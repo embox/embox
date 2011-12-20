@@ -47,10 +47,13 @@ define class-Reference
 	# Returns meta reference represented by this proxy.
 	$(method getMetaReference)
 
+	# Returns meta class of referenced object.
+	$(method getReferenceMetaClass)
+
 	# Returns a textual representation of the reference.
 	$(method getReferenceString)
 
-	# Returns a textual representation of the reference.
+	# Sets a new value of 'referenceString' property.
 	$(method setReferenceString)
 
 endef

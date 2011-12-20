@@ -33,5 +33,10 @@ $(def_all)
 «DEFINE classifier FOR EClass»
 	# Creates a new '«name»' model object.
 	«mkMethod(factoryMethodName())»
+«IF isCrossReferenced() -»
+	# Creates a new reference to '«name»'.
+	#   1. Optional reference string to set initially.
+	«mkMethod(factoryMethodNameForReference())»
+«ENDIF -»
 «ENDDEFINE»
 

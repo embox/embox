@@ -35,6 +35,15 @@ define class-«name»Impl
 		mkGet(ePackage.metaModelInstanceName() + "->" + id()))»
 «EXPAND feature FOREACH eStructuralFeatures -»
 endef
+«IF isCrossReferenced() -»
+
+define class-ReferenceTo«name»Impl
+	«mkSuper("ReferenceImpl,$(value 1)")»
+
+	«mkMethod(getter("referenceMetaClass"),
+		mkGet(ePackage.metaModelInstanceName() + "->" + id()))»
+endef
+«ENDIF -»
 «ENDDEFINE»
 
 «DEFINE feature FOR EStructuralFeature»

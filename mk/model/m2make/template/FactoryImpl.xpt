@@ -26,6 +26,11 @@ endef
 	«ERROR "Unexpected EClassifier: " + this»
 «ENDDEFINE»
 «DEFINE classifier FOR EClass»
-	«mkMethod(factoryMethodName(), "$(new " + name + ")")»
+	«mkMethod(factoryMethodName(),
+		"$(new " + name + "Impl)")»
+«IF isCrossReferenced() -»
+	«mkMethod(factoryMethodNameForReference(),
+		"$(new ReferenceTo" + name + "Impl,$(value 1))")»
+«ENDIF -»
 «ENDDEFINE»
 

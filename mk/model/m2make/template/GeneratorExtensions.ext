@@ -34,8 +34,11 @@ factoryImplName(EPackage this) :
 	name.toFirstUpper() + "FactoryImpl";
 factoryInstanceName(EPackage this) :
 	name.toFirstLower() + "FactoryInstance";
+
 factoryMethodName(EClassifier this) :
-	"create" + name.toFirstUpper();
+	"create" + id();
+factoryMethodNameForReference(EClassifier this) :
+	"createReferenceTo" + id();
 
 id(EStructuralFeature this) :
 	eContainingClass.name.toFirstUpper() + "_" + name.toFirstUpper();
@@ -92,3 +95,7 @@ mkSetWrapped(String this, String value) :
 subtypes(EClassifier this) :
 	ePackage.eClassifiers.typeSelect(EClass)
 		.select(c|c.eAllSuperTypes.contains(this));
+
+isCrossReferenced(EClassifier this) :
+	ePackage.eClassifiers.typeSelect(EClass).eReferences
+		.exists(r | r.eReferenceType == this && !r.container && !r.containment);
