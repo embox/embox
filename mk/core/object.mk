@@ -1145,61 +1145,37 @@ define obj_links
 	$(subst .,,$(basename $($($1).fields:%=.%)))
 endef
 
-$(def_all)
-
-include mk/util/graph.mk
-include mk/util/escape.mk
-
-# Serialize objects to .dot file for converting it by graphviz.
-# If $1 exist then graph from this node will be closed and objects from graph will be
-# serialized. Else every object in system will be serialized
-#
-# [param $1] if exist root node for closed graph
-#
-define objects_to_dot
-	$(\n)digraph "Make Objects Dump"
-	$(\n){
-	$(\n)	graph[rankdir="LR"];
-	$(\n)	node[shape="record"];
-	$(\n)
-	$(foreach o,
-		$(if $(call value,1),
-			# if root is known then closure graph
-			$(call graph_closure,$1,get_referenced_objects)
-			, # else get all obj% in system
-			$(__object_instance_cnt:%=.obj%)
-		), # foreach
-		$(\n)	"$o" \
-			[label="<.> $o : $($o)\l $(foreach f,$(call field_name,$($($o).fields)),
-				| <$f> $f = $(call escape_graphviz,$($o.$f))\l
-			)"];
-		$(\n)
-		$(foreach f, $(call obj_links,$o),
-			$(foreach p,$(call field_type,$($o.$f)),
-				$(\n)	"$o":$f -> "$p":".";
-			)
+#param $1 container
+#param $2 tail name
+define container_get_name
+	$(info $1)
+	$(if $(get $1.container),
+		$(if $(call has_field,$1,name),
+			$(call $0,$(get $1.container),$(get $1.name).$2)
+		,
+			$(call $0,$(get $1.container),$2)
 		)
-		$(\n)
+	,
+	$(get $1.name).$2
 	)
-	$(\n)}
-	$(\n)
 endef
 
-# Serialize all objects in closed graph to makefile
-# param $1 is a root node of graph
-define objects_to_mk
-	$(foreach o,$(call graph_closure,$1,get_referenced_objects),
-		$(foreach f,$(call field_name,$($($o).fields)),
-			$o:=$(call escape_makefile,$($o))
-			$(\n)
-			$o.$f:=$(call escape_makefile,$($o.$f))
-			$(\n)
+#param $1 an object
+define get_qualified_name
+	$(if $(call has_field,$1,name),
+		$(if $(get $1.container),
+			$(call container_get_name,$(get $1.container),$(get $1.name))
 		)
 	)
-	$(\n)
 endef
 
 $(def_all)
+
+
+#######################################
+# TODO move from here
+#######################################
+include mk/util/serialize.mk
 
 __mk_objects_dump_ps := objects_dump.ps
 
@@ -1215,5 +1191,6 @@ $(__mk_objects_dump_ps) : %.ps : %.dot
 
 mk_object_to_mk:
 	@printf '%b' '$(call escape_printf,$(call objects_to_mk,.obj7))' > dump.mk
+	@printf '%b' '$(call escape_printf,$(call objects_to_export,.obj7))' > fump.mk
 
 endif # __core_object_mk
