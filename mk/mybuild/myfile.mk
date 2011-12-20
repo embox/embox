@@ -8,7 +8,7 @@
 ifndef __mybuild_myfile_mk
 __mybuild_myfile_mk := $(lastword $(MAKEFILE_LIST))
 
-include $(addprefix $(__mybuild_myfile_mk)), \
+include $(addprefix $(__mybuild_myfile_mk), \
 			-model-old.mk -parser.mk)
 
 $(def_all)
