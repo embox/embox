@@ -25,8 +25,10 @@ include mk/gold/engine.mk
 #
 # Include tables file and constructors for symbols and rules.
 #
-include $(addprefix $(basename $(__gold_grammar_$(gold_grammar)_mk)), \
-			-tables.mk -symbols.mk -rules.mk)
+include $(addprefix $(dir $(__gold_grammar_$(gold_grammar)_mk)), \
+			myfile-tables.mk \
+			myfile-symbols.mk \
+			myfile-rules.mk)
 
 $(def_all)
 
