@@ -22,6 +22,8 @@ define class-«metaModelImplName()»
 «EXPAND initClassifier FOREACH eClassifiers -»
 endef
 
+$(def_all)
+
 «inclusionGuardEnd("metamodel_impl")»
 
 «ENDFILE»«ENDDEFINE»

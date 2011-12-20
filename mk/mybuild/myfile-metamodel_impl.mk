@@ -174,5 +174,7 @@ define class-MyFileMetaModelImpl
 		$(get FilenameModuleProperty))
 endef
 
+$(def_all)
+
 endif # __mybuild_myfile_metamodel_impl_mk
 

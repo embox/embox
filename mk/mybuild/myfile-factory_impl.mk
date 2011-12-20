@@ -69,5 +69,7 @@ define class-MyFileFactoryImpl
 		$(new ObjectsImpl))
 endef
 
+$(def_all)
+
 endif # __mybuild_myfile_factory_impl_mk
 

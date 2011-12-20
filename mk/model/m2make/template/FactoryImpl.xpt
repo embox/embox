@@ -17,6 +17,8 @@ define class-«factoryImplName()»
 «EXPAND classifier FOREACH eClassifiers -»
 endef
 
+$(def_all)
+
 «inclusionGuardEnd("factory_impl")»
 
 «ENDFILE»«ENDDEFINE»
