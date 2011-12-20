@@ -3,7 +3,8 @@ __util_serialize_mk := 1
 
 include mk/util/graph.mk
 include mk/util/escape.mk
-# include mk/core/object.mk
+include mk/mybuild/resource.mk
+include mk/core/object.mk
 
 # Serialize objects to .dot file for converting it by graphviz.
 # If $1 exist then graph from this node will be closed and objects from graph will be
@@ -59,6 +60,18 @@ define objects_to_export
 	$(foreach o,$(call graph_closure,$1,get_referenced_objects),
 		$(foreach m,$(instance-of $o,module),
 			$o:=$(call escape_makefile,$(call get_qualified_name,$m))
+			$(\n)
+		)
+	)
+endef
+
+#param $1 'my_file' object
+define model_to_resource
+	$(if $(instance-of $1,my_file),
+		$1$(\n)
+		$(call set_exports,$(new resource),$1)
+		$(foreach o,$(call get_modules,$1),
+			$(call get_qualified_name,$o)
 			$(\n)
 		)
 	)

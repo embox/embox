@@ -1179,7 +1179,7 @@ include mk/util/serialize.mk
 
 __mk_objects_dump_ps := objects_dump.ps
 
-.PHONY : mk_objects_dump mk_object_to_mk
+.PHONY : mk_objects_dump mk_object_to_mk mk_create_resource
 .PHONY : $(__mk_objects_dump_ps:.ps=.dot) # Assume it volatile.
 mk_objects_dump : $(__mk_objects_dump_ps)
 
@@ -1193,4 +1193,6 @@ mk_object_to_mk:
 	@printf '%b' '$(call escape_printf,$(call objects_to_mk,.obj7))' > dump.mk
 	@printf '%b' '$(call escape_printf,$(call objects_to_export,.obj6))' > fump.mk
 
+mk_create_resource:
+	@printf '%b' '$call escape_printf,$(call create_resource
 endif # __core_object_mk

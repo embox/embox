@@ -124,11 +124,6 @@ define class-named
 	$(method set_name,$(set name,$1))
 endef
 
-define class-resource
-	$(field nodes : node)
-	$(field issues)
-endef
-
 # Constructor args:
 #   1. Name representing the crosslink.
 define class-abstract_ref
