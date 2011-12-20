@@ -52,14 +52,14 @@ endef
 	«mkMethod(getter(), mkGet(name))»
 «LET eReferenceType.ePackage.metaModelInstanceName() AS metaInstance -»
 	«mkMethod(setter(),
-		mkInvoke("nodeSetReference",mkGet(metaInstance + "->" + id())))»
+		mkInvoke("setNodeReference",mkGet(metaInstance + "->" + id())))»
 «IF upperBound != 1 -»
 	«mkMethod(xetter("add"),
-		mkInvoke("nodeAddReference",mkGet(metaInstance + "->" + id())))»
+		mkInvoke("addNodeReference",mkGet(metaInstance + "->" + id())))»
 	«mkMethod(xetter("remove"),
-		mkInvoke("nodeRemoveReference",mkGet(metaInstance + "->" + id())))»
+		mkInvoke("removeNodeReference",mkGet(metaInstance + "->" + id())))»
 	«mkMethod(xetter("clear"),
-		mkInvoke("nodeClearReference",mkGet(metaInstance + "->" + id())))»
+		mkInvoke("clearNodeReference",mkGet(metaInstance + "->" + id())))»
 «ENDIF -»
 «ENDLET -»
 «ENDDEFINE»
