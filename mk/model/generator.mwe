@@ -17,7 +17,7 @@
 		<modelSlot value="model" />
 	</component>
 
-	<!--  generate code -->
+	<!--  Model itself -->
 	<component class="org.eclipse.xpand2.Generator">
 		<metaModel idRef="mm_emf"/>
 		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
@@ -36,9 +36,10 @@
 		</outlet>
 	</component>
 
+	<!--  Meta model -->
 	<component class="org.eclipse.xpand2.Generator">
 		<metaModel idRef="mm_emf"/>
-		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_meta_'"/>
+		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
 		<expand
 			value="template::MetaModel::main FOR model" />
 		<outlet path="${src-gen}" >
@@ -47,9 +48,28 @@
 
 	<component class="org.eclipse.xpand2.Generator">
 		<metaModel idRef="mm_emf"/>
-		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_meta_'"/>
+		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
 		<expand
 			value="template::MetaModelImpl::main FOR model" />
+		<outlet path="${src-gen}" >
+		</outlet>
+	</component>
+
+	<!--  Factory -->
+	<component class="org.eclipse.xpand2.Generator">
+		<metaModel idRef="mm_emf"/>
+		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
+		<expand
+			value="template::Factory::main FOR model" />
+		<outlet path="${src-gen}" >
+		</outlet>
+	</component>
+
+	<component class="org.eclipse.xpand2.Generator">
+		<metaModel idRef="mm_emf"/>
+		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
+		<expand
+			value="template::FactoryImpl::main FOR model" />
 		<outlet path="${src-gen}" >
 		</outlet>
 	</component>

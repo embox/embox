@@ -2,20 +2,21 @@
 
 «EXTENSION template::GeneratorExtensions»
 
-«DEFINE main FOR EPackage»«FILE name.toLowerCase() + "-model.mk" -»
+«DEFINE main FOR EPackage»«FILE fileName("model") -»
 «fileHeader()»
 
 # Model of '«name»' package.
 
-«inclusionGuardBegin()»
+«inclusionGuardBegin("model")»
 
-include $(basename «inclusionGuard()»)_impl.mk
+«includeFile("model", "model_impl")»
 
 «EXPAND classifier FOREACH eClassifiers -»
 
 $(def_all)
 
-«inclusionGuardEnd()»
+«inclusionGuardEnd("model")»
+
 «ENDFILE»«ENDDEFINE»
 
 «DEFINE classifier FOR EClassifier»

@@ -2,27 +2,27 @@
 
 «EXTENSION template::GeneratorExtensions»
 
-«DEFINE main FOR EPackage»«FILE name.toLowerCase() + "-metamodel.mk" -»
+«DEFINE main FOR EPackage»«FILE fileName("metamodel") -»
 «fileHeader()»
 
 # Meta model for '«name»' package.
 
-«inclusionGuardBegin()»
+«inclusionGuardBegin("metamodel")»
 
-include $(basename «inclusionGuard()»)_impl.mk
+«includeFile("metamodel", "metamodel_impl")»
 
 # Provides static access to contents of '«name»' model.
 # See '«metaModelInstanceName()»'.
 define class-«metaModelName()»
 	«mkSuper("MetaModel")»
-	«EXPAND classifier FOREACH eClassifiers -»
+«EXPAND classifier FOREACH eClassifiers -»
 endef
 
 $(def_all)
 
 «metaModelInstanceName()» := $(call new,«metaModelImplName()»)
 
-«inclusionGuardEnd()»
+«inclusionGuardEnd("metamodel")»
 
 «ENDFILE»«ENDDEFINE»
 

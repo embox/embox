@@ -1,0 +1,37 @@
+«IMPORT ecore»
+
+«EXTENSION template::GeneratorExtensions»
+
+«DEFINE main FOR EPackage»«FILE fileName("factory") -»
+«fileHeader()»
+
+# Factory for '«name»' model.
+
+«inclusionGuardBegin("factory")»
+
+«includeFile("factory", "factory_impl")»
+
+# Provides methods for creating objects of '«name»' model.
+# See '«factoryInstanceName()»'.
+define class-«factoryName()»
+	«mkSuper("NodeFactory")»
+«EXPAND classifier FOREACH eClassifiers -»
+endef
+
+$(def_all)
+
+«factoryInstanceName()» := $(call new,«factoryImplName()»)
+
+«inclusionGuardEnd("factory")»
+
+«ENDFILE»«ENDDEFINE»
+
+
+«DEFINE classifier FOR EClassifier»
+	«ERROR "Unexpected EClassifier: " + this»
+«ENDDEFINE»
+«DEFINE classifier FOR EClass»
+	# Creates a new '«name»' model object.
+	«mkMethod(factoryMethodName())»
+«ENDDEFINE»
+

@@ -2,16 +2,18 @@
 
 «EXTENSION template::GeneratorExtensions»
 
-«DEFINE main FOR EPackage»«FILE name.toLowerCase() + "-metamodel_impl.mk" -»
+«DEFINE main FOR EPackage»«FILE fileName("metamodel_impl") -»
 «fileHeader()»
 
 # Metamodel implementation for '«name»' package.
 
-«inclusionGuardBegin("_impl")»
+«inclusionGuardBegin("metamodel_impl")»
 
 # Creates and initializes contents of '«name»' meta model.
 define class-«metaModelImplName()»
 	«mkSuper(metaModelName())»
+
+	«mkSuper("MetaModelImpl")»
 
 	# Create necessary objects.
 «EXPAND createClassifier FOREACH eClassifiers -»
@@ -20,7 +22,7 @@ define class-«metaModelImplName()»
 «EXPAND initClassifier FOREACH eClassifiers -»
 endef
 
-«inclusionGuardEnd("_impl")»
+«inclusionGuardEnd("metamodel_impl")»
 
 «ENDFILE»«ENDDEFINE»
 
