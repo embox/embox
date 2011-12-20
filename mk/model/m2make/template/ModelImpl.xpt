@@ -57,7 +57,7 @@ endef
 «ENDDEFINE»
 
 «DEFINE feature FOR EReference»
-	«mkField(name)»
+	«mkField(name + " : " + eReferenceType.name)»
 	«mkMethod(getter(), mkGet(name))»
 «LET eReferenceType.ePackage.metaModelInstanceName() AS metaInstance -»
 	«mkMethod(setter(),
