@@ -1191,6 +1191,6 @@ $(__mk_objects_dump_ps) : %.ps : %.dot
 
 mk_object_to_mk:
 	@printf '%b' '$(call escape_printf,$(call objects_to_mk,.obj7))' > dump.mk
-	#@printf '%b' '$(call escape_printf,$(call get_qualified_name,.obj6))' > fump.mk
+	@printf '%b' '$(call escape_printf,$(call objects_to_export,.obj6))' > fump.mk
 
 endif # __core_object_mk

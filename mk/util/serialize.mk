@@ -58,7 +58,7 @@ endef
 define objects_to_export
 	$(foreach o,$(call graph_closure,$1,get_referenced_objects),
 		$(foreach m,$(instance-of $o,module),
-			$o:=$(call escape_makefile,$(call module_get_full_name,$m))
+			$o:=$(call escape_makefile,$(call get_qualified_name,$m))
 			$(\n)
 		)
 	)
