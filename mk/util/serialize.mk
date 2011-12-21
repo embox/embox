@@ -68,11 +68,11 @@ endef
 #param $1 'my_file' object
 define model_to_resource
 	$(if $(instance-of $1,my_file),
-		$1$(\n)
 		$(call set_exports,$(new resource),$1)
+		$(call resolve_internal,$1)
+		$1$(\n)
 		$(foreach o,$(call get_modules,$1),
-			$(call get_qualified_name,$o)
-			$(\n)
+			$(\n)$(call get_qualified_name,$o)
 		)
 	)
 endef
