@@ -13,8 +13,10 @@ define class-my_file
 	$(super node)
 	$(super named,$1)
 
+	$(field resolved)
 	$(field imports)
 	$(field modules : module)
+
 
 	$(method set_imports,
 		$(set imports,$1))
@@ -28,7 +30,19 @@ define class-my_file
 	$(method remove_modules,
 		$(invoke remove_references,modules,$(suffix $1)))
 
+#	$(method resolve_modules,
+#		$(foreach m,$1,$(get $m.name)$m))
+#
+	$(method set_resolved,
+		$(invoke set_references,resolved,
+			$(foreach m,$1,$(get $m.name)$m)
+		)
+	)
+
 endef
+
+#	$(method resolve_modules,$1))
+#	$(foreach m,$1,$m))$(get $m.name)
 
 # Constructor args:
 #   1. Module name.
@@ -97,34 +111,5 @@ define class-module_ref
 	$(method set_depends)
 endef
 
-define class-module_link
-	$(super module_ref,$1)
-
-	$(super link)
-
-	$(method get_reference,
-		$(get dst))
-
-	$(method get_type,module)
-
-	$(method set_depends,
-		$(set src,$1))
-
-	$(method find_resolve,
-		$(foreach o,$(globals),
-			$(if $(subst $($(this).link_name),,$($(o).link_name)),
-				,
-				$(invoke resolve,$($(o).object)))))
-	# Args:
-	#   1. Object
-	$(method resolve,
-		$(info resolving $(this) with $1)$(invoke set_references,dst,$1))
-
-	# Args:
-	#   1. Object, link to which must be deresolved
-	$(method deresolve,
-		$(invoke remove_references,dst,$1))
-
-endef
 
 $(def_all)

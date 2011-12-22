@@ -22,6 +22,7 @@
 #
 
 include mk/core/object.mk
+include mk/mybuild/link.mk
 
 # Rule: <MyFile> ::= <Package> <Imports> <Entities>
 # Args:
@@ -38,10 +39,13 @@ define $(gold_grammar)_produce-MyFile
 				,
 			$(invoke m->set_$(entity_type),
 					$(filter-patsubst $(entity_type)/%,%,$3))
+
+#			$(invoke m->set_resolved,
+#						$(filter-patsubst $(entity_type)/%,%,$3))
 		)
 	)
 endef
-
+#$(invoke m->resolve_modules,
 # Rule: <Package> ::= package <QualifiedName>
 $(gold_grammar)_produce-Package_package  = $2
 
