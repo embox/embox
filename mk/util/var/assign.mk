@@ -108,7 +108,9 @@ var_assign_recursive = \
 #       (see GNU Make manual).
 #
 var_assign_recursive_sl = \
-  ${eval $$1 = $(subst $(\h),\$(\h),$2)}
+	${eval $$1 = \
+		$(subst \\ ,\\,$(subst \\\\\#,\\\#,$(subst \#,\\\#,$(subst \\,\\ \
+				,$2))))}
 
 ##
 # Function: var_assign_recursive_ml
