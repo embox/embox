@@ -135,9 +135,7 @@ endef
 
 # Params: ignored
 define builtin_func-gold-parser
-	${eval \
-		__def_ignore += $(__gold_ns)%
-	}
+	$(call def_exclude,$(__gold_ns)%)
 endef
 
 #
