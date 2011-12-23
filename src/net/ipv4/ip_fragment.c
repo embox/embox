@@ -185,9 +185,9 @@ static void buf_delete(struct dgram_buf *buf) {
 	struct sk_buff *tmp;
 
 	while(!list_empty((struct list_head *)buf)) {
+		tmp = buf->next_skbuff;
 		list_del((struct list_head*)tmp);
 		kfree_skb(tmp);
-		tmp = buf->next_skbuff;
 	}
 
 	list_del(&buf->next_buf);
