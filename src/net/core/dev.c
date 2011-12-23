@@ -17,7 +17,7 @@
 #include <string.h>
 
 POOL_DEF(netdev_pool, struct net_device, CONFIG_NET_DEVICES_QUANTITY);
-static struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY] = {0}; /* We must clear array */
+static struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY];
 
 struct net_device * get_dev_by_idx(int num) {
 	if ((num < 0) || (num >= CONFIG_NET_DEVICES_QUANTITY)) {
@@ -209,3 +209,7 @@ int dev_set_flags(struct net_device *dev, unsigned int flags) {
 	return res;
 }
 
+int dev_init(void) {
+	memset(opened_netdevs, 0, CONFIG_NET_DEVICES_QUANTITY * sizeof(struct net_device *));
+	return ENOERR;
+}

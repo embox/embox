@@ -7,8 +7,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef ROUTE_H_
-#define ROUTE_H_
+#ifndef NET_ROUTE_H_
+#define NET_ROUTE_H_
 
 #include <types.h>
 #include <net/skbuff.h>
@@ -69,19 +69,24 @@ extern int ip_route(sk_buff_t *skbuff);
 
 /**
  * Get first element from route from table.
- * @param iter pointer to iterator
  * @return pointer to first entity
  * @retval NULL if entity not found
  */
-extern rt_entry_t *rt_fib_get_first(size_t *iter);
+extern struct rt_entry * rt_fib_get_first(void);
 
 /**
- * Get next element from route from table uses iter.
- * Use this function after tr_fib_get_first
- * @param iter pointer to iterator
- * @return pointer to first entity
+ * Get next element from route from table uses
+ * pointer to previous entry
+ * Use this function after rt_fib_get_first
+ * @param entry pointer to previous element
+ * @return pointer to next entity
  * @retval NULL if entity more not found
  */
-extern rt_entry_t *rt_fib_get_next(size_t *iter);
+extern struct rt_entry * rt_fib_get_next(struct rt_entry *entry);
 
-#endif /* ROUTE_H_ */
+/**
+ * Init function for FIB
+ */
+extern int route_init(void);
+
+#endif /* NET_ROUTE_H_ */

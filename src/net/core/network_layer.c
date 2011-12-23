@@ -19,6 +19,7 @@
 #include <linux/interrupt.h>
 #include <errno.h>
 #include <net/sock.h>
+#include <net/route.h>
 
 #include <framework/net/pack/api.h>
 
@@ -190,6 +191,7 @@ static void net_rx_action(struct softirq_action *action) {
 }
 
 static int __init unit_init(void) {
+	route_init();
 	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
 	return 0;
 }
