@@ -76,10 +76,10 @@ include mk/util/var/info.mk
 #   Nothing.
 def = \
 	$(and $(foreach __def_var,$1, \
+			$(foreach __def_in_progress_$(__def_var),$(__def_var), \
 		$(if $(value DEF_TRACE), \
 				$(warning $(\s)$(\t)def: \
 						$(flavor $(__def_var))$(\t)[$(__def_var)])) \
-		$(call var+=,__def_done,$(__def_var)) \
 		$(if $(call var_recursive,$(__def_var)), \
 			$(call var_assign_recursive,$(__def_var),$ \
 				$(call __def,$(call __def_var_value,$(__def_var)))), \
@@ -87,7 +87,8 @@ def = \
 				$(error Function '$(__def_var)' is not defined) \
 			) \
 		) \
-	),)
+		$(call var+=,__def_done,$(__def_var)) \
+	)),)
 
 ##
 # Translates all functions defined since the last call.
@@ -129,6 +130,16 @@ def_exclude = \
 #   The argument if answer is true, empty otherwise.
 def_is_done = \
 	$(filter $1,$(__def_done))
+
+##
+# Tells whether the specified function is being defined right now.
+#
+# Params:
+#   1. Name of function to check.
+# Return:
+#   The argument if answer is true, empty otherwise.
+def_in_progress = \
+	$(value __def_in_progress_$1)
 
 ##
 # Registers a new value provider for variables matching the given name pattern.
