@@ -1,11 +1,4 @@
-#----------------------------------------------------------------------
-# Description: night build script
-# Author: Nikolay Korotky
-# Created at: Tue Nov 30 21:15:15 MSK 2010
-#
-# Copyright (c) 2010 Nikolay Korotky,  All rights reserved.
-#
-#!/bin/sh
+#!/bin/bash
 
 OUT=summaru.log
 
