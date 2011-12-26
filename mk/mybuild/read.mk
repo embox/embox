@@ -58,11 +58,13 @@ $(MKFILES_CONVERTED) : mk/mybuild/read.mk mk/mybuild/myfile.mk
 $(filter %Makefile,$(MKFILES_CONVERTED)) : \
 		$(EM_DIR)%Makefile : $(ROOT_DIR)%Mybuild
 	@echo '$< -> $@'
-	@mkdir -p $(@D); $(PRINTF) '%b' '$(call my_printf_escape,$(call gold_parse,myfile,$<))' > $@
+	@mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, \
+		$(call objects_to_mk,$(call gold_parse,myfile,$<)))' > $@
 
 $(filter %.my.mk,$(MKFILES_CONVERTED)) : \
 		$(EM_DIR)%.my.mk : $(ROOT_DIR)%.my
 	@echo '$< -> $@'
-	@mkdir -p $(@D); $(PRINTF) '%b' '$(call my_printf_escape,$(call gold_parse,myfile,$<))' > $@
+	@mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, \
+		$(call objects_to_mk,$(call gold_parse,myfile,$<)))' > $@
 
 endif # __mybuild_read_mk
