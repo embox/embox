@@ -1193,6 +1193,6 @@ mk_object_to_mk:
 	@printf '%b' '$(call escape_printf,$(call objects_to_mk,.obj7))' > dump.mk
 	@printf '%b' '$(call escape_printf,$(call objects_to_export,.obj6))' > fump.mk
 
-mk_create_resource:
-	@printf '%b' '$call escape_printf,$(call create_resource
+#mk_create_resource:
+#	@printf '%b' '$call escape_printf,$(call create_resource
 endif # __core_object_mk

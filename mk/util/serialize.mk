@@ -45,14 +45,14 @@ endef
 # param $1 is a root node of a graph
 define objects_to_mk
 	$(foreach o,$(call graph_closure,$1,get_referenced_objects),
+		$(\n)
+		$o:=$(call escape_makefile,$($o))
+		$(\n)
 		$(foreach f,$(call field_name,$($($o).fields)),
-			$o:=$(call escape_makefile,$($o))
-			$(\n)
 			$o.$f:=$(call escape_makefile,$($o.$f))
 			$(\n)
 		)
 	)
-	$(\n)
 endef
 
 #param $1 is a root node of a graph
