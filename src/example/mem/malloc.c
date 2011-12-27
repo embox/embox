@@ -19,32 +19,28 @@ EMBOX_EXAMPLE(run);
 /* This structure described memory block:
  * @available - state flag: available or not
  * the memory block for allocate (default - available) (0|1);
- * @size      - size of memory block (default - all dedicated space);
- */
+ * @size      - size of memory block (default - all dedicated space); */
 struct memory_descriptor {
 	char available;
 	size_t size;
 };
 
-/* Size of memory_descriptor.
- */
+/* Size of memory_descriptor. */
 #define MEM_DESC_SZ sizeof(struct memory_descriptor)
 
 /* This is a pointer to the free block
- * at current time in our memory.
- */
+ * at current time in our memory. */
 static char *current_free_space;
 
 /* This is our memory, that we allocated,
- * size defined from MEM_SIZE.
- */
+ * size defined from MEM_SIZE. */
 static char  memory[MEM_SIZE];
 
 /* This is a function, which allocate block with necessary @size.
  * @size - size of needed block;
- * return - pointer to the allocated memory;
- */
+ * return - pointer to the allocated memory; */
 static void *memory_allocate(int size) {
+
 	/* Set the pointer(iterator) on the begin of our memory */
 	struct memory_descriptor *current_md = (void *) current_free_space;
 
@@ -82,21 +78,23 @@ static void *memory_allocate(int size) {
 
 /* This procedure makes free busy block
  * at the specified @address.
- * @address - block address being freed;
- */
+ * @address - block address being freed; */
 static void memory_free(void *address) {
+
 	/* Detect address of memory_block */
 	struct memory_descriptor *md = address - MEM_DESC_SZ;
+
 	/* Make block free*/
 	md->available = 1;
+
 	/* Set the new value of pointer to the free block */
 	if (current_free_space > (char *)md) current_free_space = (char *) md;
+
 	return;
 }
 
 /* This is procedure of the beginning
- * initialization memory.
- */
+ * initialization memory. */
 static void memory_init(void) {
 	struct memory_descriptor *md;
 	current_free_space = memory;
@@ -106,8 +104,7 @@ static void memory_init(void) {
 	return;
 }
 
-/* This program tests the simplest algorithm of memory allocation
- */
+/* This program tests the simplest algorithm of memory allocation */
 static int run(int argc, char **argv) {
 	struct memory_descriptor *md;
 	int i, temp;
