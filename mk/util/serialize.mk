@@ -46,6 +46,7 @@ endef
 define objects_to_mk
 	$(foreach o,$(call graph_closure,$1,get_referenced_objects),
 		$(\n)
+		__object_instance_cnt += $(o)$(\n)
 		$o:=$(call escape_makefile,$($o))
 		$(\n)
 		$(foreach f,$(call field_name,$($($o).fields)),
