@@ -118,9 +118,6 @@ static int udp_rcv(sk_buff_t *skb) {
 	if (sk) {
 		inet = inet_sk(sk);
 		udp_queue_rcv_skb(sk, skb);
-		/*if (!socket_port_is_busy(uh->dest, UDP_PORT)) {
-			return NET_RX_DROP;
-		}*/
 		inet->dport = uh->source;
 		inet->daddr = iph->saddr;
 		if (inet->rcv_saddr == INADDR_ANY) {
@@ -135,10 +132,21 @@ static int udp_rcv(sk_buff_t *skb) {
 }
 
 void udp_err(sk_buff_t *skb, uint32_t info) {
-	//printf("todo: udp_err\n");
-	//TODO BLIN!!! it's not printf("todo")
-}
+	struct inet_sock *inet;
+	struct sock *sk;
+	size_t i;
+	__be16 port;
 
+	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		sk = (struct sock *) udp_hash[i];
+		inet = inet_sk(sk);
+		port = *(__be16*)(skb->h.raw + ICMP_HEADER_SIZE + IP_HEADER_SIZE(skb->nh.iph));
+		if (sk && (inet->sport == port)
+			   && (inet->daddr == skb->nh.iph->saddr)) {
+			sk->sk_err = info;
+		}
+	}
+}
 
 int udp_disconnect(struct sock *sk, int flags) {
 	return 0;

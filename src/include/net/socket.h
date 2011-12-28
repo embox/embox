@@ -217,6 +217,7 @@ extern int socket_shutdown(int socket, int how);
 //FIXME move below from here
 extern struct socket * socket_alloc(void);
 extern void socket_free(struct socket *sock);
+extern int check_icmp_err(int sockfd);
 #if 0
 extern size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen);

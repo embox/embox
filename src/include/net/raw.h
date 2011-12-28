@@ -28,5 +28,6 @@ static inline raw_sock_t *raw_sk(const struct sock *sk) {
 }
 
 extern int raw_rcv(struct sk_buff *);
+extern void raw_err(sk_buff_t *skb, uint32_t info);
 
 #endif /* RAW_H */

@@ -148,8 +148,10 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 		//inet->sport = 666;
 		inet->sport = socket_get_free_port(inet->sport_type);
 	}
-	/* socket is ready for packet transmit */
+	/* socket is ready for usage and has no data transmitting errors yet */
 	sock->sk->is_ready = 1;
+	sock->sk->sk_err = -1;
+
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
 	if (res < 0) {
 		return (ssize_t)res;
@@ -162,7 +164,17 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen) {
 
 	return sendto_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
+}
 
+int check_icmp_err(int sockfd) {
+	struct socket *sock;
+	int err;
+
+	sock = idx2sock(sockfd);
+	err = sock->sk->sk_err;
+	sock->sk->sk_err = -1;
+
+	return err;
 }
 
 static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int flags,

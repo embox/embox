@@ -14,6 +14,7 @@
 #include <string.h>
 #include <net/inetdevice.h>
 #include <net/icmp.h>
+#include <net/udp.h>
 #include <net/ip.h>
 #include <net/checksum.h>
 #include <net/protocol.h>
@@ -23,6 +24,8 @@
 #include <err.h>
 #include <errno.h>
 #include <assert.h>
+
+#include <net/raw.h>
 
 EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 
@@ -95,6 +98,7 @@ static int icmp_unreach(sk_buff_t *skb) {
 	iphdr_t *iph;
 	icmphdr_t *icmph;
 	net_device_stats_t *stats;
+	uint32_t info;
 
 	assert(skb != NULL);
 
@@ -132,6 +136,13 @@ static int icmp_unreach(sk_buff_t *skb) {
 	default:
 		return -1;
 	}
+
+	info = icmph->type;
+	info ^= (icmph->code << 8);
+	info ^= (icmph->un.echo.sequence << 16);
+	/* Notify all raw and udp sockets */
+	raw_err(skb, info);
+	udp_err(skb, info);
 
 	kfree_skb(skb);
 

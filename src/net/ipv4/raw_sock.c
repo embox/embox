@@ -62,6 +62,18 @@ int raw_rcv(sk_buff_t *skb) {
 	return ENOERR;
 }
 
+void raw_err(sk_buff_t *skb, uint32_t info) {
+	size_t i;
+	struct sock *sk;
+
+	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		sk = (struct sock *)raw_hash[i];
+		if (sk && sk->sk_protocol == ICMP_PROTO_TYPE) {
+			sk->sk_err = info;
+		}
+	}
+}
+
 static void raw_close(struct sock *sk, long timeout) {
 	/*TODO: release socket*/
 	sk_free(sk);
