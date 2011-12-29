@@ -6,28 +6,26 @@ include mk/core/object.mk
 define class-resource
 	$(field nodes : node)
 	$(field issues)
+
 	$(property-field exports... : node)
-	$(property-field my_file : node)
-endef
-
-#param $1 object contains resources
-define get_modules
-	$(get $1.modules)
-endef
-
-define set_exports
-	$(set $1.exports,$(foreach o,$(call get_modules,$2),
-		$(call get_qualified_name,$o)$o)
+	#param $1 a model
+	$(setter exports,
+		$(set-field exports,
+			$(foreach o,$1,$(call get_qualified_name,$o)$o)
+		)
 	)
+
+	$(property-field my_file : node)
+
 endef
 
-
-
+# TODO move from here
+# this function tries to resolve references which place in the same madel
+# param $1 a model
 define resolve_internal
-	$(foreach o,$(call get_modules,$1),
+	$(silent-foreach o,$(get $1.modules),
 		$(foreach l,$(get $o.depends_refs),
-			$(foreach i,$(call get_modules,$1),
-				$(info $i::$(get $i.name):$l:$(get $l.link_name))
+			$(foreach i,$(get $1.modules),
 				$(if $(eq $(get $i.name),$(get $l.link_name)),
 					$(set $l.link_name,$(get $i.name)$i))
 			)
@@ -35,11 +33,13 @@ define resolve_internal
 	)
 endef
 
+#create resource from associated model
+#param $1 -a model
 define create_from_model
-	$(info +++++++++++++++++++++++++++$1)
 	$(if $(instance-of $1,my_file),
+		$(call resolve_internal,$1)
 		$(foreach r,$(new resource),$r
-			$(call set_exports,$r,$1)
+			$(set $r.exports,$(get $1.modules))
 			$(set $r.my_file,$1)
 			$(set $1.resource,$r)
 		)
