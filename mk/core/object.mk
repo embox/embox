@@ -869,7 +869,7 @@ define instance_of
 
 	# Optimized.
 	$(foreach c,$(singleword $(value $(suffix $1))),
-			$(and $(value class-$c),$(filter $2,$c $($c.super)),$1))
+			$(and $(value class-$c),$(filter $2,$c $($c.supers)),$1))
 endef
 builtin_func-instance-of = \
 	$(foreach builtin_name,instance_of,$(builtin_to_function_inline))
