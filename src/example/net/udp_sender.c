@@ -45,7 +45,19 @@ static int exec(int argc, char **argv) {
 		}
     }
 
-    close(sock);
+    /* send 100 packets and see for icmp errors */
+    for(int i = 0; i < 100; i++) {
+        sendto(sock, msg1, sizeof(msg1), 0,
+               (struct sockaddr *)&addr, sizeof(addr));
+		err = check_icmp_err(sock);
+		if((err & 0x000000FF) == ICMP_DEST_UNREACH) {
+			if((err & 0x0000FF00) >> 8 == ICMP_PORT_UNREACH) {
+				printf("\nUnreacheble port %d\n", addr.sin_port);
+			}
+		}
+    }
+
+    socket_close(sock);
 
     return 0;
 }

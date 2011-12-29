@@ -45,7 +45,6 @@ static void free_packet(struct sys_timer *timer, void *data) {
 	/* it must send message, that packet was dropped */
 	deff_pack = (struct deff_packet*) data;
 	list_del(&deff_pack->link);
-	kfree_skb(deff_pack->skb);
 	timer_close(timer);
 	deff_pack->skb->sk->is_ready = 1;
 	deff_pack->skb->sk->answer = -1;
