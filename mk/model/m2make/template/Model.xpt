@@ -1,6 +1,7 @@
 «IMPORT ecore»
 
 «EXTENSION template::GeneratorExtensions»
+«EXTENSION org::eclipse::xtend::util::stdlib::counter»
 
 «DEFINE main FOR EPackage»«FILE fileName("model") -»
 «fileHeader()»
@@ -10,18 +11,13 @@
 «inclusionGuardBegin("model")»
 
 «includeFile("model", "model_impl")»
-
-«EXPAND classifier FOREACH eClassifiers -»
+«EXPAND classifier FOREACH eClassifiers.typeSelect(EClass) -»
 
 $(def_all)
 
 «inclusionGuardEnd("model")»
 
 «ENDFILE»«ENDDEFINE»
-
-«DEFINE classifier FOR EClassifier»
-	«ERROR "Unexpected EClassifier: " + this»
-«ENDDEFINE»
 
 «DEFINE classifier FOR EClass»
 #
@@ -36,13 +32,19 @@ $(def_all)
 «ENDFOREACH -»
 #
 «ENDIF»«ENDLET -»
+«IF abstract || interface -»
+# This is an «"abstract ".ifIs(abstract) + "interface ".ifIs(interface)
+	»class. You can't instantiate it directly.
+«ELSE -»
 # To instantiate this class use '«ePackage.factoryName()».«factoryMethodName()»'.
-define class-«name»
-	«mkSuper("Node")»
+«ENDIF -»
+define class-«className()»
+	«mkSuper("ENode")»
 «FOREACH eSuperTypes AS superType -»
-	«mkSuper(superType.name)»
+	«mkSuper(superType.className())»
 «ENDFOREACH -»
 «EXPAND feature FOREACH eStructuralFeatures -»
+«EXPAND operation FOREACH eOperations»
 endef
 «ENDDEFINE»
 
@@ -51,36 +53,33 @@ endef
 «ENDDEFINE»
 
 «DEFINE feature FOR EAttribute»
-	# Returns the value of the '«name»' attribute.
-	«mkMethod(getter())»
-	# Sets the value of the '«name»' attribute.
-	#   1. New value.
-	«mkMethod(setter())»
+	# '«name»' attribute.
+«EXPAND featureProperty FOR this -»
 «ENDDEFINE»
 
 «DEFINE feature FOR EReference»
-«LET containment ? "containment " : "" AS flavor -»
-	# Returns the value of the '«name»' «flavor»reference.
-«LET eType.subtypes() AS subtypes»«IF !subtypes.isEmpty -»
-	#   1. Optional subtype of «eType.name» to filter on:
-«FOREACH subtypes AS subtype -»
-	#       '«subtype.name»'
-«ENDFOREACH -»
-«ENDIF»«ENDLET -»
-	«mkMethod(getter())»
-	# Sets the value of the '«name»' «flavor»reference.
-	#   1. New value.
-	«mkMethod(setter())»
-«IF upperBound != 1 -»
-	# Adds new elements to the '«name»' «flavor»reference.
-	#   1. Elements to add.
-	«mkMethod(xetter("add"))»
-	# Removes elements from the '«name»' «flavor»reference.
-	#   1. Elements to remove.
-	«mkMethod(xetter("remove"))»
-	# Removes all elements from the '«name»' «flavor»reference.
-	«mkMethod(xetter("clear"))»
+	# '«name»' «
+		"bidirectional ".ifIs(eOpposite) +
+		"containment "  .ifIs(containment) +
+		"container "    .ifIs(container)»reference.
+«IF eOpposite != null -»
+	# The opposite reference is '«
+		(eReferenceType.name + ".").ifIs(eReferenceType != eContainingClass) +
+		eOpposite.name»'.
 «ENDIF -»
-«ENDLET -»
+«EXPAND featureProperty FOR this -»
+«ENDDEFINE»
+
+«DEFINE featureProperty FOR EStructuralFeature -»
+	«mkProperty(propertyName() + memberCardinality() + memberType()) +
+		"# read-only.".ifIs(!changeable)»
+«ENDDEFINE»
+
+«DEFINE operation FOR EOperation»
+	# '«name»' operation.
+«FOREACH eParameters AS param -»
+	#   «counterInc()». «param.name» : «param.eType.name»
+«ENDFOREACH -»
+	«mkMethod(methodName())»
 «ENDDEFINE»
 

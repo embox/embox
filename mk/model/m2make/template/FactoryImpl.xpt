@@ -13,8 +13,9 @@
 define class-«factoryImplName()»
 	«mkSuper(factoryName())»
 
-	«mkSuper("NodeFactoryImpl")»
-«EXPAND classifier FOREACH eClassifiers -»
+	«mkSuper("EModelFactoryImpl")»
+«EXPAND class FOREACH eClassifiers.typeSelect(EClass)
+	.select(c | !c.abstract && !c.interface) -»
 endef
 
 $(def_all)
@@ -24,15 +25,12 @@ $(def_all)
 «ENDFILE»«ENDDEFINE»
 
 
-«DEFINE classifier FOR EClassifier»
-	«ERROR "Unexpected EClassifier: " + this»
-«ENDDEFINE»
-«DEFINE classifier FOR EClass»
+«DEFINE class FOR EClass»
 	«mkMethod(factoryMethodName(),
-		"$(new " + name + "Impl)")»
+		"$(new " + classImplName() + ")")»
 «IF isCrossReferenced() -»
 	«mkMethod(factoryMethodNameForReference(),
-		"$(new ReferenceTo" + name + "Impl,$(value 1))")»
+		"$(new ReferenceTo" + classImplName() + ",$(value 1))")»
 «ENDIF -»
 «ENDDEFINE»
 

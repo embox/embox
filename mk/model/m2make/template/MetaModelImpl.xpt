@@ -13,13 +13,17 @@
 define class-«metaModelImplName()»
 	«mkSuper(metaModelName())»
 
-	«mkSuper("MetaModelImpl")»
+	«mkSuper("EMetaModelImpl")»
 
-	# Create necessary objects.
-«EXPAND createClassifier FOREACH eClassifiers -»
+	# Define properties as fields.
+«EXPAND createClassifier FOREACH eClassifiers.typeSelect(EClass) -»
 
-	# Initialize.
-«EXPAND initClassifier FOREACH eClassifiers -»
+	# Initialize the objects and relations between them.
+«EXPAND initClassifier FOREACH eClassifiers.typeSelect(EClass) -»
+
+	# Bind objects to instance classes and features to properties.
+«EXPAND bindClassifier FOREACH eClassifiers.typeSelect(EClass) -»
+
 endef
 
 $(def_all)
@@ -29,11 +33,9 @@ $(def_all)
 «ENDFILE»«ENDDEFINE»
 
 
-«DEFINE createClassifier FOR EClassifier»
-	«ERROR "Unexpected EClassifier: " + this»
-«ENDDEFINE»
 «DEFINE createClassifier FOR EClass»
-	«mkSetWrapped(id(), mkInvoke("createMetaClass", name))»
+	«mkPropertyField(id(),
+		mkInvoke("createMetaClass", id()))»
 	«EXPAND createFeature FOREACH eStructuralFeatures -»
 «ENDDEFINE»
 
@@ -42,24 +44,24 @@ $(def_all)
 «ENDDEFINE»
 
 «DEFINE createFeature FOR EAttribute -»
-	«mkSetWrapped(id(),
-		mkInvoke("createMetaAttribute", name + "," +
-			mkGet(eContainingClass.id())))»
+«EXPAND createFeature("createMetaAttribute") -»
 «ENDDEFINE»
 
 «DEFINE createFeature FOR EReference -»
-	«mkSetWrapped(id(),
-		mkInvoke("createMetaReference", name + "," +
-			mkGet(eContainingClass.id())))»
+«EXPAND createFeature("createMetaReference") -»
+«ENDDEFINE»
+
+«DEFINE createFeature(String methodName) FOR EStructuralFeature -»
+	«mkPropertyField(id(),
+		mkInvoke(methodName, mkGet(eContainingClass.id()) + "," + id()))»
 «ENDDEFINE»
 
 
-«DEFINE initClassifier FOR EClassifier»«ERROR "NIY"»«ENDDEFINE»
 «DEFINE initClassifier FOR EClass»
-	«mkInvoke("initMetaClass",
-		mkGet(id()) + "," +
-		(!eSuperTypes.isEmpty ? "\n\t\t" : "") +
-		eSuperTypes.id().mkGet().toString(" \\\n\t\t"))»
+	«mkInvoke("initMetaClass", mkGet(id()) + ",\n\t\t" +
+		name + "," +
+		eSuperTypes.id().mkGet().toString(" ") + "," +
+				metaFlags().toString(" "))»
 	«EXPAND initFeature FOREACH eStructuralFeatures -»
 «ENDDEFINE»
 
@@ -67,15 +69,25 @@ $(def_all)
 	«ERROR "Unexpected EStructuralFeature: " + this»
 «ENDDEFINE»
 
-
 «DEFINE initFeature FOR EAttribute -»
-	«mkInvoke("initMetaAttribute",
-		mkGet(id()) + ",")»# NIY.
+	«mkInvoke("initMetaAttribute", mkGet(id()) + ",\n\t\t" +
+		name + "," + lowerBound + "," + upperBound.ifIs(upperBound >= 0) + "," +
+		metaFlags().toString(" "))»
 «ENDDEFINE»
 
 «DEFINE initFeature FOR EReference -»
-	«mkInvoke("initMetaReference",
-		mkGet(id()) + "," +
+	«mkInvoke("initMetaReference", mkGet(id()) + ",\n\t\t" +
+		name + "," + lowerBound + "," + upperBound.ifIs(upperBound >= 0) + "," +
 		mkGet(eReferenceType.id()) + "," +
-		(eOpposite != null ? mkGet(eOpposite.id()) : ""))»
+		mkGet(eOpposite.id()).ifIs(eOpposite) + "," +
+		metaFlags().toString(" "))»
 «ENDDEFINE»
+
+
+«DEFINE bindClassifier FOR EClass»
+	«mkInvoke("bindMetaClass", mkGet(id()) + "," + className())»
+«FOREACH eStructuralFeatures AS f -»
+	«mkInvoke("bindMetaFeature", mkGet(f.id()) + "," + f.propertyName())»
+«ENDFOREACH -»
+«ENDDEFINE»
+

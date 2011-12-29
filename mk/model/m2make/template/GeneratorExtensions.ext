@@ -1,3 +1,7 @@
+/*
+ * Author: Eldar Abusalimov
+ */
+
 import ecore;
 
 fileHeader(EPackage this) :
@@ -5,14 +9,18 @@ fileHeader(EPackage this) :
 
 fileName(EPackage this, String fileKind) :
 	name.toLowerCase() + "-" + fileKind + ".mk";
+//	fileKind + ".mk";
 
 includeFile(EPackage this, String fileKind, String anotherFileKind) :
 	"include $(dir $(" + inclusionGuard(fileKind) + "))"
 		+ fileName(anotherFileKind);
 
+private inclusionGuardPrefix(EPackage this) :
+	((String) GLOBALVAR INCLUSION_GUARD_PREFIX) + name.toLowerCase() + "_";
+//	"__model_";
+
 inclusionGuard(EPackage this, String fileKind) :
-	((String) GLOBALVAR INCLUSION_GUARD_PREFIX) + name.toLowerCase() +
-		"_" + fileKind + "_mk";
+	inclusionGuardPrefix() + fileKind + "_mk";
 
 inclusionGuardBegin(EPackage this, String fileKind) :
 	"ifndef " + inclusionGuard(fileKind) + "\n" +
@@ -21,76 +29,129 @@ inclusionGuardBegin(EPackage this, String fileKind) :
 inclusionGuardEnd(EPackage this, String fileKind) :
 	"endif # " + inclusionGuard(fileKind);
 
-metaModelName(EPackage this) :
-	name.toFirstUpper() + "MetaModel";
-metaModelImplName(EPackage this) :
-	name.toFirstUpper() + "MetaModelImpl";
-metaModelInstanceName(EPackage this) :
-	name.toFirstLower() + "MetaModelInstance";
+comment(String this) :
+	replaceAll("\n", "\n#");
 
-factoryName(EPackage this) :
-	name.toFirstUpper() + "Factory";
-factoryImplName(EPackage this) :
-	name.toFirstUpper() + "FactoryImpl";
-factoryInstanceName(EPackage this) :
-	name.toFirstLower() + "FactoryInstance";
+nsName(String this, EPackage pkg) : pkg.nsPrefix + this.toFirstUpper();
+nsName(ENamedElement this, EPackage pkg) : name.nsName(pkg);
+
+metaModelName(EPackage this) :         name.toFirstUpper() + "MetaModel";
+metaModelImplName(EPackage this) :     name.toFirstUpper() + "MetaModelImpl";
+metaModelInstanceName(EPackage this) : name.toFirstLower() + "MetaModel";
+
+factoryName(EPackage this) :         name.toFirstUpper() + "Factory";
+factoryImplName(EPackage this) :     name.toFirstUpper() + "FactoryImpl";
+factoryInstanceName(EPackage this) : name.toFirstLower() + "Factory";
+
+nodeImplName(EPackage this) :        name.toFirstUpper() + "NodeImpl";
+
+className(EClass this) :     nsName(ePackage).toFirstUpper();
+classImplName(EClass this) : nsName(ePackage).toFirstUpper() + "Impl";
+
+referenceClassImplName(EClass this) :
+	"ReferenceTo" + nsName(ePackage).toFirstUpper() + "Impl";
+
+propertyName(EStructuralFeature this) : name.toFirstLower();
+methodName(EOperation this) : name.toFirstLower();
+
+fieldName(EStructuralFeature this) : "m_" + name;
 
 factoryMethodName(EClassifier this) :
 	"create" + id();
 factoryMethodNameForReference(EClassifier this) :
 	"createReferenceTo" + id();
 
-id(EStructuralFeature this) :
-	eContainingClass.name.toFirstUpper() + "_" + name.toFirstUpper();
-id(EClassifier this) :
-	name.toFirstUpper();
+id(EStructuralFeature this) : eContainingClass.id() + "_" + name;
+id(EClassifier this) :        name.toFirstUpper();
+id(Void this) :               null;
 
-mkField(String name) :
-	"$(field " + name + ")";
-mkField(String name, String initializer) :
-	"$(field " + name + ",\n\t\t" +
-		initializer + ")";
+private metaFlagsCommon(EStructuralFeature this) :
+	(let attrs = { } :
+		if changeable  then attrs.add("changeable")  ->
+		if volatile    then attrs.add("volatile")    ->
+		if derived     then attrs.add("derived")     ->
+		if transient   then attrs.add("transient")   ->
+	attrs);
 
-mkMethod(String name) :
-	"$(method " + name + ")";
-mkMethod(String name, String body) :
-	"$(method " + name + ",\n\t\t" +
-		body + ")";
+metaFlags(EStructuralFeature this) :
+	metaFlagsCommon();
+metaFlags(EReference this) :
+	(let attrs = metaFlagsCommon() :
+		if containment then attrs.add("containment") ->
+		if container   then attrs.add("container")   ->
+	attrs);
 
-mkSuper(String name) :
-	"$(super " + name + ")";
+metaFlags(EClass this) :
+	(let attrs = { } :
+		if abstract    then attrs.add("abstract")    ->
+		if interface   then attrs.add("interface")   ->
+	attrs);
+
+featureInfo(EStructuralFeature this) : name;
+featureInfo(EReference this) :
+	"Reference '" + name + "' [" + lowerBound + ".." +
+			(upperBound == -1 ? "*" : upperBound) + "]" +
+	(let i = { } :
+		if eOpposite != null then i.add("bidirectional") ->
+		if containment then i.add("containment") ->
+		if container   then i.add("container")   ->
+		if volatile    then i.add("volatile")    ->
+		if !changeable then i.add("read-only")   ->
+		i.isEmpty ? "" : ": " + i.toString(", ")) + ".";
+featureInfo(EAttribute this) :
+	"Attribute '" + name + "'" +
+	(let i = { } :
+		if volatile    then i.add("volatile")    ->
+		if !changeable then i.add("read-only")   ->
+		i.isEmpty ? "" : ": " + i.toString(", ")) + ".";
+
+mkSuper(String name) : "$(super " + name + ")";
 mkSuper(String name, String arguments) :
-	"$(super " + name + ",\n\t\t" +
-		arguments + ")";
+	"$(super " + name + ",\n\t\t" + arguments + ")";
 
-getter(ENamedElement this) :
-	name.getter();
-getter(String this) :
-	xetter("get");
+mkMethod(String name) : "$(method " + name + ")";
+mkMethod(String name, String body) :
+	"$(method " + name + ",\n\t\t" + body + ")";
 
-setter(ENamedElement this) :
-	name.setter();
-setter(String this) :
-	xetter("set");
+mkProperty(String name) : "$(property " + name + ")";
 
-xetter(ENamedElement this, String op) :
-	name.xetter(op);
-xetter(String this, String op) :
-	op + toFirstUpper();
+mkGetter(String name, String body) :      "$(getter  "  + name + "," + body + ")";
+mkSetter(String name, String body) :      "$(setter  "  + name + "," + body + ")";
+mkSetterPlus(String name, String body) :  "$(setter+ " + name + "," + body + ")";
+mkSetterMinus(String name, String body) : "$(setter- " + name + "," + body + ")";
 
-mkInvoke(String this) :
-	"$(invoke " + this + ")";
-mkInvoke(String this, String args) :
-	"$(invoke " + this + "," + args + ")";
-mkInvokeWrapped(String this, String args) :
-	"$(invoke " + this + ",\n\t\t" + args + ")";
+mkGetterWrap(String name, String body) :      mkGetter(name, "\n\t\t" + body);
+mkSetterWrap(String name, String body) :      mkSetter(name, "\n\t\t" + body);
+mkSetterPlusWrap(String name, String body) :  mkSetterPlus(name, "\n\t\t" + body);
+mkSetterMinusWrap(String name, String body) : mkSetterMinus(name, "\n\t\t" + body);
 
-mkGet(String this) :
-	"$(get " + this + ")";
-mkSet(String this, String value) :
-	"$(set " + this + "," + value + ")";
-mkSetWrapped(String this, String value) :
-	"$(set " + this + ",\n\t\t" + value + ")";
+mkField(String name) : "$(field " + name + ")";
+mkField(String name, String initializer) :
+	"$(field " + name + ",\n\t\t" + initializer + ")";
+
+mkPropertyField(String name) : "$(property-field " + name + ")";
+mkPropertyField(String name, String initializer) :
+	"$(property-field " + name + ",\n\t\t" + initializer + ")";
+
+memberCardinality(EStructuralFeature this) : upperBound == 1 ? "" : "...";
+memberType(EStructuralFeature this) :        "";
+memberType(EReference this) :                " : " + eReferenceType.name;
+
+mkInvoke(String this) :                  "$(invoke " + this + ")";
+mkInvoke(String this, String args) :     "$(invoke " + this + "," + args + ")";
+
+mkInvokeWrap(String this, String args) : this.mkInvoke("\n\t\t" + args);
+
+mkGet(String this) : "$(get " + this + ")";
+mkSet(String this, String value) : "$(set " + this + "," + value + ")";
+mkSetWrap(String this, String value) : this.mkSet("\n\t\t" + value);
+
+mkGetField(String this) : "$(get-field " + this + ")";
+mkSetField(String this, String value) : "$(set-field " + this + "," + value + ")";
+mkSetFieldWrap(String this, String value) : this.mkSetField("\n\t\t" + value);
+
+ifIs(Object this, Object someObject) : ifIs(someObject != null);
+ifIs(Object this, Boolean condition) : condition ? toString() : "";
 
 subtypes(EClassifier this) :
 	ePackage.eClassifiers.typeSelect(EClass)

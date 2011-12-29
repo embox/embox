@@ -14,8 +14,9 @@
 # Provides methods for creating objects of '«name»' model.
 # See '«factoryInstanceName()»'.
 define class-«factoryName()»
-	«mkSuper("NodeFactory")»
-«EXPAND classifier FOREACH eClassifiers -»
+	«mkSuper("EModelFactory")»
+«EXPAND class FOREACH eClassifiers.typeSelect(EClass)
+	.select(c | !c.abstract && !c.interface) -»
 endef
 
 $(def_all)
@@ -27,10 +28,7 @@ $(def_all)
 «ENDFILE»«ENDDEFINE»
 
 
-«DEFINE classifier FOR EClassifier»
-	«ERROR "Unexpected EClassifier: " + this»
-«ENDDEFINE»
-«DEFINE classifier FOR EClass»
+«DEFINE class FOR EClass»
 	# Creates a new '«name»' model object.
 	«mkMethod(factoryMethodName())»
 «IF isCrossReferenced() -»

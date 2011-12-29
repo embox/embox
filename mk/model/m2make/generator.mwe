@@ -30,6 +30,7 @@
 	<component class="org.eclipse.xpand2.Generator">
 		<metaModel idRef="mm_emf"/>
 		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
+		<prSrcPaths value="src-gen" />
 		<expand
 			value="template::ModelImpl::main FOR model" />
 		<outlet path="${src-gen}" >

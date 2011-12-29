@@ -9,7 +9,16 @@
 
 «inclusionGuardBegin("model_impl")»
 
-«EXPAND classifier FOREACH eClassifiers -»
+# Base class for all modelled objects of this package.
+define class-«nodeImplName()»
+	«mkSuper("ENodeImpl")»
+
+	# Returns a reference to '«name»' meta model.
+	«mkGetterWrap("metaModel",
+		"$(" + metaModelInstanceName() + ")")»
+
+endef
+«EXPAND classifier FOREACH eClassifiers.typeSelect(EClass) -»
 
 $(def_all)
 
@@ -17,59 +26,93 @@ $(def_all)
 
 «ENDFILE»«ENDDEFINE»
 
-«DEFINE classifier FOR EClassifier»
-	«ERROR "Unexpected EClassifier: " + this»
-«ENDDEFINE»
-
 «DEFINE classifier FOR EClass»
+«LET mkGet(ePackage.metaModelInstanceName() + "->" + id()) AS metaClass -»
 # Implementation of '«name»' model object .
-define class-«name»Impl
-	«mkSuper(name)»
+define class-«classImplName()»
+	«mkSuper(className())»
 
-	«mkSuper("NodeImpl")»
+	«mkSuper(ePackage.nodeImplName())»
 «FOREACH eSuperTypes AS superType -»
-	«mkSuper(superType.name)»Impl
+	«mkSuper(superType.classImplName())»
 «ENDFOREACH -»
 
-	«mkMethod(getter("metaClass"),
-		mkGet(ePackage.metaModelInstanceName() + "->" + id()))»
-«EXPAND feature FOREACH eStructuralFeatures -»
+	«mkGetter("metaClass", metaClass)»
+«EXPAND feature FOREACH eStructuralFeatures»
 endef
 «IF isCrossReferenced() -»
 
-define class-ReferenceTo«name»Impl
+define class-«referenceClassImplName()»
 	«mkSuper("ReferenceImpl,$(value 1)")»
 
-	«mkMethod(getter("referenceMetaClass"),
-		mkGet(ePackage.metaModelInstanceName() + "->" + id()))»
+	«mkGetter("referenceMetaClass", metaClass)»
+
 endef
-«ENDIF -»
-«ENDDEFINE»
-
-«DEFINE feature FOR EStructuralFeature»
-	«ERROR "Unexpected EStructuralFeature: " + this»
-«ENDDEFINE»
-
-«DEFINE feature FOR EAttribute»
-	«mkField(name)»
-	«mkMethod(getter(), mkGet(name))»
-	«mkMethod(setter(), mkSet(name,"$1"))»
-«ENDDEFINE»
-
-«DEFINE feature FOR EReference»
-	«mkField(name + " : " + eReferenceType.name)»
-	«mkMethod(getter(), mkGet(name))»
-«LET eReferenceType.ePackage.metaModelInstanceName() AS metaInstance -»
-	«mkMethod(setter(),
-		mkInvoke("setNodeReference",mkGet(metaInstance + "->" + id())))»
-«IF upperBound != 1 -»
-	«mkMethod(xetter("add"),
-		mkInvoke("addNodeReference",mkGet(metaInstance + "->" + id())))»
-	«mkMethod(xetter("remove"),
-		mkInvoke("removeNodeReference",mkGet(metaInstance + "->" + id())))»
-	«mkMethod(xetter("clear"),
-		mkInvoke("clearNodeReference",mkGet(metaInstance + "->" + id())))»
 «ENDIF -»
 «ENDLET -»
 «ENDDEFINE»
 
+«DEFINE feature FOR EStructuralFeature»
+	# «featureInfo() -»
+«IF volatile -»
+«EXPAND volatileFeature -»
+«ELSE -»
+«EXPAND nonVolatileFeature -»
+«ENDIF -»
+«ENDDEFINE»
+
+«DEFINE volatileFeatureStub(String mk) FOR EStructuralFeature -»
+	# TODO Uncomment and implement me.
+#	«mk.comment()»
+«ENDDEFINE»
+
+«DEFINE volatileFeature FOR EStructuralFeature»
+«PROTECT CSTART '\t# ' CEND '' ID id()»
+«EXPAND volatileFeatureStub(mkGetterWrap(name, "$(error $0: NIY)")) -»
+«IF changeable -»
+«EXPAND volatileFeatureStub(mkSetterWrap(name, "$(error $0($1): NIY)")) -»
+«IF upperBound != 1 -»
+«EXPAND volatileFeatureStub(mkSetterPlusWrap(name, "$(error $0($1): NIY)")) -»
+«EXPAND volatileFeatureStub(mkSetterMinusWrap(name, "$(error $0($1): NIY)")) -»
+«ENDIF -»
+«ENDIF -»
+«ENDPROTECT»
+«ENDDEFINE»
+
+«DEFINE nonVolatileFeature FOR EStructuralFeature»
+	«ERROR "Unexpected EStructuralFeature: " + this»
+«ENDDEFINE»
+
+«DEFINE nonVolatileFeature FOR EAttribute»
+	«mkPropertyField(name)»
+«ENDDEFINE»
+
+«DEFINE nonVolatileFeature FOR EReference»
+«LET mkGet(eReferenceType.ePackage.metaModelInstanceName() + "->" + id())
+	AS metaReference -»
+«IF container -»
+«EXPAND containerReference(metaReference) -»
+«ELSE -»
+«EXPAND nonContainerReference(metaReference) -»
+«ENDIF -»
+«ENDLET -»
+«ENDDEFINE»
+
+«DEFINE containerReference(String metaReference) FOR EReference -»
+	«mkProperty(name + memberCardinality() + memberType())»
+	«mkGetterWrap(name, mkInvoke("doGetContainerReference", metaReference))»
+«IF changeable -»
+	«mkSetterWrap(name, mkInvoke("doSetContainerReference", metaReference + ",$1"))»
+«ENDIF -»
+«ENDDEFINE»
+
+«DEFINE nonContainerReference(String metaReference) FOR EReference -»
+	«mkPropertyField(name + memberCardinality() + memberType())»
+«IF changeable -»
+	«mkSetterWrap(name, mkInvoke("doSetReference", metaReference + ",$1"))»
+«IF upperBound != 1 -»
+	«mkSetterPlusWrap(name, mkInvoke("doAddReference", metaReference + ",$1"))»
+	«mkSetterMinusWrap(name, mkInvoke("doRemoveReference", metaReference + ",$1"))»
+«ENDIF -»
+«ENDIF -»
+«ENDDEFINE»
