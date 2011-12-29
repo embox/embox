@@ -26,7 +26,8 @@ define objects_to_dot
 			$(__object_instance_cnt:%=.obj%)
 		), # foreach
 		$(\n)	"$o" \
-			[label="<.> $o : $($o)\l $(foreach f,$(call field_name,$($($o).fields)),
+			[label="<.> $o : $($o)\l $(foreach f,$(call field_name,
+				$($($o).fields)),
 				| <$f> $f = $(call escape_graphviz,$($o.$f))\l
 			)"];
 		$(\n)
@@ -46,7 +47,7 @@ endef
 define objects_to_mk
 	$(foreach o,$(call graph_closure,$1,get_referenced_objects),
 		$(\n)
-		__object_instance_cnt += $(o)$(\n)
+		__object_instance_cnt += $(o:.obj%=%)$(\n)
 		$o:=$(call escape_makefile,$($o))
 		$(\n)
 		$(foreach f,$(call field_name,$($($o).fields)),
