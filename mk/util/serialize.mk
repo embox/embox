@@ -55,6 +55,9 @@ define objects_to_mk
 			$(\n)
 		)
 	)
+	$(\n)
+	$$(lastword $$(MAKEFILE_LIST)) := $1
+	$(\n)
 endef
 
 #param $1 is a root node of a graph
