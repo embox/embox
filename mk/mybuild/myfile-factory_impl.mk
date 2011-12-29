@@ -9,37 +9,29 @@ __mybuild_myfile_factory_impl_mk := $(lastword $(MAKEFILE_LIST))
 define class-MyFileFactoryImpl
 	$(super MyFileFactory)
 
-	$(super NodeFactoryImpl)
-
-	$(method createModel,
-		$(new ModelImpl))
+	$(super EModelFactoryImpl)
 
 	$(method createPackage,
-		$(new PackageImpl))
+		$(new MyPackageImpl))
 
 	$(method createImport,
-		$(new ImportImpl))
-
-	$(method createEntity,
-		$(new EntityImpl))
+		$(new MyImportImpl))
 
 	$(method createInterface,
-		$(new InterfaceImpl))
-	$(method createReferenceToInterface,
-		$(new ReferenceToInterfaceImpl,$(value 1)))
+		$(new MyInterfaceImpl))
 
 	$(method createFeature,
-		$(new FeatureImpl))
+		$(new MyFeatureImpl))
 	$(method createReferenceToFeature,
-		$(new ReferenceToFeatureImpl,$(value 1)))
+		$(new ReferenceToMyFeatureImpl,$(value 1)))
 
 	$(method createModule,
-		$(new ModuleImpl))
+		$(new MyModuleImpl))
 	$(method createReferenceToModule,
-		$(new ReferenceToModuleImpl,$(value 1)))
+		$(new ReferenceToMyModuleImpl,$(value 1)))
 
 	$(method createFilename,
-		$(new FilenameImpl))
+		$(new MyFilenameImpl))
 endef
 
 $(def_all)

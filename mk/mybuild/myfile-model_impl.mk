@@ -5,324 +5,268 @@
 ifndef __mybuild_myfile_model_impl_mk
 __mybuild_myfile_model_impl_mk := $(lastword $(MAKEFILE_LIST))
 
+# Base class for all modelled objects of this package.
+define class-MyFileNodeImpl
+	$(super ENodeImpl)
 
-# Implementation of 'Model' model object .
-define class-ModelImpl
-	$(super Model)
+	# Returns a reference to 'myFile' meta model.
+	$(getter  metaModel,
+		$(myFileMetaModel))
 
-	$(super NodeImpl)
-
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Model))
-
-	$(field package : Package)
-	$(method getPackage,
-		$(get package))
-	$(method setPackage,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Model_Package)))
-
-	$(field imports : Import)
-	$(method getImports,
-		$(get imports))
-	$(method setImports,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Model_Imports)))
-	$(method addImports,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Model_Imports)))
-	$(method removeImports,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Model_Imports)))
-	$(method clearImports,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Model_Imports)))
-
-	$(field entities : Entity)
-	$(method getEntities,
-		$(get entities))
-	$(method setEntities,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Model_Entities)))
-	$(method addEntities,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Model_Entities)))
-	$(method removeEntities,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Model_Entities)))
-	$(method clearEntities,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Model_Entities)))
 endef
 
 # Implementation of 'Package' model object .
-define class-PackageImpl
-	$(super Package)
+define class-MyPackageImpl
+	$(super MyPackage)
 
-	$(super NodeImpl)
+	$(super MyFileNodeImpl)
+	$(super MyNamedImpl)
 
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Package))
+	$(getter  metaClass,$(get myFileMetaModel->Package))
 
-	$(field name)
-	$(method getName,
-		$(get name))
-	$(method setName,
-		$(set name,$1))
+	# Reference 'imports' [0..*]: containment.
+	$(property-field imports... : Import)
+	$(setter  imports,
+		$(invoke doSetReference,$(get myFileMetaModel->Package_imports),$1))
+	$(setter+ imports,
+		$(invoke doAddReference,$(get myFileMetaModel->Package_imports),$1))
+	$(setter- imports,
+		$(invoke doRemoveReference,$(get myFileMetaModel->Package_imports),$1))
+
+	# Reference 'entities' [0..*]: bidirectional, containment.
+	$(property-field entities... : Entity)
+	$(setter  entities,
+		$(invoke doSetReference,$(get myFileMetaModel->Package_entities),$1))
+	$(setter+ entities,
+		$(invoke doAddReference,$(get myFileMetaModel->Package_entities),$1))
+	$(setter- entities,
+		$(invoke doRemoveReference,$(get myFileMetaModel->Package_entities),$1))
+
 endef
 
 # Implementation of 'Import' model object .
-define class-ImportImpl
-	$(super Import)
+define class-MyImportImpl
+	$(super MyImport)
 
-	$(super NodeImpl)
+	$(super MyFileNodeImpl)
 
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Import))
+	$(getter  metaClass,$(get myFileMetaModel->Import))
 
-	$(field importedNamespace)
-	$(method getImportedNamespace,
-		$(get importedNamespace))
-	$(method setImportedNamespace,
-		$(set importedNamespace,$1))
+	# Attribute 'importName'.
+	$(property-field importName)
+
 endef
 
 # Implementation of 'Entity' model object .
-define class-EntityImpl
-	$(super Entity)
+define class-MyEntityImpl
+	$(super MyEntity)
 
-	$(super NodeImpl)
+	$(super MyFileNodeImpl)
+	$(super MyNamedImpl)
 
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Entity))
+	$(getter  metaClass,$(get myFileMetaModel->Entity))
 
-	$(field name)
-	$(method getName,
-		$(get name))
-	$(method setName,
-		$(set name,$1))
+	# Reference 'package' [0..1]: bidirectional, container.
+	$(property package : Package)
+	$(getter  package,
+		$(invoke doGetContainerReference,$(get myFileMetaModel->Entity_package)))
+	$(setter  package,
+		$(invoke doSetContainerReference,$(get myFileMetaModel->Entity_package),$1))
+
 endef
 
 # Implementation of 'Interface' model object .
-define class-InterfaceImpl
-	$(super Interface)
+define class-MyInterfaceImpl
+	$(super MyInterface)
 
-	$(super NodeImpl)
-	$(super Entity)Impl
+	$(super MyFileNodeImpl)
+	$(super MyEntityImpl)
+	$(super MyExtendableImpl)
 
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Interface))
+	$(getter  metaClass,$(get myFileMetaModel->Interface))
 
-	$(field superType : Interface)
-	$(method getSuperType,
-		$(get superType))
-	$(method setSuperType,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Interface_SuperType)))
+	# Reference 'features' [0..*]: bidirectional, containment.
+	$(property-field features... : Feature)
+	$(setter  features,
+		$(invoke doSetReference,$(get myFileMetaModel->Interface_features),$1))
+	$(setter+ features,
+		$(invoke doAddReference,$(get myFileMetaModel->Interface_features),$1))
+	$(setter- features,
+		$(invoke doRemoveReference,$(get myFileMetaModel->Interface_features),$1))
 
-	$(field features : Feature)
-	$(method getFeatures,
-		$(get features))
-	$(method setFeatures,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Interface_Features)))
-	$(method addFeatures,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Interface_Features)))
-	$(method removeFeatures,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Interface_Features)))
-	$(method clearFeatures,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Interface_Features)))
-
-	$(field subTypes : Interface)
-	$(method getSubTypes,
-		$(get subTypes))
-	$(method setSubTypes,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Interface_SubTypes)))
-	$(method addSubTypes,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Interface_SubTypes)))
-	$(method removeSubTypes,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Interface_SubTypes)))
-	$(method clearSubTypes,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Interface_SubTypes)))
-endef
-
-define class-ReferenceToInterfaceImpl
-	$(super ReferenceImpl,$(value 1))
-
-	$(method getReferenceMetaClass,
-		$(get myFileMetaModelInstance->Interface))
 endef
 
 # Implementation of 'Feature' model object .
-define class-FeatureImpl
-	$(super Feature)
+define class-MyFeatureImpl
+	$(super MyFeature)
 
-	$(super NodeImpl)
+	$(super MyFileNodeImpl)
+	$(super MyNamedImpl)
+	$(super MyExtendableImpl)
 
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Feature))
+	$(getter  metaClass,$(get myFileMetaModel->Feature))
 
-	$(field name)
-	$(method getName,
-		$(get name))
-	$(method setName,
-		$(set name,$1))
+	# Reference 'interface' [0..1]: bidirectional, container.
+	$(property interface : Interface)
+	$(getter  interface,
+		$(invoke doGetContainerReference,$(get myFileMetaModel->Feature_interface)))
+	$(setter  interface,
+		$(invoke doSetContainerReference,$(get myFileMetaModel->Feature_interface),$1))
 
-	$(field superType : Feature)
-	$(method getSuperType,
-		$(get superType))
-	$(method setSuperType,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Feature_SuperType)))
+	# Reference 'providedBy' [0..*]: bidirectional.
+	$(property-field providedBy... : Module)
+	$(setter  providedBy,
+		$(invoke doSetReference,$(get myFileMetaModel->Feature_providedBy),$1))
+	$(setter+ providedBy,
+		$(invoke doAddReference,$(get myFileMetaModel->Feature_providedBy),$1))
+	$(setter- providedBy,
+		$(invoke doRemoveReference,$(get myFileMetaModel->Feature_providedBy),$1))
 
-	$(field interface : Interface)
-	$(method getInterface,
-		$(get interface))
-	$(method setInterface,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Feature_Interface)))
+	# Reference 'requiredBy' [0..*]: bidirectional.
+	$(property-field requiredBy... : Module)
+	$(setter  requiredBy,
+		$(invoke doSetReference,$(get myFileMetaModel->Feature_requiredBy),$1))
+	$(setter+ requiredBy,
+		$(invoke doAddReference,$(get myFileMetaModel->Feature_requiredBy),$1))
+	$(setter- requiredBy,
+		$(invoke doRemoveReference,$(get myFileMetaModel->Feature_requiredBy),$1))
 
-	$(field providedBy : Module)
-	$(method getProvidedBy,
-		$(get providedBy))
-	$(method setProvidedBy,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Feature_ProvidedBy)))
-	$(method addProvidedBy,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Feature_ProvidedBy)))
-	$(method removeProvidedBy,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Feature_ProvidedBy)))
-	$(method clearProvidedBy,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Feature_ProvidedBy)))
-
-	$(field requiredBy : Module)
-	$(method getRequiredBy,
-		$(get requiredBy))
-	$(method setRequiredBy,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Feature_RequiredBy)))
-	$(method addRequiredBy,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Feature_RequiredBy)))
-	$(method removeRequiredBy,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Feature_RequiredBy)))
-	$(method clearRequiredBy,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Feature_RequiredBy)))
-
-	$(field subTypes : Feature)
-	$(method getSubTypes,
-		$(get subTypes))
-	$(method setSubTypes,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Feature_SubTypes)))
-	$(method addSubTypes,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Feature_SubTypes)))
-	$(method removeSubTypes,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Feature_SubTypes)))
-	$(method clearSubTypes,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Feature_SubTypes)))
 endef
 
-define class-ReferenceToFeatureImpl
+define class-ReferenceToMyFeatureImpl
 	$(super ReferenceImpl,$(value 1))
 
-	$(method getReferenceMetaClass,
-		$(get myFileMetaModelInstance->Feature))
+	$(getter  referenceMetaClass,$(get myFileMetaModel->Feature))
+
 endef
 
 # Implementation of 'Module' model object .
-define class-ModuleImpl
-	$(super Module)
+define class-MyModuleImpl
+	$(super MyModule)
 
-	$(super NodeImpl)
-	$(super Entity)Impl
+	$(super MyFileNodeImpl)
+	$(super MyEntityImpl)
+	$(super MyExtendableImpl)
 
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Module))
+	$(getter  metaClass,$(get myFileMetaModel->Module))
 
-	$(field static)
-	$(method getStatic,
-		$(get static))
-	$(method setStatic,
-		$(set static,$1))
+	# Attribute 'static'.
+	$(property-field static)
 
-	$(field abstract)
-	$(method getAbstract,
-		$(get abstract))
-	$(method setAbstract,
-		$(set abstract,$1))
+	# Attribute 'abstract'.
+	$(property-field abstract)
 
-	$(field superType : Module)
-	$(method getSuperType,
-		$(get superType))
-	$(method setSuperType,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Module_SuperType)))
+	# Reference 'depends' [0..*]: bidirectional.
+	$(property-field depends... : Module)
+	$(setter  depends,
+		$(invoke doSetReference,$(get myFileMetaModel->Module_depends),$1))
+	$(setter+ depends,
+		$(invoke doAddReference,$(get myFileMetaModel->Module_depends),$1))
+	$(setter- depends,
+		$(invoke doRemoveReference,$(get myFileMetaModel->Module_depends),$1))
 
-	$(field subTypes : Module)
-	$(method getSubTypes,
-		$(get subTypes))
-	$(method setSubTypes,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Module_SubTypes)))
-	$(method addSubTypes,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Module_SubTypes)))
-	$(method removeSubTypes,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Module_SubTypes)))
-	$(method clearSubTypes,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Module_SubTypes)))
+	# Reference 'dependent' [0..*]: bidirectional.
+	$(property-field dependent... : Module)
+	$(setter  dependent,
+		$(invoke doSetReference,$(get myFileMetaModel->Module_dependent),$1))
+	$(setter+ dependent,
+		$(invoke doAddReference,$(get myFileMetaModel->Module_dependent),$1))
+	$(setter- dependent,
+		$(invoke doRemoveReference,$(get myFileMetaModel->Module_dependent),$1))
 
-	$(field depends : Module)
-	$(method getDepends,
-		$(get depends))
-	$(method setDepends,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Module_Depends)))
-	$(method addDepends,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Module_Depends)))
-	$(method removeDepends,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Module_Depends)))
-	$(method clearDepends,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Module_Depends)))
+	# Reference 'provides' [0..*]: bidirectional.
+	$(property-field provides... : Feature)
+	$(setter  provides,
+		$(invoke doSetReference,$(get myFileMetaModel->Module_provides),$1))
+	$(setter+ provides,
+		$(invoke doAddReference,$(get myFileMetaModel->Module_provides),$1))
+	$(setter- provides,
+		$(invoke doRemoveReference,$(get myFileMetaModel->Module_provides),$1))
 
-	$(field dependent : Module)
-	$(method getDependent,
-		$(get dependent))
-	$(method setDependent,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Module_Dependent)))
-	$(method addDependent,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Module_Dependent)))
-	$(method removeDependent,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Module_Dependent)))
-	$(method clearDependent,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Module_Dependent)))
+	# Reference 'requires' [0..*]: bidirectional.
+	$(property-field requires... : Feature)
+	$(setter  requires,
+		$(invoke doSetReference,$(get myFileMetaModel->Module_requires),$1))
+	$(setter+ requires,
+		$(invoke doAddReference,$(get myFileMetaModel->Module_requires),$1))
+	$(setter- requires,
+		$(invoke doRemoveReference,$(get myFileMetaModel->Module_requires),$1))
 
-	$(field provides : Feature)
-	$(method getProvides,
-		$(get provides))
-	$(method setProvides,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Module_Provides)))
-	$(method addProvides,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Module_Provides)))
-	$(method removeProvides,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Module_Provides)))
-	$(method clearProvides,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Module_Provides)))
-
-	$(field requires : Feature)
-	$(method getRequires,
-		$(get requires))
-	$(method setRequires,
-		$(invoke setNodeReference,$(get myFileMetaModelInstance->Module_Requires)))
-	$(method addRequires,
-		$(invoke addNodeReference,$(get myFileMetaModelInstance->Module_Requires)))
-	$(method removeRequires,
-		$(invoke removeNodeReference,$(get myFileMetaModelInstance->Module_Requires)))
-	$(method clearRequires,
-		$(invoke clearNodeReference,$(get myFileMetaModelInstance->Module_Requires)))
 endef
 
-define class-ReferenceToModuleImpl
+define class-ReferenceToMyModuleImpl
 	$(super ReferenceImpl,$(value 1))
 
-	$(method getReferenceMetaClass,
-		$(get myFileMetaModelInstance->Module))
+	$(getter  referenceMetaClass,$(get myFileMetaModel->Module))
+
+endef
+
+# Implementation of 'Named' model object .
+define class-MyNamedImpl
+	$(super MyNamed)
+
+	$(super MyFileNodeImpl)
+
+	$(getter  metaClass,$(get myFileMetaModel->Named))
+
+	# Attribute 'name'.
+	$(property-field name)
+
+endef
+
+# Implementation of 'Extendable' model object .
+define class-MyExtendableImpl
+	$(super MyExtendable)
+
+	$(super MyFileNodeImpl)
+
+	$(getter  metaClass,$(get myFileMetaModel->Extendable))
+
+	# Reference 'subTypes' [0..*]: bidirectional.
+	$(property-field subTypes... : Extendable)
+	$(setter  subTypes,
+		$(invoke doSetReference,$(get myFileMetaModel->Extendable_subTypes),$1))
+	$(setter+ subTypes,
+		$(invoke doAddReference,$(get myFileMetaModel->Extendable_subTypes),$1))
+	$(setter- subTypes,
+		$(invoke doRemoveReference,$(get myFileMetaModel->Extendable_subTypes),$1))
+
+	# Reference 'superType' [0..1]: bidirectional.
+	$(property-field superType : Extendable)
+	$(setter  superType,
+		$(invoke doSetReference,$(get myFileMetaModel->Extendable_superType),$1))
+
+	# Reference 'allSubTypes' [0..*]: bidirectional, volatile, read-only.
+	# PROTECTED REGION ID(Extendable_allSubTypes) ENABLED START
+	# TODO Uncomment and implement me.
+#	$(getter  allSubTypes,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'allSuperTypes' [0..*]: bidirectional, volatile, read-only.
+	# PROTECTED REGION ID(Extendable_allSuperTypes) ENABLED START
+	# TODO Uncomment and implement me.
+#	$(getter  allSuperTypes,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+endef
+
+define class-ReferenceToMyExtendableImpl
+	$(super ReferenceImpl,$(value 1))
+
+	$(getter  referenceMetaClass,$(get myFileMetaModel->Extendable))
+
 endef
 
 # Implementation of 'Filename' model object .
-define class-FilenameImpl
-	$(super Filename)
+define class-MyFilenameImpl
+	$(super MyFilename)
 
-	$(super NodeImpl)
+	$(super MyFileNodeImpl)
 
-	$(method getMetaClass,
-		$(get myFileMetaModelInstance->Filename))
+	$(getter  metaClass,$(get myFileMetaModel->Filename))
 
-	$(field name)
-	$(method getName,
-		$(get name))
-	$(method setName,
-		$(set name,$1))
 endef
 
 $(def_all)

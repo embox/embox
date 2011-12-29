@@ -8,12 +8,9 @@ __mybuild_myfile_factory_mk := $(lastword $(MAKEFILE_LIST))
 include $(dir $(__mybuild_myfile_factory_mk))myfile-factory_impl.mk
 
 # Provides methods for creating objects of 'myFile' model.
-# See 'myFileFactoryInstance'.
+# See 'myFileFactory'.
 define class-MyFileFactory
-	$(super NodeFactory)
-
-	# Creates a new 'Model' model object.
-	$(method createModel)
+	$(super EModelFactory)
 
 	# Creates a new 'Package' model object.
 	$(method createPackage)
@@ -21,14 +18,8 @@ define class-MyFileFactory
 	# Creates a new 'Import' model object.
 	$(method createImport)
 
-	# Creates a new 'Entity' model object.
-	$(method createEntity)
-
 	# Creates a new 'Interface' model object.
 	$(method createInterface)
-	# Creates a new reference to 'Interface'.
-	#   1. Optional reference string to set initially.
-	$(method createReferenceToInterface)
 
 	# Creates a new 'Feature' model object.
 	$(method createFeature)
@@ -48,7 +39,7 @@ endef
 
 $(def_all)
 
-myFileFactoryInstance := $(call new,MyFileFactoryImpl)
+myFileFactory := $(call new,MyFileFactoryImpl)
 
 endif # __mybuild_myfile_factory_mk
 

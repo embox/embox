@@ -9,125 +9,181 @@ __mybuild_myfile_metamodel_impl_mk := $(lastword $(MAKEFILE_LIST))
 define class-MyFileMetaModelImpl
 	$(super MyFileMetaModel)
 
-	$(super MetaModelImpl)
+	$(super EMetaModelImpl)
 
-	# Create necessary objects.
+	# Define properties as fields.
 
-	$(set Model,
-		$(invoke createMetaClass,Model))
-	$(set Model_Package,
-		$(invoke createMetaReference,package,$(get Model)))
-	$(set Model_Imports,
-		$(invoke createMetaReference,imports,$(get Model)))
-	$(set Model_Entities,
-		$(invoke createMetaReference,entities,$(get Model)))
-
-	$(set Package,
+	$(property-field Package,
 		$(invoke createMetaClass,Package))
-	$(set Package_Name,
-		$(invoke createMetaAttribute,name,$(get Package)))
+	$(property-field Package_imports,
+		$(invoke createMetaReference,$(get Package),Package_imports))
+	$(property-field Package_entities,
+		$(invoke createMetaReference,$(get Package),Package_entities))
 
-	$(set Import,
+	$(property-field Import,
 		$(invoke createMetaClass,Import))
-	$(set Import_ImportedNamespace,
-		$(invoke createMetaAttribute,importedNamespace,$(get Import)))
+	$(property-field Import_importName,
+		$(invoke createMetaAttribute,$(get Import),Import_importName))
 
-	$(set Entity,
+	$(property-field Entity,
 		$(invoke createMetaClass,Entity))
-	$(set Entity_Name,
-		$(invoke createMetaAttribute,name,$(get Entity)))
+	$(property-field Entity_package,
+		$(invoke createMetaReference,$(get Entity),Entity_package))
 
-	$(set Interface,
+	$(property-field Interface,
 		$(invoke createMetaClass,Interface))
-	$(set Interface_SuperType,
-		$(invoke createMetaReference,superType,$(get Interface)))
-	$(set Interface_Features,
-		$(invoke createMetaReference,features,$(get Interface)))
-	$(set Interface_SubTypes,
-		$(invoke createMetaReference,subTypes,$(get Interface)))
+	$(property-field Interface_features,
+		$(invoke createMetaReference,$(get Interface),Interface_features))
 
-	$(set Feature,
+	$(property-field Feature,
 		$(invoke createMetaClass,Feature))
-	$(set Feature_Name,
-		$(invoke createMetaAttribute,name,$(get Feature)))
-	$(set Feature_SuperType,
-		$(invoke createMetaReference,superType,$(get Feature)))
-	$(set Feature_Interface,
-		$(invoke createMetaReference,interface,$(get Feature)))
-	$(set Feature_ProvidedBy,
-		$(invoke createMetaReference,providedBy,$(get Feature)))
-	$(set Feature_RequiredBy,
-		$(invoke createMetaReference,requiredBy,$(get Feature)))
-	$(set Feature_SubTypes,
-		$(invoke createMetaReference,subTypes,$(get Feature)))
+	$(property-field Feature_interface,
+		$(invoke createMetaReference,$(get Feature),Feature_interface))
+	$(property-field Feature_providedBy,
+		$(invoke createMetaReference,$(get Feature),Feature_providedBy))
+	$(property-field Feature_requiredBy,
+		$(invoke createMetaReference,$(get Feature),Feature_requiredBy))
 
-	$(set Module,
+	$(property-field Module,
 		$(invoke createMetaClass,Module))
-	$(set Module_Static,
-		$(invoke createMetaAttribute,static,$(get Module)))
-	$(set Module_Abstract,
-		$(invoke createMetaAttribute,abstract,$(get Module)))
-	$(set Module_SuperType,
-		$(invoke createMetaReference,superType,$(get Module)))
-	$(set Module_SubTypes,
-		$(invoke createMetaReference,subTypes,$(get Module)))
-	$(set Module_Depends,
-		$(invoke createMetaReference,depends,$(get Module)))
-	$(set Module_Dependent,
-		$(invoke createMetaReference,dependent,$(get Module)))
-	$(set Module_Provides,
-		$(invoke createMetaReference,provides,$(get Module)))
-	$(set Module_Requires,
-		$(invoke createMetaReference,requires,$(get Module)))
+	$(property-field Module_static,
+		$(invoke createMetaAttribute,$(get Module),Module_static))
+	$(property-field Module_abstract,
+		$(invoke createMetaAttribute,$(get Module),Module_abstract))
+	$(property-field Module_depends,
+		$(invoke createMetaReference,$(get Module),Module_depends))
+	$(property-field Module_dependent,
+		$(invoke createMetaReference,$(get Module),Module_dependent))
+	$(property-field Module_provides,
+		$(invoke createMetaReference,$(get Module),Module_provides))
+	$(property-field Module_requires,
+		$(invoke createMetaReference,$(get Module),Module_requires))
 
-	$(set Filename,
+	$(property-field Named,
+		$(invoke createMetaClass,Named))
+	$(property-field Named_name,
+		$(invoke createMetaAttribute,$(get Named),Named_name))
+
+	$(property-field Extendable,
+		$(invoke createMetaClass,Extendable))
+	$(property-field Extendable_subTypes,
+		$(invoke createMetaReference,$(get Extendable),Extendable_subTypes))
+	$(property-field Extendable_superType,
+		$(invoke createMetaReference,$(get Extendable),Extendable_superType))
+	$(property-field Extendable_allSubTypes,
+		$(invoke createMetaReference,$(get Extendable),Extendable_allSubTypes))
+	$(property-field Extendable_allSuperTypes,
+		$(invoke createMetaReference,$(get Extendable),Extendable_allSuperTypes))
+
+	$(property-field Filename,
 		$(invoke createMetaClass,Filename))
-	$(set Filename_Name,
-		$(invoke createMetaAttribute,name,$(get Filename)))
 
-	# Initialize.
+	# Initialize the objects and relations between them.
 
-	$(invoke initMetaClass,$(get Model),)
-	$(invoke initMetaReference,$(get Model_Package),$(get Package),)
-	$(invoke initMetaReference,$(get Model_Imports),$(get Import),)
-	$(invoke initMetaReference,$(get Model_Entities),$(get Entity),)
+	$(invoke initMetaClass,$(get Package),
+		Package,$(get Named),)
+	$(invoke initMetaReference,$(get Package_imports),
+		imports,0,,$(get Import),,changeable containment)
+	$(invoke initMetaReference,$(get Package_entities),
+		entities,0,,$(get Entity),$(get Entity_package),changeable containment)
 
-	$(invoke initMetaClass,$(get Package),)
-	$(invoke initMetaAttribute,$(get Package_Name),)# NIY.
+	$(invoke initMetaClass,$(get Import),
+		Import,,)
+	$(invoke initMetaAttribute,$(get Import_importName),
+		importName,0,1,changeable)
 
-	$(invoke initMetaClass,$(get Import),)
-	$(invoke initMetaAttribute,$(get Import_ImportedNamespace),)# NIY.
-
-	$(invoke initMetaClass,$(get Entity),)
-	$(invoke initMetaAttribute,$(get Entity_Name),)# NIY.
+	$(invoke initMetaClass,$(get Entity),
+		Entity,$(get Named),abstract)
+	$(invoke initMetaReference,$(get Entity_package),
+		package,0,1,$(get Package),$(get Package_entities),changeable container)
 
 	$(invoke initMetaClass,$(get Interface),
-		$(get Entity))
-	$(invoke initMetaReference,$(get Interface_SuperType),$(get Interface),$(get Interface_SubTypes))
-	$(invoke initMetaReference,$(get Interface_Features),$(get Feature),$(get Feature_Interface))
-	$(invoke initMetaReference,$(get Interface_SubTypes),$(get Interface),$(get Interface_SuperType))
+		Interface,$(get Entity) $(get Extendable),)
+	$(invoke initMetaReference,$(get Interface_features),
+		features,0,,$(get Feature),$(get Feature_interface),changeable containment)
 
-	$(invoke initMetaClass,$(get Feature),)
-	$(invoke initMetaAttribute,$(get Feature_Name),)# NIY.
-	$(invoke initMetaReference,$(get Feature_SuperType),$(get Feature),$(get Feature_SubTypes))
-	$(invoke initMetaReference,$(get Feature_Interface),$(get Interface),$(get Interface_Features))
-	$(invoke initMetaReference,$(get Feature_ProvidedBy),$(get Module),$(get Module_Provides))
-	$(invoke initMetaReference,$(get Feature_RequiredBy),$(get Module),$(get Module_Requires))
-	$(invoke initMetaReference,$(get Feature_SubTypes),$(get Feature),$(get Feature_SuperType))
+	$(invoke initMetaClass,$(get Feature),
+		Feature,$(get Named) $(get Extendable),)
+	$(invoke initMetaReference,$(get Feature_interface),
+		interface,0,1,$(get Interface),$(get Interface_features),changeable container)
+	$(invoke initMetaReference,$(get Feature_providedBy),
+		providedBy,0,,$(get Module),$(get Module_provides),changeable)
+	$(invoke initMetaReference,$(get Feature_requiredBy),
+		requiredBy,0,,$(get Module),$(get Module_requires),changeable)
 
 	$(invoke initMetaClass,$(get Module),
-		$(get Entity))
-	$(invoke initMetaAttribute,$(get Module_Static),)# NIY.
-	$(invoke initMetaAttribute,$(get Module_Abstract),)# NIY.
-	$(invoke initMetaReference,$(get Module_SuperType),$(get Module),$(get Module_SubTypes))
-	$(invoke initMetaReference,$(get Module_SubTypes),$(get Module),$(get Module_SuperType))
-	$(invoke initMetaReference,$(get Module_Depends),$(get Module),$(get Module_Dependent))
-	$(invoke initMetaReference,$(get Module_Dependent),$(get Module),$(get Module_Depends))
-	$(invoke initMetaReference,$(get Module_Provides),$(get Feature),$(get Feature_ProvidedBy))
-	$(invoke initMetaReference,$(get Module_Requires),$(get Feature),$(get Feature_RequiredBy))
+		Module,$(get Entity) $(get Extendable),)
+	$(invoke initMetaAttribute,$(get Module_static),
+		static,0,1,changeable)
+	$(invoke initMetaAttribute,$(get Module_abstract),
+		abstract,0,1,changeable)
+	$(invoke initMetaReference,$(get Module_depends),
+		depends,0,,$(get Module),$(get Module_dependent),changeable)
+	$(invoke initMetaReference,$(get Module_dependent),
+		dependent,0,,$(get Module),$(get Module_depends),changeable)
+	$(invoke initMetaReference,$(get Module_provides),
+		provides,0,,$(get Feature),$(get Feature_providedBy),changeable)
+	$(invoke initMetaReference,$(get Module_requires),
+		requires,0,,$(get Feature),$(get Feature_requiredBy),changeable)
 
-	$(invoke initMetaClass,$(get Filename),)
-	$(invoke initMetaAttribute,$(get Filename_Name),)# NIY.
+	$(invoke initMetaClass,$(get Named),
+		Named,,abstract)
+	$(invoke initMetaAttribute,$(get Named_name),
+		name,0,1,changeable)
+
+	$(invoke initMetaClass,$(get Extendable),
+		Extendable,,abstract)
+	$(invoke initMetaReference,$(get Extendable_subTypes),
+		subTypes,0,,$(get Extendable),$(get Extendable_superType),changeable)
+	$(invoke initMetaReference,$(get Extendable_superType),
+		superType,0,1,$(get Extendable),$(get Extendable_subTypes),changeable)
+	$(invoke initMetaReference,$(get Extendable_allSubTypes),
+		allSubTypes,0,,$(get Extendable),$(get Extendable_allSuperTypes),volatile derived transient)
+	$(invoke initMetaReference,$(get Extendable_allSuperTypes),
+		allSuperTypes,0,,$(get Extendable),$(get Extendable_allSubTypes),volatile derived transient)
+
+	$(invoke initMetaClass,$(get Filename),
+		Filename,,)
+
+	# Bind objects to instance classes and features to properties.
+
+	$(invoke bindMetaClass,$(get Package),MyPackage)
+	$(invoke bindMetaFeature,$(get Package_imports),imports)
+	$(invoke bindMetaFeature,$(get Package_entities),entities)
+
+	$(invoke bindMetaClass,$(get Import),MyImport)
+	$(invoke bindMetaFeature,$(get Import_importName),importName)
+
+	$(invoke bindMetaClass,$(get Entity),MyEntity)
+	$(invoke bindMetaFeature,$(get Entity_package),package)
+
+	$(invoke bindMetaClass,$(get Interface),MyInterface)
+	$(invoke bindMetaFeature,$(get Interface_features),features)
+
+	$(invoke bindMetaClass,$(get Feature),MyFeature)
+	$(invoke bindMetaFeature,$(get Feature_interface),interface)
+	$(invoke bindMetaFeature,$(get Feature_providedBy),providedBy)
+	$(invoke bindMetaFeature,$(get Feature_requiredBy),requiredBy)
+
+	$(invoke bindMetaClass,$(get Module),MyModule)
+	$(invoke bindMetaFeature,$(get Module_static),static)
+	$(invoke bindMetaFeature,$(get Module_abstract),abstract)
+	$(invoke bindMetaFeature,$(get Module_depends),depends)
+	$(invoke bindMetaFeature,$(get Module_dependent),dependent)
+	$(invoke bindMetaFeature,$(get Module_provides),provides)
+	$(invoke bindMetaFeature,$(get Module_requires),requires)
+
+	$(invoke bindMetaClass,$(get Named),MyNamed)
+	$(invoke bindMetaFeature,$(get Named_name),name)
+
+	$(invoke bindMetaClass,$(get Extendable),MyExtendable)
+	$(invoke bindMetaFeature,$(get Extendable_subTypes),subTypes)
+	$(invoke bindMetaFeature,$(get Extendable_superType),superType)
+	$(invoke bindMetaFeature,$(get Extendable_allSubTypes),allSubTypes)
+	$(invoke bindMetaFeature,$(get Extendable_allSuperTypes),allSuperTypes)
+
+	$(invoke bindMetaClass,$(get Filename),MyFilename)
+
 endef
 
 $(def_all)

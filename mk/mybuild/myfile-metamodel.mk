@@ -8,54 +8,51 @@ __mybuild_myfile_metamodel_mk := $(lastword $(MAKEFILE_LIST))
 include $(dir $(__mybuild_myfile_metamodel_mk))myfile-metamodel_impl.mk
 
 # Provides static access to contents of 'myFile' model.
-# See 'myFileMetaModelInstance'.
+# See 'myFileMetaModel'.
 define class-MyFileMetaModel
-	$(super MetaModel)
+	$(super EMetaModel)
 
-	$(field Model : MetaClass)
-	$(field Model_Package : MetaReference)
-	$(field Model_Imports : MetaReference)
-	$(field Model_Entities : MetaReference)
+	$(property Package : EMetaClass)
+	$(property Package_imports : EMetaReference)
+	$(property Package_entities : EMetaReference)
 
-	$(field Package : MetaClass)
-	$(field Package_Name : MetaAttribute)
+	$(property Import : EMetaClass)
+	$(property Import_importName : EMetaAttribute)
 
-	$(field Import : MetaClass)
-	$(field Import_ImportedNamespace : MetaAttribute)
+	$(property Entity : EMetaClass)
+	$(property Entity_package : EMetaReference)
 
-	$(field Entity : MetaClass)
-	$(field Entity_Name : MetaAttribute)
+	$(property Interface : EMetaClass)
+	$(property Interface_features : EMetaReference)
 
-	$(field Interface : MetaClass)
-	$(field Interface_SuperType : MetaReference)
-	$(field Interface_Features : MetaReference)
-	$(field Interface_SubTypes : MetaReference)
+	$(property Feature : EMetaClass)
+	$(property Feature_interface : EMetaReference)
+	$(property Feature_providedBy : EMetaReference)
+	$(property Feature_requiredBy : EMetaReference)
 
-	$(field Feature : MetaClass)
-	$(field Feature_Name : MetaAttribute)
-	$(field Feature_SuperType : MetaReference)
-	$(field Feature_Interface : MetaReference)
-	$(field Feature_ProvidedBy : MetaReference)
-	$(field Feature_RequiredBy : MetaReference)
-	$(field Feature_SubTypes : MetaReference)
+	$(property Module : EMetaClass)
+	$(property Module_static : EMetaAttribute)
+	$(property Module_abstract : EMetaAttribute)
+	$(property Module_depends : EMetaReference)
+	$(property Module_dependent : EMetaReference)
+	$(property Module_provides : EMetaReference)
+	$(property Module_requires : EMetaReference)
 
-	$(field Module : MetaClass)
-	$(field Module_Static : MetaAttribute)
-	$(field Module_Abstract : MetaAttribute)
-	$(field Module_SuperType : MetaReference)
-	$(field Module_SubTypes : MetaReference)
-	$(field Module_Depends : MetaReference)
-	$(field Module_Dependent : MetaReference)
-	$(field Module_Provides : MetaReference)
-	$(field Module_Requires : MetaReference)
+	$(property Named : EMetaClass)
+	$(property Named_name : EMetaAttribute)
 
-	$(field Filename : MetaClass)
-	$(field Filename_Name : MetaAttribute)
+	$(property Extendable : EMetaClass)
+	$(property Extendable_subTypes : EMetaReference)
+	$(property Extendable_superType : EMetaReference)
+	$(property Extendable_allSubTypes : EMetaReference)
+	$(property Extendable_allSuperTypes : EMetaReference)
+
+	$(property Filename : EMetaClass)
 endef
 
 $(def_all)
 
-myFileMetaModelInstance := $(call new,MyFileMetaModelImpl)
+myFileMetaModel := $(call new,MyFileMetaModelImpl)
 
 endif # __mybuild_myfile_metamodel_mk
 
