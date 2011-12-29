@@ -40,6 +40,8 @@ MKFILES_CONVERTED := \
 
 MKFILES := $(MKFILES_CONVERTED) $(MKFILES_COPIES)
 
+MK_LINK := $(EM_DIR)/linked.mk
+
 $(MKFILES_COPIES) : \
 		$(EM_DIR)% : $(ROOT_DIR)%
 	@mkdir -p $(@D); cp $< $@
@@ -57,5 +59,9 @@ $(filter %.my.mk,$(MKFILES_CONVERTED)) : \
 	@echo '$< -> $@'
 	mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, \
 		$(call objects_to_mk,$(call create_from_model,$(call gold_parse,myfile,$<))))' > $@
+
+$(MK_LINK) : $(MKFILES_CONVERTED)
+	@echo '... -> $@'
+	touch $@
 
 endif # __mybuild_read_mk
