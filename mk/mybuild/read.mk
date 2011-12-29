@@ -4,6 +4,7 @@ __mybuild_read_mk := 1
 
 include mk/gold/engine.mk
 include mk/mybuild/myfile.mk
+include mk/util/serialize.mk
 
 include mk/util/wildcard.mk
 
@@ -29,16 +30,6 @@ my_filter_only = \
 MY_FILES := $(call my_filter,Mybuild .my,$(MY_FILES))
 EM_FILES := $(call my_filter,Makefile,$(EM_FILES))
 
-define my_printf_escape
-	$(or \
-		$(subst $(\n),\n,
-			$(subst \,\\,$1)
-		),
-		$(error Empty input)
-	)
-endef
-$(call def,my_printf_escape)
-
 MKFILES_COPIES := \
 	$(filter-out $(MY_FILES:$(ROOT_DIR)%Mybuild=$(EM_DIR)%Makefile), \
 		$(EM_FILES:$(ROOT_DIR)%=$(EM_DIR)%))
@@ -59,12 +50,12 @@ $(filter %Makefile,$(MKFILES_CONVERTED)) : \
 		$(EM_DIR)%Makefile : $(ROOT_DIR)%Mybuild
 	@echo '$< -> $@'
 	@mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, \
-		$(call objects_to_mk,$(call gold_parse,myfile,$<)))' > $@
+		$(call objects_to_mk,$(call create_from_model,$(call gold_parse,myfile,$<))))' > $@
 
 $(filter %.my.mk,$(MKFILES_CONVERTED)) : \
 		$(EM_DIR)%.my.mk : $(ROOT_DIR)%.my
 	@echo '$< -> $@'
-	@mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, \
-		$(call objects_to_mk,$(call gold_parse,myfile,$<)))' > $@
+	mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, \
+		$(call objects_to_mk,$(call create_from_model,$(call gold_parse,myfile,$<))))' > $@
 
 endif # __mybuild_read_mk

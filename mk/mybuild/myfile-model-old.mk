@@ -16,6 +16,7 @@ define class-my_file
 	$(property-field resolved)
 	$(property-field imports...)
 	$(property-field modules... : module)
+	$(property-field resource : resource)
 
 	$(method set_imports,
 		$(set imports,$1))

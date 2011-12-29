@@ -67,16 +67,19 @@ define objects_to_export
 endef
 
 #param $1 'my_file' object
-define model_to_resource
-	$(if $(instance-of $1,my_file),
-		$(call set_exports,$(new resource),$1)
-		$(call resolve_internal,$1)
-		$1$(\n)
-		$(foreach o,$(call get_modules,$1),
-			$(\n)$(call get_qualified_name,$o)
-		)
-	)
-endef
+#define model_to_resource
+#	$(if $(instance-of $1,my_file),
+#		$(foreach r,$(new resource),
+#			$(call set_exports,$r,$1)
+#			$(set $r.my_file,$1)
+#		)
+#		$(call resolve_internal,$1)
+#		$1$(\n)
+#		$(foreach o,$(call get_modules,$1),
+#			$(\n)$(call get_qualified_name,$o)
+#		)
+#	)
+#endef
 
 $(def_all)
 

@@ -6,7 +6,8 @@ include mk/core/object.mk
 define class-resource
 	$(field nodes : node)
 	$(field issues)
-	$(field exports : node)
+	$(property-field exports... : node)
+	$(property-field my_file : node)
 endef
 
 #param $1 object contains resources
@@ -20,6 +21,8 @@ define set_exports
 	)
 endef
 
+
+
 define resolve_internal
 	$(foreach o,$(call get_modules,$1),
 		$(foreach l,$(get $o.depends_refs),
@@ -28,6 +31,17 @@ define resolve_internal
 				$(if $(eq $(get $i.name),$(get $l.link_name)),
 					$(set $l.link_name,$(get $i.name)$i))
 			)
+		)
+	)
+endef
+
+define create_from_model
+	$(info +++++++++++++++++++++++++++$1)
+	$(if $(instance-of $1,my_file),
+		$(foreach r,$(new resource),$r
+			$(call set_exports,$r,$1)
+			$(set $r.my_file,$1)
+			$(set $1.resource,$r)
 		)
 	)
 endef
