@@ -4,7 +4,7 @@ __util_graph_mk := 1
 
 #param 1 node
 define get_referenced_objects
-	$(foreach f,$(subst .,,$(basename $($($1).fields:%=.%))),
+	$(foreach f,$(subst [],,$(subst .,,$(basename $($($1).fields:%=.%)))),
 		$(foreach p,$(suffix $($1.$f)),$p)
 	)
 endef

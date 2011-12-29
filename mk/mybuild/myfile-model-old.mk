@@ -13,10 +13,9 @@ define class-my_file
 	$(super node)
 	$(super named,$1)
 
-	$(field resolved)
-	$(field imports)
-	$(field modules : module)
-
+	$(property-field resolved)
+	$(property-field imports...)
+	$(property-field modules... : module)
 
 	$(method set_imports,
 		$(set imports,$1))
@@ -50,13 +49,13 @@ define class-module
 	$(super node)
 	$(super named,$1)
 
-	$(field modifiers)
-	$(field super_module_ref : module_ref)
+	$(property-field modifiers...)
+	$(property-field super_module_ref : module_ref)
 
 	$(method set_super_module_ref,
 		$(invoke set_references,super_module_ref,$1))
 
-	$(field depends_refs : module_ref)
+	$(property-field depends_refs... : module_ref)
 
 	$(method set_depends_refs,
 		$(invoke clear_references,depends_refs)
@@ -64,11 +63,11 @@ define class-module
 			$(invoke dep->set_depends,depends_refs$(this)) #XXX
 			$(invoke add_references,depends_refs,$(dep))))
 
-	$(field requires_refs)
-	$(field provides_refs)
+	$(property-field requires_refs...)
+	$(property-field provides_refs...)
 
-	$(field sources : filename)
-	$(field objects : filename)
+	$(property-field sources... : filename)
+	$(property-field objects... : filename)
 
 	$(method set_sources,
 		$(invoke set_references,sources,$1))
@@ -89,13 +88,13 @@ endef
 define class-filename
 	$(super node)
 
-	$(field name)
+	$(property-field name)
 	$(setter name,
 		$(if $(findstring $(\s),$(subst $(\t),$(\s),$(subst $(\n),$(\s),$1))),
 			$(error \
 					Invalid file name: '$1')
 		)
-		$1
+		$(set-field name,$1)
 	)
 
 	# Construct.
@@ -113,3 +112,4 @@ endef
 
 
 $(def_all)
+

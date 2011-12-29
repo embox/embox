@@ -33,7 +33,7 @@ define class-abstract_scope
 	$(super scope)
 
 	$(field parent_scope : scope,$(or $1,$(null_scope_instance)))
-	$(setter parent_scope,$(error $0 is read-only))
+
 	$(assert $(instance-of $(get parent_scope),scope),
 			Invalid parent scope: '$(get parent_scope)')
 
@@ -66,7 +66,7 @@ define class-node_scope
 	$(super abstract_scope,$1)
 
 	$(field target_node,$2)
-	$(setter target_node,$(error $0 is read-only))
+
 	$(assert $(call instance_of,$(get target_node),node),
 			Invalid target node reference: '$(get target_node)')
 

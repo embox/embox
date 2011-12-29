@@ -15,7 +15,7 @@ include mk/mybuild/scoping.mk
 
 define class-node
 
-	$(field container : node)
+	$(property-field container : node)
 
 	# 1. Field of this.
 	# 2. What to add.
@@ -118,7 +118,7 @@ endef
 # Constructor args:
 #   1. Name.
 define class-named
-	$(field name,$(value 1))
+	$(property-field name,$(value 1))
 
 	$(method get_name,$(get name))
 	$(method set_name,$(set name,$1))
@@ -129,10 +129,10 @@ endef
 define class-abstract_ref
 	$(super node)
 
-	$(field src : *)
-	$(field dst : *)
+	$(property-field src : *)
+	$(property-field dst : *)
 
-	$(field link_name,$1)
+	$(property-field link_name,$1)
 
 	$(method get_link_name,$(get link_name))
 

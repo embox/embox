@@ -54,18 +54,22 @@ __core_object_mk := 1
 #   Object reference
 #     - a value used to refer an object.
 #
-#   Field
-#     - a value associated with each object of a certain class, provides a
-#       runtime state of the instance.
-#
-#   Reference field
-#     - a special kind of field, that hold references to other objects.
-#
 #   Method
 #     - a function associated with a class, defines runtime behavior of an
 #       instance of the class. Method is evaluated in a special context with
 #      'this' pointing the current object, thus it has as access to other
 #       members of the object.
+#
+#   Field
+#     - a value associated with each object of a certain class, provides a
+#       runtime state of the instance.
+#
+#   Property
+#     - a special kind of member representing a runtime state of the instance
+#       through getter and setter methods.
+#
+#   Reference field/property
+#     - a member, that holds references to other objects.
 #
 ##
 # Class definition.
@@ -88,7 +92,7 @@ __core_object_mk := 1
 #
 #   A field is defined using special 'field' builtin function.
 #
-#   	$(field name[:{*|type}][,initializer...])
+#   	$(field name[...][:{*|type}][,initializer...])
 #
 #   The first argument specifies the name of the field and whether the field
 #   is a reference field. In the latter case one can also specify a type of
@@ -120,7 +124,7 @@ __core_object_mk := 1
 #   As fields methods are defined using special builtin function, which has the
 #   following syntax.
 #
-#   	$(field name[,implementation...])
+#   	$(method name[,implementation...])
 #
 #   The first argument is the name of the method.
 #
@@ -138,8 +142,18 @@ __core_object_mk := 1
 #   	# As a usual function method body have an access to all passed
 #   	# arguments ($1 ..). A reference to the current object is available
 #   	# in 'this' variable.
-#   	$(field say_hello,
+#   	$(method say_hello,
 #   		$(info Hello from '$(this)', the first argument is '$1'))
+#
+#
+# Property and its accessors definition.
+#
+#   The definition of a property is very similar to the fields except that
+#   there is no initializer function.
+#
+#   	$(property name[...][:{*|type}])
+#
+#   As for fields the property can be defined to hold object references.
 #
 #
 # Class inheritance.
@@ -232,12 +246,17 @@ __core_object_mk := 1
 #   	# Calls the method with given arguments and returns the result.
 #   	$(invoke method[,arguments...])
 #
-#   	$(get  field)       # Retrieves the current field value.
+#   	$(get-field  field)       # Retrieves the current field value.
 #
-#   	$(set  field,value) # Assigns a new value to the field.
-#   	$(set+ field,value) # Appends a given value to the field.
-#   	$(set* field,value) # Appends a value if the field doesn't contain it.
-#   	$(set- field,value) # Removes any occurrence of a value from the field.
+#   	$(set-field  field,value) # Assigns a new value to the field.
+#   	$(set-field+ field,value) # Appends a given value to the field.
+#   	$(set-field- field,value) # Removes any occurrence of a value.
+#
+#   	$(get  property)          # Invokes getter of the specified property.
+#
+#   	$(set  property,value)    # Sets a new value by calling setter.
+#   	$(set+ property,value)    # Append (multi-value properties only).
+#   	$(set- property,value)    # Remove (multi-value properties only).
 #
 #   Related builtin functions allows one to specify a target member in three
 #   different forms:
@@ -274,7 +293,7 @@ __core_object_mk := 1
 #   For example, 'new' returns a reference, 'this' contains a reference (in
 #   certain contexts, of course: within constructors and methods).
 #
-#   There is, however, a special property of references: prepending an
+#   There is, however, a special feature of references: prepending an
 #   arbitrary prefix does not corrupt the reference. Moreover, one can extract
 #   a prefix (if any) efficiently using $(basename <ref>) function.
 #   In turn a normalized reference is available through $(suffix <ref>).
@@ -287,6 +306,9 @@ __core_object_mk := 1
 #
 ##
 # Internal representation.
+#
+#  TODO outdated. -- Eldar
+#
 #
 #   During class definition or a new object instantiation a number of ancillary
 #   variables are created.
@@ -404,21 +426,6 @@ define new
 	$(new $1,$(value 2))
 endef
 
-# Return:
-#   Human-readable list of args from 1 up to '__obj_debug_args_nr',
-#   or 'no args' if '__obj_debug_args_nr' is 0.
-# Note:
-#   Do not 'call'.
-define __obj_debug_args
-	$(or \
-		$(foreach a,
-			$(wordlist 1,$(__obj_debug_args_nr),1 2 3 4 5 6 7 8 9),
-			$(\t)$$$a='$($a)'
-		),
-#		<no args>
-	)
-endef
-
 # Params:
 #   1.. Args...
 # Context:
@@ -441,6 +448,31 @@ define __new
 	)
 endef
 __object_instance_cnt :=# Initially empty.
+
+# Return:
+#   Human-readable list of args from 1 up to '__obj_debug_args_nr',
+#   or 'no args' if '__obj_debug_args_nr' is 0.
+# Note:
+#   Do not 'call'.
+define __obj_debug_args
+	$(or \
+		$(foreach a,
+			$(wordlist 1,$(__obj_debug_args_nr),1 2 3 4 5 6 7 8 9),
+			$(\t)$$$a='$($a)'
+		),
+#		<no args>
+	)
+endef
+
+# Params:
+#   1. Class name.
+define __class_resolve
+	$(if $(findstring undefined,$(flavor class-$1)),
+		$(call $(if $(value __def_var),builtin_)error,
+				Class '$1' not found),
+		$1
+	)
+endef
 
 #
 # Runtime member access: 'invoke', 'get' and 'set'.
@@ -543,28 +575,29 @@ define __object_check
 endef
 
 #
+# Method invocation.
+#
+
+#
 # $(invoke method,args...)
 # $(invoke obj.method,args...)
 # $(invoke ref->method,args...)
 #
 define builtin_func-invoke
-	$(call __object_member_parse,$1,
+	$(call __object_member_parse,$1,$(lambda \
 		# 1. Empty for 'this', target object otherwise.
 		# 2. Referenced method.
 		# 3. Args...
-		$(lambda \
-			$(call __object_member_access_wrap,$1,
-				$(def-ifdef OBJ_DEBUG,
-					$$(foreach __args_nr,
-						$(words $(builtin_args_list)),
-						$$(call __method_invoke,$3,$2)
-					),
-					$$(call $$($$(__this)).method.$2,$3)
-				)
+		$(call __object_member_access_wrap,$1,
+			$(def-ifdef OBJ_DEBUG,
+				$$(foreach __args_nr,
+					$(words $(builtin_args_list)),
+					$$(call __method_invoke_debug,$3,$2)
+				),
+				$$(call $$($$(__this)).$2,$3)
 			)
-		),
-		$(builtin_nofirstarg)
-	)
+		)
+	),$(builtin_nofirstarg))
 endef
 
 # Params:
@@ -573,13 +606,13 @@ endef
 # Context:
 #   '__class__'
 ifdef OBJ_DEBUG
-define __method_invoke
+define __method_invoke_debug
 	$(foreach __obj_debug_args_nr,$(word $(__args_nr),0 1 2 3 4 5 6 7 8 9),
 		$(info \
 				$(__this):	invoke $($(__this)).$($(__args_nr)): \
 				$(__obj_debug_args))
 	)
-	$(foreach 0,$(or $(call var_recursive,$($(__this)).method.$($(__args_nr))),
+	$(foreach 0,$(or $(call var_recursive,$($(__this)).$($(__args_nr))),
 			$(error \
 					No method '$($(__args_nr))', \
 					invoked on object '$(__this)' of type '$($(__this))')),
@@ -589,6 +622,92 @@ endef
 endif
 
 $(def_all)
+
+#
+# Property access.
+#
+
+#
+# $(get [{obj.|ref->}]property)
+#
+define builtin_func-get
+	$(call builtin_check_max_arity,1)
+	$(call __object_member_parse,$1,$(lambda \
+		# 1. Empty for 'this', target object otherwise.
+		# 2. Property.
+		$(call __object_member_access_wrap,$1,
+			$(def-ifdef OBJ_DEBUG,
+				$$(call __property_get_debug,$2),
+				$$(call $$($$(__this)).$2.getter)
+			)
+		)
+	))
+endef
+
+# Params:
+#   1. Property name.
+# Context:
+#   '__this'
+ifdef OBJ_DEBUG
+define __property_get_debug
+	$(info $(__this):	get    $($(__this)).$1)
+
+	$(call $(or $(call var_recursive,$($(__this)).$1.getter),
+			$(error \
+					No property '$1', performing 'get' \
+					on object '$(__this)' of type '$($(__this))'))
+	)
+endef
+endif
+
+#
+# $(set  [{obj.|ref->}]property,value)
+# $(set+ [{obj.|ref->}]property,value)
+# $(set- [{obj.|ref->}]property,value)
+#
+builtin_func-set  = $(__builtin_func_set)
+builtin_func-set+ = $(__builtin_func_set)
+builtin_func-set- = $(__builtin_func_set)
+
+# Expanded from  'setx' builtin context. It will generate a call
+# to the corresponding property setter, 'x' is taken from builtin name.
+define __builtin_func_set
+	$(call builtin_check_min_arity,2)
+	$(call __object_member_parse,$1,$(lambda \
+		# 1. Empty for 'this', target object otherwise.
+		# 2. Property.
+		# 3. Value being set.
+		$(call __object_member_access_wrap,$1,
+			$(def-ifdef OBJ_DEBUG,
+				$$(call __property_set_debug,$2,$(builtin_name:set%=%),$3),
+				$$(call $$($$(__this)).$2.setter$(builtin_name:set%=%),$3)
+			)
+		)
+	),$(builtin_nofirstarg))
+endef
+
+# Params:
+#   1. Property name.
+#   2. '+', '-', or empty.
+#   3. Value.
+# Context:
+#   '__this'
+ifdef OBJ_DEBUG
+define __property_set_debug
+	$(info $(__this):	set$(or $2,$(\s))   $($(__this)).$1: '$3')
+
+	$(call $(or $(call var_recursive,$($(__this)).$1.setter$2),
+			$(error \
+					No property '$1', performing 'set$2' \
+					on object '$(__this)' of type '$($(__this))')),
+		$3
+	)
+endef
+endif
+
+#
+# Field operations.
+#
 
 # Params:
 #   1. Field name.
@@ -603,170 +722,106 @@ define __field_check
 	)
 endef
 
-# Expanded from field 'setxxx' builtin context. It will generate a call
-# to '_field_setxxx', where xxx is taken from builtin name.
-define __builtin_func_set
+#
+# $(get-field field)
+# $(get-field obj.field)
+# $(get-field ref->field)
+#
+define builtin_func-get-field
+	$(call builtin_check_max_arity,1)
+	$(call __object_member_parse,$1,$(lambda \
+		# 1. Empty for 'this', target object otherwise.
+		# 2. Referenced field.
+		$(call __object_member_access_wrap,$1,
+			$(def-ifdef OBJ_DEBUG,
+				$$(call __field_get_debug,$2),
+				$$($$(__this).$$(call __field_check,$2))
+			)
+		)
+	))
+endef
+
+
+# Params:
+#   1. Field name.
+# Context:
+#   '__this'
+ifdef OBJ_DEBUG
+define __field_get_debug
+	$(info $(__this):	get-field $($(__this)).$1= \
+		'$($(__this).$(call __field_check,$1))')
+	$($(__this).$(call __field_check,$1))
+endef
+endif
+
+#
+# $(set-field  [{obj.|ref->}]field,value)
+# $(set-field+ [{obj.|ref->}]field,value)
+# $(set-field- [{obj.|ref->}]field,value)
+#
+builtin_func-set-field  = $(__builtin_func_set_field)
+builtin_func-set-field+ = $(__builtin_func_set_field)
+builtin_func-set-field- = $(__builtin_func_set_field)
+
+# Expanded from  'set-fieldx' builtin context. It will generate a call
+# to '__field_setx', where 'x' is taken from builtin name.
+define __builtin_func_set_field
 	$(call builtin_check_min_arity,2)
-	$(call __object_member_parse,$1,
+	$(call __object_member_parse,$1,$(lambda \
 		# 1. Empty for 'this', target object otherwise.
 		# 2. Referenced field.
 		# 3. Value.
-		$(lambda \
-			$(call __object_member_access_wrap,$1,
-				$$(call __field_$(builtin_name),$$($$(__this)),$2,$3)
-			)
-		),
-		$(builtin_nofirstarg)
-	)
-endef
-
-#
-# $(set field,value)
-# $(set obj.field,value)
-# $(set ref->field,value)
-#
-define builtin_func-set
-	$(__builtin_func_set)
+		$(call __object_member_access_wrap,$1,
+			$$(call __field_set$(builtin_name:set-field%=%),$2,$3)
+		)
+	),$(builtin_nofirstarg))
 endef
 
 # Params:
-#   1. Class.
-#   2. Field name.
-#   3. Field value.
+#   1. Field name.
+#   2. Value.
 # Context:
 #   '__this'
 define __field_set
-	$(def-ifdef OBJ_DEBUG,$(info $(__this):	set    $1.$2: '$3'))
+	$(def-ifdef OBJ_DEBUG,$(info $(__this):	set-field $($(__this)).$1: '$2'))
+
 	${eval \
-		override $(__this).$(call __field_check,$2) := \
-			$(if $(value $1.method.set.$2),
-				$$(call $1.method.set.$2,$$3),
-				$$3
-			)
+		override $(__this).$(__field_check) := $$2
 	}
 endef
 
-#
-# $(set+ field,value)
-# $(set+ obj.field,value)
-# $(set+ ref->field,value)
-#
-define builtin_func-set+
-	$(__builtin_func_set)
-endef
-
 # Params:
-#   1. Class.
-#   2. Field name.
-#   3. Field value.
+#   1. Field name.
+#   2. Value.
 # Context:
 #   '__this'
 define __field_set+
-	$(def-ifdef OBJ_DEBUG,$(info $(__this):	set+   $1.$2: '$3'))
+	$(def-ifdef OBJ_DEBUG,$(info $(__this):	set-field+ $($(__this)).$1: '$2'))
+
 	${eval \
-		$(if $($(__this).$(call __field_check,$2)),
-			$(if $(value $1.method.set.$2),
-				override $(__this).$2 := \
-					$$(call $1.method.set.$2,$$($(__this).$2) $$3)
-				,# else
-				override $(__this).$2 += \
-					$$3
-			)
-			,# else
-			override $(__this).$2 := \
-				$(if $(value $1.method.set.$2),
-					$$(call $1.method.set.$2,$$3),
-					$$3
-				)
-		)
+		override $(__this).$(__field_check) += $$2
 	}
 endef
 
-#
-# $(set* field,value)
-# $(set* obj.field,value)
-# $(set* ref->field,value)
-#
-define builtin_func-set*
-	$(__builtin_func_set)
-endef
-
 # Params:
-#   1. Class.
-#   2. Field name.
-#   3. Field value.
-# Context:
-#   '__this'
-define __field_set*
-	$(def-ifdef OBJ_DEBUG,$(info $(__this):	set*   $1.$2: '$3'))
-	$(if $(findstring $(\s)$3 , $($(__this).$(call __field_check,$2)) ),
-		,# else
-		$(call __field_set+,$1,$2,$3)
-	)
-endef
-
-#
-# $(set- field,value)
-# $(set- obj.field,value)
-# $(set- ref->field,value)
-#
-define builtin_func-set-
-	$(__builtin_func_set)
-endef
-
-# Params:
-#   1. Class.
-#   2. Field name.
-#   3. Field value.
+#   1. Field name.
+#   2. Value.
 # Context:
 #   '__this'
 define __field_set-
-	$(def-ifdef OBJ_DEBUG,$(info $(__this):	set-   $1.$2: '$3'))
-	$(call __field_set,$1,$2,$(trim $(subst $(\s)$3 , , $($(__this).$2) )))
-endef
+	$(def-ifdef OBJ_DEBUG,$(info $(__this):	set-field- $($(__this)).$1: '$2'))
 
-#
-# $(get field)
-# $(get obj.field)
-# $(get ref->field)
-#
-define builtin_func-get
-	$(call builtin_check_max_arity,1)
-	$(call __object_member_parse,$1,
-		# 1. Empty for 'this', target object otherwise.
-		# 2. Referenced field.
-		$(lambda \
-			$(call __object_member_access_wrap,$1,
-				$$(call __field_get,$$($$(__this)),$2)
+	${eval \
+		override $(__this).$(__field_check) := \
+			$(if $(findstring %,$2),
+				$$(subst %%,%,$$(filter-out $$(subst %,%%,$2),
+					$$(subst %,%%,$$($(__this).$1)))),
+				$$(filter-out $$2,$$($(__this).$1))
 			)
-		)
-	)
-endef
-$(call def,builtin_func-get)
-
-# Params:
-#   1. Class.
-#   2. Field name.
-# Context:
-#   '__this'
-define __field_get
-	$(if $(value $1.method.get.$(call __field_check,$2)),
-		$$(call $1.method.get.$2,$($(__this).$2)),
-		$($(__this).$2)
-	)
+	}
 endef
 
 $(def_all)
-
-# Params:
-#   1. Class name.
-define __class_resolve
-	$(if $(findstring undefined,$(flavor class-$1)),
-		$(call $(if $(value __def_var),builtin_)error,
-				Class '$1' not found),
-		$1
-	)
-endef
 
 #
 # Object/class structure introspection.
@@ -836,10 +891,32 @@ builtin_func-has-field = \
 # Return:
 #   The first argument if the answer is true, empty otherwise.
 define class_has_field
-	$(if $(filter $2,$(basename $(value $1.fields))),$1)
+	$(if $(filter $2 $(addsuffix [],$2),$(basename $(value $1.fields))),$1)
 endef
 builtin_func-class-has-field = \
 	$(foreach builtin_name,class_has_field,$(builtin_to_function_inline))
+
+# Tells whether a given object has the specified property.
+#   1. Reference to check.
+#   2. Property name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define has_property
+	$(if $(call class_has_property,$(class $1),$2),$1)
+endef
+builtin_func-has-property = \
+	$(foreach builtin_name,has_property,$(builtin_to_function_inline))
+
+# Tells whether a class has the given property.
+#   1. Name of the class to check.
+#   2. Property name.
+# Return:
+#   The first argument if the answer is true, empty otherwise.
+define class_has_property
+	$(if $(filter $2 $(addsuffix [],$2),$(basename $(value $1.properties))),$1)
+endef
+builtin_func-class-has-property = \
+	$(foreach builtin_name,class_has_property,$(builtin_to_function_inline))
 
 # Tells whether a given object has the specified method.
 #   1. Reference to check.
@@ -877,14 +954,25 @@ define __class_variable_value_provider
 				Illegal class name: '$(1:class-%=%)')
 	)
 
-	$$(__class__ $(value $1))
+	$(if $(call def_is_done,$1),
+		# Workaround for repeated def in case when the class has already been
+		# defined from 'super' builtin of another one.
+		$(value $1),
+		$$(__class__ $(value $1))
+	)
 endef
 $(call def,__class_variable_value_provider)
 $(call def_register_value_provider,class-%,__class_variable_value_provider)
 
 define builtin_tag-__class__
-	$(__def_var:class-%=%)
+	$(foreach __class__,$(__def_var:class-%=%),
+		$(call var_assign_simple,$(__class__),)
+		$(__class__)
+	)
 endef
+
+# Builtin-time class name access.
+__class__ = $(call builtin_tag,__class__)
 
 #
 # $(__class__ fields/methods/supers...)
@@ -892,12 +980,16 @@ endef
 define builtin_func-__class__
 	$(call builtin_check_max_arity,1)
 
-	$(foreach c,$(call builtin_tag,__class__),
-		$(silent-foreach a,fields methods super,
-			$(call var_assign_simple,
-				$c.$a,$(strip $(value $c.$a)))
-		)
-	)
+	# Define four special variables needed for introspection.
+	# TODO Backward-compatibility, should be replaced by '__class_attr_xxx' API.
+	$(call var_assign_simple,$(__class__).supers,
+		$(notdir $(call __class_attr_query,super,%)))
+	$(call var_assign_simple,$(__class__).methods,
+		$(notdir $(call __class_attr_query,method%,%)))
+	$(call var_assign_simple,$(__class__).properties,
+		$(notdir $(call __class_attr_query,property,%)))
+	$(call var_assign_simple,$(__class__).fields,
+		$(notdir $(call __class_attr_query,field,%)))
 
 	$1
 endef
@@ -907,16 +999,15 @@ endef
 # Returns:
 #   The argument if it is a valid name, empty otherwise.
 define __class_name_check
-	$(if $(not \
-			$(or \
-				$(filter field method super class,$1),
-				$(findstring $(\\),$1),
-				$(findstring $(\h),$1),
-				$(findstring $$,$1),
-				$(findstring  .,$1),
-				$(findstring  -,$1),
-				$(findstring  /,$1)
-			)),
+	$(if $(not $(or \
+			$(filter field method super class,$1),
+			$(findstring $(\\),$1),
+			$(findstring $(\h),$1),
+			$(findstring $$,$1),
+			$(findstring  %,$1),
+			$(findstring  .,$1),
+			$(findstring  /,$1)
+		)),
 		$(singleword $1)
 	)
 endef
@@ -932,141 +1023,251 @@ define __class_name_check_or_die
 	)
 endef
 
-# Param:
-#   1. Class attribute to append the identifier to.
-#   2. Identifier to check.
-define __class_def_attribute
-	# XXX
+# Params:
+#   1. Type.
+#   2. Name.
+define __class_new_attr
+	$(assert $(not $(findstring /,$1$2)))
 
-	$(__class_def_attribute_no_check)
-endef
-
-# Param:
-#   The same as to '__class_def_attributes'.
-define __class_def_attribute_no_check
-	$(assert $(eq __class__,$(builtin_caller)),
-		Function '$(builtin_name)' can be used only within a class definition)
+	$(if $(__class_attr_query_self),
+		$(call builtin_error,
+			Redefinition of '$2' $1)
+	)
 
 	$(call var_assign_simple_append,
-		$(call builtin_tag,__class__).$1,$2)
+		$(__class__),$1/$2)
 endef
 
-# Defines a new member (method or field initializer) in the current class.
 # Params:
-#   1. A type of the member.
-#   2. Member name.
-#   3. Function body.
-define __member_def
-	$(foreach c,$(call builtin_tag,__class__),
-		${eval \
-			$c.$1.$2 = \
-				$(if $(not $(findstring $3x,$(trim $3x))),
-						$$(\0))# Preserve leading whitespaces.
-				$(subst $(\h),$$(\h),$(subst $(\\),$$(\\),$3))
-			$(\n)
-			__def_ignore += $1.$2
-		}
+#   1. Type.
+#   2. Name.
+#   3. Body.
+define __class_new_attr_func
+	$(call __class_new_attr,$1,$2)
+	$(call __class_new_func,$2,$3)
+endef
+
+# Params:
+#   1. Name.
+#   2. Body.
+define __class_new_func
+	$(foreach f,$(__class__).$1,
+		$(if $(call var_undefined,$f),
+			$(call def_exclude,$f))
+		$(call var_assign_recursive_sl,$f,$2)
 	)
 endef
 
 # Params:
-#   1. Field name to parse in form 'name' or 'name:type'.
+#   1. Name.
+#   2. Body.
+define __class_new_func_weak
+	$(foreach f,$(__class__).$1,
+		$(if $(call var_undefined,$f),
+			$(call def_exclude,$f)
+			$(call var_assign_recursive_sl,$f,$2))
+	)
+endef
+
+# Searches the current class and its super-type hierarchy (at the moment
+# of call, of course) for members matching both of the specified patterns.
+# Duplicates are removed.
+#
+# Params:
+#   1. Type patterns.
+#   2. Name patterns.
+# Return:
+#   Quering result in form 'type/name'.
+__class_attr_query = $(sort $(__class_attr_query_nosort))
+__class_attr_query_nosort = \
+	$(__class_attr_query_self_nosort) $(__class_attr_query_supers_nosort)
+
+# Queries for those members that have been defined in the class itself.
+# See '__class_attr_query'.
+__class_attr_query_self = $(sort $(__class_attr_query_self_nosort))
+define __class_attr_query_self_nosort
+	$(foreach __class__,$(__class__),# Just a little optimization.
+		$(__class_attr_do_query)
+	)
+endef
+
+# Queries for members defined in supers of the current class.
+# See '__class_attr_query'.
+__class_attr_query_supers = $(sort $(__class_attr_query_supers_nosort))
+define __class_attr_query_supers_nosort
+	$(foreach __class__,# Get list of super classes.
+		$(sort $(call $(lambda \
+			$(foreach __class__,$(notdir $(call __class_attr_do_query,super,%)),
+				$(__class__) $(call $0))
+		))),
+		$(__class_attr_do_query)
+	)
+endef
+
+# Internal method for retrieving members of the class defined by '__class__'.
+# Result may include duplicates.
+define __class_attr_do_query
+	$(with $1,$(filter $2,$(notdir $($(__class__)))),
+		$(filter $(foreach 1,$1,$(addprefix $1/,$2)),$($(__class__))))
+endef
+
+# Searches the specified class and its super-type hierarchy.
+#   1. Target class.
+#   2. Type patterns.
+#   3. Name patterns.
+__class_attr_query_in = \
+	$(foreach __class__,$1,$(call __class_attr_query,$2,$3))
+
+# See '__class_attr_query_in', '__class_attr_query_self'.
+__class_attr_query_self_in = \
+	$(foreach __class__,$1,$(call __class_attr_query_self,$2,$3))
+
+# See '__class_attr_query_in', '__class_attr_query_supers'.
+__class_attr_query_supers_in = \
+	$(foreach __class__,$1,$(call __class_attr_query_supers,$2,$3))
+
+#
+# $(super ancestor,args...)
+#
+define builtin_func-super
+	$(foreach s,class-$(call __class_resolve,$1),
+		$(if $(or \
+				$(call def_in_progress,$s),
+				$(and \
+					$(call def_is_done,$s),
+					$(call __class_attr_query_in,$1,super,$(__class__))
+				)),
+			$(call builtin_error,
+				Class '$(__class__)' can't extend '$1' \
+				because of inheritance loop)
+		)
+
+		$(if $(not $(call def_is_done,$s)),$(call def,$s))
+
+		# Emit a call to a super constructor.
+		$(if $(multiword $(builtin_args_list)),
+			$$(call $s,$(builtin_nofirstarg)),
+			$$(call $s)
+		)
+	)
+
+	# Must add it after querying the parent for its supers
+	# because '__class_attr_query' assumes there is no inheritance loops.
+	$(call __class_new_attr,super,$1)
+
+	# Copy function table from super class, but not override functions, that
+	# have already been defined in the current class - they always take
+	# a precedence over inherited ones.
+	$(foreach f,
+		$(notdir $(call __class_attr_query_in,$1,method% xetter%,%)),
+		$(call __class_new_func_weak,$f,$(value $1.$f))
+	)
+endef
+
+#
+# $(method name,body...)
+#
+define builtin_func-method
+	$(if $(multiword $(builtin_args_list)),
+
+		# Method with an implementation.
+		$(call __class_new_attr_func,method,$(trim $1),
+			$$(foreach this,$$(__this),$(builtin_nofirstarg))),
+
+		# Abstract method, define a stub.
+		$(call __class_new_attr_func,method_stub,$(trim $1),
+			$$(error Invoking unimplemented abstract method $0, \
+					declared in class $(__class__)))
+
+	)
+endef
+
+# Params:
+#   1. Field name to parse in form 'name[...][:{*|type}]'.
 #   2. Continuation with the following args:
-#       1. Recognized name.
-#       2. Type if specified, empty otherwise.
-#       3. Optional argument.
+#       1. Recognized name, may be with trailing '...'.
+#       2. '...', if any.
+#       3. Type if specified, empty otherwise.
+#       4. Optional argument.
 #   3. (optional) Argument to pass to the continuaion.
 # Return:
 #   Result of call to continuation in case of a valid reference,
 #   otherwise it aborts using 'builtin_error'.
-define __field_name_parse
+define __member_name_parse
 	$(or \
 		$(with \
 			$(subst :, : ,$1),# Split the argument.
 			$2,$(value 3),# Continuation function with its argument.
 
-			$(foreach name,$(call __class_name_check,$(firstword $1)),
+			$(foreach first,$(firstword $1),$(foreach name,
+				$(call __class_name_check,$(patsubst %...,%,$(first))),
+
 				$(if $(singleword $1),
 					# No type is specified.
-					$(call $2,$(name),,$3),
+					$(call $2,$(name),$(filter-patsubst %...,...,$(first)),,$3),
 
 					# Expecting to see a type in the third word.
 					$(if $(eq :,$(word 2,$1)),
 						$(foreach type,$(call __class_name_check,$(word 3,$1)),
-							$(call $2,$(name),$(type),$3)
+							$(call $2,$(name),
+								$(filter-patsubst %...,...,$(first)),$(type),$3)
 						)
 					)
 				)
-			)
+			))
 		),
 
 		$(call builtin_error,
-				Invalid field name: '$1'$(\comma) \
-				should be 'name'$(\comma) 'name:type'$(\comma) or 'name:*')
+				Invalid $(builtin_name) name: '$1'$(\comma) \
+				should be 'name' or 'name:type'$(\comma) \
+				where name can include trailing '...' \
+				and type is a class name or '*')
 	)
 endef
 
-#
-# $(field name,initializer...)
-# $(field name:*,initializer...)
-# $(field name:type,initializer...)
-#
-define builtin_func-field
-	$(call __field_name_parse,$1,
-		# 1. Name.
-		# 2. Type, '*', or empty.
-		# 3. Initializer...
-		$(lambda $(foreach c,$(call builtin_tag,__class__),
-			$(call __class_def_attribute,fields,$1$(if $2,.$2))
-			$(call __member_def,field,$1,$3)
+# Checks that a property/field being defined does not conflicts with an already
+# declared one (if any).
+#   1. 'property' or 'field'.
+#   2. Name.
+#   3. Cardinality: '...' or empty.
+#   4. Type: '*', class name, or empty.
+define __member_check_and_def_attr
+	$(foreach m_new,$2$(if $3,[])$(if $4,.$4),
+		$(foreach m_old,
+			$(with $1,$2,
+				$(notdir $(call __class_attr_query,$1,$2 $2[] $2.% $2[].%)),
+				$(assert $(not $(multiword $3)),
+					__class_attr_query returned too many for '$2' $1: '$3')
+				$3
+			),
 
-			$(if $2,
-				# Define a type checking setter if there is a type specified.
-				$(call __class_def_attribute_no_check,methods,set.$1)
-				$(call __member_def,method,set.$1,
-					$(if $(eq *,$2),
-						$$(__field_setter_object_check),
-						$$(foreach 2,$2,$$(__field_setter_type_check))
-					)
-				)
+			$(if $(not $(eq $(m_new),$(m_old))),
+				$(call builtin_error,
+					Conflicting property type/cardinality: \
+					'$(subst [],...,$(subst ., : ,$(m_new)))'$(\comma) \
+					previously declared as \
+					'$(subst [],...,$(subst ., : ,$(m_old)))')
 			)
-
-			# Field initializer.
-			$$(eval override $$(this).$1 := $$(value $c.field.$1))
-		)),
-		$(builtin_nofirstarg)
-	)
-endef
-
-# 1. Value being set.
-# 2. Type.
-define __field_setter_type_check
-	$(foreach 1,$1,
-		$(or $(instance-of $1,$2),
-			$(error \
-					Attemp to assign value '$1' ($(if $(is-object $1),
-							instance of class $(class $1),not an object)) \
-					to field '$(subst .method.set.,.,$0)' \
-					of incompatible type '$2')
 		)
-	)
-endef
 
-# 1. Value being set.
-define __field_setter_object_check
-	$(foreach 1,$1,
-		$(or $(is-object $1),
-			$(error \
-					Attemp to assign value '$1' which is not a valid object \
-					to field '$(subst .method.set.,.,$0)')
-		)
+		$(call __class_new_attr,$1,$(m_new))
 	)
 endef
 
 #
-# $(setter name,body...)
+# $(getter  property,body...)
+# $(setter  property,body...)
+# $(setter+ property,body...)
+# $(setter- property,body...)
 #
-define builtin_func-setter
+builtin_func-getter  = $(__builtin_func_xetter)
+builtin_func-setter  = $(__builtin_func_xetter)
+builtin_func-setter+ = $(__builtin_func_xetter)
+builtin_func-setter- = $(__builtin_func_xetter)
+
+# Expanded from getter/setter builtin context.
+# Defines an appropriate method, the actual name is taken from builtin name.
+define __builtin_func_xetter
 	$(call builtin_check_min_arity,2)
 
 	$(if $(not $(call __class_name_check,$1)),
@@ -1074,67 +1275,212 @@ define builtin_func-setter
 				Illegal name: '$1')
 	)
 
-	$(call __class_def_attribute_no_check,methods,set.$(trim $1))
-	$(call __member_def,method,set.$(trim $1),
-			$$(foreach this,$$(__this),$(builtin_nofirstarg)))
-endef
+	# Check that the corresponding property has already been declared.
+	$(with $1,
+		$(call __class_attr_query,property,$1 $1[] $1.% $1[].%),
 
-#
-# $(method name,body...)
-#
-define builtin_func-method
-	$(call __class_def_attribute,methods,$1)
-
-	$(call __member_def,method,$(trim $1),
-		$(if $(multiword $(builtin_args_list)),
-			$$(foreach this,$$(__this),$(builtin_nofirstarg)),
-			$$(error Invoking unimplemented abstract method $0, \
-					declared in class $(call builtin_tag,__class__))
-		)
-	)
-endef
-
-#
-# $(super ancestor,args...)
-#
-define builtin_func-super
-	$(call __class_def_attribute,super,$1)
-
-	$(foreach c,class-$(call __class_resolve,$1),
-		$(if $(not $(call def_is_done,$c)),$(call def,$c))
-
-		$(if $(multiword $(builtin_args_list)),
-			$$(call $c,$(builtin_nofirstarg)),
-			$$(call $c)
-		)
-	)
-
-	$(call __class_inherit,$1)
-
-	$(foreach m,$($1.methods),
-		$(call __member_def,method,$m,$(value $1.method.$m))
-	)
-endef
-
-# Params:
-#   1. Ancestor.
-define __class_inherit
-	$(foreach c,$(call builtin_tag,__class__),
-
-		$(silent-foreach a,fields methods super,
-			$(call var_assign_simple_append,
-				$c.$a,$($1.$a))
-		)
-
-		$(if $(filter $c,$($c.super)),
+		$(if $(not $2),
 			$(call builtin_error,
-					Can't inherit class '$c' from '$1' because of a loop)
+				You must declare a '$1' property before defining \
+				a $(builtin_name:setter%=setter) for it)
+		)
+		$(assert $(singleword $2),
+			__class_attr_query returned too many for '$1' property: '$2')
+
+		$(and \
+			$(filter-patsubst setter%,%,$(builtin_name)),
+			$(filter-out %[],$(basename $2)),
+			$(call builtin_error,
+				Add/remove setters can be defined for list properties only)
 		)
 	)
+
+	$(call __class_new_attr_func,xetter,$1.$(builtin_name),
+		$(or \
+			$(def-ifdef OBJ_DEBUG,
+				$(if $(filter setter%,$(builtin_name)),
+					$$(if $$(foreach this,$$(__this),$(builtin_nofirstarg)),
+						$$(error \
+								Setter for '$(basename $0)' property returned \
+								non-empty result))
+				)
+			),
+			$$(foreach this,$$(__this),$(builtin_nofirstarg))
+		)
+	)
+
 endef
+
+#
+# $(property name)
+# $(property name : *)
+# $(property name : type)
+#
+# $(property name...)
+# $(property name... : *)
+# $(property name... : type)
+#
+define builtin_func-property
+	$(call builtin_check_max_arity,1)
+
+	$(and $(call __member_name_parse,$1,$(lambda \
+		# 1. Name.
+		# 2. '...', or empty.
+		# 3. Type, '*', or empty.
+
+		$(call __member_check_and_def_attr,property,$1,$2,$3)
+
+		$(call __class_new_attr_func,xetter_stub,$1.getter,
+				$$(call __xetter_noimpl,getter,$$(basename $$0)))
+
+		$(call __class_new_attr_func,xetter_stub,$1.setter,
+				$$(call __xetter_noimpl,setter,$$(basename $$0)))
+
+		$(foreach s, + -,
+			$(call __class_new_attr_func,xetter_stub,$1.setter$s,
+				$(if $2,$$(call __setter$s,$$(basename $$0),$$1),
+						$$(call __setterx_noimpl,$s,$$(basename $$0))))
+		)
+
+		# Due to current design of '__member_name_parse', we have to return
+		# something to indicate that everything is ok.
+		42# <- the answer.
+	)),)# <- Suppress the output.
+endef
+
+# 1. 'getter' or 'setter'.
+# 2. 'class.property'.
+define __xetter_noimpl
+	$(error Unimplemented $1 for '$2' property)
+endef
+
+# 1. '+' or '-'.
+# 2. 'class.property'.
+define __setterx_noimpl
+	$(error set$1 operation is not available for '$2' property)
+endef
+
+# 1. Name of setter function with no suffix.
+# 2. Value to add.
+define __setter+
+	$(foreach this,$(__this),$(call $1.setter,$(call $1.getter) $2))
+endef
+
+# 1. Name of setter function with no suffix.
+# 2. Value to remove.
+define __setter-
+	$(foreach this,$(__this),$(call $1.setter,
+		$(if $(findstring %,$2),
+			$(subst %%,%,
+				$(filter-out $(subst %,%%,$2),$(subst %,%%,$(call $1.getter)))),
+			$(filter-out $2,$(call $1.getter))
+		)
+	))
+endef
+
+#
+# $(field name, initializer...)
+# $(field name : *, initializer...)
+# $(field name : type, initializer...)
+#
+# $(field name...)
+# $(field name... : *)
+# $(field name... : type)
+#
+define builtin_func-field
+	$(call __member_name_parse,$1,__field_define,$(builtin_nofirstarg))
+endef
+
+#
+# $(property-field name, initializer...)
+# $(property-field name : *, initializer...)
+# $(property-field name : type, initializer...)
+#
+# $(property-field name...)
+# $(property-field name... : *)
+# $(property-field name... : type)
+#
+define builtin_func-property-field
+	$(call __member_name_parse,$1,$(lambda \
+		# 1. Name.
+		# 2. '...', or empty.
+		# 3. Type, '*', or empty.
+		# 4. Initializer...
+
+		$(call __member_check_and_def_attr,property,$1,$2,$3)
+
+		$(call __class_new_attr_func,xetter_stub,$1.getter,
+				$$($$(__this).$1))
+
+		$(call __class_new_attr_func,xetter_stub,$1.setter,
+				$$(call __field_set,$1,$$1))
+
+		$(foreach s, + -,
+			$(call __class_new_attr_func,xetter_stub,$1.setter$s,
+				$(if $2,$$(call __field_set$s,$1,$$1),
+						$$(call __setterx_noimpl,$s,$$(basename $$0))))
+		)
+
+		# Perform the rest initialization as for regular field.
+		$(__field_define)
+
+	),$(builtin_nofirstarg))
+endef
+
+# 1. Name.
+# 2. '...', or empty.
+# 3. Type, '*', or empty.
+# 4. Initializer...
+define __field_define
+	$(call __member_check_and_def_attr,field,$1,$2,$3)
+
+#			$(if $2,
+#				# Define a type checking setter if there is a type specified.
+#				$(call __class_def_attribute_no_check,methods,set.$1)
+#				$(call __member_def,method,set.$1,
+#					$(if $(eq *,$2),
+#						$$(__field_setter_object_check),
+#						$$(foreach 2,$2,$$(__field_setter_type_check))
+#					)
+#				)
+#			)
+
+	# Field initializer.
+	$$(eval $$(this).$1 := \
+		$(if $(not $(findstring $4x,$(trim $4x))),
+				$$$$(\0))# Preserve leading whitespaces.
+		$(subst $$,$$$$,$4))
+endef
+
+## 1. Value being set.
+## 2. Type.
+#define __field_setter_type_check
+#	$(foreach 1,$1,
+#		$(or $(instance-of $1,$2),
+#			$(error \
+#					Attemp to assign value '$1' ($(if $(is-object $1),
+#							instance of class $(class $1),not an object)) \
+#					to field '$(subst .method.set.,.,$0)' \
+#					of incompatible type '$2')
+#		)
+#	)
+#endef
+#
+## 1. Value being set.
+#define __field_setter_object_check
+#	$(foreach 1,$1,
+#		$(or $(is-object $1),
+#			$(error \
+#					Attemp to assign value '$1' which is not a valid object \
+#					to field '$(subst .method.set.,.,$0)')
+#		)
+#	)
+#endef
+
+# XXX below
 
 define field_name
-	$(basename $1)
+	$(subst [],,$(basename $1))
 endef
 
 define field_type
@@ -1142,7 +1488,7 @@ define field_type
 endef
 
 define obj_links
-	$(subst .,,$(basename $($($1).fields:%=.%)))
+	$(subst [],,$(subst .,,$(basename $($($1).fields:%=.%))))
 endef
 
 #param $1 container
@@ -1175,7 +1521,6 @@ $(def_all)
 #######################################
 # TODO move from here
 #######################################
-include mk/util/serialize.mk
 
 __mk_objects_dump_ps := objects_dump.ps
 
