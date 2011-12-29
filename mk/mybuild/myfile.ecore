@@ -2,52 +2,43 @@
 <ecore:EPackage xmi:version="2.0"
     xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="myFile"
-    nsURI="http://www.mybuild.org/myfile/MyFile" nsPrefix="myFile">
-  <eClassifiers xsi:type="ecore:EClass" name="Model">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="package" eType="#//Package"
-        containment="true"/>
+    nsURI="http://www.mybuild.org/myfile/MyFile" nsPrefix="my">
+  <eClassifiers xsi:type="ecore:EClass" name="Package" eSuperTypes="#//Named">
     <eStructuralFeatures xsi:type="ecore:EReference" name="imports" upperBound="-1"
         eType="#//Import" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="entities" upperBound="-1"
-        eType="#//Entity" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Package">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+        eType="#//Entity" containment="true" eOpposite="#//Entity/package"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Import">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="importedNamespace" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="importName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Entity">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Entity" abstract="true" eSuperTypes="#//Named">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="package" eType="#//Package"
+        eOpposite="#//Package/entities"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="#//Entity">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="superType" eType="#//Interface"
-        eOpposite="#//Interface/subTypes"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Interface">
     <eStructuralFeatures xsi:type="ecore:EReference" name="features" upperBound="-1"
         eType="#//Feature" containment="true" eOpposite="#//Feature/interface"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="subTypes" upperBound="-1"
-        eType="#//Interface" eOpposite="#//Interface/superType"/>
+    <eGenericSuperTypes eClassifier="#//Entity"/>
+    <eGenericSuperTypes eClassifier="#//Extendable">
+      <eTypeArguments eClassifier="#//Interface"/>
+    </eGenericSuperTypes>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Feature">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="superType" eType="#//Feature"
-        eOpposite="#//Feature/subTypes"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="interface" eType="#//Interface"
         eOpposite="#//Interface/features"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="providedBy" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/provides"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="requiredBy" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/requires"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="subTypes" upperBound="-1"
-        eType="#//Feature" eOpposite="#//Feature/superType"/>
+    <eGenericSuperTypes eClassifier="#//Named"/>
+    <eGenericSuperTypes eClassifier="#//Extendable">
+      <eTypeArguments eClassifier="#//Feature"/>
+    </eGenericSuperTypes>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Module" eSuperTypes="#//Entity">
+  <eClassifiers xsi:type="ecore:EClass" name="Module">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="static" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="superType" eType="#//Module"
-        eOpposite="#//Module/subTypes"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="subTypes" upperBound="-1"
-        eType="#//Module" eOpposite="#//Module/superType"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="depends" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/dependent"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="dependent" upperBound="-1"
@@ -56,8 +47,45 @@
         eType="#//Feature" eOpposite="#//Feature/providedBy"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="requires" upperBound="-1"
         eType="#//Feature" eOpposite="#//Feature/requiredBy"/>
+    <eGenericSuperTypes eClassifier="#//Entity"/>
+    <eGenericSuperTypes eClassifier="#//Extendable">
+      <eTypeArguments eClassifier="#//Module"/>
+    </eGenericSuperTypes>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Filename">
+  <eClassifiers xsi:type="ecore:EClass" name="Named" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Extendable" abstract="true">
+    <eTypeParameters name="T">
+      <eBounds eClassifier="#//Extendable">
+        <eTypeArguments eTypeParameter="#//Extendable/T"/>
+      </eBounds>
+    </eTypeParameters>
+    <eOperations name="isSubTypeOf" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
+      <eParameters name="another">
+        <eGenericType eTypeParameter="#//Extendable/T"/>
+      </eParameters>
+    </eOperations>
+    <eOperations name="isSuperTypeOf" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
+      <eParameters name="another">
+        <eGenericType eTypeParameter="#//Extendable/T"/>
+      </eParameters>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="subTypes" upperBound="-1"
+        eOpposite="#//Extendable/superType">
+      <eGenericType eTypeParameter="#//Extendable/T"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="superType" eOpposite="#//Extendable/subTypes">
+      <eGenericType eTypeParameter="#//Extendable/T"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="allSubTypes" upperBound="-1"
+        changeable="false" volatile="true" transient="true" derived="true" eOpposite="#//Extendable/allSuperTypes">
+      <eGenericType eTypeParameter="#//Extendable/T"/>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="allSuperTypes" upperBound="-1"
+        changeable="false" volatile="true" transient="true" derived="true" eOpposite="#//Extendable/allSubTypes">
+      <eGenericType eTypeParameter="#//Extendable/T"/>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Filename"/>
 </ecore:EPackage>
