@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="EModel"
+    nsURI="http://www.eclipse.org/emf/2002/Ecore" nsPrefix="">
+  <eClassifiers xsi:type="ecore:EClass" name="ENode">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaClass" eType="#//EMetaClass"
+        changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="eResource" eType="#//EResource"
+        changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eContainer" eType="#//ENode"
+        changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eContents" upperBound="-1"
+        eType="#//ENode" changeable="false" volatile="true" transient="true" derived="true"
+        eOpposite="#//ENode/eContents"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllContents" upperBound="-1"
+        eType="#//ENode" changeable="false" volatile="true" transient="true" derived="true"
+        eOpposite="#//ENode/eAllContents"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ELink" eSuperTypes="#//ENamed">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaReference" eType="#//EMetaReference"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EMetaType" abstract="true" eSuperTypes="#//ENamed">
+    <eOperations name="isInstance" eType="#//EBoolean">
+      <eParameters name="object" eType="#//ENode"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="instanceClass" eType="#//EString"
+        volatile="true" unsettable="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaModel" eType="#//EMetaModel"
+        changeable="false" transient="true" eOpposite="#//EMetaModel/eTypes"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EMetaClass" eSuperTypes="#//EMetaType">
+    <eOperations name="isSuperTypeOf" eType="#//EBoolean">
+      <eParameters name="someClass" eType="#//EMetaClass"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="interface" eType="#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eSuperTypes" upperBound="-1"
+        eType="#//EMetaClass" unsettable="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="suppressedIsSetVisibility" value="true"/>
+        <details key="suppressedUnsetVisibility" value="true"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllAttributes" upperBound="-1"
+        eType="#//EMetaAttribute" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllReferences" upperBound="-1"
+        eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eReferences" upperBound="-1"
+        eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAttributes" upperBound="-1"
+        eType="#//EMetaAttribute" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllContainments" upperBound="-1"
+        eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllFeatures" upperBound="-1"
+        eType="#//EMetaFeature" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllSuperTypes" upperBound="-1"
+        eType="#//EMetaClass" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eFeatures" upperBound="-1"
+        eType="#//EMetaFeature" containment="true" resolveProxies="false" eOpposite="#//EMetaFeature/eContainingClass"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EMetaPrimitive" eSuperTypes="#//EMetaType"/>
+  <eClassifiers xsi:type="ecore:EClass" name="EMetaFeature" abstract="true" eSuperTypes="#//ETyped">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="changeable" eType="#//EBoolean"
+        defaultValueLiteral="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="volatile" eType="#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="transient" eType="#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="derived" eType="#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eContainingClass" eType="#//EMetaClass"
+        changeable="false" transient="true" resolveProxies="false" eOpposite="#//EMetaClass/eFeatures"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EMetaReference" eSuperTypes="#//EMetaFeature">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="containment" eType="#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="container" eType="#//EBoolean"
+        changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eOpposite" eType="#//EMetaReference"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eReferenceType" lowerBound="1"
+        eType="#//EMetaClass" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EMetaAttribute" eSuperTypes="#//EMetaFeature">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAttributeType" lowerBound="1"
+        eType="#//EMetaPrimitive" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EMetaModel" eSuperTypes="#//ENamed">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eFactoryInstance" lowerBound="1"
+        eType="#//EModelFactory" transient="true" resolveProxies="false" eOpposite="#//EModelFactory/eMetaModel"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eTypes" upperBound="-1"
+        eType="#//EMetaType" containment="true" eOpposite="#//EMetaType/eMetaModel"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EModelFactory">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaModel" lowerBound="1"
+        eType="#//EMetaModel" transient="true" resolveProxies="false" eOpposite="#//EMetaModel/eFactoryInstance"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ENamed" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ETyped" abstract="true" eSuperTypes="#//ENamed">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="lowerBound" eType="#//EInt"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="upperBound" eType="#//EInt"
+        defaultValueLiteral="1"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eType" eType="#//EMetaType"
+        volatile="true" unsettable="true">
+      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
+        <details key="suppressedIsSetVisibility" value="true"/>
+        <details key="suppressedUnsetVisibility" value="true"/>
+      </eAnnotations>
+    </eStructuralFeatures>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EDataType" name="EBoolean" instanceClassName="boolean"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="EInt" instanceClassName="int"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="EResource" instanceClassName="org.eclipse.emf.ecore.resource.Resource"
+      serializable="false"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="EResourceSet" instanceClassName="org.eclipse.emf.ecore.resource.ResourceSet"
+      serializable="false"/>
+  <eClassifiers xsi:type="ecore:EDataType" name="EString" instanceClassName="java.lang.String"/>
+</ecore:EPackage>
