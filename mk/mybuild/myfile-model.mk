@@ -39,7 +39,7 @@ define class-MyImport
 	$(super ENode)
 
 	# 'importName' attribute.
-	$(property importName)
+	$(property importName : EString)
 
 endef
 
@@ -124,10 +124,10 @@ define class-MyModule
 	$(super MyExtendable)
 
 	# 'static' attribute.
-	$(property static)
+	$(property isStatic : EBoolean)
 
 	# 'abstract' attribute.
-	$(property abstract)
+	$(property isAbstract : EBoolean)
 
 	# 'depends' bidirectional reference.
 	# The opposite reference is 'dependent'.
@@ -158,7 +158,7 @@ define class-MyNamed
 	$(super ENode)
 
 	# 'name' attribute.
-	$(property name)
+	$(property name : EString)
 
 endef
 
@@ -191,11 +191,11 @@ define class-MyExtendable
 	# The opposite reference is 'allSubTypes'.
 	$(property allSuperTypes... : Extendable)# read-only.
 
-	# 'isSubTypeOf' operation.
+	# 'isSubTypeOf : EBoolean' operation.
 	#   1. another : Extendable
 	$(method isSubTypeOf)
 
-	# 'isSuperTypeOf' operation.
+	# 'isSuperTypeOf : EBoolean' operation.
 	#   1. another : Extendable
 	$(method isSuperTypeOf)
 

@@ -10,7 +10,7 @@ define class-MyFileNodeImpl
 	$(super ENodeImpl)
 
 	# Returns a reference to 'myFile' meta model.
-	$(getter  metaModel,
+	$(getter eMetaModel,
 		$(myFileMetaModel))
 
 endef
@@ -22,11 +22,14 @@ define class-MyPackageImpl
 	$(super MyFileNodeImpl)
 	$(super MyNamedImpl)
 
-	$(getter  metaClass,$(get myFileMetaModel->Package))
+	$(getter eMetaClass,$(get myFileMetaModel->Package))
 
 	# Reference 'imports' [0..*]: containment.
-	$(property-field imports... : Import)
-	$(setter  imports,
+	$(property imports... : Import)
+	$(field imports... : Import)
+	$(getter imports,
+		$(get-field imports))
+	$(setter imports,
 		$(invoke doSetReference,$(get myFileMetaModel->Package_imports),$1))
 	$(setter+ imports,
 		$(invoke doAddReference,$(get myFileMetaModel->Package_imports),$1))
@@ -34,14 +37,20 @@ define class-MyPackageImpl
 		$(invoke doRemoveReference,$(get myFileMetaModel->Package_imports),$1))
 
 	# Reference 'entities' [0..*]: bidirectional, containment.
-	$(property-field entities... : Entity)
-	$(setter  entities,
+	$(property entities... : Entity)
+	$(field entities... : Entity)
+	$(getter entities,
+		$(get-field entities))
+	$(setter entities,
 		$(invoke doSetReference,$(get myFileMetaModel->Package_entities),$1))
 	$(setter+ entities,
 		$(invoke doAddReference,$(get myFileMetaModel->Package_entities),$1))
 	$(setter- entities,
 		$(invoke doRemoveReference,$(get myFileMetaModel->Package_entities),$1))
 
+	# PROTECTED REGION ID(Package) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 # Implementation of 'Import' model object .
@@ -50,11 +59,14 @@ define class-MyImportImpl
 
 	$(super MyFileNodeImpl)
 
-	$(getter  metaClass,$(get myFileMetaModel->Import))
+	$(getter eMetaClass,$(get myFileMetaModel->Import))
 
 	# Attribute 'importName'.
-	$(property-field importName)
+	$(property-field importName : EString)
 
+	# PROTECTED REGION ID(Import) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 # Implementation of 'Entity' model object .
@@ -64,15 +76,18 @@ define class-MyEntityImpl
 	$(super MyFileNodeImpl)
 	$(super MyNamedImpl)
 
-	$(getter  metaClass,$(get myFileMetaModel->Entity))
+	$(getter eMetaClass,$(get myFileMetaModel->Entity))
 
 	# Reference 'package' [0..1]: bidirectional, container.
 	$(property package : Package)
-	$(getter  package,
+	$(getter package,
 		$(invoke doGetContainerReference,$(get myFileMetaModel->Entity_package)))
-	$(setter  package,
+	$(setter package,
 		$(invoke doSetContainerReference,$(get myFileMetaModel->Entity_package),$1))
 
+	# PROTECTED REGION ID(Entity) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 # Implementation of 'Interface' model object .
@@ -83,17 +98,23 @@ define class-MyInterfaceImpl
 	$(super MyEntityImpl)
 	$(super MyExtendableImpl)
 
-	$(getter  metaClass,$(get myFileMetaModel->Interface))
+	$(getter eMetaClass,$(get myFileMetaModel->Interface))
 
 	# Reference 'features' [0..*]: bidirectional, containment.
-	$(property-field features... : Feature)
-	$(setter  features,
+	$(property features... : Feature)
+	$(field features... : Feature)
+	$(getter features,
+		$(get-field features))
+	$(setter features,
 		$(invoke doSetReference,$(get myFileMetaModel->Interface_features),$1))
 	$(setter+ features,
 		$(invoke doAddReference,$(get myFileMetaModel->Interface_features),$1))
 	$(setter- features,
 		$(invoke doRemoveReference,$(get myFileMetaModel->Interface_features),$1))
 
+	# PROTECTED REGION ID(Interface) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 # Implementation of 'Feature' model object .
@@ -104,18 +125,21 @@ define class-MyFeatureImpl
 	$(super MyNamedImpl)
 	$(super MyExtendableImpl)
 
-	$(getter  metaClass,$(get myFileMetaModel->Feature))
+	$(getter eMetaClass,$(get myFileMetaModel->Feature))
 
 	# Reference 'interface' [0..1]: bidirectional, container.
 	$(property interface : Interface)
-	$(getter  interface,
+	$(getter interface,
 		$(invoke doGetContainerReference,$(get myFileMetaModel->Feature_interface)))
-	$(setter  interface,
+	$(setter interface,
 		$(invoke doSetContainerReference,$(get myFileMetaModel->Feature_interface),$1))
 
 	# Reference 'providedBy' [0..*]: bidirectional.
-	$(property-field providedBy... : Module)
-	$(setter  providedBy,
+	$(property providedBy... : Module)
+	$(field providedBy... : Module)
+	$(getter providedBy,
+		$(get-field providedBy))
+	$(setter providedBy,
 		$(invoke doSetReference,$(get myFileMetaModel->Feature_providedBy),$1))
 	$(setter+ providedBy,
 		$(invoke doAddReference,$(get myFileMetaModel->Feature_providedBy),$1))
@@ -123,21 +147,20 @@ define class-MyFeatureImpl
 		$(invoke doRemoveReference,$(get myFileMetaModel->Feature_providedBy),$1))
 
 	# Reference 'requiredBy' [0..*]: bidirectional.
-	$(property-field requiredBy... : Module)
-	$(setter  requiredBy,
+	$(property requiredBy... : Module)
+	$(field requiredBy... : Module)
+	$(getter requiredBy,
+		$(get-field requiredBy))
+	$(setter requiredBy,
 		$(invoke doSetReference,$(get myFileMetaModel->Feature_requiredBy),$1))
 	$(setter+ requiredBy,
 		$(invoke doAddReference,$(get myFileMetaModel->Feature_requiredBy),$1))
 	$(setter- requiredBy,
 		$(invoke doRemoveReference,$(get myFileMetaModel->Feature_requiredBy),$1))
 
-endef
-
-define class-ReferenceToMyFeatureImpl
-	$(super ReferenceImpl,$(value 1))
-
-	$(getter  referenceMetaClass,$(get myFileMetaModel->Feature))
-
+	# PROTECTED REGION ID(Feature) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 # Implementation of 'Module' model object .
@@ -148,17 +171,20 @@ define class-MyModuleImpl
 	$(super MyEntityImpl)
 	$(super MyExtendableImpl)
 
-	$(getter  metaClass,$(get myFileMetaModel->Module))
+	$(getter eMetaClass,$(get myFileMetaModel->Module))
 
 	# Attribute 'static'.
-	$(property-field static)
+	$(property-field isStatic : EBoolean)
 
 	# Attribute 'abstract'.
-	$(property-field abstract)
+	$(property-field isAbstract : EBoolean)
 
 	# Reference 'depends' [0..*]: bidirectional.
-	$(property-field depends... : Module)
-	$(setter  depends,
+	$(property depends... : Module)
+	$(field depends... : Module)
+	$(getter depends,
+		$(get-field depends))
+	$(setter depends,
 		$(invoke doSetReference,$(get myFileMetaModel->Module_depends),$1))
 	$(setter+ depends,
 		$(invoke doAddReference,$(get myFileMetaModel->Module_depends),$1))
@@ -166,8 +192,11 @@ define class-MyModuleImpl
 		$(invoke doRemoveReference,$(get myFileMetaModel->Module_depends),$1))
 
 	# Reference 'dependent' [0..*]: bidirectional.
-	$(property-field dependent... : Module)
-	$(setter  dependent,
+	$(property dependent... : Module)
+	$(field dependent... : Module)
+	$(getter dependent,
+		$(get-field dependent))
+	$(setter dependent,
 		$(invoke doSetReference,$(get myFileMetaModel->Module_dependent),$1))
 	$(setter+ dependent,
 		$(invoke doAddReference,$(get myFileMetaModel->Module_dependent),$1))
@@ -175,8 +204,11 @@ define class-MyModuleImpl
 		$(invoke doRemoveReference,$(get myFileMetaModel->Module_dependent),$1))
 
 	# Reference 'provides' [0..*]: bidirectional.
-	$(property-field provides... : Feature)
-	$(setter  provides,
+	$(property provides... : Feature)
+	$(field provides... : Feature)
+	$(getter provides,
+		$(get-field provides))
+	$(setter provides,
 		$(invoke doSetReference,$(get myFileMetaModel->Module_provides),$1))
 	$(setter+ provides,
 		$(invoke doAddReference,$(get myFileMetaModel->Module_provides),$1))
@@ -184,21 +216,20 @@ define class-MyModuleImpl
 		$(invoke doRemoveReference,$(get myFileMetaModel->Module_provides),$1))
 
 	# Reference 'requires' [0..*]: bidirectional.
-	$(property-field requires... : Feature)
-	$(setter  requires,
+	$(property requires... : Feature)
+	$(field requires... : Feature)
+	$(getter requires,
+		$(get-field requires))
+	$(setter requires,
 		$(invoke doSetReference,$(get myFileMetaModel->Module_requires),$1))
 	$(setter+ requires,
 		$(invoke doAddReference,$(get myFileMetaModel->Module_requires),$1))
 	$(setter- requires,
 		$(invoke doRemoveReference,$(get myFileMetaModel->Module_requires),$1))
 
-endef
-
-define class-ReferenceToMyModuleImpl
-	$(super ReferenceImpl,$(value 1))
-
-	$(getter  referenceMetaClass,$(get myFileMetaModel->Module))
-
+	# PROTECTED REGION ID(Module) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 # Implementation of 'Named' model object .
@@ -207,11 +238,14 @@ define class-MyNamedImpl
 
 	$(super MyFileNodeImpl)
 
-	$(getter  metaClass,$(get myFileMetaModel->Named))
+	$(getter eMetaClass,$(get myFileMetaModel->Named))
 
 	# Attribute 'name'.
-	$(property-field name)
+	$(property-field name : EString)
 
+	# PROTECTED REGION ID(Named) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 # Implementation of 'Extendable' model object .
@@ -220,11 +254,14 @@ define class-MyExtendableImpl
 
 	$(super MyFileNodeImpl)
 
-	$(getter  metaClass,$(get myFileMetaModel->Extendable))
+	$(getter eMetaClass,$(get myFileMetaModel->Extendable))
 
 	# Reference 'subTypes' [0..*]: bidirectional.
-	$(property-field subTypes... : Extendable)
-	$(setter  subTypes,
+	$(property subTypes... : Extendable)
+	$(field subTypes... : Extendable)
+	$(getter subTypes,
+		$(get-field subTypes))
+	$(setter subTypes,
 		$(invoke doSetReference,$(get myFileMetaModel->Extendable_subTypes),$1))
 	$(setter+ subTypes,
 		$(invoke doAddReference,$(get myFileMetaModel->Extendable_subTypes),$1))
@@ -232,31 +269,48 @@ define class-MyExtendableImpl
 		$(invoke doRemoveReference,$(get myFileMetaModel->Extendable_subTypes),$1))
 
 	# Reference 'superType' [0..1]: bidirectional.
-	$(property-field superType : Extendable)
-	$(setter  superType,
+	$(property superType : Extendable)
+	$(field superType : Extendable)
+	$(getter superType,
+		$(get-field superType))
+	$(setter superType,
 		$(invoke doSetReference,$(get myFileMetaModel->Extendable_superType),$1))
 
 	# Reference 'allSubTypes' [0..*]: bidirectional, volatile, read-only.
+	$(property allSubTypes... : Extendable)
 	# PROTECTED REGION ID(Extendable_allSubTypes) ENABLED START
-	# TODO Uncomment and implement me.
-#	$(getter  allSubTypes,
+#	# TODO Uncomment and implement me.
+#	$(getter allSubTypes,
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'allSuperTypes' [0..*]: bidirectional, volatile, read-only.
+	$(property allSuperTypes... : Extendable)
 	# PROTECTED REGION ID(Extendable_allSuperTypes) ENABLED START
-	# TODO Uncomment and implement me.
-#	$(getter  allSuperTypes,
+#	# TODO Uncomment and implement me.
+#	$(getter allSuperTypes,
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-endef
+	# 'isSubTypeOf : EBoolean' operation.
+	#   1. another : Extendable
+	# PROTECTED REGION ID(Extendable_isSubTypeOf) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(method isSubTypeOf,
+#		$(error $0($1): NIY))
+	# PROTECTED REGION END
 
-define class-ReferenceToMyExtendableImpl
-	$(super ReferenceImpl,$(value 1))
+	# 'isSuperTypeOf : EBoolean' operation.
+	#   1. another : Extendable
+	# PROTECTED REGION ID(Extendable_isSuperTypeOf) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(method isSuperTypeOf,
+#		$(error $0($1): NIY))
+	# PROTECTED REGION END
 
-	$(getter  referenceMetaClass,$(get myFileMetaModel->Extendable))
-
+	# PROTECTED REGION ID(Extendable) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 # Implementation of 'Filename' model object .
@@ -265,8 +319,11 @@ define class-MyFilenameImpl
 
 	$(super MyFileNodeImpl)
 
-	$(getter  metaClass,$(get myFileMetaModel->Filename))
+	$(getter eMetaClass,$(get myFileMetaModel->Filename))
 
+	# PROTECTED REGION ID(Filename) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 $(def_all)

@@ -9,7 +9,7 @@ __mybuild_myfile_factory_impl_mk := $(lastword $(MAKEFILE_LIST))
 define class-MyFileFactoryImpl
 	$(super MyFileFactory)
 
-	$(super EModelFactoryImpl)
+	$(super EFactoryImpl)
 
 	$(method createPackage,
 		$(new MyPackageImpl))
@@ -22,13 +22,9 @@ define class-MyFileFactoryImpl
 
 	$(method createFeature,
 		$(new MyFeatureImpl))
-	$(method createReferenceToFeature,
-		$(new ReferenceToMyFeatureImpl,$(value 1)))
 
 	$(method createModule,
 		$(new MyModuleImpl))
-	$(method createReferenceToModule,
-		$(new ReferenceToMyModuleImpl,$(value 1)))
 
 	$(method createFilename,
 		$(new MyFilenameImpl))

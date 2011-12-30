@@ -166,8 +166,8 @@ define class-MyFileMetaModelImpl
 	$(invoke bindMetaFeature,$(get Feature_requiredBy),requiredBy)
 
 	$(invoke bindMetaClass,$(get Module),MyModule)
-	$(invoke bindMetaFeature,$(get Module_static),static)
-	$(invoke bindMetaFeature,$(get Module_abstract),abstract)
+	$(invoke bindMetaFeature,$(get Module_static),isStatic)
+	$(invoke bindMetaFeature,$(get Module_abstract),isAbstract)
 	$(invoke bindMetaFeature,$(get Module_depends),depends)
 	$(invoke bindMetaFeature,$(get Module_dependent),dependent)
 	$(invoke bindMetaFeature,$(get Module_provides),provides)

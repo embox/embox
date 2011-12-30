@@ -10,7 +10,7 @@ include $(dir $(__mybuild_myfile_factory_mk))myfile-factory_impl.mk
 # Provides methods for creating objects of 'myFile' model.
 # See 'myFileFactory'.
 define class-MyFileFactory
-	$(super EModelFactory)
+	$(super EFactory)
 
 	# Creates a new 'Package' model object.
 	$(method createPackage)
@@ -23,15 +23,9 @@ define class-MyFileFactory
 
 	# Creates a new 'Feature' model object.
 	$(method createFeature)
-	# Creates a new reference to 'Feature'.
-	#   1. Optional reference string to set initially.
-	$(method createReferenceToFeature)
 
 	# Creates a new 'Module' model object.
 	$(method createModule)
-	# Creates a new reference to 'Module'.
-	#   1. Optional reference string to set initially.
-	$(method createReferenceToModule)
 
 	# Creates a new 'Filename' model object.
 	$(method createFilename)
