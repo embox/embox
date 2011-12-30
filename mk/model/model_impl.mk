@@ -26,25 +26,24 @@ define class-ENodeImpl
 	# Reference 'eMetaClass' [0..1]: volatile, read-only.
 	$(property eMetaClass : EMetaClass)
 	# PROTECTED REGION ID(ENode_eMetaClass) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eMetaClass,
-#		$(error $0: NIY))
+	#
+	# Subclasses must override 'eMetaClass' getter, see above.
+	#
 	# PROTECTED REGION END
 
 	# Attribute 'eResource': volatile, read-only.
 	$(property eResource : EResource)
 	# PROTECTED REGION ID(ENode_eResource) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eResource,
-#		$(error $0: NIY))
+	$(getter  eResource,
+		$(error $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eContainer' [0..1]: volatile, read-only.
 	$(property eContainer : ENode)
 	# PROTECTED REGION ID(ENode_eContainer) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eContainer,
-#		$(error $0: NIY))
+	$(field eContainer)
+	$(getter  eContainer,
+		$(get-field eContainer))
 	# PROTECTED REGION END
 
 	# Reference 'eRootContainer' [0..1]: volatile, read-only.
@@ -58,21 +57,65 @@ define class-ENodeImpl
 	# Reference 'eContents' [0..*]: bidirectional, volatile, read-only.
 	$(property eContents... : ENode)
 	# PROTECTED REGION ID(ENode_eContents) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eContents,
-#		$(error $0: NIY))
+	$(getter  eContents,
+		$(foreach metaReference,$(get $(get eMetaClass).eAllContainments),
+			$(get $(get metaReference->instanceProperty))))
 	# PROTECTED REGION END
 
 	# Reference 'eAllContents' [0..*]: bidirectional, volatile, read-only.
 	$(property eAllContents... : ENode)
 	# PROTECTED REGION ID(ENode_eAllContents) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eAllContents,
-#		$(error $0: NIY))
+	$(getter  eAllContents,
+		$(foreach child,$(get eContents),$(child) \
+			$(get child->eAllContents)))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ENode) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+
+	# Params:
+	#   1. Meta reference.
+	#   2. What to add.
+	$(method doAddReference,
+		$(assert $(invoke $(get 1->eContainingClass).isSuperTypeOf,
+				$(get eMetaClass)),
+			Bad cast '$(get $(get eMetaClass).name)' \
+			to '$(get $(get 1->eContainingClass).name)')
+
+		$(assert $(not $(get 1->isContainer)),
+			Container reference '$(get $(get 1->eContainingClass).name)
+				.$(get 1->name)' must be set using 'doSetContainerReference')
+
+		$(foreach eLinkClass,$(get eModelMetaModel->ELink),$(foreach e,$2,
+			$(invoke \
+				$(if $(invoke eLinkClass->isSuperTypeOf,$(get e->eMetaClass)),
+					doAddLinkReference,
+					doAddNodeReference),
+				$1,$e)
+		))
+
+		$(with $1,
+			$(invoke __prefix_links,$1,
+				$(filter-out $(get $(get 1->a_field)) $(suffix $(get links)),
+					$(suffix $2))),
+			$(get meta_model_instance->node_links),
+
+			$(set+ $(get 1->a_field),$(foreach e,$(filter-out $1%,$2),$e
+				$(invoke e->inverse_add_references,$1,$(this))
+			))
+
+			$(set+ links,$(foreach l,$(filter $1%,$2),$l
+				$(invoke l->inverse_add_references,$3,$(this))
+			))
+
+		)
+	)
+
+	# Params:
+	#   1. Meta reference.
+	#   2. What to add.
+	$(method doAddNodeReference,
+	)
+
 	# PROTECTED REGION END
 endef
 
@@ -94,7 +137,6 @@ define class-ELinkImpl
 		$(invoke doSetReference,$(get eModelMetaModel->ELink_eMetaReference),$1))
 
 	# PROTECTED REGION ID(ELink) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
@@ -124,7 +166,6 @@ define class-EMetaTypeImpl
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(EMetaType) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
@@ -158,9 +199,11 @@ define class-EMetaClassImpl
 	# Reference 'eAllSuperTypes' [0..*]: volatile, read-only.
 	$(property eAllSuperTypes... : EMetaClass)
 	# PROTECTED REGION ID(EMetaClass_eAllSuperTypes) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eAllSuperTypes,
-#		$(error $0: NIY))
+	$(getter  eAllSuperTypes,
+		# TODO inefficient.
+		$(sort \
+			$(foreach superType,$(get eSuperTypes),$(superType) \
+				$(get superType->eAllSuperTypes))))
 	# PROTECTED REGION END
 
 	# Reference 'eFeatures' [0..*]: bidirectional, containment.
@@ -178,49 +221,52 @@ define class-EMetaClassImpl
 	# Reference 'eAllFeatures' [0..*]: volatile, read-only.
 	$(property eAllFeatures... : EMetaFeature)
 	# PROTECTED REGION ID(EMetaClass_eAllFeatures) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eAllFeatures,
-#		$(error $0: NIY))
+	$(getter  eAllFeatures,
+		$(sort $(get eFeatures) \
+			$(foreach superType,$(get eSuperTypes),
+				$(get superType->eAllFeatures))))
 	# PROTECTED REGION END
 
 	# Reference 'eAttributes' [0..*]: volatile, read-only.
 	$(property eAttributes... : EMetaAttribute)
 	# PROTECTED REGION ID(EMetaClass_eAttributes) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eAttributes,
-#		$(error $0: NIY))
+	$(getter  eAttributes,
+		$(invoke filterFeaturesByClass,$(get eFeatures),
+			$(get eModelMetaModel->EMetaAttribute)))
 	# PROTECTED REGION END
 
 	# Reference 'eAllAttributes' [0..*]: volatile, read-only.
 	$(property eAllAttributes... : EMetaAttribute)
 	# PROTECTED REGION ID(EMetaClass_eAllAttributes) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eAllAttributes,
-#		$(error $0: NIY))
+	$(getter  eAllAttributes,
+		$(invoke filterFeaturesByClass,$(get eAllFeatures),
+			$(get eModelMetaModel->EMetaAttribute)))
 	# PROTECTED REGION END
 
 	# Reference 'eReferences' [0..*]: volatile, read-only.
 	$(property eReferences... : EMetaReference)
 	# PROTECTED REGION ID(EMetaClass_eReferences) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eReferences,
-#		$(error $0: NIY))
+	# TODO Uncomment and implement me.
+	$(getter  eReferences,
+		$(invoke filterFeaturesByClass,$(get eFeatures),
+			$(get eModelMetaModel->EMetaReference)))
 	# PROTECTED REGION END
 
 	# Reference 'eAllReferences' [0..*]: volatile, read-only.
 	$(property eAllReferences... : EMetaReference)
 	# PROTECTED REGION ID(EMetaClass_eAllReferences) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eAllReferences,
-#		$(error $0: NIY))
+	$(getter  eAllReferences,
+		$(invoke filterFeaturesByClass,$(get eAllFeatures),
+			$(get eModelMetaModel->EMetaReference)))
 	# PROTECTED REGION END
 
 	# Reference 'eAllContainments' [0..*]: volatile, read-only.
 	$(property eAllContainments... : EMetaReference)
 	# PROTECTED REGION ID(EMetaClass_eAllContainments) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eAllContainments,
-#		$(error $0: NIY))
+	# TODO Uncomment and implement me.
+	$(getter  eAllContainments,
+		$(foreach reference,$(get eAllReferences),
+			$(if $(get reference->isContainment),$(reference))))
 	# PROTECTED REGION END
 
 	# 'isSuperTypeOf : EBoolean' operation.
@@ -232,7 +278,16 @@ define class-EMetaClassImpl
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(EMetaClass) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+
+	# Params:
+	#   1. List of features.
+	#   2. Meta class.
+	$(method filterFeaturesByClass,
+		$(foreach feature,$1,
+			$(if $(invoke 2->isSuperTypeOf,$(get feature->eContainingClass)),
+				$(feature)))
+	)
+
 	# PROTECTED REGION END
 endef
 
@@ -246,7 +301,6 @@ define class-EMetaPrimitiveImpl
 	$(getter eMetaClass,$(get eModelMetaModel->EMetaPrimitive))
 
 	# PROTECTED REGION ID(EMetaPrimitive) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
@@ -280,7 +334,6 @@ define class-EMetaFeatureImpl
 		$(invoke doGetContainerReference,$(get eModelMetaModel->EMetaFeature_eContainingClass)))
 
 	# PROTECTED REGION ID(EMetaFeature) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
@@ -299,9 +352,8 @@ define class-EMetaReferenceImpl
 	# Attribute 'container': volatile, read-only.
 	$(property isContainer : EBoolean)
 	# PROTECTED REGION ID(EMetaReference_container) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter isContainer,
-#		$(error $0: NIY))
+	$(getter  isContainer,
+		$(foreach opposite,$(get eOpposite),$(get opposite->isContainment)))
 	# PROTECTED REGION END
 
 	# Reference 'eOpposite' [0..1].
@@ -315,13 +367,11 @@ define class-EMetaReferenceImpl
 	# Reference 'eReferenceType' [1..1]: volatile, read-only.
 	$(property eReferenceType : EMetaClass)
 	# PROTECTED REGION ID(EMetaReference_eReferenceType) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eReferenceType,
-#		$(error $0: NIY))
+	$(getter  eReferenceType,
+		$(instance-of $(get eType),EMetaClass))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(EMetaReference) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
@@ -337,13 +387,11 @@ define class-EMetaAttributeImpl
 	# Reference 'eAttributeType' [1..1]: volatile, read-only.
 	$(property eAttributeType : EMetaPrimitive)
 	# PROTECTED REGION ID(EMetaAttribute_eAttributeType) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eAttributeType,
-#		$(error $0: NIY))
+	$(getter  eReferenceType,
+		$(instance-of $(get eType),EMetaPrimitive))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(EMetaAttribute) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
@@ -377,7 +425,119 @@ define class-EMetaModelImpl
 		$(invoke doRemoveReference,$(get eModelMetaModel->EMetaModel_eTypes),$1))
 
 	# PROTECTED REGION ID(EMetaModel) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+
+	#
+	# Meta object instantiation.
+	#
+
+	# Params:
+	#   1. Meta class ID (unused).
+	$(method createMetaClass,
+		$(invoke eModelFactory->createEMetaClass))
+
+	# Params:
+	#   1. Meta class.
+	#   2. Meta feature ID (unused).
+	$(method createMetaAttribute,
+		$(invoke addMetaFeatureToClass,$1,
+			$(invoke eModelFactory->createEMetaAttribute)))
+
+	# Params:
+	#   1. Meta class.
+	#   2. Meta feature ID (unused).
+	$(method createMetaReference,
+		$(invoke addMetaFeatureToClass,$1,
+			$(invoke eModelFactory->createEMetaReference)))
+
+	# Params:
+	#   1. Meta class.
+	#   2. New meta feature.
+	# Return:
+	#   The second argument.
+	$(method addMetaFeatureToClass,
+		$(set+ 1->eFeatures,$2)
+		$2)
+
+	#
+	# Objects initialization.
+	#
+
+	# Params:
+	#   1. Meta class.
+	#   2. Name.
+	#   3. Super types...
+	#   4. Flags...
+	$(method initMetaClass,
+		$(set 1->name,$2)
+		$(set 1->eSuperTypes,$3)
+		$(set 1->isAbstract,$(filter abstract,$4))
+		$(set 1->isInterface,$(filter interface,$4))
+	)
+
+	# Params:
+	#   1. Meta attribute.
+	#   2. Name.
+	#   3. Lower bound.
+	#   4. Upper bound.
+	#   5. Flags...
+	$(method initMetaAttribute,
+		$(invoke commonInitMetaFeature,$1,$2,$3,$4,$5))
+
+	# Params:
+	#   1. Meta reference.
+	#   2. Name.
+	#   3. Lower bound.
+	#   4. Upper bound.
+	#   5. Referenced class.
+	#   6. Opposite reference (if any).
+	#   7. Flags...
+	$(method initMetaReference,
+		$(invoke commonInitMetaFeature,$1,$2,$3,$4,$7)
+		$(set 1->eType,$5)
+		$(set 1->eOpposite,$6)
+		$(set 1->isContainment,$(filter containment,$7))
+		$(set 1->isContainer,$(filter container,$7))
+	)
+
+	# Params:
+	#   1. Meta feature.
+	#   2. Name.
+	#   3. Lower bound.
+	#   4. Upper bound.
+	#   5. Flags...
+	$(method commonInitMetaFeature,
+		$(set 1->name,$2)
+		$(set 1->lowerBound,$3)
+		$(set 1->upperBound,$4)
+		$(set 1->isChangeable,$(filter changeable,$4))
+		$(set 1->isDerived,$(filter derived,$4))
+		$(set 1->isVolatile,$(filter volatile,$4))
+		$(set 1->isTransient,$(filter transient,$4))
+	)
+
+	#
+	# Binding to native class/properties.
+	#
+
+	# Params:
+	#   1. Meta class.
+	#   2. Instance class name.
+	$(method bindMetaClass,
+		$(assert $(class-exists $2),
+			Can't bind meta type '$(get 1->name)' to undefined class '$2')
+		$(set 1->instanceClass,$2)
+	)
+
+	# Params:
+	#   1. Meta feature.
+	#   2. Instance property name.
+	$(method bindMetaFeature,
+		$(assert $(class-has-property $(get 1->instanceClass),$2),
+			Can't bind meta feature '$(get 1->name)' to undefined property '$2'
+			of class '$(get 1->instanceClass)')
+		$(set 1->instanceProperty,$2)
+	)
+
 	# PROTECTED REGION END
 endef
 
@@ -398,7 +558,6 @@ define class-EModelFactoryImpl
 		$(invoke doSetReference,$(get eModelMetaModel->EModelFactory_eMetaModel),$1))
 
 	# PROTECTED REGION ID(EModelFactory) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
@@ -414,7 +573,6 @@ define class-ENamedImpl
 	$(property-field name : EString)
 
 	# PROTECTED REGION ID(ENamed) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
@@ -442,7 +600,6 @@ define class-ETypedImpl
 		$(invoke doSetReference,$(get eModelMetaModel->ETyped_eType),$1))
 
 	# PROTECTED REGION ID(ETyped) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
