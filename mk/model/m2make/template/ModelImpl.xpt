@@ -14,7 +14,7 @@ define class-«nodeImplName()»
 	«mkSuper("ENodeImpl")»
 
 	# Returns a reference to '«name»' meta model.
-	«mkGetterWrap("metaModel",
+	«mkGetterWrap("eMetaModel",
 		"$(" + metaModelInstanceName() + ")")»
 
 endef
@@ -37,18 +37,12 @@ define class-«classImplName()»
 	«mkSuper(superType.classImplName())»
 «ENDFOREACH -»
 
-	«mkGetter("metaClass", metaClass)»
+	«mkGetter("eMetaClass", metaClass)»
 «EXPAND feature FOREACH eStructuralFeatures»
+«PROTECT CSTART '\t# ' CEND '' ID id()»
+#	# TODO Add custom implementation here and remove this comment.
+«ENDPROTECT»
 endef
-«IF isCrossReferenced() -»
-
-define class-«referenceClassImplName()»
-	«mkSuper("ReferenceImpl,$(value 1)")»
-
-	«mkGetter("referenceMetaClass", metaClass)»
-
-endef
-«ENDIF -»
 «ENDLET -»
 «ENDDEFINE»
 
@@ -61,22 +55,23 @@ endef
 «ENDIF -»
 «ENDDEFINE»
 
-«DEFINE volatileFeatureStub(String mk) FOR EStructuralFeature -»
-	# TODO Uncomment and implement me.
-#	«mk.comment()»
-«ENDDEFINE»
-
 «DEFINE volatileFeature FOR EStructuralFeature»
+	«mkProperty(propertyName() + memberCardinality() + memberType())»
 «PROTECT CSTART '\t# ' CEND '' ID id()»
-«EXPAND volatileFeatureStub(mkGetterWrap(name, "$(error $0: NIY)")) -»
+«EXPAND volatileFeatureStub(mkGetterWrap(propertyName(), "$(error $0: NIY)")) -»
 «IF changeable -»
-«EXPAND volatileFeatureStub(mkSetterWrap(name, "$(error $0($1): NIY)")) -»
+«EXPAND volatileFeatureStub(mkSetterWrap(propertyName(), "$(error $0($1): NIY)")) -»
 «IF upperBound != 1 -»
-«EXPAND volatileFeatureStub(mkSetterPlusWrap(name, "$(error $0($1): NIY)")) -»
-«EXPAND volatileFeatureStub(mkSetterMinusWrap(name, "$(error $0($1): NIY)")) -»
+«EXPAND volatileFeatureStub(mkSetterPlusWrap(propertyName(), "$(error $0($1): NIY)")) -»
+«EXPAND volatileFeatureStub(mkSetterMinusWrap(propertyName(), "$(error $0($1): NIY)")) -»
 «ENDIF -»
 «ENDIF -»
 «ENDPROTECT»
+«ENDDEFINE»
+
+«DEFINE volatileFeatureStub(String mk) FOR EStructuralFeature -»
+#	# TODO Uncomment and implement me.
+#	«mk.comment()»
 «ENDDEFINE»
 
 «DEFINE nonVolatileFeature FOR EStructuralFeature»
@@ -84,12 +79,19 @@ endef
 «ENDDEFINE»
 
 «DEFINE nonVolatileFeature FOR EAttribute»
-	«mkPropertyField(name)»
+«IF changeable -»
+	«mkPropertyField(propertyName() + memberCardinality() + memberType())»
+«ELSE -»
+	«mkProperty(propertyName() + memberCardinality() + memberType())»
+	«mkField(propertyName() + memberCardinality() + memberType())»
+	«mkGetter(propertyName(), mkGetField(propertyName()))»
+«ENDIF -»
 «ENDDEFINE»
 
 «DEFINE nonVolatileFeature FOR EReference»
 «LET mkGet(eReferenceType.ePackage.metaModelInstanceName() + "->" + id())
 	AS metaReference -»
+	«mkProperty(propertyName() + memberCardinality() + memberType())»
 «IF container -»
 «EXPAND containerReference(metaReference) -»
 «ELSE -»
@@ -99,20 +101,20 @@ endef
 «ENDDEFINE»
 
 «DEFINE containerReference(String metaReference) FOR EReference -»
-	«mkProperty(name + memberCardinality() + memberType())»
-	«mkGetterWrap(name, mkInvoke("doGetContainerReference", metaReference))»
+	«mkGetterWrap(propertyName(), mkInvoke("doGetContainerReference", metaReference))»
 «IF changeable -»
-	«mkSetterWrap(name, mkInvoke("doSetContainerReference", metaReference + ",$1"))»
+	«mkSetterWrap(propertyName(), mkInvoke("doSetContainerReference", metaReference + ",$1"))»
 «ENDIF -»
 «ENDDEFINE»
 
 «DEFINE nonContainerReference(String metaReference) FOR EReference -»
-	«mkPropertyField(name + memberCardinality() + memberType())»
+	«mkField(propertyName() + memberCardinality() + memberType())»
+	«mkGetterWrap(propertyName(), mkGetField(propertyName()))»
 «IF changeable -»
-	«mkSetterWrap(name, mkInvoke("doSetReference", metaReference + ",$1"))»
+	«mkSetterWrap(propertyName(), mkInvoke("doSetReference", metaReference + ",$1"))»
 «IF upperBound != 1 -»
-	«mkSetterPlusWrap(name, mkInvoke("doAddReference", metaReference + ",$1"))»
-	«mkSetterMinusWrap(name, mkInvoke("doRemoveReference", metaReference + ",$1"))»
+	«mkSetterPlusWrap(propertyName(), mkInvoke("doAddReference", metaReference + ",$1"))»
+	«mkSetterMinusWrap(propertyName(), mkInvoke("doRemoveReference", metaReference + ",$1"))»
 «ENDIF -»
 «ENDIF -»
 «ENDDEFINE»

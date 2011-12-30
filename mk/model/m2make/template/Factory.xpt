@@ -14,7 +14,7 @@
 # Provides methods for creating objects of '«name»' model.
 # See '«factoryInstanceName()»'.
 define class-«factoryName()»
-	«mkSuper("EModelFactory")»
+	«mkSuper("EFactory")»
 «EXPAND class FOREACH eClassifiers.typeSelect(EClass)
 	.select(c | !c.abstract && !c.interface) -»
 endef
@@ -31,10 +31,5 @@ $(def_all)
 «DEFINE class FOR EClass»
 	# Creates a new '«name»' model object.
 	«mkMethod(factoryMethodName())»
-«IF isCrossReferenced() -»
-	# Creates a new reference to '«name»'.
-	#   1. Optional reference string to set initially.
-	«mkMethod(factoryMethodNameForReference())»
-«ENDIF -»
 «ENDDEFINE»
 

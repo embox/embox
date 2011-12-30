@@ -24,8 +24,7 @@
     <eOperations name="isInstance" eType="#//EBoolean">
       <eParameters name="object" eType="#//ENode"/>
     </eOperations>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="instanceClass" eType="#//EString"
-        volatile="true" unsettable="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="instanceClass" eType="#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaModel" eType="#//EMetaModel"
         changeable="false" transient="true" eOpposite="#//EMetaModel/eTypes"/>
   </eClassifiers>
@@ -36,35 +35,30 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="interface" eType="#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eSuperTypes" upperBound="-1"
-        eType="#//EMetaClass" unsettable="true">
-      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-        <details key="suppressedIsSetVisibility" value="true"/>
-        <details key="suppressedUnsetVisibility" value="true"/>
-      </eAnnotations>
-    </eStructuralFeatures>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllAttributes" upperBound="-1"
-        eType="#//EMetaAttribute" changeable="false" volatile="true" transient="true"
-        derived="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllReferences" upperBound="-1"
-        eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
-        derived="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eReferences" upperBound="-1"
-        eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
-        derived="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eAttributes" upperBound="-1"
-        eType="#//EMetaAttribute" changeable="false" volatile="true" transient="true"
-        derived="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllContainments" upperBound="-1"
-        eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
-        derived="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllFeatures" upperBound="-1"
-        eType="#//EMetaFeature" changeable="false" volatile="true" transient="true"
-        derived="true"/>
+        eType="#//EMetaClass" unsettable="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eAllSuperTypes" upperBound="-1"
         eType="#//EMetaClass" changeable="false" volatile="true" transient="true"
         derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eFeatures" upperBound="-1"
         eType="#//EMetaFeature" containment="true" resolveProxies="false" eOpposite="#//EMetaFeature/eContainingClass"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllFeatures" upperBound="-1"
+        eType="#//EMetaFeature" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAttributes" upperBound="-1"
+        eType="#//EMetaAttribute" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllAttributes" upperBound="-1"
+        eType="#//EMetaAttribute" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eReferences" upperBound="-1"
+        eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllReferences" upperBound="-1"
+        eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
+        derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllContainments" upperBound="-1"
+        eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
+        derived="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EMetaPrimitive" eSuperTypes="#//EMetaType"/>
   <eClassifiers xsi:type="ecore:EClass" name="EMetaFeature" abstract="true" eSuperTypes="#//ETyped">
@@ -73,6 +67,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="volatile" eType="#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="transient" eType="#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="derived" eType="#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="instanceProperty" eType="#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eContainingClass" eType="#//EMetaClass"
         changeable="false" transient="true" resolveProxies="false" eOpposite="#//EMetaClass/eFeatures"/>
   </eClassifiers>
@@ -91,14 +86,14 @@
         derived="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EMetaModel" eSuperTypes="#//ENamed">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eFactoryInstance" lowerBound="1"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eFactory" lowerBound="1"
         eType="#//EModelFactory" transient="true" resolveProxies="false" eOpposite="#//EModelFactory/eMetaModel"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eTypes" upperBound="-1"
         eType="#//EMetaType" containment="true" eOpposite="#//EMetaType/eMetaModel"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EModelFactory">
     <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaModel" lowerBound="1"
-        eType="#//EMetaModel" transient="true" resolveProxies="false" eOpposite="#//EMetaModel/eFactoryInstance"/>
+        eType="#//EMetaModel" transient="true" resolveProxies="false" eOpposite="#//EMetaModel/eFactory"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ENamed" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="#//EString"/>
@@ -107,13 +102,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="lowerBound" eType="#//EInt"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="upperBound" eType="#//EInt"
         defaultValueLiteral="1"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eType" eType="#//EMetaType"
-        volatile="true" unsettable="true">
-      <eAnnotations source="http://www.eclipse.org/emf/2002/GenModel">
-        <details key="suppressedIsSetVisibility" value="true"/>
-        <details key="suppressedUnsetVisibility" value="true"/>
-      </eAnnotations>
-    </eStructuralFeatures>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eType" eType="#//EMetaType"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EDataType" name="EBoolean" instanceClassName="boolean"/>
   <eClassifiers xsi:type="ecore:EDataType" name="EInt" instanceClassName="int"/>

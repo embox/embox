@@ -13,7 +13,7 @@
 define class-«factoryImplName()»
 	«mkSuper(factoryName())»
 
-	«mkSuper("EModelFactoryImpl")»
+	«mkSuper("EFactoryImpl")»
 «EXPAND class FOREACH eClassifiers.typeSelect(EClass)
 	.select(c | !c.abstract && !c.interface) -»
 endef
@@ -28,9 +28,5 @@ $(def_all)
 «DEFINE class FOR EClass»
 	«mkMethod(factoryMethodName(),
 		"$(new " + classImplName() + ")")»
-«IF isCrossReferenced() -»
-	«mkMethod(factoryMethodNameForReference(),
-		"$(new ReferenceTo" + classImplName() + ",$(value 1))")»
-«ENDIF -»
 «ENDDEFINE»
 
