@@ -16,8 +16,6 @@
 
 EMBOX_CMD(exec);
 
-extern udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
-
 static unsigned int ip_addr[4];
 
 static void ip_addr_print(in_addr_t ip) {
@@ -58,7 +56,7 @@ static int exec(int argc, char **argv) {
 	for (port_nr = 0; port_nr < SYSTEM_PORT_MAX_NUMBER; port_nr++) {
 		if (socket_port_is_busy(port_nr, 1)) {
 			printf("tcp   %d  ", port_nr);
-			get_proto_info((char**) tcp_hash, port_nr, sizeof(udp_sock_t*) / 4);
+			get_proto_info((char**) tcp_hash, port_nr, sizeof(tcp_sock_t*) / 4);
 		} else if (socket_port_is_busy(port_nr, 2)) {
 			printf("udp   %d  ", port_nr);
 			get_proto_info((char**) udp_hash, port_nr, sizeof(udp_sock_t*) / 4);

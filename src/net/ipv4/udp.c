@@ -20,7 +20,7 @@
 
 EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
 
-udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
+static udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 					__be16 dest, size_t len) {
