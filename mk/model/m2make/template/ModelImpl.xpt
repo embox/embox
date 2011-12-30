@@ -1,6 +1,7 @@
 «IMPORT ecore»
 
 «EXTENSION template::GeneratorExtensions»
+«EXTENSION org::eclipse::xtend::util::stdlib::counter»
 
 «DEFINE main FOR EPackage»«FILE fileName("model_impl") -»
 «fileHeader()»
@@ -38,7 +39,8 @@ define class-«classImplName()»
 «ENDFOREACH -»
 
 	«mkGetter("eMetaClass", metaClass)»
-«EXPAND feature FOREACH eStructuralFeatures»
+«EXPAND feature FOREACH eStructuralFeatures -»
+«EXPAND operation FOREACH eOperations»
 «PROTECT CSTART '\t# ' CEND '' ID id()»
 #	# TODO Add custom implementation here and remove this comment.
 «ENDPROTECT»
@@ -58,20 +60,20 @@ endef
 «DEFINE volatileFeature FOR EStructuralFeature»
 	«mkProperty(propertyName() + memberCardinality() + memberType())»
 «PROTECT CSTART '\t# ' CEND '' ID id()»
-«EXPAND volatileFeatureStub(mkGetterWrap(propertyName(), "$(error $0: NIY)")) -»
+«EXPAND memberStub FOR (mkGetterWrap(propertyName(), "$(error $0: NIY)")) -»
 «IF changeable -»
-«EXPAND volatileFeatureStub(mkSetterWrap(propertyName(), "$(error $0($1): NIY)")) -»
+«EXPAND memberStub FOR (mkSetterWrap(propertyName(), "$(error $0($1): NIY)")) -»
 «IF upperBound != 1 -»
-«EXPAND volatileFeatureStub(mkSetterPlusWrap(propertyName(), "$(error $0($1): NIY)")) -»
-«EXPAND volatileFeatureStub(mkSetterMinusWrap(propertyName(), "$(error $0($1): NIY)")) -»
+«EXPAND memberStub FOR (mkSetterPlusWrap(propertyName(), "$(error $0($1): NIY)")) -»
+«EXPAND memberStub FOR (mkSetterMinusWrap(propertyName(), "$(error $0($1): NIY)")) -»
 «ENDIF -»
 «ENDIF -»
 «ENDPROTECT»
 «ENDDEFINE»
 
-«DEFINE volatileFeatureStub(String mk) FOR EStructuralFeature -»
+«DEFINE memberStub FOR String -»
 #	# TODO Uncomment and implement me.
-#	«mk.comment()»
+#	«comment()»
 «ENDDEFINE»
 
 «DEFINE nonVolatileFeature FOR EStructuralFeature»
@@ -118,3 +120,16 @@ endef
 «ENDIF -»
 «ENDIF -»
 «ENDDEFINE»
+
+«DEFINE operation FOR EOperation»
+	# '«name + memberCardinality() + memberType()»' operation.
+«FOREACH eParameters AS param ITERATOR i -»
+	#   «i.counter1». «param.name + param.memberCardinality() + param.memberType()»
+«ENDFOREACH -»
+«PROTECT CSTART '\t# ' CEND '' ID id()»
+«EXPAND memberStub FOR (mkMethod(methodName(),
+	"$(error $0(" + eParameters.collect(p | "$" + counterInc()).toString(",") +
+			"): NIY)")) -»
+«ENDPROTECT»
+«ENDDEFINE»
+

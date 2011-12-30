@@ -76,9 +76,9 @@ endef
 «ENDDEFINE»
 
 «DEFINE operation FOR EOperation»
-	# '«name»' operation.
-«FOREACH eParameters AS param -»
-	#   «counterInc()». «param.name» : «param.eType.name»
+	# '«name + memberCardinality() + memberType()»' operation.
+«FOREACH eParameters AS param ITERATOR i -»
+	#   «i.counter1». «param.name + param.memberCardinality() + param.memberType()»
 «ENDFOREACH -»
 	«mkMethod(methodName())»
 «ENDDEFINE»

@@ -62,6 +62,7 @@ fieldName(EStructuralFeature this) : "m_" + name;
 factoryMethodName(EClassifier this) :
 	"create" + id();
 
+id(EOperation this)         : eContainingClass.id() + "_" + name;
 id(EStructuralFeature this) : eContainingClass.id() + "_" + name;
 id(EClassifier this) :        name.toFirstUpper();
 id(Void this) :               null;
@@ -134,9 +135,8 @@ mkPropertyField(String name) : "$(property-field " + name + ")";
 mkPropertyField(String name, String initializer) :
 	"$(property-field " + name + ",\n\t\t" + initializer + ")";
 
-memberCardinality(EStructuralFeature this) : upperBound == 1 ? "" : "...";
-memberType(EStructuralFeature this) :        "";
-memberType(EReference this) :                " : " + eReferenceType.name;
+memberCardinality(ETypedElement this) : upperBound == 1 ? "" : "...";
+memberType(ETypedElement this)        : " : " + eType.name;
 
 mkInvoke(String this) :                  "$(invoke " + this + ")";
 mkInvoke(String this, String args) :     "$(invoke " + this + "," + args + ")";
