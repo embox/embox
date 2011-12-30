@@ -15,6 +15,7 @@ define class-resource
 		)
 	)
 
+	$(field imports)
 	$(property-field my_file : node)
 
 endef
@@ -33,6 +34,22 @@ define resolve_internal
 	)
 endef
 
+define resolve_link_from_resource
+	$(foreach m,$(filter $(get $1.link_name).%,$(get $2.exports)),
+		$(info link_name is $(get $1.link_name), exports is $m)
+	#	$(set $1.dst,$m)
+		$(set $1.link_name,$m)
+		$(info now linkname is $(get $1.link_name)))
+endef
+
+define resolve_links_from_files
+	$(info resolving)
+	$(foreach l,$(call get-instances-of,module_link),
+		$(foreach f,$1,
+			#$(info link is $l, file is $f, resource is $($f))
+			$(call resolve_link_from_resource,$l,$($f))))
+endef
+
 #create resource from associated model
 #param $1 -a model
 define create_from_model
@@ -49,3 +66,4 @@ endef
 $(def_all)
 
 endif #__mybuild_resource_mk
+

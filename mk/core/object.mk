@@ -874,6 +874,25 @@ endef
 builtin_func-instance-of = \
 	$(foreach builtin_name,instance_of,$(builtin_to_function_inline))
 
+# Get all instances of all classes
+define get-instances
+	$(__object_instance_cnt:%=.obj%)
+endef
+
+
+# Get all instances of speceifed classes
+#   1. Class name (optional).
+define get-instances-of
+	$(if $(call value,1),
+		$(info searching istances of $1)
+		$(foreach i,$(call get-instances),
+			$(instance-of $i,$1)
+		)
+		,
+		$(call get-instances)
+	)
+endef
+
 # Tells whether a given object has the specified field.
 #   1. Reference to check.
 #   2. Field name.

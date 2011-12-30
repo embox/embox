@@ -62,6 +62,7 @@ $(filter %.my.mk,$(MKFILES_CONVERTED)) : \
 
 $(MK_LINK) : $(MKFILES_CONVERTED)
 	@echo '... -> $@'
+	@echo $(call resolve_links_from_files,$^)
 	touch $@
 
 endif # __mybuild_read_mk

@@ -23,7 +23,7 @@ define objects_to_dot
 			# if root is known then closure graph
 			$(call graph_closure,$1,get_referenced_objects)
 			, # else get all obj% in system
-			$(__object_instance_cnt:%=.obj%)
+			$(call get-instances)
 		), # foreach
 		$(\n)	"$o" \
 			[label="<.> $o : $($o)\l $(foreach f,$(call field_name,
