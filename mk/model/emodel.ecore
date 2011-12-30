@@ -10,6 +10,8 @@
         changeable="false" volatile="true" transient="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eContainer" eType="#//ENode"
         changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eRootContainer" eType="#//ENode"
+        changeable="false" volatile="true" transient="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eContents" upperBound="-1"
         eType="#//ENode" changeable="false" volatile="true" transient="true" derived="true"
         eOpposite="#//ENode/eContents"/>
