@@ -100,6 +100,8 @@ static inline tcphdr_t *tcp_hdr(const sk_buff_t *skb) {
 	return (tcphdr_t *) skb->h.raw;
 }
 
+extern void *get_tcp_sockets(void);
+
 #define TCP_INET_SOCK(tcp_sk) ((struct inet_sock *) tcp_sk)
 #define TCP_SOCK(tcp_sk) ((struct sock *) tcp_sk)
 

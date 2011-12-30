@@ -20,7 +20,7 @@
 
 EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
 
-static udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
+udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 					__be16 dest, size_t len) {
@@ -146,6 +146,10 @@ void udp_err(sk_buff_t *skb, uint32_t info) {
 			sk->sk_err = info;
 		}
 	}
+}
+
+void *get_udp_sockets() {
+	return (void*) udp_hash;
 }
 
 int udp_disconnect(struct sock *sk, int flags) {

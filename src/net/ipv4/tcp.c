@@ -676,6 +676,10 @@ int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	return len;
 }
 
+void *get_tcp_sockets() {
+	return (void*) tcp_hash;
+}
+
 struct proto tcp_prot = {
 	.name                   = "TCP",
 	.init                   = tcp_v4_init_sock,

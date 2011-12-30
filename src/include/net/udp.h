@@ -53,5 +53,6 @@ extern int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 /*extern void udp_err(sk_buff_t *, uint32_t);*/
 
 extern int udp_disconnect(struct sock *sk, int flags);
+extern void *get_udp_sockets(void);
 
 #endif /* UDP_H_ */
