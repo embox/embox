@@ -221,6 +221,44 @@ trim = \
 builtin_func-trim = $(builtin_to_function_inline)
 
 ##
+# Builtin function: subst-start
+#
+#      $(subst-start from,to,string), or
+# $(call subst-start from,to,string)
+#
+# Performs a string substitution of 'from' in case when the 'string' start
+# with it.
+#
+# Params:
+#   1. Prefix to replace.
+#   2. Replacement.
+#   3. The string.
+# Return:
+#   The string with prefix (if any) replaced.
+subst-start = \
+	$(if $(findstring [$3]$1,[$3]$3),$(subst [$3]$1,$2,[$3]$3),$3)
+builtin_func-subst-start = $(builtin_to_function_call)
+
+##
+# Builtin function: subst-end
+#
+#      $(subst-end from,to,string), or
+# $(call subst-end from,to,string)
+#
+# Performs a string substitution of 'from' in case when the 'string' ends
+# with it.
+#
+# Params:
+#   1. Suffix to replace.
+#   2. Replacement.
+#   3. The string.
+# Return:
+#   The string with suffix (if any) replaced.
+subst-end = \
+	$(if $(findstring $1[$3],$3[$3]),$(subst $1[$3],$2,$3[$3]),$3)
+builtin_func-subst-end = $(builtin_to_function_call)
+
+##
 # Builtin function: append
 # Appends the second argument after the first using whitespace as a separator
 # (if both of the argument are non-empty strings).
