@@ -85,13 +85,15 @@ define class-ENodeImpl
 			Container reference '$(get $(get 1->eContainingClass).name)
 				.$(get 1->name)' must be set using 'doSetContainerReference')
 
-		$(foreach eLinkClass,$(get eModelMetaModel->ELink),$(foreach e,$2,
+		$(for \
+			eLinkClass <- $(get eModelMetaModel->ELink),
+			e          <- $2,
 			$(invoke \
 				$(if $(invoke eLinkClass->isSuperTypeOf,$(get e->eMetaClass)),
 					doAddLinkReference,
 					doAddNodeReference),
 				$1,$e)
-		))
+		)
 
 		$(with $1,
 			$(invoke __prefix_links,$1,
@@ -99,9 +101,6 @@ define class-ENodeImpl
 					$(suffix $2))),
 			$(get meta_model_instance->node_links),
 
-			$(set+ $(get 1->a_field),$(foreach e,$(filter-out $1%,$2),$e
-				$(invoke e->inverse_add_references,$1,$(this))
-			))
 
 			$(set+ links,$(foreach l,$(filter $1%,$2),$l
 				$(invoke l->inverse_add_references,$3,$(this))
@@ -112,8 +111,11 @@ define class-ENodeImpl
 
 	# Params:
 	#   1. Meta reference.
-	#   2. What to add.
+	#   2. A single node to add.
 	$(method doAddNodeReference,
+		$(set-field+ $(get 1->instanceProperty),
+			$(invoke 2->doInverseAdd,$1,$(this))
+		))
 	)
 
 	# PROTECTED REGION END
