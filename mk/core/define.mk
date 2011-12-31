@@ -1455,6 +1455,96 @@ endef
 
 __builtin_to_function_inline_expanded_args :=
 
+# Builtin to function is ready to be used.
+$(def_all)
+
+#
+# Some syntactic sugar.
+#
+
+#
+# Extension: 'for' builtin function.
+#
+# Compound 'foreach'.
+#
+# '$(for variable <- list,...,body)'
+#
+# Note:
+#   Arrow sign ('<-') is a separator and it must appear literally.
+define builtin_func-for
+	$(call builtin_check_min_arity,2)
+
+	$(subst-end $$$[foreach,,
+		$$$[foreach $(foreach a,$(nolastword $(builtin_args_list)),
+			$(call __for_variable_parse,$($a),$(lambda $1,$2,$$$[foreach)))
+	)
+
+	$(builtin_lastarg)# body
+
+	$(subst $(\s),,$(nolastword $(builtin_args_list:%=$])))
+endef
+
+# Params:
+#   1. Variable definition to parse in form 'var<-list'.
+#      It is assumed that there is no any commas outside parens.
+#   2. Continuation with the following args:
+#       1. Recognized variable name.
+#       2. The list.
+#       3. Optional argument.
+#   3. (optional) Argument to pass to the continuaion.
+# Return:
+#   Result of call to continuation in case of a valid definition,
+#   otherwise it aborts using 'builtin_error'.
+define __for_variable_parse
+	$(or \
+		$(expand $$(call \
+			$(lambda \
+				$(and $(eq .,$6),$(nolastword $4),$(trim $5),
+					# Escaped variable name is in $4. Escaped list is in $5.
+					$(call $1,$(call $3,$(nolastword $4)),$(call $3,$5),$2))
+			),
+
+			# 1 and 2: The continuation with its argument.
+			$$2,$$(value 3),
+
+			# 3: Unescape function which restores '<-' back.
+			$(lambda $(subst $(\s)<-$(\comma),<-,$(trim $1))),
+
+			# 4 and 5: Escaped definition with '<-' repalaced by commas.
+			$(subst <-,$(\s)<-$(\comma),
+				$(subst $(\comma),$$(\comma),$(subst $$,$$$$,$1))),
+
+			# 6: End of args marker.
+			.,
+		)),
+
+		$(call builtin_error,
+				Invalid argument to '$(builtin_name)' function: '$1')
+	)
+endef
+
+$(def_all)
+
+##
+# Extension: 'silent-for' builtin function.
+#
+# '$(silent-for variable <- list,...,body)'
+#
+# A version of 'for' builtin that returns nothing.
+#
+define builtin_func-silent-for
+	$$(if \
+		$(for builtin_name <- for,
+			$(builtin_func-for)),
+	)
+endef
+
+# Expansions like $(for) or $(call for,...) are meaningless.
+for = \
+	$(warning for: illegal invocation)
+silent-for = \
+	$(warning silent-for: illegal invocation)
+
 # Finally, flush the rest and say Goodbye!
 $(def_all)
 

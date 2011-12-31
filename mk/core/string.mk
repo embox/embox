@@ -323,4 +323,6 @@ builtin_func-filter-patsubst = $(builtin_to_function_inline)
 builtin_func-silent-foreach = \
 	$(call builtin_check_min_arity,3)$$(if $$(foreach $(builtin_args)),)
 
+silent-foreach =# Nothing (stub).
+
 endif # __core_string_mk
