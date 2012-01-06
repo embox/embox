@@ -13,6 +13,7 @@
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>
+#include <drivers/btm112.h>
 #include <kernel/timer.h>
 #include <string.h>
 #include <unistd.h>
@@ -31,19 +32,24 @@ static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_BTM_BT_SERIAL_
 
 EMBOX_UNIT_INIT(btm_bluetooth_init);
 
-uint8_t *btm_bt_read_buff;
-int btm_bt_read_len;
+#define BUFF_SIZE 27
 
+static uint8_t btm_bt_read_buff[BUFF_SIZE];
+static int btm_bt_read_len;
+
+static int nop_rx(int len, void *data) {
+	return 0;
+}
 static int nop(void) {
 	return 0;
 }
 
-CALLBACK_INIT_DEF(nxt_bt_rx_handle_t, __bt_rx, nop);
+CALLBACK_INIT_DEF(btm_bt_rx_handle_t, __bt_rx, nop_rx);
 CALLBACK_INIT_DEF(nxt_bt_state_handle_t, bt_state, nop);
 
 static irq_return_t btm_bt_us_handler(int irq_num, void *dev_id) {
 
-	CALLBACK(__bt_rx)();
+	CALLBACK(__bt_rx)(btm_bt_read_len, btm_bt_read_buff);
 
 	return IRQ_HANDLED;
 }
@@ -120,10 +126,9 @@ size_t bluetooth_write(uint8_t *buff, size_t len) {
 	return len;
 }
 
-size_t bluetooth_read(uint8_t *buff, size_t len) {
-	btm_bt_read_buff = buff;
+size_t bluetooth_read(size_t len) {
 	btm_bt_read_len = len;
-	REG_STORE(&(us_dev_regs->US_RPR), (uint32_t) buff);
+	REG_STORE(&(us_dev_regs->US_RPR), (uint32_t) btm_bt_read_buff);
 	REG_STORE(&(us_dev_regs->US_RCR), len);
 
 	return 0;

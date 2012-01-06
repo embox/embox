@@ -65,20 +65,23 @@ static int httpd_exec(int argc, char **argv) {
 		}
 
 		listen(sock, 1);
-		connect_sock = accept(sock, (struct sockaddr *) &dst, &dst_addr_len);
+		connect_sock = accept(sock,(struct sockaddr *)&dst,
+				&dst_addr_len);
 
 		if (connect_sock < 0) {
 			printf("accept fail\n");
 			return -1;
 		}
 
-		while ((bytes_read = recvfrom(connect_sock, req_buf, 3, 0, NULL, 0)) != 0) {
+		while ((bytes_read = recvfrom(connect_sock, req_buf,
+						3, 0, NULL, 0)) != 0) {
 			if (strncmp(req_buf, "GET", 3) == 0) {
 				break;
 			}
 		}
 
-		sendto(connect_sock, file_buf, f - file_buf, 0, (struct sockaddr *) &dst, sizeof(dst));
+		sendto(connect_sock, file_buf, f - file_buf, 0,
+				(struct sockaddr *) &dst, sizeof(dst));
 		close(connect_sock);
 
 	}
