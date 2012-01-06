@@ -173,8 +173,8 @@ static void handle_case_fixture_failure(const struct test_case *test_case,
 
 static void handle_case_result(const struct test_case *test_case,
 		const struct __test_assertion_point *failure) {
-	const struct location *test_loc;
-	const struct location_func *fail_loc;
+	const struct location __attribute__ ((unused)) *test_loc;
+	const struct location_func __attribute__ ((unused)) *fail_loc;
 
 	if (!failure) {
 		prom_printf(".");
