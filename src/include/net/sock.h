@@ -88,6 +88,7 @@ typedef struct sock {
 	int (* get_port)(struct sock *sk, unsigned short num);
 	int is_ready;
 	int answer;
+	int sk_err;
 } sock_t;
 
 /** Sock flags */
