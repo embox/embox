@@ -1,0 +1,4 @@
+#!/bin/sh
+ip tuntap add mode tap tap0
+ethtool -K tap0 rx off tx off gro off
+ifconfig tap0 10.0.2.15 up

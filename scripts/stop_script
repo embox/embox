@@ -1,0 +1,2 @@
+#!/bin/sh
+ip tuntap del mode tap tap0

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PRGNAM=embox
-VERSION=0.2.4
+VERSION=current
 
 pushd ../.. > /dev/null
 
