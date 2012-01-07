@@ -1,7 +1,7 @@
 #
-# Copyright 2011, Mathematics and Mechanics faculty
+# Copyright 2011-2012, Mathematics and Mechanics faculty
 #                   of Saint-Petersburg State University. All rights reserved.
-# Copyright 2011, Lanit-Tercom Inc. All rights reserved.
+# Copyright 2011-2012, Lanit-Tercom Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -423,15 +423,17 @@ endef
 
 define __def_inner_install_hooks
 	$(subst $$$$$$$$$[,
-			$$$[call __def_inner_hook$(\comma),
+		$$$[call __def_inner_hook$(\comma),
+
 		# Doubly escaped double dollars. I am a rich man. $)
 		$(subst $$$$$$$$$$$$$$$$,
 			# The hell below is '$($$)$($$)' with dollars and parens escaped.
 			$$$$_$$$$[$$$$$$$$_$$$$]
 			$$$$_$$$$[$$$$$$$$_$$$$],
-			$(subst $(\comma),_$$$$c,
-				$1
-			)
+
+			# Commas are also escaped so that inner hook handler gets only
+			# one argument.
+			$(subst $(\comma),_$$$$c,$1)
 		)
 	)
 endef
@@ -461,15 +463,24 @@ define __def_inner_hook
 		$(or \
 			$(foreach first,$(firstword $1),
 				# Guaranteed non empty value inside $(...).
-				$(__def_inner_handle)
-			),
+				$(__def_inner_handle)),
+
 			# Empty variable name or nothing except whitespaces.
-			$$(call __def_outer_hook_warning,
-				$$$$($1),
-				Empty variable name
-			)
+			$(call __def_inner_warning,$1,
+				Empty variable name)
 		)
 	)
+endef
+
+# Params:
+#   1. The code inside $(...) that caused warning, without '$(' and ')'. May
+#      include escaped commas ('_$$c'), which are converted back to real ones.
+#   2. Warning message.
+define __def_inner_warning
+	# The real warning message will be printed at the outer expansion phase.
+	$$(call __def_outer_hook_warning,
+		$$$$($(subst _$$c,$$(\comma),$1)),
+		$(subst $(\comma),$$(\comma),$2))
 endef
 
 #
@@ -505,12 +516,10 @@ define __def_inner_handle
 
 		# Check that there is no commas in function or variable name.
 		$(if $(findstring _$$c,$(first)),
-			# Invalid name. Emit a warning hook.
+			# Invalid name. Emit a warning.
 			#   $(foo,bar) $(foo, bar) $(foo,) $(,foo) $(,)
-			$$(call __def_outer_hook_warning,
-				$$$$($(subst _$$c,$(\comma),$1)),
-				Unexpected '$$(\comma)' in variable or function name
-			)
+			$(call __def_inner_warning,$1,
+				Unexpected '$(\comma)' in variable or function name)
 		),
 
 		# No commas in the first word. Assuming that it is the only word inside
@@ -526,10 +535,8 @@ define __def_inner_handle
 		$(if $(filter-out x$(first),$(firstword x$1)),
 			# There are some, name is bad:
 			#   $( foo) $( foo bar)
-			$$(call __def_outer_hook_warning,
-				$$$$($(subst _$$c,$(\comma),$1)),
-				Unexpected leading whitespace in variable or function name
-			)
+			$(call __def_inner_warning,$1,
+				Unexpected leading whitespace in variable or function name)
 		),
 
 		# No leading whitespaces: valid function call.
@@ -753,11 +760,11 @@ define __def_outer_hook_func
 				# For unknown function 'minimum_args' would be 0.
 				$(or $(notdir $(filter $0/%,$(__builtin_native_functions))),0),
 
-				$(if $(minimum_args:0=),
-					$(call builtin_check_min_arity,$(minimum_args)),
+				$(if $(filter 0,$(minimum_args)),
 					$(call builtin_error,
-						Undefined function '$0'
-					)
+						Undefined function '$0'),
+					$(call builtin_check_min_arity,
+						$(minimum_args))
 				)
 			)
 			# Finally leave the function call as is.
@@ -774,9 +781,11 @@ endef
 # Return:
 #   The first argument.
 define __def_outer_hook_warning
+	$(call __def_outer_hook_push,<unknown>)
+	$(call builtin_warning,
+		$2$(if $1,: '$1'))
+	$(__def_outer_hook_pop)
 	$1
-	$(warning $2$(if $1,: '$1'))
-	$(builtin_print_stack)
 endef
 
 # Special builtin which echoes its arguments.
@@ -993,14 +1002,14 @@ endef
 # Return:
 #   Nothing.
 define builtin_print_stack
-	$(warning Expansion stack:)
-	$(warning $(\t)function '$(firstword $(__def_stack_top))')
-	$(strip $(foreach e,$(__def_stack),
-		$(warning \
+	$(warning $(__def_var): Expansion stack:)
+	$(warning $(__def_var):$(\t)function '$(firstword $(__def_stack_top))')
+	$(and $(foreach e,$(__def_stack),
+		$(warning $(__def_var):
 			$(\t)arg $(words $(call nofirstword,$(subst $(\comma), ,$e))) \
 				of '$(firstword $(subst $(\comma), ,$e))'
 		)
-	))
+	),)
 endef
 
 # Produces a warning with the specified message and contents of the expansion
@@ -1010,7 +1019,7 @@ endef
 # Return:
 #   Nothing.
 define builtin_warning
-	$(warning $1)
+	$(warning $(__def_var): $1)
 	$(builtin_print_stack)
 endef
 
@@ -1021,7 +1030,7 @@ endef
 #   No return.
 define builtin_error
 	$(builtin_warning)
-	$(error Error in definition of '$(__def_var)' function)
+	$(error $(__def_var): Error in definition of '$(__def_var)' function)
 endef
 
 #
