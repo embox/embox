@@ -1,10 +1,9 @@
 #!/bin/bash
 
-LOCK=qemu.lck
+QEMU=qemu-system-i386
+IMAGE=../build/base/bin/embox
 
-while [ -f $LOCK ]; do
-	sudo qemu -s -S -kernel build/base/bin/embox \
+sudo $QEMU -kernel $IMAGE \
 	-net nic,model=ne2k_pci,macaddr=AA:BB:CC:DD:EE:02 \
-	-net tap,name=tap0,script=start_script,downscript=stop_script -nographic \
-	$@
-done
+	-net tap,name=tap0,script=start_script,downscript=stop_script \
+	-nographic $@
