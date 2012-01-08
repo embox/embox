@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief Demonstrates repository creation with ARRAY_SPREAD API
  * @details This example demonstrates work on repository which was create with
  *          ARRAY_SPREAD macro. You can use this technique for creation local
@@ -17,7 +16,6 @@
  *          for iterates over the repository.
  *          We added utility function lookup_in_repo as helper for search item
  *          in the repository. We use item's name as a identifier.
- *
  *
  * @date 13.08.2011
  * @author Anton Bondarev
@@ -62,13 +60,13 @@ ARRAY_SPREAD_DEF(const struct example_array_registry_data,
  * You also can put not structure to repository array but pointer to it if you
  * declare array with pointer type.
  */
-#define DEFINE_ITEM(item_name, func_run)                                      \
-	/* we can declare item before it would be implement */                    \
-	static void func_run(void);                                               \
-	/* declare new item and  add new item to our array */                     \
-	ARRAY_SPREAD_ADD(__example_array_registry, {                              \
-		.run = func_run,                                                      \
-		.name = "" item_name                                                  \
+#define DEFINE_ITEM(item_name, func_run) \
+	/* we can declare item before it would be implement */  \
+	static void func_run(void);                             \
+	/* declare new item and  add new item to our array */   \
+	ARRAY_SPREAD_ADD(__example_array_registry, {            \
+		.run = func_run,                                \
+		.name = "" item_name                            \
 	})
 
 static struct example_array_registry_data *lookup_in_repo(char *name,
@@ -95,10 +93,12 @@ DEFINE_ITEM("thirst_item", third_run);
 static void first_run(void) {
 	printf("I'm first\n");
 }
+
 /** handle for second item */
 static void  second_run(void) {
 	printf("I'm second\n");
 }
+
 /** handle for third item */
 static void  third_run(void) {
 	printf("I'm third\n");

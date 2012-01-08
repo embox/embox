@@ -37,7 +37,7 @@ static int process_backlog(struct net_device *dev) {
 	return ENOERR;
 }
 
-struct net_device * alloc_netdev(int sizeof_priv, const char *name,
+struct net_device *alloc_netdev(int sizeof_priv, const char *name,
 		void (*setup)(struct net_device *)) {
 	struct net_device *dev;
 
@@ -52,8 +52,8 @@ struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 
 	setup(dev);
 
-	dev->dev_queue.next = (struct sk_buff *)(&(dev->dev_queue));
-	dev->dev_queue.prev = (struct sk_buff *)(&(dev->dev_queue));
+	dev->dev_queue.next = (struct sk_buff *) (&(dev->dev_queue));
+	dev->dev_queue.prev = (struct sk_buff *) (&(dev->dev_queue));
 	dev->poll = process_backlog;
 
 	strncpy(dev->name, name, IFNAMSIZ);
@@ -70,15 +70,13 @@ void free_netdev(struct net_device *dev) {
 
 
 int register_netdev(struct net_device *dev) {
-	size_t idx;
-
 	if (dev == NULL) {
 		return -EINVAL;
 	}
 
-	for (idx = 0; idx < CONFIG_NET_DEVICES_QUANTITY; ++idx) {
-		if (opened_netdevs[idx] == NULL) {
-			opened_netdevs[idx] = dev;
+	for (size_t i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+		if (opened_netdevs[i] == NULL) {
+			opened_netdevs[i] = dev;
 			return ENOERR;
 		}
 	}
@@ -87,13 +85,11 @@ int register_netdev(struct net_device *dev) {
 }
 
 void unregister_netdev(struct net_device *dev) {
-	size_t i;
-
 	if (dev == NULL) {
 		return;
 	}
 
-	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+	for (size_t i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
 		if (opened_netdevs[i] == dev) {
 			opened_netdevs[i] = NULL;
 			return;
@@ -101,16 +97,14 @@ void unregister_netdev(struct net_device *dev) {
 	}
 }
 
-
 struct net_device * netdev_get_by_name(const char *name) {
-	size_t i;
 	struct net_device *dev;
 
 	if (name == NULL) {
 		return NULL;
 	}
 
-	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+	for (size_t i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
 		dev = opened_netdevs[i];
 		if (strncmp(name, dev->name, IFNAMSIZ) == 0) {
 			return dev;
@@ -178,8 +172,7 @@ int dev_close(struct net_device *dev) {
 	}
 	if (res != ENOERR) {
 		dev->state |= __LINK_STATE_START;
-	}
-	else {
+	} else {
 		/* Device is now down. */
 		/*TODO: IFF_RUNNING sets not here*/
 		dev->flags &= ~(IFF_UP | IFF_RUNNING);
@@ -191,7 +184,6 @@ int dev_close(struct net_device *dev) {
 unsigned int dev_get_flags(const struct net_device *dev) {
 	return dev->flags;
 }
-
 
 int dev_set_flags(struct net_device *dev, unsigned int flags) {
 	int res, old_flags;

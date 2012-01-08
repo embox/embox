@@ -41,8 +41,7 @@ int eth_header(sk_buff_t *pack, struct net_device *dev, unsigned short type,
 		/* Anyway, the loopback-device should never use this function... */
 		memset(eth->h_dest, 0, ETH_ALEN);
 		return ENOERR;
-	}
-	else if (daddr != NULL) {
+	} else if (daddr != NULL) {
 		memcpy(eth->h_dest, daddr, ETH_ALEN);
 		return ENOERR;
 	}
@@ -66,11 +65,9 @@ int eth_rebuild_header(sk_buff_t *pack) {
 	if (pack->protocol == ETH_P_IP) {
 		memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
 		return arp_resolve(pack);
-	}
-	else if (pack->protocol == ETH_P_ARP) {
+	} else if (pack->protocol == ETH_P_ARP) {
 		return ENOERR;
-	}
-	else {
+	} else {
 		LOG_WARN("%s: unable to resolve type %X addresses.\n",
 					dev->name, (int)eth->h_proto);
 		return -EINVAL;

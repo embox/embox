@@ -40,10 +40,10 @@ struct cache {
 };
 
 #define __CACHE_DEF(cache_nm, object_t, objects_nr) \
-	static struct cache cache_nm =  {               \
-		/* .obj_nr = (objects_nr), TODO */          \
-		.obj_size = sizeof(object_t),               \
-	};                                              \
+	static struct cache cache_nm =  {                      \
+		/* .obj_nr = (objects_nr), TODO */             \
+		.obj_size = sizeof(object_t),                  \
+	};                                                     \
 	extern const struct mod_member_ops __cache_member_ops; \
 	MOD_MEMBER_BIND(&__cache_member_ops, &cache_nm)
 
