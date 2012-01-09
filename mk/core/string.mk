@@ -258,6 +258,43 @@ subst-end = \
 	$(if $(findstring $1[$3],$3[$3]),$(subst $1[$3],$2,$3[$3]),$3)
 builtin_func-subst-end = $(builtin_to_function_call)
 
+
+##
+# Builtin function: find-start
+#
+#      $(find-start what,string), or
+# $(call find-start what,string)
+#
+# Tests if the 'string' starts with 'what' prefix.
+#
+# Params:
+#   1. Prefix to search.
+#   2. The string.
+# Return:
+#   The first argument if it appears to be a prefix of the second one,
+#   empty otherwise.
+find-start = \
+	$(if $(findstring [$2]$1,[$2]$2),$1)
+builtin_func-find-start = $(builtin_to_function_call)
+
+##
+# Builtin function: find-end
+#
+#      $(find-end what,string), or
+# $(call find-end what,string)
+#
+# Tests if the 'string' ends with 'what' suffix.
+#
+# Params:
+#   1. Suffix to search.
+#   2. The string.
+# Return:
+#   The first argument if it appears to be a suffix of the second one,
+#   empty otherwise.
+find-end = \
+	$(if $(findstring $1[$2],$2[$2]),$1)
+builtin_func-find-end = $(builtin_to_function_call)
+
 ##
 # Builtin function: append
 # Appends the second argument after the first using whitespace as a separator
