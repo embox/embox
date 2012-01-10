@@ -257,11 +257,11 @@ __def_strip_unescape = \
 
 # See '__def_brace_real'.
 __def_brace = \
-	$(subst $$$$,$$,$1)
+	$1
 
 # See: '__def_builtin_real'.
 __def_builtin = \
-	$1
+	$(subst $$$$,$$,$1)
 
 #
 # Now we can use $(call def,...) and $(def_all).
@@ -346,10 +346,10 @@ __def_tmp__ :=
 # Params:
 #   1. Dollar-escaped value.
 # Return:
-#   The unescaped result of brace substitution.
+#   The result of brace substitution, still dollar-escaped.
 define __def_brace_real
-	# Expand hooks.
-	$(call __def_expand,
+	# Expand hooks and re-escape the dollars.
+	$(subst $$,$$$$,$(call __def_expand,
 		# Replace true ${...} expansion occurrences to a hook call:
 		#   ${call __def_brace_hook,...}
 		# which will echo its argument surrounded by $(...)
@@ -369,7 +369,7 @@ define __def_brace_real
 				)
 			)
 		)
-	)
+	))
 endef
 
 # Surrounds the argument with '$(' and ')'.
@@ -381,7 +381,7 @@ __def_brace_hook = \
 $(def_all)
 
 __def_brace = \
-	$(if $(findstring {,$1),$(call __def_brace_real,$1),$(subst $$$$,$$,$1))
+	$(if $(findstring {,$1),$(call __def_brace_real,$1),$1)
 
 #
 # Here goes builtin functions transformation stuff.
@@ -408,34 +408,16 @@ __def_brace = \
 #
 
 # The real work is done here.
-# 1. Text
+#   1. Text with dollars escaped.
 define __def_builtin_real
 	$(call __def_expand,$(call __def_inner_unescape,
 		$(call __def_expand,$(call __def_inner_install_hooks,
-			# Escape dollars twice.
-			$(subst $$,$$$$$$$$,
+			# Escape dollars once again.
+			$(subst $$,$$$$,
 				# '__def_root__' echoes everything passed to it.
-				$$(__def_root__ $1)
-			)
+				$$$$(__def_root__ $1))
 		))
 	))
-endef
-
-define __def_inner_install_hooks
-	$(subst $$$$$$$$$[,
-		$$$[call __def_inner_hook$(\comma),
-
-		# Doubly escaped double dollars. I am a rich man. $)
-		$(subst $$$$$$$$$$$$$$$$,
-			# The hell below is '$($$)$($$)' with dollars and parens escaped.
-			$$$$_$$$$[$$$$$$$$_$$$$]
-			$$$$_$$$$[$$$$$$$$_$$$$],
-
-			# Commas are also escaped so that inner hook handler gets only
-			# one argument.
-			$(subst $(\comma),_$$$$c,$1)
-		)
-	)
 endef
 
 define __def_inner_escape
@@ -458,35 +440,75 @@ define __def_inner_unescape
 	))
 endef
 
-define __def_inner_hook
+# Sets the following hooks:
+#   '(' to call to '__def_inner_hook_paren', and
+#   '$('        to '__def_inner_hook_expansion'.
+define __def_inner_install_hooks
+	$(subst $$$$$$$$# Fix up paren hooks that follow a dollar: '$('.
+			$$$[call __def_inner_hook_paren,
+			$$$[call __def_inner_hook_expansion,
+		# Install a paren hook on every opening paren: '('.
+		$(subst  $[,$$$[call __def_inner_hook_paren$(\comma),
+
+			# Doubly escaped double dollars. I am a rich man. $)
+			$(subst $$$$$$$$$$$$$$$$,
+				# The hell below is '$($$)$($$)'
+				# with dollars and parens escaped.
+				$$$$_$$$$[$$$$$$$$_$$$$]
+				$$$$_$$$$[$$$$$$$$_$$$$],
+
+				# Commas are also escaped so that inner hook handler gets only
+				# one argument.
+				$(subst $(\comma),_$$$$c,$1)
+			)
+		)
+	)
+endef
+
+# Hook for plain '(...)'.
+#   1. Value inside the parens.
+define __def_inner_hook_paren
+	# All we need here is to echo the argument enclosing it with calls
+	# to outer stack push/pop functions and restoring the original parens.
+	$(call __def_inner_escape,
+		(
+			$$(call __def_outer_hook_push,__paren__)
+			$1
+			$$(__def_outer_hook_pop)
+		)
+	)
+endef
+
+# Hook for '$(...)'.
+#   1. Value inside the parens.
+define __def_inner_hook_expansion
 	$(call __def_inner_escape,
 		$(or \
-			$(foreach first,$(firstword $1),
+			$(foreach 1st,$(firstword $1),
 				# Guaranteed non empty value inside $(...).
 				$(__def_inner_handle)),
 
 			# Empty variable name or nothing except whitespaces.
-			$(call __def_inner_warning,$1,
+			$(call __def_inner_warning,$$$$($1),
 				Empty variable name)
 		)
 	)
 endef
 
 # Params:
-#   1. The code inside $(...) that caused warning, without '$(' and ')'. May
-#      include escaped commas ('_$$c'), which are converted back to real ones.
+#   1. The code a warning. May include inner-escaped commas ('_$$c'), which
+#      are converted back to real ones.
 #   2. Warning message.
 define __def_inner_warning
 	# The real warning message will be printed at the outer expansion phase.
-	$$(call __def_outer_hook_warning,
-		$$$$($(subst _$$c,$$(\comma),$1)),
+	$$(call __def_outer_hook_warning,$(subst _$$c,$$(\comma),$1),
 		$(subst $(\comma),$$(\comma),$2))
 endef
 
 #
 # Params:
 #   1. Non-empty value being handled.
-#   'first': The first word of the value.
+#  '1st': The first word of the value.
 #
 # Return:
 #   Resulting handled value with (possibly) outer hooks installed if the value
@@ -515,10 +537,10 @@ define __def_inner_handle
 		$(__def_inner_handle_substitution_reference),
 
 		# Check that there is no commas in function or variable name.
-		$(if $(findstring _$$c,$(first)),
+		$(if $(findstring _$$c,$(1st)),
 			# Invalid name. Emit a warning.
 			#   $(foo,bar) $(foo, bar) $(foo,) $(,foo) $(,)
-			$(call __def_inner_warning,$1,
+			$(call __def_inner_warning,$$$$($1),
 				Unexpected '$(\comma)' in variable or function name)
 		),
 
@@ -532,10 +554,10 @@ define __def_inner_handle
 		# the expansion parens, either between chars or around them...
 
 		# Check if the first char is not a whitespace.
-		$(if $(filter-out x$(first),$(firstword x$1)),
+		$(if $(filter-out x$(1st),$(firstword x$1)),
 			# There are some, name is bad:
 			#   $( foo) $( foo bar)
-			$(call __def_inner_warning,$1,
+			$(call __def_inner_warning,$$$$($1),
 				Unexpected leading whitespace in variable or function name)
 		),
 
@@ -553,7 +575,7 @@ define __def_inner_handle_substitution_reference
 	$(and \
 
 		# If there is a colon in the first word...
-		$(findstring :,$(first)),
+		$(findstring :,$(1st)),
 
 		# ...and there is an equal sign after the colon...
 		$(findstring =,$(call nofirstword,$(subst :,: ,$1))),
@@ -570,15 +592,15 @@ endef
 #   Resulting value with necessary outer hooks installed in case that it is
 #   a valid function call, or empty otherwise.
 define __def_inner_handle_function
-	$(if $(findstring undefined,$(flavor builtin_tag-$(first))),
+	$(if $(findstring undefined,$(flavor builtin_tag-$(1st))),
 
 		# Plain push and handle.
-		$$(call __def_outer_hook_push,$(first))
+		$$(call __def_outer_hook_push,$(1st))
 		$(__def_inner_handle_function_pushed),
 
 		# Handle only if the push handler resulted in a non-empty tag.
-		$$(foreach __def_outer_tag_$(first),
-			$$(call __def_outer_hook_push_tag,$(first)),
+		$$(foreach __def_outer_tag_$(1st),
+			$$(call __def_outer_hook_push_tag,$(1st)),
 			$(__def_inner_handle_function_pushed)
 		)
 	)
@@ -611,15 +633,7 @@ define __def_inner_handle_function_pushed
 				# function name and the first argument is not meaningful and
 				# thus it is not preserved. Any trailing whitespaces are
 				# guarded with $(\0) from being stripped out.
-				$(subst $[,
-					_$$[
-					$$_$$[call __def_outer_hook_push$(\comma)__paren___$$],
-					$(subst $],
-						$$_$$[__def_outer_hook_pop_$$]
-						_$$],
-						$(call nofirstword,$1$$_$$[\0_$$])
-					)
-				)
+				$(call nofirstword,$1$$(\0))
 			)
 		)
 	)
