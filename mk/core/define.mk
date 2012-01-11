@@ -421,23 +421,19 @@ define __def_builtin_real
 endef
 
 define __def_inner_escape
-	$(subst $[,_$$[,$(subst $],_$$],
-		$(subst :,_$$l,$(subst _$$q,=,
-			$(subst $(\s),_$$s,$(subst $(\t),_$$t,
-				$1
-			))
+	$(subst :,_$$l,
+		$(subst $(\s),_$$s,$(subst $(\t),_$$t,
+			$1
 		))
-	))
+	)
 endef
 
 define __def_inner_unescape
-	$(subst _$$[,$[,$(subst _$$],$],
-		$(subst _$$l,:,$(subst _$$q,=,
-			$(subst _$$s,$(\s),$(subst _$$t,$(\t),
-				$1
-			))
+	$(subst _$$l,:,
+		$(subst _$$s,$(\s),$(subst _$$t,$(\t),
+			$1
 		))
-	))
+	)
 endef
 
 # Sets the following hooks:
@@ -451,11 +447,7 @@ define __def_inner_install_hooks
 		$(subst  $[,$$$[call __def_inner_hook_paren$(\comma),
 
 			# Doubly escaped double dollars. I am a rich man. $)
-			$(subst $$$$$$$$$$$$$$$$,
-				# The hell below is '$($$)$($$)'
-				# with dollars and parens escaped.
-				$$$$_$$$$[$$$$$$$$_$$$$]
-				$$$$_$$$$[$$$$$$$$_$$$$],
+			$(subst $$$$$$$$$$$$$$$$,$$$${$$$$$$$$}$$$${$$$$$$$$},
 
 				# Commas are also escaped so that inner hook handler gets only
 				# one argument.
@@ -496,8 +488,8 @@ define __def_inner_hook_expansion
 endef
 
 # Params:
-#   1. The code a warning. May include inner-escaped commas ('_$$c'), which
-#      are converted back to real ones.
+#   1. The code that caused a warning. May include inner-escaped
+#      commas ('_$$c'), which are converted back to real ones.
 #   2. Warning message.
 define __def_inner_warning
 	# The real warning message will be printed at the outer expansion phase.
@@ -512,7 +504,7 @@ endef
 #
 # Return:
 #   Resulting handled value with (possibly) outer hooks installed if the value
-#   is syntactically correct, or empty otherwise.
+#   is syntactically correct, warning hooks otherwise.
 #
 # Invariants:
 #   Everything that has been already handled before is mangled so that
@@ -522,7 +514,7 @@ endef
 #   For example, if we are going to handle the outermost expansion of
 #     $(foo bar$(one:%r=%z),baz$(two bob,alice))
 #   then the actual value being handled would have a form of
-#     $(foo bar???,baz???)
+#     $(foo bar$(???),baz$(???))
 #
 #   This avoids handling values more than once and prevents interference with
 #   the processing of the current values. Referring to the example above, the
@@ -538,10 +530,14 @@ define __def_inner_handle
 
 		# Check that there is no commas in function or variable name.
 		$(if $(findstring _$$c,$(1st)),
-			# Invalid name. Emit a warning.
-			#   $(foo,bar) $(foo, bar) $(foo,) $(,foo) $(,)
-			$(call __def_inner_warning,$$$$($1),
-				Unexpected '$(\comma)' in variable or function name)
+			$(if $(findstring $1,_$$c),
+				# A single comma as a variable name is valid.
+				$$$$(,),
+				# Invalid name. Emit a warning.
+				#   $(foo,bar) $(foo, bar) $(foo,) $(,foo)
+				$(call __def_inner_warning,$$$$($1),
+					Unexpected '$(,)' in variable or function name)
+			)
 		),
 
 		# No commas in the first word. Assuming that it is the only word inside
@@ -561,7 +557,7 @@ define __def_inner_handle
 				Unexpected leading whitespace in variable or function name)
 		),
 
-		# No leading whitespaces: valid function call.
+		# No leading whitespaces: it is definetily a valid function call.
 		$(__def_inner_handle_function)
 	)
 endef
@@ -586,22 +582,18 @@ define __def_inner_handle_substitution_reference
 	)
 endef
 
-# Params:
-#   The same as to '__def_inner_handle'.
-# Return:
-#   Resulting value with necessary outer hooks installed in case that it is
-#   a valid function call, or empty otherwise.
+# See '__def_inner_handle'.
 define __def_inner_handle_function
 	$(if $(findstring undefined,$(flavor builtin_tag-$(1st))),
 
 		# Plain push and handle.
 		$$(call __def_outer_hook_push,$(1st))
-		$(__def_inner_handle_function_pushed),
+			$(__def_inner_handle_function_pushed),
 
 		# Handle only if the push handler resulted in a non-empty tag.
 		$$(foreach __def_outer_tag_$(1st),
 			$$(call __def_outer_hook_push_tag,$(1st)),
-			$(__def_inner_handle_function_pushed)
+				$(__def_inner_handle_function_pushed)
 		)
 	)
 endef
