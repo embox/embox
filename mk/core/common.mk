@@ -76,7 +76,7 @@ ascii_char = \
 
 ## Identity function.
 id = $1
-builtin_func-id = $(builtin_to_function_inline)
+builtin_func-id = $(builtin_to_function_inline)# $$(if ,,$(builtin_args))
 
 true  := 1
 false :=

@@ -421,16 +421,16 @@ define __def_builtin_real
 endef
 
 define __def_inner_escape
-	$(subst :,_$$l,
-		$(subst $(\s),_$$s,$(subst $(\t),_$$t,
+	$(subst :,l[$$],
+		$(subst $(\s),s[$$],$(subst $(\t),t[$$],
 			$1
 		))
 	)
 endef
 
 define __def_inner_unescape
-	$(subst _$$l,:,
-		$(subst _$$s,$(\s),$(subst _$$t,$(\t),
+	$(subst l[$$],:,
+		$(subst s[$$],$(\s),$(subst t[$$],$(\t),
 			$1
 		))
 	)
@@ -446,13 +446,16 @@ define __def_inner_install_hooks
 		# Install a paren hook on every opening paren: '('.
 		$(subst  $[,$$$[call __def_inner_hook_paren$(\comma),
 
-			# Doubly escaped double dollars. I am a rich man. $)
-			$(subst $$$$$$$$$$$$$$$$,$$$${$$$$$$$$}$$$${$$$$$$$$},
+			# Commas are also escaped so that inner hook handler gets only
+			# one argument.
+			$(subst $(\comma),c[$$$$],
 
-				# Commas are also escaped so that inner hook handler gets only
-				# one argument.
-				$(subst $(\comma),_$$$$c,$1)
-			)
+				# A single comma as a variable name is enclosed by parens
+				# if there is no such.
+				$(subst $$$$$$$$$(\comma),$$$$$$$$($(\comma)),
+
+					# Doubly escaped double dollars. I am a rich man. $)
+					$(subst $$$$$$$$$$$$$$$$,$$$${$$$$$$$$}$$$${$$$$$$$$},$1)))
 		)
 	)
 endef
@@ -465,7 +468,7 @@ define __def_inner_hook_paren
 	$(call __def_inner_escape,
 		(
 			$$(call __def_outer_hook_push,__paren__)
-			$1
+				$(subst c[$$],$(,),$1)
 			$$(__def_outer_hook_pop)
 		)
 	)
@@ -489,11 +492,11 @@ endef
 
 # Params:
 #   1. The code that caused a warning. May include inner-escaped
-#      commas ('_$$c'), which are converted back to real ones.
+#      commas ('c[$$]'), which are converted back to real ones.
 #   2. Warning message.
 define __def_inner_warning
 	# The real warning message will be printed at the outer expansion phase.
-	$$(call __def_outer_hook_warning,$(subst _$$c,$$(\comma),$1),
+	$$(call __def_outer_hook_warning,$(subst c[$$],$$(\comma),$1),
 		$(subst $(\comma),$$(\comma),$2))
 endef
 
@@ -524,15 +527,22 @@ endef
 define __def_inner_handle
 	$(or \
 
-		# First try to treat it as a variable expansion with a substitution
-		# reference.
-		$(__def_inner_handle_substitution_reference),
+		# Colon in the first word has a special meaning, check it.
+		$(if $(findstring :,$(1st)),
+			$(if $(findstring $1,:),
+				$$$$(:),# Accept a single colon as a variable name.
+
+				# It has to be an extended expression.
+				#   $(foo: ...) $(: foo: ...)
+				$(call __def_inner_handle_extexp,$(call trim,$1))
+			)
+		),
 
 		# Check that there is no commas in function or variable name.
-		$(if $(findstring _$$c,$(1st)),
-			$(if $(findstring $1,_$$c),
-				# A single comma as a variable name is valid.
-				$$$$(,),
+		$(if $(findstring c[$$],$(1st)),
+			$(if $(findstring $1,c[$$]),
+				$$$$(,),# A single comma as a variable name is valid.
+
 				# Invalid name. Emit a warning.
 				#   $(foo,bar) $(foo, bar) $(foo,) $(,foo)
 				$(call __def_inner_warning,$$$$($1),
@@ -540,8 +550,10 @@ define __def_inner_handle
 			)
 		),
 
-		# No commas in the first word. Assuming that it is the only word inside
-		# the value being expanded and there is no whitespaces around it
+		# No commas or colons in the first word.
+
+		# Assuming that it is the only word inside the value being expanded
+		# and there is no whitespaces around it,
 		# we try to handle it as a regular variable expansion.
 		#   $(foo)
 		$(call singleword,$$$$($1)),
@@ -562,23 +574,29 @@ define __def_inner_handle
 	)
 endef
 
-# Params:
-#   The same as to '__def_inner_handle'.
-# Return:
-#   The value inside expansion parens if it is a valid substitution reference,
-#   or empty otherwise.
-define __def_inner_handle_substitution_reference
-	$(and \
+# Called in case of a colon in the '1st',
+# but which doesn't seem to be a '$(:)' variable reference.
+# See '__def_inner_handle'.
+define __def_inner_handle_extexp
+	$$(call __def_outer_hook_push,__extexp__)
 
-		# If there is a colon in the first word...
-		$(findstring :,$(1st)),
+	$$(call __def_outer_hook_extexp
+		# Arguments are delimited using colon.
+		$(subst :,$(\comma)$$(call __def_outer_hook_arg),
 
-		# ...and there is an equal sign after the colon...
-		$(findstring =,$(call nofirstword,$(subst :,: ,$1))),
+			# There are always at least two arguments:
+			#   - If it seems to be a generic extexp ('$(: ...)'), then
+			#     the first argument is empty.
+			#   - If the extexp is in simple form ('$(foo: ...)', like plain
+			#     old Make substitution reference), the first argument is the
+			#     name of target variable ('foo'), everything else goes into
+			#     the rest arguments ($2..).
+			:
 
-		# ...then it seems to be a substitution reference. Substitutions
-		# are not our friends. Stop handle here and output the value as is.
-		$$$$($(subst _$$c,$$(\comma),$1))
+			# '$:' -> '$(:)'
+			# ',' (literal comma) -> '$(,)'
+			$(subst $$$$:,$$$$($$(\colon)),$(subst c[$$],$$$$(,),$1))
+		)
 	)
 endef
 
@@ -600,35 +618,38 @@ endef
 
 # See '__def_inner_handle_function'
 define __def_inner_handle_function_pushed
-	$$(call __def_outer_hook_func
+	$$$[call __def_outer_hook_func
 
 		# Unescape any escaped commas and install argument hooks
 		# after each of them.
-		$(subst _$$c,
+		$(subst c[$$],
 			# Real commas are needed to get actual arguments placed
 			# into the corresponding variables ($1,$2,...), and
 			# hooks help to get the list of theese variables.
-			$(\comma)$$(call __def_outer_hook_arg),
+			$(,)$$(call __def_outer_hook_arg),
 
-			_$$c# Escaped comma before the actual arguments (if any).
+			c[$$]# Escaped comma before the first argument.
 
 			# The one and only word with trailing whitespace is anyway a valid
 			# function call with a single empty argument: '$(foo )',
-			# and in such case we've done.
-
-			# Otherwise (one non-empty or more than one argument),
-			# we should deal with these arguments.
+			# and in such case we've done. Otherwise (one non-empty or more
+			# than one argument), we should deal with these arguments.
 			#   $(foo bar) $(foo ,) $(foo bar,) $(foo ,bar) ...
-			$(if $(word 2,$1),
-				# The actual arguments form the rest of the value being
-				# handled. An exact structure of whitespaces between the
-				# function name and the first argument is not meaningful and
-				# thus it is not preserved. Any trailing whitespaces are
-				# guarded with $(\0) from being stripped out.
-				$(call nofirstword,$1$$(\0))
+
+			# The actual arguments form the rest of the value being
+			# handled. An exact structure of whitespaces between the
+			# function name and the first argument is not meaningful and
+			# thus it is not preserved. Any trailing whitespaces are
+			# guarded with closing paren ('$]') from being stripped out.
+			$(if $(findstring undefined,$(flavor builtin_raw-$(1st))),
+				$(call nofirstword,$1$]),
+				$(subst [$$$$],[$$],$(subst $$,$$$$,
+					$(call nofirstword,$1$])))
 			)
 		)
-	)
+
+	# Notice the absence of closing paren here. Thats because
+	# we've already appended it after the last argument (see above).
 endef
 
 #
@@ -752,6 +773,7 @@ endef
 #   A code which will substitute the original expansion.
 define __def_outer_hook_func
 	$(if $(value __def_debug),$(call __def_debug,func [$(builtin_reconstruct)]))
+
 	$(foreach 0,$(builtin_name),
 		$(if $(call var_defined,builtin_func-$0),
 			# There is a special builtin function handler, invoke it.
@@ -777,6 +799,19 @@ define __def_outer_hook_func
 			$(builtin_reconstruct)
 		)
 	)
+
+	$(__def_outer_hook_pop)
+endef
+
+# Handles an extended expression.
+# Return:
+#   A code which will substitute the original expansion.
+define __def_outer_hook_extexp
+	$(if $(value __def_debug),$(call __def_debug,extexp [$(builtin_args)]))
+
+	$(or $(and $1,$(findstring =,$2),$$($1:$2)),
+		$(call builtin_error,NIY (extexp:$(builtin_args))!))
+
 	$(__def_outer_hook_pop)
 endef
 
