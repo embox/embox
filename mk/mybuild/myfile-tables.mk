@@ -287,7 +287,7 @@ define __gold_$(gold_grammar)_parser
 		# 		),
 		# 		...
 		# 	),
-		$(gold-dfa-table $(id \
+		$(gold-dfa-table $(def-id \
 				0# Initial state ID.
 			),$(gold-dfa-state 0,-1,
 				$(gold-dfa-edge 0,1),
@@ -795,7 +795,7 @@ define __gold_$(gold_grammar)_parser
 		# 		),
 		# 		...
 		# 	),
-		$(gold-lalr-table $(id \
+		$(gold-lalr-table $(def-id \
 				0# Initial state ID.
 			),$(gold-lalr-state 0,
 				$(gold-lalr-action 26,1,1),
