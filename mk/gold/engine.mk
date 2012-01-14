@@ -121,21 +121,16 @@ endef
 __gold_read_file = \
 	$(shell od -v -A n -t uC $1)
 
-# Parser private namespace for builtins context. The same as $g in runtime.
-__gold_ns = $(call builtin_tag,gold-parser)
-
-define builtin_tag-gold-parser
-	$(or \
-		$(filter-patsubst __gold_%_parser,__g_%,$(__def_var)),
-		$(call builtin_error,
-			Bad variable name: '$(__def_var)'
-		)
-	)
-endef
-
 # Params: ignored
-define builtin_func-gold-parser
-	$(call def_exclude,$(__gold_ns)%)
+define builtin_macro-gold-parser
+	$(foreach __gold_ns,
+		$(or $(filter-patsubst __gold_%_parser,__g_%,$(__def_var)),
+			$(call builtin_error,Bad variable name: '$(__def_var)')),
+
+		$(call def_exclude,$(__gold_ns)%)
+
+		$(and $(call __def_expand,$(for a <- $(builtin_args_list),$($a))),)
+	)
 endef
 
 #

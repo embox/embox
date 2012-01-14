@@ -983,34 +983,30 @@ endef
 $(call def,__class_variable_value_provider)
 $(call def_register_value_provider,class-%,__class_variable_value_provider)
 
-define builtin_tag-__class__
-	$(foreach __class__,$(__def_var:class-%=%),
-		$(call var_assign_simple,$(__class__),)
-		$(__class__)
-	)
-endef
-
-# Builtin-time class name access.
-__class__ = $(call builtin_tag,__class__)
-
 #
 # $(__class__ fields/methods/supers...)
 #
-define builtin_func-__class__
+define builtin_macro-__class__
 	$(call builtin_check_max_arity,1)
 
-	# Define four special variables needed for introspection.
-	# TODO Backward-compatibility, should be replaced by '__class_attr_xxx' API.
-	$(call var_assign_simple,$(__class__).supers,
-		$(notdir $(call __class_attr_query,super,%)))
-	$(call var_assign_simple,$(__class__).methods,
-		$(notdir $(call __class_attr_query,method%,%)))
-	$(call var_assign_simple,$(__class__).properties,
-		$(notdir $(call __class_attr_query,property,%)))
-	$(call var_assign_simple,$(__class__).fields,
-		$(notdir $(call __class_attr_query,field,%)))
+	$(foreach __class__,$(__def_var:class-%=%),
+		$(call var_assign_simple,$(__class__),)
 
-	$1
+		$(expand $1)
+
+		# Define four special variables needed for introspection.
+		# TODO Backward-compatibility, should be replaced
+		# by '__class_attr_xxx' API.
+		$(call var_assign_simple,$(__class__).supers,
+			$(notdir $(call __class_attr_query,super,%)))
+		$(call var_assign_simple,$(__class__).methods,
+			$(notdir $(call __class_attr_query,method%,%)))
+		$(call var_assign_simple,$(__class__).properties,
+			$(notdir $(call __class_attr_query,property,%)))
+		$(call var_assign_simple,$(__class__).fields,
+			$(notdir $(call __class_attr_query,field,%)))
+	)
+
 endef
 
 # Params:

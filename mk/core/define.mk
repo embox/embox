@@ -437,14 +437,14 @@ define __def_inner_unescape
 endef
 
 # Sets the following hooks:
-#   '(' to call to '__def_inner_hook_paren', and
-#   '$('        to '__def_inner_hook_expansion'.
+#   '(' to call to '__def_i_paren', and
+#   '$('        to '__def_i_expansion'.
 define __def_inner_install_hooks
 	$(subst $$$$$$$$# Fix up paren hooks that follow a dollar: '$('.
-			$$$[call __def_inner_hook_paren,
-			$$$[call __def_inner_hook_expansion,
+			$$$[call __def_i_paren,
+			$$$[call __def_i_expansion,
 		# Install a paren hook on every opening paren: '('.
-		$(subst  $[,$$$[call __def_inner_hook_paren$(\comma),
+		$(subst  $[,$$$[call __def_i_paren$(\comma),
 
 			# Commas are also escaped so that inner hook handler gets only
 			# one argument.
@@ -462,21 +462,21 @@ endef
 
 # Hook for plain '(...)'.
 #   1. Value inside the parens.
-define __def_inner_hook_paren
+define __def_i_paren
 	# All we need here is to echo the argument enclosing it with calls
 	# to outer stack push/pop functions and restoring the original parens.
 	$(call __def_inner_escape,
 		(
-			$$(call __def_outer_hook_push,__paren__)
+			$$(call __def_o_push,__paren__)
 				$(subst c[$$],$(,),$1)
-			$$(__def_outer_hook_pop)
+			$$(__def_o_pop)
 		)
 	)
 endef
 
 # Hook for '$(...)'.
 #   1. Value inside the parens.
-define __def_inner_hook_expansion
+define __def_i_expansion
 	$(call __def_inner_escape,
 		$(or \
 			$(foreach 1st,$(firstword $1),
@@ -496,7 +496,7 @@ endef
 #   2. Warning message.
 define __def_inner_warning
 	# The real warning message will be printed at the outer expansion phase.
-	$$(call __def_outer_hook_warning,$(subst c[$$],$$(\comma),$1),
+	$$(call __def_o_warning,$(subst c[$$],$$(\comma),$1),
 		$(subst $(\comma),$$(\comma),$2))
 endef
 
@@ -578,11 +578,11 @@ endef
 # but which doesn't seem to be a '$(:)' variable reference.
 # See '__def_inner_handle'.
 define __def_inner_handle_extexp
-	$$(call __def_outer_hook_push,__extexp__)
+	$$(call __def_o_push,__extexp__)
 
-	$$(call __def_outer_hook_extexp
+	$$(call __def_o_extexp
 		# Arguments are delimited using colon.
-		$(subst :,$(\comma)$$(call __def_outer_hook_arg),
+		$(subst :,$(\comma)$$(call __def_o_arg),
 
 			# There are always at least two arguments:
 			#   - If it seems to be a generic extexp ('$(: ...)'), then
@@ -602,23 +602,10 @@ endef
 
 # See '__def_inner_handle'.
 define __def_inner_handle_function
-	$(if $(findstring undefined,$(flavor builtin_tag-$(1st))),
+	$$(call __def_o_push,$(1st))
 
-		# Plain push and handle.
-		$$(call __def_outer_hook_push,$(1st))
-			$(__def_inner_handle_function_pushed),
-
-		# Handle only if the push handler resulted in a non-empty tag.
-		$$(foreach __def_outer_tag_$(1st),
-			$$(call __def_outer_hook_push_tag,$(1st)),
-				$(__def_inner_handle_function_pushed)
-		)
-	)
-endef
-
-# See '__def_inner_handle_function'
-define __def_inner_handle_function_pushed
-	$$$[call __def_outer_hook_func
+	# Notice that the opening paren is escaped (see below for explanations).
+	$$$[call __def_o_func# <- also there is no comma here.
 
 		# Unescape any escaped commas and install argument hooks
 		# after each of them.
@@ -626,9 +613,11 @@ define __def_inner_handle_function_pushed
 			# Real commas are needed to get actual arguments placed
 			# into the corresponding variables ($1,$2,...), and
 			# hooks help to get the list of theese variables.
-			$(,)$$(call __def_outer_hook_arg),
+			$(,)$$(call __def_o_arg),
 
-			c[$$]# Escaped comma before the first argument.
+			c[$$]# Escaped comma before the arguments.
+
+			# TODO outdated comments below... -- Eldar
 
 			# The one and only word with trailing whitespace is anyway a valid
 			# function call with a single empty argument: '$(foo )',
@@ -641,14 +630,23 @@ define __def_inner_handle_function_pushed
 			# function name and the first argument is not meaningful and
 			# thus it is not preserved. Any trailing whitespaces are
 			# guarded with closing paren ('$]') from being stripped out.
-			$(if $(findstring undefined,$(flavor builtin_raw-$(1st))),
+			$(if $(findstring undefined,$(flavor builtin_macro-$(1st))),
+
+				# The target builtin is a plain function, arguments are
+				# expanded as usual (before executing builtin handler).
 				$(call nofirstword,$1$]),
+
+				# Builtin is a macro, and it will expand the necessary
+				# arguments by itself.
+				# We have to escape dollars (once again :) ), to prevent
+				# arguments to be expanded before executing the handler.
 				$(subst [$$$$],[$$],$(subst $$,$$$$,
 					$(call nofirstword,$1$])))
 			)
 		)
 
-	# Notice the absence of closing paren here. Thats because
+	# )
+	# Notice the absence of real closing paren here. Thats because
 	# we've already appended it after the last argument (see above).
 endef
 
@@ -701,7 +699,7 @@ define __def_stack_pop_mk
 endef
 __def_stack_pop_mk := $(value __def_stack_pop_mk)
 
-# Debugging stuff.
+# Outer stack debugging stuff.
 ifdef DEF_DEBUG
 # 1. Msg.
 __def_debug = \
@@ -717,40 +715,17 @@ endif # DEF_DEBUG
 #   1. Value to push.
 # Return:
 #   Nothing.
-define __def_outer_hook_push
+define __def_o_push
 	$(call __def_debug,push [$1])
 	${eval \
 		$(__def_stack_push_mk)
 	}
 endef
 
-# Params:
-#   1. Value to push.
-# Return:
-#   A singleword tag or empty to omit the whole subexpression.
-define __def_outer_hook_push_tag
-	$(__def_outer_hook_push)
-	$(or \
-		$(call __def_outer_tag_check,$(call builtin_tag-$1)),
-		$(__def_outer_hook_pop)
-	)
-endef
-
-# Params:
-#   1. Return value of the push handler.
-# Return:
-#   The argument if is ok, no return (die) otherwise.
-define __def_outer_tag_check
-	$(if $(word 2,$1),
-		$(error Bad return value of '$(builtin_name)' push handler: '$1')
-	)
-	$(firstword $1)
-endef
-
 # Increments the number of arguments of the function call being handled now.
 # Return:
 #   Nothing.
-define __def_outer_hook_arg
+define __def_o_arg
 	$(call __def_debug,arg$(words $(__def_stack_top)))
 	${eval \
 		$(__def_stack_arg_mk)
@@ -760,7 +735,7 @@ endef
 # Removes an element from the top and restores the previous element.
 # Return:
 #   Nothing.
-define __def_outer_hook_pop
+define __def_o_pop
 	${eval \
 		$(__def_stack_pop_mk)
 	}
@@ -771,67 +746,37 @@ endef
 # a special translation in case of user-defined builtin.
 # Return:
 #   A code which will substitute the original expansion.
-define __def_outer_hook_func
+define __def_o_func
 	$(if $(value __def_debug),$(call __def_debug,func [$(builtin_reconstruct)]))
 
 	$(foreach 0,$(builtin_name),
-		$(if $(call var_defined,builtin_func-$0),
-			# There is a special builtin function handler, invoke it.
+		$(foreach __builtin_handler,
+			$(or $(call var_defined,builtin_macro-$0),
+				 $(call var_defined,builtin_func-$0),
+				 __builtin_native_handler),
+
+			# Invoke the handler preserving the current call context.
 			${eval \
 				__def_tmp__ := \
-					$$(\0)$(subst $(\h),$$(\h),$(value builtin_func-$0))
+					$$(\0)$(subst $(\h),$$(\h),$(value $(__builtin_handler)))
 			}
-			$(__def_tmp__),
-
-			# If it is a native function check its arity.
-			$(foreach minimum_args,
-				# For unknown function 'minimum_args' would be 0.
-				$(or $(notdir $(filter $0/%,$(__builtin_native_functions))),0),
-
-				$(if $(filter 0,$(minimum_args)),
-					$(call builtin_error,
-						Undefined function '$0'),
-					$(call builtin_check_min_arity,
-						$(minimum_args))
-				)
-			)
-			# Finally leave the function call as is.
-			$(builtin_reconstruct)
+			$(__def_tmp__)
 		)
 	)
 
-	$(__def_outer_hook_pop)
+	$(__def_o_pop)
 endef
 
-# Handles an extended expression.
-# Return:
-#   A code which will substitute the original expansion.
-define __def_outer_hook_extexp
-	$(if $(value __def_debug),$(call __def_debug,extexp [$(builtin_args)]))
-
-	$(or $(and $1,$(findstring =,$2),$$($1:$2)),
-		$(call builtin_error,NIY (extexp:$(builtin_args))!))
-
-	$(__def_outer_hook_pop)
-endef
-
-# Issues a warning with the specified message including the expansion stack.
-# Params:
-#   1. Code fragment which caused the warning.
-#   2. The message.
-# Return:
-#   The first argument.
-define __def_outer_hook_warning
-	$(call __def_outer_hook_push,<unknown>)
-	$(call builtin_warning,
-		$2$(if $1,: '$1'))
-	$(__def_outer_hook_pop)
-	$1
-endef
-
-# Special builtin which echoes its arguments.
-define builtin_func-__def_root__
-	$(builtin_args)
+# Handles GNU Make native functions.
+# The invocation context is the same as for user-defined builtins.
+define __builtin_native_handler
+	# If it is a native function check its arity.
+	$(call builtin_check_min_arity,
+		$(or $(notdir $(filter $0/%,$(__builtin_native_functions))),
+			# If a function is unknown then give up.
+			$(call builtin_error,Undefined function '$0')))
+	# Finally leave the function call as is.
+	$(builtin_reconstruct)
 endef
 
 # List of GNU Make 3.81 native builtin functions with their arities.
@@ -846,6 +791,37 @@ __builtin_native_functions := \
 	error/1       warning/1     if/2          or/1         \
 	and/1         value/1       eval/1
 __builtin_native_functions := $(strip $(__builtin_native_functions))
+
+# Handles an extended expression.
+# Return:
+#   A code which will substitute the original expansion.
+define __def_o_extexp
+	$(if $(value __def_debug),$(call __def_debug,extexp [$(builtin_args)]))
+
+	$(or $(and $1,$(findstring =,$2),$$($1:$2)),
+		$(call builtin_error,NIY (extexp:$(builtin_args))!))
+
+	$(__def_o_pop)
+endef
+
+# Issues a warning with the specified message including the expansion stack.
+# Params:
+#   1. Code fragment which caused the warning.
+#   2. The message.
+# Return:
+#   The first argument.
+define __def_o_warning
+	$(call __def_o_push,<unknown>)
+	$(call builtin_warning,
+		$2$(if $1,: '$1'))
+	$(__def_o_pop)
+	$1
+endef
+
+# Special builtin which echoes its arguments.
+define builtin_func-__def_root__
+	$(builtin_args)
+endef
 
 #
 # Here goes an API for defining own builtin functions.
@@ -1019,20 +995,6 @@ endef
 #   namely 'baz', its direct caller is 'bar' and a caller at depth 2 is 'foo'.
 define builtin_caller_at
 	$(word $1,$(builtin_callers))
-endef
-
-# Retrieves a tag if it has been defined.
-#
-# Params:
-#   1. Function name.
-# Return:
-#   The tag of the nearest expansion of the specified builtin (if any).
-# Example:
-#   In case of handling 'baz' builtin in expression $(foo $(bar $(baz ...))),
-#   and assuming that 'builtin_tag-bar' returned 'moo', the result of calling
-#   '$(call builtin_tag,bar)' will be 'moo'.
-define builtin_tag
-	$(value __def_outer_tag_$1)
 endef
 
 #
