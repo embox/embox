@@ -511,8 +511,8 @@ endef
 #
 # Invariants:
 #   Everything that has been already handled before is mangled so that
-#   there is no whitespaces, escaped commas, colons or equal signs in such
-#   handled fragments.
+#   there is no whitespaces, escaped commas or colons in such handled
+#   fragments.
 #
 #   For example, if we are going to handle the outermost expansion of
 #     $(foo bar$(one:%r=%z),baz$(two bob,alice))
@@ -522,8 +522,7 @@ endef
 #   This avoids handling values more than once and prevents interference with
 #   the processing of the current values. Referring to the example above, the
 #   value will have only two words (unlike three words in the original
-#   expansion), only one comma (as opposed to two commas) and no equal sign or
-#   colon.
+#   expansion), only one comma (as opposed to two commas) and no colon.
 define __def_inner_handle
 	$(or \
 
@@ -534,7 +533,7 @@ define __def_inner_handle
 
 				# It has to be an extended expression.
 				#   $(foo: ...) $(: foo: ...)
-				$(call __def_inner_handle_extexp,$(call trim,$1))
+				$(call __def_inner_handle_extexp,$1)
 			)
 		),
 
@@ -578,24 +577,15 @@ endef
 # but which doesn't seem to be a '$(:)' variable reference.
 # See '__def_inner_handle'.
 define __def_inner_handle_extexp
-	$$(call __def_o_push,__extexp__)
-
-	$$(call __def_o_extexp
-		# Arguments are delimited using colon.
-		$(subst :,$(\comma)$$(call __def_o_arg),
-
-			# There are always at least two arguments:
-			#   - If it seems to be a generic extexp ('$(: ...)'), then
-			#     the first argument is empty.
-			#   - If the extexp is in simple form ('$(foo: ...)', like plain
-			#     old Make substitution reference), the first argument is the
-			#     name of target variable ('foo'), everything else goes into
-			#     the rest arguments ($2..).
-			:
-
-			# '$:' -> '$(:)'
-			# ',' (literal comma) -> '$(,)'
-			$(subst $$$$:,$$$$($$(\colon)),$(subst c[$$],$$$$(,),$1))
+	$(foreach 1st,__extexp__,
+		$(call __def_inner_handle_function,
+			# Arguments are delimited using colon.
+			$(subst :,c[$$],
+				# '$:' -> '$(:)'
+				# ',' (literal comma) -> '$(,)'
+				$(subst $$$$:,$$(\colon),$(subst c[$$],$$(,),
+					# Handle is as if it was $(__extexp__ foo, ...).
+					__extexp__ $1)))
 		)
 	)
 endef
@@ -638,7 +628,7 @@ define __def_inner_handle_function
 
 				# Builtin is a macro, and it will expand the necessary
 				# arguments by itself.
-				# We have to escape dollars (once again :) ), to prevent
+				# We have to escape dollars (once again :) ) to prevent
 				# arguments to be expanded before executing the handler.
 				$(subst [$$$$],[$$],$(subst $$,$$$$,
 					$(call nofirstword,$1$])))
@@ -774,7 +764,7 @@ define __builtin_native_handler
 	$(call builtin_check_min_arity,
 		$(or $(notdir $(filter $0/%,$(__builtin_native_functions))),
 			# If a function is unknown then give up.
-			$(call builtin_error,Undefined function '$0')))
+			$(call builtin_error,Undefined function or macro '$0')))
 	# Finally leave the function call as is.
 	$(builtin_reconstruct)
 endef
@@ -791,18 +781,6 @@ __builtin_native_functions := \
 	error/1       warning/1     if/2          or/1         \
 	and/1         value/1       eval/1
 __builtin_native_functions := $(strip $(__builtin_native_functions))
-
-# Handles an extended expression.
-# Return:
-#   A code which will substitute the original expansion.
-define __def_o_extexp
-	$(if $(value __def_debug),$(call __def_debug,extexp [$(builtin_args)]))
-
-	$(or $(and $1,$(findstring =,$2),$$($1:$2)),
-		$(call builtin_error,NIY (extexp:$(builtin_args))!))
-
-	$(__def_o_pop)
-endef
 
 # Issues a warning with the specified message including the expansion stack.
 # Params:
@@ -821,6 +799,22 @@ endef
 # Special builtin which echoes its arguments.
 define builtin_func-__def_root__
 	$(builtin_args)
+endef
+
+# Handles an extended expression.
+#
+# There are always at least two arguments:
+#
+#   - If it seems to be a generic extexp ('$(: ...)'), then the first argument
+#     is empty.
+#
+#   - If the extexp is in simple form ('$(foo: ...)', like plain old Make
+#     substitution reference), the first argument is the name of target
+#     variable ('foo'), everything else goes into the rest arguments ($2..).
+#
+define builtin_macro-__extexp__
+	$(or $(and $1,$(findstring =,$2),$$($1:$(call __def_expand,$2))),
+		$(call builtin_error,NIY (extexp:$(builtin_args))!))
 endef
 
 #
@@ -940,11 +934,8 @@ builtin_check_max_arity = \
 #   Nothing.
 define builtin_check_arity_range
 	$(call __builtin_check_arity_range,
-		$(wordlist \
-			$(or $(1:0=),1),
-			$(or $2,$(words $(builtin_args_list))),
-			$(builtin_args_list)
-		)
+		$(wordlist $(or $1,1),$(or $2,$(words $(builtin_args_list))),
+			$(builtin_args_list))
 	)
 endef
 
@@ -971,9 +962,7 @@ endef
 #   For the function 'baz' in $(foo $(bar $(baz ...))) the return would be
 #   'bar foo'.
 define builtin_callers
-	$(filter-out $(\comma)%,$(subst $(\comma), $(\comma),
-		$(filter-out __paren__% __def_root__%,$(__def_stack))
-	))
+	$(filter-out $(,)%,$(subst $(,), $(,),$(__def_stack)))
 endef
 
 # A shorthand for $(firstword $(builtin_callers)).
@@ -1009,8 +998,8 @@ define builtin_print_stack
 	$(warning $(__def_var):$(\t)function '$(firstword $(__def_stack_top))')
 	$(and $(foreach e,$(__def_stack),
 		$(warning $(__def_var):
-			$(\t)arg $(words $(call nofirstword,$(subst $(\comma), ,$e))) \
-				of '$(firstword $(subst $(\comma), ,$e))'
+			$(\t)arg $(words $(call nofirstword,$(subst $(,), ,$e))) \
+				of '$(firstword $(subst $(,), ,$e))'
 		)
 	),)
 endef
@@ -1035,6 +1024,13 @@ define builtin_error
 	$(builtin_warning)
 	$(error $(__def_var): Error in definition of '$(__def_var)' function)
 endef
+
+# Ufff, builtins definition framework is mostly up.
+# Flush functions we have just defined and activate '__def_builtin_real'.
+$(def_all)
+
+__def_builtin = \
+	$(call __def_builtin_real,$1)
 
 #
 # Misc.
@@ -1073,13 +1069,6 @@ endef
 
 # Turn off auto-def for functions generated by builtin handlers.
 $(call def_exclude,__def_aux%)
-
-# Ufff, builtins definition framework is mostly up.
-# Flush functions we have just defined and activate '__def_builtin_real'.
-$(def_all)
-
-__def_builtin = \
-	$(call __def_builtin_real,$1)
 
 #
 # Define some simple builtins that will help us with defining the rest ones.
@@ -1166,9 +1155,10 @@ define builtin_func-expand
 	$$(__def_tmp__)
 endef
 
-# Flush: assert, lambda, with and expand.
+# Flush: builtin aux API, assert, lambda, with and expand.
 $(def_all)
 
+# Expands the first argument.
 expand = $(expand $1)
 $(call def,expand)
 
