@@ -1143,6 +1143,18 @@ with = \
 # '$(expand code...)'
 #
 define builtin_func-expand
+	$(builtin_func-silent-expand)
+	$$(__def_tmp__)
+endef
+
+#
+# Extension: 'silent-expand' builtin function.
+#
+# Performs the same as 'expand', but does not return anything.
+#
+# '$(silent-expand code...)'
+#
+define builtin_func-silent-expand
 	$${eval \
 		__def_tmp__ := \
 			$$$$(\0)# Preserve leading whitespace.
@@ -1152,7 +1164,6 @@ define builtin_func-expand
 				)
 			)
 	}
-	$$(__def_tmp__)
 endef
 
 # Flush: builtin aux API, assert, lambda, with and expand.
