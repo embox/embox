@@ -5,7 +5,6 @@
 ifndef __model_model_mk
 __model_model_mk := $(lastword $(MAKEFILE_LIST))
 
-include $(dir $(__model_model_mk))model_impl.mk
 
 #
 # Model object 'ENode'.
@@ -17,30 +16,78 @@ include $(dir $(__model_model_mk))model_impl.mk
 #   - reference 'eRootContainer'
 #   - reference 'eContents'
 #   - reference 'eAllContents'
+#   - reference 'eLinks'
+#   - reference 'eResolvedLinks'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eUnresolvedLinks'
+#   - reference 'eRefs'
+#   - reference 'eInverseRefs'
+#   - reference 'eLinkedRefs'
+#   - reference 'eInverseLinkedRefs'
+#   - reference 'eImmediateRefs'
+#   - reference 'eInverseImmediateRefs'
 #
 # To instantiate this class use 'EModelFactory.createENode'.
 define class-ENode
-	$(super ENode)
+#	$(super ENode)
 
 	# 'eMetaClass' reference.
 	$(property eMetaClass : EMetaClass)# read-only.
 
 	# 'eResource' attribute.
-	$(property eResource : EResource)# read-only.
+	$(property eResource)# read-only.
 
-	# 'eContainer' reference.
+	# 'eContainer' bidirectional reference.
+	# The opposite reference is 'eContents'.
 	$(property eContainer : ENode)# read-only.
 
 	# 'eRootContainer' reference.
 	$(property eRootContainer : ENode)# read-only.
 
 	# 'eContents' bidirectional reference.
-	# The opposite reference is 'eContents'.
+	# The opposite reference is 'eContainer'.
 	$(property eContents... : ENode)# read-only.
 
-	# 'eAllContents' bidirectional reference.
-	# The opposite reference is 'eAllContents'.
+	# 'eAllContents' reference.
 	$(property eAllContents... : ENode)# read-only.
+
+	# 'eLinks' bidirectional containment reference.
+	# The opposite reference is 'ELink.eSource'.
+	$(property eLinks... : ELink)# read-only.
+
+	# 'eResolvedLinks' reference.
+	$(property eResolvedLinks... : ELink)# read-only.
+
+	# 'eInverseResolvedLinks' bidirectional reference.
+	# The opposite reference is 'ELink.eDestination'.
+	$(property eInverseResolvedLinks... : ELink)# read-only.
+
+	# 'eUnresolvedLinks' reference.
+	$(property eUnresolvedLinks... : ELink)# read-only.
+
+	# 'eRefs' bidirectional reference.
+	# The opposite reference is 'eInverseRefs'.
+	$(property eRefs... : ENode)# read-only.
+
+	# 'eInverseRefs' bidirectional reference.
+	# The opposite reference is 'eRefs'.
+	$(property eInverseRefs... : ENode)# read-only.
+
+	# 'eLinkedRefs' bidirectional reference.
+	# The opposite reference is 'eInverseLinkedRefs'.
+	$(property eLinkedRefs... : ENode)# read-only.
+
+	# 'eInverseLinkedRefs' bidirectional reference.
+	# The opposite reference is 'eLinkedRefs'.
+	$(property eInverseLinkedRefs... : ENode)# read-only.
+
+	# 'eImmediateRefs' bidirectional reference.
+	# The opposite reference is 'eInverseImmediateRefs'.
+	$(property eImmediateRefs... : ENode)# read-only.
+
+	# 'eInverseImmediateRefs' bidirectional reference.
+	# The opposite reference is 'eImmediateRefs'.
+	$(property eInverseImmediateRefs... : ENode)# read-only.
 
 endef
 
@@ -49,6 +96,8 @@ endef
 #
 # The following features are available:
 #   - reference 'eMetaReference'
+#   - reference 'eSource'
+#   - reference 'eDestination'
 #
 # To instantiate this class use 'EModelFactory.createELink'.
 define class-ELink
@@ -57,6 +106,14 @@ define class-ELink
 
 	# 'eMetaReference' reference.
 	$(property eMetaReference : EMetaReference)
+
+	# 'eSource' bidirectional container reference.
+	# The opposite reference is 'ENode.eLinks'.
+	$(property eSource : ENode)# read-only.
+
+	# 'eDestination' bidirectional reference.
+	# The opposite reference is 'ENode.eInverseResolvedLinks'.
+	$(property eDestination : ENode)# read-only.
 
 endef
 
@@ -73,15 +130,11 @@ define class-EMetaType
 	$(super ENamed)
 
 	# 'instanceClass' attribute.
-	$(property instanceClass : EString)
+	$(property instanceClass)
 
 	# 'eMetaModel' bidirectional container reference.
 	# The opposite reference is 'EMetaModel.eTypes'.
 	$(property eMetaModel : EMetaModel)# read-only.
-
-	# 'isInstance : EBoolean' operation.
-	#   1. object : ENode
-	$(method isInstance)
 
 endef
 
@@ -107,10 +160,10 @@ define class-EMetaClass
 	$(super EMetaType)
 
 	# 'abstract' attribute.
-	$(property isAbstract : EBoolean)
+	$(property isAbstract)
 
 	# 'interface' attribute.
-	$(property isInterface : EBoolean)
+	$(property isInterface)
 
 	# 'eSuperTypes' reference.
 	$(property eSuperTypes... : EMetaClass)
@@ -140,9 +193,13 @@ define class-EMetaClass
 	# 'eAllContainments' reference.
 	$(property eAllContainments... : EMetaReference)# read-only.
 
-	# 'isSuperTypeOf : EBoolean' operation.
+	# 'isSuperTypeOf' operation.
 	#   1. someClass : EMetaClass
 	$(method isSuperTypeOf)
+
+	# 'isInstance' operation.
+	#   1. object : ENode
+	$(method isInstance)
 
 endef
 
@@ -173,19 +230,19 @@ define class-EMetaFeature
 	$(super ETyped)
 
 	# 'changeable' attribute.
-	$(property isChangeable : EBoolean)
+	$(property isChangeable)
 
 	# 'volatile' attribute.
-	$(property isVolatile : EBoolean)
+	$(property isVolatile)
 
 	# 'transient' attribute.
-	$(property isTransient : EBoolean)
+	$(property isTransient)
 
 	# 'derived' attribute.
-	$(property isDerived : EBoolean)
+	$(property isDerived)
 
 	# 'instanceProperty' attribute.
-	$(property instanceProperty : EString)
+	$(property instanceProperty)
 
 	# 'eContainingClass' bidirectional container reference.
 	# The opposite reference is 'EMetaClass.eFeatures'.
@@ -208,10 +265,10 @@ define class-EMetaReference
 	$(super EMetaFeature)
 
 	# 'containment' attribute.
-	$(property isContainment : EBoolean)
+	$(property isContainment)
 
 	# 'container' attribute.
-	$(property isContainer : EBoolean)# read-only.
+	$(property isContainer)# read-only.
 
 	# 'eOpposite' reference.
 	$(property eOpposite : EMetaReference)
@@ -250,8 +307,8 @@ define class-EMetaModel
 	$(super ENamed)
 
 	# 'eFactory' bidirectional reference.
-	# The opposite reference is 'EModelFactory.eMetaModel'.
-	$(property eFactory : EModelFactory)
+	# The opposite reference is 'EFactory.eMetaModel'.
+	$(property eFactory : EFactory)
 
 	# 'eTypes' bidirectional containment reference.
 	# The opposite reference is 'EMetaType.eMetaModel'.
@@ -260,13 +317,13 @@ define class-EMetaModel
 endef
 
 #
-# Model object 'EModelFactory'.
+# Model object 'EFactory'.
 #
 # The following features are available:
 #   - reference 'eMetaModel'
 #
-# To instantiate this class use 'EModelFactory.createEModelFactory'.
-define class-EModelFactory
+# To instantiate this class use 'EModelFactory.createEFactory'.
+define class-EFactory
 	$(super ENode)
 
 	# 'eMetaModel' bidirectional reference.
@@ -286,7 +343,7 @@ define class-ENamed
 	$(super ENode)
 
 	# 'name' attribute.
-	$(property name : EString)
+	$(property name)
 
 endef
 
@@ -296,6 +353,7 @@ endef
 # The following features are available:
 #   - attribute 'lowerBound'
 #   - attribute 'upperBound'
+#   - attribute 'many'
 #   - reference 'eType'
 #
 # This is an abstract class. You can't instantiate it directly.
@@ -304,10 +362,13 @@ define class-ETyped
 	$(super ENamed)
 
 	# 'lowerBound' attribute.
-	$(property lowerBound : EInt)
+	$(property lowerBound)
 
 	# 'upperBound' attribute.
-	$(property upperBound : EInt)
+	$(property upperBound)
+
+	# 'many' attribute.
+	$(property isMany)# read-only.
 
 	# 'eType' reference.
 	$(property eType : EMetaType)
@@ -315,6 +376,8 @@ define class-ETyped
 endef
 
 $(def_all)
+
+include $(dir $(__model_model_mk))model_impl.mk
 
 endif # __model_model_mk
 

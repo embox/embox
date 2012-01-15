@@ -2,8 +2,10 @@
 
 # Implementation of factory for 'EModel' model.
 
-ifndef __model_factory_impl_mk
-__model_factory_impl_mk := $(lastword $(MAKEFILE_LIST))
+ifndef __model_factory_mk
+$(error \
+	Do not include this file directly, include 'factory.mk' instead!)
+endif # __model_factory_mk
 
 # Implements methods for creating objects of 'EModel' model.
 define class-EModelFactoryImpl
@@ -32,11 +34,9 @@ define class-EModelFactoryImpl
 	$(method createEMetaModel,
 		$(new EMetaModelImpl))
 
-	$(method createEModelFactory,
-		$(new EModelFactoryImpl))
+	$(method createEFactory,
+		$(new EFactoryImpl))
 endef
 
 $(def_all)
-
-endif # __model_factory_impl_mk
 

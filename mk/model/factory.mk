@@ -5,8 +5,6 @@
 ifndef __model_factory_mk
 __model_factory_mk := $(lastword $(MAKEFILE_LIST))
 
-include $(dir $(__model_factory_mk))factory_impl.mk
-
 # Provides methods for creating objects of 'EModel' model.
 # See 'eModelFactory'.
 define class-EModelFactory
@@ -33,11 +31,13 @@ define class-EModelFactory
 	# Creates a new 'EMetaModel' model object.
 	$(method createEMetaModel)
 
-	# Creates a new 'EModelFactory' model object.
-	$(method createEModelFactory)
+	# Creates a new 'EFactory' model object.
+	$(method createEFactory)
 endef
 
 $(def_all)
+
+include $(dir $(__model_factory_mk))factory_impl.mk
 
 eModelFactory := $(call new,EModelFactoryImpl)
 

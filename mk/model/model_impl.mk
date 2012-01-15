@@ -2,26 +2,18 @@
 
 # Model implementation of 'EModel' package.
 
-ifndef __model_model_impl_mk
-__model_model_impl_mk := $(lastword $(MAKEFILE_LIST))
+ifndef __model_model_mk
+$(error \
+	Do not include this file directly, include 'model.mk' instead!)
+endif # __model_model_mk
 
-# Base class for all modelled objects of this package.
-define class-EModelNodeImpl
-	$(super ENodeImpl)
-
-	# Returns a reference to 'EModel' meta model.
-	$(getter eMetaModel,
-		$(eModelMetaModel))
-
-endef
-
-# Implementation of 'ENode' model object .
+# Implementation of 'ENode' model object.
 define class-ENodeImpl
-	$(super ENode)
-
-	$(super EModelNodeImpl)
-
-	$(getter eMetaClass,$(get eModelMetaModel->ENode))
+#	$(super ENode)
+#
+#	$(super ENodeImpl)
+#
+#	$(getter eMetaClass,$(get eModelMetaModel->ENode))
 
 	# Reference 'eMetaClass' [0..1]: volatile, read-only.
 	$(property eMetaClass : EMetaClass)
@@ -32,42 +24,124 @@ define class-ENodeImpl
 	# PROTECTED REGION END
 
 	# Attribute 'eResource': volatile, read-only.
-	$(property eResource : EResource)
+	$(property eResource)
 	# PROTECTED REGION ID(ENode_eResource) ENABLED START
-	$(getter  eResource,
+	$(getter eResource,
 		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eContainer' [0..1]: volatile, read-only.
+	# Reference 'eContainer' [0..1]: bidirectional, volatile, read-only.
 	$(property eContainer : ENode)
 	# PROTECTED REGION ID(ENode_eContainer) ENABLED START
 	$(field eContainer)
-	$(getter  eContainer,
+	$(getter eContainer,
 		$(get-field eContainer))
 	# PROTECTED REGION END
 
 	# Reference 'eRootContainer' [0..1]: volatile, read-only.
 	$(property eRootContainer : ENode)
 	# PROTECTED REGION ID(ENode_eRootContainer) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eRootContainer,
-#		$(error $0: NIY))
+	$(getter eRootContainer,
+		$(or \
+			$(for container <- $(get eContainer),
+				$(get container->eRootContainer)),
+			$(this)))
 	# PROTECTED REGION END
 
 	# Reference 'eContents' [0..*]: bidirectional, volatile, read-only.
 	$(property eContents... : ENode)
 	# PROTECTED REGION ID(ENode_eContents) ENABLED START
-	$(getter  eContents,
-		$(foreach metaReference,$(get $(get eMetaClass).eAllContainments),
+	$(getter eContents,
+		$(for metaReference <- $(get $(get eMetaClass).eAllContainments),
 			$(get $(get metaReference->instanceProperty))))
 	# PROTECTED REGION END
 
-	# Reference 'eAllContents' [0..*]: bidirectional, volatile, read-only.
+	# Reference 'eAllContents' [0..*]: volatile, read-only.
 	$(property eAllContents... : ENode)
 	# PROTECTED REGION ID(ENode_eAllContents) ENABLED START
-	$(getter  eAllContents,
-		$(foreach child,$(get eContents),$(child) \
-			$(get child->eAllContents)))
+	$(getter eAllContents,
+		$(for child <- $(get eContents),
+			$(child) $(get child->eAllContents)))
+	# PROTECTED REGION END
+
+	# Reference 'eLinks' [0..*]: bidirectional, containment, volatile, read-only.
+	$(property eLinks... : ELink)
+	# PROTECTED REGION ID(ENode_eLinks) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eLinks,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'eResolvedLinks' [0..*]: volatile, read-only.
+	$(property eResolvedLinks... : ELink)
+	# PROTECTED REGION ID(ENode_eResolvedLinks) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eResolvedLinks,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'eInverseResolvedLinks' [0..*]: bidirectional, volatile, read-only.
+	$(property eInverseResolvedLinks... : ELink)
+	# PROTECTED REGION ID(ENode_eInverseResolvedLinks) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eInverseResolvedLinks,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'eUnresolvedLinks' [0..*]: volatile, read-only.
+	$(property eUnresolvedLinks... : ELink)
+	# PROTECTED REGION ID(ENode_eUnresolvedLinks) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eUnresolvedLinks,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'eRefs' [0..*]: bidirectional, volatile, read-only.
+	$(property eRefs... : ENode)
+	# PROTECTED REGION ID(ENode_eRefs) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eRefs,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'eInverseRefs' [0..*]: bidirectional, volatile, read-only.
+	$(property eInverseRefs... : ENode)
+	# PROTECTED REGION ID(ENode_eInverseRefs) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eInverseRefs,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'eLinkedRefs' [0..*]: bidirectional, volatile, read-only.
+	$(property eLinkedRefs... : ENode)
+	# PROTECTED REGION ID(ENode_eLinkedRefs) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eLinkedRefs,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'eInverseLinkedRefs' [0..*]: bidirectional, volatile, read-only.
+	$(property eInverseLinkedRefs... : ENode)
+	# PROTECTED REGION ID(ENode_eInverseLinkedRefs) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eInverseLinkedRefs,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'eImmediateRefs' [0..*]: bidirectional, volatile, read-only.
+	$(property eImmediateRefs... : ENode)
+	# PROTECTED REGION ID(ENode_eImmediateRefs) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eImmediateRefs,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'eInverseImmediateRefs' [0..*]: bidirectional, volatile, read-only.
+	$(property eInverseImmediateRefs... : ENode)
+	# PROTECTED REGION ID(ENode_eInverseImmediateRefs) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eInverseImmediateRefs,
+#		$(error $0: NIY))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ENode) ENABLED START
@@ -121,11 +195,11 @@ define class-ENodeImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'ELink' model object .
+# Implementation of 'ELink' model object.
 define class-ELinkImpl
 	$(super ELink)
 
-	$(super EModelNodeImpl)
+	$(super ENodeImpl)
 	$(super ENamedImpl)
 
 	$(getter eMetaClass,$(get eModelMetaModel->ELink))
@@ -138,53 +212,61 @@ define class-ELinkImpl
 	$(setter eMetaReference,
 		$(invoke doSetReference,$(get eModelMetaModel->ELink_eMetaReference),$1))
 
+	# Reference 'eSource' [0..1]: bidirectional, container, volatile, read-only.
+	$(property eSource : ENode)
+	# PROTECTED REGION ID(ELink_eSource) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eSource,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'eDestination' [0..1]: bidirectional, volatile, read-only.
+	$(property eDestination : ENode)
+	# PROTECTED REGION ID(ELink_eDestination) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eDestination,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
 	# PROTECTED REGION ID(ELink) ENABLED START
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'EMetaType' model object .
+# Implementation of 'EMetaType' model object.
 define class-EMetaTypeImpl
 	$(super EMetaType)
 
-	$(super EModelNodeImpl)
+	$(super ENodeImpl)
 	$(super ENamedImpl)
 
 	$(getter eMetaClass,$(get eModelMetaModel->EMetaType))
 
 	# Attribute 'instanceClass'.
-	$(property-field instanceClass : EString)
+	$(property-field instanceClass)
 
 	# Reference 'eMetaModel' [0..1]: bidirectional, container, read-only.
 	$(property eMetaModel : EMetaModel)
 	$(getter eMetaModel,
 		$(invoke doGetContainerReference,$(get eModelMetaModel->EMetaType_eMetaModel)))
 
-	# 'isInstance : EBoolean' operation.
-	#   1. object : ENode
-	# PROTECTED REGION ID(EMetaType_isInstance) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(method isInstance,
-#		$(error $0($1): NIY))
-	# PROTECTED REGION END
-
 	# PROTECTED REGION ID(EMetaType) ENABLED START
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'EMetaClass' model object .
+# Implementation of 'EMetaClass' model object.
 define class-EMetaClassImpl
 	$(super EMetaClass)
 
-	$(super EModelNodeImpl)
+	$(super ENodeImpl)
 	$(super EMetaTypeImpl)
 
 	$(getter eMetaClass,$(get eModelMetaModel->EMetaClass))
 
 	# Attribute 'abstract'.
-	$(property-field isAbstract : EBoolean)
+	$(property-field isAbstract)
 
 	# Attribute 'interface'.
-	$(property-field isInterface : EBoolean)
+	$(property-field isInterface)
 
 	# Reference 'eSuperTypes' [0..*].
 	$(property eSuperTypes... : EMetaClass)
@@ -201,7 +283,7 @@ define class-EMetaClassImpl
 	# Reference 'eAllSuperTypes' [0..*]: volatile, read-only.
 	$(property eAllSuperTypes... : EMetaClass)
 	# PROTECTED REGION ID(EMetaClass_eAllSuperTypes) ENABLED START
-	$(getter  eAllSuperTypes,
+	$(getter eAllSuperTypes,
 		# TODO inefficient.
 		$(sort \
 			$(foreach superType,$(get eSuperTypes),$(superType) \
@@ -223,7 +305,7 @@ define class-EMetaClassImpl
 	# Reference 'eAllFeatures' [0..*]: volatile, read-only.
 	$(property eAllFeatures... : EMetaFeature)
 	# PROTECTED REGION ID(EMetaClass_eAllFeatures) ENABLED START
-	$(getter  eAllFeatures,
+	$(getter eAllFeatures,
 		$(sort $(get eFeatures) \
 			$(foreach superType,$(get eSuperTypes),
 				$(get superType->eAllFeatures))))
@@ -232,7 +314,7 @@ define class-EMetaClassImpl
 	# Reference 'eAttributes' [0..*]: volatile, read-only.
 	$(property eAttributes... : EMetaAttribute)
 	# PROTECTED REGION ID(EMetaClass_eAttributes) ENABLED START
-	$(getter  eAttributes,
+	$(getter eAttributes,
 		$(invoke filterFeaturesByClass,$(get eFeatures),
 			$(get eModelMetaModel->EMetaAttribute)))
 	# PROTECTED REGION END
@@ -240,7 +322,7 @@ define class-EMetaClassImpl
 	# Reference 'eAllAttributes' [0..*]: volatile, read-only.
 	$(property eAllAttributes... : EMetaAttribute)
 	# PROTECTED REGION ID(EMetaClass_eAllAttributes) ENABLED START
-	$(getter  eAllAttributes,
+	$(getter eAllAttributes,
 		$(invoke filterFeaturesByClass,$(get eAllFeatures),
 			$(get eModelMetaModel->EMetaAttribute)))
 	# PROTECTED REGION END
@@ -248,8 +330,7 @@ define class-EMetaClassImpl
 	# Reference 'eReferences' [0..*]: volatile, read-only.
 	$(property eReferences... : EMetaReference)
 	# PROTECTED REGION ID(EMetaClass_eReferences) ENABLED START
-	# TODO Uncomment and implement me.
-	$(getter  eReferences,
+	$(getter eReferences,
 		$(invoke filterFeaturesByClass,$(get eFeatures),
 			$(get eModelMetaModel->EMetaReference)))
 	# PROTECTED REGION END
@@ -257,7 +338,7 @@ define class-EMetaClassImpl
 	# Reference 'eAllReferences' [0..*]: volatile, read-only.
 	$(property eAllReferences... : EMetaReference)
 	# PROTECTED REGION ID(EMetaClass_eAllReferences) ENABLED START
-	$(getter  eAllReferences,
+	$(getter eAllReferences,
 		$(invoke filterFeaturesByClass,$(get eAllFeatures),
 			$(get eModelMetaModel->EMetaReference)))
 	# PROTECTED REGION END
@@ -265,17 +346,24 @@ define class-EMetaClassImpl
 	# Reference 'eAllContainments' [0..*]: volatile, read-only.
 	$(property eAllContainments... : EMetaReference)
 	# PROTECTED REGION ID(EMetaClass_eAllContainments) ENABLED START
-	# TODO Uncomment and implement me.
-	$(getter  eAllContainments,
+	$(getter eAllContainments,
 		$(foreach reference,$(get eAllReferences),
 			$(if $(get reference->isContainment),$(reference))))
 	# PROTECTED REGION END
 
-	# 'isSuperTypeOf : EBoolean' operation.
+	# 'isSuperTypeOf' operation.
 	#   1. someClass : EMetaClass
 	# PROTECTED REGION ID(EMetaClass_isSuperTypeOf) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(method isSuperTypeOf,
+#		$(error $0($1): NIY))
+	# PROTECTED REGION END
+
+	# 'isInstance' operation.
+	#   1. object : ENode
+	# PROTECTED REGION ID(EMetaClass_isInstance) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(method isInstance,
 #		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
@@ -293,11 +381,11 @@ define class-EMetaClassImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'EMetaPrimitive' model object .
+# Implementation of 'EMetaPrimitive' model object.
 define class-EMetaPrimitiveImpl
 	$(super EMetaPrimitive)
 
-	$(super EModelNodeImpl)
+	$(super ENodeImpl)
 	$(super EMetaTypeImpl)
 
 	$(getter eMetaClass,$(get eModelMetaModel->EMetaPrimitive))
@@ -306,29 +394,29 @@ define class-EMetaPrimitiveImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'EMetaFeature' model object .
+# Implementation of 'EMetaFeature' model object.
 define class-EMetaFeatureImpl
 	$(super EMetaFeature)
 
-	$(super EModelNodeImpl)
+	$(super ENodeImpl)
 	$(super ETypedImpl)
 
 	$(getter eMetaClass,$(get eModelMetaModel->EMetaFeature))
 
 	# Attribute 'changeable'.
-	$(property-field isChangeable : EBoolean)
+	$(property-field isChangeable)
 
 	# Attribute 'volatile'.
-	$(property-field isVolatile : EBoolean)
+	$(property-field isVolatile)
 
 	# Attribute 'transient'.
-	$(property-field isTransient : EBoolean)
+	$(property-field isTransient)
 
 	# Attribute 'derived'.
-	$(property-field isDerived : EBoolean)
+	$(property-field isDerived)
 
 	# Attribute 'instanceProperty'.
-	$(property-field instanceProperty : EString)
+	$(property-field instanceProperty)
 
 	# Reference 'eContainingClass' [0..1]: bidirectional, container, read-only.
 	$(property eContainingClass : EMetaClass)
@@ -339,22 +427,22 @@ define class-EMetaFeatureImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'EMetaReference' model object .
+# Implementation of 'EMetaReference' model object.
 define class-EMetaReferenceImpl
 	$(super EMetaReference)
 
-	$(super EModelNodeImpl)
+	$(super ENodeImpl)
 	$(super EMetaFeatureImpl)
 
 	$(getter eMetaClass,$(get eModelMetaModel->EMetaReference))
 
 	# Attribute 'containment'.
-	$(property-field isContainment : EBoolean)
+	$(property-field isContainment)
 
 	# Attribute 'container': volatile, read-only.
-	$(property isContainer : EBoolean)
+	$(property isContainer)
 	# PROTECTED REGION ID(EMetaReference_container) ENABLED START
-	$(getter  isContainer,
+	$(getter isContainer,
 		$(foreach opposite,$(get eOpposite),$(get opposite->isContainment)))
 	# PROTECTED REGION END
 
@@ -369,7 +457,7 @@ define class-EMetaReferenceImpl
 	# Reference 'eReferenceType' [1..1]: volatile, read-only.
 	$(property eReferenceType : EMetaClass)
 	# PROTECTED REGION ID(EMetaReference_eReferenceType) ENABLED START
-	$(getter  eReferenceType,
+	$(getter eReferenceType,
 		$(instance-of $(get eType),EMetaClass))
 	# PROTECTED REGION END
 
@@ -377,11 +465,11 @@ define class-EMetaReferenceImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'EMetaAttribute' model object .
+# Implementation of 'EMetaAttribute' model object.
 define class-EMetaAttributeImpl
 	$(super EMetaAttribute)
 
-	$(super EModelNodeImpl)
+	$(super ENodeImpl)
 	$(super EMetaFeatureImpl)
 
 	$(getter eMetaClass,$(get eModelMetaModel->EMetaAttribute))
@@ -389,7 +477,7 @@ define class-EMetaAttributeImpl
 	# Reference 'eAttributeType' [1..1]: volatile, read-only.
 	$(property eAttributeType : EMetaPrimitive)
 	# PROTECTED REGION ID(EMetaAttribute_eAttributeType) ENABLED START
-	$(getter  eReferenceType,
+	$(getter eAttributeType,
 		$(instance-of $(get eType),EMetaPrimitive))
 	# PROTECTED REGION END
 
@@ -397,18 +485,18 @@ define class-EMetaAttributeImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'EMetaModel' model object .
+# Implementation of 'EMetaModel' model object.
 define class-EMetaModelImpl
 	$(super EMetaModel)
 
-	$(super EModelNodeImpl)
+	$(super ENodeImpl)
 	$(super ENamedImpl)
 
 	$(getter eMetaClass,$(get eModelMetaModel->EMetaModel))
 
 	# Reference 'eFactory' [1..1]: bidirectional.
-	$(property eFactory : EModelFactory)
-	$(field eFactory : EModelFactory)
+	$(property eFactory : EFactory)
+	$(field eFactory : EFactory)
 	$(getter eFactory,
 		$(get-field eFactory))
 	$(setter eFactory,
@@ -543,13 +631,13 @@ define class-EMetaModelImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'EModelFactory' model object .
-define class-EModelFactoryImpl
-	$(super EModelFactory)
+# Implementation of 'EFactory' model object.
+define class-EFactoryImpl
+	$(super EFactory)
 
-	$(super EModelNodeImpl)
+	$(super ENodeImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->EModelFactory))
+	$(getter eMetaClass,$(get eModelMetaModel->EFactory))
 
 	# Reference 'eMetaModel' [1..1]: bidirectional.
 	$(property eMetaModel : EMetaModel)
@@ -557,41 +645,50 @@ define class-EModelFactoryImpl
 	$(getter eMetaModel,
 		$(get-field eMetaModel))
 	$(setter eMetaModel,
-		$(invoke doSetReference,$(get eModelMetaModel->EModelFactory_eMetaModel),$1))
+		$(invoke doSetReference,$(get eModelMetaModel->EFactory_eMetaModel),$1))
 
-	# PROTECTED REGION ID(EModelFactory) ENABLED START
+	# PROTECTED REGION ID(EFactory) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'ENamed' model object .
+# Implementation of 'ENamed' model object.
 define class-ENamedImpl
 	$(super ENamed)
 
-	$(super EModelNodeImpl)
+	$(super ENodeImpl)
 
 	$(getter eMetaClass,$(get eModelMetaModel->ENamed))
 
 	# Attribute 'name'.
-	$(property-field name : EString)
+	$(property-field name)
 
 	# PROTECTED REGION ID(ENamed) ENABLED START
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'ETyped' model object .
+# Implementation of 'ETyped' model object.
 define class-ETypedImpl
 	$(super ETyped)
 
-	$(super EModelNodeImpl)
+	$(super ENodeImpl)
 	$(super ENamedImpl)
 
 	$(getter eMetaClass,$(get eModelMetaModel->ETyped))
 
 	# Attribute 'lowerBound'.
-	$(property-field lowerBound : EInt)
+	$(property-field lowerBound)
 
 	# Attribute 'upperBound'.
-	$(property-field upperBound : EInt)
+	$(property-field upperBound)
+
+	# Attribute 'many': volatile, read-only.
+	$(property isMany)
+	# PROTECTED REGION ID(ETyped_many) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter isMany,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
 
 	# Reference 'eType' [0..1].
 	$(property eType : EMetaType)
@@ -606,6 +703,4 @@ define class-ETypedImpl
 endef
 
 $(def_all)
-
-endif # __model_model_impl_mk
 

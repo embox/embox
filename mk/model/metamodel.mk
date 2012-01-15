@@ -5,8 +5,6 @@
 ifndef __model_metamodel_mk
 __model_metamodel_mk := $(lastword $(MAKEFILE_LIST))
 
-include $(dir $(__model_metamodel_mk))metamodel_impl.mk
-
 # Provides static access to contents of 'EModel' model.
 # See 'eModelMetaModel'.
 define class-EModelMetaModel
@@ -19,9 +17,21 @@ define class-EModelMetaModel
 	$(property ENode_eRootContainer : EMetaReference)
 	$(property ENode_eContents : EMetaReference)
 	$(property ENode_eAllContents : EMetaReference)
+	$(property ENode_eLinks : EMetaReference)
+	$(property ENode_eResolvedLinks : EMetaReference)
+	$(property ENode_eInverseResolvedLinks : EMetaReference)
+	$(property ENode_eUnresolvedLinks : EMetaReference)
+	$(property ENode_eRefs : EMetaReference)
+	$(property ENode_eInverseRefs : EMetaReference)
+	$(property ENode_eLinkedRefs : EMetaReference)
+	$(property ENode_eInverseLinkedRefs : EMetaReference)
+	$(property ENode_eImmediateRefs : EMetaReference)
+	$(property ENode_eInverseImmediateRefs : EMetaReference)
 
 	$(property ELink : EMetaClass)
 	$(property ELink_eMetaReference : EMetaReference)
+	$(property ELink_eSource : EMetaReference)
+	$(property ELink_eDestination : EMetaReference)
 
 	$(property EMetaType : EMetaClass)
 	$(property EMetaType_instanceClass : EMetaAttribute)
@@ -63,8 +73,8 @@ define class-EModelMetaModel
 	$(property EMetaModel_eFactory : EMetaReference)
 	$(property EMetaModel_eTypes : EMetaReference)
 
-	$(property EModelFactory : EMetaClass)
-	$(property EModelFactory_eMetaModel : EMetaReference)
+	$(property EFactory : EMetaClass)
+	$(property EFactory_eMetaModel : EMetaReference)
 
 	$(property ENamed : EMetaClass)
 	$(property ENamed_name : EMetaAttribute)
@@ -72,10 +82,13 @@ define class-EModelMetaModel
 	$(property ETyped : EMetaClass)
 	$(property ETyped_lowerBound : EMetaAttribute)
 	$(property ETyped_upperBound : EMetaAttribute)
+	$(property ETyped_many : EMetaAttribute)
 	$(property ETyped_eType : EMetaReference)
 endef
 
 $(def_all)
+
+include $(dir $(__model_metamodel_mk))metamodel_impl.mk
 
 eModelMetaModel := $(call new,EModelMetaModelImpl)
 
