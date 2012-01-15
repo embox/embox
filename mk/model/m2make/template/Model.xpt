@@ -10,10 +10,11 @@
 
 «inclusionGuardBegin("model")»
 
-«includeFile("model", "model_impl")»
 «EXPAND classifier FOREACH eClassifiers.typeSelect(EClass) -»
 
 $(def_all)
+
+«includeFile("model", "model_impl")»
 
 «inclusionGuardEnd("model")»
 

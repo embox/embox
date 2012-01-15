@@ -9,8 +9,6 @@
 
 «inclusionGuardBegin("metamodel")»
 
-«includeFile("metamodel", "metamodel_impl")»
-
 # Provides static access to contents of '«name»' model.
 # See '«metaModelInstanceName()»'.
 define class-«metaModelName()»
@@ -19,6 +17,8 @@ define class-«metaModelName()»
 endef
 
 $(def_all)
+
+«includeFile("metamodel", "metamodel_impl")»
 
 «metaModelInstanceName()» := $(call new,«metaModelImplName()»)
 

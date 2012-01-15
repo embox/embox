@@ -9,8 +9,6 @@
 
 «inclusionGuardBegin("factory")»
 
-«includeFile("factory", "factory_impl")»
-
 # Provides methods for creating objects of '«name»' model.
 # See '«factoryInstanceName()»'.
 define class-«factoryName()»
@@ -20,6 +18,8 @@ define class-«factoryName()»
 endef
 
 $(def_all)
+
+«includeFile("factory", "factory_impl")»
 
 «factoryInstanceName()» := $(call new,«factoryImplName()»)
 

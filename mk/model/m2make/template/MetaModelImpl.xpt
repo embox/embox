@@ -7,7 +7,7 @@
 
 # Metamodel implementation for '«name»' package.
 
-«inclusionGuardBegin("metamodel_impl")»
+«implInclusionCheck("metamodel")»
 
 # Creates and initializes contents of '«name»' meta model.
 define class-«metaModelImplName()»
@@ -28,13 +28,11 @@ endef
 
 $(def_all)
 
-«inclusionGuardEnd("metamodel_impl")»
-
 «ENDFILE»«ENDDEFINE»
 
 
 «DEFINE createClassifier FOR EClass»
-	«mkPropertyField(id(),
+	«mkPropertyField(id() + " : EMetaClass",
 		mkInvoke("createMetaClass", id()))»
 	«EXPAND createFeature FOREACH eStructuralFeatures -»
 «ENDDEFINE»
@@ -44,15 +42,15 @@ $(def_all)
 «ENDDEFINE»
 
 «DEFINE createFeature FOR EAttribute -»
-«EXPAND createFeature("createMetaAttribute") -»
+«EXPAND createFeature("EMetaAttribute", "createMetaAttribute") -»
 «ENDDEFINE»
 
 «DEFINE createFeature FOR EReference -»
-«EXPAND createFeature("createMetaReference") -»
+«EXPAND createFeature("EMetaReference", "createMetaReference") -»
 «ENDDEFINE»
 
-«DEFINE createFeature(String methodName) FOR EStructuralFeature -»
-	«mkPropertyField(id(),
+«DEFINE createFeature(String type, String methodName) FOR EStructuralFeature -»
+	«mkPropertyField(id() + " : " + type,
 		mkInvoke(methodName, mkGet(eContainingClass.id()) + "," + id()))»
 «ENDDEFINE»
 

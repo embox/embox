@@ -8,22 +8,11 @@
 
 # Model implementation of '«name»' package.
 
-«inclusionGuardBegin("model_impl")»
+«implInclusionCheck("model")»
 
-# Base class for all modelled objects of this package.
-define class-«nodeImplName()»
-	«mkSuper("ENodeImpl")»
-
-	# Returns a reference to '«name»' meta model.
-	«mkGetterWrap("eMetaModel",
-		"$(" + metaModelInstanceName() + ")")»
-
-endef
 «EXPAND classifier FOREACH eClassifiers.typeSelect(EClass) -»
 
 $(def_all)
-
-«inclusionGuardEnd("model_impl")»
 
 «ENDFILE»«ENDDEFINE»
 
@@ -33,7 +22,7 @@ $(def_all)
 define class-«classImplName()»
 	«mkSuper(className())»
 
-	«mkSuper(ePackage.nodeImplName())»
+	«mkSuper("ENodeImpl")»
 «FOREACH eSuperTypes AS superType -»
 	«mkSuper(superType.classImplName())»
 «ENDFOREACH -»

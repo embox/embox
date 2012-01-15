@@ -29,6 +29,12 @@ inclusionGuardBegin(EPackage this, String fileKind) :
 inclusionGuardEnd(EPackage this, String fileKind) :
 	"endif # " + inclusionGuard(fileKind);
 
+implInclusionCheck(EPackage this, String fileKind) :
+	"ifndef " + inclusionGuard(fileKind) + "\n" +
+	"$(error \\\n\tDo not include this file directly, include '" +
+		fileName(fileKind) + "' instead!)\n" +
+	"endif # " + inclusionGuard(fileKind);
+
 comment(String this) :
 	replaceAll("\n", "\n#");
 

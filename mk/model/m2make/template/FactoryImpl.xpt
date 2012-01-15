@@ -7,7 +7,7 @@
 
 # Implementation of factory for '«name»' model.
 
-«inclusionGuardBegin("factory_impl")»
+«implInclusionCheck("factory")»
 
 # Implements methods for creating objects of '«name»' model.
 define class-«factoryImplName()»
@@ -19,8 +19,6 @@ define class-«factoryImplName()»
 endef
 
 $(def_all)
-
-«inclusionGuardEnd("factory_impl")»
 
 «ENDFILE»«ENDDEFINE»
 
