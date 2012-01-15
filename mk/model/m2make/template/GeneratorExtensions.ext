@@ -51,10 +51,19 @@ classImplName(EClass this) : nsName(ePackage).toFirstUpper() + "Impl";
 referenceClassImplName(EClass this) :
 	"ReferenceTo" + nsName(ePackage).toFirstUpper() + "Impl";
 
+memberCardinality(ETypedElement this) : many ? "..." : "";
+memberType(ETypedElement this)        : eType.memberTypeFor();
+memberTypeFor(EClassifier this)       : "";
+memberTypeFor(EClass this)            : " : " + name;
+
 propertyName(EStructuralFeature this) : name.toFirstLower();
 propertyName(EAttribute this) :
 	"boolean" == eAttributeType.instanceClassName
 		? "is" + name.toFirstUpper() : name.toFirstLower();
+
+propertyLinkName(EReference this) : propertyName() + "_link" + "s".ifIs(many);
+propertyLinkType(EReference this) : " : ELink";
+
 methodName(EOperation this) : name.toFirstLower();
 
 fieldName(EStructuralFeature this) : "m_" + name;
@@ -134,9 +143,6 @@ mkField(String name, String initializer) :
 mkPropertyField(String name) : "$(property-field " + name + ")";
 mkPropertyField(String name, String initializer) :
 	"$(property-field " + name + ",\n\t\t" + initializer + ")";
-
-memberCardinality(ETypedElement this) : upperBound == 1 ? "" : "...";
-memberType(ETypedElement this)        : " : " + eType.name;
 
 mkInvoke(String this) :                  "$(invoke " + this + ")";
 mkInvoke(String this, String args) :     "$(invoke " + this + "," + args + ")";

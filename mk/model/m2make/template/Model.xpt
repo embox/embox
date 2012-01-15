@@ -68,6 +68,10 @@ endef
 		eOpposite.name»'.
 «ENDIF -»
 «EXPAND featureProperty FOR this -»
+«IF resolveProxies &&!containment && !container -»
+	«mkProperty(propertyLinkName() +
+		memberCardinality() + propertyLinkType()) + "# read-only.".ifIs(!changeable)»
+«ENDIF -»
 «ENDDEFINE»
 
 «DEFINE featureProperty FOR EStructuralFeature -»

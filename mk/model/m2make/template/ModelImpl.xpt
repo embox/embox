@@ -29,7 +29,7 @@ $(def_all)
 
 «DEFINE classifier FOR EClass»
 «LET mkGet(ePackage.metaModelInstanceName() + "->" + id()) AS metaClass -»
-# Implementation of '«name»' model object .
+# Implementation of '«name»' model object.
 define class-«classImplName()»
 	«mkSuper(className())»
 
@@ -60,15 +60,30 @@ endef
 «DEFINE volatileFeature FOR EStructuralFeature»
 	«mkProperty(propertyName() + memberCardinality() + memberType())»
 «PROTECT CSTART '\t# ' CEND '' ID id()»
-«EXPAND memberStub FOR (mkGetterWrap(propertyName(), "$(error $0: NIY)")) -»
+«EXPAND memberStub FOR mkGetterWrap(propertyName(), "$(error $0: NIY)") -»
 «IF changeable -»
-«EXPAND memberStub FOR (mkSetterWrap(propertyName(), "$(error $0($1): NIY)")) -»
-«IF upperBound != 1 -»
-«EXPAND memberStub FOR (mkSetterPlusWrap(propertyName(), "$(error $0($1): NIY)")) -»
-«EXPAND memberStub FOR (mkSetterMinusWrap(propertyName(), "$(error $0($1): NIY)")) -»
+«EXPAND memberStub FOR mkSetterWrap(propertyName(), "$(error $0($1): NIY)") -»
+«IF many -»
+«EXPAND memberStub FOR mkSetterPlusWrap(propertyName(), "$(error $0($1): NIY)") -»
+«EXPAND memberStub FOR mkSetterMinusWrap(propertyName(), "$(error $0($1): NIY)") -»
 «ENDIF -»
 «ENDIF -»
+«EXPAND volatileCrossReference -»
 «ENDPROTECT»
+«ENDDEFINE»
+
+«DEFINE volatileCrossReference FOR EStructuralFeature»«ENDDEFINE»
+«DEFINE volatileCrossReference FOR EReference -»
+«IF resolveProxies && !containment && !container -»
+«EXPAND memberStub FOR mkGetterWrap(propertyLinkName(), "$(error $0: NIY)") -»
+«IF changeable -»
+«EXPAND memberStub FOR mkSetterWrap(propertyLinkName(), "$(error $0($1): NIY)") -»
+«IF many -»
+«EXPAND memberStub FOR mkSetterPlusWrap(propertyLinkName(), "$(error $0($1): NIY)") -»
+«EXPAND memberStub FOR mkSetterMinusWrap(propertyLinkName(), "$(error $0($1): NIY)") -»
+«ENDIF -»
+«ENDIF -»
+«ENDIF -»
 «ENDDEFINE»
 
 «DEFINE memberStub FOR String -»
@@ -114,9 +129,20 @@ endef
 	«mkGetterWrap(propertyName(), mkGetField(propertyName()))»
 «IF changeable -»
 	«mkSetterWrap(propertyName(), mkInvoke("doSetReference", metaReference + ",$1"))»
-«IF upperBound != 1 -»
+«IF many -»
 	«mkSetterPlusWrap(propertyName(), mkInvoke("doAddReference", metaReference + ",$1"))»
 	«mkSetterMinusWrap(propertyName(), mkInvoke("doRemoveReference", metaReference + ",$1"))»
+«ENDIF -»
+«ENDIF -»
+«IF resolveProxies && !containment && !container -»
+	# Link operations.
+	«mkGetterWrap(propertyLinkName(), mkInvoke("doGetLink", metaReference))»
+«IF changeable -»
+	«mkSetterWrap(propertyLinkName(), mkInvoke("doSetLink", metaReference + ",$1"))»
+«IF many -»
+	«mkSetterPlusWrap(propertyLinkName(), mkInvoke("doAddLink", metaReference + ",$1"))»
+	«mkSetterMinusWrap(propertyLinkName(), mkInvoke("doRemoveLink", metaReference + ",$1"))»
+«ENDIF -»
 «ENDIF -»
 «ENDIF -»
 «ENDDEFINE»
