@@ -12,18 +12,18 @@
 
 #include <util/ring_buff.h>
 
-EMBOX_EXAMPLE(circular_buffer_ex_run);
+EMBOX_EXAMPLE(rbuff_example_run);
 
-CIRCULAR_BUFFER_DEF(test_buffer, int, 10);
+RING_BUFFER_DEF(test_buffer, int, 10);
 
-static int circular_buffer_ex_run(int argc, char *argv[]) {
+static int rbuff_example_run(int argc, char *argv[]) {
 	int a = 5;
 
-	c_buf_add(&test_buffer, a);
+	ring_buff_enque(&test_buffer, &a);
 
 	a = 6;
 
-	c_buf_get(&test_buffer, a);
+	ring_buff_deque(&test_buffer, &a);
 
 	return 0;
 }

@@ -11,37 +11,30 @@
 
 #include <stddef.h>
 
-struct c_buf {
-	int len;
-	int size;
-	int beg;
-	int end;
-	void *buf;
+struct ring_buff {
+	int capacity;      /**< capacity of buffer in elements */
+	int cnt;           /**< element counter in buffer*/
+	int p_write;       /**< pointer to next write element*/
+	int p_read;        /**< pointer to next read element*/
+	void *storage;     /**< storage */
+	int elem_size;     /**< size of element */
 };
 
-extern int __c_buf_add(struct c_buf *buf, void *elem, size_t elem_size);
+extern int ring_buff_enque(struct ring_buff *buf, void *elem);
 
-extern int __c_buf_get(struct c_buf *buf, void *elem, size_t elem_size);
+extern int ring_buff_deque(struct ring_buff *buf, void *elem);
 
-extern int c_buf_init(struct c_buf *buf, int count, void *storage);
+extern int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count, void *storage);
 
-#define CIRCULAR_BUFFER_DEF(name, elem_type, len) \
-	__CIRCULAR_BUFFER_DEF(name, name##_storage, elem_type, len)
-
-#define __CIRCULAR_BUFFER_DEF(name, storage_nm, elem_type, req_len) \
-	static elem_type storage_nm[req_len]; \
-	static struct c_buf name = {          \
-		.len = req_len,               \
-		.size = 0,                    \
-		.beg = 0,                     \
-		.end = 0,                     \
-		.buf = (void *) storage_nm    \
+#define RING_BUFFER_DEF(name, elem_type, req_len) \
+	static elem_type name##_storage[req_len];     \
+	static struct ring_buff name = {              \
+		.elem_size = sizeof(elem_type),           \
+		.capacity = req_len,                           \
+		.cnt = 0,                                \
+		.p_write = 0,                                 \
+		.p_read = 0,                                 \
+		.storage = (void *) name##_storage            \
 	}
-
-#define c_buf_add(name, elem) \
-	__c_buf_add(name, (void *) &elem, sizeof(elem))
-
-#define c_buf_get(name, elem) \
-	__c_buf_get(name, (void *) &elem, sizeof(elem))
 
 #endif /* UTIL_RING_BUFF_H_ */

@@ -10,37 +10,51 @@
 #include <string.h>
 #include <util/ring_buff.h>
 
-int __c_buf_add(struct c_buf *buf, void *elem, size_t elem_size) {
-	char *buf_pool = buf->buf;
-	if (buf->size >= buf->len) {
+int ring_buff_get_cnt(struct ring_buff *buf) {
+	return buf->cnt;
+}
+
+int ring_buff_get_available(struct ring_buff *buf) {
+	return buf->capacity - buf->cnt;
+}
+
+int ring_buff_enque(struct ring_buff *buf, void *elem) {
+	char *buf_pool = buf->storage;
+
+	if (buf->cnt >= buf->capacity) {
 		return -1;
 	}
-	buf->size++;
-	memcpy(buf_pool + (buf->beg * elem_size), (const void *) elem,
-			elem_size);
-	buf->beg = (buf->beg + 1) % buf->len;
+
+	buf->cnt++;
+	memcpy(buf_pool + (buf->p_write * buf->elem_size), (const void *) elem,
+			buf->elem_size);
+	buf->p_write = (buf->p_write + 1) % buf->capacity;
+
 	return 0;
 }
 
-int __c_buf_get(struct c_buf *buf, void *elem, size_t elem_size) {
-	char *buf_pool = buf->buf;
-	void *ret = buf_pool + (buf->end * elem_size);
-	if (buf->size == 0) {
+int ring_buff_deque(struct ring_buff *buf, void *elem) {
+	char *buf_pool = buf->storage;
+	void *ret = buf_pool + (buf->p_read * buf->elem_size);
+
+	if (buf->cnt == 0) {
 		return -1;
 	}
-	buf->size--;
-	buf->end = (buf->end + 1) % buf->len;
-	memcpy(elem, ret, elem_size);
+
+	buf->cnt--;
+	buf->p_read = (buf->p_read + 1) % buf->capacity;
+	memcpy(elem, ret, buf->elem_size);
+
 	return 0;
 }
 
-int c_buf_init(struct c_buf *buf, int count, void *storage) {
-	buf->len  = count;
-	buf->size = 0;
-	buf->beg  = 0;
-	buf->end  = 0;
-	buf->buf  = storage;
+int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count, void *storage) {
+	buf->capacity  = count;
+	buf->cnt = 0;
+	buf->p_write  = 0;
+	buf->p_read  = 0;
+	buf->storage  = storage;
+	buf->elem_size = elem_size;
+
 	return 0;
 }
-
-
