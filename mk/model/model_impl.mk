@@ -146,50 +146,62 @@ define class-ENodeImpl
 
 	# PROTECTED REGION ID(ENode) ENABLED START
 
+	$(field oppositeReferences : ENode)
+
+	# Params:
+	#   1. Meta reference.
+	$(method doGetContainerReference,
+		$(get-field eContainer)
+	)
+
 	# Params:
 	#   1. Meta reference.
 	#   2. What to add.
 	$(method doAddReference,
-		$(assert $(invoke $(get 1->eContainingClass).isSuperTypeOf,
-				$(get eMetaClass)),
-			Bad cast '$(get $(get eMetaClass).name)' \
-			to '$(get $(get 1->eContainingClass).name)')
+#		$(assert $(invoke $(get 1->eContainingClass).isSuperTypeOf,
+#				$(get eMetaClass)),
+#			Bad cast '$(get $(get eMetaClass).name)' \
+#			to '$(get $(get 1->eContainingClass).name)')
 
 		$(assert $(not $(get 1->isContainer)),
 			Container reference '$(get $(get 1->eContainingClass).name)
 				.$(get 1->name)' must be set using 'doSetContainerReference')
 
-		$(for \
-			eLinkClass <- $(get eModelMetaModel->ELink),
-			e          <- $2,
-			$(invoke \
-				$(if $(invoke eLinkClass->isSuperTypeOf,$(get e->eMetaClass)),
-					doAddLinkReference,
-					doAddNodeReference),
-				$1,$e)
+		$(silent-for \
+			f <- $(get 1->instanceProperty),
+
+			e <- $2
+				$(set-field+ $f,$2),
+
+			$(invoke e->doInverseAddReference,$1,$(this))
 		)
 
-		$(with $1,
-			$(invoke __prefix_links,$1,
-				$(filter-out $(get $(get 1->a_field)) $(suffix $(get links)),
-					$(suffix $2))),
-			$(get meta_model_instance->node_links),
-
-
-			$(set+ links,$(foreach l,$(filter $1%,$2),$l
-				$(invoke l->inverse_add_references,$3,$(this))
-			))
-
-		)
 	)
 
 	# Params:
 	#   1. Meta reference.
-	#   2. A single node to add.
-	$(method doAddNodeReference,
-		$(set-field+ $(get 1->instanceProperty),
-			$(invoke 2->doInverseAdd,$1,$(this))
-		))
+	#   2. New value.
+	$(method doSetReference,
+		$(silent-for \
+			f <- $(get 1->instanceProperty),
+
+			e <- $(get-field $f)
+				 $(set-field $f,),
+
+			$(invoke e->doInverseRemoveReference,$1,$(this))
+		)
+
+		$(invoke doAddReference,$1,$2)
+	)
+
+	# Params:
+	#   1. Meta reference.
+	#   2. A single node being added.
+	$(method doInverseAddReference,
+		$(set-field+ \
+			$(or $(for r <- $(get 1->eOpposite),$(get r->instanceProperty)),
+				oppositeReferences),
+			$2)
 	)
 
 	# PROTECTED REGION END
@@ -298,7 +310,10 @@ define class-EMetaClassImpl
 	$(setter eFeatures,
 		$(invoke doSetReference,$(get eModelMetaModel->EMetaClass_eFeatures),$1))
 	$(setter+ eFeatures,
-		$(invoke doAddReference,$(get eModelMetaModel->EMetaClass_eFeatures),$1))
+		$(set-field+ eFeatures,$1)
+		$(silent-for e <- $1,$(set-field e->eContainer,$(this)))
+#		$(invoke doAddReference,$(get eModelMetaModel->EMetaClass_eFeatures),$1)
+	)
 	$(setter- eFeatures,
 		$(invoke doRemoveReference,$(get eModelMetaModel->EMetaClass_eFeatures),$1))
 
@@ -354,17 +369,15 @@ define class-EMetaClassImpl
 	# 'isSuperTypeOf' operation.
 	#   1. someClass : EMetaClass
 	# PROTECTED REGION ID(EMetaClass_isSuperTypeOf) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(method isSuperTypeOf,
-#		$(error $0($1): NIY))
+	$(method isSuperTypeOf,
+		$(filter $1 $(get 1->eAllSuperTypes),$(this)))
 	# PROTECTED REGION END
 
 	# 'isInstance' operation.
 	#   1. object : ENode
 	# PROTECTED REGION ID(EMetaClass_isInstance) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(method isInstance,
-#		$(error $0($1): NIY))
+	$(method isInstance,
+		$(invoke isSuperTypeOf,$(class $1)))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(EMetaClass) ENABLED START
@@ -558,7 +571,7 @@ define class-EMetaModelImpl
 	#   3. Super types...
 	#   4. Flags...
 	$(method initMetaClass,
-		$(set 1->name,$2)
+#		$(set 1->name,$2)
 		$(set 1->eSuperTypes,$3)
 		$(set 1->isAbstract,$(filter abstract,$4))
 		$(set 1->isInterface,$(filter interface,$4))
@@ -586,7 +599,7 @@ define class-EMetaModelImpl
 		$(set 1->eType,$5)
 		$(set 1->eOpposite,$6)
 		$(set 1->isContainment,$(filter containment,$7))
-		$(set 1->isContainer,$(filter container,$7))
+#		$(set 1->isContainer,$(filter container,$7))
 	)
 
 	# Params:
@@ -596,7 +609,7 @@ define class-EMetaModelImpl
 	#   4. Upper bound.
 	#   5. Flags...
 	$(method commonInitMetaFeature,
-		$(set 1->name,$2)
+#		$(set 1->name,$2)
 		$(set 1->lowerBound,$3)
 		$(set 1->upperBound,$4)
 		$(set 1->isChangeable,$(filter changeable,$4))
@@ -648,7 +661,6 @@ define class-EFactoryImpl
 		$(invoke doSetReference,$(get eModelMetaModel->EFactory_eMetaModel),$1))
 
 	# PROTECTED REGION ID(EFactory) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 

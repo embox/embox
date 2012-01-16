@@ -13,6 +13,9 @@ define class-EModelMetaModelImpl
 
 	$(super EMetaModelImpl)
 
+	# XXX
+	${eval eModelMetaModel := $(this)}
+
 	# Define properties as fields.
 
 	$(property-field ENode : EMetaClass,
