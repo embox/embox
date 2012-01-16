@@ -999,7 +999,7 @@ define builtin_macro-__class__
 	$(foreach __class__,$(__def_var:class-%=%),
 		$(call var_assign_simple,$(__class__),)
 
-		$(expand $1)
+		$(expand $1)$$(\0)# XXX
 
 		# Define four special variables needed for introspection.
 		# TODO Backward-compatibility, should be replaced
@@ -1182,7 +1182,8 @@ define builtin_func-super
 	# a precedence over inherited ones.
 	$(foreach f,
 		$(notdir $(call __class_attr_query_in,$1,method% xetter%,%)),
-		$(call __class_new_func_weak,$f,$(value $1.$f))
+		# XXX There used to be a call to '__class_new_func_weak'... -- Eldar
+		$(call __class_new_func,$f,$(value $1.$f))
 	)
 endef
 
