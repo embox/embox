@@ -813,7 +813,7 @@ endef
 #     variable ('foo'), everything else goes into the rest arguments ($2..).
 #
 define builtin_macro-__extexp__
-	$(or $(and $1,$(findstring =,$2),$$($1:$(call __def_expand,$2))),
+	$(or $(and $1,$(findstring =,$2),$$($(call __def_expand,$1:$2))),
 		$(call builtin_error,NIY (extexp:$(builtin_args))!))
 endef
 
