@@ -33,7 +33,7 @@ define class-ENodeImpl
 	# Reference 'eContainer' [0..1]: bidirectional, volatile, read-only.
 	$(property eContainer : ENode)
 	# PROTECTED REGION ID(ENode_eContainer) ENABLED START
-	$(field eContainer)
+	$(field eContainer : ENode)
 	$(getter eContainer,
 		$(get-field eContainer))
 	# PROTECTED REGION END
@@ -571,7 +571,7 @@ define class-EMetaModelImpl
 	#   3. Super types...
 	#   4. Flags...
 	$(method initMetaClass,
-#		$(set 1->name,$2)
+		$(set 1->name,$2)
 		$(set 1->eSuperTypes,$3)
 		$(set 1->isAbstract,$(filter abstract,$4))
 		$(set 1->isInterface,$(filter interface,$4))
@@ -609,7 +609,7 @@ define class-EMetaModelImpl
 	#   4. Upper bound.
 	#   5. Flags...
 	$(method commonInitMetaFeature,
-#		$(set 1->name,$2)
+		$(set 1->name,$2)
 		$(set 1->lowerBound,$3)
 		$(set 1->upperBound,$4)
 		$(set 1->isChangeable,$(filter changeable,$4))
@@ -635,9 +635,10 @@ define class-EMetaModelImpl
 	#   1. Meta feature.
 	#   2. Instance property name.
 	$(method bindMetaFeature,
-		$(assert $(class-has-property $(get 1->instanceClass),$2),
+		$(assert $(class-has-property \
+				$(get $(get 1->eContainingClass).instanceClass),$2),
 			Can't bind meta feature '$(get 1->name)' to undefined property '$2'
-			of class '$(get 1->instanceClass)')
+			of class '$(get $(get 1->eContainingClass).instanceClass)')
 		$(set 1->instanceProperty,$2)
 	)
 
