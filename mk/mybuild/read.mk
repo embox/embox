@@ -57,12 +57,14 @@ $(filter %Makefile,$(MKFILES_CONVERTED)) : \
 $(filter %.my.mk,$(MKFILES_CONVERTED)) : \
 		$(EM_DIR)%.my.mk : $(ROOT_DIR)%.my
 	@echo '$< -> $@'
-	mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, \
+	@mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, \
 		$(call objects_to_mk,$(call create_from_model,$(call gold_parse,myfile,$<))))' > $@
+
 
 $(MK_LINK) : $(MKFILES_CONVERTED)
 	@echo '... -> $@'
-	@echo $(call resolve_links_from_files,$^)
-	touch $@
+	@echo > $@
+	@$(PRINTF) '%b' '$(call escape_printf, \
+		$(call raw_objects_to_mk,$(call resolve_links_from_files,$^)))' > $@
 
 endif # __mybuild_read_mk

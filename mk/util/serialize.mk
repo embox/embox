@@ -42,18 +42,25 @@ define objects_to_dot
 	$(\n)
 endef
 
-# Serialize all objects in closed graph to makefile
-# param $1 is a root node of a graph
-define objects_to_mk
-	$(foreach o,$(call graph_closure,$1,get_referenced_objects),
-		$(\n)
-		__object_instance_cnt += $(o:.obj%=%)$(\n)
+# param $1 is a list of objects to serialize
+define raw_objects_to_mk
+	$(foreach o,$1,
 		$o:=$(call escape_makefile,$($o))
 		$(\n)
 		$(foreach f,$(call field_name,$($($o).fields)),
 			$o.$f:=$(call escape_makefile,$($o.$f))
 			$(\n)
 		)
+	)
+endef
+
+# Serialize all objects in closed graph to makefile
+# param $1 is a root node of a graph
+define objects_to_mk
+	$(foreach o,$(call graph_closure,$1,get_referenced_objects),
+		$(\n)
+		__object_instance_cnt += $(o:.obj%=%)$(\n)
+		$(call raw_objects_to_mk, $o)
 	)
 	$(\n)
 	$$(lastword $$(MAKEFILE_LIST)) := $1

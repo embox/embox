@@ -15,7 +15,7 @@ define graph_closure
 	$(foreach f,$(or $(singleword $2),$(error invalid argument in $0: '$2')),
 		$(sort $(with $1,,
 				$(if $(filter $1,$2),$2,
-					$(foreach o,$(call $f,$1),
+					$1 $(foreach o,$(call $f,$1),
 						$(call $0,$o,$2 $1)
 					)
 				)
