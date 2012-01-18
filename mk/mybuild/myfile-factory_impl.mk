@@ -2,8 +2,10 @@
 
 # Implementation of factory for 'myFile' model.
 
-ifndef __mybuild_myfile_factory_impl_mk
-__mybuild_myfile_factory_impl_mk := $(lastword $(MAKEFILE_LIST))
+ifndef __mybuild_myfile_factory_mk
+$(error \
+	Do not include this file directly, include 'myfile-factory.mk' instead!)
+endif # __mybuild_myfile_factory_mk
 
 # Implements methods for creating objects of 'myFile' model.
 define class-MyFileFactoryImpl
@@ -31,6 +33,4 @@ define class-MyFileFactoryImpl
 endef
 
 $(def_all)
-
-endif # __mybuild_myfile_factory_impl_mk
 

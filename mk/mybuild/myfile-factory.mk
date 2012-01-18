@@ -5,8 +5,6 @@
 ifndef __mybuild_myfile_factory_mk
 __mybuild_myfile_factory_mk := $(lastword $(MAKEFILE_LIST))
 
-include $(dir $(__mybuild_myfile_factory_mk))myfile-factory_impl.mk
-
 # Provides methods for creating objects of 'myFile' model.
 # See 'myFileFactory'.
 define class-MyFileFactory
@@ -32,6 +30,8 @@ define class-MyFileFactory
 endef
 
 $(def_all)
+
+include $(dir $(__mybuild_myfile_factory_mk))myfile-factory_impl.mk
 
 myFileFactory := $(call new,MyFileFactoryImpl)
 

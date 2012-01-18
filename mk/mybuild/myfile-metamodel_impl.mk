@@ -2,8 +2,10 @@
 
 # Metamodel implementation for 'myFile' package.
 
-ifndef __mybuild_myfile_metamodel_impl_mk
-__mybuild_myfile_metamodel_impl_mk := $(lastword $(MAKEFILE_LIST))
+ifndef __mybuild_myfile_metamodel_mk
+$(error \
+	Do not include this file directly, include 'myfile-metamodel.mk' instead!)
+endif # __mybuild_myfile_metamodel_mk
 
 # Creates and initializes contents of 'myFile' meta model.
 define class-MyFileMetaModelImpl
@@ -13,69 +15,69 @@ define class-MyFileMetaModelImpl
 
 	# Define properties as fields.
 
-	$(property-field Package,
+	$(property-field Package : EMetaClass,
 		$(invoke createMetaClass,Package))
-	$(property-field Package_imports,
+	$(property-field Package_imports : EMetaReference,
 		$(invoke createMetaReference,$(get Package),Package_imports))
-	$(property-field Package_entities,
+	$(property-field Package_entities : EMetaReference,
 		$(invoke createMetaReference,$(get Package),Package_entities))
 
-	$(property-field Import,
+	$(property-field Import : EMetaClass,
 		$(invoke createMetaClass,Import))
-	$(property-field Import_importName,
+	$(property-field Import_importName : EMetaAttribute,
 		$(invoke createMetaAttribute,$(get Import),Import_importName))
 
-	$(property-field Entity,
+	$(property-field Entity : EMetaClass,
 		$(invoke createMetaClass,Entity))
-	$(property-field Entity_package,
+	$(property-field Entity_package : EMetaReference,
 		$(invoke createMetaReference,$(get Entity),Entity_package))
 
-	$(property-field Interface,
+	$(property-field Interface : EMetaClass,
 		$(invoke createMetaClass,Interface))
-	$(property-field Interface_features,
+	$(property-field Interface_features : EMetaReference,
 		$(invoke createMetaReference,$(get Interface),Interface_features))
 
-	$(property-field Feature,
+	$(property-field Feature : EMetaClass,
 		$(invoke createMetaClass,Feature))
-	$(property-field Feature_interface,
+	$(property-field Feature_interface : EMetaReference,
 		$(invoke createMetaReference,$(get Feature),Feature_interface))
-	$(property-field Feature_providedBy,
+	$(property-field Feature_providedBy : EMetaReference,
 		$(invoke createMetaReference,$(get Feature),Feature_providedBy))
-	$(property-field Feature_requiredBy,
+	$(property-field Feature_requiredBy : EMetaReference,
 		$(invoke createMetaReference,$(get Feature),Feature_requiredBy))
 
-	$(property-field Module,
+	$(property-field Module : EMetaClass,
 		$(invoke createMetaClass,Module))
-	$(property-field Module_static,
+	$(property-field Module_static : EMetaAttribute,
 		$(invoke createMetaAttribute,$(get Module),Module_static))
-	$(property-field Module_abstract,
+	$(property-field Module_abstract : EMetaAttribute,
 		$(invoke createMetaAttribute,$(get Module),Module_abstract))
-	$(property-field Module_depends,
+	$(property-field Module_depends : EMetaReference,
 		$(invoke createMetaReference,$(get Module),Module_depends))
-	$(property-field Module_dependent,
+	$(property-field Module_dependent : EMetaReference,
 		$(invoke createMetaReference,$(get Module),Module_dependent))
-	$(property-field Module_provides,
+	$(property-field Module_provides : EMetaReference,
 		$(invoke createMetaReference,$(get Module),Module_provides))
-	$(property-field Module_requires,
+	$(property-field Module_requires : EMetaReference,
 		$(invoke createMetaReference,$(get Module),Module_requires))
 
-	$(property-field Named,
+	$(property-field Named : EMetaClass,
 		$(invoke createMetaClass,Named))
-	$(property-field Named_name,
+	$(property-field Named_name : EMetaAttribute,
 		$(invoke createMetaAttribute,$(get Named),Named_name))
 
-	$(property-field Extendable,
+	$(property-field Extendable : EMetaClass,
 		$(invoke createMetaClass,Extendable))
-	$(property-field Extendable_subTypes,
+	$(property-field Extendable_subTypes : EMetaReference,
 		$(invoke createMetaReference,$(get Extendable),Extendable_subTypes))
-	$(property-field Extendable_superType,
+	$(property-field Extendable_superType : EMetaReference,
 		$(invoke createMetaReference,$(get Extendable),Extendable_superType))
-	$(property-field Extendable_allSubTypes,
+	$(property-field Extendable_allSubTypes : EMetaReference,
 		$(invoke createMetaReference,$(get Extendable),Extendable_allSubTypes))
-	$(property-field Extendable_allSuperTypes,
+	$(property-field Extendable_allSuperTypes : EMetaReference,
 		$(invoke createMetaReference,$(get Extendable),Extendable_allSuperTypes))
 
-	$(property-field Filename,
+	$(property-field Filename : EMetaClass,
 		$(invoke createMetaClass,Filename))
 
 	# Initialize the objects and relations between them.
@@ -187,6 +189,4 @@ define class-MyFileMetaModelImpl
 endef
 
 $(def_all)
-
-endif # __mybuild_myfile_metamodel_impl_mk
 

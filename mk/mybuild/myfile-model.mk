@@ -5,7 +5,6 @@
 ifndef __mybuild_myfile_model_mk
 __mybuild_myfile_model_mk := $(lastword $(MAKEFILE_LIST))
 
-include $(dir $(__mybuild_myfile_model_mk))myfile-model_impl.mk
 
 #
 # Model object 'Package'.
@@ -39,7 +38,7 @@ define class-MyImport
 	$(super ENode)
 
 	# 'importName' attribute.
-	$(property importName : EString)
+	$(property importName)
 
 endef
 
@@ -99,10 +98,12 @@ define class-MyFeature
 	# 'providedBy' bidirectional reference.
 	# The opposite reference is 'Module.provides'.
 	$(property providedBy... : Module)
+	$(property providedBy_links... : ELink)
 
 	# 'requiredBy' bidirectional reference.
 	# The opposite reference is 'Module.requires'.
 	$(property requiredBy... : Module)
+	$(property requiredBy_links... : ELink)
 
 endef
 
@@ -124,26 +125,30 @@ define class-MyModule
 	$(super MyExtendable)
 
 	# 'static' attribute.
-	$(property isStatic : EBoolean)
+	$(property isStatic)
 
 	# 'abstract' attribute.
-	$(property isAbstract : EBoolean)
+	$(property isAbstract)
 
 	# 'depends' bidirectional reference.
 	# The opposite reference is 'dependent'.
 	$(property depends... : Module)
+	$(property depends_links... : ELink)
 
 	# 'dependent' bidirectional reference.
 	# The opposite reference is 'depends'.
 	$(property dependent... : Module)
+	$(property dependent_links... : ELink)
 
 	# 'provides' bidirectional reference.
 	# The opposite reference is 'Feature.providedBy'.
 	$(property provides... : Feature)
+	$(property provides_links... : ELink)
 
 	# 'requires' bidirectional reference.
 	# The opposite reference is 'Feature.requiredBy'.
 	$(property requires... : Feature)
+	$(property requires_links... : ELink)
 
 endef
 
@@ -158,7 +163,7 @@ define class-MyNamed
 	$(super ENode)
 
 	# 'name' attribute.
-	$(property name : EString)
+	$(property name)
 
 endef
 
@@ -178,24 +183,28 @@ define class-MyExtendable
 	# 'subTypes' bidirectional reference.
 	# The opposite reference is 'superType'.
 	$(property subTypes... : Extendable)
+	$(property subTypes_links... : ELink)
 
 	# 'superType' bidirectional reference.
 	# The opposite reference is 'subTypes'.
 	$(property superType : Extendable)
+	$(property superType_link : ELink)
 
 	# 'allSubTypes' bidirectional reference.
 	# The opposite reference is 'allSuperTypes'.
 	$(property allSubTypes... : Extendable)# read-only.
+	$(property allSubTypes_links... : ELink)# read-only.
 
 	# 'allSuperTypes' bidirectional reference.
 	# The opposite reference is 'allSubTypes'.
 	$(property allSuperTypes... : Extendable)# read-only.
+	$(property allSuperTypes_links... : ELink)# read-only.
 
-	# 'isSubTypeOf : EBoolean' operation.
+	# 'isSubTypeOf' operation.
 	#   1. another : Extendable
 	$(method isSubTypeOf)
 
-	# 'isSuperTypeOf : EBoolean' operation.
+	# 'isSuperTypeOf' operation.
 	#   1. another : Extendable
 	$(method isSuperTypeOf)
 
@@ -211,6 +220,8 @@ define class-MyFilename
 endef
 
 $(def_all)
+
+include $(dir $(__mybuild_myfile_model_mk))myfile-model_impl.mk
 
 endif # __mybuild_myfile_model_mk
 

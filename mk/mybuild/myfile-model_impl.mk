@@ -2,24 +2,17 @@
 
 # Model implementation of 'myFile' package.
 
-ifndef __mybuild_myfile_model_impl_mk
-__mybuild_myfile_model_impl_mk := $(lastword $(MAKEFILE_LIST))
+ifndef __mybuild_myfile_model_mk
+$(error \
+	Do not include this file directly, include 'myfile-model.mk' instead!)
+endif # __mybuild_myfile_model_mk
 
-# Base class for all modelled objects of this package.
-define class-MyFileNodeImpl
-	$(super ENodeImpl)
 
-	# Returns a reference to 'myFile' meta model.
-	$(getter eMetaModel,
-		$(myFileMetaModel))
-
-endef
-
-# Implementation of 'Package' model object .
+# Implementation of 'Package' model object.
 define class-MyPackageImpl
 	$(super MyPackage)
 
-	$(super MyFileNodeImpl)
+	$(super ENodeImpl)
 	$(super MyNamedImpl)
 
 	$(getter eMetaClass,$(get myFileMetaModel->Package))
@@ -53,27 +46,27 @@ define class-MyPackageImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'Import' model object .
+# Implementation of 'Import' model object.
 define class-MyImportImpl
 	$(super MyImport)
 
-	$(super MyFileNodeImpl)
+	$(super ENodeImpl)
 
 	$(getter eMetaClass,$(get myFileMetaModel->Import))
 
 	# Attribute 'importName'.
-	$(property-field importName : EString)
+	$(property-field importName)
 
 	# PROTECTED REGION ID(Import) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'Entity' model object .
+# Implementation of 'Entity' model object.
 define class-MyEntityImpl
 	$(super MyEntity)
 
-	$(super MyFileNodeImpl)
+	$(super ENodeImpl)
 	$(super MyNamedImpl)
 
 	$(getter eMetaClass,$(get myFileMetaModel->Entity))
@@ -90,11 +83,11 @@ define class-MyEntityImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'Interface' model object .
+# Implementation of 'Interface' model object.
 define class-MyInterfaceImpl
 	$(super MyInterface)
 
-	$(super MyFileNodeImpl)
+	$(super ENodeImpl)
 	$(super MyEntityImpl)
 	$(super MyExtendableImpl)
 
@@ -117,11 +110,11 @@ define class-MyInterfaceImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'Feature' model object .
+# Implementation of 'Feature' model object.
 define class-MyFeatureImpl
 	$(super MyFeature)
 
-	$(super MyFileNodeImpl)
+	$(super ENodeImpl)
 	$(super MyNamedImpl)
 	$(super MyExtendableImpl)
 
@@ -145,6 +138,15 @@ define class-MyFeatureImpl
 		$(invoke doAddReference,$(get myFileMetaModel->Feature_providedBy),$1))
 	$(setter- providedBy,
 		$(invoke doRemoveReference,$(get myFileMetaModel->Feature_providedBy),$1))
+	# Link operations.
+	$(getter providedBy_links,
+		$(invoke doGetLink,$(get myFileMetaModel->Feature_providedBy)))
+	$(setter providedBy_links,
+		$(invoke doSetLink,$(get myFileMetaModel->Feature_providedBy),$1))
+	$(setter+ providedBy_links,
+		$(invoke doAddLink,$(get myFileMetaModel->Feature_providedBy),$1))
+	$(setter- providedBy_links,
+		$(invoke doRemoveLink,$(get myFileMetaModel->Feature_providedBy),$1))
 
 	# Reference 'requiredBy' [0..*]: bidirectional.
 	$(property requiredBy... : Module)
@@ -157,27 +159,36 @@ define class-MyFeatureImpl
 		$(invoke doAddReference,$(get myFileMetaModel->Feature_requiredBy),$1))
 	$(setter- requiredBy,
 		$(invoke doRemoveReference,$(get myFileMetaModel->Feature_requiredBy),$1))
+	# Link operations.
+	$(getter requiredBy_links,
+		$(invoke doGetLink,$(get myFileMetaModel->Feature_requiredBy)))
+	$(setter requiredBy_links,
+		$(invoke doSetLink,$(get myFileMetaModel->Feature_requiredBy),$1))
+	$(setter+ requiredBy_links,
+		$(invoke doAddLink,$(get myFileMetaModel->Feature_requiredBy),$1))
+	$(setter- requiredBy_links,
+		$(invoke doRemoveLink,$(get myFileMetaModel->Feature_requiredBy),$1))
 
 	# PROTECTED REGION ID(Feature) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'Module' model object .
+# Implementation of 'Module' model object.
 define class-MyModuleImpl
 	$(super MyModule)
 
-	$(super MyFileNodeImpl)
+	$(super ENodeImpl)
 	$(super MyEntityImpl)
 	$(super MyExtendableImpl)
 
 	$(getter eMetaClass,$(get myFileMetaModel->Module))
 
 	# Attribute 'static'.
-	$(property-field isStatic : EBoolean)
+	$(property-field isStatic)
 
 	# Attribute 'abstract'.
-	$(property-field isAbstract : EBoolean)
+	$(property-field isAbstract)
 
 	# Reference 'depends' [0..*]: bidirectional.
 	$(property depends... : Module)
@@ -190,6 +201,15 @@ define class-MyModuleImpl
 		$(invoke doAddReference,$(get myFileMetaModel->Module_depends),$1))
 	$(setter- depends,
 		$(invoke doRemoveReference,$(get myFileMetaModel->Module_depends),$1))
+	# Link operations.
+	$(getter depends_links,
+		$(invoke doGetLink,$(get myFileMetaModel->Module_depends)))
+	$(setter depends_links,
+		$(invoke doSetLink,$(get myFileMetaModel->Module_depends),$1))
+	$(setter+ depends_links,
+		$(invoke doAddLink,$(get myFileMetaModel->Module_depends),$1))
+	$(setter- depends_links,
+		$(invoke doRemoveLink,$(get myFileMetaModel->Module_depends),$1))
 
 	# Reference 'dependent' [0..*]: bidirectional.
 	$(property dependent... : Module)
@@ -202,6 +222,15 @@ define class-MyModuleImpl
 		$(invoke doAddReference,$(get myFileMetaModel->Module_dependent),$1))
 	$(setter- dependent,
 		$(invoke doRemoveReference,$(get myFileMetaModel->Module_dependent),$1))
+	# Link operations.
+	$(getter dependent_links,
+		$(invoke doGetLink,$(get myFileMetaModel->Module_dependent)))
+	$(setter dependent_links,
+		$(invoke doSetLink,$(get myFileMetaModel->Module_dependent),$1))
+	$(setter+ dependent_links,
+		$(invoke doAddLink,$(get myFileMetaModel->Module_dependent),$1))
+	$(setter- dependent_links,
+		$(invoke doRemoveLink,$(get myFileMetaModel->Module_dependent),$1))
 
 	# Reference 'provides' [0..*]: bidirectional.
 	$(property provides... : Feature)
@@ -214,6 +243,15 @@ define class-MyModuleImpl
 		$(invoke doAddReference,$(get myFileMetaModel->Module_provides),$1))
 	$(setter- provides,
 		$(invoke doRemoveReference,$(get myFileMetaModel->Module_provides),$1))
+	# Link operations.
+	$(getter provides_links,
+		$(invoke doGetLink,$(get myFileMetaModel->Module_provides)))
+	$(setter provides_links,
+		$(invoke doSetLink,$(get myFileMetaModel->Module_provides),$1))
+	$(setter+ provides_links,
+		$(invoke doAddLink,$(get myFileMetaModel->Module_provides),$1))
+	$(setter- provides_links,
+		$(invoke doRemoveLink,$(get myFileMetaModel->Module_provides),$1))
 
 	# Reference 'requires' [0..*]: bidirectional.
 	$(property requires... : Feature)
@@ -226,33 +264,42 @@ define class-MyModuleImpl
 		$(invoke doAddReference,$(get myFileMetaModel->Module_requires),$1))
 	$(setter- requires,
 		$(invoke doRemoveReference,$(get myFileMetaModel->Module_requires),$1))
+	# Link operations.
+	$(getter requires_links,
+		$(invoke doGetLink,$(get myFileMetaModel->Module_requires)))
+	$(setter requires_links,
+		$(invoke doSetLink,$(get myFileMetaModel->Module_requires),$1))
+	$(setter+ requires_links,
+		$(invoke doAddLink,$(get myFileMetaModel->Module_requires),$1))
+	$(setter- requires_links,
+		$(invoke doRemoveLink,$(get myFileMetaModel->Module_requires),$1))
 
 	# PROTECTED REGION ID(Module) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'Named' model object .
+# Implementation of 'Named' model object.
 define class-MyNamedImpl
 	$(super MyNamed)
 
-	$(super MyFileNodeImpl)
+	$(super ENodeImpl)
 
 	$(getter eMetaClass,$(get myFileMetaModel->Named))
 
 	# Attribute 'name'.
-	$(property-field name : EString)
+	$(property-field name)
 
 	# PROTECTED REGION ID(Named) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'Extendable' model object .
+# Implementation of 'Extendable' model object.
 define class-MyExtendableImpl
 	$(super MyExtendable)
 
-	$(super MyFileNodeImpl)
+	$(super ENodeImpl)
 
 	$(getter eMetaClass,$(get myFileMetaModel->Extendable))
 
@@ -267,6 +314,15 @@ define class-MyExtendableImpl
 		$(invoke doAddReference,$(get myFileMetaModel->Extendable_subTypes),$1))
 	$(setter- subTypes,
 		$(invoke doRemoveReference,$(get myFileMetaModel->Extendable_subTypes),$1))
+	# Link operations.
+	$(getter subTypes_links,
+		$(invoke doGetLink,$(get myFileMetaModel->Extendable_subTypes)))
+	$(setter subTypes_links,
+		$(invoke doSetLink,$(get myFileMetaModel->Extendable_subTypes),$1))
+	$(setter+ subTypes_links,
+		$(invoke doAddLink,$(get myFileMetaModel->Extendable_subTypes),$1))
+	$(setter- subTypes_links,
+		$(invoke doRemoveLink,$(get myFileMetaModel->Extendable_subTypes),$1))
 
 	# Reference 'superType' [0..1]: bidirectional.
 	$(property superType : Extendable)
@@ -275,6 +331,11 @@ define class-MyExtendableImpl
 		$(get-field superType))
 	$(setter superType,
 		$(invoke doSetReference,$(get myFileMetaModel->Extendable_superType),$1))
+	# Link operations.
+	$(getter superType_link,
+		$(invoke doGetLink,$(get myFileMetaModel->Extendable_superType)))
+	$(setter superType_link,
+		$(invoke doSetLink,$(get myFileMetaModel->Extendable_superType),$1))
 
 	# Reference 'allSubTypes' [0..*]: bidirectional, volatile, read-only.
 	$(property allSubTypes... : Extendable)
@@ -292,7 +353,7 @@ define class-MyExtendableImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# 'isSubTypeOf : EBoolean' operation.
+	# 'isSubTypeOf' operation.
 	#   1. another : Extendable
 	# PROTECTED REGION ID(Extendable_isSubTypeOf) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -300,7 +361,7 @@ define class-MyExtendableImpl
 #		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
-	# 'isSuperTypeOf : EBoolean' operation.
+	# 'isSuperTypeOf' operation.
 	#   1. another : Extendable
 	# PROTECTED REGION ID(Extendable_isSuperTypeOf) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -313,11 +374,11 @@ define class-MyExtendableImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'Filename' model object .
+# Implementation of 'Filename' model object.
 define class-MyFilenameImpl
 	$(super MyFilename)
 
-	$(super MyFileNodeImpl)
+	$(super ENodeImpl)
 
 	$(getter eMetaClass,$(get myFileMetaModel->Filename))
 
@@ -327,6 +388,4 @@ define class-MyFilenameImpl
 endef
 
 $(def_all)
-
-endif # __mybuild_myfile_model_impl_mk
 

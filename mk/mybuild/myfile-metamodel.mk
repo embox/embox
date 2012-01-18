@@ -5,8 +5,6 @@
 ifndef __mybuild_myfile_metamodel_mk
 __mybuild_myfile_metamodel_mk := $(lastword $(MAKEFILE_LIST))
 
-include $(dir $(__mybuild_myfile_metamodel_mk))myfile-metamodel_impl.mk
-
 # Provides static access to contents of 'myFile' model.
 # See 'myFileMetaModel'.
 define class-MyFileMetaModel
@@ -51,6 +49,8 @@ define class-MyFileMetaModel
 endef
 
 $(def_all)
+
+include $(dir $(__mybuild_myfile_metamodel_mk))myfile-metamodel_impl.mk
 
 myFileMetaModel := $(call new,MyFileMetaModelImpl)
 
