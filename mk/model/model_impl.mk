@@ -523,7 +523,10 @@ define class-EMetaModelImpl
 	$(setter eTypes,
 		$(invoke doSetReference,$(get eModelMetaModel->EMetaModel_eTypes),$1))
 	$(setter+ eTypes,
-		$(invoke doAddReference,$(get eModelMetaModel->EMetaModel_eTypes),$1))
+		$(set-field+ eTypes,$1)
+		$(silent-for e <- $1,$(set-field e->eContainer,$(this)))
+#		$(invoke doAddReference,$(get eModelMetaModel->EMetaModel_eTypes),$1)
+	)
 	$(setter- eTypes,
 		$(invoke doRemoveReference,$(get eModelMetaModel->EMetaModel_eTypes),$1))
 
@@ -536,30 +539,25 @@ define class-EMetaModelImpl
 	# Params:
 	#   1. Meta class ID (unused).
 	$(method createMetaClass,
-		$(invoke eModelFactory->createEMetaClass))
+		$(for class <- $(invoke eModelFactory->createEMetaClass),
+			$(set+ eTypes,$(class))
+			$(class)))
 
 	# Params:
 	#   1. Meta class.
 	#   2. Meta feature ID (unused).
 	$(method createMetaAttribute,
-		$(invoke addMetaFeatureToClass,$1,
-			$(invoke eModelFactory->createEMetaAttribute)))
+		$(for feature <- $(invoke eModelFactory->createEMetaAttribute),
+			$(set+ 1->eFeatures,$(feature))
+			$(feature)))
 
 	# Params:
 	#   1. Meta class.
 	#   2. Meta feature ID (unused).
 	$(method createMetaReference,
-		$(invoke addMetaFeatureToClass,$1,
-			$(invoke eModelFactory->createEMetaReference)))
-
-	# Params:
-	#   1. Meta class.
-	#   2. New meta feature.
-	# Return:
-	#   The second argument.
-	$(method addMetaFeatureToClass,
-		$(set+ 1->eFeatures,$2)
-		$2)
+		$(for feature <- $(invoke eModelFactory->createEMetaReference),
+			$(set+ 1->eFeatures,$(feature))
+			$(feature)))
 
 	#
 	# Objects initialization.
