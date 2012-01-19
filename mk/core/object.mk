@@ -890,7 +890,6 @@ endef
 #   1. Class name (optional).
 define get-instances-of
 	$(if $(call value,1),
-		$(info searching istances of $1)
 		$(foreach i,$(call get-instances),
 			$(instance-of $i,$1)
 		)

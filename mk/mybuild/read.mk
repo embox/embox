@@ -40,7 +40,11 @@ MKFILES_CONVERTED := \
 
 MKFILES := $(MKFILES_CONVERTED) $(MKFILES_COPIES)
 
+-include $(MKFILES)
+
 MK_LINK := $(EM_DIR)/linked.mk
+
+-include $(MK_LINK)
 
 $(MKFILES_COPIES) : \
 		$(EM_DIR)% : $(ROOT_DIR)%
@@ -51,14 +55,16 @@ $(MKFILES_CONVERTED) : mk/mybuild/read.mk mk/mybuild/myfile.mk
 $(filter %Makefile,$(MKFILES_CONVERTED)) : \
 		$(EM_DIR)%Makefile : $(ROOT_DIR)%Mybuild
 	@echo '$< -> $@'
-	@mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, \
-		$(call objects_to_mk,$(call create_from_model,$(call gold_parse,myfile,$<))))' > $@
+	$(eval $@ := $$(call create_from_model,$$(call gold_parse,myfile,$$<)))
+	$(info $($@))
+	@mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, $(call objects_to_mk,$($@)))' > $@
 
 $(filter %.my.mk,$(MKFILES_CONVERTED)) : \
 		$(EM_DIR)%.my.mk : $(ROOT_DIR)%.my
 	@echo '$< -> $@'
-	@mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, \
-		$(call objects_to_mk,$(call create_from_model,$(call gold_parse,myfile,$<))))' > $@
+	$(eval $@ := $$(call create_from_model,$$(call gold_parse,myfile,$$<)))
+	$(info $($@))
+	@mkdir -p $(@D); $(PRINTF) '%b' '$(call escape_printf, $(call objects_to_mk,$($@)))' > $@
 
 
 $(MK_LINK) : $(MKFILES_CONVERTED)
