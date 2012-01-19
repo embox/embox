@@ -51,7 +51,10 @@ define class-module
 	$(super named,$1)
 
 	$(property-field modifiers...)
-	$(property-field super_module_ref : module_ref)
+	#$(property-field super_module_ref : module_ref)
+	$(property-field super_module_ref... : module_ref) #XXX ->
+		#could be only one, but otherwise set_super_module_ref fails
+		#	--Anton K
 
 	$(method set_super_module_ref,
 		$(invoke set_references,super_module_ref,$1))

@@ -114,7 +114,7 @@ define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 	$(foreach m,$(new module,$3),$m
 
 		$(set m->modifiers,$1)
-		$(set m->super_module_ref,$4)
+		$(invoke m->set_super_module_ref,$4)
 
 		$(silent-foreach attr,
 				depends_refs \
