@@ -16,15 +16,13 @@ define class-module_link
 	$(method set_depends,
 		$(set src,$1))
 
-	$(method find_resolve,
-		$(foreach o,$(globals),
-			$(if $(subst $($(this).link_name),,$($(o).link_name)),
-				,
-				$(invoke resolve,$($(o).object)))))
+	$(method resolved?,
+		$(get dst))
+
 	# Args:
 	#   1. Object
 	$(method resolve,
-		$(info resolving $(this) with $1)$(invoke set_references,dst,$1))
+		$(set dst,$1))
 
 	# Args:
 	#   1. Object, link to which must be deresolved
@@ -32,6 +30,10 @@ define class-module_link
 		$(invoke remove_references,dst,$1))
 
 endef
+
+MODULE_LINKS_NOTRESOLVED := $(\0)
+
+MODULE_LINKS_RESOLVED := $(\0)
 
 $(def_all)
 

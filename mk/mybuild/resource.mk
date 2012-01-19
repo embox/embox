@@ -24,12 +24,14 @@ endef
 # this function tries to resolve references which place in the same madel
 # param $1 a model
 define resolve_internal
-	$(silent-foreach o,$(get $1.modules),
-		$(foreach l,$(get $o.depends_refs),
-			$(foreach i,$(get $1.modules),
+	$(silent-foreach
+		$(silent-for o<-$(get $1.modules),
+		      f<-depends_refs super_module_ref,
+		      l<-$(get $o.$f),
+		      i<-$(get $1.modules),
 				$(if $(eq $(get $i.name),$(get $l.link_name)),
-					$(set $l.link_name,$(get $i.name)$i))
-			)
+					$(set $l.link_name,$(get $i.name)$i)
+					$(invoke )
 		)
 	)
 endef
@@ -37,8 +39,9 @@ endef
 define resolve_link_from_resource
 	$(foreach m,$(filter $(get $1.link_name).%,$(get $2.exports)),
 		#$(info link_name is $(get $1.link_name), exports is $m)
-		$(set $1.dst,$m)
-		$(set $1.link_name,$m)
+		$(invoke $1.resolve,$m)
+		#$(set $1.dst,$m)
+		#$(set $1.link_name,$m)
 		#$(info now linkname is $(get $1.link_name))
 	)
 endef
