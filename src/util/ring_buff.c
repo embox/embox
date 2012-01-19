@@ -14,8 +14,12 @@ int ring_buff_get_cnt(struct ring_buff *buf) {
 	return buf->cnt;
 }
 
-int ring_buff_get_available(struct ring_buff *buf) {
+int ring_buff_available_space(struct ring_buff *buf) {
 	return buf->capacity - buf->cnt;
+}
+
+int ring_buff_empty(struct ring_buff *buf) {
+	return !buf->cnt;
 }
 
 int ring_buff_enque(struct ring_buff *buf, void *elem) {

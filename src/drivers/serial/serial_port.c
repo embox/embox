@@ -10,6 +10,7 @@
 #include <asm/io.h>
 #include <kernel/irq.h>
 #include <stdio.h>
+#include <util/ring_buff.h>
 #include <drivers/serial.h>
 
 /**
@@ -94,7 +95,7 @@
 
 #define DIVISOR(baud) (115200 / baud)
 
-#if 1
+
 static int uart_init(void) {
 	/* Turn off the interrupt */
 	out8(0x0, COM0_PORT + UART_IER);
@@ -112,7 +113,6 @@ static int uart_init(void) {
 
 	return 0;
 }
-#endif
 
 static void uart_putc(char ch) {
 	while (!(in8(COM0_PORT + UART_LSR) & UART_EMPTY_TX));
@@ -141,7 +141,7 @@ static int uart_set_irq_handler(irq_handler_t pfunc, struct file_desc *desc) {
 	out8(UART_IER_RX_ENABLE, COM0_PORT + UART_IER);
 	return 0;
 }
-
+#if 1
 static int uart_remove_irq_handler(void) {
 	out8(UART_DLAB, COM0_PORT + UART_LCR);
 	/*disable all uart interrupts*/
@@ -153,7 +153,7 @@ static int uart_remove_irq_handler(void) {
 
 	return 0;
 }
-
+#endif
 
 #include <embox/device.h>
 #include <fs/file.h>
@@ -173,37 +173,18 @@ static file_operations_t file_op = {
 		.fwrite = dev_write
 };
 
+RING_BUFFER_DEF(dev_buff, int, 0x20);
 
-//TODO bad HACK rx_buff
-static char rx_buff[0x20];
-static char *rc_pbuff, *read_buff;
 
-static char * buff_inc_pointer(char *pointer, char * base, size_t size) {
-	uint32_t p = (uint32_t)pointer - (uint32_t)base;
-	p ++;
-	p = p % size;
-	return base + p;
-}
-
-static void cp_buff(char *buff, size_t count) {
-	do {
-		*buff ++ = *read_buff;
-		read_buff = buff_inc_pointer(read_buff, rx_buff, sizeof(rx_buff));
-	} while(rc_pbuff != read_buff);
-}
-
-static int has_block = 0;
 
 static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
-//	tty_add_char(&tty, uart_getc());
 
-//	struct file_desc *desc = (struct file_desc *)data;
-
+	int ch;
 	if(uart_has_symbol()) {
-		*rc_pbuff = uart_getc();
-		rc_pbuff = buff_inc_pointer(rc_pbuff, rx_buff, sizeof(rx_buff));
-		has_block = 0;
+		ch = uart_getc();
+		ring_buff_enque(&dev_buff, &ch);
 	}
+
 	return 0;
 }
 
@@ -215,7 +196,7 @@ static void *dev_open(struct file_desc *desc) {
 
 	tty.file_op = &file_op;
 	desc->ops = &file_op;
-	rc_pbuff = read_buff = rx_buff;
+//	rc_pbuff = read_buff = rx_buff;
 //	tty_register(&tty);
 	uart_set_irq_handler(irq_handler, desc);
 	return (void *) desc;
@@ -229,14 +210,14 @@ static int dev_close(struct file_desc *desc) {
 
 
 static size_t dev_read(void *buff, size_t size, size_t count, void *file) {
-	if(rc_pbuff == read_buff) {//buff is empty
-		has_block = 1;
-		while(has_block) {
-			//block
-		}
-	}
-	cp_buff(buff, size * count);
 
+	while(ring_buff_empty(&dev_buff)) {
+	}
+
+	for(;0 < count;--count) {
+		ring_buff_deque(&dev_buff, buff);
+		buff = (void *)(((uint32_t)buff) + size);
+	}
 
 	return 0;
 }
