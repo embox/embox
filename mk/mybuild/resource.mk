@@ -24,18 +24,21 @@ endef
 # this function tries to resolve references which place in the same madel
 # param $1 a model
 define resolve_internal
-	$(silent-foreach
-		$(silent-for o<-$(get $1.modules),
-		      f<-depends_refs super_module_ref,
-		      l<-$(get $o.$f),
-		      i<-$(get $1.modules),
-				$(if $(eq $(get $i.name),$(get $l.link_name)),
-					$(set $l.link_name,$(get $i.name)$i)
-					$(invoke )
-		)
+	$(silent-for o<-$(get $1.modules),
+	      f<-depends_refs super_module_ref,
+	      l<-$(get $o.$f),
+	      i<-$(get $1.modules),
+			$(if $(eq $(get $i.name),$(get $l.link_name)),
+				$(set $l.link_name,$(get $i.name)$i)
+				$(invoke $l.resolve,$(get $i.name)$i))
 	)
 endef
 
+# param $1 is a link
+# param $2 is a resource
+# output is
+# 	zero if no resolve was made
+# 	obj otherwise
 define resolve_link_from_resource
 	$(foreach m,$(filter $(get $1.link_name).%,$(get $2.exports)),
 		#$(info link_name is $(get $1.link_name), exports is $m)
@@ -46,10 +49,19 @@ define resolve_link_from_resource
 	)
 endef
 
+# param $1 list of files
+# output is normalized obj list
 define resolve_links_from_files
+	$(suffix $(call __resolve_links_from_files,$1))
+endef
+
+# param $1 list of files
+# output is obj list
+define __resolve_links_from_files
 	$(foreach l,$(call get-instances-of,module_link),
-		$(or $($l.dst),
-			$(foreach f,$1,
+		$(if $(invoke $l.resolved?),
+			$l,
+			$(silent-foreach f,$1,
 				#$(info link is $l, file is $f, resource is $($f))
 				$(call resolve_link_from_resource,$l,$($f)))
 			$l))

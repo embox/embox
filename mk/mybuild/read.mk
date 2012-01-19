@@ -63,7 +63,6 @@ $(filter %.my.mk,$(MKFILES_CONVERTED)) : \
 
 $(MK_LINK) : $(MKFILES_CONVERTED)
 	@echo '... -> $@'
-	@echo > $@
 	@$(PRINTF) '%b' '$(call escape_printf, \
 		$(call raw_objects_to_mk,$(call resolve_links_from_files,$^)))' > $@
 

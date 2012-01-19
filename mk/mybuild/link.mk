@@ -27,7 +27,7 @@ define class-module_link
 	# Args:
 	#   1. Object, link to which must be deresolved
 	$(method deresolve,
-		$(invoke remove_references,dst,$1))
+		$(set dst,$(\0)))
 
 endef
 
