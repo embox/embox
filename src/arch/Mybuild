@@ -13,3 +13,7 @@ abstract module context {
 abstract module libarch {
 
 }
+
+abstract module locore {
+
+}

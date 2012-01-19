@@ -1,0 +1,10 @@
+/*FIXME mybuild libarch is bad packet */
+package embox.kernel
+
+module main {
+	source "init.c", "nosys.c"
+	/*FIXME mybuild linker scripts */
+	source "nosys.lds"
+	depends embox.arch.libarch
+	depends embox.arch.locore
+}
