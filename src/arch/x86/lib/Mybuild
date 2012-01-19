@@ -1,0 +1,6 @@
+/*FIXME mybuild libarch is bad packet */
+package embox.arch.x86
+
+module libarch {
+	source "setjmp.S"
+}

@@ -1,4 +1,4 @@
-package embox.kernel.thread.sync
+package embox.kernel.thread
 
 module sync {
 	source "mutex.c", "message.c"

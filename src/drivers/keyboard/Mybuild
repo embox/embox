@@ -1,0 +1,6 @@
+/*FIXME mybuild wrong packet name */
+package embox.driver
+
+abstract module keyboard {
+	source "keyboard.c"
+}

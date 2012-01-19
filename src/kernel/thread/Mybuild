@@ -5,14 +5,14 @@ module core {
 
 	depends sched, sync, embox.kernel.task_api
 
-	depends embox.hal.context
+	depends embox.arch.context
 }
 
 module sched {
 	source "sched.c"
 
 	depends embox.kernel.timer.timer_api // for timeslices support
-	depends embox.hal.context // context_switch
+	depends embox.arch.context // context_switch
 	depends embox.kernel.critical
 	depends embox.kernel.thread.sched_policy.api
 
