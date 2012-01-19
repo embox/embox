@@ -436,7 +436,7 @@ define __new
 	# It is mandatory for object references to start with a period.
 	$(foreach this,.obj$(words $(__object_instance_cnt) x),
 		$(def-ifdef OBJ_DEBUG,
-			$(info $(this):	new    $(__class__): $(__obj_debug_args)))
+			$(info $(this):  	new    $(__class__): $(__obj_debug_args)))
 		${eval \
 			__object_instance_cnt += $(this:.obj%=%)
 			$(\n)
@@ -590,13 +590,9 @@ define builtin_func-invoke
 		# 3. Args...
 		$(call __object_member_access_wrap,$1,
 			$(def-ifdef OBJ_DEBUG,
-				$(if $(nofirstword $(builtin_args_list)),
-					$$(foreach __args_nr,
-						$(words $(builtin_args_list)),
-						$$(call __method_invoke_debug,$3,$2)
-					),
-					$$(foreach __args_nr,1,
-						$$(call __method_invoke_debug,$2)
+				$$(foreach __method_name,$2,
+					$$(foreach __args_nr,$(words $(builtin_args_list)),
+						$$(call __method_invoke_debug,$3)
 					)
 				),
 				$$(call $$($$(__this)).$2,$3)
@@ -613,13 +609,11 @@ endef
 ifdef OBJ_DEBUG
 define __method_invoke_debug
 	$(foreach __obj_debug_args_nr,$(word $(__args_nr),0 1 2 3 4 5 6 7 8 9),
-		$(info \
-				$(__this):	invoke $($(__this)).$($(__args_nr)): \
+		$(info $(__this):  	invoke $($(__this)).$(__method_name): \
 				$(__obj_debug_args))
 	)
-	$(foreach 0,$(or $(call var_recursive,$($(__this)).$($(__args_nr))),
-			$(error \
-					No method '$($(__args_nr))', \
+	$(foreach 0,$(or $(call var_recursive,$($(__this)).$(__method_name)),
+			$(error No method '$(__method_name)', \
 					invoked on object '$(__this)' of type '$($(__this))')),
 		$(expand $(value $0))
 	)
@@ -655,13 +649,20 @@ endef
 #   '__this'
 ifdef OBJ_DEBUG
 define __property_get_debug
-	$(info $(__this):	get    $($(__this)).$1)
+	$(info $(__this):  	get    $($(__this)).$1)
 
-	$(call $(or $(call var_recursive,$($(__this)).$1.getter),
-			$(error \
-					No property '$1', performing 'get' \
-					on object '$(__this)' of type '$($(__this))'))
+	$(with \
+		$1,
+		$(call $(or $(call var_recursive,$($(__this)).$1.getter),
+				$(error \
+						No property '$1', performing 'get' \
+						on object '$(__this)' of type '$($(__this))'))
+		),
+
+		$(info $(__this):  	get    $($(__this)).$1 = '$2')
+		$2
 	)
+
 endef
 endif
 
@@ -699,7 +700,7 @@ endef
 #   '__this'
 ifdef OBJ_DEBUG
 define __property_set_debug
-	$(info $(__this):	set$(or $2,$(\s))   $($(__this)).$1: '$3')
+	$(info $(__this):  	set$(or $2,$(\s))   $($(__this)).$1: '$3')
 
 	$(call $(or $(call var_recursive,$($(__this)).$1.setter$2),
 			$(error \
@@ -753,7 +754,7 @@ endef
 #   '__this'
 ifdef OBJ_DEBUG
 define __field_get_debug
-	$(info $(__this):	get-field $($(__this)).$1= \
+	$(info $(__this):  	f-get  $($(__this)).$1= \
 		'$($(__this).$(call __field_check,$1))')
 	$($(__this).$(call __field_check,$1))
 endef
@@ -788,7 +789,7 @@ endef
 # Context:
 #   '__this'
 define __field_set
-	$(def-ifdef OBJ_DEBUG,$(info $(__this):	set-field $($(__this)).$1: '$2'))
+	$(def-ifdef OBJ_DEBUG,$(info $(__this):  	f-set  $($(__this)).$1: '$2'))
 
 	${eval \
 		override $(__this).$(__field_check) := $$2
@@ -801,7 +802,7 @@ endef
 # Context:
 #   '__this'
 define __field_set+
-	$(def-ifdef OBJ_DEBUG,$(info $(__this):	set-field+ $($(__this)).$1: '$2'))
+	$(def-ifdef OBJ_DEBUG,$(info $(__this):  	f-set+ $($(__this)).$1: '$2'))
 
 	${eval \
 		override $(__this).$(__field_check) += $$2
@@ -814,7 +815,7 @@ endef
 # Context:
 #   '__this'
 define __field_set-
-	$(def-ifdef OBJ_DEBUG,$(info $(__this):	set-field- $($(__this)).$1: '$2'))
+	$(def-ifdef OBJ_DEBUG,$(info $(__this):  	f-set- $($(__this)).$1: '$2'))
 
 	${eval \
 		override $(__this).$(__field_check) := \
