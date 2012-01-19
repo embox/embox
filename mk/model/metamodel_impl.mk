@@ -198,9 +198,9 @@ define class-EModelMetaModelImpl
 	$(invoke initMetaReference,$(get ELink_eMetaReference),
 		eMetaReference,0,1,$(get EMetaReference),,changeable)
 	$(invoke initMetaReference,$(get ELink_eSource),
-		eSource,0,1,$(get ENode),$(get ENode_eLinks),volatile derived transient container)
+		eSource,0,1,$(get ENode),$(get ENode_eLinks),changeable volatile derived transient container)
 	$(invoke initMetaReference,$(get ELink_eDestination),
-		eDestination,0,1,$(get ENode),$(get ENode_eInverseResolvedLinks),volatile derived transient)
+		eDestination,0,1,$(get ENode),$(get ENode_eInverseResolvedLinks),changeable volatile derived transient)
 
 	$(invoke initMetaClass,$(get EMetaType),
 		EMetaType,$(get ENamed),abstract)

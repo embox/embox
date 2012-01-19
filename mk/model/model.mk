@@ -109,11 +109,11 @@ define class-ELink
 
 	# 'eSource' bidirectional container reference.
 	# The opposite reference is 'ENode.eLinks'.
-	$(property eSource : ENode)# read-only.
+	$(property eSource : ENode)
 
 	# 'eDestination' bidirectional reference.
 	# The opposite reference is 'ENode.eInverseResolvedLinks'.
-	$(property eDestination : ENode)# read-only.
+	$(property eDestination : ENode)
 
 endef
 

@@ -7,6 +7,7 @@ $(error \
 	Do not include this file directly, include 'model.mk' instead!)
 endif # __model_model_mk
 
+
 # Implementation of 'ENode' model object.
 define class-ENodeImpl
 #	$(super ENode)
@@ -146,11 +147,15 @@ define class-ENodeImpl
 
 	# PROTECTED REGION ID(ENode) ENABLED START
 
+	# '[.link].metaRef.node'
 	$(field oppositeReferences : ENode)
+
+	$(field unresolvedLinks : ELink)
 
 	# Params:
 	#   1. Meta reference.
 	$(method doGetContainerReference,
+#		$(filter $1.%,$(get-field eContainer))
 		$(get-field eContainer)
 	)
 
@@ -170,7 +175,7 @@ define class-ENodeImpl
 		$(silent-for \
 			f <- $(get 1->instanceProperty),
 
-			e <- $2
+			e <- $(suffix $2)
 				$(set-field+ $f,$2),
 
 			$(invoke e->doInverseAddReference,$1,$(this))
@@ -197,11 +202,61 @@ define class-ENodeImpl
 	# Params:
 	#   1. Meta reference.
 	#   2. A single node being added.
+	#   3. An optional link.
 	$(method doInverseAddReference,
 		$(set-field+ \
-			$(or $(for r <- $(get 1->eOpposite),$(get r->instanceProperty)),
+			$(or $(if $(get 1->isContainment),eContainer)
+				$(for r <- $(get 1->eOpposite),$(get r->instanceProperty)),
 				oppositeReferences),
-			$2)
+			$(value 3)$1$2)
+	)
+
+	# Params:
+	#   1. Meta reference.
+	#   2. Link to add.
+	$(method doAddLink,
+#		$(assert $(not $(or $(get 1->isContainer),$(get 1->isContainment))),
+#			Non cross-reference '$(get $(get 1->eContainingClass).name)
+#				.$(get 1->name)' cannot be added using links)
+
+		$(silent-for \
+			f <- $(get 1->instanceProperty),
+
+			link <- $2,
+
+			$(or $(for dst <- $(get link->eDestination),
+					$(set-field+ $f,$(link)$(dst))
+					$(invoke dst->doInverseAddReference,$1,$(dst),$(link))
+					$(dst)),
+
+				$(set-field+ unresolvedLinks,$(link)))
+
+#			$(set link->eSource,$(this))
+			$(set-field link->eContainer,$(this))
+		)
+
+	)
+
+	# Params:
+	#   1. Meta reference.
+	#   2. New value.
+	$(method doSetLink,
+		$(silent-for \
+			f <- $(get 1->instanceProperty),
+
+			$(set-field $f,
+				$(for e <- $(get-field $f),
+					$(if $(basename $e),
+						# 'e' is '.link.node'
+						$(invoke e->doInverseRemoveReference,$1,$(this)),
+						$e
+					)
+				)
+			)
+
+		)
+
+		$(invoke doAddLink,$1,$2)
 	)
 
 	# PROTECTED REGION END
@@ -224,21 +279,20 @@ define class-ELinkImpl
 	$(setter eMetaReference,
 		$(invoke doSetReference,$(get eModelMetaModel->ELink_eMetaReference),$1))
 
-	# Reference 'eSource' [0..1]: bidirectional, container, volatile, read-only.
+	# Reference 'eSource' [0..1]: bidirectional, container.
 	$(property eSource : ENode)
-	# PROTECTED REGION ID(ELink_eSource) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eSource,
-#		$(error $0: NIY))
-	# PROTECTED REGION END
+	$(getter eSource,
+		$(invoke doGetContainerReference,$(get eModelMetaModel->ELink_eSource)))
+	$(setter eSource,
+		$(invoke doSetContainerReference,$(get eModelMetaModel->ELink_eSource),$1))
 
-	# Reference 'eDestination' [0..1]: bidirectional, volatile, read-only.
+	# Reference 'eDestination' [0..1]: bidirectional.
 	$(property eDestination : ENode)
-	# PROTECTED REGION ID(ELink_eDestination) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eDestination,
-#		$(error $0: NIY))
-	# PROTECTED REGION END
+	$(field eDestination : ENode)
+	$(getter eDestination,
+		$(get-field eDestination))
+	$(setter eDestination,
+		$(invoke doSetReference,$(get eModelMetaModel->ELink_eDestination),$1))
 
 	# PROTECTED REGION ID(ELink) ENABLED START
 	# PROTECTED REGION END
@@ -531,6 +585,8 @@ define class-EMetaModelImpl
 		$(invoke doRemoveReference,$(get eModelMetaModel->EMetaModel_eTypes),$1))
 
 	# PROTECTED REGION ID(EMetaModel) ENABLED START
+
+#	$(set eFactory,$(eModelFactory))
 
 	#
 	# Meta object instantiation.
