@@ -2,22 +2,22 @@ package embox.framework
 
 module runlevel {
 	/*FIXME mybuild make flags options */
-	make flags "-D__FRAMEWORK__"
+	/*make flags "-D__FRAMEWORK__"*/
 	source "runlevel.c"
 	source "unit.c"
 }
 
-module level_arch {
+module level_0 { /*level_arch */
 }
 
-module level_test {
+module level_1 { /* level_test */
 }
 
-module level_driver {
+module level_2 { /* level_driver */
 }
 
-module level_user{
+module level_3 { /*level_user */
 }
 
-module level_nonloaded {
+module level_4 { /*level_nonloaded */
 }
