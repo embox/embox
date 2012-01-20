@@ -11,7 +11,9 @@ endef
 #param $1 module object
 define runlevel_setup
 	$(foreach r,$(call find_mod,$(call get_runlevel_name,$1)),
-		$(info $r)
+		$(foreach m,$(call find_mod,$1),
+			$(info add dependence $m to $r)
+		)
 	)
 endef
 
