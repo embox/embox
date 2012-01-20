@@ -45,7 +45,6 @@ metaModelInitializer(EPackage this) : "__" + name.toFirstLower() + "_init";
 metaModelBinder(EPackage this) :      "__" + name.toFirstLower() + "_bind";
 
 factoryName(EPackage this) :         name.toFirstUpper() + "Factory";
-factoryImplName(EPackage this) :     name.toFirstUpper() + "FactoryImpl";
 factoryInstanceName(EPackage this) : name.toFirstLower() + "Factory";
 
 withModelPrefix(String this, EPackage model):

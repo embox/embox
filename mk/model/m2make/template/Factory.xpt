@@ -19,7 +19,7 @@ endef
 
 $(def_all)
 
-«factoryInstanceName()» := «mkCall("new", factoryImplName())»
+«factoryInstanceName()» := «mkCall("new", factoryName())»
 
 «inclusionGuardEnd("factory")»
 
