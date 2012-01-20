@@ -10,7 +10,7 @@ define get_referenced_objects
 endef
 
 #param $1 current object
-#param $2 current marked object list
+#param $2 function taking obj and returning it's obj references
 define graph_closure
 	$(foreach f,$(or $(singleword $2),$(error invalid argument in $0: '$2')),
 		$(sort $(with $1,,
