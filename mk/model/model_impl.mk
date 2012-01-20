@@ -10,11 +10,11 @@ endif # __model_model_mk
 
 # Implementation of 'ENode' model object.
 define class-ENodeImpl
-#	$(super ENode)
-#
-#	$(super ENodeImpl)
-#
-#	$(getter eMetaClass,$(get eModelMetaModel->ENode))
+	$(super ENode)
+
+	$(super ENodeImpl)
+
+	$(getter eMetaClass,$(EModel_ENode))
 
 	# Reference 'eMetaClass' [0..1]: volatile, read-only.
 	$(property eMetaClass : EMetaClass)
@@ -34,9 +34,9 @@ define class-ENodeImpl
 	# Reference 'eContainer' [0..1]: bidirectional, volatile, read-only.
 	$(property eContainer : ENode)
 	# PROTECTED REGION ID(ENode_eContainer) ENABLED START
-	$(field eContainer : ENode)
+	$(field __eContainer : ENode)
 	$(getter eContainer,
-		$(get-field eContainer))
+		$(get-field __eContainer))
 	# PROTECTED REGION END
 
 	# Reference 'eRootContainer' [0..1]: volatile, read-only.
@@ -148,67 +148,87 @@ define class-ENodeImpl
 	# PROTECTED REGION ID(ENode) ENABLED START
 
 	# '[.link].metaRef.node'
-	$(field oppositeReferences : ENode)
+	$(field __eOppositeRefs : ENode)
 
 	$(field unresolvedLinks : ELink)
 
 	# Params:
-	#   1. Meta reference.
-	$(method doGetContainerReference,
-#		$(filter $1.%,$(get-field eContainer))
-		$(get-field eContainer)
+	#   1. Property name.
+	$(method __eGetContainer,
+		$(filter $1.%,$(get-field __eContainer))
 	)
 
 	# Params:
-	#   1. Meta reference.
+	#   1. Property name.
+	#   2. New container.
+	#   3. Containment property in the container.
+	$(method __eSetContainer,
+		$(assert $(not $(multiword $2)))
+
+		$(for oldContainer <- $(get-field __eContainer),
+			$(set-field- oldContainer->$(notdir $(basename $(oldContainer))),
+				$1$(this))
+		)
+
+		$(set-field __eContainer,$1/$3$2)
+
+		$(for newContainer <- $2,
+			$(set-field+ newContainer->$3,$1$(this))
+		)
+	)
+
+	# Params:
+	#   1. Property name.
 	#   2. What to add.
-	$(method doAddReference,
-#		$(assert $(invoke $(get 1->eContainingClass).isSuperTypeOf,
-#				$(get eMetaClass)),
-#			Bad cast '$(get $(get eMetaClass).name)' \
-#			to '$(get $(get 1->eContainingClass).name)')
-
-		$(assert $(not $(get 1->isContainer)),
-			Container reference '$(get $(get 1->eContainingClass).name)
-				.$(get 1->name)' must be set using 'doSetContainerReference')
-
-		$(silent-for \
-			f <- $(get 1->instanceProperty),
-
-			e <- $(suffix $2)
-				$(set-field+ $f,$2),
-
-			$(invoke e->doInverseAddReference,$1,$(this))
-		)
-
+	$(method __eAdd,
+		$(set-field+ $1,$(suffix $2))
+		$(silent-for e <- $2,
+			$(set-field+ e->__eOppositeRefs,$1$(this)))
 	)
 
 	# Params:
-	#   1. Meta reference.
+	#   1. Property name.
+	#   2. What to add.
+	#   3. Opposite property.
+	$(method __eAddContainment,
+		$(silent-for e <- $2,
+			$(invoke e->__eSetContainer,$3,$(this),$1))
+	)
+
+	# Params:
+	#   1. Property name.
+	#   2. What to add.
+	#   3. Opposite property.
+	$(method __eAddBidirectional,
+		$(set-field+ $1,$(suffix $2))
+		$(silent-for e <- $2,
+			$(set-field+ e->$3,$(this)))
+	)
+
+	# Params:
+	#   1. Property name.
 	#   2. New value.
-	$(method doSetReference,
-		$(silent-for \
-			f <- $(get 1->instanceProperty),
-
-			e <- $(get-field $f)
-				 $(set-field $f,),
-
-			$(invoke e->doInverseRemoveReference,$1,$(this))
-		)
-
-		$(invoke doAddReference,$1,$2)
+	$(method __eSet,
+		$(invoke __eRemove,$1,$(get-field $1))
+		$(invoke __eAdd,$1,$2)
 	)
 
 	# Params:
-	#   1. Meta reference.
-	#   2. A single node being added.
-	#   3. An optional link.
-	$(method doInverseAddReference,
-		$(set-field+ \
-			$(or $(if $(get 1->isContainment),eContainer)
-				$(for r <- $(get 1->eOpposite),$(get r->instanceProperty)),
-				oppositeReferences),
-			$(value 3)$1$2)
+	#   1. Property name.
+	#   2. New value.
+	#   3. Opposite property.
+	$(method __eSetBidirectional,
+		$(invoke __eRemoveBidirectional,$1,$(get-field $1),$3)
+		$(invoke __eAddBidirectional,$1,$2,$3)
+	)
+
+	# Params:
+	#   1. Property name.
+	#   2. New value.
+	#   3. Opposite property.
+	$(method __eSetContainment,
+		$(invoke __eRemoveContainment,$1,$(get-field $1),$3)
+		$(invoke __eAddContainment,$1,$2,$3)
 	)
 
 	# Params:
@@ -269,7 +289,7 @@ define class-ELinkImpl
 	$(super ENodeImpl)
 	$(super ENamedImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->ELink))
+	$(getter eMetaClass,$(EModel_ELink))
 
 	# Reference 'eMetaReference' [0..1].
 	$(property eMetaReference : EMetaReference)
@@ -277,14 +297,14 @@ define class-ELinkImpl
 	$(getter eMetaReference,
 		$(get-field eMetaReference))
 	$(setter eMetaReference,
-		$(invoke doSetReference,$(get eModelMetaModel->ELink_eMetaReference),$1))
+		$(invoke __eSet,eMetaReference,$(suffix $1),))
 
 	# Reference 'eSource' [0..1]: bidirectional, container.
 	$(property eSource : ENode)
 	$(getter eSource,
-		$(invoke doGetContainerReference,$(get eModelMetaModel->ELink_eSource)))
+		$(invoke __eGetContainer,eSource))
 	$(setter eSource,
-		$(invoke doSetContainerReference,$(get eModelMetaModel->ELink_eSource),$1))
+		$(invoke __eSetBidirectional,eSource,$(suffix $1),eLinks))
 
 	# Reference 'eDestination' [0..1]: bidirectional.
 	$(property eDestination : ENode)
@@ -292,7 +312,7 @@ define class-ELinkImpl
 	$(getter eDestination,
 		$(get-field eDestination))
 	$(setter eDestination,
-		$(invoke doSetReference,$(get eModelMetaModel->ELink_eDestination),$1))
+		$(invoke __eSetBidirectional,eDestination,$(suffix $1),eInverseResolvedLinks))
 
 	# PROTECTED REGION ID(ELink) ENABLED START
 	# PROTECTED REGION END
@@ -305,7 +325,7 @@ define class-EMetaTypeImpl
 	$(super ENodeImpl)
 	$(super ENamedImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->EMetaType))
+	$(getter eMetaClass,$(EModel_EMetaType))
 
 	# Attribute 'instanceClass'.
 	$(property-field instanceClass)
@@ -313,7 +333,7 @@ define class-EMetaTypeImpl
 	# Reference 'eMetaModel' [0..1]: bidirectional, container, read-only.
 	$(property eMetaModel : EMetaModel)
 	$(getter eMetaModel,
-		$(invoke doGetContainerReference,$(get eModelMetaModel->EMetaType_eMetaModel)))
+		$(invoke __eGetContainer,eMetaModel))
 
 	# PROTECTED REGION ID(EMetaType) ENABLED START
 	# PROTECTED REGION END
@@ -326,7 +346,7 @@ define class-EMetaClassImpl
 	$(super ENodeImpl)
 	$(super EMetaTypeImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->EMetaClass))
+	$(getter eMetaClass,$(EModel_EMetaClass))
 
 	# Attribute 'abstract'.
 	$(property-field isAbstract)
@@ -340,11 +360,11 @@ define class-EMetaClassImpl
 	$(getter eSuperTypes,
 		$(get-field eSuperTypes))
 	$(setter eSuperTypes,
-		$(invoke doSetReference,$(get eModelMetaModel->EMetaClass_eSuperTypes),$1))
+		$(invoke __eSet,eSuperTypes,$(suffix $1),))
 	$(setter+ eSuperTypes,
-		$(invoke doAddReference,$(get eModelMetaModel->EMetaClass_eSuperTypes),$1))
+		$(invoke __eAdd,eSuperTypes,$(suffix $1),))
 	$(setter- eSuperTypes,
-		$(invoke doRemoveReference,$(get eModelMetaModel->EMetaClass_eSuperTypes),$1))
+		$(invoke __eRemove,eSuperTypes,$(suffix $1),))
 
 	# Reference 'eAllSuperTypes' [0..*]: volatile, read-only.
 	$(property eAllSuperTypes... : EMetaClass)
@@ -362,14 +382,11 @@ define class-EMetaClassImpl
 	$(getter eFeatures,
 		$(get-field eFeatures))
 	$(setter eFeatures,
-		$(invoke doSetReference,$(get eModelMetaModel->EMetaClass_eFeatures),$1))
+		$(invoke __eSetContainment,eFeatures,$(suffix $1),eContainingClass))
 	$(setter+ eFeatures,
-		$(set-field+ eFeatures,$1)
-		$(silent-for e <- $1,$(set-field e->eContainer,$(this)))
-#		$(invoke doAddReference,$(get eModelMetaModel->EMetaClass_eFeatures),$1)
-	)
+		$(invoke __eAddContainment,eFeatures,$(suffix $1),eContainingClass))
 	$(setter- eFeatures,
-		$(invoke doRemoveReference,$(get eModelMetaModel->EMetaClass_eFeatures),$1))
+		$(invoke __eRemoveContainment,eFeatures,$(suffix $1),eContainingClass))
 
 	# Reference 'eAllFeatures' [0..*]: volatile, read-only.
 	$(property eAllFeatures... : EMetaFeature)
@@ -455,7 +472,7 @@ define class-EMetaPrimitiveImpl
 	$(super ENodeImpl)
 	$(super EMetaTypeImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->EMetaPrimitive))
+	$(getter eMetaClass,$(EModel_EMetaPrimitive))
 
 	# PROTECTED REGION ID(EMetaPrimitive) ENABLED START
 	# PROTECTED REGION END
@@ -468,7 +485,7 @@ define class-EMetaFeatureImpl
 	$(super ENodeImpl)
 	$(super ETypedImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->EMetaFeature))
+	$(getter eMetaClass,$(EModel_EMetaFeature))
 
 	# Attribute 'changeable'.
 	$(property-field isChangeable)
@@ -488,7 +505,7 @@ define class-EMetaFeatureImpl
 	# Reference 'eContainingClass' [0..1]: bidirectional, container, read-only.
 	$(property eContainingClass : EMetaClass)
 	$(getter eContainingClass,
-		$(invoke doGetContainerReference,$(get eModelMetaModel->EMetaFeature_eContainingClass)))
+		$(invoke __eGetContainer,eContainingClass))
 
 	# PROTECTED REGION ID(EMetaFeature) ENABLED START
 	# PROTECTED REGION END
@@ -501,14 +518,14 @@ define class-EMetaReferenceImpl
 	$(super ENodeImpl)
 	$(super EMetaFeatureImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->EMetaReference))
+	$(getter eMetaClass,$(EModel_EMetaReference))
 
 	# Attribute 'containment'.
 	$(property-field isContainment)
 
 	# Attribute 'container': volatile, read-only.
 	$(property isContainer)
-	# PROTECTED REGION ID(EMetaReference_container) ENABLED START
+	# PROTECTED REGION ID(EMetaReference_isContainer) ENABLED START
 	$(getter isContainer,
 		$(foreach opposite,$(get eOpposite),$(get opposite->isContainment)))
 	# PROTECTED REGION END
@@ -519,7 +536,7 @@ define class-EMetaReferenceImpl
 	$(getter eOpposite,
 		$(get-field eOpposite))
 	$(setter eOpposite,
-		$(invoke doSetReference,$(get eModelMetaModel->EMetaReference_eOpposite),$1))
+		$(invoke __eSet,eOpposite,$(suffix $1),))
 
 	# Reference 'eReferenceType' [1..1]: volatile, read-only.
 	$(property eReferenceType : EMetaClass)
@@ -539,7 +556,7 @@ define class-EMetaAttributeImpl
 	$(super ENodeImpl)
 	$(super EMetaFeatureImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->EMetaAttribute))
+	$(getter eMetaClass,$(EModel_EMetaAttribute))
 
 	# Reference 'eAttributeType' [1..1]: volatile, read-only.
 	$(property eAttributeType : EMetaPrimitive)
@@ -559,7 +576,7 @@ define class-EMetaModelImpl
 	$(super ENodeImpl)
 	$(super ENamedImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->EMetaModel))
+	$(getter eMetaClass,$(EModel_EMetaModel))
 
 	# Reference 'eFactory' [1..1]: bidirectional.
 	$(property eFactory : EFactory)
@@ -567,7 +584,7 @@ define class-EMetaModelImpl
 	$(getter eFactory,
 		$(get-field eFactory))
 	$(setter eFactory,
-		$(invoke doSetReference,$(get eModelMetaModel->EMetaModel_eFactory),$1))
+		$(invoke __eSetBidirectional,eFactory,$(suffix $1),eMetaModel))
 
 	# Reference 'eTypes' [0..*]: bidirectional, containment.
 	$(property eTypes... : EMetaType)
@@ -575,127 +592,13 @@ define class-EMetaModelImpl
 	$(getter eTypes,
 		$(get-field eTypes))
 	$(setter eTypes,
-		$(invoke doSetReference,$(get eModelMetaModel->EMetaModel_eTypes),$1))
+		$(invoke __eSetContainment,eTypes,$(suffix $1),eMetaModel))
 	$(setter+ eTypes,
-		$(set-field+ eTypes,$1)
-		$(silent-for e <- $1,$(set-field e->eContainer,$(this)))
-#		$(invoke doAddReference,$(get eModelMetaModel->EMetaModel_eTypes),$1)
-	)
+		$(invoke __eAddContainment,eTypes,$(suffix $1),eMetaModel))
 	$(setter- eTypes,
-		$(invoke doRemoveReference,$(get eModelMetaModel->EMetaModel_eTypes),$1))
+		$(invoke __eRemoveContainment,eTypes,$(suffix $1),eMetaModel))
 
 	# PROTECTED REGION ID(EMetaModel) ENABLED START
-
-#	$(set eFactory,$(eModelFactory))
-
-	#
-	# Meta object instantiation.
-	#
-
-	# Params:
-	#   1. Meta class ID (unused).
-	$(method createMetaClass,
-		$(for class <- $(invoke eModelFactory->createEMetaClass),
-			$(set+ eTypes,$(class))
-			$(class)))
-
-	# Params:
-	#   1. Meta class.
-	#   2. Meta feature ID (unused).
-	$(method createMetaAttribute,
-		$(for feature <- $(invoke eModelFactory->createEMetaAttribute),
-			$(set+ 1->eFeatures,$(feature))
-			$(feature)))
-
-	# Params:
-	#   1. Meta class.
-	#   2. Meta feature ID (unused).
-	$(method createMetaReference,
-		$(for feature <- $(invoke eModelFactory->createEMetaReference),
-			$(set+ 1->eFeatures,$(feature))
-			$(feature)))
-
-	#
-	# Objects initialization.
-	#
-
-	# Params:
-	#   1. Meta class.
-	#   2. Name.
-	#   3. Super types...
-	#   4. Flags...
-	$(method initMetaClass,
-		$(set 1->name,$2)
-		$(set 1->eSuperTypes,$3)
-		$(set 1->isAbstract,$(filter abstract,$4))
-		$(set 1->isInterface,$(filter interface,$4))
-	)
-
-	# Params:
-	#   1. Meta attribute.
-	#   2. Name.
-	#   3. Lower bound.
-	#   4. Upper bound.
-	#   5. Flags...
-	$(method initMetaAttribute,
-		$(invoke commonInitMetaFeature,$1,$2,$3,$4,$5))
-
-	# Params:
-	#   1. Meta reference.
-	#   2. Name.
-	#   3. Lower bound.
-	#   4. Upper bound.
-	#   5. Referenced class.
-	#   6. Opposite reference (if any).
-	#   7. Flags...
-	$(method initMetaReference,
-		$(invoke commonInitMetaFeature,$1,$2,$3,$4,$7)
-		$(set 1->eType,$5)
-		$(set 1->eOpposite,$6)
-		$(set 1->isContainment,$(filter containment,$7))
-#		$(set 1->isContainer,$(filter container,$7))
-	)
-
-	# Params:
-	#   1. Meta feature.
-	#   2. Name.
-	#   3. Lower bound.
-	#   4. Upper bound.
-	#   5. Flags...
-	$(method commonInitMetaFeature,
-		$(set 1->name,$2)
-		$(set 1->lowerBound,$3)
-		$(set 1->upperBound,$4)
-		$(set 1->isChangeable,$(filter changeable,$4))
-		$(set 1->isDerived,$(filter derived,$4))
-		$(set 1->isVolatile,$(filter volatile,$4))
-		$(set 1->isTransient,$(filter transient,$4))
-	)
-
-	#
-	# Binding to native class/properties.
-	#
-
-	# Params:
-	#   1. Meta class.
-	#   2. Instance class name.
-	$(method bindMetaClass,
-		$(assert $(class-exists $2),
-			Can't bind meta type '$(get 1->name)' to undefined class '$2')
-		$(set 1->instanceClass,$2)
-	)
-
-	# Params:
-	#   1. Meta feature.
-	#   2. Instance property name.
-	$(method bindMetaFeature,
-		$(assert $(class-has-property \
-				$(get $(get 1->eContainingClass).instanceClass),$2),
-			Can't bind meta feature '$(get 1->name)' to undefined property '$2'
-			of class '$(get $(get 1->eContainingClass).instanceClass)')
-		$(set 1->instanceProperty,$2)
-	)
-
 	# PROTECTED REGION END
 endef
 
@@ -705,7 +608,7 @@ define class-EFactoryImpl
 
 	$(super ENodeImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->EFactory))
+	$(getter eMetaClass,$(EModel_EFactory))
 
 	# Reference 'eMetaModel' [1..1]: bidirectional.
 	$(property eMetaModel : EMetaModel)
@@ -713,7 +616,7 @@ define class-EFactoryImpl
 	$(getter eMetaModel,
 		$(get-field eMetaModel))
 	$(setter eMetaModel,
-		$(invoke doSetReference,$(get eModelMetaModel->EFactory_eMetaModel),$1))
+		$(invoke __eSetBidirectional,eMetaModel,$(suffix $1),eFactory))
 
 	# PROTECTED REGION ID(EFactory) ENABLED START
 	# PROTECTED REGION END
@@ -725,7 +628,7 @@ define class-ENamedImpl
 
 	$(super ENodeImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->ENamed))
+	$(getter eMetaClass,$(EModel_ENamed))
 
 	# Attribute 'name'.
 	$(property-field name)
@@ -741,7 +644,7 @@ define class-ETypedImpl
 	$(super ENodeImpl)
 	$(super ENamedImpl)
 
-	$(getter eMetaClass,$(get eModelMetaModel->ETyped))
+	$(getter eMetaClass,$(EModel_ETyped))
 
 	# Attribute 'lowerBound'.
 	$(property-field lowerBound)
@@ -751,7 +654,7 @@ define class-ETypedImpl
 
 	# Attribute 'many': volatile, read-only.
 	$(property isMany)
-	# PROTECTED REGION ID(ETyped_many) ENABLED START
+	# PROTECTED REGION ID(ETyped_isMany) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter isMany,
 #		$(error $0: NIY))
@@ -763,7 +666,7 @@ define class-ETypedImpl
 	$(getter eType,
 		$(get-field eType))
 	$(setter eType,
-		$(invoke doSetReference,$(get eModelMetaModel->ETyped_eType),$1))
+		$(invoke __eSet,eType,$(suffix $1),))
 
 	# PROTECTED REGION ID(ETyped) ENABLED START
 	# PROTECTED REGION END

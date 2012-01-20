@@ -5,92 +5,312 @@
 ifndef __model_metamodel_mk
 __model_metamodel_mk := $(lastword $(MAKEFILE_LIST))
 
-# Provides static access to contents of 'EModel' model.
-# See 'eModelMetaModel'.
-define class-EModelMetaModel
-	$(super EMetaModel)
+# Create meta objects.
+EModel := \
+	$(call createMetaModel,EModel)
 
-	$(property ENode : EMetaClass)
-	$(property ENode_eMetaClass : EMetaReference)
-	$(property ENode_eResource : EMetaAttribute)
-	$(property ENode_eContainer : EMetaReference)
-	$(property ENode_eRootContainer : EMetaReference)
-	$(property ENode_eContents : EMetaReference)
-	$(property ENode_eAllContents : EMetaReference)
-	$(property ENode_eLinks : EMetaReference)
-	$(property ENode_eResolvedLinks : EMetaReference)
-	$(property ENode_eInverseResolvedLinks : EMetaReference)
-	$(property ENode_eUnresolvedLinks : EMetaReference)
-	$(property ENode_eRefs : EMetaReference)
-	$(property ENode_eInverseRefs : EMetaReference)
-	$(property ENode_eLinkedRefs : EMetaReference)
-	$(property ENode_eInverseLinkedRefs : EMetaReference)
-	$(property ENode_eImmediateRefs : EMetaReference)
-	$(property ENode_eInverseImmediateRefs : EMetaReference)
+EModel_ENode := \
+	$(call createMetaClass,$(EModel),EModel_ENode)
+EModel_ENode_eMetaClass := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eMetaClass)
+EModel_ENode_eResource := \
+	$(call createMetaAttribute,$(EModel_ENode),EModel_ENode_eResource)
+EModel_ENode_eContainer := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eContainer)
+EModel_ENode_eRootContainer := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eRootContainer)
+EModel_ENode_eContents := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eContents)
+EModel_ENode_eAllContents := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eAllContents)
+EModel_ENode_eLinks := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eLinks)
+EModel_ENode_eResolvedLinks := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eResolvedLinks)
+EModel_ENode_eInverseResolvedLinks := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eInverseResolvedLinks)
+EModel_ENode_eUnresolvedLinks := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eUnresolvedLinks)
+EModel_ENode_eRefs := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eRefs)
+EModel_ENode_eInverseRefs := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eInverseRefs)
+EModel_ENode_eLinkedRefs := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eLinkedRefs)
+EModel_ENode_eInverseLinkedRefs := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eInverseLinkedRefs)
+EModel_ENode_eImmediateRefs := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eImmediateRefs)
+EModel_ENode_eInverseImmediateRefs := \
+	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eInverseImmediateRefs)
 
-	$(property ELink : EMetaClass)
-	$(property ELink_eMetaReference : EMetaReference)
-	$(property ELink_eSource : EMetaReference)
-	$(property ELink_eDestination : EMetaReference)
+EModel_ELink := \
+	$(call createMetaClass,$(EModel),EModel_ELink)
+EModel_ELink_eMetaReference := \
+	$(call createMetaReference,$(EModel_ELink),EModel_ELink_eMetaReference)
+EModel_ELink_eSource := \
+	$(call createMetaReference,$(EModel_ELink),EModel_ELink_eSource)
+EModel_ELink_eDestination := \
+	$(call createMetaReference,$(EModel_ELink),EModel_ELink_eDestination)
 
-	$(property EMetaType : EMetaClass)
-	$(property EMetaType_instanceClass : EMetaAttribute)
-	$(property EMetaType_eMetaModel : EMetaReference)
+EModel_EMetaType := \
+	$(call createMetaClass,$(EModel),EModel_EMetaType)
+EModel_EMetaType_instanceClass := \
+	$(call createMetaAttribute,$(EModel_EMetaType),EModel_EMetaType_instanceClass)
+EModel_EMetaType_eMetaModel := \
+	$(call createMetaReference,$(EModel_EMetaType),EModel_EMetaType_eMetaModel)
 
-	$(property EMetaClass : EMetaClass)
-	$(property EMetaClass_abstract : EMetaAttribute)
-	$(property EMetaClass_interface : EMetaAttribute)
-	$(property EMetaClass_eSuperTypes : EMetaReference)
-	$(property EMetaClass_eAllSuperTypes : EMetaReference)
-	$(property EMetaClass_eFeatures : EMetaReference)
-	$(property EMetaClass_eAllFeatures : EMetaReference)
-	$(property EMetaClass_eAttributes : EMetaReference)
-	$(property EMetaClass_eAllAttributes : EMetaReference)
-	$(property EMetaClass_eReferences : EMetaReference)
-	$(property EMetaClass_eAllReferences : EMetaReference)
-	$(property EMetaClass_eAllContainments : EMetaReference)
+EModel_EMetaClass := \
+	$(call createMetaClass,$(EModel),EModel_EMetaClass)
+EModel_EMetaClass_isAbstract := \
+	$(call createMetaAttribute,$(EModel_EMetaClass),EModel_EMetaClass_isAbstract)
+EModel_EMetaClass_isInterface := \
+	$(call createMetaAttribute,$(EModel_EMetaClass),EModel_EMetaClass_isInterface)
+EModel_EMetaClass_eSuperTypes := \
+	$(call createMetaReference,$(EModel_EMetaClass),EModel_EMetaClass_eSuperTypes)
+EModel_EMetaClass_eAllSuperTypes := \
+	$(call createMetaReference,$(EModel_EMetaClass),EModel_EMetaClass_eAllSuperTypes)
+EModel_EMetaClass_eFeatures := \
+	$(call createMetaReference,$(EModel_EMetaClass),EModel_EMetaClass_eFeatures)
+EModel_EMetaClass_eAllFeatures := \
+	$(call createMetaReference,$(EModel_EMetaClass),EModel_EMetaClass_eAllFeatures)
+EModel_EMetaClass_eAttributes := \
+	$(call createMetaReference,$(EModel_EMetaClass),EModel_EMetaClass_eAttributes)
+EModel_EMetaClass_eAllAttributes := \
+	$(call createMetaReference,$(EModel_EMetaClass),EModel_EMetaClass_eAllAttributes)
+EModel_EMetaClass_eReferences := \
+	$(call createMetaReference,$(EModel_EMetaClass),EModel_EMetaClass_eReferences)
+EModel_EMetaClass_eAllReferences := \
+	$(call createMetaReference,$(EModel_EMetaClass),EModel_EMetaClass_eAllReferences)
+EModel_EMetaClass_eAllContainments := \
+	$(call createMetaReference,$(EModel_EMetaClass),EModel_EMetaClass_eAllContainments)
 
-	$(property EMetaPrimitive : EMetaClass)
+EModel_EMetaPrimitive := \
+	$(call createMetaClass,$(EModel),EModel_EMetaPrimitive)
 
-	$(property EMetaFeature : EMetaClass)
-	$(property EMetaFeature_changeable : EMetaAttribute)
-	$(property EMetaFeature_volatile : EMetaAttribute)
-	$(property EMetaFeature_transient : EMetaAttribute)
-	$(property EMetaFeature_derived : EMetaAttribute)
-	$(property EMetaFeature_instanceProperty : EMetaAttribute)
-	$(property EMetaFeature_eContainingClass : EMetaReference)
+EModel_EMetaFeature := \
+	$(call createMetaClass,$(EModel),EModel_EMetaFeature)
+EModel_EMetaFeature_isChangeable := \
+	$(call createMetaAttribute,$(EModel_EMetaFeature),EModel_EMetaFeature_isChangeable)
+EModel_EMetaFeature_isVolatile := \
+	$(call createMetaAttribute,$(EModel_EMetaFeature),EModel_EMetaFeature_isVolatile)
+EModel_EMetaFeature_isTransient := \
+	$(call createMetaAttribute,$(EModel_EMetaFeature),EModel_EMetaFeature_isTransient)
+EModel_EMetaFeature_isDerived := \
+	$(call createMetaAttribute,$(EModel_EMetaFeature),EModel_EMetaFeature_isDerived)
+EModel_EMetaFeature_instanceProperty := \
+	$(call createMetaAttribute,$(EModel_EMetaFeature),EModel_EMetaFeature_instanceProperty)
+EModel_EMetaFeature_eContainingClass := \
+	$(call createMetaReference,$(EModel_EMetaFeature),EModel_EMetaFeature_eContainingClass)
 
-	$(property EMetaReference : EMetaClass)
-	$(property EMetaReference_containment : EMetaAttribute)
-	$(property EMetaReference_container : EMetaAttribute)
-	$(property EMetaReference_eOpposite : EMetaReference)
-	$(property EMetaReference_eReferenceType : EMetaReference)
+EModel_EMetaReference := \
+	$(call createMetaClass,$(EModel),EModel_EMetaReference)
+EModel_EMetaReference_isContainment := \
+	$(call createMetaAttribute,$(EModel_EMetaReference),EModel_EMetaReference_isContainment)
+EModel_EMetaReference_isContainer := \
+	$(call createMetaAttribute,$(EModel_EMetaReference),EModel_EMetaReference_isContainer)
+EModel_EMetaReference_eOpposite := \
+	$(call createMetaReference,$(EModel_EMetaReference),EModel_EMetaReference_eOpposite)
+EModel_EMetaReference_eReferenceType := \
+	$(call createMetaReference,$(EModel_EMetaReference),EModel_EMetaReference_eReferenceType)
 
-	$(property EMetaAttribute : EMetaClass)
-	$(property EMetaAttribute_eAttributeType : EMetaReference)
+EModel_EMetaAttribute := \
+	$(call createMetaClass,$(EModel),EModel_EMetaAttribute)
+EModel_EMetaAttribute_eAttributeType := \
+	$(call createMetaReference,$(EModel_EMetaAttribute),EModel_EMetaAttribute_eAttributeType)
 
-	$(property EMetaModel : EMetaClass)
-	$(property EMetaModel_eFactory : EMetaReference)
-	$(property EMetaModel_eTypes : EMetaReference)
+EModel_EMetaModel := \
+	$(call createMetaClass,$(EModel),EModel_EMetaModel)
+EModel_EMetaModel_eFactory := \
+	$(call createMetaReference,$(EModel_EMetaModel),EModel_EMetaModel_eFactory)
+EModel_EMetaModel_eTypes := \
+	$(call createMetaReference,$(EModel_EMetaModel),EModel_EMetaModel_eTypes)
 
-	$(property EFactory : EMetaClass)
-	$(property EFactory_eMetaModel : EMetaReference)
+EModel_EFactory := \
+	$(call createMetaClass,$(EModel),EModel_EFactory)
+EModel_EFactory_eMetaModel := \
+	$(call createMetaReference,$(EModel_EFactory),EModel_EFactory_eMetaModel)
 
-	$(property ENamed : EMetaClass)
-	$(property ENamed_name : EMetaAttribute)
+EModel_ENamed := \
+	$(call createMetaClass,$(EModel),EModel_ENamed)
+EModel_ENamed_name := \
+	$(call createMetaAttribute,$(EModel_ENamed),EModel_ENamed_name)
 
-	$(property ETyped : EMetaClass)
-	$(property ETyped_lowerBound : EMetaAttribute)
-	$(property ETyped_upperBound : EMetaAttribute)
-	$(property ETyped_many : EMetaAttribute)
-	$(property ETyped_eType : EMetaReference)
-endef
+EModel_ETyped := \
+	$(call createMetaClass,$(EModel),EModel_ETyped)
+EModel_ETyped_lowerBound := \
+	$(call createMetaAttribute,$(EModel_ETyped),EModel_ETyped_lowerBound)
+EModel_ETyped_upperBound := \
+	$(call createMetaAttribute,$(EModel_ETyped),EModel_ETyped_upperBound)
+EModel_ETyped_isMany := \
+	$(call createMetaAttribute,$(EModel_ETyped),EModel_ETyped_isMany)
+EModel_ETyped_eType := \
+	$(call createMetaReference,$(EModel_ETyped),EModel_ETyped_eType)
+
+# Initializes the objects and relations between them.
+define __eModel_init
+	$(call initMetaModel,$(EModel),EModel,)
+
+	$(call initMetaClass,$(EModel_ENode),ENode,,)
+	$(call initMetaReference,$(EModel_ENode_eMetaClass),eMetaClass,0,1,$(EModel_EMetaClass),,volatile derived transient)
+	$(call initMetaAttribute,$(EModel_ENode_eResource),eResource,0,1,volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eContainer),eContainer,0,1,$(EModel_ENode),$(EModel_ENode_eContents),volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eRootContainer),eRootContainer,0,1,$(EModel_ENode),,volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eContents),eContents,0,,$(EModel_ENode),$(EModel_ENode_eContainer),volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eAllContents),eAllContents,0,,$(EModel_ENode),,volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eLinks),eLinks,0,,$(EModel_ELink),$(EModel_ELink_eSource),volatile derived transient containment)
+	$(call initMetaReference,$(EModel_ENode_eResolvedLinks),eResolvedLinks,0,,$(EModel_ELink),,volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eInverseResolvedLinks),eInverseResolvedLinks,0,,$(EModel_ELink),$(EModel_ELink_eDestination),volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eUnresolvedLinks),eUnresolvedLinks,0,,$(EModel_ELink),,volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eRefs),eRefs,0,,$(EModel_ENode),$(EModel_ENode_eInverseRefs),volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eInverseRefs),eInverseRefs,0,,$(EModel_ENode),$(EModel_ENode_eRefs),volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eLinkedRefs),eLinkedRefs,0,,$(EModel_ENode),$(EModel_ENode_eInverseLinkedRefs),volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eInverseLinkedRefs),eInverseLinkedRefs,0,,$(EModel_ENode),$(EModel_ENode_eLinkedRefs),volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eImmediateRefs),eImmediateRefs,0,,$(EModel_ENode),$(EModel_ENode_eInverseImmediateRefs),volatile derived transient)
+	$(call initMetaReference,$(EModel_ENode_eInverseImmediateRefs),eInverseImmediateRefs,0,,$(EModel_ENode),$(EModel_ENode_eImmediateRefs),volatile derived transient)
+
+	$(call initMetaClass,$(EModel_ELink),ELink,$(EModel_ENamed),)
+	$(call initMetaReference,$(EModel_ELink_eMetaReference),eMetaReference,0,1,$(EModel_EMetaReference),,changeable)
+	$(call initMetaReference,$(EModel_ELink_eSource),eSource,0,1,$(EModel_ENode),$(EModel_ENode_eLinks),changeable container)
+	$(call initMetaReference,$(EModel_ELink_eDestination),eDestination,0,1,$(EModel_ENode),$(EModel_ENode_eInverseResolvedLinks),changeable)
+
+	$(call initMetaClass,$(EModel_EMetaType),EMetaType,$(EModel_ENamed),abstract)
+	$(call initMetaAttribute,$(EModel_EMetaType_instanceClass),instanceClass,0,1,changeable)
+	$(call initMetaReference,$(EModel_EMetaType_eMetaModel),eMetaModel,0,1,$(EModel_EMetaModel),$(EModel_EMetaModel_eTypes),transient container)
+
+	$(call initMetaClass,$(EModel_EMetaClass),EMetaClass,$(EModel_EMetaType),)
+	$(call initMetaAttribute,$(EModel_EMetaClass_isAbstract),abstract,0,1,changeable)
+	$(call initMetaAttribute,$(EModel_EMetaClass_isInterface),interface,0,1,changeable)
+	$(call initMetaReference,$(EModel_EMetaClass_eSuperTypes),eSuperTypes,0,,$(EModel_EMetaClass),,changeable)
+	$(call initMetaReference,$(EModel_EMetaClass_eAllSuperTypes),eAllSuperTypes,0,,$(EModel_EMetaClass),,volatile derived transient)
+	$(call initMetaReference,$(EModel_EMetaClass_eFeatures),eFeatures,0,,$(EModel_EMetaFeature),$(EModel_EMetaFeature_eContainingClass),changeable containment)
+	$(call initMetaReference,$(EModel_EMetaClass_eAllFeatures),eAllFeatures,0,,$(EModel_EMetaFeature),,volatile derived transient)
+	$(call initMetaReference,$(EModel_EMetaClass_eAttributes),eAttributes,0,,$(EModel_EMetaAttribute),,volatile derived transient)
+	$(call initMetaReference,$(EModel_EMetaClass_eAllAttributes),eAllAttributes,0,,$(EModel_EMetaAttribute),,volatile derived transient)
+	$(call initMetaReference,$(EModel_EMetaClass_eReferences),eReferences,0,,$(EModel_EMetaReference),,volatile derived transient)
+	$(call initMetaReference,$(EModel_EMetaClass_eAllReferences),eAllReferences,0,,$(EModel_EMetaReference),,volatile derived transient)
+	$(call initMetaReference,$(EModel_EMetaClass_eAllContainments),eAllContainments,0,,$(EModel_EMetaReference),,volatile derived transient)
+
+	$(call initMetaClass,$(EModel_EMetaPrimitive),EMetaPrimitive,$(EModel_EMetaType),)
+
+	$(call initMetaClass,$(EModel_EMetaFeature),EMetaFeature,$(EModel_ETyped),abstract)
+	$(call initMetaAttribute,$(EModel_EMetaFeature_isChangeable),changeable,0,1,changeable)
+	$(call initMetaAttribute,$(EModel_EMetaFeature_isVolatile),volatile,0,1,changeable)
+	$(call initMetaAttribute,$(EModel_EMetaFeature_isTransient),transient,0,1,changeable)
+	$(call initMetaAttribute,$(EModel_EMetaFeature_isDerived),derived,0,1,changeable)
+	$(call initMetaAttribute,$(EModel_EMetaFeature_instanceProperty),instanceProperty,0,1,changeable)
+	$(call initMetaReference,$(EModel_EMetaFeature_eContainingClass),eContainingClass,0,1,$(EModel_EMetaClass),$(EModel_EMetaClass_eFeatures),transient container)
+
+	$(call initMetaClass,$(EModel_EMetaReference),EMetaReference,$(EModel_EMetaFeature),)
+	$(call initMetaAttribute,$(EModel_EMetaReference_isContainment),containment,0,1,changeable)
+	$(call initMetaAttribute,$(EModel_EMetaReference_isContainer),container,0,1,volatile derived transient)
+	$(call initMetaReference,$(EModel_EMetaReference_eOpposite),eOpposite,0,1,$(EModel_EMetaReference),,changeable)
+	$(call initMetaReference,$(EModel_EMetaReference_eReferenceType),eReferenceType,1,1,$(EModel_EMetaClass),,volatile derived transient)
+
+	$(call initMetaClass,$(EModel_EMetaAttribute),EMetaAttribute,$(EModel_EMetaFeature),)
+	$(call initMetaReference,$(EModel_EMetaAttribute_eAttributeType),eAttributeType,1,1,$(EModel_EMetaPrimitive),,volatile derived transient)
+
+	$(call initMetaClass,$(EModel_EMetaModel),EMetaModel,$(EModel_ENamed),)
+	$(call initMetaReference,$(EModel_EMetaModel_eFactory),eFactory,1,1,$(EModel_EFactory),$(EModel_EFactory_eMetaModel),changeable transient)
+	$(call initMetaReference,$(EModel_EMetaModel_eTypes),eTypes,0,,$(EModel_EMetaType),$(EModel_EMetaType_eMetaModel),changeable containment)
+
+	$(call initMetaClass,$(EModel_EFactory),EFactory,,)
+	$(call initMetaReference,$(EModel_EFactory_eMetaModel),eMetaModel,1,1,$(EModel_EMetaModel),$(EModel_EMetaModel_eFactory),changeable transient)
+
+	$(call initMetaClass,$(EModel_ENamed),ENamed,,abstract)
+	$(call initMetaAttribute,$(EModel_ENamed_name),name,0,1,changeable)
+
+	$(call initMetaClass,$(EModel_ETyped),ETyped,$(EModel_ENamed),abstract)
+	$(call initMetaAttribute,$(EModel_ETyped_lowerBound),lowerBound,0,1,changeable)
+	$(call initMetaAttribute,$(EModel_ETyped_upperBound),upperBound,0,1,changeable)
+	$(call initMetaAttribute,$(EModel_ETyped_isMany),many,0,1,volatile derived transient)
+	$(call initMetaReference,$(EModel_ETyped_eType),eType,0,1,$(EModel_EMetaType),,changeable)
+
+endef # __eModel_init
+
+# Binds objects to instance classes and features to properties.
+define __eModel_bind
+	$(call bindMetaClass,$(EModel_ENode),ENode)
+	$(call bindMetaFeature,$(EModel_ENode_eMetaClass),eMetaClass)
+	$(call bindMetaFeature,$(EModel_ENode_eResource),eResource)
+	$(call bindMetaFeature,$(EModel_ENode_eContainer),eContainer)
+	$(call bindMetaFeature,$(EModel_ENode_eRootContainer),eRootContainer)
+	$(call bindMetaFeature,$(EModel_ENode_eContents),eContents)
+	$(call bindMetaFeature,$(EModel_ENode_eAllContents),eAllContents)
+	$(call bindMetaFeature,$(EModel_ENode_eLinks),eLinks)
+	$(call bindMetaFeature,$(EModel_ENode_eResolvedLinks),eResolvedLinks)
+	$(call bindMetaFeature,$(EModel_ENode_eInverseResolvedLinks),eInverseResolvedLinks)
+	$(call bindMetaFeature,$(EModel_ENode_eUnresolvedLinks),eUnresolvedLinks)
+	$(call bindMetaFeature,$(EModel_ENode_eRefs),eRefs)
+	$(call bindMetaFeature,$(EModel_ENode_eInverseRefs),eInverseRefs)
+	$(call bindMetaFeature,$(EModel_ENode_eLinkedRefs),eLinkedRefs)
+	$(call bindMetaFeature,$(EModel_ENode_eInverseLinkedRefs),eInverseLinkedRefs)
+	$(call bindMetaFeature,$(EModel_ENode_eImmediateRefs),eImmediateRefs)
+	$(call bindMetaFeature,$(EModel_ENode_eInverseImmediateRefs),eInverseImmediateRefs)
+
+	$(call bindMetaClass,$(EModel_ELink),ELink)
+	$(call bindMetaFeature,$(EModel_ELink_eMetaReference),eMetaReference)
+	$(call bindMetaFeature,$(EModel_ELink_eSource),eSource)
+	$(call bindMetaFeature,$(EModel_ELink_eDestination),eDestination)
+
+	$(call bindMetaClass,$(EModel_EMetaType),EMetaType)
+	$(call bindMetaFeature,$(EModel_EMetaType_instanceClass),instanceClass)
+	$(call bindMetaFeature,$(EModel_EMetaType_eMetaModel),eMetaModel)
+
+	$(call bindMetaClass,$(EModel_EMetaClass),EMetaClass)
+	$(call bindMetaFeature,$(EModel_EMetaClass_isAbstract),isAbstract)
+	$(call bindMetaFeature,$(EModel_EMetaClass_isInterface),isInterface)
+	$(call bindMetaFeature,$(EModel_EMetaClass_eSuperTypes),eSuperTypes)
+	$(call bindMetaFeature,$(EModel_EMetaClass_eAllSuperTypes),eAllSuperTypes)
+	$(call bindMetaFeature,$(EModel_EMetaClass_eFeatures),eFeatures)
+	$(call bindMetaFeature,$(EModel_EMetaClass_eAllFeatures),eAllFeatures)
+	$(call bindMetaFeature,$(EModel_EMetaClass_eAttributes),eAttributes)
+	$(call bindMetaFeature,$(EModel_EMetaClass_eAllAttributes),eAllAttributes)
+	$(call bindMetaFeature,$(EModel_EMetaClass_eReferences),eReferences)
+	$(call bindMetaFeature,$(EModel_EMetaClass_eAllReferences),eAllReferences)
+	$(call bindMetaFeature,$(EModel_EMetaClass_eAllContainments),eAllContainments)
+
+	$(call bindMetaClass,$(EModel_EMetaPrimitive),EMetaPrimitive)
+
+	$(call bindMetaClass,$(EModel_EMetaFeature),EMetaFeature)
+	$(call bindMetaFeature,$(EModel_EMetaFeature_isChangeable),isChangeable)
+	$(call bindMetaFeature,$(EModel_EMetaFeature_isVolatile),isVolatile)
+	$(call bindMetaFeature,$(EModel_EMetaFeature_isTransient),isTransient)
+	$(call bindMetaFeature,$(EModel_EMetaFeature_isDerived),isDerived)
+	$(call bindMetaFeature,$(EModel_EMetaFeature_instanceProperty),instanceProperty)
+	$(call bindMetaFeature,$(EModel_EMetaFeature_eContainingClass),eContainingClass)
+
+	$(call bindMetaClass,$(EModel_EMetaReference),EMetaReference)
+	$(call bindMetaFeature,$(EModel_EMetaReference_isContainment),isContainment)
+	$(call bindMetaFeature,$(EModel_EMetaReference_isContainer),isContainer)
+	$(call bindMetaFeature,$(EModel_EMetaReference_eOpposite),eOpposite)
+	$(call bindMetaFeature,$(EModel_EMetaReference_eReferenceType),eReferenceType)
+
+	$(call bindMetaClass,$(EModel_EMetaAttribute),EMetaAttribute)
+	$(call bindMetaFeature,$(EModel_EMetaAttribute_eAttributeType),eAttributeType)
+
+	$(call bindMetaClass,$(EModel_EMetaModel),EMetaModel)
+	$(call bindMetaFeature,$(EModel_EMetaModel_eFactory),eFactory)
+	$(call bindMetaFeature,$(EModel_EMetaModel_eTypes),eTypes)
+
+	$(call bindMetaClass,$(EModel_EFactory),EFactory)
+	$(call bindMetaFeature,$(EModel_EFactory_eMetaModel),eMetaModel)
+
+	$(call bindMetaClass,$(EModel_ENamed),ENamed)
+	$(call bindMetaFeature,$(EModel_ENamed_name),name)
+
+	$(call bindMetaClass,$(EModel_ETyped),ETyped)
+	$(call bindMetaFeature,$(EModel_ETyped_lowerBound),lowerBound)
+	$(call bindMetaFeature,$(EModel_ETyped_upperBound),upperBound)
+	$(call bindMetaFeature,$(EModel_ETyped_isMany),isMany)
+	$(call bindMetaFeature,$(EModel_ETyped_eType),eType)
+
+endef # __eModel_bind
 
 $(def_all)
 
-include $(dir $(__model_metamodel_mk))metamodel_impl.mk
-
-eModelMetaModel := $(call new,EModelMetaModelImpl)
+$(call __eModel_init)
+$(call __eModel_bind)
 
 endif # __model_metamodel_mk
 

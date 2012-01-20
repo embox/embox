@@ -11,33 +11,39 @@ define class-EModelFactory
 	$(super EFactory)
 
 	# Creates a new 'ENode' model object.
-	$(method createENode)
+	$(method createENode,
+		$(new ENodeImpl))
 
 	# Creates a new 'ELink' model object.
-	$(method createELink)
+	$(method createELink,
+		$(new ELinkImpl))
 
 	# Creates a new 'EMetaClass' model object.
-	$(method createEMetaClass)
+	$(method createEMetaClass,
+		$(new EMetaClassImpl))
 
 	# Creates a new 'EMetaPrimitive' model object.
-	$(method createEMetaPrimitive)
+	$(method createEMetaPrimitive,
+		$(new EMetaPrimitiveImpl))
 
 	# Creates a new 'EMetaReference' model object.
-	$(method createEMetaReference)
+	$(method createEMetaReference,
+		$(new EMetaReferenceImpl))
 
 	# Creates a new 'EMetaAttribute' model object.
-	$(method createEMetaAttribute)
+	$(method createEMetaAttribute,
+		$(new EMetaAttributeImpl))
 
 	# Creates a new 'EMetaModel' model object.
-	$(method createEMetaModel)
+	$(method createEMetaModel,
+		$(new EMetaModelImpl))
 
 	# Creates a new 'EFactory' model object.
-	$(method createEFactory)
+	$(method createEFactory,
+		$(new EFactoryImpl))
 endef
 
 $(def_all)
-
-include $(dir $(__model_factory_mk))factory_impl.mk
 
 eModelFactory := $(call new,EModelFactoryImpl)
 
