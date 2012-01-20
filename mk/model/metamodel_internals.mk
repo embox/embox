@@ -91,7 +91,7 @@ endef
 #   6. Opposite reference (if any).
 #   7. Flags...
 define initMetaReference
-	$(invoke commonInitMetaFeature,$1,$2,$3,$4,$7)
+	$(call commonInitMetaFeature,$1,$2,$3,$4,$7)
 	$(set 1->eType,$5)
 	$(set 1->eOpposite,$6)
 	$(set 1->isContainment,$(filter containment,$7))
