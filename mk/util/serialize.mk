@@ -100,7 +100,7 @@ endef
 
 # param $1 is var name
 define serialize_var
-	$1 := $(call escape_makefile,$($1))
+	$1 := $($1)
 endef
 
 

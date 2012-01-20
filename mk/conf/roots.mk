@@ -17,6 +17,21 @@ define find_mod
 		$(call find_mod_in_res,$1,$r))
 endef
 
+#param 1 module object
+define get_dependecies
+	$(foreach module_link,$(get $1.depends_refs),
+		$(get $(module_link).dst))
+endef
+
+# All dependencies of modules
+# param $1 is list of modules
+# output is closure list of given modules plus dependencies
+define module_closure
+	$(call sort, \
+		$(foreach m,$1,\
+			$(call graph_closure,$m,get_dependecies)))
+endef
+
 $(def_all)
 
 endif
