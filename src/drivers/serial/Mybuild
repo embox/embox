@@ -1,0 +1,25 @@
+package embox.driver.serial
+
+abstract module serial {
+
+}
+
+module serial_port extends serial{
+	source "serial_port.c"
+	depends embox.kernel.irq
+}
+
+module apbuart extends serial{
+	source "apbuart.c"
+	depends embox.kernel.irq
+}
+
+module xuartlite extends serial{
+	source "xuartlite.c"
+	depends embox.kernel.irq
+}
+
+module at91_uart extends serial{
+	source "at91_uart.c"
+	depends embox.kernel.irq
+}

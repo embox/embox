@@ -1,0 +1,5 @@
+package embox.cmds
+
+module ls {
+	source "ls.c"
+}

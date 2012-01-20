@@ -1,0 +1,5 @@
+package embox.net
+
+module util {
+	source "misc.c", "inet_addr.c"
+}

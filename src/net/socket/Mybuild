@@ -1,0 +1,6 @@
+package embox.net
+
+module socket {
+	source "socket.c", "socket_allocator.c", "socket_repo.c"
+	source "kernel_socket.c", "port.c"
+}

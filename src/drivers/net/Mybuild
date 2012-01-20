@@ -1,0 +1,20 @@
+package embox.driver.net
+
+module loopback {
+	source "loopback.c"
+}
+
+module ne2k_pci {
+	source "ne2k_pci.c"
+	depends embox.kernel.irq
+}
+
+module xemaclite {
+	source "xilinx_emaclite.c"
+	depends embox.kernel.irq
+}
+
+module r6040 {
+	source "r6040.c"
+	depends embox.kernel.irq
+}

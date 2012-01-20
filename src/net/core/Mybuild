@@ -1,0 +1,24 @@
+package embox.net
+
+module core {
+	source "devinet.c", "sock.c", "skbuff.c"
+	depends embox.net.dev
+	depends embox.net.util
+}
+
+module dev {
+	source "network_layer.c", "dev.c"
+	depends entry_api
+}
+
+abstract module entry_api {
+
+}
+
+module net_entry extends entry_api{
+	source "net_entry.c"
+}
+
+module neighbour {
+	source "neighbour.c"
+}

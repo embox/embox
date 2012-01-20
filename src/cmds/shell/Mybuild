@@ -1,0 +1,5 @@
+package embox.cmds
+
+module shell {
+	source "shell.c"
+}

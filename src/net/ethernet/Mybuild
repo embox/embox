@@ -1,0 +1,5 @@
+package embox.net
+
+module eth {
+	source "eth.c"
+}

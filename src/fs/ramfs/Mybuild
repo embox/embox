@@ -1,0 +1,7 @@
+package embox.fs
+
+module ramfs {
+	source "cpio.c", "ramfs.c", "ramfs_cpio.S"
+	source "ramfs.lds.S"
+	depends embox.fs.core
+}

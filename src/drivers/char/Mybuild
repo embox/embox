@@ -1,0 +1,6 @@
+package embox.drivers
+
+module terminal {
+	source "terminal.c"
+	source "vtbuild.c", "vtparse.c", "vtparse_state.c"
+}
