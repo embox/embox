@@ -10,11 +10,11 @@ endif # __model_model_mk
 
 # Implementation of 'ENode' model object.
 define class-ENodeImpl
-	$(super ENode)
-
-	$(super ENodeImpl)
-
-	$(getter eMetaClass,$(EModel_ENode))
+#	$(super ENode)
+#
+#	$(super ENodeImpl)
+#
+#	$(getter eMetaClass,$(EModel_ENode))
 
 	# Reference 'eMetaClass' [0..1]: volatile, read-only.
 	$(property eMetaClass : EMetaClass)
@@ -155,7 +155,7 @@ define class-ENodeImpl
 	# Params:
 	#   1. Property name.
 	$(method __eGetContainer,
-		$(filter $1.%,$(get-field __eContainer))
+		$(filter $1/%,$(get-field __eContainer))
 	)
 
 	# Params:
@@ -167,13 +167,13 @@ define class-ENodeImpl
 
 		$(for oldContainer <- $(get-field __eContainer),
 			$(set-field- oldContainer->$(notdir $(basename $(oldContainer))),
-				$1$(this))
+				$(this))
 		)
 
 		$(set-field __eContainer,$1/$3$2)
 
 		$(for newContainer <- $2,
-			$(set-field+ newContainer->$3,$1$(this))
+			$(set-field+ newContainer->$3,$(this))
 		)
 	)
 
@@ -203,6 +203,29 @@ define class-ENodeImpl
 		$(set-field+ $1,$(suffix $2))
 		$(silent-for e <- $2,
 			$(set-field+ e->$3,$(this)))
+	)
+
+	# Params:
+	#   1. Property name.
+	#   2. What to remove.
+	$(method __eRemove,
+		$(foreach ,$2,$(error $0: NIY))
+	)
+
+	# Params:
+	#   1. Property name.
+	#   2. What to remove.
+	#   3. Opposite property.
+	$(method __eRemoveBidirectional,
+		$(foreach ,$2,$(error $0: NIY))
+	)
+
+	# Params:
+	#   1. Property name.
+	#   2. What to remove.
+	#   3. Opposite property.
+	$(method __eRemoveContainment,
+		$(foreach ,$2,$(error $0: NIY))
 	)
 
 	# Params:

@@ -45,7 +45,7 @@ endef
 
 $(def_all)
 
-eModelFactory := $(call new,EModelFactoryImpl)
+eModelFactory := $(call new,EModelFactory)
 
 endif # __model_factory_mk
 
