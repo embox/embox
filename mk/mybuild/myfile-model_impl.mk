@@ -15,7 +15,7 @@ define class-MyPackageImpl
 	$(super ENodeImpl)
 	$(super MyNamedImpl)
 
-	$(getter eMetaClass,$(get myFileMetaModel->Package))
+	$(getter eMetaClass,$(MyFile_Package))
 
 	# Reference 'imports' [0..*]: containment.
 	$(property imports... : Import)
@@ -23,11 +23,11 @@ define class-MyPackageImpl
 	$(getter imports,
 		$(get-field imports))
 	$(setter imports,
-		$(invoke doSetReference,$(get myFileMetaModel->Package_imports),$1))
+		$(invoke __eSetContainment,imports,$(suffix $1),))
 	$(setter+ imports,
-		$(invoke doAddReference,$(get myFileMetaModel->Package_imports),$1))
+		$(invoke __eAddContainment,imports,$(suffix $1),))
 	$(setter- imports,
-		$(invoke doRemoveReference,$(get myFileMetaModel->Package_imports),$1))
+		$(invoke __eRemoveContainment,imports,$(suffix $1),))
 
 	# Reference 'entities' [0..*]: bidirectional, containment.
 	$(property entities... : Entity)
@@ -35,11 +35,11 @@ define class-MyPackageImpl
 	$(getter entities,
 		$(get-field entities))
 	$(setter entities,
-		$(invoke doSetReference,$(get myFileMetaModel->Package_entities),$1))
+		$(invoke __eSetContainment,entities,$(suffix $1),package))
 	$(setter+ entities,
-		$(invoke doAddReference,$(get myFileMetaModel->Package_entities),$1))
+		$(invoke __eAddContainment,entities,$(suffix $1),package))
 	$(setter- entities,
-		$(invoke doRemoveReference,$(get myFileMetaModel->Package_entities),$1))
+		$(invoke __eRemoveContainment,entities,$(suffix $1),package))
 
 	# PROTECTED REGION ID(Package) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -52,7 +52,7 @@ define class-MyImportImpl
 
 	$(super ENodeImpl)
 
-	$(getter eMetaClass,$(get myFileMetaModel->Import))
+	$(getter eMetaClass,$(MyFile_Import))
 
 	# Attribute 'importName'.
 	$(property-field importName)
@@ -69,14 +69,14 @@ define class-MyEntityImpl
 	$(super ENodeImpl)
 	$(super MyNamedImpl)
 
-	$(getter eMetaClass,$(get myFileMetaModel->Entity))
+	$(getter eMetaClass,$(MyFile_Entity))
 
 	# Reference 'package' [0..1]: bidirectional, container.
 	$(property package : Package)
 	$(getter package,
-		$(invoke doGetContainerReference,$(get myFileMetaModel->Entity_package)))
+		$(invoke __eGetContainer,package))
 	$(setter package,
-		$(invoke doSetContainerReference,$(get myFileMetaModel->Entity_package),$1))
+		$(invoke __eSetBidirectional,package,$(suffix $1),entities))
 
 	# PROTECTED REGION ID(Entity) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -91,7 +91,7 @@ define class-MyInterfaceImpl
 	$(super MyEntityImpl)
 	$(super MyExtendableImpl)
 
-	$(getter eMetaClass,$(get myFileMetaModel->Interface))
+	$(getter eMetaClass,$(MyFile_Interface))
 
 	# Reference 'features' [0..*]: bidirectional, containment.
 	$(property features... : Feature)
@@ -99,11 +99,11 @@ define class-MyInterfaceImpl
 	$(getter features,
 		$(get-field features))
 	$(setter features,
-		$(invoke doSetReference,$(get myFileMetaModel->Interface_features),$1))
+		$(invoke __eSetContainment,features,$(suffix $1),interface))
 	$(setter+ features,
-		$(invoke doAddReference,$(get myFileMetaModel->Interface_features),$1))
+		$(invoke __eAddContainment,features,$(suffix $1),interface))
 	$(setter- features,
-		$(invoke doRemoveReference,$(get myFileMetaModel->Interface_features),$1))
+		$(invoke __eRemoveContainment,features,$(suffix $1),interface))
 
 	# PROTECTED REGION ID(Interface) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -118,14 +118,14 @@ define class-MyFeatureImpl
 	$(super MyNamedImpl)
 	$(super MyExtendableImpl)
 
-	$(getter eMetaClass,$(get myFileMetaModel->Feature))
+	$(getter eMetaClass,$(MyFile_Feature))
 
 	# Reference 'interface' [0..1]: bidirectional, container.
 	$(property interface : Interface)
 	$(getter interface,
-		$(invoke doGetContainerReference,$(get myFileMetaModel->Feature_interface)))
+		$(invoke __eGetContainer,interface))
 	$(setter interface,
-		$(invoke doSetContainerReference,$(get myFileMetaModel->Feature_interface),$1))
+		$(invoke __eSetBidirectional,interface,$(suffix $1),features))
 
 	# Reference 'providedBy' [0..*]: bidirectional.
 	$(property providedBy... : Module)
@@ -133,20 +133,20 @@ define class-MyFeatureImpl
 	$(getter providedBy,
 		$(get-field providedBy))
 	$(setter providedBy,
-		$(invoke doSetReference,$(get myFileMetaModel->Feature_providedBy),$1))
+		$(invoke __eSetBidirectional,providedBy,$(suffix $1),provides))
 	$(setter+ providedBy,
-		$(invoke doAddReference,$(get myFileMetaModel->Feature_providedBy),$1))
+		$(invoke __eAddBidirectional,providedBy,$(suffix $1),provides))
 	$(setter- providedBy,
-		$(invoke doRemoveReference,$(get myFileMetaModel->Feature_providedBy),$1))
+		$(invoke __eRemoveBidirectional,providedBy,$(suffix $1),provides))
 	# Link operations.
 	$(getter providedBy_links,
-		$(invoke doGetLink,$(get myFileMetaModel->Feature_providedBy)))
+		$(invoke __eGetBidirectional_link,providedBy))
 	$(setter providedBy_links,
-		$(invoke doSetLink,$(get myFileMetaModel->Feature_providedBy),$1))
+		$(invoke __eSetBidirectional_link,providedBy,$(suffix $1),provides))
 	$(setter+ providedBy_links,
-		$(invoke doAddLink,$(get myFileMetaModel->Feature_providedBy),$1))
+		$(invoke __eAddBidirectional_link,providedBy,$(suffix $1),provides))
 	$(setter- providedBy_links,
-		$(invoke doRemoveLink,$(get myFileMetaModel->Feature_providedBy),$1))
+		$(invoke __eRemoveBidirectional_link,providedBy,$(suffix $1),provides))
 
 	# Reference 'requiredBy' [0..*]: bidirectional.
 	$(property requiredBy... : Module)
@@ -154,20 +154,20 @@ define class-MyFeatureImpl
 	$(getter requiredBy,
 		$(get-field requiredBy))
 	$(setter requiredBy,
-		$(invoke doSetReference,$(get myFileMetaModel->Feature_requiredBy),$1))
+		$(invoke __eSetBidirectional,requiredBy,$(suffix $1),requires))
 	$(setter+ requiredBy,
-		$(invoke doAddReference,$(get myFileMetaModel->Feature_requiredBy),$1))
+		$(invoke __eAddBidirectional,requiredBy,$(suffix $1),requires))
 	$(setter- requiredBy,
-		$(invoke doRemoveReference,$(get myFileMetaModel->Feature_requiredBy),$1))
+		$(invoke __eRemoveBidirectional,requiredBy,$(suffix $1),requires))
 	# Link operations.
 	$(getter requiredBy_links,
-		$(invoke doGetLink,$(get myFileMetaModel->Feature_requiredBy)))
+		$(invoke __eGetBidirectional_link,requiredBy))
 	$(setter requiredBy_links,
-		$(invoke doSetLink,$(get myFileMetaModel->Feature_requiredBy),$1))
+		$(invoke __eSetBidirectional_link,requiredBy,$(suffix $1),requires))
 	$(setter+ requiredBy_links,
-		$(invoke doAddLink,$(get myFileMetaModel->Feature_requiredBy),$1))
+		$(invoke __eAddBidirectional_link,requiredBy,$(suffix $1),requires))
 	$(setter- requiredBy_links,
-		$(invoke doRemoveLink,$(get myFileMetaModel->Feature_requiredBy),$1))
+		$(invoke __eRemoveBidirectional_link,requiredBy,$(suffix $1),requires))
 
 	# PROTECTED REGION ID(Feature) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -182,7 +182,7 @@ define class-MyModuleImpl
 	$(super MyEntityImpl)
 	$(super MyExtendableImpl)
 
-	$(getter eMetaClass,$(get myFileMetaModel->Module))
+	$(getter eMetaClass,$(MyFile_Module))
 
 	# Attribute 'static'.
 	$(property-field isStatic)
@@ -196,20 +196,20 @@ define class-MyModuleImpl
 	$(getter depends,
 		$(get-field depends))
 	$(setter depends,
-		$(invoke doSetReference,$(get myFileMetaModel->Module_depends),$1))
+		$(invoke __eSetBidirectional,depends,$(suffix $1),dependent))
 	$(setter+ depends,
-		$(invoke doAddReference,$(get myFileMetaModel->Module_depends),$1))
+		$(invoke __eAddBidirectional,depends,$(suffix $1),dependent))
 	$(setter- depends,
-		$(invoke doRemoveReference,$(get myFileMetaModel->Module_depends),$1))
+		$(invoke __eRemoveBidirectional,depends,$(suffix $1),dependent))
 	# Link operations.
 	$(getter depends_links,
-		$(invoke doGetLink,$(get myFileMetaModel->Module_depends)))
+		$(invoke __eGetBidirectional_link,depends))
 	$(setter depends_links,
-		$(invoke doSetLink,$(get myFileMetaModel->Module_depends),$1))
+		$(invoke __eSetBidirectional_link,depends,$(suffix $1),dependent))
 	$(setter+ depends_links,
-		$(invoke doAddLink,$(get myFileMetaModel->Module_depends),$1))
+		$(invoke __eAddBidirectional_link,depends,$(suffix $1),dependent))
 	$(setter- depends_links,
-		$(invoke doRemoveLink,$(get myFileMetaModel->Module_depends),$1))
+		$(invoke __eRemoveBidirectional_link,depends,$(suffix $1),dependent))
 
 	# Reference 'dependent' [0..*]: bidirectional.
 	$(property dependent... : Module)
@@ -217,20 +217,20 @@ define class-MyModuleImpl
 	$(getter dependent,
 		$(get-field dependent))
 	$(setter dependent,
-		$(invoke doSetReference,$(get myFileMetaModel->Module_dependent),$1))
+		$(invoke __eSetBidirectional,dependent,$(suffix $1),depends))
 	$(setter+ dependent,
-		$(invoke doAddReference,$(get myFileMetaModel->Module_dependent),$1))
+		$(invoke __eAddBidirectional,dependent,$(suffix $1),depends))
 	$(setter- dependent,
-		$(invoke doRemoveReference,$(get myFileMetaModel->Module_dependent),$1))
+		$(invoke __eRemoveBidirectional,dependent,$(suffix $1),depends))
 	# Link operations.
 	$(getter dependent_links,
-		$(invoke doGetLink,$(get myFileMetaModel->Module_dependent)))
+		$(invoke __eGetBidirectional_link,dependent))
 	$(setter dependent_links,
-		$(invoke doSetLink,$(get myFileMetaModel->Module_dependent),$1))
+		$(invoke __eSetBidirectional_link,dependent,$(suffix $1),depends))
 	$(setter+ dependent_links,
-		$(invoke doAddLink,$(get myFileMetaModel->Module_dependent),$1))
+		$(invoke __eAddBidirectional_link,dependent,$(suffix $1),depends))
 	$(setter- dependent_links,
-		$(invoke doRemoveLink,$(get myFileMetaModel->Module_dependent),$1))
+		$(invoke __eRemoveBidirectional_link,dependent,$(suffix $1),depends))
 
 	# Reference 'provides' [0..*]: bidirectional.
 	$(property provides... : Feature)
@@ -238,20 +238,20 @@ define class-MyModuleImpl
 	$(getter provides,
 		$(get-field provides))
 	$(setter provides,
-		$(invoke doSetReference,$(get myFileMetaModel->Module_provides),$1))
+		$(invoke __eSetBidirectional,provides,$(suffix $1),providedBy))
 	$(setter+ provides,
-		$(invoke doAddReference,$(get myFileMetaModel->Module_provides),$1))
+		$(invoke __eAddBidirectional,provides,$(suffix $1),providedBy))
 	$(setter- provides,
-		$(invoke doRemoveReference,$(get myFileMetaModel->Module_provides),$1))
+		$(invoke __eRemoveBidirectional,provides,$(suffix $1),providedBy))
 	# Link operations.
 	$(getter provides_links,
-		$(invoke doGetLink,$(get myFileMetaModel->Module_provides)))
+		$(invoke __eGetBidirectional_link,provides))
 	$(setter provides_links,
-		$(invoke doSetLink,$(get myFileMetaModel->Module_provides),$1))
+		$(invoke __eSetBidirectional_link,provides,$(suffix $1),providedBy))
 	$(setter+ provides_links,
-		$(invoke doAddLink,$(get myFileMetaModel->Module_provides),$1))
+		$(invoke __eAddBidirectional_link,provides,$(suffix $1),providedBy))
 	$(setter- provides_links,
-		$(invoke doRemoveLink,$(get myFileMetaModel->Module_provides),$1))
+		$(invoke __eRemoveBidirectional_link,provides,$(suffix $1),providedBy))
 
 	# Reference 'requires' [0..*]: bidirectional.
 	$(property requires... : Feature)
@@ -259,20 +259,20 @@ define class-MyModuleImpl
 	$(getter requires,
 		$(get-field requires))
 	$(setter requires,
-		$(invoke doSetReference,$(get myFileMetaModel->Module_requires),$1))
+		$(invoke __eSetBidirectional,requires,$(suffix $1),requiredBy))
 	$(setter+ requires,
-		$(invoke doAddReference,$(get myFileMetaModel->Module_requires),$1))
+		$(invoke __eAddBidirectional,requires,$(suffix $1),requiredBy))
 	$(setter- requires,
-		$(invoke doRemoveReference,$(get myFileMetaModel->Module_requires),$1))
+		$(invoke __eRemoveBidirectional,requires,$(suffix $1),requiredBy))
 	# Link operations.
 	$(getter requires_links,
-		$(invoke doGetLink,$(get myFileMetaModel->Module_requires)))
+		$(invoke __eGetBidirectional_link,requires))
 	$(setter requires_links,
-		$(invoke doSetLink,$(get myFileMetaModel->Module_requires),$1))
+		$(invoke __eSetBidirectional_link,requires,$(suffix $1),requiredBy))
 	$(setter+ requires_links,
-		$(invoke doAddLink,$(get myFileMetaModel->Module_requires),$1))
+		$(invoke __eAddBidirectional_link,requires,$(suffix $1),requiredBy))
 	$(setter- requires_links,
-		$(invoke doRemoveLink,$(get myFileMetaModel->Module_requires),$1))
+		$(invoke __eRemoveBidirectional_link,requires,$(suffix $1),requiredBy))
 
 	# PROTECTED REGION ID(Module) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -285,7 +285,7 @@ define class-MyNamedImpl
 
 	$(super ENodeImpl)
 
-	$(getter eMetaClass,$(get myFileMetaModel->Named))
+	$(getter eMetaClass,$(MyFile_Named))
 
 	# Attribute 'name'.
 	$(property-field name)
@@ -301,7 +301,7 @@ define class-MyExtendableImpl
 
 	$(super ENodeImpl)
 
-	$(getter eMetaClass,$(get myFileMetaModel->Extendable))
+	$(getter eMetaClass,$(MyFile_Extendable))
 
 	# Reference 'subTypes' [0..*]: bidirectional.
 	$(property subTypes... : Extendable)
@@ -309,20 +309,20 @@ define class-MyExtendableImpl
 	$(getter subTypes,
 		$(get-field subTypes))
 	$(setter subTypes,
-		$(invoke doSetReference,$(get myFileMetaModel->Extendable_subTypes),$1))
+		$(invoke __eSetBidirectional,subTypes,$(suffix $1),superType))
 	$(setter+ subTypes,
-		$(invoke doAddReference,$(get myFileMetaModel->Extendable_subTypes),$1))
+		$(invoke __eAddBidirectional,subTypes,$(suffix $1),superType))
 	$(setter- subTypes,
-		$(invoke doRemoveReference,$(get myFileMetaModel->Extendable_subTypes),$1))
+		$(invoke __eRemoveBidirectional,subTypes,$(suffix $1),superType))
 	# Link operations.
 	$(getter subTypes_links,
-		$(invoke doGetLink,$(get myFileMetaModel->Extendable_subTypes)))
+		$(invoke __eGetBidirectional_link,subTypes))
 	$(setter subTypes_links,
-		$(invoke doSetLink,$(get myFileMetaModel->Extendable_subTypes),$1))
+		$(invoke __eSetBidirectional_link,subTypes,$(suffix $1),superType))
 	$(setter+ subTypes_links,
-		$(invoke doAddLink,$(get myFileMetaModel->Extendable_subTypes),$1))
+		$(invoke __eAddBidirectional_link,subTypes,$(suffix $1),superType))
 	$(setter- subTypes_links,
-		$(invoke doRemoveLink,$(get myFileMetaModel->Extendable_subTypes),$1))
+		$(invoke __eRemoveBidirectional_link,subTypes,$(suffix $1),superType))
 
 	# Reference 'superType' [0..1]: bidirectional.
 	$(property superType : Extendable)
@@ -330,12 +330,12 @@ define class-MyExtendableImpl
 	$(getter superType,
 		$(get-field superType))
 	$(setter superType,
-		$(invoke doSetReference,$(get myFileMetaModel->Extendable_superType),$1))
+		$(invoke __eSetBidirectional,superType,$(suffix $1),subTypes))
 	# Link operations.
 	$(getter superType_link,
-		$(invoke doGetLink,$(get myFileMetaModel->Extendable_superType)))
+		$(invoke __eGetBidirectional_link,superType))
 	$(setter superType_link,
-		$(invoke doSetLink,$(get myFileMetaModel->Extendable_superType),$1))
+		$(invoke __eSetBidirectional_link,superType,$(suffix $1),subTypes))
 
 	# Reference 'allSubTypes' [0..*]: bidirectional, volatile, read-only.
 	$(property allSubTypes... : Extendable)
@@ -380,7 +380,7 @@ define class-MyFilenameImpl
 
 	$(super ENodeImpl)
 
-	$(getter eMetaClass,$(get myFileMetaModel->Filename))
+	$(getter eMetaClass,$(MyFile_Filename))
 
 	# PROTECTED REGION ID(Filename) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.

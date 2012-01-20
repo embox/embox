@@ -181,7 +181,7 @@ define class-ENodeImpl
 	#   1. Property name.
 	#   2. What to add.
 	$(method __eAdd,
-		$(set-field+ $1,$(suffix $2))
+		$(set-field+ $1,$2)
 		$(silent-for e <- $2,
 			$(set-field+ e->__eOppositeRefs,$1$(this)))
 	)
@@ -200,7 +200,7 @@ define class-ENodeImpl
 	#   2. What to add.
 	#   3. Opposite property.
 	$(method __eAddBidirectional,
-		$(set-field+ $1,$(suffix $2))
+		$(set-field+ $1,$2)
 		$(silent-for e <- $2,
 			$(set-field+ e->$3,$(this)))
 	)

@@ -11,29 +11,33 @@ define class-MyFileFactory
 	$(super EFactory)
 
 	# Creates a new 'Package' model object.
-	$(method createPackage)
+	$(method createPackage,
+		$(new MyPackageImpl))
 
 	# Creates a new 'Import' model object.
-	$(method createImport)
+	$(method createImport,
+		$(new MyImportImpl))
 
 	# Creates a new 'Interface' model object.
-	$(method createInterface)
+	$(method createInterface,
+		$(new MyInterfaceImpl))
 
 	# Creates a new 'Feature' model object.
-	$(method createFeature)
+	$(method createFeature,
+		$(new MyFeatureImpl))
 
 	# Creates a new 'Module' model object.
-	$(method createModule)
+	$(method createModule,
+		$(new MyModuleImpl))
 
 	# Creates a new 'Filename' model object.
-	$(method createFilename)
+	$(method createFilename,
+		$(new MyFilenameImpl))
 endef
 
 $(def_all)
 
-include $(dir $(__mybuild_myfile_factory_mk))myfile-factory_impl.mk
-
-myFileFactory := $(call new,MyFileFactoryImpl)
+myFileFactory := $(call new,MyFileFactory)
 
 endif # __mybuild_myfile_factory_mk
 
