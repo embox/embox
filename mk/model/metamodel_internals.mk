@@ -54,6 +54,13 @@ endef
 #
 
 # Params:
+#   1. Meta model.
+#   2. Name.
+define initMetaModel
+	$(set 1->name,$2)
+endef
+
+# Params:
 #   1. Meta class.
 #   2. Name.
 #   3. Super types...
