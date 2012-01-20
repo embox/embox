@@ -92,6 +92,18 @@ endef
 #	)
 #endef
 
+# param $1 what to write
+# param $2 filename to write to
+define write
+	$(PRINTF) '%b' '$1' > $2
+endef
+
+# param $1 is var name
+define serialize_var
+	$1 := $(call escape_makefile,$($1))
+endef
+
+
 $(def_all)
 
 endif #__util_serialize_mk

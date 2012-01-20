@@ -34,18 +34,34 @@ define resolve_internal
 	)
 endef
 
+#param $1 is list of module names
+define find_mods
+	$(foreach m,$1,
+		$(or $(strip $(call find_mod,$m)),$(info Cant find $m)))
+endef
+
+# param $1 is name
+# output module object
+define find_mod
+	$(foreach r,$(call get-instances-of,resource),
+		$(call find_mod_in_res,$1,$r))
+endef
+
+# param $1 is name
+# param $2 is resource
+# output module object
+define find_mod_in_res
+	$(filter $1.%,$(get $2.exports))
+endef
+
 # param $1 is a link
 # param $2 is a resource
 # output is
 # 	zero if no resolve was made
 # 	obj otherwise
 define resolve_link_from_resource
-	$(foreach m,$(filter $(get $1.link_name).%,$(get $2.exports)),
-		#$(info link_name is $(get $1.link_name), exports is $m)
+	$(foreach m,$(call find_mod_in_res,$(get $1.link_name),$2),
 		$(invoke $1.resolve,$m)
-		#$(set $1.dst,$m)
-		#$(set $1.link_name,$m)
-		#$(info now linkname is $(get $1.link_name))
 	)
 endef
 
