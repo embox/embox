@@ -19,9 +19,7 @@ endef
 
 $(def_all)
 
-«includeFile("factory", "factory_impl")»
-
-«factoryInstanceName()» := $(call new,«factoryImplName()»)
+«factoryInstanceName()» := «mkCall("new", factoryImplName())»
 
 «inclusionGuardEnd("factory")»
 
@@ -30,6 +28,6 @@ $(def_all)
 
 «DEFINE class FOR EClass»
 	# Creates a new '«name»' model object.
-	«mkMethod(factoryMethodName())»
+	«mkMethod(factoryMethodName(), mkNew(classImplName()))»
 «ENDDEFINE»
 

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <workflow>
-	<property name="model" value="org.mybuild.myfile.codegen/src/myfile.ecore" />
+	<property name="model" value="org.mybuild.myfile.codegen/src/emodel.ecore" />
 	<property name="src-gen" value="src-gen" />
 
 	<!-- set up EMF for standalone execution -->
@@ -47,15 +47,6 @@
 		</outlet>
 	</component>
 
-	<component class="org.eclipse.xpand2.Generator">
-		<metaModel idRef="mm_emf"/>
-		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
-		<expand
-			value="template::MetaModelImpl::main FOR model" />
-		<outlet path="${src-gen}" >
-		</outlet>
-	</component>
-
 	<!--  Factory -->
 	<component class="org.eclipse.xpand2.Generator">
 		<metaModel idRef="mm_emf"/>
@@ -66,12 +57,4 @@
 		</outlet>
 	</component>
 
-	<component class="org.eclipse.xpand2.Generator">
-		<metaModel idRef="mm_emf"/>
-		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
-		<expand
-			value="template::FactoryImpl::main FOR model" />
-		<outlet path="${src-gen}" >
-		</outlet>
-	</component>
 </workflow>

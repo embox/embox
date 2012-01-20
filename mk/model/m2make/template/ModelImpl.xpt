@@ -17,7 +17,6 @@ $(def_all)
 «ENDFILE»«ENDDEFINE»
 
 «DEFINE classifier FOR EClass»
-«LET mkGet(ePackage.metaModelInstanceName() + "->" + id()) AS metaClass -»
 # Implementation of '«name»' model object.
 define class-«classImplName()»
 	«mkSuper(className())»
@@ -27,14 +26,13 @@ define class-«classImplName()»
 	«mkSuper(superType.classImplName())»
 «ENDFOREACH -»
 
-	«mkGetter("eMetaClass", metaClass)»
+	«mkGetter("eMetaClass", mkExpand(metaVariable()))»
 «EXPAND feature FOREACH eStructuralFeatures -»
 «EXPAND operation FOREACH eOperations»
 «PROTECT CSTART '\t# ' CEND '' ID id()»
 #	# TODO Add custom implementation here and remove this comment.
 «ENDPROTECT»
 endef
-«ENDLET -»
 «ENDDEFINE»
 
 «DEFINE feature FOR EStructuralFeature»
@@ -95,45 +93,36 @@ endef
 «ENDDEFINE»
 
 «DEFINE nonVolatileFeature FOR EReference»
-«LET mkGet(eReferenceType.ePackage.metaModelInstanceName() + "->" + id())
-	AS metaReference -»
 	«mkProperty(propertyName() + memberCardinality() + memberType())»
+«LET containment ? "Containment" : "Bidirectional".ifIs(eOpposite) AS suffix -»
+«LET { propertyName(), "$(suffix $1)", eOpposite.propertyName() } AS setterArgs -»
 «IF container -»
-«EXPAND containerReference(metaReference) -»
+	«mkGetterWrap(propertyName(),
+		mkInvoke("__eGetContainer", propertyName()))»
 «ELSE -»
-«EXPAND nonContainerReference(metaReference) -»
-«ENDIF -»
-«ENDLET -»
-«ENDDEFINE»
-
-«DEFINE containerReference(String metaReference) FOR EReference -»
-	«mkGetterWrap(propertyName(), mkInvoke("doGetContainerReference", metaReference))»
-«IF changeable -»
-	«mkSetterWrap(propertyName(), mkInvoke("doSetContainerReference", metaReference + ",$1"))»
-«ENDIF -»
-«ENDDEFINE»
-
-«DEFINE nonContainerReference(String metaReference) FOR EReference -»
 	«mkField(propertyName() + memberCardinality() + memberType())»
 	«mkGetterWrap(propertyName(), mkGetField(propertyName()))»
+«ENDIF -»
 «IF changeable -»
-	«mkSetterWrap(propertyName(), mkInvoke("doSetReference", metaReference + ",$1"))»
+	«mkSetterWrap(propertyName(), mkInvoke("__eSet" + suffix, setterArgs))»
 «IF many -»
-	«mkSetterPlusWrap(propertyName(), mkInvoke("doAddReference", metaReference + ",$1"))»
-	«mkSetterMinusWrap(propertyName(), mkInvoke("doRemoveReference", metaReference + ",$1"))»
+	«mkSetterPlusWrap(propertyName(), mkInvoke("__eAdd" + suffix, setterArgs))»
+	«mkSetterMinusWrap(propertyName(), mkInvoke("__eRemove" + suffix, setterArgs))»
 «ENDIF -»
 «ENDIF -»
 «IF resolveProxies && !containment && !container -»
 	# Link operations.
-	«mkGetterWrap(propertyLinkName(), mkInvoke("doGetLink", metaReference))»
+	«mkGetterWrap(propertyLinkName(), mkInvoke("__eGet" + suffix + "_link", propertyName()))»
 «IF changeable -»
-	«mkSetterWrap(propertyLinkName(), mkInvoke("doSetLink", metaReference + ",$1"))»
+	«mkSetterWrap(propertyLinkName(), mkInvoke("__eSet" + suffix + "_link", setterArgs))»
 «IF many -»
-	«mkSetterPlusWrap(propertyLinkName(), mkInvoke("doAddLink", metaReference + ",$1"))»
-	«mkSetterMinusWrap(propertyLinkName(), mkInvoke("doRemoveLink", metaReference + ",$1"))»
+	«mkSetterPlusWrap(propertyLinkName(), mkInvoke("__eAdd" + suffix + "_link", setterArgs))»
+	«mkSetterMinusWrap(propertyLinkName(), mkInvoke("__eRemove" + suffix + "_link", setterArgs))»
 «ENDIF -»
 «ENDIF -»
 «ENDIF -»
+«ENDLET -»
+«ENDLET -»
 «ENDDEFINE»
 
 «DEFINE operation FOR EOperation»
