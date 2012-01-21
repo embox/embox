@@ -9,40 +9,40 @@ __model_metamodel_mk := $(lastword $(MAKEFILE_LIST))
 EModel := \
 	$(call createMetaModel,EModel)
 
-EModel_ENode := \
-	$(call createMetaClass,$(EModel),EModel_ENode)
-EModel_ENode_eMetaClass := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eMetaClass)
-EModel_ENode_eResource := \
-	$(call createMetaAttribute,$(EModel_ENode),EModel_ENode_eResource)
-EModel_ENode_eContainer := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eContainer)
-EModel_ENode_eRootContainer := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eRootContainer)
-EModel_ENode_eContents := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eContents)
-EModel_ENode_eAllContents := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eAllContents)
-EModel_ENode_eLinks := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eLinks)
-EModel_ENode_eResolvedLinks := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eResolvedLinks)
-EModel_ENode_eInverseResolvedLinks := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eInverseResolvedLinks)
-EModel_ENode_eUnresolvedLinks := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eUnresolvedLinks)
-EModel_ENode_eRefs := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eRefs)
-EModel_ENode_eInverseRefs := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eInverseRefs)
-EModel_ENode_eLinkedRefs := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eLinkedRefs)
-EModel_ENode_eInverseLinkedRefs := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eInverseLinkedRefs)
-EModel_ENode_eImmediateRefs := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eImmediateRefs)
-EModel_ENode_eInverseImmediateRefs := \
-	$(call createMetaReference,$(EModel_ENode),EModel_ENode_eInverseImmediateRefs)
+EModel_EObject := \
+	$(call createMetaClass,$(EModel),EModel_EObject)
+EModel_EObject_eMetaClass := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eMetaClass)
+EModel_EObject_eResource := \
+	$(call createMetaAttribute,$(EModel_EObject),EModel_EObject_eResource)
+EModel_EObject_eContainer := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eContainer)
+EModel_EObject_eRootContainer := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eRootContainer)
+EModel_EObject_eContents := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eContents)
+EModel_EObject_eAllContents := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eAllContents)
+EModel_EObject_eLinks := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eLinks)
+EModel_EObject_eResolvedLinks := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eResolvedLinks)
+EModel_EObject_eInverseResolvedLinks := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eInverseResolvedLinks)
+EModel_EObject_eUnresolvedLinks := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eUnresolvedLinks)
+EModel_EObject_eRefs := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eRefs)
+EModel_EObject_eInverseRefs := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eInverseRefs)
+EModel_EObject_eLinkedRefs := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eLinkedRefs)
+EModel_EObject_eInverseLinkedRefs := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eInverseLinkedRefs)
+EModel_EObject_eImmediateRefs := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eImmediateRefs)
+EModel_EObject_eInverseImmediateRefs := \
+	$(call createMetaReference,$(EModel_EObject),EModel_EObject_eInverseImmediateRefs)
 
 EModel_ELink := \
 	$(call createMetaClass,$(EModel),EModel_ELink)
@@ -151,28 +151,28 @@ EModel_ETyped_eType := \
 define __eModel_init
 	$(call initMetaModel,$(EModel),EModel,)
 
-	$(call initMetaClass,$(EModel_ENode),ENode,,)
-	$(call initMetaReference,$(EModel_ENode_eMetaClass),eMetaClass,0,1,$(EModel_EMetaClass),,volatile derived transient)
-	$(call initMetaAttribute,$(EModel_ENode_eResource),eResource,0,1,volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eContainer),eContainer,0,1,$(EModel_ENode),$(EModel_ENode_eContents),volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eRootContainer),eRootContainer,0,1,$(EModel_ENode),,volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eContents),eContents,0,,$(EModel_ENode),$(EModel_ENode_eContainer),volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eAllContents),eAllContents,0,,$(EModel_ENode),,volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eLinks),eLinks,0,,$(EModel_ELink),$(EModel_ELink_eSource),volatile derived transient containment)
-	$(call initMetaReference,$(EModel_ENode_eResolvedLinks),eResolvedLinks,0,,$(EModel_ELink),,volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eInverseResolvedLinks),eInverseResolvedLinks,0,,$(EModel_ELink),$(EModel_ELink_eDestination),volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eUnresolvedLinks),eUnresolvedLinks,0,,$(EModel_ELink),,volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eRefs),eRefs,0,,$(EModel_ENode),$(EModel_ENode_eInverseRefs),volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eInverseRefs),eInverseRefs,0,,$(EModel_ENode),$(EModel_ENode_eRefs),volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eLinkedRefs),eLinkedRefs,0,,$(EModel_ENode),$(EModel_ENode_eInverseLinkedRefs),volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eInverseLinkedRefs),eInverseLinkedRefs,0,,$(EModel_ENode),$(EModel_ENode_eLinkedRefs),volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eImmediateRefs),eImmediateRefs,0,,$(EModel_ENode),$(EModel_ENode_eInverseImmediateRefs),volatile derived transient)
-	$(call initMetaReference,$(EModel_ENode_eInverseImmediateRefs),eInverseImmediateRefs,0,,$(EModel_ENode),$(EModel_ENode_eImmediateRefs),volatile derived transient)
+	$(call initMetaClass,$(EModel_EObject),EObject,,)
+	$(call initMetaReference,$(EModel_EObject_eMetaClass),eMetaClass,0,1,$(EModel_EMetaClass),,volatile derived transient)
+	$(call initMetaAttribute,$(EModel_EObject_eResource),eResource,0,1,volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eContainer),eContainer,0,1,$(EModel_EObject),$(EModel_EObject_eContents),volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eRootContainer),eRootContainer,0,1,$(EModel_EObject),,volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eContents),eContents,0,,$(EModel_EObject),$(EModel_EObject_eContainer),volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eAllContents),eAllContents,0,,$(EModel_EObject),,volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eLinks),eLinks,0,,$(EModel_ELink),$(EModel_ELink_eSource),volatile derived transient containment)
+	$(call initMetaReference,$(EModel_EObject_eResolvedLinks),eResolvedLinks,0,,$(EModel_ELink),,volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eInverseResolvedLinks),eInverseResolvedLinks,0,,$(EModel_ELink),$(EModel_ELink_eDestination),volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eUnresolvedLinks),eUnresolvedLinks,0,,$(EModel_ELink),,volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eRefs),eRefs,0,,$(EModel_EObject),$(EModel_EObject_eInverseRefs),volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eInverseRefs),eInverseRefs,0,,$(EModel_EObject),$(EModel_EObject_eRefs),volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eLinkedRefs),eLinkedRefs,0,,$(EModel_EObject),$(EModel_EObject_eInverseLinkedRefs),volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eInverseLinkedRefs),eInverseLinkedRefs,0,,$(EModel_EObject),$(EModel_EObject_eLinkedRefs),volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eImmediateRefs),eImmediateRefs,0,,$(EModel_EObject),$(EModel_EObject_eInverseImmediateRefs),volatile derived transient)
+	$(call initMetaReference,$(EModel_EObject_eInverseImmediateRefs),eInverseImmediateRefs,0,,$(EModel_EObject),$(EModel_EObject_eImmediateRefs),volatile derived transient)
 
 	$(call initMetaClass,$(EModel_ELink),ELink,$(EModel_ENamed),)
 	$(call initMetaReference,$(EModel_ELink_eMetaReference),eMetaReference,0,1,$(EModel_EMetaReference),,changeable)
-	$(call initMetaReference,$(EModel_ELink_eSource),eSource,0,1,$(EModel_ENode),$(EModel_ENode_eLinks),changeable container)
-	$(call initMetaReference,$(EModel_ELink_eDestination),eDestination,0,1,$(EModel_ENode),$(EModel_ENode_eInverseResolvedLinks),changeable)
+	$(call initMetaReference,$(EModel_ELink_eSource),eSource,0,1,$(EModel_EObject),$(EModel_EObject_eLinks),volatile derived transient container)
+	$(call initMetaReference,$(EModel_ELink_eDestination),eDestination,0,1,$(EModel_EObject),$(EModel_EObject_eInverseResolvedLinks),volatile derived transient)
 
 	$(call initMetaClass,$(EModel_EMetaType),EMetaType,$(EModel_ENamed),abstract)
 	$(call initMetaAttribute,$(EModel_EMetaType_instanceClass),instanceClass,0,1,changeable)
@@ -230,23 +230,23 @@ endef # __eModel_init
 
 # Binds objects to instance classes and features to properties.
 define __eModel_bind
-	$(call bindMetaClass,$(EModel_ENode),ENode)
-	$(call bindMetaFeature,$(EModel_ENode_eMetaClass),eMetaClass)
-	$(call bindMetaFeature,$(EModel_ENode_eResource),eResource)
-	$(call bindMetaFeature,$(EModel_ENode_eContainer),eContainer)
-	$(call bindMetaFeature,$(EModel_ENode_eRootContainer),eRootContainer)
-	$(call bindMetaFeature,$(EModel_ENode_eContents),eContents)
-	$(call bindMetaFeature,$(EModel_ENode_eAllContents),eAllContents)
-	$(call bindMetaFeature,$(EModel_ENode_eLinks),eLinks)
-	$(call bindMetaFeature,$(EModel_ENode_eResolvedLinks),eResolvedLinks)
-	$(call bindMetaFeature,$(EModel_ENode_eInverseResolvedLinks),eInverseResolvedLinks)
-	$(call bindMetaFeature,$(EModel_ENode_eUnresolvedLinks),eUnresolvedLinks)
-	$(call bindMetaFeature,$(EModel_ENode_eRefs),eRefs)
-	$(call bindMetaFeature,$(EModel_ENode_eInverseRefs),eInverseRefs)
-	$(call bindMetaFeature,$(EModel_ENode_eLinkedRefs),eLinkedRefs)
-	$(call bindMetaFeature,$(EModel_ENode_eInverseLinkedRefs),eInverseLinkedRefs)
-	$(call bindMetaFeature,$(EModel_ENode_eImmediateRefs),eImmediateRefs)
-	$(call bindMetaFeature,$(EModel_ENode_eInverseImmediateRefs),eInverseImmediateRefs)
+	$(call bindMetaClass,$(EModel_EObject),EObject)
+	$(call bindMetaFeature,$(EModel_EObject_eMetaClass),eMetaClass)
+	$(call bindMetaFeature,$(EModel_EObject_eResource),eResource)
+	$(call bindMetaFeature,$(EModel_EObject_eContainer),eContainer)
+	$(call bindMetaFeature,$(EModel_EObject_eRootContainer),eRootContainer)
+	$(call bindMetaFeature,$(EModel_EObject_eContents),eContents)
+	$(call bindMetaFeature,$(EModel_EObject_eAllContents),eAllContents)
+	$(call bindMetaFeature,$(EModel_EObject_eLinks),eLinks)
+	$(call bindMetaFeature,$(EModel_EObject_eResolvedLinks),eResolvedLinks)
+	$(call bindMetaFeature,$(EModel_EObject_eInverseResolvedLinks),eInverseResolvedLinks)
+	$(call bindMetaFeature,$(EModel_EObject_eUnresolvedLinks),eUnresolvedLinks)
+	$(call bindMetaFeature,$(EModel_EObject_eRefs),eRefs)
+	$(call bindMetaFeature,$(EModel_EObject_eInverseRefs),eInverseRefs)
+	$(call bindMetaFeature,$(EModel_EObject_eLinkedRefs),eLinkedRefs)
+	$(call bindMetaFeature,$(EModel_EObject_eInverseLinkedRefs),eInverseLinkedRefs)
+	$(call bindMetaFeature,$(EModel_EObject_eImmediateRefs),eImmediateRefs)
+	$(call bindMetaFeature,$(EModel_EObject_eInverseImmediateRefs),eInverseImmediateRefs)
 
 	$(call bindMetaClass,$(EModel_ELink),ELink)
 	$(call bindMetaFeature,$(EModel_ELink_eMetaReference),eMetaReference)

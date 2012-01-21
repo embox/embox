@@ -3,21 +3,21 @@
     xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="EModel"
     nsURI="http://www.mybuild.org/Emodel" nsPrefix="">
-  <eClassifiers xsi:type="ecore:EClass" name="ENode">
+  <eClassifiers xsi:type="ecore:EClass" name="EObject">
     <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaClass" eType="#//EMetaClass"
         changeable="false" volatile="true" transient="true" derived="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="eResource" eType="#//EResource"
         changeable="false" volatile="true" transient="true" derived="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eContainer" eType="#//ENode"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eContainer" eType="#//EObject"
         changeable="false" volatile="true" transient="true" derived="true" resolveProxies="false"
-        eOpposite="#//ENode/eContents"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eRootContainer" eType="#//ENode"
+        eOpposite="#//EObject/eContents"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eRootContainer" eType="#//EObject"
         changeable="false" volatile="true" transient="true" derived="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eContents" upperBound="-1"
-        eType="#//ENode" changeable="false" volatile="true" transient="true" derived="true"
-        resolveProxies="false" eOpposite="#//ENode/eContainer"/>
+        eType="#//EObject" changeable="false" volatile="true" transient="true" derived="true"
+        resolveProxies="false" eOpposite="#//EObject/eContainer"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eAllContents" upperBound="-1"
-        eType="#//ENode" changeable="false" volatile="true" transient="true" derived="true"
+        eType="#//EObject" changeable="false" volatile="true" transient="true" derived="true"
         resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eLinks" upperBound="-1"
         eType="#//ELink" changeable="false" volatile="true" transient="true" derived="true"
@@ -32,33 +32,33 @@
         eType="#//ELink" changeable="false" volatile="true" transient="true" derived="true"
         resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eRefs" upperBound="-1"
-        eType="#//ENode" changeable="false" volatile="true" transient="true" derived="true"
-        resolveProxies="false" eOpposite="#//ENode/eInverseRefs"/>
+        eType="#//EObject" changeable="false" volatile="true" transient="true" derived="true"
+        resolveProxies="false" eOpposite="#//EObject/eInverseRefs"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eInverseRefs" upperBound="-1"
-        eType="#//ENode" changeable="false" volatile="true" transient="true" derived="true"
-        resolveProxies="false" eOpposite="#//ENode/eRefs"/>
+        eType="#//EObject" changeable="false" volatile="true" transient="true" derived="true"
+        resolveProxies="false" eOpposite="#//EObject/eRefs"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eLinkedRefs" upperBound="-1"
-        eType="#//ENode" changeable="false" volatile="true" transient="true" derived="true"
-        resolveProxies="false" eOpposite="#//ENode/eInverseLinkedRefs"/>
+        eType="#//EObject" changeable="false" volatile="true" transient="true" derived="true"
+        resolveProxies="false" eOpposite="#//EObject/eInverseLinkedRefs"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eInverseLinkedRefs" upperBound="-1"
-        eType="#//ENode" changeable="false" volatile="true" transient="true" derived="true"
-        resolveProxies="false" eOpposite="#//ENode/eLinkedRefs"/>
+        eType="#//EObject" changeable="false" volatile="true" transient="true" derived="true"
+        resolveProxies="false" eOpposite="#//EObject/eLinkedRefs"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eImmediateRefs" upperBound="-1"
-        eType="#//ENode" changeable="false" volatile="true" transient="true" derived="true"
-        resolveProxies="false" eOpposite="#//ENode/eInverseImmediateRefs"/>
+        eType="#//EObject" changeable="false" volatile="true" transient="true" derived="true"
+        resolveProxies="false" eOpposite="#//EObject/eInverseImmediateRefs"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eInverseImmediateRefs"
-        upperBound="-1" eType="#//ENode" changeable="false" volatile="true" transient="true"
-        derived="true" resolveProxies="false" eOpposite="#//ENode/eImmediateRefs"/>
+        upperBound="-1" eType="#//EObject" changeable="false" volatile="true" transient="true"
+        derived="true" resolveProxies="false" eOpposite="#//EObject/eImmediateRefs"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ELink" eSuperTypes="#//ENamed">
     <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaReference" eType="#//EMetaReference"
         resolveProxies="false"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eSource" eType="#//ENode"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eSource" eType="#//EObject"
         changeable="false" volatile="true" transient="true" derived="true" resolveProxies="false"
-        eOpposite="#//ENode/eLinks"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eDestination" eType="#//ENode"
+        eOpposite="#//EObject/eLinks"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eDestination" eType="#//EObject"
         changeable="false" volatile="true" transient="true" derived="true" resolveProxies="false"
-        eOpposite="#//ENode/eInverseResolvedLinks"/>
+        eOpposite="#//EObject/eInverseResolvedLinks"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EMetaType" abstract="true" eSuperTypes="#//ENamed">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="instanceClass" eType="#//EString"/>
@@ -70,7 +70,7 @@
       <eParameters name="someClass" eType="#//EMetaClass"/>
     </eOperations>
     <eOperations name="isInstance" eType="#//EBoolean">
-      <eParameters name="object" eType="#//ENode"/>
+      <eParameters name="object" eType="#//EObject"/>
     </eOperations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="interface" eType="#//EBoolean"/>

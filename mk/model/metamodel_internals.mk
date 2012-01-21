@@ -8,6 +8,8 @@
 ifndef __model_metamodel_internals_mk
 __model_metamodel_internals_mk := 1
 
+include mk/model/factory.mk
+
 # TODO Proper prefixes on functions. -- Eldar
 
 #

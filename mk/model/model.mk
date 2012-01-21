@@ -5,11 +5,10 @@
 ifndef __model_model_mk
 __model_model_mk := $(lastword $(MAKEFILE_LIST))
 
-
 #
-# Model object 'ENode'.
+# Model object 'EObject'.
 #
-# The following features are available:
+# The following features are defined:
 #   - reference 'eMetaClass'
 #   - attribute 'eResource'
 #   - reference 'eContainer'
@@ -27,9 +26,8 @@ __model_model_mk := $(lastword $(MAKEFILE_LIST))
 #   - reference 'eImmediateRefs'
 #   - reference 'eInverseImmediateRefs'
 #
-# To instantiate this class use 'EModelFactory.createENode'.
-define class-ENode
-#	$(super ENode)
+# To instantiate this class use 'EModelFactory.createEObject'.
+define class-EObject
 
 	# 'eMetaClass' reference.
 	$(property eMetaClass : EMetaClass)# read-only.
@@ -39,17 +37,17 @@ define class-ENode
 
 	# 'eContainer' bidirectional reference.
 	# The opposite reference is 'eContents'.
-	$(property eContainer : ENode)# read-only.
+	$(property eContainer : EObject)# read-only.
 
 	# 'eRootContainer' reference.
-	$(property eRootContainer : ENode)# read-only.
+	$(property eRootContainer : EObject)# read-only.
 
 	# 'eContents' bidirectional reference.
 	# The opposite reference is 'eContainer'.
-	$(property eContents... : ENode)# read-only.
+	$(property eContents... : EObject)# read-only.
 
 	# 'eAllContents' reference.
-	$(property eAllContents... : ENode)# read-only.
+	$(property eAllContents... : EObject)# read-only.
 
 	# 'eLinks' bidirectional containment reference.
 	# The opposite reference is 'ELink.eSource'.
@@ -67,66 +65,72 @@ define class-ENode
 
 	# 'eRefs' bidirectional reference.
 	# The opposite reference is 'eInverseRefs'.
-	$(property eRefs... : ENode)# read-only.
+	$(property eRefs... : EObject)# read-only.
 
 	# 'eInverseRefs' bidirectional reference.
 	# The opposite reference is 'eRefs'.
-	$(property eInverseRefs... : ENode)# read-only.
+	$(property eInverseRefs... : EObject)# read-only.
 
 	# 'eLinkedRefs' bidirectional reference.
 	# The opposite reference is 'eInverseLinkedRefs'.
-	$(property eLinkedRefs... : ENode)# read-only.
+	$(property eLinkedRefs... : EObject)# read-only.
 
 	# 'eInverseLinkedRefs' bidirectional reference.
 	# The opposite reference is 'eLinkedRefs'.
-	$(property eInverseLinkedRefs... : ENode)# read-only.
+	$(property eInverseLinkedRefs... : EObject)# read-only.
 
 	# 'eImmediateRefs' bidirectional reference.
 	# The opposite reference is 'eInverseImmediateRefs'.
-	$(property eImmediateRefs... : ENode)# read-only.
+	$(property eImmediateRefs... : EObject)# read-only.
 
 	# 'eInverseImmediateRefs' bidirectional reference.
 	# The opposite reference is 'eImmediateRefs'.
-	$(property eInverseImmediateRefs... : ENode)# read-only.
+	$(property eInverseImmediateRefs... : EObject)# read-only.
 
 endef
 
 #
 # Model object 'ELink'.
 #
-# The following features are available:
+# The following features are defined:
 #   - reference 'eMetaReference'
 #   - reference 'eSource'
 #   - reference 'eDestination'
 #
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#
 # To instantiate this class use 'EModelFactory.createELink'.
 define class-ELink
-	$(super ENode)
+	$(super EObject)
 	$(super ENamed)
 
 	# 'eMetaReference' reference.
 	$(property eMetaReference : EMetaReference)
 
 	# 'eSource' bidirectional container reference.
-	# The opposite reference is 'ENode.eLinks'.
-	$(property eSource : ENode)
+	# The opposite reference is 'EObject.eLinks'.
+	$(property eSource : EObject)# read-only.
 
 	# 'eDestination' bidirectional reference.
-	# The opposite reference is 'ENode.eInverseResolvedLinks'.
-	$(property eDestination : ENode)
+	# The opposite reference is 'EObject.eInverseResolvedLinks'.
+	$(property eDestination : EObject)# read-only.
 
 endef
 
 #
 # Model object 'EMetaType'.
 #
-# The following features are available:
+# The following features are defined:
 #   - attribute 'instanceClass'
 #   - reference 'eMetaModel'
 #
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaType
-	$(super ENode)
+	$(super EObject)
 	$(super ENamed)
 
 	# 'instanceClass' attribute.
@@ -141,7 +145,7 @@ endef
 #
 # Model object 'EMetaClass'.
 #
-# The following features are available:
+# The following features and operations are defined:
 #   - attribute 'abstract'
 #   - attribute 'interface'
 #   - reference 'eSuperTypes'
@@ -153,10 +157,19 @@ endef
 #   - reference 'eReferences'
 #   - reference 'eAllReferences'
 #   - reference 'eAllContainments'
+#   - operation 'isSuperTypeOf'
+#   - operation 'isInstance'
+#
+# The following features are inherited from 'EMetaType':
+#   - attribute 'instanceClass'
+#   - reference 'eMetaModel'
+#
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
 #
 # To instantiate this class use 'EModelFactory.createEMetaClass'.
 define class-EMetaClass
-	$(super ENode)
+	$(super EObject)
 	$(super EMetaType)
 
 	# 'abstract' attribute.
@@ -198,7 +211,7 @@ define class-EMetaClass
 	$(method isSuperTypeOf)
 
 	# 'isInstance' operation.
-	#   1. object : ENode
+	#   1. object : EObject
 	$(method isInstance)
 
 endef
@@ -206,9 +219,18 @@ endef
 #
 # Model object 'EMetaPrimitive'.
 #
+# No features or operations defined.
+#
+# The following features are inherited from 'EMetaType':
+#   - attribute 'instanceClass'
+#   - reference 'eMetaModel'
+#
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#
 # To instantiate this class use 'EModelFactory.createEMetaPrimitive'.
 define class-EMetaPrimitive
-	$(super ENode)
+	$(super EObject)
 	$(super EMetaType)
 
 endef
@@ -216,7 +238,7 @@ endef
 #
 # Model object 'EMetaFeature'.
 #
-# The following features are available:
+# The following features are defined:
 #   - attribute 'changeable'
 #   - attribute 'volatile'
 #   - attribute 'transient'
@@ -224,9 +246,18 @@ endef
 #   - attribute 'instanceProperty'
 #   - reference 'eContainingClass'
 #
+# The following features are inherited from 'ETyped':
+#   - attribute 'lowerBound'
+#   - attribute 'upperBound'
+#   - attribute 'many'
+#   - reference 'eType'
+#
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaFeature
-	$(super ENode)
+	$(super EObject)
 	$(super ETyped)
 
 	# 'changeable' attribute.
@@ -253,15 +284,32 @@ endef
 #
 # Model object 'EMetaReference'.
 #
-# The following features are available:
+# The following features are defined:
 #   - attribute 'containment'
 #   - attribute 'container'
 #   - reference 'eOpposite'
 #   - reference 'eReferenceType'
 #
+# The following features are inherited from 'EMetaFeature':
+#   - attribute 'changeable'
+#   - attribute 'volatile'
+#   - attribute 'transient'
+#   - attribute 'derived'
+#   - attribute 'instanceProperty'
+#   - reference 'eContainingClass'
+#
+# The following features are inherited from 'ETyped':
+#   - attribute 'lowerBound'
+#   - attribute 'upperBound'
+#   - attribute 'many'
+#   - reference 'eType'
+#
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#
 # To instantiate this class use 'EModelFactory.createEMetaReference'.
 define class-EMetaReference
-	$(super ENode)
+	$(super EObject)
 	$(super EMetaFeature)
 
 	# 'containment' attribute.
@@ -281,12 +329,29 @@ endef
 #
 # Model object 'EMetaAttribute'.
 #
-# The following features are available:
+# The following features are defined:
 #   - reference 'eAttributeType'
+#
+# The following features are inherited from 'EMetaFeature':
+#   - attribute 'changeable'
+#   - attribute 'volatile'
+#   - attribute 'transient'
+#   - attribute 'derived'
+#   - attribute 'instanceProperty'
+#   - reference 'eContainingClass'
+#
+# The following features are inherited from 'ETyped':
+#   - attribute 'lowerBound'
+#   - attribute 'upperBound'
+#   - attribute 'many'
+#   - reference 'eType'
+#
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
 #
 # To instantiate this class use 'EModelFactory.createEMetaAttribute'.
 define class-EMetaAttribute
-	$(super ENode)
+	$(super EObject)
 	$(super EMetaFeature)
 
 	# 'eAttributeType' reference.
@@ -297,13 +362,16 @@ endef
 #
 # Model object 'EMetaModel'.
 #
-# The following features are available:
+# The following features are defined:
 #   - reference 'eFactory'
 #   - reference 'eTypes'
 #
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#
 # To instantiate this class use 'EModelFactory.createEMetaModel'.
 define class-EMetaModel
-	$(super ENode)
+	$(super EObject)
 	$(super ENamed)
 
 	# 'eFactory' bidirectional reference.
@@ -319,12 +387,12 @@ endef
 #
 # Model object 'EFactory'.
 #
-# The following features are available:
+# The following features are defined:
 #   - reference 'eMetaModel'
 #
 # To instantiate this class use 'EModelFactory.createEFactory'.
 define class-EFactory
-	$(super ENode)
+	$(super EObject)
 
 	# 'eMetaModel' bidirectional reference.
 	# The opposite reference is 'EMetaModel.eFactory'.
@@ -335,12 +403,12 @@ endef
 #
 # Model object 'ENamed'.
 #
-# The following features are available:
+# The following features are defined:
 #   - attribute 'name'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-ENamed
-	$(super ENode)
+	$(super EObject)
 
 	# 'name' attribute.
 	$(property name)
@@ -350,15 +418,18 @@ endef
 #
 # Model object 'ETyped'.
 #
-# The following features are available:
+# The following features are defined:
 #   - attribute 'lowerBound'
 #   - attribute 'upperBound'
 #   - attribute 'many'
 #   - reference 'eType'
 #
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#
 # This is an abstract class. You can't instantiate it directly.
 define class-ETyped
-	$(super ENode)
+	$(super EObject)
 	$(super ENamed)
 
 	# 'lowerBound' attribute.

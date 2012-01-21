@@ -7,18 +7,15 @@ $(error \
 	Do not include this file directly, include 'model.mk' instead!)
 endif # __model_model_mk
 
+# Implementation of 'EObject' model object.
+define class-EObjectImpl
+	$(super EObject)
 
-# Implementation of 'ENode' model object.
-define class-ENodeImpl
-#	$(super ENode)
-#
-#	$(super ENodeImpl)
-#
-#	$(getter eMetaClass,$(EModel_ENode))
+	$(getter eMetaClass,$(error Subclass must override eMetaClass property))
 
 	# Reference 'eMetaClass' [0..1]: volatile, read-only.
 	$(property eMetaClass : EMetaClass)
-	# PROTECTED REGION ID(ENode_eMetaClass) ENABLED START
+	# PROTECTED REGION ID(EObject_eMetaClass) ENABLED START
 	#
 	# Subclasses must override 'eMetaClass' getter, see above.
 	#
@@ -26,22 +23,22 @@ define class-ENodeImpl
 
 	# Attribute 'eResource': volatile, read-only.
 	$(property eResource)
-	# PROTECTED REGION ID(ENode_eResource) ENABLED START
+	# PROTECTED REGION ID(EObject_eResource) ENABLED START
 	$(getter eResource,
 		$(error $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eContainer' [0..1]: bidirectional, volatile, read-only.
-	$(property eContainer : ENode)
-	# PROTECTED REGION ID(ENode_eContainer) ENABLED START
-	$(field __eContainer : ENode)
+	$(property eContainer : EObject)
+	# PROTECTED REGION ID(EObject_eContainer) ENABLED START
+	$(field __eContainer : EObject)
 	$(getter eContainer,
 		$(get-field __eContainer))
 	# PROTECTED REGION END
 
 	# Reference 'eRootContainer' [0..1]: volatile, read-only.
-	$(property eRootContainer : ENode)
-	# PROTECTED REGION ID(ENode_eRootContainer) ENABLED START
+	$(property eRootContainer : EObject)
+	# PROTECTED REGION ID(EObject_eRootContainer) ENABLED START
 	$(getter eRootContainer,
 		$(or \
 			$(for container <- $(get eContainer),
@@ -50,16 +47,16 @@ define class-ENodeImpl
 	# PROTECTED REGION END
 
 	# Reference 'eContents' [0..*]: bidirectional, volatile, read-only.
-	$(property eContents... : ENode)
-	# PROTECTED REGION ID(ENode_eContents) ENABLED START
+	$(property eContents... : EObject)
+	# PROTECTED REGION ID(EObject_eContents) ENABLED START
 	$(getter eContents,
 		$(for metaReference <- $(get $(get eMetaClass).eAllContainments),
 			$(get $(get metaReference->instanceProperty))))
 	# PROTECTED REGION END
 
 	# Reference 'eAllContents' [0..*]: volatile, read-only.
-	$(property eAllContents... : ENode)
-	# PROTECTED REGION ID(ENode_eAllContents) ENABLED START
+	$(property eAllContents... : EObject)
+	# PROTECTED REGION ID(EObject_eAllContents) ENABLED START
 	$(getter eAllContents,
 		$(for child <- $(get eContents),
 			$(child) $(get child->eAllContents)))
@@ -67,7 +64,7 @@ define class-ENodeImpl
 
 	# Reference 'eLinks' [0..*]: bidirectional, containment, volatile, read-only.
 	$(property eLinks... : ELink)
-	# PROTECTED REGION ID(ENode_eLinks) ENABLED START
+	# PROTECTED REGION ID(EObject_eLinks) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter eLinks,
 #		$(error $0: NIY))
@@ -75,7 +72,7 @@ define class-ENodeImpl
 
 	# Reference 'eResolvedLinks' [0..*]: volatile, read-only.
 	$(property eResolvedLinks... : ELink)
-	# PROTECTED REGION ID(ENode_eResolvedLinks) ENABLED START
+	# PROTECTED REGION ID(EObject_eResolvedLinks) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter eResolvedLinks,
 #		$(error $0: NIY))
@@ -83,7 +80,7 @@ define class-ENodeImpl
 
 	# Reference 'eInverseResolvedLinks' [0..*]: bidirectional, volatile, read-only.
 	$(property eInverseResolvedLinks... : ELink)
-	# PROTECTED REGION ID(ENode_eInverseResolvedLinks) ENABLED START
+	# PROTECTED REGION ID(EObject_eInverseResolvedLinks) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter eInverseResolvedLinks,
 #		$(error $0: NIY))
@@ -91,64 +88,64 @@ define class-ENodeImpl
 
 	# Reference 'eUnresolvedLinks' [0..*]: volatile, read-only.
 	$(property eUnresolvedLinks... : ELink)
-	# PROTECTED REGION ID(ENode_eUnresolvedLinks) ENABLED START
+	# PROTECTED REGION ID(EObject_eUnresolvedLinks) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter eUnresolvedLinks,
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eRefs' [0..*]: bidirectional, volatile, read-only.
-	$(property eRefs... : ENode)
-	# PROTECTED REGION ID(ENode_eRefs) ENABLED START
+	$(property eRefs... : EObject)
+	# PROTECTED REGION ID(EObject_eRefs) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter eRefs,
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eInverseRefs' [0..*]: bidirectional, volatile, read-only.
-	$(property eInverseRefs... : ENode)
-	# PROTECTED REGION ID(ENode_eInverseRefs) ENABLED START
+	$(property eInverseRefs... : EObject)
+	# PROTECTED REGION ID(EObject_eInverseRefs) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter eInverseRefs,
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eLinkedRefs' [0..*]: bidirectional, volatile, read-only.
-	$(property eLinkedRefs... : ENode)
-	# PROTECTED REGION ID(ENode_eLinkedRefs) ENABLED START
+	$(property eLinkedRefs... : EObject)
+	# PROTECTED REGION ID(EObject_eLinkedRefs) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter eLinkedRefs,
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eInverseLinkedRefs' [0..*]: bidirectional, volatile, read-only.
-	$(property eInverseLinkedRefs... : ENode)
-	# PROTECTED REGION ID(ENode_eInverseLinkedRefs) ENABLED START
+	$(property eInverseLinkedRefs... : EObject)
+	# PROTECTED REGION ID(EObject_eInverseLinkedRefs) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter eInverseLinkedRefs,
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eImmediateRefs' [0..*]: bidirectional, volatile, read-only.
-	$(property eImmediateRefs... : ENode)
-	# PROTECTED REGION ID(ENode_eImmediateRefs) ENABLED START
+	$(property eImmediateRefs... : EObject)
+	# PROTECTED REGION ID(EObject_eImmediateRefs) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter eImmediateRefs,
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eInverseImmediateRefs' [0..*]: bidirectional, volatile, read-only.
-	$(property eInverseImmediateRefs... : ENode)
-	# PROTECTED REGION ID(ENode_eInverseImmediateRefs) ENABLED START
+	$(property eInverseImmediateRefs... : EObject)
+	# PROTECTED REGION ID(EObject_eInverseImmediateRefs) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter eInverseImmediateRefs,
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(ENode) ENABLED START
+	# PROTECTED REGION ID(EObject) ENABLED START
 
 	# '[.link].metaRef.node'
-	$(field __eOppositeRefs : ENode)
+	$(field __eOppositeRefs : EObject)
 
 	$(field unresolvedLinks : ELink)
 
@@ -309,7 +306,7 @@ endef
 define class-ELinkImpl
 	$(super ELink)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 	$(super ENamedImpl)
 
 	$(getter eMetaClass,$(EModel_ELink))
@@ -322,20 +319,21 @@ define class-ELinkImpl
 	$(setter eMetaReference,
 		$(invoke __eSet,eMetaReference,$(suffix $1),))
 
-	# Reference 'eSource' [0..1]: bidirectional, container.
-	$(property eSource : ENode)
-	$(getter eSource,
-		$(invoke __eGetContainer,eSource))
-	$(setter eSource,
-		$(invoke __eSetBidirectional,eSource,$(suffix $1),eLinks))
+	# Reference 'eSource' [0..1]: bidirectional, container, volatile, read-only.
+	$(property eSource : EObject)
+	# PROTECTED REGION ID(ELink_eSource) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eSource,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
 
-	# Reference 'eDestination' [0..1]: bidirectional.
-	$(property eDestination : ENode)
-	$(field eDestination : ENode)
-	$(getter eDestination,
-		$(get-field eDestination))
-	$(setter eDestination,
-		$(invoke __eSetBidirectional,eDestination,$(suffix $1),eInverseResolvedLinks))
+	# Reference 'eDestination' [0..1]: bidirectional, volatile, read-only.
+	$(property eDestination : EObject)
+	# PROTECTED REGION ID(ELink_eDestination) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eDestination,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ELink) ENABLED START
 	# PROTECTED REGION END
@@ -345,7 +343,7 @@ endef
 define class-EMetaTypeImpl
 	$(super EMetaType)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 	$(super ENamedImpl)
 
 	$(getter eMetaClass,$(EModel_EMetaType))
@@ -366,7 +364,7 @@ endef
 define class-EMetaClassImpl
 	$(super EMetaClass)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 	$(super EMetaTypeImpl)
 
 	$(getter eMetaClass,$(EModel_EMetaClass))
@@ -468,7 +466,7 @@ define class-EMetaClassImpl
 	# PROTECTED REGION END
 
 	# 'isInstance' operation.
-	#   1. object : ENode
+	#   1. object : EObject
 	# PROTECTED REGION ID(EMetaClass_isInstance) ENABLED START
 	$(method isInstance,
 		$(invoke isSuperTypeOf,$(class $1)))
@@ -492,7 +490,7 @@ endef
 define class-EMetaPrimitiveImpl
 	$(super EMetaPrimitive)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 	$(super EMetaTypeImpl)
 
 	$(getter eMetaClass,$(EModel_EMetaPrimitive))
@@ -505,7 +503,7 @@ endef
 define class-EMetaFeatureImpl
 	$(super EMetaFeature)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 	$(super ETypedImpl)
 
 	$(getter eMetaClass,$(EModel_EMetaFeature))
@@ -538,7 +536,7 @@ endef
 define class-EMetaReferenceImpl
 	$(super EMetaReference)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 	$(super EMetaFeatureImpl)
 
 	$(getter eMetaClass,$(EModel_EMetaReference))
@@ -576,7 +574,7 @@ endef
 define class-EMetaAttributeImpl
 	$(super EMetaAttribute)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 	$(super EMetaFeatureImpl)
 
 	$(getter eMetaClass,$(EModel_EMetaAttribute))
@@ -596,7 +594,7 @@ endef
 define class-EMetaModelImpl
 	$(super EMetaModel)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 	$(super ENamedImpl)
 
 	$(getter eMetaClass,$(EModel_EMetaModel))
@@ -629,7 +627,7 @@ endef
 define class-EFactoryImpl
 	$(super EFactory)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 
 	$(getter eMetaClass,$(EModel_EFactory))
 
@@ -649,7 +647,7 @@ endef
 define class-ENamedImpl
 	$(super ENamed)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 
 	$(getter eMetaClass,$(EModel_ENamed))
 
@@ -664,7 +662,7 @@ endef
 define class-ETypedImpl
 	$(super ETyped)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 	$(super ENamedImpl)
 
 	$(getter eMetaClass,$(EModel_ETyped))

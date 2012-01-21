@@ -10,9 +10,9 @@ __model_factory_mk := $(lastword $(MAKEFILE_LIST))
 define class-EModelFactory
 	$(super EFactory)
 
-	# Creates a new 'ENode' model object.
-	$(method createENode,
-		$(new ENodeImpl))
+	# Creates a new 'EObject' model object.
+	$(method createEObject,
+		$(new EObjectImpl))
 
 	# Creates a new 'ELink' model object.
 	$(method createELink,
