@@ -99,6 +99,7 @@ endef
 #
 # The following features are inherited from 'ENamed':
 #   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # To instantiate this class use 'EModelFactory.createELink'.
 define class-ELink
@@ -127,6 +128,7 @@ endef
 #
 # The following features are inherited from 'ENamed':
 #   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaType
@@ -166,6 +168,7 @@ endef
 #
 # The following features are inherited from 'ENamed':
 #   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # To instantiate this class use 'EModelFactory.createEMetaClass'.
 define class-EMetaClass
@@ -227,6 +230,7 @@ endef
 #
 # The following features are inherited from 'ENamed':
 #   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # To instantiate this class use 'EModelFactory.createEMetaPrimitive'.
 define class-EMetaPrimitive
@@ -240,20 +244,17 @@ endef
 #
 # The following features are defined:
 #   - attribute 'changeable'
-#   - attribute 'volatile'
-#   - attribute 'transient'
 #   - attribute 'derived'
 #   - attribute 'instanceProperty'
 #   - reference 'eContainingClass'
 #
 # The following features are inherited from 'ETyped':
-#   - attribute 'lowerBound'
-#   - attribute 'upperBound'
 #   - attribute 'many'
 #   - reference 'eType'
 #
 # The following features are inherited from 'ENamed':
 #   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaFeature
@@ -262,12 +263,6 @@ define class-EMetaFeature
 
 	# 'changeable' attribute.
 	$(property isChangeable)
-
-	# 'volatile' attribute.
-	$(property isVolatile)
-
-	# 'transient' attribute.
-	$(property isTransient)
 
 	# 'derived' attribute.
 	$(property isDerived)
@@ -292,20 +287,17 @@ endef
 #
 # The following features are inherited from 'EMetaFeature':
 #   - attribute 'changeable'
-#   - attribute 'volatile'
-#   - attribute 'transient'
 #   - attribute 'derived'
 #   - attribute 'instanceProperty'
 #   - reference 'eContainingClass'
 #
 # The following features are inherited from 'ETyped':
-#   - attribute 'lowerBound'
-#   - attribute 'upperBound'
 #   - attribute 'many'
 #   - reference 'eType'
 #
 # The following features are inherited from 'ENamed':
 #   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # To instantiate this class use 'EModelFactory.createEMetaReference'.
 define class-EMetaReference
@@ -334,20 +326,17 @@ endef
 #
 # The following features are inherited from 'EMetaFeature':
 #   - attribute 'changeable'
-#   - attribute 'volatile'
-#   - attribute 'transient'
 #   - attribute 'derived'
 #   - attribute 'instanceProperty'
 #   - reference 'eContainingClass'
 #
 # The following features are inherited from 'ETyped':
-#   - attribute 'lowerBound'
-#   - attribute 'upperBound'
 #   - attribute 'many'
 #   - reference 'eType'
 #
 # The following features are inherited from 'ENamed':
 #   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # To instantiate this class use 'EModelFactory.createEMetaAttribute'.
 define class-EMetaAttribute
@@ -363,20 +352,16 @@ endef
 # Model object 'EMetaModel'.
 #
 # The following features are defined:
-#   - reference 'eFactory'
 #   - reference 'eTypes'
 #
 # The following features are inherited from 'ENamed':
 #   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # To instantiate this class use 'EModelFactory.createEMetaModel'.
 define class-EMetaModel
 	$(super EObject)
 	$(super ENamed)
-
-	# 'eFactory' bidirectional reference.
-	# The opposite reference is 'EFactory.eMetaModel'.
-	$(property eFactory : EFactory)
 
 	# 'eTypes' bidirectional containment reference.
 	# The opposite reference is 'EMetaType.eMetaModel'.
@@ -385,26 +370,11 @@ define class-EMetaModel
 endef
 
 #
-# Model object 'EFactory'.
-#
-# The following features are defined:
-#   - reference 'eMetaModel'
-#
-# To instantiate this class use 'EModelFactory.createEFactory'.
-define class-EFactory
-	$(super EObject)
-
-	# 'eMetaModel' bidirectional reference.
-	# The opposite reference is 'EMetaModel.eFactory'.
-	$(property eMetaModel : EMetaModel)
-
-endef
-
-#
 # Model object 'ENamed'.
 #
 # The following features are defined:
 #   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-ENamed
@@ -413,33 +383,29 @@ define class-ENamed
 	# 'name' attribute.
 	$(property name)
 
+	# 'qualifiedName' attribute.
+	$(property qualifiedName)# read-only.
+
 endef
 
 #
 # Model object 'ETyped'.
 #
 # The following features are defined:
-#   - attribute 'lowerBound'
-#   - attribute 'upperBound'
 #   - attribute 'many'
 #   - reference 'eType'
 #
 # The following features are inherited from 'ENamed':
 #   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-ETyped
 	$(super EObject)
 	$(super ENamed)
 
-	# 'lowerBound' attribute.
-	$(property lowerBound)
-
-	# 'upperBound' attribute.
-	$(property upperBound)
-
 	# 'many' attribute.
-	$(property isMany)# read-only.
+	$(property isMany)
 
 	# 'eType' reference.
 	$(property eType : EMetaType)

@@ -13,7 +13,7 @@ define class-EObjectImpl
 
 	$(getter eMetaClass,$(error Subclass must override eMetaClass property))
 
-	# Reference 'eMetaClass' [0..1]: volatile, read-only.
+	# Reference 'eMetaClass' [0..1]: derived, read-only.
 	$(property eMetaClass : EMetaClass)
 	# PROTECTED REGION ID(EObject_eMetaClass) ENABLED START
 	#
@@ -21,14 +21,14 @@ define class-EObjectImpl
 	#
 	# PROTECTED REGION END
 
-	# Attribute 'eResource': volatile, read-only.
+	# Attribute 'eResource': derived, read-only.
 	$(property eResource)
 	# PROTECTED REGION ID(EObject_eResource) ENABLED START
 	$(getter eResource,
 		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eContainer' [0..1]: bidirectional, volatile, read-only.
+	# Reference 'eContainer' [0..1]: bidirectional, derived, read-only.
 	$(property eContainer : EObject)
 	# PROTECTED REGION ID(EObject_eContainer) ENABLED START
 	$(field __eContainer : EObject)
@@ -36,7 +36,7 @@ define class-EObjectImpl
 		$(get-field __eContainer))
 	# PROTECTED REGION END
 
-	# Reference 'eRootContainer' [0..1]: volatile, read-only.
+	# Reference 'eRootContainer' [0..1]: derived, read-only.
 	$(property eRootContainer : EObject)
 	# PROTECTED REGION ID(EObject_eRootContainer) ENABLED START
 	$(getter eRootContainer,
@@ -46,7 +46,7 @@ define class-EObjectImpl
 			$(this)))
 	# PROTECTED REGION END
 
-	# Reference 'eContents' [0..*]: bidirectional, volatile, read-only.
+	# Reference 'eContents' [0..*]: bidirectional, derived, read-only.
 	$(property eContents... : EObject)
 	# PROTECTED REGION ID(EObject_eContents) ENABLED START
 	$(getter eContents,
@@ -54,7 +54,7 @@ define class-EObjectImpl
 			$(get $(get metaReference->instanceProperty))))
 	# PROTECTED REGION END
 
-	# Reference 'eAllContents' [0..*]: volatile, read-only.
+	# Reference 'eAllContents' [0..*]: derived, read-only.
 	$(property eAllContents... : EObject)
 	# PROTECTED REGION ID(EObject_eAllContents) ENABLED START
 	$(getter eAllContents,
@@ -62,7 +62,7 @@ define class-EObjectImpl
 			$(child) $(get child->eAllContents)))
 	# PROTECTED REGION END
 
-	# Reference 'eLinks' [0..*]: bidirectional, containment, volatile, read-only.
+	# Reference 'eLinks' [0..*]: bidirectional, containment, derived, read-only.
 	$(property eLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eLinks) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -70,7 +70,7 @@ define class-EObjectImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eResolvedLinks' [0..*]: volatile, read-only.
+	# Reference 'eResolvedLinks' [0..*]: derived, read-only.
 	$(property eResolvedLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eResolvedLinks) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -78,7 +78,7 @@ define class-EObjectImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eInverseResolvedLinks' [0..*]: bidirectional, volatile, read-only.
+	# Reference 'eInverseResolvedLinks' [0..*]: bidirectional, derived, read-only.
 	$(property eInverseResolvedLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eInverseResolvedLinks) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -86,7 +86,7 @@ define class-EObjectImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eUnresolvedLinks' [0..*]: volatile, read-only.
+	# Reference 'eUnresolvedLinks' [0..*]: derived, read-only.
 	$(property eUnresolvedLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eUnresolvedLinks) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -94,7 +94,7 @@ define class-EObjectImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eRefs' [0..*]: bidirectional, volatile, read-only.
+	# Reference 'eRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eRefs... : EObject)
 	# PROTECTED REGION ID(EObject_eRefs) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -102,7 +102,7 @@ define class-EObjectImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eInverseRefs' [0..*]: bidirectional, volatile, read-only.
+	# Reference 'eInverseRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eInverseRefs... : EObject)
 	# PROTECTED REGION ID(EObject_eInverseRefs) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -110,7 +110,7 @@ define class-EObjectImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eLinkedRefs' [0..*]: bidirectional, volatile, read-only.
+	# Reference 'eLinkedRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eLinkedRefs... : EObject)
 	# PROTECTED REGION ID(EObject_eLinkedRefs) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -118,7 +118,7 @@ define class-EObjectImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eInverseLinkedRefs' [0..*]: bidirectional, volatile, read-only.
+	# Reference 'eInverseLinkedRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eInverseLinkedRefs... : EObject)
 	# PROTECTED REGION ID(EObject_eInverseLinkedRefs) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -126,7 +126,7 @@ define class-EObjectImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eImmediateRefs' [0..*]: bidirectional, volatile, read-only.
+	# Reference 'eImmediateRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eImmediateRefs... : EObject)
 	# PROTECTED REGION ID(EObject_eImmediateRefs) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -134,7 +134,7 @@ define class-EObjectImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eInverseImmediateRefs' [0..*]: bidirectional, volatile, read-only.
+	# Reference 'eInverseImmediateRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eInverseImmediateRefs... : EObject)
 	# PROTECTED REGION ID(EObject_eInverseImmediateRefs) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -319,7 +319,7 @@ define class-ELinkImpl
 	$(setter eMetaReference,
 		$(invoke __eSet,eMetaReference,$(suffix $1),))
 
-	# Reference 'eSource' [0..1]: bidirectional, container, volatile, read-only.
+	# Reference 'eSource' [0..1]: bidirectional, container, derived, read-only.
 	$(property eSource : EObject)
 	# PROTECTED REGION ID(ELink_eSource) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -327,7 +327,7 @@ define class-ELinkImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eDestination' [0..1]: bidirectional, volatile, read-only.
+	# Reference 'eDestination' [0..1]: bidirectional, derived, read-only.
 	$(property eDestination : EObject)
 	# PROTECTED REGION ID(ELink_eDestination) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -387,7 +387,7 @@ define class-EMetaClassImpl
 	$(setter- eSuperTypes,
 		$(invoke __eRemove,eSuperTypes,$(suffix $1),))
 
-	# Reference 'eAllSuperTypes' [0..*]: volatile, read-only.
+	# Reference 'eAllSuperTypes' [0..*]: derived, read-only.
 	$(property eAllSuperTypes... : EMetaClass)
 	# PROTECTED REGION ID(EMetaClass_eAllSuperTypes) ENABLED START
 	$(getter eAllSuperTypes,
@@ -409,7 +409,7 @@ define class-EMetaClassImpl
 	$(setter- eFeatures,
 		$(invoke __eRemoveContainment,eFeatures,$(suffix $1),eContainingClass))
 
-	# Reference 'eAllFeatures' [0..*]: volatile, read-only.
+	# Reference 'eAllFeatures' [0..*]: derived, read-only.
 	$(property eAllFeatures... : EMetaFeature)
 	# PROTECTED REGION ID(EMetaClass_eAllFeatures) ENABLED START
 	$(getter eAllFeatures,
@@ -418,7 +418,7 @@ define class-EMetaClassImpl
 				$(get superType->eAllFeatures))))
 	# PROTECTED REGION END
 
-	# Reference 'eAttributes' [0..*]: volatile, read-only.
+	# Reference 'eAttributes' [0..*]: derived, read-only.
 	$(property eAttributes... : EMetaAttribute)
 	# PROTECTED REGION ID(EMetaClass_eAttributes) ENABLED START
 	$(getter eAttributes,
@@ -426,7 +426,7 @@ define class-EMetaClassImpl
 			$(get eModelMetaModel->EMetaAttribute)))
 	# PROTECTED REGION END
 
-	# Reference 'eAllAttributes' [0..*]: volatile, read-only.
+	# Reference 'eAllAttributes' [0..*]: derived, read-only.
 	$(property eAllAttributes... : EMetaAttribute)
 	# PROTECTED REGION ID(EMetaClass_eAllAttributes) ENABLED START
 	$(getter eAllAttributes,
@@ -434,7 +434,7 @@ define class-EMetaClassImpl
 			$(get eModelMetaModel->EMetaAttribute)))
 	# PROTECTED REGION END
 
-	# Reference 'eReferences' [0..*]: volatile, read-only.
+	# Reference 'eReferences' [0..*]: derived, read-only.
 	$(property eReferences... : EMetaReference)
 	# PROTECTED REGION ID(EMetaClass_eReferences) ENABLED START
 	$(getter eReferences,
@@ -442,7 +442,7 @@ define class-EMetaClassImpl
 			$(get eModelMetaModel->EMetaReference)))
 	# PROTECTED REGION END
 
-	# Reference 'eAllReferences' [0..*]: volatile, read-only.
+	# Reference 'eAllReferences' [0..*]: derived, read-only.
 	$(property eAllReferences... : EMetaReference)
 	# PROTECTED REGION ID(EMetaClass_eAllReferences) ENABLED START
 	$(getter eAllReferences,
@@ -450,7 +450,7 @@ define class-EMetaClassImpl
 			$(get eModelMetaModel->EMetaReference)))
 	# PROTECTED REGION END
 
-	# Reference 'eAllContainments' [0..*]: volatile, read-only.
+	# Reference 'eAllContainments' [0..*]: derived, read-only.
 	$(property eAllContainments... : EMetaReference)
 	# PROTECTED REGION ID(EMetaClass_eAllContainments) ENABLED START
 	$(getter eAllContainments,
@@ -511,12 +511,6 @@ define class-EMetaFeatureImpl
 	# Attribute 'changeable'.
 	$(property-field isChangeable)
 
-	# Attribute 'volatile'.
-	$(property-field isVolatile)
-
-	# Attribute 'transient'.
-	$(property-field isTransient)
-
 	# Attribute 'derived'.
 	$(property-field isDerived)
 
@@ -544,7 +538,7 @@ define class-EMetaReferenceImpl
 	# Attribute 'containment'.
 	$(property-field isContainment)
 
-	# Attribute 'container': volatile, read-only.
+	# Attribute 'container': derived, read-only.
 	$(property isContainer)
 	# PROTECTED REGION ID(EMetaReference_isContainer) ENABLED START
 	$(getter isContainer,
@@ -559,7 +553,7 @@ define class-EMetaReferenceImpl
 	$(setter eOpposite,
 		$(invoke __eSet,eOpposite,$(suffix $1),))
 
-	# Reference 'eReferenceType' [1..1]: volatile, read-only.
+	# Reference 'eReferenceType' [1..1]: derived, read-only.
 	$(property eReferenceType : EMetaClass)
 	# PROTECTED REGION ID(EMetaReference_eReferenceType) ENABLED START
 	$(getter eReferenceType,
@@ -579,7 +573,7 @@ define class-EMetaAttributeImpl
 
 	$(getter eMetaClass,$(EModel_EMetaAttribute))
 
-	# Reference 'eAttributeType' [1..1]: volatile, read-only.
+	# Reference 'eAttributeType' [1..1]: derived, read-only.
 	$(property eAttributeType : EMetaPrimitive)
 	# PROTECTED REGION ID(EMetaAttribute_eAttributeType) ENABLED START
 	$(getter eAttributeType,
@@ -599,14 +593,6 @@ define class-EMetaModelImpl
 
 	$(getter eMetaClass,$(EModel_EMetaModel))
 
-	# Reference 'eFactory' [1..1]: bidirectional.
-	$(property eFactory : EFactory)
-	$(field eFactory : EFactory)
-	$(getter eFactory,
-		$(get-field eFactory))
-	$(setter eFactory,
-		$(invoke __eSetBidirectional,eFactory,$(suffix $1),eMetaModel))
-
 	# Reference 'eTypes' [0..*]: bidirectional, containment.
 	$(property eTypes... : EMetaType)
 	$(field eTypes... : EMetaType)
@@ -623,26 +609,6 @@ define class-EMetaModelImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'EFactory' model object.
-define class-EFactoryImpl
-	$(super EFactory)
-
-	$(super EObjectImpl)
-
-	$(getter eMetaClass,$(EModel_EFactory))
-
-	# Reference 'eMetaModel' [1..1]: bidirectional.
-	$(property eMetaModel : EMetaModel)
-	$(field eMetaModel : EMetaModel)
-	$(getter eMetaModel,
-		$(get-field eMetaModel))
-	$(setter eMetaModel,
-		$(invoke __eSetBidirectional,eMetaModel,$(suffix $1),eFactory))
-
-	# PROTECTED REGION ID(EFactory) ENABLED START
-	# PROTECTED REGION END
-endef
-
 # Implementation of 'ENamed' model object.
 define class-ENamedImpl
 	$(super ENamed)
@@ -653,6 +619,14 @@ define class-ENamedImpl
 
 	# Attribute 'name'.
 	$(property-field name)
+
+	# Attribute 'qualifiedName': derived, read-only.
+	$(property qualifiedName)
+	# PROTECTED REGION ID(ENamed_qualifiedName) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter qualifiedName,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ENamed) ENABLED START
 	# PROTECTED REGION END
@@ -667,19 +641,8 @@ define class-ETypedImpl
 
 	$(getter eMetaClass,$(EModel_ETyped))
 
-	# Attribute 'lowerBound'.
-	$(property-field lowerBound)
-
-	# Attribute 'upperBound'.
-	$(property-field upperBound)
-
-	# Attribute 'many': volatile, read-only.
-	$(property isMany)
-	# PROTECTED REGION ID(ETyped_isMany) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter isMany,
-#		$(error $0: NIY))
-	# PROTECTED REGION END
+	# Attribute 'many'.
+	$(property-field isMany)
 
 	# Reference 'eType' [0..1].
 	$(property eType : EMetaType)

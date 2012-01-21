@@ -79,7 +79,7 @@ $(def_all)
 «DEFINE initFeature FOR EAttribute -»
 	«mkCall("initMetaAttribute", {
 		mkExpand(metaVariable()),
-		name, lowerBound, upperBound.ifIs(upperBound >= 0),
+		name,
 		metaFlags().toString(" ")
 	})»
 «ENDDEFINE»
@@ -87,7 +87,7 @@ $(def_all)
 «DEFINE initFeature FOR EReference -»
 	«mkCall("initMetaReference", {
 		mkExpand(metaVariable()),
-		name, lowerBound, upperBound.ifIs(upperBound >= 0),
+		name,
 		mkExpand(eReferenceType.metaVariable()),
 		mkExpand(eOpposite.metaVariable()).ifIs(eOpposite),
 		metaFlags().toString(" ")

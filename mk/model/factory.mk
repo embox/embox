@@ -8,39 +8,40 @@ __model_factory_mk := $(lastword $(MAKEFILE_LIST))
 # Provides methods for creating objects of 'EModel' model.
 # See 'eModelFactory'.
 define class-EModelFactory
-	$(super EFactory)
 
 	# Creates a new 'EObject' model object.
 	$(method createEObject,
 		$(new EObjectImpl))
 
 	# Creates a new 'ELink' model object.
+	#   1. (optional) initial value of 'name' property.
 	$(method createELink,
-		$(new ELinkImpl))
+		$(for e <- $(new ELinkImpl),$(set e->name,$(value 1))$e))
 
 	# Creates a new 'EMetaClass' model object.
+	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaClass,
-		$(new EMetaClassImpl))
+		$(for e <- $(new EMetaClassImpl),$(set e->name,$(value 1))$e))
 
 	# Creates a new 'EMetaPrimitive' model object.
+	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaPrimitive,
-		$(new EMetaPrimitiveImpl))
+		$(for e <- $(new EMetaPrimitiveImpl),$(set e->name,$(value 1))$e))
 
 	# Creates a new 'EMetaReference' model object.
+	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaReference,
-		$(new EMetaReferenceImpl))
+		$(for e <- $(new EMetaReferenceImpl),$(set e->name,$(value 1))$e))
 
 	# Creates a new 'EMetaAttribute' model object.
+	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaAttribute,
-		$(new EMetaAttributeImpl))
+		$(for e <- $(new EMetaAttributeImpl),$(set e->name,$(value 1))$e))
 
 	# Creates a new 'EMetaModel' model object.
+	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaModel,
-		$(new EMetaModelImpl))
-
-	# Creates a new 'EFactory' model object.
-	$(method createEFactory,
-		$(new EFactoryImpl))
+		$(for e <- $(new EMetaModelImpl),$(set e->name,$(value 1))$e))
 endef
 
 $(def_all)

@@ -77,43 +77,32 @@ endef
 # Params:
 #   1. Meta attribute.
 #   2. Name.
-#   3. Lower bound.
-#   4. Upper bound.
-#   5. Flags...
+#   3. Flags...
 define initMetaAttribute
-	$(call commonInitMetaFeature,$1,$2,$3,$4,$5)
+	$(call commonInitMetaFeature,$1,$2,$3)
 endef
 
 # Params:
 #   1. Meta reference.
 #   2. Name.
-#   3. Lower bound.
-#   4. Upper bound.
-#   5. Referenced class.
-#   6. Opposite reference (if any).
-#   7. Flags...
+#   3. Referenced class.
+#   4. Opposite reference (if any).
+#   5. Flags...
 define initMetaReference
-	$(call commonInitMetaFeature,$1,$2,$3,$4,$7)
-	$(set 1->eType,$5)
-	$(set 1->eOpposite,$6)
-	$(set 1->isContainment,$(filter containment,$7))
-#		$(set 1->isContainer,$(filter container,$7))
+	$(call commonInitMetaFeature,$1,$2,$5)
+	$(set 1->eType,$3)
+	$(set 1->eOpposite,$4)
+	$(set 1->isContainment,$(filter containment,$5))
 endef
 
 # Params:
 #   1. Meta feature.
 #   2. Name.
-#   3. Lower bound.
-#   4. Upper bound.
-#   5. Flags...
+#   3. Flags...
 define commonInitMetaFeature
 	$(set 1->name,$2)
-	$(set 1->lowerBound,$3)
-	$(set 1->upperBound,$4)
-	$(set 1->isChangeable,$(filter changeable,$4))
-	$(set 1->isDerived,$(filter derived,$4))
-	$(set 1->isVolatile,$(filter volatile,$4))
-	$(set 1->isTransient,$(filter transient,$4))
+	$(set 1->isChangeable,$(filter changeable,$3))
+	$(set 1->isDerived,$(filter derived,$3))
 endef
 
 #

@@ -12,7 +12,6 @@
 # Provides methods for creating objects of '«name»' model.
 # See '«factoryInstanceName()»'.
 define class-«factoryName()»
-	«mkSuper("EFactory")»
 «EXPAND class FOREACH eClassifiers.typeSelect(EClass)
 	.select(c | !c.abstract && !c.interface) -»
 endef
@@ -28,6 +27,12 @@ $(def_all)
 
 «DEFINE class FOR EClass»
 	# Creates a new '«name»' model object.
+«IF eAllSuperTypes.exists(e|e.name == "ENamed") -»
+	#   1. (optional) initial value of 'name' property.
+	«mkMethod(factoryMethodName(),
+		"$(for e <- " + mkNew(classImplName()) + ",$(set e->name,$(value 1))$e)")»
+«ELSE -»
 	«mkMethod(factoryMethodName(), mkNew(classImplName()))»
+«ENDIF -»
 «ENDDEFINE»
 

@@ -9,7 +9,6 @@
 # Model implementation of '«name»' package.
 
 «implInclusionCheck("model")»
-
 «EXPAND classifier FOREACH eClassifiers.typeSelect(EClass) -»
 
 $(def_all)
@@ -20,13 +19,18 @@ $(def_all)
 # Implementation of '«name»' model object.
 define class-«classImplName()»
 	«mkSuper(className())»
+«IF classImplName() != "EObjectImpl" -»
 
-	«mkSuper("ENodeImpl")»
+	«mkSuper("EObjectImpl")»
 «FOREACH eSuperTypes AS superType -»
 	«mkSuper(superType.classImplName())»
 «ENDFOREACH -»
 
 	«mkGetter("eMetaClass", mkExpand(metaVariable()))»
+«ELSE -»
+
+	«mkGetter("eMetaClass", "$(error Subclass must override eMetaClass property)")»
+«ENDIF -»
 «EXPAND feature FOREACH eStructuralFeatures -»
 «EXPAND operation FOREACH eOperations»
 «PROTECT CSTART '\t# ' CEND '' ID id()»
@@ -37,7 +41,7 @@ endef
 
 «DEFINE feature FOR EStructuralFeature»
 	# «featureInfo() -»
-«IF volatile -»
+«IF derived -»
 «EXPAND volatileFeature -»
 «ELSE -»
 «EXPAND nonVolatileFeature -»

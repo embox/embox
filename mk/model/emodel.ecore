@@ -104,8 +104,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="EMetaFeature" abstract="true" eSuperTypes="#//ETyped">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="changeable" eType="#//EBoolean"
         defaultValueLiteral="true"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="volatile" eType="#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="transient" eType="#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="derived" eType="#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="instanceProperty" eType="#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eContainingClass" eType="#//EMetaClass"
@@ -127,24 +125,16 @@
         derived="true" resolveProxies="false"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EMetaModel" eSuperTypes="#//ENamed">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eFactory" lowerBound="1"
-        eType="#//EFactory" transient="true" resolveProxies="false" eOpposite="#//EFactory/eMetaModel"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eTypes" upperBound="-1"
         eType="#//EMetaType" containment="true" resolveProxies="false" eOpposite="#//EMetaType/eMetaModel"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EFactory">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaModel" lowerBound="1"
-        eType="#//EMetaModel" transient="true" resolveProxies="false" eOpposite="#//EMetaModel/eFactory"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ENamed" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="qualifiedName" eType="#//EString"
+        changeable="false" volatile="true" transient="true" derived="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ETyped" abstract="true" eSuperTypes="#//ENamed">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="lowerBound" eType="#//EInt"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="upperBound" eType="#//EInt"
-        defaultValueLiteral="1"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="many" eType="#//EBoolean"
-        changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="many" eType="#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eType" eType="#//EMetaType"
         resolveProxies="false"/>
   </eClassifiers>
