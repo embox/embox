@@ -55,11 +55,6 @@ MyFile_Module_provides := \
 MyFile_Module_requires := \
 	$(call createMetaReference,$(MyFile_Module),MyFile_Module_requires)
 
-MyFile_Named := \
-	$(call createMetaClass,$(MyFile),MyFile_Named)
-MyFile_Named_name := \
-	$(call createMetaAttribute,$(MyFile_Named),MyFile_Named_name)
-
 MyFile_Extendable := \
 	$(call createMetaClass,$(MyFile),MyFile_Extendable)
 MyFile_Extendable_subTypes := \
@@ -78,40 +73,37 @@ MyFile_Filename := \
 define __myFile_init
 	$(call initMetaModel,$(MyFile),myFile,my)
 
-	$(call initMetaClass,$(MyFile_Package),Package,$(MyFile_Named),)
-	$(call initMetaReference,$(MyFile_Package_imports),imports,0,,$(MyFile_Import),,changeable containment)
-	$(call initMetaReference,$(MyFile_Package_entities),entities,0,,$(MyFile_Entity),$(MyFile_Entity_package),changeable containment)
+	$(call initMetaClass,$(MyFile_Package),Package,$(EModel_ENamed),)
+	$(call initMetaReference,$(MyFile_Package_imports),imports,$(MyFile_Import),,changeable many containment)
+	$(call initMetaReference,$(MyFile_Package_entities),entities,$(MyFile_Entity),$(MyFile_Entity_package),changeable many containment)
 
 	$(call initMetaClass,$(MyFile_Import),Import,,)
-	$(call initMetaAttribute,$(MyFile_Import_importName),importName,0,1,changeable)
+	$(call initMetaAttribute,$(MyFile_Import_importName),importName,changeable)
 
-	$(call initMetaClass,$(MyFile_Entity),Entity,$(MyFile_Named),abstract)
-	$(call initMetaReference,$(MyFile_Entity_package),package,0,1,$(MyFile_Package),$(MyFile_Package_entities),changeable container)
+	$(call initMetaClass,$(MyFile_Entity),Entity,$(EModel_ENamed),abstract)
+	$(call initMetaReference,$(MyFile_Entity_package),package,$(MyFile_Package),$(MyFile_Package_entities),changeable container)
 
 	$(call initMetaClass,$(MyFile_Interface),Interface,$(MyFile_Entity) $(MyFile_Extendable),)
-	$(call initMetaReference,$(MyFile_Interface_features),features,0,,$(MyFile_Feature),$(MyFile_Feature_interface),changeable containment)
+	$(call initMetaReference,$(MyFile_Interface_features),features,$(MyFile_Feature),$(MyFile_Feature_interface),changeable many containment)
 
-	$(call initMetaClass,$(MyFile_Feature),Feature,$(MyFile_Named) $(MyFile_Extendable),)
-	$(call initMetaReference,$(MyFile_Feature_interface),interface,0,1,$(MyFile_Interface),$(MyFile_Interface_features),changeable container)
-	$(call initMetaReference,$(MyFile_Feature_providedBy),providedBy,0,,$(MyFile_Module),$(MyFile_Module_provides),changeable)
-	$(call initMetaReference,$(MyFile_Feature_requiredBy),requiredBy,0,,$(MyFile_Module),$(MyFile_Module_requires),changeable)
+	$(call initMetaClass,$(MyFile_Feature),Feature,$(EModel_ENamed) $(MyFile_Extendable),)
+	$(call initMetaReference,$(MyFile_Feature_interface),interface,$(MyFile_Interface),$(MyFile_Interface_features),changeable container)
+	$(call initMetaReference,$(MyFile_Feature_providedBy),providedBy,$(MyFile_Module),$(MyFile_Module_provides),changeable many)
+	$(call initMetaReference,$(MyFile_Feature_requiredBy),requiredBy,$(MyFile_Module),$(MyFile_Module_requires),changeable many)
 
 	$(call initMetaClass,$(MyFile_Module),Module,$(MyFile_Entity) $(MyFile_Extendable),)
-	$(call initMetaAttribute,$(MyFile_Module_isStatic),static,0,1,changeable)
-	$(call initMetaAttribute,$(MyFile_Module_isAbstract),abstract,0,1,changeable)
-	$(call initMetaReference,$(MyFile_Module_depends),depends,0,,$(MyFile_Module),$(MyFile_Module_dependent),changeable)
-	$(call initMetaReference,$(MyFile_Module_dependent),dependent,0,,$(MyFile_Module),$(MyFile_Module_depends),changeable)
-	$(call initMetaReference,$(MyFile_Module_provides),provides,0,,$(MyFile_Feature),$(MyFile_Feature_providedBy),changeable)
-	$(call initMetaReference,$(MyFile_Module_requires),requires,0,,$(MyFile_Feature),$(MyFile_Feature_requiredBy),changeable)
-
-	$(call initMetaClass,$(MyFile_Named),Named,,abstract)
-	$(call initMetaAttribute,$(MyFile_Named_name),name,0,1,changeable)
+	$(call initMetaAttribute,$(MyFile_Module_isStatic),static,changeable)
+	$(call initMetaAttribute,$(MyFile_Module_isAbstract),abstract,changeable)
+	$(call initMetaReference,$(MyFile_Module_depends),depends,$(MyFile_Module),$(MyFile_Module_dependent),changeable many)
+	$(call initMetaReference,$(MyFile_Module_dependent),dependent,$(MyFile_Module),$(MyFile_Module_depends),changeable many)
+	$(call initMetaReference,$(MyFile_Module_provides),provides,$(MyFile_Feature),$(MyFile_Feature_providedBy),changeable many)
+	$(call initMetaReference,$(MyFile_Module_requires),requires,$(MyFile_Feature),$(MyFile_Feature_requiredBy),changeable many)
 
 	$(call initMetaClass,$(MyFile_Extendable),Extendable,,abstract)
-	$(call initMetaReference,$(MyFile_Extendable_subTypes),subTypes,0,,$(MyFile_Extendable),$(MyFile_Extendable_superType),changeable)
-	$(call initMetaReference,$(MyFile_Extendable_superType),superType,0,1,$(MyFile_Extendable),$(MyFile_Extendable_subTypes),changeable)
-	$(call initMetaReference,$(MyFile_Extendable_allSubTypes),allSubTypes,0,,$(MyFile_Extendable),$(MyFile_Extendable_allSuperTypes),volatile derived transient)
-	$(call initMetaReference,$(MyFile_Extendable_allSuperTypes),allSuperTypes,0,,$(MyFile_Extendable),$(MyFile_Extendable_allSubTypes),volatile derived transient)
+	$(call initMetaReference,$(MyFile_Extendable_subTypes),subTypes,$(MyFile_Extendable),$(MyFile_Extendable_superType),changeable many)
+	$(call initMetaReference,$(MyFile_Extendable_superType),superType,$(MyFile_Extendable),$(MyFile_Extendable_subTypes),changeable)
+	$(call initMetaReference,$(MyFile_Extendable_allSubTypes),allSubTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSuperTypes),derived many)
+	$(call initMetaReference,$(MyFile_Extendable_allSuperTypes),allSuperTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSubTypes),derived many)
 
 	$(call initMetaClass,$(MyFile_Filename),Filename,,)
 
@@ -144,9 +136,6 @@ define __myFile_bind
 	$(call bindMetaFeature,$(MyFile_Module_dependent),dependent)
 	$(call bindMetaFeature,$(MyFile_Module_provides),provides)
 	$(call bindMetaFeature,$(MyFile_Module_requires),requires)
-
-	$(call bindMetaClass,$(MyFile_Named),MyNamed)
-	$(call bindMetaFeature,$(MyFile_Named_name),name)
 
 	$(call bindMetaClass,$(MyFile_Extendable),MyExtendable)
 	$(call bindMetaFeature,$(MyFile_Extendable_subTypes),subTypes)

@@ -5,18 +5,21 @@
 ifndef __mybuild_myfile_model_mk
 __mybuild_myfile_model_mk := $(lastword $(MAKEFILE_LIST))
 
-
 #
 # Model object 'Package'.
 #
-# The following features are available:
+# The following features are defined:
 #   - reference 'imports'
 #   - reference 'entities'
 #
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#
 # To instantiate this class use 'MyFileFactory.createPackage'.
 define class-MyPackage
-	$(super ENode)
-	$(super MyNamed)
+	$(super EObject)
+	$(super ENamed)
 
 	# 'imports' containment reference.
 	$(property imports... : Import)
@@ -30,12 +33,12 @@ endef
 #
 # Model object 'Import'.
 #
-# The following features are available:
+# The following features are defined:
 #   - attribute 'importName'
 #
 # To instantiate this class use 'MyFileFactory.createImport'.
 define class-MyImport
-	$(super ENode)
+	$(super EObject)
 
 	# 'importName' attribute.
 	$(property importName)
@@ -45,13 +48,17 @@ endef
 #
 # Model object 'Entity'.
 #
-# The following features are available:
+# The following features are defined:
 #   - reference 'package'
+#
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-MyEntity
-	$(super ENode)
-	$(super MyNamed)
+	$(super EObject)
+	$(super ENamed)
 
 	# 'package' bidirectional container reference.
 	# The opposite reference is 'Package.entities'.
@@ -62,12 +69,27 @@ endef
 #
 # Model object 'Interface'.
 #
-# The following features are available:
+# The following features are defined:
 #   - reference 'features'
+#
+# The following features and operations are inherited from 'Extendable':
+#   - reference 'subTypes'
+#   - reference 'superType'
+#   - reference 'allSubTypes'
+#   - reference 'allSuperTypes'
+#   - operation 'isSubTypeOf'
+#   - operation 'isSuperTypeOf'
+#
+# The following features are inherited from 'Entity':
+#   - reference 'package'
+#
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
 #
 # To instantiate this class use 'MyFileFactory.createInterface'.
 define class-MyInterface
-	$(super ENode)
+	$(super EObject)
 	$(super MyEntity)
 	$(super MyExtendable)
 
@@ -80,15 +102,27 @@ endef
 #
 # Model object 'Feature'.
 #
-# The following features are available:
+# The following features are defined:
 #   - reference 'interface'
 #   - reference 'providedBy'
 #   - reference 'requiredBy'
 #
+# The following features and operations are inherited from 'Extendable':
+#   - reference 'subTypes'
+#   - reference 'superType'
+#   - reference 'allSubTypes'
+#   - reference 'allSuperTypes'
+#   - operation 'isSubTypeOf'
+#   - operation 'isSuperTypeOf'
+#
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#
 # To instantiate this class use 'MyFileFactory.createFeature'.
 define class-MyFeature
-	$(super ENode)
-	$(super MyNamed)
+	$(super EObject)
+	$(super ENamed)
 	$(super MyExtendable)
 
 	# 'interface' bidirectional container reference.
@@ -110,7 +144,7 @@ endef
 #
 # Model object 'Module'.
 #
-# The following features are available:
+# The following features are defined:
 #   - attribute 'static'
 #   - attribute 'abstract'
 #   - reference 'depends'
@@ -118,9 +152,24 @@ endef
 #   - reference 'provides'
 #   - reference 'requires'
 #
+# The following features and operations are inherited from 'Extendable':
+#   - reference 'subTypes'
+#   - reference 'superType'
+#   - reference 'allSubTypes'
+#   - reference 'allSuperTypes'
+#   - operation 'isSubTypeOf'
+#   - operation 'isSuperTypeOf'
+#
+# The following features are inherited from 'Entity':
+#   - reference 'package'
+#
+# The following features are inherited from 'ENamed':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#
 # To instantiate this class use 'MyFileFactory.createModule'.
 define class-MyModule
-	$(super ENode)
+	$(super EObject)
 	$(super MyEntity)
 	$(super MyExtendable)
 
@@ -153,32 +202,19 @@ define class-MyModule
 endef
 
 #
-# Model object 'Named'.
-#
-# The following features are available:
-#   - attribute 'name'
-#
-# This is an abstract class. You can't instantiate it directly.
-define class-MyNamed
-	$(super ENode)
-
-	# 'name' attribute.
-	$(property name)
-
-endef
-
-#
 # Model object 'Extendable'.
 #
-# The following features are available:
+# The following features and operations are defined:
 #   - reference 'subTypes'
 #   - reference 'superType'
 #   - reference 'allSubTypes'
 #   - reference 'allSuperTypes'
+#   - operation 'isSubTypeOf'
+#   - operation 'isSuperTypeOf'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-MyExtendable
-	$(super ENode)
+	$(super EObject)
 
 	# 'subTypes' bidirectional reference.
 	# The opposite reference is 'superType'.
@@ -213,9 +249,11 @@ endef
 #
 # Model object 'Filename'.
 #
+# No features or operations defined.
+#
 # To instantiate this class use 'MyFileFactory.createFilename'.
 define class-MyFilename
-	$(super ENode)
+	$(super EObject)
 
 endef
 

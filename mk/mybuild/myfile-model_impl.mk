@@ -7,13 +7,12 @@ $(error \
 	Do not include this file directly, include 'myfile-model.mk' instead!)
 endif # __mybuild_myfile_model_mk
 
-
 # Implementation of 'Package' model object.
 define class-MyPackageImpl
 	$(super MyPackage)
 
-	$(super ENodeImpl)
-	$(super MyNamedImpl)
+	$(super EObjectImpl)
+	$(super ENamedImpl)
 
 	$(getter eMetaClass,$(MyFile_Package))
 
@@ -50,7 +49,7 @@ endef
 define class-MyImportImpl
 	$(super MyImport)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 
 	$(getter eMetaClass,$(MyFile_Import))
 
@@ -66,8 +65,8 @@ endef
 define class-MyEntityImpl
 	$(super MyEntity)
 
-	$(super ENodeImpl)
-	$(super MyNamedImpl)
+	$(super EObjectImpl)
+	$(super ENamedImpl)
 
 	$(getter eMetaClass,$(MyFile_Entity))
 
@@ -87,7 +86,7 @@ endef
 define class-MyInterfaceImpl
 	$(super MyInterface)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 	$(super MyEntityImpl)
 	$(super MyExtendableImpl)
 
@@ -114,8 +113,8 @@ endef
 define class-MyFeatureImpl
 	$(super MyFeature)
 
-	$(super ENodeImpl)
-	$(super MyNamedImpl)
+	$(super EObjectImpl)
+	$(super ENamedImpl)
 	$(super MyExtendableImpl)
 
 	$(getter eMetaClass,$(MyFile_Feature))
@@ -178,7 +177,7 @@ endef
 define class-MyModuleImpl
 	$(super MyModule)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 	$(super MyEntityImpl)
 	$(super MyExtendableImpl)
 
@@ -279,27 +278,11 @@ define class-MyModuleImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'Named' model object.
-define class-MyNamedImpl
-	$(super MyNamed)
-
-	$(super ENodeImpl)
-
-	$(getter eMetaClass,$(MyFile_Named))
-
-	# Attribute 'name'.
-	$(property-field name)
-
-	# PROTECTED REGION ID(Named) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
-	# PROTECTED REGION END
-endef
-
 # Implementation of 'Extendable' model object.
 define class-MyExtendableImpl
 	$(super MyExtendable)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 
 	$(getter eMetaClass,$(MyFile_Extendable))
 
@@ -337,7 +320,7 @@ define class-MyExtendableImpl
 	$(setter superType_link,
 		$(invoke __eSetBidirectional_link,superType,$(suffix $1),subTypes))
 
-	# Reference 'allSubTypes' [0..*]: bidirectional, volatile, read-only.
+	# Reference 'allSubTypes' [0..*]: bidirectional, derived, read-only.
 	$(property allSubTypes... : Extendable)
 	# PROTECTED REGION ID(Extendable_allSubTypes) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -345,7 +328,7 @@ define class-MyExtendableImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'allSuperTypes' [0..*]: bidirectional, volatile, read-only.
+	# Reference 'allSuperTypes' [0..*]: bidirectional, derived, read-only.
 	$(property allSuperTypes... : Extendable)
 	# PROTECTED REGION ID(Extendable_allSuperTypes) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -378,7 +361,7 @@ endef
 define class-MyFilenameImpl
 	$(super MyFilename)
 
-	$(super ENodeImpl)
+	$(super EObjectImpl)
 
 	$(getter eMetaClass,$(MyFile_Filename))
 

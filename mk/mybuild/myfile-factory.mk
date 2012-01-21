@@ -8,27 +8,30 @@ __mybuild_myfile_factory_mk := $(lastword $(MAKEFILE_LIST))
 # Provides methods for creating objects of 'myFile' model.
 # See 'myFileFactory'.
 define class-MyFileFactory
-	$(super EFactory)
 
 	# Creates a new 'Package' model object.
+	#   1. (optional) initial value of 'name' property.
 	$(method createPackage,
-		$(new MyPackageImpl))
+		$(for e <- $(new MyPackageImpl),$(set e->name,$(value 1))$e))
 
 	# Creates a new 'Import' model object.
 	$(method createImport,
 		$(new MyImportImpl))
 
 	# Creates a new 'Interface' model object.
+	#   1. (optional) initial value of 'name' property.
 	$(method createInterface,
-		$(new MyInterfaceImpl))
+		$(for e <- $(new MyInterfaceImpl),$(set e->name,$(value 1))$e))
 
 	# Creates a new 'Feature' model object.
+	#   1. (optional) initial value of 'name' property.
 	$(method createFeature,
-		$(new MyFeatureImpl))
+		$(for e <- $(new MyFeatureImpl),$(set e->name,$(value 1))$e))
 
 	# Creates a new 'Module' model object.
+	#   1. (optional) initial value of 'name' property.
 	$(method createModule,
-		$(new MyModuleImpl))
+		$(for e <- $(new MyModuleImpl),$(set e->name,$(value 1))$e))
 
 	# Creates a new 'Filename' model object.
 	$(method createFilename,
