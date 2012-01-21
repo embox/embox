@@ -107,7 +107,7 @@ define class-ELink
 	$(super ENamed)
 
 	# 'eMetaReference' reference.
-	$(property eMetaReference : EMetaReference)
+	$(property eMetaReference : EMetaReference)# read-only.
 
 	# 'eSource' bidirectional container reference.
 	# The opposite reference is 'EObject.eLinks'.
@@ -115,7 +115,7 @@ define class-ELink
 
 	# 'eDestination' bidirectional reference.
 	# The opposite reference is 'EObject.eInverseResolvedLinks'.
-	$(property eDestination : EObject)# read-only.
+	$(property eDestination : EObject)
 
 endef
 

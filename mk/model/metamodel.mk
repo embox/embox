@@ -157,9 +157,9 @@ define __eModel_init
 	$(call initMetaReference,$(EModel_EObject_eInverseImmediateRefs),eInverseImmediateRefs,$(EModel_EObject),$(EModel_EObject_eImmediateRefs),derived many)
 
 	$(call initMetaClass,$(EModel_ELink),ELink,$(EModel_ENamed),)
-	$(call initMetaReference,$(EModel_ELink_eMetaReference),eMetaReference,$(EModel_EMetaReference),,changeable)
-	$(call initMetaReference,$(EModel_ELink_eSource),eSource,$(EModel_EObject),$(EModel_EObject_eLinks),derived container)
-	$(call initMetaReference,$(EModel_ELink_eDestination),eDestination,$(EModel_EObject),$(EModel_EObject_eInverseResolvedLinks),derived)
+	$(call initMetaReference,$(EModel_ELink_eMetaReference),eMetaReference,$(EModel_EMetaReference),,derived)
+	$(call initMetaReference,$(EModel_ELink_eSource),eSource,$(EModel_EObject),$(EModel_EObject_eLinks),container)
+	$(call initMetaReference,$(EModel_ELink_eDestination),eDestination,$(EModel_EObject),$(EModel_EObject_eInverseResolvedLinks),changeable derived)
 
 	$(call initMetaClass,$(EModel_EMetaType),EMetaType,$(EModel_ENamed),abstract)
 	$(call initMetaAttribute,$(EModel_EMetaType_instanceClass),instanceClass,changeable)

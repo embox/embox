@@ -31,7 +31,6 @@ define class-EObjectImpl
 	# Reference 'eContainer' [0..1]: bidirectional, derived, read-only.
 	$(property eContainer : EObject)
 	# PROTECTED REGION ID(EObject_eContainer) ENABLED START
-	$(field __eContainer : EObject)
 	$(getter eContainer,
 		$(get-field __eContainer))
 	# PROTECTED REGION END
@@ -144,10 +143,14 @@ define class-EObjectImpl
 
 	# PROTECTED REGION ID(EObject) ENABLED START
 
-	# '[.link].metaRef.node'
+	# 'property/oppositeProperty.object'
+	$(field __eContainer : EObject)
+
+	# 'property[.link].object'
 	$(field __eOppositeRefs : EObject)
 
-	$(field unresolvedLinks : ELink)
+	# 'property/[oppositeProperty].link'
+	$(field __eUnresolvedLinks : ELink)
 
 	# Params:
 	#   1. Property name.
@@ -252,51 +255,77 @@ define class-EObjectImpl
 	)
 
 	# Params:
-	#   1. Meta reference.
-	#   2. Link to add.
-	$(method doAddLink,
-#		$(assert $(not $(or $(get 1->isContainer),$(get 1->isContainment))),
-#			Non cross-reference '$(get $(get 1->eContainingClass).name)
-#				.$(get 1->name)' cannot be added using links)
+	#   1. Property name.
+	#   2. What to add.
+	$(method __eAdd_link,
+		$(with $1,$2,
+			# Resolved links suffixed by destination.
+			$(for link <- $2,
+				$(set-field link->__eContainer,$1/eLinks$(this))
+				$(for dst <- $(get link->eDestination),
+					$(link)$(dst))),
 
-		$(silent-for \
-			f <- $(get 1->instanceProperty),
+			$(set-field+ $1,$3)
+			$(silent-for link_dst <- $3,
+				$(set-field+ link_dst->__eOppositeRefs,
+					$1$(basename $(link_dst))$(this)))
 
-			link <- $2,
-
-			$(or $(for dst <- $(get link->eDestination),
-					$(set-field+ $f,$(link)$(dst))
-					$(invoke dst->doInverseAddReference,$1,$(dst),$(link))
-					$(dst)),
-
-				$(set-field+ unresolvedLinks,$(link)))
-
-#			$(set link->eSource,$(this))
-			$(set-field link->eContainer,$(this))
+			$(set-field+ __eUnresolvedLinks,
+				$(addprefix $1/,$(filter-out $(basename $3),$2)))
 		)
-
 	)
 
 	# Params:
-	#   1. Meta reference.
-	#   2. New value.
-	$(method doSetLink,
-		$(silent-for \
-			f <- $(get 1->instanceProperty),
+	#   1. Property name.
+	#   2. What to add.
+	#   3. Opposite property.
+	$(method __eAddBidirectional_link,
+		$(with $1,$2,$3,
+			# Resolved links suffixed by destination.
+			$(for link <- $2,
+				$(set-field link->__eContainer,$1/eLinks$(this))
+				$(for dst <- $(get link->eDestination),
+					$(link)$(dst))),
 
-			$(set-field $f,
-				$(for e <- $(get-field $f),
-					$(if $(basename $e),
-						# 'e' is '.link.node'
-						$(invoke e->doInverseRemoveReference,$1,$(this)),
-						$e
-					)
-				)
-			)
+			$(set-field+ $1,$4)
+			$(silent-for link_dst <- $4,
+				$(set-field+ link_dst->$3,$(basename $(link_dst))$(this)))
 
+			$(set-field+ __eUnresolvedLinks,
+				$(addprefix $1/$3,$(filter-out $(basename $3),$2)))
 		)
+	)
 
-		$(invoke doAddLink,$1,$2)
+	# Params:
+	#   1. Property name.
+	#   2. What to remove.
+	$(method __eRemove_link,
+		$(foreach ,$2,$(error $0: NIY))
+	)
+
+	# Params:
+	#   1. Property name.
+	#   2. What to remove.
+	#   3. Opposite property.
+	$(method __eRemoveBidirectional_link,
+		$(foreach ,$2,$(error $0: NIY))
+	)
+
+	# Params:
+	#   1. Property name.
+	#   2. New value.
+	$(method __eSet_link,
+		$(invoke __eRemove_link,$1,$(get-field $1))
+		$(invoke __eAdd_link,$1,$2)
+	)
+
+	# Params:
+	#   1. Property name.
+	#   2. New value.
+	#   3. Opposite property.
+	$(method __eSetBidirectional_link,
+		$(invoke __eRemoveBidirectional_link,$1,$(get-field $1),$3)
+		$(invoke __eAddBidirectional_link,$1,$2,$3)
 	)
 
 	# PROTECTED REGION END
@@ -311,28 +340,28 @@ define class-ELinkImpl
 
 	$(getter eMetaClass,$(EModel_ELink))
 
-	# Reference 'eMetaReference' [0..1].
+	# Reference 'eMetaReference' [0..1]: derived, read-only.
 	$(property eMetaReference : EMetaReference)
-	$(field eMetaReference : EMetaReference)
-	$(getter eMetaReference,
-		$(get-field eMetaReference))
-	$(setter eMetaReference,
-		$(invoke __eSet,eMetaReference,$(suffix $1),))
-
-	# Reference 'eSource' [0..1]: bidirectional, container, derived, read-only.
-	$(property eSource : EObject)
-	# PROTECTED REGION ID(ELink_eSource) ENABLED START
+	# PROTECTED REGION ID(ELink_eMetaReference) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter eSource,
+#	$(getter eMetaReference,
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eDestination' [0..1]: bidirectional, derived, read-only.
+	# Reference 'eSource' [0..1]: bidirectional, container, read-only.
+	$(property eSource : EObject)
+	$(getter eSource,
+		$(invoke __eGetContainer,eSource))
+
+	# Reference 'eDestination' [0..1]: bidirectional, derived.
 	$(property eDestination : EObject)
 	# PROTECTED REGION ID(ELink_eDestination) ENABLED START
+	$(field eDestination : EObject)
+	$(getter eDestination,
+		$(get-field eDestination))
 #	# TODO Uncomment and implement me.
-#	$(getter eDestination,
-#		$(error $0: NIY))
+#	$(setter eDestination,
+#		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ELink) ENABLED START
