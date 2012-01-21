@@ -141,6 +141,24 @@ define class-EObjectImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
+	# 'isAncestorOf' operation.
+	#   1. object : EObject
+	# PROTECTED REGION ID(EObject_isAncestorOf) ENABLED START
+	$(method isAncestorOf,
+		$(for container <- $(get 1->eContainer),
+			$(or $(filter $(this),$(container)),
+				$(invoke isAncestorOf,$(container)))))
+	# PROTECTED REGION END
+
+	# 'getContainerOfType : EObject' operation.
+	#   1. someClass : EMetaClass
+	# PROTECTED REGION ID(EObject_getContainerOfType) ENABLED START
+	$(method getContainerOfType,
+		$(for container <- $(get eContainer),
+			$(if $(invoke 1->isInstance,$(container)),
+				$(container),$(invoke container->getContainerOfType,$1))))
+	# PROTECTED REGION END
+
 	# PROTECTED REGION ID(EObject) ENABLED START
 
 	# 'property/oppositeProperty.object'
@@ -654,13 +672,8 @@ define class-ENamedImpl
 	$(property qualifiedName)
 	# PROTECTED REGION ID(ENamed_qualifiedName) ENABLED START
 	$(getter qualifiedName,
-		$(for namedContainer <-
-			$(with $(get eContainer),
-				$(if $1,$(if $(invoke EModel_ENamed->isInstance,$1),
-					$1,$(call $0,$(get 1->eContainer))))),
-			$(get namedContainer->qualifiedName).)
-		$(get name)
-	)
+		$(for namedContainer <- $(invoke getContainerOfType,$(EModel_ENamed)),
+			$(get namedContainer->qualifiedName).)$(get name))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ENamed) ENABLED START

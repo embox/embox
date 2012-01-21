@@ -4,6 +4,12 @@
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="EModel"
     nsURI="http://www.mybuild.org/Emodel" nsPrefix="">
   <eClassifiers xsi:type="ecore:EClass" name="EObject">
+    <eOperations name="isAncestorOf" eType="#//EBoolean">
+      <eParameters name="object" eType="#//EObject"/>
+    </eOperations>
+    <eOperations name="getContainerOfType" eType="#//EObject">
+      <eParameters name="someClass" eType="#//EMetaClass"/>
+    </eOperations>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaClass" eType="#//EMetaClass"
         changeable="false" volatile="true" transient="true" derived="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="eResource" eType="#//EResource"

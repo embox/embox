@@ -8,7 +8,7 @@ __model_model_mk := $(lastword $(MAKEFILE_LIST))
 #
 # Model object 'EObject'.
 #
-# The following features are defined:
+# The following features and operations are defined:
 #   - reference 'eMetaClass'
 #   - attribute 'eResource'
 #   - reference 'eContainer'
@@ -25,6 +25,8 @@ __model_model_mk := $(lastword $(MAKEFILE_LIST))
 #   - reference 'eInverseLinkedRefs'
 #   - reference 'eImmediateRefs'
 #   - reference 'eInverseImmediateRefs'
+#   - operation 'isAncestorOf'
+#   - operation 'getContainerOfType'
 #
 # To instantiate this class use 'EModelFactory.createEObject'.
 define class-EObject
@@ -86,6 +88,14 @@ define class-EObject
 	# 'eInverseImmediateRefs' bidirectional reference.
 	# The opposite reference is 'eImmediateRefs'.
 	$(property eInverseImmediateRefs... : EObject)# read-only.
+
+	# 'isAncestorOf' operation.
+	#   1. object : EObject
+	$(method isAncestorOf)
+
+	# 'getContainerOfType : EObject' operation.
+	#   1. someClass : EMetaClass
+	$(method getContainerOfType)
 
 endef
 
