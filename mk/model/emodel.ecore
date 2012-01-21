@@ -21,7 +21,7 @@
         resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eLinks" upperBound="-1"
         eType="#//ELink" changeable="false" volatile="true" transient="true" derived="true"
-        containment="true" resolveProxies="false" eOpposite="#//ELink/eSource"/>
+        resolveProxies="false" eOpposite="#//ELink/eSource"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eResolvedLinks" upperBound="-1"
         eType="#//ELink" changeable="false" volatile="true" transient="true" derived="true"
         resolveProxies="false"/>

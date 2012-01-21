@@ -49,7 +49,7 @@ define class-EObject
 	# 'eAllContents' reference.
 	$(property eAllContents... : EObject)# read-only.
 
-	# 'eLinks' bidirectional containment reference.
+	# 'eLinks' bidirectional reference.
 	# The opposite reference is 'ELink.eSource'.
 	$(property eLinks... : ELink)# read-only.
 
@@ -109,7 +109,7 @@ define class-ELink
 	# 'eMetaReference' reference.
 	$(property eMetaReference : EMetaReference)# read-only.
 
-	# 'eSource' bidirectional container reference.
+	# 'eSource' bidirectional reference.
 	# The opposite reference is 'EObject.eLinks'.
 	$(property eSource : EObject)# read-only.
 

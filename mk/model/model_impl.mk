@@ -61,7 +61,7 @@ define class-EObjectImpl
 			$(child) $(get child->eAllContents)))
 	# PROTECTED REGION END
 
-	# Reference 'eLinks' [0..*]: bidirectional, containment, derived, read-only.
+	# Reference 'eLinks' [0..*]: bidirectional, derived, read-only.
 	$(property eLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eLinks) ENABLED START
 #	# TODO Uncomment and implement me.
@@ -348,10 +348,11 @@ define class-ELinkImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eSource' [0..1]: bidirectional, container, read-only.
+	# Reference 'eSource' [0..1]: bidirectional, read-only.
 	$(property eSource : EObject)
+	$(field eSource : EObject)
 	$(getter eSource,
-		$(invoke __eGetContainer,eSource))
+		$(get-field eSource))
 
 	# Reference 'eDestination' [0..1]: bidirectional, derived.
 	$(property eDestination : EObject)
@@ -452,7 +453,7 @@ define class-EMetaClassImpl
 	# PROTECTED REGION ID(EMetaClass_eAttributes) ENABLED START
 	$(getter eAttributes,
 		$(invoke filterFeaturesByClass,$(get eFeatures),
-			$(get eModelMetaModel->EMetaAttribute)))
+			$(EModel_EMetaAttribute)))
 	# PROTECTED REGION END
 
 	# Reference 'eAllAttributes' [0..*]: derived, read-only.
@@ -460,7 +461,7 @@ define class-EMetaClassImpl
 	# PROTECTED REGION ID(EMetaClass_eAllAttributes) ENABLED START
 	$(getter eAllAttributes,
 		$(invoke filterFeaturesByClass,$(get eAllFeatures),
-			$(get eModelMetaModel->EMetaAttribute)))
+			$(EModel_EMetaAttribute)))
 	# PROTECTED REGION END
 
 	# Reference 'eReferences' [0..*]: derived, read-only.
@@ -468,7 +469,7 @@ define class-EMetaClassImpl
 	# PROTECTED REGION ID(EMetaClass_eReferences) ENABLED START
 	$(getter eReferences,
 		$(invoke filterFeaturesByClass,$(get eFeatures),
-			$(get eModelMetaModel->EMetaReference)))
+			$(EModel_EMetaReference)))
 	# PROTECTED REGION END
 
 	# Reference 'eAllReferences' [0..*]: derived, read-only.
@@ -476,7 +477,7 @@ define class-EMetaClassImpl
 	# PROTECTED REGION ID(EMetaClass_eAllReferences) ENABLED START
 	$(getter eAllReferences,
 		$(invoke filterFeaturesByClass,$(get eAllFeatures),
-			$(get eModelMetaModel->EMetaReference)))
+			$(EModel_EMetaReference)))
 	# PROTECTED REGION END
 
 	# Reference 'eAllContainments' [0..*]: derived, read-only.
@@ -498,7 +499,7 @@ define class-EMetaClassImpl
 	#   1. object : EObject
 	# PROTECTED REGION ID(EMetaClass_isInstance) ENABLED START
 	$(method isInstance,
-		$(invoke isSuperTypeOf,$(class $1)))
+		$(invoke isSuperTypeOf,$(get 1->eMetaClass)))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(EMetaClass) ENABLED START
@@ -508,7 +509,7 @@ define class-EMetaClassImpl
 	#   2. Meta class.
 	$(method filterFeaturesByClass,
 		$(foreach feature,$1,
-			$(if $(invoke 2->isSuperTypeOf,$(get feature->eContainingClass)),
+			$(if $(invoke 2->isInstance,$(feature)),
 				$(feature)))
 	)
 
@@ -652,9 +653,14 @@ define class-ENamedImpl
 	# Attribute 'qualifiedName': derived, read-only.
 	$(property qualifiedName)
 	# PROTECTED REGION ID(ENamed_qualifiedName) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter qualifiedName,
-#		$(error $0: NIY))
+	$(getter qualifiedName,
+		$(for namedContainer <-
+			$(with $(get eContainer),
+				$(if $1,$(if $(invoke EModel_ENamed->isInstance,$1),
+					$1,$(call $0,$(get 1->eContainer))))),
+			$(get namedContainer->qualifiedName).)
+		$(get name)
+	)
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ENamed) ENABLED START
