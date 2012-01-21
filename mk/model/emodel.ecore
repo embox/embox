@@ -52,13 +52,11 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ELink" eSuperTypes="#//ENamed">
     <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaReference" eType="#//EMetaReference"
-        resolveProxies="false"/>
+        changeable="false" volatile="true" transient="true" derived="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eSource" eType="#//EObject"
-        changeable="false" volatile="true" transient="true" derived="true" resolveProxies="false"
-        eOpposite="#//EObject/eLinks"/>
+        changeable="false" resolveProxies="false" eOpposite="#//EObject/eLinks"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eDestination" eType="#//EObject"
-        changeable="false" volatile="true" transient="true" derived="true" resolveProxies="false"
-        eOpposite="#//EObject/eInverseResolvedLinks"/>
+        volatile="true" transient="true" derived="true" resolveProxies="false" eOpposite="#//EObject/eInverseResolvedLinks"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EMetaType" abstract="true" eSuperTypes="#//ENamed">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="instanceClass" eType="#//EString"/>
