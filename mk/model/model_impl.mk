@@ -11,14 +11,10 @@ endif # __model_model_mk
 define class-EObjectImpl
 	$(super EObject)
 
-	$(getter eMetaClass,$(error Subclass must override eMetaClass property))
-
 	# Reference 'eMetaClass' [0..1]: derived, read-only.
 	$(property eMetaClass : EMetaClass)
 	# PROTECTED REGION ID(EObject_eMetaClass) ENABLED START
-	#
-	# Subclasses must override 'eMetaClass' getter, see above.
-	#
+	$(getter eMetaClass,$(error Subclass must override eMetaClass property))
 	# PROTECTED REGION END
 
 	# Attribute 'eResource': derived, read-only.
@@ -39,8 +35,7 @@ define class-EObjectImpl
 	$(property eRootContainer : EObject)
 	# PROTECTED REGION ID(EObject_eRootContainer) ENABLED START
 	$(getter eRootContainer,
-		$(or \
-			$(for container <- $(get eContainer),
+		$(or $(for container <- $(get eContainer),
 				$(get container->eRootContainer)),
 			$(this)))
 	# PROTECTED REGION END
@@ -673,7 +668,8 @@ define class-ENamedImpl
 	# PROTECTED REGION ID(ENamed_qualifiedName) ENABLED START
 	$(getter qualifiedName,
 		$(for namedContainer <- $(invoke getContainerOfType,$(EModel_ENamed)),
-			$(get namedContainer->qualifiedName).)$(get name))
+			parentName <- $(get namedContainer->qualifiedName),
+			$(parentName)$(if $(get name),.))$(get name))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ENamed) ENABLED START
