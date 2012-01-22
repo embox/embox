@@ -13,35 +13,39 @@ define class-EModelFactory
 	$(method createEObject,
 		$(new EObjectImpl))
 
+	# Creates a new 'ENamedObject' model object.
+	$(method createENamedObject,
+		$(new ENamedObjectImpl))
+
 	# Creates a new 'ELink' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createELink,
-		$(for e <- $(new ELinkImpl),$(set e->name,$(value 1))$e))
+		$(for e <- $(new ELinkImpl),$(if $(value 1),$(set e->name,$1))$e))
 
 	# Creates a new 'EMetaClass' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaClass,
-		$(for e <- $(new EMetaClassImpl),$(set e->name,$(value 1))$e))
+		$(for e <- $(new EMetaClassImpl),$(if $(value 1),$(set e->name,$1))$e))
 
 	# Creates a new 'EMetaPrimitive' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaPrimitive,
-		$(for e <- $(new EMetaPrimitiveImpl),$(set e->name,$(value 1))$e))
+		$(for e <- $(new EMetaPrimitiveImpl),$(if $(value 1),$(set e->name,$1))$e))
 
 	# Creates a new 'EMetaReference' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaReference,
-		$(for e <- $(new EMetaReferenceImpl),$(set e->name,$(value 1))$e))
+		$(for e <- $(new EMetaReferenceImpl),$(if $(value 1),$(set e->name,$1))$e))
 
 	# Creates a new 'EMetaAttribute' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaAttribute,
-		$(for e <- $(new EMetaAttributeImpl),$(set e->name,$(value 1))$e))
+		$(for e <- $(new EMetaAttributeImpl),$(if $(value 1),$(set e->name,$1))$e))
 
 	# Creates a new 'EMetaModel' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaModel,
-		$(for e <- $(new EMetaModelImpl),$(set e->name,$(value 1))$e))
+		$(for e <- $(new EMetaModelImpl),$(if $(value 1),$(set e->name,$1))$e))
 endef
 
 $(def_all)

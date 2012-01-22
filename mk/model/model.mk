@@ -17,12 +17,10 @@ __model_model_mk := $(lastword $(MAKEFILE_LIST))
 #   - reference 'eAllContents'
 #   - reference 'eLinks'
 #   - reference 'eResolvedLinks'
-#   - reference 'eInverseResolvedLinks'
 #   - reference 'eUnresolvedLinks'
 #   - reference 'eRefs'
 #   - reference 'eInverseRefs'
 #   - reference 'eLinkedRefs'
-#   - reference 'eInverseLinkedRefs'
 #   - reference 'eImmediateRefs'
 #   - reference 'eInverseImmediateRefs'
 #   - operation 'isAncestorOf'
@@ -58,10 +56,6 @@ define class-EObject
 	# 'eResolvedLinks' reference.
 	$(property eResolvedLinks... : ELink)# read-only.
 
-	# 'eInverseResolvedLinks' bidirectional reference.
-	# The opposite reference is 'ELink.eDestination'.
-	$(property eInverseResolvedLinks... : ELink)# read-only.
-
 	# 'eUnresolvedLinks' reference.
 	$(property eUnresolvedLinks... : ELink)# read-only.
 
@@ -74,12 +68,8 @@ define class-EObject
 	$(property eInverseRefs... : EObject)# read-only.
 
 	# 'eLinkedRefs' bidirectional reference.
-	# The opposite reference is 'eInverseLinkedRefs'.
-	$(property eLinkedRefs... : EObject)# read-only.
-
-	# 'eInverseLinkedRefs' bidirectional reference.
-	# The opposite reference is 'eLinkedRefs'.
-	$(property eInverseLinkedRefs... : EObject)# read-only.
+	# The opposite reference is 'ENamedObject.eInverseLinkedRefs'.
+	$(property eLinkedRefs... : ENamedObject)# read-only.
 
 	# 'eImmediateRefs' bidirectional reference.
 	# The opposite reference is 'eInverseImmediateRefs'.
@@ -100,21 +90,52 @@ define class-EObject
 endef
 
 #
+# Model object 'ENamedObject'.
+#
+# The following features are defined:
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
+#
+# To instantiate this class use 'EModelFactory.createENamedObject'.
+define class-ENamedObject
+	$(super EObject)
+
+	# 'name' attribute.
+	$(property name)
+
+	# 'qualifiedName' attribute.
+	$(property qualifiedName)# read-only.
+
+	# 'eInverseResolvedLinks' bidirectional reference.
+	# The opposite reference is 'ELink.eTarget'.
+	$(property eInverseResolvedLinks... : ELink)# read-only.
+
+	# 'eInverseLinkedRefs' bidirectional reference.
+	# The opposite reference is 'EObject.eLinkedRefs'.
+	$(property eInverseLinkedRefs... : EObject)# read-only.
+
+endef
+
+#
 # Model object 'ELink'.
 #
 # The following features are defined:
 #   - reference 'eMetaReference'
 #   - reference 'eSource'
-#   - reference 'eDestination'
+#   - reference 'eTarget'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createELink'.
 define class-ELink
 	$(super EObject)
-	$(super ENamed)
+	$(super ENamedObject)
 
 	# 'eMetaReference' reference.
 	$(property eMetaReference : EMetaReference)# read-only.
@@ -123,9 +144,9 @@ define class-ELink
 	# The opposite reference is 'EObject.eLinks'.
 	$(property eSource : EObject)# read-only.
 
-	# 'eDestination' bidirectional reference.
-	# The opposite reference is 'EObject.eInverseResolvedLinks'.
-	$(property eDestination : EObject)
+	# 'eTarget' bidirectional reference.
+	# The opposite reference is 'ENamedObject.eInverseResolvedLinks'.
+	$(property eTarget : ENamedObject)
 
 endef
 
@@ -136,14 +157,16 @@ endef
 #   - attribute 'instanceClass'
 #   - reference 'eMetaModel'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaType
 	$(super EObject)
-	$(super ENamed)
+	$(super ENamedObject)
 
 	# 'instanceClass' attribute.
 	$(property instanceClass)
@@ -176,9 +199,11 @@ endef
 #   - attribute 'instanceClass'
 #   - reference 'eMetaModel'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createEMetaClass'.
 define class-EMetaClass
@@ -238,9 +263,11 @@ endef
 #   - attribute 'instanceClass'
 #   - reference 'eMetaModel'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createEMetaPrimitive'.
 define class-EMetaPrimitive
@@ -262,9 +289,11 @@ endef
 #   - attribute 'many'
 #   - reference 'eType'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaFeature
@@ -305,9 +334,11 @@ endef
 #   - attribute 'many'
 #   - reference 'eType'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createEMetaReference'.
 define class-EMetaReference
@@ -344,9 +375,11 @@ endef
 #   - attribute 'many'
 #   - reference 'eType'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createEMetaAttribute'.
 define class-EMetaAttribute
@@ -364,37 +397,20 @@ endef
 # The following features are defined:
 #   - reference 'eTypes'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createEMetaModel'.
 define class-EMetaModel
 	$(super EObject)
-	$(super ENamed)
+	$(super ENamedObject)
 
 	# 'eTypes' bidirectional containment reference.
 	# The opposite reference is 'EMetaType.eMetaModel'.
 	$(property eTypes... : EMetaType)
-
-endef
-
-#
-# Model object 'ENamed'.
-#
-# The following features are defined:
-#   - attribute 'name'
-#   - attribute 'qualifiedName'
-#
-# This is an abstract class. You can't instantiate it directly.
-define class-ENamed
-	$(super EObject)
-
-	# 'name' attribute.
-	$(property name)
-
-	# 'qualifiedName' attribute.
-	$(property qualifiedName)# read-only.
 
 endef
 
@@ -405,14 +421,16 @@ endef
 #   - attribute 'many'
 #   - reference 'eType'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-ETyped
 	$(super EObject)
-	$(super ENamed)
+	$(super ENamedObject)
 
 	# 'many' attribute.
 	$(property isMany)

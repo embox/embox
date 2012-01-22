@@ -12,14 +12,16 @@ __mybuild_myfile_model_mk := $(lastword $(MAKEFILE_LIST))
 #   - reference 'imports'
 #   - reference 'entities'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'MyFileFactory.createPackage'.
 define class-MyPackage
 	$(super EObject)
-	$(super ENamed)
+	$(super ENamedObject)
 
 	# 'imports' containment reference.
 	$(property imports... : Import)
@@ -51,14 +53,16 @@ endef
 # The following features are defined:
 #   - reference 'package'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-MyEntity
 	$(super EObject)
-	$(super ENamed)
+	$(super ENamedObject)
 
 	# 'package' bidirectional container reference.
 	# The opposite reference is 'Package.entities'.
@@ -83,9 +87,11 @@ endef
 # The following features are inherited from 'Entity':
 #   - reference 'package'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'MyFileFactory.createInterface'.
 define class-MyInterface
@@ -115,14 +121,16 @@ endef
 #   - operation 'isSubTypeOf'
 #   - operation 'isSuperTypeOf'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'MyFileFactory.createFeature'.
 define class-MyFeature
 	$(super EObject)
-	$(super ENamed)
+	$(super ENamedObject)
 	$(super MyExtendable)
 
 	# 'interface' bidirectional container reference.
@@ -163,9 +171,11 @@ endef
 # The following features are inherited from 'Entity':
 #   - reference 'package'
 #
-# The following features are inherited from 'ENamed':
+# The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'MyFileFactory.createModule'.
 define class-MyModule
@@ -212,9 +222,16 @@ endef
 #   - operation 'isSubTypeOf'
 #   - operation 'isSuperTypeOf'
 #
+# The following features are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
+#
 # This is an abstract class. You can't instantiate it directly.
 define class-MyExtendable
 	$(super EObject)
+	$(super ENamedObject)
 
 	# 'subTypes' bidirectional reference.
 	# The opposite reference is 'superType'.

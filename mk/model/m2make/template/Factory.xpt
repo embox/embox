@@ -27,10 +27,10 @@ $(def_all)
 
 «DEFINE class FOR EClass»
 	# Creates a new '«name»' model object.
-«IF eAllSuperTypes.exists(e|e.name == "ENamed") -»
+«IF isSubtypeOfNamed() -»
 	#   1. (optional) initial value of 'name' property.
 	«mkMethod(factoryMethodName(),
-		"$(for e <- " + mkNew(classImplName()) + ",$(set e->name,$(value 1))$e)")»
+		"$(for e <- " + mkNew(classImplName()) + ",$(if $(value 1),$(set e->name,$1))$e)")»
 «ELSE -»
 	«mkMethod(factoryMethodName(), mkNew(classImplName()))»
 «ENDIF -»

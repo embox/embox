@@ -12,7 +12,7 @@ define class-MyPackageImpl
 	$(super MyPackage)
 
 	$(super EObjectImpl)
-	$(super ENamedImpl)
+	$(super ENamedObjectImpl)
 
 	$(getter eMetaClass,$(MyFile_Package))
 
@@ -66,7 +66,7 @@ define class-MyEntityImpl
 	$(super MyEntity)
 
 	$(super EObjectImpl)
-	$(super ENamedImpl)
+	$(super ENamedObjectImpl)
 
 	$(getter eMetaClass,$(MyFile_Entity))
 
@@ -114,7 +114,7 @@ define class-MyFeatureImpl
 	$(super MyFeature)
 
 	$(super EObjectImpl)
-	$(super ENamedImpl)
+	$(super ENamedObjectImpl)
 	$(super MyExtendableImpl)
 
 	$(getter eMetaClass,$(MyFile_Feature))
@@ -283,6 +283,7 @@ define class-MyExtendableImpl
 	$(super MyExtendable)
 
 	$(super EObjectImpl)
+	$(super ENamedObjectImpl)
 
 	$(getter eMetaClass,$(MyFile_Extendable))
 

@@ -12,7 +12,7 @@ define class-MyFileFactory
 	# Creates a new 'Package' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createPackage,
-		$(for e <- $(new MyPackageImpl),$(set e->name,$(value 1))$e))
+		$(for e <- $(new MyPackageImpl),$(if $(value 1),$(set e->name,$1))$e))
 
 	# Creates a new 'Import' model object.
 	$(method createImport,
@@ -21,17 +21,17 @@ define class-MyFileFactory
 	# Creates a new 'Interface' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createInterface,
-		$(for e <- $(new MyInterfaceImpl),$(set e->name,$(value 1))$e))
+		$(for e <- $(new MyInterfaceImpl),$(if $(value 1),$(set e->name,$1))$e))
 
 	# Creates a new 'Feature' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createFeature,
-		$(for e <- $(new MyFeatureImpl),$(set e->name,$(value 1))$e))
+		$(for e <- $(new MyFeatureImpl),$(if $(value 1),$(set e->name,$1))$e))
 
 	# Creates a new 'Module' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createModule,
-		$(for e <- $(new MyModuleImpl),$(set e->name,$(value 1))$e))
+		$(for e <- $(new MyModuleImpl),$(if $(value 1),$(set e->name,$1))$e))
 
 	# Creates a new 'Filename' model object.
 	$(method createFilename,

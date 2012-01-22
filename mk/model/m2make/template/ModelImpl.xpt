@@ -62,7 +62,7 @@ endef
 
 «DEFINE volatileCrossReference FOR EStructuralFeature»«ENDDEFINE»
 «DEFINE volatileCrossReference FOR EReference -»
-«IF resolveProxies && !containment && !container -»
+«IF isLinkableReference() -»
 «EXPAND memberStub FOR mkGetterWrap(propertyLinkName(), "$(error $0: NIY)") -»
 «IF changeable -»
 «EXPAND memberStub FOR mkSetterWrap(propertyLinkName(), "$(error $0($1): NIY)") -»
@@ -111,7 +111,7 @@ endef
 	«mkSetterMinusWrap(propertyName(), mkInvoke("__eRemove" + suffix, setterArgs))»
 «ENDIF -»
 «ENDIF -»
-«IF resolveProxies && !containment && !container -»
+«IF isLinkableReference() -»
 	# Link operations.
 	«mkGetterWrap(propertyLinkName(), mkInvoke("__eGet" + suffix + "_link", propertyName()))»
 «IF changeable -»

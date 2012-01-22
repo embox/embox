@@ -72,14 +72,6 @@ define class-EObjectImpl
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eInverseResolvedLinks' [0..*]: bidirectional, derived, read-only.
-	$(property eInverseResolvedLinks... : ELink)
-	# PROTECTED REGION ID(EObject_eInverseResolvedLinks) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eInverseResolvedLinks,
-#		$(error $0: NIY))
-	# PROTECTED REGION END
-
 	# Reference 'eUnresolvedLinks' [0..*]: derived, read-only.
 	$(property eUnresolvedLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eUnresolvedLinks) ENABLED START
@@ -105,18 +97,10 @@ define class-EObjectImpl
 	# PROTECTED REGION END
 
 	# Reference 'eLinkedRefs' [0..*]: bidirectional, derived, read-only.
-	$(property eLinkedRefs... : EObject)
+	$(property eLinkedRefs... : ENamedObject)
 	# PROTECTED REGION ID(EObject_eLinkedRefs) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(getter eLinkedRefs,
-#		$(error $0: NIY))
-	# PROTECTED REGION END
-
-	# Reference 'eInverseLinkedRefs' [0..*]: bidirectional, derived, read-only.
-	$(property eInverseLinkedRefs... : EObject)
-	# PROTECTED REGION ID(EObject_eInverseLinkedRefs) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eInverseLinkedRefs,
 #		$(error $0: NIY))
 	# PROTECTED REGION END
 
@@ -344,12 +328,52 @@ define class-EObjectImpl
 	# PROTECTED REGION END
 endef
 
+# Implementation of 'ENamedObject' model object.
+define class-ENamedObjectImpl
+	$(super ENamedObject)
+
+	$(super EObjectImpl)
+
+	$(getter eMetaClass,$(EModel_ENamedObject))
+
+	# Attribute 'name'.
+	$(property-field name)
+
+	# Attribute 'qualifiedName': derived, read-only.
+	$(property qualifiedName)
+	# PROTECTED REGION ID(ENamedObject_qualifiedName) ENABLED START
+	$(getter qualifiedName,
+		$(for namedContainer <- $(invoke getContainerOfType,$(EModel_ENamedObject)),
+			parentName <- $(get namedContainer->qualifiedName),
+			$(parentName)$(if $(get name),.))$(get name))
+	# PROTECTED REGION END
+
+	# Reference 'eInverseResolvedLinks' [0..*]: bidirectional, derived, read-only.
+	$(property eInverseResolvedLinks... : ELink)
+	# PROTECTED REGION ID(ENamedObject_eInverseResolvedLinks) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eInverseResolvedLinks,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# Reference 'eInverseLinkedRefs' [0..*]: bidirectional, derived, read-only.
+	$(property eInverseLinkedRefs... : EObject)
+	# PROTECTED REGION ID(ENamedObject_eInverseLinkedRefs) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eInverseLinkedRefs,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(ENamedObject) ENABLED START
+	# PROTECTED REGION END
+endef
+
 # Implementation of 'ELink' model object.
 define class-ELinkImpl
 	$(super ELink)
 
 	$(super EObjectImpl)
-	$(super ENamedImpl)
+	$(super ENamedObjectImpl)
 
 	$(getter eMetaClass,$(EModel_ELink))
 
@@ -367,14 +391,14 @@ define class-ELinkImpl
 	$(getter eSource,
 		$(get-field eSource))
 
-	# Reference 'eDestination' [0..1]: bidirectional, derived.
-	$(property eDestination : EObject)
-	# PROTECTED REGION ID(ELink_eDestination) ENABLED START
-	$(field eDestination : EObject)
-	$(getter eDestination,
-		$(get-field eDestination))
+	# Reference 'eTarget' [0..1]: bidirectional, derived.
+	$(property eTarget : ENamedObject)
+	# PROTECTED REGION ID(ELink_eTarget) ENABLED START
+	$(field eTarget : EObject)
+	$(getter eTarget,
+		$(get-field eTarget))
 #	# TODO Uncomment and implement me.
-#	$(setter eDestination,
+#	$(setter eTarget,
 #		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
@@ -387,7 +411,7 @@ define class-EMetaTypeImpl
 	$(super EMetaType)
 
 	$(super EObjectImpl)
-	$(super ENamedImpl)
+	$(super ENamedObjectImpl)
 
 	$(getter eMetaClass,$(EModel_EMetaType))
 
@@ -632,7 +656,7 @@ define class-EMetaModelImpl
 	$(super EMetaModel)
 
 	$(super EObjectImpl)
-	$(super ENamedImpl)
+	$(super ENamedObjectImpl)
 
 	$(getter eMetaClass,$(EModel_EMetaModel))
 
@@ -652,36 +676,12 @@ define class-EMetaModelImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'ENamed' model object.
-define class-ENamedImpl
-	$(super ENamed)
-
-	$(super EObjectImpl)
-
-	$(getter eMetaClass,$(EModel_ENamed))
-
-	# Attribute 'name'.
-	$(property-field name)
-
-	# Attribute 'qualifiedName': derived, read-only.
-	$(property qualifiedName)
-	# PROTECTED REGION ID(ENamed_qualifiedName) ENABLED START
-	$(getter qualifiedName,
-		$(for namedContainer <- $(invoke getContainerOfType,$(EModel_ENamed)),
-			parentName <- $(get namedContainer->qualifiedName),
-			$(parentName)$(if $(get name),.))$(get name))
-	# PROTECTED REGION END
-
-	# PROTECTED REGION ID(ENamed) ENABLED START
-	# PROTECTED REGION END
-endef
-
 # Implementation of 'ETyped' model object.
 define class-ETypedImpl
 	$(super ETyped)
 
 	$(super EObjectImpl)
-	$(super ENamedImpl)
+	$(super ENamedObjectImpl)
 
 	$(getter eMetaClass,$(EModel_ETyped))
 
