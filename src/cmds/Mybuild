@@ -1,5 +1,94 @@
-package embox.cmds
+package embox.cmd
 
 module ls {
 	source "ls.c"
+}
+
+module rm {
+	source "rm.c"
+}
+
+module cat {
+	source "cat.c"
+}
+
+module goto {
+	source "goto.c"
+}
+
+module load {
+	source "load.c"
+}
+
+module readelf {
+	source "readelf.c"
+}
+
+module runelf {
+	source "runelf.c"
+}
+
+/*netutil */
+module arp {
+	source "arp.c"
+}
+
+module arping {
+	source "arping.c"
+}
+
+module ping {
+	source "ping.c"
+}
+
+module ifconfig {
+	source "ifconfig.c"
+}
+
+module route {
+	source "route.c"
+}
+
+module tftp {
+	source "tftp.c"
+}
+
+module version {
+	source "version.c"
+}
+
+module man {
+	source "man.c"
+}
+
+module help {
+	source "help.c"
+}
+
+module mem {
+	source "mem.c"
+}
+
+module wmem {
+	source "wmem.c"
+}
+
+module test {
+	source "test.c"
+}
+
+module lspci {
+	source "lspci.c"
+}
+
+module lsmod {
+	source "lsmod.c"
+}
+
+module md5sum {
+	source "md5sum.c"
+}
+
+module ne2k_pci_probe {
+	source "ne2k_pci_probe.c"
 }

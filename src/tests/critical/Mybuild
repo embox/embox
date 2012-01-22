@@ -1,0 +1,6 @@
+package embox.test
+
+module critical {
+	source "critical.c"
+	depends embox.kernel.critical
+}

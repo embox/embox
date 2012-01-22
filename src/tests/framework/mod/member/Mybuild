@@ -1,0 +1,5 @@
+package embox.test.framework.mod.member
+
+module ops_test {
+	source "ops_test.c"
+}

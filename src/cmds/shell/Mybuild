@@ -1,4 +1,4 @@
-package embox.cmds
+package embox.cmd
 
 module shell {
 	source "shell.c"
