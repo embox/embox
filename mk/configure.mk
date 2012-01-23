@@ -24,10 +24,17 @@ AUTOCONF_FILES := $(build_mk) $(mods_mk) $(config_h) $(config_lds_h)
 
 -include $(build_mk) $(mods_mk)
 
+include mk/mybuild/read.mk
+include mk/conf/roots.mk
+include mk/conf/runlevel.mk
+
+#mods_enable_obj_mk := mods_enable_obj.mk
+MODS_ENABLE_OBJ := $(call find_mods,$(sort $(MODS_ENABLE)))
+
 TARGET ?= embox$(if $(PLATFORM),-$(PLATFORM))
 TARGET := $(TARGET)$(if $(LOCALVERSION),-$(LOCALVERSION))
 
-.PHONY: check_config check_conf_dir
+.PHONY: check_config check_conf_dir $(mods_enable_obj_mk)
 check_config: check_conf_dir $(CONF_FILES)
 ifndef ARCH
 	@echo 'Error: ARCH undefined'
