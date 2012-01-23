@@ -1518,7 +1518,6 @@ endef
 #param $1 container
 #param $2 tail name
 define container_get_name
-	$(info $1)
 	$(if $(get $1.container),
 		$(if $(call has_field,$1,name),
 			$(call $0,$(get $1.container),$(get $1.name).$2)

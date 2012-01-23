@@ -65,7 +65,7 @@ define __resolve_links_from_files
 		$(if $(invoke $l.resolved?),
 			$l,
 			$(silent-foreach f,$1,
-				#$(info link is $l, file is $f, resource is $($f))
+				$(info link is $l, file is $f, resource is $($f))
 				$(call resolve_link_from_resource,$l,$($f)))
 			$l))
 endef

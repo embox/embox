@@ -15,6 +15,8 @@ define runlevel_setup
 			$(info add dependence $m to $r)
 			$(foreach l,$(new module_link,$m),
 				$(info module_link = $l)
+				$(invoke l->resolve,$m)
+				$(invoke m->add_depends_refs,$l)
 			)
 		)
 	)

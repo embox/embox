@@ -7,7 +7,7 @@ include mybuild/resource.mk
 #param $1 is list of module names
 define find_mods
 	$(foreach m,$1,
-		$(or $(strip $(call find_mod,$m)),$(info Cant find $m)))
+		$(or $(strip $(call find_mod,$m)),$(warning Cant find $m)))
 endef
 
 # param $1 is name
