@@ -34,9 +34,9 @@ image_prepare:
 	@mkdir -p $(OBJ_SUBDIRS)
 
 #TODO rootfs make target is bad stily
-rootfs_prepare:
-	@mkdir -p $(BUILD_DIR)/rootfs
-	@cp $(__ROOTFS_SRCS) $(BUILD_DIR)/rootfs/
+rootfs_prepare: ;
+#	@mkdir -p $(BUILD_DIR)/rootfs
+#	@cp $(__ROOTFS_SRCS) $(BUILD_DIR)/rootfs/
 
 CC      = $(CROSS_COMPILE)gcc
 CPP     = $(CC) -E
@@ -85,18 +85,37 @@ include $(MK_DIR)/codegen-di.mk
 
 include mk/headers.mk
 
-OBJS_ALL := $(sort $(foreach unit,$(MODS) $(LIBS),$(OBJS-$(unit))))
-SRCS_ALL := $(sort $(foreach unit,$(MODS) $(LIBS),$(SRCS-$(unit))))
--include $(OBJS_ALL:.o=.d)
+# param $1 is module obj
+define module_get_objects
+	$(filter-patsubst %.c %.S,%.o,$(foreach s,$(get $1.sources),
+						$(get s->name)))
+endef
 
-OBJS_BUILD := $(foreach mod,$(MODS_BUILD),$(OBJS-$(mod)))
+define module_get_sources
+	$(filter %.c %.S,$(foreach s,$(get $1.sources),
+				$(get s->name)))
+endef
+
+$(def_all)
+
+OBJS_BUILD := $(sort $(foreach m,$(MODS_ENABLE_OBJ), $(call module_get_objects,$m)))
+SRCS_BUILD := $(sort $(foreach m,$(MODS_ENABLE_OBJ), $(call module_get_sources,$m)))
+
+$(info objs are $(OBJS_BUILD))
+$(info srcs are $(SRCS_BUILD))
+
+-include $(OBJS_BUILD:.o=.d)
+
+#OBJS_BUILD := $(foreach mod,$(MODS_BUILD),$(OBJS-$(mod)))
 OBJ_SUBDIRS := \
-  $(sort $(dir $(OBJS_BUILD) $(foreach lib,$(LIBS),$(OBJS-$(lib)))))
+  $(sort $(dir $(OBJS_BUILD)))
 
-$(OBJS_ALL): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk
+#$(foreach lib,$(LIBS),$(OBJS-$(lib)))))
+
+$(OBJS_BUILD): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk
 
 __CMDS = \
-  $(patsubst $(ROOT_DIR)%.$1,$(OBJ_DIR)%.cmd,$(filter %.$1,$(SRCS_ALL)))
+  $(patsubst $(ROOT_DIR)%.$1,$(OBJ_DIR)%.cmd,$(filter %.$1,$(SRCS_BUILD)))
 
 CMDS_C := $(call __CMDS,c)
 CMDS_S := $(call __CMDS,S)
