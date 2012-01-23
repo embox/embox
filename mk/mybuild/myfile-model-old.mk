@@ -61,11 +61,14 @@ define class-module
 
 	$(property-field depends_refs... : module_ref)
 
-	$(method set_depends_refs,
-		$(invoke clear_references,depends_refs)
+	$(method add_depends_refs,
 		$(foreach dep,$1,
 			$(invoke dep->set_depends,depends_refs$(this)) #XXX
 			$(invoke add_references,depends_refs,$(dep))))
+
+	$(method set_depends_refs,
+		$(invoke clear_references,depends_refs)
+		$(invoke add_depends_refs,$1))
 
 	$(property-field requires_refs...)
 	$(property-field provides_refs...)
@@ -78,6 +81,10 @@ define class-module
 
 	$(method set_objects,
 		$(invoke set_references,objects,$1))
+
+	$(property-field flags... : string)
+	$(method set_flags,
+		$(set flags,$1))
 
 endef
 

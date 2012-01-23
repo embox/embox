@@ -120,6 +120,7 @@ define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 				depends_refs \
 #				requires_refs
 #				provides_refs
+				flags \
 				sources \
 				objects,
 			$(invoke m->set_$(attr),
@@ -233,9 +234,7 @@ endef
 
 # Rule: <MakeFlags> ::= flags <StringList>
 # Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-MakeFlags_flags
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-MakeFlags_flags = $(2:%=$1/%)
 
 # Rule: <MakeRule> ::= <Filename> <Prerequisites> <Recipes>
 # Args: 1..3 - Symbols in the RHS.
