@@ -12,6 +12,7 @@
 
 #include <string.h>
 #include <kernel/timer.h>
+#include <net/icmp.h>
 #include <net/inetdevice.h>
 #include <net/arp.h>
 #include <net/ip.h>
@@ -120,6 +121,7 @@ int arp_resolve(sk_buff_t *pack) {
 #endif
 	ip = pack->nh.iph;
 	pack->mac.raw = pack->data;
+	/* loopback */
 	if (ipv4_is_loopback(ip->daddr)) {
 		/* Loopback address is 127.*.*.*
 		 * so previous check is incorrect:
@@ -127,12 +129,19 @@ int arp_resolve(sk_buff_t *pack) {
 		memset(pack->mac.ethh->h_dest, 0x00, ETH_ALEN);
 		return 0;
 	}
+	/* broadcast */
 	if (ip->daddr == htonl(INADDR_BROADCAST)) {
 		memset(pack->mac.ethh->h_dest, 0xFF, ETH_ALEN);
 		return 0;
 	}
 	dev = pack->dev;
-	if ((hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr))) {
+	/* our machine on our device? */
+	if(ip->daddr == inet_dev_get_ipaddr(in_dev_get(dev))){
+		memcpy(pack->mac.ethh->h_dest, dev->dev_addr, ETH_ALEN);
+		return 0;
+	}
+	/* someone on the net */
+		if ((hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr))) {
 		memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
 		return 0;
 	}
@@ -159,6 +168,7 @@ int arp_resolve(sk_buff_t *pack) {
 		}
 	}
 #endif
+
 	return -1;
 }
 

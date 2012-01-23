@@ -194,9 +194,9 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	m.msg_iov = &iov;
 
 	res = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
-	if (res < 0) {
-		return res;
-	}
+	/* if (res < 0) { */
+	/* 	return res; */
+	/* } */
 
 #if 0
 	/* FIXME: Error:

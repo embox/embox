@@ -179,14 +179,26 @@ void netif_rx_schedule(net_device_t *dev) {
 
 extern net_device_t *get_dev_by_idx(int num); /* TODO delete it */
 
+/* FIXME: rx_action_in_action - is a fast patch, just in case
+   another interrupt happens while processing soft irq. This
+   should dissapear once correct soft irq handling system is written. //Timk */
+static int net_rx_action_in_action = 0;
+
 static void net_rx_action(struct softirq_action *action) {
 	size_t i;
 	net_device_t *dev;
-	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
-		dev = get_dev_by_idx(i);
-		if (dev) {
-			dev->poll(dev);
+
+	if(!net_rx_action_in_action){
+		net_rx_action_in_action = 1;
+		for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
+			dev = get_dev_by_idx(i);
+			if (dev) {
+				dev->poll(dev);
+			}
 		}
+		net_rx_action_in_action = 0;
+	}else{
+		printk("net_rx_action: multiple tries to handle inerrupt\n");
 	}
 }
 

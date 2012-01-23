@@ -15,6 +15,7 @@
 #include <net/if_ether.h>
 #include <net/in.h>
 #include <net/netdevice.h>
+#include <net/icmp.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -52,6 +53,7 @@ int eth_header(sk_buff_t *pack, struct net_device *dev, unsigned short type,
 int eth_rebuild_header(sk_buff_t *pack) {
 	struct ethhdr *eth;
 	struct net_device *dev;
+	//	sk_buff_t *skb_temp;
 
 	if (pack == NULL) {
 		return -EINVAL;
@@ -63,8 +65,17 @@ int eth_rebuild_header(sk_buff_t *pack) {
 	eth->h_proto = htons(pack->protocol);
 
 	if (pack->protocol == ETH_P_IP) {
+		/* fill out eth packet source and destination */
 		memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
-		return arp_resolve(pack);
+		if(arp_resolve(pack) < 0){	/* if couldn't resolve then the host is unreachable */
+			/* if((skb_temp = skb_copy(pack, 0))){ */
+			/* 	icmp_send(skb_temp, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, 0); /\* report it *\/ */
+			/* 	kfree_skb(skb_temp); */
+			/* } */
+			return -EINVAL;
+		}
+		else
+			return ENOERR;						/* else everythimg is fine, the packet is ready to be sent */
 	} else if (pack->protocol == ETH_P_ARP) {
 		return ENOERR;
 	} else {

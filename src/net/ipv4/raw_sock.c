@@ -52,7 +52,11 @@ int raw_rcv(sk_buff_t *skb) {
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		sk = (struct sock *)raw_hash[i];
 		if (sk && sk->sk_protocol == iph->proto) {
-			cloned = skb_clone(skb, 0);
+			cloned = skb_clone(skb, 0); // TODO without skb_clone()
+			if(!cloned){
+				printk("raw_sock.c: raw_rcv: own is NULL\n");
+				return ENOMEM;
+			}
 			if (raw_rcv_skb(sk, cloned) < 0) {
 				kfree_skb(cloned);
 			}

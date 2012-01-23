@@ -26,6 +26,7 @@
 #include <assert.h>
 
 #include <net/raw.h>
+#include <net/socket.h>
 
 EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 
@@ -283,7 +284,15 @@ static int icmp_rcv(sk_buff_t *pack) {
 	net_device_stats_t *stats;
 	uint16_t tmp;
 
+	struct sk_buff *skb_tmp;
+
+
 	assert(pack != NULL);
+
+	/* remove packet that came to raw socket icmp_socket
+	   TODO: write a separate function? */
+	if((skb_tmp = skb_recv_datagram(icmp_socket->sk, 0, 0, 0)))
+		kfree_skb(skb_tmp);
 
 	icmph = pack->h.icmph;
 	stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);
@@ -330,5 +339,6 @@ static int icmp_rcv(sk_buff_t *pack) {
 		return res;
 	}
 
+	kfree_skb(pack);
 	return ENOERR;
 }
