@@ -157,6 +157,18 @@ static int icmp_redirect(sk_buff_t *skb) {
 }
 
 static int icmp_echo(sk_buff_t *skb) {
+	sk_buff_t *reply;
+
+	/* RFC 796:  The data received in the echo message must be returned in the echo reply message. */
+	reply = skb_clone(skb, 0);
+	reply->h.icmph->type = ICMP_ECHOREPLY;
+	/* TODO checksum must be at network byte order */
+	reply->h.icmph->checksum = 0;
+	reply->h.icmph->checksum = ptclbsum(reply->h.raw, htons(reply->nh.iph->tot_len) - IP_HEADER_SIZE(reply->nh.iph));
+	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
+	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, reply, 0);
+	return ENOERR;
+#if 0
 	skb->h.icmph->type = ICMP_ECHOREPLY;
 	/* TODO checksum must be at network byte order */
 	skb->h.icmph->checksum = 0;
@@ -164,6 +176,7 @@ static int icmp_echo(sk_buff_t *skb) {
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
 	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, skb, 0);
 	return ENOERR;
+#endif
 }
 
 static int icmp_timestamp(sk_buff_t *skb) {
