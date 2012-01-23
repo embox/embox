@@ -17,7 +17,8 @@ define find_mod
 		$(call find_mod_in_res,$1,$r))
 endef
 
-#param 1 module object
+# function used for getting module's dependent modules
+# param 1 module object
 define get_dependecies
 	$(foreach module_link,$(get $1.depends_refs),
 		$(get $(module_link).dst))

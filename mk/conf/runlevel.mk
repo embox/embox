@@ -3,15 +3,15 @@ __conf_runlevel_mk := 1
 
 include mk/conf/roots.mk
 
-#param $1 module object
+#param $1 module name
 define get_runlevel_name
 	embox.framework.level_$(or $(RUNLEVEL-$1),2)
 endef
 
 #param $1 module object
 define runlevel_setup
-	$(foreach r,$(call find_mod,$(call get_runlevel_name,$1)),
-		$(foreach m,$(call find_mod,$1),
+	$(foreach r,$(call find_mod,$(call get_runlevel_name,$(call basename,$1))),
+		$(foreach m,$1,
 			$(info add dependence $m to $r)
 			$(foreach l,$(new module_link,$m),
 				$(info module_link = $l)
