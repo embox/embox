@@ -8,7 +8,7 @@
 ifndef _codegen_dot_mk_
 _codegen_dot_mk_ := 1
 
-include $(MK_DIR)/embuild.mk
+#include $(MK_DIR)/embuild.mk
 
 GRAPH = $(MODS_BUILD)
 GRAPH_DOT = $(CODEGEN_DIR)/mod_dag.dot

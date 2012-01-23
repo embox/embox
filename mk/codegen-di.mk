@@ -7,7 +7,7 @@
 ifndef _codegen_di_mk_
 _codegen_di_mk_ := 1
 
-include $(MK_DIR)/embuild.mk
+#include $(MK_DIR)/embuild.mk
 
 DEPSINJECT_SRC = $(CODEGEN_DIR)/depsinject.c
 DEPSINJECT_OBJ = $(OBJ_DIR)/depsinject.o

@@ -78,7 +78,8 @@ SRC_TO_OBJ = \
 LIB_FILE   = $(1:%=$(LIB_DIR)/%)
 
 # It's time to scan subdirs and prepare mods info.
-include $(MK_DIR)/embuild.mk
+#include $(MK_DIR)/embuild.mk
+include mk/mybuild/read.mk
 # ...and to build dependency injection model
 include $(MK_DIR)/codegen-di.mk
 
