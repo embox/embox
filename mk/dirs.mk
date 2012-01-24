@@ -11,6 +11,8 @@ DOCS_DIR       := $(ROOT_DIR)/docs
 
 CONF_DIR       := $(ROOT_DIR)/conf
 
+PATCH_NAME ?=
+
 BASE_CONF_DIR  := $(ROOT_DIR)/conf
 PATCH_CONF_DIR := $(ROOT_DIR)/conf/$(PATCH_NAME)
 

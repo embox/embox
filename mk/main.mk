@@ -190,39 +190,6 @@ endif
 endif #PROFILE
 endif #PROJECT
 
-CUR_CONFIG_FILES := $(filter-out $(notdir $(BACKUP_DIR)),\
-						$(notdir $(wildcard $(BASE_CONF_DIR)/*)))
-# It would be better to use check_config from configure.mk,
-# But I cant imagine any normal condition to include it.
-saveconfig s:
-ifndef PROJECT
-	@echo 'Error: PROJECT undefined'
-	@echo 'Usage: "make PROJECT=<project> PROFILE=<new profile name> saveconfig"'
-	exit 1
-endif
-ifndef PROFILE
-	@echo 'Error: PROFILE undefined'
-	@echo 'Usage: "make PROJECT=<project> PROFILE=<new profile name> saveconfig"'
-	exit 1
-endif
-	$(if $(CUR_CONFIG_FILES),,\
-		echo 'Error: no config presented in "$(BASE_CONF_DIR)"'; \
-		exit 1; \
-	)
-ifneq ($(FORCED),true)
-	@if [ -d $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE) ];          \
-	then                                                       \
-		echo 'Error: Profile "$(PROFILE)" already exist';      \
-		exit 1;                                                \
-	fi;
-else
-	rm -r $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);
-endif
-	$(MKDIR) $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);        \
-	$(CP) -fvr -t $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/ \
-			$(CUR_CONFIG_FILES:%=$(BASE_CONF_DIR)/%);
-	@echo Config was saved.
-
 TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
 
 menuconfig m: PROJECT = $(shell dialog \
