@@ -87,19 +87,21 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
   ) \
 )\n
 
-generate_header = \
+#generate_header = \
   /* Auto-generated EMBuild Dependency Injection model file. Do not edit. */\n
 
-generate_includes = \n\#include <framework/mod/embuild.h>\n
+#generate_includes = \n\#include <framework/mod/embuild.h>\n
 
 __printf_escape = "$(subst ",\",$1)"
-$(DEPSINJECT_SRC) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-di.mk \
-  $(AUTOCONF_DIR)/mods.mk
-	@$(PRINTF) $(call __printf_escape,$(generate_header)) > $@
-	@$(PRINTF) $(call __printf_escape,$(generate_includes)) >> $@
-	@$(PRINTF) $(call __printf_escape,$(generate_package_defs)) >> $@
-	@$(PRINTF) $(call __printf_escape,$(generate_mod_defs)) >> $@
-	@$(PRINTF) $(call __printf_escape,$(generate_mod_deps)) >> $@
+$(DEPSINJECT_SRC) :
+	echo > $@
+#$(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-di.mk \
+#  $(AUTOCONF_DIR)/mods.mk
+#	@$(PRINTF) $(call __printf_escape,$(generate_header)) > $@
+#	@$(PRINTF) $(call __printf_escape,$(generate_includes)) >> $@
+#	@$(PRINTF) $(call __printf_escape,$(generate_package_defs)) >> $@
+#	@$(PRINTF) $(call __printf_escape,$(generate_mod_defs)) >> $@
+#	@$(PRINTF) $(call __printf_escape,$(generate_mod_deps)) >> $@
 
 $(DEPSINJECT_OBJ) : $(AUTOCONF_DIR)/config.h
 $(DEPSINJECT_OBJ) : $(DEPSINJECT_SRC)

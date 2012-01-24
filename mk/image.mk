@@ -87,22 +87,38 @@ include mk/headers.mk
 
 # param $1 is module obj
 define module_get_objects
-	$(filter-patsubst %.c %.S,%.o,$(foreach s,$(get $1.sources),
-						$(get s->name)))
+	$(call SRC_TO_OBJ,$(module_get_sources))
 endef
 
 define module_get_sources
 	$(filter %.c %.S,$(foreach s,$(get $1.sources),
-				$(get s->name)))
+				$(get s->fullname)))
+endef
+
+#define define_lib_rules
+#  $(call LIB_FILE,$(unit)) : $(OBJS-$(unit))
+#	$(AR) $(ARFLAGS) $@ $(^:%= \$(\n)	%)
+#endef
+
+
+#param $1 is module obj
+#param $2 is .o of module
+define define_mod_obj_rules
+$(if $(get $1.flags),
+  $2 : override CCFLAGS  += $(get $1.flags)$(\n))
+  $2 : override CPPFLAGS += -D__EMBUILD_MOD__='$(subst .,__,$(get $1.qualified_name))'
 endef
 
 $(def_all)
 
-OBJS_BUILD := $(sort $(foreach m,$(MODS_ENABLE_OBJ), $(call module_get_objects,$m)))
 SRCS_BUILD := $(sort $(foreach m,$(MODS_ENABLE_OBJ), $(call module_get_sources,$m)))
+OBJS_BUILD := $(call SRC_TO_OBJ,$(SRCS_BUILD))
 
 $(info objs are $(OBJS_BUILD))
 $(info srcs are $(SRCS_BUILD))
+
+$(foreach m,$(MODS_ENABLE_OBJ),$(eval $(call define_mod_obj_rules,$m,\
+	$(call module_get_objects,$m))))
 
 -include $(OBJS_BUILD:.o=.d)
 
