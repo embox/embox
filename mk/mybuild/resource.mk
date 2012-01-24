@@ -3,6 +3,8 @@ __mybuild_resource_mk := 1
 include mk/core/string.mk
 include mk/core/object.mk
 
+# Constructor args:
+#   1. (Optional) Filename to load resource from.
 define class-resource
 	$(field nodes : node)
 	$(field issues)
@@ -11,13 +13,26 @@ define class-resource
 	#param $1 a model
 	$(setter exports,
 		$(set-field exports,
-			$(foreach o,$1,$(call get_qualified_name,$o)$o)
+			$(foreach o,$1,$(get o->qualified_name)$o)
 		)
 	)
 
 	$(field imports)
 	$(property-field my_file : node)
 
+	$(property-field filename)
+
+	#param $1 is filename
+	$(method load,
+		$(for myfile<-$(call gold_parse,myfile,$1),
+			$(set filename,$1)
+			$(call resolve_internal,$(myfile))
+			$(set exports,$(get myfile->modules))
+			$(set my_file,$(myfile))
+			$(set myfile->resource,$(this))
+	       	)
+	)
+	$(if $(value 1),$(invoke load,$1))
 endef
 
 # TODO move from here

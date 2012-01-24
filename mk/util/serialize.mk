@@ -68,14 +68,14 @@ define objects_to_mk
 endef
 
 #param $1 is a root node of a graph
-define objects_to_export
-	$(foreach o,$(call graph_closure,$1,get_referenced_objects),
-		$(foreach m,$(instance-of $o,module),
-			$o:=$(call escape_makefile,$(call get_qualified_name,$m))
-			$(\n)
-		)
-	)
-endef
+#define objects_to_export
+#	$(foreach o,$(call graph_closure,$1,get_referenced_objects),
+#		$(foreach m,$(instance-of $o,module),
+#			$o:=$(call escape_makefile,$(call get_qualified_name,$m))
+#			$(\n)
+#		)
+#	)
+#endef
 
 #param $1 'my_file' object
 #define model_to_resource

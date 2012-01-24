@@ -88,6 +88,29 @@ define class-module
 
 endef
 
+#param $1 container
+#param $2 tail name
+define container_get_name
+	$(if $(get $1.container),
+		$(if $(call has_field,$1,name),
+			$(call $0,$(get $1.container),$(get $1.name).$2)
+		,
+			$(call $0,$(get $1.container),$2)
+		)
+	,
+	$(get $1.name).$2
+	)
+endef
+
+#param $1 an object
+define get_qualified_name
+	$(if $(call has_field,$1,name),
+		$(if $(get $1.container),
+			$(call container_get_name,$(get $1.container),$(get $1.name))
+		)
+	)
+endef
+
 # Constructor args:
 #   1. (optional) value.
 define class-string
@@ -107,6 +130,15 @@ define class-filename
 		)
 		$(set-field name,$1)
 	)
+
+	$(property fullname)
+
+	$(getter fullname,
+		$(dir $(get $(get resource).filename))$(get name))
+
+	$(property resource)
+	$(getter resource,
+		$(get $(get root_container).resource))
 
 	# Construct.
 	$(if $(value 1),$(set name,$1))

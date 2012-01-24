@@ -78,6 +78,12 @@ define class-node
 			$(set container,)
 		)
 	)
+	$(property root_container)
+
+	$(getter root_container,
+		$(or $(for container<-$(get container),
+			$(get container->root_container)),
+		     $(this)))
 
 	$(method get_container,
 		$(suffix $(get container)))
@@ -119,6 +125,13 @@ endef
 #   1. Name.
 define class-named
 	$(property-field name,$(value 1))
+	$(property qualified_name)
+
+	$(getter qualified_name,
+		$(for named_container<-$(with $(get container),
+						$(if $1,$(or $(instance-of $1,named),
+							$(call $0,$(get $1.container))))),
+			$(get named_container->qualified_name).)$(get name))
 
 	$(method get_name,$(get name))
 	$(method set_name,$(set name,$1))

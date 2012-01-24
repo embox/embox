@@ -1515,29 +1515,6 @@ define obj_links
 	$(subst [],,$(subst .,,$(basename $($($1).fields:%=.%))))
 endef
 
-#param $1 container
-#param $2 tail name
-define container_get_name
-	$(if $(get $1.container),
-		$(if $(call has_field,$1,name),
-			$(call $0,$(get $1.container),$(get $1.name).$2)
-		,
-			$(call $0,$(get $1.container),$2)
-		)
-	,
-	$(get $1.name).$2
-	)
-endef
-
-#param $1 an object
-define get_qualified_name
-	$(if $(call has_field,$1,name),
-		$(if $(get $1.container),
-			$(call container_get_name,$(get $1.container),$(get $1.name))
-		)
-	)
-endef
-
 $(def_all)
 
 
