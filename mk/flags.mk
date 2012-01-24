@@ -64,3 +64,6 @@ override LDFLAGS += $(SUBDIRS_LDFLAGS)
 override LDFLAGS += $(ldflags)
 
 override ARFLAGS = rcs
+
+CCFLAGS ?=
+

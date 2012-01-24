@@ -105,7 +105,7 @@ endef
 #param $2 is .o of module
 define define_mod_obj_rules
 $(if $(get $1.flags),
-  $2 : override CCFLAGS  += $(get $1.flags)$(\n))
+  $2 : override CCFLAGS  += $(for s<-$(get $1.flags),$(get s->value))$(\n))
   $2 : override CPPFLAGS += -D__EMBUILD_MOD__='$(subst .,__,$(get $1.qualified_name))'
 endef
 
@@ -138,8 +138,8 @@ CMDS_S := $(call __CMDS,S)
 
 CMDS := $(CMDS_C) $(CMDS_S)
 
-$(CMDS_C) : __FLAGS = $(CFLAGS) $(CPPFLAGS)
-$(CMDS_S) : __FLAGS = $(ASFLAGS) $(CPPFLAGS)
+$(CMDS_C) : __FLAGS = $(CFLAGS) $(CPPFLAGS) $(CCFLAGS)
+$(CMDS_S) : __FLAGS = $(ASFLAGS) $(CPPFLAGS) $(CCFLAGS)
 $(CMDS) : FLAGS = $(subst ",,$(__FLAGS))
 $(CMDS) :
 	@echo '$(FLAGS) -o $(@:%.cmd=%.o) -c' > $@

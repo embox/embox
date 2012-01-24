@@ -114,7 +114,7 @@ endef
 # Constructor args:
 #   1. (optional) value.
 define class-string
-	$(field value,$(value 1))
+	$(property-field value,$(value 1))
 endef
 
 # Constructor args:
