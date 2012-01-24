@@ -118,6 +118,7 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 					(void*) msg->msg_iov->iov_base, len);
 	skb->h.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE +
 			IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
+	skb->sk = sk;
 	return ip_send_packet(inet, skb);
 }
 
