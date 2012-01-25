@@ -84,7 +84,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	const struct net_device_ops *ops;
 	net_device_stats_t *stats;
 
-	if (NULL == skb || NULL == skb->sk ) {
+	if (NULL == skb) {
 		return -EINVAL;
 	}
 
