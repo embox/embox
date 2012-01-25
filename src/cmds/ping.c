@@ -65,7 +65,7 @@ static void print_usage(void) {
 		"            [-I interface] [-W timeout] destination\n");
 }
 
-static int sent_resalt(int sock, uint32_t timeout, union packet *ptx_pack) {
+static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack) {
 	uint32_t start, delta;
 	union packet rx_pack;
 	struct sockaddr_in from;
@@ -107,6 +107,9 @@ static int ping(struct ping_info *pinfo) {
 	int cnt_resp, cnt_err, sk;
 	union packet tx_pack;
 
+	cnt_resp = 0; cnt_err = 0;
+
+	/* fill out ip header */
 	tx_pack.hdr.ip_hdr.version = 4;
 	tx_pack.hdr.ip_hdr.ihl = IP_MIN_HEADER_SIZE >> 2;
 	tx_pack.hdr.ip_hdr.tos = 0;
@@ -116,25 +119,25 @@ static int ping(struct ping_info *pinfo) {
 	tx_pack.hdr.ip_hdr.tot_len = htons(IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
 	tx_pack.hdr.ip_hdr.ttl = pinfo->ttl;
 	tx_pack.hdr.ip_hdr.proto = IPPROTO_ICMP;
-
-	cnt_resp = 0; cnt_err = 0;
-
-	timeout = pinfo->timeout * 1000;
-	printf("PING %s %d bytes of data.\n", inet_ntoa(pinfo->dst), pinfo->padding_size);
-
-	if ((sk = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0) {
-		LOG_ERROR("socket error\n");
-		return -1;
-	}
-
+	/* fill out icmp header */
 	tx_pack.hdr.icmp_hdr.type = ICMP_ECHO;
 	tx_pack.hdr.icmp_hdr.code = 1;
 	tx_pack.hdr.icmp_hdr.un.echo.id = 11; /* TODO: get unique id */
 	tx_pack.hdr.icmp_hdr.un.echo.sequence = 0;
 
+	timeout = pinfo->timeout * 1000;
+
+	/* open socket */
+	if ((sk = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0) {
+		LOG_ERROR("socket error\n");
+		return -1;
+	}
+
+	printf("PING %s %d bytes of data.\n", inet_ntoa(pinfo->dst), pinfo->padding_size);
+
 	total = clock();
 	i = 0;
-	for (;;) {
+	for (i=0; i< pinfo->count; i++) {
 		tx_pack.hdr.icmp_hdr.un.echo.sequence = htons(ntohs(tx_pack.hdr.icmp_hdr.un.echo.sequence) + 1);
 		tx_pack.hdr.icmp_hdr.checksum = 0;
 		/* TODO checksum must be at network byte order */
@@ -145,19 +148,19 @@ static int ping(struct ping_info *pinfo) {
 
 		sendto(sk, tx_pack.packet_buff, ntohs(tx_pack.hdr.ip_hdr.tot_len), 0, (struct sockaddr *)&pinfo->dst, 0);
 
-		++i;
-		if (sent_resalt(sk, timeout, &tx_pack)) {
-			cnt_resp++;
-		}
-		else {
+		/* try to fetch response */
+		if (sent_result(sk, timeout, &tx_pack))
+			cnt_resp++;								/* if response was fetched proceed */
+		else {											/* else output diagnostics */
+			/* that is not right. fetch error message */
 			printf("From %s icmp_seq=%d Destination Host Unreachable\n", inet_ntoa(pinfo->dst), i); // TODO
 			cnt_err++;
 		}
-		if (i >= pinfo->count) {
-				break;
-		}
+
+		/* wait before sending next */
 		sleep(pinfo->interval);
 	}
+	/* output statistics */
 	printf("--- %s ping statistics ---\n", inet_ntoa(pinfo->dst));
 	printf("%d packets transmitted, %d received, %d%% packet loss, time %dms\n",
 		cnt_resp + cnt_err, cnt_resp, (cnt_err * 100) / (cnt_err + cnt_resp),
@@ -168,9 +171,12 @@ static int ping(struct ping_info *pinfo) {
 }
 
 static int exec(int argc, char **argv) {
-	int opt;
+	int opt, i_opt;
 	in_device_t *in_dev;
 	struct ping_info pinfo;
+	int iface_set, cnt_set, ttl_set, tout_set, psize_set, int_set, pat_set, ip_set;
+	int garbage, duplicate;
+	duplicate = garbage =	iface_set = cnt_set = ttl_set = tout_set = psize_set = int_set = pat_set = ip_set = 0;
 
 	in_dev = NULL;
 	pinfo.count = DEFAULT_COUNT;
@@ -179,86 +185,147 @@ static int exec(int argc, char **argv) {
 	pinfo.pattern = DEFAULT_PATTERN;
 	pinfo.timeout = DEFAULT_TIMEOUT;
 	pinfo.ttl = DEFAULT_TTL;
+
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "I:c:t:W:s:i:p:h"))) {
+	/* while (-1 != (opt = getopt(argc, argv, "I:c:t:W:s:i:p:h"))) { */
+	/* Parse commandline options */
+	for(i_opt = 0; i_opt < argc-1; i_opt++){
+		opt = getopt(argc, argv, "I:c:t:W:s:i:p:h");
 		switch(opt) {
-		case 'I':
-			in_dev = inet_dev_find_by_name(optarg);
-			if (in_dev == NULL) {
-				printf("ping: unknown Iface %s\n", optarg);
-				return -1;
-			}
+		case 'I':										/* interface */
+			if(!iface_set){						/* is interface already set */
+				in_dev = inet_dev_find_by_name(optarg);
+				if (in_dev == NULL) {
+					printf("ping: unknown Iface %s\n", optarg);
+					return -1;
+				}
+				iface_set = 1;					/* now it is set */
+			}else
+				duplicate = 1;					/* so if it is a duplicate output error message */
+			i_opt++;									/* getopt sacns option and its value, while in argv
+																   everything divided by ' ' character is a separate
+																   entity*/
 			break;
-		case 'c':
-			if ((sscanf(optarg, "%d", &pinfo.count) != 1)  || (pinfo.count < 1)) {
-				printf("ping: bad number of packets to transmit\n");
-				return -1;
-			}
+
+		case 'c':										/* count of pings */
+			if(!cnt_set){
+				if ((sscanf(optarg, "%d", &pinfo.count) != 1)  || (pinfo.count < 1)) {
+					printf("ping: bad number of packets to transmit\n");
+					return -1;
+				}
+				cnt_set = 1;
+			}else
+				duplicate = 1;
+			i_opt++;
 			break;
-		case 't':
-			if (sscanf(optarg, "%d", &pinfo.ttl) != 1) {
-				printf("ping: can't set unicast time-to-live: Invalid argument\n");
-				return -1;
-			}
+
+		case 't':										/* time to live */
+			if(!ttl_set){
+				if (sscanf(optarg, "%d", &pinfo.ttl) != 1) {
+					printf("ping: can't set unicast time-to-live: Invalid argument\n");
+					return -1;
+				}
+				ttl_set = 1;
+			}else
+				duplicate = 1;
+			i_opt++;
 			break;
-		case 'W':
-			if ((sscanf(optarg, "%d", &pinfo.timeout) != 1)
-					|| (pinfo.timeout < 0)) {
-				printf("ping: bad linger time\n");
-				return -1;
-			}
+
+		case 'W':										/* timeout */
+			if(!tout_set){
+				if ((sscanf(optarg, "%d", &pinfo.timeout) != 1)
+						|| (pinfo.timeout < 0)) {
+					printf("ping: bad linger time\n");
+					return -1;
+				}
+				tout_set = 1;
+			}else
+				duplicate = 1;
+			i_opt++;
 			break;
-		case 's':
-			if ((sscanf(optarg, "%d", &pinfo.padding_size) != 1)
-					|| (pinfo.padding_size < 0)) {
-				printf("ping: bad padding size\n");
-				return -1;
-			}
+
+		case 's':										/* packet size */
+			if(!psize_set){
+				if ((sscanf(optarg, "%d", &pinfo.padding_size) != 1)
+						|| (pinfo.padding_size < 0)) {
+					printf("ping: bad padding size\n");
+					return -1;
+				}
+				psize_set = 1;
+			}else
+				duplicate = 1;
+			i_opt++;
 			if (pinfo.padding_size > MAX_PADLEN) {
 				printf("packet size is too large. Maximum is %d\n", MAX_PADLEN);
 			}
 			break;
-		case 'i':
-			if ((sscanf(optarg, "%d", &pinfo.interval) != 1) ||
-					(pinfo.interval < 0)) {
-				printf("ping: bad timing interval.\n");
-				return -1;
-			}
+
+		case 'i':										/* interval */
+			if(!int_set){
+				if ((sscanf(optarg, "%d", &pinfo.interval) != 1) ||
+						(pinfo.interval < 0)) {
+					printf("ping: bad timing interval.\n");
+					return -1;
+				}
+				int_set = 1;
+			}else
+				duplicate = 1;
 			break;
-		case 'p':
-			if (sscanf(optarg, "%d", &pinfo.pattern) != 1) {
-				printf("ping: patterns must be specified as hex digits.\n");
-				return -1;
-			}
+
+		case 'p':										/* pattern */
+			if(!pat_set){
+				if (sscanf(optarg, "%d", &pinfo.pattern) != 1) {
+					printf("ping: patterns must be specified as hex digits.\n");
+					return -1;
+				}
+				pat_set = 1;
+			}else
+				duplicate = 1;
+			i_opt++;
 			break;
-		case 'h':
+
+		case 'h':										/* print isage message */
 			print_usage();
 			return 0;
+
+		case -1:										/* non-option argument, should be ip*/
+		  if(!ip_set){
+				if (inet_aton(argv[i_opt + 1], &pinfo.dst) == 0) {
+					printf("ping: bad ip address (%s)\n", argv[argc - 1]);
+					print_usage();
+					return -1;
+				}
+				ip_set = 1;
+			}else
+				garbage = 1;						/* in case of garbage in option string */
+			break;
+
 		default:
+			printf("ping: unknown option '%s' or unspecified value\n", argv[i_opt+1]);
+			print_usage();
 			return 0;
+		}
+		if(garbage)									/* inform about garbage in commandline */
+			printf("ping: info: garbage in option string\n");
+		if(duplicate){							/* inform about duplicate options */
+			printf("ping: duplicate option '%c'\n", (char)opt);
+			return -1;
 		}
 	}
 
-	if (argc == 1) {
+	if (!ip_set){									/* if no arguments or no ip address was specified
+																   output usage message*/
 		print_usage();
 		return 0;
 	}
 
-//	inet_dev_find_by_name("eth0");
-	/* Get destination addr */
-	if (inet_aton(argv[argc - 1], &pinfo.dst) == 0) {
-		printf("wrong ip addr format (%s)\n", argv[argc - 1]);
-		print_usage();
-		return -1;
-	}
-
 	/* Get source addr */
-	if (in_dev != NULL) {
+	if (in_dev != NULL)
 		pinfo.from.s_addr = inet_dev_get_ipaddr(in_dev);
-	} else {
-		pinfo.from.s_addr = 0;
-	}
+	else
+		pinfo.from.s_addr = 0;			/* Hm, what could that possibly mean? */
 
+	/* ping! */
 	ping(&pinfo);
 
 	return 0;
