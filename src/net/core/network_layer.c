@@ -61,7 +61,7 @@ void dev_remove_pack(struct packet_type *pt) {
 
 
 /* we use this function in debug mode*/
-#if 0
+#ifdef DEBUG
 static void print_packet (sk_buff_t *skb) {
 	size_t i, j;
 	printf("pack:\n");
@@ -84,7 +84,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	const struct net_device_ops *ops;
 	net_device_stats_t *stats;
 
-	if (skb == NULL) {
+	if (NULL == skb || NULL == skb->sk ) {
 		return -EINVAL;
 	}
 
@@ -99,7 +99,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	if (dev->flags & IFF_UP) {
 		res = dev->header_ops->rebuild(skb);
 		if (res < 0) {
-			while(!skb->sk->is_ready);
+			while(!skb->sk->is_ready); /*TODO may be create function sock_ready */
 			if(skb->sk->answer < 0) {
 				kfree_skb(skb);
 				stats->tx_err++;

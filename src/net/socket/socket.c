@@ -145,7 +145,6 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 
 	socket_set_port_type(sock);
 	if (inet->sport == 0) {
-		//inet->sport = 666;
 		inet->sport = socket_get_free_port(inet->sport_type);
 	}
 	/* socket is ready for usage and has no data transmitting errors yet */
@@ -180,10 +179,8 @@ int check_icmp_err(int sockfd) {
 static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
 	int res;
-//	struct inet_sock *inet;
 	struct iovec iov;
 	struct msghdr m;
-//	struct sockaddr_in *dest_addr;
 
 	if (sock == NULL) {
 		return -EBADF;
@@ -194,9 +191,6 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	m.msg_iov = &iov;
 
 	res = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
-	/* if (res < 0) { */
-	/* 	return res; */
-	/* } */
 
 #if 0
 	/* FIXME: Error:
