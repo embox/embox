@@ -26,5 +26,6 @@ module xuartlite extends diag_api {
 module vga extends diag_api {
 	source "vga.c"
 	depends embox.driver.video.vga, embox.driver.keyboard
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 

@@ -2,4 +2,5 @@ package embox.cmd
 
 module shell {
 	source "shell.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include -I$(CONF_DIR)/"
 }

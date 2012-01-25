@@ -2,4 +2,6 @@ package embox.net
 
 module util {
 	source "misc.c", "inet_addr.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
 }

@@ -17,14 +17,13 @@ __header_gen = \
 #param $2 is module list
 #output is module descedant from list
 define find_descedant
-	$(info find_descedant $1)
 	$(for o<-$1,
 		m<-$2,
 		$(with $m,
 			$(for l<-$(get $1.super_module_ref),
 				super<-$(invoke l->get_reference),
 				$(if $(eq $(suffix $(super)),$(suffix $o)),
-					$(info found $m)$m,
+					$m,
 					$(call $0,$(super))))))
 endef
 

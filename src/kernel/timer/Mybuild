@@ -6,20 +6,24 @@ abstract module timer_api { }
 module timer extends timer_api {
 	source "timer.c"
 	depends embox.kernel.clock_source, embox.arch.clock
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module head_timer extends timer_api {
 	source "head_timer.c"
 	depends embox.kernel.clock_source, embox.arch.clock
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module sleep extends sleep_api {
 	source "sleep.c"
 	depends timer_api, embox.kernel.thread.core
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module sleep_nosched extends sleep_api {
 	source "sleep_nosched.c"
 	depends timer_api
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 

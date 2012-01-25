@@ -3,8 +3,10 @@ package embox.mem
 module slab {
 	source "slab.c", "slab_impl.h"
 	depends embox.mem.page_api
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module pool {
 	source "pool.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }

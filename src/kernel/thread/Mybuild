@@ -6,6 +6,7 @@ module core {
 	depends sched, sync, embox.kernel.task_api
 
 	depends embox.arch.context
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module sched {
@@ -16,5 +17,6 @@ module sched {
 	depends embox.kernel.critical
 	depends embox.kernel.thread.sched_policy.api
 
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 

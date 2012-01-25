@@ -4,11 +4,15 @@ module core {
 	source "devinet.c", "sock.c", "skbuff.c"
 	depends embox.net.dev
 	depends embox.net.util
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
 
 module dev {
 	source "network_layer.c", "dev.c"
 	depends entry_api
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
 
 abstract module entry_api {
@@ -17,8 +21,12 @@ abstract module entry_api {
 
 module net_entry extends entry_api{
 	source "net_entry.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
 
 module neighbour {
 	source "neighbour.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
 }

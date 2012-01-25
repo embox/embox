@@ -3,4 +3,5 @@ package embox.driver
 module terminal {
 	source "terminal.c"
 	source "vtbuild.c", "vtparse.c", "vtparse_state.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }

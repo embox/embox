@@ -2,4 +2,5 @@ package embox.test.framework.mod.member
 
 module ops_test {
 	source "ops_test.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }

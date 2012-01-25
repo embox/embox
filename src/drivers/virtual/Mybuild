@@ -2,6 +2,7 @@ package embox.driver.virtual
 
 module diag_device {
 	source "diag_device.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module zero {

@@ -7,6 +7,7 @@ abstract module serial {
 module serial_port extends serial{
 	source "serial_port.c"
 	depends embox.kernel.irq
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module apbuart extends serial{
