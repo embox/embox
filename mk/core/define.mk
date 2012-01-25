@@ -561,7 +561,7 @@ define __def_inner_handle
 		# the expansion parens, either between chars or around them...
 
 		# Check if the first char is not a whitespace.
-		$(if $(filter-out x$(1st),$(firstword x$1)),
+		$(if $(subst x$(1st),,$(firstword x$1)),
 			# There are some, name is bad:
 			#   $( foo) $( foo bar)
 			$(call __def_inner_warning,$$$$($1),
