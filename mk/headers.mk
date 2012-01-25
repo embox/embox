@@ -23,7 +23,7 @@ define find_descedant
 		$(with $m,
 			$(for l<-$(get $1.super_module_ref),
 				super<-$(invoke l->get_reference),
-				$(if $(eq $(strip $(super)),$(strip $o)),
+				$(if $(eq $(suffix $(super)),$(suffix $o)),
 					$(info found $m)$m,
 					$(call $0,$(super))))))
 endef
