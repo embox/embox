@@ -5,7 +5,7 @@ abstract module printf {
 }
 
 module prom_printf extends printf {
-	source "prom_printf.c"
+	source "prom_printf.c", "prom_printf.h"
 }
 
 module noprom_printf extends printf {

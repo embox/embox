@@ -83,23 +83,28 @@ include mk/mybuild/read.mk
 # ...and to build dependency injection model
 include $(MK_DIR)/codegen-di.mk
 
-include mk/headers.mk
-
 # param $1 is module obj
 define module_get_objects
 	$(call SRC_TO_OBJ,$(module_get_sources))
 endef
 
+define module_get_files
+	$(foreach s,$(get $1.sources),
+		$(get s->fullname))
+endef
+
 define module_get_sources
-	$(filter %.c %.S,$(foreach s,$(get $1.sources),
-				$(get s->fullname)))
+	$(filter %.c %.S,$(module_get_files))
+endef
+
+define module_get_headers
+	$(filter %.h,$(module_get_files))
 endef
 
 #define define_lib_rules
 #  $(call LIB_FILE,$(unit)) : $(OBJS-$(unit))
 #	$(AR) $(ARFLAGS) $@ $(^:%= \$(\n)	%)
 #endef
-
 
 #param $1 is module obj
 #param $2 is .o of module
@@ -109,13 +114,26 @@ $(if $(get $1.flags),
   $2 : override CPPFLAGS += -D__EMBUILD_MOD__='$(subst .,__,$(get $1.qualified_name))'
 endef
 
+define find_abstract
+	$(foreach m,$1,
+		$(if $(filter abstract,$(get m->modifiers)),
+			$m))
+endef
+
 $(def_all)
+
+APIS_BUILD := $(call find_abstract,$(MODS_ENABLE_OBJ))
+
+include mk/headers.mk
 
 SRCS_BUILD := $(sort $(foreach m,$(MODS_ENABLE_OBJ), $(call module_get_sources,$m)))
 OBJS_BUILD := $(call SRC_TO_OBJ,$(SRCS_BUILD))
 
-$(info objs are $(OBJS_BUILD))
-$(info srcs are $(SRCS_BUILD))
+#$(foreach m,$(MODS_ENABLE_OBJ),\
+#	$(call place_headers,$m,$(call module_get_headers,$m)))
+
+#$(info objs are $(OBJS_BUILD))
+#$(info srcs are $(SRCS_BUILD))
 
 $(foreach m,$(MODS_ENABLE_OBJ),$(eval $(call define_mod_obj_rules,$m,\
 	$(call module_get_objects,$m))))
