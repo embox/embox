@@ -154,9 +154,9 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
 
 	if(res < 0) {
-		if(sock->sk) {
+		if(sock->sk && !sock->sk->is_ready) {
 			while(!sock->sk->is_ready); /* TODO may be create function sock_ready */
-			return (sock->sk->answer >= 0 ? (ssize_t)sock->sk->answer : (ssize_t)res);
+			return (sock->sk->answer >= 0 ? (ssize_t) len : (ssize_t) sock->sk->answer);
 		} else {
 			return (ssize_t)res;
 		}
