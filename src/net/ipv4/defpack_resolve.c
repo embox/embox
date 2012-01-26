@@ -32,6 +32,8 @@ void def_process_list(sk_buff_t *arp_pack) {
 			list_del(&pack->link);
 			timer_close(pack->timer);
 			memcpy(pack->skb->mac.ethh->h_dest, arp_pack->mac.ethh->h_source, ETH_ALEN);
+			/* skbuff will be free in this transmitting, because
+			 * in ARP cache already added appropriate record */
 			pack->skb->sk->answer = dev_queue_xmit(pack->skb);
 			pack->skb->sk->is_ready = 1;
 			pool_free(&__deff_packet_buff, pack);
@@ -47,19 +49,23 @@ static void free_packet(struct sys_timer *timer, void *data) {
 	list_del(&deff_pack->link);
 	timer_close(timer);
 	deff_pack->skb->sk->is_ready = 1;
-	deff_pack->skb->sk->answer = -1;
+	//deff_pack->skb->sk->answer = -1;
+	kfree_skb(deff_pack->skb);
 	pool_free(&__deff_packet_buff, deff_pack);
 }
 
 void def_add_packet(sk_buff_t *pack) {
 	sys_timer_t *timer;
 	struct deff_packet *deff_pack;
+	sk_buff_t *new_pack;
 
 	deff_pack = (struct deff_packet*) pool_alloc(&__deff_packet_buff);
 	timer_set(&timer, DEF_PACKET_TTL, free_packet, deff_pack);
 
+	new_pack = skb_copy(pack, 0);
+
 	INIT_LIST_HEAD(&deff_pack->link);
-	deff_pack->skb = pack;
+	deff_pack->skb = new_pack;
 	deff_pack->timer = timer;
 	list_add_tail(&deff_packet_list, &deff_pack->link);
 	deff_pack->skb->sk->is_ready = 0;

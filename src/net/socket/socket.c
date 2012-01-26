@@ -149,11 +149,17 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	}
 	/* socket is ready for usage and has no data transmitting errors yet */
 	sock->sk->is_ready = 1;
-	sock->sk->sk_err = -1;
+	sock->sk->answer = sock->sk->sk_err = -1;
 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
-	if (res < 0) {
-		return (ssize_t)res;
+
+	if(res < 0) {
+		if(sock->sk) {
+			while(!sock->sk->is_ready); /* TODO may be create function sock_ready */
+			return (sock->sk->answer >= 0 ? (ssize_t)sock->sk->answer : (ssize_t)res);
+		} else {
+			return (ssize_t)res;
+		}
 	}
 
 	return (ssize_t)len;
