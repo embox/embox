@@ -86,6 +86,18 @@ define class-module
 	$(method set_flags,
 		$(set flags,$1))
 
+	$(property-field recipies... : string)
+	$(method set_recipies,
+		$(set recipes,$1))
+
+endef
+
+define class-make_rule
+	$(property-field filename : filename)
+
+	$(property-field prerequisites... : filename)
+
+	$(property-field recipes... : string)
 endef
 
 #param $1 container

@@ -75,7 +75,6 @@ LDSCRIPT = $(OBJ_DIR)/$(TARGET).lds
 
 SRC_TO_OBJ = \
   $(call filter-patsubst,$(ROOT_DIR)%.c $(ROOT_DIR)%.S,$(OBJ_DIR)%.o,$1)
-LIB_FILE   = $(1:%=$(LIB_DIR)/%)
 
 # It's time to scan subdirs and prepare mods info.
 #include $(MK_DIR)/embuild.mk
@@ -153,14 +152,24 @@ __CMDS = \
 
 CMDS_C := $(call __CMDS,c)
 CMDS_S := $(call __CMDS,S)
+CMDS_LDS_S := $(call __CMDS,lds.S)
 
 CMDS := $(CMDS_C) $(CMDS_S)
 
+CMDS_LDS := $(CMDS_LDS_S)
+
 $(CMDS_C) : __FLAGS = $(CFLAGS) $(CPPFLAGS) $(CCFLAGS)
 $(CMDS_S) : __FLAGS = $(ASFLAGS) $(CPPFLAGS) $(CCFLAGS)
+$(CMDS_LDS_S) : __FLAGS = -P -undef $(CPPFLAGS) \
+		-imacros $(AUTOCONF_DIR)/config.lds.h -MMD -MT $@ -MF $@.d
+
 $(CMDS) : FLAGS = $(subst ",,$(__FLAGS))
 $(CMDS) :
 	@echo '$(FLAGS) -o $(@:%.cmd=%.o) -c' > $@
+
+$(CMDS_LDS) :
+	@echo '$(FLAGS) -o $(@:%.cmd=%.lds)' > $@
+
 
 $(CMDS): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk $(MK_DIR)/image.mk
 
@@ -174,10 +183,13 @@ else
 CC_RULES = $(CC) $(patsubst -D%,-D"%",$(shell cat $<)) $(word 2,$^)
 endif
 
+$(OBJ_DIR)/%.lds :: $(ROOT_DIR)/%.lds.S
+	mkdir -p $(@D) && $(CPP) $@ $<
+
 $(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
 	$(CC_RULES)
 
-$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
+$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S)
 	$(CC_RULES)
 
 ifndef PARTIAL_LINKING
