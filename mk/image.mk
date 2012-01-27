@@ -138,7 +138,7 @@ OBJS_BUILD := $(call SRC_TO_OBJ,$(SRCS_BUILD))
 $(foreach m,$(MODS_ENABLE_OBJ),$(eval $(call define_mod_obj_rules,$m,\
 	$(call module_get_objects,$m))))
 
--include $(OBJS_BUILD:.o=.d)
+-include $(patsubst %.lds,%.lds.d,$(OBJS_BUILD:.o=.d))
 
 #OBJS_BUILD := $(foreach mod,$(MODS_BUILD),$(OBJS-$(mod)))
 OBJ_SUBDIRS := \
