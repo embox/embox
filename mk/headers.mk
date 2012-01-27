@@ -4,9 +4,6 @@ include core/define.mk
 HEADERS_BUILD := \
   $(patsubst %,$(OBJ_DIR)/mods/%.h,$(subst .,/,$(basename $(APIS_BUILD))))
 
-$(warning HEADERS_BUILD is $(HEADERS_BUILD))
-$(warning APIS is $(APIS_BUILD))
-
 __header_mod = \
   $(subst /,.,$(patsubst $(abspath $(OBJ_DIR))/mods/%.h,%,$(abspath $@)))
 
