@@ -129,6 +129,8 @@ include mk/headers.mk
 SRCS_BUILD := $(sort $(foreach m,$(MODS_ENABLE_OBJ), $(call module_get_sources,$m)))
 OBJS_BUILD := $(call SRC_TO_OBJ,$(SRCS_BUILD))
 
+LDFLAGS += $(filter %.lds,$(OBJS_BUILD))
+
 #$(foreach m,$(MODS_ENABLE_OBJ),\
 #	$(call place_headers,$m,$(call module_get_headers,$m)))
 
@@ -183,7 +185,8 @@ $(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
 
 $(OBJ_DIR)/%.lds :: $(ROOT_DIR)/%.lds.S $(config_lds_h)
 	mkdir -p $(@D)
-	$(CPP) -P -undef $(CPPFLAGS) -imacros $(AUTOCONF_DIR)/config.lds.h -MMD -MT $@ -MF $@.d -o $@ $<
+	$(CPP) -P -undef $(CPPFLAGS) -imacros $(AUTOCONF_DIR)/config.lds.h \
+		-MMD -MT $@ -MF $@.d -o $@ $<
 
 ifndef PARTIAL_LINKING
 
