@@ -17,3 +17,7 @@ abstract module libarch {
 abstract module locore {
 
 }
+
+abstract module lds {
+
+}
