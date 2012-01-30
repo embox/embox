@@ -111,6 +111,8 @@ $(\h) = $(def_all)
 __def_done   :=
 __def_ignore := $(.VARIABLES) __def_ignore
 
+__cache_volatile += __def_done __def_ignore
+
 ##
 # Disables auto definition of certain variables.
 #
@@ -340,6 +342,7 @@ define __def_expand
 endef
 
 __def_tmp__ :=
+__cache_transient += __def_tmp__
 
 # Substitutes all unescaped occurrences of ${...} expansion to $(...).
 # This does not affect pure {...} groups or escaped $${...}.
@@ -1047,6 +1050,7 @@ define builtin_aux_alloc
 	$(builtin_aux_last)
 endef
 __builtin_aux_cnt :=# Initially empty.
+__cache_volatile += __builtin_aux_cnt
 
 # Allocates a new auxiliary function and assigns a value to it.
 # Params:
@@ -1484,6 +1488,7 @@ define __builtin_to_function_inline
 endef
 
 __builtin_to_function_inline_expanded_args :=
+__cache_transient += __builtin_to_function_inline_expanded_args
 
 # Builtin to function is ready to be used.
 $(def_all)

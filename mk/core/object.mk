@@ -448,6 +448,7 @@ define __new
 	)
 endef
 __object_instance_cnt :=# Initially empty.
+__cache_volatile += __object_instance_cnt
 
 # Return:
 #   Human-readable list of args from 1 up to '__obj_debug_args_nr',
@@ -1180,7 +1181,7 @@ define builtin_func-super
 	# Copy function table from super class, but not override functions, that
 	# have already been defined in the current class - they always take
 	# a precedence over inherited ones.
-	$(foreach f,
+	$(silent-foreach f,
 		$(notdir $(call __class_attr_query_in,$1,method% xetter%,%)),
 		# XXX There used to be a call to '__class_new_func_weak'... -- Eldar
 		$(call __class_new_func,$f,$(value $1.$f))
