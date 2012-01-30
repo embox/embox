@@ -3,7 +3,7 @@
 # Author: Eldar Abusalimov
 #
 
-CACHE_DIR := mk/cache
+CACHE_DIR := mk/.cache
 
 # Core scripts: def & obj.
 mk_core := $(CACHE_DIR)/mk_core.mk
@@ -20,6 +20,7 @@ $(mk_gold)/includes := \
 $(mk_gold)/uses := \
 	$(mk_core)
 
+ifeq (0,1) ###
 # Tiny version of EMF Ecore.
 mk_model := $(CACHE_DIR)/mk_model.mk
 $(mk_model)/includes := \
@@ -48,6 +49,24 @@ all_mk_targets := \
 	$(mk_model) \
 	$(mk_mybuild)
 
+else ###
+
+mk_mybuild := $(CACHE_DIR)/mk_mybuild.mk
+$(mk_mybuild)/includes := \
+	mk/mybuild/model.mk     \
+	mk/mybuild/myfile.mk     \
+	mk/mybuild/resource.mk
+$(mk_mybuild)/uses := \
+	$(mk_core) \
+	$(mk_gold)
+
+all_mk_targets := \
+	$(mk_core) \
+	$(mk_gold) \
+	$(mk_mybuild)
+
+endif ###
+
 all : $(all_mk_targets)
 	$(MAKE) -f mk/core/common.mk MAKEFILES=$(mk_mybuild)
 
@@ -56,7 +75,8 @@ $(all_mk_targets) : $$($$@/includes)
 $(all_mk_targets) : $$($$@/uses)
 $(all_mk_targets) : mk/load.mk
 $(all_mk_targets) : mk/cache.mk
+	@echo Preparing $(@F)...
 	@mkdir -p $(@D)
-	$(MAKE) -f mk/cache.mk \
+	@$(MAKE) -f mk/cache.mk \
 		CACHE_INCLUDES='$(value $@/includes)' \
 		CACHE_USES='$(value $@/uses)' > $@
