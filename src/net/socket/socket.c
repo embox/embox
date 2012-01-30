@@ -27,6 +27,10 @@
 
 extern const struct task_res_ops * __task_res_ops[];
 
+#define is_ready(sock) (sock->sk->sk_deferred_info & 0x000000FF)
+#define was_transmit_deferred(sock) ((sock->sk->sk_deferred_info & 0x0000FF00) >> 8)
+#define get_answer_from(sock) ((sock->sk->sk_deferred_info & 0x00FF0000) >> 16)
+
 static ssize_t this_read(int fd, const void *buf, size_t nbyte) {
 	return recvfrom(fd, (void *) buf, nbyte, 0, NULL, 0);
 }
@@ -148,18 +152,20 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 		inet->sport = socket_get_free_port(inet->sport_type);
 	}
 	/* socket is ready for usage and has no data transmitting errors yet */
-	sock->sk->is_ready = 1;
-	sock->sk->answer = sock->sk->sk_err = -1;
+	sock->sk->sk_err = -1;
+	sock->sk->sk_deferred_info = 1;
 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
 
+	if(sock->sk && was_transmit_deferred(sock) != 0) {
+		sock_lock(sock->sk);
+		while(!is_ready(sock));
+		sock_unlock(sock->sk);
+		res = get_answer_from(sock);
+	}
+
 	if(res < 0) {
-		if(sock->sk && !sock->sk->is_ready) {
-			while(!sock->sk->is_ready); /* TODO may be create function sock_ready */
-			return (sock->sk->answer >= 0 ? (ssize_t) len : (ssize_t) sock->sk->answer);
-		} else {
-			return (ssize_t)res;
-		}
+		return (ssize_t)res;
 	}
 
 	return (ssize_t)len;

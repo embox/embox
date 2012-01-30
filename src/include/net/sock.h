@@ -10,6 +10,7 @@
 #define SOCK_H_
 
 #include <net/netdevice.h>
+#include <kernel/thread/sync/mutex.h>
 #include <net/net.h>
 
 typedef struct {
@@ -86,9 +87,8 @@ typedef struct sock {
 	int (* sk_backlog_rcv)(struct sock *sk, sk_buff_t *pack);
 	void (* sk_destruct)(struct sock *sk);
 	int (* get_port)(struct sock *sk, unsigned short num);
-	int is_ready;
-	int answer;
 	int sk_err;
+	int sk_deferred_info;
 } sock_t;
 
 /** Sock flags */
@@ -160,6 +160,14 @@ extern int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
 
 extern void sk_common_release(struct sock *sk);
 
+static inline void sock_lock(struct sock *sk) {
+	while(sk->sk_lock.slock);
+	sk->sk_lock.slock = 1;
+}
+
+static inline void sock_unlock(struct sock *sk) {
+	sk->sk_lock.slock = 0;
+}
 #if 0
 //TODO NETSOCK: functions are not realized now
 extern int proto_register(proto_t *prot, int alloc_slab);
