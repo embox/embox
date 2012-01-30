@@ -28,7 +28,7 @@ define objects_to_dot
 		$(\n)	"$o" \
 			[label="<.> $o : $($o)\l $(foreach f,$(call field_name,
 				$($($o).fields)),
-				| <$f> $f = $(call escape_graphviz,$($o.$f))\l
+				| <$f> $f = \l$(patsubst %,%\r,$(call escape_graphviz,$($o.$f)))
 			)"];
 		$(\n)
 		$(foreach f, $(call obj_links,$o),

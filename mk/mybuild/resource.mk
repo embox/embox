@@ -24,13 +24,13 @@ define class-resource
 
 	#param $1 is filename
 	$(method load,
-		$(for myfile<-$(call gold_parse,myfile,$1),
+		$(for myfile <- $(call gold_parse,myfile,$1),
 			$(set filename,$1)
 			$(call resolve_internal,$(myfile))
 			$(set exports,$(get myfile->modules))
 			$(set my_file,$(myfile))
 			$(set myfile->resource,$(this))
-	       	)
+		)
 	)
 	$(if $(value 1),$(invoke load,$1))
 endef
