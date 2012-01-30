@@ -259,7 +259,7 @@ define class-EObjectImpl
 			# Resolved links suffixed by destination.
 			$(for link <- $2,
 				$(set-field link->__eContainer,$1/eLinks$(this))
-				$(for dst <- $(get link->eDestination),
+				$(for dst <- $(get link->eTarget),
 					$(link)$(dst))),
 
 			$(set-field+ $1,$3)
@@ -281,7 +281,7 @@ define class-EObjectImpl
 			# Resolved links suffixed by destination.
 			$(for link <- $2,
 				$(set-field link->__eContainer,$1/eLinks$(this))
-				$(for dst <- $(get link->eDestination),
+				$(for dst <- $(get link->eTarget),
 					$(link)$(dst))),
 
 			$(set-field+ $1,$4)

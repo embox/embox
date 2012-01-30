@@ -5,6 +5,8 @@
 ifndef __mybuild_myfile_metamodel_mk
 __mybuild_myfile_metamodel_mk := $(lastword $(MAKEFILE_LIST))
 
+include mk/model/metamodel_internals.mk
+
 # Create meta objects.
 MyFile := \
 	$(call createMetaModel,MyFile)

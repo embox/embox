@@ -9,6 +9,8 @@
 
 «inclusionGuardBegin("metamodel")»
 
+include mk/model/metamodel_internals.mk
+
 # Create meta objects.
 «metaVariable()» := \
 	«mkCall("createMetaModel", metaVariable())»
