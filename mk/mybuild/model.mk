@@ -11,8 +11,6 @@ __mybuild_model_mk := 1
 include mk/core/define.mk
 include mk/core/object.mk
 
-include mk/mybuild/scoping.mk
-
 define class-node
 
 	$(property-field container : node)

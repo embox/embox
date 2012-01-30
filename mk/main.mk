@@ -69,7 +69,7 @@ build_patch_targets := \
     $(filter-out $(notdir $(BACKUP_DIR)),$(call __get_subdirs, $(CONF_DIR))) \
   )
 
-.PHONY: all build prepare docsgen dot clean config xconfig menuconfig conf_update
+.PHONY: all __build prepare docsgen dot clean config xconfig menuconfig conf_update
 .PHONY: $(build_patch_targets) build_base_target create_rootfs
 
 # XXX create_rootfs here till myfile make rules processing
@@ -79,9 +79,9 @@ all: create_rootfs $(build_patch_targets) build_base_target
 $(build_patch_targets): export PATCH_NAME=$(basename $@)
 $(build_patch_targets) build_base_target: export BUILD_TARGET=1
 $(build_patch_targets) build_base_target:
-	$(MAKE) build
+	$(MAKE) __build
 
-build: check_config prepare image
+__build: check_config prepare image
 	@echo '$(or $(PATCH_NAME),Base) build complete'
 
 prepare:

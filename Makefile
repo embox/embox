@@ -11,9 +11,7 @@ MK_DIR := $(abspath mk)
 
 ifdef __mk_ready
 
-MYBUILD=1
-
-include main.mk
+include mk/load.mk
 
 else
 
@@ -26,7 +24,7 @@ MAKEFLAGS += --warn-undefined-variables
 .DEFAULT_GOAL := all
 
 % :
-	@$(MAKE) __mk_ready=1 $@ 2>&1
+	@$(MAKE) __mk_ready=1 $@
 
 endif
 
