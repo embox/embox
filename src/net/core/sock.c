@@ -121,3 +121,22 @@ void sk_common_release(struct sock *sk) {
 
 	sk_free(sk);
 }
+
+static int test_and_set(unsigned long *a) {
+	register int tmp;
+
+	sched_lock();
+	tmp = *a;
+	*a = 1;
+	sched_unlock();
+
+	return tmp;
+}
+
+void sock_lock(struct sock *sk) {
+	while(test_and_set(&sk->sk_lock.slock));
+}
+
+void sock_unlock(struct sock *sk) {
+	sk->sk_lock.slock = 0;
+}

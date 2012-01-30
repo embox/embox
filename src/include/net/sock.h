@@ -160,14 +160,10 @@ extern int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
 
 extern void sk_common_release(struct sock *sk);
 
-static inline void sock_lock(struct sock *sk) {
-	while(sk->sk_lock.slock);
-	sk->sk_lock.slock = 1;
-}
+/* Simple spinlock */
+extern void sock_lock(struct sock *sk);
+extern void sock_unlock(struct sock *sk);
 
-static inline void sock_unlock(struct sock *sk) {
-	sk->sk_lock.slock = 0;
-}
 #if 0
 //TODO NETSOCK: functions are not realized now
 extern int proto_register(proto_t *prot, int alloc_slab);

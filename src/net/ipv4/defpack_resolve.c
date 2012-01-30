@@ -32,11 +32,11 @@ void def_process_list(sk_buff_t *arp_pack) {
 			list_del(&pack->link);
 			timer_close(pack->timer);
 			memcpy(pack->skb->mac.ethh->h_dest, arp_pack->mac.ethh->h_source, ETH_ALEN);
-			/* skbuff will be free in this transmitting, because
-			 * in ARP cache already added appropriate record */
-			pack->skb->sk->sk_deferred_info |= (dev_queue_xmit(pack->skb) << 16);
+
 			pack->skb->sk->sk_deferred_info |= (1 << 8);
 			pack->skb->sk->sk_deferred_info |= 1;
+			pack->skb->sk->sk_deferred_info |= (dev_queue_xmit(pack->skb) << 16);
+
 			pool_free(&__deff_packet_buff, pack);
 		}
 	}
@@ -44,15 +44,21 @@ void def_process_list(sk_buff_t *arp_pack) {
 
 static void free_packet(struct sys_timer *timer, void *data) {
 	struct deff_packet *deff_pack;
+	net_device_stats_t *stats;
+	net_device_t *dev;
 
 	/* it must send message, that packet was dropped */
 	deff_pack = (struct deff_packet*) data;
-	list_del(&deff_pack->link);
-	timer_close(timer);
-	deff_pack->skb->sk->sk_deferred_info |= 1;
-	//deff_pack->skb->sk->answer = -1;
 	kfree_skb(deff_pack->skb);
+	dev = deff_pack->skb->dev;
+	stats = dev->netdev_ops->ndo_get_stats(dev);
+	stats->tx_err++;
+
+	timer_close(timer);
+	list_del(&deff_pack->link);
 	pool_free(&__deff_packet_buff, deff_pack);
+
+	deff_pack->skb->sk->sk_deferred_info |= 1;
 }
 
 void def_add_packet(sk_buff_t *pack) {
@@ -61,13 +67,15 @@ void def_add_packet(sk_buff_t *pack) {
 	sk_buff_t *new_pack;
 
 	deff_pack = (struct deff_packet*) pool_alloc(&__deff_packet_buff);
-	timer_set(&timer, DEF_PACKET_TTL, free_packet, deff_pack);
-
-	new_pack = skb_copy(pack, 0);
-
 	INIT_LIST_HEAD(&deff_pack->link);
-	deff_pack->skb = new_pack;
-	deff_pack->timer = timer;
 	list_add_tail(&deff_packet_list, &deff_pack->link);
+
+	timer_set(&timer, DEF_PACKET_TTL, free_packet, deff_pack);
+	deff_pack->timer = timer;
+
+	new_pack = skb_clone(pack, 0);
+	new_pack->sk = pack->sk;
+	deff_pack->skb = new_pack;
+
 	deff_pack->skb->sk->sk_deferred_info ^= 1;
 }
