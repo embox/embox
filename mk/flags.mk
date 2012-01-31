@@ -34,6 +34,7 @@ override CPPFLAGS += -D"__module_headers(path)=<$(patsubst \
 override CPPFLAGS += -D"__impl_x(path)=<../path>"
 override CPPFLAGS += -imacros $(AUTOCONF_DIR)/config.h
 override CPPFLAGS += -I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
+override CPPFLAGS += -I$(SRC_DIR)/compat/linux/include -I$(SRC_DIR)/compat/posix/include
 override CPPFLAGS += -nostdinc
 override CPPFLAGS += -MMD -MP# -MT $@ -MF $(@:.o=.d)
 override CPPFLAGS += $(cppflags)

@@ -61,11 +61,11 @@ ifneq ($(or $(call >,$(CC_VERSION_MAJOR),4), \
 CC_SUPPORTS_@file := 1
 endif
 
-ifeq ($(C),1)
-CHECK   = sparse
-REAL_CC = $(CC)
-CC     := cgcc
-endif
+#ifeq ($(C),1)
+#CHECK   = sparse
+#REAL_CC = $(CC)
+#CC     := cgcc
+#endif
 
 include mk/flags.mk
 
