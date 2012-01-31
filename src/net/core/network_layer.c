@@ -29,7 +29,10 @@ EMBOX_UNIT_INIT(unit_init);
  we should use alloc_skb_queue?*/
 //static SKB_LIST_HEAD(netdev_skb_head);
 
-
+/* FIXME network packet's type is L2 (device layer protocols)
+ * what is dev_add_pack, why was separated ptype_base and ptype_all
+ * what this code does here?
+ */
 /*paket's types*/
 static LIST_HEAD(ptype_base);
 static LIST_HEAD(ptype_all);
@@ -118,8 +121,8 @@ int dev_queue_xmit(struct sk_buff *skb) {
 
 int __netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
-	struct packet_type *q = NULL;
-	const struct net_pack *pack;
+//	struct packet_type *q = NULL;
+//	const struct net_pack *pack;
 
 	if (NULL == skb) {
 		return NET_RX_DROP;
@@ -130,7 +133,8 @@ int __netif_rx(struct sk_buff *skb) {
 		return NET_RX_DROP;
 	}
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
-
+#if 0
+	/*this loop exist in netif_receive_skb*/
 	net_pack_foreach(pack) {
 		q = pack->netpack;
 		if (q->type == skb->protocol) {
@@ -140,6 +144,10 @@ int __netif_rx(struct sk_buff *skb) {
 		}
 	}
 	kfree_skb(skb);
+#endif
+	skb_queue_tail(&(dev->dev_queue), skb);
+	netif_rx_schedule(dev);
+
 	return NET_RX_DROP;
 }
 
@@ -154,15 +162,6 @@ int __netif_receive_skb(sk_buff_t *skb) {
 		}
 	}
 
-#if 0
-
-	net_pack_foreach(
-	list_for_each_entry(q, &ptype_base, list) {
-		if (q->type == skb->protocol) {
-			return q->func(skb, skb->dev, q, NULL);
-		}
-	}
-#endif
 	kfree_skb(skb);
 	return NET_RX_DROP;
 }
@@ -186,6 +185,7 @@ static void net_rx_action(struct softirq_action *action) {
 
 	if(!net_rx_action_in_action){
 		net_rx_action_in_action = 1;
+		//TODO it will be better use list of active device and cache for them
 		for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
 			dev = get_dev_by_idx(i);
 			if (dev) {
@@ -199,6 +199,7 @@ static void net_rx_action(struct softirq_action *action) {
 }
 
 static int __init unit_init(void) {
+	//TODO network route must be a separated module
 	route_init();
 	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
 	return 0;
