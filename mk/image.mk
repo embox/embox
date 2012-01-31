@@ -69,11 +69,9 @@ endif
 
 include mk/flags.mk
 
-LDSCRIPT = $(OBJ_DIR)/$(TARGET).lds
-
 SRC_TO_OBJ = \
-  $(call filter-patsubst,$(ROOT_DIR)%.lds.S,$(OBJ_DIR)%.lds,$1) \
-  $(call filter-patsubst,$(ROOT_DIR)%.c $(ROOT_DIR)%.S,$(OBJ_DIR)%.o,$(filter-out %.lds.S,$1))
+	$(call filter-patsubst,$(ROOT_DIR)%.c $(ROOT_DIR)%.S,$(OBJ_DIR)%.o, \
+		$(filter-out %.lds.S,$1))
 
 # It's time to scan subdirs and prepare mods info.
 #include $(MK_DIR)/embuild.mk
@@ -126,8 +124,10 @@ include mk/headers.mk
 
 SRCS_BUILD := $(sort $(foreach m,$(MODS_ENABLE_OBJ), $(call module_get_sources,$m)))
 OBJS_BUILD := $(call SRC_TO_OBJ,$(SRCS_BUILD))
+LDSS_BUILD := \
+	$(call filter-patsubst,$(ROOT_DIR)%.lds.S,$(OBJ_DIR)%.lds,$(SRCS_BUILD))
 
-LDFLAGS += $(filter %.lds,$(OBJS_BUILD))
+override LDFLAGS += $(LDSS_BUILD:%=-T %)
 
 #$(foreach m,$(MODS_ENABLE_OBJ),\
 #	$(call place_headers,$m,$(call module_get_headers,$m)))
@@ -142,11 +142,11 @@ $(foreach m,$(MODS_ENABLE_OBJ),$(eval $(call define_mod_obj_rules,$m,\
 
 #OBJS_BUILD := $(foreach mod,$(MODS_BUILD),$(OBJS-$(mod)))
 OBJ_SUBDIRS := \
-  $(sort $(dir $(OBJS_BUILD)))
+  $(sort $(dir $(OBJS_BUILD) $(LDSS_BUILD)))
 
 #$(foreach lib,$(LIBS),$(OBJS-$(lib)))))
 
-$(OBJS_BUILD): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk
+$(OBJS_BUILD) $(LDSS_BUILD): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk
 
 __CMDS = \
   $(patsubst $(ROOT_DIR)%.$1,$(OBJ_DIR)%.cmd,$(filter %.$1,$(SRCS_BUILD)))
@@ -188,7 +188,7 @@ $(OBJ_DIR)/%.lds :: $(ROOT_DIR)/%.lds.S $(config_lds_h)
 
 ifndef PARTIAL_LINKING
 
-$(IMAGE): $(HEADERS_BUILD) $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
+$(IMAGE): $(HEADERS_BUILD) $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(LDSS_BUILD) $(call LIB_FILE,$(LIBS))
 	$(LD) $(LDFLAGS) $(OBJS_BUILD:%=\$(\n)		%) \
 		$(DEPSINJECT_OBJ) \
 	-L$(LIB_DIR) $(LIBS:lib%.a=\$(\n)		-l%) \
@@ -198,7 +198,7 @@ $(IMAGE): $(HEADERS_BUILD) $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIB
 else
 
 IMAGE_O    = $(IMAGE).o
-$(IMAGE_O): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(call LIB_FILE,$(LIBS))
+$(IMAGE_O): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(LDSS_BUILD) $(call LIB_FILE,$(LIBS))
 	$(LD) -r -o  $@ $(OBJS_BUILD:%=\$(\n)	%) \
 	$(DEPSINJECT_OBJ)
 $(IMAGE): $(IMAGE_O)
@@ -228,7 +228,7 @@ image_size_sort = \
 	echo "sort by $2 size" >> $@;     \
 	cat $@.tmp | sort -g -k $1 >> $@;
 
-$(IMAGE_SIZE): $(IMAGE) $(OBJS_BUILD) $(DEPSINJECT_OBJ)
+$(IMAGE_SIZE): $(IMAGE)
 	@if [ `which $(SIZE) 2> /dev/null` ];  \
 	then                                   \
 	    $(SIZE) $^ > $@.tmp;               \

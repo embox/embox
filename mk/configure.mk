@@ -28,7 +28,9 @@ include mk/mybuild/read.mk
 include mk/conf/roots.mk
 include mk/conf/runlevel.mk
 
-MODS_ENABLE_OBJ := $(call module_closure,$(call find_mods,$(sort $(MODS_ENABLE))))
+MODS_ENABLE += embox.arch.lds
+MODS_ENABLE_OBJ := \
+	$(call module_closure,$(call find_mods,$(sort $(MODS_ENABLE))))
 
 TARGET ?= embox$(if $(PLATFORM),-$(PLATFORM))
 TARGET := $(TARGET)$(if $(LOCALVERSION),-$(LOCALVERSION))

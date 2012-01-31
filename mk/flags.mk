@@ -61,8 +61,7 @@ ldflags := $(LDFLAGS)
 override LDFLAGS  = -static
 override LDFLAGS += -nostdlib
 override LDFLAGS += --cref --relax
-override LDFLAGS += -T $(LDSCRIPT)
-override LDFLAGS += $(SUBDIRS_LDFLAGS)
+#override LDFLAGS += $(SUBDIRS_LDFLAGS)
 override LDFLAGS += $(ldflags)
 
 override ARFLAGS = rcs
