@@ -21,37 +21,31 @@
 
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
-static int inet_create(struct socket *sock, int protocol) {
-	struct sock *sk;
-	struct inet_sock *inet;
+static struct inet_protosw *inet_proto_find(int type, int protocol) {
 	struct inet_protosw *p_netsock = NULL;
 	const struct net_sock *net_sock_ptr;
 
 	net_sock_foreach(net_sock_ptr) {
 		p_netsock = net_sock_ptr->netsock;
-		if (p_netsock->type != sock->type) {
+		if (p_netsock->type != type) {
 			continue;
 		}
-		/* TODO modify if-else block --Ilia Vaprol */
 		if (p_netsock->protocol == protocol) {
-			if (protocol != IPPROTO_IP) {
-				break;
-			}
-		} else {
-			if (IPPROTO_IP == protocol) {
-				protocol = p_netsock->protocol;
-				break;
-			}
-			if (IPPROTO_IP == p_netsock->protocol) {
-				break;
-			}
+			return p_netsock;
 		}
-		/* TODO What if loop was completed without break? */
 	}
+	return NULL;
+}
 
-	// TODO what if there was no appropriate netsock? -- Eldar
-	if (!p_netsock) {
-		return -ENOENT;
+/* AF_INET socket create */
+static int inet_create(struct socket *sock, int protocol) {
+	int err;
+	struct sock *sk;
+	struct inet_sock *inet;
+	struct inet_protosw *p_netsock = NULL;
+
+	if (NULL == (p_netsock = inet_proto_find(sock->type, protocol))) {
+		return -EPROTONOSUPPORT;
 	}
 
 	sk = sk_alloc(PF_INET, 0, (struct proto *) p_netsock->prot);
@@ -66,15 +60,17 @@ static int inet_create(struct socket *sock, int protocol) {
 
 	inet = inet_sk(sk);
 	inet->id = 0;
-	inet->uc_ttl = 64; /* TODO remove constant */
-	inet->mc_ttl = 64;
+	inet->uc_ttl = -1; /* TODO socket setup more options  */
+	inet->mc_ttl = 1;
 
 	if (sk->sk_prot->init != NULL) {
-		return sk->sk_prot->init(sk);
+		if(0 != (err = sk->sk_prot->init(sk))) {
+			sk_common_release(sk);
+			return err;
+		}
 	}
 
-	// TODO Is it right to return no error if there is not init function?
-	return 0;
+	return ENOERR;
 }
 
 int inet_release(struct socket *sock) {
