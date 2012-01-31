@@ -5,10 +5,6 @@ include core/define.mk
 HEADERS_BUILD := \
   $(patsubst %,$(OBJ_DIR)/mods/%.h,$(subst .,/,$(basename $(APIS_BUILD))))
 
-$(warning MODS_ENABLE_OBJ: $(MODS_ENABLE_OBJ:%=$(\n)$(\t)%))
-$(warning APIS_BUILD: $(APIS_BUILD:%=$(\n)$(\t)%))
-$(warning HEADERS_BUILD: $(HEADERS_BUILD:%=$(\n)$(\t)%))
-
 __header_mod = \
   $(subst /,.,$(patsubst $(abspath $(OBJ_DIR))/mods/%.h,%,$(abspath $@)))
 
@@ -51,5 +47,4 @@ $(foreach impl,$(call find_descedant,$1,$(MODS_ENABLE_OBJ)),$(\n)// impl: $(impl
 endef
 
 $(HEADERS_BUILD): $(MK_DIR)/image.mk $(AUTOCONF_DIR)/mods.mk
-	@echo making $@
 	@$(MKDIR) $(@D) && printf "%b" '$(__header_gen)' > $@
