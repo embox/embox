@@ -16,16 +16,16 @@
 
 /* Supported address families. */
 #define AF_UNSPEC    0
-//#define AF_UNIX      1  /* Unix domain sockets */
-//#define AF_LOCAL     1  /* POSIX name for AF_UNIX */
+#define AF_UNIX      1  /* Unix domain sockets */
+#define AF_LOCAL     1  /* POSIX name for AF_UNIX */
 #define AF_INET      2  /* Internet IP Protocol */
 #define AF_PACKET    17 /* Packet family */
 #define AF_MAX       33 /* For now.. */
 
 /* Protocol families, same as address families. */
 #define PF_UNSPEC	AF_UNSPEC
-//#define PF_UNIX		AF_UNIX
-//#define PF_LOCAL	AF_LOCAL
+#define PF_UNIX		AF_UNIX
+#define PF_LOCAL	AF_LOCAL
 #define PF_INET		AF_INET
 #define PF_PACKET	AF_PACKET
 #define PF_MAX		AF_MAX
