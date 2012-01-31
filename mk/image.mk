@@ -13,23 +13,18 @@ IMAGE_PIGGY= $(IMAGE).piggy
 
 .PHONY: image image_init image_fini
 image: image_init
-image: $(IMAGE) $(IMAGE_SIZE) $(IMAGE_PIGGY)
-ifeq ($(DISASSEMBLE),y)
+image: $(IMAGE)
 image: $(IMAGE_DIS)
-endif
-ifeq ($(BINARY_IMAGE),y)
 image: $(IMAGE_BIN)
-endif
-ifeq ($(SREC_IMAGE),y)
 image: $(IMAGE_SREC)
-endif
-
+image: $(IMAGE_SIZE)
+image: $(IMAGE_PIGGY)
 image: image_fini
 
-image_init image_fini: rootfs_prepare
+image_init image_fini:
 
 .PHONY: image_prepare
-prepare: image_prepare rootfs_prepare
+prepare: image_prepare
 image_prepare:
 	@mkdir -p $(OBJ_SUBDIRS)
 
@@ -37,6 +32,9 @@ image_prepare:
 rootfs_prepare: ;
 #	@mkdir -p $(BUILD_DIR)/rootfs
 #	@cp $(__ROOTFS_SRCS) $(BUILD_DIR)/rootfs/
+
+$(ROOTFS_IMAGE):
+	@find $(ROOTFS_DIR)/ -depth -print | cpio -H newc -o > $@
 
 CC      = $(CROSS_COMPILE)gcc
 CPP     = $(CC) -E

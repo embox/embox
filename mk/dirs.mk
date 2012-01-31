@@ -11,14 +11,10 @@ DOCS_DIR       := $(ROOT_DIR)/docs
 
 CONF_DIR       := $(ROOT_DIR)/conf
 
-PATCH_NAME ?=
-
-BASE_CONF_DIR  := $(ROOT_DIR)/conf
-PATCH_CONF_DIR := $(ROOT_DIR)/conf/$(PATCH_NAME)
-
 BACKUP_DIR     := $(ROOT_DIR)/conf/backup~
 
-BUILD_DIR     := $(ROOT_DIR)/build/$(if $(PATCH_NAME),patch_$(PATCH_NAME),base)
+# XXX check for hardcoded 'build/base' anywhere. -- Eldar
+BUILD_DIR     := $(ROOT_DIR)/build/base
 
 EMBUILD_DIR    := $(MK_DIR)/embuild
 

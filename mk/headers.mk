@@ -42,5 +42,5 @@ $(foreach impl,$(call find_descedant,$2,$(MODS_ENABLE_OBJ)),$(\n)// impl: $(impl
 
 endef
 
-$(HEADERS_BUILD): $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/image.mk $(AUTOCONF_DIR)/mods.mk
+$(HEADERS_BUILD): $(MK_DIR)/image.mk $(AUTOCONF_DIR)/mods.mk
 	@$(MKDIR) $(@D) && printf "%b" '$(__header_gen)' > $@

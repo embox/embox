@@ -42,17 +42,10 @@ include mk/util/serialize.mk
 
 include mk/gmsl/gmsl.mk
 
-makegoals := $(MAKECMDGOALS)
-ifeq ($(makegoals),)
-makegoals := all
-endif
-
 # XXX Fix this shit. -- Eldar
 
 # 'clean', 'docsgen' and 'config' are handled in-place.
-ifneq ($(filter-out %clean %config conf% %docsgen,$(makegoals)),)
-# Root 'make all' does not need other makefiles too.
-ifneq ($(or $(filter-out $(makegoals),all),$(BUILD_TARGET)),)
+ifneq ($(filter-out %clean %config conf% %docsgen,$(MAKECMDGOALS)),)
 # Need to include it prior to walking the source tree
 include $(MK_DIR)/configure.mk
 # Skip image.mk if configs has not been remade yet
@@ -60,35 +53,19 @@ ifneq ($(wildcard $(AUTOCONF_DIR)/build.mk),)
 include $(MK_DIR)/image.mk
 include $(MK_DIR)/codegen-dot.mk
 endif # $(wildcard $(AUTOCONF_DIR)/build.mk)
-endif # $(or $(filter-out $(makegoals),all),$(BUILD_TARGET))
-endif # $(filter-out %clean %config %docsgen,$(makegoals))
+endif # $(filter-out %clean %config %docsgen,$(MAKECMDGOALS))
 
-__get_subdirs = $(sort $(notdir $(call d-wildcard,$(1:%=%/*))))
-build_patch_targets := \
-  $(patsubst %,%.target, \
-    $(filter-out $(notdir $(BACKUP_DIR)),$(call __get_subdirs, $(CONF_DIR))) \
-  )
+.PHONY: all  prepare docsgen dot clean config xconfig menuconfig conf_update
 
-.PHONY: all __build prepare docsgen dot clean config xconfig menuconfig conf_update
-.PHONY: $(build_patch_targets) build_base_target create_rootfs
-
-# XXX create_rootfs here till myfile make rules processing
-all: create_rootfs $(build_patch_targets) build_base_target
+all: check_config prepare image
 	@echo 'Build complete'
-
-$(build_patch_targets): export PATCH_NAME=$(basename $@)
-$(build_patch_targets) build_base_target: export BUILD_TARGET=1
-$(build_patch_targets) build_base_target:
-	$(MAKE) __build
-
-__build: check_config prepare image
-	@echo '$(or $(PATCH_NAME),Base) build complete'
 
 prepare:
 	@$(MKDIR) $(BUILD_DIR)
 	@$(MKDIR) $(BIN_DIR)
 	@$(MKDIR) $(OBJ_DIR)
 	@$(MKDIR) $(LIB_DIR)
+	@$(MKDIR) $(ROOTFS_DIR)
 	@$(MKDIR) $(AUTOCONF_DIR)
 	@$(MKDIR) $(DOCS_OUT_DIR)
 
@@ -99,10 +76,6 @@ docsgen:
 
 dot: $(GRAPH_PS)
 	@echo 'Dot complete'
-
-create_rootfs:
-	@mkdir -p $(ROOTFS_DIR)
-	pushd $(ROOTFS_DIR); find ./ -depth -print | cpio -H newc -ov > ../rootfs.cpio; popd;
 
 clean c: _clean
 	@echo 'Clean complete'

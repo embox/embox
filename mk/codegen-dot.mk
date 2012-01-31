@@ -43,7 +43,7 @@ generate_dot = $(strip \ndigraph Embox { \
   ) \
 \n})\n
 
-$(GRAPH_DOT) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-dot.mk
+$(GRAPH_DOT) : $(MK_DIR)/codegen-dot.mk
 	@$(PRINTF) '$(generate_dot)' > $@
 
 $(GRAPH_PS) : $(GRAPH_DOT)

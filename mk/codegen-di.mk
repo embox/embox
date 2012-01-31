@@ -95,7 +95,7 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
 __printf_escape = "$(subst ",\",$1)"
 $(DEPSINJECT_SRC) :
 	echo > $@
-#$(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-di.mk \
+# $(MK_DIR)/codegen-di.mk \
 #  $(AUTOCONF_DIR)/mods.mk
 #	@$(PRINTF) $(call __printf_escape,$(generate_header)) > $@
 #	@$(PRINTF) $(call __printf_escape,$(generate_includes)) >> $@

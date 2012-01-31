@@ -28,13 +28,12 @@ include mk/mybuild/read.mk
 include mk/conf/roots.mk
 include mk/conf/runlevel.mk
 
-#mods_enable_obj_mk := mods_enable_obj.mk
 MODS_ENABLE_OBJ := $(call module_closure,$(call find_mods,$(sort $(MODS_ENABLE))))
 
 TARGET ?= embox$(if $(PLATFORM),-$(PLATFORM))
 TARGET := $(TARGET)$(if $(LOCALVERSION),-$(LOCALVERSION))
 
-.PHONY: check_config check_conf_dir $(mods_enable_obj_mk)
+.PHONY: check_config check_conf_dir
 check_config: check_conf_dir $(CONF_FILES)
 ifndef ARCH
 	@echo 'Error: ARCH undefined'
@@ -53,15 +52,13 @@ $(mods_mk)      : DEFS := __MODS_MK__
 $(config_h)     : DEFS := __CONFIG_H__
 $(config_lds_h) : DEFS := __CONFIG_LDS_H__
 
-$(AUTOCONF_DIR)/start_script.inc: \
-  $(or $(wildcard $(PATCH_CONF_DIR)/start_script.inc), \
-        $(wildcard $(BASE_CONF_DIR)/start_script.inc))
-	$(if $<,cp -f $< $@,@echo 'ERROR: start_script.inc not found';exit 1)
+$(AUTOCONF_DIR)/start_script.inc: $(CONF_DIR)/start_script.inc
+	@cp -f $< $@
 
-ifeq ($(HOSTCC_MAJOR), 4)
-HOSTCC_CPPFLAGS := -iquote $(PATCH_CONF_DIR) -iquote $(BASE_CONF_DIR)
+ifeq ($(HOSTCC_MAJOR),4)
+HOSTCC_CPPFLAGS := -iquote $(CONF_DIR)
 else
-HOSTCC_CPPFLAGS := -I $(PATCH_CONF_DIR) -I $(BASE_CONF_DIR) -I-
+HOSTCC_CPPFLAGS := -I $(CONF_DIR) -I-
 endif
 
 $(build_mk) $(mods_mk) :
