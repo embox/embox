@@ -1,12 +1,13 @@
 package embox.util
 
-
-static module libutil {
+static module LibUtil {
 	//FIXME mybuild Option handling is not yet implemented
 	source "slist_debug.c", "slist_debug.h"
 	source "list_debug.c", "list_debug.h"
-	source "tree_set.c", "tree.c"
-	source "priority_q.c", "binary_heap.c"
+	source "tree_set.c"
+	source "tree.c"
+	source "priority_q.c"
+	source "binary_heap.c"
 	source "circular_buffer.c"
 }
 

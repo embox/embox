@@ -1,5 +1,21 @@
 package embox.framework
 
+static module LibFramework {
+	make flags "-D__FRAMEWORK__"
+
+	source "cmd/core.c"
+	source "example/core.c"
+	source "mod/core.c"
+	source "net/pack/core.c"
+	source "net/proto/core.c"
+	source "net/sock/core.c"
+	source "service/callback.c"
+	source "test/registry.c"
+	source "test/run.c"
+
+	depends runlevel
+}
+
 module runlevel {
 	/*FIXME mybuild make flags options */
 	/*make flags "-D__FRAMEWORK__"*/

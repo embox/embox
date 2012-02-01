@@ -12,8 +12,6 @@
 #include <framework/mod/ops.h>
 #include <framework/mod/api.h>
 
-// XXX rewrite this shit. -- Eldar
-#define __EMBUILD_MOD__
 #include <embox/unit.h>
 
 static int unit_mod_enable(struct mod_info *mod_info);

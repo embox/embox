@@ -1,6 +1,6 @@
 package embox.lib
 
-static module Libc {
+static module LibC {
 	source "assert.c"
 	source "crypt/crc32.c"
 	source "crypt/md5.c"

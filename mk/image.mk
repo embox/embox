@@ -207,7 +207,7 @@ $(IMAGE_O): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(LDSS_BUILD) $(call LIB_FILE,$(LIBS
 	$(DEPSINJECT_OBJ)
 $(IMAGE): $(IMAGE_O)
 	$(LD) $(LDFLAGS) $< \
-	-L$(LIB_DIR) $(LIBS:lib%.a=\$(\n)		-l%) \
+	$(patsubst %,\$(\n)		%,$(call LIB_FILE,$(LIBS_BUILD))) \
 	-Map $@.map \
 	-o   $@
 
