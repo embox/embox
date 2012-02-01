@@ -72,7 +72,7 @@ int eth_rebuild_header(sk_buff_t *pack) {
 			/* 	icmp_send(skb_temp, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, 0); /\* report it *\/ */
 			/* 	kfree_skb(skb_temp); */
 			/* } */
-			return -EINVAL;
+			return -ENOENT;
 		}
 		else
 			return ENOERR;						/* else everythimg is fine, the packet is ready to be sent */

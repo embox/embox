@@ -103,7 +103,8 @@ int dev_queue_xmit(struct sk_buff *skb) {
 		res = dev->header_ops->rebuild(skb);
 		if (res < 0) {
 			kfree_skb(skb);
-			stats->tx_err++;
+			if(res != -ENOENT) /* if packet was not deferred */
+				stats->tx_err++;
 			return res;
 		}
 		res = ops->ndo_start_xmit(skb, dev);
