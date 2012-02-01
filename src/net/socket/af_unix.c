@@ -139,3 +139,6 @@ static const struct net_proto_family unix_family_ops = {
 #endif
 };
 
+static int af_unix_init(void) {
+	return sock_register(&unix_family_ops);
+}

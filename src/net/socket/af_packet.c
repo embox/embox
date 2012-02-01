@@ -7,8 +7,12 @@
  * @author Anton Bondarev
  */
 #include <errno.h>
+#include <embox/net/pack.h>
 #include <net/socket.h>
 #include <net/sock.h>
+
+
+EMBOX_NET_PACK(ETH_P_ALL, ip_rcv, af_packet_init);
 
 struct packet_sock {
 	/* struct sock has to be the first member of packet_sock */
@@ -57,4 +61,8 @@ struct net_proto_family packet_family_ops = {
 	.owner = THIS_MODULE,
 #endif
 };
+
+static int af_packet_init(void) {
+	return sock_register(&packet_family_ops);
+}
 
