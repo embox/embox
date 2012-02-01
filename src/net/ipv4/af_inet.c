@@ -30,7 +30,7 @@ static struct inet_protosw *inet_proto_find(int type, int protocol) {
 		if (p_netsock->type != type) {
 			continue;
 		}
-		if (p_netsock->protocol == protocol) {
+		if (p_netsock->protocol == protocol || IPPROTO_IP == p_netsock->protocol) {
 			return p_netsock;
 		}
 	}
