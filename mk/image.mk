@@ -73,6 +73,9 @@ SRC_TO_OBJ = \
 	$(call filter-patsubst,$(ROOT_DIR)%.c $(ROOT_DIR)%.S,$(OBJ_DIR)%.o, \
 		$(filter-out %.lds.S,$1))
 
+LIB_FILE = \
+	$(foreach 1,$1,$(LIB_DIR)/$(get $1.qualified_name).a)
+
 # It's time to scan subdirs and prepare mods info.
 #include $(MK_DIR)/embuild.mk
 include mk/mybuild/read.mk
@@ -80,71 +83,72 @@ include mk/mybuild/read.mk
 include $(MK_DIR)/codegen-di.mk
 
 # param $1 is module obj
-define module_get_objects
+module_get_objects = \
 	$(call SRC_TO_OBJ,$(module_get_sources))
-endef
-
-define module_get_files
-	$(foreach s,$(get $1.sources),
-		$(get s->fullname))
-endef
-
-define module_get_sources
+module_get_files = \
+	$(foreach s,$(get $1.sources),$(get s->fullname))
+module_get_sources = \
 	$(filter %.c %.S,$(module_get_files))
-endef
-
-define module_get_headers
+module_get_headers = \
 	$(filter %.h,$(module_get_files))
-endef
 
-#define define_lib_rules
-#  $(call LIB_FILE,$(unit)) : $(OBJS-$(unit))
-#	$(AR) $(ARFLAGS) $@ $(^:%= \$(\n)	%)
-#endef
-
-#param $1 is module obj
-#param $2 is .o of module
-define define_mod_obj_rules
-$(if $(get $1.flags),
-  $2 : override CCFLAGS  += $(for s<-$(get $1.flags),$(get s->value))$(\n))
-  $2 : override CPPFLAGS += -D__EMBUILD_MOD__='$(subst .,__,$(get $1.qualified_name))'
-endef
-
-define find_abstract
-	$(foreach m,$1,
-		$(if $(filter abstract,$(get m->modifiers)),
-			$m))
-endef
+filter_abstract_modules = \
+	$(strip $(foreach m,$1,$(if $(filter abstract,$(get m->modifiers)),$m)))
+filter_static_modules = \
+	$(strip $(foreach m,$1,$(if $(filter static,$(get m->modifiers)),$m)))
 
 $(def_all)
 
-APIS_BUILD := $(call find_abstract,$(MODS_ENABLE_OBJ))
+APIS_BUILD := $(call filter_abstract_modules,$(MODS_ENABLE_OBJ))
+LIBS_BUILD := $(call filter_static_modules,$(MODS_ENABLE_OBJ))
 
-include mk/headers.mk
-
-SRCS_BUILD := $(sort $(foreach m,$(MODS_ENABLE_OBJ), $(call module_get_sources,$m)))
+SRCS_BUILD := $(sort $(foreach m,$(MODS_ENABLE_OBJ),$(call module_get_sources,$m)))
 OBJS_BUILD := $(call SRC_TO_OBJ,$(SRCS_BUILD))
+SRCS_BUILD_NONLIB := \
+	$(sort $(foreach m,$(filter-out $(LIBS_BUILD),$(MODS_ENABLE_OBJ)), \
+		$(call module_get_sources,$m)))
+OBJS_BUILD_NONLIB := $(call SRC_TO_OBJ,$(SRCS_BUILD_NONLIB))
 LDSS_BUILD := \
 	$(call filter-patsubst,$(ROOT_DIR)%.lds.S,$(OBJ_DIR)%.lds,$(SRCS_BUILD))
 
 override LDFLAGS += $(LDSS_BUILD:%=-T %)
 
-#$(foreach m,$(MODS_ENABLE_OBJ),\
-#	$(call place_headers,$m,$(call module_get_headers,$m)))
 
-#$(info objs are $(OBJS_BUILD))
-#$(info srcs are $(SRCS_BUILD))
+# 1. Module.
+define define_mod_obj_rules
+	${eval \
+		$(with $1,$(call module_get_objects,$1),
+			$(if $(get $1.flags),
+				$2 : override CCFLAGS += \
+						$(for s<-$(get $1.flags),$(get s->value))
+				$(\n))
+			$2 : override CPPFLAGS += \
+					-D__EMBUILD_MOD__='$(subst .,__,$(get $1.qualified_name))'
+		)
+	}
+endef
 
-$(foreach m,$(MODS_ENABLE_OBJ),$(eval $(call define_mod_obj_rules,$m,\
-	$(call module_get_objects,$m))))
+# 1. Library module.
+define define_lib_rules
+	${eval \
+		$(call LIB_FILE,$1) : $(call module_get_objects,$1)$(\n)
+			$(\t)$(AR) $(ARFLAGS) $$@ $$(^:%= \$$(\n)	%)
+	}
+endef
+
+$(def_all)
+
+
+$(foreach m,$(MODS_ENABLE_OBJ),$(call define_mod_obj_rules,$m))
+$(foreach l,$(LIBS_BUILD),$(call define_lib_rules,$l))
 
 -include $(patsubst %.lds,%.lds.d,$(OBJS_BUILD:.o=.d))
 
 #OBJS_BUILD := $(foreach mod,$(MODS_BUILD),$(OBJS-$(mod)))
 OBJ_SUBDIRS := \
-  $(sort $(dir $(OBJS_BUILD) $(LDSS_BUILD)))
+	$(sort $(dir $(OBJS_BUILD) $(LDSS_BUILD)))
 
-#$(foreach lib,$(LIBS),$(OBJS-$(lib)))))
+include mk/headers.mk
 
 $(OBJS_BUILD) $(LDSS_BUILD): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk
 
@@ -188,18 +192,18 @@ $(OBJ_DIR)/%.lds :: $(ROOT_DIR)/%.lds.S $(config_lds_h)
 
 ifndef PARTIAL_LINKING
 
-$(IMAGE): $(HEADERS_BUILD) $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(LDSS_BUILD) $(call LIB_FILE,$(LIBS))
-	$(LD) $(LDFLAGS) $(OBJS_BUILD:%=\$(\n)		%) \
+$(IMAGE): $(HEADERS_BUILD) $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(LDSS_BUILD) $(call LIB_FILE,$(LIBS_BUILD))
+	$(LD) $(LDFLAGS) $(OBJS_BUILD_NONLIB:%=\$(\n)		%) \
 		$(DEPSINJECT_OBJ) \
-	-L$(LIB_DIR) $(LIBS:lib%.a=\$(\n)		-l%) \
+		$(patsubst %,\$(\n)		%,$(call LIB_FILE,$(LIBS_BUILD))) \
 	-Map $@.map \
 	-o   $@
 
 else
 
 IMAGE_O    = $(IMAGE).o
-$(IMAGE_O): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(LDSS_BUILD) $(call LIB_FILE,$(LIBS))
-	$(LD) -r -o  $@ $(OBJS_BUILD:%=\$(\n)	%) \
+$(IMAGE_O): $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(LDSS_BUILD) $(call LIB_FILE,$(LIBS_BUILD))
+	$(LD) -r -o  $@ $(OBJS_BUILD_NONLIB:%=\$(\n)	%) \
 	$(DEPSINJECT_OBJ)
 $(IMAGE): $(IMAGE_O)
 	$(LD) $(LDFLAGS) $< \
