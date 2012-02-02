@@ -20,7 +20,9 @@
 
 #include <asm/system.h> /*linux-compatible*/
 
+#define INITIAL_SOCKET_COUNT 10
 
+#if 0
 typedef struct sock_info {
 	/*FIXME NETSOCK: now we use just udp_sock pull. It is the biggest of sock
 	 *  structure now. But we must allocate sock with size equals obj_size
@@ -31,6 +33,7 @@ typedef struct sock_info {
 
 /* pool for allocate sock_info */
 POOL_DEF(socks_pool, sock_info_t, CONFIG_MAX_KERNEL_SOCKETS);
+#endif
 
 
 /* allocates proto structure for specified protocol*/
@@ -45,7 +48,10 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 		sock = prot->sock_alloc();
 	}
 
-	if(sock == NULL && (sock = pool_alloc(&socks_pool)) == NULL) {
+	if(!prot->cachep)
+		prot->cachep = cache_create(prot->name, prot->obj_size, INITIAL_SOCKET_COUNT);
+
+	if(sock == NULL && (sock = cache_alloc(prot->cachep)) == NULL) {
 		local_irq_restore(flags);
 		return NULL;
 	}
@@ -69,7 +75,8 @@ static void sk_prot_free(struct proto *prot, struct sock *sk) {
 	if (prot->sock_free != NULL) {
 		prot->sock_free(sk);
 	} else {
-		pool_free(&socks_pool, sk);
+		//pool_free(&socks_pool, sk);
+		cache_free(prot->cachep, sk);
 	}
 	local_irq_restore(irq_old);
 }

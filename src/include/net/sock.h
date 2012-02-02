@@ -12,6 +12,7 @@
 #include <net/netdevice.h>
 #include <kernel/thread/sync/mutex.h>
 #include <net/net.h>
+#include <mem/misc/slab.h>
 
 typedef struct {
 	spinlock_t slock;
@@ -125,6 +126,7 @@ typedef struct proto {
 	sock_t *(*sock_alloc)(void); /**< if not NULL, allocate proto socket casted to sock_t */
 	void (*sock_free)(sock_t *); /**< must not be NULL if sock_alloc is not NULL */
 	unsigned int obj_size;
+	cache_t *cachep;
 	char name[32];
 } proto_t;
 

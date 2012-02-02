@@ -691,7 +691,8 @@ struct proto tcp_prot = {
 	.sendmsg		= tcp_v4_sendmsg,
 	.recvmsg		= tcp_v4_recvmsg,
 	.sock_alloc		= tcp_v4_sock_alloc,
-	.sock_free		= tcp_v4_sock_free
+	.sock_free		= tcp_v4_sock_free,
+	.obj_size = sizeof(struct tcp_sock),
 #if 0
 	.owner                  = THIS_MODULE,
 	.connect                = tcp_v4_connect,

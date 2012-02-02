@@ -11,6 +11,7 @@ $_SRCS-core += sock.c
 $_SRCS-core += skbuff.c
 $_DEPS-core += embox.net.dev
 $_DEPS-core += embox.net.util
+$_DEPS-core += embox.mem.slab
 
 $_MODS     += dev
 $_SRCS-dev += dev.c

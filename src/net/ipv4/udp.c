@@ -186,4 +186,5 @@ struct proto udp_prot = {
 	.obj_size          = sizeof(struct udp_sock),
 	.h.udp_table       = &udp_table,
 #endif
+	.obj_size = sizeof(struct udp_sock),
 };
