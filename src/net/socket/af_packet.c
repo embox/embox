@@ -16,11 +16,37 @@ EMBOX_NET_PACK(ETH_P_ALL, ip_rcv, af_packet_init);
 
 struct packet_sock {
 	/* struct sock has to be the first member of packet_sock */
-	struct sock		sk;
+	struct sock sk;
 };
+
+static struct packet_sock *packet_hash_table[CONFIG_MAX_KERNEL_SOCKETS];
+
+static void packet_sock_hash(struct sock *sk) {
+	size_t i;
+
+	for (i = 0; i < ARRAY_SIZE(packet_hash_table); i++) {
+		if (packet_hash_table[i] == NULL) {
+			packet_hash_table[i] = (struct packet_sock *) sk;
+			break;
+		}
+	}
+}
+
+static void packet_sock_unhash(struct sock *sk) {
+	size_t i;
+
+	for (i = 0; i < ARRAY_SIZE(packet_hash_table); i++) {
+		if (packet_hash_table[i] == (struct packet_sock *) sk) {
+			packet_hash_table[i] = NULL;
+			break;
+		}
+	}
+}
 
 static struct proto packet_proto = {
 	.name	  = "PACKET",
+	.hash	  = packet_sock_hash,
+	.unhash	  = packet_sock_unhash,
 #if 0
 	.owner	  = THIS_MODULE,
 #endif

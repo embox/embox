@@ -50,7 +50,9 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 		return NULL;
 	}
 
-	prot->hash(sock);
+	if(0 != prot->hash) {
+		prot->hash(sock);
+	}
 
 	local_irq_restore(flags);
 
@@ -61,7 +63,9 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 static void sk_prot_free(struct proto *prot, struct sock *sk) {
 	unsigned long irq_old;
 	local_irq_save(irq_old);
-	prot->unhash(sk);
+	if(prot->unhash) {
+		prot->unhash(sk);
+	}
 	if (prot->sock_free != NULL) {
 		prot->sock_free(sk);
 	} else {
