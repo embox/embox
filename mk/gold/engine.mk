@@ -1,7 +1,7 @@
 #
-# Copyright 2011, Mathematics and Mechanics faculty
+# Copyright 2011-2012, Mathematics and Mechanics faculty
 #                   of Saint-Petersburg State University. All rights reserved.
-# Copyright 2011, Lanit-Tercom Inc. All rights reserved.
+# Copyright 2011-2012, Lanit-Tercom Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -1086,9 +1086,8 @@ endef
 # Note:
 #   Rule production handlers can access locations of the rest RHS symbols
 #   using 'gold_location_of' function.
-define gold_location
+gold_location = \
 	$(call gold_location_of,1)
-endef
 
 #
 # Gets a location of a symbol specified by its number in the RHS of the rule
@@ -1098,46 +1097,39 @@ endef
 #   1. The ordinal number of the sought-for symbol in the RHS.
 # Return:
 #   Location in form 'line:col', or empty if there is no such symbol.
-define gold_location_of
+gold_location_of = \
 	$(word $1,$(subst -, ,$(__gold_location__)))
-endef
 
 #
 # Error/warning/info reporting.
 #
 
 # 1. Message.
-define gold_report_info
+gold_report_info = \
 	$(call gold_report_info_at,$(gold_location),$1)
-endef
 
 # 1. Location.
 # 2. Message.
-define gold_report_info_at
+gold_report_info_at = \
 	$(call __gold_report_semantic,info,$1,$2)
-endef
 
 # 1. Message.
-define gold_report_warning
+gold_report_warning = \
 	$(call gold_report_warning_at,$(gold_location),$1)
-endef
 
 # 1. Location.
 # 2. Message.
-define gold_report_warning_at
+gold_report_warning_at = \
 	$(call __gold_report_semantic,warning,$1,$2)
-endef
 
 # 1. Message.
-define gold_report_error
+gold_report_error = \
 	$(call gold_report_error_at,$(gold_location),$1)
-endef
 
 # 1. Location.
 # 2. Message.
-define gold_report_error_at
+gold_report_error_at = \
 	$(call __gold_report_semantic,error,$1,$2)
-endef
 
 # '__gold_report_xxx'
 # Params:
