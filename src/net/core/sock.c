@@ -20,7 +20,7 @@
 
 #include <asm/system.h> /*linux-compatible*/
 
-#define INITIAL_SOCKET_COUNT 10
+#define LOWER_BOUND 1 // lower bound of sockets count
 
 #if 0
 typedef struct sock_info {
@@ -49,7 +49,7 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 	}
 
 	if(!prot->cachep)
-		prot->cachep = cache_create(prot->name, prot->obj_size, INITIAL_SOCKET_COUNT);
+		prot->cachep = cache_create(prot->name, prot->obj_size, LOWER_BOUND);
 
 	if(sock == NULL && (sock = cache_alloc(prot->cachep)) == NULL) {
 		local_irq_restore(flags);

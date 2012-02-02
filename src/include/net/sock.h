@@ -126,7 +126,7 @@ typedef struct proto {
 	sock_t *(*sock_alloc)(void); /**< if not NULL, allocate proto socket casted to sock_t */
 	void (*sock_free)(sock_t *); /**< must not be NULL if sock_alloc is not NULL */
 	unsigned int obj_size;
-	cache_t *cachep;
+	cache_t *cachep;             /**< associated cache in witch socks will be stored */
 	char name[32];
 } proto_t;
 
