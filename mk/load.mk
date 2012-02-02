@@ -16,7 +16,7 @@ $(mk_core) : CACHE_INCLUDES := \
 mk_gold := $(CACHE_DIR)/mk_gold.mk
 $(mk_gold) : CACHE_INCLUDES := \
 	mk/gold/engine.mk
-$(mk_gold) : CACHE_USES := \
+$(mk_gold) : CACHE_REQUIRES := \
 	$(mk_core)
 
 ifeq (0,1) ###
@@ -26,7 +26,7 @@ $(mk_model) : CACHE_INCLUDES := \
 	mk/model/model.mk     \
 	mk/model/factory.mk   \
 	mk/model/metamodel.mk
-$(mk_model) : CACHE_USES := \
+$(mk_model) : CACHE_REQUIRES := \
 	$(mk_core)
 
 # Mybuild itself.
@@ -37,7 +37,7 @@ $(mk_mybuild) : CACHE_INCLUDES := \
 	mk/mybuild/myfile-metamodel.mk \
 	mk/mybuild/myfile-resource.mk  \
 	mk/mybuild/myfile-parser.mk
-$(mk_mybuild) : CACHE_USES := \
+$(mk_mybuild) : CACHE_REQUIRES := \
 	$(mk_core) \
 	$(mk_gold) \
 	$(mk_model)
@@ -55,7 +55,7 @@ $(mk_mybuild) : CACHE_INCLUDES := \
 	mk/mybuild/model.mk     \
 	mk/mybuild/myfile.mk     \
 	mk/mybuild/resource.mk
-$(mk_mybuild) : CACHE_USES := \
+$(mk_mybuild) : CACHE_REQUIRES := \
 	$(mk_core) \
 	$(mk_gold)
 
@@ -68,16 +68,18 @@ endif ###
 
 # Defaults.
 export CACHE_INCLUDES :=
-export CACHE_USES :=
+export CACHE_REQUIRES :=
 
 $(MAKECMDGOALS) : $(all_mk_scripts)
 	@$(MAKE) -f mk/main.mk MAKEFILES=$(mk_mybuild) $@
 
+-include $(all_mk_scripts:%=%.d)
+
 .SECONDEXPANSION:
 $(all_mk_scripts) : $$(CACHE_INCLUDES)
-$(all_mk_scripts) : $$(CACHE_USES)
+$(all_mk_scripts) : $$(CACHE_REQUIRES)
 $(all_mk_scripts) : mk/load.mk
 $(all_mk_scripts) : mk/cache.mk
 $(all_mk_scripts) :
 	@echo Preparing $(@F)...
-	@mkdir -p $(@D) && $(MAKE) -f mk/cache.mk > $@
+	@mkdir -p $(@D) && $(MAKE) -f mk/cache.mk CACHE_DEP_TARGET='$@' > $@
