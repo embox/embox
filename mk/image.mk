@@ -101,12 +101,13 @@ $(def_all)
 
 APIS_BUILD := $(call filter_abstract_modules,$(MODS_ENABLE_OBJ))
 LIBS_BUILD := $(call filter_static_modules,$(MODS_ENABLE_OBJ))
+MODS_BUILD := $(filter-out $(LIBS_BUILD),$(MODS_ENABLE_OBJ))
 
-SRCS_BUILD := $(sort $(foreach m,$(MODS_ENABLE_OBJ),$(call module_get_sources,$m)))
+SRCS_BUILD := \
+	$(sort $(foreach m,$(MODS_ENABLE_OBJ),$(call module_get_sources,$m)))
 OBJS_BUILD := $(call SRC_TO_OBJ,$(SRCS_BUILD))
 SRCS_BUILD_NONLIB := \
-	$(sort $(foreach m,$(filter-out $(LIBS_BUILD),$(MODS_ENABLE_OBJ)), \
-		$(call module_get_sources,$m)))
+	$(sort $(foreach m,$(MODS_BUILD),$(call module_get_sources,$m)))
 OBJS_BUILD_NONLIB := $(call SRC_TO_OBJ,$(SRCS_BUILD_NONLIB))
 LDSS_BUILD := \
 	$(call filter-patsubst,$(ROOT_DIR)%.lds.S,$(OBJ_DIR)%.lds,$(SRCS_BUILD))

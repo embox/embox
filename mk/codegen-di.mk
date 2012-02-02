@@ -33,7 +33,8 @@ c_str_escape = \
 
 eol-trim = $(if $(findstring $(\s)\n,$1),$(call $0,$(subst $(\s)\n,\n,$1)),$1)
 
-cond_flags =   $(if $(strip $(CFLAGS-$2) $(CPPFLAGS-$2)), \
+cond_flags = NYI
+#cond_flags =   $(if $(strip $(CFLAGS-$2) $(CPPFLAGS-$2)), \
     $1 $(strip $(CFLAGS-$2) $(CPPFLAGS-$2)) \
   ) \
 
@@ -45,7 +46,8 @@ package_def = \
   \nMOD_PACKAGE_DEF($(c_package), "$(package)");
 
 generate_package_defs = $(call eol-trim,\n/* Package definitions. */\
-  $(foreach package,$(sort generic $(basename $(MODS_BUILD))), \
+  $(foreach package,$(sort generic $(basename $(for m <- $(MODS_BUILD), \
+        $(get m->qualified_name)))), \
     $(package_def) \
   ) \
 )\n
@@ -55,53 +57,55 @@ mod_def = \
   \n * Mod: $(mod) \
   $(call cond_flags,\n *   FLAGS:,$(mod)) \
   \n * Sources: \
-  $(foreach src,$(SRCS-$(mod)), \
+  $(for s <- $(get m->sources), \
+        src <- $(get s->fullname), \
     \n *    $(src) \
     $(call cond_flags,\n *       FLAGS:,$(abspath $(src))) \
   ) \
   \n */ \
   \nMOD_DEF($(c_mod), $(call c_escape,$(mod_package)), "$(mod_name)", \
-    $(call c_str_escape,$(BRIEF-$(mod))), \
-    $(call c_str_escape,$(DETAILS-$(mod))));
+    $(call c_str_escape,$(value BRIEF-$(mod))), \
+    $(call c_str_escape,$(value DETAILS-$(mod))));
 
 generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
-  $(foreach mod,$(MODS_BUILD), \
+  $(for m <- $(MODS_BUILD), \
+        mod <- $(get m->qualified_name), \
     $(mod_def) \
   ) \
-  $(foreach runlevel,0 1 2 3, \
-    $(foreach mod,$(addprefix generic.runlevel$(runlevel)_,init fini), \
-      $(mod_def) \
-    ) \
-  ) \
 )\n
+#  $(foreach runlevel,0 1 2 3, \
+#    $(foreach mod,$(addprefix generic.runlevel$(runlevel)_,init fini), \
+#      $(mod_def) \
+#    ) \
+#  ) \
 
 generate_mod_deps = $(strip \n/* Mod deps. */\
-  $(foreach mod,$(MODS_BUILD), \
-    $(foreach dep,$(DEPS-$(mod)), \
+  $(for m <- $(MODS_BUILD), \
+        mod <- $(get m->qualified_name), \
+    $(for link <- $(get m->depends_refs), \
+          d <- $(get link->dst), \
+          dep <- $(get d->qualified_name), \
       \nMOD_DEP_DEF($(c_mod), $(c_dep)); \
-    ) \
-    $(if $(RUNLEVEL-$(mod)), \
-      \nMOD_DEP_DEF(generic__runlevel$(RUNLEVEL-$(mod))_init, $(c_mod)); \
-      \nMOD_DEP_DEF($(c_mod), generic__runlevel$(RUNLEVEL-$(mod))_fini); \
     ) \
   ) \
 )\n
+#    $(if $(RUNLEVEL-$(mod)), \
+#      \nMOD_DEP_DEF(generic__runlevel$(RUNLEVEL-$(mod))_init, $(c_mod)); \
+#      \nMOD_DEP_DEF($(c_mod), generic__runlevel$(RUNLEVEL-$(mod))_fini); \
+#    ) \
 
-#generate_header = \
+generate_header := \
   /* Auto-generated EMBuild Dependency Injection model file. Do not edit. */\n
 
-#generate_includes = \n\#include <framework/mod/embuild.h>\n
+generate_includes := \n\#include <framework/mod/embuild.h>\n
 
 __printf_escape = "$(subst ",\",$1)"
-$(DEPSINJECT_SRC) :
-	echo > $@
-# $(MK_DIR)/codegen-di.mk \
-#  $(AUTOCONF_DIR)/mods.mk
-#	@$(PRINTF) $(call __printf_escape,$(generate_header)) > $@
-#	@$(PRINTF) $(call __printf_escape,$(generate_includes)) >> $@
-#	@$(PRINTF) $(call __printf_escape,$(generate_package_defs)) >> $@
-#	@$(PRINTF) $(call __printf_escape,$(generate_mod_defs)) >> $@
-#	@$(PRINTF) $(call __printf_escape,$(generate_mod_deps)) >> $@
+$(DEPSINJECT_SRC) : $(MK_DIR)/codegen-di.mk $(AUTOCONF_DIR)/mods.mk
+	@$(PRINTF) $(call __printf_escape,$(generate_header)) > $@
+	@$(PRINTF) $(call __printf_escape,$(generate_includes)) >> $@
+	@$(PRINTF) $(call __printf_escape,$(generate_package_defs)) >> $@
+	@$(PRINTF) $(call __printf_escape,$(generate_mod_defs)) >> $@
+	@$(PRINTF) $(call __printf_escape,$(generate_mod_deps)) >> $@
 
 $(DEPSINJECT_OBJ) : $(AUTOCONF_DIR)/config.h
 $(DEPSINJECT_OBJ) : $(DEPSINJECT_SRC)
