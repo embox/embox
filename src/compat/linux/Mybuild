@@ -1,0 +1,8 @@
+package embox.compat.linux
+
+module LibLinux {
+	source "kernel/softirq.c"
+
+	make flags "-I$(SRC_DIR)/compat/linux/include"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+}
