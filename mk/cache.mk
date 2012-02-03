@@ -37,6 +37,10 @@ MAKEFILE_LIST :=
 # Include scripts which should not be cached...
 include $(CACHE_REQUIRES)
 
+# Save volatile state.
+$(foreach v,__cache_volatile $(__cache_volatile), \
+	${eval __cache_volatile_variable_$$v := $$(value $$v)})
+
 # Collect variables...
 __cache_preinclude_variables := $(.VARIABLES)
 include $(CACHE_INCLUDES)
@@ -75,7 +79,9 @@ __cache_print_transient_variable_definitions = \
 __cache_print_volatile_variable_definitions = \
 	$(foreach 1,__cache_volatile \
 		$(call __cache_sort,$(__cache_volatile)), \
-		$(__cache_print_variable_definition))
+		$(if $(findstring undefined,$(flavor __cache_volatile_variable_$1)), \
+			$(__cache_print_variable_definition), \
+			$(__cache_print_appending_volatile_variable_definition)))
 
 # Arg 1: list of variables.
 
@@ -92,13 +98,23 @@ __cache_print_variable_definition = \
 		$(findstring $(\h),$(subst $(\n),$(\h),$(value $1))) \
 			,verbose,regular)_$(flavor $1)_variable))
 
+# TODO insert accumulation check.
+__cache_print_appending_volatile_variable_definition = \
+	$(info $(__cache_escape_variable_name) += \
+		$(wordlist \
+			$(words x $(__cache_volatile_variable_$1)), \
+			$(words $(value $1)), \
+			$(if $(findstring recursive,$(flavor $1)), \
+				$(value $1), \
+				$(subst $$,$$$$,$($1)))))
+
 #
 # __cache_construct_xxx
 #
 
 __cache_construct_regular_simple_variable = \
 	$(__cache_escape_variable_name) := \
-		$(if $(__cache_variable_has_leading_ws),$$(\0))$(subst $$,$$$$,$(value $1))
+		$(if $(__cache_variable_has_leading_ws),$$(\0))$(subst $$,$$$$,$($1))
 
 __cache_construct_regular_recursive_variable = \
 	$(if $(__cache_variable_has_leading_ws),$ \
