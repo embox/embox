@@ -161,6 +161,8 @@ def_register_value_provider = \
 	)
 __def_value_providers :=# Initially nothing.
 
+__cache_volatile += __def_value_providers
+
 # Params:
 #   1. Variable name.
 # Return:
