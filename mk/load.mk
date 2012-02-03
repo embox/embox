@@ -6,31 +6,35 @@
 CACHE_DIR := mk/.cache
 
 # Core scripts: def & obj.
-mk_core := $(CACHE_DIR)/mk_core.mk
-$(mk_core) : CACHE_INCLUDES := \
-	mk/core/string.mk \
-	mk/core/define.mk \
+export mk_core_def := $(CACHE_DIR)/mk_core_def.mk
+$(mk_core_def) : CACHE_INCLUDES := \
+	mk/core/define.mk
+
+export mk_core_obj := $(CACHE_DIR)/mk_core_obj.mk
+$(mk_core_obj) : CACHE_INCLUDES := \
 	mk/core/object.mk
+$(mk_core_obj) : CACHE_REQUIRES := \
+	$(mk_core_def)
 
 # GOLD parser engine.
-mk_gold := $(CACHE_DIR)/mk_gold.mk
-$(mk_gold) : CACHE_INCLUDES := \
+export mk_gold_engine := $(CACHE_DIR)/mk_gold_engine.mk
+$(mk_gold_engine) : CACHE_INCLUDES := \
 	mk/gold/engine.mk
-$(mk_gold) : CACHE_REQUIRES := \
-	$(mk_core)
+$(mk_gold_engine) : CACHE_REQUIRES := \
+	$(mk_core_def)
 
 ifeq (0,1) ###
 # Tiny version of EMF Ecore.
-mk_model := $(CACHE_DIR)/mk_model.mk
+export mk_model := $(CACHE_DIR)/mk_model.mk
 $(mk_model) : CACHE_INCLUDES := \
 	mk/model/model.mk     \
 	mk/model/factory.mk   \
 	mk/model/metamodel.mk
 $(mk_model) : CACHE_REQUIRES := \
-	$(mk_core)
+	$(mk_core_def)
 
 # Mybuild itself.
-mk_mybuild := $(CACHE_DIR)/mk_mybuild.mk
+export mk_mybuild := $(CACHE_DIR)/mk_mybuild.mk
 $(mk_mybuild) : CACHE_INCLUDES := \
 	mk/mybuild/myfile-model.mk     \
 	mk/mybuild/myfile-factory.mk   \
@@ -38,30 +42,32 @@ $(mk_mybuild) : CACHE_INCLUDES := \
 	mk/mybuild/myfile-resource.mk  \
 	mk/mybuild/myfile-parser.mk
 $(mk_mybuild) : CACHE_REQUIRES := \
-	$(mk_core) \
-	$(mk_gold) \
+	$(mk_core_def) \
+	$(mk_gold_engine) \
 	$(mk_model)
 
 all_mk_scripts := \
-	$(mk_core) \
-	$(mk_gold) \
+	$(mk_core_def) \
+	$(mk_core_obj) \
+	$(mk_gold_engine) \
 	$(mk_model) \
 	$(mk_mybuild)
 
 else ###
 
-mk_mybuild := $(CACHE_DIR)/mk_mybuild.mk
+export mk_mybuild := $(CACHE_DIR)/mk_mybuild.mk
 $(mk_mybuild) : CACHE_INCLUDES := \
 	mk/mybuild/model.mk     \
 	mk/mybuild/myfile.mk     \
 	mk/mybuild/resource.mk
 $(mk_mybuild) : CACHE_REQUIRES := \
-	$(mk_core) \
-	$(mk_gold)
+	$(mk_core_obj) \
+	$(mk_gold_engine)
 
 all_mk_scripts := \
-	$(mk_core) \
-	$(mk_gold) \
+	$(mk_core_def) \
+	$(mk_core_obj) \
+	$(mk_gold_engine) \
 	$(mk_mybuild)
 
 endif ###
