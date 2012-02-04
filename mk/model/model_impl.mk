@@ -144,10 +144,10 @@ define class-EObjectImpl
 	$(field __eContainer : EObject)
 
 	# 'property[.link].object'
-	$(field __eOppositeRefs : EObject)
+	$(field __eOppositeRefs... : EObject)
 
 	# 'property/[oppositeProperty].link'
-	$(field __eUnresolvedLinks : ELink)
+	$(field __eUnresolvedLinks... : ELink)
 
 	# Params:
 	#   1. Property name.
