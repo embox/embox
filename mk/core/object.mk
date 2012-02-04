@@ -1013,6 +1013,22 @@ define builtin_macro-__class__
 			$(notdir $(call __class_attr_query,property,%)))
 		$(call var_assign_simple,$(__class__).fields,
 			$(notdir $(call __class_attr_query,field,%)))
+
+		# Special subsets of fields (for faster traversing/serialization).
+		$(with $($(__class__).fields),
+			$(call var_assign_simple,$(__class__).scalar_fields,
+				$(strip \
+					$(for f <- $(basename $1),$(if $(findstring [],$f),,$f))))
+			$(call var_assign_simple,$(__class__).list_fields,
+				$(subst [],,
+					$(filter-out $($(__class__).scalar_fields),$(basename $1))))
+			$(call var_assign_simple,$(__class__).raw_fields,
+				$(strip \
+					$(for f <- $(subst [],,$1),$(if $(suffix $f),,$f))))
+			$(call var_assign_simple,$(__class__).reference_fields,
+				$(basename \
+					$(filter-out $($(__class__).raw_fields),$(subst [],,$1))))
+		)
 	)
 
 endef
@@ -1501,6 +1517,79 @@ endef
 #		)
 #	)
 #endef
+
+# Param:
+#   1. List of objects acting as graph entry points.
+#   2. Optional object ID provider to use which should return a singleword
+#      unique object identifier starting with a period: '.xxx'
+#      Defaults to the identity function.
+# Return:
+#   List of _newly_ reached objects. This in particular means that subsequent
+#   calls on the same object graph will return an empty list.
+define object_graph_print
+	$(if $(multiword $(value 2)),
+		$(error Bad identifier provider name: '$2'))
+
+	$(silent-for id_fn <- $(or $(trim $(value 2)),id),
+		o <- $(suffix $1),
+
+		o <- $(with $o,
+				$(if $(value $1.__serial_id__),
+					# The object has already been visited. Do nothing.
+					,# else
+					# Return the object marking it with a generated identifier.
+					$1 $(call var_assign_simple,$1.__serial_id__,$($(id_fn)))
+					$(assert $(and \
+							$($1.__serial_id__),
+							$(singleword [$($1.__serial_id__)]),
+							$(not $(basename $($1.__serial_id__))),
+							$(eq $($1.__serial_id__),
+								$(suffix $($1.__serial_id__)))),
+						Bad serial identifier: '$($1.__serial_id__)')
+					# Recursively process the objects referenced by this one.
+					$(for f <- $($($1).reference_fields),
+						o <- $(suffix $($1.$f)),
+						$(call $0,$o)))
+			),
+
+		s <- $($o.__serial_id__),
+		c <- $($o),
+
+		$(__object_print)
+	)
+
+endef
+
+# Context:
+#   o. The object.
+#   s. Its serial ID.
+#   c. Its class
+define __object_print
+	$(info $s := $c)
+
+	$(for f <- $(filter $($c.list_fields),$($c.reference_fields)),
+		$(info $s.$f := $(for r <- $($o.$f),\$(\n)$(\t)
+				$(subst $$,$$$$,$(basename $r))$($(suffix $r).__serial_id__))))
+
+	$(for f <- $(filter $($c.scalar_fields),$($c.reference_fields)),
+		$(assert $(not $(multiword $($o.$f))),
+			Multiword value '$($o.$f)' inside scalar field $c.$f \
+			of object $o being serialized as $s)
+		$(info $s.$f := $(for r <- $($o.$f),
+				$(subst $$,$$$$,$(basename $r))$($(suffix $r).__serial_id__))))
+
+	$(for f <- $(filter $($c.list_fields),$($c.raw_fields)),
+		$(info $s.$f := \
+			$(subst $$,$$$$,$($o.$f:%=\$(\n)$(\t)%))))
+
+	$(for f <- $(filter $($c.scalar_fields),$($c.raw_fields)),
+		$(info $s.$f := \
+			# Check for leading whitespace.
+			$(if $(subst x$(firstword $($o.$f)),,$(firstword x$($o.$f))),
+				$$(\0))
+			$(subst $(\n),$$(\n),$(subst $(\h),$$(\h),$(subst $$,$$$$,
+				$($o.$f))))))
+endef
 
 # XXX below
 
