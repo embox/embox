@@ -78,7 +78,9 @@ __cache_print_transient_variable_definitions = \
 # No args.
 __cache_print_volatile_variable_definitions = \
 	$(foreach 1,__cache_volatile \
-		$(call __cache_sort,$(__cache_volatile)), \
+			$(call __cache_sort,$(filter \
+				$(__cache_volatile), \
+				$(.VARIABLES))), \
 		$(if $(findstring undefined,$(flavor __cache_volatile_variable_$1)), \
 			$(__cache_print_variable_definition), \
 			$(__cache_print_appending_volatile_variable_definition)))
