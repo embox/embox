@@ -1016,18 +1016,29 @@ define builtin_macro-__class__
 
 		# Special subsets of fields (for faster traversing/serialization).
 		$(with $($(__class__).fields),
-			$(call var_assign_simple,$(__class__).scalar_fields,
-				$(strip \
-					$(for f <- $(basename $1),$(if $(findstring [],$f),,$f))))
-			$(call var_assign_simple,$(__class__).list_fields,
-				$(subst [],,
-					$(filter-out $($(__class__).scalar_fields),$(basename $1))))
-			$(call var_assign_simple,$(__class__).raw_fields,
-				$(strip \
-					$(for f <- $(subst [],,$1),$(if $(suffix $f),,$f))))
-			$(call var_assign_simple,$(__class__).reference_fields,
-				$(basename \
-					$(filter-out $($(__class__).raw_fields),$(subst [],,$1))))
+
+			# List of references: 'name[].type'
+			$(call var_assign_simple,$(__class__).reference_list_fields,
+				$(basename $(subst [],,$(for f <- $1,
+						$(if $(findstring [].,$f),$f)))))
+
+			# Single reference: 'name.type'
+			$(call var_assign_simple,$(__class__).reference_scalar_fields,
+				$(basename $(for f <- $1,
+						$(and $(not $(findstring [],$f)),$(suffix $f),$f))))
+
+			# Plain list: 'name[]'
+			$(call var_assign_simple,$(__class__).raw_list_fields,
+				$(subst [],,$(for f <- $1,
+						$(and $(findstring [],$f),$(not $(suffix $f)),$f))))
+
+			# Raw value: 'name'
+			$(call var_assign_simple,$(__class__).raw_scalar_fields,
+				$(filter-out \
+					$($(__class__).reference_list_fields) \
+					$($(__class__).reference_scalar_fields) \
+					$($(__class__).raw_list_fields),
+						$(basename $(subst [],,$1))))
 		)
 	)
 
@@ -1039,7 +1050,7 @@ endef
 #   The argument if it is a valid name, empty otherwise.
 define __class_name_check
 	$(if $(not $(or \
-			$(filter field method super class,$1),
+			$(filter property setter getter field method super class,$1),
 			$(findstring $(\\),$1),
 			$(findstring $(\h),$1),
 			$(findstring $$,$1),
@@ -1518,77 +1529,140 @@ endef
 #	)
 #endef
 
+#
+# Serialization stuff.
+#
+
+# Traverses the object graph starting with given objects and assigning a unique
+# identifier to each reacheable object.
+#
 # Param:
 #   1. List of objects acting as graph entry points.
-#   2. Optional object ID provider to use which should return a singleword
-#      unique object identifier starting with a period: '.xxx'
+#   2. Optional object serial ID provider to use which should return
+#      a singleword unique object identifier starting with a period: '.xxx'
 #      Defaults to the identity function.
 # Return:
-#   List of _newly_ reached objects. This in particular means that subsequent
-#   calls on the same object graph will return an empty list.
-define object_graph_print
+#   List of _newly_ reached (untouched) objects.
+#   Once touched an object is not participate in traversing of the graph.
+#   This in particular means that subsequent calls on the same object graph
+#   will return an empty list. Moreover, even if some already touched object is
+#   modified so that some yet untouched objects would become reachable, these
+#   objects will not be returned.
+#   To avoid such problems, avoid multiple calls to this function.
+define object_graph_traverse
 	$(if $(multiword $(value 2)),
 		$(error Bad identifier provider name: '$2'))
 
-	$(silent-for id_fn <- $(or $(trim $(value 2)),id),
+	$(for id_fn <- $(or $(trim $(value 2)),id),
 		o <- $(suffix $1),
 
-		o <- $(with $o,
-				$(if $(value $1.__serial_id__),
-					# The object has already been visited. Do nothing.
-					,# else
-					# Return the object marking it with a generated identifier.
-					$1 $(call var_assign_simple,$1.__serial_id__,$($(id_fn)))
-					$(assert $(and \
-							$($1.__serial_id__),
-							$(singleword [$($1.__serial_id__)]),
-							$(not $(basename $($1.__serial_id__))),
-							$(eq $($1.__serial_id__),
-								$(suffix $($1.__serial_id__)))),
-						Bad serial identifier: '$($1.__serial_id__)')
-					# Recursively process the objects referenced by this one.
-					$(for f <- $($($1).reference_fields),
-						o <- $(suffix $($1.$f)),
-						$(call $0,$o)))
-			),
-
-		s <- $($o.__serial_id__),
-		c <- $($o),
-
-		$(__object_print)
+		$(with $o,
+			$(if $(value $1.__serial_id__),
+				# The object has already been visited. Do nothing.
+				,# else
+				# Return the object marking it with a generated identifier.
+				$1 $(call var_assign_simple,$1.__serial_id__,$($(id_fn)))
+				$(assert $(and \
+						$($1.__serial_id__),
+						$(singleword [$($1.__serial_id__)]),
+						$(not $(findstring $$,$($1.__serial_id__))),
+						$(not $(basename $($1.__serial_id__))),
+						$(eq $($1.__serial_id__),
+							$(suffix $($1.__serial_id__)))),
+					Bad serial identifier: '$($1.__serial_id__)')
+				# Recursively process the objects referenced by this one.
+				$(for f <-
+						$($($1).reference_list_fields) \
+						$($($1).reference_scalar_fields),
+					o <- $(suffix $($1.$f)),
+					$(call $0,$o))
+			)
+		)
 	)
+endef
 
+# Results in a Make code sufficient to reproduce the object graph.
+# If a serial ID provider is specified in the second argument, then all object
+# identifiers and references are properly replaced by the provided values.
+#
+# Param:
+#   See 'object_graph_traverse'.
+# Return:
+#   Make code. It doesn't include allocation-related stuff,
+#   its up to the serial ID provider to track the objects being serialized.
+define object_graph_print
+	$(subst $(\n) ,$(\n),
+		$(for o <- $(object_graph_traverse),
+			s <- $($o.__serial_id__),
+			c <- $($o),
+
+			$(__object_print)
+		)
+	)
 endef
 
 # Context:
 #   o. The object.
 #   s. Its serial ID.
-#   c. Its class
+#   c. Its class.
 define __object_print
-	$(info $s := $c)
+	$(\h) $o$(\n)# Comment with an original object identifier.
+	$s := $c$(\n)
 
-	$(for f <- $(filter $($c.list_fields),$($c.reference_fields)),
-		$(info $s.$f := $(for r <- $($o.$f),\$(\n)$(\t)
-				$(subst $$,$$$$,$(basename $r))$($(suffix $r).__serial_id__))))
+	$(for ft <- $(for l <- reference_list reference_scalar raw_list raw_scalar,
+			$(addsuffix .$l,$($c.$l_fields))),
+		f <- $(basename $(ft)),
+		# Call field printer with possibly preprocessed field value.
+		$(call __object_print_field$(suffix $(ft)),
+			$(if $(class-has-method $c,__serialize_field-$f),
+				$(invoke o->__serialize_field-$f,$($o.$f)),
+				$($o.$f)))
+	)
 
-	$(for f <- $(filter $($c.scalar_fields),$($c.reference_fields)),
-		$(assert $(not $(multiword $($o.$f))),
-			Multiword value '$($o.$f)' inside scalar field $c.$f \
-			of object $o being serialized as $s)
-		$(info $s.$f := $(for r <- $($o.$f),
-				$(subst $$,$$$$,$(basename $r))$($(suffix $r).__serial_id__))))
+	$(\n)
+endef
 
-	$(for f <- $(filter $($c.list_fields),$($c.raw_fields)),
-		$(info $s.$f := \
-			$(subst $$,$$$$,$($o.$f:%=\$(\n)$(\t)%))))
+__object_field_escape = \
+	$(subst $(\n),$$(\n),$(subst $(\h),$$(\h),$(subst $$,$$$$,$1)))
 
-	$(for f <- $(filter $($c.scalar_fields),$($c.raw_fields)),
-		$(info $s.$f := \
-			# Check for leading whitespace.
-			$(if $(subst x$(firstword $($o.$f)),,$(firstword x$($o.$f))),
-				$$(\0))
-			$(subst $(\n),$$(\n),$(subst $(\h),$$(\h),$(subst $$,$$$$,
-				$($o.$f))))))
+define __object_print_field.reference_list
+	$s.$f := \
+		$(for r <- $1,$(assert $(is-object $r))\$(\n)$(\t)
+			# Substitute the suffix with the serial identifier of the
+			# referenced object and escape everything else.
+			$(call __object_field_escape,$(basename $r))
+			$($(suffix $r).__serial_id__))$(\n)
+endef
+
+define __object_print_field.reference_scalar
+	$(assert $(not $(multiword $1)),
+		Multiword value '$1' inside scalar field $c.$f \
+		of object $o being serialized as $s)
+	$s.$f := \
+		$(for r <- $1,$(assert $(is-object $r))
+			# See '__object_print_field_reference_list'.
+			$(call __object_field_escape,$(basename $r))
+			$($(suffix $r).__serial_id__))$(\n)
+endef
+
+define __object_print_field.raw_list
+	$s.$f := \
+		# Guard a trailing backslash (if any)
+		# and pretty-print each list item on a separate line.
+		$(patsubst %,\$(\n)$(\t)%,$(subst \$(\n),$$(\\)$(\n),
+			$(__object_field_escape)
+			$(\n)))
+endef
+
+define __object_print_field.raw_scalar
+	$s.$f := \
+		# Check for a leading whitespace.
+		$(if $(subst x$(firstword $($o.$f)),,$(firstword x$($o.$f))),
+			$$(\0))
+		# Guard a trailing backslash (if any).
+		$(subst \$(\n),$$(\\)$(\n),
+			$(__object_field_escape)
+			$(\n))
 endef
 
 # XXX below
