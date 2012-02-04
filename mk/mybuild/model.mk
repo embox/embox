@@ -98,17 +98,6 @@ define class-node
 		)
 	)
 
-	$(method serialize,
-		$(this) := $($(this))$(\n)
-		$(foreach f,$(call field_name,$($($(this)).fields)),
-			$(this).$f := $($(__this).$f)$(\n)))
-
-	$(method deserialize,
-		${eval \
-			$*
-		})
-
-
 endef
 
 define class-link
