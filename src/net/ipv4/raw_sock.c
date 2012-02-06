@@ -54,7 +54,7 @@ int raw_rcv(sk_buff_t *skb) {
 		if (sk && sk->sk_protocol == iph->proto) {
 			cloned = skb_clone(skb, 0); // TODO without skb_clone()
 			if(!cloned){
-				printk("raw_sock.c: raw_rcv: own is NULL\n");
+				printk("raw_sock.c: raw_rcv: couldn't clone socket buffer\n");
 				return ENOMEM;
 			}
 			if (raw_rcv_skb(sk, cloned) < 0) {

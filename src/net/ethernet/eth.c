@@ -53,7 +53,6 @@ int eth_header(sk_buff_t *pack, struct net_device *dev, unsigned short type,
 int eth_rebuild_header(sk_buff_t *pack) {
 	struct ethhdr *eth;
 	struct net_device *dev;
-	//	sk_buff_t *skb_temp;
 
 	if (pack == NULL) {
 		return -EINVAL;
@@ -68,10 +67,6 @@ int eth_rebuild_header(sk_buff_t *pack) {
 		/* fill out eth packet source and destination */
 		memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
 		if(arp_resolve(pack) < 0){	/* if couldn't resolve then the host is unreachable */
-			/* if((skb_temp = skb_copy(pack, 0))){ */
-			/* 	icmp_send(skb_temp, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, 0); /\* report it *\/ */
-			/* 	kfree_skb(skb_temp); */
-			/* } */
 			return -ENOENT;
 		}
 		else

@@ -51,7 +51,7 @@ static int build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	return 0;
 }
 
-#define LB_ADDRESS 0x0100007F 	/* loopback = 127.0.0.1x */
+#define LB_ADDRESS 0x0100007F 	/* loopback = 127.0.0.1 */
 int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
 //	struct sock *sk = skb->sk;
 //	struct inet_sock *inet = inet_sk(sk);
