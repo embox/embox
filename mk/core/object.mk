@@ -912,7 +912,7 @@ builtin_func-has-field = \
 # Return:
 #   The first argument if the answer is true, empty otherwise.
 define class_has_field
-	$(if $(filter $2 $(addsuffix [],$2),$(basename $(value $1.fields))),$1)
+	$(if $(filter $2,$(value $1.fields)),$1)
 endef
 builtin_func-class-has-field = \
 	$(foreach builtin_name,class_has_field,$(builtin_to_function_inline))
@@ -934,7 +934,7 @@ builtin_func-has-property = \
 # Return:
 #   The first argument if the answer is true, empty otherwise.
 define class_has_property
-	$(if $(filter $2 $(addsuffix [],$2),$(basename $(value $1.properties))),$1)
+	$(if $(filter $2,$(value $1.properties)),$1)
 endef
 builtin_func-class-has-property = \
 	$(foreach builtin_name,class_has_property,$(builtin_to_function_inline))
@@ -1006,12 +1006,14 @@ define builtin_macro-__class__
 		$(call var_assign_simple,$(__class__).methods,
 			$(notdir $(call __class_attr_query,method%,%)))
 		$(call var_assign_simple,$(__class__).properties,
-			$(notdir $(call __class_attr_query,property,%)))
-		$(call var_assign_simple,$(__class__).fields,
-			$(notdir $(call __class_attr_query,field,%)))
+			$(basename $(subst [],,
+				$(notdir $(call __class_attr_query,property,%)))))
 
 		# Special subsets of fields (for faster traversing/serialization).
-		$(with $($(__class__).fields),
+		$(with $(notdir $(call __class_attr_query,field,%)),
+
+			$(call var_assign_simple,$(__class__).fields,
+				$(basename $(subst [],,$1)))
 
 			# List of references: 'name[].type'
 			$(call var_assign_simple,$(__class__).reference_list_fields,
@@ -1036,6 +1038,7 @@ define builtin_macro-__class__
 					$($(__class__).raw_list_fields),
 						$(basename $(subst [],,$1))))
 		)
+
 	)
 
 endef
@@ -1203,7 +1206,7 @@ define builtin_func-super
 
 	# Copy function table from super class, but not override functions, that
 	# have already been defined in the current class - they always take
-	# a precedence over inherited ones.
+	# a precedence over inherited ones. XXX That's not so for now. -- Eldar
 	$(silent-foreach f,
 		$(notdir $(call __class_attr_query_in,$1,method% xetter%,%)),
 		# XXX There used to be a call to '__class_new_func_weak'... -- Eldar
@@ -1567,10 +1570,13 @@ define object_graph_traverse
 							$(suffix $($1.__serial_id__)))),
 					Bad serial identifier: '$($1.__serial_id__)')
 				# Recursively process the objects referenced by this one.
-				$(for f <-
+				$(for o <- \
+					$(for f <-
 						$($($1).reference_list_fields) \
 						$($($1).reference_scalar_fields),
-					o <- $(suffix $($1.$f)),
+							$(suffix $($1.$f))) \
+					$(if $(class-has-method $($1),__serialize_extra_objects),
+						$(invoke 1->__serialize_extra_objects)),
 					$(call $0,$o))
 			)
 		)
