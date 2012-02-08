@@ -96,7 +96,7 @@ endef
 «DEFINE nonVolatileFeature FOR EReference»
 	«mkProperty(propertyName() + memberCardinality() + memberType())»
 «LET containment ? "Containment" : "Bidirectional".ifIs(eOpposite) AS suffix -»
-«LET { propertyName(), "$(suffix $1)", eOpposite.propertyName() } AS setterArgs -»
+«LET { propertyName(), "$(suffix $1)", eOpposite.propertyName(), metaVariable() } AS setterArgs -»
 «IF container -»
 	«mkGetterWrap(propertyName(),
 		mkInvoke("__eGetContainer", propertyName()))»

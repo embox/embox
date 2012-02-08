@@ -254,11 +254,14 @@ define class-EObjectImpl
 	# Params:
 	#   1. Property name.
 	#   2. What to add.
+	#   3. Empty.
+	#   4. Meta reference ID.
 	$(method __eAdd_link,
 		$(with $1,$2,
 			# Resolved links suffixed by destination.
 			$(for link <- $2,
-				$(set-field link->__eContainer,$1/eLinks$(this))
+				$(set-field link->eMetaReference,$($4))
+				$(set-field link->eSource,$1/eLinks$(this))
 				$(for dst <- $(get link->eTarget),
 					$(link)$(dst))),
 
@@ -276,11 +279,13 @@ define class-EObjectImpl
 	#   1. Property name.
 	#   2. What to add.
 	#   3. Opposite property.
+	#   4. Meta reference ID.
 	$(method __eAddBidirectional_link,
 		$(with $1,$2,$3,
 			# Resolved links suffixed by destination.
 			$(for link <- $2,
-				$(set-field link->__eContainer,$1/eLinks$(this))
+				$(set-field link->eMetaReference,$($4))
+				$(set-field link->eSource,$1/eLinks$(this))
 				$(for dst <- $(get link->eTarget),
 					$(link)$(dst))),
 
@@ -289,7 +294,7 @@ define class-EObjectImpl
 				$(set-field+ link_dst->$3,$(basename $(link_dst))$(this)))
 
 			$(set-field+ __eUnresolvedLinks,
-				$(addprefix $1/$3,$(filter-out $(basename $3),$2)))
+				$(addprefix $1/$3,$(filter-out $(basename $4),$2)))
 		)
 	)
 
@@ -311,18 +316,21 @@ define class-EObjectImpl
 	# Params:
 	#   1. Property name.
 	#   2. New value.
+	#   3. Empty.
+	#   4. Meta reference ID.
 	$(method __eSet_link,
 		$(invoke __eRemove_link,$1,$(get-field $1))
-		$(invoke __eAdd_link,$1,$2)
+		$(invoke __eAdd_link,$1,$2,,$4)
 	)
 
 	# Params:
 	#   1. Property name.
 	#   2. New value.
 	#   3. Opposite property.
+	#   4. Meta reference ID.
 	$(method __eSetBidirectional_link,
 		$(invoke __eRemoveBidirectional_link,$1,$(get-field $1),$3)
-		$(invoke __eAddBidirectional_link,$1,$2,$3)
+		$(invoke __eAddBidirectional_link,$1,$2,$3,$4)
 	)
 
 	# PROTECTED REGION END
@@ -380,9 +388,9 @@ define class-ELinkImpl
 	# Reference 'eMetaReference' [0..1]: derived, read-only.
 	$(property eMetaReference : EMetaReference)
 	# PROTECTED REGION ID(ELink_eMetaReference) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eMetaReference,
-#		$(error $0: NIY))
+	$(field eMetaReference : EMetaReference)
+	$(getter eMetaReference,
+		$(get-field eMetaReference))
 	# PROTECTED REGION END
 
 	# Reference 'eSource' [0..1]: bidirectional, read-only.
@@ -448,11 +456,11 @@ define class-EMetaClassImpl
 	$(getter eSuperTypes,
 		$(get-field eSuperTypes))
 	$(setter eSuperTypes,
-		$(invoke __eSet,eSuperTypes,$(suffix $1),))
+		$(invoke __eSet,eSuperTypes,$(suffix $1),,EModel_EMetaClass_eSuperTypes))
 	$(setter+ eSuperTypes,
-		$(invoke __eAdd,eSuperTypes,$(suffix $1),))
+		$(invoke __eAdd,eSuperTypes,$(suffix $1),,EModel_EMetaClass_eSuperTypes))
 	$(setter- eSuperTypes,
-		$(invoke __eRemove,eSuperTypes,$(suffix $1),))
+		$(invoke __eRemove,eSuperTypes,$(suffix $1),,EModel_EMetaClass_eSuperTypes))
 
 	# Reference 'eAllSuperTypes' [0..*]: derived, read-only.
 	$(property eAllSuperTypes... : EMetaClass)
@@ -470,11 +478,11 @@ define class-EMetaClassImpl
 	$(getter eFeatures,
 		$(get-field eFeatures))
 	$(setter eFeatures,
-		$(invoke __eSetContainment,eFeatures,$(suffix $1),eContainingClass))
+		$(invoke __eSetContainment,eFeatures,$(suffix $1),eContainingClass,EModel_EMetaClass_eFeatures))
 	$(setter+ eFeatures,
-		$(invoke __eAddContainment,eFeatures,$(suffix $1),eContainingClass))
+		$(invoke __eAddContainment,eFeatures,$(suffix $1),eContainingClass,EModel_EMetaClass_eFeatures))
 	$(setter- eFeatures,
-		$(invoke __eRemoveContainment,eFeatures,$(suffix $1),eContainingClass))
+		$(invoke __eRemoveContainment,eFeatures,$(suffix $1),eContainingClass,EModel_EMetaClass_eFeatures))
 
 	# Reference 'eAllFeatures' [0..*]: derived, read-only.
 	$(property eAllFeatures... : EMetaFeature)
@@ -618,7 +626,7 @@ define class-EMetaReferenceImpl
 	$(getter eOpposite,
 		$(get-field eOpposite))
 	$(setter eOpposite,
-		$(invoke __eSet,eOpposite,$(suffix $1),))
+		$(invoke __eSet,eOpposite,$(suffix $1),,EModel_EMetaReference_eOpposite))
 
 	# Reference 'eReferenceType' [1..1]: derived, read-only.
 	$(property eReferenceType : EMetaClass)
@@ -666,11 +674,11 @@ define class-EMetaModelImpl
 	$(getter eTypes,
 		$(get-field eTypes))
 	$(setter eTypes,
-		$(invoke __eSetContainment,eTypes,$(suffix $1),eMetaModel))
+		$(invoke __eSetContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
 	$(setter+ eTypes,
-		$(invoke __eAddContainment,eTypes,$(suffix $1),eMetaModel))
+		$(invoke __eAddContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
 	$(setter- eTypes,
-		$(invoke __eRemoveContainment,eTypes,$(suffix $1),eMetaModel))
+		$(invoke __eRemoveContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
 
 	# PROTECTED REGION ID(EMetaModel) ENABLED START
 	# PROTECTED REGION END
@@ -694,7 +702,7 @@ define class-ETypedImpl
 	$(getter eType,
 		$(get-field eType))
 	$(setter eType,
-		$(invoke __eSet,eType,$(suffix $1),))
+		$(invoke __eSet,eType,$(suffix $1),,EModel_ETyped_eType))
 
 	# PROTECTED REGION ID(ETyped) ENABLED START
 	# PROTECTED REGION END
