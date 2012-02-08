@@ -44,7 +44,9 @@ export mk_model := $(CACHE_DIR)/mk_model.mk
 $(mk_model) : CACHE_INCLUDES := \
 	mk/model/model.mk     \
 	mk/model/factory.mk   \
-	mk/model/metamodel.mk
+	mk/model/metamodel.mk \
+	mk/model/resource.mk  \
+	mk/model/linkage.mk
 $(mk_model) : CACHE_REQUIRES := \
 	$(mk_core_obj)
 $(mk_model) : ALLOC_SCOPE := d
