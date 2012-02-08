@@ -1555,7 +1555,7 @@ define object_graph_traverse
 	$(for id_fn <- $(or $(trim $(value 2)),id),
 		o <- $(suffix $1),
 
-		$(with $o,
+		$(with $o,$($o),
 			$(if $(value $1.__serial_id__),
 				# The object has already been visited. Do nothing.
 				,# else
@@ -1572,12 +1572,12 @@ define object_graph_traverse
 				# Recursively process the objects referenced by this one.
 				$(for o <- \
 					$(for f <-
-						$($($1).reference_list_fields) \
-						$($($1).reference_scalar_fields),
+						$($2.reference_list_fields) \
+						$($2.reference_scalar_fields),
 							$(suffix $($1.$f))) \
-					$(if $(class-has-method $($1),__serialize_extra_objects),
+					$(if $(filter __serialize_extra_objects,$($2.methods)),
 						$(invoke 1->__serialize_extra_objects)),
-					$(call $0,$o))
+					$(call $0,$o,$($o)))
 			)
 		)
 	)
