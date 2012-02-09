@@ -9,9 +9,13 @@ endif
 
 ifndef mk_core_obj
 $(error mk_core_obj is not defined, use the loader to run this script)
-endef
+endif
 
-include $(mk_core_obj)
+.PHONY : all
+all :
+	@#
+
+include $(filter-out $(MAKEFILE_LIST),$(mk_core_obj))
 
 __PERSIST_OBJECTS := $(PERSIST_OBJECTS)
 
