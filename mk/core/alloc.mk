@@ -13,7 +13,7 @@ alloc = \
 		,${eval __alloc_cnt_$(ALLOC_SCOPE)-$1 += $(cnt)}$(cnt)$(ALLOC_SCOPE))
 
 alloc_last = \
-	$(foreach cnt,$(lastword $(value __alloc_cnt_$(ALLOC_SCOPE)-$1) \
+	$(foreach cnt,$(lastword $(value __alloc_cnt_$(ALLOC_SCOPE)-$1)) \
 		,$(cnt)$(ALLOC_SCOPE))
 
 __cache_volatile += __alloc_cnt_%
