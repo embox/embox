@@ -140,7 +140,6 @@ endef
 
 $(def_all)
 
-
 $(foreach m,$(MODS_ENABLE_OBJ),$(call define_mod_obj_rules,$m))
 $(foreach l,$(LIBS_BUILD),$(call define_lib_rules,$l))
 
@@ -155,7 +154,7 @@ include mk/headers.mk
 $(OBJS_BUILD) $(LDSS_BUILD): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk
 
 __CMDS = \
-  $(patsubst $(ROOT_DIR)%.$1,$(OBJ_DIR)%.cmd,$(filter %.$1,$(SRCS_BUILD)))
+  $(patsubst $(abspath $(ROOT_DIR))%.$1,$(OBJ_DIR)%.cmd,$(filter %.$1,$(abspath $(SRCS_BUILD))))
 
 CMDS_C := $(call __CMDS,c)
 CMDS_S := $(call __CMDS,S)
