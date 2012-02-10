@@ -50,6 +50,13 @@ define resolve_internal
 	)
 endef
 
+# param $1 is name
+# param $2 is resource
+# output module object
+define find_mod_in_res
+	$(filter $1.%,$(get $2.exports))
+endef
+
 $(def_all)
 
 endif #__mybuild_resource_mk
