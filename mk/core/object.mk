@@ -879,6 +879,7 @@ builtin_func-instance-of = \
 
 # Get all instances of all classes
 define get-instances
+	$(error $0: DEPRECATED!)
 	$(__object_instance_cnt:%=.obj%)
 endef
 
@@ -886,6 +887,7 @@ endef
 # Get all instances of speceifed classes
 #   1. Class name (optional).
 define get-instances-of
+	$(error $0: DEPRECATED!)
 	$(if $(call value,1),
 		$(foreach i,$(call get-instances),
 			$(instance-of $i,$1)

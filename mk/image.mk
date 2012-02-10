@@ -70,8 +70,9 @@ endif
 include mk/flags.mk
 
 SRC_TO_OBJ = \
-	$(call filter-patsubst,$(ROOT_DIR)%.c $(ROOT_DIR)%.S,$(OBJ_DIR)%.o, \
-		$(filter-out %.lds.S,$1))
+	$(call filter-patsubst, \
+		$(abspath $(ROOT_DIR))%.c $(abspath $(ROOT_DIR))%.S,$(OBJ_DIR)%.o, \
+		$(filter-out %.lds.S,$(abspath $1)))
 
 LIB_FILE = \
 	$(foreach 1,$1,$(LIB_DIR)/$(get $1.qualified_name).a)
