@@ -93,6 +93,8 @@ all_mk_scripts := \
 
 endif ###
 
+export all_mk_scripts
+
 $(MAKECMDGOALS) : $(all_mk_scripts)
 	@$(MAKE) -f mk/load2.mk $@
 

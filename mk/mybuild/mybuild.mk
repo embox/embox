@@ -36,6 +36,8 @@ define class-mybuild
 	$(if $(value 1),$(invoke link,$1))
 endef
 
+mybuild_model_instance = $(__mybuild_model_instance)
+
 $(def_all)
 
 endif # __mybuild_mybuild_mk

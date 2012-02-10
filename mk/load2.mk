@@ -30,7 +30,7 @@ ifneq ($(or $(mybuild_model_myfiles_added),$(mybuild_model_myfiles_removed)),)
 endif
 
 $(MAKECMDGOALS) : $(cached_mybuild_model)
-	@$(MAKE) -f mk/main.mk MAKEFILES='$<' $@
+	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_scripts) $<' $@
 
 export all_cached_myfiles
 
@@ -46,6 +46,7 @@ $(cached_mybuild_model) : $(all_cached_myfiles)
 		PERSIST_OBJECTS='$$(call new,mybuild,$$(foreach f,$$(all_cached_myfiles),$$($$f)))' \
 		PERSIST_REALLOC='my' \
 		ALLOC_SCOPE='m' > $@
+	@echo '__mybuild_model_instance := .my1m' >> $@
 	@printf 'mybuild_model_myfiles := %b' '$(all_cached_myfiles:%=\\\n\t%)' \
 		> $(cached_mybuild_model_myfiles)
 
