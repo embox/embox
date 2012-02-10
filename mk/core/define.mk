@@ -209,8 +209,9 @@ __def_strip = \
 #   Nothing.
 __def_strip_precheck = \
 	$(if $(findstring \$(\s),$(subst $(\t),$(\s),$(subst \\,,$1))),$ \
-		$(warning Backslash followed by a whitespace \
-				is probably not what you want)$ \
+		$(warning $(__def_var): \
+			Backslash followed by a whitespace \
+			is probably not what you want)$ \
 	)
 
 # Params:
@@ -219,14 +220,11 @@ __def_strip_precheck = \
 #   The code with whitespaces and some other control chars replaced with
 #   special markers (for instance, \n -> _$$n).
 __def_strip_escape = \
-  $(subst _$$l,\,$        \
-   $(subst \ _$$h ,$(\h),$ \
-    $(subst \\,_$$l,$       \
-     $(subst  $(\h), _$$h ,$ \
-      $(subst  $(\n), _$$n ,$ \
-       $(subst  $(\t), _$$t ,$ \
-        $(subst  $(\s), _$$s ,$ \
-         $1)))))))
+  $(subst  $(\h), _$$h ,$ \
+   $(subst  $(\n), _$$n ,$ \
+    $(subst  $(\t), _$$t ,$ \
+     $(subst  $(\s), _$$s ,$ \
+      $1))))
 
 # Code convolution function.
 # Params:

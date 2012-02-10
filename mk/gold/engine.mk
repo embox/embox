@@ -570,7 +570,7 @@ define __gold_dfa_handle[/1/]
 	$(if $(findstring /1/1/,$(__gold_state__)$a/),
 		# The char causes errors both in the current state and on the ground.
 		# Error token will be closed on the next iteration.
-		$(if $(a:/1/=),/)$1.,# "\ %
+		$(if $(a:/1/=),/)$1.,# "\\ %
 
 		$(if $(findstring /1/,$a/),
 			# Error in the current state.
