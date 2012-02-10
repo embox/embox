@@ -23,6 +23,6 @@ module core {
 	source "fs.c"
 	depends file_desc
 	depends node
-	depends driver_repo
+	depends embox.fs.driver.repo
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
