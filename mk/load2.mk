@@ -3,8 +3,6 @@
 # Author: Eldar Abusalimov
 #
 
-include mk/core/alloc.mk
-
 MY_CACHE_DIR := mk/.cache/my
 
 MY_PATH := src/ platform/
@@ -54,9 +52,10 @@ $(all_cached_myfiles) : mk/load2.mk
 $(all_cached_myfiles) : mk/script/mk-persist.mk
 $(all_cached_myfiles) : $(MY_CACHE_DIR)/files/%.mk : ./%
 	@echo ' MYFILE $<'
-	@mkdir -p $(@D) && \
-		$(MAKE) -f mk/script/mk-persist.mk MAKEFILES='$(mk_mybuild)' \
+	@SCOPE=`echo '$<' | sum | cut -f 1 -d ' '`; \
+	mkdir -p $(@D) && \
+	$(MAKE) -f mk/script/mk-persist.mk MAKEFILES='$(mk_mybuild)' \
 		PERSIST_OBJECTS='$$(call new,resource,$<)' \
-		ALLOC_SCOPE='r$(call alloc,res)' > $@
-	@echo '$$(lastword $$(MAKEFILE_LIST)) := .obj1r$(call alloc_last,res)' >> $@
+		ALLOC_SCOPE="r$$SCOPE" > $@ && \
+	echo '$$(lastword $$(MAKEFILE_LIST)) := '".obj1r$$SCOPE" >> $@
 
