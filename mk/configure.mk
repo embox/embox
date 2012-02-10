@@ -24,7 +24,6 @@ AUTOCONF_FILES := $(build_mk) $(mods_mk) $(config_h) $(config_lds_h)
 
 -include $(build_mk) $(mods_mk)
 
-include mk/mybuild/read.mk
 include mk/conf/roots.mk
 include mk/conf/runlevel.mk
 
