@@ -41,11 +41,7 @@ define class-LinkageUnit
 	#   'targetType'. Meta class of the object being resolved.
 	$(method searchLocalScopeOf,
 		$(strip $(with $1,,
-			$(for namedChild <-
-					$(with $(get 1->eContents),$(for 1 <- $1,
-						$(if $(invoke EModel_ENamedObject->isInstance,$1),
-							$1,$(call $0,$(get 1->eContents))))),
-
+			$(for namedChild <- $(invoke getVisibleMembersOf,$1),
 				childName <- $(get namedChild->name),
 
 				$(if $(filter $2.$(childName).,.$(linkName).),
@@ -56,6 +52,24 @@ define class-LinkageUnit
 				)
 			)
 		))
+	)
+
+	# Param:
+	#   1. Scope container.
+	# Return:
+	#   Implemantation have to return named objects supposed to be a members
+	#   of the given container. By default returns named descendants, either
+	#   direct or indirect being first found in each brach of the subtree.
+	$(method getVisibleMembersOf,
+		$(for metaReference <- $(get $(get 1->eMetaClass).eAllContainments),
+			$(if $(invoke EModel_ENamedObject->isSuperTypeOf,
+					$(get metaReference->eReferenceType)),
+				$(get 1->$(get metaReference->instanceProperty)),
+				$(for child <-
+					$(get 1->$(get metaReference->instanceProperty)),
+					$(call $0,$(child)))
+			)
+		)
 	)
 
 	$(method unlink)
