@@ -9,7 +9,9 @@ __core_alloc_mk := 1
 ALLOC_SCOPE ?=
 
 alloc = \
-	$(foreach cnt,$(words x $(value __alloc_cnt_$(ALLOC_SCOPE)-$1)) \
+	$(foreach cnt,$(words x \
+		$(or $(value __alloc_cnt_$(ALLOC_SCOPE)-$1), \
+			${eval __alloc_cnt_$(ALLOC_SCOPE)-$1 :=})) \
 		,${eval __alloc_cnt_$(ALLOC_SCOPE)-$1 += $(cnt)}$(cnt)$(ALLOC_SCOPE))
 
 alloc_last = \
