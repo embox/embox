@@ -69,7 +69,11 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="eTarget" eType="#//ENamedObject"
         volatile="true" transient="true" derived="true" resolveProxies="false" eOpposite="#//ENamedObject/eInverseResolvedLinks"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EMetaType" abstract="true" eSuperTypes="#//ENamedObject">
+  <eClassifiers xsi:type="ecore:EClass" name="EMetaModel" eSuperTypes="#//ENamedObject #//EFreezable">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eTypes" upperBound="-1"
+        eType="#//EMetaType" containment="true" resolveProxies="false" eOpposite="#//EMetaType/eMetaModel"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EMetaType" abstract="true" eSuperTypes="#//ENamedObject #//EFreezable">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="instanceClass" eType="#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaModel" eType="#//EMetaModel"
         changeable="false" transient="true" resolveProxies="false" eOpposite="#//EMetaModel/eTypes"/>
@@ -110,7 +114,7 @@
         derived="true" resolveProxies="false"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EMetaPrimitive" eSuperTypes="#//EMetaType"/>
-  <eClassifiers xsi:type="ecore:EClass" name="EMetaFeature" abstract="true" eSuperTypes="#//ETyped">
+  <eClassifiers xsi:type="ecore:EClass" name="EMetaFeature" abstract="true" eSuperTypes="#//ETyped #//EFreezable">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="changeable" eType="#//EBoolean"
         defaultValueLiteral="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="derived" eType="#//EBoolean"/>
@@ -133,14 +137,13 @@
         eType="#//EMetaPrimitive" changeable="false" volatile="true" transient="true"
         derived="true" resolveProxies="false"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="EMetaModel" eSuperTypes="#//ENamedObject">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eTypes" upperBound="-1"
-        eType="#//EMetaType" containment="true" resolveProxies="false" eOpposite="#//EMetaType/eMetaModel"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ETyped" abstract="true" eSuperTypes="#//ENamedObject">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="many" eType="#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eType" eType="#//EMetaType"
         resolveProxies="false"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="EFreezable" abstract="true">
+    <eOperations name="freeze"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EDataType" name="EBoolean" instanceClassName="boolean"/>
   <eClassifiers xsi:type="ecore:EDataType" name="EInt" instanceClassName="int"/>

@@ -13,12 +13,12 @@ include mk/model/metamodel_internals.mk
 
 # Create meta objects.
 «metaVariable()» := \
-	«mkCall("createMetaModel", metaVariable())»
+	«mkCall("eMetaModelCreate", metaVariable())»
 «EXPAND createClassifier FOREACH eClassifiers.typeSelect(EClass) -»
 
 # Initializes the objects and relations between them.
 define «metaModelInitializer()»
-	«mkCall("initMetaModel",
+	«mkCall("eMetaModelInit",
 		{ mkExpand(metaVariable()), name, nsPrefix })»
 «EXPAND initClassifier FOREACH eClassifiers.typeSelect(EClass)»
 endef # «metaModelInitializer()»
@@ -33,6 +33,8 @@ $(def_all)
 «mkCall(metaModelInitializer())»
 «mkCall(metaModelBinder())»
 
+«mkCall("eMetaModelFreeze", mkExpand(metaVariable()))»
+
 «inclusionGuardEnd("metamodel")»
 
 «ENDFILE»«ENDDEFINE»
@@ -40,7 +42,7 @@ $(def_all)
 
 «DEFINE createClassifier FOR EClass»
 «metaVariable()» := \
-	«mkCall("createMetaClass",
+	«mkCall("eMetaClassCreate",
 		{ mkExpand(ePackage.metaVariable()), metaVariable() })»
 	«EXPAND createFeature FOREACH eStructuralFeatures -»
 «ENDDEFINE»
@@ -50,11 +52,11 @@ $(def_all)
 «ENDDEFINE»
 
 «DEFINE createFeature FOR EAttribute -»
-«EXPAND createFeature("EMetaAttribute", "createMetaAttribute") -»
+«EXPAND createFeature("EMetaAttribute", "eMetaAttributeCreate") -»
 «ENDDEFINE»
 
 «DEFINE createFeature FOR EReference -»
-«EXPAND createFeature("EMetaReference", "createMetaReference") -»
+«EXPAND createFeature("EMetaReference", "eMetaReferenceCreate") -»
 «ENDDEFINE»
 
 «DEFINE createFeature(String type, String methodName) FOR EStructuralFeature -»
@@ -65,7 +67,7 @@ $(def_all)
 
 
 «DEFINE initClassifier FOR EClass»
-	«mkCall("initMetaClass", {
+	«mkCall("eMetaClassInit", {
 		mkExpand(metaVariable()),
 		name,
 		eSuperTypes.metaVariable().mkExpand().toString(" "),
@@ -79,7 +81,7 @@ $(def_all)
 «ENDDEFINE»
 
 «DEFINE initFeature FOR EAttribute -»
-	«mkCall("initMetaAttribute", {
+	«mkCall("eMetaAttributeInit", {
 		mkExpand(metaVariable()),
 		name,
 		metaFlags().toString(" ")
@@ -87,7 +89,7 @@ $(def_all)
 «ENDDEFINE»
 
 «DEFINE initFeature FOR EReference -»
-	«mkCall("initMetaReference", {
+	«mkCall("eMetaReferenceInit", {
 		mkExpand(metaVariable()),
 		name,
 		mkExpand(eReferenceType.metaVariable()),
@@ -98,10 +100,10 @@ $(def_all)
 
 
 «DEFINE bindClassifier FOR EClass»
-	«mkCall("bindMetaClass",
+	«mkCall("eMetaClassBind",
 		{ mkExpand(metaVariable()), className() })»
 «FOREACH eStructuralFeatures AS f -»
-	«mkCall("bindMetaFeature",
+	«mkCall("eMetaFeatureBind",
 		{ mkExpand(f.metaVariable()), f.propertyName() })»
 «ENDFOREACH -»
 «ENDDEFINE»
