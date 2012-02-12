@@ -100,6 +100,7 @@ $(MAKECMDGOALS) : $(all_mk_scripts)
 
 -include $(all_mk_scripts:%=%.d)
 
+.DELETE_ON_ERROR:
 .SECONDEXPANSION:
 $(all_mk_scripts) : $$(CACHE_INCLUDES)
 $(all_mk_scripts) : $$(CACHE_REQUIRES)
