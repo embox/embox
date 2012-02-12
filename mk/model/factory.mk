@@ -22,6 +22,11 @@ define class-EModelFactory
 	$(method createELink,
 		$(for e <- $(new ELinkImpl),$(if $(value 1),$(set e->name,$1))$e))
 
+	# Creates a new 'EMetaModel' model object.
+	#   1. (optional) initial value of 'name' property.
+	$(method createEMetaModel,
+		$(for e <- $(new EMetaModelImpl),$(if $(value 1),$(set e->name,$1))$e))
+
 	# Creates a new 'EMetaClass' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaClass,
@@ -41,11 +46,6 @@ define class-EModelFactory
 	#   1. (optional) initial value of 'name' property.
 	$(method createEMetaAttribute,
 		$(for e <- $(new EMetaAttributeImpl),$(if $(value 1),$(set e->name,$1))$e))
-
-	# Creates a new 'EMetaModel' model object.
-	#   1. (optional) initial value of 'name' property.
-	$(method createEMetaModel,
-		$(for e <- $(new EMetaModelImpl),$(if $(value 1),$(set e->name,$1))$e))
 endef
 
 $(def_all)

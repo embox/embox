@@ -151,11 +151,41 @@ define class-ELink
 endef
 
 #
+# Model object 'EMetaModel'.
+#
+# The following features are defined:
+#   - reference 'eTypes'
+#
+# The following operations are inherited from 'EFreezable':
+#   - operation 'freeze'
+#
+# The following features are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - reference 'eInverseResolvedLinks'
+#   - reference 'eInverseLinkedRefs'
+#
+# To instantiate this class use 'EModelFactory.createEMetaModel'.
+define class-EMetaModel
+	$(super EObject)
+	$(super ENamedObject)
+	$(super EFreezable)
+
+	# 'eTypes' bidirectional containment reference.
+	# The opposite reference is 'EMetaType.eMetaModel'.
+	$(property eTypes... : EMetaType)
+
+endef
+
+#
 # Model object 'EMetaType'.
 #
 # The following features are defined:
 #   - attribute 'instanceClass'
 #   - reference 'eMetaModel'
+#
+# The following operations are inherited from 'EFreezable':
+#   - operation 'freeze'
 #
 # The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -167,6 +197,7 @@ endef
 define class-EMetaType
 	$(super EObject)
 	$(super ENamedObject)
+	$(super EFreezable)
 
 	# 'instanceClass' attribute.
 	$(property instanceClass)
@@ -198,6 +229,9 @@ endef
 # The following features are inherited from 'EMetaType':
 #   - attribute 'instanceClass'
 #   - reference 'eMetaModel'
+#
+# The following operations are inherited from 'EFreezable':
+#   - operation 'freeze'
 #
 # The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -263,6 +297,9 @@ endef
 #   - attribute 'instanceClass'
 #   - reference 'eMetaModel'
 #
+# The following operations are inherited from 'EFreezable':
+#   - operation 'freeze'
+#
 # The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
@@ -285,6 +322,9 @@ endef
 #   - attribute 'instanceProperty'
 #   - reference 'eContainingClass'
 #
+# The following operations are inherited from 'EFreezable':
+#   - operation 'freeze'
+#
 # The following features are inherited from 'ETyped':
 #   - attribute 'many'
 #   - reference 'eType'
@@ -299,6 +339,7 @@ endef
 define class-EMetaFeature
 	$(super EObject)
 	$(super ETyped)
+	$(super EFreezable)
 
 	# 'changeable' attribute.
 	$(property isChangeable)
@@ -329,6 +370,9 @@ endef
 #   - attribute 'derived'
 #   - attribute 'instanceProperty'
 #   - reference 'eContainingClass'
+#
+# The following operations are inherited from 'EFreezable':
+#   - operation 'freeze'
 #
 # The following features are inherited from 'ETyped':
 #   - attribute 'many'
@@ -371,6 +415,9 @@ endef
 #   - attribute 'instanceProperty'
 #   - reference 'eContainingClass'
 #
+# The following operations are inherited from 'EFreezable':
+#   - operation 'freeze'
+#
 # The following features are inherited from 'ETyped':
 #   - attribute 'many'
 #   - reference 'eType'
@@ -388,29 +435,6 @@ define class-EMetaAttribute
 
 	# 'eAttributeType' reference.
 	$(property eAttributeType : EMetaPrimitive)# read-only.
-
-endef
-
-#
-# Model object 'EMetaModel'.
-#
-# The following features are defined:
-#   - reference 'eTypes'
-#
-# The following features are inherited from 'ENamedObject':
-#   - attribute 'name'
-#   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
-#
-# To instantiate this class use 'EModelFactory.createEMetaModel'.
-define class-EMetaModel
-	$(super EObject)
-	$(super ENamedObject)
-
-	# 'eTypes' bidirectional containment reference.
-	# The opposite reference is 'EMetaType.eMetaModel'.
-	$(property eTypes... : EMetaType)
 
 endef
 
@@ -437,6 +461,21 @@ define class-ETyped
 
 	# 'eType' reference.
 	$(property eType : EMetaType)
+
+endef
+
+#
+# Model object 'EFreezable'.
+#
+# The following operations are defined:
+#   - operation 'freeze'
+#
+# This is an abstract class. You can't instantiate it directly.
+define class-EFreezable
+	$(super EObject)
+
+	# 'freeze : null' operation.
+	$(method freeze)
 
 endef
 

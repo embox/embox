@@ -21,7 +21,7 @@ define class-EObjectImpl
 	$(property eResource)
 	# PROTECTED REGION ID(EObject_eResource) ENABLED START
 	$(getter eResource,
-		$(error $0: NIY))
+		$(warning $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eContainer' [0..1]: bidirectional, derived, read-only.
@@ -60,64 +60,64 @@ define class-EObjectImpl
 	$(property eLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eLinks) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter eLinks,
-#		$(error $0: NIY))
+	$(getter eLinks,
+		$(warning $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eResolvedLinks' [0..*]: derived, read-only.
 	$(property eResolvedLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eResolvedLinks) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter eResolvedLinks,
-#		$(error $0: NIY))
+	$(getter eResolvedLinks,
+		$(warning $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eUnresolvedLinks' [0..*]: derived, read-only.
 	$(property eUnresolvedLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eUnresolvedLinks) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter eUnresolvedLinks,
-#		$(error $0: NIY))
+	$(getter eUnresolvedLinks,
+		$(warning $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eRefs... : EObject)
 	# PROTECTED REGION ID(EObject_eRefs) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter eRefs,
-#		$(error $0: NIY))
+	$(getter eRefs,
+		$(warning $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eInverseRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eInverseRefs... : EObject)
 	# PROTECTED REGION ID(EObject_eInverseRefs) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter eInverseRefs,
-#		$(error $0: NIY))
+	$(getter eInverseRefs,
+		$(warning $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eLinkedRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eLinkedRefs... : ENamedObject)
 	# PROTECTED REGION ID(EObject_eLinkedRefs) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter eLinkedRefs,
-#		$(error $0: NIY))
+	$(getter eLinkedRefs,
+		$(warning $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eImmediateRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eImmediateRefs... : EObject)
 	# PROTECTED REGION ID(EObject_eImmediateRefs) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter eImmediateRefs,
-#		$(error $0: NIY))
+	$(getter eImmediateRefs,
+		$(warning $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eInverseImmediateRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eInverseImmediateRefs... : EObject)
 	# PROTECTED REGION ID(EObject_eInverseImmediateRefs) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter eInverseImmediateRefs,
-#		$(error $0: NIY))
+	$(getter eInverseImmediateRefs,
+		$(warning $0: NIY))
 	# PROTECTED REGION END
 
 	# 'isAncestorOf' operation.
@@ -206,7 +206,7 @@ define class-EObjectImpl
 	#   1. Property name.
 	#   2. What to remove.
 	$(method __eRemove,
-		$(foreach ,$2,$(error $0: NIY))
+		$(foreach ,$2,$(warning $0: NIY))
 	)
 
 	# Params:
@@ -214,7 +214,7 @@ define class-EObjectImpl
 	#   2. What to remove.
 	#   3. Opposite property.
 	$(method __eRemoveBidirectional,
-		$(foreach ,$2,$(error $0: NIY))
+		$(foreach ,$2,$(warning $0: NIY))
 	)
 
 	# Params:
@@ -222,7 +222,7 @@ define class-EObjectImpl
 	#   2. What to remove.
 	#   3. Opposite property.
 	$(method __eRemoveContainment,
-		$(foreach ,$2,$(error $0: NIY))
+		$(foreach ,$2,$(warning $0: NIY))
 	)
 
 	# Params:
@@ -260,7 +260,7 @@ define class-EObjectImpl
 		$(with $1,$2,
 			# Resolved links suffixed by destination.
 			$(for link <- $2,
-				$(set-field link->eMetaReference,$($4))
+				$(set-field link->eMetaReferenceId,$4)
 				$(set-field link->eSource,$1/eLinks$(this))
 				$(for dst <- $(get link->eTarget),
 					$(link)$(dst))),
@@ -284,7 +284,7 @@ define class-EObjectImpl
 		$(with $1,$2,$3,
 			# Resolved links suffixed by destination.
 			$(for link <- $2,
-				$(set-field link->eMetaReference,$($4))
+				$(set-field link->eMetaReferenceId,$4)
 				$(set-field link->eSource,$1/eLinks$(this))
 				$(for dst <- $(get link->eTarget),
 					$(link)$(dst))),
@@ -302,7 +302,7 @@ define class-EObjectImpl
 	#   1. Property name.
 	#   2. What to remove.
 	$(method __eRemove_link,
-		$(foreach ,$2,$(error $0: NIY))
+		$(foreach ,$2,$(warning $0: NIY))
 	)
 
 	# Params:
@@ -310,7 +310,7 @@ define class-EObjectImpl
 	#   2. What to remove.
 	#   3. Opposite property.
 	$(method __eRemoveBidirectional_link,
-		$(foreach ,$2,$(error $0: NIY))
+		$(foreach ,$2,$(warning $0: NIY))
 	)
 
 	# Params:
@@ -360,16 +360,16 @@ define class-ENamedObjectImpl
 	$(property eInverseResolvedLinks... : ELink)
 	# PROTECTED REGION ID(ENamedObject_eInverseResolvedLinks) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter eInverseResolvedLinks,
-#		$(error $0: NIY))
+	$(getter eInverseResolvedLinks,
+		$(warning $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'eInverseLinkedRefs' [0..*]: bidirectional, derived, read-only.
 	$(property eInverseLinkedRefs... : EObject)
 	# PROTECTED REGION ID(ENamedObject_eInverseLinkedRefs) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter eInverseLinkedRefs,
-#		$(error $0: NIY))
+	$(getter eInverseLinkedRefs,
+		$(warning $0: NIY))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ENamedObject) ENABLED START
@@ -388,9 +388,9 @@ define class-ELinkImpl
 	# Reference 'eMetaReference' [0..1]: derived, read-only.
 	$(property eMetaReference : EMetaReference)
 	# PROTECTED REGION ID(ELink_eMetaReference) ENABLED START
-	$(field eMetaReference : EMetaReference)
+	$(field eMetaReferenceId)
 	$(getter eMetaReference,
-		$(get-field eMetaReference))
+		$(value $(get-field eMetaReferenceId)))
 	# PROTECTED REGION END
 
 	# Reference 'eSource' [0..1]: bidirectional, read-only.
@@ -406,11 +406,37 @@ define class-ELinkImpl
 	$(getter eTarget,
 		$(get-field eTarget))
 #	# TODO Uncomment and implement me.
-#	$(setter eTarget,
-#		$(error $0($1): NIY))
+	$(setter eTarget,
+		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ELink) ENABLED START
+	# PROTECTED REGION END
+endef
+
+# Implementation of 'EMetaModel' model object.
+define class-EMetaModelImpl
+	$(super EMetaModel)
+
+	$(super EObjectImpl)
+	$(super ENamedObjectImpl)
+	$(super EFreezableImpl)
+
+	$(getter eMetaClass,$(EModel_EMetaModel))
+
+	# Reference 'eTypes' [0..*]: bidirectional, containment.
+	$(property eTypes... : EMetaType)
+	$(field eTypes... : EMetaType)
+	$(getter eTypes,
+		$(get-field eTypes))
+	$(setter eTypes,
+		$(invoke __eSetContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
+	$(setter+ eTypes,
+		$(invoke __eAddContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
+	$(setter- eTypes,
+		$(invoke __eRemoveContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
+
+	# PROTECTED REGION ID(EMetaModel) ENABLED START
 	# PROTECTED REGION END
 endef
 
@@ -420,6 +446,7 @@ define class-EMetaTypeImpl
 
 	$(super EObjectImpl)
 	$(super ENamedObjectImpl)
+	$(super EFreezableImpl)
 
 	$(getter eMetaClass,$(EModel_EMetaType))
 
@@ -580,6 +607,7 @@ define class-EMetaFeatureImpl
 
 	$(super EObjectImpl)
 	$(super ETypedImpl)
+	$(super EFreezableImpl)
 
 	$(getter eMetaClass,$(EModel_EMetaFeature))
 
@@ -659,31 +687,6 @@ define class-EMetaAttributeImpl
 	# PROTECTED REGION END
 endef
 
-# Implementation of 'EMetaModel' model object.
-define class-EMetaModelImpl
-	$(super EMetaModel)
-
-	$(super EObjectImpl)
-	$(super ENamedObjectImpl)
-
-	$(getter eMetaClass,$(EModel_EMetaModel))
-
-	# Reference 'eTypes' [0..*]: bidirectional, containment.
-	$(property eTypes... : EMetaType)
-	$(field eTypes... : EMetaType)
-	$(getter eTypes,
-		$(get-field eTypes))
-	$(setter eTypes,
-		$(invoke __eSetContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
-	$(setter+ eTypes,
-		$(invoke __eAddContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
-	$(setter- eTypes,
-		$(invoke __eRemoveContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
-
-	# PROTECTED REGION ID(EMetaModel) ENABLED START
-	# PROTECTED REGION END
-endef
-
 # Implementation of 'ETyped' model object.
 define class-ETypedImpl
 	$(super ETyped)
@@ -705,6 +708,67 @@ define class-ETypedImpl
 		$(invoke __eSet,eType,$(suffix $1),,EModel_ETyped_eType))
 
 	# PROTECTED REGION ID(ETyped) ENABLED START
+	# PROTECTED REGION END
+endef
+
+# Implementation of 'EFreezable' model object.
+define class-EFreezableImpl
+	$(super EFreezable)
+
+	$(super EObjectImpl)
+
+	$(getter eMetaClass,$(EModel_EFreezable))
+
+	# 'freeze : null' operation.
+	# PROTECTED REGION ID(EFreezable_freeze) ENABLED START
+	$(method freeze,
+		$(silent-for f <- $(get $(get eMetaClass).eAllFeatures),
+			$(if $(get f->isDerived),
+				$(call var_assign_simple,
+					$(this).$(get f->instanceProperty)_frozen,
+					$(get $(get f->instanceProperty)))))
+		$(call var_assign_simple,$(this),
+			$(invoke getFrozenProxyClass)))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(EFreezable) ENABLED START
+
+	# Return:
+	#   Name of proxifier class.
+	$(method getFrozenProxyClass,
+		$(for proxyClass <- $(class $(this))FrozenProxy,
+			$(or $(class-exists $(proxyClass)),
+				$(call var_assign_recursive_sl,class-$(proxyClass),
+					$(invoke generateFrozenProxyClassBody))
+				$(call def,class-$(proxyClass))
+				$(proxyClass)))
+	)
+
+	# Return:
+	#   Code for the class being defined.
+	$(method generateFrozenProxyClassBody,
+		$$(super $(class $(this)))
+
+		$(for f <- $(get $(get eMetaClass).eAllFeatures),
+			$(if $(get f->isDerived),
+				$$(field $(get f->instanceProperty)_frozen
+					$(if $(get f->isMany),...)
+					$(for t <- $(get f->eType),
+						$(if $(invoke EModel_EMetaClass->isInstance,$t),
+							: $(get t->name))))
+				$$(getter $(get f->instanceProperty),
+					$$(get-field $(get f->instanceProperty)_frozen))
+			)
+			$(for s <- \
+				$(if $(get f->isChangeable),
+					setter \
+					$(if $(get f->isMany),
+						setter+ setter-)),
+				$$($s $(get f->instanceProperty),
+					$$(error $$0($$1): Frozen))
+			)
+		)
+	)
 	# PROTECTED REGION END
 endef
 
