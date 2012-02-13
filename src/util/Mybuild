@@ -8,6 +8,6 @@ static module LibUtil {
 	source "tree.c"
 	source "priority_q.c"
 	source "binary_heap.c"
-	source "circular_buffer.c"
+	source "ring_buff.c"
 }
 

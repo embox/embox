@@ -2,8 +2,7 @@ package embox.net
 
 module core {
 	source "devinet.c", "sock.c", "skbuff.c"
-	depends embox.net.dev
-	depends embox.net.util
+	depends embox.net.dev, embox.net.util, embox.mem.slab
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
