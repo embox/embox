@@ -39,10 +39,7 @@ cond_flags = NYI
   ) \
 
 package_def = \
-  \n\n/* \
-  \n * Package: $(package) \
-  $(call cond_flags,\n *   FLAGS:,$(package)) \
-  \n */ \
+  \n\n/* Package: $(package) */ \
   \nMOD_PACKAGE_DEF($(c_package), "$(package)");
 
 generate_package_defs = $(call eol-trim,\n/* Package definitions. */\
@@ -53,9 +50,7 @@ generate_package_defs = $(call eol-trim,\n/* Package definitions. */\
 )\n
 
 mod_def = \
-  \n\n/* \
-  \n * Mod: $(mod) \
-  \n */ \
+  \n\n/* Mod: $(mod) */ \
   \nMOD_DEF($(c_mod), $(call c_escape,$(mod_package)), "$(mod_name)", \
     $(call c_str_escape,$(value BRIEF-$(mod))), \
     $(call c_str_escape,$(value DETAILS-$(mod))));
