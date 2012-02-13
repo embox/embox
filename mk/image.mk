@@ -111,10 +111,12 @@ SRCS_BUILD_NONLIB := \
 	$(sort $(foreach m,$(MODS_BUILD),$(call module_get_sources,$m)))
 OBJS_BUILD_NONLIB := $(call SRC_TO_OBJ,$(SRCS_BUILD_NONLIB))
 LDSS_BUILD := \
-	$(call filter-patsubst,$(ROOT_DIR)%.lds.S,$(OBJ_DIR)%.lds,$(SRCS_BUILD))
+	$(call filter-patsubst,\
+		$(abspath $(ROOT_DIR))/%.lds.S,\
+		$(OBJ_DIR)/%.lds,\
+		$(abspath $(SRCS_BUILD)))
 
 override LDFLAGS += $(LDSS_BUILD:%=-T %)
-
 
 # 1. Module.
 define define_mod_obj_rules

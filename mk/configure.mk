@@ -27,9 +27,11 @@ AUTOCONF_FILES := $(build_mk) $(mods_mk) $(config_h) $(config_lds_h)
 include mk/conf/roots.mk
 include mk/conf/runlevel.mk
 
-MODS_ENABLE += embox.arch.lds
 MODS_ENABLE_OBJ := \
 	$(call module_closure,$(call find_mods,$(sort $(MODS_ENABLE))))
+#_MODS_ENABLE_OBJ := $(foreach module_name,$(MODS_ENABLE),$(filter $(module_name)%,$(__MODS_ENABLE_OBJ)))
+#MODS_ENABLE_OBJ := $(_MODS_ENABLE_OBJ) $(filter-out $(_MODS_ENABLE_OBJ),$(__MODS_ENABLE_OBJ))
+#$(error $(\n)$(\n) $(__MODS_ENABLE_OBJ) $(\n) ***** $(_MODS_ENABLE_OBJ) $(\n) ***** $(MODS_ENABLE_OBJ)$(\n)$(\n))
 
 TARGET ?= embox$(if $(PLATFORM),-$(PLATFORM))
 TARGET := $(TARGET)$(if $(LOCALVERSION),-$(LOCALVERSION))
