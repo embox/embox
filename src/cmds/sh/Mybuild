@@ -1,0 +1,14 @@
+package embox.cmd.sh
+
+abstract module shell_api { }
+
+module tish extends shell_api {
+	source "tish.c"
+	depends embox.compat.posix
+}
+
+module shell_start {
+	source "shell_start.c"
+	depends shell_api
+	make flags "-I$(CONF_DIR)"
+}
