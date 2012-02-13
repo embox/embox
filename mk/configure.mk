@@ -28,11 +28,14 @@ MODS_ENABLE :=
 include mk/conf/roots.mk
 include mk/conf/runlevel.mk
 
-MODS_ENABLE_OBJ := \
-	$(call module_closure,$(call find_mods,$(sort $(MODS_ENABLE))))
-#_MODS_ENABLE_OBJ := $(foreach module_name,$(MODS_ENABLE),$(filter $(module_name)%,$(__MODS_ENABLE_OBJ)))
-#MODS_ENABLE_OBJ := $(_MODS_ENABLE_OBJ) $(filter-out $(_MODS_ENABLE_OBJ),$(__MODS_ENABLE_OBJ))
-#$(error $(\n)$(\n) $(__MODS_ENABLE_OBJ) $(\n) ***** $(_MODS_ENABLE_OBJ) $(\n) ***** $(MODS_ENABLE_OBJ)$(\n)$(\n))
+$(if $(filter-out $(words $(MODS_ENABLE)),$(words $(sort $(MODS_ENABLE)))),\
+	$(error Multiple mod inclusion: $(sort $(foreach m,$(MODS_ENABLE),$(if $(word 2,$(filter $m,$(MODS_ENABLE))),$m)))))
+
+__MODS_ENABLE_OBJ := \
+	$(call module_closure,$(call find_mods,$(MODS_ENABLE)))
+_MODS_ENABLE_OBJ := $(foreach m,$(MODS_ENABLE),\
+	$(filter $m.%,$(__MODS_ENABLE_OBJ)))
+MODS_ENABLE_OBJ := $(_MODS_ENABLE_OBJ) $(filter-out $(_MODS_ENABLE_OBJ),$(__MODS_ENABLE_OBJ))
 
 TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))
 TARGET := $(TARGET)$(if $(value LOCALVERSION),-$(LOCALVERSION))
