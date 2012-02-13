@@ -6,3 +6,13 @@ module socket {
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
+
+module af_packet {
+	source "af_packet.c"
+	depends socket
+
+}
+module af_unix {
+	source "af_unix.c"
+	depends socket
+}
