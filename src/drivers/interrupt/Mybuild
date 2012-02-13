@@ -16,6 +16,5 @@ module i8259 extends embox.arch.interrupt{
 
 module irqmp extends embox.arch.interrupt{
 	source "irqmp.c", "irqmp.h"
-	/*FIXME AMBAPP was as options */
-	/*depends embox.driver.ambapp*/
+	depends embox.driver.ambapp
 }

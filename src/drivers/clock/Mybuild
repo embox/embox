@@ -14,6 +14,7 @@ module pit extends embox.arch.clock {
 module gptimer extends embox.arch.clock {
 	source "gptimer.c"
 	depends embox.kernel.irq
+	depends embox.driver.ambapp
 }
 
 module at91_pitc extends embox.arch.clock {
