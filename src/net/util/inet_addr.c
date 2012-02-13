@@ -41,7 +41,11 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 	uint8_t *pp = res.bytes;
 	int digit;
 	int base;
+	int dots;
+
 	res.word = 0;
+
+	dots = 0;											/* there should be 3 dots in character ip string notation */
 
 	c = *cp;
 	for (;;) {
@@ -93,30 +97,25 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 			}
 			*pp++ = val;
 			c = *++cp;
+			dots++;  									/* calculate how much dots do we have */
 		} else {
 			break;
 		}
 	}
-	/*
-	 * Check for trailing characters.
-	 */
-	if (c != '\0' && !isspace(c)) {
-		return 0;
-	}
-	/*
-	 * Did we get a valid digit?
-	 */
-	if (!digit) {
-		return 0;
-	}
+	/* checkings */
+	if ((c != '\0' && !isspace(c)) ||	/* Check for trailing characters */
+			(dots!=3) ||									/* how much octets did we yeild */
+			(!digit))											/* Did we get a valid digit? */
+		return 0;												/* something went wrong */
+
 	/* Check whether the last part is in its limits depending on
 	   the number of parts in total.  */
-	if (val > max[pp - res.bytes]) {
+	if (val > max[pp - res.bytes])
 		return 0;
-	}
-	if (addr != NULL) {
+
+	/* everything went fine */
+	if (addr != NULL)
 		addr->s_addr = res.word | htonl (val);
-	}
 	return 1;
 }
 static char ntoa_buffer[] = "xxx.xxx.xxx.xxx";

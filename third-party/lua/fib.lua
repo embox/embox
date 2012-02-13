@@ -6,4 +6,6 @@ function fib(n)
     end
 end
 
-print(fib(3))
+for i = 0,7 do
+    print("Fib(" .. i .. ") = " .. fib(i))
+end

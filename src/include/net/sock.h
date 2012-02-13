@@ -10,7 +10,9 @@
 #define SOCK_H_
 
 #include <net/netdevice.h>
+#include <kernel/thread/sync/mutex.h>
 #include <net/net.h>
+#include <mem/misc/slab.h>
 
 typedef struct {
 	spinlock_t slock;
@@ -86,6 +88,8 @@ typedef struct sock {
 	int (* sk_backlog_rcv)(struct sock *sk, sk_buff_t *pack);
 	void (* sk_destruct)(struct sock *sk);
 	int (* get_port)(struct sock *sk, unsigned short num);
+	int sk_err;
+	int sk_deferred_info;
 } sock_t;
 
 /** Sock flags */
@@ -122,6 +126,7 @@ typedef struct proto {
 	sock_t *(*sock_alloc)(void); /**< if not NULL, allocate proto socket casted to sock_t */
 	void (*sock_free)(sock_t *); /**< must not be NULL if sock_alloc is not NULL */
 	unsigned int obj_size;
+	cache_t *cachep;             /**< associated cache in witch socks will be stored */
 	char name[32];
 } proto_t;
 
@@ -156,6 +161,10 @@ extern int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
 			struct msghdr *msg, size_t size, int flags);
 
 extern void sk_common_release(struct sock *sk);
+
+/* Simple spinlock */
+extern void sock_lock(struct sock *sk);
+extern void sock_unlock(struct sock *sk);
 
 #if 0
 //TODO NETSOCK: functions are not realized now

@@ -9,5 +9,6 @@ $_SRCS-posix += getopt.c
 $_SRCS-posix += select.c
 $_SRCS-posix += utsname.c
 $_SRCS-posix += wait.c
+$_REQUIRES-posix += embox.kernel.task_api
 
 $_CPPFLAGS += -I$(SRC_DIR)/compat/posix/include

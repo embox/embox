@@ -26,12 +26,11 @@ extern size_t bluetooth_write(uint8_t *buff, size_t len);
 
 CALLBACK_DECLARE(bt_comm_handler_t, bluetooth_uart);
 
-typedef int (*nxt_bt_rx_handle_t)(void);
+typedef int (*nxt_bt_rx_handle_t)(int len, void *data);
 CALLBACK_DECLARE(nxt_bt_rx_handle_t, bt_rx);
 
 typedef int (*nxt_bt_state_handle_t)(void);
 CALLBACK_DECLARE(nxt_bt_state_handle_t, bt_state);
-
 
 /*
  * Does hard reset. Usually need during boot, or unmaintable hw failure

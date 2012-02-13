@@ -29,3 +29,7 @@ module math_test {
 	source "math_test.c"
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
+
+module rbuff_test {
+	source "rbuff_test.c"
+}

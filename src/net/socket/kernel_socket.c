@@ -62,10 +62,7 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	 err = security_socket_post_create(sock, family, type, protocol, kern);
 	 */
 
-	//res = sock - (struct socket *)socket_pool.storage; /* calculate sockfd */
-	//res = task_idx_alloc(TASK_IDX_TYPE_SOCKET);
-	//task_idx_save(res, sock);
-	*psock = sock; /* and save struct */
+	*psock = sock; /* and save structure */
 
 	return res;
 }
@@ -95,27 +92,10 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 	return sock->ops->listen(sock, backlog);
 }
 
-#if 0
-int kernel_socket_accept(struct socket *sock, struct socket **newsock, int flags) {
-	int res;
-
--	res = sock->ops->accept(sock, *newsock, flags);
-	if (res < 0) {
-		return res;
-#if 0
-		kernel_socket_release(*newsock); /* FIXME must be free in accept() function */
-#endif
-	}
-
-	(*newsock)->ops = sock->ops;
-
-	return res;
-}
-#endif
-
 int kernel_socket_accept(struct socket *sock, struct sockaddr *addr, socklen_t *addrlen) {
 	return sock->ops->accept(sock, addr, addrlen);
 }
+
 int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
 	return sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);

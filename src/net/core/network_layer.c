@@ -18,6 +18,8 @@
 #include <kernel/irq.h>
 #include <linux/interrupt.h>
 #include <errno.h>
+#include <net/sock.h>
+#include <net/route.h>
 
 #include <framework/net/pack/api.h>
 
@@ -27,7 +29,10 @@ EMBOX_UNIT_INIT(unit_init);
  we should use alloc_skb_queue?*/
 //static SKB_LIST_HEAD(netdev_skb_head);
 
-
+/* FIXME network packet's type is L2 (device layer protocols)
+ * what is dev_add_pack, why was separated ptype_base and ptype_all
+ * what this code does here?
+ */
 /*paket's types*/
 static LIST_HEAD(ptype_base);
 static LIST_HEAD(ptype_all);
@@ -59,7 +64,7 @@ void dev_remove_pack(struct packet_type *pt) {
 
 
 /* we use this function in debug mode*/
-#if 0
+#ifdef DEBUG
 static void print_packet (sk_buff_t *skb) {
 	size_t i, j;
 	printf("pack:\n");
@@ -82,7 +87,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	const struct net_device_ops *ops;
 	net_device_stats_t *stats;
 
-	if (skb == NULL) {
+	if (NULL == skb) {
 		return -EINVAL;
 	}
 
@@ -98,7 +103,8 @@ int dev_queue_xmit(struct sk_buff *skb) {
 		res = dev->header_ops->rebuild(skb);
 		if (res < 0) {
 			kfree_skb(skb);
-			stats->tx_err++;
+			if(res != -ENOENT) /* if packet was not deferred */
+				stats->tx_err++;
 			return res;
 		}
 		res = ops->ndo_start_xmit(skb, dev);
@@ -114,11 +120,10 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	return ENOERR;
 }
 
-
 int __netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
-	struct packet_type *q = NULL;
-	const struct net_pack *pack;
+//	struct packet_type *q = NULL;
+//	const struct net_pack *pack;
 
 	if (NULL == skb) {
 		return NET_RX_DROP;
@@ -129,7 +134,8 @@ int __netif_rx(struct sk_buff *skb) {
 		return NET_RX_DROP;
 	}
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
-
+#if 0
+	/*this loop exist in netif_receive_skb*/
 	net_pack_foreach(pack) {
 		q = pack->netpack;
 		if (q->type == skb->protocol) {
@@ -139,6 +145,10 @@ int __netif_rx(struct sk_buff *skb) {
 		}
 	}
 	kfree_skb(skb);
+#endif
+	skb_queue_tail(&(dev->dev_queue), skb);
+	netif_rx_schedule(dev);
+
 	return NET_RX_DROP;
 }
 
@@ -153,15 +163,6 @@ int __netif_receive_skb(sk_buff_t *skb) {
 		}
 	}
 
-#if 0
-
-	net_pack_foreach(
-	list_for_each_entry(q, &ptype_base, list) {
-		if (q->type == skb->protocol) {
-			return q->func(skb, skb->dev, q, NULL);
-		}
-	}
-#endif
 	kfree_skb(skb);
 	return NET_RX_DROP;
 }
@@ -174,18 +175,33 @@ void netif_rx_schedule(net_device_t *dev) {
 
 extern net_device_t *get_dev_by_idx(int num); /* TODO delete it */
 
+/* FIXME: rx_action_in_action - is a fast patch, just in case
+   another interrupt happens while processing soft irq. This
+   should dissapear once correct soft irq handling system is written. //Timk */
+static int net_rx_action_in_action = 0;
+
 static void net_rx_action(struct softirq_action *action) {
 	size_t i;
 	net_device_t *dev;
-	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
-		dev = get_dev_by_idx(i);
-		if (dev) {
-			dev->poll(dev);
+
+	if(!net_rx_action_in_action){
+		net_rx_action_in_action = 1;
+		//TODO it will be better use list of active device and cache for them
+		for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
+			dev = get_dev_by_idx(i);
+			if (dev) {
+				dev->poll(dev);
+			}
 		}
+		net_rx_action_in_action = 0;
+	}else{
+		printk("net_rx_action: multiple tries to handle inerrupt\n");
 	}
 }
 
 static int __init unit_init(void) {
+	//TODO network route must be a separated module
+	route_init();
 	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
 	return 0;
 }

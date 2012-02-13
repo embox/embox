@@ -18,6 +18,12 @@
 #define LUA_COLIBNAME	"coroutine"
 LUALIB_API int (luaopen_base) (lua_State *L);
 
+#define LUA_TABLIBNAME  "table"
+LUALIB_API int (luaopen_table) (lua_State *L);
+
+#define LUA_DBLIBNAME   "debug"
+LUALIB_API int (luaopen_debug) (lua_State *L);
+
 /* open all previous libraries */
 LUALIB_API void (luaL_openlibs) (lua_State *L);
 

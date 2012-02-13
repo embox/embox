@@ -27,6 +27,10 @@
 
 extern const struct task_res_ops * __task_res_ops[];
 
+#define is_ready(sock) (sock->sk->sk_deferred_info & 0x000000FF)
+#define was_transmit_deferred(sock) ((sock->sk->sk_deferred_info & 0x0000FF00) >> 8)
+#define get_answer_from(sock) ((sock->sk->sk_deferred_info & 0x00FF0000) >> 16)
+
 static ssize_t this_read(int fd, const void *buf, size_t nbyte) {
 	return recvfrom(fd, (void *) buf, nbyte, 0, NULL, 0);
 }
@@ -145,12 +149,22 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 
 	socket_set_port_type(sock);
 	if (inet->sport == 0) {
-		//inet->sport = 666;
 		inet->sport = socket_get_free_port(inet->sport_type);
 	}
+	/* socket is ready for usage and has no data transmitting errors yet */
+	sock->sk->sk_err = -1;
+	sock->sk->sk_deferred_info = 1;
 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
-	if (res < 0) {
+
+	if(sock->sk && was_transmit_deferred(sock) != 0) {
+		sock_lock(sock->sk);
+		while(!is_ready(sock));
+		sock_unlock(sock->sk);
+		res = get_answer_from(sock);
+	}
+
+	if(res < 0) {
 		return (ssize_t)res;
 	}
 
@@ -161,16 +175,24 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen) {
 
 	return sendto_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
+}
 
+int check_icmp_err(int sockfd) {
+	struct socket *sock;
+	int err;
+
+	sock = idx2sock(sockfd);
+	err = sock->sk->sk_err;
+	sock->sk->sk_err = -1;
+
+	return err;
 }
 
 static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
 	int res;
-//	struct inet_sock *inet;
 	struct iovec iov;
 	struct msghdr m;
-//	struct sockaddr_in *dest_addr;
 
 	if (sock == NULL) {
 		return -EBADF;
@@ -181,9 +203,6 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	m.msg_iov = &iov;
 
 	res = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
-	if (res < 0) {
-		return res;
-	}
 
 #if 0
 	/* FIXME: Error:

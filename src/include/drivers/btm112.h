@@ -14,9 +14,8 @@
 #include <util/callback.h>
 #include <drivers/bluetooth.h>
 
-extern uint8_t *btm_bt_read_buff;
-extern int btm_bt_read_len;
+typedef int (*btm_bt_rx_handle_t)(int cnt, void *data);
 
-CALLBACK_DECLARE(nxt_bt_rx_handle_t, __bt_rx);
+CALLBACK_DECLARE(btm_bt_rx_handle_t, __bt_rx);
 
 #endif

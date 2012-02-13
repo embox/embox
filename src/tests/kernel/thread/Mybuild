@@ -1,7 +1,7 @@
 package embox.test.kernel.thread
 
-module core_test {
-	source "core_test.c"
+module thread_test {
+	source "thread_test.c"
 	depends embox.kernel.thread.core
 }
 
@@ -12,5 +12,10 @@ module state_test {
 
 module suspend_resume_test {
 	source "suspend_resume_test.c"
+	depends embox.kernel.thread.core
+}
+
+module event_test {
+	source "event_test.c"
 	depends embox.kernel.thread.core
 }

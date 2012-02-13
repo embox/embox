@@ -12,12 +12,16 @@
 
 #include <string.h>
 #include <kernel/timer.h>
+#include <net/icmp.h>
 #include <net/inetdevice.h>
 #include <net/arp.h>
 #include <net/ip.h>
 #include <embox/net/pack.h>
 #include <errno.h>
 #include <net/neighbour.h>
+#include <time.h>
+
+#include <net/defpack_resolve.h>
 
 /*
  * FIXME:
@@ -112,9 +116,12 @@ int arp_resolve(sk_buff_t *pack) {
 	uint8_t *hw_addr;
 	net_device_t *dev;
 	iphdr_t *ip;
-
+#ifdef TRIVIAL_WAIT
+	uint32_t start;
+#endif
 	ip = pack->nh.iph;
 	pack->mac.raw = pack->data;
+	/* loopback */
 	if (ipv4_is_loopback(ip->daddr)) {
 		/* Loopback address is 127.*.*.*
 		 * so previous check is incorrect:
@@ -122,18 +129,46 @@ int arp_resolve(sk_buff_t *pack) {
 		memset(pack->mac.ethh->h_dest, 0x00, ETH_ALEN);
 		return 0;
 	}
+	/* broadcast */
 	if (ip->daddr == htonl(INADDR_BROADCAST)) {
 		memset(pack->mac.ethh->h_dest, 0xFF, ETH_ALEN);
 		return 0;
 	}
 	dev = pack->dev;
-	if ((hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr))) {
+	/* our machine on our device? */
+	if(ip->daddr == inet_dev_get_ipaddr(in_dev_get(dev))){
+		memcpy(pack->mac.ethh->h_dest, dev->dev_addr, ETH_ALEN);
+		return 0;
+	}
+	/* someone on the net */
+		if ((hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr))) {
 		memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
 		return 0;
 	}
-	/* send arp request  */
+
+	/* send arp request and add packet in list of deferred packets */
+	def_add_packet(pack);
 	arp_send(ARPOP_REQUEST, ETH_P_ARP, ip->daddr, dev, ip->saddr, NULL,
 			dev->dev_addr, NULL);
+
+	/* ARP sender must not wait for ARP response from another host. It add packet in
+	 * list of deferred packets and report on this to socket. When ARP response arrive,
+	 * it report on this and we check our deferred list for arrived
+	 * IP address and then send all corresponding packets. It is so if we not want
+	 * check all ARP cache in cycle (it can be very slow) --Alexander */
+#ifdef TRIVIAL_WAIT
+	/* give some time for response for an hw address to come back */
+	start = clock();
+	/* TODO: is the ARP_RESOLVE_TIMEOUT value set up correctly? find more appropriate value */
+	while(clock() - start < ARP_RESOLVE_TIMEOUT){
+		hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr); /* did we get reply */
+		if(hw_addr){																						/* if yes fill out missing fields and proceed */
+			memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
+			return 0;
+		}
+	}
+#endif
+
 	return -1;
 }
 
@@ -185,6 +220,7 @@ static int arp_process(sk_buff_t *skb) {
 	switch (ntohs(arp->ar_op)) {
 		case ARPOP_REPLY:
 			res = received_resp(skb);
+			def_process_list(skb);
 			kfree_skb(skb);
 			return res;
 		case ARPOP_REQUEST:

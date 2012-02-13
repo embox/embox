@@ -1530,6 +1530,7 @@ X lval fasr(lval * f, lval * p, int pz, lval * s, lval * sp, int sz, lval * c,
 	*ro = y;
 }
 #endif
+
 #ifdef _WIN32
 lval lrp(lval * f, lval * h)
 {
@@ -1563,8 +1564,11 @@ int lisp5000_main(int argc, char *argv[])
 	lval *g;
 	int i;
 	lval sym;
-	memory_size = 1 * 1024 * 1024;
-	memory = malloc(memory_size);
+	memory_size = 1 * 1024 * 1024 + 0x10;
+//	memory = malloc(memory_size);
+//	memory = (lval *)(((int)memory + 7) & ~7);
+	memory = memalign(8, memory_size);
+
 	memf = memory;
 	memset(memory, 0, memory_size);
 	memf[0] = 0;

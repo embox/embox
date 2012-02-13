@@ -45,7 +45,7 @@ static int exec(int argc, char *argv[]) {
 	int opt;
 	in_device_t *ifdev;
 	struct rt_entry *rt;
-	size_t l, iterator;
+	size_t l;
 	in_addr_t net, mask, gw;
 	struct in_addr addr;
 	char buff[BUFF_SZ], *str;
@@ -98,7 +98,7 @@ static int exec(int argc, char *argv[]) {
 		printf("Destination     Gateway         Genmask         Flags Iface\n");
 
 		buff[OFFSET_EOS] = '\0';
-		rt = rt_fib_get_first(&iterator);
+		rt = rt_fib_get_first();
 		while (rt != NULL) {
 			memset(&buff[0], ' ', (BUFF_SZ - 1) * sizeof(char));
 
@@ -136,7 +136,7 @@ static int exec(int argc, char *argv[]) {
 
 			printf("%s\n", &buff[OFFSET_START]);  /* print info */
 
-			rt = rt_fib_get_next(&iterator);
+			rt = rt_fib_get_next(rt);
 		}
 	}
 	return 0;

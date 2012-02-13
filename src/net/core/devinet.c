@@ -50,20 +50,6 @@ static struct inetdev_info * find_indev_info_entry(struct in_device *in_dev) {
 	return NULL;
 }
 
-#if 0
-static int free_handler(in_device_t * handler) {
-	size_t i;
-	for (i = 0; i < CONFIG_NET_INTERFACES_QUANTITY; i++) {
-		if ((1 == ifs_info[i].is_busy) &&
-			(&ifs_info[i].dev == handler)) {
-			ifs_info[i].is_busy = 0;
-			return 0;
-		}
-	}
-	return -1;
-}
-#endif
-
 static int alloc_callback(struct in_device *in_dev, unsigned int type,
 				ETH_LISTEN_CALLBACK callback) {
 	struct inetdev_info *indev_info;
@@ -236,6 +222,59 @@ in_addr_t inet_dev_get_ipaddr(struct in_device *in_dev) {
 	return (in_dev == NULL) ? 0 : in_dev->ifa_address;
 }
 
+int inet_dev_add_dev(struct net_device *dev) {
+	int res;
+	struct inetdev_info *indev_info;
+
+	indev_info = (struct inetdev_info *)pool_alloc(&indev_info_pool);
+	if (indev_info == NULL) {
+		LOG_ERROR("ifdev up: can't find find free handler\n");
+		return -ENOMEM;
+	}
+
+	res = dev_open(dev);
+	if (res < 0) {
+		LOG_ERROR("ifdev up: can't open device with name %s\n", dev->name);
+		pool_free(&indev_info_pool, indev_info);
+		return res;
+	}
+
+	indev_info->in_dev.dev = dev;
+	INIT_LIST_HEAD(&indev_info->cb_info_list);
+	list_add_tail(&indev_info->lnk, &indev_info_list);
+	return ENOERR;
+}
+
+int inet_dev_remove_dev(struct in_device *in_dev) {
+	int res;
+	struct callback_info *cb_info;
+	struct inetdev_info *indev_info;
+	struct list_head *tmp, *safe;
+
+	indev_info = member_cast_out(in_dev, struct inetdev_info, in_dev);
+
+	list_del(&indev_info->lnk);
+
+	assert(indev_info->in_dev.dev != NULL);
+
+	res = dev_close(indev_info->in_dev.dev);
+	if (res < 0) {
+		LOG_ERROR("ifdev down: can't close device with name %s\n", in_dev->dev->name);
+		list_add_tail(&indev_info->lnk, &indev_info_list);
+		return res;
+	}
+
+	list_for_each_safe(tmp, safe, &indev_info->cb_info_list) {
+		cb_info = member_cast_out(tmp, struct callback_info, lnk);
+		list_del(&cb_info->lnk);
+		pool_free(&callback_info_pool, cb_info);
+	}
+
+	pool_free(&indev_info_pool, indev_info);
+
+	return ENOERR;
+}
+
 #if 0
 /**
  * this function is called by device layer from function "netif_rx"
@@ -292,86 +331,6 @@ struct in_device * inet_dev_get_next_used(struct in_device *in_dev) {
 
 	return (&indev_info->lnk == &indev_info_list) ? NULL : &indev_info->in_dev;
 }
-
-/*TODO follow functions either have different interface or move to another place
-     move into ifconfig -- sikmir*/
-int ifdev_up(const char *if_name) {
-	int res;
-	struct net_device *dev;
-	struct inetdev_info *indev_info;
-
-	dev = netdev_get_by_name(if_name);
-	if (dev == NULL) {
-		LOG_ERROR("ifdev up: can't find net_device with name %s\n", if_name);
-		return -ENOENT;
-	}
-
-	indev_info = (struct inetdev_info *)pool_alloc(&indev_info_pool);
-	if (indev_info == NULL) {
-		LOG_ERROR("ifdev up: can't find find free handler\n");
-		return -ENOMEM;
-	}
-
-	res = dev_open(dev);
-	if (res < 0) {
-		LOG_ERROR("ifdev up: can't open device with name %s\n", if_name);
-		pool_free(&indev_info_pool, indev_info);
-		return res;
-	}
-
-	indev_info->in_dev.dev = dev;
-	INIT_LIST_HEAD(&indev_info->cb_info_list);
-	list_add_tail(&indev_info->lnk, &indev_info_list);
-
-	return ENOERR;
-}
-
-int ifdev_down(const char *if_name) {
-	int res;
-	struct callback_info *cb_info;
-	struct in_device *in_dev;
-	struct inetdev_info *indev_info;
-	struct list_head *tmp, *safe;
-
-	in_dev = inet_dev_find_by_name(if_name);
-	if (in_dev == NULL) {
-		LOG_ERROR("ifdev down: can't find in_device with name %s\n", if_name);
-		return -ENOENT;
-	}
-
-	indev_info = member_cast_out(in_dev, struct inetdev_info, in_dev);
-
-	list_del(&indev_info->lnk);
-
-	assert(indev_info->in_dev.dev != NULL);
-
-	res = dev_close(indev_info->in_dev.dev);
-	if (res < 0) {
-		LOG_ERROR("ifdev down: can't close device with name %s\n", if_name);
-		list_add_tail(&indev_info->lnk, &indev_info_list);
-		return res;
-	}
-
-	list_for_each_safe(tmp, safe, &indev_info->cb_info_list) {
-		cb_info = member_cast_out(tmp, struct callback_info, lnk);
-		list_del(&cb_info->lnk);
-		pool_free(&callback_info_pool, cb_info);
-	}
-
-	pool_free(&indev_info_pool, indev_info);
-
-	return ENOERR;
-}
-
-#if 0
-int ifdev_set_debug_mode(const char *iname, unsigned int type_filter) {
-	return 0;
-}
-
-int ifdev_clear_debug_mode(const char *iname) {
-	return 0;
-}
-#endif
 
 static int devinet_init(void) {
 	INIT_LIST_HEAD(&indev_info_list);

@@ -1,0 +1,993 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{t1enc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\topmargin -1cm
+\oddsidemargin 0cm
+
+\textwidth  16cm
+\textheight 24cm
+\pagestyle{empty}
+
+\begin{document}
+
+%%%%%%%% title %%%%%%%%%%
+\title{{\bf EmBOX} networking subsystem: refactoring raw sockets - present state(draft.0.1)}
+\date{February 3, 2012}
+\author{Timur Abdukadyrov}
+
+\maketitle
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\tableofcontents
+
+%%%%%%%%%%% document description %%%%%%%%%%%%
+\newpage
+
+\section{Document description}
+\label{sec:description}
+Current version of this document is 0.1(draft).
+
+The purpose of this document is to systemize the structure of EMBOX' sockets
+networking subsystem(further ENSS), particulary raw sockets and help in refactoring
+current version of that subsystem to consitute more logic and finished module. In
+this text the description of files, structures and methods of socket networking
+subsystem is given along with it's common logic.
+
+Once the common structure of refactored ENSS is achieved document's version should
+evaluate to 0.2. On completion of refactoring this document should reflect the
+changes and version should evaluate to 0.3 and become description of ENSS.
+
+\newpage
+\section{TODO}
+This document still lacks the description of shared socket methods and ip protocol
+family description.
+\section{Refactoring}
+\begin{itemize}
+  \item More logic file tree structure in {\it net/} and particulary in
+    {\it net/ipv4}
+  \item Develop a generalized shared IP methods library to have a flexible
+    instrument for IP functioning.
+  \item Raw socket can fetch a supposed protocol, which can be omited (Linux
+    style). And it should realize respected processing of headers. For example
+    if a raw socket is a UDP raw socket than, UDP headers can be left to be
+    processed by kernel itself and we are only interested in the following
+    packet contets. In case we omit the protocol of raw socket we should take
+    care of the whole packet contents begining with IP header(classic variant).
+    Previously developed shared methods library should be the sub-layer for
+    this one.
+  \item Other higher level protocols now could be realized via only raw
+    sockets with a defined set of preferencies and propetries.
+\end{itemize}
+\newpage
+
+\section{socket.c}
+\label{sec:socket_c_socket.c}
+\subsection{Functions}
+\label{sec:socket_c_socket_functions}
+{\it
+\begin{itemize}
+  \item this\_read
+  \item this\_write
+  \item id2sock
+  \item socket
+  \item connect
+  \item bind
+  \item listen
+  \item accept
+  \item sendto\_sock
+  \item sendto
+  \item check\_icmp\_err
+  \item recvfrom\_sock
+  \item recvfrom
+  \item socket\_close
+\end{itemize}
+}
+
+\subsubsection{this\_read}
+\label{sec:socket_c_this_read}
+\begin{verbatim}
+static ssize_t this_read(int fd, const void *buf, size_t nbyte)
+\end{verbatim}
+This is a {\it task\_res\_ops} read member. {\it task\_res\_ops} is defined
+in {\it include/kernel/task\_resources.h}.
+
+
+\subsubsection{this\_write}
+\label{sec:socket_c_this_write}
+\begin{verbatim}
+static ssize_t this_write(int fd, const void *buf, size_t nbyte)
+\end{verbatim}
+This is a {\it task\_res\_ops} write member.  {\it task\_res\_ops} is defined
+in {\it include/kernel/task\_resources.h}.
+
+\subsubsection{idx2sock}
+\label{sec:socket_c_idx2sock}
+\begin{verbatim}
+static struct socket *idx2sock(int fd)
+\end{verbatim}
+Socket descriptor number to {\it socket} conversion.
+
+\subsubsection{socket}
+\label{sec:socket_c_socket}
+\begin{verbatim}
+int socket(int domain, int type, int protocol)
+\end{verbatim}
+Create a socket.
+
+{\bf Returns} error code if any. Else returns
+{\it task\_res\_idx\_alloc} result, which is defined in
+{\it include/kernel/task\_resources.h} and {\it kernel/task/index\_desc.c}.
+
+{\bf Is a} wrap for {\it kernel\_socket\_create} function plus trivial checks.
+
+\subsubsection{connect}
+\label{sec:socket_c_connectn}
+\begin{verbatim}
+int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen)
+\end{verbatim}
+Connect to destination address {\it daddr}.
+
+{\bf Returns} socket connection result error code
+
+{\bf Is a} wrap for {\it kernel\_socket\_connect} function  plus trivial checks.
+
+\subsubsection{bind}
+\label{sec:socket_c_bind}
+\begin{verbatim}
+int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen)
+\end{verbatim}
+Bind socket to address {\it addr}.
+
+{\bf Returns} socket binding result error code.
+
+{\bf Is a} wrap for {\it kernel\_socket\_bind} function  plus trivial checks.
+
+\subsubsection{listen}
+\label{sec:socket_c_listen}
+\begin{verbatim}
+int listen(int sockfd, int backlog)
+\end{verbatim}
+Begin listenning on a socket.
+
+{\bf Returns} socket listening result error code.
+
+{\bf Is a} wrap for {\it kernel\_socket\_listen} function  plus trivial checks.
+
+
+\subsubsection{accept}
+\label{sec:socket_c_accept}
+\begin{verbatim}
+int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+\end{verbatim}
+Accept incoming connection.
+
+{\bf Returns} socket acceptance result error code if any. Else returns socket
+descriptor.
+
+{\bf Is a} wrap for {\it kernel\_socket\_accept} function  plus trivial checks.
+
+
+\subsubsection{sendto\_sock}
+\label{sec:socket_c_sendto_sock}
+\begin{verbatim}
+static size_t sendto_sock(struct socket *sock, const void *buf, size_t len,
+       int flags, const struct sockaddr *daddr, socklen_t daddrlen)
+\end{verbatim}
+Structurizes the input buffer and fills out {\it inet} (of {\bf \it inet\_sock}
+type). The {\it sport} member of {\it inet} check and filling if needed.
+Overwrites {\it sock->sk->is\_ready} and {\it sock->sk\_err}. Then call to
+{\it kernel\_socket\_sendmsg}. Uses also {\it socket\_set\_port\_type()} and
+{\it socket\_get\_free\_port()} functions from net/socket/port.c.
+
+{\bf Returns} Error code if any. Else returns {\it len} input argument
+unmodified.
+
+\subsubsection{sendto}
+\label{sec:socket_c_sendto}
+\begin{verbatim}
+ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
+               const struct sockaddr *daddr, socklen_t daddrlen)
+\end{verbatim}
+Send datagram to socket, using socket descriptor. User-level interface(?)
+
+{\bf Returns} {\it sendto\_sock} result.
+
+{\bf Is a } wrap for {\it sendto\_sock} function.
+
+\subsubsection{check\_icmp\_err}
+\label{sec:socket_c_check_icmp_err}
+\begin{verbatim}
+int check_icmp_err(int sockfd)
+\end{verbatim}
+Check for errors from icmp handler in icmp module. Get errors, set
+{\it sock->sk->sk\_err} = -1.
+
+{\bf Returns} last error.
+
+\subsubsection{recvfrom\_sock}
+\label{sec:socket_c_recvfrom_sock}
+\begin{verbatim}
+static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len,
+       int flags, struct sockaddr *daddr, socklen_t *daddrlen)
+\end{verbatim}
+Receive data from socket {\it sock}. Prepare {\it iovec} and {\it msghdr}
+structures and call {\it kernel\_socket\_recvmsg}.
+
+{\bf Returns } {\it res}, which is the return value of
+{\it kernel\_socket\_recvmsg()}.
+
+\subsubsection{recvfrom}
+\label{sec:socket_c_recvfrom}
+\begin{verbatim}
+ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
+        struct sockaddr *daddr, socklen_t *daddrlen)
+\end{verbatim}
+{\bf Is a} wrap for {\it recvfrom\_sock()}.
+
+{\bf Returns} what {\it recvfrom\_sock()} returns.
+
+\subsubsection{socket\_close}
+\label{sec:socket_c_socket_close}
+\begin{verbatim}
+int socket_close(int sockfd)
+\end{verbatim}
+Find socket matching socket descriptor number and try to close it.
+
+{\bf Returns} result of {\it kernel\_socket\_release()} if socket descriptor
+was ok. Else returns {\it -EBADF} value.
+
+%%%%%%%%%%%% socket.c structures %%%%%%%%%
+\subsection{Structures}
+\subsubsection{iovec}
+\begin{verbatim}
+struct iovec {
+  void *iov_base;
+  size_t iov_len;
+};
+\end{verbatim}
+Input/output vector.
+
+{\bf Is used} in {\it msghdr} structure.
+
+\subsubsection{msghdr}
+\label{sec:socket_c_msghdr}
+\begin{verbatim}
+struct msghdr {
+  void *msg_name;       /* Socket name */
+  int msg_namelen;      /* Length of name */
+  struct iovec *msg_iov; /* Data blocks */
+#if 0
+  __kernel_size_t msg_iovlen;  /* Number of blocks    */
+#endif
+  void *msg_control;    /* Per protocol magic (eg BSD file descriptor passing) */
+#if 0
+  __kernel_size_t  msg_controllen;  /* Length of cmsg list */
+#endif
+  unsigned int msg_flags;
+};
+\end{verbatim}
+{\bf Is used} in {\it *\_recvmsg} and {\it *\_sendmsg} functions in
+\begin{itemize}
+\item   net/ipv4/af\_inet.c
+\item   net/ipv4/tcp.c
+\item   net/ipv4/icmp.c
+\item   net/ipv4/raw\_sock.c
+\item   net/ipv4/udp.c
+\item   net/core/sock.c
+\item   net/socket/socket.c
+\item   net/socket/kernel\_socket.c
+\end{itemize}
+
+\subsubsection{sockaddr}
+\label{sec:socket_c_sockaddr}
+\begin{verbatim}
+typedef struct sockaddr {
+	sa_family_t sa_family; /* Address family, AF_xxx */
+	char sa_data[14];      /* 14 bytes of protocol address */
+} sockaddr_t;
+\end{verbatim}
+Matches {\it osockaddr} in BSD. {\it sa\_family} data type is alias to
+{\it unsigned short}.
+
+It is often overcasted as {\it sockaddr\_in}. It's definition is as follows
+\begin{verbatim}
+struct sockaddr_in {
+  short            sin_family;   /* e.g. AF_INET */
+  unsigned short   sin_port;     /* e.g. htons(3490) */
+  unsigned short   port_type;
+  struct in_addr   sin_addr;     /* see struct in_addr, below */
+  char             sin_zero[8];  /* zero this if you want to */
+};
+\end{verbatim}
+It is defined in {\it include/net/in.h}.
+
+%%%%%%%%%%%% kernel_socket.c %%%%%%%%%%%%%
+\newpage
+\section{kernel\_socket.c}
+\label{sec:kernel_socket_kernel_socket.c}
+
+\subsection{Functions}
+\label{sec:kernel_socket_kernel_socket_functions}
+
+\subsubsection{kernel\_socket\_create}
+\label{sec:kernel_socket_kernel_socket_create}
+\begin{verbatim}
+int kernel_socket_create(int family, int type, int protocol,
+                         struct socket **psock)
+\end{verbatim}
+Create a socket. Calls {\it socket\_alloc()} from
+{\it net/socket/socket\_allocator.c}. And then calls socket type native method
+{\it create()} from {\it net\_proto\_family} structure of this family. If
+nothing happened free allocated socket via {\it socket\_free()} same from
+{\it socket\_allocator.c} (also here stays TODO about socket permissions).
+
+{\bf Returns} {\it -EINVAL} if checks regarding type and family don't pass.
+{\it -ENOMEM} if {\it socket\_alloc()} couldn't allocate memory. Result returned
+by native {\it create()} method is returned elsewise.
+
+\subsubsection{kernel\_socket\_release}
+\label{sec:kernel_socket_kernel_socket_release}
+\begin{verbatim}
+int kernel_socket_release(struct socket *sock)
+\end{verbatim}
+Release {\it {\bf socket}} structure bound to this socket. Calls native
+{\it release()} method of this PF and then calls {\it socket\_free()} to
+deallocate space.
+
+{\bf Returns} {\it ENOERR} on success. Else returns error code returned by
+{\it release()} method.
+
+\subsubsection{kernel\_socket\_bind}
+\label{sec:kernel_socket_kernel_socket_bind}
+\begin{verbatim}
+int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
+			socklen_t addrlen)
+\end{verbatim}
+{\bf Is a} wrap for this' PF native {\it bind()} method.
+
+{\bf Returns} result of the method.
+
+\subsubsection{kernel\_socket\_listen}
+\label{sec:kernel_socket_kernel_socket_listen}
+\begin{verbatim}
+int kernel_socket_listen(struct socket *sock, int backlog)
+\end{verbatim}
+{\bf Is a} wrap for this' PF native {\it listen()} method.
+
+{\bf Returns} result of the method.
+
+\subsubsection{kernel\_socket\_accept}
+\label{sec:kernel_socket_kernel_socket_accept}
+\begin{verbatim}
+int kernel_socket_accept(struct socket *sock, struct sockaddr *addr,
+                         socklen_t *addrlen)
+\end{verbatim}
+{\bf Is a} wrap for this' PF native {\it accept()} method.
+
+{\bf Returns} result of the method.
+
+
+\subsubsection{kernel\_socket\_connect}
+\label{sec:kernel_socket_kernel_socket_connect}
+\begin{verbatim}
+int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
+                          socklen_t addrlen, int flags)
+\end{verbatim}
+{\bf Is a} wrap for this' PF native {\it connect()} method.
+
+{\bf Returns} result of the method.
+
+
+\subsubsection{kernel\_socket\_getsockname}
+\label{sec:kernel_socket_kernel_socket_getsockname}
+\begin{verbatim}
+int kernel_socket_getsockname(struct socket *sock,
+                              struct sockaddr *addr, int *addrlen)
+\end{verbatim}
+{\bf Is a} wrap for this' PF native {\it getname()} method.
+
+{\bf Returns} result of the method.
+
+
+\subsubsection{kernel\_socket\_getpeername}
+\label{sec:kernel_socket_kernel_socket_getpeername}
+\begin{verbatim}
+int kernel_socket_getpeername(struct socket *sock,
+                              struct sockaddr *addr, int *addrlen)
+\end{verbatim}
+{\bf Is a} wrap for this' PF native {\it getname()} method.
+
+{\bf Returns} result of the method.
+
+
+\subsubsection{kernel\_socket\_getsockopt}
+\label{sec:kernel_socket_kernel_socket_getsockopt}
+\begin{verbatim}
+int kernel_socket_getsockopt(struct socket *sock, int level, int optname,
+                             char *optval, int *optlen)
+\end{verbatim}
+{\bf Is a} wrap for this' PF native {\it getsockopt()} method.
+
+{\bf Returns} result of the method.
+
+
+\subsubsection{kernel\_socket\_setsockopt}
+\label{sec:kernel_socket_kernel_socket_setsockopt}
+\begin{verbatim}
+int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
+                             char *optval, int optlen)
+\end{verbatim}
+{\bf Is a} wrap for this' PF native {\it setsockopt()} method.
+
+{\bf Returns} result of the method.
+
+
+\subsubsection{kernel\_socket\_sendmsg}
+\label{sec:kernel_socket_kernel_socket_sendmsg}
+\begin{verbatim}
+int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,
+                          struct msghdr *m, size_t total_len)
+\end{verbatim}
+{\bf Is a} wrap for this' PF native {\it sendmsg()} method.
+
+{\bf Returns} result of the method.
+
+
+\subsubsection{kernel\_socket\_recvmsg}
+\label{sec:kernel_socket_kernel_socket_recvmsg}
+\begin{verbatim}
+int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,
+                          struct msghdr *m, size_t total_len, int flags)
+\end{verbatim}
+{\bf Is a} wrap for this' PF native {\it recvmsg()} method.
+
+{\bf Returns} result of the method.
+
+%%%%%%%%%%%%% EMBOX_NET_* %%%%%%%%%%%%%%%%%%%%
+\newpage
+\section {EMBOX\_NET\_PACK and EMBOX\_NET\_SOCK}
+\label{sec:embox_net_pack_and_sock}
+\subsection{EMBOX\_NET\_PACK}
+\label{sec:embox_net_pack}
+EMBOX\_NET\_PACK stands for
+\begin{verbatim}
+#define EMBOX_NET_PACK(_type, _func, _init)
+  int _func(sk_buff_t *skb,
+        net_device_t *dev,
+        packet_type_t *pt,
+        net_device_t *orig_dev);
+  static int _init(void);
+  static packet_type_t _##_type = {
+      .type = _type,
+      .func = _func,
+      .init = _init
+    };
+    __EMBOX_NET_PACK(_##_type)
+\end{verbatim}
+and is defined in {\it include/framework/net/pack/self.h}. So for example
+\begin{verbatim}
+EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
+\end{verbatim}
+from {\it net/ipv4/af\_inet.c} after first step preprocessing becomes like
+\begin{verbatim}
+  int ip_rcv(sk_buff_t *skb,
+        net_device_t *dev,
+        packet_type_t *pt,
+        net_device_t *orig_dev);
+  static int inet_init(void);
+  static packet_type_t _ETH_P_IP = {
+      .type = ETH_P_IP,
+      .func = ip_rcv,
+      .init = inet_init
+    };
+    __EMBOX_NET_PACK(_ETH_P_IP)
+\end{verbatim}
+Underscore version {\it \_\_EMBOX\_NET\_PACK} stands for
+\begin{verbatim}
+#define __EMBOX_NET_PACK(_packet)
+  extern const struct mod_ops __net_pack_mod_ops;
+  extern const struct net_pack __net_pack_registry[];
+  ARRAY_SPREAD_ADD_NAMED(__net_pack_registry, __net##_packet, {
+    .netpack = &_packet,
+    .mod = &mod_self
+  });
+  MOD_INFO_BIND(&__net_pack_mod_ops, &__net##_packet)
+\end{verbatim}
+{\it ARRAY\_SPREAD\_ADD\_NAMED} in it's turn adds to
+{\it \_\_net\_pack\_registry} array entry regarding new packet family(i.e. in
+our particular case {\it \_\_netETH\_P\_IP}) and {\it MOD\_INFO\_BIND}
+binds native operations for that new packet family.
+
+ The argument {\it \_type } in {\it EMBOX\_NET\_PACK} is the type of protocol field of
+network packet header. After binding all data needed to process IP protocol
+(i.e. after {\it EMBOX\_NET\_PACK(ETH\_P\_IP, ip\_rcv, inet\_init);}) EMBOX now
+knows that each time a packet containing {\it ETH\_P\_IP}(which is standard
+0x0800 for IP) protocol type in header arrives it should pass this packet to
+{\it af\_inet} module.
+
+%% EMBOX_NET_SOCK macro
+
+\subsection{EMBOX\_NET\_SOCK}
+\label{sec:embox_net_sock}
+
+{\it EMBOX\_NET\_SOCK} stands for
+\begin{verbatim}
+#define EMBOX_NET_SOCK(_type, _protocol, _prot, _ops, _no_check,
+            net_proto_family)
+  static inet_protosw_t _##_type = {
+      .type = _type,
+      .protocol = _protocol,
+      .prot = &_prot,
+      .ops = &_ops,
+      .no_check = _no_check
+    };
+    __EMBOX_NET_SOCK(_##_type, net_proto_family)
+\end{verbatim}
+and is defined in {\it include/framework/net/sock/self.h}.
+
+Just like {\it EMBOX\_NET\_PACK} macro {\it EMBOX\_NET\_SOCK} registers a new
+socket type in system.
+
+To be complete here is what underscore version {\it \_\_EMBOX\_NET\_SOCK} does
+\begin{verbatim}
+#define __EMBOX_NET_SOCK(_sock, _net_proto_family)
+  extern const struct mod_ops __net_sock_mod_ops;
+  extern const struct net_sock __net_sock_registry[];
+  ARRAY_SPREAD_ADD_NAMED(__net_sock_registry, __net##_sock, {
+      .net_proto_family = _net_proto_family,
+      .netsock = &_sock,
+      .mod = &mod_self
+    });
+  MOD_INFO_BIND(&__net_sock_mod_ops, &__net##_sock )
+\end{verbatim}
+
+%%%%%%%%%%%%% af_inet.c %%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+\section{af\_inet.c}
+\label{sec:af_inet_c}
+Sockets of AF\_INET family.
+
+\subsection{Functions}
+
+\subsubsection{inet\_create}
+\label{sec:embox_net_inet_create}
+\begin{verbatim}
+static int inet_create(struct socket *sock, int protocol)
+\end{verbatim}
+Create a socket. Is bound to {\it inet\_dgram\_ops.create} method.
+
+Looks through existing socket types in EMBOX socket type array. Once the socket
+type is found check protocol type.
+
+If appropriate socket type is found allocate space for socket and initialize
+structure fields. Bind {\it sock} entitiy to {\it sk} entity. And call native
+{\it init()} method.
+
+{\bf Returns} {\it -ENOENT} in case no appropriate socket was found or if
+couldn't allocate space for {\it sk}. Else 0.
+
+Various {\bf TODO}s regarding logic.
+
+\subsubsection{inet\_release}
+\label{sec:embox_net_release}
+\begin{verbatim}
+int inet_release(struct socket *sock)
+\end{verbatim}
+Release socket. Unlock ports used and call {\it close()} method of
+{\it sk\_prot}. Deallocation of {\it sk} should be conducted in {\it close()}
+method.
+
+{\bf Returns} {\it -EINVAL} in case there's no {\it sk}(==NULL). {\it ENOERR}
+elsewise.
+
+\subsubsection{inet\_bind}
+\label{sec:embox_net_inet_bind}
+\begin{verbatim}
+int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len)
+\end{verbatim}
+Bind socket to adress/port specified in struct {\it addr} using native protocol
+{\it bind()} method.
+
+{\bf Returns} Error code of {\it bind()} method, if errors occured. Returns
+{\it -EBUSY} if the source port in {\it addr} is busy. Returns {\it NOERR}
+if everything went fine.
+
+\subsubsection{inet\_dgram\_connect}
+\label{sec:embox_net_inet_dgram_connect}
+\begin{verbatim}
+int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
+                       int addr_len, int flags)
+\end{verbatim}
+Datagram-connect. Find a free port, lock it for usage and call native
+{\it connect} method.
+
+{\bf Returns} {\it connect()} method's respond.
+
+\subsubsection{inet\_sendmsg}
+\label{sec:embox_net_inet_sendmsg}
+\begin{verbatim}
+int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
+                 struct msghdr *msg, size_t size)
+\end{verbatim}
+Send message. Calls protocols native {\it sendmsg()} method.
+
+{\bf Returns} {\it sendmsg()} method's respond.
+
+
+\subsubsection{inet\_stream\_connect}
+\label{sec:af_inet_inet_stream_connect}
+\begin{verbatim}
+int inet_stream_connect(struct socket *sock, struct sockaddr * addr,
+                        int addr_len, int flags)
+\end{verbatim}
+{\bf Is a wrap} for {\it inet\_dgram\_connect()} for now.
+
+{\bf Returns} the result of {\it inet\_dgram\_connect()} method.
+
+\subsubsection{inet\_listen}
+\label{sec:af_inet_inet_listen}
+\begin{verbatim}
+int inet_listen(struct socket *sock, int backlog)
+\end{verbatim}
+Calls protocol's native method {\it listen()}.
+
+{\bf Returns} method's respond.
+
+\subsubsection{inet\_accept}
+\label{sec:af_inet_inet_accept}
+\begin{verbatim}
+static int inet_accept(socket_t *sock, sockaddr_t *addr, int *addr_len)
+\end{verbatim}
+Calls protocol's native method {\it accept()}.
+
+{\bf Returns} method's respond.
+
+\subsection{Structures}
+\label{sec:af_inet_structures}
+In {\it af\_inet.c} {\it sock} and {\it inet\_sock} structure types are used
+widely. This section is the overview of them.
+\subsubsection{sock}
+Definition is in {\it include/net/sock.h} :
+\begin{verbatim}
+/**
+ * Network layer representation of sockets.
+ * @param __sk_common shared layout with inet_timewait_sock
+ * @param sk_protocol which protocol this socket belongs in this network family
+ * @param sk_type socket type
+ * @param sk_rcvbuf size of receive buffer in bytes
+ * @param sk_lock synchronizer
+ * @param sk_sndbuf size of send buffer in bytes
+ * @param sk_flags %SO_LINGER (l_onoff), %SO_BROADCAST, %SO_KEEPALIVE,
+ *      %SO_OOBINLINE settings, %SO_TIMESTAMPING settings
+ * @param sk_receive_queue incoming packets
+ * @param sk_write_queue Packet sending queue
+ * @param sk_socket Identd and reporting IO signals
+ * @param sk_state_change: callback to indicate change in the state of the sock
+ * @param sk_data_ready: callback to indicate there is data to be processed
+ * @param sk_write_space: callback to indicate there is bf sending space available
+ * @param sk_error_report: callback to indicate errors (e.g. %MSG_ERRQUEUE)
+ * @param sk_backlog_rcv: callback to process the backlog
+ * @param sk_destruct: called at sock freeing time, i.e. when all refcnt == 0
+ */
+typedef struct sock {
+  struct sock_common __sk_common;
+#define sk_family  __sk_common.skc_family
+#define sk_prot    __sk_common.skc_prot
+#define sk_state   __sk_common.skc_state
+  unsigned char sk_protocol;
+  unsigned short sk_type;
+  int sk_rcvbuf;
+  socket_lock_t sk_lock;
+  struct {
+    struct sk_buff *head;
+    struct sk_buff *tail;
+  } sk_backlog;
+  int sk_sndbuf;
+  unsigned long sk_flags;
+
+  struct sk_buff_head *sk_receive_queue;
+  struct sk_buff_head *sk_write_queue;
+
+  struct socket *sk_socket;
+  void *sk_user_data;
+
+  void (* sk_state_change)(struct sock *sk);
+  void (* sk_data_ready)(struct sock *sk, int bytes);
+  void (* sk_write_space)(struct sock *sk);
+  void (* sk_error_report)(struct sock *sk);
+  int (* sk_backlog_rcv)(struct sock *sk, sk_buff_t *pack);
+  void (* sk_destruct)(struct sock *sk);
+  int (* get_port)(struct sock *sk, unsigned short num);
+  int is_ready;
+  int answer;
+  int sk_err;
+} sock_t;
+
+\end{verbatim}
+
+Keeping in mind field {\it sk\_protocol} is vital for development of raw
+sockets supporting other higher level protocols. In case of raw sockets
+{\it sk\_type} is {\it SOCK\_RAW}.
+
+\subsubsection{inet\_sock}
+\label{sec:af_inet_inet_sock}
+Definition is in {\it include/net/inet\_sock.c} :
+\begin{verbatim}
+/**
+ * @struct inet_sock
+ * @brief Representation of INET sockets
+ *
+ * @var sk - ancestor class
+ * @var pinet6 - pointer to IPv6 control block
+ * @var daddr - Foreign IPv4 addr
+ * @var rcv_saddr - Bound local IPv4 addr
+ * @var dport - Destination port
+ * @var num - Local port
+ * @var saddr - Sending source
+ * @var uc_ttl - Unicast TTL
+ * @var sport - Source port
+ * @var id - ID counter for DF pkts
+ * @var tos - TOS
+ * @var mc_ttl - Multicasting TTL
+ * @var is_icsk - is this an inet_connection_sock?
+ * @var mc_index - Multicast device index
+ * @var mc_list - Group array
+ * @var cork - info to build ip hdr on each ip frag while socket is corked
+ * @var port_type - identificator
+ */
+typedef struct inet_sock {
+  /* sk have to be the first member of inet_sock */
+  sock_t         sk;
+
+  in_addr_t      daddr;
+  in_addr_t      rcv_saddr;
+  struct ip_options *opt;
+  __be16         dport;
+  __be16         sport;
+  __u16          sport_type;
+  __u16          num;
+  in_addr_t      saddr;
+  __s16          uc_ttl;
+  __u16          id;
+  __u8           tos;
+  __u8           mc_ttl;
+} inet_sock_t;
+\end{verbatim}
+
+%%%%%%%%%%%%% raw_sock.c %%%%%%%%%%%%%%%%%%%%%
+\newpage
+\section{sk\_buff\_t}
+\label{sec:sk_buff_t}
+The structure type {\it sk\_buff\_t} is probably widely used across the network
+layer of any BSD sockets compatible OS. In EMBOX it has more or less standard
+view and is made use of in a similar way. It is described precise enough throught
+different papers across internet. It's detailed overview can be simply gained.
+Here is how it is defined in EMBOX in {\it include/net/skbuff.h}:
+
+\begin{verbatim}
+typedef struct sk_buff {   /* Socket buffer */
+  /* These two members must be first. */
+  struct sk_buff *next;    /* Next buffer in list */
+  struct sk_buff *prev;    /* Previous buffer in list */
+  struct sock *sk;         /* Socket we are owned by */
+  struct net_device *dev;  /* Device we arrived on/are leaving by */
+#if 0
+  struct skb_timeval tstamp;  /* Time we arrived */
+#endif
+  __be16 protocol;         /* Packet protocol from driver */
+  uint8_t pkt_type;        /* Packet class */
+  char cb[52];             /* Control buffer (used to store layer-specific
+                              info e.g. ip options) */
+  unsigned int len;        /* Length of actual data */
+  union {                  /* Transport layer header */
+    struct tcphdr *th;
+    struct udphdr *uh;
+    struct icmphdr *icmph;
+#if 0
+    igmphdr *igmph;
+    iphdr *ipiph;
+    ipv6hdr *ipv6h;
+#endif
+    unsigned char *raw;
+  } h;
+  union {                  /* Network layer header */
+    struct iphdr *iph;
+#if 0
+    ipv6hdr *ipv6h;
+#endif
+    struct arphdr *arph;
+    unsigned char *raw;
+  } nh;
+  union {                  /* Link layer header */
+    struct ethhdr *ethh;
+    unsigned char *raw;
+  } mac;
+  __be16 offset;           /* Offset information for ip fragmentation*/
+#if 0
+  void (*destructor)(struct sk_buff *skb);
+#endif
+  unsigned char *data;     /* Pointer for buffer used to store all skb content */
+  unsigned char *p_data;   /* Pointer for current processing data */
+  char prot_info;   /* Protocol level additional data,
+                       tcp uses for state handling */
+#if 0
+  unsigned char tries;
+#endif
+} sk_buff_t;
+\end{verbatim}
+
+In a couple of words it can be described as a container of network information
+going in and out of OS. It consists of 3 unions making access to different
+protocols' headers' compounds easier. Also it contains bindings to socket to which it
+belongs, if there is one, device.
+
+All socket buffers are members of a list, and members {\it next} and {\it prev}
+are the pointers to the previous and next list entries.
+
+\newpage
+\section{raw\_sock.c}
+\label{sec:raw_sock_c}
+
+\subsection{Functions}
+
+\subsubsection{raw\_rcv}
+\label{sec:raw_sock_raw_rcv}
+\begin{verbatim}
+int raw_rcv(sk_buff_t *skb)
+\end{verbatim}
+
+{\it raw\_rcv} fetches an {\it sk\_buff\_t} item - an incoming netwrok packet.
+This is a standard way for wrapping incoming and outgoing network messages in
+EMBOX (See section \ref{sec:sk_buff_t}). Then it cycles thought all raw sockets
+opened, which are listed in {\it raw\_hash}(See section \ref{sec:raw_raw_hash}).
+It clones incoming skb for each raw socket in {\it raw\_hash}. {\bf TODO}
+Here states to realize it without cloning(See section \ref{sec:cloning} on
+cloning issue ({\bf TODO create cloning section})).
+Then each cloned {\it skb} is being sent to a respected socket.
+
+{\bf Returns} {\it ENOERR} if everything went fine. If something went wrong it
+should probably notify about that, but currently it doesn't.
+
+\subsubsection{raw\_err}
+\label{sec:raw_sock_raw_err}
+\begin{verbatim}
+void raw_err(sk_buff_t *skb, uint32_t info)
+\end{verbatim}
+Notify sockets about error. Cycle though each socket in {\it raw\_has} and set
+it's {\it sk\_err} field to {\it info} value.
+
+\subsubsection{raw\_close}
+\label{sec:raw_sock_raw_close}
+\label{sec:raw_sock_}
+\begin{verbatim}
+static void raw_close(struct sock *sk, long timeout)
+\end{verbatim}
+Frees structure {\it sk} given. Probably should perform some more actions.
+
+\subsubsection{raw\_rcv\_skb}
+\label{sec:raw_sock_raw_rcv_skb}
+\begin{verbatim}
+static int raw_rcv_skb(struct sock *sk, sk_buff_t *skb)
+\end{verbatim}
+Passes given arguments to {\it sock\_queue\_rcv\_skb} method (See section
+{\ref{sec:shared_methods}}). It is defined in {\it include/net/sock.h} and
+{net/core/sock.c}.
+
+{\bf Returns} {\it NET\_RX\_DROP} if {\it sock\_queue\_rcv\_skb} fails. Else
+returns {\it NET\_RX\_SUCCESS}.
+
+\subsubsection{raw\_v4\_hash}
+\label{sec:raw_sock_raw_v4_hash}
+\begin{verbatim}
+static void raw_v4_hash(struct sock *sk)
+\end{verbatim}
+Adds an entity of type {\it struct sock} to {\it raw\_hash}. The sense is
+registration of a socket.
+
+\subsubsection{raw\_v4\_unhash}
+\label{sec:raw_sock_raw_v4_unhash}
+\begin{verbatim}
+static void raw_v4_unhash(struct sock *sk) {
+\end{verbatim}
+Remove an entity from {\it raw\_hash} list.
+
+\subsubsection{raw\_sendmsg}
+\label{sec:raw_sock_raw_sendmsg}
+\begin{verbatim}
+static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
+                       size_t len)
+\end{verbatim}
+Creates an {\it skb} entity of {\it sk\_buff\_t} type. Fills it up and
+send to {\it ip\_send\_packet} method of the underlying IP protocol
+defined in {\it include/net/ip.h} and {\it net/ipv4/ip\_output.c}.
+
+{\bf Returns} the result of {\it ip\_send\_packet} method.
+
+\subsubsection{raw\_recvmsg}
+\label{sec:raw_sock_raw_recvmsg}
+\begin{verbatim}
+static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
+                       size_t len, int noblock, int flags, int *addr_len)
+\end{verbatim}
+Calls {\it skb\_recv\_datagram} method from the sockets shared methods
+(See section \ref{sec:shared_methods}). Corrects input {\it len} if needed.
+And deallocates orginal {\it skb} in the sense, that this message is fetched
+by the end-client.
+
+{\bf Returns} the length of received message.
+
+\subsubsection{raw\_bind}
+\label{sec:raw_sock_raw_bind}
+\begin{verbatim}
+static int raw_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len)
+\end{verbatim}
+Binds the socket addresses to a given value in {\it uaddr}.
+
+{\bf Returns} 0.
+
+\subsubsection{raw\_setsockopt}
+\label{sec:raw_sock_raw_setsockopt}
+\begin{verbatim}
+static int raw_setsockopt(struct sock *sk, int level, int optname,
+                          char *optval, int optlen)
+\end{verbatim}
+Is a dummy.
+
+{\bf Returns} 0.
+
+\subsubsection{raw\_getsockopt}
+\label{sec:raw_sock_raw_getsockopt}
+\begin{verbatim}
+static int raw_getsockopt(struct sock *sk, int level, int optname,
+                          char *optval, int *optlen)
+\end{verbatim}
+Is a dummy.
+
+{\bf Returns} 0.
+
+\subsubsection{raw\_ioctl}
+\label{sec:raw_sock_raw_ioctl}
+\begin{verbatim}
+static int raw_ioctl(struct sock *sk, int cmd, unsigned long arg)
+\end{verbatim}
+Is a dummy.
+
+{\bf Returns} 0.
+
+\subsubsection{ip4\_datagram\_connect}
+\label{sec:raw_sock_ip4_datagram_connect}
+\begin{verbatim}
+int ip4_datagram_connect(struct sock *sk, struct sockaddr *uaddr, int addr_len)
+\end{verbatim}
+Is a dummy.
+
+{\bf Returns} 0.
+
+
+\subsection{Structures and arrays}
+\label{sec:raw_sock_strustures}
+
+\subsubsection{raw\_prot}
+\label{sec:raw_sock_structures_raw_prot}
+Is a standard entity of type {\it struct proto} to bind protocol methods to
+events.
+
+\subsubsection{inet\_sockraw\_ops}
+\label{sec:raw_sock_structures_inet_sockraw_ops}
+For {\it SOCK\_RAW} sockets; should be the same as {\it inet\_dgram\_ops} but without
+{\it udp\_poll}
+
+\subsubsection{raw\_hash}
+\label{sec:raw_sock_structures_raw_hash}
+This array holds the list of opened raw sockets.
+
+\subsubsection{}
+\label{sec:}
+\begin{verbatim}
+\end{verbatim}
+
+\end{document}

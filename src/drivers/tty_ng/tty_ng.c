@@ -157,6 +157,10 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 	char ch;
 	char nm[] = "0";
 
+	if (count <= 0) {
+		return;
+	}
+
 	for (int i = 0; i < count; i++) {
 		init(&ttys[i]);
 		tty_init(&ttys[i]);

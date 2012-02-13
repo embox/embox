@@ -25,7 +25,7 @@ static void print_usage(void) {
 
 static int exec(int argc, char **argv) {
 	int opt;
-	char *src, *dir;
+//	char *src, *dir;
 	char fs_type[0x20];
 	node_t *node;
 	fs_drv_t * drv;
@@ -49,8 +49,8 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 2) {
-		src = argv[argc - 2];
-		dir = argv[argc - 1];
+//		src = argv[argc - 2];
+//		dir = argv[argc - 1];
 	}
 
 	vfs_add_path(argv[argc - 1], NULL);

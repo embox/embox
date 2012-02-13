@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 
-#define DEBUG 1
+#define DEBUG 0
 #if DEBUG
 #include <kernel/printk.h>
 
@@ -154,10 +154,10 @@ static struct free_block * cut(struct free_block *block, size_t size) {
 	return block;
 }
 
-void *malloc(size_t size) {
+void *memalign(size_t boundary, size_t size) {
 	struct free_block *block;
 	struct free_block_link *link;
-	//size_t sz;
+	void *ret_addr;
 
 	if (size <= 0) {
 		return NULL;
@@ -167,11 +167,10 @@ void *malloc(size_t size) {
 		size = sizeof(struct free_block);
 	}
 
-	size = (size + 3) & ~3; /* align by word*/
+	size = (size + (boundary - 1)) & ~(boundary - 1); /* align by word*/
 
 	for (link = free_blocks.next; link != &free_blocks; link = link->next) {
 		block = (struct free_block *) ((uint32_t *) link - 1);
-		//sz = get_clear_size(block->size) + sizeof(block->size);
 		if((size + sizeof(block->size)) > get_clear_size(block->size)) {
 			continue;
 		}
@@ -180,16 +179,24 @@ void *malloc(size_t size) {
 			block = cut(block, size);
 			mark_block(block);
 			mark_next(block);
-			return (void *) ((uint32_t *) block + 1);
+			//return (void *) ((uint32_t *) block + 1);
 		} else {
 			block_unlink(block);
 			mark_block(block);
 			mark_next(block);
 			/* we already have size */
-			return (void *) ((uint32_t *) block + 1);
+			//return (void *) ((uint32_t *) block + 1);
 		}
+		ret_addr = (void *)((uint32_t *) block + 1);
+		ret_addr = (void *)(((size_t)ret_addr + (boundary - 1)) & ~(boundary - 1));
+
+		return ret_addr;
 	}
 	return NULL;
+}
+
+void *malloc(size_t size) {
+	return memalign(4, size);
 }
 
 void free(void *ptr) {

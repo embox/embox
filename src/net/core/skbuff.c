@@ -43,6 +43,8 @@ static unsigned char * net_buff_alloc(void) {
 static void net_buff_free(unsigned char *buff) {
 	ipl_t sp;
 
+	/* printk("deallocating 0x%X\n", (unsigned int)buff); */
+
 	sp = ipl_save();
 	pool_free(&net_buff_pool, buff);
 	ipl_restore(sp);

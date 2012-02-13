@@ -1,6 +1,9 @@
 /**
  * @file
- * @brief TODO documentation for core_test.c -- Alina Kramar
+ * @brief Tests thread API.
+ *
+ * @details Thih test set testing thread API (threads creation, threads join,
+ *      threads suspend/resume and detaching)
  *
  * @date 09.04.11
  * @author Alina Kramar

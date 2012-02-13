@@ -9,11 +9,14 @@ $_SRCS-list_test  = list_test.c
 $_MODS           += slist_test
 $_SRCS-slist_test = slist_test.c
 
+$_MODS           += hashtable_test
+$_SRCS-hashtable_test  = hashtable_test.c
+
 $_MODS           += tree_test
 $_SRCS-tree_test  = tree_test.c
 
 $_MODS           += tree_set_test
 $_SRCS-tree_set_test  = tree_set_test.c
 
-$_MODS		 += math_test
+$_MODS           += math_test
 $_SRCS-math_test += math_test.c

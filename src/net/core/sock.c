@@ -20,7 +20,9 @@
 
 #include <asm/system.h> /*linux-compatible*/
 
+#define LOWER_BOUND 1 // lower bound of sockets count
 
+#if 0
 typedef struct sock_info {
 	/*FIXME NETSOCK: now we use just udp_sock pull. It is the biggest of sock
 	 *  structure now. But we must allocate sock with size equals obj_size
@@ -31,6 +33,7 @@ typedef struct sock_info {
 
 /* pool for allocate sock_info */
 POOL_DEF(socks_pool, sock_info_t, CONFIG_MAX_KERNEL_SOCKETS);
+#endif
 
 
 /* allocates proto structure for specified protocol*/
@@ -45,12 +48,17 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 		sock = prot->sock_alloc();
 	}
 
-	if(sock == NULL && (sock = pool_alloc(&socks_pool)) == NULL) {
+	if(!prot->cachep)
+		prot->cachep = cache_create(prot->name, prot->obj_size, LOWER_BOUND);
+
+	if(sock == NULL && (sock = cache_alloc(prot->cachep)) == NULL) {
 		local_irq_restore(flags);
 		return NULL;
 	}
 
-	prot->hash(sock);
+	if(0 != prot->hash) {
+		prot->hash(sock);
+	}
 
 	local_irq_restore(flags);
 
@@ -61,11 +69,14 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 static void sk_prot_free(struct proto *prot, struct sock *sk) {
 	unsigned long irq_old;
 	local_irq_save(irq_old);
-	prot->unhash(sk);
+	if(prot->unhash) {
+		prot->unhash(sk);
+	}
 	if (prot->sock_free != NULL) {
 		prot->sock_free(sk);
 	} else {
-		pool_free(&socks_pool, sk);
+		//pool_free(&socks_pool, sk);
+		cache_free(prot->cachep, sk);
 	}
 	local_irq_restore(irq_old);
 }
@@ -120,4 +131,23 @@ void sk_common_release(struct sock *sk) {
 	skb_queue_purge(sk->sk_write_queue);
 
 	sk_free(sk);
+}
+
+static int test_and_set(unsigned long *a) {
+	register int tmp;
+
+	sched_lock();
+	tmp = *a;
+	*a = 1;
+	sched_unlock();
+
+	return tmp;
+}
+
+void sock_lock(struct sock *sk) {
+	while(test_and_set(&sk->sk_lock.slock));
+}
+
+void sock_unlock(struct sock *sk) {
+	sk->sk_lock.slock = 0;
 }

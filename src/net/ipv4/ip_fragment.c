@@ -13,6 +13,7 @@
 #include <util/math.h>
 #include <net/icmp.h>
 #include <net/ip.h>
+#include <errno.h>
 
 /**
  * Datagram receive buffer
@@ -44,13 +45,15 @@ OBJALLOC_DEF(__dgram_bufs, struct dgram_buf, MAX_BUFS_CNT);
 	   ((struct list_head*)skb)!=(struct list_head*)buf; \
 	   skb = skb->next)
 
+#define df_flag(skb) ntohs(skb->nh.iph->frag_off) & IP_DF
+
 #define TIMER_TICK 1000
 
 static struct dgram_buf *buf_create(struct iphdr *iph);
 static void buf_delete(struct dgram_buf *buf);
 static void ip_frag_dgram_buf(struct dgram_buf *buf, struct sk_buff *skb);
 static struct sk_buff *build_packet(struct dgram_buf *buf);
-static void ttl_handler(struct sys_timer *timer, void *param);
+static void ttl_handler(struct sys_timer *timer, void *param);;
 
 static void ttl_handler(struct sys_timer *timer, void *param) {
 	struct dgram_buf *buf;
@@ -58,7 +61,6 @@ static void ttl_handler(struct sys_timer *timer, void *param) {
 	buf = (struct dgram_buf *)param;
 
 	if (buf->buf_ttl == 0) {
-		/* FIXME what skbuff we must send? */
 		/*icmp_send(buf->next_skbuff, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);*/
 		buf_delete(buf);
 		timer_close(timer);
@@ -183,9 +185,9 @@ static void buf_delete(struct dgram_buf *buf) {
 	struct sk_buff *tmp;
 
 	while(!list_empty((struct list_head *)buf)) {
+		tmp = buf->next_skbuff;
 		list_del((struct list_head*)tmp);
 		kfree_skb(tmp);
-		tmp = buf->next_skbuff;
 	}
 
 	list_del(&buf->next_buf);
@@ -209,6 +211,12 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	offset <<= 3;
 	/* if it is not complete packet */
 	if(offset || mf_flag) {
+		if (df_flag(skb)) {
+			icmp_send(skb, ICMP_FRAG_NEEDED, 0, 0);
+			kfree_skb(skb);
+			skb = (sk_buff_t *)NULL;
+			return skb;
+		}
 		if ((buf = ip_find(skb->nh.iph)) == NULL) {
 			buf = buf_create(skb->nh.iph);
 		}

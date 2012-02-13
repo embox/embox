@@ -41,6 +41,7 @@ int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 				    msg->msg_iov->iov_len, 0);
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
 	skb->h.raw = (unsigned char *) skb->nh.raw + IP_MIN_HEADER_SIZE; // + inet->opt->optlen;
+	skb->sk = sk;
 	memcpy((void*)((unsigned int)(skb->h.raw + UDP_HEADER_SIZE)),
 				(void *) msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 	/* Fill UDP header */
@@ -103,7 +104,6 @@ static struct sock *udp_lookup(in_addr_t daddr, __be16 dport) {
 
 static int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	sock_queue_rcv_skb(sk, skb);
-	skb->links++;
 	return 0;
 }
 
@@ -118,9 +118,6 @@ static int udp_rcv(sk_buff_t *skb) {
 	if (sk) {
 		inet = inet_sk(sk);
 		udp_queue_rcv_skb(sk, skb);
-		/*if (!socket_port_is_busy(uh->dest, UDP_PORT)) {
-			return NET_RX_DROP;
-		}*/
 		inet->dport = uh->source;
 		inet->daddr = iph->saddr;
 		if (inet->rcv_saddr == INADDR_ANY) {
@@ -135,10 +132,25 @@ static int udp_rcv(sk_buff_t *skb) {
 }
 
 void udp_err(sk_buff_t *skb, uint32_t info) {
-	//printf("todo: udp_err\n");
-	//TODO BLIN!!! it's not printf("todo")
+	struct inet_sock *inet;
+	struct sock *sk;
+	size_t i;
+	__be16 port;
+
+	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		sk = (struct sock *) udp_hash[i];
+		inet = inet_sk(sk);
+		port = *(__be16*)(skb->h.raw + ICMP_HEADER_SIZE + IP_HEADER_SIZE(skb->nh.iph));
+		if (sk && (inet->sport == port)
+			   && (inet->daddr == skb->nh.iph->saddr)) {
+			sk->sk_err = info;
+		}
+	}
 }
 
+void *get_udp_sockets() {
+	return (void*) udp_hash;
+}
 
 int udp_disconnect(struct sock *sk, int flags) {
 	return 0;
@@ -174,4 +186,5 @@ struct proto udp_prot = {
 	.obj_size          = sizeof(struct udp_sock),
 	.h.udp_table       = &udp_table,
 #endif
+	.obj_size = sizeof(struct udp_sock),
 };

@@ -264,4 +264,9 @@ static inline void netif_start_queue(net_device_t *dev) {
 	/*TODO:*/
 }
 
+/**
+ * Init function for net device
+ */
+extern int dev_init(void);
+
 #endif /* NET_DEVICE_H_ */

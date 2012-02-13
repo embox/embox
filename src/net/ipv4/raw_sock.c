@@ -46,20 +46,36 @@ int raw_rcv(sk_buff_t *skb) {
 	size_t i;
 	struct sock *sk;
 	iphdr_t *iph;
-	sk_buff_t *own;
+	sk_buff_t *cloned;
 
 	iph = ip_hdr(skb);
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		sk = (struct sock *)raw_hash[i];
 		if (sk && sk->sk_protocol == iph->proto) {
-			own = skb_clone(skb, 0); // TODO without skb_clone()
-			if (raw_rcv_skb(sk, own) < 0) {
-				kfree_skb(own);
+			cloned = skb_clone(skb, 0); // TODO without skb_clone()
+			if(!cloned){
+				printk("raw_sock.c: raw_rcv: couldn't clone socket buffer\n");
+				return ENOMEM;
+			}
+			if (raw_rcv_skb(sk, cloned) < 0) {
+				kfree_skb(cloned);
 			}
 		}
 	}
 
 	return ENOERR;
+}
+
+void raw_err(sk_buff_t *skb, uint32_t info) {
+	size_t i;
+	struct sock *sk;
+
+	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+		sk = (struct sock *)raw_hash[i];
+		if (sk && sk->sk_protocol == ICMP_PROTO_TYPE) {
+			sk->sk_err = info;
+		}
+	}
 }
 
 static void raw_close(struct sock *sk, long timeout) {
@@ -102,6 +118,7 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 					(void*) msg->msg_iov->iov_base, len);
 	skb->h.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE +
 			IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
+	skb->sk = sk;
 	return ip_send_packet(inet, skb);
 }
 

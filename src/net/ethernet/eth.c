@@ -15,6 +15,7 @@
 #include <net/if_ether.h>
 #include <net/in.h>
 #include <net/netdevice.h>
+#include <net/icmp.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -41,8 +42,7 @@ int eth_header(sk_buff_t *pack, struct net_device *dev, unsigned short type,
 		/* Anyway, the loopback-device should never use this function... */
 		memset(eth->h_dest, 0, ETH_ALEN);
 		return ENOERR;
-	}
-	else if (daddr != NULL) {
+	} else if (daddr != NULL) {
 		memcpy(eth->h_dest, daddr, ETH_ALEN);
 		return ENOERR;
 	}
@@ -64,13 +64,16 @@ int eth_rebuild_header(sk_buff_t *pack) {
 	eth->h_proto = htons(pack->protocol);
 
 	if (pack->protocol == ETH_P_IP) {
+		/* fill out eth packet source and destination */
 		memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
-		return arp_resolve(pack);
-	}
-	else if (pack->protocol == ETH_P_ARP) {
+		if(arp_resolve(pack) < 0){	/* if couldn't resolve then the host is unreachable */
+			return -ENOENT;
+		}
+		else
+			return ENOERR;						/* else everythimg is fine, the packet is ready to be sent */
+	} else if (pack->protocol == ETH_P_ARP) {
 		return ENOERR;
-	}
-	else {
+	} else {
 		LOG_WARN("%s: unable to resolve type %X addresses.\n",
 					dev->name, (int)eth->h_proto);
 		return -EINVAL;

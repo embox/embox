@@ -44,8 +44,9 @@ typedef struct page_info {
 
 extern char _heap_start;
 extern char _heap_end;
-# define HEAP_START_PTR         (&_heap_start)
-# define HEAP_END_PTR           (&_heap_end)
+
+#define HEAP_START_PTR         (&_heap_start)
+#define HEAP_END_PTR           (&_heap_end)
 
 static page_info_t pages[CONFIG_HEAP_SIZE / CONFIG_PAGE_SIZE];
 
@@ -89,24 +90,36 @@ static page_info_t* virt_to_page(void *objp) {
 
 /* main cache which will contain another descriptors of caches */
 cache_t cache_chain = {
-		.name = "__cache_chain",
-		.num  = (CONFIG_PAGE_SIZE * CACHE_CHAIN_SIZE
+	.name = "__cache_chain",
+	.num  = (CONFIG_PAGE_SIZE * CACHE_CHAIN_SIZE
 				- binalign_bound(sizeof(slab_t), 4))
 				/ binalign_bound(sizeof(cache_t), 4),
-		.obj_size =
-		          binalign_bound(sizeof(cache_t), sizeof(struct list_head)),
-		.slabs_full = { &cache_chain.slabs_full, &cache_chain.slabs_full },
-		.slabs_free = { &cache_chain.slabs_free, &cache_chain.slabs_free },
-		.slabs_partial = { &cache_chain.slabs_partial,
-				&cache_chain.slabs_partial }, .next = { &cache_chain.next,
-				&cache_chain.next }, .growing = false, .slab_order =
-				CACHE_CHAIN_SIZE };
+	.obj_size = binalign_bound(sizeof(cache_t), sizeof(struct list_head)),
+	.slabs_full = {
+		&cache_chain.slabs_full,
+		&cache_chain.slabs_full
+	},
+	.slabs_free = {
+		&cache_chain.slabs_free,
+		&cache_chain.slabs_free
+	},
+	.slabs_partial = {
+		&cache_chain.slabs_partial,
+		&cache_chain.slabs_partial
+	},
+	.next = {
+		&cache_chain.next,
+		&cache_chain.next
+	},
+	.growing = false,
+	.slab_order = CACHE_CHAIN_SIZE
+};
 
 /** Initialize cache according to storage data in info structure */
 static int cache_member_init(struct mod_member *info);
 
 const struct mod_member_ops __cache_member_ops = {
-		.init = &cache_member_init,
+	.init = &cache_member_init,
 };
 
 static int cache_member_init(struct mod_member *info) {

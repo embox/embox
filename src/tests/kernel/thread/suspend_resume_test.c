@@ -2,6 +2,13 @@
  * @file
  * @brief Tests thread suspend/resume methods.
  *
+ * @details The test create two threads, the first with a high priority
+ *      the second with a low priority, Both of them create with (suspend) flag
+ *      THREAD_FLAG_SUSPENDED. Than the low priority thread is waked up and it
+ *      execute while it will not finished (the main thread call thread_join).
+ *      Then resume the high thread. The test checks a correct sequence of
+ *      these stage.
+ *
  * @date 17.04.11
  * @author Eldar Abusalimov
  */

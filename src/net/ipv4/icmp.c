@@ -14,6 +14,7 @@
 #include <string.h>
 #include <net/inetdevice.h>
 #include <net/icmp.h>
+#include <net/udp.h>
 #include <net/ip.h>
 #include <net/checksum.h>
 #include <net/protocol.h>
@@ -23,6 +24,9 @@
 #include <err.h>
 #include <errno.h>
 #include <assert.h>
+
+#include <net/raw.h>
+#include <net/socket.h>
 
 EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 
@@ -95,6 +99,7 @@ static int icmp_unreach(sk_buff_t *skb) {
 	iphdr_t *iph;
 	icmphdr_t *icmph;
 	net_device_stats_t *stats;
+	uint32_t info;
 
 	assert(skb != NULL);
 
@@ -133,6 +138,15 @@ static int icmp_unreach(sk_buff_t *skb) {
 		return -1;
 	}
 
+	info = icmph->type;
+	info ^= (icmph->code << 8);
+	info ^= (icmph->un.echo.sequence << 16);
+	/* Notify all raw and udp sockets */
+	raw_err(skb, info);
+	udp_err(skb, info);
+
+	kfree_skb(skb);
+
 	return ENOERR;
 }
 
@@ -154,6 +168,15 @@ static int icmp_echo(sk_buff_t *skb) {
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
 	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, reply, 0);
 	return ENOERR;
+#if 0
+	skb->h.icmph->type = ICMP_ECHOREPLY;
+	/* TODO checksum must be at network byte order */
+	skb->h.icmph->checksum = 0;
+	skb->h.icmph->checksum = ptclbsum(skb->h.raw, htons(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph));
+	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
+	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, skb, 0);
+	return ENOERR;
+#endif
 }
 
 static int icmp_timestamp(sk_buff_t *skb) {
@@ -236,7 +259,7 @@ static int icmp_init(void) {
 }
 
 static int ping_rcv(struct sk_buff *skb) {
-	return -1;
+	return ENOERR;
 }
 
 static icmp_control icmp_handlers[NR_ICMP_TYPES] = {
@@ -274,7 +297,15 @@ static int icmp_rcv(sk_buff_t *pack) {
 	net_device_stats_t *stats;
 	uint16_t tmp;
 
+	struct sk_buff *skb_tmp;
+
+
 	assert(pack != NULL);
+
+	/* remove packet that came to raw socket icmp_socket
+	   TODO: write a separate function? */
+	if((skb_tmp = skb_recv_datagram(icmp_socket->sk, 0, 0, 0)))
+		kfree_skb(skb_tmp);
 
 	icmph = pack->h.icmph;
 	stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);
@@ -286,6 +317,7 @@ static int icmp_rcv(sk_buff_t *pack) {
 	if (icmph->type >= NR_ICMP_TYPES) {
 		LOG_WARN("unknown type of ICMP packet\n");
 		stats->rx_err++;
+		kfree_skb(pack);
 		return -1;
 	}
 
@@ -307,16 +339,19 @@ static int icmp_rcv(sk_buff_t *pack) {
 		LOG_WARN("bad icmp checksum\n");
 		stats->rx_err++;
 		stats->rx_crc_errors++;
+		kfree_skb(pack);
 		return -1;
 	}
 
 	assert(icmp_handlers[icmph->type] != NULL);
 	res = icmp_handlers[icmph->type](pack);
 	if (res < 0) {
-		/* If function return ENOERR, we shouldn't to free pack */
+		/* If function return ENOERR, we must free pack */
 		stats->rx_err++;
+		kfree_skb(pack);
 		return res;
 	}
 
+	kfree_skb(pack);
 	return ENOERR;
 }

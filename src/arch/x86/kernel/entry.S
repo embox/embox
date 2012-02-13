@@ -59,10 +59,18 @@ IRQ_ENTRY(13) /* math co-processor/integrated FPU/inter-processor interrupt(use 
 IRQ_ENTRY(14) /* primary ATA channel */
 IRQ_ENTRY(15) /* secondary ATA channel */
 
+// TODO: if ss/esp is changed in the pt_regs structure by a debugger the change must be implemented
+// even if we return without privilege level change. This is not the case now
+
 excep_stub:
 	SAVE_ALL
 
 	SETUP_SEGMENTS
+
+	pushl %ss
+	mov	%esp, %eax
+	add	$(21 * 4 - 4 + 8), %eax
+	pushl	%eax
 
 	mov	    %esp, %ebp		/* Save current stack */
 	pushl   %ebp            /* first parameter struct pt_regs *regs */
@@ -70,6 +78,7 @@ excep_stub:
 	call    exception_handler
 
 	movl    %ebp, %esp		/* Restore original stack */
+	add	$8, %esp
 
 	RESTORE_ALL
 	add     $8, %esp
@@ -80,11 +89,17 @@ irq_stub:
 
 	SETUP_SEGMENTS
 
+	pushl %ss
+	mov	%esp, %eax
+	add	$(21 * 4 - 4 + 8), %eax
+	pushl	%eax
+
 	mov	    %esp, %ebp		/* Save current stack */
 	pushl   %ebp            /* first parameter struct pt_regs *regs */
 	call    irq_handler
 
 	movl    %ebp, %esp		/* Restore original stack */
+	add	$(8), %esp
 
 	RESTORE_ALL
 	add     $8, %esp
