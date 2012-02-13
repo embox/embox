@@ -34,7 +34,7 @@ MODS_ENABLE_OBJ := \
 #MODS_ENABLE_OBJ := $(_MODS_ENABLE_OBJ) $(filter-out $(_MODS_ENABLE_OBJ),$(__MODS_ENABLE_OBJ))
 #$(error $(\n)$(\n) $(__MODS_ENABLE_OBJ) $(\n) ***** $(_MODS_ENABLE_OBJ) $(\n) ***** $(MODS_ENABLE_OBJ)$(\n)$(\n))
 
-TARGET ?= embox$(if $(PLATFORM),-$(PLATFORM))
+TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))
 TARGET := $(TARGET)$(if $(value LOCALVERSION),-$(LOCALVERSION))
 
 .PHONY: check_config check_conf_dir
