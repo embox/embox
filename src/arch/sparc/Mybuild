@@ -1,0 +1,5 @@
+package embox.arch.sparc
+
+module lds extends embox.arch.lds {
+	source "embox.lds.S"
+}
