@@ -23,7 +23,7 @@
 
 #define mod(mod, ...) \
 	MODS_ENABLE += mod $N\
-	RUNLEVEL-##mod := __FIRST_ARG(__VA_ARGS__)
+	RUNLEVEL-##mod := $(or __FIRST_ARG(__VA_ARGS__), 2)
 
 #define test(mod_name, ...) \
 	mod(embox.test.##mod_name, $(or __VA_ARGS__, 1))
