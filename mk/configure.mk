@@ -22,6 +22,7 @@ config_lds_h := $(AUTOCONF_DIR)/config.lds.h
 CONF_FILES     := $(build_conf) $(options_conf) $(mods_conf) $(lds_conf)
 AUTOCONF_FILES := $(build_mk) $(mods_mk) $(config_h) $(config_lds_h)
 
+MODS_ENABLE :=
 -include $(build_mk) $(mods_mk)
 
 include mk/conf/roots.mk
@@ -34,7 +35,7 @@ MODS_ENABLE_OBJ := \
 #$(error $(\n)$(\n) $(__MODS_ENABLE_OBJ) $(\n) ***** $(_MODS_ENABLE_OBJ) $(\n) ***** $(MODS_ENABLE_OBJ)$(\n)$(\n))
 
 TARGET ?= embox$(if $(PLATFORM),-$(PLATFORM))
-TARGET := $(TARGET)$(if $(LOCALVERSION),-$(LOCALVERSION))
+TARGET := $(TARGET)$(if $(value LOCALVERSION),-$(LOCALVERSION))
 
 .PHONY: check_config check_conf_dir
 check_config: check_conf_dir $(CONF_FILES)
