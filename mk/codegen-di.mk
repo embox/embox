@@ -55,13 +55,6 @@ generate_package_defs = $(call eol-trim,\n/* Package definitions. */\
 mod_def = \
   \n\n/* \
   \n * Mod: $(mod) \
-  $(call cond_flags,\n *   FLAGS:,$(mod)) \
-  \n * Sources: \
-  $(for s <- $(get m->sources), \
-        src <- $(get s->fullname), \
-    \n *    $(src) \
-    $(call cond_flags,\n *       FLAGS:,$(abspath $(src))) \
-  ) \
   \n */ \
   \nMOD_DEF($(c_mod), $(call c_escape,$(mod_package)), "$(mod_name)", \
     $(call c_str_escape,$(value BRIEF-$(mod))), \
@@ -72,12 +65,12 @@ generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
         mod <- $(get m->qualified_name), \
     $(mod_def) \
   ) \
+  $(foreach runlevel,0 1 2 3, \
+    $(foreach mod,$(addprefix generic.runlevel$(runlevel)_,init fini), \
+      $(mod_def) \
+    ) \
+  ) \
 )\n
-#  $(foreach runlevel,0 1 2 3, \
-#    $(foreach mod,$(addprefix generic.runlevel$(runlevel)_,init fini), \
-#      $(mod_def) \
-#    ) \
-#  ) \
 
 generate_mod_deps = $(strip \n/* Mod deps. */\
   $(for m <- $(MODS_BUILD), \
@@ -87,12 +80,12 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
           dep <- $(get d->qualified_name), \
       \nMOD_DEP_DEF($(c_mod), $(c_dep)); \
     ) \
+    $(if $(value RUNLEVEL-$(mod)), \
+      \nMOD_DEP_DEF(generic__runlevel$(RUNLEVEL-$(mod))_init, $(c_mod)); \
+      \nMOD_DEP_DEF($(c_mod), generic__runlevel$(RUNLEVEL-$(mod))_fini); \
+    ) \
   ) \
 )\n
-#    $(if $(RUNLEVEL-$(mod)), \
-#      \nMOD_DEP_DEF(generic__runlevel$(RUNLEVEL-$(mod))_init, $(c_mod)); \
-#      \nMOD_DEP_DEF($(c_mod), generic__runlevel$(RUNLEVEL-$(mod))_fini); \
-#    ) \
 
 generate_header := \
   /* Auto-generated EMBuild Dependency Injection model file. Do not edit. */\n
