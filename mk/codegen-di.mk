@@ -75,6 +75,12 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
           dep <- $(get d->qualified_name), \
       \nMOD_DEP_DEF($(c_mod), $(c_dep)); \
     ) \
+    $(for link <- $(get m->super_module_ref), \
+          d <- $(get link->dst), \
+          mod <- $(get d->qualified_name), \
+          dep <- $(get m->qualified_name), \
+      \nMOD_DEP_DEF($(c_mod), $(c_dep)); \
+    ) \
     $(if $(value RUNLEVEL-$(mod)), \
       \nMOD_DEP_DEF(generic__runlevel$(RUNLEVEL-$(mod))_init, $(c_mod)); \
       \nMOD_DEP_DEF($(c_mod), generic__runlevel$(RUNLEVEL-$(mod))_fini); \
