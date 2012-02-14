@@ -7,8 +7,8 @@ module usart {
 	depends embox.driver.pins
 }
 
-module bt112 extends embox.driver.bluetooth {
+module bt112 extends embox.driver.Bluetooth {
 	source "btm_bt112.c"
-	depends usart
+	depends embox.driver.bluetooth.btm.usart
 }
 

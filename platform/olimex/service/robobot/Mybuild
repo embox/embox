@@ -5,6 +5,6 @@ module robobot_bluetooth_car {
 	source "bluetooth_car.c"
 	make flags "-I$(PLATFORM_DIR)/olimex/include"
 	depends embox.driver.pins
-	depends embox.hal.bluetooth
+	depends embox.driver.Bluetooth
 }
 

@@ -7,7 +7,7 @@ module usart {
 	depends embox.driver.pins
 }
 
-module blue_core extends embox.driver.bluetooth {
+module blue_core extends embox.driver.Bluetooth {
 	source "blue_core4.c"
 	depends usart
 }
