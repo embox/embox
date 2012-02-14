@@ -1,0 +1,7 @@
+
+package embox.init
+
+module init {
+	source "init.c"
+	make flags "-I$(CONF_DIR)", "-I$(SRC_DIR)/compat/posix/include"
+}

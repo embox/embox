@@ -1,0 +1,23 @@
+
+package embox.pnet
+
+abstract module entry_api { }
+
+module socket {
+	source "socket.c"
+}
+
+module pnet_entry extends entry_api {
+	source "pnet_entry.c"
+	depends embox.pnet.core
+	make flags "-I$(SRC_DIR)/compat/linux/include"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+
+}
+
+module net_entry extends entry_api {
+	source "net_entry.c"
+	depends embox.pnet.core, embox.pnet.core.pack.pack_skbuf
+	make flags "-I$(SRC_DIR)/compat/linux/include"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+}

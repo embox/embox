@@ -8,14 +8,14 @@ include mk/mybuild/mybuild.mk
 #param $1 is list of module names
 define find_mods
 	$(foreach m,$1,
-		$(or $(strip $(call find_mod,$m)),$(warning Cant find $m)))
+		$(strip $(call find_mod,$m)))
 endef
 
 # param $1 is name
 # output module object
 define find_mod
-	$(foreach r,$(get mybuild_model_instance->resources),
-		$(call find_mod_in_res,$1,$r))
+	$(or $(foreach r,$(get mybuild_model_instance->resources),
+		$(call find_mod_in_res,$1,$r)),$(warning Cant find $1))
 endef
 
 # function used for getting module's dependent modules
