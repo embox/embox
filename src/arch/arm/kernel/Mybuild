@@ -1,0 +1,14 @@
+package embox.arch.arm.kernel
+
+
+/*FIXME mybuild may be split this to differernt modules */
+module locore extends embox.arch.locore {
+	source "entry.S"
+	source "head.S"
+}
+
+/*FIXME mybuild arch module what is it */
+module arch {
+	source "arch.c"
+	depends locore
+}
