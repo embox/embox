@@ -116,7 +116,15 @@ LDSS_BUILD := \
 		$(OBJ_DIR)/%.lds,\
 		$(abspath $(SRCS_BUILD)))
 
+ifdef LDSS_BUILD
+LD_SINGLE_T_OPTION := \
+	$(if $(value LD_SINGLE_T_OPTION),$(filter-out n,$(LD_SINGLE_T_OPTION)))
+ifndef LD_SINGLE_T_OPTION
 override LDFLAGS += $(LDSS_BUILD:%=-T %)
+else
+override LDFLAGS += -T $(LDSS_BUILD)
+endif
+endif
 
 # 1. Module.
 define define_mod_obj_rules
