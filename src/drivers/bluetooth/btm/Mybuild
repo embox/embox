@@ -1,0 +1,14 @@
+package embox.driver.bluetooth.btm
+
+module usart {
+	source "btm_bluetooth.c"
+	depends embox.kernel.timer.sleep_api
+	depends embox.kernel.irq
+	depends embox.driver.pins
+}
+
+module bt112 extends embox.driver.bluetooth {
+	source "btm_bt112.c"
+	depends usart
+}
+
