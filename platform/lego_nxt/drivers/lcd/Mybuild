@@ -1,0 +1,10 @@
+package lego_nxt.driver
+
+module nxt_lcd {
+	source "nxt_lcd.c", "../../lib/display.c"
+}
+
+module nxt_diag_lcd extends embox.driver.diag.diag_api {
+	source "diag.c"
+	depends embox.lego_nxt.driver.nxt_lcd
+}
