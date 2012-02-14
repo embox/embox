@@ -33,8 +33,8 @@ $(if $(filter-out $(words $(MODS_ENABLE)),$(words $(sort $(MODS_ENABLE)))),\
 
 __MODS_ENABLE_OBJ := \
 	$(call module_closure,$(call find_mods,$(MODS_ENABLE)))
-_MODS_ENABLE_OBJ := $(foreach m,$(MODS_ENABLE),\
-	$(filter $m.%,$(__MODS_ENABLE_OBJ)))
+
+_MODS_ENABLE_OBJ := $(strip $(foreach m,$(MODS_ENABLE),$(foreach n,$(__MODS_ENABLE_OBJ),$(if $(call eq,$(basename $n),$m),$n))))
 MODS_ENABLE_OBJ := $(_MODS_ENABLE_OBJ) $(filter-out $(_MODS_ENABLE_OBJ),$(__MODS_ENABLE_OBJ))
 
 TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))
