@@ -11,102 +11,134 @@ __mybuild_model_mk := 1
 include mk/core/define.mk
 include mk/core/object.mk
 
-# Constructor args:
-#   1. Name of property in each contained object.
-#   2. Name of property in container.
-define class-containment_helper
-	$(field prop_in_contents,$(or $(singleword $1),
-			$(error 'prop_in_contents' must be a singleword: '$1')))
-	$(setter prop_in_contents,$(error $0 is read-only))
-
-	$(field prop_in_container,$(or $(singleword $2),
-			$(error 'prop_in_container' must be a singleword: '$2')))
-	$(setter prop_in_container,$(error $0 is read-only))
-
-	# 1. Contained (child) node.
-	# 2. New container (parent).
-	$(method set_container_of,
-		$(foreach parent,$(get prop_in_contents),
-				$(foreach children,$(get prop_in_container),
-			$(or $(eq $2,$(get $1.$(parent))),
-				$(foreach old,$(get $1.$(parent)),$(set- old->$(children),$1))
-				$(set $1.$(parent),$2)
-				$(foreach new,$2,$(set+ new->$(children),$1))
-			)
-		))
-	)
-
-endef
-
-create_containment_helper = $(new containment_helper,$1,$2)
-
-# Constructor args:
-#   1. Resource.
 define class-node
-	$(field resource)
-	$(invoke resource_containment_helper->set_container_of,$(this),$1)
 
-	$(field children)
-	$(field parent)
+	$(property-field container : node)
 
-	# Returns a list of referenced objects.
-	$(method get_references,
-		$(sort $(foreach f,$(invoke get_reference_features),$(get $f)))
+	# 1. Field of this.
+	# 2. What to add.
+	$(method add_references,
+		$(set+ $1,
+			$(foreach e,$(filter-out $(get $1),$2),$e
+				$(invoke e->inverse_add_references,$(basename $e),$1$(this))
+			)
+		)
 	)
 
-	# Implementation have to return a list of names of fields corresponding
-	# to reference features.
-	$(method get_reference_features)# Abstract.
+	# 1. Field of this.
+	# 2. What to remove.
+	$(method remove_references,
+		$(set- $1,
+			$(foreach e,$(filter $2,$(get $1)),$e
+				$(invoke e->inverse_remove_references,$(basename $e),$1$(this))
+			)
+		)
+	)
+
+	# 1. Field of this.
+	$(method clear_references,
+		$(silent-foreach e,$(get $1),
+			$(invoke e->inverse_remove_references,$(basename $e),$1$(this))
+		)
+		$(set $1,)
+	)
+
+	# 1. Field of this.
+	# 2. New references.
+	$(method set_references,
+		$(invoke clear_references,$1)
+		$(invoke add_references,$1,$2)
+	)
+
+	# 1. Field of this.
+	# 2. What is being added.
+	$(method inverse_add_references,
+		$(assert $(singleword $2),'$0' handles a single reference at once)
+
+		$(if $1,
+			$(set+ $1,$2),
+
+			$(assert $(not $(multiword $(get container))))
+			$(invoke clear_references,container)
+			$(set container,$2)
+		)
+	)
+
+	# 1. Field of this.
+	# 2. What is being removed.
+	$(method inverse_remove_references,
+		$(assert $(singleword $2),'$0' handles a single reference at once)
+
+		$(if $1,
+			$(set- $1,$2),
+
+			$(assert $(eq $2,$(get container)))
+			$(set container,)
+		)
+	)
+	$(property root_container)
+
+	$(getter root_container,
+		$(or $(for container<-$(get container),
+			$(get container->root_container)),
+		     $(this)))
+
+	$(method get_container,
+		$(suffix $(get container)))
+
+	# 1. New container.
+	$(method set_container,
+		$(assert $(not $(multiword $1)),
+			A node can't have more than one container)
+		$(assert $(not $(multiword $(get container))))
+
+		$(if $(not $(eq $1,$(get container))),
+			$(invoke clear_references,container)
+			$(invoke add_references,container,$1)
+		)
+	)
 
 endef
 
-define class-resource
-	$(field nodes)
-	$(field issues)
+define class-link
+	$(super node)
+
+	$(method get_reference)
+
+	$(method get_type)
 endef
 
 # Constructor args:
-#   1. Resource.
-define class-list
-	$(super node,$1)
+#   1. Name.
+define class-named
+	$(property-field name,$(value 1))
+	$(property qualified_name)
 
-	# Adds the given elements to this list.
-	#   1. Elements to add.
-	# Return:
-	#   Element that were newly added.
-	$(method add,
-		$(and $(foreach element,$1,
-			$(invoke node_containment_helper->set_container_of,
-					$(element),$(this))
-		),)
-	)
+	$(getter qualified_name,
+		$(for named_container<-$(with $(get container),
+						$(if $1,$(or $(instance-of $1,named),
+							$(call $0,$(get $1.container))))),
+			$(get named_container->qualified_name).)$(get name))
 
-	# Removes the given elements from this list.
-	# Objects that don't belong to this list are not touched.
-	#   1. Elements to remove.
-	# Return:
-	#   Element that were actually removed.
-	$(method remove,
-		$(and $(foreach element,$(filter $(get children),$1),
-			$(invoke node_containment_helper->set_container_of,
-					$(element),)
-		),)
-	)
-
-	$(method get_elements,
-		$(get children)
-	)
+	$(method get_name,$(get name))
+	$(method set_name,$(set name,$1))
 endef
 
 # Constructor args:
-#   1. Resource.
-define class-model
-	$(super node,$1)
+#   1. Name representing the crosslink.
+define class-abstract_ref
+	$(super node)
+
+	$(property-field src : *)
+	$(property-field dst : *)
+
+	$(property-field link_name,$1)
+
+	$(method get_link_name,$(get link_name))
+
+	$(method get_link_type)
 endef
 
 $(def_all)
-
-resource_containment_helper := $(call create_containment_helper,resource,nodes)
-node_containment_helper := $(call create_containment_helper,parent,children)
 
 endif # __mybuild_model_mk

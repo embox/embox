@@ -1,24 +1,23 @@
 package embox.driver.clock
 
-abstract module clock_api { }
-
-
-module mb_timer extends clock_api {
+module mb_timer extends embox.arch.clock {
 	source "mb_timer.c"
 	depends embox.kernel.irq
 }
 
-module pit extends clock_api {
+module pit extends embox.arch.clock {
 	source "pit.c"
 	depends embox.kernel.irq
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
-module gptimer extends clock_api {
+module gptimer extends embox.arch.clock {
 	source "gptimer.c"
 	depends embox.kernel.irq
+	depends embox.driver.ambapp
 }
 
-module at91_pitc extends clock_api {
+module at91_pitc extends embox.arch.clock {
 	source "at91_pitc.c"
 	depends embox.kernel.irq
 }

@@ -10,7 +10,6 @@
 # Params:
 #   1. For terminals: a list of decimal char codes representing the token.
 #      For nonterminals: the result of production.
-#   2. Start location in form 'line:column'.
 #
 # Return:
 #   Converted value. The value is then passed to a rule containing that symbol
@@ -139,4 +138,7 @@ $(gold_grammar)_name_of-source          := source
 $(gold_grammar)_name_of-static          := static
 $(gold_grammar)_name_of-string          := string
 $(gold_grammar)_name_of-StringLiteral   := String Literal
+
+
+$(def_all)
 

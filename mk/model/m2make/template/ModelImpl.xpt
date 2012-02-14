@@ -1,0 +1,140 @@
+«IMPORT ecore»
+
+«EXTENSION template::GeneratorExtensions»
+«EXTENSION org::eclipse::xtend::util::stdlib::counter»
+
+«DEFINE main FOR EPackage»«FILE fileName("model_impl") -»
+«fileHeader()»
+
+# Model implementation of '«name»' package.
+
+«implInclusionCheck("model")»
+«EXPAND classifier FOREACH eClassifiers.typeSelect(EClass) -»
+
+$(def_all)
+
+«ENDFILE»«ENDDEFINE»
+
+«DEFINE classifier FOR EClass»
+# Implementation of '«name»' model object.
+define class-«classImplName()»
+	«mkSuper(className())»
+«IF classImplName() != "EObjectImpl" -»
+
+	«mkSuper("EObjectImpl")»
+«FOREACH eSuperTypes AS superType -»
+	«mkSuper(superType.classImplName())»
+«ENDFOREACH -»
+
+	«mkGetter("eMetaClass", mkExpand(metaVariable()))»
+«ENDIF -»
+«EXPAND feature FOREACH eStructuralFeatures -»
+«EXPAND operation FOREACH eOperations»
+«PROTECT CSTART '\t# ' CEND '' ID id()»
+#	# TODO Add custom implementation here and remove this comment.
+«ENDPROTECT»
+endef
+«ENDDEFINE»
+
+«DEFINE feature FOR EStructuralFeature»
+	# «featureInfo() -»
+«IF derived -»
+«EXPAND volatileFeature -»
+«ELSE -»
+«EXPAND nonVolatileFeature -»
+«ENDIF -»
+«ENDDEFINE»
+
+«DEFINE volatileFeature FOR EStructuralFeature»
+	«mkProperty(propertyName() + memberCardinality() + memberType())»
+«PROTECT CSTART '\t# ' CEND '' ID id()»
+«EXPAND memberStub FOR mkGetterWrap(propertyName(), "$(error $0: NIY)") -»
+«IF changeable -»
+«EXPAND memberStub FOR mkSetterWrap(propertyName(), "$(error $0($1): NIY)") -»
+«IF many -»
+«EXPAND memberStub FOR mkSetterPlusWrap(propertyName(), "$(error $0($1): NIY)") -»
+«EXPAND memberStub FOR mkSetterMinusWrap(propertyName(), "$(error $0($1): NIY)") -»
+«ENDIF -»
+«ENDIF -»
+«EXPAND volatileCrossReference -»
+«ENDPROTECT»
+«ENDDEFINE»
+
+«DEFINE volatileCrossReference FOR EStructuralFeature»«ENDDEFINE»
+«DEFINE volatileCrossReference FOR EReference -»
+«IF isLinkableReference() -»
+«EXPAND memberStub FOR mkGetterWrap(propertyLinkName(), "$(error $0: NIY)") -»
+«IF changeable -»
+«EXPAND memberStub FOR mkSetterWrap(propertyLinkName(), "$(error $0($1): NIY)") -»
+«IF many -»
+«EXPAND memberStub FOR mkSetterPlusWrap(propertyLinkName(), "$(error $0($1): NIY)") -»
+«EXPAND memberStub FOR mkSetterMinusWrap(propertyLinkName(), "$(error $0($1): NIY)") -»
+«ENDIF -»
+«ENDIF -»
+«ENDIF -»
+«ENDDEFINE»
+
+«DEFINE memberStub FOR String -»
+#	# TODO Uncomment and implement me.
+#	«comment()»
+«ENDDEFINE»
+
+«DEFINE nonVolatileFeature FOR EStructuralFeature»
+	«ERROR "Unexpected EStructuralFeature: " + this»
+«ENDDEFINE»
+
+«DEFINE nonVolatileFeature FOR EAttribute»
+«IF changeable -»
+	«mkPropertyField(propertyName() + memberCardinality() + memberType())»
+«ELSE -»
+	«mkProperty(propertyName() + memberCardinality() + memberType())»
+	«mkField(propertyName() + memberCardinality() + memberType())»
+	«mkGetter(propertyName(), mkGetField(propertyName()))»
+«ENDIF -»
+«ENDDEFINE»
+
+«DEFINE nonVolatileFeature FOR EReference»
+	«mkProperty(propertyName() + memberCardinality() + memberType())»
+«LET containment ? "Containment" : "Bidirectional".ifIs(eOpposite) AS suffix -»
+«LET { propertyName(), "$(suffix $1)", eOpposite.propertyName(), metaVariable() } AS setterArgs -»
+«IF container -»
+	«mkGetterWrap(propertyName(),
+		mkInvoke("__eGetContainer", propertyName()))»
+«ELSE -»
+	«mkField(propertyName() + memberCardinality() + memberType())»
+	«mkGetterWrap(propertyName(), mkGetField(propertyName()))»
+«ENDIF -»
+«IF changeable -»
+	«mkSetterWrap(propertyName(), mkInvoke("__eSet" + suffix, setterArgs))»
+«IF many -»
+	«mkSetterPlusWrap(propertyName(), mkInvoke("__eAdd" + suffix, setterArgs))»
+	«mkSetterMinusWrap(propertyName(), mkInvoke("__eRemove" + suffix, setterArgs))»
+«ENDIF -»
+«ENDIF -»
+«IF isLinkableReference() -»
+	# Link operations.
+	«mkGetterWrap(propertyLinkName(), mkInvoke("__eGet" + suffix + "_link", propertyName()))»
+«IF changeable -»
+	«mkSetterWrap(propertyLinkName(), mkInvoke("__eSet" + suffix + "_link", setterArgs))»
+«IF many -»
+	«mkSetterPlusWrap(propertyLinkName(), mkInvoke("__eAdd" + suffix + "_link", setterArgs))»
+	«mkSetterMinusWrap(propertyLinkName(), mkInvoke("__eRemove" + suffix + "_link", setterArgs))»
+«ENDIF -»
+«ENDIF -»
+«ENDIF -»
+«ENDLET -»
+«ENDLET -»
+«ENDDEFINE»
+
+«DEFINE operation FOR EOperation»
+	# '«name + memberCardinality() + memberType()»' operation.
+«FOREACH eParameters AS param ITERATOR i -»
+	#   «i.counter1». «param.name + param.memberCardinality() + param.memberType()»
+«ENDFOREACH -»
+«PROTECT CSTART '\t# ' CEND '' ID id()»
+«EXPAND memberStub FOR (mkMethod(methodName(),
+	"$(error $0(" + eParameters.collect(p | "$" + counterInc()).toString(",") +
+			"): NIY)")) -»
+«ENDPROTECT»
+«ENDDEFINE»
+

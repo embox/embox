@@ -1,0 +1,38 @@
+«IMPORT ecore»
+
+«EXTENSION template::GeneratorExtensions»
+
+«DEFINE main FOR EPackage»«FILE fileName("factory") -»
+«fileHeader()»
+
+# Factory for '«name»' model.
+
+«inclusionGuardBegin("factory")»
+
+# Provides methods for creating objects of '«name»' model.
+# See '«factoryInstanceName()»'.
+define class-«factoryName()»
+«EXPAND class FOREACH eClassifiers.typeSelect(EClass)
+	.select(c | !c.abstract && !c.interface) -»
+endef
+
+$(def_all)
+
+«factoryInstanceName()» := «mkCall("new", factoryName())»
+
+«inclusionGuardEnd("factory")»
+
+«ENDFILE»«ENDDEFINE»
+
+
+«DEFINE class FOR EClass»
+	# Creates a new '«name»' model object.
+«IF isSubtypeOfNamed() -»
+	#   1. (optional) initial value of 'name' property.
+	«mkMethod(factoryMethodName(),
+		"$(for e <- " + mkNew(classImplName()) + ",$(if $(value 1),$(set e->name,$1))$e)")»
+«ELSE -»
+	«mkMethod(factoryMethodName(), mkNew(classImplName()))»
+«ENDIF -»
+«ENDDEFINE»
+

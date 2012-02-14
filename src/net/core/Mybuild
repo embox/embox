@@ -1,0 +1,32 @@
+package embox.net
+
+module core {
+	source "devinet.c", "sock.c", "skbuff.c"
+	depends embox.net.dev, embox.net.util, embox.mem.slab
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
+}
+
+module dev {
+	source "network_layer.c", "dev.c"
+	depends entry_api
+	depends embox.compat.linux.LibLinux
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
+}
+
+abstract module entry_api {
+
+}
+
+module net_entry extends entry_api{
+	source "net_entry.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
+}
+
+module neighbour {
+	source "neighbour.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
+}

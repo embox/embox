@@ -1,0 +1,12 @@
+package embox.driver
+
+module ambapp {
+	source "ambapp.c"
+}
+
+module amba_registry {
+	source "amba_registry.c"
+	depends ambapp
+	make flags "-I$(SRC_DIR)/drivers/ambapp"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
+}

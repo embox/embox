@@ -1,0 +1,22 @@
+
+package lego_nxt.pnet.node.direct_comm
+
+module executer {
+	source "executer.c"
+	depends lego_nxt.driver.nxt_motor
+	depends embox.pnet.core, embox.pnet.core.pack.api
+	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
+}
+
+module executer_embox {
+	source "executer_embox.c"
+	depends lego_nxt.driver.nxt_motor
+	depends embox.pnet.core, embox.pnet.core.pack.api
+	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
+}
+
+module formation {
+	source "formation.c"
+	depends embox.pnet.core, embox.pnet.core.pack.api
+	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
+}

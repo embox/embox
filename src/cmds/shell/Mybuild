@@ -1,0 +1,6 @@
+package embox.cmd
+
+module shell {
+	source "shell.c", "console/console.c", "console/cmdline.c", "console/screen.c", "console/screen_in.c", "console/screen_out.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include -I$(CONF_DIR)/"
+}

@@ -1,0 +1,146 @@
+package embox.cmd
+
+module ls {
+	source "ls.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module rm {
+	source "rm.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module cat {
+	source "cat.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module goto {
+	source "goto.c"
+	depends embox.arch.interrupt
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module load {
+	source "load.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module readelf {
+	source "readelf.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module runelf {
+	source "runelf.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+/*netutil */
+module arp {
+	source "arp.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module arping {
+	source "arping.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module ping {
+	source "ping.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module ifconfig {
+	source "ifconfig.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module route {
+	source "route.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module tftp {
+	source "tftp.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module version {
+	source "version.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module man {
+	source "man.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module help {
+	source "help.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module mem {
+	source "mem.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module wmem {
+	source "wmem.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module test {
+	source "test.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module lspci {
+	source "lspci.c"
+	depends embox.compat.posix.LibPosix, embox.driver.pci
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module lsmod {
+	source "lsmod.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module md5sum {
+	source "md5sum.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module ne2k_pci_probe {
+	source "ne2k_pci_probe.c"
+	depends embox.compat.posix.LibPosix, embox.driver.net.ne2k_pci
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module example {
+	source "example.c"
+	depends embox.compat.posix.LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}

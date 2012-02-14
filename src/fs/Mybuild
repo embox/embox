@@ -2,15 +2,19 @@ package embox.fs
 
 module node {
 	source "node.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
 
 module file_desc {
 	source "file_desc.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module rootfs {
 	source "rootfs.c"
 	depends core
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module core {
@@ -19,5 +23,6 @@ module core {
 	source "fs.c"
 	depends file_desc
 	depends node
-	depends driver_repo
+	depends embox.fs.driver.repo
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }

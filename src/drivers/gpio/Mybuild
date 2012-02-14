@@ -1,0 +1,5 @@
+package embox.driver.gpio
+
+module rdc_gpio {
+	source "rdc_gpio.c"
+}

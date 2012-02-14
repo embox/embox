@@ -1,0 +1,14 @@
+package embox.driver.bluetooth.lego
+
+module usart {
+	source "nxt_bluetooth_usart.c"
+	depends embox.kernel.timer.sleep_api
+	depends embox.kernel.irq
+	depends embox.driver.pins
+}
+
+module blue_core extends embox.driver.Bluetooth {
+	source "blue_core4.c"
+	depends usart
+}
+

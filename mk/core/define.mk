@@ -1,7 +1,7 @@
 #
-# Copyright 2011, Mathematics and Mechanics faculty
+# Copyright 2011-2012, Mathematics and Mechanics faculty
 #                   of Saint-Petersburg State University. All rights reserved.
-# Copyright 2011, Lanit-Tercom Inc. All rights reserved.
+# Copyright 2011-2012, Lanit-Tercom Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -59,6 +59,7 @@ __core_def_mk := 1
 #   $(def_all)
 #
 
+include mk/core/alloc.mk
 include mk/core/common.mk
 include mk/core/string.mk
 
@@ -76,17 +77,19 @@ include mk/util/var/info.mk
 #   Nothing.
 def = \
 	$(and $(foreach __def_var,$1, \
+			$(foreach __def_in_progress_$(__def_var),$(__def_var), \
 		$(if $(value DEF_TRACE), \
 				$(warning $(\s)$(\t)def: \
 						$(flavor $(__def_var))$(\t)[$(__def_var)])) \
 		$(if $(call var_recursive,$(__def_var)), \
-			$(call var_assign_recursive,$(__def_var),$ \
-				$(call __def,$(call __def_var_value,$(__def_var)))), \
+			$(call var_assign_recursive,$(__def_var),$(call __def \
+					,$(call __def_var_value,$(__def_var)))), \
 			$(if $(call var_undefined,$(__def_var)), \
 				$(error Function '$(__def_var)' is not defined) \
 			) \
 		) \
-	),)$(call var+=,__def_done,$1)
+		$(call var+=,__def_done,$(__def_var)) \
+	)),)
 
 ##
 # Translates all functions defined since the last call.
@@ -96,14 +99,50 @@ def = \
 # Note:
 #   The order of translation may differ from the order of definition.
 # Note:
-#   This does not affects functions defined with 'builtin_aux_def'.
+#   This does not affects functions defined with 'builtin_aux_def' and
+#   those ones that were disabled using 'def_exclude'.
 # Note:
 #   No need to 'call' it, just expand: $(def_all).
 def_all = \
 	$(call def,$(filter-out $(__def_done) $(__def_ignore),$(.VARIABLES)))
 
+# A shorthand for $(def_all), usage: $#
+$(\h) = $(def_all)
+
 __def_done   :=
 __def_ignore := $(.VARIABLES) __def_ignore
+
+__cache_volatile += __def_done __def_ignore
+
+##
+# Disables auto definition of certain variables.
+#
+# Params:
+#   1. Name of function to exclude. May include percent sign for pattern match.
+# Return:
+#   Nothing.
+def_exclude = \
+	${eval __def_ignore += $$1}
+
+##
+# Tells whether the specified function has been ever processed using 'def'.
+#
+# Params:
+#   1. Name of function to check.
+# Return:
+#   The argument if answer is true, empty otherwise.
+def_is_done = \
+	$(filter $1,$(__def_done))
+
+##
+# Tells whether the specified function is being defined right now.
+#
+# Params:
+#   1. Name of function to check.
+# Return:
+#   The argument if answer is true, empty otherwise.
+def_in_progress = \
+	$(value __def_in_progress_$1)
 
 ##
 # Registers a new value provider for variables matching the given name pattern.
@@ -123,6 +162,8 @@ def_register_value_provider = \
 	)
 __def_value_providers :=# Initially nothing.
 
+__cache_volatile += __def_value_providers
+
 # Params:
 #   1. Variable name.
 # Return:
@@ -137,18 +178,18 @@ __def_value_provider_for = \
 # Return:
 #   The value.
 __def_var_value = \
-	$(if $(filter-out $(dir $(__def_value_providers)),$1/),$(value $1),$ \
-		$(call $(call __def_value_provider_for,$1),$1))
+	$(if $(filter-out $(dir $(__def_value_providers)),$1/) \
+		,$(value $1),$(call $(call __def_value_provider_for,$1),$1))
 
 # Params:
 #   1. Code of a function being defined.
 # Return:
 #   Processed code ready to replace the original value of the function.
 __def = \
-	$(call __def_builtin,$ \
-		$(call __def_brace,$ \
-			$(call __def_strip,$ \
-				$(subst $$,$$$$,$1))))
+	$(call __def_builtin \
+		,$(call __def_brace \
+			,$(call __def_strip \
+				,$(subst $$,$$$$,$1))))
 
 # Params:
 #   1. Code with dollars escaped.
@@ -156,21 +197,20 @@ __def = \
 #   The code with comments, newlines and indentation discarded.
 #   Dollars remain escaped.
 __def_strip = \
-	$(__def_strip_precheck)$ \
-	$(call __def_strip_unescape,$ \
-		$(call list_scan,__def_strip_fold,_$$n,$ \
-			$(call __def_strip_escape,$ \
-				$1)))
+	$(__def_strip_precheck)$(call __def_strip_unescape \
+		,$(call list_scan,__def_strip_fold,_$$n \
+			,$(call __def_strip_escape \
+				,$1)))
 
 # Params:
 #   1. Code with dollars escaped.
 # Return:
 #   Nothing.
 __def_strip_precheck = \
-	$(if $(findstring \$(\s),$(subst $(\t),$(\s),$(subst \\,,$1))),$ \
-		$(warning Backslash followed by a whitespace \
-				is probably not what you want)$ \
-	)
+	$(if $(findstring \$(\s),$(subst $(\t),$(\s),$(subst \\,,$1))) \
+		,$(warning $(__def_var): \
+			Backslash followed by a whitespace \
+			is probably not what you want))
 
 # Params:
 #   1. Code with dollars escaped.
@@ -178,14 +218,11 @@ __def_strip_precheck = \
 #   The code with whitespaces and some other control chars replaced with
 #   special markers (for instance, \n -> _$$n).
 __def_strip_escape = \
-  $(subst _$$l,\,$        \
-   $(subst \ _$$h ,$(\h),$ \
-    $(subst \\,_$$l,$       \
-     $(subst  $(\h), _$$h ,$ \
-      $(subst  $(\n), _$$n ,$ \
-       $(subst  $(\t), _$$t ,$ \
-        $(subst  $(\s), _$$s ,$ \
-         $1)))))))
+               $(subst \
+   $(\h), _$$h ,$(subst \
+    $(\n), _$$n ,$(subst \
+     $(\t), _$$t ,$(subst \
+      $(\s), _$$s ,$1))))
 
 # Code convolution function.
 # Params:
@@ -194,12 +231,9 @@ __def_strip_escape = \
 # Return:
 #   Token to append to the resulting text.
 __def_strip_fold = \
-  $(and $(subst _$$h,,$2), \
-        $(if $(findstring _$$n,$1),$ \
-             $(subst _$$s,_$$n,$(subst _$$t,_$$n,$2)),$ \
-             $(or $(findstring _$$n,$2), \
-                  $(if $1,$2))) \
-   )
+  $(if $(findstring _$$h,$2) \
+     ,,$(if $(findstring _$$n,$1) \
+           ,$(subst _$$s,_$$n,$(subst _$$t,_$$n,$2)),$(if $1,$2,$(findstring _$$n,$2))))
 
 # Params:
 #   1. Code with control characters inserted by '__def_strip_escape'.
@@ -207,11 +241,11 @@ __def_strip_fold = \
 #   The code with restored whitespaces (space and tabs).
 #   Newlines are discarded.
 __def_strip_unescape = \
-  $(subst  _$$s,$(\s),$ \
-   $(subst  _$$t,$(\t),$ \
-    $(subst  _$$n,,$      \
-     $(subst $(\s),,$      \
-      $1))))
+             $(subst \
+   _$$s,$(\s),$(subst \
+    _$$t,$(\t),$(subst \
+     _$$n,,$(subst      \
+     $(\s),,$1))))
 
 #
 # Starting at this point the rest functions will be written using new syntax
@@ -222,11 +256,11 @@ __def_strip_unescape = \
 
 # See '__def_brace_real'.
 __def_brace = \
-	$(subst $$$$,$$,$1)
+	$1
 
 # See: '__def_builtin_real'.
 __def_builtin = \
-	$1
+	$(subst $$$$,$$,$1)
 
 #
 # Now we can use $(call def,...) and $(def_all).
@@ -305,16 +339,17 @@ define __def_expand
 endef
 
 __def_tmp__ :=
+__cache_transient += __def_tmp__
 
 # Substitutes all unescaped occurrences of ${...} expansion to $(...).
 # This does not affect pure {...} groups or escaped $${...}.
 # Params:
 #   1. Dollar-escaped value.
 # Return:
-#   The unescaped result of brace substitution.
+#   The result of brace substitution, still dollar-escaped.
 define __def_brace_real
-	# Expand hooks.
-	$(call __def_expand,
+	# Expand hooks and re-escape the dollars.
+	$(subst $$,$$$$,$(call __def_expand,
 		# Replace true ${...} expansion occurrences to a hook call:
 		#   ${call __def_brace_hook,...}
 		# which will echo its argument surrounded by $(...)
@@ -334,7 +369,7 @@ define __def_brace_real
 				)
 			)
 		)
-	)
+	))
 endef
 
 # Surrounds the argument with '$(' and ')'.
@@ -346,7 +381,7 @@ __def_brace_hook = \
 $(def_all)
 
 __def_brace = \
-	$(if $(findstring {,$1),$(call __def_brace_real,$1),$(subst $$$$,$$,$1))
+	$(if $(findstring {,$1),$(call __def_brace_real,$1),$1)
 
 #
 # Here goes builtin functions transformation stuff.
@@ -373,113 +408,151 @@ __def_brace = \
 #
 
 # The real work is done here.
-# 1. Text
+#   1. Text with dollars escaped.
 define __def_builtin_real
 	$(call __def_expand,$(call __def_inner_unescape,
 		$(call __def_expand,$(call __def_inner_install_hooks,
-			# Escape dollars twice.
-			$(subst $$,$$$$$$$$,
+			# Escape dollars once again.
+			$(subst $$,$$$$,
 				# '__def_root__' echoes everything passed to it.
-				$$(__def_root__ $1)
-			)
+				$$$$(__def_root__ $1))
 		))
 	))
-endef
-
-define __def_inner_install_hooks
-	$(subst $$$$$$$$$[,
-			$$$[call __def_inner_hook$(\comma),
-		# Doubly escaped double dollars. I am a rich man. $)
-		$(subst $$$$$$$$$$$$$$$$,
-			# The hell below is '$($$)$($$)' with dollars and parens escaped.
-			$$$$_$$$$[$$$$$$$$_$$$$]
-			$$$$_$$$$[$$$$$$$$_$$$$],
-			$(subst $(\comma),_$$$$c,
-				$1
-			)
-		)
-	)
 endef
 
 define __def_inner_escape
-	$(subst $[,_$$[,$(subst $],_$$],
-		$(subst :,_$$l,$(subst _$$q,=,
-			$(subst $(\s),_$$s,$(subst $(\t),_$$t,
-				$1
-			))
+	$(subst :,l[$$],
+		$(subst $(\s),s[$$],$(subst $(\t),t[$$],
+			$1
 		))
-	))
+	)
 endef
 
 define __def_inner_unescape
-	$(subst _$$[,$[,$(subst _$$],$],
-		$(subst _$$l,:,$(subst _$$q,=,
-			$(subst _$$s,$(\s),$(subst _$$t,$(\t),
-				$1
-			))
+	$(subst l[$$],:,
+		$(subst s[$$],$(\s),$(subst t[$$],$(\t),
+			$1
 		))
-	))
+	)
 endef
 
-define __def_inner_hook
-	$(call __def_inner_escape,
-		$(or \
-			$(foreach first,$(firstword $1),
-				# Guaranteed non empty value inside $(...).
-				$(__def_inner_handle)
-			),
-			# Empty variable name or nothing except whitespaces.
-			$$(call __def_outer_hook_warning,
-				$$$$($1),
-				Empty variable name
-			)
+# Sets the following hooks:
+#   '(' to call to '__def_i_paren', and
+#   '$('        to '__def_i_expansion'.
+define __def_inner_install_hooks
+	$(subst $$$$$$$$# Fix up paren hooks that follow a dollar: '$('.
+			$$$[call __def_i_paren,
+			$$$[call __def_i_expansion,
+		# Install a paren hook on every opening paren: '('.
+		$(subst  $[,$$$[call __def_i_paren$(\comma),
+
+			# Commas are also escaped so that inner hook handler gets only
+			# one argument.
+			$(subst $(\comma),c[$$$$],
+
+				# A single comma as a variable name is enclosed by parens
+				# if there is no such.
+				$(subst $$$$$$$$$(\comma),$$$$$$$$($(\comma)),
+
+					# Doubly escaped double dollars. I am a rich man. $)
+					$(subst $$$$$$$$$$$$$$$$,$$$${$$$$$$$$}$$$${$$$$$$$$},$1)))
 		)
 	)
+endef
+
+# Hook for plain '(...)'.
+#   1. Value inside the parens.
+define __def_i_paren
+	# All we need here is to echo the argument enclosing it with calls
+	# to outer stack push/pop functions and restoring the original parens.
+	$(call __def_inner_escape,
+		(
+			$$(call __def_o_push,__paren__)
+				$(subst c[$$],$(,),$1)
+			$$(__def_o_pop)
+		)
+	)
+endef
+
+# Hook for '$(...)'.
+#   1. Value inside the parens.
+define __def_i_expansion
+	$(call __def_inner_escape,
+		$(or \
+			$(foreach 1st,$(firstword $1),
+				# Guaranteed non empty value inside $(...).
+				$(__def_inner_handle)),
+
+			# Empty variable name or nothing except whitespaces.
+			$(call __def_inner_warning,$$$$($1),
+				Empty variable name)
+		)
+	)
+endef
+
+# Params:
+#   1. The code that caused a warning. May include inner-escaped
+#      commas ('c[$$]'), which are converted back to real ones.
+#   2. Warning message.
+define __def_inner_warning
+	# The real warning message will be printed at the outer expansion phase.
+	$$(call __def_o_warning,$(subst c[$$],$$(\comma),$1),
+		$(subst $(\comma),$$(\comma),$2))
 endef
 
 #
 # Params:
 #   1. Non-empty value being handled.
-#   'first': The first word of the value.
+#  '1st': The first word of the value.
 #
 # Return:
 #   Resulting handled value with (possibly) outer hooks installed if the value
-#   is syntactically correct, or empty otherwise.
+#   is syntactically correct, warning hooks otherwise.
 #
 # Invariants:
 #   Everything that has been already handled before is mangled so that
-#   there is no whitespaces, escaped commas, colons or equal signs in such
-#   handled fragments.
+#   there is no whitespaces, escaped commas or colons in such handled
+#   fragments.
 #
 #   For example, if we are going to handle the outermost expansion of
 #     $(foo bar$(one:%r=%z),baz$(two bob,alice))
 #   then the actual value being handled would have a form of
-#     $(foo bar???,baz???)
+#     $(foo bar$(???),baz$(???))
 #
 #   This avoids handling values more than once and prevents interference with
 #   the processing of the current values. Referring to the example above, the
 #   value will have only two words (unlike three words in the original
-#   expansion), only one comma (as opposed to two commas) and no equal sign or
-#   colon.
+#   expansion), only one comma (as opposed to two commas) and no colon.
 define __def_inner_handle
 	$(or \
 
-		# First try to treat it as a variable expansion with a substitution
-		# reference.
-		$(__def_inner_handle_substitution_reference),
+		# Colon in the first word has a special meaning, check it.
+		$(if $(findstring :,$(1st)),
+			$(if $(findstring $1,:),
+				$$$$(:),# Accept a single colon as a variable name.
 
-		# Check that there is no commas in function or variable name.
-		$(if $(findstring _$$c,$(first)),
-			# Invalid name. Emit a warning hook.
-			#   $(foo,bar) $(foo, bar) $(foo,) $(,foo) $(,)
-			$$(call __def_outer_hook_warning,
-				$$$$($(subst _$$c,$(\comma),$1)),
-				Unexpected '$$(\comma)' in variable or function name
+				# It has to be an extended expression.
+				#   $(foo: ...) $(: foo: ...)
+				$(call __def_inner_handle_extexp,$1)
 			)
 		),
 
-		# No commas in the first word. Assuming that it is the only word inside
-		# the value being expanded and there is no whitespaces around it
+		# Check that there is no commas in function or variable name.
+		$(if $(findstring c[$$],$(1st)),
+			$(if $(findstring $1,c[$$]),
+				$$$$(,),# A single comma as a variable name is valid.
+
+				# Invalid name. Emit a warning.
+				#   $(foo,bar) $(foo, bar) $(foo,) $(,foo)
+				$(call __def_inner_warning,$$$$($1),
+					Unexpected '$(,)' in variable or function name)
+			)
+		),
+
+		# No commas or colons in the first word.
+
+		# Assuming that it is the only word inside the value being expanded
+		# and there is no whitespaces around it,
 		# we try to handle it as a regular variable expansion.
 		#   $(foo)
 		$(call singleword,$$$$($1)),
@@ -488,99 +561,83 @@ define __def_inner_handle
 		# the expansion parens, either between chars or around them...
 
 		# Check if the first char is not a whitespace.
-		$(if $(filter-out x$(first),$(firstword x$1)),
+		$(if $(subst x$(1st),,$(firstword x$1)),
 			# There are some, name is bad:
 			#   $( foo) $( foo bar)
-			$$(call __def_outer_hook_warning,
-				$$$$($(subst _$$c,$(\comma),$1)),
-				Unexpected leading whitespace in variable or function name
-			)
+			$(call __def_inner_warning,$$$$($1),
+				Unexpected leading whitespace in variable or function name)
 		),
 
-		# No leading whitespaces: valid function call.
+		# No leading whitespaces: it is definetily a valid function call.
 		$(__def_inner_handle_function)
 	)
 endef
 
-# Params:
-#   The same as to '__def_inner_handle'.
-# Return:
-#   The value inside expansion parens if it is a valid substitution reference,
-#   or empty otherwise.
-define __def_inner_handle_substitution_reference
-	$(and \
-
-		# If there is a colon in the first word...
-		$(findstring :,$(first)),
-
-		# ...and there is an equal sign after the colon...
-		$(findstring =,$(call nofirstword,$(subst :,: ,$1))),
-
-		# ...then it seems to be a substitution reference. Substitutions
-		# are not our friends. Stop handle here and output the value as is.
-		$$$$($(subst _$$c,$$(\comma),$1))
-	)
-endef
-
-# Params:
-#   The same as to '__def_inner_handle'.
-# Return:
-#   Resulting value with necessary outer hooks installed in case that it is
-#   a valid function call, or empty otherwise.
-define __def_inner_handle_function
-	$(if $(findstring undefined,$(flavor builtin_tag-$(first))),
-
-		# Plain push and handle.
-		$$(call __def_outer_hook_push,$(first))
-		$(__def_inner_handle_function_pushed),
-
-		# Handle only if the push handler resulted in a non-empty tag.
-		$$(foreach __def_outer_tag_$(first),
-			$$(call __def_outer_hook_push_tag,$(first)),
-			$(__def_inner_handle_function_pushed)
+# Called in case of a colon in the '1st',
+# but which doesn't seem to be a '$(:)' variable reference.
+# See '__def_inner_handle'.
+define __def_inner_handle_extexp
+	$(foreach 1st,__extexp__,
+		$(call __def_inner_handle_function,
+			# Arguments are delimited using colon.
+			$(subst :,c[$$],
+				# '$:' -> '$(:)'
+				# ',' (literal comma) -> '$(,)'
+				$(subst $$$$:,$$(\colon),$(subst c[$$],$$(,),
+					# Handle is as if it was $(__extexp__ foo, ...).
+					__extexp__ $1)))
 		)
 	)
 endef
 
-# See '__def_inner_handle_function'
-define __def_inner_handle_function_pushed
-	$$(call __def_outer_hook_func
+# See '__def_inner_handle'.
+define __def_inner_handle_function
+	$$(call __def_o_push,$(1st))
+
+	# Notice that the opening paren is escaped (see below for explanations).
+	$$$[call __def_o_func# <- also there is no comma here.
 
 		# Unescape any escaped commas and install argument hooks
 		# after each of them.
-		$(subst _$$c,
+		$(subst c[$$],
 			# Real commas are needed to get actual arguments placed
 			# into the corresponding variables ($1,$2,...), and
 			# hooks help to get the list of theese variables.
-			$(\comma)$$(call __def_outer_hook_arg),
+			$(,)$$(call __def_o_arg),
 
-			_$$c# Escaped comma before the actual arguments (if any).
+			c[$$]# Escaped comma before the arguments.
+
+			# TODO outdated comments below... -- Eldar
 
 			# The one and only word with trailing whitespace is anyway a valid
 			# function call with a single empty argument: '$(foo )',
-			# and in such case we've done.
-
-			# Otherwise (one non-empty or more than one argument),
-			# we should deal with these arguments.
+			# and in such case we've done. Otherwise (one non-empty or more
+			# than one argument), we should deal with these arguments.
 			#   $(foo bar) $(foo ,) $(foo bar,) $(foo ,bar) ...
-			$(if $(word 2,$1),
-				# The actual arguments form the rest of the value being
-				# handled. An exact structure of whitespaces between the
-				# function name and the first argument is not meaningful and
-				# thus it is not preserved. Any trailing whitespaces are
-				# guarded with $(\0) from being stripped out.
-				$(subst $[,
-					_$$[
-					$$_$$[call __def_outer_hook_push$(\comma)__paren___$$],
-					$(subst $],
-						$$_$$[__def_outer_hook_pop_$$]
-						_$$],
-						$(call nofirstword,$1$$_$$[\0_$$])
-					)
-				)
+
+			# The actual arguments form the rest of the value being
+			# handled. An exact structure of whitespaces between the
+			# function name and the first argument is not meaningful and
+			# thus it is not preserved. Any trailing whitespaces are
+			# guarded with closing paren ('$]') from being stripped out.
+			$(if $(findstring undefined,$(flavor builtin_macro-$(1st))),
+
+				# The target builtin is a plain function, arguments are
+				# expanded as usual (before executing builtin handler).
+				$(call nofirstword,$1$]),
+
+				# Builtin is a macro, and it will expand the necessary
+				# arguments by itself.
+				# We have to escape dollars (once again :) ) to prevent
+				# arguments to be expanded before executing the handler.
+				$(subst [$$$$],[$$],$(subst $$,$$$$,
+					$(call nofirstword,$1$])))
 			)
 		)
-	)
+
+	# )
+	# Notice the absence of real closing paren here. Thats because
+	# we've already appended it after the last argument (see above).
 endef
 
 #
@@ -632,7 +689,7 @@ define __def_stack_pop_mk
 endef
 __def_stack_pop_mk := $(value __def_stack_pop_mk)
 
-# Debugging stuff.
+# Outer stack debugging stuff.
 ifdef DEF_DEBUG
 # 1. Msg.
 __def_debug = \
@@ -648,40 +705,17 @@ endif # DEF_DEBUG
 #   1. Value to push.
 # Return:
 #   Nothing.
-define __def_outer_hook_push
+define __def_o_push
 	$(call __def_debug,push [$1])
 	${eval \
 		$(__def_stack_push_mk)
 	}
 endef
 
-# Params:
-#   1. Value to push.
-# Return:
-#   A singleword tag or empty to omit the whole subexpression.
-define __def_outer_hook_push_tag
-	$(__def_outer_hook_push)
-	$(or \
-		$(call __def_outer_tag_check,$(call builtin_tag-$1)),
-		$(__def_outer_hook_pop)
-	)
-endef
-
-# Params:
-#   1. Return value of the push handler.
-# Return:
-#   The argument if is ok, no return (die) otherwise.
-define __def_outer_tag_check
-	$(if $(word 2,$1),
-		$(error Bad return value of '$(builtin_name)' push handler: '$1')
-	)
-	$(firstword $1)
-endef
-
 # Increments the number of arguments of the function call being handled now.
 # Return:
 #   Nothing.
-define __def_outer_hook_arg
+define __def_o_arg
 	$(call __def_debug,arg$(words $(__def_stack_top)))
 	${eval \
 		$(__def_stack_arg_mk)
@@ -691,7 +725,7 @@ endef
 # Removes an element from the top and restores the previous element.
 # Return:
 #   Nothing.
-define __def_outer_hook_pop
+define __def_o_pop
 	${eval \
 		$(__def_stack_pop_mk)
 	}
@@ -702,47 +736,37 @@ endef
 # a special translation in case of user-defined builtin.
 # Return:
 #   A code which will substitute the original expansion.
-define __def_outer_hook_func
+define __def_o_func
 	$(if $(value __def_debug),$(call __def_debug,func [$(builtin_reconstruct)]))
+
 	$(foreach 0,$(builtin_name),
-		$(if $(call var_defined,builtin_func-$0),
-			# There is a special builtin function handler, invoke it.
-			$(builtin_func-$0),
+		$(foreach __builtin_handler,
+			$(or $(call var_defined,builtin_macro-$0),
+				 $(call var_defined,builtin_func-$0),
+				 __builtin_native_handler),
 
-			# If it is a native function check its arity.
-			$(foreach minimum_args,
-				# For unknown function 'minimum_args' would be 0.
-				$(or $(notdir $(filter $0/%,$(__builtin_native_functions))),0),
-
-				$(if $(minimum_args:0=),
-					$(call builtin_check_min_arity,$(minimum_args)),
-					$(call builtin_error,
-						Undefined function '$0'
-					)
-				)
-			)
-			# Finally leave the function call as is.
-			$(builtin_reconstruct)
+			# Invoke the handler preserving the current call context.
+			${eval \
+				__def_tmp__ := \
+					$$(\0)$(subst $(\h),$$(\h),$(value $(__builtin_handler)))
+			}
+			$(__def_tmp__)
 		)
 	)
-	$(__def_outer_hook_pop)
+
+	$(__def_o_pop)
 endef
 
-# Issues a warning with the specified message including the expansion stack.
-# Params:
-#   1. Code fragment which caused the warning.
-#   2. The message.
-# Return:
-#   The first argument.
-define __def_outer_hook_warning
-	$1
-	$(warning $2$(if $1,: '$1'))
-	$(builtin_print_stack)
-endef
-
-# Special builtin which echoes its arguments.
-define builtin_func-__def_root__
-	$(builtin_args)
+# Handles GNU Make native functions.
+# The invocation context is the same as for user-defined builtins.
+define __builtin_native_handler
+	# If it is a native function check its arity.
+	$(call builtin_check_min_arity,
+		$(or $(notdir $(filter $0/%,$(__builtin_native_functions))),
+			# If a function is unknown then give up.
+			$(call builtin_error,Undefined function or macro '$0')))
+	# Finally leave the function call as is.
+	$(builtin_reconstruct)
 endef
 
 # List of GNU Make 3.81 native builtin functions with their arities.
@@ -757,6 +781,41 @@ __builtin_native_functions := \
 	error/1       warning/1     if/2          or/1         \
 	and/1         value/1       eval/1
 __builtin_native_functions := $(strip $(__builtin_native_functions))
+
+# Issues a warning with the specified message including the expansion stack.
+# Params:
+#   1. Code fragment which caused the warning.
+#   2. The message.
+# Return:
+#   The first argument.
+define __def_o_warning
+	$(call __def_o_push,<unknown>)
+	$(call builtin_warning,
+		$2$(if $1,: '$1'))
+	$(__def_o_pop)
+	$1
+endef
+
+# Special builtin which echoes its arguments.
+define builtin_func-__def_root__
+	$(builtin_args)
+endef
+
+# Handles an extended expression.
+#
+# There are always at least two arguments:
+#
+#   - If it seems to be a generic extexp ('$(: ...)'), then the first argument
+#     is empty.
+#
+#   - If the extexp is in simple form ('$(foo: ...)', like plain old Make
+#     substitution reference), the first argument is the name of target
+#     variable ('foo'), everything else goes into the rest arguments ($2..).
+#
+define builtin_macro-__extexp__
+	$(or $(and $1,$(findstring =,$2),$$($(call __def_expand,$1:$2))),
+		$(call builtin_error,NIY (extexp:$(builtin_args))!))
+endef
 
 #
 # Here goes an API for defining own builtin functions.
@@ -875,11 +934,8 @@ builtin_check_max_arity = \
 #   Nothing.
 define builtin_check_arity_range
 	$(call __builtin_check_arity_range,
-		$(wordlist \
-			$(or $(1:0=),1),
-			$(or $2,$(words $(builtin_args_list))),
-			$(builtin_args_list)
-		)
+		$(wordlist $(or $1,1),$(or $2,$(words $(builtin_args_list))),
+			$(builtin_args_list))
 	)
 endef
 
@@ -906,9 +962,7 @@ endef
 #   For the function 'baz' in $(foo $(bar $(baz ...))) the return would be
 #   'bar foo'.
 define builtin_callers
-	$(filter-out $(\comma)%,$(subst $(\comma), $(\comma),
-		$(filter-out __paren__% __def_root__%,$(__def_stack))
-	))
+	$(filter-out $(,)%,$(subst $(,), $(,),$(__def_stack)))
 endef
 
 # A shorthand for $(firstword $(builtin_callers)).
@@ -932,20 +986,6 @@ define builtin_caller_at
 	$(word $1,$(builtin_callers))
 endef
 
-# Retrieves a tag if it has been defined.
-#
-# Params:
-#   1. Function name.
-# Return:
-#   The tag of the nearest expansion of the specified builtin (if any).
-# Example:
-#   In case of handling 'baz' builtin in expression $(foo $(bar $(baz ...))),
-#   and assuming that 'builtin_tag-bar' returned 'moo', the result of calling
-#   '$(call builtin_tag,bar)' will be 'moo'.
-define builtin_tag
-	$(value __def_outer_tag_$1)
-endef
-
 #
 # Helper functions for error/warning reporting.
 #
@@ -954,14 +994,14 @@ endef
 # Return:
 #   Nothing.
 define builtin_print_stack
-	$(warning Expansion stack:)
-	$(warning $(\t)function '$(firstword $(__def_stack_top))')
-	$(strip $(foreach e,$(__def_stack),
-		$(warning \
-			$(\t)arg $(words $(call nofirstword,$(subst $(\comma), ,$e))) \
-				of '$(firstword $(subst $(\comma), ,$e))'
+	$(warning $(__def_var): Expansion stack:)
+	$(warning $(__def_var):$(\t)function '$(firstword $(__def_stack_top))')
+	$(and $(foreach e,$(__def_stack),
+		$(warning $(__def_var):
+			$(\t)arg $(words $(call nofirstword,$(subst $(,), ,$e))) \
+				of '$(firstword $(subst $(,), ,$e))'
 		)
-	))
+	),)
 endef
 
 # Produces a warning with the specified message and contents of the expansion
@@ -971,7 +1011,7 @@ endef
 # Return:
 #   Nothing.
 define builtin_warning
-	$(warning $1)
+	$(warning $(__def_var): $1)
 	$(builtin_print_stack)
 endef
 
@@ -982,8 +1022,15 @@ endef
 #   No return.
 define builtin_error
 	$(builtin_warning)
-	$(error Error in definition of '$(__def_var)' function)
+	$(error $(__def_var): Error in definition of '$(__def_var)' function)
 endef
+
+# Ufff, builtins definition framework is mostly up.
+# Flush functions we have just defined and activate '__def_builtin_real'.
+$(def_all)
+
+__def_builtin = \
+	$(call __def_builtin_real,$1)
 
 #
 # Misc.
@@ -993,13 +1040,14 @@ endef
 # Useful if your builtin needs to define auxiliary function/variable.
 # Return:
 #   A unique name in a private namespace.
-define builtin_aux_alloc
-	${eval \
-		__builtin_aux_cnt += x
-	}
-	$(builtin_aux_last)
-endef
-__builtin_aux_cnt :=# Initially empty.
+builtin_aux_alloc = \
+	__def_aux$(call alloc,def_aux)
+
+# Gets the last allocated name.
+# Return:
+#   Result of the last call to 'builtin_aux_alloc' or to 'builtin_aux_def'.
+builtin_aux_last = \
+	__def_aux$(call alloc_last,def_aux)
 
 # Allocates a new auxiliary function and assigns a value to it.
 # Params:
@@ -1013,22 +1061,8 @@ define builtin_aux_def
 	)
 endef
 
-# Gets the last allocated name.
-# Return:
-#   Result of the last call to 'builtin_aux_alloc' or to 'builtin_aux_def'.
-define builtin_aux_last
-	__def_aux$(words $(__builtin_aux_cnt))
-endef
-
 # Turn off auto-def for functions generated by builtin handlers.
-__def_ignore += __def_aux%
-
-# Ufff, builtins definition framework is mostly up.
-# Flush functions we have just defined and activate '__def_builtin_real'.
-$(def_all)
-
-__def_builtin = \
-	$(call __def_builtin_real,$1)
+$(call def_exclude,__def_aux%)
 
 #
 # Define some simple builtins that will help us with defining the rest ones.
@@ -1045,7 +1079,7 @@ define builtin_func-assert
 	$$(if $1,,
 		$$(call __assert_handle_failure,$(__def_var),$(subst $$,$$$$,$1)
 			$(if $(filter 2,$(builtin_args_list)),
-				$(\comma)$(subst $(\comma),$$(\comma),$(builtin_nofirstarg))
+				$(\comma)$$(subst ,,$(builtin_nofirstarg))
 			)
 		)
 	)
@@ -1103,6 +1137,18 @@ with = \
 # '$(expand code...)'
 #
 define builtin_func-expand
+	$(builtin_func-silent-expand)
+	$$(__def_tmp__)
+endef
+
+#
+# Extension: 'silent-expand' builtin function.
+#
+# Performs the same as 'expand', but does not return anything.
+#
+# '$(silent-expand code...)'
+#
+define builtin_func-silent-expand
 	$${eval \
 		__def_tmp__ := \
 			$$$$(\0)# Preserve leading whitespace.
@@ -1112,12 +1158,12 @@ define builtin_func-expand
 				)
 			)
 	}
-	$$(__def_tmp__)
 endef
 
-# Flush: assert, lambda, with and expand.
+# Flush: builtin aux API, assert, lambda, with and expand.
 $(def_all)
 
+# Expands the first argument.
 expand = $(expand $1)
 $(call def,expand)
 
@@ -1161,13 +1207,36 @@ endef
 __builtin_func-fx_cnt :=# Initially empty.
 
 #
-# Def-time static conditionals.
+# Def-time static utils.
 #
+
+#
+# Extension: 'def-id' builtin function.
+#
+# Echoes the arguments (unexpanded).
+#
+# '$(def-id args...)'
+#
+define builtin_func-def-id
+	$(builtin_args)
+endef
+
+#
+# Extension: 'def-expand' builtin function.
+#
+# Def-time expansion.
+#
+# '$(def-expand args...)'
+#
+define builtin_func-def-expand
+	$(call __def_expand,$(builtin_args))
+endef
 
 #
 # Extension: 'def-if' builtin function.
 #
-# Basic static conditional.
+# Basic static conditional. Condition is expanded and the corresponding
+# branch is emitted as a result (unexpanded).
 #
 # '$(def-if condition,then[,else])'
 #
@@ -1175,7 +1244,7 @@ define builtin_func-def-if
 	$(call builtin_check_arity_range,2,3)
 
 	# Use explicit 'call' to shadow builtins context when expanding user code.
-	$(if $(call expand,$1),$2,$(value 3))
+	$(if $(call __def_expand,$1),$2,$(value 3))
 endef
 
 #
@@ -1190,7 +1259,7 @@ endef
 #   Particularly, a variable with empty value is considered undefined.
 define builtin_func-def-ifdef
 	$(call builtin_check_arity_range,2,3)
-	$(if $(value $(call expand,$1)),$2,$(value 3))
+	$(if $(value $(call __def_expand,$1)),$2,$(value 3))
 endef
 
 #
@@ -1204,7 +1273,7 @@ endef
 #   See notes to 'def-ifdef'
 define builtin_func-def-ifndef
 	$(call builtin_check_arity_range,2,3)
-	$(if $(value $(call expand,$1)),$(value 3),$2)
+	$(if $(value $(call __def_expand,$1)),$(value 3),$2)
 endef
 
 #
@@ -1228,13 +1297,10 @@ define builtin_to_function_call
 	$(if $(filter undefined,$(flavor $(builtin_name))),
 		$(call builtin_warning,
 			Converting builtin into a call to possibly undefined function \
-			'$(builtin_name)'
-		)
+			'$(builtin_name)')
 	)
-	$$(call \
-		$(builtin_name),
-		$(builtin_args)
-	)
+	$$(call $(builtin_name),
+			$(builtin_args))
 endef
 
 # Tries to substitute the builtin by an inlined call to a user-defined
@@ -1306,11 +1372,9 @@ define builtin_to_function_inline
 		$(if $(call not,$(call var_recursive,$(builtin_name))),
 			$(if $(call var_simple,$(builtin_name)),
 				$(call builtin_warning,
-					Can not inline non-recursive variable '$(builtin_name)'
-				),
+					Can not inline non-recursive variable '$(builtin_name)'),
 				$(warning \
-					Can not inline undefined function '$(builtin_name)'
-				)
+					Can not inline undefined function '$(builtin_name)')
 			),
 			$(__builtin_to_function_inline)
 		),
@@ -1406,8 +1470,7 @@ define __builtin_to_function_inline
 			$(def-ifdef DEF_DEBUG,
 				$(call __def_debug,
 					Inlining of function '$(builtin_name)' failed due to \
-					ambiguous usage of certain arguments
-				)
+					ambiguous usage of certain arguments)
 			),
 			$1
 		)
@@ -1415,6 +1478,97 @@ define __builtin_to_function_inline
 endef
 
 __builtin_to_function_inline_expanded_args :=
+__cache_transient += __builtin_to_function_inline_expanded_args
+
+# Builtin to function is ready to be used.
+$(def_all)
+
+#
+# Some syntactic sugar.
+#
+
+#
+# Extension: 'for' builtin function.
+#
+# Compound 'foreach'.
+#
+# '$(for variable <- list,...,body)'
+#
+# Note:
+#   Arrow sign ('<-') is a separator and it must appear literally.
+define builtin_func-for
+	$(call builtin_check_min_arity,2)
+
+	$(subst-end $$$[foreach,,
+		$$$[foreach $(foreach a,$(nolastword $(builtin_args_list)),
+			$(call __for_variable_parse,$($a),$(lambda $1,$2,$$$[foreach)))
+	)
+
+	$(builtin_lastarg)# body
+
+	$(subst $(\s),,$(nolastword $(builtin_args_list:%=$])))
+endef
+
+# Params:
+#   1. Variable definition to parse in form 'var<-list'.
+#      It is assumed that there is no any commas outside parens.
+#   2. Continuation with the following args:
+#       1. Recognized variable name.
+#       2. The list.
+#       3. Optional argument.
+#   3. (optional) Argument to pass to the continuaion.
+# Return:
+#   Result of call to continuation in case of a valid definition,
+#   otherwise it aborts using 'builtin_error'.
+define __for_variable_parse
+	$(or \
+		$(expand $$(call \
+			$(lambda \
+				$(and $(eq .,$6),$(nolastword $4),$(trim $5),
+					# Escaped variable name is in $4. Escaped list is in $5.
+					$(call $1,$(call $3,$(nolastword $4)),$(call $3,$5),$2))
+			),
+
+			# 1 and 2: The continuation with its argument.
+			$$2,$$(value 3),
+
+			# 3: Unescape function which restores '<-' back.
+			$(lambda $(subst $(\s)<-$(\comma),<-,$(trim $1))),
+
+			# 4 and 5: Escaped definition with '<-' repalaced by commas.
+			$(subst <-,$(\s)<-$(\comma),
+				$(subst $(\comma),$$(\comma),$(subst $$,$$$$,$1))),
+
+			# 6: End of args marker.
+			.,
+		)),
+
+		$(call builtin_error,
+				Invalid argument to '$(builtin_name)' function: '$1')
+	)
+endef
+
+$(def_all)
+
+##
+# Extension: 'silent-for' builtin function.
+#
+# '$(silent-for variable <- list,...,body)'
+#
+# A version of 'for' builtin that returns nothing.
+#
+define builtin_func-silent-for
+	$$(if \
+		$(for builtin_name <- for,
+			$(builtin_func-for)),
+	)
+endef
+
+# Expansions like $(for) or $(call for,...) are meaningless.
+for = \
+	$(warning for: illegal invocation)
+silent-for = \
+	$(warning silent-for: illegal invocation)
 
 # Finally, flush the rest and say Goodbye!
 $(def_all)

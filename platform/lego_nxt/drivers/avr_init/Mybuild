@@ -1,0 +1,8 @@
+
+package lego_nxt.driver
+
+module nxt_avr_init {
+	source "avr_init.c", "buttons.c", "sensors.c", "power_mng.c"
+	depends embox.driver.at91_twi, lego_nxt.driver.soft_i2c, embox.kernel.timer.timer_api
+	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
+}

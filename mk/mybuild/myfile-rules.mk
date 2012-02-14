@@ -5,185 +5,294 @@
 #
 # As for symbols each rule can have a constructor that is used to produce an
 # application-specific representation of the rule data.
-# The signature of production function is the following:
+# Production functions are named '$(gold_grammar)_produce-<ID>' and have the
+# following signature:
 #
 # Params:
-#  1..N: Each argument contains a value of the corresponding symbol
-#        in the rule's RHS.
-#  N+1:  Location vector with 'line:column' words each of which is a start of
-#        the corresponding symbol.
+#   1..N: Each argument contains a value of the corresponding symbol in the RHS
+#         of the rule production.
 #
 # Return:
 #   Converted value that is passed to a symbol handler corresponding to
 #   the rule's LHS (if any has been defined).
 #
 # If production function is not defined then the rule is produced by
-# concatenating the RHS through a space. To reuse this default value one can
+# concatenating the RHS through spaces. To reuse this default value one can
 # call 'gold_default_produce' function.
 #
 
-# Rule: <Model> ::= <Package> <Imports> <Entities>
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-Model
-	$(\h) Generated from $(gold_file). Do not edit!$(\n)$(\n)
-	$(if $1,$1$(\n))
-	$(if $2,$2$(\n))
-	$(if $3,
-		$(if $(findstring $$_APIS,$3),
-			ifneq ($$(flavor $$_APIS),simple)$(\n)
-			$$_APIS :=$$(value $$_APIS)$(\n)
-			endif$(\n)
+include mk/core/object.mk
+include mk/mybuild/link.mk
+
+# Rule: <MyFile> ::= <Package> <Imports> <Entities>
+# Args:
+#   1. Qualified name of package (if any).
+#   2. Import scope object.
+#   3. Entities: '<type>/object'
+define $(gold_grammar)_produce-MyFile
+	$(foreach m,$(new my_file,$1),$m
+		$(invoke m->set_imports,$2)
+
+		$(silent-foreach entity_type,
+				modules \
+#				interfaces
+				,
+			$(invoke m->set_$(entity_type),
+					$(filter-patsubst $(entity_type)/%,%,$3))
+
+#			$(invoke m->set_resolved,
+#						$(filter-patsubst $(entity_type)/%,%,$3))
 		)
-		$(if $(findstring $$_MODS,$3),
-			ifneq ($$(flavor $$_MODS),simple)$(\n)
-			$$_MODS :=$$(value $$_MODS)$(\n)
-			endif$(\n)
-		)
-		$(\n)$3$(\n)
 	)
 endef
-
+#$(invoke m->resolve_modules,
 # Rule: <Package> ::= package <QualifiedName>
-# Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-Package_package
-	$$_PACKAGE := $2$(\n)
-endef
+$(gold_grammar)_produce-Package_package  = $2
 
 # Rule: <Package> ::=
-# Args: 1..0 - Symbols; 0+1 - Location vector.
+# Args: 1..0 - Symbols in the RHS.
 define $(gold_grammar)_produce-Package
 	$(call gold_report_warning,
-		Using default package
-	)
+			Using default package)
 endef
+
+## Rule: <Imports> ::= <Import> <Imports>
+## Args:
+##   1. Imported entity or feature: '<type> FQN[.*]'.
+##   2. Import scope.
+#define $(gold_grammar)_produce-Imports
+#	$(invoke 2->add_imported_$(firstword $1),$(secondword $1))
+#endef
+#
+## Rule: <Imports> ::=
+#define $(gold_grammar)_produce-Imports2
+#	$(new import_scope)
+#endef
 
 # Rule: <Import> ::= import <ImportFeature> <QualifiedNameWithWildcard>
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-Import_import
-	$(call gold_report_warning,
-		Imports are not yet implemented!
+$(gold_grammar)_produce-Import_import    = $2/$3
+
+# Rule: <ImportFeature> ::= feature
+$(gold_grammar)_produce-ImportFeature_feature     := feature
+# Rule: <ImportFeature> ::=
+$(gold_grammar)_produce-ImportFeature             := entity
+
+# Rule: <Entity> ::= <Module>
+$(gold_grammar)_produce-Entity           = modules/$1
+# Rule: <Entity> ::= <Interface>
+$(gold_grammar)_produce-Entity2          = interfaces/$1
+
+# Rule: <Interface> ::= interface Identifier <SuperInterfaces> '{' <InterfaceAttributes> '}'
+# Args: 1..6 - Symbols in the RHS.
+define $(gold_grammar)_produce-Interface_interface_Identifier_LBrace_RBrace
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <SuperInterfaces> ::= extends <InterfaceRefList>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-SuperInterfaces_extends
+	$2
+endef
+
+# Rule: <Feature> ::= feature Identifier <SuperFeatures>
+# Args: 1..3 - Symbols in the RHS.
+define $(gold_grammar)_produce-Feature_feature_Identifier
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <SuperFeatures> ::= extends <FeatureRefList>
+$(gold_grammar)_produce-SuperFeatures_extends = $2
+
+# <Module> ::= <ModuleModifiers> module Identifier <SuperModule>
+#                  '{' <ModuleAttributes> '}'
+# Args:
+#   1. Modifiers.
+#   3. Module name.
+#   4. Reference to a super type (if any).
+#   6. Attributes.
+define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
+	$(foreach m,$(new module,$3),$m
+
+		$(set m->modifiers,$1)
+		$(invoke m->set_super_module_ref,$4)
+
+		$(silent-foreach attr,
+				depends_refs \
+#				requires_refs
+#				provides_refs
+				flags \
+				sources \
+				objects,
+			$(invoke m->set_$(attr),
+					$(filter-patsubst $(attr)/%,%,$6))
+		)
 	)
 endef
 
-# Rule: <Entities> ::= <Entity> <Entities>
-# Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-Entities
-	$1$2
-endef
-
-# Rule: <Module> ::= <ModuleModifiers> module Identifier <SuperModule> '{' <ModuleAttributes> '}'
-# Args: 1..7 - Symbols; 7+1 - Location vector.
-define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
-	m := $3$(\n)
-	$$_$(if $(filter abstract,$1),APIS,MODS) += $$m$(\n)
-	$4
-	$6$(\n)
+# Rule: <ModuleModifiers> ::= <ModuleModifier> <ModuleModifiers>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-ModuleModifiers
+	$(if $(filter $1,$2),
+		$(call gold_report_error,
+				Duplicate module modifier '$1'),
+		$1 \
+	)
+	$2
 endef
 
 # Rule: <SuperModule> ::= extends <ModuleRef>
-# Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-SuperModule_extends
-	$$_PROVIDES-$$m += $2$(\n)
-endef
-
-# Rule: <ModuleAttributes> ::= <ModuleAttribute> <ModuleAttributes>
-# Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-ModuleAttributes
-	$1$2
-endef
+$(gold_grammar)_produce-SuperModule_extends = $2
 
 # Rule: <Depends> ::= depends <ModuleRefList>
-# Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-Depends_depends
-	$$_DEPS-$$m += $2$(\n)
-endef
+$(gold_grammar)_produce-Depends_depends       = $(2:%=$1_refs/%)
 
-# Rule: <Sources> ::= source <FilenameList>
-# Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-Sources_source
-	$$_SRCS-$$m += $2$(\n)
-endef
+# Rule: <FeatureAttribute> ::= <FeatureAttributeNature> <FeatureRefList>
+# <FeatureAttributeNature> ($1) is either 'requires' or 'provides'.
+$(gold_grammar)_produce-FeatureAttribute      = $(2:%=$1_refs/%)
 
-# Rule: <Objects> ::= object <FilenameList>
-# Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-Objects_object
-	$(call gold_report_warning,
-		Objects are not yet implemented!
-	)
-endef
+# Rule: <FilenameAttribute> ::= <FilenameAttributeNature> <FilenameList>
+# <FilenameAttributeNature> ($1) is either 'source' or 'object'.
+$(gold_grammar)_produce-FilenameAttribute     = $(2:%=$1s/%)
 
 # Rule: <Option> ::= option Identifier ':' <OptionTypeWithAssignment>
-# Args: 1..4 - Symbols; 4+1 - Location vector.
+# Args: 1..4 - Symbols in the RHS.
 define $(gold_grammar)_produce-Option_option_Identifier_Colon
-	$(call gold_report_warning,
-		Options are not yet implemented!
-	)
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <Flags> ::= make flags <StringList>
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-Flags_make_flags
-	$$_CFLAGS-$$m += $3$(\n)
+# Rule: <OptionTypeWithAssignment> ::= string <StringOptionAssignment>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-OptionTypeWithAssignment_string
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <Rule> ::= make <Filename> <Prerequisites> <Recipes>
-# Args: 1..4 - Symbols; 4+1 - Location vector.
-define $(gold_grammar)_produce-Rule_make
-	$(call gold_report_warning,
-		Make rules are not yet implemented!
-	)
+# Rule: <OptionTypeWithAssignment> ::= number <NumberOptionAssignment>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-OptionTypeWithAssignment_number
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <Filename> ::= StringLiteral
-# Args: 1..1 - Symbols; 1+1 - Location vector.
-define $(gold_grammar)_produce-Filename_StringLiteral
-	$(or \
-		$(singleword $1),
-		$(call gold_report_warning,
-			File name must be a single word
-		)
-	)
+# Rule: <OptionTypeWithAssignment> ::= boolean <BooleanOptionAssignment>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-OptionTypeWithAssignment_boolean
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <InterfaceRefList> ::= <InterfaceRef> ',' <InterfaceRefList>
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-InterfaceRefList_Comma
-	$1 $3
+# Rule: <StringOptionAssignment> ::= '=' StringLiteral
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-StringOptionAssignment_Eq_StringLiteral
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <FeatureRefList> ::= <FeatureRef> ',' <FeatureRefList>
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-FeatureRefList_Comma
-	$1 $3
+# Rule: <StringOptionAssignment> ::=
+# Args: 1..0 - Symbols in the RHS.
+define $(gold_grammar)_produce-StringOptionAssignment
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <ModuleRefList> ::= <ModuleRef> ',' <ModuleRefList>
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-ModuleRefList_Comma
-	$1 $3
+# Rule: <NumberOptionAssignment> ::= '=' NumberLiteral
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-NumberOptionAssignment_Eq_NumberLiteral
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <FilenameList> ::= <Filename> ',' <FilenameList>
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-FilenameList_Comma
-	$1 $3
+# Rule: <NumberOptionAssignment> ::=
+# Args: 1..0 - Symbols in the RHS.
+define $(gold_grammar)_produce-NumberOptionAssignment
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <StringList> ::= StringLiteral ',' <StringList>
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-StringList_StringLiteral_Comma
-	$1 $3
+# Rule: <BooleanOptionAssignment> ::= '=' BooleanLiteral
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-BooleanOptionAssignment_Eq_BooleanLiteral
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <QualifiedName> ::= Identifier '.' <QualifiedName>
-# Args: 1..3 - Symbols; 3+1 - Location vector.
-define $(gold_grammar)_produce-QualifiedName_Identifier_Dot
-	$1.$3
+# Rule: <BooleanOptionAssignment> ::=
+# Args: 1..0 - Symbols in the RHS.
+define $(gold_grammar)_produce-BooleanOptionAssignment
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
-# Args: 1..2 - Symbols; 2+1 - Location vector.
-define $(gold_grammar)_produce-QualifiedNameWithWildcard_DotTimes
-	$1.*
+# Rule: <MakeAttribute> ::= make <Make>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-MakeAttribute_make
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
+
+# Rule: <Make> ::= <MakeFlags>
+# Args: 1..1 - Symbols in the RHS.
+define $(gold_grammar)_produce-Make
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Make> ::= <MakeRule>
+# Args: 1..1 - Symbols in the RHS.
+define $(gold_grammar)_produce-Make2
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <MakeFlags> ::= flags <StringList>
+# Args: 1..2 - Symbols in the RHS.
+$(gold_grammar)_produce-MakeFlags_flags = $(2:%=$1/%)
+
+# Rule: <MakeRule> ::= <Filename> <Prerequisites> <Recipes>
+# Args: 1..3 - Symbols in the RHS.
+define $(gold_grammar)_produce-MakeRule
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Prerequisites> ::= ':' <FilenameList>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-Prerequisites_Colon
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Prerequisites> ::=
+# Args: 1..0 - Symbols in the RHS.
+define $(gold_grammar)_produce-Prerequisites
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Recipes> ::= '{' <StringList> '}'
+# Args: 1..3 - Symbols in the RHS.
+define $(gold_grammar)_produce-Recipes_LBrace_RBrace
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Recipes> ::=
+# Args: 1..0 - Symbols in the RHS.
+define $(gold_grammar)_produce-Recipes
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# <InterfaceRef> ::= <QualifiedName>
+$(gold_grammar)_produce-InterfaceRef =             = $(call gold_report_error,NIY)
+# <FeatureRef> ::= <QualifiedNameWithWildcard>
+$(gold_grammar)_produce-FeatureRef                 = $(call gold_report_error,NIY)
+# <ModuleRef> ::= <QualifiedName>
+$(gold_grammar)_produce-ModuleRef                  = $(new module_link,$1)
+# <Filename> ::= StringLiteral
+$(gold_grammar)_produce-Filename_StringLiteral     = $(new filename,$1)
+# <String> ::= StringLiteral
+$(gold_grammar)_produce-String_StringLiteral       = $(new string,$1)
+
+# <InterfaceRefList> ::= <InterfaceRef> ',' <InterfaceRefList>
+$(gold_grammar)_produce-InterfaceRefList_Comma     = $1 $3
+# <FeatureRefList> ::= <FeatureRef> ',' <FeatureRefList>
+$(gold_grammar)_produce-FeatureRefList_Comma       = $1 $3
+# <ModuleRefList> ::= <ModuleRef> ',' <ModuleRefList>
+$(gold_grammar)_produce-ModuleRefList_Comma        = $1 $3
+# <FilenameList> ::= <Filename> ',' <FilenameList>
+$(gold_grammar)_produce-FilenameList_Comma         = $1 $3
+# <StringList> ::= <String> ',' <StringList>
+$(gold_grammar)_produce-StringList_Comma           = $1 $3
+
+# <QualifiedName> ::= Identifier '.' <QualifiedName>
+$(gold_grammar)_produce-QualifiedName_Identifier_Dot         = $1.$3
+# <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
+$(gold_grammar)_produce-QualifiedNameWithWildcard_DotTimes   = $1.%
+
+
+$(def_all)
 

@@ -1,0 +1,7 @@
+/*FIXME mybuild couldn't add linker script */
+/*FIXME mybuild how to exclude include folder */
+package embox.arch.x86
+
+module lds extends embox.arch.lds {
+	source "embox.lds.S"
+}

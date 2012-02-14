@@ -4,8 +4,10 @@ abstract module api { }
 
 module sched_trivial extends api {
 	source "sched_trivial.c", "sched_trivial.h"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module priority_based extends api {
 	source "priority_based.c", "priority_based.h"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }

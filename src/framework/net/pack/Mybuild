@@ -1,0 +1,7 @@
+package embox.framework.net
+
+module pack {
+	/*FIXME mybuild make flags options */
+	make flags "-D__FRAMEWORK__"
+	source "core.c"
+}

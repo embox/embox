@@ -5,6 +5,7 @@ abstract module task_api { }
 module util {
 	source "index_desc.c", "file.c"
 	depends embox.fs.rootfs
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module multi_task extends task_api {
@@ -12,6 +13,7 @@ module multi_task extends task_api {
 	depends embox.driver.virtual.diag_device
 	depends util
 	depends embox.kernel.thread.sched
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module single_task extends task_api {

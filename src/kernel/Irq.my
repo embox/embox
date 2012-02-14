@@ -2,5 +2,7 @@ package embox.kernel
 
 module irq {
 	source "irq.c", "irq_lock.c"
-	depends embox.mem.objalloc, embox.hal.interrupt
+	depends embox.mem.objalloc, embox.arch.interrupt
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
+

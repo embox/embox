@@ -3,8 +3,10 @@ package embox.kernel
 module time {
 	source "time.c"
 	depends clock_source, embox.kernel.timer.timer_api
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module clock_source {
 	source "clock_source.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }

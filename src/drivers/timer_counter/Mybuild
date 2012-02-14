@@ -1,0 +1,8 @@
+
+package embox.driver
+
+module at91_tc {
+	source "at91_timer_counter.c"
+	depends embox.kernel.irq
+	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
+}

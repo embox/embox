@@ -1,0 +1,110 @@
+«IMPORT ecore»
+
+«EXTENSION template::GeneratorExtensions»
+
+«DEFINE main FOR EPackage»«FILE fileName("metamodel") -»
+«fileHeader()»
+
+# Meta model for '«name»' package.
+
+«inclusionGuardBegin("metamodel")»
+
+include mk/model/metamodel_internals.mk
+
+# Create meta objects.
+«metaVariable()» := \
+	«mkCall("eMetaModelCreate", metaVariable())»
+«EXPAND createClassifier FOREACH eClassifiers.typeSelect(EClass) -»
+
+# Initializes the objects and relations between them.
+define «metaModelInitializer()»
+	«mkCall("eMetaModelInit",
+		{ mkExpand(metaVariable()), name, nsPrefix })»
+«EXPAND initClassifier FOREACH eClassifiers.typeSelect(EClass)»
+endef # «metaModelInitializer()»
+
+# Binds objects to instance classes and features to properties.
+define «metaModelBinder() -»
+«EXPAND bindClassifier FOREACH eClassifiers.typeSelect(EClass)»
+endef # «metaModelBinder()»
+
+$(def_all)
+
+«mkCall(metaModelInitializer())»
+«mkCall(metaModelBinder())»
+
+«mkCall("eMetaModelFreeze", mkExpand(metaVariable()))»
+
+«inclusionGuardEnd("metamodel")»
+
+«ENDFILE»«ENDDEFINE»
+
+
+«DEFINE createClassifier FOR EClass»
+«metaVariable()» := \
+	«mkCall("eMetaClassCreate",
+		{ mkExpand(ePackage.metaVariable()), metaVariable() })»
+	«EXPAND createFeature FOREACH eStructuralFeatures -»
+«ENDDEFINE»
+
+«DEFINE createFeature FOR EStructuralFeature»
+	«ERROR "Unexpected EStructuralFeature: " + this»
+«ENDDEFINE»
+
+«DEFINE createFeature FOR EAttribute -»
+«EXPAND createFeature("EMetaAttribute", "eMetaAttributeCreate") -»
+«ENDDEFINE»
+
+«DEFINE createFeature FOR EReference -»
+«EXPAND createFeature("EMetaReference", "eMetaReferenceCreate") -»
+«ENDDEFINE»
+
+«DEFINE createFeature(String type, String methodName) FOR EStructuralFeature -»
+«metaVariable()» := \
+	«mkCall(methodName,
+		{ mkExpand(eContainingClass.metaVariable()), metaVariable() })»
+«ENDDEFINE»
+
+
+«DEFINE initClassifier FOR EClass»
+	«mkCall("eMetaClassInit", {
+		mkExpand(metaVariable()),
+		name,
+		eSuperTypes.metaVariable().mkExpand().toString(" "),
+		metaFlags().toString(" ")
+	})»
+	«EXPAND initFeature FOREACH eStructuralFeatures -»
+«ENDDEFINE»
+
+«DEFINE initFeature FOR EStructuralFeature»
+	«ERROR "Unexpected EStructuralFeature: " + this»
+«ENDDEFINE»
+
+«DEFINE initFeature FOR EAttribute -»
+	«mkCall("eMetaAttributeInit", {
+		mkExpand(metaVariable()),
+		name,
+		metaFlags().toString(" ")
+	})»
+«ENDDEFINE»
+
+«DEFINE initFeature FOR EReference -»
+	«mkCall("eMetaReferenceInit", {
+		mkExpand(metaVariable()),
+		name,
+		mkExpand(eReferenceType.metaVariable()),
+		mkExpand(eOpposite.metaVariable()).ifIs(eOpposite),
+		metaFlags().toString(" ")
+	})»
+«ENDDEFINE»
+
+
+«DEFINE bindClassifier FOR EClass»
+	«mkCall("eMetaClassBind",
+		{ mkExpand(metaVariable()), className() })»
+«FOREACH eStructuralFeatures AS f -»
+	«mkCall("eMetaFeatureBind",
+		{ mkExpand(f.metaVariable()), f.propertyName() })»
+«ENDFOREACH -»
+«ENDDEFINE»
+

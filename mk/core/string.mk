@@ -221,6 +221,81 @@ trim = \
 builtin_func-trim = $(builtin_to_function_inline)
 
 ##
+# Builtin function: subst-start
+#
+#      $(subst-start from,to,string), or
+# $(call subst-start from,to,string)
+#
+# Performs a string substitution of 'from' in case when the 'string' start
+# with it.
+#
+# Params:
+#   1. Prefix to replace.
+#   2. Replacement.
+#   3. The string.
+# Return:
+#   The string with prefix (if any) replaced.
+subst-start = \
+	$(if $(findstring [$3]$1,[$3]$3),$(subst [$3]$1,$2,[$3]$3),$3)
+builtin_func-subst-start = $(builtin_to_function_call)
+
+##
+# Builtin function: subst-end
+#
+#      $(subst-end from,to,string), or
+# $(call subst-end from,to,string)
+#
+# Performs a string substitution of 'from' in case when the 'string' ends
+# with it.
+#
+# Params:
+#   1. Suffix to replace.
+#   2. Replacement.
+#   3. The string.
+# Return:
+#   The string with suffix (if any) replaced.
+subst-end = \
+	$(if $(findstring $1[$3],$3[$3]),$(subst $1[$3],$2,$3[$3]),$3)
+builtin_func-subst-end = $(builtin_to_function_call)
+
+
+##
+# Builtin function: find-start
+#
+#      $(find-start what,string), or
+# $(call find-start what,string)
+#
+# Tests if the 'string' starts with 'what' prefix.
+#
+# Params:
+#   1. Prefix to search.
+#   2. The string.
+# Return:
+#   The first argument if it appears to be a prefix of the second one,
+#   empty otherwise.
+find-start = \
+	$(if $(findstring [$2]$1,[$2]$2),$1)
+builtin_func-find-start = $(builtin_to_function_call)
+
+##
+# Builtin function: find-end
+#
+#      $(find-end what,string), or
+# $(call find-end what,string)
+#
+# Tests if the 'string' ends with 'what' suffix.
+#
+# Params:
+#   1. Suffix to search.
+#   2. The string.
+# Return:
+#   The first argument if it appears to be a suffix of the second one,
+#   empty otherwise.
+find-end = \
+	$(if $(findstring $1[$2],$2[$2]),$1)
+builtin_func-find-end = $(builtin_to_function_call)
+
+##
 # Builtin function: append
 # Appends the second argument after the first using whitespace as a separator
 # (if both of the argument are non-empty strings).
@@ -260,12 +335,31 @@ builtin_func-prepend = $(builtin_to_function_call)
 #
 # Params:
 #   1. Pattern...
-#   2. Replacement
-#   3. String
+#   2. Replacement.
+#   3. String.
 # Return:
 #   The result of patsubst applied to filtered string.
 filter-patsubst = \
 	$(foreach __fp,$1,$(patsubst $(__fp),$2,$(filter $(__fp),$3)))
 builtin_func-filter-patsubst = $(builtin_to_function_inline)
+
+##
+# Builtin function: silent-foreach
+#
+#      $(silent-foreach var,list,text)
+#
+# A version of 'foreach' that iterates over the list as usual, but suppresses
+# the output of expansions of 'text' and returns nothing.
+#
+# Params:
+#   1. Iteration variable.
+#   2. The list to iterate over.
+#   3. Text to expand for each word in the list.
+# Return:
+#   Empty.
+builtin_func-silent-foreach = \
+	$(call builtin_check_min_arity,3)$$(if $$(foreach $(builtin_args)),)
+
+silent-foreach =# Nothing (stub).
 
 endif # __core_string_mk

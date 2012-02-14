@@ -1,0 +1,8 @@
+package embox.test.kernel.timer
+
+module sleep_test {
+	source "sleep_test.c"
+	depends embox.kernel.time
+	depends embox.kernel.timer.sleep_api
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+}

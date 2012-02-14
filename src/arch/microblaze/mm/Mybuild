@@ -1,0 +1,5 @@
+package embox.mem // XXX bad package. -- Eldar
+
+module mmu {
+	source "mmu_core.c"
+}

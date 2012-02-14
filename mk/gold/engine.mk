@@ -1,7 +1,7 @@
 #
-# Copyright 2011, Mathematics and Mechanics faculty
+# Copyright 2011-2012, Mathematics and Mechanics faculty
 #                   of Saint-Petersburg State University. All rights reserved.
-# Copyright 2011, Lanit-Tercom Inc. All rights reserved.
+# Copyright 2011-2012, Lanit-Tercom Inc. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -57,7 +57,7 @@ __gold_engine_mk := 1
 # The only stage that involves calling of a user code is the third phase, where
 # the parse tree is interpreted by invoking user-defined functions for each
 # node of the tree.
-# Nodes are tranformed from a leaves upwards to the root: the result of
+# Nodes are transformed from a leaves upwards to the root: the result of
 # calling a handler for some node is passed as an argument to a handler of its
 # parent node. Finally, the result of transforming the root is returned to the
 # client.
@@ -76,26 +76,42 @@ include mk/util/var/info.mk
 #
 # Params:
 #   1. The name used for definitions in your grammar files.
-#   2. Input file name.
+#   2. Input file name (may be a list of files).
+#   3. (optional) custom error handler:
+#       1. Origin:   'lexical'/'syntactic' or empty for semantic errors
+#       2. Severity: 'info'/'warning'/'error'
+#       3. Location: 'line:col'
+#       4. Message.
+#      Also, there are 'gold_grammar' and 'gold_file' variables available
+#      in error handler context.
 # Return:
 #   Result of interpreting parse tree with user-defined handlers
 #   or empty on error.
 # Note:
 #   The grammar must be previously loaded.
 define gold_parse
+	# Check passed grammar name.
 	$(if $(not $(singleword $1)),
-		$(error Invalid grammar name: '$1')
-	)
-
+		$(error Invalid grammar name: '$1'))
 	$(if $(call var_undefined,__gold_$1_parser),
-		$(error Grammar '$1' does not seem to be loaded)
+		$(error Grammar '$1' does not seem to be loaded))
+
+	# Check error handler (if any).
+	$(if $(value 3),
+		$(if $(not $(singleword $3)),
+			$(error Invalid error handler function name: '$3'))
+		$(if $(call var_undefined,$3),
+			$(error Function '$3' is not defined))
 	)
 
-	$(foreach gold_grammar,$1,$(foreach g,__g_$(gold_grammar),
-		$(foreach gold_file,$2,
-			$(__gold_parse)
-		)
-	))
+	# Prepare invocation context and launch the parser.
+	$(for \
+		gold_grammar <- $1,
+		g <- __g_$(gold_grammar),
+		__gold_error_handler <-
+			$(or $(trim $(value 3)),__gold_default_error_handler),
+		gold_file <- $2,# Iterate over the files list.
+			$(__gold_parse))
 endef
 
 # Params:
@@ -119,25 +135,18 @@ endef
 # Return:
 #   List of decimal char codes.
 __gold_read_file = \
-	$(shell od -v -A n -t uC $1)
-
-# Parser private namespace for builtins context. The same as $g in runtime.
-__gold_ns = $(call builtin_tag,gold-parser)
-
-define builtin_tag-gold-parser
-	$(or \
-		$(filter-patsubst __gold_%_parser,__g_%,$(__def_var)),
-		$(call builtin_error,
-			Bad variable name: '$(__def_var)'
-		)
-	)
-endef
+	$(shell od --output-duplicates --address-radix=n --format=uC $1)
 
 # Params: ignored
-define builtin_func-gold-parser
-	${eval \
-		__def_ignore += $(__gold_ns)%
-	}
+define builtin_macro-gold-parser
+	$(foreach __gold_ns,
+		$(or $(filter-patsubst __gold_%_parser,__g_%,$(__def_var)),
+			$(call builtin_error,Bad variable name: '$(__def_var)')),
+
+		$(call def_exclude,$(__gold_ns)%)
+
+		$(silent-expand $(for a <- $(builtin_args_list),$($a)))
+	)
 endef
 
 #
@@ -183,7 +192,7 @@ define builtin_func-gold-symbol
 
 	$(if $(filter 4 5 6,$2),
 		$(call builtin_error,
-			Comment terminals are not supported, \
+			Comment terminals are not supported$(\comma) \
 				incorporate them into whitespace terminal
 		)
 	)
@@ -561,7 +570,7 @@ define __gold_dfa_handle[/1/]
 	$(if $(findstring /1/1/,$(__gold_state__)$a/),
 		# The char causes errors both in the current state and on the ground.
 		# Error token will be closed on the next iteration.
-		$(if $(a:/1/=),/)$1.,# "\ %
+		$(if $(a:/1/=),/)$1.,# "\\ %
 
 		$(if $(findstring /1/,$a/),
 			# Error in the current state.
@@ -730,7 +739,7 @@ define __gold_lalr_handle[+]
 	${eval \
 		# Push the current token onto the stack.
 		__gold_stack__ += \
-			$$(call $(lambda $1/[$2,$1,$4]),$(subst /,$(\comma),$t))
+			$$(call $(lambda $1/[$2,$4,$1]),$(subst /,$(\comma),$t))
 			$(__gold_state__)
 		$(\n)
 		# Move to a new state.
@@ -752,7 +761,7 @@ define __gold_lalr_handle[-]
 		$(if $(findstring $n,0),
 			# Just append a reduction.
 			__gold_stack__ += \
-				$(firstword $(subst /, ,$t))/(0,,$r)$(__gold_state__)
+				$(firstword $(subst /, ,$t))/(0,-,$r)$(__gold_state__)
 
 			,# else
 			$(foreach d,$(words $(__gold_stack__)),
@@ -779,7 +788,7 @@ define __gold_lalr_handle[-]
 						$$(subst $$(\s),$$(\comma),
 							$$(notdir $$(basename $$(__gold_tmp__)))
 						),# 1..N: Symbols.
-						$$(subst / ,.,
+						$$(subst / ,-,
 								$$(dir $$(__gold_tmp__)) ),# N+1: Locations.
 						$r# N+2: Rule Id.
 					)
@@ -897,8 +906,8 @@ endef
 # 3. Start position
 # 4. End position
 define __gold_hook_error_dfa
-	$(call gold_report_at,$4,
-		Lexical error: Unrecognized character$(if $(word 2,$2),s) \
+	$(call __gold_report_lexical,error,$4,
+		Unrecognized character$(if $(multiword $2),s) \
 		$(subst $(\s),$(\comma)$(\s),$(foreach c,$2,
 			'$(if $(eq 0,$c),NULL,$(word $c,$(ascii_table)))'
 		))
@@ -911,8 +920,8 @@ endef
 # 4. End position
 # 5. LALR State
 define __gold_hook_error_lalr
-	$(call gold_report_at,$4,
-		Syntax error: Unexpected $(__gold_symbol_name) token$(\comma) \
+	$(call __gold_report_syntactic,error,$4,
+		Unexpected $(__gold_symbol_name) token$(,) \
 		expected $(with $(filter-out /%,$(subst /, /,$($g_lalr.$5))),
 			$(foreach s,$(nolastword $1),
 				$(call __gold_symbol_name,$s),
@@ -945,8 +954,8 @@ __gold_default_symbol_name = \
 
 # Params:
 #   1. Chars.
-#   2. Location.
-#   3. Symbol Id.
+#   2. Symbol Id.
+#   3. Location.
 define __gold_hook_token
 	$(foreach __gold_location__,$3,
 		$(__gold_invoke_create_fn)
@@ -956,16 +965,15 @@ endef
 # Calls symbols creation function (if any, otherwise a default one is called).
 # Params:
 #   1. Chars/Production.
-#   2. One word location in form 'line:col'.
-#   3. Symbol Id.
+#   2. Symbol Id.
 # Context:
-#   '__gold_location__': The same as arg 2.
+#   '__gold_location__'.
 define __gold_invoke_create_fn
-	$(foreach __gold_symbol_id,$3,
+	$(foreach __gold_symbol_id,$2,
 		$(foreach 0,
 			$(or \
 				$(call var_defined,
-						$(gold_grammar)_create-$(call __gold_symbol_fn,$3)),
+						$(gold_grammar)_create-$(call __gold_symbol_fn,$2)),
 				gold_default_create
 			),
 			$($0)
@@ -1027,13 +1035,13 @@ __gold_ascii_table := \
 
 # Called by '__gold_hook_rule_nN' proxy.
 # Context:
-#   r. Rule Id
+#   r. Rule Id.
 # Params:
 #   ... Symbols,
-#   N+1 Location vector.
+#   N+1 Location vector: 'l1-l2-...lN-', or '-' for N=0.
 define __gold_hook_rule
 	$(foreach __gold_location__,
-		$(firstword $($(__gold_n$(call __gold_rule_symbols_nr,$r)+1))),
+		$($(__gold_n$(call __gold_rule_symbols_nr,$r)+1)),
 		$(call __gold_invoke_create_fn,
 			$(foreach __gold_rule_id,$r,
 				$(foreach 0,
@@ -1045,7 +1053,6 @@ define __gold_hook_rule
 					$($0)# No call to preserve expansion context.
 				)
 			),
-			$(__gold_location__),
 			$(call __gold_rule_nonterminal_id,$r)
 		)
 	)
@@ -1065,51 +1072,80 @@ define gold_default_produce
 endef
 
 #
+# Getting location information.
+#
+
+#
+# Retrieves a location in form 'line:col'.
+#
+# When calling from rule production or non-terminal constructor context:
+#   location of the first symbol in the RHS (if any), nothing for empty rule
+# From terminal symbol constructor context:
+#   location of the first character of the token
+#
+# Note:
+#   Rule production handlers can access locations of the rest RHS symbols
+#   using 'gold_location_of' function.
+gold_location = \
+	$(call gold_location_of,1)
+
+#
+# Gets a location of a symbol specified by its number in the RHS of the rule
+# production.
+#
+# Params:
+#   1. The ordinal number of the sought-for symbol in the RHS.
+# Return:
+#   Location in form 'line:col', or empty if there is no such symbol.
+gold_location_of = \
+	$(word $1,$(subst -, ,$(__gold_location__)))
+
+#
 # Error/warning/info reporting.
 #
 
 # 1. Message.
-define gold_report
-	$(call gold_report_at,$(__gold_location__),$1)
-endef
+gold_report_info = \
+	$(call gold_report_info_at,$(gold_location),$1)
 
 # 1. Location.
 # 2. Message.
-define gold_report_at
-	$(info $(gold_file):$1: $2)
-endef
+gold_report_info_at = \
+	$(call __gold_report_semantic,info,$1,$2)
 
 # 1. Message.
-define gold_report_info
-	$(call gold_report,info: $1)
-endef
+gold_report_warning = \
+	$(call gold_report_warning_at,$(gold_location),$1)
 
 # 1. Location.
 # 2. Message.
-define gold_report_info_at
-	$(call gold_report_at,$1,info: $2)
-endef
+gold_report_warning_at = \
+	$(call __gold_report_semantic,warning,$1,$2)
 
 # 1. Message.
-define gold_report_warning
-	$(call gold_report,warning: $1)
-endef
+gold_report_error = \
+	$(call gold_report_error_at,$(gold_location),$1)
 
 # 1. Location.
 # 2. Message.
-define gold_report_warning_at
-	$(call gold_report_at,$1,warning: $2)
-endef
+gold_report_error_at = \
+	$(call __gold_report_semantic,error,$1,$2)
 
-# 1. Message.
-define gold_report_error
-	$(call gold_report,error: $1)
-endef
+# '__gold_report_xxx'
+# Params:
+#   1. Severity: 'info'/'warning'/'error'
+#   2. Location: 'line:col'
+#   3. Message.
+__gold_report_semantic  = \
+	$(and $(call $(__gold_error_handler),,$1,$2,$3),)
+__gold_report_lexical   = \
+	$(and $(call $(__gold_error_handler),lexical,$1,$2,$3),)
+__gold_report_syntactic = \
+	$(and $(call $(__gold_error_handler),syntactic,$1,$2,$3),)
 
-# 1. Location.
-# 2. Message.
-define gold_report_error_at
-	$(call gold_report_at,$1,error: $2)
+# Called if no user handler is specified.
+define __gold_default_error_handler
+	$(info $(gold_file):$3: $(trim $1 $2): $4)
 endef
 
 $(def_all)

@@ -7,7 +7,6 @@
  * @author Anton Bondarev
  */
 
-
 #include <types.h>
 #include <string.h>
 #include <kernel/softirq.h>

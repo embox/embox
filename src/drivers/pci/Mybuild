@@ -1,0 +1,7 @@
+package embox.driver
+
+module pci {
+	source "pci.c", "pci_repo.c", "pci_utils.c"
+	make flags "-I$(SRC_DIR)/drivers/pci", "-I$(SRC_DIR)/compat/linux/include"
+}
+

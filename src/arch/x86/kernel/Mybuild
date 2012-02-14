@@ -1,0 +1,19 @@
+package embox.arch.x86.kernel
+
+module context extends embox.arch.context {
+	source "context.c", "context_switch.S"
+}
+
+/*FIXME mybuild may be split this to differernt modules */
+module locore extends embox.arch.locore {
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	source "boot.S", "idt.c", "entry.S", "irq_handler.c"
+	source "gdt.c", "gdt_flush.S"
+	source "ipl.c", "exception_handler.c", "traps_core.c"
+}
+
+/*FIXME mybuild arch module what is it */
+module arch {
+	source "arch.c"
+	depends locore
+}

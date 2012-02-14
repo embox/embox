@@ -1,0 +1,9 @@
+package embox.fs
+
+module ramfs {
+	source "cpio.c", "ramfs.c", "ramfs_cpio.S"
+	source "ramfs_lds.lds.S"
+	depends embox.fs.core
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+	make flags "-I$(SRC_DIR)/compat/linux/include"
+}

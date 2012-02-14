@@ -5,7 +5,7 @@
 
 "Case Sensitive" = True
 
-"Start Symbol" = <Model>
+"Start Symbol" = <MyFile>
 
 ! -------------------------------------------------
 ! Character Sets
@@ -52,7 +52,7 @@ BooleanLiteral = 'true' | 'false'
 ! Rules
 ! -------------------------------------------------
 
-<Model>
+<MyFile>
         ::= <Package> <Imports> <Entities>
 
 ! Package?
@@ -193,14 +193,16 @@ BooleanLiteral = 'true' | 'false'
 ! -------------------------------------------------
 ! Datatypes.
 
-<Filename>
-        ::= StringLiteral
 <InterfaceRef>
         ::= <QualifiedName>
 <FeatureRef>
         ::= <QualifiedNameWithWildcard>
 <ModuleRef>
         ::= <QualifiedName>
+<Filename>
+        ::= StringLiteral
+<String>
+        ::= StringLiteral
 
 ! -------------------------------------------------
 ! Comma separated lists.
@@ -219,8 +221,8 @@ BooleanLiteral = 'true' | 'false'
         ::= <Filename> ',' <FilenameList>
          |  <Filename>
 <StringList>
-        ::= StringLiteral ',' <StringList>
-         |  StringLiteral
+        ::= <String> ',' <StringList>
+         |  <String>
 
 ! -------------------------------------------------
 ! Extended identifiers.

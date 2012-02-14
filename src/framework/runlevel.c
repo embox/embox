@@ -13,8 +13,6 @@
 
 #include <framework/mod/api.h>
 
-// XXX rewrite this shit. -- Eldar
-#define __EMBUILD_MOD__
 #include <framework/mod/self.h>
 
 #define __RUNLEVEL_MOD(op, nr) \

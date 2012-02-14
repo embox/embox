@@ -81,7 +81,7 @@ define __gold_$(gold_grammar)_parser
 		# 		),
 		# 		...
 		# 	),
-		$(gold-dfa-table $(id \
+		$(gold-dfa-table $(def-id \
 				%InitialState%# Initial state ID.
 ##DFA-STATES
 			),$(gold-dfa-state %Index%,%AcceptIndex%,
@@ -102,7 +102,7 @@ define __gold_$(gold_grammar)_parser
 		# 		),
 		# 		...
 		# 	),
-		$(gold-lalr-table $(id \
+		$(gold-lalr-table $(def-id \
 				%InitialState%# Initial state ID.
 ##LALR-STATES
 			),$(gold-lalr-state %Index%,

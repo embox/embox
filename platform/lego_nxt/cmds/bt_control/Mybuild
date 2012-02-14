@@ -1,0 +1,11 @@
+
+package lego_nxt.cmd
+
+module bt_control {
+	source "bt_control.c"
+	depends lego_nxt.pnet.node.direct_comm.formation
+	depends lego_nxt.pnet.node.direct_comm.executer_embox
+	depends embox.pnet.core
+	depends embox.pnet.core.pack.api
+	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
+}

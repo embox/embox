@@ -173,9 +173,8 @@ f-wildcard_relative = $(call __wildcard_relative,f-wildcard,$1,$2)
 # Expand wildcards (first argument) for patterns within the base dir
 # and get back to relative names.
 __wildcard_relative = \
-  $(foreach basedir,$(abspath $2),$ \
-    $(patsubst $(basedir)/%,%,$(call $1,$(3:%=$(basedir)/%)))$ \
-  )
+  $(foreach basedir,$(abspath $2) \
+    ,$(patsubst $(basedir)/%,%,$(call $1,$(3:%=$(basedir)/%))))
 
 d-wildcard_relative_first = $(call __wildcard_relative,d-wildcard_first,$1,$2)
 f-wildcard_relative_first = $(call __wildcard_relative,f-wildcard_first,$1,$2)

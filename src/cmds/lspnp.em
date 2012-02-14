@@ -1,7 +1,7 @@
 ifdef CONFIG_AMBAPP
 $_MODS += lspnp
 $_SRCS-lspnp += lspnp.c
-$_CPPFLAGS-lspnp += -I$(BASE_CONF_DIR)
+$_CPPFLAGS-lspnp += -I$(CONF_DIR)
 $_DEPS-lspnp += embox.driver.amba_registry
 endif
 

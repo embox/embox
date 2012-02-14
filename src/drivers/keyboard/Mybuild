@@ -1,0 +1,7 @@
+/*FIXME mybuild wrong packet name */
+package embox.driver
+
+abstract module keyboard {
+	source "keyboard.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+}

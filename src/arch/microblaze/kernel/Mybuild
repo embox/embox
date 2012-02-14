@@ -1,0 +1,21 @@
+package embox.arch.microblaze.kernel
+
+module context extends embox.arch.context {
+	source "context.c", "context_switch.S"
+}
+
+/*FIXME mybuild may be split this to differernt modules */
+module locore extends embox.arch.locore {
+	source "entry.S"
+	source "boot.S"
+	source "interrupt_handler.c"
+	source "mb_trap_dispatcher.c"
+	source "traps_core.c"
+	source "ivt.S"
+}
+
+/*FIXME mybuild arch module what is it */
+module arch {
+	source "arch.c"
+	depends locore
+}

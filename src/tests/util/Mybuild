@@ -2,26 +2,32 @@ package embox.test.util
 
 module array_test {
 	source "array_test.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module list_test {
 	source "list_test.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module slist_test {
 	source "slist_test.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module tree_test {
 	source "tree_test.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module tree_set_test {
 	source "tree_set_test.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module math_test {
 	source "math_test.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module rbuff_test {

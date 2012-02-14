@@ -37,20 +37,15 @@ endef
 \comma   := ,
 \period  := .
 \eq_sign := =
+\colon   := :
+
+$(\comma)   := $(\comma)
+$(\period)  := $(\period)
+$(\eq_sign) := $(\eq_sign)
+$(\colon)   := $(\colon)
 
 ## Single dollar ('$') which expands into itself.
 $$ := $$
-
-##
-# This variable is named by a single space and it expands to an empty string.
-# Perhaps, it is not useful "as is", but it is widely used to suppress a space
-# which is emitted when using backslash-newline in a function definition.
-# Typical usage is:
-#   foo = bar$ \
-#         baz
-# In this example the value of foo will be 'barbaz' without any whitespaces
-# inside.
-$(\s) :=
 
 ascii_table = \
        SOH STX ETX EOT ENQ ACK BEL  BS TAB  LF  VT  FF  CR  SO  SI   \
@@ -70,7 +65,7 @@ ascii_char = \
 
 ## Identity function.
 id = $1
-builtin_func-id = $(builtin_to_function_inline)
+builtin_func-id = $$(if ,,$(builtin_args))# Remain the enclosing braces.
 
 true  := 1
 false :=

@@ -8,7 +8,7 @@
 ifndef _codegen_dot_mk_
 _codegen_dot_mk_ := 1
 
-include $(MK_DIR)/embuild.mk
+#include $(MK_DIR)/embuild.mk
 
 GRAPH = $(MODS_BUILD)
 GRAPH_DOT = $(CODEGEN_DIR)/mod_dag.dot
@@ -43,7 +43,10 @@ generate_dot = $(strip \ndigraph Embox { \
   ) \
 \n})\n
 
-$(GRAPH_DOT) : $(EMBUILD_DUMP_PREREQUISITES) $(MK_DIR)/codegen-dot.mk
+dot: $(GRAPH_PS)
+	@echo 'Dot complete'
+
+$(GRAPH_DOT) : $(MK_DIR)/codegen-dot.mk
 	@$(PRINTF) '$(generate_dot)' > $@
 
 $(GRAPH_PS) : $(GRAPH_DOT)

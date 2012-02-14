@@ -1,0 +1,16 @@
+package embox.test.stdlib
+
+module bsearch_test {
+	source "bsearch_test.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module qsort_test {
+	source "qsort_test.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+}
+
+module setjmp_test {
+	source "setjmp_test.c"
+	make flags "-I$(SRC_DIR)/compat/posix/include"
+}

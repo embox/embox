@@ -38,20 +38,14 @@ LN     := ln -s
 
 include mk/util.mk
 include mk/util/wildcard.mk
+include mk/util/serialize.mk
 
 include mk/gmsl/gmsl.mk
-
-makegoals := $(MAKECMDGOALS)
-ifeq ($(makegoals),)
-makegoals := all
-endif
 
 # XXX Fix this shit. -- Eldar
 
 # 'clean', 'docsgen' and 'config' are handled in-place.
-ifneq ($(filter-out %clean %config conf% %docsgen,$(makegoals)),)
-# Root 'make all' does not need other makefiles too.
-ifneq ($(or $(filter-out $(makegoals),all),$(BUILD_TARGET)),)
+ifneq ($(filter-out %clean %config conf% %docsgen,$(MAKECMDGOALS)),)
 # Need to include it prior to walking the source tree
 include $(MK_DIR)/configure.mk
 # Skip image.mk if configs has not been remade yet
@@ -59,34 +53,19 @@ ifneq ($(wildcard $(AUTOCONF_DIR)/build.mk),)
 include $(MK_DIR)/image.mk
 include $(MK_DIR)/codegen-dot.mk
 endif # $(wildcard $(AUTOCONF_DIR)/build.mk)
-endif # $(or $(filter-out $(makegoals),all),$(BUILD_TARGET))
-endif # $(filter-out %clean %config %docsgen,$(makegoals))
+endif # $(filter-out %clean %config %docsgen,$(MAKECMDGOALS))
 
-__get_subdirs = $(sort $(notdir $(call d-wildcard,$(1:%=%/*))))
-build_patch_targets := \
-  $(patsubst %,%.target, \
-    $(filter-out $(notdir $(BACKUP_DIR)),$(call __get_subdirs, $(CONF_DIR))) \
-  )
+.PHONY: all  prepare docsgen dot clean config xconfig menuconfig conf_update
 
-.PHONY: all build prepare docsgen dot clean config xconfig menuconfig conf_update
-.PHONY: $(build_patch_targets) build_base_target create_rootfs
-
-all: $(build_patch_targets) build_base_target
+all: check_config prepare image
 	@echo 'Build complete'
-
-$(build_patch_targets): export PATCH_NAME=$(basename $@)
-$(build_patch_targets) build_base_target: export BUILD_TARGET=1
-$(build_patch_targets) build_base_target:
-	$(MAKE) build
-
-build: check_config prepare image
-	@echo '$(or $(PATCH_NAME),Base) build complete'
 
 prepare:
 	@$(MKDIR) $(BUILD_DIR)
 	@$(MKDIR) $(BIN_DIR)
 	@$(MKDIR) $(OBJ_DIR)
 	@$(MKDIR) $(LIB_DIR)
+	@$(MKDIR) $(ROOTFS_DIR)
 	@$(MKDIR) $(AUTOCONF_DIR)
 	@$(MKDIR) $(DOCS_OUT_DIR)
 
@@ -94,12 +73,6 @@ docsgen:
 	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)
 	doxygen
 	@echo 'Docs generation complete'
-
-dot: $(GRAPH_PS)
-	@echo 'Dot complete'
-
-create_rootfs:
-	pushd $(ROOTFS_DIR); find ./ -depth -print | cpio -H newc -ov > ../rootfs.cpio; popd;
 
 clean c: _clean
 	@echo 'Clean complete'
@@ -188,39 +161,6 @@ endif
 
 endif #PROFILE
 endif #PROJECT
-
-CUR_CONFIG_FILES := $(filter-out $(notdir $(BACKUP_DIR)),\
-						$(notdir $(wildcard $(BASE_CONF_DIR)/*)))
-# It would be better to use check_config from configure.mk,
-# But I cant imagine any normal condition to include it.
-saveconfig s:
-ifndef PROJECT
-	@echo 'Error: PROJECT undefined'
-	@echo 'Usage: "make PROJECT=<project> PROFILE=<new profile name> saveconfig"'
-	exit 1
-endif
-ifndef PROFILE
-	@echo 'Error: PROFILE undefined'
-	@echo 'Usage: "make PROJECT=<project> PROFILE=<new profile name> saveconfig"'
-	exit 1
-endif
-	$(if $(CUR_CONFIG_FILES),,\
-		echo 'Error: no config presented in "$(BASE_CONF_DIR)"'; \
-		exit 1; \
-	)
-ifneq ($(FORCED),true)
-	@if [ -d $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE) ];          \
-	then                                                       \
-		echo 'Error: Profile "$(PROFILE)" already exist';      \
-		exit 1;                                                \
-	fi;
-else
-	rm -r $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);
-endif
-	$(MKDIR) $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE);        \
-	$(CP) -fvr -t $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/ \
-			$(CUR_CONFIG_FILES:%=$(BASE_CONF_DIR)/%);
-	@echo Config was saved.
 
 TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
 

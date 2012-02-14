@@ -1,0 +1,23 @@
+/*FIXME mybuild couldn't add include path */
+package embox.arch
+
+abstract module interrupt {
+}
+
+abstract module clock {
+}
+
+abstract module context {
+}
+
+abstract module libarch {
+
+}
+
+abstract module locore {
+
+}
+
+abstract module lds {
+
+}

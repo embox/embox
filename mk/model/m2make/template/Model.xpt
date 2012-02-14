@@ -1,0 +1,107 @@
+«IMPORT ecore»
+
+«EXTENSION template::GeneratorExtensions»
+«EXTENSION org::eclipse::xtend::util::stdlib::counter»
+
+«DEFINE main FOR EPackage»«FILE fileName("model") -»
+«fileHeader()»
+
+# Model of '«name»' package.
+
+«inclusionGuardBegin("model")»
+«EXPAND classifier FOREACH eClassifiers.typeSelect(EClass) -»
+
+$(def_all)
+
+«includeFile("model", "model_impl")»
+
+«inclusionGuardEnd("model")»
+
+«ENDFILE»«ENDDEFINE»
+
+«DEFINE classifier FOR EClass»
+#
+# Model object '«name»'.
+#
+«EXPAND classMembersComment("defined") -»
+«FOREACH eAllSuperTypes.reverse() AS superType -»
+«EXPAND classMembersComment("inherited from '" + superType.name + "'") FOR superType -»
+«ENDFOREACH -»
+«IF abstract || interface -»
+# This is an «"abstract ".ifIs(abstract) + "interface ".ifIs(interface)
+	»class. You can't instantiate it directly.
+«ELSE -»
+# To instantiate this class use '«ePackage.factoryName()».«factoryMethodName()»'.
+«ENDIF -»
+define class-«className()»
+«IF className() != "EObject" -»
+	«mkSuper("EObject")»
+«ENDIF -»
+«FOREACH eSuperTypes AS superType -»
+	«mkSuper(superType.className())»
+«ENDFOREACH -»
+«EXPAND feature FOREACH eStructuralFeatures -»
+«EXPAND operation FOREACH eOperations»
+endef
+«ENDDEFINE»
+
+«DEFINE classMembersComment(String suffixText) FOR EClass -»
+«IF eStructuralFeatures.isEmpty && eOperations.isEmpty -»
+# No features or operations «suffixText».
+«ELSE -»
+# The following «let l = { } :
+	if !eStructuralFeatures.isEmpty then l.add("features") ->
+	if !eOperations.isEmpty then l.add("operations") ->
+	l.toString(" and ")» are «suffixText»:
+«FOREACH eStructuralFeatures AS feature -»
+#   - «EReference.isInstance(feature)
+		? "reference"
+		: "attribute"» '«feature.name»'
+«ENDFOREACH -»
+«FOREACH eOperations AS operation -»
+#   - operation '«operation.name»'
+«ENDFOREACH -»
+«ENDIF -»
+#
+«ENDDEFINE»
+
+
+«DEFINE feature FOR EStructuralFeature»
+	«ERROR "Unexpected EStructuralFeature: " + this»
+«ENDDEFINE»
+
+«DEFINE feature FOR EAttribute»
+	# '«name»' attribute.
+«EXPAND featureProperty FOR this -»
+«ENDDEFINE»
+
+«DEFINE feature FOR EReference»
+	# '«name»' «
+		"bidirectional ".ifIs(eOpposite) +
+		"containment "  .ifIs(containment) +
+		"container "    .ifIs(container)»reference.
+«IF eOpposite != null -»
+	# The opposite reference is '«
+		(eReferenceType.name + ".").ifIs(eReferenceType != eContainingClass) +
+		eOpposite.name»'.
+«ENDIF -»
+«EXPAND featureProperty FOR this -»
+«IF isLinkableReference() -»
+	«mkProperty(propertyLinkName() +
+		memberCardinality() + propertyLinkType()) + "# read-only.".ifIs(!changeable)»
+«ENDIF -»
+«ENDDEFINE»
+
+«DEFINE featureProperty FOR EStructuralFeature -»
+	«mkProperty(propertyName() + memberCardinality() + memberType()) +
+		"# read-only.".ifIs(!changeable)»
+«ENDDEFINE»
+
+«DEFINE operation FOR EOperation»
+	# '«name + memberCardinality() + memberType()»' operation.
+«FOREACH eParameters AS param ITERATOR i -»
+	#   «i.counter1». «param.name + param.memberCardinality() + param.memberType()»
+«ENDFOREACH -»
+	«mkMethod(methodName())»
+«ENDDEFINE»
+
