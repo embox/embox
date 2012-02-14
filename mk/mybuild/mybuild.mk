@@ -30,7 +30,8 @@ define class-mybuild
 			l <- $(get __unresolved_links),
 			r <- $(get resources),
 			m <- $(filter $(get l->link_name).%,$(get r->exports)),
-				$(invoke l->resolve,$m))
+				$(if $(eq $(basename $m),$(get l->link_name)),
+					$(invoke l->resolve,$m)))
 	)
 
 	$(if $(value 1),$(invoke link,$1))
