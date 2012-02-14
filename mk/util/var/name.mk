@@ -132,10 +132,9 @@ __var_name_escape3 = \
 # Params:
 #  1. Multiword-named variables (word-escaped)
 __var_name_escape4 = \
-  $(if $(strip $1),$(foreach combo,$(call __var_name_escape_combos,$ \
-                $1,$(call int_sequence,x,$(1:%=x)),$(words $1)),$ \
-    $(if $(call var_defined,$(call var_name_demangle,$(combo))),$(combo))$ \
-   ))
+  $(if $(strip $1),$(foreach combo,$(call __var_name_escape_combos \
+                ,$1,$(call int_sequence,x,$(1:%=x)),$(words $1)) \
+    ,$(if $(call var_defined,$(call var_name_demangle,$(combo))),$(combo))))
 
 # Params:
 #  1. Word-escaped list

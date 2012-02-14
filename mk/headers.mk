@@ -37,10 +37,10 @@ define __header_template
 
 #ifndef __MOD_HEADER__$(subst .,__,$1)
 #define __MOD_HEADER__$(subst .,__,$1)
-$(foreach impl,$(call find_descedant,$1,$(MODS_ENABLE_OBJ)),$(\n)// impl: $(impl)$ \
-  $(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
-                 $(abspath $(call module_get_headers,$(impl))))),$ \
-      $(\n)$(\h)include __impl_x($(header))))
+$(foreach impl,$(call find_descedant,$1,$(MODS_ENABLE_OBJ)),$(\n)// impl: \
+  $(impl)$(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
+                 $(abspath $(call module_get_headers,$(impl))))) \
+      ,$(\n)$(\h)include __impl_x($(header))))
 
 #endif /* __MOD_HEADER__$(subst .,__,$1) */
 

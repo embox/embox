@@ -82,8 +82,8 @@ def = \
 				$(warning $(\s)$(\t)def: \
 						$(flavor $(__def_var))$(\t)[$(__def_var)])) \
 		$(if $(call var_recursive,$(__def_var)), \
-			$(call var_assign_recursive,$(__def_var),$ \
-				$(call __def,$(call __def_var_value,$(__def_var)))), \
+			$(call var_assign_recursive,$(__def_var),$(call __def \
+					,$(call __def_var_value,$(__def_var)))), \
 			$(if $(call var_undefined,$(__def_var)), \
 				$(error Function '$(__def_var)' is not defined) \
 			) \
@@ -178,18 +178,18 @@ __def_value_provider_for = \
 # Return:
 #   The value.
 __def_var_value = \
-	$(if $(filter-out $(dir $(__def_value_providers)),$1/),$(value $1),$ \
-		$(call $(call __def_value_provider_for,$1),$1))
+	$(if $(filter-out $(dir $(__def_value_providers)),$1/) \
+		,$(value $1),$(call $(call __def_value_provider_for,$1),$1))
 
 # Params:
 #   1. Code of a function being defined.
 # Return:
 #   Processed code ready to replace the original value of the function.
 __def = \
-	$(call __def_builtin,$ \
-		$(call __def_brace,$ \
-			$(call __def_strip,$ \
-				$(subst $$,$$$$,$1))))
+	$(call __def_builtin \
+		,$(call __def_brace \
+			,$(call __def_strip \
+				,$(subst $$,$$$$,$1))))
 
 # Params:
 #   1. Code with dollars escaped.
@@ -197,22 +197,20 @@ __def = \
 #   The code with comments, newlines and indentation discarded.
 #   Dollars remain escaped.
 __def_strip = \
-	$(__def_strip_precheck)$ \
-	$(call __def_strip_unescape,$ \
-		$(call list_scan,__def_strip_fold,_$$n,$ \
-			$(call __def_strip_escape,$ \
-				$1)))
+	$(__def_strip_precheck)$(call __def_strip_unescape \
+		,$(call list_scan,__def_strip_fold,_$$n \
+			,$(call __def_strip_escape \
+				,$1)))
 
 # Params:
 #   1. Code with dollars escaped.
 # Return:
 #   Nothing.
 __def_strip_precheck = \
-	$(if $(findstring \$(\s),$(subst $(\t),$(\s),$(subst \\,,$1))),$ \
-		$(warning $(__def_var): \
+	$(if $(findstring \$(\s),$(subst $(\t),$(\s),$(subst \\,,$1))) \
+		,$(warning $(__def_var): \
 			Backslash followed by a whitespace \
-			is probably not what you want)$ \
-	)
+			is probably not what you want))
 
 # Params:
 #   1. Code with dollars escaped.
@@ -220,11 +218,11 @@ __def_strip_precheck = \
 #   The code with whitespaces and some other control chars replaced with
 #   special markers (for instance, \n -> _$$n).
 __def_strip_escape = \
-  $(subst  $(\h), _$$h ,$ \
-   $(subst  $(\n), _$$n ,$ \
-    $(subst  $(\t), _$$t ,$ \
-     $(subst  $(\s), _$$s ,$ \
-      $1))))
+               $(subst \
+   $(\h), _$$h ,$(subst \
+    $(\n), _$$n ,$(subst \
+     $(\t), _$$t ,$(subst \
+      $(\s), _$$s ,$1))))
 
 # Code convolution function.
 # Params:
@@ -233,11 +231,9 @@ __def_strip_escape = \
 # Return:
 #   Token to append to the resulting text.
 __def_strip_fold = \
-  $(and $(subst _$$h,,$2), \
-        $(if $(findstring _$$n,$1),$ \
-             $(subst _$$s,_$$n,$(subst _$$t,_$$n,$2)),$ \
-             $(if $1,$2,$(findstring _$$n,$2))) \
-   )
+  $(if $(findstring _$$h,$2) \
+     ,,$(if $(findstring _$$n,$1) \
+           ,$(subst _$$s,_$$n,$(subst _$$t,_$$n,$2)),$(if $1,$2,$(findstring _$$n,$2))))
 
 # Params:
 #   1. Code with control characters inserted by '__def_strip_escape'.
@@ -245,11 +241,11 @@ __def_strip_fold = \
 #   The code with restored whitespaces (space and tabs).
 #   Newlines are discarded.
 __def_strip_unescape = \
-  $(subst  _$$s,$(\s),$ \
-   $(subst  _$$t,$(\t),$ \
-    $(subst  _$$n,,$      \
-     $(subst $(\s),,$      \
-      $1))))
+             $(subst \
+   _$$s,$(\s),$(subst \
+    _$$t,$(\t),$(subst \
+     _$$n,,$(subst      \
+     $(\s),,$1))))
 
 #
 # Starting at this point the rest functions will be written using new syntax

@@ -109,8 +109,7 @@ var_assign_recursive = \
 #
 var_assign_recursive_sl = \
 	${eval $$1 = \
-		$(subst \\ ,\\,$(subst \\\\\#,\\\#,$(subst \#,\\\#,$(subst \\,\\ \
-				,$2))))}
+		$(subst \\ ,\\,$(subst \\\\\#,\\\#,$(subst \#,\\\#,$(subst \\,\\ ,$2))))}
 
 ##
 # Function: var_assign_recursive_ml
@@ -130,11 +129,10 @@ var_assign_recursive_sl = \
 #       and all notes about its arguments are applied for this case too
 #       (see GNU Make manual).
 #
-${eval $ \
-  define var_assign_recursive_ml$(\n)$ \
-  $${eval define $$$$1$(\n)$$2$(\n)endef}$(\n)$ \
-  endef$                                      \
-} # eval above is 3.81 bug (Savannah #27394) workaround.
+${eval \
+  define var_assign_recursive_ml$(\n)$${eval \
+    define $$$$1$(\n)$$2$(\n)endef}$(\n)endef}
+# eval above is 3.81 bug (Savannah #27394) workaround.
 
 ##
 # Function: var_assign_undefined, var_undefine
@@ -169,15 +167,17 @@ var_assign_simple_append = \
         $(if $(findstring recursive,$(flavor $1)),$$($$1) )$$2})
 
 var_assign_simple_remove = \
-  $(if $(findstring %,$2),$(__var_assign_simple_remove_escaped)$ \
-      ,${eval $$1 := $$(filter-out $$2,$$($$1))})
+  $(if $(findstring %,$2) \
+      ,$(__var_assign_simple_remove_escaped),${eval $$1 \
+         := $$(filter-out $$2,$$($$1))})
 __var_assign_simple_remove_escaped = \
   $(error __var_assign_simple_remove_escaped not yet implemented)
 
 var_assign_simple_append_unique = \
-  $(if $(findstring %,$2),$(__var_assign_simple_append_unique_escaped)$ \
-      ,$(if $(findstring undefined,$(flavor $1)),${eval $$1 := $$2},$ \
-           $(if $(filter $2,$($1)),,$(if $(findstring simple,$(flavor $1)) \
+  $(if $(findstring %,$2) \
+      ,$(__var_assign_simple_append_unique_escaped),$(if \
+         $(findstring undefined,$(flavor $1)),${eval $$1 := $$2},$(if \
+              $(filter $2,$($1)),,$(if $(findstring simple,$(flavor $1)) \
                ,${eval $$1 += $$2},${eval $$1 := $$($$1) $$2}))))
 __var_assign_simple_append_unique_escaped = \
   $(error __var_assign_simple_append_unique_escaped not yet implemented)

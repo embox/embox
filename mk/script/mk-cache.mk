@@ -89,8 +89,8 @@ __cache_print_volatile_variable_definitions = \
 
 __cache_sort = \
 	$(foreach v, \
-		$(sort $(join $(patsubst [%],%_,$(subst _,,$(1:%=[%]))),$1)),$ \
-		$(subst [$v]$(firstword $(subst _,_ ,$v)),,[$v]$v))
+		$(sort $(join $(patsubst [%],%_,$(subst _,,$(1:%=[%]))),$1)) \
+		,$(subst [$v]$(firstword $(subst _,_ ,$v)),,[$v]$v))
 #	$(sort $1)# Uncomment for simple lexicographical sort.
 #	$1# Or for no sort at all.
 
@@ -119,17 +119,16 @@ __cache_construct_regular_simple_variable = \
 		$(if $(__cache_variable_has_leading_ws),$$(\0))$(subst $$,$$$$,$($1))
 
 __cache_construct_regular_recursive_variable = \
-	$(if $(__cache_variable_has_leading_ws),$ \
-		$(__cache_construct_verbose_recursive_variable),$ \
-		$(__cache_escape_variable_name) = $(value $1))
+	$(if $(__cache_variable_has_leading_ws) \
+		,$(__cache_construct_verbose_recursive_variable),$(__cache_escape_variable_name) \
+			= $(value $1))
 
 __cache_construct_verbose_recursive_variable = \
-	define $(__cache_escape_variable_name)$(\n)$ \
-		$(value $1)$(\n)$ \
-	endef
+	define $(__cache_escape_variable_name)$(\n)$(value $1)$(\n)endef
+
 __cache_construct_verbose_simple_variable = \
-	$(__cache_construct_verbose_recursive_variable)$(\n)$ \
-	$(__cache_escape_variable_name) := $$(value $(__cache_escape_variable_name))
+	$(__cache_construct_verbose_recursive_variable)$(\n)$(__cache_escape_variable_name) \
+		:= $$(value $(__cache_escape_variable_name))
 
 __cache_construct_regular_undefined_variable = $(__cache_error_undefined)
 __cache_construct_verbose_undefined_variable = $(__cache_error_undefined)
@@ -144,7 +143,7 @@ __cache_variable_has_leading_ws = \
 
 __cache_print_uses_inclusions = \
 	$(if $(strip $(CACHE_REQUIRES)), \
-		$(info include $$(filter-out $$(MAKEFILE_LIST),$ \
+		$(info include $$(filter-out $$(MAKEFILE_LIST), \
 			$(CACHE_REQUIRES:%= \$(\n)$(\t)$(\t)$(\t)%))))
 
 __cache_print_uses_inclusions = \
