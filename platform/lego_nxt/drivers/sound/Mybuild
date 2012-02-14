@@ -2,6 +2,7 @@
 package lego_nxt.driver
 
 module nxt_sound {
-	source "nxt_sound.c"
+	source "sound.c"
 	depends embox.kernel.irq
+	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
 }
