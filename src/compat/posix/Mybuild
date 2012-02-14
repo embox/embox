@@ -10,4 +10,5 @@ module LibPosix {
 	source "wait.c"
 
 	make flags "-I$(SRC_DIR)/compat/posix/include"
+	depends embox.kernel.task.task_api
 }
