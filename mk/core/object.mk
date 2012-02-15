@@ -1667,43 +1667,6 @@ define __object_print_field.raw_scalar
 			$(__object_field_escape)$(\n))
 endef
 
-# XXX below
-
-define field_name
-	$(subst [],,$(basename $1))
-endef
-
-define field_type
-	$(suffix $1)
-endef
-
-define obj_links
-	$(subst [],,$(subst .,,$(basename $($($1).fields:%=.%))))
-endef
-
 $(def_all)
 
-
-#######################################
-# TODO move from here
-#######################################
-
-__mk_objects_dump_ps := objects_dump.ps
-
-.PHONY : mk_objects_dump mk_object_to_mk mk_create_resource
-.PHONY : $(__mk_objects_dump_ps:.ps=.dot) # Assume it volatile.
-mk_objects_dump : $(__mk_objects_dump_ps)
-
-$(__mk_objects_dump_ps:.ps=.dot) :
-	@printf '%b' '$(call escape_printf,$(call objects_to_dot))' > $@
-
-$(__mk_objects_dump_ps) : %.ps : %.dot
-	@dot -Tps $< -o $@
-
-mk_object_to_mk:
-	@printf '%b' '$(call escape_printf,$(call objects_to_mk,.obj7))' > dump.mk
-	@printf '%b' '$(call escape_printf,$(call objects_to_export,.obj6))' > fump.mk
-
-#mk_create_resource:
-#	@printf '%b' '$call escape_printf,$(call create_resource
 endif # __core_object_mk

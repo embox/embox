@@ -6,6 +6,18 @@ include mk/util/escape.mk
 include mk/mybuild/resource.mk
 include mk/core/object.mk
 
+define field_name
+	$(subst [],,$(basename $1))
+endef
+
+define field_type
+	$(suffix $1)
+endef
+
+define obj_links
+	$(subst [],,$(subst .,,$(basename $($($1).fields:%=.%))))
+endef
+
 # Serialize objects to .dot file for converting it by graphviz.
 # If $1 exist then graph from this node will be closed and objects from graph will be
 # serialized. Else every object in system will be serialized
@@ -92,16 +104,16 @@ endef
 #	)
 #endef
 
-# param $1 what to write
-# param $2 filename to write to
-define write
-	$(PRINTF) '%b' '$1' > $2
-endef
-
-# param $1 is var name
-define serialize_var
-	$1 := $($1)
-endef
+## param $1 what to write
+## param $2 filename to write to
+#define write
+#	$(PRINTF) '%b' '$1' > $2
+#endef
+#
+## param $1 is var name
+#define serialize_var
+#	$1 := $($1)
+#endef
 
 
 $(def_all)
