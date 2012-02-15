@@ -1,57 +1,46 @@
 #
+# Second stage: loads My-files and links them together.
+#
 #   Date: Feb 9, 2012
 # Author: Eldar Abusalimov
 #
 
-MY_CACHE_DIR := mk/.cache/my
+MYBUILD_CACHE_DIR := mk/.cache/my
+MYFILES_CACHE_DIR := mk/.cache/my/files
 
-MY_PATH := src/ platform/
-MY_FILES := $(shell find . -depth \( -name Mybuild -o -name \*.my \) -print)
+MYBUILD_PATH := src/ platform/ third-party/
 
-all_cached_myfiles := \
-	$(patsubst $(abspath ./%),$(MY_CACHE_DIR)/files/%.mk, \
-		$(abspath $(MY_FILES)))
+MYFILES := \
+	$(shell find $(MYBUILD_PATH) -depth \
+		\( -name Mybuild -o -name \*.my \) -print)
 
-cached_mybuild_model := $(MY_CACHE_DIR)/model.mk
-cached_mybuild_model_myfiles := $(MY_CACHE_DIR)/model-myfiles.mk
+mybuild_model_mk := $(MYBUILD_CACHE_DIR)/model.mk
+myfiles_mk_cached_list_mk := $(MYBUILD_CACHE_DIR)/model-myfiles.mk
 
--include $(cached_mybuild_model_myfiles)
-mybuild_model_myfiles ?=
+export myfiles_mk := \
+	$(patsubst $(abspath ./%),$(MYFILES_CACHE_DIR)/%.mk, \
+		$(abspath $(MYFILES)))
 
-export mybuild_model_myfiles_added := \
-	$(filter-out $(mybuild_model_myfiles),$(all_cached_myfiles))
-export mybuild_model_myfiles_removed := \
-	$(filter-out $(all_cached_myfiles),$(mybuild_model_myfiles))
+-include $(myfiles_mk_cached_list_mk)
+myfiles_mk_cached ?=
 
-ifneq ($(or $(mybuild_model_myfiles_added),$(mybuild_model_myfiles_removed)),)
-.PHONY : $(cached_mybuild_model)
+export myfiles_mk_added := \
+	$(filter-out $(myfiles_mk_cached),$(myfiles_mk))
+export myfiles_mk_removed := \
+	$(filter-out $(myfiles_mk),$(myfiles_mk_cached))
+
+ifneq ($(or $(myfiles_mk_added),$(myfiles_mk_removed)),)
+.PHONY : $(mybuild_model_mk)
 endif
 
-$(MAKECMDGOALS) : $(cached_mybuild_model)
-	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_scripts) $<' $@
-
-export all_cached_myfiles
+$(MAKECMDGOALS) : $(mybuild_model_mk)
+	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $<' $@
 
 .DELETE_ON_ERROR:
-$(cached_mybuild_model) : mk/load2.mk
-$(cached_mybuild_model) : mk/script/mk-persist.mk
-$(cached_mybuild_model) : $(all_cached_myfiles)
-	@echo ' MYBUILD ...'
-	@$(foreach f,$(mybuild_model_myfiles_added)   ,echo '  A $f';)#
-	@$(foreach f,$*                               ,echo '  M $f';)#
-	@$(foreach f,$(mybuild_model_myfiles_removed) ,echo '  D $f';)#
-	@mkdir -p $(@D) && \
-		$(MAKE) -f mk/script/mk-persist.mk MAKEFILES='$(mk_mybuild) $(all_cached_myfiles)' \
-		PERSIST_OBJECTS='$$(call new,mybuild,$$(foreach f,$$(all_cached_myfiles),$$($$f)))' \
-		PERSIST_REALLOC='my' \
-		ALLOC_SCOPE='m' > $@
-	@echo '__mybuild_model_instance := .my1m' >> $@
-	@printf 'mybuild_model_myfiles := %b' '$(all_cached_myfiles:%=\\\n\t%)' \
-		> $(cached_mybuild_model_myfiles)
 
-$(all_cached_myfiles) : mk/load2.mk
-$(all_cached_myfiles) : mk/script/mk-persist.mk
-$(all_cached_myfiles) : $(MY_CACHE_DIR)/files/%.mk : ./%
+$(myfiles_mk) : mk/load2.mk
+$(myfiles_mk) : mk/script/mk-persist.mk
+$(myfiles_mk) : $(MYFILES_CACHE_DIR)/%.mk : %
 	@echo ' MYFILE $<'
 	@SCOPE=`echo '$<' | sum | cut -f 1 -d ' '`; \
 	mkdir -p $(@D) && \
@@ -60,3 +49,18 @@ $(all_cached_myfiles) : $(MY_CACHE_DIR)/files/%.mk : ./%
 		ALLOC_SCOPE="r$$SCOPE" > $@ && \
 	echo '$$(lastword $$(MAKEFILE_LIST)) := '".obj1r$$SCOPE" >> $@
 
+$(mybuild_model_mk) : mk/load2.mk
+$(mybuild_model_mk) : mk/script/mk-persist.mk
+$(mybuild_model_mk) : $(myfiles_mk)
+	@echo ' MYBUILD ...'
+	@$(foreach f,$(myfiles_mk_added)   ,echo '  A $f';)#
+	@$(foreach f,$*                     ,echo '  M $f';)#
+	@$(foreach f,$(myfiles_mk_removed) ,echo '  D $f';)#
+	@mkdir -p $(@D) && \
+		$(MAKE) -f mk/script/mk-persist.mk MAKEFILES='$(mk_mybuild) $(myfiles_mk)' \
+		PERSIST_OBJECTS='$$(call new,mybuild,$$(foreach f,$$(myfiles_mk),$$($$f)))' \
+		PERSIST_REALLOC='my' \
+		ALLOC_SCOPE='m' > $@
+	@echo '__mybuild_model_instance := .my1m' >> $@
+	@printf 'myfiles_mk_cached := %b' '$(myfiles_mk:%=\\\n\t%)' \
+		> $(myfiles_mk_cached_list_mk)
