@@ -1653,9 +1653,8 @@ define __object_print_field.raw_list
 	$s.$f := \
 		# Guard a trailing backslash (if any)
 		# and pretty-print each list item on a separate line.
-		$(patsubst %,\$(\n)$(\t)%,$(subst \$(\n),$$(\\)$(\n),
-			$(__object_field_escape)
-			$(\n)))
+		$(patsubst %,\$(\n)$(\t)%,$(subst-end \,$$(\\),
+			$(__object_field_escape)))$(\n)
 endef
 
 define __object_print_field.raw_scalar
@@ -1665,8 +1664,7 @@ define __object_print_field.raw_scalar
 			$$(\0))
 		# Guard a trailing backslash (if any).
 		$(subst \$(\n),$$(\\)$(\n),
-			$(__object_field_escape)
-			$(\n))
+			$(__object_field_escape)$(\n))
 endef
 
 # XXX below
