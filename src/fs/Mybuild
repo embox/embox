@@ -24,5 +24,6 @@ module core {
 	depends file_desc
 	depends node
 	depends embox.fs.driver.repo
+	depends embox.kernel.task_api
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
