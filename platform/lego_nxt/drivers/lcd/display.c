@@ -156,6 +156,7 @@ void display_char(int c) {
 	if (c == '\n') {
 		display_x = 0;
 		display_y++;
+		return;
 	}
 
 	if ((unsigned int) display_x == DISPLAY_CHAR_WIDTH) {

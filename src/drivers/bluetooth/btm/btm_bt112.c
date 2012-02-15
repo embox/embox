@@ -16,7 +16,7 @@ CALLBACK_INIT(nxt_bt_rx_handle_t, bt_rx);
 
 typedef int (*string_handler)(int len, void *data);
 
-enum reader_state {
+enum state_num {
 	CONNECT_WAIT = 0,
 	LR_WAIT = 1,
 	DISCONNECT_WAIT = 2
@@ -41,11 +41,11 @@ static string_handler str_hnds[] = {
 static int rs_comm = 0;
 static int rs_pos = 0;
 
-static int set_handler(int state) {
-	rs_comm = state;
+static int set_state(int state_num) {
+	rs_comm = state_num;
 	rs_pos = 0;
 
-	CALLBACK_REG(__bt_rx, str_hnds[state]);
+	CALLBACK_REG(__bt_rx, str_hnds[state_num]);
 
 	return 0;
 }
@@ -70,7 +70,7 @@ static int general_handler(int cnt, void *data) {
 
 static int irq_hnd_wait_conn(int len, void *data) {
 	if (general_handler(len, data)) {
-		set_handler(LR_WAIT);
+		set_state(LR_WAIT);
 	}
 	bluetooth_read(1);
 	return 0;
@@ -78,10 +78,11 @@ static int irq_hnd_wait_conn(int len, void *data) {
 
 static int irq_hnd_wait_lrlf(int len, void *data) {
 	if (general_handler(len, data)) {
-		set_handler(DISCONNECT_WAIT);
+		set_state(DISCONNECT_WAIT);
 		//Acknowlege about connect
 		//FIXME
 		CALLBACK(bt_state)();
+		return 0;
 	}
 	bluetooth_read(1);
 	return 0;
@@ -89,8 +90,10 @@ static int irq_hnd_wait_lrlf(int len, void *data) {
 
 static int irq_hnd_wait_disconn(int len, void *data) {
 	if (general_handler(len, data)) {
-		set_handler(CONNECT_WAIT);
+		set_state(CONNECT_WAIT);
 		CALLBACK(bt_state)();
+		bluetooth_read(1);
+		return 0;
 	}
 	CALLBACK(bt_rx)(len, data);
 	return 0;
