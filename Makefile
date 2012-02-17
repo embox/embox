@@ -7,8 +7,6 @@
 # Author: Eldar Abusalimov
 #
 
-MK_DIR := $(abspath mk)
-
 ifndef __mk_ready
 
 # Check Make version (we need at least GNU Make 3.81). Fortunately,
@@ -19,7 +17,6 @@ $(error Unsupported Make version. \
 	please use GNU Make 3.81 or above.)
 endif
 
-MAKEFLAGS += --include-dir=$(MK_DIR)
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
 MAKEFLAGS += --no-print-directory
