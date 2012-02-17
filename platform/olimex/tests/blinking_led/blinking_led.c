@@ -13,13 +13,6 @@
 
 EMBOX_TEST(blinking_led);
 
-/**
- * The test itself.
- *
- * @return the test result
- * @retval 0 on success
- * @retval nonzero on failure
- */
 #define DELAY   0x25000
 #define INC     0x0
 
