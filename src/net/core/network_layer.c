@@ -122,8 +122,6 @@ int dev_queue_xmit(struct sk_buff *skb) {
 
 int __netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
-//	struct packet_type *q = NULL;
-//	const struct net_pack *pack;
 
 	if (NULL == skb) {
 		return NET_RX_DROP;
@@ -134,18 +132,7 @@ int __netif_rx(struct sk_buff *skb) {
 		return NET_RX_DROP;
 	}
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
-#if 0
-	/*this loop exist in netif_receive_skb*/
-	net_pack_foreach(pack) {
-		q = pack->netpack;
-		if (q->type == skb->protocol) {
-			skb_queue_tail(&(dev->dev_queue), skb);
-			netif_rx_schedule(dev);
-			return NET_RX_SUCCESS;
-		}
-	}
-	kfree_skb(skb);
-#endif
+
 	skb_queue_tail(&(dev->dev_queue), skb);
 	netif_rx_schedule(dev);
 
@@ -175,27 +162,16 @@ void netif_rx_schedule(net_device_t *dev) {
 
 extern net_device_t *get_dev_by_idx(int num); /* TODO delete it */
 
-/* FIXME: rx_action_in_action - is a fast patch, just in case
-   another interrupt happens while processing soft irq. This
-   should dissapear once correct soft irq handling system is written. //Timk */
-static int net_rx_action_in_action = 0;
-
 static void net_rx_action(struct softirq_action *action) {
 	size_t i;
 	net_device_t *dev;
 
-	if(!net_rx_action_in_action){
-		net_rx_action_in_action = 1;
-		//TODO it will be better use list of active device and cache for them
-		for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
-			dev = get_dev_by_idx(i);
-			if (dev) {
-				dev->poll(dev);
-			}
+	//TODO it will be better use list of active device and cache for them
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
+		dev = get_dev_by_idx(i);
+		if ((NULL != dev) && (NULL != dev->poll)) {
+			dev->poll(dev);
 		}
-		net_rx_action_in_action = 0;
-	}else{
-		printk("net_rx_action: multiple tries to handle inerrupt\n");
 	}
 }
 
