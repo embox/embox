@@ -39,8 +39,6 @@ PS1    :=
 
 include mk/util/wildcard.mk
 
-include mk/gmsl/gmsl.mk
-
 # XXX Fix this shit. -- Eldar
 
 # 'clean', 'docsgen' and 'config' are handled in-place.

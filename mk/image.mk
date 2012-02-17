@@ -53,9 +53,9 @@ endif
 CC_VERSION_MAJOR := $(shell echo $(CC_VERSION) | cut -d'.' -f 1)
 CC_VERSION_MINOR := $(shell echo $(CC_VERSION) | cut -d'.' -f 2)
 
-ifneq ($(or $(call >,$(CC_VERSION_MAJOR),4), \
-       $(and $(call  ==,$(CC_VERSION_MAJOR),4), \
-             $(call >=,$(CC_VERSION_MINOR),2))),)
+ifneq ($(or $(filter-out 0 1 2 3 4,$(CC_VERSION_MAJOR)), \
+       $(and $(filter 4,$(CC_VERSION_MAJOR)), \
+             $(filter-out 0 1,$(CC_VERSION_MINOR)))),)
 CC_SUPPORTS_@file := 1
 endif
 
