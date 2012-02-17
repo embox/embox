@@ -39,7 +39,6 @@ PS1    :=
 
 include mk/util.mk
 include mk/util/wildcard.mk
-include mk/util/serialize.mk
 
 include mk/gmsl/gmsl.mk
 

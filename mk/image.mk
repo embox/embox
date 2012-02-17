@@ -78,8 +78,6 @@ LIB_FILE = \
 	$(foreach 1,$1,$(LIB_DIR)/$(get $1.qualified_name).a)
 
 # It's time to scan subdirs and prepare mods info.
-#include $(MK_DIR)/embuild.mk
-#include mk/mybuild/read.mk
 # ...and to build dependency injection model
 include $(MK_DIR)/codegen-di.mk
 

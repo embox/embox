@@ -4,6 +4,7 @@ __conf_roots_mk := 1
 include mk/core/define.mk
 include mk/mybuild/resource.mk
 include mk/mybuild/mybuild.mk
+include mk/util/graph.mk
 
 #param $1 is list of module names
 define find_mods
