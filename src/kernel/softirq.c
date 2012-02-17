@@ -33,6 +33,22 @@ static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
 static uint32_t softirq_pending;
 static uint32_t softirq_handling;
 
+typedef uint32_t softipl_t;
+
+
+static softipl_t softipl_save(softirq_nr_t nm) {
+	softipl_t sipl = softirq_handling;
+
+	softirq_handling = 1 << nm;
+
+	return sipl;
+}
+
+static void softipl_restore(softipl_t sipl) {
+	softirq_handling = sipl;
+}
+
+
 int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *data) {
 	ipl_t ipl;
 
@@ -64,36 +80,46 @@ int softirq_raise(softirq_nr_t nr) {
 	return 0;
 }
 
+static softirq_nr_t softirq_get_dispatch_nm(void) {
+	softirq_nr_t nm;
+	uint32_t pending;
+
+	if(0 == (pending = softirq_pending)) {
+		return -1;
+	}
+
+	for (nm = 0; pending & (softirq_handling - 1); pending >>= 1, ++nm) {
+		if (pending & 0x1) {
+			return nm;
+		}
+	}
+
+	return -1;
+}
+
 /**
  * Called by critical dispatching code with max IPL (all IRQ disabled).
  */
 static void softirq_dispatch(void) {
-	uint32_t pending;
-	uint32_t handling;
 	softirq_handler_t handler;
 	void *data;
+	softirq_nr_t nr;
+	softipl_t sipl;
 
 	critical_enter(CRITICAL_SOFTIRQ_HANDLER);
 
-	while ((pending = softirq_pending)) {
-		softirq_pending = 0;
-		handling = 0x1;
-		for (softirq_nr_t nr = 0; pending; pending >>= 1, handling <<= 1, ++nr) {
-			if (!(pending & 0x1) || (softirq_handling & handling)) {
-				continue;
-			}
+	while (-1 != (nr = softirq_get_dispatch_nm())) {
+		softirq_pending &= ~(1 << nr);
+		if ((handler = softirq_actions[nr].handler)) {
+			data = softirq_actions[nr].data;
 
-			softirq_handling |= handling;
+			sipl = softipl_save(nr);
+			ipl_enable();
 
-			if ((handler = softirq_actions[nr].handler)) {
-				data = softirq_actions[nr].data;
+			handler(nr, data);
 
-				ipl_enable();
-				handler(nr, data);
-				ipl_disable();
-			}
-
-			softirq_handling &= ~handling;
+			ipl_disable();
+			softipl_restore(sipl);
 		}
 	}
 
