@@ -2,8 +2,6 @@
 # Author: Eldar Abusalimov
 #
 
-include $(MK_DIR)/util.mk
-
 IMAGE      = $(BIN_DIR)/$(TARGET)
 IMAGE_DIS  = $(IMAGE).dis
 IMAGE_BIN  = $(IMAGE).bin
