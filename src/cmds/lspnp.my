@@ -1,0 +1,8 @@
+
+package embox.cmd
+
+module lspnp {
+	source "lspnp.c"
+	make flags "-I$(CONF_DIR)"
+	depends embox.driver.amba_registry
+}
