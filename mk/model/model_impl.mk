@@ -206,17 +206,16 @@ define class-ELinkImpl
 	# Reference 'eMetaReference' [0..1]: derived, read-only.
 	$(property eMetaReference : EMetaReference)
 	# PROTECTED REGION ID(ELink_eMetaReference) ENABLED START
-	$(field eMetaReferenceId)
 	$(getter eMetaReference,
-		$(value $(get-field eMetaReferenceId)))
+		$(value $(get eMetaReferenceId)))
 	# PROTECTED REGION END
 
 	# Attribute 'eMetaReferenceId': derived, read-only.
 	$(property eMetaReferenceId)
 	# PROTECTED REGION ID(ELink_eMetaReferenceId) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter eMetaReferenceId,
-#		$(error $0: NIY))
+	$(field eMetaReferenceId)
+	$(getter eMetaReferenceId,
+		$(get-field eMetaReferenceId))
 	# PROTECTED REGION END
 
 	# Reference 'eSource' [0..1]: bidirectional, read-only.
