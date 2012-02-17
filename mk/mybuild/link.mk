@@ -29,11 +29,9 @@ define class-module_link
 	$(method deresolve,
 		$(set dst,$(\0)))
 
+	$(if $(value 2),
+		$(set dst,$2))
 endef
-
-MODULE_LINKS_NOTRESOLVED := $(\0)
-
-MODULE_LINKS_RESOLVED := $(\0)
 
 $(def_all)
 

@@ -98,11 +98,22 @@ filter_abstract_modules = \
 filter_static_modules = \
 	$(strip $(foreach m,$1,$(if $(filter static,$(get m->modifiers)),$m)))
 
+include mk/mybuild/check.mk
+include mk/mybuild/mybuild.mk
+
+abstract_deps_check = \
+$(silent-foreach a,$(APIS_BUILD),\
+	$(or $(call find_descedant_obj,$a,$(MODS_ENABLE_OBJ)),\
+		$(error $(get a->qualified_name) has no realization, possible realisation:\
+		$(strip $(foreach r,$(get $(mybuild_model_instance).resources),\
+			$(basename $(call find_descedant_obj,$a,$(get r->exports))))))))
 $(def_all)
 
 APIS_BUILD := $(call filter_abstract_modules,$(MODS_ENABLE_OBJ))
 LIBS_BUILD := $(call filter_static_modules,$(MODS_ENABLE_OBJ))
 MODS_BUILD := $(filter-out $(LIBS_BUILD),$(MODS_ENABLE_OBJ))
+
+$(call abstract_deps_check)
 
 SRCS_BUILD := \
 	$(foreach m,$(MODS_ENABLE_OBJ),$(call module_get_sources,$m))

@@ -1,6 +1,7 @@
 
 include mk/mybuild/resource.mk
 include core/define.mk
+include mk/mybuild/check.mk
 
 HEADERS_BUILD := \
   $(patsubst %,$(OBJ_DIR)/mods/%.h,$(subst .,/,$(basename $(APIS_BUILD))))
@@ -10,26 +11,6 @@ __header_mod = \
 
 __header_gen = \
   $(subst $(\n),\n,$(call __header_template,$(__header_mod)))
-
-# Param:
-#   1. module name
-#   2. module list
-# Return:
-#   Module descedant from list
-define find_descedant
-	$(for o <- $(call find_mod,$(__header_mod)),
-		m <- $2,
-		$(with $m,
-			$(for l <- $(get $1.super_module_ref),
-				super <- $(invoke l->get_reference),
-				$(if $(eq $(suffix $(super)),$(suffix $o)),
-					$m,$(call $0,$(super)))
-			)
-		)
-	)
-endef
-
-$(call def,find_descedant)
 
 # 1. Header module name
 define __header_template
