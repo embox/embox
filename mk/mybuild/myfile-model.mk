@@ -20,15 +20,14 @@ __mybuild_myfile_model_mk := $(lastword $(MAKEFILE_LIST))
 #
 # To instantiate this class use 'MyFileFactory.createPackage'.
 define class-MyPackage
-	$(super EObject)
 	$(super ENamedObject)
 
 	# 'imports' containment reference.
-	$(property imports... : Import)
+	$(property imports... : MyImport)
 
 	# 'entities' bidirectional containment reference.
 	# The opposite reference is 'Entity.package'.
-	$(property entities... : Entity)
+	$(property entities... : MyEntity)
 
 endef
 
@@ -61,12 +60,11 @@ endef
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-MyEntity
-	$(super EObject)
 	$(super ENamedObject)
 
 	# 'package' bidirectional container reference.
 	# The opposite reference is 'Package.entities'.
-	$(property package : Package)
+	$(property package : MyPackage)
 
 endef
 
@@ -95,13 +93,12 @@ endef
 #
 # To instantiate this class use 'MyFileFactory.createInterface'.
 define class-MyInterface
-	$(super EObject)
 	$(super MyEntity)
 	$(super MyExtendable)
 
 	# 'features' bidirectional containment reference.
 	# The opposite reference is 'Feature.interface'.
-	$(property features... : Feature)
+	$(property features... : MyFeature)
 
 endef
 
@@ -129,22 +126,21 @@ endef
 #
 # To instantiate this class use 'MyFileFactory.createFeature'.
 define class-MyFeature
-	$(super EObject)
 	$(super ENamedObject)
 	$(super MyExtendable)
 
 	# 'interface' bidirectional container reference.
 	# The opposite reference is 'Interface.features'.
-	$(property interface : Interface)
+	$(property interface : MyInterface)
 
 	# 'providedBy' bidirectional reference.
 	# The opposite reference is 'Module.provides'.
-	$(property providedBy... : Module)
+	$(property providedBy... : MyModule)
 	$(property providedBy_links... : ELink)
 
 	# 'requiredBy' bidirectional reference.
 	# The opposite reference is 'Module.requires'.
-	$(property requiredBy... : Module)
+	$(property requiredBy... : MyModule)
 	$(property requiredBy_links... : ELink)
 
 endef
@@ -179,7 +175,6 @@ endef
 #
 # To instantiate this class use 'MyFileFactory.createModule'.
 define class-MyModule
-	$(super EObject)
 	$(super MyEntity)
 	$(super MyExtendable)
 
@@ -191,22 +186,22 @@ define class-MyModule
 
 	# 'depends' bidirectional reference.
 	# The opposite reference is 'dependent'.
-	$(property depends... : Module)
+	$(property depends... : MyModule)
 	$(property depends_links... : ELink)
 
 	# 'dependent' bidirectional reference.
 	# The opposite reference is 'depends'.
-	$(property dependent... : Module)
+	$(property dependent... : MyModule)
 	$(property dependent_links... : ELink)
 
 	# 'provides' bidirectional reference.
 	# The opposite reference is 'Feature.providedBy'.
-	$(property provides... : Feature)
+	$(property provides... : MyFeature)
 	$(property provides_links... : ELink)
 
 	# 'requires' bidirectional reference.
 	# The opposite reference is 'Feature.requiredBy'.
-	$(property requires... : Feature)
+	$(property requires... : MyFeature)
 	$(property requires_links... : ELink)
 
 endef
@@ -230,35 +225,34 @@ endef
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-MyExtendable
-	$(super EObject)
 	$(super ENamedObject)
 
 	# 'subTypes' bidirectional reference.
 	# The opposite reference is 'superType'.
-	$(property subTypes... : Extendable)
+	$(property subTypes... : MyExtendable)
 	$(property subTypes_links... : ELink)
 
 	# 'superType' bidirectional reference.
 	# The opposite reference is 'subTypes'.
-	$(property superType : Extendable)
+	$(property superType : MyExtendable)
 	$(property superType_link : ELink)
 
 	# 'allSubTypes' bidirectional reference.
 	# The opposite reference is 'allSuperTypes'.
-	$(property allSubTypes... : Extendable)# read-only.
+	$(property allSubTypes... : MyExtendable)# read-only.
 	$(property allSubTypes_links... : ELink)# read-only.
 
 	# 'allSuperTypes' bidirectional reference.
 	# The opposite reference is 'allSubTypes'.
-	$(property allSuperTypes... : Extendable)# read-only.
+	$(property allSuperTypes... : MyExtendable)# read-only.
 	$(property allSuperTypes_links... : ELink)# read-only.
 
 	# 'isSubTypeOf' operation.
-	#   1. another : Extendable
+	#   1. another : MyExtendable
 	$(method isSubTypeOf)
 
 	# 'isSuperTypeOf' operation.
-	#   1. another : Extendable
+	#   1. another : MyExtendable
 	$(method isSuperTypeOf)
 
 endef

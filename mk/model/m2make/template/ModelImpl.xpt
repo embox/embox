@@ -9,6 +9,8 @@
 # Model implementation of '«name»' package.
 
 «implInclusionCheck("model")»
+
+include mk/model/eobject.mk
 «EXPAND classifier FOREACH eClassifiers.typeSelect(EClass) -»
 
 $(def_all)
@@ -18,15 +20,10 @@ $(def_all)
 «DEFINE classifier FOR EClass»
 # Implementation of '«name»' model object.
 define class-«classImplName()»
-	«mkSuper(className())»
 «IF classImplName() != "EObjectImpl" -»
-
-	«mkSuper("EObjectImpl")»
-«FOREACH eSuperTypes AS superType -»
-	«mkSuper(superType.classImplName())»
-«ENDFOREACH -»
-
-	«mkGetter("eMetaClass", mkExpand(metaVariable()))»
+	«mk("eobject", { metaVariable(),
+		"\n\t\t" + className(), eSuperTypes.className().toString(" "),
+		metaFlags().toString(" ") })»
 «ENDIF -»
 «EXPAND feature FOREACH eStructuralFeatures -»
 «EXPAND operation FOREACH eOperations»
@@ -44,6 +41,23 @@ endef
 «EXPAND nonVolatileFeature -»
 «ENDIF -»
 «ENDDEFINE»
+
+«DEFINE nonVolatileFeature FOR EStructuralFeature»
+	«ERROR "Unexpected EStructuralFeature: " + this»
+«ENDDEFINE»
+
+«DEFINE nonVolatileFeature FOR EAttribute»
+	«mk("eobject-attribute", { metaVariable(),
+		"\n\t\t" + propertyName(),
+		metaFlags().toString(" ")})»
+«ENDDEFINE»
+
+«DEFINE nonVolatileFeature FOR EReference»
+	«mk("eobject-reference", { metaVariable(),
+		"\n\t\t" + propertyName(), eReferenceType.className(), eOpposite.propertyName(),
+		metaFlags().toString(" ")})»
+«ENDDEFINE»
+
 
 «DEFINE volatileFeature FOR EStructuralFeature»
 	«mkProperty(propertyName() + memberCardinality() + memberType())»
@@ -79,11 +93,12 @@ endef
 #	«comment()»
 «ENDDEFINE»
 
-«DEFINE nonVolatileFeature FOR EStructuralFeature»
+
+«DEFINE nonVolatileFeatureOld FOR EStructuralFeature»
 	«ERROR "Unexpected EStructuralFeature: " + this»
 «ENDDEFINE»
 
-«DEFINE nonVolatileFeature FOR EAttribute»
+«DEFINE nonVolatileFeatureOld FOR EAttribute»
 «IF changeable -»
 	«mkPropertyField(propertyName() + memberCardinality() + memberType())»
 «ELSE -»
@@ -93,32 +108,33 @@ endef
 «ENDIF -»
 «ENDDEFINE»
 
-«DEFINE nonVolatileFeature FOR EReference»
+«DEFINE nonVolatileFeatureOld FOR EReference»
 	«mkProperty(propertyName() + memberCardinality() + memberType())»
-«LET containment ? "Containment" : "Bidirectional".ifIs(eOpposite) AS suffix -»
+«LET containment ? "Containment" : (container ? "Container" :
+	(eOpposite != null ? "Bidirectional" : "Unidirectional")) AS suffix -»
 «LET { propertyName(), "$(suffix $1)", eOpposite.propertyName(), metaVariable() } AS setterArgs -»
 «IF container -»
 	«mkGetterWrap(propertyName(),
-		mkInvoke("__eGetContainer", propertyName()))»
+		mkCall("__eObjectGet" + suffix, propertyName()))»
 «ELSE -»
 	«mkField(propertyName() + memberCardinality() + memberType())»
-	«mkGetterWrap(propertyName(), mkGetField(propertyName()))»
+	«mkGetterWrap(propertyName(), "$(suffix " + mkGetField(propertyName()) + ")")»
 «ENDIF -»
 «IF changeable -»
-	«mkSetterWrap(propertyName(), mkInvoke("__eSet" + suffix, setterArgs))»
+	«mkSetterWrap(propertyName(), mkCall("__eObjectSet" + suffix, setterArgs))»
 «IF many -»
-	«mkSetterPlusWrap(propertyName(), mkInvoke("__eAdd" + suffix, setterArgs))»
-	«mkSetterMinusWrap(propertyName(), mkInvoke("__eRemove" + suffix, setterArgs))»
+	«mkSetterPlusWrap(propertyName(), mkCall("__eObjectAdd" + suffix, setterArgs))»
+	«mkSetterMinusWrap(propertyName(), mkCall("__eObjectRemove" + suffix, setterArgs))»
 «ENDIF -»
 «ENDIF -»
 «IF isLinkableReference() -»
 	# Link operations.
-	«mkGetterWrap(propertyLinkName(), mkInvoke("__eGet" + suffix + "_link", propertyName()))»
+	«mkGetterWrap(propertyLinkName(), mkCall("__eObjectGet" + suffix + "_link", propertyName()))»
 «IF changeable -»
-	«mkSetterWrap(propertyLinkName(), mkInvoke("__eSet" + suffix + "_link", setterArgs))»
+	«mkSetterWrap(propertyLinkName(), mkCall("__eObjectSet" + suffix + "_link", setterArgs))»
 «IF many -»
-	«mkSetterPlusWrap(propertyLinkName(), mkInvoke("__eAdd" + suffix + "_link", setterArgs))»
-	«mkSetterMinusWrap(propertyLinkName(), mkInvoke("__eRemove" + suffix + "_link", setterArgs))»
+	«mkSetterPlusWrap(propertyLinkName(), mkCall("__eObjectAdd" + suffix + "_link", setterArgs))»
+	«mkSetterMinusWrap(propertyLinkName(), mkCall("__eObjectRemove" + suffix + "_link", setterArgs))»
 «ENDIF -»
 «ENDIF -»
 «ENDIF -»

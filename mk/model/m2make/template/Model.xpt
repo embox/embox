@@ -35,11 +35,13 @@ $(def_all)
 «ENDIF -»
 define class-«className()»
 «IF className() != "EObject" -»
+«IF eSuperTypes.isEmpty -»
 	«mkSuper("EObject")»
 «ENDIF -»
 «FOREACH eSuperTypes AS superType -»
 	«mkSuper(superType.className())»
 «ENDFOREACH -»
+«ENDIF -»
 «EXPAND feature FOREACH eStructuralFeatures -»
 «EXPAND operation FOREACH eOperations»
 endef

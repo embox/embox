@@ -15,6 +15,8 @@ EModel_EObject := \
 	$(call eMetaClassCreate,$(EModel),EModel_EObject)
 EModel_EObject_eMetaClass := \
 	$(call eMetaReferenceCreate,$(EModel_EObject),EModel_EObject_eMetaClass)
+EModel_EObject_eMetaClassId := \
+	$(call eMetaAttributeCreate,$(EModel_EObject),EModel_EObject_eMetaClassId)
 EModel_EObject_eResource := \
 	$(call eMetaAttributeCreate,$(EModel_EObject),EModel_EObject_eResource)
 EModel_EObject_eContainer := \
@@ -57,6 +59,8 @@ EModel_ELink := \
 	$(call eMetaClassCreate,$(EModel),EModel_ELink)
 EModel_ELink_eMetaReference := \
 	$(call eMetaReferenceCreate,$(EModel_ELink),EModel_ELink_eMetaReference)
+EModel_ELink_eMetaReferenceId := \
+	$(call eMetaAttributeCreate,$(EModel_ELink),EModel_ELink_eMetaReferenceId)
 EModel_ELink_eSource := \
 	$(call eMetaReferenceCreate,$(EModel_ELink),EModel_ELink_eSource)
 EModel_ELink_eTarget := \
@@ -145,6 +149,7 @@ define __eModel_init
 
 	$(call eMetaClassInit,$(EModel_EObject),EObject,,)
 	$(call eMetaReferenceInit,$(EModel_EObject_eMetaClass),eMetaClass,$(EModel_EMetaClass),,derived)
+	$(call eMetaAttributeInit,$(EModel_EObject_eMetaClassId),eMetaClassId,derived)
 	$(call eMetaAttributeInit,$(EModel_EObject_eResource),eResource,derived)
 	$(call eMetaReferenceInit,$(EModel_EObject_eContainer),eContainer,$(EModel_EObject),$(EModel_EObject_eContents),derived)
 	$(call eMetaReferenceInit,$(EModel_EObject_eRootContainer),eRootContainer,$(EModel_EObject),,derived)
@@ -167,6 +172,7 @@ define __eModel_init
 
 	$(call eMetaClassInit,$(EModel_ELink),ELink,$(EModel_ENamedObject),)
 	$(call eMetaReferenceInit,$(EModel_ELink_eMetaReference),eMetaReference,$(EModel_EMetaReference),,derived)
+	$(call eMetaAttributeInit,$(EModel_ELink_eMetaReferenceId),eMetaReferenceId,derived)
 	$(call eMetaReferenceInit,$(EModel_ELink_eSource),eSource,$(EModel_EObject),$(EModel_EObject_eLinks),)
 	$(call eMetaReferenceInit,$(EModel_ELink_eTarget),eTarget,$(EModel_ENamedObject),$(EModel_ENamedObject_eInverseResolvedLinks),changeable derived)
 
@@ -219,6 +225,7 @@ endef # __eModel_init
 define __eModel_bind
 	$(call eMetaClassBind,$(EModel_EObject),EObject)
 	$(call eMetaFeatureBind,$(EModel_EObject_eMetaClass),eMetaClass)
+	$(call eMetaFeatureBind,$(EModel_EObject_eMetaClassId),eMetaClassId)
 	$(call eMetaFeatureBind,$(EModel_EObject_eResource),eResource)
 	$(call eMetaFeatureBind,$(EModel_EObject_eContainer),eContainer)
 	$(call eMetaFeatureBind,$(EModel_EObject_eRootContainer),eRootContainer)
@@ -241,6 +248,7 @@ define __eModel_bind
 
 	$(call eMetaClassBind,$(EModel_ELink),ELink)
 	$(call eMetaFeatureBind,$(EModel_ELink_eMetaReference),eMetaReference)
+	$(call eMetaFeatureBind,$(EModel_ELink_eMetaReferenceId),eMetaReferenceId)
 	$(call eMetaFeatureBind,$(EModel_ELink_eSource),eSource)
 	$(call eMetaFeatureBind,$(EModel_ELink_eTarget),eTarget)
 

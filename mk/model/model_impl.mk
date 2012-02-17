@@ -7,14 +7,22 @@ $(error \
 	Do not include this file directly, include 'model.mk' instead!)
 endif # __model_model_mk
 
+include mk/model/eobject.mk
+
 # Implementation of 'EObject' model object.
 define class-EObjectImpl
-	$(super EObject)
 
 	# Reference 'eMetaClass' [0..1]: derived, read-only.
 	$(property eMetaClass : EMetaClass)
 	# PROTECTED REGION ID(EObject_eMetaClass) ENABLED START
-	$(getter eMetaClass,$(error Subclass must override eMetaClass property))
+	$(getter eMetaClass,
+		$($(get eMetaClassId)))
+	# PROTECTED REGION END
+
+	# Attribute 'eMetaClassId': derived, read-only.
+	$(property eMetaClassId)
+	# PROTECTED REGION ID(EObject_eMetaClassId) ENABLED START
+	$(getter eMetaClassId,$(error Subclass must override eMetaClassId property))
 	# PROTECTED REGION END
 
 	# Attribute 'eResource': derived, read-only.
@@ -149,203 +157,17 @@ define class-EObjectImpl
 	# 'property/[oppositeProperty].link'
 	$(field __eUnresolvedLinks... : ELink)
 
-	# Params:
-	#   1. Property name.
-	$(method __eGetContainer,
-		$(filter $1/%,$(get-field __eContainer))
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. New container.
-	#   3. Containment property in the container.
-	$(method __eSetContainer,
-		$(assert $(not $(multiword $2)))
-
-		$(for oldContainer <- $(get-field __eContainer),
-			$(set-field- oldContainer->$(notdir $(basename $(oldContainer))),
-				$(this))
-		)
-
-		$(set-field __eContainer,$1/$3$2)
-
-		$(for newContainer <- $2,
-			$(set-field+ newContainer->$3,$(this))
-		)
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. What to add.
-	$(method __eAdd,
-		$(set-field+ $1,$2)
-		$(silent-for e <- $2,
-			$(set-field+ e->__eOppositeRefs,$1$(this)))
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. What to add.
-	#   3. Opposite property.
-	$(method __eAddContainment,
-		$(silent-for e <- $2,
-			$(invoke e->__eSetContainer,$3,$(this),$1))
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. What to add.
-	#   3. Opposite property.
-	$(method __eAddBidirectional,
-		$(set-field+ $1,$2)
-		$(silent-for e <- $2,
-			$(set-field+ e->$3,$(this)))
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. What to remove.
-	$(method __eRemove,
-		$(foreach ,$2,$(warning $0: NIY))
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. What to remove.
-	#   3. Opposite property.
-	$(method __eRemoveBidirectional,
-		$(foreach ,$2,$(warning $0: NIY))
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. What to remove.
-	#   3. Opposite property.
-	$(method __eRemoveContainment,
-		$(foreach ,$2,$(warning $0: NIY))
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. New value.
-	$(method __eSet,
-		$(invoke __eRemove,$1,$(get-field $1))
-		$(invoke __eAdd,$1,$2)
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. New value.
-	#   3. Opposite property.
-	$(method __eSetBidirectional,
-		$(invoke __eRemoveBidirectional,$1,$(get-field $1),$3)
-		$(invoke __eAddBidirectional,$1,$2,$3)
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. New value.
-	#   3. Opposite property.
-	$(method __eSetContainment,
-		$(invoke __eRemoveContainment,$1,$(get-field $1),$3)
-		$(invoke __eAddContainment,$1,$2,$3)
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. What to add.
-	#   3. Empty.
-	#   4. Meta reference ID.
-	$(method __eAdd_link,
-		$(with $1,$2,
-			# Resolved links suffixed by destination.
-			$(for link <- $2,
-				$(set-field link->eMetaReferenceId,$4)
-				$(set-field link->eSource,$1/eLinks$(this))
-				$(for dst <- $(get link->eTarget),
-					$(link)$(dst))),
-
-			$(set-field+ $1,$3)
-			$(silent-for link_dst <- $3,
-				$(set-field+ link_dst->__eOppositeRefs,
-					$1$(basename $(link_dst))$(this)))
-
-			$(set-field+ __eUnresolvedLinks,
-				$(addprefix $1/,$(filter-out $(basename $3),$2)))
-		)
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. What to add.
-	#   3. Opposite property.
-	#   4. Meta reference ID.
-	$(method __eAddBidirectional_link,
-		$(with $1,$2,$3,
-			# Resolved links suffixed by destination.
-			$(for link <- $2,
-				$(set-field link->eMetaReferenceId,$4)
-				$(set-field link->eSource,$1/eLinks$(this))
-				$(for dst <- $(get link->eTarget),
-					$(link)$(dst))),
-
-			$(set-field+ $1,$4)
-			$(silent-for link_dst <- $4,
-				$(set-field+ link_dst->$3,$(basename $(link_dst))$(this)))
-
-			$(set-field+ __eUnresolvedLinks,
-				$(addprefix $1/$3,$(filter-out $(basename $4),$2)))
-		)
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. What to remove.
-	$(method __eRemove_link,
-		$(foreach ,$2,$(warning $0: NIY))
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. What to remove.
-	#   3. Opposite property.
-	$(method __eRemoveBidirectional_link,
-		$(foreach ,$2,$(warning $0: NIY))
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. New value.
-	#   3. Empty.
-	#   4. Meta reference ID.
-	$(method __eSet_link,
-		$(invoke __eRemove_link,$1,$(get-field $1))
-		$(invoke __eAdd_link,$1,$2,,$4)
-	)
-
-	# Params:
-	#   1. Property name.
-	#   2. New value.
-	#   3. Opposite property.
-	#   4. Meta reference ID.
-	$(method __eSetBidirectional_link,
-		$(invoke __eRemoveBidirectional_link,$1,$(get-field $1),$3)
-		$(invoke __eAddBidirectional_link,$1,$2,$3,$4)
-	)
-
 	# PROTECTED REGION END
 endef
 
 # Implementation of 'ENamedObject' model object.
 define class-ENamedObjectImpl
-	$(super ENamedObject)
-
-	$(super EObjectImpl)
-
-	$(getter eMetaClass,$(EModel_ENamedObject))
+	$(eobject EModel_ENamedObject,
+		ENamedObject,,)
 
 	# Attribute 'name'.
-	$(property-field name)
+	$(eobject-attribute EModel_ENamedObject_name,
+		name,changeable)
 
 	# Attribute 'qualifiedName': derived, read-only.
 	$(property qualifiedName)
@@ -378,12 +200,8 @@ endef
 
 # Implementation of 'ELink' model object.
 define class-ELinkImpl
-	$(super ELink)
-
-	$(super EObjectImpl)
-	$(super ENamedObjectImpl)
-
-	$(getter eMetaClass,$(EModel_ELink))
+	$(eobject EModel_ELink,
+		ELink,ENamedObject,)
 
 	# Reference 'eMetaReference' [0..1]: derived, read-only.
 	$(property eMetaReference : EMetaReference)
@@ -393,11 +211,17 @@ define class-ELinkImpl
 		$(value $(get-field eMetaReferenceId)))
 	# PROTECTED REGION END
 
+	# Attribute 'eMetaReferenceId': derived, read-only.
+	$(property eMetaReferenceId)
+	# PROTECTED REGION ID(ELink_eMetaReferenceId) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter eMetaReferenceId,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
+
 	# Reference 'eSource' [0..1]: bidirectional, read-only.
-	$(property eSource : EObject)
-	$(field eSource : EObject)
-	$(getter eSource,
-		$(get-field eSource))
+	$(eobject-reference EModel_ELink_eSource,
+		eSource,EObject,eLinks,)
 
 	# Reference 'eTarget' [0..1]: bidirectional, derived.
 	$(property eTarget : ENamedObject)
@@ -416,25 +240,12 @@ endef
 
 # Implementation of 'EMetaModel' model object.
 define class-EMetaModelImpl
-	$(super EMetaModel)
-
-	$(super EObjectImpl)
-	$(super ENamedObjectImpl)
-	$(super EFreezableImpl)
-
-	$(getter eMetaClass,$(EModel_EMetaModel))
+	$(eobject EModel_EMetaModel,
+		EMetaModel,ENamedObject EFreezable,)
 
 	# Reference 'eTypes' [0..*]: bidirectional, containment.
-	$(property eTypes... : EMetaType)
-	$(field eTypes... : EMetaType)
-	$(getter eTypes,
-		$(get-field eTypes))
-	$(setter eTypes,
-		$(invoke __eSetContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
-	$(setter+ eTypes,
-		$(invoke __eAddContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
-	$(setter- eTypes,
-		$(invoke __eRemoveContainment,eTypes,$(suffix $1),eMetaModel,EModel_EMetaModel_eTypes))
+	$(eobject-reference EModel_EMetaModel_eTypes,
+		eTypes,EMetaType,eMetaModel,changeable many containment)
 
 	# PROTECTED REGION ID(EMetaModel) ENABLED START
 	# PROTECTED REGION END
@@ -442,21 +253,16 @@ endef
 
 # Implementation of 'EMetaType' model object.
 define class-EMetaTypeImpl
-	$(super EMetaType)
-
-	$(super EObjectImpl)
-	$(super ENamedObjectImpl)
-	$(super EFreezableImpl)
-
-	$(getter eMetaClass,$(EModel_EMetaType))
+	$(eobject EModel_EMetaType,
+		EMetaType,ENamedObject EFreezable,abstract)
 
 	# Attribute 'instanceClass'.
-	$(property-field instanceClass)
+	$(eobject-attribute EModel_EMetaType_instanceClass,
+		instanceClass,changeable)
 
 	# Reference 'eMetaModel' [0..1]: bidirectional, container, read-only.
-	$(property eMetaModel : EMetaModel)
-	$(getter eMetaModel,
-		$(invoke __eGetContainer,eMetaModel))
+	$(eobject-reference EModel_EMetaType_eMetaModel,
+		eMetaModel,EMetaModel,eTypes,container)
 
 	# PROTECTED REGION ID(EMetaType) ENABLED START
 	# PROTECTED REGION END
@@ -464,30 +270,20 @@ endef
 
 # Implementation of 'EMetaClass' model object.
 define class-EMetaClassImpl
-	$(super EMetaClass)
-
-	$(super EObjectImpl)
-	$(super EMetaTypeImpl)
-
-	$(getter eMetaClass,$(EModel_EMetaClass))
+	$(eobject EModel_EMetaClass,
+		EMetaClass,EMetaType,)
 
 	# Attribute 'abstract'.
-	$(property-field isAbstract)
+	$(eobject-attribute EModel_EMetaClass_isAbstract,
+		isAbstract,changeable)
 
 	# Attribute 'interface'.
-	$(property-field isInterface)
+	$(eobject-attribute EModel_EMetaClass_isInterface,
+		isInterface,changeable)
 
 	# Reference 'eSuperTypes' [0..*].
-	$(property eSuperTypes... : EMetaClass)
-	$(field eSuperTypes... : EMetaClass)
-	$(getter eSuperTypes,
-		$(get-field eSuperTypes))
-	$(setter eSuperTypes,
-		$(invoke __eSet,eSuperTypes,$(suffix $1),,EModel_EMetaClass_eSuperTypes))
-	$(setter+ eSuperTypes,
-		$(invoke __eAdd,eSuperTypes,$(suffix $1),,EModel_EMetaClass_eSuperTypes))
-	$(setter- eSuperTypes,
-		$(invoke __eRemove,eSuperTypes,$(suffix $1),,EModel_EMetaClass_eSuperTypes))
+	$(eobject-reference EModel_EMetaClass_eSuperTypes,
+		eSuperTypes,EMetaClass,,changeable many)
 
 	# Reference 'eAllSuperTypes' [0..*]: derived, read-only.
 	$(property eAllSuperTypes... : EMetaClass)
@@ -500,16 +296,8 @@ define class-EMetaClassImpl
 	# PROTECTED REGION END
 
 	# Reference 'eFeatures' [0..*]: bidirectional, containment.
-	$(property eFeatures... : EMetaFeature)
-	$(field eFeatures... : EMetaFeature)
-	$(getter eFeatures,
-		$(get-field eFeatures))
-	$(setter eFeatures,
-		$(invoke __eSetContainment,eFeatures,$(suffix $1),eContainingClass,EModel_EMetaClass_eFeatures))
-	$(setter+ eFeatures,
-		$(invoke __eAddContainment,eFeatures,$(suffix $1),eContainingClass,EModel_EMetaClass_eFeatures))
-	$(setter- eFeatures,
-		$(invoke __eRemoveContainment,eFeatures,$(suffix $1),eContainingClass,EModel_EMetaClass_eFeatures))
+	$(eobject-reference EModel_EMetaClass_eFeatures,
+		eFeatures,EMetaFeature,eContainingClass,changeable many containment)
 
 	# Reference 'eAllFeatures' [0..*]: derived, read-only.
 	$(property eAllFeatures... : EMetaFeature)
@@ -590,12 +378,8 @@ endef
 
 # Implementation of 'EMetaPrimitive' model object.
 define class-EMetaPrimitiveImpl
-	$(super EMetaPrimitive)
-
-	$(super EObjectImpl)
-	$(super EMetaTypeImpl)
-
-	$(getter eMetaClass,$(EModel_EMetaPrimitive))
+	$(eobject EModel_EMetaPrimitive,
+		EMetaPrimitive,EMetaType,)
 
 	# PROTECTED REGION ID(EMetaPrimitive) ENABLED START
 	# PROTECTED REGION END
@@ -603,27 +387,24 @@ endef
 
 # Implementation of 'EMetaFeature' model object.
 define class-EMetaFeatureImpl
-	$(super EMetaFeature)
-
-	$(super EObjectImpl)
-	$(super ETypedImpl)
-	$(super EFreezableImpl)
-
-	$(getter eMetaClass,$(EModel_EMetaFeature))
+	$(eobject EModel_EMetaFeature,
+		EMetaFeature,ETyped EFreezable,abstract)
 
 	# Attribute 'changeable'.
-	$(property-field isChangeable)
+	$(eobject-attribute EModel_EMetaFeature_isChangeable,
+		isChangeable,changeable)
 
 	# Attribute 'derived'.
-	$(property-field isDerived)
+	$(eobject-attribute EModel_EMetaFeature_isDerived,
+		isDerived,changeable)
 
 	# Attribute 'instanceProperty'.
-	$(property-field instanceProperty)
+	$(eobject-attribute EModel_EMetaFeature_instanceProperty,
+		instanceProperty,changeable)
 
 	# Reference 'eContainingClass' [0..1]: bidirectional, container, read-only.
-	$(property eContainingClass : EMetaClass)
-	$(getter eContainingClass,
-		$(invoke __eGetContainer,eContainingClass))
+	$(eobject-reference EModel_EMetaFeature_eContainingClass,
+		eContainingClass,EMetaClass,eFeatures,container)
 
 	# PROTECTED REGION ID(EMetaFeature) ENABLED START
 	# PROTECTED REGION END
@@ -631,15 +412,12 @@ endef
 
 # Implementation of 'EMetaReference' model object.
 define class-EMetaReferenceImpl
-	$(super EMetaReference)
-
-	$(super EObjectImpl)
-	$(super EMetaFeatureImpl)
-
-	$(getter eMetaClass,$(EModel_EMetaReference))
+	$(eobject EModel_EMetaReference,
+		EMetaReference,EMetaFeature,)
 
 	# Attribute 'containment'.
-	$(property-field isContainment)
+	$(eobject-attribute EModel_EMetaReference_isContainment,
+		isContainment,changeable)
 
 	# Attribute 'container': derived, read-only.
 	$(property isContainer)
@@ -649,12 +427,8 @@ define class-EMetaReferenceImpl
 	# PROTECTED REGION END
 
 	# Reference 'eOpposite' [0..1].
-	$(property eOpposite : EMetaReference)
-	$(field eOpposite : EMetaReference)
-	$(getter eOpposite,
-		$(get-field eOpposite))
-	$(setter eOpposite,
-		$(invoke __eSet,eOpposite,$(suffix $1),,EModel_EMetaReference_eOpposite))
+	$(eobject-reference EModel_EMetaReference_eOpposite,
+		eOpposite,EMetaReference,,changeable)
 
 	# Reference 'eReferenceType' [1..1]: derived, read-only.
 	$(property eReferenceType : EMetaClass)
@@ -669,12 +443,8 @@ endef
 
 # Implementation of 'EMetaAttribute' model object.
 define class-EMetaAttributeImpl
-	$(super EMetaAttribute)
-
-	$(super EObjectImpl)
-	$(super EMetaFeatureImpl)
-
-	$(getter eMetaClass,$(EModel_EMetaAttribute))
+	$(eobject EModel_EMetaAttribute,
+		EMetaAttribute,EMetaFeature,)
 
 	# Reference 'eAttributeType' [1..1]: derived, read-only.
 	$(property eAttributeType : EMetaPrimitive)
@@ -689,23 +459,16 @@ endef
 
 # Implementation of 'ETyped' model object.
 define class-ETypedImpl
-	$(super ETyped)
-
-	$(super EObjectImpl)
-	$(super ENamedObjectImpl)
-
-	$(getter eMetaClass,$(EModel_ETyped))
+	$(eobject EModel_ETyped,
+		ETyped,ENamedObject,abstract)
 
 	# Attribute 'many'.
-	$(property-field isMany)
+	$(eobject-attribute EModel_ETyped_isMany,
+		isMany,changeable)
 
 	# Reference 'eType' [0..1].
-	$(property eType : EMetaType)
-	$(field eType : EMetaType)
-	$(getter eType,
-		$(get-field eType))
-	$(setter eType,
-		$(invoke __eSet,eType,$(suffix $1),,EModel_ETyped_eType))
+	$(eobject-reference EModel_ETyped_eType,
+		eType,EMetaType,,changeable)
 
 	# PROTECTED REGION ID(ETyped) ENABLED START
 	# PROTECTED REGION END
@@ -713,13 +476,10 @@ endef
 
 # Implementation of 'EFreezable' model object.
 define class-EFreezableImpl
-	$(super EFreezable)
+	$(eobject EModel_EFreezable,
+		EFreezable,,abstract)
 
-	$(super EObjectImpl)
-
-	$(getter eMetaClass,$(EModel_EFreezable))
-
-	# 'freeze : null' operation.
+	# 'freeze' operation.
 	# PROTECTED REGION ID(EFreezable_freeze) ENABLED START
 	$(method freeze,
 		$(silent-for f <- $(get $(get eMetaClass).eAllFeatures),

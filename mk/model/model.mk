@@ -10,6 +10,7 @@ __model_model_mk := $(lastword $(MAKEFILE_LIST))
 #
 # The following features and operations are defined:
 #   - reference 'eMetaClass'
+#   - attribute 'eMetaClassId'
 #   - attribute 'eResource'
 #   - reference 'eContainer'
 #   - reference 'eRootContainer'
@@ -31,6 +32,9 @@ define class-EObject
 
 	# 'eMetaClass' reference.
 	$(property eMetaClass : EMetaClass)# read-only.
+
+	# 'eMetaClassId' attribute.
+	$(property eMetaClassId)# read-only.
 
 	# 'eResource' attribute.
 	$(property eResource)# read-only.
@@ -123,6 +127,7 @@ endef
 #
 # The following features are defined:
 #   - reference 'eMetaReference'
+#   - attribute 'eMetaReferenceId'
 #   - reference 'eSource'
 #   - reference 'eTarget'
 #
@@ -134,11 +139,13 @@ endef
 #
 # To instantiate this class use 'EModelFactory.createELink'.
 define class-ELink
-	$(super EObject)
 	$(super ENamedObject)
 
 	# 'eMetaReference' reference.
 	$(property eMetaReference : EMetaReference)# read-only.
+
+	# 'eMetaReferenceId' attribute.
+	$(property eMetaReferenceId)# read-only.
 
 	# 'eSource' bidirectional reference.
 	# The opposite reference is 'EObject.eLinks'.
@@ -167,7 +174,6 @@ endef
 #
 # To instantiate this class use 'EModelFactory.createEMetaModel'.
 define class-EMetaModel
-	$(super EObject)
 	$(super ENamedObject)
 	$(super EFreezable)
 
@@ -195,7 +201,6 @@ endef
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaType
-	$(super EObject)
 	$(super ENamedObject)
 	$(super EFreezable)
 
@@ -241,7 +246,6 @@ endef
 #
 # To instantiate this class use 'EModelFactory.createEMetaClass'.
 define class-EMetaClass
-	$(super EObject)
 	$(super EMetaType)
 
 	# 'abstract' attribute.
@@ -308,7 +312,6 @@ endef
 #
 # To instantiate this class use 'EModelFactory.createEMetaPrimitive'.
 define class-EMetaPrimitive
-	$(super EObject)
 	$(super EMetaType)
 
 endef
@@ -337,7 +340,6 @@ endef
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaFeature
-	$(super EObject)
 	$(super ETyped)
 	$(super EFreezable)
 
@@ -386,7 +388,6 @@ endef
 #
 # To instantiate this class use 'EModelFactory.createEMetaReference'.
 define class-EMetaReference
-	$(super EObject)
 	$(super EMetaFeature)
 
 	# 'containment' attribute.
@@ -430,7 +431,6 @@ endef
 #
 # To instantiate this class use 'EModelFactory.createEMetaAttribute'.
 define class-EMetaAttribute
-	$(super EObject)
 	$(super EMetaFeature)
 
 	# 'eAttributeType' reference.
@@ -453,7 +453,6 @@ endef
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-ETyped
-	$(super EObject)
 	$(super ENamedObject)
 
 	# 'many' attribute.
@@ -474,7 +473,7 @@ endef
 define class-EFreezable
 	$(super EObject)
 
-	# 'freeze : null' operation.
+	# 'freeze' operation.
 	$(method freeze)
 
 endef

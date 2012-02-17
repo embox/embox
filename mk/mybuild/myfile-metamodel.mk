@@ -90,22 +90,22 @@ define __myFile_init
 
 	$(call eMetaClassInit,$(MyFile_Feature),Feature,$(EModel_ENamedObject) $(MyFile_Extendable),)
 	$(call eMetaReferenceInit,$(MyFile_Feature_interface),interface,$(MyFile_Interface),$(MyFile_Interface_features),changeable container)
-	$(call eMetaReferenceInit,$(MyFile_Feature_providedBy),providedBy,$(MyFile_Module),$(MyFile_Module_provides),changeable many)
-	$(call eMetaReferenceInit,$(MyFile_Feature_requiredBy),requiredBy,$(MyFile_Module),$(MyFile_Module_requires),changeable many)
+	$(call eMetaReferenceInit,$(MyFile_Feature_providedBy),providedBy,$(MyFile_Module),$(MyFile_Module_provides),changeable many linkable)
+	$(call eMetaReferenceInit,$(MyFile_Feature_requiredBy),requiredBy,$(MyFile_Module),$(MyFile_Module_requires),changeable many linkable)
 
 	$(call eMetaClassInit,$(MyFile_Module),Module,$(MyFile_Entity) $(MyFile_Extendable),)
 	$(call eMetaAttributeInit,$(MyFile_Module_isStatic),static,changeable)
 	$(call eMetaAttributeInit,$(MyFile_Module_isAbstract),abstract,changeable)
-	$(call eMetaReferenceInit,$(MyFile_Module_depends),depends,$(MyFile_Module),$(MyFile_Module_dependent),changeable many)
-	$(call eMetaReferenceInit,$(MyFile_Module_dependent),dependent,$(MyFile_Module),$(MyFile_Module_depends),changeable many)
-	$(call eMetaReferenceInit,$(MyFile_Module_provides),provides,$(MyFile_Feature),$(MyFile_Feature_providedBy),changeable many)
-	$(call eMetaReferenceInit,$(MyFile_Module_requires),requires,$(MyFile_Feature),$(MyFile_Feature_requiredBy),changeable many)
+	$(call eMetaReferenceInit,$(MyFile_Module_depends),depends,$(MyFile_Module),$(MyFile_Module_dependent),changeable many linkable)
+	$(call eMetaReferenceInit,$(MyFile_Module_dependent),dependent,$(MyFile_Module),$(MyFile_Module_depends),changeable many linkable)
+	$(call eMetaReferenceInit,$(MyFile_Module_provides),provides,$(MyFile_Feature),$(MyFile_Feature_providedBy),changeable many linkable)
+	$(call eMetaReferenceInit,$(MyFile_Module_requires),requires,$(MyFile_Feature),$(MyFile_Feature_requiredBy),changeable many linkable)
 
 	$(call eMetaClassInit,$(MyFile_Extendable),Extendable,$(EModel_ENamedObject),abstract)
-	$(call eMetaReferenceInit,$(MyFile_Extendable_subTypes),subTypes,$(MyFile_Extendable),$(MyFile_Extendable_superType),changeable many)
-	$(call eMetaReferenceInit,$(MyFile_Extendable_superType),superType,$(MyFile_Extendable),$(MyFile_Extendable_subTypes),changeable)
-	$(call eMetaReferenceInit,$(MyFile_Extendable_allSubTypes),allSubTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSuperTypes),derived many)
-	$(call eMetaReferenceInit,$(MyFile_Extendable_allSuperTypes),allSuperTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSubTypes),derived many)
+	$(call eMetaReferenceInit,$(MyFile_Extendable_subTypes),subTypes,$(MyFile_Extendable),$(MyFile_Extendable_superType),changeable many linkable)
+	$(call eMetaReferenceInit,$(MyFile_Extendable_superType),superType,$(MyFile_Extendable),$(MyFile_Extendable_subTypes),changeable linkable)
+	$(call eMetaReferenceInit,$(MyFile_Extendable_allSubTypes),allSubTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSuperTypes),derived many linkable)
+	$(call eMetaReferenceInit,$(MyFile_Extendable_allSuperTypes),allSuperTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSubTypes),derived many linkable)
 
 	$(call eMetaClassInit,$(MyFile_Filename),Filename,,)
 

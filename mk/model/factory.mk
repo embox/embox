@@ -14,8 +14,9 @@ define class-EModelFactory
 		$(new EObjectImpl))
 
 	# Creates a new 'ENamedObject' model object.
+	#   1. (optional) initial value of 'name' property.
 	$(method createENamedObject,
-		$(new ENamedObjectImpl))
+		$(for e <- $(new ENamedObjectImpl),$(if $(value 1),$(set e->name,$1))$e))
 
 	# Creates a new 'ELink' model object.
 	#   1. (optional) initial value of 'name' property.
