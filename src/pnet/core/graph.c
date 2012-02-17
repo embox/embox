@@ -26,6 +26,8 @@ struct pnet_graph *pnet_get_graph(int sock) {
 struct pnet_graph *pnet_graph_create(void) {
 	struct pnet_graph *gr = (struct pnet_graph *) objalloc(&graphs);
 	list_init(&gr->nodes);
+	gr->state = PNET_GRAPH_STOPPED;
+
 	return gr;
 }
 

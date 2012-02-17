@@ -8,6 +8,7 @@ abstract module init_api { }
 module core {
 	source "node.c", "proto.c", "connect.c", "repo.c", "graph.c"
 	depends prior_path
+	depends embox.pnet.core.pack.api
 }
 
 module init_null extends init_api {

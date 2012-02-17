@@ -2,13 +2,3 @@
 package embox.pnet.core.pack
 
 abstract module api { }
-
-module pack_skbuf extends api {
-	source "pack_skbuf/pack.c", "pack_skbuf/pack_skbuf.h"
-}
-
-module pack_standalone extends api {
-	source "pack_standalone/pack_alone.c", "pack_standalone/pack_alone.h"
-}
-
-
