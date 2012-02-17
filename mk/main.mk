@@ -35,6 +35,7 @@ PRINTF := printf
 SHELL  := bash
 MKDIR  := mkdir -p
 LN     := ln -s
+PS1    :=
 
 include mk/util.mk
 include mk/util/wildcard.mk
