@@ -29,7 +29,10 @@ static int car_bt_disconnect(void);
 static int car_bt_connect(void);
 static int car_bt_read(int len, void *data);
 
-#define MOTOR_DRY_RUN
+static uint8_t determ_ack[ROBOBOT_DETERM_ACK_SIZE] =
+	{0x03, 0x00, 0x02, 0x0d, 0x02};
+
+//#define MOTOR_DRY_RUN
 
 void turn_right(void) {
 #ifndef MOTOR_DRY_RUN
@@ -125,14 +128,14 @@ static int car_bt_read(int len, void *_buff) {
 		robobot_handle_car(buff + ROBOBOT_HEADER_SIZE);
 	} else if (robobot_stamp(buff)) {
 		/* send robobot_car id */
-		uint8_t ack[5] = {0x03, 0x00, 0x02, 0x0d, 0x02};
-		bluetooth_write(ack, 5);
+		bluetooth_write(determ_ack, ROBOBOT_DETERM_ACK_SIZE);
 	}
 	bluetooth_read(ROBOBOT_MSG_SIZE);
 	return 0;
 }
 
 static int car_bt_connect(void) {
+	bluetooth_write((uint8_t *) "test", 4);
 	bluetooth_read(ROBOBOT_MSG_SIZE);
 	pin_set_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
 	CALLBACK_REG(bt_state, car_bt_disconnect);

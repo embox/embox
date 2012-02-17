@@ -13,5 +13,8 @@
 #define ROBOBOT_MSG_SIZE	    4
 #define ROBOBOT_HEADER_SIZE	    2
 
+#define ROBOBOT_DETERM_ACK_SIZE     5
+
+
 #endif /* SERVICE_ROBOBOT_CAR_H_ */
 
