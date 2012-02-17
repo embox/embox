@@ -21,11 +21,11 @@ include mk/util/wildcard.mk
 # 'clean', 'docsgen' and 'config' are handled in-place.
 ifneq ($(filter-out %clean %config conf% %docsgen,$(MAKECMDGOALS)),)
 # Need to include it prior to walking the source tree
-include $(MK_DIR)/configure.mk
+include mk/configure.mk
 # Skip image.mk if configs has not been remade yet
 ifneq ($(wildcard $(AUTOCONF_DIR)/build.mk),)
-include $(MK_DIR)/image.mk
-include $(MK_DIR)/codegen-dot.mk
+include mk/image.mk
+include mk/codegen-dot.mk
 endif # $(wildcard $(AUTOCONF_DIR)/build.mk)
 endif # $(filter-out %clean %config %docsgen,$(MAKECMDGOALS))
 

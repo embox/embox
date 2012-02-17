@@ -70,12 +70,12 @@ endif
 
 $(build_mk) $(mods_mk) :
 	$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
-	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
+	-MMD -MT $@ -MF $@.d mk/confmacro.S \
 		| sed 's/$$N/\n/g' > $@
 
 $(config_h) $(config_lds_h) :
 	$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
-	-MMD -MT $@ -MF $@.d $(MK_DIR)/confmacro.S \
+	-MMD -MT $@ -MF $@.d mk/confmacro.S \
 		| sed -e 's/$$N/\n/g' -e 's/$$define/#define/g' > $@
 #ifeq ($(SVN_REV),)
 #	@echo "svn cmd not found"
@@ -83,7 +83,7 @@ $(config_h) $(config_lds_h) :
 #	@echo "#define CONFIG_SVN_REV $(SVN_REV)" >> $@
 #endif
 
-$(AUTOCONF_FILES) : $(MK_DIR)/configure.mk \
+$(AUTOCONF_FILES) : mk/configure.mk \
   | check_conf_dir mkdir # these goals shouldn't force target to be updated
 
 -include $(AUTOCONF_FILES:%=%.d)

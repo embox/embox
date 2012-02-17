@@ -16,7 +16,7 @@ BACKUP_DIR     := $(ROOT_DIR)/conf/backup~
 # XXX check for hardcoded 'build/base' anywhere. -- Eldar
 BUILD_DIR     := $(ROOT_DIR)/build/base
 
-EMBUILD_DIR    := $(MK_DIR)/embuild
+EMBUILD_DIR    := mk/embuild
 
 BIN_DIR        := $(BUILD_DIR)/bin
 OBJ_DIR        := $(BUILD_DIR)/obj

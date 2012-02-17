@@ -7,7 +7,7 @@
 ifndef _codegen_di_mk_
 _codegen_di_mk_ := 1
 
-#include $(MK_DIR)/embuild.mk
+#include mk/embuild.mk
 
 DEPSINJECT_SRC = $(CODEGEN_DIR)/depsinject.c
 DEPSINJECT_OBJ = $(OBJ_DIR)/depsinject.o
@@ -94,7 +94,7 @@ generate_header := \
 generate_includes := \n\#include <framework/mod/embuild.h>\n
 
 __printf_escape = "$(subst ",\",$1)"
-$(DEPSINJECT_SRC) : $(MK_DIR)/codegen-di.mk $(AUTOCONF_DIR)/mods.mk
+$(DEPSINJECT_SRC) : mk/codegen-di.mk $(AUTOCONF_DIR)/mods.mk
 	@$(PRINTF) $(call __printf_escape,$(generate_header)) > $@
 	@$(PRINTF) $(call __printf_escape,$(generate_includes)) >> $@
 	@$(PRINTF) $(call __printf_escape,$(generate_package_defs)) >> $@

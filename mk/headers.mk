@@ -1,6 +1,6 @@
 
 include mk/mybuild/resource.mk
-include core/define.mk
+include mk/core/define.mk
 include mk/mybuild/check.mk
 
 HEADERS_BUILD := \
@@ -27,5 +27,5 @@ $(foreach impl,$(call find_descedant,$1,$(MODS_ENABLE_OBJ)),$(\n)// impl: \
 
 endef
 
-$(HEADERS_BUILD): $(MK_DIR)/image.mk $(AUTOCONF_DIR)/mods.mk
+$(HEADERS_BUILD): mk/image.mk $(AUTOCONF_DIR)/mods.mk
 	@$(MKDIR) $(@D) && printf "%b" '$(__header_gen)' > $@
