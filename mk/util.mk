@@ -11,21 +11,6 @@ include core/common.mk
 include core/string.mk
 include gmsl/gmsl.mk # agrhhh!.. avoid using it. -- Eldar
 
-##
-# r-patsubst stands for recursive patsubst.
-# This function has the same syntax as patsubst, excepting that you should use
-# $(call ...) to invoke it.
-# Unlike regular patsubst this one performs pattern replacement until at least
-# one of the words in target expression matches the pattern.
-#
-# For example:
-#   $(call r-patsubst,%/,%,foo/ bar/// baz) produces "foo bar baz"
-#   whilst $(patsubst %/,%,foo/ bar/// baz) is just  "foo bar// baz"
-#
-# Usage: $(call r-patsubst,pattern,replacement,text)
-#
-r-patsubst = $(if $(filter $1,$3),$(call $0,$1,$2,$(3:$1=$2)),$3)
-
 # Make-style error and warning strings.
 
 # The most general way to get error/warning string.

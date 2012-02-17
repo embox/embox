@@ -344,6 +344,30 @@ filter-patsubst = \
 builtin_func-filter-patsubst = $(builtin_to_function_inline)
 
 ##
+# Function: r-patsubst
+#
+#      $(r-patsubst pattern,replacement,text), or
+# $(call r-patsubst,pattern,replacement,text)
+#
+# Recursive 'patsubst'. Unlike regular 'patsubst' this one performs pattern
+# replacement until at least one of the words in target expression matches the
+# pattern.
+#
+# Example:
+#          $(r-patsubst %/,%,foo/ bar/// baz) produces 'foo bar baz'
+#   whilst   $(patsubst %/,%,foo/ bar/// baz) is just  'foo bar// baz'
+#
+# Params:
+#   1. Pattern.
+#   2. Replacement.
+#   3. String.
+# Return:
+#   The result of 'patsubst' being applied while the value matches the pattern.
+r-patsubst = \
+	$(if $(filter $1,$3),$(call $0,$1,$2,$(patsubst $1,$2,$3)),$3)
+builtin_func-r-patsubst = $(builtin_to_function_call)
+
+##
 # Builtin function: silent-foreach
 #
 #      $(silent-foreach var,list,text)
