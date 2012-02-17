@@ -9,11 +9,15 @@
 
 MK_DIR := $(abspath mk)
 
-ifdef __mk_ready
+ifndef __mk_ready
 
-include mk/load.mk
-
-else
+# Check Make version (we need at least GNU Make 3.81). Fortunately,
+# '.FEATURES' built-in variable has been introduced exactly in GNU Make 3.81.
+ifneq ($(origin .FEATURES),default)
+$(error Unsupported Make version. \
+	Mybuild does not work properly with GNU Make $(MAKE_VERSION), \
+	please use GNU Make 3.81 or above.)
+endif
 
 MAKEFLAGS += --include-dir=$(MK_DIR)
 MAKEFLAGS += --no-builtin-rules
@@ -26,6 +30,10 @@ MAKEFLAGS += --warn-undefined-variables
 .NOTPARALLEL :
 % :
 	@$(MAKE) __mk_ready=1 $@
+
+else
+
+include mk/load.mk
 
 endif
 

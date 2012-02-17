@@ -1,29 +1,6 @@
 #
-# Embox main Makefile
+# Embox main Makefile.
 #
-
-# Check Make version (we need at least GNU Make 3.81)
-# .FEATURES built-in variable has been introduced exactly in GNU Make 3.81.
-ifneq ($(origin .FEATURES),default)
-define error_msg
-Unsupported Make version.
-Unfortunatelly EMBuild does not work properly with GNU Make $(MAKE_VERSION).
-This is a known issue. Please use GNU Make 3.81 or above
-endef
-endif
-
-# Root makefile runs this using single goal per invocation. Check it.
-ifneq ($(words $(MAKECMDGOALS)),1)
-define error_msg
-Illegal invocation (non-single make goal).
-Please use root makefile to run the build
-endef
-endif
-
-# Fail here if things are bad...
-ifdef error_msg
-$(error $(error_msg))
-endif
 
 include mk/dirs.mk
 
