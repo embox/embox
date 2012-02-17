@@ -9,6 +9,7 @@ module loopback {
 module ne2k_pci {
 	source "ne2k_pci.c"
 	depends embox.kernel.irq
+	depends embox.driver.pci
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
