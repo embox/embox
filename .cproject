@@ -202,9 +202,9 @@
 				<useDefaultCommand>false</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
 			</target>
-			<target name="config arm nxt" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+			<target name="config arm nxt_debug" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
-				<buildArguments>PROJECT=arm PROFILE=nxt</buildArguments>
+				<buildArguments>PROJECT=arm PROFILE=nxt_debug</buildArguments>
 				<buildTarget>config</buildTarget>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>false</useDefaultCommand>

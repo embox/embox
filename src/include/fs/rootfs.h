@@ -31,21 +31,6 @@ typedef FILE_INFO *(*FS_FILE_ITERATOR)(FILE_INFO *file_info);
 typedef FS_FILE_ITERATOR (*FS_GETFILELISTITERATOR_FUNC) (void);
 
 #include <fs/file.h>
-#if 0
-fsop_desc_t *rootfs_get_fsopdesc(char *fs_name);
-
-
-typedef struct _FILE_NAME_STRUCT {
-	/* fs name (flash ramdisc and so on) */
-	char fs_name[CONFIG_FS_MAX_DISK_NAME_LENGTH];
-	char *file_name;
-} FILE_NAME_STRUCT;
-
-FILE_NAME_STRUCT *parse_file_name(const char *file_name, FILE_NAME_STRUCT *file_name_struct);
-fsop_desc_t *rootfs_get_fsopdesc(char *fs_name);
-
-void *rootfs_fopen(const char *file_name, const char *mode);
-#endif
 
 extern node_t *root_fs_get_node(void);
 
