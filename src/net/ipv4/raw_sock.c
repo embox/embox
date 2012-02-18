@@ -17,6 +17,9 @@
 #include <embox/net/sock.h>
 #include <errno.h>
 
+static struct proto raw_prot;
+static const struct proto_ops inet_sockraw_ops;
+
 EMBOX_NET_SOCK(SOCK_RAW, IPPROTO_IP, raw_prot, inet_sockraw_ops, 0, NULL);
 
 static raw_sock_t *raw_hash[CONFIG_MAX_KERNEL_SOCKETS];
@@ -167,11 +170,8 @@ int ip4_datagram_connect(struct sock *sk,
 	return 0;
 }
 
-static const struct proto raw_prot = {
+static struct proto raw_prot = {
 	.name = "RAW",
-#if 0
-	.owner = THIS_MODULE,
-#endif
 	.close = raw_close,
 	.connect = ip4_datagram_connect,
 	.disconnect = udp_disconnect,
@@ -194,27 +194,9 @@ static const struct proto raw_prot = {
  */
 static const struct proto_ops inet_sockraw_ops = {
 	.family = PF_INET,
-#if 0
-	.owner = THIS_MODULE,
-#endif
 	.release = inet_release,
 	.bind = inet_bind,
 	.connect = inet_dgram_connect,
-#if 0
-	.socketpair = sock_no_socketpair,
-	.accept = sock_no_accept,
-	.getname = inet_getname,
-	.poll = datagram_poll,
-	.ioctl = inet_ioctl,
-	.listen = sock_no_listen,
-	.shutdown = inet_shutdown,
-	.setsockopt = sock_common_setsockopt,
-	.getsockopt = sock_common_getsockopt,
-#endif
 	.sendmsg = inet_sendmsg,
 	.recvmsg = sock_common_recvmsg,
-#if 0
-	.mmap = sock_no_mmap,
-	.sendpage = inet_sendpage,
-#endif
 };

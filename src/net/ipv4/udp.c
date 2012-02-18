@@ -159,32 +159,14 @@ int udp_disconnect(struct sock *sk, int flags) {
 static void udp_lib_close(struct sock *sk, long timeout) {
 	sk_common_release(sk);
 }
+
 struct proto udp_prot = {
 	.name              = "UDP",
-#if 0
-	.owner             = THIS_MODULE,
-#endif
 	.close             = udp_lib_close,
-#if 0
-	.connect           = ip4_datagram_connect,
-	.disconnect        = udp_disconnect,
-	.ioctl             = udp_ioctl,
-	.destroy           = udp_destroy_sock,
-	.setsockopt        = udp_setsockopt,
-	.getsockopt        = udp_getsockopt,
-#endif
 	.sendmsg           = udp_sendmsg,
 	.recvmsg           = udp_recvmsg,
-#if 0
-	.sendpage          = udp_sendpage,
-#endif
 	.backlog_rcv       = udp_queue_rcv_skb,
 	.hash              = udp_lib_hash,
 	.unhash            = udp_lib_unhash,
-#if 0
-	.get_port          = udp_v4_get_port,
-	.obj_size          = sizeof(struct udp_sock),
-	.h.udp_table       = &udp_table,
-#endif
 	.obj_size = sizeof(struct udp_sock),
 };

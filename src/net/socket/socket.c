@@ -204,19 +204,6 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 
 	res = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
 
-#if 0
-	/* FIXME: Error:
-	 * sizeof(struct sock) < sizeof(struct inet_sock), so reinterpret
-	 * sock->sk as pointer to struct inet_sock pointer is incorrect,
-	 * because after that we will use memory of the next field in
-	 * struct socket i.e. const struct proto_ops *ops; --Ilia Vaprol
-	 */
-	inet = inet_sk(sock->sk);
-	dest_addr = (struct sockaddr_in *)daddr;
-	dest_addr->sin_addr.s_addr = inet->daddr;
-	dest_addr->sin_port = inet->dport;
-#endif
-
 	return res;
 }
 

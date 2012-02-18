@@ -162,63 +162,26 @@ static int inet_accept(socket_t *sock, sockaddr_t *addr, int *addr_len) {
 struct net_proto_family inet_family_ops = {
 	.family = PF_INET,
 	.create = inet_create,
-#if 0
-	.owner = THIS_MODULE,
-#endif
 };
 
 const struct proto_ops inet_dgram_ops = {
 	.family            = PF_INET,
-#if 0
-	.owner             = THIS_MODULE,
-#endif
 	.release           = inet_release,
 	.bind              = inet_bind,
 	.connect           = inet_dgram_connect,
-#if 0
-	.socketpair        = sock_no_socketpair,
-	.accept            = sock_no_accept,
-	.getname           = inet_getname,
-	.poll              = udp_poll,
-	.ioctl             = inet_ioctl,
-	.listen            = sock_no_listen,
-	.shutdown          = inet_shutdown,
-	.setsockopt        = sock_common_setsockopt,
-	.getsockopt        = sock_common_getsockopt,
-#endif
 	.sendmsg           = inet_sendmsg,
 	.recvmsg           = sock_common_recvmsg,
-#if 0
-	.mmap              = sock_no_mmap,
-	.sendpage          = inet_sendpage,
-#endif
 };
 
 const struct proto_ops inet_stream_ops = {
 	.family            = PF_INET,
-#if 0
-	.owner             = THIS_MODULE,
-#endif
 	.release           = inet_release,
 	.bind              = inet_bind,
 	.connect           = inet_stream_connect,
 	.accept            = inet_accept,
 	.listen            = inet_listen,
-#if 0
-	.socketpair        = sock_no_socketpair,
-	.getname           = inet_getname,
-	.poll              = udp_poll,
-	.ioctl             = inet_ioctl,
-	.shutdown          = inet_shutdown,
-	.setsockopt        = sock_common_setsockopt,
-	.getsockopt        = sock_common_getsockopt,
-#endif
 	.sendmsg           = inet_sendmsg,
 	.recvmsg           = sock_common_recvmsg,
-#if 0
-	.mmap              = sock_no_mmap,
-	.sendpage          = inet_sendpage,
-#endif
 };
 
 
