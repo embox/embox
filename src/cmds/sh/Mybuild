@@ -4,7 +4,7 @@ abstract module shell_api { }
 
 module tish extends shell_api {
 	source "tish.c"
-	depends embox.compat.posix
+	depends embox.compat.posix.LibPosix
 }
 
 module shell_start {
