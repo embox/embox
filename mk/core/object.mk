@@ -816,11 +816,7 @@ define __field_set-
 
 	${eval \
 		override $(__this).$(__field_check) := \
-			$(if $(findstring %,$2),
-				$$(subst %%,%,$$(filter-out $$(subst %,%%,$2),
-					$$(subst %,%%,$$($(__this).$1)))),
-				$$(filter-out $$2,$$($(__this).$1))
-			)
+			$$(filter-out $$2,$$($(__this).$1))
 	}
 endef
 
