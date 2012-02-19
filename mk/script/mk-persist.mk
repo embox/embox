@@ -18,6 +18,7 @@ all :
 include $(filter-out $(MAKEFILE_LIST),$(mk_core_obj))
 
 __persist_objects := $(PERSIST_OBJECTS)
+override PERSIST_OBJECTS :=# Prevent expanding it once again.
 
 ifdef PERSIST_REALLOC
 __persist_realloc := $(PERSIST_REALLOC)
