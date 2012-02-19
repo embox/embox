@@ -14,29 +14,15 @@ define class-MyPackageImpl
 	$(eobject MyFile_Package,
 		MyPackage,ENamedObject,)
 
-	# Reference 'imports' [0..*]: containment.
-	$(eobject-reference MyFile_Package_imports,
-		imports,MyImport,,changeable many containment)
-
 	# Reference 'entities' [0..*]: bidirectional, containment.
 	$(eobject-reference MyFile_Package_entities,
 		entities,MyEntity,package,changeable many containment)
 
+	# Attribute 'imports'.
+	$(eobject-attribute MyFile_Package_imports,
+		imports,changeable many)
+
 	# PROTECTED REGION ID(Package) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
-	# PROTECTED REGION END
-endef
-
-# Implementation of 'Import' model object.
-define class-MyImportImpl
-	$(eobject MyFile_Import,
-		MyImport,,)
-
-	# Attribute 'importName'.
-	$(eobject-attribute MyFile_Import_importName,
-		importName,changeable)
-
-	# PROTECTED REGION ID(Import) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef

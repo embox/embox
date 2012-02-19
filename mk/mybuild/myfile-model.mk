@@ -9,8 +9,8 @@ __mybuild_myfile_model_mk := $(lastword $(MAKEFILE_LIST))
 # Model object 'Package'.
 #
 # The following features are defined:
-#   - reference 'imports'
 #   - reference 'entities'
+#   - attribute 'imports'
 #
 # The following features are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -22,27 +22,12 @@ __mybuild_myfile_model_mk := $(lastword $(MAKEFILE_LIST))
 define class-MyPackage
 	$(super ENamedObject)
 
-	# 'imports' containment reference.
-	$(property imports... : MyImport)
-
 	# 'entities' bidirectional containment reference.
 	# The opposite reference is 'Entity.package'.
 	$(property entities... : MyEntity)
 
-endef
-
-#
-# Model object 'Import'.
-#
-# The following features are defined:
-#   - attribute 'importName'
-#
-# To instantiate this class use 'MyFileFactory.createImport'.
-define class-MyImport
-	$(super EObject)
-
-	# 'importName' attribute.
-	$(property importName)
+	# 'imports' attribute.
+	$(property imports...)
 
 endef
 
@@ -240,12 +225,10 @@ define class-MyExtendable
 	# 'allSubTypes' bidirectional reference.
 	# The opposite reference is 'allSuperTypes'.
 	$(property allSubTypes... : MyExtendable)# read-only.
-	$(property allSubTypes_links... : ELink)# read-only.
 
 	# 'allSuperTypes' bidirectional reference.
 	# The opposite reference is 'allSubTypes'.
 	$(property allSuperTypes... : MyExtendable)# read-only.
-	$(property allSuperTypes_links... : ELink)# read-only.
 
 	# 'isSubTypeOf' operation.
 	#   1. another : MyExtendable

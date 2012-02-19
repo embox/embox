@@ -13,15 +13,10 @@ MyFile := \
 
 MyFile_Package := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Package)
-MyFile_Package_imports := \
-	$(call eMetaReferenceCreate,$(MyFile_Package),MyFile_Package_imports)
 MyFile_Package_entities := \
 	$(call eMetaReferenceCreate,$(MyFile_Package),MyFile_Package_entities)
-
-MyFile_Import := \
-	$(call eMetaClassCreate,$(MyFile),MyFile_Import)
-MyFile_Import_importName := \
-	$(call eMetaAttributeCreate,$(MyFile_Import),MyFile_Import_importName)
+MyFile_Package_imports := \
+	$(call eMetaAttributeCreate,$(MyFile_Package),MyFile_Package_imports)
 
 MyFile_Entity := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Entity)
@@ -76,11 +71,8 @@ define __myFile_init
 	$(call eMetaModelInit,$(MyFile),myFile,my)
 
 	$(call eMetaClassInit,$(MyFile_Package),Package,$(EModel_ENamedObject),)
-	$(call eMetaReferenceInit,$(MyFile_Package_imports),imports,$(MyFile_Import),,changeable many containment)
 	$(call eMetaReferenceInit,$(MyFile_Package_entities),entities,$(MyFile_Entity),$(MyFile_Entity_package),changeable many containment)
-
-	$(call eMetaClassInit,$(MyFile_Import),Import,,)
-	$(call eMetaAttributeInit,$(MyFile_Import_importName),importName,changeable)
+	$(call eMetaAttributeInit,$(MyFile_Package_imports),imports,changeable many)
 
 	$(call eMetaClassInit,$(MyFile_Entity),Entity,$(EModel_ENamedObject),abstract)
 	$(call eMetaReferenceInit,$(MyFile_Entity_package),package,$(MyFile_Package),$(MyFile_Package_entities),changeable container)
@@ -104,8 +96,8 @@ define __myFile_init
 	$(call eMetaClassInit,$(MyFile_Extendable),Extendable,$(EModel_ENamedObject),abstract)
 	$(call eMetaReferenceInit,$(MyFile_Extendable_subTypes),subTypes,$(MyFile_Extendable),$(MyFile_Extendable_superType),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Extendable_superType),superType,$(MyFile_Extendable),$(MyFile_Extendable_subTypes),changeable linkable)
-	$(call eMetaReferenceInit,$(MyFile_Extendable_allSubTypes),allSubTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSuperTypes),derived many linkable)
-	$(call eMetaReferenceInit,$(MyFile_Extendable_allSuperTypes),allSuperTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSubTypes),derived many linkable)
+	$(call eMetaReferenceInit,$(MyFile_Extendable_allSubTypes),allSubTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSuperTypes),derived many)
+	$(call eMetaReferenceInit,$(MyFile_Extendable_allSuperTypes),allSuperTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSubTypes),derived many)
 
 	$(call eMetaClassInit,$(MyFile_Filename),Filename,,)
 
@@ -114,11 +106,8 @@ endef # __myFile_init
 # Binds objects to instance classes and features to properties.
 define __myFile_bind
 	$(call eMetaClassBind,$(MyFile_Package),MyPackage)
-	$(call eMetaFeatureBind,$(MyFile_Package_imports),imports)
 	$(call eMetaFeatureBind,$(MyFile_Package_entities),entities)
-
-	$(call eMetaClassBind,$(MyFile_Import),MyImport)
-	$(call eMetaFeatureBind,$(MyFile_Import_importName),importName)
+	$(call eMetaFeatureBind,$(MyFile_Package_imports),imports)
 
 	$(call eMetaClassBind,$(MyFile_Entity),MyEntity)
 	$(call eMetaFeatureBind,$(MyFile_Entity_package),package)

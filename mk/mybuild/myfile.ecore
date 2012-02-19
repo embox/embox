@@ -4,13 +4,10 @@
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="myFile"
     nsURI="http://www.mybuild.org/myfile/MyFile" nsPrefix="my">
   <eClassifiers xsi:type="ecore:EClass" name="Package" eSuperTypes="emodel.ecore#//ENamedObject">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="imports" upperBound="-1"
-        eType="#//Import" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="entities" upperBound="-1"
         eType="#//Entity" containment="true" eOpposite="#//Entity/package"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Import">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="importName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="imports" upperBound="-1"
+        eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Entity" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
     <eStructuralFeatures xsi:type="ecore:EReference" name="package" eType="#//Package"

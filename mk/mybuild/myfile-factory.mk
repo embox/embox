@@ -14,10 +14,6 @@ define class-MyFileFactory
 	$(method createPackage,
 		$(for e <- $(new MyPackageImpl),$(if $(value 1),$(set e->name,$1))$e))
 
-	# Creates a new 'Import' model object.
-	$(method createImport,
-		$(new MyImportImpl))
-
 	# Creates a new 'Interface' model object.
 	#   1. (optional) initial value of 'name' property.
 	$(method createInterface,
