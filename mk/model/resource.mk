@@ -24,6 +24,23 @@ define class-Resource
 	# The root of the containment hierarchy of this resource.
 	# Empty if the resource is not yet loaded.
 	$(property-field rootObject : EObject)
+	$(setter rootObject,
+		$(assert $(not $(multiword $1)))
+
+		$(for oldRootObject <- $(get-field rootObject),
+			$(set-field oldRootObject->__eContainer,))
+
+		$(for newRootObject <- $1,
+			$(assert $(not $(invoke EModel_ELink->isInstance,$(newRootObject))),
+				ELink can't be set as 'rootObject' of resource)
+			$(assert $(not $(get-field newRootObject->__eContainer)),
+				Only the root of containment hierarchy \
+				which does not belong to another resource \
+				can be set as 'rootObject' of resource)
+			$(set-field newRootObject->__eContainer,$(this)))
+
+		$(set-field rootObject,$(suffix $1))
+	)
 
 	# List of named objects in the containment hierarchy.
 	# Empty for not yet loaded resource.

@@ -25,6 +25,26 @@ define class-MyFileResource
 
 endef
 
+define class-MyBuildGlobalState
+	$(super CompositeLinkageUnit)
+
+	$(getter children,
+		$(get resources))
+
+	$(property-field resources... : MyFileResource,$1)
+
+	# Param:
+	#   1. The resource.
+	$(method getResourceImportNormalizers,
+		$(for root <- $(get 1->rootObject),
+			$(with $(get root->name),
+				$(if $1,
+					$(assert $(singleword [$1]))
+					$1.)%)))
+
+	$(invoke link)
+endef
+
 $(def_all)
 
 endif # __mybuild_myfile_resource_mk

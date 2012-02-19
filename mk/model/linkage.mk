@@ -35,7 +35,7 @@ define class-LinkageUnit
 	$(method __link,
 		$(for link     <- $(get unresolvedLinks),
 			linkName   <- $(get link->name),
-			linkNamePrefix <- $(firstword $(subst ., ,$(linkName))),
+			linkPrefix <- $(firstword $(subst ., ,$(linkName))),
 			source     <- $(get link->eSource),
 			reference  <- $(get link->eMetaReference),
 			targetType <- $(get reference->eReferenceType),
@@ -44,13 +44,15 @@ define class-LinkageUnit
 					$(invoke lookupContainerChain,
 						$(source),searchLocalScopeOf),
 					$(invoke lookupContainerChain,
-						$(source),searchGlobalScopeUsingImportNormalizersOf),
-#					$(invoke searchGlobalScopeByFullName),
-					$(warning can't resolve $(linkName) \
-						[reference=$(get reference->name)])),
-				$(warning >>> '$(linkName)' -> '$1')
+						$(source),searchGlobalScopeUsingImportsOf),
+					$(invoke searchGlobalScopeUsingResourceImports),
+					$(invoke searchGlobalScopeByFullName),
+				),
+#				$(warning >>> '$(linkName)' -> '$1')
 				$(if $(singleword $1),
-					$(set link->eTarget,$1))
+					$(set link->eTarget,$1),
+					$(warning Couldn't resolve reference to \
+						$(get targetType->name) '$(linkName)'))
 			)
 		)
 	)
@@ -115,23 +117,68 @@ define class-LinkageUnit
 	#   1. Scope container.
 	# Context:
 	#   'linkName'. Name to find.
-	#   'linkNamePrefix'. The firs segment of the link name.
+	#   'linkPrefix'. The firs segment of the link name.
 	#   'targetType'. Meta class of the object being resolved.
 	# Return:
 	#   List of named elements of type 'targetType',
 	#   who's name relative to the given container equals to 'linkName'.
-	$(method searchGlobalScopeUsingImportNormalizersOf,
-		$(with $(strip $(invoke getImportNormalizers,$1)),$(if $1,$(with \
+	$(method searchGlobalScopeUsingImportsOf,
+		$(invoke searchGlobalScopeWithImportNormalizers,
+			$(invoke getLocalImportNormalizers,$1)))
+
+	# Param:
+	#   1. Scope container.
+	# Return:
+	#   Implementation have to return list of import normalization patterns
+	#   local to the given object. By default looks for an attribute named
+	#   'imports' and returns its value (if any).
+	$(method getLocalImportNormalizers,
+		$(for metaAttribute <- $(get $(get 1->eMetaClass).eAllAttributes),
+			$(if $(eq imports,$(get metaAttribute->name)),
+				$(get 1->$(get metaAttribute->instanceProperty)))
+		)
+	)
+
+	# Context:
+	#   'linkName'. Name to find.
+	#   'linkPrefix'. The firs segment of the link name.
+	#   'targetType'. Meta class of the object being resolved.
+	# Return:
+	#   List of named elements of type 'targetType',
+	#   who's normalized name equals to 'linkName'.
+	$(method searchGlobalScopeUsingResourceImports,
+		$(invoke searchGlobalScopeWithImportNormalizers,
+			$(invoke getResourceImportNormalizers,$(get link->eResource))))
+
+	# Param:
+	#   1. The resource.
+	# Return:
+	#   Implementation have to return list of implicit imports of the given
+	#   resource. By default returns nothing.
+	$(method getResourceImportNormalizers,
+		)
+
+	# Param:
+	#   1. List of import normalizers
+	# Context:
+	#   'linkName'. Name to find.
+	#   'linkPrefix'. The firs segment of the link name.
+	#   'targetType'. Meta class of the object being resolved.
+	# Return:
+	#   List of named elements of type 'targetType',
+	#   who's name relative to the given container equals to 'linkName'.
+	$(method searchGlobalScopeWithImportNormalizers,
+		$(if $(strip $1),$(with \
 			$(for matchingObject <-
 				$(filter \
 					# Get list of matching imports, replace the last segment
 					# with the full link name, and append a percent.
 					$(addsuffix .$(linkName)/%,$(basename $(or \
 						# Search for an exact match (no wildcards).
-						$(filter %.$(linkNamePrefix),$1),
+						$(filter %.$(linkPrefix),$1),
 						# Replace wildcards with our name.
 						$(filter $1,
-							$(addsuffix .$(linkNamePrefix),$(basename $1)))))),
+							$(addsuffix .$(linkPrefix),$(basename $1)))))),
 					# List of 'f.q.n/object' items.
 					$(get-field __exportedObjectsWithNamePrefixes)),
 
@@ -144,19 +191,23 @@ define class-LinkageUnit
 			$(or $(notdir $(singleword $1)),
 				$(if $(strip $1),
 					$(warning Multiple import matches: $1)))
-		)))
+		))
 	)
 
-	# Param:
-	#   1. Scope container.
+	# Context:
+	#   'linkName'. Name to find.
+	#   'targetType'. Meta class of the object being resolved.
 	# Return:
-	#   Implementation have to return list of import normalization patterns
-	#   local to the given object. By default looks for an attribute named
-	#   'imports' and returns its value (if any).
-	$(method getImportNormalizers,
-		$(for metaAttribute <- $(get $(get 1->eMetaClass).eAllAttributes),
-			$(if $(eq imports,$(get metaAttribute->name)),
-				$(get 1->$(get metaAttribute->instanceProperty)))
+	#   List of named elements of type 'targetType',
+	#   who's name equals to 'linkName', with no normalization applied.
+	$(method searchGlobalScopeByFullName,
+		$(notdir \
+			$(for matchingObject <-
+				$(filter $(linkName)/%,
+					$(get-field __exportedObjectsWithNamePrefixes)),
+
+				$(if $(invoke targetType->isInstance,$(matchingObject)),
+					$(matchingObject)))
 		)
 	)
 

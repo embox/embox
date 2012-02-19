@@ -29,14 +29,15 @@ define class-EObjectImpl
 	$(property eResource)
 	# PROTECTED REGION ID(EObject_eResource) ENABLED START
 	$(getter eResource,
-		$(warning $0: NIY))
+		$(get-field $(get eRootContainer).__eContainer))
 	# PROTECTED REGION END
 
 	# Reference 'eContainer' [0..1]: bidirectional, derived, read-only.
 	$(property eContainer : EObject)
 	# PROTECTED REGION ID(EObject_eContainer) ENABLED START
 	$(getter eContainer,
-		$(get-field __eContainer))
+		$(for c <- $(get-field __eContainer),
+			$(if $(basename $c),$(suffix $c))))
 	# PROTECTED REGION END
 
 	# Reference 'eRootContainer' [0..1]: derived, read-only.
@@ -67,7 +68,6 @@ define class-EObjectImpl
 	# Reference 'eLinks' [0..*]: bidirectional, derived, read-only.
 	$(property eLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eLinks) ENABLED START
-#	# TODO Uncomment and implement me.
 	$(getter eLinks,
 		$(subst ./,,$(dir \
 			$(for metaReference <- $(get $(get eMetaClass).eAllLinkables),
@@ -79,9 +79,10 @@ define class-EObjectImpl
 	# Reference 'eResolvedLinks' [0..*]: derived, read-only.
 	$(property eResolvedLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eResolvedLinks) ENABLED START
-#	# TODO Uncomment and implement me.
 	$(getter eResolvedLinks,
-		$(warning $0: NIY))
+		$(for l <- $(get eLinks),
+			$(if $(get l->eTarget),$l))
+	)
 	# PROTECTED REGION END
 
 	# Reference 'eUnresolvedLinks' [0..*]: derived, read-only.
@@ -116,16 +117,16 @@ define class-EObjectImpl
 	# PROTECTED REGION ID(EObject) ENABLED START
 
 	# 'property/oppositeProperty.object'
+	# '.object' for resource containment.
 	$(field __eContainer : EObject)
 
 	# 'property[.link].object'
 	$(field __eOppositeRefs... : EObject)
 
-	# 'property/[oppositeProperty].link'
-#	$(field __eUnresolvedLinks... : ELink)
-
 	$(method __serialize_extra_objects,
-		$(get eLinks))
+		$(get eLinks) \
+		$(suffix $(get-field __eOppositeRefs) \
+			$(basename $(get-field __eOppositeRefs))))
 
 	# PROTECTED REGION END
 endef
@@ -151,9 +152,13 @@ define class-ENamedObjectImpl
 	# Reference 'eInverseResolvedLinks' [0..*]: bidirectional, derived, read-only.
 	$(property eInverseResolvedLinks... : ELink)
 	# PROTECTED REGION ID(ENamedObject_eInverseResolvedLinks) ENABLED START
-#	# TODO Uncomment and implement me.
 	$(getter eInverseResolvedLinks,
-		$(warning $0: NIY))
+#		$(suffix $(basename \
+#			$(get-field __eOppositeRefs) \
+#			$(for metaReference <- $(get $(get eMetaClass).eAllCrossReferences),
+#				$(get-field $(get-field metaReference->instanceProperty)))
+#		))
+	)
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ENamedObject) ENABLED START
@@ -176,15 +181,14 @@ define class-ELinkImpl
 	$(property eMetaReferenceId)
 	# PROTECTED REGION ID(ELink_eMetaReferenceId) ENABLED START
 	$(getter eMetaReferenceId,
-		$(basename $(get-field eReferenceSource)))
+		$(basename $(get-field __eContainer)))
 	# PROTECTED REGION END
 
 	# Reference 'eSource' [0..1]: bidirectional, derived, read-only.
 	$(property eSource : EObject)
 	# PROTECTED REGION ID(ELink_eSource) ENABLED START
-	$(field eReferenceSource)
 	$(getter eSource,
-		$(suffix $(get-field eReferenceSource)))
+		$(suffix $(get-field __eContainer)))
 	# PROTECTED REGION END
 
 	# Reference 'eTarget' [0..1]: bidirectional, derived.
@@ -198,6 +202,13 @@ define class-ELinkImpl
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ELink) ENABLED START
+
+	$(getter eResource,
+		$(for s <- $(get eSource),
+			$(get s->eResource)))
+
+	$(getter eContainer,)
+
 	# PROTECTED REGION END
 endef
 

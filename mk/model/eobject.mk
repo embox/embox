@@ -150,27 +150,25 @@ endef
 
 # Params:
 #   1. Property name.
-define __eObjectGetContainer
-	$(filter $1/%,$(get-field __eContainer))
-endef
-
-# Params:
-#   1. Property name.
 #   2. New container.
 #   3. Containment property in the container.
 define __eObjectSetContainer
 	$(assert $(not $(multiword $2)))
 
 	$(for oldContainer <- $(get-field __eContainer),
-		$(set-field- oldContainer->$(notdir $(basename $(oldContainer))),
-			$(this))
+		$(if $(basename $(oldContainer)),
+			# Regular containment.
+			$(set-field- oldContainer->$(notdir $(basename $(oldContainer))),
+				$(this)),
+			# Resource containment.
+			$(set oldContainer->rootObject,)
+		)
 	)
 
 	$(set-field __eContainer,$1/$3$2)
 
 	$(for newContainer <- $2,
-		$(set-field+ newContainer->$3,$(this))
-	)
+		$(set-field+ newContainer->$3,$(this)))
 endef
 
 # Params:
@@ -259,7 +257,7 @@ endef
 define __eObjectAddUnidirectional_link
 	$(set-field+ $1,
 		$(for link <- $2,
-			$(set-field link->eReferenceSource,$4$(this))
+			$(set-field link->__eContainer,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
 			$(link)./$(for target <- $(get link->eTarget),
 						$(set-field+ target->__eOppositeRefs,$(link)/$1$(this))
@@ -275,7 +273,7 @@ endef
 define __eObjectAddBidirectional_link
 	$(set-field+ $1,
 		$(for link <- $2,
-			$(set-field link->eReferenceSource,$4$(this))
+			$(set-field link->__eContainer,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
 			$(link)./$(for target <- $(get link->eTarget),
 						$(set-field+ target->$3,$(link)$(this))
