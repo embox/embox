@@ -70,8 +70,17 @@ define builtin_func-eobject-reference
 				$$(suffix $$(filter $2/%,$$(get-field __eContainer)))),
 
 			# Otherwise define a new field.
-			$$(field $2$(if $(filter many,$5),...) : $3)
+			$(if $(filter containment,$5),
+				$$(field $2$(if $(filter many,$5),...) : $3),
+
+				# Cross references are stored in raw fields.
+				$$(field $2$(if $(filter many,$5),...))
+				# There is also a custom serializer for such fields.
+				$$(method __serialize_field-$2,
+					$$(call __eObjectSerializeCrossReference,$2,$1))
+			)
 			$$(getter $2,
+				# Getting suffix is mandatory here!
 				$$(suffix $$(get-field $2)))
 		)
 
@@ -88,7 +97,7 @@ define builtin_func-eobject-reference
 					fn_suffix <- $(fn_suffix)_link,
 
 					$$(getter $(property),
-						$$(call __eObjectGet$(fn_suffix),$2))
+						$$(subst ./,,$$(dir $$(get-field $2))))
 
 					$(__eobject_ref_setters)
 				)
@@ -122,6 +131,25 @@ __eobject_ref_setter_args = \
 
 # Params:
 #   1. Property name.
+#   2. Meta reference ID.
+define __eObjectSerializeCrossReference
+	$(assert $(not $(or $(get $2->isContainment),$(get $2->isContainer))),
+		$0: Can't handle non-cross references)
+	# '.link./.target'
+	# '.link./'
+	#        '.target'
+	#   '.link.target'
+	$(for r <- $(get-field $1),
+		$(for l <- $(subst ./,,$(dir $r)),# Link.
+			$($l.__serial_id__)./)
+		$(for t <- $(suffix $r),# Target.
+			$(for l <- $(basename $(notdir $r)),# Opposite link.
+				$($l.__serial_id__))
+			$($t.__serial_id__)))
+endef
+
+# Params:
+#   1. Property name.
 define __eObjectGetContainer
 	$(filter $1/%,$(get-field __eContainer))
 endef
@@ -148,15 +176,6 @@ endef
 # Params:
 #   1. Property name.
 #   2. What to add.
-define __eObjectAddUnidirectional
-	$(set-field+ $1,$2)
-	$(silent-for e <- $2,
-		$(set-field+ e->__eOppositeRefs,$1$(this)))
-endef
-
-# Params:
-#   1. Property name.
-#   2. What to add.
 #   3. Opposite property.
 define __eObjectAddContainment
 	$(silent-for this <- $2,
@@ -167,11 +186,28 @@ endef
 # Params:
 #   1. Property name.
 #   2. What to add.
+define __eObjectAddUnidirectional
+	$(set-field+ $1,$2)
+	$(silent-for e <- $2,
+		$(set-field+ e->__eOppositeRefs,$1$(this)))
+endef
+
+# Params:
+#   1. Property name.
+#   2. What to add.
 #   3. Opposite property.
 define __eObjectAddBidirectional
 	$(set-field+ $1,$2)
 	$(silent-for e <- $2,
 		$(set-field+ e->$3,$(this)))
+endef
+
+# Params:
+#   1. Property name.
+#   2. What to remove.
+#   3. Opposite property.
+define __eObjectRemoveContainment
+	$(foreach ,$2,$(warning $0: NIY))
 endef
 
 # Params:
@@ -191,10 +227,11 @@ endef
 
 # Params:
 #   1. Property name.
-#   2. What to remove.
+#   2. New value.
 #   3. Opposite property.
-define __eObjectRemoveContainment
-	$(foreach ,$2,$(warning $0: NIY))
+define __eObjectSetContainment
+	$(call __eObjectRemoveContainment,$1,$(get-field $1),$3)
+	$(call __eObjectAddContainment,$1,$2,$3)
 endef
 
 # Params:
@@ -216,34 +253,17 @@ endef
 
 # Params:
 #   1. Property name.
-#   2. New value.
-#   3. Opposite property.
-define __eObjectSetContainment
-	$(call __eObjectRemoveContainment,$1,$(get-field $1),$3)
-	$(call __eObjectAddContainment,$1,$2,$3)
-endef
-
-# Params:
-#   1. Property name.
 #   2. What to add.
 #   3. Empty.
 #   4. Meta reference ID.
 define __eObjectAddUnidirectional_link
-	$(with $1,$2,
-		# Resolved links suffixed by destination.
+	$(set-field+ $1,
 		$(for link <- $2,
-			$(set-field link->eMetaReferenceId,$4)
-			$(set-field link->eSource,$1/eLinks$(this))
-			$(for dst <- $(get link->eTarget),
-				$(link)$(dst))),
-
-		$(set-field+ $1,$3)
-		$(silent-for link_dst <- $3,
-			$(set-field+ link_dst->__eOppositeRefs,
-				$1$(basename $(link_dst))$(this)))
-
-		$(set-field+ __eUnresolvedLinks,
-			$(addprefix $1/,$(filter-out $(basename $3),$2)))
+			$(set-field link->eReferenceSource,$4$(this))
+			# 'link./target' for resolved links, 'link./' otherwise.
+			$(link)./$(for target <- $(get link->eTarget),
+						$(set-field+ target->__eOppositeRefs,$(link)/$1$(this))
+						$(target)))
 	)
 endef
 
@@ -253,20 +273,13 @@ endef
 #   3. Opposite property.
 #   4. Meta reference ID.
 define __eObjectAddBidirectional_link
-	$(with $1,$2,$3,
-		# Resolved links suffixed by destination.
+	$(set-field+ $1,
 		$(for link <- $2,
-			$(set-field link->eMetaReferenceId,$4)
-			$(set-field link->eSource,$1/eLinks$(this))
-			$(for dst <- $(get link->eTarget),
-				$(link)$(dst))),
-
-		$(set-field+ $1,$4)
-		$(silent-for link_dst <- $4,
-			$(set-field+ link_dst->$3,$(basename $(link_dst))$(this)))
-
-		$(set-field+ __eUnresolvedLinks,
-			$(addprefix $1/$3,$(filter-out $(basename $4),$2)))
+			$(set-field link->eReferenceSource,$4$(this))
+			# 'link./target' for resolved links, 'link./' otherwise.
+			$(link)./$(for target <- $(get link->eTarget),
+						$(set-field+ target->$3,$(link)$(this))
+						$(target)))
 	)
 endef
 
@@ -305,6 +318,35 @@ define __eObjectSetBidirectional_link
 	$(call __eObjectAddBidirectional_link,$1,$2,$3,$4)
 endef
 
+# Params:
+#   1. New value of 'eTarget' property of this link.
+define __eLinkSetTarget
+	$(assert $(not $(multiword $1)))
+	$(assert $(get eSource),
+		Can't set a target on the link with no source)
+
+	$(for oldTarget <- $(get-field eTarget),
+		$(warning $0: NIY))
+
+	$(for newTarget <- $1,
+		source <- $(get eSource),
+		metaReference <- $(get eMetaReference),
+		referenceProperty <- $(get metaReference->instanceProperty),
+
+		$(set-field eTarget,$(newTarget))
+
+		$(set-field source->$(referenceProperty),
+			$(patsubst $(this)./,$(this)./$(newTarget),
+				$(get-field source->$(referenceProperty))))
+
+		$(if $(for opposite <- $(get metaReference->eOpposite),
+				oppositeProperty <- $(get opposite->instanceProperty),
+				$(set-field+ newTarget->$(oppositeProperty),$(this)$(source))
+				$(opposite)),,# else
+			$(set-field+ newTarget->__eOppositeRefs,
+				$(this)/$(referenceProperty)$(source)))
+	)
+endef
 
 $(def_all)
 

@@ -196,7 +196,7 @@ isSubtypeOfNamed(EClass this) : isSubtypeOf("ENamedObject");
 isSubtypeOf(EClass this, String superTypeName) :
 	name == superTypeName || eAllSuperTypes.exists(e|e.name == superTypeName);
 isLinkableReference(EReference this) : eReferenceType.isSubtypeOfNamed() &&
-	resolveProxies && !containment && !container;
+	resolveProxies && !derived && !containment && !container;
 
 subtypes(EClassifier this) :
 	ePackage.eClassifiers.typeSelect(EClass)

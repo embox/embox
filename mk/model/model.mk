@@ -19,11 +19,6 @@ __model_model_mk := $(lastword $(MAKEFILE_LIST))
 #   - reference 'eLinks'
 #   - reference 'eResolvedLinks'
 #   - reference 'eUnresolvedLinks'
-#   - reference 'eRefs'
-#   - reference 'eInverseRefs'
-#   - reference 'eLinkedRefs'
-#   - reference 'eImmediateRefs'
-#   - reference 'eInverseImmediateRefs'
 #   - operation 'isAncestorOf'
 #   - operation 'getContainerOfType'
 #
@@ -63,26 +58,6 @@ define class-EObject
 	# 'eUnresolvedLinks' reference.
 	$(property eUnresolvedLinks... : ELink)# read-only.
 
-	# 'eRefs' bidirectional reference.
-	# The opposite reference is 'eInverseRefs'.
-	$(property eRefs... : EObject)# read-only.
-
-	# 'eInverseRefs' bidirectional reference.
-	# The opposite reference is 'eRefs'.
-	$(property eInverseRefs... : EObject)# read-only.
-
-	# 'eLinkedRefs' bidirectional reference.
-	# The opposite reference is 'ENamedObject.eInverseLinkedRefs'.
-	$(property eLinkedRefs... : ENamedObject)# read-only.
-
-	# 'eImmediateRefs' bidirectional reference.
-	# The opposite reference is 'eInverseImmediateRefs'.
-	$(property eImmediateRefs... : EObject)# read-only.
-
-	# 'eInverseImmediateRefs' bidirectional reference.
-	# The opposite reference is 'eImmediateRefs'.
-	$(property eInverseImmediateRefs... : EObject)# read-only.
-
 	# 'isAncestorOf' operation.
 	#   1. object : EObject
 	$(method isAncestorOf)
@@ -100,7 +75,6 @@ endef
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
 #   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createENamedObject'.
 define class-ENamedObject
@@ -115,10 +89,6 @@ define class-ENamedObject
 	# 'eInverseResolvedLinks' bidirectional reference.
 	# The opposite reference is 'ELink.eTarget'.
 	$(property eInverseResolvedLinks... : ELink)# read-only.
-
-	# 'eInverseLinkedRefs' bidirectional reference.
-	# The opposite reference is 'EObject.eLinkedRefs'.
-	$(property eInverseLinkedRefs... : EObject)# read-only.
 
 endef
 
@@ -135,7 +105,6 @@ endef
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
 #   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createELink'.
 define class-ELink
@@ -170,7 +139,6 @@ endef
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
 #   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createEMetaModel'.
 define class-EMetaModel
@@ -197,7 +165,6 @@ endef
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
 #   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaType
@@ -227,7 +194,9 @@ endef
 #   - reference 'eAllAttributes'
 #   - reference 'eReferences'
 #   - reference 'eAllReferences'
+#   - reference 'eAllCrossReferences'
 #   - reference 'eAllContainments'
+#   - reference 'eAllLinkables'
 #   - operation 'isSuperTypeOf'
 #   - operation 'isInstance'
 #
@@ -242,7 +211,6 @@ endef
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
 #   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createEMetaClass'.
 define class-EMetaClass
@@ -279,8 +247,14 @@ define class-EMetaClass
 	# 'eAllReferences' reference.
 	$(property eAllReferences... : EMetaReference)# read-only.
 
+	# 'eAllCrossReferences' reference.
+	$(property eAllCrossReferences... : EMetaReference)# read-only.
+
 	# 'eAllContainments' reference.
 	$(property eAllContainments... : EMetaReference)# read-only.
+
+	# 'eAllLinkables' reference.
+	$(property eAllLinkables... : EMetaReference)# read-only.
 
 	# 'isSuperTypeOf' operation.
 	#   1. someClass : EMetaClass
@@ -308,7 +282,6 @@ endef
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
 #   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createEMetaPrimitive'.
 define class-EMetaPrimitive
@@ -336,7 +309,6 @@ endef
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
 #   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaFeature
@@ -364,6 +336,8 @@ endef
 # The following features are defined:
 #   - attribute 'containment'
 #   - attribute 'container'
+#   - attribute 'linkable'
+#   - attribute 'crossReference'
 #   - reference 'eOpposite'
 #   - reference 'eReferenceType'
 #
@@ -384,7 +358,6 @@ endef
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
 #   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createEMetaReference'.
 define class-EMetaReference
@@ -395,6 +368,12 @@ define class-EMetaReference
 
 	# 'container' attribute.
 	$(property isContainer)# read-only.
+
+	# 'linkable' attribute.
+	$(property isLinkable)
+
+	# 'crossReference' attribute.
+	$(property isCrossReference)# read-only.
 
 	# 'eOpposite' reference.
 	$(property eOpposite : EMetaReference)
@@ -427,7 +406,6 @@ endef
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
 #   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
 #
 # To instantiate this class use 'EModelFactory.createEMetaAttribute'.
 define class-EMetaAttribute
@@ -449,7 +427,6 @@ endef
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
 #   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-ETyped

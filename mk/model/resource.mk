@@ -40,7 +40,7 @@ define class-Resource
 	$(getter unresolvedLinks,
 		$(for root <- $(get rootObject),
 			child  <- $(root) $(get root->eAllContents),
-			link  <- $(get-field child->__eUnresolvedLinks),
+			link  <- $(get child->eUnresolvedLinks),
 			$(if $(not $(get link->eTarget)),
 				$(link)))
 	)

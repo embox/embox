@@ -91,6 +91,7 @@ define eMetaReferenceInit
 	$(set 1->eType,$3)
 	$(set 1->eOpposite,$4)
 	$(set 1->isContainment,$(filter containment,$5))
+	$(set 1->isLinkable,$(filter linkable,$5))
 endef
 
 # Params:

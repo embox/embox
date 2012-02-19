@@ -33,16 +33,6 @@ EModel_EObject_eResolvedLinks := \
 	$(call eMetaReferenceCreate,$(EModel_EObject),EModel_EObject_eResolvedLinks)
 EModel_EObject_eUnresolvedLinks := \
 	$(call eMetaReferenceCreate,$(EModel_EObject),EModel_EObject_eUnresolvedLinks)
-EModel_EObject_eRefs := \
-	$(call eMetaReferenceCreate,$(EModel_EObject),EModel_EObject_eRefs)
-EModel_EObject_eInverseRefs := \
-	$(call eMetaReferenceCreate,$(EModel_EObject),EModel_EObject_eInverseRefs)
-EModel_EObject_eLinkedRefs := \
-	$(call eMetaReferenceCreate,$(EModel_EObject),EModel_EObject_eLinkedRefs)
-EModel_EObject_eImmediateRefs := \
-	$(call eMetaReferenceCreate,$(EModel_EObject),EModel_EObject_eImmediateRefs)
-EModel_EObject_eInverseImmediateRefs := \
-	$(call eMetaReferenceCreate,$(EModel_EObject),EModel_EObject_eInverseImmediateRefs)
 
 EModel_ENamedObject := \
 	$(call eMetaClassCreate,$(EModel),EModel_ENamedObject)
@@ -52,8 +42,6 @@ EModel_ENamedObject_qualifiedName := \
 	$(call eMetaAttributeCreate,$(EModel_ENamedObject),EModel_ENamedObject_qualifiedName)
 EModel_ENamedObject_eInverseResolvedLinks := \
 	$(call eMetaReferenceCreate,$(EModel_ENamedObject),EModel_ENamedObject_eInverseResolvedLinks)
-EModel_ENamedObject_eInverseLinkedRefs := \
-	$(call eMetaReferenceCreate,$(EModel_ENamedObject),EModel_ENamedObject_eInverseLinkedRefs)
 
 EModel_ELink := \
 	$(call eMetaClassCreate,$(EModel),EModel_ELink)
@@ -100,8 +88,12 @@ EModel_EMetaClass_eReferences := \
 	$(call eMetaReferenceCreate,$(EModel_EMetaClass),EModel_EMetaClass_eReferences)
 EModel_EMetaClass_eAllReferences := \
 	$(call eMetaReferenceCreate,$(EModel_EMetaClass),EModel_EMetaClass_eAllReferences)
+EModel_EMetaClass_eAllCrossReferences := \
+	$(call eMetaReferenceCreate,$(EModel_EMetaClass),EModel_EMetaClass_eAllCrossReferences)
 EModel_EMetaClass_eAllContainments := \
 	$(call eMetaReferenceCreate,$(EModel_EMetaClass),EModel_EMetaClass_eAllContainments)
+EModel_EMetaClass_eAllLinkables := \
+	$(call eMetaReferenceCreate,$(EModel_EMetaClass),EModel_EMetaClass_eAllLinkables)
 
 EModel_EMetaPrimitive := \
 	$(call eMetaClassCreate,$(EModel),EModel_EMetaPrimitive)
@@ -123,6 +115,10 @@ EModel_EMetaReference_isContainment := \
 	$(call eMetaAttributeCreate,$(EModel_EMetaReference),EModel_EMetaReference_isContainment)
 EModel_EMetaReference_isContainer := \
 	$(call eMetaAttributeCreate,$(EModel_EMetaReference),EModel_EMetaReference_isContainer)
+EModel_EMetaReference_isLinkable := \
+	$(call eMetaAttributeCreate,$(EModel_EMetaReference),EModel_EMetaReference_isLinkable)
+EModel_EMetaReference_isCrossReference := \
+	$(call eMetaAttributeCreate,$(EModel_EMetaReference),EModel_EMetaReference_isCrossReference)
 EModel_EMetaReference_eOpposite := \
 	$(call eMetaReferenceCreate,$(EModel_EMetaReference),EModel_EMetaReference_eOpposite)
 EModel_EMetaReference_eReferenceType := \
@@ -158,22 +154,16 @@ define __eModel_init
 	$(call eMetaReferenceInit,$(EModel_EObject_eLinks),eLinks,$(EModel_ELink),$(EModel_ELink_eSource),derived many)
 	$(call eMetaReferenceInit,$(EModel_EObject_eResolvedLinks),eResolvedLinks,$(EModel_ELink),,derived many)
 	$(call eMetaReferenceInit,$(EModel_EObject_eUnresolvedLinks),eUnresolvedLinks,$(EModel_ELink),,derived many)
-	$(call eMetaReferenceInit,$(EModel_EObject_eRefs),eRefs,$(EModel_EObject),$(EModel_EObject_eInverseRefs),derived many)
-	$(call eMetaReferenceInit,$(EModel_EObject_eInverseRefs),eInverseRefs,$(EModel_EObject),$(EModel_EObject_eRefs),derived many)
-	$(call eMetaReferenceInit,$(EModel_EObject_eLinkedRefs),eLinkedRefs,$(EModel_ENamedObject),$(EModel_ENamedObject_eInverseLinkedRefs),derived many)
-	$(call eMetaReferenceInit,$(EModel_EObject_eImmediateRefs),eImmediateRefs,$(EModel_EObject),$(EModel_EObject_eInverseImmediateRefs),derived many)
-	$(call eMetaReferenceInit,$(EModel_EObject_eInverseImmediateRefs),eInverseImmediateRefs,$(EModel_EObject),$(EModel_EObject_eImmediateRefs),derived many)
 
 	$(call eMetaClassInit,$(EModel_ENamedObject),ENamedObject,,)
 	$(call eMetaAttributeInit,$(EModel_ENamedObject_name),name,changeable)
 	$(call eMetaAttributeInit,$(EModel_ENamedObject_qualifiedName),qualifiedName,derived)
 	$(call eMetaReferenceInit,$(EModel_ENamedObject_eInverseResolvedLinks),eInverseResolvedLinks,$(EModel_ELink),$(EModel_ELink_eTarget),derived many)
-	$(call eMetaReferenceInit,$(EModel_ENamedObject_eInverseLinkedRefs),eInverseLinkedRefs,$(EModel_EObject),$(EModel_EObject_eLinkedRefs),derived many)
 
 	$(call eMetaClassInit,$(EModel_ELink),ELink,$(EModel_ENamedObject),)
 	$(call eMetaReferenceInit,$(EModel_ELink_eMetaReference),eMetaReference,$(EModel_EMetaReference),,derived)
 	$(call eMetaAttributeInit,$(EModel_ELink_eMetaReferenceId),eMetaReferenceId,derived)
-	$(call eMetaReferenceInit,$(EModel_ELink_eSource),eSource,$(EModel_EObject),$(EModel_EObject_eLinks),)
+	$(call eMetaReferenceInit,$(EModel_ELink_eSource),eSource,$(EModel_EObject),$(EModel_EObject_eLinks),derived)
 	$(call eMetaReferenceInit,$(EModel_ELink_eTarget),eTarget,$(EModel_ENamedObject),$(EModel_ENamedObject_eInverseResolvedLinks),changeable derived)
 
 	$(call eMetaClassInit,$(EModel_EMetaModel),EMetaModel,$(EModel_ENamedObject) $(EModel_EFreezable),)
@@ -194,7 +184,9 @@ define __eModel_init
 	$(call eMetaReferenceInit,$(EModel_EMetaClass_eAllAttributes),eAllAttributes,$(EModel_EMetaAttribute),,derived many)
 	$(call eMetaReferenceInit,$(EModel_EMetaClass_eReferences),eReferences,$(EModel_EMetaReference),,derived many)
 	$(call eMetaReferenceInit,$(EModel_EMetaClass_eAllReferences),eAllReferences,$(EModel_EMetaReference),,derived many)
+	$(call eMetaReferenceInit,$(EModel_EMetaClass_eAllCrossReferences),eAllCrossReferences,$(EModel_EMetaReference),,derived many)
 	$(call eMetaReferenceInit,$(EModel_EMetaClass_eAllContainments),eAllContainments,$(EModel_EMetaReference),,derived many)
+	$(call eMetaReferenceInit,$(EModel_EMetaClass_eAllLinkables),eAllLinkables,$(EModel_EMetaReference),,derived many)
 
 	$(call eMetaClassInit,$(EModel_EMetaPrimitive),EMetaPrimitive,$(EModel_EMetaType),)
 
@@ -207,6 +199,8 @@ define __eModel_init
 	$(call eMetaClassInit,$(EModel_EMetaReference),EMetaReference,$(EModel_EMetaFeature),)
 	$(call eMetaAttributeInit,$(EModel_EMetaReference_isContainment),containment,changeable)
 	$(call eMetaAttributeInit,$(EModel_EMetaReference_isContainer),container,derived)
+	$(call eMetaAttributeInit,$(EModel_EMetaReference_isLinkable),linkable,changeable)
+	$(call eMetaAttributeInit,$(EModel_EMetaReference_isCrossReference),crossReference,derived)
 	$(call eMetaReferenceInit,$(EModel_EMetaReference_eOpposite),eOpposite,$(EModel_EMetaReference),,changeable)
 	$(call eMetaReferenceInit,$(EModel_EMetaReference_eReferenceType),eReferenceType,$(EModel_EMetaClass),,derived)
 
@@ -234,17 +228,11 @@ define __eModel_bind
 	$(call eMetaFeatureBind,$(EModel_EObject_eLinks),eLinks)
 	$(call eMetaFeatureBind,$(EModel_EObject_eResolvedLinks),eResolvedLinks)
 	$(call eMetaFeatureBind,$(EModel_EObject_eUnresolvedLinks),eUnresolvedLinks)
-	$(call eMetaFeatureBind,$(EModel_EObject_eRefs),eRefs)
-	$(call eMetaFeatureBind,$(EModel_EObject_eInverseRefs),eInverseRefs)
-	$(call eMetaFeatureBind,$(EModel_EObject_eLinkedRefs),eLinkedRefs)
-	$(call eMetaFeatureBind,$(EModel_EObject_eImmediateRefs),eImmediateRefs)
-	$(call eMetaFeatureBind,$(EModel_EObject_eInverseImmediateRefs),eInverseImmediateRefs)
 
 	$(call eMetaClassBind,$(EModel_ENamedObject),ENamedObject)
 	$(call eMetaFeatureBind,$(EModel_ENamedObject_name),name)
 	$(call eMetaFeatureBind,$(EModel_ENamedObject_qualifiedName),qualifiedName)
 	$(call eMetaFeatureBind,$(EModel_ENamedObject_eInverseResolvedLinks),eInverseResolvedLinks)
-	$(call eMetaFeatureBind,$(EModel_ENamedObject_eInverseLinkedRefs),eInverseLinkedRefs)
 
 	$(call eMetaClassBind,$(EModel_ELink),ELink)
 	$(call eMetaFeatureBind,$(EModel_ELink_eMetaReference),eMetaReference)
@@ -270,7 +258,9 @@ define __eModel_bind
 	$(call eMetaFeatureBind,$(EModel_EMetaClass_eAllAttributes),eAllAttributes)
 	$(call eMetaFeatureBind,$(EModel_EMetaClass_eReferences),eReferences)
 	$(call eMetaFeatureBind,$(EModel_EMetaClass_eAllReferences),eAllReferences)
+	$(call eMetaFeatureBind,$(EModel_EMetaClass_eAllCrossReferences),eAllCrossReferences)
 	$(call eMetaFeatureBind,$(EModel_EMetaClass_eAllContainments),eAllContainments)
+	$(call eMetaFeatureBind,$(EModel_EMetaClass_eAllLinkables),eAllLinkables)
 
 	$(call eMetaClassBind,$(EModel_EMetaPrimitive),EMetaPrimitive)
 
@@ -283,6 +273,8 @@ define __eModel_bind
 	$(call eMetaClassBind,$(EModel_EMetaReference),EMetaReference)
 	$(call eMetaFeatureBind,$(EModel_EMetaReference_isContainment),isContainment)
 	$(call eMetaFeatureBind,$(EModel_EMetaReference_isContainer),isContainer)
+	$(call eMetaFeatureBind,$(EModel_EMetaReference_isLinkable),isLinkable)
+	$(call eMetaFeatureBind,$(EModel_EMetaReference_isCrossReference),isCrossReference)
 	$(call eMetaFeatureBind,$(EModel_EMetaReference_eOpposite),eOpposite)
 	$(call eMetaFeatureBind,$(EModel_EMetaReference_eReferenceType),eReferenceType)
 

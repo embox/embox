@@ -36,21 +36,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="eUnresolvedLinks" upperBound="-1"
         eType="#//ELink" changeable="false" volatile="true" transient="true" derived="true"
         resolveProxies="false"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eRefs" upperBound="-1"
-        eType="#//EObject" changeable="false" volatile="true" transient="true" derived="true"
-        resolveProxies="false" eOpposite="#//EObject/eInverseRefs"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eInverseRefs" upperBound="-1"
-        eType="#//EObject" changeable="false" volatile="true" transient="true" derived="true"
-        resolveProxies="false" eOpposite="#//EObject/eRefs"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eLinkedRefs" upperBound="-1"
-        eType="#//ENamedObject" changeable="false" volatile="true" transient="true"
-        derived="true" resolveProxies="false" eOpposite="#//ENamedObject/eInverseLinkedRefs"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eImmediateRefs" upperBound="-1"
-        eType="#//EObject" changeable="false" volatile="true" transient="true" derived="true"
-        resolveProxies="false" eOpposite="#//EObject/eInverseImmediateRefs"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eInverseImmediateRefs"
-        upperBound="-1" eType="#//EObject" changeable="false" volatile="true" transient="true"
-        derived="true" resolveProxies="false" eOpposite="#//EObject/eImmediateRefs"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ENamedObject">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="#//EString"/>
@@ -59,9 +44,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="eInverseResolvedLinks"
         upperBound="-1" eType="#//ELink" changeable="false" volatile="true" transient="true"
         derived="true" resolveProxies="false" eOpposite="#//ELink/eTarget"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="eInverseLinkedRefs" upperBound="-1"
-        eType="#//EObject" changeable="false" volatile="true" transient="true" derived="true"
-        resolveProxies="false" eOpposite="#//EObject/eLinkedRefs"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ELink" eSuperTypes="#//ENamedObject">
     <eStructuralFeatures xsi:type="ecore:EReference" name="eMetaReference" eType="#//EMetaReference"
@@ -69,7 +51,8 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="eMetaReferenceId" eType="#//EString"
         changeable="false" volatile="true" transient="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eSource" eType="#//EObject"
-        changeable="false" resolveProxies="false" eOpposite="#//EObject/eLinks"/>
+        changeable="false" volatile="true" transient="true" derived="true" resolveProxies="false"
+        eOpposite="#//EObject/eLinks"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eTarget" eType="#//ENamedObject"
         volatile="true" transient="true" derived="true" resolveProxies="false" eOpposite="#//ENamedObject/eInverseResolvedLinks"/>
   </eClassifiers>
@@ -113,7 +96,13 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="eAllReferences" upperBound="-1"
         eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
         derived="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllCrossReferences" upperBound="-1"
+        eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
+        derived="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eAllContainments" upperBound="-1"
+        eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
+        derived="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="eAllLinkables" upperBound="-1"
         eType="#//EMetaReference" changeable="false" volatile="true" transient="true"
         derived="true" resolveProxies="false"/>
   </eClassifiers>
@@ -129,6 +118,9 @@
   <eClassifiers xsi:type="ecore:EClass" name="EMetaReference" eSuperTypes="#//EMetaFeature">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="containment" eType="#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="container" eType="#//EBoolean"
+        changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="linkable" eType="#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="crossReference" eType="#//EBoolean"
         changeable="false" volatile="true" transient="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="eOpposite" eType="#//EMetaReference"
         resolveProxies="false"/>

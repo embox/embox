@@ -69,7 +69,11 @@ define class-EObjectImpl
 	# PROTECTED REGION ID(EObject_eLinks) ENABLED START
 #	# TODO Uncomment and implement me.
 	$(getter eLinks,
-		$(warning $0: NIY))
+		$(subst ./,,$(dir \
+			$(for metaReference <- $(get $(get eMetaClass).eAllLinkables),
+				$(get-field $(get-field metaReference->instanceProperty)))
+		))
+	)
 	# PROTECTED REGION END
 
 	# Reference 'eResolvedLinks' [0..*]: derived, read-only.
@@ -83,49 +87,12 @@ define class-EObjectImpl
 	# Reference 'eUnresolvedLinks' [0..*]: derived, read-only.
 	$(property eUnresolvedLinks... : ELink)
 	# PROTECTED REGION ID(EObject_eUnresolvedLinks) ENABLED START
-#	# TODO Uncomment and implement me.
 	$(getter eUnresolvedLinks,
-		$(warning $0: NIY))
-	# PROTECTED REGION END
-
-	# Reference 'eRefs' [0..*]: bidirectional, derived, read-only.
-	$(property eRefs... : EObject)
-	# PROTECTED REGION ID(EObject_eRefs) ENABLED START
-#	# TODO Uncomment and implement me.
-	$(getter eRefs,
-		$(warning $0: NIY))
-	# PROTECTED REGION END
-
-	# Reference 'eInverseRefs' [0..*]: bidirectional, derived, read-only.
-	$(property eInverseRefs... : EObject)
-	# PROTECTED REGION ID(EObject_eInverseRefs) ENABLED START
-#	# TODO Uncomment and implement me.
-	$(getter eInverseRefs,
-		$(warning $0: NIY))
-	# PROTECTED REGION END
-
-	# Reference 'eLinkedRefs' [0..*]: bidirectional, derived, read-only.
-	$(property eLinkedRefs... : ENamedObject)
-	# PROTECTED REGION ID(EObject_eLinkedRefs) ENABLED START
-#	# TODO Uncomment and implement me.
-	$(getter eLinkedRefs,
-		$(warning $0: NIY))
-	# PROTECTED REGION END
-
-	# Reference 'eImmediateRefs' [0..*]: bidirectional, derived, read-only.
-	$(property eImmediateRefs... : EObject)
-	# PROTECTED REGION ID(EObject_eImmediateRefs) ENABLED START
-#	# TODO Uncomment and implement me.
-	$(getter eImmediateRefs,
-		$(warning $0: NIY))
-	# PROTECTED REGION END
-
-	# Reference 'eInverseImmediateRefs' [0..*]: bidirectional, derived, read-only.
-	$(property eInverseImmediateRefs... : EObject)
-	# PROTECTED REGION ID(EObject_eInverseImmediateRefs) ENABLED START
-#	# TODO Uncomment and implement me.
-	$(getter eInverseImmediateRefs,
-		$(warning $0: NIY))
+		$(subst ./,,$(filter %./,
+			$(for metaReference <- $(get $(get eMetaClass).eAllLinkables),
+				$(get-field $(get-field metaReference->instanceProperty)))
+		))
+	)
 	# PROTECTED REGION END
 
 	# 'isAncestorOf' operation.
@@ -155,7 +122,10 @@ define class-EObjectImpl
 	$(field __eOppositeRefs... : EObject)
 
 	# 'property/[oppositeProperty].link'
-	$(field __eUnresolvedLinks... : ELink)
+#	$(field __eUnresolvedLinks... : ELink)
+
+	$(method __serialize_extra_objects,
+		$(get eLinks))
 
 	# PROTECTED REGION END
 endef
@@ -186,14 +156,6 @@ define class-ENamedObjectImpl
 		$(warning $0: NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eInverseLinkedRefs' [0..*]: bidirectional, derived, read-only.
-	$(property eInverseLinkedRefs... : EObject)
-	# PROTECTED REGION ID(ENamedObject_eInverseLinkedRefs) ENABLED START
-#	# TODO Uncomment and implement me.
-	$(getter eInverseLinkedRefs,
-		$(warning $0: NIY))
-	# PROTECTED REGION END
-
 	# PROTECTED REGION ID(ENamedObject) ENABLED START
 	# PROTECTED REGION END
 endef
@@ -213,14 +175,17 @@ define class-ELinkImpl
 	# Attribute 'eMetaReferenceId': derived, read-only.
 	$(property eMetaReferenceId)
 	# PROTECTED REGION ID(ELink_eMetaReferenceId) ENABLED START
-	$(field eMetaReferenceId)
 	$(getter eMetaReferenceId,
-		$(get-field eMetaReferenceId))
+		$(basename $(get-field eReferenceSource)))
 	# PROTECTED REGION END
 
-	# Reference 'eSource' [0..1]: bidirectional, read-only.
-	$(eobject-reference EModel_ELink_eSource,
-		eSource,EObject,eLinks,)
+	# Reference 'eSource' [0..1]: bidirectional, derived, read-only.
+	$(property eSource : EObject)
+	# PROTECTED REGION ID(ELink_eSource) ENABLED START
+	$(field eReferenceSource)
+	$(getter eSource,
+		$(suffix $(get-field eReferenceSource)))
+	# PROTECTED REGION END
 
 	# Reference 'eTarget' [0..1]: bidirectional, derived.
 	$(property eTarget : ENamedObject)
@@ -228,9 +193,8 @@ define class-ELinkImpl
 	$(field eTarget : EObject)
 	$(getter eTarget,
 		$(get-field eTarget))
-#	# TODO Uncomment and implement me.
 	$(setter eTarget,
-		$(error $0($1): NIY))
+		$(call __eLinkSetTarget,$(suffix $1)))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ELink) ENABLED START
@@ -288,7 +252,8 @@ define class-EMetaClassImpl
 	$(property eAllSuperTypes... : EMetaClass)
 	# PROTECTED REGION ID(EMetaClass_eAllSuperTypes) ENABLED START
 	$(getter eAllSuperTypes,
-		# TODO inefficient.
+		# Inefficient, but nobody actually cares because of freezing
+		# the metamodel before using it.
 		$(sort \
 			$(foreach superType,$(get eSuperTypes),$(superType) \
 				$(get superType->eAllSuperTypes))))
@@ -339,12 +304,28 @@ define class-EMetaClassImpl
 			$(EModel_EMetaReference)))
 	# PROTECTED REGION END
 
+	# Reference 'eAllCrossReferences' [0..*]: derived, read-only.
+	$(property eAllCrossReferences... : EMetaReference)
+	# PROTECTED REGION ID(EMetaClass_eAllCrossReferences) ENABLED START
+	$(getter eAllCrossReferences,
+		$(foreach reference,$(get eAllReferences),
+			$(if $(get reference->isCrossReference),$(reference))))
+	# PROTECTED REGION END
+
 	# Reference 'eAllContainments' [0..*]: derived, read-only.
 	$(property eAllContainments... : EMetaReference)
 	# PROTECTED REGION ID(EMetaClass_eAllContainments) ENABLED START
 	$(getter eAllContainments,
 		$(foreach reference,$(get eAllReferences),
 			$(if $(get reference->isContainment),$(reference))))
+	# PROTECTED REGION END
+
+	# Reference 'eAllLinkables' [0..*]: derived, read-only.
+	$(property eAllLinkables... : EMetaReference)
+	# PROTECTED REGION ID(EMetaClass_eAllLinkables) ENABLED START
+	$(getter eAllLinkables,
+		$(foreach reference,$(get eAllReferences),
+			$(if $(get reference->isLinkable),$(reference))))
 	# PROTECTED REGION END
 
 	# 'isSuperTypeOf' operation.
@@ -422,7 +403,21 @@ define class-EMetaReferenceImpl
 	$(property isContainer)
 	# PROTECTED REGION ID(EMetaReference_isContainer) ENABLED START
 	$(getter isContainer,
-		$(foreach opposite,$(get eOpposite),$(get opposite->isContainment)))
+		$(for opposite <- $(get eOpposite),
+			$(get opposite->isContainment)))
+	# PROTECTED REGION END
+
+	# Attribute 'linkable'.
+	$(eobject-attribute EModel_EMetaReference_isLinkable,
+		isLinkable,changeable)
+
+	# Attribute 'crossReference': derived, read-only.
+	$(property isCrossReference)
+	# PROTECTED REGION ID(EMetaReference_isCrossReference) ENABLED START
+	$(getter isCrossReference,
+		$(not $(or $(get isContainment),
+			$(for opposite <- $(get eOpposite),
+				$(get opposite->isContainment)))))
 	# PROTECTED REGION END
 
 	# Reference 'eOpposite' [0..1].

@@ -39,13 +39,18 @@ define class-LinkageUnit
 			source     <- $(get link->eSource),
 			reference  <- $(get link->eMetaReference),
 			targetType <- $(get reference->eReferenceType),
-			$(or \
-				$(invoke lookupContainerChain,
-					$(source),searchLocalScopeOf),
-				$(invoke lookupContainerChain,
-					$(source),searchGlobalScopeUsingImportNormalizersOf),
-#				$(invoke searchGlobalScopeByFullName),
-				$(warning can't resolve $(linkName) [reference=$(get reference->name)])
+			$(with \
+				$(or \
+					$(invoke lookupContainerChain,
+						$(source),searchLocalScopeOf),
+					$(invoke lookupContainerChain,
+						$(source),searchGlobalScopeUsingImportNormalizersOf),
+#					$(invoke searchGlobalScopeByFullName),
+					$(warning can't resolve $(linkName) \
+						[reference=$(get reference->name)])),
+				$(warning >>> '$(linkName)' -> '$1')
+				$(if $(singleword $1),
+					$(set link->eTarget,$1))
 			)
 		)
 	)
@@ -135,7 +140,7 @@ define class-LinkageUnit
 					$(matchingObject))
 			),
 
-			$(silent-for 1 <- $1,$(warning >>> $1))
+#			$(silent-for 1 <- $1,$(warning >>> $1))
 			$(or $(notdir $(singleword $1)),
 				$(if $(strip $1),
 					$(warning Multiple import matches: $1)))
@@ -149,14 +154,9 @@ define class-LinkageUnit
 	#   local to the given object. By default looks for an attribute named
 	#   'imports' and returns its value (if any).
 	$(method getImportNormalizers,
-		$(for metaReference <- $(get $(get 1->eMetaClass).eAllContainments),
-			metaAttribute <-
-				$(get $(get metaReference->eReferenceType).eAllAttributes),
-			$(if $(eq importName,$(get metaAttribute->name)),
-				$(for attributeProperty <-
-						$(get metaAttribute->instanceProperty),
-					child <- $(get 1->$(get metaReference->instanceProperty)),
-					$(get child->$(attributeProperty))))
+		$(for metaAttribute <- $(get $(get 1->eMetaClass).eAllAttributes),
+			$(if $(eq imports,$(get metaAttribute->name)),
+				$(get 1->$(get metaAttribute->instanceProperty)))
 		)
 	)
 
