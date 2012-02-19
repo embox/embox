@@ -259,7 +259,7 @@ define __eObjectAddUnidirectional_link
 		$(for link <- $2,
 			$(set-field link->__eContainer,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
-			$(link)./$(for target <- $(get link->eTarget),
+			$(link)./$(for target <- $(invoke link->eTarget),
 						$(set-field+ target->__eOppositeRefs,$(link)/$1$(this))
 						$(target)))
 	)
@@ -275,7 +275,7 @@ define __eObjectAddBidirectional_link
 		$(for link <- $2,
 			$(set-field link->__eContainer,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
-			$(link)./$(for target <- $(get link->eTarget),
+			$(link)./$(for target <- $(invoke link->eTarget),
 						$(set-field+ target->$3,$(link)$(this))
 						$(target)))
 	)
@@ -320,14 +320,14 @@ endef
 #   1. New value of 'eTarget' property of this link.
 define __eLinkSetTarget
 	$(assert $(not $(multiword $1)))
-	$(assert $(get eSource),
+	$(assert $(invoke eSource),
 		Can't set a target on the link with no source)
 
 	$(for oldTarget <- $(get-field eTarget),
 		$(warning $0: NIY))
 
 	$(for newTarget <- $1,
-		source <- $(get eSource),
+		source <- $(invoke eSource),
 		metaReference <- $(get eMetaReference),
 		referenceProperty <- $(get metaReference->instanceProperty),
 

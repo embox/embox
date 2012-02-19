@@ -36,7 +36,7 @@ define class-LinkageUnit
 		$(for link     <- $(get unresolvedLinks),
 			linkName   <- $(get link->name),
 			linkPrefix <- $(firstword $(subst ., ,$(linkName))),
-			source     <- $(get link->eSource),
+			source     <- $(invoke link->eSource),
 			reference  <- $(get link->eMetaReference),
 			targetType <- $(get reference->eReferenceType),
 			$(with \
@@ -50,7 +50,7 @@ define class-LinkageUnit
 				),
 #				$(warning >>> '$(linkName)' -> '$1')
 				$(if $(singleword $1),
-					$(set link->eTarget,$1),
+					$(invoke link->resolve,$1),
 					$(warning Couldn't resolve reference to \
 						$(get targetType->name) '$(linkName)'))
 			)
@@ -61,10 +61,10 @@ define class-LinkageUnit
 	#   1. Link source.
 	#   2. Method to invoke on each container until it returns non-empty value.
 	$(method lookupContainerChain,
-		$(with $(get 1->eContainer),$2,
+		$(with $(invoke 1->eContainer),$2,
 			$(if $1,
 				$(or $(invoke $2,$1),
-					$(call $0,$(get 1->eContainer),$2))))
+					$(call $0,$(invoke 1->eContainer),$2))))
 	)
 
 	# Param:

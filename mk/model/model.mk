@@ -12,15 +12,16 @@ __model_model_mk := $(lastword $(MAKEFILE_LIST))
 #   - reference 'eMetaClass'
 #   - attribute 'eMetaClassId'
 #   - attribute 'eResource'
-#   - reference 'eContainer'
-#   - reference 'eRootContainer'
-#   - reference 'eContents'
-#   - reference 'eAllContents'
-#   - reference 'eLinks'
-#   - reference 'eResolvedLinks'
-#   - reference 'eUnresolvedLinks'
 #   - operation 'isAncestorOf'
-#   - operation 'getContainerOfType'
+#   - operation 'eContainer'
+#   - operation 'eContainerOfType'
+#   - operation 'eRootContainer'
+#   - operation 'eContents'
+#   - operation 'eContentsOfType'
+#   - operation 'eAllContents'
+#   - operation 'eLinks'
+#   - operation 'eResolvedLinks'
+#   - operation 'eUnresolvedLinks'
 #
 # To instantiate this class use 'EModelFactory.createEObject'.
 define class-EObject
@@ -34,47 +35,47 @@ define class-EObject
 	# 'eResource' attribute.
 	$(property eResource)# read-only.
 
-	# 'eContainer' bidirectional reference.
-	# The opposite reference is 'eContents'.
-	$(property eContainer : EObject)# read-only.
-
-	# 'eRootContainer' reference.
-	$(property eRootContainer : EObject)# read-only.
-
-	# 'eContents' bidirectional reference.
-	# The opposite reference is 'eContainer'.
-	$(property eContents... : EObject)# read-only.
-
-	# 'eAllContents' reference.
-	$(property eAllContents... : EObject)# read-only.
-
-	# 'eLinks' bidirectional reference.
-	# The opposite reference is 'ELink.eSource'.
-	$(property eLinks... : ELink)# read-only.
-
-	# 'eResolvedLinks' reference.
-	$(property eResolvedLinks... : ELink)# read-only.
-
-	# 'eUnresolvedLinks' reference.
-	$(property eUnresolvedLinks... : ELink)# read-only.
-
 	# 'isAncestorOf' operation.
 	#   1. object : EObject
 	$(method isAncestorOf)
 
-	# 'getContainerOfType : EObject' operation.
+	# 'eContainer : EObject' operation.
+	$(method eContainer)
+
+	# 'eContainerOfType : EObject' operation.
 	#   1. someClass : EMetaClass
-	$(method getContainerOfType)
+	$(method eContainerOfType)
+
+	# 'eRootContainer : EObject' operation.
+	$(method eRootContainer)
+
+	# 'eContents... : EObject' operation.
+	$(method eContents)
+
+	# 'eContentsOfType... : EObject' operation.
+	$(method eContentsOfType)
+
+	# 'eAllContents... : EObject' operation.
+	$(method eAllContents)
+
+	# 'eLinks... : ELink' operation.
+	$(method eLinks)
+
+	# 'eResolvedLinks... : ELink' operation.
+	$(method eResolvedLinks)
+
+	# 'eUnresolvedLinks... : ELink' operation.
+	$(method eUnresolvedLinks)
 
 endef
 
 #
 # Model object 'ENamedObject'.
 #
-# The following features are defined:
+# The following features and operations are defined:
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
+#   - operation 'eInverseResolvedLinks'
 #
 # To instantiate this class use 'EModelFactory.createENamedObject'.
 define class-ENamedObject
@@ -86,25 +87,26 @@ define class-ENamedObject
 	# 'qualifiedName' attribute.
 	$(property qualifiedName)# read-only.
 
-	# 'eInverseResolvedLinks' bidirectional reference.
-	# The opposite reference is 'ELink.eTarget'.
-	$(property eInverseResolvedLinks... : ELink)# read-only.
+	# 'eInverseResolvedLinks... : ELink' operation.
+	$(method eInverseResolvedLinks)
 
 endef
 
 #
 # Model object 'ELink'.
 #
-# The following features are defined:
+# The following features and operations are defined:
 #   - reference 'eMetaReference'
 #   - attribute 'eMetaReferenceId'
-#   - reference 'eSource'
-#   - reference 'eTarget'
+#   - operation 'eSource'
+#   - operation 'eTarget'
+#   - operation 'resolve'
+#   - operation 'deresolve'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
+#   - operation 'eInverseResolvedLinks'
 #
 # To instantiate this class use 'EModelFactory.createELink'.
 define class-ELink
@@ -116,13 +118,18 @@ define class-ELink
 	# 'eMetaReferenceId' attribute.
 	$(property eMetaReferenceId)# read-only.
 
-	# 'eSource' bidirectional reference.
-	# The opposite reference is 'EObject.eLinks'.
-	$(property eSource : EObject)# read-only.
+	# 'eSource : EObject' operation.
+	$(method eSource)
 
-	# 'eTarget' bidirectional reference.
-	# The opposite reference is 'ENamedObject.eInverseResolvedLinks'.
-	$(property eTarget : ENamedObject)
+	# 'eTarget : EObject' operation.
+	$(method eTarget)
+
+	# 'resolve' operation.
+	#   1. object : EObject
+	$(method resolve)
+
+	# 'deresolve' operation.
+	$(method deresolve)
 
 endef
 
@@ -135,10 +142,10 @@ endef
 # The following operations are inherited from 'EFreezable':
 #   - operation 'freeze'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
+#   - operation 'eInverseResolvedLinks'
 #
 # To instantiate this class use 'EModelFactory.createEMetaModel'.
 define class-EMetaModel
@@ -161,10 +168,10 @@ endef
 # The following operations are inherited from 'EFreezable':
 #   - operation 'freeze'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
+#   - operation 'eInverseResolvedLinks'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaType
@@ -207,10 +214,10 @@ endef
 # The following operations are inherited from 'EFreezable':
 #   - operation 'freeze'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
+#   - operation 'eInverseResolvedLinks'
 #
 # To instantiate this class use 'EModelFactory.createEMetaClass'.
 define class-EMetaClass
@@ -278,10 +285,10 @@ endef
 # The following operations are inherited from 'EFreezable':
 #   - operation 'freeze'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
+#   - operation 'eInverseResolvedLinks'
 #
 # To instantiate this class use 'EModelFactory.createEMetaPrimitive'.
 define class-EMetaPrimitive
@@ -305,10 +312,10 @@ endef
 #   - attribute 'many'
 #   - reference 'eType'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
+#   - operation 'eInverseResolvedLinks'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-EMetaFeature
@@ -354,10 +361,10 @@ endef
 #   - attribute 'many'
 #   - reference 'eType'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
+#   - operation 'eInverseResolvedLinks'
 #
 # To instantiate this class use 'EModelFactory.createEMetaReference'.
 define class-EMetaReference
@@ -402,10 +409,10 @@ endef
 #   - attribute 'many'
 #   - reference 'eType'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
+#   - operation 'eInverseResolvedLinks'
 #
 # To instantiate this class use 'EModelFactory.createEMetaAttribute'.
 define class-EMetaAttribute
@@ -423,10 +430,10 @@ endef
 #   - attribute 'many'
 #   - reference 'eType'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
+#   - operation 'eInverseResolvedLinks'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-ETyped

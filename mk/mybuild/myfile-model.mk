@@ -12,11 +12,10 @@ __mybuild_myfile_model_mk := $(lastword $(MAKEFILE_LIST))
 #   - reference 'entities'
 #   - attribute 'imports'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
+#   - operation 'eInverseResolvedLinks'
 #
 # To instantiate this class use 'MyFileFactory.createPackage'.
 define class-MyPackage
@@ -37,11 +36,10 @@ endef
 # The following features are defined:
 #   - reference 'package'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
+#   - operation 'eInverseResolvedLinks'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-MyEntity
@@ -70,11 +68,10 @@ endef
 # The following features are inherited from 'Entity':
 #   - reference 'package'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
+#   - operation 'eInverseResolvedLinks'
 #
 # To instantiate this class use 'MyFileFactory.createInterface'.
 define class-MyInterface
@@ -103,11 +100,10 @@ endef
 #   - operation 'isSubTypeOf'
 #   - operation 'isSuperTypeOf'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
+#   - operation 'eInverseResolvedLinks'
 #
 # To instantiate this class use 'MyFileFactory.createFeature'.
 define class-MyFeature
@@ -152,11 +148,10 @@ endef
 # The following features are inherited from 'Entity':
 #   - reference 'package'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
+#   - operation 'eInverseResolvedLinks'
 #
 # To instantiate this class use 'MyFileFactory.createModule'.
 define class-MyModule
@@ -202,11 +197,10 @@ endef
 #   - operation 'isSubTypeOf'
 #   - operation 'isSuperTypeOf'
 #
-# The following features are inherited from 'ENamedObject':
+# The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
-#   - reference 'eInverseResolvedLinks'
-#   - reference 'eInverseLinkedRefs'
+#   - operation 'eInverseResolvedLinks'
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-MyExtendable

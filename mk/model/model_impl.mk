@@ -29,46 +29,66 @@ define class-EObjectImpl
 	$(property eResource)
 	# PROTECTED REGION ID(EObject_eResource) ENABLED START
 	$(getter eResource,
-		$(get-field $(get eRootContainer).__eContainer))
+		$(get-field $(invoke eRootContainer).__eContainer))
 	# PROTECTED REGION END
 
-	# Reference 'eContainer' [0..1]: bidirectional, derived, read-only.
-	$(property eContainer : EObject)
+	# 'isAncestorOf' operation.
+	#   1. object : EObject
+	# PROTECTED REGION ID(EObject_isAncestorOf) ENABLED START
+	$(method isAncestorOf,
+		$(for container <- $(invoke 1->eContainer),
+			$(or $(filter $(this),$(container)),
+				$(invoke isAncestorOf,$(container)))))
+	# PROTECTED REGION END
+
+	# 'eContainer : EObject' operation.
 	# PROTECTED REGION ID(EObject_eContainer) ENABLED START
-	$(getter eContainer,
+	$(method eContainer,
 		$(for c <- $(get-field __eContainer),
 			$(if $(basename $c),$(suffix $c))))
 	# PROTECTED REGION END
 
-	# Reference 'eRootContainer' [0..1]: derived, read-only.
-	$(property eRootContainer : EObject)
+	# 'eContainerOfType : EObject' operation.
+	#   1. someClass : EMetaClass
+	# PROTECTED REGION ID(EObject_eContainerOfType) ENABLED START
+	$(method eContainerOfType,
+		$(for container <- $(invoke eContainer),
+			$(if $(invoke 1->isInstance,$(container)),
+				$(container),$(invoke container->eContainerOfType,$1))))
+	# PROTECTED REGION END
+
+	# 'eRootContainer : EObject' operation.
 	# PROTECTED REGION ID(EObject_eRootContainer) ENABLED START
-	$(getter eRootContainer,
-		$(or $(for container <- $(get eContainer),
-				$(get container->eRootContainer)),
+	$(method eRootContainer,
+		$(or $(for container <- $(invoke eContainer),
+				$(invoke container->eRootContainer)),
 			$(this)))
 	# PROTECTED REGION END
 
-	# Reference 'eContents' [0..*]: bidirectional, derived, read-only.
-	$(property eContents... : EObject)
+	# 'eContents... : EObject' operation.
 	# PROTECTED REGION ID(EObject_eContents) ENABLED START
-	$(getter eContents,
+	$(method eContents,
 		$(for metaReference <- $(get $(get eMetaClass).eAllContainments),
 			$(get $(get metaReference->instanceProperty))))
 	# PROTECTED REGION END
 
-	# Reference 'eAllContents' [0..*]: derived, read-only.
-	$(property eAllContents... : EObject)
-	# PROTECTED REGION ID(EObject_eAllContents) ENABLED START
-	$(getter eAllContents,
-		$(for child <- $(get eContents),
-			$(child) $(get child->eAllContents)))
+	# 'eContentsOfType... : EObject' operation.
+	# PROTECTED REGION ID(EObject_eContentsOfType) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(method eContentsOfType,
+#		$(error $0(): NIY))
 	# PROTECTED REGION END
 
-	# Reference 'eLinks' [0..*]: bidirectional, derived, read-only.
-	$(property eLinks... : ELink)
+	# 'eAllContents... : EObject' operation.
+	# PROTECTED REGION ID(EObject_eAllContents) ENABLED START
+	$(method eAllContents,
+		$(for child <- $(invoke eContents),
+			$(child) $(invoke child->eAllContents)))
+	# PROTECTED REGION END
+
+	# 'eLinks... : ELink' operation.
 	# PROTECTED REGION ID(EObject_eLinks) ENABLED START
-	$(getter eLinks,
+	$(method eLinks,
 		$(subst ./,,$(dir \
 			$(for metaReference <- $(get $(get eMetaClass).eAllLinkables),
 				$(get-field $(get-field metaReference->instanceProperty)))
@@ -76,42 +96,22 @@ define class-EObjectImpl
 	)
 	# PROTECTED REGION END
 
-	# Reference 'eResolvedLinks' [0..*]: derived, read-only.
-	$(property eResolvedLinks... : ELink)
+	# 'eResolvedLinks... : ELink' operation.
 	# PROTECTED REGION ID(EObject_eResolvedLinks) ENABLED START
-	$(getter eResolvedLinks,
-		$(for l <- $(get eLinks),
-			$(if $(get l->eTarget),$l))
+	$(method eResolvedLinks,
+		$(for l <- $(invoke eLinks),
+			$(if $(invoke l->eTarget),$l))
 	)
 	# PROTECTED REGION END
 
-	# Reference 'eUnresolvedLinks' [0..*]: derived, read-only.
-	$(property eUnresolvedLinks... : ELink)
+	# 'eUnresolvedLinks... : ELink' operation.
 	# PROTECTED REGION ID(EObject_eUnresolvedLinks) ENABLED START
-	$(getter eUnresolvedLinks,
+	$(method eUnresolvedLinks,
 		$(subst ./,,$(filter %./,
 			$(for metaReference <- $(get $(get eMetaClass).eAllLinkables),
 				$(get-field $(get-field metaReference->instanceProperty)))
 		))
 	)
-	# PROTECTED REGION END
-
-	# 'isAncestorOf' operation.
-	#   1. object : EObject
-	# PROTECTED REGION ID(EObject_isAncestorOf) ENABLED START
-	$(method isAncestorOf,
-		$(for container <- $(get 1->eContainer),
-			$(or $(filter $(this),$(container)),
-				$(invoke isAncestorOf,$(container)))))
-	# PROTECTED REGION END
-
-	# 'getContainerOfType : EObject' operation.
-	#   1. someClass : EMetaClass
-	# PROTECTED REGION ID(EObject_getContainerOfType) ENABLED START
-	$(method getContainerOfType,
-		$(for container <- $(get eContainer),
-			$(if $(invoke 1->isInstance,$(container)),
-				$(container),$(invoke container->getContainerOfType,$1))))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(EObject) ENABLED START
@@ -124,7 +124,7 @@ define class-EObjectImpl
 	$(field __eOppositeRefs... : EObject)
 
 	$(method __serialize_extra_objects,
-		$(get eLinks) \
+		$(invoke eLinks) \
 		$(suffix $(get-field __eOppositeRefs) \
 			$(basename $(get-field __eOppositeRefs))))
 
@@ -144,15 +144,14 @@ define class-ENamedObjectImpl
 	$(property qualifiedName)
 	# PROTECTED REGION ID(ENamedObject_qualifiedName) ENABLED START
 	$(getter qualifiedName,
-		$(for namedContainer <- $(invoke getContainerOfType,$(EModel_ENamedObject)),
+		$(for namedContainer <- $(invoke eContainerOfType,$(EModel_ENamedObject)),
 			parentName <- $(get namedContainer->qualifiedName),
 			$(parentName)$(if $(get name),.))$(get name))
 	# PROTECTED REGION END
 
-	# Reference 'eInverseResolvedLinks' [0..*]: bidirectional, derived, read-only.
-	$(property eInverseResolvedLinks... : ELink)
+	# 'eInverseResolvedLinks... : ELink' operation.
 	# PROTECTED REGION ID(ENamedObject_eInverseResolvedLinks) ENABLED START
-	$(getter eInverseResolvedLinks,
+	$(method eInverseResolvedLinks,
 #		$(suffix $(basename \
 #			$(get-field __eOppositeRefs) \
 #			$(for metaReference <- $(get $(get eMetaClass).eAllCrossReferences),
@@ -184,30 +183,40 @@ define class-ELinkImpl
 		$(basename $(get-field __eContainer)))
 	# PROTECTED REGION END
 
-	# Reference 'eSource' [0..1]: bidirectional, derived, read-only.
-	$(property eSource : EObject)
+	# 'eSource : EObject' operation.
 	# PROTECTED REGION ID(ELink_eSource) ENABLED START
-	$(getter eSource,
+	$(method eSource,
 		$(suffix $(get-field __eContainer)))
 	# PROTECTED REGION END
 
-	# Reference 'eTarget' [0..1]: bidirectional, derived.
-	$(property eTarget : ENamedObject)
+	# 'eTarget : EObject' operation.
 	# PROTECTED REGION ID(ELink_eTarget) ENABLED START
 	$(field eTarget : EObject)
-	$(getter eTarget,
+	$(method eTarget,
 		$(get-field eTarget))
-	$(setter eTarget,
+	# PROTECTED REGION END
+
+	# 'resolve' operation.
+	#   1. object : EObject
+	# PROTECTED REGION ID(ELink_resolve) ENABLED START
+	$(method resolve,
 		$(call __eLinkSetTarget,$(suffix $1)))
+	# PROTECTED REGION END
+
+	# 'deresolve' operation.
+	# PROTECTED REGION ID(ELink_deresolve) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method deresolve,
+		$(error $0(): NIY))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ELink) ENABLED START
 
 	$(getter eResource,
-		$(for s <- $(get eSource),
+		$(for s <- $(invoke eSource),
 			$(get s->eResource)))
 
-	$(getter eContainer,)
+	$(method eContainer,)
 
 	# PROTECTED REGION END
 endef
