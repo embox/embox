@@ -20,6 +20,32 @@ endif
 override CACHE_INCLUDES := $(CACHE_INCLUDES)
 override CACHE_REQUIRES := $(CACHE_REQUIRES)
 
+#
+# Define a rule to generate a file with Make dependencies.
+#
+
+ifdef CACHE_DEP_TARGET
+
+override CACHE_DEP_TARGET := $(CACHE_DEP_TARGET)
+
+CACHE_DEP_FILE ?= $(CACHE_DEP_TARGET).d
+override CACHE_DEP_FILE   := $(CACHE_DEP_FILE)
+
+.PHONY : $(CACHE_DEP_FILE)
+all : $(CACHE_DEP_FILE)
+
+# The 'MAKEFILE_LIST' inside the recipe will be expanded after including
+# all needed Makefiles, so its value will be valid.
+$(CACHE_DEP_FILE) :
+	@printf '$(CACHE_DEP_TARGET):' > $@
+	@for dep in $(MAKEFILE_LIST); \
+		do printf ' \\\n\t%s' "$$dep" >> $@; done
+	@printf '\n' >> $@
+	@for dep in $(MAKEFILE_LIST); \
+		do printf '\n%s:\n' "$$dep" >> $@; done
+
+endif
+
 include mk/core/common.mk
 
 # Forces certain variables to be dumped unconditionally, even if some of them
@@ -59,10 +85,12 @@ __cache_transient := $(strip $(__cache_transient))
 # Now define some internally used functions.
 #
 
+# Yeah, 'filter-out' is evil because some variables contain percent sign.
+# But nobody cares...
 __cache_new_variables := \
-	$(subst %%,%,$(filter-out \
-		$(subst %,%%,$(__cache_preinclude_variables)), \
-		$(subst %,%%,$(__cache_postinclude_variables))))
+	$(filter-out \
+		$(__cache_preinclude_variables), \
+		$(__cache_postinclude_variables))
 
 # No args.
 __cache_print_new_variable_definitions = \
@@ -186,29 +214,4 @@ $(info )
 $(info # New variables.)
 $(__cache_print_new_variable_definitions)
 $(info )
-
-#
-# Last, define a rule to generate a file with Make dependencies.
-#
-
-ifdef CACHE_DEP_TARGET
-
-override CACHE_DEP_TARGET := $(CACHE_DEP_TARGET)
-
-CACHE_DEP_FILE ?= $(CACHE_DEP_TARGET).d
-override CACHE_DEP_FILE   := $(CACHE_DEP_FILE)
-
-.PHONY : $(CACHE_DEP_FILE)
-all : $(CACHE_DEP_FILE)
-
-$(CACHE_DEP_FILE) :
-	@printf '$(CACHE_DEP_TARGET):' > $@
-	@for dep in $(MAKEFILE_LIST); \
-		do printf ' \\\n\t%s' "$$dep" >> $@; done
-	@printf '\n' >> $@
-	@for dep in $(MAKEFILE_LIST); \
-		do printf '\n%s:\n' "$$dep" >> $@; done
-
-endif
-
 
