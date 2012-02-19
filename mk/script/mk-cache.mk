@@ -3,6 +3,10 @@
 # Author: Eldar Abusalimov
 #
 
+.PHONY : all
+all :
+	@#
+
 ifndef CACHE_INCLUDES
 $(error CACHE_INCLUDES is not defined, nothing to cache)
 endif
@@ -12,9 +16,9 @@ ifeq ($(findstring --no-print-directory,$(MAKEFLAGS)),)
 $(error '--no-print-directory' flag must be specified)
 endif
 
-.PHONY : all
-all :
-	@#
+# Flatten.
+override CACHE_INCLUDES := $(CACHE_INCLUDES)
+override CACHE_REQUIRES := $(CACHE_REQUIRES)
 
 include mk/core/common.mk
 
@@ -189,7 +193,10 @@ $(info )
 
 ifdef CACHE_DEP_TARGET
 
+override CACHE_DEP_TARGET := $(CACHE_DEP_TARGET)
+
 CACHE_DEP_FILE ?= $(CACHE_DEP_TARGET).d
+override CACHE_DEP_FILE   := $(CACHE_DEP_FILE)
 
 .PHONY : $(CACHE_DEP_FILE)
 all : $(CACHE_DEP_FILE)
