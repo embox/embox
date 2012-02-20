@@ -39,6 +39,7 @@ static int exec(int argc, char **argv) {
 	/* check if file descriptor is positive*/
 	if (sock < 0) {
 		prom_printf("%s", "can't create socket!");
+		return sock;
 	}
 
 	/* form address socket assign to*/
@@ -54,6 +55,7 @@ static int exec(int argc, char **argv) {
 	 * by the file descriptor sock. You can bind only one socket on port of concrete type */
 	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
 		printf("%s","sock can't bind!");
+		return -1;
 	}
 
 	/*if(bind(sock2, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
