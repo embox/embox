@@ -1,0 +1,20 @@
+package embox.example.net
+
+module receiver {
+	source "receiver.c"
+	depends embox.net.socket, embox.net.eth, embox.net.arp
+}
+
+module tcp_receiver {
+	source "tcp_receiver.c"
+	depends embox.net.socket
+}
+
+module httpd {
+	source "httpd.c"
+	depends embox.net.socket
+}
+
+module r6040_example {
+	source "r6040_example.c"
+}

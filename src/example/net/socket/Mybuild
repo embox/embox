@@ -1,0 +1,8 @@
+package embox.example.net
+
+module loopback {
+	source "loopback.c"
+	depends embox.net.socket
+	depends embox.net.eth
+	depends embox.net.arp
+}
