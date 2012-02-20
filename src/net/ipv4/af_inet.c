@@ -56,7 +56,7 @@ static int inet_create(struct socket *sock, int protocol) {
 	sock->sk = sk;
 	sock->ops = p_netsock->ops;
 	sk->sk_type = sock->type;
-	sk->sk_protocol = protocol;
+	sk->sk_protocol = p_netsock->protocol;
 
 	inet = inet_sk(sk);
 	inet->id = 0;
