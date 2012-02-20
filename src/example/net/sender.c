@@ -36,7 +36,7 @@ int main() {
 	/* form address socket assign to */
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(12345);
-	addr.sin_addr.s_addr = htonl((in_addr_t) 0x0A000210);
+	addr.sin_addr.s_addr = htonl((in_addr_t) 0x0A00020f);
 
 	/* you can send so */
 	sendto(sock, msg1, sizeof(msg1), 0,

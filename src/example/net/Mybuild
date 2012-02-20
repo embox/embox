@@ -5,6 +5,11 @@ module receiver {
 	depends embox.net.socket, embox.net.eth, embox.net.arp, embox.net.af_inet, embox.net.udp
 }
 
+module udp_echo {
+	source "udp_echo.c"
+	depends embox.net.socket, embox.net.eth, embox.net.arp, embox.net.af_inet, embox.net.udp
+}
+
 module tcp_receiver {
 	source "tcp_receiver.c"
 	depends embox.net.socket
