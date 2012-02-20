@@ -20,9 +20,18 @@ define class-MyFileResource
 		$(for resource <- $(this),
 			$(call gold_parse,myfile,$1,
 				$(lambda $(set+ resource->issues,
-					$(new Issue,$(resource),$2,$3,$4)))))
+					$(new ParsingIssue,$(resource),$2,$3,$4)))))
 	)
 
+endef
+
+# Constructor args:
+#   1. Resource.
+#   2. Severity.
+#   3. Location.
+#   4. Message.
+define class-ParsingIssue
+	$(super BaseIssue,$1,$2,$3,$4)
 endef
 
 define class-MyBuildGlobalState
@@ -43,6 +52,14 @@ define class-MyBuildGlobalState
 					$1.)%)))
 
 	$(invoke link)
+
+	$(for l <- $(get unresolvedLinks),
+		$(set+ $(get l->eResource).issues,
+			$(new UnresolvedLinkIssue,$l)))
+
+	$(for r <- $(get resources),
+		issue <- $(get r->issues),
+		$(invoke issue->report))
 endef
 
 $(def_all)
