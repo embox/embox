@@ -28,7 +28,7 @@ include mk/gold/engine.mk
 include $(addprefix $(dir $(__gold_grammar_$(gold_grammar)_mk)), \
 			myfile-tables.mk \
 			myfile-symbols.mk \
-			myfile-rules.mk)
+			myfile-rules-old.mk)
 
 $(def_all)
 

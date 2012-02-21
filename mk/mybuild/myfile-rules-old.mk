@@ -21,16 +21,31 @@
 # call 'gold_default_produce' function.
 #
 
+include mk/core/object.mk
+include mk/mybuild/link.mk
+
 # Rule: <MyFile> ::= <Package> <Imports> <Entities>
+# Args:
+#   1. Qualified name of package (if any).
+#   2. Import scope object.
+#   3. Entities: '<type>/object'
 define $(gold_grammar)_produce-MyFile
-	$(for package <- $(new MyPackage),
-		$(set package->name,$1)
-		$(set package->imports,$2)
-		$(set package->entities,$3)
-		$(package)
+	$(foreach m,$(new my_file,$1),$m
+		$(invoke m->set_imports,$2)
+
+		$(silent-foreach entity_type,
+				modules \
+#				interfaces
+				,
+			$(invoke m->set_$(entity_type),
+					$(filter-patsubst $(entity_type)/%,%,$3))
+
+#			$(invoke m->set_resolved,
+#						$(filter-patsubst $(entity_type)/%,%,$3))
+		)
 	)
 endef
-
+#$(invoke m->resolve_modules,
 # Rule: <Package> ::= package <QualifiedName>
 $(gold_grammar)_produce-Package_package  = $2
 
@@ -41,13 +56,36 @@ define $(gold_grammar)_produce-Package
 			Using default package)
 endef
 
+## Rule: <Imports> ::= <Import> <Imports>
+## Args:
+##   1. Imported entity or feature: '<type> FQN[.*]'.
+##   2. Import scope.
+#define $(gold_grammar)_produce-Imports
+#	$(invoke 2->add_imported_$(firstword $1),$(secondword $1))
+#endef
+#
+## Rule: <Imports> ::=
+#define $(gold_grammar)_produce-Imports2
+#	$(new import_scope)
+#endef
+
 # Rule: <Import> ::= import <ImportFeature> <QualifiedNameWithWildcard>
-$(gold_grammar)_produce-Import_import = $3
+$(gold_grammar)_produce-Import_import    = $2/$3
+
+# Rule: <ImportFeature> ::= feature
+$(gold_grammar)_produce-ImportFeature_feature     := feature
+# Rule: <ImportFeature> ::=
+$(gold_grammar)_produce-ImportFeature             := entity
+
+# Rule: <Entity> ::= <Module>
+$(gold_grammar)_produce-Entity           = modules/$1
+# Rule: <Entity> ::= <Interface>
+$(gold_grammar)_produce-Entity2          = interfaces/$1
 
 # Rule: <Interface> ::= interface Identifier <SuperInterfaces> '{' <InterfaceAttributes> '}'
 # Args: 1..6 - Symbols in the RHS.
 define $(gold_grammar)_produce-Interface_interface_Identifier_LBrace_RBrace
-	$(call gold_report_error,NIY)
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
 # Rule: <SuperInterfaces> ::= extends <InterfaceRefList>
@@ -59,7 +97,7 @@ endef
 # Rule: <Feature> ::= feature Identifier <SuperFeatures>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-Feature_feature_Identifier
-	$(call gold_report_error,NIY)
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
 # Rule: <SuperFeatures> ::= extends <FeatureRefList>
@@ -73,17 +111,21 @@ $(gold_grammar)_produce-SuperFeatures_extends = $2
 #   4. Reference to a super type (if any).
 #   6. Attributes.
 define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
-	$(foreach module,$(new MyModule),
-		$(set module->name,$3)
+	$(foreach m,$(new module,$3),$m
 
-		$(set module->isStatic,$(filter static,$1))
-		$(set module->isAbstract,$(filter abstract,$1))
+		$(set m->modifiers,$1)
+		$(invoke m->set_super_module_ref,$4)
 
-		$(set module->superType_link,$4)
-
-		$(set module->depends_links,$(filter-patsubst depends_links/%,%,$6))
-
-		$(module)
+		$(silent-foreach attr,
+				depends_refs \
+#				requires_refs
+#				provides_refs
+				flags \
+				sources \
+				objects,
+			$(invoke m->set_$(attr),
+					$(filter-patsubst $(attr)/%,%,$6))
+		)
 	)
 endef
 
@@ -102,15 +144,15 @@ endef
 $(gold_grammar)_produce-SuperModule_extends = $2
 
 # Rule: <Depends> ::= depends <ModuleRefList>
-$(gold_grammar)_produce-Depends_depends       = $(addprefix $1_links/,$2)
+$(gold_grammar)_produce-Depends_depends       = $(2:%=$1_refs/%)
 
 # Rule: <FeatureAttribute> ::= <FeatureAttributeNature> <FeatureRefList>
 # <FeatureAttributeNature> ($1) is either 'requires' or 'provides'.
-$(gold_grammar)_produce-FeatureAttribute      = $(addprefix $1_links/,$2)
+$(gold_grammar)_produce-FeatureAttribute      = $(2:%=$1_refs/%)
 
 # Rule: <FilenameAttribute> ::= <FilenameAttributeNature> <FilenameList>
 # <FilenameAttributeNature> ($1) is either 'source' or 'object'.
-$(gold_grammar)_produce-FilenameAttribute     = $(addprefix $1s/,$2)
+$(gold_grammar)_produce-FilenameAttribute     = $(2:%=$1s/%)
 
 # Rule: <Option> ::= option Identifier ':' <OptionTypeWithAssignment>
 # Args: 1..4 - Symbols in the RHS.
@@ -192,9 +234,7 @@ endef
 
 # Rule: <MakeFlags> ::= flags <StringList>
 # Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-MakeFlags_flags
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-MakeFlags_flags = $(2:%=$1/%)
 
 # Rule: <MakeRule> ::= <Filename> <Prerequisites> <Recipes>
 # Args: 1..3 - Symbols in the RHS.
@@ -227,15 +267,15 @@ define $(gold_grammar)_produce-Recipes
 endef
 
 # <InterfaceRef> ::= <QualifiedName>
-$(gold_grammar)_produce-InterfaceRef = $(new ELink,$1,$(gold_location))
+$(gold_grammar)_produce-InterfaceRef =             = $(call gold_report_error,NIY)
 # <FeatureRef> ::= <QualifiedNameWithWildcard>
-$(gold_grammar)_produce-FeatureRef   = $(new ELink,$1,$(gold_location))
+$(gold_grammar)_produce-FeatureRef                 = $(call gold_report_error,NIY)
 # <ModuleRef> ::= <QualifiedName>
-$(gold_grammar)_produce-ModuleRef    = $(new ELink,$1,$(gold_location))
+$(gold_grammar)_produce-ModuleRef                  = $(new module_link,$1)
 # <Filename> ::= StringLiteral
-#$(gold_grammar)_produce-Filename_StringLiteral     = $(new filename,$1)
+$(gold_grammar)_produce-Filename_StringLiteral     = $(new filename,$1)
 # <String> ::= StringLiteral
-#$(gold_grammar)_produce-String_StringLiteral       = $(new string,$1)
+$(gold_grammar)_produce-String_StringLiteral       = $(new string,$1)
 
 # <InterfaceRefList> ::= <InterfaceRef> ',' <InterfaceRefList>
 $(gold_grammar)_produce-InterfaceRefList_Comma     = $1 $3
