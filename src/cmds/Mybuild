@@ -142,5 +142,6 @@ module ne2k_pci_probe {
 module example {
 	source "example.c"
 	depends embox.compat.posix.LibPosix
+	depends embox.framework.example
 	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
 }

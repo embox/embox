@@ -87,9 +87,9 @@ int inet_release(struct socket *sock) {
 		return -EINVAL;
 	}
 
+	sock_unlock(sock->sk);
 	sk->sk_prot->close(sk, 0);
 	sock->sk = NULL;
-	sock_unlock(sock->sk);
 
 	return ENOERR;
 }
