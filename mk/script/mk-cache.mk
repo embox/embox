@@ -7,14 +7,12 @@
 all :
 	@#
 
+include mk/script/check-make-flags.mk
+
 ifndef CACHE_INCLUDES
 $(error CACHE_INCLUDES is not defined, nothing to cache)
 endif
 CACHE_REQUIRES ?=
-
-ifeq ($(findstring --no-print-directory,$(MAKEFLAGS)),)
-$(error '--no-print-directory' flag must be specified)
-endif
 
 # Flatten.
 override CACHE_INCLUDES := $(CACHE_INCLUDES)
