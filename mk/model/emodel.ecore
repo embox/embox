@@ -17,6 +17,9 @@
       <eParameters name="someClass" eType="#//EMetaClass"/>
     </eOperations>
     <eOperations name="eAllContents" upperBound="-1" eType="#//EObject"/>
+    <eOperations name="eAllContentsOfType" upperBound="-1" eType="#//EObject">
+      <eParameters name="someClass" eType="#//EMetaClass"/>
+    </eOperations>
     <eOperations name="eLinks" upperBound="-1" eType="#//ELink"/>
     <eOperations name="eResolvedLinks" upperBound="-1" eType="#//ELink"/>
     <eOperations name="eUnresolvedLinks" upperBound="-1" eType="#//ELink"/>
@@ -134,8 +137,6 @@
   <eClassifiers xsi:type="ecore:EDataType" name="EBoolean" instanceClassName="boolean"/>
   <eClassifiers xsi:type="ecore:EDataType" name="EInt" instanceClassName="int"/>
   <eClassifiers xsi:type="ecore:EDataType" name="EResource" instanceClassName="org.eclipse.emf.ecore.resource.Resource"
-      serializable="false"/>
-  <eClassifiers xsi:type="ecore:EDataType" name="EResourceSet" instanceClassName="org.eclipse.emf.ecore.resource.ResourceSet"
       serializable="false"/>
   <eClassifiers xsi:type="ecore:EDataType" name="EString" instanceClassName="java.lang.String"/>
 </ecore:EPackage>

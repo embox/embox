@@ -21,6 +21,7 @@ include mk/model/model_impl.mk
 #   - operation 'eContents'
 #   - operation 'eContentsOfType'
 #   - operation 'eAllContents'
+#   - operation 'eAllContentsOfType'
 #   - operation 'eLinks'
 #   - operation 'eResolvedLinks'
 #   - operation 'eUnresolvedLinks'
@@ -90,9 +91,16 @@ define class-EObject
 	# Method 'eContentsOfType... : EObject'.
 	#   1. someClass : EMetaClass
 	# PROTECTED REGION ID(EObject_eContentsOfType) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(method eContentsOfType,
-#		$(error $0(): NIY))
+	$(method eContentsOfType,
+		$(for metaReference <- $(get $(get eMetaClass).eAllContainments),
+			$(if $(invoke 1->isSuperTypeOf,
+					$(get metaReference->eReferenceType)),
+				$(get $(get metaReference->instanceProperty)),
+				$(for child <- $(get $(get metaReference->instanceProperty)),
+					$(call $0,$(child)))
+			)
+		)
+	)
 	# PROTECTED REGION END
 
 	# Method 'eAllContents... : EObject'.
@@ -100,6 +108,14 @@ define class-EObject
 	$(method eAllContents,
 		$(for child <- $(invoke eContents),
 			$(child) $(invoke child->eAllContents)))
+	# PROTECTED REGION END
+
+	# Method 'eAllContentsOfType... : EObject'.
+	#   1. someClass : EMetaClass
+	# PROTECTED REGION ID(EObject_eAllContentsOfType) ENABLED START
+	$(method eAllContentsOfType,
+		$(for child <- $(invoke eContentsOfType,$1),
+			$(child) $(invoke child->eAllContentsOfType,$1)))
 	# PROTECTED REGION END
 
 	# Method 'eLinks... : ELink'.
