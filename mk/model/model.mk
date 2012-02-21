@@ -5,7 +5,7 @@
 ifndef __model_model_mk
 __model_model_mk := $(lastword $(MAKEFILE_LIST))
 
-include mk/model/eobject.mk
+include mk/model/model_impl.mk
 
 #
 # Model object 'EObject'.
