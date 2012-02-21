@@ -170,7 +170,7 @@ define class-ENamedObject
 	$(getter qualifiedName,
 		$(for namedContainer <- $(invoke eContainerOfType,$(EModel_ENamedObject)),
 			parentName <- $(get namedContainer->qualifiedName),
-			$(parentName)$(if $(get name),.))$(get name))
+			$(parentName)$(if $(get-field name),.))$(get-field name))
 	# PROTECTED REGION END
 
 	# Property 'origin'.
@@ -180,6 +180,7 @@ define class-ENamedObject
 	# Method 'eInverseResolvedLinks... : ELink'.
 	# PROTECTED REGION ID(ENamedObject_eInverseResolvedLinks) ENABLED START
 	$(method eInverseResolvedLinks,
+		$(error NIY)
 #		$(suffix $(basename \
 #			$(get-field __eOppositeRefs) \
 #			$(for metaReference <- $(get $(get eMetaClass).eAllCrossReferences),
@@ -189,6 +190,10 @@ define class-ENamedObject
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ENamedObject) ENABLED START
+	$(setter name,
+		$(assert $(if $1,$(and $(singleword [$1]),$(filter-out .% %.,$1)),ok),
+			Invalid name: '$1')
+		$(set-field name,$1))
 	# PROTECTED REGION END
 endef
 
@@ -262,6 +267,15 @@ define class-ELink
 			$(get s->eResource)))
 
 	$(method eContainer,)
+
+	# Constructor:
+	#   As a special exception, ELink takes two optional constructor arguments:
+	#     1. (optional) Name.
+	#     2. (optional) Origin.
+	$(if $(value 1),
+		$(set name,$1))
+	$(if $(value 2),
+		$(set origin,$2))
 
 	# PROTECTED REGION END
 endef
