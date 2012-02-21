@@ -3,7 +3,7 @@
 # Meta model for 'EModel' package.
 
 ifndef __model_metamodel_mk
-__model_metamodel_mk := $(lastword $(MAKEFILE_LIST))
+__model_metamodel_mk := 1
 
 include mk/model/metamodel_impl.mk
 
@@ -26,6 +26,8 @@ EModel_ENamedObject_name := \
 	$(call eMetaAttributeCreate,$(EModel_ENamedObject),EModel_ENamedObject_name)
 EModel_ENamedObject_qualifiedName := \
 	$(call eMetaAttributeCreate,$(EModel_ENamedObject),EModel_ENamedObject_qualifiedName)
+EModel_ENamedObject_origin := \
+	$(call eMetaAttributeCreate,$(EModel_ENamedObject),EModel_ENamedObject_origin)
 
 EModel_ELink := \
 	$(call eMetaClassCreate,$(EModel),EModel_ELink)
@@ -131,6 +133,7 @@ define __eModel_init
 	$(call eMetaClassInit,$(EModel_ENamedObject),ENamedObject,,)
 	$(call eMetaAttributeInit,$(EModel_ENamedObject_name),name,changeable)
 	$(call eMetaAttributeInit,$(EModel_ENamedObject_qualifiedName),qualifiedName,derived)
+	$(call eMetaAttributeInit,$(EModel_ENamedObject_origin),origin,changeable)
 
 	$(call eMetaClassInit,$(EModel_ELink),ELink,$(EModel_ENamedObject),)
 	$(call eMetaReferenceInit,$(EModel_ELink_eMetaReference),eMetaReference,$(EModel_EMetaReference),,derived)
@@ -195,6 +198,7 @@ define __eModel_bind
 	$(call eMetaClassBind,$(EModel_ENamedObject),ENamedObject)
 	$(call eMetaFeatureBind,$(EModel_ENamedObject_name),name)
 	$(call eMetaFeatureBind,$(EModel_ENamedObject_qualifiedName),qualifiedName)
+	$(call eMetaFeatureBind,$(EModel_ENamedObject_origin),origin)
 
 	$(call eMetaClassBind,$(EModel_ELink),ELink)
 	$(call eMetaFeatureBind,$(EModel_ELink_eMetaReference),eMetaReference)

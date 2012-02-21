@@ -3,7 +3,7 @@
 # Model of 'EModel' package.
 
 ifndef __model_model_mk
-__model_model_mk := $(lastword $(MAKEFILE_LIST))
+__model_model_mk := 1
 
 include mk/model/model_impl.mk
 
@@ -25,7 +25,6 @@ include mk/model/model_impl.mk
 #   - operation 'eResolvedLinks'
 #   - operation 'eUnresolvedLinks'
 #
-# To instantiate this class use 'EModelFactory.createEObject'.
 define class-EObject
 
 	# Reference 'eMetaClass' [0..1]: derived, read-only.
@@ -154,9 +153,9 @@ endef
 # The following features and operations are defined:
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# To instantiate this class use 'EModelFactory.createENamedObject'.
 define class-ENamedObject
 	$(eobject EModel_ENamedObject,
 		ENamedObject,,)
@@ -174,6 +173,10 @@ define class-ENamedObject
 			$(parentName)$(if $(get name),.))$(get name))
 	# PROTECTED REGION END
 
+	# Property 'origin'.
+	$(eobject-attribute EModel_ENamedObject_origin,
+		origin,changeable)
+
 	# Method 'eInverseResolvedLinks... : ELink'.
 	# PROTECTED REGION ID(ENamedObject_eInverseResolvedLinks) ENABLED START
 	$(method eInverseResolvedLinks,
@@ -186,7 +189,6 @@ define class-ENamedObject
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ENamedObject) ENABLED START
-	$(property-field origin)
 	# PROTECTED REGION END
 endef
 
@@ -204,9 +206,9 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# To instantiate this class use 'EModelFactory.createELink'.
 define class-ELink
 	# Extends 'ENamedObject' class.
 	$(eobject EModel_ELink,
@@ -276,9 +278,9 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# To instantiate this class use 'EModelFactory.createEMetaModel'.
 define class-EMetaModel
 	# Extends 'ENamedObject', 'EFreezable' classes.
 	$(eobject EModel_EMetaModel,
@@ -305,10 +307,10 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# This is an abstract class. You can't instantiate it directly.
-define class-EMetaType
+define class-EMetaType		 # abstract
 	# Extends 'ENamedObject', 'EFreezable' classes.
 	$(eobject EModel_EMetaType,
 		EMetaType,ENamedObject EFreezable,abstract)
@@ -355,9 +357,9 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# To instantiate this class use 'EModelFactory.createEMetaClass'.
 define class-EMetaClass
 	# Extends 'EMetaType' class.
 	$(eobject EModel_EMetaClass,
@@ -498,9 +500,9 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# To instantiate this class use 'EModelFactory.createEMetaPrimitive'.
 define class-EMetaPrimitive
 	# Extends 'EMetaType' class.
 	$(eobject EModel_EMetaPrimitive,
@@ -529,10 +531,10 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# This is an abstract class. You can't instantiate it directly.
-define class-EMetaFeature
+define class-EMetaFeature		 # abstract
 	# Extends 'ETyped', 'EFreezable' classes.
 	$(eobject EModel_EMetaFeature,
 		EMetaFeature,ETyped EFreezable,abstract)
@@ -584,9 +586,9 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# To instantiate this class use 'EModelFactory.createEMetaReference'.
 define class-EMetaReference
 	# Extends 'EMetaFeature' class.
 	$(eobject EModel_EMetaReference,
@@ -654,9 +656,9 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# To instantiate this class use 'EModelFactory.createEMetaAttribute'.
 define class-EMetaAttribute
 	# Extends 'EMetaFeature' class.
 	$(eobject EModel_EMetaAttribute,
@@ -683,10 +685,10 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# This is an abstract class. You can't instantiate it directly.
-define class-ETyped
+define class-ETyped		 # abstract
 	# Extends 'ENamedObject' class.
 	$(eobject EModel_ETyped,
 		ETyped,ENamedObject,abstract)
@@ -709,8 +711,7 @@ endef
 # The following operations are defined:
 #   - operation 'freeze'
 #
-# This is an abstract class. You can't instantiate it directly.
-define class-EFreezable
+define class-EFreezable		 # abstract
 	$(eobject EModel_EFreezable,
 		EFreezable,,abstract)
 

@@ -13,7 +13,9 @@
     </eOperations>
     <eOperations name="eRootContainer" eType="#//EObject"/>
     <eOperations name="eContents" upperBound="-1" eType="#//EObject"/>
-    <eOperations name="eContentsOfType" upperBound="-1" eType="#//EObject"/>
+    <eOperations name="eContentsOfType" upperBound="-1" eType="#//EObject">
+      <eParameters name="someClass" eType="#//EMetaClass"/>
+    </eOperations>
     <eOperations name="eAllContents" upperBound="-1" eType="#//EObject"/>
     <eOperations name="eLinks" upperBound="-1" eType="#//ELink"/>
     <eOperations name="eResolvedLinks" upperBound="-1" eType="#//ELink"/>
@@ -30,6 +32,7 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="qualifiedName" eType="#//EString"
         changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="origin" eType="#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="ELink" eSuperTypes="#//ENamedObject">
     <eOperations name="eSource" eType="#//EObject"/>
