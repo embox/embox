@@ -34,34 +34,18 @@ module icmp {
 
 module udp {
 	source "udp.c"
-	depends embox.net.udp_sock
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
 
 module tcp {
 	source "tcp.c"
-	depends embox.net.tcp_sock
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
 
 module raw_sock {
 	source "raw_sock.c"
-	depends embox.net.socket
-	make flags "-I$(SRC_DIR)/compat/posix/include"
-	make flags "-I$(SRC_DIR)/compat/linux/include"
-}
-
-module udp_sock {
-	source "udp_sock.c"
-	depends embox.net.socket
-	make flags "-I$(SRC_DIR)/compat/posix/include"
-	make flags "-I$(SRC_DIR)/compat/linux/include"
-}
-
-module tcp_sock {
-	source "tcp_sock.c"
 	depends embox.net.socket
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 	make flags "-I$(SRC_DIR)/compat/linux/include"

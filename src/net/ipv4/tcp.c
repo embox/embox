@@ -28,10 +28,13 @@
 
 #include <embox/unit.h>
 #include <kernel/timer.h>
+#include <embox/net/sock.h>
 
 #define REXMIT_DELAY 1000
 
 EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_init);
+
+EMBOX_NET_SOCK(SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, NULL);
 
 LIST_HEAD(rexmit_socks);
 
