@@ -21,18 +21,9 @@
 	<component class="org.eclipse.xpand2.Generator">
 		<metaModel idRef="mm_emf"/>
 		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
-		<expand
-			value="template::Model::main FOR model" />
-		<outlet path="${src-gen}" >
-		</outlet>
-	</component>
-
-	<component class="org.eclipse.xpand2.Generator">
-		<metaModel idRef="mm_emf"/>
-		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
 		<prSrcPaths value="${src-gen}" />
 		<expand
-			value="template::ModelImpl::main FOR model" />
+			value="template::Model::main FOR model" />
 		<outlet path="${src-gen}" >
 		</outlet>
 	</component>
@@ -43,16 +34,6 @@
 		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
 		<expand
 			value="template::MetaModel::main FOR model" />
-		<outlet path="${src-gen}" >
-		</outlet>
-	</component>
-
-	<!--  Factory -->
-	<component class="org.eclipse.xpand2.Generator">
-		<metaModel idRef="mm_emf"/>
-		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
-		<expand
-			value="template::Factory::main FOR model" />
 		<outlet path="${src-gen}" >
 		</outlet>
 	</component>

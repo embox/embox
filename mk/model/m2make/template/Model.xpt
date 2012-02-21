@@ -9,17 +9,17 @@
 # Model of '«name»' package.
 
 «inclusionGuardBegin("model")»
-«EXPAND classifier FOREACH eClassifiers.typeSelect(EClass) -»
+
+include mk/model/model_impl.mk
+«EXPAND class FOREACH eClassifiers.typeSelect(EClass) -»
 
 $(def_all)
-
-«includeFile("model", "model_impl")»
 
 «inclusionGuardEnd("model")»
 
 «ENDFILE»«ENDDEFINE»
 
-«DEFINE classifier FOR EClass»
+«DEFINE class FOR EClass»
 #
 # Model object '«name»'.
 #
@@ -28,22 +28,26 @@ $(def_all)
 «EXPAND classMembersComment("inherited from '" + superType.name + "'") FOR superType -»
 «ENDFOREACH -»
 «IF abstract || interface -»
-# This is an «"abstract ".ifIs(abstract) + "interface ".ifIs(interface)
-	»class. You can't instantiate it directly.
+# This is an «"abstract ".ifIs(abstract) +
+	"interface ".ifIs(interface)»class. You can't instantiate it directly.
 «ELSE -»
 # To instantiate this class use '«ePackage.factoryName()».«factoryMethodName()»'.
 «ENDIF -»
 define class-«className()»
 «IF className() != "EObject" -»
-«IF eSuperTypes.isEmpty -»
-	«mkSuper("EObject")»
+«IF !eSuperTypes.isEmpty -»
+	# Extends '«eSuperTypes.className()
+		.toString("', '")»' class«IF eSuperTypes.size > 1»es«ENDIF».
 «ENDIF -»
-«FOREACH eSuperTypes AS superType -»
-	«mkSuper(superType.className())»
-«ENDFOREACH -»
+	«mk("eobject", { metaVariable(),
+		"\n\t\t" + className(), eSuperTypes.className().toString(" "),
+		metaFlags().toString(" ") })»
 «ENDIF -»
 «EXPAND feature FOREACH eStructuralFeatures -»
 «EXPAND operation FOREACH eOperations»
+«PROTECT CSTART '\t# ' CEND '' ID id()»
+#	# TODO Add custom implementation here and remove this comment.
+«ENDPROTECT»
 endef
 «ENDDEFINE»
 
@@ -68,42 +72,69 @@ endef
 «ENDDEFINE»
 
 
+
 «DEFINE feature FOR EStructuralFeature»
+«IF !derived -»
+	# Property '«propertySignature()»'«IF !changeable» (read-only)«ENDIF».
+«EXPAND nonVolatileFeature -»
+«ELSE -»
+	# «featureInfo() -»
+«EXPAND volatileFeature -»
+«ENDIF -»
+«ENDDEFINE»
+
+«DEFINE nonVolatileFeature FOR EStructuralFeature»
 	«ERROR "Unexpected EStructuralFeature: " + this»
 «ENDDEFINE»
 
-«DEFINE feature FOR EAttribute»
-	# '«name»' attribute.
-«EXPAND featureProperty FOR this -»
+«DEFINE nonVolatileFeature FOR EAttribute -»
+	«mk("eobject-attribute", { metaVariable(),
+		"\n\t\t" + propertyName(),
+		metaFlags().toString(" ")})»
 «ENDDEFINE»
 
-«DEFINE feature FOR EReference»
-	# '«name»' «
-		"bidirectional ".ifIs(eOpposite) +
-		"containment "  .ifIs(containment) +
-		"container "    .ifIs(container)»reference.
-«IF eOpposite != null -»
-	# The opposite reference is '«
-		(eReferenceType.name + ".").ifIs(eReferenceType != eContainingClass) +
-		eOpposite.name»'.
-«ENDIF -»
-«EXPAND featureProperty FOR this -»
-«IF isLinkableReference() -»
-	«mkProperty(propertyLinkName() +
-		memberCardinality() + propertyLinkType()) + "# read-only.".ifIs(!changeable)»
-«ENDIF -»
+«DEFINE nonVolatileFeature FOR EReference -»
+	«mk("eobject-reference", { metaVariable(),
+		"\n\t\t" + propertyName(), eReferenceType.className(), eOpposite.propertyName(),
+		metaFlags().toString(" ")})»
 «ENDDEFINE»
 
-«DEFINE featureProperty FOR EStructuralFeature -»
-	«mkProperty(propertyName() + memberCardinality() + memberType()) +
-		"# read-only.".ifIs(!changeable)»
+
+«DEFINE volatileFeature FOR EStructuralFeature»
+	«mkProperty(propertyName() + memberCardinality() + memberType())»
+«PROTECT CSTART '\t# ' CEND '' ID id()»
+«EXPAND volatileFeatureStubs(propertyName()) -»
+«IF EReference.isInstance(this) && ((EReference) this).isLinkableReference() -»
+	# Property '«((EReference) this).propertyLinkSignature()»'«IF !changeable» (read-only)«ENDIF».
+«EXPAND volatileFeatureStubs(((EReference) this).propertyLinkName()) -»
+«ENDIF -»
+«ENDPROTECT»
+«ENDDEFINE»
+
+«DEFINE volatileFeatureStubs(String property) FOR EStructuralFeature -»
+#	# TODO Uncomment and implement me.
+	«mkGetterWrap(property, "$(error $0: NIY)")»
+«IF changeable -»
+#	# TODO Uncomment and implement me.
+	«mkSetterWrap(property, "$(error $0($1): NIY)")»
+«IF many -»
+#	# TODO Uncomment and implement us.
+	«mkSetterPlusWrap(property, "$(error $0($1): NIY)")»
+	«mkSetterMinusWrap(property, "$(error $0($1): NIY)")»
+«ENDIF -»
+«ENDIF -»
 «ENDDEFINE»
 
 «DEFINE operation FOR EOperation»
-	# '«name + memberCardinality() + memberType()»' operation.
+	# Method '«methodName() + memberCardinality() + memberType()»'.
 «FOREACH eParameters AS param ITERATOR i -»
 	#   «i.counter1». «param.name + param.memberCardinality() + param.memberType()»
 «ENDFOREACH -»
-	«mkMethod(methodName())»
+«PROTECT CSTART '\t# ' CEND '' ID id()»
+#	# TODO Uncomment and implement me.
+	«mkMethod(methodName(),
+	"$(error $0(" + eParameters.collect(p | "$" + counterInc()).toString(",") +
+			"): NIY)")»
+«ENDPROTECT»
 «ENDDEFINE»
 

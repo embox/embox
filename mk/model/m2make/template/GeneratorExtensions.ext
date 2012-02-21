@@ -70,8 +70,14 @@ propertyName(EAttribute this) :
 	"boolean" == eAttributeType.instanceClassName
 		? "is" + name.toFirstUpper() : name.toFirstLower();
 
+propertySignature(EStructuralFeature this) :
+	propertyName() + memberCardinality() + memberType();
+
 propertyLinkName(EReference this) : propertyName() + "_link" + "s".ifIs(many);
 propertyLinkType(EReference this) : " : ELink";
+
+propertyLinkSignature(EReference this) :
+	propertyLinkName() + memberCardinality() + propertyLinkType();
 
 methodName(EOperation this) : name.toFirstLower();
 
