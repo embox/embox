@@ -27,6 +27,9 @@ define class-Resource
 	$(setter rootObject,
 		$(assert $(not $(multiword $1)))
 
+		# Reset file name.
+		$(set-field fileName,)
+
 		$(for oldRootObject <- $(get-field rootObject),
 			$(set-field oldRootObject->__eContainer,))
 
@@ -67,8 +70,8 @@ define class-Resource
 	# Loads the resource from the specified location.
 	#   1. File name.
 	$(method load,
-		$(set-field fileName,$1)
-		$(set rootObject,$(invoke loadRootObject,$1)))
+		$(set rootObject,$(invoke loadRootObject,$1))
+		$(set-field fileName,$1))
 
 	# Implementation have to retrieve the root object of this resource.
 	#   1. File name.
@@ -136,7 +139,7 @@ define class-UnresolvedLinkIssue
 	$(getter severity,
 		error)
 	$(getter location,
-		0:0)
+		$(get $(get link).origin))
 	$(getter message,
 		$(for link     <- $(get link),
 			targetType <- $(get $(get link->eMetaReference).eReferenceType),

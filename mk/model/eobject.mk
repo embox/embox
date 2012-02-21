@@ -18,12 +18,9 @@ __model_eobject_mk := 1
 define builtin_func-eobject
 	$(call __def,
 
-		# Implements API class.
-		$$(super $2)
-
 		# Extends implementations of each super class.
 		$(foreach s,$(or $3,EObject),
-			$$(super $sImpl))
+			$$(super $s))
 
 		$$(getter eMetaClassId,
 			$1)
@@ -95,6 +92,9 @@ define builtin_func-eobject-reference
 			$(if $(filter linkable,$5),
 				$(for property <- $(property)_link$(if $(filter many,$5),s),
 					fn_suffix <- $(fn_suffix)_link,
+
+					# Declare a propery for links.
+					$$(property $(property)$(if $(filter many,$5),...) : $3)
 
 					$$(getter $(property),
 						$$(subst ./,,$$(dir $$(get-field $2))))

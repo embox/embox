@@ -8,8 +8,6 @@
 ifndef __model_metamodel_internals_mk
 __model_metamodel_internals_mk := 1
 
-include mk/model/factory.mk
-
 #
 # Meta object instantiation.
 #
@@ -17,7 +15,7 @@ include mk/model/factory.mk
 # Params:
 #   1. Meta model ID (unused).
 define eMetaModelCreate
-	$(for model <- $(invoke eModelFactory->createEMetaModel),
+	$(for model <- $(new EMetaModel),
 		# Do nothing special.
 		$(model))
 endef
@@ -26,7 +24,7 @@ endef
 #   1. Meta model.
 #   2. Meta class ID (unused).
 define eMetaClassCreate
-	$(for class <- $(invoke eModelFactory->createEMetaClass),
+	$(for class <- $(new EMetaClass),
 		$(set+ 1->eTypes,$(class))
 		$(class))
 endef
@@ -35,7 +33,7 @@ endef
 #   1. Meta class.
 #   2. Meta feature ID (unused).
 define eMetaAttributeCreate
-	$(for feature <- $(invoke eModelFactory->createEMetaAttribute),
+	$(for feature <- $(new EMetaAttribute),
 		$(set+ 1->eFeatures,$(feature))
 		$(feature))
 endef
@@ -44,7 +42,7 @@ endef
 #   1. Meta class.
 #   2. Meta feature ID (unused).
 define eMetaReferenceCreate
-	$(for feature <- $(invoke eModelFactory->createEMetaReference),
+	$(for feature <- $(new EMetaReference),
 		$(set+ 1->eFeatures,$(feature))
 		$(feature))
 endef
