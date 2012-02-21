@@ -3,7 +3,7 @@
 # Model of 'myFile' package.
 
 ifndef __mybuild_myfile_model_mk
-__mybuild_myfile_model_mk := $(lastword $(MAKEFILE_LIST))
+__mybuild_myfile_model_mk := 1
 
 include mk/model/model_impl.mk
 
@@ -17,9 +17,9 @@ include mk/model/model_impl.mk
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# To instantiate this class use 'MyFileFactory.createPackage'.
 define class-MyPackage
 	# Extends 'ENamedObject' class.
 	$(eobject MyFile_Package,
@@ -47,10 +47,10 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# This is an abstract class. You can't instantiate it directly.
-define class-MyEntity
+define class-MyEntity # abstract
 	# Extends 'ENamedObject' class.
 	$(eobject MyFile_Entity,
 		MyEntity,ENamedObject,abstract)
@@ -84,9 +84,9 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# To instantiate this class use 'MyFileFactory.createInterface'.
 define class-MyInterface
 	# Extends 'MyEntity', 'MyExtendable' classes.
 	$(eobject MyFile_Interface,
@@ -120,9 +120,9 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# To instantiate this class use 'MyFileFactory.createFeature'.
 define class-MyFeature
 	# Extends 'ENamedObject', 'MyExtendable' classes.
 	$(eobject MyFile_Feature,
@@ -170,9 +170,9 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# To instantiate this class use 'MyFileFactory.createModule'.
 define class-MyModule
 	# Extends 'MyEntity', 'MyExtendable' classes.
 	$(eobject MyFile_Module,
@@ -221,10 +221,10 @@ endef
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
+#   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# This is an abstract class. You can't instantiate it directly.
-define class-MyExtendable
+define class-MyExtendable # abstract
 	# Extends 'ENamedObject' class.
 	$(eobject MyFile_Extendable,
 		MyExtendable,ENamedObject,abstract)
@@ -279,7 +279,6 @@ endef
 #
 # No features or operations defined.
 #
-# To instantiate this class use 'MyFileFactory.createFilename'.
 define class-MyFilename
 	$(eobject MyFile_Filename,
 		MyFilename,,)

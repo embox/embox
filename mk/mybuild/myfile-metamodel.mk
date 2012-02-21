@@ -3,7 +3,7 @@
 # Meta model for 'myFile' package.
 
 ifndef __mybuild_myfile_metamodel_mk
-__mybuild_myfile_metamodel_mk := $(lastword $(MAKEFILE_LIST))
+__mybuild_myfile_metamodel_mk := 1
 
 include mk/model/metamodel_impl.mk
 
