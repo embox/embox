@@ -18,6 +18,7 @@
 #include <net/socket.h>
 #include <net/inet_sock.h>
 #include <net/port.h>
+#include <net/tcp.h>
 
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
@@ -77,6 +78,7 @@ int inet_release(struct socket *sock) {
 	struct sock *sk;
 	struct inet_sock *inet;
 
+	sock_lock(sock->sk);
 	sk = sock->sk;
 	inet = inet_sk(sk);
 	socket_port_unlock(inet->sport, inet->sport_type);
@@ -87,6 +89,8 @@ int inet_release(struct socket *sock) {
 
 	sk->sk_prot->close(sk, 0);
 	sock->sk = NULL;
+	sock_unlock(sock->sk);
+
 	return ENOERR;
 }
 
@@ -96,6 +100,7 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 	struct sockaddr_in *addr_in;
 	struct inet_sock *inet;
 
+	sock_lock(sock->sk);
 	sk = sock->sk;
 	if (sk->sk_prot->bind != NULL) {
 		res = sk->sk_prot->bind(sk, addr, addr_len);
@@ -116,6 +121,7 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 	inet->sport = addr_in->sin_port;
 	inet->daddr = 0;
 	inet->dport = 0;
+	sock_unlock(sock->sk);
 
 	return ENOERR;
 }
@@ -136,14 +142,40 @@ int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
 int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
 			struct msghdr *msg, size_t size) {
 	struct sock *sk;
-
 	sk = sock->sk;
 	return sk->sk_prot->sendmsg(iocb, sk, msg, size);
 }
 
+//FIXME add other states handling
 int inet_stream_connect(struct socket *sock, struct sockaddr * addr,
 			int addr_len, int flags) {
-	return inet_dgram_connect(sock, addr, addr_len, flags);
+	int err;
+
+	sock_lock(sock->sk);
+	switch (sock->state) {
+	default:
+		err = -EINVAL;
+		goto release;
+	case SS_CONNECTED:
+		err = -EISCONN;
+		goto release;
+	case SS_CONNECTING:
+		err = -EALREADY;
+		goto release;
+	case SS_UNCONNECTED:
+		err = -EISCONN;
+		if (sock->sk->sk_state != TCP_CLOSE)
+			goto release;
+		err = sock->sk->sk_prot->connect(sock->sk, addr, addr_len);
+		if (err < 0)
+			goto release;
+		break;
+	}
+	sock_unlock(sock->sk);
+
+release:
+	inet_release(sock);
+	return err;
 }
 
 int inet_listen(struct socket *sock, int backlog) {
@@ -183,7 +215,6 @@ const struct proto_ops inet_stream_ops = {
 	.sendmsg           = inet_sendmsg,
 	.recvmsg           = sock_common_recvmsg,
 };
-
 
 static int inet_init(void) {
 	return sock_register(&inet_family_ops);
