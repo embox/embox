@@ -161,7 +161,7 @@ define __eObjectSetContainer
 			$(set-field- oldContainer->$(notdir $(basename $(oldContainer))),
 				$(this)),
 			# Resource containment.
-			$(set oldContainer->rootObject,)
+			$(set oldContainer->contentsRoot,)
 		)
 	)
 

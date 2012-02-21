@@ -97,7 +97,7 @@ define class-EObject
 					$(get metaReference->eReferenceType)),
 				$(get $(get metaReference->instanceProperty)),
 				$(for child <- $(get $(get metaReference->instanceProperty)),
-					$(call $0,$(child)))
+					$(invoke child->eContentsOfType,$1))
 			)
 		)
 	)

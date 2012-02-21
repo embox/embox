@@ -23,7 +23,7 @@ define class-Mybuild
 	# Param:
 	#   1. The resource.
 	$(method getResourceImportNormalizers,
-		$(for root <- $(get 1->rootObject),
+		$(for root <- $(get 1->contentsRoot),
 			$(with $(get root->name),
 				$(if $1,
 					$(assert $(singleword [$1]))

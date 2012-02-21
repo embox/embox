@@ -105,15 +105,7 @@ define class-LinkageUnit
 	#   direct or indirect being first found in each brach of the containment
 	#   subtree.
 	$(method getVisibleMembers,
-		$(for metaReference <- $(get $(get 1->eMetaClass).eAllContainments),
-			$(if $(invoke EModel_ENamedObject->isSuperTypeOf,
-					$(get metaReference->eReferenceType)),
-				$(get 1->$(get metaReference->instanceProperty)),
-				$(for child <-
-					$(get 1->$(get metaReference->instanceProperty)),
-					$(call $0,$(child)))
-			)
-		)
+		$(invoke 1->eContentsOfType,$(EModel_ENamedObject))
 	)
 
 	# Param:
