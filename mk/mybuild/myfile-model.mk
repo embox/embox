@@ -5,6 +5,8 @@
 ifndef __mybuild_myfile_model_mk
 __mybuild_myfile_model_mk := $(lastword $(MAKEFILE_LIST))
 
+include mk/model/model_impl.mk
+
 #
 # Model object 'Package'.
 #
@@ -19,15 +21,21 @@ __mybuild_myfile_model_mk := $(lastword $(MAKEFILE_LIST))
 #
 # To instantiate this class use 'MyFileFactory.createPackage'.
 define class-MyPackage
-	$(super ENamedObject)
+	# Extends 'ENamedObject' class.
+	$(eobject MyFile_Package,
+		MyPackage,ENamedObject,)
 
-	# 'entities' bidirectional containment reference.
-	# The opposite reference is 'Entity.package'.
-	$(property entities... : MyEntity)
+	# Property 'entities... : MyEntity'.
+	$(eobject-reference MyFile_Package_entities,
+		entities,MyEntity,package,changeable many containment)
 
-	# 'imports' attribute.
-	$(property imports...)
+	# Property 'imports...'.
+	$(eobject-attribute MyFile_Package_imports,
+		imports,changeable many)
 
+	# PROTECTED REGION ID(Package) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 #
@@ -43,12 +51,17 @@ endef
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-MyEntity
-	$(super ENamedObject)
+	# Extends 'ENamedObject' class.
+	$(eobject MyFile_Entity,
+		MyEntity,ENamedObject,abstract)
 
-	# 'package' bidirectional container reference.
-	# The opposite reference is 'Package.entities'.
-	$(property package : MyPackage)
+	# Property 'package : MyPackage'.
+	$(eobject-reference MyFile_Entity_package,
+		package,MyPackage,entities,changeable container)
 
+	# PROTECTED REGION ID(Entity) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 #
@@ -75,13 +88,17 @@ endef
 #
 # To instantiate this class use 'MyFileFactory.createInterface'.
 define class-MyInterface
-	$(super MyEntity)
-	$(super MyExtendable)
+	# Extends 'MyEntity', 'MyExtendable' classes.
+	$(eobject MyFile_Interface,
+		MyInterface,MyEntity MyExtendable,)
 
-	# 'features' bidirectional containment reference.
-	# The opposite reference is 'Feature.interface'.
-	$(property features... : MyFeature)
+	# Property 'features... : MyFeature'.
+	$(eobject-reference MyFile_Interface_features,
+		features,MyFeature,interface,changeable many containment)
 
+	# PROTECTED REGION ID(Interface) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 #
@@ -107,23 +124,25 @@ endef
 #
 # To instantiate this class use 'MyFileFactory.createFeature'.
 define class-MyFeature
-	$(super ENamedObject)
-	$(super MyExtendable)
+	# Extends 'ENamedObject', 'MyExtendable' classes.
+	$(eobject MyFile_Feature,
+		MyFeature,ENamedObject MyExtendable,)
 
-	# 'interface' bidirectional container reference.
-	# The opposite reference is 'Interface.features'.
-	$(property interface : MyInterface)
+	# Property 'interface : MyInterface'.
+	$(eobject-reference MyFile_Feature_interface,
+		interface,MyInterface,features,changeable container)
 
-	# 'providedBy' bidirectional reference.
-	# The opposite reference is 'Module.provides'.
-	$(property providedBy... : MyModule)
-	$(property providedBy_links... : ELink)
+	# Property 'providedBy... : MyModule'.
+	$(eobject-reference MyFile_Feature_providedBy,
+		providedBy,MyModule,provides,changeable many linkable)
 
-	# 'requiredBy' bidirectional reference.
-	# The opposite reference is 'Module.requires'.
-	$(property requiredBy... : MyModule)
-	$(property requiredBy_links... : ELink)
+	# Property 'requiredBy... : MyModule'.
+	$(eobject-reference MyFile_Feature_requiredBy,
+		requiredBy,MyModule,requires,changeable many linkable)
 
+	# PROTECTED REGION ID(Feature) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 #
@@ -155,35 +174,37 @@ endef
 #
 # To instantiate this class use 'MyFileFactory.createModule'.
 define class-MyModule
-	$(super MyEntity)
-	$(super MyExtendable)
+	# Extends 'MyEntity', 'MyExtendable' classes.
+	$(eobject MyFile_Module,
+		MyModule,MyEntity MyExtendable,)
 
-	# 'static' attribute.
-	$(property isStatic)
+	# Property 'isStatic'.
+	$(eobject-attribute MyFile_Module_isStatic,
+		isStatic,changeable)
 
-	# 'abstract' attribute.
-	$(property isAbstract)
+	# Property 'isAbstract'.
+	$(eobject-attribute MyFile_Module_isAbstract,
+		isAbstract,changeable)
 
-	# 'depends' bidirectional reference.
-	# The opposite reference is 'dependent'.
-	$(property depends... : MyModule)
-	$(property depends_links... : ELink)
+	# Property 'depends... : MyModule'.
+	$(eobject-reference MyFile_Module_depends,
+		depends,MyModule,dependent,changeable many linkable)
 
-	# 'dependent' bidirectional reference.
-	# The opposite reference is 'depends'.
-	$(property dependent... : MyModule)
-	$(property dependent_links... : ELink)
+	# Property 'dependent... : MyModule'.
+	$(eobject-reference MyFile_Module_dependent,
+		dependent,MyModule,depends,changeable many linkable)
 
-	# 'provides' bidirectional reference.
-	# The opposite reference is 'Feature.providedBy'.
-	$(property provides... : MyFeature)
-	$(property provides_links... : ELink)
+	# Property 'provides... : MyFeature'.
+	$(eobject-reference MyFile_Module_provides,
+		provides,MyFeature,providedBy,changeable many linkable)
 
-	# 'requires' bidirectional reference.
-	# The opposite reference is 'Feature.requiredBy'.
-	$(property requires... : MyFeature)
-	$(property requires_links... : ELink)
+	# Property 'requires... : MyFeature'.
+	$(eobject-reference MyFile_Module_requires,
+		requires,MyFeature,requiredBy,changeable many linkable)
 
+	# PROTECTED REGION ID(Module) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 #
@@ -204,34 +225,53 @@ endef
 #
 # This is an abstract class. You can't instantiate it directly.
 define class-MyExtendable
-	$(super ENamedObject)
+	# Extends 'ENamedObject' class.
+	$(eobject MyFile_Extendable,
+		MyExtendable,ENamedObject,abstract)
 
-	# 'subTypes' bidirectional reference.
-	# The opposite reference is 'superType'.
-	$(property subTypes... : MyExtendable)
-	$(property subTypes_links... : ELink)
+	# Property 'subTypes... : MyExtendable'.
+	$(eobject-reference MyFile_Extendable_subTypes,
+		subTypes,MyExtendable,superType,changeable many linkable)
 
-	# 'superType' bidirectional reference.
-	# The opposite reference is 'subTypes'.
-	$(property superType : MyExtendable)
-	$(property superType_link : ELink)
+	# Property 'superType : MyExtendable'.
+	$(eobject-reference MyFile_Extendable_superType,
+		superType,MyExtendable,subTypes,changeable linkable)
 
-	# 'allSubTypes' bidirectional reference.
-	# The opposite reference is 'allSuperTypes'.
-	$(property allSubTypes... : MyExtendable)# read-only.
+	# Reference 'allSubTypes' [0..*]: bidirectional, derived, read-only.
+	$(property allSubTypes... : MyExtendable)
+	# PROTECTED REGION ID(Extendable_allSubTypes) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter allSubTypes,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
 
-	# 'allSuperTypes' bidirectional reference.
-	# The opposite reference is 'allSubTypes'.
-	$(property allSuperTypes... : MyExtendable)# read-only.
+	# Reference 'allSuperTypes' [0..*]: bidirectional, derived, read-only.
+	$(property allSuperTypes... : MyExtendable)
+	# PROTECTED REGION ID(Extendable_allSuperTypes) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(getter allSuperTypes,
+#		$(error $0: NIY))
+	# PROTECTED REGION END
 
-	# 'isSubTypeOf' operation.
+	# Method 'isSubTypeOf'.
 	#   1. another : MyExtendable
-	$(method isSubTypeOf)
+	# PROTECTED REGION ID(Extendable_isSubTypeOf) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(method isSubTypeOf,
+#		$(error $0($1): NIY))
+	# PROTECTED REGION END
 
-	# 'isSuperTypeOf' operation.
+	# Method 'isSuperTypeOf'.
 	#   1. another : MyExtendable
-	$(method isSuperTypeOf)
+	# PROTECTED REGION ID(Extendable_isSuperTypeOf) ENABLED START
+#	# TODO Uncomment and implement me.
+#	$(method isSuperTypeOf,
+#		$(error $0($1): NIY))
+	# PROTECTED REGION END
 
+	# PROTECTED REGION ID(Extendable) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 #
@@ -241,13 +281,15 @@ endef
 #
 # To instantiate this class use 'MyFileFactory.createFilename'.
 define class-MyFilename
-	$(super EObject)
+	$(eobject MyFile_Filename,
+		MyFilename,,)
 
+	# PROTECTED REGION ID(Filename) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
 endef
 
 $(def_all)
-
-include $(dir $(__mybuild_myfile_model_mk))myfile-model_impl.mk
 
 endif # __mybuild_myfile_model_mk
 

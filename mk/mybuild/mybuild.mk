@@ -6,6 +6,42 @@
 ifndef __mybuild_mybuild_mk
 __mybuild_mybuild_mk := 1
 
+ifeq (1,0)
+
+include mk/mybuild/myfile-resource.mk
+
+# Constructor args:
+#   1. List of resource objects.
+define class-Mybuild
+	$(super CompositeLinkageUnit)
+
+	$(getter children,
+		$(get resources))
+
+	$(property-field resources... : MyFileResource,$1)
+
+	# Param:
+	#   1. The resource.
+	$(method getResourceImportNormalizers,
+		$(for root <- $(get 1->rootObject),
+			$(with $(get root->name),
+				$(if $1,
+					$(assert $(singleword [$1]))
+					$1.)%)))
+
+	$(invoke link)
+
+	$(for l <- $(get unresolvedLinks),
+		$(set+ $(get l->eResource).issues,
+			$(new UnresolvedLinkIssue,$l)))
+
+	$(for r <- $(get resources),
+		issue <- $(get r->issues),
+		$(invoke issue->report))
+endef
+
+else
+
 include mk/mybuild/resource.mk
 
 # Constructor args:
@@ -36,6 +72,8 @@ define class-mybuild
 
 	$(if $(value 1),$(invoke link,$1))
 endef
+
+endif
 
 mybuild_model_instance = $(__mybuild_model_instance)
 
