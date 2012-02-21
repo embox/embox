@@ -34,7 +34,6 @@ ifeq (1,0) ###
 export mk_model := $(MK_CACHE_DIR)/mk_model.mk
 $(mk_model) : CACHE_INCLUDES := \
 	mk/model/model.mk     \
-	mk/model/factory.mk   \
 	mk/model/metamodel.mk \
 	mk/model/resource.mk  \
 	mk/model/linkage.mk
@@ -46,10 +45,10 @@ $(mk_model) : ALLOC_SCOPE := d
 export mk_mybuild := $(MK_CACHE_DIR)/mk_mybuild.mk
 $(mk_mybuild) : CACHE_INCLUDES := \
 	mk/mybuild/myfile-model.mk     \
-	mk/mybuild/myfile-factory.mk   \
 	mk/mybuild/myfile-metamodel.mk \
 	mk/mybuild/myfile-resource.mk  \
-	mk/mybuild/myfile-parser.mk
+	mk/mybuild/myfile-parser.mk    \
+	mk/mybuild/mybuild.mk
 $(mk_mybuild) : CACHE_REQUIRES := \
 	$(mk_core_def) \
 	$(mk_gold_engine) \
