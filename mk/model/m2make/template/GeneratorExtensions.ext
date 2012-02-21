@@ -11,10 +11,6 @@ fileName(EPackage this, String fileKind) :
 //	name.toLowerCase() + "-" +
 	fileKind + ".mk";
 
-includeFile(EPackage this, String fileKind, String anotherFileKind) :
-	"include $(dir $(" + inclusionGuard(fileKind) + "))"
-		+ fileName(anotherFileKind);
-
 private inclusionGuardPrefix(EPackage this) :
 //	((String) GLOBALVAR INCLUSION_GUARD_PREFIX) + name.toLowerCase() + "_";
 	"__model_";
@@ -24,15 +20,9 @@ inclusionGuard(EPackage this, String fileKind) :
 
 inclusionGuardBegin(EPackage this, String fileKind) :
 	"ifndef " + inclusionGuard(fileKind) + "\n" +
-	inclusionGuard(fileKind) + " := $(lastword $(MAKEFILE_LIST))";
+	inclusionGuard(fileKind) + " := 1";
 
 inclusionGuardEnd(EPackage this, String fileKind) :
-	"endif # " + inclusionGuard(fileKind);
-
-implInclusionCheck(EPackage this, String fileKind) :
-	"ifndef " + inclusionGuard(fileKind) + "\n" +
-	"$(error \\\n\tDo not include this file directly, include '" +
-		fileName(fileKind) + "' instead!)\n" +
 	"endif # " + inclusionGuard(fileKind);
 
 comment(String this) :
@@ -44,19 +34,10 @@ nsName(ENamedElement this, EPackage pkg) : name.nsName(pkg);
 metaModelInitializer(EPackage this) : "__" + name.toFirstLower() + "_init";
 metaModelBinder(EPackage this) :      "__" + name.toFirstLower() + "_bind";
 
-factoryName(EPackage this) :         name.toFirstUpper() + "Factory";
-factoryInstanceName(EPackage this) : name.toFirstLower() + "Factory";
-
 withModelPrefix(String this, EPackage model):
 	model.name.toFirstUpper() + "_" + this;
 
-nodeImplName(EPackage this) :        name.toFirstUpper() + "NodeImpl";
-
 className(EClass this) :     nsName(ePackage).toFirstUpper();
-classImplName(EClass this) : nsName(ePackage).toFirstUpper() + "Impl";
-
-referenceClassImplName(EClass this) :
-	"ReferenceTo" + nsName(ePackage).toFirstUpper() + "Impl";
 
 memberCardinality(ETypedElement this) : many ? "..." : "";
 memberType(ETypedElement this)        : eType.memberTypeFor();
@@ -80,9 +61,6 @@ propertyLinkSignature(EReference this) :
 	propertyLinkName() + memberCardinality() + propertyLinkType();
 
 methodName(EOperation this) : name.toFirstLower();
-
-factoryMethodName(EClassifier this) :
-	"create" + id();
 
 id(EOperation this)         : eContainingClass.id() + "_" + methodName();
 id(EStructuralFeature this) : eContainingClass.id() + "_" + propertyName();

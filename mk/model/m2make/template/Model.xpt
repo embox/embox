@@ -27,13 +27,8 @@ $(def_all)
 «FOREACH eAllSuperTypes.reverse() AS superType -»
 «EXPAND classMembersComment("inherited from '" + superType.name + "'") FOR superType -»
 «ENDFOREACH -»
-«IF abstract || interface -»
-# This is an «"abstract ".ifIs(abstract) +
-	"interface ".ifIs(interface)»class. You can't instantiate it directly.
-«ELSE -»
-# To instantiate this class use '«ePackage.factoryName()».«factoryMethodName()»'.
-«ENDIF -»
-define class-«className()»
+define class-«className() -»
+		«IF abstract» # abstract«ELSEIF interface» # interface«ENDIF»
 «IF className() != "EObject" -»
 «IF !eSuperTypes.isEmpty -»
 	# Extends '«eSuperTypes.className()
