@@ -24,6 +24,9 @@ define builtin_func-eobject
 
 		$$(getter eMetaClassId,
 			$1)
+		# A little optimization.
+		$$(getter eMetaClass,
+			$$($1))
 	)
 endef
 
