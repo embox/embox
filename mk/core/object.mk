@@ -776,11 +776,10 @@ define builtin_func-get-field
 	$(call __object_member_parse,$1,$(lambda \
 		# 1. Empty for 'this', target object otherwise.
 		# 2. Referenced field.
-		$(call __object_member_access_wrap,$1,
-			$(def-ifdef OBJ_DEBUG,
-				$$(call __field_get_debug,$2),
-				$$($$(__this).$$(call __field_check,$2))
-			)
+		$(def-ifdef OBJ_DEBUG,
+			$(call __object_member_access_wrap,$1,
+				$$(call __field_get_debug,$2)),
+			$$($(or $1,$$(this)).$2)
 		)
 	))
 endef
