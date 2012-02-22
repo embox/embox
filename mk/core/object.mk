@@ -873,26 +873,6 @@ endef
 builtin_func-instance-of = \
 	$(foreach builtin_name,instance_of,$(builtin_to_function_inline))
 
-# Get all instances of all classes
-define get-instances
-	$(error $0: DEPRECATED!)
-	$(__object_instance_cnt:%=.obj%)
-endef
-
-
-# Get all instances of speceifed classes
-#   1. Class name (optional).
-define get-instances-of
-	$(error $0: DEPRECATED!)
-	$(if $(call value,1),
-		$(foreach i,$(call get-instances),
-			$(instance-of $i,$1)
-		)
-		,
-		$(call get-instances)
-	)
-endef
-
 # Tells whether a given object has the specified field.
 #   1. Reference to check.
 #   2. Field name.
@@ -1004,28 +984,27 @@ define builtin_macro-__class__
 		$(call var_assign_simple,$(__class__).methods,
 			$(notdir $(call __class_attr_query,method%,%)))
 		$(call var_assign_simple,$(__class__).properties,
-			$(basename $(subst [],,
-				$(notdir $(call __class_attr_query,property,%)))))
+			$(call __member_name,$(call __class_attr_query,property,%)))
 
 		# Special subsets of fields (for faster traversing/serialization).
 		$(with $(notdir $(call __class_attr_query,field,%)),
 
 			$(call var_assign_simple,$(__class__).fields,
-				$(basename $(subst [],,$1)))
+				$(call __member_name,$1))
 
 			# List of references: 'name[].type'
 			$(call var_assign_simple,$(__class__).reference_list_fields,
-				$(basename $(subst [],,$(for f <- $1,
-						$(if $(findstring [].,$f),$f)))))
+				$(call __member_name,$(for f <- $1,
+						$(if $(findstring [].,$f),$f))))
 
 			# Single reference: 'name.type'
 			$(call var_assign_simple,$(__class__).reference_scalar_fields,
-				$(basename $(for f <- $1,
+				$(call __member_name,$(for f <- $1,
 						$(and $(not $(findstring [],$f)),$(suffix $f),$f))))
 
 			# Plain list: 'name[]'
 			$(call var_assign_simple,$(__class__).raw_list_fields,
-				$(subst [],,$(for f <- $1,
+				$(call __member_name,$(for f <- $1,
 						$(and $(findstring [],$f),$(not $(suffix $f)),$f))))
 
 			# Raw value: 'name'
@@ -1034,7 +1013,7 @@ define builtin_macro-__class__
 					$($(__class__).reference_list_fields) \
 					$($(__class__).reference_scalar_fields) \
 					$($(__class__).raw_list_fields),
-						$(basename $(subst [],,$1))))
+						$(call __member_name,$1)))
 		)
 
 	)
@@ -1205,30 +1184,22 @@ define builtin_func-super
 	# Copy function table from super class, but not override functions, that
 	# have already been defined in the current class - they always take
 	# a precedence over inherited ones. XXX That's not so for now. -- Eldar
-	$(silent-foreach f,
-		$(notdir $(call __class_attr_query_in,$1,method% xetter%,%)),
+	$(silent-for f <- $(call __member_name,
+				$(call __class_attr_query_in,$1,method method_stub,%)),
 		# XXX There used to be a call to '__class_new_func_weak'... -- Eldar
-		$(call __class_new_func,$f,$(value $1.$f))
-	)
+		$(call __class_new_func,$f,$(value $1.$f)))
+
+	$(silent-for t <- getter setter setter+ setter-,
+		f <- $(call __member_name,
+				$(call __class_attr_query_in,$1,$t $t_stub,%)),
+		$(call __class_new_func,$f.$t,$(value $1.$f.$t)))
 endef
 
-#
-# $(method name,body...)
-#
-define builtin_func-method
-	$(if $(multiword $(builtin_args_list)),
-
-		# Method with an implementation.
-		$(call __class_new_attr_func,method,$(trim $1),
-			$$(foreach this,$$(__this),$(builtin_nofirstarg))),
-
-		# Abstract method, define a stub.
-		$(call __class_new_attr_func,method_stub,$(trim $1),
-			$$(error Invoking unimplemented abstract method $0, \
-					declared in class $(__class__)))
-
-	)
-endef
+# Converts internal member representation ('flavor/name[].type')
+# into a plain 'name'. All components except the name itself are optional,
+# e.g. 'name.type' or 'flavor/name[]' are both OK.
+__member_name = \
+	$(notdir $(basename $(subst [],,$1)))
 
 # Params:
 #   1. Field name to parse in form 'name[...][:{*|type}]'.
@@ -1273,17 +1244,18 @@ define __member_name_parse
 	)
 endef
 
-# Checks that a property/field being defined does not conflicts with an already
+# Checks that a member being defined does not conflicts with an already
 # declared one (if any).
-#   1. 'property' or 'field'.
+#   1. 'method', 'method_stub', 'property' or 'field'.
 #   2. Name.
 #   3. Cardinality: '...' or empty.
 #   4. Type: '*', class name, or empty.
 define __member_check_and_def_attr
 	$(foreach m_new,$2$(if $3,[])$(if $4,.$4),
 		$(foreach m_old,
-			$(with $1,$2,
-				$(notdir $(call __class_attr_query,$1,$2 $2[] $2.% $2[].%)),
+			$(with $(1:%_stub=%),$2,
+				$(notdir $(call __class_attr_query,
+					$1 $1_stub,$2 $2[] $2.% $2[].%)),
 				# TODO check it. -- Eldar
 				$(assert $(not $(multiword $3)),
 					__class_attr_query returned too many for '$2' $1: '$3')
@@ -1292,7 +1264,7 @@ define __member_check_and_def_attr
 
 			$(if $(not $(eq $(m_new),$(m_old))),
 				$(call builtin_error,
-					Conflicting property type/cardinality: \
+					Conflicting $1 type/cardinality: \
 					'$(subst [],...,$(subst ., : ,$(m_new)))'$(\comma) \
 					previously declared as \
 					'$(subst [],...,$(subst ., : ,$(m_old)))')
@@ -1301,6 +1273,37 @@ define __member_check_and_def_attr
 
 		$(call __class_new_attr,$1,$(m_new))
 	)
+endef
+
+#
+# $(method name,body...)
+#
+define builtin_func-method
+	$(and $(call __member_name_parse,$1,$(lambda \
+		# 1. Name.
+		# 2. '...', or empty.
+		# 3. Type, '*', or empty.
+		# 4. $(builtin_nofirstarg)
+
+		$(if $(multiword $(builtin_args_list)),
+
+			# Method with an implementation.
+			$(call __member_check_and_def_attr,method,$1,$2,$3)
+			$(call __class_new_func,$1,
+				$$(foreach this,$$(__this),$4)),
+
+			# Abstract method, define a stub.
+			$(call __member_check_and_def_attr,method_stub,$1,$2,$3)
+			$(call __class_new_func,$1,
+				$$(error Invoking unimplemented abstract method $0, \
+						declared in class $(__class__)))
+
+		)
+
+		# Due to current design of '__member_name_parse', we have to return
+		# something to indicate that everything is ok.
+		42# <- the answer.
+	),$(builtin_nofirstarg)),)# <- Suppress the output.
 endef
 
 #
@@ -1344,7 +1347,8 @@ define __builtin_func_xetter
 		)
 	)
 
-	$(call __class_new_attr_func,xetter,$1.$(builtin_name),
+	$(call __class_new_attr,$(builtin_name),$1)
+	$(call __class_new_func,$1.$(builtin_name),
 		$(or \
 			$(def-ifdef OBJ_DEBUG,
 				$(if $(filter setter%,$(builtin_name)),
@@ -1379,14 +1383,17 @@ define builtin_func-property
 
 		$(call __member_check_and_def_attr,property,$1,$2,$3)
 
-		$(call __class_new_attr_func,xetter_stub,$1.getter,
+		$(call __class_new_attr,getter_stub,$1)
+		$(call __class_new_func,$1.getter,
 				$$(call __xetter_noimpl,getter,$$(basename $$0)))
 
-		$(call __class_new_attr_func,xetter_stub,$1.setter,
+		$(call __class_new_attr,setter_stub,$1)
+		$(call __class_new_func,$1.setter,
 				$$(call __xetter_noimpl,setter,$$(basename $$0)))
 
 		$(foreach s, + -,
-			$(call __class_new_attr_func,xetter_stub,$1.setter$s,
+			$(call __class_new_attr,setter$s_stub,$1)
+			$(call __class_new_func,$1.setter$s,
 				$(if $2,$$(call __setter$s,$$(basename $$0),$$1),
 						$$(call __setterx_noimpl,$s,$$(basename $$0))))
 		)
@@ -1458,14 +1465,17 @@ define builtin_func-property-field
 
 		$(call __member_check_and_def_attr,property,$1,$2,$3)
 
-		$(call __class_new_attr_func,xetter_stub,$1.getter,
+		$(call __class_new_attr,getter_stub,$1)
+		$(call __class_new_func,$1.getter,
 				$$($$(__this).$1))
 
-		$(call __class_new_attr_func,xetter_stub,$1.setter,
+		$(call __class_new_attr,setter_stub,$1)
+		$(call __class_new_func,$1.setter,
 				$$(call __field_set,$1,$$1))
 
 		$(foreach s, + -,
-			$(call __class_new_attr_func,xetter_stub,$1.setter$s,
+			$(call __class_new_attr,setter$s_stub,$1)
+			$(call __class_new_func,$1.setter$s,
 				$(if $2,$$(call __field_set$s,$1,$$1),
 						$$(call __setterx_noimpl,$s,$$(basename $$0))))
 		)
