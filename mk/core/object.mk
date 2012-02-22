@@ -435,17 +435,56 @@ new = \
 define __new
 	# It is mandatory for object references to start with a period.
 	$(foreach this,.obj$(call alloc,obj),
-		$(def-ifdef OBJ_DEBUG,
-			$(warning $(this):  	new    $(__class__): $(__obj_debug_args)))
+		$(__obj_trace_push $(this),new    $(__class__): $(__obj_debug_args))
 		${eval \
 			$(this) := $(__class__)$(\n)
 			# Call the constructor.
 			$$(and $(value class-$(__class__)),)
 		}
+		$(__obj_trace_pop $(this),new    $(__class__))
 		$(this)
 	)
 endef
 
+ifdef OBJ_DEBUG
+
+__obj_trace_stack :=
+
+# Param:
+#   1. Obj.
+#   2. Msg.
+__obj_trace = \
+	$(warning $(__obj_trace_stack:%=>$(\t))$1:	$2)
+
+# Param:
+#   1. Obj.
+#   2. Msg.
+define __obj_trace_push
+	$(__obj_trace)
+	${eval __obj_trace_stack += x}
+endef
+
+# Param:
+#   1. Obj.
+#   2. Msg.
+define __obj_trace_pop
+	${eval __obj_trace_stack := $(nofirstword $(__obj_trace_stack))}
+	$(__obj_trace)
+endef
+
+builtin_func-__obj_trace      = $(builtin_to_function_call)
+builtin_func-__obj_trace_push = $(builtin_to_function_call)
+builtin_func-__obj_trace_pop  = $(builtin_to_function_call)
+
+$(def_all)
+
+else
+builtin_func-__obj_trace      :=
+builtin_func-__obj_trace_push :=
+builtin_func-__obj_trace_pop  :=
+endif
+
+ifdef OBJ_DEBUG
 # Return:
 #   Human-readable list of args from 1 up to '__obj_debug_args_nr',
 #   or 'no args' if '__obj_debug_args_nr' is 0.
@@ -460,6 +499,7 @@ define __obj_debug_args
 #		<no args>
 	)
 endef
+endif
 
 # Params:
 #   1. Class name.
@@ -598,22 +638,23 @@ define builtin_func-invoke
 	),$(builtin_nofirstarg))
 endef
 
+ifdef OBJ_DEBUG
 # Params:
 #   1..N: Args...
-#   N+1:  Method
 # Context:
 #   '__class__'
-ifdef OBJ_DEBUG
 define __method_invoke_debug
 	$(foreach __obj_debug_args_nr,$(word $(__args_nr),0 1 2 3 4 5 6 7 8 9),
-		$(warning $(__this):  	invoke $($(__this)).$(__method_name): \
+		$(__obj_trace_push $(__this),invoke $($(__this)).$(__method_name): \
 				$(__obj_debug_args))
 	)
-	$(foreach 0,$(or $(call var_recursive,$($(__this)).$(__method_name)),
-			$(error No method '$(__method_name)', \
-					invoked on object '$(__this)' of type '$($(__this))')),
-		$(expand $(value $0))
-	)
+	$(with \
+		$(foreach 0,$(or $(call var_recursive,$($(__this)).$(__method_name)),
+				$(error No method '$(__method_name)', \
+						invoked on object '$(__this)' of type '$($(__this))')),
+			$(expand $(value $0))),
+		$(__obj_trace_pop $(__this),invoke $($(__this)).$(__method_name) = '$1')
+		$1)
 endef
 endif
 
@@ -640,13 +681,13 @@ define builtin_func-get
 	))
 endef
 
+ifdef OBJ_DEBUG
 # Params:
 #   1. Property name.
 # Context:
 #   '__this'
-ifdef OBJ_DEBUG
 define __property_get_debug
-	$(warning $(__this):  	get    $($(__this)).$1)
+	$(__obj_trace_push $(__this),get    $($(__this)).$1)
 
 	$(with \
 		$1,
@@ -656,7 +697,7 @@ define __property_get_debug
 						on object '$(__this)' of type '$($(__this))'))
 		),
 
-		$(warning $(__this):  	get    $($(__this)).$1 = '$2')
+		$(__obj_trace_pop $(__this),get    $($(__this)).$1 = '$2')
 		$2
 	)
 
@@ -689,22 +730,22 @@ define __builtin_func_set
 	),$(builtin_nofirstarg))
 endef
 
+ifdef OBJ_DEBUG
 # Params:
 #   1. Property name.
 #   2. '+', '-', or empty.
 #   3. Value.
 # Context:
 #   '__this'
-ifdef OBJ_DEBUG
 define __property_set_debug
-	$(warning $(__this):  	set$(or $2,$(\s))   $($(__this)).$1: '$3')
+	$(__obj_trace_push $(__this),set$(or $2,$(\s))   $($(__this)).$1: '$3')
 
 	$(call $(or $(call var_recursive,$($(__this)).$1.setter$2),
-			$(error \
-					No property '$1', performing 'set$2' \
-					on object '$(__this)' of type '$($(__this))')),
-		$3
-	)
+			$(error No property '$1', performing 'set$2' \
+				on object '$(__this)' of type '$($(__this))')),
+		$3)
+
+	$(__obj_trace_pop $(__this),set$(or $2,$(\s))   $($(__this)).$1)
 endef
 endif
 
@@ -745,13 +786,13 @@ define builtin_func-get-field
 endef
 
 
+ifdef OBJ_DEBUG
 # Params:
 #   1. Field name.
 # Context:
 #   '__this'
-ifdef OBJ_DEBUG
 define __field_get_debug
-	$(warning $(__this):  	f-get  $($(__this)).$1= \
+	$(__obj_trace $(__this),f-get  $($(__this)).$1 = \
 		'$($(__this).$(call __field_check,$1))')
 	$($(__this).$(call __field_check,$1))
 endef
@@ -786,7 +827,7 @@ endef
 # Context:
 #   '__this'
 define __field_set
-	$(def-ifdef OBJ_DEBUG,$(warning $(__this):  	f-set  $($(__this)).$1: '$2'))
+	$(__obj_trace $(__this),f-set  $($(__this)).$1: '$2')
 
 	${eval \
 		override $(__this).$(__field_check) := $$2
@@ -799,7 +840,7 @@ endef
 # Context:
 #   '__this'
 define __field_set+
-	$(def-ifdef OBJ_DEBUG,$(warning $(__this):  	f-set+ $($(__this)).$1: '$2'))
+	$(__obj_trace $(__this),f-set+ $($(__this)).$1: '$2')
 
 	${eval \
 		override $(__this).$(__field_check) += $$2
@@ -812,7 +853,7 @@ endef
 # Context:
 #   '__this'
 define __field_set-
-	$(def-ifdef OBJ_DEBUG,$(warning $(__this):  	f-set- $($(__this)).$1: '$2'))
+	$(__obj_trace $(__this),f-set- $($(__this)).$1: '$2')
 
 	${eval \
 		override $(__this).$(__field_check) := \
