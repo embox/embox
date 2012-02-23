@@ -20,6 +20,7 @@
 target_name=sparc-leon-elf
 target_configure_options=--with-soft-fp
 
+prefix_dir=/tmp
 binutils_name=binutils-2.22
 gcc_name=gcc-4.6.2
 gmp_name=gmp-5.0.2
@@ -36,7 +37,7 @@ tar xjf $binutils_name.tar.bz2
 
 mkdir build-binutils
 cd build-binutils
-../$binutils_name/configure --prefix=/cygdrive/c/tmp/$target_name-$gcc_name --target=$target_name \
+../$binutils_name/configure --prefix=$prefix_dir/$target_name-$gcc_name --target=$target_name \
  --disable-werror --disable-nls
 make && make install
 cd ..
@@ -76,7 +77,7 @@ ln -s ../$mpfr_name $gcc_name/mpfr
 
 mkdir build-gcc
 cd build-gcc
-../$gcc_name/configure --prefix=/cygdrive/c/tmp/$target_name-$gcc_name --target=$target_name --disable-werror \
+../$gcc_name/configure --prefix=$prefix_dir/$target_name-$gcc_name --target=$target_name --disable-werror \
  --with-gnu-ld  --disable-nls --disable-multilib --with-gnu-as   --without-headers  \
  --enable-languages=c --disable-libssp --with-mpfr-include=$(pwd)/../$gcc_name/mpfr/src \
  --with-mpfr-lib=$(pwd)/mpfr/src/.libs  $target_configure_options
@@ -98,7 +99,7 @@ cd ..
 
 #mkdir build-gdb
 #cd build-gdb
-#../$gdb_name/configure -prefix=/cygdrive/c/tmp/$target_name-$gcc_name --target=$target_name
+#../$gdb_name/configure -prefix=$prefix_dir/$target_name-$gcc_name --target=$target_name
 #make && make install
 #cd ..
 
