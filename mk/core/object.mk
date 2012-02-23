@@ -588,12 +588,12 @@ endef
 # Return:
 #   The code (wrapped if needed).
 define __object_member_access_wrap
-	$$(foreach __this,$(if $1,
+	$$(foreach __this,
+		$(if $1,
 			$$(call __object_check,$1
 					$(def-ifdef OBJ_DEBUG,$(\comma)$(subst $$,$$$$,$1))),
 			$$(this)),
-		$2
-	)
+		$2)
 endef
 
 $(def_all)
@@ -604,11 +604,8 @@ $(def_all)
 # Return:
 #   The trimmed argument if it is a single word, fails with an error otherwise.
 define __object_check
-	$(or \
-		$(suffix $(singleword $1)),
-		$(error \
-				Invalid object reference: '$1'$(def-ifdef OBJ_DEBUG, ($2)))
-	)
+	$(or $(if $(word 2,$1),,$(suffix $1)),
+		$(error Invalid object reference: '$1'$(def-ifdef OBJ_DEBUG, ($2))))
 endef
 
 #
@@ -779,7 +776,7 @@ define builtin_func-get-field
 		$(def-ifdef OBJ_DEBUG,
 			$(call __object_member_access_wrap,$1,
 				$$(call __field_get_debug,$2)),
-			$$($(or $1,$$(this)).$2)
+			$$($(if $1,$$(suffix $1),$$(this)).$2)
 		)
 	))
 endef
