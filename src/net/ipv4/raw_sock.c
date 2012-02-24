@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Implementes raw socket function.
+ * @brief Implements raw socket function.
  *
  * @date 04.02.10
  * @author Anton Bondarev

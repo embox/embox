@@ -30,6 +30,7 @@
 
 EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 
+
 /**
  * ICMP Build xmit assembly blocks
  */
@@ -250,7 +251,7 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 static int icmp_init(void) {
 	int res;
 
-	res = kernel_socket_create(PF_INET, SOCK_RAW, IPPROTO_IP, &icmp_socket);
+	res = kernel_socket_create(PF_INET, SOCK_RAW, IPPROTO_ICMP, &icmp_socket);
 	if (res < 0) {
 		return res;
 	}
