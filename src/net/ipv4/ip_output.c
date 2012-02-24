@@ -38,7 +38,6 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	hdr->frag_off = skb->offset;
 	hdr->frag_off |= IP_DF;
 	hdr->frag_off = htons(hdr->frag_off);
-	//hdr->frag_off = htons(IP_DF);
 	hdr->proto = proto;
 	ip_send_check(hdr);
 	return 0;
@@ -52,13 +51,8 @@ static int build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 }
 
 #define LB_ADDRESS 0x0100007F 	/* loopback = 127.0.0.1 */
+
 int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
-//	struct sock *sk = skb->sk;
-//	struct inet_sock *inet = inet_sk(sk);
-//	struct ip_options *opt = inet->opt;
-//	struct iphdr *iph = skb->nh.iph;
-	/*TODO: route*/
-//	iph->ttl      = 64;
 	skb->protocol = ETH_P_IP;
 	/* check if we are sending ip packet to our machine */
 	if(skb->nh.iph->daddr == skb->nh.iph->saddr &&
@@ -89,7 +83,6 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 
 	if (sk->sk.sk_type != SOCK_RAW) {
 		build_ip_packet(sk, skb);
-		//skb->len += IP_HEADER_SIZE;
 	}
 	if (ip_route(skb)) {
 		kfree_skb(skb);

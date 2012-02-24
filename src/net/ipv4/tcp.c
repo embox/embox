@@ -408,8 +408,6 @@ static int tcp_st_close(struct tcp_sock *tcpsk, struct sk_buff *skb,
 }
 static int tcp_st_estabil(struct tcp_sock *tcpsk, struct sk_buff *skb,
 		tcphdr_t *tcph, tcphdr_t *out_tcph) {
-//	unsigned long seq = ntohl(tcph->seq);
-	//unsigned long ack = ntohl(tcph->ack_seq);
 	int data_len;
 
 	assert(TCP_SOCK(tcpsk)->sk_state == TCP_ESTABIL);
@@ -532,14 +530,12 @@ static void tcp_v4_process(struct tcp_sock *tcpsk, sk_buff_t *skb) {
 	printf("===== process: start %d =====\n", level++);
 	if (skb->h.th->ack) {
 		if (tcp_handle(tcpsk, skb, pre_process) < 0) {
-//			return;
 			goto leave;
 		}
 	}
 
 	if (tcp_rexmit(tcpsk)) {
-//		return;
-//		goto leave;
+		goto leave;
 	}
 
 	printf("process: sock state = %d\n", sk->sk_state);
@@ -696,32 +692,5 @@ struct proto tcp_prot = {
 	.sock_alloc		= tcp_v4_sock_alloc,
 	.sock_free		= tcp_v4_sock_free,
 	.obj_size = sizeof(struct tcp_sock),
-#if 0
-	.owner                  = THIS_MODULE,
-	.connect                = tcp_v4_connect,
-	.disconnect             = tcp_disconnect,
-	.ioctl                  = tcp_ioctl,
-	.destroy                = tcp_v4_destroy_sock,
-	.shutdown               = tcp_shutdown,
-	.setsockopt             = tcp_setsockopt,
-	.getsockopt             = tcp_getsockopt,
-	.recvmsg                = tcp_recvmsg,
-	.backlog_rcv            = tcp_v4_do_rcv,
-	.get_port               = inet_csk_get_port,
-	.enter_memory_pressure  = tcp_enter_memory_pressure,
-	.sockets_allocated      = &tcp_sockets_allocated,
-	.orphan_count           = &tcp_orphan_count,
-	.memory_allocated       = &tcp_memory_allocated,
-	.memory_pressure        = &tcp_memory_pressure,
-	.sysctl_mem             = sysctl_tcp_mem,
-	.sysctl_wmem            = sysctl_tcp_wmem,
-	.sysctl_rmem            = sysctl_tcp_rmem,
-	.max_header             = MAX_TCP_HEADER,
-	.obj_size               = sizeof(struct tcp_sock),
-	.slab_flags             = SLAB_DESTROY_BY_RCU,
-	.twsk_prot              = &tcp_timewait_sock_ops,
-	.rsk_prot               = &tcp_request_sock_ops,
-	.h.hashinfo             = &tcp_hashinfo,
-#endif
 };
 

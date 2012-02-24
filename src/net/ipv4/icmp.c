@@ -49,10 +49,6 @@ struct icmp_bxm {
 		uint32_t times[3];  /* Used by the ICMP_TIMESTAMPREPLY message type */
 	} data;
 	int head_len;           /* Size of the ICMP header */
-#if 0
-	struct ip_options replyopts;
-	unsigned char  optbuf[40];
-#endif
 };
 
 /**
@@ -64,31 +60,6 @@ typedef int (*icmp_control)(sk_buff_t *skb);
 static socket_t *icmp_socket; /* Socket for transmitting ICMP messages */
 
 static icmp_control icmp_handlers[]; /* ICMP control handlers */
-
-#if 0
-/**
- * Driving logic for building and sending ICMP messages.
- * Used by the ICMP protocol to reply to ingress ICMP request messages
- * that require a response (ECHO and TIMESTAMP).
- *
- * @param icmp_param
- * @param skb_in
- */
-static int icmp_reply(struct icmp_bxm *icmp_param, sk_buff_t *skb_in) {
-	sk_buff_t *skb = skb_copy(icmp_param->skb, 0);
-	skb->dev = icmp_param->skb->dev;
-	skb->h.icmph->type = icmp_param->data.icmph.type;
-	skb->h.icmph->code = icmp_param->data.icmph.code;
-	skb->h.icmph->checksum = 0;
-	/* TODO checksum must be at network byte order */
-	skb->h.icmph->checksum = ptclbsum(skb->h.raw,
-				htons(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph));
-	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
-	ip_send_reply(NULL, icmp_param->skb->nh.iph->daddr,
-				icmp_param->skb->nh.iph->saddr, skb, 0);
-	return ENOERR;
-}
-#endif
 
 static int icmp_discard(sk_buff_t *skb) {
 	/* nothing to do here */
@@ -169,15 +140,6 @@ static int icmp_echo(sk_buff_t *skb) {
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
 	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, reply, 0);
 	return ENOERR;
-#if 0
-	skb->h.icmph->type = ICMP_ECHOREPLY;
-	/* TODO checksum must be at network byte order */
-	skb->h.icmph->checksum = 0;
-	skb->h.icmph->checksum = ptclbsum(skb->h.raw, htons(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph));
-	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
-	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, skb, 0);
-	return ENOERR;
-#endif
 }
 
 static int icmp_timestamp(sk_buff_t *skb) {
@@ -281,10 +243,6 @@ static icmp_control icmp_handlers[NR_ICMP_TYPES] = {
 		[ICMP_TIMESTAMPREPLY] = icmp_discard,
 		[ICMP_INFO_REQUEST]   = icmp_discard,
 		[ICMP_INFO_REPLY]     = icmp_discard
-#if 0
-		[ICMP_ADDRESS]        = icmp_address,
-		[ICMP_ADDRESSREPLY]   = icmp_address_reply
-#endif
 };
 
 /**

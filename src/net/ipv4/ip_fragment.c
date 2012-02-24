@@ -197,14 +197,10 @@ static void buf_delete(struct dgram_buf *buf) {
 struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	struct dgram_buf *buf;
 	int mf_flag;
-	//int df_flag;
 	int offset;
 
 	mf_flag = ntohs(skb->nh.iph->frag_off);
-	//df_flag = mf_flag;
 	mf_flag &= IP_MF;
-
-	//df_flag &= IP_DF;
 
 	offset = ntohs(skb->nh.iph->frag_off);
 	offset &= IP_OFFSET;
@@ -255,7 +251,6 @@ struct sk_buff_head *ip_frag(struct sk_buff *skb) {
 		fragment = alloc_skb(align_MTU, 0);
 		memcpy(fragment->data + len, skb->data + offset, align_MTU);
 		fragment->h.raw = fragment->data + len;
-		//fragment->h.uh->len = htons(MTU - len);
 		fragment->nh.raw = (unsigned char *) fragment->data + ETH_HEADER_SIZE;
 		fragment->offset = (offset - len) >> 3; /* data offset */
 		fragment->offset |= IP_MF;
