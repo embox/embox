@@ -1,0 +1,15 @@
+
+package embox.pnet.node
+
+module null {
+	source "null.c"
+}
+
+module linux_layer {
+	source "linux_layer.c"
+}
+
+module info_printer {
+	source "info_printer.c"
+}
+

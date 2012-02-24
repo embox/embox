@@ -4,6 +4,6 @@ package embox.test.hal
 module ipl_test {
 	source "ipl_test.c"
 	depends embox.kernel.irq
-	depends embox.hal.interrupt
+	depends embox.arch.interrupt
 }
 

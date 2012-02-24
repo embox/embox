@@ -8,6 +8,6 @@ module nxt_lcd {
 module nxt_diag_lcd extends embox.driver.diag.diag_api {
 	source "diag.c"
 	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
-	depends embox.lego_nxt.driver.nxt_lcd
+	depends lego_nxt.driver.nxt_lcd
 	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
 }
