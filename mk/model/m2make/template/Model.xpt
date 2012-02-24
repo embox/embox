@@ -66,10 +66,12 @@ endef
 «ENDDEFINE»
 
 
-
 «DEFINE feature FOR EStructuralFeature»
 «IF !derived -»
 	# Property '«propertySignature()»'«IF !changeable» (read-only)«ENDIF».
+«IF EReference.isInstance(this) && ((EReference) this).isLinkableReference() -»
+	# Property '«((EReference) this).propertyLinkSignature()»'«IF !changeable» (read-only)«ENDIF».
+«ENDIF -»
 «EXPAND nonVolatileFeature -»
 «ELSE -»
 	# «featureInfo() -»
@@ -98,10 +100,6 @@ endef
 	«mkProperty(propertyName() + memberCardinality() + memberType())»
 «PROTECT CSTART '\t# ' CEND '' ID id()»
 «EXPAND volatileFeatureStubs(propertyName()) -»
-«IF EReference.isInstance(this) && ((EReference) this).isLinkableReference() -»
-	# Property '«((EReference) this).propertyLinkSignature()»'«IF !changeable» (read-only)«ENDIF».
-«EXPAND volatileFeatureStubs(((EReference) this).propertyLinkName()) -»
-«ENDIF -»
 «ENDPROTECT»
 «ENDDEFINE»
 
@@ -120,13 +118,13 @@ endef
 «ENDDEFINE»
 
 «DEFINE operation FOR EOperation»
-	# Method '«methodName() + memberCardinality() + memberType()»'.
+	# Method '«methodSignature()»'.
 «FOREACH eParameters AS param ITERATOR i -»
 	#   «i.counter1». «param.name + param.memberCardinality() + param.memberType()»
 «ENDFOREACH -»
 «PROTECT CSTART '\t# ' CEND '' ID id()»
 #	# TODO Uncomment and implement me.
-	«mkMethod(methodName(),
+	«mkMethod(methodSignature(),
 	"$(error $0(" + eParameters.collect(p | "$" + counterInc()).toString(",") +
 			"): NIY)")»
 «ENDPROTECT»

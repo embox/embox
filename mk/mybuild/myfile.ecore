@@ -44,6 +44,10 @@
         eType="#//Feature" eOpposite="#//Feature/providedBy"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="requires" upperBound="-1"
         eType="#//Feature" eOpposite="#//Feature/requiredBy"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sources" upperBound="-1"
+        eType="#//File" containment="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="objects" upperBound="-1"
+        eType="#//File" containment="true" resolveProxies="false"/>
     <eGenericSuperTypes eClassifier="#//Entity"/>
     <eGenericSuperTypes eClassifier="#//Extendable">
       <eTypeArguments eClassifier="#//Module"/>
@@ -81,5 +85,7 @@
       <eGenericType eTypeParameter="#//Extendable/T"/>
     </eStructuralFeatures>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Filename"/>
+  <eClassifiers xsi:type="ecore:EClass" name="File">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileName" eType="ecore:EDataType emodel.ecore#//EString"/>
+  </eClassifiers>
 </ecore:EPackage>

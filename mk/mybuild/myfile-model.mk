@@ -133,10 +133,12 @@ define class-MyFeature
 		interface,MyInterface,features,changeable container)
 
 	# Property 'providedBy... : MyModule'.
+	# Property 'providedBy_links... : ELink'.
 	$(eobject-reference MyFile_Feature_providedBy,
 		providedBy,MyModule,provides,changeable many linkable)
 
 	# Property 'requiredBy... : MyModule'.
+	# Property 'requiredBy_links... : ELink'.
 	$(eobject-reference MyFile_Feature_requiredBy,
 		requiredBy,MyModule,requires,changeable many linkable)
 
@@ -155,6 +157,8 @@ endef
 #   - reference 'dependent'
 #   - reference 'provides'
 #   - reference 'requires'
+#   - reference 'sources'
+#   - reference 'objects'
 #
 # The following features and operations are inherited from 'Extendable':
 #   - reference 'subTypes'
@@ -187,20 +191,32 @@ define class-MyModule
 		isAbstract,changeable)
 
 	# Property 'depends... : MyModule'.
+	# Property 'depends_links... : ELink'.
 	$(eobject-reference MyFile_Module_depends,
 		depends,MyModule,dependent,changeable many linkable)
 
 	# Property 'dependent... : MyModule'.
+	# Property 'dependent_links... : ELink'.
 	$(eobject-reference MyFile_Module_dependent,
 		dependent,MyModule,depends,changeable many linkable)
 
 	# Property 'provides... : MyFeature'.
+	# Property 'provides_links... : ELink'.
 	$(eobject-reference MyFile_Module_provides,
 		provides,MyFeature,providedBy,changeable many linkable)
 
 	# Property 'requires... : MyFeature'.
+	# Property 'requires_links... : ELink'.
 	$(eobject-reference MyFile_Module_requires,
 		requires,MyFeature,requiredBy,changeable many linkable)
+
+	# Property 'sources... : MyFile'.
+	$(eobject-reference MyFile_Module_sources,
+		sources,MyFile,,changeable many containment)
+
+	# Property 'objects... : MyFile'.
+	$(eobject-reference MyFile_Module_objects,
+		objects,MyFile,,changeable many containment)
 
 	# PROTECTED REGION ID(Module) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -230,10 +246,12 @@ define class-MyExtendable # abstract
 		MyExtendable,ENamedObject,abstract)
 
 	# Property 'subTypes... : MyExtendable'.
+	# Property 'subTypes_links... : ELink'.
 	$(eobject-reference MyFile_Extendable_subTypes,
 		subTypes,MyExtendable,superType,changeable many linkable)
 
 	# Property 'superType : MyExtendable'.
+	# Property 'superType_link : ELink'.
 	$(eobject-reference MyFile_Extendable_superType,
 		superType,MyExtendable,subTypes,changeable linkable)
 
@@ -275,15 +293,20 @@ define class-MyExtendable # abstract
 endef
 
 #
-# Model object 'Filename'.
+# Model object 'File'.
 #
-# No features or operations defined.
+# The following features are defined:
+#   - attribute 'fileName'
 #
-define class-MyFilename
-	$(eobject MyFile_Filename,
-		MyFilename,,)
+define class-MyFile
+	$(eobject MyFile_File,
+		MyFile,,)
 
-	# PROTECTED REGION ID(Filename) ENABLED START
+	# Property 'fileName'.
+	$(eobject-attribute MyFile_File_fileName,
+		fileName,changeable)
+
+	# PROTECTED REGION ID(File) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
