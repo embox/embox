@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 18.11.2011
@@ -33,9 +32,12 @@ struct example_bm_free_block {
 	} end;
 };
 
-static struct example_bm_free_block_link free_blocks = {&free_blocks,  &free_blocks};
+static struct example_bm_free_block_link free_blocks = {
+	&free_blocks,
+	&free_blocks
+};
 
-void free_block_add(void *block, size_t size) {
+static void free_block_add(void *block, size_t size) {
 	struct example_bm_free_block *header = block;
 
 	header->size = size;
@@ -66,25 +68,25 @@ static void *example_malloc(size_t size) {
 		return NULL;
 	}
 
-	for(link = free_blocks.next; link != &free_blocks; link = link->next) {
+	for (link = free_blocks.next; link != &free_blocks; link = link->next) {
 		block = (struct example_bm_free_block *)(((int)link)- 4);
-		if(size > block->size) {
+		if (size > block->size) {
 			continue;
 		}
 
-		if((size >= (block->size)) && (size <= (block->size + sizeof(*block)))) {
+		if (size >= block->size && size <= (block->size + sizeof(*block))) {
 			/*list_unlink();*/
 			link->next->prev = link->prev;
 			link->prev->next = link->next;
 
 			mark_busy(block);
-			return (uint32_t *)(block) + 1;
+			return (uint32_t *) block + 1;
 		}
-		if(size < (block->size)) { /* cut a peace of the block*/
+		if (size < block->size) { /* cut a peace of the block*/
 			/* */
 			struct example_bm_free_block *new_block;
 
-			new_block = (struct example_bm_free_block *)((char *)(block) + size);
+			new_block = (struct example_bm_free_block *)((char *) block + size);
 
 			new_block->link.next = block->link.next;
 			new_block->link.prev = block->link.prev;
@@ -95,10 +97,9 @@ static void *example_malloc(size_t size) {
 			block->link.prev->next = &new_block->link;
 			block->link.next->prev = &new_block->link;
 
-
 			mark_busy(block);
 
-			return (uint32_t *)(block) + 1;
+			return (uint32_t *) block + 1;
 		}
 	}
 	return NULL;

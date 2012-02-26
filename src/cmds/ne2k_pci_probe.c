@@ -58,7 +58,7 @@ static int exec(int argc, char **argv) {
 
 	dev = netdev_get_by_name("eth0");
 	if (dev == NULL) {
-		printf("Couldn't find NE2K_PCI device");
+		printf("Couldn't find NE2K_PCI device\n");
 		return -1;
 	}
 

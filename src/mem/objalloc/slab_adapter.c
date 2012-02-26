@@ -1,4 +1,5 @@
 /**
+ * @file
  * @brief Implementation of memory allocation API.
  *        It allocates object have some size in cache using slab allocator
  *

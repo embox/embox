@@ -50,8 +50,8 @@ static int unit_init(void) {
 	out8(NON_SPEC_EOI, PIC1_COMMAND);
 	out8(NON_SPEC_EOI, PIC2_COMMAND);
 
-    out8(PICM_MASK, PIC1_DATA);
-    out8(PICS_MASK, PIC2_DATA);
+	out8(PICM_MASK, PIC1_DATA);
+	out8(PICS_MASK, PIC2_DATA);
 
 	interrupt_enable(2); /* enable slave irq controller irq 8-16 */
 

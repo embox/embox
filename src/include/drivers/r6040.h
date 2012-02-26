@@ -6,8 +6,8 @@
  * @author Nikolay Korotkiy
  */
 
-#ifndef R6040_H_
-#define R6040_H_
+#ifndef NET_R6040_H_
+#define NET_R6040_H_
 
 #define R6040_RX_DESCRIPTORS 32
 
@@ -29,4 +29,4 @@ extern unsigned short r6040_mdio_read(int, int);
 
 extern int r6040_wait_linkup(void);
 
-#endif /* R6040_H_ */
+#endif /* NET_R6040_H_ */

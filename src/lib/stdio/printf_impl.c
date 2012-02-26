@@ -214,6 +214,8 @@ int __print(void (*printchar_handler)(char **str, int c),
 				pc += prints(printchar_handler, out, scr, width, pad);
 				continue;
 			case 'f':
+			case 'e':
+			case 'g':
 				/*TODO: printf haven't realized float variable operations*/
 				continue;
 			}

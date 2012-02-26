@@ -1,5 +1,7 @@
 /**
+ * @file
  * @brief IP Fragmentation
+ *
  * @date 25.11.2011
  * @author Alexander Kalmuk
  */
@@ -21,14 +23,14 @@
 struct dgram_buf {
 	struct sk_buff   *next_skbuff;
 	struct sk_buff   *prev_skbuff;
-	struct list_head  next_buf; /* linked list pointers	*/
+	struct list_head  next_buf; /* linked list pointers */
 	in_addr_t         saddr;
 	in_addr_t         daddr;
 	uint16_t          id;
 	uint8_t           protocol;
 	int               uncomplete;
 	int               meat;
-	int               len; /* total length of original datagram	*/
+	int               len; /* total length of original datagram */
 	struct sys_timer *timer;
 	int               proto;
 	int               buf_ttl;
@@ -213,7 +215,7 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 			skb = (sk_buff_t *)NULL;
 			return skb;
 		}
-		if ((buf = ip_find(skb->nh.iph)) == NULL) {
+		if (NULL == (buf = ip_find(skb->nh.iph))) {
 			buf = buf_create(skb->nh.iph);
 		}
 
