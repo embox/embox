@@ -1,5 +1,0 @@
-#!/bin/sh
-
-/sbin/ip tuntap add mode tap tap0
-/usr/sbin/ethtool -K tap0 rx off tx off gro off
-/sbin/ifconfig tap0 10.0.2.15 up

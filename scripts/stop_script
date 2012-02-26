@@ -1,3 +1,0 @@
-#!/bin/sh
-
-/sbin/ip tuntap del mode tap tap0
