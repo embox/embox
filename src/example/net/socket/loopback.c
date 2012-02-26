@@ -88,11 +88,8 @@ static int run(int argc, char **argv) {
 	 *
 	 * function returns 0 if receiving is success
 	 * */
-	if (0 > (recvfrom(sock,
-			&msg_recv,
-			msg_size, 0,
-			(struct sockaddr *) &addr,
-			&addr_size))) {
+	if (0 > (recvfrom(sock, &msg_recv, msg_size, 0,
+			(struct sockaddr *) &addr, &addr_size))) {
 		/* if receiving was failed report about it and exit from test */
 		printf("\nCan't receive message");
 		return 0;

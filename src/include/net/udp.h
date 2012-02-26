@@ -6,8 +6,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef UDP_H_
-#define UDP_H_
+#ifndef NET_UDP_H_
+#define NET_UDP_H_
 
 #include <net/inet_sock.h>
 
@@ -55,4 +55,4 @@ extern int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 extern int udp_disconnect(struct sock *sk, int flags);
 extern void *get_udp_sockets(void);
 
-#endif /* UDP_H_ */
+#endif /* NET_UDP_H_ */

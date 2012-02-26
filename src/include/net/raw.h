@@ -1,17 +1,15 @@
 /**
- * @raw.h
+ * @file
  * @brief Definitions for the RAW-IP module.
  *
  * @date 16.02.10
  * @author Nikolay Korotky
  */
 
-#ifndef RAW_H
-#define RAW_H
+#ifndef NET_RAW_H_
+#define NET_RAW_H_
 
 #include <net/inet_sock.h>
-
-
 
 typedef struct raw_sock {
 	/* inet_sock has to be the first member */
@@ -28,4 +26,4 @@ static inline raw_sock_t *raw_sk(const struct sock *sk) {
 extern int raw_rcv(struct sk_buff *);
 extern void raw_err(sk_buff_t *skb, uint32_t info);
 
-#endif /* RAW_H */
+#endif /* NET_RAW_H_ */

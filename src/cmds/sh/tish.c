@@ -53,8 +53,8 @@ static int run_cmd(int argc, char *argv[]) {
 	}
 
 	if (0 != (code = cmd_exec(cmd, argc, argv))) {
-		printf("%s: Command returned with code %d: %s\n", cmd_name(cmd), code,
-				strerror(-code));
+		printf("%s: Command returned with code %d: %s\n",
+				cmd_name(cmd), code, strerror(-code));
 	}
 	return code;
 }

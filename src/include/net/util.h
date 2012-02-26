@@ -5,13 +5,13 @@
  * @author Nikolay Korotky
  */
 
-#ifndef NETUTILS_H_
-#define NETUTILS_H_
+#ifndef NET_UTIL_H_
+#define NET_UTIL_H_
 
-unsigned char *ipaddr_scan(const unsigned char *addr, unsigned char *res);
-unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res);
-void macaddr_print(unsigned char *buf, const unsigned char *addr);
-int is_addr_from_net(const unsigned char *uip,
+extern unsigned char *ipaddr_scan(const unsigned char *addr, unsigned char *res);
+extern unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res);
+extern void macaddr_print(unsigned char *buf, const unsigned char *addr);
+extern int is_addr_from_net(const unsigned char *uip,
 		    const unsigned char *nip, unsigned char msk);
 
-#endif /* NETUTILS_H_ */
+#endif /* NET_UTIL_H_ */

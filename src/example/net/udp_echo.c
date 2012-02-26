@@ -1,7 +1,7 @@
 /**
  * @file
- * @brief
- * UDP echo server
+ * @brief UDP echo server
+ *
  * @date 17.10.11
  * @author Alexander Kalmuk
  *	- Receive

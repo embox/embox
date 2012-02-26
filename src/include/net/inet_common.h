@@ -6,8 +6,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef _INET_COMMON_H
-#define _INET_COMMON_H
+#ifndef INET_COMMON_H_
+#define INET_COMMON_H_
 
 extern int  inet_release(struct socket *sock);
 extern int  inet_dgram_connect(struct socket *sock,
@@ -26,4 +26,4 @@ extern int  inet_getname(struct socket *sock,
 extern int  inet_ioctl(struct socket *sock,
 				unsigned int cmd, unsigned long arg);
 
-#endif /* _INET_COMMON_H */
+#endif /* INET_COMMON_H_ */

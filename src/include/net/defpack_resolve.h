@@ -1,5 +1,8 @@
 /**
+ * @file
+ *
  * @date 13.12.11
+ * @author Alex Kalmuk
  */
 
 #ifndef NET_DEFFPACKET_RESOLVE_H_

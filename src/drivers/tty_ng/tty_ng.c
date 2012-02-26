@@ -119,16 +119,16 @@ static void *thread_handler(void* args) {
 static int _ioctl(void *file, int request, va_list args) {
 	struct tty_buf *tty = (struct tty_buf *) ((struct file_desc *) file)->ops;
 	switch (request) {
-		case TTY_IOCTL_SET_RAW:
-			tty->canonical = 0;
-			break;
-		case TTY_IOCTL_SET_CANONICAL:
-			tty->canonical = 1;
-			break;
-		case TTY_IOCTL_REQUEST_MODE:
-			return tty->canonical;
-		default:
-			break;
+	case TTY_IOCTL_SET_RAW:
+		tty->canonical = 0;
+		break;
+	case TTY_IOCTL_SET_CANONICAL:
+		tty->canonical = 1;
+		break;
+	case TTY_IOCTL_REQUEST_MODE:
+		return tty->canonical;
+	default:
+		break;
 	}
 	return 0;
 }
@@ -161,7 +161,7 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 		return;
 	}
 
-	for (int i = 0; i < count; i++) {
+	for (size_t i = 0; i < count; i++) {
 		init(&ttys[i]);
 		tty_init(&ttys[i]);
 		descs[i].ops = &ttys[i].file_op;

@@ -6,8 +6,8 @@
  * @author Anton Kozlov
  */
 
-#ifndef _PNET_CORE_H
-#define _PNET_CORE_H
+#ifndef PNET_CORE_H_
+#define PNET_CORE_H_
 
 #include <pnet/types.h>
 
@@ -44,4 +44,4 @@ extern net_node_t pnet_dev_get_entry(void);
 
 extern int pnet_rx_thread_add(net_packet_t pack);
 
-#endif
+#endif /* PNET_CORE_H_ */

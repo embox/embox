@@ -1,8 +1,11 @@
 /**
+ * @file
+ *
  * @date 18.11.11
+ * @author Alex Kalmuk
  */
-#ifndef _NET_PORT_H
-#define _NET_PORT_H
+#ifndef NET_PORT_H_
+#define NET_PORT_H_
 
 #include <net/socket.h>
 
@@ -18,4 +21,4 @@ extern int socket_port_unlock(short port, unsigned short port_type);
 extern short socket_get_free_port(unsigned short sock_type);
 extern int socket_set_port_type(struct socket *sock);
 
-#endif /* _INET_COMMON_H */
+#endif /* NET_PORT_H_ */

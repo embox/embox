@@ -6,8 +6,8 @@
  * @author Anton Kozlov
  */
 
-#ifndef _PNET_SOCKET_H
-#define _PNET_SOCKET_H
+#ifndef PNET_SOCKET_H_
+#define PNET_SOCKET_H_
 
 #include <pnet/types.h>
 
@@ -23,4 +23,5 @@ extern int pnet_socket_send(net_socket_t node, void *data, int len);
 extern int pnet_socket_receive(net_socket_t  node, void *data, int len);
 
 extern net_socket_t pnet_socket_open(net_id_t id, net_node_t parent);
-#endif
+
+#endif /* PNET_SOCKET_H_ */

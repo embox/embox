@@ -7,8 +7,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef IP_H_
-#define IP_H_
+#ifndef NET_IP_H_
+#define NET_IP_H_
 
 #include <net/in.h>
 #include <net/skbuff.h>
@@ -130,4 +130,4 @@ extern const struct proto_ops inet_stream_ops;
 
 extern struct net_proto_family inet_family_ops;
 
-#endif /* IP_H_ */
+#endif /* NET_IP_H_ */

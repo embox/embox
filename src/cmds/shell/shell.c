@@ -40,8 +40,8 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
 	}
 
 	if (0 != (code = cmd_exec(cmd, argc, argv))) {
-		printf("%s: Command returned with code %d: %s\n", cmd_name(cmd), code,
-				strerror(-code));
+		printf("%s: Command returned with code %d: %s\n",
+				cmd_name(cmd), code, strerror(-code));
 	}
 }
 

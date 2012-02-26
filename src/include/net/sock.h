@@ -6,8 +6,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef SOCK_H_
-#define SOCK_H_
+#ifndef NET_SOCK_H_
+#define NET_SOCK_H_
 
 #include <net/netdevice.h>
 #include <kernel/thread/sync/mutex.h>
@@ -177,4 +177,4 @@ extern int sock_getsockopt(socket_t *sock, int level, int op, char *optval, int 
 extern sk_buff_t *sock_alloc_send_skb(sock_t *sk, unsigned long size, int noblock, int *errcode);
 #endif
 
-#endif /* SOCK_H_ */
+#endif /* NET_SOCK_H_ */

@@ -7,8 +7,8 @@
  */
 
 //#include <net/skbuff.h>
-#ifndef _PNET_TYPES_H
-#define _PNET_TYPES_H
+#ifndef PNET_TYPES_H_
+#define PNET_TYPES_H_
 
 #include <net/in.h>
 #include <net/if_ether.h>
@@ -59,4 +59,4 @@ struct pnet_dev {
 #include <pnet/proto.h>
 #include __module_headers(embox/pnet/core/pack/api)
 
-#endif
+#endif /* PNET_TYPES_H_ */

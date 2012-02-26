@@ -7,8 +7,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef PRIOR_PATH_H_
-#define PRIOR_PATH_H_
+#ifndef PNET_PRIOR_PATH_H_
+#define PNET_PRIOR_PATH_H_
 
 #include <net/netdevice.h>
 #include <net/in.h>
@@ -25,4 +25,4 @@ struct pnet_path {
 
 extern struct pnet_path *pnet_get_dev_prior(struct net_device *dev);
 
-#endif /* PRIOR_PATH_H_ */
+#endif /* PNET_PRIOR_PATH_H_ */

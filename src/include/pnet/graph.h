@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 01.11.2011
@@ -41,6 +40,5 @@ extern int pnet_node_link(struct net_node *src, struct net_node *node);
 static inline int pnet_graph_run_valid(struct pnet_graph *graph) {
 	return !((graph != NULL) && (graph->state == PNET_GRAPH_STARTED));
 }
-
 
 #endif /* PNET_GRAPH_H_ */
