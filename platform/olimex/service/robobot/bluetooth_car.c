@@ -34,7 +34,7 @@ static uint8_t determ_ack[ROBOBOT_DETERM_ACK_SIZE] =
 
 //#define MOTOR_DRY_RUN
 
-void turn_right(void) {
+static void turn_right(void) {
 #ifndef MOTOR_DRY_RUN
 	pin_set_output(RIGHT_PIN);
 	pin_clear_output(LEFT_PIN);
@@ -42,7 +42,7 @@ void turn_right(void) {
 	pin_clear_output(OLIMEX_SAM7_LED1);
 }
 
-void turn_left(void) {
+static void turn_left(void) {
 #ifndef MOTOR_DRY_RUN
 	pin_clear_output(RIGHT_PIN);
 	pin_set_output(LEFT_PIN);
@@ -50,7 +50,7 @@ void turn_left(void) {
 	pin_clear_output(OLIMEX_SAM7_LED1);
 }
 
-void turn_none(void) {
+static void turn_none(void) {
 #ifndef MOTOR_DRY_RUN
 	pin_clear_output(RIGHT_PIN);
 	pin_clear_output(LEFT_PIN);
@@ -58,7 +58,7 @@ void turn_none(void) {
 	pin_set_output(OLIMEX_SAM7_LED1);
 }
 
-void go_forw(void) {
+static void go_forw(void) {
 #ifndef MOTOR_DRY_RUN
 	pin_set_output(FORWARD_PIN);
 	pin_clear_output(BACKWARD_PIN);
@@ -66,7 +66,7 @@ void go_forw(void) {
 	pin_clear_output(OLIMEX_SAM7_LED2);
 }
 
-void go_back(void) {
+static void go_back(void) {
 #ifndef MOTOR_DRY_RUN
 	pin_clear_output(FORWARD_PIN);
 	pin_set_output(BACKWARD_PIN);
@@ -74,7 +74,7 @@ void go_back(void) {
 	pin_clear_output(OLIMEX_SAM7_LED2);
 }
 
-void go_none(void) {
+static void go_none(void) {
 #ifndef MOTOR_DRY_RUN
 	pin_clear_output(FORWARD_PIN);
 	pin_clear_output(BACKWARD_PIN);
