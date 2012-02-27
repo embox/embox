@@ -34,7 +34,7 @@
 
 EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_init);
 
-EMBOX_NET_SOCK(SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, NULL);
+EMBOX_NET_SOCK(SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, AF_INET);
 
 LIST_HEAD(rexmit_socks);
 

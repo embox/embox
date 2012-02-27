@@ -25,11 +25,24 @@ EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 static struct inet_protosw *inet_proto_find(int type, int protocol) {
 	struct inet_protosw *p_netsock = NULL;
 	const struct net_sock *net_sock_ptr;
+	int net_proto_family;
 
 	net_sock_foreach(net_sock_ptr) {
 		p_netsock = net_sock_ptr->netsock;
-		if (p_netsock->type != type) {
+		net_proto_family = net_sock_ptr->net_proto_family;
+		if (net_proto_family != AF_UNSPEC && net_proto_family != AF_INET) {
 			continue;
+		}
+
+		if(p_netsock->type == SOCK_RAW)
+			return p_netsock;
+
+		if(p_netsock->type != type) {
+			continue;
+		}
+
+		if (IPPROTO_IP == protocol || p_netsock->protocol == protocol) {
+			return p_netsock;
 		}
 
 		return p_netsock;
@@ -145,7 +158,7 @@ int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
 	return sk->sk_prot->sendmsg(iocb, sk, msg, size);
 }
 
-//FIXME add other states handling
+//FIXME add more states handling
 int inet_stream_connect(struct socket *sock, struct sockaddr * addr,
 			int addr_len, int flags) {
 	int err;

@@ -13,7 +13,6 @@
 
 #include <util/array.h>
 #include <framework/mod/self.h>
-#include <framework/mod/member/self.h>
 
 #include "types.h"
 
@@ -25,7 +24,7 @@
 			.netsock = &_sock,                          \
 			.mod = &mod_self                            \
 		});                                                 \
-		MOD_MEMBER_BIND(&__net_sock_mod_ops, &__net##_sock)
+		//MOD_MEMBER_BIND(&__net_sock_mod_ops, &__net##_sock)
 	//MOD_INFO_BIND(&__net_sock_mod_ops, &__net##_sock )
 
 #endif /* FRAMEWORK_NET_SOCK_SELF_IMPL_H_ */

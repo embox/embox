@@ -18,7 +18,10 @@
  */
 
 typedef struct net_sock {
+#if 0
 	struct net_proto_family *net_proto_family;
+#endif
+	int net_proto_family;
 	struct inet_protosw *netsock;
 	/** The corresponding mod. */
 	const struct mod *mod;
