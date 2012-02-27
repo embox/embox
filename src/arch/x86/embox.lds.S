@@ -91,12 +91,10 @@ SECTIONS {
 		*(.rel.iplt)
 	}
 
-	/*
 	/DISCARD/ : {
 		*(.note)
 		*(.note.ABI-tag)
 		*(.eh_frame)
 		*(.comment)
 	}
-	*/
 }
