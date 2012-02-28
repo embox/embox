@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Object pool allocator.
+ * @brief An allocator's API for fixed-size objects.
  *
  * @author Kirill Tyushev
  * @author Eldar Abusalimov
@@ -15,7 +15,7 @@
 #include <util/macro.h>
 #include <util/slist.h>
 
-/* Representation of the pool*/
+/** Representation of the pool*/
 struct pool {
 	/* Place in memory for allocation */
 	void * memory;
@@ -27,13 +27,14 @@ struct pool {
 	size_t obj_size;
 	/* Size of pool */
 	size_t pool_size;
-	/* Boundary, after which begin
-	 * non-allocated memory */
+	/* Boundary, after which begin non-allocated memory */
 	void * bound_free;
 };
 
 /**
- * create cache
+ * Create pool descriptor. The memory for pool is allocated in special section
+ * "reserve.pool"
+ *
  * @param name of cache
  * @param type of objects in cache
  * @param count of objects in cache

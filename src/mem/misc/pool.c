@@ -1,6 +1,10 @@
 /**
  * @file
  * @brief	Fixed-size pool with fixed size objects
+ * @details This implementation base on single list structure.
+ *     When object is being allocated it first of all try to find one in the
+ *     single list or just increasing pointer to free space in the pool.
+ *     When freeing object happens the object just added to the head of the list.
  *
  * @date	17.11.11
  * @author	Gleb Efimov
