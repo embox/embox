@@ -25,7 +25,7 @@ void *pool_alloc(struct pool* pool) {
 		pool->bound_free += pool->obj_size;
 		return addr;
 	}
-	printk("pool.c: pool_alloc: couldn't allocate memory\n");
+
 	return NULL;
 }
 
