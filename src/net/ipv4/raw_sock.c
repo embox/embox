@@ -20,7 +20,7 @@
 static struct proto raw_prot;
 static const struct proto_ops inet_sockraw_ops;
 
-EMBOX_NET_SOCK(SOCK_RAW, IPPROTO_IP, raw_prot, inet_sockraw_ops, 0, AF_UNSPEC);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, raw_prot, inet_sockraw_ops, 0);
 
 static raw_sock_t *raw_hash[CONFIG_MAX_KERNEL_SOCKETS];
 

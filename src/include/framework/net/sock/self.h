@@ -11,8 +11,8 @@
 
 #include __impl_x(framework/net/sock/self_impl.h)
 
-#define EMBOX_NET_SOCK(_type, _protocol, _prot, _ops, _no_check, 	\
-						net_proto_family)   	\
+#define EMBOX_NET_SOCK(net_proto_family, _type, _protocol, _prot, _ops,		\
+						_no_check)   	\
 	static inet_protosw_t _##_type = { 				\
 			.type = _type,					\
 			.protocol = _protocol,				\

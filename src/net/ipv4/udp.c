@@ -22,7 +22,7 @@
 
 EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
 
-EMBOX_NET_SOCK(SOCK_DGRAM, IPPROTO_UDP, udp_prot, inet_dgram_ops, 0, AF_INET);
+EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, udp_prot, inet_dgram_ops, 0);
 
 static udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
