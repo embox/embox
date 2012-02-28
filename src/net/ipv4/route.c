@@ -73,17 +73,29 @@ int ip_route(sk_buff_t *skb) {
 	struct rt_entry_info *rt_info;
 	struct list_head *tmp;
 	in_addr_t daddr;
+	int arp_resolve_result;
 
 	daddr = skb->nh.iph->daddr;
 	list_for_each(tmp, &rt_entry_info_list) {
 		rt_info = member_cast_out(tmp, struct rt_entry_info, lnk);
 		if ((daddr & rt_info->entry.rt_mask) == rt_info->entry.rt_dst) {
+			/* set the device for current destination address */
 			skb->dev = rt_info->entry.dev;
 			// TODO even if type is SOCK_RAW?
+			/* set the source address */
 			skb->nh.iph->saddr = in_dev_get(skb->dev)->ifa_address;
+			/* if source and destination addresses are equal send via LB interface */
+			if(skb->nh.iph->daddr  == skb->nh.iph->saddr)
+				skb->dev = inet_get_loopback_dev();
+			/* if the packet should be sent using gateway */
 			if (rt_info->entry.rt_gateway != INADDR_ANY) {
+				/* the next line coerses arp_resolve to set HW destination address
+					 to gateway's HW address*/
 				skb->nh.iph->daddr = rt_info->entry.rt_gateway;
-				return arp_resolve(skb);
+				arp_resolve_result = arp_resolve(skb);
+				/* so here we need to return the original destination address */
+				skb->nh.iph->daddr = daddr;
+				return arp_resolve_result;
 			}
 			return ENOERR;
 		}

@@ -50,16 +50,8 @@ static int build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	return 0;
 }
 
-#define LB_ADDRESS 0x0100007F 	/* loopback = 127.0.0.1 */
-
 int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
 	skb->protocol = ETH_P_IP;
-	/* check if we are sending ip packet to our machine */
-	if(skb->nh.iph->daddr == skb->nh.iph->saddr &&
-		 skb->nh.iph->daddr != LB_ADDRESS){ /* loopback has it's own interface */
-		netif_rx(skb);
-		return 0;
-	}
 	return dev_queue_xmit(skb);
 }
 

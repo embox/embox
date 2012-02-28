@@ -122,7 +122,7 @@ int arp_resolve(sk_buff_t *pack) {
 	ip = pack->nh.iph;
 	pack->mac.raw = pack->data;
 	/* loopback */
-	if (ipv4_is_loopback(ip->daddr)) {
+	if (ipv4_is_loopback(ip->daddr) || (ip->daddr == ip->saddr)) {
 		/* Loopback address is 127.*.*.*
 		 * so previous check is incorrect:
 		 * ip->daddr == htonl(INADDR_LOOPBACK) */
@@ -143,6 +143,7 @@ int arp_resolve(sk_buff_t *pack) {
 	/* someone on the net */
 		if ((hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr))) {
 		memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
+
 		return 0;
 	}
 
@@ -150,24 +151,6 @@ int arp_resolve(sk_buff_t *pack) {
 	def_add_packet(pack);
 	arp_send(ARPOP_REQUEST, ETH_P_ARP, ip->daddr, dev, ip->saddr, NULL,
 			dev->dev_addr, NULL);
-
-	/* ARP sender must not wait for ARP response from another host. It add packet in
-	 * list of deferred packets and report on this to socket. When ARP response arrive,
-	 * it report on this and we check our deferred list for arrived
-	 * IP address and then send all corresponding packets. It is so if we not want
-	 * check all ARP cache in cycle (it can be very slow) --Alexander */
-#ifdef TRIVIAL_WAIT
-	/* give some time for response for an hw address to come back */
-	start = clock();
-	/* TODO: is the ARP_RESOLVE_TIMEOUT value set up correctly? find more appropriate value */
-	while(clock() - start < ARP_RESOLVE_TIMEOUT){
-		hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr); /* did we get reply */
-		if(hw_addr){																						/* if yes fill out missing fields and proceed */
-			memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
-			return 0;
-		}
-	}
-#endif
 
 	return -1;
 }

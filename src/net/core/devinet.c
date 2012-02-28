@@ -145,6 +145,10 @@ struct in_device * inet_dev_find_by_name(const char *if_name) {
 	return NULL;
 }
 
+struct net_device *inet_get_loopback_dev(void){
+	return inet_dev_find_by_name("lo")->dev;
+}
+
 int inet_dev_set_interface(const char *if_name, in_addr_t ipaddr,
 		in_addr_t mask, const unsigned char *macaddr) {
 	int res;

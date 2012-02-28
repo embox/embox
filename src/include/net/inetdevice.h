@@ -52,6 +52,12 @@ extern struct net_device *ip_dev_find(in_addr_t addr);
 extern in_device_t *inet_dev_find_by_name(const char *if_name);
 
 /**
+ * Get loopback device. Probably temporarily needed
+ * @return pointer to the loopback device
+ */
+extern struct net_device *inet_get_loopback_dev(void);
+
+/**
  * set all config value for pointed interface
  * @param name - interface name
  * @param ipaddr - ip devices address
