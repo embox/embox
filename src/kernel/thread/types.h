@@ -9,15 +9,16 @@
 #ifndef KERNEL_THREAD_TYPES_H_
 #define KERNEL_THREAD_TYPES_H_
 
+typedef int __thread_id_t;
+typedef short __thread_priority_t;
+typedef unsigned int __thread_state_t;
+
+
 #include <lib/list.h>
 #include <hal/context.h>
 #include <kernel/thread/event.h>
 #include <kernel/thread/sched_strategy.h>
 #include <util/slist.h>
-
-typedef int __thread_id_t;
-typedef short __thread_priority_t;
-typedef unsigned int __thread_state_t;
 
 struct context;
 
