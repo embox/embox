@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <workflow>
-	<property name="model" value="org.mybuild.myfile.codegen/src/emodel.ecore" />
-	<property name="src-gen" value="src-gen" />
+	<property name="model" value="org.mybuild.myfile.codegen/src/myfile.ecore" />
+	<property name="src-gen" value="/home/anton/embox/embox-trunk/mk/mybuild/" />
 
 	<!-- set up EMF for standalone execution -->
 	<bean class="org.eclipse.emf.mwe.utils.StandaloneSetup" >

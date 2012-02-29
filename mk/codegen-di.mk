@@ -44,7 +44,7 @@ package_def = \
 
 generate_package_defs = $(call eol-trim,\n/* Package definitions. */\
   $(foreach package,$(sort generic $(basename $(for m <- $(MODS_BUILD), \
-        $(get m->qualified_name)))), \
+        $(get m->qualifiedName)))), \
     $(package_def) \
   ) \
 )\n
@@ -57,7 +57,7 @@ mod_def = \
 
 generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
   $(for m <- $(MODS_BUILD) $(LIBS_BUILD), \
-        mod <- $(get m->qualified_name), \
+        mod <- $(get m->qualifiedName), \
     $(mod_def) \
   ) \
   $(foreach runlevel,0 1 2 3, \
@@ -69,16 +69,13 @@ generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
 
 generate_mod_deps = $(strip \n/* Mod deps. */\
   $(for m <- $(MODS_BUILD) $(LIBS_BUILD), \
-        mod <- $(get m->qualified_name), \
-    $(for link <- $(get m->depends_refs), \
-          d <- $(get link->dst), \
-          dep <- $(get d->qualified_name), \
+        mod <- $(get m->qualifiedName), \
+    $(for obj_dep <- $(get m->depends), \
+          dep <- $(get obj_dep->qualifiedName), \
       \nMOD_DEP_DEF($(c_mod), $(c_dep)); \
     ) \
-    $(for link <- $(get m->super_module_ref), \
-          d <- $(get link->dst), \
-          mod <- $(get d->qualified_name), \
-          dep <- $(get m->qualified_name), \
+    $(for obj_dep <- $(filter $(get m->subTypes),$(suffix $(MODS_ENABLE_OBJ))), \
+          dep <- $(get obj_dep->qualifiedName), \
       \nMOD_DEP_DEF($(c_mod), $(c_dep)); \
     ) \
     $(if $(value RUNLEVEL-$(mod)), \

@@ -6,7 +6,7 @@
 ifndef __mybuild_mybuild_mk
 __mybuild_mybuild_mk := 1
 
-ifeq (1,0)
+ifeq (1,1)
 
 include mk/mybuild/myfile-resource.mk
 

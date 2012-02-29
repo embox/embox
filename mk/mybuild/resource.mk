@@ -54,8 +54,8 @@ endef
 # param $2 is resource
 # output module object
 define find_mod_in_res
-	$(for e <- $(get $2.exports),
-		$(if $(eq $(basename $e),$1),
+	$(for e <- $(get $2.exportedObjects),
+		$(if $(eq $(get e->qualifiedName),$1),
 			$e))
 endef
 

@@ -45,7 +45,7 @@ $(myfiles_mk) : $(MYFILES_CACHE_DIR)/%.mk : %
 	@SCOPE=`echo '$<' | sum | cut -f 1 -d ' '`; \
 	mkdir -p $(@D) && \
 	$(MAKE) -f mk/script/mk-persist.mk MAKEFILES='$(mk_mybuild)' \
-		PERSIST_OBJECTS='$$(call new,resource,$<)' \
+		PERSIST_OBJECTS='$$(call new,MyFileResource,$<)' \
 		ALLOC_SCOPE="r$$SCOPE" > $@ && \
 	echo '$$(lastword $$(MAKEFILE_LIST)) := '".obj1r$$SCOPE" >> $@
 
@@ -58,7 +58,7 @@ $(mybuild_model_mk) : $(myfiles_mk)
 	@$(foreach f,$(myfiles_mk_removed) ,echo '  D $f';)#
 	@mkdir -p $(@D) && \
 		$(MAKE) -f mk/script/mk-persist.mk MAKEFILES='$(mk_mybuild) $(myfiles_mk)' \
-		PERSIST_OBJECTS='$$(call new,mybuild,$$(foreach f,$$(myfiles_mk),$$($$f)))' \
+		PERSIST_OBJECTS='$$(call new,Mybuild,$$(foreach f,$$(myfiles_mk),$$($$f)))' \
 		PERSIST_REALLOC='my' \
 		ALLOC_SCOPE='m' > $@
 	@echo '__mybuild_model_instance := .my1m' >> $@

@@ -29,7 +29,7 @@ $(mk_gold_engine) : CACHE_REQUIRES := \
 	$(mk_core_def)
 $(mk_gold_engine) : ALLOC_SCOPE := c
 
-ifeq (1,0) ###
+ifeq (1,1) ###
 # Tiny version of EMF Ecore.
 export mk_model := $(MK_CACHE_DIR)/mk_model.mk
 $(mk_model) : CACHE_INCLUDES := \

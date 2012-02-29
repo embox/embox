@@ -24,7 +24,7 @@ image_init image_fini:
 .PHONY: image_prepare
 prepare: image_prepare
 image_prepare:
-	@mkdir -p $(OBJ_SUBDIRS)
+	@mkdir -p $(OBJ_SUBDIRS) 2>/dev/null || echo No objs are built
 
 #TODO rootfs make target is bad stily
 rootfs_prepare: ;
@@ -73,26 +73,26 @@ SRC_TO_OBJ = \
 		$(filter-out %.lds.S,$(abspath $1)))
 
 LIB_FILE = \
-	$(foreach 1,$1,$(LIB_DIR)/$(get $1.qualified_name).a)
+	$(foreach 1,$1,$(LIB_DIR)/$(get $1.qualifiedName).a)
 
 # It's time to scan subdirs and prepare mods info.
 # ...and to build dependency injection model
 include mk/codegen-di.mk
 
 # param $1 is module obj
-module_get_objects = \
-	$(call SRC_TO_OBJ,$(module_get_sources))
 module_get_files = \
-	$(foreach s,$(get $1.sources),$(get s->fullname))
+	$(foreach s,$(get $1.sources),$(get s->fileFullName))
 module_get_sources = \
 	$(filter %.c %.S,$(module_get_files))
 module_get_headers = \
 	$(filter %.h,$(module_get_files))
+module_get_objects = \
+	$(call SRC_TO_OBJ,$(module_get_sources))
 
 filter_abstract_modules = \
-	$(strip $(foreach m,$1,$(if $(filter abstract,$(get m->modifiers)),$m)))
+	$(strip $(foreach m,$1,$(if $(get m->isAbstract),$m)))
 filter_static_modules = \
-	$(strip $(foreach m,$1,$(if $(filter static,$(get m->modifiers)),$m)))
+	$(strip $(foreach m,$1,$(if $(get m->isStatic),$m)))
 
 include mk/mybuild/check.mk
 include mk/mybuild/mybuild.mk
@@ -100,16 +100,18 @@ include mk/mybuild/mybuild.mk
 abstract_deps_check = \
 $(silent-foreach a,$(APIS_BUILD),\
 	$(or $(call find_descedant_obj,$a,$(MODS_ENABLE_OBJ)),\
-		$(error $(get a->qualified_name) has no realization, possible realisation:\
+		$(error $(get a->qualifiedName) has no realization, possible realisation:\
 		$(strip $(foreach r,$(get $(mybuild_model_instance).resources),\
 			$(basename $(call find_descedant_obj,$a,$(get r->exports))))))))
 $(def_all)
+
+#$(error $(MODS_ENABLE) $(\n) $(MODS_ENABLE_OBJ))
 
 APIS_BUILD := $(call filter_abstract_modules,$(MODS_ENABLE_OBJ))
 LIBS_BUILD := $(call filter_static_modules,$(MODS_ENABLE_OBJ))
 MODS_BUILD := $(filter-out $(LIBS_BUILD),$(MODS_ENABLE_OBJ))
 
-$(call abstract_deps_check)
+#$(call abstract_deps_check)
 
 SRCS_BUILD := \
 	$(foreach m,$(MODS_ENABLE_OBJ),$(call module_get_sources,$m))
@@ -138,11 +140,10 @@ define define_mod_obj_rules
 	${eval \
 		$(with $1,$(call module_get_objects,$1),
 			$(if $(get $1.flags),
-				$2 : override CCFLAGS += \
-						$(for s<-$(get $1.flags),$(get s->value))
+				$2 : override CCFLAGS += $(get $1.flags)
 				$(\n))
 			$2 : override CPPFLAGS += \
-					-D__EMBUILD_MOD__='$(subst .,__,$(get $1.qualified_name))'
+					-D__EMBUILD_MOD__='$(subst .,__,$(get $1.qualifiedName))'
 		)
 	}
 endef
