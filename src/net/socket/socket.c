@@ -19,6 +19,7 @@
 #include <util/array.h>
 #include <kernel/task.h>
 #include <net/port.h>
+#include <net/defpack_resolve.h>
 
 #ifndef CONFIG_MAX_KERNEL_SOCKETS
 #define CONFIG_MAX_KERNEL_SOCKETS 0x4
@@ -27,9 +28,6 @@
 
 extern const struct task_res_ops * __task_res_ops[];
 
-#define is_ready(sock) (sock->sk->sk_deferred_info & 0x000000FF)
-#define was_transmit_deferred(sock) ((sock->sk->sk_deferred_info & 0x0000FF00) >> 8)
-#define get_answer_from(sock) ((sock->sk->sk_deferred_info & 0x00FF0000) >> 16)
 
 static ssize_t this_read(int fd, const void *buf, size_t nbyte) {
 	return recvfrom(fd, (void *) buf, nbyte, 0, NULL, 0);

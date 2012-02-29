@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <net/sock.h>
 #include <net/route.h>
+#include <net/defpack_resolve.h>
 
 #include <framework/net/pack/api.h>
 
@@ -102,9 +103,13 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	if (dev->flags & IFF_UP) {
 		res = dev->header_ops->rebuild(skb);
 		if (res < 0) {
-			kfree_skb(skb);
-			if(res != -ENOENT) /* if packet was not deferred */
-				stats->tx_err++;
+			if(!is_ready(skb->sk->sk_socket)) {
+				kfree_skb(skb);
+				if(res != -ENOENT)  {/* if packet was not deferred */
+					stats->tx_err++;
+				}
+			}
+
 			return res;
 		}
 		res = ops->ndo_start_xmit(skb, dev);

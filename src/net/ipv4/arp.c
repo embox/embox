@@ -116,9 +116,7 @@ int arp_resolve(sk_buff_t *pack) {
 	uint8_t *hw_addr;
 	net_device_t *dev;
 	iphdr_t *ip;
-#ifdef TRIVIAL_WAIT
-	uint32_t start;
-#endif
+
 	ip = pack->nh.iph;
 	pack->mac.raw = pack->data;
 	/* loopback */
