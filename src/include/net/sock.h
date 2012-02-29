@@ -89,7 +89,7 @@ typedef struct sock {
 	void (* sk_destruct)(struct sock *sk);
 	int (* get_port)(struct sock *sk, unsigned short num);
 	int sk_err;
-	int sk_deferred_info;
+	int arp_queue_info;
 } sock_t;
 
 /** Sock flags */

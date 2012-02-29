@@ -34,7 +34,7 @@ static inline void set_ready(int arp_queue_info) {
 	arp_queue_info |= 1;
 }
 
-static inline void set_transmitted(int arp_queue_info) {
+static inline void set_transmited(int arp_queue_info) {
 	arp_queue_info |= (1 << 8);
 }
 
@@ -51,9 +51,9 @@ void arp_queue_process(struct sk_buff *arp_pack) {
 
 			list_del(&pack->link);
 
-			set_ready(pack->skb->sk->sk_deferred_info);
-			set_answer(pack->skb->sk->sk_deferred_info, dev_queue_xmit(pack->skb));
-			set_transmitted(pack->skb->sk->sk_deferred_info);
+			set_ready(pack->skb->sk->arp_queue_info);
+			set_answer(pack->skb->sk->arp_queue_info, dev_queue_xmit(pack->skb));
+			set_transmited(pack->skb->sk->arp_queue_info);
 
 			pool_free(&arp_queue_pool, pack);
 		}
@@ -76,7 +76,7 @@ static void arp_queue_drop(struct sys_timer *timer, void *data) {
 	list_del(&deff_pack->link);
 	pool_free(&arp_queue_pool, deff_pack);
 
-	deff_pack->skb->sk->sk_deferred_info |= 1;
+	deff_pack->skb->sk->arp_queue_info |= 1;
 }
 
 int arp_queue_add(struct sk_buff *skb) {
@@ -86,7 +86,7 @@ int arp_queue_add(struct sk_buff *skb) {
 	if(NULL == (queue_pack = (struct pending_packet*)pool_alloc(&arp_queue_pool))) {
 		return -ENOMEM;
 	}
-	skb->sk->sk_deferred_info &= ~1;
+	skb->sk->arp_queue_info &= ~1;
 
 	timer_set(&timer, TTL, arp_queue_drop, queue_pack);
 	queue_pack->timer = timer;

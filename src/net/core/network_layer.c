@@ -105,9 +105,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 		if (res < 0) {
 			if(!is_ready(skb->sk->sk_socket)) {
 				kfree_skb(skb);
-				if(res != -ENOENT)  {/* if packet was not deferred */
-					stats->tx_err++;
-				}
+				stats->tx_err++;
 			}
 
 			return res;

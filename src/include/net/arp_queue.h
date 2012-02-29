@@ -5,8 +5,8 @@
  * @author Alexander Kalmuk
  */
 
-#ifndef NET_DEFFPACKET_RESOLVE_H_
-#define NET_DEFFPACKET_RESOLVE_H_
+#ifndef NET_ARP_QUEUE_H_
+#define NET_ARP_QUEUE_H_
 
 #include <net/skbuff.h>
 
@@ -25,8 +25,8 @@ extern void arp_queue_process(sk_buff_t *arp_pack);
  */
 extern int arp_queue_add(struct sk_buff *pack);
 
-#define is_ready(sock) (sock->sk->sk_deferred_info & 0x000000FF)
-#define was_transmit_deferred(sock) ((sock->sk->sk_deferred_info & 0x0000FF00) >> 8)
-#define get_answer_from(sock) ((sock->sk->sk_deferred_info & 0x00FF0000) >> 16)
+#define is_ready(sock) (sock->sk->arp_queue_info & 0x000000FF)
+#define was_transmited(sock) ((sock->sk->arp_queue_info & 0x0000FF00) >> 8)
+#define get_answer(sock) ((sock->sk->arp_queue_info & 0x00FF0000) >> 16)
 
-#endif /* NET_DEFFPACKET_RESOLVE_H_ */
+#endif /* NET_ARP_QUEUE_H_ */
