@@ -55,6 +55,8 @@ MyFile_Module_sources := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_sources)
 MyFile_Module_objects := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_objects)
+MyFile_Module_flags := \
+	$(call eMetaAttributeCreate,$(MyFile_Module),MyFile_Module_flags)
 
 MyFile_Extendable := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Extendable)
@@ -71,6 +73,8 @@ MyFile_File := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_File)
 MyFile_File_fileName := \
 	$(call eMetaAttributeCreate,$(MyFile_File),MyFile_File_fileName)
+MyFile_File_fileFullName := \
+	$(call eMetaAttributeCreate,$(MyFile_File),MyFile_File_fileFullName)
 
 # Initializes the objects and relations between them.
 define __myFile_init
@@ -100,6 +104,7 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_Module_requires),requires,$(MyFile_Feature),$(MyFile_Feature_requiredBy),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_sources),sources,$(MyFile_File),,changeable many containment)
 	$(call eMetaReferenceInit,$(MyFile_Module_objects),objects,$(MyFile_File),,changeable many containment)
+	$(call eMetaAttributeInit,$(MyFile_Module_flags),flags,changeable)
 
 	$(call eMetaClassInit,$(MyFile_Extendable),Extendable,$(EModel_ENamedObject),abstract)
 	$(call eMetaReferenceInit,$(MyFile_Extendable_subTypes),subTypes,$(MyFile_Extendable),$(MyFile_Extendable_superType),changeable many linkable)
@@ -109,6 +114,7 @@ define __myFile_init
 
 	$(call eMetaClassInit,$(MyFile_File),File,,)
 	$(call eMetaAttributeInit,$(MyFile_File_fileName),fileName,changeable)
+	$(call eMetaAttributeInit,$(MyFile_File_fileFullName),fileFullName,derived)
 
 endef # __myFile_init
 
@@ -138,6 +144,7 @@ define __myFile_bind
 	$(call eMetaFeatureBind,$(MyFile_Module_requires),requires)
 	$(call eMetaFeatureBind,$(MyFile_Module_sources),sources)
 	$(call eMetaFeatureBind,$(MyFile_Module_objects),objects)
+	$(call eMetaFeatureBind,$(MyFile_Module_flags),flags)
 
 	$(call eMetaClassBind,$(MyFile_Extendable),MyExtendable)
 	$(call eMetaFeatureBind,$(MyFile_Extendable_subTypes),subTypes)
@@ -147,6 +154,7 @@ define __myFile_bind
 
 	$(call eMetaClassBind,$(MyFile_File),MyFile)
 	$(call eMetaFeatureBind,$(MyFile_File_fileName),fileName)
+	$(call eMetaFeatureBind,$(MyFile_File_fileFullName),fileFullName)
 
 endef # __myFile_bind
 

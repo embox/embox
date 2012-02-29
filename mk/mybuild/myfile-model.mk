@@ -159,6 +159,7 @@ endef
 #   - reference 'requires'
 #   - reference 'sources'
 #   - reference 'objects'
+#   - attribute 'flags'
 #
 # The following features and operations are inherited from 'Extendable':
 #   - reference 'subTypes'
@@ -217,6 +218,10 @@ define class-MyModule
 	# Property 'objects... : MyFile'.
 	$(eobject-reference MyFile_Module_objects,
 		objects,MyFile,,changeable many containment)
+
+	# Property 'flags'.
+	$(eobject-attribute MyFile_Module_flags,
+		flags,changeable)
 
 	# PROTECTED REGION ID(Module) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -297,6 +302,7 @@ endef
 #
 # The following features are defined:
 #   - attribute 'fileName'
+#   - attribute 'fileFullName'
 #
 define class-MyFile
 	$(eobject MyFile_File,
@@ -305,6 +311,13 @@ define class-MyFile
 	# Property 'fileName'.
 	$(eobject-attribute MyFile_File_fileName,
 		fileName,changeable)
+
+	# Attribute 'fileFullName': derived, read-only.
+	$(property fileFullName)
+	# PROTECTED REGION ID(File_fileFullName) ENABLED START
+	$(getter fileFullName,
+		$(dir $(get $(get eResource).fileName))$(get fileName))
+	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(File) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.

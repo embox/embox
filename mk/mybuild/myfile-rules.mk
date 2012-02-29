@@ -81,7 +81,12 @@ define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 
 		$(set module->superType_link,$4)
 
-		$(set module->depends_links,$(filter-patsubst depends_links/%,%,$6))
+		$(silent-foreach attr, \
+				sources \
+				flags \
+				depends_links,\
+				$(set module->$(attr),\
+					$(filter-patsubst $(attr)/%,%,$6)))
 
 		$(module)
 	)
@@ -193,7 +198,7 @@ endef
 # Rule: <MakeFlags> ::= flags <StringList>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-MakeFlags_flags
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(addprefix $1/,$2)
 endef
 
 # Rule: <MakeRule> ::= <Filename> <Prerequisites> <Recipes>
@@ -233,7 +238,11 @@ $(gold_grammar)_produce-FeatureRef   = $(new ELink,$1,$(gold_location))
 # <ModuleRef> ::= <QualifiedName>
 $(gold_grammar)_produce-ModuleRef    = $(new ELink,$1,$(gold_location))
 # <Filename> ::= StringLiteral
-#$(gold_grammar)_produce-Filename_StringLiteral     = $(new filename,$1)
+$(gold_grammar)_produce-Filename_StringLiteral     = \
+	$(for file <- $(new MyFile),\
+		$(set file->fileName,$1)\
+		$(file))
+
 # <String> ::= StringLiteral
 #$(gold_grammar)_produce-String_StringLiteral       = $(new string,$1)
 
