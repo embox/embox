@@ -19,7 +19,7 @@
 #include <util/array.h>
 #include <kernel/task.h>
 #include <net/port.h>
-#include <net/defpack_resolve.h>
+#include <net/arp_queue.h>
 
 #ifndef CONFIG_MAX_KERNEL_SOCKETS
 #define CONFIG_MAX_KERNEL_SOCKETS 0x4

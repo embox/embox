@@ -21,7 +21,7 @@
 #include <net/neighbour.h>
 #include <time.h>
 
-#include <net/defpack_resolve.h>
+#include <net/arp_queue.h>
 
 /*
  * FIXME:
@@ -146,7 +146,7 @@ int arp_resolve(sk_buff_t *pack) {
 	}
 
 	/* send arp request and add packet in list of deferred packets */
-	def_add_packet(pack);
+	arp_queue_add(pack);
 	arp_send(ARPOP_REQUEST, ETH_P_ARP, ip->daddr, dev, ip->saddr, NULL,
 			dev->dev_addr, NULL);
 
@@ -201,7 +201,7 @@ static int arp_process(sk_buff_t *skb) {
 	switch (ntohs(arp->ar_op)) {
 		case ARPOP_REPLY:
 			res = received_resp(skb);
-			def_process_list(skb);
+			arp_queue_process(skb);
 			kfree_skb(skb);
 			return res;
 		case ARPOP_REQUEST:

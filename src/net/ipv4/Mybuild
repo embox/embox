@@ -8,13 +8,13 @@ module af_inet {
 	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
 
-module defpack {
-	source "defpack_resolve.c"
+module arp_queue {
+	source "arp_queue.c"
 }
 
 module arp {
 	source "arp.c"
-	depends embox.net.neighbour, defpack
+	depends embox.net.neighbour, arp_queue
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 	make flags "-I$(SRC_DIR)/compat/linux/include"
 }

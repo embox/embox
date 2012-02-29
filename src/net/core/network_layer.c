@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <net/sock.h>
 #include <net/route.h>
-#include <net/defpack_resolve.h>
+#include <net/arp_queue.h>
 
 #include <framework/net/pack/api.h>
 
