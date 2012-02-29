@@ -34,7 +34,7 @@ static inline void set_ready(int arp_queue_info) {
 	arp_queue_info |= 1;
 }
 
-static inline void set_transmited(int arp_queue_info) {
+static inline void set_transmitted(int arp_queue_info) {
 	arp_queue_info |= (1 << 8);
 }
 
@@ -53,7 +53,7 @@ void arp_queue_process(struct sk_buff *arp_pack) {
 
 			set_ready(pack->skb->sk->arp_queue_info);
 			set_answer(pack->skb->sk->arp_queue_info, dev_queue_xmit(pack->skb));
-			set_transmited(pack->skb->sk->arp_queue_info);
+			set_transmitted(pack->skb->sk->arp_queue_info);
 
 			pool_free(&arp_queue_pool, pack);
 		}

@@ -155,7 +155,7 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
 
-	if(sock->sk && was_transmited(sock) != 0) {
+	if(sock->sk && was_transmitted(sock) != 0) {
 		sock_lock(sock->sk);
 		while(!is_ready(sock));
 		sock_unlock(sock->sk);
