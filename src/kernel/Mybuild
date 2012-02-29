@@ -5,6 +5,7 @@ module main {
 	source "init.c", "nosys.c"
 	/*FIXME mybuild linker scripts */
 	source "nosys.lds"
+	depends embox.prom.printf
 	depends embox.arch.libarch
 	depends embox.arch.locore
 }
