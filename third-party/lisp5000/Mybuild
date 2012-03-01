@@ -1,0 +1,8 @@
+
+package third_party.lisp
+
+module lisp5000 {
+	source "lisp500.c"
+	make "rootfs" : "init500lite.lisp", "fib.lisp"
+	depends embox.mem.heap_api
+}
