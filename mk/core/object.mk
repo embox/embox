@@ -757,10 +757,8 @@ endif
 define __field_check
 	$(if $(findstring simple,$(flavor $(__this).$1)),
 		$1,
-		$(error \
-				No field '$1', \
-				referenced on object '$(__this)' of type '$($(__this))')
-	)
+		$(error No field '$1', \
+				referenced on object '$(__this)' of type '$($(__this))'))
 endef
 
 #
@@ -781,7 +779,6 @@ define builtin_func-get-field
 	))
 endef
 
-
 ifdef OBJ_DEBUG
 # Params:
 #   1. Field name.
@@ -789,8 +786,8 @@ ifdef OBJ_DEBUG
 #   '__this'
 define __field_get_debug
 	$(__obj_trace $(__this),f-get  $($(__this)).$1 = \
-		'$($(__this).$(call __field_check,$1))')
-	$($(__this).$(call __field_check,$1))
+		'$($(__this).$(__field_check))')
+	$($(__this).$(__field_check))
 endef
 endif
 
@@ -826,7 +823,7 @@ define __field_set
 	$(__obj_trace $(__this),f-set  $($(__this)).$1: '$2')
 
 	${eval \
-		override $(__this).$(__field_check) := $$2
+		$(__this).$(__field_check) := $$2
 	}
 endef
 
@@ -839,7 +836,7 @@ define __field_set+
 	$(__obj_trace $(__this),f-set+ $($(__this)).$1: '$2')
 
 	${eval \
-		override $(__this).$(__field_check) += $$2
+		$(__this).$(__field_check) += $$2
 	}
 endef
 
@@ -852,9 +849,236 @@ define __field_set-
 	$(__obj_trace $(__this),f-set- $($(__this)).$1: '$2')
 
 	${eval \
-		override $(__this).$(__field_check) := \
+		$(__this).$(__field_check) := \
 			$$(filter-out $$2,$$($(__this).$1))
 	}
+endef
+
+#
+# Maps.
+#
+
+# Params:
+#   The same as to '__object_member_parse',
+#   except that member name should be 'map/key', and the continuation takes one
+#   extra argument for parsed key (arg 3).
+# Return:
+#   Result of call to continuation in case of a valid reference,
+#   otherwise it aborts using 'builtin_error'.
+define __object_map_key_parse
+	$(or \
+		$(for __map_cont_fn <- $2,
+			$(expand $$(call \
+				$(lambda \
+					$(and $1,$2,
+						$(call __object_member_parse,$1,$(lambda \
+							$(call $(__map_cont_fn),
+								$1,$2,$(call expand,$3,x),$(call expand,$3,))
+						),$$(if $$2,
+							$$(if ,,$(subst $$,$$$$,$2)),
+							$$(if ,,$(subst $$,$$$$,$3))))
+					)
+				),
+
+				# 1 and 2: Escaped name with '/' replaced by commas.
+				$(with \
+					$(subst /,$(\s)/$(\comma),
+						$(subst $(\comma),$$(\comma),$(subst $$,$$$$,$1))),
+					# Unescape function which restores '/' back.
+					$(lambda $(subst $(\s)/$(\comma),/,$(nolastword $1))),
+
+					# I like this hack.
+					$$(call $2,$$(if x,$1))$,
+					$$(call $2,$$(if  ,$1) x)
+				),
+
+				# 3: Optional argument.
+				$$(value 3)
+
+			))
+		),
+
+		$(call builtin_error,
+				Invalid first argument to '$(builtin_name)' function: '$1' \
+				(missing map key after slash))
+	)
+endef
+
+#
+# $(map-get map/key)
+# $(map-get obj.map/key)
+# $(map-get ref->map/key)
+#
+define builtin_func-map-get
+	$(call builtin_check_max_arity,1)
+
+	$(call __object_map_key_parse,$1,$(lambda \
+		# 1. Target object (if any).
+		# 2. Map name.
+		# 3. Key.
+		$(def-ifdef OBJ_DEBUG,
+			$(call __object_member_access_wrap,$1,
+				$$(call __map_get_debug,$2,$3)),
+			$$(value $(if $1,$$(suffix $1),$$(this)).$2.$3)
+		)
+	))
+endef
+
+ifdef OBJ_DEBUG
+# Params:
+#   1. Map name.
+#   2. Key.
+# Context:
+#   '__this'
+define __map_get_debug
+	$(__obj_trace $(__this),m-get  $($(__this)).$1/$2 = \
+		'$(value $(__this).$(__field_check).$2)')
+	# Using '__field_check' is actually OK here.
+	$(value $(__this).$(__field_check).$2)
+endef
+endif
+
+#
+# $(map-set  [{obj.|ref->}]map,value)
+# $(map-set+ [{obj.|ref->}]map,value)
+# $(map-set- [{obj.|ref->}]map,value)
+#
+builtin_func-map-set  = $(__builtin_func_map_set)
+builtin_func-map-set+ = $(__builtin_func_map_set)
+builtin_func-map-set- = $(__builtin_func_map_set)
+
+# Expanded from  'map-setx' builtin context. It will generate a call
+# to '__map_setx', where 'x' is taken from builtin name.
+define __builtin_func_map_set
+	$(call builtin_check_min_arity,2)
+
+	$(call __object_map_key_parse,$1,$(lambda \
+		# 1. Target object (if any).
+		# 2. Map name.
+		# 3. Key.
+		# 4. Value.
+		$(call __object_member_access_wrap,$1,
+			$$(call __map_set$(builtin_name:map-set%=%),$2,$3,$4)
+		)
+	),$(builtin_nofirstarg))
+endef
+
+# Params:
+#   1. Map name.
+#   2. Key.
+# Context:
+#   '__this'
+define __map_key_check
+	$(or $(and $(findstring simple,$(flavor $(__this).$1)),
+			$(singleword $1.$2)),
+		$(error \
+			# Here is cold, find out the matter of error.
+			$(if $(findstring simple,$(flavor $(__this).$1)),
+				Bad key '$2' for,No) map '$1', \
+				referenced on object '$(__this)' of type '$($(__this))'))
+endef
+
+# Params:
+#   1. Map name.
+#   2. Key.
+#   3. Value.
+# Context:
+#   '__this'
+define __map_set
+	$(__obj_trace $(__this),m-set  $($(__this)).$1/$2: '$3')
+
+	${eval \
+		$(if $(findstring u,$(flavor $(__this).$(__map_key_check))),# !simple
+			# Add a new key.
+			$(__this).$1 += $$2$(\n)
+		)
+		# Set a new value.
+		$(__this).$1.$$2 := $$3
+	}
+endef
+
+# Params:
+#   1. Map name.
+#   2. Key.
+#   3. Value.
+# Context:
+#   '__this'
+define __map_set+
+	$(__obj_trace $(__this),m-set+ $($(__this)).$1/$2: '$3')
+
+	${eval \
+		$(if $(findstring u,$(flavor $(__this).$(__map_key_check))),
+			# New key.
+			$(__this).$1 += $$2$(\n)
+			$(__this).$1.$$2 := $$3,
+
+			# Key already exists, append a new value.
+			$(__this).$1.$$2 += $$3
+		)
+	}
+endef
+
+# Params:
+#   1. Map name.
+#   2. Key.
+#   3. Value.
+# Context:
+#   '__this'
+define __map_set-
+	$(__obj_trace $(__this),m-set- $($(__this)).$1/$2: '$3')
+
+	${eval \
+		$(if $(findstring u,$(flavor $(__this).$(__map_key_check))),
+			# Add a new key, value becomes empty anyway.
+			$(__this).$1 += $$2$(\n)
+			$(__this).$1.$$2 :=,
+
+			# Set a new value.
+			$(__this).$1.$$2 := \
+				$$(filter-out $$3,$$($(__this).$1.$$2))
+		)
+	}
+endef
+
+#
+# $(map-unset map,keys...)
+# $(map-unset obj.map,keys...)
+# $(map-unset ref->map.keys...)
+#
+define builtin_func-map-unset
+	$(call builtin_check_min_arity,2)
+
+	$(call __object_member_parse,$1,$(lambda \
+		# 1. Target object (if any).
+		# 2. Map name.
+		# 3. Keys...
+		$(call __object_member_access_wrap,$1,
+			$$(call __map_unset,$2,$3)
+		)
+	),$(builtin_nofirstarg))
+endef
+
+# Params:
+#   1. Map name.
+#   2. Patterns of keys to discard.
+# Context:
+#   '__this'
+define __map_unset
+	$(__obj_trace $(__this),m-uset $($(__this)).$1: '$2')
+
+	$(if $(for k <- $(filter $2,$($(__this).$(__field_check))),
+				${eval \
+					$(__this).$1.$$k =# recursive
+				}
+				x# some output
+			),
+
+		# Got matching keys, have to remove them.
+		${eval \
+			$(__this).$1 := \
+				$$(filter-out $$2,$$($(__this).$1))
+		}
+	)
 endef
 
 $(def_all)
@@ -1023,35 +1247,37 @@ define builtin_macro-__class__
 		$(call var_assign_simple,$(__class__).properties,
 			$(call __member_name,$(call __class_attr_query,property,%)))
 
-		# Special subsets of fields (for faster traversing/serialization).
-		$(with $(notdir $(call __class_attr_query,field,%)),
+		# Special subsets of fields and maps
+		# (for faster traversing/serialization).
+		$(for t <- field map,
+				$(with $(notdir $(call __class_attr_query,$t,%)),
 
-			$(call var_assign_simple,$(__class__).fields,
+			$(call var_assign_simple,$(__class__).$ts,
 				$(call __member_name,$1))
 
 			# List of references: 'name[].type'
-			$(call var_assign_simple,$(__class__).reference_list_fields,
+			$(call var_assign_simple,$(__class__).reference_list_$ts,
 				$(call __member_name,$(for f <- $1,
 						$(if $(findstring [].,$f),$f))))
 
 			# Single reference: 'name.type'
-			$(call var_assign_simple,$(__class__).reference_scalar_fields,
+			$(call var_assign_simple,$(__class__).reference_scalar_$ts,
 				$(call __member_name,$(for f <- $1,
 						$(and $(not $(findstring [],$f)),$(suffix $f),$f))))
 
 			# Plain list: 'name[]'
-			$(call var_assign_simple,$(__class__).raw_list_fields,
+			$(call var_assign_simple,$(__class__).raw_list_$ts,
 				$(call __member_name,$(for f <- $1,
 						$(and $(findstring [],$f),$(not $(suffix $f)),$f))))
 
 			# Raw value: 'name'
-			$(call var_assign_simple,$(__class__).raw_scalar_fields,
+			$(call var_assign_simple,$(__class__).raw_scalar_$ts,
 				$(filter-out \
-					$($(__class__).reference_list_fields) \
-					$($(__class__).reference_scalar_fields) \
-					$($(__class__).raw_list_fields),
+					$($(__class__).reference_list_$ts) \
+					$($(__class__).reference_scalar_$ts) \
+					$($(__class__).raw_list_$ts),
 						$(call __member_name,$1)))
-		)
+		))
 
 	)
 
@@ -1391,8 +1617,8 @@ define __builtin_func_xetter
 				$(if $(filter setter%,$(builtin_name)),
 					$$(if $$(foreach this,$$(__this),$(builtin_nofirstarg)),
 						$$(error \
-								Setter for '$(basename $0)' property returned \
-								non-empty result))
+								Setter for '$$(basename $$0)' property \
+								returned non-empty result))
 				)
 			),
 			$$(foreach this,$$(__this),$(builtin_nofirstarg))
@@ -1403,11 +1629,8 @@ endef
 
 #
 # $(property name)
-# $(property name : *)
 # $(property name : type)
-#
 # $(property name...)
-# $(property name... : *)
 # $(property name... : type)
 #
 define builtin_func-property
@@ -1472,26 +1695,26 @@ define __setter-
 endef
 
 #
-# $(field name, initializer...)
-# $(field name : *, initializer...)
-# $(field name : type, initializer...)
-#
+# $(field name)
+# $(field name : type)
 # $(field name...)
-# $(field name... : *)
 # $(field name... : type)
+#
+# $(field name, initializer...)
+#   ...
 #
 define builtin_func-field
 	$(call __member_name_parse,$1,__field_define,$(builtin_nofirstarg))
 endef
 
 #
-# $(property-field name, initializer...)
-# $(property-field name : *, initializer...)
-# $(property-field name : type, initializer...)
-#
+# $(property-field name)
+# $(property-field name : type)
 # $(property-field name...)
-# $(property-field name... : *)
 # $(property-field name... : type)
+#
+# $(property-field name, initializer...)
+#   ...
 #
 define builtin_func-property-field
 	$(call __member_name_parse,$1,$(lambda \
@@ -1573,6 +1796,30 @@ endef
 #	)
 #endef
 
+
+#
+# $(map name)
+# $(map name : type)
+# $(map name...)
+# $(map name... : type)
+#
+define builtin_func-map
+	$(call builtin_check_max_arity,1)
+
+	$(call __member_name_parse,$1,$(lambda \
+		# 1. Name.
+		# 2. '...', or empty.
+		# 3. Type, '*', or empty.
+
+		$(call __member_check_and_def_attr,map,$1,$2,$3)
+
+		# 'object.map_name' contains list of keys.
+		$$(eval $$(this).$1 := )
+
+	))# <- Suppress the output.
+
+endef
+
 #
 # Serialization stuff.
 #
@@ -1620,6 +1867,11 @@ define object_graph_traverse
 						$($2.reference_list_fields) \
 						$($2.reference_scalar_fields),
 							$(suffix $($1.$f))) \
+					$(for m <-
+						$($2.reference_list_maps) \
+						$($2.reference_scalar_maps),
+						k <- $($1.$m),
+							$(suffix $($1.$m.$k))) \
 					$(if $(filter __serialize_extra_objects,$($2.methods)),
 						$(invoke 1->__serialize_extra_objects)),
 					$(call $0,$o,$($o)))
@@ -1661,23 +1913,39 @@ define __object_print
 		f <- $(basename $(ft)),
 		# Call field printer with possibly preprocessed field value.
 		$(call __object_print_field$(suffix $(ft)),
+			$s.$f,
 			$(if $(class-has-method $c,__serialize_field-$f),
 				$(invoke o->__serialize_field-$f,$($o.$f)),
 				$($o.$f)))
 	)
 
+	$(for mt <- $(for l <- reference_list reference_scalar raw_list raw_scalar,
+			$(addsuffix .$l,$($c.$l_maps))),
+		m <- $(basename $(mt)),
+
+		$(call __object_print_field.raw_list,
+			$s.$m,$($o.$m))
+
+		$(for k <- $($o.$m),
+			$(call __object_print_field$(suffix $(mt)),
+				$s.$m.$(call __object_map_key_escape,$k),$($o.$m.$k))
+		)
+	)
+
 	$(\n)
 endef
 
+__object_map_key_escape = \
+	$$(if ,,$(__object_field_escape))
 __object_field_escape = \
 	$(subst $(\n),$$(\n),$(subst $(\h),$$(\h),$(subst $$,$$$$,$1)))
 
 define __object_print_field.reference_list
-	$s.$f := \
-		$(for r <- $1,\$(\n)$(\t)
+	$1 := \
+		$(for r <- $2,\$(\n)$(\t)
 			$(assert $(is-object $r),
-				Not an object '$r' inside reference field $c.$f \
-				of object $o being serialized as $s)
+				Not an object '$r' inside reference field $1 \
+				of object $o [$c] being serialized as $s)
 			# Substitute the suffix with the serial identifier of the
 			# referenced object and escape everything else.
 			$(call __object_field_escape,$(basename $r))
@@ -1685,35 +1953,35 @@ define __object_print_field.reference_list
 endef
 
 define __object_print_field.reference_scalar
-	$(assert $(not $(multiword $1)),
-		Multiword value '$1' inside scalar field $c.$f \
-		of object $o being serialized as $s)
-	$s.$f := \
-		$(for r <- $1,
+	$(assert $(not $(multiword $2)),
+		Multiword value '$2' inside scalar field $1 \
+		of object $o [$c] being serialized as $s)
+	$1 := \
+		$(for r <- $2,
 			$(assert $(is-object $r),
-				Not an object '$r' inside reference field $c.$f \
-				of object $o being serialized as $s)
+				Not an object '$r' inside reference field $1 \
+				of object $o [$c] being serialized as $s)
 			# See '__object_print_field_reference_list'.
 			$(call __object_field_escape,$(basename $r))
 			$($(suffix $r).__serial_id__))$(\n)
 endef
 
 define __object_print_field.raw_list
-	$s.$f := \
+	$1 := \
 		# Guard a trailing backslash (if any)
 		# and pretty-print each list item on a separate line.
 		$(patsubst %,\$(\n)$(\t)%,$(subst-end \,$$(\\),
-			$(__object_field_escape)))$(\n)
+			$(call __object_field_escape,$2)))$(\n)
 endef
 
 define __object_print_field.raw_scalar
-	$s.$f := \
+	$1 := \
 		# Check for a leading whitespace.
-		$(if $(subst x$(firstword $1),,$(firstword x$1)),
+		$(if $(subst x$(firstword $2),,$(firstword x$2)),
 			$$(\0))
 		# Guard a trailing backslash (if any).
 		$(subst \$(\n),$$(\\)$(\n),
-			$(__object_field_escape)$(\n))
+			$(call __object_field_escape,$2)$(\n))
 endef
 
 $(def_all)
