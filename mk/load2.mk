@@ -54,7 +54,7 @@ $(mybuild_model_mk) : mk/script/mk-persist.mk
 $(mybuild_model_mk) : $(myfiles_mk)
 	@echo ' MYBUILD ...'
 	@$(foreach f,$(myfiles_mk_added)   ,echo '  A $f';)#
-	@$(foreach f,$*                     ,echo '  M $f';)#
+	@$(foreach f,$*                    ,echo '  M $f';)#
 	@$(foreach f,$(myfiles_mk_removed) ,echo '  D $f';)#
 	@mkdir -p $(@D) && \
 		$(MAKE) -f mk/script/mk-persist.mk MAKEFILES='$(mk_mybuild) $(myfiles_mk)' \

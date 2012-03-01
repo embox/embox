@@ -16,7 +16,7 @@ define class-MyFileResource
 	#   1. File name.
 	# Return:
 	#   Result of parsing or empry on error.
-	$(method loadRootObject,
+	$(method loadRootObject : EObject,
 		$(for resource <- $(this),
 			$(call gold_parse,myfile,$1,
 				$(lambda $(set+ resource->issues,

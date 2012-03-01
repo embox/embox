@@ -9,47 +9,24 @@ __model_linkage_mk := 1
 include mk/model/model.mk
 include mk/model/metamodel.mk
 
-define class-LinkageUnit
+define class-Linker
 
-	# List of exported named objects.
-	$(property exportedObjects... : ENamedObject)
-
-	# List of not yet resolved links.
-	$(property unresolvedLinks... : ELink)
-
-	$(field __exportedObjectsWithNamePrefixes... : ELink)
-
-	# Return:
-	#   List of still unresolved links.
+	# Links all resources of the given resource set against each other.
+	#   1. The resource set to link.
 	$(method link,
-		$(with $(get-field __exportedObjectsWithNamePrefixes),
-			# Construct and push the list of currently exported objects.
-			$(set-field __exportedObjectsWithNamePrefixes,
-				$(for o <- $(get exportedObjects),$(get o->qualifiedName)/$o))
+		$(strip $(for \
+			resourceSet <- $(suffix $1),
+			resource    <- $(get resourceSet->resources),
+			link        <- $(get resource->unresolvedLinks),
+			linkName    <- $(get link->name),
+			linkPrefix  <- $(firstword $(subst ., ,$(linkName))),
+			targetType  <- $(get $(get link->eMetaReference).eReferenceType),
 
-			$(invoke __link)
-
-			# Pop.
-			$(set-field __exportedObjectsWithNamePrefixes,$1)
-		)
-	)
-
-	$(method __link,
-		$(strip $(for link     <- $(get unresolvedLinks),
-			linkName   <- $(get link->name),
-			linkPrefix <- $(firstword $(subst ., ,$(linkName))),
-			source     <- $(invoke link->eSource),
-			reference  <- $(get link->eMetaReference),
-			targetType <- $(get reference->eReferenceType),
 			$(with \
 				$(or \
-					$(invoke lookupContainerChain,
-						$(source),searchLocalScopeOf),
-					$(invoke lookupContainerChain,
-						$(source),searchGlobalScopeUsingImportsOf),
+					$(invoke lookupContainerChain,$(invoke link->eSource)),
 					$(invoke searchGlobalScopeUsingResourceImports),
-					$(invoke searchGlobalScopeByFullName),
-				),
+					$(invoke searchGlobalScopeByFullName)),
 #				$(warning >>> '$(linkName)' -> '$1')
 				$(if $(singleword $1),
 					$(invoke link->resolve,$1),
@@ -62,64 +39,24 @@ define class-LinkageUnit
 
 	# Param:
 	#   1. Link source.
-	#   2. Method to invoke on each container until it returns non-empty value.
 	$(method lookupContainerChain,
-		$(with $(invoke 1->eContainer),$2,
-			$(if $1,
-				$(or $(invoke $2,$1),
-					$(call $0,$(invoke 1->eContainer),$2))))
-	)
-
-	# Param:
-	#   1. Scope container.
-	# Context:
-	#   'link'. The link being resolved.
-	#   'linkName'. Name to find.
-	#   'targetType'. Meta class of the target object.
-	# Return:
-	#   List of named elements of type 'targetType',
-	#   who's name relative to the given container equals to 'linkName'.
-	$(method searchLocalScopeOf,
-		$(strip $(with $1,.,
-			# 1. Object to scan for members.
-			# 2. Prefix accumulating the member names delimited by a period.
-			#    Also starts and ends with periods: '.prefix.'
-			$(for namedChild <- $(invoke getVisibleMembers,$1),
-				childName <- $(get namedChild->name),
-
-				$(if $(filter $2$(childName).,.$(linkName).),
-					$(if $(invoke targetType->isInstance,$(namedChild)),
-						$(namedChild)),
-					$(if $(filter $2$(childName).%,.$(linkName).),
-						$(call $0,$(namedChild),$2$(childName).))
-				)
-			)
-		))
+		$(if $1,
+			$(or $(call Linker.searchGlobalScopeWithNormalizers,
+					$(invoke getLocalElementNormalizers,$1)),
+				$(call Linker.searchGlobalScopeWithNormalizers,
+					$(invoke getLocalImportNormalizers,$1)),
+				$(call $0,$(invoke 1->eContainer))))
 	)
 
 	# Param:
 	#   1. Scope container.
 	# Return:
-	#   Implementation have to return named objects supposed to be a members
-	#   of the given container. By default returns named descendants, either
-	#   direct or indirect being first found in each brach of the containment
-	#   subtree.
-	$(method getVisibleMembers,
-		$(invoke 1->eContentsOfType,$(EModel_ENamedObject))
-	)
-
-	# Param:
-	#   1. Scope container.
-	# Context:
-	#   'linkName'. Name to find.
-	#   'linkPrefix'. The firs segment of the link name.
-	#   'targetType'. Meta class of the object being resolved.
-	# Return:
-	#   List of named elements of type 'targetType',
-	#   who's name relative to the given container equals to 'linkName'.
-	$(method searchGlobalScopeUsingImportsOf,
-		$(invoke searchGlobalScopeWithImportNormalizers,
-			$(invoke getLocalImportNormalizers,$1)))
+	#   Implementation have to return named normalizers supposed to resolve
+	#   members of the given container.
+	#   By default returns 'fully.qualified.name.*'
+	$(method getLocalElementNormalizers,
+		$(for name <- $(get 1->qualifiedName),
+			$(name).)*)
 
 	# Param:
 	#   1. Scope container.
@@ -130,11 +67,10 @@ define class-LinkageUnit
 	$(method getLocalImportNormalizers,
 		$(for metaAttribute <- $(get $(get 1->eMetaClass).eAllAttributes),
 			$(if $(eq imports,$(get metaAttribute->name)),
-				$(get 1->$(get metaAttribute->instanceProperty)))
-		)
-	)
+				$(get 1->$(get metaAttribute->instanceProperty)))))
 
 	# Context:
+	#   'resource'. Resource containing the link.
 	#   'linkName'. Name to find.
 	#   'linkPrefix'. The firs segment of the link name.
 	#   'targetType'. Meta class of the object being resolved.
@@ -142,8 +78,8 @@ define class-LinkageUnit
 	#   List of named elements of type 'targetType',
 	#   who's normalized name equals to 'linkName'.
 	$(method searchGlobalScopeUsingResourceImports,
-		$(invoke searchGlobalScopeWithImportNormalizers,
-			$(invoke getResourceImportNormalizers,$(get link->eResource))))
+		$(call Linker.searchGlobalScopeWithNormalizers,
+			$(invoke getResourceImportNormalizers,$(resource))))
 
 	# Param:
 	#   1. The resource.
@@ -151,31 +87,26 @@ define class-LinkageUnit
 	#   Implementation have to return list of implicit imports of the given
 	#   resource. By default returns nothing.
 	$(method getResourceImportNormalizers,
-		)
+		# XXX
+		$(for root <- $(get 1->contentsRoot),
+			$(with $(get root->name),
+				$(if $1,$1.*))))
 
 	# Param:
-	#   1. List of import normalizers
+	#   1. List of normalizers.
 	# Context:
 	#   'linkName'. Name to find.
-	#   'linkPrefix'. The firs segment of the link name.
+	#   'linkPrefix'. The first segment of the link name.
 	#   'targetType'. Meta class of the object being resolved.
 	# Return:
 	#   List of named elements of type 'targetType',
 	#   who's name relative to the given container equals to 'linkName'.
-	$(method searchGlobalScopeWithImportNormalizers,
+	$(method searchGlobalScopeWithNormalizers,# static
 		$(if $(strip $1),$(with \
-			$(for matchingObject <-
-				$(filter \
-					# Get list of matching imports, replace the last segment
-					# with the full link name, and append a percent.
-					$(addsuffix .$(linkName)/%,$(basename $(or \
-						# Search for an exact match (no wildcards).
-						$(filter %.$(linkPrefix),$1),
-						# Replace wildcards with our name.
-						$(filter $1,
-							$(addsuffix .$(linkPrefix),$(basename $1)))))),
-					# List of 'f.q.n/object' items.
-					$(get-field __exportedObjectsWithNamePrefixes)),
+			# 1. List of matching objects with proper type.
+			$(for normalizedName <- $(call Linker.normalizeLinkName,$1),
+				matchingObject <- $(map-get resourceSet->exportedObjectsMap
+						/$(normalizedName)),
 
 				# Check the type of the object.
 				$(if $(invoke targetType->isInstance,$(matchingObject)),
@@ -189,6 +120,34 @@ define class-LinkageUnit
 		))
 	)
 
+	# Tries to normalize the 'linkName' using given normalizers.
+	# If possible, non-wildcard normalizers are used, and if the result is not
+	# empty, it is returned without even trying to match wildcard normalizers.
+	# Otherwise substitutes every wildcard with the 'linkName' and returns it.
+	#
+	# Param:
+	#   1. List of normalizers.
+	# Context:
+	#   'linkName'. Name to find.
+	#   'linkPrefix'. The first segment of the link name.
+	# Return:
+	#   List of normalized names.
+	$(method normalizeLinkName,# static
+
+		# Get list of matching normalizers and replace the last segment
+		# with the full link name.
+		$(addsuffix .$(linkName),
+
+			# Cut the last segment, which is either '.linkPrefix' or '.*'.
+			$(basename \
+				$(or \
+					# Search for an exact match (no wildcards).
+					$(filter %.$(linkPrefix),$1),
+
+					# Get all wildcard normalizers.
+					$(filter %.*,$1))))
+	)
+
 	# Context:
 	#   'linkName'. Name to find.
 	#   'targetType'. Meta class of the object being resolved.
@@ -196,35 +155,16 @@ define class-LinkageUnit
 	#   List of named elements of type 'targetType',
 	#   who's name equals to 'linkName', with no normalization applied.
 	$(method searchGlobalScopeByFullName,
-		$(notdir \
+		$(suffix \
 			$(for matchingObject <-
-				$(filter $(linkName)/%,
-					$(get-field __exportedObjectsWithNamePrefixes)),
+				$(map-get resourceSet->exportedObjectsMap/$(linkName)),
 
 				$(if $(invoke targetType->isInstance,$(matchingObject)),
 					$(matchingObject)))
 		)
 	)
 
-	$(method unlink)
-
 endef
-
-define class-CompositeLinkageUnit
-	$(super LinkageUnit)
-
-	$(property children... : LinkageUnit)
-
-	$(getter exportedObjects,
-		$(for child <- $(get children),
-			$(get child->exportedObjects)))
-
-	$(getter unresolvedLinks,
-		$(for child <- $(get children),
-			$(get child->unresolvedLinks)))
-
-endef
-
 
 $(def_all)
 

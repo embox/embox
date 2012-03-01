@@ -13,12 +13,7 @@ include mk/mybuild/myfile-resource.mk
 # Constructor args:
 #   1. List of resource objects.
 define class-Mybuild
-	$(super CompositeLinkageUnit)
-
-	$(getter children,
-		$(get resources))
-
-	$(property-field resources... : MyFileResource,$1)
+	$(property-field resourceSet : ResourceSet,$(new ResourceSet,$1))
 
 	# Param:
 	#   1. The resource.
@@ -29,13 +24,14 @@ define class-Mybuild
 					$(assert $(singleword [$1]))
 					$1.)%)))
 
-	$(invoke link)
+	$(invoke $(new Linker).link,$(get resourceSet))
 
-	$(for l <- $(get unresolvedLinks),
+	$(for r <- $(get $(get resourceSet).resources),
+		l <- $(get r->unresolvedLinks),
 		$(set+ $(get l->eResource).issues,
 			$(new UnresolvedLinkIssue,$l)))
 
-	$(for r <- $(get resources),
+	$(for r <- $(get $(get resourceSet).resources),
 		issue <- $(get r->issues),
 		$(invoke issue->report))
 endef

@@ -260,7 +260,7 @@ $(gold_grammar)_produce-StringList_Comma           = $1 $3
 # <QualifiedName> ::= Identifier '.' <QualifiedName>
 $(gold_grammar)_produce-QualifiedName_Identifier_Dot         = $1.$3
 # <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
-$(gold_grammar)_produce-QualifiedNameWithWildcard_DotTimes   = $1.%
+$(gold_grammar)_produce-QualifiedNameWithWildcard_DotTimes   = $1.*
 
 
 $(def_all)

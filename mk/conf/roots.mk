@@ -2,21 +2,18 @@ ifndef __conf_roots_mk
 __conf_roots_mk := 1
 
 include mk/core/define.mk
-include mk/mybuild/resource.mk
 include mk/mybuild/mybuild.mk
 include mk/util/graph.mk
-
-#param $1 is list of module names
-define find_mods
-	$(foreach m,$1,
-		$(strip $(call find_mod,$m)))
-endef
 
 # param $1 is name
 # output module object
 define find_mod
-	$(or $(foreach r,$(get mybuild_model_instance->resources),
-		$(call find_mod_in_res,$1,$r)),$(warning Cant find $1))
+	$(for moduleName <- $1,
+		$(or $(for module <-
+					$(map-get $(get mybuild_model_instance->resourceSet)
+						.exportedObjectsMap/$(moduleName)),
+				$(moduleName).$(module)),
+			$(warning Unresolved Module '$1')))
 endef
 
 # function used for getting module's dependent modules
