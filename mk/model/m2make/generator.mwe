@@ -22,6 +22,7 @@
 		<metaModel idRef="mm_emf"/>
 		<globalVarDef name="INCLUSION_GUARD_PREFIX" value="'__mybuild_'"/>
 		<prSrcPaths value="${src-gen}" />
+		<prExcludes value=".*"/>
 		<expand
 			value="template::Model::main FOR model" />
 		<outlet path="${src-gen}" >

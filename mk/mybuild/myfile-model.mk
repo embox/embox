@@ -160,6 +160,7 @@ endef
 #   - reference 'sources'
 #   - reference 'objects'
 #   - attribute 'flags'
+#   - reference 'makeRules'
 #
 # The following features and operations are inherited from 'Extendable':
 #   - reference 'subTypes'
@@ -223,8 +224,11 @@ define class-MyModule
 	$(eobject-attribute MyFile_Module_flags,
 		flags,changeable)
 
+	# Property 'makeRules... : MyMakeRule'.
+	$(eobject-reference MyFile_Module_makeRules,
+		makeRules,MyMakeRule,,changeable many containment)
+
 	# PROTECTED REGION ID(Module) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
@@ -321,6 +325,36 @@ define class-MyFile
 
 	# PROTECTED REGION ID(File) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'MakeRule'.
+#
+# The following features are defined:
+#   - reference 'target'
+#   - reference 'prerequisites'
+#
+define class-MyMakeRule
+	$(eobject MyFile_MakeRule,
+		MyMakeRule,,)
+
+	# Property 'target : MyFile'.
+	$(eobject-reference MyFile_MakeRule_target,
+		target,MyFile,,changeable containment)
+
+	# Property 'prerequisites... : MyFile'.
+	$(eobject-reference MyFile_MakeRule_prerequisites,
+		prerequisites,MyFile,,changeable many containment)
+
+	# PROTECTED REGION ID(MakeRule) ENABLED START
+
+	$(if $(value 1),
+		$(set target,$1))
+
+	$(if $(value 2),
+		$(set prerequisites,$2))
+
 	# PROTECTED REGION END
 endef
 

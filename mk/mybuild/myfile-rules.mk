@@ -84,6 +84,7 @@ define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 		$(silent-foreach attr, \
 				sources \
 				flags \
+				makeRules \
 				depends_links,\
 				$(set module->$(attr),\
 					$(filter-patsubst $(attr)/%,%,$6)))
@@ -204,19 +205,13 @@ endef
 # Rule: <MakeRule> ::= <Filename> <Prerequisites> <Recipes>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-MakeRule
-	$(gold_default_produce)# TODO Auto-generated stub!
+	makeRules/$(new MyMakeRule,$1,$2)
 endef
 
 # Rule: <Prerequisites> ::= ':' <FilenameList>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-Prerequisites_Colon
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <Prerequisites> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-Prerequisites
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$2
 endef
 
 # Rule: <Recipes> ::= '{' <StringList> '}'

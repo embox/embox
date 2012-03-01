@@ -49,6 +49,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="objects" upperBound="-1"
         eType="#//File" containment="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="flags" eType="ecore:EDataType emodel.ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="makeRules" upperBound="-1"
+        eType="#//MakeRule" containment="true"/>
     <eGenericSuperTypes eClassifier="#//Entity"/>
     <eGenericSuperTypes eClassifier="#//Extendable">
       <eTypeArguments eClassifier="#//Module"/>
@@ -91,5 +93,11 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileFullName" eType="ecore:EDataType emodel.ecore#//EString"
         changeable="false" volatile="true" transient="true" defaultValueLiteral=""
         derived="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MakeRule">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" unique="false"
+        eType="#//File" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="prerequisites" upperBound="-1"
+        eType="#//File" containment="true"/>
   </eClassifiers>
 </ecore:EPackage>
