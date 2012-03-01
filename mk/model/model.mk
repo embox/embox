@@ -59,7 +59,7 @@ define class-EObject
 
 	# Method 'eContainer : EObject'.
 	# PROTECTED REGION ID(EObject_eContainer) ENABLED START
-	$(method eContainer,
+	$(method eContainer : EObject,
 		$(for c <- $(get-field __eContainer),
 			$(if $(basename $c),$(suffix $c))))
 	# PROTECTED REGION END
@@ -75,7 +75,7 @@ define class-EObject
 
 	# Method 'eRootContainer : EObject'.
 	# PROTECTED REGION ID(EObject_eRootContainer) ENABLED START
-	$(method eRootContainer,
+	$(method eRootContainer : EObject,
 		$(or $(for container <- $(invoke eContainer),
 				$(invoke container->eRootContainer)),
 			$(this)))
@@ -83,7 +83,7 @@ define class-EObject
 
 	# Method 'eContents... : EObject'.
 	# PROTECTED REGION ID(EObject_eContents) ENABLED START
-	$(method eContents,
+	$(method eContents... : EObject,
 		$(for metaReference <- $(get $(get eMetaClass).eAllContainments),
 			$(get $(get metaReference->instanceProperty))))
 	# PROTECTED REGION END
@@ -91,7 +91,7 @@ define class-EObject
 	# Method 'eContentsOfType... : EObject'.
 	#   1. someClass : EMetaClass
 	# PROTECTED REGION ID(EObject_eContentsOfType) ENABLED START
-	$(method eContentsOfType,
+	$(method eContentsOfType... : EObject,
 		$(for metaReference <- $(get $(get eMetaClass).eAllContainments),
 			$(if $(invoke 1->isSuperTypeOf,
 					$(get metaReference->eReferenceType)),
@@ -105,7 +105,7 @@ define class-EObject
 
 	# Method 'eAllContents... : EObject'.
 	# PROTECTED REGION ID(EObject_eAllContents) ENABLED START
-	$(method eAllContents,
+	$(method eAllContents... : EObject,
 		$(for child <- $(invoke eContents),
 			$(child) $(invoke child->eAllContents)))
 	# PROTECTED REGION END
@@ -113,14 +113,14 @@ define class-EObject
 	# Method 'eAllContentsOfType... : EObject'.
 	#   1. someClass : EMetaClass
 	# PROTECTED REGION ID(EObject_eAllContentsOfType) ENABLED START
-	$(method eAllContentsOfType,
+	$(method eAllContentsOfType... : EObject,
 		$(for child <- $(invoke eContentsOfType,$1),
 			$(child) $(invoke child->eAllContentsOfType,$1)))
 	# PROTECTED REGION END
 
 	# Method 'eLinks... : ELink'.
 	# PROTECTED REGION ID(EObject_eLinks) ENABLED START
-	$(method eLinks,
+	$(method eLinks... : ELink,
 		$(subst ./,,$(dir \
 			$(for metaReference <- $(get $(get eMetaClass).eAllLinkables),
 				$(get-field $(get-field metaReference->instanceProperty)))
@@ -130,7 +130,7 @@ define class-EObject
 
 	# Method 'eResolvedLinks... : ELink'.
 	# PROTECTED REGION ID(EObject_eResolvedLinks) ENABLED START
-	$(method eResolvedLinks,
+	$(method eResolvedLinks... : ELink,
 		$(for l <- $(invoke eLinks),
 			$(if $(invoke l->eTarget),$l))
 	)
@@ -138,7 +138,7 @@ define class-EObject
 
 	# Method 'eUnresolvedLinks... : ELink'.
 	# PROTECTED REGION ID(EObject_eUnresolvedLinks) ENABLED START
-	$(method eUnresolvedLinks,
+	$(method eUnresolvedLinks... : ELink,
 		$(subst ./,,$(filter %./,
 			$(for metaReference <- $(get $(get eMetaClass).eAllLinkables),
 				$(get-field $(get-field metaReference->instanceProperty)))
@@ -251,14 +251,14 @@ define class-ELink
 
 	# Method 'eSource : EObject'.
 	# PROTECTED REGION ID(ELink_eSource) ENABLED START
-	$(method eSource,
+	$(method eSource : EObject,
 		$(suffix $(get-field __eContainer)))
 	# PROTECTED REGION END
 
 	# Method 'eTarget : EObject'.
 	# PROTECTED REGION ID(ELink_eTarget) ENABLED START
 	$(field eTarget : EObject)
-	$(method eTarget,
+	$(method eTarget : EObject,
 		$(get-field eTarget))
 	# PROTECTED REGION END
 
@@ -282,7 +282,7 @@ define class-ELink
 		$(for s <- $(invoke eSource),
 			$(get s->eResource)))
 
-	$(method eContainer,)
+	$(method eContainer : EObject,)
 
 	# Constructor:
 	#   As a special exception, ELink takes two optional constructor arguments:
@@ -491,7 +491,7 @@ define class-EMetaClass
 	#   1. someClass : EMetaClass
 	# PROTECTED REGION ID(EMetaClass_isSuperTypeOf) ENABLED START
 	$(method isSuperTypeOf,
-		$(filter $1 $(get 1->eAllSuperTypes),$(this)))
+		$(filter $(this),$1 $(get 1->eAllSuperTypes)))
 	# PROTECTED REGION END
 
 	# Method 'isInstance'.
