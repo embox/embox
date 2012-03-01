@@ -40,11 +40,10 @@ typedef struct sk_buff {        /* Socket buffer */
 	/* These two members must be first. */
 	struct sk_buff *next;       /* Next buffer in list */
 	struct sk_buff *prev;       /* Previous buffer in list */
+
 	struct sock *sk;            /* Socket we are owned by */
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
-#if 0
-	struct skb_timeval tstamp;  /* Time we arrived */
-#endif
+
 	__be16 protocol;            /* Packet protocol from driver */
 	uint8_t pkt_type;           /* Packet class */
 	char cb[52];                /* Control buffer (used to store layer-specific info e.g. ip options) */
@@ -53,18 +52,10 @@ typedef struct sk_buff {        /* Socket buffer */
 		struct tcphdr *th;
 		struct udphdr *uh;
 		struct icmphdr *icmph;
-#if 0
-		igmphdr *igmph;
-		iphdr *ipiph;
-		ipv6hdr *ipv6h;
-#endif
 		unsigned char *raw;
 	} h;
 	union {                     /* Network layer header */
 		struct iphdr *iph;
-#if 0
-		ipv6hdr *ipv6h;
-#endif
 		struct arphdr *arph;
 		unsigned char *raw;
 	} nh;
@@ -73,15 +64,10 @@ typedef struct sk_buff {        /* Socket buffer */
 		unsigned char *raw;
 	} mac;
 	__be16 offset;              /* Offset information for ip fragmentation*/
-#if 0
-	void (*destructor)(struct sk_buff *skb);
-#endif
+
 	unsigned char *data;	   /* Pointer for buffer used to store all skb content */
 	unsigned char *p_data;     /* Pointer for current processing data */
 	char prot_info;		   /* Protocol level additional data, tcp uses for state handling */
-#if 0
-	unsigned char tries;
-#endif
 } sk_buff_t;
 
 typedef struct sk_buff_head {
@@ -89,20 +75,6 @@ typedef struct sk_buff_head {
 	struct sk_buff *prev;
 } sk_buff_head_t;
 
-#if 0
-#define SKB_LIST_HEAD_INIT(name) { (sk_buff_t *)(&name), (sk_buff_t *)(&name), 0, 0}
-
-#define SKB_LIST_HEAD(name) \
-		struct sk_buff_head name = SKB_LIST_HEAD_INIT(name)
-#endif
-
-#if 0
-/**
- * function must called if we want use this functionality.
- * It init queue free packet
- */
-extern void skb_init(void);
-#endif
 
 /**
  * Allocate one instance of structure sk_buff. With pointed size and flags.
@@ -118,9 +90,6 @@ extern struct sk_buff * alloc_skb(unsigned int size, gfp_t priority);
  */
 extern void kfree_skb(struct sk_buff *skb);
 
-#if 0
-extern struct sk_buff * alloc_skb_clone(sk_buff_t *skb, gfp_t priority);
-#endif
 
 /**
  * sk_buff clone it used as we want to queue sk_buff in several queue
