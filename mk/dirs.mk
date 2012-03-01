@@ -25,7 +25,7 @@ DOT_DIR        := $(BUILD_DIR)/dot
 DOCS_OUT_DIR   := $(BUILD_DIR)/docs
 CODEGEN_DIR    := $(BUILD_DIR)/codegen
 AUTOCONF_DIR   := $(CODEGEN_DIR)
-ROOTFS_DIR     := $(BUILD_DIR)/rootfs/
+ROOTFS_DIR     := $(BUILD_DIR)/rootfs
 ROOTFS_IMAGE   := $(BUILD_DIR)/rootfs.cpio
 
 EM_DIR         := $(BUILD_DIR)/em

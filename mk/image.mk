@@ -31,9 +31,6 @@ rootfs_prepare: ;
 #	@mkdir -p $(BUILD_DIR)/rootfs
 #	@cp $(__ROOTFS_SRCS) $(BUILD_DIR)/rootfs/
 
-$(ROOTFS_IMAGE):
-	@find $(ROOTFS_DIR)/ -depth -print | cpio -H newc -o > $@
-
 CC      = $(CROSS_COMPILE)gcc
 CPP     = $(CC) -E
 AR      = $(CROSS_COMPILE)ar
@@ -94,6 +91,16 @@ filter_abstract_modules = \
 filter_static_modules = \
 	$(strip $(foreach m,$1,$(if $(get m->isStatic),$m)))
 
+ROOTFS_LABEL := rootfs
+
+define module_get_rootfs
+	$(for rule <- $(get $1.makeRules),
+		tar <- $(get rule->target),
+		prereq <- $(if $(eq $(ROOTFS_LABEL),$(get tar->fileName)),
+	       			$(get rule->prerequisites)),
+		$(get prereq->fileFullName))
+endef
+
 include mk/mybuild/check.mk
 include mk/mybuild/mybuild.mk
 
@@ -124,6 +131,19 @@ LDSS_BUILD := \
 		$(abspath $(ROOT_DIR))/%.lds.S,\
 		$(OBJ_DIR)/%.lds,\
 		$(abspath $(SRCS_BUILD)))
+
+ROOTFS_SRCS_BUILD := \
+	$(foreach m,$(MODS_ENABLE_OBJ),$(call module_get_rootfs,$m))
+
+$(foreach src,$(ROOTFS_SRCS_BUILD),\
+	$(eval \
+		$(ROOTFS_DIR)/$(notdir $(src)) : $(src) \
+		$(\n)$(\t)@$(MKDIR) $$(@D) && cp -T $$< $$@))
+
+ROOTFS_OBJS_BUILD := $(addprefix $(ROOTFS_DIR)/,$(notdir $(ROOTFS_SRCS_BUILD)))
+
+$(ROOTFS_IMAGE): $(ROOTFS_OBJS_BUILD)
+	@ls $^ | cpio --quiet -H newc -o > $@
 
 ifdef LDSS_BUILD
 LD_SINGLE_T_OPTION := \
