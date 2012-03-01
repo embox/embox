@@ -44,4 +44,6 @@ extern net_node_t pnet_dev_get_entry(void);
 
 extern int pnet_rx_thread_add(net_packet_t pack);
 
+extern net_node_t pnet_get_dev_by_device(struct net_device *dev);
+
 #endif /* PNET_CORE_H_ */

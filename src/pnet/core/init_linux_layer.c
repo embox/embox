@@ -33,3 +33,14 @@ static int net_core_init(void) {
 
 	return 0;
 }
+
+
+net_node_t pnet_get_dev_by_device(struct net_device *dev) {
+	net_node_t node = dev->pnet_node;
+
+	if (NULL == node) {
+		return pnet_get_module("devs entry");
+	}
+
+	return node;
+}

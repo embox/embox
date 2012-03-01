@@ -16,17 +16,7 @@
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/repo.h>
-
-static net_node_t pnet_get_dev_by_device(struct net_device *dev) {
-	net_node_t node = dev->pnet_node;
-
-	if (NULL == node) {
-		return pnet_get_module("devs entry");
-	}
-
-	return node;
-}
-
+#if 0
 int pnet_entry(struct net_packet *pack) {
 	net_device_t *dev = pnet_get_net_device(pack->node);
 	pack->skbuf->dev = dev;
@@ -57,11 +47,13 @@ int netif_rx(struct sk_buff *skb) {
 	netif_rx_schedule(dev);
 	return NET_RX_SUCCESS;
 }
-
+#endif
 int netif_receive_skb(sk_buff_t *skb) {
 	net_packet_t pack;
-	net_node_t node = pnet_get_dev_by_device(skb->dev);
-        pack = pnet_pack_alloc_skb(node->rx_dfault, skb);
+	net_node_t node;
+
+	node = pnet_get_dev_by_device(skb->dev);
+	pack = pnet_pack_alloc_skb(node->rx_dfault, skb);
 
 	pnet_rx_thread_add(pack);
 

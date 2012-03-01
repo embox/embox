@@ -18,12 +18,7 @@
 #include <embox/unit.h>
 
 extern int __netif_receive_skb(sk_buff_t *skb);
-extern int __netif_rx(struct sk_buff *skb);
-extern int __dev_queue_xmit(struct sk_buff *skb);
 
-int netif_rx(struct sk_buff *skb) {
-	return __netif_rx(skb);
-}
 
 int netif_receive_skb(sk_buff_t *skb) {
 	return __netif_receive_skb(skb);

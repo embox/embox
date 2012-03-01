@@ -123,7 +123,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	return ENOERR;
 }
 
-int __netif_rx(struct sk_buff *skb) {
+int netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
 
 	if (NULL == skb) {
