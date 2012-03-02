@@ -130,15 +130,20 @@ LDSS_BUILD := \
 ROOTFS_SRCS_BUILD := \
 	$(foreach m,$(MODS_ENABLE_OBJ),$(call module_get_rootfs,$m))
 
+rootfs_src_to_obj = $(addprefix $(ROOTFS_DIR)/,$(notdir $1))
+
 $(foreach src,$(ROOTFS_SRCS_BUILD),\
 	$(eval \
-		$(ROOTFS_DIR)/$(notdir $(src)) : $(src) \
+		$(call rootfs_src_to_obj,$(src)) : $(src) \
 		$(\n)$(\t)@$(MKDIR) $$(@D) && cp -T $$< $$@))
 
-ROOTFS_OBJS_BUILD := $(addprefix $(ROOTFS_DIR)/,$(notdir $(ROOTFS_SRCS_BUILD)))
+ROOTFS_OBJS_BUILD := $(call rootfs_src_to_obj,$(ROOTFS_SRCS_BUILD))
+
+$(ROOTFS_DIR) :
+	@mkdir $@
 
 $(ROOTFS_IMAGE): $(ROOTFS_DIR) $(ROOTFS_OBJS_BUILD)
-	pushd $< && \
+	@pushd $< && \
 		find . -depth -print | \
 	       	cpio --quiet -H newc -o > $$(dirs +1)/$@; \
 		popd

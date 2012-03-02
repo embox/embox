@@ -1,4 +1,3 @@
 .section .ramfs
-// XXX missing rootfs.cpio -- Eldar
-// .incbin "build/base/rootfs.cpio"
+.incbin "build/base/rootfs.cpio"
 

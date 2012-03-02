@@ -13,7 +13,7 @@ module file_desc {
 
 module rootfs {
 	source "rootfs.c"
-	depends node
+	depends node, driver.repo
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
