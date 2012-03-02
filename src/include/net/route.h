@@ -84,9 +84,4 @@ extern struct rt_entry * rt_fib_get_first(void);
  */
 extern struct rt_entry * rt_fib_get_next(struct rt_entry *entry);
 
-/**
- * Init function for FIB
- */
-extern int route_init(void);
-
 #endif /* NET_ROUTE_H_ */

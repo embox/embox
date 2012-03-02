@@ -24,7 +24,6 @@
 
 #include <framework/net/pack/api.h>
 
-EMBOX_UNIT_INIT(unit_init);
 
 /*FIXME we must have queue for each netdevice or if we want to use the only
  we should use alloc_skb_queue?*/
@@ -64,8 +63,8 @@ void dev_remove_pack(struct packet_type *pt) {
 }
 
 
-/* we use this function in debug mode*/
 #ifdef DEBUG
+/* we use this function in debug mode*/
 static void print_packet (sk_buff_t *skb) {
 	size_t i, j;
 	printf("pack:\n");
@@ -142,7 +141,7 @@ int netif_rx(struct sk_buff *skb) {
 	return NET_RX_DROP;
 }
 
-int __netif_receive_skb(sk_buff_t *skb) {
+int netif_receive_skb(sk_buff_t *skb) {
 	struct packet_type *q;
 	const struct net_pack *pack;
 
@@ -161,26 +160,4 @@ int __netif_receive_skb(sk_buff_t *skb) {
 void netif_rx_schedule(net_device_t *dev) {
 	//TODO:
 	raise_softirq(NET_RX_SOFTIRQ);
-}
-
-extern net_device_t *get_dev_by_idx(int num); /* TODO delete it */
-
-static void net_rx_action(struct softirq_action *action) {
-	size_t i;
-	net_device_t *dev;
-
-	//TODO it will be better use list of active device and cache for them
-	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
-		dev = get_dev_by_idx(i);
-		if ((NULL != dev) && (NULL != dev->poll)) {
-			dev->poll(dev);
-		}
-	}
-}
-
-static int __init unit_init(void) {
-	//TODO network route must be a separated module
-	route_init();
-	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
-	return 0;
 }

@@ -16,6 +16,11 @@
 #include <mem/misc/pool.h>
 #include <lib/list.h>
 
+#include <embox/unit.h>
+
+
+EMBOX_UNIT_INIT(route_init);
+
 /**
  * NOTE: Linux route uses 3 structs for routing:
  *    + Forwarding Information Base (FIB)
@@ -126,7 +131,7 @@ struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
 	return (&rt_info->lnk == &rt_entry_info_list) ? NULL : &rt_info->entry;
 }
 
-int route_init(void) {
+static int route_init(void) {
 	INIT_LIST_HEAD(&rt_entry_info_list);
 	return ENOERR;
 }
