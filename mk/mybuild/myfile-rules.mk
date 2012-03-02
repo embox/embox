@@ -75,6 +75,7 @@ $(gold_grammar)_produce-SuperFeatures_extends = $2
 define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 	$(foreach module,$(new MyModule),
 		$(set module->name,$3)
+		$(set module->origin,$(call gold_location_of,3))
 
 		$(set module->isStatic,$(filter static,$1))
 		$(set module->isAbstract,$(filter abstract,$1))
