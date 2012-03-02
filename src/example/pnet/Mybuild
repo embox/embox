@@ -1,0 +1,6 @@
+package embox.example.pnet
+
+module match {
+	source "match.c"
+	depends embox.pnet.core
+}

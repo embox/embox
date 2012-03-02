@@ -1,0 +1,7 @@
+package embox.pnet.netfilter
+
+module matcher {
+	source "match.c"
+	source "rule.c"
+	depends embox.pnet.core
+}
