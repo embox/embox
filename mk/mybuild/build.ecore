@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="build"
+    nsURI="http://www.mybuild.org/myfile/Build" nsPrefix="build">
+  <eClassifiers xsi:type="ecore:EClass" name="Build">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="modules" upperBound="-1"
+        eType="#//ModuleInstance" containment="true" eOpposite="#//ModuleInstance/configuration"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="ModuleInstance">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="configuration" eType="#//Build"
+        eOpposite="#//Build/modules"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="ecore:EClass myfile.ecore#//Module"
+        resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="depends" upperBound="-1"
+        eType="#//ModuleInstance"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
+        eType="#//OptionInstance" containment="true" eOpposite="#//OptionInstance/module"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OptionInstance">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="#//ModuleInstance"
+        eOpposite="#//ModuleInstance/options"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType emodel.ecore#//EString"/>
+  </eClassifiers>
+</ecore:EPackage>
