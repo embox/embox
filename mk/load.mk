@@ -6,7 +6,8 @@
 # Author: Eldar Abusalimov
 #
 
-MK_CACHE_DIR := mk/.cache/mk
+export CACHE_DIR := mk/.cache
+export MK_CACHE_DIR := $(CACHE_DIR)/mk
 
 # Core scripts: def & obj.
 export mk_core_def := $(MK_CACHE_DIR)/mk_core_def.mk
@@ -21,15 +22,23 @@ $(mk_core_obj) : CACHE_REQUIRES := \
 	$(mk_core_def)
 $(mk_core_obj) : ALLOC_SCOPE := b
 
+# Utils.
+export mk_util := $(MK_CACHE_DIR)/mk_util.mk
+$(mk_util) : CACHE_INCLUDES := \
+	mk/util/wildcard.mk \
+	mk/util/graph.mk
+$(mk_util) : CACHE_REQUIRES := \
+	$(mk_core_def)
+$(mk_util) : ALLOC_SCOPE := c
+
 # GOLD parser engine.
 export mk_gold_engine := $(MK_CACHE_DIR)/mk_gold_engine.mk
 $(mk_gold_engine) : CACHE_INCLUDES := \
 	mk/gold/engine.mk
 $(mk_gold_engine) : CACHE_REQUIRES := \
 	$(mk_core_def)
-$(mk_gold_engine) : ALLOC_SCOPE := c
+$(mk_gold_engine) : ALLOC_SCOPE := d
 
-ifeq (1,1) ###
 # Tiny version of EMF Ecore.
 export mk_model := $(MK_CACHE_DIR)/mk_model.mk
 $(mk_model) : CACHE_INCLUDES := \
@@ -39,50 +48,52 @@ $(mk_model) : CACHE_INCLUDES := \
 	mk/model/linkage.mk
 $(mk_model) : CACHE_REQUIRES := \
 	$(mk_core_obj)
-$(mk_model) : ALLOC_SCOPE := d
+$(mk_model) : ALLOC_SCOPE := e
+
+# Myfiles parser & model.
+export mk_mybuild_myfile := $(MK_CACHE_DIR)/mk_mybuild_myfile.mk
+$(mk_mybuild_myfile) : CACHE_INCLUDES := \
+	mk/mybuild/myfile-model.mk     \
+	mk/mybuild/myfile-metamodel.mk \
+	mk/mybuild/myfile-resource.mk  \
+	mk/mybuild/myfile-parser.mk
+$(mk_mybuild_myfile) : CACHE_REQUIRES := \
+	$(mk_gold_engine) \
+	$(mk_model)
+$(mk_mybuild_myfile) : ALLOC_SCOPE := f
+
+# Configuration files model.
+export mk_mybuild_configfile := $(MK_CACHE_DIR)/mk_mybuild_configfile.mk
+$(mk_mybuild_configfile) : CACHE_INCLUDES := \
+	mk/mybuild/configfile-model.mk     \
+	mk/mybuild/configfile-metamodel.mk \
+	mk/mybuild/configfile-resource.mk  \
+	mk/mybuild/configfile-parser.mk
+$(mk_mybuild_configfile) : CACHE_REQUIRES := \
+	$(mk_mybuild_myfile) \
+	$(mk_model)
+$(mk_mybuild_configfile) : ALLOC_SCOPE := g
 
 # Mybuild itself.
 export mk_mybuild := $(MK_CACHE_DIR)/mk_mybuild.mk
 $(mk_mybuild) : CACHE_INCLUDES := \
-	mk/mybuild/myfile-model.mk     \
-	mk/mybuild/myfile-metamodel.mk \
-	mk/mybuild/myfile-resource.mk  \
-	mk/mybuild/myfile-parser.mk    \
 	mk/mybuild/mybuild.mk
 $(mk_mybuild) : CACHE_REQUIRES := \
-	$(mk_core_def) \
-	$(mk_gold_engine) \
-	$(mk_model)
-$(mk_mybuild) : ALLOC_SCOPE := e
+	$(mk_mybuild_myfile) \
+	$(mk_mybuild_configfile)
+$(mk_mybuild) : ALLOC_SCOPE := h
 
 export all_mk_files := \
 	$(mk_core_def) \
 	$(mk_core_obj) \
+	$(mk_util) \
 	$(mk_gold_engine) \
 	$(mk_model) \
+	$(mk_mybuild_myfile) \
+	$(mk_mybuild_configfile) \
 	$(mk_mybuild)
 
-else ###
-
-export mk_mybuild := $(MK_CACHE_DIR)/mk_mybuild.mk
-$(mk_mybuild) : CACHE_INCLUDES := \
-	mk/mybuild/model.mk     \
-	mk/mybuild/myfile.mk    \
-	mk/mybuild/resource.mk  \
-	mk/mybuild/mybuild.mk
-$(mk_mybuild) : CACHE_REQUIRES := \
-	$(mk_core_obj) \
-	$(mk_gold_engine)
-$(mk_mybuild) : ALLOC_SCOPE := e
-
-export all_mk_files := \
-	$(mk_core_def) \
-	$(mk_core_obj) \
-	$(mk_gold_engine) \
-	$(mk_mybuild)
-
-endif ###
-
+#
 # To get our scripts work properly an 'ALLOC_SCOPE' variable should be defined.
 #
 # Different scopes are necessary to prevent possible collisions, because

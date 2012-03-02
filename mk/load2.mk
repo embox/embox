@@ -5,8 +5,8 @@
 # Author: Eldar Abusalimov
 #
 
-MYBUILD_CACHE_DIR := mk/.cache/my
-MYFILES_CACHE_DIR := mk/.cache/my/files
+export MYBUILD_CACHE_DIR := $(CACHE_DIR)/my
+export MYFILES_CACHE_DIR := $(MYBUILD_CACHE_DIR)/files
 
 MYBUILD_PATH := src/ platform/ third-party/
 
@@ -14,7 +14,7 @@ MYFILES := \
 	$(shell find $(MYBUILD_PATH) -depth \
 		\( -name Mybuild -o -name \*.my \) -print)
 
-mybuild_model_mk := $(MYBUILD_CACHE_DIR)/model.mk
+export mybuild_model_mk := $(MYBUILD_CACHE_DIR)/model.mk
 myfiles_mk_cached_list_mk := $(MYBUILD_CACHE_DIR)/model-myfiles.mk
 
 export myfiles_mk := \
@@ -34,7 +34,11 @@ ifneq ($(or $(myfiles_mk_added),$(myfiles_mk_removed)),)
 endif
 
 $(MAKECMDGOALS) : $(mybuild_model_mk)
+ifeq (0,1)
+	@$(MAKE) -f mk/load3.mk $@
+else
 	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $<' $@
+endif
 
 .DELETE_ON_ERROR:
 
@@ -44,7 +48,7 @@ $(myfiles_mk) : $(MYFILES_CACHE_DIR)/%.mk : %
 	@echo ' MYFILE $<'
 	@SCOPE=`echo '$<' | sum | cut -f 1 -d ' '`; \
 	mkdir -p $(@D) && \
-	$(MAKE) -f mk/script/mk-persist.mk MAKEFILES='$(mk_mybuild)' \
+	$(MAKE) -f mk/script/mk-persist.mk MAKEFILES='$(mk_mybuild_myfile)' \
 		PERSIST_OBJECTS='$$(call new,MyFileResource,$<)' \
 		ALLOC_SCOPE="r$$SCOPE" > $@ && \
 	echo '$$(lastword $$(MAKEFILE_LIST)) := '".obj1r$$SCOPE" >> $@
