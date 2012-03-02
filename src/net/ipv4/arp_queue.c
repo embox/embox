@@ -30,16 +30,16 @@ OBJALLOC_DEF(arp_queue_pool, struct pending_packet, MAX_QUEUE_SIZE);
 
 static LIST_HEAD(arp_queue);
 
-static inline void set_ready(int arp_queue_info) {
-	arp_queue_info |= 1;
+static inline void set_ready(int *arp_queue_info) {
+	*arp_queue_info |= 1;
 }
 
-static inline void set_transmitted(int arp_queue_info) {
-	arp_queue_info |= (1 << 8);
+static inline void set_transmitted(int *arp_queue_info) {
+	*arp_queue_info |= (1 << 8);
 }
 
-static inline void set_answer(int arp_queue_info, int answer) {
-	arp_queue_info = (answer << 16);
+static inline void set_answer(int *arp_queue_info, int answer) {
+	*arp_queue_info |= (answer << 16);
 }
 
 void arp_queue_process(struct sk_buff *arp_pack) {
@@ -51,9 +51,9 @@ void arp_queue_process(struct sk_buff *arp_pack) {
 
 			list_del(&pack->link);
 
-			set_ready(pack->skb->sk->arp_queue_info);
-			set_answer(pack->skb->sk->arp_queue_info, dev_queue_xmit(pack->skb));
-			set_transmitted(pack->skb->sk->arp_queue_info);
+			set_answer(&pack->skb->sk->arp_queue_info, dev_queue_xmit(pack->skb));
+			set_transmitted(&pack->skb->sk->arp_queue_info);
+			set_ready(&pack->skb->sk->arp_queue_info);
 
 			pool_free(&arp_queue_pool, pack);
 		}
@@ -86,7 +86,7 @@ int arp_queue_add(struct sk_buff *skb) {
 	if(NULL == (queue_pack = (struct pending_packet*)pool_alloc(&arp_queue_pool))) {
 		return -ENOMEM;
 	}
-	skb->sk->arp_queue_info &= ~1;
+	skb->sk->arp_queue_info = 0;
 
 	timer_set(&timer, TTL, arp_queue_drop, queue_pack);
 	queue_pack->timer = timer;
