@@ -63,7 +63,8 @@ __cache_postinclude_variables :=
 MAKEFILE_LIST :=
 
 # Include scripts which should not be cached...
-include $(CACHE_REQUIRES)
+$(foreach __cache_include,$(CACHE_REQUIRES), \
+	$(eval include $(filter-out $(MAKEFILE_LIST),$(__cache_include))))
 
 # Save volatile state.
 $(foreach v,__cache_volatile $(__cache_volatile), \
@@ -71,7 +72,8 @@ $(foreach v,__cache_volatile $(__cache_volatile), \
 
 # Collect variables...
 __cache_preinclude_variables := $(.VARIABLES)
-include $(CACHE_INCLUDES)
+$(foreach __cache_include,$(CACHE_INCLUDES), \
+	$(eval include $(filter-out $(MAKEFILE_LIST),$(__cache_include))))
 __cache_postinclude_variables := $(.VARIABLES)
 
 MAKEFILE_LIST := $(sort $(MAKEFILE_LIST))
