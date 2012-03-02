@@ -12,11 +12,11 @@
 struct sk_buff;
 
 struct net_packet {
+	struct sk_buff *skbuf;
+
 	enum net_packet_dir dir;
 
 	net_node_t node;
-
-	struct sk_buff *skbuf;
 };
 
 

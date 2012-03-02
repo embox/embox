@@ -9,23 +9,24 @@
 #ifndef PNET_PACK_SKB_H_
 #define PNET_PACK_SKB_H_
 
-struct sk_buff;
-
-struct net_packet {
-	enum net_packet_dir dir;
-
-	net_node_t node;
-
-	void *data;
+struct net_packet_data {
+	void *buff;
 	int len;
 };
 
+struct net_packet {
+	struct net_packet_data data;
+
+	enum net_packet_dir dir;
+	net_node_t node;
+};
+
 static inline void *pnet_pack_get_data(struct net_packet *pack) {
-	return pack->data;
+	return pack->data->buff;
 }
 
 static inline int pnet_pack_get_len(struct net_packet *pack) {
-	return pack->len;
+	return pack->data->len;
 }
 
 #endif
