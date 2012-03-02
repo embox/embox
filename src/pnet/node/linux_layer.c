@@ -17,11 +17,12 @@
 
 #include <embox/unit.h>
 #include <pnet/repo.h>
+#include <pnet/pnet_pack.h>
 
 extern int __netif_receive_skb(sk_buff_t *skb);
 
-static int pnet_linux_rx(net_packet_t pack) {
-	__netif_receive_skb(pack->skbuf);
+static int pnet_linux_rx(struct pnet_pack * pack) {
+	//__netif_receive_skb(pack->skbuf);
 	return NET_HND_SUPPRESSED;
 }
 

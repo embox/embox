@@ -15,26 +15,25 @@
 
 #include <embox/unit.h>
 
-#define NET_PACKS_CNT CONFIG_PNET_PACKETS_QUANTITY
+OBJALLOC_DEF(net_packs, struct pnet_pack, CONFIG_PNET_PACKETS_QUANTITY);
 
-OBJALLOC_DEF(net_packs, struct net_packet, NET_PACKS_CNT);
-
+#if 0
 net_packet_t pnet_pack_alloc_skb(net_node_t node, struct sk_buff *skb) {
 	net_packet_t pack = objalloc(&net_packs);
 
 	pack->node = node;
-	pack->dir = NET_PACKET_RX; //TODO varios packet types
+	pack->dir = PNET_PACK_DIRECTION_RX; //TODO varios packet types
 
 	pack->skbuf = skb;
 
 	return pack;
 }
-
-net_packet_t pnet_pack_alloc(net_node_t node, int len) {
-	net_packet_t pack = objalloc(&net_packs);
+#endif
+struct pnet_pack *pnet_pack_alloc(net_node_t node, int len) {
+	struct pnet_pack *pack = objalloc(&net_packs);
 
 	pack->node = node;
-	pack->dir = NET_PACKET_RX; //TODO varios packet types
+	pack->dir = PNET_PACK_DIRECTION_RX; //TODO varios packet types
 
 	pack->skbuf = alloc_skb(len, 0);
 
@@ -42,7 +41,7 @@ net_packet_t pnet_pack_alloc(net_node_t node, int len) {
 }
 
 
-int pnet_pack_free(net_packet_t pack) {
+int pnet_pack_free(struct pnet_pack *pack) {
 	kfree_skb(pack->skbuf);
 
 	objfree(&net_packs, pack);

@@ -14,10 +14,10 @@ static int stamp = 1;
 static void print_pack(net_packet_t pack) {
 	printf("%d: ", stamp++);
 	switch(pack->dir) {
-	case NET_PACKET_RX:
+	case PNET_PACK_DIRECTION_RX:
 		printf("RX");
 		break;
-	case NET_PACKET_TX:
+	case PNET_PACK_DIRECTION_TX:
 		printf("TX");
 		break;
 	};

@@ -17,7 +17,7 @@ struct net_packet_data {
 struct net_packet {
 	struct net_packet_data data;
 
-	enum net_packet_dir dir;
+	enum PNET_PACK_DIRECTION dir;
 	net_node_t node;
 };
 

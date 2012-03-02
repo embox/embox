@@ -39,8 +39,9 @@ struct net_node {
 };
 typedef struct net_node *net_node_t;
 
-enum net_packet_dir {
-	NET_PACKET_RX, NET_PACKET_TX
+enum PNET_PACK_DIRECTION {
+	PNET_PACK_DIRECTION_RX,
+	PNET_PACK_DIRECTION_TX
 };
 
 struct net_dev;

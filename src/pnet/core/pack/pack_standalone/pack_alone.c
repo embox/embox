@@ -12,14 +12,14 @@
 
 #include <pnet/core.h>
 
+#include <pnet/pnet_pack.h>
 
-#define NET_PACKS_CNT CONFIG_PNET_PACKETS_QUANTITY
 #define PACK_DATA_LEN 64 //TODO
 
-OBJALLOC_DEF(net_packs, struct net_packet, NET_PACKS_CNT);
-OBJALLOC_DEF(net_packs_data, unsigned char[PACK_DATA_LEN], NET_PACKS_CNT);
+OBJALLOC_DEF(net_packs, struct net_packet, CONFIG_PNET_PACKETS_QUANTITY);
+OBJALLOC_DEF(net_packs_data, unsigned char[PACK_DATA_LEN], CONFIG_PNET_PACKETS_QUANTITY);
 
-struct net_packet *pnet_pack_alloc(net_node_t node, int len) {
+struct net_packet *pnet_pack_alloc(net_node_t node, void *data, size_t len) {
 	net_packet_t pack;
 
 	if (len > PACK_DATA_LEN) {
@@ -29,7 +29,7 @@ struct net_packet *pnet_pack_alloc(net_node_t node, int len) {
 	pack = objalloc(&net_packs);
 
 	pack->node = node;
-	pack->dir = NET_PACKET_RX; //TODO varios packet types
+	pack->dir = PNET_PACK_DIRECTION_RX; //TODO varios packet types
 
 	pack->data = objalloc(&net_packs_data);
 
@@ -45,3 +45,5 @@ int pnet_pack_free(struct net_packet *pack) {
 
 	return 0;
 }
+
+PNET_PACK(PNET_PACK_TYPE_SINGLE,pnet_pack_alloc,pnet_pack_free);

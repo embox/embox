@@ -49,13 +49,13 @@ int netif_rx(struct sk_buff *skb) {
 }
 #endif
 int netif_receive_skb(sk_buff_t *skb) {
-	net_packet_t pack;
+//	struct pnet_pack *pack;
 	net_node_t node;
 
 	node = pnet_get_dev_by_device(skb->dev);
-	pack = pnet_pack_alloc_skb(node->rx_dfault, skb);
-
-	pnet_rx_thread_add(pack);
+	// TODO pnet pack = pnet_pack_alloc_skb(node->rx_dfault, skb);
+//	pack = NULL;
+//	pnet_rx_thread_add(pack);
 
 	return 0;
 }

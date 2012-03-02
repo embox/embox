@@ -8,10 +8,10 @@
  */
 
 #include <pnet/core.h>
+#include <pnet/pnet_pack.h>
 
-int pnet_rx_thread_add(net_packet_t pack) {
+int pnet_rx_thread_add(struct pnet_pack * pack) {
 	pnet_process(pack);
 	return 0;
 }
-
 

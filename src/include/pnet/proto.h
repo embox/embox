@@ -9,10 +9,12 @@
 #ifndef PNET_PROTO_H_
 #define PNET_PROTO_H_
 
-struct net_packet;
+//struct net_packet;
 struct net_node;
 
-typedef int (*net_hnd)(struct net_packet *pack);
+struct pnet_pack;
+
+typedef int (*net_hnd)(struct pnet_pack *pack);
 typedef int (*net_node_hnd)(struct net_node *node);
 typedef struct net_node *(*net_alloc_hnd)(void);
 

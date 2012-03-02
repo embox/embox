@@ -5,4 +5,5 @@ abstract module api { }
 
 module pnet_pack_factory {
 	source "pnet_pack_factory.c"
+	depends embox.pnet.core.pack.api
 }

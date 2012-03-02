@@ -49,14 +49,14 @@ net_socket_t pnet_socket_open(net_id_t id, net_node_t parent) {
 }
 
 int pnet_socket_send(net_socket_t node, void *data, int len) {
-	net_packet_t pack = pnet_pack_alloc((net_node_t) node, NET_PACKET_TX, data, len);
+	net_packet_t pack = pnet_pack_alloc((net_node_t) node, PNET_PACK_DIRECTION_TX, data, len);
 
 	return pnet_process(pack);
 }
 
 #if 0
 int pnet_core_receive(net_node_t node, void *data, int len) {
-	net_packet_t pack = pnet_pack_alloc(node, NET_PACKET_RX, data, len);
+	net_packet_t pack = pnet_pack_alloc(node, PNET_PACK_DIRECTION_RX, data, len);
 
 	return pnet_process(pack);
 }

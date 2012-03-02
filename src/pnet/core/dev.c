@@ -19,18 +19,21 @@
 #include <net/netdevice.h>
 
 #include <embox/unit.h>
+#include <pnet/pnet_pack.h>
 
 EMBOX_UNIT_INIT(net_dev_init);
 
-static int tx_hnd(net_packet_t pack) {
+static int tx_hnd(struct pnet_pack * pack) {
+
 	struct net_device *dev = ((struct pnet_dev *) pack->node)->dev;
 	struct sk_buff *skb = pack->skbuf;
 	skb->dev = dev;
 	dev->netdev_ops->ndo_start_xmit(skb, dev);
+
 	return NET_HND_SUPPRESSED; /* not to be processed further */
 }
 
-static int entry_tx_hnd(net_packet_t pack) {
+static int entry_tx_hnd(struct pnet_pack * pack) {
 	pack->node = pack->node->tx_dfault; //TODO
 	return 0;
 }
