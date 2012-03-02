@@ -145,7 +145,7 @@ $(ROOTFS_DIR) :
 $(ROOTFS_IMAGE): $(ROOTFS_DIR) $(ROOTFS_OBJS_BUILD)
 	@pushd $< && \
 		find . -depth -print | \
-	       	cpio --quiet -H newc -o > $$(dirs +1)/$@; \
+	       	cpio --quiet -H newc -o > ../$(notdir $@); \
 		popd
 
 ifdef LDSS_BUILD
