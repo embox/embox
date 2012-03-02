@@ -16,36 +16,43 @@ define class-Linker
 	$(method link,
 		$(strip $(for \
 			resourceSet <- $(suffix $1),
+			sourceSet   <- $(resourceSet) $(suffix $(value 2)),
 			resource    <- $(get resourceSet->resources),
 			link        <- $(get resource->unresolvedLinks),
 			linkName    <- $(get link->name),
 			linkPrefix  <- $(firstword $(subst ., ,$(linkName))),
 			targetType  <- $(get $(get link->eMetaReference).eReferenceType),
 
-			$(with \
-				$(or \
-					$(invoke lookupContainerChain,$(invoke link->eSource)),
-					$(invoke searchGlobalScopeUsingResourceImports),
-					$(invoke searchGlobalScopeByFullName)),
+			$(call Linker.doLink)
+
+		))
+	)
+
+	$(method doLink,
+		$(with \
+			$(or \
+				$(invoke lookupContainerChain,$(invoke link->eSource)),
+				$(invoke searchGlobalScopeUsingResourceImports),
+				$(invoke searchGlobalScopeByFullName)),
 #				$(warning >>> '$(linkName)' -> '$1')
-				$(if $(singleword $1),
-					$(invoke link->resolve,$1),
+			$(if $(singleword $1),
+				$(invoke link->resolve,$1),
 #					$(warning Couldn't resolve reference to \
 #						$(get targetType->name) '$(linkName)')
-					$(link))
-			)
-		))
+				$(link))
+		)
 	)
 
 	# Param:
 	#   1. Link source.
 	$(method lookupContainerChain,
-		$(if $1,
+		$(if $(and $1,$(invoke EModel_ENamedObject->isInstance,$1)),
 			$(or $(call Linker.searchGlobalScopeWithNormalizers,
 					$(invoke getLocalElementNormalizers,$1)),
 				$(call Linker.searchGlobalScopeWithNormalizers,
 					$(invoke getLocalImportNormalizers,$1)),
-				$(call $0,$(invoke 1->eContainer))))
+				$(call $0,$(invoke 1->eContainer))),
+			$(and $1,$(call $0,$(invoke 1->eContainer))))
 	)
 
 	# Param:
@@ -105,7 +112,7 @@ define class-Linker
 		$(if $(strip $1),$(with \
 			# 1. List of matching objects with proper type.
 			$(for normalizedName <- $(call Linker.normalizeLinkName,$1),
-				matchingObject <- $(map-get resourceSet->exportedObjectsMap
+				matchingObject <- $(map-get sourceSet->exportedObjectsMap
 						/$(normalizedName)),
 
 				# Check the type of the object.
@@ -157,7 +164,7 @@ define class-Linker
 	$(method searchGlobalScopeByFullName,
 		$(suffix \
 			$(for matchingObject <-
-				$(map-get resourceSet->exportedObjectsMap/$(linkName)),
+				$(map-get sourceSet->exportedObjectsMap/$(linkName)),
 
 				$(if $(invoke targetType->isInstance,$(matchingObject)),
 					$(matchingObject)))
