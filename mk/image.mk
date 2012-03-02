@@ -107,12 +107,6 @@ endef
 include mk/mybuild/check.mk
 include mk/mybuild/mybuild.mk
 
-abstract_deps_check = \
-$(silent-foreach a,$(APIS_BUILD),\
-	$(or $(call find_descedant_obj,$a,$(MODS_ENABLE_OBJ)),\
-		$(error $(get a->qualifiedName) has no realization, possible realisation:\
-		$(strip $(foreach r,$(get $(mybuild_model_instance).resources),\
-			$(basename $(call find_descedant_obj,$a,$(get r->exports))))))))
 $(def_all)
 
 #$(error $(MODS_ENABLE) $(\n) $(MODS_ENABLE_OBJ))
@@ -120,8 +114,6 @@ $(def_all)
 APIS_BUILD := $(call filter_abstract_modules,$(MODS_ENABLE_OBJ))
 LIBS_BUILD := $(call filter_static_modules,$(MODS_ENABLE_OBJ))
 MODS_BUILD := $(filter-out $(LIBS_BUILD),$(MODS_ENABLE_OBJ))
-
-#$(call abstract_deps_check)
 
 SRCS_BUILD := \
 	$(foreach m,$(MODS_ENABLE_OBJ),$(call module_get_sources,$m))
@@ -145,8 +137,11 @@ $(foreach src,$(ROOTFS_SRCS_BUILD),\
 
 ROOTFS_OBJS_BUILD := $(addprefix $(ROOTFS_DIR)/,$(notdir $(ROOTFS_SRCS_BUILD)))
 
-$(ROOTFS_IMAGE): $(ROOTFS_OBJS_BUILD)
-	@ls $^ | cpio --quiet -H newc -o > $@
+$(ROOTFS_IMAGE): $(ROOTFS_DIR) $(ROOTFS_OBJS_BUILD)
+	pushd $< && \
+		find . -depth -print | \
+	       	cpio --quiet -H newc -o > $$(dirs +1)/$@; \
+		popd
 
 ifdef LDSS_BUILD
 LD_SINGLE_T_OPTION := \
