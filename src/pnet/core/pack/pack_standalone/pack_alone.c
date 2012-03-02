@@ -16,11 +16,11 @@
 
 #define PACK_DATA_LEN 64 //TODO
 
-OBJALLOC_DEF(net_packs, struct net_packet, CONFIG_PNET_PACKETS_QUANTITY);
+OBJALLOC_DEF(net_packs, struct pnet_pack, CONFIG_PNET_PACKETS_QUANTITY);
 OBJALLOC_DEF(net_packs_data, unsigned char[PACK_DATA_LEN], CONFIG_PNET_PACKETS_QUANTITY);
 
-struct net_packet *pnet_pack_alloc(net_node_t node, void *data, size_t len) {
-	net_packet_t pack;
+struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
+	struct pnet_pack *pack;
 
 	if (len > PACK_DATA_LEN) {
 		return NULL;
@@ -28,22 +28,20 @@ struct net_packet *pnet_pack_alloc(net_node_t node, void *data, size_t len) {
 
 	pack = objalloc(&net_packs);
 
-	pack->node = node;
+	//pack->node = node;
 	pack->dir = PNET_PACK_DIRECTION_RX; //TODO varios packet types
 
-	pack->data = objalloc(&net_packs_data);
+	pack->data->buff = objalloc(&net_packs_data);
 
-	pack->len = len;
+	pack->data->len = len;
 
 	return pack;
 }
 
-int pnet_pack_free(struct net_packet *pack) {
-	objfree(&net_packs_data, pack->data);
+void pnet_pack_free(struct pnet_pack *pack) {
+	objfree(&net_packs_data, pack->data->buff);
 
 	objfree(&net_packs, pack);
-
-	return 0;
 }
 
 PNET_PACK(PNET_PACK_TYPE_SINGLE,pnet_pack_alloc,pnet_pack_free);

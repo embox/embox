@@ -25,8 +25,8 @@ EMBOX_UNIT_INIT(dc_pnet_init);
 
 #define DC_BUFF_SIZE 0x20 /* lego_nxt direct command maximum length */
 
-static int ctrl_rx(net_packet_t pack);
-static int data_rx(net_packet_t pack);
+static int ctrl_rx(struct pnet_pack *pack);
+static int data_rx(struct pnet_pack *pack);
 
 PNET_NODE_DEF_NAME(PNET_NODE_DIRECT_COMM_FORMATION_DATA, this_data, {
 	.rx_hnd = data_rx
@@ -62,11 +62,11 @@ static int get_body(void *msg) {
 	return NET_HND_DFAULT;
 }
 
-static int data_rx(net_packet_t pack) {
+static int data_rx(struct pnet_pack *pack) {
 	return data_hnd(pnet_pack_get_data(pack));
 }
 
-static int ctrl_rx(net_packet_t pack) {
+static int ctrl_rx(struct pnet_pack *pack) {
 	int status = *((uint8_t *) pnet_pack_get_data(pack));
 	if (0 != status) { /* if connected */
 		data_hnd = get_header;
@@ -79,5 +79,4 @@ static int ctrl_rx(net_packet_t pack) {
 static int dc_pnet_init(void) {
 	return 0;
 }
-
 

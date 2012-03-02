@@ -13,7 +13,7 @@
 #include <pnet/core.h>
 #include <pnet/node.h>
 
-int pnet_entry(net_packet_t pack) {
+int pnet_entry(struct pnet_pack *pack) {
 	if (!(pack && pack->node && pack->node->rx_dfault)) {
 		return -EINVAL;
 	}

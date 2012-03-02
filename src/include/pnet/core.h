@@ -34,7 +34,7 @@ extern net_node_t pnet_node_init(net_node_t node, net_addr_t addr, pnet_proto_t 
 
 extern int pnet_path_set_prior(net_node_t node, net_prior_t prior);
 
-extern int pnet_entry(struct net_packet *pack);
+extern int pnet_entry(struct pnet_pack *pack);
 extern int pnet_process(struct pnet_pack * pack);
 
 extern net_node_t pnet_dev_register(struct net_device *dev);

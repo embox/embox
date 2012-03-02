@@ -15,7 +15,7 @@
 struct pnet_pack_desc {
 	uint32_t type;
 	struct pnet_pack * (*create)(void *, size_t size);
-	void(*destroy)(void *pack);
+	void(*destroy)(struct pnet_pack *pack);
 };
 
 enum PNET_PACK_TYPE {

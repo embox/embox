@@ -48,7 +48,7 @@ static void handle_body(struct lego_dc_msg *msg, int *addit_len, uint8_t addit_m
 	}
 }
 
-static int dc_rx_hnd(net_packet_t pack) {
+static int dc_rx_hnd(struct pnet_pack *pack) {
 	struct lego_dc_msg *msg;
 	int addit_len = 0;
 

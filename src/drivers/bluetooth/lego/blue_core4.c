@@ -18,14 +18,15 @@
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/repo.h>
+#include <pnet/pnet_pack.h>
 
 #include <kernel/prom_printf.h>
 
 EMBOX_UNIT_INIT(nxt_bluecore_init);
 
 static int nxt_bluecore_start(struct net_node *node);
-static int data_rx(struct net_packet *pack);
-static int ctrl_rx(struct net_packet *pack);
+static int data_rx(struct pnet_pack *pack);
+static int ctrl_rx(struct pnet_pack *pack);
 
 PNET_NODE_DEF_NAME(BLUETOOTH_DRV_BLUE_CORE4_DATA, this_data, {
 	.rx_hnd = data_rx,
@@ -129,11 +130,11 @@ static int process_msg(struct bc_msg_body *msg) {
 	return res;
 }
 
-static int data_rx(struct net_packet *pack) {
+static int data_rx(struct pnet_pack *pack) {
 	return data_hnd(pnet_pack_get_data(pack));
 }
 
-static int ctrl_rx(struct net_packet *pack) {
+static int ctrl_rx(struct pnet_pack *pack) {
 	return ctrl_hnd(pnet_pack_get_data(pack));
 
 }
