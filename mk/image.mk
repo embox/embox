@@ -23,6 +23,9 @@ image_init image_fini:
 
 .PHONY: image_prepare
 prepare: image_prepare
+
+image_prepare : $(ROOTFS_IMAGE)
+
 image_prepare:
 	@mkdir -p $(OBJ_SUBDIRS) 2>/dev/null || echo No objs are built
 
