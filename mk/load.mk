@@ -83,6 +83,14 @@ $(mk_mybuild) : CACHE_REQUIRES := \
 	$(mk_mybuild_configfile)
 $(mk_mybuild) : ALLOC_SCOPE := h
 
+# Ugly scripts.
+export mk_ugly := $(MK_CACHE_DIR)/mk_ugly.mk
+$(mk_ugly) : CACHE_INCLUDES := \
+	mk/ugly.mk
+$(mk_ugly) : CACHE_REQUIRES := \
+	$(mk_mybuild)# Agrrr...
+$(mk_ugly) : ALLOC_SCOPE := u
+
 export all_mk_files := \
 	$(mk_core_def) \
 	$(mk_core_obj) \
@@ -91,7 +99,8 @@ export all_mk_files := \
 	$(mk_model) \
 	$(mk_mybuild_myfile) \
 	$(mk_mybuild_configfile) \
-	$(mk_mybuild)
+	$(mk_mybuild) \
+	$(mk_ugly)
 
 #
 # To get our scripts work properly an 'ALLOC_SCOPE' variable should be defined.

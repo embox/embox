@@ -67,49 +67,9 @@ endif
 
 include mk/flags.mk
 
-SRC_TO_OBJ = \
-	$(call filter-patsubst, \
-		$(abspath $(ROOT_DIR))%.c $(abspath $(ROOT_DIR))%.S,$(OBJ_DIR)%.o, \
-		$(filter-out %.lds.S,$(abspath $1)))
-
-LIB_FILE = \
-	$(foreach 1,$1,$(LIB_DIR)/$(get $1.qualifiedName).a)
-
 # It's time to scan subdirs and prepare mods info.
 # ...and to build dependency injection model
 include mk/codegen-di.mk
-
-# param $1 is module obj
-module_get_files = \
-	$(foreach s,$(get $1.sources),$(get s->fileFullName))
-module_get_sources = \
-	$(filter %.c %.S,$(module_get_files))
-module_get_headers = \
-	$(filter %.h,$(module_get_files))
-module_get_objects = \
-	$(call SRC_TO_OBJ,$(module_get_sources))
-
-filter_abstract_modules = \
-	$(strip $(foreach m,$1,$(if $(get m->isAbstract),$m)))
-filter_static_modules = \
-	$(strip $(foreach m,$1,$(if $(get m->isStatic),$m)))
-
-ROOTFS_LABEL := rootfs
-
-define module_get_rootfs
-	$(for rule <- $(get $1.makeRules),
-		tar <- $(get rule->target),
-		prereq <- $(if $(eq $(ROOTFS_LABEL),$(get tar->fileName)),
-	       			$(get rule->prerequisites)),
-		$(get prereq->fileFullName))
-endef
-
-include mk/mybuild/check.mk
-include mk/mybuild/mybuild.mk
-
-$(def_all)
-
-#$(error $(MODS_ENABLE) $(\n) $(MODS_ENABLE_OBJ))
 
 APIS_BUILD := $(call filter_abstract_modules,$(MODS_ENABLE_OBJ))
 LIBS_BUILD := $(call filter_static_modules,$(MODS_ENABLE_OBJ))
@@ -157,29 +117,6 @@ else
 override LDFLAGS += -T $(LDSS_BUILD)
 endif
 endif
-
-# 1. Module.
-define define_mod_obj_rules
-	${eval \
-		$(with $1,$(call module_get_objects,$1),
-			$(if $(get $1.flags),
-				$2 : override CCFLAGS += $(get $1.flags)
-				$(\n))
-			$2 : override CPPFLAGS += \
-					-D__EMBUILD_MOD__='$(subst .,__,$(get $1.qualifiedName))'
-		)
-	}
-endef
-
-# 1. Library module.
-define define_lib_rules
-	${eval \
-		$(call LIB_FILE,$1) : $(call module_get_objects,$1)$(\n)
-			$(\t)$(AR) $(ARFLAGS) $$@ $$(^:%= \$$(\n)	%)
-	}
-endef
-
-$(def_all)
 
 $(foreach m,$(MODS_ENABLE_OBJ),$(call define_mod_obj_rules,$m))
 $(foreach l,$(LIBS_BUILD),$(call define_lib_rules,$l))
