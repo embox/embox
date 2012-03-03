@@ -17,25 +17,20 @@ with '-symbols' suffix.
 ##END-PARAMETERS
 
 #
-# Each symbol is converted by the corresponding constructor (if any has been
-# defined). Constructor is a function named '$(gold_grammar)_create-<ID>'
-# (where ID is a unique symbol identifier) with the following signature:
+# Each terminal symbol is converted by the corresponding constructor (if any).
+# Constructor is a function named '$(gold_grammar)_create-<ID>' (where ID is
+# a unique symbol identifier) with the following signature:
 #
 # Params:
-#   1. For terminals: a list of decimal char codes representing the token.
-#      For nonterminals: the result of production.
+#   1. A list of decimal char codes representing the token.
 #
 # Return:
-#   Converted value. The value is then passed to a rule containing that symbol
-#   in its RHS or returned to user in case of the Start Symbol.
+#   The converted value, which is then passed as an argument to a production
+#   function of the rule containing that symbol in its RHS.
 #
 # If constructor for some symbol is not defined then the default behavior
-# is used:
-#   For terminals:
-#     Decodes an input by replacing all printable characters with their values
-#     and the rest ones with spaces.
-#   For nonterminals:
-#     Outputs the result of production as is, without modifying it.
+# is used, which is to decode an input by replacing all printable characters
+# with their values and the rest ones with spaces.
 #
 # Constructor may also use a special 'gold_default_create' function to get
 # the default value.
@@ -43,6 +38,10 @@ with '-symbols' suffix.
 
 #
 # TODO You can safely remove any constructor if the default behavior is ok.
+#
+# TODO Due to current limitations of template generator a definition
+# is generated for all existing symbols, although functions for nonterminal
+# symbols are never actually used.
 #
 
 ##SYMBOLS

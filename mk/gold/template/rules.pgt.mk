@@ -27,8 +27,8 @@ with '-rules' suffix.
 #         of the rule production.
 #
 # Return:
-#   Converted value that is passed to a symbol handler corresponding to
-#   the rule's LHS (if any has been defined).
+#   The value to pass as an argument to a rule containing the production
+#   of this rule in its RHS, or to return to user in case of the Start Symbol.
 #
 # If production function is not defined then the rule is produced by
 # concatenating the RHS through spaces. To reuse this default value one can
