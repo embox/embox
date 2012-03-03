@@ -957,53 +957,22 @@ __gold_default_symbol_name = \
 #   2. Symbol Id.
 #   3. Location.
 define __gold_hook_token
-	$(foreach __gold_location__,$3,
-		$(__gold_invoke_create_fn)
+	$(for __gold_location__ <- $3,
+
+		0 <- $(or $(call var_defined,
+					$(gold_grammar)_create-$(call __gold_symbol_fn,$2)),
+				gold_default_create),
+
+		$($0)# No call.
 	)
 endef
 
-# Calls symbols creation function (if any, otherwise a default one is called).
-# Params:
-#   1. Chars/Production.
-#   2. Symbol Id.
-# Context:
-#   '__gold_location__'.
-define __gold_invoke_create_fn
-	$(foreach __gold_symbol_id,$2,
-		$(foreach 0,
-			$(or \
-				$(call var_defined,
-						$(gold_grammar)_create-$(call __gold_symbol_fn,$2)),
-				gold_default_create
-			),
-			$($0)
-		)
-	)
-endef
-
-# Params:
-#   1. Data.
-define gold_default_create
-	$(__gold_default_create[
-			$(firstword $(value $g_symbol$(value __gold_symbol_id)))
-		])
-endef
-
-# Bad symbol.
-define __gold_default_create[]
-	$(error \
-		'gold_default_create' function \
-		must be called within regular terminal/nonterminal creation functions
-	)
-endef
-
-# Create terminal.
+# Creates terminal.
 #   1. Char codes.
-define __gold_default_create[1]
+define gold_default_create
 	$(foreach str,
-		$(subst $(\s),,$(foreach c,$(subst $(\s)0$(\s),256,$1),
-			$(word $c,$(__gold_ascii_table))
-		)),
+		$(subst $(\s),,$(foreach c,$(subst $(\s)0$(\s),256, $1 ),
+			$(word $c,$(__gold_ascii_table)))),
 		$(if $(findstring $$,$(str)),
 			$(expand $(str)),
 			$(str)
@@ -1011,14 +980,9 @@ define __gold_default_create[1]
 	)
 endef
 
-# Create nonterminal.
-#   1. Result of production.
-__gold_default_create[0] = \
-	$1
-
 __gold_ascii_table_special := \
             \SOH    \STX    \ETX    \EOT    \ENQ    \ACK    \BEL    \
-    \BS    $$(\t)  $$(\n)   \VT     \FF  $$(\empty) \SO     \SI     \
+    \BS    $$(\t)  $$(\n)   \VT     \FF    $$(\0)   \SO     \SI     \
     \DLE    \DC1    \DC2    \DC3    \DC4    \NAK    \SYN    \ETB    \
     \CAN    \EM     \SUB    \ESC    \FS     \GS     \RS     \US     \
    $$(\s)
@@ -1040,35 +1004,31 @@ __gold_ascii_table := \
 #   ... Symbols,
 #   N+1 Location vector: 'l1-l2-...lN-', or '-' for N=0.
 define __gold_hook_rule
-	$(foreach __gold_location__,
-		$($(__gold_n$(call __gold_rule_symbols_nr,$r)+1)),
-		$(call __gold_invoke_create_fn,
-			$(foreach __gold_rule_id,$r,
-				$(foreach 0,
-					$(or \
-						$(call var_defined,
-							$(gold_grammar)_produce-$(call __gold_rule_fn,$r)),
-						gold_default_produce
-					),
-					$($0)# No call to preserve expansion context.
-				)
-			),
-			$(call __gold_rule_nonterminal_id,$r)
-		)
+	$(for __gold_rule_symbols_nr__ <- $(call __gold_rule_symbols_nr,$r),
+		__gold_location__ <- $($(__gold_n$(__gold_rule_symbols_nr__)+1)),
+
+		# Find out the rule producer function to call.
+		0 <- $(or $(call var_defined,
+					$(gold_grammar)_produce-$(call __gold_rule_fn,$r)),
+				__gold_default_produce),
+
+		$($0)# No call to preserve expansion context.
 	)
 endef
 
 # Params:
-#   1. Data.
+#   ... Data.
 define gold_default_produce
-	$(if $(value __gold_rule_id),
-		# Echo everything.
-		$(__gold_args$(call __gold_rule_symbols_nr,$(__gold_rule_id))),
-		$(error \
-			'gold_default_produce' function \
-			must be called within rule production functions
-		)
-	)
+	$(if $(value __gold_rule_symbols_nr__),
+		$(__gold_default_produce),
+		$(error 'gold_default_produce' function \
+			must only be called within rule production functions))
+endef
+
+# Internal version of 'gold_default_produce' with no checks.
+define __gold_default_produce
+	# Echo everything.
+	$(__gold_args$(__gold_rule_symbols_nr__))
 endef
 
 #
