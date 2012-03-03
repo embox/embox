@@ -1,5 +1,4 @@
 
-include mk/mybuild/resource.mk
 include mk/core/define.mk
 include mk/mybuild/check.mk
 

@@ -3,7 +3,6 @@ ifndef _mybuild_check_mk_
 _codegen_di_mk_ := 1
 
 include mk/core/define.mk
-include mk/mybuild/resource.mk
 include mk/conf/roots.mk
 
 # Param:
