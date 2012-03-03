@@ -1,7 +1,7 @@
 "Name"     = 'MyFile'
 "Author"   = 'Eldar Abusalimov'
 "Version"  = '0.2'
-"About"    = 'MyBuild file'
+"About"    = 'Mybuild file'
 
 "Case Sensitive" = True
 

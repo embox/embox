@@ -16,7 +16,7 @@ exit /B
 
 @echo on
 
-copy /Y %~dp0\main.pgt.mk    "%~f1\GNU Make - MyBuild - Main.pgt"
-copy /Y %~dp0\tables.pgt.mk  "%~f1\GNU Make - MyBuild - Tables.pgt"
-copy /Y %~dp0\symbols.pgt.mk "%~f1\GNU Make - MyBuild - Symbols.pgt"
-copy /Y %~dp0\rules.pgt.mk   "%~f1\GNU Make - MyBuild - Rules.pgt"
+copy /Y %~dp0\main.pgt.mk    "%~f1\GNU Make - Mybuild - Main.pgt"
+copy /Y %~dp0\tables.pgt.mk  "%~f1\GNU Make - Mybuild - Tables.pgt"
+copy /Y %~dp0\symbols.pgt.mk "%~f1\GNU Make - Mybuild - Symbols.pgt"
+copy /Y %~dp0\rules.pgt.mk   "%~f1\GNU Make - Mybuild - Rules.pgt"
