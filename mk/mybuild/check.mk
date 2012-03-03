@@ -1,6 +1,6 @@
 
-ifndef _mybuild_check_mk_
-_codegen_di_mk_ := 1
+ifndef __mybuild_check_mk_
+__mybuild_check_mk_ := 1
 
 include mk/core/define.mk
 include mk/conf/roots.mk
@@ -30,5 +30,5 @@ endef
 $(call def,find_descedant)
 $(call def,find_descedant_obj)
 
-endif
+endif # __mybuild_check_mk_
 
