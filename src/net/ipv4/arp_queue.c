@@ -82,6 +82,7 @@ static void arp_queue_drop(struct sys_timer *timer, void *data) {
 int arp_queue_add(struct sk_buff *skb) {
 	struct sys_timer *timer;
 	struct pending_packet *queue_pack;
+	sk_buff_t *new_pack;
 
 	if(NULL == (queue_pack = (struct pending_packet*)pool_alloc(&arp_queue_pool))) {
 		return -ENOMEM;
@@ -91,7 +92,9 @@ int arp_queue_add(struct sk_buff *skb) {
 	timer_set(&timer, TTL, arp_queue_drop, queue_pack);
 	queue_pack->timer = timer;
 
-	queue_pack->skb = skb;
+	new_pack = skb_clone(skb, 0);
+	new_pack->sk = skb->sk;
+	queue_pack->skb = new_pack;
 
 	list_add_tail(&arp_queue, &queue_pack->link);
 
