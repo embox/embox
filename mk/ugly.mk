@@ -181,6 +181,12 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
 
 
 
+# 1. ResourceSet
+define configfiles_do_link
+	$(invoke $(new Linker).linkAgainst,$1,
+		$(__myfile_resource_set))
+endef
+
 
 
 

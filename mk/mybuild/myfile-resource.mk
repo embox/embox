@@ -6,32 +6,31 @@
 ifndef __mybuild_myfile_resource_mk
 __mybuild_myfile_resource_mk := 1
 
-include mk/model/resource.mk
+include mk/mybuild/common-resource.mk
 include mk/mybuild/myfile-parser.mk
+include mk/mybuild/myfile-linker.mk
 
+# Constructor args:
+#   1. File name.
 define class-MyFileResource
-	$(super Resource,$(value 1))
+	$(super GoldParsedResource,$(value 1))
 
-	# Param:
-	#   1. File name.
-	# Return:
-	#   Result of parsing or empry on error.
-	$(method loadRootObject : EObject,
-		$(for resource <- $(this),
-			$(call gold_parse,myfile,$1,
-				$(lambda $(set+ resource->issues,
-					$(new ParsingIssue,$(resource),$2,$3,$4)))))
-	)
+	$(getter goldGrammarName,myfile)
 
 endef
 
-# Constructor args:
-#   1. Resource.
-#   2. Severity.
-#   3. Location.
-#   4. Message.
-define class-ParsingIssue
-	$(super BaseIssue,$1,$2,$3,$4)
+define myfile_create_resource_set_from_files
+	$(for rs <-
+			$(new ResourceSet,
+				$(for f <- $1,$($f))),
+
+		$(invoke $(new MyFileLinker).link,$(rs))
+
+		$(for r <- $(get rs->resources),
+			issue <- $(get r->issues),
+			$(invoke issue->report))
+
+		$(rs))
 endef
 
 $(def_all)

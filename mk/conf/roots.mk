@@ -10,8 +10,8 @@ include mk/util/graph.mk
 define find_mod
 	$(for moduleName <- $1,
 		$(or $(for module <-
-					$(map-get $(get mybuild_model_instance->resourceSet)
-						.exportedObjectsMap/$(moduleName)),
+					$(map-get __myfile_resource_set->
+						exportedObjectsMap/$(moduleName)),
 				$(moduleName).$(module)),
 			$(warning Unresolved Module '$1')))
 endef

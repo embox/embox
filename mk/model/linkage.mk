@@ -14,9 +14,15 @@ define class-Linker
 	# Links all resources of the given resource set against each other.
 	#   1. The resource set to link.
 	$(method link,
+		$(invoke linkAgainst,$1,$1))
+
+	# Links the given resource set against another one.
+	#   1. The resource set being linked.
+	#   2. Resource set to search for exported objects.
+	$(method linkAgainst,
 		$(strip $(for \
 			resourceSet <- $(suffix $1),
-			sourceSet   <- $(resourceSet) $(suffix $(value 2)),
+			sourceSet   <- $(suffix $2),
 			resource    <- $(get resourceSet->resources),
 			link        <- $(get resource->unresolvedLinks),
 			linkName    <- $(get link->name),
@@ -34,12 +40,13 @@ define class-Linker
 				$(invoke lookupContainerChain,$(invoke link->eSource)),
 				$(invoke searchGlobalScopeUsingResourceImports),
 				$(invoke searchGlobalScopeByFullName)),
-#				$(warning >>> '$(linkName)' -> '$1')
+
 			$(if $(singleword $1),
 				$(invoke link->resolve,$1),
-#					$(warning Couldn't resolve reference to \
-#						$(get targetType->name) '$(linkName)')
-				$(link))
+
+				$(set+ resource->issues,
+					$(new UnresolvedLinkIssue,$(link))))
+
 		)
 	)
 
@@ -94,10 +101,7 @@ define class-Linker
 	#   Implementation have to return list of implicit imports of the given
 	#   resource. By default returns nothing.
 	$(method getResourceImportNormalizers,
-		# XXX
-		$(for root <- $(get 1->contentsRoot),
-			$(with $(get root->name),
-				$(if $1,$1.*))))
+		)
 
 	# Param:
 	#   1. List of normalizers.

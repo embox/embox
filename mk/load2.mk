@@ -62,9 +62,9 @@ $(mybuild_model_mk) : $(myfiles_mk)
 	@$(foreach f,$(myfiles_mk_removed) ,echo '  D $f';)#
 	@mkdir -p $(@D) && \
 		$(MAKE) -f mk/script/mk-persist.mk MAKEFILES='$(mk_mybuild) $(myfiles_mk)' \
-		PERSIST_OBJECTS='$$(call new,Mybuild,$$(foreach f,$$(myfiles_mk),$$($$f)))' \
+		PERSIST_OBJECTS='$$(call myfile_create_resource_set_from_files,$$(myfiles_mk))' \
 		PERSIST_REALLOC='my' \
 		ALLOC_SCOPE='m' > $@
-	@echo '__mybuild_model_instance := .my1m' >> $@
+	@echo '__myfile_resource_set := .my1m' >> $@
 	@printf 'myfiles_mk_cached := %b' '$(myfiles_mk:%=\\\n\t%)' \
 		> $(myfiles_mk_cached_list_mk)
