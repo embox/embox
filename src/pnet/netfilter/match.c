@@ -6,9 +6,9 @@
  * @author Alexander Kalmuk
  */
 
+#include <pnet/match.h>
 #include <net/ip.h>
 #include <pnet/core.h>
-#include <pnet/match.h>
 #include <pnet/types.h>
 #include <net/if_ether.h>
 #include <util/member.h>
@@ -24,8 +24,6 @@
 #include <pnet/repo.h>
 
 #define NET_NODES_CNT 0x10
-
-#define PRINT_WAYS
 
 OBJALLOC_DEF(matcher_nodes, struct net_node_matcher, NET_NODES_CNT);
 
@@ -52,19 +50,19 @@ static void print_pack_way(net_packet_t pack, match_rule_t rule , int n) {
 }
 #endif
 
-static int match(net_packet_t packet) {
+int match(struct pnet_pack *pack) {
 	unsigned char *pack_curr, *rule_curr;
 	net_node_matcher_t node;
 	match_rule_t curr;
 	struct list_head *h;
 	size_t n;
 
-	node = (net_node_matcher_t) packet->node;
+	node = (net_node_matcher_t) pack->node;
 
 	list_for_each (h, &node->match_rx_rules) {
 		curr = member_cast_out(h, struct match_rule, lnk);
 		rule_curr = &curr->header[0];
-		pack_curr = (unsigned char*) packet->skbuf->data;
+		pack_curr = (unsigned char*) pack->skbuf->data;
 
 		for (n = MAX_PACK_HEADER_SIZE;
 				(((*rule_curr == 255) || *pack_curr == *rule_curr)) && n;
@@ -72,15 +70,15 @@ static int match(net_packet_t packet) {
 			;
 
 		if (n == 0) {
-			packet->node = curr->next_node;
+			pack->node = curr->next_node;
 #ifdef PRINT_WAYS
-		print_pack_way(packet,curr,n);
+		print_pack_way(pack,curr,n);
 #endif
-			return 0;
+			return MATCH_SUCCESS;
 		}
 	}
 #ifdef PRINT_WAYS
-		print_pack_way(packet,curr,n);
+		print_pack_way(pack,curr,n);
 #endif
 	return NET_HND_DFAULT;
 }

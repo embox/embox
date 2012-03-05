@@ -22,6 +22,13 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
+struct sk_buff_head *pnet_queue;
+
+struct pnet_desc {
+	struct list_head lnk;
+	struct sk_buff *skb;
+};
+
 int pnet_entry(struct pnet_pack *pack) {
 	net_device_t *dev = pnet_get_net_device(pack->node);
 	pack->skbuf->dev = dev;
@@ -33,74 +40,48 @@ int pnet_entry(struct pnet_pack *pack) {
 	return 0;
 }
 
+static void pnetif_rx_schedule(struct sk_buff *skb) {
+	skb_queue_tail(pnet_queue, skb);
+
+	raise_softirq(PNET_RX_SOFTIRQ);
+}
+
 int pnetif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
 
 	if (NULL == skb) {
 		return NET_RX_DROP;
 	}
-
 	dev = skb->dev;
-
 	if (NULL == dev) {
 		kfree_skb(skb);
 		return NET_RX_DROP;
 	}
 
-	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
-	skb_queue_tail(&(dev->dev_queue), skb);
-	netif_rx_schedule(dev);
+	// skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+
+	pnetif_rx_schedule(skb);
 	return NET_RX_SUCCESS;
-}
-#if 0
-int netif_receive_skb(sk_buff_t *skb) {
-	struct pnet_pack *pack;
-	net_node_t node;
-
-	node = pnet_get_dev_by_device(skb->dev);
-	//pnet pack = pnet_pack_alloc_skb(node->rx_dfault, skb);
-//	pack = NULL;
-	pnet_rx_thread_add(skb, node);
-
-	return 0;
-}
-#endif
-
-void pnetif_rx_schedule(void) {
-	raise_softirq(PNET_RX_SOFTIRQ);
-}
-
-static int is_empty_pnet(void) {
-	return 1;
-}
-
-static int is_empty_net(void) {
-	return 0;
-}
-
-static int match_skb(struct sk_buff *skb, net_node_t node) {
-	return 0;
 }
 
 static void pnet_rx_action(struct softirq_action *action) {
 	net_node_t node;
 	struct sk_buff *skb;
+	struct pnet_pack *pack;
 
-	skb = skb_dequeue(NULL);
-	while(!is_empty_pnet()) {
-		//match(pack);
-	}
-	while(!is_empty_net()) {
-		node = pnet_get_dev_by_device(skb->dev);
-		if(!match_skb(skb, node)) {
+	while(NULL != (skb = skb_dequeue(pnet_queue))) {
+		node = pnet_get_module("matcher");
+		pack = pnet_pack_create(skb, skb->len, PNET_PACK_TYPE_SKB);
+		pack->node = node;
+		pack->skbuf = skb;
+		if(!(MATCH_SUCCESS == match(pack))) {
 			netif_rx_schedule(skb->dev);
 		}
 	}
-
-
 }
 
 static int unit_init(void) {
-	open_softirq(PNET_RX_SOFTIRQ, pnet_rx_action, NULL);
+	pnet_queue = alloc_skb_queue();
+	open_softirq(PNET_RX_SOFTIRQ, pnet_rx_action, &pnet_queue);
 	return 0;
 }
