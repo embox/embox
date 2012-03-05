@@ -24,15 +24,8 @@ image_init image_fini:
 .PHONY: image_prepare
 prepare: image_prepare
 
-image_prepare : $(ROOTFS_IMAGE)
-
 image_prepare:
 	@mkdir -p $(OBJ_SUBDIRS) 2>/dev/null || echo No objs are built
-
-#TODO rootfs make target is bad stily
-rootfs_prepare: ;
-#	@mkdir -p $(BUILD_DIR)/rootfs
-#	@cp $(__ROOTFS_SRCS) $(BUILD_DIR)/rootfs/
 
 CC      = $(CROSS_COMPILE)gcc
 CPP     = $(CC) -E
@@ -96,6 +89,8 @@ $(foreach src,$(ROOTFS_SRCS_BUILD),\
 	$(eval \
 		$(call rootfs_src_to_obj,$(src)) : $(src) \
 		$(\n)$(\t)@$(MKDIR) $$(@D) && cp -T $$< $$@))
+#XXX
+$(OBJ_DIR)/src/fs/ramfs/ramfs_cpio.o : $(ROOTFS_IMAGE)
 
 ROOTFS_OBJS_BUILD := $(call rootfs_src_to_obj,$(ROOTFS_SRCS_BUILD))
 

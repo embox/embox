@@ -136,6 +136,12 @@ module md5sum {
 	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
 }
 
+module lisp {
+	source "lisp.c"
+	depends LibPosix, third_party.lisp.lisp5000
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
 module ne2k_pci_probe {
 	source "ne2k_pci_probe.c"
 	depends LibPosix, embox.driver.net.ne2k_pci
