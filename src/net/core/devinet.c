@@ -34,7 +34,8 @@ struct inetdev_info {
 
 POOL_DEF(indev_info_pool, struct inetdev_info, CONFIG_NET_INTERFACES_QUANTITY);
 POOL_DEF(callback_info_pool, struct callback_info, CONFIG_NET_CALLBACK_QUANTITY);
-static struct list_head indev_info_list;
+//static struct list_head indev_info_list;
+indev_info_list
 
 static struct inetdev_info * find_indev_info_entry(struct in_device *in_dev) {
 	struct inetdev_info *indev_info;
@@ -74,8 +75,8 @@ static int alloc_callback(struct in_device *in_dev, unsigned int type,
 
 	return ENOERR;
 }
-
-/* static */int free_callback(struct in_device *in_dev, ETH_LISTEN_CALLBACK callback) {
+#if 0
+static int free_callback(struct in_device *in_dev, ETH_LISTEN_CALLBACK callback) {
 	struct inetdev_info *indev_info;
 	struct callback_info *cb_info;
 	struct list_head *tmp;
@@ -98,7 +99,7 @@ static int alloc_callback(struct in_device *in_dev, unsigned int type,
 
 	return -ENOENT;
 }
-
+#endif
 struct in_device * in_dev_get(struct net_device *dev) {
 	assert(dev != NULL);
 	return inet_dev_find_by_name(dev->name);
@@ -279,42 +280,8 @@ int inet_dev_remove_dev(struct in_device *in_dev) {
 	return ENOERR;
 }
 
-#if 0
-/**
- * this function is called by device layer from function "netif_rx"
- * before proto parse
- * socket must call "ifdev_listen" if it wants ifdev to have to
- * receive raw socket (for tcpdump for example)
- */
-void ifdev_rx_callback(sk_buff_t *pack) {
-	size_t i;
-	/* if there are some callback handlers for packet's protocol */
-	in_device_t *in_dev = (in_device_t *) pack->ifdev;
-	if (NULL == dev)
-		return;
 
-	INETDEV_INFO *ifdev_info = find_ifdev_info_entry(in_dev);
-
-	for (i = 0; i < ARRAY_SIZE(ifdev_info->cb_info); i++) {
-		if (NULL != ifdev_info->cb_info[i].func) {
-			if ((NET_TYPE_ALL_PROTOCOL == ifdev_info->cb_info[i].type)
-					|| (ifdev_info->cb_info[i].type == pack->protocol)) {
-				/* todo may be copy pack for different protocols*/
-				ifdev_info->cb_info[i].func(pack);
-			}
-		}
-	}
-}
-/**
- * this function is called by device layer from function "eth_send"
- * socket must call "ifdev_listen" if it wants ifdev to have to
- * receive raw socket (for tcpdump for example)
- */
-void ifdev_tx_callback(sk_buff_t *pack) {
-}
-#endif
-
-struct in_device * inet_dev_get_fist_used(void) {
+struct in_device * inet_dev_get_first_used(void) {
 	struct inetdev_info *indev_info;
 
 	if (list_empty(&indev_info_list)) {
@@ -337,6 +304,6 @@ struct in_device * inet_dev_get_next_used(struct in_device *in_dev) {
 }
 
 static int devinet_init(void) {
-	INIT_LIST_HEAD(&indev_info_list);
+	//INIT_LIST_HEAD(&indev_info_list);
 	return ENOERR;
 }
