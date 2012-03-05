@@ -91,7 +91,7 @@ extern int inet_dev_set_macaddr(in_device_t *in_dev, const unsigned char *macadd
 extern in_addr_t inet_dev_get_ipaddr(in_device_t *in_dev);
 
 /* iterator functions */
-extern in_device_t * inet_dev_get_fist_used(void);
+extern in_device_t * inet_dev_get_first_used(void);
 extern in_device_t * inet_dev_get_next_used(in_device_t *);
 
 extern int inet_dev_add_dev(struct net_device *dev);

@@ -66,6 +66,7 @@ module ping {
 module ifconfig {
 	source "ifconfig.c"
 	depends LibPosix
+	depends embox.net.core
 	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
 }
 

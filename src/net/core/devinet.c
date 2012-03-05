@@ -35,7 +35,7 @@ struct inetdev_info {
 POOL_DEF(indev_info_pool, struct inetdev_info, CONFIG_NET_INTERFACES_QUANTITY);
 POOL_DEF(callback_info_pool, struct callback_info, CONFIG_NET_CALLBACK_QUANTITY);
 //static struct list_head indev_info_list;
-indev_info_list
+static LIST_HEAD(indev_info_list);
 
 static struct inetdev_info * find_indev_info_entry(struct in_device *in_dev) {
 	struct inetdev_info *indev_info;

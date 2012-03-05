@@ -99,7 +99,7 @@ static void inet_dev_show_info(void *handler) {
 static void inet_dev_show_all_info(void) {
 	in_device_t *ifdev;
 
-	ifdev = inet_dev_get_fist_used();
+	ifdev = inet_dev_get_first_used();
 	if (ifdev != NULL) {
 		inet_dev_show_info(ifdev);
 	}
