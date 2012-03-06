@@ -94,4 +94,8 @@ static inline int pnet_add_new_rx_rule(match_rule_t new_rule, net_node_matcher_t
 
 extern net_node_matcher_t pnet_get_node_matcher(void);
 
+extern int match(struct pnet_pack *pack);
+
+#define MATCH_SUCCESS 0
+
 #endif /* PNET_MATCH_H_ */

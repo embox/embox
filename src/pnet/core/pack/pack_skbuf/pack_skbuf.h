@@ -21,7 +21,7 @@ struct net_packet {
 #endif
 
 struct pnet_pack {
-	struct sk_buff *skbuf;
+	struct sk_buff *skb;
 
 	net_node_t node;
 	enum PNET_PACK_DIRECTION dir;
@@ -29,11 +29,11 @@ struct pnet_pack {
 
 
 static inline void *pnet_pack_get_data(struct pnet_pack *pack) {
-	return pack->skbuf->data;
+	return pack->skb->data;
 }
 
 static inline int pnet_pack_get_len(struct pnet_pack *pack) {
-	return pack->skbuf->len;
+	return pack->skb->len;
 }
 
 #endif

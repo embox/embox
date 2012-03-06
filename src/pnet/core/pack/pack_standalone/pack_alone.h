@@ -14,19 +14,10 @@ struct pnet_pack_data {
 	int len;
 };
 
-#if 0
-struct net_packet {
-	struct net_packet_data data;
-
-	enum PNET_PACK_DIRECTION dir;
-	net_node_t node;
-};
-#endif
-
 struct pnet_pack {
-	struct pnet_pack_data *data;
+	struct pnet_pack_data data;
 	enum PNET_PACK_DIRECTION dir;
-	net_node_t node;
+	struct net_node *node;
 };
 
 static inline void *pnet_pack_get_data(struct pnet_pack *pack) {

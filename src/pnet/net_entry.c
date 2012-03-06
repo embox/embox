@@ -28,7 +28,7 @@ struct pnet_desc {
 	struct list_head lnk;
 	struct sk_buff *skb;
 };
-
+#if 0
 int pnet_entry(struct pnet_pack *pack) {
 	net_device_t *dev = pnet_get_net_device(pack->node);
 	pack->skbuf->dev = dev;
@@ -39,7 +39,7 @@ int pnet_entry(struct pnet_pack *pack) {
 
 	return 0;
 }
-
+#endif
 static void pnetif_rx_schedule(struct sk_buff *skb) {
 	skb_queue_tail(pnet_queue, skb);
 
@@ -73,7 +73,7 @@ static void pnet_rx_action(struct softirq_action *action) {
 		node = pnet_get_module("matcher");
 		pack = pnet_pack_create(skb, skb->len, PNET_PACK_TYPE_SKB);
 		pack->node = node;
-		pack->skbuf = skb;
+		pack->skb = skb;
 		if(!(MATCH_SUCCESS == match(pack))) {
 			netif_rx_schedule(skb->dev);
 		}

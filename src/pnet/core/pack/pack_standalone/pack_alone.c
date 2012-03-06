@@ -19,7 +19,7 @@
 OBJALLOC_DEF(net_packs, struct pnet_pack, CONFIG_PNET_PACKETS_QUANTITY);
 OBJALLOC_DEF(net_packs_data, unsigned char[PACK_DATA_LEN], CONFIG_PNET_PACKETS_QUANTITY);
 
-struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
+static struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
 	struct pnet_pack *pack;
 
 	if (len > PACK_DATA_LEN) {
@@ -38,7 +38,7 @@ struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
 	return pack;
 }
 
-void pnet_pack_free(struct pnet_pack *pack) {
+static void pnet_pack_free(struct pnet_pack *pack) {
 	objfree(&net_packs_data, pack->data->buff);
 
 	objfree(&net_packs, pack);

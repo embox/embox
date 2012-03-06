@@ -1,5 +1,5 @@
 package embox.pnet.core.pack
 
-module pack_standalone extends embox.pnet.core.pack.api { //TODO ugly
+module pack_standalone extends embox.pnet.core.pack.api {
 	source "pack_alone.c", "pack_alone.h"
 }

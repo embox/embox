@@ -62,7 +62,7 @@ int match(struct pnet_pack *pack) {
 	list_for_each (h, &node->match_rx_rules) {
 		curr = member_cast_out(h, struct match_rule, lnk);
 		rule_curr = &curr->header[0];
-		pack_curr = (unsigned char*) pack->skbuf->data;
+		pack_curr = (unsigned char*) pack->skb->data;
 
 		for (n = MAX_PACK_HEADER_SIZE;
 				(((*rule_curr == 255) || *pack_curr == *rule_curr)) && n;

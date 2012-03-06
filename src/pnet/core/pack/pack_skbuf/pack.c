@@ -14,37 +14,37 @@
 #include <mem/objalloc.h>
 
 #include <embox/unit.h>
+#include <pnet/pnet_pack.h>
 
 OBJALLOC_DEF(net_packs, struct pnet_pack, CONFIG_PNET_PACKETS_QUANTITY);
 
-#if 0
-net_packet_t pnet_pack_alloc_skb(net_node_t node, struct sk_buff *skb) {
-	net_packet_t pack = objalloc(&net_packs);
-
-	pack->node = node;
-	pack->dir = PNET_PACK_DIRECTION_RX; //TODO varios packet types
-
-	pack->skbuf = skb;
-
-	return pack;
-}
-#endif
-struct pnet_pack *pnet_pack_alloc(net_node_t node, int len) {
-	struct pnet_pack *pack = objalloc(&net_packs);
-
-	pack->node = node;
-	pack->dir = PNET_PACK_DIRECTION_RX; //TODO varios packet types
-
-	pack->skbuf = alloc_skb(len, 0);
-
-	return pack;
-}
-
-
-int pnet_pack_free(struct pnet_pack *pack) {
-	kfree_skb(pack->skbuf);
+void pnet_pack_free(struct pnet_pack *pack) {
+	kfree_skb(pack->skb);
 
 	objfree(&net_packs, pack);
-
-	return 0;
 }
+
+static struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
+	struct pnet_pack *pack;
+
+	if(NULL == (pack = objalloc(&net_packs))) {
+		return NULL;
+	}
+
+	if(NULL == data) {
+		if(NULL == (pack->skb = alloc_skb(len, 0))) {
+			pnet_pack_free(pack);
+			return NULL;
+		}
+	} else {
+		pack->skb = data;
+	}
+
+	pack->dir = PNET_PACK_DIRECTION_RX;
+
+	return pack;
+}
+
+
+
+PNET_PACK(PNET_PACK_TYPE_SINGLE,pnet_pack_alloc,pnet_pack_free);
