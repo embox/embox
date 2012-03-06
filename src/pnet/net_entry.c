@@ -46,7 +46,7 @@ static void pnetif_rx_schedule(struct sk_buff *skb) {
 	raise_softirq(PNET_RX_SOFTIRQ);
 }
 
-int pnetif_rx(struct sk_buff *skb) {
+int netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
 
 	if (NULL == skb) {
@@ -75,7 +75,7 @@ static void pnet_rx_action(struct softirq_action *action) {
 		pack->node = node;
 		pack->skb = skb;
 		if(!(MATCH_SUCCESS == match(pack))) {
-			netif_rx_schedule(skb->dev);
+			netif_rx_schedule(skb);
 		}
 	}
 }

@@ -102,7 +102,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	if (dev->flags & IFF_UP) {
 		res = dev->header_ops->rebuild(skb);
 		if (res < 0) {
-			if(!is_ready(skb->sk->sk_socket)) {
+			if(is_ready(skb->sk->sk_socket)) {
 				kfree_skb(skb);
 				stats->tx_err++;
 			}
@@ -121,7 +121,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	}
 	return ENOERR;
 }
-
+#if 0
 int netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
 
@@ -140,7 +140,7 @@ int netif_rx(struct sk_buff *skb) {
 
 	return NET_RX_DROP;
 }
-
+#endif
 int netif_receive_skb(sk_buff_t *skb) {
 	struct packet_type *q;
 	const struct net_pack *pack;
@@ -157,7 +157,12 @@ int netif_receive_skb(sk_buff_t *skb) {
 }
 
 
-void netif_rx_schedule(net_device_t *dev) {
+void netif_rx_schedule(struct sk_buff *skb) {
 	//TODO:
+	net_device_t *dev;
+
+	dev = skb->dev;
+	skb_queue_tail(&(dev->dev_queue), skb);
+
 	raise_softirq(NET_RX_SOFTIRQ);
 }
