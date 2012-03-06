@@ -19,6 +19,9 @@
 #include <linux/init.h>
 #include <pnet/match.h>
 #include <pnet/pnet_pack.h>
+#include <pnet/graph.h>
+#include <string.h>
+#include <util/member.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -65,15 +68,25 @@ int netif_rx(struct sk_buff *skb) {
 }
 
 static void pnet_rx_action(struct softirq_action *action) {
-	net_node_t node;
+	net_node_t node_dev, matcher;
 	struct sk_buff *skb;
 	struct pnet_pack *pack;
+	struct pnet_graph *graph;
 
 	while(NULL != (skb = skb_dequeue(pnet_queue))) {
-		node = pnet_get_module("matcher");
+		node_dev = pnet_get_dev_by_device(skb->dev);
+		graph = node_dev->graph;
+
+		matcher = node_dev->rx_dfault;
+		/* default node directly linked to device MUST be matcher? */
+		if(!strcmp(matcher->proto->name, "matcher")) {
+			matcher = pnet_get_module("matcher");
+		}
+
 		pack = pnet_pack_create(skb, skb->len, PNET_PACK_TYPE_SKB);
-		pack->node = node;
+		pack->node = matcher;
 		pack->skb = skb;
+
 		if(!(MATCH_SUCCESS == match(pack))) {
 			netif_rx_schedule(skb);
 		}
