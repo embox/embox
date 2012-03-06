@@ -9,6 +9,7 @@ module tish extends shell_api {
 
 module shell_start {
 	source "shell_start.c"
+	depends embox.kernel.thread.core
 	depends shell_api
 	make flags "-I$(CONF_DIR)"
 }
