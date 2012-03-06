@@ -33,7 +33,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <pnet/core.h>
+//#include <pnet/core.h>
 
 EMBOX_UNIT_INIT(unit_init);
 

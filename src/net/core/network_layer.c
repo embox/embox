@@ -121,7 +121,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	}
 	return ENOERR;
 }
-#if 0
+#if 1
 int netif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
 
@@ -157,12 +157,12 @@ int netif_receive_skb(sk_buff_t *skb) {
 }
 
 
-void netif_rx_schedule(struct sk_buff *skb) {
+void netif_rx_schedule(net_device_t *dev /*struct sk_buff *skb*/) {
 	//TODO:
-	net_device_t *dev;
+//	net_device_t *dev;
 
-	dev = skb->dev;
-	skb_queue_tail(&(dev->dev_queue), skb);
+//	dev = skb->dev;
+//	skb_queue_tail(&(dev->dev_queue), skb);
 
 	raise_softirq(NET_RX_SOFTIRQ);
 }

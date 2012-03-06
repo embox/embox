@@ -49,7 +49,7 @@ static void pnetif_rx_schedule(struct sk_buff *skb) {
 	raise_softirq(PNET_RX_SOFTIRQ);
 }
 
-int netif_rx(struct sk_buff *skb) {
+int pnetif_rx(struct sk_buff *skb) {
 	net_device_t *dev;
 
 	if (NULL == skb) {
