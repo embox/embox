@@ -56,6 +56,7 @@ $(mk_mybuild_myfile) : CACHE_INCLUDES := \
 	mk/mybuild/myfile-model.mk     \
 	mk/mybuild/myfile-metamodel.mk \
 	mk/mybuild/myfile-resource.mk  \
+	mk/mybuild/myfile-linker.mk  \
 	mk/mybuild/myfile-parser.mk
 $(mk_mybuild_myfile) : CACHE_REQUIRES := \
 	$(mk_gold_engine) \
@@ -68,11 +69,15 @@ $(mk_mybuild_configfile) : CACHE_INCLUDES := \
 	mk/mybuild/configfile-model.mk     \
 	mk/mybuild/configfile-metamodel.mk \
 	mk/mybuild/configfile-resource.mk  \
+	mk/mybuild/configfile-linker.mk  \
 	mk/mybuild/configfile-parser.mk
 $(mk_mybuild_configfile) : CACHE_REQUIRES := \
 	$(mk_mybuild_myfile) \
 	$(mk_model)
 $(mk_mybuild_configfile) : ALLOC_SCOPE := g
+
+
+export mk_mybuild_build-incl := mk/mybuild/build-model.mk mk/mybuild/build-metamodel.mk
 
 # Mybuild itself.
 export mk_mybuild := $(MK_CACHE_DIR)/mk_mybuild.mk

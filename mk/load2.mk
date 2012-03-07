@@ -34,7 +34,7 @@ ifneq ($(or $(myfiles_mk_added),$(myfiles_mk_removed)),)
 endif
 
 $(MAKECMDGOALS) : $(mybuild_model_mk)
-ifeq (0,1)
+ifeq (1,1)
 	@$(MAKE) -f mk/load3.mk $@
 else
 	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $<' $@

@@ -22,15 +22,13 @@ config_lds_h := $(AUTOCONF_DIR)/config.lds.h
 CONF_FILES     := $(build_conf) $(options_conf) $(mods_conf) $(lds_conf)
 AUTOCONF_FILES := $(build_mk) $(mods_mk) $(config_h) $(config_lds_h)
 
-ifeq (0,1)
-configfiles_resources := \
-	$(foreach f,$(configfiles_mk),$($f))
+ifeq (1,1)
 
-configfiles_resourceSet := \
-	$(call new,ResourceSet,$(configfiles_resources))
+config_resource_set := $(call config_link_with_myfile_model,$(__config_resource_set),$(__myfile_resource_set))
+mybuild_model := $(call new,Mybuild,$(__myfile_resource_set),$(config_resource_set))
 
-_____ignore := $(call configfiles_do_link,$(configfiles_resourceSet))
-$(error $(call class,$(_____ignore)))
+build_model := $(call new,BuildBuild,$(mybuild_model))
+
 endif
 
 MODS_ENABLE :=
