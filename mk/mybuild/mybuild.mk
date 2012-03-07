@@ -32,13 +32,15 @@ define class-Mybuild
 					cfgInclude <- $(get cfgConfiguration->includes),
 					module <- $(get cfgInclude->module),
 
-					$(invoke moduleInstance,$(module))))
+					$(invoke moduleInstanceClosure,$(module))))
 			$(build)))
 
 
 	# Args:
-	#  1. MyModule instance
+	#  1. MyModule object instance
 	#  2. (Optional) Configuration
+	# Return:
+	#  ModuleInstance instance
 	$(method moduleInstance,
 		$(for mod <- $1,
 			$(or $(map-get moduleInstanceStore/$(mod)),
@@ -51,10 +53,15 @@ define class-Mybuild
 	$(method listInstances,
 		$(for i <- modules,
 			$(get i->name)))
-
-	$(method moduleInstancesClose,
-		$(foreach d,$(get mod->depends),
-			$(invoke moduleInstance,$d)))
+	# Args:
+	#  1. MyModule object instance
+	# Return:
+	#  List of ModuleInstance for module and it's depends #TODO and supertypes
+	$(method moduleInstanceClosure,
+		$(invoke moduleInstance,$1) \
+		$(for mod <- $1,
+			dep <- $(get mod->depends),
+			$(invoke moduleInstanceClosure,$(dep))))
 
 endef
 
