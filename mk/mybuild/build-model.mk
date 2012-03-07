@@ -23,8 +23,44 @@ define class-BuildBuild
 	$(eobject-reference Build_Build_modules,
 		modules,BuildModuleInstance,configuration,changeable many containment)
 
+	$(map moduleInstanceStore... : BuildModuleInstance)
+
 	# PROTECTED REGION ID(Build) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+	# Args:
+	#  1. Mybuild instance
+	$(method loadFromMybuild,
+
+		$(set modules,
+			$(for mybuild <- $1,
+				configResSet <- $(get mybuild->configResourceSet),
+				configResource <- $(get configResSet->resources),
+				cfgFileContent <- $(get configResoure->contentsRoot),
+				cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)), #FIXME
+				cfgInclude <- $(get cfgConfiguration->includes),
+
+				module <- $(get cfgInclude->module),
+				$(invoke moduleInstance,$(module)))))
+
+
+	# Args:
+	#  1. MyModule instance
+	#  2. (Optional) Configuration
+	$(method moduleInstance,
+		$(for mod <- $1,
+			name <-$(get mod->name),
+			$(or $(get moduleInstanceStore/$(name)),
+				$(firstword $(set moduleInstanceStore/$(name),
+						$(new BuildModuleInstance,$(mod),
+							$(if $(value 2),$2)))
+					$(foreach d,$(get mod->depends),
+						$(invoke moduleInstance,$d))))))
+	$(method listInstances,
+		$(for i <- modules,
+			$(get i->name)))
+
+	$(if $(value 1),
+		$(invoke loadFromMybuild))
+
 	# PROTECTED REGION END
 endef
 
@@ -37,6 +73,11 @@ endef
 #   - reference 'depends'
 #   - reference 'options'
 #
+# Args:
+#  1. (Optional) Module type
+#  2. (Optional) Configuration
+#  3. (Optional) Depends
+#  4. (Optional) Options
 define class-BuildModuleInstance
 	$(eobject Build_ModuleInstance,
 		BuildModuleInstance,,)
@@ -58,7 +99,19 @@ define class-BuildModuleInstance
 		options,BuildOptionInstance,module,changeable many containment)
 
 	# PROTECTED REGION ID(ModuleInstance) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+
+	$(if $(value 1),
+		$(set type,$1))
+
+	$(if $(value 2),
+		$(set configuration,$2))
+
+	$(if $(value 3),
+		$(set depends,$3))
+
+	$(if $(value 4),
+		$(set options,$4))
+
 	# PROTECTED REGION END
 endef
 

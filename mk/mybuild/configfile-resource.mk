@@ -19,6 +19,22 @@ define class-ConfigFileResource
 
 endef
 
+define config_create_resource_set_from_files
+	$(new ResourceSet,$(foreach r,$1,$($r)))
+endef
+
+define config_link_with_myfile_model
+	$(for rs <- $1,
+       		myfileSet <- $2,
+		$(invoke $(new ConfigLinker).linkAgainst,$(rs),$(myfileSet))
+
+		$(for r <- $(get rs->resources),
+			issue <- $(get r->issues),
+			$(invoke issue->report))
+
+		$(rs))
+endef
+
 $(def_all)
 
 endif # __mybuild_configfile_resource_mk
