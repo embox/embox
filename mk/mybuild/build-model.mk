@@ -29,16 +29,15 @@ define class-BuildBuild
 	# Args:
 	#  1. Mybuild instance
 	$(method loadFromMybuild,
-
 		$(set modules,
 			$(for mybuild <- $1,
 				configResSet <- $(get mybuild->configResourceSet),
 				configResource <- $(get configResSet->resources),
-				cfgFileContent <- $(get configResoure->contentsRoot),
+				cfgFileContent <- $(get configResource->contentsRoot),
 				cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)), #FIXME
 				cfgInclude <- $(get cfgConfiguration->includes),
-
 				module <- $(get cfgInclude->module),
+
 				$(invoke moduleInstance,$(module)))))
 
 
@@ -47,9 +46,8 @@ define class-BuildBuild
 	#  2. (Optional) Configuration
 	$(method moduleInstance,
 		$(for mod <- $1,
-			name <-$(get mod->name),
-			$(or $(get moduleInstanceStore/$(name)),
-				$(firstword $(set moduleInstanceStore/$(name),
+			$(or $(get moduleInstanceStore/$(mod)),
+				$(firstword $(set moduleInstanceStore/$(mod),
 						$(new BuildModuleInstance,$(mod),
 							$(if $(value 2),$2)))
 					$(foreach d,$(get mod->depends),
@@ -59,7 +57,7 @@ define class-BuildBuild
 			$(get i->name)))
 
 	$(if $(value 1),
-		$(invoke loadFromMybuild))
+		$(invoke loadFromMybuild,$1))
 
 	# PROTECTED REGION END
 endef
