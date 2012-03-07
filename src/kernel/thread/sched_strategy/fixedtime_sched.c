@@ -13,6 +13,8 @@
 static int wakeup_resumed_thread(struct runq *runq, struct sleepq *sleepq);
 static void wakeup_suspended_thread(struct runq *runq, struct sleepq *sleepq);
 static void move_thread_to_another_q(struct list_head *q, struct thread *thread);
+static useconds_t time_usec(void);
+static useconds_t get_exec_time(struct thread *thread);
 
 inline void sched_strategy_init(struct sched_strategy_data *data) {
 	INIT_LIST_HEAD(&data->l_link);
@@ -133,6 +135,11 @@ static useconds_t time_usec(void) {
 	return clock_source_clock_to_usec(clock());
 }
 
+/* Calculate execution time for thread  */
+static useconds_t get_exec_time(struct thread *thread) {
+	return 10 * thread->priority; // TODO: make it with const
+}
+
 int runq_switch(struct runq *runq) {
 	struct thread *prev, *next;
 	useconds_t cur_time, diff;
@@ -143,7 +150,8 @@ int runq_switch(struct runq *runq) {
 	diff = cur_time - runq->last_upd;
 	runq->last_upd = cur_time;
 
-	if ((runq->timeleft > diff) && thread_state_running(runq->current->state)) {   // We still have time
+	if ((runq->timeleft > diff) &&
+		thread_state_running(runq->current->state)) {  /* We still have time */
 		runq->timeleft -= diff;
 		return 0;
 	}
@@ -162,7 +170,7 @@ int runq_switch(struct runq *runq) {
 	assert(thread_state_running(next->state));
 
 	runq->current = next;
-	runq->timeleft = 10 * next->priority;  // Set time left TODO: const
+	runq->timeleft = get_exec_time(next);  /* New timeleft for next thread */
 	return prev != next;
 }
 
