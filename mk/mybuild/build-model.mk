@@ -23,42 +23,7 @@ define class-BuildBuild
 	$(eobject-reference Build_Build_modules,
 		modules,BuildModuleInstance,configuration,changeable many containment)
 
-	$(map moduleInstanceStore... : BuildModuleInstance)
-
 	# PROTECTED REGION ID(Build) ENABLED START
-	# Args:
-	#  1. Mybuild instance
-	$(method loadFromMybuild,
-		$(set modules,
-			$(for mybuild <- $1,
-				configResSet <- $(get mybuild->configResourceSet),
-				configResource <- $(get configResSet->resources),
-				cfgFileContent <- $(get configResource->contentsRoot),
-				cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)), #FIXME
-				cfgInclude <- $(get cfgConfiguration->includes),
-				module <- $(get cfgInclude->module),
-
-				$(invoke moduleInstance,$(module)))))
-
-
-	# Args:
-	#  1. MyModule instance
-	#  2. (Optional) Configuration
-	$(method moduleInstance,
-		$(for mod <- $1,
-			$(or $(get moduleInstanceStore/$(mod)),
-				$(firstword $(set moduleInstanceStore/$(mod),
-						$(new BuildModuleInstance,$(mod),
-							$(if $(value 2),$2)))
-					$(foreach d,$(get mod->depends),
-						$(invoke moduleInstance,$d))))))
-	$(method listInstances,
-		$(for i <- modules,
-			$(get i->name)))
-
-	$(if $(value 1),
-		$(invoke loadFromMybuild,$1))
-
 	# PROTECTED REGION END
 endef
 
