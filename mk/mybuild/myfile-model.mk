@@ -275,9 +275,8 @@ define class-MyExtendable # abstract
 	# Reference 'allSuperTypes' [0..*]: bidirectional, derived, read-only.
 	$(property allSuperTypes... : MyExtendable)
 	# PROTECTED REGION ID(Extendable_allSuperTypes) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter allSuperTypes,
-#		$(error $0: NIY))
+	$(getter allSuperTypes,
+		$(get superType) $(foreach s,$(get superType),$(get s->allSuperTypes)))
 	# PROTECTED REGION END
 
 	# Method 'isSubTypeOf'.
