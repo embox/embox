@@ -61,7 +61,7 @@ int netif_rx(struct sk_buff *skb) {
 		return NET_RX_DROP;
 	}
 
-	// skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
 
 	pnetif_rx_schedule(skb);
 	return NET_RX_SUCCESS;
@@ -79,7 +79,7 @@ static void pnet_rx_action(struct softirq_action *action) {
 
 		matcher = node_dev->rx_dfault;
 		/* default node directly linked to device MUST be matcher? */
-		if(!strcmp(matcher->proto->name, "matcher")) {
+		if(strcmp(matcher->proto->name, "matcher")) {
 			matcher = pnet_get_module("matcher");
 		}
 

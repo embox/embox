@@ -16,7 +16,7 @@
 
 #include <mem/objalloc.h>
 
-#define CONFIG_PNET_GRAPH_CNT 0x1
+#define CONFIG_PNET_GRAPH_CNT 0x10
 
 OBJALLOC_DEF(graphs, struct pnet_graph, CONFIG_PNET_GRAPH_CNT);
 

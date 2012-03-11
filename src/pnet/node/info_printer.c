@@ -9,9 +9,10 @@
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/repo.h>
+#include <pnet/pnet_pack.h>
 
 static int stamp = 1;
-static void print_pack(net_packet_t pack) {
+static void print_pack(struct pnet_pack *pack) {
 	printf("%d: ", stamp++);
 	switch(pack->dir) {
 	case PNET_PACK_DIRECTION_RX:
@@ -22,15 +23,15 @@ static void print_pack(net_packet_t pack) {
 		break;
 	};
 
-	printf(": %d bytes\n", pack->skbuf->len);
+	printf(": %d bytes\n", pack->skb->len);
 }
 
-static int net_info_tx_hnd(net_packet_t pack) {
+static int net_info_tx_hnd(struct pnet_pack *pack) {
 	print_pack(pack);
 	return NET_HND_DFAULT;
 }
 
-static int net_info_rx_hnd(net_packet_t pack) {
+static int net_info_rx_hnd(struct pnet_pack *pack) {
 	print_pack(pack);
 	return NET_HND_DFAULT;
 }
