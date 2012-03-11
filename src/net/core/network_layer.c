@@ -121,26 +121,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	}
 	return ENOERR;
 }
-#if 1
-int netif_rx(struct sk_buff *skb) {
-	net_device_t *dev;
 
-	if (NULL == skb) {
-		return NET_RX_DROP;
-	}
-	dev = skb->dev;
-	if (NULL == dev) {
-		kfree_skb(skb);
-		return NET_RX_DROP;
-	}
-	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
-
-	skb_queue_tail(&(dev->dev_queue), skb);
-	netif_rx_schedule(dev);
-
-	return NET_RX_DROP;
-}
-#endif
 int netif_receive_skb(sk_buff_t *skb) {
 	struct packet_type *q;
 	const struct net_pack *pack;
@@ -156,13 +137,39 @@ int netif_receive_skb(sk_buff_t *skb) {
 	return NET_RX_DROP;
 }
 
+EMBOX_UNIT_INIT(unit_init);
+extern net_device_t *get_dev_by_idx(int num); /* TODO delete it */
+//static LIST_HEAD(rx_dev_queue);
 
-void netif_rx_schedule(net_device_t *dev /*struct sk_buff *skb*/) {
+static void net_rx_action(struct softirq_action *action) {
+	size_t i;
+	struct net_device *dev;
+	//struct list_head *head_dev;
+
+	//TODO it will be better use list of active device and cache for them
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
+		dev = get_dev_by_idx(i);
+		if ((NULL != dev) && (NULL != dev->poll)) {
+			dev->poll(dev);
+		}
+	}
+//	list_for_each(head_dev, &rx_dev_queue) {
+//		dev->poll(dev)
+//	}
+}
+
+
+void netif_rx_schedule(struct sk_buff *skb) {
 	//TODO:
-//	net_device_t *dev;
+	struct net_device *dev;
 
-//	dev = skb->dev;
-//	skb_queue_tail(&(dev->dev_queue), skb);
+	dev = skb->dev;
+	skb_queue_tail(&(dev->dev_queue), skb);
 
 	raise_softirq(NET_RX_SOFTIRQ);
+}
+
+static int unit_init(void) {
+	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
+	return 0;
 }

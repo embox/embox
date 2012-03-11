@@ -18,24 +18,23 @@
 
 #include <embox/unit.h>
 
-extern net_device_t *get_dev_by_idx(int num); /* TODO delete it */
+int netif_rx(struct sk_buff *skb) {
+	struct net_device *dev;
 
-EMBOX_UNIT_INIT(unit_init);
-
-static void net_rx_action(struct softirq_action *action) {
-	size_t i;
-	net_device_t *dev;
-
-	//TODO it will be better use list of active device and cache for them
-	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
-		dev = get_dev_by_idx(i);
-		if ((NULL != dev) && (NULL != dev->poll)) {
-			dev->poll(dev);
-		}
+	if (NULL == skb) {
+		return NET_RX_DROP;
 	}
+	dev = skb->dev;
+	if (NULL == dev) {
+		kfree_skb(skb);
+		return NET_RX_DROP;
+	}
+	//TODO move to processing
+	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+
+	//skb_queue_tail(&(dev->dev_queue), skb);
+	netif_rx_schedule(skb);
+
+	return NET_RX_DROP;
 }
 
-static int unit_init(void) {
-	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
-	return 0;
-}

@@ -113,10 +113,8 @@ typedef struct packet_type {
  * structure of net device
  */
 typedef struct net_device {
-#if 0
-	struct net_device *rx_netdev_list;
-	struct net_device *tx_netdev_list;
-#endif
+	struct list_head rx_dev_link;
+
 	char name[IFNAMSIZ]; /**< Name of the interface.  */
 	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
 	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
@@ -248,7 +246,7 @@ extern int netif_rx(sk_buff_t *pack);
 /**
  * Called by irq handler.
  */
-extern void netif_rx_schedule(net_device_t *dev);
+extern void netif_rx_schedule(struct sk_buff *skb);
 
 extern int netif_receive_skb(sk_buff_t *skb);
 
