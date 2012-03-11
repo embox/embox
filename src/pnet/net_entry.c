@@ -88,7 +88,7 @@ static void pnet_rx_action(struct softirq_action *action) {
 		pack->skb = skb;
 
 		if(!(MATCH_SUCCESS == match(pack))) {
-			netif_rx_schedule(skb);
+			netif_rx_schedule(skb->dev);
 		}
 	}
 }
