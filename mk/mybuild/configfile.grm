@@ -40,6 +40,14 @@ Whitespace     = {Whitespace}+
 
 Identifier     = '^'? {ID Head}{ID Tail}*
 
+StringLiteral  = '"' ( {String Chars} | '\' {String Esc} )* '"'
+               | '''''' ( ( ''? '' )? ( {Non Quote} | '\' {Quote Esc} ) )* ''''''
+
+NumberLiteral  = {Digit}+ ( '.' {Digit}+ )?
+               | '0x' {Hex Digit}+ ( '.' {Hex Digit}+ )?
+
+BooleanLiteral = 'true' | 'false'
+
 ! -------------------------------------------------
 ! Rules
 ! -------------------------------------------------
@@ -57,11 +65,7 @@ Identifier     = '^'? {ID Head}{ID Tail}*
         ::= <Import> <Imports>
          |
 <Import>
-        ::= 'import' <ImportFeature> <QualifiedNameWithWildcard>
-! feature?
-<ImportFeature>
-        ::= 'feature'
-         |
+        ::= 'import' <QualifiedNameWithWildcard>
 
 ! Configuration*
 <Configurations>
@@ -80,21 +84,36 @@ Identifier     = '^'? {ID Head}{ID Tail}*
         ::= <Include>
 
 <Include>
-        ::= 'include' <ModuleRefList>
+        ::= 'include' <ReferenceWithInitializerList>
+
+<ReferenceWithInitializerList>
+        ::= <ReferenceWithInitializer> ',' <ReferenceWithInitializerList>
+         |  <ReferenceWithInitializer>
+
+<ReferenceWithInitializer>
+        ::= <Reference> <Initializer>
+
+<Initializer>
+        ::= '(' <ParametersList> ')'
+         |
+<ParametersList>
+        ::= <Parameter> ',' <ParametersList>
+         |  <Parameter>
+<Parameter>
+        ::= <SimpleReference> '=' <Value>
+
+<Value>
+        ::= StringLiteral
+         |  NumberLiteral
+         |  BooleanLiteral
 
 ! -------------------------------------------------
 ! Datatypes.
 
-<ModuleRef>
+<Reference>
         ::= <QualifiedName>
-
-! -------------------------------------------------
-! Comma separated lists.
-
-! Item ( , Item )*
-<ModuleRefList>
-        ::= <ModuleRef> ',' <ModuleRefList>
-         |  <ModuleRef>
+<SimpleReference>
+        ::= Identifier
 
 ! -------------------------------------------------
 ! Extended identifiers.
