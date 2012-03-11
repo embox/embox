@@ -35,6 +35,8 @@ static struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
 
 	pack->data->len = len;
 
+	pack->type = PNET_PACK_TYPE_SKB;
+
 	return pack;
 }
 

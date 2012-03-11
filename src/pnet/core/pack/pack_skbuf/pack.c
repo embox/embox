@@ -42,9 +42,9 @@ static struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
 
 	pack->dir = PNET_PACK_DIRECTION_RX;
 
+	pack->type = PNET_PACK_TYPE_SKB;
+
 	return pack;
 }
-
-
 
 PNET_PACK(PNET_PACK_TYPE_SINGLE,pnet_pack_alloc,pnet_pack_free);

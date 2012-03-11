@@ -9,6 +9,7 @@
 #include <util/array.h>
 #include <net/skbuff.h>
 #include <pnet/pnet_pack.h>
+#include <mem/objalloc.h>
 
 ARRAY_SPREAD_DEF(const struct pnet_pack_desc, __pnet_pack_registry);
 
@@ -34,6 +35,10 @@ struct pnet_pack *pnet_pack_create(void *buff, size_t size, uint32_t type) {
 	return desc->create(buff, size);
 }
 
-void pnet_pack_destroy(struct pnet_pack *pack) {
+void __pnet_pack_destroy(struct pnet_pack *pack, uint32_t type) {
+	const struct pnet_pack_desc *desc;
+	desc = find_pack_desc(type);
 
+	desc->destroy(pack);
 }
+

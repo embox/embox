@@ -88,7 +88,12 @@ static void pnet_rx_action(struct softirq_action *action) {
 		pack->skb = skb;
 
 		if(!(MATCH_SUCCESS == match(pack))) {
+			/* make skb pointer NULL to prevent skbuff free in pnet_pack_destroy */
+			pack->skb = NULL;
+			pnet_pack_destroy(pack);
 			netif_rx_schedule(skb);
+		} else {
+			pnet_rx_thread_add(pack);
 		}
 	}
 }
