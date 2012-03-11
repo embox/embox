@@ -60,9 +60,9 @@ define class-CfgConfiguration # abstract
 	$(eobject-reference ConfigFile_Configuration_fileContent,
 		fileContent,CfgFileContent,configurations,changeable container)
 
-	# Property 'includes : CfgInclude'.
+	# Property 'includes... : CfgInclude'.
 	$(eobject-reference ConfigFile_Configuration_includes,
-		includes,CfgInclude,,changeable containment)
+		includes,CfgInclude,,changeable many containment)
 
 	# PROTECTED REGION ID(Configuration) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
