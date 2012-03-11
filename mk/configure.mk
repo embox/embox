@@ -28,7 +28,7 @@ config_resource_set := $(call config_link_with_myfile_model,$(__config_resource_
 mybuild_model := $(call new,Mybuild,$(__myfile_resource_set) $(config_resource_set))
 build_model := $(call Mybuild-createBuild,$(mybuild_model))
 
-$(warning Modules are $($(build_model).modules))
+#$(error $(call printInstances,$(build_model)) stop)
 endif
 
 MODS_ENABLE :=

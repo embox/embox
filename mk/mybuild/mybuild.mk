@@ -24,16 +24,26 @@ define class-Mybuild
 	$(method createBuild,
 		$(for build <-$(new BuildBuild),
 			$(set build->modules,
-				$(for \
-			       		configResSet <- $(get configResourceSet),
+				$(invoke checkResolve,$(for \
+					configResSet <- $(get configResourceSet),
 					config <- $(get configResSet->resources),
 					cfgFileContent <- $(get config->contentsRoot),
 					cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)), #FIXME
 					cfgInclude <- $(get cfgConfiguration->includes),
 					module <- $(get cfgInclude->module),
 
-					$(invoke moduleInstanceClosure,$(module))))
+					$(invoke moduleInstanceClosure,$(module)))))
 			$(build)))
+
+
+	# Args:
+	#  1. List of moduleInstance's
+	$(method checkResolve,
+		$(for inst<-$1,
+			isAbstr<-$(get $(get inst->type).isAbstract),
+			$(if $(singleword $(get inst->depends)),,
+				$(error $(get $(get inst->type).qualifiedName) api realize error, move to Issues)))
+		$1)
 
 
 	# Args:
@@ -49,20 +59,34 @@ define class-Mybuild
 						$(if $(value 2),$2)),
 					$(map-set moduleInstanceStore/$(mod),
 						$(moduleInstance))
+					$(for super <- $(get mod->allSuperTypes),
+						superInst <- $(invoke moduleInstance,$(super)),
+						$(set+ superInst->depends,$(moduleInstance)))
 					$(moduleInstance)))))
-	$(method listInstances,
-		$(for i <- modules,
-			$(get i->name)))
+
+
 	# Args:
 	#  1. MyModule object instance
 	# Return:
 	#  List of ModuleInstance for module and it's depends #TODO and supertypes
 	$(method moduleInstanceClosure,
-		$(invoke moduleInstance,$1) \
-		$(for mod <- $1,
-			dep <- $(get mod->depends),
-			$(invoke moduleInstanceClosure,$(dep))))
+		$(for thisInst<-$(invoke moduleInstance,$1),
+			$(thisInst) \
+			$(for \
+				mod <- $1,
+				dep <- $(get mod->depends),
+				depInst <- $(invoke moduleInstanceClosure,$(dep)),
+				$(set+ thisInst->depends,$(depInst))
+				$(depInst))))
 
+endef
+
+define printInstances
+		$(strip $(for mybuild<-$1,
+			inst<-$(get mybuild->modules),
+			$(warning $(get $(strip $(get inst->type)).qualifiedName))
+			$(for dep <- $(get inst->depends),
+				$(warning $(\t)$(get $(get dep->type).qualifiedName)))))
 endef
 
 # Args
