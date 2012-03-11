@@ -15,6 +15,8 @@
 #include <stddef.h>
 #include <types.h>
 
+#include <net/sock.h>
+
 
 int kernel_socket_create(int family, int type, int protocol, struct socket **psock) {
 	int res;
@@ -123,6 +125,7 @@ int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
 
 int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
 			size_t total_len) {
+	sock_set_ready(sock->sk);
 	return sock->ops->sendmsg(iocb, sock, m, total_len);
 }
 

@@ -151,15 +151,16 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	}
 	/* socket is ready for usage and has no data transmitting errors yet */
 	sock->sk->sk_err = -1;
-	sock->sk->arp_queue_info = 1;
+
+	//sock->sk->arp_queue_info = 1;
 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
 
-	if(sock->sk && was_transmitted(sock) != 0) {
+	if(sock->sk && sock_was_transmitted(sock->sk) != 0) {
 		sock_lock(sock->sk);
-		while(!is_ready(sock));
+		while(!sock_is_ready(sock->sk));
 		sock_unlock(sock->sk);
-		res = get_answer(sock);
+		res = sock_get_answer(sock->sk);
 	}
 
 	if(res < 0) {

@@ -102,7 +102,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	if (dev->flags & IFF_UP) {
 		res = dev->header_ops->rebuild(skb);
 		if (res < 0) {
-			if(is_ready(skb->sk->sk_socket)) {
+			if(sock_is_ready(skb->sk)) {
 				kfree_skb(skb);
 				stats->tx_err++;
 			}
@@ -144,7 +144,6 @@ extern net_device_t *get_dev_by_idx(int num); /* TODO delete it */
 static void net_rx_action(struct softirq_action *action) {
 	size_t i;
 	struct net_device *dev;
-	//struct list_head *head_dev;
 
 	//TODO it will be better use list of active device and cache for them
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
@@ -153,19 +152,19 @@ static void net_rx_action(struct softirq_action *action) {
 			dev->poll(dev);
 		}
 	}
-//	list_for_each(head_dev, &rx_dev_queue) {
-//		dev->poll(dev)
+//	list_for_each_entry(dev, &rx_dev_queue, rx_dev_link) {
+//		dev->poll(dev);
 //	}
 }
 
 
 void netif_rx_schedule(struct sk_buff *skb) {
-	//TODO:
 	struct net_device *dev;
 
 	dev = skb->dev;
 	skb_queue_tail(&(dev->dev_queue), skb);
 
+//	list_add_tail(&dev->rx_dev_link, &rx_dev_queue);
 	raise_softirq(NET_RX_SOFTIRQ);
 }
 

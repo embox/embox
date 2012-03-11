@@ -25,23 +25,5 @@ extern void arp_queue_process(sk_buff_t *arp_pack);
  */
 extern int arp_queue_add(struct sk_buff *pack);
 
-/**
- *	Check if socket is wait for fate of pending packs resolution.
- *	@return
- *         - 1 if socket not wait
- *         - 0 in other case
- */
-#define is_ready(sock) (sock->sk->arp_queue_info & 0x000000FF)
-
-/**
- *	Check if pending pack from socket was transmitted
- */
-#define was_transmitted(sock) ((sock->sk->arp_queue_info & 0x0000FF00) >> 8)
-
-/**
- * Get result of pending pack transmitting
- * @return error number or success of transmitting
- */
-#define get_answer(sock) ((sock->sk->arp_queue_info & 0x00FF0000) >> 16)
 
 #endif /* NET_ARP_QUEUE_H_ */

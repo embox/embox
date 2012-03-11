@@ -89,8 +89,44 @@ typedef struct sock {
 	void (* sk_destruct)(struct sock *sk);
 	int (* get_port)(struct sock *sk, unsigned short num);
 	int sk_err;
-	int arp_queue_info;
+	unsigned int arp_queue_info;
 } sock_t;
+
+static inline void sock_set_ready(struct sock *sk) {
+	sk->arp_queue_info |= 1;
+}
+static inline void sock_set_transmitted(struct sock *sk) {
+	sk->arp_queue_info |= (1 << 8);
+}
+
+static inline void sock_set_answer(struct sock *sk, int answer) {
+	sk->arp_queue_info |= (answer << 16);
+}
+
+/**
+ *	Check if socket is wait for fate of pending packs resolution.
+ *	@return
+ *         - 1 if socket not wait
+ *         - 0 in other case
+ */
+static inline unsigned int sock_is_ready(struct sock *sk) {
+	return (sk->arp_queue_info & 0x000000FF);
+}
+
+/**
+ *	Check if pending pack from socket was transmitted
+ */
+static inline unsigned int sock_was_transmitted(struct sock *sk) {
+	return ((sk->arp_queue_info & 0x0000FF00) >> 8);
+}
+
+/**
+ * Get result of pending pack transmitting
+ * @return error number or success of transmitting
+ */
+static inline unsigned int sock_get_answer(struct sock *sk) {
+	return ((sk->arp_queue_info & 0x00FF0000) >> 16);
+}
 
 /** Sock flags */
 enum sock_flags {
