@@ -38,8 +38,8 @@ typedef struct rt_entry {
 #define RTF_MSS         RTF_MTU         /* Compatibility :-(            */
 #define RTF_WINDOW      0x0080          /* per route window clamping    */
 #define RTF_IRTT        0x0100          /* Initial round trip time      */
-#endif
 #define RTF_REJECT      0x0200          /* Reject route                 */
+#endif
 
 /**
  * Add new route to table.
@@ -73,6 +73,12 @@ extern int ip_route(sk_buff_t *skbuff);
  * @retval NULL if entity not found
  */
 extern struct rt_entry * rt_fib_get_first(void);
+
+/**
+ * @return pointer to best match entity for dst
+ * @retval NULL if entity not found
+ */
+extern struct rt_entry* rt_fib_get_best(in_addr_t dst);
 
 /**
  * Get next element from route from table uses

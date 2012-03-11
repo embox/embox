@@ -5,6 +5,7 @@
  * @date 16.11.09
  * @author Nikolay Korotky
  * @author Ilia Vaprol
+ * @author Vladimir Sokolov
  */
 
 #include <embox/cmd.h>
@@ -88,8 +89,14 @@ static int exec(int argc, char *argv[]) {
 			return 0;
 		}
 	}
+	/* ToDo: check that mask is correct (leading ones etc) */
+	net = net & mask;
 
 	if (!strcmp(argv[argc - 1], "add")) {
+		/* ToDo:
+		 * 	reject route if there is a route with the same length of the mask
+		 * 	We don't allow the similar routes in the kernel
+		 */
 		rt_add_route(ifdev->dev, net, mask, gw, ((gw == INADDR_ANY) ? RTF_UP : RTF_UP | RTF_GATEWAY));
 		return 0;
 	} else if (!strcmp(argv[argc - 1], "del")) {
@@ -125,9 +132,6 @@ static int exec(int argc, char *argv[]) {
 			}
 			if (rt->rt_flags & RTF_GATEWAY) {
 				buff[l++] = 'G';
-			}
-			if (rt->rt_flags & RTF_REJECT) {
-				buff[l++] = 'R';
 			}
 
 			str = rt->dev->name;

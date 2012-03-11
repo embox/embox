@@ -5,6 +5,7 @@
  * @date 16.11.09
  * @author Nikolay Korotky
  * @author Ilia Vaprol
+ * @author Vladimir Sokolov
  */
 
 #include <net/route.h>
@@ -45,7 +46,7 @@ int rt_add_route(net_device_t *dev, in_addr_t dst,
 		return -ENOMEM;
 	}
 	rt_info->entry.dev = dev;
-	rt_info->entry.rt_dst = dst;
+	rt_info->entry.rt_dst = dst;			/* We assume that host bits are zeroes here */
 	rt_info->entry.rt_mask = mask;
 	rt_info->entry.rt_gateway = gw;
 	rt_info->entry.rt_flags = RTF_UP | flags;
@@ -75,38 +76,38 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
 }
 
 int ip_route(sk_buff_t *skb) {
-	struct rt_entry_info *rt_info;
-	struct list_head *tmp;
-	in_addr_t daddr;
-	int arp_resolve_result;
+	in_addr_t daddr = skb->nh.iph->daddr;
+	struct rt_entry *rte = rt_fib_get_best(daddr);
 
-	daddr = skb->nh.iph->daddr;
-	list_for_each(tmp, &rt_entry_info_list) {
-		rt_info = member_cast_out(tmp, struct rt_entry_info, lnk);
-		if ((daddr & rt_info->entry.rt_mask) == rt_info->entry.rt_dst) {
-			/* set the device for current destination address */
-			skb->dev = rt_info->entry.dev;
-			// TODO even if type is SOCK_RAW?
-			/* set the source address */
-			skb->nh.iph->saddr = in_dev_get(skb->dev)->ifa_address;
-			/* if source and destination addresses are equal send via LB interface */
-			if(skb->nh.iph->daddr  == skb->nh.iph->saddr)
-				skb->dev = inet_get_loopback_dev();
-			/* if the packet should be sent using gateway */
-			if (rt_info->entry.rt_gateway != INADDR_ANY) {
-				/* the next line coerses arp_resolve to set HW destination address
-					 to gateway's HW address*/
-				skb->nh.iph->daddr = rt_info->entry.rt_gateway;
-				arp_resolve_result = arp_resolve(skb);
-				/* so here we need to return the original destination address */
-				skb->nh.iph->daddr = daddr;
-				return arp_resolve_result;
-			}
-			return ENOERR;
-		}
+	if (!rte) {
+		return -ENOENT;
 	}
 
-	return -ENOENT;
+	/* set the device for current destination address */
+	skb->dev = rte->dev;
+	// TODO even if type is SOCK_RAW?
+	/* set the source address */
+	skb->nh.iph->saddr = in_dev_get(skb->dev)->ifa_address;
+	/* if source and destination addresses are equal send via LB interface
+	 * svv: suspicious. There is no check (src == dst) in ip_input
+	 */
+	if(skb->nh.iph->daddr  == skb->nh.iph->saddr)
+		skb->dev = inet_get_loopback_dev();
+
+	/* if the packet should be sent using gateway */
+	if (rte->rt_gateway != INADDR_ANY) {
+		int arp_resolve_result;
+		/* the next line coerses arp_resolve to set HW destination address
+		 * to gateway's HW address
+		 */
+		skb->nh.iph->daddr = rte->rt_gateway;
+		arp_resolve_result = arp_resolve(skb);
+		/* so here we need to return the original destination address */
+		skb->nh.iph->daddr = daddr;
+		return arp_resolve_result;
+	}
+
+	return ENOERR;
 }
 
 struct rt_entry * rt_fib_get_first(void) {
@@ -130,6 +131,32 @@ struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
 
 	return (&rt_info->lnk == &rt_entry_info_list) ? NULL : &rt_info->entry;
 }
+
+/* ToDo: It's too ugly to perform sorting for every packet.
+ * Routes must be added into list with mask_len decrease.
+ * In this case we'll simply take the first match
+ */
+struct rt_entry* rt_fib_get_best(in_addr_t dst) {
+	struct rt_entry_info	*rt_info;
+	struct rt_entry			*rte;
+	struct list_head		*tmp;
+	int mask_len;
+
+	struct rt_entry			*best_rte = NULL;
+	int best_mask_len = -1;
+
+	list_for_each(tmp, &rt_entry_info_list) {
+		rt_info = member_cast_out(tmp, struct rt_entry_info, lnk);
+		rte = &rt_info->entry;
+		mask_len = ipv4_mask_len(rte->rt_mask);
+		if ( ((dst & rte->rt_mask) == rte->rt_dst) && (mask_len > best_mask_len)) {
+			best_rte = rte;
+			best_mask_len = mask_len;
+		}
+	}
+	return best_rte;
+}
+
 
 static int route_init(void) {
 	INIT_LIST_HEAD(&rt_entry_info_list);
