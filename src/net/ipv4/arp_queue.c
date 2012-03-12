@@ -64,8 +64,8 @@ static void arp_queue_drop(struct sys_timer *timer, void *data) {
 
 	sock_set_ready(deff_pack->skb->sk);
 
-	pool_free(&arp_queue_pool, deff_pack);
 	kfree_skb(deff_pack->skb);
+	pool_free(&arp_queue_pool, deff_pack);
 }
 
 int arp_queue_add(struct sk_buff *skb) {
