@@ -7,6 +7,7 @@
  * @author Ilia Vaprol
  */
 
+
 #include <errno.h>
 #include <mem/misc/pool.h>
 #include <net/if.h>
@@ -18,7 +19,7 @@
 
 POOL_DEF(netdev_pool, struct net_device, CONFIG_NET_DEVICES_QUANTITY);
 //TODO use hash table instead this
-static struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY];
+static struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY]; // FIXME clear before using
 
 struct net_device * get_dev_by_idx(int idx) {
 	if ((idx < 0) || (idx >= CONFIG_NET_DEVICES_QUANTITY)) {
@@ -205,9 +206,4 @@ int dev_set_flags(struct net_device *dev, unsigned int flags) {
 	dev->flags = flags;
 
 	return res;
-}
-
-int dev_init(void) {
-	memset(opened_netdevs, 0, CONFIG_NET_DEVICES_QUANTITY * sizeof(struct net_device *));
-	return ENOERR;
 }
