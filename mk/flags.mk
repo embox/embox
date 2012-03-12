@@ -55,7 +55,7 @@ override ASFLAGS += $(asflags)
 cflags := $(CFLAGS)
 override CFLAGS  = -std=gnu99
 override CFLAGS += -fno-strict-aliasing -fno-common
-override CFLAGS += -Wall -Werror -Wno-array-bounds
+override CFLAGS += -Wall -Werror
 override CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
 override CFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 override CFLAGS += -Wformat -Wformat-nonliteral -Wno-format-zero-length
