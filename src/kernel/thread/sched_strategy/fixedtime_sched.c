@@ -9,6 +9,9 @@
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
+#include <kernel/prom_printf.h>
+
+#define USEC_PRIORITY_MULTIPLIER 1000
 
 static int wakeup_resumed_thread(struct runq *runq, struct sleepq *sleepq);
 static void wakeup_suspended_thread(struct runq *runq, struct sleepq *sleepq);
@@ -61,7 +64,9 @@ static int wakeup_resumed_thread(struct runq *runq, struct sleepq *sleepq) {
 
 	thread = list_entry(sleepq->rq.next, struct thread, sched.l_link);
 	assert(thread);
-	list_del(&thread->sched.l_link);
+	list_del_init(&thread->sched.l_link);
+
+	prom_printf("\n!Wakeup resumed thread: %8x, sleepq: %8x!\n", (unsigned int)thread, (unsigned int) sleepq);
 
 	thread->state = thread_state_do_wake(thread->state);
 	assert(thread_state_running(thread->state));
@@ -120,6 +125,8 @@ void runq_sleep(struct runq *runq, struct sleepq *sleepq) {
 
 	list_add_tail(&current->sched.l_link, &sleepq->rq);
 
+	prom_printf("\n!Sleep thread: %8x, sleepq: %8x!\n", (unsigned int)current, (unsigned int) sleepq);
+
 	current->sleepq = sleepq;
 	current->state = thread_state_do_sleep(current->state);
 }
@@ -137,7 +144,7 @@ static useconds_t time_usec(void) {
 
 /* Calculate execution time for thread  */
 static useconds_t get_exec_time(struct thread *thread) {
-	return 10 * thread->priority; // TODO: make it with const
+	return USEC_PRIORITY_MULTIPLIER * thread->priority;
 }
 
 int runq_switch(struct runq *runq) {
@@ -151,7 +158,7 @@ int runq_switch(struct runq *runq) {
 	runq->last_upd = cur_time;
 
 	if ((runq->timeleft > diff) &&
-		thread_state_running(runq->current->state)) {  /* We still have time */
+			thread_state_running(runq->current->state)) { /* Time isn't over */
 		runq->timeleft -= diff;
 		return 0;
 	}
