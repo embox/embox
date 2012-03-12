@@ -22,17 +22,18 @@ config_lds_h := $(AUTOCONF_DIR)/config.lds.h
 CONF_FILES     := $(build_conf) $(options_conf) $(mods_conf) $(lds_conf)
 AUTOCONF_FILES := $(build_mk) $(mods_mk) $(config_h) $(config_lds_h)
 
-ifeq (1,1)
+ifeq (2,1)
 
 config_resource_set := $(call config_link_with_myfile_model,$(__config_resource_set),$(__myfile_resource_set))
 mybuild_model := $(call new,Mybuild,$(__myfile_resource_set) $(config_resource_set))
 build_model := $(call Mybuild-createBuild,$(mybuild_model))
 
-#$(error $(call printInstances,$(build_model)) stop)
-endif
+MODS_ENABLE_OBJ := $(call listInstances,$(build_model))
+
+else
 
 MODS_ENABLE :=
--include $(build_mk) $(mods_mk)
+-include $(mods_mk)
 
 include mk/conf/roots.mk
 include mk/conf/runlevel.mk
@@ -49,6 +50,10 @@ __MODS_ENABLE_OBJ := \
 
 _MODS_ENABLE_OBJ := $(strip $(foreach m,$(MODS_ENABLE),$(foreach n,$(__MODS_ENABLE_OBJ),$(if $(call eq,$(basename $n),$m),$n))))
 MODS_ENABLE_OBJ := $(_MODS_ENABLE_OBJ) $(filter-out $(_MODS_ENABLE_OBJ),$(__MODS_ENABLE_OBJ))
+
+endif
+
+-include $(build_mk)
 
 TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))
 TARGET := $(TARGET)$(if $(value LOCALVERSION),-$(LOCALVERSION))

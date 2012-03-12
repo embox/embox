@@ -82,11 +82,16 @@ define class-Mybuild
 endef
 
 define printInstances
-		$(strip $(for mybuild<-$1,
-			inst<-$(get mybuild->modules),
+		$(strip $(for buildBuild<-$1,
+			inst<-$(get buildBuild->modules),
 			$(warning $(get $(strip $(get inst->type)).qualifiedName))
 			$(for dep <- $(get inst->depends),
 				$(warning $(\t)$(get $(get dep->type).qualifiedName)))))
+endef
+
+define listInstances
+		$(strip $(for buildBuild<-$1,
+						$(get buildBuild->modules)))
 endef
 
 # Args
