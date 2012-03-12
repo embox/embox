@@ -59,6 +59,8 @@ MyFile_Module_flags := \
 	$(call eMetaAttributeCreate,$(MyFile_Module),MyFile_Module_flags)
 MyFile_Module_makeRules := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_makeRules)
+MyFile_Module_options := \
+	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_options)
 
 MyFile_Extendable := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Extendable)
@@ -84,6 +86,18 @@ MyFile_MakeRule_target := \
 	$(call eMetaReferenceCreate,$(MyFile_MakeRule),MyFile_MakeRule_target)
 MyFile_MakeRule_prerequisites := \
 	$(call eMetaReferenceCreate,$(MyFile_MakeRule),MyFile_MakeRule_prerequisites)
+
+MyFile_Option := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_Option)
+MyFile_Option_module := \
+	$(call eMetaReferenceCreate,$(MyFile_Option),MyFile_Option_module)
+MyFile_Option_isHasDefaultValue := \
+	$(call eMetaAttributeCreate,$(MyFile_Option),MyFile_Option_isHasDefaultValue)
+
+MyFile_StringOption := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_StringOption)
+MyFile_StringOption_defaultValue := \
+	$(call eMetaAttributeCreate,$(MyFile_StringOption),MyFile_StringOption_defaultValue)
 
 # Initializes the objects and relations between them.
 define __myFile_init
@@ -115,6 +129,7 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_Module_objects),objects,$(MyFile_File),,changeable many containment)
 	$(call eMetaAttributeInit,$(MyFile_Module_flags),flags,changeable)
 	$(call eMetaReferenceInit,$(MyFile_Module_makeRules),makeRules,$(MyFile_MakeRule),,changeable many containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_options),options,$(MyFile_Option),$(MyFile_Option_module),changeable containment)
 
 	$(call eMetaClassInit,$(MyFile_Extendable),Extendable,$(EModel_ENamedObject),abstract)
 	$(call eMetaReferenceInit,$(MyFile_Extendable_subTypes),subTypes,$(MyFile_Extendable),$(MyFile_Extendable_superType),changeable many linkable)
@@ -129,6 +144,13 @@ define __myFile_init
 	$(call eMetaClassInit,$(MyFile_MakeRule),MakeRule,,)
 	$(call eMetaReferenceInit,$(MyFile_MakeRule_target),target,$(MyFile_File),,changeable containment)
 	$(call eMetaReferenceInit,$(MyFile_MakeRule_prerequisites),prerequisites,$(MyFile_File),,changeable many containment)
+
+	$(call eMetaClassInit,$(MyFile_Option),Option,$(EModel_ENamedObject),abstract)
+	$(call eMetaReferenceInit,$(MyFile_Option_module),module,$(MyFile_Module),$(MyFile_Module_options),changeable container)
+	$(call eMetaAttributeInit,$(MyFile_Option_isHasDefaultValue),hasDefaultValue,changeable)
+
+	$(call eMetaClassInit,$(MyFile_StringOption),StringOption,$(MyFile_Option),)
+	$(call eMetaAttributeInit,$(MyFile_StringOption_defaultValue),defaultValue,changeable)
 
 endef # __myFile_init
 
@@ -160,6 +182,7 @@ define __myFile_bind
 	$(call eMetaFeatureBind,$(MyFile_Module_objects),objects)
 	$(call eMetaFeatureBind,$(MyFile_Module_flags),flags)
 	$(call eMetaFeatureBind,$(MyFile_Module_makeRules),makeRules)
+	$(call eMetaFeatureBind,$(MyFile_Module_options),options)
 
 	$(call eMetaClassBind,$(MyFile_Extendable),MyExtendable)
 	$(call eMetaFeatureBind,$(MyFile_Extendable_subTypes),subTypes)
@@ -174,6 +197,13 @@ define __myFile_bind
 	$(call eMetaClassBind,$(MyFile_MakeRule),MyMakeRule)
 	$(call eMetaFeatureBind,$(MyFile_MakeRule_target),target)
 	$(call eMetaFeatureBind,$(MyFile_MakeRule_prerequisites),prerequisites)
+
+	$(call eMetaClassBind,$(MyFile_Option),MyOption)
+	$(call eMetaFeatureBind,$(MyFile_Option_module),module)
+	$(call eMetaFeatureBind,$(MyFile_Option_isHasDefaultValue),isHasDefaultValue)
+
+	$(call eMetaClassBind,$(MyFile_StringOption),MyStringOption)
+	$(call eMetaFeatureBind,$(MyFile_StringOption_defaultValue),defaultValue)
 
 endef # __myFile_bind
 

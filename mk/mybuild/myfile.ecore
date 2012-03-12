@@ -51,6 +51,8 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="flags" eType="ecore:EDataType emodel.ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="makeRules" upperBound="-1"
         eType="#//MakeRule" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="options" eType="#//Option"
+        containment="true" eOpposite="#//Option/module"/>
     <eGenericSuperTypes eClassifier="#//Entity"/>
     <eGenericSuperTypes eClassifier="#//Extendable">
       <eTypeArguments eClassifier="#//Module"/>
@@ -99,5 +101,13 @@
         eType="#//File" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="prerequisites" upperBound="-1"
         eType="#//File" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="#//Module"
+        eOpposite="#//Module/options"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="hasDefaultValue" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StringOption" eSuperTypes="#//Option">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="defaultValue" eType="ecore:EDataType emodel.ecore#//EString"/>
   </eClassifiers>
 </ecore:EPackage>

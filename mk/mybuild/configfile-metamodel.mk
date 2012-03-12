@@ -32,10 +32,15 @@ ConfigFile_Include_module := \
 ConfigFile_Include_optionBindings := \
 	$(call eMetaReferenceCreate,$(ConfigFile_Include),ConfigFile_Include_optionBindings)
 
+ConfigFile_StringOptionBinding := \
+	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_StringOptionBinding)
+ConfigFile_StringOptionBinding_value := \
+	$(call eMetaAttributeCreate,$(ConfigFile_StringOptionBinding),ConfigFile_StringOptionBinding_value)
+
 ConfigFile_OptionBinding := \
 	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_OptionBinding)
-ConfigFile_OptionBinding_value := \
-	$(call eMetaAttributeCreate,$(ConfigFile_OptionBinding),ConfigFile_OptionBinding_value)
+ConfigFile_OptionBinding_option := \
+	$(call eMetaReferenceCreate,$(ConfigFile_OptionBinding),ConfigFile_OptionBinding_option)
 
 # Initializes the objects and relations between them.
 define __configFile_init
@@ -51,10 +56,13 @@ define __configFile_init
 
 	$(call eMetaClassInit,$(ConfigFile_Include),Include,,)
 	$(call eMetaReferenceInit,$(ConfigFile_Include_module),module,$(MyFile_Module),,changeable linkable)
-	$(call eMetaReferenceInit,$(ConfigFile_Include_optionBindings),optionBindings,$(ConfigFile_OptionBinding),,changeable many containment)
+	$(call eMetaReferenceInit,$(ConfigFile_Include_optionBindings),optionBindings,$(ConfigFile_StringOptionBinding),,changeable many containment)
 
-	$(call eMetaClassInit,$(ConfigFile_OptionBinding),OptionBinding,,)
-	$(call eMetaAttributeInit,$(ConfigFile_OptionBinding_value),value,changeable)
+	$(call eMetaClassInit,$(ConfigFile_StringOptionBinding),StringOptionBinding,$(ConfigFile_OptionBinding),)
+	$(call eMetaAttributeInit,$(ConfigFile_StringOptionBinding_value),value,changeable)
+
+	$(call eMetaClassInit,$(ConfigFile_OptionBinding),OptionBinding,$(EModel_ENamedObject),abstract)
+	$(call eMetaReferenceInit,$(ConfigFile_OptionBinding_option),option,$(MyFile_Option),,changeable linkable)
 
 endef # __configFile_init
 
@@ -72,8 +80,11 @@ define __configFile_bind
 	$(call eMetaFeatureBind,$(ConfigFile_Include_module),module)
 	$(call eMetaFeatureBind,$(ConfigFile_Include_optionBindings),optionBindings)
 
+	$(call eMetaClassBind,$(ConfigFile_StringOptionBinding),CfgStringOptionBinding)
+	$(call eMetaFeatureBind,$(ConfigFile_StringOptionBinding_value),value)
+
 	$(call eMetaClassBind,$(ConfigFile_OptionBinding),CfgOptionBinding)
-	$(call eMetaFeatureBind,$(ConfigFile_OptionBinding_value),value)
+	$(call eMetaFeatureBind,$(ConfigFile_OptionBinding_option),option)
 
 endef # __configFile_bind
 

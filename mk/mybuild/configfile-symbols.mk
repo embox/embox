@@ -27,22 +27,21 @@
 # the default value.
 #
 
-# Symbol: Identifier
-define $(gold_grammar)_create-Identifier
-	$(gold_default_create:^%=%)
-endef
+include mk/mybuild/common-symbols.mk
 
 #
 # Optimized contructors for constant terminals (i.e. keywords and punctuation).
 #
 
+$(gold_grammar)_create-LParan           := (
+$(gold_grammar)_create-RParan           := )
 $(gold_grammar)_create-Comma            := ,
 $(gold_grammar)_create-Dot              := .
 $(gold_grammar)_create-DotTimes         := .*
 $(gold_grammar)_create-LBrace           := {
 $(gold_grammar)_create-RBrace           := }
+$(gold_grammar)_create-Eq               := =
 $(gold_grammar)_create-configuration    := configuration
-$(gold_grammar)_create-feature          := feature
 $(gold_grammar)_create-import           := import
 $(gold_grammar)_create-include          := include
 $(gold_grammar)_create-package          := package
@@ -52,15 +51,12 @@ $(gold_grammar)_create-package          := package
 # description used for error reporting.
 #
 
+$(gold_grammar)_name_of-LParan          := '('
+$(gold_grammar)_name_of-RParan          := ')'
 $(gold_grammar)_name_of-Comma           := ','
 $(gold_grammar)_name_of-Dot             := '.'
 $(gold_grammar)_name_of-DotTimes        := '.*'
 $(gold_grammar)_name_of-LBrace          := '{'
 $(gold_grammar)_name_of-RBrace          := '}'
-$(gold_grammar)_name_of-configuration   := configuration
-$(gold_grammar)_name_of-feature         := feature
-$(gold_grammar)_name_of-Identifier      := Identifier
-$(gold_grammar)_name_of-import          := import
-$(gold_grammar)_name_of-include         := include
-$(gold_grammar)_name_of-package         := package
+$(gold_grammar)_name_of-Eq              := '='
 

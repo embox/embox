@@ -85,11 +85,40 @@ define class-CfgInclude
 	$(eobject-reference ConfigFile_Include_module,
 		module,MyModule,,changeable linkable)
 
-	# Property 'optionBindings... : CfgOptionBinding'.
+	# Property 'optionBindings... : CfgStringOptionBinding'.
 	$(eobject-reference ConfigFile_Include_optionBindings,
-		optionBindings,CfgOptionBinding,,changeable many containment)
+		optionBindings,CfgStringOptionBinding,,changeable many containment)
 
 	# PROTECTED REGION ID(Include) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'StringOptionBinding'.
+#
+# The following features are defined:
+#   - attribute 'value'
+#
+# The following features are inherited from 'OptionBinding':
+#   - reference 'option'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-CfgStringOptionBinding
+	# Extends 'CfgOptionBinding' class.
+	$(eobject ConfigFile_StringOptionBinding,
+		CfgStringOptionBinding,CfgOptionBinding,)
+
+	# Property 'value'.
+	$(eobject-attribute ConfigFile_StringOptionBinding_value,
+		value,changeable)
+
+	# PROTECTED REGION ID(StringOptionBinding) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
@@ -98,15 +127,23 @@ endef
 # Model object 'OptionBinding'.
 #
 # The following features are defined:
-#   - attribute 'value'
+#   - reference 'option'
 #
-define class-CfgOptionBinding
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-CfgOptionBinding # abstract
+	# Extends 'ENamedObject' class.
 	$(eobject ConfigFile_OptionBinding,
-		CfgOptionBinding,,)
+		CfgOptionBinding,ENamedObject,abstract)
 
-	# Property 'value'.
-	$(eobject-attribute ConfigFile_OptionBinding_value,
-		value,changeable)
+	# Property 'option : MyOption'.
+	# Property 'option_link : ELink'.
+	$(eobject-reference ConfigFile_OptionBinding_option,
+		option,MyOption,,changeable linkable)
 
 	# PROTECTED REGION ID(OptionBinding) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.

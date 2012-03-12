@@ -61,22 +61,87 @@ define $(gold_grammar)_produce-Configuration_configuration_Identifier_LBrace_RBr
 	)
 endef
 
-# Rule: <Include> ::= include <ModuleRefList>
+# Rule: <Include> ::= include <ReferenceWithInitializerList>
+# Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-Include_include
-	$(for link <- $2,
+	$(addprefix $1s/,$2)
+endef
+
+# Rule: <ReferenceWithInitializerList> ::= <ReferenceWithInitializer> ',' <ReferenceWithInitializerList>
+# Args: 1..3 - Symbols in the RHS.
+$(gold_grammar)_produce-ReferenceWithInitializerList_Comma = $1 $3
+
+# Rule: <ReferenceWithInitializer> ::= <Reference> <Initializer>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-ReferenceWithInitializer
+	$(for link <- $1,
 		include <- $(new CfgInclude),
 
 		$(set include->module_link,$(link))
+		$(set include->optionBindings,$2)
 
-		$1s/$(include)
+		$(include)
 	)
 endef
 
-# <ModuleRef> ::= <QualifiedName>
-$(gold_grammar)_produce-ModuleRef    = $(new ELink,$1,$(gold_location))
+# Rule: <Initializer> ::= '(' <ParametersList> ')'
+# Args: 1..3 - Symbols in the RHS.
+$(gold_grammar)_produce-Initializer_LParan_RParan = $2
 
-# <ModuleRefList> ::= <ModuleRef> ',' <ModuleRefList>
-$(gold_grammar)_produce-ModuleRefList_Comma        = $1 $3
+# Rule: <Initializer> ::=
+# Args: 1..0 - Symbols in the RHS.
+define $(gold_grammar)_produce-Initializer
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <ParametersList> ::= <Parameter> ',' <ParametersList>
+# Args: 1..3 - Symbols in the RHS.
+$(gold_grammar)_produce-ParametersList_Comma = $1 $3
+
+# Rule: <ParametersList> ::= <Parameter>
+# Args: 1..1 - Symbols in the RHS.
+define $(gold_grammar)_produce-ParametersList
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Parameter> ::= <SimpleReference> '=' <Value>
+# Args: 1..3 - Symbols in the RHS.
+define $(gold_grammar)_produce-Parameter_Eq
+	$(for optBinding <- $(new CfgStringOptionBinding),
+		$(set optBinding->name,$1)
+		$(set optBinding->value,$3)
+		$(optBinding))
+endef
+
+# Rule: <Value> ::= StringLiteral
+# Args: 1..1 - Symbols in the RHS.
+define $(gold_grammar)_produce-Value_StringLiteral
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Value> ::= NumberLiteral
+# Args: 1..1 - Symbols in the RHS.
+define $(gold_grammar)_produce-Value_NumberLiteral
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Value> ::= BooleanLiteral
+# Args: 1..1 - Symbols in the RHS.
+define $(gold_grammar)_produce-Value_BooleanLiteral
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Reference> ::= <QualifiedName>
+# Args: 1..1 - Symbols in the RHS.
+define $(gold_grammar)_produce-Reference
+	$(new ELink,$1,$(gold_location))
+endef
+
+# Rule: <SimpleReference> ::= Identifier
+# Args: 1..1 - Symbols in the RHS.
+define $(gold_grammar)_produce-SimpleReference_Identifier
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
 
 # <QualifiedName> ::= Identifier '.' <QualifiedName>
 $(gold_grammar)_produce-QualifiedName_Identifier_Dot         = $1.$3

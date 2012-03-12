@@ -161,6 +161,7 @@ endef
 #   - reference 'objects'
 #   - attribute 'flags'
 #   - reference 'makeRules'
+#   - reference 'options'
 #
 # The following features and operations are inherited from 'Extendable':
 #   - reference 'subTypes'
@@ -227,6 +228,10 @@ define class-MyModule
 	# Property 'makeRules... : MyMakeRule'.
 	$(eobject-reference MyFile_Module_makeRules,
 		makeRules,MyMakeRule,,changeable many containment)
+
+	# Property 'options : MyOption'.
+	$(eobject-reference MyFile_Module_options,
+		options,MyOption,module,changeable containment)
 
 	# PROTECTED REGION ID(Module) ENABLED START
 	# PROTECTED REGION END
@@ -354,6 +359,67 @@ define class-MyMakeRule
 	$(if $(value 2),
 		$(set prerequisites,$2))
 
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'Option'.
+#
+# The following features are defined:
+#   - reference 'module'
+#   - attribute 'hasDefaultValue'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-MyOption # abstract
+	# Extends 'ENamedObject' class.
+	$(eobject MyFile_Option,
+		MyOption,ENamedObject,abstract)
+
+	# Property 'module : MyModule'.
+	$(eobject-reference MyFile_Option_module,
+		module,MyModule,options,changeable container)
+
+	# Property 'isHasDefaultValue'.
+	$(eobject-attribute MyFile_Option_isHasDefaultValue,
+		isHasDefaultValue,changeable)
+
+	# PROTECTED REGION ID(Option) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'StringOption'.
+#
+# The following features are defined:
+#   - attribute 'defaultValue'
+#
+# The following features are inherited from 'Option':
+#   - reference 'module'
+#   - attribute 'hasDefaultValue'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-MyStringOption
+	# Extends 'MyOption' class.
+	$(eobject MyFile_StringOption,
+		MyStringOption,MyOption,)
+
+	# Property 'defaultValue'.
+	$(eobject-attribute MyFile_StringOption_defaultValue,
+		defaultValue,changeable)
+
+	# PROTECTED REGION ID(StringOption) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
