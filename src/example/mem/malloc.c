@@ -61,7 +61,7 @@ struct block_desc *find_suit_block(size_t req_size) {
 	 * If the pointer(iterator) went for memory limits
 	 * then return NULL */
 	while (is_notavailable(md) && disable_size(req_size, md)) {
-		md = (void *)((size_t *) md + md->size);   // должно быть приведение типа, потому что мы прибавляем size*размер структуры
+		md = (void *)((size_t *) md + md->size);
 		if ((void *) md >= (void *)(memory + sizeof(memory)*MEM_SIZE) ){ //
 			printf("@");
 			return NULL;
