@@ -1,6 +1,6 @@
 "Name"     = 'MyFile'
 "Author"   = 'Eldar Abusalimov'
-"Version"  = '0.2'
+"Version"  = '0.3'
 "About"    = 'Mybuild file'
 
 "Case Sensitive" = True
@@ -65,16 +65,14 @@ BooleanLiteral = 'true' | 'false'
         ::= <Import> <Imports>
          |
 <Import>
-        ::= 'import' <ImportFeature> <QualifiedNameWithWildcard>
-! feature?
-<ImportFeature>
-        ::= 'feature'
-         |
+        ::= 'import' <QualifiedNameWithWildcard>
 
-! Entity*
+! AnnotatedEntity*
 <Entities>
-        ::= <Entity> <Entities>
+        ::= <AnnotatedEntity> <Entities>
          |
+<AnnotatedEntity>
+        ::= <Annotations> <Entity>
 <Entity>
         ::= <Module>
          |  <Interface>
@@ -84,19 +82,19 @@ BooleanLiteral = 'true' | 'false'
 
 ! interface Name (extends ...)? { ... }
 <Interface>
-        ::= 'interface' Identifier <SuperInterfaces> '{' <InterfaceAttributes> '}'
+        ::= 'interface' Identifier <SuperInterfaces> '{' <Features> '}'
 
 ! (extends ...)?
 <SuperInterfaces>
-        ::= 'extends' <InterfaceRefList>
+        ::= 'extends' <ReferenceList>
          |
 
-! InterfaceAttribute*
-<InterfaceAttributes>
-        ::= <InterfaceAttribute> <InterfaceAttributes>
+! AnnotatedInterfaceMember*
+<Features>
+        ::= <AnnotatedFeature> <Features>
          |
-<InterfaceAttribute>
-        ::= <Feature>
+<AnnotatedFeature>
+        ::= <Annotations> <Feature>
 
 ! feature Name (extends ...)?
 <Feature>
@@ -104,7 +102,7 @@ BooleanLiteral = 'true' | 'false'
 
 ! (extends ...)?
 <SuperFeatures>
-        ::= 'extends' <FeatureRefList>
+        ::= 'extends' <ReferenceList>
          |
 
 ! -------------------------------------------------
@@ -112,7 +110,7 @@ BooleanLiteral = 'true' | 'false'
 
 ! (abstract)? module Name (extends ...)? { ... }
 <Module>
-        ::= <ModuleModifiers> 'module' Identifier <SuperModule> '{' <ModuleAttributes> '}'
+        ::= <ModuleModifiers> 'module' Identifier <SuperModule> '{' <ModuleMembers> '}'
 
 ! ModuleModifier*
 <ModuleModifiers>
@@ -124,105 +122,85 @@ BooleanLiteral = 'true' | 'false'
 
 ! (extends ...)?
 <SuperModule>
-        ::= 'extends' <ModuleRef>
+        ::= 'extends' <Reference>
          |
 
-! ModuleAttribute*
-<ModuleAttributes>
-        ::= <ModuleAttribute> <ModuleAttributes>
+! AnnotatedModuleMember*
+<ModuleMembers>
+        ::= <AnnotatedModuleMember> <ModuleMembers>
          |
-<ModuleAttribute>
-        ::= <Depends>
-         |  <FeatureAttribute>
-         |  <FilenameAttribute>
-         |  <MakeAttribute>
+<AnnotatedModuleMember>
+        ::= <Annotations> <ModuleMember>
+<ModuleMember>
+        ::= <ReferenceModuleMember>
+         |  <FilenameModuleMember>
          |  <Option>
 
-<Depends>
-        ::= 'depends' <ModuleRefList>
-
-<FeatureAttribute>
-        ::= <FeatureAttributeNature> <FeatureRefList>
-<FeatureAttributeNature>
-        ::= 'provides'
+<ReferenceModuleMember>
+        ::= <ReferenceModuleMemberType> <ReferenceList>
+<ReferenceModuleMemberType>
+        ::= 'depends'
+         |  'provides'
          |  'requires'
 
-<FilenameAttribute>
-        ::= <FilenameAttributeNature> <FilenameList>
-<FilenameAttributeNature>
+<FilenameModuleMember>
+        ::= <FilenameModuleMemberType> <FilenameList>
+<FilenameModuleMemberType>
         ::= 'source'
          |  'object'
 
 ! option Name : ( string | number | boolean ) ( = ...)?
 <Option>
-        ::= 'option' Identifier ':' <OptionTypeWithAssignment>
-<OptionTypeWithAssignment>
-        ::= 'string'  <StringOptionAssignment>
-         |  'number'  <NumberOptionAssignment>
-         |  'boolean' <BooleanOptionAssignment>
-
-<StringOptionAssignment>
-        ::= '=' StringLiteral
-         |
-<NumberOptionAssignment>
-        ::= '=' NumberLiteral
-         |
-<BooleanOptionAssignment>
-        ::= '=' BooleanLiteral
+        ::= 'option' Identifier ':' <OptionType> <OptionInitializer>
+<OptionType>
+        ::= 'string'
+         |  'number'
+         |  'boolean'
+<OptionInitializer>
+        ::= '=' <Value>
          |
 
-<MakeAttribute>
-        ::= 'make' <Make>
-<Make>
-        ::= <MakeFlags>
-         |  <MakeRule>
-
-<MakeFlags>
-        ::= 'flags' <StringList>
-
-! make "target" ( : "prerequisite"...)? ( "recipe"...)?
-<MakeRule>
-        ::= <Filename> <Prerequisites> <Recipes>
-<Prerequisites>
-        ::= ':' <FilenameList>
+<Annotations>
+        ::= <Annotation> <Annotations>
          |
-<Recipes>
-        ::= '{' <StringList> '}'
+
+<Annotation>
+        ::= '@' <Reference> <AnnotationInitializer>
+<AnnotationInitializer>
+        ::= '(' <AnnotationParametersList> ')'
+         |  '(' <Value> ')'
          |
+<AnnotationParametersList>
+        ::= <AnnotationParameter> ',' <AnnotationParametersList>
+         |  <AnnotationParameter>
+<AnnotationParameter>
+        ::= <SimpleReference> '=' <Value>
+
+<Value>
+        ::= StringLiteral
+         |  NumberLiteral
+         |  BooleanLiteral
 
 ! -------------------------------------------------
 ! Datatypes.
 
-<InterfaceRef>
+<Reference>
         ::= <QualifiedName>
-<FeatureRef>
-        ::= <QualifiedNameWithWildcard>
-<ModuleRef>
-        ::= <QualifiedName>
+<SimpleReference>
+        ::= Identifier
 <Filename>
-        ::= StringLiteral
-<String>
         ::= StringLiteral
 
 ! -------------------------------------------------
 ! Comma separated lists.
 
 ! Item ( , Item )*
-<InterfaceRefList>
-        ::= <InterfaceRef> ',' <InterfaceRefList>
-         |  <InterfaceRef>
-<FeatureRefList>
-        ::= <FeatureRef> ',' <FeatureRefList>
-         |  <FeatureRef>
-<ModuleRefList>
-        ::= <ModuleRef> ',' <ModuleRefList>
-         |  <ModuleRef>
+<ReferenceList>
+        ::= <Reference> ',' <ReferenceList>
+         |  <Reference>
 <FilenameList>
         ::= <Filename> ',' <FilenameList>
          |  <Filename>
-<StringList>
-        ::= <String> ',' <StringList>
-         |  <String>
 
 ! -------------------------------------------------
 ! Extended identifiers.
