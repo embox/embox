@@ -49,6 +49,33 @@ SRC_TO_OBJ = \
 		$(abspath $(ROOT_DIR))%.c $(abspath $(ROOT_DIR))%.S,$(OBJ_DIR)%.o, \
 		$(filter-out %.lds.S,$(abspath $1)))
 
+NEW_SRC_TO_OBJ = \
+	$(call filter-patsubst, \
+		$(abspath $(ROOT_DIR))%.c $(abspath $(ROOT_DIR))%.S,$(OBJ_DIR)%.o, \
+			$(abspath $1))
+
+DEF_C_BUILD_RULE = \
+	$(call ___DEF_C_BUILD_RULE,$(call NEW_SRC_TO_OBJ,$1),$(OBJ_DIR)/%.o,$(ROOT_DIR)/%.c)
+
+BUILD_RULE_TEMPLATE = \
+	$1 += $$(strip $$1) $(\n)\
+	$$1 : $$2 : $$3 \
+	$(\n)$(\t)$2
+
+define ___DEF_C_BUILD_RULE
+	$(eval \
+		$(call BUILD_RULE_TEMPLATE,
+			OBJS_BUILD,
+			$$(CC) $$(CFLAGS) $$(CPPFLAGS) $$(CCFLAGS) -o $$@ -c $$<))
+endef
+
+define ___DEF_S_BUILD_RULE
+	$(eval \
+		$(call BUILD_RULE_TEMPLATE,
+			OBJS_BUILD,
+			$$(CC) $$(CFLAGS) $$(CPPFLAGS) $$(CCFLAGS) -o $$@ -c $$<))
+endef
+
 LIB_FILE = \
 	$(foreach 1,$1,$(LIB_DIR)/$(get $1.qualifiedName).a)
 
