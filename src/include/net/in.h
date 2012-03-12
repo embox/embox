@@ -86,6 +86,7 @@ int inet_aton(const char *cp, struct in_addr *addr);
 #define INADDR_LOOPBACK     ((unsigned long int) 0x7f000001)   /* 127.0.0.1   */
 
 static inline bool ipv4_is_loopback(in_addr_t addr) {
+	/* Loopback address is 127.*.*.* */
 	return (addr & htonl(0xff000000)) == htonl(0x7f000000);
 }
 

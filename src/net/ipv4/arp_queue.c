@@ -18,7 +18,7 @@
 #include <kernel/timer.h>
 
 #define TTL 1000
-#define MAX_QUEUE_SIZE 0x10
+#define ARP_QUEUE_SIZE 0x10
 
 struct pending_packet {
 	struct list_head link;
@@ -26,15 +26,14 @@ struct pending_packet {
 	struct sys_timer *timer;
 };
 
-OBJALLOC_DEF(arp_queue_pool, struct pending_packet, MAX_QUEUE_SIZE);
-
+OBJALLOC_DEF(arp_queue_pool, struct pending_packet, ARP_QUEUE_SIZE);
 static LIST_HEAD(arp_queue);
 
 
 void arp_queue_process(struct sk_buff *arp_pack) {
-	struct pending_packet *pack, *n;
+	struct pending_packet *pack, *safe;
 
-	list_for_each_entry_safe(pack, n, &arp_queue, link) {
+	list_for_each_entry_safe(pack, safe, &arp_queue, link) {
 		if(arp_pack->nh.arph->ar_sip == pack->skb->nh.iph->daddr) {
 			timer_close(pack->timer); //TODO it must be synchronized with drop function
 
@@ -56,16 +55,17 @@ static void arp_queue_drop(struct sys_timer *timer, void *data) {
 
 	/* it must send message, that packet was dropped */
 	deff_pack = (struct pending_packet*) data;
-	kfree_skb(deff_pack->skb);
 	dev = deff_pack->skb->dev;
 	stats = dev->netdev_ops->ndo_get_stats(dev);
 	stats->tx_err++;
 
 	timer_close(timer);
 	list_del(&deff_pack->link);
-	pool_free(&arp_queue_pool, deff_pack);
 
-	deff_pack->skb->sk->arp_queue_info |= 1;
+	sock_set_ready(deff_pack->skb->sk);
+
+	pool_free(&arp_queue_pool, deff_pack);
+	kfree_skb(deff_pack->skb);
 }
 
 int arp_queue_add(struct sk_buff *skb) {
@@ -73,7 +73,8 @@ int arp_queue_add(struct sk_buff *skb) {
 	struct pending_packet *queue_pack;
 //	struct sk_buff *new_pack;
 
-	if(NULL == (queue_pack = (struct pending_packet*)pool_alloc(&arp_queue_pool))) {
+	queue_pack = (struct pending_packet*)pool_alloc(&arp_queue_pool);
+	if (queue_pack == NULL) {
 		return -ENOMEM;
 	}
 	skb->sk->arp_queue_info = 0;

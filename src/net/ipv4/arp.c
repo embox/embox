@@ -121,9 +121,6 @@ int arp_resolve(sk_buff_t *pack) {
 	pack->mac.raw = pack->data;
 	/* loopback */
 	if (ipv4_is_loopback(ip->daddr) || (ip->daddr == ip->saddr)) {
-		/* Loopback address is 127.*.*.*
-		 * so previous check is incorrect:
-		 * ip->daddr == htonl(INADDR_LOOPBACK) */
 		memset(pack->mac.ethh->h_dest, 0x00, ETH_ALEN);
 		return 0;
 	}
@@ -133,15 +130,16 @@ int arp_resolve(sk_buff_t *pack) {
 		return 0;
 	}
 	dev = pack->dev;
+#if 0
 	/* our machine on our device? */
 	if(ip->daddr == inet_dev_get_ipaddr(in_dev_get(dev))){
 		memcpy(pack->mac.ethh->h_dest, dev->dev_addr, ETH_ALEN);
 		return 0;
 	}
+#endif
 	/* someone on the net */
-		if ((hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr))) {
+	if ((hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr)) != NULL) {
 		memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
-
 		return 0;
 	}
 

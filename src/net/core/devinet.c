@@ -6,8 +6,7 @@
  * @date 18.07.09
  * @author Anton Bondarev
  */
-
-#include <embox/unit.h>
+#include <assert.h>
 #include <string.h>
 #include <net/inetdevice.h>
 #include <linux/init.h>
@@ -17,8 +16,6 @@
 #include <util/member.h>
 #include <mem/misc/pool.h>
 #include <lib/list.h>
-
-EMBOX_UNIT_INIT(devinet_init);
 
 struct callback_info {
 	struct list_head lnk;
@@ -34,7 +31,6 @@ struct inetdev_info {
 
 POOL_DEF(indev_info_pool, struct inetdev_info, CONFIG_NET_INTERFACES_QUANTITY);
 POOL_DEF(callback_info_pool, struct callback_info, CONFIG_NET_CALLBACK_QUANTITY);
-//static struct list_head indev_info_list;
 static LIST_HEAD(indev_info_list);
 
 static struct inetdev_info * find_indev_info_entry(struct in_device *in_dev) {
@@ -75,31 +71,7 @@ static int alloc_callback(struct in_device *in_dev, unsigned int type,
 
 	return ENOERR;
 }
-#if 0
-static int free_callback(struct in_device *in_dev, ETH_LISTEN_CALLBACK callback) {
-	struct inetdev_info *indev_info;
-	struct callback_info *cb_info;
-	struct list_head *tmp;
 
-	assert(in_dev != NULL);
-
-	indev_info = find_indev_info_entry(in_dev);
-	if (indev_info == NULL) {
-		return -ENOENT;
-	}
-
-	list_for_each(tmp, &indev_info->cb_info_list) {
-		cb_info = member_cast_out(tmp, struct callback_info, lnk);
-		if (cb_info->func == callback) {
-			list_del(&cb_info->lnk);
-			pool_free(&callback_info_pool, cb_info);
-			return ENOERR;
-		}
-	}
-
-	return -ENOENT;
-}
-#endif
 struct in_device * in_dev_get(struct net_device *dev) {
 	assert(dev != NULL);
 	return inet_dev_find_by_name(dev->name);
@@ -146,7 +118,8 @@ struct in_device * inet_dev_find_by_name(const char *if_name) {
 	return NULL;
 }
 
-struct net_device *inet_get_loopback_dev(void){
+struct net_device * inet_get_loopback_dev(void) {
+	assert(inet_dev_find_by_name("lo") != NULL);
 	return inet_dev_find_by_name("lo")->dev;
 }
 
@@ -301,9 +274,4 @@ struct in_device * inet_dev_get_next_used(struct in_device *in_dev) {
 	indev_info = member_cast_out(indev_info->lnk.next, struct inetdev_info, lnk);
 
 	return (&indev_info->lnk == &indev_info_list) ? NULL : &indev_info->in_dev;
-}
-
-static int devinet_init(void) {
-	//INIT_LIST_HEAD(&indev_info_list);
-	return ENOERR;
 }

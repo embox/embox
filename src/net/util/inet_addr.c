@@ -102,22 +102,27 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 			break;
 		}
 	}
-	/* checkings */
-	if ((c != '\0' && !isspace(c)) ||	/* Check for trailing characters */
-			(dots!=3) ||									/* how much octets did we yeild */
-			(!digit))											/* Did we get a valid digit? */
-		return 0;												/* something went wrong */
-
+	/* Check for trailing characters. */
+	if (c != '\0' && !isspace(c)) {
+		return 0;
+	}
+	/* Did we get a valid digit? */
+	if (!digit) {
+		return 0;
+	}
 	/* Check whether the last part is in its limits depending on
 	   the number of parts in total.  */
-	if (val > max[pp - res.bytes])
+	if (val > max[pp - res.bytes]) {
 		return 0;
+	}
 
 	/* everything went fine */
-	if (addr != NULL)
+	if (addr != NULL) {
 		addr->s_addr = res.word | htonl (val);
+	}
 	return 1;
 }
+
 static char ntoa_buffer[] = "xxx.xxx.xxx.xxx";
 
 char *inet_ntoa(struct in_addr in) {

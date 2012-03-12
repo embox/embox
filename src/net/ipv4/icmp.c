@@ -113,7 +113,7 @@ static int icmp_unreach(sk_buff_t *skb) {
 	info = icmph->type;
 	info ^= (icmph->code << 8);
 	info ^= (icmph->un.echo.sequence << 16);
-	/* Notify all raw and udp sockets */
+	/* Notify to all raw and udp sockets */
 	raw_err(skb, info);
 	udp_err(skb, info);
 
@@ -131,7 +131,6 @@ static int icmp_redirect(sk_buff_t *skb) {
 static int icmp_echo(sk_buff_t *skb) {
 	sk_buff_t *reply;
 
-	/* RFC 796:  The data received in the echo message must be returned in the echo reply message. */
 	reply = skb_clone(skb, 0);
 	reply->h.icmph->type = ICMP_ECHOREPLY;
 	/* TODO checksum must be at network byte order */
@@ -255,16 +254,15 @@ static int icmp_rcv(sk_buff_t *pack) {
 	icmphdr_t *icmph;
 	net_device_stats_t *stats;
 	uint16_t tmp;
-
 	struct sk_buff *skb_tmp;
 
 
 	assert(pack != NULL);
 
-	/* remove packet that came to raw socket icmp_socket
-	   TODO: write a separate function? */
-	if((skb_tmp = skb_recv_datagram(icmp_socket->sk, 0, 0, 0)))
+	/* Remove packet that came to raw socket icmp_socket */
+	if ((skb_tmp = skb_recv_datagram(icmp_socket->sk, 0, 0, 0)) != NULL) {
 		kfree_skb(skb_tmp);
+	}
 
 	icmph = pack->h.icmph;
 	stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);

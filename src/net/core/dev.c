@@ -20,12 +20,12 @@ POOL_DEF(netdev_pool, struct net_device, CONFIG_NET_DEVICES_QUANTITY);
 //TODO use hash table instead this
 static struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY];
 
-struct net_device * get_dev_by_idx(int num) {
-	if ((num < 0) || (num >= CONFIG_NET_DEVICES_QUANTITY)) {
+struct net_device * get_dev_by_idx(int idx) {
+	if ((idx < 0) || (idx >= CONFIG_NET_DEVICES_QUANTITY)) {
 		return NULL;
 	}
 
-	return opened_netdevs[num];
+	return opened_netdevs[idx];
 }
 
 static int process_backlog(struct net_device *dev) {
@@ -38,7 +38,7 @@ static int process_backlog(struct net_device *dev) {
 	return ENOERR;
 }
 
-struct net_device *alloc_netdev(int sizeof_priv, const char *name,
+struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 		void (*setup)(struct net_device *)) {
 	struct net_device *dev;
 
@@ -53,8 +53,8 @@ struct net_device *alloc_netdev(int sizeof_priv, const char *name,
 
 	setup(dev);
 
-	dev->dev_queue.next = (struct sk_buff *) (&(dev->dev_queue));
-	dev->dev_queue.prev = (struct sk_buff *) (&(dev->dev_queue));
+	dev->dev_queue.next = (struct sk_buff *)(&(dev->dev_queue));
+	dev->dev_queue.prev = (struct sk_buff *)(&(dev->dev_queue));
 	dev->poll = process_backlog;
 
 	strncpy(dev->name, name, IFNAMSIZ);
@@ -71,11 +71,13 @@ void free_netdev(struct net_device *dev) {
 
 
 int register_netdev(struct net_device *dev) {
+	size_t i;
+
 	if (dev == NULL) {
 		return -EINVAL;
 	}
 
-	for (size_t i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
 		if (opened_netdevs[i] == NULL) {
 			opened_netdevs[i] = dev;
 			return ENOERR;
@@ -86,11 +88,13 @@ int register_netdev(struct net_device *dev) {
 }
 
 void unregister_netdev(struct net_device *dev) {
+	size_t i;
+
 	if (dev == NULL) {
 		return;
 	}
 
-	for (size_t i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
 		if (opened_netdevs[i] == dev) {
 			opened_netdevs[i] = NULL;
 			return;
@@ -99,13 +103,14 @@ void unregister_netdev(struct net_device *dev) {
 }
 
 struct net_device * netdev_get_by_name(const char *name) {
+	size_t i;
 	struct net_device *dev;
 
 	if (name == NULL) {
 		return NULL;
 	}
 
-	for (size_t i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
 		dev = opened_netdevs[i];
 		if (strncmp(name, dev->name, IFNAMSIZ) == 0) {
 			return dev;
@@ -200,4 +205,9 @@ int dev_set_flags(struct net_device *dev, unsigned int flags) {
 	dev->flags = flags;
 
 	return res;
+}
+
+int dev_init(void) {
+	memset(opened_netdevs, 0, CONFIG_NET_DEVICES_QUANTITY * sizeof(struct net_device *));
+	return ENOERR;
 }

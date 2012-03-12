@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static struct net_device *registered_etherdev[CONFIG_NET_DEVICES_QUANTITY] = {0};
+static struct net_device *registered_etherdev[CONFIG_NET_DEVICES_QUANTITY]; // TODO before using must be cleared
 
 int eth_header(sk_buff_t *pack, struct net_device *dev, unsigned short type,
 			void *daddr, void *saddr, unsigned len) {
@@ -66,11 +66,10 @@ int eth_rebuild_header(sk_buff_t *pack) {
 	if (pack->protocol == ETH_P_IP) {
 		/* fill out eth packet source and destination */
 		memcpy(eth->h_source, dev->dev_addr, ETH_ALEN);
-		if(arp_resolve(pack) < 0){	/* if couldn't resolve then the host is unreachable */
+		if(arp_resolve(pack) < 0) { /* if couldn't resolve then the host is unreachable */
 			return -ENOENT;
 		}
-		else
-			return ENOERR;						/* else everythimg is fine, the packet is ready to be sent */
+		return ENOERR; /* else everythimg is fine, the packet is ready to be sent */
 	} else if (pack->protocol == ETH_P_ARP) {
 		return ENOERR;
 	} else {
