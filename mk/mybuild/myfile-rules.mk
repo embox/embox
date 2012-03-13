@@ -49,37 +49,37 @@ $(gold_grammar)_produce-Import_import = $2
 # Rule: <AnnotatedType> ::= <AnnotationSpecifiers> <Type>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotatedType
-		$2
+	$(for target <- $2,
+		$(set+ target->annotations,$1)
+		$(target))
 endef
 
 # Rule: <Annotation> ::= annotation Identifier '{' <AnnotationMembers> '}'
 # Args: 1..5 - Symbols in the RHS.
 define $(gold_grammar)_produce-Annotation_annotation_Identifier_LBrace_RBrace
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(foreach type,$(new MyAnnotationType),
+		$(set type->name,$3)
+		$(set type->origin,$(call gold_location_of,2))
+
+		$(set type->options,$4)
+
+		$(type)
+	)
 endef
 
 # Rule: <AnnotatedAnnotationMember> ::= <AnnotationSpecifiers> <Option>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotatedAnnotationMember
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <AnnotationSpecifiers> ::= <AnnotationSpecifier> <AnnotationSpecifiers>
-# Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-AnnotationSpecifiers
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <AnnotationSpecifiers> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-AnnotationSpecifiers2
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(for target <- $2,
+		$(set+ target->annotations,$1)
+		$(target))
 endef
 
 # Rule: <AnnotationSpecifier> ::= '@' <Reference> <AnnotationInitializer>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotationSpecifier_At
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(for annotation <- $(new MyAnnotation),
+		$(set annotation->type_link,$2))
 endef
 
 # Rule: <AnnotationInitializer> ::= '(' <AnnotationParametersList> ')'
@@ -212,7 +212,11 @@ $(gold_grammar)_produce-SuperModule_extends = $2
 # Rule: <AnnotatedModuleMember> ::= <AnnotationSpecifiers> <ModuleMember>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotatedModuleMember
-		$2
+	$(for target <- $2,
+		# XXX
+		$(if $(invoke MyFile_AnnotationTarget->isInstance,$(target)),
+			$(set+ target->annotations,$1))
+		$(target))
 endef
 
 # Rule: <ModuleMember> ::= depends <ReferenceList>
