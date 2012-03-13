@@ -4,16 +4,17 @@
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="myFile"
     nsURI="http://www.mybuild.org/myfile/MyFile" nsPrefix="my">
   <eClassifiers xsi:type="ecore:EClass" name="FileContentRoot" eSuperTypes="emodel.ecore#//ENamedObject">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="entities" upperBound="-1"
-        eType="#//Entity" containment="true" eOpposite="#//Entity/fileContentRoot"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="types" upperBound="-1"
+        eType="#//Type" containment="true" eOpposite="#//Type/fileContentRoot"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="imports" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Entity" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
+  <eClassifiers xsi:type="ecore:EClass" name="Type" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fileContentRoot" eType="#//FileContentRoot"
-        eOpposite="#//FileContentRoot/entities"/>
+        eOpposite="#//FileContentRoot/types"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="#//Entity">
+  <eClassifiers xsi:type="ecore:EClass" name="AnnotationType" eSuperTypes="#//Type"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="#//Type">
     <eStructuralFeatures xsi:type="ecore:EReference" name="features" upperBound="-1"
         eType="#//Feature" containment="true" eOpposite="#//Feature/interface"/>
   </eClassifiers>
@@ -25,7 +26,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="requiredBy" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/requires"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Module" eSuperTypes="#//Entity">
+  <eClassifiers xsi:type="ecore:EClass" name="Module" eSuperTypes="#//Type">
     <eOperations name="isSubTypeOf" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
       <eParameters name="another" eType="#//Module"/>
     </eOperations>

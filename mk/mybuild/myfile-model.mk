@@ -11,7 +11,7 @@ include mk/model/model_impl.mk
 # Model object 'FileContentRoot'.
 #
 # The following features are defined:
-#   - reference 'entities'
+#   - reference 'types'
 #   - attribute 'imports'
 #
 # The following features and operations are inherited from 'ENamedObject':
@@ -25,9 +25,9 @@ define class-MyFileContentRoot
 	$(eobject MyFile_FileContentRoot,
 		MyFileContentRoot,ENamedObject,)
 
-	# Property 'entities... : MyEntity'.
-	$(eobject-reference MyFile_FileContentRoot_entities,
-		entities,MyEntity,fileContentRoot,changeable many containment)
+	# Property 'types... : MyType'.
+	$(eobject-reference MyFile_FileContentRoot_types,
+		types,MyType,fileContentRoot,changeable many containment)
 
 	# Property 'imports...'.
 	$(eobject-attribute MyFile_FileContentRoot_imports,
@@ -39,7 +39,7 @@ define class-MyFileContentRoot
 endef
 
 #
-# Model object 'Entity'.
+# Model object 'Type'.
 #
 # The following features are defined:
 #   - reference 'fileContentRoot'
@@ -50,16 +50,40 @@ endef
 #   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-define class-MyEntity # abstract
+define class-MyType # abstract
 	# Extends 'ENamedObject' class.
-	$(eobject MyFile_Entity,
-		MyEntity,ENamedObject,abstract)
+	$(eobject MyFile_Type,
+		MyType,ENamedObject,abstract)
 
 	# Property 'fileContentRoot : MyFileContentRoot'.
-	$(eobject-reference MyFile_Entity_fileContentRoot,
-		fileContentRoot,MyFileContentRoot,entities,changeable container)
+	$(eobject-reference MyFile_Type_fileContentRoot,
+		fileContentRoot,MyFileContentRoot,types,changeable container)
 
-	# PROTECTED REGION ID(Entity) ENABLED START
+	# PROTECTED REGION ID(Type) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'AnnotationType'.
+#
+# No features or operations defined.
+#
+# The following features are inherited from 'Type':
+#   - reference 'fileContentRoot'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-MyAnnotationType
+	# Extends 'MyType' class.
+	$(eobject MyFile_AnnotationType,
+		MyAnnotationType,MyType,)
+
+	# PROTECTED REGION ID(AnnotationType) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
@@ -70,7 +94,7 @@ endef
 # The following features are defined:
 #   - reference 'features'
 #
-# The following features are inherited from 'Entity':
+# The following features are inherited from 'Type':
 #   - reference 'fileContentRoot'
 #
 # The following features and operations are inherited from 'ENamedObject':
@@ -80,9 +104,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyInterface
-	# Extends 'MyEntity' class.
+	# Extends 'MyType' class.
 	$(eobject MyFile_Interface,
-		MyInterface,MyEntity,)
+		MyInterface,MyType,)
 
 	# Property 'features... : MyFeature'.
 	$(eobject-reference MyFile_Interface_features,
@@ -153,7 +177,7 @@ endef
 #   - operation 'isSubTypeOf'
 #   - operation 'isSuperTypeOf'
 #
-# The following features are inherited from 'Entity':
+# The following features are inherited from 'Type':
 #   - reference 'fileContentRoot'
 #
 # The following features and operations are inherited from 'ENamedObject':
@@ -163,9 +187,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyModule
-	# Extends 'MyEntity' class.
+	# Extends 'MyType' class.
 	$(eobject MyFile_Module,
-		MyModule,MyEntity,)
+		MyModule,MyType,)
 
 	# Property 'isStatic'.
 	$(eobject-attribute MyFile_Module_isStatic,

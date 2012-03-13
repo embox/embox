@@ -27,7 +27,7 @@ define $(gold_grammar)_produce-MyFile
 	$(for root <- $(new MyFileContentRoot),
 		$(set root->name,$1)
 		$(set root->imports,$2)
-		$(set root->entities,$3)
+		$(set root->types,$3)
 		$(root))
 endef
 
@@ -46,9 +46,9 @@ endef
 # Args: 1..2 - Symbols in the RHS.
 $(gold_grammar)_produce-Import_import = $2
 
-# Rule: <AnnotatedEntity> ::= <AnnotationSpecifiers> <Entity>
+# Rule: <AnnotatedType> ::= <AnnotationSpecifiers> <Type>
 # Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-AnnotatedEntity
+define $(gold_grammar)_produce-AnnotatedType
 		$2
 endef
 

@@ -13,15 +13,18 @@ MyFile := \
 
 MyFile_FileContentRoot := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_FileContentRoot)
-MyFile_FileContentRoot_entities := \
-	$(call eMetaReferenceCreate,$(MyFile_FileContentRoot),MyFile_FileContentRoot_entities)
+MyFile_FileContentRoot_types := \
+	$(call eMetaReferenceCreate,$(MyFile_FileContentRoot),MyFile_FileContentRoot_types)
 MyFile_FileContentRoot_imports := \
 	$(call eMetaAttributeCreate,$(MyFile_FileContentRoot),MyFile_FileContentRoot_imports)
 
-MyFile_Entity := \
-	$(call eMetaClassCreate,$(MyFile),MyFile_Entity)
-MyFile_Entity_fileContentRoot := \
-	$(call eMetaReferenceCreate,$(MyFile_Entity),MyFile_Entity_fileContentRoot)
+MyFile_Type := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_Type)
+MyFile_Type_fileContentRoot := \
+	$(call eMetaReferenceCreate,$(MyFile_Type),MyFile_Type_fileContentRoot)
+
+MyFile_AnnotationType := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_AnnotationType)
 
 MyFile_Interface := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Interface)
@@ -105,13 +108,15 @@ define __myFile_init
 	$(call eMetaModelInit,$(MyFile),myFile,my)
 
 	$(call eMetaClassInit,$(MyFile_FileContentRoot),FileContentRoot,$(EModel_ENamedObject),)
-	$(call eMetaReferenceInit,$(MyFile_FileContentRoot_entities),entities,$(MyFile_Entity),$(MyFile_Entity_fileContentRoot),changeable many containment)
+	$(call eMetaReferenceInit,$(MyFile_FileContentRoot_types),types,$(MyFile_Type),$(MyFile_Type_fileContentRoot),changeable many containment)
 	$(call eMetaAttributeInit,$(MyFile_FileContentRoot_imports),imports,changeable many)
 
-	$(call eMetaClassInit,$(MyFile_Entity),Entity,$(EModel_ENamedObject),abstract)
-	$(call eMetaReferenceInit,$(MyFile_Entity_fileContentRoot),fileContentRoot,$(MyFile_FileContentRoot),$(MyFile_FileContentRoot_entities),changeable container)
+	$(call eMetaClassInit,$(MyFile_Type),Type,$(EModel_ENamedObject),abstract)
+	$(call eMetaReferenceInit,$(MyFile_Type_fileContentRoot),fileContentRoot,$(MyFile_FileContentRoot),$(MyFile_FileContentRoot_types),changeable container)
 
-	$(call eMetaClassInit,$(MyFile_Interface),Interface,$(MyFile_Entity),)
+	$(call eMetaClassInit,$(MyFile_AnnotationType),AnnotationType,$(MyFile_Type),)
+
+	$(call eMetaClassInit,$(MyFile_Interface),Interface,$(MyFile_Type),)
 	$(call eMetaReferenceInit,$(MyFile_Interface_features),features,$(MyFile_Feature),$(MyFile_Feature_interface),changeable many containment)
 
 	$(call eMetaClassInit,$(MyFile_Feature),Feature,$(EModel_ENamedObject),)
@@ -119,7 +124,7 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_Feature_providedBy),providedBy,$(MyFile_Module),$(MyFile_Module_provides),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Feature_requiredBy),requiredBy,$(MyFile_Module),$(MyFile_Module_requires),changeable many linkable)
 
-	$(call eMetaClassInit,$(MyFile_Module),Module,$(MyFile_Entity),)
+	$(call eMetaClassInit,$(MyFile_Module),Module,$(MyFile_Type),)
 	$(call eMetaAttributeInit,$(MyFile_Module_isStatic),static,changeable)
 	$(call eMetaAttributeInit,$(MyFile_Module_isAbstract),abstract,changeable)
 	$(call eMetaReferenceInit,$(MyFile_Module_depends),depends,$(MyFile_Module),$(MyFile_Module_dependent),changeable many linkable)
@@ -159,11 +164,13 @@ endef # __myFile_init
 # Binds objects to instance classes and features to properties.
 define __myFile_bind
 	$(call eMetaClassBind,$(MyFile_FileContentRoot),MyFileContentRoot)
-	$(call eMetaFeatureBind,$(MyFile_FileContentRoot_entities),entities)
+	$(call eMetaFeatureBind,$(MyFile_FileContentRoot_types),types)
 	$(call eMetaFeatureBind,$(MyFile_FileContentRoot_imports),imports)
 
-	$(call eMetaClassBind,$(MyFile_Entity),MyEntity)
-	$(call eMetaFeatureBind,$(MyFile_Entity_fileContentRoot),fileContentRoot)
+	$(call eMetaClassBind,$(MyFile_Type),MyType)
+	$(call eMetaFeatureBind,$(MyFile_Type_fileContentRoot),fileContentRoot)
+
+	$(call eMetaClassBind,$(MyFile_AnnotationType),MyAnnotationType)
 
 	$(call eMetaClassBind,$(MyFile_Interface),MyInterface)
 	$(call eMetaFeatureBind,$(MyFile_Interface_features),features)

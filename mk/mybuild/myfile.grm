@@ -67,13 +67,13 @@ BooleanLiteral = 'true' | 'false'
 <Import>
         ::= 'import' <QualifiedNameWithWildcard>
 
-! AnnotatedEntity*
+! AnnotatedType*
 <Entities>
-        ::= <AnnotatedEntity> <Entities>
+        ::= <AnnotatedType> <Entities>
          |
-<AnnotatedEntity>
-        ::= <AnnotationSpecifiers> <Entity>
-<Entity>
+<AnnotatedType>
+        ::= <AnnotationSpecifiers> <Type>
+<Type>
         ::= <Module>
          |  <Interface>
          |  <Annotation>
