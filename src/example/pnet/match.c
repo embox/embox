@@ -48,7 +48,7 @@ static int match_example(int argc, char **argv) {
 
 	rule = pnet_rule_alloc();
 	pnet_rule_set_next_node(rule, info);
-	pnet_rule_set_proto(rule, IPPROTO_UDP);
+	pnet_rule_set_proto(rule, IPPROTO_ICMP);
 	pnet_add_new_rx_rule(rule, (net_node_matcher_t) match_node);
 
 	pnet_node_link(devs, match_node);

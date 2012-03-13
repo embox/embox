@@ -18,12 +18,16 @@
 
 #include <embox/unit.h>
 
-int netif_rx(struct sk_buff *skb) {
+int netif_rx(void *data) {
 	struct net_device *dev;
+	struct sk_buff *skb;
 
-	if (NULL == skb) {
+	if (NULL == data) {
 		return NET_RX_DROP;
 	}
+
+	skb = (struct sk_buff *) data;
+
 	dev = skb->dev;
 	if (NULL == dev) {
 		kfree_skb(skb);

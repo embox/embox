@@ -240,7 +240,7 @@ extern struct net_device *dev_rx_processing(void);
  * @param net_packet *pack struct of network packet
  * @return on success, returns 0, on error, -1 is returned
  */
-extern int netif_rx(sk_buff_t *pack);
+extern int netif_rx(void *pack);
 
 /**
  * Called by irq handler.
