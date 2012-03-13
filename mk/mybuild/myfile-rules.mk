@@ -24,12 +24,11 @@
 # Rule: <MyFile> ::= <Package> <Imports> <Entities>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-MyFile
-	$(for package <- $(new MyPackage),
-		$(set package->name,$1)
-		$(set package->imports,$2)
-		$(set package->entities,$3)
-		$(package)
-	)
+	$(for root <- $(new MyFileContentRoot),
+		$(set root->name,$1)
+		$(set root->imports,$2)
+		$(set root->entities,$3)
+		$(root))
 endef
 
 # Rule: <Package> ::= package <QualifiedName>

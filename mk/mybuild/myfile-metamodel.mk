@@ -11,17 +11,17 @@ include mk/model/metamodel_impl.mk
 MyFile := \
 	$(call eMetaModelCreate,MyFile)
 
-MyFile_Package := \
-	$(call eMetaClassCreate,$(MyFile),MyFile_Package)
-MyFile_Package_entities := \
-	$(call eMetaReferenceCreate,$(MyFile_Package),MyFile_Package_entities)
-MyFile_Package_imports := \
-	$(call eMetaAttributeCreate,$(MyFile_Package),MyFile_Package_imports)
+MyFile_FileContentRoot := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_FileContentRoot)
+MyFile_FileContentRoot_entities := \
+	$(call eMetaReferenceCreate,$(MyFile_FileContentRoot),MyFile_FileContentRoot_entities)
+MyFile_FileContentRoot_imports := \
+	$(call eMetaAttributeCreate,$(MyFile_FileContentRoot),MyFile_FileContentRoot_imports)
 
 MyFile_Entity := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Entity)
-MyFile_Entity_package := \
-	$(call eMetaReferenceCreate,$(MyFile_Entity),MyFile_Entity_package)
+MyFile_Entity_fileContentRoot := \
+	$(call eMetaReferenceCreate,$(MyFile_Entity),MyFile_Entity_fileContentRoot)
 
 MyFile_Interface := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Interface)
@@ -104,12 +104,12 @@ MyFile_StringOptionValue := \
 define __myFile_init
 	$(call eMetaModelInit,$(MyFile),myFile,my)
 
-	$(call eMetaClassInit,$(MyFile_Package),Package,$(EModel_ENamedObject),)
-	$(call eMetaReferenceInit,$(MyFile_Package_entities),entities,$(MyFile_Entity),$(MyFile_Entity_package),changeable many containment)
-	$(call eMetaAttributeInit,$(MyFile_Package_imports),imports,changeable many)
+	$(call eMetaClassInit,$(MyFile_FileContentRoot),FileContentRoot,$(EModel_ENamedObject),)
+	$(call eMetaReferenceInit,$(MyFile_FileContentRoot_entities),entities,$(MyFile_Entity),$(MyFile_Entity_fileContentRoot),changeable many containment)
+	$(call eMetaAttributeInit,$(MyFile_FileContentRoot_imports),imports,changeable many)
 
 	$(call eMetaClassInit,$(MyFile_Entity),Entity,$(EModel_ENamedObject),abstract)
-	$(call eMetaReferenceInit,$(MyFile_Entity_package),package,$(MyFile_Package),$(MyFile_Package_entities),changeable container)
+	$(call eMetaReferenceInit,$(MyFile_Entity_fileContentRoot),fileContentRoot,$(MyFile_FileContentRoot),$(MyFile_FileContentRoot_entities),changeable container)
 
 	$(call eMetaClassInit,$(MyFile_Interface),Interface,$(MyFile_Entity),)
 	$(call eMetaReferenceInit,$(MyFile_Interface_features),features,$(MyFile_Feature),$(MyFile_Feature_interface),changeable many containment)
@@ -158,12 +158,12 @@ endef # __myFile_init
 
 # Binds objects to instance classes and features to properties.
 define __myFile_bind
-	$(call eMetaClassBind,$(MyFile_Package),MyPackage)
-	$(call eMetaFeatureBind,$(MyFile_Package_entities),entities)
-	$(call eMetaFeatureBind,$(MyFile_Package_imports),imports)
+	$(call eMetaClassBind,$(MyFile_FileContentRoot),MyFileContentRoot)
+	$(call eMetaFeatureBind,$(MyFile_FileContentRoot_entities),entities)
+	$(call eMetaFeatureBind,$(MyFile_FileContentRoot_imports),imports)
 
 	$(call eMetaClassBind,$(MyFile_Entity),MyEntity)
-	$(call eMetaFeatureBind,$(MyFile_Entity_package),package)
+	$(call eMetaFeatureBind,$(MyFile_Entity_fileContentRoot),fileContentRoot)
 
 	$(call eMetaClassBind,$(MyFile_Interface),MyInterface)
 	$(call eMetaFeatureBind,$(MyFile_Interface_features),features)

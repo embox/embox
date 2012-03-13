@@ -8,7 +8,7 @@ __mybuild_myfile_model_mk := 1
 include mk/model/model_impl.mk
 
 #
-# Model object 'Package'.
+# Model object 'FileContentRoot'.
 #
 # The following features are defined:
 #   - reference 'entities'
@@ -20,20 +20,20 @@ include mk/model/model_impl.mk
 #   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-define class-MyPackage
+define class-MyFileContentRoot
 	# Extends 'ENamedObject' class.
-	$(eobject MyFile_Package,
-		MyPackage,ENamedObject,)
+	$(eobject MyFile_FileContentRoot,
+		MyFileContentRoot,ENamedObject,)
 
 	# Property 'entities... : MyEntity'.
-	$(eobject-reference MyFile_Package_entities,
-		entities,MyEntity,package,changeable many containment)
+	$(eobject-reference MyFile_FileContentRoot_entities,
+		entities,MyEntity,fileContentRoot,changeable many containment)
 
 	# Property 'imports...'.
-	$(eobject-attribute MyFile_Package_imports,
+	$(eobject-attribute MyFile_FileContentRoot_imports,
 		imports,changeable many)
 
-	# PROTECTED REGION ID(Package) ENABLED START
+	# PROTECTED REGION ID(FileContentRoot) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
@@ -42,7 +42,7 @@ endef
 # Model object 'Entity'.
 #
 # The following features are defined:
-#   - reference 'package'
+#   - reference 'fileContentRoot'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -55,9 +55,9 @@ define class-MyEntity # abstract
 	$(eobject MyFile_Entity,
 		MyEntity,ENamedObject,abstract)
 
-	# Property 'package : MyPackage'.
-	$(eobject-reference MyFile_Entity_package,
-		package,MyPackage,entities,changeable container)
+	# Property 'fileContentRoot : MyFileContentRoot'.
+	$(eobject-reference MyFile_Entity_fileContentRoot,
+		fileContentRoot,MyFileContentRoot,entities,changeable container)
 
 	# PROTECTED REGION ID(Entity) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -71,7 +71,7 @@ endef
 #   - reference 'features'
 #
 # The following features are inherited from 'Entity':
-#   - reference 'package'
+#   - reference 'fileContentRoot'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -154,7 +154,7 @@ endef
 #   - operation 'isSuperTypeOf'
 #
 # The following features are inherited from 'Entity':
-#   - reference 'package'
+#   - reference 'fileContentRoot'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
