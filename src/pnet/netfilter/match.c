@@ -6,22 +6,25 @@
  * @author Alexander Kalmuk
  */
 
-#include <pnet/match.h>
-#include <net/ip.h>
-#include <pnet/core.h>
-#include <pnet/types.h>
-#include <net/if_ether.h>
+
 #include <util/member.h>
 #include <string.h>
 #include <mem/objalloc.h>
 #include <lib/list.h>
 #include <assert.h>
-#include <net/udp.h>
 #include <stdio.h>
 #include <embox/unit.h>
-#include <pnet/node.h>
 
+#include <net/ip.h>
+#include <net/if_ether.h>
+#include <net/udp.h>
+
+#include <pnet/node.h>
 #include <pnet/repo.h>
+#include <pnet/match.h>
+#include <pnet/core.h>
+#include <pnet/types.h>
+
 
 #define NET_NODES_CNT 0x10
 
@@ -60,9 +63,11 @@ int match(struct pnet_pack *pack) {
 	node = (net_node_matcher_t) pack->node;
 
 	list_for_each (h, &node->match_rx_rules) {
+		struct sk_buff *skb = pack->data;
 		curr = member_cast_out(h, struct match_rule, lnk);
 		rule_curr = &curr->header[0];
-		pack_curr = (unsigned char*) pack->skb->data;
+
+		pack_curr = (unsigned char*)skb->data;
 
 		for (n = MAX_PACK_HEADER_SIZE;
 				(((*rule_curr == 255) || *pack_curr == *rule_curr)) && n;
