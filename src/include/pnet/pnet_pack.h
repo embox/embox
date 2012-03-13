@@ -11,6 +11,7 @@
 #define PNET_PACK_H_
 
 #include <util/array.h>
+#include <types.h>
 
 struct pnet_pack_desc {
 	uint32_t type;

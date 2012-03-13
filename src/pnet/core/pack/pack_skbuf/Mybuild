@@ -1,6 +1,6 @@
 package embox.pnet.core.pack
 
-module pack_skbuf extends embox.pnet.core.pack.api { //TODO ugly
+module pack_skbuf {
 	source "pack.c", "pack_skbuf.h"
 	depends embox.net.core
 }

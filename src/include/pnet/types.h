@@ -57,7 +57,16 @@ struct pnet_dev {
 
 };
 
+struct pnet_pack {
+	uint32_t type;
+	net_node_t node;
+	enum PNET_PACK_DIRECTION dir;
+	void *data;
+};
+
+
 #include <pnet/proto.h>
-#include __module_headers(embox/pnet/core/pack/api)
+
+//#include __module_headers(embox/pnet/core/pack/api)
 
 #endif /* PNET_TYPES_H_ */

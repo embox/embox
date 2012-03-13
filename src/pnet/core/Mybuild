@@ -37,4 +37,3 @@ module dev {
 module prior_path {
 	source "prior_path.c"
 }
-

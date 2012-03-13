@@ -26,7 +26,7 @@ EMBOX_UNIT_INIT(net_dev_init);
 static int tx_hnd(struct pnet_pack * pack) {
 
 	struct net_device *dev = ((struct pnet_dev *) pack->node)->dev;
-	struct sk_buff *skb = pack->skb;
+	struct sk_buff *skb = pack->data;
 	skb->dev = dev;
 	dev->netdev_ops->ndo_start_xmit(skb, dev);
 
