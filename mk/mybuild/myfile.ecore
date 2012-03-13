@@ -33,8 +33,11 @@
     <eOperations name="isSuperTypeOf" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
       <eParameters name="another" eType="#//Module"/>
     </eOperations>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="static" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modifiers" eType="ecore:EDataType emodel.ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="static" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        volatile="true" transient="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="depends" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/dependent"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="dependent" upperBound="-1"
@@ -47,9 +50,6 @@
         eType="#//File" containment="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="objects" upperBound="-1"
         eType="#//File" containment="true" resolveProxies="false"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="flags" eType="ecore:EDataType emodel.ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="makeRules" upperBound="-1"
-        eType="#//MakeRule" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
         eType="#//Option" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="subTypes" upperBound="-1"
@@ -68,12 +68,6 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileFullName" eType="ecore:EDataType emodel.ecore#//EString"
         changeable="false" volatile="true" transient="true" defaultValueLiteral=""
         derived="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MakeRule">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="target" unique="false"
-        eType="#//File" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="prerequisites" upperBound="-1"
-        eType="#//File" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
     <eStructuralFeatures xsi:type="ecore:EReference" name="defaultValue" eType="#//OptionValue"

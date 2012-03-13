@@ -42,6 +42,8 @@ MyFile_Feature_requiredBy := \
 
 MyFile_Module := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Module)
+MyFile_Module_modifiers := \
+	$(call eMetaAttributeCreate,$(MyFile_Module),MyFile_Module_modifiers)
 MyFile_Module_isStatic := \
 	$(call eMetaAttributeCreate,$(MyFile_Module),MyFile_Module_isStatic)
 MyFile_Module_isAbstract := \
@@ -58,10 +60,6 @@ MyFile_Module_sources := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_sources)
 MyFile_Module_objects := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_objects)
-MyFile_Module_flags := \
-	$(call eMetaAttributeCreate,$(MyFile_Module),MyFile_Module_flags)
-MyFile_Module_makeRules := \
-	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_makeRules)
 MyFile_Module_options := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_options)
 MyFile_Module_subTypes := \
@@ -79,13 +77,6 @@ MyFile_File_fileName := \
 	$(call eMetaAttributeCreate,$(MyFile_File),MyFile_File_fileName)
 MyFile_File_fileFullName := \
 	$(call eMetaAttributeCreate,$(MyFile_File),MyFile_File_fileFullName)
-
-MyFile_MakeRule := \
-	$(call eMetaClassCreate,$(MyFile),MyFile_MakeRule)
-MyFile_MakeRule_target := \
-	$(call eMetaReferenceCreate,$(MyFile_MakeRule),MyFile_MakeRule_target)
-MyFile_MakeRule_prerequisites := \
-	$(call eMetaReferenceCreate,$(MyFile_MakeRule),MyFile_MakeRule_prerequisites)
 
 MyFile_Option := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Option)
@@ -131,16 +122,15 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_Feature_requiredBy),requiredBy,$(MyFile_Module),$(MyFile_Module_requires),changeable many linkable)
 
 	$(call eMetaClassInit,$(MyFile_Module),Module,$(MyFile_Type),)
-	$(call eMetaAttributeInit,$(MyFile_Module_isStatic),static,changeable)
-	$(call eMetaAttributeInit,$(MyFile_Module_isAbstract),abstract,changeable)
+	$(call eMetaAttributeInit,$(MyFile_Module_modifiers),modifiers,changeable)
+	$(call eMetaAttributeInit,$(MyFile_Module_isStatic),static,changeable derived)
+	$(call eMetaAttributeInit,$(MyFile_Module_isAbstract),abstract,changeable derived)
 	$(call eMetaReferenceInit,$(MyFile_Module_depends),depends,$(MyFile_Module),$(MyFile_Module_dependent),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_dependent),dependent,$(MyFile_Module),$(MyFile_Module_depends),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_provides),provides,$(MyFile_Feature),$(MyFile_Feature_providedBy),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_requires),requires,$(MyFile_Feature),$(MyFile_Feature_requiredBy),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_sources),sources,$(MyFile_File),,changeable many containment)
 	$(call eMetaReferenceInit,$(MyFile_Module_objects),objects,$(MyFile_File),,changeable many containment)
-	$(call eMetaAttributeInit,$(MyFile_Module_flags),flags,changeable)
-	$(call eMetaReferenceInit,$(MyFile_Module_makeRules),makeRules,$(MyFile_MakeRule),,changeable many containment)
 	$(call eMetaReferenceInit,$(MyFile_Module_options),options,$(MyFile_Option),,changeable many containment)
 	$(call eMetaReferenceInit,$(MyFile_Module_subTypes),subTypes,$(MyFile_Module),$(MyFile_Module_superType),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_superType),superType,$(MyFile_Module),$(MyFile_Module_subTypes),changeable linkable)
@@ -150,10 +140,6 @@ define __myFile_init
 	$(call eMetaClassInit,$(MyFile_File),File,,)
 	$(call eMetaAttributeInit,$(MyFile_File_fileName),fileName,changeable)
 	$(call eMetaAttributeInit,$(MyFile_File_fileFullName),fileFullName,derived)
-
-	$(call eMetaClassInit,$(MyFile_MakeRule),MakeRule,,)
-	$(call eMetaReferenceInit,$(MyFile_MakeRule_target),target,$(MyFile_File),,changeable containment)
-	$(call eMetaReferenceInit,$(MyFile_MakeRule_prerequisites),prerequisites,$(MyFile_File),,changeable many containment)
 
 	$(call eMetaClassInit,$(MyFile_Option),Option,$(EModel_ENamedObject),abstract)
 	$(call eMetaReferenceInit,$(MyFile_Option_defaultValue),defaultValue,$(MyFile_OptionValue),,changeable containment)
@@ -191,6 +177,7 @@ define __myFile_bind
 	$(call eMetaFeatureBind,$(MyFile_Feature_requiredBy),requiredBy)
 
 	$(call eMetaClassBind,$(MyFile_Module),MyModule)
+	$(call eMetaFeatureBind,$(MyFile_Module_modifiers),modifiers)
 	$(call eMetaFeatureBind,$(MyFile_Module_isStatic),isStatic)
 	$(call eMetaFeatureBind,$(MyFile_Module_isAbstract),isAbstract)
 	$(call eMetaFeatureBind,$(MyFile_Module_depends),depends)
@@ -199,8 +186,6 @@ define __myFile_bind
 	$(call eMetaFeatureBind,$(MyFile_Module_requires),requires)
 	$(call eMetaFeatureBind,$(MyFile_Module_sources),sources)
 	$(call eMetaFeatureBind,$(MyFile_Module_objects),objects)
-	$(call eMetaFeatureBind,$(MyFile_Module_flags),flags)
-	$(call eMetaFeatureBind,$(MyFile_Module_makeRules),makeRules)
 	$(call eMetaFeatureBind,$(MyFile_Module_options),options)
 	$(call eMetaFeatureBind,$(MyFile_Module_subTypes),subTypes)
 	$(call eMetaFeatureBind,$(MyFile_Module_superType),superType)
@@ -210,10 +195,6 @@ define __myFile_bind
 	$(call eMetaClassBind,$(MyFile_File),MyFile)
 	$(call eMetaFeatureBind,$(MyFile_File_fileName),fileName)
 	$(call eMetaFeatureBind,$(MyFile_File_fileFullName),fileFullName)
-
-	$(call eMetaClassBind,$(MyFile_MakeRule),MyMakeRule)
-	$(call eMetaFeatureBind,$(MyFile_MakeRule_target),target)
-	$(call eMetaFeatureBind,$(MyFile_MakeRule_prerequisites),prerequisites)
 
 	$(call eMetaClassBind,$(MyFile_Option),MyOption)
 	$(call eMetaFeatureBind,$(MyFile_Option_defaultValue),defaultValue)

@@ -179,14 +179,12 @@ define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 		$(set module->name,$3)
 		$(set module->origin,$(call gold_location_of,3))
 
-		$(set module->isStatic,$(filter static,$1))
-		$(set module->isAbstract,$(filter abstract,$1))
+		$(set module->modifiers,$1)
 
 		$(set module->superType_link,$4)
 
 		$(silent-foreach attr, \
 				sources \
-				flags \
 				options \
 				depends_links,
 				$(set module->$(attr),
