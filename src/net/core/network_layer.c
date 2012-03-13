@@ -25,10 +25,6 @@
 #include <framework/net/pack/api.h>
 
 
-/*FIXME we must have queue for each netdevice or if we want to use the only
- we should use alloc_skb_queue?*/
-//static SKB_LIST_HEAD(netdev_skb_head);
-
 /* FIXME network packet's type is L2 (device layer protocols)
  * what is dev_add_pack, why was separated ptype_base and ptype_all
  * what this code does here?
@@ -138,23 +134,9 @@ int netif_receive_skb(sk_buff_t *skb) {
 }
 
 EMBOX_UNIT_INIT(unit_init);
-extern net_device_t *get_dev_by_idx(int num); /* TODO delete it */
-//static LIST_HEAD(rx_dev_queue);
 
 static void net_rx_action(struct softirq_action *action) {
-	size_t i;
-	struct net_device *dev;
-
-	//TODO it will be better use list of active device and cache for them
-	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; i++) {
-		dev = get_dev_by_idx(i);
-		if ((NULL != dev) && (NULL != dev->poll)) {
-			dev->poll(dev);
-		}
-	}
-//	list_for_each_entry(dev, &rx_dev_queue, rx_dev_link) {
-//		dev->poll(dev);
-//	}
+	dev_rx_processing();
 }
 
 
@@ -164,7 +146,8 @@ void netif_rx_schedule(struct sk_buff *skb) {
 	dev = skb->dev;
 	skb_queue_tail(&(dev->dev_queue), skb);
 
-//	list_add_tail(&dev->rx_dev_link, &rx_dev_queue);
+	dev_rx_queued(dev);
+
 	raise_softirq(NET_RX_SOFTIRQ);
 }
 

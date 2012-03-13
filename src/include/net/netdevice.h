@@ -98,11 +98,7 @@ typedef struct packet_type {
 	struct net_device *dev; /**< NULL is wildcarded here	     */
 	int (*func)(sk_buff_t *, struct net_device *, struct packet_type *,
 			struct net_device *);
-#if 0
-	struct sk_buff *(*gso_segment)(sk_buff_t *skb,
-			int features);
-	int (*gso_send_check)(struct sk_buff *skb);
-#endif
+
 	void *af_packet_priv;
 	struct list_head list;
 	int (*init)(void); /**<Function's called during net subsystem loading
@@ -235,6 +231,9 @@ extern int dev_set_flags(struct net_device *dev, unsigned flags);
  */
 extern int dev_queue_xmit(sk_buff_t *pack);
 
+extern int dev_rx_queued(struct net_device *dev);
+extern struct net_device *dev_rx_processing(void);
+
 /**
  * function must call from net drivers when packet was received
  * and need transmit one throw protocol's stack
@@ -257,14 +256,10 @@ static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
 	}
 	return dev->header_ops->create(skb, dev, type, daddr, saddr, len);
 }
-
+#if 0
 static inline void netif_start_queue(net_device_t *dev) {
 	/*TODO:*/
 }
-
-/**
- * Init function for net device
- */
-extern int dev_init(void);
+#endif
 
 #endif /* NET_DEVICE_H_ */

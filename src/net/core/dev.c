@@ -16,11 +16,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <hal/ipl.h>
 
 POOL_DEF(netdev_pool, struct net_device, CONFIG_NET_DEVICES_QUANTITY);
+
 //TODO use hash table instead this
 static struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY]; // FIXME clear before using
 
+#if 0
 struct net_device * get_dev_by_idx(int idx) {
 	if ((idx < 0) || (idx >= CONFIG_NET_DEVICES_QUANTITY)) {
 		return NULL;
@@ -28,6 +31,7 @@ struct net_device * get_dev_by_idx(int idx) {
 
 	return opened_netdevs[idx];
 }
+#endif
 
 static int process_backlog(struct net_device *dev) {
 	struct sk_buff *skb;
@@ -206,4 +210,39 @@ int dev_set_flags(struct net_device *dev, unsigned int flags) {
 	dev->flags = flags;
 
 	return res;
+}
+
+static LIST_HEAD(rx_dev_queue);
+
+int dev_rx_queued(struct net_device *dev) {
+	ipl_t sp;
+
+	sp = ipl_save();
+	if((NULL == dev->rx_dev_link.next) && (NULL == dev->rx_dev_link.prev)) {
+		list_add_tail(&dev->rx_dev_link, &rx_dev_queue);
+	}
+	ipl_restore(sp);
+	return 0;
+}
+
+int dev_rx_dequeued(struct net_device *dev) {
+	ipl_t sp;
+
+	sp = ipl_save();
+
+	list_del(&dev->rx_dev_link);
+
+	ipl_restore(sp);
+
+	return 0;
+}
+
+struct net_device *dev_rx_processing(void) {
+	struct net_device *dev, *save;
+
+	list_for_each_entry_safe(dev, save, &rx_dev_queue, rx_dev_link) {
+		dev->poll(dev);
+		dev_rx_dequeued(dev);
+	}
+	return NULL;
 }
