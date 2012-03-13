@@ -39,6 +39,8 @@ struct sock_common {
 	struct proto *skc_prot;
 };
 
+enum socket_connection_state_t {UNCONNECTED, CLOSED, LISTENING, BOUND, CONNECTING, CONNECTED, ESTABLISHED, DISCONNECTING};
+
 /**
  * Network layer representation of sockets.
  * @param __sk_common shared layout with inet_timewait_sock
@@ -58,6 +60,9 @@ struct sock_common {
  * @param sk_error_report: callback to indicate errors (e.g. %MSG_ERRQUEUE)
  * @param sk_backlog_rcv: callback to process the backlog
  * @param sk_destruct: called at sock freeing time, i.e. when all refcnt == 0
+ * @param get_port TODO add description
+ * @param arp_queue_info: arp_queue related parameter
+ * @param sk_connection_state: state of the socket (i.e. UNCONNECTED, CONNECTED...). enumerated type
  */
 typedef struct sock {
 	struct sock_common __sk_common;
@@ -90,6 +95,7 @@ typedef struct sock {
 	int (* get_port)(struct sock *sk, unsigned short num);
 	int sk_err;
 	unsigned int arp_queue_info;
+	enum socket_connection_state_t socket_connection_state;
 } sock_t;
 
 static inline void sock_set_ready(struct sock *sk) {
@@ -213,4 +219,10 @@ extern int sock_getsockopt(socket_t *sock, int level, int op, char *optval, int 
 extern sk_buff_t *sock_alloc_send_skb(sock_t *sk, unsigned long size, int noblock, int *errcode);
 #endif
 
+extern void sk_set_connection_state(struct sock *sk, enum socket_connection_state_t state);
+extern enum socket_connection_state_t sk_get_connection_state(struct sock *sk);
+extern int sk_is_connected(struct sock *sk);
+extern int sk_is_bound(struct sock *sk);
+
+enum sk_errno_t {SK_NOERR = 0, SK_ERR = 400, SK_NO_SUCH_METHOD = 401};
 #endif /* NET_SOCK_H_ */

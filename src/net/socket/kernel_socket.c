@@ -64,6 +64,7 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	 err = security_socket_post_create(sock, family, type, protocol, kern);
 	 */
 
+	sk_set_connection_state(sock->sk, UNCONNECTED); /* newly created socket is UNCONNECTED for sure */
 	*psock = sock; /* and save structure */
 
 	return res;
@@ -87,20 +88,82 @@ int kernel_socket_release(struct socket *sock) {
 
 int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 			socklen_t addrlen) {
-	return sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
+	int res;
+
+	if(!sock->ops->listen)
+		return SK_NO_SUCH_METHOD;
+
+	/* try to bind */
+	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
+	if(res){  /* If something went wrong */
+		printk("error while binding socket\n");
+		sk_set_connection_state(sock->sk, UNCONNECTED);  /* Set the state to UNCONNECTED */
+	}else
+		sk_set_connection_state(sock->sk, BOUND);  /* Everything turned out fine */
+	return res;
 }
 
 int kernel_socket_listen(struct socket *sock, int backlog) {
-	return sock->ops->listen(sock, backlog);
-}
+	int res;
+
+	if(!sock->ops->listen)
+		return SK_NO_SUCH_METHOD;
+
+	/* try to listen */
+	res = sock->ops->listen(sock, backlog);
+	if(res){  /* If something went wrong */
+		printk("error while listening on socket\n");
+		sk_set_connection_state(sock->sk, UNCONNECTED);  /* Set the state to UNCONNECTEd */
+	}else
+		sk_set_connection_state(sock->sk, LISTENING);  /* Everything turned out fine */
+	return res;
+ }
 
 int kernel_socket_accept(struct socket *sock, struct sockaddr *addr, socklen_t *addrlen) {
-	return sock->ops->accept(sock, addr, addrlen);
-}
+	int res;
+
+	if(!sock->ops->accept)
+		return SK_NO_SUCH_METHOD;
+
+	/* The socket should be connected first */
+	if(!sk_is_connected(sock->sk))
+		return SK_ERR;
+
+	/* try to accept */
+	res = sock->ops->accept(sock, addr, addrlen);
+	if(res)  /* If something went wrong */
+		printk("error while accepting on socket\n");
+	else
+		sk_set_connection_state(sock->sk, ESTABLISHED);  /* Everything turned out fine */
+	return res;
+ }
 
 int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
-	return sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
+	int res;
+
+	/* if unbound, then either there were no attempts
+		 to bind or connect or bind() failed*/
+	if(!sk_is_bound(sock->sk)){
+		res = kernel_socket_bind(sock, addr, addrlen);  /* First try to bind */
+		if(res){  /* if something went wrong notify and returnx */
+			printk("socket was unconnected and bind returned error\n");
+			sk_set_connection_state(sock->sk, UNCONNECTED);
+			return res;
+		}
+	}
+
+	/* try to connect */
+	sk_set_connection_state(sock->sk, CONNECTING);
+	res = sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
+	if(!res){  /* smth's wrong */
+		printk("socket was unable to connect\n");
+		sk_set_connection_state(sock->sk, BOUND); /* if here => socket was BOUND*/
+		return res;
+	}else
+		sk_set_connection_state(sock->sk, CONNECTED);
+
+	return res;
 }
 
 int kernel_socket_getsockname(struct socket *sock,
@@ -134,3 +197,11 @@ int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr
 	return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
 }
 
+/* These two dummy functions should do smth. Or maybe they aren't necessary */
+int kernel_socket_shutdown(struct socket *sock){
+	return ENOERR;
+}
+
+int kernel_socket_close(struct socket *sock){
+	return ENOERR;
+}

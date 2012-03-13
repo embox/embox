@@ -140,6 +140,9 @@ extern int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,
 extern int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,
 				struct msghdr *msg, size_t size, int flags);
 
+extern int kernel_socket_shutdown(struct socket *sock);
+extern int kernel_socket_close(struct socket *sock);
+
 #if 0
 extern int kernel_sendpage(struct socket *sock, struct page *page, int offset,
 			size_t size, int flags);
