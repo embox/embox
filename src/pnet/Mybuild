@@ -7,7 +7,7 @@ module socket {
 	source "socket.c"
 }
 
-module pnet_entry {
+module pnet_entry{
 	source "pnet_entry.c"
 	depends embox.pnet.core
 	make flags "-I$(SRC_DIR)/compat/linux/include"

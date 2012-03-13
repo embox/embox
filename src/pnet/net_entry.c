@@ -15,7 +15,6 @@
 #include <linux/interrupt.h>
 #include <embox/unit.h>
 #include <linux/init.h>
-#include <pnet/match.h>
 #include <pnet/pnet_pack.h>
 
 #include <mem/objalloc.h>
@@ -45,6 +44,7 @@ int netif_rx(void *data) {
 	}
 
 	pack = objalloc(&common_pool);
+	INIT_LIST_HEAD(&pack->link);
 	pack->data = data;
 
 	pnetif_rx_schedule(pack);
@@ -54,7 +54,6 @@ int netif_rx(void *data) {
 
 static void pnet_rx_action(struct softirq_action *action) {
 	struct pack *pack, *safe;
-	net_node_t devs;
 	uint32_t type;
 	struct pnet_pack *skb_pack;
 
@@ -64,8 +63,7 @@ static void pnet_rx_action(struct softirq_action *action) {
 		if ((type & 3)  == NET_TYPE) {
 			skb_pack = pnet_pack_create(pack->data, 0, NET_TYPE);
 
-			devs = pnet_get_module("devs entry");
-			skb_pack->node = devs;
+			skb_pack->node = pnet_get_module("devs entry");
 
 			pnet_entry(skb_pack);
 		} else {

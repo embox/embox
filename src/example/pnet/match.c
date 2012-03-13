@@ -12,7 +12,7 @@
  */
 
 
-#include <pnet/match.h>
+#include <pnet/netfilter/match_lin.h>
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/repo.h>

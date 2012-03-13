@@ -6,7 +6,7 @@
  * @author Alexander Kalmuk
  */
 
-#include <pnet/match.h>
+#include <pnet/netfilter/match_lin.h>
 #include <pnet/core.h>
 #include <pnet/types.h>
 #include <pnet/node.h>

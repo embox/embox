@@ -3,11 +3,11 @@
  * @brief
  *
  * @date 24.10.11
- * @Alexander Kalmuk
+ * @author Alexander Kalmuk
  */
 
-#ifndef PNET_MATCH_H_
-#define PNET_MATCH_H_
+#ifndef PNET_MATCH_LIN_H_
+#define PNET_MATCH_LIN_H_
 
 #include <pnet/types.h>
 #include <net/ip.h>
@@ -16,6 +16,7 @@
 #include <net/skbuff.h>
 #include <pnet/core.h>
 #include <net/in.h>
+#include <pnet/netfilter/match.h>
 
 #define ETH_P_IP_REV	0x8
 
@@ -94,8 +95,8 @@ static inline int pnet_add_new_rx_rule(match_rule_t new_rule, net_node_matcher_t
 
 extern net_node_matcher_t pnet_get_node_matcher(void);
 
-extern int match(struct pnet_pack *pack);
+extern int match_lin(struct pnet_pack *pack);
 
 #define MATCH_SUCCESS 0
 
-#endif /* PNET_MATCH_H_ */
+#endif /* PNET_MATCH_LIN_H_ */

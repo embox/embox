@@ -10,9 +10,12 @@
 #include <pnet/node.h>
 #include <pnet/repo.h>
 #include <pnet/pnet_pack.h>
+#include <net/skbuff.h>
 
 static int stamp = 1;
 static void print_pack(struct pnet_pack *pack) {
+	struct sk_buff *skb;
+
 	printf("%d: ", stamp++);
 	switch(pack->dir) {
 	case PNET_PACK_DIRECTION_RX:
@@ -22,8 +25,8 @@ static void print_pack(struct pnet_pack *pack) {
 		printf("TX");
 		break;
 	};
-
-	printf(": %d bytes\n", pack->skb->len);
+	skb = (struct sk_buff *) pack->data;
+	printf(": %d bytes\n", skb->len);
 }
 
 static int net_info_tx_hnd(struct pnet_pack *pack) {
