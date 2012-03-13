@@ -154,3 +154,9 @@ module example {
 	depends embox.framework.example
 	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
 }
+
+module log {
+	source "log.c"
+	depends LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}

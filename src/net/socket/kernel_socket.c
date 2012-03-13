@@ -97,7 +97,7 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 	/* try to bind */
 	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
 	if(res){  /* If something went wrong */
-		debug_printf("error while binding socket\n");
+		debug_printf("error while binding socket", "kernel_sockets", "kernel_socket_bind");
 		sk_set_connection_state(sock->sk, UNCONNECTED);  /* Set the state to UNCONNECTED */
 	}else
 		sk_set_connection_state(sock->sk, BOUND);  /* Everything turned out fine */
@@ -113,7 +113,7 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 	/* try to listen */
 	res = sock->ops->listen(sock, backlog);
 	if(res){  /* If something went wrong */
-		debug_printf("error while listening on socket\n");
+		debug_printf("error while listening on socket", "kernel_sockets", "kernel_socket_bind");
 		sk_set_connection_state(sock->sk, UNCONNECTED);  /* Set the state to UNCONNECTEd */
 	}else
 		sk_set_connection_state(sock->sk, LISTENING);  /* Everything turned out fine */
@@ -133,7 +133,7 @@ int kernel_socket_accept(struct socket *sock, struct sockaddr *addr, socklen_t *
 	/* try to accept */
 	res = sock->ops->accept(sock, addr, addrlen);
 	if(res)  /* If something went wrong */
-		debug_printf("error while accepting on socket\n");
+		debug_printf("error while accepting on socket", "kernel_sockets", "kernel_socket_bind");
 	else
 		sk_set_connection_state(sock->sk, ESTABLISHED);  /* Everything turned out fine */
 	return res;
@@ -148,7 +148,7 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 	if(!sk_is_bound(sock->sk)){
 		res = kernel_socket_bind(sock, addr, addrlen);  /* First try to bind */
 		if(res){  /* if something went wrong notify and returnx */
-			debug_printf("socket was unconnected and bind returned error\n");
+			debug_printf("socket was unconnected and bind returned error", "kernel_sockets", "kernel_socket_bind");
 			sk_set_connection_state(sock->sk, UNCONNECTED);
 			return res;
 		}
@@ -158,7 +158,7 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 	sk_set_connection_state(sock->sk, CONNECTING);
 	res = sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
 	if(!res){  /* smth's wrong */
-		debug_printf("socket was unable to connect\n");
+		debug_printf("socket was unable to connect", "kernel_sockets", "kernel_socket_bind");
 		sk_set_connection_state(sock->sk, BOUND); /* if here => socket was BOUND*/
 		return res;
 	}else
