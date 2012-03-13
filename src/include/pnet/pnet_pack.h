@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief
+ * @brief Interface for creation of different types of pnet packet
  *
  * @date 02.03.2012
  * @author Anton Bondarev
@@ -28,11 +28,9 @@ enum PNET_PACK_TYPE {
 	extern const struct pnet_pack_desc __pnet_pack_registry[]; \
 	ARRAY_SPREAD_ADD(__pnet_pack_registry, {ptype,fcreate,fdestroy});
 
-
-#define pnet_pack_destroy(pack) \
-		__pnet_pack_destroy(pack, pack->type)
-
 extern struct pnet_pack *pnet_pack_create(void *buff, size_t size, uint32_t type);
-extern void __pnet_pack_destroy(struct pnet_pack *pack, uint32_t type);
+
+extern void pnet_pack_destroy(struct pnet_pack *pack);
+
 
 #endif /* PNET_PACK_H_ */
