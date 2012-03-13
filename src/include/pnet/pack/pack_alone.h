@@ -15,12 +15,7 @@ struct pnet_pack_data {
 };
 
 #include <pnet/pnet_pack.h>
-//struct pnet_pack {
-//	struct pnet_pack_data *data;
-//	enum PNET_PACK_DIRECTION dir;
-//	struct net_node *node;
-//	uint32_t type;
-//};
+
 
 static inline void *pnet_pack_get_data(struct pnet_pack *pack) {
 	struct pnet_pack_data *data = pack->data;
