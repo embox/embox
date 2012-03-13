@@ -7,14 +7,14 @@
  */
 
 #include <string.h>
+#include <mem/objalloc.h>
+#include <embox/unit.h>
 
 #include <net/skbuff.h>
+
 #include <pnet/core.h>
-
-#include <mem/objalloc.h>
-
-#include <embox/unit.h>
 #include <pnet/pnet_pack.h>
+#include <pnet/pack/pack_skbuf.h>
 
 OBJALLOC_DEF(net_packs, struct pnet_pack, CONFIG_PNET_PACKETS_QUANTITY);
 

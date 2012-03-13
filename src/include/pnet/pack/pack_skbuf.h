@@ -19,7 +19,7 @@ static inline void *pnet_pack_get_data(struct pnet_pack *pack) {
 
 static inline int pnet_pack_get_len(struct pnet_pack *pack) {
 	struct sk_buff *skb = pack->data;
-	return pack->skb->len;
+	return skb->len;
 }
 
 #endif

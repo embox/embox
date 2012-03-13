@@ -1,7 +1,7 @@
 package embox.pnet.core.pack
 
 module pack_skbuf {
-	source "pack.c", "pack_skbuf.h"
+	source "pack.c"
 	depends embox.net.core
 }
 

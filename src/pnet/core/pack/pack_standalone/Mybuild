@@ -1,5 +1,5 @@
 package embox.pnet.core.pack
 
 module pack_standalone {
-	source "pack_alone.c", "pack_alone.h"
+	source "pack_alone.c"
 }
