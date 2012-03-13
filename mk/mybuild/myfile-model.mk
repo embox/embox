@@ -70,14 +70,6 @@ endef
 # The following features are defined:
 #   - reference 'features'
 #
-# The following features and operations are inherited from 'Extendable':
-#   - reference 'subTypes'
-#   - reference 'superType'
-#   - reference 'allSubTypes'
-#   - reference 'allSuperTypes'
-#   - operation 'isSubTypeOf'
-#   - operation 'isSuperTypeOf'
-#
 # The following features are inherited from 'Entity':
 #   - reference 'package'
 #
@@ -88,9 +80,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyInterface
-	# Extends 'MyEntity', 'MyExtendable' classes.
+	# Extends 'MyEntity' class.
 	$(eobject MyFile_Interface,
-		MyInterface,MyEntity MyExtendable,)
+		MyInterface,MyEntity,)
 
 	# Property 'features... : MyFeature'.
 	$(eobject-reference MyFile_Interface_features,
@@ -109,14 +101,6 @@ endef
 #   - reference 'providedBy'
 #   - reference 'requiredBy'
 #
-# The following features and operations are inherited from 'Extendable':
-#   - reference 'subTypes'
-#   - reference 'superType'
-#   - reference 'allSubTypes'
-#   - reference 'allSuperTypes'
-#   - operation 'isSubTypeOf'
-#   - operation 'isSuperTypeOf'
-#
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
@@ -124,9 +108,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyFeature
-	# Extends 'ENamedObject', 'MyExtendable' classes.
+	# Extends 'ENamedObject' class.
 	$(eobject MyFile_Feature,
-		MyFeature,ENamedObject MyExtendable,)
+		MyFeature,ENamedObject,)
 
 	# Property 'interface : MyInterface'.
 	$(eobject-reference MyFile_Feature_interface,
@@ -150,7 +134,7 @@ endef
 #
 # Model object 'Module'.
 #
-# The following features are defined:
+# The following features and operations are defined:
 #   - attribute 'static'
 #   - attribute 'abstract'
 #   - reference 'depends'
@@ -162,8 +146,6 @@ endef
 #   - attribute 'flags'
 #   - reference 'makeRules'
 #   - reference 'options'
-#
-# The following features and operations are inherited from 'Extendable':
 #   - reference 'subTypes'
 #   - reference 'superType'
 #   - reference 'allSubTypes'
@@ -181,9 +163,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyModule
-	# Extends 'MyEntity', 'MyExtendable' classes.
+	# Extends 'MyEntity' class.
 	$(eobject MyFile_Module,
-		MyModule,MyEntity MyExtendable,)
+		MyModule,MyEntity,)
 
 	# Property 'isStatic'.
 	$(eobject-attribute MyFile_Module_isStatic,
@@ -231,77 +213,50 @@ define class-MyModule
 
 	# Property 'options : MyOption'.
 	$(eobject-reference MyFile_Module_options,
-		options,MyOption,module,changeable containment)
+		options,MyOption,,changeable containment)
 
-	# PROTECTED REGION ID(Module) ENABLED START
-	# PROTECTED REGION END
-endef
-
-#
-# Model object 'Extendable'.
-#
-# The following features and operations are defined:
-#   - reference 'subTypes'
-#   - reference 'superType'
-#   - reference 'allSubTypes'
-#   - reference 'allSuperTypes'
-#   - operation 'isSubTypeOf'
-#   - operation 'isSuperTypeOf'
-#
-# The following features and operations are inherited from 'ENamedObject':
-#   - attribute 'name'
-#   - attribute 'qualifiedName'
-#   - attribute 'origin'
-#   - operation 'eInverseResolvedLinks'
-#
-define class-MyExtendable # abstract
-	# Extends 'ENamedObject' class.
-	$(eobject MyFile_Extendable,
-		MyExtendable,ENamedObject,abstract)
-
-	# Property 'subTypes... : MyExtendable'.
+	# Property 'subTypes... : MyModule'.
 	# Property 'subTypes_links... : ELink'.
-	$(eobject-reference MyFile_Extendable_subTypes,
-		subTypes,MyExtendable,superType,changeable many linkable)
+	$(eobject-reference MyFile_Module_subTypes,
+		subTypes,MyModule,superType,changeable many linkable)
 
-	# Property 'superType : MyExtendable'.
+	# Property 'superType : MyModule'.
 	# Property 'superType_link : ELink'.
-	$(eobject-reference MyFile_Extendable_superType,
-		superType,MyExtendable,subTypes,changeable linkable)
+	$(eobject-reference MyFile_Module_superType,
+		superType,MyModule,subTypes,changeable linkable)
 
 	# Reference 'allSubTypes' [0..*]: bidirectional, derived, read-only.
-	$(property allSubTypes... : MyExtendable)
-	# PROTECTED REGION ID(Extendable_allSubTypes) ENABLED START
+	$(property allSubTypes... : MyModule)
+	# PROTECTED REGION ID(Module_allSubTypes) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(getter allSubTypes,
-#		$(error $0: NIY))
+	$(getter allSubTypes,
+		$(error $0: NIY))
 	# PROTECTED REGION END
 
 	# Reference 'allSuperTypes' [0..*]: bidirectional, derived, read-only.
-	$(property allSuperTypes... : MyExtendable)
-	# PROTECTED REGION ID(Extendable_allSuperTypes) ENABLED START
+	$(property allSuperTypes... : MyModule)
+	# PROTECTED REGION ID(Module_allSuperTypes) ENABLED START
 	$(getter allSuperTypes,
 		$(get superType) $(foreach s,$(get superType),$(get s->allSuperTypes)))
 	# PROTECTED REGION END
 
 	# Method 'isSubTypeOf'.
-	#   1. another : MyExtendable
-	# PROTECTED REGION ID(Extendable_isSubTypeOf) ENABLED START
+	#   1. another : MyModule
+	# PROTECTED REGION ID(Module_isSubTypeOf) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(method isSubTypeOf,
 #		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
 	# Method 'isSuperTypeOf'.
-	#   1. another : MyExtendable
-	# PROTECTED REGION ID(Extendable_isSuperTypeOf) ENABLED START
+	#   1. another : MyModule
+	# PROTECTED REGION ID(Module_isSuperTypeOf) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(method isSuperTypeOf,
-#		$(error $0($1): NIY))
+	$(method isSuperTypeOf,
+		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(Extendable) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION ID(Module) ENABLED START
 	# PROTECTED REGION END
 endef
 
@@ -366,8 +321,7 @@ endef
 # Model object 'Option'.
 #
 # The following features are defined:
-#   - reference 'module'
-#   - attribute 'hasDefaultValue'
+#   - reference 'defaultValue'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -380,13 +334,9 @@ define class-MyOption # abstract
 	$(eobject MyFile_Option,
 		MyOption,ENamedObject,abstract)
 
-	# Property 'module : MyModule'.
-	$(eobject-reference MyFile_Option_module,
-		module,MyModule,options,changeable container)
-
-	# Property 'isHasDefaultValue'.
-	$(eobject-attribute MyFile_Option_isHasDefaultValue,
-		isHasDefaultValue,changeable)
+	# Property 'defaultValue : MyOptionValue'.
+	$(eobject-reference MyFile_Option_defaultValue,
+		defaultValue,MyOptionValue,,changeable)
 
 	# PROTECTED REGION ID(Option) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -396,12 +346,10 @@ endef
 #
 # Model object 'StringOption'.
 #
-# The following features are defined:
-#   - attribute 'defaultValue'
+# No features or operations defined.
 #
 # The following features are inherited from 'Option':
-#   - reference 'module'
-#   - attribute 'hasDefaultValue'
+#   - reference 'defaultValue'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -414,11 +362,61 @@ define class-MyStringOption
 	$(eobject MyFile_StringOption,
 		MyStringOption,MyOption,)
 
-	# Property 'defaultValue'.
-	$(eobject-attribute MyFile_StringOption_defaultValue,
-		defaultValue,changeable)
-
 	# PROTECTED REGION ID(StringOption) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'OptionValue'.
+#
+# The following features and operations are defined:
+#   - attribute 'value'
+#   - operation 'toString'
+#
+define class-MyOptionValue # abstract
+	$(eobject MyFile_OptionValue,
+		MyOptionValue,,abstract)
+
+	# Property 'value'.
+	$(eobject-attribute MyFile_OptionValue_value,
+		value,changeable)
+
+	# Method 'toString'.
+	# PROTECTED REGION ID(OptionValue_toString) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method toString,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(OptionValue) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'StringOptionValue'.
+#
+# The following operations are defined:
+#   - operation 'toString'
+#
+# The following features and operations are inherited from 'OptionValue':
+#   - attribute 'value'
+#   - operation 'toString'
+#
+define class-MyStringOptionValue
+	# Extends 'MyOptionValue' class.
+	$(eobject MyFile_StringOptionValue,
+		MyStringOptionValue,MyOptionValue,)
+
+	# Method 'toString'.
+	# PROTECTED REGION ID(StringOptionValue_toString) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method toString,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(StringOptionValue) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef

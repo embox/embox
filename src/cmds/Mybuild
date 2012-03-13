@@ -3,6 +3,7 @@ package embox.cmd
 import embox.compat.posix.LibPosix
 
 module ls {
+    option opt1 : string = "default"
 	source "ls.c"
 	depends LibPosix
 	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"

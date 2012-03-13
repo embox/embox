@@ -61,17 +61,14 @@ MyFile_Module_makeRules := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_makeRules)
 MyFile_Module_options := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_options)
-
-MyFile_Extendable := \
-	$(call eMetaClassCreate,$(MyFile),MyFile_Extendable)
-MyFile_Extendable_subTypes := \
-	$(call eMetaReferenceCreate,$(MyFile_Extendable),MyFile_Extendable_subTypes)
-MyFile_Extendable_superType := \
-	$(call eMetaReferenceCreate,$(MyFile_Extendable),MyFile_Extendable_superType)
-MyFile_Extendable_allSubTypes := \
-	$(call eMetaReferenceCreate,$(MyFile_Extendable),MyFile_Extendable_allSubTypes)
-MyFile_Extendable_allSuperTypes := \
-	$(call eMetaReferenceCreate,$(MyFile_Extendable),MyFile_Extendable_allSuperTypes)
+MyFile_Module_subTypes := \
+	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_subTypes)
+MyFile_Module_superType := \
+	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_superType)
+MyFile_Module_allSubTypes := \
+	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_allSubTypes)
+MyFile_Module_allSuperTypes := \
+	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_allSuperTypes)
 
 MyFile_File := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_File)
@@ -89,15 +86,19 @@ MyFile_MakeRule_prerequisites := \
 
 MyFile_Option := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Option)
-MyFile_Option_module := \
-	$(call eMetaReferenceCreate,$(MyFile_Option),MyFile_Option_module)
-MyFile_Option_isHasDefaultValue := \
-	$(call eMetaAttributeCreate,$(MyFile_Option),MyFile_Option_isHasDefaultValue)
+MyFile_Option_defaultValue := \
+	$(call eMetaReferenceCreate,$(MyFile_Option),MyFile_Option_defaultValue)
 
 MyFile_StringOption := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_StringOption)
-MyFile_StringOption_defaultValue := \
-	$(call eMetaAttributeCreate,$(MyFile_StringOption),MyFile_StringOption_defaultValue)
+
+MyFile_OptionValue := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_OptionValue)
+MyFile_OptionValue_value := \
+	$(call eMetaAttributeCreate,$(MyFile_OptionValue),MyFile_OptionValue_value)
+
+MyFile_StringOptionValue := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_StringOptionValue)
 
 # Initializes the objects and relations between them.
 define __myFile_init
@@ -110,15 +111,15 @@ define __myFile_init
 	$(call eMetaClassInit,$(MyFile_Entity),Entity,$(EModel_ENamedObject),abstract)
 	$(call eMetaReferenceInit,$(MyFile_Entity_package),package,$(MyFile_Package),$(MyFile_Package_entities),changeable container)
 
-	$(call eMetaClassInit,$(MyFile_Interface),Interface,$(MyFile_Entity) $(MyFile_Extendable),)
+	$(call eMetaClassInit,$(MyFile_Interface),Interface,$(MyFile_Entity),)
 	$(call eMetaReferenceInit,$(MyFile_Interface_features),features,$(MyFile_Feature),$(MyFile_Feature_interface),changeable many containment)
 
-	$(call eMetaClassInit,$(MyFile_Feature),Feature,$(EModel_ENamedObject) $(MyFile_Extendable),)
+	$(call eMetaClassInit,$(MyFile_Feature),Feature,$(EModel_ENamedObject),)
 	$(call eMetaReferenceInit,$(MyFile_Feature_interface),interface,$(MyFile_Interface),$(MyFile_Interface_features),changeable container)
 	$(call eMetaReferenceInit,$(MyFile_Feature_providedBy),providedBy,$(MyFile_Module),$(MyFile_Module_provides),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Feature_requiredBy),requiredBy,$(MyFile_Module),$(MyFile_Module_requires),changeable many linkable)
 
-	$(call eMetaClassInit,$(MyFile_Module),Module,$(MyFile_Entity) $(MyFile_Extendable),)
+	$(call eMetaClassInit,$(MyFile_Module),Module,$(MyFile_Entity),)
 	$(call eMetaAttributeInit,$(MyFile_Module_isStatic),static,changeable)
 	$(call eMetaAttributeInit,$(MyFile_Module_isAbstract),abstract,changeable)
 	$(call eMetaReferenceInit,$(MyFile_Module_depends),depends,$(MyFile_Module),$(MyFile_Module_dependent),changeable many linkable)
@@ -129,13 +130,11 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_Module_objects),objects,$(MyFile_File),,changeable many containment)
 	$(call eMetaAttributeInit,$(MyFile_Module_flags),flags,changeable)
 	$(call eMetaReferenceInit,$(MyFile_Module_makeRules),makeRules,$(MyFile_MakeRule),,changeable many containment)
-	$(call eMetaReferenceInit,$(MyFile_Module_options),options,$(MyFile_Option),$(MyFile_Option_module),changeable containment)
-
-	$(call eMetaClassInit,$(MyFile_Extendable),Extendable,$(EModel_ENamedObject),abstract)
-	$(call eMetaReferenceInit,$(MyFile_Extendable_subTypes),subTypes,$(MyFile_Extendable),$(MyFile_Extendable_superType),changeable many linkable)
-	$(call eMetaReferenceInit,$(MyFile_Extendable_superType),superType,$(MyFile_Extendable),$(MyFile_Extendable_subTypes),changeable linkable)
-	$(call eMetaReferenceInit,$(MyFile_Extendable_allSubTypes),allSubTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSuperTypes),derived many)
-	$(call eMetaReferenceInit,$(MyFile_Extendable_allSuperTypes),allSuperTypes,$(MyFile_Extendable),$(MyFile_Extendable_allSubTypes),derived many)
+	$(call eMetaReferenceInit,$(MyFile_Module_options),options,$(MyFile_Option),,changeable containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_subTypes),subTypes,$(MyFile_Module),$(MyFile_Module_superType),changeable many linkable)
+	$(call eMetaReferenceInit,$(MyFile_Module_superType),superType,$(MyFile_Module),$(MyFile_Module_subTypes),changeable linkable)
+	$(call eMetaReferenceInit,$(MyFile_Module_allSubTypes),allSubTypes,$(MyFile_Module),$(MyFile_Module_allSuperTypes),derived many)
+	$(call eMetaReferenceInit,$(MyFile_Module_allSuperTypes),allSuperTypes,$(MyFile_Module),$(MyFile_Module_allSubTypes),derived many)
 
 	$(call eMetaClassInit,$(MyFile_File),File,,)
 	$(call eMetaAttributeInit,$(MyFile_File_fileName),fileName,changeable)
@@ -146,11 +145,14 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_MakeRule_prerequisites),prerequisites,$(MyFile_File),,changeable many containment)
 
 	$(call eMetaClassInit,$(MyFile_Option),Option,$(EModel_ENamedObject),abstract)
-	$(call eMetaReferenceInit,$(MyFile_Option_module),module,$(MyFile_Module),$(MyFile_Module_options),changeable container)
-	$(call eMetaAttributeInit,$(MyFile_Option_isHasDefaultValue),hasDefaultValue,changeable)
+	$(call eMetaReferenceInit,$(MyFile_Option_defaultValue),defaultValue,$(MyFile_OptionValue),,changeable)
 
 	$(call eMetaClassInit,$(MyFile_StringOption),StringOption,$(MyFile_Option),)
-	$(call eMetaAttributeInit,$(MyFile_StringOption_defaultValue),defaultValue,changeable)
+
+	$(call eMetaClassInit,$(MyFile_OptionValue),OptionValue,,abstract)
+	$(call eMetaAttributeInit,$(MyFile_OptionValue_value),value,changeable)
+
+	$(call eMetaClassInit,$(MyFile_StringOptionValue),StringOptionValue,$(MyFile_OptionValue),)
 
 endef # __myFile_init
 
@@ -183,12 +185,10 @@ define __myFile_bind
 	$(call eMetaFeatureBind,$(MyFile_Module_flags),flags)
 	$(call eMetaFeatureBind,$(MyFile_Module_makeRules),makeRules)
 	$(call eMetaFeatureBind,$(MyFile_Module_options),options)
-
-	$(call eMetaClassBind,$(MyFile_Extendable),MyExtendable)
-	$(call eMetaFeatureBind,$(MyFile_Extendable_subTypes),subTypes)
-	$(call eMetaFeatureBind,$(MyFile_Extendable_superType),superType)
-	$(call eMetaFeatureBind,$(MyFile_Extendable_allSubTypes),allSubTypes)
-	$(call eMetaFeatureBind,$(MyFile_Extendable_allSuperTypes),allSuperTypes)
+	$(call eMetaFeatureBind,$(MyFile_Module_subTypes),subTypes)
+	$(call eMetaFeatureBind,$(MyFile_Module_superType),superType)
+	$(call eMetaFeatureBind,$(MyFile_Module_allSubTypes),allSubTypes)
+	$(call eMetaFeatureBind,$(MyFile_Module_allSuperTypes),allSuperTypes)
 
 	$(call eMetaClassBind,$(MyFile_File),MyFile)
 	$(call eMetaFeatureBind,$(MyFile_File_fileName),fileName)
@@ -199,11 +199,14 @@ define __myFile_bind
 	$(call eMetaFeatureBind,$(MyFile_MakeRule_prerequisites),prerequisites)
 
 	$(call eMetaClassBind,$(MyFile_Option),MyOption)
-	$(call eMetaFeatureBind,$(MyFile_Option_module),module)
-	$(call eMetaFeatureBind,$(MyFile_Option_isHasDefaultValue),isHasDefaultValue)
+	$(call eMetaFeatureBind,$(MyFile_Option_defaultValue),defaultValue)
 
 	$(call eMetaClassBind,$(MyFile_StringOption),MyStringOption)
-	$(call eMetaFeatureBind,$(MyFile_StringOption_defaultValue),defaultValue)
+
+	$(call eMetaClassBind,$(MyFile_OptionValue),MyOptionValue)
+	$(call eMetaFeatureBind,$(MyFile_OptionValue_value),value)
+
+	$(call eMetaClassBind,$(MyFile_StringOptionValue),MyStringOptionValue)
 
 endef # __myFile_bind
 

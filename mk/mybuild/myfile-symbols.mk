@@ -8,6 +8,8 @@ include mk/mybuild/common-symbols.mk
 # Optimized contructors for constant terminals (i.e. keywords and punctuation).
 #
 
+$(gold_grammar)_create-LParan           := (
+$(gold_grammar)_create-RParan           := )
 $(gold_grammar)_create-Comma            := ,
 $(gold_grammar)_create-Dot              := .
 $(gold_grammar)_create-DotTimes         := .*
@@ -15,15 +17,15 @@ $(gold_grammar)_create-Colon            := :
 $(gold_grammar)_create-LBrace           := {
 $(gold_grammar)_create-RBrace           := }
 $(gold_grammar)_create-Eq               := =
+$(gold_grammar)_create-At               := @
 $(gold_grammar)_create-abstract         := abstract
+$(gold_grammar)_create-annotation       := annotation
 $(gold_grammar)_create-boolean          := boolean
 $(gold_grammar)_create-depends          := depends
 $(gold_grammar)_create-extends          := extends
 $(gold_grammar)_create-feature          := feature
-$(gold_grammar)_create-flags            := flags
 $(gold_grammar)_create-import           := import
 $(gold_grammar)_create-interface        := interface
-$(gold_grammar)_create-make             := make
 $(gold_grammar)_create-module           := module
 $(gold_grammar)_create-number           := number
 $(gold_grammar)_create-object           := object
@@ -44,9 +46,12 @@ $(gold_grammar)_name_of-Comma           := ','
 $(gold_grammar)_name_of-Dot             := '.'
 $(gold_grammar)_name_of-DotTimes        := '.*'
 $(gold_grammar)_name_of-Colon           := ':'
+$(gold_grammar)_name_of-LParan          := '('
+$(gold_grammar)_name_of-RParan          := ')'
 $(gold_grammar)_name_of-LBrace          := '{'
 $(gold_grammar)_name_of-RBrace          := '}'
 $(gold_grammar)_name_of-Eq              := '='
+$(gold_grammar)_name_of-At              := '@'
 $(gold_grammar)_name_of-BooleanLiteral  := Boolean Literal
 $(gold_grammar)_name_of-NumberLiteral   := Number Literal
 $(gold_grammar)_name_of-StringLiteral   := String Literal
