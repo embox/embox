@@ -9,7 +9,6 @@
 #include <types.h>
 #include <string.h>
 #include <unistd.h>
-//#include <hal/reg.h>
 #include <kernel/prom_printf.h>
 
 #include <drivers/at91sam7s256.h>
@@ -18,11 +17,13 @@
 #include <drivers/blue_core4.h>
 #include <kernel/timer.h>
 
-#include <pnet/core.h>
-#include <pnet/repo.h>
 #include <embox/unit.h>
 
+
+#include <pnet/core.h>
+#include <pnet/repo.h>
 #include <pnet/pnet_pack.h>
+#include <pnet/pack/pack_alone.h>
 
 //TODO may be move to lego nxt header?
 //just short names, definitions in config
