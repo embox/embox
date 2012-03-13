@@ -9,11 +9,23 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="imports" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Type" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
+  <eClassifiers xsi:type="ecore:EClass" name="Type" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject #//AnnotationTarget">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fileContentRoot" eType="#//FileContentRoot"
         eOpposite="#//FileContentRoot/types"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AnnotationType" eSuperTypes="#//Type"/>
+  <eClassifiers xsi:type="ecore:EClass" name="AnnotationType" eSuperTypes="#//Type">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
+        eType="#//Option" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Annotation">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//AnnotationType"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//AnnotationTarget"
+        eOpposite="#//AnnotationTarget/annotations"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AnnotationTarget" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//Annotation" eOpposite="#//Annotation/target"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="#//Type">
     <eStructuralFeatures xsi:type="ecore:EReference" name="features" upperBound="-1"
         eType="#//Feature" containment="true" eOpposite="#//Feature/interface"/>

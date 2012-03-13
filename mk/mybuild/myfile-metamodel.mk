@@ -25,6 +25,20 @@ MyFile_Type_fileContentRoot := \
 
 MyFile_AnnotationType := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_AnnotationType)
+MyFile_AnnotationType_options := \
+	$(call eMetaReferenceCreate,$(MyFile_AnnotationType),MyFile_AnnotationType_options)
+
+MyFile_Annotation := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_Annotation)
+MyFile_Annotation_type := \
+	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_type)
+MyFile_Annotation_target := \
+	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_target)
+
+MyFile_AnnotationTarget := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_AnnotationTarget)
+MyFile_AnnotationTarget_annotations := \
+	$(call eMetaReferenceCreate,$(MyFile_AnnotationTarget),MyFile_AnnotationTarget_annotations)
 
 MyFile_Interface := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Interface)
@@ -108,10 +122,18 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_FileContentRoot_types),types,$(MyFile_Type),$(MyFile_Type_fileContentRoot),changeable many containment)
 	$(call eMetaAttributeInit,$(MyFile_FileContentRoot_imports),imports,changeable many)
 
-	$(call eMetaClassInit,$(MyFile_Type),Type,$(EModel_ENamedObject),abstract)
+	$(call eMetaClassInit,$(MyFile_Type),Type,$(EModel_ENamedObject) $(MyFile_AnnotationTarget),abstract)
 	$(call eMetaReferenceInit,$(MyFile_Type_fileContentRoot),fileContentRoot,$(MyFile_FileContentRoot),$(MyFile_FileContentRoot_types),changeable container)
 
 	$(call eMetaClassInit,$(MyFile_AnnotationType),AnnotationType,$(MyFile_Type),)
+	$(call eMetaReferenceInit,$(MyFile_AnnotationType_options),options,$(MyFile_Option),,changeable many containment)
+
+	$(call eMetaClassInit,$(MyFile_Annotation),Annotation,,)
+	$(call eMetaReferenceInit,$(MyFile_Annotation_type),type,$(MyFile_AnnotationType),,changeable linkable)
+	$(call eMetaReferenceInit,$(MyFile_Annotation_target),target,$(MyFile_AnnotationTarget),$(MyFile_AnnotationTarget_annotations),changeable)
+
+	$(call eMetaClassInit,$(MyFile_AnnotationTarget),AnnotationTarget,,abstract)
+	$(call eMetaReferenceInit,$(MyFile_AnnotationTarget_annotations),annotations,$(MyFile_Annotation),$(MyFile_Annotation_target),changeable many)
 
 	$(call eMetaClassInit,$(MyFile_Interface),Interface,$(MyFile_Type),)
 	$(call eMetaReferenceInit,$(MyFile_Interface_features),features,$(MyFile_Feature),$(MyFile_Feature_interface),changeable many containment)
@@ -167,6 +189,14 @@ define __myFile_bind
 	$(call eMetaFeatureBind,$(MyFile_Type_fileContentRoot),fileContentRoot)
 
 	$(call eMetaClassBind,$(MyFile_AnnotationType),MyAnnotationType)
+	$(call eMetaFeatureBind,$(MyFile_AnnotationType_options),options)
+
+	$(call eMetaClassBind,$(MyFile_Annotation),MyAnnotation)
+	$(call eMetaFeatureBind,$(MyFile_Annotation_type),type)
+	$(call eMetaFeatureBind,$(MyFile_Annotation_target),target)
+
+	$(call eMetaClassBind,$(MyFile_AnnotationTarget),MyAnnotationTarget)
+	$(call eMetaFeatureBind,$(MyFile_AnnotationTarget_annotations),annotations)
 
 	$(call eMetaClassBind,$(MyFile_Interface),MyInterface)
 	$(call eMetaFeatureBind,$(MyFile_Interface_features),features)

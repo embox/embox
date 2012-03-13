@@ -44,6 +44,9 @@ endef
 # The following features are defined:
 #   - reference 'fileContentRoot'
 #
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
@@ -51,9 +54,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyType # abstract
-	# Extends 'ENamedObject' class.
+	# Extends 'ENamedObject', 'MyAnnotationTarget' classes.
 	$(eobject MyFile_Type,
-		MyType,ENamedObject,abstract)
+		MyType,ENamedObject MyAnnotationTarget,abstract)
 
 	# Property 'fileContentRoot : MyFileContentRoot'.
 	$(eobject-reference MyFile_Type_fileContentRoot,
@@ -67,10 +70,14 @@ endef
 #
 # Model object 'AnnotationType'.
 #
-# No features or operations defined.
+# The following features are defined:
+#   - reference 'options'
 #
 # The following features are inherited from 'Type':
 #   - reference 'fileContentRoot'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -83,7 +90,55 @@ define class-MyAnnotationType
 	$(eobject MyFile_AnnotationType,
 		MyAnnotationType,MyType,)
 
+	# Property 'options... : MyOption'.
+	$(eobject-reference MyFile_AnnotationType_options,
+		options,MyOption,,changeable many containment)
+
 	# PROTECTED REGION ID(AnnotationType) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'Annotation'.
+#
+# The following features are defined:
+#   - reference 'type'
+#   - reference 'target'
+#
+define class-MyAnnotation
+	$(eobject MyFile_Annotation,
+		MyAnnotation,,)
+
+	# Property 'type : MyAnnotationType'.
+	# Property 'type_link : ELink'.
+	$(eobject-reference MyFile_Annotation_type,
+		type,MyAnnotationType,,changeable linkable)
+
+	# Property 'target : MyAnnotationTarget'.
+	$(eobject-reference MyFile_Annotation_target,
+		target,MyAnnotationTarget,annotations,changeable)
+
+	# PROTECTED REGION ID(Annotation) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'AnnotationTarget'.
+#
+# The following features are defined:
+#   - reference 'annotations'
+#
+define class-MyAnnotationTarget # abstract
+	$(eobject MyFile_AnnotationTarget,
+		MyAnnotationTarget,,abstract)
+
+	# Property 'annotations... : MyAnnotation'.
+	$(eobject-reference MyFile_AnnotationTarget_annotations,
+		annotations,MyAnnotation,target,changeable many)
+
+	# PROTECTED REGION ID(AnnotationTarget) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
@@ -96,6 +151,9 @@ endef
 #
 # The following features are inherited from 'Type':
 #   - reference 'fileContentRoot'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -178,6 +236,9 @@ endef
 #
 # The following features are inherited from 'Type':
 #   - reference 'fileContentRoot'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
