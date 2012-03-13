@@ -19,10 +19,14 @@
 #include <pnet/repo.h>
 #include <pnet/pnet_pack.h>
 
-extern int __netif_receive_skb(sk_buff_t *skb);
+static int pnet_linux_rx(struct pnet_pack *pack) {
+	struct sk_buff *skb;
 
-static int pnet_linux_rx(struct pnet_pack * pack) {
-	//__netif_receive_skb(pack->skbuf);
+	skb = (struct sk_buff *) pack->data;
+	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+
+	netif_rx_schedule(skb);
+
 	return NET_HND_SUPPRESSED;
 }
 
