@@ -1,17 +1,17 @@
 package embox.driver.net
 
 module loopback {
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "loopback.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
-	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
 
 module ne2k_pci {
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ne2k_pci.c"
 	depends embox.kernel.irq
 	depends embox.driver.pci
-	make flags "-I$(SRC_DIR)/compat/posix/include"
-	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
 
 module xemaclite {

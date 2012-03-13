@@ -1,13 +1,12 @@
 package lego_nxt.driver
 
 module nxt_lcd {
+    @IncludePath("$(PLATFORM_DIR)/lego_nxt/include")
 	source "nxt_lcd.c", "../../lib/display.c"
-	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
 }
 
 module nxt_diag_lcd extends embox.driver.diag.diag_api {
+    @IncludePath("$(PLATFORM_DIR)/lego_nxt/include")
 	source "diag.c"
-	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
 	depends lego_nxt.driver.nxt_lcd
-	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
 }

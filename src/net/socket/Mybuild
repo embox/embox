@@ -1,10 +1,10 @@
 package embox.net
 
 module socket {
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "socket.c", "socket_allocator.c", "socket_repo.c"
 	source "kernel_socket.c", "port.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
-	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
 
 module af_packet {

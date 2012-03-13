@@ -1,12 +1,12 @@
 package embox.kernel
 
 module time {
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "time.c"
 	depends clock_source, embox.kernel.timer.timer_api
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module clock_source {
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "clock_source.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }

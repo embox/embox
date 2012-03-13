@@ -1,6 +1,6 @@
 package embox.kernel
 
 module softirq {
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "softirq.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }

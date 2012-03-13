@@ -2,7 +2,6 @@ package embox.framework
 
 module proto {
 	/*FIXME mybuild make flags options */
-	make flags "-D__FRAMEWORK__"
-	source "run.c"
-	source "registry.c"
+    @DefineMacro("__FRAMEWORK__")
+	source "run.c", "registry.c"
 }

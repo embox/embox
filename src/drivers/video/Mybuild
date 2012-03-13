@@ -6,6 +6,6 @@ abstract module vga {
 }
 
 module vga_console extends vga {
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "vga_console.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }

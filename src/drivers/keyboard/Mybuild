@@ -2,6 +2,6 @@
 package embox.driver
 
 module keyboard {
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "keyboard.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }

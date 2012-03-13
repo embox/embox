@@ -3,16 +3,19 @@ package embox.kernel.thread.sched_policy
 abstract module api { }
 
 module sched_trivial extends api {
+    @IncludePath("-I$(SRC_DIR)/compat/posix/include")
 	source "sched_trivial.c", "sched_trivial.h"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module priority_based extends api {
+    @IncludePath("-I$(SRC_DIR)/compat/posix/include")
 	source "priority_based.c", "priority_based.h"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module fixedtime_sched extends api {
+    @IncludePath("-I$(SRC_DIR)/compat/posix/include")
 	source "fixedtime_sched.c", "fixedtime_sched.h"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }

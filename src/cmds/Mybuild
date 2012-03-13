@@ -3,155 +3,232 @@ package embox.cmd
 import embox.compat.posix.LibPosix
 
 module ls {
-    option opt1 : string = "default"
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ls.c"
+
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module rm {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "rm.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module cat {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "cat.c"
+
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module goto {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "goto.c"
 	depends embox.arch.interrupt
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module load {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "load.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module readelf {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "readelf.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module runelf {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "runelf.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 /*netutil */
 module arp {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "arp.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module arping {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "arping.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module ping {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ping.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module ifconfig {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ifconfig.c"
 	depends LibPosix
 	depends embox.net.core
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module route {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "route.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module tftp {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "tftp.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module version {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "version.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module man {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "man.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module help {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "help.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module mem {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "mem.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module wmem {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "wmem.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module test {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "test.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module lspci {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "lspci.c"
 	depends LibPosix, embox.driver.pci
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module lsmod {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "lsmod.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module md5sum {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "md5sum.c"
 	depends LibPosix
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module lisp {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "lisp.c"
 	depends LibPosix, third_party.lisp.lisp5000
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module ne2k_pci_probe {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ne2k_pci_probe.c"
 	depends LibPosix, embox.driver.net.ne2k_pci
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module example {
+
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "example.c"
 	depends LibPosix
 	depends embox.framework.example
-	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+
 }

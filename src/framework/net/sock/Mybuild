@@ -2,6 +2,6 @@ package embox.framework.net
 
 module sock {
 	/*FIXME mybuild make flags options */
-	make flags "-D__FRAMEWORK__"
+    @DefineMacro("__FRAMEWORK__")
 	source "core.c"
 }

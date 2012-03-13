@@ -1,6 +1,6 @@
 package embox.test.framework.mod.member
 
 module ops_test {
+    @IncludePath("-I$(SRC_DIR)/compat/posix/include")
 	source "ops_test.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
