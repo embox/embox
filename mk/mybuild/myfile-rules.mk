@@ -187,9 +187,9 @@ define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 		$(silent-foreach attr, \
 				sources \
 				flags \
-				makeRules \
-				depends_links,\
-				$(set module->$(attr),\
+				options \
+				depends_links,
+				$(set module->$(attr),
 					$(filter-patsubst $(attr)/%,%,$6)))
 
 		$(module)
@@ -233,57 +233,41 @@ $(gold_grammar)_produce-ModuleMember_object = $(addprefix $1s/,$2)
 
 # Rule: <ModuleMember> ::= option <Option>
 # Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-ModuleMember_option
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-ModuleMember_option = $(addprefix $1s/,$2)
 
 # Rule: <Option> ::= <OptionType> Identifier <OptionDefaultValue>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-Option_Identifier
-	$(gold_default_produce)# TODO Auto-generated stub!
+    $(for opt <- $(new My$1Option),
+		$(set opt->name,$2)
+		$(set opt->defaultValue,$3)
+
+		$(opt))
 endef
 
 # Rule: <OptionType> ::= string
 # Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-OptionType_string
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-OptionType_string = String
 
 # Rule: <OptionType> ::= number
 # Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-OptionType_number
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-OptionType_number = Number
 
 # Rule: <OptionType> ::= boolean
 # Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-OptionType_boolean
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-OptionType_boolean = Boolean
 
 # Rule: <OptionDefaultValue> ::= '=' <Value>
 # Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-OptionDefaultValue_Eq
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <OptionDefaultValue> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-OptionDefaultValue
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-OptionDefaultValue_Eq = $2
 
 # Rule: <Value> ::= StringLiteral
 # Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-Value_StringLiteral
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-Value_StringLiteral = $(new MyStringOptionValue,$1)
 
 # Rule: <Value> ::= NumberLiteral
 # Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-Value_NumberLiteral
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-Value_NumberLiteral = $(new MyNumberOptionValue,$1)
 
 # Rule: <Value> ::= BooleanLiteral
 # Args: 1..1 - Symbols in the RHS.

@@ -95,6 +95,9 @@ MyFile_Option_defaultValue := \
 MyFile_StringOption := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_StringOption)
 
+MyFile_NumberOption := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_NumberOption)
+
 MyFile_OptionValue := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_OptionValue)
 MyFile_OptionValue_value := \
@@ -102,6 +105,9 @@ MyFile_OptionValue_value := \
 
 MyFile_StringOptionValue := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_StringOptionValue)
+
+MyFile_NumberOptionValue := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_NumberOptionValue)
 
 # Initializes the objects and relations between them.
 define __myFile_init
@@ -135,7 +141,7 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_Module_objects),objects,$(MyFile_File),,changeable many containment)
 	$(call eMetaAttributeInit,$(MyFile_Module_flags),flags,changeable)
 	$(call eMetaReferenceInit,$(MyFile_Module_makeRules),makeRules,$(MyFile_MakeRule),,changeable many containment)
-	$(call eMetaReferenceInit,$(MyFile_Module_options),options,$(MyFile_Option),,changeable containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_options),options,$(MyFile_Option),,changeable many containment)
 	$(call eMetaReferenceInit,$(MyFile_Module_subTypes),subTypes,$(MyFile_Module),$(MyFile_Module_superType),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_superType),superType,$(MyFile_Module),$(MyFile_Module_subTypes),changeable linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_allSubTypes),allSubTypes,$(MyFile_Module),$(MyFile_Module_allSuperTypes),derived many)
@@ -150,14 +156,18 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_MakeRule_prerequisites),prerequisites,$(MyFile_File),,changeable many containment)
 
 	$(call eMetaClassInit,$(MyFile_Option),Option,$(EModel_ENamedObject),abstract)
-	$(call eMetaReferenceInit,$(MyFile_Option_defaultValue),defaultValue,$(MyFile_OptionValue),,changeable)
+	$(call eMetaReferenceInit,$(MyFile_Option_defaultValue),defaultValue,$(MyFile_OptionValue),,changeable containment)
 
 	$(call eMetaClassInit,$(MyFile_StringOption),StringOption,$(MyFile_Option),)
+
+	$(call eMetaClassInit,$(MyFile_NumberOption),NumberOption,$(MyFile_Option),)
 
 	$(call eMetaClassInit,$(MyFile_OptionValue),OptionValue,,abstract)
 	$(call eMetaAttributeInit,$(MyFile_OptionValue_value),value,changeable)
 
 	$(call eMetaClassInit,$(MyFile_StringOptionValue),StringOptionValue,$(MyFile_OptionValue),)
+
+	$(call eMetaClassInit,$(MyFile_NumberOptionValue),NumberOptionValue,$(MyFile_OptionValue),)
 
 endef # __myFile_init
 
@@ -210,10 +220,14 @@ define __myFile_bind
 
 	$(call eMetaClassBind,$(MyFile_StringOption),MyStringOption)
 
+	$(call eMetaClassBind,$(MyFile_NumberOption),MyNumberOption)
+
 	$(call eMetaClassBind,$(MyFile_OptionValue),MyOptionValue)
 	$(call eMetaFeatureBind,$(MyFile_OptionValue_value),value)
 
 	$(call eMetaClassBind,$(MyFile_StringOptionValue),MyStringOptionValue)
+
+	$(call eMetaClassBind,$(MyFile_NumberOptionValue),MyNumberOptionValue)
 
 endef # __myFile_bind
 

@@ -50,8 +50,8 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="flags" eType="ecore:EDataType emodel.ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="makeRules" upperBound="-1"
         eType="#//MakeRule" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="options" eType="#//Option"
-        containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
+        eType="#//Option" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="subTypes" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/superType"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="superType" eType="#//Module"
@@ -76,14 +76,19 @@
         eType="#//File" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="defaultValue" eType="#//OptionValue"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="defaultValue" eType="#//OptionValue"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StringOption" eSuperTypes="#//Option"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NumberOption" eSuperTypes="#//Option"/>
   <eClassifiers xsi:type="ecore:EClass" name="OptionValue" abstract="true">
     <eOperations name="toString" eType="ecore:EDataType emodel.ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType emodel.ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StringOptionValue" eSuperTypes="#//OptionValue">
+    <eOperations name="toString" eType="ecore:EDataType emodel.ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NumberOptionValue" eSuperTypes="#//OptionValue">
     <eOperations name="toString" eType="ecore:EDataType emodel.ecore#//EString"/>
   </eClassifiers>
 </ecore:EPackage>

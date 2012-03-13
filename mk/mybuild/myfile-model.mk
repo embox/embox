@@ -235,9 +235,9 @@ define class-MyModule
 	$(eobject-reference MyFile_Module_makeRules,
 		makeRules,MyMakeRule,,changeable many containment)
 
-	# Property 'options : MyOption'.
+	# Property 'options... : MyOption'.
 	$(eobject-reference MyFile_Module_options,
-		options,MyOption,,changeable containment)
+		options,MyOption,,changeable many containment)
 
 	# Property 'subTypes... : MyModule'.
 	# Property 'subTypes_links... : ELink'.
@@ -360,7 +360,7 @@ define class-MyOption # abstract
 
 	# Property 'defaultValue : MyOptionValue'.
 	$(eobject-reference MyFile_Option_defaultValue,
-		defaultValue,MyOptionValue,,changeable)
+		defaultValue,MyOptionValue,,changeable containment)
 
 	# PROTECTED REGION ID(Option) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -387,7 +387,29 @@ define class-MyStringOption
 		MyStringOption,MyOption,)
 
 	# PROTECTED REGION ID(StringOption) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'NumberOption'.
+#
+# No features or operations defined.
+#
+# The following features are inherited from 'Option':
+#   - reference 'defaultValue'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-MyNumberOption
+	# Extends 'MyOption' class.
+	$(eobject MyFile_NumberOption,
+		MyNumberOption,MyOption,)
+
+	# PROTECTED REGION ID(NumberOption) ENABLED START
 	# PROTECTED REGION END
 endef
 
@@ -441,7 +463,36 @@ define class-MyStringOptionValue
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(StringOptionValue) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+	$(if $(value 1),
+		$(set value,$1))
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'NumberOptionValue'.
+#
+# The following operations are defined:
+#   - operation 'toString'
+#
+# The following features and operations are inherited from 'OptionValue':
+#   - attribute 'value'
+#   - operation 'toString'
+#
+define class-MyNumberOptionValue
+	# Extends 'MyOptionValue' class.
+	$(eobject MyFile_NumberOptionValue,
+		MyNumberOptionValue,MyOptionValue,)
+
+	# Method 'toString'.
+	# PROTECTED REGION ID(NumberOptionValue_toString) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method toString,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(NumberOptionValue) ENABLED START
+	$(if $(value 1),
+		$(set value,$1))
 	# PROTECTED REGION END
 endef
 
