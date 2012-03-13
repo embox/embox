@@ -19,7 +19,7 @@
 OBJALLOC_DEF(net_packs, struct pnet_pack, CONFIG_PNET_PACKETS_QUANTITY);
 
 void pnet_pack_free(struct pnet_pack *pack) {
-	kfree_skb(pack->data);
+	//kfree_skb(pack->data);
 
 	objfree(&net_packs, pack);
 }
