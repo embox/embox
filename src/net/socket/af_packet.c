@@ -77,6 +77,9 @@ static int packet_create(struct socket *sock, int protocol) {
 		return -ENOMEM;
 	}
 	sock->sk = sk;
+	sock->ops = NULL;
+	sk->sk_protocol = protocol;
+
 	return ENOERR;
 }
 
@@ -84,9 +87,6 @@ static int packet_create(struct socket *sock, int protocol) {
 struct net_proto_family packet_family_ops = {
 	.family = PF_PACKET,
 	.create = packet_create,
-#if 0
-	.owner = THIS_MODULE,
-#endif
 };
 
 static int af_packet_init(void) {
