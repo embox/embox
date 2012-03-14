@@ -9,4 +9,5 @@ module matcher {
 	source "match_linux.c"
 	source "rule.c"
 	depends embox.pnet.core
+	depends match
 }
