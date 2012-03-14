@@ -65,14 +65,19 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	 err = security_socket_post_create(sock, family, type, protocol, kern);
 	 */
 
-	sk_set_connection_state(sock->sk, UNCONNECTED); /* newly created socket is UNCONNECTED for sure */
+	/* newly created socket is UNCONNECTED for sure */
+	sk_set_connection_state(sock->sk, UNCONNECTED);
 	*psock = sock; /* and save structure */
 
 	return res;
 }
 
+/* should be understood as close method */
 int kernel_socket_release(struct socket *sock) {
 	int res;
+
+	if(sk_is_connected(sock->sk))
+		sk_set_connection_state(sock->sk, DISCONNECTING);
 
 	if ((sock != NULL) && (sock->ops != NULL)
 			&& (sock->ops->release != NULL)) {
@@ -91,8 +96,10 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 			socklen_t addrlen) {
 	int res;
 
-	if(!sock->ops->listen)
+	if(!sock->ops->bind){
+		debug_printf("No bind() method", "kernel_socket", "kernel_socket_bind");
 		return SK_NO_SUCH_METHOD;
+	}
 
 	/* try to bind */
 	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
@@ -107,14 +114,24 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 int kernel_socket_listen(struct socket *sock, int backlog) {
 	int res;
 
-	if(!sock->ops->listen)
+	if(!sock->ops->listen){
+		debug_printf("No listen() method", "kernel_socket", "kernel_socket_bind");
 		return SK_NO_SUCH_METHOD;
+	}
+
+	if(!sk_is_bound(sock->sk)){  /* the socket should first be bound to an adress */
+		debug_printf("Socket should be bound to accept",
+								 "kernel_socket", "kernel_socket_bind");
+		return SK_ERR;
+	}
 
 	/* try to listen */
 	res = sock->ops->listen(sock, backlog);
 	if(res){  /* If something went wrong */
-		debug_printf("error while listening on socket", "kernel_sockets", "kernel_socket_bind");
-		sk_set_connection_state(sock->sk, UNCONNECTED);  /* Set the state to UNCONNECTEd */
+		debug_printf("Error setting socket in listening state",
+								 "kernel_sockets", "kernel_socket_bind");
+		/* Set the state to UNCONNECTEd */
+		sk_set_connection_state(sock->sk, UNCONNECTED);
 	}else
 		sk_set_connection_state(sock->sk, LISTENING);  /* Everything turned out fine */
 	return res;
@@ -123,17 +140,22 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 int kernel_socket_accept(struct socket *sock, struct sockaddr *addr, socklen_t *addrlen) {
 	int res;
 
-	if(!sock->ops->accept)
+	if(!sock->ops->accept){
+		debug_printf("No accept() method", "kernel_socket", "kernel_socket_bind");
 		return SK_NO_SUCH_METHOD;
+	}
 
-	/* The socket should be connected first */
-	if(!sk_is_connected(sock->sk))
+	if(!sk_is_listening(sock->sk)){  /* we should connect to a listening socket */
+		debug_printf("Socket cccepting a connection should be in listening state",
+								 "kernel_socket", "kernel_socket_bind");
 		return SK_ERR;
+	}
 
 	/* try to accept */
 	res = sock->ops->accept(sock, addr, addrlen);
 	if(res)  /* If something went wrong */
-		debug_printf("error while accepting on socket", "kernel_sockets", "kernel_socket_bind");
+		debug_printf("Error while accepting a connection",
+								 "kernel_sockets", "kernel_socket_bind");
 	else
 		sk_set_connection_state(sock->sk, ESTABLISHED);  /* Everything turned out fine */
 	return res;
@@ -143,23 +165,25 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
 	int res;
 
-	/* if unbound, then either there were no attempts
-		 to bind or connect or bind() failed*/
-	if(!sk_is_bound(sock->sk)){
-		res = kernel_socket_bind(sock, addr, addrlen);  /* First try to bind */
-		if(res){  /* if something went wrong notify and returnx */
-			debug_printf("socket was unconnected and bind returned error", "kernel_sockets", "kernel_socket_bind");
-			sk_set_connection_state(sock->sk, UNCONNECTED);
-			return res;
-		}
+	/* Socket's like UDP are 'connectionless'. that means that connect
+	   only sets binds the target of the socket to an address.
+	   In the cases of stream protocols the meaning is strict - initiate
+	   connection to a given host*/
+
+	/* TODO add code for the mentioned above cases */
+
+	if(!sock->ops->connect){
+		debug_printf("No connect() method", "kernel_socket", "kernel_socket_bind");
+		return SK_NO_SUCH_METHOD;
 	}
 
 	/* try to connect */
 	sk_set_connection_state(sock->sk, CONNECTING);
 	res = sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
 	if(!res){  /* smth's wrong */
-		debug_printf("socket was unable to connect", "kernel_sockets", "kernel_socket_bind");
-		sk_set_connection_state(sock->sk, BOUND); /* if here => socket was BOUND*/
+		debug_printf("Unable to connect on socket",
+								 "kernel_sockets", "kernel_socket_bind");
+		sk_set_connection_state(sock->sk, UNCONNECTED);
 		return res;
 	}else
 		sk_set_connection_state(sock->sk, CONNECTED);
@@ -200,9 +224,5 @@ int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr
 
 /* These two dummy functions should do smth. Or maybe they aren't necessary */
 int kernel_socket_shutdown(struct socket *sock){
-	return ENOERR;
-}
-
-int kernel_socket_close(struct socket *sock){
 	return ENOERR;
 }

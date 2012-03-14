@@ -223,6 +223,7 @@ extern void sk_set_connection_state(struct sock *sk, enum socket_connection_stat
 extern enum socket_connection_state_t sk_get_connection_state(struct sock *sk);
 extern int sk_is_connected(struct sock *sk);
 extern int sk_is_bound(struct sock *sk);
+extern int sk_is_listening(struct sock *sk);
 
 enum sk_errno_t {SK_NOERR = 0, SK_ERR = 400, SK_NO_SUCH_METHOD = 401};
 #endif /* NET_SOCK_H_ */

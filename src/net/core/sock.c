@@ -156,18 +156,18 @@ void sk_set_connection_state(struct sock *sk, enum socket_connection_state_t sta
 	sk->socket_connection_state = state;
 }
 
-enum socket_connection_state_t sk_get_connection_state(struct sock *sk){
+inline enum socket_connection_state_t sk_get_connection_state(struct sock *sk){
 	return sk->socket_connection_state;
 }
 
-int sk_is_connected(struct sock *sk){
+inline int sk_is_connected(struct sock *sk){
 	return (sk->socket_connection_state == CONNECTED);
-	/* return ((sk->socket_connection_state != UNCONNECTED)&& */
-	/* 				(sk->socket_connection_state != CLOSED)); */
 }
 
-int sk_is_bound(struct sock *sk){
+inline int sk_is_bound(struct sock *sk){
 	return (sk->socket_connection_state == BOUND);
-	/* return ((sk->socket_connection_state != UNCONNECTED)&& */
-	/* 				(sk->socket_connection_state != CLOSED)); */
+}
+
+inline int sk_is_listening(struct sock *sk){
+	return (sk->socket_connection_state == LISTENING);
 }
