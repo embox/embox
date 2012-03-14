@@ -11,7 +11,7 @@
 
 #include <pnet/types.h>
 
-#define PNET_PRIORITY_COUNT 0x10
+//#define PNET_PRIORITY_COUNT 0x10
 
 #define NET_RX_DFAULT -1
 

@@ -1,23 +1,23 @@
 /**
  * @file
- * @brief
+ * @brief  Entry net for pnet version network subsystem.
  *
  * @date 27.10.11
  * @author Anton Kozlov
  */
 
 #include <errno.h>
+#include <embox/unit.h>
+#include <mem/objalloc.h>
+
+#include <linux/interrupt.h>
+
 #include <pnet/prior_path.h>
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/repo.h>
-
-#include <linux/interrupt.h>
-#include <embox/unit.h>
-#include <linux/init.h>
 #include <pnet/pnet_pack.h>
 
-#include <mem/objalloc.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -26,13 +26,12 @@ struct pack {
 	void *data;
 };
 
-OBJALLOC_DEF(common_pool, struct pack, CONFIG_PNET_PACKETS_QUANTITY);
+OBJALLOC_DEF(common_pool, struct pack, CONFIG_PNET_RX_QUEUE_SIZE);
 
 static LIST_HEAD(pnet_queue);
 
 static void pnetif_rx_schedule(struct pack *pack) {
 	list_add_tail(&pnet_queue, &pack->link);
-
 	raise_softirq(PNET_RX_SOFTIRQ);
 }
 
@@ -77,5 +76,6 @@ static void pnet_rx_action(struct softirq_action *action) {
 
 static int unit_init(void) {
 	open_softirq(PNET_RX_SOFTIRQ, pnet_rx_action, NULL);
+
 	return 0;
 }
