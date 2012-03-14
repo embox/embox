@@ -10,6 +10,7 @@ module linux_layer {
 	source "init_linux_layer.c"
 	depends embox.pnet.core.pack.PnetPackSkbuff
 	depends embox.pnet.netfilter.matcher
+	depends embox.pnet.dev
 }
 
 module info_printer {

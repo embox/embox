@@ -33,17 +33,6 @@ static int tx_hnd(struct pnet_pack * pack) {
 	return NET_HND_SUPPRESSED; /* not to be processed further */
 }
 
-//static int rx_hnd(struct pnet_pack *pack) {
-//	struct sk_buff *skb;
-//
-//	if(pack->type == PNET_PACK_TYPE_SINGLE) {
-//		return NET_HND_SUPPRESSED;
-//	} else {
-//		skb = pack->skb;
-//		pack->node = pnet_get_dev_by_device(skb->dev);;
-//	}
-//}
-
 static int entry_tx_hnd(struct pnet_pack * pack) {
 	pack->node = pack->node->tx_dfault; //TODO
 	return 0;
