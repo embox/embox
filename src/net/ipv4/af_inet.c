@@ -146,7 +146,7 @@ int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
 	inet = inet_sk(sock->sk);
 	inet->sport = socket_get_free_port(inet->sport_type);
 	socket_set_port_type(sock);
-	socket_port_lock(inet->sport, inet->sport_type);
+//	socket_port_lock(inet->sport, inet->sport_type); it was locked in socket_get_free_port
 
 	return sk->sk_prot->connect(sk, addr, addr_len);
 }

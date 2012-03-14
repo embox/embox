@@ -54,10 +54,10 @@ static int exec(int argc, char **argv) {
 	udp_hash = get_udp_sockets();
 
 	for (port_nr = 0; port_nr < SYSTEM_PORT_MAX_NUMBER; port_nr++) {
-		if (socket_port_is_busy(port_nr, 1)) {
+		if (socket_port_is_busy(port_nr, TCP_PORT)) {
 			printf("tcp   %d  ", port_nr);
 			get_proto_info((char**) tcp_hash, port_nr, sizeof(tcp_sock_t*) / 4);
-		} else if (socket_port_is_busy(port_nr, 2)) {
+		} else if (socket_port_is_busy(port_nr, UDP_PORT)) {
 			printf("udp   %d  ", port_nr);
 			get_proto_info((char**) udp_hash, port_nr, sizeof(udp_sock_t*) / 4);
 		}

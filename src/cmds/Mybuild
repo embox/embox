@@ -148,6 +148,12 @@ module ne2k_pci_probe {
 	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
 }
 
+module netstat {
+	source "netstat.c"
+	depends LibPosix
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
 module example {
 	source "example.c"
 	depends LibPosix
