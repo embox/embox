@@ -16,14 +16,19 @@
 
 OBJALLOC_DEF(graphs, struct pnet_graph, CONFIG_PNET_GRAPH_CNT);
 
+LIST_HEAD(graphs_list);
+
 struct pnet_graph *pnet_get_graph(int sock) {
 	return (struct pnet_graph *) objalloc(&graphs);
 }
 
-struct pnet_graph *pnet_graph_create(void) {
+struct pnet_graph *pnet_graph_create(char *name) {
 	struct pnet_graph *gr = (struct pnet_graph *) objalloc(&graphs);
 
 	list_init(&gr->nodes);
+	INIT_LIST_HEAD(&gr->lnk);
+	list_add_tail(&graphs_list, &gr->lnk);
+	gr->name = name;
 	gr->state = PNET_GRAPH_STOPPED;
 
 	return gr;

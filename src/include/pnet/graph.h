@@ -22,11 +22,13 @@ struct pnet_graph {
 	int id;
 	enum pnet_graph_state state;
 	struct list nodes;
+	char *name;
+	struct list_head lnk;
 };
 
 extern struct pnet_graph *pnet_get_graph(int sock);
 
-extern struct pnet_graph *pnet_graph_create(void);
+extern struct pnet_graph *pnet_graph_create(char *name);
 
 extern int pnet_graph_start(struct pnet_graph *graph);
 extern int pnet_graph_stop(struct pnet_graph *graph);

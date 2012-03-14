@@ -166,3 +166,11 @@ module log {
 	depends LibPosix
 	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
 }
+
+module pnet {
+	source "pnet.c"
+	depends LibPosix
+	depends embox.pnet.core
+	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
+}
+
