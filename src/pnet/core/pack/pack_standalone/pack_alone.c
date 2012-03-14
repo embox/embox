@@ -1,6 +1,13 @@
 /**
  * @file
- * @brief Network packet
+ * @brief The simple pnet packet. The user data contains only buffer pointer
+ *      and data length
+ *
+ * @details This type of packets is suited well for very simple communications,
+ *     when data processing is not in network stack but in user handler,
+ *     serial ports or bluetooth data handling for example.
+ *     For using this packet type you should call pnet_create_packet with the
+ *     PNET_PACK_TYPE_SINGLE flag
  *
  * @date 20.10.2011
  * @author Anton Kozlov
@@ -50,4 +57,4 @@ static void pnet_pack_free(struct pnet_pack *pack) {
 	objfree(&net_packs, pack);
 }
 
-PNET_PACK(PNET_PACK_TYPE_SINGLE,pnet_pack_alloc,pnet_pack_free);
+PNET_PACK(PNET_PACK_TYPE_SINGLE, pnet_pack_alloc, pnet_pack_free);

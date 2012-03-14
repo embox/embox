@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Network type pack defs
+ * @brief The simple pnet packet definitions
  *
  * @date 02.11.2011
  * @author Anton Kozlov
@@ -15,7 +15,6 @@ struct pnet_pack_data {
 };
 
 #include <pnet/pnet_pack.h>
-
 
 static inline void *pnet_pack_get_data(struct pnet_pack *pack) {
 	struct pnet_pack_data *data = pack->data;

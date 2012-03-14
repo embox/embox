@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Network type pack defs
+ * @brief pnet skb type packet definitions
  *
  * @date 02.11.2011
  * @author Anton Kozlov

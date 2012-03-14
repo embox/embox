@@ -17,7 +17,7 @@ module pnet_entry{
 
 module net_entry extends entry_api {
 	source "net_entry.c"
-	depends embox.pnet.core, embox.pnet.core.pack.pack_skbuf, embox.pnet.netfilter.matcher, pnet_entry
+	depends embox.pnet.core, embox.pnet.netfilter.matcher, pnet_entry
 	make flags "-I$(SRC_DIR)/compat/linux/include"
 	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
