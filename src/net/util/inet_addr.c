@@ -106,6 +106,10 @@ int inet_aton(const char *cp, struct in_addr *addr) {
 	if (c != '\0' && !isspace(c)) {
 		return 0;
 	}
+	/* It has a valid format? */
+	if (dots == 0) {
+		return 0;
+	}
 	/* Did we get a valid digit? */
 	if (!digit) {
 		return 0;
