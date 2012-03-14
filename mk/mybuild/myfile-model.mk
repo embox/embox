@@ -117,7 +117,7 @@ define class-MyAnnotation
 
 	# Property 'target : MyAnnotationTarget'.
 	$(eobject-reference MyFile_Annotation_target,
-		target,MyAnnotationTarget,annotations,changeable)
+		target,MyAnnotationTarget,annotations,changeable container)
 
 	# PROTECTED REGION ID(Annotation) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -136,7 +136,7 @@ define class-MyAnnotationTarget # abstract
 
 	# Property 'annotations... : MyAnnotation'.
 	$(eobject-reference MyFile_AnnotationTarget_annotations,
-		annotations,MyAnnotation,target,changeable many)
+		annotations,MyAnnotation,target,changeable many containment)
 
 	# PROTECTED REGION ID(AnnotationTarget) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.

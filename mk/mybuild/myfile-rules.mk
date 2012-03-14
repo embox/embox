@@ -58,7 +58,7 @@ endef
 # Args: 1..5 - Symbols in the RHS.
 define $(gold_grammar)_produce-Annotation_annotation_Identifier_LBrace_RBrace
 	$(foreach type,$(new MyAnnotationType),
-		$(set type->name,$3)
+		$(set type->name,$2)
 		$(set type->origin,$(call gold_location_of,2))
 
 		$(set type->options,$4)
@@ -79,7 +79,8 @@ endef
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotationSpecifier_At
 	$(for annotation <- $(new MyAnnotation),
-		$(set annotation->type_link,$2))
+		$(set annotation->type_link,$2)
+		$(annotation))
 endef
 
 # Rule: <AnnotationInitializer> ::= '(' <AnnotationParametersList> ')'

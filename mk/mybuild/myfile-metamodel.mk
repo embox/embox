@@ -130,10 +130,10 @@ define __myFile_init
 
 	$(call eMetaClassInit,$(MyFile_Annotation),Annotation,,)
 	$(call eMetaReferenceInit,$(MyFile_Annotation_type),type,$(MyFile_AnnotationType),,changeable linkable)
-	$(call eMetaReferenceInit,$(MyFile_Annotation_target),target,$(MyFile_AnnotationTarget),$(MyFile_AnnotationTarget_annotations),changeable)
+	$(call eMetaReferenceInit,$(MyFile_Annotation_target),target,$(MyFile_AnnotationTarget),$(MyFile_AnnotationTarget_annotations),changeable container)
 
 	$(call eMetaClassInit,$(MyFile_AnnotationTarget),AnnotationTarget,,abstract)
-	$(call eMetaReferenceInit,$(MyFile_AnnotationTarget_annotations),annotations,$(MyFile_Annotation),$(MyFile_Annotation_target),changeable many)
+	$(call eMetaReferenceInit,$(MyFile_AnnotationTarget_annotations),annotations,$(MyFile_Annotation),$(MyFile_Annotation_target),changeable many containment)
 
 	$(call eMetaClassInit,$(MyFile_Interface),Interface,$(MyFile_Type),)
 	$(call eMetaReferenceInit,$(MyFile_Interface_features),features,$(MyFile_Feature),$(MyFile_Feature_interface),changeable many containment)

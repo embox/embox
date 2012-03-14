@@ -24,7 +24,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AnnotationTarget" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
-        eType="#//Annotation" eOpposite="#//Annotation/target"/>
+        eType="#//Annotation" containment="true" eOpposite="#//Annotation/target"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="#//Type">
     <eStructuralFeatures xsi:type="ecore:EReference" name="features" upperBound="-1"
