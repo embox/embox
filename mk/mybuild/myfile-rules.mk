@@ -214,20 +214,26 @@ $(gold_grammar)_produce-SuperModule_extends = $2
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotatedModuleMember
 	$(for target <- $2,
-		# XXX
-		$(if $(invoke MyFile_AnnotationTarget->isInstance,$(target)),
-			$(set+ target->annotations,$1))
+		$(set+ target->annotations,$1)
 		$(target))
 endef
 
+define __myfile_annotated_link_from_elinks
+	$(for link <- $1,
+		$(new MyAnnotatedLink,$(get link->name),$(get link->origin)))
+endef
+
 # Rule: <ModuleMember> ::= depends <ReferenceList>
-$(gold_grammar)_produce-ModuleMember_depends = $(addprefix $1_links/,$2)
+$(gold_grammar)_produce-ModuleMember_depends = \
+	$(addprefix $1_links/,$(call __myfile_annotated_link_from_elinks,$2))
 
 # Rule: <ModuleMember> ::= provides <ReferenceList>
-$(gold_grammar)_produce-ModuleMember_provides = $(addprefix $1_links/,$2)
+$(gold_grammar)_produce-ModuleMember_provides = \
+	$(addprefix $1_links/,$(call __myfile_annotated_link_from_elinks,$2))
 
 # Rule: <ModuleMember> ::= requires <ReferenceList>
-$(gold_grammar)_produce-ModuleMember_requires = $(addprefix $1_links/,$2)
+$(gold_grammar)_produce-ModuleMember_requires = \
+	$(addprefix $1_links/,$(call __myfile_annotated_link_from_elinks,$2))
 
 # Rule: <ModuleMember> ::= source <FilenameList>
 $(gold_grammar)_produce-ModuleMember_source = $(addprefix $1s/,$2)
@@ -289,7 +295,7 @@ $(gold_grammar)_produce-SimpleReference_Identifier = $(new ELink,$1,$(gold_locat
 # Rule: <Filename> ::= StringLiteral
 # Args: 1..1 - Symbols in the RHS.
 define $(gold_grammar)_produce-Filename_StringLiteral
-	$(for file <- $(new MyFile),
+	$(for file <- $(new MyFileMember),
 		$(set file->fileName,$1)
 				$(file))
 endef

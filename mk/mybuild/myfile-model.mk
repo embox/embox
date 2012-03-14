@@ -144,6 +144,44 @@ define class-MyAnnotationTarget # abstract
 endef
 
 #
+# Model object 'AnnotatedLink'.
+#
+# No features or operations defined.
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
+# The following features and operations are inherited from 'ELink':
+#   - reference 'eMetaReference'
+#   - attribute 'eMetaReferenceId'
+#   - operation 'eSource'
+#   - operation 'eTarget'
+#   - operation 'resolve'
+#   - operation 'deresolve'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-MyAnnotatedLink
+	# Extends 'ELink', 'MyAnnotationTarget' classes.
+	$(eobject MyFile_AnnotatedLink,
+		MyAnnotatedLink,ELink MyAnnotationTarget,)
+
+	# PROTECTED REGION ID(AnnotatedLink) ENABLED START
+
+	$(method eContainer : EObject,$(invoke eSource))
+
+	$(if $(value 1),
+		$(set name,$1))
+	$(if $(value 2),
+		$(set origin,$2))
+	# PROTECTED REGION END
+endef
+
+#
 # Model object 'Interface'.
 #
 # The following features are defined:
@@ -221,6 +259,7 @@ endef
 #   - attribute 'static'
 #   - attribute 'abstract'
 #   - reference 'depends'
+#   - reference 'dependsMembers'
 #   - reference 'dependent'
 #   - reference 'provides'
 #   - reference 'requires'
@@ -278,6 +317,21 @@ define class-MyModule
 	$(eobject-reference MyFile_Module_depends,
 		depends,MyModule,dependent,changeable many linkable)
 
+	# Reference 'dependsMembers' [0..*]: containment, derived.
+	$(property dependsMembers... : MyAnnotatedLink)
+	# PROTECTED REGION ID(Module_dependsMembers) ENABLED START
+	$(getter dependsMembers,
+		$(get depends_links))
+#	# TODO Uncomment and implement me.
+	$(setter dependsMembers,
+		$(error $0($1): NIY))
+#	# TODO Uncomment and implement us.
+	$(setter+ dependsMembers,
+		$(error $0($1): NIY))
+	$(setter- dependsMembers,
+		$(error $0($1): NIY))
+	# PROTECTED REGION END
+
 	# Property 'dependent... : MyModule'.
 	# Property 'dependent_links... : ELink'.
 	$(eobject-reference MyFile_Module_dependent,
@@ -293,13 +347,13 @@ define class-MyModule
 	$(eobject-reference MyFile_Module_requires,
 		requires,MyFeature,requiredBy,changeable many linkable)
 
-	# Property 'sources... : MyFile'.
+	# Property 'sources... : MyFileMember'.
 	$(eobject-reference MyFile_Module_sources,
-		sources,MyFile,,changeable many containment)
+		sources,MyFileMember,,changeable many containment)
 
-	# Property 'objects... : MyFile'.
+	# Property 'objects... : MyFileMember'.
 	$(eobject-reference MyFile_Module_objects,
-		objects,MyFile,,changeable many containment)
+		objects,MyFileMember,,changeable many containment)
 
 	# Property 'options... : MyOption'.
 	$(eobject-reference MyFile_Module_options,
@@ -353,28 +407,33 @@ define class-MyModule
 endef
 
 #
-# Model object 'File'.
+# Model object 'FileMember'.
 #
 # The following features are defined:
 #   - attribute 'fileName'
 #   - attribute 'fileFullName'
 #
-define class-MyFile
-	$(eobject MyFile_File,
-		MyFile,,)
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
+define class-MyFileMember
+	# Extends 'MyAnnotationTarget' class.
+	$(eobject MyFile_FileMember,
+		MyFileMember,MyAnnotationTarget,)
 
 	# Property 'fileName'.
-	$(eobject-attribute MyFile_File_fileName,
+	$(eobject-attribute MyFile_FileMember_fileName,
 		fileName,changeable)
 
 	# Attribute 'fileFullName': derived, read-only.
 	$(property fileFullName)
-	# PROTECTED REGION ID(File_fileFullName) ENABLED START
+	# PROTECTED REGION ID(FileMember_fileFullName) ENABLED START
+#	# TODO Uncomment and implement me.
 	$(getter fileFullName,
-		$(dir $(get $(get eResource).fileName))$(get fileName))
+		$(error $0: NIY))
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(File) ENABLED START
+	# PROTECTED REGION ID(FileMember) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
@@ -385,6 +444,9 @@ endef
 # The following features are defined:
 #   - reference 'defaultValue'
 #
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
@@ -392,9 +454,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyOption # abstract
-	# Extends 'ENamedObject' class.
+	# Extends 'ENamedObject', 'MyAnnotationTarget' classes.
 	$(eobject MyFile_Option,
-		MyOption,ENamedObject,abstract)
+		MyOption,ENamedObject MyAnnotationTarget,abstract)
 
 	# Property 'defaultValue : MyOptionValue'.
 	$(eobject-reference MyFile_Option_defaultValue,
@@ -412,6 +474,9 @@ endef
 #
 # The following features are inherited from 'Option':
 #   - reference 'defaultValue'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -435,6 +500,9 @@ endef
 #
 # The following features are inherited from 'Option':
 #   - reference 'defaultValue'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'

@@ -26,6 +26,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//Annotation" containment="true" eOpposite="#//Annotation/target"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AnnotatedLink" eSuperTypes="emodel.ecore#//ELink #//AnnotationTarget"/>
   <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="#//Type">
     <eStructuralFeatures xsi:type="ecore:EReference" name="features" upperBound="-1"
         eType="#//Feature" containment="true" eOpposite="#//Feature/interface"/>
@@ -52,6 +53,8 @@
         volatile="true" transient="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="depends" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/dependent"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="dependsMembers" upperBound="-1"
+        eType="#//AnnotatedLink" volatile="true" transient="true" derived="true" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="dependent" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/depends"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="provides" upperBound="-1"
@@ -59,9 +62,9 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="requires" upperBound="-1"
         eType="#//Feature" eOpposite="#//Feature/requiredBy"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="sources" upperBound="-1"
-        eType="#//File" containment="true" resolveProxies="false"/>
+        eType="#//FileMember" containment="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="objects" upperBound="-1"
-        eType="#//File" containment="true" resolveProxies="false"/>
+        eType="#//FileMember" containment="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
         eType="#//Option" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="subTypes" upperBound="-1"
@@ -75,13 +78,13 @@
         eType="#//Module" changeable="false" volatile="true" transient="true" derived="true"
         eOpposite="#//Module/allSubTypes"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="File">
+  <eClassifiers xsi:type="ecore:EClass" name="FileMember" eSuperTypes="#//AnnotationTarget">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileName" eType="ecore:EDataType emodel.ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileFullName" eType="ecore:EDataType emodel.ecore#//EString"
         changeable="false" volatile="true" transient="true" defaultValueLiteral=""
         derived="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
+  <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject #//AnnotationTarget">
     <eStructuralFeatures xsi:type="ecore:EReference" name="defaultValue" eType="#//OptionValue"
         containment="true"/>
   </eClassifiers>
