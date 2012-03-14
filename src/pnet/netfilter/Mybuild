@@ -11,3 +11,8 @@ module matcher {
 	depends embox.pnet.core
 	depends match
 }
+
+module static_rules {
+	source "linux_rules_init.c"
+	make flags "-I$(CONF_DIR)"
+}
