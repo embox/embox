@@ -80,43 +80,35 @@ endef
 define $(gold_grammar)_produce-AnnotationSpecifier_At
 	$(for annotation <- $(new MyAnnotation),
 		$(set annotation->type_link,$2)
+		$(set annotation->bindings,$3)
 		$(annotation))
 endef
 
 # Rule: <AnnotationInitializer> ::= '(' <AnnotationParametersList> ')'
 # Args: 1..3 - Symbols in the RHS.
-define $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-AnnotationInitializer_LParan_RParan = $2
 
 # Rule: <AnnotationInitializer> ::= '(' <Value> ')'
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan2
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <AnnotationInitializer> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-AnnotationInitializer
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(for binding<-$(new MyOptionBinding),
+		$(set binding->option_link,$(new ELink,value,$(gold_location)))
+		$(warning $2)
+		$(set binding->optionValue,$2)
+		$(binding))
 endef
 
 # Rule: <AnnotationParametersList> ::= <AnnotationParameter> ',' <AnnotationParametersList>
 # Args: 1..3 - Symbols in the RHS.
-define $(gold_grammar)_produce-AnnotationParametersList_Comma
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <AnnotationParametersList> ::= <AnnotationParameter>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-AnnotationParametersList
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-AnnotationParametersList_Comma = $1 $3
 
 # Rule: <AnnotationParameter> ::= <SimpleReference> '=' <Value>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotationParameter_Eq
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(for binding<-$(new MyOptionBinding),
+		$(set binding->option_link,$1)
+		$(set binding->optionValue,$3)
+		$(binding))
 endef
 
 # Rule: <Interface> ::= interface Identifier <SuperInterfaces> '{' <Features> '}'
@@ -249,7 +241,12 @@ $(gold_grammar)_produce-ModuleMember_option = $(addprefix $1s/,$2)
 define $(gold_grammar)_produce-Option_Identifier
     $(for opt <- $(new My$1Option),
 		$(set opt->name,$2)
-		$(set opt->defaultValue,$3)
+		$(and $3,
+			$(if $(invoke opt->validateOption,$3),
+				$(set opt->defaultValue,$3),
+				$(call gold_report_error_at,
+					$(call gold_location_of,3),
+					Option value has wrong type)))
 
 		$(opt))
 endef

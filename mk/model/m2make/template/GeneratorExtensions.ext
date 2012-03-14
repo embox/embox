@@ -13,7 +13,7 @@ fileName(EPackage this, String fileKind) :
 
 private inclusionGuardPrefix(EPackage this) :
 	((String) GLOBALVAR INCLUSION_GUARD_PREFIX) + name.toLowerCase() + "_";
-//	"__model_";
+	//"__model_";
 
 inclusionGuard(EPackage this, String fileKind) :
 	inclusionGuardPrefix() + fileKind + "_mk";
@@ -65,15 +65,10 @@ methodName(EOperation this) : name.toFirstLower();
 methodSignature(EOperation this) :
 	methodName() + memberCardinality() + memberType();
 
-id(EOperation this)         : eContainingClass.id() + "_" + methodName();
-id(EStructuralFeature this) : eContainingClass.id() + "_" + propertyName();
-id(EClassifier this) :        name.toFirstUpper();
-id(Void this) : null;
-
 metaVariable(EPackage this)           : name.toFirstUpper();
-metaVariable(EClassifier this)        : ePackage.metaVariable() + "_" + id();
-metaVariable(EStructuralFeature this) : eContainingClass.ePackage.metaVariable() + "_" + id();
-metaVariable(EOperation this)         : eContainingClass.ePackage.metaVariable() + "_" + id();
+metaVariable(EClassifier this)        : ePackage.metaVariable() + "_" + name.toFirstUpper();
+metaVariable(EStructuralFeature this) : eContainingClass.metaVariable() + "_" + propertyName();
+metaVariable(EOperation this)         : eContainingClass.metaVariable() + "_" + methodName();
 metaVariable(Void this) : null;
 
 private metaFlagsCommon(EStructuralFeature this) :

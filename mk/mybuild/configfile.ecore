@@ -18,10 +18,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="Include">
     <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="ecore:EClass myfile.ecore#//Module"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="optionBindings" upperBound="-1"
-        eType="#//OptionBinding" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OptionBinding" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="option" eType="ecore:EClass myfile.ecore#//Option"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="optionValue" eType="ecore:EClass myfile.ecore#//OptionValue"/>
+        eType="ecore:EClass myfile.ecore#//OptionBinding" containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

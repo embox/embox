@@ -34,6 +34,8 @@ MyFile_Annotation_type := \
 	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_type)
 MyFile_Annotation_target := \
 	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_target)
+MyFile_Annotation_bindings := \
+	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_bindings)
 
 MyFile_AnnotationTarget := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_AnnotationTarget)
@@ -119,6 +121,13 @@ MyFile_StringOptionValue := \
 MyFile_NumberOptionValue := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_NumberOptionValue)
 
+MyFile_OptionBinding := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_OptionBinding)
+MyFile_OptionBinding_option := \
+	$(call eMetaReferenceCreate,$(MyFile_OptionBinding),MyFile_OptionBinding_option)
+MyFile_OptionBinding_optionValue := \
+	$(call eMetaReferenceCreate,$(MyFile_OptionBinding),MyFile_OptionBinding_optionValue)
+
 # Initializes the objects and relations between them.
 define __myFile_init
 	$(call eMetaModelInit,$(MyFile),myFile,my)
@@ -136,6 +145,7 @@ define __myFile_init
 	$(call eMetaClassInit,$(MyFile_Annotation),Annotation,,)
 	$(call eMetaReferenceInit,$(MyFile_Annotation_type),type,$(MyFile_AnnotationType),,changeable linkable)
 	$(call eMetaReferenceInit,$(MyFile_Annotation_target),target,$(MyFile_AnnotationTarget),$(MyFile_AnnotationTarget_annotations),changeable container)
+	$(call eMetaReferenceInit,$(MyFile_Annotation_bindings),bindings,$(MyFile_OptionBinding),,changeable many containment)
 
 	$(call eMetaClassInit,$(MyFile_AnnotationTarget),AnnotationTarget,,abstract)
 	$(call eMetaReferenceInit,$(MyFile_AnnotationTarget_annotations),annotations,$(MyFile_Annotation),$(MyFile_Annotation_target),changeable many containment)
@@ -185,6 +195,10 @@ define __myFile_init
 
 	$(call eMetaClassInit,$(MyFile_NumberOptionValue),NumberOptionValue,$(MyFile_OptionValue),)
 
+	$(call eMetaClassInit,$(MyFile_OptionBinding),OptionBinding,$(EModel_ENamedObject),)
+	$(call eMetaReferenceInit,$(MyFile_OptionBinding_option),option,$(MyFile_Option),,changeable linkable)
+	$(call eMetaReferenceInit,$(MyFile_OptionBinding_optionValue),optionValue,$(MyFile_OptionValue),,changeable containment)
+
 endef # __myFile_init
 
 # Binds objects to instance classes and features to properties.
@@ -202,6 +216,7 @@ define __myFile_bind
 	$(call eMetaClassBind,$(MyFile_Annotation),MyAnnotation)
 	$(call eMetaFeatureBind,$(MyFile_Annotation_type),type)
 	$(call eMetaFeatureBind,$(MyFile_Annotation_target),target)
+	$(call eMetaFeatureBind,$(MyFile_Annotation_bindings),bindings)
 
 	$(call eMetaClassBind,$(MyFile_AnnotationTarget),MyAnnotationTarget)
 	$(call eMetaFeatureBind,$(MyFile_AnnotationTarget_annotations),annotations)
@@ -250,6 +265,10 @@ define __myFile_bind
 	$(call eMetaClassBind,$(MyFile_StringOptionValue),MyStringOptionValue)
 
 	$(call eMetaClassBind,$(MyFile_NumberOptionValue),MyNumberOptionValue)
+
+	$(call eMetaClassBind,$(MyFile_OptionBinding),MyOptionBinding)
+	$(call eMetaFeatureBind,$(MyFile_OptionBinding_option),option)
+	$(call eMetaFeatureBind,$(MyFile_OptionBinding_optionValue),optionValue)
 
 endef # __myFile_bind
 

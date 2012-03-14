@@ -28,10 +28,8 @@ define class-Linker
 			linkName    <- $(get link->name),
 			linkPrefix  <- $(firstword $(subst ., ,$(linkName))),
 			targetType  <- $(get $(get link->eMetaReference).eReferenceType),
-			$(warning $(linkName))
-			$(call Linker.doLink)
-			$(warning $(invoke link->eTarget))
 
+			$(call Linker.doLink)
 		))
 	)
 

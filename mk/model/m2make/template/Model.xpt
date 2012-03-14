@@ -13,6 +13,10 @@
 include mk/model/model_impl.mk
 «EXPAND class FOREACH eClassifiers.typeSelect(EClass) -»
 
+«PROTECT CSTART '# ' CEND '' ID metaVariable()»
+# TODO Add custom implementation here and remove this comment.
+«ENDPROTECT»
+
 $(def_all)
 
 «inclusionGuardEnd("model")»
@@ -41,7 +45,7 @@ define class-«className()»«IF abstract» # abstract«ELSEIF interface» # int
 «ENDIF -»
 «EXPAND feature FOREACH eStructuralFeatures -»
 «EXPAND operation FOREACH eOperations»
-«PROTECT CSTART '\t# ' CEND '' ID id()»
+«PROTECT CSTART '\t# ' CEND '' ID metaVariable()»
 #	# TODO Add custom implementation here and remove this comment.
 «ENDPROTECT»
 endef
@@ -100,7 +104,7 @@ endef
 
 «DEFINE volatileFeature FOR EStructuralFeature»
 	«mkProperty(propertyName() + memberCardinality() + memberType())»
-«PROTECT CSTART '\t# ' CEND '' ID id()»
+«PROTECT CSTART '\t# ' CEND '' ID metaVariable()»
 «EXPAND volatileFeatureStubs(propertyName()) -»
 «ENDPROTECT»
 «ENDDEFINE»
@@ -124,7 +128,7 @@ endef
 «FOREACH eParameters AS param ITERATOR i -»
 	#   «i.counter1». «param.name + param.memberCardinality() + param.memberType()»
 «ENDFOREACH -»
-«PROTECT CSTART '\t# ' CEND '' ID id()»
+«PROTECT CSTART '\t# ' CEND '' ID metaVariable()»
 #	# TODO Uncomment and implement me.
 	«mkMethod(methodSignature(),
 	"$(error $0(" + eParameters.collect(p | "$" + counterInc()).toString(",") +

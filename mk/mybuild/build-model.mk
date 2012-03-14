@@ -5,8 +5,6 @@
 ifndef __mybuild_build_model_mk
 __mybuild_build_model_mk := 1
 
-include mk/mybuild/myfile-model.mk
-
 include mk/model/model_impl.mk
 
 #
@@ -16,6 +14,7 @@ include mk/model/model_impl.mk
 #   - reference 'modules'
 #
 define class-BuildBuild
+	# Extends 'EObject' class (implicitly).
 	$(eobject Build_Build,
 		BuildBuild,,)
 
@@ -23,7 +22,7 @@ define class-BuildBuild
 	$(eobject-reference Build_Build_modules,
 		modules,BuildModuleInstance,configuration,changeable many containment)
 
-	# PROTECTED REGION ID(Build) ENABLED START
+	# PROTECTED REGION ID(Build_Build) ENABLED START
 	# PROTECTED REGION END
 endef
 
@@ -36,12 +35,8 @@ endef
 #   - reference 'depends'
 #   - reference 'options'
 #
-# Args:
-#  1. (Optional) Module type
-#  2. (Optional) Configuration
-#  3. (Optional) Depends
-#  4. (Optional) Options
 define class-BuildModuleInstance
+	# Extends 'EObject' class (implicitly).
 	$(eobject Build_ModuleInstance,
 		BuildModuleInstance,,)
 
@@ -61,7 +56,7 @@ define class-BuildModuleInstance
 	$(eobject-reference Build_ModuleInstance_options,
 		options,BuildOptionInstance,module,changeable many containment)
 
-	# PROTECTED REGION ID(ModuleInstance) ENABLED START
+	# PROTECTED REGION ID(Build_ModuleInstance) ENABLED START
 
 	$(if $(value 1),
 		$(set type,$1))
@@ -86,6 +81,7 @@ endef
 #   - attribute 'value'
 #
 define class-BuildOptionInstance
+	# Extends 'EObject' class (implicitly).
 	$(eobject Build_OptionInstance,
 		BuildOptionInstance,,)
 
@@ -97,10 +93,14 @@ define class-BuildOptionInstance
 	$(eobject-attribute Build_OptionInstance_value,
 		value,changeable)
 
-	# PROTECTED REGION ID(OptionInstance) ENABLED START
+	# PROTECTED REGION ID(Build_OptionInstance) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
+
+# PROTECTED REGION ID(Build) ENABLED START
+# TODO Add custom implementation here and remove this comment.
+# PROTECTED REGION END
 
 $(def_all)
 

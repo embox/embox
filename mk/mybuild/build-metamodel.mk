@@ -5,8 +5,6 @@
 ifndef __mybuild_build_metamodel_mk
 __mybuild_build_metamodel_mk := 1
 
-include mk/mybuild/myfile-metamodel.mk
-
 include mk/model/metamodel_impl.mk
 
 # Create meta objects.
