@@ -76,6 +76,7 @@ static int packet_create(struct socket *sock, int protocol) {
 	if (sk == NULL) {
 		return -ENOMEM;
 	}
+	sock->sk = sk;
 	return ENOERR;
 }
 

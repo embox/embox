@@ -90,17 +90,20 @@ int inet_release(struct socket *sock) {
 	struct sock *sk;
 	struct inet_sock *inet;
 
-	sock_lock(sock->sk);
 	sk = sock->sk;
-	inet = inet_sk(sk);
-	socket_port_unlock(inet->sport, inet->sport_type);
-
 	if (sk == NULL) {
 		return -EINVAL;
 	}
 
+	sock_lock(sk);
+	inet = inet_sk(sk); // FIXME Issue 393
+	socket_port_unlock(inet->sport, inet->sport_type);
 	sock_unlock(sock->sk);
-	sk->sk_prot->close(sk, 0);
+
+	if (sk->sk_prot->close != NULL) {
+		sk->sk_prot->close(sk, 0);
+	}
+
 	sock->sk = NULL;
 
 	return ENOERR;
