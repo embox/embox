@@ -173,6 +173,7 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-ENamedObject
+	# Extends 'EObject' class (implicitly).
 	$(eobject EModel_ENamedObject,
 		ENamedObject,,)
 
@@ -219,21 +220,15 @@ endef
 # The following features and operations are defined:
 #   - reference 'eMetaReference'
 #   - attribute 'eMetaReferenceId'
+#   - attribute 'eResource'
+#   - attribute 'name'
+#   - attribute 'origin'
 #   - operation 'eSource'
 #   - operation 'eTarget'
 #   - operation 'resolve'
 #   - operation 'deresolve'
 #
-# The following features and operations are inherited from 'ENamedObject':
-#   - attribute 'name'
-#   - attribute 'qualifiedName'
-#   - attribute 'origin'
-#   - operation 'eInverseResolvedLinks'
-#
 define class-ELink
-	# Extends 'ENamedObject' class.
-	$(eobject EModel_ELink,
-		ELink,ENamedObject,)
 
 	# Reference 'eMetaReference' [0..1]: derived, read-only.
 	$(property eMetaReference : EMetaReference)
@@ -246,18 +241,33 @@ define class-ELink
 	$(property eMetaReferenceId)
 	# PROTECTED REGION ID(ELink_eMetaReferenceId) ENABLED START
 	$(getter eMetaReferenceId,
-		$(basename $(get-field __eContainer)))
+		$(basename $(get-field eSource)))
 	# PROTECTED REGION END
+
+	# Attribute 'eResource': derived, read-only.
+	$(property eResource)
+	# PROTECTED REGION ID(ELink_eResource) ENABLED START
+	$(getter eResource,
+		$(for s <- $(invoke eSource),
+			$(get s->eResource)))
+	# PROTECTED REGION END
+
+	# Property 'name'.
+	$(eobject-attribute EModel_ELink_name,
+		name,changeable)
+
+	# Property 'origin'.
+	$(eobject-attribute EModel_ELink_origin,
+		origin,changeable)
 
 	# Method 'eSource : EObject'.
 	# PROTECTED REGION ID(ELink_eSource) ENABLED START
 	$(method eSource : EObject,
-		$(suffix $(get-field __eContainer)))
+		$(suffix $(get-field eSource)))
 	# PROTECTED REGION END
 
 	# Method 'eTarget : EObject'.
 	# PROTECTED REGION ID(ELink_eTarget) ENABLED START
-	$(field eTarget : EObject)
 	$(method eTarget : EObject,
 		$(get-field eTarget))
 	# PROTECTED REGION END
@@ -278,9 +288,14 @@ define class-ELink
 
 	# PROTECTED REGION ID(ELink) ENABLED START
 
-	$(getter eResource,
-		$(for s <- $(invoke eSource),
-			$(get s->eResource)))
+	# 'metaRefernceId.object'
+	$(field eSource : EObject)
+
+	# '.object'
+	$(field eTarget : EObject)
+
+	# 'property[.link].object'
+	$(field __eOppositeRefs... : EObject)
 
 	$(method eContainer : EObject,)
 
@@ -742,6 +757,7 @@ endef
 #   - operation 'freeze'
 #
 define class-EFreezable # abstract
+	# Extends 'EObject' class (implicitly).
 	$(eobject EModel_EFreezable,
 		EFreezable,,abstract)
 

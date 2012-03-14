@@ -28,10 +28,12 @@ $(def_all)
 «EXPAND classMembersComment("inherited from '" + superType.name + "'") FOR superType -»
 «ENDFOREACH -»
 define class-«className()»«IF abstract» # abstract«ELSEIF interface» # interface«ENDIF»
-«IF className() != "EObject" -»
+«IF className() != "EObject" && className() != "ELink" -»
 «IF !eSuperTypes.isEmpty -»
 	# Extends '«eSuperTypes.className()
 		.toString("', '")»' class«IF eSuperTypes.size > 1»es«ENDIF».
+«ELSE -»
+	# Extends 'EObject' class (implicitly).
 «ENDIF -»
 	«mk("eobject", { metaVariable(),
 		"\n\t\t" + className(), eSuperTypes.className().toString(" "),

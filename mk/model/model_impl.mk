@@ -260,7 +260,7 @@ endef
 define __eObjectAddUnidirectional_link
 	$(set-field+ $1,
 		$(for link <- $2,
-			$(set-field link->__eContainer,$4$(this))
+			$(set-field link->eSource,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
 			$(link)./$(for target <- $(invoke link->eTarget),
 						$(set-field+ target->__eOppositeRefs,$(link)/$1$(this))
@@ -276,7 +276,7 @@ endef
 define __eObjectAddBidirectional_link
 	$(set-field+ $1,
 		$(for link <- $2,
-			$(set-field link->__eContainer,$4$(this))
+			$(set-field link->eSource,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
 			$(link)./$(for target <- $(invoke link->eTarget),
 						$(set-field+ target->$3,$(link)$(this))

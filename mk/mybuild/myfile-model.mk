@@ -159,12 +159,6 @@ endef
 #   - operation 'resolve'
 #   - operation 'deresolve'
 #
-# The following features and operations are inherited from 'ENamedObject':
-#   - attribute 'name'
-#   - attribute 'qualifiedName'
-#   - attribute 'origin'
-#   - operation 'eInverseResolvedLinks'
-#
 define class-MyAnnotatedLink
 	# Extends 'ELink', 'MyAnnotationTarget' classes.
 	$(eobject MyFile_AnnotatedLink,
