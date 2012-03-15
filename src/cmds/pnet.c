@@ -55,7 +55,7 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "h:g:p:r:s"))) {
+	while (-1 != (opt = getopt(argc, argv, "hgpr:s:"))) {
 		name = optarg;
 		switch(opt) {
 		case 'h':
