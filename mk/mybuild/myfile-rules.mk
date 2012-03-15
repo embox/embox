@@ -93,7 +93,6 @@ $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan = $2
 define $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan2
 	$(for binding<-$(new MyOptionBinding),
 		$(set binding->option_link,$(new ELink,value,$(gold_location)))
-		$(warning $2)
 		$(set binding->optionValue,$2)
 		$(binding))
 endef
