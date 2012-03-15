@@ -3,7 +3,6 @@ package embox.cmd
 import embox.compat.posix.LibPosix
 
 module ls {
-    option string greeting = "Hello"
     @IncludePath("$(SRC_DIR)/compat/linux/include")
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ls.c"
