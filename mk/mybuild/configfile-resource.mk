@@ -19,14 +19,21 @@ define class-ConfigFileResource
 
 endef
 
+define class-ConfigFileResourceSet
+	$(super ResourceSet,$(value 1))
+	$(method createLinker,
+		$(new ConfigFileLinker,$(this)))
+endef
+
 define config_create_resource_set_from_files
 	$(new ResourceSet,$(foreach r,$1,$($r)))
 endef
 
 define config_link_with_myfile_model
 	$(for rs <- $1,
-       		myfileSet <- $2,
-		$(invoke $(new ConfigLinker).linkAgainst,$(rs),$(myfileSet))
+		myfileSet <- $2,
+
+		$(invoke $(get rs->linker).linkAgainst,$(rs),$(myfileSet))
 
 		$(for r <- $(get rs->resources),
 			issue <- $(get r->issues),

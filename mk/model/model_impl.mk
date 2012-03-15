@@ -83,7 +83,7 @@ define builtin_func-eobject-reference
 				# Linkable references also support on-demand linkage.
 				$(if $(filter linkable,$5),
 					$$(call __eObjectResolveLinks,
-						$$(filter %./,$$(get-field $2))))
+						$$(filter %./,$$(get-field $2)),$1))
 				# Getting suffix is mandatory here!
 				$$(suffix $$(get-field $2)))
 		)
@@ -325,9 +325,15 @@ endef
 
 # Params:
 #   1. List of unresolved (at the call time) references with './' at their ends.
+#   2. Meta reference ID.
 define __eObjectResolveLinks
-	$(and $1,$(for link <- $(subst ./,,$1),
-		$(warning NIY: on-demand linkage: [$(get link->eMetaReference)] '$(get link->name)')
+	$(and $1,$(for resource <- $(get this->eResource),
+				resourceSet <- $(get resource->resourceSet),
+		$(for link <- $(subst ./,,$1),
+			$(warning on-demand linkage: \
+				[$(get link->eMetaReference)] '$(get link->name)'))
+		$(invoke $(get resourceSet->linker).resolveLinksGroup,
+			$(subst ./,,$1),$2)
 	),)
 endef
 
@@ -355,7 +361,7 @@ define __eLinkSetTarget
 		$(if $(for opposite <- $(get metaReference->eOpposite),
 				oppositeProperty <- $(get opposite->instanceProperty),
 				$(set-field+ newTarget->$(oppositeProperty),$(this)$(source))
-				$(opposite)),,# else
+				x),,# else
 			$(set-field+ newTarget->__eOppositeRefs,
 				$(this)/$(referenceProperty)$(source)))
 	)

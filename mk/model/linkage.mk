@@ -9,32 +9,53 @@ __model_linkage_mk := 1
 include mk/model/model.mk
 include mk/model/metamodel.mk
 
+# Constructor:
+#   1. The resource set for which we create the linker.
 define class-Linker
 
+	$(field resourceSet : ResourceSet,$1)
+
 	# Links all resources of the given resource set against each other.
-	#   1. The resource set to link.
+#	#   1. The resource set to link.
 	$(method link,
 		$(invoke linkAgainst,$1,$1))
 
 	# Links the given resource set against another one.
-	#   1. The resource set being linked.
-	#   2. Resource set to search for exported objects.
+#	#   1. The resource set being linked.
+#	#   2. Resource set to search for exported objects.
 	$(method linkAgainst,
 		$(strip $(for \
-			resourceSet <- $(suffix $1),
 			sourceSet   <- $(suffix $2),
-			resource    <- $(get resourceSet->resources),
+			resource    <- $(get $(get-field resourceSet).resources),
 
 			$(call Linker.resolveLinks,$(get resource->unresolvedLinks))
 		))
 	)
 
+	# Resolves a set of links of a single resource.
+	#   1. List of the links to resolve.
+	# Context:
+	#   'resource'. Their resource.
 	$(method resolveLinks,
 		$(for \
 			link        <- $1,
 			linkName    <- $(get link->name),
 			linkPrefix  <- $(firstword $(subst ., ,$(linkName))),
 			targetType  <- $(get $(get link->eMetaReference).eReferenceType),
+
+			$(call Linker.doLink)))
+
+	# Resolves a set of links with the same resource and meta-data.
+	#   1. List of the links to resolve.
+	#   2. Meta reference of the links.
+	# Context:
+	#   'resource'. Their resource.
+	$(method resolveLinksGroup,
+		$(for \
+			targetType  <- $(get 2->eReferenceType),
+			link        <- $1,
+			linkName    <- $(get link->name),
+			linkPrefix  <- $(firstword $(subst ., ,$(linkName))),
 
 			$(call Linker.doLink)))
 
