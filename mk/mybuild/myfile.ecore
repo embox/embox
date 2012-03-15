@@ -107,7 +107,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="NumberOptionValue" eSuperTypes="#//OptionValue">
     <eOperations name="toString" eType="ecore:EDataType emodel.ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OptionBinding" eSuperTypes="emodel.ecore#//ENamedObject">
+  <eClassifiers xsi:type="ecore:EClass" name="OptionBinding">
     <eStructuralFeatures xsi:type="ecore:EReference" name="option" eType="#//Option"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="optionValue" eType="#//OptionValue"
         containment="true"/>

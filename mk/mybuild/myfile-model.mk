@@ -434,7 +434,8 @@ define class-MyFileMember
 	# PROTECTED REGION ID(MyFile_FileMember_fileFullName) ENABLED START
 #	# TODO Uncomment and implement me.
 	$(getter fileFullName,
-		$(error $0: NIY))
+		$(dir $(get $(get eResource).fileName))$(get fileName))
+
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_FileMember) ENABLED START
@@ -639,16 +640,10 @@ endef
 #   - reference 'option'
 #   - reference 'optionValue'
 #
-# The following features and operations are inherited from 'ENamedObject':
-#   - attribute 'name'
-#   - attribute 'qualifiedName'
-#   - attribute 'origin'
-#   - operation 'eInverseResolvedLinks'
-#
 define class-MyOptionBinding
-	# Extends 'ENamedObject' class.
+	# Extends 'EObject' class (implicitly).
 	$(eobject MyFile_OptionBinding,
-		MyOptionBinding,ENamedObject,)
+		MyOptionBinding,,)
 
 	# Property 'option : MyOption'.
 	# Property 'option_link : ELink'.

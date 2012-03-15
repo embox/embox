@@ -195,7 +195,7 @@ define __myFile_init
 
 	$(call eMetaClassInit,$(MyFile_NumberOptionValue),NumberOptionValue,$(MyFile_OptionValue),)
 
-	$(call eMetaClassInit,$(MyFile_OptionBinding),OptionBinding,$(EModel_ENamedObject),)
+	$(call eMetaClassInit,$(MyFile_OptionBinding),OptionBinding,,)
 	$(call eMetaReferenceInit,$(MyFile_OptionBinding_option),option,$(MyFile_Option),,changeable linkable)
 	$(call eMetaReferenceInit,$(MyFile_OptionBinding_optionValue),optionValue,$(MyFile_OptionValue),,changeable containment)
 
