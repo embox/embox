@@ -16,6 +16,20 @@ define class-ConfigLinker
 			$(with $(get root->name),
 				$(if $1,$1.*))))
 
+#	$(method linkHandle-MyFile_OptionBinding_option,
+#		$(for \
+#			optBind <- $(invoke 1->eSource),
+#			include <- $(invoke optBind->eContainer),
+#
+#			$(for link <- $(invoke include->eUnresolvedLinks),
+#				$(call Linker.doSingleLink,$(link)))
+#
+#			$(for module <- $(get include->module),
+#				opt <- $(get module->options),
+#
+#				$(if $(eq $(get opt->name),$(get link->name)),
+#					$(opt)))))
+
 endef
 
 $(def_all)
