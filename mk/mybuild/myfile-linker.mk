@@ -18,6 +18,21 @@ define class-MyFileLinker
 				$(if $1,$1.* )))
 		mybuild.*)
 
+	$(method linkHandle-MyFile_OptionBinding_option,
+		$(for \
+			optBind <- $(invoke 1->eSource),
+			annot <- $(invoke optBind->eContainer),
+
+			$(for link <- $(invoke annot->eUnresolvedLinks),
+				$(call Linker.doSingleLink,$(link)))
+
+			$(for annotType <- $(get annot->type),
+				opt <- $(get annotType->options),
+
+				$(if $(eq $(get opt->name),$(get link->name)),
+					$(opt)))))
+
+
 endef
 
 endif # __mybuild_myfile_linkage_mk

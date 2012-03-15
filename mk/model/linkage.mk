@@ -24,18 +24,24 @@ define class-Linker
 			resourceSet <- $(suffix $1),
 			sourceSet   <- $(suffix $2),
 			resource    <- $(get resourceSet->resources),
-			link        <- $(get resource->unresolvedLinks),
+
+			$(call Linker.resolveLinks,$(get resource->unresolvedLinks))
+		))
+	)
+
+	$(method resolveLinks,
+		$(for \
+			link        <- $1,
 			linkName    <- $(get link->name),
 			linkPrefix  <- $(firstword $(subst ., ,$(linkName))),
 			targetType  <- $(get $(get link->eMetaReference).eReferenceType),
 
-			$(call Linker.doLink)
-		))
-	)
+			$(call Linker.doLink)))
 
 	$(method doLink,
 		$(with \
 			$(or \
+				$(invoke linkHandler,$(link)),
 				$(invoke lookupContainerChain,$(invoke link->eSource)),
 				$(invoke searchGlobalScopeUsingResourceImports),
 				$(invoke searchGlobalScopeByFullName)),
@@ -49,6 +55,13 @@ define class-Linker
 		)
 	)
 
+	# Args:
+	#  1. Object linking
+	$(method linkHandler,
+		$(for obj <- $1,
+			handleName <- linkHandle-$(basename $(get-field $1.eSource)),
+			$(if $(has-method $(this),$(handleName)),
+				$(invoke $(handleName),$1))))
 	# Param:
 	#   1. Link source.
 	$(method lookupContainerChain,
