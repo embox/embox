@@ -15,10 +15,6 @@ CONFIGFILES := \
 
 override CONFIGFILES := $(firstword $(CONFIGFILES))
 
-BUILD_INCLUDES := \
-	mk/mybuild/build-model.mk \
-	mk/mybuild/build-metamodel.mk
-
 export configfiles_mk := \
 	$(patsubst $(abspath ./%),$(CONFIGFILES_CACHE_DIR)/%.mk, \
 		$(abspath $(CONFIGFILES)))
@@ -27,7 +23,7 @@ configfiles_linked_mk := $(CONFIGFILES_CACHE_DIR)/config_files_linked.mk
 
 $(MAKECMDGOALS) : $(configfiles_linked_mk)
 	exit 1
-	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $(mybuild_model_mk) $(mk_mybuild_build-incl) $<' $@
+	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $(mybuild_model_mk) $<' $@
 
 .DELETE_ON_ERROR:
 

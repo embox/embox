@@ -76,8 +76,17 @@ $(mk_mybuild_configfile) : CACHE_REQUIRES := \
 	$(mk_model)
 $(mk_mybuild_configfile) : ALLOC_SCOPE := g
 
+# Build model files.
+export mk_mybuild_build := $(MK_CACHE_DIR)/mk_mybuild_build.mk
+$(mk_mybuild_build) : CACHE_INCLUDES := \
+	mk/mybuild/build-model.mk     \
+	mk/mybuild/build-metamodel.mk
+$(mk_mybuild_build) : CACHE_REQUIRES := \
+	$(mk_mybuild_myfile) \
+	$(mk_mybuild_configfile) \
+	$(mk_model)
+$(mk_mybuild_build) : ALLOC_SCOPE := h
 
-export mk_mybuild_build-incl := mk/mybuild/build-model.mk mk/mybuild/build-metamodel.mk
 
 # Mybuild itself.
 export mk_mybuild := $(MK_CACHE_DIR)/mk_mybuild.mk
@@ -85,8 +94,9 @@ $(mk_mybuild) : CACHE_INCLUDES := \
 	mk/mybuild/mybuild.mk
 $(mk_mybuild) : CACHE_REQUIRES := \
 	$(mk_mybuild_myfile) \
-	$(mk_mybuild_configfile)
-$(mk_mybuild) : ALLOC_SCOPE := h
+	$(mk_mybuild_configfile) \
+	$(mk_mybuild_build)
+$(mk_mybuild) : ALLOC_SCOPE := i
 
 # Ugly scripts.
 export mk_ugly := $(MK_CACHE_DIR)/mk_ugly.mk
@@ -104,6 +114,7 @@ export all_mk_files := \
 	$(mk_model) \
 	$(mk_mybuild_myfile) \
 	$(mk_mybuild_configfile) \
+	$(mk_mybuild_build) \
 	$(mk_mybuild) \
 	$(mk_ugly)
 
