@@ -137,6 +137,10 @@ static int icmp_echo(sk_buff_t *skb) {
 	reply->h.icmph->checksum = 0;
 	reply->h.icmph->checksum = ptclbsum(reply->h.raw, htons(reply->nh.iph->tot_len) - IP_HEADER_SIZE(reply->nh.iph));
 	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
+			/* svv: ToDo: daddr might be 255.255.255.255. It can't act as a source
+			 * Please note, if we have more that 1 interface, then
+			 * daddr might not belong to the device we obtain this packet
+			 */
 	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, reply, 0);
 	return ENOERR;
 }

@@ -37,6 +37,6 @@ int ifdev_down(const char *if_name) {
 		return -ENOENT;
 	}
 
-	return ENOERR;
+	return ENOERR;			/* svv: ToDo: probably we must call inet_dev_remove_dev() here */
 }
 

@@ -99,6 +99,42 @@ struct net_device * ip_dev_find(in_addr_t addr) {
 	return NULL;
 }
 
+bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
+	struct inetdev_info *indev_info;
+	struct list_head *tmp;
+
+	if ( (addr == INADDR_BROADCAST) && check_broadcast )
+	{
+		return true;
+	}
+
+	if ( ipv4_is_multicast(addr) && check_multicast )
+	{
+		return true;
+	}
+
+	list_for_each(tmp, &indev_info_list) {
+		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
+		if (indev_info->in_dev.ifa_address == addr) {
+			return true;
+		}
+		if (check_broadcast)
+		{
+			in_addr_t broad1 = indev_info->in_dev.ifa_anycast;									/* It MUST be init to INADDR_BROADCAST by default */
+			in_addr_t broad2 = indev_info->in_dev.ifa_address & indev_info->in_dev.ifa_mask;	/* Obsoleted broadcast, not used any more */
+			in_addr_t broad3 = indev_info->in_dev.ifa_broadcast;								/* If someone inited it to something strange */
+
+			if ( (addr == broad1) || (addr == broad2) || (addr == broad3) ) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+
+
 struct in_device * inet_dev_find_by_name(const char *if_name) {
 	struct inetdev_info *indev_info;
 	struct list_head *tmp;

@@ -75,6 +75,12 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
 	return -ENOENT;
 }
 
+/* svv: ToDo:
+ * 		1) this function returns -ENOENT/ENOERR, but arp_resolve -1/0
+ * 			style must be the same
+ *		2) Carrier without ARP can't be supported
+ *		3) We might fulfill carrier-dependent info in skb here
+ */
 int ip_route(sk_buff_t *skb) {
 	in_addr_t daddr = skb->nh.iph->daddr;
 	struct rt_entry *rte = rt_fib_get_best(daddr);
