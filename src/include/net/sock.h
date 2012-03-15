@@ -30,12 +30,6 @@ struct sock_common {
 	volatile unsigned char skc_state;
 	unsigned char skc_reuse;
 	int skc_bound_dev_if;
-#if 0
-	struct hlist_node skc_node;
-	struct hlist_node skc_bind_node;
-	atomic_t skc_refcnt;
-	unsigned int skc_hash;
-#endif
 	struct proto *skc_prot;
 };
 
@@ -208,16 +202,6 @@ extern void sk_common_release(struct sock *sk);
 extern void sock_lock(struct sock *sk);
 extern void sock_unlock(struct sock *sk);
 
-#if 0
-//TODO NETSOCK: functions are not realized now
-extern int proto_register(proto_t *prot, int alloc_slab);
-extern void proto_unregister(proto_t *prot);
-
-extern sock_t *sk_clone(const sock_t *sk, const gfp_t priority);
-extern int sock_setsockopt(socket_t *sock, int level, int op, char *optval, unsigned int optlen);
-extern int sock_getsockopt(socket_t *sock, int level, int op, char *optval, int *optlen);
-extern sk_buff_t *sock_alloc_send_skb(sock_t *sk, unsigned long size, int noblock, int *errcode);
-#endif
 
 extern void sk_set_connection_state(struct sock *sk, enum socket_connection_state_t state);
 extern enum socket_connection_state_t sk_get_connection_state(struct sock *sk);
@@ -226,4 +210,5 @@ extern int sk_is_bound(struct sock *sk);
 extern int sk_is_listening(struct sock *sk);
 
 enum sk_errno_t {SK_NOERR = 0, SK_ERR = 400, SK_NO_SUCH_METHOD = 401};
+
 #endif /* NET_SOCK_H_ */

@@ -83,18 +83,13 @@ typedef struct socket {
 	socket_state state;
 	short type;
 	unsigned long flags;
-#if 0
-	struct file   *file;
-#endif
+
 	struct sock *sk;
 	const struct proto_ops *ops;
 } socket_t;
 
 struct proto_ops {
 	int family;
-#if 0
-	struct module *owner;
-#endif
 	int (*release)(struct socket *sock);
 	int (*bind)(struct socket *sock, struct sockaddr *myaddr, int sockaddr_len);
 	int (*connect)(struct socket *sock, struct sockaddr *vaddr,
@@ -103,10 +98,6 @@ struct proto_ops {
 	int (*accept)(socket_t *sock, sockaddr_t *addr, int *addr_len);
 	int (*getname)(struct socket *sock, struct sockaddr *addr,
 			int *sockaddr_len, int peer);
-#if 0
-	unsigned int (*poll)(struct file *file, struct socket *sock,
-			struct poll_table_struct *wait);
-#endif
 
 	int (*ioctl)(struct socket *sock, unsigned int cmd, unsigned long arg);
 	int (*compat_ioctl)(struct socket *sock, unsigned int cmd,
@@ -125,21 +116,11 @@ struct proto_ops {
 			size_t total_len);
 	int (*recvmsg)(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
 			size_t total_len, int flags);
-#if 0
-	int (*mmap)(struct file *file, struct socket *sock,
-			struct vm_area_struct * vma);
-	ssize_t (*sendpage)(struct socket *sock, struct page *page, int offset,
-			size_t size, int flags);
-#endif
 };
 
 typedef struct net_proto_family {
 	int		family;
 	int		(*create)(struct socket *sock, int protocol);
-	/*TODO may be define struct module for compatible*/
-#if 0
-	struct module	*owner;
-#endif
 } net_proto_family_t;
 
 /**

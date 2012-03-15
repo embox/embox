@@ -82,8 +82,7 @@ void raw_err(sk_buff_t *skb, uint32_t info) {
 }
 
 static void raw_close(struct sock *sk, long timeout) {
-	/*TODO: release socket*/
-	sk_free(sk);
+	sk_common_release(sk);
 }
 
 static int raw_rcv_skb(struct sock *sk, sk_buff_t *skb) {
