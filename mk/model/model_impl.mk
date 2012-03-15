@@ -80,6 +80,10 @@ define builtin_func-eobject-reference
 					$$(call __eObjectSerializeCrossReference,$2,$1))
 			)
 			$$(getter $2,
+				# Linkable references also support on-demand linkage.
+				$(if $(filter linkable,$5),
+					$$(call __eObjectResolveLinks,
+						$$(filter %./,$$(get-field $2))))
 				# Getting suffix is mandatory here!
 				$$(suffix $$(get-field $2)))
 		)
@@ -317,6 +321,14 @@ endef
 define __eObjectSetBidirectional_link
 	$(call __eObjectRemoveBidirectional_link,$1,$(get-field $1),$3)
 	$(call __eObjectAddBidirectional_link,$1,$2,$3,$4)
+endef
+
+# Params:
+#   1. List of unresolved (at the call time) references with './' at their ends.
+define __eObjectResolveLinks
+	$(and $1,$(for link <- $(subst ./,,$1),
+		$(warning NIY: on-demand linkage: [$(get link->eMetaReference)] '$(get link->name)')
+	),)
 endef
 
 # Params:
