@@ -53,24 +53,25 @@ static int httpd_exec(int argc, char **argv) {
 	    f += bytes_read;
 	}
 
+	// Create listen socket
+	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sock < 0) {
+		prom_printf("%s", "can't create socket!");
+	}
+
+	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+		printf("%s","sock can't bind!");
+	}
+
+	listen(sock, 1);
+
 	while (1) {
-		sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-		if(sock < 0) {
-			prom_printf("%s", "can't create socket!");
-		}
-
-		if(bind(sock, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
-			printf("%s","sock can't bind!");
-		}
-
-		listen(sock, 1);
 		connect_sock = accept(sock,(struct sockaddr *)&dst,
 				&dst_addr_len);
 
 		if (connect_sock < 0) {
 			printf("accept fail\n");
-			return -1;
+			continue;
 		}
 
 		while ((bytes_read = recvfrom(connect_sock, req_buf,
@@ -85,6 +86,8 @@ static int httpd_exec(int argc, char **argv) {
 		close(connect_sock);
 
 	}
+
+	close(sock);
 
 	return 0;
 }

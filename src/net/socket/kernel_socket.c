@@ -143,8 +143,9 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 	return res;
  }
 
-int kernel_socket_accept(struct socket *sock, struct sockaddr *addr, socklen_t *addrlen) {
+int kernel_socket_accept(struct socket *sock, struct socket **accepted, struct sockaddr *addr, socklen_t *addrlen) {
 	int res;
+	struct socket *new_sock;
 
 	if(!sock->ops->accept){
 		debug_printf("No accept() method", "kernel_socket", "kernel_socket_accept");
@@ -157,15 +158,23 @@ int kernel_socket_accept(struct socket *sock, struct sockaddr *addr, socklen_t *
 		return SK_ERR;
 	}
 
+	// create the same socket as 'sock'
+	res = kernel_socket_create(sock->sk->__sk_common.skc_family, sock->sk->sk_type,
+			sock->sk->sk_protocol, &new_sock);
+	if (res < 0) {
+		return res;
+	}
 	/* try to accept */
-	res = sock->ops->accept(sock, addr, addrlen);
-	if(res){  /* If something went wrong */
+	res = sock->ops->accept(sock, new_sock, addr, addrlen);
+	if (res < 0) { /* If something went wrong */
 		debug_printf("Error while accepting a connection",
 								 "kernel_sockets", "kernel_socket_accept");
-		sk_set_connection_state(sock->sk, LISTENING);
+		kernel_socket_release(new_sock);
 	}
-	else
-		sk_set_connection_state(sock->sk, ESTABLISHED);  /* Everything turned out fine */
+	else {
+		*accepted = new_sock;
+		sk_set_connection_state(new_sock->sk, ESTABLISHED);  /* Everything turned out fine */
+	}
 	return res;
  }
 
@@ -173,7 +182,7 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
 	int res;
 
-	/* Socket's like UDP are 'connectionless'. that means that connect
+	/* Socket's like UDP are 'connection less'. that means that connect
 	   only sets binds the target of the socket to an address.
 	   In the cases of stream protocols the meaning is strict - initiate
 	   connection to a given host*/
@@ -229,6 +238,7 @@ int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr
 			size_t total_len, int flags) {
 	return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
 }
+
 
 int kernel_socket_shutdown(struct socket *sock){
 	return ENOERR;

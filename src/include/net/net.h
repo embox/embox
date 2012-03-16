@@ -95,7 +95,7 @@ struct proto_ops {
 	int (*connect)(struct socket *sock, struct sockaddr *vaddr,
 			int sockaddr_len, int flags);
 	int (*socketpair)(struct socket *sock1, struct socket *sock2);
-	int (*accept)(socket_t *sock, sockaddr_t *addr, int *addr_len);
+	int (*accept)(socket_t *sock, socket_t *new_sock, sockaddr_t *addr, int *addr_len);
 	int (*getname)(struct socket *sock, struct sockaddr *addr,
 			int *sockaddr_len, int peer);
 

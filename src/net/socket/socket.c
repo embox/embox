@@ -59,7 +59,11 @@ int socket(int domain, int type, int protocol) {
 		return res; /* return error code */
 	}
 
-	return task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_SOCKET, sock);
+	res = task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_SOCKET, sock);
+	if (res < 0) { // release socket if can't alloc idx
+		kernel_socket_release(sock);
+	}
+	return res;
 }
 
 int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
@@ -106,7 +110,7 @@ int listen(int sockfd, int backlog) {
 }
 
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
-	struct socket *sock;
+	struct socket *sock, *new_sock;
 	int res;
 
 	if (sockfd < 0) {
@@ -117,11 +121,16 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		return -EBADF;
 	}
 
-	if ((res = kernel_socket_accept(sock, addr, addrlen)) < 0) {
+	res = kernel_socket_accept(sock, &new_sock, addr, addrlen);
+	if (res < 0) {
 		return res;
 	}
 
-	return sockfd;
+	res = task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_SOCKET, new_sock);
+	if (res < 0) {
+		kernel_socket_release(new_sock);
+	}
+	return res;
 }
 
 static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,

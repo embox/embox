@@ -59,7 +59,7 @@ struct tcp_pseudohdr {
 #define TCP_V4_HEADER_SIZE(hdr) ((((struct tcphdr *) hdr)->doff) << 2)
 enum {
 	TCP_NONE_STATE = 0,
-	TCP_ESTABIL = 1,
+	TCP_ESTABIL,
 	TCP_ESTABIL_ACK_WAIT,
 	TCP_SYN_SENT,
 	TCP_SYN_RECV_PRE,
