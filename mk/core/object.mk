@@ -1949,6 +1949,9 @@ define __object_print_field.reference_list
 			# Substitute the suffix with the serial identifier of the
 			# referenced object and escape everything else.
 			$(call __object_field_escape,$(basename $r))
+			$(if $(value $(suffix $r).__serial_id__),,
+				$(warning $0: no serial id: $r [$($r)] inside reference field $1 \
+					of object $o [$c] being serialized as $s))
 			$($(suffix $r).__serial_id__))$(\n)
 endef
 
@@ -1963,6 +1966,10 @@ define __object_print_field.reference_scalar
 				of object $o [$c] being serialized as $s)
 			# See '__object_print_field_reference_list'.
 			$(call __object_field_escape,$(basename $r))
+			$(if $(value $(suffix $r).__serial_id__),,
+				$(warning $0: no serial id: $r [$($r)] inside reference field $1 \
+					of object $o [$c] being serialized as $s))
+
 			$($(suffix $r).__serial_id__))$(\n)
 endef
 
