@@ -333,7 +333,7 @@ define __eObjectResolveLinks
 			$(warning on-demand linkage: \
 				[$(get link->eMetaReference)] '$(get link->name)'))
 		$(invoke $(get resourceSet->linker).resolveLinksGroup,
-			$(subst ./,,$1),$2)
+			$(subst ./,,$1),$($2))
 	),)
 endef
 

@@ -22,15 +22,15 @@ endef
 define class-MyFileResourceSet
 	$(super ResourceSet,$(value 1))
 	$(method createLinker,
-		$(new MyFileLinker,$(this)))
+		$(new MyFileLinker,$(this),$(this)))
 endef
 
 define myfile_create_resource_set_from_files
 	$(for rs <-
-			$(new ResourceSet,
+			$(new MyFileResourceSet,
 				$(for f <- $1,$($f))),
 
-		$(invoke $(get rs->linker).link,$(rs))
+		$(invoke $(get rs->linker).resolveAllLinks)
 
 		$(for r <- $(get rs->resources),
 			issue <- $(get r->issues),

@@ -11,21 +11,15 @@ include mk/model/metamodel.mk
 
 # Constructor:
 #   1. The resource set for which we create the linker.
+#   1. The resource sets where we will search for named objects.
 define class-Linker
 
-	$(field resourceSet : ResourceSet,$1)
+	$(field resourceSet : ResourceSet,$(or $1, $(error Linker: invalid 1 argument)))
+	$(field relatedResourceSets... : ResourceSet,$(or $2, $(error Linker: invalid 2 argument)))
 
 	# Links all resources of the given resource set against each other.
-#	#   1. The resource set to link.
-	$(method link,
-		$(invoke linkAgainst,$1,$1))
-
-	# Links the given resource set against another one.
-#	#   1. The resource set being linked.
-#	#   2. Resource set to search for exported objects.
-	$(method linkAgainst,
+	$(method resolveAllLinks,
 		$(strip $(for \
-			sourceSet   <- $(suffix $2),
 			resource    <- $(get $(get-field resourceSet).resources),
 
 			$(call Linker.resolveLinks,$(get resource->unresolvedLinks))
@@ -60,29 +54,30 @@ define class-Linker
 			$(call Linker.doLink)))
 
 	$(method doLink,
-		$(with \
-			$(or \
-				$(invoke linkHandler,$(link)),
-				$(invoke lookupContainerChain,$(invoke link->eSource)),
-				$(invoke searchGlobalScopeUsingResourceImports),
-				$(invoke searchGlobalScopeByFullName)),
+		$(for sourceSet <- $(get-field relatedResourceSets),
+			$(with \
+				$(or \
+					$(invoke linkHandler,$(link)),
+					$(invoke lookupContainerChain,$(invoke link->eSource)),
+					$(invoke searchGlobalScopeUsingResourceImports),
+					$(invoke searchGlobalScopeByFullName)),
+				$(if $(singleword $1),
+					$(invoke link->resolve,$1),
 
-			$(if $(singleword $1),
-				$(invoke link->resolve,$1),
+					$(set+ resource->issues,
+						$(new UnresolvedLinkIssue,$(link))))
 
-				$(set+ resource->issues,
-					$(new UnresolvedLinkIssue,$(link))))
-
+			)
 		)
 	)
 
 	# Args:
-	#  1. Object linking
+	#  1. Link
 	$(method linkHandler,
-		$(for obj <- $1,
-			handleName <- linkHandle-$(basename $(get-field $1.eSource)),
+		$(for link <- $1,
+			handleName <- linkHandle-$(get link->eMetaReferenceId),
 			$(if $(has-method $(this),$(handleName)),
-				$(invoke $(handleName),$1))))
+				$(invoke $(handleName),$(link)))))
 	# Param:
 	#   1. Link source.
 	$(method lookupContainerChain,

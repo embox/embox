@@ -22,20 +22,20 @@ endef
 define class-ConfigFileResourceSet
 	$(super ResourceSet,$(value 1))
 	$(method createLinker,
-		$(new ConfigFileLinker,$(this)))
+		$(new ConfigLinker,$(this),$(__myfile_resource_set)))
 endef
 
 define config_create_resource_set_from_files
-	$(new ResourceSet,$(foreach r,$1,$($r)))
+	$(new ConfigFileResourceSet,$(foreach r,$1,$($r)))
 endef
 
 define config_link_with_myfile_model
 	$(for rs <- $1,
 		myfileSet <- $2,
 
-		$(invoke $(get rs->linker).linkAgainst,$(rs),$(myfileSet))
+		$(invoke $(get rs->linker).resolveAllLinks)
 
-		$(for r <- $(get rs->resources),
+		$(silent-for r <- $(get rs->resources),
 			issue <- $(get r->issues),
 			$(invoke issue->report))
 
