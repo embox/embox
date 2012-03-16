@@ -9,7 +9,7 @@ __mybuild_config_linker_mk:= 1
 include mk/model/linkage.mk
 
 define class-ConfigLinker
-	$(super Linker)
+	$(super Linker,$1,$2)
 
 	$(method getResourceImportNormalizers,
 		$(for root <- $(get 1->contentsRoot),

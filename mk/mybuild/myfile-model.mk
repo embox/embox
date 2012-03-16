@@ -104,7 +104,7 @@ endef
 #
 # The following features are defined:
 #   - reference 'type'
-#   - reference 'target'
+#   - reference 'targets'
 #   - reference 'bindings'
 #
 define class-MyAnnotation
@@ -117,9 +117,9 @@ define class-MyAnnotation
 	$(eobject-reference MyFile_Annotation_type,
 		type,MyAnnotationType,,changeable linkable)
 
-	# Property 'target : MyAnnotationTarget'.
-	$(eobject-reference MyFile_Annotation_target,
-		target,MyAnnotationTarget,annotations,changeable container)
+	# Property 'targets... : MyAnnotationTarget'.
+	$(eobject-reference MyFile_Annotation_targets,
+		targets,MyAnnotationTarget,annotations,changeable many)
 
 	# Property 'bindings... : MyOptionBinding'.
 	$(eobject-reference MyFile_Annotation_bindings,
@@ -143,7 +143,7 @@ define class-MyAnnotationTarget # abstract
 
 	# Property 'annotations... : MyAnnotation'.
 	$(eobject-reference MyFile_AnnotationTarget_annotations,
-		annotations,MyAnnotation,target,changeable many containment)
+		annotations,MyAnnotation,targets,changeable many)
 
 	# PROTECTED REGION ID(MyFile_AnnotationTarget) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -376,9 +376,10 @@ define class-MyModule
 	# Reference 'allSubTypes' [0..*]: bidirectional, derived, read-only.
 	$(property allSubTypes... : MyModule)
 	# PROTECTED REGION ID(MyFile_Module_allSubTypes) ENABLED START
-#	# TODO Uncomment and implement me.
 	$(getter allSubTypes,
-		$(error $0: NIY))
+		$(for subType <- $(get subTypes),
+			$(subType) \
+			$(get subType->allSubTypes)))
 	# PROTECTED REGION END
 
 	# Reference 'allSuperTypes' [0..*]: bidirectional, derived, read-only.

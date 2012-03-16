@@ -19,14 +19,14 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Annotation">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//AnnotationType"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//AnnotationTarget"
-        eOpposite="#//AnnotationTarget/annotations"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="targets" upperBound="-1"
+        eType="#//AnnotationTarget" eOpposite="#//AnnotationTarget/annotations"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="bindings" upperBound="-1"
         eType="#//OptionBinding" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AnnotationTarget" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
-        eType="#//Annotation" containment="true" eOpposite="#//Annotation/target"/>
+        eType="#//Annotation" eOpposite="#//Annotation/targets"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AnnotatedLink" eSuperTypes="emodel.ecore#//ELink #//AnnotationTarget"/>
   <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="#//Type">
