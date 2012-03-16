@@ -32,8 +32,8 @@ MyFile_Annotation := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Annotation)
 MyFile_Annotation_type := \
 	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_type)
-MyFile_Annotation_targets := \
-	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_targets)
+MyFile_Annotation_target := \
+	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_target)
 MyFile_Annotation_bindings := \
 	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_bindings)
 
@@ -144,11 +144,11 @@ define __myFile_init
 
 	$(call eMetaClassInit,$(MyFile_Annotation),Annotation,,)
 	$(call eMetaReferenceInit,$(MyFile_Annotation_type),type,$(MyFile_AnnotationType),,changeable linkable)
-	$(call eMetaReferenceInit,$(MyFile_Annotation_targets),targets,$(MyFile_AnnotationTarget),$(MyFile_AnnotationTarget_annotations),changeable many)
+	$(call eMetaReferenceInit,$(MyFile_Annotation_target),target,$(MyFile_AnnotationTarget),$(MyFile_AnnotationTarget_annotations),changeable container)
 	$(call eMetaReferenceInit,$(MyFile_Annotation_bindings),bindings,$(MyFile_OptionBinding),,changeable many containment)
 
 	$(call eMetaClassInit,$(MyFile_AnnotationTarget),AnnotationTarget,,abstract)
-	$(call eMetaReferenceInit,$(MyFile_AnnotationTarget_annotations),annotations,$(MyFile_Annotation),$(MyFile_Annotation_targets),changeable many)
+	$(call eMetaReferenceInit,$(MyFile_AnnotationTarget_annotations),annotations,$(MyFile_Annotation),$(MyFile_Annotation_target),changeable many containment)
 
 	$(call eMetaClassInit,$(MyFile_AnnotatedLink),AnnotatedLink,$(EModel_ELink) $(MyFile_AnnotationTarget),)
 
@@ -215,7 +215,7 @@ define __myFile_bind
 
 	$(call eMetaClassBind,$(MyFile_Annotation),MyAnnotation)
 	$(call eMetaFeatureBind,$(MyFile_Annotation_type),type)
-	$(call eMetaFeatureBind,$(MyFile_Annotation_targets),targets)
+	$(call eMetaFeatureBind,$(MyFile_Annotation_target),target)
 	$(call eMetaFeatureBind,$(MyFile_Annotation_bindings),bindings)
 
 	$(call eMetaClassBind,$(MyFile_AnnotationTarget),MyAnnotationTarget)

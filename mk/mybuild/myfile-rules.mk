@@ -205,7 +205,7 @@ $(gold_grammar)_produce-SuperModule_extends = $2
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotatedModuleMember
 	$(for target <- $2,
-		$(set+ target->annotations,$1)
+		$(set+ target->annotations,$(foreach a,$1,$(invoke a->eCopy)))
 		$(target))
 endef
 

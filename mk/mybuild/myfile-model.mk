@@ -104,7 +104,7 @@ endef
 #
 # The following features are defined:
 #   - reference 'type'
-#   - reference 'targets'
+#   - reference 'target'
 #   - reference 'bindings'
 #
 define class-MyAnnotation
@@ -117,9 +117,9 @@ define class-MyAnnotation
 	$(eobject-reference MyFile_Annotation_type,
 		type,MyAnnotationType,,changeable linkable)
 
-	# Property 'targets... : MyAnnotationTarget'.
-	$(eobject-reference MyFile_Annotation_targets,
-		targets,MyAnnotationTarget,annotations,changeable many)
+	# Property 'target : MyAnnotationTarget'.
+	$(eobject-reference MyFile_Annotation_target,
+		target,MyAnnotationTarget,annotations,changeable container)
 
 	# Property 'bindings... : MyOptionBinding'.
 	$(eobject-reference MyFile_Annotation_bindings,
@@ -143,7 +143,7 @@ define class-MyAnnotationTarget # abstract
 
 	# Property 'annotations... : MyAnnotation'.
 	$(eobject-reference MyFile_AnnotationTarget_annotations,
-		annotations,MyAnnotation,targets,changeable many)
+		annotations,MyAnnotation,target,changeable many containment)
 
 	# PROTECTED REGION ID(MyFile_AnnotationTarget) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
