@@ -115,13 +115,13 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 	int res;
 
 	if(!sock->ops->listen){
-		debug_printf("No listen() method", "kernel_socket", "kernel_socket_bind");
+		debug_printf("No listen() method", "kernel_socket", "kernel_socket_listen");
 		return SK_NO_SUCH_METHOD;
 	}
 
-	if(!sk_is_bound(sock->sk)){  /* the socket should first be bound to an adress */
+	if(!sk_is_bound(sock->sk)){  /* the socket should first be bound to an address */
 		debug_printf("Socket should be bound to accept",
-								 "kernel_socket", "kernel_socket_bind");
+								 "kernel_socket", "kernel_socket_listen");
 		return SK_ERR;
 	}
 
@@ -129,7 +129,7 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 	res = sock->ops->listen(sock, backlog);
 	if(res){  /* If something went wrong */
 		debug_printf("Error setting socket in listening state",
-								 "kernel_sockets", "kernel_socket_bind");
+								 "kernel_sockets", "kernel_socket_listen");
 		/* Set the state to UNCONNECTEd */
 		sk_set_connection_state(sock->sk, UNCONNECTED);
 	}else
@@ -141,13 +141,13 @@ int kernel_socket_accept(struct socket *sock, struct sockaddr *addr, socklen_t *
 	int res;
 
 	if(!sock->ops->accept){
-		debug_printf("No accept() method", "kernel_socket", "kernel_socket_bind");
+		debug_printf("No accept() method", "kernel_socket", "kernel_socket_accept");
 		return SK_NO_SUCH_METHOD;
 	}
 
 	if(!sk_is_listening(sock->sk)){  /* we should connect to a listening socket */
-		debug_printf("Socket cccepting a connection should be in listening state",
-								 "kernel_socket", "kernel_socket_bind");
+		debug_printf("Socket accepting a connection should be in listening state",
+								 "kernel_socket", "kernel_socket_accept");
 		return SK_ERR;
 	}
 
@@ -155,7 +155,7 @@ int kernel_socket_accept(struct socket *sock, struct sockaddr *addr, socklen_t *
 	res = sock->ops->accept(sock, addr, addrlen);
 	if(res)  /* If something went wrong */
 		debug_printf("Error while accepting a connection",
-								 "kernel_sockets", "kernel_socket_bind");
+								 "kernel_sockets", "kernel_socket_accept");
 	else
 		sk_set_connection_state(sock->sk, ESTABLISHED);  /* Everything turned out fine */
 	return res;
@@ -173,7 +173,7 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 	/* TODO add code for the mentioned above cases */
 
 	if(!sock->ops->connect){
-		debug_printf("No connect() method", "kernel_socket", "kernel_socket_bind");
+		debug_printf("No connect() method", "kernel_socket", "kernel_socket_connect");
 		return SK_NO_SUCH_METHOD;
 	}
 
@@ -182,7 +182,7 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 	res = sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
 	if(!res){  /* smth's wrong */
 		debug_printf("Unable to connect on socket",
-								 "kernel_sockets", "kernel_socket_bind");
+								 "kernel_sockets", "kernel_socket_connect");
 		sk_set_connection_state(sock->sk, UNCONNECTED);
 		return res;
 	}else
