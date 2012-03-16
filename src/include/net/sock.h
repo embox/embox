@@ -203,11 +203,31 @@ extern void sock_lock(struct sock *sk);
 extern void sock_unlock(struct sock *sk);
 
 
-extern void sk_set_connection_state(struct sock *sk, enum socket_connection_state_t state);
-extern enum socket_connection_state_t sk_get_connection_state(struct sock *sk);
-extern int sk_is_connected(struct sock *sk);
-extern int sk_is_bound(struct sock *sk);
-extern int sk_is_listening(struct sock *sk);
+/* extern void sk_set_connection_state(struct sock *sk, enum socket_connection_state_t state); */
+/* extern enum socket_connection_state_t sk_get_connection_state(struct sock *sk); */
+/* extern int sk_is_connected(struct sock *sk); */
+/* extern int sk_is_bound(struct sock *sk); */
+/* extern int sk_is_listening(struct sock *sk); */
+static inline void sk_set_connection_state(struct sock *sk, enum socket_connection_state_t state){
+	sk->socket_connection_state = state;
+}
+
+static inline enum socket_connection_state_t sk_get_connection_state(struct sock *sk){
+	return sk->socket_connection_state;
+}
+
+static inline int sk_is_connected(struct sock *sk){
+	return (sk->socket_connection_state == CONNECTED);
+}
+
+static inline int sk_is_bound(struct sock *sk){
+	return (sk->socket_connection_state == BOUND);
+}
+
+static inline int sk_is_listening(struct sock *sk){
+	return (sk->socket_connection_state == LISTENING);
+}
+
 
 enum sk_errno_t {SK_NOERR = 0, SK_ERR = 400, SK_NO_SUCH_METHOD = 401};
 

@@ -48,18 +48,3 @@ const struct net_proto_family * socket_repo_get_family(int family) {
 
 	return net_families[family];
 }
-
-inline bool is_a_valid_sock_type(int type){
-	return ((type == SOCK_STREAM) ||
-					(type == SOCK_DGRAM) ||
-					(type == SOCK_RAW) ||
-					(type == SOCK_SEQPACKET) ||
-					(type == SOCK_PACKET));
-}
-
-inline bool is_a_valid_family(int family){
-	return ((family == AF_UNSPEC) ||
-					(family == AF_UNIX) ||
-					(family == AF_INET) ||
-					(family == AF_PACKET));
-}

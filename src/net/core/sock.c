@@ -151,23 +151,3 @@ void sock_lock(struct sock *sk) {
 void sock_unlock(struct sock *sk) {
 	sk->sk_lock.slock = 0;
 }
-
-void sk_set_connection_state(struct sock *sk, enum socket_connection_state_t state){
-	sk->socket_connection_state = state;
-}
-
-inline enum socket_connection_state_t sk_get_connection_state(struct sock *sk){
-	return sk->socket_connection_state;
-}
-
-inline int sk_is_connected(struct sock *sk){
-	return (sk->socket_connection_state == CONNECTED);
-}
-
-inline int sk_is_bound(struct sock *sk){
-	return (sk->socket_connection_state == BOUND);
-}
-
-inline int sk_is_listening(struct sock *sk){
-	return (sk->socket_connection_state == LISTENING);
-}
