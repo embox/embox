@@ -103,6 +103,7 @@ struct net_device * dev_getbyhwaddr(unsigned short type, char *hw_addr) {
  * network device pool
  * ------------------------------------------
  */
+static int process_backlog(struct net_device *dev);
 POOL_DEF(netdev_pool, struct net_device, CONFIG_NET_DEVICES_QUANTITY);
 
 struct net_device * alloc_netdev(int sizeof_priv, const char *name,
