@@ -130,8 +130,8 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 	if(res){  /* If something went wrong */
 		debug_printf("Error setting socket in listening state",
 								 "kernel_sockets", "kernel_socket_listen");
-		/* Set the state to UNCONNECTEd */
-		sk_set_connection_state(sock->sk, UNCONNECTED);
+		/* socket was bound, so set back BOUND */
+		sk_set_connection_state(sock->sk, BOUND);
 	}else
 		sk_set_connection_state(sock->sk, LISTENING);  /* Everything turned out fine */
 	return res;
@@ -153,9 +153,11 @@ int kernel_socket_accept(struct socket *sock, struct sockaddr *addr, socklen_t *
 
 	/* try to accept */
 	res = sock->ops->accept(sock, addr, addrlen);
-	if(res)  /* If something went wrong */
+	if(res){  /* If something went wrong */
 		debug_printf("Error while accepting a connection",
 								 "kernel_sockets", "kernel_socket_accept");
+		sk_set_connection_state(sock->sk, LISTENING);
+	}
 	else
 		sk_set_connection_state(sock->sk, ESTABLISHED);  /* Everything turned out fine */
 	return res;
