@@ -17,6 +17,8 @@ define class-Linker
 	$(field resourceSet : ResourceSet,$(or $1, $(error Linker: invalid 1 argument)))
 	$(field relatedResourceSets... : ResourceSet,$(or $2, $(error Linker: invalid 2 argument)))
 
+	$(field unresolvableLinks... : ELink)
+
 	# Links all resources of the given resource set against each other.
 	$(method resolveAllLinks,
 		$(strip $(for \
@@ -32,7 +34,7 @@ define class-Linker
 	#   'resource'. Their resource.
 	$(method resolveLinks,
 		$(for \
-			link        <- $1,
+			link        <- $(filter-out $(get-field unresolvableLinks),$1),
 			linkName    <- $(get link->name),
 			linkPrefix  <- $(firstword $(subst ., ,$(linkName))),
 			targetType  <- $(get $(get link->eMetaReference).eReferenceType),
@@ -45,25 +47,28 @@ define class-Linker
 	# Context:
 	#   'resource'. Their resource.
 	$(method resolveLinksGroup,
+		$(warning $0: $(get-field unresolvableLinks))
 		$(for \
 			targetType  <- $(get 2->eReferenceType),
-			link        <- $1,
+			link        <- $(filter-out $(get-field unresolvableLinks),$1),
 			linkName    <- $(get link->name),
 			linkPrefix  <- $(firstword $(subst ., ,$(linkName))),
 
 			$(call Linker.doLink)))
 
 	$(method doLink,
-		$(for sourceSet <- $(get-field relatedResourceSets),
+		$(silent-for sourceSet <- $(get-field relatedResourceSets),
 			$(with \
 				$(or \
 					$(invoke linkHandler,$(link)),
 					$(invoke lookupContainerChain,$(invoke link->eSource)),
 					$(invoke searchGlobalScopeUsingResourceImports),
 					$(invoke searchGlobalScopeByFullName)),
+				$(warning $0: $(get link->name) -> '$1')
 				$(if $(singleword $1),
 					$(invoke link->resolve,$1),
 
+					$(set-field+ unresolvableLinks,$(link))
 					$(set+ resource->issues,
 						$(new UnresolvedLinkIssue,$(link))))
 
