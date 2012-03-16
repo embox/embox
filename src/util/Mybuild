@@ -12,3 +12,7 @@ static module LibUtil {
 	source "debug_msg.c", "debug_msg.h"
 }
 
+module 	hashtable {
+	source "hashtable.c"
+	depends embox.mem.heap_bm
+}
