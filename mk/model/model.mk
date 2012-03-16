@@ -158,7 +158,11 @@ define class-EObject
 	$(method __serialize_extra_objects,
 		$(invoke eLinks) \
 		$(suffix $(get-field __eOppositeRefs) \
-			$(basename $(get-field __eOppositeRefs))))
+			$(basename $(get-field __eOppositeRefs))) \
+		# XXX truely natu:rlich
+		$(for metaReference <- $(get $(get eMetaClass).eAllCrossReferences),
+			$(if $(filter-out eMeta%,$(get metaReference->instanceProperty)),
+				$(get $(get metaReference->instanceProperty))))))
 
 	# PROTECTED REGION END
 endef
