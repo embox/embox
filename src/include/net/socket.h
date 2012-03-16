@@ -15,12 +15,18 @@
 #include <types.h>
 
 /* Supported address families. */
-#define AF_UNSPEC    0
-#define AF_UNIX      1  /* Unix domain sockets */
-#define AF_LOCAL     1  /* POSIX name for AF_UNIX */
-#define AF_INET      2  /* Internet IP Protocol */
-#define AF_PACKET    17 /* Packet family */
-#define AF_MAX       33 /* For now.. */
+#define N_FAMILIES_SUPPORTED 4
+enum supported_address_families{
+	AF_UNSPEC =  0,
+	AF_UNIX = 1,  /* Unix domain sockets */
+	AF_INET = 2,  /* Internet IP Protocol */
+	AF_PACKET = 17  /* Packet family */
+};
+/* socket types are somewhy defined in net.h */
+
+#define AF_LOCAL AF_UNIX /* POSIX name for AF_UNIX */
+/* this should be removed. the link is socket_repo.c and so on */
+#define AF_MAX AF_PACKET /* valid only if AF_PACKET is last on list */
 
 /* Protocol families, same as address families. */
 #define PF_UNSPEC	AF_UNSPEC
@@ -28,7 +34,7 @@
 #define PF_LOCAL	AF_LOCAL
 #define PF_INET		AF_INET
 #define PF_PACKET	AF_PACKET
-#define PF_MAX		AF_MAX
+//#define PF_MAX		AF_MAX
 
 #define PNET_GRAPH   40
 

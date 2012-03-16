@@ -11,6 +11,8 @@
 /*
  * The protocol list. Each protocol is registered in here.
  */
+/* TODO: actually could be quite a big todo. net families asks
+   for a way bigger space amount than actually requires. */
 static const struct net_proto_family *net_families[NPROTO] = {0};
 
 int sock_register(const struct net_proto_family *ops) {
@@ -45,4 +47,19 @@ const struct net_proto_family * socket_repo_get_family(int family) {
 	/*pf = rcu_dereference(net_families[family]);*/
 
 	return net_families[family];
+}
+
+inline bool is_a_valid_sock_type(int type){
+	return ((type == SOCK_STREAM) ||
+					(type == SOCK_DGRAM) ||
+					(type == SOCK_RAW) ||
+					(type == SOCK_SEQPACKET) ||
+					(type == SOCK_PACKET));
+}
+
+inline bool is_a_valid_family(int family){
+	return ((family == AF_UNSPEC) ||
+					(family == AF_UNIX) ||
+					(family == AF_INET) ||
+					(family == AF_PACKET));
 }

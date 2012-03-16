@@ -24,9 +24,15 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	struct socket *sock;
 	const struct net_proto_family *pf;
 
-	if ((type < 0) || (type >= SOCK_MAX)) {
-		return -EINVAL;
-	}
+	if(!is_a_valid_sock_type(type))
+		return EPROTOTYPE;
+
+	if(!is_a_valid_family(family))
+		return EAFNOSUPPORT;
+
+	/* TODO: EPROTONOSUPPORT should be returned,
+		 when protocol is not supported */
+
 	if ((family == PF_INET) && (type == SOCK_PACKET)) {
 		family = PF_PACKET;
 	}
@@ -224,7 +230,6 @@ int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr
 	return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
 }
 
-/* These two dummy functions should do smth. Or maybe they aren't necessary */
 int kernel_socket_shutdown(struct socket *sock){
 	return ENOERR;
 }

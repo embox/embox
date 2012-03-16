@@ -68,7 +68,7 @@ enum sock_type {
 	SOCK_SEQPACKET	= 5,
 //	SOCK_DCCP	= 6,
 	SOCK_PACKET	= 10,
-	SOCK_MAX /* i.e. SOCK_PACKET + 1 */
+//	SOCK_TYPE_MAX /* i.e. SOCK_PACKET + 1 */
 };
 
 /**
@@ -137,5 +137,8 @@ extern int sock_register(const struct net_proto_family *ops);
 extern void sock_unregister(int family);
 
 extern const struct net_proto_family * socket_repo_get_family(int family);
+
+extern bool is_a_valid_sock_type(int type);
+extern bool is_a_valid_family(int type);
 
 #endif /* NET_NET_H_ */
