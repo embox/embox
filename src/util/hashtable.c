@@ -97,7 +97,7 @@ void hashtable_del(struct hashtable *ht, void *key, void *value) {
 	idx = ht->get_hash_key(key) % ht->table_size;
 	list_foreach(htel, &ht->table[idx].list, lnk) {
 		if(0 == ht->cmp(key, htel->key)) {
-			//list_remove_first()&htel, &ht->table[idx].list);
+			list_unlink_link(&htel->lnk);
 			return;
 		}
 	}
