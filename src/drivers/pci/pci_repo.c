@@ -37,19 +37,19 @@ typedef struct pci_subclass {
 } pci_subclass_t;
 
 static pci_vendor_t const pci_vendors[] = {
-	#include <pci_vendors_table.inc>
+	#include "pci_vendors_table.inc"
 };
 
 static pci_device_t const pci_devices[] = {
-	#include <pci_devices_table.inc>
+	#include "pci_devices_table.inc"
 };
 
 static pci_baseclass_t const pci_baseclasses[] = {
-	#include <pci_baseclass_table.inc>
+	#include "pci_baseclass_table.inc"
 };
 
 static pci_subclass_t const pci_subclasses[] = {
-	#include <pci_subclass_table.inc>
+	#include "pci_subclass_table.inc"
 };
 
 const char *find_vendor_name(uint16_t ven_id) {

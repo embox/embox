@@ -22,7 +22,6 @@ export configfiles_mk := \
 configfiles_linked_mk := $(CONFIGFILES_CACHE_DIR)/config_files_linked.mk
 
 $(MAKECMDGOALS) : $(configfiles_linked_mk)
-	exit 1
 	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $(mybuild_model_mk) $<' $@
 
 .DELETE_ON_ERROR:
