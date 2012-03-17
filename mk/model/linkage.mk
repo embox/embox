@@ -47,7 +47,6 @@ define class-Linker
 	# Context:
 	#   'resource'. Their resource.
 	$(method resolveLinksGroup,
-		$(warning $0: $(get-field unresolvableLinks))
 		$(for \
 			targetType  <- $(get 2->eReferenceType),
 			link        <- $(filter-out $(get-field unresolvableLinks),$1),
@@ -64,7 +63,6 @@ define class-Linker
 					$(invoke lookupContainerChain,$(invoke link->eSource)),
 					$(invoke searchGlobalScopeUsingResourceImports),
 					$(invoke searchGlobalScopeByFullName)),
-				$(warning $0: $(get link->name) -> '$1')
 				$(if $(singleword $1),
 					$(invoke link->resolve,$1),
 

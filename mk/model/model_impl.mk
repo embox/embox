@@ -345,7 +345,7 @@ define __eLinkSetTarget
 		Can't set a target on the link with no source)
 
 	$(for oldTarget <- $(get-field eTarget),
-		$(warning $0: NIY))
+			$(warning $0: NIY; (old target: '$(oldTarget)')))
 
 	$(for newTarget <- $1,
 		source <- $(invoke eSource),

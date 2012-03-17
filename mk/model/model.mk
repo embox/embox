@@ -158,11 +158,33 @@ define class-EObject
 	$(method __serialize_extra_objects,
 		$(invoke eLinks) \
 		$(suffix $(get-field __eOppositeRefs) \
-			$(basename $(get-field __eOppositeRefs))) \
-		# XXX truely natu:rlich
-		$(for metaReference <- $(get $(get eMetaClass).eAllCrossReferences),
-			$(if $(filter-out eMeta%,$(get metaReference->instanceProperty)),
-				$(get $(get metaReference->instanceProperty))))))
+			$(basename $(get-field __eOppositeRefs))))
+
+	$(method eCopy,
+		$(for \
+			metaClass <- $(get eMetaClass),
+			copy <- $(new $(get metaClass->instanceClass)),
+			$(silent-for \
+				metaAttribute <- $(get metaClass->eAllAttributes),
+				instanceProperty <- $(get metaAttribute->instanceProperty),
+				$(set copy->$(instanceProperty),
+					$(get $(instanceProperty))))
+			$(silent-for \
+				metaReference <- $(get metaClass->eAllCrossReferences),
+				instanceProperty <- $(get metaReference->instanceProperty)
+						_link$(if $(get metaReference->isMany),s),
+				$(set copy->$(instanceProperty),
+					$(for l<-$(get $(instanceProperty)),
+						$(invoke l->eCopy))))
+			$(silent-for \
+				metaReference <- $(get metaClass->eAllContainments),
+				instanceProperty <- $(get metaReference->instanceProperty),
+				$(set copy->$(instanceProperty),
+					$(for o <- $(get $(instanceProperty)),
+						$(invoke o->eCopy))))
+			$(copy)))
+
+
 
 	# PROTECTED REGION END
 endef
@@ -307,6 +329,11 @@ define class-ELink
 	$(if $(value 2),
 		$(set origin,$2))
 
+	$(method eCopy,
+		$(for copy <- $(new ELink,$(get name),$(get origin)),
+				$(for target<-$(invoke eTarget),
+						$(invoke copy->resolve,target))
+		    $(copy)))
 	# PROTECTED REGION END
 endef
 
