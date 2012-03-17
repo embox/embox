@@ -17,6 +17,9 @@ struct hashtable;
 /** Hash function delegate. */
 typedef size_t (*get_hash_ft) (void *key);
 
+/** compare function delegate. */
+typedef int (*ht_cmp_ft) (void *key1, void *key2);
+
 /**
  * Create hashtable
  * @param table_size - array size for hash table
@@ -24,8 +27,7 @@ typedef size_t (*get_hash_ft) (void *key);
  * @param value_size - size of value type
  * @return hashtable
  */
-extern struct hashtable *hashtable_create(size_t table_size, size_t key_size,
-		size_t value_size, get_hash_ft get_hash);
+extern struct hashtable *hashtable_create(size_t table_size, get_hash_ft get_hash, ht_cmp_ft cmp);
 
 /**
  * Delete all elements from hashtable and free hashtable structure memory

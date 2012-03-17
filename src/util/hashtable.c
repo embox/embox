@@ -26,9 +26,8 @@ struct hashtable_entry {
 struct hashtable {
 	struct hashtable_entry *table;
 	get_hash_ft get_hash_key;
+	ht_cmp_ft cmp;
 	size_t table_size;
-	size_t key_size;
-	size_t value_size;
 };
 
 #define CONFIG_HASHTABLES_QUANTITY     0x10
@@ -39,8 +38,7 @@ OBJALLOC_DEF(ht_elem_pool, struct hashtable_entry,
 		CONFIG_HASHTABLES_QUANTITY * CONFIG_HASHTABLE_ELEM_QUNTITY);
 
 
-struct hashtable *hashtable_create(size_t table_size, size_t key_size,
-		size_t value_size, get_hash_ft get_hash) {
+struct hashtable *hashtable_create(size_t table_size, get_hash_ft get_hash, ht_cmp_ft cmp) {
 	struct hashtable *ht;
 
 	if (NULL == (ht = objalloc(&ht_pool))) {
@@ -53,8 +51,7 @@ struct hashtable *hashtable_create(size_t table_size, size_t key_size,
 	}
 	ht->get_hash_key = get_hash;
 	ht->table_size = table_size;
-	ht->key_size = key_size;
-	ht->value_size = value_size;
+	ht->cmp = cmp;
 
 	return ht;
 }
@@ -69,17 +66,41 @@ void hashtable_put(struct hashtable *ht, void *key, void *value) {
 		return;
 	}
 
-	idx = ht->get_hash_key(key) % ht->key_size;
+	idx = ht->get_hash_key(key) % ht->table_size;
 
 	list_add_first_link(&htel->lnk, &ht->table[idx].list);
 	ht->table[idx].cnt ++;
 }
 
 void *hashtable_get(struct hashtable *ht, void* key) {
+	size_t idx;
+	struct hashtable_element *htel;
+
+	assert(ht);
+
+	idx = ht->get_hash_key(key) % ht->table_size;
+	list_foreach(htel, &ht->table[idx].list, lnk) {
+		if(0 == ht->cmp(key, htel->key)) {
+			return htel->value;
+		}
+	}
+
 	return NULL;
 }
 
 void hashtable_del(struct hashtable *ht, void *key, void *value) {
+	size_t idx;
+	struct hashtable_element *htel;
+
+	assert(ht);
+
+	idx = ht->get_hash_key(key) % ht->table_size;
+	list_foreach(htel, &ht->table[idx].list, lnk) {
+		if(0 == ht->cmp(key, htel->key)) {
+			//list_remove_first()&htel, &ht->table[idx].list);
+			return;
+		}
+	}
 }
 
 void hashtable_destroy(struct hashtable *ht) {
