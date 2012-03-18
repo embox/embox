@@ -247,10 +247,10 @@ void *calloc(size_t nmemb, size_t size) {
 static int heap_init(void) {
 	struct free_block *block;
 
-	pool = page_alloc(CONFIG_HEAP_SIZE / CONFIG_PAGE_SIZE);
+	pool = page_alloc((CONFIG_HEAP_SIZE / 2) / CONFIG_PAGE_SIZE);
 
 	block = (struct free_block *) pool;
-	block->size = CONFIG_HEAP_SIZE - sizeof(block->size);
+	block->size = CONFIG_HEAP_SIZE / 2 - sizeof(block->size);
 	set_end_size(block);
 
 	mark_prev(block);
