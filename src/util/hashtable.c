@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <mem/objalloc.h>
 #include <util/hashtable.h>
+#include <util/array.h>
 
 struct hashtable_element {
 	struct list_link lnk;
@@ -40,6 +41,7 @@ OBJALLOC_DEF(ht_elem_pool, struct hashtable_entry,
 
 struct hashtable *hashtable_create(size_t table_size, get_hash_ft get_hash, ht_cmp_ft cmp) {
 	struct hashtable *ht;
+	int i;
 
 	if (NULL == (ht = objalloc(&ht_pool))) {
 		return NULL;
@@ -48,6 +50,9 @@ struct hashtable *hashtable_create(size_t table_size, get_hash_ft get_hash, ht_c
 	if (NULL ==	(ht->table = malloc(table_size * sizeof(struct hashtable_entry)))) {
 		objfree(&ht_pool, ht);
 		return NULL;
+	}
+	for(i = 0; i < table_size; i ++) {
+		list_init(&ht->table[i].list);
 	}
 	ht->get_hash_key = get_hash;
 	ht->table_size = table_size;
@@ -65,6 +70,8 @@ void hashtable_put(struct hashtable *ht, void *key, void *value) {
 	if (NULL == (htel = objalloc(&ht_elem_pool))) {
 		return;
 	}
+	htel->key = key;
+	htel->value = value;
 
 	idx = ht->get_hash_key(key) % ht->table_size;
 
@@ -98,12 +105,25 @@ void hashtable_del(struct hashtable *ht, void *key, void *value) {
 	list_foreach(htel, &ht->table[idx].list, lnk) {
 		if(0 == ht->cmp(key, htel->key)) {
 			list_unlink_link(&htel->lnk);
+			objfree(&ht_elem_pool, htel);
 			return;
 		}
 	}
 }
 
 void hashtable_destroy(struct hashtable *ht) {
+	int i;
+	struct hashtable_element *htel;
+
+	assert(ht);
+
+	for(i = 0; i < ARRAY_SIZE(ht->table); i ++) {
+		list_foreach(htel, &ht->table[i].list, lnk) {
+			list_unlink_link(&htel->lnk);
+			objfree(&ht_elem_pool, htel);
+		}
+
+	}
 	free(ht->table);
 	objfree(&ht_pool, ht);
 }

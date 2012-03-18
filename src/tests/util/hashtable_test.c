@@ -32,10 +32,9 @@ TEST_CASE("Add single element to hashtable") {
 	struct ht_element *ht_value;
 
 	ht = hashtable_create(0x10, get_hash, cmp_keys);
-
 	hashtable_put(ht, "first", &el);
-
 	ht_value = (struct ht_element *) hashtable_get(ht, "first");
-
 	hashtable_destroy(ht);
+
+	test_assert_equal(ht_value, &el);
 }
