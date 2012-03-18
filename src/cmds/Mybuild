@@ -174,3 +174,7 @@ module pnet {
 	make flags "-I$(SRC_DIR)/compat/linux/include", "-I$(SRC_DIR)/compat/posix/include"
 }
 
+module tpprint {
+	source "tpprint.c"
+	depends embox.framework.trace
+}

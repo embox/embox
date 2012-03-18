@@ -1,0 +1,6 @@
+package embox.framework
+
+module trace {
+	make flags "-D__FRAMEWORK__"
+	source "trace.c"
+}
