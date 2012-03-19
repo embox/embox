@@ -42,4 +42,5 @@ module rbuff_test {
 
 module hashtable_test {
 	source "hashtable_test.c"
+	depends embox.util.hashtable
 }
