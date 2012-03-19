@@ -28,50 +28,31 @@
     .global start
 .extern irq_handler
 
+.type reset_handler, %function
+.type undef_handler, %function
+
 .section .trap_table, "x"
-/* trap table
- * this code specific for ARM7TDMI cores
- *
- * actually, this is general for all ARM cores
- */
-start:
-    b reset_handler
-    b undef_handler
-    b SWI_handler
-    b prefetch_abt_handler
-    b data_abt_handler
-    nop /*bad exception not_used:		.word not_used*/
-    b IRQ_handler
-    b FIQ_handler
+    .word _stack_top
+    .word reset_handler
+    .word undef_handler
+    .word undef_handler
+    .word undef_handler
+    .word undef_handler
+    .word undef_handler
+    .word undef_handler
+
 
 /* stubs */
 undef_handler:
-    B undef_handler
-prefetch_abt_handler:
-    B prefetch_abt_handler
-data_abt_handler:
-    B data_abt_handler
-fiq_handler:
-    B fiq_handler
+    b die
 
 .text
 /* initialize stack */
 .RAM_TOP:
     .word _stack_top
 
+start:
 reset_handler:
-    mov	    r0, #0xd3
-    mrs	    r1, APSR
-    msr	    APSR, r0
-    ldr	    r0, =0
-    ldr	    r1, =start
-loop_excpt:
-    ldr	    r2, [r1]
-    str	    r2, [r0]
-    add	    r1, r1, #4
-    add	    r0, r0, #4
-    cmp	    r0, #0x20
-    bne    loop_excpt
 
 /* initialize memory */
 /* clear bss */
@@ -111,5 +92,9 @@ sw_init_hook:
 krn_start:
 /* kernel start */
 	bl		kernel_start
+
+SWI_handler:
+IRQ_handler:
+FIQ_handler:
 die:
     b 	    die
