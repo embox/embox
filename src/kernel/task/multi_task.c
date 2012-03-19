@@ -35,6 +35,8 @@ static void task_init(struct task *new_task, struct task *parent) {
 		par_idx_desc->link_count++;
 	}
 
+	INIT_LIST_HEAD(&new_task->threads);
+
 	list_add(&new_task->link, &parent->children);
 }
 

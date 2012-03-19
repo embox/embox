@@ -35,7 +35,7 @@ struct rt_entry_info {
 };
 
 POOL_DEF(rt_entry_info_pool, struct rt_entry_info, CONFIG_ROUTE_FIB_TABLE_SIZE);
-static struct list_head rt_entry_info_list;
+static LIST_HEAD(rt_entry_info_list);
 
 int rt_add_route(net_device_t *dev, in_addr_t dst,
 			in_addr_t mask, in_addr_t gw, int flags) {
