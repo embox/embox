@@ -11,7 +11,7 @@
 #include <kernel/thread/state.h>
 #include <kernel/prom_printf.h>
 
-#define USEC_PRIORITY_MULTIPLIER 1000
+#define USEC_PRIORITY_MULTIPLIER 100
 
 static int wakeup_resumed_thread(struct runq *runq, struct sleepq *sleepq);
 static void wakeup_suspended_thread(struct runq *runq, struct sleepq *sleepq);
@@ -41,6 +41,8 @@ int runq_start(struct runq *runq, struct thread *thread) {
 	int ret = 0;
 	assert(runq && thread);
 
+	prom_printf("runq  0x%X, 0x%X\n",
+			(uint32_t)&thread->sched.l_link, (uint32_t)&runq->rq);
 	if (list_empty(&runq->rq)) ret = 1;
 	list_add_tail(&thread->sched.l_link, &runq->rq);
 	return ret;
@@ -66,12 +68,14 @@ static int wakeup_resumed_thread(struct runq *runq, struct sleepq *sleepq) {
 	assert(thread);
 	list_del_init(&thread->sched.l_link);
 
-	prom_printf("\n!Wakeup resumed thread: %8x, sleepq: %8x!\n", (unsigned int)thread, (unsigned int) sleepq);
+	//prom_printf("\n!Wakeup resumed thread: %8x, sleepq: %8x!\n", (unsigned int)thread, (unsigned int) sleepq);
 
 	thread->state = thread_state_do_wake(thread->state);
 	assert(thread_state_running(thread->state));
 	thread->runq = runq;
 
+	prom_printf("resum 0x%X, 0x%X\n",
+			(uint32_t)&thread->sched.l_link, (uint32_t)&runq->rq);
 	if (list_empty(&runq->rq)) ret = 1;
 	list_add_tail(&thread->sched.l_link, &runq->rq);
 	return ret;
@@ -123,9 +127,12 @@ void runq_sleep(struct runq *runq, struct sleepq *sleepq) {
 	current = runq->current;
 	assert(current->runq == runq);
 
+	prom_printf("runqs 0x%X, 0x%X\n",
+			(uint32_t)&current->sched.l_link, (uint32_t)&sleepq->rq);
+
 	list_add_tail(&current->sched.l_link, &sleepq->rq);
 
-	prom_printf("\n!Sleep thread: %8x, sleepq: %8x!\n", (unsigned int)current, (unsigned int) sleepq);
+	//prom_printf("\n!Sleep thread: %8x, sleepq: %8x!\n", (unsigned int)current, (unsigned int) sleepq);
 
 	current->sleepq = sleepq;
 	current->state = thread_state_do_sleep(current->state);
@@ -165,6 +172,8 @@ int runq_switch(struct runq *runq) {
 
 	prev = runq->current;
 	if (thread_state_running(prev->state)) {
+		prom_printf("runq_ 0x%x, 0x%x\n",
+				(uint32_t)&prev->sched.l_link, (uint32_t)&runq->rq);
 		list_add_tail(&prev->sched.l_link, &runq->rq);
 	}
 
@@ -200,6 +209,7 @@ static void move_thread_to_another_q(struct list_head *q, struct thread *thread)
 	struct list_head *link;
 	assert(q && thread);
 
+	prom_printf("anoth 0x%x, 0x%x\n",(uint32_t)&thread->sched.l_link, (uint32_t) q);
 	link = &thread->sched.l_link;
 	list_del(link);
 	list_add_tail(link, q);
