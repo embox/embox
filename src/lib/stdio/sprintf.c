@@ -36,33 +36,24 @@
 int __print(void (*printchar_handler)(char **str, int c),
 		char **out, const char *format, va_list args);
 
-static void display_printchar(char **str, int c) {
-	char ch = (char) c;
-	static int prev = 0;
+static void printchar(char **str, int c) {
+	assert(str);
 
-	assert(str == NULL);
-
-	if (c == '\n' && prev != '\r') {
-		char tmp = '\r';
-		write(1, &tmp, 1);
-	}
-
-	write(1, &ch, 1);
-	prev = c;
+	**str = c;
+	++(*str);
 }
 
-int vprintf(const char *format, va_list args) {
-	return __print(display_printchar, 0, format, args);
+int vsprintf(char *out, const char *format, va_list args) {
+	return __print(printchar, &out, format, args);
 }
 
-int printf(const char *format, ...) {
+int sprintf(char *out, const char *format, ...) {
 	int ret;
 	va_list args;
 
 	va_start(args, format);
-	ret = vprintf(format, args);
+	ret = vsprintf(out, format, args);
 	va_end(args);
 
 	return ret;
 }
-

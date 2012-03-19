@@ -5,6 +5,7 @@ static module LibC {
 	source "crypt/crc32.c"
 	source "crypt/md5.c"
 	source "ctype/ctype.c"
+	XXX move from here
 	source "elf/elf_executer.c"
 	source "elf/elf_reader.c"
 	source "malloc/malloc.c"
@@ -25,6 +26,7 @@ static module LibC {
 	source "stdio/getchar.c"
 	source "stdio/gets.c"
 	source "stdio/printf.c"
+	source "stdio/sprintf.c"
 	source "stdio/printf_impl.c"
 	source "stdio/printk.c"
 	source "stdio/putchar.c"
