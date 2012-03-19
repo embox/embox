@@ -40,9 +40,11 @@ const struct net_proto_family * socket_repo_get_family(int family) {
 	/*
 	 * Check protocol is in range
 	 */
-	if ((family < 0) || (family >= NPROTO)) {
+	/* if ((family < 0) || (family >= NPROTO)) { */
+	/* 	return NULL; */
+	/* } */
+	if(!is_a_valid_family(family))
 		return NULL;
-	}
 
 	/*pf = rcu_dereference(net_families[family]);*/
 

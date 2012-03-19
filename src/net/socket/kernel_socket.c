@@ -25,22 +25,21 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	const struct net_proto_family *pf;
 
 	if(!is_a_valid_sock_type(type))
-		return EPROTOTYPE;
+		return -EPROTOTYPE;
 
-	if(!is_a_valid_family(family))
-		return EAFNOSUPPORT;
+  if ((family == PF_INET) && (type == SOCK_PACKET)) {
+    family = PF_PACKET;
+  }
 
-	/* TODO: EPROTONOSUPPORT should be returned,
-		 when protocol is not supported */
+  /* check for family support inside */
+  pf = socket_repo_get_family(family);
+  if (pf == NULL)
+    return -EAFNOSUPPORT;
 
-	if ((family == PF_INET) && (type == SOCK_PACKET)) {
-		family = PF_PACKET;
-	}
-
-	pf = socket_repo_get_family(family);
-
-	if ((pf == NULL) || (pf->create == NULL)) {
-		return -EINVAL;
+  if (pf->create == NULL){
+    debug_printf("no create() method for protocol family",
+                 "kernel_socket", "kernel_socket_create");
+		return -EAFNOSUPPORT;
 	}
 
 	/* TODO here must be code for trying socket (permition and so on)
@@ -54,6 +53,7 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	 * the protocol is 0, the family is instructed to select an appropriate
 	 * default.
 	 */
+
 	sock = socket_alloc();
 	if (sock == NULL) {
 		return -ENOMEM;
@@ -61,7 +61,12 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 
 	sock->type = type;
 
-	res = pf->create(sock, protocol);
+  /* TODO: in create() method -EPROTONOSUPPORT should be returned,
+     when protocol is not supported */
+	/* TODO: in create() method type of a given socket should be checked
+	   to avoid invalid combinations of (type, protocol) and -EPROTOTYPE
+	   should be return in invalid case */
+  res = pf->create(sock, protocol);
 	if (res < 0) {
 		socket_free(sock);
 		return res;
@@ -75,7 +80,7 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	sk_set_connection_state(sock->sk, UNCONNECTED);
 	*psock = sock; /* and save structure */
 
-	return res;
+	return ENOERR;
 }
 
 /* should be understood as close method */
@@ -182,7 +187,7 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
 	int res;
 
-	/* Socket's like UDP are 'connection less'. that means that connect
+	/* Socket's like UDP are 'connectionless'. that means that connect
 	   only sets binds the target of the socket to an address.
 	   In the cases of stream protocols the meaning is strict - initiate
 	   connection to a given host*/
