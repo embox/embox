@@ -14,6 +14,7 @@
 #include <net/skbuff.h>
 #include <net/inet_sock.h>
 #include <hal/arch.h>
+#include <net/checksum.h>
 
 #define IP_ADDR_LEN      4
 #define ICMP_PROTO_TYPE  (unsigned short)0x01
@@ -85,6 +86,12 @@ static inline iphdr_t *ip_hdr(const sk_buff_t *skb) {
 	return skb->nh.iph;
 }
 
+/* Generate a checksum for an outgoing IP datagram. */
+static inline void ip_send_check(iphdr_t *iph) {
+	iph->check = 0;
+	iph->check = ptclbsum((void *) iph, IP_HEADER_SIZE(iph));
+}
+
 /**
  * Functions provided by ip.c
  */
@@ -103,12 +110,9 @@ extern int ip_send_packet(inet_sock_t *sk, sk_buff_t *pack);
 /**
  * Perform forwarding of obtained packet
  */
-int ip_forward_packet(sk_buff_t *skb);
+extern int ip_forward_packet(sk_buff_t *skb);
 
 extern int ip_queue_xmit(sk_buff_t *skb, int ipfragok);
-
-extern void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
-			sk_buff_t *skb, unsigned int len);
 
 extern int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl,
 			unsigned char proto, unsigned short id, unsigned short len,

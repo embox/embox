@@ -16,7 +16,6 @@
 #include <net/icmp.h>
 #include <net/udp.h>
 #include <net/ip.h>
-#include <net/checksum.h>
 #include <net/protocol.h>
 #include <net/kernel_socket.h>
 #include <linux/init.h>
@@ -31,6 +30,7 @@
 EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 
 
+#if 0
 /**
  * ICMP Build xmit assembly blocks
  */
@@ -50,6 +50,7 @@ struct icmp_bxm {
 	} data;
 	int head_len;           /* Size of the ICMP header */
 };
+#endif
 
 /**
  * Packet's handler, corresponding to packet's type. This specifies
@@ -117,7 +118,7 @@ static int icmp_unreach(sk_buff_t *skb) {
 	raw_err(skb, info);
 	udp_err(skb, info);
 
-	kfree_skb(skb);
+	kfree_skb(skb);								/* svv: Check possible conflict with freeing in common function */
 
 	return ENOERR;
 }
@@ -128,10 +129,21 @@ static int icmp_redirect(sk_buff_t *skb) {
 	return -1;
 }
 
+static inline int icmp_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
+		sk_buff_t *skb, unsigned int len) {
+	skb->nh.iph->saddr = saddr;
+	skb->nh.iph->daddr = daddr;
+	skb->nh.iph->id = htons(ntohs(skb->nh.iph->id) + 1);
+	skb->nh.iph->frag_off = htons(IP_DF);				/* Why? */
+	ip_send_check(skb->nh.iph);
+	return ip_queue_xmit(skb, 0);
+}
+
 static int icmp_echo(sk_buff_t *skb) {
 	sk_buff_t *reply;
 
-	reply = skb_clone(skb, 0);
+	reply = skb_clone(skb, 0);	/* svv: Will lead to problems if our MTU is less then incoming len. See IP_DF flag later */
+	assert(reply);
 	reply->h.icmph->type = ICMP_ECHOREPLY;
 	/* TODO checksum must be at network byte order */
 	reply->h.icmph->checksum = 0;
@@ -141,8 +153,7 @@ static int icmp_echo(sk_buff_t *skb) {
 			 * Please note, if we have more that 1 interface, then
 			 * daddr might not belong to the device we obtain this packet
 			 */
-	ip_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, reply, 0);
-	return ENOERR;
+	return icmp_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, reply, 0);
 }
 
 static int icmp_timestamp(sk_buff_t *skb) {
@@ -172,15 +183,18 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 	char packet[IP_HEADER_SIZE(iph_in) + ICMP_HEADER_SIZE + DATA_SIZE(iph_in)];
 	/*
 	 * RFC 1122: 3.2.2 MUST send at least the IP header and 8 bytes of header.
-	 *   MAY send more (we do).
+	 *   MAY send more (we do)												(svv: Fine. But we can don't fit interface MTU)
+	 *																		(And there is a restriction of 576 bytes)
 	 *   MUST NOT change this header information.
-	 *   MUST NOT reply to a multicast/broadcast IP address.
-	 *   MUST NOT reply to a multicast/broadcast MAC address.
-	 *   MUST reply to only the first fragment.
+	 *   MUST NOT reply to a multicast/broadcast IP address					(Not implemented)
+	 *   MUST NOT reply to a multicast/broadcast MAC address				(Implemented)
+	 *   MUST reply to only the first fragment								(Implemented)
+	 *---------
+	 *   It's a bad idea to send ICMP error to an ICMP error				(Not implemented)
 	 */
 	if ((skb_in->pkt_type != PACKET_HOST) ||
 		(iph_in->frag_off & htons(IP_OFFSET))) {
-		return;
+		return;										/* svv: Unlike the common way we don't free this skb. Why? */
 	}
 	iph = (iphdr_t *) packet;
 	icmph = (icmphdr_t *) (packet + IP_HEADER_SIZE(iph_in));
@@ -190,8 +204,8 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 	iph->tot_len = IP_HEADER_SIZE(iph_in) + ICMP_HEADER_SIZE + DATA_SIZE(iph_in);
 	iph->daddr = skb_in->nh.iph->saddr;
 	iph->saddr = skb_in->nh.iph->daddr;
-	iph->id++;
-	iph->frag_off = IP_DF;
+	iph->id++;						/* svv: Possible problems if we already use this id in other flow */
+	iph->frag_off = IP_DF;					/* svv: Why the whole Internet must be as small as our MTU? */
 	/* build ICMP header */
 	memcpy(icmph + ICMP_HEADER_SIZE, iph_in, DATA_SIZE(iph_in));
 	icmph->type = type;
@@ -204,7 +218,7 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 	iov.iov_base = (void *) packet;
 	iov.iov_len = IP_HEADER_SIZE(iph) + ICMP_HEADER_SIZE + DATA_SIZE(iph);
 	m.msg_iov = &iov;
-	kernel_socket_sendmsg(NULL, icmp_socket, &m, iov.iov_len);
+	kernel_socket_sendmsg(NULL, icmp_socket, &m, iov.iov_len);	/* Sending interface differs from one in icmp_send_reply() */
 
 	kfree_skb(skb_in);
 }
@@ -306,13 +320,7 @@ static int icmp_rcv(sk_buff_t *pack) {
 
 	assert(icmp_handlers[icmph->type] != NULL);
 	res = icmp_handlers[icmph->type](pack);
-	if (res < 0) {
-		/* If function return ENOERR, we must free pack */
-		stats->rx_err++;
-		kfree_skb(pack);
-		return res;
-	}
-
+	stats->rx_err += (res < 0);
 	kfree_skb(pack);
-	return ENOERR;
+	return res;
 }

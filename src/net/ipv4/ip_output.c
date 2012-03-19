@@ -13,17 +13,10 @@
 #include <net/inet_sock.h>
 #include <net/inetdevice.h>
 #include <net/route.h>
-#include <net/checksum.h>
 #include <linux/init.h>
 #include <net/ip_fragment.h>
 #include <net/skbuff.h>
 #include <net/icmp.h>
-
-/* Generate a checksum for an outgoing IP datagram. */
-static inline void ip_send_check(iphdr_t *iph) {
-	iph->check = 0;
-	iph->check = ptclbsum((void *) iph, IP_HEADER_SIZE(iph));
-}
 
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,
@@ -45,11 +38,13 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	return 0;
 }
 
-static int build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
+static inline void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
+	if (sk->sk.sk_type == SOCK_RAW)
+	    return;
 	skb->nh.raw = skb->data + ETH_HEADER_SIZE;
 	rebuild_ip_header(skb, sk->uc_ttl, sk->sk.sk_protocol, sk->id, skb->len,
 			sk->saddr, sk->daddr/*, sk->opt*/);
-	return 0;
+	return;
 }
 
 int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
@@ -66,21 +61,33 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
 
-	if (skb->len > MTU && !(skb->offset & IP_DF)) {
-		tx_buf = ip_frag(skb);
-		while ((tmp = skb_dequeue(tx_buf)) != NULL) {
-			res += ip_send_packet(sk, tmp);
+	if (skb->len > MTU) {
+		/* svv: suspicious:
+		 *	if offset is just a shift (==value), then we can't use IP_DF here
+		 *	if it's conside with information structure in IP header then
+		 *	we haven't had it for not raw sockets
+		 *	we are going to build ip header later
+		 *------
+		 *	Which "MTU" should we use? We have different interfaces
+		 */
+		if (!(skb->offset & IP_DF)) {
+			tx_buf = ip_frag(skb);
+			while ((tmp = skb_dequeue(tx_buf)) != NULL) {
+				res += ip_send_packet(sk, tmp);
+			}
+			skb_queue_purge(tx_buf);
+			return res;
+		} else {
+			/* if packet size is greater than MTU and we can't fragment it we can't go further */
+			kfree_skb(skb);
+			return -1;
 		}
-		skb_queue_purge(tx_buf);
-		return res;
-	} else {
-		/* svv: ToDo: if packet size is greater than MTU and we can't fragment it we can't go further */
 	}
 
-	if (sk->sk.sk_type != SOCK_RAW) {
+	if (sk) {
 		build_ip_packet(sk, skb);
 	}
-	if (ip_route(skb)) {
+	if (ip_route(skb, NULL)) {
 		kfree_skb(skb);
 		return -1;
 	}
@@ -125,18 +132,18 @@ int ip_forward_packet(sk_buff_t *skb) {
 
 		/* Should we send ICMP redirect */
 	if (skb->dev == best_route->dev) {
-		struct sk_buff *s_copy = skb_copy(skb, 0);
-		if (s_copy) {
-			icmp_send(s_copy, ICMP_REDIRECT, (best_route->rt_gateway == INADDR_ANY), htonl(best_route->rt_gateway));
+		struct sk_buff *s_new = skb_copy(skb, 0);		/* ToDo: too extravagant. Useless for more then first fragment */
+		if (s_new) {
+			icmp_send(s_new, ICMP_REDIRECT, (best_route->rt_gateway == INADDR_ANY), htonl(best_route->rt_gateway));
 		}
 		/* We can still proceed here */
 	}
 
 		/* Fragment packet, if it's required */
-	if (skb->len > MTU) {
+	if (skb->len > best_route->dev->mtu) {
 		if (!(frag_options & IP_DF)) {
 			/* We can perform fragmentation */
-			struct sk_buff_head *tx_buf = ip_frag(skb);
+			struct sk_buff_head *tx_buf = ip_frag(skb);		/* ToDo: it must take proper MTU */
 			struct sk_buff *s_tmp;
 			int res = 0;
 
@@ -152,7 +159,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 		}
 	}
 
-	if (ip_route(skb) < 0) {
+	if (ip_route(skb, best_route) < 0) {
 		/* So we have something like arp problem */
 		icmp_send(skb, ICMP_DEST_UNREACH, best_route->rt_gateway == INADDR_ANY ? ICMP_HOST_UNREACH : ICMP_NET_UNREACH, 0);
 		return -1;
@@ -166,12 +173,3 @@ int ip_forward_packet(sk_buff_t *skb) {
 	return ip_queue_xmit(skb, 0);			/* What about not-Ether carrier? */
 }
 
-void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
-		sk_buff_t *skb, unsigned int len) {
-	skb->nh.iph->saddr = saddr;
-	skb->nh.iph->daddr = daddr;
-	skb->nh.iph->id = htons(ntohs(skb->nh.iph->id) + 1);
-	skb->nh.iph->frag_off = htons(IP_DF);
-	ip_send_check(skb->nh.iph);
-	ip_queue_xmit(skb, 0);
-}

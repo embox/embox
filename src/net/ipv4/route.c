@@ -79,11 +79,10 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
  * 		1) this function returns -ENOENT/ENOERR, but arp_resolve -1/0
  * 			style must be the same
  *		2) Carrier without ARP can't be supported
- *		3) We might fulfill carrier-dependent info in skb here
  */
-int ip_route(sk_buff_t *skb) {
+int ip_route(sk_buff_t *skb, struct rt_entry *suggested_route) {
 	in_addr_t daddr = skb->nh.iph->daddr;
-	struct rt_entry *rte = rt_fib_get_best(daddr);
+	struct rt_entry *rte = (suggested_route ? suggested_route : rt_fib_get_best(daddr));
 
 	if (!rte) {
 		return -ENOENT;
@@ -91,9 +90,15 @@ int ip_route(sk_buff_t *skb) {
 
 	/* set the device for current destination address */
 	skb->dev = rte->dev;
+
 	// TODO even if type is SOCK_RAW?
 	/* set the source address */
+	/* svv: it's definitely WRONG for
+	 *	- raw socket
+	 *	- forwarding
+	 */
 	skb->nh.iph->saddr = in_dev_get(skb->dev)->ifa_address;
+
 	/* if source and destination addresses are equal send via LB interface
 	 * svv: suspicious. There is no check (src == dst) in ip_input
 	 */

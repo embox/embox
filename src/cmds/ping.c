@@ -113,7 +113,7 @@ static int ping(struct ping_info *pinfo) {
 	tx_pack.hdr.ip_hdr.version = 4;
 	tx_pack.hdr.ip_hdr.ihl = IP_MIN_HEADER_SIZE >> 2;
 	tx_pack.hdr.ip_hdr.tos = 0;
-	tx_pack.hdr.ip_hdr.frag_off = htons(IP_DF);
+	tx_pack.hdr.ip_hdr.frag_off = htons(IP_DF);			/* Why? */
 	tx_pack.hdr.ip_hdr.saddr = pinfo->from.s_addr;
 	tx_pack.hdr.ip_hdr.daddr = pinfo->dst.s_addr;
 	tx_pack.hdr.ip_hdr.tot_len = htons(IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
@@ -133,7 +133,8 @@ static int ping(struct ping_info *pinfo) {
 		return -1;
 	}
 
-	printf("PING %s %d bytes of data.\n", inet_ntoa(pinfo->dst), pinfo->padding_size);
+	printf("PING %s %d bytes of data. id=%d\n",
+			inet_ntoa(pinfo->dst), pinfo->padding_size, ntohs(tx_pack.hdr.icmp_hdr.un.echo.id));
 
 	total = clock();
 	i = 0;

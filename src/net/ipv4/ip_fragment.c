@@ -47,7 +47,7 @@ OBJALLOC_DEF(__dgram_bufs, struct dgram_buf, MAX_BUFS_CNT);
 	   ((struct list_head*)skb)!=(struct list_head*)buf; \
 	   skb = skb->next)
 
-#define df_flag(skb) ntohs(skb->nh.iph->frag_off) & IP_DF
+#define df_flag(skb) (ntohs(skb->nh.iph->frag_off) & IP_DF)
 
 #define TIMER_TICK 1000
 
@@ -210,9 +210,8 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	/* if it is not complete packet */
 	if(offset || mf_flag) {
 		if (df_flag(skb)) {
-			icmp_send(skb, ICMP_FRAG_NEEDED, 0, 0);		/* svv: Defragmenter might send TimeExceeded ICMP, but this piece of code belongs to Fragmenter */
-														/* svv: What's more - ICMP assembling call isn't correct */
-			kfree_skb(skb);								/* svv: Really? icmp_send() ends with kfree_skb() */
+				/* For some reason we don't like situation when someone used forced fragmentation */
+			kfree_skb(skb);
 			skb = (sk_buff_t *)NULL;
 			return skb;
 		}
@@ -247,7 +246,7 @@ struct sk_buff_head *ip_frag(struct sk_buff *skb) {
 	offset = len;
 
 	/* Note: correct MTU, because fragment offset must divide on 8*/
-	align_MTU = MTU - (MTU - len) % 8;
+	align_MTU = MTU - (MTU - len) % 8;		/* svv: What "MTU" should we use? We have different interfaces */
 
 	/* copy sk_buff without last fragment. All this fragment have size MTU */
 	while(offset < skb->len - align_MTU) {

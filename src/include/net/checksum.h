@@ -6,6 +6,9 @@
  * @author Anton Bondarev
  */
 
+#ifndef NET_CHECKSUM_H_
+#define NET_CHECKSUM_H_
+
 #if 0
 #define LITTLE 0 /* big endian only*/
 #endif
@@ -110,3 +113,7 @@ static inline unsigned short ptclbsum(void *addr, int len) {
 	return losum & 0xffff;
 	*/
 }
+
+#endif /* NET_CHECKSUM_H_ */
+
+
