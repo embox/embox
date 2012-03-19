@@ -39,8 +39,6 @@ $(configfiles_mk) : $(CONFIGFILES_CACHE_DIR)/%.mk : %
 		ALLOC_SCOPE="r$$SCOPE" > $@ && \
 	echo '$$(lastword $$(MAKEFILE_LIST)) := '".obj1r$$SCOPE" >> $@
 
--include $(mk_mybuild) $(configfiles_mk) $(mybuild_model_mk)
-
 $(configfiles_linked_mk) : $(configfiles_mk)
 	@mkdir -p $(@D) && \
 		$(MAKE) -f mk/script/mk-persist.mk \
