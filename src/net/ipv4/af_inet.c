@@ -22,10 +22,15 @@
 
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
-static struct inet_protosw *inet_proto_find(int type, int protocol) {
+/* TODO: to meet POSIX inet_proto_find should decide whether type-protocol
+   combination is valid and return appropriate errno. see kernel_socket_create*/
+static struct inet_protosw *inet_proto_find(short int *type, int *protocol) {
 	struct inet_protosw *p_netsock = NULL;
 	const struct net_sock *net_sock_ptr;
 	int net_proto_family;
+
+ /* to determine whether family-type combination is valid */
+	bool type_present = false;
 
 	net_sock_foreach(net_sock_ptr) {
 		p_netsock = net_sock_ptr->netsock;
@@ -34,31 +39,45 @@ static struct inet_protosw *inet_proto_find(int type, int protocol) {
 			continue;
 		}
 
+		/* ?? */
 		if(p_netsock->type == SOCK_RAW)
 			return p_netsock;
 
-		if(p_netsock->type != type) {
+		if(p_netsock->type != *type) {
 			continue;
 		}
 
-		if (IPPROTO_IP == protocol || p_netsock->protocol == protocol) {
+		/* if at least one time we are here such type for such PF is present
+		   so -EPROTONOSUPPORT should be returned on failure */
+		type_present = true;
+
+		if (IPPROTO_IP == *protocol || p_netsock->protocol == *protocol) {
 			return p_netsock;
 		}
 
 		return p_netsock;
 	}
+
+	if(type_present)
+		*protocol = -1;
+	else
+		*type = -1;
 	return NULL;
 }
 
 /* AF_INET socket create */
 static int inet_create(struct socket *sock, int protocol) {
 	int err;
+	short int type = sock->type;
 	struct sock *sk;
 	struct inet_sock *inet;
 	struct inet_protosw *p_netsock = NULL;
 
-	if (NULL == (p_netsock = inet_proto_find(sock->type, protocol))) {
-		return -EPROTONOSUPPORT;
+	if (NULL == (p_netsock = inet_proto_find(&type, &protocol))) {
+		if(type < 0)
+			return -EPROTOTYPE;
+		else
+			return -EPROTONOSUPPORT;
 	}
 
 	sk = sk_alloc(PF_INET, 0, (struct proto *) p_netsock->prot);

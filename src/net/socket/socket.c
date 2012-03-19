@@ -56,12 +56,17 @@ int socket(int domain, int type, int protocol) {
 
 	res = kernel_socket_create(domain, type, protocol, &sock);
 	if (res < 0) {
-		return res; /* return error code */
+		SET_ERRNO(-res);
+		return -1; /* return error code */
 	}
 
 	res = task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_SOCKET, sock);
 	if (res < 0) { // release socket if can't alloc idx
 		kernel_socket_release(sock);
+		/* TODO: EMFILE should be returned when no fids left for process to use.
+		   If the system cannot allocate more fids at all, ENFILE should be returned */
+		SET_ERRNO(EMFILE);
+		return -1;
 	}
 	return res;
 }

@@ -91,5 +91,6 @@
 
 /*extern int errno;*/
 #define errno task_self()->errno
+#define SET_ERRNO(a) (errno = a)
 
 #endif /* ERRNO_H_ */
