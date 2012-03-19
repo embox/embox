@@ -1,33 +1,39 @@
 package embox.test.util
 
 module array_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "array_test.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module list_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "list_test.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module slist_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "slist_test.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module tree_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "tree_test.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module tree_set_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "tree_set_test.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module math_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "math_test.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module rbuff_test {
@@ -36,5 +42,4 @@ module rbuff_test {
 
 module hashtable_test {
 	source "hashtable_test.c"
-	depends embox.util.hashtable
 }

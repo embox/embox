@@ -1,19 +1,22 @@
 package embox.test.kernel
 
 module irq_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "irq_test.c"
 	depends embox.kernel.irq
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module timer_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "timer_test.c"
 	depends embox.kernel.timer.timer_api
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }
 
 module softirq_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "softirq_test.c"
 	depends embox.kernel.softirq
-	make flags "-I$(SRC_DIR)/compat/posix/include"
+
 }

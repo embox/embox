@@ -8,7 +8,7 @@
 export MYBUILD_CACHE_DIR := $(CACHE_DIR)/my
 export MYFILES_CACHE_DIR := $(MYBUILD_CACHE_DIR)/files
 
-MYBUILD_PATH := src/ platform/ third-party/
+MYBUILD_PATH := mk/ src/ platform/ third-party/
 
 MYFILES := \
 	$(shell find $(MYBUILD_PATH) -depth \

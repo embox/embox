@@ -37,7 +37,7 @@
         changeable="false" volatile="true" transient="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="origin" eType="#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ELink" eSuperTypes="#//ENamedObject">
+  <eClassifiers xsi:type="ecore:EClass" name="ELink">
     <eOperations name="eSource" eType="#//EObject"/>
     <eOperations name="eTarget" eType="#//EObject"/>
     <eOperations name="resolve">
@@ -48,6 +48,10 @@
         changeable="false" volatile="true" transient="true" derived="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="eMetaReferenceId" eType="#//EString"
         changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="eResource" eType="#//EResource"
+        changeable="false" volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="origin" eType="#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="EMetaModel" eSuperTypes="#//ENamedObject #//EFreezable">
     <eStructuralFeatures xsi:type="ecore:EReference" name="eTypes" upperBound="-1"

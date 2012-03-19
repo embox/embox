@@ -30,27 +30,27 @@ define class-EObject
 
 	# Reference 'eMetaClass' [0..1]: derived, read-only.
 	$(property eMetaClass : EMetaClass)
-	# PROTECTED REGION ID(EObject_eMetaClass) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eMetaClass) ENABLED START
 	$(getter eMetaClass,
 		$($(get eMetaClassId)))
 	# PROTECTED REGION END
 
 	# Attribute 'eMetaClassId': derived, read-only.
 	$(property eMetaClassId)
-	# PROTECTED REGION ID(EObject_eMetaClassId) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eMetaClassId) ENABLED START
 	$(getter eMetaClassId,$(error Subclass must override eMetaClassId property))
 	# PROTECTED REGION END
 
 	# Attribute 'eResource': derived, read-only.
 	$(property eResource)
-	# PROTECTED REGION ID(EObject_eResource) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eResource) ENABLED START
 	$(getter eResource,
 		$(get-field $(invoke eRootContainer).__eContainer))
 	# PROTECTED REGION END
 
 	# Method 'isAncestorOf'.
 	#   1. object : EObject
-	# PROTECTED REGION ID(EObject_isAncestorOf) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_isAncestorOf) ENABLED START
 	$(method isAncestorOf,
 		$(for container <- $(invoke 1->eContainer),
 			$(or $(filter $(this),$(container)),
@@ -58,7 +58,7 @@ define class-EObject
 	# PROTECTED REGION END
 
 	# Method 'eContainer : EObject'.
-	# PROTECTED REGION ID(EObject_eContainer) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eContainer) ENABLED START
 	$(method eContainer : EObject,
 		$(for c <- $(get-field __eContainer),
 			$(if $(basename $c),$(suffix $c))))
@@ -66,7 +66,7 @@ define class-EObject
 
 	# Method 'eContainerOfType : EObject'.
 	#   1. someClass : EMetaClass
-	# PROTECTED REGION ID(EObject_eContainerOfType) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eContainerOfType) ENABLED START
 	$(method eContainerOfType,
 		$(for container <- $(invoke eContainer),
 			$(if $(invoke 1->isInstance,$(container)),
@@ -74,7 +74,7 @@ define class-EObject
 	# PROTECTED REGION END
 
 	# Method 'eRootContainer : EObject'.
-	# PROTECTED REGION ID(EObject_eRootContainer) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eRootContainer) ENABLED START
 	$(method eRootContainer : EObject,
 		$(or $(for container <- $(invoke eContainer),
 				$(invoke container->eRootContainer)),
@@ -82,7 +82,7 @@ define class-EObject
 	# PROTECTED REGION END
 
 	# Method 'eContents... : EObject'.
-	# PROTECTED REGION ID(EObject_eContents) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eContents) ENABLED START
 	$(method eContents... : EObject,
 		$(for metaReference <- $(get $(get eMetaClass).eAllContainments),
 			$(get $(get metaReference->instanceProperty))))
@@ -90,7 +90,7 @@ define class-EObject
 
 	# Method 'eContentsOfType... : EObject'.
 	#   1. someClass : EMetaClass
-	# PROTECTED REGION ID(EObject_eContentsOfType) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eContentsOfType) ENABLED START
 	$(method eContentsOfType... : EObject,
 		$(for metaReference <- $(get $(get eMetaClass).eAllContainments),
 			$(if $(invoke 1->isSuperTypeOf,
@@ -104,7 +104,7 @@ define class-EObject
 	# PROTECTED REGION END
 
 	# Method 'eAllContents... : EObject'.
-	# PROTECTED REGION ID(EObject_eAllContents) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eAllContents) ENABLED START
 	$(method eAllContents... : EObject,
 		$(for child <- $(invoke eContents),
 			$(child) $(invoke child->eAllContents)))
@@ -112,14 +112,14 @@ define class-EObject
 
 	# Method 'eAllContentsOfType... : EObject'.
 	#   1. someClass : EMetaClass
-	# PROTECTED REGION ID(EObject_eAllContentsOfType) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eAllContentsOfType) ENABLED START
 	$(method eAllContentsOfType... : EObject,
 		$(for child <- $(invoke eContentsOfType,$1),
 			$(child) $(invoke child->eAllContentsOfType,$1)))
 	# PROTECTED REGION END
 
 	# Method 'eLinks... : ELink'.
-	# PROTECTED REGION ID(EObject_eLinks) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eLinks) ENABLED START
 	$(method eLinks... : ELink,
 		$(subst ./,,$(dir \
 			$(for metaReference <- $(get $(get eMetaClass).eAllLinkables),
@@ -129,7 +129,7 @@ define class-EObject
 	# PROTECTED REGION END
 
 	# Method 'eResolvedLinks... : ELink'.
-	# PROTECTED REGION ID(EObject_eResolvedLinks) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eResolvedLinks) ENABLED START
 	$(method eResolvedLinks... : ELink,
 		$(for l <- $(invoke eLinks),
 			$(if $(invoke l->eTarget),$l))
@@ -137,7 +137,7 @@ define class-EObject
 	# PROTECTED REGION END
 
 	# Method 'eUnresolvedLinks... : ELink'.
-	# PROTECTED REGION ID(EObject_eUnresolvedLinks) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject_eUnresolvedLinks) ENABLED START
 	$(method eUnresolvedLinks... : ELink,
 		$(subst ./,,$(filter %./,
 			$(for metaReference <- $(get $(get eMetaClass).eAllLinkables),
@@ -146,7 +146,7 @@ define class-EObject
 	)
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(EObject) ENABLED START
+	# PROTECTED REGION ID(EModel_EObject) ENABLED START
 
 	# 'property/oppositeProperty.object'
 	# '.object' for resource containment.
@@ -159,6 +159,32 @@ define class-EObject
 		$(invoke eLinks) \
 		$(suffix $(get-field __eOppositeRefs) \
 			$(basename $(get-field __eOppositeRefs))))
+
+	$(method eCopy,
+		$(for \
+			metaClass <- $(get eMetaClass),
+			copy <- $(new $(get metaClass->instanceClass)),
+			$(silent-for \
+				metaAttribute <- $(get metaClass->eAllAttributes),
+				instanceProperty <- $(get metaAttribute->instanceProperty),
+				$(set copy->$(instanceProperty),
+					$(get $(instanceProperty))))
+			$(silent-for \
+				metaReference <- $(get metaClass->eAllCrossReferences),
+				instanceProperty <- $(get metaReference->instanceProperty)
+						_link$(if $(get metaReference->isMany),s),
+				$(set copy->$(instanceProperty),
+					$(for l<-$(get $(instanceProperty)),
+						$(invoke l->eCopy))))
+			$(silent-for \
+				metaReference <- $(get metaClass->eAllContainments),
+				instanceProperty <- $(get metaReference->instanceProperty),
+				$(set copy->$(instanceProperty),
+					$(for o <- $(get $(instanceProperty)),
+						$(invoke o->eCopy))))
+			$(copy)))
+
+
 
 	# PROTECTED REGION END
 endef
@@ -173,6 +199,7 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-ENamedObject
+	# Extends 'EObject' class (implicitly).
 	$(eobject EModel_ENamedObject,
 		ENamedObject,,)
 
@@ -182,7 +209,7 @@ define class-ENamedObject
 
 	# Attribute 'qualifiedName': derived, read-only.
 	$(property qualifiedName)
-	# PROTECTED REGION ID(ENamedObject_qualifiedName) ENABLED START
+	# PROTECTED REGION ID(EModel_ENamedObject_qualifiedName) ENABLED START
 	$(getter qualifiedName,
 		$(for namedContainer <- $(invoke eContainerOfType,$(EModel_ENamedObject)),
 			parentName <- $(get namedContainer->qualifiedName),
@@ -194,7 +221,7 @@ define class-ENamedObject
 		origin,changeable)
 
 	# Method 'eInverseResolvedLinks... : ELink'.
-	# PROTECTED REGION ID(ENamedObject_eInverseResolvedLinks) ENABLED START
+	# PROTECTED REGION ID(EModel_ENamedObject_eInverseResolvedLinks) ENABLED START
 	$(method eInverseResolvedLinks,
 		$(error NIY)
 #		$(suffix $(basename \
@@ -205,7 +232,7 @@ define class-ENamedObject
 	)
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(ENamedObject) ENABLED START
+	# PROTECTED REGION ID(EModel_ENamedObject) ENABLED START
 	$(setter name,
 		$(assert $(if $1,$(and $(singleword [$1]),$(filter-out .% %.,$1)),ok),
 			Invalid name: '$1')
@@ -219,70 +246,79 @@ endef
 # The following features and operations are defined:
 #   - reference 'eMetaReference'
 #   - attribute 'eMetaReferenceId'
+#   - attribute 'eResource'
+#   - attribute 'name'
+#   - attribute 'origin'
 #   - operation 'eSource'
 #   - operation 'eTarget'
 #   - operation 'resolve'
 #   - operation 'deresolve'
 #
-# The following features and operations are inherited from 'ENamedObject':
-#   - attribute 'name'
-#   - attribute 'qualifiedName'
-#   - attribute 'origin'
-#   - operation 'eInverseResolvedLinks'
-#
 define class-ELink
-	# Extends 'ENamedObject' class.
-	$(eobject EModel_ELink,
-		ELink,ENamedObject,)
 
 	# Reference 'eMetaReference' [0..1]: derived, read-only.
 	$(property eMetaReference : EMetaReference)
-	# PROTECTED REGION ID(ELink_eMetaReference) ENABLED START
+	# PROTECTED REGION ID(EModel_ELink_eMetaReference) ENABLED START
 	$(getter eMetaReference,
 		$(value $(get eMetaReferenceId)))
 	# PROTECTED REGION END
 
 	# Attribute 'eMetaReferenceId': derived, read-only.
 	$(property eMetaReferenceId)
-	# PROTECTED REGION ID(ELink_eMetaReferenceId) ENABLED START
+	# PROTECTED REGION ID(EModel_ELink_eMetaReferenceId) ENABLED START
 	$(getter eMetaReferenceId,
-		$(basename $(get-field __eContainer)))
+		$(basename $(get-field eSource)))
 	# PROTECTED REGION END
 
+	# Attribute 'eResource': derived, read-only.
+	$(property eResource)
+	# PROTECTED REGION ID(EModel_ELink_eResource) ENABLED START
+	$(getter eResource,
+		$(for s <- $(invoke eSource),
+			$(get s->eResource)))
+	# PROTECTED REGION END
+
+	# Property 'name'.
+	$(eobject-attribute EModel_ELink_name,
+		name,changeable)
+
+	# Property 'origin'.
+	$(eobject-attribute EModel_ELink_origin,
+		origin,changeable)
+
 	# Method 'eSource : EObject'.
-	# PROTECTED REGION ID(ELink_eSource) ENABLED START
+	# PROTECTED REGION ID(EModel_ELink_eSource) ENABLED START
 	$(method eSource : EObject,
-		$(suffix $(get-field __eContainer)))
+		$(suffix $(get-field eSource)))
 	# PROTECTED REGION END
 
 	# Method 'eTarget : EObject'.
-	# PROTECTED REGION ID(ELink_eTarget) ENABLED START
-	$(field eTarget : EObject)
+	# PROTECTED REGION ID(EModel_ELink_eTarget) ENABLED START
 	$(method eTarget : EObject,
 		$(get-field eTarget))
 	# PROTECTED REGION END
 
 	# Method 'resolve'.
 	#   1. object : EObject
-	# PROTECTED REGION ID(ELink_resolve) ENABLED START
+	# PROTECTED REGION ID(EModel_ELink_resolve) ENABLED START
 	$(method resolve,
 		$(call __eLinkSetTarget,$(suffix $1)))
 	# PROTECTED REGION END
 
 	# Method 'deresolve'.
-	# PROTECTED REGION ID(ELink_deresolve) ENABLED START
+	# PROTECTED REGION ID(EModel_ELink_deresolve) ENABLED START
 #	# TODO Uncomment and implement me.
 	$(method deresolve,
 		$(error $0(): NIY))
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(ELink) ENABLED START
+	# PROTECTED REGION ID(EModel_ELink) ENABLED START
 
-	$(getter eResource,
-		$(for s <- $(invoke eSource),
-			$(get s->eResource)))
+	# 'metaRefernceId.object'
+	$(field eSource : EObject)
 
-	$(method eContainer : EObject,)
+	# '.object'
+	$(field eTarget : EObject)
 
 	# Constructor:
 	#   As a special exception, ELink takes two optional constructor arguments:
@@ -293,6 +329,11 @@ define class-ELink
 	$(if $(value 2),
 		$(set origin,$2))
 
+	$(method eCopy,
+		$(for copy <- $(new ELink,$(get name),$(get origin)),
+				$(for target<-$(invoke eTarget),
+						$(invoke copy->resolve,target))
+		    $(copy)))
 	# PROTECTED REGION END
 endef
 
@@ -320,7 +361,7 @@ define class-EMetaModel
 	$(eobject-reference EModel_EMetaModel_eTypes,
 		eTypes,EMetaType,eMetaModel,changeable many containment)
 
-	# PROTECTED REGION ID(EMetaModel) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaModel) ENABLED START
 	# PROTECTED REGION END
 endef
 
@@ -353,7 +394,7 @@ define class-EMetaType # abstract
 	$(eobject-reference EModel_EMetaType_eMetaModel,
 		eMetaModel,EMetaModel,eTypes,container)
 
-	# PROTECTED REGION ID(EMetaType) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaType) ENABLED START
 	# PROTECTED REGION END
 endef
 
@@ -409,7 +450,7 @@ define class-EMetaClass
 
 	# Reference 'eAllSuperTypes' [0..*]: derived, read-only.
 	$(property eAllSuperTypes... : EMetaClass)
-	# PROTECTED REGION ID(EMetaClass_eAllSuperTypes) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass_eAllSuperTypes) ENABLED START
 	$(getter eAllSuperTypes,
 		# Inefficient, but nobody actually cares because of freezing
 		# the metamodel before using it.
@@ -424,7 +465,7 @@ define class-EMetaClass
 
 	# Reference 'eAllFeatures' [0..*]: derived, read-only.
 	$(property eAllFeatures... : EMetaFeature)
-	# PROTECTED REGION ID(EMetaClass_eAllFeatures) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass_eAllFeatures) ENABLED START
 	$(getter eAllFeatures,
 		$(sort $(get eFeatures) \
 			$(foreach superType,$(get eSuperTypes),
@@ -433,7 +474,7 @@ define class-EMetaClass
 
 	# Reference 'eAttributes' [0..*]: derived, read-only.
 	$(property eAttributes... : EMetaAttribute)
-	# PROTECTED REGION ID(EMetaClass_eAttributes) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass_eAttributes) ENABLED START
 	$(getter eAttributes,
 		$(invoke filterFeaturesByClass,$(get eFeatures),
 			$(EModel_EMetaAttribute)))
@@ -441,7 +482,7 @@ define class-EMetaClass
 
 	# Reference 'eAllAttributes' [0..*]: derived, read-only.
 	$(property eAllAttributes... : EMetaAttribute)
-	# PROTECTED REGION ID(EMetaClass_eAllAttributes) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass_eAllAttributes) ENABLED START
 	$(getter eAllAttributes,
 		$(invoke filterFeaturesByClass,$(get eAllFeatures),
 			$(EModel_EMetaAttribute)))
@@ -449,7 +490,7 @@ define class-EMetaClass
 
 	# Reference 'eReferences' [0..*]: derived, read-only.
 	$(property eReferences... : EMetaReference)
-	# PROTECTED REGION ID(EMetaClass_eReferences) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass_eReferences) ENABLED START
 	$(getter eReferences,
 		$(invoke filterFeaturesByClass,$(get eFeatures),
 			$(EModel_EMetaReference)))
@@ -457,7 +498,7 @@ define class-EMetaClass
 
 	# Reference 'eAllReferences' [0..*]: derived, read-only.
 	$(property eAllReferences... : EMetaReference)
-	# PROTECTED REGION ID(EMetaClass_eAllReferences) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass_eAllReferences) ENABLED START
 	$(getter eAllReferences,
 		$(invoke filterFeaturesByClass,$(get eAllFeatures),
 			$(EModel_EMetaReference)))
@@ -465,7 +506,7 @@ define class-EMetaClass
 
 	# Reference 'eAllCrossReferences' [0..*]: derived, read-only.
 	$(property eAllCrossReferences... : EMetaReference)
-	# PROTECTED REGION ID(EMetaClass_eAllCrossReferences) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass_eAllCrossReferences) ENABLED START
 	$(getter eAllCrossReferences,
 		$(foreach reference,$(get eAllReferences),
 			$(if $(get reference->isCrossReference),$(reference))))
@@ -473,7 +514,7 @@ define class-EMetaClass
 
 	# Reference 'eAllContainments' [0..*]: derived, read-only.
 	$(property eAllContainments... : EMetaReference)
-	# PROTECTED REGION ID(EMetaClass_eAllContainments) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass_eAllContainments) ENABLED START
 	$(getter eAllContainments,
 		$(foreach reference,$(get eAllReferences),
 			$(if $(get reference->isContainment),$(reference))))
@@ -481,7 +522,7 @@ define class-EMetaClass
 
 	# Reference 'eAllLinkables' [0..*]: derived, read-only.
 	$(property eAllLinkables... : EMetaReference)
-	# PROTECTED REGION ID(EMetaClass_eAllLinkables) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass_eAllLinkables) ENABLED START
 	$(getter eAllLinkables,
 		$(foreach reference,$(get eAllReferences),
 			$(if $(get reference->isLinkable),$(reference))))
@@ -489,19 +530,19 @@ define class-EMetaClass
 
 	# Method 'isSuperTypeOf'.
 	#   1. someClass : EMetaClass
-	# PROTECTED REGION ID(EMetaClass_isSuperTypeOf) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass_isSuperTypeOf) ENABLED START
 	$(method isSuperTypeOf,
 		$(filter $(this),$1 $(get 1->eAllSuperTypes)))
 	# PROTECTED REGION END
 
 	# Method 'isInstance'.
 	#   1. object : EObject
-	# PROTECTED REGION ID(EMetaClass_isInstance) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass_isInstance) ENABLED START
 	$(method isInstance,
 		$(invoke isSuperTypeOf,$(get 1->eMetaClass)))
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(EMetaClass) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaClass) ENABLED START
 
 	# Params:
 	#   1. List of features.
@@ -538,7 +579,7 @@ define class-EMetaPrimitive
 	$(eobject EModel_EMetaPrimitive,
 		EMetaPrimitive,EMetaType,)
 
-	# PROTECTED REGION ID(EMetaPrimitive) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaPrimitive) ENABLED START
 	# PROTECTED REGION END
 endef
 
@@ -585,7 +626,7 @@ define class-EMetaFeature # abstract
 	$(eobject-reference EModel_EMetaFeature_eContainingClass,
 		eContainingClass,EMetaClass,eFeatures,container)
 
-	# PROTECTED REGION ID(EMetaFeature) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaFeature) ENABLED START
 	# PROTECTED REGION END
 endef
 
@@ -630,7 +671,7 @@ define class-EMetaReference
 
 	# Attribute 'container': derived, read-only.
 	$(property isContainer)
-	# PROTECTED REGION ID(EMetaReference_isContainer) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaReference_isContainer) ENABLED START
 	$(getter isContainer,
 		$(for opposite <- $(get eOpposite),
 			$(get opposite->isContainment)))
@@ -642,7 +683,7 @@ define class-EMetaReference
 
 	# Attribute 'crossReference': derived, read-only.
 	$(property isCrossReference)
-	# PROTECTED REGION ID(EMetaReference_isCrossReference) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaReference_isCrossReference) ENABLED START
 	$(getter isCrossReference,
 		$(not $(or $(get isContainment),
 			$(for opposite <- $(get eOpposite),
@@ -655,12 +696,12 @@ define class-EMetaReference
 
 	# Reference 'eReferenceType' [1..1]: derived, read-only.
 	$(property eReferenceType : EMetaClass)
-	# PROTECTED REGION ID(EMetaReference_eReferenceType) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaReference_eReferenceType) ENABLED START
 	$(getter eReferenceType,
 		$(instance-of $(get eType),EMetaClass))
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(EMetaReference) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaReference) ENABLED START
 	# PROTECTED REGION END
 endef
 
@@ -696,12 +737,12 @@ define class-EMetaAttribute
 
 	# Reference 'eAttributeType' [1..1]: derived, read-only.
 	$(property eAttributeType : EMetaPrimitive)
-	# PROTECTED REGION ID(EMetaAttribute_eAttributeType) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaAttribute_eAttributeType) ENABLED START
 	$(getter eAttributeType,
 		$(instance-of $(get eType),EMetaPrimitive))
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(EMetaAttribute) ENABLED START
+	# PROTECTED REGION ID(EModel_EMetaAttribute) ENABLED START
 	# PROTECTED REGION END
 endef
 
@@ -731,7 +772,7 @@ define class-ETyped # abstract
 	$(eobject-reference EModel_ETyped_eType,
 		eType,EMetaType,,changeable)
 
-	# PROTECTED REGION ID(ETyped) ENABLED START
+	# PROTECTED REGION ID(EModel_ETyped) ENABLED START
 	# PROTECTED REGION END
 endef
 
@@ -742,11 +783,12 @@ endef
 #   - operation 'freeze'
 #
 define class-EFreezable # abstract
+	# Extends 'EObject' class (implicitly).
 	$(eobject EModel_EFreezable,
 		EFreezable,,abstract)
 
 	# Method 'freeze'.
-	# PROTECTED REGION ID(EFreezable_freeze) ENABLED START
+	# PROTECTED REGION ID(EModel_EFreezable_freeze) ENABLED START
 	$(method freeze,
 		$(silent-for f <- $(get $(get eMetaClass).eAllFeatures),
 			$(if $(get f->isDerived),
@@ -757,7 +799,7 @@ define class-EFreezable # abstract
 			$(invoke getFrozenProxyClass)))
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(EFreezable) ENABLED START
+	# PROTECTED REGION ID(EModel_EFreezable) ENABLED START
 
 	# Return:
 	#   Name of proxifier class.
@@ -797,6 +839,10 @@ define class-EFreezable # abstract
 	)
 	# PROTECTED REGION END
 endef
+
+# PROTECTED REGION ID(EModel) ENABLED START
+# TODO Add custom implementation here and remove this comment.
+# PROTECTED REGION END
 
 $(def_all)
 

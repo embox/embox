@@ -80,6 +80,10 @@ define builtin_func-eobject-reference
 					$$(call __eObjectSerializeCrossReference,$2,$1))
 			)
 			$$(getter $2,
+				# Linkable references also support on-demand linkage.
+				$(if $(filter linkable,$5),
+					$$(call __eObjectResolveLinks,
+						$$(filter %./,$$(get-field $2)),$1))
 				# Getting suffix is mandatory here!
 				$$(suffix $$(get-field $2)))
 		)
@@ -260,7 +264,7 @@ endef
 define __eObjectAddUnidirectional_link
 	$(set-field+ $1,
 		$(for link <- $2,
-			$(set-field link->__eContainer,$4$(this))
+			$(set-field link->eSource,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
 			$(link)./$(for target <- $(invoke link->eTarget),
 						$(set-field+ target->__eOppositeRefs,$(link)/$1$(this))
@@ -276,7 +280,7 @@ endef
 define __eObjectAddBidirectional_link
 	$(set-field+ $1,
 		$(for link <- $2,
-			$(set-field link->__eContainer,$4$(this))
+			$(set-field link->eSource,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
 			$(link)./$(for target <- $(invoke link->eTarget),
 						$(set-field+ target->$3,$(link)$(this))
@@ -320,6 +324,20 @@ define __eObjectSetBidirectional_link
 endef
 
 # Params:
+#   1. List of unresolved (at the call time) references with './' at their ends.
+#   2. Meta reference ID.
+define __eObjectResolveLinks
+	$(and $1,$(for resource <- $(get this->eResource),
+				resourceSet <- $(get resource->resourceSet),
+		$(for link <- $(subst ./,,$1),
+			$(warning on-demand linkage: \
+				[$(get link->eMetaReference)] '$(get link->name)'))
+		$(invoke $(get resourceSet->linker).resolveLinksGroup,
+			$(subst ./,,$1),$($2))
+	),)
+endef
+
+# Params:
 #   1. New value of 'eTarget' property of this link.
 define __eLinkSetTarget
 	$(assert $(not $(multiword $1)))
@@ -327,7 +345,7 @@ define __eLinkSetTarget
 		Can't set a target on the link with no source)
 
 	$(for oldTarget <- $(get-field eTarget),
-		$(warning $0: NIY))
+			$(warning $0: NIY; (old target: '$(oldTarget)')))
 
 	$(for newTarget <- $1,
 		source <- $(invoke eSource),
@@ -343,7 +361,7 @@ define __eLinkSetTarget
 		$(if $(for opposite <- $(get metaReference->eOpposite),
 				oppositeProperty <- $(get opposite->instanceProperty),
 				$(set-field+ newTarget->$(oppositeProperty),$(this)$(source))
-				$(opposite)),,# else
+				x),,# else
 			$(set-field+ newTarget->__eOppositeRefs,
 				$(this)/$(referenceProperty)$(source)))
 	)

@@ -10,8 +10,8 @@ module at91_aic extends embox.arch.interrupt{
 }
 
 module i8259 extends embox.arch.interrupt{
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "i8259.c", "i8259.h"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module irqmp extends embox.arch.interrupt{

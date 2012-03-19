@@ -3,27 +3,21 @@
     xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="configFile"
     nsURI="http://www.mybuild.org/myfile/ConfigFile" nsPrefix="cfg">
-  <eClassifiers xsi:type="ecore:EClass" name="FileContent" eSuperTypes="emodel.ecore#//ENamedObject">
+  <eClassifiers xsi:type="ecore:EClass" name="FileContentRoot" eSuperTypes="emodel.ecore#//ENamedObject">
     <eStructuralFeatures xsi:type="ecore:EReference" name="configurations" upperBound="-1"
-        eType="#//Configuration" containment="true" eOpposite="#//Configuration/fileContent"/>
+        eType="#//Configuration" containment="true" eOpposite="#//Configuration/fileContentRoot"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="imports" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Configuration" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="fileContent" eType="#//FileContent"
-        eOpposite="#//FileContent/configurations"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fileContentRoot" eType="#//FileContentRoot"
+        eOpposite="#//FileContentRoot/configurations"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="includes" upperBound="-1"
         eType="#//Include" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Include">
     <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="ecore:EClass myfile.ecore#//Module"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="optionBindings" upperBound="-1"
-        eType="#//StringOptionBinding" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StringOptionBinding" eSuperTypes="#//OptionBinding">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType emodel.ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OptionBinding" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="option" eType="ecore:EClass myfile.ecore#//Option"/>
+        eType="ecore:EClass myfile.ecore#//OptionBinding" containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

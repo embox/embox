@@ -3,41 +3,60 @@
     xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="myFile"
     nsURI="http://www.mybuild.org/myfile/MyFile" nsPrefix="my">
-  <eClassifiers xsi:type="ecore:EClass" name="Package" eSuperTypes="emodel.ecore#//ENamedObject">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="entities" upperBound="-1"
-        eType="#//Entity" containment="true" eOpposite="#//Entity/package"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FileContentRoot" eSuperTypes="emodel.ecore#//ENamedObject">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="types" upperBound="-1"
+        eType="#//Type" containment="true" eOpposite="#//Type/fileContentRoot"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="imports" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Entity" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="package" eType="#//Package"
-        eOpposite="#//Package/entities"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Type" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject #//AnnotationTarget">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="fileContentRoot" eType="#//FileContentRoot"
+        eOpposite="#//FileContentRoot/types"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Interface">
+  <eClassifiers xsi:type="ecore:EClass" name="AnnotationType" eSuperTypes="#//Type">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
+        eType="#//Option" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Annotation">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//AnnotationType"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//AnnotationTarget"
+        eOpposite="#//AnnotationTarget/annotations"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="bindings" upperBound="-1"
+        eType="#//OptionBinding" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AnnotationTarget" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
+        eType="#//Annotation" containment="true" eOpposite="#//Annotation/target"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="AnnotatedLink" eSuperTypes="emodel.ecore#//ELink #//AnnotationTarget"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Interface" eSuperTypes="#//Type">
     <eStructuralFeatures xsi:type="ecore:EReference" name="features" upperBound="-1"
         eType="#//Feature" containment="true" eOpposite="#//Feature/interface"/>
-    <eGenericSuperTypes eClassifier="#//Entity"/>
-    <eGenericSuperTypes eClassifier="#//Extendable">
-      <eTypeArguments eClassifier="#//Interface"/>
-    </eGenericSuperTypes>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Feature">
+  <eClassifiers xsi:type="ecore:EClass" name="Feature" eSuperTypes="emodel.ecore#//ENamedObject">
     <eStructuralFeatures xsi:type="ecore:EReference" name="interface" eType="#//Interface"
         eOpposite="#//Interface/features"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="providedBy" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/provides"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="requiredBy" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/requires"/>
-    <eGenericSuperTypes eClassifier="ecore:EClass emodel.ecore#//ENamedObject"/>
-    <eGenericSuperTypes eClassifier="#//Extendable">
-      <eTypeArguments eClassifier="#//Feature"/>
-    </eGenericSuperTypes>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Module">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="static" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Module" eSuperTypes="#//Type">
+    <eOperations name="isSubTypeOf" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
+      <eParameters name="another" eType="#//Module"/>
+    </eOperations>
+    <eOperations name="isSuperTypeOf" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
+      <eParameters name="another" eType="#//Module"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="modifiers" eType="ecore:EDataType emodel.ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="static" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        volatile="true" transient="true" derived="true"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        volatile="true" transient="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="depends" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/dependent"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="dependsMembers" upperBound="-1"
+        eType="#//AnnotatedLink" volatile="true" transient="true" derived="true" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="dependent" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/depends"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="provides" upperBound="-1"
@@ -45,69 +64,52 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="requires" upperBound="-1"
         eType="#//Feature" eOpposite="#//Feature/requiredBy"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="sources" upperBound="-1"
-        eType="#//File" containment="true" resolveProxies="false"/>
+        eType="#//FileMember" containment="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="objects" upperBound="-1"
-        eType="#//File" containment="true" resolveProxies="false"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="flags" eType="ecore:EDataType emodel.ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="makeRules" upperBound="-1"
-        eType="#//MakeRule" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="options" eType="#//Option"
-        containment="true" eOpposite="#//Option/module"/>
-    <eGenericSuperTypes eClassifier="#//Entity"/>
-    <eGenericSuperTypes eClassifier="#//Extendable">
-      <eTypeArguments eClassifier="#//Module"/>
-    </eGenericSuperTypes>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Extendable" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
-    <eTypeParameters name="T">
-      <eBounds eClassifier="#//Extendable">
-        <eTypeArguments eTypeParameter="#//Extendable/T"/>
-      </eBounds>
-    </eTypeParameters>
-    <eOperations name="isSubTypeOf" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
-      <eParameters name="another">
-        <eGenericType eTypeParameter="#//Extendable/T"/>
-      </eParameters>
-    </eOperations>
-    <eOperations name="isSuperTypeOf" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
-      <eParameters name="another">
-        <eGenericType eTypeParameter="#//Extendable/T"/>
-      </eParameters>
-    </eOperations>
+        eType="#//FileMember" containment="true" resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
+        eType="#//Option" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="subTypes" upperBound="-1"
-        eOpposite="#//Extendable/superType">
-      <eGenericType eTypeParameter="#//Extendable/T"/>
-    </eStructuralFeatures>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="superType" eOpposite="#//Extendable/subTypes">
-      <eGenericType eTypeParameter="#//Extendable/T"/>
-    </eStructuralFeatures>
+        eType="#//Module" eOpposite="#//Module/superType"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="superType" eType="#//Module"
+        eOpposite="#//Module/subTypes"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="allSubTypes" upperBound="-1"
-        changeable="false" volatile="true" transient="true" derived="true" eOpposite="#//Extendable/allSuperTypes">
-      <eGenericType eTypeParameter="#//Extendable/T"/>
-    </eStructuralFeatures>
+        eType="#//Module" changeable="false" volatile="true" transient="true" derived="true"
+        eOpposite="#//Module/allSuperTypes"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="allSuperTypes" upperBound="-1"
-        changeable="false" volatile="true" transient="true" derived="true" eOpposite="#//Extendable/allSubTypes">
-      <eGenericType eTypeParameter="#//Extendable/T"/>
-    </eStructuralFeatures>
+        eType="#//Module" changeable="false" volatile="true" transient="true" derived="true"
+        eOpposite="#//Module/allSubTypes"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="File">
+  <eClassifiers xsi:type="ecore:EClass" name="FileMember" eSuperTypes="#//AnnotationTarget">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileName" eType="ecore:EDataType emodel.ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileFullName" eType="ecore:EDataType emodel.ecore#//EString"
         changeable="false" volatile="true" transient="true" defaultValueLiteral=""
         derived="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MakeRule">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="target" unique="false"
-        eType="#//File" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="prerequisites" upperBound="-1"
-        eType="#//File" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="#//Module"
-        eOpposite="#//Module/options"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="hasDefaultValue" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject #//AnnotationTarget">
+    <eOperations name="validateOption" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="defaultValue" eType="#//OptionValue"
+        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StringOption" eSuperTypes="#//Option">
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="defaultValue" eType="ecore:EDataType emodel.ecore#//EString"/>
+    <eOperations name="validateOption" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NumberOption" eSuperTypes="#//Option">
+    <eOperations name="validateOption" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OptionValue" abstract="true">
+    <eOperations name="toString" eType="ecore:EDataType emodel.ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType emodel.ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StringOptionValue" eSuperTypes="#//OptionValue">
+    <eOperations name="toString" eType="ecore:EDataType emodel.ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NumberOptionValue" eSuperTypes="#//OptionValue">
+    <eOperations name="toString" eType="ecore:EDataType emodel.ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OptionBinding">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="option" eType="#//Option"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="optionValue" eType="#//OptionValue"
+        containment="true"/>
   </eClassifiers>
 </ecore:EPackage>

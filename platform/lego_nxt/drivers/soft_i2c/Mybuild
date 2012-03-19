@@ -2,7 +2,9 @@
 package lego_nxt.driver
 
 module soft_i2c {
+
+    @IncludePath("$(PLATFORM_DIR)/lego_nxt/include")
 	source "soft_i2c.c"
+
 	depends embox.driver.pins, embox.driver.at91_tc
-	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
 }

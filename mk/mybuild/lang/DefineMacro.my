@@ -1,0 +1,7 @@
+
+package mybuild.lang
+
+annotation DefineMacro {
+	string value
+}
+

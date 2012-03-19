@@ -1,8 +1,8 @@
 package embox.driver.virtual
 
 module diag_device {
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "diag_device.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module zero {

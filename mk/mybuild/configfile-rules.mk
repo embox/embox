@@ -24,7 +24,7 @@
 # Rule: <ConfigFile> ::= <Package> <Imports> <Configurations>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-ConfigFile
-	$(for fileContent <- $(new CfgFileContent),
+	$(for fileContent <- $(new CfgFileContentRoot),
 		$(set fileContent->name,$1)
 		$(set fileContent->imports,$2)
 		$(set fileContent->configurations,$3)
@@ -88,12 +88,6 @@ endef
 # Args: 1..3 - Symbols in the RHS.
 $(gold_grammar)_produce-Initializer_LParan_RParan = $2
 
-# Rule: <Initializer> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-Initializer
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
 # Rule: <ParametersList> ::= <Parameter> ',' <ParametersList>
 # Args: 1..3 - Symbols in the RHS.
 $(gold_grammar)_produce-ParametersList_Comma = $1 $3
@@ -107,23 +101,20 @@ endef
 # Rule: <Parameter> ::= <SimpleReference> '=' <Value>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-Parameter_Eq
-	$(for optBinding <- $(new CfgStringOptionBinding),
-		$(set optBinding->name,$1)
-		$(set optBinding->value,$3)
-		$(optBinding))
+	$(for binding<-$(new MyOptionBinding),
+		$(set binding->option_link,$1)
+		$(set binding->optionValue,$3)
+		$(binding))
 endef
 
 # Rule: <Value> ::= StringLiteral
 # Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-Value_StringLiteral
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-Value_StringLiteral = $(new MyStringOptionValue,$1)
 
 # Rule: <Value> ::= NumberLiteral
 # Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-Value_NumberLiteral
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-Value_NumberLiteral = $(new MyNumberOptionValue,$1)
+
 
 # Rule: <Value> ::= BooleanLiteral
 # Args: 1..1 - Symbols in the RHS.
@@ -139,9 +130,7 @@ endef
 
 # Rule: <SimpleReference> ::= Identifier
 # Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-SimpleReference_Identifier
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-SimpleReference_Identifier = $(new ELink,$1,$(gold_location))
 
 # <QualifiedName> ::= Identifier '.' <QualifiedName>
 $(gold_grammar)_produce-QualifiedName_Identifier_Dot         = $1.$3

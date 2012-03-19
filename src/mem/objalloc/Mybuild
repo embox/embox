@@ -3,14 +3,14 @@ package embox.mem
 abstract module objalloc { }
 
 module pool_adapter extends objalloc {
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "pool_adapter.c", "pool_adapter.h"
 	depends embox.mem.pool
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module slab_adapter extends objalloc {
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "slab_adapter.c", "slab_adapter.h"
 	depends embox.mem.slab
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 

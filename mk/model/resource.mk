@@ -129,13 +129,21 @@ define class-ResourceSet
 	$(setter- resources,
 		$(foreach ,$1,$(warning $0: NIY)))
 
+	$(property-field linker : Linker)
+
 	$(property contents... : EObject)
 	$(getter contents,
 		$(for resource <- $(get resources),
 			$(invoke resources->contents)))
 
+	$(method createLinker,
+		$(new Linker,$(this)))
+
 	$(if $(value 1),
 		$(set resources,$1))
+
+	$(set linker,$(invoke createLinker))
+
 endef
 
 # Constructor args:

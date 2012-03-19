@@ -35,6 +35,12 @@ EModel_ELink_eMetaReference := \
 	$(call eMetaReferenceCreate,$(EModel_ELink),EModel_ELink_eMetaReference)
 EModel_ELink_eMetaReferenceId := \
 	$(call eMetaAttributeCreate,$(EModel_ELink),EModel_ELink_eMetaReferenceId)
+EModel_ELink_eResource := \
+	$(call eMetaAttributeCreate,$(EModel_ELink),EModel_ELink_eResource)
+EModel_ELink_name := \
+	$(call eMetaAttributeCreate,$(EModel_ELink),EModel_ELink_name)
+EModel_ELink_origin := \
+	$(call eMetaAttributeCreate,$(EModel_ELink),EModel_ELink_origin)
 
 EModel_EMetaModel := \
 	$(call eMetaClassCreate,$(EModel),EModel_EMetaModel)
@@ -135,9 +141,12 @@ define __eModel_init
 	$(call eMetaAttributeInit,$(EModel_ENamedObject_qualifiedName),qualifiedName,derived)
 	$(call eMetaAttributeInit,$(EModel_ENamedObject_origin),origin,changeable)
 
-	$(call eMetaClassInit,$(EModel_ELink),ELink,$(EModel_ENamedObject),)
+	$(call eMetaClassInit,$(EModel_ELink),ELink,,)
 	$(call eMetaReferenceInit,$(EModel_ELink_eMetaReference),eMetaReference,$(EModel_EMetaReference),,derived)
 	$(call eMetaAttributeInit,$(EModel_ELink_eMetaReferenceId),eMetaReferenceId,derived)
+	$(call eMetaAttributeInit,$(EModel_ELink_eResource),eResource,derived)
+	$(call eMetaAttributeInit,$(EModel_ELink_name),name,changeable)
+	$(call eMetaAttributeInit,$(EModel_ELink_origin),origin,changeable)
 
 	$(call eMetaClassInit,$(EModel_EMetaModel),EMetaModel,$(EModel_ENamedObject) $(EModel_EFreezable),)
 	$(call eMetaReferenceInit,$(EModel_EMetaModel_eTypes),eTypes,$(EModel_EMetaType),$(EModel_EMetaType_eMetaModel),changeable many containment)
@@ -203,6 +212,9 @@ define __eModel_bind
 	$(call eMetaClassBind,$(EModel_ELink),ELink)
 	$(call eMetaFeatureBind,$(EModel_ELink_eMetaReference),eMetaReference)
 	$(call eMetaFeatureBind,$(EModel_ELink_eMetaReferenceId),eMetaReferenceId)
+	$(call eMetaFeatureBind,$(EModel_ELink_eResource),eResource)
+	$(call eMetaFeatureBind,$(EModel_ELink_name),name)
+	$(call eMetaFeatureBind,$(EModel_ELink_origin),origin)
 
 	$(call eMetaClassBind,$(EModel_EMetaModel),EMetaModel)
 	$(call eMetaFeatureBind,$(EModel_EMetaModel_eTypes),eTypes)

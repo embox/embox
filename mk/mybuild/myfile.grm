@@ -1,6 +1,6 @@
 "Name"     = 'MyFile'
 "Author"   = 'Eldar Abusalimov'
-"Version"  = '0.3'
+"Version"  = '0.4'
 "About"    = 'Mybuild file'
 
 "Case Sensitive" = True
@@ -67,15 +67,44 @@ BooleanLiteral = 'true' | 'false'
 <Import>
         ::= 'import' <QualifiedNameWithWildcard>
 
-! AnnotatedEntity*
+! AnnotatedType*
 <Entities>
-        ::= <AnnotatedEntity> <Entities>
+        ::= <AnnotatedType> <Entities>
          |
-<AnnotatedEntity>
-        ::= <Annotations> <Entity>
-<Entity>
+<AnnotatedType>
+        ::= <AnnotationSpecifiers> <Type>
+<Type>
         ::= <Module>
          |  <Interface>
+         |  <Annotation>
+
+! -------------------------------------------------
+! Annotations.
+
+<Annotation>
+        ::= 'annotation' Identifier '{' <AnnotationMembers> '}'
+<AnnotationMembers>
+        ::= <AnnotatedAnnotationMember> <AnnotationMembers>
+         |
+<AnnotatedAnnotationMember>
+        ::= <AnnotationSpecifiers> <Option>
+
+<AnnotationSpecifiers>
+        ::= <AnnotationSpecifier> <AnnotationSpecifiers>
+         |
+
+<AnnotationSpecifier>
+        ::= '@' <Reference> <AnnotationInitializer>
+<AnnotationInitializer>
+        ::= '(' <AnnotationParametersList> ')'
+         |  '(' <Value> ')'
+         |
+<AnnotationParametersList>
+        ::= <AnnotationParameter> ',' <AnnotationParametersList>
+         |  <AnnotationParameter>
+<AnnotationParameter>
+        ::= <SimpleReference> '=' <Value>
+
 
 ! -------------------------------------------------
 ! Interfaces and features.
@@ -94,7 +123,7 @@ BooleanLiteral = 'true' | 'false'
         ::= <AnnotatedFeature> <Features>
          |
 <AnnotatedFeature>
-        ::= <Annotations> <Feature>
+        ::= <AnnotationSpecifiers> <Feature>
 
 ! feature Name (extends ...)?
 <Feature>
@@ -130,51 +159,25 @@ BooleanLiteral = 'true' | 'false'
         ::= <AnnotatedModuleMember> <ModuleMembers>
          |
 <AnnotatedModuleMember>
-        ::= <Annotations> <ModuleMember>
+        ::= <AnnotationSpecifiers> <ModuleMember>
 <ModuleMember>
-        ::= <ReferenceModuleMember>
-         |  <FilenameModuleMember>
-         |  <Option>
+        ::= 'depends'  <ReferenceList>
+         |  'provides' <ReferenceList>
+         |  'requires' <ReferenceList>
+         |  'source'   <FilenameList>
+         |  'object'   <FilenameList>
+         |  'option'   <Option>
 
-<ReferenceModuleMember>
-        ::= <ReferenceModuleMemberType> <ReferenceList>
-<ReferenceModuleMemberType>
-        ::= 'depends'
-         |  'provides'
-         |  'requires'
-
-<FilenameModuleMember>
-        ::= <FilenameModuleMemberType> <FilenameList>
-<FilenameModuleMemberType>
-        ::= 'source'
-         |  'object'
-
-! option Name : ( string | number | boolean ) ( = ...)?
+! ( string | number | boolean ) Name ( = ...)?
 <Option>
-        ::= 'option' Identifier ':' <OptionType> <OptionInitializer>
+        ::= <OptionType> Identifier <OptionDefaultValue>
 <OptionType>
         ::= 'string'
          |  'number'
          |  'boolean'
-<OptionInitializer>
+<OptionDefaultValue>
         ::= '=' <Value>
          |
-
-<Annotations>
-        ::= <Annotation> <Annotations>
-         |
-
-<Annotation>
-        ::= '@' <Reference> <AnnotationInitializer>
-<AnnotationInitializer>
-        ::= '(' <AnnotationParametersList> ')'
-         |  '(' <Value> ')'
-         |
-<AnnotationParametersList>
-        ::= <AnnotationParameter> ',' <AnnotationParametersList>
-         |  <AnnotationParameter>
-<AnnotationParameter>
-        ::= <SimpleReference> '=' <Value>
 
 <Value>
         ::= StringLiteral

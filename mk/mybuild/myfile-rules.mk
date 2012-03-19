@@ -13,8 +13,8 @@
 #         of the rule production.
 #
 # Return:
-#   Converted value that is passed to a symbol handler corresponding to
-#   the rule's LHS (if any has been defined).
+#   The value to pass as an argument to a rule containing the production
+#   of this rule in its RHS, or to return to user in case of the Start Symbol.
 #
 # If production function is not defined then the rule is produced by
 # concatenating the RHS through spaces. To reuse this default value one can
@@ -22,16 +22,17 @@
 #
 
 # Rule: <MyFile> ::= <Package> <Imports> <Entities>
+# Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-MyFile
-	$(for package <- $(new MyPackage),
-		$(set package->name,$1)
-		$(set package->imports,$2)
-		$(set package->entities,$3)
-		$(package)
-	)
+	$(for root <- $(new MyFileContentRoot),
+		$(set root->name,$1)
+		$(set root->imports,$2)
+		$(set root->types,$3)
+		$(root))
 endef
 
 # Rule: <Package> ::= package <QualifiedName>
+# Args: 1..2 - Symbols in the RHS.
 $(gold_grammar)_produce-Package_package  = $2
 
 # Rule: <Package> ::=
@@ -41,53 +42,144 @@ define $(gold_grammar)_produce-Package
 			Using default package)
 endef
 
-# Rule: <Import> ::= import <ImportFeature> <QualifiedNameWithWildcard>
-$(gold_grammar)_produce-Import_import = $3
+# Rule: <Import> ::= import <QualifiedNameWithWildcard>
+# Args: 1..2 - Symbols in the RHS.
+$(gold_grammar)_produce-Import_import = $2
 
-# Rule: <Interface> ::= interface Identifier <SuperInterfaces> '{' <InterfaceAttributes> '}'
-# Args: 1..6 - Symbols in the RHS.
-define $(gold_grammar)_produce-Interface_interface_Identifier_LBrace_RBrace
-	$(call gold_report_error,NIY)
+# Rule: <AnnotatedType> ::= <AnnotationSpecifiers> <Type>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-AnnotatedType
+	$(for target <- $2,
+		$(set+ target->annotations,$1)
+		$(target))
 endef
 
-# Rule: <SuperInterfaces> ::= extends <InterfaceRefList>
+# Rule: <Annotation> ::= annotation Identifier '{' <AnnotationMembers> '}'
+# Args: 1..5 - Symbols in the RHS.
+define $(gold_grammar)_produce-Annotation_annotation_Identifier_LBrace_RBrace
+	$(foreach type,$(new MyAnnotationType),
+		$(set type->name,$2)
+		$(set type->origin,$(call gold_location_of,2))
+
+		$(set type->options,$4)
+
+		$(type)
+	)
+endef
+
+# Rule: <AnnotatedAnnotationMember> ::= <AnnotationSpecifiers> <Option>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-AnnotatedAnnotationMember
+	$(for target <- $2,
+		$(set+ target->annotations,$1)
+		$(target))
+endef
+
+# Rule: <AnnotationSpecifier> ::= '@' <Reference> <AnnotationInitializer>
+# Args: 1..3 - Symbols in the RHS.
+define $(gold_grammar)_produce-AnnotationSpecifier_At
+	$(for annotation <- $(new MyAnnotation),
+		$(set annotation->type_link,$2)
+		$(set annotation->bindings,$3)
+		$(annotation))
+endef
+
+# Rule: <AnnotationInitializer> ::= '(' <AnnotationParametersList> ')'
+# Args: 1..3 - Symbols in the RHS.
+$(gold_grammar)_produce-AnnotationInitializer_LParan_RParan = $2
+
+# Rule: <AnnotationInitializer> ::= '(' <Value> ')'
+# Args: 1..3 - Symbols in the RHS.
+define $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan2
+	$(for binding<-$(new MyOptionBinding),
+		$(set binding->option_link,$(new ELink,value,$(gold_location)))
+		$(set binding->optionValue,$2)
+		$(binding))
+endef
+
+# Rule: <AnnotationParametersList> ::= <AnnotationParameter> ',' <AnnotationParametersList>
+# Args: 1..3 - Symbols in the RHS.
+$(gold_grammar)_produce-AnnotationParametersList_Comma = $1 $3
+
+# Rule: <AnnotationParameter> ::= <SimpleReference> '=' <Value>
+# Args: 1..3 - Symbols in the RHS.
+define $(gold_grammar)_produce-AnnotationParameter_Eq
+	$(for binding<-$(new MyOptionBinding),
+		$(set binding->option_link,$1)
+		$(set binding->optionValue,$3)
+		$(binding))
+endef
+
+# Rule: <Interface> ::= interface Identifier <SuperInterfaces> '{' <Features> '}'
+# Args: 1..6 - Symbols in the RHS.
+define $(gold_grammar)_produce-Interface_interface_Identifier_LBrace_RBrace
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <SuperInterfaces> ::= extends <ReferenceList>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-SuperInterfaces_extends
-	$2
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <SuperInterfaces> ::=
+# Args: 1..0 - Symbols in the RHS.
+define $(gold_grammar)_produce-SuperInterfaces
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Features> ::= <AnnotatedFeature> <Features>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-Features
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Features> ::=
+# Args: 1..0 - Symbols in the RHS.
+define $(gold_grammar)_produce-Features2
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <AnnotatedFeature> ::= <AnnotationSpecifiers> <Feature>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-AnnotatedFeature
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
 # Rule: <Feature> ::= feature Identifier <SuperFeatures>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-Feature_feature_Identifier
-	$(call gold_report_error,NIY)
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <SuperFeatures> ::= extends <FeatureRefList>
-$(gold_grammar)_produce-SuperFeatures_extends = $2
+# Rule: <SuperFeatures> ::= extends <ReferenceList>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-SuperFeatures_extends
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
 
-# <Module> ::= <ModuleModifiers> module Identifier <SuperModule>
-#                  '{' <ModuleAttributes> '}'
-# Args:
-#   1. Modifiers.
-#   3. Module name.
-#   4. Reference to a super type (if any).
-#   6. Attributes.
+# Rule: <SuperFeatures> ::=
+# Args: 1..0 - Symbols in the RHS.
+define $(gold_grammar)_produce-SuperFeatures
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Module> ::= <ModuleModifiers> module Identifier <SuperModule> '{' <ModuleMembers> '}'
+# Args: 1..7 - Symbols in the RHS.
 define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 	$(foreach module,$(new MyModule),
 		$(set module->name,$3)
 		$(set module->origin,$(call gold_location_of,3))
 
-		$(set module->isStatic,$(filter static,$1))
-		$(set module->isAbstract,$(filter abstract,$1))
+		$(set module->modifiers,$1)
 
 		$(set module->superType_link,$4)
 
 		$(silent-foreach attr, \
 				sources \
-				flags \
-				makeRules \
-				depends_links,\
-				$(set module->$(attr),\
+				options \
+				depends_links,
+				$(set module->$(attr),
 					$(filter-patsubst $(attr)/%,%,$6)))
 
 		$(module)
@@ -105,159 +197,116 @@ define $(gold_grammar)_produce-ModuleModifiers
 	$2
 endef
 
-# Rule: <SuperModule> ::= extends <ModuleRef>
+# Rule: <SuperModule> ::= extends <Reference>
+# Args: 1..2 - Symbols in the RHS.
 $(gold_grammar)_produce-SuperModule_extends = $2
 
-# Rule: <Depends> ::= depends <ModuleRefList>
-$(gold_grammar)_produce-Depends_depends       = $(addprefix $1_links/,$2)
-
-# Rule: <FeatureAttribute> ::= <FeatureAttributeNature> <FeatureRefList>
-# <FeatureAttributeNature> ($1) is either 'requires' or 'provides'.
-$(gold_grammar)_produce-FeatureAttribute      = $(addprefix $1_links/,$2)
-
-# Rule: <FilenameAttribute> ::= <FilenameAttributeNature> <FilenameList>
-# <FilenameAttributeNature> ($1) is either 'source' or 'object'.
-$(gold_grammar)_produce-FilenameAttribute     = $(addprefix $1s/,$2)
-
-# Rule: <Option> ::= option Identifier ':' <OptionTypeWithAssignment>
-# Args: 1..4 - Symbols in the RHS.
-define $(gold_grammar)_produce-Option_option_Identifier_Colon
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <OptionTypeWithAssignment> ::= string <StringOptionAssignment>
+# Rule: <AnnotatedModuleMember> ::= <AnnotationSpecifiers> <ModuleMember>
 # Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-OptionTypeWithAssignment_string
-	$(gold_default_produce)# TODO Auto-generated stub!
+define $(gold_grammar)_produce-AnnotatedModuleMember
+	$(for target <- $2,
+		$(set+ target->annotations,$(foreach a,$1,$(invoke a->eCopy)))
+		$(target))
 endef
 
-# Rule: <OptionTypeWithAssignment> ::= number <NumberOptionAssignment>
+define __myfile_annotated_link_from_elinks
+	$(for link <- $1,
+		$(new MyAnnotatedLink,$(get link->name),$(get link->origin)))
+endef
+
+# Rule: <ModuleMember> ::= depends <ReferenceList>
+$(gold_grammar)_produce-ModuleMember_depends = \
+	$(addprefix $1_links/,$(call __myfile_annotated_link_from_elinks,$2))
+
+# Rule: <ModuleMember> ::= provides <ReferenceList>
+$(gold_grammar)_produce-ModuleMember_provides = \
+	$(addprefix $1_links/,$(call __myfile_annotated_link_from_elinks,$2))
+
+# Rule: <ModuleMember> ::= requires <ReferenceList>
+$(gold_grammar)_produce-ModuleMember_requires = \
+	$(addprefix $1_links/,$(call __myfile_annotated_link_from_elinks,$2))
+
+# Rule: <ModuleMember> ::= source <FilenameList>
+$(gold_grammar)_produce-ModuleMember_source = $(addprefix $1s/,$2)
+# Rule: <ModuleMember> ::= object <FilenameList>
+$(gold_grammar)_produce-ModuleMember_object = $(addprefix $1s/,$2)
+
+# Rule: <ModuleMember> ::= option <Option>
 # Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-OptionTypeWithAssignment_number
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-ModuleMember_option = $(addprefix $1s/,$2)
 
-# Rule: <OptionTypeWithAssignment> ::= boolean <BooleanOptionAssignment>
-# Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-OptionTypeWithAssignment_boolean
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <StringOptionAssignment> ::= '=' StringLiteral
-# Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-StringOptionAssignment_Eq_StringLiteral
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <StringOptionAssignment> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-StringOptionAssignment
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <NumberOptionAssignment> ::= '=' NumberLiteral
-# Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-NumberOptionAssignment_Eq_NumberLiteral
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <NumberOptionAssignment> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-NumberOptionAssignment
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <BooleanOptionAssignment> ::= '=' BooleanLiteral
-# Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-BooleanOptionAssignment_Eq_BooleanLiteral
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <BooleanOptionAssignment> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-BooleanOptionAssignment
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <MakeAttribute> ::= make <Make>
-# Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-MakeAttribute_make
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <Make> ::= <MakeFlags>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-Make
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <Make> ::= <MakeRule>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-Make2
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <MakeFlags> ::= flags <StringList>
-# Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-MakeFlags_flags
-	$(addprefix $1/,$2)
-endef
-
-# Rule: <MakeRule> ::= <Filename> <Prerequisites> <Recipes>
+# Rule: <Option> ::= <OptionType> Identifier <OptionDefaultValue>
 # Args: 1..3 - Symbols in the RHS.
-define $(gold_grammar)_produce-MakeRule
-	makeRules/$(new MyMakeRule,$1,$2)
+define $(gold_grammar)_produce-Option_Identifier
+    $(for opt <- $(new My$1Option),
+		$(set opt->name,$2)
+		$(and $3,
+			$(if $(invoke opt->validateOption,$3),
+				$(set opt->defaultValue,$3),
+				$(call gold_report_error_at,
+					$(call gold_location_of,3),
+					Option value has wrong type)))
+
+		$(opt))
 endef
 
-# Rule: <Prerequisites> ::= ':' <FilenameList>
+# Rule: <OptionType> ::= string
+# Args: 1..1 - Symbols in the RHS.
+$(gold_grammar)_produce-OptionType_string = String
+
+# Rule: <OptionType> ::= number
+# Args: 1..1 - Symbols in the RHS.
+$(gold_grammar)_produce-OptionType_number = Number
+
+# Rule: <OptionType> ::= boolean
+# Args: 1..1 - Symbols in the RHS.
+$(gold_grammar)_produce-OptionType_boolean = Boolean
+
+# Rule: <OptionDefaultValue> ::= '=' <Value>
 # Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-Prerequisites_Colon
-	$2
+$(gold_grammar)_produce-OptionDefaultValue_Eq = $2
+
+# Rule: <Value> ::= StringLiteral
+# Args: 1..1 - Symbols in the RHS.
+$(gold_grammar)_produce-Value_StringLiteral = $(new MyStringOptionValue,$1)
+
+# Rule: <Value> ::= NumberLiteral
+# Args: 1..1 - Symbols in the RHS.
+$(gold_grammar)_produce-Value_NumberLiteral = $(new MyNumberOptionValue,$1)
+
+# Rule: <Value> ::= BooleanLiteral
+# Args: 1..1 - Symbols in the RHS.
+define $(gold_grammar)_produce-Value_BooleanLiteral
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <Recipes> ::= '{' <StringList> '}'
+# Rule: <Reference> ::= <QualifiedName>
+# Args: 1..1 - Symbols in the RHS.
+$(gold_grammar)_produce-Reference = $(new ELink,$1,$(gold_location))
+
+# Rule: <SimpleReference> ::= Identifier
+# Args: 1..1 - Symbols in the RHS.
+$(gold_grammar)_produce-SimpleReference_Identifier = $(new ELink,$1,$(gold_location))
+
+# Rule: <Filename> ::= StringLiteral
+# Args: 1..1 - Symbols in the RHS.
+define $(gold_grammar)_produce-Filename_StringLiteral
+	$(for file <- $(new MyFileMember),
+		$(set file->fileName,$1)
+				$(file))
+endef
+
+# Rule: <ReferenceList> ::= <Reference> ',' <ReferenceList>
 # Args: 1..3 - Symbols in the RHS.
-define $(gold_grammar)_produce-Recipes_LBrace_RBrace
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-ReferenceList_Comma = $1 $3
 
-# Rule: <Recipes> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-Recipes
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# <InterfaceRef> ::= <QualifiedName>
-$(gold_grammar)_produce-InterfaceRef = $(new ELink,$1,$(gold_location))
-# <FeatureRef> ::= <QualifiedNameWithWildcard>
-$(gold_grammar)_produce-FeatureRef   = $(new ELink,$1,$(gold_location))
-# <ModuleRef> ::= <QualifiedName>
-$(gold_grammar)_produce-ModuleRef    = $(new ELink,$1,$(gold_location))
-# <Filename> ::= StringLiteral
-$(gold_grammar)_produce-Filename_StringLiteral     = \
-	$(for file <- $(new MyFile),\
-		$(set file->fileName,$1)\
-		$(file))
-
-# <String> ::= StringLiteral
-#$(gold_grammar)_produce-String_StringLiteral       = $(new string,$1)
-
-# <InterfaceRefList> ::= <InterfaceRef> ',' <InterfaceRefList>
-$(gold_grammar)_produce-InterfaceRefList_Comma     = $1 $3
-# <FeatureRefList> ::= <FeatureRef> ',' <FeatureRefList>
-$(gold_grammar)_produce-FeatureRefList_Comma       = $1 $3
-# <ModuleRefList> ::= <ModuleRef> ',' <ModuleRefList>
-$(gold_grammar)_produce-ModuleRefList_Comma        = $1 $3
-# <FilenameList> ::= <Filename> ',' <FilenameList>
-$(gold_grammar)_produce-FilenameList_Comma         = $1 $3
-# <StringList> ::= <String> ',' <StringList>
-$(gold_grammar)_produce-StringList_Comma           = $1 $3
+# Rule: <FilenameList> ::= <Filename> ',' <FilenameList>
+# Args: 1..3 - Symbols in the RHS.
+$(gold_grammar)_produce-FilenameList_Comma = $1 $3
 
 # <QualifiedName> ::= Identifier '.' <QualifiedName>
 $(gold_grammar)_produce-QualifiedName_Identifier_Dot         = $1.$3
 # <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
 $(gold_grammar)_produce-QualifiedNameWithWildcard_DotTimes   = $1.*
 
-
-$(def_all)
 

@@ -1,28 +1,27 @@
 package embox.fs
 
 module node {
+    @IncludePath("$(SRC_DIR)/compat/linux/include")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "node.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
-	make flags "-I$(SRC_DIR)/compat/linux/include"
 }
 
 module file_desc {
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "file_desc.c"
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module rootfs {
 	source "rootfs.c"
 	depends node, driver.repo
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 
 module core {
-	source "file.c"
-	source "vfs.c"
-	source "fs.c"
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "file.c",
+		"vfs.c",
+		"fs.c"
 	depends file_desc, node, rootfs
 	depends embox.fs.driver.repo
 	depends embox.kernel.task_api
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }

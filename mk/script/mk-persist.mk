@@ -32,9 +32,16 @@ $(info )
 ifdef PERSIST_REALLOC
 
 override PERSIST_REALLOC := $(PERSIST_REALLOC)
-__persist_id_provider = .$(PERSIST_REALLOC)$(call alloc,$(PERSIST_REALLOC))
+__persist_id_provider = \
+	$(foreach id,.$(PERSIST_REALLOC)$(call alloc,$(PERSIST_REALLOC)),$(eval \
+		__persist_realloced += $(id))$(id))
 
 $(info $(call object_graph_print,$(PERSIST_OBJECTS),__persist_id_provider))
+
+$(info # Seal these objects (Prevent further serialization))
+
+$(foreach id,$(value __persist_realloced),\
+	$(info $(id).__serial_id__ := $(id)))
 
 else
 

@@ -13,6 +13,6 @@ module matcher {
 }
 
 module static_rules {
+	@IncludePath("$(CONF_DIR)")
 	source "linux_rules_init.c"
-	make flags "-I$(CONF_DIR)"
 }

@@ -2,7 +2,7 @@
 package lego_nxt.driver
 
 module nxt_motor {
+    @IncludePath("$(PLATFORM_DIR)/lego_nxt/include")
 	source "motor.c"
 	depends embox.driver.pins, lego_nxt.driver.nxt_avr_init
-	make flags "-I$(PLATFORM_DIR)/lego_nxt/include"
 }

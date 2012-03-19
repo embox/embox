@@ -20,13 +20,17 @@ module at91_uart extends diag_api {
 	source "at91_uart.c"
 }
 
+module mem_diag extends diag_api {
+	source "mem_diag.c"
+}
+
 module xuartlite extends diag_api {
 	source "xuartlite.c"
 }
 
 module vga extends diag_api {
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "vga.c"
 	depends embox.driver.video.vga, embox.driver.keyboard
-	make flags "-I$(SRC_DIR)/compat/posix/include"
 }
 

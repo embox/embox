@@ -33,7 +33,7 @@ define __header_template
 $(foreach impl,$(call get_subs,$1),$(\n)// impl: \
   $(impl)$(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
                  $(abspath $(call module_get_headers,$(impl))))) \
-      ,$(\n)$(\h)include __impl_x($(header))))
+      ,$(\n)$(\h)include __impl_x($(header))$(\n)))
 
 #endif /* __MOD_HEADER__$(subst .,__,$1) */
 
@@ -94,29 +94,42 @@ filter_abstract_modules = \
 filter_static_modules = \
 	$(strip $(foreach m,$1,$(if $(get m->isStatic),$m)))
 
-ROOTFS_LABEL := rootfs
+ROOTFS_LABEL := mybuild.lang.InitFS
 
 define module_get_rootfs
-	$(for rule <- $(get $1.makeRules),
-		tar <- $(get rule->target),
-		prereq <- $(if $(eq $(ROOTFS_LABEL),$(get tar->fileName)),
-	       			$(get rule->prerequisites)),
-		$(get prereq->fileFullName))
+	$(for fileMember <- $(get $1.sources),
+		annot <- $(get fileMember->annotations),
+		annotType <- $(get annot->type),
+		$(if $(eq $(ROOTFS_LABEL),$(get $(get annot->type).qualifiedName)),
+			$(get fileMember->fileFullName)))
 endef
 
-
+LABEL-IncludePath := mybuild.lang.IncludePath
+LABEL-DefineMacro := mybuild.lang.DefineMacro
 
 # 1. Module.
 define define_mod_obj_rules
-	${eval \
-		$(with $1,$(call module_get_objects,$1),
-			$(if $(get $1.flags),
-				$2 : override CCFLAGS += $(get $1.flags)
-				$(\n))
-			$2 : override CPPFLAGS += \
-					-D__EMBUILD_MOD__='$(subst .,__,$(get $1.qualifiedName))'
-		)
-	}
+	${eval
+		$(for mod<-$1,
+				src<-$(get mod->sources),
+				obj<-$(call SRC_TO_OBJ,$(get src->fileFullName)),
+				$(for annot <- $(get src->annotations),
+						annotType <- $(get annot->type),
+						annotName <- $(get annotType->qualifiedName),
+						annotBind <- $(get annot->bindings),
+						opt <- $(get annotBind->option),
+						optName <- $(get opt->name),
+						optValue <- $(get $(get annotBind->optionValue).value),
+						$(if $(and \
+								$(eq $(annotName),$(LABEL-IncludePath)),
+								$(eq $(optName),value)),
+						$(obj) : override CCFLAGS += -I'$(optValue)'$(\n))
+						$(if $(and \
+								$(eq $(annotName),$(LABEL-DefineMacro)),
+								$(eq $(optName),value)),
+						$(obj) : override CCFLAGS += -D'$(optValue)'$(\n)))
+				$(obj) : override CPPFLAGS += \
+					-D__EMBUILD_MOD__='$(subst .,__,$(get mod->qualifiedName))'$(\n))}
 endef
 
 # 1. Library module.

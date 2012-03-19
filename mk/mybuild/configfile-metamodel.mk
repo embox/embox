@@ -11,17 +11,17 @@ include mk/model/metamodel_impl.mk
 ConfigFile := \
 	$(call eMetaModelCreate,ConfigFile)
 
-ConfigFile_FileContent := \
-	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_FileContent)
-ConfigFile_FileContent_configurations := \
-	$(call eMetaReferenceCreate,$(ConfigFile_FileContent),ConfigFile_FileContent_configurations)
-ConfigFile_FileContent_imports := \
-	$(call eMetaAttributeCreate,$(ConfigFile_FileContent),ConfigFile_FileContent_imports)
+ConfigFile_FileContentRoot := \
+	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_FileContentRoot)
+ConfigFile_FileContentRoot_configurations := \
+	$(call eMetaReferenceCreate,$(ConfigFile_FileContentRoot),ConfigFile_FileContentRoot_configurations)
+ConfigFile_FileContentRoot_imports := \
+	$(call eMetaAttributeCreate,$(ConfigFile_FileContentRoot),ConfigFile_FileContentRoot_imports)
 
 ConfigFile_Configuration := \
 	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_Configuration)
-ConfigFile_Configuration_fileContent := \
-	$(call eMetaReferenceCreate,$(ConfigFile_Configuration),ConfigFile_Configuration_fileContent)
+ConfigFile_Configuration_fileContentRoot := \
+	$(call eMetaReferenceCreate,$(ConfigFile_Configuration),ConfigFile_Configuration_fileContentRoot)
 ConfigFile_Configuration_includes := \
 	$(call eMetaReferenceCreate,$(ConfigFile_Configuration),ConfigFile_Configuration_includes)
 
@@ -32,59 +32,37 @@ ConfigFile_Include_module := \
 ConfigFile_Include_optionBindings := \
 	$(call eMetaReferenceCreate,$(ConfigFile_Include),ConfigFile_Include_optionBindings)
 
-ConfigFile_StringOptionBinding := \
-	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_StringOptionBinding)
-ConfigFile_StringOptionBinding_value := \
-	$(call eMetaAttributeCreate,$(ConfigFile_StringOptionBinding),ConfigFile_StringOptionBinding_value)
-
-ConfigFile_OptionBinding := \
-	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_OptionBinding)
-ConfigFile_OptionBinding_option := \
-	$(call eMetaReferenceCreate,$(ConfigFile_OptionBinding),ConfigFile_OptionBinding_option)
-
 # Initializes the objects and relations between them.
 define __configFile_init
 	$(call eMetaModelInit,$(ConfigFile),configFile,cfg)
 
-	$(call eMetaClassInit,$(ConfigFile_FileContent),FileContent,$(EModel_ENamedObject),)
-	$(call eMetaReferenceInit,$(ConfigFile_FileContent_configurations),configurations,$(ConfigFile_Configuration),$(ConfigFile_Configuration_fileContent),changeable many containment)
-	$(call eMetaAttributeInit,$(ConfigFile_FileContent_imports),imports,changeable many)
+	$(call eMetaClassInit,$(ConfigFile_FileContentRoot),FileContentRoot,$(EModel_ENamedObject),)
+	$(call eMetaReferenceInit,$(ConfigFile_FileContentRoot_configurations),configurations,$(ConfigFile_Configuration),$(ConfigFile_Configuration_fileContentRoot),changeable many containment)
+	$(call eMetaAttributeInit,$(ConfigFile_FileContentRoot_imports),imports,changeable many)
 
 	$(call eMetaClassInit,$(ConfigFile_Configuration),Configuration,$(EModel_ENamedObject),abstract)
-	$(call eMetaReferenceInit,$(ConfigFile_Configuration_fileContent),fileContent,$(ConfigFile_FileContent),$(ConfigFile_FileContent_configurations),changeable container)
+	$(call eMetaReferenceInit,$(ConfigFile_Configuration_fileContentRoot),fileContentRoot,$(ConfigFile_FileContentRoot),$(ConfigFile_FileContentRoot_configurations),changeable container)
 	$(call eMetaReferenceInit,$(ConfigFile_Configuration_includes),includes,$(ConfigFile_Include),,changeable many containment)
 
 	$(call eMetaClassInit,$(ConfigFile_Include),Include,,)
 	$(call eMetaReferenceInit,$(ConfigFile_Include_module),module,$(MyFile_Module),,changeable linkable)
-	$(call eMetaReferenceInit,$(ConfigFile_Include_optionBindings),optionBindings,$(ConfigFile_StringOptionBinding),,changeable many containment)
-
-	$(call eMetaClassInit,$(ConfigFile_StringOptionBinding),StringOptionBinding,$(ConfigFile_OptionBinding),)
-	$(call eMetaAttributeInit,$(ConfigFile_StringOptionBinding_value),value,changeable)
-
-	$(call eMetaClassInit,$(ConfigFile_OptionBinding),OptionBinding,$(EModel_ENamedObject),abstract)
-	$(call eMetaReferenceInit,$(ConfigFile_OptionBinding_option),option,$(MyFile_Option),,changeable linkable)
+	$(call eMetaReferenceInit,$(ConfigFile_Include_optionBindings),optionBindings,$(MyFile_OptionBinding),,changeable many containment)
 
 endef # __configFile_init
 
 # Binds objects to instance classes and features to properties.
 define __configFile_bind
-	$(call eMetaClassBind,$(ConfigFile_FileContent),CfgFileContent)
-	$(call eMetaFeatureBind,$(ConfigFile_FileContent_configurations),configurations)
-	$(call eMetaFeatureBind,$(ConfigFile_FileContent_imports),imports)
+	$(call eMetaClassBind,$(ConfigFile_FileContentRoot),CfgFileContentRoot)
+	$(call eMetaFeatureBind,$(ConfigFile_FileContentRoot_configurations),configurations)
+	$(call eMetaFeatureBind,$(ConfigFile_FileContentRoot_imports),imports)
 
 	$(call eMetaClassBind,$(ConfigFile_Configuration),CfgConfiguration)
-	$(call eMetaFeatureBind,$(ConfigFile_Configuration_fileContent),fileContent)
+	$(call eMetaFeatureBind,$(ConfigFile_Configuration_fileContentRoot),fileContentRoot)
 	$(call eMetaFeatureBind,$(ConfigFile_Configuration_includes),includes)
 
 	$(call eMetaClassBind,$(ConfigFile_Include),CfgInclude)
 	$(call eMetaFeatureBind,$(ConfigFile_Include_module),module)
 	$(call eMetaFeatureBind,$(ConfigFile_Include_optionBindings),optionBindings)
-
-	$(call eMetaClassBind,$(ConfigFile_StringOptionBinding),CfgStringOptionBinding)
-	$(call eMetaFeatureBind,$(ConfigFile_StringOptionBinding_value),value)
-
-	$(call eMetaClassBind,$(ConfigFile_OptionBinding),CfgOptionBinding)
-	$(call eMetaFeatureBind,$(ConfigFile_OptionBinding_option),option)
 
 endef # __configFile_bind
 

@@ -15,10 +15,6 @@ CONFIGFILES := \
 
 override CONFIGFILES := $(firstword $(CONFIGFILES))
 
-BUILD_INCLUDES := \
-	mk/mybuild/build-model.mk \
-	mk/mybuild/build-metamodel.mk
-
 export configfiles_mk := \
 	$(patsubst $(abspath ./%),$(CONFIGFILES_CACHE_DIR)/%.mk, \
 		$(abspath $(CONFIGFILES)))
@@ -26,7 +22,7 @@ export configfiles_mk := \
 configfiles_linked_mk := $(CONFIGFILES_CACHE_DIR)/config_files_linked.mk
 
 $(MAKECMDGOALS) : $(configfiles_linked_mk)
-	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $(mybuild_model_mk) $(mk_mybuild_build-incl) $<' $@
+	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $(mybuild_model_mk) $<' $@
 
 .DELETE_ON_ERROR:
 
@@ -42,8 +38,6 @@ $(configfiles_mk) : $(CONFIGFILES_CACHE_DIR)/%.mk : %
 		PERSIST_OBJECTS='$$(call new,ConfigFileResource,$<)' \
 		ALLOC_SCOPE="r$$SCOPE" > $@ && \
 	echo '$$(lastword $$(MAKEFILE_LIST)) := '".obj1r$$SCOPE" >> $@
-
--include $(mk_mybuild) $(configfiles_mk) $(mybuild_model_mk)
 
 $(configfiles_linked_mk) : $(configfiles_mk)
 	@mkdir -p $(@D) && \

@@ -2,6 +2,7 @@
 package embox.init
 
 module init {
+    @IncludePath("$(CONF_DIR)")
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "init.c"
-	make flags "-I$(CONF_DIR)", "-I$(SRC_DIR)/compat/posix/include"
 }

@@ -8,10 +8,10 @@ __mybuild_myfile_model_mk := 1
 include mk/model/model_impl.mk
 
 #
-# Model object 'Package'.
+# Model object 'FileContentRoot'.
 #
 # The following features are defined:
-#   - reference 'entities'
+#   - reference 'types'
 #   - attribute 'imports'
 #
 # The following features and operations are inherited from 'ENamedObject':
@@ -20,29 +20,32 @@ include mk/model/model_impl.mk
 #   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-define class-MyPackage
+define class-MyFileContentRoot
 	# Extends 'ENamedObject' class.
-	$(eobject MyFile_Package,
-		MyPackage,ENamedObject,)
+	$(eobject MyFile_FileContentRoot,
+		MyFileContentRoot,ENamedObject,)
 
-	# Property 'entities... : MyEntity'.
-	$(eobject-reference MyFile_Package_entities,
-		entities,MyEntity,package,changeable many containment)
+	# Property 'types... : MyType'.
+	$(eobject-reference MyFile_FileContentRoot_types,
+		types,MyType,fileContentRoot,changeable many containment)
 
 	# Property 'imports...'.
-	$(eobject-attribute MyFile_Package_imports,
+	$(eobject-attribute MyFile_FileContentRoot_imports,
 		imports,changeable many)
 
-	# PROTECTED REGION ID(Package) ENABLED START
+	# PROTECTED REGION ID(MyFile_FileContentRoot) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
 #
-# Model object 'Entity'.
+# Model object 'Type'.
 #
 # The following features are defined:
-#   - reference 'package'
+#   - reference 'fileContentRoot'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -50,17 +53,135 @@ endef
 #   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-define class-MyEntity # abstract
-	# Extends 'ENamedObject' class.
-	$(eobject MyFile_Entity,
-		MyEntity,ENamedObject,abstract)
+define class-MyType # abstract
+	# Extends 'ENamedObject', 'MyAnnotationTarget' classes.
+	$(eobject MyFile_Type,
+		MyType,ENamedObject MyAnnotationTarget,abstract)
 
-	# Property 'package : MyPackage'.
-	$(eobject-reference MyFile_Entity_package,
-		package,MyPackage,entities,changeable container)
+	# Property 'fileContentRoot : MyFileContentRoot'.
+	$(eobject-reference MyFile_Type_fileContentRoot,
+		fileContentRoot,MyFileContentRoot,types,changeable container)
 
-	# PROTECTED REGION ID(Entity) ENABLED START
+	# PROTECTED REGION ID(MyFile_Type) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'AnnotationType'.
+#
+# The following features are defined:
+#   - reference 'options'
+#
+# The following features are inherited from 'Type':
+#   - reference 'fileContentRoot'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-MyAnnotationType
+	# Extends 'MyType' class.
+	$(eobject MyFile_AnnotationType,
+		MyAnnotationType,MyType,)
+
+	# Property 'options... : MyOption'.
+	$(eobject-reference MyFile_AnnotationType_options,
+		options,MyOption,,changeable many containment)
+
+	# PROTECTED REGION ID(MyFile_AnnotationType) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'Annotation'.
+#
+# The following features are defined:
+#   - reference 'type'
+#   - reference 'target'
+#   - reference 'bindings'
+#
+define class-MyAnnotation
+	# Extends 'EObject' class (implicitly).
+	$(eobject MyFile_Annotation,
+		MyAnnotation,,)
+
+	# Property 'type : MyAnnotationType'.
+	# Property 'type_link : ELink'.
+	$(eobject-reference MyFile_Annotation_type,
+		type,MyAnnotationType,,changeable linkable)
+
+	# Property 'target : MyAnnotationTarget'.
+	$(eobject-reference MyFile_Annotation_target,
+		target,MyAnnotationTarget,annotations,changeable container)
+
+	# Property 'bindings... : MyOptionBinding'.
+	$(eobject-reference MyFile_Annotation_bindings,
+		bindings,MyOptionBinding,,changeable many containment)
+
+	# PROTECTED REGION ID(MyFile_Annotation) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'AnnotationTarget'.
+#
+# The following features are defined:
+#   - reference 'annotations'
+#
+define class-MyAnnotationTarget # abstract
+	# Extends 'EObject' class (implicitly).
+	$(eobject MyFile_AnnotationTarget,
+		MyAnnotationTarget,,abstract)
+
+	# Property 'annotations... : MyAnnotation'.
+	$(eobject-reference MyFile_AnnotationTarget_annotations,
+		annotations,MyAnnotation,target,changeable many containment)
+
+	# PROTECTED REGION ID(MyFile_AnnotationTarget) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'AnnotatedLink'.
+#
+# No features or operations defined.
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
+# The following features and operations are inherited from 'ELink':
+#   - reference 'eMetaReference'
+#   - attribute 'eMetaReferenceId'
+#   - attribute 'eResource'
+#   - attribute 'name'
+#   - attribute 'origin'
+#   - operation 'eSource'
+#   - operation 'eTarget'
+#   - operation 'resolve'
+#   - operation 'deresolve'
+#
+define class-MyAnnotatedLink
+	# Extends 'ELink', 'MyAnnotationTarget' classes.
+	$(eobject MyFile_AnnotatedLink,
+		MyAnnotatedLink,ELink MyAnnotationTarget,)
+
+	# PROTECTED REGION ID(MyFile_AnnotatedLink) ENABLED START
+
+	$(method eContainer : EObject,$(invoke eSource))
+
+	$(if $(value 1),
+		$(set name,$1))
+	$(if $(value 2),
+		$(set origin,$2))
 	# PROTECTED REGION END
 endef
 
@@ -70,16 +191,11 @@ endef
 # The following features are defined:
 #   - reference 'features'
 #
-# The following features and operations are inherited from 'Extendable':
-#   - reference 'subTypes'
-#   - reference 'superType'
-#   - reference 'allSubTypes'
-#   - reference 'allSuperTypes'
-#   - operation 'isSubTypeOf'
-#   - operation 'isSuperTypeOf'
+# The following features are inherited from 'Type':
+#   - reference 'fileContentRoot'
 #
-# The following features are inherited from 'Entity':
-#   - reference 'package'
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -88,15 +204,15 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyInterface
-	# Extends 'MyEntity', 'MyExtendable' classes.
+	# Extends 'MyType' class.
 	$(eobject MyFile_Interface,
-		MyInterface,MyEntity MyExtendable,)
+		MyInterface,MyType,)
 
 	# Property 'features... : MyFeature'.
 	$(eobject-reference MyFile_Interface_features,
 		features,MyFeature,interface,changeable many containment)
 
-	# PROTECTED REGION ID(Interface) ENABLED START
+	# PROTECTED REGION ID(MyFile_Interface) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
@@ -109,14 +225,6 @@ endef
 #   - reference 'providedBy'
 #   - reference 'requiredBy'
 #
-# The following features and operations are inherited from 'Extendable':
-#   - reference 'subTypes'
-#   - reference 'superType'
-#   - reference 'allSubTypes'
-#   - reference 'allSuperTypes'
-#   - operation 'isSubTypeOf'
-#   - operation 'isSuperTypeOf'
-#
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
@@ -124,9 +232,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyFeature
-	# Extends 'ENamedObject', 'MyExtendable' classes.
+	# Extends 'ENamedObject' class.
 	$(eobject MyFile_Feature,
-		MyFeature,ENamedObject MyExtendable,)
+		MyFeature,ENamedObject,)
 
 	# Property 'interface : MyInterface'.
 	$(eobject-reference MyFile_Feature_interface,
@@ -142,7 +250,7 @@ define class-MyFeature
 	$(eobject-reference MyFile_Feature_requiredBy,
 		requiredBy,MyModule,requires,changeable many linkable)
 
-	# PROTECTED REGION ID(Feature) ENABLED START
+	# PROTECTED REGION ID(MyFile_Feature) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
@@ -150,20 +258,18 @@ endef
 #
 # Model object 'Module'.
 #
-# The following features are defined:
+# The following features and operations are defined:
+#   - attribute 'modifiers'
 #   - attribute 'static'
 #   - attribute 'abstract'
 #   - reference 'depends'
+#   - reference 'dependsMembers'
 #   - reference 'dependent'
 #   - reference 'provides'
 #   - reference 'requires'
 #   - reference 'sources'
 #   - reference 'objects'
-#   - attribute 'flags'
-#   - reference 'makeRules'
 #   - reference 'options'
-#
-# The following features and operations are inherited from 'Extendable':
 #   - reference 'subTypes'
 #   - reference 'superType'
 #   - reference 'allSubTypes'
@@ -171,8 +277,11 @@ endef
 #   - operation 'isSubTypeOf'
 #   - operation 'isSuperTypeOf'
 #
-# The following features are inherited from 'Entity':
-#   - reference 'package'
+# The following features are inherited from 'Type':
+#   - reference 'fileContentRoot'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -181,22 +290,51 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyModule
-	# Extends 'MyEntity', 'MyExtendable' classes.
+	# Extends 'MyType' class.
 	$(eobject MyFile_Module,
-		MyModule,MyEntity MyExtendable,)
+		MyModule,MyType,)
 
-	# Property 'isStatic'.
-	$(eobject-attribute MyFile_Module_isStatic,
-		isStatic,changeable)
+	# Property 'modifiers'.
+	$(eobject-attribute MyFile_Module_modifiers,
+		modifiers,changeable)
 
-	# Property 'isAbstract'.
-	$(eobject-attribute MyFile_Module_isAbstract,
-		isAbstract,changeable)
+	# Attribute 'static': derived.
+	$(property isStatic)
+	# PROTECTED REGION ID(MyFile_Module_isStatic) ENABLED START
+	$(getter isStatic,
+		$(filter static,$(get-field modifiers)))
+	$(setter isStatic,
+		$(if $1,$(set+ modifiers,static),$(set- modifiers,static)))
+	# PROTECTED REGION END
+
+	# Attribute 'abstract': derived.
+	$(property isAbstract)
+	# PROTECTED REGION ID(MyFile_Module_isAbstract) ENABLED START
+	$(getter isAbstract,
+		$(filter abstract,$(get-field modifiers)))
+	$(setter isAbstract,
+		$(if $1,$(set+ modifiers,abstract),$(set- modifiers,abstract)))
+	# PROTECTED REGION END
 
 	# Property 'depends... : MyModule'.
 	# Property 'depends_links... : ELink'.
 	$(eobject-reference MyFile_Module_depends,
 		depends,MyModule,dependent,changeable many linkable)
+
+	# Reference 'dependsMembers' [0..*]: containment, derived.
+	$(property dependsMembers... : MyAnnotatedLink)
+	# PROTECTED REGION ID(MyFile_Module_dependsMembers) ENABLED START
+	$(getter dependsMembers,
+		$(get depends_links))
+#	# TODO Uncomment and implement me.
+	$(setter dependsMembers,
+		$(error $0($1): NIY))
+#	# TODO Uncomment and implement us.
+	$(setter+ dependsMembers,
+		$(error $0($1): NIY))
+	$(setter- dependsMembers,
+		$(error $0($1): NIY))
+	# PROTECTED REGION END
 
 	# Property 'dependent... : MyModule'.
 	# Property 'dependent_links... : ELink'.
@@ -213,161 +351,108 @@ define class-MyModule
 	$(eobject-reference MyFile_Module_requires,
 		requires,MyFeature,requiredBy,changeable many linkable)
 
-	# Property 'sources... : MyFile'.
+	# Property 'sources... : MyFileMember'.
 	$(eobject-reference MyFile_Module_sources,
-		sources,MyFile,,changeable many containment)
+		sources,MyFileMember,,changeable many containment)
 
-	# Property 'objects... : MyFile'.
+	# Property 'objects... : MyFileMember'.
 	$(eobject-reference MyFile_Module_objects,
-		objects,MyFile,,changeable many containment)
+		objects,MyFileMember,,changeable many containment)
 
-	# Property 'flags'.
-	$(eobject-attribute MyFile_Module_flags,
-		flags,changeable)
-
-	# Property 'makeRules... : MyMakeRule'.
-	$(eobject-reference MyFile_Module_makeRules,
-		makeRules,MyMakeRule,,changeable many containment)
-
-	# Property 'options : MyOption'.
+	# Property 'options... : MyOption'.
 	$(eobject-reference MyFile_Module_options,
-		options,MyOption,module,changeable containment)
+		options,MyOption,,changeable many containment)
 
-	# PROTECTED REGION ID(Module) ENABLED START
-	# PROTECTED REGION END
-endef
-
-#
-# Model object 'Extendable'.
-#
-# The following features and operations are defined:
-#   - reference 'subTypes'
-#   - reference 'superType'
-#   - reference 'allSubTypes'
-#   - reference 'allSuperTypes'
-#   - operation 'isSubTypeOf'
-#   - operation 'isSuperTypeOf'
-#
-# The following features and operations are inherited from 'ENamedObject':
-#   - attribute 'name'
-#   - attribute 'qualifiedName'
-#   - attribute 'origin'
-#   - operation 'eInverseResolvedLinks'
-#
-define class-MyExtendable # abstract
-	# Extends 'ENamedObject' class.
-	$(eobject MyFile_Extendable,
-		MyExtendable,ENamedObject,abstract)
-
-	# Property 'subTypes... : MyExtendable'.
+	# Property 'subTypes... : MyModule'.
 	# Property 'subTypes_links... : ELink'.
-	$(eobject-reference MyFile_Extendable_subTypes,
-		subTypes,MyExtendable,superType,changeable many linkable)
+	$(eobject-reference MyFile_Module_subTypes,
+		subTypes,MyModule,superType,changeable many linkable)
 
-	# Property 'superType : MyExtendable'.
+	# Property 'superType : MyModule'.
 	# Property 'superType_link : ELink'.
-	$(eobject-reference MyFile_Extendable_superType,
-		superType,MyExtendable,subTypes,changeable linkable)
+	$(eobject-reference MyFile_Module_superType,
+		superType,MyModule,subTypes,changeable linkable)
 
 	# Reference 'allSubTypes' [0..*]: bidirectional, derived, read-only.
-	$(property allSubTypes... : MyExtendable)
-	# PROTECTED REGION ID(Extendable_allSubTypes) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(getter allSubTypes,
-#		$(error $0: NIY))
+	$(property allSubTypes... : MyModule)
+	# PROTECTED REGION ID(MyFile_Module_allSubTypes) ENABLED START
+	$(getter allSubTypes,
+		$(for subType <- $(get subTypes),
+			$(subType) \
+			$(get subType->allSubTypes)))
 	# PROTECTED REGION END
 
 	# Reference 'allSuperTypes' [0..*]: bidirectional, derived, read-only.
-	$(property allSuperTypes... : MyExtendable)
-	# PROTECTED REGION ID(Extendable_allSuperTypes) ENABLED START
+	$(property allSuperTypes... : MyModule)
+	# PROTECTED REGION ID(MyFile_Module_allSuperTypes) ENABLED START
 	$(getter allSuperTypes,
 		$(get superType) $(foreach s,$(get superType),$(get s->allSuperTypes)))
 	# PROTECTED REGION END
 
 	# Method 'isSubTypeOf'.
-	#   1. another : MyExtendable
-	# PROTECTED REGION ID(Extendable_isSubTypeOf) ENABLED START
+	#   1. another : MyModule
+	# PROTECTED REGION ID(MyFile_Module_isSubTypeOf) ENABLED START
 #	# TODO Uncomment and implement me.
 #	$(method isSubTypeOf,
 #		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
 	# Method 'isSuperTypeOf'.
-	#   1. another : MyExtendable
-	# PROTECTED REGION ID(Extendable_isSuperTypeOf) ENABLED START
+	#   1. another : MyModule
+	# PROTECTED REGION ID(MyFile_Module_isSuperTypeOf) ENABLED START
 #	# TODO Uncomment and implement me.
-#	$(method isSuperTypeOf,
-#		$(error $0($1): NIY))
+	$(method isSuperTypeOf,
+		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(Extendable) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION ID(MyFile_Module) ENABLED START
+	$(setter modifiers,
+		$(set-field modifiers,$(sort $1)))
 	# PROTECTED REGION END
 endef
 
 #
-# Model object 'File'.
+# Model object 'FileMember'.
 #
 # The following features are defined:
 #   - attribute 'fileName'
 #   - attribute 'fileFullName'
 #
-define class-MyFile
-	$(eobject MyFile_File,
-		MyFile,,)
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
+define class-MyFileMember
+	# Extends 'MyAnnotationTarget' class.
+	$(eobject MyFile_FileMember,
+		MyFileMember,MyAnnotationTarget,)
 
 	# Property 'fileName'.
-	$(eobject-attribute MyFile_File_fileName,
+	$(eobject-attribute MyFile_FileMember_fileName,
 		fileName,changeable)
 
 	# Attribute 'fileFullName': derived, read-only.
 	$(property fileFullName)
-	# PROTECTED REGION ID(File_fileFullName) ENABLED START
+	# PROTECTED REGION ID(MyFile_FileMember_fileFullName) ENABLED START
+#	# TODO Uncomment and implement me.
 	$(getter fileFullName,
 		$(dir $(get $(get eResource).fileName))$(get fileName))
+
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(File) ENABLED START
+	# PROTECTED REGION ID(MyFile_FileMember) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
-	# PROTECTED REGION END
-endef
-
-#
-# Model object 'MakeRule'.
-#
-# The following features are defined:
-#   - reference 'target'
-#   - reference 'prerequisites'
-#
-define class-MyMakeRule
-	$(eobject MyFile_MakeRule,
-		MyMakeRule,,)
-
-	# Property 'target : MyFile'.
-	$(eobject-reference MyFile_MakeRule_target,
-		target,MyFile,,changeable containment)
-
-	# Property 'prerequisites... : MyFile'.
-	$(eobject-reference MyFile_MakeRule_prerequisites,
-		prerequisites,MyFile,,changeable many containment)
-
-	# PROTECTED REGION ID(MakeRule) ENABLED START
-
-	$(if $(value 1),
-		$(set target,$1))
-
-	$(if $(value 2),
-		$(set prerequisites,$2))
-
 	# PROTECTED REGION END
 endef
 
 #
 # Model object 'Option'.
 #
-# The following features are defined:
-#   - reference 'module'
-#   - attribute 'hasDefaultValue'
+# The following features and operations are defined:
+#   - reference 'defaultValue'
+#   - operation 'validateOption'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -376,19 +461,23 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyOption # abstract
-	# Extends 'ENamedObject' class.
+	# Extends 'ENamedObject', 'MyAnnotationTarget' classes.
 	$(eobject MyFile_Option,
-		MyOption,ENamedObject,abstract)
+		MyOption,ENamedObject MyAnnotationTarget,abstract)
 
-	# Property 'module : MyModule'.
-	$(eobject-reference MyFile_Option_module,
-		module,MyModule,options,changeable container)
+	# Property 'defaultValue : MyOptionValue'.
+	$(eobject-reference MyFile_Option_defaultValue,
+		defaultValue,MyOptionValue,,changeable containment)
 
-	# Property 'isHasDefaultValue'.
-	$(eobject-attribute MyFile_Option_isHasDefaultValue,
-		isHasDefaultValue,changeable)
+	# Method 'validateOption'.
+	# PROTECTED REGION ID(MyFile_Option_validateOption) ENABLED START
+	# Args:
+	#  1. Option
+	$(method validateOption,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(Option) ENABLED START
+	# PROTECTED REGION ID(MyFile_Option) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
@@ -396,12 +485,15 @@ endef
 #
 # Model object 'StringOption'.
 #
-# The following features are defined:
-#   - attribute 'defaultValue'
+# The following operations are defined:
+#   - operation 'validateOption'
 #
-# The following features are inherited from 'Option':
-#   - reference 'module'
-#   - attribute 'hasDefaultValue'
+# The following features and operations are inherited from 'Option':
+#   - reference 'defaultValue'
+#   - operation 'validateOption'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -414,14 +506,166 @@ define class-MyStringOption
 	$(eobject MyFile_StringOption,
 		MyStringOption,MyOption,)
 
-	# Property 'defaultValue'.
-	$(eobject-attribute MyFile_StringOption_defaultValue,
-		defaultValue,changeable)
+	# Method 'validateOption'.
+	# PROTECTED REGION ID(MyFile_StringOption_validateOption) ENABLED START
+	$(method validateOption,
+		$(invoke MyFile_StringOptionValue->isInstance,$1))
+	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(StringOption) ENABLED START
+	# PROTECTED REGION ID(MyFile_StringOption) ENABLED START
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'NumberOption'.
+#
+# The following operations are defined:
+#   - operation 'validateOption'
+#
+# The following features and operations are inherited from 'Option':
+#   - reference 'defaultValue'
+#   - operation 'validateOption'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-MyNumberOption
+	# Extends 'MyOption' class.
+	$(eobject MyFile_NumberOption,
+		MyNumberOption,MyOption,)
+
+	# Method 'validateOption'.
+	# PROTECTED REGION ID(MyFile_NumberOption_validateOption) ENABLED START
+	$(method validateOption,
+		$(invoke MyFile_NumberOptionValue->isInstance,$1))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_NumberOption) ENABLED START
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'OptionValue'.
+#
+# The following features and operations are defined:
+#   - attribute 'value'
+#   - operation 'toString'
+#
+define class-MyOptionValue # abstract
+	# Extends 'EObject' class (implicitly).
+	$(eobject MyFile_OptionValue,
+		MyOptionValue,,abstract)
+
+	# Property 'value'.
+	$(eobject-attribute MyFile_OptionValue_value,
+		value,changeable)
+
+	# Method 'toString'.
+	# PROTECTED REGION ID(MyFile_OptionValue_toString) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method toString,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_OptionValue) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
+
+#
+# Model object 'StringOptionValue'.
+#
+# The following operations are defined:
+#   - operation 'toString'
+#
+# The following features and operations are inherited from 'OptionValue':
+#   - attribute 'value'
+#   - operation 'toString'
+#
+define class-MyStringOptionValue
+	# Extends 'MyOptionValue' class.
+	$(eobject MyFile_StringOptionValue,
+		MyStringOptionValue,MyOptionValue,)
+
+	# Method 'toString'.
+	# PROTECTED REGION ID(MyFile_StringOptionValue_toString) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method toString,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_StringOptionValue) ENABLED START
+	$(if $(value 1),
+		$(set value,$1))
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'NumberOptionValue'.
+#
+# The following operations are defined:
+#   - operation 'toString'
+#
+# The following features and operations are inherited from 'OptionValue':
+#   - attribute 'value'
+#   - operation 'toString'
+#
+define class-MyNumberOptionValue
+	# Extends 'MyOptionValue' class.
+	$(eobject MyFile_NumberOptionValue,
+		MyNumberOptionValue,MyOptionValue,)
+
+	# Method 'toString'.
+	# PROTECTED REGION ID(MyFile_NumberOptionValue_toString) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method toString,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_NumberOptionValue) ENABLED START
+	$(if $(value 1),
+		$(set value,$1))
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'OptionBinding'.
+#
+# The following features are defined:
+#   - reference 'option'
+#   - reference 'optionValue'
+#
+define class-MyOptionBinding
+	# Extends 'EObject' class (implicitly).
+	$(eobject MyFile_OptionBinding,
+		MyOptionBinding,,)
+
+	# Property 'option : MyOption'.
+	# Property 'option_link : ELink'.
+	$(eobject-reference MyFile_OptionBinding_option,
+		option,MyOption,,changeable linkable)
+
+	# Property 'optionValue : MyOptionValue'.
+	$(eobject-reference MyFile_OptionBinding_optionValue,
+		optionValue,MyOptionValue,,changeable containment)
+
+	# PROTECTED REGION ID(MyFile_OptionBinding) ENABLED START
+	$(method setOptionValue,
+		$(for opt <- $(get option),
+			$(if $(invoke opt->validate,$1),
+				$(set-field optionValue,$1))))
+	# PROTECTED REGION END
+endef
+
+# PROTECTED REGION ID(MyFile) ENABLED START
+# TODO Add custom implementation here and remove this comment.
+# PROTECTED REGION END
 
 $(def_all)
 

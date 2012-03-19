@@ -2,7 +2,7 @@
 package embox.cmd
 
 module lspnp {
+    @IncludePath("$(CONF_DIR)")
 	source "lspnp.c"
-	make flags "-I$(CONF_DIR)"
 	depends embox.driver.amba_registry
 }
