@@ -16,7 +16,7 @@ define class-MyFileLinker
 		$(for root <- $(get 1->contentsRoot),
 			$(with $(get root->name),
 				$(if $1,$1.* )))
-		mybuild.*)
+		mybuild.lang.*)
 
 	$(method linkHandle-MyFile_OptionBinding_option,
 		$(for \

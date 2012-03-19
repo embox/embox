@@ -33,7 +33,7 @@ define __header_template
 $(foreach impl,$(call get_subs,$1),$(\n)// impl: \
   $(impl)$(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
                  $(abspath $(call module_get_headers,$(impl))))) \
-      ,$(\n)$(\h)include __impl_x($(header))))
+      ,$(\n)$(\h)include __impl_x($(header))$(\n)))
 
 #endif /* __MOD_HEADER__$(subst .,__,$1) */
 
@@ -94,18 +94,18 @@ filter_abstract_modules = \
 filter_static_modules = \
 	$(strip $(foreach m,$1,$(if $(get m->isStatic),$m)))
 
-ROOTFS_LABEL := InitFS
+ROOTFS_LABEL := mybuild.lang.InitFS
 
 define module_get_rootfs
 	$(for fileMember <- $(get $1.sources),
 		annot <- $(get fileMember->annotations),
 		annotType <- $(get annot->type),
-		$(if $(eq $(ROOTFS_LABEL),$(get annot->type)),
-				$(get fileMember->fileFullName)))
+		$(if $(eq $(ROOTFS_LABEL),$(get $(get annot->type).qualifiedName)),
+			$(get fileMember->fileFullName)))
 endef
 
-LABEL-IncludePath := IncludePath
-LABEL-DefineMacro := DefineMacro
+LABEL-IncludePath := mybuild.lang.IncludePath
+LABEL-DefineMacro := mybuild.lang.DefineMacro
 
 # 1. Module.
 define define_mod_obj_rules
@@ -115,7 +115,7 @@ define define_mod_obj_rules
 				obj<-$(call SRC_TO_OBJ,$(get src->fileFullName)),
 				$(for annot <- $(get src->annotations),
 						annotType <- $(get annot->type),
-						annotName <- $(get annotType->name),
+						annotName <- $(get annotType->qualifiedName),
 						annotBind <- $(get annot->bindings),
 						opt <- $(get annotBind->option),
 						optName <- $(get opt->name),
