@@ -3,8 +3,8 @@ package embox.cmd
 import embox.compat.posix.LibPosix
 
 module ls {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ls.c"
 
 	depends LibPosix
@@ -12,8 +12,8 @@ module ls {
 
 module rm {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "rm.c"
 	depends LibPosix
 
@@ -21,8 +21,8 @@ module rm {
 
 module cat {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "cat.c"
 
 	depends LibPosix
@@ -31,8 +31,8 @@ module cat {
 
 module goto {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "goto.c"
 	depends embox.arch.interrupt
 
@@ -40,8 +40,8 @@ module goto {
 
 module load {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "load.c"
 	depends LibPosix
 
@@ -49,8 +49,8 @@ module load {
 
 module readelf {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "readelf.c"
 	depends LibPosix
 
@@ -58,8 +58,8 @@ module readelf {
 
 module runelf {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "runelf.c"
 	depends LibPosix
 
@@ -68,8 +68,8 @@ module runelf {
 /*netutil */
 module arp {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "arp.c"
 	depends LibPosix
 
@@ -77,8 +77,8 @@ module arp {
 
 module arping {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "arping.c"
 	depends LibPosix
 
@@ -86,9 +86,9 @@ module arping {
 
 module ping {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
 
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ping.c"
 	depends LibPosix
 
@@ -96,9 +96,9 @@ module ping {
 
 module ifconfig {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
 
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ifconfig.c"
 	depends LibPosix
 	depends embox.net.core
@@ -107,8 +107,8 @@ module ifconfig {
 
 module route {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "route.c"
 	depends LibPosix
 
@@ -116,8 +116,8 @@ module route {
 
 module tftp {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "tftp.c"
 	depends LibPosix
 
@@ -125,8 +125,8 @@ module tftp {
 
 module version {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "version.c"
 	depends LibPosix
 
@@ -134,8 +134,8 @@ module version {
 
 module man {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "man.c"
 	depends LibPosix
 
@@ -143,8 +143,8 @@ module man {
 
 module help {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "help.c"
 	depends LibPosix
 
@@ -152,8 +152,8 @@ module help {
 
 module mem {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "mem.c"
 	depends LibPosix
 
@@ -161,8 +161,8 @@ module mem {
 
 module wmem {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "wmem.c"
 	depends LibPosix
 
@@ -170,8 +170,8 @@ module wmem {
 
 module test {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "test.c"
 	depends LibPosix
 
@@ -179,8 +179,8 @@ module test {
 
 module lspci {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "lspci.c"
 	depends LibPosix, embox.driver.pci
 
@@ -188,8 +188,8 @@ module lspci {
 
 module lsmod {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "lsmod.c"
 	depends LibPosix
 
@@ -197,8 +197,8 @@ module lsmod {
 
 module md5sum {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "md5sum.c"
 	depends LibPosix
 
@@ -206,8 +206,8 @@ module md5sum {
 
 module lisp {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "lisp.c"
 	depends LibPosix, third_party.lisp.lisp5000
 
@@ -215,19 +215,47 @@ module lisp {
 
 module ne2k_pci_probe {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ne2k_pci_probe.c"
 	depends LibPosix, embox.driver.net.ne2k_pci
 
 }
 
+module netstat {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "netstat.c"
+	depends LibPosix
+}
+
 module example {
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "example.c"
 	depends LibPosix
 	depends embox.framework.example
 
 }
+
+module log {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "log.c"
+	depends LibPosix
+}
+
+module pnet {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "pnet.c"
+	depends LibPosix
+	depends embox.pnet.core
+}
+
+module tpprint {
+	source "tpprint.c"
+	depends embox.framework.trace
+}
+

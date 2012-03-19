@@ -1,0 +1,13 @@
+package embox.mem
+
+abstract module kmalloc { }
+
+module slob extends kmalloc {
+	source "slob.c"
+}
+
+module slab_fit extends kmalloc {
+	source "slab_fit.c"
+	depends embox.mem.slab
+}
+

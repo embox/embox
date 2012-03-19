@@ -1,9 +1,5 @@
-
 package embox.pnet.core.pack
 
-abstract module api { }
-
-module pnet_pack_factory {
+module PnetPackFactory {
 	source "pnet_pack_factory.c"
-	depends embox.pnet.core.pack.api
 }

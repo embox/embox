@@ -1,7 +1,7 @@
 package embox.kernel.thread
 
 module core {
-    @IncludePath("-I$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "core.c"
 
 	depends sched, sync, embox.kernel.task_api
@@ -11,7 +11,7 @@ module core {
 }
 
 module sched {
-    @IncludePath("-I$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "sched.c"
 
 	depends embox.kernel.timer.timer_api // for timeslices support

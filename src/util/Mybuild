@@ -9,5 +9,10 @@ static module LibUtil {
 	source "priority_q.c"
 	source "binary_heap.c"
 	source "ring_buff.c"
+	source "debug_msg.c"
 }
 
+module 	hashtable {
+	source "hashtable.c"
+	depends embox.mem.heap_bm
+}

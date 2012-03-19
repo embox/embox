@@ -1,19 +1,24 @@
 package embox.test.stdlib
 
 module bsearch_test {
-    @IncludePath("-I$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "bsearch_test.c"
 
 }
 
 module qsort_test {
-    @IncludePath("-I$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "qsort_test.c"
 
 }
 
 module setjmp_test {
-    @IncludePath("-I$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "setjmp_test.c"
 
+}
+
+module getopt_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "getopt_test.c"
 }

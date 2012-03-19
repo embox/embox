@@ -1,7 +1,18 @@
 package embox.pnet.netfilter
 
-module matcher {
+module match {
 	source "match.c"
+	depends embox.pnet.core
+}
+
+module matcher {
+	source "match_linux.c"
 	source "rule.c"
 	depends embox.pnet.core
+	depends match
+}
+
+module static_rules {
+	@IncludePath("$(CONF_DIR)")
+	source "linux_rules_init.c"
 }
