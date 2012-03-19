@@ -64,7 +64,6 @@ static int httpd_exec(int argc, char **argv) {
 	}
 
 	listen(sock, 1);
-
 	while (1) {
 		connect_sock = accept(sock,(struct sockaddr *)&dst,
 				&dst_addr_len);

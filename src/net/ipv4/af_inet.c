@@ -115,7 +115,7 @@ int inet_release(struct socket *sock) {
 	}
 
 	sock_lock(sk);
-	inet = inet_sk(sk); // FIXME Issue 393
+	inet = inet_sk(sk);
 	socket_port_unlock(inet->sport, inet->sport_type);
 	sock_unlock(sock->sk);
 
@@ -123,6 +123,7 @@ int inet_release(struct socket *sock) {
 		sk->sk_prot->close(sk, 0);
 	}
 
+	sk_common_release(sock->sk);
 	sock->sk = NULL;
 
 	return ENOERR;
@@ -135,8 +136,8 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 	struct inet_sock *inet;
 
 	sk = sock->sk;
-	if(!sk->sk_prot->bind)
-		return SK_NO_SUCH_METHOD;
+//	if(!sk->sk_prot->bind)
+//		return SK_NO_SUCH_METHOD;
 
 	sock_lock(sk);
 	if (sk->sk_prot->bind != NULL) {

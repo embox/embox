@@ -1,5 +1,10 @@
 package embox.example.net
 
+module tcp_accepter {
+	source "tcp_accepter.c"
+	depends embox.net.socket
+}
+
 module receiver {
 	source "receiver.c"
 	depends embox.net.socket, embox.net.eth, embox.net.arp, embox.net.af_inet, embox.net.udp
