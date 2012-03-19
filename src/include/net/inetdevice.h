@@ -46,6 +46,14 @@ extern int inet_dev_listen(in_device_t *in_dev, unsigned short type,
 extern struct net_device *ip_dev_find(in_addr_t addr);
 
 /**
+ * perform check: does this ip should be processes by local ip stack
+ * @param ipaddr - ip devices address
+ * @param check_broadcast - should we check broadcast addresses
+ * @param check_multicast - should we check multicast addresses
+ */
+extern bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast);
+
+/**
  * Get inet_devive by name
  * @param if_name - interface name
  */

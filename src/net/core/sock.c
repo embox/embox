@@ -48,8 +48,13 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 		sock = prot->sock_alloc();
 	}
 
-	if(!prot->cachep)
+	if(!prot->cachep) {
 		prot->cachep = cache_create(prot->name, prot->obj_size, LOWER_BOUND);
+		if(NULL == prot->cachep) {
+			local_irq_restore(flags);
+			return NULL;
+		}
+	}
 
 	if(sock == NULL && (sock = cache_alloc(prot->cachep)) == NULL) {
 		local_irq_restore(flags);
@@ -68,6 +73,7 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 /* returns specified structure sock into pull */
 static void sk_prot_free(struct proto *prot, struct sock *sk) {
 	unsigned long irq_old;
+
 	local_irq_save(irq_old);
 	if(prot->unhash) {
 		prot->unhash(sk);
@@ -75,7 +81,6 @@ static void sk_prot_free(struct proto *prot, struct sock *sk) {
 	if (prot->sock_free != NULL) {
 		prot->sock_free(sk);
 	} else {
-		//pool_free(&socks_pool, sk);
 		cache_free(prot->cachep, sk);
 	}
 	local_irq_restore(irq_old);

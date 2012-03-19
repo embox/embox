@@ -11,7 +11,6 @@
 #include <net/socket.h>
 #include <net/sock.h>
 
-
 EMBOX_NET_PACK(ETH_P_ALL, ip_rcv, af_packet_init);
 
 struct packet_sock {
@@ -43,16 +42,23 @@ static void packet_sock_unhash(struct sock *sk) {
 	}
 }
 
+
 static struct proto packet_proto = {
 	.name	  = "PACKET",
 	.hash	  = packet_sock_hash,
 	.unhash	  = packet_sock_unhash,
-#if 0
-	.owner	  = THIS_MODULE,
-#endif
 	.obj_size = sizeof(struct packet_sock),
 };
 
+static int packet_sock_release(struct socket *sock) {
+	sk_common_release(sock->sk);
+	return 0;
+}
+
+const struct proto_ops packet_proto_ops = {
+	.family            = PF_PACKET,
+	.release           = packet_sock_release,
+};
 
 static int supported_sock_type(struct socket*sock) {
 	switch(sock->type) {
@@ -76,6 +82,10 @@ static int packet_create(struct socket *sock, int protocol) {
 	if (sk == NULL) {
 		return -ENOMEM;
 	}
+	sock->sk = sk;
+	sock->ops = &packet_proto_ops;
+	sk->sk_protocol = protocol;
+
 	return ENOERR;
 }
 
@@ -83,9 +93,6 @@ static int packet_create(struct socket *sock, int protocol) {
 struct net_proto_family packet_family_ops = {
 	.family = PF_PACKET,
 	.create = packet_create,
-#if 0
-	.owner = THIS_MODULE,
-#endif
 };
 
 static int af_packet_init(void) {

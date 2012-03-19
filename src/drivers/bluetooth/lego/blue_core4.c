@@ -19,6 +19,7 @@
 #include <pnet/node.h>
 #include <pnet/repo.h>
 #include <pnet/pnet_pack.h>
+#include <pnet/pack/pack_alone.h>
 
 #include <kernel/prom_printf.h>
 

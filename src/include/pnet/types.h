@@ -1,18 +1,18 @@
 /**
  * @file
- * @brief Network types defs
+ * @brief pnet types definitions
  *
  * @date 19.10.2011
  * @author Anton Kozlov
  */
 
-//#include <net/skbuff.h>
 #ifndef PNET_TYPES_H_
 #define PNET_TYPES_H_
 
-#include <net/in.h>
-#include <net/if_ether.h>
-#include <net/netdevice.h>
+//#include <net/in.h>
+//#include <net/if_ether.h>
+//#include <net/netdevice.h>
+#include <types.h>
 #include <util/list.h>
 
 
@@ -57,7 +57,16 @@ struct pnet_dev {
 
 };
 
+struct pnet_pack {
+	uint32_t type;
+	struct net_node *node;
+	enum PNET_PACK_DIRECTION dir;
+	void *data;
+};
+
+
 #include <pnet/proto.h>
-#include __module_headers(embox/pnet/core/pack/api)
+
+//#include __module_headers(embox/pnet/core/pack/api)
 
 #endif /* PNET_TYPES_H_ */

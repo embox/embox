@@ -142,6 +142,7 @@ static inline void *netdev_priv(struct net_device *dev) {
  */
 extern struct net_device * netdev_get_by_name(const char *name);
 
+#if 0
 /**
  * Find an network device by its hw addr
  * @param type
@@ -149,6 +150,7 @@ extern struct net_device * netdev_get_by_name(const char *name);
  * @return NULL is returned if no matching device is found.
  */
 extern struct net_device * dev_getbyhwaddr(unsigned short type, char *hwaddr);
+#endif
 
 /**
  * Allocate network device
@@ -240,7 +242,7 @@ extern struct net_device *dev_rx_processing(void);
  * @param net_packet *pack struct of network packet
  * @return on success, returns 0, on error, -1 is returned
  */
-extern int netif_rx(sk_buff_t *pack);
+extern int netif_rx(void *pack);
 
 /**
  * Called by irq handler.

@@ -18,62 +18,12 @@
 #include <string.h>
 #include <hal/ipl.h>
 
-POOL_DEF(netdev_pool, struct net_device, CONFIG_NET_DEVICES_QUANTITY);
-
+/*--------------------------------------------
+ * network device registry and name calculator
+ * -------------------------------------------
+ */
 //TODO use hash table instead this
 static struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY]; // FIXME clear before using
-
-#if 0
-struct net_device * get_dev_by_idx(int idx) {
-	if ((idx < 0) || (idx >= CONFIG_NET_DEVICES_QUANTITY)) {
-		return NULL;
-	}
-
-	return opened_netdevs[idx];
-}
-#endif
-
-static int process_backlog(struct net_device *dev) {
-	struct sk_buff *skb;
-
-	while ((skb = skb_dequeue(&(dev->dev_queue))) != NULL) {
-		netif_receive_skb(skb);
-	}
-
-	return ENOERR;
-}
-
-struct net_device * alloc_netdev(int sizeof_priv, const char *name,
-		void (*setup)(struct net_device *)) {
-	struct net_device *dev;
-
-	if ((name == NULL) || (setup == NULL)) {
-		return NULL; /* Invalid args */
-	}
-
-	dev = (struct net_device *)pool_alloc(&netdev_pool);
-	if (dev == NULL) {
-		return NULL;
-	}
-
-	setup(dev);
-
-	dev->dev_queue.next = (struct sk_buff *)(&(dev->dev_queue));
-	dev->dev_queue.prev = (struct sk_buff *)(&(dev->dev_queue));
-	dev->poll = process_backlog;
-
-	strncpy(dev->name, name, IFNAMSIZ);
-
-	return dev;
-}
-
-void free_netdev(struct net_device *dev) {
-	if (dev == NULL) {
-		return;
-	}
-	pool_free(&netdev_pool, dev);
-}
-
 
 int register_netdev(struct net_device *dev) {
 	size_t i;
@@ -125,6 +75,15 @@ struct net_device * netdev_get_by_name(const char *name) {
 	return NULL;
 }
 
+#if 0
+struct net_device * get_dev_by_idx(int idx) {
+	if ((idx < 0) || (idx >= CONFIG_NET_DEVICES_QUANTITY)) {
+		return NULL;
+	}
+
+	return opened_netdevs[idx];
+}
+
 struct net_device * dev_getbyhwaddr(unsigned short type, char *hw_addr) {
 	size_t i;
 	struct net_device *dev;
@@ -138,7 +97,50 @@ struct net_device * dev_getbyhwaddr(unsigned short type, char *hw_addr) {
 
 	return NULL;
 }
+#endif
 
+/*-------------------------------------------
+ * network device pool
+ * ------------------------------------------
+ */
+static int process_backlog(struct net_device *dev);
+POOL_DEF(netdev_pool, struct net_device, CONFIG_NET_DEVICES_QUANTITY);
+
+struct net_device * alloc_netdev(int sizeof_priv, const char *name,
+		void (*setup)(struct net_device *)) {
+	struct net_device *dev;
+
+	if ((name == NULL) || (setup == NULL)) {
+		return NULL; /* Invalid args */
+	}
+
+	dev = (struct net_device *)pool_alloc(&netdev_pool);
+	if (dev == NULL) {
+		return NULL;
+	}
+
+	setup(dev);
+
+	dev->dev_queue.next = (struct sk_buff *)(&(dev->dev_queue));
+	dev->dev_queue.prev = (struct sk_buff *)(&(dev->dev_queue));
+	dev->poll = process_backlog;
+
+	strncpy(dev->name, name, IFNAMSIZ);
+
+	return dev;
+}
+
+void free_netdev(struct net_device *dev) {
+	if (dev == NULL) {
+		return;
+	}
+	pool_free(&netdev_pool, dev);
+}
+
+/*--------------------------------
+ * network device interface
+ * -------------------------------
+ */
 int dev_open(struct net_device *dev) {
 	int res;
 	const struct net_device_ops *ops;
@@ -210,6 +212,20 @@ int dev_set_flags(struct net_device *dev, unsigned int flags) {
 	dev->flags = flags;
 
 	return res;
+}
+
+
+/*------------------------------------------------
+ *  data processing
+ *  --------------------------------------------- */
+static int process_backlog(struct net_device *dev) {
+	struct sk_buff *skb;
+
+	while ((skb = skb_dequeue(&(dev->dev_queue))) != NULL) {
+		netif_receive_skb(skb);
+	}
+
+	return ENOERR;
 }
 
 static LIST_HEAD(rx_dev_queue);

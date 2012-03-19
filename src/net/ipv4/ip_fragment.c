@@ -210,8 +210,9 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	/* if it is not complete packet */
 	if(offset || mf_flag) {
 		if (df_flag(skb)) {
-			icmp_send(skb, ICMP_FRAG_NEEDED, 0, 0);
-			kfree_skb(skb);
+			icmp_send(skb, ICMP_FRAG_NEEDED, 0, 0);		/* svv: Defragmenter might send TimeExceeded ICMP, but this piece of code belongs to Fragmenter */
+														/* svv: What's more - ICMP assembling call isn't correct */
+			kfree_skb(skb);								/* svv: Really? icmp_send() ends with kfree_skb() */
 			skb = (sk_buff_t *)NULL;
 			return skb;
 		}

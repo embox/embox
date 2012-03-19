@@ -27,7 +27,7 @@ static raw_sock_t *raw_hash[CONFIG_MAX_KERNEL_SOCKETS];
 static int raw_rcv_skb(struct sock * sk, sk_buff_t * skb);
 
 static int raw_init(struct sock *sk) {
-	return 0;
+	return ENOERR;
 }
 
 #if 0
@@ -82,8 +82,7 @@ void raw_err(sk_buff_t *skb, uint32_t info) {
 }
 
 static void raw_close(struct sock *sk, long timeout) {
-	/*TODO: release socket*/
-	sk_free(sk);
+	sk_common_release(sk);
 }
 
 static int raw_rcv_skb(struct sock *sk, sk_buff_t *skb) {
@@ -148,26 +147,26 @@ static int raw_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len) {
 	struct inet_sock *inet = inet_sk(sk);
 	struct sockaddr_in *addr = (struct sockaddr_in *) uaddr;
 	inet->rcv_saddr = inet->saddr = addr->sin_addr.s_addr;
-	return 0;
+	return ENOERR;
 }
 
 static int raw_setsockopt(struct sock *sk, int level, int optname,
 			char *optval, int optlen) {
-	return 0;
+	return ENOERR;
 }
 
 static int raw_getsockopt(struct sock *sk, int level, int optname,
 			char *optval, int *optlen) {
-	return 0;
+	return ENOERR;
 }
 
 static int raw_ioctl(struct sock *sk, int cmd, unsigned long arg) {
-	return 0;
+	return ENOERR;
 }
 
 int ip4_datagram_connect(struct sock *sk,
 				struct sockaddr *uaddr, int addr_len) {
-	return 0;
+	return ENOERR;
 }
 
 static struct proto raw_prot = {

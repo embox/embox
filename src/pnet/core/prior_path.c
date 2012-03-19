@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief
+ * @brief Utilities to work with pnet paths
  *
  * @date 20.10.2011
  * @author Anton Bondarev
@@ -9,53 +9,9 @@
  * 			- add node_for_each
  */
 
-#include <errno.h>
-#include <util/fun_call.h>
-#include <pnet/core.h>
 #include <pnet/prior_path.h>
 
-#include <pnet/graph.h>
-#include <pnet/pnet_pack.h>
 
-#include <kernel/prom_printf.h>
-
-static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_node) {
-	net_node_t node;
-
-	net_id_t res = NET_HND_DFAULT;
-
-	node = pack->node;
-	assert(node);
-
-	if (0 != pnet_graph_run_valid(node->graph)) {
-		pnet_pack_destroy(pack);
-		return -EINVAL;
-	}
-
-	if (node->proto != NULL) {
-		res = fun_call_def(res, hnd, pack);
-	}
-
-	if (res & NET_HND_DFAULT) {
-		assert(next_node);
-		pack->node = next_node;
-	}
-
-	if (res & NET_HND_SUPPRESSED) {
-		pnet_pack_destroy(pack);
-	} else {
-		pnet_rx_thread_add(pack);
-	}
-
-	return 0;
-}
-
-int pnet_process(struct pnet_pack *pack) {
-	if (pack->dir == PNET_PACK_DIRECTION_RX) {
-		return step_process(pack, pnet_proto_rx_hnd(pack->node), pack->node->rx_dfault);
-	}
-	return step_process(pack, pnet_proto_tx_hnd(pack->node), pack->node->tx_dfault);
-}
 
 struct pnet_path *pnet_get_dev_prior(struct net_device *dev) {
 	return NULL;
@@ -70,13 +26,13 @@ struct pnet_path *pnet_calc_socket_path(struct sock *sock) {
 	return NULL;
 }
 
-struct _pnet_path *pnet_calc_netdev_path(struct net_device *netdev) {
+struct pnet_path *pnet_calc_netdev_path(struct net_device *netdev) {
 	prior_table[prior_cnt++].own_mac = netdev->dev_addr;
 	prior_cnt++;
 	return NULL;
 }
 
-struct _pnet_path *pnet_calc_chardev_path(char *dev_name) {
+struct pnet_path *pnet_calc_chardev_path(char *dev_name) {
 	prior_table[prior_cnt++].prior_level = 0x10;
 	prior_cnt++;
 	return NULL;

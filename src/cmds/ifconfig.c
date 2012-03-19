@@ -241,6 +241,11 @@ static int exec(int argc, char **argv) {
 		strncpy(iname, argv[argc - 1], ARRAY_SIZE(iname));
 		if (up) {
 			ifdev_up(iname);	/* up net iface */
+			/* svv: device has been created and added into common structures,
+			 * but (IMHO), it's parameters hasn't been defined yet,
+			 * so we might get some local problems (for example, in forwarding).
+			 * It depends of scheduling implementation
+			 */
 		}
 		if (NULL == (in_dev = inet_dev_find_by_name(argv[argc - 1])) &&
 			    (up	|| down)) {

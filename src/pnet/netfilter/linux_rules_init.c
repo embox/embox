@@ -6,7 +6,7 @@
  * @author Alexander Kalmuk
  */
 
-#include <pnet/match.h>
+#include <pnet/netfilter/match_lin.h>
 #include <pnet/core.h>
 #include <pnet/types.h>
 #include <pnet/node.h>
@@ -39,7 +39,7 @@ static net_node_t get_node_by_name(char *name);
 static char* parse_type(const char *rule);
 
 static const char *rules[] = {
-	#include <pnet/pnet_rules.inc>
+	#include <pnet_rules.inc>
 };
 
 static int form_rule(match_rule_t rule, const char *rule_elem, int num) {

@@ -8,7 +8,7 @@
 
 #include <pnet/core.h>
 #include <pnet/node.h>
-#include <pnet/match.h>
+#include <pnet/netfilter/match_lin.h>
 #include <pnet/repo.h>
 #include <pnet/graph.h>
 #include <mem/objalloc.h>

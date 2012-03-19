@@ -13,9 +13,6 @@
 #include <errno.h>
 #include <net/inet_sock.h>
 
-#define SYSTEM_PORT_MAX_NUMBER  (1024)
-#define FLAGS_WORD_WIDTH        (32)
-
 static uint32_t udp_ports[SYSTEM_PORT_MAX_NUMBER / FLAGS_WORD_WIDTH]; /* busy flags */
 static uint32_t tcp_ports[SYSTEM_PORT_MAX_NUMBER / FLAGS_WORD_WIDTH]; /* busy flags */
 static uint32_t sys_ports[SYSTEM_PORT_MAX_NUMBER / FLAGS_WORD_WIDTH]; /* busy flags */

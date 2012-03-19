@@ -5,7 +5,8 @@
  * @date 17.03.09
  * @author Alexandr Batyukov
  * @author Nikolay Korotky
- */
+ * @author Vladimir Sokolov
+*/
 
 #include <err.h>
 #include <string.h>
@@ -88,19 +89,12 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		}
 	}
 
-#if 0
-	/**
-	 * Check the destination address, and if it doesn't match
-	 * any of own addresses, retransmit packet according to routing table.
-	 */
-	if (ip_dev_find(iph->daddr) == NULL) {
-		if (!ip_route(skb)) {
-			dev_queue_xmit(skb);
-		}
-		return 0;
-	}
-#endif
-
+		/* It's very useful for us to have complete packet even for forwarding
+		 * (we may apply any filter, we may perform NAT etc),
+		 * but it'll break routing if different parts of a fragmented
+		 * packet will use different routes. So they can't be assembled.
+		 * See RFC 1812 for details
+		 */
 	if((complete_skb = ip_defrag(skb)) == NULL) {
 		if(skb == NULL) {
 			return NET_RX_DROP;
@@ -114,6 +108,19 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	/* When a packet is received, it is passed to any raw sockets
 	 * which have been bound to its protocol or to socket with concrete protocol */
 	raw_rcv(skb);
+
+#if 0		/* Forwarding */
+	/**
+	 * Check the destination address, and if it doesn't match
+	 * any of own addresses, retransmit packet according to the routing table.
+	 */
+	if (!ip_is_local(ntohl(iph->daddr), true, false)) {
+		if (ip_forward_packet(skb) <= 0) {
+			return NET_RX_DROP;
+		}
+		return NET_RX_SUCCESS;
+	}
+#endif
 
 	net_proto_foreach(net_proto_ptr) {
 		p_netproto = net_proto_ptr->netproto;

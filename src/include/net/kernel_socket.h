@@ -65,12 +65,13 @@ extern int kernel_socket_listen(struct socket *sock, int backlog);
  * Call accept callback from proto_ops.
  *
  * @param sock pointer to the socket structure
+ * @param pointer to new socket
  * @param sockaddr
  * @param *addrlen
  * @return error code
  */
-extern int kernel_socket_accept(struct socket *sock, struct sockaddr *addr,
-	       	socklen_t *addrlen);
+extern int kernel_socket_accept(struct socket *sock, struct socket **new_sock,
+		struct sockaddr *addr, socklen_t *addrlen);
 
 /**
  * Initiate a connection on a socket.
@@ -139,6 +140,9 @@ extern int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,
  */
 extern int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,
 				struct msghdr *msg, size_t size, int flags);
+
+extern int kernel_socket_shutdown(struct socket *sock);
+extern int kernel_socket_close(struct socket *sock);
 
 #if 0
 extern int kernel_sendpage(struct socket *sock, struct page *page, int offset,

@@ -9,6 +9,9 @@
 
 #include <net/socket.h>
 
+#define SYSTEM_PORT_MAX_NUMBER  (1024)
+#define FLAGS_WORD_WIDTH        (32)
+
 enum port_type {
 	SYS_PORT = 0,
 	TCP_PORT = 1,

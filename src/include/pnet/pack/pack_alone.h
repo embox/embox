@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Network type pack defs
+ * @brief The simple pnet packet definitions
  *
  * @date 02.11.2011
  * @author Anton Kozlov
@@ -14,19 +14,16 @@ struct pnet_pack_data {
 	int len;
 };
 
-struct pnet_pack {
-	struct pnet_pack_data *data;
-	enum PNET_PACK_DIRECTION dir;
-	struct net_node *node;
-	uint32_t type;
-};
+#include <pnet/pnet_pack.h>
 
 static inline void *pnet_pack_get_data(struct pnet_pack *pack) {
-	return pack->data->buff;
+	struct pnet_pack_data *data = pack->data;
+	return data->buff;
 }
 
 static inline int pnet_pack_get_len(struct pnet_pack *pack) {
-	return pack->data->len;
+	struct pnet_pack_data *data = pack->data;
+	return data->len;
 }
 
 #endif

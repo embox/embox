@@ -4,6 +4,7 @@
  *
  * @date 03.12.09
  * @author Nikolay Korotky
+ * @author Vladimir Sokolov
  */
 
 #include <err.h>
@@ -16,6 +17,7 @@
 #include <linux/init.h>
 #include <net/ip_fragment.h>
 #include <net/skbuff.h>
+#include <net/icmp.h>
 
 /* Generate a checksum for an outgoing IP datagram. */
 static inline void ip_send_check(iphdr_t *iph) {
@@ -36,7 +38,7 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	hdr->id = htons(id);
 	hdr->tos = 0;
 	hdr->frag_off = skb->offset;
-	hdr->frag_off |= IP_DF;
+	hdr->frag_off |= IP_DF;						/* svv: So all packets from our system can't be fragmented??? */
 	hdr->frag_off = htons(hdr->frag_off);
 	hdr->proto = proto;
 	ip_send_check(hdr);
@@ -71,6 +73,8 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 		}
 		skb_queue_purge(tx_buf);
 		return res;
+	} else {
+		/* svv: ToDo: if packet size is greater than MTU and we can't fragment it we can't go further */
 	}
 
 	if (sk->sk.sk_type != SOCK_RAW) {
@@ -81,7 +85,85 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 		return -1;
 	}
 	ip_send_check(skb->nh.iph);
-	return ip_queue_xmit(skb, 0);
+	return ip_queue_xmit(skb, 0);			/* svv: What about not-Ether carrier ? */
+}
+
+int ip_forward_packet(sk_buff_t *skb) {
+	iphdr_t *iph = ip_hdr(skb);
+	in_addr_t daddr = ntohl(iph->daddr);
+	int optlen = IP_HEADER_SIZE(iph) - IP_MIN_HEADER_SIZE;
+	int16_t frag_options = ntohs(iph->frag_off);
+	struct rt_entry *best_route = rt_fib_get_best(daddr);
+
+		/* Drop broadcast and multicast addresses of 2 and 3 layers
+		 * Note, that some kinds of those addresses we can't get here, because
+		 * they processed in other part of code - see ip_is_local(,true,xxx);
+		 */
+	if ( (skb->pkt_type != PACKET_HOST) || ipv4_is_multicast(daddr) ) {
+		kfree_skb(skb);
+		return 0;
+	}
+
+		/* Check TTL and decrease it */
+	if (iph->ttl <= 1) {
+		icmp_send(skb, ICMP_TIME_EXCEEDED, ICMP_EXC_TTL, 0);
+		return -1;
+	}
+	iph->ttl--;		/* All routes have the same length */
+
+		/* IP Options is a security violation */
+	if (optlen) {
+		icmp_send(skb, ICMP_PARAMETERPROB, 0, htonl(20));
+		return -1;
+	}
+
+		/* Check no route */
+	if (!best_route) {
+		icmp_send(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH, 0);
+		return -1;
+	}
+
+		/* Should we send ICMP redirect */
+	if (skb->dev == best_route->dev) {
+		struct sk_buff *s_copy = skb_copy(skb, 0);
+		if (s_copy) {
+			icmp_send(s_copy, ICMP_REDIRECT, (best_route->rt_gateway == INADDR_ANY), htonl(best_route->rt_gateway));
+		}
+		/* We can still proceed here */
+	}
+
+		/* Fragment packet, if it's required */
+	if (skb->len > MTU) {
+		if (!(frag_options & IP_DF)) {
+			/* We can perform fragmentation */
+			struct sk_buff_head *tx_buf = ip_frag(skb);
+			struct sk_buff *s_tmp;
+			int res = 0;
+
+			while ((s_tmp = skb_dequeue(tx_buf)) != NULL) {
+				res += ip_forward_packet(s_tmp);
+			}
+			skb_queue_purge(tx_buf);
+			return res;
+		} else {
+			/* Fragmentation is disabled */
+			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED, 0);
+			return -1;
+		}
+	}
+
+	if (ip_route(skb) < 0) {
+		/* So we have something like arp problem */
+		icmp_send(skb, ICMP_DEST_UNREACH, best_route->rt_gateway == INADDR_ANY ? ICMP_HOST_UNREACH : ICMP_NET_UNREACH, 0);
+		return -1;
+	}
+
+		/* At least TTL was changed.
+		 * But iff it's the only change fast CRC recalculation is possible (ToDo)
+		 */
+	ip_send_check(iph);
+
+	return ip_queue_xmit(skb, 0);			/* What about not-Ether carrier? */
 }
 
 void ip_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,

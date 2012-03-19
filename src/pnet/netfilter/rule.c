@@ -13,7 +13,7 @@
 #include <net/if_ether.h>
 
 #include <pnet/types.h>
-#include <pnet/match.h>
+#include <pnet/netfilter/match_lin.h>
 
 OBJALLOC_DEF(match_rules, struct match_rule, MAX_RULE_COUNT);
 

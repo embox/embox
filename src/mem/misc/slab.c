@@ -328,6 +328,8 @@ void *cache_alloc(cache_t *cachep) {
 	slab_t * slabp;
 	void *objp;
 
+	assert(cachep);
+
 	/* getting slab */
 	if (list_empty(&cachep->slabs_partial)) {
 		if (list_empty(&cachep->slabs_free))

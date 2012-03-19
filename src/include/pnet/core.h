@@ -11,7 +11,7 @@
 
 #include <pnet/types.h>
 
-#define PNET_PRIORITY_COUNT 0x10
+//#define PNET_PRIORITY_COUNT 0x10
 
 #define NET_RX_DFAULT -1
 
@@ -19,6 +19,9 @@
 
 #define NET_HND_DFAULT     (0x01L << 0)
 #define NET_HND_SUPPRESSED (0x01L << 1)
+
+#define NET_TYPE  0
+#define PNET_TYPE 1
 
 extern int pnet_proto_init(pnet_proto_t proto, net_id_t id, net_hnd rx, net_hnd tx);
 
@@ -46,6 +49,6 @@ extern int pnet_rx_thread_add(struct pnet_pack * pack);
 
 extern net_node_t pnet_get_dev_by_device(struct net_device *dev);
 
-extern int netif_rx(struct sk_buff *skb);
+extern int netif_rx(void *pack);
 
 #endif /* PNET_CORE_H_ */

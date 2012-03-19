@@ -12,7 +12,7 @@
  */
 
 
-#include <pnet/match.h>
+#include <pnet/netfilter/match_lin.h>
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/repo.h>
@@ -39,7 +39,7 @@ static int match_example(int argc, char **argv) {
 	match_node = pnet_get_module("matcher");
 
 	/* create graph*/
-	graph =  pnet_graph_create();
+	graph =  pnet_graph_create("test_graph");
 	/* add nodes */
 	pnet_graph_add_node(graph, devs);
 	pnet_graph_add_node(graph, lin_gate);
@@ -48,7 +48,8 @@ static int match_example(int argc, char **argv) {
 
 	rule = pnet_rule_alloc();
 	pnet_rule_set_next_node(rule, info);
-	pnet_rule_set_proto(rule, IPPROTO_UDP);
+	pnet_rule_set_proto(rule, IPPROTO_ICMP);
+//	pnet_rule_set_pack_type(rule, ETH_P_ARP);
 	pnet_add_new_rx_rule(rule, (net_node_matcher_t) match_node);
 
 	pnet_node_link(devs, match_node);

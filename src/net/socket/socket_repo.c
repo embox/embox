@@ -11,6 +11,8 @@
 /*
  * The protocol list. Each protocol is registered in here.
  */
+/* TODO: actually could be quite a big todo. net families asks
+   for a way bigger space amount than actually requires. */
 static const struct net_proto_family *net_families[NPROTO] = {0};
 
 int sock_register(const struct net_proto_family *ops) {
