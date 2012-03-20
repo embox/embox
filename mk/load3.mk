@@ -9,7 +9,7 @@ export CONFIGFILES_CACHE_DIR := $(MYBUILD_CACHE_DIR)/config
 
 CONFIG_PATH := conf/
 
-CONFIG_GENERATED := $(CONFIG_PATH)/genConf.config
+CONFIG_GENERATED := $(CONFIG_PATH)genConf.config
 
 $(CONFIG_GENERATED) :
 	mkdir -p $(@D)
@@ -34,7 +34,7 @@ $(MAKECMDGOALS) : $(configfiles_linked_mk)
 
 .DELETE_ON_ERROR:
 
-.PHONY : $(configfiles_linked_mk) $(CONFIG_GENERATED)
+.PHONY : $(configfiles_linked_mk)
 
 HOSTCPP = gcc -E
 
