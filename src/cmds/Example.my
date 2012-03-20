@@ -1,0 +1,23 @@
+package embox.cmd
+
+import embox.framework.example
+
+@Cmd(name = "example",
+	help = "Interacts with Embox example framework",
+	man = '''
+		NAME
+			example - an interface to Embox examples execution
+		SYNOPSIS
+			test [-h] <example_name>
+		DESCRIPTION
+			Shows example available in the system and executes the specified ones
+		OPTIONS
+			If no option is specified then the command shows the list of available
+			examples.
+		AUTHORS
+			Anton Bondarev
+	''')
+module example {
+	source "example.c"
+	depends example
+}

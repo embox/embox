@@ -128,16 +128,6 @@ module netstat {
 	depends LibPosix
 }
 
-module example {
-
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "example.c"
-	depends LibPosix
-	depends embox.framework.example
-
-}
-
 module log {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
