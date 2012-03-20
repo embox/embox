@@ -678,6 +678,16 @@ define builtin_func-get
 	))
 endef
 
+# An alias for $(get ...) to use from plain-old Make code.
+#
+# Params:
+#   1. Object.
+#   2. Property.
+# Usage:
+#   $(call get,object,property)
+get = \
+	$(get 1->$2)
+
 ifdef OBJ_DEBUG
 # Params:
 #   1. Property name.
