@@ -634,6 +634,18 @@ define builtin_func-invoke
 		)
 	),$(builtin_nofirstarg))
 endef
+$(call def,builtin_func-invoke)
+
+# An alias for $(invoke ...) to use from plain-old Make code.
+#
+# Params:
+#   1. Object.
+#   2. Method.
+#   3. (Optional) Method argument.
+# Usage:
+#   $(call invoke,object,method,value)
+invoke = \
+	$(invoke 1->$2,$(value 3))
 
 ifdef OBJ_DEBUG
 # Params:
@@ -737,6 +749,18 @@ define __builtin_func_set
 		)
 	),$(builtin_nofirstarg))
 endef
+$(call def,__builtin_func_set)
+
+# An alias for $(set ...) to use from plain-old Make code.
+#
+# Params:
+#   1. Object.
+#   2. Property.
+#   3. Value.
+# Usage:
+#   $(call set,object,property,value)
+set = \
+	$(set 1->$2,$3)
 
 ifdef OBJ_DEBUG
 # Params:
