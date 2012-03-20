@@ -1,0 +1,32 @@
+package embox.cmd
+
+import embox.compat.posix.LibPosix
+
+@Cmd(name = "ls",
+	help = "List directory contents",
+	man = '''
+		NAME
+			ls - list directory contents
+		SYNOPSIS
+			ls [OPTION]... [FILE]...
+		DESCRIPTION
+			List information about the FILEs
+			(the current directory by default).
+		OPTIONS
+			FILE -  path of directory.
+				defaults '/' (root dir).
+				Path format is /dir/filename.
+			-l - use a long listing format
+			-R - list subdirectories recursively
+		AUTHORS
+			Anton Bondarev
+	''')
+module ls {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "ls.c"
+
+	depends embox.fs.core
+	depends LibPosix
+}
+
