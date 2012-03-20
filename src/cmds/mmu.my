@@ -1,0 +1,6 @@
+package embox.cmd
+
+module mmu {
+	source "mmu.c"
+	depends embox.arch.x86.mm
+}
