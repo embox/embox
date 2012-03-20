@@ -41,66 +41,36 @@ TEST_CASE("Add single element to hashtable") {
 	test_assert_equal(ht_value, &el);
 }
 
-TEST_CASE("Add two elements to hashtable") {
-	struct hashtable *ht;
-	struct ht_element el_1 = { 1 };
-	struct ht_element el_2 = { 2 };
-	struct ht_element *ht_value_1;
-	struct ht_element *ht_value_2;
-
-	ht = hashtable_create(0x20, get_hash, cmp_keys);
-	hashtable_put(ht, "first", &el_1);
-	hashtable_put(ht, "secnd", &el_2);
-
-	ht_value_1 = (struct ht_element *) hashtable_get(ht, "first");
-	ht_value_2 = (struct ht_element *) hashtable_get(ht, "secnd");
-	hashtable_destroy(ht);
-
-	//test_assert_equal(ht_value_1, &el_1);
-	test_assert_equal(ht_value_2, &el_2);
-
-	test_assert_not_equal(ht_value_1, &el_2);
-	test_assert_not_equal(ht_value_2, &el_1);
-
-	//while (1);
-}
-
 TEST_CASE("Add three elements to hashtable") {
 	struct hashtable *ht;
 	struct ht_element el[3] = { {1}, {2}, {3}};
-	//struct ht_element el_2 = { 2 };
-	//struct ht_element el_3 = { 3 };
 
-	struct ht_element *ht_value_1;
-	struct ht_element *ht_value_2;
-	struct ht_element *ht_value_3;
+	struct ht_element *ht_value[3];
+	const char *key[3] = {"first", "secnd", "third" };
 
 	ht = hashtable_create(0x30, get_hash, cmp_keys);
+	for(int i=0; i<3; i++)	{
+		hashtable_put(ht, (void *)key[i], &el[i]);
+	}
 
-	hashtable_put(ht, "first", &el[0]);
-	hashtable_put(ht, "secnd", &el[1]);
-	hashtable_put(ht, "third", &el[2]);
-
-	ht_value_1 = (struct ht_element *) hashtable_get(ht, "first");
-	ht_value_2 = (struct ht_element *) hashtable_get(ht, "secnd");
-	ht_value_3 = (struct ht_element *) hashtable_get(ht, "third");
-
-	printf ("%d\n",(int) ht_value_1->number);
-	printf ("%d\n",(int) ht_value_2->number);
-	printf ("%d\n",(int) ht_value_3->number);
+	for(int i=0; i<3; i++)	{
+		if(NULL != hashtable_get(ht, (void *)key[i])){
+			ht_value[i] = (struct ht_element *) hashtable_get(ht, (void *)key[i]);
+			printf ("%d\n",(int) ht_value[i]->number);
+		}
+		else printf ("NULL");
+	}
 
 	hashtable_destroy(ht);
 
-	//test_assert_equal(ht_value_1, &el_1);
-	test_assert_equal(ht_value_2, &el[1]);
-	test_assert_equal(ht_value_3, &el[2]);
-
-	test_assert_not_equal(ht_value_1, &el[1]);
-	test_assert_not_equal(ht_value_1, &el[2]);
-	test_assert_not_equal(ht_value_2, &el[0]);
-	test_assert_not_equal(ht_value_2, &el[2]);
-	test_assert_not_equal(ht_value_3, &el[0]);
-	test_assert_not_equal(ht_value_3, &el[1]);
-
-	//while (1);
+	for(int i=0; i<3; i++)	{
+		for(int j=0; j<3; j++)	{
+			if (i == j){
+				test_assert_equal(ht_value[i], &el[j]);
+			}
+			else{
+				test_assert_not_equal(ht_value[i], &el[j]);
+			}
+		}
+	}
 }
