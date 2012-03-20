@@ -1,0 +1,5 @@
+package embox.arch.x86.mm
+
+module mmu_core {
+	source "mmu_core.c"
+}
