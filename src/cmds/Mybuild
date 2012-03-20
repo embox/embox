@@ -20,16 +20,6 @@ module runelf {
 
 }
 
-module ping {
-
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "ping.c"
-	depends LibPosix
-
-}
-
 module ifconfig {
 
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
