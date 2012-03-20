@@ -677,6 +677,7 @@ define builtin_func-get
 		)
 	))
 endef
+$(call def,builtin_func-get)
 
 # An alias for $(get ...) to use from plain-old Make code.
 #
