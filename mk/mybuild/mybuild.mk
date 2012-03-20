@@ -24,26 +24,32 @@ define class-Mybuild
 	$(method createBuild,
 		$(for build <-$(new BuildBuild),
 			$(set build->modules,
-				$(invoke checkResolve,$(for \
-					configResSet <- $(get configResourceSet),
-					config <- $(get configResSet->resources),
-					cfgFileContent <- $(get config->contentsRoot),
-					cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)), #FIXME
-					cfgInclude <- $(get cfgConfiguration->includes),
-					module <- $(get cfgInclude->module),
-
-					$(invoke moduleInstanceClosure,$(module)))))
+				$(invoke getBuildModules))
 			$(build)))
+
+	$(method getBuildModules,
+		$(with \
+			$(for \
+				configResSet <- $(get configResourceSet),
+				config <- $(get configResSet->resources),
+				cfgFileContent <- $(get config->contentsRoot),
+				cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)), #FIXME
+				cfgInclude <- $(get cfgConfiguration->includes),
+				module <- $(get cfgInclude->module),
+					$(invoke moduleInstanceClosure,$(module))),
+
+			$(if $(invoke checkResolve,$1),,$1)))
 
 
 	# Args:
 	#  1. List of moduleInstance's
 	$(method checkResolve,
-		$(for inst<-$1,
-			isAbstr<-$(get $(get inst->type).isAbstract),
-			$(if $(singleword $(get inst->depends)),,
-				$(error $(get $(get inst->type).qualifiedName) api realize error, move to Issues)))
-		$1)
+		$(strip
+			$(for inst<-$1,
+				isAbstr<-$(get $(get inst->type).isAbstract),
+				$(if $(singleword $(get inst->depends)),,
+					$(error $(get $(get inst->type).qualifiedName) api realize error, move to Issues $(get inst->depends))
+					$(inst)))))
 
 
 	# Args:
@@ -68,7 +74,7 @@ define class-Mybuild
 	# Args:
 	#  1. MyModule object instance
 	# Return:
-	#  List of ModuleInstance for module and it's depends #TODO and supertypes
+	#  List of ModuleInstance for module and it's depends
 	$(method moduleInstanceClosure,
 		$(for thisInst<-$(invoke moduleInstance,$1),
 			$(thisInst) \
@@ -91,7 +97,7 @@ endef
 
 define listInstances
 		$(strip $(for buildBuild<-$1,
-						$(get buildBuild->modules)))
+			$(get buildBuild->modules)))
 endef
 
 # Args
