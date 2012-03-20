@@ -2,6 +2,6 @@ package embox.framework
 
 module example {
 	/*FIXME mybuild make flags options */
-    @DefineMacro("__FRAMEWORK__")
+	@DefineMacro("__FRAMEWORK__")
 	source "core.c"
 }

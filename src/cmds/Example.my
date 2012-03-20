@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.framework.example
-
 @Cmd(name = "example",
 	help = "Interacts with Embox example framework",
 	man = '''
@@ -19,5 +17,5 @@ import embox.framework.example
 	''')
 module example {
 	source "example.c"
-	depends example
+	depends embox.framework.example
 }
