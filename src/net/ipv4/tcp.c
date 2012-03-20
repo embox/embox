@@ -42,13 +42,9 @@ static LIST_HEAD(rexmit_socks); /* List of all tcp_sock with non-empty rexmit_li
 static struct tcp_sock *tcp_hash[CONFIG_MAX_KERNEL_SOCKETS]; /* All TCP sockets in system */
 
 #define REXMIT_DELAY       1000 /* Delay for periodical rexmit */
-#define TCP_WINDOW_DEFAULT 100  /* default for window field */
+#define TCP_WINDOW_DEFAULT 500  /* default for window field */
 /* Send options */
 #define SEND_OPS_RELIABLE  0x1  /* options for send_from_sock */
-
-/* useful routines */
-#define TCP_INET_SOCK(tcp_sk)  ((struct inet_sock *)tcp_sk)
-#define TCP_SOCK(tcp_sk)       ((struct sock *)tcp_sk)
 
 /* Error code of TCP handlers */
 typedef enum tcp_st_err {
@@ -59,7 +55,7 @@ typedef enum tcp_st_err {
 	TCP_ST_SEND_RELIABLE /* send answer with SEND_OPS_RELIABLE (must be after TCP_ST_SEND_ONCE) */
 } tcp_st_err_t;
 
-/* Union for convertions socket types*/
+/* Union for conversions between socket types */
 union sock_pointer {
 	struct sock *sk;
 	struct inet_sock *inet_sk;
@@ -268,11 +264,10 @@ static tcp_st_err_t tcp_st_estabil(union sock_pointer sock, struct sk_buff *skb,
 //	if (tcph->rst && tcph->syn && !tcph->ack) {
 //		return TCP_ST_DROP;
 //	}
-	if (sock.tcp_sk->rem.seq != ntohl(tcph->seq)) {
-		assert(0);
-		return TCP_ST_DROP;
-	}
 
+//	if (sock.tcp_sk->rem.seq != ntohl(tcph->seq)) {
+//		return TCP_ST_DROP;
+//	}
 	data_len = tcp_data_len(skb);
 	if (data_len > 0) {
 		printf("\t received %d\n", data_len);
@@ -373,8 +368,7 @@ static void process_ack(union sock_pointer sock, __u32 seq, __u32 ack) {
 				printf("TCP_SOCK 0x%p set state by ack %d\n", sock.tcp_sk, sent_skb->prot_info);
 				tcp_set_st(sock, NULL, sent_skb->prot_info);
 			}
-			skb_dequeue(sock.sk->sk_write_queue);
-			kfree_skb(sent_skb);
+			kfree_skb(sent_skb); /* list_del will done at kfree_skb */
 		}
 		else {
 			sent_skb->p_data += ack_bytes;
@@ -498,7 +492,7 @@ static struct tcp_sock * tcp_lookup(in_addr_t saddr, __be16 sport, in_addr_t dad
 
 	/* lookup socket with strict addressing */
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; ++i) {
-		inet_sk = TCP_INET_SOCK(tcp_hash[i]);
+		inet_sk = (struct inet_sock *)tcp_hash[i];
 		if (inet_sk != NULL) {
 			if ((inet_sk->rcv_saddr == saddr) && (inet_sk->sport == sport)
 					&& (inet_sk->daddr == daddr) && (inet_sk->dport == dport)) {
@@ -509,7 +503,7 @@ static struct tcp_sock * tcp_lookup(in_addr_t saddr, __be16 sport, in_addr_t dad
 
 	/* lookup another sockets */
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; ++i) {
-		inet_sk = TCP_INET_SOCK(tcp_hash[i]);
+		inet_sk = (struct inet_sock *)tcp_hash[i];
 		if (inet_sk != NULL) {
 			if (((inet_sk->rcv_saddr == INADDR_ANY) || (inet_sk->rcv_saddr == saddr))
 					&& (inet_sk->sport == sport)) {
@@ -593,7 +587,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock *newsk,
 		newsock.inet_sk->sport = skb->h.th->dest;
 		newsock.inet_sk->daddr = skb->nh.iph->saddr;
 		newsock.inet_sk->dport = skb->h.th->source;
-//		newsock.tcp_sk->this.wind = tcp_sk->this.wind;
+		newsock.tcp_sk->this.wind = sock.tcp_sk->this.wind;
 		/* processing of skb */
 		tcp_set_st(newsock, NULL, TCP_SYN_RECV_PRE);
 		tcp_process(newsock, skb);
@@ -671,10 +665,11 @@ int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 				(void *)msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 
 	/* Fill TCP header */
+	sock.sk = sk;
 //	sock.tcp_sk->this_unack = sock.tcp_sk->this.seq;
 	sock.tcp_sk->this.seq += len;
-//	skb->h.th->psh |= 1;
-//	skb->h.th->ack |= 1;
+	skb->h.th->psh |= 1;
+	skb->h.th->ack |= 1;
 	printf("sendmsg: sending len %d, unack %u, seq %u\n", len,
 			sock.tcp_sk->this_unack, sock.tcp_sk->this.seq);
 	return send_from_sock(sock, skb, SEND_OPS_RELIABLE);
