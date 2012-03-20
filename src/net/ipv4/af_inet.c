@@ -120,10 +120,14 @@ int inet_release(struct socket *sock) {
 	sock_unlock(sock->sk);
 
 	if (sk->sk_prot->close != NULL) {
-		sk->sk_prot->close(sk, 0);
+		/* altering close() interface to return NULL
+			 is probably not appropriate) */
+		sk->sk_prot->close(sock->sk, 0);
+		sock->sk = NULL;
 	}
 
-	sk_common_release(sock->sk);
+	if(sock->sk)
+		sk_common_release(sock->sk);
 	sock->sk = NULL;
 
 	return ENOERR;
