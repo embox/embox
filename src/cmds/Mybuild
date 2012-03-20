@@ -19,16 +19,6 @@ module rm {
 
 }
 
-module cat {
-
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "cat.c"
-
-	depends LibPosix
-
-}
-
 module goto {
 
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
