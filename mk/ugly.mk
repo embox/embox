@@ -8,16 +8,21 @@ include mk/conf/runlevel.mk
 # Headers.
 #
 
+include mk/mybuild/check.mk
+include mk/mybuild/mybuild.mk
 
 # By header get module
 __header_mod = \
-  $(foreach name,$(subst /,.,$(patsubst $(abspath $(OBJ_DIR))/mods/%.h,%,$(abspath $@))),\
-	$(strip $(foreach i,$(MODS_BUILD),\
-		$(foreach m,$(get $i.type),\
-			$(if $(eq $(get m->qualifiedName),$(name)),$i)))))
+  $(filter $(subst /,.,$(patsubst $(abspath $(OBJ_DIR))/mods/%.h,%,$(abspath $@))).%,$(APIS_BUILD))
 
 __header_gen = \
   $(subst $(\n),\n,$(call __header_template,$(__header_mod)))
+
+define get_subs
+	$(filter $(get $1.subTypes),$(suffix $(MODS_ENABLE_OBJ)))
+endef
+
+$(call def,get_subs)
 
 # 1. Header module name
 define __header_template
@@ -25,7 +30,7 @@ define __header_template
 
 #ifndef __MOD_HEADER__$(subst .,__,$1)
 #define __MOD_HEADER__$(subst .,__,$1)
-$(foreach impl,$(get $1.depends),$(\n)// impl: \
+$(foreach impl,$(call get_subs,$1),$(\n)// impl: \
   $(impl)$(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
                  $(abspath $(call module_get_headers,$(impl))))) \
       ,$(\n)$(\h)include __impl_x($(header))$(\n)))
@@ -72,11 +77,11 @@ define ___DEF_S_BUILD_RULE
 endef
 
 LIB_FILE = \
-	$(foreach 1,$1,$(LIB_DIR)/$(get $(get $1.type).qualifiedName).a)
+	$(foreach 1,$1,$(LIB_DIR)/$(get $1.qualifiedName).a)
 
 # param $1 is module obj
 module_get_files = \
-	$(foreach s,$(get $(get 1->type).sources),$(get s->fileFullName))
+	$(foreach s,$(get $1.sources),$(get s->fileFullName))
 module_get_sources = \
 	$(filter %.c %.S,$(module_get_files))
 module_get_headers = \
@@ -85,14 +90,14 @@ module_get_objects = \
 	$(call SRC_TO_OBJ,$(module_get_sources))
 
 filter_abstract_modules = \
-	$(strip $(foreach m,$1,$(if $(get $(get m->type).isAbstract),$m)))
+	$(strip $(foreach m,$1,$(if $(get m->isAbstract),$m)))
 filter_static_modules = \
-	$(strip $(foreach m,$1,$(if $(get $(get m->type).isStatic),$m)))
+	$(strip $(foreach m,$1,$(if $(get m->isStatic),$m)))
 
 ROOTFS_LABEL := mybuild.lang.InitFS
 
 define module_get_rootfs
-	$(for fileMember <- $(get $(get 1->type).sources),
+	$(for fileMember <- $(get $1.sources),
 		annot <- $(get fileMember->annotations),
 		annotType <- $(get annot->type),
 		$(if $(eq $(ROOTFS_LABEL),$(get $(get annot->type).qualifiedName)),
@@ -105,26 +110,26 @@ LABEL-DefineMacro := mybuild.lang.DefineMacro
 # 1. Module.
 define define_mod_obj_rules
 	${eval
-		$(for mod<-$(get $1.type),
-			src<-$(get mod->sources),
-			obj<-$(call SRC_TO_OBJ,$(get src->fileFullName)),
-			$(for annot <- $(get src->annotations),
-					annotType <- $(get annot->type),
-					annotName <- $(get annotType->qualifiedName),
-					annotBind <- $(get annot->bindings),
-					opt <- $(get annotBind->option),
-					optName <- $(get opt->name),
-					optValue <- $(get $(get annotBind->optionValue).value),
-					$(if $(and \
-							$(eq $(annotName),$(LABEL-IncludePath)),
-							$(eq $(optName),value)),
-					$(obj) : override CCFLAGS += -I'$(optValue)'$(\n))
-					$(if $(and \
-							$(eq $(annotName),$(LABEL-DefineMacro)),
-							$(eq $(optName),value)),
-					$(obj) : override CCFLAGS += -D'$(optValue)'$(\n)))
-			$(obj) : override CPPFLAGS += \
-				-D__EMBUILD_MOD__='$(subst .,__,$(get mod->qualifiedName))'$(\n))}
+		$(for mod<-$1,
+				src<-$(get mod->sources),
+				obj<-$(call SRC_TO_OBJ,$(get src->fileFullName)),
+				$(for annot <- $(get src->annotations),
+						annotType <- $(get annot->type),
+						annotName <- $(get annotType->qualifiedName),
+						annotBind <- $(get annot->bindings),
+						opt <- $(get annotBind->option),
+						optName <- $(get opt->name),
+						optValue <- $(get $(get annotBind->optionValue).value),
+						$(if $(and \
+								$(eq $(annotName),$(LABEL-IncludePath)),
+								$(eq $(optName),value)),
+						$(obj) : override CCFLAGS += -I'$(optValue)'$(\n))
+						$(if $(and \
+								$(eq $(annotName),$(LABEL-DefineMacro)),
+								$(eq $(optName),value)),
+						$(obj) : override CCFLAGS += -D'$(optValue)'$(\n)))
+				$(obj) : override CPPFLAGS += \
+					-D__EMBUILD_MOD__='$(subst .,__,$(get mod->qualifiedName))'$(\n))}
 endef
 
 # 1. Library module.
@@ -172,7 +177,7 @@ package_def = \
 
 generate_package_defs = $(call eol-trim,\n/* Package definitions. */\
   $(foreach package,$(sort generic $(basename $(for m <- $(MODS_BUILD), \
-        $(get $(get m->type).qualifiedName)))), \
+        $(get m->qualifiedName)))), \
     $(package_def) \
   ) \
 )\n
@@ -199,8 +204,7 @@ mod_def = \
     $(call c_str_escape,$(call mod_cmd_annotation_value,man)));
 
 generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
-  $(for instance <- $(MODS_BUILD) $(LIBS_BUILD), \
-  	m <- $(get instance->type), \
+  $(for m <- $(MODS_BUILD) $(LIBS_BUILD), \
         mod <- $(get m->qualifiedName), \
     $(mod_def) \
   ) \
@@ -212,11 +216,14 @@ generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
 )\n
 
 generate_mod_deps = $(strip \n/* Mod deps. */\
-  $(for instance <- $(MODS_BUILD) $(LIBS_BUILD), \
-  	m <- $(get instance->type), \
+  $(for m <- $(MODS_BUILD) $(LIBS_BUILD), \
         mod <- $(get m->qualifiedName), \
-    $(for obj_dep <- $(get instance->depends), \
-          dep <- $(get $(get obj_dep->type).qualifiedName), \
+    $(for obj_dep <- $(get m->depends), \
+          dep <- $(get obj_dep->qualifiedName), \
+      \nMOD_DEP_DEF($(c_mod), $(c_dep)); \
+    ) \
+    $(for obj_dep <- $(filter $(get m->subTypes),$(suffix $(MODS_ENABLE_OBJ))), \
+          dep <- $(get obj_dep->qualifiedName), \
       \nMOD_DEP_DEF($(c_mod), $(c_dep)); \
     ) \
     $(if $(value RUNLEVEL-$(mod)), \

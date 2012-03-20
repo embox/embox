@@ -22,7 +22,7 @@ config_lds_h := $(AUTOCONF_DIR)/config.lds.h
 CONF_FILES     := $(build_conf) $(options_conf) $(mods_conf) $(lds_conf)
 AUTOCONF_FILES := $(build_mk) $(mods_mk) $(config_h) $(config_lds_h)
 
-ifeq (1,1)
+ifeq (2,1)
 
 config_resource_set := $(call config_link_with_myfile_model,$(__config_resource_set),$(__myfile_resource_set))
 mybuild_model := $(call new,Mybuild,$(__myfile_resource_set) $(config_resource_set))
