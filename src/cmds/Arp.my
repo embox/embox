@@ -1,5 +1,6 @@
 package embox.cmd
 
+import embox.compat.posix.LibPosix
 import embox.net.neighbour
 
 @Cmd(name = "arp",
@@ -31,6 +32,9 @@ import embox.net.neighbour
 	'''
 )
 module arp {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "arp.c"
 	depends neighbour
+	depends LibPosix
 }
