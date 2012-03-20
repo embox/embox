@@ -22,14 +22,15 @@
  * @param _no_check         - checksum control on/off
  */
 #define EMBOX_NET_SOCK(_net_proto_family, _type, _protocol, _prot, _ops,		\
-						_no_check)   	\
-	static inet_protosw_t _##_type = { 				\
+											 _no_check, _default)																			\
+	static inet_protosw_t _##_type_##_protocol = { 				\
 			.type = _type,					\
 			.protocol = _protocol,				\
 			.prot = &_prot,                			\
 			.ops = &_ops, 					\
-			.no_check = _no_check				\
+			.no_check = _no_check,				\
+      .deflt = _default  \
 		};							\
-		__EMBOX_NET_SOCK(_##_type, _net_proto_family)
+		__EMBOX_NET_SOCK(_##_type_##_protocol, _net_proto_family)
 
 #endif /* FRAMEWORK_NET_SOCK_SELF_H_ */

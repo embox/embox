@@ -53,6 +53,7 @@ typedef struct inet_protosw {
 	const struct proto *prot;
 	const struct proto_ops *ops;
 	char no_check; /* checksum on rcv/xmit/none? */
+	bool deflt;
 } inet_protosw_t;
 
 extern const net_protocol_t *inet_protos[MAX_INET_PROTOS];

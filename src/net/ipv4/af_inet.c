@@ -39,29 +39,23 @@ static struct inet_protosw *inet_proto_find(short int *type, int *protocol) {
 			continue;
 		}
 
-		/* ?? */
-		if(p_netsock->type == SOCK_RAW)
-			return p_netsock;
-
-		if(p_netsock->type != *type) {
-			continue;
+		if(*type == p_netsock->type){  /* type is ok */
+			type_present = true;
+			if(*protocol){
+				if(*protocol == p_netsock->protocol)
+					return p_netsock;  /* protocol and type matched */
+				else
+					continue;  /* type matched but no such protocol. try next */
+			}else
+				if(p_netsock->deflt)
+					return p_netsock;  /* only type is specified. */
 		}
-
-		/* if at least one time we are here such type for such PF is present
-		   so -EPROTONOSUPPORT should be returned on failure */
-		type_present = true;
-
-		if (IPPROTO_IP == *protocol || p_netsock->protocol == *protocol) {
-			return p_netsock;
-		}
-
-		return p_netsock;
 	}
 
 	if(type_present)
-		*protocol = -1;
+		*protocol = -1; /* to notify about type-protocol absence */
 	else
-		*type = -1;
+		*type = -1; /* to notify about type absence  */
 	return NULL;
 }
 
