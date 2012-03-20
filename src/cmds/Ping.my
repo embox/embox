@@ -1,4 +1,4 @@
-package embox.cmds
+package embox.cmd
 
 import embox.compat.posix.LibPosix
 import embox.net.icmp

@@ -1,4 +1,4 @@
-package embox.cmds
+package embox.cmd
 
 @Cmd(name = "man",
 	help = "Shows the built-in command reference",

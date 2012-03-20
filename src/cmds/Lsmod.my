@@ -1,4 +1,4 @@
-package embox.cmds
+package embox.cmd
 
 @Cmd(name = "lsmod",
 	help = "Lists mod info emitted by EMBuild",
