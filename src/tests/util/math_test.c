@@ -17,4 +17,5 @@ TEST_CASE("Check function for calculate binary logorithm") {
 	for(int i = 0; i < 32; ++i) {
 		test_assert_equal(blog2(1 << i), i);
 	}
+	while(1);
 }

@@ -7,7 +7,9 @@
  */
 
 #include <embox/test.h>
-
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <util/hashtable.h>
 
 EMBOX_TEST_SUITE("util/hashtable test");
@@ -37,4 +39,68 @@ TEST_CASE("Add single element to hashtable") {
 	hashtable_destroy(ht);
 
 	test_assert_equal(ht_value, &el);
+}
+
+TEST_CASE("Add two elements to hashtable") {
+	struct hashtable *ht;
+	struct ht_element el_1 = { 1 };
+	struct ht_element el_2 = { 2 };
+	struct ht_element *ht_value_1;
+	struct ht_element *ht_value_2;
+
+	ht = hashtable_create(0x20, get_hash, cmp_keys);
+	hashtable_put(ht, "first", &el_1);
+	hashtable_put(ht, "secnd", &el_2);
+
+	ht_value_1 = (struct ht_element *) hashtable_get(ht, "first");
+	ht_value_2 = (struct ht_element *) hashtable_get(ht, "secnd");
+	hashtable_destroy(ht);
+
+	//test_assert_equal(ht_value_1, &el_1);
+	test_assert_equal(ht_value_2, &el_2);
+
+	test_assert_not_equal(ht_value_1, &el_2);
+	test_assert_not_equal(ht_value_2, &el_1);
+
+	//while (1);
+}
+
+TEST_CASE("Add three elements to hashtable") {
+	struct hashtable *ht;
+	struct ht_element el[3] = { {1}, {2}, {3}};
+	//struct ht_element el_2 = { 2 };
+	//struct ht_element el_3 = { 3 };
+
+	struct ht_element *ht_value_1;
+	struct ht_element *ht_value_2;
+	struct ht_element *ht_value_3;
+
+	ht = hashtable_create(0x30, get_hash, cmp_keys);
+
+	hashtable_put(ht, "first", &el[0]);
+	hashtable_put(ht, "secnd", &el[1]);
+	hashtable_put(ht, "third", &el[2]);
+
+	ht_value_1 = (struct ht_element *) hashtable_get(ht, "first");
+	ht_value_2 = (struct ht_element *) hashtable_get(ht, "secnd");
+	ht_value_3 = (struct ht_element *) hashtable_get(ht, "third");
+
+	printf ("%d\n",(int) ht_value_1->number);
+	printf ("%d\n",(int) ht_value_2->number);
+	printf ("%d\n",(int) ht_value_3->number);
+
+	hashtable_destroy(ht);
+
+	//test_assert_equal(ht_value_1, &el_1);
+	test_assert_equal(ht_value_2, &el[1]);
+	test_assert_equal(ht_value_3, &el[2]);
+
+	test_assert_not_equal(ht_value_1, &el[1]);
+	test_assert_not_equal(ht_value_1, &el[2]);
+	test_assert_not_equal(ht_value_2, &el[0]);
+	test_assert_not_equal(ht_value_2, &el[2]);
+	test_assert_not_equal(ht_value_3, &el[0]);
+	test_assert_not_equal(ht_value_3, &el[1]);
+
+	//while (1);
 }
