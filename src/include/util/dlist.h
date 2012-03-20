@@ -13,6 +13,7 @@
 struct dlist_head {
 	struct dlist_head *next;
 	struct dlist_head *prev;
+	struct dlist_head *list_id;
 };
 
 #define DLIST_INIT(head) { &(head), &(head) }
@@ -27,18 +28,46 @@ static inline __dlist_add(struct dlist_head *new, struct dlist_head *next, struc
 	next->prev = new;
 	prev->next = new;
 }
+static inline int __is_linked(struct dlist_head *head) {
+	return (NULL == head->list_id);
+}
 
 static inline void dlist_add_next(struct dlist_head *new, struct dlist_head *list) {
+	if(__is_linked(new)) {
+		return;// assert
+	}
+	if(!__is_linked(list)) {
+		list->list_id = list;
+		new->list_id = list;
+	} else {
+		new ->list_id = list->list_id;
+	}
+
 	__dlist_add(new, list->next, list);
 }
 
 static inline void dlist_add_prev(struct dlist_head *new, struct dlist_head *list) {
+	if(__is_linked(new)) {
+		return;// assert
+	}
+
+	if(!__is_linked(list)) {
+		list->list_id = list;
+		new->list_id = list;
+	} else {
+		new ->list_id = list->list_id;
+	}
+
 	__dlist_add(new, list, list->prev);
 }
 
 static inline void dlist_del(struct dlist_head *head) {
+	if(!__is_linked(head)) {
+		return; //assert
+	}
 	head->prev->next = head->next;
 	head->next->prev = head->prev;
+	head->list_id = NULL;
 }
 
 static inline int dlist_empty(struct dlist_head *head) {
