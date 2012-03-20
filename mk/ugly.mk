@@ -182,11 +182,26 @@ generate_package_defs = $(call eol-trim,\n/* Package definitions. */\
   ) \
 )\n
 
+# 1. Name of the annotation property.
+define mod_cmd_annotation_value
+	$(for string <-
+			$(for m <- $(value m),
+				a <- $(get m->annotations),
+				aType <- $(get a->type),
+				binding <-
+					$(if $(filter mybuild.lang.Cmd,$(get aType->qualifiedName)),
+						$(get a->bindings)),
+				option <- $(get binding->option),
+				$(if $(filter $1,$(get option->name)),
+					$(get binding->optionValue))),
+		$(get string->value))
+endef
+
 mod_def = \
   \n\n/* Mod: $(mod) */ \
   \nMOD_DEF($(c_mod), $(call c_escape,$(mod_package)), "$(mod_name)", \
-    $(call c_str_escape,$(value BRIEF-$(mod))), \
-    $(call c_str_escape,$(value DETAILS-$(mod))));
+    $(call c_str_escape,$(call mod_cmd_annotation_value,help)), \
+    $(call c_str_escape,$(call mod_cmd_annotation_value,man)));
 
 generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
   $(for m <- $(MODS_BUILD) $(LIBS_BUILD), \

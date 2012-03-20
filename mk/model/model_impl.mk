@@ -329,9 +329,9 @@ endef
 define __eObjectResolveLinks
 	$(and $1,$(for resource <- $(get this->eResource),
 				resourceSet <- $(get resource->resourceSet),
-		$(for link <- $(subst ./,,$1),
-			$(warning on-demand linkage: \
-				[$(get link->eMetaReference)] '$(get link->name)'))
+#		$(for link <- $(subst ./,,$1),
+#			$(warning on-demand linkage: \
+#				[$(get link->eMetaReference)] '$(get link->name)'))
 		$(invoke $(get resourceSet->linker).resolveLinksGroup,
 			$(subst ./,,$1),$($2))
 	),)

@@ -1,0 +1,7 @@
+package mybuild.lang
+
+annotation Cmd {
+	string name // NIY -- Eldar
+	string help = "TODO no help available"
+	string man = "TODO no man page available"
+}

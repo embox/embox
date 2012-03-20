@@ -1,0 +1,15 @@
+package embox.cmd
+
+@Cmd(name = "help",
+	help = "Shows all available commands",
+	man = '''
+		NAME
+			help - displays all possible commands
+		SYNOPSIS
+			help [-h]
+		AUTHORS
+			Alexandr Batyukov
+	''')
+module help {
+	source "help.c"
+}

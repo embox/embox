@@ -141,15 +141,6 @@ module man {
 
 }
 
-module help {
-
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "help.c"
-	depends LibPosix
-
-}
-
 module mem {
 
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
