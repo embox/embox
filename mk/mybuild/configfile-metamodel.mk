@@ -40,11 +40,11 @@ define __configFile_init
 	$(call eMetaReferenceInit,$(ConfigFile_FileContentRoot_configurations),configurations,$(ConfigFile_Configuration),$(ConfigFile_Configuration_fileContentRoot),changeable many containment)
 	$(call eMetaAttributeInit,$(ConfigFile_FileContentRoot_imports),imports,changeable many)
 
-	$(call eMetaClassInit,$(ConfigFile_Configuration),Configuration,$(EModel_ENamedObject),abstract)
+	$(call eMetaClassInit,$(ConfigFile_Configuration),Configuration,$(EModel_ENamedObject) $(MyFile_AnnotationTarget),abstract)
 	$(call eMetaReferenceInit,$(ConfigFile_Configuration_fileContentRoot),fileContentRoot,$(ConfigFile_FileContentRoot),$(ConfigFile_FileContentRoot_configurations),changeable container)
 	$(call eMetaReferenceInit,$(ConfigFile_Configuration_includes),includes,$(ConfigFile_Include),,changeable many containment)
 
-	$(call eMetaClassInit,$(ConfigFile_Include),Include,,)
+	$(call eMetaClassInit,$(ConfigFile_Include),Include,$(MyFile_AnnotationTarget),)
 	$(call eMetaReferenceInit,$(ConfigFile_Include_module),module,$(MyFile_Module),,changeable linkable)
 	$(call eMetaReferenceInit,$(ConfigFile_Include_optionBindings),optionBindings,$(MyFile_OptionBinding),,changeable many containment)
 

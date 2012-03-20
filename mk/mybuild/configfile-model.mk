@@ -45,6 +45,9 @@ endef
 #   - reference 'fileContentRoot'
 #   - reference 'includes'
 #
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
 #   - attribute 'qualifiedName'
@@ -52,9 +55,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-CfgConfiguration # abstract
-	# Extends 'ENamedObject' class.
+	# Extends 'ENamedObject', 'MyAnnotationTarget' classes.
 	$(eobject ConfigFile_Configuration,
-		CfgConfiguration,ENamedObject,abstract)
+		CfgConfiguration,ENamedObject MyAnnotationTarget,abstract)
 
 	# Property 'fileContentRoot : CfgFileContentRoot'.
 	$(eobject-reference ConfigFile_Configuration_fileContentRoot,
@@ -76,10 +79,13 @@ endef
 #   - reference 'module'
 #   - reference 'optionBindings'
 #
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
 define class-CfgInclude
-	# Extends 'EObject' class (implicitly).
+	# Extends 'MyAnnotationTarget' class.
 	$(eobject ConfigFile_Include,
-		CfgInclude,,)
+		CfgInclude,MyAnnotationTarget,)
 
 	# Property 'module : MyModule'.
 	# Property 'module_link : ELink'.

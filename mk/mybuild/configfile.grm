@@ -49,6 +49,26 @@ NumberLiteral  = {Digit}+ ( '.' {Digit}+ )?
 BooleanLiteral = 'true' | 'false'
 
 ! -------------------------------------------------
+! Annotatons
+! -------------------------------------------------
+
+<AnnotationSpecifiers>
+        ::= <AnnotationSpecifier> <AnnotationSpecifiers>
+         |
+
+<AnnotationSpecifier>
+        ::= '@' <Reference> <AnnotationInitializer>
+<AnnotationInitializer>
+        ::= '(' <AnnotationParametersList> ')'
+         |  '(' <Value> ')'
+         |
+<AnnotationParametersList>
+        ::= <AnnotationParameter> ',' <AnnotationParametersList>
+         |  <AnnotationParameter>
+<AnnotationParameter>
+        ::= <SimpleReference> '=' <Value>
+
+! -------------------------------------------------
 ! Rules
 ! -------------------------------------------------
 
@@ -61,30 +81,30 @@ BooleanLiteral = 'true' | 'false'
          |
 
 ! Import*
-<Imports>
-        ::= <Import> <Imports>
+<AnnotatedImports>
+        ::= <AnnotatedImport> <AnnotatedImports>
          |
-<Import>
-        ::= 'import' <QualifiedNameWithWildcard>
+<AnnotatedImport>
+        ::= <AnnotationSpecifiers> 'import' <QualifiedNameWithWildcard>
 
 ! Configuration*
-<Configurations>
-        ::= <Configuration> <Configurations>
+<AnnotatedConfigurations>
+        ::= <AnnotatedConfiguration> <AnnotatedConfigurations>
          |
 
 ! configuration Name { ... }
-<Configuration>
-        ::= 'configuration' Identifier '{' <ConfigurationMembers> '}'
+<AnnotatedConfiguration>
+        ::= <AnnotatedSpecifiers>'configuration' Identifier '{' <AnnotatedConfigurationMembers> '}'
 
-! ConfigurationMember*
-<ConfigurationMembers>
-        ::= <ConfigurationMember> <ConfigurationMembers>
+! AnnotatedConfigurationMember*
+<AnnotatedConfigurationMembers>
+        ::= <AnnotatedConfigurationMember> <AnnotatedConfigurationMembers>
          |
-<ConfigurationMember>
-        ::= <Include>
+<AnnotatedConfigurationMember>
+        ::= <AnnotatedInclude>
 
-<Include>
-        ::= 'include' <ReferenceWithInitializerList>
+<AnnotatedInclude>
+        ::= <AnnotationSpecifiers> 'include' <ReferenceWithInitializerList>
 
 <ReferenceWithInitializerList>
         ::= <ReferenceWithInitializer> ',' <ReferenceWithInitializerList>

@@ -9,13 +9,13 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="imports" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Configuration" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject">
+  <eClassifiers xsi:type="ecore:EClass" name="Configuration" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject myfile.ecore#//AnnotationTarget">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fileContentRoot" eType="#//FileContentRoot"
         eOpposite="#//FileContentRoot/configurations"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="includes" upperBound="-1"
         eType="#//Include" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Include">
+  <eClassifiers xsi:type="ecore:EClass" name="Include" eSuperTypes="myfile.ecore#//AnnotationTarget">
     <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="ecore:EClass myfile.ecore#//Module"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="optionBindings" upperBound="-1"
         eType="ecore:EClass myfile.ecore#//OptionBinding" containment="true"/>
