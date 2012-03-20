@@ -1,0 +1,13 @@
+package embox.cmds
+
+@Cmd(name = "lsmod",
+	help = "Lists mod info emitted by EMBuild",
+	man = '''
+		NAME
+			lsmod
+		AUTHORS
+			Eldar Abusalimov
+	''')
+module lsmod {
+	source "lsmod.c"
+}
