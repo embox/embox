@@ -1,0 +1,27 @@
+package embox.cmd
+
+import embox.compat.posix.LibPosix
+
+@Cmd(name = "rm",
+	help = "Remove file or directory",
+	man = '''
+		NAME
+			rm - remove file or directory
+		SYNOPSIS
+			rm [OPTIONS] FILE
+		DESCRIPTION
+			rm removes each specified file
+		OPTIONS
+			-r - remove directories and their contents recursively
+			-f - ignore nonexistent files, never prompt
+		AUTHOR
+			Roman Evstifeev
+	''')
+module rm {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "rm.c"
+
+	depends embox.fs.core
+	depends LibPosix
+}
