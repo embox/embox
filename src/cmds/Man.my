@@ -1,0 +1,18 @@
+package embox.cmds
+
+@Cmd(name = "man",
+	help = "Shows the built-in command reference",
+	man = '''
+		NAME
+			man - an interface to the built-in command reference
+		SYNOPSIS
+			man cmd ...
+		DESCRIPTION
+			man displays the built-in manual pages for the specified commands
+		AUTHORS
+			Nikolay Korotky
+	''')
+module man {
+	source "man.c"
+}
+

@@ -68,15 +68,6 @@ module version {
 
 }
 
-module man {
-
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "man.c"
-	depends LibPosix
-
-}
-
 module mem {
 
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
