@@ -11,7 +11,7 @@ static module LibFramework {
 		"test/registry.c",
 		"test/run.c"
 
-//	source "example/core.c"
+	source "example/core.c"
 
 	depends runlevel
 }
