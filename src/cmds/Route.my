@@ -1,0 +1,33 @@
+package embox.cmd
+
+import embox.compat.posix.LibPosix
+import embox.net.af_inet
+
+@Cmd(name = "route",
+	help = "Manipilate routing table",
+	man = '''
+		NAME
+			route - show / manipulate the IP routing table.
+		SYNOPSIS
+			route  -n <net> -m <mask> -d <name> [add|del]
+		DESCRIPTION
+			del    delete a route.
+			add    add a new route.
+			-n <network>
+			-m <mask>
+			-g <gateway>
+			-d <device>
+		SEE ALSO
+			ifconfig, arp
+		AUTHOR
+			Nikolay Korotky
+	''')
+module route {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "route.c"
+
+	depends af_inet
+	depends LibPosix
+}
+

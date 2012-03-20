@@ -20,15 +20,6 @@ module runelf {
 
 }
 
-module route {
-
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "route.c"
-	depends LibPosix
-
-}
-
 module tftp {
 
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
