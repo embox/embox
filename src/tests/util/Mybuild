@@ -36,8 +36,8 @@ module math_test {
 
 }
 
-module rbuff_test {
-	source "rbuff_test.c"
+module ring_buff_test {
+	source "ring_buff_test.c"
 }
 
 module hashtable_test {
