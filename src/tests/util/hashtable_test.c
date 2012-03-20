@@ -56,9 +56,11 @@ TEST_CASE("Add three elements to hashtable") {
 	for(int i=0; i<3; i++)	{
 		if(NULL != hashtable_get(ht, (void *)key[i])){
 			ht_value[i] = (struct ht_element *) hashtable_get(ht, (void *)key[i]);
-			printf ("%d\n",(int) ht_value[i]->number);
+			/*printf ("%d\n",(int) ht_value[i]->number);*/
 		}
-		else printf ("NULL");
+		else {
+			/*printf ("NULL");*/
+		}
 	}
 
 	hashtable_destroy(ht);
