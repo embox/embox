@@ -65,15 +65,6 @@ module runelf {
 
 }
 
-module arping {
-
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "arping.c"
-	depends LibPosix
-
-}
-
 module ping {
 
 	@IncludePath("$(SRC_DIR)/compat/linux/include")

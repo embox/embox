@@ -1,0 +1,38 @@
+package embox.cmd
+
+import embox.compat.posix.LibPosix
+import embox.net.arp
+import embox.net.neighbour
+
+@Cmd(name = "arping",
+	help = "Send ARP REQUEST to a neighbour host",
+	man = '''
+		NAME
+			arping - send ARP REQUEST to a neighbour host
+		SYNOPSIS
+			arping [ -c count] [-I iface] destination
+		DESCRIPTION
+			Ping destination on device interface by ARP packets,
+			using source address source.
+		OPTIONS
+			-I interface
+				Set source address to specified interface address.
+				by default: eth0
+			-c count
+				Stop after sending count ECHO_REQUEST packets.
+				by default: 4 (-1 infinity)
+		EXAMPLES
+			arping -c 3 10.0.3.97
+		SEE ALSO
+			arp, ping
+		AUTHORS
+			Nikolay Korotky
+	''')
+module arping {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "arping.c"
+	depends neighbour, arp
+	depends LibPosix
+}
+

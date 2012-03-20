@@ -29,8 +29,7 @@ import embox.net.neighbour
 			ifconfig, route
 		AUTHORS
 			Nikolay Korotky
-	'''
-)
+	''')
 module arp {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
