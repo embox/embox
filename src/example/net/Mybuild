@@ -23,6 +23,7 @@ module tcp_receiver {
 module httpd {
 	source "httpd.c"
 	depends embox.net.socket
+	depends embox.compat.posix.LibPosix
 }
 
 module r6040_example {
