@@ -83,6 +83,8 @@ MyFile_Module_objects := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_objects)
 MyFile_Module_options := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_options)
+MyFile_Module_allOptions := \
+	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_allOptions)
 MyFile_Module_subTypes := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_subTypes)
 MyFile_Module_superType := \
@@ -172,6 +174,7 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_Module_sources),sources,$(MyFile_FileMember),,changeable many containment)
 	$(call eMetaReferenceInit,$(MyFile_Module_objects),objects,$(MyFile_FileMember),,changeable many containment)
 	$(call eMetaReferenceInit,$(MyFile_Module_options),options,$(MyFile_Option),,changeable many containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_allOptions),allOptions,$(MyFile_Option),,changeable derived)
 	$(call eMetaReferenceInit,$(MyFile_Module_subTypes),subTypes,$(MyFile_Module),$(MyFile_Module_superType),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_superType),superType,$(MyFile_Module),$(MyFile_Module_subTypes),changeable linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_allSubTypes),allSubTypes,$(MyFile_Module),$(MyFile_Module_allSuperTypes),derived many)
@@ -243,6 +246,7 @@ define __myFile_bind
 	$(call eMetaFeatureBind,$(MyFile_Module_sources),sources)
 	$(call eMetaFeatureBind,$(MyFile_Module_objects),objects)
 	$(call eMetaFeatureBind,$(MyFile_Module_options),options)
+	$(call eMetaFeatureBind,$(MyFile_Module_allOptions),allOptions)
 	$(call eMetaFeatureBind,$(MyFile_Module_subTypes),subTypes)
 	$(call eMetaFeatureBind,$(MyFile_Module_superType),superType)
 	$(call eMetaFeatureBind,$(MyFile_Module_allSubTypes),allSubTypes)

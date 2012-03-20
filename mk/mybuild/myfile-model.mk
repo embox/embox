@@ -270,6 +270,7 @@ endef
 #   - reference 'sources'
 #   - reference 'objects'
 #   - reference 'options'
+#   - reference 'allOptions'
 #   - reference 'subTypes'
 #   - reference 'superType'
 #   - reference 'allSubTypes'
@@ -362,6 +363,23 @@ define class-MyModule
 	# Property 'options... : MyOption'.
 	$(eobject-reference MyFile_Module_options,
 		options,MyOption,,changeable many containment)
+
+	# Reference 'allOptions' [0..1]: derived.
+	$(property allOptions : MyOption)
+	# PROTECTED REGION ID(MyFile_Module_allOptions) ENABLED START
+	$(getter allOptions,
+		$(with $(for opt <- $(get options),
+				$(get opt->name)),
+			$(get options) \
+			$(for super <- $(get superType),
+				superOpt <- $(get super->allOptions),
+				$(if $(filter $1,$(get superOpt->name)),,
+			       		$(superOpt)))))
+
+
+	$(setter allOptions,
+		$(error $0($1): NIY))
+	# PROTECTED REGION END
 
 	# Property 'subTypes... : MyModule'.
 	# Property 'subTypes_links... : ELink'.

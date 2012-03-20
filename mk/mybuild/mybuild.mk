@@ -91,8 +91,13 @@ define printInstances
 		$(strip $(for buildBuild<-$1,
 			inst<-$(get buildBuild->modules),
 			$(warning $(get $(strip $(get inst->type)).qualifiedName))
+			$(warning Deps:)
 			$(for dep <- $(get inst->depends),
-				$(warning $(\t)$(get $(get dep->type).qualifiedName)))))
+				$(warning $(\t)$(get $(get dep->type).qualifiedName)))
+			$(warning Opts:)
+			$(for opt <- $(get $(get inst->type).allOptions),
+				val <-$(warning $(\t)$(get opt->name))$(get opt->defaultValue),
+				$(warning $(\t)$(\t)DefVal : $(get val->value)))))
 endef
 
 define listInstances

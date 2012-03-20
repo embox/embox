@@ -69,6 +69,8 @@
         eType="#//FileMember" containment="true" resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
         eType="#//Option" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="allOptions" eType="#//Option"
+        volatile="true" transient="true" unsettable="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="subTypes" upperBound="-1"
         eType="#//Module" eOpposite="#//Module/superType"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="superType" eType="#//Module"
