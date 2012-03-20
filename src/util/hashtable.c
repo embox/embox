@@ -35,7 +35,7 @@ struct hashtable {
 #define CONFIG_HASHTABLE_ELEM_QUNTITY  0x10
 
 OBJALLOC_DEF(ht_pool, struct hashtable, CONFIG_HASHTABLES_QUANTITY);
-OBJALLOC_DEF(ht_elem_pool, struct hashtable_entry,
+OBJALLOC_DEF(ht_elem_pool, struct hashtable_element,
 		CONFIG_HASHTABLES_QUANTITY * CONFIG_HASHTABLE_ELEM_QUNTITY);
 
 
