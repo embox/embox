@@ -13,19 +13,6 @@
 #include <lib/bits/byteswap.h>
 #include <net/port.h>
 
-/**< Standard well-defined IP protocols.  */
-enum {
-	IPPROTO_IP   = 0,     /* Dummy protocol for TCP            */
-	IPPROTO_ICMP = 1,     /* Internet Control Message Protocol */
-	IPPROTO_TCP  = 6,     /* Transmission Control Protocol     */
-	IPPROTO_UDP  = 17,    /* User Datagram Protocol            */
-	/* A protocol of IPPROTO_RAW is able to send any IP protocol
-	 * that is specified in the passed header. Receiving of all
-	 * IP protocols via IPPROTO_RAW is not possible using raw sockets. */
-	IPPROTO_RAW  = 255,   /* Raw IP packets                    */
-	IPPROTO_MAX
-};
-
 /**
  * Define info about id of IP protocols
  * @param id - identifer of protocol
@@ -33,21 +20,6 @@ enum {
  */
 
 /* IPv4 AF_INET sockets:*/
-
-typedef uint32_t in_addr_t;
-
-/**< Internet address. */
-struct in_addr {
-	uint32_t    s_addr;
-};
-
-struct sockaddr_in {
-	short            sin_family;   /* e.g. AF_INET */
-	unsigned short   sin_port;     /* e.g. htons(3490) */
-	unsigned short   port_type;
-	struct in_addr   sin_addr;     /* see struct in_addr, below */
-	char             sin_zero[8];  /* zero this if you want to */
-};
 
 /**
  * Convert Internet number in IN to ASCII representation.

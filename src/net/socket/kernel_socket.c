@@ -14,10 +14,23 @@
 #include <net/socket.h>
 #include <stddef.h>
 #include <types.h>
+#include <string.h>
 
 #include <net/sock.h>
 #include <util/debug_msg.h>
+#include <net/kernel_socket.h>
+#include <mem/objalloc.h>
 
+/* pool for string socket-address links */
+OBJALLOC_DEF(sock_addr_pool, sock_address_node_t, MAX_SYSTEM_CONNECTIONS);
+static LIST_HEAD(sock_address_head);
+
+/* inner functions for address binding maintance */
+static sock_address_node_t *get_sock_addr_node_by_socket(struct socket *sock);
+static sock_address_node_t *get_sock_addr_node_by_address(const struct sockaddr *addr);
+static bool is_addr_free(const sockaddr_t *addr);
+static int bind_address(struct socket *sock, const struct sockaddr *addr);
+static void unbind_socket(struct socket *sock);
 
 int kernel_socket_create(int family, int type, int protocol, struct socket **psock) {
 	int res;
@@ -98,6 +111,8 @@ int kernel_socket_release(struct socket *sock) {
 		}
 	}
 
+	/* socket will be unbound if it is bound else nothing happens */
+	unbind_socket(sock);
 	socket_free(sock);
 
 	return ENOERR;
@@ -112,13 +127,19 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 		return SK_NO_SUCH_METHOD;
 	}
 
+	/* find out if address is occupied */
+	if(!is_addr_free(addr)){
+		return -EADDRINUSE;
+	}
 	/* try to bind */
 	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
 	if(res){  /* If something went wrong */
 		debug_printf("error while binding socket", "kernel_sockets", "kernel_socket_bind");
 		sk_set_connection_state(sock->sk, UNCONNECTED);  /* Set the state to UNCONNECTED */
-	}else
+	}else{
 		sk_set_connection_state(sock->sk, BOUND);  /* Everything turned out fine */
+		bind_address(sock, addr);
+	}
 	return res;
 }
 
@@ -247,4 +268,83 @@ int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr
 
 int kernel_socket_shutdown(struct socket *sock){
 	return ENOERR;
+}
+
+static bool is_addr_free(const struct sockaddr *addr){
+
+	if(get_sock_addr_node_by_address(addr))
+		return false;
+	else
+		return true;
+}
+
+static int bind_address(struct socket *sock, const struct sockaddr *addr){
+	sock_address_node_t *newnode;
+
+	/* allocate new node */
+	newnode = (sock_address_node_t *)pool_alloc(&sock_addr_pool);
+	if(newnode == NULL)
+		return -ENOMEM;
+
+	/* copy address data */
+	memcpy(&newnode->addr, addr, sizeof(struct sockaddr));
+
+	/* set socket link */
+	newnode->sock = sock;
+
+	sock->sk->sock_address = newnode;
+
+	debug_printf("bound address to socket",
+							 "kernel_socket", "bind_address");
+
+	return 0;
+}
+
+static void unbind_socket(struct socket *sock){
+	sock_address_node_t *node;
+
+	node = get_sock_addr_node_by_socket(sock);
+	if(node){
+		debug_printf("found bound socket, freeing...",
+								 "kernel_socket", "unbind_socket");
+		sock->sk->sock_address = NULL;
+		pool_free(&sock_addr_pool, node);
+	}
+}
+
+static sock_address_node_t *get_sock_addr_node_by_address(const struct sockaddr *addr){
+	sockaddr_in_t *addr_node_in, *addr_in = (sockaddr_in_t *)addr;
+	sock_address_node_t *node, *safe;
+
+	if(addr){  /* address validity */
+		list_for_each_entry_safe(node, safe, &sock_address_head, link){
+			addr_node_in = (sockaddr_in_t *)&node->addr;  /* address from list */
+			if(addr_node_in){
+				if((addr_node_in->sin_addr.s_addr == addr_in->sin_addr.s_addr) &&
+					 (addr_node_in->sin_port == addr_in->sin_port)){
+					/* addresses and ports are equal. */
+					return node;
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
+static sock_address_node_t *get_sock_addr_node_by_socket(struct socket *sock){
+	struct socket *node_sock;
+	sock_address_node_t *node, *safe;
+
+	if(sock){  /* address validity */
+		list_for_each_entry_safe(node, safe, &sock_address_head, link){
+			node_sock = node->sock;  /* socket from list */
+			if(node_sock){
+				if(node_sock == sock){
+					/* socket addresses are equal are equal*/
+					return node;
+				}
+			}
+		}
+	}
+	return NULL;
 }

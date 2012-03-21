@@ -122,10 +122,29 @@ struct msghdr {
 
 typedef unsigned short sa_family_t;
 
+/* abstract socket address structure(as i understand //ttimkk) */
 typedef struct sockaddr {
 	sa_family_t sa_family; /* Address family, AF_xxx */
 	char sa_data[14];      /* 14 bytes of protocol address */
 } sockaddr_t;
+
+typedef uint32_t in_addr_t;
+
+/**< Internet address. */
+struct in_addr {
+	uint32_t    s_addr;
+};
+
+/* more specific address structure
+	 (to recast on sockaddr_t for example in AF_INET sockets) */
+typedef struct sockaddr_in {
+	unsigned short   sin_family;   /* e.g. AF_INET */
+	unsigned short   sin_port;     /* e.g. htons(3490) */
+	unsigned short   port_type;
+	struct in_addr   sin_addr;     /* see struct in_addr, above */
+	char             sin_zero[8];  /* zero this if you want to */
+} sockaddr_in_t;
+
 
 /**
  * create an endpoint for communication.

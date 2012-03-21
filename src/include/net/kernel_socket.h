@@ -15,6 +15,19 @@
 #include <net/net.h>
 #include <types.h>
 
+#define MAX_SYSTEM_CONNECTIONS 10
+
+/**
+ * @param sock socket connected to addr
+ * @param addr address connected to sock
+ */
+typedef struct sock_address_node{
+	struct list_head link;
+	socket_t *sock;
+	sockaddr_t addr;
+} sock_address_node_t;
+
+
 /**
  * Create kernel socket.
  *

@@ -134,8 +134,6 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 	struct inet_sock *inet;
 
 	sk = sock->sk;
-//	if(!sk->sk_prot->bind)
-//		return SK_NO_SUCH_METHOD;
 
 	sock_lock(sk);
 	if (sk->sk_prot->bind != NULL) {
