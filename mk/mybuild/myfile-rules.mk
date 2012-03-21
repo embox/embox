@@ -241,7 +241,7 @@ define $(gold_grammar)_produce-Option_Identifier
     $(for opt <- $(new My$1Option),
 		$(set opt->name,$2)
 		$(and $3,
-			$(if $(invoke opt->validateOption,$3),
+			$(if $(invoke opt->validateValue,$3),
 				$(set opt->defaultValue,$3),
 				$(call gold_report_error_at,
 					$(call gold_location_of,3),

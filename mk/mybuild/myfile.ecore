@@ -89,15 +89,15 @@
         derived="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject #//AnnotationTarget">
-    <eOperations name="validateOption" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
+    <eOperations name="validateValue" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="defaultValue" eType="#//OptionValue"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StringOption" eSuperTypes="#//Option">
-    <eOperations name="validateOption" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
+    <eOperations name="validateValue" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="NumberOption" eSuperTypes="#//Option">
-    <eOperations name="validateOption" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
+    <eOperations name="validateValue" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="OptionValue" abstract="true">
     <eOperations name="toString" eType="ecore:EDataType emodel.ecore#//EString"/>

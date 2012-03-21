@@ -467,7 +467,7 @@ endef
 #
 # The following features and operations are defined:
 #   - reference 'defaultValue'
-#   - operation 'validateOption'
+#   - operation 'validateValue'
 #
 # The following features are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
@@ -487,11 +487,10 @@ define class-MyOption # abstract
 	$(eobject-reference MyFile_Option_defaultValue,
 		defaultValue,MyOptionValue,,changeable containment)
 
-	# Method 'validateOption'.
-	# PROTECTED REGION ID(MyFile_Option_validateOption) ENABLED START
-	# Args:
-	#  1. Option
-	$(method validateOption,
+	# Method 'validateValue'.
+	# PROTECTED REGION ID(MyFile_Option_validateValue) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method validateValue,
 		$(error $0(): NIY))
 	# PROTECTED REGION END
 
@@ -504,11 +503,11 @@ endef
 # Model object 'StringOption'.
 #
 # The following operations are defined:
-#   - operation 'validateOption'
+#   - operation 'validateValue'
 #
 # The following features and operations are inherited from 'Option':
 #   - reference 'defaultValue'
-#   - operation 'validateOption'
+#   - operation 'validateValue'
 #
 # The following features are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
@@ -524,9 +523,10 @@ define class-MyStringOption
 	$(eobject MyFile_StringOption,
 		MyStringOption,MyOption,)
 
-	# Method 'validateOption'.
-	# PROTECTED REGION ID(MyFile_StringOption_validateOption) ENABLED START
-	$(method validateOption,
+	# Method 'validateValue'.
+	# PROTECTED REGION ID(MyFile_StringOption_validateValue) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method validateValue,
 		$(invoke MyFile_StringOptionValue->isInstance,$1))
 	# PROTECTED REGION END
 
@@ -538,11 +538,11 @@ endef
 # Model object 'NumberOption'.
 #
 # The following operations are defined:
-#   - operation 'validateOption'
+#   - operation 'validateValue'
 #
 # The following features and operations are inherited from 'Option':
 #   - reference 'defaultValue'
-#   - operation 'validateOption'
+#   - operation 'validateValue'
 #
 # The following features are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
@@ -558,9 +558,10 @@ define class-MyNumberOption
 	$(eobject MyFile_NumberOption,
 		MyNumberOption,MyOption,)
 
-	# Method 'validateOption'.
-	# PROTECTED REGION ID(MyFile_NumberOption_validateOption) ENABLED START
-	$(method validateOption,
+	# Method 'validateValue'.
+	# PROTECTED REGION ID(MyFile_NumberOption_validateValue) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method validateValue,
 		$(invoke MyFile_NumberOptionValue->isInstance,$1))
 	# PROTECTED REGION END
 
