@@ -81,11 +81,11 @@ BooleanLiteral = 'true' | 'false'
          |
 
 ! Import*
-<AnnotatedImports>
-        ::= <AnnotatedImport> <AnnotatedImports>
+<Imports>
+        ::= <Import> <Imports>
          |
-<AnnotatedImport>
-        ::= <AnnotationSpecifiers> 'import' <QualifiedNameWithWildcard>
+<Import>
+        ::= 'import' <QualifiedNameWithWildcard>
 
 ! Configuration*
 <AnnotatedConfigurations>
