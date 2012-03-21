@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <cpio.h>
+#include <sys/stat.h>
 #include <err.h>
 
 EMBOX_CMD(exec);

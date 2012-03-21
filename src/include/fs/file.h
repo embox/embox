@@ -20,20 +20,5 @@ typedef struct file {
 	unsigned int                   f_pos;
 } file_t;
 
-typedef struct stat {
-	int       st_dev;     /* ID of device containing file */
-	int       st_ino;     /* inode number */
-	int       st_mode;    /* protection */
-	int       st_nlink;   /* number of hard links */
-	int       st_uid;     /* user ID of owner */
-	int       st_gid;     /* group ID of owner */
-	int       st_rdev;    /* device ID (if special file) */
-	size_t    st_size;    /* total size, in bytes */
-	size_t    st_blksize; /* blocksize for file system I/O */
-	int       st_blocks;  /* number of 512B blocks allocated */
-	unsigned  st_atime;   /* time of last access */
-	unsigned  st_mtime;   /* time of last modification */
-	unsigned  st_ctime;   /* time of last status change */
-} stat_t;
 
 #endif /* FS_FILE_H_ */

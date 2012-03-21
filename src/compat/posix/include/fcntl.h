@@ -15,7 +15,7 @@
 /* int open (const char *path, int __oflag);
  * int open (const char *path, int __oflag, mode_t mode);
  */
-extern int open (const char *path, int __oflag, ...);
+extern int open(const char *path, int __oflag, ...);
 
 extern int close(int file);
 

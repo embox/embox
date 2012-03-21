@@ -44,6 +44,8 @@ typedef long time_t;
 
 typedef int pid_t;
 
+typedef int dev_t;
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* SYS_TYPES_H_ */

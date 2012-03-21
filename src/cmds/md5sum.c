@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <fs/file.h>
 #include <lib/md5.h>
+#include <sys/stat.h>
 
 EMBOX_CMD(exec);
 

@@ -13,6 +13,7 @@
 #include <fs/file.h>
 #include <fs/vfs.h>
 #include <fs/ramfs.h>
+#include <sys/stat.h>
 
 EMBOX_CMD(exec);
 

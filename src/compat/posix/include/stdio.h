@@ -130,10 +130,6 @@ extern int fseek(FILE *stream, long int offset, int origin);
  */
 extern int fioctl(FILE *fp, int request, ...);
 
-/**
- * Get file status (size, mode, mtime and so on)
- */
-extern int fstat(const char *path, struct stat *buf);
 
 #include <kernel/task.h>
 /*extern FILE *stdin;*/
