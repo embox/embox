@@ -3,15 +3,32 @@
 #
 #   Date: Feb 9, 2012
 # Author: Eldar Abusalimov
+# Author: Anton Kozlov
+# 		- Generate config related stuff
 #
 
 export CONFIGFILES_CACHE_DIR := $(MYBUILD_CACHE_DIR)/config
 
 CONFIG_PATH := conf/
 
+HOSTCPP = gcc -E
+
+HOSTCC_CPPFLAGS := -I $(CONFIG_PATH)
+
+CONFIG_GENERATED := $(CONFIG_PATH)genConf.config
+
+$(CONFIG_GENERATED) :
+	mkdir -p $(@D)
+	$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) \
+		-D__MODS_CONF__ mk/confmacro2.S | \
+		awk -f mk/confmacro2.awk > $@
+
 CONFIGFILES := \
 	$(shell find $(CONFIG_PATH) -depth \
 		-name \*.config -print)
+
+#	Add to CONFIGFILES above
+#	$(CONFIG_GENERATED)
 
 override CONFIGFILES := $(firstword $(CONFIGFILES))
 
@@ -27,6 +44,8 @@ $(MAKECMDGOALS) : $(configfiles_linked_mk)
 .DELETE_ON_ERROR:
 
 .PHONY : $(configfiles_linked_mk)
+
+$(configfiles_mk) : $(CONFIGFILES)
 
 $(configfiles_mk) : mk/load3.mk
 $(configfiles_mk) : mk/script/mk-persist.mk
