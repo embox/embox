@@ -28,6 +28,6 @@ import embox.arch.interrupt
 module boot {
 	source "boot.c"
 	depends interrupt
-	depends embox.mem.mmu
+	//depends embox.mem.mmu
 	depends embox.fs.core
 }
