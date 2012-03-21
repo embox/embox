@@ -1,0 +1,11 @@
+package embox.example.kernel.thread
+
+//@Cmd(name "example.kernel.thread",
+//	help = demonstrates using thread API,
+//	man = '''
+//	''')
+
+module create_thread {
+	source "thread.c"
+	depends embox.kernel.thread.core
+}

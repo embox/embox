@@ -1,8 +1,0 @@
-package embox.example.kernel.task
-
-module task {
-	source "task.c"
-	depends embox.fs.rootfs
-	depends embox.kernel.thread.sched
-	depends embox.kernel.task_api
-}
