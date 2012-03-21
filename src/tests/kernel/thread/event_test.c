@@ -7,12 +7,13 @@
  * @author Anton Bondarev
  */
 
-#include <embox/test.h>
+#include <unistd.h>
+
 #include <kernel/thread/sched.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
-#include <unistd.h>
 
+#include <embox/test.h>
 
 EMBOX_TEST_SUITE("test for change thread state by events");
 

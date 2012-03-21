@@ -9,3 +9,8 @@ module create_thread {
 	source "thread.c"
 	depends embox.kernel.thread.core
 }
+
+module wakeup_thread {
+	source "wakeup_thread.c"
+	depends embox.kernel.thread.core
+}
