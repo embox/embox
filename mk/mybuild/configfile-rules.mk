@@ -47,7 +47,7 @@ $(gold_grammar)_produce-Import_import = $2
 
 # Rule: <AnnotatedConfiguration> ::= <Annotations> <Configuration>
 define $(gold_grammar)_produce-AnnotatedConfiguration
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$2
 endef
 
 # Rule: <Configuration> ::= configuration Identifier '{' <ConfigurationMembers> '}'
@@ -68,7 +68,9 @@ endef
 
 # Rule: <AnnotatedConfigurationMember> ::= <Annotations> <IncludeMember>
 define $(gold_grammar)_produce-AnnotatedConfigurationMember
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(for include <- $2,
+		$(set include->annotations,$1)
+		$(include))
 endef
 
 # Rule: <IncludeMember> ::= include <ReferenceWithInitializerList>
@@ -113,7 +115,10 @@ endef
 # Rule: <Annotation> ::= '@' <Reference> <AnnotationInitializer>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-Annotation_At
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(for annotation <- $(new MyAnnotation),
+		$(set annotation->type_link,$2)
+		$(set annotation->bindings,$3)
+		$(annotation))
 endef
 
 # Rule: <AnnotationInitializer> ::= '(' <ParametersList> ')'
@@ -125,13 +130,10 @@ endef
 # Rule: <AnnotationInitializer> ::= '(' <Value> ')'
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan2
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <AnnotationInitializer> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-AnnotationInitializer
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(for binding<-$(new MyOptionBinding),
+		$(set binding->option_link,$(new ELink,value,$(gold_location)))
+		$(set binding->optionValue,$2)
+		$(binding))
 endef
 
 # Rule: <ParametersList> ::= <Parameter> ',' <ParametersList>
