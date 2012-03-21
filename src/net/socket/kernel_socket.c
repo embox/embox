@@ -133,14 +133,15 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 	}
 	/* try to bind */
 	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
-	if(res){  /* If something went wrong */
+	if(res < 0){  /* If something went wrong */
 		debug_printf("error while binding socket", "kernel_sockets", "kernel_socket_bind");
 		sk_set_connection_state(sock->sk, UNCONNECTED);  /* Set the state to UNCONNECTED */
+		return res;
 	}else{
 		sk_set_connection_state(sock->sk, BOUND);  /* Everything turned out fine */
 		bind_address(sock, addr);
 	}
-	return res;
+	return ENOERR;
 }
 
 int kernel_socket_listen(struct socket *sock, int backlog) {

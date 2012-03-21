@@ -87,6 +87,7 @@ int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 }
 
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
+	int res;
 	struct socket *sock;
 
 	if (sockfd < 0) {
@@ -98,7 +99,12 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 		return -EBADF;
 	}
 
-	return kernel_socket_bind(sock, addr, addrlen);
+	res = kernel_socket_bind(sock, addr, addrlen);
+	if(res < 0){
+		SET_ERRNO(-res);
+		return -1;
+	}
+	return ENOERR;
 }
 
 int listen(int sockfd, int backlog) {
