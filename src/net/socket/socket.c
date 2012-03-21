@@ -73,17 +73,25 @@ int socket(int domain, int type, int protocol) {
 
 int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 	struct socket *sock;
+	int res;
 
 	if (sockfd < 0) {
-		return -EBADF;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
 
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
-		return -EBADF;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
 
-	return kernel_socket_connect(sock, daddr, daddrlen, 0);
+	res = kernel_socket_connect(sock, daddr, daddrlen, 0);
+	if(res < 0){
+		SET_ERRNO(-res);
+		return -1;
+	}
+	return ENOERR;
 }
 
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
@@ -91,13 +99,13 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	struct socket *sock;
 
 	if (sockfd < 0) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
@@ -111,15 +119,24 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
 int listen(int sockfd, int backlog) {
 	struct socket *sock;
+	int res;
 
 	if (sockfd < 0) {
-		return -EBADF;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
-		return -EBADF;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
-	return kernel_socket_listen(sock, backlog);
+	res = kernel_socket_listen(sock, backlog);
+	if(res < 0){
+		SET_ERRNO(-res);
+		return -1;
+	}
+	return ENOERR;
+
 }
 
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
@@ -127,21 +144,26 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	int res;
 
 	if (sockfd < 0) {
-		return -EBADF;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
-		return -EBADF;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
 
 	res = kernel_socket_accept(sock, &new_sock, addr, addrlen);
 	if (res < 0) {
-		return res;
+		SET_ERRNO(-res);
+		return -1;
 	}
 
 	res = task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_SOCKET, new_sock);
 	if (res < 0) {
 		kernel_socket_release(new_sock);
+		SET_ERRNO(EMFILE);  /* also could be ENFILE */
+		return -1;
 	}
 	return res;
 }
@@ -194,8 +216,14 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen) {
+	int res;
 
-	return sendto_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
+	res = sendto_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
+	if(res < 0){
+		SET_ERRNO(-res);
+		return -1;
+	}
+	return res;
 }
 
 int check_icmp_err(int sockfd) {
@@ -231,21 +259,36 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
+	int res;
 
-	return recvfrom_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
+	res = recvfrom_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
+	if(res <0){
+		SET_ERRNO(-res);
+		return -1;
+	}
+	return res;
 }
 
 int socket_close(int sockfd) {
+	int res;
 	struct socket *sock;
 
 	if (sockfd < 0) {
-		return -EBADF;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
 
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
-		return -EBADF;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
 
-	return kernel_socket_release(sock);
+	res = kernel_socket_release(sock);
+	if(res < 0){
+		SET_ERRNO(-res);
+		return -1;
+	}
+
+	return ENOERR;
 }
