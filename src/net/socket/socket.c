@@ -91,12 +91,14 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 	struct socket *sock;
 
 	if (sockfd < 0) {
-		return -EBADF;
+		SET_ERRNO(-EBADF);
+		return -1;
 	}
 
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
-		return -EBADF;
+		SET_ERRNO(-EBADF);
+		return -1;
 	}
 
 	res = kernel_socket_bind(sock, addr, addrlen);
