@@ -13,15 +13,15 @@
 #         of the rule production.
 #
 # Return:
-#   Converted value that is passed to a symbol handler corresponding to
-#   the rule's LHS (if any has been defined).
+#   The value to pass as an argument to a rule containing the production
+#   of this rule in its RHS, or to return to user in case of the Start Symbol.
 #
 # If production function is not defined then the rule is produced by
 # concatenating the RHS through spaces. To reuse this default value one can
 # call 'gold_default_produce' function.
 #
 
-# Rule: <ConfigFile> ::= <Package> <Imports> <Configurations>
+# Rule: <ConfigFile> ::= <Package> <Imports> <Type>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-ConfigFile
 	$(for fileContent <- $(new CfgFileContentRoot),
@@ -42,8 +42,13 @@ define $(gold_grammar)_produce-Package
 			Using default package)
 endef
 
-# Rule: <Import> ::= import <ImportFeature> <QualifiedNameWithWildcard>
-$(gold_grammar)_produce-Import_import = $3
+# Rule: <Import> ::= import <QualifiedNameWithWildcard>
+$(gold_grammar)_produce-Import_import = $2
+
+# Rule: <AnnotatedConfiguration> ::= <Annotations> <Configuration>
+define $(gold_grammar)_produce-AnnotatedConfiguration
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
 
 # Rule: <Configuration> ::= configuration Identifier '{' <ConfigurationMembers> '}'
 # Args: 1..5 - Symbols in the RHS.
@@ -61,9 +66,14 @@ define $(gold_grammar)_produce-Configuration_configuration_Identifier_LBrace_RBr
 	)
 endef
 
-# Rule: <Include> ::= include <ReferenceWithInitializerList>
+# Rule: <AnnotatedConfigurationMember> ::= <Annotations> <IncludeMember>
+define $(gold_grammar)_produce-AnnotatedConfigurationMember
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <IncludeMember> ::= include <ReferenceWithInitializerList>
 # Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-Include_include
+define $(gold_grammar)_produce-IncludeMember_include
 	$(addprefix $1s/,$2)
 endef
 
@@ -88,6 +98,42 @@ endef
 # Args: 1..3 - Symbols in the RHS.
 $(gold_grammar)_produce-Initializer_LParan_RParan = $2
 
+# Rule: <Annotations> ::= <Annotation> <Annotations>
+# Args: 1..2 - Symbols in the RHS.
+define $(gold_grammar)_produce-Annotations
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Annotations> ::=
+# Args: 1..0 - Symbols in the RHS.
+define $(gold_grammar)_produce-Annotations2
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <Annotation> ::= '@' <Reference> <AnnotationInitializer>
+# Args: 1..3 - Symbols in the RHS.
+define $(gold_grammar)_produce-Annotation_At
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <AnnotationInitializer> ::= '(' <ParametersList> ')'
+# Args: 1..3 - Symbols in the RHS.
+define $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <AnnotationInitializer> ::= '(' <Value> ')'
+# Args: 1..3 - Symbols in the RHS.
+define $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan2
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
+# Rule: <AnnotationInitializer> ::=
+# Args: 1..0 - Symbols in the RHS.
+define $(gold_grammar)_produce-AnnotationInitializer
+	$(gold_default_produce)# TODO Auto-generated stub!
+endef
+
 # Rule: <ParametersList> ::= <Parameter> ',' <ParametersList>
 # Args: 1..3 - Symbols in the RHS.
 $(gold_grammar)_produce-ParametersList_Comma = $1 $3
@@ -108,28 +154,23 @@ define $(gold_grammar)_produce-Parameter_Eq
 endef
 
 # Rule: <Value> ::= StringLiteral
-# Args: 1..1 - Symbols in the RHS.
 $(gold_grammar)_produce-Value_StringLiteral = $(new MyStringOptionValue,$1)
-
 # Rule: <Value> ::= NumberLiteral
-# Args: 1..1 - Symbols in the RHS.
 $(gold_grammar)_produce-Value_NumberLiteral = $(new MyNumberOptionValue,$1)
 
-
 # Rule: <Value> ::= BooleanLiteral
-# Args: 1..1 - Symbols in the RHS.
 define $(gold_grammar)_produce-Value_BooleanLiteral
 	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <Reference> ::= <QualifiedName>
-# Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-Reference
-	$(new ELink,$1,$(gold_location))
+# Rule: <Value> ::= <Reference>
+define $(gold_grammar)_produce-Value
+	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
+# Rule: <Reference> ::= <QualifiedName>
+$(gold_grammar)_produce-Reference                  = $(new ELink,$1,$(gold_location))
 # Rule: <SimpleReference> ::= Identifier
-# Args: 1..1 - Symbols in the RHS.
 $(gold_grammar)_produce-SimpleReference_Identifier = $(new ELink,$1,$(gold_location))
 
 # <QualifiedName> ::= Identifier '.' <QualifiedName>

@@ -8,16 +8,6 @@ include mk/mybuild/common-symbols.mk
 # Optimized contructors for constant terminals (i.e. keywords and punctuation).
 #
 
-$(gold_grammar)_create-LParan           := (
-$(gold_grammar)_create-RParan           := )
-$(gold_grammar)_create-Comma            := ,
-$(gold_grammar)_create-Dot              := .
-$(gold_grammar)_create-DotTimes         := .*
-$(gold_grammar)_create-Colon            := :
-$(gold_grammar)_create-LBrace           := {
-$(gold_grammar)_create-RBrace           := }
-$(gold_grammar)_create-Eq               := =
-$(gold_grammar)_create-At               := @
 $(gold_grammar)_create-abstract         := abstract
 $(gold_grammar)_create-annotation       := annotation
 $(gold_grammar)_create-boolean          := boolean
@@ -36,23 +26,4 @@ $(gold_grammar)_create-requires         := requires
 $(gold_grammar)_create-source           := source
 $(gold_grammar)_create-static           := static
 $(gold_grammar)_create-string           := string
-
-#
-# For each regular terminal we also define a constant with a human-readable
-# description used for error reporting.
-#
-
-$(gold_grammar)_name_of-Comma           := ','
-$(gold_grammar)_name_of-Dot             := '.'
-$(gold_grammar)_name_of-DotTimes        := '.*'
-$(gold_grammar)_name_of-Colon           := ':'
-$(gold_grammar)_name_of-LParan          := '('
-$(gold_grammar)_name_of-RParan          := ')'
-$(gold_grammar)_name_of-LBrace          := '{'
-$(gold_grammar)_name_of-RBrace          := '}'
-$(gold_grammar)_name_of-Eq              := '='
-$(gold_grammar)_name_of-At              := '@'
-$(gold_grammar)_name_of-BooleanLiteral  := Boolean Literal
-$(gold_grammar)_name_of-NumberLiteral   := Number Literal
-$(gold_grammar)_name_of-StringLiteral   := String Literal
 

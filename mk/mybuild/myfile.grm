@@ -11,10 +11,6 @@
 ! Character Sets
 ! -------------------------------------------------
 
-!{Whitespace}   = {&09 .. &0D} + {Space}
-
-!{Printable}    = {&20 .. &7F}
-
 {ID Head}      = {Letter} + [_]
 {ID Tail}      = {Alphanumeric} + [_]
 

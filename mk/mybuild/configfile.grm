@@ -1,6 +1,6 @@
 "Name"     = 'ConfigFile'
-"Author"   = 'Eldar Abusalimov'
-"Version"  = '0.1'
+"Author"   = 'Eldar Abusalimov, Anton Kozlov'
+"Version"  = '0.2'
 "About"    = 'Mybuild configuration file'
 
 "Case Sensitive" = True
@@ -10,10 +10,6 @@
 ! -------------------------------------------------
 ! Character Sets
 ! -------------------------------------------------
-
-!{Whitespace}   = {&09 .. &0D} + {Space}
-
-!{Printable}    = {&20 .. &7F}
 
 {ID Head}      = {Letter} + [_]
 {ID Tail}      = {Alphanumeric} + [_]
@@ -49,31 +45,11 @@ NumberLiteral  = {Digit}+ ( '.' {Digit}+ )?
 BooleanLiteral = 'true' | 'false'
 
 ! -------------------------------------------------
-! Annotatons
-! -------------------------------------------------
-
-<AnnotationSpecifiers>
-        ::= <AnnotationSpecifier> <AnnotationSpecifiers>
-         |
-
-<AnnotationSpecifier>
-        ::= '@' <Reference> <AnnotationInitializer>
-<AnnotationInitializer>
-        ::= '(' <AnnotationParametersList> ')'
-         |  '(' <Value> ')'
-         |
-<AnnotationParametersList>
-        ::= <AnnotationParameter> ',' <AnnotationParametersList>
-         |  <AnnotationParameter>
-<AnnotationParameter>
-        ::= <SimpleReference> '=' <Value>
-
-! -------------------------------------------------
 ! Rules
 ! -------------------------------------------------
 
 <ConfigFile>
-        ::= <Package> <Imports> <Configurations>
+        ::= <Package> <Imports> <Type>
 
 ! Package?
 <Package>
@@ -87,24 +63,27 @@ BooleanLiteral = 'true' | 'false'
 <Import>
         ::= 'import' <QualifiedNameWithWildcard>
 
-! Configuration*
-<AnnotatedConfigurations>
-        ::= <AnnotatedConfiguration> <AnnotatedConfigurations>
+! Type?
+<Type>
+        ::= <AnnotatedConfiguration>
          |
+
+<AnnotatedConfiguration>
+        ::= <Annotations> <Configuration>
 
 ! configuration Name { ... }
-<AnnotatedConfiguration>
-        ::= <AnnotatedSpecifiers>'configuration' Identifier '{' <AnnotatedConfigurationMembers> '}'
+<Configuration>
+        ::= 'configuration' Identifier '{' <ConfigurationMembers> '}'
 
-! AnnotatedConfigurationMember*
-<AnnotatedConfigurationMembers>
-        ::= <AnnotatedConfigurationMember> <AnnotatedConfigurationMembers>
+! ConfigurationMember*
+<ConfigurationMembers>
+        ::= <AnnotatedConfigurationMember> <ConfigurationMembers>
          |
 <AnnotatedConfigurationMember>
-        ::= <AnnotatedInclude>
+        ::= <Annotations> <IncludeMember>
 
-<AnnotatedInclude>
-        ::= <AnnotationSpecifiers> 'include' <ReferenceWithInitializerList>
+<IncludeMember>
+        ::= 'include' <ReferenceWithInitializerList>
 
 <ReferenceWithInitializerList>
         ::= <ReferenceWithInitializer> ',' <ReferenceWithInitializerList>
@@ -116,6 +95,24 @@ BooleanLiteral = 'true' | 'false'
 <Initializer>
         ::= '(' <ParametersList> ')'
          |
+
+! -------------------------------------------------
+! Annotations
+! -------------------------------------------------
+
+<Annotations>
+        ::= <Annotation> <Annotations>
+         |
+<Annotation>
+        ::= '@' <Reference> <AnnotationInitializer>
+<AnnotationInitializer>
+        ::= '(' <ParametersList> ')'
+         |  '(' <Value> ')'
+         |
+
+! -------------------------------------------------
+! Comma-separated list of param=value pairs.
+
 <ParametersList>
         ::= <Parameter> ',' <ParametersList>
          |  <Parameter>
@@ -126,6 +123,7 @@ BooleanLiteral = 'true' | 'false'
         ::= StringLiteral
          |  NumberLiteral
          |  BooleanLiteral
+         |  <Reference>
 
 ! -------------------------------------------------
 ! Datatypes.
