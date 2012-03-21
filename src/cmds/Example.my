@@ -17,5 +17,5 @@ package embox.cmd
 	''')
 module example {
 	source "example.c"
-	depends embox.framework.LibFramework
+	depends embox.framework.example
 }
