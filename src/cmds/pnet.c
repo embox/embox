@@ -62,7 +62,7 @@ static struct rule rule_setters[RULE_OPTION_QUANTITY] = {
 static void print_usage(void) {
 	printf("Usage: pnet [-h] [-p [--nodes | --rules] graph [node]] [-g] [-n] [-r graph] [-s graph]");
 	printf("[-l graph node1 node2] [(-a | -d) --node graph node] [(-a | -d)");
-	printf("--rule graph [-node next_node] [-ip ip] [-proto proto]] [-m [--enable | --disable] rule \n");
+	printf("--rule graph matcher [-node next_node] [OPTION]] [-m [--enable | --disable] rule \n");
 }
 
 static int delete_brokens(char *str) {
@@ -189,14 +189,25 @@ static int add_node(char **argv) {
 	struct pnet_graph *gr;
 	net_node_t node;
 
-	if (NULL == argv[3] || NULL == (gr = get_graph_by_name(argv[3])))
+	if (NULL == argv[3] || NULL == (gr = get_graph_by_name(argv[3]))) {
+		printf("%s: no such graph\n", argv[3]);
 		return -ENOENT;
+	}
 
-	if (NULL == argv[4] || NULL == (node = pnet_get_module(argv[4])))
+	if (gr->state != PNET_GRAPH_STOPPED) {
+		printf("error: %s is running\n", argv[3]);
+		return -EINPROGRESS;
+	}
+
+	if (NULL == argv[4] || NULL == (node = pnet_get_module(argv[4]))) {
+		printf("%s: no such node\n", argv[4]);
 		return -ENOENT;
-	/*TODO */
-	if (NULL != get_node_from_graph_by_name(gr, argv[4]))
+	}
+
+	if (NULL != get_node_from_graph_by_name(gr, argv[4])) {
+		printf("%s: node with the same name already exists\n", argv[4]);
 		return -EEXIST;
+	}
 
 	return pnet_graph_add_node(gr, node);
 }
@@ -205,14 +216,25 @@ static int link_node(char **argv) {
 	net_node_t src, node;
 	struct pnet_graph *gr;
 
-	if (NULL == argv[2] || NULL == (gr = get_graph_by_name(argv[2])))
+	if (NULL == argv[2] || NULL == (gr = get_graph_by_name(argv[2]))) {
+		printf("%s: no such graph\n", argv[2]);
 		return -ENOENT;
+	}
 
-	if (NULL == argv[3] || NULL == (src = get_node_from_graph_by_name(gr, argv[3])))
-		return -ENOENT;
+	if (gr->state != PNET_GRAPH_STOPPED) {
+		printf("error: %s is running\n", argv[2]);
+		return -EINPROGRESS;
+	}
 
-	if (NULL == argv[4] || NULL == (node = get_node_from_graph_by_name(gr, argv[4])))
+	if (NULL == argv[3] || NULL == (src = get_node_from_graph_by_name(gr, argv[3]))) {
+		printf("%s: no such node in graph %s\n", argv[3], argv[2]);
 		return -ENOENT;
+	}
+
+	if (NULL == argv[4] || NULL == (node = get_node_from_graph_by_name(gr, argv[4]))) {
+		printf("%s: no such node in graph %s\n", argv[4], argv[2]);
+		return -ENOENT;
+	}
 
 	return pnet_node_link(src, node);
 }
@@ -221,14 +243,18 @@ static int unlink_node(char **argv) {
 	struct pnet_graph *gr;
 	net_node_t node, parent, rx_dfault;
 
-	if (NULL == argv[3] || NULL == (gr = get_graph_by_name(argv[3])))
+	if (NULL == argv[3] || NULL == (gr = get_graph_by_name(argv[3]))) {
+		printf("%s: no such graph\n", argv[3]);
 		return -ENOENT;
-
-	if (gr->state != PNET_GRAPH_STOPPED)
+	}
+	if (gr->state != PNET_GRAPH_STOPPED) {
+		printf("error: %s is running\n", argv[3]);
 		return -EINPROGRESS;
-
-	if (NULL == argv[4] || NULL == (node = get_node_from_graph_by_name(gr, argv[4])))
+	}
+	if (NULL == argv[4] || NULL == (node = get_node_from_graph_by_name(gr, argv[4]))) {
+		printf("%s: no such node in graph %s\n", argv[4], argv[3]);
 		return -ENOENT;
+	}
 
 	parent = node->parent;
 	rx_dfault = node->rx_dfault;
@@ -322,22 +348,30 @@ static int exec(int argc, char **argv) {
 			break;
 		case 'p':
 			if (!strcmp("--nodes", argv[2])) {
-				if (NULL != (gr = get_graph_by_name(argv[3])))
+				if (NULL != (gr = get_graph_by_name(argv[3]))) {
 					print_list_of_graph_nodes(gr);
-				else
-					goto no_such_graph;
+				}
+				else {
+					printf("%s: no such graph\n", argv[3]);
+					return -1;
+				}
 			} else if (!strcmp("--rules", argv[2])) {
-				if (NULL == (gr = get_graph_by_name(argv[3])))
-					goto no_such_graph;
+				if (NULL == (gr = get_graph_by_name(argv[3]))) {
+					printf("%s: no such graph\n", argv[3]);
+					return -1;
+				}
 
-				if (NULL == (node = get_node_from_graph_by_name(gr, argv[4])))
-					goto no_such_node;
+				if (NULL == (node = get_node_from_graph_by_name(gr, argv[4]))) {
+					printf("%s: no such node in graph %s\n", argv[4], argv[3]);
+					return -1;
+				}
 
 				print_rules((net_node_matcher_t) node);
 			} else if (NULL != (gr = get_graph_by_name(argv[2]))) {
 				print_graph(gr);
 			} else {
-				goto no_such_graph;
+				printf("%s: no such graph\n", argv[2]);
+				return -1;
 			}
 			break;
 		case 'n' :
@@ -357,7 +391,8 @@ static int exec(int argc, char **argv) {
 				pnet_graph_start(gr);
 				printf("%s run \n", gr->name);
 			} else {
-				goto no_such_graph;
+				printf("%s: no such graph\n", argv[2]);
+				return -1;
 			}
 			break;
 		case 's':
@@ -365,54 +400,70 @@ static int exec(int argc, char **argv) {
 				pnet_graph_stop(gr);
 				printf("%s stopped \n", gr->name);
 			} else {
-				goto no_such_graph;
+				printf("%s: no such graph\n", argv[2]);
+				return -1;
 			}
 			break;
 		case 'a' :
 			if (!strcmp("--node", argv[2])) {
 				if (add_node(argv) < 0)
-					goto error;
+					return -1;
 			} else if (!strcmp("--graph", argv[2])) {
-				if (NULL == pnet_graph_create(argv[3]))
-					goto error;
+				if (NULL == pnet_graph_create(argv[3])) {
+					printf("%s: graph was not created\n", argv[3]);
+					return -1;
+				}
 			} else if (!strcmp("--rule", argv[2])) {
-				if (NULL == (gr = get_graph_by_name(argv[3])))
-					goto no_such_graph;
+				if (NULL == (gr = get_graph_by_name(argv[3]))) {
+					printf("%s: no such graph\n", argv[3]);
+					return -1;
+				}
+				if (NULL == (node = get_node_from_graph_by_name(gr, argv[4]))) {
+					printf("%s: no such node in graph %s\n", argv[4], argv[3]);
+					return -1;
+				}
 
-				if (NULL == (node = get_node_from_graph_by_name(gr, argv[4])))
-					goto no_such_node;
-
-				if (rule_alloc(gr, (net_node_matcher_t) node) < 0)
-					goto error;
+				if (rule_alloc(gr, (net_node_matcher_t) node) < 0) {
+					printf("rule was not created\n");
+					return -1;
+				}
 			} else {
-				LOG_ERROR("%s : no such option \n", argv[2]);
+				printf("%s: no such option \n", argv[2]);
 			}
 			break;
 		case 't':
-			if (NULL == (gr = get_graph_by_name(argv[2])))
-				goto no_such_graph;
+			if (NULL == (gr = get_graph_by_name(argv[2]))) {
+				printf("%s: no such graph\n", argv[2]);
+				return -1;
+			}
 
-			if (NULL == (node = get_node_from_graph_by_name(gr, argv[3])))
-				goto no_such_node;
+			if (NULL == (node = get_node_from_graph_by_name(gr, argv[3]))) {
+				printf("%s: no such node in graph %s\n", argv[3], argv[2]);
+				return -1;
+			}
 
-			if (NULL == (rule = rule_get_by_id(node, *argv[4])))
-				goto no_such_rule;
+			if (NULL == (rule = rule_get_by_id(node, *argv[4]))) {
+				printf("%s: no such rule in node %s\n", argv[4], argv[3]);
+				return -1;
+			}
 
 			if (NULL != (setter = get_setter_by_option(argv[5]))) {
-				if (setter(gr, rule, argv[6]) < 0)
-					goto error;
+				if (setter(gr, rule, argv[6]) < 0) {
+					printf("%s: incorrect value\n", argv[6]);
+					return -1;
+				}
 			} else {
-				LOG_ERROR("%s : no such option \n", argv[5]);
+				printf("%s: no such option \n", argv[5]);
 			}
 			break;
 		case 'l':
 			if (link_node(argv) < 0)
-				goto error;
+				return -1;
 			break;
 		case 'd' :
 			if (!strcmp("--node", argv[2])) {
 				if (unlink_node(argv) < 0)
-					goto error;
+					return -1;
 			}
 			break;
 		default:
@@ -421,20 +472,4 @@ static int exec(int argc, char **argv) {
 	}
 
 	return 0;
-
-no_such_graph:
-	LOG_ERROR("no such graph \n");
-	return -1;
-
-no_such_node:
-	LOG_ERROR("no such node \n");
-	return -1;
-
-no_such_rule:
-	LOG_ERROR("no such rule \n");
-	return -1;
-
-error:
-	LOG_ERROR("error \n");
-	return -1;
 }
