@@ -51,9 +51,13 @@ static int parse_name(const char *full_name, char **path, char **name) {
 		return 0;
 	}
 	*name = (char *)full_name;
-	*path = NULL;
+	*path = "";
 
 	return 0;
+}
+
+static const char *strtostr(const char *str) {
+	return (str != NULL) ? str : "";
 }
 
 const struct example *example_lookup(const char *full_name) {
@@ -64,7 +68,7 @@ const struct example *example_lookup(const char *full_name) {
 	parse_name(full_name, &path, &name);
 	example_foreach(example) {
 		if ((strcmp(example_name(example), name) == 0) &&
-				(strcmp(example_path(example), path) == 0)) {
+				(strcmp(strtostr(example_path(example)), path) == 0)) {
 			return example;
 		}
 	}
