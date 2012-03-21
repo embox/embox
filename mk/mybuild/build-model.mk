@@ -34,6 +34,7 @@ endef
 #   - reference 'type'
 #   - reference 'depends'
 #   - reference 'options'
+#   - reference 'includeMember'
 #
 define class-BuildModuleInstance
 	# Extends 'EObject' class (implicitly).
@@ -56,20 +57,11 @@ define class-BuildModuleInstance
 	$(eobject-reference Build_ModuleInstance_options,
 		options,BuildOptionInstance,module,changeable many containment)
 
+	# Property 'includeMember : CfgInclude'.
+	$(eobject-reference Build_ModuleInstance_includeMember,
+		includeMember,CfgInclude,,changeable)
+
 	# PROTECTED REGION ID(Build_ModuleInstance) ENABLED START
-
-	$(if $(value 1),
-		$(set type,$1))
-
-	$(if $(value 2),
-		$(set configuration,$2))
-
-	$(if $(value 3),
-		$(set depends,$3))
-
-	$(if $(value 4),
-		$(set options,$4))
-
 	# PROTECTED REGION END
 endef
 
@@ -78,7 +70,8 @@ endef
 #
 # The following features are defined:
 #   - reference 'module'
-#   - attribute 'value'
+#   - reference 'option'
+#   - reference 'optionValue'
 #
 define class-BuildOptionInstance
 	# Extends 'EObject' class (implicitly).
@@ -89,9 +82,14 @@ define class-BuildOptionInstance
 	$(eobject-reference Build_OptionInstance_module,
 		module,BuildModuleInstance,options,changeable container)
 
-	# Property 'value'.
-	$(eobject-attribute Build_OptionInstance_value,
-		value,changeable)
+	# Property 'option : MyOption'.
+	# Property 'option_link : ELink'.
+	$(eobject-reference Build_OptionInstance_option,
+		option,MyOption,,changeable linkable)
+
+	# Property 'optionValue : MyOptionValue'.
+	$(eobject-reference Build_OptionInstance_optionValue,
+		optionValue,MyOptionValue,,changeable)
 
 	# PROTECTED REGION ID(Build_OptionInstance) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
