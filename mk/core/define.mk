@@ -76,20 +76,8 @@ include mk/util/var/info.mk
 # Return:
 #   Nothing.
 def = \
-	$(and $(foreach __def_var,$1, \
-			$(foreach __def_in_progress_$(__def_var),$(__def_var), \
-		$(if $(value DEF_TRACE), \
-				$(warning $(\s)$(\t)def: \
-						$(flavor $(__def_var))$(\t)[$(__def_var)])) \
-		$(if $(call var_recursive,$(__def_var)), \
-			$(call var_assign_recursive,$(__def_var),$(call __def \
-					,$(call __def_var_value,$(__def_var)))), \
-			$(if $(call var_undefined,$(__def_var)), \
-				$(error Function '$(__def_var)' is not defined) \
-			) \
-		) \
-		$(call var+=,__def_done,$(__def_var)) \
-	)),)
+	$(call __def,$(foreach 1,$1,$(or $(var_recursive), \
+			$(call __def_append_var,__def_simples,$1))))
 
 ##
 # Translates all functions defined since the last call.
@@ -104,15 +92,50 @@ def = \
 # Note:
 #   No need to 'call' it, just expand: $(def_all).
 def_all = \
-	$(call def,$(filter-out $(__def_done) $(__def_ignore),$(.VARIABLES)))
+	$(call __def_all, \
+		$(foreach v,$(filter-out \
+						$(__def_done) \
+						$(__def_simples) \
+						$(__def_ignore), \
+							$(.VARIABLES)),$v.$(flavor $v)))
+
+# Efficiently splits processing of recursive an simple variables.
+#   1. List of variables with their flavors appended through a period.
+__def_all = \
+	$(call __def_append_var,__def_simples,$(basename $(filter %.simple,$1))) \
+	$(call __def,$(basename $(filter %.recursive,$1))) \
+	$(if $(filter %.undefined,$1), \
+		$(error def: something goes wrong \
+			(may be there is a variable with whitespaces in its name?): \
+			'$(basename $(filter %.undefined,$1))'))
 
 # A shorthand for $(def_all), usage: $#
 $(\h) = $(def_all)
 
-__def_done   :=
-__def_ignore := $(.VARIABLES) __def_ignore
+# Works with variables that are known to be recursive.
+# It sets up the context, retrieves the value of each variable,
+# and calls '__def_do' to perform the real work.
+#   1. List of recursive variables.
+__def = \
+	$(and $1,$(foreach __def_var,$1, \
+				$(foreach __def_in_progress_$(__def_var),$(__def_var), \
+		$(if $(value DEF_TRACE),$(warning def: $(__def_var))) \
+		$(call var_assign_recursive,$(__def_var),$(call __def_do \
+				,$(call __def_var_value,$(__def_var)))) \
+		$(call __def_append_var,__def_done,$(__def_var)) \
+	)),)
 
-__cache_volatile += __def_done __def_ignore
+# Appends a value (if any) to a simple variable.
+#   1. Variable.
+#   1. Value.
+__def_append_var = \
+	$(if $2,${eval $$1 += $$2})
+
+__def_done    :=
+__def_simples :=
+__def_ignore  := $(.VARIABLES) __def_ignore
+
+__cache_volatile += __def_done __def_simples __def_ignore
 
 ##
 # Disables auto definition of certain variables.
@@ -185,7 +208,7 @@ __def_var_value = \
 #   1. Code of a function being defined.
 # Return:
 #   Processed code ready to replace the original value of the function.
-__def = \
+__def_do = \
 	$(call __def_builtin \
 		,$(call __def_brace \
 			,$(call __def_strip \

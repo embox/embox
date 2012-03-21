@@ -16,7 +16,7 @@ __model_eobject_mk := 1
 #   4. Flags, which may contain:
 #        abstract, interface
 define builtin_func-eobject
-	$(call __def,
+	$(call __def_do,
 
 		# Extends implementations of each super class.
 		$(foreach s,$(or $3,EObject),
@@ -36,7 +36,7 @@ endef
 #   3. Flags, which may contain:
 #        changeable many
 define builtin_func-eobject-attribute
-	$(call __def,
+	$(call __def_do,
 		$(if $(filter changeable,$3),
 			# Changeable attributes are just property-fields.
 			$$(property-field $2$(if $(filter many,$3),...)),
@@ -58,7 +58,7 @@ endef
 #   5. Flags, which may contain:
 #        changeable many containment container linkable
 define builtin_func-eobject-reference
-	$(call __def,
+	$(call __def_do,
 
 		# Declare a propery (though it has already been declared in API class).
 		$$(property $2$(if $(filter many,$5),...) : $3)
