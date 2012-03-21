@@ -36,9 +36,12 @@ define class-Mybuild
 				cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)), #FIXME
 				cfgInclude <- $(get cfgConfiguration->includes),
 				module <- $(get cfgInclude->module),
-					$(invoke moduleInstanceClosure,$(module))),
+				$(for moduleInst <- $(invoke moduleInstance,$(module)),
+					$(set moduleInst->includeMember,$(cfgInclude)))
+				$(invoke moduleInstanceClosure,$(module))),
 
-			$(if $(invoke checkResolve,$1),,$1)))
+			$(if $(strip $(or $(invoke checkResolve,$1),
+				  $(invoke optionBind,$1))),,$1)))
 
 
 	# Args:
@@ -51,23 +54,58 @@ define class-Mybuild
 					$(error $(get $(get inst->type).qualifiedName) api realize error, move to Issues $(get inst->depends))
 					$(inst)))))
 
+	# Args:
+	#  1. List of moduleInstance's
+	$(method optionBind,
+		$(for \
+			modInst <- $1,
+			mod <- $(get modInst->type),
+			opt<-$(get mod->allOptions),
+			optValue <- $(or $(invoke findOptValue,$(opt),
+						$(get $(get modInst->includeMember).optionBindings)),
+					 $(get opt->defaultValue),
+					 Error),
+
+			$(if $(eq $(optValue),Error),
+				$(error FIXME: Move to issues, cant bind option $(get opt->name) in module $(get mod->qualifiedName) to a value)Error,
+
+				$(silent-for optInst <- $(new BuildOptionInstance),
+					$(set optInst->option,$(opt))
+					$(set optInst->optionValue,$(optValue))
+					$(set+ modInst->options,$(optInst))))))
+
+	$(method findOptValue,
+		$(for \
+			opt <- $1,
+			optName <- $(get opt->name),
+			optBinding <- $2,
+			optBindOpt <- $(get optBinding->option),
+			optBindName <- $(get optBindOpt->name),
+			optBindVal <- $(get optBinding->optionValue),
+			$(if $(and $(eq $(optName),$(optBindName)),
+					$(invoke opt->validateValue,$(optBindVal))),
+				$(optBindVal))))
+
 
 	# Args:
-	#  1. MyModule object instance
-	#  2. (Optional) Configuration
+	#  1. MyModule instance
 	# Return:
 	#  ModuleInstance instance
 	$(method moduleInstance,
 		$(for mod <- $1,
 			$(or $(map-get moduleInstanceStore/$(mod)),
 				$(for moduleInstance <-
-					$(new BuildModuleInstance,$(mod),
-						$(if $(value 2),$2)),
+					$(new BuildModuleInstance,$(mod)),
+
+					$(set moduleInstance->type,$(mod))
+
 					$(map-set moduleInstanceStore/$(mod),
 						$(moduleInstance))
+
 					$(for super <- $(get mod->allSuperTypes),
 						superInst <- $(invoke moduleInstance,$(super)),
 						$(set+ superInst->depends,$(moduleInstance)))
+
 					$(moduleInstance)))))
 
 
@@ -82,7 +120,8 @@ define class-Mybuild
 				mod <- $1,
 				dep <- $(get mod->depends),
 				depInst <- $(invoke moduleInstanceClosure,$(dep)),
-				$(set+ thisInst->depends,$(depInst))
+				$(if $(filter $(depInst),$(get thisInst->depends)),,
+					$(set+ thisInst->depends,$(depInst)))
 				$(depInst))))
 
 endef
@@ -97,7 +136,13 @@ define printInstances
 			$(warning Opts:)
 			$(for opt <- $(get $(get inst->type).allOptions),
 				val <-$(warning $(\t)$(get opt->name))$(get opt->defaultValue),
-				$(warning $(\t)$(\t)DefVal : $(get val->value)))))
+				$(warning $(\t)$(\t)DefVal : $(get val->value)))
+			$(warning OptInsts:)
+			$(for optInst <- $(get inst->options),
+				opt <- $(get optInst->option),
+				val <-$(get optInst->optionValue),
+				$(warning $(\t)$(get opt->name) : $(get val->value)))
+			$(warning $(\n)$(\n))))
 endef
 
 define listInstances
