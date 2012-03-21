@@ -1,12 +1,13 @@
  /**
  * @file
- * @brief
+ * @brief Util for pnet configuration
  *
  * @date 14.03.2012
  * @author Alexander Kalmuk
  */
 
 #include <errno.h>
+#include <err.h>
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <stdio.h>
@@ -26,21 +27,26 @@ extern struct list_head graphs_list;
 extern struct pnet_module __pnet_mod_repo[];
 
 #define MAX_WORD_LENGTH 100
+#define MAX_TOKEN_COUNT 10
 #define RULE_OPTION_QUANTITY 3
 
+typedef int (*_rule_setter) (struct pnet_graph *gr, match_rule_t rule, char *rule_str);
+
 static void print_graph(struct pnet_graph *gr);
-static void print_graph_node_list(struct pnet_graph *gr);
+static void print_list_of_graph_nodes(struct pnet_graph *gr);
 static void print_graph_names(void);
+static void print_rules(net_node_matcher_t node);
 
-static int add_node(char *str);
-static int link_node(char *str);
+static int add_node(char **argv);
+static int link_node(char **argv);
+static int unlink_node(char **argv);
 
-typedef void (*_rule_setter) (match_rule_t rule, const char *rule_str);
-static void rule_set_mac(match_rule_t rule, const char *rule_elem);
-static void rule_set_ip(match_rule_t rule, const char *rule_elem);
-static void rule_set_proto(match_rule_t rule, const char *rule_elem);
+static int rule_set_mac(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
+static int rule_set_ip(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
+static int rule_set_next_node(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
+static match_rule_t rule_get_by_id(net_node_t node, char id);
 
-static char *next_word(char *str);
+static int delete_brokens(char *str);
 
 struct rule {
 	char *option;
@@ -50,41 +56,55 @@ struct rule {
 static struct rule rule_setters[RULE_OPTION_QUANTITY] = {
 		{.option = "--mac",   .setter = rule_set_mac},
 		{.option = "--ip",    .setter = rule_set_ip},
-		{.option = "--proto", .setter = rule_set_proto}
+		{.option = "--node",  .setter = rule_set_next_node}
 };
 
 static void print_usage(void) {
-	printf("Usage: pnet [-h] [-p [--nodes] graph] [-g] [-n] [-r graph] [-s graph]");
+	printf("Usage: pnet [-h] [-p [--nodes | --rules] graph [node]] [-g] [-n] [-r graph] [-s graph]");
 	printf("[-l graph node1 node2] [(-a | -d) --node graph node] [(-a | -d)");
 	printf("--rule graph [-node next_node] [-ip ip] [-proto proto]] [-m [--enable | --disable] rule \n");
 }
 
-static char *next_word(char *str) {
-	int len = MAX_WORD_LENGTH;
+static int delete_brokens(char *str) {
+	int len;
+	char *cur;
+	int overlooking_words_cnt;
 
-	while (*str != '\0' && len)
-		str++; len--;
+	overlooking_words_cnt = 0;
+	len = MAX_WORD_LENGTH;
+	cur = str;
+	cur++;
 
-	while (*str == '\0' && len)
-		str++; len--;
-
-	if(*str != '\'') {
-		return str;
-	} else {
-		char *cur;
-		*str++ = '\0';
-		cur = str;
-
-		while (*cur != '\'' && len) {
-			if (*cur == '\0')
-				*cur = ' ';
-			cur++; len--;
+	while (*cur != '\'' && len) {
+		if (*cur == '\0') {
+			*cur = ' ';
+			overlooking_words_cnt++;
 		}
-
-		*cur = '\0';
+		cur++; len--;
 	}
 
-	return str;
+	*cur = '\0';
+
+	return overlooking_words_cnt;
+}
+
+static void shift(char **argv, int begin, int shift) {
+	for(int i = begin + shift; i < MAX_TOKEN_COUNT; i++) {
+		argv[i - shift] = argv[i];
+	}
+}
+
+static void rebuild_argv(char **argv) {
+	int len = MAX_TOKEN_COUNT;
+	int i = 0;
+
+	while (NULL != argv[i] && len) {
+		if (argv[i][0] == '\'') {
+			argv[i]++;
+			shift(argv, i + 1, delete_brokens(argv[i]));
+		}
+		i++;
+	}
 }
 
 //FIXME now this function return only first graph in list if exist
@@ -103,7 +123,7 @@ static net_node_t get_node_from_graph_by_name(struct pnet_graph *gr, char *name)
 	net_node_t node;
 
 	list_foreach(node, &gr->nodes, gr_link) {
-		if(!strcmp(node->proto->name, name))
+		if (!strcmp(node->proto->name, name))
 			return node;
 	}
 
@@ -125,9 +145,13 @@ static void print_graph_names(void) {
 	}
 }
 
-static void print_graph_node_list(struct pnet_graph *gr) {
+static void print_list_of_graph_nodes(struct pnet_graph *gr) {
 	net_node_t node = NULL;
 
+	if (list_is_empty(&gr->nodes)) {
+		printf("list of nodes is empty \n");
+		return;
+	}
 	printf("nodes of %s: ", gr->name);
 	list_foreach(node, &gr->nodes, gr_link) {
 		printf("%s, ", node->proto->name);
@@ -136,78 +160,135 @@ static void print_graph_node_list(struct pnet_graph *gr) {
 
 static void print_graph(struct pnet_graph *gr) {
 	net_node_t node, root;
-	net_node_matcher_t matcher;
-	match_rule_t rule;
-	struct list_head *h;
 
+	if (list_is_empty(&gr->nodes)) {
+		printf("list of nodes is empty \n");
+		return;
+	}
 	root = list_first_element(&gr->nodes, struct net_node, gr_link);
 	node = root->rx_dfault;
 
-	printf("%s\n", root->proto->name);
+	printf("%s \n", root->proto->name);
 	while (NULL != node) {
-		/* FIXME matcher must have special type to differ from other nodes in graph */
-		if (strcmp(node->proto->name, "matcher")) {
-			printf("%s\n ", node->proto->name);
-		} else {
-			/* if node is matcher it contain links with some other nodes */
-			matcher = (net_node_matcher_t) node;
-			printf("%s->", matcher->node.proto->name);
-
-			list_for_each (h, &matcher->match_rx_rules) {
-				rule = member_cast_out(h, struct match_rule, lnk);
-				printf("%s, ", rule->next_node->proto->name);
-			}
-			printf("\n");
-		}
+		printf("%s \n ", node->proto->name);
 		node = node->rx_dfault;
 	}
 }
 
-static int add_node(char *str) {
-	char *name;
+static void print_rules(net_node_matcher_t node) {
+	struct list_head *h;
+	match_rule_t rule;
+
+	list_for_each (h, &node->match_rx_rules) {
+		rule = member_cast_out(h, struct match_rule, lnk);
+		printf("%d \n", rule->id);
+	}
+}
+
+static int add_node(char **argv) {
 	struct pnet_graph *gr;
 	net_node_t node;
 
-	if(NULL == (name = str) || NULL == (gr = get_graph_by_name(name)))
+	if (NULL == argv[3] || NULL == (gr = get_graph_by_name(argv[3])))
 		return -ENOENT;
 
-	if(NULL == (name = next_word(name)) || NULL == (node = pnet_get_module(name)))
+	if (NULL == argv[4] || NULL == (node = pnet_get_module(argv[4])))
 		return -ENOENT;
+	/*TODO */
+	if (NULL != get_node_from_graph_by_name(gr, argv[4]))
+		return -EEXIST;
 
 	return pnet_graph_add_node(gr, node);
 }
 
-static int link_node(char *str) {
-	char *name;
+static int link_node(char **argv) {
 	net_node_t src, node;
 	struct pnet_graph *gr;
 
-	if(NULL == (name = str) || NULL == (gr = get_graph_by_name(name)))
+	if (NULL == argv[2] || NULL == (gr = get_graph_by_name(argv[2])))
 		return -ENOENT;
 
-	if(NULL == (name = next_word(name)) || NULL == (src = get_node_from_graph_by_name(gr, name)))
+	if (NULL == argv[3] || NULL == (src = get_node_from_graph_by_name(gr, argv[3])))
 		return -ENOENT;
 
-	if(NULL == (name = next_word(name)) || NULL == (node = get_node_from_graph_by_name(gr, name)))
+	if (NULL == argv[4] || NULL == (node = get_node_from_graph_by_name(gr, argv[4])))
 		return -ENOENT;
 
 	return pnet_node_link(src, node);
 }
 
-static void rule_set_mac(match_rule_t rule, const char *rule_elem) {
-	macaddr_scan((unsigned char *) rule_elem, rule->skbuf->mac.ethh->h_source);
+static int unlink_node(char **argv) {
+	struct pnet_graph *gr;
+	net_node_t node, parent, rx_dfault;
+
+	if (NULL == argv[3] || NULL == (gr = get_graph_by_name(argv[3])))
+		return -ENOENT;
+
+	if (gr->state != PNET_GRAPH_STOPPED)
+		return -EINPROGRESS;
+
+	if (NULL == argv[4] || NULL == (node = get_node_from_graph_by_name(gr, argv[4])))
+		return -ENOENT;
+
+	parent = node->parent;
+	rx_dfault = node->rx_dfault;
+	parent->rx_dfault = rx_dfault;
+
+	return ENOERR;
 }
 
-static void rule_set_ip(match_rule_t rule, const char *rule_elem) {
-	ipaddr_scan((unsigned char *) rule_elem, (unsigned char *) &rule->skbuf->nh.iph->saddr);
-}
+static int rule_alloc(struct pnet_graph *gr, net_node_matcher_t node){
+	match_rule_t rule;
 
-static void rule_set_proto(match_rule_t rule, const char *rule_elem) {
-	if (strcmp("icmp", rule_elem) == 0) {
-		pnet_rule_set_proto(rule, IPPROTO_ICMP);
-	} else if (strcmp("udp", rule_elem) == 0) {
-		pnet_rule_set_proto(rule, IPPROTO_UDP);
+	if (NULL == (rule = pnet_rule_alloc())) {
+		return -ENOMEM;
 	}
+
+	pnet_add_new_rx_rule(rule, node);
+
+	return ENOERR;
+}
+
+static int rule_set_mac(struct pnet_graph *gr, match_rule_t rule, char *rule_elem) {
+	if (NULL == macaddr_scan((unsigned char *) rule_elem, rule->skbuf->mac.ethh->h_source)) {
+		return -ENOENT;
+	}
+	return ENOERR;
+}
+
+static int rule_set_ip(struct pnet_graph *gr, match_rule_t rule, char *rule_elem) {
+	if (NULL == ipaddr_scan((unsigned char *) rule_elem, (unsigned char *) &rule->skbuf->nh.iph->saddr)) {
+		return -ENOENT;
+	}
+	return ENOERR;
+}
+
+static int rule_set_next_node (struct pnet_graph *gr, match_rule_t rule, char *rule_elem) {
+	net_node_t node;
+
+	if (NULL == (node = get_node_from_graph_by_name(gr, rule_elem)))
+		return -ENOENT;
+
+	pnet_rule_set_next_node(rule, node);
+	return ENOERR;
+}
+
+static match_rule_t rule_get_by_id(net_node_t node, char id) {
+	struct list_head *h;
+	match_rule_t rule;
+	net_node_matcher_t matcher;
+	int n;
+
+	sscanf(&id, "%d", &n);
+
+	matcher = (net_node_matcher_t) node;
+	list_for_each (h, &matcher->match_rx_rules) {
+		rule = member_cast_out(h, struct match_rule, lnk);
+		if (rule->id == n)
+			return rule;
+	}
+
+	return NULL;
 }
 
 static _rule_setter get_setter_by_option(char *option) {
@@ -221,7 +302,6 @@ static _rule_setter get_setter_by_option(char *option) {
 
 static int exec(int argc, char **argv) {
 	int opt;
-	char *name;
 	struct pnet_graph *gr;
 	const struct pnet_module *mod;
 	match_rule_t rule;
@@ -230,9 +310,9 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "hgnp:r:s:a:l:"))) {
-		name = optarg;
-		name--;
+	while (-1 != (opt = getopt(argc, argv, "hgnt:d:p:r:s:a:l:"))) {
+		rebuild_argv(argv);
+
 		switch(opt) {
 		case 'h':
 			print_usage();
@@ -241,76 +321,99 @@ static int exec(int argc, char **argv) {
 			print_graph_names();
 			break;
 		case 'p':
-			name = next_word(name);
-			if (!strcmp("--nodes", name)) {
-				name = next_word(name);
-				if (NULL != (gr = get_graph_by_name(name)))
-					print_graph_node_list(gr);
+			if (!strcmp("--nodes", argv[2])) {
+				if (NULL != (gr = get_graph_by_name(argv[3])))
+					print_list_of_graph_nodes(gr);
 				else
-					printf("%s: no such graph", name);
-			} else if (NULL != (gr = get_graph_by_name(name))){
+					goto no_such_graph;
+			} else if (!strcmp("--rules", argv[2])) {
+				if (NULL == (gr = get_graph_by_name(argv[3])))
+					goto no_such_graph;
+
+				if (NULL == (node = get_node_from_graph_by_name(gr, argv[4])))
+					goto no_such_node;
+
+				print_rules((net_node_matcher_t) node);
+			} else if (NULL != (gr = get_graph_by_name(argv[2]))) {
 				print_graph(gr);
 			} else {
-				printf("%s: no such graph", name);
+				goto no_such_graph;
 			}
 			break;
 		case 'n' :
 			printf("nodes: ");
 			array_foreach_ptr(mod, __pnet_mod_repo, ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
-				printf("%s, ", mod->node->proto->name);
+				if (mod->node)
+					printf("%s, ", mod->node->proto->name);
+			}
+			printf("\nprotocols: ");
+			array_foreach_ptr(mod, __pnet_mod_repo, ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
+				if (!mod->node)
+					printf("%s, ", mod->proto->name);
 			}
 			break;
 		case 'r':
-			name = next_word(name);
-			if (NULL != (gr = get_graph_by_name(name))) {
+			if (NULL != (gr = get_graph_by_name(argv[2]))) {
 				pnet_graph_start(gr);
 				printf("%s run \n", gr->name);
 			} else {
-				printf("%s: no such graph \n", name);
+				goto no_such_graph;
 			}
 			break;
 		case 's':
-			name = next_word(name);
-			if (NULL != (gr = get_graph_by_name(name))) {
+			if (NULL != (gr = get_graph_by_name(argv[2]))) {
 				pnet_graph_stop(gr);
 				printf("%s stopped \n", gr->name);
 			} else {
-				printf("%s: no such graph \n", name);
+				goto no_such_graph;
 			}
 			break;
 		case 'a' :
-			name = next_word(name);
-			if (!strcmp("--node", name)) {
-				name = next_word(name);
-				if (add_node(name) < 0)
-					printf("%s", "error\n");
-			} else if (!strcmp("--graph", name)) {
-				name = next_word(name);
-				pnet_graph_create(name);
-			} else if (!strcmp("--rule", name)){
-				name = next_word(name);
-				gr = get_graph_by_name(name);
+			if (!strcmp("--node", argv[2])) {
+				if (add_node(argv) < 0)
+					goto error;
+			} else if (!strcmp("--graph", argv[2])) {
+				if (NULL == pnet_graph_create(argv[3]))
+					goto error;
+			} else if (!strcmp("--rule", argv[2])) {
+				if (NULL == (gr = get_graph_by_name(argv[3])))
+					goto no_such_graph;
 
-				name = next_word(name);
-				node = get_node_from_graph_by_name(gr, name);
+				if (NULL == (node = get_node_from_graph_by_name(gr, argv[4])))
+					goto no_such_node;
 
-				rule = pnet_rule_alloc();
-				name = next_word(name);
-
-				if (NULL != (setter = get_setter_by_option(name))){
-					name = next_word(name);
-					setter(rule, name);
-				} else {
-					print_usage();
-				}
+				if (rule_alloc(gr, (net_node_matcher_t) node) < 0)
+					goto error;
 			} else {
-				print_usage();
+				LOG_ERROR("%s : no such option \n", argv[2]);
+			}
+			break;
+		case 't':
+			if (NULL == (gr = get_graph_by_name(argv[2])))
+				goto no_such_graph;
+
+			if (NULL == (node = get_node_from_graph_by_name(gr, argv[3])))
+				goto no_such_node;
+
+			if (NULL == (rule = rule_get_by_id(node, *argv[4])))
+				goto no_such_rule;
+
+			if (NULL != (setter = get_setter_by_option(argv[5]))) {
+				if (setter(gr, rule, argv[6]) < 0)
+					goto error;
+			} else {
+				LOG_ERROR("%s : no such option \n", argv[5]);
 			}
 			break;
 		case 'l':
-			name = next_word(name);
-			if(link_node(name) < 0)
-				printf("%s", "error");
+			if (link_node(argv) < 0)
+				goto error;
+			break;
+		case 'd' :
+			if (!strcmp("--node", argv[2])) {
+				if (unlink_node(argv) < 0)
+					goto error;
+			}
 			break;
 		default:
 			return 0;
@@ -318,4 +421,20 @@ static int exec(int argc, char **argv) {
 	}
 
 	return 0;
+
+no_such_graph:
+	LOG_ERROR("no such graph \n");
+	return -1;
+
+no_such_node:
+	LOG_ERROR("no such node \n");
+	return -1;
+
+no_such_rule:
+	LOG_ERROR("no such rule \n");
+	return -1;
+
+error:
+	LOG_ERROR("error \n");
+	return -1;
 }

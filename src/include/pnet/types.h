@@ -27,7 +27,8 @@ struct pnet_proto;
 typedef struct net_packet *net_packet_t;
 
 struct net_node {
-	struct net_node *this;
+	//struct net_node *this;
+	struct net_node *parent;
 	struct pnet_graph *graph;
 	struct list_link gr_link;
 	struct pnet_proto *proto;

@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <util/fun_call.h>
 #include <mem/objalloc.h>
+#include <string.h>
 
 #include <pnet/core.h>
 #include <pnet/graph.h>
@@ -23,12 +24,19 @@ struct pnet_graph *pnet_get_graph(int sock) {
 }
 
 struct pnet_graph *pnet_graph_create(char *name) {
-	struct pnet_graph *gr = (struct pnet_graph *) objalloc(&graphs);
+	struct pnet_graph *gr;
 
+	list_for_each_entry(gr, &graphs_list, lnk) {
+		if(!strcmp(gr->name, name))
+			return NULL;
+	}
+
+	gr = (struct pnet_graph *) objalloc(&graphs);
 	list_init(&gr->nodes);
 	INIT_LIST_HEAD(&gr->lnk);
-	list_add_tail(&graphs_list, &gr->lnk);
-	gr->name = name;
+	list_add_tail(&gr->lnk, &graphs_list);
+
+	strcpy(gr->name, name);
 	gr->state = PNET_GRAPH_STOPPED;
 
 	return gr;
@@ -65,7 +73,6 @@ int pnet_graph_stop(struct pnet_graph *graph) {
 
 	return 0;
 }
-
 
 int pnet_graph_add_src(struct pnet_graph *graph, struct net_node *src) {
 	return pnet_graph_add_node(graph, src);

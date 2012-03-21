@@ -128,7 +128,7 @@ static int init(void) {
 			nodes[node_cur].name = (char*)rule_elem;
 			pnet_graph_add_node(graph, nodes[node_cur++].node);
 		} else if(strncmp("GRAPH", rule_elem, 5) == 0) {
-			graph = pnet_graph_create();
+			graph = pnet_graph_create("lin_graph");
 		} else if (strncmp("RULES", rule_elem, 5) == 0) {
 			match_node =  get_node_by_name((char*)rule_elem + 6);
 			match = (net_node_matcher_t) match_node;

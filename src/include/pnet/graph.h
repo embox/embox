@@ -13,16 +13,18 @@
 #include <mem/objalloc.h>
 #include <util/list.h>
 
+#define MAX_GRAPH_NAME_SIZE 20
+
 enum pnet_graph_state {
 	PNET_GRAPH_STOPPED,
 	PNET_GRAPH_STARTED
 };
 
 struct pnet_graph {
+	char name[MAX_GRAPH_NAME_SIZE];
 	int id;
 	enum pnet_graph_state state;
 	struct list nodes;
-	char *name;
 	struct list_head lnk;
 };
 

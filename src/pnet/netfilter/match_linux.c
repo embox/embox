@@ -69,10 +69,10 @@ int match_lin(struct pnet_pack *pack) {
 		curr = member_cast_out(h, struct match_rule, lnk);
 		rule_curr = &curr->header[0];
 
-		pack_curr = (unsigned char*)skb->data;
+		pack_curr = (unsigned char *) skb->data;
 
 		for (n = MAX_PACK_HEADER_SIZE;
-				(((*rule_curr == MATCH_WILDCARD) || *pack_curr == *rule_curr)) && n;
+				(((*rule_curr == 255) || *pack_curr == *rule_curr)) && n;
 				--n, ++pack_curr, ++rule_curr)
 			;
 
@@ -87,7 +87,7 @@ int match_lin(struct pnet_pack *pack) {
 #ifdef PRINT_WAYS
 		print_pack_way(pack,curr,n);
 #endif
-	return NET_HND_DFAULT;
+	return (pack->node ? NET_HND_DFAULT : NET_HND_SUPPRESSED);
 }
 
 PNET_PROTO_DEF("matcher", {
