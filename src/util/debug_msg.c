@@ -63,7 +63,7 @@ void output_debug_messages(unsigned int count){
 	final_count = count < serial ? count : serial;
   current = (N_message - final_count)%N_DEBUG_MSG;
 
-	for(n=0; n<count; n++){
+	for(n=0; n<final_count; n++){
 		printk("#%d\t[%s][function %s]: %s\n", log[current].serial,
 					 log[current].module, log[current].func, log[current].msg);
 		current++;
