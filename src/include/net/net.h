@@ -90,6 +90,7 @@ typedef struct socket_node{
  * @param type socket type (%SOCK_STREAM, etc)
  * @param flags socket flags (%SOCK_ASYNC_NOSPACE, etc)
  * @param sk internal networking protocol agnostic socket representation
+ * @param socket_node node in global socket registry
  * @param ops protocol specific socket operations
  */
 typedef struct socket {
@@ -98,7 +99,7 @@ typedef struct socket {
 	unsigned long flags;
 
 	struct sock *sk;
-	socket_node_t *sock_address;
+	socket_node_t *socket_node;
 	const struct proto_ops *ops;
 } socket_t;
 
@@ -130,6 +131,7 @@ struct proto_ops {
 			size_t total_len);
 	int (*recvmsg)(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
 			size_t total_len, int flags);
+	bool  (*compare_addresses)(struct sockaddr *addr1, struct sockaddr *addr2);
 };
 
 typedef struct net_proto_family {

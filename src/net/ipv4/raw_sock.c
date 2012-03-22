@@ -199,4 +199,5 @@ static const struct proto_ops inet_sockraw_ops = {
 	.connect = inet_dgram_connect,
 	.sendmsg = inet_sendmsg,
 	.recvmsg = sock_common_recvmsg,
+	.compare_addresses = inet_address_compare,
 };

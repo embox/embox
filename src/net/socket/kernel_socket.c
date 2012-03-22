@@ -28,9 +28,9 @@ static LIST_HEAD(socket_repo_head);
 /* inner functions for address binding maintance */
 static int add_socket_to_pool(struct socket *sock);
 static int remove_socket_from_pool(struct socket *sock);
-static socket_node_t *get_sock_addr_node_by_socket(struct socket *sock);
-static socket_node_t *get_sock_addr_node_by_address(const struct sockaddr *addr);
-static bool is_addr_free(const sockaddr_t *addr);
+static socket_node_t *get_sock_node_by_socket(struct socket *sock);
+static socket_node_t *get_sock_node_by_address(struct socket *sock,
+    struct sockaddr *addr);
 static int bind_address(struct socket *sock, const struct sockaddr *addr);
 static void unbind_socket(struct socket *sock);
 
@@ -87,6 +87,13 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 		return res;
 	}
 
+	/* compare addresses method should be set, else we can't go on */
+	if(sock->ops->compare_addresses == NULL){
+		debug_printf("packet family has no compare_addresses() method",
+								 "kernel_socket", "kernel_socket_create");
+		return -EAFNOSUPPORT;
+	}
+
 	/* TODO here we must be code for trying socket (permition and so on)
 	 err = security_socket_post_create(sock, family, type, protocol, kern);
 	 */
@@ -134,10 +141,11 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 	}
 
 	/* find out if address is occupied */
-	if(!is_addr_free(addr)){
+	if(!kernel_socket_is_addr_free(sock, (struct sockaddr *)addr)){
 		return -EADDRINUSE;
 	}
 	/* try to bind */
+	/* NOTE: bind() method should return... i'll complete this list later // ttimkk */
 	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
 	if(res < 0){  /* If something went wrong */
 		debug_printf("error while binding socket",
@@ -298,12 +306,12 @@ static int add_socket_to_pool(struct socket *sock){
 	/* set socket link */
 	newnode->sock = sock;
 
-	sock->sock_address = newnode;
+	sock->socket_node = newnode;
+
+	list_add_tail(&socket_repo_head, &newnode->link);
 
 	debug_printf("adding socket to pool",
 							 "kernel_socket", "add_socket_to_pool");
-
-	return 0;
 
 	return ENOERR;
 }
@@ -311,18 +319,20 @@ static int add_socket_to_pool(struct socket *sock){
 static int remove_socket_from_pool(struct socket *sock){
 	socket_node_t *node;
 
-	node = get_sock_addr_node_by_socket(sock);
+	node = get_sock_node_by_socket(sock);
 	if(node){
 		debug_printf("removing socket entity...", "kernel_socket",
 								 "remove_socket_from_pool");
+		list_del(&node->link);
+		pool_free(&socket_repo, node);
 		return ENOERR;
 	}
 	return -1;
 }
 
-static bool is_addr_free(const struct sockaddr *addr){
+inline bool kernel_socket_is_addr_free(struct socket *sock, struct sockaddr *addr){
 
-	if(get_sock_addr_node_by_address(addr))
+	if(get_sock_node_by_address(sock, addr))
 		return false;
 	else
 		return true;
@@ -330,7 +340,7 @@ static bool is_addr_free(const struct sockaddr *addr){
 
 static int bind_address(struct socket *sock, const struct sockaddr *addr){
 	/* copy address data */
-	memcpy(&sock->sock_address->addr, addr, sizeof(struct sockaddr));
+	memcpy(&sock->socket_node->addr, addr, sizeof(struct sockaddr));
 
 	debug_printf("bound address to socket",
 							 "kernel_socket", "bind_address");
@@ -341,7 +351,7 @@ static int bind_address(struct socket *sock, const struct sockaddr *addr){
 static void unbind_socket(struct socket *sock){
 	socket_node_t *node;
 
-	node = get_sock_addr_node_by_socket(sock);
+	node = get_sock_node_by_socket(sock);
 	if(node){
 		debug_printf("found bound socket. unbinding...",
 								 "kernel_socket", "unbind_socket");
@@ -349,44 +359,19 @@ static void unbind_socket(struct socket *sock){
 	}
 }
 
-static socket_node_t *get_sock_addr_node_by_address(const struct sockaddr *addr){
-	sockaddr_in_t *addr_node_in, *addr_in = (sockaddr_in_t *)addr;
+static socket_node_t *get_sock_node_by_address(struct socket *sock,
+																							 struct sockaddr *addr){
 	socket_node_t *node, *safe;
 
 	if(addr){  /* address validity */
 		list_for_each_entry_safe(node, safe, &socket_repo_head, link){
-			addr_node_in = (sockaddr_in_t *)&node->addr;  /* address from list */
-			if(addr_node_in){
-				if((addr_node_in->sin_addr.s_addr == addr_in->sin_addr.s_addr) &&
-					 (addr_node_in->sin_port == addr_in->sin_port)){
-					/* addresses and ports are equal. */
-					return node;
-				}
-			}
+			if(sock->ops->compare_addresses(addr, &node->addr))
+				return node;
 		}
 	}
 	return NULL;
 }
 
-static socket_node_t *get_sock_addr_node_by_socket(struct socket *sock){
-
-	return sock ? sock->sock_address : NULL;
-
-#if 0
-	struct socket *node_sock;
-	socket_node_t *node, *safe;
-
-	if(sock){  /* address validity */
-		list_for_each_entry_safe(node, safe, &sock_address_head, link){
-			node_sock = node->sock;  /* socket from list */
-			if(node_sock){
-				if(node_sock == sock){
-					/* socket addresses are equal are equal*/
-					return node;
-				}
-			}
-		}
-	}
-	return NULL;
-#endif
+static inline socket_node_t *get_sock_node_by_socket(struct socket *sock){
+	return sock ? sock->socket_node : NULL;
 }

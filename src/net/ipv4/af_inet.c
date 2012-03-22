@@ -127,6 +127,22 @@ int inet_release(struct socket *sock) {
 	return ENOERR;
 }
 
+/**
+ * predicate to compare two internet address structures
+ **/
+bool inet_address_compare(struct sockaddr *addr1, struct sockaddr *addr2){
+	sockaddr_in_t *addr_in1, *addr_in2;
+	addr_in1 = (sockaddr_in_t *)addr1;
+	addr_in2 = (sockaddr_in_t *)addr2;
+
+	if((addr_in1->sin_family == addr_in2->sin_family) &&
+		 (addr_in1->sin_addr.s_addr == addr_in2->sin_addr.s_addr) &&
+		 (addr_in1->sin_port == addr_in2->sin_port))
+		return true;
+	else
+		return false;
+}
+
 int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 	int res;
 	struct sock *sk;
@@ -255,6 +271,7 @@ const struct proto_ops inet_dgram_ops = {
 	.connect           = inet_dgram_connect,
 	.sendmsg           = inet_sendmsg,
 	.recvmsg           = sock_common_recvmsg,
+	.compare_addresses = inet_address_compare,
 };
 
 const struct proto_ops inet_stream_ops = {
@@ -266,6 +283,7 @@ const struct proto_ops inet_stream_ops = {
 	.listen            = inet_listen,
 	.sendmsg           = inet_sendmsg,
 	.recvmsg           = sock_common_recvmsg,
+	.compare_addresses = inet_address_compare,
 };
 
 static int inet_init(void) {

@@ -144,10 +144,6 @@ extern int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,
 extern int kernel_socket_shutdown(struct socket *sock);
 extern int kernel_socket_close(struct socket *sock);
 
-#if 0
-extern int kernel_sendpage(struct socket *sock, struct page *page, int offset,
-			size_t size, int flags);
-extern int kernel_sock_ioctl(struct socket *sock, int cmd, unsigned long arg);
-#endif
+extern bool kernel_socket_is_addr_free(struct socket *sock, struct sockaddr *addr);
 
 #endif /* NET_KERNEL_SOCKET_H_ */
