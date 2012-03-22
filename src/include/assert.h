@@ -37,4 +37,13 @@
 extern void assert(int condition, ...);
 #endif /* __CDT_PARSER__ */
 
+/* It's an ability to perform check like ususal assert() does, but in compile time
+ * It'll be superseded by _Static_assert() since gcc-4.6
+ */
+#define static_assert(cond)		\
+    do {				\
+	int __assert[!!(cond) - 1];	\
+	(void)__assert;			\
+	} while (0)
+
 #endif /* ASSERT_H_ */
