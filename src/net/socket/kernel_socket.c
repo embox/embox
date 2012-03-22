@@ -91,6 +91,8 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 
 	/* newly created socket is UNCONNECTED for sure */
 	sk_set_connection_state(sock->sk, UNCONNECTED);
+	/* and unbound */
+	sock->sk->sock_address = NULL;
 	*psock = sock; /* and save structure */
 
 	return ENOERR;
@@ -103,6 +105,9 @@ int kernel_socket_release(struct socket *sock) {
 	if(sk_is_connected(sock->sk))
 		sk_set_connection_state(sock->sk, DISCONNECTING);
 
+	/* unbind socket */
+	unbind_socket(sock);
+
 	if ((sock != NULL) && (sock->ops != NULL)
 			&& (sock->ops->release != NULL)) {
 		res = sock->ops->release(sock); /* release struct sock */
@@ -112,7 +117,6 @@ int kernel_socket_release(struct socket *sock) {
 	}
 
 	/* socket will be unbound if it is bound else nothing happens */
-	unbind_socket(sock);
 	socket_free(sock);
 
 	return ENOERR;
@@ -333,6 +337,10 @@ static sock_address_node_t *get_sock_addr_node_by_address(const struct sockaddr 
 }
 
 static sock_address_node_t *get_sock_addr_node_by_socket(struct socket *sock){
+
+	return sock ? sock->sk->sock_address : NULL;
+
+#if 0
 	struct socket *node_sock;
 	sock_address_node_t *node, *safe;
 
@@ -348,4 +356,5 @@ static sock_address_node_t *get_sock_addr_node_by_socket(struct socket *sock){
 		}
 	}
 	return NULL;
+#endif
 }
