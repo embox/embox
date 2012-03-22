@@ -133,9 +133,15 @@ __def_append_var = \
 
 __def_done    :=
 __def_simples :=
-__def_ignore  := $(.VARIABLES) __def_ignore
+__def_ignore  :=
 
-__cache_volatile += __def_done __def_simples __def_ignore
+__cache_volatile += \
+	__def_done \
+	__def_simples \
+	__def_ignore
+
+__def_done    := $(foreach 1,$(.VARIABLES),$(var_recursive))
+__def_simples := $(foreach 1,$(.VARIABLES),$(var_simple))
 
 ##
 # Disables auto definition of certain variables.

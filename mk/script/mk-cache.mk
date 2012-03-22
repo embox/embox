@@ -49,7 +49,10 @@ include mk/core/common.mk
 # Forces certain variables to be dumped unconditionally, even if some of them
 # has been already defined before including scripts listed in 'CACHE_INCLUDES'
 # (i.e., as part of 'CACHE_REQUIRES').
-# Usually, volatiles are different counters and lists.
+# Usually, volatiles are different counters and lists. Moreover, they _are_
+# assumed to be a list, that is whitespaces in their values are considered
+# insingnificant.
+# The current implementation also restricts volatile variable to be simple.
 __cache_volatile :=
 
 # Variables listed here are only initialized to an empty string.
@@ -67,7 +70,7 @@ $(foreach __cache_include,$(CACHE_REQUIRES), \
 	$(eval include $(filter-out $(MAKEFILE_LIST),$(__cache_include))))
 
 # Save volatile state.
-$(foreach v,__cache_volatile $(__cache_volatile), \
+$(foreach v,__cache_volatile $(filter $(__cache_volatile),$(.VARIABLES)), \
 	${eval __cache_volatile_variable_$$v := $$(value $$v)})
 
 # Collect variables...
@@ -113,12 +116,23 @@ __cache_print_volatile_variable_definitions = \
 			$(call __cache_sort,$(filter \
 				$(__cache_volatile), \
 				$(.VARIABLES))), \
-		$(if $(findstring undefined,$(flavor __cache_volatile_variable_$1)), \
-			$(__cache_print_variable_definition), \
-			$(__cache_print_appending_volatile_variable_definition)))
+		$(__cache_print_volatile_variable_definition))
+
+# Arg 1: variable name.
+# TODO insert accumulation check.
+__cache_print_volatile_variable_definition = \
+	$(if $(findstring u,$(flavor $1)), \
+		$(error Volatile variable '$1' is $(flavor $1), must be simple)) \
+	$(info $(__cache_escape_variable_name) \
+		$(if $(findstring undefined, \
+				$(flavor __cache_volatile_variable_$1)),:=,+=) \
+		$(patsubst %,\$(\n)$(\t)%, \
+			$(wordlist \
+				$(words x $(value __cache_volatile_variable_$1)), \
+				$(words $(value $1)), \
+					$(subst $(\h),$$(\h),$(subst $$,$$$$,$($1))))))
 
 # Arg 1: list of variables.
-
 __cache_sort = \
 	$(foreach v, \
 		$(sort $(join $(patsubst [%],%_,$(subst _,,$(1:%=[%]))),$1)) \
@@ -131,16 +145,6 @@ __cache_print_variable_definition = \
 	$(info $(__cache_construct_$(if \
 		$(findstring $(\h),$(subst $(\n),$(\h),$(value $1))) \
 			,verbose,regular)_$(flavor $1)_variable))
-
-# TODO insert accumulation check.
-__cache_print_appending_volatile_variable_definition = \
-	$(info $(__cache_escape_variable_name) += \
-		$(wordlist \
-			$(words x $(__cache_volatile_variable_$1)), \
-			$(words $(value $1)), \
-			$(if $(findstring recursive,$(flavor $1)), \
-				$(value $1), \
-				$(subst $$,$$$$,$($1)))))
 
 #
 # __cache_construct_xxx
@@ -173,12 +177,7 @@ __cache_escape_variable_name = \
 __cache_variable_has_leading_ws = \
 	$(subst x$(firstword $(value $1)),,$(firstword x$(value $1)))
 
-__cache_print_uses_inclusions = \
-	$(if $(strip $(CACHE_REQUIRES)), \
-		$(info include $$(filter-out $$(MAKEFILE_LIST), \
-			$(CACHE_REQUIRES:%= \$(\n)$(\t)$(\t)$(\t)%))))
-
-__cache_print_uses_inclusions = \
+__cache_print_requires_inclusions = \
 	$(foreach mk, \
 		mk/core/common.mk $(filter-out mk/core/common.mk,$(CACHE_REQUIRES)), \
 		$(info include $$(filter-out $$(MAKEFILE_LIST),$(mk))))
@@ -203,7 +202,7 @@ $(info $$(error Multiple inclusion of '$(CACHE_DEP_TARGET)'))
 $(info endif)
 $(info )
 endif
-$(__cache_print_uses_inclusions)
+$(__cache_print_requires_inclusions)
 $(info )
 $(info # Transient variables.)
 $(__cache_print_transient_variable_definitions)
