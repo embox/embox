@@ -13,6 +13,7 @@
 #include <linux/aio.h>
 #include <net/socket.h>
 
+
 #define IPV4_ADDR_LENGTH   0x04
 
 #define NPROTO          AF_MAX /* a number of net protocols id in system */
@@ -71,6 +72,18 @@ enum sock_type {
 	SOCK_TYPE_MAX /* i.e. SOCK_PACKET + 1 */
 };
 
+#define MAX_SYSTEM_CONNECTIONS 10
+
+/**
+ * @param sock socket connected to addr
+ * @param addr address connected to sock
+ */
+typedef struct socket_node{
+	struct list_head link;
+	struct socket *sock;
+	sockaddr_t addr;
+} socket_node_t;
+
 /**
  * General BSD socket
  * @param state socket state (%SS_CONNECTED, etc)
@@ -85,6 +98,7 @@ typedef struct socket {
 	unsigned long flags;
 
 	struct sock *sk;
+	socket_node_t *sock_address;
 	const struct proto_ops *ops;
 } socket_t;
 

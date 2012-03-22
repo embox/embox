@@ -64,7 +64,7 @@ void output_debug_messages(unsigned int count){
   current = (N_message - final_count)%N_DEBUG_MSG;
 
 	for(n=0; n<final_count; n++){
-		printk("#%d\t[%s][function %s]: %s\n", log[current].serial,
+		printk("#%d\t[mod %s][func %s]: %s\n", log[current].serial,
 					 log[current].module, log[current].func, log[current].msg);
 		current++;
 		if(current>=N_DEBUG_MSG)

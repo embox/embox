@@ -22,12 +22,14 @@
 #include <mem/objalloc.h>
 
 /* pool for string socket-address links */
-OBJALLOC_DEF(sock_addr_pool, sock_address_node_t, MAX_SYSTEM_CONNECTIONS);
-static LIST_HEAD(sock_address_head);
+OBJALLOC_DEF(socket_repo, socket_node_t, MAX_SYSTEM_CONNECTIONS);
+static LIST_HEAD(socket_repo_head);
 
 /* inner functions for address binding maintance */
-static sock_address_node_t *get_sock_addr_node_by_socket(struct socket *sock);
-static sock_address_node_t *get_sock_addr_node_by_address(const struct sockaddr *addr);
+static int add_socket_to_pool(struct socket *sock);
+static int remove_socket_from_pool(struct socket *sock);
+static socket_node_t *get_sock_addr_node_by_socket(struct socket *sock);
+static socket_node_t *get_sock_addr_node_by_address(const struct sockaddr *addr);
 static bool is_addr_free(const sockaddr_t *addr);
 static int bind_address(struct socket *sock, const struct sockaddr *addr);
 static void unbind_socket(struct socket *sock);
@@ -92,7 +94,7 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	/* newly created socket is UNCONNECTED for sure */
 	sk_set_connection_state(sock->sk, UNCONNECTED);
 	/* and unbound */
-	sock->sk->sock_address = NULL;
+	add_socket_to_pool(sock);
 	*psock = sock; /* and save structure */
 
 	return ENOERR;
@@ -105,8 +107,9 @@ int kernel_socket_release(struct socket *sock) {
 	if(sk_is_connected(sock->sk))
 		sk_set_connection_state(sock->sk, DISCONNECTING);
 
-	/* unbind socket */
+	/* socket will be unbound if it is bound else nothing happens */
 	unbind_socket(sock);
+	remove_socket_from_pool(sock);
 
 	if ((sock != NULL) && (sock->ops != NULL)
 			&& (sock->ops->release != NULL)) {
@@ -116,7 +119,6 @@ int kernel_socket_release(struct socket *sock) {
 		}
 	}
 
-	/* socket will be unbound if it is bound else nothing happens */
 	socket_free(sock);
 
 	return ENOERR;
@@ -138,8 +140,10 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 	/* try to bind */
 	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
 	if(res < 0){  /* If something went wrong */
-		debug_printf("error while binding socket", "kernel_sockets", "kernel_socket_bind");
-		sk_set_connection_state(sock->sk, UNCONNECTED);  /* Set the state to UNCONNECTED */
+		debug_printf("error while binding socket",
+								 "kernel_sockets", "kernel_socket_bind");
+		/* Set the state to UNCONNECTED */
+		sk_set_connection_state(sock->sk, UNCONNECTED);
 		return res;
 	}else{
 		sk_set_connection_state(sock->sk, BOUND);  /* Everything turned out fine */
@@ -170,11 +174,12 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 		/* socket was bound, so set back BOUND */
 		sk_set_connection_state(sock->sk, BOUND);
 	}else
-		sk_set_connection_state(sock->sk, LISTENING);  /* Everything turned out fine */
+		sk_set_connection_state(sock->sk, LISTENING);/* Everything turned out fine*/
 	return res;
  }
 
-int kernel_socket_accept(struct socket *sock, struct socket **accepted, struct sockaddr *addr, socklen_t *addrlen) {
+int kernel_socket_accept(struct socket *sock, struct socket **accepted,
+												 struct sockaddr *addr, socklen_t *addrlen) {
 	int res;
 	struct socket *new_sock;
 
@@ -190,8 +195,9 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted, struct s
 	}
 
 	// create the same socket as 'sock'
-	res = kernel_socket_create(sock->sk->__sk_common.skc_family, sock->sk->sk_type,
-			sock->sk->sk_protocol, &new_sock);
+	res = kernel_socket_create(sock->sk->__sk_common.skc_family,
+														 sock->sk->sk_type,
+														 sock->sk->sk_protocol, &new_sock);
 	if (res < 0) {
 		return res;
 	}
@@ -204,7 +210,8 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted, struct s
 	}
 	else {
 		*accepted = new_sock;
-		sk_set_connection_state(new_sock->sk, ESTABLISHED);  /* Everything turned out fine */
+		/* set state */
+		sk_set_connection_state(new_sock->sk, ESTABLISHED);
 	}
 	return res;
  }
@@ -221,7 +228,8 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 	/* TODO add code for the mentioned above cases */
 
 	if(!sock->ops->connect){
-		debug_printf("No connect() method", "kernel_socket", "kernel_socket_connect");
+		debug_printf("No connect() method", "kernel_socket",
+								 "kernel_socket_connect");
 		return SK_NO_SUCH_METHOD;
 	}
 
@@ -259,20 +267,57 @@ int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
 	return sock->ops->setsockopt(sock, level, optname, optval, optlen);
 }
 
-int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
-			size_t total_len) {
+int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,
+													struct msghdr *m,	size_t total_len) {
 	sock_set_ready(sock->sk);
 	return sock->ops->sendmsg(iocb, sock, m, total_len);
 }
 
-int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock, struct msghdr *m,
-			size_t total_len, int flags) {
+int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,
+													struct msghdr *m, size_t total_len, int flags) {
 	return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
 }
 
 
 int kernel_socket_shutdown(struct socket *sock){
 	return ENOERR;
+}
+
+
+static int add_socket_to_pool(struct socket *sock){
+	socket_node_t *newnode;
+
+	/* allocate new node */
+	newnode = (socket_node_t *)pool_alloc(&socket_repo);
+	if(newnode == NULL)
+		return -ENOMEM;
+
+	/* set address data to NULL for now*/
+	memset(&newnode->addr, 0, sizeof(struct sockaddr));
+
+	/* set socket link */
+	newnode->sock = sock;
+
+	sock->sock_address = newnode;
+
+	debug_printf("adding socket to pool",
+							 "kernel_socket", "add_socket_to_pool");
+
+	return 0;
+
+	return ENOERR;
+}
+
+static int remove_socket_from_pool(struct socket *sock){
+	socket_node_t *node;
+
+	node = get_sock_addr_node_by_socket(sock);
+	if(node){
+		debug_printf("removing socket entity...", "kernel_socket",
+								 "remove_socket_from_pool");
+		return ENOERR;
+	}
+	return -1;
 }
 
 static bool is_addr_free(const struct sockaddr *addr){
@@ -284,20 +329,8 @@ static bool is_addr_free(const struct sockaddr *addr){
 }
 
 static int bind_address(struct socket *sock, const struct sockaddr *addr){
-	sock_address_node_t *newnode;
-
-	/* allocate new node */
-	newnode = (sock_address_node_t *)pool_alloc(&sock_addr_pool);
-	if(newnode == NULL)
-		return -ENOMEM;
-
 	/* copy address data */
-	memcpy(&newnode->addr, addr, sizeof(struct sockaddr));
-
-	/* set socket link */
-	newnode->sock = sock;
-
-	sock->sk->sock_address = newnode;
+	memcpy(&sock->sock_address->addr, addr, sizeof(struct sockaddr));
 
 	debug_printf("bound address to socket",
 							 "kernel_socket", "bind_address");
@@ -306,23 +339,22 @@ static int bind_address(struct socket *sock, const struct sockaddr *addr){
 }
 
 static void unbind_socket(struct socket *sock){
-	sock_address_node_t *node;
+	socket_node_t *node;
 
 	node = get_sock_addr_node_by_socket(sock);
 	if(node){
-		debug_printf("found bound socket, freeing...",
+		debug_printf("found bound socket. unbinding...",
 								 "kernel_socket", "unbind_socket");
-		sock->sk->sock_address = NULL;
-		pool_free(&sock_addr_pool, node);
+		memset(&node->addr, 0, sizeof(struct sockaddr));
 	}
 }
 
-static sock_address_node_t *get_sock_addr_node_by_address(const struct sockaddr *addr){
+static socket_node_t *get_sock_addr_node_by_address(const struct sockaddr *addr){
 	sockaddr_in_t *addr_node_in, *addr_in = (sockaddr_in_t *)addr;
-	sock_address_node_t *node, *safe;
+	socket_node_t *node, *safe;
 
 	if(addr){  /* address validity */
-		list_for_each_entry_safe(node, safe, &sock_address_head, link){
+		list_for_each_entry_safe(node, safe, &socket_repo_head, link){
 			addr_node_in = (sockaddr_in_t *)&node->addr;  /* address from list */
 			if(addr_node_in){
 				if((addr_node_in->sin_addr.s_addr == addr_in->sin_addr.s_addr) &&
@@ -336,13 +368,13 @@ static sock_address_node_t *get_sock_addr_node_by_address(const struct sockaddr 
 	return NULL;
 }
 
-static sock_address_node_t *get_sock_addr_node_by_socket(struct socket *sock){
+static socket_node_t *get_sock_addr_node_by_socket(struct socket *sock){
 
-	return sock ? sock->sk->sock_address : NULL;
+	return sock ? sock->sock_address : NULL;
 
 #if 0
 	struct socket *node_sock;
-	sock_address_node_t *node, *safe;
+	socket_node_t *node, *safe;
 
 	if(sock){  /* address validity */
 		list_for_each_entry_safe(node, safe, &sock_address_head, link){

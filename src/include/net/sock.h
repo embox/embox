@@ -13,7 +13,6 @@
 #include <kernel/thread/sync/mutex.h>
 #include <net/net.h>
 #include <mem/misc/slab.h>
-#include <net/kernel_socket.h>
 
 typedef struct {
 	spinlock_t slock;
@@ -91,7 +90,6 @@ typedef struct sock {
 	int sk_err;
 	unsigned int arp_queue_info;
 	enum socket_connection_state_t socket_connection_state;
-	sock_address_node_t *sock_address;
 } sock_t;
 
 static inline void sock_set_ready(struct sock *sk) {
