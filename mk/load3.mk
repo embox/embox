@@ -9,26 +9,30 @@
 
 export CONFIGFILES_CACHE_DIR := $(MYBUILD_CACHE_DIR)/config
 
-CONFIG_PATH := conf/
+CONFIG_PATH := conf
+CONFIG_GENERATED_PATH := build/base/codegen
 
 HOSTCPP = gcc -E
 
-HOSTCC_CPPFLAGS := -I $(CONFIG_PATH)
+HOSTCC_CPPFLAGS := -I$(CONFIG_PATH)
 
-CONFIG_GENERATED := $(CONFIG_PATH)genConf.config
+CONFIG_GENERATED := $(CONFIG_GENERATED_PATH)/genConf.config
 
 $(CONFIG_GENERATED) :
 	mkdir -p $(@D)
 	$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) \
-		-D__MODS_CONF__ mk/confmacro2.S | \
+		-MMD -MT $@ -MF $@.d -D__MODS_CONF__ mk/confmacro2.S | \
 		awk -f mk/confmacro2.awk > $@
 
-CONFIGFILES := \
-	$(shell find $(CONFIG_PATH) -depth \
-		-name \*.config -print) \
-	$(CONFIG_GENERATED)
+-include $(CONFIG_GENERATED:%=%.d)
 
-override CONFIGFILES := $(firstword $(CONFIGFILES))
+#CONFIGFILES := \
+#	$(shell find $(CONFIG_PATH) -depth \
+#		-name \*.config -print) \
+#	$(CONFIG_GENERATED)
+#CONFIGFILES := $(firstword $(CONFIGFILES))
+
+CONFIGFILES := $(CONFIG_GENERATED)
 
 export configfiles_mk := \
 	$(patsubst $(abspath ./%),$(CONFIGFILES_CACHE_DIR)/%.mk, \
