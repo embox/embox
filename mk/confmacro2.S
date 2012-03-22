@@ -12,8 +12,9 @@
 
 #define mod(mod, ...) \
 	mod | __FIRST_ARG(__VA_ARGS__) |
+
 #define test(mod_name, ...) \
-	embox.test.##mod_name | __FIRST_ARG(__VA_ARGS__)
+	embox.test.##mod_name | __FIRST_ARG(__VA_ARGS__) |
 
 #define example(mod_name, ...) \
 	embox.example.##mod_name | __FIRST_ARG(__VA_ARGS__) |

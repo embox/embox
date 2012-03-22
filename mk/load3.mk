@@ -25,10 +25,8 @@ $(CONFIG_GENERATED) :
 
 CONFIGFILES := \
 	$(shell find $(CONFIG_PATH) -depth \
-		-name \*.config -print)
-
-#	Add to CONFIGFILES above
-#	$(CONFIG_GENERATED)
+		-name \*.config -print) \
+	$(CONFIG_GENERATED)
 
 override CONFIGFILES := $(firstword $(CONFIGFILES))
 
