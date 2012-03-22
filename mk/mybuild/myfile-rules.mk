@@ -276,9 +276,7 @@ $(gold_grammar)_produce-Value_NumberLiteral = $(new MyNumberOptionValue,$1)
 
 # Rule: <Value> ::= BooleanLiteral
 # Args: 1..1 - Symbols in the RHS.
-define $(gold_grammar)_produce-Value_BooleanLiteral
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-Value_BooleanLiteral = $(new MyBooleanOptionValue,$1)
 
 # Rule: <Reference> ::= <QualifiedName>
 # Args: 1..1 - Symbols in the RHS.

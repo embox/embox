@@ -90,6 +90,7 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="emodel.ecore#//ENamedObject #//AnnotationTarget">
     <eOperations name="validateValue" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
+    <eOperations name="getId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="defaultValue" eType="#//OptionValue"
         containment="true"/>
   </eClassifiers>
@@ -99,16 +100,16 @@
   <eClassifiers xsi:type="ecore:EClass" name="NumberOption" eSuperTypes="#//Option">
     <eOperations name="validateValue" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BooleanOption" eSuperTypes="#//Option">
+    <eOperations name="validateValue" eType="ecore:EDataType emodel.ecore#//EBoolean"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="OptionValue" abstract="true">
     <eOperations name="toString" eType="ecore:EDataType emodel.ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType emodel.ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StringOptionValue" eSuperTypes="#//OptionValue">
-    <eOperations name="toString" eType="ecore:EDataType emodel.ecore#//EString"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="NumberOptionValue" eSuperTypes="#//OptionValue">
-    <eOperations name="toString" eType="ecore:EDataType emodel.ecore#//EString"/>
-  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StringOptionValue" eSuperTypes="#//OptionValue"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NumberOptionValue" eSuperTypes="#//OptionValue"/>
+  <eClassifiers xsi:type="ecore:EClass" name="BooleanOptionValue" eSuperTypes="#//OptionValue"/>
   <eClassifiers xsi:type="ecore:EClass" name="OptionBinding">
     <eStructuralFeatures xsi:type="ecore:EReference" name="option" eType="#//Option"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="optionValue" eType="#//OptionValue"

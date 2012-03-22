@@ -112,6 +112,9 @@ MyFile_StringOption := \
 MyFile_NumberOption := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_NumberOption)
 
+MyFile_BooleanOption := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_BooleanOption)
+
 MyFile_OptionValue := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_OptionValue)
 MyFile_OptionValue_value := \
@@ -122,6 +125,9 @@ MyFile_StringOptionValue := \
 
 MyFile_NumberOptionValue := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_NumberOptionValue)
+
+MyFile_BooleanOptionValue := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_BooleanOptionValue)
 
 MyFile_OptionBinding := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_OptionBinding)
@@ -191,12 +197,16 @@ define __myFile_init
 
 	$(call eMetaClassInit,$(MyFile_NumberOption),NumberOption,$(MyFile_Option),)
 
+	$(call eMetaClassInit,$(MyFile_BooleanOption),BooleanOption,$(MyFile_Option),)
+
 	$(call eMetaClassInit,$(MyFile_OptionValue),OptionValue,,abstract)
 	$(call eMetaAttributeInit,$(MyFile_OptionValue_value),value,changeable)
 
 	$(call eMetaClassInit,$(MyFile_StringOptionValue),StringOptionValue,$(MyFile_OptionValue),)
 
 	$(call eMetaClassInit,$(MyFile_NumberOptionValue),NumberOptionValue,$(MyFile_OptionValue),)
+
+	$(call eMetaClassInit,$(MyFile_BooleanOptionValue),BooleanOptionValue,$(MyFile_OptionValue),)
 
 	$(call eMetaClassInit,$(MyFile_OptionBinding),OptionBinding,,)
 	$(call eMetaReferenceInit,$(MyFile_OptionBinding_option),option,$(MyFile_Option),,changeable linkable)
@@ -263,12 +273,16 @@ define __myFile_bind
 
 	$(call eMetaClassBind,$(MyFile_NumberOption),MyNumberOption)
 
+	$(call eMetaClassBind,$(MyFile_BooleanOption),MyBooleanOption)
+
 	$(call eMetaClassBind,$(MyFile_OptionValue),MyOptionValue)
 	$(call eMetaFeatureBind,$(MyFile_OptionValue_value),value)
 
 	$(call eMetaClassBind,$(MyFile_StringOptionValue),MyStringOptionValue)
 
 	$(call eMetaClassBind,$(MyFile_NumberOptionValue),MyNumberOptionValue)
+
+	$(call eMetaClassBind,$(MyFile_BooleanOptionValue),MyBooleanOptionValue)
 
 	$(call eMetaClassBind,$(MyFile_OptionBinding),MyOptionBinding)
 	$(call eMetaFeatureBind,$(MyFile_OptionBinding_option),option)

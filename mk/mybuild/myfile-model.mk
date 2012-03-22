@@ -468,6 +468,7 @@ endef
 # The following features and operations are defined:
 #   - reference 'defaultValue'
 #   - operation 'validateValue'
+#   - operation 'getId'
 #
 # The following features are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
@@ -494,6 +495,13 @@ define class-MyOption # abstract
 		$(error $0(): NIY))
 	# PROTECTED REGION END
 
+	# Method 'getId'.
+	# PROTECTED REGION ID(MyFile_Option_getId) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method getId,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
+
 	# PROTECTED REGION ID(MyFile_Option) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
@@ -508,6 +516,7 @@ endef
 # The following features and operations are inherited from 'Option':
 #   - reference 'defaultValue'
 #   - operation 'validateValue'
+#   - operation 'getId'
 #
 # The following features are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
@@ -531,6 +540,8 @@ define class-MyStringOption
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_StringOption) ENABLED START
+	$(method getId,
+		STRING_$(get name))
 	# PROTECTED REGION END
 endef
 
@@ -543,6 +554,7 @@ endef
 # The following features and operations are inherited from 'Option':
 #   - reference 'defaultValue'
 #   - operation 'validateValue'
+#   - operation 'getId'
 #
 # The following features are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
@@ -566,6 +578,46 @@ define class-MyNumberOption
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_NumberOption) ENABLED START
+	$(method getId,
+		NUMBER_$(get name))
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'BooleanOption'.
+#
+# The following operations are defined:
+#   - operation 'validateValue'
+#
+# The following features and operations are inherited from 'Option':
+#   - reference 'defaultValue'
+#   - operation 'validateValue'
+#   - operation 'getId'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-MyBooleanOption
+	# Extends 'MyOption' class.
+	$(eobject MyFile_BooleanOption,
+		MyBooleanOption,MyOption,)
+
+	# Method 'validateValue'.
+	# PROTECTED REGION ID(MyFile_BooleanOption_validateValue) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method validateValue,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_BooleanOption) ENABLED START
+	$(method getId,
+		BOOLEAN_$(get name))
 	# PROTECTED REGION END
 endef
 
@@ -600,8 +652,7 @@ endef
 #
 # Model object 'StringOptionValue'.
 #
-# The following operations are defined:
-#   - operation 'toString'
+# No features or operations defined.
 #
 # The following features and operations are inherited from 'OptionValue':
 #   - attribute 'value'
@@ -612,14 +663,10 @@ define class-MyStringOptionValue
 	$(eobject MyFile_StringOptionValue,
 		MyStringOptionValue,MyOptionValue,)
 
-	# Method 'toString'.
-	# PROTECTED REGION ID(MyFile_StringOptionValue_toString) ENABLED START
-#	# TODO Uncomment and implement me.
-	$(method toString,
-		$(error $0(): NIY))
-	# PROTECTED REGION END
-
 	# PROTECTED REGION ID(MyFile_StringOptionValue) ENABLED START
+	$(method toString,
+		$(get value))
+
 	$(if $(value 1),
 		$(set value,$1))
 	# PROTECTED REGION END
@@ -628,8 +675,7 @@ endef
 #
 # Model object 'NumberOptionValue'.
 #
-# The following operations are defined:
-#   - operation 'toString'
+# No features or operations defined.
 #
 # The following features and operations are inherited from 'OptionValue':
 #   - attribute 'value'
@@ -640,14 +686,33 @@ define class-MyNumberOptionValue
 	$(eobject MyFile_NumberOptionValue,
 		MyNumberOptionValue,MyOptionValue,)
 
-	# Method 'toString'.
-	# PROTECTED REGION ID(MyFile_NumberOptionValue_toString) ENABLED START
-#	# TODO Uncomment and implement me.
-	$(method toString,
-		$(error $0(): NIY))
-	# PROTECTED REGION END
-
 	# PROTECTED REGION ID(MyFile_NumberOptionValue) ENABLED START
+	$(method toString,
+		$(get value))
+
+	$(if $(value 1),
+		$(set value,$1))
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'BooleanOptionValue'.
+#
+# No features or operations defined.
+#
+# The following features and operations are inherited from 'OptionValue':
+#   - attribute 'value'
+#   - operation 'toString'
+#
+define class-MyBooleanOptionValue
+	# Extends 'MyOptionValue' class.
+	$(eobject MyFile_BooleanOptionValue,
+		MyBooleanOptionValue,MyOptionValue,)
+
+	# PROTECTED REGION ID(MyFile_BooleanOptionValue) ENABLED START
+	$(method toString,
+		$(get value))
+
 	$(if $(value 1),
 		$(set value,$1))
 	# PROTECTED REGION END
