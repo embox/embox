@@ -193,8 +193,6 @@ endef
 #   2. What to add.
 define __eObjectAddUnidirectional
 	$(set-field+ $1,$2)
-	$(silent-for e <- $2,
-		$(set-field+ e->__eOppositeRefs,$1$(this)))
 endef
 
 # Params:
@@ -266,9 +264,7 @@ define __eObjectAddUnidirectional_link
 		$(for link <- $2,
 			$(set-field link->eSource,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
-			$(link)./$(for target <- $(invoke link->eTarget),
-						$(set-field+ target->__eOppositeRefs,$(link)/$1$(this))
-						$(target)))
+			$(link)./$(get-field link->eTarget))
 	)
 endef
 
@@ -282,7 +278,7 @@ define __eObjectAddBidirectional_link
 		$(for link <- $2,
 			$(set-field link->eSource,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
-			$(link)./$(for target <- $(invoke link->eTarget),
+			$(link)./$(for target <- $(get-field link->eTarget),
 						$(set-field+ target->$3,$(link)$(this))
 						$(target)))
 	)
@@ -358,12 +354,10 @@ define __eLinkSetTarget
 			$(patsubst $(this)./,$(this)./$(newTarget),
 				$(get-field source->$(referenceProperty))))
 
-		$(if $(for opposite <- $(get metaReference->eOpposite),
-				oppositeProperty <- $(get opposite->instanceProperty),
-				$(set-field+ newTarget->$(oppositeProperty),$(this)$(source))
-				x),,# else
-			$(set-field+ newTarget->__eOppositeRefs,
-				$(this)/$(referenceProperty)$(source)))
+		$(and $(for opposite <- $(get metaReference->eOpposite),
+				$(set-field+ newTarget->$(get opposite->instanceProperty),
+					$(this)$(source))
+				x),)
 	)
 endef
 

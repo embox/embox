@@ -152,13 +152,8 @@ define class-EObject
 	# '.object' for resource containment.
 	$(field __eContainer : EObject)
 
-	# 'property[.link].object'
-	$(field __eOppositeRefs... : EObject)
-
 	$(method __serialize_extra_objects,
-		$(invoke eLinks) \
-		$(suffix $(get-field __eOppositeRefs) \
-			$(basename $(get-field __eOppositeRefs))))
+		$(invoke eLinks))
 
 	$(method eCopy,
 		$(for \
@@ -223,13 +218,7 @@ define class-ENamedObject
 	# Method 'eInverseResolvedLinks... : ELink'.
 	# PROTECTED REGION ID(EModel_ENamedObject_eInverseResolvedLinks) ENABLED START
 	$(method eInverseResolvedLinks,
-		$(error NIY)
-#		$(suffix $(basename \
-#			$(get-field __eOppositeRefs) \
-#			$(for metaReference <- $(get $(get eMetaClass).eAllCrossReferences),
-#				$(get-field $(get-field metaReference->instanceProperty)))
-#		))
-	)
+		$(error NIY))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(EModel_ENamedObject) ENABLED START
