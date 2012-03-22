@@ -123,14 +123,16 @@ __cache_print_volatile_variable_definitions = \
 __cache_print_volatile_variable_definition = \
 	$(if $(findstring u,$(flavor $1)), \
 		$(error Volatile variable '$1' is $(flavor $1), must be simple)) \
-	$(info $(__cache_escape_variable_name) \
-		$(if $(findstring undefined, \
-				$(flavor __cache_volatile_variable_$1)),:=,+=) \
-		$(patsubst %,\$(\n)$(\t)%, \
-			$(wordlist \
-				$(words x $(value __cache_volatile_variable_$1)), \
-				$(words $(value $1)), \
-					$(subst $(\h),$$(\h),$(subst $$,$$$$,$($1))))))
+	$(if $(or $(findstring undefined,$(flavor __cache_volatile_variable_$1)), \
+			$(word $(words x $(__cache_volatile_variable_$1)),$($1))), \
+		$(info $(__cache_escape_variable_name) \
+			$(if $(findstring undefined, \
+					$(flavor __cache_volatile_variable_$1)),:=,+=) \
+			$(patsubst %,\$(\n)$(\t)%, \
+				$(wordlist \
+					$(words x $(value __cache_volatile_variable_$1)), \
+					$(words $($1)), \
+						$(subst $(\h),$$(\h),$(subst $$,$$$$,$($1)))))))
 
 # Arg 1: list of variables.
 __cache_sort = \
