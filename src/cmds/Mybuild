@@ -11,15 +11,6 @@ module readelf {
 
 }
 
-module runelf {
-
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "runelf.c"
-	depends LibPosix
-
-}
-
 module tftp {
 
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
@@ -89,15 +80,6 @@ module lisp {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "lisp.c"
 	depends LibPosix, third_party.lisp.lisp5000
-
-}
-
-module ne2k_pci_probe {
-
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "ne2k_pci_probe.c"
-	depends LibPosix, embox.driver.net.ne2k_pci
 
 }
 
