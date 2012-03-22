@@ -31,7 +31,7 @@ static void *thread_handler(void *args) {
 	printf("Sleeping thread %d with id %d\n", (int)thread_self(),
 			thread_self()->id);
 
-	event_init(event, "test_event");
+
 	sched_sleep(event);/* sleeping here*/
 
 	/* print a thread structure address and a thread's ID */
@@ -51,6 +51,8 @@ static int run(int argc, char **argv) {
 	struct event e;
 	void *ret;
 	int i;
+
+	event_init(&e, "test_event");
 
 	/* starting all threads */
 	for(i = 0; i < ARRAY_SIZE(thr); i ++) {
