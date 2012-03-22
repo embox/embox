@@ -17,11 +17,14 @@
  */
 typedef struct in_device {
 	struct net_device *dev;
-	in_addr_t         ifa_address; /* ip-address in network byte order */
+	in_addr_t         ifa_address;
 	in_addr_t         ifa_mask;
 	in_addr_t         ifa_broadcast;
 	in_addr_t         ifa_anycast;
 	unsigned char     ipv4_addr_length;
+
+		/* IP packets requires uniq id. It's a way to generate them. Bytes order isn't important */
+	uint32_t          ip_id_generator;
 } in_device_t;
 
 /**
@@ -47,7 +50,7 @@ extern struct net_device *ip_dev_find(in_addr_t addr);
 
 /**
  * perform check: does this ip should be processes by local ip stack
- * @param ipaddr - ip devices address
+ * @param ipaddr - ip address
  * @param check_broadcast - should we check broadcast addresses
  * @param check_multicast - should we check multicast addresses
  */
@@ -105,6 +108,13 @@ extern in_device_t * inet_dev_get_next_used(in_device_t *);
 extern int inet_dev_add_dev(struct net_device *dev);
 
 extern int inet_dev_remove_dev(struct in_device *in_dev);
+
+/**
+ * generate new id for requiered interface
+ */
+static inline uint32_t inet_dev_get_id(in_device_t *in_dev) {
+	return ++in_dev->ip_id_generator;
+}
 
 /*TODO: deprecated*/
 extern int ifdev_up(const char *iname);

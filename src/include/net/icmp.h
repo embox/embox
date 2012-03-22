@@ -13,6 +13,8 @@
 #define NET_ICMP_H_
 
 #include <net/inet_sock.h>
+#include <net/checksum.h>
+#include <net/ip.h>
 
 /* Types */
 enum {
@@ -68,7 +70,7 @@ enum {
 typedef struct icmphdr {
 	__u8     type;
 	__u8     code;
-	uint16_t checksum;
+	__be16 checksum;
 	union {
 		struct {
 			__be16 id;
@@ -86,6 +88,20 @@ typedef struct icmphdr {
 
 static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
 	return (icmphdr_t *) skb->h.raw;
+}
+
+/* Generate a checksum for an outgoing ICMP datagram. */
+static inline void icmp_send_check(icmphdr_t *icmph, uint len) {
+	icmph->checksum = 0;
+	icmph->checksum = ptclbsum((void *)icmph, len);
+}
+
+/* Generate a checksum for an outgoing ICMP datagram if skb is correct
+ * ToDo: call icmp_send_check()
+ */
+static inline void icmp_send_check_skb(sk_buff_t *skb) {
+	skb->h.icmph->checksum = 0;
+	skb->h.icmph->checksum = ptclbsum(skb->h.raw, htons(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph));
 }
 
 /**

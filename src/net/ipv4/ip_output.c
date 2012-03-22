@@ -41,6 +41,11 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 static inline void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	if (sk->sk.sk_type == SOCK_RAW)
 	    return;
+
+		/* svv:
+		 *	Strange. Should it be even mac? (Because of ETH_HEADER_SIZE)
+		 *	Should we relink data pointer?
+		 */
 	skb->nh.raw = skb->data + ETH_HEADER_SIZE;
 	rebuild_ip_header(skb, sk->uc_ttl, sk->sk.sk_protocol, sk->id, skb->len,
 			sk->saddr, sk->daddr/*, sk->opt*/);
@@ -59,6 +64,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 
 	res = 0;
 
+		/* svv: Wrong. Data might be TCP (no IP header)/IP(IP header)/etc. Should it be even mac? */
 	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
 
 	if (skb->len > MTU) {
@@ -87,12 +93,13 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	if (sk) {
 		build_ip_packet(sk, skb);
 	}
+
 	if (ip_route(skb, NULL)) {
 		kfree_skb(skb);
 		return -1;
 	}
-	ip_send_check(skb->nh.iph);
-	return ip_queue_xmit(skb, 0);			/* svv: What about not-Ether carrier ? */
+	ip_send_check(skb->nh.iph);				/* Fragmentation and other possible changes */
+	return ip_queue_xmit(skb, 0);
 }
 
 int ip_forward_packet(sk_buff_t *skb) {

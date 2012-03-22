@@ -9,8 +9,11 @@
  * 		- remove callback interface
  * 		- major refactoring
  * @author Ilia Vaprol
+ * @author Vladimir Sokolov
  */
 
+
+	/* ToDo: svv: remove not required includes */
 #include <string.h>
 #include <net/inetdevice.h>
 #include <net/icmp.h>
@@ -23,7 +26,7 @@
 #include <err.h>
 #include <errno.h>
 #include <assert.h>
-
+#include <compiler.h>
 #include <net/raw.h>
 #include <net/socket.h>
 
@@ -74,6 +77,8 @@ static int icmp_unreach(sk_buff_t *skb) {
 	net_device_stats_t *stats;
 	uint32_t info;
 
+	/* ToDo: drop ICMP if they send not to unicast address */
+
 	assert(skb != NULL);
 
 	iph = ip_hdr(skb);
@@ -85,75 +90,75 @@ static int icmp_unreach(sk_buff_t *skb) {
 	assert(stats != NULL);
 
 	switch (icmph->type) {
-	case ICMP_DEST_UNREACH:
-		if (icmph->code >= NR_ICMP_UNREACH) {
-			return -1;
-		}
-		switch (icmph->code) {
-		case ICMP_NET_UNREACH:
-		case ICMP_HOST_UNREACH:
-		case ICMP_PROT_UNREACH:
-		case ICMP_PORT_UNREACH:
+		case ICMP_DEST_UNREACH:
+			if (icmph->code >= NR_ICMP_UNREACH) {
+				return -1;
+			}
+			switch (icmph->code) {
+				case ICMP_NET_UNREACH:
+				case ICMP_HOST_UNREACH:
+				case ICMP_PROT_UNREACH:
+				case ICMP_PORT_UNREACH:
+					/* do nothing */
+					break;
+				case ICMP_FRAG_NEEDED: // TODO
+					LOG_WARN("fragmentation needed but DF is set");
+					break;
+			}
+			break;
+		case ICMP_SOURCE_QUENCH:
+		case ICMP_TIME_EXCEEDED:
 			/* do nothing */
 			break;
-		case ICMP_FRAG_NEEDED: // TODO
-			LOG_WARN("fragmentation needed but DF is set");
+		case ICMP_PARAMETERPROB:
 			break;
-		}
-		break;
-	case ICMP_SOURCE_QUENCH:
-	case ICMP_TIME_EXCEEDED:
-		/* do nothing */
-		break;
-	case ICMP_PARAMETERPROB:
-		break;
-	default:
-		return -1;
+		default:
+			return -1;
 	}
 
 	info = icmph->type;
 	info ^= (icmph->code << 8);
 	info ^= (icmph->un.echo.sequence << 16);
-	/* Notify to all raw and udp sockets */
+	/* Notify to all raw/udp/tcp sockets */
 	raw_err(skb, info);
 	udp_err(skb, info);
-
-	kfree_skb(skb);								/* svv: Check possible conflict with freeing in common function */
 
 	return ENOERR;
 }
 
 static int icmp_redirect(sk_buff_t *skb) {
-	/* Handle ICMP_REDIRECT */
-	//TODO: fix ip route before.
+	LOG_WARN("Our routes might be incorrect\n");
+	icmp_discard(skb);
 	return -1;
-}
-
-static inline int icmp_send_reply(struct sock *sk, in_addr_t saddr, in_addr_t daddr,
-		sk_buff_t *skb, unsigned int len) {
-	skb->nh.iph->saddr = saddr;
-	skb->nh.iph->daddr = daddr;
-	skb->nh.iph->id = htons(ntohs(skb->nh.iph->id) + 1);
-	skb->nh.iph->frag_off = htons(IP_DF);				/* Why? */
-	ip_send_check(skb->nh.iph);
-	return ip_queue_xmit(skb, 0);
 }
 
 static int icmp_echo(sk_buff_t *skb) {
 	sk_buff_t *reply;
 
-	reply = skb_clone(skb, 0);	/* svv: Will lead to problems if our MTU is less then incoming len. See IP_DF flag later */
-	assert(reply);
+		/* ToDo: optimization:
+		 * 	move all kfree_skb() into subfunctions like it and get rid of this skb_clone()
+		 *	we should use the original packet structures
+		 */
+	if (!likely(reply = skb_clone(skb, 0)))
+		return -1;
+
+		/* Fix ICMP header */
 	reply->h.icmph->type = ICMP_ECHOREPLY;
-	/* TODO checksum must be at network byte order */
-	reply->h.icmph->checksum = 0;
-	reply->h.icmph->checksum = ptclbsum(reply->h.raw, htons(reply->nh.iph->tot_len) - IP_HEADER_SIZE(reply->nh.iph));
-	//TODO: kernel_sendmsg(NULL, __icmp_socket, ...);
-			/* svv: ToDo: daddr might be 255.255.255.255. It can't act as a source
-			 * Please note, if we have more that 1 interface, then
-			 * daddr might not belong to the device we obtain this packet
-			 */
-	return icmp_send_reply(NULL, skb->nh.iph->daddr, skb->nh.iph->saddr, reply, 0);
+	icmp_send_check_skb(reply);
+
+		/* Fix IP header */
+	{
+		in_device_t *idev = in_dev_get(reply->dev);
+		__be16 ip_id = inet_dev_get_id(idev);
+		__be16 tot_len = reply->nh.iph->tot_len;
+
+			/* Replace not unicast addresses */
+		__in_addr_t daddr = ip_is_local(ntohl(reply->nh.iph->daddr), false, false) ?
+						reply->nh.iph->daddr : htonl(idev->ifa_address);
+
+		init_ip_header(reply->nh.iph, ICMP_PROTO_TYPE, ip_id, tot_len, daddr, reply->nh.iph->saddr);
+	}
+	return ip_send_packet(NULL, reply);
 }
 
 static int icmp_timestamp(sk_buff_t *skb) {
@@ -223,25 +228,17 @@ void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
 	kfree_skb(skb_in);
 }
 
-/*
- * This table is the definition of how we handle ICMP.
- */
-
 static int icmp_init(void) {
-	int res;
-
-	res = kernel_socket_create(PF_INET, SOCK_RAW, IPPROTO_ICMP, &icmp_socket);
-	if (res < 0) {
-		return res;
-	}
-
-	return ENOERR;
+	return kernel_socket_create(PF_INET, SOCK_RAW, IPPROTO_ICMP, &icmp_socket);
 }
 
 static int ping_rcv(struct sk_buff *skb) {
 	return ENOERR;
 }
 
+/*
+ * This table is the definition how we handle ICMP
+ */
 static icmp_control icmp_handlers[NR_ICMP_TYPES] = {
 		[ICMP_ECHOREPLY]      = ping_rcv,
 		[1]                   = icmp_discard,

@@ -74,9 +74,9 @@ typedef struct iphdr {
 	__be16      frag_off;     /**< flags + position of the fragment in the data flow */
 	__u8        ttl;          /**< Time to live */
 	__u8        proto;        /**< next header */
-	uint16_t    check;        /**< header's checksum */
-	in_addr_t   saddr;        /**< source address */
-	in_addr_t   daddr;        /**< destination address */
+	__be16    check;        /**< header's checksum */
+	__in_addr_t   saddr;        /**< source address */
+	__in_addr_t   daddr;        /**< destination address */
 } __attribute__((packed)) iphdr_t;
 
 /**< Standard well-defined IP protocols.  */
@@ -103,6 +103,22 @@ static inline iphdr_t *ip_hdr(const sk_buff_t *skb) {
 static inline void ip_send_check(iphdr_t *iph) {
 	iph->check = 0;
 	iph->check = ptclbsum((void *) iph, IP_HEADER_SIZE(iph));
+}
+
+/* Init IP header with given parameters */
+static inline void init_ip_header(iphdr_t *hdr, uint8_t proto, __be16 ip_id, __be16 tot_len,
+									__in_addr_t saddr, __in_addr_t daddr) {
+	hdr->version = 4;
+	hdr->ihl = IP_MIN_HEADER_SIZE >> 2;
+	hdr->saddr = saddr;
+	hdr->daddr = daddr;
+	hdr->tot_len = tot_len;
+	hdr->ttl = 255;
+	hdr->id = ip_id;
+	hdr->tos = 0;
+	hdr->frag_off = 0;
+	hdr->proto = proto;
+	ip_send_check(hdr);
 }
 
 /**

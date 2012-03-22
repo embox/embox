@@ -91,11 +91,11 @@ int ip_route(sk_buff_t *skb, struct rt_entry *suggested_route) {
 	/* set the device for current destination address */
 	skb->dev = rte->dev;
 
-	// TODO even if type is SOCK_RAW?
 	/* set the source address */
 	/* svv: it's definitely WRONG for
 	 *	- raw socket
 	 *	- forwarding
+	 * ToDo: throw it away
 	 */
 	skb->nh.iph->saddr = in_dev_get(skb->dev)->ifa_address;
 
