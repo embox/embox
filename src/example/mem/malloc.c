@@ -4,6 +4,7 @@
  *
  * @date 05.12.11
  * @author Gleb Efimov
+ * @author Daria Dzendzik
  */
 
 #include <stdio.h>
@@ -21,7 +22,7 @@ EMBOX_EXAMPLE(run);
  * the memory block for allocate (default - available) (0|1);
  * @size      - size of memory block (default - all dedicated space); */
 struct block_desc {
-	unsigned int available;
+	unsigned int is_available;
 	size_t size;
 };
 
@@ -37,14 +38,14 @@ static char *current_free_space;
 static char  memory[MEM_SIZE];
 
 static char is_notavailable(struct block_desc *md){
-	if (md->available == 0)
+	if (md->is_available == 0)
 		return 1;
 	else
 		return 0;
 }
 
 static char disable_size(size_t req_size, struct block_desc *md){
-	if (md->size <= req_size + BLOCK_DESC_SIZE)
+	if (md->size < req_size + BLOCK_DESC_SIZE)
 		return 1;
 	else
 		return 0;
@@ -63,10 +64,12 @@ struct block_desc *find_suit_block(size_t req_size) {
 		md = (void *)(((size_t)md) + md->size);
 		printf("md = 0x%X\n", (uint32_t)md);
 		if (((uint32_t)md) >= (uint32_t)(memory) + sizeof(memory)){
+			/*end of memory*/
 			return NULL;
 		}
 	}
-	printf("find 0x%x\n\n", (uint32_t)md);
+	printf("find 0x%x\n", (uint32_t)md);
+	printf("current_free_space 0x%x\n", (uint32_t)current_free_space);
 	return md;
 }
 
@@ -74,8 +77,8 @@ struct block_desc *find_suit_block(size_t req_size) {
  * @size - size of needed block;
  * return - pointer to the allocated memory; */
 static void *memory_allocate(size_t req_size) {
-	struct block_desc *new_block;
-	struct block_desc *old_block;
+	struct block_desc *new_block; // allocated part
+	struct block_desc *old_block; // another part of existing block
 
 	if(NULL == (new_block = find_suit_block(req_size))) {
 		return NULL;
@@ -87,35 +90,41 @@ static void *memory_allocate(size_t req_size) {
 
 	/* Initializes a new block on the remaining part of block */
 	old_block = (void *) current_free_space;
-	old_block->available = 1;
+	old_block->is_available = 1;
 	old_block->size = new_block->size - req_size;
 
 	/* Change state flag on unavailable
 	 * and fixed req_size of block */
-	new_block->available = 0;
+	new_block->is_available = 0;
 	new_block->size = req_size + BLOCK_DESC_SIZE;
 
+	printf("returned 0x%x\n\n", (uint32_t)(new_block + BLOCK_DESC_SIZE));
 	return (void *) (new_block + BLOCK_DESC_SIZE);
 }
 
-#if 0
+
 /* This procedure makes free busy block
  * at the specified @address.
  * @address - block address being freed; */
+//#if 0
 static void memory_free(void *address) {
 
 	/* Detect address of memory_block */
 	struct block_desc *md = address - BLOCK_DESC_SIZE;
 
 	/* Make block free*/
-	md->available = 1;
+	md->is_available = 1;
 
 	/* Set the new value of pointer to the free block */
-	if (current_free_space > (char *)md) {
+	if (current_free_space > (char *) md) {
+		printf("***\n");
 		current_free_space = (char *) md;
 	}
+	printf("current_free_space 0x%x\n", (uint32_t)current_free_space);
+
 }
-#endif
+//#endif
+
 /* This is procedure of the beginning
  * initialization memory. */
 static void memory_init(void) {
@@ -123,18 +132,18 @@ static void memory_init(void) {
 
 	current_free_space = memory;
 	printf("start of memory = 0x%X\n", (uint32_t)memory);
-	printf("end of memory = 0x%X\n", ((uint32_t)memory) + sizeof(memory));
+	printf("end of memory = 0x%X\n", ((uint32_t)memory) + (uint32_t)sizeof(memory));
 	md = (void *) memory;
-	md->available = 1;
+	md->is_available = 1;
 	md->size = sizeof(memory);
 }
 
 /* This program tests the simplest algorithm of memory allocation */
 static int run(int argc, char **argv) {
-	//struct block_desc *md;
+	struct block_desc *md;
 	int i, temp;
 	void *succes_alloc;
-	//void *address;
+	void *address;
 
 	memory_init();
 
@@ -146,28 +155,26 @@ static int run(int argc, char **argv) {
 		printf("block num = %d address = 0x%X\n", i, (uint32_t)succes_alloc);
 	}
 
-	return 0;
-#if 0
-	printf("3");
-//FIXME WTF?
-	address = memory;
+	//return 0;
+//#if 0
+	address = memory + BLOCK_DESC_SIZE;
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
-		if (rand() % 2 == 0)
+		if (rand() % 2 == 0){
 			memory_free(address);
+			printf("free block num = %d address = 0x%X\n\n", i, (uint32_t)address);
+		}
 		md = address - BLOCK_DESC_SIZE;
-		address += md->size;
+		address = (void *)(((size_t)address) + md->size);
 	}
-	printf("4");
 
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
-			printf("&");
 			succes_alloc = memory_allocate(temp = rand() % 1000);
 			if (succes_alloc == NULL) {
 				printf("\nMemory allocation error on the addition %d size of block: %d\n", i, temp);
 			}
+			printf("alloc again block num = %d address = 0x%X\n", i, (uint32_t)succes_alloc);
 		}
-	printf("5");
 
 	return 0;
-#endif
+//#endif
 	}
