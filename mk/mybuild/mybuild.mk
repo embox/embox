@@ -61,13 +61,16 @@ define class-Mybuild
 			modInst <- $1,
 			mod <- $(get modInst->type),
 			opt<-$(get mod->allOptions),
-			optValue <- $(or $(invoke findOptValue,$(opt),
-						$(get $(get modInst->includeMember).optionBindings)),
+			optValue <- $(or $(if $(get modInst->includeMember), # if module was explicitly enabled
+										# from configs and probably has
+										# config option bindings
+						$(invoke findOptValue,$(opt),
+							$(get $(get modInst->includeMember).optionBindings))),
 					 $(get opt->defaultValue),
 					 Error),
 
 			$(if $(eq $(optValue),Error),
-				$(error FIXME: Move to issues, cant bind option $(get opt->name) in module $(get mod->qualifiedName) to a value)Error,
+				$(warning FIXME: Move to issues, cant bind option $(get opt->name) in module $(get mod->qualifiedName) to a value),
 
 				$(silent-for optInst <- $(new BuildOptionInstance),
 					$(set optInst->option,$(opt))

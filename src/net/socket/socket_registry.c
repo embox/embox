@@ -18,7 +18,7 @@
 OBJALLOC_DEF(socket_registry, socket_node_t, MAX_SYSTEM_CONNECTIONS);
 static LIST_HEAD(socket_registry_head);
 
-static socket_node_t *get_sock_node_by_socket(struct socket *sock);
+static inline socket_node_t *get_sock_node_by_socket(struct socket *sock);
 static socket_node_t *get_sock_node_by_src_address(struct socket *sock,
     struct sockaddr *addr);
 static socket_node_t *get_sock_node_by_dst_address(struct socket *sock,
