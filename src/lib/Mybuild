@@ -5,9 +5,9 @@ static module LibC {
 	source "crypt/crc32.c"
 	source "crypt/md5.c"
 	source "ctype/ctype.c"
-	//XXX move from here
-	//source "elf/elf_executer.c"
-	//source "elf/elf_reader.c"
+	//XXX move from here, but readelf in ALL templates depends on it!
+	source "elf/elf_executer.c"
+	source "elf/elf_reader.c"
 	source "malloc/malloc.c"
 	source "math/floor.c"
 	source "math/pow.c"
