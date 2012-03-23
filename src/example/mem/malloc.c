@@ -37,20 +37,6 @@ static char *current_free_space;
  * size defined from MEM_SIZE. */
 static char  memory[MEM_SIZE];
 
-static char is_notavailable(struct block_desc *md){
-	if (md->is_available == 0)
-		return 1;
-	else
-		return 0;
-}
-
-static char disable_size(size_t req_size, struct block_desc *md){
-	if (md->size < req_size + BLOCK_DESC_SIZE)
-		return 1;
-	else
-		return 0;
-}
-
 struct block_desc *find_suit_block(size_t req_size) {
 	/* Set the pointer(iterator) on the begin of our memory */
 	struct block_desc *md = (void *) current_free_space;
@@ -60,7 +46,7 @@ struct block_desc *find_suit_block(size_t req_size) {
 	 * less then necessary req_size go to the next block.
 	 * If the pointer(iterator) went for memory limits
 	 * then return NULL */
-	while (is_notavailable(md) && disable_size(req_size, md)) {
+	while ((md->is_available == 0) && (md->size < req_size + BLOCK_DESC_SIZE)) {
 		md = (void *)(((size_t)md) + md->size);
 		printf("md = 0x%X\n", (uint32_t)md);
 		if (((uint32_t)md) >= (uint32_t)(memory) + sizeof(memory)){
@@ -86,7 +72,7 @@ static void *memory_allocate(size_t req_size) {
 
 	/* Set the pointer of current free block
 	 * to the memory for the rest of the old block */
-	current_free_space += req_size + BLOCK_DESC_SIZE;
+	current_free_space += (req_size + BLOCK_DESC_SIZE);
 
 	/* Initializes a new block on the remaining part of block */
 	old_block = (void *) current_free_space;
@@ -96,10 +82,10 @@ static void *memory_allocate(size_t req_size) {
 	/* Change state flag on unavailable
 	 * and fixed req_size of block */
 	new_block->is_available = 0;
-	new_block->size = req_size + BLOCK_DESC_SIZE;
+	new_block->size = req_size +  BLOCK_DESC_SIZE;
 
-	printf("returned 0x%x\n\n", (uint32_t)(new_block + BLOCK_DESC_SIZE));
-	return (void *) (new_block + BLOCK_DESC_SIZE);
+	printf("returned 0x%x\n\n", (uint32_t)(new_block) + (uint32_t)(BLOCK_DESC_SIZE));
+	return (void *) ((uint32_t)(new_block) + (uint32_t)(BLOCK_DESC_SIZE));
 }
 
 
@@ -133,6 +119,7 @@ static void memory_init(void) {
 	current_free_space = memory;
 	printf("start of memory = 0x%X\n", (uint32_t)memory);
 	printf("end of memory = 0x%X\n", ((uint32_t)memory) + (uint32_t)sizeof(memory));
+	printf("BLOCK_DESC_SIZE = 0x%X\n", (uint32_t)BLOCK_DESC_SIZE);
 	md = (void *) memory;
 	md->is_available = 1;
 	md->size = sizeof(memory);
@@ -157,7 +144,7 @@ static int run(int argc, char **argv) {
 
 	//return 0;
 //#if 0
-	address = memory + BLOCK_DESC_SIZE;
+	address = memory +  BLOCK_DESC_SIZE;
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
 		if (rand() % 2 == 0){
 			memory_free(address);
