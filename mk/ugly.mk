@@ -41,8 +41,7 @@ $(for moduleInstance <- $1,
 	optValRaw <- $(invoke optionValue->toString),
 	$(\n)$(\n)$(\h)define $(subst .,__,$(optionId)) $(optValRaw))
 
-$(\n)$(\h)endif /* __MOD_HEADER__$(subst .,__,$1) */
-
+$(\n)$(\h)endif /* __MOD_HEADER__$(subst .,__,$1) */$(\n)
 endef
 
 
