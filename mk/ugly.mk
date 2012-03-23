@@ -25,9 +25,8 @@ define __header_template
 $(\n)
 $(\h)ifndef __MOD_HEADER__$(subst .,__,$1) $(\n)
 $(\h)define __MOD_HEADER__$(subst .,__,$1) $(\n)
-$(foreach impl,$(get $1.depends),$(warning $(get $(get 1->type).qualifiedName), $(get $(get impl->type).qualifiedName) : )
+$(foreach impl,$(get $1.depends),
 	$(if $(invoke $(get impl->type).isSubTypeOf,$(get 1->type)),
-	$(warning are !)
 	$(\n)// impl: $(impl)$(\n)
 	$(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
 			 $(abspath $(call module_get_headers,$(impl))))) \
