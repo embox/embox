@@ -44,3 +44,7 @@ module hashtable_test {
 	source "hashtable_test.c"
 	depends embox.util.hashtable
 }
+
+module dlist_test {
+	source "dlist_test.c"
+}

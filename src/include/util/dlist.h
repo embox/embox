@@ -16,20 +16,21 @@ struct dlist_head {
 	struct dlist_head *list_id;
 };
 
-#define DLIST_INIT(head) { &(head), &(head) }
+#define DLIST_INIT(head) { &(head), &(head), &(head) }
 
 #define DLIST_DEFINE(name) \
-		struct dlist_head = DLIST_INIT()
+		struct dlist_head name = DLIST_INIT(name)
 
 /* only for internal using */
-static inline __dlist_add(struct dlist_head *new, struct dlist_head *next, struct dlist_head *prev) {
+static inline void __dlist_add(struct dlist_head *new, struct dlist_head *next, struct dlist_head *prev) {
 	new->prev = prev;
 	new->next = next;
 	next->prev = new;
 	prev->next = new;
 }
+
 static inline int __is_linked(struct dlist_head *head) {
-	return (NULL == head->list_id);
+	return (NULL != head->list_id);
 }
 
 static inline void dlist_add_next(struct dlist_head *new, struct dlist_head *list) {
