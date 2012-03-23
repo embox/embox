@@ -17,6 +17,10 @@
 #include __impl_x(kernel/thread/sched_impl.h)
 #include __impl_x(kernel/thread/types.h)
 
+#define SCHED_TIMEOUT_INFINITE     (uint32_t)(-1)
+
+#define SCHED_TIMEOUT_HAPPENED        1
+
 struct thread;
 struct event;
 
@@ -57,7 +61,7 @@ extern void sched_set_priority(struct thread *thread,
  * @retval 0
  *   Always. TODO sleep cancellation is not implemented.
  */
-extern int sched_sleep(struct event *event);
+extern int sched_sleep(struct event *event, uint32_t timeout);
 
 /**
  * Wakes up all threads that sleep on the given @a event.
@@ -75,7 +79,6 @@ extern void sched_yield(void);
 extern void sched_suspend(struct thread *thread);
 
 extern void sched_resume(struct thread *thread);
-
 
 
 extern int sched_change_scheduling_priority(struct thread *t,

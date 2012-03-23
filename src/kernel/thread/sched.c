@@ -182,8 +182,33 @@ int sched_sleep_locked(struct event *e) {
 	return 0;
 }
 
-int sched_sleep(struct event *e) {
+struct sched_sleep_data {
+	struct event *timeout_event;
+	struct thread *thr;
+};
+
+static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
+	struct thread *thr = ((struct sched_sleep_data *)sleep_data)->thr;
+	//struct event *e = ((struct sched_sleep_data *)sleep_data)->timeout_event;
+
+	thr->sleep_res = SCHED_TIMEOUT_HAPPENED;
+	runq_unsleep(&rq, thr);
+}
+
+int sched_sleep(struct event *e, uint32_t timeout) {
+	struct sched_sleep_data sleep_data;
+	struct event event;
+	struct sys_timer tmr;
+
 	assert(!in_sched_locked());
+	if(timeout != SCHED_TIMEOUT_INFINITE) {
+		event_init(&event, NULL);
+		sleep_data.timeout_event = &event;
+		sleep_data.thr = sched_current();
+		if (0 != timer_init(&tmr, timeout, timeout_handler, &sleep_data)) {
+			return EBUSY;
+		}
+	}
 
 	sched_lock();
 	{
@@ -191,7 +216,11 @@ int sched_sleep(struct event *e) {
 	}
 	sched_unlock();
 
-	return 0;
+	if(timeout != SCHED_TIMEOUT_INFINITE) {
+			timer_close(&tmr);
+	}
+
+	return sched_current()->sleep_res;
 }
 
 void sched_yield(void) {

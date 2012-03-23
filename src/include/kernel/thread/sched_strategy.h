@@ -32,6 +32,8 @@ extern int runq_stop(struct runq *runq, struct thread *thread);
 
 extern int runq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all);
 extern void runq_sleep(struct runq *runq, struct sleepq *sleepq);
+extern void runq_unsleep(struct runq *sleepq, struct thread *thread);
+
 
 extern int runq_change_priority(struct runq *runq, struct thread *thread,
 		int new_priority);

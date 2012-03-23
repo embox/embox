@@ -34,7 +34,7 @@ struct message *message_receive(void) {
 
 	if (list_empty(&thread_self()->messages)) {
 		thread_self()->need_message = true;
-		sched_sleep(&thread_self()->msg_event);
+		sched_sleep(&thread_self()->msg_event, SCHED_TIMEOUT_INFINITE);
 	}
 
 	ret = thread_self()->messages.next;

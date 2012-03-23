@@ -40,4 +40,5 @@ static inline const char *event_name(struct event *e) {
 static inline void event_fire(struct event *e) {
 	sched_wake(e);
 }
+
 #endif /* KERNEL_THREAD_EVENT_IMPL_H_ */
