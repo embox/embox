@@ -30,6 +30,7 @@
 
 .type reset_handler, %function
 .type undef_handler, %function
+.type irq_handler, %function
 
 .section .trap_table, "x"
     .word _stack_top
@@ -40,6 +41,14 @@
     .word undef_handler
     .word undef_handler
     .word undef_handler
+    .word undef_handler
+    .word undef_handler
+    .word undef_handler
+    .word undef_handler
+    .word undef_handler
+    .word undef_handler
+    .word undef_handler
+    .word irq_handler
 
 
 /* stubs */

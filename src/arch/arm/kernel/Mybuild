@@ -9,6 +9,7 @@ module locore extends embox.arch.locore {
 
 module locore_thumb extends embox.arch.locore {
 	source "head.thumb.S"
+	source "entry.thumb.S"
 }
 
 /*FIXME mybuild arch module what is it */
