@@ -1,0 +1,5 @@
+package embox.example.kernel
+
+module critical_example {
+	source "critical_example.c"
+}

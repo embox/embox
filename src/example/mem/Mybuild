@@ -13,3 +13,14 @@ module malloc {
 	source "malloc.c"
 	depends embox.framework.example
 }
+
+//$_BRIEF-objalloc = demonstrates using of API for allocation fixed size object
+module objalloc {
+	source "objalloc.c"
+	depends embox.mem.objalloc
+}
+
+module boundary_markers {
+	source "boundary_markers.c"
+	depends embox.mem.page_api
+}

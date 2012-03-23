@@ -129,11 +129,12 @@ static uint8_t etherrxbuff[0x800];
 /* Pass in the next pointer */
 static eth_desc_t *rxd_init(size_t pkt_size) {
 	eth_desc_t *rxd = (eth_desc_t *) descrxbuff;
+	unsigned char *pkt = (unsigned char *) etherrxbuff;
 
 	/* Clear it */
 	memset(rxd, 0, sizeof(eth_desc_t));
 
-	unsigned char *pkt = (unsigned char *) etherrxbuff;
+
 
 	/* clear pkt area */
 	memset(pkt, 0, pkt_size);

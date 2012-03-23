@@ -66,7 +66,7 @@ static void check_for_packets(void) {
 
 	// print the string we received, let's hope it's null terminated
 	printf("Got one packet: ");
-	printf(&g_pkt->data);
+	//printf(&g_pkt->data);
 	printf("\n");
 
 	// ready the response.

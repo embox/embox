@@ -1,0 +1,7 @@
+
+package embox.example.kernel.softirq
+
+module softirq {
+	source "softirq.c"
+	depends embox.kernel.softirq
+}

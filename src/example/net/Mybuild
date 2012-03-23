@@ -7,12 +7,14 @@ module tcp_accepter {
 
 module receiver {
 	source "receiver.c"
-	depends embox.net.socket, embox.net.eth, embox.net.arp, embox.net.af_inet, embox.net.udp
+	depends embox.net.socket, embox.net.eth, embox.net.arp
+	depends embox.net.af_inet, embox.net.udp
 }
 
 module udp_echo {
 	source "udp_echo.c"
-	depends embox.net.socket, embox.net.eth, embox.net.arp, embox.net.af_inet, embox.net.udp
+	depends embox.net.socket, embox.net.eth, embox.net.arp
+	depends embox.net.af_inet, embox.net.udp
 }
 
 module tcp_receiver {
@@ -22,10 +24,15 @@ module tcp_receiver {
 
 module httpd {
 	source "httpd.c"
+
 	depends embox.net.socket
 	depends embox.compat.posix.LibPosix
+
+	@InitFS
+	source "hello.html"
 }
 
 module r6040_example {
 	source "r6040_example.c"
+	depends embox.driver.net.r6040
 }

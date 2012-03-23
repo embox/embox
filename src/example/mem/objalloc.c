@@ -44,6 +44,9 @@ typedef struct object_example object_example_t;
 OBJALLOC_DEF(allocator_name, struct object_example, TOTAL_OBJECTS);
 
 static int run(int argc, char **argv) {
+	/* If you want to use function, but no macro */
+	objalloc_t allocator;
+
 	/* Allocate object in your allocator and use it after by object pointer */
 	struct object_example *object = (struct object_example *) objalloc(
 			&allocator_name);
@@ -62,9 +65,6 @@ static int run(int argc, char **argv) {
 
 	/* If your allocator is useless you can delete it */
 	objalloc_destroy(&allocator_name);
-
-	/* If you want to use function, but no macro */
-	objalloc_t allocator;
 
 	/* It is the other way to initialize allocator:
 	 * Init your allocator and check if it was inited */
