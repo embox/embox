@@ -410,9 +410,9 @@ define class-MyModule
 	# Method 'isSubTypeOf'.
 	#   1. another : MyModule
 	# PROTECTED REGION ID(MyFile_Module_isSubTypeOf) ENABLED START
-#	# TODO Uncomment and implement me.
-#	$(method isSubTypeOf,
-#		$(error $0($1): NIY))
+	# TODO Uncomment and implement me.
+	$(method isSubTypeOf,
+		$(filter $1,$(get allSuperTypes)))
 	# PROTECTED REGION END
 
 	# Method 'isSuperTypeOf'.
@@ -503,7 +503,11 @@ define class-MyOption # abstract
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_Option) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+
+	# Args:
+	#   1. Option type in upcase
+	$(method __getId,
+		OPTION_$1_$(subst .,__,$(get qualifiedName)))
 	# PROTECTED REGION END
 endef
 
@@ -541,7 +545,7 @@ define class-MyStringOption
 
 	# PROTECTED REGION ID(MyFile_StringOption) ENABLED START
 	$(method getId,
-		STRING_$(get name))
+		$(invoke __getId,STRING))
 	# PROTECTED REGION END
 endef
 
@@ -579,7 +583,7 @@ define class-MyNumberOption
 
 	# PROTECTED REGION ID(MyFile_NumberOption) ENABLED START
 	$(method getId,
-		NUMBER_$(get name))
+		$(invoke __getId,NUMBER))
 	# PROTECTED REGION END
 endef
 
@@ -617,7 +621,7 @@ define class-MyBooleanOption
 
 	# PROTECTED REGION ID(MyFile_BooleanOption) ENABLED START
 	$(method getId,
-		BOOLEAN_$(get name))
+		$(invoke __getId,BOOLEAN))
 	# PROTECTED REGION END
 endef
 
