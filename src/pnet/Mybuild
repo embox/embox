@@ -1,20 +1,18 @@
 
 package embox.pnet
 
-abstract module entry_api { }
-
 module socket {
 	source "socket.c"
 }
 
-module pnet_entry extends embox.net.entry_api {
+module pnet_entry {
     @IncludePath("$(SRC_DIR)/compat/linux/include")
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "pnet_entry.c"
 	depends embox.pnet.core
 }
 
-module net_entry extends entry_api {
+module net_entry extends embox.net.entry_api {
     @IncludePath("$(SRC_DIR)/compat/linux/include")
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "net_entry.c"
