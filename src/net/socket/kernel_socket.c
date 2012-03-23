@@ -128,7 +128,7 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 	}
 
 	/* find out via registry if address is occupied */
-	if(!is_saddr_free(sock, (struct sockaddr *)addr)){
+	if(!sr_is_saddr_free(sock, (struct sockaddr *)addr)){
 		return -EADDRINUSE;
 	}
 	/* try to bind */

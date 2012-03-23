@@ -18,7 +18,7 @@ extern int sr_set_saddr(struct socket *sock, const struct sockaddr *addr);
 extern void sr_remove_saddr(struct socket *sock);
 
 
-extern bool is_saddr_free(struct socket *sock, struct sockaddr *addr);
-extern bool is_daddr_free(struct socket *sock, struct sockaddr *addr);
+extern bool sr_is_saddr_free(struct socket *sock, struct sockaddr *addr);
+extern bool sr_is_daddr_free(struct socket *sock, struct sockaddr *addr);
 
 #endif

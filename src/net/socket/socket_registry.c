@@ -65,7 +65,7 @@ int sr_remove_socket_from_registry(struct socket *sock){
 	return -1;
 }
 
-bool is_saddr_free(struct socket *sock, struct sockaddr *addr){
+bool sr_is_saddr_free(struct socket *sock, struct sockaddr *addr){
 
 	if(get_sock_node_by_src_address(sock, addr))
 		return false;
@@ -73,7 +73,7 @@ bool is_saddr_free(struct socket *sock, struct sockaddr *addr){
 		return true;
 }
 
-bool is_daddr_free(struct socket *sock, struct sockaddr *addr){
+bool sr_is_daddr_free(struct socket *sock, struct sockaddr *addr){
 
 	if(get_sock_node_by_dst_address(sock, addr))
 		return false;
