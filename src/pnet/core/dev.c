@@ -23,6 +23,7 @@
 
 EMBOX_UNIT_INIT(net_dev_init);
 
+#if 0
 static int tx_hnd(struct pnet_pack * pack) {
 
 	struct net_device *dev = ((struct pnet_dev *) pack->node)->dev;
@@ -33,10 +34,12 @@ static int tx_hnd(struct pnet_pack * pack) {
 	return NET_HND_SUPPRESSED; /* not to be processed further */
 }
 
+
 static int entry_tx_hnd(struct pnet_pack * pack) {
 	pack->node = pack->node->tx_dfault; //TODO
 	return 0;
 }
+#endif
 
 /* single entry for all devices
        devices
@@ -48,10 +51,12 @@ static int entry_tx_hnd(struct pnet_pack * pack) {
 */
 
 net_node_t pnet_dev_register(struct net_device *dev) {
-	net_node_t node = pnet_get_module("dev");
+	net_node_t node = pnet_node_alloc(0, NULL);
 	struct pnet_dev *node_dev = (struct pnet_dev *) node;
 
 	node_dev->dev = dev;
+	dev->pnet_node = node;
+	node->rx_dfault = pnet_get_module("devs entry");
 
 //	pnet_node_attach(node, NET_RX_DFAULT, pnet_get_module("devs entry");
 
@@ -63,15 +68,23 @@ struct net_device *pnet_get_net_device(net_node_t node) {
 }
 
 static int net_dev_init(void) {
+	struct net_device *dev;
+	net_node_t node;
+
+	netdev_foreach(dev) {
+		if (dev) {
+			node = pnet_dev_register(dev);
+		}
+	}
 
 	return 0;
 }
 
-PNET_NODE_DEF("devs entry", {
-	.tx_hnd = entry_tx_hnd
-});
+PNET_NODE_DEF("devs entry", {});
 
+#if 0
 PNET_PROTO_DEF("dev", {
 	.tx_hnd = tx_hnd
 });
+#endif
 

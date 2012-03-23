@@ -55,6 +55,7 @@ static void pnet_rx_action(struct softirq_action *action) {
 	struct pack *pack, *safe;
 	uint32_t type;
 	struct pnet_pack *skb_pack;
+	net_node_t devs_resolver = pnet_get_module("devs resolver");
 
 	list_for_each_entry_safe(pack, safe, &pnet_queue, link) {
 		type = *(uint32_t*) pack->data;
@@ -62,7 +63,7 @@ static void pnet_rx_action(struct softirq_action *action) {
 		if ((type & 3)  == NET_TYPE) {
 			skb_pack = pnet_pack_create(pack->data, 0, NET_TYPE);
 
-			skb_pack->node = pnet_get_module("devs entry");
+			skb_pack->node = devs_resolver;
 
 			pnet_entry(skb_pack);
 		} else {

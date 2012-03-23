@@ -18,13 +18,15 @@ static int net_dev_rx_hnd(struct pnet_pack *pack) {
 	net_node_t node;
 
 	skb = (struct sk_buff *) pack->data;
+
 	node = pnet_get_dev_by_device(skb->dev);
+	assert(node);
 	pack->node = node;
 
-	return NET_HND_DFAULT;
+	return NET_HND_SUPPRESSED;
 }
 
-PNET_NODE_DEF("dev resolver", {
+PNET_NODE_DEF("devs resolver", {
 	.rx_hnd = net_dev_rx_hnd,
 	.tx_hnd = NULL
 });

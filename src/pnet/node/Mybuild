@@ -7,7 +7,8 @@ module null {
 
 module linux_layer {
 	source "linux_layer.c"
-	//source "init_linux_layer.c"
+	source "init_linux_layer.c"
+	source "dev_linux.c"
 	depends embox.pnet.core.pack.PnetPackSkbuff
 	depends embox.pnet.netfilter.matcher
 	depends embox.pnet.dev
