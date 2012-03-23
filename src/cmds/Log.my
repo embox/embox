@@ -1,0 +1,20 @@
+package embox.cmd
+
+@Cmd(name = "log",
+	help = "Display last debug messages..",
+	man = '''
+		NAME
+			log - Display last debug messages.
+		SYNOPSIS
+			log [-c cnt]
+		DESCRIPTION
+			Display n last debug messages from common debug log.
+		AUTHORS
+			Timur Abdukadyrov
+	''')
+module log {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "log.c"
+	depends LibPosix
+}

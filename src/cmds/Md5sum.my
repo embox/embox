@@ -1,0 +1,20 @@
+package embox.cmd
+
+@Cmd(name = "md5sum",
+	help = "Compute and check MD5 message digest",
+	man = '''
+	NAME
+		md5sum - compute and check MD5 message digest
+	SYNOPSIS
+		md5sum [FILE]
+	DESCRIPTION
+		Print MD5 (128-bit) checksums.
+	AUTHORS
+		Nikolay Korotky
+	''')
+module md5sum {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "md5sum.c"
+	depends LibPosix
+}

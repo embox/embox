@@ -3,25 +3,20 @@ package embox.cmd
 import embox.compat.posix.LibPosix
 
 module readelf {
-
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "readelf.c"
 	depends LibPosix
-
 }
 
 module tftp {
-
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "tftp.c"
 	depends LibPosix
-
 }
 
 module version {
-
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "version.c"
@@ -29,81 +24,69 @@ module version {
 
 }
 
-module mem {
-
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "mem.c"
-	depends LibPosix
-
-}
+//module mem {
+//	@IncludePath("$(SRC_DIR)/compat/linux/include")
+//	@IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "mem.c"
+//	depends LibPosix
+//}
 
 module wmem {
-
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "wmem.c"
 	depends LibPosix
-
 }
 
 module test {
-
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "test.c"
 	depends LibPosix
-
 }
 
 module lspci {
-
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "lspci.c"
 	depends LibPosix, embox.driver.pci
-
 }
 
-module md5sum {
-
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "md5sum.c"
-	depends LibPosix
-
-}
+//module md5sum {
+//	@IncludePath("$(SRC_DIR)/compat/linux/include")
+//	@IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "md5sum.c"
+//	depends LibPosix
+//}
 
 module lisp {
-
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "lisp.c"
 	depends LibPosix, third_party.lisp.lisp5000
-
 }
 
-module netstat {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "netstat.c"
-	depends LibPosix
-}
+//module netstat {
+//	@IncludePath("$(SRC_DIR)/compat/linux/include")
+//	@IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "netstat.c"
+//	depends LibPosix
+//}
 
-module log {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "log.c"
-	depends LibPosix
-}
+//module log {
+//	@IncludePath("$(SRC_DIR)/compat/linux/include")
+//	@IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "log.c"
+//	depends LibPosix
+//}
 
-module pnet {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "pnet.c"
-	depends LibPosix
-	depends embox.pnet.core
-}
+//module pnet {
+//	@IncludePath("$(SRC_DIR)/compat/linux/include")
+//	@IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "pnet.c"
+//	depends LibPosix
+//	depends embox.pnet.core
+//}
 
 module tpprint {
 	source "tpprint.c"

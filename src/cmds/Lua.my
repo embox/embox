@@ -1,0 +1,18 @@
+package embox.cmd
+
+@Cmd(name = "lua",
+	help = "Lua interpreter",
+	man = '''
+		NAME
+			lua - Lua interpreter
+		SYNOPSIS
+			lua [script]
+		AUTHORS
+			Nikolay Korotkiy
+	''')
+module lua {
+	@IncludePath("$(THIRDPARTY_DIR)/lua")
+	source "lua.c"
+	depends org.lua.lua_core
+	depends org.lua.lua_lib
+}

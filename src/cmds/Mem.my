@@ -1,10 +1,8 @@
-$_MODS += mem
-$_SRCS-mem += mem.c
-$_USES-mem += libframework.a
+package embox.cmd
 
-$_BRIEF-mem = Prints the contents of memory
-
-define $_DETAILS-mem
+@Cmd(name = "mem",
+	help = "Prints the contents of memory",
+	man = '''
 	NAME
 		mem - reads from memory
 	SYNOPSIS
@@ -24,4 +22,10 @@ define $_DETAILS-mem
 		wmem, testmem
 	AUTHORS
 		Alexey Fomin
-endef
+	''')
+module mem {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "mem.c"
+	depends LibPosix
+}

@@ -1,10 +1,8 @@
-$_MODS += cp
-$_SRCS-cp += cp.c
-$_DEPS-cp += embox.fs.core
+package embox.cmd
 
-$_BRIEF-cp = Copy file
-
-define $_DETAILS-cp
+@Cmd(name = "cp",
+	help = Copy file,
+	man = '''
 	NAME
 		cp - copy files and directories
 	SYNOPSIS
@@ -13,4 +11,8 @@ define $_DETAILS-cp
 		Copy SOURCE to DEST
 	AUTHOR
 		Roman Evstifeev
-endef
+	''')
+module cp {
+	source "cp.c"
+	depends embox.fs.core
+}

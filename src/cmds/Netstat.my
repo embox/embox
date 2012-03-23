@@ -1,0 +1,16 @@
+package embox.cmd
+
+@Cmd(name = "netstat",
+	help = "Print network connections, interface statics",
+	man = '''
+		NAME
+			netstat - Print network connections
+		AUTHORS
+			Alexander Kalmuk
+		''')
+module netstat {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "netstat.c"
+	depends LibPosix
+}
