@@ -112,11 +112,11 @@ int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
 }
 
 void runq_unsleep(struct runq *runq, struct thread *thread) {
-	struct prioq_link *link;
+//	struct prioq_link *link;
 
 	assert(runq && thread);
 
-	link = &thread->sched.pq_link;
+//	link = &thread->sched.pq_link;
 	wakeup_thread(runq, thread);
 }
 
