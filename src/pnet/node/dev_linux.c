@@ -25,6 +25,6 @@ static int net_dev_rx_hnd(struct pnet_pack *pack) {
 }
 
 PNET_NODE_DEF("dev resolver", {
-	.rx_hnd = match_lin,
+	.rx_hnd = net_dev_rx_hnd,
 	.tx_hnd = NULL
 });
