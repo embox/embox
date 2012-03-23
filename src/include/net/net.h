@@ -81,7 +81,8 @@ enum sock_type {
 typedef struct socket_node{
 	struct list_head link;
 	struct socket *sock;
-	sockaddr_t addr;
+	sockaddr_t saddr;
+	sockaddr_t daddr;
 } socket_node_t;
 
 /**

@@ -19,20 +19,7 @@
 #include <net/sock.h>
 #include <util/debug_msg.h>
 #include <net/kernel_socket.h>
-#include <mem/objalloc.h>
-
-/* pool for string socket-address links */
-OBJALLOC_DEF(socket_repo, socket_node_t, MAX_SYSTEM_CONNECTIONS);
-static LIST_HEAD(socket_repo_head);
-
-/* inner functions for address binding maintance */
-static int add_socket_to_pool(struct socket *sock);
-static int remove_socket_from_pool(struct socket *sock);
-static socket_node_t *get_sock_node_by_socket(struct socket *sock);
-static socket_node_t *get_sock_node_by_address(struct socket *sock,
-    struct sockaddr *addr);
-static int bind_address(struct socket *sock, const struct sockaddr *addr);
-static void unbind_socket(struct socket *sock);
+#include <net/socket_registry.h>
 
 int kernel_socket_create(int family, int type, int protocol, struct socket **psock) {
 	int res;
@@ -100,8 +87,8 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 
 	/* newly created socket is UNCONNECTED for sure */
 	sk_set_connection_state(sock->sk, UNCONNECTED);
-	/* and unbound */
-	add_socket_to_pool(sock);
+	/* addr socket entry to registry */
+	sr_add_socket_to_registry(sock);
 	*psock = sock; /* and save structure */
 
 	return ENOERR;
@@ -114,9 +101,9 @@ int kernel_socket_release(struct socket *sock) {
 	if(sk_is_connected(sock->sk))
 		sk_set_connection_state(sock->sk, DISCONNECTING);
 
-	/* socket will be unbound if it is bound else nothing happens */
-	unbind_socket(sock);
-	remove_socket_from_pool(sock);
+	/* socket will be unbound, if it is bound else nothing happens */
+	sr_remove_saddr(sock);  /* unset saddr in registry */
+	sr_remove_socket_from_registry(sock); /* remove socketentry from registry */
 
 	if ((sock != NULL) && (sock->ops != NULL)
 			&& (sock->ops->release != NULL)) {
@@ -140,8 +127,8 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 		return SK_NO_SUCH_METHOD;
 	}
 
-	/* find out if address is occupied */
-	if(!kernel_socket_is_addr_free(sock, (struct sockaddr *)addr)){
+	/* find out via registry if address is occupied */
+	if(!is_saddr_free(sock, (struct sockaddr *)addr)){
 		return -EADDRINUSE;
 	}
 	/* try to bind */
@@ -155,7 +142,7 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 		return res;
 	}else{
 		sk_set_connection_state(sock->sk, BOUND);  /* Everything turned out fine */
-		bind_address(sock, addr);
+		sr_set_saddr(sock, addr);  /* set saddr in registry */
 	}
 	return ENOERR;
 }
@@ -229,7 +216,7 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 	int res;
 
 	/* Socket's like UDP are 'connectionless'. that means that connect
-	   only sets binds the target of the socket to an address.
+	   only binds the target of the socket to an address.
 	   In the cases of stream protocols the meaning is strict - initiate
 	   connection to a given host*/
 
@@ -286,92 +273,6 @@ int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,
 	return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
 }
 
-
 int kernel_socket_shutdown(struct socket *sock){
 	return ENOERR;
-}
-
-
-static int add_socket_to_pool(struct socket *sock){
-	socket_node_t *newnode;
-
-	/* allocate new node */
-	newnode = (socket_node_t *)pool_alloc(&socket_repo);
-	if(newnode == NULL)
-		return -ENOMEM;
-
-	/* set address data to NULL for now*/
-	memset(&newnode->addr, 0, sizeof(struct sockaddr));
-
-	/* set socket link */
-	newnode->sock = sock;
-
-	sock->socket_node = newnode;
-
-	list_add_tail(&socket_repo_head, &newnode->link);
-
-	debug_printf("adding socket to pool",
-							 "kernel_socket", "add_socket_to_pool");
-
-	return ENOERR;
-}
-
-static int remove_socket_from_pool(struct socket *sock){
-	socket_node_t *node;
-
-	node = get_sock_node_by_socket(sock);
-	if(node){
-		debug_printf("removing socket entity...", "kernel_socket",
-								 "remove_socket_from_pool");
-		list_del(&node->link);
-		pool_free(&socket_repo, node);
-		return ENOERR;
-	}
-	return -1;
-}
-
-inline bool kernel_socket_is_addr_free(struct socket *sock, struct sockaddr *addr){
-
-	if(get_sock_node_by_address(sock, addr))
-		return false;
-	else
-		return true;
-}
-
-static int bind_address(struct socket *sock, const struct sockaddr *addr){
-	/* copy address data */
-	memcpy(&sock->socket_node->addr, addr, sizeof(struct sockaddr));
-
-	debug_printf("bound address to socket",
-							 "kernel_socket", "bind_address");
-
-	return 0;
-}
-
-static void unbind_socket(struct socket *sock){
-	socket_node_t *node;
-
-	node = get_sock_node_by_socket(sock);
-	if(node){
-		debug_printf("found bound socket. unbinding...",
-								 "kernel_socket", "unbind_socket");
-		memset(&node->addr, 0, sizeof(struct sockaddr));
-	}
-}
-
-static socket_node_t *get_sock_node_by_address(struct socket *sock,
-																							 struct sockaddr *addr){
-	socket_node_t *node, *safe;
-
-	if(addr){  /* address validity */
-		list_for_each_entry_safe(node, safe, &socket_repo_head, link){
-			if(sock->ops->compare_addresses(addr, &node->addr))
-				return node;
-		}
-	}
-	return NULL;
-}
-
-static inline socket_node_t *get_sock_node_by_socket(struct socket *sock){
-	return sock ? sock->socket_node : NULL;
 }

@@ -182,15 +182,15 @@ int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
 	struct inet_sock *inet;
 	sk = sock->sk;
 
-	if(!sk->sk_prot->connect)
-		return SK_NO_SUCH_METHOD;
-
 	inet = inet_sk(sock->sk);
 	inet->sport = socket_get_free_port(inet->sport_type);
 	socket_set_port_type(sock);
 //	socket_port_lock(inet->sport, inet->sport_type); it was locked in socket_get_free_port
 
-	return sk->sk_prot->connect(sk, addr, addr_len);
+	if(sk->sk_prot->connect)
+		return sk->sk_prot->connect(sk, addr, addr_len);
+	else
+		return ENOERR;
 }
 
 int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
