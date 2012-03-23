@@ -23,7 +23,7 @@
  * -------------------------------------------
  */
 //TODO use hash table instead this
-static struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY]; // FIXME clear before using
+struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY]; // FIXME clear before using
 
 int register_netdev(struct net_device *dev) {
 	size_t i;

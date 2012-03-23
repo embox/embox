@@ -10,6 +10,7 @@
 #define NET_DEVICE_H_
 
 #include <net/if_ether.h>
+#include <util/array.h>
 #include <net/if.h>
 #include <net/in.h>
 #include <lib/list.h>
@@ -258,6 +259,12 @@ static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
 	}
 	return dev->header_ops->create(skb, dev, type, daddr, saddr, len);
 }
+
+extern struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY];
+
+#define netdev_foreach(device) \
+		array_foreach(device, opened_netdevs, CONFIG_NET_DEVICES_QUANTITY)
+
 #if 0
 static inline void netif_start_queue(net_device_t *dev) {
 	/*TODO:*/

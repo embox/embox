@@ -18,6 +18,7 @@
 EMBOX_UNIT_INIT(net_core_init);
 
 static int net_core_init(void) {
+#if 0
 	net_node_t devs = pnet_get_module("devs entry");
 	net_node_t gate = pnet_get_module("linux gate");
 
@@ -30,6 +31,17 @@ static int net_core_init(void) {
 	pnet_node_link(devs, gate);
 
 	pnet_graph_start(graph);
+#endif
+	struct net_device *dev;
+
+
+	net_node_t *node;
+
+	netdev_foreach(dev) {
+		if (dev) {
+			node = pnet_dev_register(dev);
+		}
+	}
 
 	return 0;
 }

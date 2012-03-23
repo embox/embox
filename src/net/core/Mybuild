@@ -11,7 +11,7 @@ module dev {
     @IncludePath("$(SRC_DIR)/compat/linux/include")
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "network_layer.c", "dev.c"
-	depends entry_api
+	depends net_entry
 	depends embox.compat.linux.LibLinux
 }
 
