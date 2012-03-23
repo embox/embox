@@ -1,7 +1,7 @@
 package embox.cmd
 
 @Cmd(name = "cp",
-	help = Copy file,
+	help = "Copy file",
 	man = '''
 	NAME
 		cp - copy files and directories
