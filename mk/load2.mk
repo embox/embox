@@ -42,16 +42,17 @@ endif #######
 #
 # Directory where to put generated scripts.
 #
-export MYBUILD_CACHE_DIR := $(CACHE_DIR)/mybuild
-
-export MYBUILD_FILES_CACHE_DIR     := $(MYBUILD_CACHE_DIR)/files
-export MYFILES_CACHE_DIR     := $(MYBUILD_CACHE_DIR)/myfiles
-export CONFIGFILES_CACHE_DIR := $(MYBUILD_CACHE_DIR)/configfiles
+export MYBUILD_CACHE_DIR       := $(CACHE_DIR)/mybuild
+export MYBUILD_FILES_CACHE_DIR := $(MYBUILD_CACHE_DIR)/files
 
 #
 # Generated artifacts.
 #
 
+.DELETE_ON_ERROR:
+.SECONDEXPANSION:
+
+# My-files.
 myfiles_mk := \
 	$(patsubst $(abspath ./%),$(MYBUILD_FILES_CACHE_DIR)/%.mk, \
 		$(abspath $(MYFILES)))
@@ -59,9 +60,7 @@ $(myfiles_mk) : recipe_tag      := MYFILE
 $(myfiles_mk) : MAKEFILES       := $(mk_mybuild_myfile)
 $(myfiles_mk) : PERSIST_OBJECTS  = $$(call new,MyFileResource,$<)
 
-myfiles_model_mk := $(MYBUILD_CACHE_DIR)/myfiles-model.mk
-myfiles_mk_cached_list_mk := $(MYBUILD_CACHE_DIR)/myfiles-list.mk
-
+# Config-files.
 configfiles_mk := \
 	$(patsubst $(abspath ./%),$(MYBUILD_FILES_CACHE_DIR)/%.mk, \
 		$(abspath $(CONFIGFILES)))
@@ -69,17 +68,11 @@ $(configfiles_mk) : recipe_tag      := CONFIGFILE
 $(configfiles_mk) : MAKEFILES       := $(mk_mybuild_configfile)
 $(configfiles_mk) : PERSIST_OBJECTS  = $$(call new,ConfigFileResource,$<)
 
-configfiles_model_mk := $(MYBUILD_CACHE_DIR)/configfiles-model.mk
-
-$(MAKECMDGOALS) : $(myfiles_model_mk) $(configfiles_model_mk)
-	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $^' $@
-
-.DELETE_ON_ERROR:
-
 # Defaults, must be overridden with target-specific variables.
 $(myfiles_mk) $(configfiles_mk) : export PERSIST_OBJECTS ?=
-$(myfiles_mk) $(configfiles_mk) : export MAKEFILES ?= $(error expanding MAKEFILES)
+$(myfiles_mk) $(configfiles_mk) : export MAKEFILES ?=
 
+$(myfiles_mk) $(configfiles_mk) : $$(MAKEFILES)
 $(myfiles_mk) $(configfiles_mk) : mk/load2.mk
 $(myfiles_mk) $(configfiles_mk) : mk/script/mk-persist.mk
 
@@ -94,15 +87,15 @@ $(myfiles_mk) $(configfiles_mk) : $(MYBUILD_FILES_CACHE_DIR)/%.mk : %
 # Linking files together.
 #
 
-$(myfiles_model_mk) $(configfiles_model_mk) : mk/load2.mk
-$(myfiles_model_mk) $(configfiles_model_mk) : mk/script/mk-persist.mk
-
 # My-files.
+myfiles_model_mk := $(MYBUILD_CACHE_DIR)/myfiles-model.mk
+myfiles_mk_cached_list_mk := $(MYBUILD_CACHE_DIR)/myfiles-list.mk
+
+$(myfiles_model_mk) : MAKEFILES := $(mk_mybuild) $(myfiles_mk)
 $(myfiles_model_mk) : $(myfiles_mk)
 	@echo ' MYLINK: $(words $(myfiles_mk)) files $(__myfiles_model_stats)'
 	@mkdir -p $(@D) && \
 		$(MAKE) -f mk/script/mk-persist.mk \
-		MAKEFILES='$(mk_mybuild) $(myfiles_mk)' \
 		PERSIST_OBJECTS='$$(call myfile_create_resource_set_from_files,$(myfiles_mk))' \
 		PERSIST_REALLOC='my' \
 		ALLOC_SCOPE='z' > $@
@@ -111,16 +104,26 @@ $(myfiles_model_mk) : $(myfiles_mk)
 		> $(myfiles_mk_cached_list_mk)
 
 # Config-files are linked agains linked model of my-files.
-$(configfiles_model_mk) : $(myfiles_model_mk)
+configfiles_model_mk := $(MYBUILD_CACHE_DIR)/configfiles-model.mk
+
+$(configfiles_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_mk) $(myfiles_model_mk)
 $(configfiles_model_mk) : $(configfiles_mk)
 	@echo ' CONFIGLINK'
 	@mkdir -p $(@D) && \
 		$(MAKE) -f mk/script/mk-persist.mk \
-		MAKEFILES='$(mk_mybuild) $(configfiles_mk) $(myfiles_model_mk)' \
 		PERSIST_OBJECTS='$$(call config_create_resource_set_from_files,$(configfiles_mk))' \
 		PERSIST_REALLOC='cfg' \
 		ALLOC_SCOPE='y' > $@
 	@echo '__config_resource_set := .cfg1y' >> $@
+
+$(myfiles_model_mk) $(configfiles_model_mk) : export MAKEFILES ?=
+
+$(myfiles_model_mk) $(configfiles_model_mk) : $$(MAKEFILES)
+$(myfiles_model_mk) $(configfiles_model_mk) : mk/load2.mk
+$(myfiles_model_mk) $(configfiles_model_mk) : mk/script/mk-persist.mk
+
+$(MAKECMDGOALS) : $(myfiles_model_mk) $(configfiles_model_mk)
+	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $^' $@
 
 #
 # Added/removed myfiles detection.
@@ -144,10 +147,5 @@ $(myfiles_model_mk) : __myfiles_model_stats := ($(if \
 endif
 endif
 
-ifneq ($(filter-out recursive,$(flavor myfiles_mk_cached)),)
-$(myfiles_model_mk) : __myfiles_model_stats ?= \
-	$(foreach n,$(filter-out 0,$(words $(filter $(myfiles_mk),$?))),($n modified))
-else
 $(myfiles_model_mk) : __myfiles_model_stats ?=
-endif
 

@@ -129,16 +129,12 @@ export all_mk_files := \
 # both of them at the same time.
 export ALLOC_SCOPE ?=
 
-$(MAKECMDGOALS) : $(all_mk_files)
-	@$(MAKE) -f mk/load2.mk $@
-
 .DELETE_ON_ERROR:
+.SECONDEXPANSION:
 
 # Default values which are overridden with target-specific ones.
 $(all_mk_files) : export CACHE_INCLUDES ?=
 $(all_mk_files) : export CACHE_REQUIRES ?=
-
-.SECONDEXPANSION:
 
 $(all_mk_files) : $$(CACHE_INCLUDES)
 $(all_mk_files) : $$(CACHE_REQUIRES)
@@ -150,3 +146,6 @@ $(all_mk_files) :
 		$(MAKE) -f mk/script/mk-cache.mk CACHE_DEP_TARGET='$@' > $@
 
 -include $(all_mk_files:%=%.d)
+
+$(MAKECMDGOALS) : $(all_mk_files)
+	@$(MAKE) -f mk/load2.mk $@
