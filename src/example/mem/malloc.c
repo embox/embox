@@ -14,8 +14,8 @@
 
 EMBOX_EXAMPLE(run);
 
-#define MEM_SIZE                     0x100000
-#define QUANTITY_OF_TESTS            10
+#define MEM_SIZE                     0x1000000
+#define QUANTITY_OF_TESTS            15
 
 /* This structure described memory block:
  * @available - state flag: available or not
@@ -33,6 +33,8 @@ struct block_desc {
  * at current time in our memory. */
 static char *current_free_space;
 
+static char *last_valid_address;
+
 /* This is our memory, that we allocated,
  * size defined from MEM_SIZE. */
 static char  memory[MEM_SIZE];
@@ -42,6 +44,10 @@ struct block_desc *find_suit_block(size_t req_size) {
 	struct block_desc *md = (void *) current_free_space;
 
 	printf("looking for: %d\n", req_size);
+	if ((uint32_t)last_valid_address <= (uint32_t)current_free_space){
+
+		return NULL;
+	}
 	/* While current block not available or req_size of block
 	 * less then necessary req_size go to the next block.
 	 * If the pointer(iterator) went for memory limits
@@ -49,6 +55,7 @@ struct block_desc *find_suit_block(size_t req_size) {
 	while ((md->is_available == 0) && (md->size < req_size + BLOCK_DESC_SIZE)) {
 		md = (void *)(((size_t)md) + md->size);
 		printf("md = 0x%X\n", (uint32_t)md);
+		printf("^|^|^|^|^|^ \n");
 		if (((uint32_t)md) >= (uint32_t)(memory) + sizeof(memory)){
 			/*end of memory*/
 			return NULL;
@@ -117,8 +124,10 @@ static void memory_init(void) {
 	struct block_desc *md;
 
 	current_free_space = memory;
+	last_valid_address = memory + (uint32_t)sizeof(memory);
 	printf("start of memory = 0x%X\n", (uint32_t)memory);
 	printf("end of memory = 0x%X\n", ((uint32_t)memory) + (uint32_t)sizeof(memory));
+	printf("last_valid_address = 0x%X\n", (uint32_t)last_valid_address);
 	printf("BLOCK_DESC_SIZE = 0x%X\n", (uint32_t)BLOCK_DESC_SIZE);
 	md = (void *) memory;
 	md->is_available = 1;
