@@ -6,8 +6,8 @@
  * @author Alina Kramar
  */
 
-#ifndef FRAMEWORK_TRACE_TRACE_IMPL_H_
-#define FRAMEWORK_TRACE_TRACE_IMPL_H_
+#ifndef PROFILER_TRACING_TRACE_IMPL_H_
+#define PROFILER_TRACING_TRACE_IMPL_H_
 
 #include <string.h>
 
@@ -40,4 +40,4 @@ static inline void __tracepoint_handle(struct __tp *p) {
 #define __tracepoint(__name) \
 	__tracepoint_handle(__tp_ref(__name))
 
-#endif /* FRAMEWORK_TRACE_TRACE_IMPL_H_ */
+#endif /* PROFILER_TRACING_TRACE_IMPL_H_ */

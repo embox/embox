@@ -9,6 +9,6 @@
 #include <string.h>
 
 #include <util/array.h>
-#include <framework/trace/trace.h>
+#include <profiler/tracing/trace.h>
 
 ARRAY_SPREAD_DEF_TERMINATED(typeof(struct __tp *), __tracepoints_array, NULL);

@@ -88,8 +88,8 @@ module lisp {
 //	depends embox.pnet.core
 //}
 
-module tpprint {
-	source "tpprint.c"
-	depends embox.framework.trace
+module traceinfo {
+	source "traceinfo.c"
+	depends embox.profiler.tracing
 }
 

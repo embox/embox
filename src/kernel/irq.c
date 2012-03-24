@@ -26,6 +26,7 @@
 #include <hal/interrupt.h>
 #include <hal/ipl.h>
 #include <mem/objalloc.h>
+#include <profiler/tracing/trace.h>
 
 struct irq_action {
 	irq_handler_t handler;
@@ -46,6 +47,8 @@ int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, unsigned int flags,
 	}
 
 	irq_lock();
+
+	tracepoint("irq attach");
 
 	if (irq_table[irq_nr]) {
 		/* IRQ sharing is not supported for now... */
@@ -80,6 +83,8 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 
 	irq_lock();
 
+	tracepoint("irq detach");
+
 	if (!(action = irq_table[irq_nr]) || action->dev_id != dev_id) {
 		ret = -ENOENT;
 		goto out_unlock;
@@ -100,6 +105,8 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	ipl_t ipl;
 
 	assert(interrupt_nr_valid(interrupt_nr));
+
+	tracepoint("irq dispatch");
 
 	ipl = ipl_save();
 	{
