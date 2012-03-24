@@ -88,8 +88,3 @@ module lisp {
 //	depends embox.pnet.core
 //}
 
-module traceinfo {
-	source "traceinfo.c"
-	depends embox.profiler.tracing
-}
-

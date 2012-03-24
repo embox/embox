@@ -1,0 +1,20 @@
+package embox.cmd
+
+@Cmd(name = "traceinfo",
+	man = '''
+		NAME
+			TODO
+		SYNOPSIS
+			TODO
+		DESCRIPTION
+			TODO
+		OPTIONS
+			TODO
+		AUTHORS
+			Alina Kramar
+	''')
+
+module traceinfo {
+	source "traceinfo.c"
+	depends embox.profiler.tracing
+}
