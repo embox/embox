@@ -10,6 +10,7 @@
 #define LIBC_ASSERT_IMPL_H_
 
 #include <util/location.h>
+#include <compiler.h>
 
 #ifdef NDEBUG
 
@@ -37,7 +38,7 @@ extern void __attribute__ ((noreturn)) __assertion_handle_failure(
 
 # define __assert(condition, expr_str, message...) \
 	do { \
-		if (!(condition)) {                                             \
+		if (!(likely(condition))) {                                             \
 			extern char *__assertion_message_buff;                      \
 			static const struct __assertion_point __assertion_point = { \
 				.location = LOCATION_FUNC_INIT,                         \

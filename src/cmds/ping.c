@@ -113,7 +113,7 @@ static int ping(struct ping_info *pinfo) {
 	tx_pack.hdr.ip_hdr.version = 4;
 	tx_pack.hdr.ip_hdr.ihl = IP_MIN_HEADER_SIZE >> 2;
 	tx_pack.hdr.ip_hdr.tos = 0;
-	tx_pack.hdr.ip_hdr.frag_off = htons(IP_DF);			/* Why? */
+	tx_pack.hdr.ip_hdr.frag_off = 0;
 	tx_pack.hdr.ip_hdr.saddr = pinfo->from.s_addr;
 	tx_pack.hdr.ip_hdr.daddr = pinfo->dst.s_addr;
 	tx_pack.hdr.ip_hdr.tot_len = htons(IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);

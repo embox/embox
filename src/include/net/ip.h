@@ -106,7 +106,7 @@ static inline void ip_send_check(iphdr_t *iph) {
 }
 
 /* Init IP header with given parameters */
-static inline void init_ip_header(iphdr_t *hdr, uint8_t proto, __be16 ip_id, __be16 tot_len,
+static inline void init_ip_header(iphdr_t *hdr, uint8_t proto, __be16 ip_id, __be16 tot_len, __u8 tos,
 									__in_addr_t saddr, __in_addr_t daddr) {
 	hdr->version = 4;
 	hdr->ihl = IP_MIN_HEADER_SIZE >> 2;
@@ -115,7 +115,7 @@ static inline void init_ip_header(iphdr_t *hdr, uint8_t proto, __be16 ip_id, __b
 	hdr->tot_len = tot_len;
 	hdr->ttl = 255;
 	hdr->id = ip_id;
-	hdr->tos = 0;
+	hdr->tos = tos;
 	hdr->frag_off = 0;
 	hdr->proto = proto;
 	ip_send_check(hdr);

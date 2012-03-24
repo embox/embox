@@ -16,7 +16,9 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
-/* FIXME try to avoid using these types -- Eldar*/
+/* Those types are used in network subsystem.
+ * Their main purpose is to show that some fields MUST be treated in a different way
+ */
 typedef __u16 __le16;
 typedef __u16 __be16;
 typedef __u32 __le32;

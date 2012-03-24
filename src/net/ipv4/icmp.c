@@ -26,44 +26,25 @@
 #include <err.h>
 #include <errno.h>
 #include <assert.h>
-#include <compiler.h>
 #include <net/raw.h>
 #include <net/socket.h>
+#include <util/math.h>
 
 EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 
-
-#if 0
-/**
- * ICMP Build xmit assembly blocks
- */
-struct icmp_bxm {
-	sk_buff_t *skb;         /* For ICMP messages sent with icmp_send, represents
-                               the ingress IP packet that triggered the transmission.
-                               For ICMP messages sent with icmp_reply, represents an
-                               ingress ICMP messages request. */
-	int offset;             /* Offset between skb->data and skb->nh.
-                               This offset is useful when evaluating how much
-                               data can be put into the ICMP payload for those
-                               ICMP messages that require it. */
-	int data_len;           /* Size of the ICMP payload */
-	struct {
-		icmphdr_t icmph;    /* Header of the ICMP message to transmit */
-		uint32_t times[3];  /* Used by the ICMP_TIMESTAMPREPLY message type */
-	} data;
-	int head_len;           /* Size of the ICMP header */
-};
-#endif
+/* Linux rudiment. Temporary here. At least someone should notify User Space */
+static socket_t *icmp_socket;
 
 /**
- * Packet's handler, corresponding to packet's type. This specifies
- * what to do with each type of ICMP.
+ * Packet's handler, corresponding to packet's type.
+ * This specifies what to do with each type of ICMP.
  */
 typedef int (*icmp_control)(sk_buff_t *skb);
 
-static socket_t *icmp_socket; /* Socket for transmitting ICMP messages */
-
-static icmp_control icmp_handlers[]; /* ICMP control handlers */
+/* Is packet described by skb is multicast one at levels 2 or 3 */
+static inline bool is_packet_multicast(sk_buff_t *skb) {
+	return (skb->pkt_type != PACKET_HOST) || !(ip_is_local(ntohl(skb->nh.iph->daddr), false, false));
+}
 
 static int icmp_discard(sk_buff_t *skb) {
 	/* nothing to do here */
@@ -142,24 +123,46 @@ static int icmp_echo(sk_buff_t *skb) {
 	if (!likely(reply = skb_clone(skb, 0)))
 		return -1;
 
-		/* Fix ICMP header */
-	reply->h.icmph->type = ICMP_ECHOREPLY;
-	icmp_send_check_skb(reply);
-
 		/* Fix IP header */
 	{
-		in_device_t *idev = in_dev_get(reply->dev);
+		in_device_t *idev = in_dev_get(reply->dev);				/* Requires symmetric routing */
 		__be16 ip_id = inet_dev_get_id(idev);
 		__be16 tot_len = reply->nh.iph->tot_len;
 
 			/* Replace not unicast addresses */
-		__in_addr_t daddr = ip_is_local(ntohl(reply->nh.iph->daddr), false, false) ?
-						reply->nh.iph->daddr : htonl(idev->ifa_address);
+		__in_addr_t daddr = ip_is_local(ntohl(reply->nh.iph->daddr), false, false) ? reply->nh.iph->daddr : htonl(idev->ifa_address);
 
-		init_ip_header(reply->nh.iph, ICMP_PROTO_TYPE, ip_id, tot_len, daddr, reply->nh.iph->saddr);
+		init_ip_header(reply->nh.iph, ICMP_PROTO_TYPE, ip_id, tot_len, 0, daddr, reply->nh.iph->saddr);
 	}
+		/* Fix ICMP header */
+	reply->h.icmph->type = ICMP_ECHOREPLY;
+	icmp_send_check_skb(reply);
+
 	return ip_send_packet(NULL, reply);
 }
+
+
+#if 0	/* Obsoleted stuff from Linux kernel */
+/**
+ * ICMP Build xmit assembly blocks
+ */
+struct icmp_bxm {
+	sk_buff_t *skb;         /* For ICMP messages sent with icmp_send, represents
+                               the ingress IP packet that triggered the transmission.
+                               For ICMP messages sent with icmp_reply, represents an
+                               ingress ICMP messages request. */
+	int offset;             /* Offset between skb->data and skb->nh.
+                               This offset is useful when evaluating how much
+                               data can be put into the ICMP payload for those
+                               ICMP messages that require it. */
+	int data_len;           /* Size of the ICMP payload */
+	struct {
+		icmphdr_t icmph;    /* Header of the ICMP message to transmit */
+		uint32_t times[3];  /* Used by the ICMP_TIMESTAMPREPLY message type */
+	} data;
+	int head_len;           /* Size of the ICMP header */
+};
+#endif
 
 static int icmp_timestamp(sk_buff_t *skb) {
 #if 0
@@ -177,62 +180,85 @@ static int icmp_timestamp(sk_buff_t *skb) {
 	return -1;
 }
 
-#define DATA_SIZE(iph) (IP_HEADER_SIZE(iph) + 8)
+void icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be32 info) {
+		/* Determine how many data we can take from the original datagram
+		 * Note:
+		 *	We suggest that routing is symmetric (if we get packet from A from device B, then we can reply back through device B)
+		 *	That all income packets have device (no ICMP packets generated in User Space) (not checked)
+		 */
+	const uint realloc_shift = IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE;
+	uint ret_len = min((realloc_shift + ntohs(skb_in->nh.iph->tot_len)), skb_in->dev->mtu);
+	uint ip_ret_len = min(ret_len, 576);							/* See RCF 1812 4.3.2.3 */
+	sk_buff_t *skb;
 
-void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info) {
-	iphdr_t *iph_in = ip_hdr(skb_in);
-	iphdr_t *iph;
-	icmphdr_t *icmph;
-	struct iovec iov;
-	struct msghdr m;
-	char packet[IP_HEADER_SIZE(iph_in) + ICMP_HEADER_SIZE + DATA_SIZE(iph_in)];
 	/*
 	 * RFC 1122: 3.2.2 MUST send at least the IP header and 8 bytes of header.
-	 *   MAY send more (we do)												(svv: Fine. But we can don't fit interface MTU)
-	 *																		(And there is a restriction of 576 bytes)
+	 *   MAY send more (we do)								(till ip_ret_len restriction)
 	 *   MUST NOT change this header information.
-	 *   MUST NOT reply to a multicast/broadcast IP address					(Not implemented)
+	 *   MUST NOT reply to a multicast/broadcast IP address					(Implemented)
 	 *   MUST NOT reply to a multicast/broadcast MAC address				(Implemented)
-	 *   MUST reply to only the first fragment								(Implemented)
+	 *   MUST reply to only the first fragment						(Implemented)
 	 *---------
-	 *   It's a bad idea to send ICMP error to an ICMP error				(Not implemented)
+	 *   It's a bad idea to send ICMP error to an ICMP error				(Implemented)
 	 */
-	if ((skb_in->pkt_type != PACKET_HOST) ||
-		(iph_in->frag_off & htons(IP_OFFSET))) {
-		return;										/* svv: Unlike the common way we don't free this skb. Why? */
+		/* Don't reply for not unicast address of any kind */
+	if (unlikely(is_packet_multicast(skb_in) || (skb_in->nh.iph->frag_off & htons(IP_OFFSET)))) {
+		kfree_skb(skb_in);
+		return;
 	}
-	iph = (iphdr_t *) packet;
-	icmph = (icmphdr_t *) (packet + IP_HEADER_SIZE(iph_in));
-	/* build IP header */
-	memcpy(iph, iph_in, IP_HEADER_SIZE(iph_in));
-	iph->proto = IPPROTO_ICMP;
-	iph->tot_len = IP_HEADER_SIZE(iph_in) + ICMP_HEADER_SIZE + DATA_SIZE(iph_in);
-	iph->daddr = skb_in->nh.iph->saddr;
-	iph->saddr = skb_in->nh.iph->daddr;
-	iph->id++;						/* svv: Possible problems if we already use this id in other flow */
-	iph->frag_off = IP_DF;					/* svv: Why the whole Internet must be as small as our MTU? */
-	/* build ICMP header */
-	memcpy(icmph + ICMP_HEADER_SIZE, iph_in, DATA_SIZE(iph_in));
-	icmph->type = type;
-	icmph->code = code;
-	icmph->un.gateway = info;
-	icmph->checksum = 0;
-	/* TODO checksum must be at network byte order */
-	icmph->checksum = ptclbsum(icmph, htons(iph->tot_len) - IP_HEADER_SIZE(iph));
+		/* Don't reply to ICMP Error.
+		 * We don't check that it's corrupted. We already have sufficient reason to drop it
+		 */
+	if (unlikely((skb_in->nh.iph->proto == IPPROTO_ICMP) && !(ICMP_INFOTYPE(skb_in->h.icmph->type)))) {
+		kfree_skb(skb_in);
+		return;
+	}
 
-	iov.iov_base = (void *) packet;
-	iov.iov_len = IP_HEADER_SIZE(iph) + ICMP_HEADER_SIZE + DATA_SIZE(iph);
-	m.msg_iov = &iov;
-	kernel_socket_sendmsg(NULL, icmp_socket, &m, iov.iov_len);	/* Sending interface differs from one in icmp_send_reply() */
+		/* Check presence of extra space for new headers */
+	if (unlikely(skb = skb_checkcopy_expand(skb_in, realloc_shift, 0, 0))) {
+		kfree_skb(skb_in);
+		return;
+	}
 
-	kfree_skb(skb_in);
+		/* Relink skb and build content */
+	{
+		iphdr_t *iph_in = skb->nh.iph;						/* Original IP header */
+		iphdr_t *iph;
+		icmphdr_t *icmph;
+
+		skb_shifthead(skb, realloc_shift);
+		iph = skb->nh.iph;									/* IP header is in correct place. We'll fill it later */
+		skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;
+		icmph = skb->h.icmph;								/* ICMP header follows IP header. We'll fill it later */
+															/* Link Layer will be build after routing. It may not be ready yet */
+
+			/* Assemble IP header */
+		{
+			in_device_t *idev = in_dev_get(skb->dev);			/* Requires symmetric routing */
+			__be16 ip_id = inet_dev_get_id(idev);
+			__be16 tot_len = htons(ip_ret_len);
+
+			init_ip_header(skb->nh.iph, ICMP_PROTO_TYPE, ip_id, tot_len, iph_in->tos, htonl(idev->ifa_address), iph_in->saddr);
+		}
+
+			/* Assemble ICMP header */
+		icmph->type = type;
+		icmph->code = code;
+		icmph->un.gateway = info;
+		icmp_send_check_skb(skb);
+
+	}
+
+	ip_send_packet(NULL, skb);
 }
 
 static int icmp_init(void) {
+		/* It's Linux rudiment to process ICMP ECHO Replies and other stuff in User Space */
 	return kernel_socket_create(PF_INET, SOCK_RAW, IPPROTO_ICMP, &icmp_socket);
 }
 
 static int ping_rcv(struct sk_buff *skb) {
+		/* Kernel doesn't need this answer. User Space stuff might process it if it wants to */
 	return ENOERR;
 }
 
@@ -261,39 +287,49 @@ static icmp_control icmp_handlers[NR_ICMP_TYPES] = {
 
 /**
  * Receive packet.
- *
+ * Real processing code
  * @param skb received packet
  */
-static int icmp_rcv(sk_buff_t *pack) {
-	int res;
-	icmphdr_t *icmph;
-	net_device_stats_t *stats;
-	uint16_t tmp;
+static inline int __icmp_rcv(sk_buff_t *pack) {
+	icmphdr_t *icmph = pack->h.icmph;
+	net_device_stats_t *stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);
+	__be16 orig_crc = icmph->checksum;
 	struct sk_buff *skb_tmp;
 
-
-	assert(pack != NULL);
-
-	/* Remove packet that came to raw socket icmp_socket */
+	/* Note (svv): Such thing is absent in Linux. Who and how is going to use it? Should be called something like kernel_socket_... ?
+	 * There should be something useful under it:
+	 *	A) Do we want to have an ability to put raw ICMP into kernel from User Space? What for?
+	 *	B) Probably we want to process PART of ICMP exchange (like ping answers) in User Space.
+	 *	It's reasonable idea
+	 * IMHO, it's also misplaced (for case B it must be after CRC...)
+	 */
 	if ((skb_tmp = skb_recv_datagram(icmp_socket->sk, 0, 0, 0)) != NULL) {
+		/* Remove packet that came to raw socket icmp_socket */
 		kfree_skb(skb_tmp);
 	}
 
-	icmph = pack->h.icmph;
-	stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);
-
-	assert(icmph != NULL);
-	assert(stats != NULL);
-
-	/* RFC 1122: 3.2.2  Unknown ICMP messages types MUST be silently discarded */
-	if (icmph->type >= NR_ICMP_TYPES) {
-		LOG_WARN("unknown type of ICMP packet\n");
-		stats->rx_err++;
-		kfree_skb(pack);
+	if (unlikely(ntohs(pack->nh.iph->tot_len) < (IP_HEADER_SIZE(pack->nh.iph) + ICMP_HEADER_SIZE))) {
+		LOG_WARN("icmp length is too small\n");
+		stats->rx_length_errors++;
 		return -1;
 	}
 
-#if 0
+	icmp_send_check_skb(pack);
+	if (unlikely(icmph->checksum != orig_crc)) {
+		LOG_WARN("bad icmp checksum\n");
+		stats->rx_crc_errors++;
+		return -1;
+	}
+
+	/* RFC 1122: 3.2.2  Unknown ICMP messages types MUST be silently discarded (in Kernel)*/
+	if (unlikely(icmph->type >= NR_ICMP_TYPES)) {
+		LOG_WARN("Unsupported type of ICMP packet %i\n", icmph->type);
+		return -1;
+	}
+
+#if 0	/* anton wants it to be keeped */
+	/* ToDo: properly fix statistics if you are going to add it in future */
+
 	/* RFC 1122: 3.2.2.6  An ICMP_ECHO to broadcast MAY be silently ignored. */
 	if (IFF_BROADCAST && (icmph->type == ICMP_ECHO)) {
 		return -1;
@@ -305,19 +341,35 @@ static int icmp_rcv(sk_buff_t *pack) {
 	}
 #endif
 
-	tmp = icmph->checksum; /* TODO checksum must be at network byte order */
-	icmph->checksum = 0;
-	if (tmp != ptclbsum(pack->h.raw, ntohs(pack->nh.iph->tot_len) - IP_HEADER_SIZE(pack->nh.iph))) {
-		LOG_WARN("bad icmp checksum\n");
-		stats->rx_err++;
-		stats->rx_crc_errors++;
-		kfree_skb(pack);
-		return -1;
-	}
-
 	assert(icmp_handlers[icmph->type] != NULL);
-	res = icmp_handlers[icmph->type](pack);
+	return icmp_handlers[icmph->type](pack);
+}
+
+
+/**
+ * Receive packet.
+ * Check basic asserts(). Nothing special just common parts.
+ * @param skb received packet
+ */
+static int icmp_rcv(sk_buff_t *pack) {
+	int res;
+	iphdr_t *iph;
+	icmphdr_t *icmph;
+	net_device_stats_t *stats;
+
+	assert(pack != NULL);
+
+	iph = pack->nh.iph;
+	icmph = pack->h.icmph;
+	stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);		/* Why not just get stat from pack->dev? */
+
+	assert(iph != NULL);
+	assert(icmph != NULL);
+	assert(stats != NULL);
+
+	res = __icmp_rcv(pack);
 	stats->rx_err += (res < 0);
 	kfree_skb(pack);
 	return res;
 }
+

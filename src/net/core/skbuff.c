@@ -15,11 +15,12 @@
 #include <net/ip.h>
 #include <net/skbuff.h>
 #include <string.h>
+#include <assert.h>
+
 
 POOL_DEF(skb_pool, struct sk_buff, CONFIG_QUANTITY_SKB);
 POOL_DEF(skb_queue_pool, struct sk_buff_head, CONFIG_QUANTITY_SKB_QUEUE);
-POOL_DEF(net_buff_pool, unsigned char[CONFIG_ETHERNET_V2_FRAME_SIZE],
-		CONFIG_PACK_POOL_SIZE);
+POOL_DEF(net_buff_pool, unsigned char[SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE], CONFIG_PACK_POOL_SIZE);
 
 /**
  * Allocate net_packet_buff for one ethernet packet on the cache.
@@ -75,7 +76,7 @@ void kfree_skb(struct sk_buff *skb) {
 		return;
 	}
 
-	net_buff_free(skb->data);
+	net_buff_free(skb->head);
 
 	sp = ipl_save();
 
@@ -107,11 +108,12 @@ struct sk_buff * alloc_skb(unsigned int size, gfp_t priority) {
 
 	INIT_LIST_HEAD((struct list_head *) skb);
 
-	skb->data = net_buff_alloc();
-	if (skb->data == NULL) {
+	skb->head = net_buff_alloc();
+	if (skb->head == NULL) {
 		kfree_skb(skb);
 		return NULL;
 	}
+	skb->data = skb->head + SK_BUF_EXTRA_HEADROOM;
 
 	skb->len = size;
 	skb->mac.raw = skb->data;
@@ -281,6 +283,34 @@ struct sk_buff * skb_peek_datagram(struct sock *sk, unsigned flags, int noblock,
 	return skb_peek(sk->sk_receive_queue);
 }
 
+struct sk_buff *skb_copy_expand(struct sk_buff *skb, int newheadroom, int newtailroom, gfp_t priority) {
+	/* ToDo: At least check that we have enough room to keep all as is
+	 *	In current implementation we might just reserve some reasonable amount at head/tail room
+	 * ToDo: Should we transparently relink this skb into sk_buff_head chain?
+	 */
+	return skb;
+}
+
+struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb, int headroom, int tailroom, gfp_t priority) {
+	/* ToDo: At least check that we have enough room to keep all as is
+	 *	In current implementation we might just reserve some reasonable amount at head/tail room
+	 * See also: skb_copy_expand()
+	 */
+	return skb;
+}
+
+void skb_shifthead(struct sk_buff *skb, int headshift) {
+	assert(skb->data);
+	skb->data -= headshift;
+	if(likely(skb->h.raw))
+		skb->h.raw -= headshift;
+	if(likely(skb->nh.raw))
+		skb->nh.raw -= headshift;
+	if(likely(skb->mac.raw))
+		skb->mac.raw -= headshift;
+	assert(skb->head <= skb->data);
+	/* ToDo: check end here */
+}
 
 struct sk_buff * skb_recv_datagram(struct sock *sk, unsigned flags, int noblock,
 		int *err) {

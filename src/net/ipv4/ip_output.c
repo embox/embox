@@ -18,6 +18,7 @@
 #include <net/skbuff.h>
 #include <net/icmp.h>
 
+
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,
 		in_addr_t daddr/*, ip_options_t *opt*/) {
@@ -118,18 +119,20 @@ int ip_forward_packet(sk_buff_t *skb) {
 		return 0;
 	}
 
+	/* IP Options is a security violation
+	 * Try to return packet as close as possible, so check it before ttl processsing (RFC 1812)
+	 */
+	if (unlikely(optlen)) {
+		icmp_send(skb, ICMP_PARAMETERPROB, 0, htonl(IP_MIN_HEADER_SIZE));
+		return -1;
+	}
+
 		/* Check TTL and decrease it */
-	if (iph->ttl <= 1) {
+	if (unlikely(iph->ttl <= 1)) {
 		icmp_send(skb, ICMP_TIME_EXCEEDED, ICMP_EXC_TTL, 0);
 		return -1;
 	}
 	iph->ttl--;		/* All routes have the same length */
-
-		/* IP Options is a security violation */
-	if (optlen) {
-		icmp_send(skb, ICMP_PARAMETERPROB, 0, htonl(20));
-		return -1;
-	}
 
 		/* Check no route */
 	if (!best_route) {
@@ -161,14 +164,21 @@ int ip_forward_packet(sk_buff_t *skb) {
 			return res;
 		} else {
 			/* Fragmentation is disabled */
-			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED, 0);
+			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED, htonl(best_route->dev->mtu << 16));		/* Support RFC 1191 */
 			return -1;
 		}
 	}
 
 	if (ip_route(skb, best_route) < 0) {
 		/* So we have something like arp problem */
-		icmp_send(skb, ICMP_DEST_UNREACH, best_route->rt_gateway == INADDR_ANY ? ICMP_HOST_UNREACH : ICMP_NET_UNREACH, 0);
+		if (best_route->rt_gateway == INADDR_ANY)
+		{
+			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH, iph->daddr);
+		}
+		else
+		{
+			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH, htonl(best_route->rt_gateway));
+		}
 		return -1;
 	}
 
@@ -177,6 +187,6 @@ int ip_forward_packet(sk_buff_t *skb) {
 		 */
 	ip_send_check(iph);
 
-	return ip_queue_xmit(skb, 0);			/* What about not-Ether carrier? */
+	return ip_queue_xmit(skb, 0);
 }
 

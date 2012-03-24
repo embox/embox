@@ -30,7 +30,7 @@
  *
  * @return the larger of @c a and @c b
  */
-#define min(a, b) __min(a, b)
+#define max(a, b) __max(a, b)
 
 /**
  * Returns the smaller of two values.
@@ -40,7 +40,7 @@
  *
  * @return the smaller of @c a and @c b
  */
-#define max(a, b) __max(a, b)
+#define min(a, b) __min(a, b)
 
 /**
  * Limits value to the specified boundary.

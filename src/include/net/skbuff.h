@@ -11,11 +11,11 @@
 #define NET_SKBUFF_H_
 
 /* FIXME include this */
-//#include <net/icmp.h>
 //#include <net/if_arp.h>
 //#include <net/if_ether.h>
-//#include <net/ip.h>
 //#include <net/netdevice.h>
+//#include <net/ip.h>
+//#include <net/icmp.h>
 //#include <net/sock.h>
 //#include <net/udp.h>
 #include <types.h>
@@ -26,7 +26,6 @@ struct skb_timeval {
 };
 
 /* Packet types */
-
 #define PACKET_HOST             0   /* To us */
 #define PACKET_BROADCAST        1   /* To all */
 #define PACKET_MULTICAST        2   /* To group */
@@ -35,6 +34,9 @@ struct skb_timeval {
 /* These ones are invisible by user level */
 #define PACKET_LOOPBACK         5   /* MC/BRD frame looped back */
 #define PACKET_FASTROUTE        6   /* Fastrouted frame */
+
+
+#define SK_BUF_EXTRA_HEADROOM	50	/* Requires if someone wants to enlarge packet from head */
 
 typedef struct sk_buff {        /* Socket buffer */
 	/* These two members must be first. */
@@ -65,9 +67,10 @@ typedef struct sk_buff {        /* Socket buffer */
 	} mac;
 	__be16 offset;              /* Offset information for ip fragmentation*/
 
-	unsigned char *data;	   /* Pointer for buffer used to store all skb content */
-	unsigned char *p_data;     /* Pointer for current processing data */
-	char prot_info;		   /* Protocol level additional data, tcp uses for state handling */
+	unsigned char *head;		/* Pointer for buffer used to store all skb content */
+	unsigned char *data;		/* Data head pointer */
+	unsigned char *p_data;		/* Pointer for current processing data. See tail in Linux skb */
+	char prot_info;				/* Protocol level additional data, tcp uses for state handling */
 } sk_buff_t;
 
 typedef struct sk_buff_head {
@@ -90,6 +93,46 @@ extern struct sk_buff * alloc_skb(unsigned int size, gfp_t priority);
  */
 extern void kfree_skb(struct sk_buff *skb);
 
+/**
+ *	skb_copy_expand	-	copy and expand sk_buff
+ *	@skb: buffer to copy
+ *	@newheadroom: add at least those amount of free bytes at head
+ *	@newtailroom: add at least those amount of free bytes at tail
+ *	@priority: allocation priority
+ *
+ *	Make a copy of both an &sk_buff and its data and while doing so
+ *	allocate additional space.
+ *
+ *	This is used when the caller wishes to modify the data and needs a
+ *	private copy of the data to alter as well as more space for new fields.
+ *	Returns NULL on failure or the pointer to the buffer
+ *	on success.
+ */
+extern struct sk_buff *skb_copy_expand(struct sk_buff *skb,
+				int newheadroom, int newtailroom, gfp_t priority);
+
+/**
+ *	skb_checkcopy_expand	-	check, copy and expand sk_buff
+ *	@skb: buffer to check, copy
+ *	@headroom: required amount of free bytes at head
+ *	@tailroom: required amount of free bytes at tail
+ *	@priority: allocation priority
+ *
+ *	Make a copy of both an &sk_buff and its data and while doing so
+ *	allocate additional space. Do nothing if we already have such amount
+ *	of free space.
+ *
+ *	Returns NULL on failure or the pointer to the buffer
+ *	on success.
+ */
+extern struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb,
+				int headroom, int tailroom, gfp_t priority);
+
+/**
+ *	skb_shifthead	-	shift pointers to headers in the head of the skb structure
+ *	@skb: buffer to process
+ */
+extern void skb_shifthead(struct sk_buff *skb, int headshift);
 
 /**
  * sk_buff clone it used as we want to queue sk_buff in several queue

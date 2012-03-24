@@ -34,6 +34,11 @@ enum {
 	NR_ICMP_TYPES
 };
 
+#define	ICMP_INFOTYPE(type)							\
+	( ((type) == ICMP_ECHOREPLY) || ((type) == ICMP_ECHO) ||		\
+	  ((type) == ICMP_TIMESTAMP) || ((type) == ICMP_TIMESTAMPREPLY) ||	\
+	  ((type) == ICMP_INFO_REQUEST) || ((type) == ICMP_INFO_REPLY) )
+
 /* Codes for UNREACH. */
 enum {
 	ICMP_NET_UNREACH    = 0, /* Network Unreachable          */
@@ -72,11 +77,12 @@ typedef struct icmphdr {
 	__u8     code;
 	__be16 checksum;
 	union {
+		__u8  ih_pptr;				/* ICMP_PARAMETERPROB */
 		struct {
 			__be16 id;
 			__be16 sequence;
 		} echo;
-		__be16 gateway;
+		__be32 gateway;
 		struct {
 			__be16 __unused;
 			__be16 mtu;
@@ -121,6 +127,6 @@ static inline void icmp_send_check_skb(sk_buff_t *skb) {
  * 			gateway address for ICMP_REDIRECT
  * 			offset for ICMP_PARAMETERPROB
  */
-extern void icmp_send(sk_buff_t *skb_in, int type, int code, uint32_t info);
+extern void icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be32 info);
 
 #endif /* NET_ICMP_H_ */
