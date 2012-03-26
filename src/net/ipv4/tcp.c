@@ -250,13 +250,13 @@ static tcp_st_err_t tcp_st_syn_recv_pre(union sock_pointer sock, struct sk_buff 
 
 static tcp_st_err_t tcp_st_syn_recv(union sock_pointer sock, struct sk_buff *skb,
 		struct tcphdr *tcph, struct tcphdr *out_tcph) {
-	__u32 seq, ack;
+//	__u32 seq, ack;
 
 	printf("call tcp_st_syn_recv\n");
 	assert(sock.sk->sk_state == TCP_SYN_RECV);
 
-	seq = ntohl(tcph->seq);
-	ack = ntohl(tcph->ack_seq);
+//	seq = ntohl(tcph->seq);
+//	ack = ntohl(tcph->ack_seq);
 	if (tcph->ack) {// && (sock.tcp_sk->this.seq == ack) && (sock.tcp_sk->rem.seq == seq)) {
 //		tcp_sk->this.seq = ack;
 //		tcp_sk->rem.seq = seq;
