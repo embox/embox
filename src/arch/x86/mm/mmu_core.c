@@ -10,15 +10,18 @@
 #include <hal/mm/mmu_core.h>
 
 void mmu_on(void) {
-	__asm__ (
-		"mov $0x00000001, %eax"
+
+	asm (
+		"mov %cr0, %eax\n"
+		"or  $0x00000001, %eax\n"
 		"mov %eax, %cr0"
 	);
 }
 
 void mmu_off(void) {
-	__asm__ (
-		"mov $0x00000000, %eax"
+	asm (
+		"mov %cr0, %eax\n"
+		"and  $0xfffffffe, %eax\n"
 		"mov %eax, %cr0"
 	);
 }
