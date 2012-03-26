@@ -62,6 +62,7 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	}
 
 	sock->type = type;
+	sock->state = SS_UNCONNECTED;
 
   /* TODO: in create() method -EPROTONOSUPPORT should be returned,
      when protocol is not supported */

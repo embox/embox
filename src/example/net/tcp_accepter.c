@@ -18,7 +18,6 @@ EMBOX_EXAMPLE(exec);
 #define LISTENING_PORT	18
 
 static int exec(int argc, char **argv) {
-	const char *msg = "Hello! Merry Christmas!!";
 	int res, sockfd;
 	struct sockaddr_in src, dst;
 	socklen_t dst_addr_len;
@@ -56,7 +55,6 @@ static int exec(int argc, char **argv) {
  		}
 		printf("\nclient from %s:%d at %d socket\n\n",
 				inet_ntoa(dst.sin_addr), ntohs(dst.sin_port), res);
-		sendto(res, msg, strlen(msg), 0, (struct sockaddr *)&dst, sizeof(dst));
 	}
 
 	return 0;

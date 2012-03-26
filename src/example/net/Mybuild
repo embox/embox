@@ -1,5 +1,10 @@
 package embox.example.net
 
+module tcp_connect {
+	source "tcp_connect.c"
+	depends embox.net.socket
+}
+
 module tcp_accepter {
 	source "tcp_accepter.c"
 	depends embox.net.socket

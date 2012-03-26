@@ -24,8 +24,8 @@ EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
 /* TODO: to meet POSIX inet_proto_find should decide whether type-protocol
    combination is valid and return appropriate errno. see kernel_socket_create*/
-static struct inet_protosw *inet_proto_find(short int *type, int *protocol) {
-	struct inet_protosw *p_netsock = NULL;
+static struct inet_protosw * inet_proto_find(short int *type, int *protocol) {
+	struct inet_protosw *p_netsock;
 	const struct net_sock *net_sock_ptr;
 	int net_proto_family;
 
@@ -38,24 +38,28 @@ static struct inet_protosw *inet_proto_find(short int *type, int *protocol) {
 		if (net_proto_family != AF_UNSPEC && net_proto_family != AF_INET) {
 			continue;
 		}
-
-		if(*type == p_netsock->type){  /* type is ok */
+		if (*type == p_netsock->type){  /* type is ok */
 			type_present = true;
-			if(*protocol){
-				if(*protocol == p_netsock->protocol)
+			if (*protocol) {
+				if(*protocol == p_netsock->protocol) {
 					return p_netsock;  /* protocol and type matched */
-				else
+				}
+				else {
 					continue;  /* type matched but no such protocol. try next */
-			}else
-				if(p_netsock->deflt)
+				}
+			}
+			else if (p_netsock->deflt) {
 					return p_netsock;  /* only type is specified. */
+			}
 		}
 	}
 
-	if(type_present)
+	if (type_present) {
 		*protocol = -1; /* to notify about type-protocol absence */
-	else
+	}
+	else {
 		*type = -1; /* to notify about type absence  */
+	}
 	return NULL;
 }
 
@@ -65,16 +69,19 @@ static int inet_create(struct socket *sock, int protocol) {
 	short int type = sock->type;
 	struct sock *sk;
 	struct inet_sock *inet;
-	struct inet_protosw *p_netsock = NULL;
+	struct inet_protosw *p_netsock;
 
-	if (NULL == (p_netsock = inet_proto_find(&type, &protocol))) {
-		if(type < 0)
+	p_netsock = inet_proto_find(&type, &protocol);
+	if (p_netsock == NULL) {
+		if (type < 0) {
 			return -EPROTOTYPE;
-		else
+		}
+		else {
 			return -EPROTONOSUPPORT;
+		}
 	}
 
-	sk = sk_alloc(PF_INET, 0, (struct proto *) p_netsock->prot);
+	sk = sk_alloc(PF_INET, 0, (struct proto *)p_netsock->prot);
 	if (sk == NULL) {
 		return -ENOMEM;
 	}
@@ -88,9 +95,13 @@ static int inet_create(struct socket *sock, int protocol) {
 	inet->id = 0;
 	inet->uc_ttl = -1; /* TODO socket setup more options  */
 	inet->mc_ttl = 1;
+	/* setup port */
+	socket_set_port_type(sock);
+	inet->sport = htons(socket_get_free_port(inet->sport_type)); /* inet->sport at network bytes order */
 
 	if (sk->sk_prot->init != NULL) {
-		if(0 != (err = sk->sk_prot->init(sk))) {
+		err = sk->sk_prot->init(sk);
+		if (err < 0) {
 			sk_common_release(sk);
 			return err;
 		}
@@ -109,38 +120,39 @@ int inet_release(struct socket *sock) {
 	}
 
 	sock_lock(sk);
+
 	inet = inet_sk(sk);
-	socket_port_unlock(inet->sport, inet->sport_type);
-	sock_unlock(sock->sk);
+	socket_port_unlock(ntohs(inet->sport), inet->sport_type);
 
 	if (sk->sk_prot->close != NULL) {
 		/* altering close() interface to return NULL
 			 is probably not appropriate) */
 		sk->sk_prot->close(sock->sk, 0);
-		sock->sk = NULL;
 	}
-
-	if(sock->sk)
+	else {
 		sk_common_release(sock->sk);
+	}
 	sock->sk = NULL;
+	sock_unlock(sk);
 
 	return ENOERR;
 }
+
 
 /**
  * predicate to compare two internet address structures
  **/
 bool inet_address_compare(struct sockaddr *addr1, struct sockaddr *addr2){
-	sockaddr_in_t *addr_in1, *addr_in2;
-	addr_in1 = (sockaddr_in_t *)addr1;
-	addr_in2 = (sockaddr_in_t *)addr2;
+        sockaddr_in_t *addr_in1, *addr_in2;
+        addr_in1 = (sockaddr_in_t *)addr1;
+        addr_in2 = (sockaddr_in_t *)addr2;
 
-	if((addr_in1->sin_family == addr_in2->sin_family) &&
-		 (addr_in1->sin_addr.s_addr == addr_in2->sin_addr.s_addr) &&
-		 (addr_in1->sin_port == addr_in2->sin_port))
-		return true;
-	else
-		return false;
+        if((addr_in1->sin_family == addr_in2->sin_family) &&
+                 (addr_in1->sin_addr.s_addr == addr_in2->sin_addr.s_addr) &&
+                 (addr_in1->sin_port == addr_in2->sin_port))
+                return true;
+        else
+                return false;
 }
 
 int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
@@ -151,55 +163,54 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 
 	sk = sock->sk;
 
+	res = ENOERR;
 	sock_lock(sk);
 	if (sk->sk_prot->bind != NULL) {
 		res = sk->sk_prot->bind(sk, addr, addr_len);
 		if (res < 0) {
-			return res;
+			goto unlock;
 		}
 	}
 
 	inet = inet_sk(sk);
 	addr_in = (struct sockaddr_in *)addr;
-
-	socket_set_port_type(sock);
-	if (socket_port_is_busy(addr_in->sin_port, inet->sport_type)) {
-		return -EBUSY;
+	if (socket_port_is_busy(ntohs(addr_in->sin_port), inet->sport_type)) {
+		res = -EBUSY;
+		goto unlock;
 	}
-	socket_port_lock(addr_in->sin_port, inet->sport_type);
-	inet->rcv_saddr = inet->saddr = addr_in->sin_addr.s_addr;
+	else {
+		socket_port_unlock(ntohs(inet->sport), inet->sport_type);
+	}
+	socket_port_lock(ntohs(addr_in->sin_port), inet->sport_type); // reserve new port
+	inet->rcv_saddr = addr_in->sin_addr.s_addr;
 	inet->sport = addr_in->sin_port;
 	inet->daddr = 0;
 	inet->dport = 0;
-	sock_unlock(sock->sk);
 
-	return ENOERR;
+unlock:
+	sock_unlock(sock->sk);
+	return res;
 }
 
 int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
 			int addr_len, int flags) {
 	struct sock *sk;
-	struct inet_sock *inet;
+
 	sk = sock->sk;
-
-	inet = inet_sk(sock->sk);
-	inet->sport = socket_get_free_port(inet->sport_type);
-	socket_set_port_type(sock);
-//	socket_port_lock(inet->sport, inet->sport_type); it was locked in socket_get_free_port
-
-	if(sk->sk_prot->connect)
+	if (sk->sk_prot->connect == NULL) {
 		return sk->sk_prot->connect(sk, addr, addr_len);
-	else
-		return ENOERR;
+	}
+	return ENOERR;
 }
 
 int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
 			struct msghdr *msg, size_t size) {
 	struct sock *sk;
-	sk = sock->sk;
 
-	if(!sk->sk_prot->sendmsg)
+	sk = sock->sk;
+	if (sk->sk_prot->sendmsg == NULL) {
 		return SK_NO_SUCH_METHOD;
+	}
 
 	return sk->sk_prot->sendmsg(iocb, sk, msg, size);
 }
@@ -209,53 +220,52 @@ int inet_stream_connect(struct socket *sock, struct sockaddr * addr,
 			int addr_len, int flags) {
 	int err;
 
-	if(!sock->sk->sk_prot->connect)
+	if (sock->sk->sk_prot->connect == NULL) {
 		return SK_NO_SUCH_METHOD;
+	}
 
 	sock_lock(sock->sk);
 	switch (sock->state) {
 	default:
 		err = -EINVAL;
-		goto release;
+		break;
 	case SS_CONNECTED:
 		err = -EISCONN;
-		goto release;
+		break;
 	case SS_CONNECTING:
 		err = -EALREADY;
-		goto release;
+		break;
 	case SS_UNCONNECTED:
-		err = -EISCONN;
-		if (sock->sk->sk_state != TCP_CLOSE)
-			goto release;
 		err = sock->sk->sk_prot->connect(sock->sk, addr, addr_len);
-		if (err < 0)
-			goto release;
 		break;
 	}
 	sock_unlock(sock->sk);
 
-release:
-	inet_release(sock);
+//release:
+//	inet_release(sock);
 	return err;
 }
 
 int inet_listen(struct socket *sock, int backlog) {
-	struct sock *sk = sock->sk;
+	struct sock *sk;
 
-	if(!sk->sk_prot->listen)
+	sk = sock->sk;
+	if (sk->sk_prot->listen == NULL) {
 		return SK_NO_SUCH_METHOD;
+	}
 
 	return sk->sk_prot->listen(sk, backlog);
 }
 
 static int inet_accept(socket_t *sock, socket_t *newsock, sockaddr_t *addr, int *addr_len) {
-	struct sock *sk = sock->sk;
-	struct sock *newsk = newsock->sk;
+	struct sock *sk;
 
-	if(!sk->sk_prot->accept)
+	sk = sock->sk;
+	if (sk->sk_prot->accept == NULL) {
 		return SK_NO_SUCH_METHOD;
+	}
 
-	return sk->sk_prot->accept(sk, newsk, addr, addr_len);
+	return sk->sk_prot->accept(sk, newsock->sk, addr, addr_len);
 }
 
 /* uses for create socket */

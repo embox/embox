@@ -62,11 +62,11 @@ int socket_port_unlock(short port, unsigned short port_type) {
 	return 0;
 }
 
-short socket_get_free_port(unsigned short sock_type) {
+unsigned short socket_get_free_port(unsigned short sock_type) {
 	unsigned short port_number;
 
 	if (sock_type != SOCK_RAW) {
-		for (port_number = 0; port_number < SYSTEM_PORT_MAX_NUMBER;
+		for (port_number = 1; port_number < SYSTEM_PORT_MAX_NUMBER;
 				port_number++) {
 			if (!socket_port_is_busy(port_number, sock_type)) {
 				socket_port_lock(port_number, sock_type);

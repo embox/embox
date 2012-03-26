@@ -189,10 +189,11 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	inet->daddr = dest_addr->sin_addr.s_addr;
 	inet->dport = dest_addr->sin_port;
 
-	socket_set_port_type(sock);
-	if (inet->sport == 0) {
-		inet->sport = socket_get_free_port(inet->sport_type);
-	}
+//	socket_set_port_type(sock); // done at inet_create
+//	if (inet->sport == 0) {
+//		inet->sport = socket_get_free_port(inet->sport_type);
+//	}
+
 	/* socket is ready for usage and has no data transmitting errors yet */
 	sock->sk->sk_err = -1;
 
@@ -252,8 +253,11 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	m.msg_iov = &iov;
 
 	res = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
+	if (res < 0) {
+		return res;
+	}
 
-	return res;
+	return iov.iov_len; /* return length of received msg */
 }
 
 

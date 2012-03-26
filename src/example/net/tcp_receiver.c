@@ -78,6 +78,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	close(connect_sock);
+	close(sock);
 
 	return 0;
 }
