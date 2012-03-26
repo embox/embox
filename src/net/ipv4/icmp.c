@@ -238,7 +238,7 @@ void icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be32 info) {
 			__be16 ip_id = inet_dev_get_id(idev);
 			__be16 tot_len = htons(ip_ret_len);
 
-			init_ip_header(skb->nh.iph, ICMP_PROTO_TYPE, ip_id, tot_len, iph_in->tos, htonl(idev->ifa_address), iph_in->saddr);
+			init_ip_header(iph, ICMP_PROTO_TYPE, ip_id, tot_len, iph_in->tos, htonl(idev->ifa_address), iph_in->saddr);
 		}
 
 			/* Assemble ICMP header */
