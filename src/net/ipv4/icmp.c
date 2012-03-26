@@ -223,12 +223,11 @@ void icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be32 info) {
 		/* Relink skb and build content */
 	{
 		iphdr_t *iph_in = skb->nh.iph;						/* Original IP header */
-		/* iphdr_t *iph; */
+		iphdr_t *iph;
 		icmphdr_t *icmph;
 
 		skb_shifthead(skb, realloc_shift);
-		/* iph = iph_in, what iph is for? */
-		/* iph = skb->nh.iph;									/\* IP header is in correct place. We'll fill it later *\/ */
+		iph = skb->nh.iph;									/* IP header is in correct place. We'll fill it later */
 		skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;
 		icmph = skb->h.icmph;								/* ICMP header follows IP header. We'll fill it later */
 															/* Link Layer will be build after routing. It may not be ready yet */
@@ -239,7 +238,7 @@ void icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be32 info) {
 			__be16 ip_id = inet_dev_get_id(idev);
 			__be16 tot_len = htons(ip_ret_len);
 
-			init_ip_header(iph_in, ICMP_PROTO_TYPE, ip_id, tot_len, iph_in->tos, htonl(idev->ifa_address), iph_in->saddr);
+			init_ip_header(iph, ICMP_PROTO_TYPE, ip_id, tot_len, iph_in->tos, htonl(idev->ifa_address), iph_in->saddr);
 		}
 
 			/* Assemble ICMP header */
