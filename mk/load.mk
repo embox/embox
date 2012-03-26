@@ -14,6 +14,7 @@ export mk_core_def := $(MK_CACHE_DIR)/mk_core_def.mk
 $(mk_core_def) : CACHE_INCLUDES := \
 	mk/core/define.mk
 $(mk_core_def) : ALLOC_SCOPE := a
+all_mk_files += $(mk_core_def)
 
 export mk_core_obj := $(MK_CACHE_DIR)/mk_core_obj.mk
 $(mk_core_obj) : CACHE_INCLUDES := \
@@ -21,6 +22,7 @@ $(mk_core_obj) : CACHE_INCLUDES := \
 $(mk_core_obj) : CACHE_REQUIRES := \
 	$(mk_core_def)
 $(mk_core_obj) : ALLOC_SCOPE := b
+all_mk_files += $(mk_core_obj)
 
 # Utils.
 export mk_util := $(MK_CACHE_DIR)/mk_util.mk
@@ -30,6 +32,7 @@ $(mk_util) : CACHE_INCLUDES := \
 $(mk_util) : CACHE_REQUIRES := \
 	$(mk_core_def)
 $(mk_util) : ALLOC_SCOPE := c
+all_mk_files += $(mk_util)
 
 # GOLD parser engine.
 export mk_gold_engine := $(MK_CACHE_DIR)/mk_gold_engine.mk
@@ -38,6 +41,7 @@ $(mk_gold_engine) : CACHE_INCLUDES := \
 $(mk_gold_engine) : CACHE_REQUIRES := \
 	$(mk_core_def)
 $(mk_gold_engine) : ALLOC_SCOPE := d
+all_mk_files += $(mk_gold_engine)
 
 # Tiny version of EMF Ecore.
 export mk_model := $(MK_CACHE_DIR)/mk_model.mk
@@ -49,6 +53,7 @@ $(mk_model) : CACHE_INCLUDES := \
 $(mk_model) : CACHE_REQUIRES := \
 	$(mk_core_obj)
 $(mk_model) : ALLOC_SCOPE := e
+all_mk_files += $(mk_model)
 
 # Myfiles parser & model.
 export mk_mybuild_myfile := $(MK_CACHE_DIR)/mk_mybuild_myfile.mk
@@ -62,6 +67,7 @@ $(mk_mybuild_myfile) : CACHE_REQUIRES := \
 	$(mk_gold_engine) \
 	$(mk_model)
 $(mk_mybuild_myfile) : ALLOC_SCOPE := f
+all_mk_files += $(mk_mybuild_myfile)
 
 # Configuration files model.
 export mk_mybuild_configfile := $(MK_CACHE_DIR)/mk_mybuild_configfile.mk
@@ -75,6 +81,7 @@ $(mk_mybuild_configfile) : CACHE_REQUIRES := \
 	$(mk_mybuild_myfile) \
 	$(mk_model)
 $(mk_mybuild_configfile) : ALLOC_SCOPE := g
+all_mk_files += $(mk_mybuild_configfile)
 
 # Build model files.
 export mk_mybuild_build := $(MK_CACHE_DIR)/mk_mybuild_build.mk
@@ -86,7 +93,7 @@ $(mk_mybuild_build) : CACHE_REQUIRES := \
 	$(mk_mybuild_configfile) \
 	$(mk_model)
 $(mk_mybuild_build) : ALLOC_SCOPE := h
-
+all_mk_files += $(mk_mybuild_build)
 
 # Mybuild itself.
 export mk_mybuild := $(MK_CACHE_DIR)/mk_mybuild.mk
@@ -97,6 +104,7 @@ $(mk_mybuild) : CACHE_REQUIRES := \
 	$(mk_mybuild_configfile) \
 	$(mk_mybuild_build)
 $(mk_mybuild) : ALLOC_SCOPE := i
+all_mk_files += $(mk_mybuild)
 
 # Ugly scripts.
 export mk_ugly := $(MK_CACHE_DIR)/mk_ugly.mk
@@ -105,18 +113,10 @@ $(mk_ugly) : CACHE_INCLUDES := \
 $(mk_ugly) : CACHE_REQUIRES := \
 	$(mk_mybuild)# Agrrr...
 $(mk_ugly) : ALLOC_SCOPE := u
+all_mk_files += $(mk_ugly)
 
-export all_mk_files := \
-	$(mk_core_def) \
-	$(mk_core_obj) \
-	$(mk_util) \
-	$(mk_gold_engine) \
-	$(mk_model) \
-	$(mk_mybuild_myfile) \
-	$(mk_mybuild_configfile) \
-	$(mk_mybuild_build) \
-	$(mk_mybuild) \
-	$(mk_ugly)
+# Flatten and export.
+export all_mk_files := $(all_mk_files)
 
 #
 # To get our scripts work properly an 'ALLOC_SCOPE' variable should be defined.
