@@ -9,14 +9,9 @@ __mybuild_mybuild_mk := 1
 include mk/mybuild/myfile-resource.mk
 
 # Constructor args:
-#   1. Myfile resource set
-#   2. Config resource set
+#   1. Configuration resource set.
 define class-Mybuild
-	$(property-field myfileResourceSet : ResourceSet)
-	$(property-field configResourceSet : ResourceSet)
-
-	$(set myfileResourceSet,$(firstword $1))
-	$(set configResourceSet,$(word 2,$1))
+	$(property-field configResourceSet : ResourceSet,$1)
 
 	$(map moduleInstanceStore... : BuildModuleInstance)
 
@@ -139,6 +134,10 @@ define class-Mybuild
 
 endef
 
+define mybuild_create_build
+	$(invoke $(new Mybuild,$(__config_resource_set)).createBuild)
+endef
+
 define printInstances
 		$(strip $(for buildBuild<-$1,
 			inst<-$(get buildBuild->modules),
@@ -161,12 +160,6 @@ endef
 define listInstances
 		$(strip $(for buildBuild<-$1,
 			$(get buildBuild->modules)))
-endef
-
-# Args
-#  1. Mybuild instance
-define Mybuild-createBuild
-	$(invoke $1.createBuild)
 endef
 
 $(def_all)

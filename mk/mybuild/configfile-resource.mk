@@ -19,19 +19,19 @@ define class-ConfigFileResource
 
 endef
 
+# Constructor:
+#   1. List of resources.
+#   2. My-file resource set to link against.
 define class-ConfigFileResourceSet
-	$(super ResourceSet,$(value 1))
+	$(field myfileResourceSet : ResourceSet,$2)
+	$(super ResourceSet,$1)
 	$(method createLinker,
-		$(new ConfigLinker,$(this),$(__myfile_resource_set)))
+		$(new ConfigLinker,$(this),$(get-field myfileResourceSet)))
 endef
 
 define config_create_resource_set_from_files
-	$(new ConfigFileResourceSet,$(foreach r,$1,$($r)))
-endef
-
-define config_link_with_myfile_model
-	$(for rs <- $1,
-		myfileSet <- $2,
+	$(for rs <- $(new ConfigFileResourceSet,$(for f <- $1,$($f)),
+					$(__myfile_resource_set)),
 
 		$(invoke $(get rs->linker).resolveAllLinks)
 

@@ -19,16 +19,16 @@ define class-MyFileResource
 
 endef
 
+# Constructor:
+#   1. List of resources.
 define class-MyFileResourceSet
-	$(super ResourceSet,$(value 1))
+	$(super ResourceSet,$1)
 	$(method createLinker,
 		$(new MyFileLinker,$(this),$(this)))
 endef
 
 define myfile_create_resource_set_from_files
-	$(for rs <-
-			$(new MyFileResourceSet,
-				$(for f <- $1,$($f))),
+	$(for rs <- $(new MyFileResourceSet,$(for f <- $1,$($f))),
 
 		$(invoke $(get rs->linker).resolveAllLinks)
 
