@@ -12,8 +12,7 @@
  * @author Vladimir Sokolov
  */
 
-
-	/* ToDo: svv: remove not required includes */
+/* ToDo: svv: remove not required includes */
 #include <string.h>
 #include <net/inetdevice.h>
 #include <net/icmp.h>
@@ -43,7 +42,8 @@ typedef int (*icmp_control)(sk_buff_t *skb);
 
 /* Is packet described by skb is multicast one at levels 2 or 3 */
 static inline bool is_packet_multicast(sk_buff_t *skb) {
-	return (skb->pkt_type != PACKET_HOST) || !(ip_is_local(ntohl(skb->nh.iph->daddr), false, false));
+	return (skb->pkt_type != PACKET_HOST) ||
+		!(ip_is_local(ntohl(skb->nh.iph->daddr), false, false));
 }
 
 static int icmp_discard(sk_buff_t *skb) {
@@ -71,30 +71,30 @@ static int icmp_unreach(sk_buff_t *skb) {
 	assert(stats != NULL);
 
 	switch (icmph->type) {
-		case ICMP_DEST_UNREACH:
-			if (icmph->code >= NR_ICMP_UNREACH) {
-				return -1;
-			}
-			switch (icmph->code) {
-				case ICMP_NET_UNREACH:
-				case ICMP_HOST_UNREACH:
-				case ICMP_PROT_UNREACH:
-				case ICMP_PORT_UNREACH:
-					/* do nothing */
-					break;
-				case ICMP_FRAG_NEEDED: // TODO
-					LOG_WARN("fragmentation needed but DF is set");
-					break;
-			}
-			break;
-		case ICMP_SOURCE_QUENCH:
-		case ICMP_TIME_EXCEEDED:
+	case ICMP_DEST_UNREACH:
+		if (icmph->code >= NR_ICMP_UNREACH) {
+			return -1;
+		}
+		switch (icmph->code) {
+		case ICMP_NET_UNREACH:
+		case ICMP_HOST_UNREACH:
+		case ICMP_PROT_UNREACH:
+		case ICMP_PORT_UNREACH:
 			/* do nothing */
 			break;
-		case ICMP_PARAMETERPROB:
+		case ICMP_FRAG_NEEDED: // TODO
+			LOG_WARN("fragmentation needed but DF is set");
 			break;
-		default:
-			return -1;
+		}
+		break;
+	case ICMP_SOURCE_QUENCH:
+	case ICMP_TIME_EXCEEDED:
+		/* do nothing */
+		break;
+	case ICMP_PARAMETERPROB:
+		break;
+	default:
+		return -1;
 	}
 
 	info = icmph->type;
@@ -116,31 +116,31 @@ static int icmp_redirect(sk_buff_t *skb) {
 static int icmp_echo(sk_buff_t *skb) {
 	sk_buff_t *reply;
 
-		/* ToDo: optimization:
-		 * 	move all kfree_skb() into subfunctions like it and get rid of this skb_clone()
-		 *	we should use the original packet structures
-		 */
+	/* ToDo: optimization:
+	 * 	move all kfree_skb() into subfunctions like it and get rid of this skb_clone()
+	 *	we should use the original packet structures
+	 */
 	if (!likely(reply = skb_clone(skb, 0)))
 		return -1;
 
-		/* Fix IP header */
+	/* Fix IP header */
 	{
-		in_device_t *idev = in_dev_get(reply->dev);				/* Requires symmetric routing */
+		in_device_t *idev = in_dev_get(reply->dev); /* Requires symmetric routing */
 		__be16 ip_id = inet_dev_get_id(idev);
 		__be16 tot_len = reply->nh.iph->tot_len;
 
-			/* Replace not unicast addresses */
-		__in_addr_t daddr = ip_is_local(ntohl(reply->nh.iph->daddr), false, false) ? reply->nh.iph->daddr : htonl(idev->ifa_address);
+		/* Replace not unicast addresses */
+		__in_addr_t daddr = ip_is_local(ntohl(reply->nh.iph->daddr), false, false) ?
+			reply->nh.iph->daddr : htonl(idev->ifa_address);
 
 		init_ip_header(reply->nh.iph, ICMP_PROTO_TYPE, ip_id, tot_len, 0, daddr, reply->nh.iph->saddr);
 	}
-		/* Fix ICMP header */
+	/* Fix ICMP header */
 	reply->h.icmph->type = ICMP_ECHOREPLY;
 	icmp_send_check_skb(reply);
 
 	return ip_send_packet(NULL, reply);
 }
-
 
 #if 0	/* Obsoleted stuff from Linux kernel */
 /**
@@ -181,84 +181,87 @@ static int icmp_timestamp(sk_buff_t *skb) {
 }
 
 void icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be32 info) {
-		/* Determine how many data we can take from the original datagram
-		 * Note:
-		 *	We suggest that routing is symmetric (if we get packet from A from device B, then we can reply back through device B)
-		 *	That all income packets have device (no ICMP packets generated in User Space) (not checked)
-		 */
+	/* Determine how many data we can take from the original datagram
+	 * Note:
+	 *	We suggest that routing is symmetric (if we get packet from A
+	 *      from device B, then we can reply back through device B)
+	 *	That all income packets have device (no ICMP packets generated
+	 *      in User Space) (not checked)
+	 */
 	const uint realloc_shift = IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE;
 	uint ret_len = min((realloc_shift + ntohs(skb_in->nh.iph->tot_len)), skb_in->dev->mtu);
-	uint ip_ret_len = min(ret_len, 576);							/* See RCF 1812 4.3.2.3 */
+	uint ip_ret_len = min(ret_len, 576); /* See RCF 1812 4.3.2.3 */
 	sk_buff_t *skb;
 
 	/*
 	 * RFC 1122: 3.2.2 MUST send at least the IP header and 8 bytes of header.
-	 *   MAY send more (we do)								(till ip_ret_len restriction)
+	 *   MAY send more (we do) (till ip_ret_len restriction)
 	 *   MUST NOT change this header information.
-	 *   MUST NOT reply to a multicast/broadcast IP address					(Implemented)
-	 *   MUST NOT reply to a multicast/broadcast MAC address				(Implemented)
-	 *   MUST reply to only the first fragment						(Implemented)
+	 *   MUST NOT reply to a multicast/broadcast IP address	(Implemented)
+	 *   MUST NOT reply to a multicast/broadcast MAC address (Implemented)
+	 *   MUST reply to only the first fragment (Implemented)
 	 *---------
-	 *   It's a bad idea to send ICMP error to an ICMP error				(Implemented)
+	 *   It's a bad idea to send ICMP error to an ICMP error (Implemented)
 	 */
-		/* Don't reply for not unicast address of any kind */
-	if (unlikely(is_packet_multicast(skb_in) || (skb_in->nh.iph->frag_off & htons(IP_OFFSET)))) {
+	/* Don't reply for not unicast address of any kind */
+	if (unlikely(is_packet_multicast(skb_in) ||
+	    (skb_in->nh.iph->frag_off & htons(IP_OFFSET)))) {
 		kfree_skb(skb_in);
 		return;
 	}
-		/* Don't reply to ICMP Error.
-		 * We don't check that it's corrupted. We already have sufficient reason to drop it
-		 */
+	/* Don't reply to ICMP Error.
+	 * We don't check that it's corrupted. We already have sufficient reason to drop it
+	 */
 	if (unlikely((skb_in->nh.iph->proto == IPPROTO_ICMP) && !(ICMP_INFOTYPE(skb_in->h.icmph->type)))) {
 		kfree_skb(skb_in);
 		return;
 	}
 
-		/* Check presence of extra space for new headers */
+	/* Check presence of extra space for new headers */
 	if (unlikely(skb = skb_checkcopy_expand(skb_in, realloc_shift, 0, 0))) {
 		kfree_skb(skb_in);
 		return;
 	}
 
-		/* Relink skb and build content */
+	/* Relink skb and build content */
 	{
-		iphdr_t *iph_in = skb->nh.iph;						/* Original IP header */
+		iphdr_t *iph_in = skb->nh.iph; /* Original IP header */
 		iphdr_t *iph;
 		icmphdr_t *icmph;
 
 		skb_shifthead(skb, realloc_shift);
-		iph = skb->nh.iph;									/* IP header is in correct place. We'll fill it later */
+		iph = skb->nh.iph; /* IP header is in correct place. We'll fill it later */
 		skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;
-		icmph = skb->h.icmph;								/* ICMP header follows IP header. We'll fill it later */
-															/* Link Layer will be build after routing. It may not be ready yet */
+		icmph = skb->h.icmph; /* ICMP header follows IP header. We'll fill it later */
+		/* Link Layer will be build after routing. It may not be ready yet */
 
-			/* Assemble IP header */
+		/* Assemble IP header */
 		{
-			in_device_t *idev = in_dev_get(skb->dev);			/* Requires symmetric routing */
+			in_device_t *idev = in_dev_get(skb->dev); /* Requires symmetric routing */
 			__be16 ip_id = inet_dev_get_id(idev);
 			__be16 tot_len = htons(ip_ret_len);
 
-			init_ip_header(iph, ICMP_PROTO_TYPE, ip_id, tot_len, iph_in->tos, htonl(idev->ifa_address), iph_in->saddr);
+			init_ip_header(iph, ICMP_PROTO_TYPE, ip_id, tot_len,
+				iph_in->tos, htonl(idev->ifa_address), iph_in->saddr);
 		}
 
-			/* Assemble ICMP header */
+		/* Assemble ICMP header */
 		icmph->type = type;
 		icmph->code = code;
 		icmph->un.gateway = info;
 		icmp_send_check_skb(skb);
-
 	}
 
 	ip_send_packet(NULL, skb);
 }
 
 static int icmp_init(void) {
-		/* It's Linux rudiment to process ICMP ECHO Replies and other stuff in User Space */
+	/* It's Linux rudiment to process ICMP ECHO Replies and other stuff in User Space */
 	return kernel_socket_create(PF_INET, SOCK_RAW, IPPROTO_ICMP, &icmp_socket);
 }
 
 static int ping_rcv(struct sk_buff *skb) {
-		/* Kernel doesn't need this answer. User Space stuff might process it if it wants to */
+	/* Kernel doesn't need this answer. User Space stuff might process it if it wants to */
 	return ENOERR;
 }
 
@@ -266,23 +269,23 @@ static int ping_rcv(struct sk_buff *skb) {
  * This table is the definition how we handle ICMP
  */
 static icmp_control icmp_handlers[NR_ICMP_TYPES] = {
-		[ICMP_ECHOREPLY]      = ping_rcv,
-		[1]                   = icmp_discard,
-		[2]                   = icmp_discard,
-		[ICMP_DEST_UNREACH]   = icmp_unreach,
-		[ICMP_SOURCE_QUENCH]  = icmp_unreach,
-		[ICMP_REDIRECT]       = icmp_redirect,
-		[6]                   = icmp_discard,
-		[7]                   = icmp_discard,
-		[ICMP_ECHO]           = icmp_echo,
-		[9]                   = icmp_discard,
-		[10]                  = icmp_discard,
-		[ICMP_TIME_EXCEEDED]  = icmp_unreach,
-		[ICMP_PARAMETERPROB]  = icmp_unreach,
-		[ICMP_TIMESTAMP]      = icmp_timestamp,
-		[ICMP_TIMESTAMPREPLY] = icmp_discard,
-		[ICMP_INFO_REQUEST]   = icmp_discard,
-		[ICMP_INFO_REPLY]     = icmp_discard
+	[ICMP_ECHOREPLY]      = ping_rcv,
+	[1]                   = icmp_discard,
+	[2]                   = icmp_discard,
+	[ICMP_DEST_UNREACH]   = icmp_unreach,
+	[ICMP_SOURCE_QUENCH]  = icmp_unreach,
+	[ICMP_REDIRECT]       = icmp_redirect,
+	[6]                   = icmp_discard,
+	[7]                   = icmp_discard,
+	[ICMP_ECHO]           = icmp_echo,
+	[9]                   = icmp_discard,
+	[10]                  = icmp_discard,
+	[ICMP_TIME_EXCEEDED]  = icmp_unreach,
+	[ICMP_PARAMETERPROB]  = icmp_unreach,
+	[ICMP_TIMESTAMP]      = icmp_timestamp,
+	[ICMP_TIMESTAMPREPLY] = icmp_discard,
+	[ICMP_INFO_REQUEST]   = icmp_discard,
+	[ICMP_INFO_REPLY]     = icmp_discard
 };
 
 /**
@@ -345,7 +348,6 @@ static inline int __icmp_rcv(sk_buff_t *pack) {
 	return icmp_handlers[icmph->type](pack);
 }
 
-
 /**
  * Receive packet.
  * Check basic asserts(). Nothing special just common parts.
@@ -361,7 +363,7 @@ static int icmp_rcv(sk_buff_t *pack) {
 
 	iph = pack->nh.iph;
 	icmph = pack->h.icmph;
-	stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev);		/* Why not just get stat from pack->dev? */
+	stats = pack->dev->netdev_ops->ndo_get_stats(pack->dev); /* Why not just get stat from pack->dev? */
 
 	assert(iph != NULL);
 	assert(icmph != NULL);
@@ -372,4 +374,3 @@ static int icmp_rcv(sk_buff_t *pack) {
 	kfree_skb(pack);
 	return res;
 }
-
