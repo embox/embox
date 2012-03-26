@@ -14,8 +14,8 @@
 
 EMBOX_EXAMPLE(run);
 
-#define MEM_SIZE                     0x1000000
-#define QUANTITY_OF_TESTS            15
+#define MEM_SIZE                     0x100000
+#define QUANTITY_OF_TESTS            10
 
 /* This structure described memory block:
  * @available - state flag: available or not
@@ -52,6 +52,7 @@ struct block_desc *find_suit_block(size_t req_size) {
 	 * less then necessary req_size go to the next block.
 	 * If the pointer(iterator) went for memory limits
 	 * then return NULL */
+
 	while ((md->is_available == 0) && (md->size < req_size + BLOCK_DESC_SIZE)) {
 		md = (void *)(((size_t)md) + md->size);
 		printf("md = 0x%X\n", (uint32_t)md);
@@ -61,6 +62,7 @@ struct block_desc *find_suit_block(size_t req_size) {
 			return NULL;
 		}
 	}
+	printf("need %d\n", (uint32_t)(req_size) + (uint32_t)(BLOCK_DESC_SIZE));
 	printf("find 0x%x\n", (uint32_t)md);
 	printf("current_free_space 0x%x\n", (uint32_t)current_free_space);
 	return md;
@@ -136,15 +138,15 @@ static void memory_init(void) {
 
 /* This program tests the simplest algorithm of memory allocation */
 static int run(int argc, char **argv) {
-	struct block_desc *md;
+	//struct block_desc *md;
 	int i, temp;
-	void *succes_alloc;
-	void *address;
+	void *succes_alloc[QUANTITY_OF_TESTS];
+	//void *address;
 
 	memory_init();
 
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
-		succes_alloc = memory_allocate(temp = rand() % 10000);
+		succes_alloc[i] = memory_allocate(temp = rand() % 10000);
 		if (succes_alloc == NULL) {
 			printf("\nMemory allocation error on the addition %d size of block: %d\n", i, temp);
 		}
@@ -153,18 +155,18 @@ static int run(int argc, char **argv) {
 
 	//return 0;
 //#if 0
-	address = memory +  BLOCK_DESC_SIZE;
+	//address = memory +  BLOCK_DESC_SIZE;
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
 		if (rand() % 2 == 0){
-			memory_free(address);
-			printf("free block num = %d address = 0x%X\n\n", i, (uint32_t)address);
+			memory_free(succes_alloc[i]);
+			printf("free block num = %d address = 0x%X\n\n", i, (uint32_t)succes_alloc[i]);
 		}
-		md = address - BLOCK_DESC_SIZE;
-		address = (void *)(((size_t)address) + md->size);
+		//md = address - BLOCK_DESC_SIZE;
+		//address = (void *)(((size_t)address) + md->size);
 	}
 
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
-			succes_alloc = memory_allocate(temp = rand() % 1000);
+			succes_alloc[i] = memory_allocate(temp = rand() % 1000);
 			if (succes_alloc == NULL) {
 				printf("\nMemory allocation error on the addition %d size of block: %d\n", i, temp);
 			}
