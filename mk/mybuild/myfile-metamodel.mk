@@ -42,9 +42,6 @@ MyFile_AnnotationTarget := \
 MyFile_AnnotationTarget_annotations := \
 	$(call eMetaReferenceCreate,$(MyFile_AnnotationTarget),MyFile_AnnotationTarget_annotations)
 
-MyFile_AnnotatedLink := \
-	$(call eMetaClassCreate,$(MyFile),MyFile_AnnotatedLink)
-
 MyFile_Interface := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Interface)
 MyFile_Interface_features := \
@@ -75,14 +72,24 @@ MyFile_Module_dependent := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_dependent)
 MyFile_Module_provides := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_provides)
+MyFile_Module_providesMembers := \
+	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_providesMembers)
 MyFile_Module_requires := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_requires)
+MyFile_Module_requiresMembers := \
+	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_requiresMembers)
 MyFile_Module_sources := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_sources)
+MyFile_Module_sourcesMembers := \
+	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_sourcesMembers)
 MyFile_Module_objects := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_objects)
+MyFile_Module_objectsMembers := \
+	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_objectsMembers)
 MyFile_Module_options := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_options)
+MyFile_Module_optionsMembers := \
+	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_optionsMembers)
 MyFile_Module_allOptions := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_allOptions)
 MyFile_Module_subTypes := \
@@ -93,13 +100,6 @@ MyFile_Module_allSubTypes := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_allSubTypes)
 MyFile_Module_allSuperTypes := \
 	$(call eMetaReferenceCreate,$(MyFile_Module),MyFile_Module_allSuperTypes)
-
-MyFile_FileMember := \
-	$(call eMetaClassCreate,$(MyFile),MyFile_FileMember)
-MyFile_FileMember_fileName := \
-	$(call eMetaAttributeCreate,$(MyFile_FileMember),MyFile_FileMember_fileName)
-MyFile_FileMember_fileFullName := \
-	$(call eMetaAttributeCreate,$(MyFile_FileMember),MyFile_FileMember_fileFullName)
 
 MyFile_Option := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Option)
@@ -136,6 +136,48 @@ MyFile_OptionBinding_option := \
 MyFile_OptionBinding_optionValue := \
 	$(call eMetaReferenceCreate,$(MyFile_OptionBinding),MyFile_OptionBinding_optionValue)
 
+MyFile_Member := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_Member)
+MyFile_Member_module := \
+	$(call eMetaReferenceCreate,$(MyFile_Member),MyFile_Member_module)
+
+MyFile_FileName := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_FileName)
+MyFile_FileName_fileName := \
+	$(call eMetaAttributeCreate,$(MyFile_FileName),MyFile_FileName_fileName)
+MyFile_FileName_fileFullName := \
+	$(call eMetaAttributeCreate,$(MyFile_FileName),MyFile_FileName_fileFullName)
+
+MyFile_DependsMember := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_DependsMember)
+MyFile_DependsMember_modules := \
+	$(call eMetaReferenceCreate,$(MyFile_DependsMember),MyFile_DependsMember_modules)
+
+MyFile_RequiresMember := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_RequiresMember)
+MyFile_RequiresMember_features := \
+	$(call eMetaReferenceCreate,$(MyFile_RequiresMember),MyFile_RequiresMember_features)
+
+MyFile_ProvidesMember := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_ProvidesMember)
+MyFile_ProvidesMember_features := \
+	$(call eMetaReferenceCreate,$(MyFile_ProvidesMember),MyFile_ProvidesMember_features)
+
+MyFile_SourceMember := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_SourceMember)
+MyFile_SourceMember_files := \
+	$(call eMetaReferenceCreate,$(MyFile_SourceMember),MyFile_SourceMember_files)
+
+MyFile_ObjectMember := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_ObjectMember)
+MyFile_ObjectMember_files := \
+	$(call eMetaReferenceCreate,$(MyFile_ObjectMember),MyFile_ObjectMember_files)
+
+MyFile_OptionMember := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_OptionMember)
+MyFile_OptionMember_options := \
+	$(call eMetaReferenceCreate,$(MyFile_OptionMember),MyFile_OptionMember_options)
+
 # Initializes the objects and relations between them.
 define __myFile_init
 	$(call eMetaModelInit,$(MyFile),myFile,my)
@@ -158,8 +200,6 @@ define __myFile_init
 	$(call eMetaClassInit,$(MyFile_AnnotationTarget),AnnotationTarget,,abstract)
 	$(call eMetaReferenceInit,$(MyFile_AnnotationTarget_annotations),annotations,$(MyFile_Annotation),$(MyFile_Annotation_target),changeable many containment)
 
-	$(call eMetaClassInit,$(MyFile_AnnotatedLink),AnnotatedLink,$(EModel_ELink) $(MyFile_AnnotationTarget),)
-
 	$(call eMetaClassInit,$(MyFile_Interface),Interface,$(MyFile_Type),)
 	$(call eMetaReferenceInit,$(MyFile_Interface_features),features,$(MyFile_Feature),$(MyFile_Feature_interface),changeable many containment)
 
@@ -172,23 +212,24 @@ define __myFile_init
 	$(call eMetaAttributeInit,$(MyFile_Module_modifiers),modifiers,changeable)
 	$(call eMetaAttributeInit,$(MyFile_Module_isStatic),static,changeable derived)
 	$(call eMetaAttributeInit,$(MyFile_Module_isAbstract),abstract,changeable derived)
-	$(call eMetaReferenceInit,$(MyFile_Module_depends),depends,$(MyFile_Module),$(MyFile_Module_dependent),changeable many linkable)
-	$(call eMetaReferenceInit,$(MyFile_Module_dependsMembers),dependsMembers,$(MyFile_AnnotatedLink),,changeable derived many containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_depends),depends,$(MyFile_Module),$(MyFile_Module_dependent),changeable derived many)
+	$(call eMetaReferenceInit,$(MyFile_Module_dependsMembers),dependsMembers,$(MyFile_DependsMember),,changeable many containment)
 	$(call eMetaReferenceInit,$(MyFile_Module_dependent),dependent,$(MyFile_Module),$(MyFile_Module_depends),changeable many linkable)
-	$(call eMetaReferenceInit,$(MyFile_Module_provides),provides,$(MyFile_Feature),$(MyFile_Feature_providedBy),changeable many linkable)
-	$(call eMetaReferenceInit,$(MyFile_Module_requires),requires,$(MyFile_Feature),$(MyFile_Feature_requiredBy),changeable many linkable)
-	$(call eMetaReferenceInit,$(MyFile_Module_sources),sources,$(MyFile_FileMember),,changeable many containment)
-	$(call eMetaReferenceInit,$(MyFile_Module_objects),objects,$(MyFile_FileMember),,changeable many containment)
-	$(call eMetaReferenceInit,$(MyFile_Module_options),options,$(MyFile_Option),,changeable many containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_provides),provides,$(MyFile_Feature),$(MyFile_Feature_providedBy),changeable derived many)
+	$(call eMetaReferenceInit,$(MyFile_Module_providesMembers),providesMembers,$(MyFile_ProvidesMember),,changeable many containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_requires),requires,$(MyFile_Feature),$(MyFile_Feature_requiredBy),changeable derived many)
+	$(call eMetaReferenceInit,$(MyFile_Module_requiresMembers),requiresMembers,$(MyFile_RequiresMember),,changeable many containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_sources),sources,$(MyFile_FileName),,changeable derived many containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_sourcesMembers),sourcesMembers,$(MyFile_SourceMember),,changeable many containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_objects),objects,$(MyFile_FileName),,changeable derived many containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_objectsMembers),objectsMembers,$(MyFile_SourceMember),,changeable many containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_options),options,$(MyFile_Option),,changeable derived many containment)
+	$(call eMetaReferenceInit,$(MyFile_Module_optionsMembers),optionsMembers,$(MyFile_OptionMember),,changeable many containment)
 	$(call eMetaReferenceInit,$(MyFile_Module_allOptions),allOptions,$(MyFile_Option),,changeable derived)
 	$(call eMetaReferenceInit,$(MyFile_Module_subTypes),subTypes,$(MyFile_Module),$(MyFile_Module_superType),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_superType),superType,$(MyFile_Module),$(MyFile_Module_subTypes),changeable linkable)
 	$(call eMetaReferenceInit,$(MyFile_Module_allSubTypes),allSubTypes,$(MyFile_Module),$(MyFile_Module_allSuperTypes),derived many)
 	$(call eMetaReferenceInit,$(MyFile_Module_allSuperTypes),allSuperTypes,$(MyFile_Module),$(MyFile_Module_allSubTypes),derived many)
-
-	$(call eMetaClassInit,$(MyFile_FileMember),FileMember,$(MyFile_AnnotationTarget),)
-	$(call eMetaAttributeInit,$(MyFile_FileMember_fileName),fileName,changeable)
-	$(call eMetaAttributeInit,$(MyFile_FileMember_fileFullName),fileFullName,derived)
 
 	$(call eMetaClassInit,$(MyFile_Option),Option,$(EModel_ENamedObject) $(MyFile_AnnotationTarget),abstract)
 	$(call eMetaReferenceInit,$(MyFile_Option_defaultValue),defaultValue,$(MyFile_OptionValue),,changeable containment)
@@ -212,6 +253,31 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_OptionBinding_option),option,$(MyFile_Option),,changeable linkable)
 	$(call eMetaReferenceInit,$(MyFile_OptionBinding_optionValue),optionValue,$(MyFile_OptionValue),,changeable containment)
 
+	$(call eMetaClassInit,$(MyFile_Member),Member,$(MyFile_AnnotationTarget),)
+	$(call eMetaReferenceInit,$(MyFile_Member_module),module,$(MyFile_Module),,changeable linkable)
+
+	$(call eMetaClassInit,$(MyFile_FileName),FileName,,)
+	$(call eMetaAttributeInit,$(MyFile_FileName_fileName),fileName,changeable)
+	$(call eMetaAttributeInit,$(MyFile_FileName_fileFullName),fileFullName,derived)
+
+	$(call eMetaClassInit,$(MyFile_DependsMember),DependsMember,$(MyFile_Member),)
+	$(call eMetaReferenceInit,$(MyFile_DependsMember_modules),modules,$(MyFile_Module),,changeable many linkable)
+
+	$(call eMetaClassInit,$(MyFile_RequiresMember),RequiresMember,$(MyFile_Member),)
+	$(call eMetaReferenceInit,$(MyFile_RequiresMember_features),features,$(MyFile_Feature),,changeable many linkable)
+
+	$(call eMetaClassInit,$(MyFile_ProvidesMember),ProvidesMember,$(MyFile_Member),)
+	$(call eMetaReferenceInit,$(MyFile_ProvidesMember_features),features,$(MyFile_Feature),,changeable many linkable)
+
+	$(call eMetaClassInit,$(MyFile_SourceMember),SourceMember,$(MyFile_Member),)
+	$(call eMetaReferenceInit,$(MyFile_SourceMember_files),files,$(MyFile_FileName),,changeable many containment)
+
+	$(call eMetaClassInit,$(MyFile_ObjectMember),ObjectMember,$(MyFile_Member),)
+	$(call eMetaReferenceInit,$(MyFile_ObjectMember_files),files,$(MyFile_FileName),,changeable many containment)
+
+	$(call eMetaClassInit,$(MyFile_OptionMember),OptionMember,$(MyFile_Member),)
+	$(call eMetaReferenceInit,$(MyFile_OptionMember_options),options,$(MyFile_Option),,changeable many containment)
+
 endef # __myFile_init
 
 # Binds objects to instance classes and features to properties.
@@ -234,8 +300,6 @@ define __myFile_bind
 	$(call eMetaClassBind,$(MyFile_AnnotationTarget),MyAnnotationTarget)
 	$(call eMetaFeatureBind,$(MyFile_AnnotationTarget_annotations),annotations)
 
-	$(call eMetaClassBind,$(MyFile_AnnotatedLink),MyAnnotatedLink)
-
 	$(call eMetaClassBind,$(MyFile_Interface),MyInterface)
 	$(call eMetaFeatureBind,$(MyFile_Interface_features),features)
 
@@ -252,19 +316,20 @@ define __myFile_bind
 	$(call eMetaFeatureBind,$(MyFile_Module_dependsMembers),dependsMembers)
 	$(call eMetaFeatureBind,$(MyFile_Module_dependent),dependent)
 	$(call eMetaFeatureBind,$(MyFile_Module_provides),provides)
+	$(call eMetaFeatureBind,$(MyFile_Module_providesMembers),providesMembers)
 	$(call eMetaFeatureBind,$(MyFile_Module_requires),requires)
+	$(call eMetaFeatureBind,$(MyFile_Module_requiresMembers),requiresMembers)
 	$(call eMetaFeatureBind,$(MyFile_Module_sources),sources)
+	$(call eMetaFeatureBind,$(MyFile_Module_sourcesMembers),sourcesMembers)
 	$(call eMetaFeatureBind,$(MyFile_Module_objects),objects)
+	$(call eMetaFeatureBind,$(MyFile_Module_objectsMembers),objectsMembers)
 	$(call eMetaFeatureBind,$(MyFile_Module_options),options)
+	$(call eMetaFeatureBind,$(MyFile_Module_optionsMembers),optionsMembers)
 	$(call eMetaFeatureBind,$(MyFile_Module_allOptions),allOptions)
 	$(call eMetaFeatureBind,$(MyFile_Module_subTypes),subTypes)
 	$(call eMetaFeatureBind,$(MyFile_Module_superType),superType)
 	$(call eMetaFeatureBind,$(MyFile_Module_allSubTypes),allSubTypes)
 	$(call eMetaFeatureBind,$(MyFile_Module_allSuperTypes),allSuperTypes)
-
-	$(call eMetaClassBind,$(MyFile_FileMember),MyFileMember)
-	$(call eMetaFeatureBind,$(MyFile_FileMember_fileName),fileName)
-	$(call eMetaFeatureBind,$(MyFile_FileMember_fileFullName),fileFullName)
 
 	$(call eMetaClassBind,$(MyFile_Option),MyOption)
 	$(call eMetaFeatureBind,$(MyFile_Option_defaultValue),defaultValue)
@@ -287,6 +352,31 @@ define __myFile_bind
 	$(call eMetaClassBind,$(MyFile_OptionBinding),MyOptionBinding)
 	$(call eMetaFeatureBind,$(MyFile_OptionBinding_option),option)
 	$(call eMetaFeatureBind,$(MyFile_OptionBinding_optionValue),optionValue)
+
+	$(call eMetaClassBind,$(MyFile_Member),MyMember)
+	$(call eMetaFeatureBind,$(MyFile_Member_module),module)
+
+	$(call eMetaClassBind,$(MyFile_FileName),MyFileName)
+	$(call eMetaFeatureBind,$(MyFile_FileName_fileName),fileName)
+	$(call eMetaFeatureBind,$(MyFile_FileName_fileFullName),fileFullName)
+
+	$(call eMetaClassBind,$(MyFile_DependsMember),MyDependsMember)
+	$(call eMetaFeatureBind,$(MyFile_DependsMember_modules),modules)
+
+	$(call eMetaClassBind,$(MyFile_RequiresMember),MyRequiresMember)
+	$(call eMetaFeatureBind,$(MyFile_RequiresMember_features),features)
+
+	$(call eMetaClassBind,$(MyFile_ProvidesMember),MyProvidesMember)
+	$(call eMetaFeatureBind,$(MyFile_ProvidesMember_features),features)
+
+	$(call eMetaClassBind,$(MyFile_SourceMember),MySourceMember)
+	$(call eMetaFeatureBind,$(MyFile_SourceMember_files),files)
+
+	$(call eMetaClassBind,$(MyFile_ObjectMember),MyObjectMember)
+	$(call eMetaFeatureBind,$(MyFile_ObjectMember_files),files)
+
+	$(call eMetaClassBind,$(MyFile_OptionMember),MyOptionMember)
+	$(call eMetaFeatureBind,$(MyFile_OptionMember_options),options)
 
 endef # __myFile_bind
 

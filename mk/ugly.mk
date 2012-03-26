@@ -102,11 +102,12 @@ filter_static_modules = \
 ROOTFS_LABEL := mybuild.lang.InitFS
 
 define module_get_rootfs
-	$(for fileMember <- $(get $(get 1->type).sources),
+	$(for fileMember <- $(get $(get 1->type).sourcesMembers),
 		annot <- $(get fileMember->annotations),
 		annotType <- $(get annot->type),
 		$(if $(eq $(ROOTFS_LABEL),$(get $(get annot->type).qualifiedName)),
-			$(get fileMember->fileFullName)))
+			$(for fileName <- $(get fileMember->files),
+				$(get fileName->fileFullName))))
 endef
 
 LABEL-IncludePath := mybuild.lang.IncludePath
@@ -116,26 +117,31 @@ LABEL-DefineMacro := mybuild.lang.DefineMacro
 define define_mod_obj_rules
 	${eval
 		$(for mod<-$(get $1.type),
-			src<-$(get mod->sources),
-			obj<-$(call SRC_TO_OBJ,$(get src->fileFullName)),
-			$(for annot <- $(get src->annotations),
-					annotType <- $(get annot->type),
-					annotName <- $(get annotType->qualifiedName),
-					annotBind <- $(get annot->bindings),
-					opt <- $(get annotBind->option),
-					optName <- $(get opt->name),
-					optValue <- $(get $(get annotBind->optionValue).value),
-					$(if $(and \
-							$(eq $(annotName),$(LABEL-IncludePath)),
-							$(eq $(optName),value)),
-					$(obj) : override CCFLAGS += -I'$(optValue)'$(\n))
-					$(if $(and \
-							$(eq $(annotName),$(LABEL-DefineMacro)),
-							$(eq $(optName),value)),
-					$(obj) : override CCFLAGS += -D'$(optValue)'$(\n)))
-			$(obj) : override CPPFLAGS += \
-				-D__EMBUILD_MOD__='$(subst .,__,$(get mod->qualifiedName))'\
-				-imacros $(OBJ_DIR)/mods/$(subst .,/,$(get mod->qualifiedName)).h$(\n))}
+			$(for \
+				srcMember<-$(get mod->sourcesMembers),
+				annot <- $(get srcMember->annotations),
+				annotType <- $(get annot->type),
+				annotName <- $(get annotType->qualifiedName),
+				annotBind <- $(get annot->bindings),
+				opt <- $(get annotBind->option),
+				optName <- $(get opt->name),
+				optValue <- $(get $(get annotBind->optionValue).value),
+				src<-$(get srcMember->files),
+				obj<-$(call SRC_TO_OBJ,$(get src->fileFullName)),
+				$(if $(and \
+						$(eq $(annotName),$(LABEL-IncludePath)),
+						$(eq $(optName),value)),
+				$(obj) : override CCFLAGS += -I'$(optValue)'$(\n))
+				$(if $(and \
+						$(eq $(annotName),$(LABEL-DefineMacro)),
+						$(eq $(optName),value)),
+				$(obj) : override CCFLAGS += -D'$(optValue)'$(\n)))
+			$(for \
+				src<-$(get mod->sources),
+				obj<-$(call SRC_TO_OBJ,$(get src->fileFullName)),
+				$(obj) : override CPPFLAGS += \
+					-D__EMBUILD_MOD__='$(subst .,__,$(get mod->qualifiedName))'\
+					-imacros $(OBJ_DIR)/mods/$(subst .,/,$(get mod->qualifiedName)).h$(\n)))}
 endef
 
 # 1. Library module.

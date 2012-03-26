@@ -176,9 +176,9 @@ define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 		$(set module->superType_link,$4)
 
 		$(silent-foreach attr, \
-				sources \
-				options \
-				depends_links,
+				sourcesMembers \
+				optionsMembers \
+				dependsMembers,
 				$(set module->$(attr),
 					$(filter-patsubst $(attr)/%,%,$6)))
 
@@ -205,35 +205,46 @@ $(gold_grammar)_produce-SuperModule_extends = $2
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotatedModuleMember
 	$(for target <- $2,
-		$(set+ target->annotations,$(foreach a,$1,$(invoke a->eCopy)))
+		$(set target->annotations,$1)
 		$(target))
-endef
-
-define __myfile_annotated_link_from_elinks
-	$(for link <- $1,
-		$(new MyAnnotatedLink,$(get link->name),$(get link->origin)))
 endef
 
 # Rule: <ModuleMember> ::= depends <ReferenceList>
 $(gold_grammar)_produce-ModuleMember_depends = \
-	$(addprefix $1_links/,$(call __myfile_annotated_link_from_elinks,$2))
+	$(for member <- $(new MyDependsMember),\
+		$(set member->modules_links,$2)\
+		dependsMembers/$(member))
 
 # Rule: <ModuleMember> ::= provides <ReferenceList>
 $(gold_grammar)_produce-ModuleMember_provides = \
-	$(addprefix $1_links/,$(call __myfile_annotated_link_from_elinks,$2))
+	$(for member <- $(new MyProvidesMember),\
+		$(set member->features_links,$2)\
+		providesMembers/$(member))
 
 # Rule: <ModuleMember> ::= requires <ReferenceList>
 $(gold_grammar)_produce-ModuleMember_requires = \
-	$(addprefix $1_links/,$(call __myfile_annotated_link_from_elinks,$2))
+	$(for member <- $(new MyRequiresMember),\
+		$(set member->features_links,$2)\
+		requiresMembers/$(member))
 
 # Rule: <ModuleMember> ::= source <FilenameList>
-$(gold_grammar)_produce-ModuleMember_source = $(addprefix $1s/,$2)
+$(gold_grammar)_produce-ModuleMember_source = \
+	$(for member <- $(new MySourceMember),\
+		$(set member->files,$2)\
+		sourcesMembers/$(member))
+
 # Rule: <ModuleMember> ::= object <FilenameList>
-$(gold_grammar)_produce-ModuleMember_object = $(addprefix $1s/,$2)
+$(gold_grammar)_produce-ModuleMember_object = \
+	$(for member <- $(new MyObjectMember),\
+		$(set member->files,$2)\
+		objectsMembers/$(member))
 
 # Rule: <ModuleMember> ::= option <Option>
 # Args: 1..2 - Symbols in the RHS.
-$(gold_grammar)_produce-ModuleMember_option = $(addprefix $1s/,$2)
+$(gold_grammar)_produce-ModuleMember_option = \
+	$(for member <- $(new MyOptionMember),\
+		$(set member->options,$2)\
+		optionsMembers/$(member))
 
 # Rule: <Option> ::= <OptionType> Identifier <OptionDefaultValue>
 # Args: 1..3 - Symbols in the RHS.
@@ -289,7 +300,7 @@ $(gold_grammar)_produce-SimpleReference_Identifier = $(new ELink,$1,$(gold_locat
 # Rule: <Filename> ::= StringLiteral
 # Args: 1..1 - Symbols in the RHS.
 define $(gold_grammar)_produce-Filename_StringLiteral
-	$(for file <- $(new MyFileMember),
+	$(for file <- $(new MyFileName),
 		$(set file->fileName,$1)
 				$(file))
 endef
