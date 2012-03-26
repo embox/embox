@@ -36,6 +36,8 @@ static inline int thread_prio_comparator(struct prioq_link *first,
 }
 
 void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
+	current->state = thread_state_do_resume(current->state);
+
 	rq->current = current;
 	prioq_init(&rq->pq);
 	runq_start(rq, idle);
@@ -44,6 +46,7 @@ void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
 int runq_start(struct runq *rq, struct thread *t) {
 	assert(rq && t);
 
+	t->state = thread_state_do_resume(t->state);
 	prioq_enqueue(t, thread_prio_comparator, &rq->pq, sched.pq_link);
 
 	return (t->priority > rq->current->priority);
@@ -51,9 +54,9 @@ int runq_start(struct runq *rq, struct thread *t) {
 
 int runq_stop(struct runq *rq, struct thread *t) {
 	int is_current;
-
 	assert(rq && t);
 
+	t->state = thread_state_do_suspend(t->state);
 	if (!(is_current = (t == rq->current))) {
 		prioq_remove(t, thread_prio_comparator, sched.pq_link);
 	}
@@ -66,8 +69,9 @@ static void wakeup_thread(struct runq *rq, struct thread *t) {
 	assert(thread_state_running(t->state));
 
 	t->runq = rq;
-
-	prioq_enqueue(t, thread_prio_comparator, &rq->pq, sched.pq_link);
+	if (t != rq->current) {
+		prioq_enqueue(t, thread_prio_comparator, &rq->pq, sched.pq_link);
+	}
 }
 
 int runq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
@@ -184,11 +188,13 @@ void sleepq_on_suspend(struct sleepq *sq, struct thread *t) {
 	assert(sq && t);
 
 	move_thread_to_another_q(&sq->suspended, t);
+	t->state = thread_state_do_suspend(t->state);
 }
 
 void sleepq_on_resume(struct sleepq *sq, struct thread *t) {
 	assert(sq && t);
 
+	t->state = thread_state_do_resume(t->state);
 	move_thread_to_another_q(&sq->pq, t);
 }
 

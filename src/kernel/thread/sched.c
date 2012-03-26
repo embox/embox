@@ -66,12 +66,8 @@ static inline int in_sched_locked(void) {
 }
 
 int sched_init(struct thread* current, struct thread *idle) {
-	current->state = thread_state_do_resume(current->state);
 	current->runq = &rq;
-
-	idle->state = thread_state_do_resume(idle->state);
 	idle->runq = &rq;
-
 	runq_init(&rq, current, idle);
 	return 0;
 }
@@ -95,17 +91,14 @@ static void do_thread_resume(struct thread *t) {
 
 	sched_lock();
 	{
-		thread_state_t state = t->state = thread_state_do_resume(t->state);
-
-		if (thread_state_running(state)) {
+		assert(thread_state_suspended(t->state));
+		if (!thread_state_sleeping(t->state)) {
 			t->runq = &rq;
 			post_switch_if(runq_start(t->runq, t));
-
 		} else {
-			assert(thread_state_sleeping(state));
 			sleepq_on_resume(t->sleepq, t);
-
 		}
+		assert(!thread_state_suspended(t->state));
 	}
 	sched_unlock();
 }
@@ -115,19 +108,14 @@ void sched_suspend(struct thread *t) {
 
 	sched_lock();
 	{
-		thread_state_t state = t->state;
-
-		if (thread_state_running(state)) {
+		assert(!thread_state_suspended(t->state));
+		if (thread_state_running(t->state)) {
 			post_switch_if(runq_stop(t->runq, t));
 			t->runq = NULL;
-
 		} else {
-			assert(thread_state_sleeping(state));
 			sleepq_on_suspend(t->sleepq, t);
-
 		}
-
-		t->state = thread_state_do_suspend(state);
+		assert(thread_state_suspended(t->state));
 	}
 	sched_unlock();
 }
