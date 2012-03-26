@@ -38,13 +38,24 @@ __persist_id_provider = \
 
 $(info $(call object_graph_print,$(PERSIST_OBJECTS),__persist_id_provider))
 
-$(info # Seal these objects (Prevent further serialization))
-
+$(info # Seal these objects (prevent further serialization).)
 $(foreach id,$(value __persist_realloced),\
 	$(info $(id).__serial_id__ := $(id)))
+$(info )
 
 else
 
 $(info $(call object_graph_print,$(PERSIST_OBJECTS)))
 
-endif
+endif # PERSIST_REALLOC
+
+ifdef PERSIST_VARIABLE
+
+override PERSIST_VARIABLE := $(PERSIST_VARIABLE)
+
+$(info # List of objects requested to be serialized explicitly.)
+$(info $(PERSIST_VARIABLE) := \
+	$(foreach o,$(PERSIST_OBJECTS),\$(\n)$(\t)$($o.__serial_id__)))
+$(info )
+
+endif # PERSIST_VARIABLE
