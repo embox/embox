@@ -16,7 +16,6 @@
 #include <framework/example/self.h>
 #include <getopt.h>
 #include <kernel/prom_printf.h>
-#include <net/port.h>
 #include <err.h>
 
 EMBOX_EXAMPLE(exec);
@@ -47,7 +46,7 @@ static int exec(int argc, char **argv) {
 	//addr.port_type = UDP_PORT;
 	addr.sin_port= htons(22);
 	/* we want assign to socket UDP port*/
-	addr.port_type = TCP_PORT;
+	/* addr.port_type = TCP_PORT; */
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	/* assigns the address specified to by addr to the socket referred to

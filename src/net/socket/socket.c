@@ -18,7 +18,6 @@
 #include <types.h>
 #include <util/array.h>
 #include <kernel/task.h>
-#include <net/port.h>
 #include <net/arp_queue.h>
 
 #ifndef CONFIG_MAX_KERNEL_SOCKETS

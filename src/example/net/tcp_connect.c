@@ -11,7 +11,6 @@
 #include <net/ip.h>
 #include <net/socket.h>
 #include <framework/example/self.h>
-#include <net/port.h>
 
 EMBOX_EXAMPLE(exec);
 

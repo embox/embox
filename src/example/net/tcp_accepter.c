@@ -11,7 +11,6 @@
 #include <net/ip.h>
 #include <net/socket.h>
 #include <framework/example/self.h>
-#include <net/port.h>
 
 EMBOX_EXAMPLE(exec);
 
@@ -30,7 +29,7 @@ static int exec(int argc, char **argv) {
 
 	src.sin_family = AF_INET;
 	src.sin_port= htons(LISTENING_PORT);
-	src.port_type = TCP_PORT;
+	/* src.port_type = TCP_PORT; */
 	src.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	res = bind(sockfd, (struct sockaddr *)&src, sizeof src);

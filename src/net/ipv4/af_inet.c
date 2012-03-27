@@ -17,7 +17,6 @@
 #include <net/sock.h>
 #include <net/socket.h>
 #include <net/inet_sock.h>
-#include <net/port.h>
 #include <net/tcp.h>
 
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
@@ -96,8 +95,8 @@ static int inet_create(struct socket *sock, int protocol) {
 	inet->uc_ttl = -1; /* TODO socket setup more options  */
 	inet->mc_ttl = 1;
 	/* setup port */
-	socket_set_port_type(sock);
-	inet->sport = htons(socket_get_free_port(inet->sport_type)); /* inet->sport at network bytes order */
+	/* socket_set_port_type(sock); */
+	/* inet->sport = htons(socket_get_free_port(inet->sport_type)); /\* inet->sport at network bytes order  */
 
 	if (sk->sk_prot->init != NULL) {
 		err = sk->sk_prot->init(sk);
@@ -112,7 +111,7 @@ static int inet_create(struct socket *sock, int protocol) {
 
 int inet_release(struct socket *sock) {
 	struct sock *sk;
-	struct inet_sock *inet;
+	/* struct inet_sock *inet; */
 
 	sk = sock->sk;
 	if (sk == NULL) {
@@ -121,8 +120,8 @@ int inet_release(struct socket *sock) {
 
 	sock_lock(sk);
 
-	inet = inet_sk(sk);
-	socket_port_unlock(ntohs(inet->sport), inet->sport_type);
+	/* inet = inet_sk(sk); */
+	/* socket_port_unlock(ntohs(inet->sport), inet->sport_type); */
 
 	if (sk->sk_prot->close != NULL) {
 		/* altering close() interface to return NULL
@@ -174,14 +173,14 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 
 	inet = inet_sk(sk);
 	addr_in = (struct sockaddr_in *)addr;
-	if (socket_port_is_busy(ntohs(addr_in->sin_port), inet->sport_type)) {
-		res = -EBUSY;
-		goto unlock;
-	}
-	else {
-		socket_port_unlock(ntohs(inet->sport), inet->sport_type);
-	}
-	socket_port_lock(ntohs(addr_in->sin_port), inet->sport_type); // reserve new port
+	/* if (socket_port_is_busy(ntohs(addr_in->sin_port), inet->sport_type)) { */
+	/* 	res = -EBUSY; */
+	/* 	goto unlock; */
+	/* } */
+	/* else { */
+	/* 	socket_port_unlock(ntohs(inet->sport), inet->sport_type); */
+	/* } */
+	/* socket_port_lock(ntohs(addr_in->sin_port), inet->sport_type); // reserve new port */
 	inet->rcv_saddr = addr_in->sin_addr.s_addr;
 	inet->sport = addr_in->sin_port;
 	inet->daddr = 0;

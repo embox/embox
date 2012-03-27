@@ -14,7 +14,6 @@
 #include <framework/example/self.h>
 #include <getopt.h>
 #include <kernel/prom_printf.h>
-#include <net/port.h>
 #include <err.h>
 
 EMBOX_EXAMPLE(httpd_exec);
@@ -37,7 +36,7 @@ static int httpd_exec(int argc, char **argv) {
 
 	addr.sin_family = AF_INET;
 	addr.sin_port= htons(80);
-	addr.port_type = TCP_PORT;
+	/* addr.port_type = TCP_PORT; */
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	f += sprintf(file_buf, "HTTP/1.0 200 OK\n\n");
@@ -83,7 +82,7 @@ static int httpd_exec(int argc, char **argv) {
 		sendto(connect_sock, file_buf, f - file_buf, 0,
 				(struct sockaddr *) &dst, sizeof(dst));
 		close(connect_sock);
-
+		break;
 	}
 
 	close(sock);

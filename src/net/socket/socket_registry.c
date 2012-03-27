@@ -108,7 +108,8 @@ static socket_node_t *get_sock_node_by_src_address(struct socket *sock,
 
 	if(addr){  /* address validity */
 		list_for_each_entry_safe(node, safe, &socket_registry_head, link){
-			if(sock->ops->compare_addresses(addr, &node->saddr))
+			if(sock->ops->compare_addresses(addr, &node->saddr) &&
+				 (sock->type == node->sock->type))
 				return node;
 		}
 	}

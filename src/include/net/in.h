@@ -11,7 +11,7 @@
 
 #include <types.h>
 #include <lib/bits/byteswap.h>
-#include <net/port.h>
+#include <net/socket.h>
 
 /**
  * Define info about id of IP protocols

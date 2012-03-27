@@ -146,7 +146,6 @@ typedef uint32_t __in_addr_t;
 typedef struct sockaddr_in {
 	unsigned short   sin_family;   /* e.g. AF_INET */
 	unsigned short   sin_port;     /* e.g. htons(3490) */
-	unsigned short   port_type;
 	struct in_addr   sin_addr;     /* see struct in_addr, above */
 	char             sin_zero[8];  /* zero this if you want to */
 } sockaddr_in_t;

@@ -14,7 +14,6 @@
 #include <framework/example/self.h>
 #include <getopt.h>
 #include <kernel/prom_printf.h>
-#include <net/port.h>
 #include <net/icmp.h>
 #include <err.h>
 
