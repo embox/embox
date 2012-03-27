@@ -79,13 +79,19 @@ endef
 #   - reference 'module'
 #   - reference 'optionBindings'
 #
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
 # The following features are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #
 define class-CfgInclude
-	# Extends 'MyAnnotationTarget' class.
+	# Extends 'MyAnnotationTarget', 'ENamedObject' classes.
 	$(eobject ConfigFile_Include,
-		CfgInclude,MyAnnotationTarget,)
+		CfgInclude,MyAnnotationTarget ENamedObject,)
 
 	# Property 'module : MyModule'.
 	# Property 'module_link : ELink'.

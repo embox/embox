@@ -40,7 +40,9 @@ define class-Issue
 
 	$(method report,
 		$(with \
-			$(get $(get resource).fileName):$(get location): \
+			$(if $(get resource),$(get $(get resource).fileName),
+				(Unknown))
+				:$(get location): \
 			$(get severity): $(get message).,
 
 			$(shell env echo '$(subst ','"'"',$1)' >&2)))

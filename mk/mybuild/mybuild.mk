@@ -11,6 +11,8 @@ include mk/mybuild/myfile-resource.mk
 # Constructor args:
 #   1. Configuration resource set.
 define class-Mybuild
+	$(super IssueReceiver)
+
 	$(property-field configResourceSet : ResourceSet,$1)
 
 	$(map moduleInstanceStore... : BuildModuleInstance)
@@ -38,19 +40,54 @@ define class-Mybuild
 				$(for moduleInst <- $(invoke moduleInstance,$(module)),
 					$(set moduleInst->includeMember,$(cfgInclude)))),
 
-			$(if $(strip $(or $(invoke checkResolve,$1),
-				  $(invoke optionBind,$1))),,$1)))
+			$(if $(strip $(or \
+						$(invoke superSetDeps,$1),
+						$(invoke checkResolve,$1),
+						$(invoke optionBind,$1))),
+				,
+				$1)))
+
+	$(method superSetDeps,
+		$(silent-for \
+			inst <- $1,
+		   	mod <- $(get inst->type),
+			super <- $(get mod->allSuperTypes),
+			superInst <- $(invoke moduleInstance,$(super)),
+			$(set+ superInst->depends,$(inst))))
+
+
+	$(method getInstDepsOrigin,
+		$(for \
+			inst <- $1,
+			instType <- $(get inst->type),
+			$(if $(get inst->includeMember),
+				$(for \
+					includeMember <- $(get inst->includeMember),
+					resource <- $(get includeMember->eResource),
+						$(\n)$(\n)$(\t)$(get resource->fileName):
+							$(get includeMember->origin) \
+							$(get instType->qualifiedName)),
+					$(\n)$(\n)$(\t)(As dependence)::
+						$(get instType->qualifiedName))))
 
 
 	# Args:
 	#  1. List of moduleInstance's
 	$(method checkResolve,
 		$(strip
-			$(for inst<-$1,
-				isAbstr<-$(get $(get inst->type).isAbstract),
-				$(if $(singleword $(get inst->depends)),,
-					$(error $(get $(get inst->type).qualifiedName) api realize error, move to Issues $(get inst->depends))
-					$(inst)))))
+			$(for inst <- $1,
+				instType <- $(get inst->type),
+				isAbstr<-$(get instType->isAbstract),
+				$(if $(singleword $(get inst->depends)),,#Not single realization, error
+					$(if $(get inst->depends),
+						$(invoke addIssues,$(new InstantiateIssue,,error,,
+							Multiplie abstract realization: $(get instType->qualifiedName)
+								$(invoke getInstDepsOrigin,$(get inst->depends)))),
+						$(invoke addIssues,$(new InstantiateIssue,,error,,
+							No abstract realization: $(get instType->qualifiedName))))
+
+					$(inst)))
+			$(invoke printIssues)))
 
 	# Args:
 	#  1. List of moduleInstance's
@@ -68,7 +105,15 @@ define class-Mybuild
 					 Error),
 
 			$(if $(eq $(optValue),Error),
-				$(warning FIXME: Move to issues, cant bind option $(get opt->name) in module $(get mod->qualifiedName) to a value),
+				$(invoke addIssues,$(new InstantiateIssue,
+					$(for includeMember <- $(get modInst->includeMember),
+						$(get includeMember->eResource)),
+					warning,
+					$(for includeMember <- $(get modInst->includeMember),
+						$(get includeMember->origin)),
+					Couldn't bind option $(get opt->name) in module \
+						$(get mod->qualifiedName) to a value))
+					$(optValue),
 
 				$(silent-for optInst <- $(new BuildOptionInstance),
 					$(set optInst->option,$(opt))
@@ -103,10 +148,6 @@ define class-Mybuild
 					$(map-set moduleInstanceStore/$(mod),
 						$(moduleInstance))
 
-					$(for super <- $(get mod->allSuperTypes),
-						superInst <- $(invoke moduleInstance,$(super)),
-						$(set+ superInst->depends,$(moduleInstance)))
-
 					$(moduleInstance)))))
 
 	# Args:
@@ -118,19 +159,21 @@ define class-Mybuild
 		$(map-get moduleInstanceStore/$1))
 
 	# Args:
-	#  1. MyModule object instance
+	#  1. MyModule object instance, that not presented in build
 	# Return:
-	#  List of ModuleInstance for module and it's depends
+	#  List of ModuleInstance for module, that have no reperesents yet
 	$(method moduleInstanceClosure,
-		$(for thisInst<-$(invoke moduleInstance,$1),
-			$(thisInst) \
-			$(for \
-				mod <- $1,
-				dep <- $(get mod->depends),
-				depInst <- $(invoke moduleInstanceClosure,$(dep)),
-				$(if $(filter $(depInst),$(get thisInst->depends)),,
-					$(set+ thisInst->depends,$(depInst)))
-				$(depInst))))
+			$(for thisInst<-$(invoke moduleInstance,$1),
+				$(thisInst) \
+				$(for \
+					mod <- $1,
+					dep <- $(get mod->depends),
+					was <- was$(invoke moduleInstanceHas,$(dep)),
+					$(for depInst <- $(invoke moduleInstance,$(dep)),
+						$(if $(filter $(depInst),$(get thisInst->depends)),,
+							$(set+ thisInst->depends,$(depInst))))
+					$(if $(filter was,$(was)),
+						$(invoke moduleInstanceClosure,$(dep))))))
 
 endef
 
@@ -160,6 +203,11 @@ endef
 define listInstances
 		$(strip $(for buildBuild<-$1,
 			$(get buildBuild->modules)))
+endef
+
+define class-InstantiateIssue
+	$(super BaseIssue,$(value 1),$(value 2),$(value 3),$(value 4))
+
 endef
 
 $(def_all)

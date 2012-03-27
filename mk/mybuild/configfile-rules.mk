@@ -76,6 +76,8 @@ endef
 # Rule: <IncludeMember> ::= include <ReferenceWithInitializerList>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-IncludeMember_include
+	$(for include <-$2,
+		$(set include->origin,$(call gold_location_of,2)))
 	$(addprefix $1s/,$2)
 endef
 
