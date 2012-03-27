@@ -2,9 +2,9 @@ package embox.kernel.thread.sched_policy
 
 abstract module api { }
 
-module sched_trivial extends api {
+module trivial extends api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "sched_trivial.c", "sched_trivial.h"
+	source "trivial.c", "trivial.h"
 
 }
 
@@ -14,7 +14,7 @@ module priority_based extends api {
 
 }
 
-module fixedtime_sched extends api {
+module fixedtime extends api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "fixedtime_sched.c", "fixedtime_sched.h"
 

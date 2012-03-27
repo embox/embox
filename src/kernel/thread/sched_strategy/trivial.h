@@ -10,7 +10,7 @@
 #ifndef KERNEL_THREAD_SCHED_STRATEGY_TRIVIAL_H_
 #define KERNEL_THREAD_SCHED_STRATEGY_TRIVIAL_H_
 
-#include <lib/list.h>
+#include <util/dlist.h>
 
 #include <kernel/thread/sched_priority.h>
 
