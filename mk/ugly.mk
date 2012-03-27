@@ -11,7 +11,7 @@ include mk/conf/runlevel.mk
 
 # By header get module
 __header_mod = $(strip \
-  $(foreach name,$(subst /,.,$(patsubst $(abspath $(OBJ_DIR))/mods/%.h,%,$(abspath $@))),\
+  $(foreach name,$(subst /,.,$(patsubst $(abspath $(OBJ_DIR))/mods/%.h,%,$(abspath $1))),\
 	$(strip $(foreach i,$(MODS_ENABLE_OBJ),\
 		$(foreach m,$(get $i.type),\
 			$(if $(eq $(get m->qualifiedName),$(name)),$i))))))

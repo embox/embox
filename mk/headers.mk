@@ -3,8 +3,8 @@
 HEADERS_BUILD := \
   $(patsubst %,$(OBJ_DIR)/mods/%.h,$(subst .,/,$(foreach i,$(MODS_ENABLE_OBJ),$(call get,$(call get,$i,type),qualifiedName))))
 
-$(HEADERS_BUILD): mk/image.mk $(build_model_mk)
-	@$(MKDIR) $(@D) && printf "%b" '$(__header_gen)' > $@.tmp
-	@diff -q $@ $@.tmp &>/dev/null; \
-		if [ ! 0 -eq $$? ]; then mv $@.tmp $@; echo Module header $@; \
-			else rm $@.tmp; fi
+HEADERS_BUILD_TMP := $(HEADERS_BUILD:%=%.tmp)
+
+$(HEADERS_BUILD_TMP) : mk/image.mk $(build_model_mk)
+	@$(MKDIR) $(@D) && printf "%b" '$(call __header_gen,$(subst .tmp,,$@))' > $@
+	@diff -q $@ $(subst .tmp,,$@) &>/dev/null || (mv $@ $(subst .tmp,,$@); echo Module header $@)
