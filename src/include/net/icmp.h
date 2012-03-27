@@ -7,6 +7,7 @@
  * @author Alexander Batyukov
  * @author Nikolay Korotky
  * @author Ilia Vaprol
+ * @author Vladimir Sokolov
  */
 
 #ifndef NET_ICMP_H_

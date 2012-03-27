@@ -49,19 +49,20 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		kfree_skb(skb);
 		return NET_RX_DROP;
 	}
-	tmp = iph->check;
-	iph->check = 0;
-	if (tmp != ptclbsum(iph, IP_HEADER_SIZE(iph))) {
-		LOG_ERROR("bad ip checksum\n");
-		stats->rx_crc_errors++;
-		kfree_skb(skb);
-		return NET_RX_DROP;
-	}
 
 	len = ntohs(iph->tot_len);
 	if (skb->len < len || len < IP_HEADER_SIZE(iph)) {
 		LOG_ERROR("invalid IPv4 header length\n");
 		stats->rx_length_errors++;
+		kfree_skb(skb);
+		return NET_RX_DROP;
+	}
+
+	tmp = iph->check;
+	iph->check = 0;
+	if (tmp != ptclbsum(iph, IP_HEADER_SIZE(iph))) {
+		LOG_ERROR("bad ip checksum\n");
+		stats->rx_crc_errors++;
 		kfree_skb(skb);
 		return NET_RX_DROP;
 	}
@@ -126,10 +127,9 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		p_netproto = net_proto_ptr->netproto;
 		if (p_netproto->type == iph->proto) {
 			/* if we are here then socket is registered in one of hash tables */
-			p_netproto->handler(skb); // handler must free skb
-			break;
+			return p_netproto->handler(skb); // handler must free skb
 		}
 	}
 
-	return NET_RX_SUCCESS;
+	return NET_RX_DROP;				/* Nobody wants this packet */
 }
