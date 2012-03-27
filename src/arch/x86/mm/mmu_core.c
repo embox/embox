@@ -9,6 +9,11 @@
 
 #include <hal/mm/mmu_core.h>
 
+int mmu_map_region (mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
+		size_t reg_size, mmu_page_flags_t flags) {
+	return 0;
+}
+
 void mmu_on(void) {
 
 	asm (

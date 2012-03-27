@@ -4,6 +4,8 @@
  *
  * @date 09.06.09
  * @author Anton Bondarev
+ *
+ * @author Gleb Efimov
  */
 
 #include <embox/cmd.h>
@@ -16,6 +18,7 @@ static void print_usage(void) {
 	printf("Usage: mmu_probe [-r] [-h]\n");
 }
 
+#ifdef 0
 static bool mmu_show_ctrl() {
 	unsigned int ctrl_reg = mmu_get_mmureg(LEON_CNR_CTRL);
 	printf("CTLR REG:\t0x%08X\n", ctrl_reg);
@@ -52,7 +55,7 @@ static bool mmu_show_reg() {
 	printf("FAULT ADDR:\t0x%08X\n", mmu_get_mmureg(LEON_CNR_CTX));
 	return 0;
 }
-
+#endif
 #define TLBNUM 4
 
 static bool mmu_probe() {
@@ -64,18 +67,18 @@ static bool mmu_probe() {
 		"page1: .skip %0\n\t"
 		"page2: .skip %4\n\t"
 		".text\n"
-		: : "i" (PAGE_SIZE),
-		"i"(MMU_PGD_TABLE_SIZE) ,
-		"i"(MMU_PMD_TABLE_SIZE) ,
-		"i"(MMU_PTE_TABLE_SIZE) ,
-		"i"((3)*PAGE_SIZE)
+		: : "i" (MMU_PAGE_SIZE),/* Page Size */
+		"i"(MMU_GTABLE_SIZE) ,	/* Global page tables*/
+		"i"(MMU_MTABLE_SIZE) ,	/* Middle page tables */
+		"i"(MMU_PTABLE_SIZE) , 	/* Page table*/
+		"i"((3)*MMU_PAGE_SIZE)
 	);
 
 
 	/* one-on-one mapping for context 0 */
-	mmu_map_region(0, 0, 0x1000000, MMU_PTE_PRIV);
-	mmu_map_region(0x44000000, 0x44000000, 0x1000000, MMU_PTE_PRIV);
-	mmu_map_region(0x80000000, 0x80000000, 0x1000000, MMU_PTE_PRIV);
+	mmu_map_region(0, 0, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000);
+	mmu_map_region(0x44000000, 0x44000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000);
+	mmu_map_region(0x80000000, 0x80000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000);
 
 	/* close your eyes and pray ... */
 	printf("mmu start...\n");
@@ -93,6 +96,7 @@ static bool mmu_probe() {
  * return -1 another way
  */
 static int exec(int argc, char **argv) {
+#ifdef 0
 	int opt;
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "rh"))) {
@@ -107,6 +111,6 @@ static int exec(int argc, char **argv) {
 			return 0;
 		}
 	}
-
+#endif
 	return mmu_probe();
 }
