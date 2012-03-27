@@ -20,7 +20,7 @@ define class-GoldParsedResource
 	$(method loadRootObject : EObject,
 		$(for resource <- $(this),
 			$(call gold_parse,$(get goldGrammarName),$1,
-				$(lambda $(set+ resource->issues,
+				$(lambda $(invoke resource->addIssues,
 					$(new ParsingIssue,$(resource),$2,$3,$4)))))
 	)
 

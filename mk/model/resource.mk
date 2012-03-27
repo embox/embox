@@ -11,15 +11,18 @@ include mk/model/metamodel.mk
 
 include mk/model/linkage.mk
 
+include mk/model/issue.mk
+
 # Constructor args:
 #   1. (optional) File to load the resource from.
 define class-Resource
+
+	$(super IssueReceiver)
+
 	$(property fileName)
 	$(field fileName)
 	$(getter fileName,
 		$(get-field fileName))
-
-	$(property-field issues... : Issue)
 
 	# Name-to-object mapping.
 	$(map exportedObjectsMap... : ENamedObject)
@@ -143,72 +146,6 @@ define class-ResourceSet
 		$(set resources,$1))
 
 	$(set linker,$(invoke createLinker))
-
-endef
-
-# Constructor args:
-#   1. Resource.
-define class-Issue
-	$(property resource : Resource)
-
-	$(property severity)
-	$(property location)
-	$(property message)
-
-	$(property isError)
-	$(getter isError,
-		$(filter error,$(get severity)))
-
-	$(property isWarning)
-	$(getter isWarning,
-		$(filter warning,$(get severity)))
-
-	$(method report,
-		$(with \
-			$(get $(get resource).fileName):$(get location): \
-			$(get severity): $(get message).,
-
-			$(shell env echo '$(subst ','"'"',$1)' >&2)))
-
-endef
-
-# Constructor args:
-#   1. Resource.
-#   2. (optional) severity.
-#   3. (optional) location.
-#   4. (optional) message.
-define class-BaseIssue
-	$(super Issue)
-
-	$(property-field resource : Resource,$1)
-
-	$(property-field severity,$(value 2))
-	$(property-field location,$(value 3))
-	$(property-field message,$(value 4))
-
-endef
-
-# Constructor args:
-#   1. Link.
-define class-UnresolvedLinkIssue
-	$(super Issue)
-
-	$(property-field link : ELink,$1)
-
-	$(property resource : Resource)
-	$(getter resource,
-		$(get $(get link).eResource))
-
-	$(getter severity,
-		error)
-	$(getter location,
-		$(get $(get link).origin))
-	$(getter message,
-		$(for link     <- $(get link),
-			targetType <- $(get $(get link->eMetaReference).eReferenceType),
-
-			Couldn't resolve reference to $(get targetType->name) \
-				'$(get link->name)'))
 
 endef
 

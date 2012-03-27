@@ -33,8 +33,7 @@ define myfile_create_resource_set_from_files
 		$(invoke $(get rs->linker).resolveAllLinks)
 
 		$(for r <- $(get rs->resources),
-			issue <- $(get r->issues),
-			$(invoke issue->report))
+			$(invoke r->printIssues))
 
 		$(rs))
 endef
