@@ -226,3 +226,4 @@ extern void sleepq_resume(struct sleepq *sleepq, struct thread *thread);
 extern struct thread *sleepq_get_thread(struct sleepq *sleepq);
 
 #endif /* KERNEL_THREAD_SCHED_STRATEGY_H_ */
+

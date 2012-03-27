@@ -121,7 +121,7 @@ int sleepq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
 	if (wake_all) {
 		while ((t = prioq_peek(thread_prio_comparator, &sq->pq,
 				struct thread, sched.pq_link))) {
-			ret |= sleepq_wake_resumed_thread(rq, sq, t);
+			sleepq_wake_resumed_thread(rq, sq, t);
 		}
 
 		while ((t = prioq_peek(thread_prio_comparator, &sq->suspended,
@@ -239,3 +239,4 @@ struct thread *sleepq_get_thread(struct sleepq *sq) {
 	pq = prioq_empty(&sq->pq) ? &sq->suspended : &sq->pq;
 	return prioq_peek(thread_prio_comparator, pq, struct thread, sched.pq_link);
 }
+
