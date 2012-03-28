@@ -88,7 +88,7 @@ typedef struct sock {
 	int (* sk_backlog_rcv)(struct sock *sk, sk_buff_t *pack);
 	void (* sk_destruct)(struct sock *sk);
 	int (* get_port)(struct sock *sk, unsigned short num);
-	int sk_err;
+	int32_t sk_err;
 	bool ready;
 	enum socket_connection_state_t socket_connection_state;
 	struct event sock_is_ready;

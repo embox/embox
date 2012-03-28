@@ -77,7 +77,8 @@ void raw_err(sk_buff_t *skb, uint32_t info) {
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		sk = (struct sock *)raw_hash[i];
 		if (sk && sk->sk_protocol == ICMP_PROTO_TYPE) {
-			sk->sk_err = info;
+			/* svv: suspicious. One ICMP Error can't offend ALL available sockets */
+			sk->sk_err = info;		/* write uint32_t into int32_t */
 		}
 	}
 }

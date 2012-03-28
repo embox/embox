@@ -114,7 +114,6 @@ static int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 static int udp_rcv(sk_buff_t *skb) {
 	struct sock *sk;
 	struct inet_sock *inet;
-	sk_buff_t *skb_tmp;
 
 	iphdr_t *iph = ip_hdr(skb);
 	udphdr_t *uh = udp_hdr(skb);
@@ -129,8 +128,9 @@ static int udp_rcv(sk_buff_t *skb) {
 			inet->saddr = skb->nh.iph->daddr;
 		}
 	} else {
-		skb_tmp = skb_copy(skb, 0);
-		icmp_send(skb_tmp, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, 0);
+		sk_buff_t *skb_tmp = skb_copy(skb, 0);
+		if(skb_tmp)
+			icmp_send(skb_tmp, ICMP_DEST_UNREACH, ICMP_PORT_UNREACH, 0);
 	}
 	return 0;
 }
@@ -144,10 +144,15 @@ void udp_err(sk_buff_t *skb, uint32_t info) {
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		sk = (struct sock *) udp_hash[i];
 		inet = inet_sk(sk);
+		/* Wrong:
+		 *	1) internal IP header length doesn't have to coinside with external one
+		 *	2) saddr is taken from incorrect IP header
+		 *	3) none of SRC addresses has any relation with daddr
+		 */
 		port = *(__be16*)(skb->h.raw + ICMP_HEADER_SIZE + IP_HEADER_SIZE(skb->nh.iph));
 		if (sk && (inet->sport == port)
 			   && (inet->daddr == skb->nh.iph->saddr)) {
-			sk->sk_err = info;
+			sk->sk_err = info;		/* write uint32_t into int32_t */
 		}
 	}
 }

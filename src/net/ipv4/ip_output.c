@@ -127,7 +127,9 @@ int ip_forward_packet(sk_buff_t *skb) {
 		return -1;
 	}
 
-		/* Check TTL and decrease it */
+		/* Check TTL and decrease it.
+		 * We believe that this skb is ours and we can modify it
+		 */
 	if (unlikely(iph->ttl <= 1)) {
 		icmp_send(skb, ICMP_TIME_EXCEEDED, ICMP_EXC_TTL, 0);
 		return -1;

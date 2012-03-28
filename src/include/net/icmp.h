@@ -32,11 +32,28 @@ enum {
 	ICMP_INFO_REPLY     = 16, /* Information Reply */
 //	ICMP_ADDRESS        = 17, /* Address Mask Request */
 //	ICMP_ADDRESSREPLY   = 18, /* Address Mask Reply */
-	NR_ICMP_TYPES
+	NR_ICMP_TYPES	/* See also icmp_lengths enum below */
 };
 
-#define	ICMP_INFOTYPE(type)							\
-	( ((type) == ICMP_ECHOREPLY) || ((type) == ICMP_ECHO) ||		\
+/* Assumed length (bytes) of the ICMP (without possible data padding) */
+enum icmp_lengths {
+	ICMP_LEN_ECHOREPLY			= 8,  /* Echo Reply */
+	ICMP_LEN_DEST_UNREACH		= 8,  /* Destination Unreachable (with path MTU discovery) */
+	ICMP_LEN_SOURCE_QUENCH		= 8,  /* Source Quench */
+	ICMP_LEN_REDIRECT			= 8,  /* Redirect (change route) */
+	ICMP_LEN_ECHO				= 8,  /* Echo Request */
+	ICMP_LEN_TIME_EXCEEDED		= 8, /* Time Exceeded */
+	ICMP_LEN_PARAMETERPROB		= 8, /* Parameter Problem */
+	ICMP_LEN_TIMESTAMP			= 20, /* Timestamp Request */
+	ICMP_LEN_TIMESTAMPREPLY		= 20, /* Timestamp Reply */
+	ICMP_LEN_INFO_REQUEST		= 8, /* Information Request */
+	ICMP_LEN_INFO_REPLY			= 8, /* Information Reply */
+	ICMP_LEN_ADDRESS			= 12, /* Address Mask Request */
+	ICMP_LEN_ADDRESSREPLY		= 12, /* Address Mask Reply */
+};
+
+#define	ICMP_INFOTYPE(type)												\
+	( ((type) == ICMP_ECHOREPLY) || ((type) == ICMP_ECHO) ||			\
 	  ((type) == ICMP_TIMESTAMP) || ((type) == ICMP_TIMESTAMPREPLY) ||	\
 	  ((type) == ICMP_INFO_REQUEST) || ((type) == ICMP_INFO_REPLY) )
 
@@ -91,6 +108,10 @@ typedef struct icmphdr {
 	} un;
 } __attribute__((packed)) icmphdr_t;
 
+/* Note:
+ *	Be careful. It's just a common length of ICMPs
+ *	See enum icmp_lengths for details
+ */
 #define ICMP_HEADER_SIZE	(sizeof(struct icmphdr))
 
 static inline icmphdr_t *icmp_hdr(const sk_buff_t *skb) {
@@ -104,11 +125,10 @@ static inline void icmp_send_check(icmphdr_t *icmph, uint len) {
 }
 
 /* Generate a checksum for an outgoing ICMP datagram if skb is correct
- * ToDo: call icmp_send_check()
+ * So we can obtain ICMP len from it
  */
 static inline void icmp_send_check_skb(sk_buff_t *skb) {
-	skb->h.icmph->checksum = 0;
-	skb->h.icmph->checksum = ptclbsum(skb->h.raw, htons(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph));
+	icmp_send_check(skb->h.icmph, htons(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph));
 }
 
 /**
@@ -121,9 +141,10 @@ static inline void icmp_send_check_skb(sk_buff_t *skb) {
  * specific conditions are detected.
  *
  * @param skb_in input IP packet the error is assiciated with
+ * (skb: modified; freed; privacy could be any, it's checked)
  * @param type field to use in the ICMP header
  * @param code field to use in the ICMP header
- * @param info additional information:
+ * @param info additional information (with required shifts applying):
  * 			MTU for ICMP_FRAG_NEEDED
  * 			gateway address for ICMP_REDIRECT
  * 			offset for ICMP_PARAMETERPROB

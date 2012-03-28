@@ -120,7 +120,7 @@ extern struct sk_buff *skb_copy_expand(struct sk_buff *skb,
  *
  *	Make a copy of both an &sk_buff and its data and while doing so
  *	allocate additional space. Do nothing if we already have such amount
- *	of free space.
+ *	of free space and this sbk and data are completely ours.
  *
  *	Returns NULL on failure or the pointer to the buffer
  *	on success.
