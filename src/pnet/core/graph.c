@@ -11,6 +11,7 @@
 #include <util/fun_call.h>
 #include <mem/objalloc.h>
 #include <string.h>
+#include <assert.h>
 
 #include <pnet/core.h>
 #include <pnet/graph.h>
@@ -31,7 +32,9 @@ struct pnet_graph *pnet_graph_create(char *name) {
 			return NULL;
 	}
 
-	gr = (struct pnet_graph *) objalloc(&graphs);
+	if (NULL == (gr = (struct pnet_graph *) objalloc(&graphs)))
+		return NULL;
+
 	list_init(&gr->nodes);
 	INIT_LIST_HEAD(&gr->lnk);
 	list_add_tail(&gr->lnk, &graphs_list);
@@ -44,6 +47,8 @@ struct pnet_graph *pnet_graph_create(char *name) {
 
 int pnet_graph_start(struct pnet_graph *graph) {
 	net_node_t node = NULL;
+
+	assert(graph);
 
 	if (graph->state != PNET_GRAPH_STOPPED) {
 		return -EINVAL;
@@ -60,6 +65,8 @@ int pnet_graph_start(struct pnet_graph *graph) {
 
 int pnet_graph_stop(struct pnet_graph *graph) {
 	net_node_t node = NULL;
+
+	assert(graph);
 
 	if (graph->state != PNET_GRAPH_STARTED) {
 		return -EINVAL;
@@ -79,8 +86,15 @@ int pnet_graph_add_src(struct pnet_graph *graph, struct net_node *src) {
 }
 
 int pnet_graph_add_node(struct pnet_graph *graph, struct net_node *node) {
+	assert(graph);
+	assert(node);
+
 	if (graph->state != PNET_GRAPH_STOPPED) {
 		return -EINVAL;
+	}
+
+	if (NULL != node->graph) {
+		return -EBUSY;
 	}
 
 	node->graph = graph;
@@ -91,6 +105,9 @@ int pnet_graph_add_node(struct pnet_graph *graph, struct net_node *node) {
 }
 
 int pnet_node_link(struct net_node *src, struct net_node *node) {
+	assert(src);
+	assert(node);
+
 	if (src->graph != node->graph || src->graph->state != PNET_GRAPH_STOPPED) {
 		return -EINVAL;
 	}
