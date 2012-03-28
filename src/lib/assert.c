@@ -9,9 +9,8 @@
 #include <kernel/panic.h>
 #include <kernel/printk.h>
 
-#ifdef NDEBUG
-# error "Compiling assert.c for NDEBUG configuration"
-#endif
+#ifndef NDEBUG
+/*# error "Compiling assert.c for NDEBUG configuration"*/
 
 #include "assert_impl.h"
 
@@ -36,3 +35,5 @@ void __assertion_handle_failure(const struct __assertion_point *point) {
 	}
 	panic("kernel debug panic");
 }
+
+#endif
