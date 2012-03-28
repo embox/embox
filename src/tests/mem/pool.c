@@ -21,6 +21,7 @@ POOL_DEF(pool, struct test_obj, OBJECTS_QUANTITY);
 
 EMBOX_TEST_SUITE("fixed size pool test");
 
+
 TEST_CASE("single object allocation") {
 	struct test_obj *obj;
 	obj = pool_alloc(&pool);
@@ -29,21 +30,21 @@ TEST_CASE("single object allocation") {
 }
 
 TEST_CASE("test object freeing") {
-	struct test_obj* objs[OBJECTS_QUANTITY + 1];
+	struct test_obj *objs[OBJECTS_QUANTITY + 1];
 	int i;
-	for(i = 0; i < sizeof(objs); i ++) {
+	for(i = 0; i < OBJECTS_QUANTITY; i ++) {
 		if(NULL == (objs[i] = pool_alloc(&pool))) {
 			break;
 		}
 	}
+	test_assert(i == OBJECTS_QUANTITY);
 	pool_free(&pool, objs[0]);
 	objs[i] = pool_alloc(&pool);
-	test_assert_not_null(objs[i]);
-	while( 0 > i --) {
+	test_assert_not_null(objs[OBJECTS_QUANTITY]);
+	for (; i > 0; --i) {
 		pool_free(&pool, objs[i]);
 	}
 }
-
 /*
  *
  */
