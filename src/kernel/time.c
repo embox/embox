@@ -10,7 +10,7 @@
 #include <kernel/clock_source.h>
 
 static useconds_t time_usec(void) {
-	return clock_source_clock_to_usec(clock());
+	return clock_source_clock_to_usec(NULL, clock());
 }
 
 struct timeval * get_timeval(struct timeval *tv) {

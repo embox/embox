@@ -8,8 +8,6 @@
 
 #include <embox/cmd.h>
 
-#include <lib/list.h>
-
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
@@ -29,10 +27,11 @@ static int print_info(struct clock_source* c_src, int num) {
 }
 
 static int clock_source_info(void) {
-	struct clock_source_head* ptr;
+	struct clock_source_head* ptr, *tmp;
+
 	int k = 0;
 
-	list_for_each_entry(ptr, &clock_source_list, lnk) {
+	dlist_foreach_entry(ptr, tmp, &clock_source_list, lnk) {
 		print_info(ptr->clock_source, k);
 		k++;
 	}

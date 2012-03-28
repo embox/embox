@@ -79,7 +79,14 @@ static inline int dlist_empty(struct dlist_head *head) {
     ((type *)((char *)(p) - (unsigned long)(&((type *)0)->member)))
 
 #define dlist_foreach(ptr, nxt, head) \
-	for (ptr = (head)->next, nxt = ptr->next; ptr != (head); \
-		ptr = nxt, nxt = ptr->next)
+	ptr = (head)->next; nxt = ptr->next;                         \
+	for (; ptr != (head); ptr = nxt, nxt = ptr->next)
+
+#define dlist_foreach_entry(ptr, nxt, head, member)  \
+	ptr = dlist_entry((head)->next, typeof(*ptr), member);         \
+	nxt = dlist_entry(ptr->member.next, typeof(*ptr), member);     \
+	for (; &ptr->member != (head);                                 \
+		ptr = nxt,                                                 \
+		nxt = dlist_entry(nxt->member.next, typeof(*ptr), member)) \
 
 #endif /* DLIST_H_ */
