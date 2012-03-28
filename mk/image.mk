@@ -124,8 +124,6 @@ OBJ_SUBDIRS := \
 
 include mk/headers.mk
 
-prepare : $(HEADERS_BUILD_TMP)
-
 $(OBJS_BUILD) $(LDSS_BUILD): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk
 
 __CMDS = \
