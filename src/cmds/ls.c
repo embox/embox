@@ -61,6 +61,7 @@ typedef void (*print_func_t)(char *path, node_t *nod, int recursive);
 
 static int exec(int argc, char **argv) {
 	//int long_list = 0;
+	int opt_cnt = 0;
 	node_t *nod;
 	char path[CONFIG_MAX_LENGTH_FILE_NAME];
 
@@ -69,7 +70,7 @@ static int exec(int argc, char **argv) {
 
 	int opt;
 	getopt_init();
-	while (-1 != (opt = getopt(argc - 1, argv, "Rlh"))) {
+	while (-1 != (opt = getopt(argc, argv, "Rlh"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
@@ -77,19 +78,22 @@ static int exec(int argc, char **argv) {
 		case 'l':
 			/*long_list = 1;*/
 			print_func = print_long_list;
+			opt_cnt++;
 			break;
 		case 'R':
 			recursive = 1;
 			print_func = print_folder;
+			break;
+		case '?':
+			break;
 		default:
 			printf("ls: invalid option -- '%c'\n", optopt);
 			return -1;
 		}
 	}
 
-	//TODO: Maybe we should support multiple file args
-	if (argc > optind) {
-		sprintf(path, "%s", argv[optind]);
+	if (2 < (optind - opt_cnt)) {
+		sprintf(path, "%s", argv[optind - argc + opt_cnt]);
 	} else {
 		sprintf(path, "/");
 	}
