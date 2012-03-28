@@ -96,7 +96,7 @@ void sr_remove_saddr(struct socket *sock){
 
 	node = get_sock_node_by_socket(sock);
 	if(node){
-		debug_printf("found bound socket. unbinding...",
+		debug_printf("found socket. trying to unbind...",
 								 "kernel_socket", "unbind_socket");
 		memset(&node->saddr, 0, sizeof(struct sockaddr));
 	}

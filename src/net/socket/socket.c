@@ -176,7 +176,8 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	struct sockaddr_in *dest_addr;
 
 	if (sock == NULL) {
-		return -EBADF;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
 
 	iov.iov_base = (void *)buf;
@@ -188,15 +189,8 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	inet->daddr = dest_addr->sin_addr.s_addr;
 	inet->dport = dest_addr->sin_port;
 
-//	socket_set_port_type(sock); // done at inet_create
-//	if (inet->sport == 0) {
-//		inet->sport = socket_get_free_port(inet->sport_type);
-//	}
-
 	/* socket is ready for usage and has no data transmitting errors yet */
 	sock->sk->sk_err = -1;
-
-	//sock->sk->arp_queue_info = 1;
 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
 
