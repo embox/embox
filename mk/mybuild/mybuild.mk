@@ -44,7 +44,7 @@ define class-Mybuild
 						$(invoke superSetDeps,$1),
 						$(invoke checkResolve,$1),
 						$(invoke optionBind,$1))),
-				,
+				$(invoke printIssues),
 				$1)))
 
 	$(method superSetDeps,
@@ -87,7 +87,7 @@ define class-Mybuild
 							No abstract realization: $(get instType->qualifiedName))))
 
 					$(inst)))
-			$(invoke printIssues)))
+			))
 
 	# Args:
 	#  1. List of moduleInstance's
@@ -113,7 +113,7 @@ define class-Mybuild
 						$(get includeMember->origin)),
 					Couldn't bind option $(get opt->name) in module \
 						$(get mod->qualifiedName) to a value))
-					$(optValue),
+					,
 
 				$(silent-for optInst <- $(new BuildOptionInstance),
 					$(set optInst->option,$(opt))
