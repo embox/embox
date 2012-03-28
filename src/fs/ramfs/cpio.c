@@ -71,7 +71,7 @@ int cpio_unpack(void) {
 	char buff_name[CONFIG_MAX_LENGTH_FILE_NAME];
 
 	if (&_ramfs_end == &_ramfs_start) {
-		printk("No availible initramfs\n");
+		printk("No available initramfs\n");
 		return -1;
 	}
 	printk("cpio initramfs at 0x%08x\n", (unsigned int)&_ramfs_start);
