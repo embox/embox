@@ -170,7 +170,7 @@ static void print_graph(struct pnet_graph *gr) {
 
 	printf("%s \n", root->proto->name);
 	while (NULL != node) {
-		printf("%s \n ", node->proto->name);
+		printf("%s\n ", node->proto->name);
 		node = node->rx_dfault;
 	}
 }
@@ -188,15 +188,16 @@ static void print_rules(net_node_matcher_t node) {
 static int add_node(char **argv) {
 	struct pnet_graph *gr;
 	net_node_t node;
+	int graph_state;
+	int res;
 
 	if (NULL == argv[3] || NULL == (gr = get_graph_by_name(argv[3]))) {
 		printf("%s: no such graph\n", argv[3]);
 		return -ENOENT;
 	}
 
-	if (gr->state != PNET_GRAPH_STOPPED) {
-		printf("error: %s is running\n", argv[3]);
-		return -EINPROGRESS;
+	if (PNET_GRAPH_STOPPED != (graph_state = gr->state)) {
+		pnet_graph_stop(gr);
 	}
 
 	if (NULL == argv[4] || NULL == (node = pnet_get_module(argv[4]))) {
@@ -209,21 +210,25 @@ static int add_node(char **argv) {
 		return -EEXIST;
 	}
 
-	return pnet_graph_add_node(gr, node);
+	res = pnet_graph_add_node(gr, node);
+	gr->state = graph_state;
+
+	return res;
 }
 
 static int link_node(char **argv) {
 	net_node_t src, node;
 	struct pnet_graph *gr;
+	int graph_state;
+	int res;
 
 	if (NULL == argv[2] || NULL == (gr = get_graph_by_name(argv[2]))) {
 		printf("%s: no such graph\n", argv[2]);
 		return -ENOENT;
 	}
 
-	if (gr->state != PNET_GRAPH_STOPPED) {
-		printf("error: %s is running\n", argv[2]);
-		return -EINPROGRESS;
+	if (PNET_GRAPH_STOPPED != (graph_state = gr->state)) {
+		pnet_graph_stop(gr);
 	}
 
 	if (NULL == argv[3] || NULL == (src = get_node_from_graph_by_name(gr, argv[3]))) {
@@ -236,21 +241,26 @@ static int link_node(char **argv) {
 		return -ENOENT;
 	}
 
-	return pnet_node_link(src, node);
+	res = pnet_node_link(src, node);
+	gr->state = graph_state;
+
+	return res;
 }
 
 static int unlink_node(char **argv) {
 	struct pnet_graph *gr;
 	net_node_t node, parent, rx_dfault;
+	int graph_state;
 
 	if (NULL == argv[3] || NULL == (gr = get_graph_by_name(argv[3]))) {
 		printf("%s: no such graph\n", argv[3]);
 		return -ENOENT;
 	}
-	if (gr->state != PNET_GRAPH_STOPPED) {
-		printf("error: %s is running\n", argv[3]);
-		return -EINPROGRESS;
+
+	if (PNET_GRAPH_STOPPED != (graph_state = gr->state)) {
+		pnet_graph_stop(gr);
 	}
+
 	if (NULL == argv[4] || NULL == (node = get_node_from_graph_by_name(gr, argv[4]))) {
 		printf("%s: no such node in graph %s\n", argv[4], argv[3]);
 		return -ENOENT;
@@ -259,6 +269,8 @@ static int unlink_node(char **argv) {
 	parent = node->parent;
 	rx_dfault = node->rx_dfault;
 	parent->rx_dfault = rx_dfault;
+
+	gr->state = graph_state;
 
 	return ENOERR;
 }
