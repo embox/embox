@@ -14,8 +14,8 @@
 
 EMBOX_EXAMPLE(run);
 
-#define MEM_SIZE                     0x100000
-#define QUANTITY_OF_TESTS            10
+#define MEM_SIZE                     0x1000//00
+#define QUANTITY_OF_TESTS            5
 
 /* This structure described memory block:
  * @available - state flag: available or not
@@ -28,24 +28,37 @@ struct block_desc {
 
 /* Size of block_desc. */
 #define BLOCK_DESC_SIZE sizeof(struct block_desc)
+#define LAST_ADDRESS (memory + (uint32_t)sizeof(memory))
 
 /* This is a pointer to the free block
  * at current time in our memory. */
 static char *current_free_space;
 
-static char *last_valid_address;
-
 /* This is our memory, that we allocated,
  * size defined from MEM_SIZE. */
 static char  memory[MEM_SIZE];
+
+static int correct_address(char *address){
+	return (((uint32_t)address >= (uint32_t)memory) && ((uint32_t)address < (uint32_t)LAST_ADDRESS)); // check ||
+}
+
+static int available(struct block_desc *md){
+	return (md->is_available);
+}
+
+static int correct_size(struct block_desc *md, size_t req_size){
+	return (md->size >= req_size + BLOCK_DESC_SIZE);
+}
+
 
 struct block_desc *find_suit_block(size_t req_size) {
 	/* Set the pointer(iterator) on the begin of our memory */
 	struct block_desc *md = (void *) current_free_space;
 
 	printf("looking for: %d\n", req_size);
-	if ((uint32_t)last_valid_address <= (uint32_t)current_free_space){
-
+	printf("current_free_space 0x%x\n", (uint32_t)current_free_space);
+	if (correct_address(current_free_space) == 0){
+		printf("^_^ \n");
 		return NULL;
 	}
 	/* While current block not available or req_size of block
@@ -53,7 +66,7 @@ struct block_desc *find_suit_block(size_t req_size) {
 	 * If the pointer(iterator) went for memory limits
 	 * then return NULL */
 
-	while ((md->is_available == 0) && (md->size < req_size + BLOCK_DESC_SIZE)) {
+	while ((!available(md)) && (!correct_size( md, req_size))) {
 		md = (void *)(((size_t)md) + md->size);
 		printf("md = 0x%X\n", (uint32_t)md);
 		printf("^|^|^|^|^|^ \n");
@@ -79,6 +92,7 @@ static void *memory_allocate(size_t req_size) {
 		return NULL;
 	}
 
+	//if (new_block->size != req_size + BLOCK_DESC_SIZE){
 	/* Set the pointer of current free block
 	 * to the memory for the rest of the old block */
 	current_free_space += (req_size + BLOCK_DESC_SIZE);
@@ -86,7 +100,7 @@ static void *memory_allocate(size_t req_size) {
 	/* Initializes a new block on the remaining part of block */
 	old_block = (void *) current_free_space;
 	old_block->is_available = 1;
-	old_block->size = new_block->size - req_size;
+	old_block->size = new_block->size - req_size - BLOCK_DESC_SIZE;
 
 	/* Change state flag on unavailable
 	 * and fixed req_size of block */
@@ -126,10 +140,9 @@ static void memory_init(void) {
 	struct block_desc *md;
 
 	current_free_space = memory;
-	last_valid_address = memory + (uint32_t)sizeof(memory);
 	printf("start of memory = 0x%X\n", (uint32_t)memory);
 	printf("end of memory = 0x%X\n", ((uint32_t)memory) + (uint32_t)sizeof(memory));
-	printf("last_valid_address = 0x%X\n", (uint32_t)last_valid_address);
+	printf("LAST_ADDRESS = 0x%X\n", (uint32_t)LAST_ADDRESS);
 	printf("BLOCK_DESC_SIZE = 0x%X\n", (uint32_t)BLOCK_DESC_SIZE);
 	md = (void *) memory;
 	md->is_available = 1;
@@ -147,10 +160,11 @@ static int run(int argc, char **argv) {
 
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
 		succes_alloc[i] = memory_allocate(temp = rand() % 10000);
-		if (succes_alloc == NULL) {
+		if (succes_alloc[i] == NULL) {
 			printf("\nMemory allocation error on the addition %d size of block: %d\n", i, temp);
+		} else {
+			printf("block num = %d address = 0x%X\n", i, (uint32_t)succes_alloc[i]);
 		}
-		printf("block num = %d address = 0x%X\n", i, (uint32_t)succes_alloc);
 	}
 
 	//return 0;
@@ -167,12 +181,12 @@ static int run(int argc, char **argv) {
 
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
 			succes_alloc[i] = memory_allocate(temp = rand() % 1000);
-			if (succes_alloc == NULL) {
+			if (succes_alloc[i] == NULL) {
 				printf("\nMemory allocation error on the addition %d size of block: %d\n", i, temp);
 			}
-			printf("alloc again block num = %d address = 0x%X\n", i, (uint32_t)succes_alloc);
+			printf("alloc again block num = %d address = 0x%X\n", i, (uint32_t)succes_alloc[i]);
 		}
-
-	return 0;
 //#endif
+	return 0;
+
 	}
