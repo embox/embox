@@ -30,7 +30,7 @@ define class-Mybuild
 				configResSet <- $(get configResourceSet),
 				config <- $(get configResSet->resources),
 				cfgFileContent <- $(get config->contentsRoot),
-				cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)), #FIXME
+				cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)),#FIXME
 				cfgInclude <- $(get cfgConfiguration->includes),
 				module <- $(get cfgInclude->module),
 

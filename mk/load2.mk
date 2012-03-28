@@ -24,7 +24,7 @@ CONFIG_GENERATED := $(CONFIG_GENERATED_PATH)/genConf.config
 $(CONFIG_GENERATED) :
 	mkdir -p $(@D)
 	$(HOSTCPP) -P -undef -nostdinc $(HOSTCPPFLAGS) \
-		-MMD -MT $@ -MF $@.d -D__MODS_CONF__ mk/confmacro2.S | \
+		-MMD -MP -MT $@ -MF $@.d -D__MODS_CONF__ mk/confmacro2.S | \
 		awk -f mk/confmacro2.awk > $@
 
 -include $(CONFIG_GENERATED:%=%.d)
