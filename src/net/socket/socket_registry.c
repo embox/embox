@@ -13,6 +13,7 @@
 #include <net/sock.h>
 #include <util/debug_msg.h>
 #include <mem/objalloc.h>
+#include <net/socket_registry.h>
 
 /* system socket registry */
 OBJALLOC_DEF(socket_registry, socket_node_t, MAX_SYSTEM_CONNECTIONS);

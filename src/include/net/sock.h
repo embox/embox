@@ -57,6 +57,7 @@ enum socket_connection_state_t {UNCONNECTED, CLOSED, LISTENING, BOUND, CONNECTIN
  * @param get_port TODO add description
  * @param arp_queue_info: arp_queue related parameter
  * @param sk_connection_state: state of the socket (i.e. UNCONNECTED, CONNECTED...). enumerated type
+ * @param sock_is_ready: event for waking up socket when the packet is added to arp_queue
  */
 typedef struct sock {
 	struct sock_common __sk_common;
@@ -88,44 +89,26 @@ typedef struct sock {
 	void (* sk_destruct)(struct sock *sk);
 	int (* get_port)(struct sock *sk, unsigned short num);
 	int sk_err;
-	unsigned int arp_queue_info;
+	bool ready;
 	enum socket_connection_state_t socket_connection_state;
+	struct event sock_is_ready;
 } sock_t;
 
 static inline void sock_set_ready(struct sock *sk) {
-	sk->arp_queue_info |= 1;
+	sk->ready = true;
 }
-static inline void sock_set_transmitted(struct sock *sk) {
-	sk->arp_queue_info |= (1 << 8);
-}
-
-static inline void sock_set_answer(struct sock *sk, int answer) {
-	sk->arp_queue_info |= (answer << 16);
+static inline void sock_unset_ready(struct sock *sk){
+	sk->ready = false;
 }
 
 /**
  *	Check if socket is wait for fate of pending packs resolution.
  *	@return
- *         - 1 if socket not wait
- *         - 0 in other case
+ *         - true if socket is ready for further actions
+ *         - false in other case
  */
-static inline unsigned int sock_is_ready(struct sock *sk) {
-	return (sk->arp_queue_info & 0x000000FF);
-}
-
-/**
- *	Check if pending pack from socket was transmitted
- */
-static inline unsigned int sock_was_transmitted(struct sock *sk) {
-	return ((sk->arp_queue_info & 0x0000FF00) >> 8);
-}
-
-/**
- * Get result of pending pack transmitting
- * @return error number or success of transmitting
- */
-static inline unsigned int sock_get_answer(struct sock *sk) {
-	return ((sk->arp_queue_info & 0x00FF0000) >> 16);
+static inline bool sock_is_ready(struct sock *sk) {
+	return sk->ready;
 }
 
 /** Sock flags */

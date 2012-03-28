@@ -10,6 +10,8 @@
 
 #include <net/skbuff.h>
 
+#define MAX_WAIT_TIME 1000
+
 /**
  * Try to send all pending packets with appropriate IP address
  * containing in ARP pack.

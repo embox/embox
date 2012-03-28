@@ -17,6 +17,10 @@
 #include <net/arp.h>
 #include <kernel/timer.h>
 
+#include <kernel/thread/api.h>
+#include <kernel/thread/event.h>
+#include <util/debug_msg.h>
+
 #define TTL 1000
 #define ARP_QUEUE_SIZE 0x10
 
@@ -39,9 +43,11 @@ void arp_queue_process(struct sk_buff *arp_pack) {
 
 			list_del(&pack->link);
 
-			sock_set_answer(pack->skb->sk, dev_queue_xmit(pack->skb));
-			sock_set_transmitted(pack->skb->sk);
 			sock_set_ready(pack->skb->sk);
+			debug_printf("waking up socket", "arp_queue", "arp_queue_process");
+			event_fire(&pack->skb->sk->sock_is_ready);
+			dev_queue_xmit(pack->skb);
+
 
 			pool_free(&arp_queue_pool, pack);
 		}
@@ -63,6 +69,8 @@ static void arp_queue_drop(struct sys_timer *timer, void *data) {
 	list_del(&deff_pack->link);
 
 	sock_set_ready(deff_pack->skb->sk);
+	debug_printf("launching socket event", "arp_queue", "arp_queue_drop");
+	event_fire(&deff_pack->skb->sk->sock_is_ready);
 
 	kfree_skb(deff_pack->skb);
 	pool_free(&arp_queue_pool, deff_pack);
@@ -77,14 +85,12 @@ int arp_queue_add(struct sk_buff *skb) {
 	if (queue_pack == NULL) {
 		return -ENOMEM;
 	}
-	skb->sk->arp_queue_info = 0;
+	/* skb->sk->arp_queue_info = 0; */
+	sock_unset_ready(skb->sk);
 
 	timer_set(&timer, TTL, arp_queue_drop, queue_pack);
 	queue_pack->timer = timer;
 
-//	new_pack = skb_clone(skb, 0);
-//	queue_pack->skb = new_pack;
-//	new_pack->sk = skb->sk;
 	queue_pack->skb = skb;
 
 	list_add_tail(&arp_queue, &queue_pack->link);

@@ -20,6 +20,10 @@
 #include <kernel/task.h>
 #include <net/arp_queue.h>
 
+#include <kernel/thread/api.h>
+#include <kernel/thread/event.h>
+#include <util/debug_msg.h>
+
 #ifndef CONFIG_MAX_KERNEL_SOCKETS
 #define CONFIG_MAX_KERNEL_SOCKETS 0x4
 #endif
@@ -191,15 +195,20 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 
 	/* socket is ready for usage and has no data transmitting errors yet */
 	sock->sk->sk_err = -1;
+	sock_set_ready(sock->sk);
 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
 
-	if(sock->sk && sock_was_transmitted(sock->sk) != 0) {
+	/* if(sock->sk && sock_was_transmitted(sock->sk) != 0) { */
+	if(!sock_is_ready(sock->sk)){
 		sock_lock(sock->sk);
-		while(!sock_is_ready(sock->sk));
-		sock_unlock(sock->sk);
-		res = sock_get_answer(sock->sk);
-	}
+		/* sleep until the event sock_is_ready fires */
+		debug_printf("socket is not ready going to sleep",
+								 "socket", "sendto_sock");
+		sched_sleep(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
+	  sock_unlock(sock->sk);
+		/* res = sock_get_answer(sock->sk); */
+	 }
 
 	if(res < 0) {
 		return (ssize_t)res;

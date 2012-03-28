@@ -86,6 +86,9 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	 err = security_socket_post_create(sock, family, type, protocol, kern);
 	 */
 
+	/* initialize socket_is_ready event */
+	event_init(&sock->sk->sock_is_ready, "socket_is_ready");
+	sock_set_ready(sock->sk);
 	/* newly created socket is UNCONNECTED for sure */
 	sk_set_connection_state(sock->sk, UNCONNECTED);
 	/* addr socket entry to registry */
@@ -265,7 +268,6 @@ int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
 
 int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,
 													struct msghdr *m,	size_t total_len) {
-	sock_set_ready(sock->sk);
 	return sock->ops->sendmsg(iocb, sock, m, total_len);
 }
 

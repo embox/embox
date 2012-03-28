@@ -13,6 +13,7 @@
 #include <net/skbuff.h>
 #include <stddef.h>
 #include <types.h>
+#include <net/arp_queue.h>
 
 /* Supported address families. */
 #define N_FAMILIES_SUPPORTED 4
