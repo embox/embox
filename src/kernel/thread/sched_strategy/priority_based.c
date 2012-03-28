@@ -65,7 +65,7 @@ int runq_resume(struct runq *rq, struct thread *t) {
 int runq_suspend(struct runq *rq, struct thread *t) {
 	int is_current;
 	assert(rq && t);
-	assert(!thread_state_suspended(t->state));
+	assert(thread_state_running(t->state));
 
 	t->runq = NULL;
 	t->state = thread_state_do_suspend(t->state);

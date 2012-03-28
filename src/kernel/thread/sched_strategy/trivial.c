@@ -89,7 +89,6 @@ void sleepq_wake_suspended_thread(struct sleepq *sleepq, struct thread *thread) 
 }
 
 int sleepq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all) {
-	int ret = 0;
 	struct thread *thread;
 	assert(runq && sleepq);
 
@@ -99,7 +98,7 @@ int sleepq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all) {
 
 	if (!list_empty(&sleepq->rq)) {
 		thread = list_entry(sleepq->rq.next, struct thread, sched.l_link);
-		ret = sleepq_wake_resumed_thread(runq, sleepq, thread);
+		sleepq_wake_resumed_thread(runq, sleepq, thread);
 	} else {
 		assert(!list_empty(&sleepq->sq));
 		thread = list_entry(sleepq->sq.next, struct thread, sched.l_link);
@@ -109,7 +108,7 @@ int sleepq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all) {
 	if (wake_all) {
 		while (!list_empty(&sleepq->rq)) {
 			thread = list_entry(sleepq->rq.next, struct thread, sched.l_link);
-			ret |= sleepq_wake_resumed_thread(runq, sleepq, thread);
+			sleepq_wake_resumed_thread(runq, sleepq, thread);
 		}
 		while (!list_empty(&sleepq->sq)) {
 			thread = list_entry(sleepq->sq.next, struct thread, sched.l_link);
@@ -117,7 +116,7 @@ int sleepq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all) {
 		}
 	}
 
-	return ret;
+	return 0;
 }
 
 void runq_sleep(struct runq *runq, struct sleepq *sleepq) {
