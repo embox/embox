@@ -28,7 +28,7 @@ $(for modName <- $(get $(get 1->type).qualifiedName),
 	$(\h)define __MOD_HEADER__$(subst .,__,$(modName)) $(\n)
 	$(foreach impl,$(get $1.depends),
 		$(if $(invoke $(get impl->type).isSubTypeOf,$(get 1->type)),
-		$(\n)// impl: $(impl)$(\n)
+		$(\n)// impl: $(get $(get impl->type).qualifiedName)$(\n)
 		$(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
 				 $(abspath $(call module_get_headers,$(impl))))) \
 		      ,$(\h)include __impl_x($(header))$(\n)$(\n))))
