@@ -136,13 +136,19 @@ extern void skb_shifthead(struct sk_buff *skb, int headshift);
 
 /**
  * sk_buff clone it used as we want to queue sk_buff in several queue
+ * In current implementation we don't have shared area for packets data,
+ * so copy and clone are the same.
  */
-extern struct sk_buff * skb_clone(sk_buff_t *skb, gfp_t priority);
+extern struct sk_buff *skb_clone(struct sk_buff *skb, gfp_t priority);
 
 /**
  * Create copy of skb
+ * In current implementation we don't have shared area for packets data,
+ * so copy and clone are the same.
  */
-extern struct sk_buff * skb_copy(const struct sk_buff *skb, gfp_t priority);
+static inline struct sk_buff *skb_copy(struct sk_buff *skb, gfp_t priority) {
+    return skb_clone(skb, priority);
+}
 
 /**
  * Allocate one instance of structure sk_buff_head.

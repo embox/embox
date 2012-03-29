@@ -225,26 +225,7 @@ struct sk_buff * buff_to_skb(unsigned char *buff, unsigned int size) {
 	return skb;
 }
 
-struct sk_buff * skb_clone(struct sk_buff *skb, gfp_t priority) {
-	struct sk_buff *clone;
-
-	clone = skb_copy(skb, 0);
-	if (clone == NULL) {
-		return NULL;
-	}
-
-	clone->dev = skb->dev;
-	clone->pkt_type = skb->pkt_type;
-	clone->protocol = skb->protocol;
-	clone->sk = skb->sk;
-
-	clone->p_data = clone->data + (skb->p_data - skb->data);
-	clone->prot_info = skb->prot_info;
-
-	return clone;
-}
-
-struct sk_buff * skb_copy(const struct sk_buff *skb, gfp_t priority) {
+static inline struct sk_buff *skb_copydata(const struct sk_buff *skb, gfp_t priority) {
 	struct sk_buff *new_pack;
 
 	if (skb == NULL) {
@@ -271,6 +252,24 @@ struct sk_buff * skb_copy(const struct sk_buff *skb, gfp_t priority) {
 	}
 
 	return new_pack;
+}
+
+struct sk_buff * skb_clone(struct sk_buff *skb, gfp_t priority) {
+	struct sk_buff *clone = skb_copydata(skb, 0);
+
+	if (clone == NULL) {
+		return NULL;
+	}
+
+	clone->dev = skb->dev;
+	clone->pkt_type = skb->pkt_type;
+	clone->protocol = skb->protocol;
+	clone->sk = skb->sk;
+
+	clone->p_data = clone->data + (skb->p_data - skb->data);
+	clone->prot_info = skb->prot_info;
+
+	return clone;
 }
 
 struct sk_buff * skb_peek_datagram(struct sock *sk, unsigned flags, int noblock,
