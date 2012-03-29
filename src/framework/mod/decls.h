@@ -4,6 +4,8 @@
  *
  * @date 12.06.10
  * @author Eldar Abusalimov
+ * @author Anton Kozlov
+ *		- options support
  */
 
 #ifndef FRAMEWORK_MOD_DECLS_H_
@@ -29,4 +31,16 @@
 
 #define __MOD_PACKAGE(pkg_nm)  MACRO_CONCAT(__mod_package__,  pkg_nm)
 
+#define __OPTION_MODULE_GET(mod,type,name) \
+		OPTION_##type##_##mod##__##name
+
+#define OPTION_MODULE_GET(mod,type,name) \
+	__OPTION_MODULE_GET(mod,type,name)
+
+#define OPTION_GET(type,name) \
+	OPTION_MODULE_GET(__EMBUILD_MOD__,type,name)
+
+/* Performs additional stringification, handy in string options */
+#define OPTION_STRING_GET(name) \
+	MACRO_STRING(OPTION_GET(STRING,name))
 #endif /* FRAMEWORK_MOD_DECLS_H_ */
