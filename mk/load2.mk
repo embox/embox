@@ -34,10 +34,10 @@ CONFIGFILES := $(CONFIG_GENERATED)
 
 endif #######
 
-CONFIGFILES := $(shell ls $(CONFIG_PATH)/*.config)
+CONFIGFILES := $(wildcard $(CONFIG_PATH)/*.config)
 
-$(if $(filter 1,$(words $(CONFIGFILES))),,\
-	$(error Multiplie .config files not supported for now))
+$(if $(word 2,$(CONFIGFILES)),\
+	$(error $(CONFIGFILES): multiplie .config files not supported for now))
 
 #
 # Directory where to put generated scripts.
