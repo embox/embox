@@ -208,7 +208,7 @@ static int unit_init(void) {
 	sys_ticks = 0;
 	INIT_LIST_HEAD(&sys_timers_list);
 	clock_init();
-	clock_setup(clock_source_get_precision());
+	clock_setup(clock_source_get_precision(NULL));
 	timer_safe_section_init();
 	return 0;
 }

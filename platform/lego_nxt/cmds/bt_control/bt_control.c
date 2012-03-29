@@ -36,7 +36,7 @@ static int bt_main(int argc, char **argv) {
 	struct net_node *hw_data, *hw_ctrl, *bc_data, *bc_ctrl, *dc_format_data,
 			*dc_format_ctrl, *dc_exec;
 
-	graph = pnet_graph_create();
+	graph = pnet_graph_create("bt lego");
 
 	hw_data = pnet_get_module(BLUETOOTH_HW_BLUE_CORE4_DATA);
 	pnet_graph_add_src(graph, hw_data);

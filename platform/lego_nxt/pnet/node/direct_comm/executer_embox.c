@@ -19,6 +19,7 @@
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/repo.h>
+#include <pnet/pack/pack_alone.h>
 
 #include <pnet/node/direct_comm.h>
 
