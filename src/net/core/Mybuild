@@ -4,7 +4,8 @@ module core {
     @IncludePath("$(SRC_DIR)/compat/linux/include")
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "devinet.c", "sock.c", "skbuff.c"
-	depends embox.net.dev, embox.net.util, embox.mem.slab
+	depends embox.net.dev, embox.net.util, embox.mem.slab,
+		embox.framework.LibFrameworkNet
 }
 
 module dev {

@@ -1,12 +1,17 @@
 package embox.framework
 
+static module LibFrameworkNet {
+	@DefineMacro("__FRAMEWORK__")
+	source "net/pack/core.c",
+		"net/proto/core.c",
+		"net/sock/core.c"
+}
+
+
 static module LibFramework {
-    @DefineMacro("__FRAMEWORK__")
+	@DefineMacro("__FRAMEWORK__")
 	source "cmd/core.c",
 		"mod/core.c",
-		"net/pack/core.c",
-		"net/proto/core.c",
-		"net/sock/core.c",
 		"service/callback.c",
 		"test/registry.c",
 		"test/run.c"
