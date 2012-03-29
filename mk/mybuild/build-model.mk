@@ -23,6 +23,7 @@ define class-BuildBuild
 		modules,BuildModuleInstance,configuration,changeable many containment)
 
 	# PROTECTED REGION ID(Build_Build) ENABLED START
+	$(field issueReceiver : IssueReceiver)
 	# PROTECTED REGION END
 endef
 

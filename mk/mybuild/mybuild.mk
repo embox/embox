@@ -11,15 +11,18 @@ include mk/mybuild/myfile-resource.mk
 # Constructor args:
 #   1. Configuration resource set.
 define class-Mybuild
-	$(super IssueReceiver)
-
 	$(property-field configResourceSet : ResourceSet,$1)
 
 	$(map moduleInstanceStore... : BuildModuleInstance)
 
 	# Args:
 	$(method createBuild,
-		$(for build <-$(new BuildBuild),
+		$(for \
+			build <-$(new BuildBuild),
+			issueReceiver <- $(new IssueReceiver),
+
+			$(set-field build->issueReceiver,$(issueReceiver))
+
 			$(set build->modules,
 				$(invoke getBuildModules))
 			$(build)))
@@ -44,7 +47,7 @@ define class-Mybuild
 						$(invoke superSetDeps,$1),
 						$(invoke checkResolve,$1),
 						$(invoke optionBind,$1))),
-				$(invoke printIssues),
+				,
 				$1)))
 
 	$(method superSetDeps,
@@ -80,10 +83,10 @@ define class-Mybuild
 				isAbstr<-$(get instType->isAbstract),
 				$(if $(singleword $(get inst->depends)),,#Not single realization, error
 					$(if $(get inst->depends),
-						$(invoke addIssues,$(new InstantiateIssue,,error,,
+						$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
 							Multiplie abstract realization: $(get instType->qualifiedName)
 								$(invoke getInstDepsOrigin,$(get inst->depends)))),
-						$(invoke addIssues,$(new InstantiateIssue,,error,,
+						$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
 							No abstract realization: $(get instType->qualifiedName))))
 
 					$(inst)))
@@ -105,7 +108,7 @@ define class-Mybuild
 					 Error),
 
 			$(if $(eq $(optValue),Error),
-				$(invoke addIssues,$(new InstantiateIssue,
+				$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
 					$(for includeMember <- $(get modInst->includeMember),
 						$(get includeMember->eResource)),
 					warning,
@@ -201,8 +204,15 @@ define printInstances
 endef
 
 define listInstances
-		$(strip $(for buildBuild<-$1,
-			$(get buildBuild->modules)))
+		$(strip \
+			$(for \
+				buildBuild<-$1,
+				issueReceiver <- $(get-field buildBuild->issueReceiver),
+
+				$(if $(invoke issueReceiver->getIssues),
+					$(invoke issueReceiver->printIssues))
+
+				$(get buildBuild->modules)))
 endef
 
 define class-InstantiateIssue

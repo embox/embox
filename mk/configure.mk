@@ -20,36 +20,11 @@ config_lds_h := $(AUTOCONF_DIR)/config.lds.h
 CONF_FILES     := $(build_conf) $(options_conf) $(lds_conf)
 AUTOCONF_FILES := $(build_mk) $(config_h) $(config_lds_h)
 
-ifeq (1,1)
-
 build_model := $(__build_model)
 
 MODS_ENABLE_OBJ := $(call listInstances,$(build_model))
 
 #$(warning $(call printInstances,$(build_model)))
-
-else
-
-MODS_ENABLE :=
--include $(mods_mk)
-
-include mk/conf/roots.mk
-include mk/conf/runlevel.mk
-
-$(if $(filter-out $(words $(MODS_ENABLE)),$(words $(sort $(MODS_ENABLE)))),\
-	$(error Multiple mod inclusion: $(sort $(foreach m,$(MODS_ENABLE),$(if $(word 2,$(filter $m,$(MODS_ENABLE))),$m)))))
-
-__MODS_ENABLE_OBJ := \
-	$(foreach m,$(MODS_ENABLE),$(or $(strip $(call find_mod,$m)), \
-		$(error Can't resolve module $m named in configs)))
-
-__MODS_ENABLE_OBJ := \
-	$(call module_closure,$(__MODS_ENABLE_OBJ))
-
-_MODS_ENABLE_OBJ := $(strip $(foreach m,$(MODS_ENABLE),$(foreach n,$(__MODS_ENABLE_OBJ),$(if $(call eq,$(basename $n),$m),$n))))
-MODS_ENABLE_OBJ := $(_MODS_ENABLE_OBJ) $(filter-out $(_MODS_ENABLE_OBJ),$(__MODS_ENABLE_OBJ))
-
-endif
 
 -include $(build_mk)
 
