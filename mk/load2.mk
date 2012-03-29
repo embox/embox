@@ -11,9 +11,9 @@ MYFILES := \
 	$(shell find $(MYFILES_PATH) -depth \
 		\( -name Mybuild -o -name \*.my \) -print)
 
-ifeq (1,1) #######
-
 CONFIG_PATH := conf
+ifeq (0,1) #######
+
 CONFIG_GENERATED_PATH := build/base/codegen
 
 HOSTCPP = gcc -E
@@ -29,15 +29,15 @@ $(CONFIG_GENERATED) :
 
 -include $(CONFIG_GENERATED:%=%.d)
 
-#CONFIGFILES := \
-#	$(shell find $(CONFIG_PATH) -depth \
-#		-name \*.config -print) \
-#	$(CONFIG_GENERATED)
-#CONFIGFILES := $(firstword $(CONFIGFILES))
 
 CONFIGFILES := $(CONFIG_GENERATED)
 
 endif #######
+
+CONFIGFILES := $(shell ls $(CONFIG_PATH)/*.config)
+
+$(if $(filter 1,$(words $(CONFIGFILES))),,\
+	$(error Multiplie .config files not supported for now))
 
 #
 # Directory where to put generated scripts.

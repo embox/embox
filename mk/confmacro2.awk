@@ -10,10 +10,11 @@ BEGIN { print "\npackage genconfig\n\nconfiguration conf {" }
   } else if (NF == 4) {
 	  level = $3
   }
+  str = "\t"
   if (level)
-	print "\t@Runlevel(" level ")";
+	str = "\t@Runlevel(" level ") ";
   if (NF > 0)
-	print "\tinclude " $1 "\n"
+	print str "include " $1 #"\n"
 }
 
 END { print "}" }

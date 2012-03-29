@@ -11,14 +11,13 @@ HOSTCC_MAJOR := \
 
 build_conf   := $(CONF_DIR)/build.conf
 options_conf := $(CONF_DIR)/options.conf
-mods_conf    := $(CONF_DIR)/mods.conf
 lds_conf     := $(CONF_DIR)/lds.conf
 
 build_mk     := $(AUTOCONF_DIR)/build.mk
 config_h     := $(AUTOCONF_DIR)/config.h
 config_lds_h := $(AUTOCONF_DIR)/config.lds.h
 
-CONF_FILES     := $(build_conf) $(options_conf) $(mods_conf) $(lds_conf)
+CONF_FILES     := $(build_conf) $(options_conf) $(lds_conf)
 AUTOCONF_FILES := $(build_mk) $(config_h) $(config_lds_h)
 
 ifeq (1,1)
