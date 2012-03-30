@@ -1564,16 +1564,27 @@ int lisp5000_main(int argc, char *argv[])
 	lval *g;
 	int i;
 	lval sym;
-	memory_size = 1 * 1024 * 1024 + 0x10;
+	memory_size = 1 * 1024 * 1024;
 //	memory = malloc(memory_size);
 //	memory = (lval *)(((int)memory + 7) & ~7);
 	memory = memalign(8, memory_size);
+
+	if (!memory) {
+		fprintf(stderr, "Couldn't allocate operation heap!\n");
+		return -ENOMEM;
+	}
 
 	memf = memory;
 	memset(memory, 0, memory_size);
 	memf[0] = 0;
 	memf[1] = memory_size / 4;
 	stack = malloc(256 * 1024);
+	if (!stack) {
+		fprintf(stderr, "Couldn't allocate stack!\n");
+		free(memory);
+		return -ENOMEM;
+	}
+
 	memset(stack, 0, 256 * 1024);
 	g = stack + 5;
 	pkg = mkp(g, "CL", "COMMON-LISP");
