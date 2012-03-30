@@ -3,8 +3,11 @@ package embox.cmd.sh
 abstract module shell_api { }
 
 module tish extends shell_api {
+
+	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "tish.c"
-	depends embox.compat.posix.LibPosix
+
+	depends third_party.lib.linenoise
 }
 
 module shell_start {
