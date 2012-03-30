@@ -122,13 +122,12 @@ static void *memory_allocate(size_t req_size) {
 	set_not_available(new_block);
 
 	if((new_block->size - req_size - BLOCK_DESC_SIZE) >= BLOCK_DESC_SIZE){
-		/* Fixed req_size of block */
-		new_block->size = req_size +  BLOCK_DESC_SIZE;
-
 		/* Initializes a new block on the remaining part of block */
 		old_block = (void *) ((size_t)new_block + req_size + BLOCK_DESC_SIZE);
 		set_available(old_block);
 		old_block->size = new_block->size - req_size - BLOCK_DESC_SIZE;
+		/* Fixed req_size of block */
+		new_block->size = req_size +  BLOCK_DESC_SIZE;
 	}
 
 	if(current_space == (void*) new_block) {
