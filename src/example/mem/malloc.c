@@ -2,6 +2,8 @@
  * @file
  * @brief Example of simple memory allocation
  *
+ *
+ *
  * @date 05.12.11
  * @author Gleb Efimov
  * @author Daria Dzendzik
@@ -77,7 +79,7 @@ struct block_desc *find_suit_block(size_t req_size) {
 	printf("looking for: %d\n", req_size);
 	printf("current_free_space 0x%x\n", (uint32_t)current_space);
 
-
+	/*Check address correction*/
 	if (correct_address(current_space) == 0){
 		printf("address is not correct!!!  \n");
 		return NULL;
@@ -92,15 +94,14 @@ struct block_desc *find_suit_block(size_t req_size) {
 		printf("md = 0x%X\n", (uint32_t)md);
 		printf("block is not able for this new block \n");
 
+		/*Check end of memory*/
 		if (((uint32_t)md) >= (uint32_t)(memory) + sizeof(memory)){
-			/*end of memory*/
 			return NULL;
 		}
 	}
 
 	printf("need %d\n", (uint32_t)(req_size) + (uint32_t)(BLOCK_DESC_SIZE));
 	printf("find 0x%x\n", (uint32_t)md);
-	//printf("current_free_space 0x%x\n", (uint32_t)current_free_space);
 
 	return md;
 }
@@ -114,13 +115,14 @@ static void *memory_allocate(size_t req_size) {
 	/* another part of existing block */
 	struct block_desc *old_block;
 
+	/*If suit block is not exist, allocation is impossible*/
 	if(NULL == (new_block = find_suit_block(req_size))) {
 		return NULL;
 	}
 
 	/* Change state flag on unavailable*/
 	set_not_available(new_block);
-
+	/*If  */
 	if((new_block->size - req_size - BLOCK_DESC_SIZE) >= BLOCK_DESC_SIZE){
 		/* Initializes a new block on the remaining part of block */
 		old_block = (void *) ((size_t)new_block + req_size + BLOCK_DESC_SIZE);
@@ -130,21 +132,28 @@ static void *memory_allocate(size_t req_size) {
 		new_block->size = req_size +  BLOCK_DESC_SIZE;
 	}
 
+	/*If select min free space, change enter to search */
 	if(current_space == (void*) new_block) {
-		current_space += (uint32_t)(new_block->size); // check types
+		current_space += (uint32_t)(new_block->size); /* check types*/
 	}
 
 	printf("returned 0x%x\n", (uint32_t)(new_block) + (uint32_t)(BLOCK_DESC_SIZE));
 	printf("current_free_space 0x%x\n", (uint32_t)current_space);
 
+	/*Return point to memory in block*/
 	return (void *) ((uint32_t)(new_block) + (uint32_t)(BLOCK_DESC_SIZE));
 }
 
-static void resolve_dafrag(struct block_desc *md){
+//TODO another kind of defragmentation
+/*Resolve defragmentation with next block*/
+static void resolve_defrag(struct block_desc *md){
 	struct block_desc *next_md;
+	/*Look at the next block and it is free, paste it*/
 	next_md = (void *)(((size_t)md) + md->size);
+	printf("DEFRAGMENTATION start \n");
 	if (get_available(next_md)){
 		md->size = md->size + next_md->size;
+		printf("DEFRAGMENTATION RESOLVE \n");
 	}
 }
 
@@ -166,7 +175,7 @@ static void memory_free(void *address) {
 	}
 
 	/*Resolve defragmentation*/
-	resolve_dafrag(md);
+	resolve_defrag(md);
 
 	printf("NEW current_free_space 0x%x\n", (uint32_t)current_space);
 
@@ -177,29 +186,42 @@ static void memory_free(void *address) {
 static void memory_init(void) {
 	struct block_desc *md;
 
+	/*Set search pointer to memory start */
 	current_space = memory;
 
 	printf("start of memory = 0x%X\n", (uint32_t)memory);
 	printf("end of memory = 0x%X\n", ((uint32_t)memory) + (uint32_t)sizeof(memory));
-	//printf("LAST_ADDRESS = 0x%X\n", (uint32_t)LAST_ADDRESS);
-	//printf("BLOCK_DESC_SIZE = 0x%X\n", (uint32_t)BLOCK_DESC_SIZE);
-
+#if 0
+	printf("LAST_ADDRESS = 0x%X\n", (uint32_t)LAST_ADDRESS);
+	printf("BLOCK_DESC_SIZE = 0x%X\n", (uint32_t)BLOCK_DESC_SIZE);
+#endif
+	/*Initialization first block */
 	md = (void *) memory;
 	md->is_available = 1;
 	md->size = sizeof(memory);
 }
-
+#if 0
 /* This program tests the simplest algorithm of memory allocation */
+static void example(){
+//TODO
+
+}
+#endif
+
 static int run(int argc, char **argv) {
 	int i, temp;
 	void *succes_alloc[QUANTITY_OF_TESTS];
 
 	memory_init();
+	/*example();*/
 
+	memory_init();
+
+	/*First allocation*/
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
 		printf("\n\n");
 		printf("==NEW BLOCK==\n");
-		succes_alloc[i] = memory_allocate(temp = rand() % 1000);
+		succes_alloc[i] = memory_allocate(temp = rand() % 10000);
 		if (succes_alloc[i] == NULL) {
 			printf("\nMemory allocation error on the addition %d size of block: %d\n", i, temp);
 		} else {
@@ -207,12 +229,16 @@ static int run(int argc, char **argv) {
 		}
 	}
 
-	i = 1;//for (i = 0; i < QUANTITY_OF_TESTS; i++) {
+	/*Memory free*/
+	for (i = QUANTITY_OF_TESTS-1; i >0 ; i--) {
 		if (rand() % 2 == 0){
 			memory_free(succes_alloc[i]);
 			printf("free block num = %d address = 0x%X\n\n", i, (uint32_t)succes_alloc[i]);
+
+		}
 	}
 
+	/*Allocation after free*/
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
 		printf("\n\n");
 		printf("==NEW BLOCK==\n");
