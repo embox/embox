@@ -16,7 +16,7 @@ extern int sr_add_socket_to_registry(struct socket *sock);
 extern int sr_remove_socket_from_registry(struct socket *sock);
 extern int sr_set_saddr(struct socket *sock, const struct sockaddr *addr);
 extern void sr_remove_saddr(struct socket *sock);
-
+extern bool sr_socket_exists(struct socket *sock);
 
 extern bool sr_is_saddr_free(struct socket *sock, struct sockaddr *addr);
 extern bool sr_is_daddr_free(struct socket *sock, struct sockaddr *addr);

@@ -82,6 +82,18 @@ bool sr_is_daddr_free(struct socket *sock, struct sockaddr *addr){
 		return true;
 }
 
+bool sr_socket_exists(struct socket *sock){
+	socket_node_t *node, *safe;
+
+	if(sock){  /* address validity */
+		list_for_each_entry_safe(node, safe, &socket_registry_head, link){
+			if(sock == node->sock)
+				return true;
+		}
+	}
+	return false;
+}
+
 int sr_set_saddr(struct socket *sock, const struct sockaddr *addr){
 	/* copy address data */
 	memcpy(&sock->socket_node->saddr, addr, sizeof(struct sockaddr));

@@ -64,11 +64,6 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	sock->type = type;
 	sock->state = SS_UNCONNECTED;
 
-  /* TODO: in create() method -EPROTONOSUPPORT should be returned,
-     when protocol is not supported */
-	/* TODO: in create() method type of a given socket should be checked
-	   to avoid invalid combinations of (type, protocol) and -EPROTOTYPE
-	   should be return in invalid case */
   res = pf->create(sock, protocol);
 	if (res < 0) {
 		socket_free(sock);
@@ -128,15 +123,49 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 
 	if(!sock->ops->bind){
 		debug_printf("No bind() method", "kernel_socket", "kernel_socket_bind");
-		return SK_NO_SUCH_METHOD;
+		return -EOPNOTSUPP;
+	}
+
+	/* if addrlen is not equal to sizeof(sockaddr) -EINVAL is returned
+	   like in linux. posix doesn't mention this */
+	if(addrlen != sizeof(struct sockaddr)){
+		return -EINVAL;
+	}
+
+	/* rebinding is forbidden for now, the chek for the protocl
+	   rebinding permission should be added to meet posix*/
+	if(sk_is_bound(sock->sk)){
+		return -EINVAL;
 	}
 
 	/* find out via registry if address is occupied */
 	if(!sr_is_saddr_free(sock, (struct sockaddr *)addr)){
 		return -EADDRINUSE;
 	}
+
+	/* find out if socket sock is registered in the system */
+	if(!sr_socket_exists(sock)){
+		return -ENOTSOCK;
+	}
+
+	/* if sockaddr structure's family field doesn't make sense here
+	   return EAFNOSUPPORT. further address availability should be
+	   checked in place by each protocol family*/
+	if(sock->sk->sk_family != addr->sa_family){
+		return -EAFNOSUPPORT;
+	}
+
 	/* try to bind */
-	/* NOTE: bind() method should return... i'll complete this list later // ttimkk */
+	/* NOTE: return values that are not processed yet (mostly for
+		  nonblocking sockets):
+		 -EALREADY An assignment request is already in progress for the
+		 specified socket.
+		 -EINPROGRESS O_NONBLOCK is set for the file descriptor for
+		 the socket and the assignment cannot be immediately performed; the
+		 assignment shall be performed asynchronously. -- this probably should be
+		 in socket-interface level bind() // ttimkk
+		 -ENOBUFS Insufficient resources were available to complete the call.
+	*/
 	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
 	if(res < 0){  /* If something went wrong */
 		debug_printf("error while binding socket",

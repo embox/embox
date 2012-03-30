@@ -18,11 +18,10 @@
 #include <net/socket.h>
 #include <net/inet_sock.h>
 #include <net/tcp.h>
+#include <net/inetdevice.h>
 
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
-/* TODO: to meet POSIX inet_proto_find should decide whether type-protocol
-   combination is valid and return appropriate errno. see kernel_socket_create*/
 static struct inet_protosw * inet_proto_find(short int *type, int *protocol) {
 	struct inet_protosw *p_netsock;
 	const struct net_sock *net_sock_ptr;
@@ -161,6 +160,12 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 	struct inet_sock *inet;
 
 	sk = sock->sk;
+
+	/* check if there is such an ip thought our local inet devices */
+	/* check broadcast and multicast, is that correct? */
+	if(ip_is_local((in_addr_t)&addr, true, true)){
+		return -EADDRNOTAVAIL;
+	}
 
 	res = ENOERR;
 	sock_lock(sk);
