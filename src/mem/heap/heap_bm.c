@@ -167,6 +167,7 @@ void *memalign(size_t boundary, size_t size) {
 		size = sizeof(struct free_block);
 	}
 
+	boundary <<= 2;
 	size = (size + (boundary - 1)) & ~(boundary - 1); /* align by word*/
 
 	for (link = free_blocks.next; link != &free_blocks; link = link->next) {
