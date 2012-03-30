@@ -98,6 +98,7 @@ define class-Mybuild
 		$(for \
 			modInst <- $1,
 			mod <- $(get modInst->type),
+			isAbstract <- $(if $(get mod->isAbstract),,false),
 			opt<-$(get mod->allOptions),
 			optValue <- $(or $(if $(get modInst->includeMember),# if module was explicitly enabled
 										# from configs and probably has
