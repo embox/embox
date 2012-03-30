@@ -7,14 +7,15 @@
  */
 
 #include <errno.h>
-//#include <util/array.h>
 #include <kernel/thread/api.h>
 #include <mem/objalloc.h>
 #include <kernel/task.h>
 #include <fs/file.h>
 #include "index_desc.h"
 
-OBJALLOC_DEF(task_pool, struct task, CONFIG_TASKS_N_MAX);
+#include <embox/unit.h>
+
+OBJALLOC_DEF(task_pool, struct task, OPTION_GET(NUMBER, tasks_quantity));
 
 static void task_init(struct task *new_task, struct task *parent) {
 	//struct __fd_list *fdl, *par_fdl;

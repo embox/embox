@@ -9,8 +9,11 @@ module util {
 }
 
 module multi_task extends task_api {
+	option number tasks_quantity = 20
+
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "multi_task.c", "def_task.c"
+
 	depends embox.driver.virtual.diag_device
 	depends util
 	depends embox.kernel.thread.sched
