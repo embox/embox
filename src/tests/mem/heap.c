@@ -36,6 +36,25 @@ TEST_CASE("Allocates big object") {
 	free(obj);
 }
 
+#define MAX_MALLOC_SIZE (CONFIG_HEAP_SIZE /2 - 8) //XXX based on current impl
+#define BIG_MALLOC_SIZE (1024 * 1024)
+
+#if BIG_MALLOC_SIZE + 100 <= MAX_MALLOC_SIZE
+/* + align */
+
+TEST_CASE("Allocate really big size with align, fill 0's, free, allocate again") {
+		void *big = memalign(8,BIG_MALLOC_SIZE);
+		test_assert_not_null(big);
+		memset(big, 0, BIG_MALLOC_SIZE); // comment this out, and everything is OK
+		free(big);
+
+		big = malloc(BIG_MALLOC_SIZE);
+		test_assert_not_null(big);
+		free(big);
+}
+#endif
+
+
 TEST_CASE("Allocates unaligned object") {
 	void *obj = malloc(sizeof(struct unaligned_struct));
 	test_assert_not_null(obj);
@@ -64,10 +83,10 @@ TEST_CASE("Allocates several objects with different size and fill them than free
 	struct big_struct *big;
 	int i;
 
-	unaligned = malloc(sizeof(struct unaligned_struct));
+	unaligned = memalign(8, sizeof(struct unaligned_struct));
 	test_assert_not_null(unaligned);
 
-	big = malloc(sizeof(struct big_struct));
+	big = memalign(8, sizeof(struct big_struct));
 	test_assert_not_null(big);
 
 	small = malloc(sizeof(struct small_struct));
@@ -90,3 +109,4 @@ TEST_CASE("Allocates several objects with different size and fill them than free
 	free(small);
 	free(unaligned);
 }
+
