@@ -144,17 +144,27 @@ static void *memory_allocate(size_t req_size) {
 	return (void *) ((uint32_t)(new_block) + (uint32_t)(BLOCK_DESC_SIZE));
 }
 
-//TODO another kind of defragmentation
+//TODO check: another kind of defragmentation
 /*Resolve defragmentation with next block*/
 static void resolve_defrag(struct block_desc *md){
 	struct block_desc *next_md;
-	/*Look at the next block and it is free, paste it*/
+
 	next_md = (void *)(((size_t)md) + md->size);
-	printf("DEFRAGMENTATION start \n");
-	if (get_available(next_md)){
-		md->size = md->size + next_md->size;
-		printf("DEFRAGMENTATION RESOLVE \n");
+
+	if(!correct_address((char *) md)){
+		return;
 	}
+
+	if(get_available(md)){
+		/*Look at the next block and it is free, paste it*/
+		printf("DEFRAGMENTATION start 0x%x\n", (uint32_t) md);
+		if (get_available(next_md)){
+			md->size = md->size + next_md->size;
+			printf("DEFRAGMENTATION RESOLVE \n");
+			resolve_defrag(md);
+		}
+	}
+	resolve_defrag(next_md);
 }
 
 
@@ -166,19 +176,20 @@ static void memory_free(void *address) {
 	/* Detect address of memory_block */
 	struct block_desc *md = address - BLOCK_DESC_SIZE;
 	/* Make block free*/
-	md->is_available = 1;
+	set_available(md);
 
 	/* Set the new value of pointer to the free block */
 	if (current_space > (char *) md) {
 		printf("***\n");
 		current_space = (char *) md;
+	} else {
+		md = (void *) current_space;
 	}
 
 	/*Resolve defragmentation*/
 	resolve_defrag(md);
 
 	printf("NEW current_free_space 0x%x\n", (uint32_t)current_space);
-
 }
 
 /* This is procedure of the beginning
@@ -215,8 +226,6 @@ static int run(int argc, char **argv) {
 	memory_init();
 	/*example();*/
 
-	memory_init();
-
 	/*First allocation*/
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
 		printf("\n\n");
@@ -230,13 +239,26 @@ static int run(int argc, char **argv) {
 	}
 
 	/*Memory free*/
-	for (i = QUANTITY_OF_TESTS-1; i >0 ; i--) {
+#if 0
+	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
 		if (rand() % 2 == 0){
 			memory_free(succes_alloc[i]);
 			printf("free block num = %d address = 0x%X\n\n", i, (uint32_t)succes_alloc[i]);
 
 		}
 	}
+#endif
+//#if 0
+	i=3;
+	memory_free(succes_alloc[i]);
+	printf("free block num = %d address = 0x%X\n\n", i, (uint32_t)succes_alloc[i]);
+	i=1;
+	memory_free(succes_alloc[i]);
+	printf("free block num = %d address = 0x%X\n\n", i, (uint32_t)succes_alloc[i]);
+	i=2;
+	memory_free(succes_alloc[i]);
+	printf("free block num = %d address = 0x%X\n\n", i, (uint32_t)succes_alloc[i]);
+//#endif
 
 	/*Allocation after free*/
 	for (i = 0; i < QUANTITY_OF_TESTS; i++) {
