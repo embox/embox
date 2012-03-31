@@ -101,10 +101,10 @@ struct block_desc *find_suit_block(size_t req_size) {
 			return NULL;
 		}
 	}
-
-	//printf("need %d\n", (uint32_t)(req_size) + (uint32_t)(BLOCK_DESC_SIZE));
-	//printf("find 0x%x\n", (uint32_t)md);
-
+#if 0
+	printf("need %d\n", (uint32_t)(req_size) + (uint32_t)(BLOCK_DESC_SIZE));
+	printf("find 0x%x\n", (uint32_t)md);
+#endif
 	return md;
 }
 
@@ -124,7 +124,7 @@ static void *memory_allocate(size_t req_size) {
 
 	/* Change state flag on unavailable*/
 	set_not_available(new_block);
-	/*If  */
+	/*If  old block less then BLOCK_DESC_SIZE don't to cut it*/
 	if((new_block->size - req_size - BLOCK_DESC_SIZE) >= BLOCK_DESC_SIZE){
 		/* Initializes a new block on the remaining part of block */
 		old_block = (void *) ((size_t)new_block + req_size + BLOCK_DESC_SIZE);
