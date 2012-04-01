@@ -1,0 +1,29 @@
+package embox.cmd
+
+@Cmd(name = "test",
+	help = "Interacts with Embox testing framework",
+	man = '''
+	NAME
+		test - an interface to Embox testing framework
+	SYNOPSIS
+		test [-h] [-n <test_nr>] [-t <test_name>]
+	DESCRIPTION
+		Shows tests available in the system and runs the specified ones
+	OPTIONS
+		-t test_name
+			Run a test by its name
+		-n test_nr
+			Run a test with the specified number
+
+		If no option is specified then the command shows the list of available
+		tests.
+	AUTHORS
+		Alexey Fomin
+		Eldar Abusalimov
+	''')
+module test {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "test.c"
+	depends LibPosix
+}

@@ -1,0 +1,29 @@
+package embox.cmd
+
+@Cmd(name = "wmem",
+	help = "Writes memory word at the specified address",
+	man = '''
+	NAME
+		wmem - writes to memory
+	SYNOPSIS
+		wmem [-h] -a addr -v value
+	OPTIONS
+		-h
+			Shows usage
+		-a addr
+			The destination address
+		-v value
+			The value to write
+	EXAMPLES
+		wmem -a 0x40000000 -v 0xdeadbeef
+	SEE ALSO
+		mem
+	AUTHORS
+		Alexey Fomin
+	''')
+module wmem {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "wmem.c"
+	depends LibPosix
+}

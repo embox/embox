@@ -1,0 +1,12 @@
+package embox.cmd
+
+@Cmd(name = "lisp",
+	help = "Lisp interpreter",
+	man = '''
+	''')
+module lisp {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "lisp.c"
+	depends LibPosix, third_party.lisp.lisp5000
+}

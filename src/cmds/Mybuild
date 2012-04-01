@@ -9,20 +9,20 @@ module readelf {
 	depends embox.lib.ElfLib
 }
 
-module tftp {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "tftp.c"
-	depends LibPosix
-}
+//module tftp {
+//	@IncludePath("$(SRC_DIR)/compat/linux/include")
+//	@IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "tftp.c"
+//	depends LibPosix
+//}
 
-module version {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "version.c"
-	depends LibPosix
-
-}
+//module version {
+//	@IncludePath("$(SRC_DIR)/compat/linux/include")
+//	@IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "version.c"
+//	depends LibPosix
+//
+//}
 
 //module mem {
 //	@IncludePath("$(SRC_DIR)/compat/linux/include")
@@ -31,26 +31,26 @@ module version {
 //	depends LibPosix
 //}
 
-module wmem {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "wmem.c"
-	depends LibPosix
-}
+//module wmem {
+//	@IncludePath("$(SRC_DIR)/compat/linux/include")
+//	@IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "wmem.c"
+//	depends LibPosix
+//}
 
-module test {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "test.c"
-	depends LibPosix
-}
+//module test {
+//	@IncludePath("$(SRC_DIR)/compat/linux/include")
+//	@IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "test.c"
+//	depends LibPosix
+//}
 
-module lspci {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "lspci.c"
-	depends LibPosix, embox.driver.pci
-}
+//module lspci {
+//	@IncludePath("$(SRC_DIR)/compat/linux/include")
+//	@IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "lspci.c"
+//	depends LibPosix, embox.driver.pci
+//}
 
 //module md5sum {
 //	@IncludePath("$(SRC_DIR)/compat/linux/include")
@@ -59,12 +59,12 @@ module lspci {
 //	depends LibPosix
 //}
 
-module lisp {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "lisp.c"
-	depends LibPosix, third_party.lisp.lisp5000
-}
+//module lisp {
+//	@IncludePath("$(SRC_DIR)/compat/linux/include")
+//	@IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "lisp.c"
+//	depends LibPosix, third_party.lisp.lisp5000
+//}
 
 //module netstat {
 //	@IncludePath("$(SRC_DIR)/compat/linux/include")
