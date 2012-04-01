@@ -37,10 +37,7 @@ struct free_block {
 };
 
 static void *pool;
-static struct free_block_link free_blocks = {
-	&free_blocks,
-	&free_blocks
-};
+static struct free_block_link free_blocks = { &free_blocks, &free_blocks };
 
 #define get_clear_size(size) ((size) & ~3)
 #define get_flags(size) ((size) & 3)
@@ -77,17 +74,23 @@ static void mark_prev(struct free_block *block) {
 	block->size |= 0x2;
 }
 
+static void clear_prev(struct free_block *block) {
+	block->size &= ~0x2;
+}
+
 static void mark_next(struct free_block *block) {
 	struct free_block *nblock; /* next block */
 
-	nblock = (struct free_block *) ((char *) block + get_clear_size(block->size));
+	nblock =
+			(struct free_block *) ((char *) block + get_clear_size(block->size));
 	nblock->size |= 0x2;
 }
 
 static void clear_next(struct free_block *block) {
 	struct free_block *nblock; /* next block */
 
-	nblock = (struct free_block *) ((char *) block + get_clear_size(block->size));
+	nblock =
+			(struct free_block *) ((char *) block + get_clear_size(block->size));
 	nblock->size &= ~0x2;
 }
 
@@ -97,7 +100,7 @@ void set_end_size(struct free_block *block) {
 	*(uint32_t *) ((void *) block + size - 4) = size;
 }
 
-static struct free_block * concatenate_prev(struct free_block *block){
+static struct free_block * concatenate_prev(struct free_block *block) {
 	size_t prev_size, new_size;
 	struct free_block *pblock; /* prev block */
 
@@ -118,7 +121,8 @@ static struct free_block * concatenate_next(struct free_block *block) {
 	size_t size;
 	struct free_block *nblock; /* next block */
 
-	nblock = (struct free_block *) ((char *) block + get_clear_size(block->size));
+	nblock =
+			(struct free_block *) ((char *) block + get_clear_size(block->size));
 
 	if (block_is_busy(nblock)) {
 		return block;
@@ -139,7 +143,8 @@ static void block_set_size(struct free_block *block, size_t size) {
 
 static struct free_block * cut(struct free_block *block, size_t size) {
 	struct free_block *nblock; /* new block */
-	nblock = (struct free_block *) ((char *) block + size + sizeof(block->size));
+	nblock =
+			(struct free_block *) ((char *) block + size + sizeof(block->size));
 
 	block_unlink(block);
 	block_link(nblock);
@@ -167,29 +172,52 @@ void *memalign(size_t boundary, size_t size) {
 		size = sizeof(struct free_block);
 	}
 
-	boundary *= 2;
-	size = (size + (boundary - 1)) & ~(boundary - 1); /* align by word*/
+	if (0 != boundary) {
+		boundary = max(boundary, sizeof(struct free_block) << 1);
+		size = (size + 1 + (boundary - 1)) & ~(boundary - 1);
+	} else {
+		size = (size + (3)) & ~(3); /* align by word*/
+	}
 
 	for (link = free_blocks.next; link != &free_blocks; link = link->next) {
 		block = (struct free_block *) ((uint32_t *) link - 1);
-		if((size + sizeof(block->size)) > get_clear_size(block->size)) {
+		if ((size + sizeof(block->size)) > get_clear_size(block->size)) {
 			continue;
 		}
 
-		if ((size + sizeof(block->size)) < (get_clear_size(block->size) - sizeof(struct free_block))) {
+		if ((size + sizeof(block->size))
+				< (get_clear_size(block->size) - sizeof(struct free_block))) {
 			block = cut(block, size);
 			mark_block(block);
 			mark_next(block);
-			//return (void *) ((uint32_t *) block + 1);
 		} else {
 			block_unlink(block);
 			mark_block(block);
 			mark_next(block);
 			/* we already have size */
-			//return (void *) ((uint32_t *) block + 1);
 		}
-		ret_addr = (void *)((uint32_t *) block + 1);
-		ret_addr = (void *)(((size_t)ret_addr + (boundary - 1)) & ~(boundary - 1));
+
+		ret_addr = (void *) ((uint32_t *) block + 1);
+		if (0 != ((size_t) ret_addr & ~(boundary - 1))) {
+			struct free_block *aligned_block;
+
+			aligned_block = (struct free_block *) (((size_t)((size_t)(block)
+					+ boundary) & ~(boundary - 1)) - 4);
+
+			aligned_block->size = block->size;
+			block_set_size(aligned_block,
+					size - ((size_t) aligned_block - (size_t) block));
+			mark_block(aligned_block);
+			clear_prev(aligned_block);
+
+			ret_addr = (void *) ((uint32_t *) aligned_block + 1);
+
+			block_set_size(block, (size_t) aligned_block - (size_t) block);
+			block_link(block);
+			clear_block(block);
+			clear_next(block);
+			set_end_size(block);
+		}
 
 		return ret_addr;
 	}
@@ -197,7 +225,7 @@ void *memalign(size_t boundary, size_t size) {
 }
 
 void *malloc(size_t size) {
-	return memalign(4, size);
+	return memalign(0, size);
 }
 
 void free(void *ptr) {
