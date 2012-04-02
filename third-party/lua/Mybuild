@@ -3,7 +3,7 @@ package org.lua
 
 module lua_core {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	@IncludePath("$(SRC_DIR)/include/util.h")
+	@IncludePath("$(SRC_DIR)/include/util")
 	source
 		"lapi.c", "lauxlib.c", "lbaselib.c", "lcode.c",
 		"ldebug.c", "ldo.c", "ldump.c", "lfunc.c", "lgc.c", "linit.c",
@@ -14,4 +14,6 @@ module lua_core {
 
 module lua_lib {
 	source "ltablib.c", "ldblib.c"
+	@InitFS
+	source "fib.lua"
 }
