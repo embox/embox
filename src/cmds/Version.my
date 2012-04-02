@@ -5,13 +5,12 @@ import embox.compat.posix.LibPosix
 @Cmd(name = "version",
 	help = "Displays info associated with compilation",
 	man = '''
-	NAME
-		version - displays info associated with compilation
-	AUTHORS
-		Nikolay Korotky
+		NAME
+			version - displays info associated with compilation
+		AUTHORS
+			Nikolay Korotky
 	''')
 module version {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "version.c"
 	depends LibPosix

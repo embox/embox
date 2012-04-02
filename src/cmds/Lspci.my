@@ -5,17 +5,17 @@ import embox.compat.posix.LibPosix
 @Cmd(name = "lspci",
 	help = "Show list pci's devices and information",
 	man = '''
-	NAME
-		lspci - list all PCI devices
-	SYNOPSIS
-		lspci [hf]
-	DESCRIPTION
-		lspci is a utility for displaying information
-		about PCI buses in the system and devices connected to them.
-	OPTIONS
-		-f print full information
-	AUTHOR
-		Gleb Efimov
+		NAME
+			lspci - list all PCI devices
+		SYNOPSIS
+			lspci [hf]
+		DESCRIPTION
+			lspci is a utility for displaying information
+			about PCI buses in the system and devices connected to them.
+		OPTIONS
+			-f print full information
+		AUTHOR
+			Gleb Efimov
 	''')
 module lspci {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
