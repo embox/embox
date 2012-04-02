@@ -44,19 +44,28 @@ ifndef __core_def_mk
 __core_def_mk := 1
 
 ##
-# Example of typical usage scenario is the following:
-# TODO more docs. -- Eldar
+# The following variables control code generation options and verbosity of def:
 #
-##
-#   include mk/core/define.mk
+#   DEF_NOINLINE
+#     If defined, disables inlining of builtin user functions forcing a
+#     conversion to a regular function call even if the function is inlinable.
+#     This option affects the code generation, so in order to get it take
+#     an effect all cached scripts must be freshen.
 #
-#   define foo
-#   	$(call bar,
-#   		# Zzz...
-#   		baz
-#   	)
-#   endef
-#   $(def_all)
+#   DEF_NOASSERT
+#     Controls whether to enable or disable '$(assert ...)' runtime assertions.
+#     As 'DEF_NOINLINE' this option requires the cache to be explicitly
+#     flushed.
+#
+#   DEF_TRACE
+#     If this variable is defined, print a name of each function being defined.
+#     The value is checked in the run time and tracing works for cached scripts
+#     as well, so there is no need to flush the cache.
+#
+#   DEF_DEBUG
+#     Produces lots of debugging information, related primarily to operations
+#     with the expansion stack (outer phase of def).
+#     Requires cache flushing.
 #
 
 include mk/core/alloc.mk
@@ -1097,6 +1106,8 @@ $(call def_exclude,__def_aux%)
 # Define some simple builtins that will help us with defining the rest ones.
 #
 
+ifdef DEF_NOASSERT
+
 #
 # Extension: 'assert' builtin function.
 #
@@ -1123,6 +1134,10 @@ define __assert_handle_failure
 	$(call $(if $(value __def_var),builtin_)error,
 			ASSERTION FAILED in function '$1': '$2'$(if $(value 3),: $3))
 endef
+
+else
+builtin_func-assert :=
+endif # DEF_NOASSERT
 
 #
 # Extension: 'lambda' builtin function.
@@ -1332,6 +1347,11 @@ define builtin_to_function_call
 			$(builtin_args))
 endef
 
+#
+# Function inlining.
+#
+ifndef DEF_NOINLINE
+
 # Tries to substitute the builtin by an inlined call to a user-defined
 # function.
 #
@@ -1399,16 +1419,12 @@ endef
 define builtin_to_function_inline
 	$(or \
 		$(if $(call not,$(call var_recursive,$(builtin_name))),
-			$(if $(call var_simple,$(builtin_name)),
-				$(call builtin_warning,
-					Can not inline non-recursive variable '$(builtin_name)'),
-				$(warning \
-					Can not inline undefined function '$(builtin_name)')
-			),
-			$(__builtin_to_function_inline)
-		),
-		$(builtin_to_function_call)
-	)
+			$(call builtin_warning,
+				Can not inline $(if $(call var_simple,$(builtin_name)),
+						non-recursive variable,
+						undefined function) '$(builtin_name)'),
+			$(__builtin_to_function_inline)),
+		$(builtin_to_function_call))
 endef
 
 # Actual inlining is performed here.
@@ -1432,18 +1448,14 @@ define __builtin_to_function_inline
 					$(subst $$$$($2),$$(foreach arg,$2,$$($3)),
 						$(if $(filter 1 2 3 4 5 6 7 8 9,$2),
 							$(subst $$$$$2,$$$$($2),$1),
-							$1
-						)
-					)
+							$1))
 				),
 				$(subst $$$$$$$$,$$($$)$$($$),$(subst $$,$$$$,
 					# Any usage of arg 0 is replaced by possibly overridden
 					# value of 'builtin_name',
 					# not the real name of the builtin stored in $0.
 					$(subst $$(0),$(builtin_name),$(subst $$0,$(builtin_name),
-						$(value $(builtin_name))
-					))
-				)),
+						$(value $(builtin_name)))))),
 				$(builtin_args_list),
 				$(lambda \
 					${eval \
@@ -1475,39 +1487,34 @@ define __builtin_to_function_inline
 					$(call list_fold,
 						$(lambda $(subst $$$2,,$(subst $$($2),,$1))),
 						$(subst $$$$,,$($(arg))),
-						0 1 2 3 4 5 6 7 8 9
-					)
-				),
+						0 1 2 3 4 5 6 7 8 9)),
 
 				# Issue a debug message with the reason of ambiguity
 				# and emit the name of the bad argument.
-				$(def-ifdef DEF_DEBUG,
-					$(call __def_debug,
+				$(def-ifdef DEF_DEBUG,$(call __def_debug,
 						Value of the argument $(arg) ('$($(arg))') is \
 						$(if $(filter $(arg),
 								$(__builtin_to_function_inline_expanded_args)),
 							used more than once,
-							not used
-						) inside the function being inlined
-					)
-				)
+							not used) inside the function being inlined))
 				$(arg)
 			)
 		)),
 
 		$(if $2,
-			$(def-ifdef DEF_DEBUG,
-				$(call __def_debug,
+			$(def-ifdef DEF_DEBUG,$(call __def_debug,
 					Inlining of function '$(builtin_name)' failed due to \
-					ambiguous usage of certain arguments)
-			),
-			$1
-		)
+					ambiguous usage of certain arguments)),
+			$1)
 	)
 endef
 
 __builtin_to_function_inline_expanded_args :=
 __cache_transient += __builtin_to_function_inline_expanded_args
+
+else
+builtin_to_function_inline = $(builtin_to_function_call)
+endif # DEF_NOINLINE
 
 # Builtin to function is ready to be used.
 $(def_all)
