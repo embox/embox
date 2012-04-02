@@ -1,0 +1,7 @@
+package embox.test.hw
+
+module memtest {
+	option number base
+	option number offset
+	source "memtest.c"
+}

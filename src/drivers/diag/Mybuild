@@ -13,6 +13,7 @@ module apbuart extends diag_api {
 }
 
 module serial_port extends diag_api {
+	option number baud_rate
 	source "serial_port.c"
 }
 

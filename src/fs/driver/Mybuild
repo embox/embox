@@ -1,6 +1,7 @@
 package embox.fs.driver
 
 module repo {
+	option number drivers_quantity = 4
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "fs_drv.c"
 }

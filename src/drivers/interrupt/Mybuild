@@ -18,3 +18,7 @@ module irqmp extends embox.arch.interrupt{
 	source "irqmp.c", "irqmp.h"
 	depends embox.driver.ambapp
 }
+
+module no_interrupts extends embox.arch.interrupt {
+	source "no_interrupts.h"
+}

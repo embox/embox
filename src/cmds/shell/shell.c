@@ -107,7 +107,7 @@ static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
 static CONSOLE console[1];
 
 static int shell_start(void) {
-	static const char* prompt = CONFIG_SHELL_PROMPT;
+	static const char* prompt = OPTION_STRING_GET(prompt);
 	static CONSOLE_CALLBACK callback[1];
 
 	callback->exec = exec_callback;
@@ -121,7 +121,7 @@ static int shell_start(void) {
 		shell_start_script(console, callback);
 	}
 
-	printf("\n%s", CONFIG_SHELL_WELCOME_MSG);
+	printf("\n%s", OPTION_STRING_GET(welcome_msg));
 	console_start(console, prompt);
 	return 0;
 }

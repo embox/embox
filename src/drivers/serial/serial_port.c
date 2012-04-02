@@ -13,6 +13,8 @@
 #include <util/ring_buff.h>
 #include <drivers/serial.h>
 
+#include <embox/unit.h>
+
 /**
  * UART registers
  *           +---------------------+---------------------+
@@ -102,8 +104,8 @@ static int uart_init(void) {
 	/* Set DLAB */
 	out8(UART_DLAB, COM0_PORT + UART_LCR);
 	/* Set the baud rate */
-	out8(DIVISOR(CONFIG_UART_BAUD_RATE) & 0xFF, COM0_PORT + UART_DLL);
-	out8((DIVISOR(CONFIG_UART_BAUD_RATE) >> 8) & 0xFF, COM0_PORT + UART_DLH);
+	out8(DIVISOR(OPTION_GET(NUMBER, baud_rate)) & 0xFF, COM0_PORT + UART_DLL);
+	out8((DIVISOR(OPTION_GET(NUMBER, baud_rate)) >> 8) & 0xFF, COM0_PORT + UART_DLH);
 	/* Set the line status */
 	out8(UART_NO_PARITY | UART_8BITS_WORD | UART_1_STOP_BIT, COM0_PORT + UART_LCR);
 	/* Uart enable FIFO */

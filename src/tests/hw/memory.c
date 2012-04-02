@@ -21,7 +21,7 @@
 
 EMBOX_TEST(run);
 
-#define MEMTEST_ADDR (CONFIG_MEMTEST_BASE + CONFIG_MEMTEST_OFFSET)
+#define MEMTEST_ADDR (OPTION_GET(NUMBER,base) + OPTION_GET(NUMBER,offset))
 
 static inline void print_error(volatile uint32_t *addr,
 		volatile uint32_t expected_value) {

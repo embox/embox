@@ -3,16 +3,21 @@ package embox.cmd.sh
 abstract module shell_api { }
 
 module tish extends shell_api {
+    option number prompt_len = 40
+    option string prompt = "embox> "
+    option string welcome_msg = "Welcome to Embox and have a lot of fun!"
 
-	@IncludePath("$(THIRDPARTY_DIR)/include")
-	source "tish.c"
 
-	depends third_party.lib.linenoise
+    @IncludePath("$(THIRDPARTY_DIR)/include")
+    source "tish.c"
+
+    depends third_party.lib.linenoise
 }
 
 module shell_start {
     @IncludePath("$(CONF_DIR)")
-	source "shell_start.c"
-	depends embox.kernel.thread.core
-	depends shell_api
+    source "shell_start.c"
+
+    depends embox.kernel.thread.core
+    depends shell_api
 }

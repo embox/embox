@@ -5,8 +5,11 @@ abstract module serial {
 }
 
 module serial_port extends serial{
+	option number baud_rate
+
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "serial_port.c"
+
 	depends embox.kernel.irq
 }
 

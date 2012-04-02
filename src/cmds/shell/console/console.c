@@ -211,7 +211,7 @@ void console_start(CONSOLE *this, const char *prompt) {
 	screen_callback->outer = this;
 
 	strncpy(this->prompt, (prompt != NULL) ? prompt : default_prompt,
-			CONFIG_MAX_PROMPT_LENGTH);
+			OPTION_GET(NUMBER, prompt_len));
 
 	screen_out_show_prompt(this->view, this->prompt);
 	screen_in_start(this->view, screen_callback);

@@ -18,7 +18,7 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
-OBJALLOC_DEF(fs_driver_pool, struct fs_driver_head, CONFIG_MAX_FS_DRIVERS);
+OBJALLOC_DEF(fs_driver_pool, struct fs_driver_head, OPTION_GET(NUMBER,drivers_quantity));
 
 ARRAY_SPREAD_DEF(const fs_drv_t *, __fs_drivers_registry);
 

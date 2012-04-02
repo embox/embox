@@ -8,5 +8,6 @@ module main {
 	depends embox.prom.printf
 	depends embox.arch.libarch
 	depends embox.arch.locore
+	depends embox.arch.interrupt
     depends embox.driver.diag.diag_api
 }

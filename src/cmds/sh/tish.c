@@ -13,12 +13,13 @@
 #include <string.h>
 #include <lib/linenoise.h>
 #include <ctype.h>
+#include <embox/unit.h>
 
 #include <framework/cmd/api.h>
 
 #include <cmd/shell.h>
 
-#define BUF_INP_SIZE CONFIG_MAX_PROMPT_LENGTH
+#define BUF_INP_SIZE OPTION_GET(NUMBER, prompt_len)
 
 static int cmd_compl(char *buf, char *out_buf) {
 	const struct cmd *cmd = NULL;
@@ -82,13 +83,13 @@ int shell_line_input(const char *const_line) {
 }
 
 void shell_run(void) {
-	const char *prompt = CONFIG_SHELL_PROMPT;
+	const char *prompt = OPTION_STRING_GET(prompt);
 	char inp_buf[BUF_INP_SIZE];
 	struct hist h;
 
 	linenoise_history_init(&h);
 
-	printf("\n%s", CONFIG_SHELL_WELCOME_MSG);
+	printf("\n%s\n\n", OPTION_STRING_GET(welcome_msg));
 
 	while (1) {
 		linenoise(prompt, inp_buf, BUF_INP_SIZE, &h, (compl_callback_t) cmd_compl);
