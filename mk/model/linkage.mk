@@ -158,7 +158,8 @@ define class-Linker
 #			$(silent-for 1 <- $1,$(warning >>> $1))
 			$(or $(notdir $(singleword $1)),
 				$(if $(strip $1),
-					$(warning Multiple import matches: $1)))
+					$(warning Multiple import matches: \
+						$(for 1 <- $1,$1 [$(get $(get 1->eResource).fileName)]))))
 		))
 	)
 

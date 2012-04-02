@@ -4,6 +4,7 @@
 /GNUmakefile
 /build
 /conf
+/core
 mk/.cache
 mk/GNUmakefile
 /nbproject

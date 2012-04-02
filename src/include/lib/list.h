@@ -9,6 +9,7 @@
 #define LIST_H_
 
 #include <stddef.h>
+#include <hal/ipl.h>
 
 /* This file is from Linux Kernel (include/linux/list.h)
  * and modified by simply removing hardware prefetching of list items.
@@ -28,16 +29,68 @@
 
 struct list_head {
 	struct list_head *next, *prev;
+	int poison;
 };
 
-#define LIST_HEAD_INIT(name) { &(name), &(name) }
+#define __POISON_ADD  0xdead0add
+#define __POISON_DEL  0xdead0de1
+#define __POISON_NEW  0xdead0de1
+
+#define LIST_HEAD_INIT(name) { &(name), &(name), __POISON_NEW }
 
 #define LIST_HEAD(name) \
 	struct list_head name = LIST_HEAD_INIT(name)
 
 #define INIT_LIST_HEAD(ptr) do { \
-	(ptr)->next = (ptr); (ptr)->prev = (ptr); \
+	(ptr)->next = (ptr); (ptr)->prev = (ptr); (ptr)->poison = __POISON_NEW;\
 } while (0)
+
+static inline void __list_check_fail__(void) {
+//	ipl_disable();
+//	while (1)
+//		;
+}
+
+static inline void __list_check__(struct list_head *head, int poison) {
+	struct list_head *next, *prev;
+
+	if (!head) {
+		__list_check_fail__();
+	}
+
+	next = head->next;
+	prev = head->prev;
+
+	if (next->prev != head || prev->next != head) {
+		__list_check_fail__();
+	}
+
+	if (poison) {
+		if (head->poison == poison) {
+			__list_check_fail__();
+		}
+		head->poison = poison;
+	}
+}
+
+int __attribute__ ((common)) __list_counter;
+ipl_t __attribute__ ((common)) __list_ipl;
+
+static inline void __list_check_inc(void) {
+	__list_ipl = ipl_save();
+	if (__list_counter++) {
+		__list_check_fail__();
+	}
+//	ipl_restore(ipl);
+}
+
+static inline void __list_check_dec(void) {
+//	ipl_t ipl = ipl_save();
+	if (--__list_counter) {
+		__list_check_fail__();
+	}
+	ipl_restore(__list_ipl);
+}
 
 /*
  * Insert a new entry between two known consecutive entries.
@@ -47,10 +100,17 @@ struct list_head {
  */
 static inline void __list_add(struct list_head *new,
 			struct list_head *prev, struct list_head *next) {
-	next->prev = new;
-	new->next = next;
-	new->prev = prev;
-	prev->next = new;
+	__list_check_inc();
+	{
+		next->prev = new;
+		new->next = next;
+		new->prev = prev;
+		prev->next = new;
+		__list_check__(new,  __POISON_ADD);
+		__list_check__(next, 0);
+		__list_check__(prev, 0);
+	}
+	__list_check_dec();
 }
 
 /**
@@ -86,8 +146,14 @@ static inline void list_add_tail(struct list_head *new,
  * the prev/next entries already!
  */
 static inline void __list_del(struct list_head *prev, struct list_head *next) {
-	next->prev = prev;
-	prev->next = next;
+	__list_check_inc();
+	{
+		next->prev = prev;
+		prev->next = next;
+		__list_check__(next, 0);
+		__list_check__(prev, 0);
+	}
+	__list_check_dec();
 }
 
 /**
@@ -97,6 +163,7 @@ static inline void __list_del(struct list_head *prev, struct list_head *next) {
  * the entry is in an undefined state.
  */
 static inline void list_del(struct list_head *entry) {
+	__list_check__(entry, __POISON_DEL);
 	__list_del(entry->prev, entry->next);
 	entry->next = (void *) 0;
 	entry->prev = (void *) 0;
@@ -107,6 +174,7 @@ static inline void list_del(struct list_head *entry) {
  * @entry: the element to delete from the list.
  */
 static inline void list_del_init(struct list_head *entry) {
+	__list_check__(entry, __POISON_DEL);
 	__list_del(entry->prev, entry->next);
 	INIT_LIST_HEAD(entry);
 }
@@ -137,7 +205,14 @@ static inline void list_move_tail(struct list_head *list,
  * @head: the list to test.
  */
 static inline int list_empty(struct list_head *head) {
-	return head->next == head;
+	int ret = 0;
+	__list_check_inc();
+	{
+		__list_check__(head, 0);
+		ret = head->next == head;
+	}
+	__list_check_dec();
+	return ret;
 }
 
 static inline void __list_splice(struct list_head *list,
