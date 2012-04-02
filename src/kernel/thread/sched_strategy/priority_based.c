@@ -150,7 +150,11 @@ void runq_sleep(struct runq *rq, struct sleepq *sq) {
 int runq_change_priority(struct runq *rq, struct thread *t, int new_priority) {
 	assert(rq && t);
 
-	change_thread_priority(&rq->pq, t, new_priority);
+	if (rq->current == t) {
+		t->priority = new_priority;
+	} else {
+		change_thread_priority(&rq->pq, t, new_priority);
+	}
 
 	return (new_priority > rq->current->priority);
 }
