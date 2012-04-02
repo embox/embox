@@ -38,8 +38,7 @@ $(for modName <- $(get $(get 1->type).qualifiedName),
 		option <- $(get optionInstance->option),
 		optionId <- $(invoke option->getId),
 		optionValue <- $(get optionInstance->optionValue),
-		optValRaw <- $(invoke optionValue->toString),
-		$(\n)$(\n)$(\h)define $(subst .,__,$(optionId)) $(optValRaw))
+		$(\n)$(\n)$(\h)define $(subst .,__,$(optionId)) $(invoke optionValue->toString))
 
 	$(\n)$(\h)endif /* __MOD_HEADER__$(subst .,__,$(modName)) */$(\n)
 )

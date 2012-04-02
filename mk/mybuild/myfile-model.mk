@@ -714,10 +714,10 @@ define class-MyNumberOptionValue
 
 	# PROTECTED REGION ID(MyFile_NumberOptionValue) ENABLED START
 	$(method toString,
-		$(get value))
+		$(get-field value))
 
 	$(if $(value 1),
-		$(set value,$1))
+		$(set-field value,$1))
 	# PROTECTED REGION END
 endef
 
@@ -737,7 +737,9 @@ define class-MyBooleanOptionValue
 
 	# PROTECTED REGION ID(MyFile_BooleanOptionValue) ENABLED START
 	$(method toString,
-		$(get value))
+		$(if $(get-field value),
+			1,
+			0))
 
 	$(if $(value 1),
 		$(set value,$1))
