@@ -206,7 +206,7 @@ void *memalign(size_t boundary, size_t size) {
 
 			aligned_block->size = block->size;
 			block_set_size(aligned_block,
-					size - ((size_t) aligned_block - (size_t) block));
+					get_clear_size(block->size) - ((size_t) aligned_block - (size_t) block));
 			mark_block(aligned_block);
 			clear_prev(aligned_block);
 
@@ -215,8 +215,8 @@ void *memalign(size_t boundary, size_t size) {
 			block_set_size(block, (size_t) aligned_block - (size_t) block);
 			block_link(block);
 			clear_block(block);
-			clear_next(block);
 			set_end_size(block);
+			clear_next(block);
 		}
 
 		return ret_addr;
@@ -291,3 +291,4 @@ static int heap_init(void) {
 
 	return 0;
 }
+
