@@ -35,7 +35,7 @@ struct pnet_graph *pnet_graph_create(char *name) {
 	if (NULL == (gr = (struct pnet_graph *) objalloc(&graphs)))
 		return NULL;
 
-	list_init(&gr->nodes);
+	INIT_LIST_HEAD(&gr->nodes);
 	INIT_LIST_HEAD(&gr->lnk);
 	list_add_tail(&gr->lnk, &graphs_list);
 
@@ -54,7 +54,7 @@ int pnet_graph_start(struct pnet_graph *graph) {
 		return -EINVAL;
 	}
 
-	list_foreach(node, &graph->nodes, gr_link) {
+	list_for_each_entry(node, &graph->nodes, gr_link) {
 		fun_call(pnet_proto_start(node), node);
 	}
 
@@ -72,7 +72,7 @@ int pnet_graph_stop(struct pnet_graph *graph) {
 		return -EINVAL;
 	}
 
-	list_foreach(node, &graph->nodes, gr_link) {
+	list_for_each_entry(node, &graph->nodes, gr_link) {
 		fun_call(pnet_proto_stop(node), node);
 	}
 
@@ -99,7 +99,7 @@ int pnet_graph_add_node(struct pnet_graph *graph, struct net_node *node) {
 
 	node->graph = graph;
 
-	list_add_last_element(node, &graph->nodes, gr_link);
+	list_add_tail(&node->gr_link, &graph->nodes);
 
 	return 0;
 }

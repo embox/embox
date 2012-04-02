@@ -10,6 +10,7 @@
 #include <pnet/node.h>
 #include <pnet/repo.h>
 #include <pnet/pnet_pack.h>
+#include <assert.h>
 
 #include <net/skbuff.h>
 
@@ -28,5 +29,5 @@ static int net_dev_rx_hnd(struct pnet_pack *pack) {
 
 PNET_NODE_DEF("devs resolver", {
 	.rx_hnd = net_dev_rx_hnd,
-	.tx_hnd = NULL
+	.tx_hnd = NULL,
 });

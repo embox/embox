@@ -13,7 +13,7 @@
 //#include <net/if_ether.h>
 //#include <net/netdevice.h>
 #include <types.h>
-#include <util/list.h>
+#include <lib/list.h>
 
 
 typedef int net_addr_t;
@@ -28,9 +28,8 @@ typedef struct net_packet *net_packet_t;
 
 struct net_node {
 	//struct net_node *this;
-	struct net_node *parent;
 	struct pnet_graph *graph;
-	struct list_link gr_link;
+	struct list_head gr_link;
 	struct pnet_proto *proto;
 
 	struct net_node *tx_dfault;

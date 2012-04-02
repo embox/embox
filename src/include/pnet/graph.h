@@ -24,7 +24,7 @@ struct pnet_graph {
 	char name[MAX_GRAPH_NAME_SIZE];
 	int id;
 	enum pnet_graph_state state;
-	struct list nodes;
+	struct list_head nodes;
 	struct list_head lnk;
 };
 

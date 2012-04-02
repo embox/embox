@@ -23,7 +23,7 @@ net_node_t pnet_node_init(net_node_t node, pnet_proto_t proto) {
 	assert(node);
 	node->proto = proto;
 
-	list_link_init(&node->gr_link);
+	INIT_LIST_HEAD(&node->gr_link);
 
 	node->rx_dfault = node->tx_dfault = NULL;
 	node->graph = NULL;

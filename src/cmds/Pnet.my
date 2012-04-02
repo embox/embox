@@ -2,6 +2,78 @@ package embox.cmd
 
 import embox.compat.posix.LibPosix
 
+@Cmd(name = "pnet",
+	help = "Util for PNET configuration",
+	man = '''
+		NAME
+			pnet - Util for PNET configuration
+
+		SYNOPSIS
+			pnet -a --graph graph
+			pnet -a --node graph node1...nodeN
+			pnet -a --rule graph node
+			pnet -d graph node
+			pnet -p [--nodes] graph
+			pnet -p --rules graph node
+			pnet -n
+			pnet {-r|-s} graph
+			pnet -l graph node1 node2
+			pnet -t graph node rule [RULE_OPTIONS] <value>
+
+		DESCRIPTION
+			-a
+				Create new graph, new node in graph or new rule in node in graph. Specify
+				by GRAPH_OPTIONS what you want to create.
+
+			-d
+				Marks node that it is not in any graph and deletes it from graph repository (list
+				of nodes that were be added in graph).
+				NOTE: each node, that had link (rx_dfault) to deleted node still will be have
+				this link notwithstanding deleted node already is'nt in any graph. So, rebuild
+				your graph at once after completion of node delete.
+
+			-p
+				Display chain of nodes start with 'root' if no options specified.
+				If --nodes option is specified then display graph repository.
+				If --rules option is specified then display all rules from matcher.
+
+			-n
+				Display all PNET nodes and protocols in system.
+
+			-r
+				Start graph
+
+			-s
+				Stop graph
+
+			-l
+				Link node2 to node1 in graph. Node2 must be contained in graph repository already.
+
+			-t
+				Set to rule some RULE_OPTIONS
+
+		OPTIONS
+			GRAPH_OPTIONS:
+			--graph
+				specify graph
+			--node
+				specify node
+			--rule
+				specify rule
+
+			RULE_OPTIONS:
+				--ip <value>
+					set IP address to destination host
+				--mac
+					set hardware address to destination host
+				--node
+					set next node. It means that if received pack correspond to
+					rule, than next handler of pack will be node set by this option
+
+		AUTHORS
+			Alexander Kalmuk
+	''')
+
 module pnet {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
