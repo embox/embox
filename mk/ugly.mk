@@ -235,25 +235,28 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
   $(for instance <- $(MODS_BUILD) $(LIBS_BUILD), \
   	m <- $(get instance->type), \
         mod <- $(get m->qualifiedName), \
-    $(for obj_dep <- $(get instance->depends), \
+	$(for obj_dep <- $(get instance->depends), \
           dep <- $(get $(get obj_dep->type).qualifiedName), \
       \nMOD_DEP_DEF($(c_mod), $(c_dep)); \
-    ) \
-    $(for include <- $(get instance->includeMember), \
-	annotation <- $(get include->annotations), \
-	annotationType <- $(get annotation->type), \
-	annotationName <- $(get annotationType->qualifiedName), \
-	binding <- $(get annotation->bindings), \
-	option <- $(get binding->option), \
-	value <- $(get binding->optionValue), \
-	valueRaw <- $(get value->value), \
-	$(if $(and $(eq $(annotationName),$(LABEL-Runlevel)), \
-		$(eq $(get option->name),value)), \
-	      \nMOD_DEP_DEF(generic__runlevel$(valueRaw)_init, $(c_mod)); \
-	      \nMOD_DEP_DEF($(c_mod), generic__runlevel$(valueRaw)_fini); \
-    	) \
+	   )\
+   $(with $(for include <- $(get instance->includeMember), \
+		annotation <- $(get include->annotations), \
+		annotationType <- $(get annotation->type), \
+		annotationName <- $(get annotationType->qualifiedName), \
+		binding <- $(get annotation->bindings), \
+		option <- $(get binding->option), \
+		value <- $(get binding->optionValue), \
+		valueRaw <- $(get value->value), \
+		$(if $(and $(eq $(annotationName),$(LABEL-Runlevel)), \
+			$(eq $(get option->name),value)), \
+			$(valueRaw)\
+		)), \
+	$(for valueRaw <- $(or $1,2),\
+	  \nMOD_DEP_DEF(generic__runlevel$(valueRaw)_init, $(c_mod)); \
+	  \nMOD_DEP_DEF($(c_mod), generic__runlevel$(valueRaw)_fini); \
      ) \
-  ) \
+    ) \
+  )\
 )\n
 
 $(def_all)
