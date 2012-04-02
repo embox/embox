@@ -1,5 +1,7 @@
 package embox.cmd
 
+import embox.compat.posix.LibPosix
+
 @Cmd(name = "version",
 	help = "Displays info associated with compilation",
 	man = '''

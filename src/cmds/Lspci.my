@@ -1,5 +1,7 @@
 package embox.cmd
 
+import embox.compat.posix.LibPosix
+
 @Cmd(name = "lspci",
 	help = "Show list pci's devices and information",
 	man = '''
