@@ -138,9 +138,7 @@ $(all_model_files) : $$(MAKEFILES)
 $(all_model_files) : mk/load2.mk
 $(all_model_files) : mk/script/mk-persist.mk
 
-.PHONY : $(myfiles_mk) $(configfiles_mk)
 $(MAKECMDGOALS) : $(all_model_files)
-	exit 1
 	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $^' $@
 
 #
