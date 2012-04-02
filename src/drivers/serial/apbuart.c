@@ -17,7 +17,7 @@
 #include <embox/unit.h>
 
 #define UART_SCALER_VAL \
-	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
+	((((CONFIG_CORE_FREQ*10) / (8 * OPTION_GET(NUMBER,baud_rate)))-5)/10)
 
 /* status register bit masks */
 #define UART_STAT_DR (1 << 0) /**< Data is available for read in RX register*/
@@ -109,7 +109,7 @@ static char uart_getc(void) {
 	return ((char) REG_LOAD(&dev_regs->data));
 }
 
-#ifdef CONFIG_AMBAPP
+#ifdef DRIVER_AMBAPP
 static int dev_regs_init() {
 	amba_dev_t amba_dev;
 	if (-1 == capture_amba_dev(&amba_dev, AMBAPP_VENDOR_GAISLER,
@@ -122,15 +122,15 @@ static int dev_regs_init() {
 	irq_num = amba_dev.dev_info.irq;
 	return 0;
 }
-#elif defined(CONFIG_APBUART_BASE)
+#elif defined(OPTION_GET(NUMBER,apbuart_base))
 static int dev_regs_init() {
-	dev_regs = (volatile struct apbuart_regs *) CONFIG_APBUART_BASE;
+	dev_regs = (volatile struct apbuart_regs *) OPTION_GET(NUMBER,apbuart_base);
 	irq_num = CONFIG_APBUART_IRQ;
 	return 0;
 }
 #else
-# error "Either CONFIG_AMBAPP or CONFIG_APBUART_BASE must be defined"
-#endif /* CONFIG_AMBAPP */
+# error "Either DRIVER_AMBAPP or apbuart_base option must be defined"
+#endif /* DRIVER_AMBAPP */
 
 
 

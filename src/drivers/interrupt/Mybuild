@@ -10,13 +10,13 @@ module at91_aic extends embox.arch.interrupt{
 }
 
 module i8259 extends embox.arch.interrupt{
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "i8259.c", "i8259.h"
 }
 
 module irqmp extends embox.arch.interrupt{
 	source "irqmp.c", "irqmp.h"
-	depends embox.driver.ambapp
+	depends embox.driver.ambapp_api
 }
 
 module no_interrupts extends embox.arch.interrupt {

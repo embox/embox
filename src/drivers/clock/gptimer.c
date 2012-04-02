@@ -136,7 +136,7 @@ void clock_init(void) {
 	clock_source_register(&gptimer_clock_source);
 }
 
-#ifdef CONFIG_AMBAPP
+#ifdef DRIVER_AMBAPP
 static int dev_regs_init(irq_nr_t *irq_nr) {
 	amba_dev_t amba_dev;
 
@@ -151,13 +151,13 @@ static int dev_regs_init(irq_nr_t *irq_nr) {
 	*irq_nr = amba_dev.dev_info.irq;
 	return 0;
 }
-#elif defined(CONFIG_GPTIMER_BASE)
+#elif defined(OPTION_GET(NUMBER,gptimer_base))
 static int dev_regs_init(irq_nr_t *irq_nr) {
 	assert(NULL != irq_nr);
-	dev_regs = (volatile struct gptimer_regs *) CONFIG_GPTIMER_BASE;
+	dev_regs = (volatile struct gptimer_regs *) OPTION_GET(NUMBER,gptimer_base);
 	*irq_nr = CONFIG_GPTIMER_IRQ;
 	return 0;
 }
 #else
-# error "Either CONFIG_AMBAPP or CONFIG_GPTIMER_BASE must be defined"
-#endif /* CONFIG_AMBAPP */
+# error "Either DRIVER_AMBAPP or gptimer_base must be defined"
+#endif /* DRIVER_AMBAPP */

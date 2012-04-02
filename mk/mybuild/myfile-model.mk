@@ -638,7 +638,7 @@ define class-MyBooleanOption
 	# PROTECTED REGION ID(MyFile_BooleanOption_validateValue) ENABLED START
 #	# TODO Uncomment and implement me.
 	$(method validateValue,
-		$(error $0(): NIY))
+		$(invoke MyFile_BooleanOptionValue->isInstance,$1))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_BooleanOption) ENABLED START

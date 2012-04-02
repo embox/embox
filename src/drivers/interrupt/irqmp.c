@@ -81,7 +81,7 @@ static int unit_init(void) {
 	return 0;
 }
 
-#ifdef CONFIG_AMBAPP
+#ifdef DRIVER_AMBAPP
 static int dev_regs_init(void) {
 	amba_dev_t amba_dev;
 	if (-1 == capture_amba_dev(&amba_dev, AMBAPP_VENDOR_GAISLER,
@@ -91,11 +91,11 @@ static int dev_regs_init(void) {
 	dev_regs = (volatile struct irqmp_regs *) amba_dev.bar[0].start;
 	return 0;
 }
-#elif defined(CONFIG_IRQMP_BASE)
+#elif defined(OPTION_GET(NUMBER,irqmp_base))
 static int dev_regs_init(void) {
-	dev_regs = (volatile struct irqmp_regs *) CONFIG_IRQMP_BASE;
+	dev_regs = (volatile struct irqmp_regs *) OPTION_GET(NUMBER,irqmp_base);
 	return 0;
 }
 #else
-# error "Either CONFIG_AMBAPP or CONFIG_IRQMP_BASE must be defined"
-#endif /* CONFIG_AMBAPP */
+# error "Either DRIVER_AMBAPP or irqmp_base option must be defined"
+#endif /* DRIVER_AMBAPP */

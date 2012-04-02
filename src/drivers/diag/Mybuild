@@ -8,8 +8,10 @@ module no_diag extends diag_api {
 }
 
 module apbuart extends diag_api {
+	option number baud_rate
+
 	source "apbuart.c"
-	depends embox.driver.ambapp
+	depends embox.driver.ambapp_api
 }
 
 module serial_port extends diag_api {
@@ -30,7 +32,7 @@ module xuartlite extends diag_api {
 }
 
 module vga extends diag_api {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "vga.c"
 	depends embox.driver.video.vga, embox.driver.keyboard
 }

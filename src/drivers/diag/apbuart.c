@@ -11,6 +11,8 @@
 #include <kernel/diag.h>
 #include <hal/reg.h>
 
+#include <embox/unit.h>
+
 #define APBUART_BASE  0x80000100
 #define DATA_REG             0x0
 #define STATUS_REG           0x4
@@ -18,7 +20,7 @@
 #define SCALER_REG           0xc
 
 #define SCALER_VAL \
-	((((CONFIG_CORE_FREQ*10) / (8 * CONFIG_UART_BAUD_RATE))-5)/10)
+	((((CONFIG_CORE_FREQ*10) / (8 * OPTION_GET(NUMBER,baud_rate)))-5)/10)
 
 void diag_init(void) {
 	REG_STORE((volatile uint32_t *) (APBUART_BASE + SCALER_REG), SCALER_VAL);
