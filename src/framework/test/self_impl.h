@@ -109,15 +109,18 @@
 
 # undef  __TEST_FIXTURE_OP_DEF
 # define __TEST_FIXTURE_OP_DEF(ignored, function_nm) \
-	static int function_nm(void)
+	static int function_nm(); \
+	typedef typeof(function_nm) __test_fixture_placeholder
 
 # undef  __TEST_CASE
 # define __TEST_CASE(ignored) \
+	static void MACRO_GUARD(__test_case)(void); \
+	typedef typeof(MACRO_GUARD(__test_case)) __test_case_placeholder; \
 	static void MACRO_GUARD(__test_case)(void)
 
 # undef  __EMBOX_TEST
 # define __EMBOX_TEST(_run) \
-	static int _run(void)
+	int _run(void)
 
 #endif /* __CDT_PARSER__ */
 

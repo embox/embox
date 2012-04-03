@@ -74,12 +74,22 @@ struct pnet_module {
 #define PNET_NODE_DEF_NAME(str_id, node_nm, ...)\
 	__PNET_NODE_DEF_NAME_REPO(str_id, node_nm, MACRO_GUARD(proto), __VA_ARGS__ )
 
-
 extern struct net_node *pnet_get_module(const char *name);
 
-//#ifdef __CDT_PARSER__
-//#undef  PNET_NODE_DEF
-//#define PNET_NODE_DEF(str_id, ...)
-//#endif /* __CDT_PARSER__ */
+#ifdef __CDT_PARSER__
+
+#define PNET_PROTO_DEF(str_id, ...) \
+	__PNET_PROTO_DEF_NAME_REPO(str_id, MACRO_GUARD(proto), __VA_ARGS__); \
+	typedef typeof(MACRO_GUARD(proto)) __pnet_proto_placeholder
+
+#define PNET_NODE_DEF(str_id, ...)\
+	PNET_NODE_DEF_NAME(str_id, MACRO_GUARD(node), __VA_ARGS__)
+
+#define PNET_NODE_DEF_NAME(str_id, node_nm, ...)\
+	__PNET_NODE_DEF_NAME_REPO(str_id, node_nm, MACRO_GUARD(proto), __VA_ARGS__ ); \
+	typedef typeof(node_nm) __pnet_proto_placeholder; \
+	typedef typeof(MACRO_GUARD(proto)) __pnet_proto_placeholder
+
+#endif /* __CDT_PARSER__ */
 
 #endif /* PNET_REPO_H_ */

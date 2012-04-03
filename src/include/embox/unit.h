@@ -57,14 +57,18 @@ struct unit {
 
 # undef  EMBOX_UNIT
 # define EMBOX_UNIT(init, exit) \
-	static int init(void) // XXX exit arg.
+	EMBOX_UNIT_INIT(init); EMBOX_UNIT_FINI(exit)
 
 # undef  EMBOX_UNIT_INIT
 # define EMBOX_UNIT_INIT(init) \
+	static int init(void); \
+	typedef typeof(init) __unit_placeholder; \
 	static int init(void)
 
 # undef  EMBOX_UNIT_FINI
 # define EMBOX_UNIT_FINI(exit) \
+	static int exit(void); \
+	typedef typeof(exit) __unit_placeholder; \
 	static int exit(void)
 
 #endif /* __CDT_PARSER__ */
