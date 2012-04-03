@@ -4,8 +4,6 @@
 
 include mk/dirs.mk
 
-MY_PATH := $(SRC_DIR)/** $(PLATFORM_DIR)/** $(THIRDPARTY_DIR)/**
-
 export RM     := rm -f
 export CP     := cp
 export PRINTF := printf
@@ -19,8 +17,7 @@ include mk/util/wildcard.mk
 .PHONY: all  prepare docsgen dot clean config xconfig menuconfig conf_update
 
 all: prepare
-	$(MAKE) -f mk/load.mk check_config image
-	@echo 'Build complete'
+	@$(MAKE) -f mk/load.mk image
 
 prepare:
 	@$(MKDIR) $(BUILD_DIR)
@@ -52,6 +49,15 @@ _distclean: _clean
 
 ############ config ############
 
+#build.conf assumed to be in every conf
+TEMPLATES := \
+	$(patsubst $(TEMPLATES_DIR)/%/build.conf,%,\
+		$(call r-wildcard,$(TEMPLATES_DIR)/**/build.conf))
+
+$(TEMPLATES:%=confload-%) : confload-% :
+	@$(CP) -fv -R -t $(CONF_DIR) $(TEMPLATES_DIR)/$*/*
+	@echo 'Config complete'
+
 ifdef TEMPLATE
 ifneq ($(words $(subst /, ,$(TEMPLATE))),2)
 $(error TEMPLATE must be in form PROJECT/PROFILE)
@@ -60,45 +66,8 @@ override PROJECT = $(word 1,$(subst /, ,$(TEMPLATE)))
 override PROFILE = $(word 2,$(subst /, ,$(TEMPLATE)))
 endif
 
-config: _clean
-ifndef PROFILE
-	@echo 'Error: PROFILE undefined'
-	@echo 'Usage: "make PROJECT=<project> PROFILE=<profile> config"'
-	@echo '    See templates dir for possible projects and profiles'
-	exit 1
-endif
-ifndef PROJECT
-	@echo 'Error: PROJECT undefined'
-	@echo 'Usage: "make PROJECT=<project> PROFILE=<profile> config"'
-	@echo '    See templates dir for possible projects and profiles'
-	exit 1
-endif
-	@test -d $(PROJECTS_DIR)/$(PROJECT) \
-		|| (echo 'Error: project $(PROJECT) does not exist' \
-			&& exit 1)
-	@test -d $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE) \
-		|| (echo 'Error: profile $(PROFILE) does not exist in project $(PROJECT)' \
-			&& exit 1)
-	@if [ -d $(CONF_DIR) ];           \
-	then                              \
-		if [ -d $(BACKUP_DIR) ];      \
-		then                          \
-			$(RM) -r $(BACKUP_DIR)/*; \
-		else                          \
-			$(MKDIR) $(BACKUP_DIR);   \
-		fi;                           \
-		$(if $(filter-out $(BACKUP_DIR),$(wildcard $(CONF_DIR)/*)), \
-			mv -fv -t $(BACKUP_DIR) \
-				$(filter-out $(BACKUP_DIR),$(wildcard $(CONF_DIR)/*));, \
-			rm -r $(BACKUP_DIR); \
-		)                             \
-	else                              \
-		$(MKDIR) $(CONF_DIR);         \
-	fi;
-	@$(CP) -fv -R -t $(CONF_DIR) \
-	  $(wildcard $(PROJECTS_DIR)/$(PROJECT)/$(PROFILE)/*);
-	@echo 'Config complete'
-
+config:
+	@$(MAKE) confload-$(PROJECT)/$(PROFILE)
 
 # checking config is needed to uptate, because if it requres we must rebuild whole project
 ifdef PROJECT
@@ -124,14 +93,12 @@ endif
 endif #PROFILE
 endif #PROJECT
 
-TEMPLATES = $(patsubst $(PROJECTS_DIR)/%,%,$(wildcard $(PROJECTS_DIR)/*/*))
-
 menuconfig m:
-	@$(MAKE) TEMPLATE=$$(dialog --stdout --backtitle "Configuration template selection" \
+	@$(MAKE) confload-$$(dialog --stdout --backtitle "Configuration template selection" \
                 --menu "Select template to load:" 20 40 20 \
-	       	$(foreach t,$(TEMPLATES),$t "" )) config
+	       	$(foreach t,$(TEMPLATES),$t "" ))
 xconfig x:
-	@$(MAKE) TEMPLATE=$$(Xdialog --stdout --backtitle "Configuration template selection" \
+	@$(MAKE) confload-$$(Xdialog --stdout --backtitle "Configuration template selection" \
                 --menu "Select template to load:" 20 40 20 \
-	       	$(foreach t,$(TEMPLATES),$t "" )) config
+	       	$(foreach t,$(TEMPLATES),$t "" ))
 

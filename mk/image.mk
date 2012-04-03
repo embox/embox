@@ -23,6 +23,9 @@ image: $(IMAGE_SIZE)
 image: $(IMAGE_PIGGY)
 image: image_fini
 
+image:
+	@echo 'Build complete'
+
 image_init image_fini:
 
 .PHONY: image_prepare

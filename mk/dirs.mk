@@ -4,6 +4,7 @@ ROOT_DIR       := .
 MK_DIR         := $(ROOT_DIR)/mk
 SCRIPTS_DIR    := $(ROOT_DIR)/scripts
 PROJECTS_DIR   := $(ROOT_DIR)/templates
+TEMPLATES_DIR  := $(ROOT_DIR)/templates
 THIRDPARTY_DIR := $(ROOT_DIR)/third-party
 PLATFORM_DIR   := $(ROOT_DIR)/platform
 SRC_DIR        := $(ROOT_DIR)/src
