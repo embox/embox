@@ -14,24 +14,14 @@ export PS1    :=
 
 include mk/util/wildcard.mk
 
-.PHONY: all  prepare docsgen dot clean config xconfig menuconfig conf_update
+.PHONY: clean config xconfig menuconfig conf_update
 
-all: prepare
-	@$(MAKE) -f mk/load.mk image
+BUILD_TARGETS := all dot docsgen
 
-prepare:
-	@$(MKDIR) $(BUILD_DIR)
-	@$(MKDIR) $(BIN_DIR)
-	@$(MKDIR) $(OBJ_DIR)
-	@$(MKDIR) $(LIB_DIR)
-	@$(MKDIR) $(ROOTFS_DIR)
-	@$(MKDIR) $(AUTOCONF_DIR)
-	@$(MKDIR) $(DOCS_OUT_DIR)
+.PHONY: $(BUILD_TARGETS)
 
-docsgen:
-	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)
-	doxygen
-	@echo 'Docs generation complete'
+$(BUILD_TARGETS):
+	@$(MAKE) -f mk/load.mk $@
 
 clean c: _clean
 	@echo 'Clean complete'
