@@ -42,10 +42,12 @@ static void handle_body(struct lego_dc_msg *msg, int *addit_len, uint8_t addit_m
 	switch (msg->command) {
 	case DC_KEEP_ALIVE:
 		reply_handle(1, msg->command, 0, &dc_out_msg);
+		break;
 	case DC_EX_SET_M_OUTPUT_STATE:
 		nxt_motor_set_power(NXT_MOTOR_A, msg->tail[0]);
 		nxt_motor_set_power(NXT_MOTOR_B, msg->tail[1]);
 		nxt_motor_set_power(NXT_MOTOR_C, msg->tail[2]);
+		break;
 	}
 }
 
