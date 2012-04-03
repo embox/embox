@@ -26,16 +26,17 @@
     .align 4
 
     .global start
-.extern irq_handler
+;.extern irq_handler
 
 .type reset_handler, %function
 .type undef_handler, %function
-.type irq_handler, %function
+.type hard_fault, %function
 
 .section .trap_table, "x"
     .word _stack_top
     .word reset_handler
     .word undef_handler
+    .word hard_fault
     .word undef_handler
     .word undef_handler
     .word undef_handler
@@ -47,13 +48,15 @@
     .word undef_handler
     .word undef_handler
     .word undef_handler
-    .word undef_handler
-    .word irq_handler
+    .word clock_handler
 
 
 /* stubs */
 undef_handler:
-    b die
+    b undef_handler
+
+hard_fault:
+    b hard_fault
 
 .text
 /* initialize stack */

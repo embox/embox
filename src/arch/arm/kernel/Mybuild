@@ -9,7 +9,7 @@ module locore extends embox.arch.locore {
 
 module locore_thumb extends embox.arch.locore {
 	source "head.thumb.S"
-	/*source "entry.thumb.S"*/
+	source "entry.thumb.S"
 }
 
 /*FIXME mybuild arch module what is it */
@@ -17,8 +17,8 @@ module arch {
 	source "arch.c"
 	depends embox.arch.locore, embox.driver.watchdog.at91_wdtc
 }
-/*
+
 module arch_thumb {
 	source "arch_thumb.c"
 }
-*/
+
