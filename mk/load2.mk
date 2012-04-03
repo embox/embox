@@ -122,7 +122,7 @@ $(all_model_files) : mk/load2.mk
 $(all_model_files) : mk/script/mk-persist.mk
 
 $(MAKECMDGOALS) : $(all_model_files)
-	@$(MAKE) -f mk/main.mk MAKEFILES='$(all_mk_files) $^' $@
+	@$(MAKE) -f mk/image.mk MAKEFILES='$(all_mk_files) $^' $@
 
 #
 # Added/removed myfiles detection.

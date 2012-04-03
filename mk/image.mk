@@ -2,6 +2,10 @@
 # Author: Eldar Abusalimov
 #
 
+include mk/dirs.mk
+
+include mk/configure.mk #FIXME
+
 IMAGE      = $(BIN_DIR)/$(TARGET)
 IMAGE_DIS  = $(IMAGE).dis
 IMAGE_BIN  = $(IMAGE).bin
@@ -60,6 +64,11 @@ endif
 
 include mk/flags.mk
 
+build_model := $(__build_model)
+
+MODS_ENABLE_OBJ := $(call listInstances,$(build_model))
+
+#$(warning $(call printInstances,$(build_model)))
 # It's time to scan subdirs and prepare mods info.
 # ...and to build dependency injection model
 include mk/codegen-di.mk
@@ -143,6 +152,7 @@ $(CMDS) : %.cmd : %.cmd.tmp ;
 
 $(CMDS:%.cmd=%.cmd.tmp): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk \
 		mk/image.mk $(myfiles_model_mk)
+	@$(MKDIR) $(@D)
 	@echo '$(FLAGS) -o $(@:%.cmd.tmp=%.o) -c' > $@
 	@diff -q $@ $(subst .tmp,,$@) &>/dev/null || cp $@ $(subst .tmp,,$@)
 

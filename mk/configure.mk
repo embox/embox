@@ -20,12 +20,6 @@ config_lds_h := $(AUTOCONF_DIR)/config.lds.h
 CONF_FILES     := $(build_conf) $(options_conf) $(lds_conf)
 AUTOCONF_FILES := $(build_mk) $(config_h) $(config_lds_h)
 
-build_model := $(__build_model)
-
-MODS_ENABLE_OBJ := $(call listInstances,$(build_model))
-
-#$(warning $(call printInstances,$(build_model)))
-
 -include $(build_mk)
 
 TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))

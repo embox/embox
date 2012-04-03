@@ -6,32 +6,33 @@ include mk/dirs.mk
 
 MY_PATH := $(SRC_DIR)/** $(PLATFORM_DIR)/** $(THIRDPARTY_DIR)/**
 
-RM     := rm -f
-CP     := cp
-PRINTF := printf
-SHELL  := bash
-MKDIR  := mkdir -p
-LN     := ln -s
-PS1    :=
+export RM     := rm -f
+export CP     := cp
+export PRINTF := printf
+export SHELL  := bash
+export MKDIR  := mkdir -p
+export LN     := ln -s
+export PS1    :=
 
 include mk/util/wildcard.mk
 
 # XXX Fix this shit. -- Eldar
 
-# 'clean', 'docsgen' and 'config' are handled in-place.
-ifneq ($(filter-out %clean %config conf% %docsgen,$(MAKECMDGOALS)),)
-# Need to include it prior to walking the source tree
-include mk/configure.mk
-# Skip image.mk if configs has not been remade yet
-ifneq ($(wildcard $(AUTOCONF_DIR)/build.mk),)
-include mk/image.mk
-include mk/codegen-dot.mk
-endif # $(wildcard $(AUTOCONF_DIR)/build.mk)
-endif # $(filter-out %clean %config %docsgen,$(MAKECMDGOALS))
+## 'clean', 'docsgen' and 'config' are handled in-place.
+#ifneq ($(filter-out %clean %config conf% %docsgen,$(MAKECMDGOALS)),)
+## Need to include it prior to walking the source tree
+#include mk/configure.mk
+## Skip image.mk if configs has not been remade yet
+#ifneq ($(wildcard $(AUTOCONF_DIR)/build.mk),)
+#include mk/image.mk
+#include mk/codegen-dot.mk
+#endif # $(wildcard $(AUTOCONF_DIR)/build.mk)
+#endif # $(filter-out %clean %config %docsgen,$(MAKECMDGOALS))
 
 .PHONY: all  prepare docsgen dot clean config xconfig menuconfig conf_update
 
-all: check_config prepare image
+all: prepare
+	$(MAKE) -f mk/load.mk check_config image
 	@echo 'Build complete'
 
 prepare:
