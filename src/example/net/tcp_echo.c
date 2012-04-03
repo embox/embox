@@ -2,12 +2,8 @@
  * @file
  * @brief
  *
- * @date 30.10.11
- * @author Alexander Kalmuk
- *	- UDP version
- * @author Anton Kozlov
+ * @date 03.04.12
  * @author Ilia Vaprol
- *	- TCP version
  */
 
 #include <stdio.h>
@@ -16,23 +12,21 @@
 #include <net/socket.h>
 #include <framework/example/self.h>
 #include <getopt.h>
-#include <kernel/prom_printf.h>
-#include <err.h>
 
 EMBOX_EXAMPLE(exec);
 
-#define LISTENING_PORT 20
+#define LISTENING_PORT 19
 
 static int exec(int argc, char **argv) {
-	int sock, client, res;
+	int sock, client, res, bytes_read;
 	struct sockaddr_in addr;
 	struct sockaddr_in dst;
 	int dst_addr_len = 0;
 	char buff[1024];
-	int bytes_read;
 
-	printf("Hello. I'm tcp_receiver at %d port. I will print all received data.\n",
+	printf("Hello, I'm tcp_echo at %d port. I will send all messages back.\n",
 			LISTENING_PORT);
+
 
 	res = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (res < 0) {
@@ -69,14 +63,19 @@ static int exec(int argc, char **argv) {
 
 	/* read from sock, print */
 	while (1) {
-		bytes_read = recvfrom(client, buff, sizeof buff, 0, NULL, NULL);
+		bytes_read = recvfrom(client, buff, sizeof buff, 0, (struct sockaddr *)&dst,
+				&dst_addr_len);
 		if (bytes_read < 0) {
 			break;
 		}
 		buff[bytes_read] = '\0';
-		printf("recv: '%s'\n", buff);
 		if (strncmp(buff, "quit", 4) == 0) {
-			printf("client gonna to close connection\n");
+			printf("exit");
+			break;
+		}
+		printf("echo: '%s'\n", buff);
+		if (sendto(client, buff, bytes_read, 0, (struct sockaddr *)&dst,
+				dst_addr_len) < 0) {
 			break;
 		}
 	}

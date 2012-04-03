@@ -1,5 +1,15 @@
 package embox.example.net
 
+module tcp_echo {
+	source "tcp_echo.c"
+	depends embox.net.socket
+}
+
+module tcp_sender {
+	source "tcp_sender.c"
+	depends embox.net.socket
+}
+
 module tcp_connect {
 	source "tcp_connect.c"
 	depends embox.net.socket
