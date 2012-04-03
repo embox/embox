@@ -15,6 +15,7 @@
 
 #include <pnet/core.h>
 #include <pnet/graph.h>
+#include <pnet/node.h>
 
 OBJALLOC_DEF(graphs, struct pnet_graph, CONFIG_PNET_GRAPH_CNT);
 

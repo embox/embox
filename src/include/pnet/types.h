@@ -9,9 +9,6 @@
 #ifndef PNET_TYPES_H_
 #define PNET_TYPES_H_
 
-//#include <net/in.h>
-//#include <net/if_ether.h>
-//#include <net/netdevice.h>
 #include <types.h>
 #include <lib/list.h>
 
@@ -27,7 +24,6 @@ struct pnet_proto;
 typedef struct net_packet *net_packet_t;
 
 struct net_node {
-	//struct net_node *this;
 	struct pnet_graph *graph;
 	struct list_head gr_link;
 	struct pnet_proto *proto;
@@ -66,7 +62,5 @@ struct pnet_pack {
 
 
 #include <pnet/proto.h>
-
-//#include __module_headers(embox/pnet/core/pack/api)
 
 #endif /* PNET_TYPES_H_ */
