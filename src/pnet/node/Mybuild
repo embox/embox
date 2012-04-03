@@ -1,6 +1,11 @@
 
 package embox.pnet.node
 
+module match {
+	source "match.c"
+	depends embox.pnet.core
+}
+
 module null {
 	source "null.c"
 }
@@ -10,7 +15,7 @@ module linux_layer {
 	source "init_linux_layer.c"
 	source "dev_linux.c"
 	depends embox.pnet.core.pack.PnetPackSkbuff
-	depends embox.pnet.netfilter.matcher
+	depends embox.pnet.node.skbuff.matcher
 	depends embox.pnet.dev
 }
 

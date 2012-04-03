@@ -2,5 +2,5 @@ package embox.example.pnet
 
 module match {
 	source "match.c"
-	depends embox.pnet.core, embox.pnet.netfilter.matcher, embox.example.net.receiver
+	depends embox.pnet.core, embox.pnet.node.skbuff.matcher
 }

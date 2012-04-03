@@ -24,7 +24,7 @@ static int net_dev_rx_hnd(struct pnet_pack *pack) {
 	assert(node);
 	pack->node = node;
 
-	return NET_HND_SUPPRESSED;
+	return 0;
 }
 
 PNET_NODE_DEF("devs resolver", {
