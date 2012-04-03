@@ -19,6 +19,7 @@ int pnet_node_attach(net_node_t node, net_id_t id, net_node_t other) {
 		break;
 	case NET_TX_DFAULT:
 		node->tx_dfault = other;
+		break;
 	}
 
 	return 0;

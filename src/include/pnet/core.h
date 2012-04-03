@@ -27,7 +27,7 @@
 extern int pnet_entry(struct pnet_pack *pack);
 extern int pnet_process(struct pnet_pack * pack);
 
-extern net_node_t pnet_dev_get_entry(void);
+//extern net_node_t pnet_dev_get_entry(void);
 
 extern int pnet_rx_thread_add(struct pnet_pack * pack);
 

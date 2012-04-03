@@ -6,10 +6,10 @@ module core {
 	depends pack.PnetPackFactory
 }
 
-module dev {
-	source "dev.c"
-	depends embox.pnet.node.null
-}
+//module dev {
+//	source "dev.c"
+//	depends embox.pnet.node.null
+//}
 
 module prior_path {
 	source "prior_path.c"
