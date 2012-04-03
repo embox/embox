@@ -11,33 +11,16 @@ MYFILES := \
 	$(shell find $(MYFILES_PATH) -depth \
 		\( -name Mybuild -o -name \*.my \) -print)
 
-CONFIG_PATH := conf
-ifeq (0,1) #######
+CONFIGFILES_PATH := conf
+CONFIGFILES := $(wildcard $(CONFIGFILES_PATH)/*.config)
 
-CONFIG_GENERATED_PATH := build/base/codegen
+ifeq ($(strip $(CONFIGFILES)),)
+$(error No config files were found in '$(CONFIGFILES_PATH)')
+endif
 
-HOSTCPP = gcc -E
-HOSTCPPFLAGS := -I$(CONFIG_PATH)
-
-CONFIG_GENERATED := $(CONFIG_GENERATED_PATH)/genConf.config
-
-$(CONFIG_GENERATED) :
-	mkdir -p $(@D)
-	$(HOSTCPP) -P -undef -nostdinc $(HOSTCPPFLAGS) \
-		-MMD -MP -MT $@ -MF $@.d -D__MODS_CONF__ mk/confmacro2.S | \
-		awk -f mk/confmacro2.awk > $@
-
--include $(CONFIG_GENERATED:%=%.d)
-
-
-CONFIGFILES := $(CONFIG_GENERATED)
-
-endif #######
-
-CONFIGFILES := $(wildcard $(CONFIG_PATH)/*.config)
-
-$(if $(word 2,$(CONFIGFILES)),\
-	$(error $(CONFIGFILES): multiplie .config files not supported for now))
+ifneq ($(word 2,$(CONFIGFILES)),)
+$(error Handling multiplie config files is not implemented: '$(CONFIGFILES)')
+endif
 
 #
 # Directory where to put generated scripts.
