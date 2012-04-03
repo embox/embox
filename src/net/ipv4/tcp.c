@@ -123,7 +123,7 @@ static unsigned int tcp_data_len(struct sk_buff *skb) {
 	return ntohs(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph) - TCP_V4_HEADER_SIZE(skb->h.th);
 }
 
-static unsigned int tcp_data_last(struct sk_buff *skb) {
+static unsigned int tcp_data_left(struct sk_buff *skb) {
 	unsigned int size;
 
 	size = skb->p_data - skb->data;
@@ -190,6 +190,25 @@ static int send_from_sock(union sock_pointer sock, struct sk_buff *skb, int ops)
 	}
 	packet_print(sock, skb, "<=", sock.inet_sk->daddr, sock.inet_sk->dport);
 	return ip_send_packet(sock.inet_sk, skb);
+}
+
+static void free_rexmitting_queue(union sock_pointer sock, __u32 ack, __u32 unack) {
+	struct sk_buff *sent_skb;
+	unsigned long ack_bytes, sent_bytes;
+
+	ack_bytes = ack - unack;
+	while ((ack_bytes != 0) && ((sent_skb = skb_peek(sock.sk->sk_write_queue)) != NULL)) {
+		sent_bytes = tcp_data_left(sent_skb);
+		if (sent_bytes <= ack_bytes) {
+			ack_bytes -= sent_bytes;
+			debug_print("free_rexmitting_queue: remove skb 0x%p\n", sent_skb);
+			kfree_skb(sent_skb); /* list_del will done at kfree_skb */
+		}
+		else {
+			sent_skb->p_data += ack_bytes;
+			break;
+		}
+	}
 }
 
 static int tcp_rexmit(union sock_pointer sock) {
@@ -414,76 +433,52 @@ static tcp_st_err_t tcp_st_closed(union sock_pointer sock, struct sk_buff *skb,
 		//send reset ?
 	}
 #endif
-//	out_tcph->rst = 1;
-	return TCP_ST_DROP;
+	out_tcph->rst = 1;
+
+	return TCP_ST_SEND_ONCE;
 }
 
 
 /************************ Process functions ****************************/
-static void process_ack(union sock_pointer sock, __u32 seq, __u32 ack) {
-	struct sk_buff *sent_skb;
-	unsigned long ack_bytes, curr_len;
-
-	ack_bytes = ack - sock.tcp_sk->this_unack;
-	while ((ack_bytes != 0)
-			&& ((sent_skb = skb_peek(sock.sk->sk_write_queue)) != NULL)) {
-		debug_print("process_ack: skb 0x%p\n", sent_skb);
-		curr_len = ack_bytes + (sent_skb->p_data - sent_skb->data);
-		if (sent_skb->len <= curr_len) {
-			ack_bytes = curr_len - sent_skb->len;
-			debug_print("process_ack: freeing rexmitting skb 0x%p\n", sent_skb);
-			if (sent_skb->prot_info != TCP_NONE_STATE) {
-				debug_print("TCP_SOCK 0x%p set state by ack %d\n", sock.tcp_sk, sent_skb->prot_info);
-				tcp_set_st(sock, NULL, sent_skb->prot_info);
-			}
-			kfree_skb(sent_skb); /* list_del will done at kfree_skb */
-		}
-		else {
-			sent_skb->p_data += ack_bytes;
-			break;
-		}
+static tcp_st_err_t process_rst(union sock_pointer sock, struct tcphdr *tcph,
+		struct tcphdr *out_tcph) {
+//	tcp_set_st(sock, NULL, TCP_CLOSED);
+	switch (sock.sk->sk_state) {
+	case TCP_CLOSED:
+		break;
 	}
-	debug_print("process_ack: done with queue\n");
+	return TCP_ST_NO_FREE;
 }
 
-/*static*/ int process_rst(union sock_pointer sock, struct sk_buff *skb, tcphdr_t *tcph) { // TODO static functinon
-	if (tcph->rst) {
-		tcp_set_st(sock, NULL, TCP_CLOSED);
-		sk_common_release(sock.sk);
-		return 1;
+static void process_ack(union sock_pointer sock, __u32 ack) {
+	if ((sock.tcp_sk->this_unack < ack) && (ack <= sock.tcp_sk->this.seq)) { // TODO another check
+		free_rexmitting_queue(sock, ack, sock.tcp_sk->this_unack);
+		sock.tcp_sk->this_unack = ack;
 	}
-	return 0;
 }
 
 static tcp_st_err_t pre_process(union sock_pointer sock, struct sk_buff *skb,
 		struct tcphdr *tcph, struct tcphdr *out_tcph) {
-	__u32 seq, ack;
+	tcp_st_err_t res;
+	__u32 seq;
 
-	seq = ntohl(tcph->seq);
-	ack = ntohl(tcph->ack_seq);
-	debug_print("pre_process: ack %u, this_unack %u, this.seq %u, seq %u, rem.seq %u\n",
-			ack, sock.tcp_sk->this_unack, sock.tcp_sk->this.seq, seq, sock.tcp_sk->rem.seq);
-	if ((sock.tcp_sk->this_unack < ack) && (ack <= sock.tcp_sk->this.seq)) { // TODO another check
-//		if (process_rst(tcp_sk, skb, tcph)) {
-//			return TCP_ST_DROP;
-//		}
-
-		process_ack(sock, seq, ack);
-		sock.tcp_sk->this_unack = ack;
-
-		/* send segment with ack flag if this packet is duplicated */
-		if (seq < sock.tcp_sk->rem.seq) {
-			out_tcph->ack = 1;
-			debug_print("pre_process: dup\n");
-			return TCP_ST_SEND_ONCE;
-		}
-	} else {
-
+	if (skb->h.th->rst &&
+			((res = process_rst(sock, tcph, out_tcph)) != TCP_ST_NO_FREE)) {
+		return res;
 	}
-	debug_print("pre_process: no_free\n");
-
+	if (skb->h.th->ack) {
+		process_ack(sock, ntohl(tcph->ack_seq));
+	}
+	seq = ntohl(tcph->seq);
+	if (seq < sock.tcp_sk->rem.seq) {
+		/* send segment with ack flag if this packet is duplicated */
+		out_tcph->ack = 1;
+		return TCP_ST_SEND_ONCE;
+	}
+	if (0) { // TODO
+		/* drop packet if he has incorrect seq */
+	}
 	return TCP_ST_NO_FREE;
-
 }
 
 #if 0
@@ -592,8 +587,7 @@ static struct tcp_sock * tcp_lookup(in_addr_t saddr, __be16 sport, in_addr_t dad
  * Main function of TCP protocol
  */
 static void tcp_process(union sock_pointer sock, struct sk_buff *skb) {
-	if (skb->h.th->ack
-			&& (tcp_handle(sock, skb, pre_process) != TCP_ST_NO_FREE)) {
+	if (tcp_handle(sock, skb, pre_process) != TCP_ST_NO_FREE) {
 		return;
 	}
 
@@ -848,17 +842,17 @@ static int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 		}
 	} while ((skb = skb_peek_datagram(sk, flags, 0, 0)) == NULL);
 
-	if (len >= tcp_data_last(skb)) {
+	if (len >= tcp_data_left(skb)) {
 		skb_recv_datagram(sk, flags, 0, 0);
-		len = tcp_data_last(skb);
+		len = tcp_data_left(skb);
 	}
 	msg->msg_iov->iov_len = len;
 	memcpy((void *)msg->msg_iov->iov_base, skb->p_data, len);
-	kfree_skb(skb);
-//	skb->p_data += len;
-//	if (tcp_data_last(skb) == 0) {
-//			kfree_skb(skb);
-//	}
+	skb->p_data += len;
+	/* remove skb from receive's queue if he doesn't contains more data */
+	if (tcp_data_left(skb) == 0) {
+			kfree_skb(skb);
+	}
 	return ENOERR;
 }
 
