@@ -47,9 +47,9 @@ dot: $(GRAPH_PS)
 	@echo 'Dot complete'
 
 $(GRAPH_DOT) : mk/codegen-dot.mk
-	@$(PRINTF) '$(generate_dot)' > $@
+	$(MAKE) -f mk/script/dot.mk BUILD_MODEL=$(build_model) > $@
 
 $(GRAPH_PS) : $(GRAPH_DOT)
-	mkdir -p $(DOT_DIR) && fdp -Tps $< -o $@
+	@mkdir -p $(DOT_DIR) && fdp -Tps $< -o $@
 
 endif

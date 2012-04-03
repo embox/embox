@@ -127,7 +127,6 @@ $(foreach l,$(LIBS_BUILD),$(call define_lib_rules,$l))
 
 -include $(patsubst %.lds,%.lds.d,$(OBJS_BUILD:.o=.d))
 
-#OBJS_BUILD := $(foreach mod,$(MODS_BUILD),$(OBJS-$(mod)))
 OBJ_SUBDIRS := \
 	$(sort $(dir $(OBJS_BUILD) $(LDSS_BUILD)))
 
