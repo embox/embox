@@ -18,7 +18,6 @@
 OBJALLOC_DEF(match_rules, struct match_rule, MAX_RULE_COUNT);
 
 static void rule_init(match_rule_t rule) {
-	rule->id = 0;
 
 	rule->skbuf->data = rule->header;
 

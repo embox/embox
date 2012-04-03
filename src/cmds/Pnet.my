@@ -57,19 +57,29 @@ import embox.compat.posix.LibPosix
 			GRAPH_OPTIONS:
 			--graph
 				specify graph
+
 			--node
 				specify node
+
 			--rule
 				specify rule
 
 			RULE_OPTIONS:
 				--ip <value>
-					set IP address to destination host
-				--mac
-					set hardware address to destination host
-				--node
-					set next node. It means that if received pack correspond to
-					rule, than next handler of pack will be node set by this option
+					Set IP address to destination host.
+
+				--mac <value>
+					Set hardware address to destination host.
+
+				--node <value>
+					Set next node. It means that if received pack correspond to
+					rule, than next handler of pack will be node set by this option.
+
+				--rename <value>
+					Set rule identifier <value>. Thereafter you can refer to rule by this identifier.
+					Notes: All rules have identifier 0 by default.
+					If you get rule by it's identifier, this rule is the first rule in list of rules
+					in specified node.
 
 		AUTHORS
 			Alexander Kalmuk

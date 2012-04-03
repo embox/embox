@@ -57,7 +57,7 @@ static match_rule_t rule_get_by_id(net_node_t node, char id);
 #define get_node_from_graph(graph, node, node_name, error) \
 		if (NULL == (node = get_node_from_graph_by_name(graph, node_name))) {   \
 			printf("%s: no such node in graph '%s'\n", node_name, graph->name); \
-			return -error;													\
+			return -error;														\
 		}
 
 #define get_node_from_repo(node, name, error) \
@@ -74,9 +74,9 @@ struct rule {
 };
 
 static struct rule rule_setters[RULE_OPTION_QUANTITY] = {
-		{.option = "--mac",   .setter = rule_set_mac},
-		{.option = "--ip",    .setter = rule_set_ip},
-		{.option = "--node",  .setter = rule_set_next_node}
+		{.option = "--mac",    .setter = rule_set_mac},
+		{.option = "--ip",     .setter = rule_set_ip},
+		{.option = "--node",   .setter = rule_set_next_node},
 };
 
 static void print_usage(void) {
@@ -205,10 +205,21 @@ static int print_graph(char **argv) {
 static void print_rules(net_node_matcher_t node) {
 	struct list_head *h;
 	match_rule_t rule;
+	struct in_addr ip;
+	char *dstaddr;
+	unsigned char mac[18];
+	int counter  = 1;
 
 	list_for_each (h, &node->match_rx_rules) {
 		rule = member_cast_out(h, struct match_rule, lnk);
-		printf("%d \n", rule->id);
+
+		ip.s_addr = rule->skbuf->nh.iph->saddr;
+		dstaddr = inet_ntoa(ip);
+		macaddr_print(mac, rule->skbuf->mac.ethh->h_source);
+
+		printf("%d : dst IP - %s, next node - %s, dst HWaddr - %s \n",
+				counter, dstaddr, rule->next_node->proto->name, mac);
+		counter++;
 	}
 }
 
@@ -295,14 +306,14 @@ static int rule_alloc(struct pnet_graph *gr, net_node_matcher_t node) {
 
 static int rule_set_mac(struct pnet_graph *gr, match_rule_t rule, char *rule_elem) {
 	if (NULL == macaddr_scan((unsigned char *) rule_elem, rule->skbuf->mac.ethh->h_source)) {
-		return -ENOENT;
+		return -EINVAL;
 	}
 	return ENOERR;
 }
 
 static int rule_set_ip(struct pnet_graph *gr, match_rule_t rule, char *rule_elem) {
 	if (NULL == ipaddr_scan((unsigned char *) rule_elem, (unsigned char *) &rule->skbuf->nh.iph->saddr)) {
-		return -ENOENT;
+		return -EINVAL;
 	}
 	return ENOERR;
 }
@@ -311,24 +322,27 @@ static int rule_set_next_node (struct pnet_graph *gr, match_rule_t rule, char *r
 	net_node_t node;
 
 	get_node_from_graph(gr, node, rule_elem, ENOENT);
-
 	pnet_rule_set_next_node(rule, node);
+
 	return ENOERR;
 }
 
+/* return rule specified by it position in list of rules */
 static match_rule_t rule_get_by_id(net_node_t node, char id) {
 	struct list_head *h;
 	match_rule_t rule;
 	net_node_matcher_t matcher;
 	int n;
+	int counter = 1;
 
 	sscanf(&id, "%d", &n);
 
 	matcher = (net_node_matcher_t) node;
 	list_for_each (h, &matcher->match_rx_rules) {
 		rule = member_cast_out(h, struct match_rule, lnk);
-		if (rule->id == n)
+		if (counter == n)
 			return rule;
+		counter++;
 	}
 
 	return NULL;
