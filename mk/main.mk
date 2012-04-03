@@ -16,19 +16,6 @@ export PS1    :=
 
 include mk/util/wildcard.mk
 
-# XXX Fix this shit. -- Eldar
-
-## 'clean', 'docsgen' and 'config' are handled in-place.
-#ifneq ($(filter-out %clean %config conf% %docsgen,$(MAKECMDGOALS)),)
-## Need to include it prior to walking the source tree
-#include mk/configure.mk
-## Skip image.mk if configs has not been remade yet
-#ifneq ($(wildcard $(AUTOCONF_DIR)/build.mk),)
-#include mk/image.mk
-#include mk/codegen-dot.mk
-#endif # $(wildcard $(AUTOCONF_DIR)/build.mk)
-#endif # $(filter-out %clean %config %docsgen,$(MAKECMDGOALS))
-
 .PHONY: all  prepare docsgen dot clean config xconfig menuconfig conf_update
 
 all: prepare
@@ -137,39 +124,14 @@ endif
 endif #PROFILE
 endif #PROJECT
 
-TEMPLATES = $(notdir $(wildcard $(PROJECTS_DIR)/*))
+TEMPLATES = $(patsubst $(PROJECTS_DIR)/%,%,$(wildcard $(PROJECTS_DIR)/*/*))
 
-menuconfig m: PROJECT = $(shell dialog \
-                --stdout --backtitle "Configuration template selection" \
-                --radiolist "Select project to load:" 10 40 \
-                $(shell echo $(TEMPLATES) | wc -w) \
-                $(patsubst %,% "" off,$(TEMPLATES)) | tee .tmp)
-menuconfig m: PROFILE = $(shell dialog \
-                --stdout --backtitle "Configuration template selection" \
-                --radiolist "Select profile to load:" 10 40 \
-                $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*)) | wc -w) \
-                $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*))))
-menuconfig m: EDIT = $(shell dialog \
-                --stdout --backtitle "Editor selection" \
-                --radiolist "Select editor:" 20 40 2 "emacs -nw -Q" "" on vim "" off)
 menuconfig m:
-	@$(MAKE) PROJECT=$(PROJECT) PROFILE=$(PROFILE) config
-	@$(RM) .tmp
-
-xconfig x: PROJECT = $(shell Xdialog \
-                --stdout --backtitle "Configuration template selection" \
-                --radiolist "Select project to load:" 20 40 \
-                $(shell echo $(TEMPLATES) | wc -w) \
-                $(patsubst %,% "" off,$(TEMPLATES)) | tee .tmp)
-xconfig x: PROFILE = $(shell Xdialog \
-                --stdout --backtitle "Configuration template selection" \
-                --radiolist "Select profile to load:" 20 40 \
-                $(shell echo $(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*)) | wc -w) \
-                $(patsubst %,% "" off,$(notdir $(wildcard $(PROJECTS_DIR)/$(shell cat .tmp)/*))))
-xconfig x: EDIT = $(shell Xdialog \
-                --stdout --backtitle "Editor selection" \
-                --radiolist "Select editor:" 20 40 2 emacs "" on gvim "" off)
+	@$(MAKE) TEMPLATE=$$(dialog --stdout --backtitle "Configuration template selection" \
+                --menu "Select template to load:" 20 40 20 \
+	       	$(foreach t,$(TEMPLATES),$t "" )) config
 xconfig x:
-	@$(MAKE) PROFILE=$(PROFILE) PROJECT=$(PROJECT) config
-	@$(RM) .tmp
+	@$(MAKE) TEMPLATE=$$(Xdialog --stdout --backtitle "Configuration template selection" \
+                --menu "Select template to load:" 20 40 20 \
+	       	$(foreach t,$(TEMPLATES),$t "" )) config
 

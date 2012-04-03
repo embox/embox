@@ -22,8 +22,12 @@ AUTOCONF_FILES := $(build_mk) $(config_h) $(config_lds_h)
 
 -include $(build_mk)
 
+CROSS_COMPILE ?=
+
 TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))
 TARGET := $(TARGET)$(if $(value LOCALVERSION),-$(LOCALVERSION))
+
+############ rules ############
 
 .PHONY: check_config check_conf_dir
 check_config: check_conf_dir $(CONF_FILES)
@@ -71,8 +75,6 @@ $(AUTOCONF_FILES) : mk/configure.mk \
   | check_conf_dir mkdir # these goals shouldn't force target to be updated
 
 -include $(AUTOCONF_FILES:%=%.d)
-
-CROSS_COMPILE ?=
 
 mkdir:
 	@test -d $(AUTOCONF_DIR) || mkdir -p $(AUTOCONF_DIR)

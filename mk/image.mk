@@ -65,10 +65,9 @@ endif
 include mk/flags.mk
 
 build_model := $(__build_model)
-
 MODS_ENABLE_OBJ := $(call listInstances,$(build_model))
-
 #$(warning $(call printInstances,$(build_model)))
+
 # It's time to scan subdirs and prepare mods info.
 # ...and to build dependency injection model
 include mk/codegen-di.mk
