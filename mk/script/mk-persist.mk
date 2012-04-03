@@ -13,12 +13,6 @@ ifndef PERSIST_OBJECTS
 $(error PERSIST_OBJECTS is not defined, nothing to serialize)
 endif
 
-ifndef mk_core_obj
-$(error mk_core_obj is not defined, use the loader to run this script)
-endif
-
-include $(filter-out $(MAKEFILE_LIST),$(mk_core_obj))
-
 # All incoming variables must be flattened on order to prevent
 # expanding them once again.
 override PERSIST_OBJECTS := $(PERSIST_OBJECTS)

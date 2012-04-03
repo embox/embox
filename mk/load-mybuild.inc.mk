@@ -1,5 +1,5 @@
 #
-# Second stage: loads my- and config-files and links them together.
+# Loads my- and config-files, links them together, and infers the build model.
 #
 #   Date: Feb 9, 2012
 # Author: Eldar Abusalimov
@@ -23,17 +23,19 @@ $(error Handling multiplie config files is not implemented: '$(CONFIGFILES)')
 endif
 
 #
-# Directory where to put generated scripts.
+# Directories where to put generated scripts.
 #
+ifndef CACHE_DIR
+$(error CACHE_DIR is not defined, \
+	do not include this script directly, use mk/load.mk instead)
+endif
+
 export MYBUILD_CACHE_DIR       := $(CACHE_DIR)/mybuild
 export MYBUILD_FILES_CACHE_DIR := $(MYBUILD_CACHE_DIR)/files
 
 #
 # Generated artifacts.
 #
-
-.DELETE_ON_ERROR:
-.SECONDEXPANSION:
 
 # My-files.
 myfiles_mk := \
@@ -56,7 +58,7 @@ $(myfiles_mk) $(configfiles_mk) : export PERSIST_OBJECTS ?=
 $(myfiles_mk) $(configfiles_mk) : export MAKEFILES ?=
 
 $(myfiles_mk) $(configfiles_mk) : $$(MAKEFILES)
-$(myfiles_mk) $(configfiles_mk) : mk/load2.mk
+$(myfiles_mk) $(configfiles_mk) : mk/load-mybuild.inc.mk
 $(myfiles_mk) $(configfiles_mk) : mk/script/mk-persist.mk
 
 $(myfiles_mk) $(configfiles_mk) : $(MYBUILD_FILES_CACHE_DIR)/%.mk : %
@@ -85,6 +87,7 @@ $(myfiles_model_mk) :
 		ALLOC_SCOPE='z' > $@
 	@printf 'myfiles_mk_cached := %b' '$(myfiles_mk:%=\\\n\t%)' \
 		> $(myfiles_mk_cached_list_mk)
+load_mybuild_files += $(myfiles_model_mk)
 
 # Config-files are linked agains linked model of my-files.
 export configfiles_model_mk := $(MYBUILD_CACHE_DIR)/configfiles-model.mk
@@ -98,6 +101,7 @@ $(configfiles_model_mk) :
 		PERSIST_REALLOC='cfg' \
 		PERSIST_VARIABLE='__config_resource_set' \
 		ALLOC_SCOPE='y' > $@
+load_mybuild_files += $(configfiles_model_mk)
 
 # Build model is inferred from both configuration and myfiles models.
 export build_model_mk := $(MYBUILD_CACHE_DIR)/build-model.mk
@@ -111,18 +115,15 @@ $(build_model_mk) :
 		PERSIST_REALLOC='bld' \
 		PERSIST_VARIABLE='__build_model' \
 		ALLOC_SCOPE='x' > $@
+load_mybuild_files += $(build_model_mk)
 
-export all_model_files := \
-	$(myfiles_model_mk) $(configfiles_model_mk) $(build_model_mk)
+export load_mybuild_files := $(load_mybuild_files)
 
-$(all_model_files) : export MAKEFILES ?=
+$(load_mybuild_files) : export MAKEFILES ?=
 
-$(all_model_files) : $$(MAKEFILES)
-$(all_model_files) : mk/load2.mk
-$(all_model_files) : mk/script/mk-persist.mk
-
-$(MAKECMDGOALS) : $(all_model_files)
-	@$(MAKE) -f mk/image.mk MAKEFILES='$(all_mk_files) $^' $@
+$(load_mybuild_files) : $$(MAKEFILES)
+$(load_mybuild_files) : mk/load-mybuild.inc.mk
+$(load_mybuild_files) : mk/script/mk-persist.mk
 
 #
 # Added/removed myfiles detection.
