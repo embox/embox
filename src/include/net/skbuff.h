@@ -135,6 +135,11 @@ extern struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb,
 extern void skb_shifthead(struct sk_buff *skb, int headshift);
 
 /**
+ * buff_to_skb parse buffer with size 'size' and write it to skb structure
+ */
+extern struct sk_buff * buff_to_skb(unsigned char *buff, unsigned int size);
+
+/**
  * sk_buff clone it used as we want to queue sk_buff in several queue
  * In current implementation we don't have shared area for packets data,
  * so copy and clone are the same.

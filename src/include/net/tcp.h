@@ -43,7 +43,7 @@ typedef struct tcphdr {
 		fin:1;
 #endif
 	__be16 window;
-	__be32 check;
+	__be16 check;
 	__be16 urg_ptr;
 	__u8 options;
 } __attribute__((packed)) tcphdr_t;

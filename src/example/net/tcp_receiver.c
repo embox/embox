@@ -65,8 +65,9 @@ static int exec(int argc, char **argv) {
 
 	/* read from sock, print, echo back to sock */
 	while (1) {
-		if (0 >= (bytes_read = recvfrom(connect_sock, buf, 1024, 0, NULL, NULL))) {
-			continue;
+		bytes_read = recvfrom(connect_sock, buf, 1024, 0, NULL, NULL);
+		if (bytes_read < 0) {
+			break;
 		}
 		buf[bytes_read] = '\0';
 		if (0 == strncmp(buf, "quit", 4)) {

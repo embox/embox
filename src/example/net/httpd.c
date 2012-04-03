@@ -33,23 +33,25 @@ static int httpd_exec(int argc, char **argv) {
 	char file_buf[FILE_BUF_SZ], req_buf[REQ_BUF_SZ];
 	char *f = file_buf;
 
-
 	addr.sin_family = AF_INET;
 	addr.sin_port= htons(80);
-	/* addr.port_type = TCP_PORT; */
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	f += sprintf(file_buf, "HTTP/1.0 200 OK\n\n");
 
-	fd = open("hello.html", 0);
-
-	if (fd < 0) {
-	    printf("Cannot open file\n");
-	    return -1;
+	if (argc == 2) {
+		fd = open(argv[1], 0);
+		if (fd < 0) {
+			printf("Cannot open file '%s'\n", argv[1]);
+			return -1;
+		}
+		while ((bytes_read = read(fd, f, FILE_READ_CHUNK_SZ)) > 0) {
+			f += bytes_read;
+		}
+		close(fd);
 	}
-
-	while ((bytes_read = read(fd, f, FILE_READ_CHUNK_SZ)) > 0) {
-	    f += bytes_read;
+	else {
+		f += sprintf(f, "<html><p>Hello World!</p></html>");
 	}
 
 	// Create listen socket
@@ -82,7 +84,6 @@ static int httpd_exec(int argc, char **argv) {
 		sendto(connect_sock, file_buf, f - file_buf, 0,
 				(struct sockaddr *) &dst, sizeof(dst));
 		close(connect_sock);
-		break;
 	}
 
 	close(sock);

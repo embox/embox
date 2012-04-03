@@ -54,6 +54,7 @@ static int exec(int argc, char **argv) {
  		}
 		printf("\nclient from %s:%d at %d socket\n\n",
 				inet_ntoa(dst.sin_addr), ntohs(dst.sin_port), res);
+		close(res);
 	}
 
 	return 0;
