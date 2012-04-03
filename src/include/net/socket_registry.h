@@ -9,6 +9,25 @@
 #ifndef SOCKET_REGISTRY_H_
 #define SOCKET_REGISTRY_H_
 
+#include <net/net.h>
+#include <util/dlist.h>
+
+#define MAX_SYSTEM_CONNECTIONS 5
+
+enum socket_connection_state_t {UNCONNECTED, CLOSED, LISTENING, BOUND, CONNECTING, CONNECTED, ESTABLISHED, DISCONNECTING};
+
+/**
+ * @param sock socket connected to addr
+ * @param addr address connected to sock
+ */
+typedef struct socket_node{
+	struct dlist_head link;
+	struct socket *sock;
+	sockaddr_t saddr;
+	sockaddr_t daddr;
+	enum socket_connection_state_t socket_connection_state;
+} socket_node_t;
+
 /* TODO: add descriptions */
 
 /* inner functions for address binding maintance */

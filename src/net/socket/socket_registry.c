@@ -13,11 +13,12 @@
 #include <net/sock.h>
 #include <util/debug_msg.h>
 #include <mem/objalloc.h>
+#include <util/dlist.h>
 #include <net/socket_registry.h>
 
 /* system socket registry */
-OBJALLOC_DEF(socket_registry, socket_node_t, MAX_SYSTEM_CONNECTIONS);
-static LIST_HEAD(socket_registry_head);
+POOL_DEF(socket_pool, socket_node_t, MAX_SYSTEM_CONNECTIONS);
+DLIST_DEFINE(socket_registry);
 
 static inline socket_node_t *get_sock_node_by_socket(struct socket *sock);
 static socket_node_t *get_sock_node_by_src_address(struct socket *sock,
@@ -30,7 +31,8 @@ int sr_add_socket_to_registry(struct socket *sock){
 	socket_node_t *newnode;
 
 	/* allocate new node */
-	newnode = (socket_node_t *)pool_alloc(&socket_registry);
+	newnode = (socket_node_t *)pool_alloc(&socket_pool);
+	newnode->link.list_id = 0;  /* 0_o */
 	if(newnode == NULL)
 		return -ENOMEM;
 
@@ -44,7 +46,8 @@ int sr_add_socket_to_registry(struct socket *sock){
 
 	sock->socket_node = newnode;
 
-	list_add_tail(&socket_registry_head, &newnode->link);
+	/* list_add_tail(&socket_registry_head, &newnode->link); */
+	dlist_add_next(&newnode->link, &socket_registry);
 
 	debug_printf("adding socket to pool",
 							 "kernel_socket", "add_socket_to_pool");
@@ -59,8 +62,8 @@ int sr_remove_socket_from_registry(struct socket *sock){
 	if(node){
 		debug_printf("removing socket entity...", "kernel_socket",
 								 "remove_socket_from_pool");
-		list_del(&node->link);
-		pool_free(&socket_registry, node);
+		dlist_del(&node->link);
+		pool_free(&socket_pool, node);
 		return ENOERR;
 	}
 	return -1;
@@ -83,10 +86,10 @@ bool sr_is_daddr_free(struct socket *sock, struct sockaddr *addr){
 }
 
 bool sr_socket_exists(struct socket *sock){
-	socket_node_t *node, *safe;
+	socket_node_t *node, *tmp;
 
 	if(sock){  /* address validity */
-		list_for_each_entry_safe(node, safe, &socket_registry_head, link){
+		dlist_foreach_entry(node, tmp, &socket_registry, link){
 			if(sock == node->sock)
 				return true;
 		}
@@ -117,10 +120,10 @@ void sr_remove_saddr(struct socket *sock){
 
 static socket_node_t *get_sock_node_by_src_address(struct socket *sock,
 																							 struct sockaddr *addr){
-	socket_node_t *node, *safe;
+	socket_node_t *node, *tmp;
 
 	if(addr){  /* address validity */
-		list_for_each_entry_safe(node, safe, &socket_registry_head, link){
+		dlist_foreach_entry(node, tmp, &socket_registry, link){
 			if(sock->ops->compare_addresses(addr, &node->saddr) &&
 				 (sock->type == node->sock->type))
 				return node;
@@ -131,10 +134,10 @@ static socket_node_t *get_sock_node_by_src_address(struct socket *sock,
 
 static socket_node_t *get_sock_node_by_dst_address(struct socket *sock,
 																							 struct sockaddr *addr){
-	socket_node_t *node, *safe;
+	socket_node_t *node, *tmp;
 
 	if(addr){  /* address validity */
-		list_for_each_entry_safe(node, safe, &socket_registry_head, link){
+		dlist_foreach_entry(node, tmp, &socket_registry, link){
 			if(sock->ops->compare_addresses(addr, &node->daddr))
 				return node;
 		}
