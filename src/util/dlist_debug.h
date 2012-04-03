@@ -46,7 +46,7 @@ static inline void dlist_init(struct dlist_head *head) {
 static inline void dlist_add_next(struct dlist_head *new,
 		struct dlist_head *list) {
 
-	assert(__is_linked(new)); /* we can't add not initialized element*/
+	assert(!__is_linked(new)); /* we can't add not initialized element*/
 
 	if (!__is_linked(list)) {
 		list->list_id = list;
@@ -61,7 +61,7 @@ static inline void dlist_add_next(struct dlist_head *new,
 static inline void dlist_add_prev(struct dlist_head *new,
 		struct dlist_head *list) {
 
-	assert(__is_linked(new)); /* we can't add not initialized element */
+	assert(!__is_linked(new)); /* we can't add not initialized element */
 
 	if (!__is_linked(list)) {
 		list->list_id = list;
@@ -74,7 +74,7 @@ static inline void dlist_add_prev(struct dlist_head *new,
 }
 
 static inline void dlist_del(struct dlist_head *head) {
-	assert(!__is_linked(head)); /* we can't remove initialized element */
+	assert(__is_linked(head)); /* we can't remove initialized element */
 
 	head->prev->next = head->next;
 	head->next->prev = head->prev;
