@@ -85,9 +85,10 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	event_init(&sock->sk->sock_is_ready, "socket_is_ready");
 	sock_set_ready(sock->sk);
 	/* newly created socket is UNCONNECTED for sure */
-	sk_set_connection_state(sock->sk, UNCONNECTED);
+	sk_set_connection_state(sock, UNCONNECTED);
 	/* addr socket entry to registry */
-	sr_add_socket_to_registry(sock);
+	if( 0 > (res = sr_add_socket_to_registry(sock)))
+		return res;
 	*psock = sock; /* and save structure */
 
 	return ENOERR;
@@ -97,12 +98,17 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 int kernel_socket_release(struct socket *sock) {
 	int res;
 
-	if(sk_is_connected(sock->sk))
-		sk_set_connection_state(sock->sk, DISCONNECTING);
+	if(sk_is_connected(sock))
+		sk_set_connection_state(sock, DISCONNECTING);
 
 	/* socket will be unbound, if it is bound else nothing happens */
 	sr_remove_saddr(sock);  /* unset saddr in registry */
-	sr_remove_socket_from_registry(sock); /* remove socketentry from registry */
+	/* remove socketentry from registry */
+	if(0 > (res = sr_remove_socket_from_registry(sock))){
+		debug_printf("couldn't remove entry from registry",
+								 "kernel_socket", "kernel_socket_release");
+		return res;
+	}
 
 	if ((sock != NULL) && (sock->ops != NULL)
 			&& (sock->ops->release != NULL)) {
@@ -132,9 +138,9 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 		return -EINVAL;
 	}
 
-	/* rebinding is forbidden for now, the chek for the protocl
+	/* rebinding is forbidden for now, the check for the protocol
 	   rebinding permission should be added to meet posix*/
-	if(sk_is_bound(sock->sk)){
+	if(sk_is_bound(sock)){
 		return -EINVAL;
 	}
 
@@ -171,10 +177,10 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 		debug_printf("error while binding socket",
 								 "kernel_sockets", "kernel_socket_bind");
 		/* Set the state to UNCONNECTED */
-		sk_set_connection_state(sock->sk, UNCONNECTED);
+		sk_set_connection_state(sock, UNCONNECTED);
 		return res;
 	}else{
-		sk_set_connection_state(sock->sk, BOUND);  /* Everything turned out fine */
+		sk_set_connection_state(sock, BOUND);  /* Everything turned out fine */
 		sr_set_saddr(sock, addr);  /* set saddr in registry */
 	}
 	return ENOERR;
@@ -188,7 +194,7 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 		return SK_NO_SUCH_METHOD;
 	}
 
-	if(!sk_is_bound(sock->sk)){  /* the socket should first be bound to an address */
+	if(!sk_is_bound(sock)){  /* the socket should first be bound to an address */
 		debug_printf("Socket should be bound to accept",
 								 "kernel_socket", "kernel_socket_listen");
 		return SK_ERR;
@@ -200,9 +206,9 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 		debug_printf("Error setting socket in listening state",
 								 "kernel_sockets", "kernel_socket_listen");
 		/* socket was bound, so set back BOUND */
-		sk_set_connection_state(sock->sk, BOUND);
+		sk_set_connection_state(sock, BOUND);
 	}else
-		sk_set_connection_state(sock->sk, LISTENING);/* Everything turned out fine*/
+		sk_set_connection_state(sock, LISTENING);/* Everything turned out fine*/
 	return res;
  }
 
@@ -216,7 +222,7 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 		return SK_NO_SUCH_METHOD;
 	}
 
-	if(!sk_is_listening(sock->sk)){  /* we should connect to a listening socket */
+	if(!sk_is_listening(sock)){  /* we should connect to a listening socket */
 		debug_printf("Socket accepting a connection should be in listening state",
 								 "kernel_socket", "kernel_socket_accept");
 		return SK_ERR;
@@ -239,7 +245,7 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 	else {
 		*accepted = new_sock;
 		/* set state */
-		sk_set_connection_state(new_sock->sk, ESTABLISHED);
+		sk_set_connection_state(new_sock, ESTABLISHED);
 	}
 	return res;
  }
@@ -262,15 +268,15 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 	}
 
 	/* try to connect */
-	sk_set_connection_state(sock->sk, CONNECTING);
+	sk_set_connection_state(sock, CONNECTING);
 	res = sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
 	if(!res){  /* smth's wrong */
 		debug_printf("Unable to connect on socket",
 								 "kernel_sockets", "kernel_socket_connect");
-		sk_set_connection_state(sock->sk, UNCONNECTED);
+		sk_set_connection_state(sock, UNCONNECTED);
 		return res;
 	}else
-		sk_set_connection_state(sock->sk, CONNECTED);
+		sk_set_connection_state(sock, CONNECTED);
 
 	return res;
 }

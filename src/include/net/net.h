@@ -12,6 +12,8 @@
 #include <linux/compiler.h>
 #include <linux/aio.h>
 #include <net/socket.h>
+#include <net/net.h>
+#include <net/socket_registry.h>
 
 
 #define IPV4_ADDR_LENGTH   0x04
@@ -72,19 +74,6 @@ enum sock_type {
 	SOCK_TYPE_MAX /* i.e. SOCK_PACKET + 1 */
 };
 
-#define MAX_SYSTEM_CONNECTIONS 10
-
-/**
- * @param sock socket connected to addr
- * @param addr address connected to sock
- */
-typedef struct socket_node{
-	struct list_head link;
-	struct socket *sock;
-	sockaddr_t saddr;
-	sockaddr_t daddr;
-} socket_node_t;
-
 /**
  * General BSD socket
  * @param state socket state (%SS_CONNECTED, etc)
@@ -100,7 +89,7 @@ typedef struct socket {
 	unsigned long flags;
 
 	struct sock *sk;
-	socket_node_t *socket_node;
+	struct socket_node *socket_node;
 	const struct proto_ops *ops;
 } socket_t;
 
