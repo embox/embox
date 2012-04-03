@@ -8,5 +8,5 @@ module bt_control {
 	depends lego_nxt.pnet.node.direct_comm.executer_embox
 	depends embox.pnet.core
 	//depends embox.pnet.core.pack.api
-	depends embox.pnet.core.pack.PnetPackSimple
+	depends embox.pnet.pack.PnetPackSimple
 }

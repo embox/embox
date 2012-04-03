@@ -5,18 +5,18 @@ module executer {
     @IncludePath("$(PLATFORM_DIR)/lego_nxt/include")
 	source "executer.c"
 	depends lego_nxt.driver.nxt_motor
-	depends embox.pnet.core, embox.pnet.core.pack.PnetPackSimple
+	depends embox.pnet.core, embox.pnet.pack.PnetPackSimple
 }
 
 module executer_embox {
     @IncludePath("$(PLATFORM_DIR)/lego_nxt/include")
 	source "executer_embox.c"
 	depends lego_nxt.driver.nxt_motor
-	depends embox.pnet.core, embox.pnet.core.pack.PnetPackSimple
+	depends embox.pnet.core, embox.pnet.pack.PnetPackSimple
 }
 
 module formation {
     @IncludePath("$(PLATFORM_DIR)/lego_nxt/include")
 	source "formation.c"
-	depends embox.pnet.core, embox.pnet.core.pack.PnetPackSimple
+	depends embox.pnet.core, embox.pnet.pack.PnetPackSimple
 }

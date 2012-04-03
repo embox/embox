@@ -14,7 +14,7 @@ module linux_layer {
 	source "linux_layer.c"
 	source "init_linux_layer.c"
 	source "dev_linux.c"
-	depends embox.pnet.core.pack.PnetPackSkbuff
+	depends embox.pnet.pack.PnetPackSkbuff
 	depends embox.pnet.node.skbuff.matcher
 	depends embox.pnet.dev
 }

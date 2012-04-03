@@ -1,4 +1,4 @@
-package embox.pnet.core.pack
+package embox.pnet.pack
 
 module PnetPackSkbuff {
 	source "pack.c"
