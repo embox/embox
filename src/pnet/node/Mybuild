@@ -27,3 +27,7 @@ module linux_layer {
 module info_printer {
 	source "info_printer.c"
 }
+
+module skb_printer {
+	source "skb_printer.c"
+}

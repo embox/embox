@@ -77,4 +77,9 @@ struct pnet_module {
 
 extern struct net_node *pnet_get_module(const char *name);
 
+//#ifdef __CDT_PARSER__
+//#undef  PNET_NODE_DEF
+//#define PNET_NODE_DEF(str_id, ...)
+//#endif /* __CDT_PARSER__ */
+
 #endif /* PNET_REPO_H_ */
