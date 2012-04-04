@@ -153,7 +153,7 @@ $(CMDS:%.cmd=%.cmd.tmp): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk \
 		mk/image.mk $(myfiles_model_mk)
 	@$(MKDIR) $(@D)
 	@echo '$(FLAGS) -o $(@:%.cmd.tmp=%.o) -c' > $@
-	@diff -q $@ $(subst .tmp,,$@) &>/dev/null || cp $@ $(subst .tmp,,$@)
+	@diff -q $@ $(subst .tmp,,$@) >/dev/null 2>&1 || cp $@ $(subst .tmp,,$@)
 
 ifndef VERBOSE
 ifdef CC_SUPPORTS_@file
