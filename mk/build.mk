@@ -4,18 +4,16 @@
 #
 
 include mk/dirs.mk
-
 include mk/configure.mk #FIXME
-
 include mk/codegen-dot.mk
 
-include mk/image.mk
-
-.PHONY : docsgen dot prepare
+.PHONY : all image prepare docsgen dot
 
 all : image
 
 image : prepare
+
+include mk/image.mk #FIXME move it upper. -- Eldar
 
 prepare:
 	@$(MKDIR) $(BUILD_DIR)
