@@ -3,16 +3,7 @@
 #
 
 include mk/core/common.mk
-include mk/dirs.mk
 include mk/util/wildcard.mk
-
-export RM     := rm -f
-export CP     := cp
-export PRINTF := printf
-export SHELL  := bash
-export MKDIR  := mkdir -p
-export LN     := ln -s
-export PS1    :=
 
 #
 # Targets that require Mybuild infrastructure.

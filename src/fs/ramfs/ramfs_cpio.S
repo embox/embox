@@ -1,3 +1,3 @@
 .section .ramfs
-.incbin "build/base/rootfs.cpio"
+.incbin CONFIG_ROOTFS_IMAGE
 

@@ -65,11 +65,8 @@ $(config_h) $(config_lds_h) :
 	$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d mk/confmacro.S \
 		| sed -e 's/$$N/\n/g' -e 's/$$define/#define/g' > $@
-#ifeq ($(SVN_REV),)
-#	@echo "svn cmd not found"
-#else
-#	@echo "#define CONFIG_SVN_REV $(SVN_REV)" >> $@
-#endif
+# XXX =/
+	echo '#define CONFIG_ROOTFS_IMAGE "$(ROOTFS_IMAGE)"' >> $@
 
 $(AUTOCONF_FILES) : mk/configure.mk \
   | check_conf_dir mkdir # these goals shouldn't force target to be updated

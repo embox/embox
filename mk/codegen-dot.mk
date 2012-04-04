@@ -10,7 +10,7 @@ _codegen_dot_mk_ := 1
 
 #include mk/embuild.mk
 
-GRAPH_DOT = $(CODEGEN_DIR)/mod_dag.dot
+GRAPH_DOT = $(SRCGEN_DIR)/mod_dag.dot
 GRAPH_PS  = $(DOT_DIR)/$(TARGET).ps
 
 dot: $(GRAPH_PS)

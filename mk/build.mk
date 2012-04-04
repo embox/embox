@@ -3,7 +3,6 @@
 # Author: Anton Kozlov
 #
 
-include mk/dirs.mk
 include mk/configure.mk #FIXME
 include mk/codegen-dot.mk
 

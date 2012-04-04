@@ -7,6 +7,45 @@
 # Author: Eldar Abusalimov
 #
 
+#
+# Directories.
+#
+
+export ROOT_DIR       := .
+
+export CONF_DIR       := $(ROOT_DIR)/conf
+export TEMPLATES_DIR  := $(ROOT_DIR)/templates
+
+export SRC_DIR        := $(ROOT_DIR)/src
+export THIRDPARTY_DIR := $(ROOT_DIR)/third-party
+export PLATFORM_DIR   := $(ROOT_DIR)/platform
+export DOC_DIR        := $(ROOT_DIR)/doc
+
+export BUILD_DIR      := $(ROOT_DIR)/build/base
+
+export BIN_DIR        := $(BUILD_DIR)/bin
+export OBJ_DIR        := $(BUILD_DIR)/obj
+export LIB_DIR        := $(BUILD_DIR)/lib
+export SRCGEN_DIR     := $(BUILD_DIR)/src-gen
+export AUTOCONF_DIR   := $(SRCGEN_DIR)
+export ROOTFS_DIR     := $(OBJ_DIR)/rootfs
+export ROOTFS_IMAGE   := $(OBJ_DIR)/rootfs.cpio
+export DOT_DIR        := $(DOC_DIR)
+export DOCS_OUT_DIR   := $(DOC_DIR)
+
+export CACHE_DIR      := mk/.cache
+
+#
+# Tools.
+#
+
+export RM     := rm -f
+export CP     := cp
+export PRINTF := printf
+export MKDIR  := mkdir -p
+export LN     := ln -s
+export PS1    :=
+
 ifndef __mk_ready
 
 # Check Make version (we need at least GNU Make 3.81). Fortunately,

@@ -7,7 +7,7 @@
 ifndef _codegen_di_mk_
 _codegen_di_mk_ := 1
 
-DEPSINJECT_SRC := $(CODEGEN_DIR)/depsinject.c
+DEPSINJECT_SRC := $(SRCGEN_DIR)/depsinject.c
 DEPSINJECT_OBJ := $(OBJ_DIR)/depsinject.o
 
 generate_header := \
