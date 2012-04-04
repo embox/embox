@@ -127,6 +127,17 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 			socklen_t addrlen) {
 	int res;
 
+	/* NOTE: return values that are not processed yet (mostly for
+		  nonblocking sockets):
+		 -EALREADY An assignment request is already in progress for the
+		 specified socket.
+		 -EINPROGRESS O_NONBLOCK is set for the file descriptor for
+		 the socket and the assignment cannot be immediately performed; the
+		 assignment shall be performed asynchronously. -- this probably should be
+		 in socket-interface level bind() // ttimkk
+		 -ENOBUFS Insufficient resources were available to complete the call.
+	*/
+
 	if(!sock->ops->bind){
 		debug_printf("No bind() method", "kernel_socket", "kernel_socket_bind");
 		return -EOPNOTSUPP;
@@ -162,16 +173,6 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 	}
 
 	/* try to bind */
-	/* NOTE: return values that are not processed yet (mostly for
-		  nonblocking sockets):
-		 -EALREADY An assignment request is already in progress for the
-		 specified socket.
-		 -EINPROGRESS O_NONBLOCK is set for the file descriptor for
-		 the socket and the assignment cannot be immediately performed; the
-		 assignment shall be performed asynchronously. -- this probably should be
-		 in socket-interface level bind() // ttimkk
-		 -ENOBUFS Insufficient resources were available to complete the call.
-	*/
 	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
 	if(res < 0){  /* If something went wrong */
 		debug_printf("error while binding socket",
@@ -188,25 +189,42 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 
 int kernel_socket_listen(struct socket *sock, int backlog) {
 	int res;
+	/* TODO come up with an idea about listening queue */
+	/* -EACCES may be returned if the process doesn't have enough privileges */
+	/* TODO the situation then socket is shutdown should be handeled */
+	/* NOTE if insufficient resources are available ENOBUFS is the errno */
 
+	/* no listen method is supported for that type of socket */
 	if(!sock->ops->listen){
 		debug_printf("No listen() method", "kernel_socket", "kernel_socket_listen");
-		return SK_NO_SUCH_METHOD;
+		return -EOPNOTSUPP;
 	}
 
+	/* find out if socket sock is registered in the system */
+	if(!sr_socket_exists(sock)){
+		return -ENOTSOCK;
+	}
+
+	/* the socket is unbound */
 	if(!sk_is_bound(sock)){  /* the socket should first be bound to an address */
 		debug_printf("Socket should be bound to accept",
 								 "kernel_socket", "kernel_socket_listen");
-		return SK_ERR;
+		return -EDESTADDRREQ;
+	}
+
+	/* is the socket already connected */
+	if(sk_is_connected(sock)){
+		return -EINVAL;
 	}
 
 	/* try to listen */
 	res = sock->ops->listen(sock, backlog);
-	if(res){  /* If something went wrong */
+	if(res < 0){  /* If something went wrong */
 		debug_printf("Error setting socket in listening state",
 								 "kernel_sockets", "kernel_socket_listen");
 		/* socket was bound, so set back BOUND */
 		sk_set_connection_state(sock, BOUND);
+		return res;
 	}else
 		sk_set_connection_state(sock, LISTENING);/* Everything turned out fine*/
 	return res;
@@ -217,18 +235,33 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 	int res;
 	struct socket *new_sock;
 
+	/* TODO EAGAIN or EWOULDBLOCK in case of non-blocking socket and absence
+	   of incoming connections should be returned */
+	/* TODO ECONNABORTED in case of connection abortion */
+	/* TODO EINTR in case of interruption by a signal prior to valid connection
+		 arrival */
+	/* TODO EPROTO is the errno in case we are having some kind of troubles with
+	   protocol */
+
+	/* accept method is not set */
 	if(!sock->ops->accept){
 		debug_printf("No accept() method", "kernel_socket", "kernel_socket_accept");
-		return SK_NO_SUCH_METHOD;
+		return -EOPNOTSUPP;
 	}
 
+	/* find out if socket sock is registered in the system */
+	if(!sr_socket_exists(sock)){
+		return -ENOTSOCK;
+	}
+
+	/* is the socket accepting connections */
 	if(!sk_is_listening(sock)){  /* we should connect to a listening socket */
 		debug_printf("Socket accepting a connection should be in listening state",
 								 "kernel_socket", "kernel_socket_accept");
-		return SK_ERR;
+		return -EINVAL;
 	}
 
-	// create the same socket as 'sock'
+	/* create socket with the same type, protocol and family as 'sock' */
 	res = kernel_socket_create(sock->sk->__sk_common.skc_family,
 														 sock->sk->sk_type,
 														 sock->sk->sk_protocol, &new_sock);
