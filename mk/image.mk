@@ -107,10 +107,8 @@ $(ROOTFS_DIR) :
 	@mkdir $@
 
 $(ROOTFS_IMAGE): $(ROOTFS_DIR) $(ROOTFS_OBJS_BUILD)
-	@pushd $< && \
-		find . -depth -print | \
-	       	cpio --quiet -H newc -o > ../$(notdir $@); \
-		popd
+	@cd $< \
+	&& find . -depth -print | cpio --quiet -H newc -o > ../$(notdir $@)
 
 ifdef LDSS_BUILD
 LD_SINGLE_T_OPTION := \
