@@ -11,10 +11,11 @@ include mk/conf/runlevel.mk
 
 # By header get module
 __header_mod = $(strip \
-  $(foreach name,$(subst /,.,$(patsubst $(abspath $(OBJ_DIR))/mods/%.h,%,$(abspath $1))),\
-	$(strip $(foreach i,$(MODS_ENABLE_OBJ),\
-		$(foreach m,$(get $i.type),\
-			$(if $(eq $(get m->qualifiedName),$(name)),$i))))))
+	$(foreach name, \
+			$(subst /,.,$(patsubst $(abspath $(SRCGEN_DIR))/include/module/%.h,%,$(abspath $1))),\
+		$(strip $(foreach i,$(MODS_ENABLE_OBJ),\
+			$(foreach m,$(get $i.type),\
+				$(if $(eq $(get m->qualifiedName),$(name)),$i))))))
 
 __header_gen = \
   $(subst $(\n),\n,$(call __header_template,$(__header_mod)))
@@ -141,7 +142,7 @@ define define_mod_obj_rules
 				obj<-$(call SRC_TO_OBJ,$(get src->fileFullName)),
 				$(obj) : override CPPFLAGS += \
 					-D__EMBUILD_MOD__='$(subst .,__,$(get mod->qualifiedName))'\
-					-imacros $(OBJ_DIR)/mods/$(subst .,/,$(get mod->qualifiedName)).h$(\n)))}
+					-imacros $(SRCGEN_DIR)/include/module/$(subst .,/,$(get mod->qualifiedName)).h$(\n)))}
 endef
 
 # 1. Library module.

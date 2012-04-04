@@ -10,7 +10,7 @@
 #ifndef AMBAPP_H_
 #define AMBAPP_H_
 
-#include __module_headers(embox/driver/ambapp_api)
+#include <module/embox/driver/ambapp_api.h>
 
 /* Vendor codes. */
 #define AMBAPP_VENDOR_GAISLER       0x01   /**< Gaisler Research */

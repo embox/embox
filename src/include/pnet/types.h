@@ -67,6 +67,6 @@ struct pnet_pack {
 
 #include <pnet/proto.h>
 
-//#include __module_headers(embox/pnet/core/pack/api)
+//#include <module/embox/pnet/core/pack/api.h>
 
 #endif /* PNET_TYPES_H_ */
