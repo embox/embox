@@ -59,11 +59,9 @@ __r_wildcard_double_loop = \
 
 #
 # Directory/file versions of wildcard.
-# Both of them are based on the fact that wildcard expansion of the expression
-# containing the trailing slash drops the slash for files but leaves it for
-# directories.
 #
-# TODO some strange behavior, check again. -- Eldar
+# Based on: http://stackoverflow.com/q/9442829/545027
+#
 
 ##
 # Function: d-wildcard
@@ -79,7 +77,7 @@ __r_wildcard_double_loop = \
 # Usage: $(call d-wildcard,pattern...)
 #
 d-wildcard = \
-	$(patsubst %/,%,$(filter %/,$(wildcard $(1:%=%/))))
+	$(patsubst %/.,%,$(filter %/.,$(wildcard $(1:%=%/.))))
 
 ##
 # Function: f-wildcard
