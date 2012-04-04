@@ -34,15 +34,19 @@ static int exec(int argc, char **argv) {
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "ht:"))) {
 		switch (opt) {
-		case 'h':
-			print_usage();
-			return 0;
 		case 't':
 			if (0 == sscanf(optarg, "%s", fs_type)) {
 				LOG_ERROR("wrong -t argument %s\n", optarg);
 				return -1;
 			}
 			printf("type is %s\n", fs_type);
+			return 0;
+		case '?':
+			printf("Invalid option `-%c'\n", optopt);
+			/* FALLTHROUGH */
+		case 'h':
+			print_usage();
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		}

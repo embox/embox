@@ -127,6 +127,17 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 			socklen_t addrlen) {
 	int res;
 
+	/* NOTE: return values that are not processed yet (mostly for
+		  nonblocking sockets):
+		 -EALREADY An assignment request is already in progress for the
+		 specified socket.
+		 -EINPROGRESS O_NONBLOCK is set for the file descriptor for
+		 the socket and the assignment cannot be immediately performed; the
+		 assignment shall be performed asynchronously. -- this probably should be
+		 in socket-interface level bind() // ttimkk
+		 -ENOBUFS Insufficient resources were available to complete the call.
+	*/
+
 	if(!sock->ops->bind){
 		debug_printf("No bind() method", "kernel_socket", "kernel_socket_bind");
 		return -EOPNOTSUPP;
@@ -162,16 +173,6 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 	}
 
 	/* try to bind */
-	/* NOTE: return values that are not processed yet (mostly for
-		  nonblocking sockets):
-		 -EALREADY An assignment request is already in progress for the
-		 specified socket.
-		 -EINPROGRESS O_NONBLOCK is set for the file descriptor for
-		 the socket and the assignment cannot be immediately performed; the
-		 assignment shall be performed asynchronously. -- this probably should be
-		 in socket-interface level bind() // ttimkk
-		 -ENOBUFS Insufficient resources were available to complete the call.
-	*/
 	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
 	if(res < 0){  /* If something went wrong */
 		debug_printf("error while binding socket",
@@ -188,25 +189,42 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 
 int kernel_socket_listen(struct socket *sock, int backlog) {
 	int res;
+	/* TODO come up with an idea about listening queue */
+	/* -EACCES may be returned if the process doesn't have enough privileges */
+	/* TODO the situation when socket is shut down should be handled */
+	/* NOTE if insufficient resources are available ENOBUFS is the errno */
 
+	/* no listen method is supported for that type of socket */
 	if(!sock->ops->listen){
 		debug_printf("No listen() method", "kernel_socket", "kernel_socket_listen");
-		return SK_NO_SUCH_METHOD;
+		return -EOPNOTSUPP;
 	}
 
+	/* find out if socket sock is registered in the system */
+	if(!sr_socket_exists(sock)){
+		return -ENOTSOCK;
+	}
+
+	/* the socket is unbound */
 	if(!sk_is_bound(sock)){  /* the socket should first be bound to an address */
 		debug_printf("Socket should be bound to accept",
 								 "kernel_socket", "kernel_socket_listen");
-		return SK_ERR;
+		return -EDESTADDRREQ;
+	}
+
+	/* is the socket already connected */
+	if(sk_is_connected(sock)){
+		return -EINVAL;
 	}
 
 	/* try to listen */
 	res = sock->ops->listen(sock, backlog);
-	if(res){  /* If something went wrong */
+	if(res < 0){  /* If something went wrong */
 		debug_printf("Error setting socket in listening state",
 								 "kernel_sockets", "kernel_socket_listen");
 		/* socket was bound, so set back BOUND */
 		sk_set_connection_state(sock, BOUND);
+		return res;
 	}else
 		sk_set_connection_state(sock, LISTENING);/* Everything turned out fine*/
 	return res;
@@ -217,18 +235,33 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 	int res;
 	struct socket *new_sock;
 
+	/* TODO EAGAIN or EWOULDBLOCK in case of non-blocking socket and absence
+	   of incoming connections should be returned */
+	/* TODO ECONNABORTED in case of connection abortion */
+	/* TODO EINTR in case of interruption by a signal prior to valid connection
+		 arrival */
+	/* TODO EPROTO is the errno in case we are having some kind of troubles with
+	   protocol */
+
+	/* accept method is not set */
 	if(!sock->ops->accept){
 		debug_printf("No accept() method", "kernel_socket", "kernel_socket_accept");
-		return SK_NO_SUCH_METHOD;
+		return -EOPNOTSUPP;
 	}
 
+	/* find out if socket sock is registered in the system */
+	if(!sr_socket_exists(sock)){
+		return -ENOTSOCK;
+	}
+
+	/* is the socket accepting connections */
 	if(!sk_is_listening(sock)){  /* we should connect to a listening socket */
 		debug_printf("Socket accepting a connection should be in listening state",
 								 "kernel_socket", "kernel_socket_accept");
-		return SK_ERR;
+		return -EINVAL;
 	}
 
-	// create the same socket as 'sock'
+	/* create socket with the same type, protocol and family as 'sock' */
 	res = kernel_socket_create(sock->sk->__sk_common.skc_family,
 														 sock->sk->sk_type,
 														 sock->sk->sk_protocol, &new_sock);
@@ -254,27 +287,72 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
 	int res;
 
-	/* Socket's like UDP are 'connectionless'. that means that connect
-	   only binds the target of the socket to an address.
-	   In the cases of stream protocols the meaning is strict - initiate
-	   connection to a given host*/
+	/* EACCES may ber returnedf in case of a lack of priveleges */
 
-	/* TODO add code for the mentioned above cases */
+	/* EADDRNOTAVAIL. probably the best place - is specific
+	   protocol implementation*/
 
+	/* how should this be interpreted? */
 	if(!sock->ops->connect){
 		debug_printf("No connect() method", "kernel_socket",
 								 "kernel_socket_connect");
 		return SK_NO_SUCH_METHOD;
 	}
 
-	/* try to connect */
+	/* find out if socket sock is registered in the system */
+	if(!sr_socket_exists(sock)){
+		return -ENOTSOCK;
+	}
+
+	/* invalid address family or length of addr*/
+	if((sizeof(struct sockaddr) != addrlen)||
+		 (sock->sk->sk_family != addr->sa_family)){
+		return -EINVAL;
+	}
+
+	/* is the socket already connected */
+	if((sock->type == SOCK_STREAM) &&
+		 sk_is_connected(sock)){
+		return -EISCONN;
+	}
+
+	/* is socket listening? */
+	if(sk_is_listening(sock)){
+		return -EOPNOTSUPP;
+	}
+
+	/* here is the place to check wheather the socket is bound
+	   to a local address. if it is not, try to bind it.
+		 is EADDRINUSE the situation when connect() is trying to
+	   bind to an address already in use? */
+	if(!sk_is_bound(sock)){
+		/* a method to get a local address which fits the network in
+		   which the host we are trying to connect to is situated */
+		/* kernel_socket_bind(sock, &localaddress, sizeof(struct sockaddr)); */
+	}
+
+	/* if the socket is non blocking, and it is in connecting state
+	   at the same time with connect() being called*/
+	/* (only blocking sockets are implemented now, but
+     in future this code should work, or else shall be
+	   modified)*/
+	if(sk_get_connection_state(sock) == CONNECTING){
+		return -EALREADY;
+	}
 	sk_set_connection_state(sock, CONNECTING);
+
+	/* try to connect */
+	/* specific connect method can return ECONREFUSED, ENETUNREACH,
+	   EPROTOTYPE, ETIMEDOUT, ECONNRESET, EHOSTUNREACH, ELOOP,
+	   ENAMETOLONG, ENETDOWN*/
 	res = sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
-	if(!res){  /* smth's wrong */
+	if(res < 0){
+		/* in case of non-blocking sockets(for the future)
+		   here should be handled situation when connect is trying to
+		   finish asynchronously */
 		debug_printf("Unable to connect on socket",
 								 "kernel_sockets", "kernel_socket_connect");
-		sk_set_connection_state(sock, UNCONNECTED);
-		return res;
+		sk_set_connection_state(sock, BOUND);
 	}else
 		sk_set_connection_state(sock, CONNECTED);
 

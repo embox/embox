@@ -12,8 +12,6 @@
 #include <net/net.h>
 #include <util/dlist.h>
 
-#define MAX_SYSTEM_CONNECTIONS 5
-
 enum socket_connection_state_t {UNCONNECTED, CLOSED, LISTENING, BOUND, CONNECTING, CONNECTED, ESTABLISHED, DISCONNECTING};
 
 /**

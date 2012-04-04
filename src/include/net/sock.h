@@ -99,7 +99,7 @@ static inline void sock_unset_ready(struct sock *sk){
 }
 
 /**
- *	Check if socket is wait for fate of pending packs resolution.
+ *	Check if socket is awaiting address resolution
  *	@return
  *         - true if socket is ready for further actions
  *         - false in other case
@@ -150,7 +150,7 @@ extern void sk_init(void);
 
 /** Allocates structure sock with specific parameters
  * @family - Protocol family (PF_INIT for example)
- * @priority -not use now
+ * @priority - isn't used now
  * @prot - pointer to the proto structure
  */
 extern sock_t *sk_alloc(/*struct net *net,*/int family, gfp_t priority,

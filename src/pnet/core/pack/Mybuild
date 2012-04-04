@@ -1,5 +1,0 @@
-package embox.pnet.core.pack
-
-module PnetPackFactory {
-	source "pnet_pack_factory.c"
-}

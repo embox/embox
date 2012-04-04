@@ -31,7 +31,6 @@ struct match_rule {
 	struct sk_buff *skbuf;
 	net_node_t next_node;
 	struct list_head lnk;
-	unsigned char id;
 };
 
 typedef struct match_rule *match_rule_t;
@@ -89,15 +88,8 @@ static inline void pnet_rule_set_proto(match_rule_t rule, unsigned char proto) {
 //extern net_node_t pnet_create_matcher(net_hnd rx_matcher, net_hnd tx_matcher);
 extern match_rule_t pnet_rule_alloc(void);
 
-static inline int pnet_add_new_rx_rule(match_rule_t new_rule, net_node_matcher_t node) {
-	if (!list_empty(&node->match_rx_rules)) {
-		new_rule->id = member_cast_out((&node->match_rx_rules)->prev, struct match_rule, lnk)->id;
-		new_rule->id++;
-	}
-
+static inline void pnet_add_new_rx_rule(match_rule_t new_rule, net_node_matcher_t node) {
 	list_add_tail(&new_rule->lnk, &node->match_rx_rules);
-
-	return 0;
 }
 
 extern net_node_matcher_t pnet_get_node_matcher(void);

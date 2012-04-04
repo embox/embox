@@ -3,13 +3,13 @@ package embox.pnet
 module core {
 	source "node.c", "proto.c", "connect.c", "repo.c", "graph.c"
 	depends prior_path
-	depends core.pack.PnetPackFactory
+	depends pack.PnetPackFactory
 }
 
-module dev {
-	source "dev.c"
-	depends embox.pnet.node.null
-}
+//module dev {
+//	source "dev.c"
+//	depends embox.pnet.node.null
+//}
 
 module prior_path {
 	source "prior_path.c"

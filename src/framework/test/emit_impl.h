@@ -11,6 +11,7 @@
 
 #include <assert.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #include <util/macro.h>
 
@@ -70,19 +71,7 @@ static inline bool test_emit_buffer_full(struct test_emit_buffer *b) {
 	return b->ptr == b->buff + b->buff_sz;
 }
 
-static inline void test_emit_into(struct test_emit_buffer *b, char ch) {
-	if (test_emit_buffer_overflown(b)) {
-		return;
-	}
-
-	if (!test_emit_buffer_full(b)) {
-		*b->ptr++ = ch;
-		*b->ptr = '\0';
-	} else {
-		/* do overflow */
-		b->ptr++;
-	}
-}
+extern void test_emit_into(struct test_emit_buffer *buffer, char ch);
 
 static inline void test_emit(char ch) {
 	extern struct test_emit_buffer *__test_emit_buffer_current(void);

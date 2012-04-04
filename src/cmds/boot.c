@@ -43,6 +43,7 @@ static int uimage_info(unsigned int addr) {
 		break;
 	default:
 		printf("unknown\n");
+		break;
 	}
 	printf("CPU architecture: ");
 	switch(hdr->ih_arch) {
@@ -54,6 +55,7 @@ static int uimage_info(unsigned int addr) {
 		break;
 	default:
 		printf("unknown\n");
+		break;
 	}
 	printf("Image Type: ");
 	switch(hdr->ih_type) {
@@ -62,6 +64,7 @@ static int uimage_info(unsigned int addr) {
 		break;
 	default:
 		printf("unknown\n");
+		break;
 	}
 	printf("Compression Type: ");
 	switch(hdr->ih_comp) {
@@ -79,6 +82,7 @@ static int uimage_info(unsigned int addr) {
 		break;
 	default:
 		printf("unknown\n");
+		break;
 	}
 	printf("Image Name: %s\n", hdr->ih_name);
 	return 0;

@@ -13,8 +13,6 @@
 #include <kernel/irq.h>
 
 #define FIRE_CALLBACK(cb, func, view, ...)	do {((cb->func != NULL) ? cb->func(cb, view, ## __VA_ARGS__) : 0) ;} while (0)
-extern CONSOLE *cur_console;
-
 
 static void handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
 	SCREEN_CALLBACK *cb = this->callback;
@@ -75,6 +73,7 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		if (prev_token == TERMINAL_TOKEN_CR) {
 			break;
 		}
+		/* FALLTHROUGH */
 	case TERMINAL_TOKEN_CR:
 		FIRE_CALLBACK(cb, on_new_line, this, 0);
 		break;

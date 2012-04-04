@@ -12,13 +12,9 @@ static module LibFramework {
 	@DefineMacro("__FRAMEWORK__")
 	source "cmd/core.c",
 		"mod/core.c",
-		"service/callback.c",
-		"test/registry.c",
-		"test/run.c"
+		"service/callback.c"
 
-	//source "example/core.c"
-
-	depends runlevel
+	depends runlevel, test
 }
 
 module runlevel {

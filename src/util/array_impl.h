@@ -145,4 +145,21 @@
 	for (typeof(element_ptr) _ptr = (array_begin), _end = (array_end); \
 			(_ptr < _end) && ((element_ptr) = _ptr); ++_ptr)
 
+/* Help Eclipse CDT. */
+#ifdef __CDT_PARSER__
+
+# undef  __ARRAY_SPREAD_DEF_TERMINATED
+# define __ARRAY_SPREAD_DEF_TERMINATED(element_t, array_nm, terminator) \
+	const element_t array_nm[]
+
+# undef  __ARRAY_SPREAD_ADD
+# define __ARRAY_SPREAD_ADD(array_nm, ...) \
+	typedef typeof(array_nm[0]) __array_spread_element_placeholder
+
+# undef  __ARRAY_SPREAD_ADD_NAMED
+# define __ARRAY_SPREAD_ADD_NAMED(array_nm, ptr_nm, ...) \
+	const static typeof(array_nm[0]) ptr_nm[]
+
+#endif /* __CDT_PARSER__ */
+
 #endif /* UTIL_ARRAY_IMPL_H_ */

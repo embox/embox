@@ -47,7 +47,7 @@ static int exec(int argc, char **argv) {
 	//addr.port_type = UDP_PORT;
 	addr.sin_port= htons(0x1);
 	/* we want assign to socket UDP port*/
-	addr.port_type = UDP_PORT;
+	//addr.port_type = UDP_PORT;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	/* assigns the address specified to by addr to the socket referred to

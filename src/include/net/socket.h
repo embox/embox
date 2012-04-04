@@ -15,6 +15,9 @@
 #include <types.h>
 #include <net/arp_queue.h>
 
+/* maximum number of socket connections */
+#define MAX_SYSTEM_CONNECTIONS 4
+
 /* Supported address families. */
 #define N_FAMILIES_SUPPORTED 4
 enum supported_address_families{
@@ -39,8 +42,8 @@ enum supported_address_families{
 
 #define PNET_GRAPH   40
 
-/* Maximum queue length specifiable by listen.  */
-//#define SOMAXCONN 128
+/* Maximum queue length specifiable by listen. */
+#define SOMAXCONN 4
 
 /* Flags we can use with send/ and recv.
    Added those for 1003.1g not all are supported yet

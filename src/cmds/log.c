@@ -37,9 +37,11 @@ static int exec(int argc, char **argv) {
 			break;
 		case '?':
 			printf("Invalid option `-%c'\n", optopt);
+			/* FALLTHROUGH */
 		case 'h':
-		default:
 			print_usage();
+			/* FALLTHROUGH */
+		default:
 			return 0;
 		}
 	};

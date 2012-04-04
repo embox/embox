@@ -12,6 +12,7 @@
 
 #include <net/netdevice.h>
 #include <net/in.h>
+#include <pnet/types.h>
 
 struct pnet_path {
 	unsigned char    *own_mac;
@@ -24,5 +25,7 @@ struct pnet_path {
 };
 
 extern struct pnet_path *pnet_get_dev_prior(struct net_device *dev);
+
+extern int pnet_path_set_prior(struct net_node * node, net_prior_t prior);
 
 #endif /* PNET_PRIOR_PATH_H_ */

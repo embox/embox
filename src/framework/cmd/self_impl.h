@@ -27,8 +27,10 @@
 #ifdef __CDT_PARSER__
 
 # undef  __EMBOX_CMD
-# define __EMBOX_CMD(_exec) \
-	static int _exec(int, char **)
+# define __EMBOX_CMD(function_nm) \
+	static int function_nm(int, char **); \
+	typedef typeof(function_nm) __cmd_placeholder; \
+	static int function_nm(int, char **)
 
 #endif /* __CDT_PARSER__ */
 

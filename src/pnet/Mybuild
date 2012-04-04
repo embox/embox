@@ -1,10 +1,6 @@
 
 package embox.pnet
 
-module socket {
-	source "socket.c"
-}
-
 module pnet_entry {
     @IncludePath("$(SRC_DIR)/compat/linux/include")
     @IncludePath("$(SRC_DIR)/compat/posix/include")
@@ -16,5 +12,5 @@ module net_entry extends embox.net.entry_api {
     @IncludePath("$(SRC_DIR)/compat/linux/include")
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "net_entry.c"
-	depends embox.pnet.core, embox.pnet.netfilter.matcher, pnet_entry
+	depends embox.pnet.core, embox.pnet.node.skbuff.matcher, pnet_entry
 }

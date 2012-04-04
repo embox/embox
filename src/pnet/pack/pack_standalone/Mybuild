@@ -1,0 +1,5 @@
+package embox.pnet.pack
+
+module PnetPackSimple {
+	source "pack_alone.c"
+}

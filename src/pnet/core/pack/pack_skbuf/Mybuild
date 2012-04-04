@@ -1,7 +1,0 @@
-package embox.pnet.core.pack
-
-module PnetPackSkbuff {
-	source "pack.c"
-	depends embox.net.core
-}
-

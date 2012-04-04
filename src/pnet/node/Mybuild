@@ -1,19 +1,33 @@
 
 package embox.pnet.node
 
+module match {
+	source "match.c"
+	depends embox.pnet.core
+}
+
 module null {
+	//source "init_null.c"
 	source "null.c"
+}
+
+module linux_dev {
+	source "dev_linux.c"
+	depends null
 }
 
 module linux_layer {
 	source "linux_layer.c"
 	source "init_linux_layer.c"
-	source "dev_linux.c"
-	depends embox.pnet.core.pack.PnetPackSkbuff
-	depends embox.pnet.netfilter.matcher
-	depends embox.pnet.dev
+	depends embox.pnet.pack.PnetPackSkbuff
+	depends embox.pnet.node.skbuff.matcher
+	depends linux_dev
 }
 
 module info_printer {
 	source "info_printer.c"
+}
+
+module skb_printer {
+	source "skb_printer.c"
 }

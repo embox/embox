@@ -54,6 +54,7 @@ static inline void show_bars_type(amba_bar_info_t *bar) {
 		break;
 	default:
 		printf("\t%X", bar->type);
+		break;
 	}
 }
 
