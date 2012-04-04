@@ -1,7 +1,7 @@
 
 ROOT_DIR       := .
 
-CACHE_DIR      := mk/.cache
+export CACHE_DIR      := mk/.cache
 
 MK_DIR         := $(ROOT_DIR)/mk
 SCRIPTS_DIR    := $(ROOT_DIR)/scripts
