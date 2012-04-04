@@ -8,10 +8,9 @@
  */
 
 #include <errno.h>
-#include <util/fun_call.h>
-#include <mem/objalloc.h>
 #include <string.h>
 #include <assert.h>
+#include <mem/objalloc.h>
 
 #include <pnet/core.h>
 #include <pnet/graph.h>
@@ -48,6 +47,7 @@ struct pnet_graph *pnet_graph_create(char *name) {
 
 int pnet_graph_start(struct pnet_graph *graph) {
 	net_node_t node = NULL;
+	net_node_hnd hnd;
 
 	assert(graph);
 
@@ -56,7 +56,9 @@ int pnet_graph_start(struct pnet_graph *graph) {
 	}
 
 	list_for_each_entry(node, &graph->nodes, gr_link) {
-		fun_call(pnet_proto_start(node), node);
+		if(NULL == (hnd = pnet_proto_start(node))) {
+			hnd(node);
+		}
 	}
 
 	graph->state = PNET_GRAPH_STARTED;
@@ -66,6 +68,7 @@ int pnet_graph_start(struct pnet_graph *graph) {
 
 int pnet_graph_stop(struct pnet_graph *graph) {
 	net_node_t node = NULL;
+	net_node_hnd hnd;
 
 	assert(graph);
 
@@ -74,7 +77,9 @@ int pnet_graph_stop(struct pnet_graph *graph) {
 	}
 
 	list_for_each_entry(node, &graph->nodes, gr_link) {
-		fun_call(pnet_proto_stop(node), node);
+		if(NULL == (hnd = pnet_proto_stop(node))) {
+			hnd(node);
+		}
 	}
 
 	graph->state = PNET_GRAPH_STOPPED;

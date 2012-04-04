@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Callback body macroses
+ * @brief Callback body macros
  *
  * @date 07.07.11
  * @author Anton Kozlov

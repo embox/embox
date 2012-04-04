@@ -7,7 +7,6 @@
  * @author Anton Bondarev
  */
 #include <errno.h>
-#include <util/fun_call.h>
 
 #include <pnet/core.h>
 #include <pnet/graph.h>
@@ -27,7 +26,9 @@ static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_nod
 	}
 
 	if (node->proto != NULL) {
-		res = fun_call_def(res, hnd, pack);
+		if(NULL != hnd) {
+			hnd(pack);
+		}
 	}
 
 	if (res & NET_HND_DFAULT) {
