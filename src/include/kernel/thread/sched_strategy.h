@@ -13,7 +13,7 @@
 #ifndef KERNEL_THREAD_SCHED_STRATEGY_H_
 #define KERNEL_THREAD_SCHED_STRATEGY_H_
 
-#include __module_headers(embox/kernel/thread/sched_policy/api)
+#include <module/embox/kernel/thread/sched_policy/api.h>
 
 struct thread;
 

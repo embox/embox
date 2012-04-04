@@ -20,16 +20,14 @@ config_lds_h := $(AUTOCONF_DIR)/config.lds.h
 CONF_FILES     := $(build_conf) $(options_conf) $(lds_conf)
 AUTOCONF_FILES := $(build_mk) $(config_h) $(config_lds_h)
 
-build_model := $(__build_model)
-
-MODS_ENABLE_OBJ := $(call listInstances,$(build_model))
-
-#$(warning $(call printInstances,$(build_model)))
-
 -include $(build_mk)
+
+CROSS_COMPILE ?=
 
 TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))
 TARGET := $(TARGET)$(if $(value LOCALVERSION),-$(LOCALVERSION))
+
+############ rules ############
 
 .PHONY: check_config check_conf_dir
 check_config: check_conf_dir $(CONF_FILES)
@@ -67,18 +65,13 @@ $(config_h) $(config_lds_h) :
 	$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 	-MMD -MT $@ -MF $@.d mk/confmacro.S \
 		| sed -e 's/$$N/\n/g' -e 's/$$define/#define/g' > $@
-#ifeq ($(SVN_REV),)
-#	@echo "svn cmd not found"
-#else
-#	@echo "#define CONFIG_SVN_REV $(SVN_REV)" >> $@
-#endif
+# XXX =/
+	echo '#define CONFIG_ROOTFS_IMAGE "$(ROOTFS_IMAGE)"' >> $@
 
 $(AUTOCONF_FILES) : mk/configure.mk \
   | check_conf_dir mkdir # these goals shouldn't force target to be updated
 
 -include $(AUTOCONF_FILES:%=%.d)
-
-CROSS_COMPILE ?=
 
 mkdir:
 	@test -d $(AUTOCONF_DIR) || mkdir -p $(AUTOCONF_DIR)

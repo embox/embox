@@ -9,7 +9,7 @@
 #ifndef HAL_INTERRUPT_H_
 #define HAL_INTERRUPT_H_
 
-#include __module_headers(embox/arch/interrupt)
+#include <module/embox/arch/interrupt.h>
 
 /**
  * Total amount of interrupt lines available on the controller.

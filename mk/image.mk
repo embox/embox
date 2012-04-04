@@ -19,6 +19,9 @@ image: $(IMAGE_SIZE)
 image: $(IMAGE_PIGGY)
 image: image_fini
 
+image:
+	@echo 'Build complete'
+
 image_init image_fini:
 
 .PHONY: image_prepare
@@ -60,6 +63,10 @@ endif
 
 include mk/flags.mk
 
+build_model := $(__build_model)
+MODS_ENABLE_OBJ := $(call listInstances,$(build_model))
+#$(warning $(call printInstances,$(build_model)))
+
 # It's time to scan subdirs and prepare mods info.
 # ...and to build dependency injection model
 include mk/codegen-di.mk
@@ -98,10 +105,8 @@ $(ROOTFS_DIR) :
 	@mkdir $@
 
 $(ROOTFS_IMAGE): $(ROOTFS_DIR) $(ROOTFS_OBJS_BUILD)
-	@pushd $< && \
-		find . -depth -print | \
-	       	cpio --quiet -H newc -o > ../$(notdir $@); \
-		popd
+	@cd $< \
+	&& find . -depth -print | cpio --quiet -H newc -o > ../$(notdir $@)
 
 ifdef LDSS_BUILD
 LD_SINGLE_T_OPTION := \
@@ -118,7 +123,6 @@ $(foreach l,$(LIBS_BUILD),$(call define_lib_rules,$l))
 
 -include $(patsubst %.lds,%.lds.d,$(OBJS_BUILD:.o=.d))
 
-#OBJS_BUILD := $(foreach mod,$(MODS_BUILD),$(OBJS-$(mod)))
 OBJ_SUBDIRS := \
 	$(sort $(dir $(OBJS_BUILD) $(LDSS_BUILD)))
 
@@ -143,8 +147,9 @@ $(CMDS) : %.cmd : %.cmd.tmp ;
 
 $(CMDS:%.cmd=%.cmd.tmp): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk \
 		mk/image.mk $(myfiles_model_mk)
+	@$(MKDIR) $(@D)
 	@echo '$(FLAGS) -o $(@:%.cmd.tmp=%.o) -c' > $@
-	@diff -q $@ $(subst .tmp,,$@) &>/dev/null || cp $@ $(subst .tmp,,$@)
+	@diff -q $@ $(subst .tmp,,$@) >/dev/null 2>&1 || cp $@ $(subst .tmp,,$@)
 
 ifndef VERBOSE
 ifdef CC_SUPPORTS_@file
