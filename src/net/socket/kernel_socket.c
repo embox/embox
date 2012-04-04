@@ -191,7 +191,7 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 	int res;
 	/* TODO come up with an idea about listening queue */
 	/* -EACCES may be returned if the process doesn't have enough privileges */
-	/* TODO the situation then socket is shutdown should be handeled */
+	/* TODO the situation when socket is shut down should be handled */
 	/* NOTE if insufficient resources are available ENOBUFS is the errno */
 
 	/* no listen method is supported for that type of socket */
@@ -287,27 +287,72 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 		socklen_t addrlen, int flags) {
 	int res;
 
-	/* Socket's like UDP are 'connectionless'. that means that connect
-	   only binds the target of the socket to an address.
-	   In the cases of stream protocols the meaning is strict - initiate
-	   connection to a given host*/
+	/* EACCES may ber returnedf in case of a lack of priveleges */
 
-	/* TODO add code for the mentioned above cases */
+	/* EADDRNOTAVAIL. probably the best place - is specific
+	   protocol implementation*/
 
+	/* how should this be interpreted? */
 	if(!sock->ops->connect){
 		debug_printf("No connect() method", "kernel_socket",
 								 "kernel_socket_connect");
 		return SK_NO_SUCH_METHOD;
 	}
 
-	/* try to connect */
+	/* find out if socket sock is registered in the system */
+	if(!sr_socket_exists(sock)){
+		return -ENOTSOCK;
+	}
+
+	/* invalid address family or length of addr*/
+	if((sizeof(struct sockaddr) != addrlen)||
+		 (sock->sk->sk_family != addr->sa_family)){
+		return -EINVAL;
+	}
+
+	/* is the socket already connected */
+	if((sock->type == SOCK_STREAM) &&
+		 sk_is_connected(sock)){
+		return -EISCONN;
+	}
+
+	/* is socket listening? */
+	if(sk_is_listening(sock)){
+		return -EOPNOTSUPP;
+	}
+
+	/* here is the place to check wheather the socket is bound
+	   to a local address. if it is not, try to bind it.
+		 is EADDRINUSE the situation when connect() is trying to
+	   bind to an address already in use? */
+	if(!sk_is_bound(sock)){
+		/* a method to get a local address which fits the network in
+		   which the host we are trying to connect to is situated */
+		/* kernel_socket_bind(sock, &localaddress, sizeof(struct sockaddr)); */
+	}
+
+	/* if the socket is non blocking, and it is in connecting state
+	   at the same time with connect() being called*/
+	/* (only blocking sockets are implemented now, but
+     in future this code should work, or else shall be
+	   modified)*/
+	if(sk_get_connection_state(sock) == CONNECTING){
+		return -EALREADY;
+	}
 	sk_set_connection_state(sock, CONNECTING);
+
+	/* try to connect */
+	/* specific connect method can return ECONREFUSED, ENETUNREACH,
+	   EPROTOTYPE, ETIMEDOUT, ECONNRESET, EHOSTUNREACH, ELOOP,
+	   ENAMETOLONG, ENETDOWN*/
 	res = sock->ops->connect(sock, (struct sockaddr *) addr, addrlen, flags);
-	if(!res){  /* smth's wrong */
+	if(res < 0){
+		/* in case of non-blocking sockets(for the future)
+		   here should be handled situation when connect is trying to
+		   finish asynchronously */
 		debug_printf("Unable to connect on socket",
 								 "kernel_sockets", "kernel_socket_connect");
-		sk_set_connection_state(sock, UNCONNECTED);
-		return res;
+		sk_set_connection_state(sock, BOUND);
 	}else
 		sk_set_connection_state(sock, CONNECTED);
 
