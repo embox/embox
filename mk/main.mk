@@ -41,8 +41,8 @@ _distclean: _clean
 
 #build.conf assumed to be in every conf
 TEMPLATES := \
-	$(patsubst $(TEMPLATES_DIR)/%/build.conf,%,\
-		$(call r-wildcard,$(TEMPLATES_DIR)/**/build.conf))
+	$(sort $(patsubst $(TEMPLATES_DIR)/%/build.conf,%,\
+		$(call r-wildcard,$(TEMPLATES_DIR)/**/build.conf)))
 
 $(TEMPLATES:%=confload-%) : confload-% :
 	@$(CP) -fv -R -t $(CONF_DIR) $(TEMPLATES_DIR)/$*/*
@@ -83,12 +83,13 @@ endif
 endif #PROFILE
 endif #PROJECT
 
-menuconfig m:
-	@$(MAKE) confload-$$(dialog --stdout --backtitle "Configuration template selection" \
-                --menu "Select template to load:" 20 40 20 \
-	       	$(foreach t,$(TEMPLATES),$t "" ))
-xconfig x:
-	@$(MAKE) confload-$$(Xdialog --stdout --backtitle "Configuration template selection" \
-                --menu "Select template to load:" 20 40 20 \
-	       	$(foreach t,$(TEMPLATES),$t "" ))
+menuconfig m: DIALOG := dialog
+xconfig    x: DIALOG := Xdialog
+
+menuconfig m xconfig x:
+	@TEMPLATE=`$(DIALOG) --stdout \
+		--backtitle "Configuration template selection" \
+		--menu "Select template to load:" 20 40 20 \
+		$(TEMPLATES:%=% "" )` \
+	&& $(MAKE) confload-$$TEMPLATE
 
