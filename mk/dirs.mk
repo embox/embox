@@ -1,6 +1,8 @@
 
 ROOT_DIR       := .
 
+CACHE_DIR      := mk/.cache
+
 MK_DIR         := $(ROOT_DIR)/mk
 SCRIPTS_DIR    := $(ROOT_DIR)/scripts
 PROJECTS_DIR   := $(ROOT_DIR)/templates
@@ -11,8 +13,6 @@ SRC_DIR        := $(ROOT_DIR)/src
 DOCS_DIR       := $(ROOT_DIR)/docs
 
 CONF_DIR       := $(ROOT_DIR)/conf
-
-BACKUP_DIR     := $(ROOT_DIR)/conf/backup~
 
 # XXX check for hardcoded 'build/base' anywhere. -- Eldar
 BUILD_DIR     := $(ROOT_DIR)/build/base

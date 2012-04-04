@@ -3,6 +3,7 @@
 #
 
 include mk/dirs.mk
+include mk/util/wildcard.mk
 
 export RM     := rm -f
 export CP     := cp
@@ -12,36 +13,36 @@ export MKDIR  := mkdir -p
 export LN     := ln -s
 export PS1    :=
 
-include mk/util/wildcard.mk
+#
+# Targets that require Mybuild infrastructure.
+#
 
-.PHONY: clean config xconfig menuconfig conf_update
+BUILD_TARGETS := all dot docsgen
 
-BUILD_TARGETS := all dot docsgen mkclean
-
-.PHONY: $(BUILD_TARGETS)
-
-$(BUILD_TARGETS):
+.PHONY : $(BUILD_TARGETS)
+$(BUILD_TARGETS) :
 	@$(MAKE) -f mk/load.mk $@
 
 #
-# Configuration related stuff:
-#
-#   confload-<TEMPLATE>
-#   m menuconfig
-#   x xconfig
+# Configuration related stuff.
 #
 
 # Assuming that we have 'build.conf' in every template.
 TEMPLATES := \
-	$(sort $(patsubst $(TEMPLATES_DIR)/%/build.conf,%,\
+	$(sort $(patsubst $(TEMPLATES_DIR)/%/build.conf,%, \
 		$(call r-wildcard,$(TEMPLATES_DIR)/**/build.conf)))
 
+# confload-<TEMPLATE>
+.PHONY : $(TEMPLATES:%=confload-%)
 $(TEMPLATES:%=confload-%) : confload-% : confclean
 	@$(MKDIR) $(CONF_DIR)
 	@$(CP) -fR -t $(CONF_DIR) $(TEMPLATES_DIR)/$*/*
 	@echo 'Config complete'
 
 # Dialog-based interactive template selections.
+.PHONY : m menuconfig
+.PHONY : x xconfig
+
 m menuconfig : DIALOG := dialog
 x xconfig    : DIALOG := Xdialog
 
@@ -53,6 +54,7 @@ x xconfig :
 		$(TEMPLATES:%=% "" )` \
 	&& $(MAKE) confload-$$TEMPLATE
 
+.PHONY : config
 # Old-style configuration.
 config :
 	@echo '"make config" is considered obsolete and will be removed soon.'
@@ -60,18 +62,21 @@ config :
 	$(MAKE) confload-$(PROJECT)/$(PROFILE)
 
 #
-# Cleaning targets:
-#
-#   c clean
-#   confclean
-#   distclean
+# Cleaning targets.
 #
 
-c clean:
+.PHONY : c clean
+c clean :
 	@$(RM) -r $(ROOT_DIR)/build
 
+.PHONY : confclean
 confclean : clean
 	@$(RM) -r $(CONF_DIR)
 
-distclean: clean confclean mkclean
+.PHONY : cacheclean
+cacheclean :
+	@$(RM) -r $(CACHE_DIR)
+
+.PHONY : distclean
+distclean : clean confclean cacheclean
 
