@@ -9,7 +9,6 @@ __util_wildcard_mk := 1
 
 include mk/core/common.mk
 include mk/core/string.mk
-include mk/core/define.mk
 
 include mk/util/list.mk
 
@@ -25,46 +24,38 @@ include mk/util/list.mk
 #   Wildcard expansion of the patterns.
 # Note:
 #   It does not handle properly more than one '**' tokens in single pattern.
-define r-wildcard
-	$(foreach p,$1,
-		$(with $(subst **,* *,$p),
-			$(if $(singleword $1),
-				$(wildcard $1),
-				$(if $(doubleword $1),
-					$(foreach b,$(firstword $1),$(foreach e,$(secondword $1),
-						$(foreach d,$(if $(findstring /,$e),
-										$(firstword $(subst /,/ ,$e)),*),
-							$(__r-wildcard)
-						)
-					)),
-					$(error \
-						Handling more than one '**' tokens is not implemented
-					)
-				)
-			)
-		)
-	)
-endef
+r-wildcard = \
+	$(sort $(foreach p,$1,$(call __r_wildcard,$(subst **,* *,$p))))
 builtin_func-r-wildcard = $(builtin_to_function_inline)
+
+# Called for a single pattern with '**' replaced by '* *'.
+__r_wildcard = \
+	$(if $(call singleword,$1), \
+		$(wildcard $1), \
+		$(if $(call doubleword,$1), \
+			$(foreach b,$(firstword $1), \
+			$(foreach e,$(word 2,$1), \
+			$(foreach d,$(if $(findstring /,$e), \
+					$(firstword $(subst /,/ ,$e)),*), \
+				$(__r_wildcard_double)))), \
+			$(error \
+				Handling more than one '**' tokens is not implemented)))
 
 # Context:
 #   b. Path at the beginning, before '**': 'foo/b*'.
 #   e. Part after '**':                    '*r/baz'.
 #   d. $(e) up to the first '/' (if any):  '*r/' (or '*' if there is no '/').
-define __r-wildcard
-	$(with \
-		#Start with a single separator, it will grow on each recursive subcall.
-		/,# -> '/*/' -> '/*/*/' -> ...
-		$(wildcard $b$(e:*%=%) $(if $(eq */,$d),$b$(e:*/%=%))),# <- Accum.
+__r_wildcard_double = \
+	$(call __r_wildcard_double_loop,/, \
+		$(wildcard $b$(e:*%=%) $(if $(call eq,*/,$d),$b$(e:*/%=%))))
 
-#		$(info [$b]$1[$e] [$d])
-		$(if $2,$2 )
-		$(if $(wildcard $b$1$d),
-			# Expand wildcards while 'foo/b*/*/...' gives non-empty result.
-			$(call $0,$1*/,$(wildcard $b$1$e))
-		)
-	)
-endef
+# Start with a single separator, it will grow on each recursive subcall.
+#   / -> '/*/' -> '/*/*/' -> ...
+# Expand wildcards while 'foo/b*/*/...' gives non-empty result.
+#   1. Separator.
+#   2. Accumulator.
+__r_wildcard_double_loop = \
+	$(if $2,$2 )$(if $(wildcard $b$1$d),$(call $0,$1*/,$(wildcard $b$1$e)))
 
 #
 # Directory/file versions of wildcard.
@@ -179,7 +170,5 @@ __wildcard_relative = \
 d-wildcard_relative_first = $(call __wildcard_relative,d-wildcard_first,$1,$2)
 f-wildcard_relative_first = $(call __wildcard_relative,f-wildcard_first,$1,$2)
   wildcard_relative_first = $(call __wildcard_relative,  wildcard_first,$1,$2)
-
-$(def_all)
 
 endif # __util_wildcard_mk
