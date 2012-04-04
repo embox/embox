@@ -45,11 +45,12 @@ struct net_device *pnet_get_net_device(net_node_t node) {
 
 static int net_dev_init(void) {
 	struct net_device *dev;
-	net_node_t node;
+	/*net_node_t node;*/
 
 	netdev_foreach(dev) {
 		if (dev) {
-			node = pnet_dev_register(dev);
+			/*node = */
+			pnet_dev_register(dev);
 		}
 	}
 

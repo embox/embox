@@ -248,8 +248,7 @@ static int exec(int argc, char **argv) {
 			 * It depends of scheduling implementation
 			 */
 		}
-		if (NULL == (in_dev = inet_dev_find_by_name(argv[argc - 1])) &&
-			    (up	|| down)) {
+		if (NULL == (in_dev = inet_dev_find_by_name(argv[argc - 1]))) {
 			LOG_ERROR("can't find interface %s\n", argv[argc - 1]);
 			return -1;
 		}

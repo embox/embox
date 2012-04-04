@@ -56,7 +56,7 @@ int pnet_graph_start(struct pnet_graph *graph) {
 	}
 
 	list_for_each_entry(node, &graph->nodes, gr_link) {
-		if(NULL == (hnd = pnet_proto_start(node))) {
+		if(NULL != (hnd = pnet_proto_start(node))) {
 			hnd(node);
 		}
 	}
@@ -77,7 +77,7 @@ int pnet_graph_stop(struct pnet_graph *graph) {
 	}
 
 	list_for_each_entry(node, &graph->nodes, gr_link) {
-		if(NULL == (hnd = pnet_proto_stop(node))) {
+		if(NULL != (hnd = pnet_proto_stop(node))) {
 			hnd(node);
 		}
 	}

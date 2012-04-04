@@ -137,7 +137,6 @@ static int ping(struct ping_info *pinfo) {
 			inet_ntoa(pinfo->dst), pinfo->padding_size, ntohs(tx_pack.hdr.icmp_hdr.un.echo.id));
 
 	total = clock();
-	i = 0;
 	for (i=0; i< pinfo->count; i++) {
 		tx_pack.hdr.icmp_hdr.un.echo.sequence = htons(ntohs(tx_pack.hdr.icmp_hdr.un.echo.sequence) + 1);
 		tx_pack.hdr.icmp_hdr.checksum = 0;

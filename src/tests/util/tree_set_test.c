@@ -36,6 +36,7 @@ struct int_tree_set_element {
 };
 
 static int get_tree_set_int_val(struct tree_set_link *link) {
+	assert(link);
 	return tree_set_element(link, struct int_tree_set_element, link)->data;
 }
 

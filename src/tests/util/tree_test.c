@@ -155,6 +155,7 @@ TEST_CASE("Foreach on subtree") {
 
 /** Return data field of node, corresponding to given link. */
 static int link2int(struct tree_link *link) {
+	assert(link);
 	return tree_element(link, struct int_tree, link)->data;
 }
 
