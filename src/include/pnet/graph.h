@@ -15,6 +15,8 @@
 
 #define MAX_GRAPH_NAME_SIZE 20
 
+extern struct list_head pnet_graphs;
+
 enum pnet_graph_state {
 	PNET_GRAPH_STOPPED,
 	PNET_GRAPH_STARTED

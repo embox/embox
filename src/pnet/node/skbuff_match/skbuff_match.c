@@ -67,7 +67,7 @@ int match_lin(struct pnet_pack *pack) {
 	list_for_each (h, &node->match_rx_rules) {
 		struct sk_buff *skb = pack->data;
 		curr = member_cast_out(h, struct match_rule, lnk);
-		rule_curr = &curr->header[0];
+		rule_curr = curr->skbuf->data;
 
 		pack_curr = (unsigned char *) skb->data;
 

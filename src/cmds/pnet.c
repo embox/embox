@@ -1,6 +1,6 @@
  /**
  * @file
- * @brief Util for pnet configuration
+ * @brief Util for PNET configuration
  *
  * @date 14.03.2012
  * @author Alexander Kalmuk
@@ -23,7 +23,6 @@
 
 EMBOX_CMD(exec);
 
-extern struct list_head graphs_list;
 extern struct pnet_module __pnet_mod_repo[];
 
 #define MAX_WORD_LENGTH 100
@@ -46,7 +45,7 @@ static int rule_set_ip(struct pnet_graph *gr, match_rule_t rule, char *rule_str)
 static int rule_set_next_node(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
 static match_rule_t rule_get_by_id(net_node_t node, char id);
 
-/* macros to get graph or node by it name */
+/* macros to get graph, node or rule by it name */
 
 #define get_graph(graph, name, error) \
 		if (NULL == (graph = get_graph_by_name(name))) { \
@@ -64,6 +63,12 @@ static match_rule_t rule_get_by_id(net_node_t node, char id);
 		if (NULL == (node = pnet_get_module(name))) { \
 			printf("%s: no such node\n", name);		  \
 			return -error;							  \
+		}
+
+#define get_rule_from_node(node, rule, rule_name, error) \
+		if (NULL == (rule = rule_get_by_id(node, *rule_name))) { \
+			printf("%s: no such rule", rule_name);				 \
+			return -error;										 \
 		}
 
 static int delete_brokens(char *str);
@@ -130,7 +135,7 @@ static void rebuild_argv(char **argv) {
 static struct pnet_graph *get_graph_by_name(char *name) {
 	struct pnet_graph *gr;
 
-	list_for_each_entry(gr, &graphs_list, lnk) {
+	list_for_each_entry(gr, &pnet_graphs, lnk) {
 		if (0 == strcmp(gr->name, name))
 			return gr;
 	}
@@ -142,7 +147,7 @@ static net_node_t get_node_from_graph_by_name(struct pnet_graph *gr, char *name)
 	net_node_t node;
 
 	list_for_each_entry(node, &gr->nodes, gr_link) {
-		if (!strcmp(node->proto->name, name))
+		if (!strcmp(node->name, name))
 			return node;
 	}
 
@@ -153,12 +158,12 @@ static void print_graph_names(void) {
 	struct pnet_graph *gr;
 
 	printf("%s", "Running graphs: ");
-	list_for_each_entry(gr, &graphs_list, lnk) {
+	list_for_each_entry(gr, &pnet_graphs, lnk) {
 		if (PNET_GRAPH_STARTED == gr->state)
 			printf("%s, ", gr->name);
 	}
 	printf("\n%s", "Stopped graphs: ");
-	list_for_each_entry(gr, &graphs_list, lnk) {
+	list_for_each_entry(gr, &pnet_graphs, lnk) {
 		if (PNET_GRAPH_STOPPED == gr->state)
 			printf("%s, ", gr->name);
 	}
@@ -173,7 +178,7 @@ static void print_list_of_graph_nodes(struct pnet_graph *gr) {
 	}
 	printf("nodes of %s: ", gr->name);
 	list_for_each_entry(node, &gr->nodes, gr_link) {
-		printf("%s, ", node->proto->name);
+		printf("%s(type:%s), ", node->name, node->proto->name);
 	}
 }
 
@@ -193,9 +198,9 @@ static int print_graph(char **argv) {
 
 	node = root->rx_dfault;
 
-	printf("%s \n", root->proto->name);
+	printf("%s(type:%s) \n", root->name, root->proto->name);
 	while (NULL != node) {
-		printf("%s\n", node->proto->name);
+		printf("%s(type:%s)\n", node->name, node->proto->name);
 		node = node->rx_dfault;
 	}
 
@@ -235,6 +240,7 @@ static int add_node(char **argv) {
 	}
 
 	get_node_from_repo(node, argv[4], ENOENT);
+	node->name = argv[5];
 
 	gr->state = graph_state;
 
@@ -264,6 +270,9 @@ static int link_node(char **argv) {
 	res = pnet_node_link(src, node);
 	gr->state = graph_state;
 
+	if(res < 0)
+		printf("node linking error\n");
+
 	return res;
 }
 
@@ -292,17 +301,38 @@ static int unlink_node(char **argv) {
 	return ENOERR;
 }
 
-static int rule_alloc(struct pnet_graph *gr, net_node_matcher_t node) {
+static int rule_alloc(char **argv) {
 	match_rule_t rule;
+	struct pnet_graph *gr;
+	net_node_t node;
+
+	get_graph(gr, argv[3], 0);
+	get_node_from_graph(gr, node, argv[4], 0);
 
 	if (NULL == (rule = pnet_rule_alloc())) {
 		return -ENOMEM;
 	}
 
-	pnet_add_new_rx_rule(rule, node);
+	pnet_add_new_rx_rule(rule, (net_node_matcher_t) node);
 
 	return ENOERR;
 }
+
+static int rule_delete(char **argv) {
+	match_rule_t rule;
+	struct pnet_graph *gr;
+	net_node_t node;
+
+	get_graph(gr, argv[3], 0);
+	get_node_from_graph(gr, node, argv[4], 0);
+	get_rule_from_node(node, rule, argv[5], 0);
+
+	pnet_remove_rx_rule(rule);
+	pnet_rule_free(rule);
+
+	return ENOERR;
+}
+
 
 static int rule_set_mac(struct pnet_graph *gr, match_rule_t rule, char *rule_elem) {
 	if (NULL == macaddr_scan((unsigned char *) rule_elem, rule->skbuf->mac.ethh->h_source)) {
@@ -378,23 +408,25 @@ static int exec(int argc, char **argv) {
 			print_graph_names();
 			break;
 		case 'p':
-			if (!strcmp("--nodes", argv[2])) {
+			if (!strcmp("--graph", argv[2])) {
+				print_graph(argv);
+				break;
+			}
+
+			if (!strcmp("--node", argv[2])) {
 				get_graph(gr, argv[3], 0);
 				print_list_of_graph_nodes(gr);
 				break;
 			}
 
-			if (!strcmp("--rules", argv[2])) {
+			if (!strcmp("--rule", argv[2])) {
 				get_graph(gr, argv[3], 0);
 				get_node_from_graph(gr, node, argv[4], 0);
 				print_rules((net_node_matcher_t) node);
 				break;
 			}
 
-			if (print_graph(argv) < 0) {
-				return 0;
-			}
-
+			printf("%s: no such option", argv[2]);
 			break;
 		case 'n' :
 			printf("nodes: ");
@@ -417,6 +449,14 @@ static int exec(int argc, char **argv) {
 			pnet_graph_stop(gr);
 			break;
 		case 'a' :
+			if (!strcmp("--graph", argv[2])) {
+				if (NULL == pnet_graph_create(argv[3])) {
+					printf("%s: graph was not created\n", argv[3]);
+					return -1;
+				}
+				break;
+			}
+
 			if (!strcmp("--node", argv[2])) {
 				if ((res = add_node(argv)) < 0) {
 					if (res == -EBUSY) {
@@ -430,20 +470,8 @@ static int exec(int argc, char **argv) {
 				break;
 			}
 
-			if (!strcmp("--graph", argv[2])) {
-				if (NULL == pnet_graph_create(argv[3])) {
-					printf("%s: graph was not created\n", argv[3]);
-					return -1;
-				}
-				break;
-			}
-
 			if (!strcmp("--rule", argv[2])) {
-				get_graph(gr, argv[3], 0);
-
-				get_node_from_graph(gr, node, argv[4], 0);
-
-				if (rule_alloc(gr, (net_node_matcher_t) node) < 0) {
+				if (rule_alloc(argv) < 0) {
 					printf("rule was not created\n");
 					return -1;
 				}
@@ -454,13 +482,8 @@ static int exec(int argc, char **argv) {
 			return 0;
 		case 't':
 			get_graph(gr, argv[2], 0);
-
 			get_node_from_graph(gr, node, argv[3], 0);
-
-			if (NULL == (rule = rule_get_by_id(node, *argv[4]))) {
-				printf("%s: no such rule in node %s\n", argv[4], argv[3]);
-				return 0;
-			}
+			get_rule_from_node(node, rule, argv[4], 0);
 
 			if (NULL != (setter = get_setter_by_option(argv[5]))) {
 				if (setter(gr, rule, argv[6]) < 0) {
@@ -473,14 +496,21 @@ static int exec(int argc, char **argv) {
 			break;
 		case 'l':
 			if (link_node(argv) < 0)
-				return -1;
+				return 0;
 			break;
 		case 'd' :
 			if (!strcmp("--node", argv[2])) {
 				if (unlink_node(argv) < 0)
-					return -1;
+					return 0;
+				break;
 			}
-			break;
+			if (!strcmp("--rule", argv[2])) {
+				if (rule_delete(argv) < 0)
+					return 0;
+				break;
+			}
+			printf("%s: no such option", argv[2]);
+			return -1;
 		default:
 			return 0;
 		}

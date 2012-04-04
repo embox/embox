@@ -18,7 +18,7 @@
 
 OBJALLOC_DEF(graphs, struct pnet_graph, CONFIG_PNET_GRAPH_CNT);
 
-LIST_HEAD(graphs_list);
+LIST_HEAD(pnet_graphs);
 
 struct pnet_graph *pnet_get_graph(int sock) {
 	return (struct pnet_graph *) objalloc(&graphs);
@@ -27,7 +27,7 @@ struct pnet_graph *pnet_get_graph(int sock) {
 struct pnet_graph *pnet_graph_create(char *name) {
 	struct pnet_graph *gr;
 
-	list_for_each_entry(gr, &graphs_list, lnk) {
+	list_for_each_entry(gr, &pnet_graphs, lnk) {
 		if(!strcmp(gr->name, name))
 			return NULL;
 	}
@@ -37,7 +37,7 @@ struct pnet_graph *pnet_graph_create(char *name) {
 
 	INIT_LIST_HEAD(&gr->nodes);
 	INIT_LIST_HEAD(&gr->lnk);
-	list_add_tail(&gr->lnk, &graphs_list);
+	list_add_tail(&gr->lnk, &pnet_graphs);
 
 	strcpy(gr->name, name);
 	gr->state = PNET_GRAPH_STOPPED;

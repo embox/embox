@@ -24,6 +24,7 @@ struct pnet_proto;
 typedef struct net_packet *net_packet_t;
 
 struct net_node {
+	const char *name;		/*< unique name inside graph */
 	struct pnet_graph *graph;
 	struct list_head gr_link;
 	struct pnet_proto *proto;

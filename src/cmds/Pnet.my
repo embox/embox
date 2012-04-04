@@ -13,9 +13,9 @@ import embox.compat.posix.LibPosix
 			pnet -a --node graph node1...nodeN
 			pnet -a --rule graph node
 			pnet -d graph node
-			pnet -p graph root
-			pnet -p [--nodes] graph
-			pnet -p --rules graph node
+			pnet -p --graph graph root
+			pnet -p --node graph
+			pnet -p --rule graph node
 			pnet -n
 			pnet {-r|-s} graph
 			pnet -l graph node1 node2
@@ -59,10 +59,10 @@ import embox.compat.posix.LibPosix
 				specify graph
 
 			--node
-				specify node
+				specify node(s)
 
 			--rule
-				specify rule
+				specify rule(s)
 
 			RULE_OPTIONS:
 				--ip <value>

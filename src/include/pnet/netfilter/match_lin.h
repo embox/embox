@@ -26,8 +26,8 @@
 
 #define MAX_PACK_HEADER_SIZE	0x30
 
+/* TODO make set of rules as a hash table */
 struct match_rule {
-	unsigned char header[MAX_PACK_HEADER_SIZE];
 	struct sk_buff *skbuf;
 	net_node_t next_node;
 	struct list_head lnk;
@@ -87,9 +87,14 @@ static inline void pnet_rule_set_proto(match_rule_t rule, unsigned char proto) {
 
 //extern net_node_t pnet_create_matcher(net_hnd rx_matcher, net_hnd tx_matcher);
 extern match_rule_t pnet_rule_alloc(void);
+extern void pnet_rule_free(match_rule_t rule);
 
 static inline void pnet_add_new_rx_rule(match_rule_t new_rule, net_node_matcher_t node) {
 	list_add_tail(&new_rule->lnk, &node->match_rx_rules);
+}
+
+static inline void pnet_remove_rx_rule(match_rule_t new_rule) {
+	list_del(&new_rule->lnk);
 }
 
 extern net_node_matcher_t pnet_get_node_matcher(void);
