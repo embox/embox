@@ -346,7 +346,7 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 	}
 
 		/* Check presence of extra space for new headers and modification permission*/
-	if (unlikely(skb = skb_checkcopy_expand(skb_in, realloc_shift, 0, 0))) {
+	if (!unlikely(skb = skb_checkcopy_expand(skb_in, realloc_shift, 0, 0))) {
 		kfree_skb(skb_in);
 		return;
 	}

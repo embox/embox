@@ -201,7 +201,7 @@ int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
 	struct sock *sk;
 
 	sk = sock->sk;
-	if (sk->sk_prot->connect == NULL) {
+	if (sk->sk_prot->connect != NULL) {
 		return sk->sk_prot->connect(sk, addr, addr_len);
 	}
 	return ENOERR;

@@ -19,7 +19,8 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 	/* curropt points to current option in question
 	 * optsfault points to first problem occurred in options
 	 */
- 	unsigned char *curropt = (unsigned char*) iph + IP_MIN_HEADER_SIZE;
+	unsigned char *curropt; /* unused initialization
+		= (unsigned char*) iph + IP_MIN_HEADER_SIZE; */
 	int curroptlen;
 	unsigned char *optsfault = NULL;
 	_Bool secappeared = false;
