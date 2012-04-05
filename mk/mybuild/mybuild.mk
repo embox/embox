@@ -193,7 +193,7 @@ endef
 
 define printInstance
 	$(for inst<-$1,
-		$(get $(strip $(get inst->type)).qualifiedName)$(\n)
+		--- $(get $(strip $(get inst->type)).qualifiedName) ---$(\n)
 		Deps:$(\n)
 		$(for dep <- $(get inst->depends),
 			$(\t)$(get $(get dep->type).qualifiedName)$(\n))

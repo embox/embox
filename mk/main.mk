@@ -4,6 +4,7 @@
 
 include mk/core/common.mk
 include mk/util/wildcard.mk
+include mk/help.mk
 
 #
 # Targets that require Mybuild infrastructure.
@@ -67,6 +68,15 @@ config :
 c clean :
 	@$(RM) -r $(ROOT_DIR)/build
 
+help-clean_title := Clean
+help-clean_desc :=\
+Cleans building artifacts such as target, objects, etc
+help-clean_usage:= make clean
+
+
+HELP_SECTIONS := help help-clean
+.PHONY: $(HELP_SECTIONS)
+
 .PHONY : confclean
 confclean : clean
 	@$(RM) -r $(CONF_DIR)
@@ -78,3 +88,31 @@ cacheclean :
 .PHONY : distclean
 distclean : clean confclean cacheclean
 
+help_title:= All
+help_desc :=\
+Build system supports following make targets (there is also shourtcuts):\
+$(call help_pointed_list,\
+$(call help_section,Clean targets)\
+*clean (c): remove build artefacts\
+*confclean: remove current config; make it blank\
+*cacheclean: remove build system cache; causing rereading all Mybuild and configfiles\
+*distclean: make all cleans; makes pure distribution like one after check-out\
+$(call help_section,Configure sections)\
+*confload-target: load target config from templates\
+*menuconfig (m): show all possible template choises to load as config (CLI version)\
+*xconfig (x): show all possible template choises to load as config (GTK version)\
+$(call help_section,Documentation)\
+*docsgen: Generate doc from source's doxygen\
+*dot: Generate ps file with illustration of module packages and dependencies\
+$(call help_section,Module Inspection)\
+$(\n)See help-mod section\
+)
+help_usage:= make help-subsection with subsection named above
+
+$(HELP_SECTIONS) :
+	$(info $(call help_template,$($@_title),$($@_desc),$($@_usage)))
+	@#
+
+#default help section
+help-% :
+	@echo There is no such help section

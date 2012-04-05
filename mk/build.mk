@@ -33,10 +33,13 @@ docsgen:
 MODULE_LIST := $(strip $(call help_modulelist))
 
 help-mod-list :
-	$(info $(addsuffix $(\n),$(MODULE_LIST)))
 	@echo --- Module list ---
+	$(info $(addsuffix $(\n),$(MODULE_LIST)))
+	@#
 
-#$(MODULE_LIST:%=help-mod-%) : help-mod-% :
-help-mod-% :
+$(MODULE_LIST:%=help-mod-%) : help-mod-% :
 	$(info $(call help_module,$*))
-	@echo --- Module $* ---
+	@#
+
+help-mod-% :
+	@echo There is no such module in build
