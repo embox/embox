@@ -2,6 +2,8 @@
 # Embox main Makefile.
 #
 
+export MYBUILD_VERSION := 0.4
+
 include mk/core/common.mk
 include mk/util/wildcard.mk
 include mk/help.mk
@@ -10,16 +12,38 @@ include mk/help.mk
 # Targets that require Mybuild infrastructure.
 #
 
-BUILD_TARGETS := all dot docsgen
-BUILD_TARGET_IMPL := help-mod-%
+#####
+build_targets += all
 
-.PHONY : $(BUILD_TARGETS)
-$(BUILD_TARGETS) :
+help_brief-all = \
+	Build the current configuration
+help_targets += all
+
+#####
+build_targets += dot
+
+help_brief-dot = \
+	Generate ps file with illustration of module packages and dependencies
+help_targets += dot
+
+#####
+build_targets += docsgen
+
+help_brief-docsgen = \
+	Generate doc from source's doxygen
+help_targets += docsgen
+
+#####
+build_targets += help-mod-%
+
+help_brief-help-mod-list = \
+	NIY
+help_targets += help-mod-list
+
+.PHONY : $(build_targets)
+$(build_targets) :
 # Call here prevents sub-make invocation in question mode (-q).
 # Used to speed up recent bash-completion.
-	@$(call MAKE) -f mk/load.mk $@
-
-$(BUILD_TARGET_IMPL) :
 	@$(call MAKE) -f mk/load.mk $@
 
 #
@@ -63,32 +87,92 @@ config :
 #
 # Cleaning targets.
 #
-
+#####
 .PHONY : c clean
 c clean :
 	@$(RM) -r $(ROOT_DIR)/build
 
-help-clean_title := Clean
-help-clean_desc :=\
-Cleans building artifacts such as target, objects, etc
-help-clean_usage:= make clean
+help_brief-clean = \
+	Remove most build artifacts (image, libraries, objects, etc.)
+help_alias-clean = \
+	c
+help_targets += clean
 
-
-HELP_SECTIONS := help help-clean
-.PHONY: $(HELP_SECTIONS)
-
+#####
 .PHONY : confclean
 confclean : clean
 	@$(RM) -r $(CONF_DIR)
 
+help_brief-confclean = \
+	Remove build artifacts and loaded configuration
+help_targets += confclean
+
+#####
 .PHONY : cacheclean
 cacheclean :
 	@$(RM) -r $(CACHE_DIR)
 
+help_brief-cacheclean = \
+	Flush Mybuild internal cache
+help_targets += cacheclean
+
+#####
 .PHONY : distclean
 distclean : clean confclean cacheclean
 
-help_title:= All
+help_brief-distclean = \
+	clean + confclean + cacheclean
+help_targets += distclean
+
+#
+# Make help and its friends.
+#
+#####
+.PHONY : help
+help :
+	@$(info $(help_main))#
+
+help_brief-help = \
+	Print this message
+help_alias-help = \
+	h
+help_targets += help
+
+# Message for 'make help'.
+define help_main
+Usage: $(MAKE) [targets]
+Mybuild version $(MYBUILD_VERSION).
+
+Configuration targets:
+    $(call help_brief,confload)
+
+Building targets:
+    $(call help_brief,all)
+
+Cleaning targets:
+    $(call help_brief,clean)
+    $(call help_brief,confclean)
+    $(call help_brief,cacheclean)
+    $(call help_brief,distclean)
+
+endef
+
+
+.PHONY : $(help_targets:%=help-%)
+$(help_targets:%=help-%) : help-% :
+	@$(info $(call help_message,$*))#
+
+# 1. Name of the target.
+help_message = \
+	$(help_brief)
+
+# 1. Name of the target.
+help_brief = \
+	$1$(if $(value help_alias-$1), \
+				($(subst $(\s),$(,) ,$(strip $(help_alias-$1)))))$(if \
+		$(value help_brief-$1), - $(help_brief-$1))
+
+ifeq (0,1)
 help_desc :=\
 Build system supports following make targets (there is also shourtcuts):\
 $(call help_pointed_list,\
@@ -107,12 +191,4 @@ $(call help_section,Documentation)\
 $(call help_section,Module Inspection)\
 $(\n)See help-mod section\
 )
-help_usage:= make help-subsection with subsection named above
-
-$(HELP_SECTIONS) :
-	$(info $(call help_template,$($@_title),$($@_desc),$($@_usage)))
-	@#
-
-#default help section
-help-% :
-	@echo There is no such help section
+endif
