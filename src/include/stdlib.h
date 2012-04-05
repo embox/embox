@@ -17,6 +17,16 @@
 #include <stddef.h>
 #include <sys/wait.h>
 
+typedef struct ldiv{
+   long int quot;
+   long int rem;
+} ldiv_t;
+
+typedef struct div{
+   int quot;
+   int rem;
+} div_t;
+
 /**
  * Converts the initial part of the string in @a nptr to a long integer value
  * according to the given @a base, which must be between 2 and 36 inclusive,
@@ -81,6 +91,8 @@ extern int rand(void);
 extern int rand_r(unsigned int *seedp);
 extern void srand(unsigned int seed);
 
+extern ldiv_t ldiv(long num, long denom);
+extern div_t div(int num, int denom);
 
 //FIXME atof atoi and so on
 extern double atof(const char *nptr);

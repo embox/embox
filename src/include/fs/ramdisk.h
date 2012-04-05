@@ -14,7 +14,7 @@
 
 #define RAMDISK_BLOCK_SIZE  0x400;
 
-typedef struct ramdisk {
+typedef struct ramdisk_params {
 	char *start_addr;
 	size_t   size;
 	size_t   blocks;

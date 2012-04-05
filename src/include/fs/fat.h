@@ -1,5 +1,5 @@
 /**
- * @file fat.h
+ * @file
  * @brief
  *
  * @date 29.03.2012
@@ -17,7 +17,6 @@
 /*
  * Configurable
  */
-
 #define MAX_PATH		64	/*  Maximum path length  */
 #define DIR_SEPARATOR	'/'	/* character separating directory components*/
 
@@ -53,17 +52,6 @@
 #define ATTR_LONG_NAME	(ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | \
 ATTR_VOLUME_ID)
 
-
-typedef struct ldiv{
-   long int quot;
-   long int rem;
-} ldiv_t;
-
-typedef struct div{
-   long int quot;
-   long int rem;
-} div_t;
-
 /*
  * 	Directory entry structure
  * 	note: if name[0] == 0xe5, this is a free dir entry
@@ -78,7 +66,7 @@ typedef struct div{
  * 	             bit 5-10 = minutes (0-59)
  * 				 bit 11-15= hours (0-23)
  */
-typedef struct _tag_dir_ent {
+typedef struct dir_ent {
 	uint8_t name[11];		/* filename */
 	uint8_t attr;			/* attributes (see ATTR_* constant definitions) */
 	uint8_t reserved;		/* reserved, must be 0 */
@@ -106,8 +94,8 @@ typedef struct _tag_dir_ent {
 /*
  *	Partition table entry structure
  */
-typedef struct _tag_pt_info {
-	uint8_t		active;			/* 0x80 if partition active */
+typedef struct pt_info {
+	uint8_t		active;		/* 0x80 if partition active */
 	uint8_t		start_h;		/* starting head */
 	uint8_t		start_cs_l;		/* starting cylinder and sector (low byte) */
 	uint8_t		start_cs_h;		/* starting cylinder and sector (high byte) */
@@ -128,7 +116,7 @@ typedef struct _tag_pt_info {
 /*
  *	Master Boot Record structure
  */
-typedef struct _tag_MBR {
+typedef struct mbr {
 	uint8_t bootcode[0x1be];	/* boot sector */
 	pt_info_t ptable[4];		/* four partition table structures */
 	uint8_t sig_55;				/* 0x55 signature byte */
@@ -138,7 +126,7 @@ typedef struct _tag_MBR {
 /*
  *	BIOS Parameter Block structure (FAT12/16)
  */
-typedef struct _tag_BPB {
+typedef struct bpb {
 
 	uint8_t bytepersec_l;	/* bytes per sector low byte (0x00) */
 	uint8_t bytepersec_h;	/* bytes per sector high byte (0x02) */
@@ -170,7 +158,7 @@ typedef struct _tag_BPB {
 /*
  *	Extended BIOS Parameter Block structure (FAT12/16)
  */
-typedef struct _tag_EBPB {
+typedef struct ebpb {
 	uint8_t unit;			/* int 13h drive# */
 	uint8_t head;			/* archaic, used by Windows NT-class OSes for flags */
 	uint8_t signature;		/* 0x28 or 0x29 */
@@ -185,7 +173,7 @@ typedef struct _tag_EBPB {
 /*
  *	Extended BIOS Parameter Block structure (FAT32)
  */
-typedef struct _tag_EBPB32 {
+typedef struct ebpb32 {
 	uint8_t fatsize_0;		/* big FAT size in sectors low byte */
 	uint8_t fatsize_1;		/* */
 	uint8_t fatsize_2;		/* */
@@ -217,7 +205,7 @@ typedef struct _tag_EBPB32 {
 /*
  *	Logical Boot Record structure (volume boot sector)
  */
-typedef struct _tag_LBR {
+typedef struct lbr {
 	uint8_t jump[3];		/* JMP instruction */
 	uint8_t oemid[8];		/* OEM ID, space-padded */
 	bpb_t bpb;				/* BIOS Parameter Block */
@@ -233,7 +221,7 @@ typedef struct _tag_LBR {
 /*
  *	Volume information structure (Internal to DOSFS)
  */
-typedef struct _tag_VOLINFO {
+typedef struct volinfo {
 	uint8_t unit;			/* unit on which this volume resides */
 	uint8_t filesystem;		/* formatted filesystem */
 
@@ -271,7 +259,7 @@ typedef struct _tag_VOLINFO {
 /*
  *	Directory search structure (Internal to DOSFS)
  */
-typedef struct _tag_DIRINFO {
+typedef struct dirinfo {
 	uint32_t currentcluster;	/* current cluster in dir */
 	uint8_t currentsector;		/* current sector in cluster */
 	uint8_t currententry;		/* current dir entry in sector */
@@ -282,7 +270,7 @@ typedef struct _tag_DIRINFO {
 /*
  *	File handle structure (Internal to DOSFS)
  */
-typedef struct _tag_FILEINFO {
+typedef struct fileinfo {
 	p_vol_info_t volinfo;		/* vol_info_t used to open this file */
 	uint32_t dirsector;			/* physical sector containing dir entry of this file */
 	uint8_t diroffset;			/* # of this entry within the dir sector */
