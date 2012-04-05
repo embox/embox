@@ -12,34 +12,8 @@ include mk/help.mk
 # Targets that require Mybuild infrastructure.
 #
 
-#####
-build_targets += all
-
-help_brief-all = \
-	Build the current configuration
-help_targets += all
-
-#####
-build_targets += dot
-
-help_brief-dot = \
-	Generate ps file with illustration of module packages and dependencies
-help_targets += dot
-
-#####
-build_targets += docsgen
-
-help_brief-docsgen = \
-	Generate doc from source's doxygen
-help_targets += docsgen
-
-#####
-build_targets += help-mod-%
-
-help_brief-help-mod-list = \
-	NIY
-help_targets += help-mod-list
-
+build_targets := all dot docsgen
+build_targets_implicit := help-mod-%
 .PHONY : $(build_targets)
 $(build_targets) :
 # Call here prevents sub-make invocation in question mode (-q).
@@ -62,12 +36,38 @@ $(TEMPLATES:%=confload-%) : confload-% : confclean
 	@$(CP) -fR -t $(CONF_DIR) $(TEMPLATES_DIR)/$*/*
 	@echo 'Config complete'
 
+define help_confload
+Usage make confload-<TEMPLATE>
+
+    Loads <TEMPLATE> as config. In contrast with template, config is intended
+    for user to modify, adding problem-aspect features to system.
+
+endef
+
 # Dialog-based interactive template selections.
 .PHONY : m menuconfig
 .PHONY : x xconfig
 
 m menuconfig : DIALOG := dialog
 x xconfig    : DIALOG := Xdialog
+define help_menuconfig
+Usage: make menuconfig
+
+    Displays pseudo-graphic menu with avaibale choises for config loading.
+
+    Requires dialog
+
+endef
+
+define help_xconfig
+Usage: make xconfig
+
+    Same as menuconfig, but with GTK support. Displays graphic menu with
+    avaibale choises for config loading.
+
+    Requires X11, GTK, Xdialog
+
+endef
 
 m menuconfig \
 x xconfig :
@@ -76,6 +76,7 @@ x xconfig :
 		--menu "Select template to load:" 20 40 20 \
 		$(TEMPLATES:%=% "" )` \
 	&& $(MAKE) confload-$$TEMPLATE
+
 
 .PHONY : config
 # Old-style configuration.
@@ -87,108 +88,88 @@ config :
 #
 # Cleaning targets.
 #
-#####
+
 .PHONY : c clean
 c clean :
 	@$(RM) -r $(ROOT_DIR)/build
 
-help_brief-clean = \
-	Remove most build artifacts (image, libraries, objects, etc.)
-help_alias-clean = \
-	c
-help_targets += clean
+define help_clean
+Usage: make clean
 
-#####
+    Remove most build artifacts (image, libraries, objects, etc.) #TODO Usecase?
+
+endef
+
 .PHONY : confclean
 confclean : clean
 	@$(RM) -r $(CONF_DIR)
 
-help_brief-confclean = \
-	Remove build artifacts and loaded configuration
-help_targets += confclean
+define help_confclean
+Usage: make confclean
 
-#####
+  Cleans config directory, suitable for case, when you need precached Mybuild,
+  but no config, for example, when you gives a version to some end customers,
+  that will not chagne Mybuild's
+
+endef
+
 .PHONY : cacheclean
 cacheclean :
 	@$(RM) -r $(CACHE_DIR)
+define help_cacheclean
+Usage: make cacheclean
 
-help_brief-cacheclean = \
-	Flush Mybuild internal cache
-help_targets += cacheclean
+  Removes build system cache. This is not intended to use manually,
+  but may be usefull in build system developing or when update from repo
+  causes broken build
 
-#####
+endef
+
 .PHONY : distclean
 distclean : clean confclean cacheclean
 
-help_brief-distclean = \
-	clean + confclean + cacheclean
-help_targets += distclean
+define help_distclean
+Usage: make distclean
+
+  Performs full clean: clean, confclean, distclean. After running this,
+  root directory reverts to fresh state, just like after fresh checkout
+  or after archive extraction.
+
+endef
 
 #
 # Make help and its friends.
 #
-#####
 .PHONY : help
 help :
 	@$(info $(help_main))#
 
-help_brief-help = \
-	Print this message
-help_alias-help = \
-	h
-help_targets += help
-
-# Message for 'make help'.
 define help_main
 Usage: $(MAKE) [targets]
 Mybuild version $(MYBUILD_VERSION).
 
 Configuration targets:
-    $(call help_brief,confload)
+    confload-target: load target config from templates
+    menuconfig (m): show all possible template choises to load as config (CLI version)
+    xconfig (x): show all possible template choises to load as config (GTK version)
 
 Building targets:
-    $(call help_brief,all)
+    all: default building target, builds main executable
 
 Cleaning targets:
-    $(call help_brief,clean)
-    $(call help_brief,confclean)
-    $(call help_brief,cacheclean)
-    $(call help_brief,distclean)
+    clean (c): remove build artefacts
+    confclean: remove current config; make it blank
+    cacheclean: remove build system cache; causing rereading all Mybuild and configfiles
+    distclean: make all cleans; makes pure distribution like one after check-out
 
 endef
 
-
+help_targets := confload menuconfig xconfig all clean confclean cacheclean distclean
 .PHONY : $(help_targets:%=help-%)
 $(help_targets:%=help-%) : help-% :
-	@$(info $(call help_message,$*))#
+	@$(info $(help_$*))#
 
-# 1. Name of the target.
-help_message = \
-	$(help_brief)
+#default help section
+help-% :
+	@echo There is no such help section
 
-# 1. Name of the target.
-help_brief = \
-	$1$(if $(value help_alias-$1), \
-				($(subst $(\s),$(,) ,$(strip $(help_alias-$1)))))$(if \
-		$(value help_brief-$1), - $(help_brief-$1))
-
-ifeq (0,1)
-help_desc :=\
-Build system supports following make targets (there is also shourtcuts):\
-$(call help_pointed_list,\
-$(call help_section,Clean targets)\
-*clean (c): remove build artefacts\
-*confclean: remove current config; make it blank\
-*cacheclean: remove build system cache; causing rereading all Mybuild and configfiles\
-*distclean: make all cleans; makes pure distribution like one after check-out\
-$(call help_section,Configure sections)\
-*confload-target: load target config from templates\
-*menuconfig (m): show all possible template choises to load as config (CLI version)\
-*xconfig (x): show all possible template choises to load as config (GTK version)\
-$(call help_section,Documentation)\
-*docsgen: Generate doc from source's doxygen\
-*dot: Generate ps file with illustration of module packages and dependencies\
-$(call help_section,Module Inspection)\
-$(\n)See help-mod section\
-)
-endif
