@@ -3,7 +3,13 @@
  *
  * @brief Interface of double linked list
  *
- * @details
+ * @details This interface of double linked list is simular as 'linux list',
+ *         but has a little more restrictions during using. It make this list
+ *         more safely. This interface has two implementations: first is ndebug
+ *         second is debug. ndebug is simply and have no advantages versus
+ *         'linux list', It should be used in release version when the code is
+ *         checked and tested. The debug version has more asserts and inspections
+ *         during list operations, and it can help you to debug the code.
  *
  * @date 19.03.2012
  * @author Anton Bondarev
@@ -26,8 +32,9 @@
 struct dlist_head;
 
 /**
- * A macro for static initializing list head.
- * This macro must overload in each implementation of dlist interface.
+ * A macro for static initializing the list head.
+ * This macro must overload in each implementation of dlist interface as
+ * #__DLIST_INIT.
  */
 #define DLIST_INIT(head) \
 	__DLIST_INIT(head)
@@ -91,7 +98,7 @@ static inline int dlist_empty(struct dlist_head *head) {
 }
 
 /**
- * Return item structure which contains the head
+ * Return a pointer to the item structure which contains the head
  */
 #define dlist_entry(head, type, member) \
     ((type *)((char *)(head) - (unsigned long)(&((type *)0)->member)))
