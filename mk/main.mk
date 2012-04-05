@@ -13,14 +13,14 @@ include mk/util/wildcard.mk
 
 build_targets := all dot docsgen
 
-build_targets_implicit := help-mod-%
-
 .PHONY : $(build_targets)
 $(build_targets) :
 # Call here prevents sub-make invocation in question mode (-q).
 # Used to speed up recent bash-completion.
 	@$(call MAKE) -f mk/load.mk $@
 
+build_targets_implicit := help-mod-%
+.PHONY : $(build_targets_implicit)
 $(build_targets_implicit) :
 	@$(call MAKE) -f mk/load.mk $@
 
@@ -29,29 +29,34 @@ $(build_targets_implicit) :
 #
 
 define help-all
-Usage: make [all]
+Usage: $(MAKE) [all]
 
-  Stands for default build target. Makes all generated source files, objects,
-  main executable, generate various debuggin and logging info.
+  Default build target.
+
+  Compile all source files and link objects into main executable
+  producing various debug and log info.
+
+  Note that you have to configure the project prior to building it.
+
 
 endef
 
 define help-dot
-Usage: make dot
+Usage: $(MAKE) dot
 
-  Generates ps file with module dependencies. Modules are also grouped by package
+  Generate PostScript file with module dependency graph.
 
 endef
 
 define help-docsgen
-Usage: make docsgen
+Usage: $(MAKE) docsgen
 
   Generate documentation from doxygen comments in source files
 
 endef
 
 define help-mod
-Usage: make help-mod-<INFO>
+Usage: $(MAKE) help-mod-<INFO>
 
   Print <INFO> info about modules:
   list: list all modules included in build
@@ -73,9 +78,9 @@ $(TEMPLATES:%=confload-%) : confload-% : confclean
 	@echo 'Config complete'
 
 define help-confload
-Usage make confload-<TEMPLATE>
+Usage make confload-<template>
 
-  Loads <TEMPLATE> as config. In contrast with template, config is intended
+  Loads <template> as config. In contrast with template, config is intended
   for user to modify, adding problem-aspect features to system.
 
 endef
@@ -86,24 +91,6 @@ endef
 
 m menuconfig : DIALOG := dialog
 x xconfig    : DIALOG := Xdialog
-define help-menuconfig
-Usage: make menuconfig
-
-  Displays pseudo-graphic menu with avaibale choises for config loading.
-
-  Requires dialog
-
-endef
-
-define help-xconfig
-Usage: make xconfig
-
-  Same as menuconfig, but with GTK support. Displays graphic menu with
-  avaibale choises for config loading.
-
-  Requires X11, GTK, Xdialog
-
-endef
 
 m menuconfig \
 x xconfig :
@@ -112,6 +99,25 @@ x xconfig :
 		--menu "Select template to load:" 20 40 20 \
 		$(TEMPLATES:%=% "" )` \
 	&& $(MAKE) confload-$$TEMPLATE
+
+define help-menuconfig
+Usage: $(MAKE) menuconfig
+
+  Displays pseudo-graphic menu with avaibale choises for config loading.
+
+  Requires 'dialog'.
+
+endef
+
+define help-xconfig
+Usage: $(MAKE) xconfig
+
+  Same as menuconfig, but with GTK support. Displays graphic menu with
+  avaibale choises for config loading.
+
+  Requires X11, GTK, Xdialog.
+
+endef
 
 
 .PHONY : config
@@ -130,7 +136,7 @@ c clean :
 	@$(RM) -r $(ROOT_DIR)/build
 
 define help-clean
-Usage: make clean
+Usage: $(MAKE) clean
 
   Remove most build artifacts (image, libraries, objects, etc.) #TODO Usecase?
 
@@ -141,11 +147,11 @@ confclean : clean
 	@$(RM) -r $(CONF_DIR)
 
 define help-confclean
-Usage: make confclean
+Usage: $(MAKE) confclean
 
-Cleans config directory, suitable for case, when you need precached Mybuild,
-but no config, for example, when you gives a version to some end customers,
-that will not chagne Mybuild's
+  Cleans config directory, suitable for case, when you need precached Mybuild,
+  but no config, for example, when you gives a version to some end customers,
+  that will not chagne Mybuild's
 
 endef
 
@@ -153,11 +159,11 @@ endef
 cacheclean :
 	@$(RM) -r $(CACHE_DIR)
 define help-cacheclean
-Usage: make cacheclean
+Usage: $(MAKE) cacheclean
 
-Removes build system cache. This is not intended to use manually,
-but may be usefull in build system developing or when update from repo
-causes broken build
+  Removes build system cache. This is not intended to use manually,
+  but may be usefull in build system developing or when update from repo
+  causes broken build.
 
 endef
 
@@ -165,11 +171,11 @@ endef
 distclean : clean confclean cacheclean
 
 define help-distclean
-Usage: make distclean
+Usage: $(MAKE) distclean
 
-Performs full clean: clean, confclean, distclean. After running this,
-root directory reverts to fresh state, just like after fresh checkout
-or after archive extraction.
+  Performs full clean: clean, confclean, distclean. After running this,
+  root directory reverts to fresh state, just like after fresh checkout
+  or after archive extraction.
 
 endef
 
@@ -185,25 +191,27 @@ Usage: $(MAKE) [targets]
 Mybuild version $(MYBUILD_VERSION).
 
 Configuration targets:
-  confload-target: load target config from templates
-  menuconfig (m): show all possible template choises to load as config (CLI version)
-  xconfig (x): show all possible template choises to load as config (GTK version)
+  confload-<t>   - Load a configuration from template <t>
+  menuconfig (m) - Interactively select a configuration using a menu based
+                   program (requires 'dialog')
+  xconfig (x)    - Interactively select a configuration using GTK client
+                   (requires 'Xdialog')
 
 Building targets:
-  all: default building target, builds main executable
+  all            - Build main executable (default build target)
 
 Cleaning targets:
-  clean (c): remove build artefacts
-  confclean: remove current config; make it blank
-  cacheclean: remove build system cache; causing rereading all Mybuild and configfiles
-  distclean: make all cleans; makes pure distribution like one after check-out
+  clean (c)      - Remove most build artifacts (image, libraries, objects, etc.)
+  confclean      - Remove build artifacts and loaded configuration
+  cacheclean     - Flush Mybuild internal cache
+  distclean      - clean + confclean + cacheclean
 
-Document targets:
-  dot: generate dot files
-  doxygen: generate documentation from doxygen comments
+Documentation targets:
+  dot            - Generate a picture with module dependency graph
+  doxygen        - Denerate documentation from doxygen comments
 
-Module information
-  help-mod: various module information. See more there
+Module information:
+  help-mod       - Various module information. See more there
 
 endef
 
