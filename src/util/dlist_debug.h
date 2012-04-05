@@ -51,6 +51,8 @@ static inline int __is_linked(struct dlist_head *head) {
  * in any list
  */
 static inline void dlist_head_init(struct dlist_head *head) {
+	head->next = head;
+	head->prev = head;
 	head->list_id = NULL;
 }
 

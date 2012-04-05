@@ -11,15 +11,15 @@
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 
-static void move_thread_to_another_q(struct list_head *q, struct thread *thread);
+static void move_thread_to_another_q(struct dlist_head *q, struct thread *thread);
 
 inline void sched_strategy_init(struct sched_strategy_data *data) {
-	INIT_LIST_HEAD(&data->l_link);
+	dlist_head_init(&data->l_link);
 }
 
 void runq_init(struct runq *runq, struct thread *current, struct thread *idle) {
 	assert(current && idle);
-	INIT_LIST_HEAD(&runq->rq);
+	dlist_head_init(&runq->rq);
 
 	current->runq = runq;
 	idle->runq = runq;
@@ -42,7 +42,7 @@ int runq_resume(struct runq *runq, struct thread *thread) {
 	thread->state = thread_state_do_resume(thread->state);
 	thread->runq = runq;
 	if (thread != runq->current) {
-		list_add_tail(&thread->sched.l_link, &runq->rq);
+		dlist_add_prev(&thread->sched.l_link, &runq->rq);
 	}
 
 	return 0;
@@ -59,7 +59,7 @@ int runq_suspend(struct runq *runq, struct thread *thread) {
 		return 1;
 	}
 
-	list_del(&thread->sched.l_link);
+	dlist_del(&thread->sched.l_link);
 	return 0;
 }
 
@@ -67,13 +67,13 @@ int sleepq_wake_resumed_thread(struct runq *runq, struct sleepq *sleepq, struct 
 	assert(runq && sleepq && thread);
 	assert(thread_state_sleeping(thread->state) && !thread_state_suspended(thread->state));
 
-	list_del(&thread->sched.l_link);
+	dlist_del(&thread->sched.l_link);
 
 	thread->state = thread_state_do_wake(thread->state);
 	thread->runq = runq;
 
 	if (thread != runq->current) {
-		list_add_tail(&thread->sched.l_link, &runq->rq);
+		dlist_add_prev(&thread->sched.l_link, &runq->rq);
 	}
 	return 0;
 }
@@ -82,7 +82,7 @@ void sleepq_wake_suspended_thread(struct sleepq *sleepq, struct thread *thread) 
 	assert(sleepq && thread);
 	assert(thread_state_sleeping(thread->state) && thread_state_suspended(thread->state));
 
-	list_del(&thread->sched.l_link);
+	dlist_del(&thread->sched.l_link);
 
 	thread->state = thread_state_do_wake(thread->state);
 	thread->sleepq = NULL;
@@ -96,22 +96,22 @@ int sleepq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all) {
 		return 0;
 	}
 
-	if (!list_empty(&sleepq->rq)) {
-		thread = list_entry(sleepq->rq.next, struct thread, sched.l_link);
+	if (!dlist_empty(&sleepq->rq)) {
+		thread = dlist_entry(sleepq->rq.next, struct thread, sched.l_link);
 		sleepq_wake_resumed_thread(runq, sleepq, thread);
 	} else {
-		assert(!list_empty(&sleepq->sq));
-		thread = list_entry(sleepq->sq.next, struct thread, sched.l_link);
+		assert(!dlist_empty(&sleepq->sq));
+		thread = dlist_entry(sleepq->sq.next, struct thread, sched.l_link);
 		sleepq_wake_suspended_thread(sleepq, thread);
 	}
 
 	if (wake_all) {
-		while (!list_empty(&sleepq->rq)) {
-			thread = list_entry(sleepq->rq.next, struct thread, sched.l_link);
+		while (!dlist_empty(&sleepq->rq)) {
+			thread = dlist_entry(sleepq->rq.next, struct thread, sched.l_link);
 			sleepq_wake_resumed_thread(runq, sleepq, thread);
 		}
-		while (!list_empty(&sleepq->sq)) {
-			thread = list_entry(sleepq->sq.next, struct thread, sched.l_link);
+		while (!dlist_empty(&sleepq->sq)) {
+			thread = dlist_entry(sleepq->sq.next, struct thread, sched.l_link);
 			sleepq_wake_suspended_thread(sleepq, thread);
 		}
 	}
@@ -126,7 +126,7 @@ void runq_sleep(struct runq *runq, struct sleepq *sleepq) {
 	current = runq->current;
 	assert(current->runq == runq);
 
-	list_add_tail(&current->sched.l_link, &sleepq->rq);
+	dlist_add_prev(&current->sched.l_link, &sleepq->rq);
 
 	current->sleepq = sleepq;
 	current->state = thread_state_do_sleep(current->state);
@@ -144,13 +144,13 @@ int runq_switch(struct runq *runq) {
 
 	prev = runq->current;
 	if (thread_state_running(prev->state)) {
-		list_add_tail(&prev->sched.l_link, &runq->rq);
+		dlist_add_prev(&prev->sched.l_link, &runq->rq);
 	}
 
-	assert(!list_empty(&runq->rq));
+	assert(!dlist_empty(&runq->rq));
 
-	next = list_entry(runq->rq.next, struct thread, sched.l_link);
-	list_del(&next->sched.l_link);
+	next = dlist_entry(runq->rq.next, struct thread, sched.l_link);
+	dlist_del(&next->sched.l_link);
 
 	assert(next);
 	assert(thread_state_running(next->state));
@@ -160,13 +160,13 @@ int runq_switch(struct runq *runq) {
 }
 
 inline void sleepq_init(struct sleepq *sleepq) {
-	INIT_LIST_HEAD(&sleepq->rq);
-	INIT_LIST_HEAD(&sleepq->sq);
+	dlist_head_init(&sleepq->rq);
+	dlist_head_init(&sleepq->sq);
 }
 
 int sleepq_empty(struct sleepq *sleepq) {
 	assert(sleepq);
-	return list_empty(&sleepq->rq) && list_empty(&sleepq->sq);
+	return dlist_empty(&sleepq->rq) && dlist_empty(&sleepq->sq);
 }
 
 void sleepq_change_priority(struct sleepq *sleepq, struct thread *thread, int new_priority) {
@@ -174,13 +174,13 @@ void sleepq_change_priority(struct sleepq *sleepq, struct thread *thread, int ne
 	thread->priority = new_priority;
 }
 
-static void move_thread_to_another_q(struct list_head *q, struct thread *thread) {
-	struct list_head *link;
+static void move_thread_to_another_q(struct dlist_head *q, struct thread *thread) {
+	struct dlist_head *link;
 	assert(q && thread);
 
 	link = &thread->sched.l_link;
-	list_del(link);
-	list_add_tail(link, q);
+	dlist_del(link);
+	dlist_add_prev(link, q);
 }
 
 void sleepq_suspend(struct sleepq *sleepq, struct thread *thread) {
@@ -200,10 +200,10 @@ void sleepq_resume(struct sleepq *sleepq, struct thread *thread) {
 }
 
 struct thread *sleepq_get_thread(struct sleepq *sleepq) {
-	struct list_head *q;
+	struct dlist_head *q;
 	assert(sleepq && !sleepq_empty(sleepq));
 
-	q = list_empty(&sleepq->rq) ? &sleepq->sq : &sleepq->rq;
-	return list_entry(q->next, struct thread, sched.l_link);
+	q = dlist_empty(&sleepq->rq) ? &sleepq->sq : &sleepq->rq;
+	return dlist_entry(q->next, struct thread, sched.l_link);
 }
 
