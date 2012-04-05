@@ -54,17 +54,35 @@ static int exec(int argc, char **argv) {
 	struct in_addr addr;
 	unsigned char hwaddr[ETH_ALEN];
 	in_device_t *ifdev = NULL;
-	int op = -1;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "hdsa:m:i:"))) {
+	while (-1 != (opt = getopt(argc, argv, "hd:s:a:m:i:"))) {
 		switch (opt) {
 		case 'd':
-			op = 0;
-			break;
+			if (0 == inet_aton(optarg, &addr)) {
+				printf("arp: invalid IP address: %s\n", optarg);
+				return -1;
+			}
+			//TODO checked interface and use default
+			neighbour_delete(ifdev, addr.s_addr);
+			return 0;
 		case 's':
-			op = 1;
-			break;
+			if (0 == inet_aton(optarg, &addr)) {
+				printf("arp: invalid IP address: %s\n", optarg);
+				return -1;
+			}
+			if(argc <= optind) {
+				print_usage();
+				return -1;
+			}
+			optarg = argv[optind++];
+			if (NULL == macaddr_scan((const unsigned char *) optarg, hwaddr)) {
+				printf("arp: invalid MAC address: %s\n", optarg);
+				return -1;
+			}
+			//TODO checked interface and use default
+			neighbour_add(ifdev, addr.s_addr, hwaddr, ATF_PERM);
+			return 0;
 		case 'a':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);
@@ -94,16 +112,7 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	if (op == -1) {
-		print_arp_cache(ifdev);
-		return 0;
-	}
-
-	if (op) {
-		neighbour_add(ifdev, addr.s_addr, hwaddr, ATF_PERM);
-	} else {
-		neighbour_delete(ifdev, addr.s_addr);
-	}
+	print_arp_cache(ifdev);
 
 	return 0;
 }
