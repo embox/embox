@@ -193,7 +193,8 @@ endef
 
 define printInstance
 	$(for inst<-$1,
-		--- $(get $(strip $(get inst->type)).qualifiedName) ---$(\n)
+		mod <- $(get inst->type),
+		--- $(get mod->qualifiedName) ---$(\n)
 		Deps:$(\n)
 		$(for dep <- $(get inst->depends),
 			$(\t)$(get $(get dep->type).qualifiedName)$(\n))
@@ -202,10 +203,21 @@ define printInstance
 			opt <- $(get optInst->option),
 			val <-$(get optInst->optionValue),
 			$(\t)$(get opt->name) : $(get val->value)$(\n))
+		Sources:$(\n)
+		$(for srcMember <- $(get mod->sourcesMembers),
+			src <- $(get $(get srcMember->files).fileFullName),
+	       		$(for annot<-$(get srcMember->annotations),
+				annotType <- $(get annot->type),
+				annotName <- $(get annotType->qualifiedName),
+				annotBind <- $(get annot->bindings),
+				@$(annotName):$(\n)
+				$(for opt <- $(get annotBind->option),
+					optName <- $(get opt->name),
+					optValue <- $(get $(get annotBind->optionValue).value),
+					$(\t)$(optName) = $(optValue)$(\n)))
+			$(src))
 	)
 endef
-
-
 
 define printInstances
 	$(for buildBuild<-$1,
