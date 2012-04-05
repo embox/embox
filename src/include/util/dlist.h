@@ -3,13 +3,13 @@
  *
  * @brief Interface of double linked list
  *
- * @details This interface of double linked list is simular as 'linux list',
- *         but has a little more restrictions during using. It make this list
- *         more safely. This interface has two implementations: first is ndebug
- *         second is debug. ndebug is simply and have no advantages versus
+ * @details This interface of double linked list is simular to 'linux list',
+ *         but has a few more usage restrictions. It makes this list
+ *         more safe. This interface has two implementations: first is ndebug
+ *         second is debug. ndebug is simple and has no advantages versus
  *         'linux list', It should be used in release version when the code is
  *         checked and tested. The debug version has more asserts and inspections
- *         during list operations, and it can help you to debug the code.
+ *         during list operations, and it can help you debug the code.
  *
  * @date 19.03.2012
  * @author Anton Bondarev
