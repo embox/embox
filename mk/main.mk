@@ -6,23 +6,56 @@ export MYBUILD_VERSION := 0.4
 
 include mk/core/common.mk
 include mk/util/wildcard.mk
-include mk/help.mk
 
 #
 # Targets that require Mybuild infrastructure.
 #
 
 build_targets := all dot docsgen
+
 build_targets_implicit := help-mod-%
+
 .PHONY : $(build_targets)
 $(build_targets) :
 # Call here prevents sub-make invocation in question mode (-q).
 # Used to speed up recent bash-completion.
 	@$(call MAKE) -f mk/load.mk $@
 
+$(build_targets_implicit) :
+	@$(call MAKE) -f mk/load.mk $@
+
 #
 # Configuration related stuff.
 #
+
+define help-all
+Usage: make [all]
+
+  Stands for default build target. Makes all generated source files, objects,
+  main executable, generate various debuggin and logging info.
+endef
+
+define help-dot
+Usage: make dot
+
+  Generates ps file with module dependencies. Modules are also grouped by package
+
+endef
+
+define help-docsgen
+Usage: make docsgen
+
+  Generate documentation from doxygen comments in source files
+
+endef
+
+define help-mod
+Usage: make help-mod-<INFO>
+
+  Print <INFO> info about modules:
+  list: list all modules included in build
+  <module_name>: show brief informataion about module: dependencies, options,
+	source files
 
 # Assuming that we have 'build.conf' in every template.
 TEMPLATES := \
@@ -36,11 +69,11 @@ $(TEMPLATES:%=confload-%) : confload-% : confclean
 	@$(CP) -fR -t $(CONF_DIR) $(TEMPLATES_DIR)/$*/*
 	@echo 'Config complete'
 
-define help_confload
+define help-confload
 Usage make confload-<TEMPLATE>
 
-    Loads <TEMPLATE> as config. In contrast with template, config is intended
-    for user to modify, adding problem-aspect features to system.
+  Loads <TEMPLATE> as config. In contrast with template, config is intended
+  for user to modify, adding problem-aspect features to system.
 
 endef
 
@@ -50,22 +83,22 @@ endef
 
 m menuconfig : DIALOG := dialog
 x xconfig    : DIALOG := Xdialog
-define help_menuconfig
+define help-menuconfig
 Usage: make menuconfig
 
-    Displays pseudo-graphic menu with avaibale choises for config loading.
+  Displays pseudo-graphic menu with avaibale choises for config loading.
 
-    Requires dialog
+  Requires dialog
 
 endef
 
-define help_xconfig
+define help-xconfig
 Usage: make xconfig
 
-    Same as menuconfig, but with GTK support. Displays graphic menu with
-    avaibale choises for config loading.
+  Same as menuconfig, but with GTK support. Displays graphic menu with
+  avaibale choises for config loading.
 
-    Requires X11, GTK, Xdialog
+  Requires X11, GTK, Xdialog
 
 endef
 
@@ -93,10 +126,10 @@ config :
 c clean :
 	@$(RM) -r $(ROOT_DIR)/build
 
-define help_clean
+define help-clean
 Usage: make clean
 
-    Remove most build artifacts (image, libraries, objects, etc.) #TODO Usecase?
+  Remove most build artifacts (image, libraries, objects, etc.) #TODO Usecase?
 
 endef
 
@@ -104,36 +137,36 @@ endef
 confclean : clean
 	@$(RM) -r $(CONF_DIR)
 
-define help_confclean
+define help-confclean
 Usage: make confclean
 
-  Cleans config directory, suitable for case, when you need precached Mybuild,
-  but no config, for example, when you gives a version to some end customers,
-  that will not chagne Mybuild's
+Cleans config directory, suitable for case, when you need precached Mybuild,
+but no config, for example, when you gives a version to some end customers,
+that will not chagne Mybuild's
 
 endef
 
 .PHONY : cacheclean
 cacheclean :
 	@$(RM) -r $(CACHE_DIR)
-define help_cacheclean
+define help-cacheclean
 Usage: make cacheclean
 
-  Removes build system cache. This is not intended to use manually,
-  but may be usefull in build system developing or when update from repo
-  causes broken build
+Removes build system cache. This is not intended to use manually,
+but may be usefull in build system developing or when update from repo
+causes broken build
 
 endef
 
 .PHONY : distclean
 distclean : clean confclean cacheclean
 
-define help_distclean
+define help-distclean
 Usage: make distclean
 
-  Performs full clean: clean, confclean, distclean. After running this,
-  root directory reverts to fresh state, just like after fresh checkout
-  or after archive extraction.
+Performs full clean: clean, confclean, distclean. After running this,
+root directory reverts to fresh state, just like after fresh checkout
+or after archive extraction.
 
 endef
 
@@ -142,32 +175,32 @@ endef
 #
 .PHONY : help
 help :
-	@$(info $(help_main))#
+	@$(info $(help-main))#
 
-define help_main
+define help-main
 Usage: $(MAKE) [targets]
 Mybuild version $(MYBUILD_VERSION).
 
 Configuration targets:
-    confload-target: load target config from templates
-    menuconfig (m): show all possible template choises to load as config (CLI version)
-    xconfig (x): show all possible template choises to load as config (GTK version)
+  confload-target: load target config from templates
+  menuconfig (m): show all possible template choises to load as config (CLI version)
+  xconfig (x): show all possible template choises to load as config (GTK version)
 
 Building targets:
-    all: default building target, builds main executable
+  all: default building target, builds main executable
 
 Cleaning targets:
-    clean (c): remove build artefacts
-    confclean: remove current config; make it blank
-    cacheclean: remove build system cache; causing rereading all Mybuild and configfiles
-    distclean: make all cleans; makes pure distribution like one after check-out
+  clean (c): remove build artefacts
+  confclean: remove current config; make it blank
+  cacheclean: remove build system cache; causing rereading all Mybuild and configfiles
+  distclean: make all cleans; makes pure distribution like one after check-out
 
 endef
 
 help_targets := confload menuconfig xconfig all clean confclean cacheclean distclean
 .PHONY : $(help_targets:%=help-%)
 $(help_targets:%=help-%) : help-% :
-	@$(info $(help_$*))#
+	@$(info $(help-$*))#
 
 #default help section
 help-% :

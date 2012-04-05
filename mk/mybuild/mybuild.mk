@@ -215,7 +215,7 @@ define printInstance
 					optName <- $(get opt->name),
 					optValue <- $(get $(get annotBind->optionValue).value),
 					$(\t)$(optName) = $(optValue)$(\n)))
-			$(src))
+			$(src)$(\n))
 	)
 endef
 
