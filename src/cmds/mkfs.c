@@ -1,10 +1,11 @@
-/*
- * mkfs.c
+/**
+ * @file mkfs.c
+ * @brief
  *
- *  Created on: 27.03.2012
- *      Author: Andrey Gazukin
- *
+ * @date 27.03.2012
+ * @author Andrey Gazukin
  */
+
 #include <types.h>
 #include <getopt.h>
 #include <unistd.h>
@@ -52,8 +53,7 @@ static int exec(int argc, char **argv) {
 	min_argc = MIN_ARGS_OF_MKFS;
 	mkfs_params.blocks = DEFAULT_BLOCK_QTTY;
 
-	memcpy((void *)&mkfs_params.fs_name, (const void *)DEFAULT_FS_NAME, \
-			(size_t)strlen(DEFAULT_FS_NAME));
+	strcpy((void *)&mkfs_params.fs_name, (const void *)DEFAULT_FS_NAME);
 
 	mkfs_params.fs_type = DEFAULT_FS_TYPE;
 	getopt_init();
@@ -61,8 +61,7 @@ static int exec(int argc, char **argv) {
 		switch (opt) {
 		case 't':
 			min_argc = 4;
-			memcpy ((void *)&(mkfs_params.fs_name), (const void *)optarg, \
-					(size_t)strlen(optarg));
+			strcpy ((void *)&(mkfs_params.fs_name), (const void *)optarg);
 			if(check_invalid(min_argc, argc, argv)){
 				return -1;
 			}
@@ -85,12 +84,10 @@ static int exec(int argc, char **argv) {
 			print_usage();
 			return -1;
 		}
-		memcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 2], \
-				(size_t)strlen(argv[argc - 2]));
+		strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 2]);
 	}
 	else {/** last arg should be diskname*/
-		memcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 1], \
-				(size_t)strlen(argv[argc - 1]));
+		strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 1]);
 
 	}
 

@@ -1,9 +1,9 @@
-/*
- * tmpfs.h
+/**
+ * @file fat.h
+ * @brief
  *
- *  Created on: 29.03.2012
- *      Author: Andrey Gazukin
- *
+ * @date 29.03.2012
+ * @author Andrey Gazukin
  */
 
 #ifndef FAT_H_
@@ -63,17 +63,6 @@ typedef struct div{
    long int quot;
    long int rem;
 } div_t;
-
-/*
-typedef struct _ramfs_file_description {
-        unsigned long start_addr;
-        unsigned int  size;
-        unsigned int  mode;
-        unsigned int  mtime;
-        int           cur_pointer;
-        int           lock;
-} ramfs_file_description_t;
-*/
 
 /*
  * 	Directory entry structure
@@ -141,7 +130,7 @@ typedef struct _tag_pt_info {
  */
 typedef struct _tag_MBR {
 	uint8_t bootcode[0x1be];	/* boot sector */
-	pt_info_t ptable[4];			/* four partition table structures */
+	pt_info_t ptable[4];		/* four partition table structures */
 	uint8_t sig_55;				/* 0x55 signature byte */
 	uint8_t sig_aa;				/* 0xaa signature byte */
 } mbr_t, *p_mbr_t;
@@ -243,13 +232,13 @@ typedef struct _tag_LBR {
 
 /*
  *	Volume information structure (Internal to DOSFS)
-*/
+ */
 typedef struct _tag_VOLINFO {
 	uint8_t unit;			/* unit on which this volume resides */
 	uint8_t filesystem;		/* formatted filesystem */
 
 /*
- *  These two fields aren't very useful, so support for them has been commented
+ * These two fields aren't very useful, so support for them has been commented
  * out to save memory. (Note that the "system" tag is not actually used by DOS
  * to determine filesystem type - that decision is made entirely on the basis
  * of how many clusters the drive contains. DOSFS works the same way).
@@ -276,12 +265,12 @@ typedef struct _tag_VOLINFO {
 
 /*
  *	Flags in DIRINFO.flags
-*/
+ */
 #define DFS_DI_BLANKENT		0x01	/* Searching for blank entry */
 
 /*
  *	Directory search structure (Internal to DOSFS)
-*/
+ */
 typedef struct _tag_DIRINFO {
 	uint32_t currentcluster;	/* current cluster in dir */
 	uint8_t currentsector;		/* current sector in cluster */
@@ -292,7 +281,7 @@ typedef struct _tag_DIRINFO {
 
 /*
  *	File handle structure (Internal to DOSFS)
-*/
+ */
 typedef struct _tag_FILEINFO {
 	p_vol_info_t volinfo;		/* vol_info_t used to open this file */
 	uint32_t dirsector;			/* physical sector containing dir entry of this file */
@@ -329,34 +318,35 @@ uint32_t fat_get_vol_info(uint8_t unit, uint8_t *scratchsector,
 		uint32_t startsector, p_vol_info_t volinfo);
 
 /*
-	Open a directory for enumeration by DFS_GetNextDirEnt
-	You must supply a populated VOLINFO (see DFS_GetVolInfo)
-	The empty string or a string containing only the directory separator are
-	considered to be the root directory.
-	Returns 0 OK, nonzero for any error.
-*/
+ * Open a directory for enumeration by DFS_GetNextDirEnt
+ * You must supply a populated VOLINFO (see DFS_GetVolInfo)
+ * The empty string or a string containing only the directory separator are
+ * considered to be the root directory.
+ * Returns 0 OK, nonzero for any error.
+ */
+
 uint32_t fat_open_dir(p_vol_info_t volinfo, uint8_t *dirname,
 		p_dir_info_t dirinfo);
 
 /*
- *	Get next entry in opened directory structure. Copies fields into the dirent
- *	structure, updates dirinfo. Note that it is the _caller's_ responsibility to
- *	handle the '.' and '..' entries.
- *	A deleted file will be returned as a NULL entry (first char of filename=0)
- *	by this code. Filenames beginning with 0x05 will be translated to 0xE5
- *	automatically. Long file name entries will be returned as NULL.
- *	returns DFS_EOF if there are no more entries, DFS_OK if this entry is valid,
- *	or DFS_ERRMISC for a media error
+ * Get next entry in opened directory structure. Copies fields into the dirent
+ * structure, updates dirinfo. Note that it is the _caller's_ responsibility to
+ * handle the '.' and '..' entries.
+ * A deleted file will be returned as a NULL entry (first char of filename=0)
+ * by this code. Filenames beginning with 0x05 will be translated to 0xE5
+ * automatically. Long file name entries will be returned as NULL.
+ * returns DFS_EOF if there are no more entries, DFS_OK if this entry is valid,
+ * or DFS_ERRMISC for a media error
  */
 uint32_t fat_get_next(p_vol_info_t volinfo, p_dir_info_t dirinfo,
 		p_dir_ent_t dirent);
 
 /*
- *	Open a file for reading or writing. You supply populated VOLINFO, a path to the file,
- *	mode (DFS_READ or DFS_WRITE) and an empty fileinfo structure. You also need to
- *	provide a pointer to a sector-sized scratch buffer.
- *	Returns various DFS_* error states. If the result is DFS_OK, fileinfo can be used
- *	to access the file from this point on.
+ * Open a file for reading or writing. You supply populated VOLINFO,
+ * a path to the file, mode (DFS_READ or DFS_WRITE) and an empty fileinfo
+ * structure. You also need to provide a pointer to a sector-sized scratch
+ * buffer. Returns various DFS_* error states. If the result is DFS_OK,
+ * fileinfo can be used	to access the file from this point on.
  */
 uint32_t fat_open_file(p_vol_info_t volinfo, uint8_t *path, uint8_t mode,
 		uint8_t *scratch, p_file_info_t fileinfo);

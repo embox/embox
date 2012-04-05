@@ -1,9 +1,9 @@
-/*
- * tmpfs.c
+/**
+ * @file tmpfs.c
+ * @brief
  *
- *  Created on: 28.03.2012
- *      Author: Andrey Gazukin
- *
+ * @date 28.03.2012
+ * @author Andrey Gazukin
  */
 
 #include <stdio.h>
@@ -141,25 +141,18 @@ static int fatfs_mount(void *par) {
 int fatfs_create(void *params) {
 	ramdisk_params_t *par;
 	node_t *nod;
-	//fat_file_description_t *fd;
 
 	par = (ramdisk_params_t *) params;
 	if (NULL == (nod = vfs_add_path(par->name, NULL))) {
 		return -1;/*file already exist*/
 	}
 
-	//fd = ramfs_info_alloc();
 	nod->fs_type = &fatfs_drv;
 	nod->file_info = (void *) &fatfs_fop;
 	nod->attr = params;
 
 	fatfs_init(params);
 	fatfs_format (params);
-
-	/*fd->start_addr = par->start_addr;
-	fd->size = par->size;
-	fd->mode = par->mode;
-	fd->mtime = par->mtime;*/
 
 	return 0;
 }
@@ -217,8 +210,8 @@ int fatfs_format (void *params) {
 
 
 	lbr.ebpb.ebpb.signature = 0x29;
-	memcpy ((void *)&lbr.ebpb.ebpb.label, LABEL, strlen(LABEL));
-	memcpy ((void *)&lbr.ebpb.ebpb.system, SYSTEM, strlen(SYSTEM));
+	strcpy ((void *)&lbr.ebpb.ebpb.label, LABEL);
+	strcpy ((void *)&lbr.ebpb.ebpb.system, SYSTEM);
 
 	memcpy ((void *)&sector[0], (void *)&lbr, SECTOR_SIZE);
 
@@ -397,7 +390,7 @@ uint32_t fat_get_vol_info(uint8_t unit, uint8_t *scratchsector,
 	volinfo->fat1 = startsector + volinfo->reservedsecs;
 
 	/**
-	 *  The calculation below is designed to round up the root directory size
+	 * The calculation below is designed to round up the root directory size
 	 * for FAT12/16 and to simply ignore the root directory for FAT32, since
 	 * it's a normal, expandable file in that situation.
 	 */

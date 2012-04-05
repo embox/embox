@@ -1,8 +1,9 @@
-/*
- * ramdisk.c
+/**
+ * @file ramdisk.c
+ * @brief
  *
- *  Created on: 27.03.2012
- *      Author: Andrey Gazukin
+ * @date 27.03.2012
+ * @author Andrey Gazukin
  */
 
 #include <types.h>
@@ -33,34 +34,39 @@ int ramdisk_create(void *mkfs_params) {
 	p_mkfs_params = (mkfs_params_t *)mkfs_params;
 
 	if (NULL != (ramdisk_node = vfs_find_node(p_mkfs_params->name, NULL))) {
+#ifdef _GAZ_DEBUG_
 		printf("Ramdisk already exist 1\n");
+#endif /*def _GAZ_DEBUG_ */
 		return 0;/*file already exist*/
 		}
 
 	if(NULL == (ramd_params.start_addr = page_alloc(p_mkfs_params->blocks))) {
+#ifdef _GAZ_DEBUG_
 		printf("Out of memory\n");
+#endif /*def _GAZ_DEBUG_ */
+		return 0;
 	}
-	else {
-		memcpy ((void *)&ramd_params.name,
-				(const void *)p_mkfs_params->name,
-				(size_t)strlen(p_mkfs_params->name));
 
-		ramd_params.size = p_mkfs_params->blocks * CONFIG_PAGE_SIZE;
-		ramd_params.blocks = p_mkfs_params->blocks;
+	strcpy ((void *)&ramd_params.name, (const void *)p_mkfs_params->name);
 
-		memcpy ((void *)&ramd_params.fs_name,
-				(const void *)p_mkfs_params->fs_name,
-				(size_t)strlen(p_mkfs_params->fs_name));
+	ramd_params.size = p_mkfs_params->blocks * CONFIG_PAGE_SIZE;
+	ramd_params.blocks = p_mkfs_params->blocks;
 
-		if (0 != fatfs_create((void *)&ramd_params)) {
-			printf("Ramdisk already exist 2\n");
-			page_free(ramd_params.start_addr, p_mkfs_params->blocks);
-			return 0;/*file already exist*/
-		}
+	strcpy ((void *)&ramd_params.fs_name,
+			(const void *)p_mkfs_params->fs_name);
 
-		printf("Create ramdisk %s, size %d, filesistem %s\n",
-				ramd_params.name, ramd_params.size, ramd_params.fs_name);
+	if (0 != fatfs_create((void *)&ramd_params)) {
+#ifdef _GAZ_DEBUG_
+		printf("Ramdisk already exist 2\n");
+#endif /*def _GAZ_DEBUG_ */
+		page_free(ramd_params.start_addr, p_mkfs_params->blocks);
+		return 0;/*file already exist*/
 	}
+
+#ifdef _GAZ_DEBUG_
+	printf("Create ramdisk %s, size %d, filesistem %s\n",
+			ramd_params.name, ramd_params.size, ramd_params.fs_name);
+#endif /*def _GAZ_DEBUG_ */
 
 #ifdef _GAZ_DEBUG_
 	fat_main((const void *)ramd_params.name);

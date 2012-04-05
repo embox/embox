@@ -1,4 +1,3 @@
-#Tue Apr 03 20:29:50 MSK 2012
 eclipse.preferences.version=1
 org.eclipse.cdt.codan.checkers.errnoreturn=Warning
 org.eclipse.cdt.codan.checkers.errnoreturn.params={implicit\=>false}
@@ -15,7 +14,7 @@ org.eclipse.cdt.codan.internal.checkers.AssignmentInConditionProblem.params={}
 org.eclipse.cdt.codan.internal.checkers.AssignmentToItselfProblem=Error
 org.eclipse.cdt.codan.internal.checkers.AssignmentToItselfProblem.params={}
 org.eclipse.cdt.codan.internal.checkers.CaseBreakProblem=Warning
-org.eclipse.cdt.codan.internal.checkers.CaseBreakProblem.params={no_break_comment\=>FALLTHROUGH,last_case_param\=>false,empty_case_param\=>false}
+org.eclipse.cdt.codan.internal.checkers.CaseBreakProblem.params={no_break_comment\=>"no break",last_case_param\=>true,empty_case_param\=>false}
 org.eclipse.cdt.codan.internal.checkers.CatchByReference=Warning
 org.eclipse.cdt.codan.internal.checkers.CatchByReference.params={unknown\=>false,exceptions\=>()}
 org.eclipse.cdt.codan.internal.checkers.CircularReferenceProblem=Error
@@ -49,7 +48,7 @@ org.eclipse.cdt.codan.internal.checkers.ReturnStyleProblem.params={}
 org.eclipse.cdt.codan.internal.checkers.ScanfFormatStringSecurityProblem=-Warning
 org.eclipse.cdt.codan.internal.checkers.ScanfFormatStringSecurityProblem.params={}
 org.eclipse.cdt.codan.internal.checkers.StatementHasNoEffectProblem=Warning
-org.eclipse.cdt.codan.internal.checkers.StatementHasNoEffectProblem.params={macro\=>false,exceptions\=>()}
+org.eclipse.cdt.codan.internal.checkers.StatementHasNoEffectProblem.params={macro\=>true,exceptions\=>()}
 org.eclipse.cdt.codan.internal.checkers.SuggestedParenthesisProblem=Warning
 org.eclipse.cdt.codan.internal.checkers.SuggestedParenthesisProblem.params={paramNot\=>false}
 org.eclipse.cdt.codan.internal.checkers.SuspiciousSemicolonProblem=Warning
@@ -57,11 +56,11 @@ org.eclipse.cdt.codan.internal.checkers.SuspiciousSemicolonProblem.params={else\
 org.eclipse.cdt.codan.internal.checkers.TypeResolutionProblem=Error
 org.eclipse.cdt.codan.internal.checkers.TypeResolutionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>false,RUN_ON_INC_BUILD\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true}}
 org.eclipse.cdt.codan.internal.checkers.UnusedFunctionDeclarationProblem=Warning
-org.eclipse.cdt.codan.internal.checkers.UnusedFunctionDeclarationProblem.params={}
+org.eclipse.cdt.codan.internal.checkers.UnusedFunctionDeclarationProblem.params={macro\=>true}
 org.eclipse.cdt.codan.internal.checkers.UnusedStaticFunctionProblem=Warning
-org.eclipse.cdt.codan.internal.checkers.UnusedStaticFunctionProblem.params={}
+org.eclipse.cdt.codan.internal.checkers.UnusedStaticFunctionProblem.params={macro\=>true}
 org.eclipse.cdt.codan.internal.checkers.UnusedVariableDeclarationProblem=Warning
-org.eclipse.cdt.codan.internal.checkers.UnusedVariableDeclarationProblem.params={exceptions\=>("@(\#)","$Id")}
+org.eclipse.cdt.codan.internal.checkers.UnusedVariableDeclarationProblem.params={macro\=>true,exceptions\=>("@(\#)","$Id")}
 org.eclipse.cdt.codan.internal.checkers.VariableResolutionProblem=Error
 org.eclipse.cdt.codan.internal.checkers.VariableResolutionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>false,RUN_ON_INC_BUILD\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true}}
 useParentScope=false

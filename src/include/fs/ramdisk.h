@@ -1,8 +1,9 @@
-/*
- * ramdisk.h
+/**
+ * @file ramdisk.h
+ * @brief
  *
- *  Created on: 27.03.2012
- *      Author: Andrey Gazukin
+ * @date 27.03.2012
+ * @author Andrey Gazukin
  */
 
 #ifndef RAMDISK_H_
