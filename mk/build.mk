@@ -6,6 +6,8 @@
 include mk/configure.mk #FIXME
 include mk/codegen-dot.mk
 
+include mk/help-module.mk
+
 .PHONY : all image prepare docsgen dot
 
 all : image
@@ -28,4 +30,13 @@ docsgen:
 	doxygen
 	@echo 'Docs generation complete'
 
+MODULE_LIST := $(strip $(call help_modulelist))
 
+help-mod-list :
+	$(info $(addsuffix $(\n),$(MODULE_LIST)))
+	@echo --- Module list ---
+
+#$(MODULE_LIST:%=help-mod-%) : help-mod-% :
+help-mod-% :
+	$(info $(call help_module,$*))
+	@echo --- Module $* ---

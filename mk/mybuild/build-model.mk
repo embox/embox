@@ -24,6 +24,9 @@ define class-BuildBuild
 
 	# PROTECTED REGION ID(Build_Build) ENABLED START
 	$(field issueReceiver : IssueReceiver)
+
+	$(map moduleInstanceByName : BuildModuleInstance)
+
 	# PROTECTED REGION END
 endef
 

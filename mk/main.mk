@@ -10,11 +10,15 @@ include mk/util/wildcard.mk
 #
 
 BUILD_TARGETS := all dot docsgen
+BUILD_TARGET_IMPL := help-mod-%
 
 .PHONY : $(BUILD_TARGETS)
 $(BUILD_TARGETS) :
 # Call here prevents sub-make invocation in question mode (-q).
 # Used to speed up recent bash-completion.
+	@$(call MAKE) -f mk/load.mk $@
+
+$(BUILD_TARGET_IMPL) :
 	@$(call MAKE) -f mk/load.mk $@
 
 #

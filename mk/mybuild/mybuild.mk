@@ -25,6 +25,12 @@ define class-Mybuild
 
 			$(set build->modules,
 				$(invoke getBuildModules))
+
+			$(for modInst <- $(get build->modules),
+				mod <- $(get modInst->type),
+				$(map-set build->moduleInstanceByName/$(get mod->qualifiedName),
+					$(modInst)))
+
 			$(build)))
 
 	$(method getBuildModules,
@@ -185,23 +191,25 @@ define mybuild_create_build
 	$(invoke $(new Mybuild,$(__config_resource_set)).createBuild)
 endef
 
+define printInstance
+	$(for inst<-$1,
+		$(get $(strip $(get inst->type)).qualifiedName)$(\n)
+		Deps:$(\n)
+		$(for dep <- $(get inst->depends),
+			$(\t)$(get $(get dep->type).qualifiedName)$(\n))
+		OptInsts:$(\n)
+		$(for optInst <- $(get inst->options),
+			opt <- $(get optInst->option),
+			val <-$(get optInst->optionValue),
+			$(\t)$(get opt->name) : $(get val->value)$(\n))
+	)
+endef
+
+
+
 define printInstances
-		$(strip $(for buildBuild<-$1,
-			inst<-$(get buildBuild->modules),
-			$(warning $(get $(strip $(get inst->type)).qualifiedName))
-			$(warning Deps:)
-			$(for dep <- $(get inst->depends),
-				$(warning $(\t)$(get $(get dep->type).qualifiedName)))
-			$(warning Opts:)
-			$(for opt <- $(get $(get inst->type).allOptions),
-				val <-$(warning $(\t)$(get opt->name))$(get opt->defaultValue),
-				$(warning $(\t)$(\t)DefVal : $(get val->value)))
-			$(warning OptInsts:)
-			$(for optInst <- $(get inst->options),
-				opt <- $(get optInst->option),
-				val <-$(get optInst->optionValue),
-				$(warning $(\t)$(get opt->name) : $(get val->value)))
-			$(warning $(\n)$(\n))))
+	$(for buildBuild<-$1,
+		$(warning $(call printInstance,$(get buildBuild->modules)))))
 endef
 
 define listInstances
