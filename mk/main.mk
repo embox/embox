@@ -33,6 +33,7 @@ Usage: make [all]
 
   Stands for default build target. Makes all generated source files, objects,
   main executable, generate various debuggin and logging info.
+
 endef
 
 define help-dot
@@ -56,6 +57,8 @@ Usage: make help-mod-<INFO>
   list: list all modules included in build
   <module_name>: show brief informataion about module: dependencies, options,
 	source files
+
+endef
 
 # Assuming that we have 'build.conf' in every template.
 TEMPLATES := \
@@ -195,9 +198,17 @@ Cleaning targets:
   cacheclean: remove build system cache; causing rereading all Mybuild and configfiles
   distclean: make all cleans; makes pure distribution like one after check-out
 
+Document targets:
+  dot: generate dot files
+  doxygen: generate documentation from doxygen comments
+
+Module information
+  help-mod: various module information. See more there
+
 endef
 
-help_targets := confload menuconfig xconfig all clean confclean cacheclean distclean
+help_targets := confload menuconfig xconfig all clean confclean cacheclean distclean dot \
+	doxygen mod
 .PHONY : $(help_targets:%=help-%)
 $(help_targets:%=help-%) : help-% :
 	@$(info $(help-$*))#
