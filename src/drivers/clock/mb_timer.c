@@ -9,12 +9,16 @@
 
 #include <types.h>
 #include <bitops.h>
+#include <embox/unit.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
 #include <kernel/clock_source.h>
 #include <hal/clock.h>
 
-#define CONFIG_SYS_TIMER_PRELOAD     (CONFIG_CORE_FREQ/1000)
+#include <module/embox/arch/system.h>
+
+#define SYS_CLOCK     OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
+#define TIMER_PRELOAD (SYS_CLOCK/1000)
 
 /*bits definition of cntl/status (tcsr) register*/
 #define TIMER_ENALL_BIT  21      /**< ENALL */
@@ -68,19 +72,19 @@ typedef volatile struct mb_timers {
 static mb_timers_t *timers = (mb_timers_t *) CONFIG_XILINX_TIMER_BASEADDR;
 #define timer0 (&timers->tmr0)
 
-/*we must use proxy for interrupt handler because we must clean bit in register
+/*
+ * we must use proxy for interrupt handler because we must clean bit in register
  * timer.
  */
 static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	timer0->tcsr |= TIMER_INT;
-	// XXX Anton irq_func_tmr_1mS bad style
 	clock_tick_handler(irq_nr,dev_id);
 	return IRQ_HANDLED;
 }
 
 void clock_init(void) {
 	/*set clocks period*/
-	timer0->tlr = CONFIG_SYS_TIMER_PRELOAD;
+	timer0->tlr = TIMER_PRELOAD;
 	/*clear interrupts bit and load value from tlr register*/
 	timer0->tcsr = TIMER_INT | TIMER_RESET;
 	/*start timer*/
@@ -93,8 +97,6 @@ void clock_init(void) {
 
 	mb_timer_clock_source.flags = 1;
 	mb_timer_clock_source.precision = 1000;
-//	mb_timer_clock_source.timers_list.next = &mb_timer_clock_source.timers_list;
-//	mb_timer_clock_source.timers_list.prev = &mb_timer_clock_source.timers_list;
 	clock_source_register(&mb_timer_clock_source);
 }
 

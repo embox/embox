@@ -39,6 +39,7 @@ module icmp {
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "icmp.c"
 	depends af_inet
+	depends embox.kernel.time
 }
 
 module udp {

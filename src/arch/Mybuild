@@ -1,5 +1,8 @@
-/*FIXME mybuild couldn't add include path */
 package embox.arch
+
+module system {
+	option number core_freq
+}
 
 abstract module interrupt {
 }
@@ -11,13 +14,13 @@ abstract module context {
 }
 
 abstract module libarch {
-
 }
 
 abstract module locore {
+}
 
+abstract module entry {
 }
 
 abstract module lds {
-
 }

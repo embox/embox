@@ -6,16 +6,19 @@
  * @author Nikolay Korotky
  */
 
-#include <hal/clock.h>
-#include <hal/reg.h>
-#include <kernel/irq.h>
-#include <kernel/clock_source.h>
 #include <types.h>
-#include <hal/interrupt.h>
+#include <errno.h>
+
 #include <asm/io.h>
+#include <hal/clock.h>
+#include <hal/interrupt.h>
+#include <kernel/irq.h>
+#include <kernel/panic.h>
+
+#include <kernel/clock_source.h>
 
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
-#define IRQ0 0x0
+#define IRQ0               0x0
 
 /**
  * The PIT chip uses the following I/O ports:
@@ -72,15 +75,16 @@
 
 static struct clock_source pit_clock_source;
 
-irq_return_t clock_handler(int irq_nr, void *dev_id) {
+static irq_return_t clock_handler(int irq_nr, void *dev_id) {
 	clock_tick_handler(irq_nr, dev_id);
 	return IRQ_HANDLED;
 }
 
 void clock_init(void) {
-	// TODO check return code.
-	irq_attach((irq_nr_t) IRQ0,
-		(irq_handler_t) &clock_handler, 0, NULL, "PIT");
+	if(ENOERR != irq_attach((irq_nr_t) IRQ0,
+		(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
+		panic("pit timer irq_attach failed");
+	}
 	/* Initialization of clock source structure */
 	pit_clock_source.flags = 1;
 	pit_clock_source.precision = 1000;

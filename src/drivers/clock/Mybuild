@@ -3,6 +3,7 @@ package embox.driver.clock
 module mb_timer extends embox.arch.clock {
 	source "mb_timer.c"
 	depends embox.kernel.irq
+	depends embox.arch.system
 }
 
 module pit extends embox.arch.clock {
@@ -15,6 +16,7 @@ module gptimer extends embox.arch.clock {
 	source "gptimer.c"
 	depends embox.kernel.irq
 	depends embox.driver.ambapp_api
+	depends embox.arch.system
 }
 
 module at91_pitc extends embox.arch.clock {

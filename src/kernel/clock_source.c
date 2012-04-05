@@ -11,15 +11,14 @@
 #include <assert.h>
 #include <errno.h>
 
+#include <embox/unit.h>
+
 #include <util/dlist.h>
 #include <mem/misc/pool.h>
 
 #include <kernel/clock_source.h>
 
-//TODO CONFIG_ module
-#define CLOCK_SOURCE_POOL_SZ 4
-
-POOL_DEF(clock_source_pool, struct clock_source_head, CLOCK_SOURCE_POOL_SZ);
+POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER,clocks_quantity));
 DLIST_DEFINE(clock_source_list);
 
 static struct clock_source_head *clock_source_find(struct clock_source *cs) {

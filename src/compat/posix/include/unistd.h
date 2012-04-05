@@ -51,5 +51,7 @@ extern int unlink(const char *pathname);
 
 extern int rmdir(const char *pathname);
 
+extern pid_t getpid(void);
+
 
 #endif /* UNISTD_H_ */
