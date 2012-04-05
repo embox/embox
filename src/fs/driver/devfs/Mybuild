@@ -5,3 +5,10 @@ module devfs {
 	source "devfs.c"
 	depends embox.fs.rootfs
 }
+
+module fat {
+	source "fat.c"
+	depends node, driver.repo
+	depends embox.fs.devfs
+	depends embox.mem.page_api
+}

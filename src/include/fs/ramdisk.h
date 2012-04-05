@@ -14,12 +14,14 @@
 #define RAMDISK_BLOCK_SIZE  0x400;
 
 typedef struct ramdisk {
-	const char   name[CONFIG_MAX_LENGTH_FILE_NAME];
-	unsigned size;
-	const char   fs_type[CONFIG_MAX_LENGTH_FILE_NAME];
-	u16_t *addr;
-} ramdisk_t;
+	char *start_addr;
+	size_t   size;
+	size_t   blocks;
+	const char name[CONFIG_MAX_LENGTH_FILE_NAME];
+	const char fs_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	unsigned int fs_type;
+} ramdisk_params_t;
 
-extern int ramdisk_create(const char *name, unsigned size, const char *name_fs);
+extern int ramdisk_create(void *mkfs_params);
 
 #endif /* RAMDISK_H_ */

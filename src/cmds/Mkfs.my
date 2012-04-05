@@ -19,4 +19,5 @@ module mkfs {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "mkfs.c"
 	depends LibPosix
+	depends embox.fs.ramdisk
 }
