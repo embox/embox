@@ -11,7 +11,7 @@ MYFILES := \
 	$(shell find $(MYFILES_PATH) -depth \
 		\( -name Mybuild -o -name \*.my \) -print)
 
-CONFIGFILES_PATH := conf
+CONFIGFILES_PATH := $(CONF_DIR)
 CONFIGFILES := $(wildcard $(CONFIGFILES_PATH)/*.config)
 
 ifeq ($(strip $(CONFIGFILES)),)
