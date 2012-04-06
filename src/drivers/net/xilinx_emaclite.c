@@ -211,7 +211,7 @@ static void pack_receiving(void *dev_id) {
 	switch_rx_buff();
 
 	skb->mac.raw = skb->data;
-	skb->protocol = skb->mac.ethh->h_proto;
+	skb->protocol = ntohs(skb->mac.ethh->h_proto);
 
 	/* update device statistic */
 	skb->dev = dev_id;

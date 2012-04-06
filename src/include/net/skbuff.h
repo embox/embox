@@ -47,7 +47,7 @@ typedef struct sk_buff {        /* Socket buffer */
 	struct sock *sk;            /* Socket we are owned by */
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
 
-	__be16 protocol;            /* Packet protocol from driver */
+	uint16_t protocol;            /* Packet protocol from driver */
 	uint8_t pkt_type;           /* Packet class */
 	char cb[52];                /* Control buffer (used to store layer-specific info e.g. ip options) */
 	unsigned int len;           /* Length of actual data */
