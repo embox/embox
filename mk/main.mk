@@ -7,11 +7,13 @@ export MYBUILD_VERSION := 0.4
 include mk/core/common.mk
 include mk/util/wildcard.mk
 
-.PHONY : all
-all : build
+.PHONY : all a
+a : all
+all: build
 
 define help-all
 Usage: $(MAKE) [all]
+   Or: $(MAKE) a
 
   Default build target. It is an alias to '$(MAKE) build'.
 endef # all
@@ -20,30 +22,32 @@ endef # all
 # Targets that require Mybuild infrastructure.
 #
 
-build_targets := build dot docsgen
-.PHONY : $(build_targets)
-$(build_targets) :
 # Call here prevents sub-make invocation in question mode (-q).
 # Used to speed up recent bash-completion.
-	@$(call MAKE) -f mk/load.mk $@
+make_mybuild = $(call MAKE) -f mk/load.mk
 
-build_targets_implicit := help-mod-%
-.PHONY : $(build_targets_implicit)
-$(build_targets_implicit) :
-	@$(call MAKE) -f mk/load.mk $@
+.PHONY : build b
+b : build
+build :
+	@$(make_mybuild) $@
 
 define help-build
-Usage: $(MAKE) build
-   Or: $(MAKE) build-<template>
+Usage: $(MAKE) build-<template>
+   Or: $(MAKE) build
+   Or: $(MAKE) b
 
-  Build current active configuration or the given <template>.
+  Build the given <template> (if any) or the current active configuration.
 
   Compile all source files and link objects into main executable
   producing various debug and log info.
 
-  Note that in order to use simple form ('$(MAKE) build'), you have to
-  configure the project first. See configuration targets.
+  Note that in order to use simple form (with no template spesified),
+  you have to configure the project first. See configuration targets.
 endef # build
+
+.PHONY : dot
+dot :
+	@$(make_mybuild) $@
 
 define help-dot
 Usage: $(MAKE) dot
@@ -51,11 +55,18 @@ Usage: $(MAKE) dot
   Generate PostScript file with module dependency graph.
 endef # dot
 
+.PHONY : docsgen
+docsgen :
+	@$(make_mybuild) $@
+
 define help-docsgen
 Usage: $(MAKE) docsgen
 
   Generate documentation from doxygen comments in source files.
 endef # docsgen
+
+help-mod-% :
+	@$(make_mybuild) $@
 
 define help-mod
 Usage: $(MAKE) help-mod-<INFO>
@@ -66,21 +77,20 @@ Usage: $(MAKE) help-mod-<INFO>
 	source files
 endef
 
-#
-# Configuration related stuff.
-#
-
 # Assuming that we have 'build.conf' in every template.
 templates := \
 	$(sort $(patsubst $(TEMPLATES_DIR)/%/build.conf,%, \
 		$(call r-wildcard,$(TEMPLATES_DIR)/**/build.conf)))
 
-
 # build-<template>
+# Reruns Make with overridden CONF_DIR
 .PHONY : $(templates:%=build-%)
 $(templates:%=build-%) : build-% :
-	$(call MAKE) CONF_DIR=$(TEMPLATES_DIR)/$* build
+	@$(make_mybuild) CONF_DIR=$(TEMPLATES_DIR)/$* build
 
+#
+# Configuration related stuff.
+#
 
 .PHONY : confload
 confload :
@@ -115,40 +125,66 @@ Usage: $(MAKE) confload-<template>
   where you can edit it for your needs.
 endef # confload
 
+.PHONY : config
+# Old-style configuration.
+config :
+	@echo '"make config" is considered obsolete and will be removed soon.'
+	@echo 'Use "make confload-<template>" instead.'
+	$(MAKE) confload-$(PROJECT)/$(PROFILE)
+
+#
 # Dialog-based interactive template selections.
-.PHONY : m menuconfig
-.PHONY : x xconfig
+#
 
-m menuconfig menubuild : DIALOG := dialog
-x xconfig    xbuild: DIALOG := Xdialog
+.PHONY : mb menubuild
+.PHONY : xb xbuild
+.PHONY : mc menuconfig
+.PHONY : xc xconfig
 
-m menuconfig \
-x xconfig :
+mb : menubuild
+xb : xbuild
+mc : menuconfig
+xc : xconfig
+
+menubuild  menuconfig : DIALOG := dialog
+xbuild     xconfig    : DIALOG := Xdialog
+
+menubuild  xbuild     : target := build
+menuconfig xconfig    : target := confload
+
+menubuild   xbuild    \
+menuconfig  xconfig   :
 	@TEMPLATE=`$(DIALOG) --stdout \
 		--backtitle "Configuration template selection" \
-		--menu "Select template to build:" 20 40 20 \
+		--clear \
+		--menu "Select template to $(target:conf%=%):" 20 40 20 \
 		$(templates:%=% "" )` \
-	&& $(MAKE) confload-$$TEMPLATE
-
-menubuild \
-xbuild :
-	@TEMPLATE=`$(DIALOG) --stdout \
-		--backtitle "Configuration template selection" \
-		--menu "Select template to build:" 20 40 20 \
-		$(templates:%=% "" )` \
-	&& $(MAKE) build-$$TEMPLATE
+	&& $(MAKE) $(target)-$$TEMPLATE
 
 define help-menubuild
-Usage: make menubuild
+Usage: $(MAKE) menubuild
+   Or: $(MAKE) mb
 
-  Same as menuconfig, but for building: display pseudo-graphic menu with template listing
-  to immediatly build selected one.
-endef
+  Display pseudo-graphic menu with list of templates, allows you
+  to build the selected one immediatelly.
+
+  Requires 'dialog'.
+endef # menubuild
+
+define help-xbuild
+Usage: $(MAKE) xbuild
+   Or: $(MAKE) xb
+
+  Same as menubuild, but uses grapical menu.
+
+  Requires X11, Xdialog.
+endef # xbuild
 
 define help-menuconfig
 Usage: $(MAKE) menuconfig
+   Or: $(MAKE) mc
 
-  Displays pseudo-graphic menu listing templates available to be loaded
+  Display pseudo-graphic menu listing templates available to be loaded
   as a configuration.
 
   Requires 'dialog'.
@@ -156,33 +192,20 @@ endef # menuconfig
 
 define help-xconfig
 Usage: $(MAKE) xconfig
+   Or: $(MAKE) xc
 
-  Same as menuconfig, but with GTK support. Displays graphic menu with
-  avaibale choises for config loading.
+  Same as menuconfig, but uses grapical menu.
 
   Requires X11, Xdialog.
 endef # xconfig
-
-define help-xbuild
-Usage: make xbuild
-
-  Same as xconfig, but for building, display menu with template listing
-  to immediatly build selected one.
-endef
-
-.PHONY : config
-# Old-style configuration.
-config :
-	@echo '"make config" is considered obsolete and will be removed soon.'
-	@echo 'Use "make confload-<TEMPLATE>" instead.'
-	$(MAKE) confload-$(PROJECT)/$(PROFILE)
 
 #
 # Cleaning targets.
 #
 
-.PHONY : c clean
-c clean :
+.PHONY : clean
+c : clean
+clean :
 	@$(RM) -r $(ROOT_DIR)/build
 
 define help-clean
@@ -239,13 +262,9 @@ Usage: $(MAKE) [targets]
 Mybuild version $(MYBUILD_VERSION).
 
 Building targets:
-  all            - Default build target, alias to '$(MAKE) build'
-  build          - Build the current active configuration
+  all (a)        - Default build target, alias to '$(MAKE) build'
+  build (b)      - Build the current active configuration
   build-<t>      - Build a given configuration template
-  menubuild      - Interactively select a configuration to build using
-                   a menu based program (requires 'dialog')
-  xbuild         - Interactively select a configuration to build using
-                   GTK client (requires 'Xdialog')
 
 Configuration targets:
   confload       - List available configuration templates
@@ -273,12 +292,12 @@ endef
 help_entries := \
 	all \
 	build \
-	menubuild \
-	xbuild \
 	dot \
 	docsgen \
 	mod \
 	confload \
+	menubuild \
+	xbuild \
 	menuconfig \
 	xconfig \
 	clean \
