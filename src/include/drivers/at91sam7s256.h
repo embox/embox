@@ -43,12 +43,10 @@
 #define AT91SAM7S256_H_
 
 #include <types.h>
-
-#ifndef AT91SAM7S256_H
-#define AT91SAM7S256_H
-
-#include <types.h>
 #include <hal/reg.h>
+
+typedef volatile unsigned int at91_reg_t;
+
 
 // *****************************************************************************
 //              SOFTWARE API DEFINITION  FOR System Peripherals
@@ -1026,7 +1024,5 @@ typedef struct _AT91S_UDP {
 #define AT91C_ISRAM_SIZE	 ((unsigned int) 0x00010000) // Internal SRAM size in byte (64 Kbyte)
 #define AT91C_IFLASH	 ((char *) 	0x00100000) // Internal ROM base address
 #define AT91C_IFLASH_SIZE	 ((unsigned int) 0x00040000) // Internal ROM size in byte (256 Kbyte)
-
-#endif
 
 #endif /* AT91SAM7S256_H_ */

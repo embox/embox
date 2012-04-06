@@ -10,11 +10,6 @@
 
 #include <types.h>
 
-// FIXME AT91_REG - platform-specific definition in common header. -- Eldar
-// XXX too many TODO's ^_^ -- Eldar
-/** Hardware register definition for AT91. */
-typedef volatile unsigned int at91_reg_t;
-
 static inline uint32_t get_cpsr(void) {
 	volatile uint32_t reg;
 	__asm__ __volatile__ ("mrs %0, CPSR;\n\t"
