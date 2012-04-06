@@ -133,7 +133,7 @@ typedef struct proto {
 	int (*sendmsg)(struct kiocb *iocb, sock_t *sk, struct msghdr *msg,
 			size_t len);
 	int (*recvmsg)(struct kiocb *iocb, sock_t *sk, struct msghdr *msg,
-			size_t len, int noblock, int flags, int *addr_len);
+			size_t len, int noblock, int flags);
 	int (*bind)(sock_t *sk, sockaddr_t *uaddr, int addr_len);
 	int (*backlog_rcv)(sock_t *sk, sk_buff_t *skb);
 	void (*hash)(struct sock *sk);

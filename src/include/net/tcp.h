@@ -60,7 +60,7 @@ struct tcp_pseudohdr {
 #define TCP_V4_HEADER_SIZE(hdr) (4 * ((struct tcphdr *)hdr)->doff)
 
 enum {
-	TCP_CLOSED = 1,
+	TCP_CLOSED,
 	TCP_LISTEN,
 	TCP_SYN_SENT,
 	TCP_SYN_RECV_PRE,

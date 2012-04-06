@@ -54,7 +54,7 @@ int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 }
 
 int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-			size_t len, int noblock, int flags, int *addr_len) {
+			size_t len, int noblock, int flags) {
 	struct sk_buff *skb;
 	skb = skb_recv_datagram(sk, flags, 0, 0);
 	if (skb && skb->len > 0) {

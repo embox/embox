@@ -130,11 +130,11 @@ static size_t tcp_data_left(struct sk_buff *skb) {
 	return (skb->len > size ? skb->len - size : 0);
 }
 
-static void tcp_set_st(union sock_pointer sock, struct sk_buff *skb, char state) {
-	const char *str_state[] = { "TCP_NONE_STATE", "TCP_CLOSED", "TCP_LISTEN",
+static void tcp_set_st(union sock_pointer sock, struct sk_buff *skb, unsigned char state) {
+	const char *str_state[TCP_MAX_STATE] = {"TCP_CLOSED", "TCP_LISTEN",
 			"TCP_SYN_SENT", "TCP_SYN_RECV_PRE", "TCP_SYN_RECV", "TCP_ESTABIL",
 			"TCP_FINWAIT_1", "TCP_FINWAIT_2", "TCP_CLOSEWAIT", "TCP_CLOSING",
-			"TCP_LASTACK", "TCP_TIMEWAIT", "TCP_MAX_STATE"};
+			"TCP_LASTACK", "TCP_TIMEWAIT"};
 	if (skb == NULL) {
 		sock.sk->sk_state = state;
 		debug_print("TCP_SOCK 0x%p set state %d-%s\n", sock.tcp_sk, state, str_state[state]);
@@ -186,7 +186,6 @@ static int send_from_sock(union sock_pointer sock, struct sk_buff *skb, int ops)
 		if (c_skb == NULL) {
 			return -ENOMEM;
 		}
-//		c_skb->p_data = c_skb->h.raw + TCP_V4_HEADER_SIZE(c_skb->h.th);
 		debug_print("send_from_sock: skb 0x%p, postponded 0x%p\n", skb, c_skb);
 		skb_queue_tail(sock.sk->sk_write_queue, c_skb);
 	}
@@ -520,7 +519,7 @@ static inline int tcp_opt_process(struct tcphdr *tcph, struct tcphdr *otcph, str
 
 
 /************************ Handlers table *******************************/
-static tcp_handler_t tcp_st_handler[TCP_MAX_STATE] = {
+static const tcp_handler_t tcp_st_handler[TCP_MAX_STATE] = {
 		[TCP_CLOSED]       = tcp_st_closed,
 		[TCP_LISTEN]       = tcp_st_listen,
 		[TCP_SYN_SENT]     = tcp_st_syn_sent,
@@ -552,7 +551,6 @@ static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_
 		skb->nh.iph->tot_len = htons(IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE);
 		memcpy(skb->h.raw, out_tcph_raw, sizeof out_tcph_raw);
 		send_from_sock(sock, skb, (res == TCP_RET_SEND_RELIABLE ? SEND_OPS_RELIABLE : 0));
-		debug_print("tcp_handle: send\n");
 		break;
 	case TCP_RET_DROP:
 		kfree_skb(skb);
@@ -600,7 +598,7 @@ static void tcp_process(union sock_pointer sock, struct sk_buff *skb) {
 		return;
 	}
 
-	assert((0 < sock.sk->sk_state) && (sock.sk->sk_state < TCP_MAX_STATE));
+	assert(sock.sk->sk_state < TCP_MAX_STATE);
 	tcp_handle(sock, skb, tcp_st_handler[sock.sk->sk_state]);
 }
 
@@ -839,7 +837,7 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 }
 
 static int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-			size_t len, int noblock, int flags, int *addr_len) {
+			size_t len, int noblock, int flags) {
 	struct sk_buff *skb;
 	union sock_pointer sock;
 	size_t data_left;

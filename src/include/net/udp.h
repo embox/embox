@@ -49,7 +49,7 @@ extern void udp_err(sk_buff_t *skb, uint32_t info);
 extern int udp_sendmsg(struct kiocb *iocb, struct sock *sk,
 			struct msghdr *msg, size_t len);
 extern int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
-			size_t len, int noblock, int flags, int *addr_len);
+			size_t len, int noblock, int flags);
 /*extern void udp_err(sk_buff_t *, uint32_t);*/
 
 extern int udp_disconnect(struct sock *sk, int flags);
