@@ -25,6 +25,7 @@ module xuartlite extends serial{
 }
 
 module at91_uart extends serial{
+	option number baud_rate
 	source "at91_uart.c"
 	depends embox.kernel.irq
 }

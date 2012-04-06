@@ -35,8 +35,9 @@ typedef struct _AT91S_PITC {
 #define AT91C_PITC_PIIR ((at91_reg_t *) 	0xFFFFFD3C) // (PITC) Period Interval Image Register
 #define AT91C_PITC_PIMR ((at91_reg_t *) 	0xFFFFFD30) // (PITC) Period Interval Mode Register
 
+#include <system.h>
 #define AT91C_PIT_IRQ 1
 
-#define AT91C_PIT_USECOND (CONFIG_SYS_CLOCK / (16 * 1000000))
+#define AT91C_PIT_USECOND (SYS_CLOCK / (16 * 1000000))
 
 #endif /* AT91SAM7_PIT_H_ */

@@ -11,11 +11,12 @@
 #include <drivers/at91sam7s256.h>
 
 #include <kernel/diag.h>
+#include <system.h>
 
 /* Baudrate=SYS_CLOCK/(8(2-Over)CD) = MCK/16CD = 18432000/(16*30) = 38400
  * CD = SYS_CLOCK / (16 * UART_BAUD_RATE)
  */
-#define UART_CLOCK_DIVIDER (CONFIG_SYS_CLOCK / (16 * CONFIG_UART_BAUD_RATE))
+#define UART_CLOCK_DIVIDER (SYS_CLOCK / (16 * OPTION_GET(NUMBER,baud_rate)))
 #define TTGR_DISABLE 0
 
 void diag_init(void) {

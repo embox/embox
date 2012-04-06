@@ -12,16 +12,13 @@
 #include <hal/reg.h>
 
 #include <embox/unit.h>
+#include <system.h>
 
 #define APBUART_BASE  0x80000100
 #define DATA_REG             0x0
 #define STATUS_REG           0x4
 #define CTRL_REG             0x8
 #define SCALER_REG           0xc
-
-#include <module/embox/arch/system.h>
-
-#define SYS_CLOCK     OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
 
 #define SCALER_VAL \
 	((((SYS_CLOCK * 10) / (8 * OPTION_GET(NUMBER,baud_rate))) - 5) / 10)
