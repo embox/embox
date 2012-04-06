@@ -17,6 +17,8 @@
 #include <embox/net/sock.h>
 #include <errno.h>
 
+#include <kernel/printk.h>
+
 static struct proto raw_prot;
 static const struct proto_ops inet_sockraw_ops;
 

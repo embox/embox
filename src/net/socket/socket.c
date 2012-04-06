@@ -50,7 +50,7 @@ static struct task_res_ops ops = {
 ARRAY_SPREAD_ADD(__task_res_ops, &ops);
 
 static struct socket *idx2sock(int fd) {
-	return task_self_idx_get(fd)->socket;
+	return (struct socket *) task_self_idx_get(fd)->data;
 }
 
 int socket(int domain, int type, int protocol) {

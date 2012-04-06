@@ -11,7 +11,6 @@
 
 #include <stdarg.h>
 #include <stdio.h> /* FILE */
-#include <fs/file_desc.h>
 
 struct file_desc;
 
@@ -30,8 +29,5 @@ typedef struct file_operations {
 	FILEOP_FSEEK fseek;
 	FILEOP_IOCTL ioctl;
 } file_operations_t;
-
-struct task_resources;
-extern int task_file_close(int fd, struct task_resources *res);
 
 #endif /* KERNEL_FILE_H_ */

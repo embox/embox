@@ -11,6 +11,8 @@
 
 #define CONFIG_TASKS_RES_QUANTITY 16
 
+#include <stdarg.h>
+
 enum {
 	TASK_IDX_TYPE_FILE = 0,
 	TASK_IDX_TYPE_SOCKET = 1
@@ -20,19 +22,15 @@ struct task_res_ops {
 	int	type;
 	int	(*open)(const char *path, int __oflag, va_list args);
 	int	(*close)(int idx);
-	ssize_t (*read) (int fd, const void *buf, size_t nbyte);
-	ssize_t (*write)(int fd, const void *buf, size_t nbyte);
+	int	(*read) (int fd, const void *buf, size_t nbyte);
+	int	(*write)(int fd, const void *buf, size_t nbyte);
 	int	(*ioctl)(int fd, int request, va_list args);
 };
 
 struct idx_desc {
-	union {
-		struct socket *socket;
-		FILE *file;
-		void *data;
-	};
-	int link_count;
-	int type;
+	void *data;     /**< @brief Pointer for actual struct */
+	int link_count; /**< @brief Count of links in all tasks */
+	int type;	/**< @brief Type of resource */
 };
 
 static inline void *task_idx_desc_get_res(struct idx_desc *desc) {

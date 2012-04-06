@@ -18,7 +18,7 @@
 #define TTY_TXBUFF_SIZE 0x1000
 #endif
 
-#include <fs/file.h>
+#include <kernel/file.h>
 #include <drivers/vtbuild.h>
 #include <drivers/vtparse.h>
 #include <drivers/vconsole.h>

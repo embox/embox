@@ -133,7 +133,7 @@ extern int fioctl(FILE *fp, int request, ...);
 
 #include <kernel/task.h>
 /*extern FILE *stdin;*/
-#define stdin (task_res_idx_get(task_self_res(), 0)->file)
+#define stdin ((FILE *)(task_res_idx_get(task_self_res(), 0)->data))
 
 //TODO: stub
 

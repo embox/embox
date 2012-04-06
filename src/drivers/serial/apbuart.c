@@ -13,7 +13,6 @@
 #include <drivers/amba_pnp.h>
 #include <kernel/printk.h>
 #include <embox/device.h>
-#include <fs/file.h>
 
 #include <embox/unit.h>
 

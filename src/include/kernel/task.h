@@ -9,7 +9,6 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-#include <fs/file.h>
 #include <lib/list.h>
 #include <kernel/task_resources.h>
 

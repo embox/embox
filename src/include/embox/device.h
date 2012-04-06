@@ -10,6 +10,7 @@
 #define DEVICE_H_
 
 #include <fs/file.h>
+#include <fs/file_desc.h>
 
 #include <util/array.h>
 

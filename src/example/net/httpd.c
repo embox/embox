@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <string.h>
 #include <net/ip.h>
 #include <net/socket.h>
