@@ -18,6 +18,7 @@ enum {
 
 struct task_res_ops {
 	int	type;
+	int	(*open)(const char *path, int __oflag, va_list args);
 	int	(*close)(int idx);
 	ssize_t (*read) (int fd, const void *buf, size_t nbyte);
 	ssize_t (*write)(int fd, const void *buf, size_t nbyte);
