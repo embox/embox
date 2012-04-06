@@ -44,7 +44,6 @@ export CP     := cp
 export PRINTF := printf
 export MKDIR  := mkdir -p
 export LN     := ln -s
-export PS1    :=
 
 ifndef __mk_ready
 
@@ -56,16 +55,26 @@ $(error Unsupported Make version. \
 	please use GNU Make 3.81 or above.)
 endif
 
+# Disable everything, turn on undefined variables check.
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
 MAKEFLAGS += --no-print-directory
 MAKEFLAGS += --warn-undefined-variables
 
+# Fixup for case when prompt contains dollar signs.
+# Avoids bogus 'undefined variable' warnings.
+export PS1 :=
+
 .DEFAULT_GOAL := all
 
+# Force multiple targets listed in the command line to run independently,
+# even if -j option is enabled. This allows 'make -j clean all' to run
+# properly, at the same time executing each target in parallel.
 .NOTPARALLEL :
-% :
-	@$(MAKE) __mk_ready=1 $@
+
+.PHONY : all $(MAKECMDGOALS)
+all $(MAKECMDGOALS) :
+	@$(MAKE) -C $(dir $(lastword $(MAKEFILE_LIST))) __mk_ready=1 $@
 
 else
 
