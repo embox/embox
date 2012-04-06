@@ -21,4 +21,3 @@ module arch {
 module arch_thumb {
 	source "arch_thumb.c"
 }
-
