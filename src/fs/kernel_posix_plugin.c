@@ -1,23 +1,14 @@
 /**
  * @file
  * @brief File descriptor (fd) abstraction over FILE *
- *
+ * @details Provide POSIX kernel support to operate with flides (int)
+ *	instead of FILE *
  * @date 06.09.11
  * @author Anton Kozlov
  */
-#include <fs/file_desc.h>
-#include <types.h>
-#include <errno.h>
-#include <kernel/task.h>
-#include <lib/list.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <assert.h>
-#include <stdio.h>
-#include <kernel/file.h>
-#include <util/array.h>
 
-#include "index_desc.h"
+#include <kernel/task.h>
+#include <util/array.h>
 
 extern const struct task_res_ops * __task_res_ops[];
 
@@ -40,12 +31,16 @@ static ssize_t this_write(int fd, const void *buf, size_t nbyte) {
 	return fwrite(buf, 1, nbyte, file);
 }
 
+static int this_ioctl(int fd, int request, va_list args) {
+	return fioctl(task_self_idx_get(fd)->file, request, args);
+}
 static struct task_res_ops ops = {
 	.type  = TASK_IDX_TYPE_FILE,
 	.open  = this_open,
 	.close = this_close,
 	.read  = this_read,
 	.write = this_write,
+	.ioctl = this_ioctl,
 };
 
 ARRAY_SPREAD_ADD(__task_res_ops, &ops);

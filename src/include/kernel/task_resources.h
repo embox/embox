@@ -22,6 +22,7 @@ struct task_res_ops {
 	int	(*close)(int idx);
 	ssize_t (*read) (int fd, const void *buf, size_t nbyte);
 	ssize_t (*write)(int fd, const void *buf, size_t nbyte);
+	int	(*ioctl)(int fd, int request, va_list args);
 };
 
 struct idx_desc {

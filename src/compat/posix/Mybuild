@@ -11,5 +11,4 @@ module LibPosix {
 		"wait.c"
 
 	depends embox.kernel.task_api
-	depends embox.fs.core
 }

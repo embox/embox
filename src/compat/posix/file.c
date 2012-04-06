@@ -71,8 +71,16 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	return ops->read(fd, buf, nbyte);
 }
 
-int ioctl(int fd, int request, va_list args) {
-	return fioctl(task_self_idx_get(fd)->file, request, args);
+int ioctl(int fd, int request, ...) {
+	va_list args;
+	int ret = -ENOTSUP;
+	struct task_res_ops *ops = find_res_ops_by_type(TASK_IDX_TYPE_FILE);
+
+	va_start(args, request);
+	ret = ops->ioctl(fd, request, args);
+	va_end(args);
+
+	return ret;
 }
 
 int fsync(int fd) {

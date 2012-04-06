@@ -2,27 +2,19 @@ package embox.kernel
 
 abstract module task_api { }
 
-module util {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "index_desc.c", "file.c"
-
-}
-
 module multi_task extends task_api {
 	option number tasks_quantity = 20
 
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "multi_task.c", "def_task.c"
+	source "multi_task.c", "def_task.c", "index_desc.c"
 
 	depends embox.driver.virtual.diag_device
-	depends util
 	depends embox.kernel.thread.sched
 
 }
 
 module single_task extends task_api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "single_task.c", "def_task.c"
+	source "single_task.c", "def_task.c", "index_desc.c"
 	depends embox.driver.virtual.diag_device
-	depends util
 }
