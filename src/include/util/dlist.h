@@ -60,7 +60,7 @@ extern void dlist_init(struct dlist_head *head);
  * item head state to 'init' but not linked state. It can be checked in
  * #dlist_add_next or #dlist_add_prev function.
  */
-extern void dlist_head_init(struct dlist_head *head);
+extern struct dlist_head *dlist_head_init(struct dlist_head *head);
 
 /**
  * Inserts new item to a list after pointed list head.

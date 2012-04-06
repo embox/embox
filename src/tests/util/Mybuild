@@ -3,19 +3,16 @@ package embox.test.util
 module array_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "array_test.c"
-
 }
 
 module list_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "list_test.c"
-
 }
 
 module slist_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "slist_test.c"
-
 }
 
 module tree_test {
@@ -27,13 +24,11 @@ module tree_test {
 module tree_set_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "tree_set_test.c"
-
 }
 
 module math_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "math_test.c"
-
 }
 
 module ring_buff_test {

@@ -1,10 +1,15 @@
 /**
  * @file
  *
- * @brief An safe implementation of dlist interface. It protects the list from
- * re-add and re-delete an item.
+ * @brief An safe implementation of 'dlist' interface. It protects the list
+ *      from re-add and re-delete an item.
  *
- *
+ * @details This implementation of 'dlist' interface uses special value for
+ *       examine re-add and re-delete operation. This value is list_id. It is
+ *       the list head address. Each item head in the list must contains
+ *       similar list_id. If adding item head has set not NULL list_id field it
+ *       means that this item head already in a list and the assertion will
+ *       call.
  *
  * @date 03.04.2012
  * @author Anton Bondarev
@@ -50,10 +55,11 @@ static inline int __is_linked(struct dlist_head *head) {
  * Initialize the item head. Set list_is as NULL it means that item head is not
  * in any list
  */
-static inline void dlist_head_init(struct dlist_head *head) {
+static inline struct dlist_head *dlist_head_init(struct dlist_head *head) {
 	head->next = head;
 	head->prev = head;
 	head->list_id = NULL;
+	return head;
 }
 
 /**
