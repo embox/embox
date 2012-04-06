@@ -8,9 +8,10 @@ include mk/codegen-dot.mk
 
 include mk/help-module.mk
 
-.PHONY : all image prepare docsgen dot
+.PHONY : build image prepare docsgen dot
 
-all : image
+build : image
+	@echo 'Build complete'
 
 image : prepare
 

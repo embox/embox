@@ -7,11 +7,20 @@ export MYBUILD_VERSION := 0.4
 include mk/core/common.mk
 include mk/util/wildcard.mk
 
+.PHONY : all
+all : build
+
+define help-all
+Usage: $(MAKE) [all]
+
+  Default build target. It is an alias to '$(MAKE) build'.
+endef # all
+
 #
 # Targets that require Mybuild infrastructure.
 #
 
-build_targets := all dot docsgen
+build_targets := build dot docsgen
 .PHONY : $(build_targets)
 $(build_targets) :
 # Call here prevents sub-make invocation in question mode (-q).
@@ -23,16 +32,18 @@ build_targets_implicit := help-mod-%
 $(build_targets_implicit) :
 	@$(call MAKE) -f mk/load.mk $@
 
-define help-all
-Usage: $(MAKE) [all]
+define help-build
+Usage: $(MAKE) build
+   Or: $(MAKE) build-<template>
 
-  Default build target.
+  Build current active configuration or the given <template>.
 
   Compile all source files and link objects into main executable
   producing various debug and log info.
 
-  Note that you have to configure the project prior to building it.
-endef # all
+  Note that in order to use simple form ('$(MAKE) build'), you have to
+  configure the project first. See configuration targets.
+endef # build
 
 define help-dot
 Usage: $(MAKE) dot
@@ -227,6 +238,7 @@ endef
 
 help_entries := \
 	all \
+	build \
 	dot \
 	docsgen \
 	mod \
