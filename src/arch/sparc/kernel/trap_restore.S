@@ -91,6 +91,7 @@
 #include <asm/asi.h>
 #include <asm/ptrace.h>
 #include <asm/winmacro.h>
+#include <asm/cpu.h>
 
 	.text
 	.align 4

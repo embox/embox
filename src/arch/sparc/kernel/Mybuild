@@ -4,15 +4,24 @@ module context extends embox.arch.context {
 	source "context.c", "context_switch.S"
 }
 
+module leon3 extends embox.arch.cpu {
+	option number nwindows=8
+}
+
 /*FIXME mybuild may be split this to differernt modules */
 module locore extends embox.arch.locore {
 	source "entry.S"
-	source "head.S"
 	source "traps.c"
 	source "trap_save.S"
 	source "trap_restore.S"
-	source "traps_core.c"
+	//source "traps_core.c"
 	source "winflush.S"
+	depends boot
+	depends leon3
+}
+
+module boot extends embox.arch.boot {
+	source "head.S"
 }
 
 /*FIXME mybuild arch module what is it */

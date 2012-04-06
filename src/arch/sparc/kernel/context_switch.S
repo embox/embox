@@ -13,6 +13,7 @@
 #include <asm/wim.h>
 #include <asm/ptrace.h>
 #include <asm/stack.h>
+#include <asm/cpu.h>
 
 	.text
 	.align 4

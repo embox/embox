@@ -172,6 +172,8 @@
 #include <asm/stack.h>
 #include <asm/winmacro.h>
 
+#include <asm/cpu.h>
+
 	.text
 	.align 4
 

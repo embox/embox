@@ -19,8 +19,12 @@
 #define CTRL_REG             0x8
 #define SCALER_REG           0xc
 
+#include <module/embox/arch/system.h>
+
+#define SYS_CLOCK     OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
+
 #define SCALER_VAL \
-	((((CONFIG_CORE_FREQ*10) / (8 * OPTION_GET(NUMBER,baud_rate)))-5)/10)
+	((((SYS_CLOCK * 10) / (8 * OPTION_GET(NUMBER,baud_rate))) - 5) / 10)
 
 void diag_init(void) {
 	REG_STORE((volatile uint32_t *) (APBUART_BASE + SCALER_REG), SCALER_VAL);

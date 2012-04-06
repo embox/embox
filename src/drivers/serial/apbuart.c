@@ -16,8 +16,11 @@
 #include <fs/file.h>
 #include <embox/unit.h>
 
+#include <module/embox/arch/system.h>
+#define SYS_CLOCK     OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
+
 #define UART_SCALER_VAL \
-	((((CONFIG_CORE_FREQ*10) / (8 * OPTION_GET(NUMBER,baud_rate)))-5)/10)
+	((((SYS_CLOCK * 10) / (8 * OPTION_GET(NUMBER,baud_rate))) - 5) / 10)
 
 /* status register bit masks */
 #define UART_STAT_DR (1 << 0) /**< Data is available for read in RX register*/

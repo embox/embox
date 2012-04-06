@@ -11,6 +11,7 @@
 	.align 4
 
 #include <asm/stack.h>
+#include <asm/cpu.h>
 
 	.global winflush
 winflush:
