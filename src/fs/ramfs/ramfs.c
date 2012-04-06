@@ -16,6 +16,7 @@
 #include <fs/vfs.h>
 #include <linux/init.h>
 #include <util/array.h>
+#include <embox/unit.h>
 
 typedef struct ramfs_file_description_head {
 	struct list_head *next;
@@ -23,7 +24,7 @@ typedef struct ramfs_file_description_head {
 	ramfs_file_description_t desc;
 } ramfs_file_description_head_t;
 
-static ramfs_file_description_head_t fdesc_pool[CONFIG_QUANTITY_NODE];
+static ramfs_file_description_head_t fdesc_pool[OPTION_GET(NUMBER,fdesc_quantity)];
 static LIST_HEAD(fdesc_free);
 
 #define desc_to_head(fdesc) \

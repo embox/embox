@@ -22,7 +22,7 @@ typedef struct node_head {
 	node_t            nod;
 } node_head_t;
 
-static node_head_t node_pool[CONFIG_QUANTITY_NODE];
+static node_head_t node_pool[OPTION_GET(NUMBER,fnode_quantity)];
 static LIST_HEAD(head_node);
 
 #define nod_to_head(node) (uint32_t)(node - offsetof(node_head_t, nod))

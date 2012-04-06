@@ -11,9 +11,9 @@
 #include <mem/objalloc.h>
 
 #include <fs/file_desc.h>
+#include <embox/unit.h>
 
-
-OBJALLOC_DEF(desc_pool, struct file_desc, CONFIG_QUANTITY_NODE);
+OBJALLOC_DEF(desc_pool, struct file_desc, OPTION_GET(NUMBER,fdesc_quantity));
 
 struct file_desc *file_desc_alloc(void) {
 	return objalloc(&desc_pool);
