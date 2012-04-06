@@ -119,16 +119,31 @@ endef # confload
 .PHONY : m menuconfig
 .PHONY : x xconfig
 
-m menuconfig : DIALOG := dialog
-x xconfig    : DIALOG := Xdialog
+m menuconfig menubuild : DIALOG := dialog
+x xconfig    xbuild: DIALOG := Xdialog
 
 m menuconfig \
 x xconfig :
 	@TEMPLATE=`$(DIALOG) --stdout \
 		--backtitle "Configuration template selection" \
-		--menu "Select template to load:" 20 40 20 \
-		$(TEMPLATES:%=% "" )` \
+		--menu "Select template to build:" 20 40 20 \
+		$(templates:%=% "" )` \
 	&& $(MAKE) confload-$$TEMPLATE
+
+menubuild \
+xbuild :
+	@TEMPLATE=`$(DIALOG) --stdout \
+		--backtitle "Configuration template selection" \
+		--menu "Select template to build:" 20 40 20 \
+		$(templates:%=% "" )` \
+	&& $(MAKE) build-$$TEMPLATE
+
+define help-menubuild
+Usage: make menubuild
+
+  Same as menuconfig, but for building: display pseudo-graphic menu with template listing
+  to immediatly build selected one.
+endef
 
 define help-menuconfig
 Usage: $(MAKE) menuconfig
@@ -145,9 +160,15 @@ Usage: $(MAKE) xconfig
   Same as menuconfig, but with GTK support. Displays graphic menu with
   avaibale choises for config loading.
 
-  Requires X11, GTK, Xdialog.
+  Requires X11, Xdialog.
 endef # xconfig
 
+define help-xbuild
+Usage: make xbuild
+
+  Same as xconfig, but for building, display menu with template listing
+  to immediatly build selected one.
+endef
 
 .PHONY : config
 # Old-style configuration.
@@ -221,6 +242,10 @@ Building targets:
   all            - Default build target, alias to '$(MAKE) build'
   build          - Build the current active configuration
   build-<t>      - Build a given configuration template
+  menubuild      - Interactively select a configuration to build using
+                   a menu based program (requires 'dialog')
+  xbuild         - Interactively select a configuration to build using
+                   GTK client (requires 'Xdialog')
 
 Configuration targets:
   confload       - List available configuration templates
@@ -248,6 +273,8 @@ endef
 help_entries := \
 	all \
 	build \
+	menubuild \
+	xbuild \
 	dot \
 	docsgen \
 	mod \
