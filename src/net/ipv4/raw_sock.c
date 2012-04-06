@@ -120,6 +120,7 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			size_t len) {
 	struct inet_sock *inet = inet_sk(sk);
 	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + len, 0);
+	assert(skb);
 	memcpy((void*)((unsigned int)(skb->data + ETH_HEADER_SIZE)),
 					(void*) msg->msg_iov->iov_base, len);
 	skb->h.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE +

@@ -132,6 +132,7 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 
 	ihlen = (tmp->h.raw - tmp->data);
 	skb = alloc_skb(buf->len + ihlen, 0);
+	assert(skb);
 	memcpy(skb->data, tmp->data, tmp->len);
 
 	skb->h.raw = skb->data + (tmp->h.raw - tmp->data);
@@ -251,6 +252,7 @@ struct sk_buff_head *ip_frag(struct sk_buff *skb) {
 	/* copy sk_buff without last fragment. All this fragment have size MTU */
 	while(offset < skb->len - align_MTU) {
 		fragment = alloc_skb(align_MTU, 0);
+		assert(fragment);
 		memcpy(fragment->data + len, skb->data + offset, align_MTU);
 		fragment->h.raw = fragment->data + len;
 		fragment->nh.raw = (unsigned char *) fragment->data + ETH_HEADER_SIZE;
@@ -263,6 +265,7 @@ struct sk_buff_head *ip_frag(struct sk_buff *skb) {
 	/* copy last fragment */
 	if(offset < skb->len) {
 		fragment = alloc_skb(skb->len - offset + len, 0);
+		assert(fragment);
 		memcpy(fragment->data + len, skb->data + offset, skb->len - offset);
 		fragment->nh.raw = (unsigned char *) fragment->data + ETH_HEADER_SIZE;
 		fragment->offset = (offset - len) >> 3; /* data offset */

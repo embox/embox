@@ -76,6 +76,7 @@ static void rtl8139_rx(struct net_device *dev) {
 		uint16_t pkt_len = rx_size - 4;
 
 		skb = alloc_skb(pkt_len, 0);
+		assert(skb);
 		wrap_copy(skb->data, rx_buf, (ring_offset + 4) % RX_BUF_SIZE, skb->len);
 		skb->dev = dev;
 		skb->protocol = ntohs(skb->mac.ethh->h_proto);
