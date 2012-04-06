@@ -20,6 +20,8 @@
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
 
+#include <embox/unit.h>
+
 #include <module/embox/arch/system.h>
 
 #define SYS_CLOCK     OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
@@ -156,7 +158,7 @@ static int dev_regs_init(irq_nr_t *irq_nr) {
 	*irq_nr = amba_dev.dev_info.irq;
 	return 0;
 }
-#elif defined(OPTION_GET(NUMBER,gptimer_base))
+#elif OPTION_DEFINED(NUMBER,gptimer_base)
 static int dev_regs_init(irq_nr_t *irq_nr) {
 	assert(NULL != irq_nr);
 	dev_regs = (volatile struct gptimer_regs *) OPTION_GET(NUMBER,gptimer_base);

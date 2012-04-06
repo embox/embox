@@ -91,7 +91,7 @@ static int dev_regs_init(void) {
 	dev_regs = (volatile struct irqmp_regs *) amba_dev.bar[0].start;
 	return 0;
 }
-#elif defined(OPTION_GET(NUMBER,irqmp_base))
+#elif OPTION_DEFINED(NUMBER,irqmp_base)
 static int dev_regs_init(void) {
 	dev_regs = (volatile struct irqmp_regs *) OPTION_GET(NUMBER,irqmp_base);
 	return 0;

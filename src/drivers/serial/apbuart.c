@@ -14,6 +14,7 @@
 #include <kernel/printk.h>
 #include <embox/device.h>
 #include <fs/file.h>
+
 #include <embox/unit.h>
 
 #include <module/embox/arch/system.h>
@@ -125,7 +126,7 @@ static int dev_regs_init() {
 	irq_num = amba_dev.dev_info.irq;
 	return 0;
 }
-#elif defined(OPTION_GET(NUMBER,apbuart_base))
+#elif OPTION_DEFINED(NUMBER,apbuart_base)
 static int dev_regs_init() {
 	dev_regs = (volatile struct apbuart_regs *) OPTION_GET(NUMBER,apbuart_base);
 	irq_num = CONFIG_APBUART_IRQ;
