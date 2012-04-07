@@ -59,6 +59,7 @@ static inline void pnet_rule_set_pack_type(match_rule_t rule, uint16_t type) {
 	/* TODO */
 	switch (type) {
 	case ETH_P_IP:
+			/* svv: It's correct unless we have options in IP packet */
 		rule->skbuf->h.raw = rule->skbuf->nh.raw + IP_MIN_HEADER_SIZE;
 		break;
 	case ETH_P_LOOP:
@@ -78,6 +79,7 @@ static inline void pnet_rule_set_src_ip(match_rule_t rule, net_addr_t ip_src) {
 
 static inline void pnet_rule_set_src_udp_port(match_rule_t rule,
 		uint16_t src_port) {
+	/* svv: Won't work if packet is fragmented. + Check bytes order in port */
 	rule->skbuf->h.uh->source = src_port;
 }
 
