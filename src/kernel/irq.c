@@ -48,7 +48,7 @@ int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, unsigned int flags,
 
 	irq_lock();
 
-	tracepoint("irq attach");
+	trace_point("irq attach");
 
 	if (irq_table[irq_nr]) {
 		/* IRQ sharing is not supported for now... */
@@ -83,7 +83,7 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 
 	irq_lock();
 
-	tracepoint("irq detach");
+	trace_point("irq detach");
 
 	if (!(action = irq_table[irq_nr]) || action->dev_id != dev_id) {
 		ret = -ENOENT;
@@ -106,7 +106,7 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 
 	assert(interrupt_nr_valid(interrupt_nr));
 
-	tracepoint("irq dispatch");
+	trace_point("irq dispatch");
 
 	ipl = ipl_save();
 	{

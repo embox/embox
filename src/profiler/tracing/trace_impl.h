@@ -20,7 +20,15 @@ struct __tp {
 	const char *name;
 };
 
-extern struct __tp * const __tracepoints_array[];
+extern struct __tp * const __trace_points_array[];
+
+#define __TRACE_POINT_DEF(_name, tp_name) \
+		struct __tp _name = {                                 \
+			.location = LOCATION_FUNC_INIT,                   \
+			.name = tp_name,                                  \
+			.count = 0,                                       \
+		};                                                    \
+		ARRAY_SPREAD_ADD(__trace_points_array, &_name)
 
 static inline void __tracepoint_handle(struct __tp *p) {
 	p->count++;
@@ -33,11 +41,24 @@ static inline void __tracepoint_handle(struct __tp *p) {
 			.name = __name,                                   \
 			.count = 0,                                       \
 		};                                                    \
-		ARRAY_SPREAD_ADD(__tracepoints_array, &__tp);         \
+		ARRAY_SPREAD_ADD(__trace_points_array, &__tp);        \
 		&__tp;                                                \
 	})
 
-#define __tracepoint(__name) \
+#define __trace_point(__name) \
 	__tracepoint_handle(__tp_ref(__name))
+
+#define __trace_point_set(tp) \
+	__tracepoint_handle(tp)
+
+#define __trace_point_get_name(tp)             \
+	({                                         \
+		(tp)->name;                            \
+	})
+
+#define __trace_point_get_value(tp)            \
+	({                                         \
+		(tp)->count;                           \
+	})
 
 #endif /* PROFILER_TRACING_TRACE_IMPL_H_ */
