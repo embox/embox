@@ -118,7 +118,6 @@ int arp_resolve(sk_buff_t *pack) {
 	iphdr_t *ip;
 
 	ip = pack->nh.iph;
-	pack->mac.raw = pack->data;
 	/* loopback */
 	if (ipv4_is_loopback(ip->daddr) || (ip->daddr == ip->saddr)) {
 		memset(pack->mac.ethh->h_dest, 0x00, ETH_ALEN);

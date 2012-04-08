@@ -5,6 +5,7 @@
  * @date 20.10.09
  * @author Anton Bondarev
  * @author Ilia Vaprol
+ * @author Vladimir Sokolov
  */
 
 #include <stdio.h>
@@ -225,7 +226,26 @@ struct sk_buff * buff_to_skb(unsigned char *buff, unsigned int size) {
 	return skb;
 }
 
-static inline struct sk_buff *skb_copydata(const struct sk_buff *skb, gfp_t priority) {
+static void skb_copydata(struct sk_buff *new_pack, const struct sk_buff *skb) {
+	memmove(new_pack->data, skb->data, skb->len);
+	new_pack->len = skb->len;
+
+	/*fix data references during copy net_pack*/
+	if (skb->h.raw != NULL) {
+		new_pack->h.raw = new_pack->data + (skb->h.raw - skb->data);
+	}
+	if (skb->nh.raw != NULL) {
+		new_pack->nh.raw = new_pack->data + (skb->nh.raw - skb->data);
+	}
+	if (skb->mac.raw != NULL) {
+		new_pack->mac.raw = new_pack->data + (skb->mac.raw - skb->data);
+	}
+	if (skb->p_data != NULL) {
+		new_pack->p_data = new_pack->data + (skb->p_data - skb->data);
+	}
+}
+
+static inline struct sk_buff *skb_allocatecopydata(const struct sk_buff *skb, gfp_t priority) {
 	struct sk_buff *new_pack;
 
 	if (skb == NULL) {
@@ -237,25 +257,14 @@ static inline struct sk_buff *skb_copydata(const struct sk_buff *skb, gfp_t prio
 		return NULL;
 	}
 
-	memcpy(new_pack->data, skb->data, skb->len);
-	new_pack->len = skb->len;
-
-	/*fix references during copy net_pack*/
-	if (skb->h.raw != NULL) {
-		new_pack->h.raw = new_pack->data + (skb->h.raw - skb->data);
-	}
-	if (skb->nh.raw != NULL) {
-		new_pack->nh.raw = new_pack->data + (skb->nh.raw - skb->data);
-	}
-	if (skb->mac.raw != NULL) {
-		new_pack->mac.raw = new_pack->data + (skb->mac.raw - skb->data);
-	}
+	skb_copydata(new_pack, skb);
 
 	return new_pack;
 }
 
+
 struct sk_buff * skb_clone(struct sk_buff *skb, gfp_t priority) {
-	struct sk_buff *clone = skb_copydata(skb, 0);
+	struct sk_buff *clone = skb_allocatecopydata(skb, priority);
 
 	if (clone == NULL) {
 		return NULL;
@@ -265,8 +274,6 @@ struct sk_buff * skb_clone(struct sk_buff *skb, gfp_t priority) {
 	clone->pkt_type = skb->pkt_type;
 	clone->protocol = skb->protocol;
 	clone->sk = skb->sk;
-
-	clone->p_data = clone->data + (skb->p_data - skb->data);
 	clone->prot_info = skb->prot_info;
 
 	return clone;
@@ -282,20 +289,29 @@ struct sk_buff * skb_peek_datagram(struct sock *sk, unsigned flags, int noblock,
 	return skb_peek(sk->sk_receive_queue);
 }
 
-struct sk_buff *skb_copy_expand(struct sk_buff *skb, int newheadroom, int newtailroom, gfp_t priority) {
-	/* ToDo: At least check that we have enough room to keep all as is
-	 *	In current implementation we might just reserve some reasonable amount at head/tail room
-	 * ToDo: Should we transparently relink this skb into sk_buff_head chain?
-	 */
-	return skb;
-}
-
 struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb, int headroom, int tailroom, gfp_t priority) {
-	/* ToDo: At least check that we have enough room to keep all as is
-	 *	In current implementation we might just reserve some reasonable amount at head/tail room
-	 * See also: skb_copy_expand()
-	 */
-	return skb;
+	int free_headroom = skb->data - skb->head;
+	int free_tailroom = SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE - (free_headroom + skb->len);
+	int free_space = SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE - (skb->len + headroom + tailroom);
+
+		/* Stupid situations during shrink */
+	assert((-headroom) < (skb->len + tailroom));
+
+	if (likely((headroom <= free_headroom) && (tailroom <= free_tailroom))) {
+		/* Simplest case, do nothing */
+		return skb;
+	} else if (free_space >= 0) {
+		/* We still can fit reserved buffer */
+		struct sk_buff skb_fields_save = *skb;
+		skb->data = skb->head + (free_space / 2);	/* Be fair to the tail and head */
+		skb_copydata(skb, &skb_fields_save);
+		return skb;
+	} else {
+		/* There is no way in current implementaion to give more than
+		 * we have space in pool. You should use sk_buff_head somehow
+		 */
+		return NULL;
+	}
 }
 
 void skb_shifthead(struct sk_buff *skb, int headshift) {
@@ -308,6 +324,8 @@ void skb_shifthead(struct sk_buff *skb, int headshift) {
 	if(likely(skb->mac.raw))
 		skb->mac.raw -= headshift;
 	assert(skb->head <= skb->data);
+	assert((int)skb->len >= (-headshift));
+	skb->len += headshift;
 	/* ToDo: check end here */
 }
 

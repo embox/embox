@@ -133,6 +133,13 @@ extern int ip_rcv(sk_buff_t *pack, net_device_t *dev,
 
 /**
  * Add an ip header to a net_packet and send it out.
+ * It mignt be called with/without socket-related data.
+ * Whan socket-related info is present we may use it to build some headers.
+ * Current usage:
+ *	ICMP: no socket, IP/ICMP headers are build, LL header unknown
+ *	UDP: socket, UDP header is built, IP header is placed, LL header unknown
+ *	RAW: socket, IP header is ready, but LL header unknown
+ *	TCP: socket, TCP header is built, IP header is placed, LL header unknown
  */
 extern int ip_send_packet(inet_sock_t *sk, sk_buff_t *pack);
 

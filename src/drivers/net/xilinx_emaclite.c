@@ -210,7 +210,6 @@ static void pack_receiving(void *dev_id) {
 	current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
 	switch_rx_buff();
 
-	skb->mac.raw = skb->data;
 	skb->protocol = ntohs(skb->mac.ethh->h_proto);
 
 	/* update device statistic */

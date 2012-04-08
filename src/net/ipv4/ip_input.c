@@ -34,7 +34,6 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	int optlen;
 	sk_buff_t *complete_skb;
 
-	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(iph);
 	/**
 	 *   RFC1122: 3.1.2.2 MUST silently discard any IP frame that fails the checksum.
 	 *   Is the datagram acceptable?
@@ -105,6 +104,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		skb = complete_skb;
 		iph = ip_hdr(complete_skb);
 	}
+	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(iph);
 
 	/* When a packet is received, it is passed to any raw sockets
 	 * which have been bound to its protocol or to socket with concrete protocol */

@@ -358,6 +358,7 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 		icmphdr_t *icmph;
 
 		skb_shifthead(skb, realloc_shift);
+		skb->len = ip_ret_len + ETH_HEADER_SIZE;
 
 			/* IP header is in correct place now. We'll fill it later */
 		iph = skb->nh.iph;

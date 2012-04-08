@@ -32,7 +32,7 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	hdr->id = htons(id);
 	hdr->tos = 0;
 	hdr->frag_off = skb->offset;
-	hdr->frag_off |= IP_DF;						/* svv: So all packets from our system can't be fragmented??? */
+	hdr->frag_off |= IP_DF;		/* svv: So all packets from our system (except RAW) can't be fragmented??? */
 	hdr->frag_off = htons(hdr->frag_off);
 	hdr->proto = proto;
 	ip_send_check(hdr);
@@ -40,13 +40,14 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 }
 
 static inline void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
-	if (sk->sk.sk_type == SOCK_RAW)
-	    return;
 
-		/* svv:
-		 *	Strange. Should it be even mac? (Because of ETH_HEADER_SIZE)
-		 *	Should we relink data pointer?
-		 */
+	/* IP header has already been built */
+	if (sk->sk.sk_type == SOCK_RAW)
+		return;
+
+	/* We use headers in other way then Linux. So data coinsides with LL header
+	 * Ethernet was hardcoded in skb allocations, so be careful
+	 */
 	skb->nh.raw = skb->data + ETH_HEADER_SIZE;
 	rebuild_ip_header(skb, sk->uc_ttl, sk->sk.sk_protocol, sk->id, skb->len,
 			sk->saddr, sk->daddr/*, sk->opt*/);
@@ -64,9 +65,6 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	int res;
 
 	res = 0;
-
-		/* svv: Wrong. Data might be TCP (no IP header)/IP(IP header)/etc. Should it be even mac? */
-	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
 
 	if (skb->len > MTU) {
 		/* svv: suspicious:
@@ -99,6 +97,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 		kfree_skb(skb);
 		return -1;
 	}
+
 	ip_send_check(skb->nh.iph);				/* Fragmentation and other possible changes */
 	return ip_queue_xmit(skb, 0);
 }

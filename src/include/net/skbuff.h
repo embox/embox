@@ -5,6 +5,7 @@
  * @date 20.10.09
  * @author Anton Bondarev
  * @author Ilia Vaprol
+ * @author Vladimir Sokolov
  */
 
 #ifndef NET_SKBUFF_H_
@@ -47,30 +48,72 @@ typedef struct sk_buff {        /* Socket buffer */
 	struct sock *sk;            /* Socket we are owned by */
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
 
-	uint16_t protocol;            /* Packet protocol from driver */
-	uint8_t pkt_type;           /* Packet class */
+		/* Packet protocol from driver or
+		 * protocol to put into Eth header during assembling
+		 */
+	uint16_t protocol;
+
+		/* Packet class. Should be extracted by driver from Eth header data */
+	uint8_t pkt_type;
+
 	char cb[52];                /* Control buffer (used to store layer-specific info e.g. ip options) */
-	unsigned int len;           /* Length of actual data */
+
+		/* Length of actual data, from LL header till the end */
+	unsigned int len;
+
 	union {                     /* Transport layer header */
 		struct tcphdr *th;
 		struct udphdr *uh;
 		struct icmphdr *icmph;
 		unsigned char *raw;
 	} h;
-	union {                     /* Network layer header */
+
+		/* Network layer header.
+		 * Usually iph contains IP_MIN_HEADER_SIZE except some cases:
+		 *	when we process incoming IP packet with options
+		 *	when we use RAW sockets for sending (still not fixed in design)
+		 */
+	union {
 		struct iphdr *iph;
 		struct arphdr *arph;
 		unsigned char *raw;
 	} nh;
+
+		/* In current implementation our stack allocates
+		 * ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + ...
+		 * for outgoing packets.
+		 * So it's assumed to have eth header at the start
+		 */
 	union {                     /* Link layer header */
 		struct ethhdr *ethh;
 		unsigned char *raw;
 	} mac;
-	__be16 offset;              /* Offset information for ip fragmentation*/
 
-	unsigned char *head;		/* Pointer for buffer used to store all skb content */
-	unsigned char *data;		/* Data head pointer */
-	unsigned char *p_data;		/* Pointer for current processing data. See tail in Linux skb */
+		/* Offset information for ip fragmentation.
+		 * It's used by fragmenter as info to future IP header assembling
+		 * Requires deep refactoring to get rid of it
+		 */
+	__be16 offset;
+
+		/* Pointer for buffer used to store all skb content.
+		 * Used by operations with pool, so it MUST NOT be changed
+		 */
+	unsigned char *head;
+
+		/* Data head pointer.
+		 * Unlike Linux code it simply points to the packet start (mac).
+		 * So it just coinsides with mac.raw
+		 * (We can get rid of it (use mac.raw everywhere), or at least
+		 * check that (data == mac.raw) in skb integrity check)
+		 * It almost not touched, except ICMP and future IPIP code
+		 */
+	unsigned char *data;
+
+		/* Pointer for current processing data.
+		 * Used only in tcp code unlike tail in Linux skb
+		 * ToDo: why isn't it enough to have just len?
+		 */
+	unsigned char *p_data;
 	char prot_info;				/* Protocol level additional data, tcp uses for state handling */
 } sk_buff_t;
 
@@ -95,24 +138,6 @@ extern struct sk_buff * alloc_skb(unsigned int size, gfp_t priority);
 extern void kfree_skb(struct sk_buff *skb);
 
 /**
- *	skb_copy_expand	-	copy and expand sk_buff
- *	@skb: buffer to copy
- *	@newheadroom: add at least those amount of free bytes at head
- *	@newtailroom: add at least those amount of free bytes at tail
- *	@priority: allocation priority
- *
- *	Make a copy of both an &sk_buff and its data and while doing so
- *	allocate additional space.
- *
- *	This is used when the caller wishes to modify the data and needs a
- *	private copy of the data to alter as well as more space for new fields.
- *	Returns NULL on failure or the pointer to the buffer
- *	on success.
- */
-extern struct sk_buff *skb_copy_expand(struct sk_buff *skb,
-				int newheadroom, int newtailroom, gfp_t priority);
-
-/**
  *	skb_checkcopy_expand	-	check, copy and expand sk_buff
  *	@skb: buffer to check, copy
  *	@headroom: required amount of free bytes at head
@@ -125,6 +150,9 @@ extern struct sk_buff *skb_copy_expand(struct sk_buff *skb,
  *
  *	Returns NULL on failure or the pointer to the buffer
  *	on success.
+ *
+ *	In current implementation there is no "extra-large packets pool"
+ *	to allocate data from. So no allocation if new size doesn't fit.
  */
 extern struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb,
 				int headroom, int tailroom, gfp_t priority);
