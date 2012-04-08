@@ -103,9 +103,18 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
 	struct inetdev_info *indev_info;
 	struct list_head *tmp;
 
-	if ( (addr == INADDR_BROADCAST) && check_broadcast )
+	if (check_broadcast)
 	{
-		return true;
+		if (addr == INADDR_BROADCAST)
+			return true;
+
+#if 0	/* Obsoleted broadcast */
+		/* RFC 919/922 Section 7 - deprecated
+		 * RFC 1122. Section 3.3.6 - obsoleted
+		 */
+		if (addr == INADDR_ANY)
+			return true;
+#endif
 	}
 
 	if ( ipv4_is_multicast(addr) && check_multicast )
@@ -129,11 +138,6 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
 			}
 		}
 	}
-
-	if (addr == INADDR_ANY) {
-		return true;
-	}
-
 	return false;
 }
 
