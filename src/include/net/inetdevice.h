@@ -50,6 +50,8 @@ extern struct net_device *ip_dev_find(in_addr_t addr);
 
 /**
  * perform check: does this ip should be processes by local ip stack
+ * (This function is intended for external packets processing.
+ * It DOESN'T support internal stack conventions.)
  * @param ipaddr - ip address
  * @param check_broadcast - should we check broadcast addresses
  * @param check_multicast - should we check multicast addresses

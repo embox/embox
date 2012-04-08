@@ -111,6 +111,7 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
 #if 0	/* Obsoleted broadcast */
 		/* RFC 919/922 Section 7 - deprecated
 		 * RFC 1122. Section 3.3.6 - obsoleted
+		 * Please, don't confuse external and internal conventions!
 		 */
 		if (addr == INADDR_ANY)
 			return true;
