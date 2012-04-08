@@ -42,18 +42,18 @@ struct element {
 static struct element element[0x10];
 
 TEST_CASE("Add a single element to a dlist") {
-	struct dlist_head dlist = &static_dlist; /*Initialization is not required*/
+	struct dlist_head *dlist = &static_dlist; /*Initialization is not required*/
 
 	test_assert_not_zero(dlist_empty(dlist));
 	dlist_add_next(dlist_head_init(&element[0].lnk), dlist);
 	test_assert_zero(dlist_empty(dlist));
 	dlist_del(&element[0].lnk);
-	test_assert_not_zero(dlist_empty(&dlist));
+	test_assert_not_zero(dlist_empty(dlist));
 }
 
 TEST_CASE("Add two elements to a dlist"
 		" first added by dlist_add_next and second with dlist_add_prev") {
-	struct dlist_head dlist = &static_dlist; /*initialization is not required*/
+	struct dlist_head *dlist = &static_dlist; /*initialization is not required*/
 
 	test_assert_not_zero(dlist_empty(dlist));
 	dlist_add_next(dlist_head_init(&element[0].lnk), dlist);
@@ -70,7 +70,7 @@ TEST_CASE("Add two elements to a dlist"
 }
 
 TEST_CASE("Create a list in runtime and add a single element") {
-	struct dlist_head dlist = dlist_init(&dynamic_dlist); /*initialize*/
+	struct dlist_head *dlist = dlist_init(&dynamic_dlist); /*initialize*/
 
 	test_assert_not_zero(dlist_empty(dlist));
 	dlist_add_next(dlist_head_init(&element[0].lnk), dlist);

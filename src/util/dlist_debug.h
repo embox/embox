@@ -93,8 +93,8 @@ static inline void dlist_add_next(struct dlist_head *new,
 	 * use #dlist_head_init before using new element*/
 	assert(!__is_linked(new)); /* re-add element */
 	/* we can't use list head without initialization.
-	/* Use macro #DLIST_INIT for static or #dlist_init for dynamic
-	 * initialization */
+	* Use macro #DLIST_INIT for static or #dlist_init for dynamic
+	* initialization */
 	assert(__is_linked(list)); /* add to not initialized list */
 
 	new->list_id = list->list_id; /* mark item head as added to this list */
@@ -120,7 +120,7 @@ static inline void dlist_add_prev(struct dlist_head *new,
 	 * use #dlist_head_init before using new element*/
 	assert(!__is_linked(new)); /* re-add element */
 	/* we can't use list head without initialization.
-	/* Use macro #DLIST_INIT for static or #dlist_init for dynamic
+	 * Use macro #DLIST_INIT for static or #dlist_init for dynamic
 	 * initialization */
 	assert(__is_linked(list)); /* add to not initialized list */
 

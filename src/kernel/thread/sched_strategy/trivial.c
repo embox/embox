@@ -19,7 +19,7 @@ inline void sched_strategy_init(struct sched_strategy_data *data) {
 
 void runq_init(struct runq *runq, struct thread *current, struct thread *idle) {
 	assert(current && idle);
-	dlist_head_init(&runq->rq);
+	dlist_init(&runq->rq);
 
 	current->runq = runq;
 	idle->runq = runq;
@@ -160,8 +160,8 @@ int runq_switch(struct runq *runq) {
 }
 
 inline void sleepq_init(struct sleepq *sleepq) {
-	dlist_head_init(&sleepq->rq);
-	dlist_head_init(&sleepq->sq);
+	dlist_init(&sleepq->rq);
+	dlist_init(&sleepq->sq);
 }
 
 int sleepq_empty(struct sleepq *sleepq) {
