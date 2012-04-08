@@ -15,4 +15,6 @@ static module LibUtil {
 module 	hashtable {
 	source "hashtable.c"
 	depends embox.mem.heap_bm
+	option number hashtables_quantity=16
+	option number item_quntity=64
 }

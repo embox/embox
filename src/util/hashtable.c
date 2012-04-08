@@ -1,17 +1,29 @@
 /**
  * @file
- * @brief Implementation of hashtable data structure
+ *
+ * @brief An implementation of 'hashtable' interface
  *
  * @date 30.09.11
+ *
  * @author Dmitry Zubarevich
  * @author Avdyukhin Dmitry
+ * @author Anton Bondarev
  */
-
-#include <util/list.h>
 #include <stdlib.h>
 #include <mem/objalloc.h>
-#include <util/hashtable.h>
+
+
 #include <util/array.h>
+#include <util/list.h>
+
+#include <util/hashtable.h>
+
+#include <embox/unit.h>
+
+#include <module/embox/util/hashtable.h>
+
+#define CONFIG_HASHTABLES_QUANTITY     OPTION_GET(NUMBER,hashtables_quantity)
+#define CONFIG_HASHTABLE_ELEM_QUNTITY  OPTION_GET(NUMBER,item_quntity)
 
 struct hashtable_element {
 	struct list_link lnk;
@@ -24,15 +36,20 @@ struct hashtable_entry {
 	size_t cnt;
 };
 
+/**
+ * handler of hash-table.
+ * It contains size of hash-table array, compare element function, calculation
+ * hash index function and array of the table entry. table entry is the list of
+ *  the element with equivalent hash index.
+ */
 struct hashtable {
-	struct hashtable_entry *table;
-	get_hash_ft get_hash_key;
-	ht_cmp_ft cmp;
-	size_t table_size;
+	struct hashtable_entry *table; /**< array of the tables entry */
+	get_hash_ft get_hash_key; /**< handler of the calculation index function */
+	ht_cmp_ft cmp; /** < handler of the compare elements function */
+	size_t table_size; /** size of the array of the table entry */
 };
 
-#define CONFIG_HASHTABLES_QUANTITY     0x10
-#define CONFIG_HASHTABLE_ELEM_QUNTITY  0x10
+
 
 OBJALLOC_DEF(ht_pool, struct hashtable, CONFIG_HASHTABLES_QUANTITY);
 OBJALLOC_DEF(ht_elem_pool, struct hashtable_element,
