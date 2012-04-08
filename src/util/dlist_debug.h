@@ -12,17 +12,18 @@
  *       call.
  *
  * @date 03.04.2012
+ *
  * @author Anton Bondarev
  */
-
 #ifndef DLIST_DEBUG_H_
 #define DLIST_DEBUG_H_
 
-#include <assert.h>
+#include <assert.h> /*it's required for assertion operation */
+
 /**
- * Double list head with an additional field 'list_id'. It contains address of
- * list head (entry of the list) structure or NULL if item isn't initialized
- * now.
+ * Double list head structure with an additional field 'list_id'. It contains
+ * an address of a list head (entry of the list) structure or NULL if item is
+ * not initialized now.
  */
 struct dlist_head {
 	struct dlist_head *next;   /**<pointer to next item in the list*/
@@ -33,6 +34,7 @@ struct dlist_head {
 	 */
 	struct dlist_head *list_id;
 };
+
 /** The implementation of the #DLIST_INIT macro */
 #define __DLIST_INIT(head) { &(head), &(head), &(head) }
 
@@ -51,54 +53,83 @@ static inline void __dlist_add(struct dlist_head *new, struct dlist_head *next,
 static inline int __is_linked(struct dlist_head *head) {
 	return (NULL != head->list_id);
 }
+
 /**
  * Initialize the item head. Set list_is as NULL it means that item head is not
  * in any list
  */
 static inline struct dlist_head *dlist_head_init(struct dlist_head *head) {
-	head->next = head;
-	head->prev = head;
-	head->list_id = NULL;
+	head->list_id = NULL; /* mark it's not in a list */
+
 	return head;
 }
 
 /**
- * Initialize the list head. Setup all fields as own address, it means that
- * the list is looped itself (marked empty), and list_id field with own address
- * points follows this head now is owned the list and the list entry is this
- * head.
+ * Implementation of the #dlist_init function.
+ * It initializes the list head.
+ * Setup all fields as own address, it means that the list is looped itself
+ * (marked empty), and list_id field filled with the own address points.
+ * It means that this list head now is owned the specify list and the list id
+ * is address of this list head.
  */
-static inline void dlist_init(struct dlist_head *head) {
-	head->list_id = head->next = head->prev = head;
+static inline struct dlist_head *dlist_init(struct dlist_head *list_head) {
+	/*mark it's in a list and this head is list entry */
+	list_head->list_id = list_head;
+	list_head->next = list_head->prev = list_head; /* closure list */
+
+	return list_head;
 }
 
+/**
+ * Implementation of the #dlist_add_next function
+ * First of all it examine correct state of the item head and the list head.
+ * List head must be in a list but item head not.
+ * Then if state is correct it marks the new item head as owned this list.
+ * And at the and it add the new element into the list after list head element.
+ */
 static inline void dlist_add_next(struct dlist_head *new,
 		struct dlist_head *list) {
+	/* we can't add not initialized element.
+	 * use #dlist_head_init before using new element*/
+	assert(!__is_linked(new)); /* re-add element */
+	/* we can't use list head without initialization.
+	/* Use macro #DLIST_INIT for static or #dlist_init for dynamic
+	 * initialization */
+	assert(__is_linked(list)); /* add to not initialized list */
 
-	assert(!__is_linked(new)); /* we can't add not initialized element*/
+	new->list_id = list->list_id; /* mark item head as added to this list */
 
-	if (!__is_linked(list)) {
-		list->list_id = list;
-		new->list_id = list;
-	} else {
-		new->list_id = list->list_id;
-	}
-
+	/* Real adding the element
+	 * new sequence will be following
+	 * list head <-> new item <-> next item of list head
+	 */
 	__dlist_add(new, list->next, list);
 }
 
+/**
+ * Implementation of the #dlist_add_next function
+ * First of all it examine correct state of the item head and the list head.
+ * List head must be in a list but item head not.
+ * Then if state is correct it marks the new item head as owned this list.
+ * And at the and it add the new element into the list as previous element for
+ * the list head.
+ */
 static inline void dlist_add_prev(struct dlist_head *new,
 		struct dlist_head *list) {
+	/* we can't add not initialized element.
+	 * use #dlist_head_init before using new element*/
+	assert(!__is_linked(new)); /* re-add element */
+	/* we can't use list head without initialization.
+	/* Use macro #DLIST_INIT for static or #dlist_init for dynamic
+	 * initialization */
+	assert(__is_linked(list)); /* add to not initialized list */
 
-	assert(!__is_linked(new)); /* we can't add not initialized element */
+	new->list_id = list->list_id; /* mark item head as added to this list */
 
-	if (!__is_linked(list)) {
-		list->list_id = list;
-		new->list_id = list;
-	} else {
-		new->list_id = list->list_id;
-	}
-
+	/* Real adding the element
+	 * new sequence will be following
+	 * list head <-> new item <-> previous item of list head
+	 */
 	__dlist_add(new, list, list->prev);
 }
 
@@ -112,6 +143,9 @@ static inline void dlist_add_prev(struct dlist_head *new,
 static inline void dlist_del(struct dlist_head *head) {
 	assert(__is_linked(head)); /* we can't remove initialized element */
 
+	/* close the list
+	 * the previous element refer to the next element and next element refer to
+	 * the previous */
 	head->prev->next = head->next;
 	head->next->prev = head->prev;
 

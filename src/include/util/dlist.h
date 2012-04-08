@@ -14,7 +14,6 @@
  * @date 19.03.2012
  * @author Anton Bondarev
  */
-
 #ifndef DLIST_H_
 #define DLIST_H_
 
@@ -35,12 +34,18 @@ struct dlist_head;
  * A macro for static initializing the list head.
  * This macro must overload in each implementation of dlist interface as
  * #__DLIST_INIT.
+ *
+ * @param head - head list which wants to be initialized
  */
 #define DLIST_INIT(head) \
 	__DLIST_INIT(head)
 
 /**
- * A macro declares list head variable and initialize it with #DLIST_INIT.
+ * A macro declares list head variable and initialize it with #DLIST_INIT. It
+ * declare structure of list head if you wand refer to it you should use
+ * address of this variable.
+ *
+ * @param name -variable of a new list head name
  */
 #define DLIST_DEFINE(name) \
 		struct dlist_head name = DLIST_INIT(name)
@@ -50,8 +55,13 @@ struct dlist_head;
  * You have to use this function if memory for list head is allocated dynamic
  * and you must initialize the head before using (adding an element into the
  * list).
+ *
+ * @param list_head - head of the list which wants to be initialized before
+ *        using
+ *
+ * @return pointer to the initialized list head
  */
-extern void dlist_init(struct dlist_head *head);
+extern struct dlist_head *dlist_init(struct dlist_head *list_head);
 
 /**
  * Initializes item to insert one to a list.
@@ -59,14 +69,21 @@ extern void dlist_init(struct dlist_head *head);
  * allocated from unspecified place and its memory undefined. This function set
  * item head state to 'init' but not linked state. It can be checked in
  * #dlist_add_next or #dlist_add_prev function.
+ *
+ * @param item_head - head of the item which wants to be added to a list
+ *
+ * @return pointer to the initialized item head
  */
-extern struct dlist_head *dlist_head_init(struct dlist_head *head);
+extern struct dlist_head *dlist_head_init(struct dlist_head *item_head);
 
 /**
  * Inserts new item to a list after pointed list head.
  * For safe usage of this function you should initialize list head with
  * #dlist_init function or #DLIST_INIT macro and item head with function
  * #dlist_head_init.
+ *
+ * @param new - head of the item which wants to be inserted into the list
+ * @param -list - head of the list which we want to join the new item
  */
 extern void dlist_add_next(struct dlist_head *new, struct dlist_head *list);
 
@@ -74,16 +91,25 @@ extern void dlist_add_next(struct dlist_head *new, struct dlist_head *list);
  * Inserts new item to a list before pointed list head
  * For safe usage this function you should comply with the same restrictions as
  * in function #dlist_add_next
+ *
+ * @param new - head of the item which wants to be inserted into the list
+ * @param -list - head of the list which we want to join the new item
  */
 extern void dlist_add_prev(struct dlist_head *new,	struct dlist_head *list);
 
 /**
- * Remove item from its list and initialize item head for new using.
+ * Remove item from its list and initialize item head for future using. It
+ * links 'next' and 'prev' element in the item list list to each other.
+ *
+ * @param item_head - deleting item head
  */
-extern void dlist_del(struct dlist_head *head);
+extern void dlist_del(struct dlist_head *item_head);
 
 /**
- * move item from the list where it places now to the pointed list
+ * Move the item head from the list where it is now to the pointed list.
+ *
+ * @param head - head of a item which wants to be moved.
+ * @param list - new head of the list
  */
 static inline void dlist_move(struct dlist_head *head, struct dlist_head *list) {
 	dlist_del(head);
@@ -91,14 +117,22 @@ static inline void dlist_move(struct dlist_head *head, struct dlist_head *list) 
 }
 
 /**
- * Checks whether there are any items in the list or not.
+ * Checks whether there are any items in the list except list head or not.
+ *
+ * @param head - head of the list which wants to be checked
+ * @return 1 if list is not empty and zero if empty *
  */
 static inline int dlist_empty(struct dlist_head *head) {
 	return head == head->next;
 }
 
 /**
- * Return a pointer to the item structure which contains the head
+ * Receive the element structure which encapsulates item head.
+ *
+ * @param head - pointer to the item head in demanded structure
+ * @param type - type of the element structure
+ * @param member - name of the head field in the element structure
+ * @return a pointer to the item structure which contains the head
  */
 #define dlist_entry(head, type, member) \
     ((type *)((char *)(head) - (unsigned long)(&((type *)0)->member)))
