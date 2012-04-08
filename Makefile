@@ -72,8 +72,8 @@ export PS1 :=
 # properly, at the same time executing each target in parallel.
 .NOTPARALLEL :
 
-.PHONY : all $(MAKECMDGOALS)
-all $(MAKECMDGOALS) :
+.PHONY : all $(filter-out all,$(MAKECMDGOALS))
+all $(filter-out all,$(MAKECMDGOALS)) :
 	@$(MAKE) -C $(dir $(lastword $(MAKEFILE_LIST))) __mk_ready=1 $@
 
 else
