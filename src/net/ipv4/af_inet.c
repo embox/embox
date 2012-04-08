@@ -161,9 +161,10 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 
 	sk = sock->sk;
 
+	addr_in = (struct sockaddr_in *)addr;
 	/* check if there is such an ip thought our local inet devices */
 	/* check broadcast and multicast, is that correct? */
-	if(ip_is_local((in_addr_t)&addr, true, true)){
+	if (!ip_is_local(addr_in->sin_addr.s_addr, true, true)) {
 		return -EADDRNOTAVAIL;
 	}
 
@@ -177,7 +178,6 @@ int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 	}
 
 	inet = inet_sk(sk);
-	addr_in = (struct sockaddr_in *)addr;
 	/* if (socket_port_is_busy(ntohs(addr_in->sin_port), inet->sport_type)) { */
 	/* 	res = -EBUSY; */
 	/* 	goto unlock; */

@@ -130,6 +130,10 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
 		}
 	}
 
+	if (addr == INADDR_ANY) {
+		return true;
+	}
+
 	return false;
 }
 
