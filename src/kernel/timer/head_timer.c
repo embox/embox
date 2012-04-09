@@ -31,30 +31,6 @@ clock_t clock(void) {
 	return sys_ticks;
 }
 
-#if 0 //need or not
-//static ipl_t timer_ipl;
-//static bool timer_in_section = false;
-#endif
-
-static inline void timer_safe_section_init(void) {
-}
-
-static inline void timer_safe_section_start(void) {
-#if 0
-	timer_ipl = ipl_save();
-	if(false != timer_in_section) {
-		return;
-	}
-	timer_in_section = true;
-#endif
-}
-
-static inline void timer_safe_section_end(void) {
-#if 0
-	timer_in_section = false;
-	ipl_restore(timer_ipl);
-#endif
-}
 
 POOL_DEF(timer_pool, sys_timer_t, TIMER_POOL_SZ); //TODO: new allocator (objalloc)
 
@@ -118,9 +94,7 @@ int timer_init(struct sys_timer *ptimer, uint32_t ticks,	sys_timer_handler_t han
 	ptimer->handle = handler;
 	ptimer->param  = param;
 
-	timer_safe_section_start();
 	timer_insert_into_list(ptimer);
-	timer_safe_section_end();
 
 	return 0;
 }
@@ -130,11 +104,7 @@ int timer_close(sys_timer_t *ptimer) {
 		return -EINVAL;
 	}
 
-	timer_safe_section_start();
-
 	list_del(&ptimer->lnk);
-
-	timer_safe_section_end();
 
 	if (ptimer->is_preallocated) {
 		pool_free(&timer_pool, ptimer);
@@ -182,13 +152,9 @@ static inline void timers_schedule(void) {
  * to the counter and the function is executed.
  */
 static inline void inc_sys_timers(void) {
-	timer_safe_section_start();
-
 	if(timers_need_schedule()) {
 		timers_schedule();
 	}
-
-	timer_safe_section_end();
 }
 
 /**
@@ -209,7 +175,6 @@ static int unit_init(void) {
 	INIT_LIST_HEAD(&sys_timers_list);
 	clock_init();
 	clock_setup(clock_source_get_precision(NULL));
-	timer_safe_section_init();
 	return 0;
 }
 
