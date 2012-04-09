@@ -12,48 +12,101 @@
 #include <lib/list.h>
 #include <kernel/task_resources.h>
 
+/**
+ * @brief Task describing struct
+ */
 struct task {
-	struct task *parent;
+	struct task *parent; /**< @brief Task's parent */
 
-	struct list_head children;
-	struct list_head link;
+	struct list_head children; /**< @brief Task's children */
+	struct list_head link; /**< @brief task's list link (handle task in lists) */
 
-	struct list_head threads;
+	struct list_head threads; /**< @brief Threads which have task pointer this task */
 
-	struct task_resources resources;
+	struct task_resources resources; /**< @brief Resources which task have */
 
-	int errno;
+	int errno; /**< @brief Last occured error code */
 };
 
+/**
+ * @brief Create new task with resources inhereted from parent task
+ *
+ * @param new Pointer where new task's pointer will be stored
+ * @param parent Pointer to a parent task
+ *
+ * @return 0 for success, negative on error occur
+ */
 extern int task_create(struct task **new, struct task *parent);
 
+/**
+ * @brief Get self task (task which current execution thread associated with)
+ *
+ * @return Pointer to self task
+ */
 extern struct task *task_self(void);
 
+/**
+ * @brief TODO
+ *
+ * @param tsk
+ *
+ * @return
+ */
 extern int task_delete(struct task *tsk);
 
 
+/**
+ * @brief Get task resources struct from task
+ * @param task Task to get from
+ * @return Task resources from task
+ */
 static inline struct task_resources *task_get_resources(struct task *task) {
 	return &task->resources;
 }
-//TODO
+/**
+ * @brief Determ is given fd is valid to use with tasks
+ * @param fd File descriptor number to test
+ * @return If given fs is valid to use with tasks
+ */
 static inline int task_valid_fd(int fd) {
 	return 0 <= fd && fd <= CONFIG_TASKS_RES_QUANTITY;
 }
 
 
-//TODO
+/**
+ * @brief Default task, which is associated with running thread after
+ * threads initialization
+ *
+ * @return Pointer to default task
+ */
 extern struct task *task_default_get(void);
 
-//TODO
+/**
+ * @brief Get task resources of self task
+ *
+ * @return Task resources of self task
+ */
 static inline struct task_resources *task_self_res(void) {
 	return task_get_resources(task_self());
 }
-//TODO
+
+/**
+ * @brief Get idx descriptor from self task
+ *
+ * @param fd idx number
+ *
+ * @return Pointer to idx descriptor
+ */
 static inline struct idx_desc *task_self_idx_get(int fd) {
 	return task_res_idx_get(task_self_res(), fd);
 }
 
-//TODO
+/**
+ * @brief Set idx descriptor of self task
+ *
+ * @param fd idx descriptor number
+ * @param desc idx descriptor pointer to associate with number
+ */
 static inline void task_self_idx_set(int fd, struct idx_desc *desc) {
 	task_res_idx_set(task_self_res(), fd, desc);
 }
