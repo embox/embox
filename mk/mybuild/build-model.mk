@@ -36,6 +36,7 @@ endef
 # The following features are defined:
 #   - reference 'configuration'
 #   - reference 'type'
+#   - reference 'dependent'
 #   - reference 'depends'
 #   - reference 'options'
 #   - reference 'includeMember'
@@ -53,17 +54,22 @@ define class-BuildModuleInstance
 	$(eobject-reference Build_ModuleInstance_type,
 		type,MyModule,,changeable)
 
+	# Property 'dependent... : BuildModuleInstance'.
+	$(eobject-reference Build_ModuleInstance_dependent,
+		dependent,BuildModuleInstance,depends,changeable many)
+
 	# Property 'depends... : BuildModuleInstance'.
 	$(eobject-reference Build_ModuleInstance_depends,
-		depends,BuildModuleInstance,,changeable many)
+		depends,BuildModuleInstance,dependent,changeable many)
 
 	# Property 'options... : BuildOptionInstance'.
 	$(eobject-reference Build_ModuleInstance_options,
 		options,BuildOptionInstance,module,changeable many containment)
 
 	# Property 'includeMember : CfgInclude'.
+	# Property 'includeMember_link : ELink'.
 	$(eobject-reference Build_ModuleInstance_includeMember,
-		includeMember,CfgInclude,,changeable)
+		includeMember,CfgInclude,,changeable linkable)
 
 	# PROTECTED REGION ID(Build_ModuleInstance) ENABLED START
 	# PROTECTED REGION END

@@ -65,16 +65,18 @@ Usage: $(MAKE) docsgen
   Generate documentation from doxygen comments in source files.
 endef # docsgen
 
-help-mod-% :
+mod-% :
 	@$(make_mybuild) $@
 
 define help-mod
-Usage: $(MAKE) help-mod-<INFO>
+Usage: $(MAKE) mod-<INFO>
 
   Print <INFO> info about modules:
   list: list all modules included in build
-  <module_name>: show brief informataion about module: dependencies, options,
+  brief-<module_name>: show brief informataion about module: dependencies, options,
 	source files
+  include-reason-<module_name>: show dependence subtree desribing why <module_name>
+    was included in build
 endef
 
 # Assuming that we have 'build.conf' in every template.
@@ -265,13 +267,17 @@ Building targets:
   all (a)        - Default build target, alias to '$(MAKE) build'
   build (b)      - Build the current active configuration
   build-<t>      - Build a given configuration template
+  menubuild (mb) - Interactively select a configuration to build a menu based
+                   program (requires 'dialog')
+  xbuild (xb)    - Interactively select a configuration to build using GTK
+                   client (requires 'Xdialog')
 
 Configuration targets:
   confload       - List available configuration templates
   confload-<t>   - Load a configuration from template <t>
-  menuconfig (m) - Interactively select a configuration using a menu based
+  menuconfig (mc) - Interactively select a configuration using a menu based
                    program (requires 'dialog')
-  xconfig (x)    - Interactively select a configuration using GTK client
+  xconfig (xc)    - Interactively select a configuration using GTK client
                    (requires 'Xdialog')
 
 Cleaning targets:
@@ -285,7 +291,7 @@ Documentation targets:
   doxygen        - Denerate documentation from doxygen comments
 
 Module information:
-  help-mod       - Various module information. See more there
+  mod            - Various module information. See more in help-mod
 
 endef
 

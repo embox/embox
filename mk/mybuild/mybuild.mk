@@ -195,8 +195,12 @@ define printInstance
 	$(for inst<-$1,
 		mod <- $(get inst->type),
 		--- $(get mod->qualifiedName) ---$(\n)
-		Deps:$(\n)
+		Inclusion reason: $(if $(get inst->includeMember),explicit,as dependence)$(\n)
+		Depends:$(\n)
 		$(for dep <- $(get inst->depends),
+			$(\t)$(get $(get dep->type).qualifiedName)$(\n))
+		Dependents:$(\n)
+		$(for dep <- $(get inst->dependent),
 			$(\t)$(get $(get dep->type).qualifiedName)$(\n))
 		OptInsts:$(\n)
 		$(for optInst <- $(get inst->options),
@@ -205,17 +209,17 @@ define printInstance
 			$(\t)$(get opt->name) : $(get val->value)$(\n))
 		Sources:$(\n)
 		$(for srcMember <- $(get mod->sourcesMembers),
-			src <- $(get $(get srcMember->files).fileFullName),
+				src <- $(get srcMember->files),
 	       		$(for annot<-$(get srcMember->annotations),
-				annotType <- $(get annot->type),
-				annotName <- $(get annotType->qualifiedName),
-				annotBind <- $(get annot->bindings),
-				@$(annotName):$(\n)
-				$(for opt <- $(get annotBind->option),
-					optName <- $(get opt->name),
-					optValue <- $(get $(get annotBind->optionValue).value),
-					$(\t)$(optName) = $(optValue)$(\n)))
-			$(src)$(\n))
+					annotType <- $(get annot->type),
+					annotName <- $(get annotType->qualifiedName),
+					annotBind <- $(get annot->bindings),
+					@$(annotName):$(\n)
+					$(for opt <- $(get annotBind->option),
+						optName <- $(get opt->name),
+						optValue <- $(get $(get annotBind->optionValue).value),
+						$(\t)$(optName) = $(optValue)$(\n)))
+				$(get src->fileFullName)$(\n))
 	)
 endef
 

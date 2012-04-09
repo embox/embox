@@ -22,6 +22,8 @@ Build_ModuleInstance_configuration := \
 	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_configuration)
 Build_ModuleInstance_type := \
 	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_type)
+Build_ModuleInstance_dependent := \
+	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_dependent)
 Build_ModuleInstance_depends := \
 	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_depends)
 Build_ModuleInstance_options := \
@@ -48,9 +50,10 @@ define __build_init
 	$(call eMetaClassInit,$(Build_ModuleInstance),ModuleInstance,,)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_configuration),configuration,$(Build_Build),$(Build_Build_modules),changeable container)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_type),type,$(MyFile_Module),,changeable)
-	$(call eMetaReferenceInit,$(Build_ModuleInstance_depends),depends,$(Build_ModuleInstance),,changeable many)
+	$(call eMetaReferenceInit,$(Build_ModuleInstance_dependent),dependent,$(Build_ModuleInstance),$(Build_ModuleInstance_depends),changeable many)
+	$(call eMetaReferenceInit,$(Build_ModuleInstance_depends),depends,$(Build_ModuleInstance),$(Build_ModuleInstance_dependent),changeable many)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_options),options,$(Build_OptionInstance),$(Build_OptionInstance_module),changeable many containment)
-	$(call eMetaReferenceInit,$(Build_ModuleInstance_includeMember),includeMember,$(ConfigFile_Include),,changeable)
+	$(call eMetaReferenceInit,$(Build_ModuleInstance_includeMember),includeMember,$(ConfigFile_Include),,changeable linkable)
 
 	$(call eMetaClassInit,$(Build_OptionInstance),OptionInstance,,)
 	$(call eMetaReferenceInit,$(Build_OptionInstance_module),module,$(Build_ModuleInstance),$(Build_ModuleInstance_options),changeable container)
@@ -67,6 +70,7 @@ define __build_bind
 	$(call eMetaClassBind,$(Build_ModuleInstance),BuildModuleInstance)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_configuration),configuration)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_type),type)
+	$(call eMetaFeatureBind,$(Build_ModuleInstance_dependent),dependent)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_depends),depends)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_options),options)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_includeMember),includeMember)

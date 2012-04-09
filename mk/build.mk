@@ -31,16 +31,18 @@ docsgen:
 	doxygen
 	@echo 'Docs generation complete'
 
-MODULE_LIST := $(strip $(call help_modulelist))
+MODULE_LIST := $(strip $(call mod_list))
 
-help-mod-list :
+mod-list :
 	$(info --- Module list --- )
-	$(info $(addsuffix $(\n),$(MODULE_LIST)))
-	@#
+	@$(info $(addsuffix $(\n),$(MODULE_LIST)))#
 
-$(MODULE_LIST:%=help-mod-%) : help-mod-% :
-	$(info $(call help_module,$*))
-	@#
+$(MODULE_LIST:%=mod-include-reason-%) : mod-include-reason-% :
+	@$(info $(call mod_include_reason,$*))#
 
-help-mod-% :
+$(MODULE_LIST:%=mod-brief-%) : mod-brief-% :
+	@$(info $(call mod_brief,$*))#
+
+
+mod-brief-% :
 	@echo There is no such module in build
