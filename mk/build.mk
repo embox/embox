@@ -44,5 +44,5 @@ $(MODULE_LIST:%=mod-brief-%) : mod-brief-% :
 	@$(info $(call mod_brief,$*))#
 
 
-mod-brief-% :
-	@echo There is no such module in build
+mod-brief-% mod-include-reason-%:
+	@echo There is no $* module in build
