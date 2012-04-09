@@ -12,6 +12,8 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
 #include <net/util.h>
 #include <net/in.h>
 
@@ -20,6 +22,7 @@
 #include <pnet/node.h>
 #include <pnet/repo.h>
 #include <pnet/graph.h>
+
 
 EMBOX_CMD(exec);
 
@@ -49,25 +52,25 @@ static match_rule_t rule_get_by_id(net_node_t node, char id);
 
 #define get_graph(graph, name, error) \
 		if (NULL == (graph = get_graph_by_name(name))) { \
-			printf("%s: no such graph\n", name);		 \
+			printf("%s: no such graph ", name);		 \
 			return -error;								 \
 		}
 
 #define get_node_from_graph(graph, node, node_name, error) \
 		if (NULL == (node = get_node_from_graph_by_name(graph, node_name))) {   \
-			printf("%s: no such node in graph '%s'\n", node_name, graph->name); \
+			printf("%s: no such node in graph '%s'", node_name, graph->name); \
 			return -error;														\
 		}
 
 #define get_node_from_repo(node, name, error) \
 		if (NULL == (node = pnet_get_module(name))) { \
-			printf("%s: no such node\n", name);		  \
+			printf("%s: no such node ", name);	  \
 			return -error;							  \
 		}
 
 #define get_rule_from_node(node, rule, rule_name, error) \
 		if (NULL == (rule = rule_get_by_id(node, *rule_name))) { \
-			printf("%s: no such rule", rule_name);				 \
+			printf("%s: no such rule ", rule_name);				 \
 			return -error;										 \
 		}
 
@@ -113,7 +116,7 @@ static int delete_brokens(char *str) {
 }
 
 static void shift(char **argv, int begin, int shift) {
-	for(int i = begin + shift; i < MAX_TOKEN_COUNT; i++) {
+	for (int i = begin + shift; i < MAX_TOKEN_COUNT; i++) {
 		argv[i - shift] = argv[i];
 	}
 }
@@ -176,9 +179,9 @@ static void print_list_of_graph_nodes(struct pnet_graph *gr) {
 		printf("list of nodes is empty \n");
 		return;
 	}
-	printf("nodes of %s: ", gr->name);
+	printf("nodes of %s: \n", gr->name);
 	list_for_each_entry(node, &gr->nodes, gr_link) {
-		printf("%s(type:%s), ", node->name, node->proto->name);
+		printf("	%s (type: %s)\n ", node->name, node->proto->name);
 	}
 }
 
@@ -187,20 +190,20 @@ static int print_graph(char **argv) {
 	struct pnet_graph *gr;
 	net_node_t root;
 
-	get_graph(gr, argv[2], ENOENT);
+	get_graph(gr, argv[3], ENOENT);
 
-	get_node_from_graph(gr, root, argv[3], ENOENT);
+	get_node_from_graph(gr, root, argv[4], ENOENT);
 
 	if (list_empty(&gr->nodes)) {
-		printf("list of nodes is empty \n");
+		printf("list of nodes is empty ");
 		return ENOERR;
 	}
 
 	node = root->rx_dfault;
 
-	printf("%s(type:%s) \n", root->name, root->proto->name);
+	printf("%s (type: %s)\n", root->name, root->proto->name);
 	while (NULL != node) {
-		printf("%s(type:%s)\n", node->name, node->proto->name);
+		printf("%s (type: %s)\n", node->name, node->proto->name);
 		node = node->rx_dfault;
 	}
 
@@ -232,6 +235,8 @@ static int add_node(char **argv) {
 	struct pnet_graph *gr;
 	net_node_t node;
 	int graph_state;
+	char *name;
+	int res;
 
 	get_graph(gr, argv[3], ENOENT);
 
@@ -240,11 +245,21 @@ static int add_node(char **argv) {
 	}
 
 	get_node_from_repo(node, argv[4], ENOENT);
-	node->name = argv[5];
+
+	if (0 > (res = pnet_graph_add_node(gr, node))) {
+		if (res == -EBUSY) {
+			printf("node %s is already in use in graph %s", node->name, gr->name);
+		}
+		return res;
+	}
+
+	name  = malloc(strlen(argv[5]));
+	strcpy(name, argv[5]);
+	node->name = name;
 
 	gr->state = graph_state;
 
-	return pnet_graph_add_node(gr, node);
+	return ENOERR;
 }
 
 /**
@@ -270,8 +285,8 @@ static int link_node(char **argv) {
 	res = pnet_node_link(src, node);
 	gr->state = graph_state;
 
-	if(res < 0)
-		printf("node linking error\n");
+	if (res < 0)
+		printf("node linking error ");
 
 	return res;
 }
@@ -379,7 +394,7 @@ static match_rule_t rule_get_by_id(net_node_t node, char id) {
 }
 
 static _rule_setter get_setter_by_option(char *option) {
-	for(int i = 0; i < RULE_OPTION_QUANTITY; i++) {
+	for (int i = 0; i < RULE_OPTION_QUANTITY; i++) {
 		if (!strcmp(rule_setters[i].option, option))
 			return rule_setters[i].setter;
 	}
@@ -426,18 +441,18 @@ static int exec(int argc, char **argv) {
 				break;
 			}
 
-			printf("%s: no such option", argv[2]);
+			printf("%s: no such option ", argv[2]);
 			break;
 		case 'n' :
-			printf("nodes: ");
+			printf("nodes:\n");
 			array_foreach_ptr(mod, __pnet_mod_repo, ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
 				if (mod->node)
-					printf("%s, ", mod->node->proto->name);
+					printf("	%s\n", mod->node->proto->name);
 			}
-			printf("\nprotocols: ");
+			printf("\nprotocols:\n");
 			array_foreach_ptr(mod, __pnet_mod_repo, ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
 				if (!mod->node)
-					printf("%s, ", mod->proto->name);
+					printf("	%s\n", mod->proto->name);
 			}
 			break;
 		case 'r':
@@ -451,7 +466,7 @@ static int exec(int argc, char **argv) {
 		case 'a' :
 			if (!strcmp("--graph", argv[2])) {
 				if (NULL == pnet_graph_create(argv[3])) {
-					printf("%s: graph was not created\n", argv[3]);
+					printf("%s: graph was not created ", argv[3]);
 					return -1;
 				}
 				break;
@@ -459,26 +474,20 @@ static int exec(int argc, char **argv) {
 
 			if (!strcmp("--node", argv[2])) {
 				if ((res = add_node(argv)) < 0) {
-					if (res == -EBUSY) {
-						gr = get_graph_by_name(argv[3]);
-						node = pnet_get_module(argv[4]);
-						printf("node '%s' in use already in graph '%s' \n", argv[4], node->graph->name);
-						return 0;
-					}
-					return -1;
+					return 0;
 				}
 				break;
 			}
 
 			if (!strcmp("--rule", argv[2])) {
 				if (rule_alloc(argv) < 0) {
-					printf("rule was not created\n");
+					printf("rule was not created ");
 					return -1;
 				}
 				break;
 			}
 
-			printf("%s: no such option \n", argv[2]);
+			printf("%s: no such option ", argv[2]);
 			return 0;
 		case 't':
 			get_graph(gr, argv[2], 0);
@@ -487,11 +496,11 @@ static int exec(int argc, char **argv) {
 
 			if (NULL != (setter = get_setter_by_option(argv[5]))) {
 				if (setter(gr, rule, argv[6]) < 0) {
-					printf("%s: incorrect value\n", argv[6]);
+					printf("%s: incorrect value ", argv[6]);
 					return 0;
 				}
 			} else {
-				printf("%s: no such option \n", argv[5]);
+				printf("%s: no such option ", argv[5]);
 			}
 			break;
 		case 'l':
@@ -509,7 +518,7 @@ static int exec(int argc, char **argv) {
 					return 0;
 				break;
 			}
-			printf("%s: no such option", argv[2]);
+			printf("%s: no such option ", argv[2]);
 			return -1;
 		default:
 			return 0;

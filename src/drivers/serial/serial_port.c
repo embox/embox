@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <util/ring_buff.h>
 #include <drivers/serial.h>
+#include <fs/file_desc.h>
 
 #include <embox/unit.h>
 
@@ -134,6 +135,7 @@ static char uart_getc(void) {
 static bool handler_was_set = false;
 #define COM0_IRQ_NUM 0x4
 #define UART_IER_RX_ENABLE 0x1
+
 static int uart_set_irq_handler(irq_handler_t pfunc, struct file_desc *desc) {
 	/*FIXME x86 uart 4 is number only for first port*/
 	// TODO check return code.

@@ -27,7 +27,7 @@ static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_nod
 
 	if (node->proto != NULL) {
 		if(NULL != hnd) {
-			hnd(pack);
+			res = hnd(pack);
 		}
 	}
 
