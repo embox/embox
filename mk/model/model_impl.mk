@@ -64,21 +64,19 @@ define builtin_func-eobject-reference
 		$$(property $2$(if $(filter many,$5),...) : $3)
 
 		# Generate getter.
-		$(if $(filter container,$5),
-			# Container references share the same field.
+		$(if $(filter contain%,$5),
+			# Container and containment references share the same field.
 			$$(getter $2,
-				$$(suffix $$(filter $2/%,$$(get-field __eContainer)))),
+				$$(suffix $$(filter $2/%,$$(get-field \
+					$(if $(filter container,$5),__eContainer,__eContents))))),
 
 			# Otherwise define a new field.
-			$(if $(filter containment,$5),
-				$$(field $2$(if $(filter many,$5),...) : $3),
+			# Cross references are stored in raw fields.
+			$$(field $2$(if $(filter many,$5),...))
+			# There is also a custom serializer for such fields.
+			$$(method __serialize_field-$2,
+				$$(call __eObjectSerializeCrossReference,$2,$1))
 
-				# Cross references are stored in raw fields.
-				$$(field $2$(if $(filter many,$5),...))
-				# There is also a custom serializer for such fields.
-				$$(method __serialize_field-$2,
-					$$(call __eObjectSerializeCrossReference,$2,$1))
-			)
 			$$(getter $2,
 				# Linkable references also support on-demand linkage.
 				$(if $(filter linkable,$5),
@@ -158,8 +156,8 @@ define __eObjectSetContainer
 	$(for oldContainer <- $(get-field __eContainer),
 		$(if $(basename $(oldContainer)),
 			# Regular containment.
-			$(set-field- oldContainer->$(notdir $(basename $(oldContainer))),
-				$(this)),
+			$(set-field- oldContainer->__eContents,
+				$(notdir $(basename $(oldContainer)))/$(this)),
 			# Resource containment.
 			$(set oldContainer->contentsRoot,)
 		)
@@ -168,7 +166,7 @@ define __eObjectSetContainer
 	$(set-field __eContainer,$1/$3$2)
 
 	$(for newContainer <- $2,
-		$(set-field+ newContainer->$3,$(this)))
+		$(set-field+ newContainer->__eContents,$3/$(this)))
 endef
 
 # Params:
@@ -226,7 +224,7 @@ endef
 #   2. New value.
 #   3. Opposite property.
 define __eObjectSetContainment
-	$(call __eObjectSetContainment-,$1,$(get-field $1),$3)
+	$(call __eObjectSetContainment-,$1,$(get $1),$3)
 	$(call __eObjectSetContainment+,$1,$2,$3)
 endef
 

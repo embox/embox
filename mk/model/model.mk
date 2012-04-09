@@ -84,8 +84,7 @@ define class-EObject
 	# Method 'eContents... : EObject'.
 	# PROTECTED REGION ID(EModel_EObject_eContents) ENABLED START
 	$(method eContents... : EObject,
-		$(for metaReference <- $(get $(get eMetaClass).eAllContainments),
-			$(get $(get metaReference->instanceProperty))))
+		$(suffix __eContents))
 	# PROTECTED REGION END
 
 	# Method 'eContentsOfType... : EObject'.
@@ -151,6 +150,9 @@ define class-EObject
 	# 'property/oppositeProperty.object'
 	# '.object' for resource containment.
 	$(field __eContainer : EObject)
+
+	# 'property/.object'
+	$(field __eContents... : EObject)
 
 	$(method __serialize_extra_objects,
 		$(invoke eLinks))
