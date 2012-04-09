@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Multi-threads Timer handling.
+ * @brief
  *
  * @date 22.07.10
  * @author Andrey Baboshin
@@ -8,35 +8,14 @@
  * @author Fedor Burdun
  */
 
-#include <assert.h>
 #include <mem/misc/pool.h>
-#include <hal/clock.h>
 #include <lib/list.h>
-#include <embox/unit.h>
 #include <kernel/timer.h>
-//#include <kernel/thread/event.h>
-//#include <kernel/thread/sched.h>
-#include <kernel/clock_source.h>
-#include <hal/ipl.h>
-#include <assert.h>
-#include <errno.h>
-
-#define TIMER_POOL_SZ 20 /**<system timers quantity */
-
-EMBOX_UNIT_INIT(unit_init);
-
-static clock_t sys_ticks; /* ticks after start system. */
-
-clock_t clock(void) {
-	return sys_ticks;
-}
 
 
-POOL_DEF(timer_pool, sys_timer_t, TIMER_POOL_SZ); //TODO: new allocator (objalloc)
+static LIST_HEAD(sys_timers_list); /* list head to timers */
 
-static struct list_head sys_timers_list; /* list head to timers */
-
-static inline void timer_insert_into_list(struct sys_timer *tmr) {
+void timer_start(struct sys_timer *tmr) {
 	struct list_head *iter, *tmp;
 
 	tmr->cnt = tmr->load;
@@ -66,51 +45,8 @@ static inline void timer_insert_into_list(struct sys_timer *tmr) {
 	list_add_tail(&tmr->lnk, &sys_timers_list);
 }
 
-int timer_set(struct sys_timer **ptimer, uint32_t ticks,	sys_timer_handler_t handler,
-		void *param) {
-
-	if (NULL == handler || NULL == ptimer) {
-		return -EINVAL;
-	}
-	if (NULL == (*ptimer = (sys_timer_t*) pool_alloc(&timer_pool))) {
-		return -ENOMEM;
-	}
-	/* we know that init will be success (right ptimer and handler) */
-	timer_init(*ptimer, ticks, handler, param);
-	(*ptimer)->is_preallocated = true;
-
-	return 0;
-}
-
-int timer_init(struct sys_timer *ptimer, uint32_t ticks,	sys_timer_handler_t handler,
-		void *param) {
-
-	if (NULL == handler || NULL == ptimer) {
-		return -EINVAL; /* wrong parameters */
-	}
-
-	ptimer->is_preallocated = false;
-	ptimer->cnt    = ptimer->load = ticks;
-	ptimer->handle = handler;
-	ptimer->param  = param;
-
-	timer_insert_into_list(ptimer);
-
-	return 0;
-}
-
-int timer_close(sys_timer_t *ptimer) {
-	if(NULL == ptimer) {
-		return -EINVAL;
-	}
-
+void timer_stop(struct sys_timer *ptimer) {
 	list_del(&ptimer->lnk);
-
-	if (ptimer->is_preallocated) {
-		pool_free(&timer_pool, ptimer);
-	}
-
-	return 0;
 }
 
 static inline bool timers_need_schedule(void) {
@@ -142,7 +78,7 @@ static inline void timers_schedule(void) {
 
 		list_del(iter);
 
-		timer_insert_into_list(timer);
+		timer_start(timer);
 	}
 }
 
@@ -151,30 +87,8 @@ static inline void timers_schedule(void) {
  * and the counter of this timer is the zero then its initial value is assigned
  * to the counter and the function is executed.
  */
-static inline void inc_sys_timers(void) {
+void timer_sched(void) {
 	if(timers_need_schedule()) {
 		timers_schedule();
 	}
 }
-
-/**
- * Handling of the clock tick.
- */
-void clock_tick_handler(int irq_num, void *dev_id) {
-	sys_ticks++;
-	inc_sys_timers();
-}
-
-/**
- * Initialization of the timer subsystem.
- *
- * @return 0 if success
- */
-static int unit_init(void) {
-	sys_ticks = 0;
-	INIT_LIST_HEAD(&sys_timers_list);
-	clock_init();
-	clock_setup(clock_source_get_precision(NULL));
-	return 0;
-}
-

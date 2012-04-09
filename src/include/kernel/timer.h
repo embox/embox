@@ -79,4 +79,10 @@ extern int timer_set(sys_timer_t **ptimer, uint32_t ticks,
  */
 extern int timer_close(sys_timer_t *ptimer);
 
+extern void timer_sched(void);
+
+extern void timer_stop(struct sys_timer *ptimer);
+
+extern void timer_start(struct sys_timer *ptimer);
+
 #endif /* KERNEL_TIMER_H_ */
