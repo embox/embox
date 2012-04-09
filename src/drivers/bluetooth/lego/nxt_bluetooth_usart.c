@@ -9,6 +9,7 @@
 #include <types.h>
 #include <string.h>
 #include <unistd.h>
+#include <assert.h>
 #include <kernel/prom_printf.h>
 
 #include <drivers/at91sam7s256.h>

@@ -10,7 +10,9 @@
 #define FS_FILE_DESC_H_
 
 #include <lib/list.h>
-#include <fs/node.h>
+//#include <fs/node.h>
+
+struct node;
 
 struct file_desc {
 	//struct list_head;
