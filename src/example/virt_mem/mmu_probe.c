@@ -10,15 +10,18 @@
 
 #include <embox/cmd.h>
 #include <getopt.h>
+#include <types.h>
 #include <hal/mm/mmu_core.h>
+#include <stdio.h>
 
 EMBOX_CMD(exec);
 
+
+#if 0
 static void print_usage(void) {
 	printf("Usage: mmu_probe [-r] [-h]\n");
 }
 
-#ifdef 0
 static bool mmu_show_ctrl() {
 	unsigned int ctrl_reg = mmu_get_mmureg(LEON_CNR_CTRL);
 	printf("CTLR REG:\t0x%08X\n", ctrl_reg);
@@ -56,29 +59,29 @@ static bool mmu_show_reg() {
 	return 0;
 }
 #endif
-#define TLBNUM 4
+#define TLBNUM 0
 
-static bool mmu_probe() {
+static bool mmu_probe(void) {
 	/* alloc mem for pages */
-	__asm__(
-		".section .data\n\t"
-		".align %0\n\t"
-		"page0: .skip %0\n\t"
-		"page1: .skip %0\n\t"
-		"page2: .skip %4\n\t"
+	asm (
+		".section .data \n/t"
+		".align %0\n/t"
+		"page0: .skip %1\n/t"
+		"page1: .skip %2\n/t"
+		"page2: .skip %3\n\t"
 		".text\n"
 		: : "i" (MMU_PAGE_SIZE),/* Page Size */
-		"i"(MMU_GTABLE_SIZE) ,	/* Global page tables*/
-		"i"(MMU_MTABLE_SIZE) ,	/* Middle page tables */
-		"i"(MMU_PTABLE_SIZE) , 	/* Page table*/
+		"i"(MMU_GTABLE_SIZE) ,	/* Directory of tables*/
+		"i"(MMU_MTABLE_SIZE) ,	/* Table of pages */
 		"i"((3)*MMU_PAGE_SIZE)
 	);
 
+	/*"i"(MMU_PTABLE_SIZE) , 	 Page table*/
 
 	/* one-on-one mapping for context 0 */
-	mmu_map_region(0, 0, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000);
-	mmu_map_region(0x44000000, 0x44000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000);
-	mmu_map_region(0x80000000, 0x80000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000);
+	mmu_map_region(0, 0, 0x1000000, /* MMU_PTE_PRIV */ 0x000000000, 0x0);
+	mmu_map_region(0x44000000, 0x44000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
+	mmu_map_region(0x80000000, 0x80000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
 
 	/* close your eyes and pray ... */
 	printf("mmu start...\n");
@@ -96,7 +99,7 @@ static bool mmu_probe() {
  * return -1 another way
  */
 static int exec(int argc, char **argv) {
-#ifdef 0
+#if 0
 	int opt;
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "rh"))) {
