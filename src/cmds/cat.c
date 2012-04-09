@@ -22,9 +22,15 @@ static int exec(int argc, char **argv) {
 	int number = 0, line = 0, new_line = 1;
 	FILE *fd;
 	char buff;
+
+	if(argc < 2) {
+		printf("Please enter correct file name\n");
+		return 0;
+	}
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "nh"))) {
-		switch(opt) {
+
+	while (-1 != (opt = getopt(argc - 1, argv, "nh"))) {
+		switch (opt) {
 		case 'n':
 			number = 1;
 			break;
@@ -44,9 +50,9 @@ static int exec(int argc, char **argv) {
 		return 0;
 	}
 	if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
-                printf("Can't open file %s\n", argv[argc - 1]);
-                return -1;
-        }
+		printf("Can't open file %s\n", argv[argc - 1]);
+		return -1;
+	}
 
 	while (fread(&buff, 1, 1, fd) > 0) {
 		if (new_line && number) {
