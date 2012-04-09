@@ -94,7 +94,7 @@ define builtin_func-eobject-reference
 					$(if $4,Bidirectional,Unidirectional))),
 			property <- $2,
 
-			$(__eobject_ref_setters)
+			$(__eobject_ref_setter)
 
 			$(if $(filter linkable,$5),
 				$(for property <- $(property)_link$(if $(filter many,$5),s),
@@ -106,7 +106,7 @@ define builtin_func-eobject-reference
 					$$(getter $(property),
 						$$(subst ./,,$$(dir $$(get-field $2))))
 
-					$(__eobject_ref_setters)
+					$(__eobject_ref_setter)
 				)
 			)
 		)
@@ -118,23 +118,16 @@ endef
 # Context:
 #   'property'
 #   'fn_suffix'
-define __eobject_ref_setters
+define __eobject_ref_setter
 	$(if $(filter changeable,$5),
 		$$(setter $(property),
-			$$(call __eObjectSet$(fn_suffix),$(__eobject_ref_setter_args)))
-		$(if $(filter many,$5),
-			$$(setter+ $(property),
-				$$(call __eObjectAdd$(fn_suffix),$(__eobject_ref_setter_args)))
-			$$(setter- $(property),
-				$$(call __eObjectRemove$(fn_suffix),$(__eobject_ref_setter_args)))
-		)
+			$(if $(not $(filter many,$5)),
+				$$(assert $$(not $$2),
+					Set '$$2' invoked for a non-list EReference $1)
+			)
+			$$(call __eObjectSet$(fn_suffix)$$2,$2,$$(suffix $$1),$4,$1))
 	)
 endef
-
-# Param:
-#   Same as to 'eobject-reference' builtin.
-__eobject_ref_setter_args = \
-	$2,$$(suffix $$1),$4,$1
 
 # Params:
 #   1. Property name.
@@ -182,7 +175,7 @@ endef
 #   1. Property name.
 #   2. What to add.
 #   3. Opposite property.
-define __eObjectAddContainment
+define __eObjectSetContainment+
 	$(silent-for this <- $2,
 		# XXX Using '__this'. -- Eldar
 		$(call __eObjectSetContainer,$3,$(__this),$1))
@@ -191,7 +184,7 @@ endef
 # Params:
 #   1. Property name.
 #   2. What to add.
-define __eObjectAddUnidirectional
+define __eObjectSetUnidirectional+
 	$(set-field+ $1,$2)
 endef
 
@@ -199,7 +192,7 @@ endef
 #   1. Property name.
 #   2. What to add.
 #   3. Opposite property.
-define __eObjectAddBidirectional
+define __eObjectSetBidirectional+
 	$(set-field+ $1,$2)
 	$(silent-for e <- $2,
 		$(set-field+ e->$3,$(this)))
@@ -209,14 +202,14 @@ endef
 #   1. Property name.
 #   2. What to remove.
 #   3. Opposite property.
-define __eObjectRemoveContainment
+define __eObjectSetContainment-
 	$(foreach ,$2,$(warning $0: NIY))
 endef
 
 # Params:
 #   1. Property name.
 #   2. What to remove.
-define __eObjectRemoveUnidirectional
+define __eObjectSetUnidirectional-
 	$(foreach ,$2,$(warning $0: NIY))
 endef
 
@@ -224,7 +217,7 @@ endef
 #   1. Property name.
 #   2. What to remove.
 #   3. Opposite property.
-define __eObjectRemoveBidirectional
+define __eObjectSetBidirectional-
 	$(foreach ,$2,$(warning $0: NIY))
 endef
 
@@ -233,16 +226,16 @@ endef
 #   2. New value.
 #   3. Opposite property.
 define __eObjectSetContainment
-	$(call __eObjectRemoveContainment,$1,$(get-field $1),$3)
-	$(call __eObjectAddContainment,$1,$2,$3)
+	$(call __eObjectSetContainment-,$1,$(get-field $1),$3)
+	$(call __eObjectSetContainment+,$1,$2,$3)
 endef
 
 # Params:
 #   1. Property name.
 #   2. New value.
 define __eObjectSetUnidirectional
-	$(call __eObjectRemoveUnidirectional,$1,$(get-field $1))
-	$(call __eObjectAddUnidirectional,$1,$2)
+	$(call __eObjectSetUnidirectional-,$1,$(get-field $1))
+	$(call __eObjectSetUnidirectional+,$1,$2)
 endef
 
 # Params:
@@ -250,8 +243,8 @@ endef
 #   2. New value.
 #   3. Opposite property.
 define __eObjectSetBidirectional
-	$(call __eObjectRemoveBidirectional,$1,$(get-field $1),$3)
-	$(call __eObjectAddBidirectional,$1,$2,$3)
+	$(call __eObjectSetBidirectional-,$1,$(get-field $1),$3)
+	$(call __eObjectSetBidirectional+,$1,$2,$3)
 endef
 
 # Params:
@@ -259,7 +252,7 @@ endef
 #   2. What to add.
 #   3. Empty.
 #   4. Meta reference ID.
-define __eObjectAddUnidirectional_link
+define __eObjectSetUnidirectional_link+
 	$(set-field+ $1,
 		$(for link <- $2,
 			$(set-field link->eSource,$4$(this))
@@ -273,7 +266,7 @@ endef
 #   2. What to add.
 #   3. Opposite property.
 #   4. Meta reference ID.
-define __eObjectAddBidirectional_link
+define __eObjectSetBidirectional_link+
 	$(set-field+ $1,
 		$(for link <- $2,
 			$(set-field link->eSource,$4$(this))
@@ -287,7 +280,7 @@ endef
 # Params:
 #   1. Property name.
 #   2. What to remove.
-define __eObjectRemoveUnidirectional_link
+define __eObjectSetUnidirectional_link-
 	$(foreach ,$2,$(warning $0: NIY))
 endef
 
@@ -295,7 +288,7 @@ endef
 #   1. Property name.
 #   2. What to remove.
 #   3. Opposite property.
-define __eObjectRemoveBidirectional_link
+define __eObjectSetBidirectional_link-
 	$(foreach ,$2,$(warning $0: NIY))
 endef
 
@@ -305,8 +298,8 @@ endef
 #   3. Empty.
 #   4. Meta reference ID.
 define __eObjectSetUnidirectional_link
-	$(call __eObjectRemoveUnidirectional_link,$1,$(get-field $1))
-	$(call __eObjectAddUnidirectional_link,$1,$2,,$4)
+	$(call __eObjectSetUnidirectional_link-,$1,$(get-field $1))
+	$(call __eObjectSetUnidirectional_link+,$1,$2,,$4)
 endef
 
 # Params:
@@ -315,8 +308,8 @@ endef
 #   3. Opposite property.
 #   4. Meta reference ID.
 define __eObjectSetBidirectional_link
-	$(call __eObjectRemoveBidirectional_link,$1,$(get-field $1),$3)
-	$(call __eObjectAddBidirectional_link,$1,$2,$3,$4)
+	$(call __eObjectSetBidirectional_link-,$1,$(get-field $1),$3)
+	$(call __eObjectSetBidirectional_link+,$1,$2,$3,$4)
 endef
 
 # Params:

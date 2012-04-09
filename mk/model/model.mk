@@ -816,12 +816,8 @@ define class-EFreezable # abstract
 				$$(getter $(get f->instanceProperty),
 					$$(get-field $(get f->instanceProperty)_frozen))
 			)
-			$(for s <- \
-				$(if $(get f->isChangeable),
-					setter \
-					$(if $(get f->isMany),
-						setter+ setter-)),
-				$$($s $(get f->instanceProperty),
+			$(if $(get f->isChangeable),
+				$$(setter $(get f->instanceProperty),
 					$$(error $$0($$1): Frozen))
 			)
 		)

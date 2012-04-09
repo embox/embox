@@ -115,11 +115,6 @@ endef
 «IF changeable -»
 #	# TODO Uncomment and implement me.
 	«mkSetterWrap(property, "$(error $0($1): NIY)")»
-«IF many -»
-#	# TODO Uncomment and implement us.
-	«mkSetterPlusWrap(property, "$(error $0($1): NIY)")»
-	«mkSetterMinusWrap(property, "$(error $0($1): NIY)")»
-«ENDIF -»
 «ENDIF -»
 «ENDDEFINE»
 

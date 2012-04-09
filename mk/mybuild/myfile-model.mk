@@ -295,11 +295,6 @@ define class-MyModule
 #	# TODO Uncomment and implement me.
 	$(setter depends,
 		$(error $0($1): NIY))
-#	# TODO Uncomment and implement us.
-	$(setter+ depends,
-		$(error $0($1): NIY))
-	$(setter- depends,
-		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
 	# Property 'dependsMembers... : MyDependsMember'.
@@ -319,11 +314,6 @@ define class-MyModule
 #	# TODO Uncomment and implement me.
 	$(setter provides,
 		$(error $0($1): NIY))
-#	# TODO Uncomment and implement us.
-	$(setter+ provides,
-		$(error $0($1): NIY))
-	$(setter- provides,
-		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
 	# Property 'providesMembers... : MyProvidesMember'.
@@ -337,11 +327,6 @@ define class-MyModule
 		$(invoke getMembers,requires,features))
 #	# TODO Uncomment and implement me.
 	$(setter requires,
-		$(error $0($1): NIY))
-#	# TODO Uncomment and implement us.
-	$(setter+ requires,
-		$(error $0($1): NIY))
-	$(setter- requires,
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
@@ -357,11 +342,6 @@ define class-MyModule
 #	# TODO Uncomment and implement me.
 	$(setter sources,
 		$(error $0($1): NIY))
-#	# TODO Uncomment and implement us.
-	$(setter+ sources,
-		$(error $0($1): NIY))
-	$(setter- sources,
-		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
 	# Property 'sourcesMembers... : MySourceMember'.
@@ -375,11 +355,6 @@ define class-MyModule
 		$(invoke getMembers,objects,files))
 #	# TODO Uncomment and implement me.
 	$(setter objects,
-		$(error $0($1): NIY))
-#	# TODO Uncomment and implement us.
-	$(setter+ objects,
-		$(error $0($1): NIY))
-	$(setter- objects,
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
@@ -395,11 +370,6 @@ define class-MyModule
 		$(invoke getMembers,options,options))
 #	# TODO Uncomment and implement me.
 	$(setter options,
-		$(error $0($1): NIY))
-#	# TODO Uncomment and implement us.
-	$(setter+ options,
-		$(error $0($1): NIY))
-	$(setter- options,
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
 

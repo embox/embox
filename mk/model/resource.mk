@@ -121,16 +121,19 @@ define class-ResourceSet
 
 	$(property-field resources... : Resource)
 	$(setter resources,
-		$(set- resources,$(get-field resources))
-		$(set+ resources,$1))
-	$(setter+ resources,
-		$(silent-for newResource <- $(suffix $1),
-			$(set newResource->resourceSet,$(this))
-			$(for qualifiedName <- $(get-field newResource->exportedObjectsMap),
-				$(map-set+ exportedObjectsMap/$(qualifiedName),
-					$(map-get newResource->exportedObjectsMap/$(qualifiedName))))))
-	$(setter- resources,
-		$(foreach ,$1,$(warning $0: NIY)))
+		$(if $2,
+			$(if $(eq +,$2),
+				$(silent-for newResource <- $(suffix $1),
+					$(set newResource->resourceSet,$(this))
+					$(for qualifiedName <-
+							$(get-field newResource->exportedObjectsMap),
+						$(map-set+ exportedObjectsMap/$(qualifiedName),
+							$(map-get newResource->exportedObjectsMap/
+								$(qualifiedName))))),
+				$(if $1,$(warning $0: NIY))),
+			$(set- resources,$(get-field resources))
+			$(set+ resources,$1))
+	)
 
 	$(property-field linker : Linker)
 

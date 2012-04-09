@@ -750,7 +750,7 @@ define __builtin_func_set
 		$(call __object_member_access_wrap,$1,
 			$(def-ifdef OBJ_DEBUG,
 				$$(call __property_set_debug,$2,$(builtin_name:set%=%),$3),
-				$$(call $$($$(__this)).$2.setter$(builtin_name:set%=%),$3)
+				$$(call $$($$(__this)).$2.setter,$3,$(builtin_name:set%=%))
 			)
 		)
 	),$(builtin_nofirstarg))
@@ -778,10 +778,10 @@ ifdef OBJ_DEBUG
 define __property_set_debug
 	$(__obj_trace_push $(__this),set$(or $2,$(\s))   $($(__this)).$1: '$3')
 
-	$(call $(or $(call var_recursive,$($(__this)).$1.setter$2),
+	$(call $(or $(call var_recursive,$($(__this)).$1.setter),
 			$(error No property '$1', performing 'set$2' \
 				on object '$(__this)' of type '$($(__this))')),
-		$3)
+		$3,$2)
 
 	$(__obj_trace_pop $(__this),set$(or $2,$(\s))   $($(__this)).$1)
 endef
@@ -1499,7 +1499,7 @@ define builtin_func-super
 		# XXX There used to be a call to '__class_new_func_weak'... -- Eldar
 		$(call __class_new_func,$f,$(value $1.$f)))
 
-	$(silent-for t <- getter setter setter+ setter-,
+	$(silent-for t <- getter setter,
 		f <- $(call __member_name,
 				$(call __class_attr_query_in,$1,$t $t_stub,%)),
 		$(call __class_new_func,$f.$t,$(value $1.$f.$t)))
@@ -1619,13 +1619,9 @@ endef
 #
 # $(getter  property,body...)
 # $(setter  property,body...)
-# $(setter+ property,body...)
-# $(setter- property,body...)
 #
 builtin_func-getter  = $(__builtin_func_xetter)
 builtin_func-setter  = $(__builtin_func_xetter)
-builtin_func-setter+ = $(__builtin_func_xetter)
-builtin_func-setter- = $(__builtin_func_xetter)
 
 # Expanded from getter/setter builtin context.
 # Defines an appropriate method, the actual name is taken from builtin name.
@@ -1640,21 +1636,13 @@ define __builtin_func_xetter
 	# Check that the corresponding property has already been declared.
 	$(with $1,
 		$(call __class_attr_query,property,$1 $1[] $1.% $1[].%),
+		$(assert $(not $(multiword $2)),
+			__class_attr_query returned too many for '$1' property: '$2')
 
 		$(if $(not $2),
 			$(call builtin_error,
 				You must declare a '$1' property before defining \
-				a $(builtin_name:setter%=setter) for it)
-		)
-		$(assert $(singleword $2),
-			__class_attr_query returned too many for '$1' property: '$2')
-
-		$(and \
-			$(filter-patsubst setter%,%,$(builtin_name)),
-			$(filter-out %[],$(basename $2)),
-			$(call builtin_error,
-				Add/remove setters can be defined for list properties only)
-		)
+				a $(builtin_name:setter%=setter) for it))
 	)
 
 	$(call __class_new_attr,$(builtin_name),$1)
@@ -1690,20 +1678,10 @@ define builtin_func-property
 
 		$(call __member_check_and_def_attr,property,$1,$2,$3)
 
-		$(call __class_new_attr,getter_stub,$1)
-		$(call __class_new_func,$1.getter,
-				$$(call __xetter_noimpl,getter,$$(basename $$0)))
-
-		$(call __class_new_attr,setter_stub,$1)
-		$(call __class_new_func,$1.setter,
-				$$(call __xetter_noimpl,setter,$$(basename $$0)))
-
-		$(foreach s, + -,
-			$(call __class_new_attr,setter$s_stub,$1)
-			$(call __class_new_func,$1.setter$s,
-				$(if $2,$$(call __setter$s,$$(basename $$0),$$1),
-						$$(call __setterx_noimpl,$s,$$(basename $$0))))
-		)
+		$(for xetter <- getter setter,
+			$(call __class_new_attr,$(xetter)_stub,$1)
+			$(call __class_new_func,$1.$(xetter),
+					$$(call __xetter_noimpl,$(xetter),$$(basename $$0))))
 
 		# Due to current design of '__member_name_parse', we have to return
 		# something to indicate that everything is ok.
@@ -1715,30 +1693,6 @@ endef
 # 2. 'class.property'.
 define __xetter_noimpl
 	$(error Unimplemented $1 for '$2' property)
-endef
-
-# 1. '+' or '-'.
-# 2. 'class.property'.
-define __setterx_noimpl
-	$(error set$1 operation is not available for '$2' property)
-endef
-
-# 1. Name of setter function with no suffix.
-# 2. Value to add.
-define __setter+
-	$(foreach this,$(__this),$(call $1.setter,$(call $1.getter) $2))
-endef
-
-# 1. Name of setter function with no suffix.
-# 2. Value to remove.
-define __setter-
-	$(foreach this,$(__this),$(call $1.setter,
-		$(if $(findstring %,$2),
-			$(subst %%,%,
-				$(filter-out $(subst %,%%,$2),$(subst %,%%,$(call $1.getter)))),
-			$(filter-out $2,$(call $1.getter))
-		)
-	))
 endef
 
 #
@@ -1778,14 +1732,7 @@ define builtin_func-property-field
 
 		$(call __class_new_attr,setter_stub,$1)
 		$(call __class_new_func,$1.setter,
-				$$(call __field_set,$1,$$1))
-
-		$(foreach s, + -,
-			$(call __class_new_attr,setter$s_stub,$1)
-			$(call __class_new_func,$1.setter$s,
-				$(if $2,$$(call __field_set$s,$1,$$1),
-						$$(call __setterx_noimpl,$s,$$(basename $$0))))
-		)
+				$$(call __field_set$$2,$1,$$1))
 
 		# Perform the rest initialization as for regular field.
 		$(__field_define)

@@ -140,13 +140,9 @@ mkProperty(String name) : "$(property " + name + ")";
 
 mkGetter(String name, String body) :      "$(getter "  + name + "," + body + ")";
 mkSetter(String name, String body) :      "$(setter "  + name + "," + body + ")";
-mkSetterPlus(String name, String body) :  "$(setter+ " + name + "," + body + ")";
-mkSetterMinus(String name, String body) : "$(setter- " + name + "," + body + ")";
 
 mkGetterWrap(String name, String body) :      mkGetter(name, "\n\t\t" + body);
 mkSetterWrap(String name, String body) :      mkSetter(name, "\n\t\t" + body);
-mkSetterPlusWrap(String name, String body) :  mkSetterPlus(name, "\n\t\t" + body);
-mkSetterMinusWrap(String name, String body) : mkSetterMinus(name, "\n\t\t" + body);
 
 mkField(String name) : "$(field " + name + ")";
 mkField(String name, String initializer) :
