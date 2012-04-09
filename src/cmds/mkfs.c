@@ -57,6 +57,7 @@ static int exec(int argc, char **argv) {
 
 	mkfs_params.fs_type = DEFAULT_FS_TYPE;
 	getopt_init();
+	/* TODO add -q to create device, -F for vfat fstype 12/16/32 */
 	while (-1 != (opt = getopt(argc, argv, "ht:"))) {
 		switch (opt) {
 		case 't':

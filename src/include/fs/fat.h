@@ -396,4 +396,9 @@ extern int fat_main(const void *name);
 extern int fatfs_create(void *params);
 extern int fatfs_format (void *params);
 
+/*
+ *	Write a root directory to the filesistem
+ */
+int fatfs_root_create(void);
+
 #endif /* FAT_H_ */
