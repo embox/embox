@@ -9,9 +9,10 @@ module page {
 	depends embox.mem.page_api
 }
 
-module malloc {
-	source "malloc.c"
+module simple_alloc {
+	source "simple_alloc.c"
 	depends embox.framework.example
+	option number pool_size=65535
 }
 
 //$_BRIEF-objalloc = demonstrates using of API for allocation fixed size object
