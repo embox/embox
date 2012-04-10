@@ -33,6 +33,7 @@
 #include <embox/unit.h>
 #include <kernel/timer.h>
 #include <embox/net/sock.h>
+#include <kernel/thread/sched_lock.h>
 
 
 EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
@@ -128,6 +129,33 @@ static void tcp_sock_save_skb(union sock_pointer sock, struct sk_buff *skb) {
 	sock_queue_rcv_skb(sock.sk, skb);
 }
 
+static void tcp_sock_lock(union sock_pointer sock) {
+	/* TODO mutex falls there:
+		tcp_sock_lock: try sk 0x1b7390
+		ASSERTION FAILED at src/kernel/thread/sync/mutex.c : 42,
+			in function mutex_lock:
+
+		critical_allows(CRITICAL_SCHED_LOCK)
+	 */
+	__u8 locked;
+	debug_print("tcp_sock_lock: try sk 0x%p\n", sock.tcp_sk);
+try_lock:
+	sched_lock();
+	locked = sock.tcp_sk->lock, sock.tcp_sk->lock = 1;
+	sched_unlock();
+	if (!locked) {
+		goto lock_done;
+	}
+	goto try_lock;
+lock_done:
+	debug_print("tcp_sock_lock: sk 0x%p locked\n", sock.tcp_sk);
+}
+
+static void tcp_sock_unlock(union sock_pointer sock) {
+	debug_print("tcp_sock_unlock: sk 0x%p unlocked\n", sock.tcp_sk);
+	sock.tcp_sk->lock = 0;
+}
+
 static size_t tcp_data_len(struct sk_buff *skb) {
 	return ntohs(skb->nh.iph->tot_len) - IP_HEADER_SIZE(skb->nh.iph) - TCP_V4_HEADER_SIZE(skb->h.th);
 }
@@ -139,13 +167,22 @@ static size_t tcp_data_left(struct sk_buff *skb) {
 	return (skb->len > size ? skb->len - size : 0);
 }
 
-static size_t tcp_seq_len(struct sk_buff *skb) {
-	struct tcphdr *tcph;
-	size_t seq_len;
+static int tcp_seq_flags(struct tcphdr *tcph) {
+	return (tcph->fin || tcph->syn || tcph->psh);
+}
 
-	tcph = tcp_hdr(skb);
-	seq_len = tcp_data_len(skb);
-	return (seq_len > 0 ? seq_len : (size_t)(tcph->fin || tcph->syn || tcph->psh));
+static size_t tcp_seq_len(struct sk_buff *skb) {
+	size_t data_len;
+
+	data_len = tcp_data_len(skb);
+	return (data_len > 0 ? data_len : (size_t)tcp_seq_flags(skb->h.th));
+}
+
+static size_t tcp_seq_left(struct sk_buff *skb) {
+	size_t data_left;
+
+	data_left = tcp_data_left(skb);
+	return (data_left > 0 ? data_left : (size_t)tcp_seq_flags(skb->h.th));
 }
 
 static void tcp_set_st(union sock_pointer sock, struct sk_buff *skb, unsigned char state) {
@@ -197,17 +234,20 @@ static int tcp_sock_xmit(union sock_pointer sock) {
 	struct sk_buff *skb, *skb_send;
 	size_t seq_len;
 
-	sock_lock(sock.sk);
+	tcp_sock_lock(sock);
 
 	/* get next skb for sending */
 	skb = skb_peek(sock.sk->sk_write_queue);
-	assert(skb != NULL);
+	if (skb == NULL) {
+		tcp_sock_unlock(sock);
+		return ENOERR;
+	}
 	seq_len = tcp_seq_len(skb);
 	if (seq_len > 0) {
 		skb_send = skb_clone(skb, 0);
 		if (skb_send == NULL) {
 			LOG_ERROR("no memory\n");
-			sock_unlock(sock.sk);
+			tcp_sock_unlock(sock);
 			return -ENOMEM;
 		}
 		debug_print("tcp_sock_xmit: send skb 0x%p, postponed 0x%p\n", skb_send, skb);
@@ -218,7 +258,7 @@ static int tcp_sock_xmit(union sock_pointer sock) {
 		debug_print("tcp_sock_xmit: send skb 0x%p\n", skb_send);
 	}
 
-	sock_unlock(sock.sk);
+	tcp_sock_unlock(sock);
 
 	sock.tcp_sk->this.seq = sock.tcp_sk->this_unack + seq_len;
 	rebuild_tcp_header(sock.inet_sk->saddr, sock.inet_sk->daddr,
@@ -234,6 +274,7 @@ static int tcp_sock_xmit(union sock_pointer sock) {
 static int send_from_sock(union sock_pointer sock, struct sk_buff *skb) {
 	/* save skb */
 	skb->sk = sock.sk;
+	skb->p_data = skb->h.raw + TCP_V4_HEADER_SIZE(skb->h.th);
 	skb_queue_tail(sock.sk->sk_write_queue, skb);
 	debug_print("send_from_sock: save 0x%p to outgoing queue\n", skb);
 	/* send packet */
@@ -243,26 +284,26 @@ static int send_from_sock(union sock_pointer sock, struct sk_buff *skb) {
 
 static void free_rexmitting_queue(union sock_pointer sock, __u32 ack, __u32 unack) {
 	struct sk_buff *sent_skb;
-	size_t ack_bytes, sent_bytes;
+	size_t ack_len, seq_left;
 
-	sock_lock(sock.sk);
+	tcp_sock_lock(sock);
 
-	ack_bytes = ack - unack;
-	while ((ack_bytes != 0)
+	ack_len = ack - unack;
+	while ((ack_len != 0)
 			&& ((sent_skb = skb_peek(sock.sk->sk_write_queue)) != NULL)) {
-		sent_bytes = tcp_data_left(sent_skb);
-		if (sent_bytes <= ack_bytes) {
-			ack_bytes -= sent_bytes;
+		seq_left = tcp_seq_left(sent_skb);
+		if (seq_left <= ack_len) {
+			ack_len -= seq_left;
 			debug_print("free_rexmitting_queue: remove skb 0x%p\n", sent_skb);
 			kfree_skb(sent_skb); /* list_del will done at kfree_skb */
 		}
 		else {
-			sent_skb->p_data += ack_bytes;
+			sent_skb->p_data += ack_len;
 			break;
 		}
 	}
 
-	sock_unlock(sock.sk);
+	tcp_sock_unlock(sock);
 }
 
 static int tcp_rexmit(union sock_pointer sock) {
@@ -597,7 +638,7 @@ static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_
 	}
 
 	res = (*hnd)(sock, skb, skb->h.th, skb_send->h.th);
-//	printf("tcp_handle: ret %d skb 0x%p sk 0x%p\n", res, skb, sock.tcp_sk);
+//	debug_print("tcp_handle: ret %d skb 0x%p sk 0x%p\n", res, skb, sock.tcp_sk);
 	switch (res) {
 	case TCP_RET_SEND:
 		send_from_sock(sock, skb_send);
@@ -695,17 +736,23 @@ static int tcp_v4_init(void) {
 /************************ Socket's functions ***************************/
 static int tcp_v4_init_sock(struct sock *sk) {
 	union sock_pointer sock;
+	struct sk_buff_head *queue;
 
 	assert(sk != NULL);
 
 	sock.sk = sk;
 	debug_print("tcp_v4_init_sock: sk 0x%p\n", sock.tcp_sk);
 
+	queue = alloc_skb_queue();
+	if (queue == NULL) {
+		return -ENOMEM;
+	}
 	tcp_set_st(sock, NULL, TCP_CLOSED);
-	sock.tcp_sk->conn_wait = alloc_skb_queue();
 	sock.tcp_sk->this_unack = 100; // TODO remove constant
 	sock.tcp_sk->this.seq = sock.tcp_sk->this_unack;
 	sock.tcp_sk->this.wind = htons(TCP_WINDOW_DEFAULT);
+	sock.tcp_sk->lock = 0;
+	sock.tcp_sk->conn_wait = queue;
 	list_add(&sock.tcp_sk->rexmit_link, &rexmit_socks);
 
 	return ENOERR;

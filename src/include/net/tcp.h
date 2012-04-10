@@ -82,19 +82,12 @@ struct tcp_seq_state {
 
 typedef struct tcp_sock {
 	/* inet_sock has to be the first member */
-	struct inet_sock inet;
-#if 0
-	__be32 seq;
-	__be32 seq_unack;
-	__be32 ack_seq;
-#endif
-	__be32 this_unack;
-	struct tcp_seq_state this;
-	struct tcp_seq_state rem;
-	unsigned short mss;
-
-	struct sk_buff_head *conn_wait;
-
+	struct inet_sock inet;          /* Inet socket (parent) */
+	__be32 this_unack;              /* Last unacknowledged sequence number */
+	struct tcp_seq_state this;      /* Some informations about this socket */
+	struct tcp_seq_state rem;       /* Informations about remote socket */
+	__u8 lock;                      /* Tool for synchronization */
+	struct sk_buff_head *conn_wait; /* Queue of incoming requests for connection */
 	struct list_head rexmit_link;
 } tcp_sock_t;
 

@@ -72,16 +72,20 @@ static int httpd_exec(int argc, char **argv) {
 
 		if (connect_sock < 0) {
 			printf("accept fail\n");
-			return -1;
+			continue;
 		}
 		do {
 			bytes_read = recvfrom(connect_sock, req_buf,
 									3, 0, NULL, 0);
 			if (bytes_read < 0) {
 				printf("recvfrom fail\n");
-				return -1;
+				break;
 			}
 		} while ((bytes_read >= 3) && (strncmp(req_buf, "GET", 3) != 0));
+		if (bytes_read < 0) {
+			close(connect_sock);
+			continue;
+		}
 		sendto(connect_sock, file_buf, f - file_buf, 0,
 				(struct sockaddr *) &dst, sizeof(dst));
 		close(connect_sock);
