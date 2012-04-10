@@ -15,7 +15,7 @@
 
 static int nonblocking = 0;
 
-static void *diag_open(struct file_desc *desc);
+static void *diag_open(struct file_desc *desc, const char *mode);
 static int diag_close(struct file_desc *desc);
 static size_t diag_read(void *buf, size_t size, size_t count, void *file);
 static size_t diag_write(const void *buff, size_t size, size_t count, void *file);
@@ -31,15 +31,16 @@ static file_operations_t file_op = {
 };
 
 static struct file_desc diag_desc;
+static const char mode;
 
 FILE *diag_device_get(void) {
-	return diag_open(&diag_desc);
+	return diag_open(&diag_desc, &mode);
 }
 
 /*
  * file_operation
  */
-static void *diag_open(struct file_desc *desc) {
+static void *diag_open(struct file_desc *desc, const char *mode) {
 	desc->ops = &file_op;
 	return (void *) desc;
 }

@@ -14,7 +14,7 @@
 
 struct file_desc;
 
-typedef void  *(*FILEOP_OPEN)(struct file_desc *desc);
+typedef void  *(*FILEOP_OPEN)(struct file_desc *desc,  const char *mode);
 typedef int    (*FILEOP_CLOSE)(struct file_desc *desc);
 typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);
 typedef size_t (*FILEOP_WRITE)(const void *buf, size_t size, size_t count, void *file);

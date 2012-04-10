@@ -59,7 +59,7 @@ static void ramfs_info_free(ramfs_file_description_t *desc) {
 
 /* File operations */
 
-static void *ramfs_fopen(struct file_desc *desc);
+static void *ramfs_fopen(struct file_desc *desc, const char *mode);
 static int ramfs_fclose(struct file_desc *desc);
 static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count,
@@ -70,7 +70,7 @@ static int ramfs_ioctl(void *file, int request, va_list args);
 static file_operations_t ramfs_fop = { ramfs_fopen, ramfs_fclose, ramfs_fread,
 		ramfs_fwrite, ramfs_fseek, ramfs_ioctl };
 
-static void *ramfs_fopen(struct file_desc *desc) {
+static void *ramfs_fopen(struct file_desc *desc, const char *mode) {
 	node_t *nod;
 	ramfs_file_description_t *fd;
 

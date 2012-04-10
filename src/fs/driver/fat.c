@@ -18,26 +18,26 @@
 #include <embox/device.h>
 #include <mem/page.h>
 
-static FILE *hostfile;
 static char *start_addr;
-
+static char start_name[CONFIG_MAX_LENGTH_FILE_NAME];
 static uint8_t sector[SECTOR_SIZE];
-//static uint8_t sector2[SECTOR_SIZE];
+static uint32_t pstart, psize;
+static uint8_t pactive, ptype;
 static uint32_t bytecount;
-//static uint32_t pstart, psize;
-//static uint8_t pactive, ptype;
 static vol_info_t vi;
-//static dir_info_t di;
-//static dir_ent_t de;
-//static uint32_t cache;
+static dir_info_t di;
+static dir_ent_t de;
 static file_info_t fi;
-//static uint8_t *p;
-//static unsigned size_p;
+
+#ifdef _GAZ_DEBUG_
+static uint32_t i;
+static uint8_t sector[SECTOR_SIZE], sector2[SECTOR_SIZE];
+#endif /*def _GAZ_DEBUG_ */
 
 
 /* File operations */
 
-static void *fatfs_fopen(struct file_desc *desc);
+static void *fatfs_fopen(struct file_desc *desc,  const char *mode);
 static int fatfs_fclose(struct file_desc *desc);
 static size_t fatfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t fatfs_fwrite(const void *buf, size_t size, size_t count,
@@ -48,14 +48,36 @@ static int fatfs_ioctl(void *file, int request, va_list args);
 static file_operations_t fatfs_fop = { fatfs_fopen, fatfs_fclose, fatfs_fread,
 		fatfs_fwrite, fatfs_fseek, fatfs_ioctl };
 
+static uint32_t fat_get_ptn_start(uint8_t unit, uint8_t *scratchsector,
+		uint8_t pnum, uint8_t *pactive, uint8_t *pptype, uint32_t *psize);
+
+static uint32_t fat_get_vol_info(uint8_t unit, uint8_t *scratchsector,
+		uint32_t startsector, p_vol_info_t volinfo);
+
+
+static int set_full_path (uint8_t *tmppath, uint8_t *path);
 /*
  * file_operation
  */
-static void *fatfs_fopen(struct file_desc *desc) {
+static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
 	node_t *nod;
+	uint8_t _mode;
+	char path [MAX_PATH];
 
 	nod = desc->node;
-	if(DFS_OK == fat_open_file(&vi, (uint8_t *)&nod->name, DFS_WRITE, sector, &fi)) {
+	if ('r' == *mode) {
+		_mode = DFS_READ;
+	}
+	else if ('w' == *mode) {
+		_mode = DFS_WRITE;
+	}
+	else {
+		_mode = DFS_READ;
+	}
+
+	set_full_path ((uint8_t *) path, (uint8_t *)&nod->name);
+
+	if(DFS_OK == fat_open_file(&vi, (uint8_t *)path, _mode, sector, &fi)) {
 		return desc;
 	}
 	return NULL;
@@ -93,7 +115,8 @@ static size_t fatfs_fwrite(const void *buf, size_t size,
 	size_to_write = size * count;
 	desc = (struct file_desc *) file;
 
-	rezult = fat_write_file(&fi, sector, (uint8_t *)buf, &bytecount, size_to_write);
+	rezult = fat_write_file(&fi, sector, (uint8_t *)buf,
+			&bytecount, size_to_write);
 	if (DFS_OK == rezult) {
 		return bytecount;
 	}
@@ -126,6 +149,8 @@ static int fatfs_init(void * par) {
 	params = (ramdisk_params_t *) par;
 
 	start_addr = params->start_addr;
+	strcpy(start_name, params->name);
+
 	return 0;
 }
 
@@ -136,6 +161,24 @@ static int fatfs_mount(void *par) {
 	}
 
 	return 0;
+}
+
+static int set_full_path (uint8_t *tmppath, uint8_t *path) {
+	char buff[MAX_PATH];
+
+	/*strcpy((char *) tmppath, (const char *) start_name);
+		if ('/' != *((char *)path)) {
+			strcat((char *) tmppath, "/");
+		}*/
+	strcpy((char *) tmppath, (const char *) "/");
+	strcat((char *) tmppath, (const char *) path);
+
+	strncpy((char *) buff, (char *) tmppath, MAX_PATH);
+	buff[MAX_PATH - 1] = 0;
+	if (strcmp((char *) tmppath,(char *) buff)) {
+		return DFS_PATHLEN;
+	}
+	return DFS_OK;
 }
 
 int fatfs_create(void *params) {
@@ -169,9 +212,7 @@ int fatfs_format(void *params) {
 
 
 	memset ((void *)&lbr.jump, 0x00, SECTOR_SIZE); /* set all by ZERO */
-
 	memset ((void *)&lbr.oemid, 0x45, 0x08); /* EEEEEEEE */
-
 	bytepersec = 0x200;
 	lbr.bpb.bytepersec_l = (uint8_t)(bytepersec & 0xFF);
 	lbr.bpb.bytepersec_h = (uint8_t)((bytepersec & 0xFF00) >> 8);
@@ -179,13 +220,10 @@ int fatfs_format(void *params) {
 	lbr.bpb.reserved_l = 0x02; /* reserved sectors */
 	lbr.bpb.numfats = 0x02;/* 2 FAT copy */
 	lbr.bpb.mediatype = 0xF8;
-
 	lbr.sig_55 = 0x55;
 	lbr.sig_aa = 0xAA;
 
-
 	par = (ramdisk_params_t *) params;
-
 
 	num_sect = par->size / bytepersec;
 	if (0xFFFF > num_sect)	{
@@ -199,21 +237,16 @@ int fatfs_format(void *params) {
 		lbr.bpb.sectors_l_3 = (uint8_t)(0x00000FF & (num_sect >> 24));
 	}
 
-	secperfat = (uint16_t)(0xFFFF & ((num_sect * 2 /
-			bytepersec) + 1));
+	secperfat = (uint16_t)(0xFFFF & ((num_sect * 2 / bytepersec) + 1));
 	lbr.bpb.secperfat_l = (uint8_t)(0x00FF & secperfat );
 	lbr.bpb.secperfat_h = (uint8_t)(0x00FF & (secperfat >> 8));
-
 	/* rootentries = (uint16_t)(0xFFFF & (num_sect / 2)); */
-	rootentries = 0x00FF; /* 255 for FAT16 */
+	rootentries = 0x0200; /* 512 for FAT16 */
 	lbr.bpb.rootentries_l = (uint8_t)(0x00FF & rootentries );
 	lbr.bpb.rootentries_h = (uint8_t)(0x00FF & (rootentries >> 8));
-
-
 	lbr.ebpb.ebpb.signature = 0x29;
 	strcpy ((void *)&lbr.ebpb.ebpb.label, LABEL);
 	strcpy ((void *)&lbr.ebpb.ebpb.system, SYSTEM);
-
 	memcpy ((void *)&sector[0], (void *)&lbr, SECTOR_SIZE);
 
 	return fat_write_sector(0, sector, 0, 1);
@@ -222,9 +255,6 @@ int fatfs_format(void *params) {
 static int fatfs_delete(const char *fname) {
 	return 0;
 }
-
-
-DECLARE_FILE_SYSTEM_DRIVER(fatfs_drv);
 
 /**
  *	Get starting sector# of specified partition on drive #unit
@@ -235,8 +265,8 @@ DECLARE_FILE_SYSTEM_DRIVER(fatfs_drv);
  *	If pptype is non-NULL, this function also returns the partition type.
  *	If psize is non-NULL, this function also returns the partition size.
  */
-uint32_t fat_get_ptn_start(uint8_t unit, uint8_t *scratchsector, uint8_t pnum,
-		uint8_t *pactive, uint8_t *pptype, uint32_t *psize)
+static uint32_t fat_get_ptn_start(uint8_t unit, uint8_t *scratchsector,
+		uint8_t pnum, uint8_t *pactive, uint8_t *pptype, uint32_t *psize)
 {
 	uint32_t result;
 	p_mbr_t mbr = (p_mbr_t) scratchsector;
@@ -282,7 +312,7 @@ uint32_t fat_get_ptn_start(uint8_t unit, uint8_t *scratchsector, uint8_t pnum,
  * Attempts to read BPB and glean information about the FS from that.
  * Returns 0 OK, nonzero for any error.
  */
-uint32_t fat_get_vol_info(uint8_t unit, uint8_t *scratchsector,
+static uint32_t fat_get_vol_info(uint8_t unit, uint8_t *scratchsector,
 		uint32_t startsector, p_vol_info_t volinfo)
 {
 	p_lbr_t lbr = (p_lbr_t) scratchsector;
@@ -390,6 +420,7 @@ uint32_t fat_get_vol_info(uint8_t unit, uint8_t *scratchsector,
 	return DFS_OK;
 }
 
+DECLARE_FILE_SYSTEM_DRIVER(fatfs_drv);
 /*
  *	Fetch FAT entry for specified cluster number You must provide a scratch
  *	buffer for one sector (SECTOR_SIZE) and a populated vol_info_t
@@ -1082,12 +1113,14 @@ uint32_t fat_open_file(p_vol_info_t volinfo, uint8_t *path, uint8_t mode,
 	dir_info_t di;
 	dir_ent_t de;
 
+	node_t *nod;
+
 	memset(fileinfo, 0, sizeof(file_info_t));
 
 	/* save access mode */
 	fileinfo->mode = mode;
 
-	/* Get a local copy of the path. If it's longer than MAX_PATH, abort. */
+	/* Get a local copy of the path. If it's longer than MAX_PATH, abort.*/
 	strncpy((char *) tmppath, (char *) path, MAX_PATH);
 	tmppath[MAX_PATH - 1] = 0;
 	if (strcmp((char *) path,(char *) tmppath)) {
@@ -1118,6 +1151,7 @@ uint32_t fat_open_file(p_vol_info_t volinfo, uint8_t *path, uint8_t mode,
 		p--;
 	}
 
+	/*TODO need to understand why this is necessary */
 	if (*p == DIR_SEPARATOR || p == tmppath) {
 		*p = 0;
 	}
@@ -1126,9 +1160,12 @@ uint32_t fat_open_file(p_vol_info_t volinfo, uint8_t *path, uint8_t mode,
 	 *  At this point, if our path was MYDIR/MYDIR2/FILE.EXT, filename = "FILE    EXT" and
 	 *  tmppath = "MYDIR/MYDIR2".
 	 */
+
 	di.scratch = scratch;
 	if (fat_open_dir(volinfo, tmppath, &di)) {
-		return DFS_NOTFOUND;
+		if(DFS_WRITE != mode){
+			return DFS_NOTFOUND;
+		}
 	}
 
 	while (!fat_get_next(volinfo, &di, &de)) {
@@ -1224,7 +1261,7 @@ uint32_t fat_open_file(p_vol_info_t volinfo, uint8_t *path, uint8_t mode,
 					((di.currentcluster - 2) * volinfo->secperclus) +
 					di.currentsector;
 		}
-		fileinfo->diroffset = di.currententry - 1;
+		fileinfo->diroffset = di.currententry;// - 1;
 		fileinfo->cluster = cluster;
 		fileinfo->firstcluster = cluster;
 		fileinfo->filelen = 0;
@@ -1238,7 +1275,7 @@ uint32_t fat_open_file(p_vol_info_t volinfo, uint8_t *path, uint8_t mode,
 		if (fat_read_sector(volinfo->unit, scratch, fileinfo->dirsector, 1)) {
 			return DFS_ERRMISC;
 		}
-		memcpy(&(((p_dir_ent_t) scratch)[di.currententry - 1]),
+		memcpy(&(((p_dir_ent_t) scratch)[di.currententry/* - 1*/]),
 				&de, sizeof(dir_ent_t));
 		if (fat_write_sector(volinfo->unit, scratch, fileinfo->dirsector, 1)) {
 			return DFS_ERRMISC;
@@ -1253,9 +1290,24 @@ uint32_t fat_open_file(p_vol_info_t volinfo, uint8_t *path, uint8_t mode,
 		temp = 0;
 		fat_set_fat_(volinfo, scratch, &temp, fileinfo->cluster, cluster);
 
+		/*TODO  it should be in vfs or in the node*/
+		strcpy((char *) tmppath, (const char *)start_name);
+		if ('/' != *((char *)path)) {
+			strcat((char *) tmppath, "/");
+		}
+		strcat((char *) tmppath, (const char *)path);
+
+		/* if file open to write and not create */
+		if (NULL == vfs_find_node((const char *) tmppath, NULL)) {
+			if (NULL == (nod = vfs_add_path((const char *) tmppath, NULL))) {
+				return DFS_NOTFOUND;/*file already exist*/
+			}
+
+			nod->fs_type = &fatfs_drv;
+			nod->file_info = (void *) &fatfs_fop;
+		}
 		return DFS_OK;
 	}
-
 	return DFS_NOTFOUND;
 }
 
@@ -1734,15 +1786,6 @@ uint32_t fat_write_file(p_file_info_t fileinfo, uint8_t *scratch,
 	return result;
 }
 
-int fat_attach_file(char *imagefile)
-{
-	hostfile = fopen(imagefile, "r+b");
-	if (hostfile == NULL)
-		return -1;
-
-	return 0;	/* OK */
-}
-
 int fat_read_sector(uint8_t unit, uint8_t *buffer,
 		uint32_t sector, uint32_t count)
 {
@@ -1772,14 +1815,7 @@ int fat_write_sector(uint8_t unit, uint8_t *buffer,
 
 #define ROOT_DIR "/"
 int fatfs_root_create(void) {
-	dir_info_t di;
-	dir_ent_t de;
 	uint32_t cluster;
-	uint8_t sector[SECTOR_SIZE];
-	uint32_t pstart, psize;
-	uint8_t pactive, ptype;
-	vol_info_t vi;
-	file_info_t fi;
 	p_vol_info_t volinfo;
 	p_file_info_t fileinfo;
 
@@ -1829,12 +1865,13 @@ int fatfs_root_create(void) {
 	/* update file_info_t for our caller's sake */
 	fileinfo->volinfo = volinfo;
 	fileinfo->pointer = 0;
-	fileinfo->dirsector = volinfo->rootdir + di.currentsector;
+	fileinfo->dirsector = 32;//volinfo->rootdir + di.currentsector;
 
 	fileinfo->diroffset = 0;
 	fileinfo->cluster = cluster;
 	fileinfo->firstcluster = cluster;
 	fileinfo->filelen = 0;
+	fileinfo->mode = DFS_WRITE;
 
 	/*
 	 * write the directory entry
@@ -1845,8 +1882,8 @@ int fatfs_root_create(void) {
 	if (fat_read_sector(volinfo->unit, sector, fileinfo->dirsector, 1)) {
 		return DFS_ERRMISC;
 	}
-	memcpy(&(((p_dir_ent_t) sector)[di.currententry - 1]),
-			&de, sizeof(dir_ent_t));
+	memcpy(&(((p_dir_ent_t) sector)[0]), &de, sizeof(dir_ent_t));
+
 	if (fat_write_sector(volinfo->unit, sector, fileinfo->dirsector, 1)) {
 		return DFS_ERRMISC;
 	}
@@ -1867,35 +1904,14 @@ int fatfs_root_create(void) {
 
 int fat_main(const void *name)
 {
-	uint8_t sector[SECTOR_SIZE];//, sector2[SECTOR_SIZE];
-	uint32_t pstart, psize, i;
-	uint8_t pactive, ptype;
-	vol_info_t vi;
-	//dir_info_t di;
-	//dir_ent_t de;
-	//uint32_t cache;
+	uint32_t cache;
 	file_info_t fi;
 	uint8_t *p;
 	unsigned size_p;
 	char *p_file_ch;
 
-	/* Attach user-specified image file
-	if (fat_attach_file((char *) name)) {
-		printf("Cannot attach image file '%s'\n", (char *)name);
-		return -1;
-	}*/
+	/* Obtain pointer to first partition on first (only) unit*/
 
-	/* Obtain pointer to first partition on first (only) unit */
-	pstart = fat_get_ptn_start(0, sector, 0, &pactive, &ptype, &psize);
-	if (pstart == 0xffffffff) {
-		printf("Cannot find first partition\n");
-		return -1;
-	}
-
-	if (fat_get_vol_info(0, sector, pstart, &vi)) {
-		printf("Error getting volume information\n");
-		return -1;
-	}
 	printf("Volume label '%s'\n", vi.label);
 	printf("%d sector/s per cluster, %d reserved sector/s, volume total %d sectors.\n", vi.secperclus, vi.reservedsecs, vi.numsecs);
 	printf("%d sectors per FAT, first FAT at sector #%d, root dir at #%d.\n",vi.secperfat,vi.fat1,vi.rootdir);
@@ -1929,28 +1945,24 @@ int fat_main(const void *name)
 
 /*------------------------------------------------------------*/
 /* File write test */
-	/*if (fat_open_file(&vi, (uint8_t *)"MYDIR1/WRTEST.TXT", DFS_WRITE, sector, &fi)) {
-		printf("error opening file\n");
-		return -1;
-	}*/
-#define TESTFILE "/test.txt"
-	if (fat_open_file(&vi, (uint8_t *)TESTFILE, DFS_WRITE, sector, &fi)) {
+
+	if (fat_open_file(&vi, (uint8_t *)name, DFS_WRITE, sector, &fi)) {
 			printf("error opening file 1\n");
 			return -1;
 		}
-	/*for (i=0;i<18;i++) {
-		memset(sector2, 128+i, SECTOR_SIZE);
+	for (i = 0; i < 10; i++) {
+		memset(sector2, 0x30 + i, SECTOR_SIZE);
 		fat_write_file(&fi, sector, sector2, &cache, SECTOR_SIZE/2);
-		memset(sector2+256, 255-i, SECTOR_SIZE/2);
-		fat_write_file(&fi, sector, sector2+256, &cache, SECTOR_SIZE/2);
+		memset(sector2 + 256, 0x39 - i, SECTOR_SIZE/2);
+		fat_write_file(&fi, sector, sector2 + 256, &cache, SECTOR_SIZE/2);
 	}
 	sprintf((char *)sector2, (const char *)"test string at the end...");
-	fat_write_file(&fi, sector, sector2, &cache, strlen((const char *)sector2));*/
+	fat_write_file(&fi, sector, sector2, &cache, strlen((const char *)sector2));
 
 /*------------------------------------------------------------*/
 /* File read test */
 	printf("Readback test\n");
-	if (fat_open_file(&vi, (uint8_t *)TESTFILE, DFS_READ, sector, &fi)) {
+	if (fat_open_file(&vi, (uint8_t *)name, DFS_READ, sector, &fi)) {
 		printf("error opening file 2\n");
 	}
 	else {
@@ -1961,13 +1973,14 @@ int fat_main(const void *name)
 		memset(p, 0xaa, fi.filelen + 512);
 
 		fat_read_file(&fi, sector, p, &i, fi.filelen);
-		printf("read complete %d bytes (expected %d) pointer %d\n", i, fi.filelen, fi.pointer);
+		printf("read complete %d bytes (expected %d) pointer %d\n",
+				i, fi.filelen, fi.pointer);
 
 		p_file_ch = (char *)p;
 		for (i = 0; i < fi.filelen; i++) {
-			printf("%c",  *p_file_ch);
+			printf("%c",  *p_file_ch++);
 		}
-
+		printf("\n");
 	}
 
 	return 0;

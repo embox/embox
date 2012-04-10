@@ -64,14 +64,14 @@ int ramdisk_create(void *mkfs_params) {
 	}
 
 #ifdef _GAZ_DEBUG_
-	printf("Create ramdisk %s, size %d, filesistem %s\n",
-			ramd_params.name, ramd_params.size, ramd_params.fs_name);
+	printf("Create ramdisk %s, size %d, filesistem %s, addr %d,\n",	ramd_params.name,
+			ramd_params.size, ramd_params.fs_name, (int)ramd_params.start_addr);
 #endif /*def _GAZ_DEBUG_ */
 
 #ifdef _GAZ_DEBUG_
-	fat_main((const void *)ramd_params.name);
+	fat_main("/test1.txt");
 
-	fat_main("/dev/ram1/1.txt");
+	fat_main("/test2.txt");
 #endif /*def _GAZ_DEBUG_ */
 
 	return 0;

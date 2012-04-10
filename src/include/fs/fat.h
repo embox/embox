@@ -291,20 +291,20 @@ typedef struct fileinfo {
  *	active flag. If pptype is non-NULL, this function also returns the
  *	partition type.
  *	If psize is non-NULL, this function also returns the partition size.
- */
-uint32_t fat_get_ptn_start(uint8_t unit, uint8_t *scratchsector,
-		uint8_t pnum, uint8_t *pactive, uint8_t *pptype, uint32_t *psize);
 
+static uint32_t fat_get_ptn_start(uint8_t unit, uint8_t *scratchsector,
+		uint8_t pnum, uint8_t *pactive, uint8_t *pptype, uint32_t *psize);
+*/
 /*
  *	Retrieve volume info from BPB and store it in a VOLINFO structure
  *	You must provide the unit and starting sector of the filesystem, and
  *	a pointer to a sector buffer for scratch
  *	Attempts to read BPB and glean information about the FS from that.
  *	Returns 0 OK, nonzero for any error.
- */
-uint32_t fat_get_vol_info(uint8_t unit, uint8_t *scratchsector,
-		uint32_t startsector, p_vol_info_t volinfo);
 
+static uint32_t fat_get_vol_info(uint8_t unit, uint8_t *scratchsector,
+		uint32_t startsector, p_vol_info_t volinfo);
+*/
 /*
  * Open a directory for enumeration by DFS_GetNextDirEnt
  * You must supply a populated VOLINFO (see DFS_GetVolInfo)

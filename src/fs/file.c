@@ -52,7 +52,7 @@ FILE *fopen(const char *path, const char *mode) {
 		LOG_ERROR("fop->fopen is NULL handler\n");
 		return NULL;
 	}
-	file = drv->file_op->fopen(desc);
+	file = drv->file_op->fopen(desc, mode);
 
 	return file;
 }
