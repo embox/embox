@@ -6,14 +6,14 @@ abstract module timer_api { }
 module timer extends timer_api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "list_timer.c"
-	source "timer.c"
+	source "timer.c", "clock.c"
 	depends embox.kernel.clock_source, embox.arch.clock
 }
 
 module head_timer extends timer_api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "head_timer.c"
-	source "timer.c"
+	source "timer.c", "clock.c"
 	depends embox.kernel.clock_source, embox.arch.clock
 }
 
