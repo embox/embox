@@ -1106,7 +1106,7 @@ $(call def_exclude,__def_aux%)
 # Define some simple builtins that will help us with defining the rest ones.
 #
 
-ifdef DEF_NOASSERT
+ifndef DEF_NOASSERT
 
 #
 # Extension: 'assert' builtin function.
