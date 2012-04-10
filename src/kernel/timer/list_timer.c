@@ -7,7 +7,6 @@
  * @author Ilia Vaprol
  */
 #include <lib/list.h>
-#include <embox/unit.h>
 #include <kernel/timer.h>
 
 static LIST_HEAD(sys_timers_list);

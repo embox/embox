@@ -8,7 +8,6 @@
  * @author Fedor Burdun
  */
 
-#include <mem/misc/pool.h>
 #include <lib/list.h>
 #include <kernel/timer.h>
 
@@ -16,25 +15,21 @@
 static LIST_HEAD(sys_timers_list); /* list head to timers */
 
 void timer_start(struct sys_timer *tmr) {
-	struct list_head *iter, *tmp;
+	struct sys_timer *it_tmr, *tmp;
+	//TODO patch for sleep(0)
+	if(0 == tmr->load) {
+		tmr->load = 1;
+	}
 
 	tmr->cnt = tmr->load;
 
-	/* if we haven't any timers we just insert new timer into the list */
-	if (list_empty(&sys_timers_list)) {
-		/* we just add timer to list */
-		list_add(&tmr->lnk, &sys_timers_list);
-		return;
-	}
-
 	/* find first element that its time bigger than inserting @new_time */
-	list_for_each_safe(iter, tmp, &sys_timers_list) {
-		struct sys_timer *it_tmr = (struct sys_timer*) iter;
-
+	list_for_each_entry_safe(it_tmr, tmp, &sys_timers_list,lnk) {
 		if (it_tmr->cnt >= tmr->cnt) {
 			/* decrease value of next timer after inserting */
 			it_tmr->cnt -= tmr->cnt;
-			list_add_tail(&tmr->lnk, iter);
+
+			list_add_tail(&tmr->lnk, &it_tmr->lnk);
 			return;
 		}
 		tmr->cnt -= it_tmr->cnt;
@@ -46,6 +41,11 @@ void timer_start(struct sys_timer *tmr) {
 }
 
 void timer_stop(struct sys_timer *ptimer) {
+	struct sys_timer *next_tmr;
+	if(ptimer->lnk.next != &sys_timers_list) {
+		next_tmr = (struct sys_timer *)ptimer->lnk.next;
+		next_tmr->cnt += ptimer->cnt;
+	}
 	list_del(&ptimer->lnk);
 }
 
@@ -54,31 +54,27 @@ static inline bool timers_need_schedule(void) {
 		return false;
 	}
 
-	if(0 == ((sys_timer_t*)sys_timers_list.next)->cnt) {
+	if(0 == --((sys_timer_t*)sys_timers_list.next)->cnt) {
 		return true;
 	} else {
-		((sys_timer_t*)sys_timers_list.next)->cnt--;
+		return false;
 	}
-
-	return false;
 }
 
 static inline void timers_schedule(void) {
-	struct sys_timer *timer;
-	struct list_head *iter, *tmp;
+	struct sys_timer *timer,*tmp;
+	uint32_t nxt_cnt = 0; /* we schedule first timer */
 
-	list_for_each_safe(iter, tmp, &sys_timers_list) {
-		timer = (struct sys_timer *)iter;
-
-		if (0 != timer->cnt) {
-			return;
-		}
-
+	list_for_each_entry_safe(timer, tmp, &sys_timers_list, lnk) {
+		nxt_cnt = tmp->cnt;
 		timer->handle(timer, timer->param);
 
-		list_del(iter);
-
+		timer_stop(timer);
 		timer_start(timer);
+
+		if (0 != nxt_cnt) {
+			return;
+		}
 	}
 }
 
