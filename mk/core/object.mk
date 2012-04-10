@@ -1011,7 +1011,7 @@ endef
 #   '__this'
 define __map_key_check
 	$(or $(and $(findstring simple,$(flavor $(__this).$1)),
-			$(singleword $1.$2)),
+			$(singleword $(subst $(\n),x x,$1.$2))),
 		$(error \
 			# Here is cold, find out the matter of error.
 			$(if $(findstring simple,$(flavor $(__this).$1)),
@@ -1827,13 +1827,13 @@ endef
 #      a singleword unique object identifier starting with a period: '.xxx'
 #      Defaults to the identity function.
 # Return:
-#   List of _newly_ reached (untouched) objects.
-#   Once touched an object is not participate in traversing of the graph.
+#   List of _newly_ reached (that is, previously untouched) objects.
+#   Once touched, an object does not participate in traversing of the graph.
 #   This in particular means that subsequent calls on the same object graph
 #   will return an empty list. Moreover, even if some already touched object is
 #   modified so that some yet untouched objects would become reachable, these
 #   objects will not be returned.
-#   To avoid such problems, avoid multiple calls to this function.
+#   To overcome such problems, avoid multiple calls to this function.
 define object_graph_traverse
 	$(if $(multiword $(value 2)),
 		$(error Bad identifier provider name: '$2'))
@@ -1906,7 +1906,7 @@ define __object_print
 			$(addsuffix .$l,$($c.$l_fields))),
 		f <- $(basename $(ft)),
 		# Call field printer with possibly preprocessed field value.
-		$(call __object_print_field$(suffix $(ft)),
+		$(call __object_print_var$(suffix $(ft)),
 			$s.$f,
 			$(if $(class-has-method $c,__serialize_field-$f),
 				$(invoke o->__serialize_field-$f,$($o.$f)),
@@ -1917,11 +1917,11 @@ define __object_print
 			$(addsuffix .$l,$($c.$l_maps))),
 		m <- $(basename $(mt)),
 
-		$(call __object_print_field.raw_list,
+		$(call __object_print_var.raw_list,
 			$s.$m,$($o.$m))
 
 		$(for k <- $($o.$m),
-			$(call __object_print_field$(suffix $(mt)),
+			$(call __object_print_var$(suffix $(mt)),
 				$s.$m.$(call __object_map_key_escape,$k),$($o.$m.$k))
 		)
 	)
@@ -1930,11 +1930,11 @@ define __object_print
 endef
 
 __object_map_key_escape = \
-	$$(if ,,$(__object_field_escape))
+	$(subst =,$$(=),$(subst :,$$(:),$(subst $(\h),$$(\h),$(subst $$,$$$$,$1))))
 __object_field_escape = \
 	$(subst $(\n),$$(\n),$(subst $(\h),$$(\h),$(subst $$,$$$$,$1)))
 
-define __object_print_field.reference_list
+define __object_print_var.reference_list
 	$1 := \
 		$(for r <- $2,\$(\n)$(\t)
 			$(assert $(is-object $r),
@@ -1949,7 +1949,7 @@ define __object_print_field.reference_list
 			$($(suffix $r).__serial_id__))$(\n)
 endef
 
-define __object_print_field.reference_scalar
+define __object_print_var.reference_scalar
 	$(assert $(not $(multiword $2)),
 		Multiword value '$2' inside scalar field $1 \
 		of object $o [$c] being serialized as $s)
@@ -1958,7 +1958,7 @@ define __object_print_field.reference_scalar
 			$(assert $(is-object $r),
 				Not an object '$r' inside reference field $1 \
 				of object $o [$c] being serialized as $s)
-			# See '__object_print_field_reference_list'.
+			# See '__object_print_var_reference_list'.
 			$(call __object_field_escape,$(basename $r))
 			$(if $(value $(suffix $r).__serial_id__),,
 				$(warning $0: no serial id: $r [$($r)] inside reference field $1 \
@@ -1967,7 +1967,7 @@ define __object_print_field.reference_scalar
 			$($(suffix $r).__serial_id__))$(\n)
 endef
 
-define __object_print_field.raw_list
+define __object_print_var.raw_list
 	$1 := \
 		# Guard a trailing backslash (if any)
 		# and pretty-print each list item on a separate line.
@@ -1975,7 +1975,7 @@ define __object_print_field.raw_list
 			$(call __object_field_escape,$2)))$(\n)
 endef
 
-define __object_print_field.raw_scalar
+define __object_print_var.raw_scalar
 	$1 := \
 		# Check for a leading whitespace.
 		$(if $(subst x$(firstword $2),,$(firstword x$2)),
