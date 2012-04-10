@@ -31,7 +31,7 @@ static file_info_t fi;
 
 #ifdef _GAZ_DEBUG_
 static uint32_t i;
-static uint8_t sector[SECTOR_SIZE], sector2[SECTOR_SIZE];
+static uint8_t sector2[SECTOR_SIZE];
 #endif /*def _GAZ_DEBUG_ */
 
 
