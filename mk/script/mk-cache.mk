@@ -3,11 +3,7 @@
 # Author: Eldar Abusalimov
 #
 
-.PHONY : all
-all :
-	@#
-
-include mk/script/check-make-flags.mk
+include mk/script/script-common.mk
 
 ifndef CACHE_INCLUDES
 $(error CACHE_INCLUDES is not defined, nothing to cache)
