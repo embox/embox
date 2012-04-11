@@ -175,4 +175,10 @@ extern const struct proto_ops inet_stream_ops;
 
 extern struct net_proto_family inet_family_ops;
 
+
+/**
+ * notify an ip socket about icmp error
+ **/
+extern void ip_v4_icmp_err_notify(struct sock *sk, int type, int code);
+
 #endif /* NET_IP_H_ */

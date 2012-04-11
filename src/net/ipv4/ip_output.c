@@ -191,3 +191,9 @@ int ip_forward_packet(sk_buff_t *skb) {
 	return ip_queue_xmit(skb, 0);
 }
 
+void ip_v4_icmp_err_notify(struct sock *sk, int type, int code){
+
+	/* TODO: add more specific error notification */
+
+	sk->sk_err = (type & (code<<8));
+}

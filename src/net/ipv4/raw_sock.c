@@ -29,6 +29,42 @@ static raw_sock_t *raw_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
 static int raw_rcv_skb(struct sock * sk, sk_buff_t * skb);
 
+/* static method for getting hash table index of a socket */
+static int _raw_v4_get_hash_idx(struct sock *sk){
+	unsigned int i;
+
+	if(sk != NULL){
+		for(i=0; i<CONFIG_MAX_KERNEL_SOCKETS; i++)
+			if(&raw_hash[i]->inet.sk == sk)
+				return i;
+	}
+	return -1;
+}
+
+/* looking up for a socket by index in table, proto, source and dest addresses */
+static struct sock *_raw_v4_lookup(unsigned int sk_hash_idx, unsigned char protocol,
+									 unsigned int saddr, unsigned int daddr,
+									 struct net_device *dev){
+	/* socket for iterating */
+	struct sock * sk_it;
+	struct inet_sock *inet;
+	int i;
+
+	for(i = sk_hash_idx; i<CONFIG_MAX_KERNEL_SOCKETS; i++){
+		sk_it = &raw_hash[i]->inet.sk;
+		inet = inet_sk(sk_it);
+		/* the socket is being searched for by (daddr, saddr, protocol) */
+		if(!(inet->daddr != daddr && inet->daddr) &&
+			 !(inet->rcv_saddr != saddr && inet->rcv_saddr) &&
+			 /* sk_it->sk_bound_dev_if struct sock doesn't have device binding? */
+			 sk_it->sk_protocol == protocol){
+			return sk_it;
+		}
+	}
+	return NULL;
+}
+
+
 static int raw_init(struct sock *sk) {
 	return ENOERR;
 }
@@ -73,16 +109,23 @@ int raw_rcv(sk_buff_t *skb) {
 }
 
 void raw_err(sk_buff_t *skb, uint32_t info) {
-	size_t i;
-	struct sock *sk;
+	struct sock *sk = NULL;
+	int sk_idx = 0;
+	struct iphdr *emb_pack_iphdr;
 
-	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
-		sk = (struct sock *)raw_hash[i];
-		if (sk && sk->sk_protocol == ICMP_PROTO_TYPE) {
-			/* svv: suspicious. One ICMP Error can't offend ALL available sockets */
-			sk->sk_err = info;		/* write uint32_t into int32_t */
+	emb_pack_iphdr = (struct iphdr*)(skb->h.raw+IP_HEADER_SIZE(skb->nh.iph)+ICMP_HEADER_SIZE);
+
+	/* notify all sockets matching source, dest address and protocol */
+	do{
+		sk = _raw_v4_lookup(sk_idx, emb_pack_iphdr->proto,
+												emb_pack_iphdr->saddr, emb_pack_iphdr->daddr, skb->dev);
+		if(sk){  /* notify socket about an error */
+			ip_v4_icmp_err_notify(sk, skb->h.icmph->type,
+														skb->h.icmph->code);
+			/* do something else - specific for raw sockets ? */
+			sk_idx = _raw_v4_get_hash_idx(sk) + 1;
 		}
-	}
+	}while(sk != NULL);
 }
 
 static void raw_close(struct sock *sk, long timeout) {
@@ -96,7 +139,7 @@ static int raw_rcv_skb(struct sock *sk, sk_buff_t *skb) {
 	return NET_RX_SUCCESS;
 }
 
- static void raw_v4_hash(struct sock *sk) {
+static void raw_v4_hash(struct sock *sk) {
 	size_t i;
 	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
 		if (raw_hash[i] == NULL) {

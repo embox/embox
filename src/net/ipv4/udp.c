@@ -26,6 +26,44 @@ EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, udp_prot, inet_dgram_ops, 0, tr
 
 static udp_sock_t *udp_hash[CONFIG_MAX_KERNEL_SOCKETS];
 
+/* static method for getting socket index in hash table */
+static int _udp_v4_get_hash_idx(struct sock *sk){
+	unsigned int i;
+
+	if(sk != NULL){
+		for(i=0; i<CONFIG_MAX_KERNEL_SOCKETS; i++)
+			if(&udp_hash[i]->inet.sk == sk)
+				return i;
+	}
+	return -1;
+}
+
+/* static method for looking an sk by index, proto, sourace and dest addresses and ports */
+static struct sock *_udp_v4_lookup(unsigned int sk_hash_idx, unsigned char protocol,
+																	 unsigned int saddr, unsigned int daddr,
+																	 unsigned short sport, unsigned short dport,
+																	 struct net_device *dev){
+	/* socket for iterating */
+	struct sock * sk_it;
+	struct inet_sock *inet;
+	int i;
+
+	for(i = sk_hash_idx; i<CONFIG_MAX_KERNEL_SOCKETS; i++){
+		sk_it = &udp_hash[i]->inet.sk;
+		inet = inet_sk(sk_it);
+		/* the socket is being searched for by (daddr, saddr, protocol) */
+		if(!(inet->daddr != daddr && inet->daddr) &&
+			 !(inet->rcv_saddr != saddr && inet->rcv_saddr) &&
+			 (inet->sport == sport) && (inet->dport == dport) &&
+			 /* sk_it->sk_bound_dev_if struct sock doesn't have device binding? */
+			 sk_it->sk_protocol == protocol){
+			return sk_it;
+		}
+	}
+	return NULL;
+}
+
+
 static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 					__be16 dest, size_t len) {
 	udphdr_t *udph = skb->h.uh;
@@ -137,25 +175,32 @@ static int udp_rcv(sk_buff_t *skb) {
 }
 
 void udp_err(sk_buff_t *skb, uint32_t info) {
-	struct inet_sock *inet;
 	struct sock *sk;
-	size_t i;
-	__be16 port;
+	struct iphdr *emb_pack_iphdr;
+	struct udphdr *emb_pack_udphdr;
+	int sk_idx = 0;
 
-	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
-		sk = (struct sock *) udp_hash[i];
-		inet = inet_sk(sk);
-		/* Wrong:
-		 *	1) internal IP header length doesn't have to coinside with external one
-		 *	2) saddr is taken from incorrect IP header
-		 *	3) none of SRC addresses has any relation with daddr
-		 */
-		port = *(__be16*)(skb->h.raw + ICMP_HEADER_SIZE + IP_HEADER_SIZE(skb->nh.iph));
-		if (sk && (inet->sport == port)
-			   && (inet->daddr == skb->nh.iph->saddr)) {
-			sk->sk_err = info;		/* write uint32_t into int32_t */
+	/* size_t i; */
+	/* __be16 port; */
+
+	emb_pack_iphdr = (struct iphdr*)(skb->h.raw+IP_HEADER_SIZE(skb->nh.iph)+ICMP_HEADER_SIZE);
+	emb_pack_udphdr = (struct udphdr*)(skb->h.raw+IP_HEADER_SIZE(skb->nh.iph)+
+																		ICMP_HEADER_SIZE+IP_HEADER_SIZE(emb_pack_iphdr));
+
+	/* notify all sockets matching source, dest address, protocol and ports*/
+	do{
+		sk = _udp_v4_lookup(sk_idx, emb_pack_iphdr->proto,
+												emb_pack_iphdr->saddr, emb_pack_iphdr->daddr,
+												emb_pack_udphdr->source, emb_pack_udphdr->dest,
+												skb->dev);
+		if(sk){  /* notify socket about an error */
+			ip_v4_icmp_err_notify(sk, skb->h.icmph->type,
+														skb->h.icmph->code);
+			/* do something else - specific for udp sockets ? */
+			sk_idx = _udp_v4_get_hash_idx(sk) + 1;
 		}
-	}
+	}while(sk != NULL);
+
 }
 
 void *get_udp_sockets() {
