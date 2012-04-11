@@ -314,64 +314,29 @@ $(def_all)
 # Note:
 #   As a side effect all escaped dollars become unescaped.
 define __def_expand
-	# It is essential to use simple variable definition here to allow
-	# redifinitions inside the expansion.
+	# It is essential to use simple variable definition here to make this
+	# function reentrant allowing redefinitions inside the expansion.
 	#
 	# The reason of this limitation is a bug in expansion engine of
 	# GNU Make which affects all recent versions that implement 'eval'
-	# function (any of 3.8x).
-	#
+	# function (3.80-3.82).
 	# The simplest case that reproduces this bug is expanding recursive
-	# variable 'foo' defined as follows:
+	# variable 'foo' defined as 'foo = $(eval foo =)'.
 	#
-	#   foo = $(eval foo =)
-	#
-	# In that case steps that Make performs to expand string $(foo) are:
-	#   1. Start expanding a reference to a recursive variable 'foo':
-	#        $(foo)
-	#   2. Get its value and start parsing it:
-	#        $(eval foo =)
-	#   3. Find an invocation of builtin function 'eval' and run it:
-	#        foo =
-	#   4. Redefine the variable 'foo' which is being expanded right now.
-	#      Redefinition of an already defined variable also involves
-	#      freeing a memory occupied by an old value.
-	#   5. Return from builtin function handler back to string expansion
-	#      code (see step 2).
-	#   6. At this point the string being parsed refers to a memory block
-	#      that has been freed in step 4.
-	#
-	# Symptoms that one can observe may vary depending on the actual value
-	# of an expanding variable. These may include:
-	#   - 'missing separator' error,
-	#   - 'unterminated variable reference' and 'unterminated call to function'
-	#      errors,
-	#   - garbage in results in case if expansion succeeds.
-	# The latter is clearly seen when running Make under Valgrind with
-	# --free-fill flag.
-	#
-	# A possible workaround is to use simple variable assignments, like:
-	#
-	#   foo := $(eval foo =)
-	#
-	# Here expansion of the value being assigned occurs immediately before
-	# actually assigning it and no redefinitions of recursive variables is
-	# performed.
+	# See Savannah patch #7534 for more details.
 	#
 	# The most significant drawback is that we can't use 'define' directive
 	# in version 3.81 and lower because such variable would be defined
-	# recursive. This forces us to escape newlines and comment hashes
-	# properly.
+	# recursive. This forces us to escape comment hashes properly.
 	${eval \
 		# Use immediate expansion to allow recursive invocations of 'def' and
 		# reuse '__def_tmp__' variable (e.g. in '__builtin_args_expand').
 		__def_tmp__ := \
 			# Prevent interpreting hashes as comments.
 			$(subst $(\h),$$(\h),
-				# We don't care about any trailing backslash here because
-				# Make actually gets EOF at the end of line, not a newline.
-				$1
-			)
+				# We don't care about any trailing backslash here because Make
+				# actually gets EOF at the end of this line, not a newline.
+				$1)
 	}
 	$(__def_tmp__)
 endef
