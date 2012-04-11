@@ -5,13 +5,13 @@
  * @author Nikolay Korotky
  */
 
-#include <embox/cmd.h>
+#include <framework/example/self.h>
 #include <getopt.h>
 #include <string.h>
 #include <stdio.h>
 #include <drivers/r6040.h>
 
-EMBOX_CMD(exec);
+EMBOX_EXAMPLE(exec);
 
 static void print_usage(void) {
 	printf("Usage: r6040_example\n");
