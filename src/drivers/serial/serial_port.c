@@ -98,7 +98,6 @@
 
 #define DIVISOR(baud) (115200 / baud)
 
-
 static int uart_init(void) {
 	/* Turn off the interrupt */
 	out8(0x0, COM0_PORT + UART_IER);
@@ -121,7 +120,6 @@ static void uart_putc(char ch) {
 	while (!(in8(COM0_PORT + UART_LSR) & UART_EMPTY_TX));
 	out8((uint8_t) ch, COM0_PORT + UART_TX);
 }
-
 
 static int uart_has_symbol(void) {
 	return in8(COM0_PORT + UART_LSR) & UART_DATA_READY;
@@ -165,24 +163,21 @@ static int uart_remove_irq_handler(void) {
 
 static tty_device_t tty;
 
-static void *dev_open(struct file_desc *desc);
+static void *dev_open(struct file_desc *desc, const char *mode);
 static int dev_close(struct file_desc *desc);
 static size_t dev_read(void *buf, size_t size, size_t count, void *file);
 static size_t dev_write(const void *buff, size_t size, size_t count, void *file);
 
 static file_operations_t file_op = {
-		.fread = dev_read,
-		.fopen = dev_open,
-		.fclose = dev_close,
-		.fwrite = dev_write
+	.fread = dev_read,
+	.fopen = dev_open,
+	.fclose = dev_close,
+	.fwrite = dev_write
 };
 
 RING_BUFFER_DEF(dev_buff, int, 0x20);
 
-
-
 static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
-
 	int ch;
 	if(uart_has_symbol()) {
 		ch = uart_getc();
@@ -195,7 +190,7 @@ static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
 /*
  * file_operation
  */
-static void *dev_open(struct file_desc *desc) {
+static void *dev_open(struct file_desc *desc, const char *mode) {
 	uart_init();
 
 	tty.file_op = &file_op;
@@ -211,7 +206,6 @@ static int dev_close(struct file_desc *desc) {
 	uart_remove_irq_handler();
 	return 0;
 }
-
 
 static size_t dev_read(void *buff, size_t size, size_t count, void *file) {
 
@@ -237,4 +231,3 @@ static size_t dev_write(const void *buff, size_t size, size_t count, void *file)
 }
 
 EMBOX_DEVICE("uart", &file_op);
-
