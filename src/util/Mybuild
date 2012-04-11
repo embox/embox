@@ -10,6 +10,8 @@ static module LibUtil {
 	source "binary_heap.c"
 	source "ring_buff.c"
 	source "debug_msg.c"
+
+	requires embox.mem.iobjalloc.rt_alloc
 }
 
 module 	hashtable {

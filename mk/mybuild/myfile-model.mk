@@ -189,6 +189,10 @@ endef
 #   - reference 'interface'
 #   - reference 'providedBy'
 #   - reference 'requiredBy'
+#   - reference 'superFeatures'
+#   - reference 'subFeatures'
+#   - reference 'allSuperFeatures'
+#   - reference 'allSubFeatures'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -215,8 +219,39 @@ define class-MyFeature
 	$(eobject-reference MyFile_Feature_requiredBy,
 		requiredBy,MyModule,requires,changeable many linkable)
 
+	# Property 'superFeatures... : MyFeature'.
+	# Property 'superFeatures_links... : ELink'.
+	$(eobject-reference MyFile_Feature_superFeatures,
+		superFeatures,MyFeature,subFeatures,changeable many linkable)
+
+	# Property 'subFeatures... : MyFeature'.
+	# Property 'subFeatures_links... : ELink'.
+	$(eobject-reference MyFile_Feature_subFeatures,
+		subFeatures,MyFeature,superFeatures,changeable many linkable)
+
+	# Reference 'allSuperFeatures' [0..*]: bidirectional, derived.
+	$(property allSuperFeatures... : MyFeature)
+	# PROTECTED REGION ID(MyFile_Feature_allSuperFeatures) ENABLED START
+	$(getter allSuperFeatures,
+		$(for super <- $(get superFeatures),
+			$(get super->allSuperFeatures)))
+
+	$(setter allSuperFeatures,
+		$(error $0($1): NIY))
+	# PROTECTED REGION END
+
+	# Reference 'allSubFeatures' [0..*]: bidirectional, derived.
+	$(property allSubFeatures... : MyFeature)
+	# PROTECTED REGION ID(MyFile_Feature_allSubFeatures) ENABLED START
+	$(getter allSubFeatures,
+		$(for sub <- $(get subFeatures),
+			$(get sub->allSubFeatures)))
+
+	$(setter allSubFeatures,
+		$(error $0($1): NIY))
+	# PROTECTED REGION END
+
 	# PROTECTED REGION ID(MyFile_Feature) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 

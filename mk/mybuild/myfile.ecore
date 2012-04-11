@@ -39,6 +39,16 @@
         eType="#//Module" transient="true" eOpposite="#//Module/provides"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="requiredBy" upperBound="-1"
         eType="#//Module" transient="true" eOpposite="#//Module/requires"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="superFeatures" upperBound="-1"
+        eType="#//Feature" eOpposite="#//Feature/subFeatures"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="subFeatures" upperBound="-1"
+        eType="#//Feature" eOpposite="#//Feature/superFeatures"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="allSuperFeatures" upperBound="-1"
+        eType="#//Feature" volatile="true" transient="true" unsettable="true" derived="true"
+        eOpposite="#//Feature/allSubFeatures"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="allSubFeatures" upperBound="-1"
+        eType="#//Feature" volatile="true" transient="true" unsettable="true" derived="true"
+        eOpposite="#//Feature/allSuperFeatures"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Module" eSuperTypes="#//Type">
     <eOperations name="isSubTypeOf" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">

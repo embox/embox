@@ -113,7 +113,10 @@ endef
 # Rule: <Interface> ::= interface Identifier <SuperInterfaces> '{' <Features> '}'
 # Args: 1..6 - Symbols in the RHS.
 define $(gold_grammar)_produce-Interface_interface_Identifier_LBrace_RBrace
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(for interface <- $(new MyInterface),
+		$(set interface->name,$2)
+		$(set interface->features,$5)
+		$(interface))
 endef
 
 # Rule: <SuperInterfaces> ::= extends <ReferenceList>
@@ -122,21 +125,9 @@ define $(gold_grammar)_produce-SuperInterfaces_extends
 	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <SuperInterfaces> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-SuperInterfaces
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
 # Rule: <Features> ::= <AnnotatedFeature> <Features>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-Features
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <Features> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-Features2
 	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
@@ -149,20 +140,15 @@ endef
 # Rule: <Feature> ::= feature Identifier <SuperFeatures>
 # Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-Feature_feature_Identifier
-	$(gold_default_produce)# TODO Auto-generated stub!
+	$(for feature <- $(new MyFeature),
+		$(set feature->name,$2)
+		$(set feature->superFeatures_links,$3)
+		$(feature))
 endef
 
 # Rule: <SuperFeatures> ::= extends <ReferenceList>
 # Args: 1..2 - Symbols in the RHS.
-define $(gold_grammar)_produce-SuperFeatures_extends
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
-
-# Rule: <SuperFeatures> ::=
-# Args: 1..0 - Symbols in the RHS.
-define $(gold_grammar)_produce-SuperFeatures
-	$(gold_default_produce)# TODO Auto-generated stub!
-endef
+$(gold_grammar)_produce-SuperFeatures_extends = $2
 
 # Rule: <Module> ::= <ModuleModifiers> module Identifier <SuperModule> '{' <ModuleMembers> '}'
 # Args: 1..7 - Symbols in the RHS.
@@ -178,7 +164,9 @@ define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
 		$(silent-foreach attr, \
 				sourcesMembers \
 				optionsMembers \
-				dependsMembers,
+				dependsMembers \
+				requiresMembers \
+				providesMembers,
 				$(set module->$(attr),
 					$(filter-patsubst $(attr)/%,%,$6)))
 

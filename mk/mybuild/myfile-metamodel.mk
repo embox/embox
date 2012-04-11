@@ -55,6 +55,14 @@ MyFile_Feature_providedBy := \
 	$(call eMetaReferenceCreate,$(MyFile_Feature),MyFile_Feature_providedBy)
 MyFile_Feature_requiredBy := \
 	$(call eMetaReferenceCreate,$(MyFile_Feature),MyFile_Feature_requiredBy)
+MyFile_Feature_superFeatures := \
+	$(call eMetaReferenceCreate,$(MyFile_Feature),MyFile_Feature_superFeatures)
+MyFile_Feature_subFeatures := \
+	$(call eMetaReferenceCreate,$(MyFile_Feature),MyFile_Feature_subFeatures)
+MyFile_Feature_allSuperFeatures := \
+	$(call eMetaReferenceCreate,$(MyFile_Feature),MyFile_Feature_allSuperFeatures)
+MyFile_Feature_allSubFeatures := \
+	$(call eMetaReferenceCreate,$(MyFile_Feature),MyFile_Feature_allSubFeatures)
 
 MyFile_Module := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Module)
@@ -207,6 +215,10 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_Feature_interface),interface,$(MyFile_Interface),$(MyFile_Interface_features),changeable container)
 	$(call eMetaReferenceInit,$(MyFile_Feature_providedBy),providedBy,$(MyFile_Module),$(MyFile_Module_provides),changeable many linkable)
 	$(call eMetaReferenceInit,$(MyFile_Feature_requiredBy),requiredBy,$(MyFile_Module),$(MyFile_Module_requires),changeable many linkable)
+	$(call eMetaReferenceInit,$(MyFile_Feature_superFeatures),superFeatures,$(MyFile_Feature),$(MyFile_Feature_subFeatures),changeable many linkable)
+	$(call eMetaReferenceInit,$(MyFile_Feature_subFeatures),subFeatures,$(MyFile_Feature),$(MyFile_Feature_superFeatures),changeable many linkable)
+	$(call eMetaReferenceInit,$(MyFile_Feature_allSuperFeatures),allSuperFeatures,$(MyFile_Feature),$(MyFile_Feature_allSubFeatures),changeable derived many)
+	$(call eMetaReferenceInit,$(MyFile_Feature_allSubFeatures),allSubFeatures,$(MyFile_Feature),$(MyFile_Feature_allSuperFeatures),changeable derived many)
 
 	$(call eMetaClassInit,$(MyFile_Module),Module,$(MyFile_Type),)
 	$(call eMetaAttributeInit,$(MyFile_Module_modifiers),modifiers,changeable)
@@ -307,6 +319,10 @@ define __myFile_bind
 	$(call eMetaFeatureBind,$(MyFile_Feature_interface),interface)
 	$(call eMetaFeatureBind,$(MyFile_Feature_providedBy),providedBy)
 	$(call eMetaFeatureBind,$(MyFile_Feature_requiredBy),requiredBy)
+	$(call eMetaFeatureBind,$(MyFile_Feature_superFeatures),superFeatures)
+	$(call eMetaFeatureBind,$(MyFile_Feature_subFeatures),subFeatures)
+	$(call eMetaFeatureBind,$(MyFile_Feature_allSuperFeatures),allSuperFeatures)
+	$(call eMetaFeatureBind,$(MyFile_Feature_allSubFeatures),allSubFeatures)
 
 	$(call eMetaClassBind,$(MyFile_Module),MyModule)
 	$(call eMetaFeatureBind,$(MyFile_Module_modifiers),modifiers)
