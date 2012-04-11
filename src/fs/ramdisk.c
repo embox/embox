@@ -7,6 +7,7 @@
  */
 
 #include <types.h>
+#include <errno.h>
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
@@ -34,25 +35,21 @@ int ramdisk_create(void *mkfs_params) {
 
 	p_mkfs_params = (mkfs_params_t *)mkfs_params;
 
-	ramdisk_node = vfs_find_node(p_mkfs_params->name, NULL);
-	/* mkfs command said to create new dev */
-	if (NULL != ramdisk_node) {
+	if (NULL == (ramdisk_node = vfs_add_path(p_mkfs_params->name, NULL))) {
 #ifdef _GAZ_DEBUG_
 		printf("Ramdisk already exist 1\n");
 #endif /*def _GAZ_DEBUG_ */
-		return 0;/*file already exist*/
+		return -EBUSY;/*file already exist*/
 	}
 
-	if(NULL == (ramd_params.start_addr =
-			page_alloc(p_mkfs_params->blocks))) {
+	if(NULL == (ramd_params.start_addr = page_alloc(p_mkfs_params->blocks))) {
 #ifdef _GAZ_DEBUG_
 		printf("Out of memory\n");
 #endif /*def _GAZ_DEBUG_ */
-		return 0;
+		return -ENOMEM;
 	}
 
 	strcpy ((void *)&ramd_params.name, (const void *)p_mkfs_params->name);
-
 	ramd_params.size = p_mkfs_params->blocks * CONFIG_PAGE_SIZE;
 	ramd_params.blocks = p_mkfs_params->blocks;
 
@@ -63,6 +60,9 @@ int ramdisk_create(void *mkfs_params) {
 }
 
 ramdisk_params_t *ramdisk_get_param(char *name) {
+	if (strcmp(name,(char *) ramd_params.name)) {
+		return NULL;
+	}
 	return &ramd_params;
 }
 

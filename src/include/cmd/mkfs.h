@@ -19,4 +19,6 @@ typedef struct mkfs_params {
 	unsigned int operation_flag;
 } mkfs_params_t;
 
+extern int mkfs_do_operation(void *_mkfs_params);
+
 #endif /* MKFS_H_ */

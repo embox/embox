@@ -6,6 +6,7 @@
  * @author Andrey Gazukin
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -186,8 +187,8 @@ int fatfs_create(void *params) {
 	node_t *nod;
 
 	par = (ramdisk_params_t *) params;
-	if (NULL == (nod = vfs_add_path(par->name, NULL))) {
-		return -1;/*file already exist*/
+	if (NULL == (nod = vfs_find_node(par->name, NULL))) {
+		return -ENODEV;/*device not found*/
 	}
 
 	nod->fs_type = &fatfs_drv;

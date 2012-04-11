@@ -7,6 +7,7 @@
  */
 
 #include <types.h>
+#include <errno.h>
 #include <getopt.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -41,7 +42,7 @@ static int check_invalid(int min_argc, int argc, char **argv) {
 	if (min_argc > argc){
 		printf("Invalid option `-%c' `%s'\n", optind, argv[optind]);
 		print_usage();
-		return 1;
+		return EINVAL;
 	}
 	else {
 		return 0;
@@ -67,7 +68,7 @@ static int exec(int argc, char **argv) {
 			min_argc = 4;
 			strcpy ((void *)&(mkfs_params.fs_name), (const void *)optarg);
 			if(check_invalid(min_argc, argc, argv)){
-				return -1;
+				return -EINVAL;
 			}
 			mkfs_params.operation_flag |= MKFS_FORMAT_DEV;
 			break;
@@ -75,12 +76,12 @@ static int exec(int argc, char **argv) {
 			min_argc += 1;
 			mkfs_params.operation_flag |= MKFS_CREATE_DEV;
 			if(check_invalid(min_argc, argc, argv)){
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case '?':
 			if(check_invalid(min_argc, argc, argv)){
-				return -1;
+				return -EINVAL;
 			}
 			break;
 		case 'h':
@@ -94,23 +95,42 @@ static int exec(int argc, char **argv) {
 	if (argc > min_argc) {/** last arg should be block quantity*/
 		if(0 >= sscanf(argv[argc - 1], "%d", &mkfs_params.blocks)){
 			print_usage();
-			return -1;
+			return -EINVAL;
 		}
 		strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 2]);
 	}
 	else {/** last arg should be diskname*/
 		strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 1]);
-
 	}
 
-	if(mkfs_params.operation_flag && MKFS_CREATE_DEV) {
-		ramdisk_create((void *)&mkfs_params);
+	return mkfs_do_operation(&mkfs_params);
+}
+
+
+int mkfs_do_operation(void *_mkfs_params) {
+	mkfs_params_t *mkfs_params;
+	int rezult;
+
+	mkfs_params = (mkfs_params_t *) _mkfs_params;
+
+	if(mkfs_params->operation_flag & MKFS_CREATE_DEV) {
+		if(0 != (rezult = ramdisk_create((void *)mkfs_params))) {
+			return rezult;
+		}
 	}
 
-	if(mkfs_params.operation_flag && MKFS_FORMAT_DEV) {
-		ramd_params = ramdisk_get_param(mkfs_params.name);
-		if (0 != fatfs_create((void *)ramd_params)) {
-			return -1;/*file already exist*/
+	if(mkfs_params->operation_flag & MKFS_FORMAT_DEV) {
+		if(NULL == (ramd_params = ramdisk_get_param(mkfs_params->name))) {
+			return -ENODEV;
+		}
+		/* set filesystem attribute to ramdisk */
+		strcpy ((void *)ramd_params->name, (const void *)mkfs_params->name);
+		strcpy ((void *)ramd_params->fs_name,
+					(const void *)mkfs_params->fs_name);
+		ramd_params->fs_type = mkfs_params->fs_type;
+		/* format filesystem */
+		if (0 != (rezult = fatfs_create((void *)ramd_params))) {
+			return rezult;/*file already exist*/
 		}
 
 #ifdef _GAZ_DEBUG_
