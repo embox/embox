@@ -17,7 +17,7 @@ module prior_path {
 
 abstract module rx_worker_api { }
 
-module rx_threads extends rx_worker_api {
+module rx_thread extends rx_worker_api {
 	source "rx_thread.c"
 	source "process.c"
 }

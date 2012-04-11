@@ -23,14 +23,13 @@
 #include <pnet/repo.h>
 #include <pnet/graph.h>
 
-
 EMBOX_CMD(exec);
 
 extern struct pnet_module __pnet_mod_repo[];
 
 #define MAX_WORD_LENGTH 100
 #define MAX_TOKEN_COUNT 10
-#define RULE_OPTION_QUANTITY 3
+#define RULE_OPTION_QUANTITY 4
 
 typedef int (*_rule_setter) (struct pnet_graph *gr, match_rule_t rule, char *rule_str);
 
@@ -46,6 +45,7 @@ static int unlink_node(char **argv);
 static int rule_set_mac(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
 static int rule_set_ip(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
 static int rule_set_next_node(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
+static int rule_set_priority(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
 static match_rule_t rule_get_by_id(net_node_t node, char id);
 
 /* macros to get graph, node or rule by it name */
@@ -82,9 +82,10 @@ struct rule {
 };
 
 static struct rule rule_setters[RULE_OPTION_QUANTITY] = {
-		{.option = "--mac",    .setter = rule_set_mac},
-		{.option = "--ip",     .setter = rule_set_ip},
-		{.option = "--node",   .setter = rule_set_next_node},
+		{.option = "--mac",      .setter = rule_set_mac},
+		{.option = "--ip",       .setter = rule_set_ip},
+		{.option = "--node",     .setter = rule_set_next_node},
+		{.option = "--priority", .setter = rule_set_priority},
 };
 
 static void print_usage(void) {
@@ -225,8 +226,8 @@ static void print_rules(net_node_matcher_t node) {
 		dstaddr = inet_ntoa(ip);
 		macaddr_print(mac, rule->skbuf->mac.ethh->h_source);
 
-		printf("%d : dst IP - %s, next node - %s, dst HWaddr - %s \n",
-				counter, dstaddr, rule->next_node->proto->name, mac);
+		printf("%d : dst IP - %s, next node - %s, dst HWaddr - %s, priority - %d \n",
+				counter, dstaddr, rule->next_node->proto->name, mac, rule->priority);
 		counter++;
 	}
 }
@@ -368,6 +369,12 @@ static int rule_set_next_node (struct pnet_graph *gr, match_rule_t rule, char *r
 
 	get_node_from_graph(gr, node, rule_elem, ENOENT);
 	pnet_rule_set_next_node(rule, node);
+
+	return ENOERR;
+}
+
+static int rule_set_priority (struct pnet_graph *gr, match_rule_t rule, char *rule_elem) {
+	sscanf(rule_elem, "%u", &rule->priority);
 
 	return ENOERR;
 }

@@ -78,6 +78,7 @@ int match_lin(struct pnet_pack *pack) {
 
 		if (n == 0) {
 			pack->node = curr->next_node;
+			pack->priority = curr->priority;
 #ifdef PRINT_WAYS
 		print_pack_way(pack,curr,n);
 #endif

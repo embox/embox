@@ -34,6 +34,9 @@ match_rule_t pnet_rule_alloc(void) {
 	/* Fill data with 255 per byte. It means '*', i.e. any value is suitable. */
 	memset(rule->skbuf->data, MATCH_WILDCARD, MAX_PACK_HEADER_SIZE);
 	rule->next_node = NULL;
+
+	/* All rules and packets have priority 0 after allocation. */
+	rule->priority = 0;
 	INIT_LIST_HEAD(&rule->lnk);
 
 	return rule;

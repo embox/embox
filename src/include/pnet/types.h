@@ -56,6 +56,7 @@ struct pnet_dev {
 
 struct pnet_pack {
 	uint32_t type;
+	uint32_t priority;
 	struct net_node *node;
 	enum PNET_PACK_DIRECTION dir;
 	void *data;

@@ -31,6 +31,7 @@ struct match_rule {
 	struct sk_buff *skbuf;
 	net_node_t next_node;
 	struct list_head lnk;
+	uint32_t priority;
 };
 
 typedef struct match_rule *match_rule_t;
@@ -60,7 +61,7 @@ static inline void pnet_rule_set_pack_type(match_rule_t rule, uint16_t type) {
 	switch (type) {
 	case ETH_P_IP:
 			/* svv: It's correct unless we have options in IP packet */
-		rule->skbuf->h.raw = rule->skbuf->nh.raw + IP_MIN_HEADER_SIZE;
+		/* rule->skbuf->h.raw = rule->skbuf->nh.raw + IP_HEADER_SIZE(rule->skbuf->nh.iph);*/
 		break;
 	case ETH_P_LOOP:
 		break;
