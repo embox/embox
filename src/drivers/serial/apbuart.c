@@ -138,7 +138,7 @@ static int dev_regs_init() {
 
 /* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
 
-static void *apb_open(struct file_desc *desc);
+static void *apb_open(struct file_desc *desc, const char *mode);
 static int apb_close(struct file_desc *desc);
 static size_t apb_read(void *buf, size_t size, size_t count, void *file);
 static size_t apb_write(const void *buff, size_t size, size_t count, void *file);
@@ -153,7 +153,7 @@ static file_operations_t file_op = {
 /*
  * file_operation
  */
-static void *apb_open(struct file_desc *desc) {
+static void *apb_open(struct file_desc *desc, const char *mode) {
 	if(NULL == dev_regs) {
 		uart_init();
 	}

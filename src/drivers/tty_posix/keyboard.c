@@ -58,7 +58,7 @@
  */
 
 static irq_return_t	keyboard_int_handler(irq_nr_t irq_num, void *data);
-static void 	*kbd_open					(struct file_desc *desc);
+static void 	*kbd_open					(struct file_desc *desc, const char *mode);
 static int 		kbd_close					(struct file_desc *desc);
 static size_t 	kbd_read					(void *buf, size_t size, size_t count, void *file);
 static size_t 	kbd_write					(const void *buff, size_t size, size_t count, void *file);
@@ -180,7 +180,7 @@ static tty_t * getTty(void* file) {
 /*
  * file_operation
  */
-static void *kbd_open(struct file_desc *desc) {
+static void *kbd_open(struct file_desc *desc, const char *mode) {
 
 	struct tty *tp = tty_addr(CONSOLE);
 #if 0

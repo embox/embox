@@ -9,6 +9,7 @@
 #define MKFS_H_
 
 #define MKFS_CREATE_DEV 0x00000001
+#define MKFS_FORMAT_DEV 0x00000002
 
 typedef struct mkfs_params {
 	size_t      blocks;

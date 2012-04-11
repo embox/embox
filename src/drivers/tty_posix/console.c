@@ -60,12 +60,12 @@
 /*
  * device functions
  */
-static void 	*open_factory(const char *fname, const char *mode);
+static void 	*open_factory(const char *fname, const char *_mode);
 static int 		close_factory(void *file);
 static size_t 	read_factory(void *buf, size_t size, size_t count, void *file);
 static size_t 	write_factory(const void *buff, size_t size, size_t count, void *file);
 static int 		ioctl_factory(void *file, int request, va_list args);
-static void 	*open(const char *fname, const char *mode);
+static void 	*open(const char *fname, const char *_mode);
 static int 		close(void *file);
 static size_t 	read(void *buf, size_t size, size_t count, void *file);
 static size_t 	write(const void *buff, size_t size, size_t count, void *file);
@@ -193,7 +193,7 @@ int tty_posix_console_diag_init(void)
  * fname could be 'console'
  * nod->attr - will be used for console_t* !!!
  */
-static void *open_factory(const char *fname, const char *mode) {
+static void *open_factory(const char *fname, const char *_mode) {
 //	struct tty *tp;
 //	int line;
 	node_t * node_factory;
@@ -245,7 +245,7 @@ static int ioctl_factory(void *file, int request, va_list args) {
  * fname could be '0'...'4'
  * nod->attr - will be used for console_t* !!!
  */
-static void *open(const char *fname, const char *mode) {
+static void *open(const char *fname, const char *_mode) {
 	struct tty *tp;
 	int line;
 	node_t * node_factory;
@@ -362,12 +362,12 @@ void set_fg(console_t* cons,int fg)
  *
 0x0 Schwarz 	0x8 Dunkelgrau
 0x1 Blau 		0x9 Hellblau
-0x2 Grün 		0xA Hellgrün
+0x2 Grï¿½n 		0xA Hellgrï¿½n
 0x3 Cyan 		0xB	Hellcyan
 0x4 Rot 		0xC Hellrot
 0x5 Magenta 	0xD Hellmagenta
 0x6 Braun 		0xE	Gelb
-0x7 Hellgrau	0xF Weiß
+0x7 Hellgrau	0xF Weiï¿½
 */
 {
 	cons->c_attr = (cons->c_attr  & 0xF8FF)| (fg << 8);
