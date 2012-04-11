@@ -14,7 +14,7 @@
 
 static LIST_HEAD(sys_timers_list); /* list head to timers */
 
-void timer_start(struct sys_timer *tmr) {
+void timer_strat_start(struct sys_timer *tmr) {
 	struct sys_timer *it_tmr, *tmp;
 	//TODO patch for sleep(0)
 	if(0 == tmr->load) {
@@ -40,7 +40,7 @@ void timer_start(struct sys_timer *tmr) {
 	list_add_tail(&tmr->lnk, &sys_timers_list);
 }
 
-void timer_stop(struct sys_timer *ptimer) {
+void timer_strat_stop(struct sys_timer *ptimer) {
 	struct sys_timer *next_tmr;
 	if(ptimer->lnk.next != &sys_timers_list) {
 		next_tmr = (struct sys_timer *)ptimer->lnk.next;
@@ -83,7 +83,7 @@ static inline void timers_schedule(void) {
  * and the counter of this timer is the zero then its initial value is assigned
  * to the counter and the function is executed.
  */
-void timer_sched(void) {
+void timer_strat_sched(void) {
 	if(timers_need_schedule()) {
 		timers_schedule();
 	}

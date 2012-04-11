@@ -9,13 +9,14 @@
 #include <embox/unit.h>
 
 #include <kernel/clock_source.h>
+#include <kernel/softirq.h>
 
 #include <hal/clock.h>
 #include <kernel/timer.h>
 
 EMBOX_UNIT_INIT(module_init);
 
-static clock_t sys_ticks; /* ticks after start system. */
+static clock_t sys_ticks = 0; /* ticks after start system. */
 
 clock_t clock(void) {
 	return sys_ticks;
@@ -26,7 +27,11 @@ clock_t clock(void) {
  */
 void clock_tick_handler(int irq_num, void *dev_id) {
 	sys_ticks++;
-	timer_sched();
+	softirq_raise(SOFTIRQ_NR_TIMER);
+}
+
+static void soft_clock_handler(softirq_nr_t softirq_nr, void *data) {
+	timer_strat_sched();
 }
 
 /**
@@ -35,9 +40,9 @@ void clock_tick_handler(int irq_num, void *dev_id) {
  * @return 0 if success
  */
 static int module_init(void) {
-	sys_ticks = 0;
 	clock_init();
 	clock_setup(clock_source_get_precision(NULL));
+	softirq_install(SOFTIRQ_NR_TIMER, soft_clock_handler,NULL);
 	return 0;
 }
 

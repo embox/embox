@@ -11,7 +11,7 @@
 
 static LIST_HEAD(sys_timers_list);
 
-void timer_start(struct sys_timer *ptimer) {
+void timer_strat_start(struct sys_timer *ptimer) {
 	list_add_tail(&ptimer->lnk, &sys_timers_list);
 }
 /**
@@ -19,7 +19,7 @@ void timer_start(struct sys_timer *ptimer) {
  * and the counter of this timer is the zero then its initial value is assigned
  * to the counter and the function is executed.
  */
-void timer_sched(void) {
+void timer_strat_sched(void) {
 	struct list_head *tmp, *tmp2;
 	sys_timer_t *tmr;
 
@@ -32,6 +32,6 @@ void timer_sched(void) {
 	}
 }
 
-void timer_stop(struct sys_timer *ptimer) {
+void timer_strat_stop(struct sys_timer *ptimer) {
 	list_del(&ptimer->lnk);
 }

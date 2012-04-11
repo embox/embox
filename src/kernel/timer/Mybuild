@@ -3,18 +3,22 @@ package embox.kernel.timer
 abstract module sleep_api { }
 abstract module timer_api { }
 
-module timer extends timer_api {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "list_timer.c"
+module sys_timer {
 	source "timer.c", "clock.c"
 	depends embox.kernel.clock_source, embox.arch.clock
+	option number timer_quantity=20
+}
+
+module timer extends timer_api {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "list_timer.c","list_timer.h"
+	depends sys_timer
 }
 
 module head_timer extends timer_api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "head_timer.c"
-	source "timer.c", "clock.c"
-	depends embox.kernel.clock_source, embox.arch.clock
+	source "head_timer.c", "head_timer.h"
+	depends sys_timer
 }
 
 module sleep extends sleep_api {

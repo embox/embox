@@ -16,7 +16,8 @@
 #define KERNEL_TIMER_H_
 
 #include <types.h>
-#include <lib/list.h>
+
+#include <kernel/timer_strat.h>
 
 struct sys_timer;
 
@@ -26,11 +27,13 @@ struct sys_timer;
  */
 typedef void (*sys_timer_handler_t)(struct sys_timer *timer, void *param);
 
+
 /**
  * system timer structure
  */
 struct sys_timer {
-	struct list_head lnk;
+	sys_timer_queue_t lnk;
+
 	uint32_t   load;
 	uint32_t   cnt;
 	sys_timer_handler_t handle;
@@ -53,7 +56,7 @@ typedef struct sys_timer sys_timer_t;
  * @retval 0 if the timer is set
  * @retval non-0 if the timer isn't set
  */
-extern int timer_init(sys_timer_t *ptimer, uint32_t ticks,
+extern int timer_init(struct sys_timer *tmr, uint32_t ticks,
 		sys_timer_handler_t handle, void *param);
 
 /**
@@ -69,7 +72,7 @@ extern int timer_init(sys_timer_t *ptimer, uint32_t ticks,
  * @retval 0 if the timer is set
  * @retval non-0 if the timer isn't set
  */
-extern int timer_set(sys_timer_t **ptimer, uint32_t ticks,
+extern int timer_set(struct sys_timer **ptimer, uint32_t ticks,
 		sys_timer_handler_t handle, void *param);
 
 /**
@@ -77,12 +80,7 @@ extern int timer_set(sys_timer_t **ptimer, uint32_t ticks,
  *
  * @param id timer identifier
  */
-extern int timer_close(sys_timer_t *ptimer);
+extern int timer_close(struct sys_timer *ptimer);
 
-extern void timer_sched(void);
-
-extern void timer_stop(struct sys_timer *ptimer);
-
-extern void timer_start(struct sys_timer *ptimer);
 
 #endif /* KERNEL_TIMER_H_ */

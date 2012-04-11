@@ -7,31 +7,30 @@
  * @author Anton Bondarev
  */
 #include <errno.h>
+#include <embox/unit.h>
 #include <mem/misc/pool.h>
 
 #include <kernel/timer.h>
 
-#define TIMER_POOL_SZ 20 /**< system timers quantity */
+POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
 
-POOL_DEF(timer_pool, sys_timer_t, TIMER_POOL_SZ);
-
-int timer_init(sys_timer_t *ptimer, uint32_t ticks,
+int timer_init(struct sys_timer *tmr, uint32_t ticks,
 		sys_timer_handler_t handler, void *param) {
-	if (!handler || !ptimer) {
+	if (!handler || !tmr) {
 		return -EINVAL;
 	}
 
-	ptimer->is_preallocated = false;
-	ptimer->cnt    = ptimer->load = ticks;
-	ptimer->handle = handler;
-	ptimer->param  = param;
+	tmr->is_preallocated = false;
+	tmr->cnt = tmr->load = ticks;
+	tmr->handle = handler;
+	tmr->param = param;
 
-	timer_start(ptimer);
+	timer_strat_start(tmr);
 
-	return 0;
+	return ENOERR;
 }
 
-int timer_set(sys_timer_t **ptimer, uint32_t ticks,
+int timer_set(struct sys_timer **ptimer, uint32_t ticks,
 		sys_timer_handler_t handler, void *param) {
 
 	if (NULL == handler || NULL == ptimer) {
@@ -44,18 +43,18 @@ int timer_set(sys_timer_t **ptimer, uint32_t ticks,
 	timer_init(*ptimer, ticks, handler, param);
 	(*ptimer)->is_preallocated = true;
 
-	return 0;
+	return ENOERR;
 }
 
-int timer_close(sys_timer_t *ptimer) {
-	if (NULL == ptimer) {
+int timer_close(struct sys_timer *tmr) {
+	if (NULL == tmr) {
 		return -EINVAL;
 	}
 
-	timer_stop(ptimer);
-	if (ptimer->is_preallocated) {
-		pool_free(&timer_pool, ptimer);
+	timer_strat_stop(tmr);
+	if (tmr->is_preallocated) {
+		pool_free(&timer_pool, tmr);
 	}
 
-	return 0;
+	return ENOERR;
 }
