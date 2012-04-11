@@ -49,12 +49,11 @@ define class-Mybuild
 				$(for moduleInst <- $(invoke moduleInstance,$(module)),
 					$(set moduleInst->includeMember,$(cfgInclude)))),
 
-			$(if $(strip $(or \
-						$(invoke superSetDeps,$1),
-						$(invoke checkResolve,$1),
-						$(invoke optionBind,$1))),
-				,
-				$1)))
+			$(invoke superSetDeps,$1)
+			$(invoke checkResolve,$1)
+			$(invoke optionBind,$1)
+			$1))
+
 
 	$(method superSetDeps,
 		$(silent-for \
@@ -93,9 +92,7 @@ define class-Mybuild
 							Multiplie abstract realization: $(get instType->qualifiedName)
 								$(invoke getInstDepsOrigin,$(get inst->depends)))),
 						$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
-							No abstract realization: $(get instType->qualifiedName))))
-
-					$(inst)))
+							No abstract realization: $(get instType->qualifiedName))))))
 			))
 
 	# Args:

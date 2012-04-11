@@ -61,8 +61,12 @@ endif
 include mk/flags.mk
 
 build_model := $(__build_model)
+
 MODS_ENABLE_OBJ := $(call listInstances,$(build_model))
 #$(warning $(call printInstances,$(build_model)))
+
+$(if $(call invoke,$(call get,$(build_model),issueReceiver),getIssues),\
+	$(error There are unresolved errors in build configuration))
 
 # It's time to scan subdirs and prepare mods info.
 # ...and to build dependency injection model
