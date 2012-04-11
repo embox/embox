@@ -84,7 +84,7 @@ define class-EObject
 	# Method 'eContents... : EObject'.
 	# PROTECTED REGION ID(EModel_EObject_eContents) ENABLED START
 	$(method eContents... : EObject,
-		$(suffix __eContents))
+		$(suffix $(get-field __eContents)))
 	# PROTECTED REGION END
 
 	# Method 'eContentsOfType... : EObject'.
