@@ -234,7 +234,7 @@ define class-MyFeature
 	# PROTECTED REGION ID(MyFile_Feature_allSuperFeatures) ENABLED START
 	$(getter allSuperFeatures,
 		$(for super <- $(get superFeatures),
-			$(get super->allSuperFeatures)))
+			$(super) $(get super->allSuperFeatures)))
 
 	$(setter allSuperFeatures,
 		$(error $0($1): NIY))
@@ -245,7 +245,7 @@ define class-MyFeature
 	# PROTECTED REGION ID(MyFile_Feature_allSubFeatures) ENABLED START
 	$(getter allSubFeatures,
 		$(for sub <- $(get subFeatures),
-			$(get sub->allSubFeatures)))
+			$(sub) $(get sub->allSubFeatures)))
 
 	$(setter allSubFeatures,
 		$(error $0($1): NIY))
