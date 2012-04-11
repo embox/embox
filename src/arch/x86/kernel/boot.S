@@ -61,7 +61,7 @@ multiboot_entry:
 	cmp   $_data_lma, %eax
 	je    1f
 	/*data section*/
-	movl   $_data_len, 0x4(%esp)
+	movl   $_data_len, 0x8(%esp)
 	movl   $_data_lma, 0x4(%esp)
 	movl   $_data_vma, 0x0(%esp)
 	call   memcpy
