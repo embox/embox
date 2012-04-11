@@ -109,6 +109,7 @@ static int exec(int argc, char **argv) {
 
 int mkfs_do_operation(void *_mkfs_params) {
 	mkfs_params_t *mkfs_params;
+	fs_drv_t *fs_drv;
 	int rezult;
 
 	mkfs_params = (mkfs_params_t *) _mkfs_params;
@@ -117,6 +118,15 @@ int mkfs_do_operation(void *_mkfs_params) {
 		if(0 != (rezult = ramdisk_create((void *)mkfs_params))) {
 			return rezult;
 		}
+#ifdef _GAZ_DEBUG_
+		if(NULL == (ramd_params = ramdisk_get_param(mkfs_params->name))) {
+				return -ENODEV;
+			}
+
+		printf("Create ramdisk %s, size %d, filesistem %s, addr %d,\n",
+				ramd_params->name,ramd_params->size,
+				ramd_params->fs_name, (int)ramd_params->start_addr);
+#endif /*def _GAZ_DEBUG_ */
 	}
 
 	if(mkfs_params->operation_flag & MKFS_FORMAT_DEV) {
@@ -128,16 +138,15 @@ int mkfs_do_operation(void *_mkfs_params) {
 		strcpy ((void *)ramd_params->fs_name,
 					(const void *)mkfs_params->fs_name);
 		ramd_params->fs_type = mkfs_params->fs_type;
+
+		fs_drv = filesystem_find_drv((const char *) &mkfs_params->fs_name);
+
 		/* format filesystem */
-		if (0 != (rezult = fatfs_create((void *)ramd_params))) {
+		if (0 != (rezult = fs_drv->fsop->create_file((void *)ramd_params))) {
 			return rezult;/*file already exist*/
 		}
 
 #ifdef _GAZ_DEBUG_
-		printf("Create ramdisk %s, size %d, filesistem %s, addr %d,\n",
-				ramd_params->name,ramd_params->size,
-				ramd_params->fs_name, (int)ramd_params->start_addr);
-
 		fat_main("/test1.txt");
 
 		fat_main("/test2.txt");

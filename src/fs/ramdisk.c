@@ -31,21 +31,14 @@ EMBOX_UNIT_INIT(unit_init);
 int ramdisk_create(void *mkfs_params) {
 	node_t *ramdisk_node;
 	mkfs_params_t *p_mkfs_params;
-	//fs_drv_t *drv;
 
 	p_mkfs_params = (mkfs_params_t *)mkfs_params;
 
 	if (NULL == (ramdisk_node = vfs_add_path(p_mkfs_params->name, NULL))) {
-#ifdef _GAZ_DEBUG_
-		printf("Ramdisk already exist 1\n");
-#endif /*def _GAZ_DEBUG_ */
 		return -EBUSY;/*file already exist*/
 	}
 
 	if(NULL == (ramd_params.start_addr = page_alloc(p_mkfs_params->blocks))) {
-#ifdef _GAZ_DEBUG_
-		printf("Out of memory\n");
-#endif /*def _GAZ_DEBUG_ */
 		return -ENOMEM;
 	}
 
