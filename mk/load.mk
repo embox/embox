@@ -15,3 +15,5 @@ include mk/load-mybuild.inc.mk
 $(MAKECMDGOALS) : $(load_mk_files) $(load_mybuild_files)
 	@$(MAKE) -f mk/build.mk MAKEFILES='$^' $@
 
+%/. :
+	@$(MKDIR) $(@D)

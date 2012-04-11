@@ -140,9 +140,9 @@ $(load_mk_files) : $$(CACHE_INCLUDES)
 $(load_mk_files) : $$(CACHE_REQUIRES)
 $(load_mk_files) : mk/load-mk.inc.mk
 $(load_mk_files) : mk/script/mk-cache.mk
+$(load_mk_files) : | $$(@D)/.
 $(load_mk_files) :
 	@echo ' MKGEN $(@F)'
-	@mkdir -p $(@D) && \
-		$(MAKE) -f mk/script/mk-cache.mk CACHE_DEP_TARGET='$@' > $@
+	@$(MAKE) -f mk/script/mk-cache.mk CACHE_DEP_TARGET='$@' > $@
 
 -include $(load_mk_files:%=%.d)

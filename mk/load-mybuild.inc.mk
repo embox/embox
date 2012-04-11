@@ -60,11 +60,11 @@ $(myfiles_mk) $(configfiles_mk) : export MAKEFILES ?=
 $(myfiles_mk) $(configfiles_mk) : $$(MAKEFILES)
 $(myfiles_mk) $(configfiles_mk) : mk/load-mybuild.inc.mk
 $(myfiles_mk) $(configfiles_mk) : mk/script/mk-persist.mk
+$(myfiles_mk) $(configfiles_mk) : | $$(@D)/.
 
 $(myfiles_mk) $(configfiles_mk) : $(MYBUILD_FILES_CACHE_DIR)/%.mk : %
 	@echo ' $(recipe_tag) $<'
 	@SCOPE=`echo '$<' | sum | cut -f 1 -d ' '`; \
-	mkdir -p $(@D) && \
 	$(MAKE) -f mk/script/mk-persist.mk ALLOC_SCOPE="p$$SCOPE" > $@ && \
 	echo '$$(lastword $$(MAKEFILE_LIST)) := '".obj1p$$SCOPE" >> $@
 
@@ -79,13 +79,12 @@ myfiles_mk_cached_list_mk := $(MYBUILD_CACHE_DIR)/myfiles-list.mk
 $(myfiles_model_mk) : MAKEFILES := $(mk_mybuild) $(myfiles_mk)
 $(myfiles_model_mk) :
 	@echo ' MYLINK: $(words $(myfiles_mk)) files $(__myfiles_model_stats)'
-	@mkdir -p $(@D) && \
-		$(MAKE) -f mk/script/mk-persist.mk \
+	@$(MAKE) -f mk/script/mk-persist.mk \
 		PERSIST_OBJECTS='$$(call myfile_create_resource_set_from_files,$(myfiles_mk))' \
 		PERSIST_REALLOC='my' \
 		PERSIST_VARIABLE='__myfile_resource_set' \
 		ALLOC_SCOPE='z' > $@
-	@printf 'myfiles_mk_cached := %b' '$(myfiles_mk:%=\\\n\t%)' \
+	@$(PRINTF) 'myfiles_mk_cached := %b' '$(myfiles_mk:%=\\\n\t%)' \
 		> $(myfiles_mk_cached_list_mk)
 load_mybuild_files += $(myfiles_model_mk)
 
@@ -95,8 +94,7 @@ export configfiles_model_mk := $(MYBUILD_CACHE_DIR)/configfiles-model.mk
 $(configfiles_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_mk) $(myfiles_model_mk)
 $(configfiles_model_mk) :
 	@echo ' CONFIGLINK'
-	@mkdir -p $(@D) && \
-		$(MAKE) -f mk/script/mk-persist.mk \
+	@$(MAKE) -f mk/script/mk-persist.mk \
 		PERSIST_OBJECTS='$$(call config_create_resource_set_from_files,$(configfiles_mk))' \
 		PERSIST_REALLOC='cfg' \
 		PERSIST_VARIABLE='__config_resource_set' \
@@ -109,8 +107,7 @@ export build_model_mk := $(MYBUILD_CACHE_DIR)/build-model.mk
 $(build_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_model_mk) $(myfiles_model_mk)
 $(build_model_mk) :
 	@echo ' BUILDMODEL'
-	@mkdir -p $(@D) && \
-		$(MAKE) -f mk/script/mk-persist.mk \
+	@$(MAKE) -f mk/script/mk-persist.mk \
 		PERSIST_OBJECTS='$$(call mybuild_create_build)' \
 		PERSIST_REALLOC='bld' \
 		PERSIST_VARIABLE='__build_model' \
@@ -124,6 +121,7 @@ $(load_mybuild_files) : export MAKEFILES ?=
 $(load_mybuild_files) : $$(MAKEFILES)
 $(load_mybuild_files) : mk/load-mybuild.inc.mk
 $(load_mybuild_files) : mk/script/mk-persist.mk
+$(load_mybuild_files) : | $$(@D)/.
 
 #
 # Added/removed myfiles detection.
