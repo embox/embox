@@ -22,7 +22,7 @@
 EMBOX_EXAMPLE(run);
 
 static void timer_handler(sys_timer_t* timer, void *param) {
-	*(volatile int *)param += 1;
+	*(volatile int *) param += 1;
 }
 
 static inline bool wait_tick(int *tmr_cnt) {
@@ -43,13 +43,15 @@ static int timer_init_example(void) {
 	/* this value will change during execution callback handler */
 	tick_cnt = false;
 
-	if (ENOERR != (res = timer_init(&timer, TEST_TIMER_TICKS, timer_handler, (void *)&tick_cnt))) {
+	if (ENOERR
+			!= (res = timer_init(&timer, 0, TEST_TIMER_TICKS, timer_handler,
+					(void *) &tick_cnt))) {
 		printf("failed to install timer");
 		return res;
 	}
 
 	/* wait until timer handler will be called */
-	wait_tick((int *)&tick_cnt);
+	wait_tick((int *) &tick_cnt);
 
 	/* delete from queue */
 	timer_close(&timer);
@@ -65,13 +67,15 @@ static int timer_set_example(void) {
 	/* this value will change during execution callback handler */
 	tick_cnt = 0;
 
-	if (ENOERR != (res = timer_set(&timer, TEST_TIMER_TICKS, timer_handler, &tick_cnt))) {
+	if (ENOERR
+			!= (res = timer_set(&timer, TEST_TIMER_TICKS, timer_handler,
+					&tick_cnt))) {
 		printf("failed to install timer");
 		return res;
 	}
 
 	/* wait until timer handler will be called */
-	wait_tick((int *)&tick_cnt);
+	wait_tick((int *) &tick_cnt);
 
 	/* delete from queue */
 	timer_close(timer);

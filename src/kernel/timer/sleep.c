@@ -22,14 +22,19 @@ static void restore_thread(sys_timer_t *timer, void *param) {
 /* system library function */
 int usleep(useconds_t usec) {
 	int ret = 0;
-	struct event wait_event;
-	sys_timer_t tmr; /* we allocate timer structure on the stack */
 
-	event_init(&wait_event, NULL);
+	if(0 == usec) {
+		sched_yield();
+		return ret;
+	}
 
 	sched_lock();
 	{
-		if (0 != timer_init(&tmr, usec, &restore_thread, &wait_event)) {
+		struct event wait_event;
+		struct sys_timer tmr; /* we allocate timer structure on the stack */
+
+		event_init(&wait_event, NULL);
+		if (0 != timer_init(&tmr, 0, usec, &restore_thread, &wait_event)) {
 			ret = -EBUSY;
 			goto out_unlock;
 		}

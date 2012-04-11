@@ -20,9 +20,14 @@ static void wake_up(sys_timer_t *timer, void *param) {
 int usleep(useconds_t usec) {
 	volatile int wait_flag; // for sleep func
 	sys_timer_t timer;
+
+	if(0 == usec) {
+		return 0;
+	}
+
 	wait_flag = 1;
 	/* FIXME timer_set argument is tick (not usec) */
-	if (timer_init(&timer, usec, &wake_up, (void *) &wait_flag)) {
+	if (timer_init(&timer, 0, usec, &wake_up, (void *) &wait_flag)) {
 		return 1;
 	}
 	while (wait_flag) {

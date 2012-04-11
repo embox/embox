@@ -27,6 +27,9 @@ struct sys_timer;
  */
 typedef void (*sys_timer_handler_t)(struct sys_timer *timer, void *param);
 
+#define TIMER_PERIODIC     0x1
+#define TIMER_ONESHORT     0x0
+#define TIMER_REALTIME     0x80000000
 
 /**
  * system timer structure
@@ -56,7 +59,7 @@ typedef struct sys_timer sys_timer_t;
  * @retval 0 if the timer is set
  * @retval non-0 if the timer isn't set
  */
-extern int timer_init(struct sys_timer *tmr, uint32_t ticks,
+extern int timer_init(struct sys_timer *tmr, uint32_t flags, uint32_t ticks,
 		sys_timer_handler_t handle, void *param);
 
 /**

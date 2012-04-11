@@ -17,9 +17,9 @@ static LIST_HEAD(sys_timers_list); /* list head to timers */
 void timer_strat_start(struct sys_timer *tmr) {
 	struct sys_timer *it_tmr, *tmp;
 	//TODO patch for sleep(0)
-	if(0 == tmr->load) {
-		tmr->load = 1;
-	}
+//	if(0 == tmr->load) {
+//		tmr->load = 1;
+//	}
 
 	tmr->cnt = tmr->load;
 

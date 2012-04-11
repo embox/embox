@@ -14,7 +14,7 @@
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
 
-int timer_init(struct sys_timer *tmr, uint32_t ticks,
+int timer_init(struct sys_timer *tmr, uint32_t flags, uint32_t ticks,
 		sys_timer_handler_t handler, void *param) {
 	if (!handler || !tmr) {
 		return -EINVAL;
@@ -40,7 +40,7 @@ int timer_set(struct sys_timer **ptimer, uint32_t ticks,
 		return -ENOMEM;
 	}
 	/* we know that init will be success (right ptimer and handler) */
-	timer_init(*ptimer, ticks, handler, param);
+	timer_init(*ptimer, 0, ticks, handler, param);
 	(*ptimer)->is_preallocated = true;
 
 	return ENOERR;

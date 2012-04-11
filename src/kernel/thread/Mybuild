@@ -18,7 +18,5 @@ module sched {
 	depends embox.arch.context // context_switch
 	depends embox.kernel.critical
 	depends embox.kernel.thread.sched_policy.api
-
-
 }
 
