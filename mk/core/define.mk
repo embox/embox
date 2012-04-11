@@ -423,6 +423,10 @@ define __def_builtin_real
 	))
 endef
 
+#
+# Inner expansion.
+#
+
 define __def_inner_escape
 	$(subst :,l[$$],
 		$(subst $(\s),s[$$],$(subst $(\t),t[$$],
@@ -534,9 +538,9 @@ define __def_inner_handle
 			$(if $(findstring $1,:),
 				$$$$(:),# Accept a single colon as a variable name.
 
-				# It has to be an extended expression.
+				# It has to be an extended colon expression.
 				#   $(foo: ...) $(: foo: ...)
-				$(call __def_inner_handle_extexp,$1)
+				$(call __def_inner_handle_colonexpr,$1)
 			)
 		),
 
@@ -579,16 +583,16 @@ endef
 # Called in case of a colon in the '1st',
 # but which doesn't seem to be a '$(:)' variable reference.
 # See '__def_inner_handle'.
-define __def_inner_handle_extexp
-	$(foreach 1st,__extexp__,
+define __def_inner_handle_colonexpr
+	$(foreach 1st,__colonexpr__,
 		$(call __def_inner_handle_function,
 			# Arguments are delimited using colon.
 			$(subst :,c[$$],
 				# '$:' -> '$(:)'
 				# ',' (literal comma) -> '$(,)'
 				$(subst $$$$:,$$(\colon),$(subst c[$$],$$(,),
-					# Handle is as if it was $(__extexp__ foo, ...).
-					__extexp__ $1)))
+					# Handle it as if it would be $(__colonexpr__ foo, ...).
+					__colonexpr__ $1)))
 		)
 	)
 endef
@@ -605,18 +609,10 @@ define __def_inner_handle_function
 		$(subst c[$$],
 			# Real commas are needed to get actual arguments placed
 			# into the corresponding variables ($1,$2,...), and
-			# hooks help to get the list of theese variables.
+			# hooks help to construct a list of these variables.
 			$(,)$$(call __def_o_arg),
 
 			c[$$]# Escaped comma before the arguments.
-
-			# TODO outdated comments below... -- Eldar
-
-			# The one and only word with trailing whitespace is anyway a valid
-			# function call with a single empty argument: '$(foo )',
-			# and in such case we've done. Otherwise (one non-empty or more
-			# than one argument), we should deal with these arguments.
-			#   $(foo bar) $(foo ,) $(foo bar,) $(foo ,bar) ...
 
 			# The actual arguments form the rest of the value being
 			# handled. An exact structure of whitespaces between the
@@ -632,7 +628,7 @@ define __def_inner_handle_function
 				# Builtin is a macro, and it will expand the necessary
 				# arguments by itself.
 				# We have to escape dollars (once again :) ) to prevent
-				# arguments to be expanded before executing the handler.
+				# arguments from being expanded before executing the handler.
 				$(subst [$$$$],[$$],$(subst $$,$$$$,
 					$(call nofirstword,$1$])))
 			)
@@ -643,6 +639,8 @@ define __def_inner_handle_function
 	# we've already appended it after the last argument (see above).
 endef
 
+#
+# Here goes outer expansion phase of def.
 #
 # The main structure used by the outer expansion phase is an expansion stack.
 # The stack holds an information about how native make expansion engine
@@ -773,6 +771,7 @@ define __builtin_native_handler
 endef
 
 # List of GNU Make 3.81 native builtin functions with their arities.
+# TODO Recent versions also introduce 'file/1' and 'guile/1' functions.
 __builtin_native_functions := \
 	abspath/1     addprefix/2   addsuffix/2   basename/1   \
 	dir/1         notdir/1      subst/3       suffix/1     \
@@ -808,16 +807,16 @@ endef
 #
 # There are always at least two arguments:
 #
-#   - If it seems to be a generic extexp ('$(: ...)'), then the first argument
-#     is empty.
+#   - If it seems to be a generic colonexpr ('$(: ...)'), then the first
+#     argument is empty.
 #
-#   - If the extexp is in simple form ('$(foo: ...)', like plain old Make
+#   - If the colonexpr is in simple form ('$(foo: ...)', like plain old Make
 #     substitution reference), the first argument is the name of target
 #     variable ('foo'), everything else goes into the rest arguments ($2..).
 #
-define builtin_macro-__extexp__
+define builtin_macro-__colonexpr__
 	$(or $(and $1,$(findstring =,$2),$$($(call __def_expand,$1:$2))),
-		$(call builtin_error,NIY (extexp:$(builtin_args))!))
+		$(call builtin_error,NIY (colonexpr:$(builtin_args))!))
 endef
 
 #
