@@ -102,7 +102,7 @@ int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 		}
 		memcpy((void *) msg->msg_iov->iov_base,
 				(void *) (skb->h.raw + UDP_HEADER_SIZE), len);
-		kfree_skb(skb);
+		kfree_skb(skb); /* FIXME `skb` may contains more data than `len` */
 	} else {
 		len = 0;
 	}

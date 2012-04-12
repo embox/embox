@@ -114,7 +114,6 @@ typedef struct sk_buff {        /* Socket buffer */
 		 * ToDo: why isn't it enough to have just len?
 		 */
 	unsigned char *p_data;
-	char prot_info;				/* Protocol level additional data, tcp uses for state handling */
 } sk_buff_t;
 
 typedef struct sk_buff_head {

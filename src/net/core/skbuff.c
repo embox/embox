@@ -274,7 +274,6 @@ struct sk_buff * skb_clone(struct sk_buff *skb, gfp_t priority) {
 	clone->pkt_type = skb->pkt_type;
 	clone->protocol = skb->protocol;
 	clone->sk = skb->sk;
-	clone->prot_info = skb->prot_info;
 
 	return clone;
 }
