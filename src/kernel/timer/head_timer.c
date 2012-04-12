@@ -69,8 +69,8 @@ static inline void timers_schedule(void) {
 		nxt_cnt = tmp->cnt;
 		timer->handle(timer, timer->param);
 
-		timer_stop(timer);
-		timer_start(timer);
+		timer_strat_stop(timer);
+		timer_strat_start(timer);
 
 		if (0 != nxt_cnt) {
 			return;
