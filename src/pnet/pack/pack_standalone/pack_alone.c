@@ -11,6 +11,12 @@
  *
  * @date 20.10.2011
  * @author Anton Kozlov
+ *	- initial implementation
+ * @author Anton Bondarev
+ *	- packet type managment
+ * @autorh Alexander Kalmuk
+ *	- packet destroy
+ *	- priority handling
  */
 
 #include <string.h>
@@ -22,25 +28,41 @@
 #include <pnet/pnet_pack.h>
 #include <pnet/pack/pack_alone.h>
 
-#define PACK_DATA_LEN 64 //TODO
-
 OBJALLOC_DEF(net_packs, struct pnet_pack, CONFIG_PNET_PACKETS_QUANTITY);
-OBJALLOC_DEF(net_packs_data, unsigned char[PACK_DATA_LEN], CONFIG_PNET_PACKETS_QUANTITY);
+OBJALLOC_DEF(net_packs_data,struct pnet_pack_data, CONFIG_PNET_PACKETS_QUANTITY);
 
+/**
+ * @brief Alloc pnet simple packet with content
+ *
+ * @param data Content pointer to store to packet
+ * @param len Content lenght
+ *
+ * @return Pointer to allocated packet
+ */
 static struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
-	struct pnet_pack *pack = data;
-	struct pnet_pack_data *pack_data = pack->data;
+	struct pnet_pack *pack;
+	struct pnet_pack_data *pack_data;
 
-	if (len > PACK_DATA_LEN) {
+	if (len > PNET_PACK_MAX_DATA_LEN) {
 		return NULL;
 	}
 
-	pack = objalloc(&net_packs);
+	if (!(pack = objalloc(&net_packs))) {
+		return NULL;
+	}
 
-	//pack->node = node;
+	if (!(pack_data = objalloc(&net_packs_data))) {
+		objfree(&net_packs,pack);
+		return NULL;
+	}
+
+	pack->data = pack_data;
+
 	pack->dir = PNET_PACK_DIRECTION_RX; //TODO varios packet types
 
-	pack_data->buff = objalloc(&net_packs_data);
+	if (data) {
+		memcpy(pack_data->buff,data,len);
+	}
 
 	pack_data->len = len;
 
@@ -54,7 +76,7 @@ static struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
 static void pnet_pack_free(struct pnet_pack *pack) {
 	struct pnet_pack_data *data = pack->data;
 
-	objfree(&net_packs_data, data->buff);
+	objfree(&net_packs_data, data);
 
 	objfree(&net_packs, pack);
 }
