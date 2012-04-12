@@ -767,6 +767,10 @@ $(call def,__builtin_func_set)
 #   $(call set,object,property,value)
 set = \
 	$(set 1->$2,$3)
+set+ = \
+	$(set+ 1->$2,$3)
+set- = \
+	$(set- 1->$2,$3)
 
 ifdef OBJ_DEBUG
 # Params:
