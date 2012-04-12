@@ -296,7 +296,7 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 	if(!sock->ops->connect){
 		debug_printf("No connect() method", "kernel_socket",
 								 "kernel_socket_connect");
-		return SK_NO_SUCH_METHOD;
+		return -EOPNOTSUPP;
 	}
 
 	/* find out if socket sock is registered in the system */
