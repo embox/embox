@@ -29,10 +29,10 @@ match_rule_t pnet_rule_alloc(void) {
 	/* FIXME mac.raw initialized in alloc_skb. I think nh.raw also is uniquely determined.
 	 * But now we initialize it in net/core/net_entry.c. So, temporary I suppose
 	 * that is no initialization of nh in alloc_skb() --Alexander */
-	rule->skbuf->nh.raw = rule->skbuf->data + ETH_HEADER_SIZE;
+	rule->skbuf->nh.raw = rule->skbuf->mac.raw + ETH_HEADER_SIZE;
 
 	/* Fill data with 255 per byte. It means '*', i.e. any value is suitable. */
-	memset(rule->skbuf->data, MATCH_WILDCARD, MAX_PACK_HEADER_SIZE);
+	memset(rule->skbuf->mac.raw, MATCH_WILDCARD, MAX_PACK_HEADER_SIZE);
 	rule->next_node = NULL;
 
 	/* All rules and packets have priority 0 after allocation. */

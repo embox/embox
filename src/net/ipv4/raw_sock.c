@@ -164,17 +164,16 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	struct inet_sock *inet = inet_sk(sk);
 	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + len, 0);
 	assert(skb);
-	memcpy((void*)((unsigned int)(skb->data + ETH_HEADER_SIZE)),
+	memcpy((void*)((unsigned int)(skb->mac.raw + ETH_HEADER_SIZE)),
 					(void*) msg->msg_iov->iov_base, len);
-	skb->nh.raw = skb->data + ETH_HEADER_SIZE;
+	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 
 		/* Correct until somebody sends:
 		 *	IP packet with options
 		 *	already fragmented IP packet
 		 * Probably we don't need this pointer in later code
 		 */
-	skb->h.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE +
-			IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
+	skb->h.raw = skb->mac.raw + ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
 
 	skb->sk = sk;
 	return ip_send_packet(inet, skb);
@@ -190,7 +189,7 @@ static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			len = skb->len - ETH_HEADER_SIZE;
 		}
 		memcpy((void*) msg->msg_iov->iov_base,
-				(void*) (skb->data + ETH_HEADER_SIZE), len);
+				(void*) (skb->mac.raw + ETH_HEADER_SIZE), len);
 		kfree_skb(skb);
 	} else {
 		len = 0;

@@ -100,20 +100,12 @@ typedef struct sk_buff {        /* Socket buffer */
 		 */
 	unsigned char *head;
 
-		/* Data head pointer.
-		 * Unlike Linux code it simply points to the packet start (mac).
-		 * So it just coinsides with mac.raw
-		 * (We can get rid of it (use mac.raw everywhere), or at least
-		 * check that (data == mac.raw) in skb integrity check)
-		 * It almost not touched, except ICMP and future IPIP code
-		 */
-	unsigned char *data;
-
-		/* Pointer for current processing data.
-		 * Used only in tcp code unlike tail in Linux skb
-		 * ToDo: why isn't it enough to have just len?
+		/* After processing by (incoming) stack packet is used by
+		 * socket structures. Socket (== User) may consume only a part
+		 * of data. Taken data ends with p_data
 		 */
 	unsigned char *p_data;
+
 } sk_buff_t;
 
 typedef struct sk_buff_head {

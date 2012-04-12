@@ -23,7 +23,7 @@ static int pnet_linux_rx(struct pnet_pack *pack) {
 	struct sk_buff *skb;
 
 	skb = (struct sk_buff *) pack->data;
-	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 
 	netif_rx_schedule(skb);
 

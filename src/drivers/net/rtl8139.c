@@ -40,7 +40,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	uint32_t size    = skb->len;
 	uint8_t *msg_buf = tx_buf[entry];
 
-	memcpy(msg_buf, skb->data, skb->len);
+	memcpy(msg_buf, skb->mac.raw, skb->len);
 
 	out32(((256 << 11) & 0x003f0000) | size,
 		dev->base_addr + RTL8139_TX_STAT_0 + (entry * 4));
@@ -77,7 +77,7 @@ static void rtl8139_rx(struct net_device *dev) {
 
 		skb = alloc_skb(pkt_len, 0);
 		assert(skb);
-		wrap_copy(skb->data, rx_buf, (ring_offset + 4) % RX_BUF_SIZE, skb->len);
+		wrap_copy(skb->mac.raw, rx_buf, (ring_offset + 4) % RX_BUF_SIZE, skb->len);
 		skb->dev = dev;
 		skb->protocol = ntohs(skb->mac.ethh->h_proto);
 

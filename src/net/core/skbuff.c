@@ -93,7 +93,7 @@ struct sk_buff * alloc_skb(unsigned int size, gfp_t priority) {
 	ipl_t sp;
 	struct sk_buff *skb;
 
-	if (size == 0) {
+	if ((!size) || (size > (SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE))) {
 		return NULL;
 	}
 
@@ -114,10 +114,12 @@ struct sk_buff * alloc_skb(unsigned int size, gfp_t priority) {
 		kfree_skb(skb);
 		return NULL;
 	}
-	skb->data = skb->head + SK_BUF_EXTRA_HEADROOM;
-
+	skb->mac.raw = skb->head + SK_BUF_EXTRA_HEADROOM;
+	/* Really skb->nh.raw (as a pointer) is also defined now,
+	 * because everything supports only Ethernet.
+	 * Does NULL pointer give us something more reasonable?
+	 */
 	skb->len = size;
-	skb->mac.raw = skb->data;
 	return skb;
 }
 
@@ -216,7 +218,7 @@ struct sk_buff * buff_to_skb(unsigned char *buff, unsigned int size) {
 		return NULL;
 	}
 
-	memcpy(skb->data, buff, size * sizeof(char));
+	memcpy(skb->mac.raw, buff, size * sizeof(unsigned char));
 	skb->protocol = ntohs(skb->mac.ethh->h_proto);
 	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 	if (skb->protocol == ETH_P_IP) {
@@ -227,21 +229,18 @@ struct sk_buff * buff_to_skb(unsigned char *buff, unsigned int size) {
 }
 
 static void skb_copydata(struct sk_buff *new_pack, const struct sk_buff *skb) {
-	memmove(new_pack->data, skb->data, skb->len);
+	memmove(new_pack->mac.raw, skb->mac.raw, skb->len);
 	new_pack->len = skb->len;
 
 	/*fix data references during copy net_pack*/
-	if (skb->h.raw != NULL) {
-		new_pack->h.raw = new_pack->data + (skb->h.raw - skb->data);
+	if (skb->h.raw) {
+		new_pack->h.raw = new_pack->mac.raw + (skb->h.raw - skb->mac.raw);
 	}
-	if (skb->nh.raw != NULL) {
-		new_pack->nh.raw = new_pack->data + (skb->nh.raw - skb->data);
+	if (skb->nh.raw) {
+		new_pack->nh.raw = new_pack->mac.raw + (skb->nh.raw - skb->mac.raw);
 	}
-	if (skb->mac.raw != NULL) {
-		new_pack->mac.raw = new_pack->data + (skb->mac.raw - skb->data);
-	}
-	if (skb->p_data != NULL) {
-		new_pack->p_data = new_pack->data + (skb->p_data - skb->data);
+	if (skb->p_data) {
+		new_pack->p_data = new_pack->mac.raw + (skb->p_data - skb->mac.raw);
 	}
 }
 
@@ -289,7 +288,7 @@ struct sk_buff * skb_peek_datagram(struct sock *sk, unsigned flags, int noblock,
 }
 
 struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb, int headroom, int tailroom, gfp_t priority) {
-	int free_headroom = skb->data - skb->head;
+	int free_headroom = skb->mac.raw - skb->head;
 	int free_tailroom = SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE - (free_headroom + skb->len);
 	int free_space = SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE - (skb->len + headroom + tailroom);
 
@@ -302,7 +301,7 @@ struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb, int headroom, int tail
 	} else if (free_space >= 0) {
 		/* We still can fit reserved buffer */
 		struct sk_buff skb_fields_save = *skb;
-		skb->data = skb->head + (free_space / 2);	/* Be fair to the tail and head */
+		skb->mac.raw = skb->head + (free_space / 2);	/* Be fair to the tail and head */
 		skb_copydata(skb, &skb_fields_save);
 		return skb;
 	} else {
@@ -314,18 +313,14 @@ struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb, int headroom, int tail
 }
 
 void skb_shifthead(struct sk_buff *skb, int headshift) {
-	assert(skb->data);
-	skb->data -= headshift;
+	skb->mac.raw -= headshift;
 	if(likely(skb->h.raw))
 		skb->h.raw -= headshift;
 	if(likely(skb->nh.raw))
 		skb->nh.raw -= headshift;
-	if(likely(skb->mac.raw))
-		skb->mac.raw -= headshift;
-	assert(skb->head <= skb->data);
+	assert(skb->head <= skb->mac.raw);
 	assert((int)skb->len >= (-headshift));
 	skb->len += headshift;
-	/* ToDo: check end here */
 }
 
 struct sk_buff * skb_recv_datagram(struct sock *sk, unsigned flags, int noblock,

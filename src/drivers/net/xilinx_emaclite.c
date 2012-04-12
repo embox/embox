@@ -154,7 +154,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 			return -EBUSY; /*transmitter is busy*/
 		}
 	}
-	memcpy32((uint32_t*) TX_PACK, skb->data, skb->len);
+	memcpy32((uint32_t*) TX_PACK, skb->mac.raw, skb->len);
 	TX_LEN_REG = skb->len & XEL_TPLR_LENGTH_MASK;
 	TX_CTRL_REG |= XEL_TSR_XMIT_BUSY_MASK;
 
@@ -205,7 +205,7 @@ static void pack_receiving(void *dev_id) {
 		return;
 	}
 
-	memcpy32((uint32_t *) skb->data, RX_PACK, (size_t) len);
+	memcpy32((uint32_t *) skb->mac.raw, RX_PACK, (size_t) len);
 	/* Acknowledge the frame */
 	current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
 	switch_rx_buff();

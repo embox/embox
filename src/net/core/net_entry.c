@@ -34,7 +34,7 @@ int netif_rx(void *data) {
 		return NET_RX_DROP;
 	}
 	//TODO move to processing
-	skb->nh.raw = (unsigned char *) skb->data + ETH_HEADER_SIZE;
+	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 
 	//skb_queue_tail(&(dev->dev_queue), skb);
 	netif_rx_schedule(skb);

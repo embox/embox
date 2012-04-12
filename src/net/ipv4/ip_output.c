@@ -48,7 +48,7 @@ static inline void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	/* We use headers in other way then Linux. So data coinsides with LL header
 	 * Ethernet was hardcoded in skb allocations, so be careful
 	 */
-	skb->nh.raw = skb->data + ETH_HEADER_SIZE;
+	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 	rebuild_ip_header(skb, sk->uc_ttl, sk->sk.sk_protocol, sk->id, skb->len,
 			sk->saddr, sk->daddr/*, sk->opt*/);
 	return;

@@ -98,7 +98,7 @@ static void ip_frag_dgram_buf(struct dgram_buf *buf, struct sk_buff *skb) {
 	offset &= IP_OFFSET;
 	offset <<= 3;
 
-	data_len = skb->len - (skb->h.raw - skb->data);
+	data_len = skb->len - (skb->h.raw - skb->mac.raw);
 	end = offset + data_len;
 
 	skbuff_for_each(tmp, buf) {
@@ -130,20 +130,25 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 
 	tmp = buf->next_skbuff;
 
-	ihlen = (tmp->h.raw - tmp->data);
+	ihlen = (tmp->h.raw - tmp->mac.raw);
 	skb = alloc_skb(buf->len + ihlen, 0);
+		/* Strange:
+		 *	- it might return NULL, because length is too big now.
+		 *	- ihlen has upper limit. So it's more wise to has such
+		 *	amount of extra space in the pool (NOT shared with ICMP)
+		 */
 	assert(skb);
-	memcpy(skb->data, tmp->data, tmp->len);
+	memcpy(skb->mac.raw, tmp->mac.raw, tmp->len);
 
-	skb->h.raw = skb->data + (tmp->h.raw - tmp->data);
-	skb->nh.raw = skb->data + (tmp->nh.raw - tmp->data);
-	skb->mac.raw = skb->data + (tmp->mac.raw - tmp->data);
+		/* Terrible. Some pointers might be NULL here. sk pointer is omitted */
+	skb->h.raw = skb->mac.raw + (tmp->h.raw - tmp->mac.raw);
+	skb->nh.raw = skb->mac.raw + (tmp->nh.raw - tmp->mac.raw);
 	skb->protocol = tmp->protocol;
 	skb->dev = tmp->dev;
 
 	/* copy and concatenate data */
 	while(!list_empty((struct list_head *)buf)) {
-		memcpy(skb->data + ihlen + offset, tmp->data + ihlen, tmp->len - ihlen);
+		memcpy(skb->mac.raw + ihlen + offset, tmp->mac.raw + ihlen, tmp->len - ihlen);
 		offset += tmp->len - ihlen;
 		list_del((struct list_head *)tmp);
 		kfree_skb(tmp);
@@ -238,12 +243,12 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 struct sk_buff_head *ip_frag(struct sk_buff *skb) {
 	struct sk_buff_head *tx_buf;
 	struct sk_buff *fragment;
-	int offset; /* offset from skb->data */
+	int offset; /* offset from skb->mac.raw */
 	int len;
 	int align_MTU;
 
 	tx_buf = alloc_skb_queue();
-	len = skb->h.raw - skb->data;
+	len = skb->h.raw - skb->mac.raw;
 	offset = len;
 
 	/* Note: correct MTU, because fragment offset must divide on 8*/
@@ -253,9 +258,9 @@ struct sk_buff_head *ip_frag(struct sk_buff *skb) {
 	while(offset < skb->len - align_MTU) {
 		fragment = alloc_skb(align_MTU, 0);
 		assert(fragment);
-		memcpy(fragment->data + len, skb->data + offset, align_MTU);
-		fragment->h.raw = fragment->data + len;
-		fragment->nh.raw = (unsigned char *) fragment->data + ETH_HEADER_SIZE;
+		memcpy(fragment->mac.raw + len, skb->mac.raw + offset, align_MTU);
+		fragment->h.raw = fragment->mac.raw + len;
+		fragment->nh.raw = fragment->mac.raw + ETH_HEADER_SIZE;
 		fragment->offset = (offset - len) >> 3; /* data offset */
 		fragment->offset |= IP_MF;
 		skb_queue_tail(tx_buf, fragment);
@@ -266,8 +271,8 @@ struct sk_buff_head *ip_frag(struct sk_buff *skb) {
 	if(offset < skb->len) {
 		fragment = alloc_skb(skb->len - offset + len, 0);
 		assert(fragment);
-		memcpy(fragment->data + len, skb->data + offset, skb->len - offset);
-		fragment->nh.raw = (unsigned char *) fragment->data + ETH_HEADER_SIZE;
+		memcpy(fragment->mac.raw + len, skb->mac.raw + offset, skb->len - offset);
+		fragment->nh.raw = fragment->mac.raw + ETH_HEADER_SIZE;
 		fragment->offset = (offset - len) >> 3; /* data offset */
 
 		skb_queue_tail(tx_buf, fragment);

@@ -174,7 +174,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	}
 
 	count = skb->len;
-	copy_data_to_card(NESM_START_PG_TX << 8, skb->data, count, base_addr);
+	copy_data_to_card(NESM_START_PG_TX << 8, skb->mac.raw, count, base_addr);
 
 	/* switch off dma */
 	out8(E8390_NODMA | E8390_START | E8390_PAGE0, base_addr + NE_CMD);
@@ -187,7 +187,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	while (in8(base_addr + NE_CMD) & E8390_TRANS) ;
 
 #if DEBUG
-	show_packet(skb->data, skb->len, "send");
+	show_packet(skb->mac.raw, skb->len, "send");
 #endif
 	kfree_skb(skb); /* free packet */
 
@@ -204,10 +204,10 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length,
 	}
 
 	skb->dev = dev;
-	copy_data_from_card(offset, skb->data, total_length, dev->base_addr);
+	copy_data_from_card(offset, skb->mac.raw, total_length, dev->base_addr);
 	skb->protocol = ntohs(skb->mac.ethh->h_proto);
 #if DEBUG
-	show_packet(skb->data, skb->len, "recv");
+	show_packet(skb->mac.raw, skb->len, "recv");
 #endif
 
 	return skb;

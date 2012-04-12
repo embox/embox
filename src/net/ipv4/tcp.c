@@ -130,11 +130,11 @@ static struct sk_buff * alloc_prep_skb(size_t addit_len) {
 				    /*inet->opt->optlen +*/ TCP_V4_HEADER_MIN_SIZE +
 				    addit_len, 0);
 	if (skb == NULL) {
-		LOG_ERROR("no memory\n");
+		LOG_ERROR("no memory or len is too big\n");
 		return NULL;
 	}
 
-	skb->nh.raw = skb->data + ETH_HEADER_SIZE;
+	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
 	skb->nh.iph->ihl = IP_MIN_HEADER_SIZE / 4;
 	skb->nh.iph->tot_len = htons(IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE + addit_len);
 	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
@@ -183,7 +183,7 @@ static size_t tcp_data_len(struct sk_buff *skb) {
 static size_t tcp_data_left(struct sk_buff *skb) {
 	size_t size;
 
-	size = skb->p_data - skb->data;
+	size = skb->p_data - skb->mac.raw;
 	return (skb->len > size ? skb->len - size : 0);
 }
 
