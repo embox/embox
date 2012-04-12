@@ -17,6 +17,7 @@ static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_nod
 	net_node_t node;
 	net_id_t res = NET_HND_DFAULT;
 
+	assert(pack);
 	assert(pack->node);
 
 	node = pack->node;
@@ -37,9 +38,7 @@ static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_nod
 		pack->node = next_node;
 	}
 
-	if (res & NET_HND_SUPPRESSED) {
-		pnet_pack_destroy(pack);
-	} else {
+	if (res != NET_PACK_ACCEPTED) {
 		pnet_rx_thread_add(pack);
 	}
 

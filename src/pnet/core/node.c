@@ -11,8 +11,9 @@
 #include <mem/objalloc.h>
 #include <assert.h>
 #include <string.h>
-
 #include <util/list.h>
+
+#include <pnet/core.h>
 
 #ifndef CONFIG_PNET_NODES_QUANTITY
 #define CONFIG_PNET_NODES_QUANTITY 0x10
@@ -67,4 +68,32 @@ int pnet_node_free(net_node_t node) {
 
 int node_is_supporter(net_node_t node) {
 	return !strcmp(node->name, "devs resolver");
+}
+
+int pnet_node_attach(net_node_t node, net_id_t id, net_node_t other) {
+	if (node == NULL) {
+		return -1;
+	}
+
+	switch (id) {
+		case NET_RX_DFAULT:
+			node->rx_dfault = other;
+			break;
+		case NET_TX_DFAULT:
+			node->tx_dfault = other;
+			break;
+	}
+
+	return 0;
+}
+
+net_node_t pnet_node_get(net_node_t node, net_id_t id) {
+	switch (id) {
+		case NET_RX_DFAULT:
+			return node->rx_dfault;
+		case NET_TX_DFAULT:
+			return node->tx_dfault;
+	}
+
+	return NULL;
 }
