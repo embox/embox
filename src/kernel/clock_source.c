@@ -48,7 +48,7 @@ int clock_source_register(struct clock_source *cs) {
 	}
 	csh->clock_source = cs;
 
-	dlist_add_prev(&csh->lnk, &clock_source_list);
+	dlist_add_prev(dlist_head_init(&csh->lnk), &clock_source_list);
 
 	return ENOERR;
 }
