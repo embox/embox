@@ -144,4 +144,7 @@ extern int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,
 extern int kernel_socket_shutdown(struct socket *sock);
 extern int kernel_socket_close(struct socket *sock);
 
+extern struct socket * socket_alloc(void);
+extern void socket_free(struct socket *sock);
+
 #endif /* NET_KERNEL_SOCKET_H_ */

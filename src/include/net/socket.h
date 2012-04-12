@@ -168,26 +168,26 @@ extern int socket(int domain, int type, int protocol);
 /**
  * setup of connection
  * @param sockfd socket description, was created by socket()
- * @param daddr destination address
+ * @param daddr destination address sockaddr structure
  * @param daddrlen size of daddr
- * @return error code
+ * @return 0 on success. -1 on failure with errno indicating error.
  */
 extern int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen);
 
 /**
- * bind a address to a socket.
- * @param sockfd socket description
- * @param addr local address
+ * bind a socket to an address.
+ * @param sockfd socket file descriptor
+ * @param addr local address sockaddr structure
  * @param addrlen size of addr
- * @return 0 on success. On error, result < 0.
+ * @return 0 on success. -1 on failure with errno indicating error.
  */
 extern int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 
 /**
  * mark socket as accepting connections
- * @param sockfd socket description
+ * @param sockfd socket descriptor
  * @param backlog limit of outstanding connections in sock queue
- * @return 0 on success. On error, result < 0.
+ * @return 0 on success. -1 on failure with errno indicating error.
  */
 extern int listen(int sockfd, int backlog);
 
@@ -195,68 +195,50 @@ extern int listen(int sockfd, int backlog);
  * peek first connection request from queue and return fd of socket associated to
  * connected stream
  * @param sockfd socket description
- * @param addr NULL or pointer of sockaddr struct where addres of connected socket
+ * @param addr NULL or pointer of sockaddr struct where address of connected socket
  * will be returened
  * @param addrlen length of addr struct
- * @return fd on success. On error, result < 0.
+ * @return fd on success. -1 on failure with errno indicating error.
  */
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 
 /**
  * send a message on a socket.
- * @param sockfd socket description
- * @param buf pointer on data
+ * @param sockfd socket file descriptor
+ * @param buf pointer to data
  * @param len length of buf
  * @param flags
- * @param daddr destination address
+ * @param daddr destination address sockaddr structure
  * @param daddrlen size of daddr
- * @return the number of characters sent. On error, result < 0.
+ * @return the number of characters sent. -1 on failure with errno indicating error.
  */
 extern ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen);
 
 /**
  * receive a message from a socket.
- * @param sockfd socket description
+ * @param sockfd socket descriptor
  * @param buf buffer
  * @param len size of buffer
  * @param flags
- * @param daddr destination address
+ * @param daddr destination address sockaddr structure
  * @param daddrlen size of daddr
- * @return the number of bytes received, or result < 0 if an error occurred.
+ * @return the number of bytes received. -1 on failure with errno indicating error.
  */
 extern ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 		struct sockaddr *daddr, socklen_t *daddrlen);
 
-#if 0
-/**
- * check message in a socket
- * @param sockfd socket description
- * @return 1 if there isn't a message in socket, 0 otherwise or result < 0 if an error occurred.
- */
-extern int empty_socket(int sockfd);
-#endif
-
 /**
  * close a socket descriptor
  * @param sockfd socket description
- * @return 0 on success. On error, result < 0.
+ * @return 0 on success. -1 on failure with errno indicating error.
  */
 extern int socket_close(int sockfd);
 extern int close(int sockfd);
 
-//TODO not implement now
+/* TODO implement */
 extern int socket_shutdown(int socket, int how);
 
-//FIXME move below from here
-extern struct socket * socket_alloc(void);
-extern void socket_free(struct socket *sock);
 extern int check_icmp_err(int sockfd);
-#if 0
-extern size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,
-		const struct sockaddr *daddr, socklen_t daddrlen);
 
-extern ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int flags,
-			struct sockaddr *daddr, socklen_t *daddrlen);
-#endif
 #endif /* NET_SOCKET_H_ */
