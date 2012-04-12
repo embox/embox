@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <err.h>
 #include <assert.h>
+#include <net/sock.h>
 
 #include <hal/ipl.h>
 
@@ -42,18 +43,14 @@ EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, 
 
 
 /* TODO
- * 1. Create default socket for resetting
- * 2. PSH flag
- * 3. RST flag
+ * +1. Create default socket for resetting
+ * +2. PSH flag
+ * +3. RST flag
  * 4. Changes state's logic (i.e. TCP_CLOSED for all socket which doesn't exists etc.)
- * 5. Rewrite send_from_sock (don't send new skb if queue is not empty)
+ * +5. Rewrite send_from_sock (don't send new skb if queue is not empty)
  * 6. tcp_sock_free in tcp_st_finwait_2
  */
 
-
-OBJALLOC_DEF(objalloc_tcp_socks, struct tcp_sock, CONFIG_MAX_KERNEL_SOCKETS); /* Allocator for tcp_sock structure */
-static LIST_HEAD(rexmit_socks); /* List of all tcp_sock with non-empty rexmit_link list */
-static struct tcp_sock *tcp_hash[CONFIG_MAX_KERNEL_SOCKETS]; /* All TCP sockets in system */
 
 #define REXMIT_DELAY       3000 /* Delay for periodical rexmit */
 #define TCP_WINDOW_DEFAULT 500  /* default for window field */
@@ -77,12 +74,18 @@ typedef int (*tcp_handler_t)(union sock_pointer sock,
 		struct sk_buff **skb, struct tcphdr *tcph, struct tcphdr *out_tcph);
 
 
+OBJALLOC_DEF(objalloc_tcp_socks, struct tcp_sock, CONFIG_MAX_KERNEL_SOCKETS); /* Allocator for tcp_sock structure */
+static LIST_HEAD(rexmit_socks); /* List of all tcp_sock with non-empty rexmit_link list */
+static struct tcp_sock *tcp_hash[CONFIG_MAX_KERNEL_SOCKETS]; /* All TCP sockets in system */
+static union sock_pointer tcp_default; /* Default socket for TCP protocol. */
+struct proto tcp_prot; /* prototype */
+
 /************************ Debug functions ******************************/
 static inline void debug_print(__u8 code, const char *msg, ...) {
 	va_list args;
 
 	va_start(args, msg);
-	if (code & 0b11100100) {
+	if (code & 0b10101100) {
 		/* 0bit - ;
 		 * 1bit - tcp_handle
 		 * 2bit - tcp global functions (init, send, recv etc.)
@@ -138,7 +141,14 @@ static struct sk_buff * alloc_prep_skb(size_t addit_len) {
 }
 
 static void tcp_sock_save_skb(union sock_pointer sock, struct sk_buff *skb) {
-	skb->p_data = skb->h.raw + TCP_V4_HEADER_SIZE(skb->h.th);
+	__u32 seq, rem_seq;
+
+	seq = ntohl(skb->h.th->seq);
+	rem_seq = sock.tcp_sk->rem.seq;
+	/* setup p_data */
+	assert(rem_seq >= seq); /* FIMXME */
+	skb->p_data = skb->h.raw + TCP_V4_HEADER_SIZE(skb->h.th) + (rem_seq - seq);
+	/* move skb to socket received queue */
 	sock_queue_rcv_skb(sock.sk, skb);
 }
 
@@ -342,6 +352,7 @@ static int tcp_st_closed(union sock_pointer sock, struct sk_buff **pskb,
 	assert(sock.sk->sk_state == TCP_CLOSED);
 
 	out_tcph->rst = 1;
+	out_tcph->ack = 1;
 	/* Set seq and ack */
 	if (tcph->ack) {
 		sock.tcp_sk->this_unack = ntohl(tcph->ack_seq);
@@ -351,6 +362,12 @@ static int tcp_st_closed(union sock_pointer sock, struct sk_buff **pskb,
 		sock.tcp_sk->this_unack = 0;
 		sock.tcp_sk->rem.seq = ntohl(tcph->seq) + tcp_seq_len(*pskb);
 	}
+
+	/* Set up a socket */
+	sock.inet_sk->saddr = (*pskb)->nh.iph->daddr;
+	sock.inet_sk->sport = tcph->dest;
+	sock.inet_sk->daddr = (*pskb)->nh.iph->saddr;
+	sock.inet_sk->dport = tcph->source;
 
 	return TCP_RET_SEND;
 }
@@ -438,8 +455,8 @@ static int tcp_st_estabil(union sock_pointer sock, struct sk_buff **pskb,
 		}
 		/* Save current sk_buff_t with data */
 		debug_print(8, "\t received %d\n", data_len);
-		sock.tcp_sk->rem.seq += data_len;
 		tcp_sock_save_skb(sock, *pskb);
+		sock.tcp_sk->rem.seq += data_len;
 		out_tcph->ack = 1;
 		if (tcph->fin) {
 			tcp_set_st(sock, NULL, TCP_CLOSEWAIT);
@@ -474,8 +491,8 @@ static int tcp_st_finwait_1(union sock_pointer sock, struct sk_buff **pskb,
 		}
 		/* Save current sk_buff_t with data */
 		debug_print(8, "\t received %d\n", data_len);
-		sock.tcp_sk->rem.seq += data_len;
 		tcp_sock_save_skb(sock, *pskb);
+		sock.tcp_sk->rem.seq += data_len;
 		out_tcph->ack = 1;
 		if (tcph->fin) {
 			tcp_set_st(sock, NULL, TCP_CLOSING);
@@ -516,8 +533,8 @@ static int tcp_st_finwait_2(union sock_pointer sock, struct sk_buff **pskb,
 		}
 		/* Save current sk_buff_t with data */
 		debug_print(8, "\t received %d\n", data_len);
-		sock.tcp_sk->rem.seq += data_len;
 		tcp_sock_save_skb(sock, *pskb);
+		sock.tcp_sk->rem.seq += data_len;
 		out_tcph->ack = 1;
 		if (tcph->fin) {
 			tcp_set_st(sock, NULL, TCP_CLOSED); /* TODO TCP_TIMEWAIT */
@@ -681,8 +698,17 @@ static int pre_process(union sock_pointer sock, struct sk_buff **pskb,
 	case TCP_CLOSING:
 	case TCP_LASTACK:
 	case TCP_TIMEWAIT:
-		if (((rem_seq <= seq) && (seq < rem_last))
-				|| ((rem_seq <= seq_last) && (seq_last < rem_last))) {
+		if ((rem_seq <= seq) && (seq < rem_last)) {
+			if (rem_seq != seq) {
+				/* TODO There is correct packet (with correct sequence
+				 * number, but some packages was lost. We should save
+				 * this skb, and wait previous packages.
+				 */
+				return TCP_RET_DROP;
+			}
+			return TCP_RET_OK;
+		}
+		else if ((rem_seq <= seq_last) && (seq_last < rem_last)) {
 			return TCP_RET_OK;
 		}
 		else {
@@ -823,11 +849,11 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 	sock.tcp_sk = tcp_lookup(iph->daddr, tcph->dest, iph->saddr, tcph->source);
 	packet_print(sock, skb, "=>", skb->nh.iph->saddr, skb->h.th->source);
 	if (sock.tcp_sk == NULL) {
-		kfree_skb(skb);
-		return -1;
+		tcp_handle(tcp_default, skb, tcp_st_handler[TCP_CLOSED]);
 	}
-
-	tcp_process(sock, skb);
+	else {
+		tcp_process(sock, skb);
+	}
 
 	return ENOERR;
 }
@@ -842,10 +868,22 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 }
 
 static int tcp_v4_init(void) {
+	int res;
 //	sys_timer_t *timer;
 
 //	return timer_set(&timer, REXMIT_DELAY, timer_handler, (void *)&rexmit_socks);
-	return 0;
+	tcp_default.sk = sk_alloc(AF_INET, 0, &tcp_prot);
+	if (tcp_default.sk == NULL) {
+		return -ENOMEM;
+	}
+	res = tcp_prot.init(tcp_default.sk);
+	if (res < 0) {
+		sk_common_release(tcp_default.sk);
+		return res;
+	}
+	tcp_prot.unhash(tcp_default.sk);
+	tcp_default.sk->sk_protocol = IPPROTO_TCP;
+	return ENOERR;
 }
 
 
