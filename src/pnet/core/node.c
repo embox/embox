@@ -10,6 +10,7 @@
 #include <pnet/types.h>
 #include <mem/objalloc.h>
 #include <assert.h>
+#include <string.h>
 
 #include <util/list.h>
 
@@ -62,4 +63,8 @@ int pnet_node_free(net_node_t node) {
 	}
 	objfree(&net_nodes, node);
 	return 0;
+}
+
+int node_is_supporter(net_node_t node) {
+	return !strcmp(node->name, "devs resolver");
 }

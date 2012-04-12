@@ -13,7 +13,8 @@ module null {
 
 module linux_dev {
 	source "dev_linux.c"
-	depends null
+	depends embox.pnet.dev
+	depends embox.pnet.net_entry
 }
 
 module linux_layer {

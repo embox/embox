@@ -18,7 +18,7 @@
 #include <pnet/core.h>
 #include <pnet/pnet_pack.h>
 
-#define PNET_THREAD_DEBUG
+//#define PNET_THREAD_DEBUG
 
 EMBOX_UNIT_INIT(rx_thread_init);
 
