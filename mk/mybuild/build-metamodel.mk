@@ -49,7 +49,7 @@ define __build_init
 
 	$(call eMetaClassInit,$(Build_ModuleInstance),ModuleInstance,,)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_configuration),configuration,$(Build_Build),$(Build_Build_modules),changeable container)
-	$(call eMetaReferenceInit,$(Build_ModuleInstance_type),type,$(MyFile_Module),,changeable)
+	$(call eMetaReferenceInit,$(Build_ModuleInstance_type),type,$(MyFile_ModuleType),,changeable)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_dependent),dependent,$(Build_ModuleInstance),$(Build_ModuleInstance_depends),changeable many)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_depends),depends,$(Build_ModuleInstance),$(Build_ModuleInstance_dependent),changeable many)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_options),options,$(Build_OptionInstance),$(Build_OptionInstance_module),changeable many containment)

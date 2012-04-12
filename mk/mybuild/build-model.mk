@@ -50,9 +50,9 @@ define class-BuildModuleInstance
 	$(eobject-reference Build_ModuleInstance_configuration,
 		configuration,BuildBuild,modules,changeable container)
 
-	# Property 'type : MyModule'.
+	# Property 'type : MyModuleType'.
 	$(eobject-reference Build_ModuleInstance_type,
-		type,MyModule,,changeable)
+		type,MyModuleType,,changeable)
 
 	# Property 'dependent... : BuildModuleInstance'.
 	$(eobject-reference Build_ModuleInstance_dependent,

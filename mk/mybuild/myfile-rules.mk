@@ -153,7 +153,7 @@ $(gold_grammar)_produce-SuperFeatures_extends = $2
 # Rule: <Module> ::= <ModuleModifiers> module Identifier <SuperModule> '{' <ModuleMembers> '}'
 # Args: 1..7 - Symbols in the RHS.
 define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
-	$(foreach module,$(new MyModule),
+	$(foreach module,$(new MyModuleType),
 		$(set module->name,$3)
 		$(set module->origin,$(call gold_location_of,3))
 

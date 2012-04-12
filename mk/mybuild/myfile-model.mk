@@ -209,15 +209,15 @@ define class-MyFeature
 	$(eobject-reference MyFile_Feature_interface,
 		interface,MyInterface,features,changeable container)
 
-	# Property 'providedBy... : MyModule'.
+	# Property 'providedBy... : MyModuleType'.
 	# Property 'providedBy_links... : ELink'.
 	$(eobject-reference MyFile_Feature_providedBy,
-		providedBy,MyModule,provides,changeable many linkable)
+		providedBy,MyModuleType,provides,changeable many linkable)
 
-	# Property 'requiredBy... : MyModule'.
+	# Property 'requiredBy... : MyModuleType'.
 	# Property 'requiredBy_links... : ELink'.
 	$(eobject-reference MyFile_Feature_requiredBy,
-		requiredBy,MyModule,requires,changeable many linkable)
+		requiredBy,MyModuleType,requires,changeable many linkable)
 
 	# Property 'superFeatures... : MyFeature'.
 	# Property 'superFeatures_links... : ELink'.
@@ -295,18 +295,18 @@ endef
 #   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-define class-MyModule
+define class-MyModuleType
 	# Extends 'MyType' class.
-	$(eobject MyFile_Module,
-		MyModule,MyType,)
+	$(eobject MyFile_ModuleType,
+		MyModuleType,MyType,)
 
 	# Property 'modifiers'.
-	$(eobject-attribute MyFile_Module_modifiers,
+	$(eobject-attribute MyFile_ModuleType_modifiers,
 		modifiers,changeable)
 
 	# Attribute 'static': derived.
 	$(property isStatic)
-	# PROTECTED REGION ID(MyFile_Module_isStatic) ENABLED START
+	# PROTECTED REGION ID(MyFile_ModuleType_isStatic) ENABLED START
 	$(getter isStatic,
 		$(filter static,$(get-field modifiers)))
 	$(setter isStatic,
@@ -315,7 +315,7 @@ define class-MyModule
 
 	# Attribute 'abstract': derived.
 	$(property isAbstract)
-	# PROTECTED REGION ID(MyFile_Module_isAbstract) ENABLED START
+	# PROTECTED REGION ID(MyFile_ModuleType_isAbstract) ENABLED START
 	$(getter isAbstract,
 		$(filter abstract,$(get-field modifiers)))
 	$(setter isAbstract,
@@ -323,8 +323,8 @@ define class-MyModule
 	# PROTECTED REGION END
 
 	# Reference 'depends' [0..*]: bidirectional, derived.
-	$(property depends... : MyModule)
-	# PROTECTED REGION ID(MyFile_Module_depends) ENABLED START
+	$(property depends... : MyModuleType)
+	# PROTECTED REGION ID(MyFile_ModuleType_depends) ENABLED START
 	$(getter depends,
 		$(invoke getMembers,depends,modules))
 #	# TODO Uncomment and implement me.
@@ -333,17 +333,17 @@ define class-MyModule
 	# PROTECTED REGION END
 
 	# Property 'dependsMembers... : MyDependsMember'.
-	$(eobject-reference MyFile_Module_dependsMembers,
+	$(eobject-reference MyFile_ModuleType_dependsMembers,
 		dependsMembers,MyDependsMember,,changeable many containment)
 
-	# Property 'dependent... : MyModule'.
+	# Property 'dependent... : MyModuleType'.
 	# Property 'dependent_links... : ELink'.
-	$(eobject-reference MyFile_Module_dependent,
-		dependent,MyModule,depends,changeable many linkable)
+	$(eobject-reference MyFile_ModuleType_dependent,
+		dependent,MyModuleType,depends,changeable many linkable)
 
 	# Reference 'provides' [0..*]: bidirectional, derived.
 	$(property provides... : MyFeature)
-	# PROTECTED REGION ID(MyFile_Module_provides) ENABLED START
+	# PROTECTED REGION ID(MyFile_ModuleType_provides) ENABLED START
 	$(getter provides,
 		$(invoke getMembers,provides,features))
 #	# TODO Uncomment and implement me.
@@ -352,12 +352,12 @@ define class-MyModule
 	# PROTECTED REGION END
 
 	# Property 'providesMembers... : MyProvidesMember'.
-	$(eobject-reference MyFile_Module_providesMembers,
+	$(eobject-reference MyFile_ModuleType_providesMembers,
 		providesMembers,MyProvidesMember,,changeable many containment)
 
 	# Reference 'requires' [0..*]: bidirectional, derived.
 	$(property requires... : MyFeature)
-	# PROTECTED REGION ID(MyFile_Module_requires) ENABLED START
+	# PROTECTED REGION ID(MyFile_ModuleType_requires) ENABLED START
 	$(getter requires,
 		$(invoke getMembers,requires,features))
 #	# TODO Uncomment and implement me.
@@ -366,12 +366,12 @@ define class-MyModule
 	# PROTECTED REGION END
 
 	# Property 'requiresMembers... : MyRequiresMember'.
-	$(eobject-reference MyFile_Module_requiresMembers,
+	$(eobject-reference MyFile_ModuleType_requiresMembers,
 		requiresMembers,MyRequiresMember,,changeable many containment)
 
 	# Reference 'sources' [0..*]: containment, derived.
 	$(property sources... : MyFileName)
-	# PROTECTED REGION ID(MyFile_Module_sources) ENABLED START
+	# PROTECTED REGION ID(MyFile_ModuleType_sources) ENABLED START
 	$(getter sources,
 		$(invoke getMembers,sources,files))
 #	# TODO Uncomment and implement me.
@@ -380,12 +380,12 @@ define class-MyModule
 	# PROTECTED REGION END
 
 	# Property 'sourcesMembers... : MySourceMember'.
-	$(eobject-reference MyFile_Module_sourcesMembers,
+	$(eobject-reference MyFile_ModuleType_sourcesMembers,
 		sourcesMembers,MySourceMember,,changeable many containment)
 
 	# Reference 'objects' [0..*]: containment, derived.
 	$(property objects... : MyFileName)
-	# PROTECTED REGION ID(MyFile_Module_objects) ENABLED START
+	# PROTECTED REGION ID(MyFile_ModuleType_objects) ENABLED START
 	$(getter objects,
 		$(invoke getMembers,objects,files))
 #	# TODO Uncomment and implement me.
@@ -394,12 +394,12 @@ define class-MyModule
 	# PROTECTED REGION END
 
 	# Property 'objectsMembers... : MySourceMember'.
-	$(eobject-reference MyFile_Module_objectsMembers,
+	$(eobject-reference MyFile_ModuleType_objectsMembers,
 		objectsMembers,MySourceMember,,changeable many containment)
 
 	# Reference 'options' [0..*]: containment, derived.
 	$(property options... : MyOption)
-	# PROTECTED REGION ID(MyFile_Module_options) ENABLED START
+	# PROTECTED REGION ID(MyFile_ModuleType_options) ENABLED START
 #	# TODO Uncomment and implement me.
 	$(getter options,
 		$(invoke getMembers,options,options))
@@ -409,12 +409,12 @@ define class-MyModule
 	# PROTECTED REGION END
 
 	# Property 'optionsMembers... : MyOptionMember'.
-	$(eobject-reference MyFile_Module_optionsMembers,
+	$(eobject-reference MyFile_ModuleType_optionsMembers,
 		optionsMembers,MyOptionMember,,changeable many containment)
 
 	# Reference 'allOptions' [0..1]: derived.
 	$(property allOptions : MyOption)
-	# PROTECTED REGION ID(MyFile_Module_allOptions) ENABLED START
+	# PROTECTED REGION ID(MyFile_ModuleType_allOptions) ENABLED START
 	$(getter allOptions,
 		$(with $(for opt <- $(get options),
 				$(get opt->name)),
@@ -429,19 +429,19 @@ define class-MyModule
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
-	# Property 'subTypes... : MyModule'.
+	# Property 'subTypes... : MyModuleType'.
 	# Property 'subTypes_links... : ELink'.
-	$(eobject-reference MyFile_Module_subTypes,
-		subTypes,MyModule,superType,changeable many linkable)
+	$(eobject-reference MyFile_ModuleType_subTypes,
+		subTypes,MyModuleType,superType,changeable many linkable)
 
-	# Property 'superType : MyModule'.
+	# Property 'superType : MyModuleType'.
 	# Property 'superType_link : ELink'.
-	$(eobject-reference MyFile_Module_superType,
-		superType,MyModule,subTypes,changeable linkable)
+	$(eobject-reference MyFile_ModuleType_superType,
+		superType,MyModuleType,subTypes,changeable linkable)
 
 	# Reference 'allSubTypes' [0..*]: bidirectional, derived, read-only.
-	$(property allSubTypes... : MyModule)
-	# PROTECTED REGION ID(MyFile_Module_allSubTypes) ENABLED START
+	$(property allSubTypes... : MyModuleType)
+	# PROTECTED REGION ID(MyFile_ModuleType_allSubTypes) ENABLED START
 	$(getter allSubTypes,
 		$(for subType <- $(get subTypes),
 			$(subType) \
@@ -449,29 +449,29 @@ define class-MyModule
 	# PROTECTED REGION END
 
 	# Reference 'allSuperTypes' [0..*]: bidirectional, derived, read-only.
-	$(property allSuperTypes... : MyModule)
-	# PROTECTED REGION ID(MyFile_Module_allSuperTypes) ENABLED START
+	$(property allSuperTypes... : MyModuleType)
+	# PROTECTED REGION ID(MyFile_ModuleType_allSuperTypes) ENABLED START
 	$(getter allSuperTypes,
 		$(get superType) $(foreach s,$(get superType),$(get s->allSuperTypes)))
 	# PROTECTED REGION END
 
 	# Method 'isSubTypeOf'.
-	#   1. another : MyModule
-	# PROTECTED REGION ID(MyFile_Module_isSubTypeOf) ENABLED START
+	#   1. another : MyModuleType
+	# PROTECTED REGION ID(MyFile_ModuleType_isSubTypeOf) ENABLED START
 	# TODO Uncomment and implement me.
 	$(method isSubTypeOf,
 		$(filter $1,$(get allSuperTypes)))
 	# PROTECTED REGION END
 
 	# Method 'isSuperTypeOf'.
-	#   1. another : MyModule
-	# PROTECTED REGION ID(MyFile_Module_isSuperTypeOf) ENABLED START
+	#   1. another : MyModuleType
+	# PROTECTED REGION ID(MyFile_ModuleType_isSuperTypeOf) ENABLED START
 #	# TODO Uncomment and implement me.
 	$(method isSuperTypeOf,
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(MyFile_Module) ENABLED START
+	# PROTECTED REGION ID(MyFile_ModuleType) ENABLED START
 	$(setter modifiers,
 		$(set-field modifiers,$(sort $1)))
 
@@ -794,10 +794,10 @@ define class-MyMember
 	$(eobject MyFile_Member,
 		MyMember,MyAnnotationTarget,)
 
-	# Property 'module : MyModule'.
+	# Property 'module : MyModuleType'.
 	# Property 'module_link : ELink'.
 	$(eobject-reference MyFile_Member_module,
-		module,MyModule,,changeable linkable)
+		module,MyModuleType,,changeable linkable)
 
 	# PROTECTED REGION ID(MyFile_Member) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -850,10 +850,10 @@ define class-MyDependsMember
 	$(eobject MyFile_DependsMember,
 		MyDependsMember,MyMember,)
 
-	# Property 'modules... : MyModule'.
+	# Property 'modules... : MyModuleType'.
 	# Property 'modules_links... : ELink'.
 	$(eobject-reference MyFile_DependsMember_modules,
-		modules,MyModule,,changeable many linkable)
+		modules,MyModuleType,,changeable many linkable)
 
 	# PROTECTED REGION ID(MyFile_DependsMember) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
