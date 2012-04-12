@@ -136,7 +136,7 @@ define __eObjectSerializeCrossReference
 	# '.link./.target'
 	# '.link./'
 	#        '.target'
-	#   '.link.target'
+	# '.oplink.target'
 	$(for r <- $(get-field $1),
 		$(for l <- $(subst ./,,$(dir $r)),# Link.
 			$($l.__serial_id__)./)
