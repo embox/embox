@@ -10,7 +10,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="ModuleInstance">
     <eStructuralFeatures xsi:type="ecore:EReference" name="configuration" eType="#//Build"
         eOpposite="#//Build/modules"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="ecore:EClass myfile.ecore#//Module"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="ecore:EClass myfile.ecore#//ModuleType"
         resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="dependent" upperBound="-1"
         eType="#//ModuleInstance" eOpposite="#//ModuleInstance/depends"/>

@@ -220,7 +220,7 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_Feature_allSuperFeatures),allSuperFeatures,$(MyFile_Feature),$(MyFile_Feature_allSubFeatures),changeable derived many)
 	$(call eMetaReferenceInit,$(MyFile_Feature_allSubFeatures),allSubFeatures,$(MyFile_Feature),$(MyFile_Feature_allSuperFeatures),changeable derived many)
 
-	$(call eMetaClassInit,$(MyFile_ModuleType),Module,$(MyFile_Type),)
+	$(call eMetaClassInit,$(MyFile_ModuleType),ModuleType,$(MyFile_Type),)
 	$(call eMetaAttributeInit,$(MyFile_ModuleType_modifiers),modifiers,changeable)
 	$(call eMetaAttributeInit,$(MyFile_ModuleType_isStatic),static,changeable derived)
 	$(call eMetaAttributeInit,$(MyFile_ModuleType_isAbstract),abstract,changeable derived)

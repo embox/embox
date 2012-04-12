@@ -256,7 +256,7 @@ define class-MyFeature
 endef
 
 #
-# Model object 'Module'.
+# Model object 'ModuleType'.
 #
 # The following features and operations are defined:
 #   - attribute 'modifiers'
