@@ -21,18 +21,16 @@
 
 static char *start_addr;
 static char start_name[CONFIG_MAX_LENGTH_FILE_NAME];
+
 static uint8_t sector[SECTOR_SIZE];
-static uint32_t pstart, psize;
-static uint8_t pactive, ptype;
 static uint32_t bytecount;
 static vol_info_t vi;
-static dir_info_t di;
-static dir_ent_t de;
 static file_info_t fi;
 
 #ifdef _GAZ_DEBUG_
 static uint32_t i;
 static uint8_t sector2[SECTOR_SIZE];
+static int n;
 #endif /*def _GAZ_DEBUG_ */
 
 
@@ -156,10 +154,6 @@ static int fatfs_init(void * par) {
 }
 
 static int fatfs_mount(void *par) {
-	fs_drv_t *fsdrv;
-	if (NULL != (fsdrv = filesystem_find_drv("ramfs"))) {
-		fsdrv->fsop->mount(NULL);
-	}
 
 	return 0;
 }
@@ -1819,6 +1813,10 @@ int fatfs_root_create(void) {
 	uint32_t cluster;
 	p_vol_info_t volinfo;
 	p_file_info_t fileinfo;
+	uint32_t pstart, psize;
+	uint8_t pactive, ptype;
+	dir_info_t di;
+	dir_ent_t de;
 
 	fileinfo = (p_file_info_t) &fi;
 	volinfo = (p_vol_info_t) &vi;
@@ -1957,7 +1955,7 @@ int fat_main(const void *name)
 		memset(sector2 + 256, 0x39 - i, SECTOR_SIZE/2);
 		fat_write_file(&fi, sector, sector2 + 256, &cache, SECTOR_SIZE/2);
 	}
-	sprintf((char *)sector2, (const char *)"test string at the end...");
+	sprintf((char *)sector2, (const char *)"test string at the end...%d", n++);
 	fat_write_file(&fi, sector, sector2, &cache, strlen((const char *)sector2));
 
 /*------------------------------------------------------------*/

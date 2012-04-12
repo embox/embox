@@ -13,6 +13,7 @@
 #include <fs/node.h>
 
 #define RAMDISK_BLOCK_SIZE  0x400;
+#define CONFIG_QUANTITY_RAMDISK 0x05
 
 typedef struct ramdisk_params {
 	char *start_addr;

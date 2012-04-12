@@ -24,13 +24,51 @@
 #include <mem/page.h>
 #include <cmd/mkfs.h>
 
-static ramdisk_params_t ramd_params;
+typedef struct ramdisk_params_head {
+	struct list_head *next;
+	struct list_head *prev;
+	ramdisk_params_t param;
+} ramdisk_params_head_t;
+
+static ramdisk_params_head_t ramdisk_pool[CONFIG_QUANTITY_RAMDISK];
+static LIST_HEAD(ramdisk_free);
+
+#define param_to_head(fparam) \
+	(uint32_t)(fparam - offsetof(ramdisk_params_head_t, param))
+
+static void init_ramdisk_info_pool(void) {
+	size_t i;
+	for (i = 0; i < ARRAY_SIZE(ramdisk_pool); i++) {
+		list_add((struct list_head *) &ramdisk_pool[i], &ramdisk_free);
+	}
+}
+
+static ramdisk_params_t *ramdisk_info_alloc(void) {
+	ramdisk_params_head_t *head;
+	ramdisk_params_t *param;
+
+	if (list_empty(&ramdisk_free)) {
+		return NULL;
+	}
+	head = (ramdisk_params_head_t *) (&ramdisk_free)->next;
+	list_del((&ramdisk_free)->next);
+	param = &(head->param);
+	return param;
+}
+
+static void ramdisk_info_free(ramdisk_params_t *param) {
+	if (NULL == param) {
+		return;
+	}
+	list_add((struct list_head*) param_to_head(param), &ramdisk_free);
+}
 
 EMBOX_UNIT_INIT(unit_init);
 
 int ramdisk_create(void *mkfs_params) {
 	node_t *ramdisk_node;
 	mkfs_params_t *p_mkfs_params;
+	ramdisk_params_t *ramd_params;
 
 	p_mkfs_params = (mkfs_params_t *)mkfs_params;
 
@@ -38,31 +76,47 @@ int ramdisk_create(void *mkfs_params) {
 		return -EBUSY;/*file already exist*/
 	}
 
-	if(NULL == (ramd_params.start_addr = page_alloc(p_mkfs_params->blocks))) {
+	ramd_params = ramdisk_info_alloc();
+	ramdisk_node->attr = (void *) ramd_params;
+
+	if(NULL == (ramd_params->start_addr = page_alloc(p_mkfs_params->blocks))) {
 		return -ENOMEM;
 	}
 
-	strcpy ((void *)&ramd_params.name, (const void *)p_mkfs_params->name);
-	ramd_params.size = p_mkfs_params->blocks * CONFIG_PAGE_SIZE;
-	ramd_params.blocks = p_mkfs_params->blocks;
+	strcpy ((void *)&ramd_params->name, (const void *)p_mkfs_params->name);
+	ramd_params->size = p_mkfs_params->blocks * CONFIG_PAGE_SIZE;
+	ramd_params->blocks = p_mkfs_params->blocks;
 
-	strcpy ((void *)&ramd_params.fs_name,
+	strcpy ((void *)&ramd_params->fs_name,
 			(const void *)p_mkfs_params->fs_name);
 
 	return 0;
 }
 
 ramdisk_params_t *ramdisk_get_param(char *name) {
-	if (strcmp(name,(char *) ramd_params.name)) {
-		return NULL;
+	node_t *ramdisk_node;
+
+	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
+		return NULL;/*file already exist*/
 	}
-	return &ramd_params;
+	return (ramdisk_params_t *) ramdisk_node->attr;
 }
 
-int ramdisk_delete(void *mkfs_params) {
+int ramdisk_delete(const char *name) {
+	node_t *ramdisk_node;
+	ramdisk_params_t *ramd_params;
+
+	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
+		return -1;
+	}
+	ramd_params = ramdisk_node->attr;
+
+	ramdisk_info_free(ramd_params);
+	vfs_del_leaf(ramdisk_node);
 	return 0;
 }
 
 static int unit_init(void) {
+	init_ramdisk_info_pool();
 	return 0;
 }

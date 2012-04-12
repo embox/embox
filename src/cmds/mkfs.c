@@ -120,8 +120,8 @@ int mkfs_do_operation(void *_mkfs_params) {
 		}
 #ifdef _GAZ_DEBUG_
 		if(NULL == (ramd_params = ramdisk_get_param(mkfs_params->name))) {
-				return -ENODEV;
-			}
+			return -ENODEV;
+		}
 
 		printf("Create ramdisk %s, size %d, filesistem %s, addr %d,\n",
 				ramd_params->name,ramd_params->size,
@@ -147,9 +147,9 @@ int mkfs_do_operation(void *_mkfs_params) {
 		}
 
 #ifdef _GAZ_DEBUG_
-		fat_main("/test1.txt");
+		fat_main("/t1.txt");
 
-		fat_main("/test2.txt");
+		fat_main("/t2.txt");
 #endif /*def _GAZ_DEBUG_ */
 	}
 	return 0;
