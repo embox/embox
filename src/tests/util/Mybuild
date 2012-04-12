@@ -43,3 +43,8 @@ module hashtable_test {
 module dlist_test {
 	source "dlist_test.c"
 }
+
+module priority_q_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "priority_q_test.c"
+}

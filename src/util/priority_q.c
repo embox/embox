@@ -53,7 +53,7 @@
 /**
  * Compares the values stored in cells c and b in queue pq
  */
-#define LSS(pq, c, b) ((pq)->a[c] < (pq)->a[b])
+#define LSS(pq, c, b) (pq->cmp((pq)->a[c], (pq)->a[b]))
 
 #define SWAP(a, b) \
 	do {                          \
@@ -62,17 +62,21 @@
 		b = temp;             \
 	} while (0)
 
-void insert(struct priority_q *pq, int value) {
-	int idx = pq->size++;
+void priority_q_insert(struct priority_q *pq, void *value) {
+	int idx;
+	if(pq->size == pq->capacity) {
+		return;
+	}
+	idx = pq->size++;
 	pq->a[idx] = value;
 	for ( ; idx && LSS(pq, idx, (idx - 1) >> 1); idx = (idx - 1) >> 1) {
 		SWAP(pq->a[idx], pq->a[(idx - 1) >> 1]);
 	}
 }
 
-void pop(struct priority_q *pq) {
+void priority_q_pop(struct priority_q *pq) {
 	int idx = 0;
-	if (empty(pq)) {
+	if (priority_q_empty(pq)) {
 		return;
 	}
 
