@@ -41,6 +41,10 @@ EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
 
 EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, true);
 
+/* internet protocol stack private method for socket allocation */
+extern struct sock *inet_create_sock(gfp_t priority,
+															struct proto *prot, int protocol, int type,
+																		 unsigned int size);
 
 /* TODO
  * +1. Create default socket for resetting
@@ -866,8 +870,9 @@ static int tcp_v4_init(void) {
 //	sys_timer_t *timer;
 
 //	return timer_set(&timer, REXMIT_DELAY, timer_handler, (void *)&rexmit_socks);
-	// TODO make it more beautiful
-	tcp_default.sk = sk_alloc(AF_INET, 0, &tcp_prot);
+	/* create a maintainance tcp socket without inheritors */
+	tcp_default.sk = inet_create_sock(0, &tcp_prot, IPPROTO_TCP, SOCK_STREAM,
+												sizeof(struct sock));
 	if (tcp_default.sk == NULL) {
 		return -ENOMEM;
 	}
@@ -877,7 +882,6 @@ static int tcp_v4_init(void) {
 		return res;
 	}
 	tcp_prot.unhash(tcp_default.sk);
-	tcp_default.sk->sk_protocol = IPPROTO_TCP;
 	return ENOERR;
 }
 

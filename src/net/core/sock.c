@@ -38,7 +38,7 @@ POOL_DEF(socks_pool, sock_info_t, CONFIG_MAX_KERNEL_SOCKETS);
 
 /* allocates proto structure for specified protocol*/
 static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
-		int family) {
+																	unsigned int size) {
 	struct sock *sock = NULL;
 	unsigned long flags;
 
@@ -49,7 +49,7 @@ static struct sock *sk_prot_alloc(struct proto *prot, gfp_t priority,
 	}
 
 	if(!prot->cachep) {
-		prot->cachep = cache_create(prot->name, prot->obj_size, LOWER_BOUND);
+		prot->cachep = cache_create(prot->name, size, LOWER_BOUND);
 		if(NULL == prot->cachep) {
 			local_irq_restore(flags);
 			return NULL;
@@ -87,9 +87,9 @@ static void sk_prot_free(struct proto *prot, struct sock *sk) {
 }
 
 struct sock *sk_alloc(/*struct net *net,*/int family, gfp_t priority,
-		struct proto *prot) {
+											struct proto *prot, unsigned int size) {
 	struct sock *sk;
-	sk = sk_prot_alloc(prot, 0, family);
+	sk = sk_prot_alloc(prot, 0, size);
 	if (sk) {
 		sk->sk_family = family;
 		sk->sk_prot = prot;

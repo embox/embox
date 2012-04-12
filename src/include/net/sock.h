@@ -154,7 +154,7 @@ extern void sk_init(void);
  * @prot - pointer to the proto structure
  */
 extern sock_t *sk_alloc(/*struct net *net,*/int family, gfp_t priority,
-		proto_t *prot);
+												proto_t *prot, unsigned int size);
 
 /**
  * Returns specified structure sock into pull,
