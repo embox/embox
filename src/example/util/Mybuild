@@ -11,3 +11,7 @@ module ring_buff {
 module tree_set {
 	source "tree_set.c"
 }
+
+module priority_q {
+	source "priority_q.c"
+}
