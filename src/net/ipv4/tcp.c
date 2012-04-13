@@ -89,7 +89,11 @@ static inline void debug_print(__u8 code, const char *msg, ...) {
 	va_list args;
 
 	va_start(args, msg);
+#if 0
+	0b prefix not support in sparc 3.4.4 compaller
 	if (code & 0b10101100) {
+#endif
+	if (code & 0xAC) {
 		/* 0bit - ;
 		 * 1bit - tcp_handle
 		 * 2bit - tcp global functions (init, send, recv etc.)
