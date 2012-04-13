@@ -12,6 +12,7 @@
 //#define _GAZ_DEBUG_
 
 #include <stdint.h>
+#include <fs/ramdisk.h>
 
 
 /*
@@ -19,6 +20,7 @@
  */
 #define MAX_PATH		64	/*  Maximum path length  */
 #define DIR_SEPARATOR	'/'	/* character separating directory components*/
+#define CONFIG_QUANTITY_FATFILE  64
 
 
 /* 32-bit error codes */
@@ -282,6 +284,17 @@ typedef struct fileinfo {
 	uint32_t pointer;			/* current (BYTE) pointer */
 } file_info_t, *p_file_info_t;
 
+typedef struct fat_fs_description {
+	ramdisk_params_t * device;
+	char root_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	vol_info_t vi;
+} fat_fs_description_t;
+
+typedef struct _fat_file_description {
+	file_info_t fi;
+	fat_fs_description_t *p_fs_dsc;
+} fat_file_description_t;
+
 /*
  *	Get starting sector# of specified partition on drive #unit
  *	NOTE: This code ASSUMES an MBR on the disk.
@@ -292,9 +305,10 @@ typedef struct fileinfo {
  *	partition type.
  *	If psize is non-NULL, this function also returns the partition size.
 
-static uint32_t fat_get_ptn_start(uint8_t unit, uint8_t *scratchsector,
-		uint8_t pnum, uint8_t *pactive, uint8_t *pptype, uint32_t *psize);
-*/
+
+uint32_t fat_get_ptn_start(uint8_t unit, uint8_t *scratchsector,
+		uint8_t pnum, uint8_t *pactive, uint8_t *pptype, uint32_t *psize); */
+
 /*
  *	Retrieve volume info from BPB and store it in a VOLINFO structure
  *	You must provide the unit and starting sector of the filesystem, and
@@ -302,9 +316,10 @@ static uint32_t fat_get_ptn_start(uint8_t unit, uint8_t *scratchsector,
  *	Attempts to read BPB and glean information about the FS from that.
  *	Returns 0 OK, nonzero for any error.
 
-static uint32_t fat_get_vol_info(uint8_t unit, uint8_t *scratchsector,
-		uint32_t startsector, p_vol_info_t volinfo);
-*/
+
+uint32_t fat_get_vol_info(fat_file_description_t *fd, uint8_t *scratchsector,
+		uint32_t startsector);*/
+
 /*
  * Open a directory for enumeration by DFS_GetNextDirEnt
  * You must supply a populated VOLINFO (see DFS_GetVolInfo)
@@ -313,7 +328,7 @@ static uint32_t fat_get_vol_info(uint8_t unit, uint8_t *scratchsector,
  * Returns 0 OK, nonzero for any error.
  */
 
-uint32_t fat_open_dir(p_vol_info_t volinfo, uint8_t *dirname,
+uint32_t fat_open_dir(fat_file_description_t *fd, uint8_t *dirname,
 		p_dir_info_t dirinfo);
 
 /*
@@ -326,7 +341,7 @@ uint32_t fat_open_dir(p_vol_info_t volinfo, uint8_t *dirname,
  * returns DFS_EOF if there are no more entries, DFS_OK if this entry is valid,
  * or DFS_ERRMISC for a media error
  */
-uint32_t fat_get_next(p_vol_info_t volinfo, p_dir_info_t dirinfo,
+uint32_t fat_get_next(fat_file_description_t *fd, p_dir_info_t dirinfo,
 		p_dir_ent_t dirent);
 
 /*
@@ -336,8 +351,8 @@ uint32_t fat_get_next(p_vol_info_t volinfo, p_dir_info_t dirinfo,
  * buffer. Returns various DFS_* error states. If the result is DFS_OK,
  * fileinfo can be used	to access the file from this point on.
  */
-uint32_t fat_open_file(p_vol_info_t volinfo, uint8_t *path, uint8_t mode,
-		uint8_t *scratch, p_file_info_t fileinfo);
+uint32_t fat_open_file(fat_file_description_t *fd, uint8_t *path, uint8_t mode,
+		uint8_t *scratch);
 
 /*
  *	Read an open file
@@ -346,7 +361,7 @@ uint32_t fat_open_file(p_vol_info_t volinfo, uint8_t *path, uint8_t mode,
  *	Note that returning DFS_EOF is not an error condition. This function updates the
  *	successcount field with the number of bytes actually read.
  */
-uint32_t fat_read_file(p_file_info_t fileinfo, uint8_t *scratch,
+uint32_t fat_read_file(fat_file_description_t *fd, uint8_t *scratch,
 		uint8_t *buffer, uint32_t *successcount, uint32_t len);
 
 /*
@@ -356,7 +371,7 @@ uint32_t fat_read_file(p_file_info_t fileinfo, uint8_t *scratch,
  *	This function updates the successcount field with the number of
  *	bytes actually written.
  */
-uint32_t fat_write_file(p_file_info_t fileinfo, uint8_t *scratch,
+uint32_t fat_write_file(fat_file_description_t *fd, uint8_t *scratch,
 		uint8_t *buffer, uint32_t *successcount, uint32_t len);
 
 /*
@@ -365,26 +380,26 @@ uint32_t fat_write_file(p_file_info_t fileinfo, uint8_t *scratch,
  *	to see where the pointer wound up.
  *	Requires a SECTOR_SIZE scratch buffer
  */
-void fat_seek(p_file_info_t fileinfo, uint32_t offset, uint8_t *scratch);
+void fat_seek(fat_file_description_t *fd, uint32_t offset, uint8_t *scratch);
 
 /*
  *	Delete a file
  *	scratch must point to a sector-sized buffer
  */
-uint32_t fat_unlike_file(p_vol_info_t volinfo,
+uint32_t fat_unlike_file(fat_file_description_t *fd,
 		uint8_t *path, uint8_t *scratch);
 
 
 /*
  *	Read a sectors to the buffer
  */
-int fat_read_sector(uint8_t unit, uint8_t *buffer,
+int fat_read_sector(fat_file_description_t *fd, uint8_t *buffer,
 		uint32_t sector, uint32_t count);
 
 /*
  *	Write a sectors from the buffer
  */
-int fat_write_sector(uint8_t unit, uint8_t *buffer,
+int fat_write_sector(fat_file_description_t *fd, uint8_t *buffer,
 		uint32_t sector, uint32_t count);
 
 /*
@@ -399,6 +414,6 @@ extern int fatfs_format (void *params);
 /*
  *	Write a root directory to the filesistem
  */
-int fatfs_root_create(void);
+int fatfs_root_create(void *fdesc);
 
 #endif /* FAT_H_ */
