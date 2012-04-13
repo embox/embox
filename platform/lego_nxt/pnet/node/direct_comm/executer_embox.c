@@ -59,7 +59,7 @@ static int dc_rx_hnd(struct pnet_pack *pack) {
 
 	handle_body(msg, &addit_len, dc_out_msg.body.tail + 1);
 
-	return NET_HND_SUPPRESSED;
+	return NET_HND_STOP_FREE;
 }
 
 static int node_dc_init(void) {

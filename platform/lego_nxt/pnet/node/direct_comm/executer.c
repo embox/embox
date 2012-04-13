@@ -108,7 +108,7 @@ static int dc_rx_hnd(net_packet_t pack) {
 		reply_handle(status, msg->command, addit_len, &dc_out_msg);
 	}
 
-	return NET_HND_SUPPRESSED;
+	return NET_HND_STOP_FREE;
 }
 
 static int node_dc_init(void) {

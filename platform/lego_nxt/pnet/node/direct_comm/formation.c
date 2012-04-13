@@ -18,8 +18,6 @@
 
 #include <pnet/node/direct_comm.h>
 
-#include <kernel/prom_printf.h>
-
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(dc_pnet_init);
@@ -54,13 +52,13 @@ static int get_header(void *msg) {
 	}
 	data_hnd = get_body;
 	bluetooth_read(size);
-	return NET_HND_SUPPRESSED;
+	return NET_HND_STOP_FREE;
 }
 
 static int get_body(void *msg) {
 	data_hnd = get_header;
 	bluetooth_read(MSG_SIZE_BYTE_CNT);
-	return NET_HND_DFAULT;
+	return NET_HND_FORWARD_DEFAULT;
 }
 
 static int data_rx(struct pnet_pack *pack) {
@@ -74,7 +72,7 @@ static int ctrl_rx(struct pnet_pack *pack) {
 		bluetooth_read(MSG_SIZE_BYTE_CNT);
 	}
 
-	return NET_HND_SUPPRESSED;
+	return NET_HND_STOP_FREE;
 }
 
 static int dc_pnet_init(void) {

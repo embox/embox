@@ -10,7 +10,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
-#include <kernel/prom_printf.h>
 
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
@@ -58,11 +57,13 @@ void bluetooth_hw_soft_reset(void) {
 }
 
 static irq_return_t nxt_bt_us_handler(irq_nr_t irq_nr, void *data) {
+	if (!data_pack) {
+		return IRQ_HANDLED;
+	}
 	if (REG_LOAD(&(us_dev_regs->US_CSR)) & AT91C_US_ENDTX) {
 		struct pnet_pack *_pack = data_pack;
 		data_pack = NULL;
-
-		if (0 != pnet_entry(_pack)) {
+		if (0 != netif_rx(_pack)) {
 			pnet_pack_destroy(_pack);
 		}
 	}
@@ -80,9 +81,10 @@ size_t bluetooth_read(size_t len) {
 	if (data_pack) {
 		pnet_pack_destroy(data_pack);
 	}
-	//data_pack = pnet_pack_alloc(NULL, len);
 	data_pack = pnet_pack_create(NULL, len, PNET_PACK_TYPE_SINGLE);
+
 	assert(data_pack);
+
 	data_pack->node = &this_data;
 
 	REG_STORE(&(us_dev_regs->US_RPR), (uint32_t) pnet_pack_get_data(data_pack));
@@ -141,6 +143,7 @@ static void init_adc(void) {
 	REG_STORE(AT91C_ADC_CHER, AT91C_ADC_CH6 | AT91C_ADC_CH4);
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
 }
+
 /* timer handler
  * we scan PIN_BT4 for changing and if it changed bt state switch to disconnect
  *  mode.
@@ -148,6 +151,7 @@ static void init_adc(void) {
 static void  nxt_bt_timer_handler(struct sys_timer *timer, void *param) {
 	static int bt_last_state; //TODO init state? //inited with 0, ok
 	int bt_state = REG_LOAD(AT91C_ADC_CDR6) > 0x200 ? 1 : 0;
+
 	if (bt_last_state != bt_state) {
 		struct pnet_pack *pack = pnet_pack_create(NULL, 1, PNET_PACK_TYPE_SINGLE);
 		assert(pack);
@@ -171,19 +175,16 @@ void bluetooth_hw_hard_reset(void) {
 static int nxt_bluetooth_init(void) {
 	struct sys_timer *ntx_bt_timer;
 
-	data_pack = pnet_pack_create(NULL, 0, PNET_PACK_TYPE_SINGLE);
+	data_pack = NULL;
 
 	irq_attach((irq_nr_t) CONFIG_NXT_BT_US_IRQ,
 		nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 
 	init_usart();
-
 	init_control_pins();
-
 	init_adc();
 
-//TODO may be it must set when bt has been connected?
+	//TODO may be it must set when bt has been connected?
 	return timer_set(&ntx_bt_timer, TIMER_PERIODIC, 200, nxt_bt_timer_handler, NULL);
-
 }
 

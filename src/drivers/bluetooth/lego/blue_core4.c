@@ -49,7 +49,7 @@ static int (*ctrl_hnd)(void *pack_data) = wait_connect;
 
 static struct bc_msg out_msg;
 
-//#define DEBUG
+/*#define DEBUG*/
 #ifdef DEBUG
 static void print_msg(struct bc_msg_body *msg) {
 	prom_printf("P%x:", msg->type);
@@ -79,7 +79,6 @@ static void send_msg(struct bc_msg * msg) {
 	msg->length += 2;
 	bluetooth_write((uint8_t *) msg, msg->length + 1);
 }
-
 
 static int process_msg(struct bc_msg_body *msg) {
 	/* TODO it must be return in connect result we can also get partner address
@@ -143,32 +142,30 @@ static int ctrl_rx(struct pnet_pack *pack) {
 static int get_length(void *_msg) {
 	struct bc_msg *msg = _msg;
 	data_hnd = get_body;
-
 	bluetooth_read(msg->length);
 
-	return NET_HND_SUPPRESSED;
+	return NET_HND_STOP_FREE;
 }
 
 static int get_body(void *msg) {
 	int answ = process_msg((struct bc_msg_body *) msg);
-
 	if (answ == 0) {
 		data_hnd = get_length;
 		bluetooth_read(1);
 	}
 
-	return NET_HND_SUPPRESSED;
+	return NET_HND_STOP_FREE;
 }
 
 static int bypass(void *msg) {
-	return NET_HND_DFAULT;
+	return NET_HND_FORWARD_DEFAULT;
 }
 
 static int wait_connect(void *msg) {
 	ctrl_hnd = wait_disconnect;
 	data_hnd = bypass;
 
-	return NET_HND_DFAULT;
+	return NET_HND_FORWARD_DEFAULT;
 }
 
 static int wait_disconnect(void *msg) {
@@ -178,7 +175,7 @@ static int wait_disconnect(void *msg) {
 	bluetooth_hw_soft_reset();
 	bluetooth_read(1);
 
-	return NET_HND_DFAULT;
+	return NET_HND_FORWARD_DEFAULT;
 }
 
 static int nxt_bluecore_start(struct net_node *node) {
