@@ -1564,12 +1564,14 @@ int lisp5000_main(int argc, char *argv[])
 	int i;
 	lval sym;
 	memory_size = 1 * 1024 * 1024;
-	memory = malloc(memory_size);
+	//memory = malloc(memory_size);
+	memory = memalign(8, memory_size);
 	memf = memory;
 	memset(memory, 0, memory_size);
 	memf[0] = 0;
 	memf[1] = memory_size / 4;
-	stack = malloc(256 * 1024);
+	//stack = malloc(256 * 1024);
+	stack = memalign(8, 256 * 1024);
 	memset(stack, 0, 256 * 1024);
 	g = stack + 5;
 	pkg = mkp(g, "CL", "COMMON-LISP");
