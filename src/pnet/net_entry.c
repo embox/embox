@@ -26,7 +26,7 @@ struct pack {
 	void *data;
 };
 
-OBJALLOC_DEF(common_pool, struct pack, CONFIG_PNET_RX_QUEUE_SIZE);
+OBJALLOC_DEF(common_pool, struct pack, OPTION_GET(NUMBER,rx_queue_size));
 
 static LIST_HEAD(pnet_queue);
 
@@ -51,7 +51,7 @@ int netif_rx(void *data) {
 	return NET_RX_SUCCESS;
 }
 
-static void pnet_rx_action(struct softirq_action *action) {
+static void pnet_rx_action(softirq_nr_t nr, void *data) {
 	struct pack *pack, *safe;
 	uint32_t type;
 	struct pnet_pack *skb_pack;
@@ -76,7 +76,7 @@ static void pnet_rx_action(struct softirq_action *action) {
 }
 
 static int unit_init(void) {
-	open_softirq(PNET_RX_SOFTIRQ, pnet_rx_action, NULL);
+	softirq_install(PNET_RX_SOFTIRQ, pnet_rx_action, NULL);
 
 	return 0;
 }

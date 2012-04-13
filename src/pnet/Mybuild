@@ -2,15 +2,17 @@
 package embox.pnet
 
 module pnet_entry {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "pnet_entry.c"
 	depends embox.pnet.core
 }
 
 module net_entry extends embox.net.entry_api {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	option number rx_queue_size = 100
+
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "net_entry.c"
-	depends embox.pnet.core, embox.pnet.node.skbuff.matcher, pnet_entry
+	depends embox.pnet.core, pnet_entry, embox.kernel.softirq
 }
