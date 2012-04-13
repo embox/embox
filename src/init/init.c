@@ -13,6 +13,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include <kernel/prom_printf.h>
+
 #ifdef CONFIG_MAX_PROMPT_LENGTH
 #define BUF_INP_SIZE CONFIG_MAX_PROMPT_LENGTH
 #else
@@ -35,12 +37,12 @@ static int run_cmd(int argc, char *argv[]) {
 	}
 
 	if (NULL == (cmd = cmd_lookup(argv[0]))) {
-		printf("%s: Command not found\n", argv[0]);
+		prom_printf("%s: Command not found\n", argv[0]);
 		return 0;
 	}
 
 	if (0 != (code = cmd_exec(cmd, argc, argv))) {
-		printf("%s: Command returned with code %d: %s\n", cmd_name(cmd), code,
+		prom_printf("%s: Command returned with code %d: %s\n", cmd_name(cmd), code,
 				strerror(-code));
 	}
 	return code;
@@ -68,9 +70,9 @@ int parse(const char *const_line) {
 
 static int run(void) {
 	const char *command;
-	printf("\nloading start script\n");
+	prom_printf("\nloading start script\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
-		printf("> %s \n", command);
+		prom_printf("> %s \n", command);
 		parse(command);
 	}
 	return 0;
