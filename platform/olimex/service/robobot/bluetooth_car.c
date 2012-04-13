@@ -86,7 +86,8 @@ static int robobot_handle(uint8_t *buff) {
 	return (buff[0] == 0x42 && buff[1] == 0x24);
 }
 
-#define THRESHOLD 60
+#define FORW_THRESHOLD 45
+#define TURN_THRESHOLD 65
 static int8_t speed;
 static int8_t direction;
 
@@ -94,17 +95,17 @@ static void robobot_handle_car(uint8_t *buff) {
 	speed = (int8_t) buff[0];
 	direction = (int8_t) buff[1];
 
-	if (speed > THRESHOLD) {
+	if (speed > FORW_THRESHOLD) {
 	    go_forw();
-	} else if (speed < -THRESHOLD) {
+	} else if (speed < -FORW_THRESHOLD) {
 	    go_back();
 	} else {
 	    go_none();
 	}
 
-	if (direction > THRESHOLD) {
+	if (direction > TURN_THRESHOLD) {
 	    turn_right();
-	} else if (direction < -THRESHOLD) {
+	} else if (direction < -TURN_THRESHOLD) {
 	    turn_left();
 	} else {
 	    turn_none();

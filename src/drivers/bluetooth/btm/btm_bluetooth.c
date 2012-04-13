@@ -87,13 +87,6 @@ static void init_usart(void) {
 	REG_STORE(&(us_dev_regs->US_PTCR), AT91C_PDC_RXTEN | AT91C_PDC_TXTEN);
 	REG_STORE(&(us_dev_regs->US_IER), AT91C_US_ENDRX);
 }
-#if 0
-static void link_pin_handler(pin_mask_t ch_mask, pin_mask_t mon_mask) {
-	if (!ch_mask &&  conn_state == CONN_CONNECTED) {
-		CALLBACK_DO(bluetooth_uart, BT_DRV_MSG_DISCONNECTED, NULL);
-	}
-}
-#endif
 
 void bluetooth_hw_hard_reset(void) {
 	pin_config_output(CONFIG_BTM_BT_RST_PIN);
@@ -113,8 +106,6 @@ static int btm_bluetooth_init(void) {
 		(irq_handler_t) &btm_bt_us_handler, 0, NULL, "bt reader");
 
 	init_usart();
-//	pin_set_input_monitor(CONFIG_BTM_BT_LINK_PIN, &link_pin_handler);
-
 	return 0;
 }
 
