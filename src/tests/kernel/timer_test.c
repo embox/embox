@@ -25,7 +25,7 @@ TEST_CASE("testing timer_set function") {
 	/* Timer value changing means ok */
 	tick_happened = 0;
 
-	if (timer_set(&timer, TEST_TIMER_PERIOD, test_timer_handler,
+	if (timer_set(&timer, TIMER_ONESHOT, TEST_TIMER_PERIOD, test_timer_handler,
 			(void *) &tick_happened)) {
 		test_fail("failed to install timer");
 	}

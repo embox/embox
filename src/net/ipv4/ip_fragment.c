@@ -170,7 +170,7 @@ static struct dgram_buf *buf_create(struct iphdr *iph) {
 	if (!buf)
 		return NULL;
 
-	timer_set(&timer, TIMER_TICK , ttl_handler, (void *)buf);
+	timer_set(&timer, TIMER_ONESHOT, TIMER_TICK, ttl_handler, (void *)buf);
 
 	INIT_LIST_HEAD((struct list_head *)buf);
 	INIT_LIST_HEAD(&buf->next_buf);

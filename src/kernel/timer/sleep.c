@@ -34,7 +34,7 @@ int usleep(useconds_t usec) {
 		struct sys_timer tmr; /* we allocate timer structure on the stack */
 
 		event_init(&wait_event, NULL);
-		if (0 != timer_init(&tmr, 0, usec, &restore_thread, &wait_event)) {
+		if (0 != timer_init(&tmr, TIMER_ONESHOT, usec, &restore_thread, &wait_event)) {
 			ret = -EBUSY;
 			goto out_unlock;
 		}

@@ -183,7 +183,7 @@ static int nxt_bluetooth_init(void) {
 	init_adc();
 
 //TODO may be it must set when bt has been connected?
-	return timer_set(&ntx_bt_timer, 200, nxt_bt_timer_handler, NULL);
+	return timer_set(&ntx_bt_timer, TIMER_PERIODIC, 200, nxt_bt_timer_handler, NULL);
 
 }
 

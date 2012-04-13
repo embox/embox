@@ -379,7 +379,7 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 }
 
 static int unit_init(void) {
-	if (timer_set(&tick_timer, SCHED_TICK_INTERVAL, sched_tick, NULL)) {
+	if (timer_set(&tick_timer, TIMER_PERIODIC, SCHED_TICK_INTERVAL, sched_tick, NULL)) {
 		return -EBUSY;
 	}
 

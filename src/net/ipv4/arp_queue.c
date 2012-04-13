@@ -88,7 +88,7 @@ int arp_queue_add(struct sk_buff *skb) {
 	/* skb->sk->arp_queue_info = 0; */
 	sock_unset_ready(skb->sk);
 
-	timer_set(&timer, TTL, arp_queue_drop, queue_pack);
+	timer_set(&timer, TIMER_ONESHOT, TTL, arp_queue_drop, queue_pack);
 	queue_pack->timer = timer;
 
 	queue_pack->skb = skb;

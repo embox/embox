@@ -83,7 +83,7 @@ static int init(void) {
 
 	sensors_init();
 
-	result = timer_set(&avr_timer, 1, (sys_timer_handler_t) avr_handler, 0);
+	result = timer_set(&avr_timer, TIMER_PERIODIC, 1, (sys_timer_handler_t) avr_handler, 0);
 
 	return result;
 }

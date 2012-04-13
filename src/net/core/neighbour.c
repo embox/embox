@@ -186,5 +186,6 @@ int neighbour_get_next(struct neighbour **pentity) {
 }
 
 static int unit_init(void) {
-	return timer_set(&neighbour_refresh_timer, NEIGHBOUR_CHECK_INTERVAL, neighbour_refresh, NULL);
- }
+	return timer_set(&neighbour_refresh_timer, TIMER_PERIODIC,
+			NEIGHBOUR_CHECK_INTERVAL, neighbour_refresh, NULL);
+}
