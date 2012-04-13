@@ -11,6 +11,7 @@
 
 #define CONFIG_TASKS_RES_QUANTITY 16
 
+#include <assert.h>
 #include <stdarg.h>
 
 /**
@@ -50,6 +51,7 @@ struct idx_desc {
  * @return resource in idx
  */
 static inline void *task_idx_desc_get_res(struct idx_desc *desc) {
+	assert(desc);
 	return desc->data;
 }
 
@@ -58,8 +60,9 @@ static inline void *task_idx_desc_get_res(struct idx_desc *desc) {
  * @param desc idx descriptor to get
  * @return type in idx
  */
-static inline int task_idx_desc_get_type(struct idx_desc *desk) {
-	return desk->type;
+static inline int task_idx_desc_get_type(struct idx_desc *desc) {
+	assert(desc);
+	return desc->type;
 }
 
 /**
@@ -68,6 +71,7 @@ static inline int task_idx_desc_get_type(struct idx_desc *desk) {
  * @return count of references to idx resource
  */
 static inline int task_idx_desc_link_count(struct idx_desc *desc) {
+	assert(desc);
 	return desc->link_count;
 }
 
@@ -78,6 +82,7 @@ static inline int task_idx_desc_link_count(struct idx_desc *desc) {
  * @return new count of references to idx resource
  */
 static inline int task_idx_desc_link_count_add(struct idx_desc *desc, int d) {
+	assert(desc);
 	return (desc->link_count += d);
 }
 
@@ -89,9 +94,6 @@ struct task_resources {
 	struct idx_desc *idx[CONFIG_TASKS_RES_QUANTITY];
 };
 
-#define TASK_IDX_RES(res, _idx) \
-	(res->idx[_idx])
-
 /**
  * @brief Get idx descriptor from task resources by idx number
  *
@@ -101,7 +103,8 @@ struct task_resources {
  * @return Pointer to idx
  */
 static inline struct idx_desc *task_res_idx_get(struct task_resources *res, int idx) {
-	return TASK_IDX_RES(res, idx);
+	assert(res);
+	return res->idx[idx];
 }
 
 /**
@@ -112,10 +115,9 @@ static inline struct idx_desc *task_res_idx_get(struct task_resources *res, int 
  * @param desc idx descriptor to store in task resources
  */
 static inline void task_res_idx_set(struct task_resources *res, int idx, struct idx_desc *desc) {
-	TASK_IDX_RES(res, idx) = desc;
+	assert(res);
+	res->idx[idx] = desc;
 }
-
-#undef TASK_IDX_RES
 
 /**
  * @brief Allocate idx descriptor structure with type and data

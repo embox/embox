@@ -39,9 +39,7 @@ int open(const char *path, int __oflag, ...) {
 	int ret = -1;
 	struct task_res_ops *ops = find_res_ops_by_type(TASK_IDX_TYPE_FILE);
 
-	if (! ops) {
-		return -ENOTSUP;
-	}
+	assert(ops);
 
 	va_start(args, __oflag);
 	ret = ops->open(path, __oflag, args);
@@ -54,20 +52,27 @@ int close(int fd) {
 	int res = 0;
 	struct task_res_ops *ops = find_res_ops(fd);
 	struct idx_desc *desc = task_self_idx_get(fd);
+
+	assert(ops);
+
 	if (task_idx_desc_link_count_add(desc, -1) == 0) {
 		res = ops->close(fd);
 	}
+
 	task_res_idx_free(task_self_res(), fd);
+
 	return res;
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
 	struct task_res_ops *ops = find_res_ops(fd);
+	assert(ops);
 	return ops->write(fd, buf, nbyte);
 }
 
 ssize_t read(int fd, void *buf, size_t nbyte) {
 	struct task_res_ops *ops = find_res_ops(fd);
+	assert(ops);
 	return ops->read(fd, buf, nbyte);
 }
 
@@ -75,6 +80,8 @@ int ioctl(int fd, int request, ...) {
 	va_list args;
 	int ret = -ENOTSUP;
 	struct task_res_ops *ops = find_res_ops_by_type(TASK_IDX_TYPE_FILE);
+
+	assert(ops);
 
 	va_start(args, request);
 	ret = ops->ioctl(fd, request, args);

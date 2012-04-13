@@ -9,8 +9,6 @@
 #ifndef KERNEL_PRINTK_H_
 #define KERNEL_PRINTK_H_
 
-#include <stdio.h>
-
 extern int printk(const char *format, ...) __attribute__ ((format
 				(printf, 1, 2)));
 
