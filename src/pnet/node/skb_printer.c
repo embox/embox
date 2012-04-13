@@ -40,7 +40,7 @@ static int handler(struct pnet_pack *pack) {
 
 	skb = (struct sk_buff *) pack->data;
 	print_skb(skb);
-	return NET_HND_DFAULT;
+	return NET_HND_FORWARD_DEFAULT;
 }
 
 PNET_NODE_DEF("skb printer", {

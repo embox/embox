@@ -15,7 +15,7 @@
 
 static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_node) {
 	net_node_t node;
-	net_id_t res = NET_HND_DFAULT;
+	net_id_t res = NET_HND_FORWARD_DEFAULT;
 
 	assert(pack);
 	assert(pack->node);
@@ -33,13 +33,22 @@ static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_nod
 		}
 	}
 
-	if (res & NET_HND_DFAULT) {
+	switch (res) {
+	case NET_HND_FORWARD_DEFAULT:
 		assert(next_node);
 		pack->node = next_node;
-	}
-
-	if (res != NET_PACK_ACCEPTED) {
+		/* FALLTHROUGH */
+	case NET_HND_FORWARD:
 		pnet_rx_thread_add(pack);
+		break;
+	case NET_HND_STOP_FREE:
+		pnet_pack_destroy(pack);
+		break;
+	case NET_HND_STOP:
+		break;
+	default:
+		/* do nothing */
+		break;
 	}
 
 	return 0;

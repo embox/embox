@@ -31,12 +31,12 @@ static void print_pack(struct pnet_pack *pack) {
 
 static int net_info_tx_hnd(struct pnet_pack *pack) {
 	print_pack(pack);
-	return NET_HND_DFAULT;
+	return NET_HND_FORWARD_DEFAULT;
 }
 
 static int net_info_rx_hnd(struct pnet_pack *pack) {
 	print_pack(pack);
-	return NET_HND_DFAULT;
+	return NET_HND_FORWARD_DEFAULT;
 }
 
 #if 0

@@ -14,12 +14,12 @@
 
 static int net_null_tx_hnd(struct pnet_pack *pack) {
 	pnet_pack_destroy(pack);
-	return NET_PACK_ACCEPTED;
+	return NET_HND_STOP;
 }
 
 static int net_null_rx_hnd(struct pnet_pack *pack) {
 	pnet_pack_destroy(pack);
-	return NET_PACK_ACCEPTED;
+	return NET_HND_STOP;
 }
 
 PNET_NODE_DEF("null node", {

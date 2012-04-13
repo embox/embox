@@ -27,7 +27,7 @@ static int pnet_linux_rx(struct pnet_pack *pack) {
 
 	netif_rx_schedule(skb);
 
-	return NET_HND_DFAULT;
+	return NET_HND_STOP_FREE;
 }
 
 PNET_NODE_DEF("linux gate", {

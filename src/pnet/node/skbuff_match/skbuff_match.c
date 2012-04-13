@@ -88,7 +88,7 @@ int match_lin(struct pnet_pack *pack) {
 #ifdef PRINT_WAYS
 		print_pack_way(pack,curr,n);
 #endif
-	return NET_HND_DFAULT;
+	return NET_HND_FORWARD_DEFAULT;
 }
 
 PNET_PROTO_DEF("matcher", {

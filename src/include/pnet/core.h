@@ -11,15 +11,19 @@
 
 #include <pnet/types.h>
 
+/**
+ * @brief Result code of node handler
+ */
+enum net_hnd_results {
+	NET_HND_FORWARD, /**< @brief Packet should go further to @link next_node @link */
+	NET_HND_FORWARD_DEFAULT, /**< @brief Packet should go to default next node */
+	NET_HND_STOP, /**< @brief Packet done processing and should not be
+			  processed further */
+	NET_HND_STOP_FREE, /**< @brief Packet done processing and should be freed */
+};
 
 #define NET_RX_DFAULT -1
 #define NET_TX_DFAULT -2
-
-/* packet go to default handler  */
-#define NET_HND_DFAULT     (0x01L << 0)
-
-/* packet had going through all graph */
-#define NET_PACK_ACCEPTED           (0x01L << 1)
 
 #define NET_TYPE  0
 #define PNET_TYPE 1
