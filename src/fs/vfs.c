@@ -11,13 +11,17 @@
 #include <string.h>
 #include <fs/vfs.h>
 
+/**
+ * Save first node name in path into buff variable.
+ * Return the remaining part of path.
+ */
 static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 	char *p = (char *) path;
 	char *b = buff;
 	while ('/' == *p) {
 		p++;
 	}
-	while (('/' != *p) && ('\0' != *p) && (buff_len != 0)) {
+	while (('/' != *p) && ('\0' != *p) && (buff_len --> 1)) {
 		*b++ = *p++;
 	}
 	*b = '\0';
@@ -31,20 +35,20 @@ static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 	return NULL;
 }
 
-int vfs_add_leaf(node_t *child, node_t *parrent) {
-	list_add(&(child->neighbors), &(parrent->leaves));
+int vfs_add_leaf(node_t *child, node_t *parent) {
+	tree_add_link(&(parent->tree_link), &(child->tree_link));
 	return 0;
 }
 
-static node_t *vfs_add_new_path(node_t *parrent, char *p_path, char *child_name) {
+static node_t *vfs_add_new_path(node_t *parent, char *p_path, char *child_name) {
 	node_t *child;
 	child = alloc_node(child_name);
-	vfs_add_leaf(child, parrent);
-	while (NULL != (p_path = get_next_node_name(p_path,
-			child_name, CONFIG_MAX_LENGTH_FILE_NAME))) {
-		parrent = child;
+	vfs_add_leaf(child, parent);
+	while (NULL != (p_path = get_next_node_name(p_path, child_name,
+													CONFIG_MAX_LENGTH_FILE_NAME))) {
+		parent = child;
 		child = alloc_node(child_name);
-		vfs_add_leaf(child, parrent);
+		vfs_add_leaf(child, parent);
 	}
 	return child;
 }
@@ -52,54 +56,52 @@ static node_t *vfs_add_new_path(node_t *parrent, char *p_path, char *child_name)
 extern node_t *vfs_find_child(const char *name, node_t *parrent);
 extern node_t *rootfs_get_node (void);
 
-node_t *vfs_add_path(const char *path, node_t *parrent) {
-	node_t *node = NULL;
+node_t *vfs_add_path(const char *path, node_t *parent) {
+	node_t *node = parent;
 	char node_name[CONFIG_MAX_LENGTH_FILE_NAME];
 	char *p_path = (char *) path;
 
-	if (NULL == parrent) {
+	if (NULL == parent) {
 		node = rootfs_get_node();
-	} else {
-		node = parrent;
 	}
-	while (NULL != (p_path = get_next_node_name(p_path,
-			node_name, sizeof(node_name)))) {
-		parrent = node;
+	while (NULL != (p_path = get_next_node_name(p_path,	node_name,
+													sizeof(node_name)))) {
+		parent = node;
 		if (NULL == (node = vfs_find_child(node_name, node))) {
-			return vfs_add_new_path(parrent, p_path, node_name);
+			return vfs_add_new_path(parent, p_path, node_name);
 		}
 	}
 
 	return NULL;
 }
 
-int vfs_del_leaf(node_t *nod) {
-	list_del(&(nod->neighbors));
-	return 0;
+int vfs_del_leaf(node_t *node) {
+	return tree_unlink_link(&(node->tree_link));
 }
 
-node_t *vfs_find_child(const char *name, node_t *parrent) {
-	node_t *child;
-	struct list_head *head;
-	list_for_each(head, &(parrent->leaves)) {
-		child = list_entry(head, node_t, neighbors);
-		if (0 == strcmp(child->name, name)) {
-			return child;
-		}
-	}
+static char *pattern_name = NULL;
+static int compare_children_names(struct tree_link* link) {
+	return strcmp(tree_element(link, node_t, tree_link)->name, pattern_name);
+}
+
+node_t *vfs_find_child(const char *name, node_t *parent) {
+	pattern_name = (char *)name;
+	//XXX Not thread-safe.
+	tree_children_find(&(parent->tree_link), compare_children_names);
 	return NULL;
 }
 
-node_t *vfs_find_node(const char *path, node_t *parrent) {
-	node_t *node = NULL;
+node_t *vfs_find_node(const char *path, node_t *parent) {
+	node_t *node = parent;
 	char node_name[CONFIG_MAX_LENGTH_FILE_NAME];
 	char *p_path = (char *) path;
 
-	if (NULL == parrent) {
+	if (NULL == parent) {
 		node = rootfs_get_node();
 	}
 	//FIXME if we return immediately we return root node
-	while (NULL != (p_path = get_next_node_name(p_path, node_name, sizeof(node_name)))) {
+	while (NULL != (p_path = get_next_node_name(p_path, node_name,
+													sizeof(node_name)))) {
 		if (NULL == (node = vfs_find_child(node_name, node))) {
 			return NULL;
 		}

@@ -10,14 +10,14 @@
 #define FS_NODE_H_
 
 #include <fs/fs.h>
+#include <util/tree.h>
 
 typedef struct node {
 	const char            name[CONFIG_MAX_LENGTH_FILE_NAME];
 	void                 *file_info; /* WTF? maybe introduce Node Attribute Structure(NAS)? (sikmir) */
 	struct fs_drv        *fs_type;
 	void                 *attr;
-	struct list_head      neighbors;
-	struct list_head      leaves;
+	struct tree_link      tree_link;
 } node_t;
 
 extern node_t *alloc_node(const char *name);

@@ -14,6 +14,7 @@
 #include <fs/vfs.h>
 #include <fs/ramfs.h>
 #include <sys/stat.h>
+#include <util/list.h>
 
 EMBOX_CMD(exec);
 
@@ -21,15 +22,15 @@ static void print_usage(void) {
 	printf("Usage: ls [-hl] path\n");
 }
 
-static void print_long_list(char *path, node_t *nod, int recursive) {
-	struct list_head *p;
+static void print_long_list(char *path, node_t *node, int recursive) {
+	struct tree_link *p;
 	node_t *item;
 	stat_t sb;
 	char time_buff[17];
 	printf("%s\t%s\t%s\t\t\t%s\n", "mode", "size", "mtime", "name");
 
-	list_for_each(p, &(nod->leaves)) {
-		item = (node_t*) list_entry(p, node_t, neighbors);
+	list_foreach(p, &(node->tree_link.children), list_link) {
+		item = tree_element(p, node_t, tree_link);
 		fstat((char *) item->name, &sb);
 		ctime((time_t *) &(sb.st_mtime), time_buff);
 		printf("%d\t%d\t%s\t%s\n",
@@ -40,19 +41,21 @@ static void print_long_list(char *path, node_t *nod, int recursive) {
 	}
 }
 
-static void print_folder(char *path, node_t *nod, int recursive) {
-	struct list_head *p;
-	list_for_each(p, &(nod->leaves)) {
+static void print_folder(char *path, node_t *node, int recursive) {
+	struct tree_link *p;
+	node_t *item;
+	list_foreach(p, &(node->tree_link.children), list_link) {
+		item = tree_element(p, node_t, tree_link);
 		if (recursive) {
 			if (0 == strcmp(path, "/")) {
-				printf("%s\n",  (char *) ((node_t*) list_entry(p, node_t, neighbors))->name);
+				printf("%s\n",  (char *) item->name);
 			} else {
-				printf("%s/%s\n", path, (char *)((node_t*) list_entry(p, node_t, neighbors))->name);
-				strcat(path, (char *)((node_t*) list_entry(p, node_t, neighbors))->name);
-				print_folder(path, (node_t*) list_entry(p, node_t, neighbors), recursive);
+				printf("%s/%s\n", path, (char *) item->name);
+				strcat(path, (char *) item->name);
+				print_folder(path, item, recursive);
 			}
 		} else {
-			printf("%s\n", (char *) ((node_t*) list_entry(p, node_t, neighbors))->name);
+			printf("%s\n", (char *) item->name);
 		}
 	}
 }
