@@ -66,6 +66,24 @@ int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
 	return dev_queue_xmit(skb);
 }
 
+/* Fragments skb and sends it to the interface.
+ * Returns -1 in case of error
+ * As side effect frees incoming skb
+ */
+static int fragment_skb_and_send(sk_buff_t *skb, const struct rt_entry *best_route) {
+	struct sk_buff_head *tx_buf = ip_frag(skb, best_route->dev->mtu);
+	int res = tx_buf ? 0 : -1;
+	struct sk_buff *s_tmp;
+
+	kfree_skb(skb);
+	while ((res >= 0) && (s_tmp = skb_dequeue(tx_buf))) {
+		res = min(ip_queue_xmit(s_tmp, 0), res);
+	}
+	skb_queue_purge(tx_buf);
+	return res;
+}
+
+
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	iphdr_t *iph = ip_hdr(skb);
 	in_addr_t daddr = ntohl(iph->daddr);
@@ -87,16 +105,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 
 	if (skb->len > best_route->dev->mtu) {
 		if (!(skb->nh.iph->frag_off & htons(IP_DF))) {
-			struct sk_buff_head *tx_buf = ip_frag(skb, best_route->dev->mtu);
-			struct sk_buff *tmp;
-			int res = 0;
-
-			kfree_skb(skb);
-			while ((res >= 0) && (tmp = skb_dequeue(tx_buf))) {
-				res = min(ip_queue_xmit(tmp, 0), res);
-			}
-			skb_queue_purge(tx_buf);
-			return res;
+			return fragment_skb_and_send(skb, best_route);
 		} else {
 			/* if packet size is greater than MTU and we can't fragment it we can't go further */
 			kfree_skb(skb);
@@ -174,16 +183,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 	if (skb->len > best_route->dev->mtu) {
 		if (!(iph->frag_off & htons(IP_DF))) {
 			/* We can perform fragmentation */
-			struct sk_buff_head *tx_buf = ip_frag(skb, best_route->dev->mtu);
-			struct sk_buff *s_tmp;
-			int res = 0;
-
-			kfree_skb(skb);
-			while ((res >= 0) && (s_tmp = skb_dequeue(tx_buf))) {
-				res = min(ip_queue_xmit(s_tmp, 0), res);
-			}
-			skb_queue_purge(tx_buf);
-			return res;
+			return fragment_skb_and_send(skb, best_route);
 		} else {
 			/* Fragmentation is disabled */
 			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED,
