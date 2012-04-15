@@ -3,7 +3,14 @@
  *
  * @brief Example of simple memory allocation
  *
- * @details
+ * @details Simple memory allocation algorithm.
+ * All memory divide on blocks. There is descriptor with "available" and size before every block.
+ * Initialization: all available space is one free block. current_space is start of memory.
+ * Allocation: first of all find suitable block. It must be free and have suitable size.
+ * 	Divide selected block to allocated part and free part. Check the remaining free part - must be more then
+ * 	size of descriptor.
+ * Free: mark block which contains address as "free". Defragmentation memory.
+ * Defragmentation: gluing free block between each other.
  *
  * @date 05.12.11
  *
@@ -154,7 +161,7 @@ static void *memory_allocate(size_t req_size) {
 }
 
 /*Resolve defragmentation with a next block*/
-static void resolve_defrag(struct block_desc *md) {
+static void defragmintstion(struct block_desc *md) {
 	struct block_desc *next_md;
 
 	next_md = (void *) (((size_t) md) + md->size);
@@ -170,7 +177,7 @@ static void resolve_defrag(struct block_desc *md) {
 			resolve_defrag(md);
 		}
 	}
-	resolve_defrag(next_md);
+	defragmintstion(next_md);
 }
 
 /* This procedure makes free busy block
@@ -191,7 +198,7 @@ static void memory_free(void *address) {
 	}
 
 	/*Resolve defragmentation*/
-	resolve_defrag(md);
+	defragmintstion(md);
 
 	printf("NEW current_free_space 0x%x\n", (uint32_t) current_space);
 }
