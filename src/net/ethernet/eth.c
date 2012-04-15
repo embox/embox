@@ -206,3 +206,28 @@ void free_etherdev(struct net_device *dev) {
 __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev) {
 	return skb->mac.ethh->h_proto;
 }
+
+uint8_t eth_packet_type(struct sk_buff *skb) {
+	struct ethhdr *eth = eth_hdr(skb);
+	struct net_device *dev = skb->dev;
+
+	assert(dev);
+	if (dev == inet_get_loopback_dev()) {
+		return PACKET_LOOPBACK;
+	}
+
+	if (is_multicast_ether_addr(eth->h_dest)) {
+		if (!compare_ether_addr(eth->h_dest, dev->broadcast))
+			return PACKET_BROADCAST;
+		else
+			return PACKET_MULTICAST;
+	} else {
+		if (unlikely(compare_ether_addr(eth->h_dest, dev->dev_addr))) {
+			return PACKET_OTHERHOST;
+		} else {
+			return PACKET_HOST;
+		}
+	}
+}
+
+

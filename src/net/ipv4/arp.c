@@ -211,12 +211,12 @@ static int arp_process(sk_buff_t *skb) {
 
 int arp_rcv(sk_buff_t *skb, net_device_t *dev, packet_type_t *pt,
 		net_device_t *orig_dev) {
-	arphdr_t *arp;
+	arphdr_t *arp = skb->nh.arph;
+	uint8_t pkt_type = eth_packet_type(skb);
 
-	arp = skb->nh.arph;
 	if ((arp->ar_hln != dev->addr_len) || (dev->flags & IFF_NOARP)
-			|| (skb->pkt_type == PACKET_OTHERHOST)
-			|| (skb->pkt_type == PACKET_LOOPBACK)
+			|| (pkt_type == PACKET_OTHERHOST)
+			|| (pkt_type == PACKET_LOOPBACK)
 			|| (arp->ar_pln != 4)) {
 		kfree_skb(skb);
 		return NET_RX_SUCCESS;

@@ -46,7 +46,7 @@ typedef struct ip_options {
 
 /**
  * @struct inet_sock
- * @brief Representation of INET sockets
+ * @brief Representation of INET sockets (FixMe)
  *
  * @var sk - ancestor class
  * @var pinet6 - pointer to IPv6 control block

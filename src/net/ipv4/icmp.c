@@ -26,9 +26,13 @@
 
 EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 
-/* Is the packet described by skb is multicast/broadcast one at levels 2 or 3 */
+/* Is the packet described by skb is multicast/broadcast one at levels 2 or 3
+ * Packets with type PACKET_LOOPBACK we treat as broadcast and drop them.
+ * There are much more simple interfaces for local error notifications
+ * then ICMP
+ */
 static inline bool is_packet_not_unicast(sk_buff_t *skb) {
-	return (skb->pkt_type != PACKET_HOST) ||
+	return (eth_packet_type(skb) != PACKET_HOST) ||
 		   !(ip_is_local(ntohl(skb->nh.iph->daddr), false, false));
 }
 

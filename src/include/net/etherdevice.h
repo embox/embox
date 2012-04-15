@@ -63,22 +63,52 @@ static inline int is_valid_ether_addr(const uint8_t *addr) {
 }
 
 /**
+ * compare_ether_addr - Compare two Ethernet addresses
+ * @a: Pointer to a six-byte array containing the Ethernet address
+ * @b: Pointer other six-byte array containing the Ethernet address
+ *
+ * Compare two ethernet addresses, returns 0 if equal
+ */
+static inline bool compare_ether_addr(const uint8_t *a, const uint8_t *b)
+{
+	return ( (a[0] ^ b[0]) | (a[1] ^ b[1]) | (a[2] ^ b[2]) |
+			 (a[3] ^ b[3]) | (a[4] ^ b[4]) | (a[5] ^ b[5]) );
+}
+
+/**
  * Functions provided by eth.c
  */
+
+
+/* Packet types.
+ * Do we want to pack them into a enum?
+ */
+#define PACKET_HOST             0	/* To us */
+#define PACKET_BROADCAST        1	/* To all */
+#define PACKET_MULTICAST        2	/* To group */
+#define PACKET_OTHERHOST        3	/* To someone else */
+#define PACKET_LOOPBACK         4	/* We are in loopback, it overwrites everything */
+
+/**
+ * eth_packet_type - determine the packet type (See above)
+ * @param skb: skb holding incoming packet
+ * (at least LL info and incoming device)
+ */
+extern uint8_t eth_packet_type(struct sk_buff *skb);
 
 /**
  * Extract hardware address from packet.
  * @param pack packet to extract header from
  * @param haddr destination buffer
  */
-int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr);
+extern int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr);
 
 /**
  * Set new Ethernet hardware address.
  * @param dev network device
  * @param addr socket address
  */
-int eth_mac_addr(struct net_device *dev, struct sockaddr *addr);
+extern int eth_mac_addr(struct net_device *dev, struct sockaddr *addr);
 
 /**
  * Create the Ethernet header

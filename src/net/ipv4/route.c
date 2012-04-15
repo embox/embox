@@ -91,14 +91,6 @@ int ip_route(sk_buff_t *skb, struct rt_entry *suggested_route) {
 	/* set the device for current destination address */
 	skb->dev = rte->dev;
 
-	/* set the source address */
-	/* svv: it's definitely WRONG for
-	 *	- raw socket
-	 *	- forwarding
-	 * ToDo: throw it away
-	 */
-	skb->nh.iph->saddr = in_dev_get(skb->dev)->ifa_address;
-
 	/* if source and destination addresses are equal send via LB interface
 	 * svv: suspicious. There is no check (src == dst) in ip_input
 	 */
@@ -109,7 +101,12 @@ int ip_route(sk_buff_t *skb, struct rt_entry *suggested_route) {
 	if (rte->rt_gateway != INADDR_ANY) {
 		int arp_resolve_result;
 		/* the next line coerses arp_resolve to set HW destination address
-		 * to gateway's HW address
+		 * to gateway's HW address.
+		 * Suspicious:
+		 *	probably	dev_queue_xmit()->
+		 *				dev->header_ops->rebuild()->
+		 *				eth_rebuild_header()
+		 *	will do the same again and overwrite the result
 		 */
 		skb->nh.iph->daddr = rte->rt_gateway;
 		arp_resolve_result = arp_resolve(skb);

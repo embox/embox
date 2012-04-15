@@ -27,17 +27,6 @@ struct skb_timeval {
 	uint32_t off_usec;
 };
 
-/* Packet types */
-#define PACKET_HOST             0   /* To us */
-#define PACKET_BROADCAST        1   /* To all */
-#define PACKET_MULTICAST        2   /* To group */
-#define PACKET_OTHERHOST        3   /* To someone else */
-#define PACKET_OUTGOING         4   /* Outgoing of any type */
-/* These ones are invisible by user level */
-#define PACKET_LOOPBACK         5   /* MC/BRD frame looped back */
-#define PACKET_FASTROUTE        6   /* Fastrouted frame */
-
-
 #define SK_BUF_EXTRA_HEADROOM	50	/* Requires if someone wants to enlarge packet from head */
 
 typedef struct sk_buff {        /* Socket buffer */
@@ -48,13 +37,12 @@ typedef struct sk_buff {        /* Socket buffer */
 	struct sock *sk;            /* Socket we are owned by */
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
 
-		/* Packet protocol from driver or
-		 * protocol to put into Eth header during assembling
+		/* Packet protocol from driver or protocol to put into Eth header during assembling.
+		 * We should get rid of it. It's almost useless during packet
+		 * receiving and there is a special field in LL header
+		 * for packet assembling.
 		 */
 	uint16_t protocol;
-
-		/* Packet class. Should be extracted by driver from Eth header data */
-	uint8_t pkt_type;
 
 	char cb[52];                /* Control buffer (used to store layer-specific info e.g. ip options) */
 
@@ -88,12 +76,6 @@ typedef struct sk_buff {        /* Socket buffer */
 		struct ethhdr *ethh;
 		unsigned char *raw;
 	} mac;
-
-		/* Offset information for ip fragmentation.
-		 * It's used by fragmenter as info to future IP header assembling
-		 * Requires deep refactoring to get rid of it
-		 */
-	__be16 offset;
 
 		/* Pointer for buffer used to store all skb content.
 		 * Used by operations with pool, so it MUST NOT be changed

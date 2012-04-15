@@ -17,6 +17,8 @@
 #include <net/ip_fragment.h>
 #include <net/skbuff.h>
 #include <net/icmp.h>
+#include <util/math.h>
+
 
 
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
@@ -31,9 +33,7 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	hdr->ttl = htons(ttl);
 	hdr->id = htons(id);
 	hdr->tos = 0;
-	hdr->frag_off = skb->offset;
-	hdr->frag_off |= IP_DF;		/* svv: So all packets from our system (except RAW) can't be fragmented??? */
-	hdr->frag_off = htons(hdr->frag_off);
+	/* frag_off will be set during fragmentation decision */
 	hdr->proto = proto;
 	ip_send_check(hdr);
 	return 0;
@@ -49,6 +49,13 @@ static inline void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	 * Ethernet was hardcoded in skb allocations, so be careful
 	 */
 	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
+
+		/* Suspicious:
+		 *	socket SHOULD NOT set TLL. It's possible, but strange
+		 *	socket (!raw || !packet) CAN NOT have information about id. It's not its business.
+		 * This functionality belongs to the device. NOT to the socket.
+		 * See init_ip_header() usage. It's more correct
+		 */
 	rebuild_ip_header(skb, sk->uc_ttl, sk->sk.sk_protocol, sk->id, skb->len,
 			sk->saddr, sk->daddr/*, sk->opt*/);
 	return;
@@ -60,25 +67,33 @@ int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
 }
 
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
-	struct sk_buff_head *tx_buf;
-	struct sk_buff *tmp;
-	int res;
+	iphdr_t *iph = ip_hdr(skb);
+	in_addr_t daddr = ntohl(iph->daddr);
+	struct rt_entry *best_route = rt_fib_get_best(daddr);
 
-	res = 0;
+	if (!best_route) {
+		kfree_skb(skb);
+		return -1;
+	}
 
-	if (skb->len > MTU) {
-		/* svv: suspicious:
-		 *	if offset is just a shift (==value), then we can't use IP_DF here
-		 *	if it's conside with information structure in IP header then
-		 *	we haven't had it for not raw sockets
-		 *	we are going to build ip header later
-		 *------
-		 *	Which "MTU" should we use? We have different interfaces
-		 */
-		if (!(skb->offset & IP_DF)) {
-			tx_buf = ip_frag(skb);
-			while ((tmp = skb_dequeue(tx_buf)) != NULL) {
-				res += ip_send_packet(sk, tmp);
+	if (sk) {
+		build_ip_packet(sk, skb);
+	}
+
+	if (ip_route(skb, best_route) < 0) {
+		kfree_skb(skb);
+		return -1;
+	}
+
+	if (skb->len > best_route->dev->mtu) {
+		if (!(skb->nh.iph->frag_off & htons(IP_DF))) {
+			struct sk_buff_head *tx_buf = ip_frag(skb, best_route->dev->mtu);
+			struct sk_buff *tmp;
+			int res = 0;
+
+			kfree_skb(skb);
+			while ((res >= 0) && (tmp = skb_dequeue(tx_buf))) {
+				res = min(ip_queue_xmit(tmp, 0), res);
 			}
 			skb_queue_purge(tx_buf);
 			return res;
@@ -89,16 +104,6 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 		}
 	}
 
-	if (sk) {
-		build_ip_packet(sk, skb);
-	}
-
-	if (ip_route(skb, NULL)) {
-		kfree_skb(skb);
-		return -1;
-	}
-
-	ip_send_check(skb->nh.iph);				/* Fragmentation and other possible changes */
 	return ip_queue_xmit(skb, 0);
 }
 
@@ -106,14 +111,14 @@ int ip_forward_packet(sk_buff_t *skb) {
 	iphdr_t *iph = ip_hdr(skb);
 	in_addr_t daddr = ntohl(iph->daddr);
 	int optlen = IP_HEADER_SIZE(iph) - IP_MIN_HEADER_SIZE;
-	int16_t frag_options = ntohs(iph->frag_off);
 	struct rt_entry *best_route = rt_fib_get_best(daddr);
 
 		/* Drop broadcast and multicast addresses of 2 and 3 layers
 		 * Note, that some kinds of those addresses we can't get here, because
 		 * they processed in other part of code - see ip_is_local(,true,xxx);
+		 * And, of course, loopback packets must not be processed here
 		 */
-	if ( (skb->pkt_type != PACKET_HOST) || ipv4_is_multicast(daddr) ) {
+	if ( (eth_packet_type(skb) != PACKET_HOST) || ipv4_is_multicast(daddr) ) {
 		kfree_skb(skb);
 		return 0;
 	}
@@ -134,6 +139,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 		return -1;
 	}
 	iph->ttl--;		/* All routes have the same length */
+	ip_send_check(iph);
 
 		/* Check no route */
 	if (!best_route) {
@@ -143,31 +149,12 @@ int ip_forward_packet(sk_buff_t *skb) {
 
 		/* Should we send ICMP redirect */
 	if (skb->dev == best_route->dev) {
-		struct sk_buff *s_new = skb_copy(skb, 0);		/* ToDo: too extravagant. Useless for more then first fragment */
+		struct sk_buff *s_new = skb_copy(skb, 0);
 		if (s_new) {
-			icmp_send(s_new, ICMP_REDIRECT, (best_route->rt_gateway == INADDR_ANY), htonl(best_route->rt_gateway));
+			icmp_send(s_new, ICMP_REDIRECT, (best_route->rt_gateway == INADDR_ANY),
+					  htonl(best_route->rt_gateway));
 		}
 		/* We can still proceed here */
-	}
-
-		/* Fragment packet, if it's required */
-	if (skb->len > best_route->dev->mtu) {
-		if (!(frag_options & IP_DF)) {
-			/* We can perform fragmentation */
-			struct sk_buff_head *tx_buf = ip_frag(skb);		/* ToDo: it must take proper MTU */
-			struct sk_buff *s_tmp;
-			int res = 0;
-
-			while ((s_tmp = skb_dequeue(tx_buf)) != NULL) {
-				res += ip_forward_packet(s_tmp);
-			}
-			skb_queue_purge(tx_buf);
-			return res;
-		} else {
-			/* Fragmentation is disabled */
-			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED, htonl(best_route->dev->mtu << 16));		/* Support RFC 1191 */
-			return -1;
-		}
 	}
 
 	if (ip_route(skb, best_route) < 0) {
@@ -183,10 +170,27 @@ int ip_forward_packet(sk_buff_t *skb) {
 		return -1;
 	}
 
-		/* At least TTL was changed.
-		 * But iff it's the only change fast CRC recalculation is possible (ToDo)
-		 */
-	ip_send_check(iph);
+		/* Fragment packet, if it's required */
+	if (skb->len > best_route->dev->mtu) {
+		if (!(iph->frag_off & htons(IP_DF))) {
+			/* We can perform fragmentation */
+			struct sk_buff_head *tx_buf = ip_frag(skb, best_route->dev->mtu);
+			struct sk_buff *s_tmp;
+			int res = 0;
+
+			kfree_skb(skb);
+			while ((res >= 0) && (s_tmp = skb_dequeue(tx_buf))) {
+				res = min(ip_queue_xmit(s_tmp, 0), res);
+			}
+			skb_queue_purge(tx_buf);
+			return res;
+		} else {
+			/* Fragmentation is disabled */
+			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED,
+					  htonl(best_route->dev->mtu << 16));		/* Support RFC 1191 */
+			return -1;
+		}
+	}
 
 	return ip_queue_xmit(skb, 0);
 }

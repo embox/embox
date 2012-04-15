@@ -240,45 +240,54 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	return NULL;
 }
 
-struct sk_buff_head *ip_frag(struct sk_buff *skb) {
-	struct sk_buff_head *tx_buf;
+struct sk_buff_head *ip_frag(const struct sk_buff *skb, uint32_t mtu) {
+	struct sk_buff_head *tx_buf = alloc_skb_queue();
 	struct sk_buff *fragment;
-	int offset; /* offset from skb->mac.raw */
-	int len;
-	int align_MTU;
+	int len = ETH_HEADER_SIZE + IP_HEADER_SIZE(skb->nh.iph);
+	int offset = len;		/* offset from skb start (== mac.raw) */
 
-	tx_buf = alloc_skb_queue();
-	len = skb->h.raw - skb->mac.raw;
-	offset = len;
+		/* Note: correct MTU, because fragment offset must divide on 8*/
+	int align_MTU = mtu - (mtu - len) % 8;
 
-	/* Note: correct MTU, because fragment offset must divide on 8*/
-	align_MTU = MTU - (MTU - len) % 8;		/* svv: What "MTU" should we use? We have different interfaces */
+	if(unlikely(!tx_buf)) {
+		return NULL;
+	}
 
-	/* copy sk_buff without last fragment. All this fragment have size MTU */
+		/* copy sk_buff without last fragment. All this fragments have size MTU */
 	while(offset < skb->len - align_MTU) {
-		fragment = alloc_skb(align_MTU, 0);
-		assert(fragment);
+		if(unlikely(!(fragment = alloc_skb(align_MTU, 0)))) {
+			skb_queue_purge(tx_buf);
+			return NULL;
+		}
+
+			/* Copy IP and MAC headers */
+		memcpy(fragment->mac.raw, skb->mac.raw, len);
+			/* Copy IP content */
 		memcpy(fragment->mac.raw + len, skb->mac.raw + offset, align_MTU);
-		fragment->h.raw = fragment->mac.raw + len;
 		fragment->nh.raw = fragment->mac.raw + ETH_HEADER_SIZE;
-		fragment->offset = (offset - len) >> 3; /* data offset */
-		fragment->offset |= IP_MF;
+		fragment->nh.iph->frag_off = htons(
+					(((offset - len) >> 3) /* data offset / 8 */) | IP_MF);
+		ip_send_check(fragment->nh.iph);
 		skb_queue_tail(tx_buf, fragment);
 		offset += (align_MTU - len);
 	}
 
 	/* copy last fragment */
 	if(offset < skb->len) {
-		fragment = alloc_skb(skb->len - offset + len, 0);
-		assert(fragment);
+		if(unlikely(!(fragment = alloc_skb(skb->len - offset + len, 0)))) {
+			skb_queue_purge(tx_buf);
+			return NULL;
+		}
+
+			/* Copy IP and MAC headers */
+		memcpy(fragment->mac.raw, skb->mac.raw, len);
+			/* Copy IP content */
 		memcpy(fragment->mac.raw + len, skb->mac.raw + offset, skb->len - offset);
 		fragment->nh.raw = fragment->mac.raw + ETH_HEADER_SIZE;
-		fragment->offset = (offset - len) >> 3; /* data offset */
-
+		fragment->nh.iph->frag_off = htons(((offset - len) >> 3));
+		ip_send_check(fragment->nh.iph);
 		skb_queue_tail(tx_buf, fragment);
 	}
-
-	kfree_skb(skb);
 
 	return tx_buf;
 }
