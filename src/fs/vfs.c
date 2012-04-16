@@ -79,10 +79,9 @@ int vfs_del_leaf(node_t *node) {
 	return tree_unlink_link(&(node->tree_link));
 }
 
-static char *pattern_name = NULL;
-static int compare_children_names(struct tree_link* link) {
+static int compare_children_names(struct tree_link* link, void *name) {
 	node_t *node = tree_element(link, node_t, tree_link);
-	return 0 == strcmp(node->name, pattern_name);
+	return 0 == strcmp(node->name, (char *)name);
 #if 0
 	//do not compile by sparc 3.4.4 compiler
 	return strcmp(tree_element(link, node_t, tree_link)->name, pattern_name);
@@ -92,13 +91,9 @@ static int compare_children_names(struct tree_link* link) {
 node_t *vfs_find_child(const char *name, node_t *parent) {
 	struct tree_link *tlink;
 
-	pattern_name = (char *)name;
-	//XXX Not thread-safe.
-	if (NULL == (tlink = tree_children_find(&(parent->tree_link), compare_children_names))) {
-		return NULL;
-	}
+	tlink = tree_children_arg_find(&(parent->tree_link), (void *)name, compare_children_names);
 
-	return list_entry(tlink, struct node, tree_link);
+	return tree_element(tlink, struct node, tree_link);
 }
 
 node_t *vfs_find_node(const char *path, node_t *parent) {
