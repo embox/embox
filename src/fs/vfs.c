@@ -81,7 +81,12 @@ int vfs_del_leaf(node_t *node) {
 
 static char *pattern_name = NULL;
 static int compare_children_names(struct tree_link* link) {
+	node_t *node = tree_element(link, node_t, tree_link);
+	return strcmp(node->name, pattern_name);
+#if 0
+	//do not compile by sparc 3.4.4 compiler
 	return strcmp(tree_element(link, node_t, tree_link)->name, pattern_name);
+#endif
 }
 
 node_t *vfs_find_child(const char *name, node_t *parent) {
