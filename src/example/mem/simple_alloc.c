@@ -3,14 +3,19 @@
  *
  * @brief Example of simple memory allocation
  *
- * @details Simple memory allocation algorithm.
+ * @details Simple memory allocation algorithm
+ *
  * All memory divide on blocks. There is descriptor with "available" and size before every block.
- * Initialization: all available space is one free block. current_space is start of memory.
- * Allocation: first of all find suitable block. It must be free and have suitable size.
- * 	Divide selected block to allocated part and free part. Check the remaining free part - must be more then
- * 	size of descriptor.
- * Free: mark block which contains address as "free". Defragmentation memory.
- * Defragmentation: gluing free block between each other.
+ *
+ * @par Initialization
+ * All available space is one free block. current_space is start of memory.
+ * The whole memory is divided into blocks. There is a descriptor with availability mark and size in front of each block. Initially the whole available space is represented by a single free block and #current_space points to the start of the memory.
+ *
+ * @par Allocation
+ * During allocation we, first of all, search for the first free block with suitable size. If there is no such block, we give up. Otherwise, if we found a block and it is large enough (that is if a block that would remain after allocating the current one is bigger than the descriptor), then it is divided into two blocks - a newly allocated one and the rest free block.
+ *
+ * @par Freeing
+ * Mark a block being freed as "free" and perform defragmentation.
  *
  * @date 05.12.11
  *
@@ -161,7 +166,7 @@ static void *memory_allocate(size_t req_size) {
 }
 
 /*Resolve defragmentation with a next block*/
-static void defragmintstion(struct block_desc *md) {
+static void defragmintation(struct block_desc *md) {
 	struct block_desc *next_md;
 
 	next_md = (void *) (((size_t) md) + md->size);
@@ -174,10 +179,10 @@ static void defragmintstion(struct block_desc *md) {
 		/*Look at the next block and it is free, paste it*/
 		if (get_available(next_md)) {
 			md->size = md->size + next_md->size;
-			resolve_defrag(md);
+			defragmintation(md);
 		}
 	}
-	defragmintstion(next_md);
+	defragmintation(next_md);
 }
 
 /* This procedure makes free busy block
@@ -198,7 +203,7 @@ static void memory_free(void *address) {
 	}
 
 	/*Resolve defragmentation*/
-	defragmintstion(md);
+	defragmintation(md);
 
 	printf("NEW current_free_space 0x%x\n", (uint32_t) current_space);
 }
