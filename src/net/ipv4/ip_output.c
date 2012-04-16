@@ -86,8 +86,7 @@ static int fragment_skb_and_send(sk_buff_t *skb, const struct rt_entry *best_rou
 
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	iphdr_t *iph = ip_hdr(skb);
-	in_addr_t daddr = ntohl(iph->daddr);
-	struct rt_entry *best_route = rt_fib_get_best(daddr);
+	struct rt_entry *best_route = rt_fib_get_best(iph->daddr);
 
 	if (!best_route) {
 		kfree_skb(skb);
