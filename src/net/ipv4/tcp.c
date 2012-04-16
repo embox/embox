@@ -1253,7 +1253,7 @@ static void tcp_v4_close(struct sock *sk, long timeout) {
 	case TCP_TIMEWAIT:
 		return; /* error: connection closing */
 	}
-//	while (sock.sk->sk_state != TCP_CLOSED);
+	while (sock.sk->sk_state != TCP_CLOSED);
 }
 
 //TODO move to hash table routines
