@@ -60,6 +60,7 @@ struct pnet_pack {
 	struct net_node *node;
 	enum PNET_PACK_DIRECTION dir;
 	void *data;
+	struct list_head link;
 };
 
 

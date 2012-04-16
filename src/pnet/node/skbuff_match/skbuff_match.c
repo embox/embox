@@ -82,7 +82,7 @@ int match_lin(struct pnet_pack *pack) {
 #ifdef PRINT_WAYS
 		print_pack_way(pack,curr,n);
 #endif
-			return MATCH_SUCCESS;
+			return NET_HND_FORWARD;
 		}
 	}
 #ifdef PRINT_WAYS
