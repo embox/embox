@@ -22,10 +22,11 @@ EMBOX_CMD(exec);
 #define FILE_READ_CHUNK_SZ 2
 
 static int client_process(int client) {
-	int bytes_read, addr_len;
-	struct sockaddr_in addr;
+	int bytes_read;
 	char file_buf[FILE_BUF_SZ], req_buf[REQ_BUF_SZ];
 	char *f = file_buf;
+	struct sockaddr_in addr;
+	int addr_len;
 
 	f += sprintf(file_buf,
 			"HTTP/1.0 200 OK\n"
@@ -49,6 +50,7 @@ static int client_process(int client) {
 				(struct sockaddr *)&addr, &addr_len);
 		if (bytes_read < 0) {
 			printf("recvfrom fail\n");
+			close(client);
 			return bytes_read;
 		}
 	} while ((bytes_read >= 3) && (strncmp(req_buf, "GET", 3) != 0));

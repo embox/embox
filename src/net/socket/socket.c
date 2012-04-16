@@ -191,7 +191,7 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	inet = inet_sk(sock->sk);
 	dest_addr = (struct sockaddr_in *)daddr;
 	inet->daddr = dest_addr->sin_addr.s_addr;
-	inet->dport = dest_addr->sin_port;
+	inet->dport = ntohs(dest_addr->sin_port);
 
 	/* socket is ready for usage and has no data transmitting errors yet */
 	sock->sk->sk_err = -1;
@@ -243,8 +243,10 @@ int check_icmp_err(int sockfd) {
 static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
 	int res;
+	struct inet_sock *inet;
 	struct iovec iov;
 	struct msghdr m;
+	struct sockaddr_in *dest_addr;
 
 	if (sock == NULL) {
 		return -EBADF;
@@ -258,6 +260,12 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	if (res < 0) {
 		return res;
 	}
+
+	inet = inet_sk(sock->sk);
+	dest_addr = (struct sockaddr_in *)daddr;
+	dest_addr->sin_addr.s_addr = inet->daddr;
+	dest_addr->sin_port = htons(inet->dport);
+	*daddrlen = sizeof dest_addr;
 
 	return iov.iov_len; /* return length of received msg */
 }
