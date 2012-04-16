@@ -21,14 +21,8 @@
 /** 4K-byte pages */
 #define __MMU_PAGE_SIZE		0x400UL
 
-#define MMU_PTE_CACHE        0x80
-#define MMU_PTE_MODIFIED     0x40
-#define MMU_PTE_REF          0x20
-#define MMU_PTE_EXEC         0x08
-#define MMU_PTE_WRITE        0x04
+#define MMU_PTE_CACHE        0x08
 
 #define __MMU_PAGE_CACHEABLE   MMU_PTE_CACHE
-#define __MMU_PAGE_WRITEABLE   MMU_PTE_WRITE
-#define __MMU_PAGE_EXECUTEABLE MMU_PTE_EXEC
 
 #endif /* X86_MMU_CORE_H_ */

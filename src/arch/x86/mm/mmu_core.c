@@ -7,11 +7,15 @@
  * @author Gleb Efimov
  */
 
+
+#include <embox/unit.h>
+
 #include <hal/mm/mmu_core.h>
 #include <asm/hal/mm/mmu_core.h>
 
-int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
-		size_t reg_size, mmu_page_flags_t flags) {
+EMBOX_UNIT_INIT(mmu_init);
+
+static int mmu_init(void) {
 	return 0;
 }
 

@@ -3,3 +3,7 @@ package embox.arch.x86.mm
 module mmu_core {
 	source "mmu_core.c"
 }
+
+module mmu_map {
+	source "mmu_map.c"
+}
