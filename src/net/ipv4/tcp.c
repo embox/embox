@@ -84,7 +84,7 @@ static union sock_pointer tcp_default; /* Default socket for TCP protocol. */
 struct proto tcp_prot; /* prototype */
 
 /* internet protocol stack private method for socket allocation */
-extern struct sock *inet_create_sock(gfp_t priority, struct proto *prot, int protocol, int type, unsigned int size);
+extern struct sock *inet_create_sock(gfp_t priority, struct proto *prot, int protocol, int type);
 
 
 /************************ Debug functions ******************************/
@@ -938,8 +938,7 @@ static int tcp_v4_init(void) {
 
 //	return timer_set(&timer, REXMIT_DELAY, timer_handler, (void *)&rexmit_socks);
 	/* Create a maintainance tcp socket without inheritors */
-	tcp_default.sk = inet_create_sock(0, &tcp_prot, IPPROTO_TCP, SOCK_STREAM,
-												sizeof(struct tcp_sock));
+	tcp_default.sk = inet_create_sock(0, &tcp_prot, IPPROTO_TCP, SOCK_STREAM);
 	if (tcp_default.sk == NULL) {
 		return -ENOMEM;
 	}

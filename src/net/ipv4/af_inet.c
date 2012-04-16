@@ -62,12 +62,11 @@ static struct inet_protosw * inet_proto_find(short int *type, int *protocol) {
 }
 
 /* AF_INET socket create */
-struct sock *inet_create_sock(gfp_t priority,
-															struct proto *prot, int protocol, int type,
-															unsigned int size){
+struct sock * inet_create_sock(gfp_t priority, struct proto *prot,
+		int protocol, int type) {
 	struct sock *sk;
 
-	sk = sk_alloc(PF_INET, 0, prot, size);
+	sk = sk_alloc(PF_INET, 0, prot);
 	if(sk != NULL){
 		sk->sk_type = type;
 		sk->sk_protocol = protocol;
@@ -92,8 +91,7 @@ static int inet_create(struct socket *sock, int protocol) {
 		}
 	}
 
-	sk = inet_create_sock(0, (struct proto *)p_netsock->prot, protocol, type,
-												sizeof(struct inet_sock)/* = p_netsock->prot->obj_size */);
+	sk = inet_create_sock(0, (struct proto *)p_netsock->prot, protocol, type);
 	if (sk == NULL) {
 		return -ENOMEM;
 	}
