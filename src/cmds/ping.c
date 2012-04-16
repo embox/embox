@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <err.h>
+#include <errno.h>
+#include <net/route.h>
 
 EMBOX_CMD(exec);
 
@@ -322,9 +324,14 @@ static int exec(int argc, char **argv) {
 	/* Get source addr */
 	if (in_dev != NULL)
 		pinfo.from.s_addr = inet_dev_get_ipaddr(in_dev);
-	else
-		pinfo.from.s_addr = 0;			/* Hm, what could that possibly mean? */
-
+	else {
+		struct rt_entry *rte = rt_fib_get_best(pinfo.dst.s_addr);
+		if (rte == NULL) {
+			return -EHOSTUNREACH;
+		}
+		assert(in_dev_get(rte->dev) != NULL);
+		pinfo.from.s_addr = in_dev_get(rte->dev)->ifa_address; /* Hm, what could that possibly mean? */
+	}
 	/* ping! */
 	ping(&pinfo);
 

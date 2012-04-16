@@ -117,16 +117,15 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 
 int ip_forward_packet(sk_buff_t *skb) {
 	iphdr_t *iph = ip_hdr(skb);
-	in_addr_t daddr = ntohl(iph->daddr);
 	int optlen = IP_HEADER_SIZE(iph) - IP_MIN_HEADER_SIZE;
-	struct rt_entry *best_route = rt_fib_get_best(daddr);
+	struct rt_entry *best_route = rt_fib_get_best(iph->daddr);
 
 		/* Drop broadcast and multicast addresses of 2 and 3 layers
 		 * Note, that some kinds of those addresses we can't get here, because
 		 * they processed in other part of code - see ip_is_local(,true,xxx);
 		 * And, of course, loopback packets must not be processed here
 		 */
-	if ( (eth_packet_type(skb) != PACKET_HOST) || ipv4_is_multicast(daddr) ) {
+	if ( (eth_packet_type(skb) != PACKET_HOST) || ipv4_is_multicast(iph->daddr) ) {
 		kfree_skb(skb);
 		return 0;
 	}

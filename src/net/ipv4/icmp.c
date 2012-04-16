@@ -222,8 +222,8 @@ static int icmp_prepare_reply(sk_buff_t *reply) {
 		__be16 tot_len = reply->nh.iph->tot_len;
 
 		/* Replace not unicast addresses */
-		__in_addr_t daddr = ip_is_local(ntohl(reply->nh.iph->daddr), false, false) ?
-							reply->nh.iph->daddr : htonl(idev->ifa_address);
+		in_addr_t daddr = ip_is_local(reply->nh.iph->daddr, false, false) ?
+							reply->nh.iph->daddr : idev->ifa_address;
 
 		init_ip_header(reply->nh.iph, ICMP_PROTO_TYPE, ip_id, tot_len, 0, daddr, reply->nh.iph->saddr);
 

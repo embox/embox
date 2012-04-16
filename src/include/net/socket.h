@@ -132,18 +132,12 @@ typedef struct sockaddr {
 	char sa_data[14];      /* 14 bytes of protocol address */
 } sockaddr_t;
 
-/**< Internet address. With underline it's in network representation */
+/**< Internet address in network representation */
 struct in_addr {
 	uint32_t    s_addr;
 };
 
-struct __in_addr {
-	uint32_t    s_addr;
-};
-
-/* With underline it's in network representation */
 typedef uint32_t in_addr_t;
-typedef uint32_t __in_addr_t;
 
 /* more specific address structure
 	 (to recast on sockaddr_t in AF_INET sockets) */
