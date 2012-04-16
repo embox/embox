@@ -29,8 +29,6 @@ int netif_rx(void *data) {
 	struct pnet_pack *pack;
 	uint32_t type;
 
-	printf("netif_rx\n");
-
 	if (NULL == data) {
 		return NET_RX_DROP;
 	}
@@ -64,9 +62,7 @@ static void pnet_rx_action(softirq_nr_t nr, void *data) {
 	}
 
 	list_for_each_safe(curr, n, &skb_queue) {
-		printf("list_del begin\n");
 		list_del(curr);
-		printf("list_del end\n");
 		skb_pack = pnet_pack_create((void*) curr, 0, PNET_PACK_TYPE_SKB);
 		skb_pack->node = entry;
 		pnet_entry(skb_pack);
