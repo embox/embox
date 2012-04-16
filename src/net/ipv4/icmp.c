@@ -33,7 +33,7 @@ EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
  */
 static inline bool is_packet_not_unicast(sk_buff_t *skb) {
 	return (eth_packet_type(skb) != PACKET_HOST) ||
-		   !(ip_is_local(ntohl(skb->nh.iph->daddr), false, false));
+		   !(ip_is_local(skb->nh.iph->daddr, false, false));
 }
 
 static int icmp_discard(sk_buff_t *skb) {
@@ -380,7 +380,7 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 			__be16 tot_len = htons(ip_ret_len);
 
 			init_ip_header(iph, ICMP_PROTO_TYPE, ip_id, tot_len, iph_in->tos,
-						   htonl(idev->ifa_address), iph_in->saddr);
+						   idev->ifa_address, iph_in->saddr);
 		}
 
 			/* Assemble ICMP header */

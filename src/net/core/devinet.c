@@ -105,7 +105,7 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
 
 	if (check_broadcast)
 	{
-		if (addr == INADDR_BROADCAST)
+		if (addr == htonl(INADDR_BROADCAST))
 			return true;
 
 #if 0	/* Obsoleted broadcast */
@@ -113,7 +113,7 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
 		 * RFC 1122. Section 3.3.6 - obsoleted
 		 * Please, don't confuse external and internal conventions!
 		 */
-		if (addr == INADDR_ANY)
+		if (addr == htonl(INADDR_ANY))
 			return true;
 #endif
 	}

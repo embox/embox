@@ -147,7 +147,7 @@ static int ping(struct ping_info *pinfo) {
 		 * but it's wrong */
 		tx_pack.hdr.icmp_hdr.checksum = ptclbsum(tx_pack.packet_buff + IP_MIN_HEADER_SIZE,
 						ICMP_HEADER_SIZE + pinfo->padding_size);
-
+		ip_send_check(&tx_pack.hdr.ip_hdr);
 		sendto(sk, tx_pack.packet_buff, ntohs(tx_pack.hdr.ip_hdr.tot_len), 0, (struct sockaddr *)&pinfo->dst, 0);
 
 		/* try to fetch response */
