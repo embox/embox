@@ -38,8 +38,10 @@ static int httpd_exec(int argc, char **argv) {
 	addr.sin_port= htons(80);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	f += sprintf(file_buf, "HTTP/1.0 200 OK\n\n");
-
+	f += sprintf(file_buf,
+			"HTTP/1.0 200 OK\n"
+			"Content-Type: text/html\n"
+			"\n");
 	if (argc == 2) {
 		fd = open(argv[1], 0);
 		if (fd < 0) {
@@ -89,6 +91,7 @@ static int httpd_exec(int argc, char **argv) {
 		sendto(connect_sock, file_buf, f - file_buf, 0,
 				(struct sockaddr *) &dst, sizeof(dst));
 		close(connect_sock);
+		printf("\n\n\n\n\n");
 	}
 
 	close(sock);
