@@ -17,46 +17,92 @@
 
 EMBOX_CMD(exec);
 
-#define FILE_BUF_SZ 1024
-#define REQ_BUF_SZ 128
-#define FILE_READ_CHUNK_SZ 2
+#define BUFF_SZ 256
+#define FILE_READ_CHUNK_SZ 64
+
+static int parse_req(char *buff, char **method, char **file) {
+	char *tmp;
+
+	/* Find method */
+	*method = buff;
+	for (tmp = *method; *tmp != ' '; ++tmp) {
+		if (*tmp == '\0') {
+			LOG_ERROR("no such file\n");
+			return -1;
+		}
+	}
+	*tmp = '\0'; /* set end of method */
+
+	/* Find file */
+	*file = tmp + 1;
+	for (tmp = *file; *tmp != ' '; ++tmp) {
+		if (*tmp == '\0') {
+			LOG_ERROR("no such version\n");
+			return -1;
+		}
+	}
+	*tmp = '\0'; /* set end of method */
+
+	return 0;
+}
+
+static int send_file(char *file, int client, struct sockaddr_in addr, int addr_len) {
+	int fd, bytes_read;
+	char buff[BUFF_SZ], *curr;
+
+	fd = open(file, O_RDONLY);
+	if (fd < 0) {
+		LOG_ERROR("can't open file '%s'\n", file);
+		close(client);
+		return -1;
+	}
+	curr = buff;
+	curr += sprintf(curr, "HTTP/1.0 200 OK\nContent-Type: text/html\n\n");
+	while ((bytes_read = read(fd, curr, FILE_READ_CHUNK_SZ)) > 0) { /* FIXME check the boundaries */
+		curr += bytes_read;
+	}
+	if (bytes_read < 0) {
+		close(fd);
+		return -1;
+	}
+	sendto(client, buff, curr - buff, 0,
+				(struct sockaddr *)&addr, addr_len);
+	return 0;
+}
 
 static int client_process(int client) {
 	int bytes_read, addr_len;
-	char file_buf[FILE_BUF_SZ], req_buf[REQ_BUF_SZ];
-	char *f = file_buf;
+	char buff[BUFF_SZ];
+	char *method, *file;
 	struct sockaddr_in addr;
 
-	f += sprintf(file_buf,
-			"HTTP/1.0 200 OK\n"
-			"Content-Type: text/html\n"
-			"\n");
-#if 0
-	int fd = open(argv[1], 0);
-	if (fd < 0) {
-		printf("Cannot open file '%s'\n", argv[1]);
+	/* Get request */
+	bytes_read = recvfrom(client, buff, sizeof buff - 1, 0, (struct sockaddr *)&addr, &addr_len);
+	if (bytes_read < 0) {
+		LOG_ERROR("recvfrom() failed. code=%d\n", bytes_read);
+		close(client);
+		return bytes_read;
+	}
+	buff[bytes_read] = '\0';
+
+	/* Parse request */
+	if (parse_req(buff, &method, &file) != 0) {
+		close(client);
 		return -1;
 	}
-	while ((bytes_read = read(fd, f, FILE_READ_CHUNK_SZ)) > 0) {
-		f += bytes_read;
-	}
-	close(fd);
-#else
-	f += sprintf(f, "<html><p>Hello World!</p></html>");
-#endif
-	do {
-		bytes_read = recvfrom(client, req_buf, 3, 0,
-				(struct sockaddr *)&addr, &addr_len);
-		if (bytes_read < 0) {
-			printf("recvfrom fail\n");
+
+	if (strcmp(method, "GET") == 0) {
+		if (send_file(file, client, addr, addr_len) < 0) {
 			close(client);
-			return bytes_read;
+			return -1;
 		}
-	} while ((bytes_read >= 3) && (strncmp(req_buf, "GET", 3) != 0));
-	if (bytes_read > 0) {
-		sendto(client, file_buf, f - file_buf, 0,
-				(struct sockaddr *)&addr, addr_len);
 	}
+	else { /* not suppported */
+		LOG_ERROR("method '%s' not supported\n", method);
+		close(client);
+		return -ENOSUPP;
+	}
+
 	close(client);
 	return ENOERR;
 }
