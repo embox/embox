@@ -98,17 +98,26 @@ $(foreach src,$(ROOTFS_SRCS_BUILD),\
 	$(eval \
 		$(call rootfs_src_to_obj,$(src)) : $(src) \
 		$(\n)$(\t)@$(MKDIR) $$(@D) && cp -T $$< $$@))
+
+__rootfs_image := $(abspath $(ROOTFS_IMAGE))
+
 #XXX
-$(OBJ_DIR)/src/fs/ramfs/ramfs_cpio.o : $(ROOTFS_IMAGE)
+$(OBJ_DIR)/src/fs/ramfs/ramfs_cpio.o : $(__rootfs_image)
 
 ROOTFS_OBJS_BUILD := $(call rootfs_src_to_obj,$(ROOTFS_SRCS_BUILD))
 
 $(ROOTFS_DIR) :
 	@mkdir $@
 
-$(ROOTFS_IMAGE): $(ROOTFS_DIR) $(ROOTFS_OBJS_BUILD)
+.PHONY : $(USER_ROOTFS_DIR)
+
+$(__rootfs_image): $(ROOTFS_DIR) $(USER_ROOTFS_DIR) $(ROOTFS_OBJS_BUILD)
 	@cd $< \
-	&& find . -depth -print | cpio --quiet -H newc -o > ../$(notdir $@)
+	&& find * -depth -print | cpio --quiet -H newc -o -O $@
+	if [ -d $(USER_ROOTFS_DIR) ]; then \
+		cd $(USER_ROOTFS_DIR); \
+		find * -depth -print | cpio --quiet -H newc -o --append -O $@; \
+	fi
 
 ifdef LDSS_BUILD
 LD_SINGLE_T_OPTION := \

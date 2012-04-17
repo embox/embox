@@ -232,7 +232,7 @@ endef
 #   1. Property name.
 #   2. New value.
 define __eObjectSetUnidirectional
-	$(set-field $1,)
+	$(set-field $1,)#TODO Deresolve of link before removing not implemented
 	$(call __eObjectSetUnidirectional+,$1,$2)
 endef
 

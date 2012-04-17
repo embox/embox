@@ -30,6 +30,7 @@ export SRCGEN_DIR     := $(BUILD_DIR)/src-gen
 export AUTOCONF_DIR   := $(SRCGEN_DIR)
 export ROOTFS_DIR     := $(OBJ_DIR)/rootfs
 export ROOTFS_IMAGE   := $(OBJ_DIR)/rootfs.cpio
+export USER_ROOTFS_DIR:= $(CONF_DIR)/rootfs
 export DOT_DIR        := $(DOC_DIR)
 export DOCS_OUT_DIR   := $(DOC_DIR)
 
