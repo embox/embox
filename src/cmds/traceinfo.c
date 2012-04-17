@@ -14,7 +14,7 @@
 
 EMBOX_CMD(exec);
 
-extern struct __tp * const __trace_points_array[];
+extern struct __trace_point * const __trace_points_array[];
 
 //static void print_usage(void) {
 //	printf("%s\n", "Usage: tpprint");
@@ -22,7 +22,7 @@ extern struct __tp * const __trace_points_array[];
 
 static int exec(int argc, char **argv) {
 
-	struct __tp *tp;
+	struct __trace_point *tp;
 
 	array_nullterm_foreach(tp, __trace_points_array) {
 		printf("%10s - %d\n", tp->name, tp->count);
