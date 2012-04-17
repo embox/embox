@@ -4,48 +4,20 @@
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="configFile"
     nsURI="http://www.mybuild.org/myfile/ConfigFile" nsPrefix="cfg">
   <eClassifiers xsi:type="ecore:EClass" name="FileContentRoot" eSuperTypes="../model/emodel.ecore#//ENamedObject">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="configurations" upperBound="-1"
-        eType="#//Configuration" containment="true" eOpposite="#//Configuration/fileContentRoot"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="configurations" eType="#//Configuration"
+        containment="true" eOpposite="#//Configuration/fileContentRoot"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="imports" upperBound="-1"
         eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Configuration" abstract="true" eSuperTypes="../model/emodel.ecore#//ENamedObject myfile.ecore#//AnnotationTarget">
-    <eOperations name="createBuild" eType="#//Build"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Configuration" eSuperTypes="../model/emodel.ecore#//ENamedObject myfile.ecore#//AnnotationTarget">
     <eStructuralFeatures xsi:type="ecore:EReference" name="fileContentRoot" eType="#//FileContentRoot"
         eOpposite="#//FileContentRoot/configurations"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="includes" upperBound="-1"
         eType="#//Include" containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="build" eType="#//Build"
-        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Include" eSuperTypes="myfile.ecore#//AnnotationTarget ../model/emodel.ecore#//ENamedObject">
     <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="ecore:EClass myfile.ecore#//ModuleType"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="optionBindings" upperBound="-1"
         eType="ecore:EClass myfile.ecore#//OptionBinding" containment="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Build">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="modules" upperBound="-1"
-        eType="#//ModuleInstance" containment="true" eOpposite="#//ModuleInstance/build"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="configuration" eType="#//Configuration"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ModuleInstance">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="build" eType="#//Build"
-        eOpposite="#//Build/modules"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="ecore:EClass myfile.ecore#//ModuleType"
-        resolveProxies="false"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="dependent" upperBound="-1"
-        eType="#//ModuleInstance" eOpposite="#//ModuleInstance/depends"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="depends" upperBound="-1"
-        eType="#//ModuleInstance" eOpposite="#//ModuleInstance/dependent"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
-        eType="#//OptionInstance" containment="true" eOpposite="#//OptionInstance/module"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="includeMember" eType="#//Include"
-        unsettable="true"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OptionInstance">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="#//ModuleInstance"
-        eOpposite="#//ModuleInstance/options"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="option" eType="ecore:EClass myfile.ecore#//Option"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="optionValue" eType="ecore:EClass myfile.ecore#//OptionValue"/>
   </eClassifiers>
 </ecore:EPackage>

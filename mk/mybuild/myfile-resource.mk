@@ -27,8 +27,10 @@ define class-MyFileResourceSet
 		$(new MyFileLinker,$(this),$(this)))
 endef
 
-define myfile_create_resource_set_from_files
-	$(for rs <- $(new MyFileResourceSet,$(for f <- $1,$($f))),
+# Params:
+#   1. List of resources.
+define myfile_create_resource_set
+	$(for rs <- $(new MyFileResourceSet,$1),
 
 		$(invoke $(get rs->linker).resolveAllLinks)
 

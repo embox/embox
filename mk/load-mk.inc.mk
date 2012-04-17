@@ -79,20 +79,42 @@ $(mk_mybuild_configfile) : CACHE_INCLUDES := \
 	mk/mybuild/configfile-metamodel.mk \
 	mk/mybuild/configfile-resource.mk  \
 	mk/mybuild/configfile-linker.mk    \
-	mk/mybuild/configfile-parser.mk    \
-	mk/mybuild/mybuild.mk
+	mk/mybuild/configfile-parser.mk
 $(mk_mybuild_configfile) : CACHE_REQUIRES := \
 	$(mk_mybuild_myfile) \
 	$(mk_model)
 $(mk_mybuild_configfile) : ALLOC_SCOPE := g
 load_mk_files += $(mk_mybuild_configfile)
 
+# Build model files.
+mk_mybuild_build := $(MK_CACHE_DIR)/mk_mybuild_build.mk
+$(mk_mybuild_build) : CACHE_INCLUDES := \
+	mk/mybuild/build-model.mk     \
+	mk/mybuild/build-metamodel.mk
+$(mk_mybuild_build) : CACHE_REQUIRES := \
+	$(mk_mybuild_myfile) \
+	$(mk_mybuild_configfile) \
+	$(mk_model)
+$(mk_mybuild_build) : ALLOC_SCOPE := h
+load_mk_files += $(mk_mybuild_build)
+
+# Mybuild itself.
+mk_mybuild := $(MK_CACHE_DIR)/mk_mybuild.mk
+$(mk_mybuild) : CACHE_INCLUDES := \
+	mk/mybuild/mybuild.mk
+$(mk_mybuild) : CACHE_REQUIRES := \
+	$(mk_mybuild_myfile)     \
+	$(mk_mybuild_configfile) \
+	$(mk_mybuild_build)
+$(mk_mybuild) : ALLOC_SCOPE := i
+load_mk_files += $(mk_mybuild)
+
 # Ugly scripts.
 mk_ugly := $(MK_CACHE_DIR)/mk_ugly.mk
 $(mk_ugly) : CACHE_INCLUDES := \
 	mk/ugly.mk
 $(mk_ugly) : CACHE_REQUIRES := \
-	$(mk_mybuild_configfile)# Agrrr...
+	$(mk_mybuild)# Agrrr...
 $(mk_ugly) : ALLOC_SCOPE := u
 load_mk_files += $(mk_ugly)
 

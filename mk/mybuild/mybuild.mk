@@ -11,22 +11,24 @@ include mk/mybuild/myfile-resource.mk
 # Constructor args:
 #   1. Configuration.
 define class-Mybuild
-	$(field configuration : CfgConfiguration,$1)
-
-	$(map moduleInstanceStore... : CfgModuleInstance) #by module
-	$(map activeFeatures... : CfgModuleInstance) #by feature
+	$(map moduleInstanceStore... : ModuleInstance) #by module
+	$(map activeFeatures... : ModuleInstance) #by feature
 
 # Public:
 
-	# Create BuildModel from current state.
+	# Creates build model from the configuration.
 	#
+	# Args:
+	#   1. Configuration.
 	# Return:
-	#	Created BuildModel with issuees
+	#   New instance of CfgBuild.
 	$(method createBuild,
-		$(for \
-			build <-$(new CfgBuild),
+		$(assert $(singleword $1))
+		$(for configuration <- $1,
+			build <-$(new Build),
 			issueReceiver <- $(new IssueReceiver),
 
+			$(set build->configuration,$(configuration))
 			$(set-field build->issueReceiver,$(issueReceiver))
 
 			$(set build->modules,
@@ -38,21 +40,22 @@ define class-Mybuild
 				$(map-set build->moduleInstanceByName/$(get super->qualifiedName),
 					$(modInst)))
 
-			$(build)))
+			$(build))
+	)
 
 # Private:
 
 	# Gets all modulesInstance's created according configResourceSet
 	#
 	# Context:
+	#   'configuration'
 	#   'issueReceiver'
-	# Args:
 	# Return:
 	#	List of avaible moduleInstances. Some of them may not be created, issue was created
 	$(method getBuildModules,
 		$(with \
 			$(for \
-				cfgInclude <- $(get $(get-field configuration).includes),
+				cfgInclude <- $(get configuration->includes),
 				module <- $(get cfgInclude->module),
 
 				$(if $(invoke moduleInstanceHas,$(module)),,
@@ -66,12 +69,12 @@ define class-Mybuild
 					$(invoke checkAbstractRealization,$1)))
 			))
 
-   $(method checkAbstractRealization,
-       $(for inst <- $1,
-           instType <- $(get inst->type),
-           $(if $(get instType->isAbstract),
-			$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
-				   No abstract realization: $(get instType->qualifiedName))),
+	$(method checkAbstractRealization,
+		$(for inst <- $1,
+			instType <- $(get inst->type),
+			$(if $(get instType->isAbstract),
+				$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
+					No abstract realization: $(get instType->qualifiedName))),
 				$(inst))))
 
 
@@ -146,7 +149,7 @@ define class-Mybuild
 														optionBindings))),
 								 $(get opt->defaultValue),),
 					$(if $(optValue),
-						$(silent-for optInst <- $(new CfgOptionInstance),
+						$(silent-for optInst <- $(new OptionInstance),
 							$(set optInst->option,$(opt))
 							$(set optInst->optionValue,$(optValue))
 							$(set+ modInst->options,$(optInst))),
@@ -159,8 +162,6 @@ define class-Mybuild
 							Could not bind option $(get opt->name) in module \
 								$(get mod->qualifiedName) to a value))Error)))
 				,,$(modInst))))
-
-
 
 	# Find option binding for option within list.
 	#
@@ -217,7 +218,7 @@ define class-Mybuild
 							Module $(get mod->qualifiedName) extends module supertype \
 								already extended by incompatible $(invoke getInstDepsOrigin,$1)))
 					)),
-				$(new CfgModuleInstance,$(mod)))))
+				$(new ModuleInstance,$(mod)))))
 
 	# Get ModuleInstance for Module
 	#
@@ -262,29 +263,32 @@ define class-Mybuild
 	# Return:
 	#  List of ModuleInstance for module, that have no reperesents yet
 	$(method moduleInstanceClosure,
-			$(for thisInst<-$(invoke moduleInstance,$1),
-				$(thisInst) \
-				$(for \
-					mod <- $1,
-					dep <- $(get mod->depends),
-					was <- was$(invoke moduleInstanceHas,$(dep)),
-					$(for depInst <- $(invoke moduleInstance,$(dep)),
-						$(if $(filter $(depInst),$(get thisInst->depends)),,
-							$(set+ thisInst->depends,$(depInst))))
-					$(if $(filter was,$(was)),
-						$(invoke moduleInstanceClosure,$(dep))))))
+		$(for thisInst<-$(invoke moduleInstance,$1),
+			$(thisInst) \
+			$(for \
+				mod <- $1,
+				dep <- $(get mod->depends),
+				was <- was$(invoke moduleInstanceHas,$(dep)),
+				$(for depInst <- $(invoke moduleInstance,$(dep)),
+					$(if $(filter $(depInst),$(get thisInst->depends)),,
+						$(set+ thisInst->depends,$(depInst))))
+				$(if $(filter was,$(was)),
+					$(invoke moduleInstanceClosure,$(dep))))))
 
 endef
 
-define mybuild_get_active_build
-	$(for config <- $(get __config_resource_set->resources),
-		cfgFileContent <- $(get config->contentsRoot),
-		cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)),#FIXME
-		$(get cfgConfiguration->build))
-endef
-
+# Takes a resource set of configfiles and creates build for each configuration.
+# Returns the argument.
 define mybuild_create_build
-	$(invoke $(new Mybuild,$(__config_resource_set)).createBuild)
+	$(invoke $(new Mybuild).createBuild,
+		$(call mybuild_get_active_configuration,$1))
+endef
+
+# 1. Config files resource set.
+define mybuild_get_active_configuration
+	$(for resource <- $(get 1->resources),
+		root <- $(get resource->contentsRoot),
+		$(get root->configurations))
 endef
 
 define printInstance

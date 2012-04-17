@@ -60,12 +60,12 @@ endif
 
 include mk/flags.mk
 
-build_model := $(mybuild_get_active_build)
+#build_model := $(mybuild_get_active_build)
 
 MODS_ENABLE_OBJ := \
-$(if $(call invoke,$(call get,$(build_model),issueReceiver),getIssues),\
-	$(call printIssues,$(build_model)),\
-	$(call listInstances,$(build_model)))
+	$(if $(call invoke,$(call get,$(build_model),issueReceiver),getIssues),\
+		$(call printIssues,$(build_model)),\
+		$(call listInstances,$(build_model)))
 
 #$(warning $(call printInstances,$(build_model)))
 

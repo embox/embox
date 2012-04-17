@@ -66,7 +66,7 @@ $(myfiles_mk) $(configfiles_mk) : $(MYBUILD_FILES_CACHE_DIR)/%.mk : %
 	@echo ' $(recipe_tag) $<'
 	@SCOPE=`echo '$<' | sum | cut -f 1 -d ' '`; \
 	$(MAKE) -f mk/script/mk-persist.mk ALLOC_SCOPE="p$$SCOPE" > $@ && \
-	echo '$$(lastword $$(MAKEFILE_LIST)) := '".obj1p$$SCOPE" >> $@
+	echo '__resource-$@ := '".obj1p$$SCOPE" >> $@
 
 #
 # Linking files together.
@@ -80,7 +80,8 @@ $(myfiles_model_mk) : MAKEFILES := $(mk_mybuild_myfile) $(myfiles_mk)
 $(myfiles_model_mk) :
 	@echo ' MYLINK: $(words $(myfiles_mk)) files $(__myfiles_model_stats)'
 	@$(MAKE) -f mk/script/mk-persist.mk \
-		PERSIST_OBJECTS='$$(call myfile_create_resource_set_from_files,$(myfiles_mk))' \
+		PERSIST_OBJECTS='$$(call myfile_create_resource_set, \
+				$$(foreach f,$(myfiles_mk),$$(__resource-$$f)))' \
 		PERSIST_REALLOC='my' \
 		PERSIST_VARIABLE='__myfile_resource_set' \
 		ALLOC_SCOPE='z' > $@
@@ -91,15 +92,31 @@ load_mybuild_files += $(myfiles_model_mk)
 # Config-files are linked agains linked model of my-files.
 export configfiles_model_mk := $(MYBUILD_CACHE_DIR)/configfiles-model.mk
 
-$(configfiles_model_mk) : MAKEFILES := $(mk_mybuild_configfile) $(configfiles_mk) $(myfiles_model_mk)
+$(configfiles_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_mk) $(myfiles_model_mk)
 $(configfiles_model_mk) :
 	@echo ' CONFIGLINK'
 	@$(MAKE) -f mk/script/mk-persist.mk \
-		PERSIST_OBJECTS='$$(call config_create_resource_set_from_files,$(configfiles_mk))' \
+		PERSIST_OBJECTS='$$(call config_create_resource_set, \
+				$$(foreach f,$(configfiles_mk),$$(__resource-$$f)), \
+				$$(__myfile_resource_set))' \
 		PERSIST_REALLOC='cfg' \
 		PERSIST_VARIABLE='__config_resource_set' \
 		ALLOC_SCOPE='y' > $@
 load_mybuild_files += $(configfiles_model_mk)
+
+# Build model is inferred from both configuration and myfiles models.
+export build_model_mk := $(MYBUILD_CACHE_DIR)/build-model.mk
+
+$(build_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_model_mk) $(myfiles_model_mk)
+$(build_model_mk) :
+	@echo ' BUILDMODEL'
+	@$(MAKE) -f mk/script/mk-persist.mk \
+		PERSIST_OBJECTS='$$(call mybuild_create_build, \
+				$$(__config_resource_set))' \
+		PERSIST_REALLOC='bld' \
+		PERSIST_VARIABLE='build_model' \
+		ALLOC_SCOPE='x' > $@
+load_mybuild_files += $(build_model_mk)
 
 export load_mybuild_files := $(load_mybuild_files)
 

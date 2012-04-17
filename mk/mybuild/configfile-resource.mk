@@ -29,16 +29,13 @@ define class-ConfigFileResourceSet
 		$(new ConfigLinker,$(this),$(get-field myfileResourceSet)))
 endef
 
-define config_create_resource_set_from_files
-	$(for rs <- $(new ConfigFileResourceSet,$(for f <- $1,$($f)),
-					$(__myfile_resource_set)),
+# Params:
+#   1. List of resources.
+#   2. Myfiles resource set.
+define config_create_resource_set
+	$(for rs <- $(new ConfigFileResourceSet,$1,$2),
 
 		$(invoke $(get rs->linker).resolveAllLinks)
-
-		$(silent-for config <- $(get rs->resources),
-			root <- $(get config->contentsRoot),
-			configuration <- $(firstword $(get root->configurations)),#FIXME
-			$(invoke configuration->createBuild))
 
 		$(silent-for r <- $(get rs->resources),
 			$(invoke r->printIssues))

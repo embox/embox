@@ -25,9 +25,9 @@ define class-CfgFileContentRoot
 	$(eobject ConfigFile_FileContentRoot,
 		CfgFileContentRoot,ENamedObject,)
 
-	# Property 'configurations... : CfgConfiguration'.
+	# Property 'configurations : CfgConfiguration'.
 	$(eobject-reference ConfigFile_FileContentRoot_configurations,
-		configurations,CfgConfiguration,fileContentRoot,changeable many containment)
+		configurations,CfgConfiguration,fileContentRoot,changeable containment)
 
 	# Property 'imports...'.
 	$(eobject-attribute ConfigFile_FileContentRoot_imports,
@@ -41,11 +41,9 @@ endef
 #
 # Model object 'Configuration'.
 #
-# The following features and operations are defined:
+# The following features are defined:
 #   - reference 'fileContentRoot'
 #   - reference 'includes'
-#   - reference 'build'
-#   - operation 'createBuild'
 #
 # The following features are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
@@ -56,10 +54,10 @@ endef
 #   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-define class-CfgConfiguration # abstract
+define class-CfgConfiguration
 	# Extends 'ENamedObject', 'MyAnnotationTarget' classes.
 	$(eobject ConfigFile_Configuration,
-		CfgConfiguration,ENamedObject MyAnnotationTarget,abstract)
+		CfgConfiguration,ENamedObject MyAnnotationTarget,)
 
 	# Property 'fileContentRoot : CfgFileContentRoot'.
 	$(eobject-reference ConfigFile_Configuration_fileContentRoot,
@@ -68,18 +66,6 @@ define class-CfgConfiguration # abstract
 	# Property 'includes... : CfgInclude'.
 	$(eobject-reference ConfigFile_Configuration_includes,
 		includes,CfgInclude,,changeable many containment)
-
-	# Property 'build : CfgBuild'.
-	$(eobject-reference ConfigFile_Configuration_build,
-		build,CfgBuild,,changeable containment)
-
-	# Method 'createBuild : CfgBuild'.
-	# PROTECTED REGION ID(ConfigFile_Configuration_createBuild) ENABLED START
-	$(method createBuild : CfgBuild,
-		$(for build <- $(invoke $(new Mybuild,$(this)).createBuild),
-			$(set build,$(build))
-			$(build)))
-	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(ConfigFile_Configuration) ENABLED START
 	# PROTECTED REGION END
@@ -116,113 +102,6 @@ define class-CfgInclude
 		optionBindings,MyOptionBinding,,changeable many containment)
 
 	# PROTECTED REGION ID(ConfigFile_Include) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
-	# PROTECTED REGION END
-endef
-
-#
-# Model object 'Build'.
-#
-# The following features are defined:
-#   - reference 'modules'
-#   - reference 'configuration'
-#
-define class-CfgBuild
-	# Extends 'EObject' class (implicitly).
-	$(eobject ConfigFile_Build,
-		CfgBuild,,)
-
-	# Property 'modules... : CfgModuleInstance'.
-	$(eobject-reference ConfigFile_Build_modules,
-		modules,CfgModuleInstance,build,changeable many containment)
-
-	# Property 'configuration : CfgConfiguration'.
-	# Property 'configuration_link : ELink'.
-	$(eobject-reference ConfigFile_Build_configuration,
-		configuration,CfgConfiguration,,changeable linkable)
-
-	# PROTECTED REGION ID(ConfigFile_Build) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
-	$(property-field issueReceiver : IssueReceiver)
-
-	$(map moduleInstanceByName : CfgModuleInstance)
-
-	# PROTECTED REGION END
-endef
-
-#
-# Model object 'ModuleInstance'.
-#
-# The following features are defined:
-#   - reference 'build'
-#   - reference 'type'
-#   - reference 'dependent'
-#   - reference 'depends'
-#   - reference 'options'
-#   - reference 'includeMember'
-#
-define class-CfgModuleInstance
-	# Extends 'EObject' class (implicitly).
-	$(eobject ConfigFile_ModuleInstance,
-		CfgModuleInstance,,)
-
-	# Property 'build : CfgBuild'.
-	$(eobject-reference ConfigFile_ModuleInstance_build,
-		build,CfgBuild,modules,changeable container)
-
-	# Property 'type : MyModuleType'.
-	$(eobject-reference ConfigFile_ModuleInstance_type,
-		type,MyModuleType,,changeable)
-
-	# Property 'dependent... : CfgModuleInstance'.
-	$(eobject-reference ConfigFile_ModuleInstance_dependent,
-		dependent,CfgModuleInstance,depends,changeable many)
-
-	# Property 'depends... : CfgModuleInstance'.
-	$(eobject-reference ConfigFile_ModuleInstance_depends,
-		depends,CfgModuleInstance,dependent,changeable many)
-
-	# Property 'options... : CfgOptionInstance'.
-	$(eobject-reference ConfigFile_ModuleInstance_options,
-		options,CfgOptionInstance,module,changeable many containment)
-
-	# Property 'includeMember : CfgInclude'.
-	# Property 'includeMember_link : ELink'.
-	$(eobject-reference ConfigFile_ModuleInstance_includeMember,
-		includeMember,CfgInclude,,changeable linkable)
-
-	# PROTECTED REGION ID(ConfigFile_ModuleInstance) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
-	# PROTECTED REGION END
-endef
-
-#
-# Model object 'OptionInstance'.
-#
-# The following features are defined:
-#   - reference 'module'
-#   - reference 'option'
-#   - reference 'optionValue'
-#
-define class-CfgOptionInstance
-	# Extends 'EObject' class (implicitly).
-	$(eobject ConfigFile_OptionInstance,
-		CfgOptionInstance,,)
-
-	# Property 'module : CfgModuleInstance'.
-	$(eobject-reference ConfigFile_OptionInstance_module,
-		module,CfgModuleInstance,options,changeable container)
-
-	# Property 'option : MyOption'.
-	# Property 'option_link : ELink'.
-	$(eobject-reference ConfigFile_OptionInstance_option,
-		option,MyOption,,changeable linkable)
-
-	# Property 'optionValue : MyOptionValue'.
-	$(eobject-reference ConfigFile_OptionInstance_optionValue,
-		optionValue,MyOptionValue,,changeable)
-
-	# PROTECTED REGION ID(ConfigFile_OptionInstance) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
