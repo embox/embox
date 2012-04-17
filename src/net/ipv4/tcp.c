@@ -57,6 +57,7 @@ EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, 
 #define REXMIT_DELAY       3000 /* Delay for periodical rexmit */
 #define TCP_WINDOW_DEFAULT 500  /* default for window field */
 
+
 /* Error code of TCP handlers */
 enum {
 	TCP_RET_OK = 1, /* all ok, don't free packet */
@@ -79,13 +80,14 @@ typedef int (*tcp_handler_t)(union sock_pointer sock,
 
 
 OBJALLOC_DEF(objalloc_tcp_socks, struct tcp_sock, CONFIG_MAX_KERNEL_SOCKETS); /* Allocator for tcp_sock structure */
-static LIST_HEAD(rexmit_socks); /* List of all tcp_sock with non-empty rexmit_link list */
+static LIST_HEAD(rexmit_list); /* List of all tcp_sock with non-empty rexmit_link list */
 static struct tcp_sock *tcp_hash[CONFIG_MAX_KERNEL_SOCKETS]; /* All TCP sockets in system */
 static union sock_pointer tcp_default; /* Default socket for TCP protocol. */
-struct proto tcp_prot; /* prototype */
+//static struct sys_timer rexmit_tmr; /* Timer for rexmitting */
 
-/* internet protocol stack private method for socket allocation */
-extern struct sock *inet_create_sock(gfp_t priority, struct proto *prot, int protocol, int type);
+/* Prototypes */
+struct proto tcp_prot;
+extern struct sock * inet_create_sock(gfp_t priority, struct proto *prot, int protocol, int type);
 
 
 /************************ Debug functions ******************************/
@@ -93,16 +95,15 @@ static inline void debug_print(__u8 code, const char *msg, ...) {
 	va_list args;
 
 	va_start(args, msg);
-	if (code) {// & 0b10111111) {
-		/* 0bit - warnings
-		 * 1bit - tcp_handle
-		 * 2bit - tcp global functions (init, send, recv etc.)
-		 * 3bit - tcp state's handlers
-		 * 4bit - tcp_sock_xmit, send_from_sock, send_ack_from_sock, free_rexmitting_queue,  tcp_rexmit
-		 * 5bit - socket state
-		 * 6bit - sock_lock / sock_unlock
-		 * 7bit - packet_print
-		 */
+	switch (code) {
+//	case 1:   /* 0bit - warnings */
+//	case 2:   /* 1bit - tcp_handle */
+	case 4:   /* 2bit - tcp global functions (init, send, recv etc.) */
+//	case 8:   /* 3bit - tcp state's handlers */
+//	case 16:  /* 4bit - tcp_sock_xmit, send_from_sock, send_ack_from_sock, free_rexmitting_queue,  tcp_rexmit */
+//	case 32:  /* 5bit - socket state */
+//	case 64:  /* 6bit - sock_lock / sock_unlock */
+	case 128: /* 7bit - packet_print */
 		softirq_lock();
 		vprintf(msg, args);
 		softirq_unlock();
@@ -696,7 +697,7 @@ static int process_ack(union sock_pointer sock, struct tcphdr *tcph,
 	}
 	else if (ack == this_unack) { } /* no new acknowledgments */
 	else if (ack < this_unack) {
-//		tcp_rexmit(sock);
+		tcp_rexmit(sock);
 	}
 	else {
 		assert(ack > this_seq);
@@ -894,13 +895,19 @@ static struct tcp_sock * tcp_lookup(in_addr_t saddr, __be16 sport, in_addr_t dad
  */
 static void tcp_process(union sock_pointer sock, struct sk_buff *skb) {
 	switch (tcp_handle(sock, skb, pre_process)) {
-	default:
-	case TCP_RET_DROP:
+	default: /* error code or TCP_RET_DROP */
 		tcp_rexmit(sock);
 		break;
 	case TCP_RET_OK:
 		assert(sock.sk->sk_state < TCP_MAX_STATE);
-		tcp_handle(sock, skb, tcp_st_handler[sock.sk->sk_state]);
+		switch (tcp_handle(sock, skb, tcp_st_handler[sock.sk->sk_state])) {
+		default:
+			tcp_rexmit(sock);
+		case TCP_RET_SEND:
+		case TCP_RET_ACK:
+		case TCP_RET_RST:
+			break;
+		}
 		break;
 	case TCP_RET_SEND:
 	case TCP_RET_ACK:
@@ -933,20 +940,26 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 }
 
 /*static*/ void timer_handler(sys_timer_t* timer, void *param) {
-	struct list_head *resocks = (struct list_head *) param;
 	union sock_pointer sock;
 
-	list_for_each_entry(sock.tcp_sk, resocks, rexmit_link) {
+	debug_print(16, "TIMER: timer_handler\n");
+	list_for_each_entry(sock.tcp_sk, &rexmit_list, rexmit_link) {
 		tcp_rexmit(sock);
 	}
 }
 
 static int tcp_v4_init(void) {
 	int res;
-//	sys_timer_t *timer;
 
-//	return timer_set(&timer, REXMIT_DELAY, timer_handler, (void *)&rexmit_socks);
-	/* Create a maintainance tcp socket without inheritors */
+#if 0
+	/* Initialize timer for rexmitting */
+	res = timer_init(&rexmit_tmr, TIMER_PERIODIC, REXMIT_DELAY, timer_handler, NULL);
+	if (res < 0) {
+		return res;
+	}
+#endif
+
+	/* Create default socket for resetting */
 	tcp_default.sk = inet_create_sock(0, &tcp_prot, IPPROTO_TCP, SOCK_STREAM);
 	if (tcp_default.sk == NULL) {
 		return -ENOMEM;
@@ -957,6 +970,7 @@ static int tcp_v4_init(void) {
 		return res;
 	}
 	tcp_prot.unhash(tcp_default.sk);
+
 	return ENOERR;
 }
 
@@ -981,7 +995,7 @@ static int tcp_v4_init_sock(struct sock *sk) {
 	sock.tcp_sk->this.wind = TCP_WINDOW_DEFAULT;
 	sock.tcp_sk->lock = 0;
 	sock.tcp_sk->conn_wait = queue;
-	list_add(&sock.tcp_sk->rexmit_link, &rexmit_socks);
+	list_add(&sock.tcp_sk->rexmit_link, &rexmit_list);
 
 	return ENOERR;
 }
@@ -1142,6 +1156,9 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 		return -1; /* TODO save data and send them later */
 	case TCP_ESTABIL:
 	case TCP_CLOSEWAIT:
+		if (len == 0) {
+			return ENOERR;
+		}
 		skb = alloc_prep_skb(msg->msg_iov->iov_len);
 		if (skb == NULL) {
 			return -ENOMEM;

@@ -214,7 +214,7 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 		return (ssize_t)res;
 	}
 
-	return (ssize_t)len;
+	return (ssize_t)iov.iov_len;
 }
 
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,

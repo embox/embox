@@ -17,8 +17,15 @@
 
 EMBOX_CMD(exec);
 
-#define BUFF_SZ 256
-#define FILE_READ_CHUNK_SZ 64
+#define SEND_BUFF_SZ 256
+#define RECV_BUFF_SZ 128
+#define DEFAULT_PAGE "index.html"
+
+struct client_info {
+	int sock;
+	struct sockaddr_in addr;
+	int addr_len;
+};
 
 static int parse_req(char *buff, char **method, char **file) {
 	char *tmp;
@@ -46,38 +53,45 @@ static int parse_req(char *buff, char **method, char **file) {
 	return 0;
 }
 
-static int send_file(char *file, int client, struct sockaddr_in addr, int addr_len) {
-	int fd, bytes_read;
-	char buff[BUFF_SZ], *curr;
+static int send_file(char *file, struct client_info *pci) {
+	int fd, bytes;
+	char buff_out[SEND_BUFF_SZ], *curr;
 
 	fd = open(file, O_RDONLY);
 	if (fd < 0) {
 		LOG_ERROR("can't open file '%s'\n", file);
-		close(client);
 		return -1;
 	}
-	curr = buff;
+
+	curr = buff_out;
 	curr += sprintf(curr, "HTTP/1.0 200 OK\nContent-Type: text/html\n\n");
-	while ((bytes_read = read(fd, curr, FILE_READ_CHUNK_SZ)) > 0) { /* FIXME check the boundaries */
-		curr += bytes_read;
-	}
-	if (bytes_read < 0) {
-		close(fd);
-		return -1;
-	}
-	sendto(client, buff, curr - buff, 0,
-				(struct sockaddr *)&addr, addr_len);
+	do {
+		bytes = read(fd, curr, sizeof buff_out - (curr - buff_out));
+		if (bytes < 0) {
+			LOG_ERROR("read failed. error=%d\n", bytes);
+			close(fd);
+			return -1;
+		}
+		curr += bytes;
+		sendto(pci->sock, buff_out, curr - buff_out, 0,
+				(struct sockaddr *)&pci->addr, pci->addr_len);
+		curr = buff_out;
+	} while (bytes > 0);
+
+	close(fd);
+
 	return 0;
 }
 
 static int client_process(int client) {
-	int bytes_read, addr_len;
-	char buff[BUFF_SZ];
+	int bytes_read;
+	char buff[RECV_BUFF_SZ];
 	char *method, *file;
-	struct sockaddr_in addr;
+	struct client_info ci;
 
 	/* Get request */
-	bytes_read = recvfrom(client, buff, sizeof buff - 1, 0, (struct sockaddr *)&addr, &addr_len);
+	ci.sock = client;
+	bytes_read = recvfrom(client, buff, sizeof buff - 1, 0, (struct sockaddr *)&ci.addr, &ci.addr_len);
 	if (bytes_read < 0) {
 		LOG_ERROR("recvfrom() failed. code=%d\n", bytes_read);
 		close(client);
@@ -91,8 +105,12 @@ static int client_process(int client) {
 		return -1;
 	}
 
+	printf("req: method-%s file-%s\n", method, file);
 	if (strcmp(method, "GET") == 0) {
-		if (send_file(file, client, addr, addr_len) < 0) {
+		if (strcmp(file, "/") == 0) {
+			file = DEFAULT_PAGE;
+		}
+		if (send_file(file, &ci) < 0) {
 			close(client);
 			return -1;
 		}
@@ -108,7 +126,7 @@ static int client_process(int client) {
 }
 
 static int exec(int argc, char **argv) {
-	int res, host, client, addr_len;
+	int res, host, addr_len;
 	struct sockaddr_in addr;
 
 	addr.sin_family = AF_INET;
@@ -135,14 +153,14 @@ static int exec(int argc, char **argv) {
 	}
 
 	while (1) {
-		client = accept(host,(struct sockaddr *)&addr, &addr_len);
-		if (client < 0) {
+		res = accept(host,(struct sockaddr *)&addr, &addr_len);
+		if (res < 0) {
 			/* error code in client, now */
-			LOG_ERROR("accept() failed. code=%d", client);
+			LOG_ERROR("accept() failed. code=%d", res);
 			close(host);
-			return client;
+			return res;
 		}
-		client_process(client);
+		client_process(res);
 	}
 
 	close(host);
