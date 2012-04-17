@@ -13,16 +13,19 @@
 #include <unistd.h>
 #include <fs/file_desc.h>
 
-typedef int (*FS_CREATE_FUNC)(void *params);
-typedef int (*FS_DELETE_FUNC)(const char *file_name);
+
 typedef int (*FS_INIT_FUNC)(void *par);
+typedef int (*FS_FORMAT_FUNC)(void *par);
 typedef int (*FS_MOUNT_FUNC)(void *par);
+typedef int (*FS_CREATE_FUNC)(void *par);
+typedef int (*FS_DELETE_FUNC)(const char *file_name);
 
 typedef struct fsop_desc {
         FS_INIT_FUNC init;
+        FS_FORMAT_FUNC format;
+        FS_MOUNT_FUNC mount;
         FS_CREATE_FUNC create_file;
         FS_DELETE_FUNC delete_file;
-        FS_MOUNT_FUNC mount;
 } fsop_desc_t;
 
 /**

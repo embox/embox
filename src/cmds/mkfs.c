@@ -112,6 +112,10 @@ int mkfs_do_operation(void *_mkfs_params) {
 	fs_drv_t *fs_drv;
 	int rezult;
 
+#ifdef _GAZ_DEBUG_
+	FILE *fd;
+#endif /*def _GAZ_DEBUG_ */
+
 	mkfs_params = (mkfs_params_t *) _mkfs_params;
 
 	if(mkfs_params->operation_flag & MKFS_CREATE_DEV) {
@@ -142,7 +146,7 @@ int mkfs_do_operation(void *_mkfs_params) {
 		fs_drv = filesystem_find_drv((const char *) &mkfs_params->fs_name);
 
 		/* format filesystem */
-		if (0 != (rezult = fs_drv->fsop->create_file((void *)ramd_params))) {
+		if (0 != (rezult = fs_drv->fsop->format((void *)ramd_params))) {
 			return rezult;/*file already exist*/
 		}
 
@@ -150,6 +154,9 @@ int mkfs_do_operation(void *_mkfs_params) {
 		fat_main("/t1.txt");
 
 		fat_main("/t2.txt");
+
+		fd = fopen("/dev/ram1/1/2/3/4/5", "w");
+		fd = fopen("/dev/ram1/1/2", "r");
 #endif /*def _GAZ_DEBUG_ */
 	}
 	return 0;

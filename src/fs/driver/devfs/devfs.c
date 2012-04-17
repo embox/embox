@@ -27,6 +27,10 @@ static int devfs_init(void * par) {
 	return 0;
 }
 
+static int devfs_format(void *par) {
+	return 0;
+}
+
 static int devfs_mount(void *par) {
 	node_t *nod, *devnod;
 	size_t i;
@@ -77,8 +81,8 @@ static int devfs_ioctl(void *file, int request, va_list args) {
 	return 0;
 }
 
-static fsop_desc_t devfs_fsop = { devfs_init, devfs_create, devfs_delete,
-		devfs_mount };
+static fsop_desc_t devfs_fsop = { devfs_init, devfs_format, devfs_mount,
+		devfs_create, devfs_delete};
 
 static file_operations_t devfs_fop = {
        .fopen = devfs_open,

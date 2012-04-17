@@ -28,6 +28,10 @@ node_t *rootfs_get_node(void) {
 	return root_node;
 }
 
+static int rootfs_format(void *par) {
+	return 0;
+}
+
 static int rootfs_create(void *params) {
 	return 0;
 }
@@ -49,9 +53,10 @@ static int rootfs_mount(void *par) {
 
 static fsop_desc_t rootfs_fsop = {
 	rootfs_init,
+	rootfs_format,
+	rootfs_mount,
 	rootfs_create,
-	rootfs_delete,
-	rootfs_mount
+	rootfs_delete
 };
 
 static const fs_drv_t rootfs_drv = {

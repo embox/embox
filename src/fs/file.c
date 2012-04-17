@@ -15,9 +15,106 @@
 #include <fs/vfs.h>
 #include <util/array.h>
 #include <err.h>
+#include <fs/file.h>
 
 #include <fs/file_desc.h>
 #include <kernel/prom_printf.h>
+
+#define LAST  0x01
+
+int nip_tail (char *head, char *tail) {
+	char *p_tail;
+	char *p;
+
+	p = p_tail = head + strlen(head);
+	strcat(head, tail);
+
+	do {
+		p_tail--;
+		if(head >= p_tail) {
+			*p = '\0';
+			return -1;
+		}
+	} while ('/' != *p_tail);
+
+	strcpy (tail, p_tail);
+	*p_tail = '\0';
+
+	return 0;
+}
+
+int increase_tail (char *head, char *tail) {
+	char *p_tail;
+
+		p_tail = head + strlen(head);
+		strcat(head, tail);
+
+		do {
+			if('\0' == *p_tail) {
+				break;
+			}
+			p_tail++;
+		} while ('/' != *p_tail);
+
+		strcpy (tail, p_tail);
+		*p_tail = '\0';
+
+		return 0;
+}
+
+int create_filechain (const char *path){
+	int count_dir;
+	file_create_param_t param;
+	fs_drv_t *drv;
+	node_t *node, *new_node;
+	char tail[CONFIG_MAX_LENGTH_FILE_NAME];
+
+	count_dir = 0;
+	tail[0] = '\0';
+	strcpy (param.path, path);
+
+	do {
+		if (nip_tail (param.path, tail)) {
+			errno = -EINVAL;
+			return -1;
+		}
+		count_dir ++;
+	} while (NULL == (node = vfs_find_node(param.path, NULL)));
+
+
+	do {
+		increase_tail (param.path, tail);
+
+		if (NULL == (new_node = vfs_add_path (param.path, NULL))) {
+			errno = -EINVAL;
+			return -1;
+		}
+
+		drv = new_node->fs_type = node->fs_type;
+		new_node->file_info = node->file_info;
+		new_node->properties  = IS_DIRECTORY;
+		/* believe that the latter in path is always a file */
+		if (LAST == count_dir) {
+			new_node->properties &= ~IS_DIRECTORY;
+		}
+
+		param.node = (void *) new_node;
+		param.parents_node = (void *) node;
+
+		if (NULL == drv->fsop->create_file) {
+			errno = -EINVAL;
+			LOG_ERROR("fsop->create_file is NULL handler\n");
+			return -1;
+		}
+
+		drv->fsop->create_file ((void *)&param);
+
+		node = new_node;
+
+	} while (count_dir --);
+
+	return 0;
+}
 
 FILE *fopen(const char *path, const char *mode) {
 	node_t *nod;
@@ -26,8 +123,16 @@ FILE *fopen(const char *path, const char *mode) {
 	struct file_desc *desc;
 
 	if (NULL == (nod = vfs_find_node(path, NULL))) {
-		errno = -EINVAL;
-		return NULL;
+		if ('w' != *mode) {
+			errno = -EINVAL;
+			return NULL;
+		}
+
+		if (create_filechain(path)) {
+			errno = -EINVAL;
+			return NULL;
+		}
+
 	}
 	/* check permissions */
 
