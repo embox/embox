@@ -101,19 +101,6 @@ $(configfiles_model_mk) :
 		ALLOC_SCOPE='y' > $@
 load_mybuild_files += $(configfiles_model_mk)
 
-## Build model is inferred from both configuration and myfiles models.
-#export build_model_mk := $(MYBUILD_CACHE_DIR)/build-model.mk
-#
-#$(build_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_model_mk) $(myfiles_model_mk)
-#$(build_model_mk) :
-#	@echo ' BUILDMODEL'
-#	@$(MAKE) -f mk/script/mk-persist.mk \
-#		PERSIST_OBJECTS='$$(call mybuild_create_build)' \
-#		PERSIST_REALLOC='bld' \
-#		PERSIST_VARIABLE='__build_model' \
-#		ALLOC_SCOPE='x' > $@
-#load_mybuild_files += $(build_model_mk)
-
 export load_mybuild_files := $(load_mybuild_files)
 
 $(load_mybuild_files) : export MAKEFILES ?=
