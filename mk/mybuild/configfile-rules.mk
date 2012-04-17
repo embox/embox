@@ -27,7 +27,7 @@ define $(gold_grammar)_produce-ConfigFile
 	$(for fileContent <- $(new CfgFileContentRoot),
 		$(set fileContent->name,$1)
 		$(set fileContent->imports,$2)
-		$(set fileContent->configurations,$3)
+		$(set fileContent->configuration,$3)
 		$(fileContent)
 	)
 endef

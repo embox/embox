@@ -288,7 +288,7 @@ endef
 define mybuild_get_active_configuration
 	$(for resource <- $(get 1->resources),
 		root <- $(get resource->contentsRoot),
-		$(get root->configurations))
+		$(get root->configuration))
 endef
 
 define printInstance

@@ -13,8 +13,8 @@ ConfigFile := \
 
 ConfigFile_FileContentRoot := \
 	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_FileContentRoot)
-ConfigFile_FileContentRoot_configurations := \
-	$(call eMetaReferenceCreate,$(ConfigFile_FileContentRoot),ConfigFile_FileContentRoot_configurations)
+ConfigFile_FileContentRoot_configuration := \
+	$(call eMetaReferenceCreate,$(ConfigFile_FileContentRoot),ConfigFile_FileContentRoot_configuration)
 ConfigFile_FileContentRoot_imports := \
 	$(call eMetaAttributeCreate,$(ConfigFile_FileContentRoot),ConfigFile_FileContentRoot_imports)
 
@@ -37,11 +37,11 @@ define __configFile_init
 	$(call eMetaModelInit,$(ConfigFile),configFile,cfg)
 
 	$(call eMetaClassInit,$(ConfigFile_FileContentRoot),FileContentRoot,$(EModel_ENamedObject),)
-	$(call eMetaReferenceInit,$(ConfigFile_FileContentRoot_configurations),configurations,$(ConfigFile_Configuration),$(ConfigFile_Configuration_fileContentRoot),changeable containment)
+	$(call eMetaReferenceInit,$(ConfigFile_FileContentRoot_configuration),configuration,$(ConfigFile_Configuration),$(ConfigFile_Configuration_fileContentRoot),changeable containment)
 	$(call eMetaAttributeInit,$(ConfigFile_FileContentRoot_imports),imports,changeable many)
 
 	$(call eMetaClassInit,$(ConfigFile_Configuration),Configuration,$(EModel_ENamedObject) $(MyFile_AnnotationTarget),)
-	$(call eMetaReferenceInit,$(ConfigFile_Configuration_fileContentRoot),fileContentRoot,$(ConfigFile_FileContentRoot),$(ConfigFile_FileContentRoot_configurations),changeable container)
+	$(call eMetaReferenceInit,$(ConfigFile_Configuration_fileContentRoot),fileContentRoot,$(ConfigFile_FileContentRoot),$(ConfigFile_FileContentRoot_configuration),changeable container)
 	$(call eMetaReferenceInit,$(ConfigFile_Configuration_includes),includes,$(ConfigFile_Include),,changeable many containment)
 
 	$(call eMetaClassInit,$(ConfigFile_Include),Include,$(MyFile_AnnotationTarget) $(EModel_ENamedObject),)
@@ -53,7 +53,7 @@ endef # __configFile_init
 # Binds objects to instance classes and features to properties.
 define __configFile_bind
 	$(call eMetaClassBind,$(ConfigFile_FileContentRoot),CfgFileContentRoot)
-	$(call eMetaFeatureBind,$(ConfigFile_FileContentRoot_configurations),configurations)
+	$(call eMetaFeatureBind,$(ConfigFile_FileContentRoot_configuration),configuration)
 	$(call eMetaFeatureBind,$(ConfigFile_FileContentRoot_imports),imports)
 
 	$(call eMetaClassBind,$(ConfigFile_Configuration),CfgConfiguration)
