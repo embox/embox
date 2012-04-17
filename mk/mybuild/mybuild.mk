@@ -13,11 +13,17 @@ include mk/mybuild/myfile-resource.mk
 define class-Mybuild
 	$(property-field configResourceSet : ResourceSet,$1)
 
-	$(map moduleInstanceStore... : BuildModuleInstance)
+	$(map moduleInstanceStore... : BuildModuleInstance) #by module
 
-	$(map activeFeatures... : BuildModuleInstance)
+	$(map activeFeatures... : BuildModuleInstance) #by feature
 
+# Public:
+
+	# Create BuildModel from current state.
+	#
 	# Args:
+	# Return:
+	#	Created BuildModel with issuees
 	$(method createBuild,
 		$(for \
 			build <-$(new BuildBuild),
@@ -30,11 +36,20 @@ define class-Mybuild
 
 			$(for modInst <- $(get build->modules),
 				mod <- $(get modInst->type),
-				$(map-set build->moduleInstanceByName/$(get mod->qualifiedName),
+				super <- $(mod) $(get mod->allSuperTypes),
+				$(map-set build->moduleInstanceByName/$(get super->qualifiedName),
 					$(modInst)))
 
 			$(build)))
+# Private:
 
+	# Gets all modulesInstance's created according configResourceSet
+	#
+	# Context:
+	#	IssueReceiver
+	# Args:
+	# Return:
+	#	List of avaible moduleInstances. Some of them may not be created, issue was created
 	$(method getBuildModules,
 		$(with \
 			$(for \
@@ -51,22 +66,16 @@ define class-Mybuild
 				$(for moduleInst <- $(invoke moduleInstance,$(module)),
 					$(set moduleInst->includeMember,$(cfgInclude)))),
 
-			$(invoke superSetDeps,$1)
-			$(invoke checkAbstractRealization,$1)
 			$(invoke checkFeatureRealization,$1)
 			$(invoke optionBind,$1)
 			$1))
 
-
-	$(method superSetDeps,
-		$(silent-for \
-			inst <- $1,
-		   	mod <- $(get inst->type),
-			super <- $(get mod->allSuperTypes),
-			superInst <- $(invoke moduleInstanceHas,$(super)),
-			$(set+ superInst->depends,$(inst))))
-
-
+	# Helper method, returns string representation of moduleInstance origin
+	#
+	# Args:
+	#	1. ModuleInstance
+	# Return:
+	#	String representation of ModuleInstance origin
 	$(method getInstDepsOrigin,
 		$(for \
 			inst <- $1,
@@ -75,28 +84,22 @@ define class-Mybuild
 				$(for \
 					includeMember <- $(get inst->includeMember),
 					resource <- $(get includeMember->eResource),
-						$(\n)$(\n)$(\t)$(get resource->fileName):
-							$(get includeMember->origin) \
-							$(get instType->qualifiedName)),
-					$(\n)$(\n)$(\t)(As dependence)::
-						$(get instType->qualifiedName))))
+						$(get instType->qualifiedName)(
+						$(get resource->fileName):
+						$(get includeMember->origin))),
+				$(get instType->qualifiedName)(As dependence))))
 
 
+	# Checks that ModuleInstances have all feature realization in current build
+	#
+	# Context:
+	#	IssueReceiver
 	# Args:
-	#  1. List of moduleInstance's
-	$(method checkAbstractRealization,
-		$(for inst <- $1,
-			instType <- $(get inst->type),
-			isAbstr<-$(get instType->isAbstract),
-			$(if $(singleword $(get inst->depends)),,#Not single realization, error
-				$(if $(get inst->depends),
-					$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
-						Multiplie abstract realization: $(get instType->qualifiedName)
-							$(invoke getInstDepsOrigin,$(get inst->depends)))),
-					$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
-						No abstract realization: $(get instType->qualifiedName))))))
-		)
-
+	#	1. List of ModuleInstance
+	# Return:
+	#   None.
+	# Side effect:
+	#	Probably issue was added to IssueReceiver
 	$(method checkFeatureRealization,
 		$(for inst <- $1,
 			instType <- $(get inst->type),
@@ -108,8 +111,16 @@ define class-Mybuild
 					$(get instType->qualifiedName) is not implemented)))))
 
 
+	# Bind options for ModuleInstances (set ModuleInstance optionBinding field with option binding)
+	#
+	# Context:
+	#	Issue Receiver
 	# Args:
-	#  1. List of moduleInstance's
+	#  1. List of ModuleInstance
+	# Return:
+	#   None.
+	# Side effect:
+	#	Probably issue was added to IssueReceiver
 	$(method optionBind,
 		$(for \
 			modInst <- $1,
@@ -140,6 +151,13 @@ define class-Mybuild
 					$(set optInst->optionValue,$(optValue))
 					$(set+ modInst->options,$(optInst))))))
 
+	# Find option binding for option within list.
+	#
+	# Args:
+	#	1. Option
+	#	2. List of OptionBinding
+	# Return:
+	#	OptionBindings for given option
 	$(method findOptValue,
 		$(for \
 			opt <- $1,
@@ -152,39 +170,84 @@ define class-Mybuild
 					$(invoke opt->validateValue,$(optBindVal))),
 				$(optBindVal))))
 
-
+	# Effectivelly allocate ModuleInstance.
+	# If there are ModuleInstance for module supertype, it will be returned,
+	# else new ModuleInstance returned.
+	#
+	# Returned ModuleInstance is not initialized.
+	#
+	# Context:
+	#	IssueReceiver
+	#	cfgInclude. IncludeMember of processing ModuleInstance requiest.
+	#	mod. Module for which ModuleInstance is creating.
 	# Args:
-	#  1. MyModuleType instance
+	#	None.
 	# Return:
-	#  ModuleInstance instance
-	$(method moduleInstance,
-		$(for mod <- $1,
-			$(or $(invoke moduleInstanceHas,$(mod)),
-				$(for moduleInstance <-
-					$(new BuildModuleInstance,$(mod)),
+	#	Uninitialized ModuleInstance
+	# Side effect:
+	#	Probably issue was added in case mod has incompatible hierarchy
+	#	sibiling (sibiling extends one of mod supertype but nor extends
+	#	mod, neither is one of mods subtype).
+	$(method moduleInstanceSuper,
+		$(with \
+			$(sort \
+				$(for super <- $(mod) $(get mod->allSuperTypes),
+					$(invoke moduleInstanceHas,$(super)))),
+			$(if $1,
+				$(if $(filter $(get 1->type),$(mod) $(get mod->allSuperTypes)),
+					$1,
+					$(if $(filter $(get 1->type),$(get mod->allSubTypes)),,
+						$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
+							$(for includeMember <- $(cfgInclude),
+								$(get includeMember->eResource)),
+							error,
+							$(for includeMember <- $(cfgInclude),
+								$(get includeMember->origin)),
+							Module $(get mod->qualifiedName) extends module supertype \
+								already extended by incompatible $(invoke getInstDepsOrigin,$1)))
+					)),
+				$(new BuildModuleInstance,$(mod)))))
 
-					$(set moduleInstance->type,$(mod))
-
-					$(map-set moduleInstanceStore/$(mod),
-						$(moduleInstance))
-
-					$(for provide <- $(get mod->provides),
-						opt <- $(provide) $(get provide->allSubFeatures),
-						$(map-set+ activeFeatures/$(opt),
-							$(moduleInstance)))
-
-					$(moduleInstance)))))
-
+	# Get ModuleInstance for Module
+	#
 	# Args:
-	#  1. MyModuleType instance
+	#	1. Module
+	# Return:
+	#	ModuleInstance instance
+	# SideEffect:
+	#	Build realized features appends Module features
+	$(method moduleInstance,
+		$(for \
+			mod <- $1,
+			moduleInstance <- $(call Mybuild.moduleInstanceSuper),
+
+			$(set moduleInstance->type,$(mod))
+
+			$(for super <- $(mod) $(get mod->allSuperTypes),
+				$(map-set moduleInstanceStore/$(super),
+					$(moduleInstance)))
+
+			$(for provide <- $(get mod->provides),
+				opt <- $(provide) $(get provide->allSubFeatures),
+				$(map-set+ activeFeatures/$(opt),
+					$(moduleInstance)))
+
+			$(moduleInstance)))
+
+	# Check if there are ModuleInstance for Module
+	#
+	# Args:
+	#  1. Module
 	# Return:
 	#  ModuleInstance on positive
 	#  None on negative
 	$(method moduleInstanceHas,
 		$(map-get moduleInstanceStore/$1))
 
+	# Get ModuleInstance closure of given  Module
+	#
 	# Args:
-	#  1. MyModuleType object instance, that not presented in build
+	#  1. Module, that not presented in build
 	# Return:
 	#  List of ModuleInstance for module, that have no reperesents yet
 	$(method moduleInstanceClosure,

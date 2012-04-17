@@ -3,7 +3,7 @@
 HEADERS_BUILD := \
 	$(patsubst %,$(SRCGEN_DIR)/include/module/%.h,$(subst .,/, \
 		$(foreach i,$(MODS_ENABLE_OBJ), \
-			$(call get,$(call get,$i,type),qualifiedName))))
+			$(call get,$(call get,$i,type),qualifiedName)) $(APIS_BUILD)))
 
 $(HEADERS_BUILD) : %.h : %.h.tmp ;
 
