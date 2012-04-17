@@ -70,13 +70,12 @@ define class-Mybuild
 			))
 
 	$(method checkAbstractRealization,
+		$1
 		$(for inst <- $1,
-			instType <- $(get inst->type),
-			$(if $(get instType->isAbstract),
-				$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
-					No abstract realization: $(get instType->qualifiedName))),
-				$(inst))))
-
+		   instType <- $(get inst->type),
+		   $(if $(get instType->isAbstract),
+			$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
+				   No abstract realization: $(get instType->qualifiedName))))))
 
 	# Helper method, returns string representation of moduleInstance origin
 	#
@@ -136,7 +135,6 @@ define class-Mybuild
 		$(for \
 			modInst <- $1,
 			mod <- $(get modInst->type),
-			isAbstract <- $(if $(get mod->isAbstract),,false),
 			$(if $(strip \
 				$(for \
 					opt<-$(get mod->allOptions),
