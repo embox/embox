@@ -76,7 +76,7 @@ $(myfiles_mk) $(configfiles_mk) : $(MYBUILD_FILES_CACHE_DIR)/%.mk : %
 export myfiles_model_mk := $(MYBUILD_CACHE_DIR)/myfiles-model.mk
 myfiles_mk_cached_list_mk := $(MYBUILD_CACHE_DIR)/myfiles-list.mk
 
-$(myfiles_model_mk) : MAKEFILES := $(mk_mybuild) $(myfiles_mk)
+$(myfiles_model_mk) : MAKEFILES := $(mk_mybuild_myfile) $(myfiles_mk)
 $(myfiles_model_mk) :
 	@echo ' MYLINK: $(words $(myfiles_mk)) files $(__myfiles_model_stats)'
 	@$(MAKE) -f mk/script/mk-persist.mk \
@@ -91,7 +91,7 @@ load_mybuild_files += $(myfiles_model_mk)
 # Config-files are linked agains linked model of my-files.
 export configfiles_model_mk := $(MYBUILD_CACHE_DIR)/configfiles-model.mk
 
-$(configfiles_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_mk) $(myfiles_model_mk)
+$(configfiles_model_mk) : MAKEFILES := $(mk_mybuild_configfile) $(configfiles_mk) $(myfiles_model_mk)
 $(configfiles_model_mk) :
 	@echo ' CONFIGLINK'
 	@$(MAKE) -f mk/script/mk-persist.mk \
@@ -101,18 +101,18 @@ $(configfiles_model_mk) :
 		ALLOC_SCOPE='y' > $@
 load_mybuild_files += $(configfiles_model_mk)
 
-# Build model is inferred from both configuration and myfiles models.
-export build_model_mk := $(MYBUILD_CACHE_DIR)/build-model.mk
-
-$(build_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_model_mk) $(myfiles_model_mk)
-$(build_model_mk) :
-	@echo ' BUILDMODEL'
-	@$(MAKE) -f mk/script/mk-persist.mk \
-		PERSIST_OBJECTS='$$(call mybuild_create_build)' \
-		PERSIST_REALLOC='bld' \
-		PERSIST_VARIABLE='__build_model' \
-		ALLOC_SCOPE='x' > $@
-load_mybuild_files += $(build_model_mk)
+## Build model is inferred from both configuration and myfiles models.
+#export build_model_mk := $(MYBUILD_CACHE_DIR)/build-model.mk
+#
+#$(build_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_model_mk) $(myfiles_model_mk)
+#$(build_model_mk) :
+#	@echo ' BUILDMODEL'
+#	@$(MAKE) -f mk/script/mk-persist.mk \
+#		PERSIST_OBJECTS='$$(call mybuild_create_build)' \
+#		PERSIST_REALLOC='bld' \
+#		PERSIST_VARIABLE='__build_model' \
+#		ALLOC_SCOPE='x' > $@
+#load_mybuild_files += $(build_model_mk)
 
 export load_mybuild_files := $(load_mybuild_files)
 

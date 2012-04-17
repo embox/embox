@@ -60,7 +60,7 @@ endif
 
 include mk/flags.mk
 
-build_model := $(__build_model)
+build_model := $(mybuild_get_active_build)
 
 MODS_ENABLE_OBJ := \
 $(if $(call invoke,$(call get,$(build_model),issueReceiver),getIssues),\
@@ -147,11 +147,14 @@ $(CMDS) : FLAGS = $(subst ",,$(__FLAGS))
 
 $(CMDS) : %.cmd : %.cmd.tmp ;
 
+.SECONDEXPANSION:
 $(CMDS:%.cmd=%.cmd.tmp): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk \
-		mk/image.mk $(myfiles_model_mk)
-	@$(MKDIR) $(@D)
+		mk/image.mk $(myfiles_model_mk) | $$(@D)
 	@echo '$(FLAGS) -o $(@:%.cmd.tmp=%.o) -c' > $@
 	@diff -q $@ $(subst .tmp,,$@) >/dev/null 2>&1 || cp $@ $(subst .tmp,,$@)
+
+$(sort $(dir $(CMDS))) :
+	@$(MKDIR) $@
 
 ifndef VERBOSE
 ifdef CC_SUPPORTS_@file
@@ -163,10 +166,10 @@ else
 CC_RULES = $(CC) $(patsubst -D%,-D"%",$(shell cat $<)) $(word 2,$^)
 endif
 
-$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
+$(OBJ_DIR)/%.o : $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
 	$(CC_RULES)
 
-$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
+$(OBJ_DIR)/%.o : $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
 	$(CC_RULES)
 
 $(OBJ_DIR)/%.lds :: $(ROOT_DIR)/%.lds.S $(config_lds_h)

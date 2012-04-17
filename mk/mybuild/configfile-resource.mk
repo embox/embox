@@ -35,6 +35,11 @@ define config_create_resource_set_from_files
 
 		$(invoke $(get rs->linker).resolveAllLinks)
 
+		$(silent-for config <- $(get rs->resources),
+			root <- $(get config->contentsRoot),
+			configuration <- $(firstword $(get root->configurations)),#FIXME
+			$(invoke configuration->createBuild))
+
 		$(silent-for r <- $(get rs->resources),
 			$(invoke r->printIssues))
 

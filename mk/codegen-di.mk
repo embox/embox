@@ -16,7 +16,7 @@ generate_header := \
 generate_includes := \n\#include <framework/mod/embuild.h>\n
 
 __printf_escape = "$(subst ",\",$1)"
-$(DEPSINJECT_SRC) : mk/codegen-di.mk $(build_model_mk)
+$(DEPSINJECT_SRC) : mk/codegen-di.mk $(configfiles_model_mk)
 	@$(PRINTF) $(call __printf_escape,$(generate_header)) > $@
 	@$(PRINTF) $(call __printf_escape,$(generate_includes)) >> $@
 	@$(PRINTF) $(call __printf_escape,$(generate_package_defs)) >> $@

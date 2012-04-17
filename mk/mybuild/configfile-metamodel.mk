@@ -24,6 +24,8 @@ ConfigFile_Configuration_fileContentRoot := \
 	$(call eMetaReferenceCreate,$(ConfigFile_Configuration),ConfigFile_Configuration_fileContentRoot)
 ConfigFile_Configuration_includes := \
 	$(call eMetaReferenceCreate,$(ConfigFile_Configuration),ConfigFile_Configuration_includes)
+ConfigFile_Configuration_build := \
+	$(call eMetaReferenceCreate,$(ConfigFile_Configuration),ConfigFile_Configuration_build)
 
 ConfigFile_Include := \
 	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_Include)
@@ -31,6 +33,37 @@ ConfigFile_Include_module := \
 	$(call eMetaReferenceCreate,$(ConfigFile_Include),ConfigFile_Include_module)
 ConfigFile_Include_optionBindings := \
 	$(call eMetaReferenceCreate,$(ConfigFile_Include),ConfigFile_Include_optionBindings)
+
+ConfigFile_Build := \
+	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_Build)
+ConfigFile_Build_modules := \
+	$(call eMetaReferenceCreate,$(ConfigFile_Build),ConfigFile_Build_modules)
+ConfigFile_Build_configuration := \
+	$(call eMetaReferenceCreate,$(ConfigFile_Build),ConfigFile_Build_configuration)
+
+ConfigFile_ModuleInstance := \
+	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_ModuleInstance)
+ConfigFile_ModuleInstance_build := \
+	$(call eMetaReferenceCreate,$(ConfigFile_ModuleInstance),ConfigFile_ModuleInstance_build)
+ConfigFile_ModuleInstance_type := \
+	$(call eMetaReferenceCreate,$(ConfigFile_ModuleInstance),ConfigFile_ModuleInstance_type)
+ConfigFile_ModuleInstance_dependent := \
+	$(call eMetaReferenceCreate,$(ConfigFile_ModuleInstance),ConfigFile_ModuleInstance_dependent)
+ConfigFile_ModuleInstance_depends := \
+	$(call eMetaReferenceCreate,$(ConfigFile_ModuleInstance),ConfigFile_ModuleInstance_depends)
+ConfigFile_ModuleInstance_options := \
+	$(call eMetaReferenceCreate,$(ConfigFile_ModuleInstance),ConfigFile_ModuleInstance_options)
+ConfigFile_ModuleInstance_includeMember := \
+	$(call eMetaReferenceCreate,$(ConfigFile_ModuleInstance),ConfigFile_ModuleInstance_includeMember)
+
+ConfigFile_OptionInstance := \
+	$(call eMetaClassCreate,$(ConfigFile),ConfigFile_OptionInstance)
+ConfigFile_OptionInstance_module := \
+	$(call eMetaReferenceCreate,$(ConfigFile_OptionInstance),ConfigFile_OptionInstance_module)
+ConfigFile_OptionInstance_option := \
+	$(call eMetaReferenceCreate,$(ConfigFile_OptionInstance),ConfigFile_OptionInstance_option)
+ConfigFile_OptionInstance_optionValue := \
+	$(call eMetaReferenceCreate,$(ConfigFile_OptionInstance),ConfigFile_OptionInstance_optionValue)
 
 # Initializes the objects and relations between them.
 define __configFile_init
@@ -43,10 +76,28 @@ define __configFile_init
 	$(call eMetaClassInit,$(ConfigFile_Configuration),Configuration,$(EModel_ENamedObject) $(MyFile_AnnotationTarget),abstract)
 	$(call eMetaReferenceInit,$(ConfigFile_Configuration_fileContentRoot),fileContentRoot,$(ConfigFile_FileContentRoot),$(ConfigFile_FileContentRoot_configurations),changeable container)
 	$(call eMetaReferenceInit,$(ConfigFile_Configuration_includes),includes,$(ConfigFile_Include),,changeable many containment)
+	$(call eMetaReferenceInit,$(ConfigFile_Configuration_build),build,$(ConfigFile_Build),,changeable containment)
 
 	$(call eMetaClassInit,$(ConfigFile_Include),Include,$(MyFile_AnnotationTarget) $(EModel_ENamedObject),)
 	$(call eMetaReferenceInit,$(ConfigFile_Include_module),module,$(MyFile_ModuleType),,changeable linkable)
 	$(call eMetaReferenceInit,$(ConfigFile_Include_optionBindings),optionBindings,$(MyFile_OptionBinding),,changeable many containment)
+
+	$(call eMetaClassInit,$(ConfigFile_Build),Build,,)
+	$(call eMetaReferenceInit,$(ConfigFile_Build_modules),modules,$(ConfigFile_ModuleInstance),$(ConfigFile_ModuleInstance_build),changeable many containment)
+	$(call eMetaReferenceInit,$(ConfigFile_Build_configuration),configuration,$(ConfigFile_Configuration),,changeable linkable)
+
+	$(call eMetaClassInit,$(ConfigFile_ModuleInstance),ModuleInstance,,)
+	$(call eMetaReferenceInit,$(ConfigFile_ModuleInstance_build),build,$(ConfigFile_Build),$(ConfigFile_Build_modules),changeable container)
+	$(call eMetaReferenceInit,$(ConfigFile_ModuleInstance_type),type,$(MyFile_ModuleType),,changeable)
+	$(call eMetaReferenceInit,$(ConfigFile_ModuleInstance_dependent),dependent,$(ConfigFile_ModuleInstance),$(ConfigFile_ModuleInstance_depends),changeable many)
+	$(call eMetaReferenceInit,$(ConfigFile_ModuleInstance_depends),depends,$(ConfigFile_ModuleInstance),$(ConfigFile_ModuleInstance_dependent),changeable many)
+	$(call eMetaReferenceInit,$(ConfigFile_ModuleInstance_options),options,$(ConfigFile_OptionInstance),$(ConfigFile_OptionInstance_module),changeable many containment)
+	$(call eMetaReferenceInit,$(ConfigFile_ModuleInstance_includeMember),includeMember,$(ConfigFile_Include),,changeable linkable)
+
+	$(call eMetaClassInit,$(ConfigFile_OptionInstance),OptionInstance,,)
+	$(call eMetaReferenceInit,$(ConfigFile_OptionInstance_module),module,$(ConfigFile_ModuleInstance),$(ConfigFile_ModuleInstance_options),changeable container)
+	$(call eMetaReferenceInit,$(ConfigFile_OptionInstance_option),option,$(MyFile_Option),,changeable linkable)
+	$(call eMetaReferenceInit,$(ConfigFile_OptionInstance_optionValue),optionValue,$(MyFile_OptionValue),,changeable)
 
 endef # __configFile_init
 
@@ -59,10 +110,28 @@ define __configFile_bind
 	$(call eMetaClassBind,$(ConfigFile_Configuration),CfgConfiguration)
 	$(call eMetaFeatureBind,$(ConfigFile_Configuration_fileContentRoot),fileContentRoot)
 	$(call eMetaFeatureBind,$(ConfigFile_Configuration_includes),includes)
+	$(call eMetaFeatureBind,$(ConfigFile_Configuration_build),build)
 
 	$(call eMetaClassBind,$(ConfigFile_Include),CfgInclude)
 	$(call eMetaFeatureBind,$(ConfigFile_Include_module),module)
 	$(call eMetaFeatureBind,$(ConfigFile_Include_optionBindings),optionBindings)
+
+	$(call eMetaClassBind,$(ConfigFile_Build),CfgBuild)
+	$(call eMetaFeatureBind,$(ConfigFile_Build_modules),modules)
+	$(call eMetaFeatureBind,$(ConfigFile_Build_configuration),configuration)
+
+	$(call eMetaClassBind,$(ConfigFile_ModuleInstance),CfgModuleInstance)
+	$(call eMetaFeatureBind,$(ConfigFile_ModuleInstance_build),build)
+	$(call eMetaFeatureBind,$(ConfigFile_ModuleInstance_type),type)
+	$(call eMetaFeatureBind,$(ConfigFile_ModuleInstance_dependent),dependent)
+	$(call eMetaFeatureBind,$(ConfigFile_ModuleInstance_depends),depends)
+	$(call eMetaFeatureBind,$(ConfigFile_ModuleInstance_options),options)
+	$(call eMetaFeatureBind,$(ConfigFile_ModuleInstance_includeMember),includeMember)
+
+	$(call eMetaClassBind,$(ConfigFile_OptionInstance),CfgOptionInstance)
+	$(call eMetaFeatureBind,$(ConfigFile_OptionInstance_module),module)
+	$(call eMetaFeatureBind,$(ConfigFile_OptionInstance_option),option)
+	$(call eMetaFeatureBind,$(ConfigFile_OptionInstance_optionValue),optionValue)
 
 endef # __configFile_bind
 

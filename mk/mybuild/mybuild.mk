@@ -9,24 +9,22 @@ __mybuild_mybuild_mk := 1
 include mk/mybuild/myfile-resource.mk
 
 # Constructor args:
-#   1. Configuration resource set.
+#   1. Configuration.
 define class-Mybuild
-	$(property-field configResourceSet : ResourceSet,$1)
+	$(field configuration : CfgConfiguration,$1)
 
-	$(map moduleInstanceStore... : BuildModuleInstance) #by module
-
-	$(map activeFeatures... : BuildModuleInstance) #by feature
+	$(map moduleInstanceStore... : CfgModuleInstance) #by module
+	$(map activeFeatures... : CfgModuleInstance) #by feature
 
 # Public:
 
 	# Create BuildModel from current state.
 	#
-	# Args:
 	# Return:
 	#	Created BuildModel with issuees
 	$(method createBuild,
 		$(for \
-			build <-$(new BuildBuild),
+			build <-$(new CfgBuild),
 			issueReceiver <- $(new IssueReceiver),
 
 			$(set-field build->issueReceiver,$(issueReceiver))
@@ -41,23 +39,20 @@ define class-Mybuild
 					$(modInst)))
 
 			$(build)))
+
 # Private:
 
 	# Gets all modulesInstance's created according configResourceSet
 	#
 	# Context:
-	#	IssueReceiver
+	#   'issueReceiver'
 	# Args:
 	# Return:
 	#	List of avaible moduleInstances. Some of them may not be created, issue was created
 	$(method getBuildModules,
 		$(with \
 			$(for \
-				configResSet <- $(get configResourceSet),
-				config <- $(get configResSet->resources),
-				cfgFileContent <- $(get config->contentsRoot),
-				cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)),#FIXME
-				cfgInclude <- $(get cfgConfiguration->includes),
+				cfgInclude <- $(get $(get-field configuration).includes),
 				module <- $(get cfgInclude->module),
 
 				$(if $(invoke moduleInstanceHas,$(module)),,
@@ -146,7 +141,7 @@ define class-Mybuild
 						$(get mod->qualifiedName) to a value))
 					,
 
-				$(silent-for optInst <- $(new BuildOptionInstance),
+				$(silent-for optInst <- $(new CfgOptionInstance),
 					$(set optInst->option,$(opt))
 					$(set optInst->optionValue,$(optValue))
 					$(set+ modInst->options,$(optInst))))))
@@ -206,7 +201,7 @@ define class-Mybuild
 							Module $(get mod->qualifiedName) extends module supertype \
 								already extended by incompatible $(invoke getInstDepsOrigin,$1)))
 					)),
-				$(new BuildModuleInstance,$(mod)))))
+				$(new CfgModuleInstance,$(mod)))))
 
 	# Get ModuleInstance for Module
 	#
@@ -263,6 +258,13 @@ define class-Mybuild
 					$(if $(filter was,$(was)),
 						$(invoke moduleInstanceClosure,$(dep))))))
 
+endef
+
+define mybuild_get_active_build
+	$(for config <- $(get __config_resource_set->resources),
+		cfgFileContent <- $(get config->contentsRoot),
+		cfgConfiguration <- $(firstword $(get cfgFileContent->configurations)),#FIXME
+		$(get cfgConfiguration->build))
 endef
 
 define mybuild_create_build

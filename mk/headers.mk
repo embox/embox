@@ -7,7 +7,7 @@ HEADERS_BUILD := \
 
 $(HEADERS_BUILD) : %.h : %.h.tmp ;
 
-$(HEADERS_BUILD:%=%.tmp) : mk/image.mk $(build_model_mk)
+$(HEADERS_BUILD:%=%.tmp) : mk/image.mk $(configfiles_model_mk)
 	@$(MKDIR) $(@D) && printf "%b" '$(call __header_gen,$(basename $@))' > $@
 	@diff -q $@ $(basename $@) >/dev/null 2>&1 \
 	|| (cp $@ $(basename $@); echo Module header $(basename $@))
