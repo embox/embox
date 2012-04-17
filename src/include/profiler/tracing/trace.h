@@ -26,8 +26,8 @@
 #define trace_point_set(tp_pointer) \
 	  __trace_point_set(tp_pointer)
 
-#define trace_block_dif(tb_pointer) \
-	  __trace_block_dif(tb_pointer)
+#define trace_block_diff(tb_pointer) \
+	  __trace_block_diff(tb_pointer)
 
 #define trace_point(name) \
 	  __trace_point(name)

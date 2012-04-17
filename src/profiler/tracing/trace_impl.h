@@ -67,7 +67,7 @@ static inline void __tracepoint_handle(struct __trace_point *p) {
 		(tb_pointer)->end = &_end;                              \
 	})
 
-#define __trace_block_dif(tb_pointer) \
+#define __trace_block_diff(tb_pointer) \
 	({ \
 		int a = trace_point_get_value((tb_pointer)->begin);     \
 		int b = trace_point_get_value((tb_pointer)->end);       \
