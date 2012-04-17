@@ -232,7 +232,7 @@ endef
 #   1. Property name.
 #   2. New value.
 define __eObjectSetUnidirectional
-	$(call __eObjectSetUnidirectional-,$1,$(get-field $1))
+	$(set-field $1,)
 	$(call __eObjectSetUnidirectional+,$1,$2)
 endef
 
