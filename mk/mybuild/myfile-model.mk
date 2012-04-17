@@ -418,7 +418,7 @@ define class-MyModuleType
 	$(getter allOptions,
 		$(with $(for opt <- $(get options),
 				$(get opt->name)),
-			$(get options) \
+			$(get options)\
 			$(for super <- $(get superType),
 				superOpt <- $(get super->allOptions),
 				$(if $(filter $1,$(get superOpt->name)),,
@@ -444,7 +444,7 @@ define class-MyModuleType
 	# PROTECTED REGION ID(MyFile_ModuleType_allSubTypes) ENABLED START
 	$(getter allSubTypes,
 		$(for subType <- $(get subTypes),
-			$(subType) \
+			$(subType)\
 			$(get subType->allSubTypes)))
 	# PROTECTED REGION END
 

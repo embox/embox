@@ -107,16 +107,17 @@ $(OBJ_DIR)/src/fs/ramfs/ramfs_cpio.o : $(__rootfs_image)
 ROOTFS_OBJS_BUILD := $(call rootfs_src_to_obj,$(ROOTFS_SRCS_BUILD))
 
 $(ROOTFS_DIR) :
-	@mkdir $@
+	@$(MKDIR) $@
 
-.PHONY : $(USER_ROOTFS_DIR)
+$(USER_ROOTFS_DIR) :
+	@$(MKDIR) $@
 
 $(__rootfs_image): $(ROOTFS_DIR) $(USER_ROOTFS_DIR) $(ROOTFS_OBJS_BUILD)
 	@cd $< \
-	&& find * -depth -print | cpio --quiet -H newc -o -O $@
-	if [ -d $(USER_ROOTFS_DIR) ]; then \
+	&& find * -depth -print 2>/dev/null | cpio --quiet -H newc -o -O $@
+	@if [ -d $(USER_ROOTFS_DIR) ]; then \
 		cd $(USER_ROOTFS_DIR); \
-		find * -depth -print | cpio --quiet -H newc -o --append -O $@; \
+		find * -depth -print 2>/dev/null | cpio --quiet -H newc -o --append -O $@; \
 	fi
 
 ifdef LDSS_BUILD

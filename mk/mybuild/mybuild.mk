@@ -61,9 +61,19 @@ define class-Mybuild
 				$(for moduleInst <- $(invoke moduleInstance,$(module)),
 					$(set moduleInst->includeMember,$(cfgInclude)))),
 
-			$(invoke checkFeatureRealization,$1)
-			$(invoke optionBind,$1)
-			$1))
+			$(invoke optionBind,
+				$(invoke checkFeatureRealization,
+					$(invoke checkAbstractRealization,$1)))
+			))
+
+   $(method checkAbstractRealization,
+       $(for inst <- $1,
+           instType <- $(get inst->type),
+           $(if $(get instType->isAbstract),
+			$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
+				   No abstract realization: $(get instType->qualifiedName))),
+				$(inst))))
+
 
 	# Helper method, returns string representation of moduleInstance origin
 	#
@@ -98,12 +108,15 @@ define class-Mybuild
 	$(method checkFeatureRealization,
 		$(for inst <- $1,
 			instType <- $(get inst->type),
-			require <- $(get instType->requires),
-			$(if $(map-get activeFeatures/$(require)),#OK nothing to do
-				,#Feature not realized, error
-				$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
-					Feature $(get require->qualifiedName) required by
-					$(get instType->qualifiedName) is not implemented)))))
+			$(if $(strip \
+				$(for require <- $(get instType->requires),
+					$(if $(map-get activeFeatures/$(require)),#OK
+						,error#Feature not realized, error
+						$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
+							Feature $(get require->qualifiedName) required by
+							$(get instType->qualifiedName) is not implemented))))),
+				,$(inst))))
+
 
 
 	# Bind options for ModuleInstances (set ModuleInstance optionBinding field with option binding)
@@ -121,30 +134,33 @@ define class-Mybuild
 			modInst <- $1,
 			mod <- $(get modInst->type),
 			isAbstract <- $(if $(get mod->isAbstract),,false),
-			opt<-$(get mod->allOptions),
-			optValue <- $(or $(if $(get modInst->includeMember),# if module was explicitly enabled
-										# from configs and probably has
-										# config option bindings
-						$(invoke findOptValue,$(opt),
-							$(get $(get modInst->includeMember).optionBindings))),
-					 $(get opt->defaultValue),
-					 Error),
+			$(if $(strip \
+				$(for \
+					opt<-$(get mod->allOptions),
+					optValue <- $(or $(if $(get modInst->includeMember),
+											# if module was explicitly enabled
+											# from configs and probably has
+											# config option bindings
+										$(invoke findOptValue,$(opt),
+											$(get $(get modInst->includeMember).
+														optionBindings))),
+								 $(get opt->defaultValue),),
+					$(if $(optValue),
+						$(silent-for optInst <- $(new CfgOptionInstance),
+							$(set optInst->option,$(opt))
+							$(set optInst->optionValue,$(optValue))
+							$(set+ modInst->options,$(optInst))),
+						$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
+							$(for includeMember <- $(get modInst->includeMember),
+								$(get includeMember->eResource)),
+							warning,
+							$(for includeMember <- $(get modInst->includeMember),
+								$(get includeMember->origin)),
+							Could not bind option $(get opt->name) in module \
+								$(get mod->qualifiedName) to a value))Error)))
+				,,$(modInst))))
 
-			$(if $(eq $(optValue),Error),
-				$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
-					$(for includeMember <- $(get modInst->includeMember),
-						$(get includeMember->eResource)),
-					warning,
-					$(for includeMember <- $(get modInst->includeMember),
-						$(get includeMember->origin)),
-					Couldn't bind option $(get opt->name) in module \
-						$(get mod->qualifiedName) to a value))
-					,
 
-				$(silent-for optInst <- $(new CfgOptionInstance),
-					$(set optInst->option,$(opt))
-					$(set optInst->optionValue,$(optValue))
-					$(set+ modInst->options,$(optInst))))))
 
 	# Find option binding for option within list.
 	#
