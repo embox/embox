@@ -14,7 +14,7 @@
 #include <fs/vfs.h>
 #include <fs/ramfs.h>
 #include <sys/stat.h>
-#include <util/list.h>
+#include <util/tree.h>
 
 EMBOX_CMD(exec);
 
@@ -23,14 +23,11 @@ static void print_usage(void) {
 }
 
 static void print_long_list(char *path, node_t *node, int recursive) {
-	struct tree_link *p;
 	node_t *item;
 	stat_t sb;
 	char time_buff[17];
 	printf("%s\t%s\t%s\t\t\t%s\n", "mode", "size", "mtime", "name");
-
-	list_foreach(p, &(node->tree_link.children), list_link) {
-		item = tree_element(p, node_t, tree_link);
+	tree_foreach_children(item, &node->tree_link, tree_link) {
 		fstat((char *) item->name, &sb);
 		ctime((time_t *) &(sb.st_mtime), time_buff);
 		printf("%d\t%d\t%s\t%s\n",
@@ -42,10 +39,8 @@ static void print_long_list(char *path, node_t *node, int recursive) {
 }
 
 static void print_folder(char *path, node_t *node, int recursive) {
-	struct tree_link *p;
 	node_t *item;
-	list_foreach(p, &(node->tree_link.children), list_link) {
-		item = tree_element(p, node_t, tree_link);
+	tree_foreach_children(item, (&node->tree_link), tree_link) {
 		if (recursive) {
 			if (0 == strcmp(path, "/")) {
 				printf("%s\n",  (char *) item->name);

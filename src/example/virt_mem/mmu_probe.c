@@ -16,6 +16,9 @@
 
 EMBOX_CMD(exec);
 
+#define START 0x9C000
+#define OFFSET 0x1000
+
 
 #if 0
 static void print_usage(void) {
@@ -63,6 +66,26 @@ static bool mmu_show_reg() {
 
 static bool mmu_probe(void) {
 	/* alloc mem for pages */
+	uint32_t address = 0;
+	uint32_t *pdt = (uint32_t *)START;
+	uint32_t *pte;
+
+	for (int i = 0; i < MMU_GTABLE_SIZE; i++) {
+		pdt[i] = 0 | 2;
+	}
+
+	pte = pdt + OFFSET;
+
+	for (int i = 0; i < MMU_MTABLE_SIZE; i++) {
+		pte[i] = address | 3;
+		address += 0x1000;
+	}
+
+	pdt[0] = (uint32_t)pte;
+	pdt[0] |= 3;
+
+	asm volatile("mov %0, %%cr3":: "b"(pdt));
+
 	asm (
 		".section .data \n/t"
 		".align %0\n/t"

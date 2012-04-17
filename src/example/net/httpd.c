@@ -73,7 +73,7 @@ static int httpd_exec(int argc, char **argv) {
 				&dst_addr_len);
 
 		if (connect_sock < 0) {
-			printf("accept fail\n");
+			printf("accept fail %d\n", connect_sock);
 			continue;
 		}
 		do {

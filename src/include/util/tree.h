@@ -36,6 +36,11 @@ struct tree_link {
  */
 typedef int (*tree_link_predicate_t)(struct tree_link *link);
 
+/**
+ * Type of functions, returning true or false for given tree_link with some argument.
+ */
+typedef int (*tree_link_arg_predicate_t)(struct tree_link *link, void *arg);
+
 /*
  * Initialize tree link.
  * @param tree_link Link to initialize.
@@ -108,6 +113,18 @@ extern struct tree_link *tree_children_find(struct tree_link *node,
 		tree_link_predicate_t predicate);
 
 /**
+ * Find children of given node, for what specified predicate with setted argument is true.
+ *
+ * @param node Node, what children are tested.
+ * @param arg Additional argument for predicate.
+ * @param predicate Predicate, with what nodes are tested.
+ *
+ * @return Child, for what predicate is true, or NULL, if it doesn't exist.
+ */
+extern struct tree_link *tree_children_arg_find(struct tree_link *node,
+		void *arg, tree_link_arg_predicate_t predicate);
+
+/**
  * Find element of subtree, for what specified predicate is true.
  *
  * @param tree Node, subtree of what (including itself) is tested.
@@ -117,6 +134,12 @@ extern struct tree_link *tree_children_find(struct tree_link *node,
  */
 extern struct tree_link *tree_find(struct tree_link *tree,
 		tree_link_predicate_t predicate);
+
+extern struct tree_link *tree_children_begin(struct tree_link *tree);
+
+extern struct tree_link *tree_children_end(struct tree_link *tree);
+
+extern struct tree_link *tree_children_next(struct tree_link *tree);
 
 /**
  * Iteration on tree. Elements are links (without casting from links).
@@ -131,6 +154,7 @@ extern struct tree_link *tree_find(struct tree_link *tree,
 	for (struct tree_link *end_link = (link = begin(tree), end(tree)); \
 			link != end_link; \
 			link = next(link))
+
 
 /**
  * Iteration on tree. Elements are links (without casting from links).
@@ -168,6 +192,16 @@ extern struct tree_link *tree_find(struct tree_link *tree,
 		link != end_link \
 			&& (element = tree_element(link, typeof(*element), link_member)); \
 		link = next(link))
+
+/** Iterating only on children of node (not all subtree). */
+#define tree_foreach_children_link(link, tree) \
+	tree_foreach_link(link, tree, \
+		tree_children_begin, tree_children_end, tree_children_next)
+
+/** Iterating with casting only on children of node (not all subtree). */
+#define tree_foreach_children(element, tree, link_member) \
+	tree_foreach(element, tree, link_member, \
+		tree_children_begin, tree_children_end, tree_children_next)
 
 /**
  * Postorder iteration on tree.

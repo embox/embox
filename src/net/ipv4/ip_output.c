@@ -159,7 +159,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 		struct sk_buff *s_new = skb_copy(skb, 0);
 		if (s_new) {
 			icmp_send(s_new, ICMP_REDIRECT, (best_route->rt_gateway == INADDR_ANY),
-					  htonl(best_route->rt_gateway));
+					  best_route->rt_gateway);
 		}
 		/* We can still proceed here */
 	}
@@ -172,7 +172,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 		}
 		else
 		{
-			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH, htonl(best_route->rt_gateway));
+			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_NET_UNREACH, best_route->rt_gateway);
 		}
 		return -1;
 	}

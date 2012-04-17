@@ -25,9 +25,6 @@ enum net_hnd_results {
 #define NET_RX_DFAULT -1
 #define NET_TX_DFAULT -2
 
-#define NET_TYPE  0
-#define PNET_TYPE 1
-
 extern int pnet_entry(struct pnet_pack *pack);
 extern int pnet_process(struct pnet_pack * pack);
 

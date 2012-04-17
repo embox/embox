@@ -62,7 +62,8 @@ enum {
 	TCP_RET_OK = 1, /* all ok, don't free packet */
 	TCP_RET_DROP,   /* drop packet */
 	TCP_RET_SEND,   /* send answer */
-	TCP_RET_ACKN    /* send acknowledgment */
+	TCP_RET_ACK,    /* send acknowledgment */
+	TCP_RET_RST     /* reset (Only for pre_process) */
 };
 
 /* Union for conversions between socket types */
@@ -390,13 +391,13 @@ static int tcp_st_closed(union sock_pointer sock, struct sk_buff **pskb,
 	assert(sock.sk->sk_state == TCP_CLOSED);
 
 	out_tcph->rst = 1;
-//	out_tcph->ack = 1;
 	/* Set seq and ack */
 	if (tcph->ack) {
 		sock.tcp_sk->this_unack = ntohl(tcph->ack_seq);
 		sock.tcp_sk->rem.seq = 0;
 	}
 	else {
+		out_tcph->ack = 1;
 		sock.tcp_sk->this_unack = 0;
 		sock.tcp_sk->rem.seq = ntohl(tcph->seq) + tcp_seq_len(*pskb);
 	}
@@ -438,7 +439,7 @@ static int tcp_st_syn_sent(union sock_pointer sock, struct sk_buff **pskb,
 		else {
 			tcp_set_st(sock, TCP_SYN_RECV);
 		}
-		return TCP_RET_ACKN;
+		return TCP_RET_ACK;
 	}
 
 	return TCP_RET_DROP;
@@ -497,13 +498,13 @@ static int tcp_st_estabil(union sock_pointer sock, struct sk_buff **pskb,
 			tcp_set_st(sock, TCP_CLOSEWAIT);
 		}
 		*pskb = answer;
-		return TCP_RET_ACKN;
+		return TCP_RET_ACK;
 	}
 	else if (tcph->fin) {
 		sock.tcp_sk->rem.seq += 1;
 		out_tcph->ack = 1;
 		tcp_set_st(sock, TCP_CLOSEWAIT);
-		return TCP_RET_ACKN;
+		return TCP_RET_ACK;
 	}
 
 	return TCP_RET_DROP;
@@ -543,7 +544,7 @@ static int tcp_st_finwait_1(union sock_pointer sock, struct sk_buff **pskb,
 			tcp_set_st(sock, TCP_FINWAIT_2);
 		}
 		*pskb = answer;
-		return TCP_RET_ACKN;
+		return TCP_RET_ACK;
 	}
 	else if (tcph->fin) {
 		sock.tcp_sk->rem.seq += 1;
@@ -555,7 +556,7 @@ static int tcp_st_finwait_1(union sock_pointer sock, struct sk_buff **pskb,
 		else {
 			tcp_set_st(sock, TCP_CLOSING);
 		}
-		return TCP_RET_ACKN;
+		return TCP_RET_ACK;
 	}
 	else if (tcph->ack) {
 		tcp_set_st(sock, TCP_FINWAIT_2);
@@ -589,14 +590,14 @@ static int tcp_st_finwait_2(union sock_pointer sock, struct sk_buff **pskb,
 //			tcp_free_sock(sock); // TODO move to tcp_st_timewait
 		}
 		*pskb = answer;
-		return TCP_RET_ACKN;
+		return TCP_RET_ACK;
 	}
 	else if (tcph->fin) {
 		sock.tcp_sk->rem.seq += 1;
 		out_tcph->ack = 1;
 		tcp_set_st(sock, TCP_CLOSED); /* TODO TCP_TIMEWAIT */
 //		tcp_free_sock(sock); // TODO move to tcp_st_timewait
-		return TCP_RET_ACKN;
+		return TCP_RET_ACK;
 	}
 
 	return TCP_RET_DROP;
@@ -677,6 +678,15 @@ static int process_ack(union sock_pointer sock, struct tcphdr *tcph,
 		struct tcphdr *out_tcph) {
 	__u32 ack, this_seq, this_unack;
 
+	/* Resetting if recv ack in this state */
+	switch (sock.sk->sk_state) {
+	default:
+		break;
+	case TCP_CLOSED:
+	case TCP_LISTEN:
+		return TCP_RET_RST;
+	}
+
 	ack = ntohl(tcph->ack_seq);
 	this_seq = sock.tcp_sk->this.seq;
 	this_unack = sock.tcp_sk->this_unack;
@@ -694,15 +704,10 @@ static int process_ack(union sock_pointer sock, struct tcphdr *tcph,
 		switch (sock.sk->sk_state) {
 		default:
 			return TCP_RET_DROP;
-		case TCP_LISTEN:
 		case TCP_SYN_SENT:
 		case TCP_SYN_RECV_PRE:
 		case TCP_SYN_RECV:
-			out_tcph->rst = 1;
-			/* Set seq and ack */
-			sock.tcp_sk->this_unack = ack;
-			sock.tcp_sk->rem.seq = 0;
-			return TCP_RET_SEND;
+			return TCP_RET_RST;
 		}
 	}
 
@@ -760,7 +765,7 @@ static int pre_process(union sock_pointer sock, struct sk_buff **pskb,
 			if ((seq < rem_seq) && (seq_last < rem_seq)) {
 				/* Send segment with ack flag if this packet is duplicated */
 				out_tcph->ack = 1;
-				return TCP_RET_ACKN;
+				return TCP_RET_ACK;
 			}
 			return TCP_RET_DROP;
 		}
@@ -838,7 +843,7 @@ static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_
 		kfree_skb(skb);
 		break;
 	case TCP_RET_SEND:
-	case TCP_RET_ACKN:
+	case TCP_RET_ACK:
 		assert(skb != NULL);
 		memcpy(skb->h.raw, out_tcph_raw, sizeof out_tcph_raw);
 		skb->len = ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE;
@@ -851,6 +856,7 @@ static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_
 			send_ack_from_sock(sock, skb);
 		}
 		break;
+	case TCP_RET_RST: /* this processing in tcp_process */
 	case TCP_RET_OK:
 		break;
 	}
@@ -897,7 +903,10 @@ static void tcp_process(union sock_pointer sock, struct sk_buff *skb) {
 		tcp_handle(sock, skb, tcp_st_handler[sock.sk->sk_state]);
 		break;
 	case TCP_RET_SEND:
-	case TCP_RET_ACKN:
+	case TCP_RET_ACK:
+		break;
+	case TCP_RET_RST:
+		tcp_handle(tcp_default, skb, tcp_st_handler[TCP_CLOSED]);
 		break;
 	}
 }
@@ -1253,7 +1262,7 @@ static void tcp_v4_close(struct sock *sk, long timeout) {
 	case TCP_TIMEWAIT:
 		return; /* error: connection closing */
 	}
-//	while (sock.sk->sk_state != TCP_CLOSED);
+	while (sock.sk->sk_state != TCP_CLOSED);
 }
 
 //TODO move to hash table routines

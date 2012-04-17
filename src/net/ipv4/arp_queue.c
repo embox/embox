@@ -31,8 +31,8 @@ struct pending_packet {
 };
 
 OBJALLOC_DEF(arp_queue_pool, struct pending_packet, ARP_QUEUE_SIZE);
-static LIST_HEAD(arp_queue);
 
+static LIST_HEAD(arp_queue);
 
 void arp_queue_process(struct sk_buff *arp_pack) {
 	struct pending_packet *pack, *safe;
@@ -93,7 +93,7 @@ int arp_queue_add(struct sk_buff *skb) {
 
 	queue_pack->skb = skb;
 
-	list_add_tail(&arp_queue, &queue_pack->link);
+	list_add_tail(&queue_pack->link, &arp_queue);
 
 	return ENOERR;
 }

@@ -93,12 +93,17 @@ struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 		return NULL;
 	}
 
-	sk->sk_family = family;
-	sk->sk_prot = prot;
 	sk->sk_receive_queue = alloc_skb_queue();
 	sk->sk_write_queue = alloc_skb_queue();
-	assert (sk->sk_receive_queue &&  sk->sk_write_queue);
+	if (unlikely(!(sk->sk_receive_queue && sk->sk_write_queue))) {
+		skb_queue_purge(sk->sk_receive_queue);
+		skb_queue_purge(sk->sk_write_queue);
+		sk_prot_free(sk->sk_prot, sk);
+		return NULL;
+	}
 	sk->sk_destruct = NULL;
+	sk->sk_family = family;
+	sk->sk_prot = prot;
 
 	return sk;
 }

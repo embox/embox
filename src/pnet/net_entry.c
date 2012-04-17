@@ -9,6 +9,8 @@
 #include <errno.h>
 #include <embox/unit.h>
 #include <mem/objalloc.h>
+#include <lib/list.h>
+#include <stdio.h>
 
 #include <linux/interrupt.h>
 
@@ -20,68 +22,59 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
-struct pack {
-	struct list_head link;
-	void *data;
-};
-
-OBJALLOC_DEF(common_pool, struct pack, OPTION_GET(NUMBER,rx_queue_size));
-
+static LIST_HEAD(skb_queue);
 static LIST_HEAD(pnet_queue);
 
-static void pnetif_rx_schedule(struct pack *pack) {
-	list_add_tail(&pack->link,&pnet_queue);
-	softirq_raise(PNET_RX_SOFTIRQ);
-}
-
 int netif_rx(void *data) {
-	struct pack *pack;
+	struct pnet_pack *pack;
+	uint32_t type;
 
 	if (NULL == data) {
 		return NET_RX_DROP;
 	}
 
-	if (!(pack = objalloc(&common_pool))) {
-		return -ENOMEM;
+	type = *(uint32_t*) data;
+
+	if ((type & 3)  == PNET_PACK_TYPE_SKB) {
+		INIT_LIST_HEAD((struct list_head *) data);
+		list_add_tail((struct list_head *) data, &skb_queue);
+	} else {
+		pack = (struct pnet_pack*) data;
+		INIT_LIST_HEAD(&pack->link);
+		list_add_tail(&pack->link, &pnet_queue);
 	}
 
-	INIT_LIST_HEAD(&pack->link);
-	pack->data = data;
+	raise_softirq(PNET_RX_SOFTIRQ);
 
-	pnetif_rx_schedule(pack);
 	return NET_RX_SUCCESS;
 }
 
+static net_node_t entry;
+
 static void pnet_rx_action(softirq_nr_t nr, void *data) {
-	struct pack *pack, *safe;
-	uint32_t type;
+	struct pnet_pack *pack, *safe;
+	struct list_head *curr, *n;
 	struct pnet_pack *skb_pack;
-	net_node_t entry = pnet_get_module("pnet entry");
 
 	list_for_each_entry_safe(pack, safe, &pnet_queue, link) {
-		void *pack_data = pack->data;
 		list_del(&pack->link);
-		objfree(&common_pool, pack);
-		type = *(uint32_t*) pack_data;
+		pnet_entry(pack);
+	}
 
-		if ((type & 3)  == NET_TYPE) {
-			skb_pack = pnet_pack_create(pack_data, 0, NET_TYPE);
-
-			skb_pack->node = entry;
-
-			pnet_entry(skb_pack);
-		} else {
-			pnet_entry((struct pnet_pack*) pack_data);
-		}
-
+	list_for_each_safe(curr, n, &skb_queue) {
+		list_del(curr);
+		skb_pack = pnet_pack_create((void*) curr, 0, PNET_PACK_TYPE_SKB);
+		skb_pack->node = entry;
+		pnet_entry(skb_pack);
 	}
 }
 
 static int unit_init(void) {
+	entry = pnet_get_module("pnet entry");
+
 	softirq_install(PNET_RX_SOFTIRQ, pnet_rx_action, NULL);
 
 	return 0;
 }
 
 PNET_NODE_DEF("pnet entry", {});
-

@@ -115,7 +115,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	 * Check the destination address, and if it doesn't match
 	 * any of own addresses, retransmit packet according to the routing table.
 	 */
-	if (!ip_is_local(ntohl(iph->daddr), true, false)) {
+	if (!ip_is_local(iph->daddr, true, false)) {
 		if (ip_forward_packet(skb) <= 0) {
 			return NET_RX_DROP;
 		}
