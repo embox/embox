@@ -299,7 +299,7 @@ static void sched_switch(void) {
 		prev = runq_current(&rq);
 
 		new_clock = clock();
-		prev->runtime += new_clock - prev_clock;
+		prev->running_time += new_clock - prev_clock;
 		prev_clock = new_clock;
 
 		if (!runq_switch(&rq)) {
