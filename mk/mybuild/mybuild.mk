@@ -8,6 +8,31 @@ __mybuild_mybuild_mk := 1
 
 include mk/mybuild/myfile-resource.mk
 
+chekers_list := \
+	Mybuild.checkAbstractRealization \
+	Mybuild.checkFeatureRealization \
+	Mybuild.optionBind
+
+
+# Main check procedures. Check modules with checkers sequence.
+# Out of every checkers passed to next's in, so checkers can add
+# or remove instances from input. Every checkers also called with
+# passed checkers list, so cheking can be restarted for some
+# instances with already passed chekers only.
+#
+# Args:
+# 	1. Cheking instances
+# 	2. Checkers list
+# 	3. Passed checkers list
+define check
+	$(if $2,
+		$(call check,
+			$(call $(firstword $2),$1,$3),
+			$(wordlist 2,$(words $2),$2),
+			$3 $(firstword $2)),
+		$1)
+endef
+
 # Constructor args:
 #   1. Configuration.
 define class-Mybuild
@@ -64,18 +89,25 @@ define class-Mybuild
 				$(for moduleInst <- $(invoke moduleInstance,$(module)),
 					$(set moduleInst->includeMember,$(cfgInclude)))),
 
-			$(invoke optionBind,
-				$(invoke checkFeatureRealization,
-					$(invoke checkAbstractRealization,$1)))
+			$(call check,$1,$(chekers_list),)
 			))
 
+	# Cheker for abstract realization. If there is only one subtype of given abstract module
+	# it included to build with all dependencies, which are also checked for abstract
+	# realization with `check' restart
+	#
+	# Args:
+	#	1. List of ModuleInstance
+	#	2. Checkers, which ModuleInstances was passed.
 	$(method checkAbstractRealization,
-		$1
 		$(for inst <- $1,
-		   instType <- $(get inst->type),
-		   $(if $(get instType->isAbstract),
-			$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
-				   No abstract realization: $(get instType->qualifiedName))))))
+			instType <- $(get inst->type),
+			$(if $(get instType->isAbstract),
+				$(if $(singleword $(get instType->subTypes)),
+					$(call check,$(invoke moduleInstanceClosure,$(get instType->subTypes)),$2 $0),
+					$(inst)$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
+				   		No abstract realization: $(get instType->qualifiedName)))),
+				$(inst))))
 
 	# Helper method, returns string representation of moduleInstance origin
 	#
@@ -103,6 +135,7 @@ define class-Mybuild
 	#	IssueReceiver
 	# Args:
 	#	1. List of ModuleInstance
+	#	2. Checkers, which ModuleInstances was passed.
 	# Return:
 	#   None.
 	# Side effect:
@@ -126,7 +159,8 @@ define class-Mybuild
 	# Context:
 	#	Issue Receiver
 	# Args:
-	#  1. List of ModuleInstance
+	#	1. List of ModuleInstance
+	#	2. Checkers, which ModuleInstances was passed.
 	# Return:
 	#   None.
 	# Side effect:
