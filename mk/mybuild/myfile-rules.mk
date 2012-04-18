@@ -84,7 +84,7 @@ define $(gold_grammar)_produce-Annotation_At
 		$(annotation))
 endef
 
-# Rule: <AnnotationInitializer> ::= '(' <AnnotationParametersList> ')'
+# Rule: <AnnotationInitializer> ::= '(' <ParametersList> ')'
 # Args: 1..3 - Symbols in the RHS.
 $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan = $2
 
@@ -97,13 +97,13 @@ define $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan2
 		$(binding))
 endef
 
-# Rule: <AnnotationParametersList> ::= <AnnotationParameter> ',' <AnnotationParametersList>
+# Rule: <ParametersList> ::= <Parameter> ',' <ParametersList>
 # Args: 1..3 - Symbols in the RHS.
-$(gold_grammar)_produce-AnnotationParametersList_Comma = $1 $3
+$(gold_grammar)_produce-ParametersList_Comma = $1 $3
 
-# Rule: <AnnotationParameter> ::= <SimpleReference> '=' <Value>
+# Rule: <Parameter> ::= <SimpleReference> '=' <Value>
 # Args: 1..3 - Symbols in the RHS.
-define $(gold_grammar)_produce-AnnotationParameter_Eq
+define $(gold_grammar)_produce-Parameter_Eq
 	$(for binding<-$(new MyOptionBinding),
 		$(set binding->option_link,$1)
 		$(set binding->optionValue,$3)

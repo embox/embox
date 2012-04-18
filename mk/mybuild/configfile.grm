@@ -112,6 +112,7 @@ BooleanLiteral = 'true' | 'false'
 
 ! -------------------------------------------------
 ! Comma-separated list of param=value pairs.
+! -------------------------------------------------
 
 <ParametersList>
         ::= <Parameter> ',' <ParametersList>
@@ -127,6 +128,7 @@ BooleanLiteral = 'true' | 'false'
 
 ! -------------------------------------------------
 ! Datatypes.
+! -------------------------------------------------
 
 <Reference>
         ::= <QualifiedName>
@@ -135,6 +137,7 @@ BooleanLiteral = 'true' | 'false'
 
 ! -------------------------------------------------
 ! Extended identifiers.
+! -------------------------------------------------
 
 <QualifiedName>
         ::= Identifier '.' <QualifiedName>

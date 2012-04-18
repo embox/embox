@@ -1,6 +1,6 @@
 "Name"     = 'MyFile'
 "Author"   = 'Eldar Abusalimov'
-"Version"  = '0.4'
+"Version"  = '0.5'
 "About"    = 'Mybuild file'
 
 "Case Sensitive" = True
@@ -89,18 +89,12 @@ BooleanLiteral = 'true' | 'false'
 <Annotations>
         ::= <Annotation> <Annotations>
          |
-
 <Annotation>
         ::= '@' <Reference> <AnnotationInitializer>
 <AnnotationInitializer>
-        ::= '(' <AnnotationParametersList> ')'
+        ::= '(' <ParametersList> ')'
          |  '(' <Value> ')'
          |
-<AnnotationParametersList>
-        ::= <AnnotationParameter> ',' <AnnotationParametersList>
-         |  <AnnotationParameter>
-<AnnotationParameter>
-        ::= <SimpleReference> '=' <Value>
 
 
 ! -------------------------------------------------
@@ -167,21 +161,32 @@ BooleanLiteral = 'true' | 'false'
          |  'object'   <FilenameList>
          |  'option'   <Option>
 
-! ( string | number | boolean ) Name ( = ...)?
+! ( string | number | boolean | Type ) Name ( = ...)?
 <Option>
         ::= <OptionType> Identifier <OptionDefaultValue>
 <OptionType>
         ::= 'string'
          |  'number'
          |  'boolean'
+         |  <Reference>
 <OptionDefaultValue>
         ::= '=' <Value>
          |
+
+! -------------------------------------------------
+! Comma-separated list of param=value pairs.
+
+<ParametersList>
+        ::= <Parameter> ',' <ParametersList>
+         |  <Parameter>
+<Parameter>
+        ::= <SimpleReference> '=' <Value>
 
 <Value>
         ::= StringLiteral
          |  NumberLiteral
          |  BooleanLiteral
+         |  <Reference>
 
 ! -------------------------------------------------
 ! Datatypes.
