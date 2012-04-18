@@ -1,0 +1,8 @@
+package embox.test.kernel.thread.sync
+
+module mutex_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "mutex_test.c"
+	depends embox.kernel.thread.sync
+}
+
