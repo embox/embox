@@ -317,17 +317,16 @@ define class-Mybuild
 	# Return:
 	#  List of ModuleInstance for module, that have no reperesents yet
 	$(method moduleInstanceClosure,
+		$(invoke moduleInstance,$1) \
 		$(for thisInst<-$(invoke moduleInstance,$1),
-			$(thisInst) \
-			$(for \
-				mod <- $1,
-				dep <- $(get mod->depends),
-				was <- was$(map-get moduleInstanceStore/$(dep)),
-				$(for depInst <- $(invoke moduleInstance,$(dep)),
-					$(if $(filter $(depInst),$(get thisInst->depends)),,
-						$(set+ thisInst->depends,$(depInst))))
-				$(if $(filter was,$(was)),
-					$(invoke moduleInstanceClosure,$(dep))))))
+			mod <- $1,
+			dep <- $(get mod->depends),
+			was <- was$(map-get moduleInstanceStore/$(dep)),
+			$(for depInst <- $(invoke moduleInstance,$(dep)),
+				$(if $(filter $(depInst),$(get thisInst->depends)),,
+					$(set+ thisInst->depends,$(depInst))))
+			$(if $(filter was,$(was)),
+				$(invoke moduleInstanceClosure,$(dep)))))
 
 endef
 
