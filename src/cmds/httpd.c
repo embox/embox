@@ -17,112 +17,151 @@
 
 EMBOX_CMD(exec);
 
-#define SEND_BUFF_SZ 256
-#define RECV_BUFF_SZ 128
-#define DEFAULT_PAGE "index.html"
+#define FILE_NAME_MAX 32
+#define BUFF_SZ       512
+#define DEFAULT_PAGE  "index.html"
 
-struct client_info {
-	int sock;
-	struct sockaddr_in addr;
-	int addr_len;
+enum http_method {
+	HTTP_METHOD_UNKNOWN,
+	HTTP_METHOD_GET
 };
 
-static int parse_req(char *buff, char **method, char **file) {
-	char *tmp;
+struct client_info {
+	int sock;                /* socket for client connection*/
+	struct sockaddr_in addr; /* client address */
+	int addr_len;            /* address length */
+	enum http_method method; /* method in request */
+	char *req_file;          /* client want open this page */
+};
 
-	/* Find method */
-	*method = buff;
-	for (tmp = *method; *tmp != ' '; ++tmp) {
-		if (*tmp == '\0') {
-			LOG_ERROR("no such file\n");
-			return -1;
-		}
+
+static int http_method_get(struct client_info *info, char *buff, size_t len) {
+	int fd, bytes, bytes_read;
+	char *curr;
+
+	if (strcmp(info->req_file, "/") == 0) {
+		info->req_file = DEFAULT_PAGE;
 	}
-	*tmp = '\0'; /* set end of method */
 
-	/* Find file */
-	*file = tmp + 1;
-	for (tmp = *file; *tmp != ' '; ++tmp) {
-		if (*tmp == '\0') {
-			LOG_ERROR("no such version\n");
-			return -1;
-		}
-	}
-	*tmp = '\0'; /* set end of method */
-
-	return 0;
-}
-
-static int send_file(char *file, struct client_info *pci) {
-	int fd, bytes;
-	char buff_out[SEND_BUFF_SZ], *curr;
-
-	fd = open(file, O_RDONLY);
+	curr = buff;
+	fd = open(info->req_file, O_RDONLY);
 	if (fd < 0) {
-		LOG_ERROR("can't open file '%s'\n", file);
+		curr += sprintf(curr,
+				"HTTP/1.0 404 OK\n"
+				"Content-Type: text/html\n"
+				"\n"
+				"<html>"
+				"<head>"
+				"<title>404 Not Found</title>"
+				"</head>"
+				"<body>"
+				"<center><h1>404</h1></center>"
+				"</body>"
+				"</html>"
+				);
+		printf("Send 404\n");
+		sendto(info->sock, buff, curr - buff, 0,
+				(struct sockaddr *)&info->addr, info->addr_len);
+		printf("Done Send 404\n");
 		return -1;
 	}
 
-	curr = buff_out;
 	curr += sprintf(curr, "HTTP/1.0 200 OK\nContent-Type: text/html\n\n");
 	do {
-		bytes = read(fd, curr, sizeof buff_out - (curr - buff_out));
+		bytes_read = sizeof buff - (curr - buff);
+		bytes = read(fd, curr, bytes_read);
 		if (bytes < 0) {
-			LOG_ERROR("read failed. error=%d\n", bytes);
 			close(fd);
 			return -1;
 		}
 		curr += bytes;
-		sendto(pci->sock, buff_out, curr - buff_out, 0,
-				(struct sockaddr *)&pci->addr, pci->addr_len);
-		curr = buff_out;
-	} while (bytes > 0);
+		if (sendto(info->sock, buff, curr - buff, 0,
+				(struct sockaddr *)&info->addr, info->addr_len) < 0 ) {
+			close(fd);
+			return -1;
+		}
+		curr = buff;
+	} while (bytes == bytes_read);
 
 	close(fd);
 
 	return 0;
 }
 
-static int client_process(int client) {
-	int bytes_read;
-	char buff[RECV_BUFF_SZ];
-	char *method, *file;
+static int get_line(struct client_info *pci, char *buff, size_t len) {
+	int res;
+
+	/* XXX len must be greater or equal 2 */
+	do {
+		res = recvfrom(pci->sock, buff, sizeof(char), 0, (struct sockaddr *)&pci->addr, &pci->addr_len);
+	} while ((res == 1) && (*buff++ != '\n') && (--len > 1));
+	*buff = '\0';
+	return res;
+}
+
+static void client_process(int sock) {
+	int res;
+	char buff[BUFF_SZ], req_file[FILE_NAME_MAX], *tmp;
 	struct client_info ci;
 
-	/* Get request */
-	ci.sock = client;
-	bytes_read = recvfrom(client, buff, sizeof buff - 1, 0, (struct sockaddr *)&ci.addr, &ci.addr_len);
-	if (bytes_read < 0) {
-		LOG_ERROR("recvfrom() failed. code=%d\n", bytes_read);
-		close(client);
-		return bytes_read;
-	}
-	buff[bytes_read] = '\0';
+	memset(&ci, 0, sizeof ci);
 
-	/* Parse request */
-	if (parse_req(buff, &method, &file) != 0) {
-		close(client);
-		return -1;
-	}
+	ci.sock = sock;
 
-	printf("req: method-%s file-%s\n", method, file);
-	if (strcmp(method, "GET") == 0) {
-		if (strcmp(file, "/") == 0) {
-			file = DEFAULT_PAGE;
+	/* Parse HTTP header */
+	res = get_line(&ci, buff, sizeof buff);
+	if (res < 0) {
+		close(sock);
+		return;
+	}
+	printf("httpd head: '%s'\n", buff);
+	if (strncmp(buff, "GET ", 4) == 0) {
+		/* set method */
+		ci.method = HTTP_METHOD_GET;
+		/* set file */
+		ci.req_file = req_file;
+		for (tmp = buff + 4; (*tmp != ' ') && (*tmp != '?'); ++tmp) {
+			if (*tmp == '\0') {
+				close(sock);
+				return;
+			}
 		}
-		if (send_file(file, &ci) < 0) {
-			close(client);
-			return -1;
-		}
+		*tmp = '\0';
+		strcpy(req_file, buff + 4); // save filename
 	}
-	else { /* not suppported */
-		LOG_ERROR("method '%s' not supported\n", method);
-		close(client);
-		return -ENOSUPP;
+//	else if (strncmp(buff, "POST ", 5) == 0)
+	else {
+		printf("httpd warning: unknown method '%s'", buff);
+	}
+	do {
+		res = get_line(&ci, buff, sizeof buff);
+		printf("httpd opts: '%s'\n", buff);
+		if (strcmp(buff, "\n")) { break; } /* end header section */
+		else if (strncmp(buff, "Host:", 5)) { }
+		else if (strncmp(buff, "Connection:", 11)) { }
+		else if (strncmp(buff, "User-Agent:", 11)) { }
+		else if (strncmp(buff, "Accept:", 7)) { }
+		else if (strncmp(buff, "Accept-Encoding:", 16)) { }
+		else if (strncmp(buff, "Accept-Language:", 16)) { }
+		else if (strncmp(buff, "Accept-Charset:", 15)) { }
+		else {
+			printf("httpd warning: unknown options '%s'", buff);
+		}
+	} while (res >= 0);
+
+	/* Send answer */
+	switch (ci.method) {
+	default:
+		break;
+	case HTTP_METHOD_GET:
+		http_method_get(&ci, buff, sizeof buff);
+		break;
 	}
 
-	close(client);
-	return ENOERR;
+	/* Close connection */
+	close(sock);
+
+	return;
 }
 
 static int exec(int argc, char **argv) {

@@ -98,7 +98,7 @@ static inline void debug_print(__u8 code, const char *msg, ...) {
 	switch (code) {
 //	case 1:   /* 0bit - warnings */
 //	case 2:   /* 1bit - tcp_handle */
-	case 4:   /* 2bit - tcp global functions (init, send, recv etc.) */
+//	case 4:   /* 2bit - tcp global functions (init, send, recv etc.) */
 //	case 8:   /* 3bit - tcp state's handlers */
 //	case 16:  /* 4bit - tcp_sock_xmit, send_from_sock, send_ack_from_sock, free_rexmitting_queue,  tcp_rexmit */
 //	case 32:  /* 5bit - socket state */
