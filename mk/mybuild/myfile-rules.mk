@@ -2,24 +2,7 @@
 
 # Rule productions for 'MyFile' grammar.
 
-#
-# As for symbols each rule can have a constructor that is used to produce an
-# application-specific representation of the rule data.
-# Production functions are named '$(gold_grammar)_produce-<ID>' and have the
-# following signature:
-#
-# Params:
-#   1..N: Each argument contains a value of the corresponding symbol in the RHS
-#         of the rule production.
-#
-# Return:
-#   The value to pass as an argument to a rule containing the production
-#   of this rule in its RHS, or to return to user in case of the Start Symbol.
-#
-# If production function is not defined then the rule is produced by
-# concatenating the RHS through spaces. To reuse this default value one can
-# call 'gold_default_produce' function.
-#
+include mk/mybuild/common-rules.mk
 
 # Rule: <MyFile> ::= <Package> <Imports> <Entities>
 # Args: 1..3 - Symbols in the RHS.
@@ -73,41 +56,6 @@ define $(gold_grammar)_produce-AnnotatedAnnotationMember
 	$(for target <- $2,
 		$(set+ target->annotations,$1)
 		$(target))
-endef
-
-# Rule: <Annotation> ::= '@' <Reference> <AnnotationInitializer>
-# Args: 1..3 - Symbols in the RHS.
-define $(gold_grammar)_produce-Annotation_At
-	$(for annotation <- $(new MyAnnotation),
-		$(set annotation->type_link,$2)
-		$(set annotation->bindings,$3)
-		$(annotation))
-endef
-
-# Rule: <AnnotationInitializer> ::= '(' <ParametersList> ')'
-# Args: 1..3 - Symbols in the RHS.
-$(gold_grammar)_produce-AnnotationInitializer_LParan_RParan = $2
-
-# Rule: <AnnotationInitializer> ::= '(' <Value> ')'
-# Args: 1..3 - Symbols in the RHS.
-define $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan2
-	$(for binding<-$(new MyOptionBinding),
-		$(set binding->option_link,$(new ELink,value,$(gold_location)))
-		$(set binding->optionValue,$2)
-		$(binding))
-endef
-
-# Rule: <ParametersList> ::= <Parameter> ',' <ParametersList>
-# Args: 1..3 - Symbols in the RHS.
-$(gold_grammar)_produce-ParametersList_Comma = $1 $3
-
-# Rule: <Parameter> ::= <SimpleReference> '=' <Value>
-# Args: 1..3 - Symbols in the RHS.
-define $(gold_grammar)_produce-Parameter_Eq
-	$(for binding<-$(new MyOptionBinding),
-		$(set binding->option_link,$1)
-		$(set binding->optionValue,$3)
-		$(binding))
 endef
 
 # Rule: <Interface> ::= interface Identifier <SuperInterfaces> '{' <Features> '}'
@@ -265,26 +213,6 @@ $(gold_grammar)_produce-OptionType_boolean = Boolean
 # Args: 1..2 - Symbols in the RHS.
 $(gold_grammar)_produce-OptionDefaultValue_Eq = $2
 
-# Rule: <Value> ::= StringLiteral
-# Args: 1..1 - Symbols in the RHS.
-$(gold_grammar)_produce-Value_StringLiteral = $(new MyStringOptionValue,$1)
-
-# Rule: <Value> ::= NumberLiteral
-# Args: 1..1 - Symbols in the RHS.
-$(gold_grammar)_produce-Value_NumberLiteral = $(new MyNumberOptionValue,$1)
-
-# Rule: <Value> ::= BooleanLiteral
-# Args: 1..1 - Symbols in the RHS.
-$(gold_grammar)_produce-Value_BooleanLiteral = $(new MyBooleanOptionValue,$1)
-
-# Rule: <Reference> ::= <QualifiedName>
-# Args: 1..1 - Symbols in the RHS.
-$(gold_grammar)_produce-Reference = $(new ELink,$1,$(gold_location))
-
-# Rule: <SimpleReference> ::= Identifier
-# Args: 1..1 - Symbols in the RHS.
-$(gold_grammar)_produce-SimpleReference_Identifier = $(new ELink,$1,$(gold_location))
-
 # Rule: <Filename> ::= StringLiteral
 # Args: 1..1 - Symbols in the RHS.
 define $(gold_grammar)_produce-Filename_StringLiteral
@@ -300,10 +228,5 @@ $(gold_grammar)_produce-ReferenceList_Comma = $1 $3
 # Rule: <FilenameList> ::= <Filename> ',' <FilenameList>
 # Args: 1..3 - Symbols in the RHS.
 $(gold_grammar)_produce-FilenameList_Comma = $1 $3
-
-# <QualifiedName> ::= Identifier '.' <QualifiedName>
-$(gold_grammar)_produce-QualifiedName_Identifier_Dot         = $1.$3
-# <QualifiedNameWithWildcard> ::= <QualifiedName> '.*'
-$(gold_grammar)_produce-QualifiedNameWithWildcard_DotTimes   = $1.*
 
 
