@@ -178,6 +178,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	event_init(&t->exit_event, "thread_exit");
 	t->need_message = false;
 
+	t->runtime = 0;
 }
 
 static void thread_context_init(struct thread *t) {
