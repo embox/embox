@@ -68,29 +68,29 @@ BooleanLiteral = 'true' | 'false'
         ::= <AnnotatedType> <Entities>
          |
 <AnnotatedType>
-        ::= <AnnotationSpecifiers> <Type>
+        ::= <Annotations> <Type>
 <Type>
-        ::= <Module>
+        ::= <ModuleType>
          |  <Interface>
-         |  <Annotation>
+         |  <AnnotationType>
 
 ! -------------------------------------------------
 ! Annotations.
 ! -------------------------------------------------
 
-<Annotation>
+<AnnotationType>
         ::= 'annotation' Identifier '{' <AnnotationMembers> '}'
 <AnnotationMembers>
         ::= <AnnotatedAnnotationMember> <AnnotationMembers>
          |
 <AnnotatedAnnotationMember>
-        ::= <AnnotationSpecifiers> <Option>
+        ::= <Annotations> <Option>
 
-<AnnotationSpecifiers>
-        ::= <AnnotationSpecifier> <AnnotationSpecifiers>
+<Annotations>
+        ::= <Annotation> <Annotations>
          |
 
-<AnnotationSpecifier>
+<Annotation>
         ::= '@' <Reference> <AnnotationInitializer>
 <AnnotationInitializer>
         ::= '(' <AnnotationParametersList> ')'
@@ -121,7 +121,7 @@ BooleanLiteral = 'true' | 'false'
         ::= <AnnotatedFeature> <Features>
          |
 <AnnotatedFeature>
-        ::= <AnnotationSpecifiers> <Feature>
+        ::= <Annotations> <Feature>
 
 ! feature Name (extends ...)?
 <Feature>
@@ -137,7 +137,7 @@ BooleanLiteral = 'true' | 'false'
 ! -------------------------------------------------
 
 ! (abstract)? module Name (extends ...)? { ... }
-<Module>
+<ModuleType>
         ::= <ModuleModifiers> 'module' Identifier <SuperModule> '{' <ModuleMembers> '}'
 
 ! ModuleModifier*
@@ -158,7 +158,7 @@ BooleanLiteral = 'true' | 'false'
         ::= <AnnotatedModuleMember> <ModuleMembers>
          |
 <AnnotatedModuleMember>
-        ::= <AnnotationSpecifiers> <ModuleMember>
+        ::= <Annotations> <ModuleMember>
 <ModuleMember>
         ::= 'depends'  <ReferenceList>
          |  'provides' <ReferenceList>

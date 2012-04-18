@@ -46,7 +46,7 @@ endef
 # Args: 1..2 - Symbols in the RHS.
 $(gold_grammar)_produce-Import_import = $2
 
-# Rule: <AnnotatedType> ::= <AnnotationSpecifiers> <Type>
+# Rule: <AnnotatedType> ::= <Annotations> <Type>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotatedType
 	$(for target <- $2,
@@ -54,9 +54,9 @@ define $(gold_grammar)_produce-AnnotatedType
 		$(target))
 endef
 
-# Rule: <Annotation> ::= annotation Identifier '{' <AnnotationMembers> '}'
+# Rule: <AnnotationType> ::= annotation Identifier '{' <AnnotationMembers> '}'
 # Args: 1..5 - Symbols in the RHS.
-define $(gold_grammar)_produce-Annotation_annotation_Identifier_LBrace_RBrace
+define $(gold_grammar)_produce-AnnotationType_annotation_Identifier_LBrace_RBrace
 	$(foreach type,$(new MyAnnotationType),
 		$(set type->name,$2)
 		$(set type->origin,$(call gold_location_of,2))
@@ -67,7 +67,7 @@ define $(gold_grammar)_produce-Annotation_annotation_Identifier_LBrace_RBrace
 	)
 endef
 
-# Rule: <AnnotatedAnnotationMember> ::= <AnnotationSpecifiers> <Option>
+# Rule: <AnnotatedAnnotationMember> ::= <Annotations> <Option>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotatedAnnotationMember
 	$(for target <- $2,
@@ -75,9 +75,9 @@ define $(gold_grammar)_produce-AnnotatedAnnotationMember
 		$(target))
 endef
 
-# Rule: <AnnotationSpecifier> ::= '@' <Reference> <AnnotationInitializer>
+# Rule: <Annotation> ::= '@' <Reference> <AnnotationInitializer>
 # Args: 1..3 - Symbols in the RHS.
-define $(gold_grammar)_produce-AnnotationSpecifier_At
+define $(gold_grammar)_produce-Annotation_At
 	$(for annotation <- $(new MyAnnotation),
 		$(set annotation->type_link,$2)
 		$(set annotation->bindings,$3)
@@ -131,7 +131,7 @@ define $(gold_grammar)_produce-Features
 	$(gold_default_produce)# TODO Auto-generated stub!
 endef
 
-# Rule: <AnnotatedFeature> ::= <AnnotationSpecifiers> <Feature>
+# Rule: <AnnotatedFeature> ::= <Annotations> <Feature>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotatedFeature
 	$(gold_default_produce)# TODO Auto-generated stub!
@@ -150,9 +150,9 @@ endef
 # Args: 1..2 - Symbols in the RHS.
 $(gold_grammar)_produce-SuperFeatures_extends = $2
 
-# Rule: <Module> ::= <ModuleModifiers> module Identifier <SuperModule> '{' <ModuleMembers> '}'
+# Rule: <ModuleType> ::= <ModuleModifiers> module Identifier <SuperModule> '{' <ModuleMembers> '}'
 # Args: 1..7 - Symbols in the RHS.
-define $(gold_grammar)_produce-Module_module_Identifier_LBrace_RBrace
+define $(gold_grammar)_produce-ModuleType_module_Identifier_LBrace_RBrace
 	$(foreach module,$(new MyModuleType),
 		$(set module->name,$3)
 		$(set module->origin,$(call gold_location_of,3))
@@ -189,7 +189,7 @@ endef
 # Args: 1..2 - Symbols in the RHS.
 $(gold_grammar)_produce-SuperModule_extends = $2
 
-# Rule: <AnnotatedModuleMember> ::= <AnnotationSpecifiers> <ModuleMember>
+# Rule: <AnnotatedModuleMember> ::= <Annotations> <ModuleMember>
 # Args: 1..2 - Symbols in the RHS.
 define $(gold_grammar)_produce-AnnotatedModuleMember
 	$(for target <- $2,
