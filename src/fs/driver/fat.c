@@ -344,14 +344,6 @@ int fatfs_partition(void *fdes) {
 	return fat_write_sector(fd, sector, 0, 1);
 }
 
-int fatfs_create_directory(void *par) {
-	return 0;
-}
-
-int fatfs_create_file(void *par) {
-	return 0;
-}
-
 int fatfs_set_path (uint8_t *tmppath, uint8_t *path) {
 	char buff[MAX_PATH];
 
@@ -903,7 +895,7 @@ uint32_t fat_get_free_fat_(void *fd, uint8_t *scratch)
 	 * NOTE: This search can't terminate at a bad cluster, because there might
 	 * legitimately be bad clusters on the disk.
 	 */
-	for (i=2; i < volinfo->numclusters; i++) {
+	for (i = 2; i < volinfo->numclusters; i++) {
 		result = fat_get_fat_(fd, scratch, &scratchcache, i);
 		if (!result) {
 			return i;
@@ -1251,6 +1243,172 @@ uint32_t fat_get_free_dir_ent(void *fd, uint8_t *path,
 }
 
 /*
+ *  Parse filename off the end of the supplied path
+ */
+void get_filename(uint8_t *tmppath, uint8_t *filename) {
+	uint8_t *p;
+
+	p = tmppath;
+	/* strip leading path separators */
+	while (*tmppath == DIR_SEPARATOR){
+		strcpy((char *) tmppath, (char *) tmppath + 1);
+	}
+	while (*(p++));
+	p--;
+	while (p > tmppath && *p != DIR_SEPARATOR) {
+		p--;
+	}
+
+	if (*p == DIR_SEPARATOR) {
+		p++;
+	}
+	fat_canonical_to_dir(filename, p);
+	if (p > tmppath) {
+		p--;
+	}
+	/*TODO need to understand why this is necessary */
+	if (*p == DIR_SEPARATOR || p == tmppath) {
+		*p = 0;
+	}
+}
+/*
+ * Cut mount directory name from path to get the path in filesysytem
+ */
+void cut_mount_dir(char *path, char *mount_dir) {
+		char *p;
+
+		p = path;
+		while (*mount_dir && (*mount_dir == *p)) {
+			mount_dir++;
+			p++;
+		}
+		strcpy(path, p);
+	}
+
+/*
+ * Create a file or directory. You supply a file_create_param_t
+ * structure.
+ * Returns various DFS_* error states. If the result is DFS_OK, file
+ * was created and can be used.
+ */
+int fatfs_create_file(void *par) {
+	uint8_t tmppath[MAX_PATH];
+	uint8_t filename[12];
+	dir_info_t di;
+	dir_ent_t de;
+
+	p_vol_info_t volinfo;
+	p_file_info_t fileinfo;
+	fat_file_description_t *fd;
+	file_create_param_t *param;
+	node_t *node;
+	uint32_t cluster, temp;
+
+	param = (file_create_param_t *) par;
+
+	node = (node_t *) param->node;
+	fd = (fat_file_description_t *) node->attr;
+
+	volinfo = &fd->p_fs_dsc->vi;
+	fileinfo = &fd->fi;
+
+	memset(fileinfo, 0, sizeof(file_info_t));
+
+	/* Get a local copy of the path. */
+	strncpy((char *) tmppath, (char *) param->path, MAX_PATH);
+
+	cut_mount_dir((char *) tmppath, fd->p_fs_dsc->root_name);
+
+	get_filename(tmppath, filename);
+
+	/*
+	 *  At this point, if our path was MYDIR/MYDIR2/FILE.EXT,
+	 *  filename = "FILE    EXT" and  tmppath = "MYDIR/MYDIR2".
+	 */
+	di.scratch = sector;
+	if (fat_open_dir(fd, tmppath, &di)) {
+		return DFS_NOTFOUND;
+	}
+
+	while (!fat_get_next(fd, &di, &de));
+
+	/* Locate or create a directory entry for this file */
+	if (DFS_OK != fat_get_free_dir_ent(fd, tmppath, &di, &de)) {
+		return DFS_ERRMISC;
+	}
+
+	/* put sane values in the directory entry */
+	memset(&de, 0, sizeof(de));
+	memcpy(de.name, filename, 11);
+	de.crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
+	de.crttime_h = 0x08;
+	de.crtdate_l = 0x11;
+	de.crtdate_h = 0x34;
+	de.lstaccdate_l = 0x11;
+	de.lstaccdate_h = 0x34;
+	de.wrttime_l = 0x20;
+	de.wrttime_h = 0x08;
+	de.wrtdate_l = 0x11;
+	de.wrtdate_h = 0x34;
+
+	/* allocate a starting cluster for the directory entry */
+	cluster = fat_get_free_fat_(fd, sector);
+
+	de.startclus_l_l = cluster & 0xff;
+	de.startclus_l_h = (cluster & 0xff00) >> 8;
+	de.startclus_h_l = (cluster & 0xff0000) >> 16;
+	de.startclus_h_h = (cluster & 0xff000000) >> 24;
+
+	/* update file_info_t for our caller's sake */
+	fileinfo->volinfo = volinfo;
+	fileinfo->pointer = 0;
+	/*
+	 * The reason we store this extra info about the file is so that we can
+	 * speedily update the file size, modification date, etc. on a file
+	 * that is opened for writing.
+	 */
+	if (di.currentcluster == 0) {
+		fileinfo->dirsector = volinfo->rootdir + di.currentsector;
+	}
+	else {
+		fileinfo->dirsector = volinfo->dataarea +
+				((di.currentcluster - 2) * volinfo->secperclus) +
+				di.currentsector;
+	}
+	fileinfo->diroffset = di.currententry;/* - 1;*/
+	fileinfo->cluster = cluster;
+	fileinfo->firstcluster = cluster;
+	fileinfo->filelen = 0;
+
+	/*
+	 * write the directory entry
+	 * note that we no longer have the sector containing the directory
+	 * entry, tragically, so we have to re-read it
+	 */
+
+	if (fat_read_sector(fd, sector, fileinfo->dirsector, 1)) {
+		return DFS_ERRMISC;
+	}
+	memcpy(&(((p_dir_ent_t) sector)[di.currententry/* - 1*/]),
+			&de, sizeof(dir_ent_t));
+	if (fat_write_sector(fd, sector, fileinfo->dirsector, 1)) {
+		return DFS_ERRMISC;
+	}
+	/* Mark newly allocated cluster as end of chain */
+	switch(volinfo->filesystem) {
+		case FAT12:		cluster = 0xff8;	break;
+		case FAT16:		cluster = 0xfff8;	break;
+		case FAT32:		cluster = 0x0ffffff8;	break;
+		default:		return DFS_ERRMISC;
+	}
+
+	temp = 0;
+	fat_set_fat_(fd, sector, &temp, fileinfo->cluster, cluster);
+
+	return DFS_OK;
+}
+
+/*
  * Open a file for reading or writing. You supply populated vol_info_t,
  * a path to the file, mode (DFS_READ or DFS_WRITE) and an empty fileinfo
  * structure. You also need to provide a pointer to a sector-sized scratch
@@ -1263,7 +1421,6 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 {
 	uint8_t tmppath[MAX_PATH];
 	uint8_t filename[12];
-	uint8_t *p;
 	dir_info_t di;
 	dir_ent_t de;
 
@@ -1288,45 +1445,16 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 		return DFS_PATHLEN;
 	}
 
-	/* strip leading path separators */
-	while (tmppath[0] == DIR_SEPARATOR){
-		strcpy((char *) tmppath, (char *) tmppath + 1);
-	}
-
-	/* Parse filename off the end of the supplied path */
-	p = tmppath;
-	while (*(p++));
-
-	p--;
-	while (p > tmppath && *p != DIR_SEPARATOR) {
-		p--;
-	}
-
-	if (*p == DIR_SEPARATOR) {
-		p++;
-	}
-
-	fat_canonical_to_dir(filename, p);
-
-	if (p > tmppath) {
-		p--;
-	}
-
-	/*TODO need to understand why this is necessary */
-	if (*p == DIR_SEPARATOR || p == tmppath) {
-		*p = 0;
-	}
+	get_filename(tmppath, filename);
 
 	/*
-	 *  At this point, if our path was MYDIR/MYDIR2/FILE.EXT, filename = "FILE    EXT" and
-	 *  tmppath = "MYDIR/MYDIR2".
+	 *  At this point, if our path was MYDIR/MYDIR2/FILE.EXT,
+	 *  filename = "FILE    EXT" and  tmppath = "MYDIR/MYDIR2".
 	 */
 
 	di.scratch = scratch;
 	if (fat_open_dir(fd, tmppath, &di)) {
-		if(DFS_WRITE != mode){
-			return DFS_NOTFOUND;
-		}
+		return DFS_NOTFOUND;
 	}
 
 	while (!fat_get_next(fd, &di, &de)) {
@@ -1370,88 +1498,6 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 
 			return DFS_OK;
 		}
-	}
-
-	/*
-	 * At this point, we KNOW the file does not exist. If the file was opened
-	 * with write access, we can create it.
-	 */
-	if (mode & DFS_WRITE) {
-		uint32_t cluster, temp;
-
-		/* Locate or create a directory entry for this file */
-		if (DFS_OK != fat_get_free_dir_ent(fd, tmppath, &di, &de)) {
-			return DFS_ERRMISC;
-		}
-
-		/* put sane values in the directory entry */
-		memset(&de, 0, sizeof(de));
-		memcpy(de.name, filename, 11);
-		de.crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
-		de.crttime_h = 0x08;
-		de.crtdate_l = 0x11;
-		de.crtdate_h = 0x34;
-		de.lstaccdate_l = 0x11;
-		de.lstaccdate_h = 0x34;
-		de.wrttime_l = 0x20;
-		de.wrttime_h = 0x08;
-		de.wrtdate_l = 0x11;
-		de.wrtdate_h = 0x34;
-
-		/* allocate a starting cluster for the directory entry */
-		cluster = fat_get_free_fat_(fd, scratch);
-
-		de.startclus_l_l = cluster & 0xff;
-		de.startclus_l_h = (cluster & 0xff00) >> 8;
-		de.startclus_h_l = (cluster & 0xff0000) >> 16;
-		de.startclus_h_h = (cluster & 0xff000000) >> 24;
-
-		/* update file_info_t for our caller's sake */
-		fileinfo->volinfo = volinfo;
-		fileinfo->pointer = 0;
-		/*
-		 * The reason we store this extra info about the file is so that we can
-		 * speedily update the file size, modification date, etc. on a file
-		 * that is opened for writing.
-		 */
-		if (di.currentcluster == 0) {
-			fileinfo->dirsector = volinfo->rootdir + di.currentsector;
-		}
-		else {
-			fileinfo->dirsector = volinfo->dataarea +
-					((di.currentcluster - 2) * volinfo->secperclus) +
-					di.currentsector;
-		}
-		fileinfo->diroffset = di.currententry;/* - 1;*/
-		fileinfo->cluster = cluster;
-		fileinfo->firstcluster = cluster;
-		fileinfo->filelen = 0;
-
-		/*
-		 * write the directory entry
-		 * note that we no longer have the sector containing the directory
-		 * entry, tragically, so we have to re-read it
-		 */
-
-		if (fat_read_sector(fd, scratch, fileinfo->dirsector, 1)) {
-			return DFS_ERRMISC;
-		}
-		memcpy(&(((p_dir_ent_t) scratch)[di.currententry/* - 1*/]),
-				&de, sizeof(dir_ent_t));
-		if (fat_write_sector(fd, scratch, fileinfo->dirsector, 1)) {
-			return DFS_ERRMISC;
-		}
-		/* Mark newly allocated cluster as end of chain */
-		switch(volinfo->filesystem) {
-			case FAT12:		cluster = 0xff8;	break;
-			case FAT16:		cluster = 0xfff8;	break;
-			case FAT32:		cluster = 0x0ffffff8;	break;
-			default:		return DFS_ERRMISC;
-		}
-		temp = 0;
-		fat_set_fat_(fd, scratch, &temp, fileinfo->cluster, cluster);
-
-		return DFS_OK;
 	}
 	return DFS_NOTFOUND;
 }
@@ -2080,13 +2126,11 @@ int fatfs_root_create(void *fdes) {
 
 int fat_main(const void *name)
 {
-	uint32_t cache;
 	uint8_t *p;
 	unsigned size_p;
 	char *p_file_ch;
-	node_t *nod;
 	fat_file_description_t *fdsc;
-	uint8_t path[MAX_PATH];
+	FILE *file;
 
 	/* Obtain pointer to first partition on first (only) unit*/
 
@@ -2130,56 +2174,37 @@ int fat_main(const void *name)
 
 /*------------------------------------------------------------*/
 /* File write test */
-	/*TODO  it should be in vfs or in the node*/
-	strcpy((char *) path, (const char *)father->p_fs_dsc->root_name);
-	if ('/' != *((char *)name)) {
-		strcat((char *) path, "/");
-	}
-	strcat((char *) path, (const char *)name);
-
-	/* if file open to write and not created */
-	if (NULL == vfs_find_node((const char *) path, NULL)) {
-		if (NULL == (nod = vfs_add_path((const char *) path, NULL))) {
-			return DFS_NOTFOUND;/*file already exist*/
-		}
-
-		fdsc = fat_fileinfo_alloc();
-		fdsc->p_fs_dsc = father->p_fs_dsc;
-
-		nod->fs_type = &fatfs_drv;
-		nod->file_info = (void *) &fatfs_fop;
-		nod->attr = (void *) fdsc;
-	}
-
-	if (fat_open_file((void *) fdsc, (uint8_t *)name, DFS_WRITE, sector)) {
+	if(NULL == (file = fopen((const char *) name, "w"))) {
 		printf("error opening file 1\n");
 		return -1;
 	}
 
 	for (i = 0; i < 10; i++) {
 		memset(sector2, 0x30 + i, SECTOR_SIZE);
-		fat_write_file((void *) fdsc, sector, sector2, &cache, SECTOR_SIZE/2);
+		fwrite((const void *) sector2, SECTOR_SIZE/2, 1, file);
 		memset(sector2 + 256, 0x39 - i, SECTOR_SIZE/2);
-		fat_write_file((void *) fdsc, sector, sector2 + 256, &cache, SECTOR_SIZE/2);
+		fwrite((const void *) sector2, SECTOR_SIZE/2, 1, file);
 	}
 	sprintf((char *)sector2, (const char *)"test string at the end...%d", n++);
-	fat_write_file((void *) fdsc, sector, sector2, &cache,
-			strlen((const char *)sector2));
+	fwrite((const void *) sector2, strlen((const char *)sector2), 1, file);
 
 /*------------------------------------------------------------*/
 /* File read test */
 	printf("Readback test\n");
-	if (fat_open_file((void *) fdsc, (uint8_t *)name, DFS_READ, sector)) {
+	if(NULL == (file = fopen((const char *) name, "w"))) {
 		printf("error opening file 2\n");
 	}
 	else {
+		struct file_desc *desc = (struct file_desc *) file;
+
+		fdsc = (fat_file_description_t *) desc->node->attr;
 		size_p = (fdsc->fi.filelen + 512) / CONFIG_PAGE_SIZE;
 		size_p++; /*fractional part of pagesize*/
 
 		p = (void *)page_alloc(size_p);
 		memset(p, 0xaa, fdsc->fi.filelen + 512);
 
-		fat_read_file((void *) fdsc, sector, p, &i, fdsc->fi.filelen);
+		fread((void *) p, fdsc->fi.filelen, 1, file);
 		printf("read complete %d bytes (expected %d) pointer %d\n",
 				i, fdsc->fi.filelen, fdsc->fi.pointer);
 

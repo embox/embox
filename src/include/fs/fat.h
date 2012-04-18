@@ -399,11 +399,14 @@ int fat_read_sector(void *fd, uint8_t *buffer,
 int fat_write_sector(void *fd, uint8_t *buffer,
 		uint32_t sector, uint32_t count);
 
-int fatfs_create_directory(void *par);
-
+/*
+ *	Create a file or a directory in the filesystem
+ */
 int fatfs_create_file(void *par);
 
-
+/*
+ *	Create a partition and format it
+ */
 int fatfs_partition (void *fdes);
 
 

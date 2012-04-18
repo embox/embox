@@ -22,7 +22,7 @@
 
 #define LAST  0x01
 
-int nip_tail (char *head, char *tail) {
+int nip_tail(char *head, char *tail) {
 	char *p_tail;
 	char *p;
 
@@ -43,7 +43,7 @@ int nip_tail (char *head, char *tail) {
 	return 0;
 }
 
-int increase_tail (char *head, char *tail) {
+int increase_tail(char *head, char *tail) {
 	char *p_tail;
 
 		p_tail = head + strlen(head);
@@ -62,7 +62,7 @@ int increase_tail (char *head, char *tail) {
 		return 0;
 }
 
-int create_filechain (const char *path){
+node_t *create_filechain(const char *path){
 	int count_dir;
 	file_create_param_t param;
 	fs_drv_t *drv;
@@ -73,21 +73,20 @@ int create_filechain (const char *path){
 	tail[0] = '\0';
 	strcpy (param.path, path);
 
+	/* find last node in the path */
 	do {
 		if (nip_tail (param.path, tail)) {
-			errno = -EINVAL;
-			return -1;
+			return NULL;
 		}
 		count_dir ++;
 	} while (NULL == (node = vfs_find_node(param.path, NULL)));
 
-
+	/* add one directory and assign the parameters of the parent */
 	do {
 		increase_tail (param.path, tail);
 
 		if (NULL == (new_node = vfs_add_path (param.path, NULL))) {
-			errno = -EINVAL;
-			return -1;
+			return NULL;
 		}
 
 		drv = new_node->fs_type = node->fs_type;
@@ -102,18 +101,18 @@ int create_filechain (const char *path){
 		param.parents_node = (void *) node;
 
 		if (NULL == drv->fsop->create_file) {
-			errno = -EINVAL;
 			LOG_ERROR("fsop->create_file is NULL handler\n");
-			return -1;
+			return NULL;
 		}
 
 		drv->fsop->create_file ((void *)&param);
 
 		node = new_node;
+		count_dir--;
 
-	} while (count_dir --);
+	} while (LAST < count_dir);
 
-	return 0;
+	return node;
 }
 
 FILE *fopen(const char *path, const char *mode) {
@@ -128,7 +127,7 @@ FILE *fopen(const char *path, const char *mode) {
 			return NULL;
 		}
 
-		if (create_filechain(path)) {
+		if (NULL == (nod = create_filechain(path))) {
 			errno = -EINVAL;
 			return NULL;
 		}

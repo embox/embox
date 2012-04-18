@@ -37,4 +37,7 @@ typedef struct file_create_param {
 	char   path[CONFIG_MAX_LENGTH_FILE_NAME];
 } file_create_param_t;
 
+extern int nip_tail(char *head, char *tail);
+extern int increase_tail(char *head, char *tail);
+
 #endif /* KERNEL_FILE_H_ */
