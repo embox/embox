@@ -2,7 +2,7 @@
 
 # Grammar info:
 #   Name            : ConfigFile
-#   Version         : 0.2
+#   Version         : 0.3
 #   Author          : Eldar Abusalimov, Anton Kozlov
 #   About           : Mybuild configuration file
 #   Case Sensitive  : True

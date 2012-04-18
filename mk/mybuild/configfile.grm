@@ -1,48 +1,11 @@
 "Name"     = 'ConfigFile'
 "Author"   = 'Eldar Abusalimov, Anton Kozlov'
-"Version"  = '0.2'
+"Version"  = '0.3'
 "About"    = 'Mybuild configuration file'
 
 "Case Sensitive" = True
 
 "Start Symbol" = <ConfigFile>
-
-! -------------------------------------------------
-! Character Sets
-! -------------------------------------------------
-
-{ID Head}      = {Letter} + [_]
-{ID Tail}      = {Alphanumeric} + [_]
-
-{Hex Digit}    = {Digit} + [abcdef] + [ABCDEF]
-
-{String Chars} = {Printable} + {HT} - ["\]
-{String Esc}   = [rnt''"\]
-{Non Quote}    = {Printable} + {Whitespace} - [''\]
-{Quote Esc}    = [''\]
-
-{Non Slash}    = {Printable} + {Whitespace} - [/]
-{Non Asterisk} = {Printable} + {Whitespace} - [*]
-
-{Not New Line} = {Printable} + {Whitespace} - {CR} - {LF}
-
-! -------------------------------------------------
-! Terminals
-! -------------------------------------------------
-
-Whitespace     = {Whitespace}+
-               | '/*' ( {Non Asterisk} | '*' {Non Slash} )*  '*/'
-               | '//' {Not New Line}* ( {CR}? {LF} )?
-
-Identifier     = '^'? {ID Head}{ID Tail}*
-
-StringLiteral  = '"' ( {String Chars} | '\' {String Esc} )* '"'
-               | '''''' ( ( ''? '' )? ( {Non Quote} | '\' {Quote Esc} ) )* ''''''
-
-NumberLiteral  = {Digit}+ ( '.' {Digit}+ )?
-               | '0x' {Hex Digit}+ ( '.' {Hex Digit}+ )?
-
-BooleanLiteral = 'true' | 'false'
 
 ! -------------------------------------------------
 ! Rules
@@ -97,7 +60,58 @@ BooleanLiteral = 'true' | 'false'
          |
 
 ! -------------------------------------------------
-! Annotations
+! The grammar fragments below are common for
+! both my- and config-files. These include:
+!   - Charsets and terminal definitions
+!   - Rules for annotations
+!   - Option values
+!   - Lists of key=value pairs
+!   - Qualified names and wrapping references
+!
+! When modifying them please take care to update
+! the corresponding parts in another grammar file.
+! -------------------------------------------------
+
+! -------------------------------------------------
+! Character Sets
+! -------------------------------------------------
+
+{ID Head}      = {Letter} + [_]
+{ID Tail}      = {Alphanumeric} + [_]
+
+{Hex Digit}    = {Digit} + [abcdef] + [ABCDEF]
+
+{String Chars} = {Printable} + {HT} - ["\]
+{String Esc}   = [rnt''"\]
+{Non Quote}    = {Printable} + {Whitespace} - [''\]
+{Quote Esc}    = [''\]
+
+{Non Slash}    = {Printable} + {Whitespace} - [/]
+{Non Asterisk} = {Printable} + {Whitespace} - [*]
+
+{Not New Line} = {Printable} + {Whitespace} - {CR} - {LF}
+
+! -------------------------------------------------
+! Terminals
+! -------------------------------------------------
+
+Whitespace     = {Whitespace}+
+               | '/*' ( {Non Asterisk} | '*' {Non Slash} )*  '*/'
+               | '//' {Not New Line}* ( {CR}? {LF} )?
+
+Identifier     = '^'? {ID Head}{ID Tail}*
+
+StringLiteral  = '"' ( {String Chars} | '\' {String Esc} )* '"'
+               | '''''' ( ( ''? '' )? ( {Non Quote} | '\' {Quote Esc} ) )* ''''''
+
+NumberLiteral  = {Digit}+ ( '.' {Digit}+ )?
+               | '0x' {Hex Digit}+ ( '.' {Hex Digit}+ )?
+
+BooleanLiteral = 'true' | 'false'
+
+
+! -------------------------------------------------
+! @Annotations.
 ! -------------------------------------------------
 
 <Annotations>
