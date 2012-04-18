@@ -20,10 +20,11 @@ int timer_init(struct sys_timer *tmr, unsigned int flags, uint32_t ticks,
 		return -EINVAL;
 	}
 
-	tmr->is_preallocated = false;
+	tmr->state = 0;
 	tmr->cnt = tmr->load = ticks;
 	tmr->handle = handler;
 	tmr->param = param;
+	tmr->flags = flags;
 
 	timer_strat_start(tmr);
 
@@ -41,7 +42,7 @@ int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t ticks,
 	}
 	/* we know that init will be success (right ptimer and handler) */
 	timer_init(*ptimer, flags, ticks, handler, param);
-	(*ptimer)->is_preallocated = true;
+	timer_set_preallocated(*ptimer);
 
 	return ENOERR;
 }
@@ -50,9 +51,10 @@ int timer_close(struct sys_timer *tmr) {
 	if (NULL == tmr) {
 		return -EINVAL;
 	}
-
-	timer_strat_stop(tmr);
-	if (tmr->is_preallocated) {
+	if(timer_is_started(tmr)) {
+		timer_strat_stop(tmr);
+	}
+	if (timer_is_preallocated(tmr)) {
 		pool_free(&timer_pool, tmr);
 	}
 

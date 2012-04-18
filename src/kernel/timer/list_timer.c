@@ -11,8 +11,9 @@
 
 static LIST_HEAD(sys_timers_list);
 
-void timer_strat_start(struct sys_timer *ptimer) {
-	list_add_tail(&ptimer->lnk, &sys_timers_list);
+void timer_strat_start(struct sys_timer *tmr) {
+	timer_set_started(tmr);
+	list_add_tail(&tmr->lnk, &sys_timers_list);
 }
 /**
  * For each timer in the timers array do the following: if the timer is enable
@@ -27,11 +28,16 @@ void timer_strat_sched(void) {
 		tmr = (sys_timer_t*) tmp;
 		if (0 == tmr->cnt--) {
 			tmr->handle(tmr, tmr->param);
+			if(!timer_is_periodic(tmr)) {
+				timer_strat_stop(tmr);
+				continue;
+			}
 			tmr->cnt = tmr->load;
 		}
 	}
 }
 
-void timer_strat_stop(struct sys_timer *ptimer) {
-	list_del(&ptimer->lnk);
+void timer_strat_stop(struct sys_timer *tmr) {
+	timer_set_stopped(tmr);
+	list_del(&tmr->lnk);
 }
