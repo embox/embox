@@ -69,7 +69,7 @@ struct thread {
 	struct task      *task;          /**< Task belong to. */
 	struct list_head  task_link;     /**< Link in list holding task threads. */
 
-	clock_t           running_time;  /**< Running time of thread. */
+	clock_t           running_time;  /**< Running time of thread in clocks. */
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */
