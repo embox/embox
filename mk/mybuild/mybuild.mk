@@ -9,6 +9,7 @@ __mybuild_mybuild_mk := 1
 include mk/mybuild/myfile-resource.mk
 
 chekers_list := \
+	Mybuild.specifyInstances \
 	Mybuild.checkAbstractRealization \
 	Mybuild.checkFeatureRealization \
 	Mybuild.optionBind
@@ -33,11 +34,16 @@ define check
 		$1)
 endef
 
+LABEL-IfNeed := mybuild.lang.IfNeed
+
+excludeAnnotations := $(LABEL-IfNeed)
+
 # Constructor args:
 #   1. Configuration.
 define class-Mybuild
 	$(map moduleInstanceStore... : ModuleInstance) #by module
 	$(map activeFeatures... : ModuleInstance) #by feature
+	$(property-field recommendations)
 
 # Public:
 
@@ -59,12 +65,6 @@ define class-Mybuild
 			$(set build->modules,
 				$(invoke getBuildModules))
 
-			$(for modInst <- $(get build->modules),
-				mod <- $(get modInst->type),
-				super <- $(mod) $(get mod->allSuperTypes),
-				$(map-set build->moduleInstanceByName/$(get super->qualifiedName),
-					$(modInst)))
-
 			$(build))
 	)
 
@@ -82,15 +82,41 @@ define class-Mybuild
 			$(for \
 				cfgInclude <- $(get configuration->includes),
 				module <- $(get cfgInclude->module),
+				$(if $(strip $(filter $(excludeAnnotations),
+						$(for annot <-
+								$(get cfgInclude->annotations),
+							$(get annot->qualifiedName)))),
+					$(call Mybuild.processIncludeAnnotations,$(module),
+						$(get cfgInclude->annotations)),
 
-				$(if $(invoke moduleInstanceHas,$(module)),,
-					$(invoke moduleInstanceClosure,$(module)))
+					$(if $(map-get moduleInstanceStore/$(module)),,
+						$(invoke moduleInstanceClosure,$(module)))
 
-				$(for moduleInst <- $(invoke moduleInstance,$(module)),
-					$(set moduleInst->includeMember,$(cfgInclude)))),
-
+					$(for moduleInst <- $(invoke moduleInstance,$(module)),
+						$(set moduleInst->includeMember,$(cfgInclude))))),
 			$(call check,$1,$(chekers_list),)
 			))
+
+	$(method processIncludeAnnotations,
+		$(for annot <-$2,
+			$(if $(eq $(get annot->qualifiedName),$(LABEL-IfNeed)),
+				$(set+ recommendations,
+					$(invoke $(get $(get annot->bindings).optionValue).toString)
+					$1))))
+
+	$(method specifyInstances,
+		$(with $1,$2,$(for name <- $(basename $(get recommendations)),
+							$(map-get build->moduleInstanceByName/$(name))),
+			$(for inst <- $1,
+				$(if $(filter $(inst),$3),
+					$(for \
+						rule<-$(get recommendations),
+						targetInstance<-$(map-get build->moduleInstanceByName/$(basename $(rule))),
+						targetModule<-$(suffix $(rule)),
+						$(if $(invoke targetModule->isSubTypeOf,$(get targetInstance->type)),
+								$(call check,$(invoke moduleInstanceClosure,$(targetModule)),$2 $0,)
+								)),
+					$(inst)))))
 
 	# Cheker for abstract realization. If there is only one subtype of given abstract module
 	# it included to build with all dependencies, which are also checked for abstract
@@ -104,7 +130,7 @@ define class-Mybuild
 			instType <- $(get inst->type),
 			$(if $(get instType->isAbstract),
 				$(if $(singleword $(get instType->subTypes)),
-					$(call check,$(invoke moduleInstanceClosure,$(get instType->subTypes)),$2 $0),
+					$(call check,$(invoke moduleInstanceClosure,$(get instType->subTypes)),$2 $0,),
 					$(inst)$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
 				   		No abstract realization: $(get instType->qualifiedName)))),
 				$(inst))))
@@ -236,7 +262,7 @@ define class-Mybuild
 		$(with \
 			$(sort \
 				$(for super <- $(mod) $(get mod->allSuperTypes),
-					$(invoke moduleInstanceHas,$(super)))),
+					$(map-get moduleInstanceStore/$(super)))),
 			$(if $1,
 				$(if $(filter $(get 1->type),$(mod) $(get mod->allSuperTypes)),
 					$1,
@@ -252,6 +278,21 @@ define class-Mybuild
 					)),
 				$(new ModuleInstance,$(mod)))))
 
+	$(method setInstanceToType,
+			$(set 1->type,$2)
+
+			$(for super <- $2 $(get 2->allSuperTypes),
+				$(map-set build->moduleInstanceByName/$(get super->qualifiedName),
+					$1)
+				$(map-set moduleInstanceStore/$(super),
+					$1))
+
+			$(for provide <- $(get 2->provides),
+				opt <- $(provide) $(get provide->allSubFeatures),
+				$(map-set+ activeFeatures/$(opt),
+					$1)))
+
+
 	# Get ModuleInstance for Module
 	#
 	# Args:
@@ -265,28 +306,9 @@ define class-Mybuild
 			mod <- $1,
 			moduleInstance <- $(call Mybuild.moduleInstanceSuper),
 
-			$(set moduleInstance->type,$(mod))
-
-			$(for super <- $(mod) $(get mod->allSuperTypes),
-				$(map-set moduleInstanceStore/$(super),
-					$(moduleInstance)))
-
-			$(for provide <- $(get mod->provides),
-				opt <- $(provide) $(get provide->allSubFeatures),
-				$(map-set+ activeFeatures/$(opt),
-					$(moduleInstance)))
+			$(invoke setInstanceToType,$(moduleInstance),$(mod))
 
 			$(moduleInstance)))
-
-	# Check if there are ModuleInstance for Module
-	#
-	# Args:
-	#  1. Module
-	# Return:
-	#  ModuleInstance on positive
-	#  None on negative
-	$(method moduleInstanceHas,
-		$(map-get moduleInstanceStore/$1))
 
 	# Get ModuleInstance closure of given  Module
 	#
@@ -300,7 +322,7 @@ define class-Mybuild
 			$(for \
 				mod <- $1,
 				dep <- $(get mod->depends),
-				was <- was$(invoke moduleInstanceHas,$(dep)),
+				was <- was$(map-get moduleInstanceStore/$(dep)),
 				$(for depInst <- $(invoke moduleInstance,$(dep)),
 					$(if $(filter $(depInst),$(get thisInst->depends)),,
 						$(set+ thisInst->depends,$(depInst))))

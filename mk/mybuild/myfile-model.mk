@@ -126,7 +126,10 @@ define class-MyAnnotation
 		bindings,MyOptionBinding,,changeable many containment)
 
 	# PROTECTED REGION ID(MyFile_Annotation) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+	$(property qualifiedName)
+
+	$(getter qualifiedName,
+		$(get $(get type).qualifiedName))
 	# PROTECTED REGION END
 endef
 

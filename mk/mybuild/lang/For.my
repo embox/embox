@@ -1,0 +1,7 @@
+
+package mybuild.lang
+
+annotation For {
+	string value
+}
+
