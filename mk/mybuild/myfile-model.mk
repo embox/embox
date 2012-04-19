@@ -656,20 +656,58 @@ define class-MyBooleanOption
 endef
 
 #
-# Model object 'OptionValue'.
+# Model object 'TypeReferenceOption'.
 #
 # The following features and operations are defined:
-#   - attribute 'value'
+#   - reference 'type'
+#   - operation 'validateValue'
+#
+# The following features and operations are inherited from 'Option':
+#   - reference 'defaultValue'
+#   - operation 'validateValue'
+#   - operation 'getId'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-MyTypeReferenceOption
+	# Extends 'MyOption' class.
+	$(eobject MyFile_TypeReferenceOption,
+		MyTypeReferenceOption,MyOption,)
+
+	# Property 'type : MyType'.
+	# Property 'type_link : ELink'.
+	$(eobject-reference MyFile_TypeReferenceOption_type,
+		type,MyType,,changeable linkable)
+
+	# Method 'validateValue'.
+	# PROTECTED REGION ID(MyFile_TypeReferenceOption_validateValue) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method validateValue,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_TypeReferenceOption) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'OptionValue'.
+#
+# The following operations are defined:
 #   - operation 'toString'
 #
 define class-MyOptionValue # abstract
 	# Extends 'EObject' class (implicitly).
 	$(eobject MyFile_OptionValue,
 		MyOptionValue,,abstract)
-
-	# Property 'value'.
-	$(eobject-attribute MyFile_OptionValue_value,
-		value,changeable)
 
 	# Method 'toString'.
 	# PROTECTED REGION ID(MyFile_OptionValue_toString) ENABLED START
@@ -686,16 +724,20 @@ endef
 #
 # Model object 'StringOptionValue'.
 #
-# No features or operations defined.
-#
-# The following features and operations are inherited from 'OptionValue':
+# The following features are defined:
 #   - attribute 'value'
+#
+# The following operations are inherited from 'OptionValue':
 #   - operation 'toString'
 #
 define class-MyStringOptionValue
 	# Extends 'MyOptionValue' class.
 	$(eobject MyFile_StringOptionValue,
 		MyStringOptionValue,MyOptionValue,)
+
+	# Property 'value'.
+	$(eobject-attribute MyFile_StringOptionValue_value,
+		value,changeable)
 
 	# PROTECTED REGION ID(MyFile_StringOptionValue) ENABLED START
 	$(method toString,
@@ -709,16 +751,20 @@ endef
 #
 # Model object 'NumberOptionValue'.
 #
-# No features or operations defined.
-#
-# The following features and operations are inherited from 'OptionValue':
+# The following features are defined:
 #   - attribute 'value'
+#
+# The following operations are inherited from 'OptionValue':
 #   - operation 'toString'
 #
 define class-MyNumberOptionValue
 	# Extends 'MyOptionValue' class.
 	$(eobject MyFile_NumberOptionValue,
 		MyNumberOptionValue,MyOptionValue,)
+
+	# Property 'value'.
+	$(eobject-attribute MyFile_NumberOptionValue_value,
+		value,changeable)
 
 	# PROTECTED REGION ID(MyFile_NumberOptionValue) ENABLED START
 	$(method toString,
@@ -732,16 +778,20 @@ endef
 #
 # Model object 'BooleanOptionValue'.
 #
-# No features or operations defined.
-#
-# The following features and operations are inherited from 'OptionValue':
+# The following features are defined:
 #   - attribute 'value'
+#
+# The following operations are inherited from 'OptionValue':
 #   - operation 'toString'
 #
 define class-MyBooleanOptionValue
 	# Extends 'MyOptionValue' class.
 	$(eobject MyFile_BooleanOptionValue,
 		MyBooleanOptionValue,MyOptionValue,)
+
+	# Property 'isValue'.
+	$(eobject-attribute MyFile_BooleanOptionValue_isValue,
+		isValue,changeable)
 
 	# PROTECTED REGION ID(MyFile_BooleanOptionValue) ENABLED START
 	$(method toString,
@@ -751,6 +801,30 @@ define class-MyBooleanOptionValue
 
 	$(if $(value 1),
 		$(set value,$1))
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'TypeReferenceOptionValue'.
+#
+# The following features are defined:
+#   - reference 'value'
+#
+# The following operations are inherited from 'OptionValue':
+#   - operation 'toString'
+#
+define class-MyTypeReferenceOptionValue
+	# Extends 'MyOptionValue' class.
+	$(eobject MyFile_TypeReferenceOptionValue,
+		MyTypeReferenceOptionValue,MyOptionValue,)
+
+	# Property 'value : MyType'.
+	# Property 'value_link : ELink'.
+	$(eobject-reference MyFile_TypeReferenceOptionValue_value,
+		value,MyType,,changeable linkable)
+
+	# PROTECTED REGION ID(MyFile_TypeReferenceOptionValue) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 

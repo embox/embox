@@ -62,27 +62,34 @@
         volatile="true" transient="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="abstract" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
         volatile="true" transient="true" derived="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="members" upperBound="-1"
-        eType="#//Member" containment="true" eOpposite="#//Member/module"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="depends" upperBound="-1"
         eType="#//ModuleType" volatile="true" transient="true" derived="true" eOpposite="#//ModuleType/dependent"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="dependsMembers" upperBound="-1"
+        eType="#//DependsMember" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="dependent" upperBound="-1"
         eType="#//ModuleType" transient="true" eOpposite="#//ModuleType/depends"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="provides" upperBound="-1"
         eType="#//Feature" volatile="true" transient="true" derived="true" eOpposite="#//Feature/providedBy"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="providesMembers" upperBound="-1"
+        eType="#//ProvidesMember" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="requires" upperBound="-1"
         eType="#//Feature" volatile="true" transient="true" derived="true" eOpposite="#//Feature/requiredBy"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="requiresMembers" upperBound="-1"
+        eType="#//RequiresMember" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="sources" upperBound="-1"
         eType="#//FileName" volatile="true" transient="true" derived="true" containment="true"
         resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="sourcesMembers" upperBound="-1"
-        eType="#//SourceMember" changeable="false" volatile="true" transient="true"
-        derived="true" containment="true"/>
+        eType="#//SourceMember" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="objects" upperBound="-1"
         eType="#//FileName" volatile="true" transient="true" derived="true" containment="true"
         resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="objectsMembers" upperBound="-1"
+        eType="#//SourceMember" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
         eType="#//Option" volatile="true" transient="true" derived="true" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="optionsMembers" upperBound="-1"
+        eType="#//OptionMember" containment="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="allOptions" eType="#//Option"
         volatile="true" transient="true" unsettable="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="subTypes" upperBound="-1"
@@ -111,21 +118,35 @@
   <eClassifiers xsi:type="ecore:EClass" name="BooleanOption" eSuperTypes="#//Option">
     <eOperations name="validateValue" eType="ecore:EDataType ../model/emodel.ecore#//EBoolean"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OptionValue" abstract="true">
+  <eClassifiers xsi:type="ecore:EClass" name="TypeReferenceOption" eSuperTypes="#//Option">
+    <eOperations name="validateValue" eType="ecore:EDataType ../model/emodel.ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//Type"/>
+  </eClassifiers>  <eClassifiers xsi:type="ecore:EClass" name="OptionValue" abstract="true">
     <eOperations name="toString" eType="ecore:EDataType ../model/emodel.ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType ../model/emodel.ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StringOptionValue" eSuperTypes="#//OptionValue"/>
-  <eClassifiers xsi:type="ecore:EClass" name="NumberOptionValue" eSuperTypes="#//OptionValue"/>
-  <eClassifiers xsi:type="ecore:EClass" name="BooleanOptionValue" eSuperTypes="#//OptionValue"/>
+  <eClassifiers xsi:type="ecore:EClass" name="OptionValue" abstract="true">
+    <eOperations name="toString" eType="ecore:EDataType ../model/emodel.ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StringOptionValue" eSuperTypes="#//OptionValue">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType ../model/emodel.ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="NumberOptionValue" eSuperTypes="#//OptionValue">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType ../model/emodel.ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BooleanOptionValue" eSuperTypes="#//OptionValue">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType ../model/emodel.ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TypeReferenceOptionValue" eSuperTypes="#//OptionValue">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Type"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="OptionBinding">
     <eStructuralFeatures xsi:type="ecore:EReference" name="option" eType="#//Option"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="optionValue" eType="#//OptionValue"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Member" eSuperTypes="#//AnnotationTarget">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="#//ModuleType"
-        eOpposite="#//ModuleType/members"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="#//ModuleType"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FileName">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="fileName" eType="ecore:EDataType ../model/emodel.ecore#//EString"/>

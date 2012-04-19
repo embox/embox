@@ -123,19 +123,33 @@ MyFile_NumberOption := \
 MyFile_BooleanOption := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_BooleanOption)
 
+MyFile_TypeReferenceOption := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_TypeReferenceOption)
+MyFile_TypeReferenceOption_type := \
+	$(call eMetaReferenceCreate,$(MyFile_TypeReferenceOption),MyFile_TypeReferenceOption_type)
+
 MyFile_OptionValue := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_OptionValue)
-MyFile_OptionValue_value := \
-	$(call eMetaAttributeCreate,$(MyFile_OptionValue),MyFile_OptionValue_value)
 
 MyFile_StringOptionValue := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_StringOptionValue)
+MyFile_StringOptionValue_value := \
+	$(call eMetaAttributeCreate,$(MyFile_StringOptionValue),MyFile_StringOptionValue_value)
 
 MyFile_NumberOptionValue := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_NumberOptionValue)
+MyFile_NumberOptionValue_value := \
+	$(call eMetaAttributeCreate,$(MyFile_NumberOptionValue),MyFile_NumberOptionValue_value)
 
 MyFile_BooleanOptionValue := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_BooleanOptionValue)
+MyFile_BooleanOptionValue_isValue := \
+	$(call eMetaAttributeCreate,$(MyFile_BooleanOptionValue),MyFile_BooleanOptionValue_isValue)
+
+MyFile_TypeReferenceOptionValue := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_TypeReferenceOptionValue)
+MyFile_TypeReferenceOptionValue_value := \
+	$(call eMetaReferenceCreate,$(MyFile_TypeReferenceOptionValue),MyFile_TypeReferenceOptionValue_value)
 
 MyFile_OptionBinding := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_OptionBinding)
@@ -252,14 +266,22 @@ define __myFile_init
 
 	$(call eMetaClassInit,$(MyFile_BooleanOption),BooleanOption,$(MyFile_Option),)
 
+	$(call eMetaClassInit,$(MyFile_TypeReferenceOption),TypeReferenceOption,$(MyFile_Option),)
+	$(call eMetaReferenceInit,$(MyFile_TypeReferenceOption_type),type,$(MyFile_Type),,changeable linkable)
+
 	$(call eMetaClassInit,$(MyFile_OptionValue),OptionValue,,abstract)
-	$(call eMetaAttributeInit,$(MyFile_OptionValue_value),value,changeable)
 
 	$(call eMetaClassInit,$(MyFile_StringOptionValue),StringOptionValue,$(MyFile_OptionValue),)
+	$(call eMetaAttributeInit,$(MyFile_StringOptionValue_value),value,changeable)
 
 	$(call eMetaClassInit,$(MyFile_NumberOptionValue),NumberOptionValue,$(MyFile_OptionValue),)
+	$(call eMetaAttributeInit,$(MyFile_NumberOptionValue_value),value,changeable)
 
 	$(call eMetaClassInit,$(MyFile_BooleanOptionValue),BooleanOptionValue,$(MyFile_OptionValue),)
+	$(call eMetaAttributeInit,$(MyFile_BooleanOptionValue_isValue),value,changeable)
+
+	$(call eMetaClassInit,$(MyFile_TypeReferenceOptionValue),TypeReferenceOptionValue,$(MyFile_OptionValue),)
+	$(call eMetaReferenceInit,$(MyFile_TypeReferenceOptionValue_value),value,$(MyFile_Type),,changeable linkable)
 
 	$(call eMetaClassInit,$(MyFile_OptionBinding),OptionBinding,,)
 	$(call eMetaReferenceInit,$(MyFile_OptionBinding_option),option,$(MyFile_Option),,changeable linkable)
@@ -356,14 +378,22 @@ define __myFile_bind
 
 	$(call eMetaClassBind,$(MyFile_BooleanOption),MyBooleanOption)
 
+	$(call eMetaClassBind,$(MyFile_TypeReferenceOption),MyTypeReferenceOption)
+	$(call eMetaFeatureBind,$(MyFile_TypeReferenceOption_type),type)
+
 	$(call eMetaClassBind,$(MyFile_OptionValue),MyOptionValue)
-	$(call eMetaFeatureBind,$(MyFile_OptionValue_value),value)
 
 	$(call eMetaClassBind,$(MyFile_StringOptionValue),MyStringOptionValue)
+	$(call eMetaFeatureBind,$(MyFile_StringOptionValue_value),value)
 
 	$(call eMetaClassBind,$(MyFile_NumberOptionValue),MyNumberOptionValue)
+	$(call eMetaFeatureBind,$(MyFile_NumberOptionValue_value),value)
 
 	$(call eMetaClassBind,$(MyFile_BooleanOptionValue),MyBooleanOptionValue)
+	$(call eMetaFeatureBind,$(MyFile_BooleanOptionValue_isValue),isValue)
+
+	$(call eMetaClassBind,$(MyFile_TypeReferenceOptionValue),MyTypeReferenceOptionValue)
+	$(call eMetaFeatureBind,$(MyFile_TypeReferenceOptionValue_value),value)
 
 	$(call eMetaClassBind,$(MyFile_OptionBinding),MyOptionBinding)
 	$(call eMetaFeatureBind,$(MyFile_OptionBinding_option),option)
