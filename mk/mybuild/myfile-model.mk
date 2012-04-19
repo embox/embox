@@ -469,9 +469,9 @@ define class-MyModuleType
 	# Method 'isSuperTypeOf'.
 	#   1. another : MyModuleType
 	# PROTECTED REGION ID(MyFile_ModuleType_isSuperTypeOf) ENABLED START
-#	# TODO Uncomment and implement me.
 	$(method isSuperTypeOf,
-		$(error $0($1): NIY))
+		$(if $(invoke 1->isSubTypeOf,$(this)),
+			$1))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_ModuleType) ENABLED START
@@ -824,7 +824,8 @@ define class-MyTypeReferenceOptionValue
 		value,MyType,,changeable linkable)
 
 	# PROTECTED REGION ID(MyFile_TypeReferenceOptionValue) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+	$(method toString,
+		$(get $(get-field value).qualifiedName))
 	# PROTECTED REGION END
 endef
 

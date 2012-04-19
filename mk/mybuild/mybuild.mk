@@ -35,8 +35,10 @@ define check
 endef
 
 LABEL-IfNeed := mybuild.lang.IfNeed
+LABEL-For := mybuild.lang.For
 
 excludeAnnotations := $(LABEL-IfNeed)
+leftToRightParentAnnotations := $(LABEL-IfNeed) $(LABEL-For)
 
 # Constructor args:
 #   1. Configuration.
@@ -82,12 +84,8 @@ define class-Mybuild
 			$(for \
 				cfgInclude <- $(get configuration->includes),
 				module <- $(get cfgInclude->module),
-				$(if $(strip $(filter $(excludeAnnotations),
-						$(for annot <-
-								$(get cfgInclude->annotations),
-							$(get annot->qualifiedName)))),
-					$(call Mybuild.processIncludeAnnotations,$(module),
-						$(get cfgInclude->annotations)),
+				$(if $(strip $(call Mybuild.processIncludeAnnotations,$(module),
+						$(get cfgInclude->annotations))),
 
 					$(if $(map-get moduleInstanceStore/$(module)),,
 						$(invoke moduleInstanceClosure,$(module)))
@@ -98,25 +96,37 @@ define class-Mybuild
 			))
 
 	$(method processIncludeAnnotations,
+		$(if $2,,$1)
 		$(for annot <-$2,
-			$(if $(eq $(get annot->qualifiedName),$(LABEL-IfNeed)),
+			annotName <- $(get annot->qualifiedName),
+			$(if $(filter $(annotName),$(excludeAnnotations)),,$1)
+			$(if $(filter $(annotName),$(leftToRightParentAnnotations)),
+				$(if $(invoke \
+						$(get-field \
+							$(get $(get annot->bindings).optionValue)
+							.value)
+						.isSuperTypeOf,$1),,
+					$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
+						$(get cfgInclude->eResource),
+						error,
+						$(get cfgInclude->origin),
+						Annotation $(annotName) value should be target's parent))))
+			$(if $(eq $(annotName),$(LABEL-IfNeed)),
 				$(set+ recommendations,
 					$(invoke $(get $(get annot->bindings).optionValue).toString)
 					$1))))
 
 	$(method specifyInstances,
-		$(with $1,$2,$(for name <- $(basename $(get recommendations)),
-							$(map-get build->moduleInstanceByName/$(name))),
-			$(for inst <- $1,
-				$(if $(filter $(inst),$3),
-					$(for \
-						rule<-$(get recommendations),
-						targetInstance<-$(map-get build->moduleInstanceByName/$(basename $(rule))),
-						targetModule<-$(suffix $(rule)),
-						$(if $(invoke targetModule->isSubTypeOf,$(get targetInstance->type)),
-								$(call check,$(invoke moduleInstanceClosure,$(targetModule)),$2 $0,)
-								)),
-					$(inst)))))
+		$(for inst <- $1,
+			$(with $(strip $(for \
+					rule<-$(get recommendations),
+					targetInstance<-$(map-get build->moduleInstanceByName/$(basename $(rule))),
+					targetModule<-$(suffix $(rule)),
+					$(if $(and $(filter $(inst),$(targetInstance)),
+								$(invoke targetModule->isSubTypeOf,$(get targetInstance->type))),
+							$(call check,$(invoke moduleInstanceClosure,$(targetModule)),$2 $0,)
+							))),
+				$(if $1,$1,$(inst)))))
 
 	# Cheker for abstract realization. If there is only one subtype of given abstract module
 	# it included to build with all dependencies, which are also checked for abstract

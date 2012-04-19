@@ -65,7 +65,11 @@ $(gold_grammar)_produce-Value_NumberLiteral  = $(new MyNumberOptionValue,$1)
 # Rule: <Value> ::= BooleanLiteral
 $(gold_grammar)_produce-Value_BooleanLiteral = $(new MyBooleanOptionValue,$1)
 # Rule: <Value> ::= <Reference>
-$(gold_grammar)_produce-Value = $(error NIY: $0($1))
+define $(gold_grammar)_produce-Value
+	$(for value<-$(new MyTypeReferenceOptionValue),
+		$(set value->value_link,$1)
+		$(value))
+endef
 
 # Rule: <Reference> ::= <QualifiedName>
 $(gold_grammar)_produce-Reference                  = $(new ELink,$1,$(gold_location))
