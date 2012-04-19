@@ -11,7 +11,6 @@
 
 #include <stdarg.h>
 #include <stdio.h> /* FILE */
-#include <fs/node.h>
 
 struct file_desc;
 
@@ -30,14 +29,5 @@ typedef struct file_operations {
 	FILEOP_FSEEK fseek;
 	FILEOP_IOCTL ioctl;
 } file_operations_t;
-
-typedef struct file_create_param {
-	void  *node;
-	void  *parents_node;
-	char   path[CONFIG_MAX_LENGTH_FILE_NAME];
-} file_create_param_t;
-
-extern int nip_tail(char *head, char *tail);
-extern int increase_tail(char *head, char *tail);
 
 #endif /* KERNEL_FILE_H_ */

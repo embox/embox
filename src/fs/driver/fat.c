@@ -14,6 +14,7 @@
 #include <fs/fat.h>
 #include <fs/ramdisk.h>
 #include <fs/fs.h>
+#include <fs/node.h>
 #include <fs/vfs.h>
 #include <util/array.h>
 #include <embox/device.h>

@@ -23,6 +23,15 @@ typedef struct node {
 	struct tree_link      tree_link;
 } node_t;
 
+typedef struct file_create_param {
+	void  *node;
+	void  *parents_node;
+	char   path[CONFIG_MAX_LENGTH_FILE_NAME];
+} file_create_param_t;
+
+extern int nip_tail(char *head, char *tail);
+extern int increase_tail(char *head, char *tail);
+
 extern node_t *alloc_node(const char *name);
 extern void free_node(node_t *node);
 
