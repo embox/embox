@@ -26,4 +26,5 @@ module at91_pitc extends embox.arch.clock {
 
 module systick_timer extends embox.arch.clock {
 	source "systick_timer.c"
+	depends embox.kernel.time
 }

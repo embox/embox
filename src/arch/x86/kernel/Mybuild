@@ -16,4 +16,5 @@ module locore extends embox.arch.locore {
 module arch {
 	source "arch.c"
 	depends locore
+	depends embox.arch.x86.cpu
 }

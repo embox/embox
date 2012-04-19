@@ -28,4 +28,5 @@ module boot extends embox.arch.boot {
 module arch {
 	source "arch.c"
 	depends locore
+	depends embox.arch.sparc.cpu //TODO move from here
 }

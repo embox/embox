@@ -3,3 +3,7 @@ package embox.arch.sparc
 module lds extends embox.arch.lds {
 	source "embox.lds.S"
 }
+
+module cpu extends embox.arch.cpu {
+	source "include/asm/hal/ipl.h"
+}

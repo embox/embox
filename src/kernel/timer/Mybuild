@@ -5,7 +5,8 @@ abstract module timer_api { }
 
 module sys_timer {
 	source "timer.c", "clock.c"
-	depends embox.kernel.clock_source, embox.arch.clock
+	depends embox.kernel.clock_source, embox.arch.clock,
+		embox.kernel.softirq
 	option number timer_quantity=20
 }
 
