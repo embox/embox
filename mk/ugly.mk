@@ -37,7 +37,7 @@ $(for modName <- $2,
 		$(\n)// impl: $(get $(get 1->type).qualifiedName)$(\n)
 		$(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
 				 $(abspath $(call module_get_headers,$1)))) \
-		      ,$(\h)include __impl_x($(header))$(\n)$(\n)))
+		      ,$(\h)include <../$(header)>$(\n)$(\n)))
 
 	$(for moduleInstance <- $1,
 		optionInstance <- $(get moduleInstance->options),

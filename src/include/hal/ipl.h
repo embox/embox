@@ -9,8 +9,8 @@
 #ifndef HAL_IPL_H_
 #define HAL_IPL_H_
 
-#include <asm/hal/ipl.h>
-/*#include <module/embox/arch/cpu.h>*/
+/*#include <asm/hal/ipl.h>*/
+#include <module/embox/arch/cpu.h>
 
 /**
  * The implementation-dependent type suitable to hold IPL flags.

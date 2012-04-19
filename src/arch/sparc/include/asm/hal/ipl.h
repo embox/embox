@@ -1,3 +1,4 @@
+#ifndef __ASSEMBLER__
 #ifndef HAL_IPL_H_
 # error "Do not include this file directly!"
 #endif /* HAL_IPL_H_ */
@@ -51,3 +52,5 @@ static inline void ipl_restore(unsigned int ipl) {
 		: "memory"
 	);
 }
+
+#endif /* __ASSEMBLER__ */

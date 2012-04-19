@@ -6,7 +6,7 @@ module context extends embox.arch.context {
 
 module leon3 extends embox.arch.cpu {
 	option number nwindows=8
-	/*source "include/asm/hal/ipl.h"*/
+	source "../include/asm/hal/ipl.h"
 }
 
 /*FIXME mybuild may be split this to differernt modules */
