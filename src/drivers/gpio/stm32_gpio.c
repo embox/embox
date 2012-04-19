@@ -56,12 +56,25 @@ void gpio_conf_in(struct gpio *gpio, gpio_mask_t mask) {
 }
 
 void gpio_out_set(struct gpio *gpio, gpio_mask_t mask) {
-	gpio_conf_out(gpio, mask);
 	assert((mask & ~((1 << 16) - 1)) == 0);
 	REG_STORE(&(gpio->odr), mask);
 }
 
 gpio_mask_t gpio_out_get(struct gpio *gpio, gpio_mask_t mask) {
-	return REG_LOAD(&(gpio->idr));
+	return mask & REG_LOAD(&(gpio->idr));
+}
+
+gpio_mask_t gpio_in_get(struct gpio *gpio, gpio_mask_t mask) {
+	return mask & REG_LOAD(&(gpio->idr));
+}
+
+void gpio_conf_in_pull_up(struct gpio *gpio, gpio_mask_t mask) {
+	set_state(gpio, mask, 8);
+	REG_STORE(&(gpio->bsrr), mask);
+}
+
+void gpio_conf_in_pull_down(struct gpio *gpio, gpio_mask_t mask) {
+	set_state(gpio, mask, 8);
+	REG_STORE(&(gpio->brr), mask);
 }
 
