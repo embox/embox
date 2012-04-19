@@ -26,25 +26,29 @@ EMBOX_TEST(blinking_led);
 
 #define DELAY   0x25000
 
+#include <drivers/gpio.h>
+
 static void delay(int d) {
 	while (-- d) {
 	}
 }
 
 static void led1_on(void) {
-	 REG_STORE(LED_PORT_ODR, LED_BLUE | LED_GREEN);
+	/*REG_STORE(LED_PORT_ODR, LED_BLUE | LED_GREEN);*/
+	gpio_out_set(GPIO_C, LED_BLUE | LED_GREEN);
 }
 
 static void led1_off(void) {
-	 REG_STORE(LED_PORT_ODR, 0);
+	/*REG_STORE(LED_PORT_ODR, 0);*/
+	gpio_out_set(GPIO_C, 0);
 }
 
 static int blinking_led(void) {
-	static int count = 3;
-	REG_STORE(RCC_APB1RSTR,RCC_APB1PWR);
-	REG_STORE(RCC_APB2ENR,RCC_APB2GPIOC);
-	REG_STORE(GPIOC_CRH,0x44444411);
-
+	int count = 3;
+	/*REG_STORE(RCC_APB1RSTR,RCC_APB1PWR);*/
+	/*REG_STORE(RCC_APB2ENR,RCC_APB2GPIOC);*/
+	/*REG_STORE(GPIOC_CRH,0x44444411);*/
+    gpio_conf_out(GPIO_C, LED_BLUE | LED_GREEN);
 	while (count--) {
 		led1_on();
 		delay(DELAY);

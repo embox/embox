@@ -2,4 +2,5 @@ package stm32vl.test
 
 module blinking_led {
 	source "blinking_led.c"
+	depends embox.driver.gpio.stm32
 }
