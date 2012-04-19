@@ -9,5 +9,5 @@ module cpu extends embox.arch.cpu {
 }
 
 module cpu_thumb extends embox.arch.cpu {
-
+	source "include/asm/hal/ipl_thumb.h"
 }
