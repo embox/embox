@@ -265,19 +265,15 @@ endef
 #   - attribute 'modifiers'
 #   - attribute 'static'
 #   - attribute 'abstract'
+#   - reference 'members'
 #   - reference 'depends'
-#   - reference 'dependsMembers'
 #   - reference 'dependent'
 #   - reference 'provides'
-#   - reference 'providesMembers'
 #   - reference 'requires'
-#   - reference 'requiresMembers'
 #   - reference 'sources'
 #   - reference 'sourcesMembers'
 #   - reference 'objects'
-#   - reference 'objectsMembers'
 #   - reference 'options'
-#   - reference 'optionsMembers'
 #   - reference 'allOptions'
 #   - reference 'subTypes'
 #   - reference 'superType'
@@ -325,6 +321,10 @@ define class-MyModuleType
 		$(if $1,$(set+ modifiers,abstract),$(set- modifiers,abstract)))
 	# PROTECTED REGION END
 
+	# Property 'members... : MyMember'.
+	$(eobject-reference MyFile_ModuleType_members,
+		members,MyMember,module,changeable many containment)
+
 	# Reference 'depends' [0..*]: bidirectional, derived.
 	$(property depends... : MyModuleType)
 	# PROTECTED REGION ID(MyFile_ModuleType_depends) ENABLED START
@@ -334,10 +334,6 @@ define class-MyModuleType
 	$(setter depends,
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
-
-	# Property 'dependsMembers... : MyDependsMember'.
-	$(eobject-reference MyFile_ModuleType_dependsMembers,
-		dependsMembers,MyDependsMember,,changeable many containment)
 
 	# Property 'dependent... : MyModuleType'.
 	# Property 'dependent_links... : ELink'.
@@ -354,10 +350,6 @@ define class-MyModuleType
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
-	# Property 'providesMembers... : MyProvidesMember'.
-	$(eobject-reference MyFile_ModuleType_providesMembers,
-		providesMembers,MyProvidesMember,,changeable many containment)
-
 	# Reference 'requires' [0..*]: bidirectional, derived.
 	$(property requires... : MyFeature)
 	# PROTECTED REGION ID(MyFile_ModuleType_requires) ENABLED START
@@ -367,10 +359,6 @@ define class-MyModuleType
 	$(setter requires,
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
-
-	# Property 'requiresMembers... : MyRequiresMember'.
-	$(eobject-reference MyFile_ModuleType_requiresMembers,
-		requiresMembers,MyRequiresMember,,changeable many containment)
 
 	# Reference 'sources' [0..*]: containment, derived.
 	$(property sources... : MyFileName)
@@ -382,9 +370,13 @@ define class-MyModuleType
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
-	# Property 'sourcesMembers... : MySourceMember'.
-	$(eobject-reference MyFile_ModuleType_sourcesMembers,
-		sourcesMembers,MySourceMember,,changeable many containment)
+	# Reference 'sourcesMembers' [0..*]: containment, derived, read-only.
+	$(property sourcesMembers... : MySourceMember)
+	# PROTECTED REGION ID(MyFile_ModuleType_sourcesMembers) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(getter sourcesMembers,
+		$(error $0: NIY))
+	# PROTECTED REGION END
 
 	# Reference 'objects' [0..*]: containment, derived.
 	$(property objects... : MyFileName)
@@ -396,10 +388,6 @@ define class-MyModuleType
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
 
-	# Property 'objectsMembers... : MySourceMember'.
-	$(eobject-reference MyFile_ModuleType_objectsMembers,
-		objectsMembers,MySourceMember,,changeable many containment)
-
 	# Reference 'options' [0..*]: containment, derived.
 	$(property options... : MyOption)
 	# PROTECTED REGION ID(MyFile_ModuleType_options) ENABLED START
@@ -410,10 +398,6 @@ define class-MyModuleType
 	$(setter options,
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
-
-	# Property 'optionsMembers... : MyOptionMember'.
-	$(eobject-reference MyFile_ModuleType_optionsMembers,
-		optionsMembers,MyOptionMember,,changeable many containment)
 
 	# Reference 'allOptions' [0..1]: derived.
 	$(property allOptions : MyOption)
@@ -656,20 +640,58 @@ define class-MyBooleanOption
 endef
 
 #
-# Model object 'OptionValue'.
+# Model object 'TypeReferenceOption'.
 #
 # The following features and operations are defined:
-#   - attribute 'value'
+#   - reference 'type'
+#   - operation 'validateValue'
+#
+# The following features and operations are inherited from 'Option':
+#   - reference 'defaultValue'
+#   - operation 'validateValue'
+#   - operation 'getId'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-MyTypeReferenceOption
+	# Extends 'MyOption' class.
+	$(eobject MyFile_TypeReferenceOption,
+		MyTypeReferenceOption,MyOption,)
+
+	# Property 'type : MyType'.
+	# Property 'type_link : ELink'.
+	$(eobject-reference MyFile_TypeReferenceOption_type,
+		type,MyType,,changeable linkable)
+
+	# Method 'validateValue'.
+	# PROTECTED REGION ID(MyFile_TypeReferenceOption_validateValue) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method validateValue,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_TypeReferenceOption) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'OptionValue'.
+#
+# The following operations are defined:
 #   - operation 'toString'
 #
 define class-MyOptionValue # abstract
 	# Extends 'EObject' class (implicitly).
 	$(eobject MyFile_OptionValue,
 		MyOptionValue,,abstract)
-
-	# Property 'value'.
-	$(eobject-attribute MyFile_OptionValue_value,
-		value,changeable)
 
 	# Method 'toString'.
 	# PROTECTED REGION ID(MyFile_OptionValue_toString) ENABLED START
@@ -686,16 +708,20 @@ endef
 #
 # Model object 'StringOptionValue'.
 #
-# No features or operations defined.
-#
-# The following features and operations are inherited from 'OptionValue':
+# The following features are defined:
 #   - attribute 'value'
+#
+# The following operations are inherited from 'OptionValue':
 #   - operation 'toString'
 #
 define class-MyStringOptionValue
 	# Extends 'MyOptionValue' class.
 	$(eobject MyFile_StringOptionValue,
 		MyStringOptionValue,MyOptionValue,)
+
+	# Property 'value'.
+	$(eobject-attribute MyFile_StringOptionValue_value,
+		value,changeable)
 
 	# PROTECTED REGION ID(MyFile_StringOptionValue) ENABLED START
 	$(method toString,
@@ -709,16 +735,20 @@ endef
 #
 # Model object 'NumberOptionValue'.
 #
-# No features or operations defined.
-#
-# The following features and operations are inherited from 'OptionValue':
+# The following features are defined:
 #   - attribute 'value'
+#
+# The following operations are inherited from 'OptionValue':
 #   - operation 'toString'
 #
 define class-MyNumberOptionValue
 	# Extends 'MyOptionValue' class.
 	$(eobject MyFile_NumberOptionValue,
 		MyNumberOptionValue,MyOptionValue,)
+
+	# Property 'value'.
+	$(eobject-attribute MyFile_NumberOptionValue_value,
+		value,changeable)
 
 	# PROTECTED REGION ID(MyFile_NumberOptionValue) ENABLED START
 	$(method toString,
@@ -732,16 +762,20 @@ endef
 #
 # Model object 'BooleanOptionValue'.
 #
-# No features or operations defined.
-#
-# The following features and operations are inherited from 'OptionValue':
+# The following features are defined:
 #   - attribute 'value'
+#
+# The following operations are inherited from 'OptionValue':
 #   - operation 'toString'
 #
 define class-MyBooleanOptionValue
 	# Extends 'MyOptionValue' class.
 	$(eobject MyFile_BooleanOptionValue,
 		MyBooleanOptionValue,MyOptionValue,)
+
+	# Property 'isValue'.
+	$(eobject-attribute MyFile_BooleanOptionValue_isValue,
+		isValue,changeable)
 
 	# PROTECTED REGION ID(MyFile_BooleanOptionValue) ENABLED START
 	$(method toString,
@@ -751,6 +785,30 @@ define class-MyBooleanOptionValue
 
 	$(if $(value 1),
 		$(set value,$1))
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'TypeReferenceOptionValue'.
+#
+# The following features are defined:
+#   - reference 'value'
+#
+# The following operations are inherited from 'OptionValue':
+#   - operation 'toString'
+#
+define class-MyTypeReferenceOptionValue
+	# Extends 'MyOptionValue' class.
+	$(eobject MyFile_TypeReferenceOptionValue,
+		MyTypeReferenceOptionValue,MyOptionValue,)
+
+	# Property 'value : MyType'.
+	# Property 'value_link : ELink'.
+	$(eobject-reference MyFile_TypeReferenceOptionValue_value,
+		value,MyType,,changeable linkable)
+
+	# PROTECTED REGION ID(MyFile_TypeReferenceOptionValue) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
@@ -798,9 +856,8 @@ define class-MyMember
 		MyMember,MyAnnotationTarget,)
 
 	# Property 'module : MyModuleType'.
-	# Property 'module_link : ELink'.
 	$(eobject-reference MyFile_Member_module,
-		module,MyModuleType,,changeable linkable)
+		module,MyModuleType,members,changeable container)
 
 	# PROTECTED REGION ID(MyFile_Member) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
