@@ -10,11 +10,19 @@
 #include <kernel/task.h>
 #include <util/array.h>
 #include <stdio.h>
+#include <fcntl.h>
 
 extern const struct task_res_ops * __task_res_ops[];
 
 static int this_open(const char *path, int __oflag, va_list args) {
-	return task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_FILE, fopen(path, "rw"));
+	char mode;
+	if ((O_RDWR == __oflag) || (O_WRONLY == __oflag)) {
+		mode = 'w';
+	}
+	else {
+		mode = 'r';
+	}
+	return task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_FILE, fopen(path, (const char *) &mode));
 }
 
 static int this_close(int fd) {

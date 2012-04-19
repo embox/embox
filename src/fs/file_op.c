@@ -91,7 +91,7 @@ node_t *create_filechain(const char *path){
 
 		drv = new_node->fs_type = node->fs_type;
 		new_node->file_info = node->file_info;
-		new_node->properties  = IS_DIRECTORY;
+		new_node->properties = IS_DIRECTORY;
 		/* believe that the latter in path is always a file */
 		if (LAST == count_dir) {
 			new_node->properties &= ~IS_DIRECTORY;
@@ -123,7 +123,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	if (NULL == (nod = vfs_find_node(path, NULL))) {
 		if ('w' != *mode) {
-			errno = -EINVAL;
+			errno = -ENOENT;
 			return NULL;
 		}
 

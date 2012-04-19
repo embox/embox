@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 #include <fs/ramfs.h>
 #include <fs/ramdisk.h>
 #include <fs/fat.h>
@@ -156,6 +157,8 @@ int mkfs_do_operation(void *_mkfs_params) {
 
 		//fd = fopen("/dev/ram1/1/2/3/4/5", "w");
 		//fd = fopen("/dev/ram1/1/2", "r");
+		rezult = open("/dev/ram1/t3.txt", O_RDONLY);
+		rezult = open("/dev/ram1/t3.txt", O_WRONLY);
 
 		fd = fopen("/dev/ram1/3.txt", "w");
 		fd = fopen("/dev/ram1/4.txt", "w");

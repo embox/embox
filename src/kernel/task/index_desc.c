@@ -34,6 +34,7 @@ void task_idx_desc_free(struct idx_desc *desc) {
 }
 
 int task_res_idx_alloc(struct task_resources *res, int type, void *data) {
+	if(NULL == data) return -1;
 	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
 		if (!task_res_idx_is_binded(res, i)) {
 			task_res_idx_set(res, i, task_idx_desc_alloc(type, data));

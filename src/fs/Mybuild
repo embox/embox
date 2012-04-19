@@ -20,7 +20,7 @@ module rootfs {
 
 module core {
     @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "file.c",
+	source "file_op.c",
 		"vfs.c",
 		"fs.c",
 		"kernel_posix_plugin.c"
