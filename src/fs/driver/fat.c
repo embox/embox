@@ -133,7 +133,8 @@ uint32_t fat_get_vol_info(void *fd,
 		uint8_t *scratchsector,	uint32_t startsector);
 
 
-int fatfs_set_path (uint8_t *tmppath, uint8_t *path);
+int fatfs_set_path (uint8_t *tmppath, node_t *nod);
+void cut_mount_dir(char *path, char *mount_dir);
 /*
  * file_operation
  */
@@ -156,7 +157,8 @@ static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
 		_mode = DFS_READ;
 	}
 
-	fatfs_set_path ((uint8_t *) path, (uint8_t *)&nod->name);
+	fatfs_set_path ((uint8_t *) path, nod);
+	cut_mount_dir((char *) path, fd->p_fs_dsc->root_name);
 
 	if(DFS_OK == fat_open_file(fd, (uint8_t *)path, _mode, sector)) {
 		return desc;
@@ -309,7 +311,7 @@ int fatfs_partition(void *fdes) {
 
 	memset ((void *)&lbr.jump, 0x00, SECTOR_SIZE); /* set all by ZERO */
 	memset ((void *)&lbr.oemid, 0x45, 0x08); /* EEEEEEEE */
-	bytepersec = 0x200;
+	bytepersec = SECTOR_SIZE;
 	lbr.bpb.bytepersec_l = (uint8_t)(bytepersec & 0xFF);
 	lbr.bpb.bytepersec_h = (uint8_t)((bytepersec & 0xFF00) >> 8);
 	lbr.bpb.secperclus = 0x01;
@@ -345,19 +347,35 @@ int fatfs_partition(void *fdes) {
 	return fat_write_sector(fd, sector, 0, 1);
 }
 
-int fatfs_set_path (uint8_t *tmppath, uint8_t *path) {
+int fatfs_set_path (uint8_t *path, node_t *nod) {
+
+	node_t *parent, *node;
 	char buff[MAX_PATH];
+
+	*path = *buff= 0;
+	node = nod;
+	strcpy((char *) buff, (const char *) &node->name);
+
+	while(NULL != (parent = vfs_find_parent((const char *) &node->name, node))) {
+		strcpy((char *) path, (const char *) &parent->name);
+		if('/' != *path) {
+			strcat((char *) path, (const char *) "/");
+		}
+		strcat((char *) path, (const char *) buff);
+		strcpy((char *) buff, (const char *) path);
+		node = parent;
+	}
 
 	/*strcpy((char *) tmppath, (const char *) start_name);
 		if ('/' != *((char *)path)) {
 			strcat((char *) tmppath, "/");
-		}*/
+		}
 	strcpy((char *) tmppath, (const char *) "/");
-	strcat((char *) tmppath, (const char *) path);
+	strcat((char *) tmppath, (const char *) &nod->name);*/
 
-	strncpy((char *) buff, (char *) tmppath, MAX_PATH);
+	strncpy((char *) buff, (char *) path, MAX_PATH);
 	buff[MAX_PATH - 1] = 0;
-	if (strcmp((char *) tmppath,(char *) buff)) {
+	if (strcmp((char *) path,(char *) buff)) {
 		return DFS_PATHLEN;
 	}
 	return DFS_OK;
@@ -467,12 +485,12 @@ uint32_t fat_get_vol_info(void *fd,
 		  (((uint32_t) lbr->ebpb.ebpb32.fatsize_2) << 16) |
 		  (((uint32_t) lbr->ebpb.ebpb32.fatsize_3) << 24);
 
-		memcpy(volinfo->label, lbr->ebpb.ebpb32.label, 11);
+		memcpy(volinfo->label, lbr->ebpb.ebpb32.label, MSDOS_NAME);
 		volinfo->label[11] = 0;
 
 	}
 	else {
-		memcpy(volinfo->label, lbr->ebpb.ebpb.label, 11);
+		memcpy(volinfo->label, lbr->ebpb.ebpb.label, MSDOS_NAME);
 		volinfo->label[11] = 0;
 
 	}
@@ -854,7 +872,7 @@ uint8_t *fat_canonical_to_dir(uint8_t *dest, uint8_t *src)
 {
 	uint8_t *destptr = dest;
 
-	memset(dest, ' ', 11);
+	memset(dest, ' ', MSDOS_NAME);
 	dest[11] = 0;
 
 	while (*src && (*src != DIR_SEPARATOR) && (destptr - dest < 11)) {
@@ -997,9 +1015,9 @@ uint32_t fat_open_dir(void *fd,
 
 			do {
 				result = fat_get_next(fd, dirinfo, &de);
-			} while (!result && memcmp(de.name, tmpfn, 11));
+			} while (!result && memcmp(de.name, tmpfn, MSDOS_NAME));
 
-			if (!memcmp(de.name, tmpfn, 11) &&
+			if (!memcmp(de.name, tmpfn, MSDOS_NAME) &&
 					((de.attr & ATTR_DIRECTORY) == ATTR_DIRECTORY)) {
 				if (volinfo->filesystem == FAT32) {
 					dirinfo->currentcluster = (uint32_t) de.startclus_l_l |
@@ -1020,7 +1038,7 @@ uint32_t fat_open_dir(void *fd,
 					return DFS_ERRMISC;
 				}
 			}
-			else if (!memcmp(de.name, tmpfn, 11) &&
+			else if (!memcmp(de.name, tmpfn, MSDOS_NAME) &&
 					!(de.attr & ATTR_DIRECTORY)) {
 				return DFS_NOTFOUND;
 			}
@@ -1286,6 +1304,41 @@ void cut_mount_dir(char *path, char *mount_dir) {
 		strcpy(path, p);
 	}
 
+#define MSDOS_DOT     "."
+#define MSDOS_DOTDOT  ".."
+void fatfs_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
+	p_dir_ent_t de;
+
+	de = (dir_ent_t *) sector;
+
+	memset(sector, 0, SECTOR_SIZE);
+	memcpy(de[0].name, MSDOS_DOT, MSDOS_NAME);
+	memcpy(de[1].name, MSDOS_DOTDOT, MSDOS_NAME);
+	de[0].attr = de[1].attr = ATTR_DIRECTORY;
+	/* TODO set normal time */
+	de[0].crttime_l = de[1].crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
+	de[0].crttime_h = de[1].crttime_h = 0x08;
+	de[0].crtdate_l = de[1].crtdate_l = 0x11;
+	de[0].crtdate_h = de[1].crtdate_h = 0x34;
+	de[0].lstaccdate_l = de[1].lstaccdate_l = 0x11;
+	de[0].lstaccdate_h = de[1].lstaccdate_h = 0x34;
+	de[0].wrttime_l = de[1].wrttime_l = 0x20;
+	de[0].wrttime_h = de[1].wrttime_h = 0x08;
+	de[0].wrtdate_l = de[1].wrtdate_l = 0x11;
+	de[0].wrtdate_h = de[1].wrtdate_h = 0x34;
+
+	/*point to the directory containing cluster */
+	de[0].startclus_l_l = cluster & 0xff;
+	de[0].startclus_l_h = (cluster & 0xff00) >> 8;
+	de[0].startclus_h_l = (cluster & 0xff0000) >> 16;
+	de[0].startclus_h_h = (cluster & 0xff000000) >> 24;
+	/*point to the directory parents cluster */
+	de[1].startclus_l_l = dir_cluster & 0xff;
+	de[1].startclus_l_h = (dir_cluster & 0xff00) >> 8;
+	de[1].startclus_h_l = (dir_cluster & 0xff0000) >> 16;
+	de[1].startclus_h_h = (dir_cluster & 0xff000000) >> 24;
+}
+
 /*
  * Create a file or directory. You supply a file_create_param_t
  * structure.
@@ -1340,7 +1393,9 @@ int fatfs_create_file(void *par) {
 
 	/* put sane values in the directory entry */
 	memset(&de, 0, sizeof(de));
-	memcpy(de.name, filename, 11);
+	memcpy(de.name, filename, MSDOS_NAME);
+	de.attr = node->properties;
+	/* TODO set normal time */
 	de.crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
 	de.crttime_h = 0x08;
 	de.crtdate_l = 0x11;
@@ -1406,6 +1461,16 @@ int fatfs_create_file(void *par) {
 	temp = 0;
 	fat_set_fat_(fd, sector, &temp, fileinfo->cluster, cluster);
 
+	if (ATTR_DIRECTORY == (node->properties & ATTR_DIRECTORY)) {
+		/* create . and ..  files of this catalog */
+		fatfs_set_direntry(di.currentcluster, fileinfo->cluster);
+		cluster = fileinfo->volinfo->dataarea +
+				  ((fileinfo->cluster - 2) * fileinfo->volinfo->secperclus);
+		if (fat_write_sector(fd, sector, cluster, 1)) {
+			return DFS_ERRMISC;
+		}
+	}
+
 	return DFS_OK;
 }
 
@@ -1459,7 +1524,7 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 	}
 
 	while (!fat_get_next(fd, &di, &de)) {
-		if (!memcmp(de.name, filename, 11)) {
+		if (!memcmp(de.name, filename, MSDOS_NAME)) {
 			/* You can't use this function call to open a directory. */
 			if (de.attr & ATTR_DIRECTORY){
 				return DFS_NOTFOUND;
@@ -2064,7 +2129,7 @@ int fatfs_root_create(void *fdes) {
 
 	/* put sane values in the directory entry */
 	memset(&de, 0, sizeof(de));
-	memcpy(de.name, "/", 11);
+	memcpy(de.name, "/", MSDOS_NAME);
 	de.attr = ATTR_DIRECTORY;
 	de.crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
 	de.crttime_h = 0x08;
@@ -2187,6 +2252,7 @@ int fat_main(const void *name)
 		fwrite((const void *) sector2, SECTOR_SIZE/2, 1, file);
 	}
 	sprintf((char *)sector2, (const char *)"test string at the end...%d", n++);
+	strcat((char *)sector2, (const char *) name);
 	fwrite((const void *) sector2, strlen((const char *)sector2), 1, file);
 
 /*------------------------------------------------------------*/

@@ -21,6 +21,7 @@
 #define MAX_PATH		64	/*  Maximum path length  */
 #define DIR_SEPARATOR	'/'	/* character separating directory components*/
 #define CONFIG_QUANTITY_FATFILE  64
+#define MSDOS_NAME    11
 
 
 /* 32-bit error codes */

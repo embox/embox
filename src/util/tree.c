@@ -139,4 +139,6 @@ struct tree_link *tree_children_next(struct tree_link *tree) {
 	    return list_element(tree->list_link.next, struct tree_link, list_link);
 }
 
-
+struct tree_link *tree_children_prev(struct tree_link *tree) {
+	    return list_element(tree->list_link.next, struct tree_link, list_link);
+}

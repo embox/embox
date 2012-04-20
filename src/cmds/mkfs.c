@@ -114,6 +114,7 @@ int mkfs_do_operation(void *_mkfs_params) {
 
 #ifdef _GAZ_DEBUG_
 	FILE *fd;
+	char filename[MAX_PATH];
 #endif /*def _GAZ_DEBUG_ */
 
 	mkfs_params = (mkfs_params_t *) _mkfs_params;
@@ -151,18 +152,35 @@ int mkfs_do_operation(void *_mkfs_params) {
 		}
 
 #ifdef _GAZ_DEBUG_
-		fat_main("/dev/ram1/t1.txt");
+		strcpy(filename, ramd_params->name);
+		strcat (filename, "/t1.txt");
+		fat_main((const void *) filename);
 
-		fat_main("/dev/ram1/t2.txt");
+		strcpy(filename, ramd_params->name);
+		strcat (filename, "/t2.txt");
+		fat_main((const void *) filename);
 
 		//fd = fopen("/dev/ram1/1/2/3/4/5", "w");
 		//fd = fopen("/dev/ram1/1/2", "r");
-		rezult = open("/dev/ram1/t3.txt", O_RDONLY);
-		rezult = open("/dev/ram1/t3.txt", O_WRONLY);
+		strcpy(filename, ramd_params->name);
+		strcat (filename, "/t3.txt");
+		rezult = open((const char *) filename, O_RDONLY);
+		rezult = open((const char *) filename, O_WRONLY);
 
-		fd = fopen("/dev/ram1/3.txt", "w");
-		fd = fopen("/dev/ram1/4.txt", "w");
-		fd = fopen("/dev/ram1/3.txt", "r");
+		strcpy(filename, ramd_params->name);
+		strcat (filename, "/1/2/3/4/3.txt");
+		//fd = fopen((const char *) filename, "w");
+		fat_main((const void *) filename);
+
+		strcpy(filename, ramd_params->name);
+		strcat (filename, "/5/6/7/8/4.txt");
+		//fd = fopen((const char *) filename, "w");
+		fat_main((const void *) filename);
+
+
+		strcpy(filename, ramd_params->name);
+		strcat (filename, "/3.txt");
+		fd = fopen((const char *) filename, "r");
 #endif /*def _GAZ_DEBUG_ */
 	}
 	return 0;

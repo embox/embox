@@ -110,7 +110,7 @@ node_t *create_filechain(const char *path){
 		node = new_node;
 		count_dir--;
 
-	} while (LAST < count_dir);
+	} while (0 < count_dir);
 
 	return node;
 }

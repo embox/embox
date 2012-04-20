@@ -12,11 +12,11 @@
 #include <fs/fs.h>
 #include <util/tree.h>
 
-#define IS_DIRECTORY    0x00000010
+#define IS_DIRECTORY    0x10
 
 typedef struct node {
 	const char            name[CONFIG_MAX_LENGTH_FILE_NAME];
-	unsigned int          properties;
+	uint8_t               properties;
 	void                 *file_info; /* WTF? maybe introduce Node Attribute Structure(NAS)? (sikmir) */
 	struct fs_drv        *fs_type;
 	void                 *attr;

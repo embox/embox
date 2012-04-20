@@ -88,6 +88,14 @@ static int compare_children_names(struct tree_link* link, void *name) {
 #endif
 }
 
+node_t *vfs_find_parent(const char *name, node_t *child) {
+	struct tree_link *tlink;
+
+	tlink = &child->tree_link;
+
+	return tree_element(tlink->par, struct node, tree_link);
+}
+
 node_t *vfs_find_child(const char *name, node_t *parent) {
 	struct tree_link *tlink;
 
