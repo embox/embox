@@ -87,7 +87,7 @@ endef
 # The following features are defined:
 #   - reference 'module'
 #   - reference 'option'
-#   - reference 'optionValue'
+#   - reference 'value'
 #
 define class-OptionInstance
 	# Extends 'EObject' class (implicitly).
@@ -103,9 +103,9 @@ define class-OptionInstance
 	$(eobject-reference Build_OptionInstance_option,
 		option,MyOption,,changeable linkable)
 
-	# Property 'optionValue : MyOptionValue'.
-	$(eobject-reference Build_OptionInstance_optionValue,
-		optionValue,MyOptionValue,,changeable)
+	# Property 'value : MyLiteral'.
+	$(eobject-reference Build_OptionInstance_value,
+		value,MyLiteral,,changeable)
 
 	# PROTECTED REGION ID(Build_OptionInstance) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.

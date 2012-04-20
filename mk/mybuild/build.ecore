@@ -26,6 +26,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="#//ModuleInstance"
         eOpposite="#//ModuleInstance/options"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="option" eType="ecore:EClass myfile.ecore#//Option"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="optionValue" eType="ecore:EClass myfile.ecore#//OptionValue"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="ecore:EClass myfile.ecore#//Literal"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -43,7 +43,7 @@ $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan = $2
 define $(gold_grammar)_produce-AnnotationInitializer_LParan_RParan2
 	$(for binding<-$(new MyOptionBinding),
 		$(set binding->option_link,$(new ELink,value,$(gold_location)))
-		$(set binding->optionValue,$2)
+		$(set binding->value,$2)
 		$(binding))
 endef
 
@@ -54,19 +54,19 @@ $(gold_grammar)_produce-ParametersList_Comma = $1 $3
 define $(gold_grammar)_produce-Parameter_Eq
 	$(for binding<-$(new MyOptionBinding),
 		$(set binding->option_link,$1)
-		$(set binding->optionValue,$3)
+		$(set binding->value,$3)
 		$(binding))
 endef
 
 # Rule: <Value> ::= StringLiteral
-$(gold_grammar)_produce-Value_StringLiteral  = $(new MyStringOptionValue,$1)
+$(gold_grammar)_produce-Value_StringLiteral  = $(new MyStringLiteral,$1)
 # Rule: <Value> ::= NumberLiteral
-$(gold_grammar)_produce-Value_NumberLiteral  = $(new MyNumberOptionValue,$1)
+$(gold_grammar)_produce-Value_NumberLiteral  = $(new MyNumberLiteral,$1)
 # Rule: <Value> ::= BooleanLiteral
-$(gold_grammar)_produce-Value_BooleanLiteral = $(new MyBooleanOptionValue,$1)
+$(gold_grammar)_produce-Value_BooleanLiteral = $(new MyBooleanLiteral,$1)
 # Rule: <Value> ::= <Reference>
 define $(gold_grammar)_produce-Value
-	$(for value<-$(new MyTypeReferenceOptionValue),
+	$(for value<-$(new MyTypeReferenceLiteral),
 		$(set value->value_link,$1)
 		$(value))
 endef

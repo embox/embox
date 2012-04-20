@@ -103,7 +103,7 @@ define class-Mybuild
 			$(if $(filter $(annotName),$(leftToRightParentAnnotations)),
 				$(if $(invoke \
 						$(get-field \
-							$(get $(get annot->bindings).optionValue)
+							$(get $(get annot->bindings).value)
 							.value)
 						.isSuperTypeOf,$1),,
 					$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
@@ -113,7 +113,7 @@ define class-Mybuild
 						Annotation $(annotName) value should be target's parent))))
 			$(if $(eq $(annotName),$(LABEL-IfNeed)),
 				$(set+ recommendations,
-					$(invoke $(get $(get annot->bindings).optionValue).toString)
+					$(invoke $(get $(get annot->bindings).value).toString)
 					$1))))
 
 	$(method specifyInstances,
@@ -219,7 +219,7 @@ define class-Mybuild
 					$(if $(optValue),
 						$(silent-for optInst <- $(new OptionInstance),
 							$(set optInst->option,$(opt))
-							$(set optInst->optionValue,$(optValue))
+							$(set optInst->value,$(optValue))
 							$(set+ modInst->options,$(optInst))),
 						$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
 							$(for includeMember <- $(get modInst->includeMember),
@@ -245,7 +245,7 @@ define class-Mybuild
 			optBinding <- $2,
 			optBindOpt <- $(get optBinding->option),
 			optBindName <- $(get optBindOpt->name),
-			optBindVal <- $(get optBinding->optionValue),
+			optBindVal <- $(get optBinding->value),
 			$(if $(and $(eq $(optName),$(optBindName)),
 					$(invoke opt->validateValue,$(optBindVal))),
 				$(optBindVal))))
@@ -368,7 +368,7 @@ define printInstance
 		OptInsts:$(\n)
 		$(for optInst <- $(get inst->options),
 			opt <- $(get optInst->option),
-			val <-$(get optInst->optionValue),
+			val <-$(get optInst->value),
 			$(\t)$(get opt->name) : $(get val->value)$(\n))
 		Sources:$(\n)
 		$(for srcMember <- $(get mod->sourcesMembers),
@@ -380,7 +380,7 @@ define printInstance
 					@$(annotName):$(\n)
 					$(for opt <- $(get annotBind->option),
 						optName <- $(get opt->name),
-						optValue <- $(get $(get annotBind->optionValue).value),
+						optValue <- $(get $(get annotBind->value).value),
 						$(\t)$(optName) = $(optValue)$(\n)))
 				$(get src->fileFullName)$(\n))
 	)

@@ -43,7 +43,7 @@ $(for modName <- $2,
 		optionInstance <- $(get moduleInstance->options),
 		option <- $(get optionInstance->option),
 		optionId <- $(invoke option->getId),
-		optionValue <- $(get optionInstance->optionValue),
+		optionValue <- $(get optionInstance->value),
 		$(\n)$(\n)$(\h)define $(subst .,__,$(optionId)) $(invoke optionValue->toString))
 
 	$(\n)$(\h)endif /* __MOD_HEADER__$(subst .,__,$(modName)) */$(\n)
@@ -112,7 +112,7 @@ define define_mod_obj_rules
 				annotBind <- $(get annot->bindings),
 				opt <- $(get annotBind->option),
 				optName <- $(get opt->name),
-				optValue <- $(get $(get annotBind->optionValue).value),
+				optValue <- $(get $(get annotBind->value).value),
 				src<-$(get srcMember->files),
 				obj<-$(call SRC_TO_OBJ,$(get src->fileFullName)),
 				$(if $(and \
@@ -192,7 +192,7 @@ define mod_cmd_annotation_value
 						$(get a->bindings)),
 				option <- $(get binding->option),
 				$(if $(filter $1,$(get option->name)),
-					$(get binding->optionValue))),
+					$(get binding->value))),
 		$(get string->value))
 endef
 
@@ -232,7 +232,7 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
 		annotationName <- $(get annotationType->qualifiedName), \
 		binding <- $(get annotation->bindings), \
 		option <- $(get binding->option), \
-		value <- $(get binding->optionValue), \
+		value <- $(get binding->value), \
 		valueRaw <- $(get value->value), \
 		$(if $(and $(eq $(annotationName),$(LABEL-Runlevel)), \
 			$(eq $(get option->name),value)), \

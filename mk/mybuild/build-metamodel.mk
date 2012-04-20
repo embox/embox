@@ -39,8 +39,8 @@ Build_OptionInstance_module := \
 	$(call eMetaReferenceCreate,$(Build_OptionInstance),Build_OptionInstance_module)
 Build_OptionInstance_option := \
 	$(call eMetaReferenceCreate,$(Build_OptionInstance),Build_OptionInstance_option)
-Build_OptionInstance_optionValue := \
-	$(call eMetaReferenceCreate,$(Build_OptionInstance),Build_OptionInstance_optionValue)
+Build_OptionInstance_value := \
+	$(call eMetaReferenceCreate,$(Build_OptionInstance),Build_OptionInstance_value)
 
 # Initializes the objects and relations between them.
 define __build_init
@@ -61,7 +61,7 @@ define __build_init
 	$(call eMetaClassInit,$(Build_OptionInstance),OptionInstance,,)
 	$(call eMetaReferenceInit,$(Build_OptionInstance_module),module,$(Build_ModuleInstance),$(Build_ModuleInstance_options),changeable container)
 	$(call eMetaReferenceInit,$(Build_OptionInstance_option),option,$(MyFile_Option),,changeable linkable)
-	$(call eMetaReferenceInit,$(Build_OptionInstance_optionValue),optionValue,$(MyFile_OptionValue),,changeable)
+	$(call eMetaReferenceInit,$(Build_OptionInstance_value),value,$(MyFile_Literal),,changeable)
 
 endef # __build_init
 
@@ -82,7 +82,7 @@ define __build_bind
 	$(call eMetaClassBind,$(Build_OptionInstance),OptionInstance)
 	$(call eMetaFeatureBind,$(Build_OptionInstance_module),module)
 	$(call eMetaFeatureBind,$(Build_OptionInstance_option),option)
-	$(call eMetaFeatureBind,$(Build_OptionInstance_optionValue),optionValue)
+	$(call eMetaFeatureBind,$(Build_OptionInstance_value),value)
 
 endef # __build_bind
 
