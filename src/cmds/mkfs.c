@@ -92,18 +92,21 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	if (argc > min_argc) {/** last arg should be block quantity*/
-		if(0 >= sscanf(argv[argc - 1], "%d", &mkfs_params.blocks)){
-			print_usage();
-			return -EINVAL;
+	if (argc > 1) {
+		if (argc > min_argc) {/** last arg should be block quantity*/
+			if(0 >= sscanf(argv[argc - 1], "%d", &mkfs_params.blocks)){
+				print_usage();
+				return -EINVAL;
+			}
+			strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 2]);
 		}
-		strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 2]);
-	}
-	else {/** last arg should be diskname*/
-		strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 1]);
-	}
+		else {/** last arg should be diskname*/
+			strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 1]);
+		}
 
-	return mkfs_do_operation(&mkfs_params);
+		return mkfs_do_operation(&mkfs_params);
+	}
+	return 0;
 }
 
 int mkfs_do_operation(void *_mkfs_params) {
@@ -159,8 +162,6 @@ int mkfs_do_operation(void *_mkfs_params) {
 		strcat (filename, "/t2.txt");
 		fat_main((const void *) filename);
 
-		//fd = fopen("/dev/ram1/1/2/3/4/5", "w");
-		//fd = fopen("/dev/ram1/1/2", "r");
 		strcpy(filename, ramd_params->name);
 		strcat (filename, "/t3.txt");
 		rezult = open((const char *) filename, O_RDONLY);
@@ -175,6 +176,26 @@ int mkfs_do_operation(void *_mkfs_params) {
 		strcat (filename, "/5/6/7/8/4.txt");
 		//fd = fopen((const char *) filename, "w");
 		fat_main((const void *) filename);
+
+		strcpy(filename, ramd_params->name);
+		strcat (filename, "/1/2/3/4/4.txt");
+		fat_main((const void *) filename);
+
+		strcpy(filename, ramd_params->name);
+		strcat (filename, "/1/2/3/4/5.txt");
+		//fd = fopen((const char *) filename, "w");
+		fat_main((const void *) filename);
+
+		strcpy(filename, ramd_params->name);
+		strcat (filename, "/1/2/3/4/6.txt");
+		//fd = fopen((const char *) filename, "w");
+		fat_main((const void *) filename);
+
+		strcpy(filename, ramd_params->name);
+		strcat (filename, "/1/2/3/4/4.txt");
+		rezult = open((const char *) filename, O_WRONLY);
+		strcpy(filename, "file was rewrite \n");
+        write(rezult, (const void *) filename, strlen (filename));
 
 
 		strcpy(filename, ramd_params->name);

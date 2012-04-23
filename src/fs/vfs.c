@@ -119,7 +119,7 @@ node_t *vfs_add_path(const char *path, node_t *parent) {
 }
 
 #define LAST  0x01
-node_t *vfs_create_filechain(const char *path){
+node_t *vfs_create_filechain(const char *path, int is_file){
 	int count_dir;
 	file_create_param_t param;
 	fs_drv_t *drv;
@@ -150,7 +150,7 @@ node_t *vfs_create_filechain(const char *path){
 		new_node->file_info = node->file_info;
 		new_node->properties = IS_DIRECTORY;
 		/* believe that the latter in path is always a file */
-		if (LAST == count_dir) {
+		if ((LAST == count_dir) && is_file) {
 			new_node->properties &= ~IS_DIRECTORY;
 		}
 

@@ -19,6 +19,6 @@ extern node_t *vfs_find_parent(const char *name, node_t *parrent);
 extern node_t *vfs_find_node(const char *path, node_t *parrent);
 extern int nip_tail(char *head, char *tail);
 extern int increase_tail(char *head, char *tail);
-extern node_t *vfs_create_filechain(const char *path);
+extern node_t *vfs_create_filechain(const char *path, int is_file);
 
 #endif /* FS_VFS_H_ */

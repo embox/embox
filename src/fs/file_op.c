@@ -20,6 +20,7 @@
 #include <fs/file_desc.h>
 #include <kernel/prom_printf.h>
 
+#define IS_FILE  0x01
 FILE *fopen(const char *path, const char *mode) {
 	node_t *nod;
 	fs_drv_t *drv;
@@ -32,7 +33,7 @@ FILE *fopen(const char *path, const char *mode) {
 			return NULL;
 		}
 
-		if (NULL == (nod = vfs_create_filechain(path))) {
+		if (NULL == (nod = vfs_create_filechain(path, IS_FILE))) {
 			errno = -EINVAL;
 			return NULL;
 		}

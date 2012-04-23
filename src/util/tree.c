@@ -101,6 +101,7 @@ struct tree_link *tree_children_find(struct tree_link *node,
 	}
 	return NULL;
 }
+
 struct tree_link *tree_children_arg_find(struct tree_link *tree,
 		void *arg, tree_link_arg_predicate_t predicate) {
 	struct tree_link *link;

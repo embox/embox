@@ -30,7 +30,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 1) {
-		vfs_add_path(argv[argc - 1], NULL);
+		vfs_create_filechain(argv[argc - 1], 0);
 	}
 
 	return 0;
