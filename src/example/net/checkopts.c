@@ -33,6 +33,7 @@ struct sock_opts {
   int		opt_name;
 	enum opt_type type;
 } sock_opts[] = {
+	{"SO_ACCEPTCONN", SOL_SOCKET, SO_ACCEPTCONN, OT_INT},
 	{"SO_BROADCAST",		SOL_SOCKET,	SO_BROADCAST, OT_INT},
 	{"SO_DEBUG",			SOL_SOCKET,	SO_DEBUG, OT_INT},
 	{"SO_DONTROUTE",		SOL_SOCKET,	SO_DONTROUTE, OT_INT},
