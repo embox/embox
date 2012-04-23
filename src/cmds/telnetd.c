@@ -60,7 +60,7 @@ static void out_msgs(const char *msg, const char *msg2, const char *msg3,
 	}
 }
 
-	/* Executes shell or its emulator */
+	/* Executes real shell or it's emulator */
 static void run(void) {
 	printf("Welcome to telnet!\n");
 #if 0
@@ -70,7 +70,7 @@ static void run(void) {
 		printf("telnet!%c\n", ch);		/* Gives something reasonable */
 	}
 #else
-		/* Some problems to connect embox.cmd.sh package */
+		/* Run tish */
 	shell_run();
 #endif
 }
@@ -86,7 +86,8 @@ static void *telnet_thread_handler(void* args) {
 		 * Unfortunately it's not working. We try to treat stdout as
 		 * a socket, but we can't map 1 into a socket descriptor
 		 * ToDo:
-		 * 	Clear the original descriptors
+		 * 	It's unsertain what we should do with the original descriptors
+		 *	We can close them, but it may corrupt the original task
 		 */
 	task_res_idx_set(t_r, 0, i_d);
 	task_res_idx_set(t_r, 1, i_d);
@@ -96,7 +97,9 @@ static void *telnet_thread_handler(void* args) {
 		/* Run shell */
 	run();
 
-		/* We don't need socket any more. Should we force to close all it's clones? */
+		/* We don't need socket any more.
+		 * Task shutdown should clear other descriptors (not implemented yet)
+		 */
 	close(*client_descr_p);
 	*client_descr_p = -1;
 	return NULL;
@@ -110,6 +113,7 @@ static void *telnet_thread_handler(void* args) {
 	struct idx_desc *i_d = task_res_idx_get(t_r, *client_descr_p);
 	struct socket *s= i_d->data;
 
+		/* Bad idea. Closing one of those will lead to socket close. */
 	struct idx_desc *r0 = task_idx_desc_alloc(TASK_IDX_TYPE_SOCKET, s);
 	struct idx_desc *r1 = task_idx_desc_alloc(TASK_IDX_TYPE_SOCKET, s);
 	struct idx_desc *r2 = task_idx_desc_alloc(TASK_IDX_TYPE_SOCKET, s);
@@ -117,8 +121,8 @@ static void *telnet_thread_handler(void* args) {
 	if (!(r0 && r1 && r2)) {
 		out_msgs("Not enough resources\n", "Can't allocate resources\n",
 				 "idx_allocate", *client_descr_p, NULL);
-		/* ToDo:
-		 * 	Free resources we have allocated
+		/*
+		 * Task shutdown should clear other descriptors (not implemented yet)
 		 */
 		close(*client_descr_p);
 		*client_descr_p = -1;
@@ -127,7 +131,8 @@ static void *telnet_thread_handler(void* args) {
 
 		/* Redirect stdin, stdout, stderr to our socket
 		 * ToDo:
-		 * 	Clear the original descriptors
+		 * 	It's unsertain what we should do with the original descriptors
+		 *	We can close them, but it may corrupt the original task
 		 */
 	task_res_idx_set(t_r, 0, r0);
 	task_res_idx_set(t_r, 1, r1);
@@ -137,7 +142,7 @@ static void *telnet_thread_handler(void* args) {
 	run();
 
 		/* We don't need socket any more.
-		 * ToDo: Should we free allocated descriptors?
+		 * Task shutdown should clear other descriptors (not implemented yet)
 		 */
 	close(*client_descr_p);
 	*client_descr_p = -1;
@@ -192,9 +197,6 @@ static int exec(int argc, char **argv) {
 
 			MD(printf("Attempt to connect from address %s:%d",
 					inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)) );
-
-//			printf("\n \n SOCKETS BUG: inverting bytes in port. What for ???\n");
-//			client_socket.sin_port = ntohs(client_socket.sin_port);
 
 			{
 				/* Useless paranoidal check for descriptor allocation */
