@@ -18,7 +18,6 @@
 EMBOX_CMD(exec);
 
 
-#define MAX_FNAME     32
 #define BUFF_SZ       512
 #define DEFAULT_PAGE  "index.html"
 
@@ -58,7 +57,8 @@ struct client_info {
 	struct sockaddr_in addr;  /* client address */
 	socklen_t addr_len;       /* address length */
 	enum http_method method;  /* method in request */
-	char req_file[MAX_FNAME]; /* client want open this page */
+	FILE *xmit_file;          /* file to transmit */
+	char *xmit_err;           /* error (used if file_xmit is null) */
 	char buff[BUFF_SZ];       /* client's buffer (may contains more than one piece of data) */
 	char *data;               /* pointer to current chunk */
 	char *next_data;          /* pointer to next piece of data in buffer */
@@ -102,8 +102,7 @@ static char * get_next_line(struct client_info *info) {
 	/* 1. move next_chunk to head of buffer */
 	chunk = memmove(info->buff, chunk, len);
 	/* 2. get new piece if data */
-	res = recvfrom(info->sock, chunk, sizeof info->buff - len, 0,
-			(struct sockaddr *)&info->addr, &info->addr_len);
+	res = recvfrom(info->sock, chunk + len, sizeof info->buff - len, 0, NULL, NULL);
 	if (res <= 0) {
 		return NULL;
 	}
@@ -139,7 +138,7 @@ static int http_hnd_title(struct client_info *info) {
 		return HTTP_RET_ABORT; /* bad request */
 	}
 
-	*file = '\0', file = file + 1;
+	*file = '\0', file = file + 2;
 
 	if (strcmp(method, "GET") == 0) {
 		info->method = HTTP_METHOD_GET;
@@ -156,12 +155,10 @@ static int http_hnd_title(struct client_info *info) {
 			*param = '\0', param = param + 1;
 		}
 
-		if (strcmp(file, "/") == 0) {
-			strcpy(info->req_file, DEFAULT_PAGE);
+		if (strcmp(file, "") == 0) {
+			file = DEFAULT_PAGE;
 		}
-		else {
-			strncpy(info->req_file, file, sizeof info->req_file);
-		}
+		info->xmit_file = fopen(file, "r");
 	}
 	else if (strcmp(method, "POST") == 0) {
 		info->method = HTTP_METHOD_POST;
@@ -231,56 +228,15 @@ static int process_request(struct client_info *info) {
 }
 
 static int http_req_get(struct client_info *info) {
-	FILE *fp;
-
-	fp = fopen(info->req_file, "r");
-	if (fp == NULL) {
+	if (info->xmit_file == NULL) { /* file doesn't exist */
+		info->xmit_err = "<html>\
+						  <head><title>404</title></head>\
+						  <body><center><h1>Oops...</h1></center></body>\
+						  </html>";
 		return HTTP_STAT_404;
 	}
-	fclose(fp);
+
 	return HTTP_STAT_200;
-#if 0
-	if (fd < 0) {
-		curr += sprintf(curr,
-				"HTTP/1.0 200 OK\n"
-				"Content-Type: text/html\n"
-				"\n"
-				"<html>"
-				"<head>"
-				"<title>404 Not Found</title>"
-				"</head>"
-				"<body>"
-				"<center><h1>404</h1></center>"
-				"</body>"
-				"</html>"
-				);
-		printf("Send to host: %s\n", buff);
-		send(info->sock, buff, curr - buff, 0);
-		return -1;
-	}
-
-	curr += sprintf(curr, "HTTP/1.0 200 OK\nContent-Type: text/html\n\n");
-	do {
-		bytes_read = len - (curr - buff);
-		bytes = read(fd, curr, bytes_read);
-		if (bytes < 0) {
-			close(fd);
-			return -1;
-		}
-		curr += bytes;
-		printf("Send to host: %s\n", buff);
-		if (send(info->sock, buff, curr - buff, 0) < 0) {
-			printf("Error.. send failed\n");
-			close(fd);
-			return -1;
-		}
-		curr = buff;
-	} while (bytes == bytes_read);
-
-	close(fd);
-
-	return 0;
-#endif
 }
 
 static int process_response(struct client_info *info) {
@@ -294,6 +250,7 @@ static int process_response(struct client_info *info) {
 
 static void client_process(int sock) {
 	int res;
+	size_t bytes, bytes_need;
 	struct client_info ci;
 	int (*hnd)(struct client_info *);
 	char *curr;
@@ -306,16 +263,47 @@ static void client_process(int sock) {
 	hnd = process_request; /* request heandler for first */
 process_again:
 	res = hnd(&ci);
+	assert((hnd == process_request) || (res != HTTP_RET_OK));
 	switch (res) {
 	default:
 		/* Make header: */
 		curr = ci.buff;
 		/* 1. set title */
+		assert((0 <= res) && (res < HTTP_STAT_MAX));
 		curr += sprintf(curr, "HTTP/1.0 %s\r\n", http_stat_str[res]);
 		/* 2. set ops */
 		curr += sprintf(curr, "Content-Type: %s\r\n", "text/html");
-		/* Send file */
-		printf("RESPONSE:\n%s", ci.buff);
+		curr += sprintf(curr, "Connection: %s\r\n", "close");
+		curr += sprintf(curr, "\r\n");
+		/* 3. set data and send respone */
+		if (ci.xmit_file == NULL) {
+			/* send error */
+			assert(ci.xmit_err != NULL);
+			curr += sprintf(curr, "%s", ci.xmit_err);
+			bytes_need = curr - ci.buff;
+			assert(bytes_need <= sizeof ci.buff); /* TODO remove this and make normal checks */
+			bytes = sendto(ci.sock, ci.buff, bytes_need, 0, NULL, 0);
+			if (bytes != bytes_need) {
+				printf("http error: send() error\n");
+			}
+		}
+		else {
+			/* send file */
+			do {
+				bytes_need = sizeof ci.buff - (curr - ci.buff);
+				bytes = fread(curr, 1, bytes_need, ci.xmit_file);
+				if (bytes < 0) {
+					break;
+				}
+				bytes_need = sizeof ci.buff - bytes_need + bytes;
+				bytes = sendto(ci.sock, ci.buff, bytes_need, 0, NULL, 0);
+				if (bytes != bytes_need) {
+					printf("http error: send() error\n");
+					break;
+				}
+				curr = ci.buff;
+			} while (bytes_need == sizeof ci.buff);
+		}
 		break;
 	case HTTP_RET_OK:
 		hnd = process_response;
@@ -324,10 +312,11 @@ process_again:
 		break;
 	}
 
-	/* close connection */
-	close(sock);
+	if (ci.xmit_file != NULL) {
+		fclose(ci.xmit_file); /* close file (it's open or null) */
+	}
 
-	return;
+	close(ci.sock); /* close connection */
 }
 
 static int exec(int argc, char **argv) {

@@ -90,9 +90,7 @@ typedef struct tcp_sock {
 	struct sk_buff_head *conn_wait; /* Queue of incoming requests for connection */
 	struct list_head rexmit_link;
 	__be32 seq_queue;               /* Sequence number for next package */
-	__be32 ack_flag;                /* Acknowledgment for flags (syn and fin) */
-//	__be32 ack_syn;                 /* Acknowledgment number for the SYN flag */
-//	__be32 ack_fin;                 /* Acknowledgment number for the FIN flag  */
+	__be32 ack_flag;                /* Acknowledgment for flags (SYN or FIN) */
 } tcp_sock_t;
 
 #if 0
