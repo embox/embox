@@ -146,7 +146,7 @@ typedef uint32_t in_addr_t;
 	 (to recast on sockaddr_t in AF_INET sockets) */
 typedef struct sockaddr_in {
 	unsigned short   sin_family;   /* e.g. AF_INET */
-	unsigned short   sin_port;     /* e.g. htons(3490) */
+	unsigned short   sin_port;     /* e.g. htons(3490) i.e. port in big endian */
 	struct in_addr   sin_addr;     /* see struct in_addr, above */
 	char             sin_zero[8];  /* zero this if you want to */
 } sockaddr_in_t;

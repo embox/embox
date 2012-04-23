@@ -206,7 +206,7 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 		} else {
 			dest_addr = (struct sockaddr_in *)daddr;
 			inet->daddr = dest_addr->sin_addr.s_addr;
-			inet->dport = ntohs(dest_addr->sin_port);	/* ???? BUG - see telnetd */
+			inet->dport = dest_addr->sin_port;
 		}
 	}
 
@@ -282,7 +282,7 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	if ((daddr != NULL) && (daddrlen != NULL)) {
 		dest_addr = (struct sockaddr_in *)daddr;
 		dest_addr->sin_addr.s_addr = inet->daddr;
-		dest_addr->sin_port = htons(inet->dport);  /* ???? BUG - see telnetd */
+		dest_addr->sin_port = inet->dport;
 		*daddrlen = sizeof *dest_addr;
 	}
 
