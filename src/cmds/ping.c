@@ -107,6 +107,7 @@ static int ping(struct ping_info *pinfo) {
 	uint32_t timeout, total;
 	size_t i;
 	int cnt_resp, cnt_err, sk;
+	struct sockaddr_in to;
 	union packet tx_pack;
 
 	cnt_resp = 0; cnt_err = 0;
@@ -135,6 +136,8 @@ static int ping(struct ping_info *pinfo) {
 		return -1;
 	}
 
+	to.sin_addr.s_addr = pinfo->dst.s_addr;
+
 	printf("PING %s %d bytes of data. id=%d\n",
 			inet_ntoa(pinfo->dst), pinfo->padding_size, ntohs(tx_pack.hdr.icmp_hdr.un.echo.id));
 
@@ -148,7 +151,7 @@ static int ping(struct ping_info *pinfo) {
 		tx_pack.hdr.icmp_hdr.checksum = ptclbsum(tx_pack.packet_buff + IP_MIN_HEADER_SIZE,
 						ICMP_HEADER_SIZE + pinfo->padding_size);
 		ip_send_check(&tx_pack.hdr.ip_hdr);
-		sendto(sk, tx_pack.packet_buff, ntohs(tx_pack.hdr.ip_hdr.tot_len), 0, (struct sockaddr *)&pinfo->dst, 0);
+		sendto(sk, tx_pack.packet_buff, ntohs(tx_pack.hdr.ip_hdr.tot_len), 0, (struct sockaddr *)&to, sizeof to);
 
 		/* try to fetch response */
 		if (sent_result(sk, timeout, &tx_pack))
@@ -330,7 +333,7 @@ static int exec(int argc, char **argv) {
 			return -EHOSTUNREACH;
 		}
 		assert(in_dev_get(rte->dev) != NULL);
-		pinfo.from.s_addr = in_dev_get(rte->dev)->ifa_address; /* Hm, what could that possibly mean? */
+		pinfo.from.s_addr = in_dev_get(rte->dev)->ifa_address;
 	}
 	/* ping! */
 	ping(&pinfo);
