@@ -149,7 +149,7 @@ static int http_hnd_title(struct client_info *info) {
 			return HTTP_RET_ABORT; /* bad request */
 		}
 
-		version = '\0', version = version + 1;
+		*version = '\0', version = version + 1;
 
 		param = strchr(file, '?');
 		if (param != NULL) {
@@ -210,8 +210,9 @@ static int process_request(struct client_info *info) {
 	int (*http_header_hnd)(struct client_info *);
 
 	http_header_hnd = http_hnd_title; /* set first heandler of data */
-	while (get_next_line(info) == 0) {
+	while (get_next_line(info) != NULL) {
 		res = http_header_hnd(info);
+		printf("http_header_hnd=%d\n", res);
 		switch (res) {
 		default:
 			return res;
@@ -225,6 +226,7 @@ static int process_request(struct client_info *info) {
 		}
 	}
 
+	printf("failed\n");
 	return (http_header_hnd == http_hnd_title ? HTTP_STAT_414 : HTTP_STAT_413);
 }
 
