@@ -26,6 +26,7 @@ typedef struct socket_node{
 	struct sockaddr saddr;
 	struct sockaddr daddr;
 	enum socket_connection_state_t socket_connection_state;
+	struct socket_opt_state options;
 } socket_node_t;
 
 /* TODO: add descriptions */

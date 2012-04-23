@@ -371,12 +371,29 @@ int kernel_socket_getpeername(struct socket *sock,
 
 int kernel_socket_getsockopt(struct socket *sock, int level, int optname,
 		char *optval, int *optlen) {
-	return sock->ops->getsockopt(sock, level, optname, optval, optlen);
+	int res;
+
+	if(level == SOL_SOCKET){
+		res = so_get_socket_option(&sock->socket_node->options, optname, optval,
+															 (socklen_t*)optlen);
+	}else{
+		res = sock->ops->getsockopt(sock, level, optname, optval, optlen);
+	}
+
+	return res;
 }
 
 int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
 		char *optval, int optlen) {
-	return sock->ops->setsockopt(sock, level, optname, optval, optlen);
+	int res;
+
+	if(level == SOL_SOCKET){
+		res = so_set_socket_option(&sock->socket_node->options, optname, optval,
+															 (socklen_t)optlen);
+	}else{
+		res = sock->ops->setsockopt(sock, level, optname, optval, optlen);
+	}
+	return res;
 }
 
 int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,

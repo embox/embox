@@ -6,9 +6,11 @@
  * @author Timur Abdukadyrov
  */
 
+
 #include <errno.h>
 #include <string.h>
 #include <net/socket.h>
+#include <net/net.h>
 
 /**
  * default stream type socket options set
@@ -125,16 +127,16 @@ int so_set_socket_option(struct socket_opt_state *opts, unsigned int option,
 		memcpy(&opts->so_linger, option_value, option_len);
 		break;
 	case SO_RCVTIMEO:
-		if(option_len < sizeof(struct linger))
+		if(option_len < sizeof(struct timeval))
 			return -EINVAL;
-		if(option_len > sizeof(struct linger))
+		if(option_len > sizeof(struct timeval))
 			return -EDOM;
 		memcpy(&opts->so_rcvtimeo, option_value, option_len);
 		break;
 	case SO_SNDTIMEO:
-		if(option_len < sizeof(struct linger))
+		if(option_len < sizeof(struct timeval))
 			return -EINVAL;
-		if(option_len > sizeof(struct linger))
+		if(option_len > sizeof(struct timeval))
 			return -EDOM;
 		memcpy(&opts->so_sndtimeo, option_value, option_len);
 		break;
@@ -149,93 +151,109 @@ int so_set_socket_option(struct socket_opt_state *opts, unsigned int option,
  * Get socket option
  */
 int so_get_socket_option(struct socket_opt_state *opts, unsigned int option,
-												 const void *option_value, socklen_t option_len){
+												 const void *option_value, socklen_t *option_len){
 
 	switch(option){
 	case SO_ACCEPTCONN:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_acceptconn;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_ERROR:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_error;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_TYPE:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_type;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_BROADCAST:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_type;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_DEBUG:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_debug;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_DONTROUTE:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_dontroute;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_KEEPALIVE:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_keepalive;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_OOBINLINE:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_oobinline;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_RCVBUF:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_rcvbuf;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_RCVLOWAT:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_rcvlowat;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_REUSEADDR:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_reuseaddr;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_SNDBUF:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_sndbuf;
+		*option_len = sizeof(unsigned int);
 		break;
 	case SO_SNDLOWAT:
-		if(option_len != sizeof(unsigned int))
+		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_sndlowat;
+		*option_len = sizeof(unsigned int);
 		break;
 		/* non-integer valued options */
 	case SO_LINGER:
-		if(option_len != sizeof(struct linger))
+		if(*option_len != sizeof(struct linger))
 			return -EINVAL;
-		memcpy(&opts->so_linger, option_value, option_len);
+		memcpy(&opts->so_linger, option_value, *option_len);
+		*option_len = sizeof(struct linger);
 		break;
 	case SO_RCVTIMEO:
-		if(option_len < sizeof(struct linger))
+		if(*option_len < sizeof(struct timeval))
 			return -EINVAL;
-		if(option_len > sizeof(struct linger))
+		if(*option_len > sizeof(struct timeval))
 			return -EDOM;
-		memcpy(&opts->so_rcvtimeo, option_value, option_len);
+		memcpy(&opts->so_rcvtimeo, option_value, *option_len);
+		*option_len = sizeof(struct timeval);
 		break;
 	case SO_SNDTIMEO:
-		if(option_len < sizeof(struct linger))
+		if(*option_len < sizeof(struct timeval))
 			return -EINVAL;
-		if(option_len > sizeof(struct linger))
+		if(*option_len > sizeof(struct timeval))
 			return -EDOM;
-		memcpy(&opts->so_sndtimeo, option_value, option_len);
+		memcpy(&opts->so_sndtimeo, option_value, *option_len);
+		*option_len = sizeof(struct timeval);
 		break;
 	default:
 		return -ENOPROTOOPT;

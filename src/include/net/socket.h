@@ -14,6 +14,7 @@
 #include <stddef.h>
 #include <types.h>
 #include <net/arp_queue.h>
+#include <net/socket_options.h> /* should be here for posix */
 
 /* maximum number of socket connections */
 #define MAX_SYSTEM_CONNECTIONS 4
@@ -76,6 +77,7 @@ enum supported_address_families{
 
 
 /* Setsockoptions(2) level. Thanks to BSD these must match IPPROTO_xxx */
+#define SOL_SOCKET 1
 #define SOL_IP      0
 //#define SOL_ICMP    1   /* No-no-no! Due to Linux :-) we cannot use SOL_ICMP=1 */
 //#define SOL_TCP     6
@@ -101,6 +103,7 @@ enum supported_address_families{
 //#define SOL_DCCP    269
 //#define SOL_NETLINK 270
 //#define SOL_TIPC    271
+
 
 /* IPX options */
 #define IPX_TYPE    1
@@ -234,7 +237,5 @@ extern int close(int sockfd);
 extern int socket_shutdown(int socket, int how);
 
 extern int check_icmp_err(int sockfd);
-
-#include <net/socket_options.h> /* should be here for posix */
 
 #endif /* NET_SOCKET_H_ */
