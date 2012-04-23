@@ -44,7 +44,11 @@ typedef struct sk_buff {        /* Socket buffer */
 		 */
 	uint16_t protocol;
 
-	char cb[52];                /* Control buffer (used to store layer-specific info e.g. ip options) */
+		/* Control buffer (used to store layer-specific info e.g. ip options)
+		 * Nowdays it's used only in ip options, so it's a good idea to
+		 * remove this field
+		 */
+	char cb[52];
 
 		/* Length of actual data, from LL header till the end */
 	unsigned int len;
@@ -85,6 +89,11 @@ typedef struct sk_buff {        /* Socket buffer */
 		/* After processing by (incoming) stack packet is used by
 		 * socket structures. Socket (== User) may consume only a part
 		 * of data. Taken data ends with p_data
+		 * Note:
+		 *	Quoting from man recvfrom "If a message is too long to fit in
+		 *	the supplied buffer, excess bytes may be discarded depending
+		 *	on the type of socket the message is received from"
+		 * So the presence of this field isn't mandatory.
 		 */
 	unsigned char *p_data;
 

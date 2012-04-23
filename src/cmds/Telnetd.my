@@ -1,0 +1,27 @@
+package embox.cmd
+
+import embox.net.socket
+
+@Cmd(name = "telnetd",
+	help = "Start telnetd server",
+	man = '''
+		NAME
+			telnetd - telnet server
+		SYNOPSIS
+			telnetd
+		DESCRIPTION
+			Start telnetd server in the system
+		EXAMPLES
+			telnetd
+		AUTHORS
+			Vladimir Sokolov
+	''')
+module telnetd {
+	source "telnetd.c"
+	depends embox.net.socket, embox.net.tcp, embox.net.eth, embox.net.arp
+	depends embox.net.core, embox.net.af_inet, embox.net.ipv4, embox.net.icmp
+	depends embox.cmd.shell
+}
+
+
+

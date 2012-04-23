@@ -189,10 +189,25 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	m.msg_iov = &iov;
 
 	inet = inet_sk(sock->sk);
-	if ((daddr != NULL) && (daddrlen == sizeof *dest_addr)) {
-		dest_addr = (struct sockaddr_in *)daddr;
-		inet->daddr = dest_addr->sin_addr.s_addr;
-		inet->dport = ntohs(dest_addr->sin_port);
+	if ( (sock->type == SOCK_STREAM) || (sock->type ==  SOCK_SEQPACKET) ) {
+		/* Quotation: "If sendto() is used on a connection-mode (SOCK_STREAM, SOCK_SEQPACKET)
+		 * socket, the arguments dest_addr and addrlen are ignored
+		 * (and the error EISCONN MAY be returned when they are not NULL and 0)"
+		 *------------
+		 * Currently we do nothing and believe that inet has correct pair address-port
+		 * from tcp_v4_accept() call. As a compromise with the old code we can
+		 * check that new parameters don't change anything. If not - return
+		 * an error.
+		 */
+	} else {
+		if(!daddr || (daddrlen < sizeof(struct sockaddr_in))) {
+			SET_ERRNO(EDESTADDRREQ);
+			return -1;
+		} else {
+			dest_addr = (struct sockaddr_in *)daddr;
+			inet->daddr = dest_addr->sin_addr.s_addr;
+			inet->dport = ntohs(dest_addr->sin_port);	/* ???? BUG - see telnetd */
+		}
 	}
 
 	/* socket is ready for usage and has no data transmitting errors yet */
@@ -267,7 +282,7 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	if ((daddr != NULL) && (daddrlen != NULL)) {
 		dest_addr = (struct sockaddr_in *)daddr;
 		dest_addr->sin_addr.s_addr = inet->daddr;
-		dest_addr->sin_port = htons(inet->dport);
+		dest_addr->sin_port = htons(inet->dport);  /* ???? BUG - see telnetd */
 		*daddrlen = sizeof *dest_addr;
 	}
 

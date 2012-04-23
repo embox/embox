@@ -36,7 +36,7 @@ import embox.compat.posix.LibPosix
 			-w 	The broadcast address to be assigned.
 			-z 	Pointipoint connection control.
 		EXAMPLES
-			ifconfig -a 10.0.0.1 -m 11:AA:22:CC:FF:00 -u eth0
+			ifconfig -a 10.0.0.1 -m 00:AA:22:CC:FF:00 -u eth0
 				This will setup new interface eth0.
 		SEE ALSO
 			route, arp
