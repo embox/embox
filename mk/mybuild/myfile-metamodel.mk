@@ -128,11 +128,6 @@ MyFile_TypeReferenceOption := \
 MyFile_TypeReferenceOption_type := \
 	$(call eMetaReferenceCreate,$(MyFile_TypeReferenceOption),MyFile_TypeReferenceOption_type)
 
-MyFile_OptionValueNotUsedXXX := \
-	$(call eMetaClassCreate,$(MyFile),MyFile_OptionValueNotUsedXXX)
-MyFile_OptionValueNotUsedXXX_value := \
-	$(call eMetaAttributeCreate,$(MyFile_OptionValueNotUsedXXX),MyFile_OptionValueNotUsedXXX_value)
-
 MyFile_Literal := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Literal)
 
@@ -274,9 +269,6 @@ define __myFile_init
 	$(call eMetaClassInit,$(MyFile_TypeReferenceOption),TypeReferenceOption,$(MyFile_Option),)
 	$(call eMetaReferenceInit,$(MyFile_TypeReferenceOption_type),type,$(MyFile_Type),,changeable linkable)
 
-	$(call eMetaClassInit,$(MyFile_OptionValueNotUsedXXX),OptionValueNotUsedXXX,,abstract)
-	$(call eMetaAttributeInit,$(MyFile_OptionValueNotUsedXXX_value),value,changeable)
-
 	$(call eMetaClassInit,$(MyFile_Literal),Literal,,abstract)
 
 	$(call eMetaClassInit,$(MyFile_StringLiteral),StringLiteral,$(MyFile_Literal),)
@@ -388,9 +380,6 @@ define __myFile_bind
 
 	$(call eMetaClassBind,$(MyFile_TypeReferenceOption),MyTypeReferenceOption)
 	$(call eMetaFeatureBind,$(MyFile_TypeReferenceOption_type),type)
-
-	$(call eMetaClassBind,$(MyFile_OptionValueNotUsedXXX),MyOptionValueNotUsedXXX)
-	$(call eMetaFeatureBind,$(MyFile_OptionValueNotUsedXXX_value),value)
 
 	$(call eMetaClassBind,$(MyFile_Literal),MyLiteral)
 

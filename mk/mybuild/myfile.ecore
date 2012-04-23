@@ -122,10 +122,6 @@
     <eOperations name="validateValue" eType="ecore:EDataType ../model/emodel.ecore#//EBoolean"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//Type"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OptionValueNotUsedXXX" abstract="true">
-    <eOperations name="toString" eType="ecore:EDataType ../model/emodel.ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType ../model/emodel.ecore#//EString"/>
-  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Literal" abstract="true">
     <eOperations name="toString" eType="ecore:EDataType ../model/emodel.ecore#//EString"/>
   </eClassifiers>

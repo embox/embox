@@ -698,34 +698,6 @@ define class-MyTypeReferenceOption
 endef
 
 #
-# Model object 'OptionValueNotUsedXXX'.
-#
-# The following features and operations are defined:
-#   - attribute 'value'
-#   - operation 'toString'
-#
-define class-MyOptionValueNotUsedXXX # abstract
-	# Extends 'EObject' class (implicitly).
-	$(eobject MyFile_OptionValueNotUsedXXX,
-		MyOptionValueNotUsedXXX,,abstract)
-
-	# Property 'value'.
-	$(eobject-attribute MyFile_OptionValueNotUsedXXX_value,
-		value,changeable)
-
-	# Method 'toString'.
-	# PROTECTED REGION ID(MyFile_OptionValueNotUsedXXX_toString) ENABLED START
-#	# TODO Uncomment and implement me.
-	$(method toString,
-		$(error $0(): NIY))
-	# PROTECTED REGION END
-
-	# PROTECTED REGION ID(MyFile_OptionValueNotUsedXXX) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
-	# PROTECTED REGION END
-endef
-
-#
 # Model object 'Literal'.
 #
 # The following operations are defined:
