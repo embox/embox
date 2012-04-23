@@ -268,7 +268,7 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 		dest_addr = (struct sockaddr_in *)daddr;
 		dest_addr->sin_addr.s_addr = inet->daddr;
 		dest_addr->sin_port = htons(inet->dport);
-		*daddrlen = sizeof dest_addr;
+		*daddrlen = sizeof *dest_addr;
 	}
 
 	return iov.iov_len; /* return length of received msg */
