@@ -688,9 +688,8 @@ define class-MyTypeReferenceOption
 
 	# Method 'validateValue'.
 	# PROTECTED REGION ID(MyFile_TypeReferenceOption_validateValue) ENABLED START
-#	# TODO Uncomment and implement me.
 	$(method validateValue,
-		$(error $0(): NIY))
+		$(invoke MyTypeReferenceLiteral->isInstance,$1))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_TypeReferenceOption) ENABLED START

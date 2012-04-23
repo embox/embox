@@ -37,6 +37,8 @@ define config_create_resource_set
 
 		$(invoke $(get rs->linker).resolveAllLinks)
 
+		$(call myfile_resources_check_optionbind,$(get rs->resources))
+
 		$(silent-for r <- $(get rs->resources),
 			$(invoke r->printIssues))
 
