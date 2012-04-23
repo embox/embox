@@ -161,7 +161,7 @@ c_package = $(call c_escape,$(package))
 c_escape = $(subst .,__,$(1))
 
 c_str_escape = \
-  \n\t\t"$(subst $(\n),\\\\n"\n\t\t",$(subst $(\t),\\t,$(subst ",\",$1)))"
+  "$(subst $(\n),\n,$(subst $(\t),\t,$(subst ",\",$1)))"
 
 eol-trim = $(if $(findstring $(\s)\n,$1),$(call $0,$(subst $(\s)\n,\n,$1)),$1)
 
@@ -171,15 +171,14 @@ cond_flags = NYI
   ) \
 
 package_def = \
-  \n\n/* Package: $(package) */ \
-  \nMOD_PACKAGE_DEF($(c_package), "$(package)");
+  $(\n)$(\n)/* Package: $(package) */ \
+  $(\n)MOD_PACKAGE_DEF($(c_package), "$(package)");
 
-generate_package_defs = $(call eol-trim,\n/* Package definitions. */\
+generate_package_defs = /* Package definitions. */\
   $(foreach package,$(sort generic $(basename $(for m <- $(MODS_BUILD), \
         $(get $(get m->type).qualifiedName)))), \
     $(package_def) \
-  ) \
-)\n
+  )$(\n)
 
 # 1. Name of the annotation property.
 define mod_cmd_annotation_value
@@ -197,12 +196,13 @@ define mod_cmd_annotation_value
 endef
 
 mod_def = \
-  \n\n/* Mod: $(mod) */ \
-  \nMOD_DEF($(c_mod), $(call c_escape,$(mod_package)), "$(mod_name)", \
-    $(call c_str_escape,$(call mod_cmd_annotation_value,help)), \
-    $(call c_str_escape,$(call mod_cmd_annotation_value,man)));
+  $(\n)$(\n)/* Mod: $(mod) */ \
+  $(\n)MOD_DEF($(c_mod), $(call c_escape,$(mod_package)), "$(mod_name)", \
+  $(call c_str_escape,$(call mod_cmd_annotation_value,help)), \
+  $(call c_str_escape,$(call mod_cmd_annotation_value,man)));
 
-generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
+
+generate_mod_defs = $(\n)/* Mod definitions. */\
   $(for instance <- $(MODS_BUILD) $(LIBS_BUILD), \
   	m <- $(get instance->type), \
         mod <- $(get m->qualifiedName), \
@@ -212,19 +212,18 @@ generate_mod_defs = $(call eol-trim,\n/* Mod definitions. */\
     $(foreach mod,$(addprefix generic.runlevel$(runlevel)_,init fini), \
       $(mod_def) \
     ) \
-  ) \
-)\n
+  )$(\n)
 
 
 LABEL-Runlevel := mybuild.lang.Runlevel
 
-generate_mod_deps = $(strip \n/* Mod deps. */\
+generate_mod_deps = $(\n)/* Mod deps. */\
   $(for instance <- $(MODS_BUILD) $(LIBS_BUILD), \
   	m <- $(get instance->type), \
         mod <- $(get m->qualifiedName), \
 	$(for obj_dep <- $(get instance->depends), \
           dep <- $(get $(get obj_dep->type).qualifiedName), \
-      \nMOD_DEP_DEF($(c_mod), $(c_dep)); \
+      $(\n)MOD_DEP_DEF($(c_mod), $(c_dep)); \
 	   )\
    $(with $(for include <- $(get instance->includeMember), \
 		annotation <- $(get include->annotations), \
@@ -239,12 +238,11 @@ generate_mod_deps = $(strip \n/* Mod deps. */\
 			$(valueRaw)\
 		)), \
 	$(for valueRaw <- $(or $1,2),\
-	  \nMOD_DEP_DEF(generic__runlevel$(valueRaw)_init, $(c_mod)); \
-	  \nMOD_DEP_DEF($(c_mod), generic__runlevel$(valueRaw)_fini); \
+	  $(\n)MOD_DEP_DEF(generic__runlevel$(valueRaw)_init, $(c_mod)); \
+	  $(\n)MOD_DEP_DEF($(c_mod), generic__runlevel$(valueRaw)_fini); \
      ) \
     ) \
-  )\
-)\n
+  )$(\n)
 
 $(def_all)
 

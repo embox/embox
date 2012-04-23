@@ -74,8 +74,8 @@ MODS_ENABLE_OBJ := \
 include mk/codegen-di.mk
 
 APIS_BUILD := $(call filter_abstract_modules,$(MODS_ENABLE_OBJ))
-LIBS_BUILD := $(call filter_static_modules,$(MODS_ENABLE_OBJ))
-MODS_BUILD := $(filter-out $(LIBS_BUILD),$(MODS_ENABLE_OBJ))
+export LIBS_BUILD := $(call filter_static_modules,$(MODS_ENABLE_OBJ))
+export MODS_BUILD := $(filter-out $(LIBS_BUILD),$(MODS_ENABLE_OBJ))
 
 SRCS_BUILD := \
 	$(foreach m,$(MODS_ENABLE_OBJ),$(call module_get_sources,$m))
