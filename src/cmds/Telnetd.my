@@ -20,7 +20,7 @@ module telnetd {
 	source "telnetd.c"
 	depends embox.net.socket, embox.net.tcp, embox.net.eth, embox.net.arp
 	depends embox.net.core, embox.net.af_inet, embox.net.ipv4, embox.net.icmp
-	depends embox.cmd.shell
+	depends embox.cmd.sh.tish
 }
 
 

@@ -63,7 +63,7 @@ static void out_msgs(const char *msg, const char *msg2, const char *msg3,
 	/* Executes shell or its emulator */
 static void run(void) {
 	printf("Welcome to telnet!\n");
-#if 1
+#if 0
 	while (1) {
 		char ch;
 		read(0, &ch, 1);				/* Not working. Treats socket as a file */
@@ -75,7 +75,7 @@ static void run(void) {
 #endif
 }
 
-#if 0
+#if 1
 	/* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
 	int *client_descr_p = (int *)args;
@@ -216,7 +216,7 @@ static int exec(int argc, char **argv) {
 					/* Strange: depending of the options we might not inherit
 					 * the descriptors. Why?
 					 */
-					if ((res = thread_create(&thds, THREAD_FLAG_PRIORITY_INHERIT | THREAD_FLAG_DETACHED,
+					if ((res = thread_create(&thds, THREAD_FLAG_PRIORITY_INHERIT | THREAD_FLAG_IN_NEW_TASK,
 											 telnet_thread_handler, &clients[i]))) {
 						out_msgs("Internal error with shell creation\n", " failed. Can't create shell\n",
 								 "shell_create", client_descr, &client_socket);
