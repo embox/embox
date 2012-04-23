@@ -62,7 +62,6 @@ static int exec(int argc, char **argv) {
 
 	mkfs_params.fs_type = DEFAULT_FS_TYPE;
 	getopt_init();
-	/* TODO add -q to create device, -F for vfat fstype 12/16/32 */
 	while (-1 != (opt = getopt(argc, argv, "ht:q:"))) {
 		switch (opt) {
 		case 't':
@@ -130,7 +129,7 @@ int mkfs_do_operation(void *_mkfs_params) {
 
 		printf("Create ramdisk %s, size %d, filesistem %s, addr %d,\n",
 				ramd_params->name,ramd_params->size,
-				ramd_params->fs_name, (int)ramd_params->start_addr);
+				ramd_params->fs_name, (int)ramd_params->p_start_addr);
 #endif /*def _GAZ_DEBUG_ */
 	}
 
@@ -179,7 +178,7 @@ int mkfs_do_operation(void *_mkfs_params) {
 
 
 		strcpy(filename, ramd_params->name);
-		strcat (filename, "/3.txt");
+		strcat (filename, "/1/2/3/4/3.txt");
 		fd = fopen((const char *) filename, "r");
 #endif /*def _GAZ_DEBUG_ */
 	}

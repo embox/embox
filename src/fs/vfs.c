@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fs/vfs.h>
+#include <err.h>
 
 /**
  * Save first node name in path into buff variable.
@@ -35,17 +36,59 @@ static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 	return NULL;
 }
 
+int nip_tail(char *head, char *tail) {
+	char *p_tail;
+	char *p;
+
+	p = p_tail = head + strlen(head);
+	strcat(head, tail);
+
+	do {
+		p_tail--;
+		if(head >= p_tail) {
+			*p = '\0';
+			return -1;
+		}
+	} while ('/' != *p_tail);
+
+	strcpy (tail, p_tail);
+	*p_tail = '\0';
+
+	return 0;
+}
+
+int increase_tail(char *head, char *tail) {
+	char *p_tail;
+
+		p_tail = head + strlen(head);
+		strcat(head, tail);
+
+		do {
+			if('\0' == *p_tail) {
+				break;
+			}
+			p_tail++;
+		} while ('/' != *p_tail);
+
+		strcpy (tail, p_tail);
+		*p_tail = '\0';
+
+		return 0;
+}
+
+
 int vfs_add_leaf(node_t *child, node_t *parent) {
 	tree_add_link(&(parent->tree_link), &(child->tree_link));
 	return 0;
 }
 
-static node_t *vfs_add_new_path(node_t *parent, char *p_path, char *child_name) {
+static node_t *vfs_add_new_path(node_t *parent,
+		char *p_path, char *child_name) {
 	node_t *child;
 	child = alloc_node(child_name);
 	vfs_add_leaf(child, parent);
 	while (NULL != (p_path = get_next_node_name(p_path, child_name,
-													CONFIG_MAX_LENGTH_FILE_NAME))) {
+											CONFIG_MAX_LENGTH_FILE_NAME))) {
 		parent = child;
 		child = alloc_node(child_name);
 		vfs_add_leaf(child, parent);
@@ -73,6 +116,60 @@ node_t *vfs_add_path(const char *path, node_t *parent) {
 	}
 
 	return NULL;
+}
+
+#define LAST  0x01
+node_t *vfs_create_filechain(const char *path){
+	int count_dir;
+	file_create_param_t param;
+	fs_drv_t *drv;
+	node_t *node, *new_node;
+	char tail[CONFIG_MAX_LENGTH_FILE_NAME];
+
+	count_dir = 0;
+	tail[0] = '\0';
+	strcpy (param.path, path);
+
+	/* find last node in the path */
+	do {
+		if (nip_tail (param.path, tail)) {
+			return NULL;
+		}
+		count_dir ++;
+	} while (NULL == (node = vfs_find_node(param.path, NULL)));
+
+	/* add one directory and assign the parameters of the parent */
+	do {
+		increase_tail (param.path, tail);
+
+		if (NULL == (new_node = vfs_add_path (param.path, NULL))) {
+			return NULL;
+		}
+
+		drv = new_node->fs_type = node->fs_type;
+		new_node->file_info = node->file_info;
+		new_node->properties = IS_DIRECTORY;
+		/* believe that the latter in path is always a file */
+		if (LAST == count_dir) {
+			new_node->properties &= ~IS_DIRECTORY;
+		}
+
+		param.node = (void *) new_node;
+		param.parents_node = (void *) node;
+
+		if (NULL == drv->fsop->create_file) {
+			LOG_ERROR("fsop->create_file is NULL handler\n");
+			return NULL;
+		}
+
+		drv->fsop->create_file ((void *)&param);
+
+		node = new_node;
+		count_dir--;
+
+	} while (0 < count_dir);
+
+	return node;
 }
 
 int vfs_del_leaf(node_t *node) {

@@ -79,7 +79,8 @@ int ramdisk_create(void *mkfs_params) {
 	ramd_params = ramdisk_info_alloc();
 	ramdisk_node->attr = (void *) ramd_params;
 
-	if(NULL == (ramd_params->start_addr = page_alloc(p_mkfs_params->blocks))) {
+	if(NULL == (ramd_params->p_start_addr =
+			page_alloc(p_mkfs_params->blocks))) {
 		return -ENOMEM;
 	}
 

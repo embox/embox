@@ -20,101 +20,6 @@
 #include <fs/file_desc.h>
 #include <kernel/prom_printf.h>
 
-#define LAST  0x01
-
-int nip_tail(char *head, char *tail) {
-	char *p_tail;
-	char *p;
-
-	p = p_tail = head + strlen(head);
-	strcat(head, tail);
-
-	do {
-		p_tail--;
-		if(head >= p_tail) {
-			*p = '\0';
-			return -1;
-		}
-	} while ('/' != *p_tail);
-
-	strcpy (tail, p_tail);
-	*p_tail = '\0';
-
-	return 0;
-}
-
-int increase_tail(char *head, char *tail) {
-	char *p_tail;
-
-		p_tail = head + strlen(head);
-		strcat(head, tail);
-
-		do {
-			if('\0' == *p_tail) {
-				break;
-			}
-			p_tail++;
-		} while ('/' != *p_tail);
-
-		strcpy (tail, p_tail);
-		*p_tail = '\0';
-
-		return 0;
-}
-
-node_t *create_filechain(const char *path){
-	int count_dir;
-	file_create_param_t param;
-	fs_drv_t *drv;
-	node_t *node, *new_node;
-	char tail[CONFIG_MAX_LENGTH_FILE_NAME];
-
-	count_dir = 0;
-	tail[0] = '\0';
-	strcpy (param.path, path);
-
-	/* find last node in the path */
-	do {
-		if (nip_tail (param.path, tail)) {
-			return NULL;
-		}
-		count_dir ++;
-	} while (NULL == (node = vfs_find_node(param.path, NULL)));
-
-	/* add one directory and assign the parameters of the parent */
-	do {
-		increase_tail (param.path, tail);
-
-		if (NULL == (new_node = vfs_add_path (param.path, NULL))) {
-			return NULL;
-		}
-
-		drv = new_node->fs_type = node->fs_type;
-		new_node->file_info = node->file_info;
-		new_node->properties = IS_DIRECTORY;
-		/* believe that the latter in path is always a file */
-		if (LAST == count_dir) {
-			new_node->properties &= ~IS_DIRECTORY;
-		}
-
-		param.node = (void *) new_node;
-		param.parents_node = (void *) node;
-
-		if (NULL == drv->fsop->create_file) {
-			LOG_ERROR("fsop->create_file is NULL handler\n");
-			return NULL;
-		}
-
-		drv->fsop->create_file ((void *)&param);
-
-		node = new_node;
-		count_dir--;
-
-	} while (0 < count_dir);
-
-	return node;
-}
-
 FILE *fopen(const char *path, const char *mode) {
 	node_t *nod;
 	fs_drv_t *drv;
@@ -127,7 +32,7 @@ FILE *fopen(const char *path, const char *mode) {
 			return NULL;
 		}
 
-		if (NULL == (nod = create_filechain(path))) {
+		if (NULL == (nod = vfs_create_filechain(path))) {
 			errno = -EINVAL;
 			return NULL;
 		}

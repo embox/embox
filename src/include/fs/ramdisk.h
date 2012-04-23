@@ -16,12 +16,12 @@
 #define CONFIG_QUANTITY_RAMDISK 0x05
 
 typedef struct ramdisk_params {
-	char *start_addr;
-	size_t   size;
-	size_t   blocks;
-	const char name[CONFIG_MAX_LENGTH_FILE_NAME];
-	const char fs_name[CONFIG_MAX_LENGTH_FILE_NAME];
-	unsigned int fs_type;
+	char           *p_start_addr;
+	size_t          size;
+	size_t          blocks;
+	const char      name[CONFIG_MAX_LENGTH_FILE_NAME];
+	const char      fs_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	unsigned int    fs_type;
 } ramdisk_params_t;
 
 extern int ramdisk_create(void *mkfs_params);

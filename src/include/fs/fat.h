@@ -18,11 +18,11 @@
 /*
  * Configurable
  */
-#define MAX_PATH		64	/*  Maximum path length  */
-#define DIR_SEPARATOR	'/'	/* character separating directory components*/
-#define CONFIG_QUANTITY_FATFILE  64
-#define MSDOS_NAME    11
+#define MAX_PATH		         64	/*  Maximum path length  */
+#define CONFIG_FATFILE_QUANTITY  64
+#define MSDOS_NAME               11
 
+#define DIR_SEPARATOR	'/'	/* character separating directory components*/
 
 /* 32-bit error codes */
 #define DFS_OK			0			/* no error */
@@ -98,22 +98,22 @@ typedef struct dir_ent {
  *	Partition table entry structure
  */
 typedef struct pt_info {
-	uint8_t		active;		/* 0x80 if partition active */
-	uint8_t		start_h;		/* starting head */
-	uint8_t		start_cs_l;		/* starting cylinder and sector (low byte) */
-	uint8_t		start_cs_h;		/* starting cylinder and sector (high byte) */
-	uint8_t		type;			/* type ID byte */
-	uint8_t		end_h;			/* ending head */
-	uint8_t		end_cs_l;		/* ending cylinder and sector (low byte) */
-	uint8_t		end_cs_h;		/* ending cylinder and sector (high byte) */
-	uint8_t		start_0;		/* starting sector# (low byte) */
-	uint8_t		start_1;		/* */
-	uint8_t		start_2;		/* */
-	uint8_t		start_3;		/* starting sector# (high byte) */
-	uint8_t		size_0;			/* size of partition (low byte) */
-	uint8_t		size_1;			/* */
-	uint8_t		size_2;			/* */
-	uint8_t		size_3;			/* size of partition (high byte) */
+	uint8_t	active;		/* 0x80 if partition active */
+	uint8_t	start_h;		/* starting head */
+	uint8_t	start_cs_l;		/* starting cylinder and sector (low byte) */
+	uint8_t	start_cs_h;		/* starting cylinder and sector (high byte) */
+	uint8_t	type;			/* type ID byte */
+	uint8_t	end_h;			/* ending head */
+	uint8_t	end_cs_l;		/* ending cylinder and sector (low byte) */
+	uint8_t	end_cs_h;		/* ending cylinder and sector (high byte) */
+	uint8_t	start_0;		/* starting sector# (low byte) */
+	uint8_t	start_1;		/* */
+	uint8_t	start_2;		/* */
+	uint8_t	start_3;		/* starting sector# (high byte) */
+	uint8_t	size_0;			/* size of partition (low byte) */
+	uint8_t	size_1;			/* */
+	uint8_t	size_2;			/* */
+	uint8_t	size_3;			/* size of partition (high byte) */
 } pt_info_t, *p_pt_info_t;
 
 /*
@@ -266,7 +266,7 @@ typedef struct dirinfo {
 	uint32_t currentcluster;	/* current cluster in dir */
 	uint8_t currentsector;		/* current sector in cluster */
 	uint8_t currententry;		/* current dir entry in sector */
-	uint8_t *scratch;			/* ptr to user-supplied scratch buffer (one sector) */
+	uint8_t *p_scratch;			/* ptr to user-supplied scratch buffer (one sector) */
 	uint8_t flags;				/* internal DOSFS flags */
 } dir_info_t, *p_dir_info_t;
 
@@ -286,7 +286,7 @@ typedef struct fileinfo {
 } file_info_t, *p_file_info_t;
 
 typedef struct fat_fs_description {
-	ramdisk_params_t * device;
+	ramdisk_params_t * p_device;
 	char root_name[CONFIG_MAX_LENGTH_FILE_NAME];
 	vol_info_t vi;
 } fat_fs_description_t;
@@ -296,30 +296,6 @@ typedef struct _fat_file_description {
 	fat_fs_description_t *p_fs_dsc;
 } fat_file_description_t;
 
-/*
- *	Get starting sector# of specified partition on drive #unit
- *	NOTE: This code ASSUMES an MBR on the disk.
- *	scratchsector should point to a SECTOR_SIZE scratch area
- *	Returns 0xffffffff for any error.
- *	If pactive is non-NULL, this function also returns the partition
- *	active flag. If pptype is non-NULL, this function also returns the
- *	partition type.
- *	If psize is non-NULL, this function also returns the partition size.
-
-
-uint32_t fat_get_ptn_start(void *fd, uint8_t *scratchsector,
-		uint8_t pnum, uint8_t *pactive, uint8_t *pptype, uint32_t *psize); */
-
-/*
- *	Retrieve volume info from BPB and store it in a VOLINFO structure
- *	You must provide the unit and starting sector of the filesystem, and
- *	a pointer to a sector buffer for scratch
- *	Attempts to read BPB and glean information about the FS from that.
- *	Returns 0 OK, nonzero for any error.
-
-
-uint32_t fat_get_vol_info(void *fd, uint8_t *scratchsector,
-		uint32_t startsector);*/
 
 /*
  * Open a directory for enumeration by DFS_GetNextDirEnt
