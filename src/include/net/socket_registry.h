@@ -10,9 +10,11 @@
 #define SOCKET_REGISTRY_H_
 
 #include <net/net.h>
+#include <net/socket.h>
 #include <util/dlist.h>
 
-enum socket_connection_state_t {UNCONNECTED, CLOSED, LISTENING, BOUND, CONNECTING, CONNECTED, ESTABLISHED, DISCONNECTING};
+enum socket_connection_state_t {UNCONNECTED,
+ CLOSED, LISTENING, BOUND, CONNECTING, CONNECTED, ESTABLISHED, DISCONNECTING};
 
 /**
  * @param sock socket connected to addr
@@ -21,8 +23,8 @@ enum socket_connection_state_t {UNCONNECTED, CLOSED, LISTENING, BOUND, CONNECTIN
 typedef struct socket_node{
 	struct dlist_head link;
 	struct socket *sock;
-	sockaddr_t saddr;
-	sockaddr_t daddr;
+	struct sockaddr saddr;
+	struct sockaddr daddr;
 	enum socket_connection_state_t socket_connection_state;
 } socket_node_t;
 

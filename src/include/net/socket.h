@@ -235,4 +235,6 @@ extern int socket_shutdown(int socket, int how);
 
 extern int check_icmp_err(int sockfd);
 
+#include <net/socket_options.h> /* should be here for posix */
+
 #endif /* NET_SOCKET_H_ */

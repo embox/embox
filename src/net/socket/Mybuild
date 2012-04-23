@@ -5,6 +5,7 @@ module socket {
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "socket.c", "socket_allocator.c", "socket_repo.c", "socket_registry.c"
 	source "kernel_socket.c"
+	source "socket_options.c"
 }
 
 module af_packet {
