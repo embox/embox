@@ -1,5 +1,10 @@
 package embox.example.net
 
+module checkopts {
+        source "checkopts.c"
+	depends embox.net.socket
+}
+
 module tcp_echo {
 	source "tcp_echo.c"
 	depends embox.net.socket

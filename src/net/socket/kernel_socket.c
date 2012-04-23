@@ -89,6 +89,8 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	/* addr socket entry to registry */
 	if( 0 > (res = sr_add_socket_to_registry(sock)))
 		return res;
+	/* set default socket options */
+	so_options_init(&sock->socket_node->options, type);
 	*psock = sock; /* and save structure */
 
 	return ENOERR;
@@ -377,7 +379,10 @@ int kernel_socket_getsockopt(struct socket *sock, int level, int optname,
 		res = so_get_socket_option(&sock->socket_node->options, optname, optval,
 															 (socklen_t*)optlen);
 	}else{
-		res = sock->ops->getsockopt(sock, level, optname, optval, optlen);
+		if(sock->ops->getsockopt)
+			res = sock->ops->getsockopt(sock, level, optname, optval, optlen);
+		else
+			res = -EOPNOTSUPP;
 	}
 
 	return res;

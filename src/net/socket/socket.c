@@ -325,3 +325,27 @@ int socket_close(int sockfd) {
 
 	return ENOERR;
 }
+
+int getsockopt(int sockfd, int level, int optname, void *optval,
+               socklen_t *optlen){
+	struct socket *sock;
+	int res;
+
+	if (sockfd < 0) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+	sock = idx2sock(sockfd);
+	if (sock == NULL) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+	res = kernel_socket_getsockopt(sock, level, optname,
+														 optval, optlen);
+	if(res < 0){
+		SET_ERRNO(-res);
+		return -1;
+	}
+	return ENOERR;
+
+}

@@ -147,6 +147,16 @@ int so_set_socket_option(struct socket_opt_state *opts, unsigned int option,
 	return ENOERR;
 }
 
+void so_options_init(struct socket_opt_state *opts, int socket_type){
+	switch(socket_type){
+	case SOCK_STREAM:
+		memcpy(opts, &DEFAULT_STREAM_OPTS, sizeof(struct socket_opt_state));
+		break;
+	case SOCK_DGRAM:
+	default:
+		memcpy(opts, &DEFAULT_DGRAM_OPTS, sizeof(struct socket_opt_state));
+	}
+}
 /**
  * Get socket option
  */
@@ -175,7 +185,7 @@ int so_get_socket_option(struct socket_opt_state *opts, unsigned int option,
 	case SO_BROADCAST:
 		if(*option_len != sizeof(unsigned int))
 			return -EINVAL;
-		*((unsigned int*)option_value) = opts->so_type;
+		*((unsigned int*)option_value) = opts->so_broadcast;
 		*option_len = sizeof(unsigned int);
 		break;
 	case SO_DEBUG:
@@ -236,7 +246,8 @@ int so_get_socket_option(struct socket_opt_state *opts, unsigned int option,
 	case SO_LINGER:
 		if(*option_len != sizeof(struct linger))
 			return -EINVAL;
-		memcpy(&opts->so_linger, option_value, *option_len);
+		((struct linger*)option_value)->l_onoff = opts->so_linger.l_onoff;
+		((struct linger*)option_value)->l_linger = opts->so_linger.l_linger;
 		*option_len = sizeof(struct linger);
 		break;
 	case SO_RCVTIMEO:
@@ -244,7 +255,8 @@ int so_get_socket_option(struct socket_opt_state *opts, unsigned int option,
 			return -EINVAL;
 		if(*option_len > sizeof(struct timeval))
 			return -EDOM;
-		memcpy(&opts->so_rcvtimeo, option_value, *option_len);
+		((struct timeval*)option_value)->tv_sec = opts->so_rcvtimeo.tv_sec;
+		((struct timeval*)option_value)->tv_usec = opts->so_rcvtimeo.tv_usec;
 		*option_len = sizeof(struct timeval);
 		break;
 	case SO_SNDTIMEO:
@@ -252,7 +264,8 @@ int so_get_socket_option(struct socket_opt_state *opts, unsigned int option,
 			return -EINVAL;
 		if(*option_len > sizeof(struct timeval))
 			return -EDOM;
-		memcpy(&opts->so_sndtimeo, option_value, *option_len);
+		((struct timeval*)option_value)->tv_sec = opts->so_sndtimeo.tv_sec;
+		((struct timeval*)option_value)->tv_usec = opts->so_sndtimeo.tv_usec;
 		*option_len = sizeof(struct timeval);
 		break;
 	default:

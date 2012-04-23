@@ -89,7 +89,6 @@ enum socket_options{
 	SO_TYPE, /* int *//* Identify socket type ( getsockopt() only). */
 };
 
-
 /* methods */
 
 /**
@@ -103,5 +102,10 @@ int so_set_socket_option(struct socket_opt_state *opts, unsigned int option,
  **/
 int so_get_socket_option(struct socket_opt_state *opts, unsigned int option,
 												 const void *option_value, socklen_t *option_len);
+
+/**
+ * initialize socket options values
+ **/
+void so_options_init(struct socket_opt_state *opts, int socket_type);
 
 #endif

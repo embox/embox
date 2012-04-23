@@ -233,6 +233,10 @@ extern ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 extern int socket_close(int sockfd);
 extern int close(int sockfd);
 
+int getsockopt(int sockfd, int level, int optname, void *optval,
+               socklen_t *optlen);
+
+
 /* TODO implement */
 extern int socket_shutdown(int socket, int how);
 
