@@ -1,0 +1,5 @@
+package embox.profiler
+
+static module backtrace {
+	source "backtrace.c", "backtrace.h"
+}
