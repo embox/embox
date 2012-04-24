@@ -1,0 +1,21 @@
+package embox.cmd
+
+import embox.compat.posix.LibPosix
+
+@Cmd(name = "touch",
+	help = "Display last debug messages..",
+	man = '''
+	NAME
+		touch - create a file
+	SYNOPSIS
+		touch  full_filename
+	DESCRIPTION
+		touch is used to create a file
+	''')
+module touch {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "touch.c"
+	depends LibPosix
+	depends embox.fs.ramdisk
+}
