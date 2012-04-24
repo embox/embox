@@ -16,7 +16,7 @@
  * default stream type socket options set
  */
 static const struct socket_opt_state DEFAULT_STREAM_OPTS = {
-	.so_acceptconn = 1,  /* by default stream socket should be able to accept */
+	.so_acceptconn = 0,  /* posix doesn't specify default value, we'll turn it off */
 	.so_broadcast = 0,   /* and it shouldn't be able to broadcast. dgram should */
 	.so_debug = 0,       /* no debug */
 	.so_dontroute = 0,	 /* no dontroute flag */
@@ -38,7 +38,7 @@ static const struct socket_opt_state DEFAULT_STREAM_OPTS = {
  * default dgram type socket options set
  */
 static const struct socket_opt_state DEFAULT_DGRAM_OPTS = {
-	.so_acceptconn = 0,  /* by default dgram socket shouldn't be able to accept */
+	.so_acceptconn = 0,
 	.so_broadcast = 1,   /* and it should be able to broadcast.*/
 	.so_debug = 0,       /* no debug */
 	.so_dontroute = 0,	 /* no dontroute flag */

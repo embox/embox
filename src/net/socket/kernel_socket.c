@@ -100,8 +100,11 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 int kernel_socket_release(struct socket *sock) {
 	int res;
 
-	if(sk_is_connected(sock))
-		sk_set_connection_state(sock, DISCONNECTING);
+	sk_set_connection_state(sock, DISCONNECTING);
+
+	/* since we are releaseing no more connections can be accepted */
+	if(sk_is_listening(sock))
+		sock->socket_node->options.so_acceptconn = 0;
 
 	/* socket will be unbound, if it is bound else nothing happens */
 	sr_remove_saddr(sock);  /* unset saddr in registry */
@@ -226,6 +229,7 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 								 "kernel_sockets", "kernel_socket_listen");
 		/* socket was bound, so set back BOUND */
 		sk_set_connection_state(sock, BOUND);
+		sock->socket_node->options.so_acceptconn = 1;
 		return res;
 	}else
 		sk_set_connection_state(sock, LISTENING);/* Everything turned out fine*/
