@@ -8,7 +8,7 @@ import embox.compat.posix.LibPosix
 	NAME
 		mount - mount device into directory
 	SYNOPSIS
-		mount dev dir
+		mount DEV DIR
 	DESCRIPTION
 		Note that one does not really mount a device, one mounts
         a filesystem found on the device.
