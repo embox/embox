@@ -1,6 +1,6 @@
 
 package mybuild.lang
 
-annotation DefRealization {
+annotation DefaultImpl {
 	string value
 }
