@@ -132,9 +132,9 @@ define class-Mybuild
 						mod <- $(get inst->type),
 						annotation <- $(get mod->annotations),
 						annotationType <- $(get annotation->type),
-						$(warning 1 $(annotationType))
+#						$(warning 1 $(annotationType))
 						$(if $(eq $(get annotationType->qualifiedName),$(LABEL-DefaultImpl)),
-							$(warning $(annotation))
+#							$(warning $(annotation))
 							$(for \
 								bind <- $(get annotation->bindings),
 								option <- $(get bind->option),
