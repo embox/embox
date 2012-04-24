@@ -183,34 +183,29 @@ $(gold_grammar)_produce-ModuleMember_option = \
 		optionsMembers/$(member))
 
 # Rule: <Option> ::= <OptionType> Identifier <OptionDefaultValue>
-# Args: 1..3 - Symbols in the RHS.
 define $(gold_grammar)_produce-Option_Identifier
-    $(for opt <- $(new My$1Option),
-		$(set opt->name,$2)
-		$(and $3,
-			$(if $(invoke opt->validateValue,$3),
-				$(set opt->defaultValue,$3),
-				$(call gold_report_error_at,
-					$(call gold_location_of,3),
+	# Here $1 is a newly created instance of MyXxxOption.
+	$(for option <- $1,
+		$(set option->name,$2)
+		$(if $3,
+			$(if $(invoke option->validateValue,$3),
+				$(set option->defaultValue,$3),
+				$(call gold_report_error_at,$(call gold_location_of,3),
 					Option value has wrong type)))
 
-		$(opt))
+		$(option))
 endef
 
 # Rule: <OptionType> ::= string
-# Args: 1..1 - Symbols in the RHS.
-$(gold_grammar)_produce-OptionType_string = String
-
+$(gold_grammar)_produce-OptionType_string  = $(new MyStringOption)
 # Rule: <OptionType> ::= number
-# Args: 1..1 - Symbols in the RHS.
-$(gold_grammar)_produce-OptionType_number = Number
-
+$(gold_grammar)_produce-OptionType_number  = $(new MyNumberOption)
 # Rule: <OptionType> ::= boolean
-# Args: 1..1 - Symbols in the RHS.
-$(gold_grammar)_produce-OptionType_boolean = Boolean
+$(gold_grammar)_produce-OptionType_boolean = $(new MyBooleanOption)
+# Rule: <OptionType> ::= <Reference>
+$(gold_grammar)_produce-OptionType         = $(new MyTypeReferenceOption,$1)
 
 # Rule: <OptionDefaultValue> ::= '=' <Value>
-# Args: 1..2 - Symbols in the RHS.
 $(gold_grammar)_produce-OptionDefaultValue_Eq = $2
 
 # Rule: <Filename> ::= StringLiteral
