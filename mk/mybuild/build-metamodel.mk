@@ -30,6 +30,8 @@ Build_ModuleInstance_depends := \
 	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_depends)
 Build_ModuleInstance_options := \
 	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_options)
+Build_ModuleInstance_afterDepends := \
+	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_afterDepends)
 Build_ModuleInstance_includeMember := \
 	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_includeMember)
 
@@ -56,6 +58,7 @@ define __build_init
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_dependent),dependent,$(Build_ModuleInstance),$(Build_ModuleInstance_depends),changeable many)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_depends),depends,$(Build_ModuleInstance),$(Build_ModuleInstance_dependent),changeable many)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_options),options,$(Build_OptionInstance),$(Build_OptionInstance_module),changeable many containment)
+	$(call eMetaReferenceInit,$(Build_ModuleInstance_afterDepends),afterDepends,$(Build_ModuleInstance),,changeable many)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_includeMember),includeMember,$(ConfigFile_Include),,changeable linkable)
 
 	$(call eMetaClassInit,$(Build_OptionInstance),OptionInstance,,)
@@ -77,6 +80,7 @@ define __build_bind
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_dependent),dependent)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_depends),depends)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_options),options)
+	$(call eMetaFeatureBind,$(Build_ModuleInstance_afterDepends),afterDepends)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_includeMember),includeMember)
 
 	$(call eMetaClassBind,$(Build_OptionInstance),OptionInstance)

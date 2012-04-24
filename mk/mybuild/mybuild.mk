@@ -9,6 +9,8 @@ __mybuild_mybuild_mk := 1
 include mk/mybuild/myfile-resource.mk
 
 chekers_list := \
+	Mybuild.closeInstances \
+	Mybuild.testsAnnotations \
 	Mybuild.specifyInstances \
 	Mybuild.checkAbstractRealization \
 	Mybuild.checkFeatureRealization \
@@ -37,9 +39,19 @@ endef
 LABEL-DefaultImpl := mybuild.lang.DefaultImpl
 LABEL-IfNeed      := mybuild.lang.IfNeed
 LABEL-For         := mybuild.lang.For
+LABEL-TestFor := mybuild.lang.TestFor
 
 excludeAnnotations := $(LABEL-IfNeed)
 leftToRightParentAnnotations := $(LABEL-IfNeed) $(LABEL-For)
+
+define getAnnotation
+	$(strip $(for annot <- $1,
+		annotType<-$(get annot->type),
+		$(if $(eq $(get annotType->qualifiedName),$2),
+			$(for bind <- $(get annot->bindings),
+				$(if $(eq $3,$(get $(get bind->option).name)),
+					$(get bind->value))))))
+endef
 
 # Constructor args:
 #   1. Configuration.
@@ -88,11 +100,10 @@ define class-Mybuild
 				$(if $(strip $(call Mybuild.processIncludeAnnotations,$(module),
 						$(get cfgInclude->annotations))),
 
-					$(if $(map-get moduleInstanceStore/$(module)),,
-						$(invoke moduleInstanceClosure,$(module)))
-
 					$(for moduleInst <- $(invoke moduleInstance,$(module)),
-						$(set moduleInst->includeMember,$(cfgInclude))))),
+						$(set moduleInst->includeMember,$(cfgInclude))
+						$(moduleInst)))),
+
 			$(call check,$1,$(chekers_list),)
 			))
 
@@ -117,6 +128,25 @@ define class-Mybuild
 					$(invoke $(get $(get annot->bindings).value).toString)
 					$1))))
 
+	$(method closeInstances,
+		$(for inst <- $1,
+			$(inst) \
+			$(invoke instanceClosure,$(inst))))
+
+	$(method testsAnnotations,
+		$(for \
+			inst <- $1,
+			mod <- $(get inst->type),
+			$(inst) \
+			$(for testModLiteral <- $(call getAnnotation,$(get mod->annotations),$(LABEL-TestFor),value) \
+						$(if $(strip $(get inst->includeMember)),
+							$(call getAnnotation,$(get $(get inst->includeMember).annotations),$(LABEL-TestFor),value)),
+				testModInst <-$(invoke moduleInstance,$(get testModLiteral->value)),
+
+				$(call check,$(testModInst),$3,)
+				$(set+ testModInst->afterDepends,$(inst)))
+			))
+
 	$(method specifyInstances,
 		$(for inst <- $1,
 			$(with $(or $(strip $(for \
@@ -126,20 +156,12 @@ define class-Mybuild
 
 						$(if $(and $(filter $(inst),$(targetInstance)),
 									$(invoke targetModule->isSubTypeOf,$(get targetInstance->type))),
-								$(call check,$(invoke moduleInstanceClosure,$(targetModule)),$2 $0,)
+								$(call check,$(invoke moduleInstance,$(targetModule)),$2 $0,)
 								))),
 					$(strip $(for \
 						mod <- $(get inst->type),
-						annotation <- $(get mod->annotations),
-						annotationType <- $(get annotation->type),
-#						$(warning 1 $(annotationType))
-						$(if $(eq $(get annotationType->qualifiedName),$(LABEL-DefaultImpl)),
-#							$(warning $(annotation))
-							$(for \
-								bind <- $(get annotation->bindings),
-								option <- $(get bind->option),
-								$(if $(eq $(get option->name),value),
-									$(call check,$(invoke moduleInstanceClosure,$(get bind->value)),$2 $0,))))))),
+						annotValue <- $(call getAnnotation,$(get mod->annotations),$(LABEL-DefaultImpl),value),
+							$(call check,$(invoke moduleInstance,$(get annotValue->value)),$2 $0,)))),
 				$(if $1,$1,$(inst)))))
 
 	# Cheker for abstract realization. If there is only one subtype of given abstract module
@@ -154,7 +176,7 @@ define class-Mybuild
 			instType <- $(get inst->type),
 			$(if $(get instType->isAbstract),
 				$(if $(singleword $(get instType->subTypes)),
-					$(call check,$(invoke moduleInstanceClosure,$(get instType->subTypes)),$2 $0,),
+					$(call check,$(invoke moduleInstance,$(get instType->subTypes)),$2 $0,),
 					$(inst)$(invoke issueReceiver->addIssues,$(new InstantiateIssue,,error,,
 				   		No abstract realization: $(get instType->qualifiedName)))),
 				$(inst))))
@@ -290,7 +312,7 @@ define class-Mybuild
 			$(if $1,
 				$(if $(filter $(get 1->type),$(mod) $(get mod->allSuperTypes)),
 					$1,
-					$(if $(filter $(get 1->type),$(get mod->allSubTypes)),,
+					$(if $(filter $(get 1->type),$(get mod->allSubTypes)),$1,
 						$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
 							$(for includeMember <- $(cfgInclude),
 								$(get includeMember->eResource)),
@@ -327,10 +349,12 @@ define class-Mybuild
 	#	Build realized features appends Module features
 	$(method moduleInstance,
 		$(for \
-			mod <- $1,
-			moduleInstance <- $(call Mybuild.moduleInstanceSuper),
+			mod<-$1,
+			moduleInstance<-$(call Mybuild.moduleInstanceSuper),
 
-			$(invoke setInstanceToType,$(moduleInstance),$(mod))
+			$(if $(or $(if $(get moduleInstance->type),,1),
+						$(invoke $(get moduleInstance->type).isSuperTypeOf,$(mod))),
+				$(invoke setInstanceToType,$(moduleInstance),$(mod)))
 
 			$(moduleInstance)))
 
@@ -340,17 +364,19 @@ define class-Mybuild
 	#  1. Module, that not presented in build
 	# Return:
 	#  List of ModuleInstance for module, that have no reperesents yet
-	$(method moduleInstanceClosure,
-		$(invoke moduleInstance,$1) \
-		$(for thisInst<-$(invoke moduleInstance,$1),
-			mod <- $1,
+	$(method instanceClosure,
+		$(for thisInst<-$1,
+			mod <- $(get thisInst->type),
 			dep <- $(get mod->depends),
 			was <- was$(map-get moduleInstanceStore/$(dep)),
-			$(for depInst <- $(invoke moduleInstance,$(dep)),
-				$(if $(filter $(depInst),$(get thisInst->depends)),,
-					$(set+ thisInst->depends,$(depInst))))
+			depInst <- $(invoke moduleInstance,$(dep)),
+			$(if $(filter $(depInst),$(get thisInst->depends)),,
+				$(set+ thisInst->depends,$(depInst)))
+
 			$(if $(filter was,$(was)),
-				$(invoke moduleInstanceClosure,$(dep)))))
+				$(depInst)) \
+
+			$(invoke instanceClosure,$(depInst))))
 
 endef
 

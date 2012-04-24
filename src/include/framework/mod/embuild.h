@@ -48,6 +48,18 @@
 	  __MOD_DEP_DEF(mod_nm, dep_nm)
 
 /**
+ * Defines new after-loading dependency of modules
+ * @param mod_nm
+ *   Symbol name of the module after which @a dep_nm
+ *   should be loaded
+ * @param dep_nm
+ *   Symbol name of the module that should be loaded
+ *   after @a mod_nm
+ */
+#define MOD_AFTER_DEP_DEF(mod_nm, dep_nm) \
+	  __MOD_AFTER_DEP_DEF(mod_nm, dep_nm)
+
+/**
  * Defines a new package.
  *
  * @param package_nm

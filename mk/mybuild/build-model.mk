@@ -45,6 +45,7 @@ endef
 #   - reference 'dependent'
 #   - reference 'depends'
 #   - reference 'options'
+#   - reference 'afterDepends'
 #   - reference 'includeMember'
 #
 define class-ModuleInstance
@@ -71,6 +72,10 @@ define class-ModuleInstance
 	# Property 'options... : OptionInstance'.
 	$(eobject-reference Build_ModuleInstance_options,
 		options,OptionInstance,module,changeable many containment)
+
+	# Property 'afterDepends... : ModuleInstance'.
+	$(eobject-reference Build_ModuleInstance_afterDepends,
+		afterDepends,ModuleInstance,,changeable many)
 
 	# Property 'includeMember : CfgInclude'.
 	# Property 'includeMember_link : ELink'.

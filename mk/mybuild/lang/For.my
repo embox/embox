@@ -2,6 +2,6 @@
 package mybuild.lang
 
 annotation For {
-	string value
+	Module value
 }
 

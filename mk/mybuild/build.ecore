@@ -19,6 +19,8 @@
         eType="#//ModuleInstance" eOpposite="#//ModuleInstance/dependent"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
         eType="#//OptionInstance" containment="true" eOpposite="#//OptionInstance/module"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="afterDepends" upperBound="-1"
+        eType="#//ModuleInstance"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="includeMember" eType="ecore:EClass configfile.ecore#//Include"
         unsettable="true"/>
   </eClassifiers>

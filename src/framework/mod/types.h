@@ -18,7 +18,7 @@ struct mod_member;
 
 struct mod {
 	/** Null-terminated array with dependency information. */
-	const struct mod **requires, **provides;
+	const struct mod **requires, **provides, **after_deps;
 
 	/* Descriptive information about the module provided by Embuild. */
 

@@ -1,6 +1,6 @@
 
 package mybuild.lang
 
-annotation DefaultImpl {
+annotation TestFor {
 	Module value
 }

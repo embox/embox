@@ -223,7 +223,11 @@ generate_mod_deps = $(\n)/* Mod deps. */\
         mod <- $(get m->qualifiedName), \
 	$(for obj_dep <- $(get instance->depends), \
           dep <- $(get $(get obj_dep->type).qualifiedName), \
-      $(\n)MOD_DEP_DEF($(c_mod), $(c_dep)); \
+	      $(\n)MOD_DEP_DEF($(c_mod), $(c_dep)); \
+	   )\
+	$(for obj_dep <- $(get instance->afterDepends), \
+          dep <- $(get $(get obj_dep->type).qualifiedName), \
+	      $(\n)MOD_AFTER_DEP_DEF($(c_mod), $(c_dep)); \
 	   )\
    $(with $(for include <- $(get instance->includeMember), \
 		annotation <- $(get include->annotations), \
