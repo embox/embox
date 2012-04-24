@@ -1944,12 +1944,12 @@ define __object_print_var.reference_list
 			$(assert $(is-object $r),
 				Not an object '$r' inside reference field $1 \
 				of object $o [$c] being serialized as $s)
+			$(assert $(value $(suffix $r).__serial_id__),
+				No serial id: $r [$($r)] inside reference field $1 \
+					of object $o [$c] being serialized as $s)
 			# Substitute the suffix with the serial identifier of the
 			# referenced object and escape everything else.
 			$(call __object_field_escape,$(basename $r))
-			$(if $(value $(suffix $r).__serial_id__),,
-				$(warning $0: no serial id: $r [$($r)] inside reference field $1 \
-					of object $o [$c] being serialized as $s))
 			$($(suffix $r).__serial_id__))$(\n)
 endef
 
@@ -1962,12 +1962,11 @@ define __object_print_var.reference_scalar
 			$(assert $(is-object $r),
 				Not an object '$r' inside reference field $1 \
 				of object $o [$c] being serialized as $s)
+			$(assert $(value $(suffix $r).__serial_id__),
+				No serial id: $r [$($r)] inside reference field $1 \
+					of object $o [$c] being serialized as $s)
 			# See '__object_print_var_reference_list'.
 			$(call __object_field_escape,$(basename $r))
-			$(if $(value $(suffix $r).__serial_id__),,
-				$(warning $0: no serial id: $r [$($r)] inside reference field $1 \
-					of object $o [$c] being serialized as $s))
-
 			$($(suffix $r).__serial_id__))$(\n)
 endef
 
