@@ -22,7 +22,7 @@ static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_nod
 
 	node = pack->node;
 
-	if (0 != pnet_graph_run_valid(node->graph) && !node_is_supporter(node)) {
+	if (0 != pnet_graph_run_valid(node->graph)) {
 		pnet_pack_destroy(pack);
 		return -EINVAL;
 	}

@@ -64,8 +64,10 @@ static match_rule_t rule_get_by_id(net_node_t node, char id);
 
 #define get_node_from_repo(node, name, error) \
 		if (NULL == (node = pnet_get_module(name))) { \
-			printf("%s: no such node ", name);	  \
-			return -error;							  \
+			if (NULL == (node = pnet_get_dev_by_name(name))) { \
+				printf("%s: no such node ", name);	 \
+				return -error;						 \
+			}										 \
 		}
 
 #define get_rule_from_node(node, rule, rule_name, error) \
@@ -182,7 +184,11 @@ static void print_list_of_graph_nodes(struct pnet_graph *gr) {
 	}
 	printf("nodes of %s: \n", gr->name);
 	list_for_each_entry(node, &gr->nodes, gr_link) {
-		printf("	%s (type: %s)\n ", node->name, node->proto->name);
+		if(node->proto) {
+			printf("	%s (type: %s)\n", node->name, node->proto->name);
+		} else {
+			printf("	%s (%s)\n", node->name, "no protocol");
+		}
 	}
 }
 
@@ -202,9 +208,17 @@ static int print_graph(char **argv) {
 
 	node = root->rx_dfault;
 
-	printf("%s (type: %s)\n", root->name, root->proto->name);
+	if(root->proto) {
+		printf("%s (type: %s)\n", root->name, root->proto->name);
+	} else {
+		printf("%s (%s)\n", root->name, "no protocol node");
+	}
 	while (NULL != node) {
-		printf("%s (type: %s)\n", node->name, node->proto->name);
+		if(node->proto) {
+			printf("%s (type: %s)\n", node->name, node->proto->name);
+		} else {
+			printf("%s (%s)\n", node->name, "no protocol");
+		}
 		node = node->rx_dfault;
 	}
 
@@ -254,9 +268,14 @@ static int add_node(char **argv) {
 		return res;
 	}
 
-	name  = malloc(strlen(argv[5]));
-	strcpy(name, argv[5]);
-	node->name = name;
+	if(*argv[5]) {
+		name  = malloc(strlen(argv[5]));
+		strcpy(name, argv[5]);
+		node->name = name;
+	} else {
+		printf("type name for node\n");
+		return -ENOENT;
+	}
 
 	gr->state = graph_state;
 

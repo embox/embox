@@ -4,16 +4,20 @@
  *
  * @date 23.03.12
  * @author Alexander Kalmuk
+ * @author Anton Kozlov
+ *         - pnet_get_dev_by_device()
  */
 
 #include <embox/unit.h>
 #include <assert.h>
 #include <embox/unit.h>
+#include <string.h>
 
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/repo.h>
 #include <pnet/pnet_pack.h>
+#include <pnet/graph.h>
 
 #include <net/skbuff.h>
 #include <net/netdevice.h>
@@ -35,7 +39,29 @@ static int net_dev_rx_hnd(struct pnet_pack *pack) {
 		pack->node = pnet_get_module("devs entry");
 	}
 
-	return 0;
+	return NET_HND_FORWARD;
+}
+
+net_node_t pnet_get_dev_by_device(struct net_device *dev) {
+	net_node_t node = dev->pnet_node;
+
+	if (NULL == node) {
+		return pnet_get_module("devs entry");
+	}
+
+	return node;
+}
+
+net_node_t pnet_get_dev_by_name(char *name) {
+	struct net_device *dev;
+
+	netdev_foreach(dev) {
+		if (!strcmp(dev->name, name)) {
+			return dev->pnet_node;
+		}
+	}
+
+	return NULL;
 }
 
 PNET_NODE_DEF("devs resolver", {
@@ -45,9 +71,13 @@ PNET_NODE_DEF("devs resolver", {
 
 static int init(void) {
 	net_node_t entry, resolver;
+	struct pnet_graph *graph = pnet_graph_create("devs resolver");
+
+	resolver = pnet_get_module("devs resolver");
+	pnet_graph_add_src(graph, resolver);
+	pnet_graph_start(graph);
 
 	entry = pnet_get_module("pnet entry");
-	resolver = pnet_get_module("devs resolver");
 	entry->rx_dfault = resolver;
 
 	return 0;
