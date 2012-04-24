@@ -372,31 +372,59 @@ int kernel_socket_getpeername(struct socket *sock,
 }
 
 int kernel_socket_getsockopt(struct socket *sock, int level, int optname,
-		char *optval, int *optlen) {
+		char *optval, socklen_t *optlen) {
 	int res;
+
+	/* sock is not NULL */
+	if(!sock){
+		return -ENOTSOCK;
+	}
+
+	/* check if such socket exists */
+	if(!sr_socket_exists(sock)){
+		return -ENOTSOCK;
+	}
 
 	if(level == SOL_SOCKET){
 		res = so_get_socket_option(&sock->socket_node->options, optname, optval,
-															 (socklen_t*)optlen);
+															 optlen);
 	}else{
 		if(sock->ops->getsockopt)
 			res = sock->ops->getsockopt(sock, level, optname, optval, optlen);
 		else
-			res = -EOPNOTSUPP;
+			/* if no getsockopt or setsockopt method is set, it should
+			   probably be interpreted as no options available to get or set */
+			res = -ENOPROTOOPT;
 	}
 
 	return res;
 }
 
 int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
-		char *optval, int optlen) {
+		char *optval, socklen_t optlen) {
 	int res;
+
+	/* sock is not NULL */
+	if(!sock){
+		return -ENOTSOCK;
+	}
+
+	/* check if such socket exists */
+	if(!sr_socket_exists(sock)){
+		return -ENOTSOCK;
+	}
 
 	if(level == SOL_SOCKET){
 		res = so_set_socket_option(&sock->socket_node->options, optname, optval,
-															 (socklen_t)optlen);
+															 optlen);
 	}else{
-		res = sock->ops->setsockopt(sock, level, optname, optval, optlen);
+		if(sock->ops->setsockopt){
+			res = sock->ops->setsockopt(sock, level, optname, optval, optlen);
+		}else{
+			/* if no getsockopt or setsockopt method is set, it should
+			   probably be interpreted as no options available to get or set */
+			res = -ENOPROTOOPT;
+		}
 	}
 	return res;
 }

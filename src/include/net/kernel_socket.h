@@ -119,14 +119,14 @@ extern int kernel_socket_getpeername(struct socket *sock, struct sockaddr *addr,
  * Note: not realized.
  */
 extern int kernel_socket_getsockopt(struct socket *sock, int level, int optname,
-					char *optval, int *optlen);
+					char *optval, socklen_t *optlen);
 
 /**
  * Set socket options.
  * Note: not realized.
  */
 extern int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
-					char *optval, int optlen);
+					char *optval, socklen_t optlen);
 
 /**
  * Send a message on a socket.

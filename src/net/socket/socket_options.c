@@ -62,6 +62,12 @@ static const struct socket_opt_state DEFAULT_DGRAM_OPTS = {
 int so_set_socket_option(struct socket_opt_state *opts, unsigned int option,
 												 const void *option_value, socklen_t option_len){
 
+	/* the best would be to check the accessibility of addresses pointed to by
+	   option_value and option_len*/
+	if(!option_value || !option_len){
+		return -EFAULT;
+	}
+
 	switch(option){
 	case SO_ACCEPTCONN:
 	case SO_ERROR:
@@ -162,6 +168,12 @@ void so_options_init(struct socket_opt_state *opts, int socket_type){
  */
 int so_get_socket_option(struct socket_opt_state *opts, unsigned int option,
 												 const void *option_value, socklen_t *option_len){
+
+	/* the best would be to check the accessibility of addresses pointed to by
+	   option_value and option_len*/
+	if(!option_value || !option_len){
+		return -EFAULT;
+	}
 
 	switch(option){
 	case SO_ACCEPTCONN:

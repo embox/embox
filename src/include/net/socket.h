@@ -233,8 +233,29 @@ extern ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 extern int socket_close(int sockfd);
 extern int close(int sockfd);
 
+/**
+ * get socket options
+ * @param sockfd socket description
+ * @param level option level (SOL_SOCKET or protocol number)
+ * @param optname option name (like SO_BROADCAST or SO_LINGER)
+ * @param optval pointer to option value variable on return
+ * @param optlen pointer to length of the option value variable on return
+ * @return 0 on success. -1 on failure with errno indicating error.
+ */
 int getsockopt(int sockfd, int level, int optname, void *optval,
                socklen_t *optlen);
+
+/**
+ * set socket options
+ * @param sockfd socket description
+ * @param level option level (SOL_SOCKET or protocol number)
+ * @param optname option name (like SO_BROADCAST or SO_LINGER)
+ * @param optval option value to set
+ * @param optlen length of the option value
+ * @return 0 on success. -1 on failure with errno indicating error.
+ */
+int setsockopt(int sockfd, int level, int optname, void *optval,
+               socklen_t optlen);
 
 
 /* TODO implement */
