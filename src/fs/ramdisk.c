@@ -72,7 +72,7 @@ int ramdisk_create(void *mkfs_params) {
 
 	p_mkfs_params = (mkfs_params_t *)mkfs_params;
 
-	if (NULL == (ramdisk_node = vfs_add_path(p_mkfs_params->name, NULL))) {
+	if (NULL == (ramdisk_node = vfs_add_path(p_mkfs_params->path, NULL))) {
 		return -EBUSY;/*file already exist*/
 	}
 
@@ -84,7 +84,7 @@ int ramdisk_create(void *mkfs_params) {
 		return -ENOMEM;
 	}
 
-	strcpy ((void *)&ramd_params->name, (const void *)p_mkfs_params->name);
+	strcpy ((void *)&ramd_params->path, (const void *)p_mkfs_params->path);
 	ramd_params->size = p_mkfs_params->blocks * CONFIG_PAGE_SIZE;
 	ramd_params->blocks = p_mkfs_params->blocks;
 

@@ -18,7 +18,6 @@
 /*
  * Configurable
  */
-#define MAX_PATH		         64	/*  Maximum path length  */
 #define CONFIG_FATFILE_QUANTITY  64
 #define MSDOS_NAME               11
 

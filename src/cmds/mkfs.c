@@ -98,10 +98,10 @@ static int exec(int argc, char **argv) {
 				print_usage();
 				return -EINVAL;
 			}
-			strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 2]);
+			strcpy ((void *)&(mkfs_params.path), (const void *)argv[argc - 2]);
 		}
 		else {/** last arg should be diskname*/
-			strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 1]);
+			strcpy ((void *)&(mkfs_params.path), (const void *)argv[argc - 1]);
 		}
 
 		return mkfs_do_operation(&mkfs_params);
@@ -137,11 +137,11 @@ int mkfs_do_operation(void *_mkfs_params) {
 	}
 
 	if(mkfs_params->operation_flag & MKFS_FORMAT_DEV) {
-		if(NULL == (ramd_params = ramdisk_get_param(mkfs_params->name))) {
+		if(NULL == (ramd_params = ramdisk_get_param(mkfs_params->path))) {
 			return -ENODEV;
 		}
 		/* set filesystem attribute to ramdisk */
-		strcpy ((void *)ramd_params->name, (const void *)mkfs_params->name);
+		strcpy ((void *)ramd_params->path, (const void *)mkfs_params->path);
 		strcpy ((void *)ramd_params->fs_name,
 					(const void *)mkfs_params->fs_name);
 		ramd_params->fs_type = mkfs_params->fs_type;

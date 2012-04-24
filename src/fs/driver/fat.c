@@ -19,6 +19,7 @@
 #include <util/array.h>
 #include <embox/device.h>
 #include <mem/page.h>
+#include <cmd/mount.h>
 
 static uint8_t sector[SECTOR_SIZE];
 static uint32_t bytecount;
@@ -139,7 +140,7 @@ static file_operations_t fatfs_fop = { fatfs_fopen, fatfs_fclose, fatfs_fread,
 static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
 	node_t *nod;
 	uint8_t _mode;
-	char path [MAX_PATH];
+	char path [CONFIG_MAX_LENGTH_PATH_NAME];
 	fat_file_description_t *fd;
 
 	nod = desc->node;
@@ -239,7 +240,7 @@ static int fatfs_format(void *par) {
 	fat_file_description_t *fd;
 
 	params = (ramdisk_params_t *) par;
-	if (NULL == (nod = vfs_find_node(params->name, NULL))) {
+	if (NULL == (nod = vfs_find_node(params->path, NULL))) {
 		return -ENODEV;/*device not found*/
 	}
 
@@ -250,7 +251,7 @@ static int fatfs_format(void *par) {
 	fd->p_fs_dsc = fs_des;
 
 	/*TODO  it should be into the fatfs_mount function*/
-	strcpy(fs_des->root_name, fs_des->p_device->name);
+	//strcpy(fs_des->root_name, fs_des->p_device->path);
 
 	nod->fs_type = &fatfs_drv;
 	nod->file_info = (void *) &fatfs_fop;
@@ -263,17 +264,29 @@ static int fatfs_format(void *par) {
 }
 
 static int fatfs_mount(void *par) {
-	ramdisk_params_t *params;
-	node_t *nod;
-	fat_file_description_t *fd;
+	mount_params_t *params;
+	node_t *dir_node, *dev_node;
+	fat_file_description_t *fd, *dev_fd;
 
-	params = (ramdisk_params_t *) par;
-	if (NULL == (nod = vfs_find_node(params->name, NULL))) {
-		return -ENODEV;/*device not found*/
+	params = (mount_params_t *) par;
+	dev_node = params->dev_node;
+	if (NULL == (dir_node = vfs_find_node(params->dir, NULL))) {
+		/*TODO usually mount doesn't create a directory*/
+		if (NULL == (dir_node = vfs_add_path (params->dir, NULL))) {
+			return -ENODEV;/*device not found*/
+		}
+		dir_node->properties = ATTR_DIRECTORY;
 	}
 
-	fd = (fat_file_description_t *) nod->attr;
-	strcpy(fd->p_fs_dsc->root_name, fd->p_fs_dsc->p_device->name);
+	dev_fd = (fat_file_description_t *) dev_node->attr;
+	strcpy(dev_fd->p_fs_dsc->root_name, params->dir);
+
+	fd = fat_fileinfo_alloc();
+	fd->p_fs_dsc = dev_fd->p_fs_dsc;
+
+	dir_node->attr = (void *) fd;
+	dir_node->fs_type = &fatfs_drv;
+	dir_node->file_info = (void *) &fatfs_fop;
 
 	return 0;
 }
@@ -359,7 +372,7 @@ int fatfs_partition(void *fdes) {
 int fatfs_set_path (uint8_t *path, node_t *nod) {
 
 	node_t *parent, *node;
-	char buff[MAX_PATH];
+	char buff[CONFIG_MAX_LENGTH_PATH_NAME];
 
 	*path = *buff= 0;
 	node = nod;
@@ -376,8 +389,8 @@ int fatfs_set_path (uint8_t *path, node_t *nod) {
 		strcpy((char *) buff, (const char *) path);
 	}
 
-	strncpy((char *) buff, (char *) path, MAX_PATH);
-	buff[MAX_PATH - 1] = 0;
+	strncpy((char *) buff, (char *) path, CONFIG_MAX_LENGTH_PATH_NAME);
+	buff[CONFIG_MAX_LENGTH_PATH_NAME - 1] = 0;
 	if (strcmp((char *) path,(char *) buff)) {
 		return DFS_PATHLEN;
 	}
@@ -1335,7 +1348,7 @@ void fatfs_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
  * was created and can be used.
  */
 int fatfs_create_file(void *par) {
-	uint8_t tmppath[MAX_PATH];
+	uint8_t tmppath[CONFIG_MAX_LENGTH_PATH_NAME];
 	uint8_t filename[12];
 	dir_info_t di;
 	dir_ent_t de;
@@ -1358,7 +1371,8 @@ int fatfs_create_file(void *par) {
 	memset(fileinfo, 0, sizeof(file_info_t));
 
 	/* Get a local copy of the path. */
-	strncpy((char *) tmppath, (char *) param->path, MAX_PATH);
+	strncpy((char *) tmppath,
+			(char *) param->path, CONFIG_MAX_LENGTH_PATH_NAME);
 
 	cut_mount_dir((char *) tmppath, fd->p_fs_dsc->root_name);
 
@@ -1473,7 +1487,7 @@ int fatfs_create_file(void *par) {
  */
 uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 		uint8_t *p_scratch) {
-	uint8_t tmppath[MAX_PATH];
+	uint8_t tmppath[CONFIG_MAX_LENGTH_PATH_NAME];
 	uint8_t filename[12];
 	dir_info_t di;
 	dir_ent_t de;
@@ -1493,8 +1507,8 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 	fileinfo->mode = mode;
 
 	/* Get a local copy of the path. If it's longer than MAX_PATH, abort.*/
-	strncpy((char *) tmppath, (char *) path, MAX_PATH);
-	tmppath[MAX_PATH - 1] = 0;
+	strncpy((char *) tmppath, (char *) path, CONFIG_MAX_LENGTH_PATH_NAME);
+	tmppath[CONFIG_MAX_LENGTH_PATH_NAME - 1] = 0;
 	if (strcmp((char *) path,(char *) tmppath)) {
 		return DFS_PATHLEN;
 	}
