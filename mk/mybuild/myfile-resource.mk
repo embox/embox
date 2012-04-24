@@ -55,7 +55,6 @@ define myfile_resources_check_optionbind
 		val <- $(get optionBind->value),
 
 		$(if $(invoke opt->validateValue,$(val)),,
-			$(warning $(opt) $(val))
 			$(invoke $(get optionBind->eResource).addIssues,
 				$(new BaseIssue,$(get optionBind->eResource),
 					error,,	Option $(get opt->qualifiedName) \

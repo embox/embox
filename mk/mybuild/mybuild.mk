@@ -35,6 +35,7 @@ define check
 endef
 
 LABEL-IfNeed := mybuild.lang.IfNeed
+LABEL-DefRealization := mybuild.lang.DefRealization
 LABEL-For := mybuild.lang.For
 
 excludeAnnotations := $(LABEL-IfNeed)
@@ -118,14 +119,27 @@ define class-Mybuild
 
 	$(method specifyInstances,
 		$(for inst <- $1,
-			$(with $(strip $(for \
-					rule<-$(get recommendations),
-					targetInstance<-$(map-get build->moduleInstanceByName/$(basename $(rule))),
-					targetModule<-$(suffix $(rule)),
-					$(if $(and $(filter $(inst),$(targetInstance)),
-								$(invoke targetModule->isSubTypeOf,$(get targetInstance->type))),
-							$(call check,$(invoke moduleInstanceClosure,$(targetModule)),$2 $0,)
-							))),
+			$(with $(or $(strip $(for \
+						rule<-$(get recommendations),
+						targetInstance<-$(map-get build->moduleInstanceByName/$(basename $(rule))),
+						targetModule<-$(suffix $(rule)),
+
+						$(if $(and $(filter $(inst),$(targetInstance)),
+									$(invoke targetModule->isSubTypeOf,$(get targetInstance->type))),
+								$(call check,$(invoke moduleInstanceClosure,$(targetModule)),$2 $0,)
+								))),
+					$(strip $(for \
+						mod <- $(get inst->type),
+						annotation <- $(get mod->annotations),
+						annotationType <- $(get annotation->type),
+						$(warning 1 $(annotationType))
+						$(if $(eq $(get annotationType->qualifiedName),$(LABEL-DefRealization)),
+							$(warning $(annotation))
+							$(for \
+								bind <- $(get annotation->bindings),
+								option <- $(get bind->option),
+								$(if $(eq $(get option->name),value),
+									$(call check,$(invoke moduleInstanceClosure,$(get bind->value)),$2 $0,))))))),
 				$(if $1,$1,$(inst)))))
 
 	# Cheker for abstract realization. If there is only one subtype of given abstract module
