@@ -89,6 +89,9 @@ static void *telnet_thread_handler(void* args) {
 		 * 	It's unsertain what we should do with the original descriptors
 		 *	We can close them, but it may corrupt the original task
 		 */
+	close(0);
+	close(1);
+	close(2);
 	task_res_idx_set(t_r, 0, i_d);
 	task_res_idx_set(t_r, 1, i_d);
 	task_res_idx_set(t_r, 2, i_d);
