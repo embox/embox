@@ -168,7 +168,8 @@ static void print_graph_names(void) {
 		if (PNET_GRAPH_STARTED == gr->state)
 			printf("%s, ", gr->name);
 	}
-	printf("\n%s", "Stopped graphs: ");
+	printf("\n");
+	printf("%s", "Stopped graphs: ");
 	list_for_each_entry(gr, &pnet_graphs, lnk) {
 		if (PNET_GRAPH_STOPPED == gr->state)
 			printf("%s, ", gr->name);
@@ -239,9 +240,18 @@ static void print_rules(net_node_matcher_t node) {
 		ip.s_addr = rule->skbuf->nh.iph->saddr;
 		dstaddr = inet_ntoa(ip);
 		macaddr_print(mac, rule->skbuf->mac.ethh->h_source);
-
-		printf("%d : dst IP - %s, next node - %s, dst HWaddr - %s, priority - %d \n",
-				counter, dstaddr, rule->next_node->proto->name, mac, rule->priority);
+		if (rule->next_node) {
+			if (rule->next_node->proto) {
+				printf("%d : dst IP - %s, next node - %s (type: %s), dst HWaddr - %s, priority - %d \n",
+					counter, dstaddr, rule->next_node->name, rule->next_node->proto->name, mac, rule->priority);
+			} else {
+				printf("%d : dst IP - %s, next node - %s (type: %s), dst HWaddr - %s, priority - %d \n",
+					counter, dstaddr, rule->next_node->name, "no protocol", mac, rule->priority);
+			}
+		} else {
+			printf("%d : dst IP - %s, next node - null, dst HWaddr - %s, priority - %d \n",
+				counter, dstaddr, mac, rule->priority);
+		}
 		counter++;
 	}
 }
