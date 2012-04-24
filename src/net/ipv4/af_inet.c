@@ -227,7 +227,7 @@ int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
 
 	sk = sock->sk;
 	if (sk->sk_prot->sendmsg == NULL) {
-		return SK_NO_SUCH_METHOD;
+		return EOPNOTSUPP;
 	}
 
 	return sk->sk_prot->sendmsg(iocb, sk, msg, size);
@@ -239,7 +239,7 @@ int inet_stream_connect(struct socket *sock, struct sockaddr * addr,
 	int err;
 
 	if (sock->sk->sk_prot->connect == NULL) {
-		return SK_NO_SUCH_METHOD;
+		return EOPNOTSUPP;
 	}
 
 	sock_lock(sock->sk);
@@ -269,7 +269,7 @@ int inet_listen(struct socket *sock, int backlog) {
 
 	sk = sock->sk;
 	if (sk->sk_prot->listen == NULL) {
-		return SK_NO_SUCH_METHOD;
+		return EOPNOTSUPP;
 	}
 
 	return sk->sk_prot->listen(sk, backlog);
@@ -280,7 +280,7 @@ static int inet_accept(socket_t *sock, socket_t *newsock, sockaddr_t *addr, int 
 
 	sk = sock->sk;
 	if (sk->sk_prot->accept == NULL) {
-		return SK_NO_SUCH_METHOD;
+		return EOPNOTSUPP;
 	}
 
 	return sk->sk_prot->accept(sk, newsock->sk, addr, addr_len);

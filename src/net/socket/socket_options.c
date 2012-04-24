@@ -187,6 +187,7 @@ int so_get_socket_option(struct socket_opt_state *opts, unsigned int option,
 			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_error;
 		*option_len = sizeof(unsigned int);
+		opts->so_error = 0;  /* clear pending error. posix */
 		break;
 	case SO_TYPE:
 		if(*option_len != sizeof(unsigned int))

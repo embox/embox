@@ -202,6 +202,11 @@ static inline int sk_is_listening(struct socket *sock){
 	return (sock->socket_node->socket_connection_state == LISTENING);
 }
 
-enum sk_errno_t {SK_NOERR = 0, SK_ERR = 400, SK_NO_SUCH_METHOD = 401};
+/**
+ * clear sk_err variable in struct sock
+ **/
+static inline void sk_clear_pending_error(struct sock *sk){
+	sk->sk_err = 0;
+}
 
 #endif /* NET_SOCK_H_ */

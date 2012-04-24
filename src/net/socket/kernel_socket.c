@@ -388,6 +388,9 @@ int kernel_socket_getsockopt(struct socket *sock, int level, int optname,
 	if(level == SOL_SOCKET){
 		res = so_get_socket_option(&sock->socket_node->options, optname, optval,
 															 optlen);
+		/* clear pending error if it was retrieved */
+		if(optname == SO_ERROR && res>=0)
+			sk_clear_pending_error(sock->sk);
 	}else{
 		if(sock->ops->getsockopt)
 			res = sock->ops->getsockopt(sock, level, optname, optval, optlen);
