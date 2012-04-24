@@ -70,24 +70,24 @@ typedef struct socket_opt_state{
  * @param SO_SNDTIMEO struct timeval Timeout value for a socket send operation.
  * @param SO_TYPE int Identify socket type ( getsockopt() only).
  */
-enum socket_options{
-	SO_ACCEPTCONN,/* int *//* Non-zero indicates that socket listening is enabled ( getsockopt() only). */
-	SO_BROADCAST,/* int *//* Non-zero requests permission to transmit broadcast datagrams (SOCK_DGRAM sockets only). */
-	SO_DEBUG,/* int *//* Non-zero requests debugging in underlying protocol modules. */
-	SO_DONTROUTE,/* int *//* Non-zero requests bypass of normal routing; route based on destination address only. */
-	SO_ERROR,/* int *//* Requests and clears pending error information on the socket ( getsockopt() only). */
-	SO_KEEPALIVE,/* int *//* Non-zero requests periodic transmission of keepalive messages (protocol-specific). */
-	SO_LINGER,/* struct linger *//* Specify actions to be taken for queued, unsent data on close(): linger on/off and linger time in seconds. */
-	SO_OOBINLINE,/* int *//* Non-zero requests that out-of-band data be placed into normal data input queue as received. */
-	SO_RCVBUF,/* int *//* Size of receive buffer (in bytes). */
-	SO_RCVLOWAT,/* int *//* Minimum amount of data to return to application for input operations (in bytes). */
-	SO_RCVTIMEO,/* struct timeval *//* Timeout value for a socket receive operation. */
-	SO_REUSEADDR,/* int *//* Non-zero requests reuse of local addresses in bind() (protocol-specific). */
-	SO_SNDBUF,/* int *//* Size of send buffer (in bytes). */
-	SO_SNDLOWAT, /* int *//* Minimum amount of data to send for output operations (in bytes). */
-	SO_SNDTIMEO, /* struct timeval *//* Timeout value for a socket send operation. */
-	SO_TYPE, /* int *//* Identify socket type ( getsockopt() only). */
-};
+/* enum socket_options{ */
+#define	SO_ACCEPTCONN   0/* int *//* Non-zero indicates that socket listening is enabled ( getsockopt() only). */
+#define	SO_BROADCAST    1/* int *//* Non-zero requests permission to transmit broadcast datagrams (SOCK_DGRAM sockets only). */
+#define	SO_DEBUG        2/* int *//* Non-zero requests debugging in underlying protocol modules. */
+#define	SO_DONTROUTE    3/* int *//* Non-zero requests bypass of normal routing; route based on destination address only. */
+#define	SO_ERROR        4/* int *//* Requests and clears pending error information on the socket ( getsockopt() only). */
+#define	SO_KEEPALIVE    5/* int *//* Non-zero requests periodic transmission of keepalive messages (protocol-specific). */
+#define	SO_LINGER       6/* struct linger *//* Specify actions to be taken for queued, unsent data on close(): linger on/off and linger time in seconds. */
+#define	SO_OOBINLINE    7/* int *//* Non-zero requests that out-of-band data be placed into normal data input queue as received. */
+#define	SO_RCVBUF       8/* int *//* Size of receive buffer (in bytes). */
+#define	SO_RCVLOWAT     9/* int *//* Minimum amount of data to return to application for input operations (in bytes). */
+#define	SO_RCVTIMEO     10/* struct timeval *//* Timeout value for a socket receive operation. */
+#define	SO_REUSEADDR    11/* int *//* Non-zero requests reuse of local addresses in bind() (protocol-specific). */
+#define	SO_SNDBUF       12/* int *//* Size of send buffer (in bytes). */
+#define	SO_SNDLOWAT     13/* int *//* Minimum amount of data to send for output operations (in bytes). */
+#define	SO_SNDTIMEO     14/* struct timeval *//* Timeout value for a socket send operation. */
+#define	SO_TYPE         15/* int *//* Identify socket type ( getsockopt() only). */
+/* }; */
 
 /* methods */
 
