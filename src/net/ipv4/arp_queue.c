@@ -44,7 +44,6 @@ void arp_queue_process(struct sk_buff *arp_pack) {
 			list_del(&pack->link);
 
 			sock_set_ready(pack->skb->sk);
-			debug_printf("waking up socket", "arp_queue", "arp_queue_process");
 			event_fire(&pack->skb->sk->sock_is_ready);
 			dev_queue_xmit(pack->skb);
 
@@ -69,7 +68,6 @@ static void arp_queue_drop(struct sys_timer *timer, void *data) {
 	list_del(&deff_pack->link);
 
 	sock_set_ready(deff_pack->skb->sk);
-	debug_printf("launching socket event", "arp_queue", "arp_queue_drop");
 	event_fire(&deff_pack->skb->sk->sock_is_ready);
 
 	kfree_skb(deff_pack->skb);

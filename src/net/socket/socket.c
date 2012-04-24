@@ -220,8 +220,6 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	if(!sock_is_ready(sock->sk)){
 		sock_lock(sock->sk);
 		/* sleep until the event sock_is_ready fires */
-		debug_printf("socket is not ready going to sleep",
-								 "socket", "sendto_sock");
 		sched_sleep(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
 	  sock_unlock(sock->sk);
 		/* res = sock_get_answer(sock->sk); */

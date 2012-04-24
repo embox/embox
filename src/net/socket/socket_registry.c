@@ -49,8 +49,7 @@ int sr_add_socket_to_registry(struct socket *sock){
 	/* list_add_tail(&socket_registry_head, &newnode->link); */
 	dlist_add_next(&newnode->link, &socket_registry);
 
-	debug_printf("adding socket to pool",
-							 "kernel_socket", "add_socket_to_pool");
+	LOG_INFO("add_socket_to_pool", "adding socket to pool");
 
 	return ENOERR;
 }
@@ -60,8 +59,7 @@ int sr_remove_socket_from_registry(struct socket *sock){
 
 	node = get_sock_node_by_socket(sock);
 	if(node){
-		debug_printf("removing socket entity...", "kernel_socket",
-								 "remove_socket_from_pool");
+		LOG_INFO("remove_socket_from_pool", "removing socket entity...");
 		dlist_del(&node->link);
 		pool_free(&socket_pool, node);
 		return ENOERR;
@@ -101,9 +99,7 @@ int sr_set_saddr(struct socket *sock, const struct sockaddr *addr){
 	/* copy address data */
 	memcpy(&sock->socket_node->saddr, addr, sizeof(struct sockaddr));
 
-	debug_printf("bound address to socket",
-							 "kernel_socket", "bind_address");
-
+	LOG_INFO("bind_address", "bound address to socket");
 	return 0;
 }
 
@@ -112,8 +108,7 @@ void sr_remove_saddr(struct socket *sock){
 
 	node = get_sock_node_by_socket(sock);
 	if(node){
-		debug_printf("found socket. trying to unbind...",
-								 "kernel_socket", "unbind_socket");
+		LOG_INFO("unbind_socket", "found socket. trying to unbind...");
 		memset(&node->saddr, 0, sizeof(struct sockaddr));
 	}
 }

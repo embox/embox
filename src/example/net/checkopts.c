@@ -1,13 +1,13 @@
 /**
  * @file
  * @brief Example showing the use of getsockopt.
- * displays default socket options
+ * displays default socket options. sets them to inverse and displays again
  *
- * @date 13.01.10
- * @author Anton Bondarev
- * @author Ilia Vaprol
+ * @date 23.04.12
+ * @author Timur Abdukadyrov
  */
 
+#include <util/macro.h>
 #include <framework/example/self.h>
 #include <stdio.h>
 #include <net/net.h>
@@ -197,7 +197,7 @@ static int exec(int argc, char **argv)
 	int	sockfd;
 
 	/* display message */
-	printf("Check default socket options example.\n");
+	printf("Check default socket options example. Module is %s\n", MACRO_STRING(__EMBUILD_MOD__));
 	printf("shows the functioning of berkeley sockets getsockopt and setsockopt methods.");
 	printf("Get and display default socket options for TCP socket.\n");
 	printf("Set them to inverse and display again.\n");

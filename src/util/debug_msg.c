@@ -21,28 +21,34 @@ static unsigned int N_message = 0;
 static unsigned int serial = 0;
 /* static unsigned int tail = 0; */
 
-void debug_printf(char *msg, char *module, char *func){
+static char* types_str[] = {"INFO", "WARNING", "ERROR", "DEBUG"};
+
+void system_log(char *msg, char *module, char *func, int msg_type){
 
 	/* truncuate if necessary */
 	if(strlen(msg)>MAX_MSG_LENGTH){
 		if(strlen(MSG_TRUNC_MSG)<=MAX_MSG_LENGTH)/* just in case*/
-			debug_printf(MSG_TRUNC_MSG, MODULE_NAME, "debug_printf");
+			/* debug_printf(MSG_TRUNC_MSG, MODULE_NAME, "debug_printf"); */
+			LOG_WARN("system_log", MSG_TRUNC_MSG);
 		strncpy(log[N_message].msg, msg, MAX_MSG_LENGTH);
 	}else
 		strcpy(log[N_message].msg, msg);
 	if(strlen(module)>MAX_MODULE_NAME_LENGTH){
 		if(strlen(MOD_TRUNC_MSG)<=MAX_MSG_LENGTH)/* just in case*/
-			debug_printf(MOD_TRUNC_MSG, MODULE_NAME, "debug_printf");
+			/* debug_printf(MOD_TRUNC_MSG, MODULE_NAME, "debug_printf"); */
+			LOG_WARN("system_log", MOD_TRUNC_MSG);
 		strncpy(log[N_message].module, module, MAX_MODULE_NAME_LENGTH);
 	}else
 		strcpy(log[N_message].module, module);
 	if(strlen(func)>MAX_FUNC_NAME_LENGTH){
 		if(strlen(FUNC_TRUNC_MSG)<=MAX_MSG_LENGTH)/* just in case*/
-			debug_printf(FUNC_TRUNC_MSG, MODULE_NAME, "debug_printf");
+			/* debug_printf(FUNC_TRUNC_MSG, MODULE_NAME, "debug_printf"); */
+			LOG_WARN("system_log", FUNC_TRUNC_MSG);
 		strncpy(log[N_message].func, func, MAX_FUNC_NAME_LENGTH);
 	}else
 		strcpy(log[N_message].func, func);
 	log[N_message].serial = serial;
+	log[N_message].msg_type = msg_type;
 
 	/* cyclic incrementation */
 	serial++;
@@ -64,8 +70,9 @@ void output_debug_messages(unsigned int count){
   current = (N_message - final_count)%N_DEBUG_MSG;
 
 	for(n=0; n<final_count; n++){
-		printk("#%d\t[mod %s][func %s]: %s\n", log[current].serial,
-					 log[current].module, log[current].func, log[current].msg);
+		printk("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
+					 types_str[log[current].msg_type], log[current].module, log[current].func,
+					 log[current].msg);
 		current++;
 		if(current>=N_DEBUG_MSG)
 			current = 0;
