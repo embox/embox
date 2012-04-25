@@ -9,11 +9,8 @@
 #ifndef FAT_H_
 #define FAT_H_
 
-//#define _GAZ_DEBUG_
-
 #include <stdint.h>
 #include <fs/ramdisk.h>
-
 
 /*
  * Configurable

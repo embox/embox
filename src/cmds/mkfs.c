@@ -114,10 +114,6 @@ int mkfs_do_operation(void *_mkfs_params) {
 	fs_drv_t *fs_drv;
 	int rezult;
 
-#ifdef _GAZ_DEBUG_
-	FILE *fd;
-	char filename[MAX_PATH];
-#endif /*def _GAZ_DEBUG_ */
 
 	mkfs_params = (mkfs_params_t *) _mkfs_params;
 
@@ -125,15 +121,6 @@ int mkfs_do_operation(void *_mkfs_params) {
 		if(0 != (rezult = ramdisk_create((void *)mkfs_params))) {
 			return rezult;
 		}
-#ifdef _GAZ_DEBUG_
-		if(NULL == (ramd_params = ramdisk_get_param(mkfs_params->name))) {
-			return -ENODEV;
-		}
-
-		printf("Create ramdisk %s, size %d, filesistem %s, addr %d,\n",
-				ramd_params->name,ramd_params->size,
-				ramd_params->fs_name, (int)ramd_params->p_start_addr);
-#endif /*def _GAZ_DEBUG_ */
 	}
 
 	if(mkfs_params->operation_flag & MKFS_FORMAT_DEV) {
@@ -153,55 +140,14 @@ int mkfs_do_operation(void *_mkfs_params) {
 			return rezult;
 		}
 
-#ifdef _GAZ_DEBUG_
-		strcpy(filename, ramd_params->name);
-		strcat (filename, "/t1.txt");
-		fat_main((const void *) filename);
-
-		strcpy(filename, ramd_params->name);
-		strcat (filename, "/t2.txt");
-		fat_main((const void *) filename);
-
-		strcpy(filename, ramd_params->name);
-		strcat (filename, "/t3.txt");
-		rezult = open((const char *) filename, O_RDONLY);
-		rezult = open((const char *) filename, O_WRONLY);
-
-		strcpy(filename, ramd_params->name);
-		strcat (filename, "/1/2/3/4/3.txt");
-		//fd = fopen((const char *) filename, "w");
-		fat_main((const void *) filename);
-
-		strcpy(filename, ramd_params->name);
-		strcat (filename, "/5/6/7/8/4.txt");
-		//fd = fopen((const char *) filename, "w");
-		fat_main((const void *) filename);
-
-		strcpy(filename, ramd_params->name);
-		strcat (filename, "/1/2/3/4/4.txt");
-		fat_main((const void *) filename);
-
-		strcpy(filename, ramd_params->name);
-		strcat (filename, "/1/2/3/4/5.txt");
-		//fd = fopen((const char *) filename, "w");
-		fat_main((const void *) filename);
-
-		strcpy(filename, ramd_params->name);
-		strcat (filename, "/1/2/3/4/6.txt");
-		//fd = fopen((const char *) filename, "w");
-		fat_main((const void *) filename);
-
-		strcpy(filename, ramd_params->name);
-		strcat (filename, "/1/2/3/4/4.txt");
-		rezult = open((const char *) filename, O_WRONLY);
-		strcpy(filename, "file was rewrite \n");
-        write(rezult, (const void *) filename, strlen (filename));
-
-
-		strcpy(filename, ramd_params->name);
-		strcat (filename, "/1/2/3/4/3.txt");
-		fd = fopen((const char *) filename, "r");
-#endif /*def _GAZ_DEBUG_ */
+		/*
+		 * strcpy(filename, ramd_params->name);
+		 * strcat (filename, "/1/2/3/4/4.txt");
+		 * rezult = open((const char *) filename, O_WRONLY);
+		 * strcpy(filename, "file was rewrite \n");
+		 * write(rezult, (const void *) filename, strlen (filename));
+		 *
+		 */
 	}
 	return 0;
 }

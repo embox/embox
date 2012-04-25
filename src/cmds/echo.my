@@ -1,0 +1,17 @@
+package embox.cmd
+
+import embox.compat.posix.LibPosix
+
+@Cmd(name = "echo",
+	help = "Display last debug messages..",
+	man = '''
+	NAME
+		echo - display a line of text
+	SYNOPSIS
+		echo "STRING" >> FILE
+	DESCRIPTION
+		 Echo the STRING(s) to standard output.
+	''')
+module echo {
+	source "echo.c"
+}
