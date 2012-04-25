@@ -21,12 +21,14 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: log\t[-c cnt]\n\t\t[-h]\n\t\t[-i][-w][-e][-d]\n[-I]");
+	printf("Usage: log\t[-c cnt]\n\t\t[-h]\n\t\t[-i][-w][-e][-d]\n\t\t[-I]\n");
 	printf("c\tmessage count\nh\tshow this message and quit\n");
 	printf("i\tshow INFO messages\nw\tshow warning mwssages\n");
 	printf("e\tshow error messages\nd\tshow debug messages\n");
 	printf("I\ttoggle intrusive syslog mode(all messages are automatically\n");
 	printf("displayed to stdout.\n");
+	printf("When option -I and one or more of -w -e -i or -d options are set\n ");
+	printf("then log just sets the types to output in intrusive mode.\n");
 }
 
 static int exec(int argc, char **argv) {
@@ -34,6 +36,7 @@ static int exec(int argc, char **argv) {
 	bool disp_types[] = {true, true, true, true};
 	/* indicates if types to show are inputed or defaults are used */
 	bool setting_types = false;
+	bool intrusive_mode = false;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "c:h:i w e d I"))) {
@@ -64,8 +67,7 @@ static int exec(int argc, char **argv) {
 			setting_types = true;  /* we are setting types to display from cmd line  */
 			break;
 		case 'I':
-			printf("log:intrusive mode is %s\n", syslog_toggle_intrusive()? "on" : "off");
-			return 0;
+			intrusive_mode = true;
 			break;
 		case '?':
 			printf("Invalid option `-%c'\n", optopt);
@@ -78,7 +80,17 @@ static int exec(int argc, char **argv) {
 		}
 	};
 
-	show_log(cnt, disp_types);
+	/* toggle intrusive mode and exit */
+	if(intrusive_mode){
+		if(setting_types){  /* if set then we are setting message types to display
+													 for intrusive mode */
+			syslog_toggle_intrusive(NULL);
+		}
+		printf("log:intrusive mode is %s\n", syslog_toggle_intrusive(disp_types)? "on" : "off");
+		return 0;
+	}
 
+	/* show messages */
+	show_log(cnt, disp_types);
 	return 0;
 }

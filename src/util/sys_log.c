@@ -14,6 +14,7 @@
 #include <kernel/prom_printf.h>
 
 static bool annoy = false;
+static bool annoy_types[] = {true, true, true, true};
 
 /* POOL_DEF(debug_msg_pool, struct debug_msg, N_DEBUG_MSG); */
 /* static char pool[N_MSG*N_DEBUG_MSG]; */
@@ -25,7 +26,14 @@ static unsigned int serial = 0;
 
 static char* types_str[] = {"INFO", "WARNING", "ERROR", "DEBUG"};
 
-bool syslog_toggle_intrusive(void){
+bool syslog_toggle_intrusive(bool *types){
+	int i;
+
+	/* set types to display in intrusive mode */
+	if(types != NULL)
+		for(i=0; i<LT_MAX-1; i++)
+			annoy_types[i] = types[i];
+
 	return annoy = annoy ? false : true;
 }
 
@@ -64,7 +72,7 @@ void system_log(char *msg, char *module, char *func, int msg_type){
 
 	/* if user asked to print all log messages to stdout */
 	if(annoy)
-		show_log(1, NULL);
+		show_log(1, annoy_types);
 
 }
 

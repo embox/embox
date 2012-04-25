@@ -39,7 +39,7 @@ typedef struct debug_msg{
 	int msg_type;
 } debug_msg_t;
 
-extern bool syslog_toggle_intrusive(void);
+extern bool syslog_toggle_intrusive(bool *types);
 extern void system_log(char *msg, char *module, char *func, int msg_type);
 extern void show_log(unsigned int count, bool *disp_types);
 
