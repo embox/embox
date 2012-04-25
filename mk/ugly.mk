@@ -1,9 +1,6 @@
 ifndef __mk_ugly_mk
 __mk_ugly_mk := 1
 
-include mk/conf/roots.mk
-include mk/conf/runlevel.mk
-
 #
 # Headers.
 #
