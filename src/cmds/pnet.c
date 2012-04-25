@@ -76,8 +76,6 @@ static match_rule_t rule_get_by_id(net_node_t node, char id);
 			return -error;										 \
 		}
 
-static int delete_brokens(char *str);
-
 struct rule {
 	char *option;
 	_rule_setter setter;
@@ -92,49 +90,6 @@ static struct rule rule_setters[RULE_OPTION_QUANTITY] = {
 
 static void print_usage(void) {
 	printf("Usage: pnet [options] [keys] graph [nodes | rules]\n");
-}
-
-//TODO move from here
-static int delete_brokens(char *str) {
-	int len;
-	char *cur;
-	int overlooking_words_cnt;
-
-	overlooking_words_cnt = 0;
-	len = MAX_WORD_LENGTH;
-	cur = str;
-	cur++;
-
-	while (*cur != '\'' && len) {
-		if (*cur == '\0') {
-			*cur = ' ';
-			overlooking_words_cnt++;
-		}
-		cur++; len--;
-	}
-
-	*cur = '\0';
-
-	return overlooking_words_cnt;
-}
-
-static void shift(char **argv, int begin, int shift) {
-	for (int i = begin + shift; i < MAX_TOKEN_COUNT; i++) {
-		argv[i - shift] = argv[i];
-	}
-}
-
-static void rebuild_argv(char **argv) {
-	int len = MAX_TOKEN_COUNT;
-	int i = 0;
-
-	while (NULL != argv[i] && len) {
-		if (argv[i][0] == '\'') {
-			argv[i]++;
-			shift(argv, i + 1, delete_brokens(argv[i]));
-		}
-		i++;
-	}
 }
 
 //FIXME now this function return only first graph in list if exist
@@ -284,11 +239,13 @@ static int add_node(char **argv) {
 		strcpy(name, argv[5]);
 		node->name = name;
 	} else {
-		printf("type name for node\n");
+		printf("node should have the name\n");
 		return -ENOENT;
 	}
 
-	gr->state = graph_state;
+	if (graph_state == PNET_GRAPH_STARTED) {
+		pnet_graph_start(gr);
+	}
 
 	return ENOERR;
 }
@@ -314,7 +271,10 @@ static int link_node(char **argv) {
 	get_node_from_graph(gr, node, argv[4], ENOENT);
 
 	res = pnet_node_link(src, node);
-	gr->state = graph_state;
+
+	if (graph_state == PNET_GRAPH_STARTED) {
+		pnet_graph_start(gr);
+	}
 
 	if (res < 0)
 		printf("node linking error \n");
@@ -342,7 +302,9 @@ static int unlink_node(char **argv) {
 	/* delete node from graph */
 	list_del(&node->gr_link);
 
-	gr->state = graph_state;
+	if (graph_state == PNET_GRAPH_STARTED) {
+		pnet_graph_start(gr);
+	}
 
 	return ENOERR;
 }
@@ -450,7 +412,6 @@ static int exec(int argc, char **argv) {
 	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "hgnt:d:p:r:s:a:l:"))) {
-		rebuild_argv(argv);
 
 		switch(opt) {
 		case 'h':
