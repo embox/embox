@@ -24,16 +24,12 @@
 #include <kernel/irq.h>
 #include <linux/init.h>
 #include <net/etherdevice.h>
-#include <net/in.h>
 #include <drivers/ne2k_pci.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
-#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdlib.h>
 
-//#include <pnet/core.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -169,7 +165,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	base_addr = dev->base_addr;
 
 	if (in8(base_addr + NE_CMD) & E8390_TRANS) { /* no matter, which page is active */
-		printf("%s: start_xmit() called with the transmitter busy.\n", dev->name);
+		LOG_ERROR("%s: start_xmit() called with the transmitter busy.\n", dev->name);
 		return -EBUSY;
 	}
 
@@ -224,7 +220,7 @@ static void ne2k_receive(struct net_device *dev) {
 	base_addr = dev->base_addr;
 	stat = get_eth_stat(dev);
 
-	while (1) {
+	while (1) { /* XXX It's an infinite loop or not? */
 		/* Get the current page */
 		out8(E8390_NODMA | E8390_PAGE1, base_addr + E8390_CMD);
 		current_page = in8(base_addr + EN1_CURPAG);

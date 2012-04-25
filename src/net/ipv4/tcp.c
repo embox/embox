@@ -28,7 +28,7 @@
 #include <err.h>
 #include <assert.h>
 #include <net/sock.h>
-
+#include <time.h>
 #include <hal/ipl.h>
 
 #include <embox/unit.h>
@@ -99,7 +99,7 @@ static inline void debug_print(__u8 code, const char *msg, ...) {
 //	case 1:   /* 0bit - warnings */
 //	case 2:   /* 1bit - tcp_handle */
 //	case 4:   /* 2bit - tcp global functions (init, send, recv etc.) */
-//	case 8:   /* 3bit - tcp state's handlers */
+	case 8:   /* 3bit - tcp state's handlers */
 //	case 16:  /* 4bit - tcp_sock_xmit, send_from_sock, send_ack_from_sock, free_rexmitting_queue,  tcp_rexmit */
 //	case 32:  /* 5bit - socket state */
 //	case 64:  /* 6bit - sock_lock / sock_unlock */
@@ -114,9 +114,9 @@ static inline void debug_print(__u8 code, const char *msg, ...) {
 static __u32 tcp_seq_len(struct sk_buff *skb);
 static inline void packet_print(union sock_pointer sock, struct sk_buff *skb, char *msg,
 		in_addr_t ip, uint16_t port) {
-	debug_print(128, "%s:%d %s sk 0x%p skb 0x%p seq %u ack %u seq_len %u flags %s %s %s %s %s %s %s %s\n",
+	debug_print(128, "%lu %s:%d %s sk 0x%p skb 0x%p seq %u ack %u seq_len %u flags %s %s %s %s %s %s %s %s\n",
 			// info
-			inet_ntoa(*(struct in_addr*)&ip), ntohs(port), msg, sock.tcp_sk, skb,
+			clock(), inet_ntoa(*(struct in_addr*)&ip), ntohs(port), msg, sock.tcp_sk, skb,
 			// seq, ack, seq_len
 			ntohl(skb->h.th->seq), ntohl(skb->h.th->ack_seq), tcp_seq_len(skb),
 			// flags
@@ -186,10 +186,11 @@ static size_t tcp_data_len(struct sk_buff *skb) {
 }
 
 static size_t tcp_data_left(struct sk_buff *skb) {
-	size_t size;
+	size_t size, ip_len;
 
-	size = skb->p_data - skb->mac.raw;
-	return (skb->len > size ? skb->len - size : 0);
+	ip_len = ntohs(skb->nh.iph->tot_len);
+	size = skb->p_data - skb->nh.raw;
+	return (ip_len > size ? ip_len - size : 0);
 }
 
 static int tcp_seq_flags(struct tcphdr *tcph) {
@@ -384,6 +385,7 @@ static void tcp_free_sock(union sock_pointer sock) {
 	list_del(&sock.tcp_sk->rexmit_link);
 	sk_common_release(sock.sk);
 }
+
 
 /************************ Handlers of TCP states ***********************/
 static int tcp_st_closed(union sock_pointer sock, struct sk_buff **pskb,
@@ -862,6 +864,7 @@ static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_
 		break;
 	}
 
+	printf("tcp_handle=%d\n", res);
 	return res;
 }
 
