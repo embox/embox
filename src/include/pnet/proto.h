@@ -51,7 +51,7 @@ __ACCESSOR_PREF(pnet_proto_, net_node_hnd, free)
 
 #define __ACCESSOR(pref, res_type, fun) \
 	static inline res_type pref##fun(struct net_node *node) { \
-		return node->proto->actions.fun;\
+		return (node->proto ? node->proto->actions.fun : NULL);\
 	}
 
 __ACCESSOR(pnet_proto_, net_hnd, rx_hnd)
