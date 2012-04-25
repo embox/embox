@@ -17,7 +17,7 @@
 #include <string.h>
 
 #include <net/sock.h>
-#include <util/debug_msg.h>
+#include <util/sys_log.h>
 #include <net/kernel_socket.h>
 #include <net/socket_registry.h>
 

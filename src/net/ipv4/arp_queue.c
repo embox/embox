@@ -19,7 +19,6 @@
 
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
-#include <util/debug_msg.h>
 
 #define TTL 1000
 #define ARP_QUEUE_SIZE 0x10

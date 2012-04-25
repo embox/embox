@@ -11,7 +11,7 @@
 #include <string.h>
 
 #include <net/sock.h>
-#include <util/debug_msg.h>
+#include <util/sys_log.h>
 #include <mem/objalloc.h>
 #include <util/dlist.h>
 #include <net/socket_registry.h>

@@ -41,7 +41,7 @@ typedef struct debug_msg{
 } debug_msg_t;
 
 void system_log(char *msg, char *module, char *func, int msg_type);
-void output_debug_messages(unsigned int count);
+void show_log(unsigned int count, bool *disp_types);
 
 #define LOG_INFO(func_name, msg) system_log(msg, MACRO_STRING(__EMBUILD_MOD__),\
 																							func_name, LT_INFO)

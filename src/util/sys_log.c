@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <mem/misc/pool.h>
-#include <util/debug_msg.h>
+#include <util/sys_log.h>
 #include <kernel/prom_printf.h>
 
 /* POOL_DEF(debug_msg_pool, struct debug_msg, N_DEBUG_MSG); */
@@ -58,7 +58,7 @@ void system_log(char *msg, char *module, char *func, int msg_type){
 }
 
 
-void output_debug_messages(unsigned int count){
+void show_log(unsigned int count, bool *disp_types){
 	int n, final_count, current;
 
 	if(!serial){ /* if there are no messages to display */
@@ -70,9 +70,10 @@ void output_debug_messages(unsigned int count){
   current = (N_message - final_count)%N_DEBUG_MSG;
 
 	for(n=0; n<final_count; n++){
-		printk("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
-					 types_str[log[current].msg_type], log[current].module, log[current].func,
-					 log[current].msg);
+		if(disp_types[log[current].msg_type]) /* show only messages set to be displayed */
+			printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
+						 types_str[log[current].msg_type], log[current].module, log[current].func,
+						 log[current].msg);
 		current++;
 		if(current>=N_DEBUG_MSG)
 			current = 0;

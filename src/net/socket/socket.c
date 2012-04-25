@@ -22,7 +22,6 @@
 
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
-#include <util/debug_msg.h>
 
 #ifndef CONFIG_MAX_KERNEL_SOCKETS
 #define CONFIG_MAX_KERNEL_SOCKETS 0x4
