@@ -13,6 +13,8 @@
 #include <util/sys_log.h>
 #include <kernel/prom_printf.h>
 
+static bool annoy = false;
+
 /* POOL_DEF(debug_msg_pool, struct debug_msg, N_DEBUG_MSG); */
 /* static char pool[N_MSG*N_DEBUG_MSG]; */
 static debug_msg_t log[N_DEBUG_MSG];
@@ -22,6 +24,10 @@ static unsigned int serial = 0;
 /* static unsigned int tail = 0; */
 
 static char* types_str[] = {"INFO", "WARNING", "ERROR", "DEBUG"};
+
+bool syslog_toggle_intrusive(void){
+	return annoy = annoy ? false : true;
+}
 
 void system_log(char *msg, char *module, char *func, int msg_type){
 
@@ -55,6 +61,11 @@ void system_log(char *msg, char *module, char *func, int msg_type){
 	N_message++;
 	if(N_message == N_DEBUG_MSG)
 		N_message = 0;
+
+	/* if user asked to print all log messages to stdout */
+	if(annoy)
+		show_log(1, NULL);
+
 }
 
 
@@ -70,10 +81,16 @@ void show_log(unsigned int count, bool *disp_types){
   current = (N_message - final_count)%N_DEBUG_MSG;
 
 	for(n=0; n<final_count; n++){
-		if(disp_types[log[current].msg_type]) /* show only messages set to be displayed */
-			printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
-						 types_str[log[current].msg_type], log[current].module, log[current].func,
-						 log[current].msg);
+		if(disp_types != NULL){
+			if(disp_types[log[current].msg_type]) /* show only messages set to be displayed */
+				printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
+							 types_str[log[current].msg_type], log[current].module, log[current].func,
+							 log[current].msg);
+		}else{  /* no specific information on output */
+				printf("#%d  [%s][mod %s][func %s]: %s\n", log[current].serial,
+							 types_str[log[current].msg_type], log[current].module, log[current].func,
+							 log[current].msg);
+		}
 		current++;
 		if(current>=N_DEBUG_MSG)
 			current = 0;

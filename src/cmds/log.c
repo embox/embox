@@ -21,10 +21,12 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: log\t[-c cnt]\n\t\t[-h]\n\t\t[-i][-w][-e][-d]\n");
+	printf("Usage: log\t[-c cnt]\n\t\t[-h]\n\t\t[-i][-w][-e][-d]\n[-I]");
 	printf("c\tmessage count\nh\tshow this message and quit\n");
 	printf("i\tshow INFO messages\nw\tshow warning mwssages\n");
 	printf("e\tshow error messages\nd\tshow debug messages\n");
+	printf("I\ttoggle intrusive syslog mode(all messages are automatically\n");
+	printf("displayed to stdout.\n");
 }
 
 static int exec(int argc, char **argv) {
@@ -34,7 +36,7 @@ static int exec(int argc, char **argv) {
 	bool setting_types = false;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "c:h:i w e d"))) {
+	while (-1 != (opt = getopt(argc, argv, "c:h:i w e d I"))) {
 		switch (opt) {
 		case 'c': /* get msg cnt */
 			if (1 != sscanf(optarg, "%d", &cnt) || !cnt){
@@ -60,6 +62,10 @@ static int exec(int argc, char **argv) {
 			if(opt == 'd')
 				disp_types[LT_DEBUG] = true;
 			setting_types = true;  /* we are setting types to display from cmd line  */
+			break;
+		case 'I':
+			printf("log:intrusive mode is %s\n", syslog_toggle_intrusive()? "on" : "off");
+			return 0;
 			break;
 		case '?':
 			printf("Invalid option `-%c'\n", optopt);

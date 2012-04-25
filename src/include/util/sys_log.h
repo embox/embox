@@ -18,7 +18,6 @@
 #define MAX_MODULE_NAME_LENGTH (50+1)  /* module name */
 #define MAX_FUNC_NAME_LENGTH (50+1)  /* function name */
 
-#define MODULE_NAME "utils"
 #define MSG_TRUNC_MSG "The message is to long. Trunctuated to 50 symbols\n"
 #define MOD_TRUNC_MSG "The module name is to long. Trunctuated to 20 symbols\n"
 #define FUNC_TRUNC_MSG "The function name is to long. Trunctuated to 20 symbols\n"
@@ -40,8 +39,9 @@ typedef struct debug_msg{
 	int msg_type;
 } debug_msg_t;
 
-void system_log(char *msg, char *module, char *func, int msg_type);
-void show_log(unsigned int count, bool *disp_types);
+extern bool syslog_toggle_intrusive(void);
+extern void system_log(char *msg, char *module, char *func, int msg_type);
+extern void show_log(unsigned int count, bool *disp_types);
 
 #define LOG_INFO(func_name, msg) system_log(msg, MACRO_STRING(__EMBUILD_MOD__),\
 																							func_name, LT_INFO)
