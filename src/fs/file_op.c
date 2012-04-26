@@ -121,21 +121,16 @@ int fclose(FILE *file) {
 	return 0;
 }
 
-int fseek(FILE *stream, long int offset, int origin) {
-	node_t *nod;
-	fs_drv_t *drv;
-	nod = (node_t *) stream;
+int fseek(FILE *file, long int offset, int origin) {
+	struct file_desc *desc;
 
-	if (NULL == nod) {
-		return -EBADF;
-	}
-	drv = nod->fs_type;
-	if (NULL == drv->file_op->fseek) {
-		LOG_ERROR("fop->fseek is NULL handler\n");
+	if(NULL == file) {
 		return -EBADF;
 	}
 
-	return drv->file_op->fseek(stream, offset, origin);
+	desc = (struct file_desc *)file;
+
+	return desc->ops->fseek(file, offset, origin);
 }
 
 int fioctl(FILE *fp, int request, ...) {

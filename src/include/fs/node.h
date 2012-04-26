@@ -26,7 +26,7 @@ typedef struct node {
 typedef struct file_create_param {
 	void  *node;
 	void  *parents_node;
-	char   path[CONFIG_MAX_LENGTH_FILE_NAME];
+	char   path[CONFIG_MAX_LENGTH_PATH_NAME];
 } file_create_param_t;
 
 extern int nip_tail(char *head, char *tail);

@@ -40,6 +40,11 @@ static ssize_t this_write(int fd, const void *buf, size_t nbyte) {
 	return fwrite(buf, 1, nbyte, file);
 }
 
+static int this_lseek(int fd, long int offset, int origin) {
+	FILE *file = (FILE *) task_self_idx_get(fd)->data;
+	return fseek(file, offset, origin);
+}
+
 static int this_ioctl(int fd, int request, va_list args) {
 	return fioctl(task_self_idx_get(fd)->data, request, args);
 }
@@ -49,6 +54,7 @@ static struct task_res_ops ops = {
 	.close = this_close,
 	.read  = this_read,
 	.write = this_write,
+	.fseek = this_lseek,
 	.ioctl = this_ioctl,
 };
 

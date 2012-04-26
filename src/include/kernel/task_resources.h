@@ -32,6 +32,7 @@ struct task_res_ops {
 	int	(*read) (int fd, const void *buf, size_t nbyte);
 	int	(*write)(int fd, const void *buf, size_t nbyte);
 	int	(*ioctl)(int fd, int request, va_list args);
+	int (*fseek)(int fd, long int offset, int origin);
 };
 
 /**

@@ -76,6 +76,12 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	return ops->read(fd, buf, nbyte);
 }
 
+int lseek(int fd, long int offset, int origin) {
+	struct task_res_ops *ops = find_res_ops(fd);
+	assert(ops);
+	return ops->fseek(fd, offset, origin);
+}
+
 int ioctl(int fd, int request, ...) {
 	va_list args;
 	int ret = -ENOTSUP;
