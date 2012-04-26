@@ -141,10 +141,14 @@ define class-Mybuild
 			$(for testModLiteral <- $(call getAnnotation,$(get mod->annotations),$(LABEL-TestFor),value) \
 						$(if $(strip $(get inst->includeMember)),
 							$(call getAnnotation,$(get $(get inst->includeMember).annotations),$(LABEL-TestFor),value)),
-				testModInst <-$(invoke moduleInstance,$(get testModLiteral->value)),
+					testMod <- $(get testModLiteral->value),
+					testModWas <- was$(map-get moduleInstanceStore/$(testMod)),
+					testModInst <-$(invoke moduleInstance,$(testMod)),
 
-				$(call check,$(testModInst),$3,)
-				$(set+ testModInst->afterDepends,$(inst)))
+					$(if $(filter was,$(testModWas)),
+						$(call check,$(testModInst),$3,))
+
+					$(set+ testModInst->afterDepends,$(inst)))
 			))
 
 	$(method specifyInstances,
