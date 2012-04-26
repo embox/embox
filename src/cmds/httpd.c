@@ -58,7 +58,6 @@ struct client_info {
 	socklen_t addr_len;       /* address length */
 	enum http_method method;  /* method in request */
 	FILE *xmit_file;          /* file to transmit */
-	char *xmit_err;           /* error (used if file_xmit is null) */
 	char buff[BUFF_SZ];       /* client's buffer (may contains more than one piece of data) */
 	char *data;               /* pointer to current chunk */
 	char *next_data;          /* pointer to next piece of data in buffer */
@@ -174,7 +173,7 @@ static int http_hnd_title(struct client_info *info) {
 static int http_hnd_ops(struct client_info *info) {
 	char *ops, *param;
 
-	printf("http_req_ops: %s\n", info->data);
+//	printf("http_req_ops: %s\n", info->data);
 
 	ops = info->data;
 	if (strcmp(ops, "") == 0) {
@@ -195,6 +194,7 @@ static int http_hnd_ops(struct client_info *info) {
 	else if (strcmp(ops, "Accept-Encoding") == 0) { }
 	else if (strcmp(ops, "Accept-Language") == 0) { }
 	else if (strcmp(ops, "Accept-Charset") == 0) { }
+	else if (strcmp(ops, "Cache-Control") == 0) { }
 	else {
 		printf("httpd warning: unknown options: ops='%s' param='%s'\n", ops, param);
 	}
@@ -206,10 +206,9 @@ static int process_request(struct client_info *info) {
 	int res;
 	int (*http_header_hnd)(struct client_info *);
 
-	http_header_hnd = http_hnd_title; /* set first heandler of data */
+	http_header_hnd = http_hnd_title; /* set first handler of data */
 	while (get_next_line(info) != NULL) {
 		res = http_header_hnd(info);
-		printf("http_header_hnd=%d\n", res);
 		switch (res) {
 		default:
 			return res;
@@ -223,16 +222,11 @@ static int process_request(struct client_info *info) {
 		}
 	}
 
-	printf("failed\n");
 	return (http_header_hnd == http_hnd_title ? HTTP_STAT_414 : HTTP_STAT_413);
 }
 
 static int http_req_get(struct client_info *info) {
 	if (info->xmit_file == NULL) { /* file doesn't exist */
-		info->xmit_err = "<html>\
-						  <head><title>404</title></head>\
-						  <body><center><h1>Oops...</h1></center></body>\
-						  </html>";
 		return HTTP_STAT_404;
 	}
 
@@ -278,8 +272,12 @@ process_again:
 		/* 3. set data and send respone */
 		if (ci.xmit_file == NULL) {
 			/* send error */
-			assert(ci.xmit_err != NULL);
-			curr += sprintf(curr, "%s", ci.xmit_err);
+			curr += sprintf(curr,
+					"<html>"
+					"<head><title>%s</title></head>"
+					"<body><center><h1>Oops...</h1></center></body>"
+					"</html>",
+					http_stat_str[res]);
 			bytes_need = curr - ci.buff;
 			assert(bytes_need <= sizeof ci.buff); /* TODO remove this and make normal checks */
 			bytes = sendto(ci.sock, ci.buff, bytes_need, 0, NULL, 0);
@@ -315,7 +313,7 @@ process_again:
 	if (ci.xmit_file != NULL) {
 		fclose(ci.xmit_file); /* close file (it's open or null) */
 	}
-
+printf("httpd: exit\n");
 	close(ci.sock); /* close connection */
 }
 
@@ -331,30 +329,30 @@ static int exec(int argc, char **argv) {
 	/* Create listen socket */
 	host = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (host < 0) {
-		printf("Error.. can't create socket\n");
+		printf("Error.. can't create socket. errno=%d\n", errno);
 		return host;
 	}
 
 	res = bind(host, (struct sockaddr *)&addr, sizeof(addr));
 	if (res < 0) {
-		printf("Error.. bind() failed\n");
+		printf("Error.. bind() failed. errno=%d\n", errno);
 		return res;
 	}
 
 	res = listen(host, 1);
 	if (res < 0) {
-		printf("Error.. listen() failed\n");
+		printf("Error.. listen() failed. errno=%d\n", errno);
 		return res;
 	}
-
 	while (1) {
 		res = accept(host,(struct sockaddr *)&addr, &addr_len);
 		if (res < 0) {
 			/* error code in client, now */
-			printf("Error.. accept() failed");
+			printf("Error.. accept() failed. errno=%d\n", errno);
 			close(host);
 			return res;
 		}
+		printf("client %s:%d\n", inet_ntoa(addr.sin_addr), ntohs(addr.sin_port));
 		client_process(res);
 	}
 

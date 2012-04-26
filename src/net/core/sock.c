@@ -38,35 +38,27 @@ POOL_DEF(socks_pool, sock_info_t, CONFIG_MAX_KERNEL_SOCKETS);
 
 /* allocates proto structure for specified protocol*/
 static struct sock * sk_prot_alloc(struct proto *prot, gfp_t priority) {
-	struct sock *sock = NULL;
+	struct sock *sk;
 	unsigned long flags;
 
 	local_irq_save(flags);
 
+	sk = NULL;
 	if (prot->sock_alloc != NULL) {
-		sock = prot->sock_alloc();
+		sk = prot->sock_alloc();
 	}
-
-	if(!prot->cachep) {
+	else if (prot->cachep == NULL) {
 		prot->cachep = cache_create(prot->name, prot->obj_size, LOWER_BOUND);
-		if(NULL == prot->cachep) {
+		if (prot->cachep == NULL) {
 			local_irq_restore(flags);
 			return NULL;
 		}
-	}
-
-	if(sock == NULL && (sock = cache_alloc(prot->cachep)) == NULL) {
-		local_irq_restore(flags);
-		return NULL;
-	}
-
-	if(0 != prot->hash) {
-		prot->hash(sock);
+		sk = cache_alloc(prot->cachep);
 	}
 
 	local_irq_restore(flags);
 
-	return sock;
+	return sk;
 }
 
 /* returns specified structure sock into pull */
@@ -74,9 +66,6 @@ static void sk_prot_free(const struct proto *prot, struct sock *sk) {
 	unsigned long irq_old;
 
 	local_irq_save(irq_old);
-	if(prot->unhash) {
-		prot->unhash(sk);
-	}
 	if (prot->sock_free != NULL) {
 		prot->sock_free(sk);
 	} else {
@@ -93,23 +82,37 @@ struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 		return NULL;
 	}
 
+	if (prot->init != NULL) {
+		if (prot->init(sk) < 0) {
+			sk_prot_free(prot, sk);
+			return NULL;
+		}
+	}
+
 	sk->sk_receive_queue = alloc_skb_queue();
 	sk->sk_write_queue = alloc_skb_queue();
 	if (unlikely(!(sk->sk_receive_queue && sk->sk_write_queue))) {
 		skb_queue_purge(sk->sk_receive_queue);
 		skb_queue_purge(sk->sk_write_queue);
-		sk_prot_free(sk->sk_prot, sk);
+		sk_prot_free(prot, sk);
 		return NULL;
 	}
 	sk->sk_destruct = NULL;
 	sk->sk_family = family;
 	sk->sk_prot = prot;
 
+	if(prot->hash != NULL) {
+		prot->hash(sk);
+	}
+
 	return sk;
 }
 
 void sk_free(struct sock *sk) {
-	if (sk->sk_destruct) {
+	if(sk->sk_prot->unhash != NULL) {
+		sk->sk_prot->unhash(sk);
+	}
+	if (sk->sk_destruct != NULL) {
 		sk->sk_destruct(sk);
 	}
 	sk_prot_free(sk->sk_prot, sk);
