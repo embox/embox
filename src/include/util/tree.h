@@ -113,7 +113,7 @@ extern struct tree_link *tree_children_find(struct tree_link *node,
 		tree_link_predicate_t predicate);
 
 /**
- * Find children of given node, for what specified predicate with setted argument is true.
+ * Find children of given node, for what specified predicate with set argument is true.
  *
  * @param node Node, what children are tested.
  * @param arg Additional argument for predicate.

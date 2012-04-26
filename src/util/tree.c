@@ -102,11 +102,11 @@ struct tree_link *tree_children_find(struct tree_link *node,
 	return NULL;
 }
 
-struct tree_link *tree_children_arg_find(struct tree_link *tree,
+struct tree_link *tree_children_arg_find(struct tree_link *node,
 		void *arg, tree_link_arg_predicate_t predicate) {
 	struct tree_link *link;
-	assert(tree != NULL);
-	tree_postorder_traversal_link(link, tree) {
+	assert(node != NULL);
+	list_foreach(link, &node->children, list_link) {
 		if (predicate(link, arg)) {
 			return link;
 		}
