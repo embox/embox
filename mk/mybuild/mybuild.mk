@@ -48,9 +48,12 @@ define getAnnotation
 	$(strip $(for annot <- $1,
 		annotType<-$(get annot->type),
 		$(if $(eq $(get annotType->qualifiedName),$2),
-			$(for bind <- $(get annot->bindings),
-				$(if $(eq $3,$(get $(get bind->option).name)),
-					$(get bind->value))))))
+			$(if $(value 3),
+				$(for bind <- $(get annot->bindings),
+					$(if $(eq $3,$(get $(get bind->option).name)),
+						$(get bind->value))),
+				$2))))
+
 endef
 
 # Constructor args:
