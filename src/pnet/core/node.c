@@ -15,10 +15,6 @@
 
 #include <pnet/core.h>
 
-#ifndef CONFIG_PNET_NODES_QUANTITY
-#define CONFIG_PNET_NODES_QUANTITY 0x10
-#endif
-
 OBJALLOC_DEF(net_nodes, struct net_node, CONFIG_PNET_NODES_QUANTITY);
 
 net_node_t pnet_node_init(net_node_t node, pnet_proto_t proto) {

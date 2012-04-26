@@ -23,10 +23,6 @@
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
 
-#ifndef CONFIG_MAX_KERNEL_SOCKETS
-#define CONFIG_MAX_KERNEL_SOCKETS 0x4
-#endif
-/* TODO: remove all below from here */
 
 extern const struct task_res_ops * __task_res_ops[];
 

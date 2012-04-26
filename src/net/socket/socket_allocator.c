@@ -12,10 +12,6 @@
 #include <net/socket.h>
 #include <hal/ipl.h>
 
-#ifndef CONFIG_MAX_KERNEL_SOCKETS
-#define CONFIG_MAX_KERNEL_SOCKETS 0x4
-#endif
-
 /* pool for allocate sockets */
 POOL_DEF(socket_pool, struct socket, CONFIG_MAX_KERNEL_SOCKETS);
 
