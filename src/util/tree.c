@@ -127,7 +127,11 @@ struct tree_link *tree_find(struct tree_link *tree,
 }
 
 struct tree_link *tree_children_begin(struct tree_link *tree) {
-	    return list_element(list_first_link(&tree->children)->next, struct tree_link, list_link);
+	struct list_link *lnk = list_first_link(&tree->children);
+	if(NULL == (lnk = list_first_link(&tree->children))) {
+		return NULL;
+	}
+	return list_element(lnk, struct tree_link, list_link);
 }
 
 
