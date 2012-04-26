@@ -29,9 +29,6 @@ typedef struct file_create_param {
 	char   path[CONFIG_MAX_LENGTH_PATH_NAME];
 } file_create_param_t;
 
-extern int nip_tail(char *head, char *tail);
-extern int increase_tail(char *head, char *tail);
-
 extern node_t *alloc_node(const char *name);
 extern void free_node(node_t *node);
 

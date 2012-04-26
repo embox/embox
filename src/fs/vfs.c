@@ -36,7 +36,7 @@ static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 	return NULL;
 }
 
-int nip_tail(char *head, char *tail) {
+static int nip_tail(char *head, char *tail) {
 	char *p_tail;
 	char *p;
 
@@ -57,7 +57,7 @@ int nip_tail(char *head, char *tail) {
 	return 0;
 }
 
-int increase_tail(char *head, char *tail) {
+static int increase_tail(char *head, char *tail) {
 	char *p_tail;
 
 		p_tail = head + strlen(head);
@@ -179,10 +179,6 @@ int vfs_del_leaf(node_t *node) {
 static int compare_children_names(struct tree_link* link, void *name) {
 	node_t *node = tree_element(link, node_t, tree_link);
 	return 0 == strcmp(node->name, (char *)name);
-#if 0
-	//do not compile by sparc 3.4.4 compiler
-	return strcmp(tree_element(link, node_t, tree_link)->name, pattern_name);
-#endif
 }
 
 node_t *vfs_find_parent(const char *name, node_t *child) {
