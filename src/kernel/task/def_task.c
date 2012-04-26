@@ -33,11 +33,13 @@ struct task *task_default_get(void) {
 static int tasks_init(void) {
 	FILE* file = diag_device_get();
 	struct task_resources *res = task_get_resources(&default_task);
+	struct idx_desc *cidx = task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file);
 
 	task_root_init(&default_task);
-	task_res_idx_set(res, 0, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
-	task_res_idx_set(res, 1, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
-	task_res_idx_set(res, 2, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
+
+	task_res_idx_set(res, 0, cidx);
+	task_res_idx_set(res, 1, cidx);
+	task_res_idx_set(res, 2, cidx);
 
 	return 0;
 }

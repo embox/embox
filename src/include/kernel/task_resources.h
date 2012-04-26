@@ -88,6 +88,18 @@ static inline int task_idx_desc_link_count_add(struct idx_desc *desc, int d) {
 }
 
 /**
+ * @brief Tells, if next free on idx free idx
+ * @param desc idx_desc to check
+ *
+ * @return Not 0 on positive
+ * 0 on negative
+ */
+static inline int task_idx_desc_link_count_remove(struct idx_desc *desc) {
+	assert(desc);
+	return (desc->link_count == 1);
+}
+
+/**
  * @brief Task resources container
  */
 struct task_resources {
@@ -117,7 +129,15 @@ static inline struct idx_desc *task_res_idx_get(struct task_resources *res, int 
  */
 static inline void task_res_idx_set(struct task_resources *res, int idx, struct idx_desc *desc) {
 	assert(res);
+	if (res->idx[idx]) {
+		task_idx_desc_link_count_add(res->idx[idx], -1);
+	}
+
 	res->idx[idx] = desc;
+
+	if (desc) {
+		task_idx_desc_link_count_add(desc, 1);
+	}
 }
 
 /**

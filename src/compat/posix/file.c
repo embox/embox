@@ -55,7 +55,7 @@ int close(int fd) {
 
 	assert(ops);
 
-	if (task_idx_desc_link_count_add(desc, -1) == 0) {
+	if (task_idx_desc_link_count_remove(desc)) {
 		res = ops->close(fd);
 	}
 

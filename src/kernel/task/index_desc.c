@@ -22,7 +22,7 @@ void res_init(struct task_resources *res) {
 
 struct idx_desc *task_idx_desc_alloc(int type, void *data) {
 	struct idx_desc *desc = objalloc(&idx_res_pool);
-	desc->link_count = 1; //always assigns returned value
+	desc->link_count = 0;
 
 	desc->type = type;
 	desc->data = data;
@@ -45,8 +45,10 @@ int task_res_idx_alloc(struct task_resources *res, int type, void *data) {
 }
 
 void task_res_idx_free(struct task_resources *res, int idx) {
-	task_idx_desc_free(task_res_idx_get(res, idx));
-
+	struct idx_desc *cidx = task_res_idx_get(res, idx);
+	if (0 == task_idx_desc_link_count_add(cidx, -1)) {
+		task_idx_desc_free(cidx);
+	}
 	task_res_idx_unbind(res, idx);
 }
 
