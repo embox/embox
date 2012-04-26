@@ -1813,14 +1813,12 @@ void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch) {
  */
 uint32_t fat_unlike_file(void *fdsc, uint8_t *path,
 		uint8_t *p_scratch) {
-	file_info_t fi;
 	uint32_t cache;
 	uint32_t tempclus;
 	p_vol_info_t volinfo;
 	fat_file_description_t *fd;
 
 	fd = (fat_file_description_t *) fdsc;
-
 	volinfo = &fd->p_fs_dsc->vi;
 
 	cache = 0;
@@ -1830,22 +1828,22 @@ uint32_t fat_unlike_file(void *fdsc, uint8_t *path,
 	}
 
 	/* First, read the directory sector and delete that entry */
-	if (fat_read_sector(fd, p_scratch, fi.dirsector, 1)) {
+	if (fat_read_sector(fd, p_scratch, fd->fi.dirsector, 1)) {
 		return DFS_ERRMISC;
 	}
-	((p_dir_ent_t) p_scratch)[fi.diroffset].name[0] = 0xe5;
-	if (fat_write_sector(fd, p_scratch, fi.dirsector, 1)) {
+	((p_dir_ent_t) p_scratch)[fd->fi.diroffset].name[0] = 0xe5;
+	if (fat_write_sector(fd, p_scratch, fd->fi.dirsector, 1)) {
 		return DFS_ERRMISC;
 	}
 
 	/* Now follow the cluster chain to free the file space */
-	while (!((volinfo->filesystem == FAT12 && fi.firstcluster >= 0x0ff7) ||
-			(volinfo->filesystem == FAT16 && fi.firstcluster >= 0xfff7) ||
-			(volinfo->filesystem == FAT32 && fi.firstcluster >= 0x0ffffff7))) {
-		tempclus = fi.firstcluster;
+	while (!((volinfo->filesystem == FAT12 && fd->fi.firstcluster >= 0x0ff7) ||
+			(volinfo->filesystem == FAT16 && fd->fi.firstcluster >= 0xfff7) ||
+			(volinfo->filesystem == FAT32 && fd->fi.firstcluster >= 0x0ffffff7))) {
+		tempclus = fd->fi.firstcluster;
 
-		fi.firstcluster = fat_get_fat_(fd, p_scratch,
-				&cache, fi.firstcluster);
+		fd->fi.firstcluster = fat_get_fat_(fd, p_scratch,
+				&cache, fd->fi.firstcluster);
 
 		fat_set_fat_(fd, p_scratch, &cache, tempclus, 0);
 
