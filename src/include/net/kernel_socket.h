@@ -24,12 +24,16 @@
  * @param family a protocol family which will be used for communication.
  * @param type socket type(i.e. SOCK_STREAM, SOCK_DGRAM, SOCK_RAW).
  * @param protocol a particular protocol to be used with the socket.
- * @param res pointer to the socket structure
+ * @param psock pointer to pointer to the socket structure
+ * @param sk - socket to wrap. if NULL created from scratch
+ * @param sk_ops - proto struct pointer for sk socket type
  * @return On success, 0 otherwise result equal to minus posix errno for the
  * error reason.
  */
-extern int kernel_socket_create(int family, int type, int protocol,
-					struct socket **res);
+/* extern int kernel_socket_create(int family, int type, int protocol, */
+/* 					struct socket **res); */
+extern int kernel_socket_create(int family, int type, int protocol, struct socket **psock,
+																struct sock *sk, struct proto_ops *sk_ops);
 
 /**
  * Close socket method in kernel layer.

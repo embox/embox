@@ -56,7 +56,7 @@ int socket(int domain, int type, int protocol) {
 	int res;
 	struct socket *sock;
 
-	res = kernel_socket_create(domain, type, protocol, &sock);
+	res = kernel_socket_create(domain, type, protocol, &sock, NULL, NULL);
 	if (res < 0) {
 		SET_ERRNO(-res);
 		return -1; /* return error code */

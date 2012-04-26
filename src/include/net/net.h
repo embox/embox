@@ -100,7 +100,10 @@ struct proto_ops {
 	int (*connect)(struct socket *sock, struct sockaddr *vaddr,
 			int sockaddr_len, int flags);
 	int (*socketpair)(struct socket *sock1, struct socket *sock2);
-	int (*accept)(socket_t *sock, socket_t *new_sock, sockaddr_t *addr, int *addr_len);
+	/* 1st arg struct sock* - because sockets are handled on kernel sockets level
+	   2nd arg struct sock** - not to create excess struct socket, but create it based
+	    on alreadey creaed struct sock* */
+	int (*accept)(struct sock *sock, struct sock **new_sock, sockaddr_t *addr, int *addr_len);
 	int (*getname)(struct socket *sock, struct sockaddr *addr,
 			int *sockaddr_len, int peer);
 

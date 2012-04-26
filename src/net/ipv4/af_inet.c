@@ -263,21 +263,19 @@ int inet_listen(struct socket *sock, int backlog) {
 
 	sk = sock->sk;
 	if (sk->sk_prot->listen == NULL) {
-		return EOPNOTSUPP;
+		return -EOPNOTSUPP;
 	}
 
 	return sk->sk_prot->listen(sk, backlog);
 }
 
-static int inet_accept(socket_t *sock, socket_t *newsock, sockaddr_t *addr, int *addr_len) {
-	struct sock *sk;
+static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, int *addr_len) {
 
-	sk = sock->sk;
 	if (sk->sk_prot->accept == NULL) {
-		return EOPNOTSUPP;
+		return -EOPNOTSUPP;
 	}
 
-	return sk->sk_prot->accept(sk, newsock->sk, addr, addr_len);
+	return sk->sk_prot->accept(sk, newsk, addr, addr_len);
 }
 
 /* uses for create socket */

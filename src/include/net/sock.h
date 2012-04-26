@@ -122,7 +122,7 @@ typedef struct proto {
 	int (*connect)(sock_t *sk, sockaddr_t *addr, int addr_len);
 	int (*disconnect)(sock_t *sk, int flags);
 	int (*listen)(sock_t *sk, int backlog);
-	int (*accept)(sock_t *sk, sock_t *newsk, sockaddr_t *addr, int *addr_len);
+	int (*accept)(sock_t *sk, sock_t **newsk, sockaddr_t *addr, int *addr_len);
 	int (*ioctl)(struct sock *sk, int cmd, unsigned long arg);
 	int (*init)(sock_t *sk);
 	void (*destroy)(struct sock *sk);

@@ -1202,7 +1202,8 @@ static int tcp_v4_listen(struct sock *sk, int backlog) {
 	}
 }
 
-static int tcp_v4_accept(struct sock *sk, struct sock *newsk,
+#if 0
+static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		struct sockaddr *addr, int *addr_len) {
 	struct sk_buff *skb;
 	union sock_pointer sock, newsock;
@@ -1220,7 +1221,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock *newsk,
 	default: /* TODO another states */
 		return -EBADF;
 	case TCP_LISTEN:
-		newsock.sk = newsk;
+		newsock.sk = *newsk;
 		addr_in = (struct sockaddr_in *)addr;
 		/* waiting for clients */
 		while ((skb = skb_dequeue(sock.tcp_sk->conn_wait)) == NULL);
@@ -1228,7 +1229,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock *newsk,
 		addr_in->sin_family = AF_INET;
 		addr_in->sin_port = skb->h.th->source;
 		addr_in->sin_addr.s_addr = skb->nh.iph->saddr;
-		debug_print(4, "tcp_v4_accept: new sk 0x%x for %s:%d\n", (int)newsk,
+		debug_print(4, "tcp_v4_accept: new sk 0x%x for %s:%d\n", (int)*newsk,
 				inet_ntoa(*(struct in_addr *)&skb->nh.iph->saddr), (int)ntohs(skb->h.th->source));
 		/* set up new socket */
 		newsock.inet_sk->saddr = newsock.inet_sk->rcv_saddr = skb->nh.iph->daddr;
@@ -1244,6 +1245,12 @@ static int tcp_v4_accept(struct sock *sk, struct sock *newsk,
 		*addr_len = sizeof(struct sockaddr_in);
 		return ENOERR;
 	}
+}
+#endif
+
+static int tcp_v4_accept_dummy(struct sock *sk, struct sock **newsk,
+															 struct sockaddr *addr, int *addr_len) {
+	return -EOPNOTSUPP;
 }
 
 static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
@@ -1444,7 +1451,8 @@ struct proto tcp_prot = {
 		.init       = tcp_v4_init_sock,
 		.connect    = tcp_v4_connect,
 		.listen     = tcp_v4_listen,
-		.accept     = tcp_v4_accept,
+		/* .accept     = tcp_v4_accept, */
+		.accept     = tcp_v4_accept_dummy,
 //		.setsockopt = tcp_v4_setsockopt,
 //		.getsockopt = tcp_v4_getsockopt,
 		.sendmsg    = tcp_v4_sendmsg,
