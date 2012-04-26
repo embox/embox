@@ -23,7 +23,7 @@ void mmu_on(void) {
 
 	asm (
 		"mov %cr0, %eax\n"
-		"or  $0x80000001, %eax\n"
+		"or  $0x8000000, %eax\n"
 		"mov %eax, %cr0"
 	);
 }
@@ -31,7 +31,7 @@ void mmu_on(void) {
 void mmu_off(void) {
 	asm (
 		"mov %cr0, %eax\n"
-		"and  $0x7ffffffe, %eax\n"
+		"and  $0x7fffffff, %eax\n"
 		"mov %eax, %cr0"
 	);
 }

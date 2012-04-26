@@ -84,7 +84,7 @@ static bool mmu_probe(void) {
 	pdt[0] = (uint32_t)pte;
 	pdt[0] |= 3;
 
-	asm volatile("mov %0, %%cr3":: "b"(pdt));
+	asm volatile("mov %0, %%cr3":: "b"(((int)pdt << 12) & (0xfffff00c)));
 
 	asm (
 		".section .data \n/t"
@@ -108,10 +108,12 @@ static bool mmu_probe(void) {
 
 	/* close your eyes and pray ... */
 	printf("mmu start...\n");
+
+	/* enabling paging */
 	mmu_on();
 
-	printf ("ending mmu testing");
-	mmu_off();
+	/*printf ("ending mmu testing");
+	mmu_off();*/
 	return 0;
 }
 
