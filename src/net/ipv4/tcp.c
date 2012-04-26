@@ -30,7 +30,6 @@
 #include <net/sock.h>
 #include <time.h>
 #include <hal/ipl.h>
-#include <lib/list.h>
 
 #include <embox/unit.h>
 #include <kernel/timer.h>
@@ -110,17 +109,19 @@ static inline void debug_print(__u8 code, const char *msg, ...) {
 
 	va_start(args, msg);
 	switch (code) {
+	case 0:
 //	case 1:   /* 0bit - warnings */
 //	case 2:   /* 1bit - tcp_handle */
 //	case 4:   /* 2bit - tcp global functions (init, send, recv etc.) */
 //	case 8:   /* 3bit - tcp state's handlers */
 //	case 16:  /* 4bit - tcp_sock_xmit, send_from_sock, send_ack_from_sock, free_rexmitting_queue,  tcp_rexmit */
-//	case 32:  /* 5bit - socket state */
+	case 32:  /* 5bit - socket state */
 //	case 64:  /* 6bit - sock_lock / sock_unlock */
-	case 128: /* 7bit - packet_print */
+//	case 128: /* 7bit - packet_print */
 		softirq_lock();
 		vprintf(msg, args);
 		softirq_unlock();
+		break;
 	}
 	va_end(args);
 }
@@ -423,10 +424,8 @@ static int tcp_rexmit(union sock_pointer sock) {
 
 static void tcp_free_sock(union sock_pointer sock) {
 	union sock_pointer anticipant;
-	struct list_head *tmp;
 
-	list_for_each(tmp, &sock.tcp_sk->conn_wait) {
-		anticipant.tcp_sk = member_cast_out(tmp, struct tcp_sock, conn_wait);
+	list_for_each_entry(anticipant.tcp_sk, &sock.tcp_sk->conn_wait, conn_wait) {
 		list_del(&anticipant.tcp_sk->rexmit_link);
 		sk_common_release(anticipant.sk);
 	}
@@ -1191,8 +1190,8 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		/* waiting anyone */
 		while (list_empty(&sock.tcp_sk->conn_wait));
 		/* get first socket from */
-		newsock.tcp_sk = member_cast_out(sock.tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
-		list_del(&newsock.tcp_sk->conn_wait);
+		newsock.tcp_sk = list_entry(sock.tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
+		list_del_init(&newsock.tcp_sk->conn_wait);
 		/* save remote address */
 		addr_in = (struct sockaddr_in *)addr;
 		addr_in->sin_family = AF_INET;
@@ -1319,7 +1318,7 @@ static void tcp_v4_close(struct sock *sk, long timeout) {
 	assert(sk != NULL);
 
 	sock.sk = sk;
-	debug_print(4, "tcp_v4_close: sk 0x%p\n", sock.tcp_sk);
+	debug_print(0, "tcp_v4_close: sk 0x%p\n", sock.tcp_sk);
 
 	state = sock.sk->sk_state;
 	switch (state) {
@@ -1362,7 +1361,7 @@ static void tcp_v4_close(struct sock *sk, long timeout) {
 static void tcp_v4_hash(struct sock *sk) {
 	size_t i;
 
-	debug_print(4, "tcp_v4_hash: sk 0x%p\n", sk);
+	debug_print(0, "tcp_v4_hash: sk 0x%p\n", sk);
 	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; ++i) {
 		if (tcp_hash[i] == NULL) {
 			tcp_hash[i] = (struct tcp_sock *)sk;
@@ -1374,7 +1373,7 @@ static void tcp_v4_hash(struct sock *sk) {
 static void tcp_v4_unhash(struct sock *sk) {
 	size_t i;
 
-	debug_print(4, "tcp_v4_unhash: sk 0x%p\n", sk);
+	debug_print(0, "tcp_v4_unhash: sk 0x%p\n", sk);
 	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; ++i) {
 		if (tcp_hash[i] == (struct tcp_sock *)sk) {
 			tcp_hash[i] = NULL;
@@ -1384,11 +1383,15 @@ static void tcp_v4_unhash(struct sock *sk) {
 }
 
 static struct sock * tcp_v4_sock_alloc(void) {
-	return (struct sock *)objalloc(&objalloc_tcp_socks);
+	struct sock *sk;
+	sk = (struct sock *)objalloc(&objalloc_tcp_socks);
+	debug_print(0, "tcp_v4_sock_alloc: 0x%p\n", sk);
+	return sk;
 }
 
-static void tcp_v4_sock_free(struct sock *sock) {
-	objfree(&objalloc_tcp_socks, sock);
+static void tcp_v4_sock_free(struct sock *sk) {
+	debug_print(0, "tcp_v4_sock_free: 0x%p\n", sk);
+	objfree(&objalloc_tcp_socks, sk);
 }
 
 ////////////////////////////////////
