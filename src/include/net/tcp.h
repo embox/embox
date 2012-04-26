@@ -13,6 +13,8 @@
 #include <hal/arch.h>
 #include <net/inet_sock.h>
 #include <types.h>
+#include <kernel/timer.h>
+#include <time.h>
 
 typedef struct tcphdr {
 	__be16 source;
@@ -87,10 +89,11 @@ typedef struct tcp_sock {
 	struct tcp_seq_state this;      /* Some informations about this socket */
 	struct tcp_seq_state rem;       /* Informations about remote socket */
 	__u8 lock;                      /* Tool for synchronization */
-	struct sk_buff_head *conn_wait; /* Queue of incoming requests for connection */
+	struct list_head conn_wait;     /* Queue of incoming connection */
 	struct list_head rexmit_link;
 	__be32 seq_queue;               /* Sequence number for next package */
 	__be32 ack_flag;                /* Acknowledgment for flags (SYN or FIN) */
+//	clock_t last_send;              /* The time when last message was sent */
 } tcp_sock_t;
 
 #if 0
