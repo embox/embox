@@ -62,4 +62,6 @@ static module LibC {
 	source "string/strstr.c"
 	source "string/strupr.c"
 	source "time/ctime.c"
+	source "shell/tokenizer.c"
+	source "stacktrace.c"
 }

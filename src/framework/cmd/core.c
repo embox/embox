@@ -37,6 +37,7 @@ const struct cmd *cmd_lookup(const char *name) {
 	return NULL;
 }
 
+#if 0
 // TODO cmdline_xxx aren't part of cmd framework,
 // move them to some utils library. -- Eldar
 static char *cmdline_next_token(const char **str) {
@@ -95,3 +96,4 @@ int cmdline_tokenize(char *cmdline, char **argv) {
 
 	return argc;
 }
+#endif
