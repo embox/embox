@@ -247,7 +247,7 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 												 struct sockaddr *addr, socklen_t *addrlen) {
 	int res;
-	struct sock **newsk;
+	struct sock *newsk;
 
 	/* TODO EAGAIN or EWOULDBLOCK in case of non-blocking socket and absence
 	   of incoming connections should be returned */
@@ -275,23 +275,23 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 	}
 
 	/* try to accept */
-	newsk = NULL;
-	res = sock->ops->accept(sock->sk, newsk, addr, addrlen);
+	res = sock->ops->accept(sock->sk, &newsk, addr, addrlen);
 	if (res < 0) { /* If something went wrong */
 		/* debug_printf("Error while accepting a connection", */
 		/* 						 "kernel_sockets", "kernel_socket_accept"); */
 		LOG_ERROR("kernel_socket_accept", "error while accepting a connection");
+		return res;
 	}
-	else {
-		/* create socket with the same type, protocol and family as 'sock' */
-		if(kernel_socket_create(sock->sk->__sk_common.skc_family,
-																 sock->sk->sk_type,
-																 sock->sk->sk_protocol, accepted, *newsk,
-																	(struct proto_ops*)sock->ops)<0)
-				return -ENOMEM;  /* for now */
-		/* set state */
-		sk_set_connection_state(*accepted, ESTABLISHED);
+
+	/* create socket with the same type, protocol and family as 'sock' */
+	res = kernel_socket_create(sock->sk->__sk_common.skc_family, sock->sk->sk_type,
+			sock->sk->sk_protocol, accepted, newsk, (struct proto_ops *)sock->ops);
+	if (res < 0) {
+		sk_common_release(newsk);
+		return res;
 	}
+	/* set state */
+	sk_set_connection_state(*accepted, ESTABLISHED);
 	return res;
  }
 
