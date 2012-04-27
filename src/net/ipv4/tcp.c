@@ -46,13 +46,12 @@ EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, 
  * +1. Create default socket for resetting
  * +2. PSH flag
  * +3. RST flag
- * 4. Changes state's logic (i.e. TCP_CLOSED for all socket which doesn't exists etc.)
+ * ?4. Changes state's logic (i.e. TCP_CLOSED for all socket which doesn't exists etc.)
  * +5. Rewrite send_from_sock (don't send new skb if queue is not empty)
- * 6. tcp_sock_free in tcp_st_finwait_2
+ * +6. tcp_sock_free in tcp_st_finwait_2
  * 7. Remove seq_queue (use rem.seq instead, build packet, and then rebuild only)
  * 8. Add lock/unlock
- * 9. Add rexmit
- * mrrrr =* i love you
+ * +9. Add rexmit
  */
 
 
@@ -109,13 +108,13 @@ static inline void debug_print(__u8 code, const char *msg, ...) {
 	va_start(args, msg);
 	switch (code) {
 	case 0:  /* default */
-	case 1:  /* in/out package print */
+//	case 1:  /* in/out package print */
 	case 2:  /* socket state */
-	case 3:  /* global functions */
+//	case 3:  /* global functions */
 	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
 	case 6:	 /* sock_alloc/sock_free */
-	case 7:  /* tcp_default_timer action */
+//	case 7:  /* tcp_default_timer action */
 //	case 8:  /* state's handler */
 //	case 9:  /* sending package */
 //	case 10: /* pre_process */
@@ -1294,15 +1293,15 @@ static void tcp_v4_close(struct sock *sk, long timeout) {
 	struct sk_buff *skb;
 	struct tcphdr *tcph;
 	union sock_pointer sock;
-	__u8 state;
+	//__u8 state;
 
 	assert(sk != NULL);
 
 	sock.sk = sk;
 	debug_print(3, "tcp_v4_close: sk 0x%p\n", sock.tcp_sk);
 
-	state = sock.sk->sk_state;
-	switch (state) {
+//	state = sock.sk->sk_state;
+	switch (sock.sk->sk_state) {
 	default:
 		return; /* error: EBADF */
 	case TCP_CLOSED:
@@ -1325,7 +1324,7 @@ static void tcp_v4_close(struct sock *sk, long timeout) {
 		tcph->fin = 1;
 		tcph->ack = 1;
 		sock.tcp_sk->seq_queue += tcp_seq_len(skb);
-		tcp_set_st(sock, (state == TCP_CLOSEWAIT ? TCP_LASTACK : TCP_FINWAIT_1));
+		tcp_set_st(sock, (sock.sk->sk_state == TCP_CLOSEWAIT ? TCP_LASTACK : TCP_FINWAIT_1));
 		send_from_sock(sock, skb);
 		break;
 	case TCP_FINWAIT_1:
