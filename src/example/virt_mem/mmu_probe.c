@@ -84,7 +84,7 @@ static bool mmu_probe(void) {
 	pdt[0] = (uint32_t)pte;
 	pdt[0] |= 3;
 
-	asm volatile("mov %0, %%cr3":: "b"(((int)pdt << 12) & (0xfffff00c)));
+	asm volatile("mov %0, %%cr3":: "b"((uint32_t *)(((int)pdt << 12) & (0xfffff00c))));
 
 	asm (
 		".section .data \n/t"
@@ -107,7 +107,7 @@ static bool mmu_probe(void) {
 	mmu_map_region(0x80000000, 0x80000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
 
 	/* close your eyes and pray ... */
-	printf("mmu start...\n");
+	printf("Paging starting...\n");
 
 	/* enabling paging */
 	mmu_on();
