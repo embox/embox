@@ -81,6 +81,7 @@ static int exec(int argc, char **argv) {
 		case 'R':
 			recursive = 1;
 			print_func = print_folder;
+			opt_cnt++;
 			break;
 		case '?':
 			break;

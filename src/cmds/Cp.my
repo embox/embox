@@ -1,5 +1,7 @@
 package embox.cmd
 
+import embox.compat.posix.LibPosix
+
 @Cmd(name = "cp",
 	help = "Copy file",
 	man = '''

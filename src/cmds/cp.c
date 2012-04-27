@@ -8,7 +8,14 @@
 
 #include <embox/cmd.h>
 #include <getopt.h>
-#include <fs/file.h>
+#include <fs/vfs.h>
+#include <types.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
 
 EMBOX_CMD(exec);
 
@@ -17,7 +24,9 @@ static void print_usage(void) {
 }
 
 static int exec(int argc, char **argv) {
-	int opt;
+	int opt, src_file, dst_file;
+	char buf[CONFIG_PAGE_SIZE];
+	int bytesread;
 	const char *src_path,*dst_path;
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "h"))) {
@@ -26,7 +35,7 @@ static int exec(int argc, char **argv) {
 			print_usage();
 			return 0;
 		default:
-			return 0;
+			break;
 		}
 	}
 
@@ -38,29 +47,28 @@ static int exec(int argc, char **argv) {
 	src_path = argv[argc - 2];
 	dst_path = argv[argc - 1];
 
-	FDESC src = open(src_path, NULL);
-	if (src==FDESC_INVALID)  {
+
+	if (-1 == (src_file = open(src_path, O_RDONLY)))  {
 		printf("can't open file %s\n",src_path);
 		return -1;
 	}
 
-	FDESC dst = open(dst_path, O_CREAT);
-	if (dst == FDESC_INVALID) {
+	if (-1 == (dst_file = open(dst_path, O_WRONLY))) {
 		printf("can't open file %s\n",dst_path);
 		return -1;
 	}
 
 	// buf optimized for whole block write
-	char buf[0x40000];
-	int bytesread = 0;
-	while ((bytesread = read(src,buf,0x40000)) > 0)
-		if (write(dst,buf,bytesread)<=0) {
+	bytesread = 0;
+	while ((bytesread = read(src_file, buf, CONFIG_PAGE_SIZE)) > 0) {
+		if (write (dst_file, buf, bytesread)<=0) {
 			printf ("WR ERR!\n");
 			break;
 		}
+	}
 
-	if (!fsync(dst_path))
-		return -1;
+	/*if (!fsync(dst_path))
+		return -1; */
 
 	return 0;
 }

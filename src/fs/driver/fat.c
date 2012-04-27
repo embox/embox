@@ -23,7 +23,6 @@
 
 static uint8_t sector1[SECTOR_SIZE];
 static uint32_t bytecount;
-fat_file_description_t *father;
 
 /* fat filesystem description pool */
 
@@ -263,13 +262,11 @@ static int fatfs_format(void *par) {
 	}
 
 	fs_des = fat_fsinfo_alloc();
-	father = fd = fat_fileinfo_alloc();
-
 	fs_des->p_device = params;
-	fd->p_fs_dsc = fs_des;
-
 	strcpy(fs_des->root_name, "\0");
 
+	fd = fat_fileinfo_alloc();
+	fd->p_fs_dsc = fs_des;
 	nod->fs_type = &fatfs_drv;
 	nod->file_info = (void *) &fatfs_fop;
 	nod->attr = (void *)fd;
@@ -300,31 +297,63 @@ static int fatfs_mount(void *par) {
 
 	fd = fat_fileinfo_alloc();
 	fd->p_fs_dsc = dev_fd->p_fs_dsc;
-
-	dir_node->attr = (void *) fd;
 	dir_node->fs_type = &fatfs_drv;
 	dir_node->file_info = (void *) &fatfs_fop;
+	dir_node->attr = (void *) fd;
 
 	return 0;
 }
 
 static int fatfs_create(void *par) {
 	file_create_param_t *param;
-	fat_file_description_t *fd, *par_fd;
+	fat_file_description_t *fd;
 	node_t *node, *parents_node;
+	int node_quantity;
 
 	param = (file_create_param_t *) par;
 
 	node = (node_t *)param->node;
 	parents_node = (node_t *)param->parents_node;
 
-	fd = fat_fileinfo_alloc();
-	par_fd = (fat_file_description_t *) parents_node->attr;
+	if (ATTR_DIRECTORY == (node->properties & ATTR_DIRECTORY)) {
+		node_quantity = 3; /* need create . and .. directory */
+	}
+	else {
+		node_quantity = 1;
+	}
 
-	fd->p_fs_dsc = par_fd->p_fs_dsc;
-	node->attr = (void *) fd;
+	for (int count = 0; count < node_quantity; count ++) {
 
-	return fatfs_create_file(par);
+		if(0 < count) {
+			if(1 == count) {
+				strcat(param->path, "/.");
+			}
+			else if(2 == count) {
+				strcat(param->path, ".");
+			}
+			node = vfs_add_path (param->path, NULL);
+		}
+
+		fd = fat_fileinfo_alloc();
+		fd->p_fs_dsc = ((fat_file_description_t *) parents_node->attr)->p_fs_dsc;
+		node->fs_type = &fatfs_drv;
+		node->file_info = (void *) &fatfs_fop;
+		node->attr = (void *)fd;
+
+		/*
+		 * fatfs_create_file called only once for the newly created directory.
+		 * Creation of dir . and .. occurs into the function fatfs_create_file.
+		 */
+		if(0 >= count) {
+			fatfs_create_file(par);
+		}
+	}
+	/* cut /.. from end of PATH, if need */
+	if (1 < node_quantity) {
+		param->path[strlen(param->path) - 3] = '\0';
+	}
+
+	return 0;
 }
 
 static int fatfs_delete(const char *fname) {
@@ -1800,10 +1829,11 @@ void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch) {
 				return;
 			}
 			fileinfo->pointer += SECTOR_SIZE * fileinfo->volinfo->secperclus;
+			offset -= SECTOR_SIZE * fileinfo->volinfo->secperclus;
 		}
 
 		/* since we know the cluster is right, we have no more work to do */
-		fileinfo->pointer = offset;
+		fileinfo->pointer += offset;
 	}
 }
 
@@ -2159,7 +2189,7 @@ int fatfs_root_create(void *fdes) {
 	/* update file_info_t for our caller's sake */
 	fileinfo->volinfo = volinfo;
 	fileinfo->pointer = 0;
-	fileinfo->dirsector = 32;
+	fileinfo->dirsector = volinfo->rootdir;
 
 	fileinfo->diroffset = 0;
 	fileinfo->cluster = cluster;
