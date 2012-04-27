@@ -90,10 +90,9 @@ typedef struct tcp_sock {
 	struct tcp_seq_state rem;       /* Informations about remote socket */
 	__u8 lock;                      /* Tool for synchronization */
 	struct list_head conn_wait;     /* Queue of incoming connection */
-	struct list_head rexmit_link;
 	__be32 seq_queue;               /* Sequence number for next package */
 	__be32 ack_flag;                /* Acknowledgment for flags (SYN or FIN) */
-//	clock_t last_send;              /* The time when last message was sent */
+	clock_t last_send;              /* The time when last message was sent */
 } tcp_sock_t;
 
 #if 0
