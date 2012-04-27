@@ -7,50 +7,57 @@
 
 #include <kernel/timer.h>
 #include <lib/list.h>
+#include <embox/unit.h>
+
+#ifdef SINGLE_ARRAY_IMPL
 
 /**
  * Evaluates n module k, suggesting k being the power of 2
  */
-#define mod(n, k) (n & (k - 1))
+#define mod(n, k) ((n) & (k - 1))
 
-const int length = 1 << 10;
+#define length (1 << 10)
 
-static list_head* timeline[length];
-static uint_32 cur;
+static struct list_head timeline[length];
+static uint32_t cur;
 
 EMBOX_UNIT_INIT(timer_strat_init);
 
-static void timer_strat_init(void) {
-	int i;
+static int timer_strat_init(void) {
+	uint32_t i;
 
 	for(i = 0; i < length; ++i) {
-		timeline[i] = { timeline[i], timeline[i] };
+		timeline[i].next = &(timeline[i]);
+		timeline[i].prev = &(timeline[i]);
 	}
 
     cur = 0;
+    return 0;
 }
 
-static void timer_strat_start(struct sys_timer *ptimer) {
+void timer_strat_start(struct sys_timer *ptimer) {
 	if(ptimer->load > length) {
 		return;
 	}
-	list_add(&ptimer->lnk, timeline[mod(ptimer->load + cur, length)]);
+	list_add(&ptimer->lnk, &timeline[mod(ptimer->load + cur, length)]);
 }
 
-static void timer_strat_sched() {
-	sys_timer *ptimer;
+void timer_strat_sched() {
+	struct sys_timer *ptimer;
 	cur = mod(cur + 1, length);
 
-	while(!list_empty(timeline[cur])) {
-		ptimer = list_entry(&timeline[cur]->next, sys_timer, lnk);
+	while(!list_empty(&timeline[cur])) {
+		ptimer = list_entry(timeline[cur].next, struct sys_timer, lnk);
 
 		ptimer->handle(ptimer, ptimer->param);
-		list_del(timeline[cur]->next);
-		list_add(&ptimer->lnk, timeline[mod(ptimer->load + cur, length)]);
+		list_del(timeline[cur].next);
+		list_add(&ptimer->lnk, &timeline[mod(ptimer->load + cur, length)]);
 	}
 }
 
 void timer_strat_stop(struct sys_timer *ptimer) {
 	list_del(&ptimer->lnk);
 }
+
+#endif /* SINGLE_ARRAY_IMPL */
 

@@ -10,6 +10,8 @@
 
 #include <lib/list.h>
 
+#define DOUBLE_ARRAY_IMPL
+
 typedef struct list_head sys_timer_queue_t;
 
 #endif /* ARRAY_TIMER_ */
