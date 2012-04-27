@@ -15,7 +15,8 @@ chekers_list := \
 	Mybuild.checkAbstractRealization \
 	Mybuild.checkFeatureRealization \
 	Mybuild.optionBind \
-	Mybuild.optionCheck
+	Mybuild.optionCheckUnique \
+	Mybuild.optionCheckConstraints
 
 
 
@@ -111,6 +112,16 @@ define class-Mybuild
 
 			$(call check,$1,$(chekers_list),)
 			))
+
+	$(method __addIssue,
+		$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
+			$(for includeMember <- $(get 1->includeMember),
+				$(get includeMember->eResource)),
+			$2,
+			$(for includeMember <- $(get 1->includeMember),
+				$(get includeMember->origin)),
+			$3
+			)))
 
 	$(method processIncludeAnnotations,
 		$(if $2,,$1)
@@ -266,26 +277,21 @@ define class-Mybuild
 							$(set optInst->option,$(opt))
 							$(set optInst->value,$(optValue))
 							$(set+ modInst->options,$(optInst))),
-						$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
-							$(for includeMember <- $(get modInst->includeMember),
-								$(get includeMember->eResource)),
-							warning,
-							$(for includeMember <- $(get modInst->includeMember),
-								$(get includeMember->origin)),
+						$(invoke __addIssue,$(modInst),warning,
 							Could not bind option $(get opt->name) in module \
-								$(get mod->qualifiedName) to a value))Error)))
+								$(get mod->qualifiedName) to a value)Error)))
 				,,$(modInst))))
 
 	$(map optionUniq)
 	$(map optionSet)
 
-	$(method optionCheckMarkUnique,
+	$(method optionCheckUniqueMark,
 			$(if $(and $1,$2),
 				$(map-set optionUniq/$(get 1->value),1)),
 				$(if $2,$(warning Setting @Unique without @Type is useless!))
 			1)
 
-	$(method optionCheckCheckUnique,
+	$(method optionCheckUniqueCheck,
 			$(if $1,
 				$(for \
 					inst<-$3,
@@ -295,21 +301,15 @@ define class-Mybuild
 					$(if $(map-get optionUniq/$(typeId)),
 						$(for anotherInst<-$(map-get optionSet/$(setMark)),
 							Error
-							$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
-								$(for includeMember <- $(get inst->includeMember),
-									$(get includeMember->eResource)),
-								error,
-								$(for includeMember <- $(get inst->includeMember),
-									$(get includeMember->origin)),
+							$(invoke __addIssue,$(inst),error,
 								Unique type $(typeId) assigned many times to same value
 								(first assing occured in $(get $(get anotherInst->type).qualifiedName) \
-								inclusion))
-								)
-							)
+								inclusion)
+							))
 						$(map-set optionSet/$(setMark),$(inst))))))
 
-	$(method optionCheck,
-		$(for phase <- Mybuild.optionCheckMarkUnique Mybuild.optionCheckCheckUnique,
+	$(method optionCheckUnique,
+		$(for phase <- Mybuild.optionCheckUniqueMark Mybuild.optionCheckUniqueCheck,
 			$(with $1,$(for inst <- $1,
 				opt<-$(get inst->options),
 				optType<-$(get opt->option),
@@ -322,6 +322,27 @@ define class-Mybuild
 					$($(phase)))),
 
 				$(if $(strip $2),,$1))))
+
+	$(method optionCheckConstraints,
+		$(with $1,$(for inst<-$1,
+				opt<-$(get inst->options),
+				optVal <- $(get opt->value),
+				optValRaw <- $(get optVal->value),
+				optType<-$(get opt->option),
+				member<-$(invoke optType->eContainer),
+				$(if $(invoke MyFile_NumberOption->isInstance,$(optType)),
+					$(with \
+						$(for cmp <- ge gt le lt,
+							val <- $(call getAnnotation,$(get member->annotations),
+								mybuild.lang.NumConstraint,$(cmp)),
+					$(if $(shell if [ ! $(optValRaw) -$(cmp) $(get val->value) ]; then echo 1; fi),
+						$(invoke __addIssue,$(inst),error,option $(get optType->qualifiedName) \
+							constraint check error)))))),
+
+			$(if $(strip $2),
+				$(for errInst <- $2,
+					$(invoke __addIssue,$(errInst),error,option constraint check error)),
+				$1)))
 
 	# Find option binding for option within list.
 	#

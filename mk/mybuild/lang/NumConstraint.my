@@ -1,0 +1,9 @@
+
+package mybuild.lang
+
+annotation NumConstraint {
+	number gt
+	number lt
+	number le
+	number ge
+}
