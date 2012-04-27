@@ -5,36 +5,6 @@ __mk_ugly_mk := 1
 # Headers.
 #
 
-define option_check_gen
-$(for inst<-$(get build_model->modules),
-		opt<-$(get inst->options),
-		optType<-$(get opt->option),
-		member<-$(invoke optType->eContainer),
-		$(with \
-			$(call getAnnotation,$(get member->annotations),mybuild.lang.Type,value),
-			$(call getAnnotation,$(get member->annotations),mybuild.lang.Unique),
-			$(if $1,
-				$(for \
-					typeId<-$(get 1->value),
-					valueMark <- $(subst $(\s),_,$(get $(get opt->value).value)),
-					setMark<-$(typeId)_set_$(valueMark),
-					uniqMark<-$(typeId)_unique,
-					$(if $2,
-						$(\h)define $(uniqMark)$(\n),
-						$(\h)ifdef $(uniqMark))
-					$(\n)
-					$(\h)ifdef $(setMark)$(\n)
-					$(\h)error "Unique type $(typeId) assigned second time with the same value \
-						in $(get optType->qualifiedName) (with value $(valueMark))"$(\n)
-					$(\h)endif$(\n)
-					$(if $2,,
-						$(\h)endif /*$(uniqMark)*/)$(\n)
-					$(\h)define $(setMark)$(\n)
-					$(\n)
-					$(\n)),
-				$(if $2,$(warning Setting @Unique without @Type is useless!)))))
-endef
-
 # By header get module
 #
 define __header_mod_name

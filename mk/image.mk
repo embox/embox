@@ -189,7 +189,7 @@ $(OBJ_DIR)/%.lds :: $(ROOT_DIR)/%.lds.S $(config_lds_h)
 
 ifndef PARTIAL_LINKING
 
-$(IMAGE): $(OPTION_CHECK_MK) $(HEADERS_BUILD) $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(LDSS_BUILD) $(call LIB_FILE,$(LIBS_BUILD))
+$(IMAGE): $(HEADERS_BUILD) $(DEPSINJECT_OBJ) $(OBJS_BUILD) $(LDSS_BUILD) $(call LIB_FILE,$(LIBS_BUILD))
 	$(LD) $(LDFLAGS) $(OBJS_BUILD_NONLIB:%=\$(\n)		%) \
 		$(DEPSINJECT_OBJ) \
 		$(patsubst %,\$(\n)		%,$(call LIB_FILE,$(LIBS_BUILD))) \

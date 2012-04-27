@@ -14,7 +14,9 @@ chekers_list := \
 	Mybuild.specifyInstances \
 	Mybuild.checkAbstractRealization \
 	Mybuild.checkFeatureRealization \
-	Mybuild.optionBind
+	Mybuild.optionBind \
+	Mybuild.optionCheck
+
 
 
 # Main check procedures. Check modules with checkers sequence.
@@ -273,6 +275,53 @@ define class-Mybuild
 							Could not bind option $(get opt->name) in module \
 								$(get mod->qualifiedName) to a value))Error)))
 				,,$(modInst))))
+
+	$(map optionUniq)
+	$(map optionSet)
+
+	$(method optionCheckMarkUnique,
+			$(if $(and $1,$2),
+				$(map-set optionUniq/$(get 1->value),1)),
+				$(if $2,$(warning Setting @Unique without @Type is useless!))
+			1)
+
+	$(method optionCheckCheckUnique,
+			$(if $1,
+				$(for \
+					inst<-$3,
+					typeId<-$(get 1->value),
+					valueMark <- $(subst $(\s),_,$(get $(get opt->value).value)),
+					setMark<-$(typeId)_set_$(valueMark),
+					$(if $(map-get optionUniq/$(typeId)),
+						$(for anotherInst<-$(map-get optionSet/$(setMark)),
+							Error
+							$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
+								$(for includeMember <- $(get inst->includeMember),
+									$(get includeMember->eResource)),
+								error,
+								$(for includeMember <- $(get inst->includeMember),
+									$(get includeMember->origin)),
+								Unique type $(typeId) assigned many times to same value
+								(first assing occured in $(get $(get anotherInst->type).qualifiedName) \
+								inclusion))
+								)
+							)
+						$(map-set optionSet/$(setMark),$(inst))))))
+
+	$(method optionCheck,
+		$(for phase <- Mybuild.optionCheckMarkUnique Mybuild.optionCheckCheckUnique,
+			$(with $1,$(for inst <- $1,
+				opt<-$(get inst->options),
+				optType<-$(get opt->option),
+				member<-$(invoke optType->eContainer),
+				$(with \
+					$(call getAnnotation,$(get member->annotations),mybuild.lang.Type,value),
+					$(call getAnnotation,$(get member->annotations),mybuild.lang.Unique),
+					$(inst),
+
+					$($(phase)))),
+
+				$(if $(strip $2),,$1))))
 
 	# Find option binding for option within list.
 	#
