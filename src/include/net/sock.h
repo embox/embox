@@ -9,10 +9,11 @@
 #ifndef NET_SOCK_H_
 #define NET_SOCK_H_
 
-#include <net/netdevice.h>
 #include <kernel/thread/sync/mutex.h>
-#include <net/net.h>
 #include <mem/misc/slab.h>
+#include <net/netdevice.h>
+#include <net/net.h>
+#include <net/socket_options.h>
 
 typedef struct {
 	spinlock_t slock;
@@ -54,7 +55,6 @@ struct sock_common {
  * @param sk_destruct: called at sock freeing time, i.e. when all refcnt == 0
  * @param get_port TODO add description
  * @param arp_queue_info: arp_queue related parameter
- * @param sk_connection_state: state of the socket (i.e. UNCONNECTED, CONNECTED...). enumerated type
  * @param sock_is_ready: event for waking up socket when the packet is added to arp_queue
  */
 typedef struct sock {
@@ -181,32 +181,12 @@ extern void sk_common_release(struct sock *sk);
 extern void sock_lock(struct sock *sk);
 extern void sock_unlock(struct sock *sk);
 
-/* socket information node connection info methods. could be excess */
-static inline void sk_set_connection_state(struct socket *sock, enum socket_connection_state_t state){
-	sock->socket_node->socket_connection_state = state;
-}
-
-static inline enum socket_connection_state_t sk_get_connection_state(struct socket *sock){
-	return sock->socket_node->socket_connection_state;
-}
-
-static inline int sk_is_connected(struct socket *sock){
-	return (sock->socket_node->socket_connection_state == CONNECTED);
-}
-
-static inline int sk_is_bound(struct socket *sock){
-	return (sock->socket_node->socket_connection_state == BOUND);
-}
-
-static inline int sk_is_listening(struct socket *sock){
-	return (sock->socket_node->socket_connection_state == LISTENING);
-}
-
 /**
  * clear sk_err variable in struct sock
  **/
 static inline void sk_clear_pending_error(struct sock *sk){
 	sk->sk_err = 0;
 }
+
 
 #endif /* NET_SOCK_H_ */

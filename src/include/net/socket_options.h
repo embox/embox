@@ -108,4 +108,7 @@ int so_get_socket_option(struct socket_opt_state *opts, unsigned int option,
  **/
 void so_options_init(struct socket_opt_state *opts, int socket_type);
 
+/* simple wrap to ask if option is set(senseless for linger and timeval structs)*/
+#define SO_IS_OPTION_SET(sk, option) sk->sk_socket->socket_node->options.option ? true : false
+
 #endif

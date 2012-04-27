@@ -7,7 +7,7 @@
  * @author Vladimir Sokolov
  */
 
-#include <err.h>
+#include <errno.h>
 #include <net/ip.h>
 #include <net/udp.h>
 #include <net/inet_sock.h>
@@ -17,6 +17,7 @@
 #include <net/ip_fragment.h>
 #include <net/skbuff.h>
 #include <net/icmp.h>
+#include <net/socket_registry.h>
 #include <util/math.h>
 
 
@@ -99,7 +100,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 
 	if (ip_route(skb, best_route) < 0) {
 		kfree_skb(skb);
-		return -1;
+		return -ENETUNREACH;  /* errno? */
 	}
 
 	if (skb->len > best_route->dev->mtu) {
@@ -108,7 +109,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 		} else {
 			/* if packet size is greater than MTU and we can't fragment it we can't go further */
 			kfree_skb(skb);
-			return -1;
+			return -EMSGSIZE;  /* errno? */
 		}
 	}
 
@@ -198,5 +199,5 @@ void ip_v4_icmp_err_notify(struct sock *sk, int type, int code){
 	/* TODO: add more specific error notification */
 
 	sk->sk_err = (type & (code<<8));
-	sk->sk_socket->socket_node->options.so_error = sk->sk_err;
+	so_sk_set_so_error(sk, sk->sk_err);
 }

@@ -14,7 +14,7 @@
 #include <stddef.h>
 #include <types.h>
 #include <net/arp_queue.h>
-#include <net/socket_options.h> /* should be here for posix */
+#include <net/socket_options.h>
 
 /* maximum number of socket connections */
 #define MAX_SYSTEM_CONNECTIONS 4

@@ -77,6 +77,12 @@ int so_set_socket_option(struct socket_opt_state *opts, unsigned int option,
 		break;
 		/* integer valued options */
 	case SO_BROADCAST:
+		/* in a specific protocol realization when the address is checked
+			 to be broadcast it is also a good idea to check wheather it can
+		   broadcast at all (like socket type is SOCK_DGRAM)
+		   This check isn't done here, because posix dosn't lay any
+		   restrictions on setting this option for sockets with types
+		   other than SOCK_DGRAM */
 		if(option_len != sizeof(unsigned int))
 			return -EINVAL;
 		opts->so_broadcast = *((unsigned int*)option_value);

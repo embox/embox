@@ -12,8 +12,6 @@
 #include <linux/compiler.h>
 #include <linux/aio.h>
 #include <net/socket.h>
-#include <net/net.h>
-#include <net/socket_registry.h>
 
 
 #define IPV4_ADDR_LENGTH   0x04
@@ -161,6 +159,5 @@ static inline bool is_a_valid_family(int family){
 					(family == AF_INET) ||
 					(family == AF_PACKET));
 }
-
 
 #endif /* NET_NET_H_ */

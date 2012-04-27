@@ -10,7 +10,7 @@
 #define SOCKET_REGISTRY_H_
 
 #include <net/net.h>
-#include <net/socket.h>
+#include <net/socket_options.h>
 #include <util/dlist.h>
 
 enum socket_connection_state_t {UNCONNECTED,
@@ -40,5 +40,38 @@ extern bool sr_socket_exists(struct socket *sock);
 
 extern bool sr_is_saddr_free(struct socket *sock, struct sockaddr *addr);
 extern bool sr_is_daddr_free(struct socket *sock, struct sockaddr *addr);
+
+/* socket information node connection info methods. could be excess */
+static inline void sk_set_connection_state(struct socket *sock, enum socket_connection_state_t state){
+	sock->socket_node->socket_connection_state = state;
+}
+
+static inline enum socket_connection_state_t sk_get_connection_state(struct socket *sock){
+	return sock->socket_node->socket_connection_state;
+}
+
+static inline int sk_is_connected(struct socket *sock){
+	return (sock->socket_node->socket_connection_state == CONNECTED);
+}
+
+static inline int sk_is_bound(struct socket *sock){
+	return (sock->socket_node->socket_connection_state == BOUND);
+}
+
+static inline int sk_is_listening(struct socket *sock){
+	return (sock->socket_node->socket_connection_state == LISTENING);
+}
+
+/**
+ * set pending error in socket registry node for struct socket entity
+ **/
+static inline void so_sk_set_so_error(struct sock *sk, int error){
+	if(sk){
+		assert(sk->sk_socket != NULL);
+		sk->sk_socket->socket_node->options.so_error = error;
+	}
+	else
+		return;
+}
 
 #endif
