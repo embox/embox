@@ -7,7 +7,10 @@ module time {
 }
 
 module clock_source {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+
+	@NumConstraint(ge=1)
     option number clocks_quantity = 4
+
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "clock_source.c"
 }

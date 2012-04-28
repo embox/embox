@@ -286,10 +286,10 @@ define class-Mybuild
 	$(map optionSet)
 
 	$(method optionCheckUniqueMark,
-			$(if $(and $1,$2),
-				$(map-set optionUniq/$(get 1->value),1)),
-				$(if $2,$(warning Setting @Unique without @Type is useless!))
-			1)
+		$(if $(and $1,$2),
+			$(map-set optionUniq/$(get 1->value),1),
+			$(if $2,$(invoke __addIssue,$(inst),warning,$(get optType->qualifiedName) has @Unique without @Type))
+		1))
 
 	$(method optionCheckUniqueCheck,
 			$(if $1,
@@ -299,14 +299,14 @@ define class-Mybuild
 					valueMark <- $(subst $(\s),_,$(get $(get opt->value).value)),
 					setMark<-$(typeId)_set_$(valueMark),
 					$(if $(map-get optionUniq/$(typeId)),
-						$(for anotherInst<-$(map-get optionSet/$(setMark)),
+						$(for anotherOpt<-$(map-get optionSet/$(setMark)),
 							Error
 							$(invoke __addIssue,$(inst),error,
-								Unique type $(typeId) assigned many times to same value
-								(first assing occured in $(get $(get anotherInst->type).qualifiedName) \
+								Unique type $(typeId) assigned many times to same value in $(get optType->qualifiedName) \
+								(first assing occured in $(get $(get anotherOpt->option).qualifiedName) \
 								inclusion)
 							))
-						$(map-set optionSet/$(setMark),$(inst))))))
+						$(map-set optionSet/$(setMark),$(opt))))))
 
 	$(method optionCheckUnique,
 		$(for phase <- Mybuild.optionCheckUniqueMark Mybuild.optionCheckUniqueCheck,
@@ -340,8 +340,7 @@ define class-Mybuild
 							constraint check error)))))),
 
 			$(if $(strip $2),
-				$(for errInst <- $2,
-					$(invoke __addIssue,$(errInst),error,option constraint check error)),
+				,
 				$1)))
 
 	# Find option binding for option within list.

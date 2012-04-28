@@ -25,16 +25,14 @@
 #include <pnet/pnet_pack.h>
 #include <pnet/pack/pack_alone.h>
 
-//TODO may be move to lego nxt header?
-//just short names, definitions in config
-#define RX_PIN  ((uint32_t) CONFIG_NXT_BT_RX_PIN)
-#define TX_PIN  ((uint32_t) CONFIG_NXT_BT_TX_PIN)
-#define SCK_PIN ((uint32_t) CONFIG_NXT_BT_SCK_PIN)
-#define RTS_PIN ((uint32_t) CONFIG_NXT_BT_RTS_PIN)
-#define CTS_PIN ((uint32_t) CONFIG_NXT_BT_CTS_PIN)
+#define RX_PIN  ((uint32_t) (1 << OPTION_GET(NUMBER,rx_pin)))
+#define TX_PIN  ((uint32_t) (1 << OPTION_GET(NUMBER,tx_pin)))
+#define SCK_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,sck_pin)))
+#define RTS_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,rts_pin)))
+#define CTS_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,cts_pin)))
 
-#define CMD_PIN ((uint32_t) CONFIG_NXT_BT_CMD_PIN)
-#define RST_PIN ((uint32_t) CONFIG_NXT_BT_RST_PIN)
+#define CMD_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,cmd_pin)))
+#define RST_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,rst_pin)))
 
 static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_NXT_BT_SERIAL_PORT_OFFSET);
 

@@ -1,7 +1,24 @@
 package embox.driver.bluetooth.lego
 
 module usart {
+	@Type("pin") @Unique
+	option number rx_pin = 21
+	@Type("pin") @Unique
+	option number tx_pin = 22
+	@Type("pin") @Unique
+	option number sck_pin = 14
+	@Type("pin") @Unique
+	option number rts_pin = 24
+	@Type("pin") @Unique
+	option number cts_pin = 25
+
+	@Type("pin") @Unique
+	option number cmd_pin = 27
+	@Type("pin") @Unique
+	option number rst_pin = 11
+
 	source "nxt_bluetooth_usart.c"
+
 	depends embox.kernel.timer.sleep_api
 	depends embox.kernel.irq
 	depends embox.driver.pins
