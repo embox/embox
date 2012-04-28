@@ -4,7 +4,7 @@
  *
  * @date 26.04.2012
  * @author Eldar Abusalimov
- *         - cmd_XXX functions
+ *         - cmdline_XXX functions
  * @author Alexander Kalmuk
  *         - quotes parsing
  */
@@ -15,10 +15,12 @@
 #include <ctype.h>
 #include <stdio.h>
 
+#define BUF_INP_SIZE 100
+
 /* Parse single quotes */
-static char *parse_sq(const char **str) {
+static char *parse_sq(char **str) {
 	char *ret;
-	char *ptr = (char *) *str;
+	char *ptr = *str;
 
 	ret = ++ptr;
 
@@ -30,18 +32,18 @@ static char *parse_sq(const char **str) {
 	}
 
 	*ptr = ' ';
-	*str = (const char *) ptr;
+	*str = ptr;
 
 	return ret;
 }
 
 /* Parse double quotes */
-static char *parse_dq(const char **str) {
+static char *parse_dq(char **str) {
 	/* right_ptr - point to current processing character,
 	 * left_ptr  - point to the end of processed substring */
 	char *left_ptr, *right_ptr, *ret;
 
-	left_ptr = right_ptr = ret = (char *) *str;
+	left_ptr = right_ptr = ret = *str;
 
 	/* move before " */
 	left_ptr--;
@@ -52,7 +54,7 @@ static char *parse_dq(const char **str) {
 		right_ptr++;
 
 		if (*right_ptr == '\0') {
-			*str = (const char *) left_ptr;
+			*str = left_ptr;
 			return (char*) NULL;
 		}
 
@@ -74,14 +76,14 @@ static char *parse_dq(const char **str) {
 		*right_ptr = ' ';
 	}
 
-	*str = (const char *) left_ptr;
+	*str = left_ptr;
 
 	return ret;
 }
 
-static char *cmdline_next_token(const char **str) {
+static char *cmdline_next_token(char **str) {
 	char *ret;
-	const char *ptr = (const char *) *str;
+	char *ptr = *str;
 
 	/* Skip whitespace characters. */
 	while (isspace(*ptr)) {
@@ -102,7 +104,7 @@ static char *cmdline_next_token(const char **str) {
 	}
 
 	/* Save end of token into the argument. */
-	*str = (const char *) ptr;
+	*str = ptr;
 
 	return ret;
 }
@@ -113,11 +115,11 @@ int cmdline_tokenize(char *string, char **argv) {
 
 	while (*string != '\0') {
 		if (*string == '\'') {
-			argv[argc++] = (token = parse_sq((const char **) &string));
+			argv[argc++] = (token = parse_sq(&string));
 		} else if(*string == '\"') {
-			argv[argc++] = (token = parse_dq((const char **) &string));
+			argv[argc++] = (token = parse_dq(&string));
 		} else {
-			argv[argc++] = (token = cmdline_next_token((const char **) &string));
+			argv[argc++] = (token = cmdline_next_token(&string));
 		}
 
 		if (*string) {
