@@ -141,7 +141,6 @@ static inline void packet_print(union sock_pointer sock, struct sk_buff *skb, ch
 
 
 /************************ Auxiliary functions **************************/
-
 static struct sk_buff * alloc_prep_skb(size_t addit_len) {
 	struct sk_buff *skb;
 
@@ -1205,6 +1204,7 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 
 	assert(sk != NULL);
 	assert(msg != NULL);
+	assert(len == msg->msg_iov->iov_len);
 
 	sock.sk = sk;
 	debug_print(3, "tcp_v4_sendmsg: sk 0x%p\n", sock.tcp_sk);
@@ -1228,6 +1228,9 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 			bytes = (len > max_len ? max_len : len);
 			skb = alloc_prep_skb(bytes);
 			if (skb == NULL) {
+				if (len != msg->msg_iov->iov_len) {
+					break;
+				}
 				return -ENOMEM;
 			}
 			memcpy((void *)(skb->h.raw + TCP_V4_HEADER_MIN_SIZE),
@@ -1241,6 +1244,7 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 			sock.tcp_sk->seq_queue += tcp_seq_len(skb);
 			send_from_sock(sock, skb);
 		}
+		msg->msg_iov->iov_len -= len;
 		return ENOERR;
 	case TCP_FINWAIT_1:
 	case TCP_FINWAIT_2:
@@ -1260,6 +1264,7 @@ static int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 
 	assert(sk != NULL);
 	assert(msg != NULL);
+	assert(len == msg->msg_iov->iov_len);
 
 	sock.sk = sk;
 	debug_print(3, "tcp_v4_recvmsg: sk 0x%p\n", sock.tcp_sk);
