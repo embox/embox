@@ -40,31 +40,29 @@ static inline void __tracepoint_handle(struct __trace_point *p) {
 	p->count++;
 }
 
-#define __TRACE_BLOCK_DEF(tb_name)                            \
-		static struct __trace_block tb_name  = {              \
-			.begin = NULL,                                    \
-			.end   = NULL,                                    \
-		}
+#define __TRACE_BLOCK_DEF(tb_name)                           \
+	static struct __trace_point b;             \
+	static struct __trace_point e;             \
+	static struct __trace_block tb_name  = {         \
+			.begin = &b,                             \
+			.end   = &e,                             \
+	};                                                   \
+	ARRAY_SPREAD_ADD(__trace_blocks_array, &tb_name);  \
 
 #define __trace_block_enter(tb_pointer) \
 	({ \
-		static struct __trace_point _begin = {                         \
-			.location = LOCATION_FUNC_INIT,                   \
-			.name = "begin",                                  \
-			.count = 0,                                       \
-		};                                                    \
-		(tb_pointer)->begin = &_begin;                          \
+			if (trace_point_get_value((tb_pointer)->begin) == 0) { \
+				trace_point_set((tb_pointer)->begin); \
+			} \
+			__tracepoint_handle((tb_pointer)->begin);\
 	})
 
 #define __trace_block_leave(tb_pointer) \
 	({ \
-		static struct __trace_point _end = {                           \
-			.location = LOCATION_FUNC_INIT,                   \
-			.name = "end",                                    \
-			.count = 0,                                       \
-		};                                                    \
-		ARRAY_SPREAD_ADD(__trace_blocks_array, tb_pointer);  \
-		(tb_pointer)->end = &_end;                              \
+			if (trace_point_get_value((tb_pointer)->end) == 0) { \
+				trace_point_set((tb_pointer)->end); \
+			} \
+			__tracepoint_handle((tb_pointer)->end);                              \
 	})
 
 #define __trace_block_diff(tb_pointer) \

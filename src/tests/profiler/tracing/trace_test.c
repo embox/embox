@@ -14,9 +14,7 @@ TEST_CASE("trace point count should be equals count of loop's iterations") {
 	test_assert_equal(trace_point_get_value(&tp), 10);
 }
 
-
 TRACE_BLOCK_DEF(my_trace);
-
 
 static void my_traced_function(int n) {
 
@@ -32,7 +30,3 @@ TEST_CASE("Value of trace block end and trace block begin should be equals") {
 	test_assert(0 == trace_block_diff(&my_trace));
 }
 
-//TEST_CASE("If parameter is positive trace_block_diff should return positive number") {
-//	my_traced_function(100);
-//	test_assert(trace_block_diff(&my_trace) > 0);
-//}
