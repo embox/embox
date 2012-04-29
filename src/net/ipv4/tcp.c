@@ -10,18 +10,12 @@
  */
 
 #include <net/tcp.h>
-
 #include <string.h>
 #include <mem/objalloc.h>
+
 #include <net/inetdevice.h>
-#include <net/ip.h>
-#include <net/icmp.h>
 #include <net/socket.h>
 #include <net/checksum.h>
-#include <net/protocol.h>
-#include <net/inet_common.h>
-#include <net/skbuff.h>
-#include <embox/net/proto.h>
 #include <net/route.h>
 #include <net/skbuff.h>
 #include <errno.h>
@@ -29,11 +23,10 @@
 #include <assert.h>
 #include <net/sock.h>
 #include <time.h>
-#include <hal/ipl.h>
 
-#include <embox/unit.h>
 #include <kernel/timer.h>
 #include <embox/net/sock.h>
+#include <embox/net/proto.h>
 #include <kernel/softirq_lock.h>
 
 
@@ -52,6 +45,9 @@ EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, 
  * 7. Remove seq_queue (use rem.seq instead, build packet, and then rebuild only)
  * 8. Add lock/unlock
  * +9. Add rexmit
+ * +-10. Add window
+ * 11. Add options
+ * 12. Add timeout
  */
 
 
@@ -59,7 +55,8 @@ EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, 
 #define TCP_TIMEWAIT_DELAY  2000 /* Delay for TIME-WAIT state */
 #define TCP_REXMIT_DELAY    2000 /* Delay between rexmitting */
 #define TCP_WINDOW_DEFAULT  500  /* Default size of widnow */
-
+#define TCP_MAX_DATA_LEN    (CONFIG_ETHERNET_V2_FRAME_SIZE\
+		- (ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE))  /* Maximum size of data */
 
 /* Error code of TCP handlers */
 enum {
@@ -108,12 +105,12 @@ static inline void debug_print(__u8 code, const char *msg, ...) {
 	va_start(args, msg);
 	switch (code) {
 	case 0:  /* default */
-//	case 1:  /* in/out package print */
-	case 2:  /* socket state */
+	case 1:  /* in/out package print */
+//	case 2:  /* socket state */
 //	case 3:  /* global functions */
-	case 4:  /* hash/unhash */
+//	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
-	case 6:	 /* sock_alloc/sock_free */
+//	case 6:	 /* sock_alloc/sock_free */
 //	case 7:  /* tcp_default_timer action */
 //	case 8:  /* state's handler */
 //	case 9:  /* sending package */
@@ -144,6 +141,7 @@ static inline void packet_print(union sock_pointer sock, struct sk_buff *skb, ch
 
 
 /************************ Auxiliary functions **************************/
+
 static struct sk_buff * alloc_prep_skb(size_t addit_len) {
 	struct sk_buff *skb;
 
@@ -284,8 +282,8 @@ static __u16 tcp_checksum(__be32 saddr, __be32 daddr, __u8 proto,
 }
 
 static void rebuild_tcp_header(__be32 ip_src, __be32 ip_dest,
-		__be16 source, __be16 dest, __be32 seq, __be32 ack_seq,
-		__be16 window, struct sk_buff *skb) {
+		__be16 source, __be16 dest, __u32 seq, __u32 ack_seq,
+		__u16 window, struct sk_buff *skb) {
 	struct tcphdr *tcph;
 
 	tcph = tcp_hdr(skb);
@@ -778,7 +776,18 @@ static int process_ack(union sock_pointer sock, struct tcphdr *tcph,
 static int pre_process(union sock_pointer sock, struct sk_buff **pskb,
 		struct tcphdr *tcph, struct tcphdr *out_tcph) {
 	int res;
+	__u16 check;
 	__u32 seq, seq_last, rem_seq, rem_last;
+
+	/* Check CRC */
+	check = tcph->check;
+	tcph->check = 0;
+	if (check != tcp_checksum(sock.inet_sk->daddr, sock.inet_sk->saddr,
+			IPPROTO_TCP, tcph, TCP_V4_HEADER_SIZE(tcph) + tcp_data_len(*pskb))) {
+		LOG_ERROR("invalid ckecksum %x sk 0x%p skb 0x%p\n", (int)check,
+						sock.tcp_sk, *pskb);
+//		return TCP_RET_DROP;
+	}
 
 	switch (sock.sk->sk_state) {
 	default:
@@ -975,6 +984,7 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 
 static void tcp_tmr_timewait(union sock_pointer sock) {
 	if (clock() - sock.tcp_sk->last_send >= TCP_TIMEWAIT_DELAY) {
+		tcp_set_st(sock, TCP_CLOSED);
 		debug_print(7, "TIMER: tcp_tmr_timewait: release sk 0x%p\n", sock.tcp_sk);
 		sk_common_release(sock.sk);
 	}
@@ -1190,6 +1200,8 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 			size_t len) {
 	struct sk_buff *skb;
 	union sock_pointer sock;
+	size_t bytes, max_len;
+	char *buff;
 
 	assert(sk != NULL);
 	assert(msg != NULL);
@@ -1209,24 +1221,26 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 		return -1; /* TODO save data and send them later */
 	case TCP_ESTABIL:
 	case TCP_CLOSEWAIT:
-		if (len == 0) {
-			return ENOERR;
+		max_len = (sock.tcp_sk->rem.wind > TCP_MAX_DATA_LEN ?
+				TCP_MAX_DATA_LEN : sock.tcp_sk->rem.wind);
+		buff = (char *)msg->msg_iov->iov_base;
+		while (len > 0) {
+			bytes = (len > max_len ? max_len : len);
+			skb = alloc_prep_skb(bytes);
+			if (skb == NULL) {
+				return -ENOMEM;
+			}
+			memcpy((void *)(skb->h.raw + TCP_V4_HEADER_MIN_SIZE),
+					buff, bytes);
+			buff += bytes;
+			len -= bytes;
+			/* Fill TCP header */
+			skb->h.th->psh = 1; /* XXX not req */
+			skb->h.th->ack = 1;
+			debug_print(3, "tcp_v4_sendmsg: sending len %d\n", bytes);
+			sock.tcp_sk->seq_queue += tcp_seq_len(skb);
+			send_from_sock(sock, skb);
 		}
-		skb = alloc_prep_skb(msg->msg_iov->iov_len);
-		if (skb == NULL) {
-			return -ENOMEM;
-		}
-
-		memcpy((void*)(skb->h.raw + TCP_V4_HEADER_MIN_SIZE),
-					(void *)msg->msg_iov->iov_base, msg->msg_iov->iov_len);
-
-		/* Fill TCP header */
-		skb->h.th->psh = 1; /* XXX not req */
-		skb->h.th->ack = 1;
-		debug_print(4, "tcp_v4_sendmsg: sending len %d, unack %u, seq %u\n", len,
-				sock.tcp_sk->this_unack, sock.tcp_sk->this.seq);
-		sock.tcp_sk->seq_queue += tcp_seq_len(skb);
-		send_from_sock(sock, skb);
 		return ENOERR;
 	case TCP_FINWAIT_1:
 	case TCP_FINWAIT_2:
@@ -1241,7 +1255,8 @@ static int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 			size_t len, int noblock, int flags) {
 	struct sk_buff *skb;
 	union sock_pointer sock;
-	size_t data_left;
+	size_t bytes;
+	char *buff, last_iteration;
 
 	assert(sk != NULL);
 	assert(msg != NULL);
@@ -1272,15 +1287,25 @@ check_state:
 			/* wait received packet or another state */
 			goto check_state;
 		}
-		data_left = tcp_data_left(skb);
-		len = (len >= data_left ? data_left : len);
-		msg->msg_iov->iov_len = len;
-		memcpy((void *)msg->msg_iov->iov_base, skb->p_data, len);
-		skb->p_data += len;
-		/* remove skb from receive's queue if he doesn't contains more data */
-		if (len >= data_left) {
-				kfree_skb(skb);
-		}
+		last_iteration = 0;
+		buff = (char *)msg->msg_iov->iov_base;
+		do {
+			bytes = tcp_data_left(skb);
+			if (bytes > len) {
+				bytes = len;
+				last_iteration = 1;
+			}
+			memcpy((void *)buff, skb->p_data, bytes);
+			buff += bytes;
+			len -= bytes;
+			debug_print(3, "tcp_v4_recvmsg: received len %d\n", bytes);
+			if (last_iteration) {
+				skb->p_data += bytes;
+				break;
+			}
+			kfree_skb(skb);
+		} while ((len > 0) && ((skb = skb_peek_datagram(sk, flags, 0, 0)) != NULL));
+		msg->msg_iov->iov_len -= len;
 		return ENOERR;
 	case TCP_CLOSING:
 	case TCP_LASTACK:
@@ -1361,16 +1386,17 @@ static void tcp_v4_unhash(struct sock *sk) {
 	}
 }
 
+static int allocated = 0; /* for debug */
 static struct sock * tcp_v4_sock_alloc(void) {
 	struct sock *sk;
 
 	sk = (struct sock *)objalloc(&objalloc_tcp_socks);
-	debug_print(6, "tcp_v4_sock_alloc: 0x%p\n", sk);
+	debug_print(6, "tcp_v4_sock_alloc: 0x%p, total %d\n", sk, ++allocated);
 	return sk;
 }
 
 static void tcp_v4_sock_free(struct sock *sk) {
-	debug_print(6, "tcp_v4_sock_free: 0x%p\n", sk);
+	debug_print(6, "tcp_v4_sock_free: 0x%p, total %d\n", sk, --allocated);
 	objfree(&objalloc_tcp_socks, sk);
 }
 
