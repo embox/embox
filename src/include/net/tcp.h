@@ -83,15 +83,15 @@ struct tcp_seq_state {
 
 typedef struct tcp_sock {
 	/* inet_sock has to be the first member */
-	struct inet_sock inet;          /* Inet socket (parent) */
-	__u32 this_unack;              /* Last unacknowledged sequence number */
-	struct tcp_seq_state this;      /* Some informations about this socket */
-	struct tcp_seq_state rem;       /* Informations about remote socket */
-	__u8 lock;                      /* Tool for synchronization */
-	struct list_head conn_wait;     /* Queue of incoming connection */
-	__u32 seq_queue;               /* Sequence number for next package */
-	__u32 ack_flag;                /* Acknowledgment for flags (SYN or FIN) */
-	clock_t last_send;              /* The time when last message was sent */
+	struct inet_sock inet;      /* Inet socket (parent) */
+	__u32 this_unack;           /* Last unacknowledged sequence number */
+	struct tcp_seq_state this;  /* Some informations about this socket */
+	struct tcp_seq_state rem;   /* Informations about remote socket */
+	__u8 lock;                  /* Tool for synchronization */
+	struct list_head conn_wait; /* Queue of incoming connection */
+	__u32 seq_queue;            /* Sequence number for next package */
+	__u32 ack_flag;             /* Acknowledgment for flags (SYN or FIN) */
+	clock_t last_activity;      /* The time when last message was sent */
 } tcp_sock_t;
 
 #if 0

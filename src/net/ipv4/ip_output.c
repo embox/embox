@@ -86,12 +86,11 @@ static int fragment_skb_and_send(sk_buff_t *skb, const struct rt_entry *best_rou
 
 
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
-	iphdr_t *iph = ip_hdr(skb);
-	struct rt_entry *best_route = rt_fib_get_best(iph->daddr);
+	struct rt_entry *best_route = rt_fib_get_best(sk->daddr);
 
 	if (!best_route) {
 		kfree_skb(skb);
-		return -1;
+		return -EHOSTUNREACH;
 	}
 
 	if (sk) {
