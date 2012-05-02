@@ -150,7 +150,8 @@ define class-Mybuild
 			$(invoke instanceClosure,$(inst))))
 
 	$(method testAnnotTestGet,
-		$(call getAnnotation,$(get mod->annotations),$(LABEL-TestFor),value) \
+		$(for testModLiteral<-$(call getAnnotation,$(get mod->annotations),$(LABEL-TestFor),value),
+			$(get testModLiteral->value)) \
 		$(if $(strip $(get inst->includeMember)),
 			$(for annotLiteral<-$(call getAnnotation,$(get $(get inst->includeMember).annotations),$(LABEL-TestFor),value),
 				$(get annotLiteral->value))))
