@@ -46,7 +46,7 @@ static int rule_set_mac(struct pnet_graph *gr, match_rule_t rule, char *rule_str
 static int rule_set_ip(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
 static int rule_set_next_node(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
 static int rule_set_priority(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
-static match_rule_t rule_get_by_id(net_node_t node, char id);
+static match_rule_t rule_get_by_id(net_node_t node, char *id);
 
 /* macros to get graph, node or rule by it name */
 
@@ -71,7 +71,7 @@ static match_rule_t rule_get_by_id(net_node_t node, char id);
 		}
 
 #define get_rule_from_node(node, rule, rule_name, error) \
-		if (NULL == (rule = rule_get_by_id(node, *rule_name))) { \
+		if (NULL == (rule = rule_get_by_id(node, rule_name))) { \
 			printf("%s: no such rule \n", rule_name);				 \
 			return -error;										 \
 		}
@@ -372,14 +372,15 @@ static int rule_set_priority (struct pnet_graph *gr, match_rule_t rule, char *ru
 }
 
 /* return rule specified by it position in list of rules */
-static match_rule_t rule_get_by_id(net_node_t node, char id) {
+static match_rule_t rule_get_by_id(net_node_t node, char *id) {
 	struct list_head *h;
 	match_rule_t rule;
 	net_node_matcher_t matcher;
-	int n;
+	int n = 0;
 	int counter = 1;
 
-	sscanf(&id, "%d", &n);
+	sscanf(id, "%d", &n);
+	printf("%d\n", n);
 
 	matcher = (net_node_matcher_t) node;
 	list_for_each (h, &matcher->match_rx_rules) {
