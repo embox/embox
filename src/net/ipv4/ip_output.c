@@ -86,15 +86,16 @@ static int fragment_skb_and_send(sk_buff_t *skb, const struct rt_entry *best_rou
 
 
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
-	struct rt_entry *best_route = rt_fib_get_best(sk->daddr);
+	struct rt_entry *best_route;
 
-	if (!best_route) {
-		kfree_skb(skb);
-		return -EHOSTUNREACH;
+	if (sk != NULL) {
+		build_ip_packet(sk, skb);
 	}
 
-	if (sk) {
-		build_ip_packet(sk, skb);
+	best_route = rt_fib_get_best(skb->nh.iph->daddr);
+	if (best_route == NULL) {
+		kfree_skb(skb);
+		return -EHOSTUNREACH;
 	}
 
 	if (ip_route(skb, best_route) < 0) {
