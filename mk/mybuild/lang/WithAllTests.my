@@ -1,5 +1,5 @@
 
 package mybuild.lang
 
-annotation WithAllTest {
+annotation WithAllTests {
 }

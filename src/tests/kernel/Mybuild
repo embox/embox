@@ -16,7 +16,7 @@ module timer_test {
 
 }
 
-@TestFor(embox.kernel.irq)
+@TestFor(embox.kernel.softirq)
 module softirq_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "softirq_test.c"
