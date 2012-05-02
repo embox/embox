@@ -406,6 +406,7 @@ static int exec(int argc, char **argv) {
 	int opt, res;
 	struct pnet_graph *gr;
 	const struct pnet_module *mod;
+	struct net_device *dev;
 	match_rule_t rule;
 	net_node_t node;
 	_rule_setter setter;
@@ -443,12 +444,19 @@ static int exec(int argc, char **argv) {
 			printf("%s: no such option \n", argv[2]);
 			break;
 		case 'n' :
-			printf("nodes:\n");
+			printf("Network Interfaces:\n");
+			netdev_foreach(dev) {
+				if (dev) {
+					printf("	%s\n", dev->name);
+				}
+			}
+
+			printf("\nNodes:\n");
 			array_foreach_ptr(mod, __pnet_mod_repo, ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
 				if (mod->node)
 					printf("	%s\n", mod->node->proto->name);
 			}
-			printf("\nprotocols:\n");
+			printf("\nProtocols:\n");
 			array_foreach_ptr(mod, __pnet_mod_repo, ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
 				if (!mod->node)
 					printf("	%s\n", mod->proto->name);
