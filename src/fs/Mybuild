@@ -22,7 +22,6 @@ module core {
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "file_op.c",
 		"vfs.c",
-		"fs.c",
 		"kernel_posix_plugin.c"
 	depends file_desc, node, rootfs
 	depends embox.fs.driver.repo
@@ -32,8 +31,7 @@ module core {
 module ramdisk {
 	source "ramdisk.c"
 	depends node
-	depends embox.fs.devfs
+	depends embox.fs.driver.devfs
 	depends embox.fs.driver.fat
 	depends embox.mem.page_api
 }
-

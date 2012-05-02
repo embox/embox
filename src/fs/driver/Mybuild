@@ -10,6 +10,12 @@ module repo {
 module fat {
 	source "fat.c"
 	depends embox.fs.node, embox.fs.driver.repo
-	depends embox.fs.devfs
+	depends embox.fs.driver.devfs
 	depends embox.mem.page_api
+}
+
+module devfs {
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "devfs.c"
+	depends embox.fs.rootfs
 }

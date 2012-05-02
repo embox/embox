@@ -2,6 +2,6 @@ package embox.example.fs
 
 module devfs {
 	source "devfs.c"
-	depends embox.fs.devfs
+	depends embox.fs.driver.devfs
 	depends embox.fs.core
 }
