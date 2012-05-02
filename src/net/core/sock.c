@@ -47,13 +47,13 @@ static struct sock * sk_prot_alloc(struct proto *prot, gfp_t priority) {
 	if (prot->sock_alloc != NULL) {
 		sk = prot->sock_alloc();
 	}
-	else if (prot->cachep == NULL) {
-		prot->cachep = cache_create(prot->name, prot->obj_size, LOWER_BOUND);
+	else {
 		if (prot->cachep == NULL) {
-			local_irq_restore(flags);
-			return NULL;
+			prot->cachep = cache_create(prot->name, prot->obj_size, LOWER_BOUND);
 		}
-		sk = cache_alloc(prot->cachep);
+		if (prot->cachep != NULL) {
+			sk = cache_alloc(prot->cachep);
+		}
 	}
 
 	local_irq_restore(flags);
