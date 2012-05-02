@@ -55,7 +55,7 @@ EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, 
 #define TCP_TIMEWAIT_DELAY    2000 /* Delay for TIME-WAIT state */
 #define TCP_REXMIT_DELAY      2000 /* Delay between rexmitting */
 #define TCP_WINDOW_DEFAULT    500  /* Default size of widnow */
-#define TCP_MAX_DATA_LEN      (CONFIG_ETHERNET_V2_FRAME_SIZE\
+#define TCP_MAX_DATA_LEN      (CONFIG_ETHERNET_V2_FRAME_SIZE - 18\
 		- (ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE))  /* Maximum size of data */
 /* TCP xmit options */
 #define TCP_XMIT_DEFAULT      0    /* Default options for xmitting */
@@ -114,7 +114,7 @@ static inline void debug_print(__u8 code, const char *msg, ...) {
 	switch (code) {
 //default:
 	case 0:  /* default */
-//	case 1:  /* in/out package print */
+	case 1:  /* in/out package print */
 //	case 2:  /* socket state */
 //	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
@@ -1261,7 +1261,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		return ENOERR;
 	}
 }
-extern int usleep(useconds_t usec);
+
 static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			size_t len) {
 	struct sk_buff *skb;

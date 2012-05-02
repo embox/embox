@@ -18,7 +18,7 @@
 EMBOX_CMD(httpd);
 
 
-#define BUFF_SZ       500
+#define BUFF_SZ       (1446 * 4)
 #define FILENAME_SZ   30
 #define DEFAULT_PAGE  "index.html"
 
