@@ -149,23 +149,45 @@ define class-Mybuild
 			$(inst) \
 			$(invoke instanceClosure,$(inst))))
 
+	$(method testAnnotTestGet,
+		$(call getAnnotation,$(get mod->annotations),$(LABEL-TestFor),value) \
+		$(if $(strip $(get inst->includeMember)),
+			$(for annotLiteral<-$(call getAnnotation,$(get $(get inst->includeMember).annotations),$(LABEL-TestFor),value),
+				$(get annotLiteral->value))))
+
+	$(method testAnnotTestingGet,
+		$(if $(strip $(get inst->includeMember)),
+			$(for \
+				testModLiteral <-$(call getAnnotation,$(get $(get inst->includeMember).annotations),mybuild.lang.WithTest,value),
+				testMod<-$(get testModLiteral->value),
+				$(with \
+					$(for testModTestAnnot <- $(call getAnnotation,$(get testMod->annotations),mybuild.lang.TestFor,value),
+						testModTestTarget <- $(get testModTestAnnot->value),
+						$(if $(filter $(mod),$(testModTestTarget) $(get testModTestTarget->allSubTypes)),1)),
+					$(if $(strip $1),
+						$(testMod),
+						$(invoke __addIssue,$(inst),error,$(get mod->qualifiedName) inclusion requested \
+							$(get testMod->qualifiedName) as test; but it is not defined test))))))
+
+	$(method testAnnotTestDo,
+		$(set+ testModInst->afterDepends,$(inst)))
+
+	$(method testAnnotTestingDo,
+		$(set+ inst->afterDepends,$(testModInst)))
+
 	$(method testsAnnotations,
 		$(for \
 			inst <- $1,
 			mod <- $(get inst->type),
 			$(inst) \
-			$(for testModLiteral <- $(call getAnnotation,$(get mod->annotations),$(LABEL-TestFor),value) \
-						$(if $(strip $(get inst->includeMember)),
-							$(call getAnnotation,$(get $(get inst->includeMember).annotations),$(LABEL-TestFor),value)),
-					testMod <- $(get testModLiteral->value),
-					testModWas <- was$(map-get moduleInstanceStore/$(testMod)),
-					testModInst <-$(invoke moduleInstance,$(testMod)),
+			$(for targetAction <-Test Testing,
+				testMod <- $(call Mybuild.testAnnot$(targetAction)Get),
+				testModWas <-was$(map-get moduleInstanceStore/$(testMod)),
+				testModInst <-$(invoke moduleInstance,$(testMod)),
 
-					$(if $(filter was,$(testModWas)),
-						$(call check,$(testModInst),$3,))
-
-					$(set+ testModInst->afterDepends,$(inst)))
-			))
+				$(if $(filter was,$(testModWas)),
+					$(call check,$(testModInst),$3,))
+				$(call Mybuild.testAnnot$(targetAction)Do))))
 
 	$(method specifyInstances,
 		$(for inst <- $1,

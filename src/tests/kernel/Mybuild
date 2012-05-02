@@ -1,5 +1,6 @@
 package embox.test.kernel
 
+@TestFor(embox.kernel.irq)
 module irq_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "irq_test.c"
@@ -7,6 +8,7 @@ module irq_test {
 
 }
 
+@TestFor(embox.kernel.timer.timer_api)
 module timer_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "timer_test.c"
@@ -14,6 +16,7 @@ module timer_test {
 
 }
 
+@TestFor(embox.kernel.irq)
 module softirq_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "softirq_test.c"
