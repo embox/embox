@@ -98,7 +98,7 @@ int eth_mac_addr(struct net_device *dev, struct sockaddr *addr) {
 }
 
 int eth_change_mtu(struct net_device *dev, int new_mtu) {
-	if ((new_mtu < 68) || (new_mtu > ETH_DATA_LEN)) {
+	if ((new_mtu < 68) || (new_mtu > ETH_FRAME_LEN)) {
 		return -EINVAL;
 	}
 
@@ -152,7 +152,7 @@ const header_ops_t *get_eth_header_ops() {
 void ether_setup(struct net_device *dev) {
 	dev->header_ops    = &eth_header_ops;
 	dev->type          = ARPHRD_ETHER;
-	dev->mtu           = ETH_DATA_LEN;
+	dev->mtu           = ETH_FRAME_LEN;
 	dev->addr_len      = ETH_ALEN;
 	dev->flags         = IFF_BROADCAST|IFF_MULTICAST;
 	dev->tx_queue_len  = 1000;

@@ -34,6 +34,7 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	hdr->ttl = htons(ttl);
 	hdr->id = htons(id);
 	hdr->tos = 0;
+//	hdr->frag_off = 0;
 	/* frag_off will be set during fragmentation decision */
 	hdr->proto = proto;
 	ip_send_check(hdr);
