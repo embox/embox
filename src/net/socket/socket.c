@@ -35,11 +35,16 @@ static ssize_t this_write(int fd, const void *buf, size_t nbyte) {
 	return sendto(fd, buf, nbyte, 0, NULL, 0);
 }
 
+static int this_ioctl(int fd, int request, va_list args) {
+	return 0;
+}
+
 static struct task_res_ops ops = {
 	.type = TASK_IDX_TYPE_SOCKET,
 	.read = this_read,
 	.write = this_write,
-	.close = socket_close
+	.close = socket_close,
+	.ioctl = this_ioctl
 };
 
 ARRAY_SPREAD_ADD(__task_res_ops, &ops);

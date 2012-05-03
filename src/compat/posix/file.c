@@ -40,6 +40,7 @@ int open(const char *path, int __oflag, ...) {
 	struct task_res_ops *ops = find_res_ops_by_type(TASK_IDX_TYPE_FILE);
 
 	assert(ops);
+	assert(ops->open);
 
 	va_start(args, __oflag);
 	ret = ops->open(path, __oflag, args);
@@ -54,6 +55,7 @@ int close(int fd) {
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	assert(ops);
+	assert(ops->close);
 
 	if (task_idx_desc_link_count_remove(desc)) {
 		res = ops->close(fd);
@@ -67,27 +69,31 @@ int close(int fd) {
 ssize_t write(int fd, const void *buf, size_t nbyte) {
 	struct task_res_ops *ops = find_res_ops(fd);
 	assert(ops);
+	assert(ops->write);
 	return ops->write(fd, buf, nbyte);
 }
 
 ssize_t read(int fd, void *buf, size_t nbyte) {
 	struct task_res_ops *ops = find_res_ops(fd);
 	assert(ops);
+	assert(ops->read);
 	return ops->read(fd, buf, nbyte);
 }
 
 int lseek(int fd, long int offset, int origin) {
 	struct task_res_ops *ops = find_res_ops(fd);
 	assert(ops);
+	assert(ops->fseek);
 	return ops->fseek(fd, offset, origin);
 }
 
 int ioctl(int fd, int request, ...) {
 	va_list args;
 	int ret = -ENOTSUP;
-	struct task_res_ops *ops = find_res_ops_by_type(TASK_IDX_TYPE_FILE);
+	struct task_res_ops *ops = find_res_ops(fd);
 
 	assert(ops);
+	assert(ops->ioctl);
 
 	va_start(args, request);
 	ret = ops->ioctl(fd, request, args);
