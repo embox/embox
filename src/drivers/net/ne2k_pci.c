@@ -139,7 +139,8 @@ static inline void copy_data_to_card(uint16_t dest, uint8_t *src,
 		len++;
 	}
 	outsw(base_addr + NE_DATAPORT, src, len >> 1);
-	while (0 == (in8(base_addr + EN0_ISR) & ENISR_RDC));
+//	while (0 == (in8(base_addr + EN0_ISR) & ENISR_RDC)); /* FIXME sometimes it requires much time */
+//	out8(ENISR_RDC, base_addr + EN0_ISR);
 }
 
 static inline void copy_data_from_card(uint16_t src, uint8_t *dest,
