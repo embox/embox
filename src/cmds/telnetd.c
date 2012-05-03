@@ -79,8 +79,8 @@ static void run(void) {
 	/* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
 	int *client_descr_p = (int *)args;
-//	struct task_resources *t_r = task_self_res();
-//	struct idx_desc *i_d = task_res_idx_get(t_r, *client_descr_p);
+	struct task_resources *t_r = task_self_res();
+	struct idx_desc *i_d = task_res_idx_get(t_r, *client_descr_p);
 
 		/* Redirect stdin, stdout, stderr to our socket
 		 * Unfortunately it's not working. We try to treat stdout as
@@ -89,62 +89,12 @@ static void *telnet_thread_handler(void* args) {
 		 * 	It's unsertain what we should do with the original descriptors
 		 *	We can close them, but it may corrupt the original task
 		 */
-#if 0
-	We cant do that. See error below
 	close(0);
 	close(1);
 	close(2);
 	task_res_idx_set(t_r, 0, i_d);
 	task_res_idx_set(t_r, 1, i_d);
 	task_res_idx_set(t_r, 2, i_d);
------------------------------
-ASSERTION FAILED at src/mem/misc/pool.c : 39,
-	in function pool_free:
-
-obj
-kernel debug panic
-
-Stack:
-39 pool_free() pool.c:40 0x00101078
-38 net_buff_free() skbuff.c:52 0x0011c597
-37 kfree_skb() skbuff.c:81 0x0011c609
-36 alloc_skb() skbuff.c:115 0x0011c6ec
-35 alloc_prep_skb() tcp.c:156 0x00123a34
-34 tcp_v4_sendmsg() tcp.c:1297 0x001261d7
-33 inet_sendmsg() af_inet.c:227 0x0011f977
-32 kernel_socket_sendmsg() kernel_socket.c:444 0x0011e656
-31 sendto_sock() socket.c:212 0x0011d221
-30 sendto() socket.c:234 0x0011d2b7
-29 this_write() socket.c:35 0x0011ce25
-28 write() file.c:70 0x0010f17e
-27 display_printchar() printf.c:50 0x00130184
-26 prints() printf_impl.c:60 0x00130321
-25 printi() printf_impl.c:116 0x00130493
-24 __print() printf_impl.c:202 0x001307ad
-23 vprintf() printf.c:55 0x001301b6
-22 debug_print() tcp.c:129 0x00123806
-21 packet_print() tcp.c:139 0x00123a0c
-20 tcp_xmit() tcp.c:330 0x00124168
-19 tcp_sock_xmit() tcp.c:382 0x00124366
-18 process_ack() tcp.c:784 0x001251c9
-17 pre_process() tcp.c:878 0x001254c2
-16 tcp_handle() tcp.c:943 0x001255de
-15 tcp_process() tcp.c:1004 0x001257fc
-14 tcp_v4_rcv() tcp.c:1037 0x00125944
-13 ip_rcv() ip_input.c:130 0x00120012
-12 netif_receive_skb() network_layer.c:128 0x0011efbe
-11 process_backlog() dev.c:225 0x0011f434
-10 dev_rx_processing() dev.c:260 0x0011f4fa
-9 net_rx_action() network_layer.c:139 0x0011eff5
-8 softirq_wrap() softirq.c:17 0x00110801
-7 softirq_dispatch() softirq.c:119 0x00128ed6
-6 critical_dispatch_pending() critical.c:31 0x001292b7
-5 irq_handler() irq_handler.c:37 0x001009db
-4 irq_stub() entry.S:99 0x0012c81b
-3 <symbol is not available> 0x001a7ee4
-2 <symbol is not available> 0x00000010
-1 <symbol is not available> 0x001a7f50
-#endif
 
 		/* Run shell */
 	run();

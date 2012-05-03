@@ -12,6 +12,7 @@
 #include <net/tcp.h>
 #include <string.h>
 #include <mem/objalloc.h>
+#include <kernel/prom_printf.h>
 
 #include <net/inetdevice.h>
 #include <net/socket.h>
@@ -107,6 +108,7 @@ static const tcp_handler_t tcp_st_handler[];
 
 
 /************************ Debug functions ******************************/
+
 static inline void debug_print(__u8 code, const char *msg, ...) {
 	va_list args;
 
@@ -116,7 +118,7 @@ static inline void debug_print(__u8 code, const char *msg, ...) {
 	case 0:  /* default */
 	case 1:  /* in/out package print */
 //	case 2:  /* socket state */
-//	case 3:  /* global functions */
+	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
 	case 6:	 /* sock_alloc/sock_free */
@@ -126,7 +128,7 @@ static inline void debug_print(__u8 code, const char *msg, ...) {
 //	case 10: /* pre_process */
 //	case 11: /* tcp_handle */
 		softirq_lock();
-		vprintf(msg, args);
+		prom_vprintf(msg, args);
 		softirq_unlock();
 		break;
 	}

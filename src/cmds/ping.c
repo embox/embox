@@ -131,8 +131,9 @@ static int ping(struct ping_info *pinfo) {
 	timeout = pinfo->timeout * 1000;
 
 	/* open socket */
-	if ((sk = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP)) < 0) {
-		LOG_ERROR("socket error\n");
+	sk = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP);
+	if (sk < 0) {
+		LOG_ERROR("socket failed. error=%d\n", sk);
 		return -1;
 	}
 

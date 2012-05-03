@@ -34,9 +34,12 @@ int prom_printf(const char *format, ...) {
 	va_list args;
 
 	va_start(args, format);
-	ret = __print(printchar, 0, format, args);
+	ret = prom_vprintf(format, args);
 	va_end(args);
 
 	return ret;
 }
 
+int prom_vprintf(const char *format, va_list args) {
+	return __print(printchar, 0, format, args);
+}
