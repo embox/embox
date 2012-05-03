@@ -17,6 +17,7 @@
 #include <net/skbuff.h>
 #include <string.h>
 #include <assert.h>
+//#include <err.h>
 
 
 POOL_DEF(skb_pool, struct sk_buff, CONFIG_QUANTITY_SKB);
@@ -92,8 +93,14 @@ void kfree_skb(struct sk_buff *skb) {
 struct sk_buff * alloc_skb(unsigned int size, gfp_t priority) {
 	ipl_t sp;
 	struct sk_buff *skb;
+	unsigned char *head;
 
 	if ((!size) || (size > (SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE))) {
+		return NULL;
+	}
+
+	head = net_buff_alloc();
+	if (head == NULL) {
 		return NULL;
 	}
 
@@ -102,18 +109,13 @@ struct sk_buff * alloc_skb(unsigned int size, gfp_t priority) {
 	ipl_restore(sp);
 
 	if (skb == NULL) {
+		net_buff_free(head);
 		return NULL;
 	}
 
 	memset(skb, 0, sizeof(struct sk_buff));
-
+	skb->head = head;
 	INIT_LIST_HEAD((struct list_head *) skb);
-
-	skb->head = net_buff_alloc();
-	if (skb->head == NULL) {
-		kfree_skb(skb);
-		return NULL;
-	}
 	skb->mac.raw = skb->head + SK_BUF_EXTRA_HEADROOM;
 	/* Really skb->nh.raw (as a pointer) is also defined now,
 	 * because everything supports only Ethernet.
@@ -253,6 +255,7 @@ static inline struct sk_buff *skb_allocatecopydata(const struct sk_buff *skb, gf
 
 	new_pack = alloc_skb(skb->len, priority);
 	if (new_pack == NULL) {
+//		LOG_ERROR("new_pack is null. len=%u\n", skb->len);
 		return NULL;
 	}
 
