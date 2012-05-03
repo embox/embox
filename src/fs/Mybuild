@@ -20,8 +20,7 @@ module rootfs {
 
 module core {
     @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "file_op.c",
-		"vfs.c",
+	source "vfs.c",
 		"kernel_posix_plugin.c"
 	depends file_desc, node, rootfs
 	depends embox.fs.driver.repo

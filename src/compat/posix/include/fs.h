@@ -9,7 +9,7 @@
 #define FS_FS_H_
 
 #include <lib/list.h>
-#include <fs/file.h>
+#include <file_op.h>
 #include <unistd.h>
 #include <fs/file_desc.h>
 

@@ -9,7 +9,7 @@
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <stdio.h>
-#include <fs/file.h>
+#include <file_op.h>
 #include <lib/md5.h>
 #include <sys/stat.h>
 

@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-#include <fs/fs.h>
+#include <fs.h>
 #include <fs/vfs.h>
 #include <util/array.h>
 #include <embox/device.h>

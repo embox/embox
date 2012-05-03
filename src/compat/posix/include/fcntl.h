@@ -20,6 +20,7 @@ extern int open(const char *path, int __oflag, ...);
 extern int close(int file);
 
 extern int creat(const char *pathname, mode_t mode);
+extern int mkdir(const char *pathname, mode_t mode);
 
 #define O_RDONLY           0
 #define O_WRONLY           1

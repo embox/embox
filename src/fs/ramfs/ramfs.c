@@ -12,7 +12,7 @@
 #include <string.h>
 #include <errno.h>
 #include <fs/ramfs.h>
-#include <fs/fs.h>
+#include <fs.h>
 #include <fs/vfs.h>
 #include <linux/init.h>
 #include <util/array.h>

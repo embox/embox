@@ -30,8 +30,8 @@
 #define DFS_ERRMISC		0xffffffff	/* generic error */
 
 /* File access modes */
-#define DFS_READ		1			/* read-only */
-#define DFS_WRITE		2			/* write-only */
+//#define DFS_READ		1			/* read-only */
+//#define DFS_WRITE		2			/* write-only */
 
 /* Miscellaneous constants */
 #define SECTOR_SIZE		512		/* sector size in bytes */
@@ -389,7 +389,7 @@ int fatfs_partition (void *fdes);
 extern int fat_main(const void *name);
 
 /*
- *	Write a root directory to the filesistem
+ *	Write a root directory into the filesistem
  */
 int fatfs_root_create(void *fdesc);
 

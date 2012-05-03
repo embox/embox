@@ -9,10 +9,10 @@
 #ifndef FS_NODE_H_
 #define FS_NODE_H_
 
-#include <fs/fs.h>
+#include <fs.h>
 #include <util/tree.h>
 
-#define IS_DIRECTORY    0x10
+#define ATTR_DIRECTORY    0x10
 
 typedef struct node {
 	const char            name[CONFIG_MAX_LENGTH_FILE_NAME];

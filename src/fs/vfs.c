@@ -36,7 +36,7 @@ static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 	return NULL;
 }
 
-static int nip_tail(char *head, char *tail) {
+int nip_tail(char *head, char *tail) {
 	char *p_tail;
 	char *p;
 
@@ -57,7 +57,7 @@ static int nip_tail(char *head, char *tail) {
 	return 0;
 }
 
-static int increase_tail(char *head, char *tail) {
+int increase_tail(char *head, char *tail) {
 	char *p_tail;
 
 		p_tail = head + strlen(head);
@@ -116,57 +116,6 @@ node_t *vfs_add_path(const char *path, node_t *parent) {
 	}
 
 	return NULL;
-}
-
-#define LAST  0x01
-node_t *vfs_create_filechain(const char *path, int is_file){
-	int count_dir;
-	file_create_param_t param;
-	fs_drv_t *drv;
-	node_t *node, *new_node;
-	char tail[CONFIG_MAX_LENGTH_FILE_NAME];
-
-	count_dir = 0;
-	tail[0] = '\0';
-	strcpy (param.path, path);
-
-	/* find last node in the path */
-	do {
-		if (nip_tail (param.path, tail)) {
-			return NULL;
-		}
-		count_dir ++;
-	} while (NULL == (node = vfs_find_node(param.path, NULL)));
-	/* check drv of parents */
-	drv = node->fs_type;
-	if (NULL == drv->fsop->create_file) {
-		LOG_ERROR("fsop->create_file is NULL handler\n");
-		return NULL;
-	}
-
-	/* add one directory and assign the parameters of the parent */
-	do {
-		increase_tail (param.path, tail);
-
-		if (NULL == (new_node = vfs_add_path (param.path, NULL))) {
-			return NULL;
-		}
-
-		new_node->properties = IS_DIRECTORY;
-		if ((LAST == count_dir) && is_file) {
-			new_node->properties &= ~IS_DIRECTORY;
-		}
-
-		param.node = (void *) new_node;
-		param.parents_node = (void *) node;
-		drv->fsop->create_file ((void *)&param);
-
-		node = new_node;
-		count_dir--;
-
-	} while (0 < count_dir);
-
-	return node;
 }
 
 int vfs_del_leaf(node_t *node) {

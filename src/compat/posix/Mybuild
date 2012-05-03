@@ -4,6 +4,7 @@ module LibPosix {
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "exec.c",
 		"file.c",
+		"file_op.c",
 		"fs.c",
 		"fork.c",
 		"getopt.c",

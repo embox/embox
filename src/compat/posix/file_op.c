@@ -9,18 +9,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <err.h>
+#include <fcntl.h>
+#include <file_op.h>
 #include <lib/list.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
-#include <util/array.h>
-#include <err.h>
-#include <fs/file.h>
-
 #include <fs/file_desc.h>
+#include <util/array.h>
+
 #include <kernel/prom_printf.h>
 
-#define IS_FILE  0x01
 FILE *fopen(const char *path, const char *mode) {
 	node_t *nod;
 	fs_drv_t *drv;
@@ -33,11 +33,14 @@ FILE *fopen(const char *path, const char *mode) {
 			return NULL;
 		}
 
-		if (NULL == (nod = vfs_create_filechain(path, IS_FILE))) {
+		if (-1 == creat(path, 0)) {
 			errno = -EINVAL;
 			return NULL;
 		}
 
+		if (NULL == (nod = vfs_find_node(path, NULL))) {
+			return NULL;
+		}
 	}
 	/* check permissions */
 
@@ -115,7 +118,7 @@ int fclose(FILE *file) {
 	}
 
 	desc = (struct file_desc *)file;
-	desc->ops->fclose(desc);;
+	desc->ops->fclose(desc);
 	file_desc_free(desc);
 
 	return 0;

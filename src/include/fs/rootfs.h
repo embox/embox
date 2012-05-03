@@ -30,7 +30,7 @@ typedef FILE_INFO *(*FS_FILE_ITERATOR)(FILE_INFO *file_info);
 
 typedef FS_FILE_ITERATOR (*FS_GETFILELISTITERATOR_FUNC) (void);
 
-#include <fs/file.h>
+#include <file_op.h>
 
 extern node_t *root_fs_get_node(void);
 

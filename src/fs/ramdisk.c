@@ -11,8 +11,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
+#include <fs.h>
 #include <fs/ramfs.h>
-#include <fs/fs.h>
 #include <fs/vfs.h>
 #include <fs/node.h>
 #include <fs/ramdisk.h>

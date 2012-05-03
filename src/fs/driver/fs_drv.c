@@ -13,7 +13,7 @@
 #include <mem/objalloc.h>
 #include <embox/unit.h>
 #include <util/array.h>
-#include <fs/fs.h>
+#include <fs.h>
 #include <fs/driver_registry.h>
 
 EMBOX_UNIT_INIT(unit_init);

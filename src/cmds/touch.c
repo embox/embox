@@ -6,6 +6,7 @@
  * @author Andrey Gazukin
  */
 #include <embox/cmd.h>
+#include <fcntl.h>
 #include <getopt.h>
 #include <fs/vfs.h>
 
@@ -29,7 +30,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 1) {
-		vfs_create_filechain(argv[argc - 1], 0x01);
+		creat(argv[argc - 1], 0);
 	}
 
 	return 0;

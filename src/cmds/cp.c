@@ -58,6 +58,8 @@ static int exec(int argc, char **argv) {
 		return -1;
 	}
 
+	lseek(dst_file, 0, SEEK_SET);
+
 	// buf optimized for whole block write
 	bytesread = 0;
 	while ((bytesread = read(src_file, buf, CONFIG_PAGE_SIZE)) > 0) {
@@ -67,8 +69,10 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	/*if (!fsync(dst_path))
-		return -1; */
+	if (fsync(dst_file))
+		return -1;
 
+	close(src_file);
+	close(dst_file);
 	return 0;
 }

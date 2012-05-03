@@ -10,7 +10,7 @@
 #include <kernel/thread/api.h>
 #include <mem/objalloc.h>
 #include <kernel/task.h>
-#include <fs/file.h>
+#include <file_op.h>
 #include "index_desc.h"
 
 #include <embox/unit.h>
