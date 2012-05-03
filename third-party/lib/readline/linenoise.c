@@ -204,6 +204,7 @@ static int linenoise_prompt(int fd, char *buf, size_t buflen, const char *prompt
 	compl_cnt = 0;
 
         switch(c) {
+	case '\n':
         case 13:    /* enter */
 	    printf("\n");
 	    buf[len++] = '\n';
