@@ -60,9 +60,9 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 			return NULL;
 		}
 
-		new_node->properties = ATTR_DIRECTORY;
+		new_node->properties = DIRECTORY_NODE_TYPE;
 		if ((LAST_IN_PATH == count_dir) && (FILE_NODE_TYPE == node_type)) {
-			new_node->properties &= ~ATTR_DIRECTORY;
+			new_node->properties &= ~DIRECTORY_NODE_TYPE;
 		}
 
 		param.node = (void *) new_node;
@@ -75,34 +75,6 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 	} while (0 < count_dir);
 
 	return node;
-}
-
-
-int remove(const char *pathname) {
-	node_t *nod;
-	fs_drv_t *drv;
-
-	if (NULL == (nod = vfs_find_node(pathname, NULL))) {
-		errno = -ENOENT;
-		return -1;
-	}
-
-	drv = nod->fs_type;
-	if (NULL == drv->fsop->delete_file) {
-		errno = -EINVAL;
-		LOG_ERROR("fsop->delete_file is NULL handler\n");
-		return -1;
-	}
-
-	return drv->fsop->delete_file (pathname);
-}
-
-int unlink(const char *pathname) {
-	/*node_t *nod;
-	fs_drv_t *drv;
-	FILE *file;
-	struct file_desc *desc;*/
-	return 0;
 }
 
 int creat(const char *pathname, mode_t mode) {
@@ -143,8 +115,49 @@ int mkdir(const char *pathname, mode_t mode) {
 	return 0;
 }
 
+int remove(const char *pathname) {
+	node_t *node;
+	fs_drv_t *drv;
+
+	if (NULL == (node = vfs_find_node(pathname, NULL))) {
+		errno = -ENOENT;
+		return -1;
+	}
+
+	drv = node->fs_type;
+	if (NULL == drv->fsop->delete_file) {
+		errno = -EINVAL;
+		LOG_ERROR("fsop->delete_file is NULL handler\n");
+		return -1;
+	}
+
+	if (DIRECTORY_NODE_TYPE == (node->properties & DIRECTORY_NODE_TYPE)) {
+		return rmdir(pathname);
+	}
+	else {
+		return unlink(pathname);
+	}
+}
+
+/* TODO */
+int unlink(const char *pathname) {
+	node_t *node;
+	fs_drv_t *drv;
+
+	node = vfs_find_node(pathname, NULL);
+	drv = node->fs_type;
+
+	return drv->fsop->delete_file (pathname);
+}
+
 int rmdir(const char *pathname) {
-	return remove(pathname);
+	node_t *node;
+	fs_drv_t *drv;
+
+	node = vfs_find_node(pathname, NULL);
+	drv = node->fs_type;
+
+	return drv->fsop->delete_file (pathname);
 }
 
 int fstat(const char *path, stat_t *buf) {

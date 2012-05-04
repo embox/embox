@@ -33,7 +33,7 @@ typedef struct fat_fs_description_head {
 	fat_fs_description_t desc;
 } fat_fs_description_head_t;
 
-static fat_fs_description_head_t fat_fs_pool[CONFIG_QUANTITY_RAMDISK];
+static fat_fs_description_head_t fat_fs_pool[QUANTITY_RAMDISK];
 static LIST_HEAD(fat_free_fs);
 
 #define param_to_head_fs(fs_param) \
@@ -290,7 +290,7 @@ static int fatfs_mount(void *par) {
 		if (NULL == (dir_node = vfs_add_path (params->dir, NULL))) {
 			return -ENODEV;/*device not found*/
 		}
-		dir_node->properties = ATTR_DIRECTORY;
+		dir_node->properties = DIRECTORY_NODE_TYPE;
 	}
 
 	dev_fd = (fat_file_description_t *) dev_node->attr;
@@ -316,7 +316,7 @@ static int fatfs_create(void *par) {
 	node = (node_t *)param->node;
 	parents_node = (node_t *)param->parents_node;
 
-	if (ATTR_DIRECTORY == (node->properties & ATTR_DIRECTORY)) {
+	if (DIRECTORY_NODE_TYPE == (node->properties & DIRECTORY_NODE_TYPE)) {
 		node_quantity = 3; /* need create . and .. directory */
 	}
 	else {
@@ -1522,7 +1522,7 @@ int fatfs_create_file(void *par) {
 	temp = 0;
 	fat_set_fat_(fd, sector_buff, &temp, fileinfo->cluster, cluster);
 
-	if (ATTR_DIRECTORY == (node->properties & ATTR_DIRECTORY)) {
+	if (ATTR_DIRECTORY == (node->properties & DIRECTORY_NODE_TYPE)) {
 		/* create . and ..  files of this catalog */
 		fatfs_set_direntry(di.currentcluster, fileinfo->cluster);
 		cluster = fileinfo->volinfo->dataarea +
@@ -1907,6 +1907,8 @@ uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
 	uint32_t result = DFS_OK;
 	uint32_t sector;
 	uint32_t byteswritten;
+	uint32_t lastcluster, nextcluster;
+	uint32_t clastersize;
 	p_file_info_t fileinfo;
 	fat_file_description_t *fd;
 
@@ -1920,6 +1922,7 @@ uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
 
 	remain = len;
 	*successcount = 0;
+	clastersize = fileinfo->volinfo->secperclus * SECTOR_SIZE;
 
 	while (remain && result == DFS_OK) {
 		/*
@@ -1930,8 +1933,7 @@ uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
 		 */
 		sector = fileinfo->volinfo->dataarea +
 		  ((fileinfo->cluster - 2) * fileinfo->volinfo->secperclus) +
-		  div(div(fileinfo->pointer,fileinfo->volinfo->secperclus *
-				  SECTOR_SIZE).rem, SECTOR_SIZE).quot;
+		  div(div(fileinfo->pointer, clastersize).rem, SECTOR_SIZE).quot;
 
 		/* Case 1 - File pointer is not on a sector boundary */
 		if (div(fileinfo->pointer, SECTOR_SIZE).rem) {
@@ -2034,11 +2036,8 @@ uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
 		*successcount += byteswritten;
 
 		/* check to see if we stepped over a cluster boundary */
-		if (div(fileinfo->pointer - byteswritten,
-				fileinfo->volinfo->secperclus * SECTOR_SIZE).quot !=
-				div(fileinfo->pointer, fileinfo->volinfo->secperclus *
-						SECTOR_SIZE).quot) {
-		  	uint32_t lastcluster;
+		if (div(fileinfo->pointer - byteswritten, clastersize).quot !=
+				div(fileinfo->pointer, clastersize).quot) {
 
 		  	/* We've transgressed into another cluster. If we were already
 		  	 * at EOF, we need to allocate a new cluster.
@@ -2086,6 +2085,43 @@ uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
 			/* No else clause is required. */
 		}
 	}
+	    /* If cleared, then released to mark the clusters*/
+		if(fileinfo->filelen > fileinfo->pointer) {
+			if (div(fileinfo->filelen, clastersize).quot !=
+				div(fileinfo->pointer, clastersize).quot) {
+
+				byteswritten = 0;
+				nextcluster = fat_get_fat_(fd, p_scratch,
+						&byteswritten, fileinfo->cluster);
+
+				/* Mark last cluster as end of chain */
+				switch(fileinfo->volinfo->filesystem) {
+					case FAT12:		lastcluster = 0xff8;	break;
+					case FAT16:		lastcluster = 0xfff8;	break;
+					case FAT32:		lastcluster = 0x0ffffff8;	break;
+					default:		return DFS_ERRMISC;
+				}
+				fat_set_fat_(fd, p_scratch, &byteswritten,
+						fileinfo->cluster, lastcluster);
+
+				/* Now follow the cluster chain to free the file space */
+				while (!((fileinfo->volinfo->filesystem == FAT12 &&
+						nextcluster >= 0x0ff7) ||
+						(fileinfo->volinfo->filesystem == FAT16 &&
+						nextcluster >= 0xfff7) ||
+						(fileinfo->volinfo->filesystem == FAT32 &&
+						nextcluster >= 0x0ffffff7))) {
+					lastcluster = nextcluster;
+
+					nextcluster = fat_get_fat_(fd, p_scratch,
+							&byteswritten, nextcluster);
+
+					fat_set_fat_(fd, p_scratch, &byteswritten, lastcluster, 0);
+				}
+
+			}
+		}
+
 		fileinfo->filelen = fileinfo->pointer;
 
 		/* Update directory entry */

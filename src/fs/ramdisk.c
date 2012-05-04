@@ -30,7 +30,7 @@ typedef struct ramdisk_params_head {
 	ramdisk_params_t param;
 } ramdisk_params_head_t;
 
-static ramdisk_params_head_t ramdisk_pool[CONFIG_QUANTITY_RAMDISK];
+static ramdisk_params_head_t ramdisk_pool[QUANTITY_RAMDISK];
 static LIST_HEAD(ramdisk_free);
 
 #define param_to_head(fparam) \
@@ -98,7 +98,7 @@ ramdisk_params_t *ramdisk_get_param(char *name) {
 	node_t *ramdisk_node;
 
 	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
-		return NULL;/*file already exist*/
+		return NULL;
 	}
 	return (ramdisk_params_t *) ramdisk_node->attr;
 }
