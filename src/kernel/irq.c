@@ -106,7 +106,7 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 
 	assert(interrupt_nr_valid(interrupt_nr));
 
-	trace_point("irq dispatch");
+	trace_point("interrupt");
 
 	ipl = ipl_save();
 	{

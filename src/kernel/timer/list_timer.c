@@ -8,6 +8,7 @@
  */
 #include <lib/list.h>
 #include <kernel/timer.h>
+#include <profiler/tracing/trace.h>
 
 static LIST_HEAD(sys_timers_list);
 
@@ -26,6 +27,7 @@ void timer_strat_sched(void) {
 	list_for_each_safe(tmp, tmp2, &sys_timers_list) {
 		tmr = (sys_timer_t*) tmp;
 		if (0 == tmr->cnt--) {
+			trace_point("timer tick");
 			tmr->handle(tmr, tmr->param);
 			tmr->cnt = tmr->load;
 		}

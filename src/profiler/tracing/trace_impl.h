@@ -49,29 +49,6 @@ static inline void __tracepoint_handle(struct __trace_point *p) {
 	};                                                   \
 	ARRAY_SPREAD_ADD(__trace_blocks_array, &tb_name);  \
 
-#define __trace_block_enter(tb_pointer) \
-	({ \
-			if (trace_point_get_value((tb_pointer)->begin) == 0) { \
-				trace_point_set((tb_pointer)->begin); \
-			} \
-			__tracepoint_handle((tb_pointer)->begin);\
-	})
-
-#define __trace_block_leave(tb_pointer) \
-	({ \
-			if (trace_point_get_value((tb_pointer)->end) == 0) { \
-				trace_point_set((tb_pointer)->end); \
-			} \
-			__tracepoint_handle((tb_pointer)->end);                              \
-	})
-
-#define __trace_block_diff(tb_pointer) \
-	({ \
-		int a = trace_point_get_value((tb_pointer)->begin);     \
-		int b = trace_point_get_value((tb_pointer)->end);       \
-		a - b;                                                \
-	})
-
 #define __tp_ref(__name) \
 	({                                                        \
 		static struct __trace_point __tp = {                           \

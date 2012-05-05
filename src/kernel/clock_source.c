@@ -16,6 +16,7 @@
 #include <util/dlist.h>
 #include <mem/misc/pool.h>
 
+#include <profiler/tracing/trace.h>
 #include <kernel/clock_source.h>
 
 POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER,clocks_quantity));
@@ -38,6 +39,7 @@ static struct clock_source_head *clock_source_find(struct clock_source *cs) {
 
 int clock_source_register(struct clock_source *cs) {
 	struct clock_source_head *csh;
+	trace_point("reg clock");
 
 	if (!cs) {
 		return -EINVAL;
