@@ -86,13 +86,7 @@ define class-ModuleInstance
 		$(get-field depends))
 
 	$(setter depends,
-		$(if $(filter +,$2),
-			$(for arg <- $1,
-				$(if $(filter $(arg),$(get-field depends)),
-					,
-					$(set-field+ depends,$(arg)))),
-			$(set-field depends,$1)))
-
+		$(call incrFieldSetter,depends,$1,$2))
 	# PROTECTED REGION END
 
 	# Reference 'contains' [0..*]: bidirectional, derived.
@@ -104,12 +98,7 @@ define class-ModuleInstance
 		$(get-field contains))
 
 	$(setter contains,
-		$(if $(filter +,$2),
-			$(for arg <- $1,
-				$(if $(filter $(arg),$(get-field contains)),
-					,
-					$(set-field+ contains,$(arg)))),
-			$(set-field contains,$1)))
+		$(call incrFieldSetter,contains,$1,$2))
 
 	# PROTECTED REGION END
 

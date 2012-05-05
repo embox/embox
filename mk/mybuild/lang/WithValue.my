@@ -1,0 +1,7 @@
+
+package mybuild.lang
+
+annotation WithValueNumber {
+	string name
+	number value
+}
