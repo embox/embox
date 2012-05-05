@@ -44,10 +44,21 @@ endef
 #   - reference 'type'
 #   - reference 'dependent'
 #   - reference 'depends'
+#   - reference 'contains'
+#   - reference 'contained'
 #   - reference 'options'
 #   - reference 'afterDepends'
 #   - reference 'includeMember'
 #
+define incrFieldSetter
+	$(if $(filter +,$3),
+		$(for arg <- $2,
+			$(if $(filter $(arg),$(get-field $1)),
+				,
+				$(set-field+ $1,$(arg)))),
+		$(set-field depends,$2))
+endef
+
 define class-ModuleInstance
 	# Extends 'EObject' class (implicitly).
 	$(eobject Build_ModuleInstance,
@@ -65,9 +76,46 @@ define class-ModuleInstance
 	$(eobject-reference Build_ModuleInstance_dependent,
 		dependent,ModuleInstance,depends,changeable many)
 
-	# Property 'depends... : ModuleInstance'.
-	$(eobject-reference Build_ModuleInstance_depends,
-		depends,ModuleInstance,dependent,changeable many)
+	# Reference 'depends' [0..*]: bidirectional, derived.
+	$(property depends... : ModuleInstance)
+	# PROTECTED REGION ID(Build_ModuleInstance_depends) ENABLED START
+
+	$(field depends... : ModuleInstance)
+
+	$(getter depends,
+		$(get-field depends))
+
+	$(setter depends,
+		$(if $(filter +,$2),
+			$(for arg <- $1,
+				$(if $(filter $(arg),$(get-field depends)),
+					,
+					$(set-field+ depends,$(arg)))),
+			$(set-field depends,$1)))
+
+	# PROTECTED REGION END
+
+	# Reference 'contains' [0..*]: bidirectional, derived.
+	$(property contains... : ModuleInstance)
+	# PROTECTED REGION ID(Build_ModuleInstance_contains) ENABLED START
+	$(field contains... : ModuleInstance)
+
+	$(getter contains,
+		$(get-field contains))
+
+	$(setter contains,
+		$(if $(filter +,$2),
+			$(for arg <- $1,
+				$(if $(filter $(arg),$(get-field contains)),
+					,
+					$(set-field+ contains,$(arg)))),
+			$(set-field contains,$1)))
+
+	# PROTECTED REGION END
+
+	# Property 'contained : ModuleInstance'.
+	$(eobject-reference Build_ModuleInstance_contained,
+		contained,ModuleInstance,contains,changeable)
 
 	# Property 'options... : OptionInstance'.
 	$(eobject-reference Build_ModuleInstance_options,

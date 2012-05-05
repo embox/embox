@@ -14,9 +14,15 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="ecore:EClass myfile.ecore#//ModuleType"
         resolveProxies="false"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="dependent" upperBound="-1"
-        eType="#//ModuleInstance" eOpposite="#//ModuleInstance/depends"/>
+        eType="#//ModuleInstance" resolveProxies="false" eOpposite="#//ModuleInstance/depends"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="depends" upperBound="-1"
-        eType="#//ModuleInstance" eOpposite="#//ModuleInstance/dependent"/>
+        eType="#//ModuleInstance" volatile="true" transient="true" derived="true"
+        resolveProxies="false" eOpposite="#//ModuleInstance/dependent"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="contains" upperBound="-1"
+        eType="#//ModuleInstance" volatile="true" transient="true" derived="true"
+        resolveProxies="false" eOpposite="#//ModuleInstance/contained"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="contained" eType="#//ModuleInstance"
+        resolveProxies="false" eOpposite="#//ModuleInstance/contains"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
         eType="#//OptionInstance" containment="true" eOpposite="#//OptionInstance/module"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="afterDepends" upperBound="-1"

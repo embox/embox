@@ -539,10 +539,17 @@ define class-Mybuild
 	$(method instanceClosure,
 		$(for thisInst<-$1,
 			mod <- $(get thisInst->type),
-			dep <- $(get mod->depends),
+			depMember <- $(get mod->dependsMembers),
+			dep <- $(get depMember->modules),
 			was <- was$(map-get moduleInstanceStore/$(dep)),
 			depInst <- $(invoke moduleInstance,$(dep)),
-			$(if $(filter $(depInst),$(get thisInst->depends)),,
+
+			$(if $(call getAnnotation,$(get depMember->annotations),mybuild.lang.Include),
+				$(if $(get depInst->contained),
+					$(call __addIssue,$(thisInst),error,$(get dep->qualifiedName) \
+						contains in several modules: $(get mod->qualifiedName) \
+						$(get $(get $(get depInst->contained).type).qualifiedName)),
+					$(set+ thisInst->contains,$(depInst))),
 				$(set+ thisInst->depends,$(depInst)))
 
 			$(if $(filter was,$(was)),
