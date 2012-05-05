@@ -8,6 +8,7 @@ module core {
 
 	depends embox.arch.context
 
+	option number thread_stack_size=8192
 }
 
 module sched {
