@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.net.socket
-
 @Cmd(name = "httpd",
 	help = "Start HTTP server",
 	man = '''
@@ -10,14 +8,18 @@ import embox.net.socket
 		SYNOPSIS
 			httpd address
 		DESCRIPTION
-			Start HTTP server on `address`
+			Start HTTP server
 		EXAMPLES
-			httpd 0.0.0.0
+			httpd
 			After that try connect to it from web browser
 		AUTHORS
 			Ilia Vaprol
 	''')
 module httpd {
 	source "httpd.c"
-	depends socket
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.net.socket
+	depends embox.fs.core
 }

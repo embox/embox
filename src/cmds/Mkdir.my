@@ -1,21 +1,21 @@
 package embox.cmd
 
-@Cmd(name = "md5sum",
-	help = "Compute and check MD5 message digest",
+@Cmd(name = "mkdir",
+	help = "Make directories",
 	man = '''
 		NAME
-			md5sum - compute and check MD5 message digest
+			mkdir - create a directory
 		SYNOPSIS
-			md5sum [FILE]
+			mkdir  directory_name
 		DESCRIPTION
-			Print MD5 (128-bit) checksums.
+			mkdir is used to create a directory
 		AUTHORS
 			Nikolay Korotky
 	''')
-module md5sum {
+module mkdir {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "md5sum.c"
+	source "mkdir.c"
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix

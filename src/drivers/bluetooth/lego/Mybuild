@@ -11,7 +11,6 @@ module usart {
 	option number rts_pin = 24
 	@Type("pin") @Unique
 	option number cts_pin = 25
-
 	@Type("pin") @Unique
 	option number cmd_pin = 27
 	@Type("pin") @Unique
@@ -26,7 +25,9 @@ module usart {
 
 module blue_core extends embox.driver.Bluetooth {
 	source "blue_core4.c"
+
 	depends usart
-	depends embox.pnet.pack.PnetPackSimple
+	depends embox.driver.Bluetooth
+	depends embox.lib.LibC
 }
 

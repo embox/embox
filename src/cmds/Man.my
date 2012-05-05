@@ -13,6 +13,11 @@ package embox.cmd
 			Nikolay Korotky
 	''')
 module man {
+	/* FIXME:
+	 * 1.it depends from embox.framework.cmd (called from man.c)
+	 */
 	source "man.c"
+
+	depends embox.lib.LibC
 }
 

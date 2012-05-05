@@ -10,7 +10,7 @@
 #include <kernel/panic.h>
 #include <kernel/irq.h>
 
-void int0301HandlerHack(pt_regs_t*); // todo: A HACK! See http://code.google.com/p/embox/issues/detail?id=358
+//void int0301HandlerHack(pt_regs_t*); // todo: A HACK! See http://code.google.com/p/embox/issues/detail?id=358
 
 void exception_handler(pt_regs_t *st) {
    if (3 == st -> trapno || 1 == st -> trapno) {

@@ -13,6 +13,6 @@ package embox.cmd
 module lua {
 	@IncludePath("$(THIRDPARTY_DIR)/lua")
 	source "lua.c"
+
 	depends org.lua.lua_core
-	depends org.lua.lua_lib
 }

@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "netstat",
 	help = "Print network connections, interface statics",
 	man = '''
@@ -14,5 +12,8 @@ module netstat {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "netstat.c"
-	depends LibPosix
+
+	depends embox.lib.LibC
+	depends embox.net.tcp
+	depends embox.net.udp
 }

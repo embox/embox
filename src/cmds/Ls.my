@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "ls",
 	help = "List directory contents",
 	man = '''
@@ -26,7 +24,9 @@ module ls {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ls.c"
 
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
 	depends embox.fs.core
-	depends LibPosix
+	depends embox.util.LibUtil
 }
 

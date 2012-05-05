@@ -11,4 +11,5 @@ module main {
 	depends embox.arch.interrupt
 	depends embox.arch.cpu
 	depends embox.driver.diag.diag_api
+	depends embox.arch.x86.kernel.arch
 }

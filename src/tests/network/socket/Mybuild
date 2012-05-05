@@ -3,12 +3,14 @@ package embox.test.network.socket
 
 module inet_socket_test {
 	source "inet_socket_test.c"
+
 	depends embox.net.socket
-	depends embox.net.af_inet
+	depends embox.compat.posix.LibPosix
 }
 
 module packet_socket_test {
 	source "packet_socket_test.c"
+
 	depends embox.net.socket
-	depends embox.net.af_packet
+	depends embox.compat.posix.LibPosix
 }

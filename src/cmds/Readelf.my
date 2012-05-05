@@ -1,0 +1,29 @@
+package embox.cmd
+
+@Cmd(name = "readelf",
+	help = "Display information about the contents of ELF format files",
+	man = '''
+		NAME
+			readelf - shows information about ELF binaries
+		SYNOPSIS
+			readelf [-hSlrs] <filename>
+		DESCRIPTION
+			This program shows various information from ELF file
+		OPTIONS
+			-h 	 Display the ELF file header
+			-S 	 Display the sections header
+			-l 	 Display the program headers
+			-r 	 Display the relocations
+			-s 	 Display the symbol table
+		AUTHORS
+			Anatoly Trosinenko, Aleksandr Kirov, Nikolay Korotky
+	''')
+module readelf {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "readelf.c"
+
+	depends embox.lib.LibC
+	depends embox.fs.core
+	depends embox.lib.ElfLib
+}

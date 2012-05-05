@@ -8,7 +8,6 @@
  * 	- implement ping through raw socket.
  * 	- major refactoring
  * @author Ilia Vaprol
- *
  * @author Daria Dzendzik
  */
 

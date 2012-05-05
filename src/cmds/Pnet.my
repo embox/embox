@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "pnet",
 	help = "Util for PNET configuration",
 	man = '''
@@ -84,11 +82,17 @@ import embox.compat.posix.LibPosix
 		AUTHORS
 			Alexander Kalmuk
 	''')
-
 module pnet {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "pnet.c"
-	depends LibPosix
+
+	depends embox.lib.LibC
 	depends embox.pnet.core
+	depends embox.pnet.node.linux_dev
+	depends embox.mem.heap_api
+	depends embox.pnet.node.skbuff.matcher
+	depends embox.net.util
+	depends embox.compat.posix.LibPosix
+	depends embox.net.dev
 }

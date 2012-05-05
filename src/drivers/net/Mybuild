@@ -12,6 +12,10 @@ module ne2k_pci {
 	source "ne2k_pci.c"
 	depends embox.kernel.irq
 	depends embox.driver.pci
+	depends embox.net.core
+	depends embox.lib.LibC
+	depends embox.net.eth
+	depends embox.net.dev
 }
 
 module xemaclite {

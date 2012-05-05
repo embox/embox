@@ -9,7 +9,6 @@
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <fs/rootfs.h>
-#include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <lib/list.h>
 #include <cpio.h>
@@ -22,7 +21,7 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: mount [-h] src dir\n");
+	printf("Usage: mount [-h] dev dir\n");
 }
 
 static int mount_dev(char *dev, char *dir) {

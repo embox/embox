@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "ifconfig",
 	help = "Configure a network interface",
 	man = '''
@@ -48,6 +46,10 @@ module ifconfig {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ifconfig.c"
 
+	depends embox.lib.LibC
+	depends embox.net.util
 	depends embox.net.core
-	depends LibPosix
+	depends embox.compat.posix.LibPosix
+	depends embox.net.eth
+	depends embox.net.af_inet
 }

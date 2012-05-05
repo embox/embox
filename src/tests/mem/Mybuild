@@ -2,24 +2,31 @@ package embox.test.mem
 
 module objalloc {
 	source "objalloc.c"
+
 	depends embox.mem.objalloc
 }
 
 module page {
 	source "page.c"
+
 	depends embox.mem.page_api
 }
 
 module heap {
 	source "heap.c"
+
+	depends embox.lib.LibC
 	depends embox.mem.heap_api
 }
 
 module pool {
 	source "pool.c"
+
+	depends embox.mem.pool
 }
 
 module slab {
 	source "slab.c"
+
 	depends embox.mem.slab
 }

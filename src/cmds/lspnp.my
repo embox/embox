@@ -1,8 +1,29 @@
-
 package embox.cmd
 
+@Cmd(name = "lspnp",
+	help = "Show list of plug and play devices",
+	man = '''
+		NAME
+			lspnp - show list of plug and play devices
+		SYNOPSIS
+			lspnp [-b <bus_type>] [-n <dev_id>]
+		OPTIONS
+			-b bus_type  - type of the bus of P&P device.
+				Possible values: ahbm  - AHB bus, master
+					ahbsl - AHB bus, slave
+					apb   - APB bus
+					all   - AHB&APB buses
+				by default: all
+			-n dev_id    - number of required device.
+		AUTHORS
+			Alexandr Batyukov
+	''')
 module lspnp {
     @IncludePath("$(CONF_DIR)")
 	source "lspnp.c"
+
+	depends embox.lib.LibC
 	depends embox.driver.amba_registry
+	depends embox.driver.ambapp_api
+	depends embox.compat.posix.LibPosix
 }

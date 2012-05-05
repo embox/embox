@@ -21,7 +21,6 @@ extern struct __tp * const __trace_points_array[];
 //}
 
 static int exec(int argc, char **argv) {
-
 	struct __tp *tp;
 
 	array_nullterm_foreach(tp, __trace_points_array) {

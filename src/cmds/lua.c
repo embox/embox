@@ -9,7 +9,6 @@
 #include <embox/cmd.h>
 
 #include <lua.h>
-#include <lauxlib.h>
 #include <lualib.h>
 
 EMBOX_CMD(exec);

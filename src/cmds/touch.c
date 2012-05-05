@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief Create an empty file
  *
  * @date 24.04.2012
  * @author Andrey Gazukin
@@ -13,7 +13,7 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: touch FILE ...\n");
+	printf("Usage: touch full_filename ...\n");
 }
 
 static int exec(int argc, char **argv) {

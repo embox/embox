@@ -2,5 +2,6 @@ package embox.test.profiler.tracing
 
 module trace_test {
 	source "trace_test.c"
+
 	depends embox.profiler.tracing
 }

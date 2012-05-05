@@ -81,11 +81,11 @@ static int exec(int argc, char *argv[]) {
 			}
 			break;
 		case '?':
-			printf("Invalid option `-%c'\n", optopt);
-			/* FALLTHROUGH */
+			printf("Invalid option '-%c'\n", optopt);
+			return -1;
 		case 'h':
 			print_usage();
-			/* FALLTHROUGH */
+			return 0;
 		default:
 			return 0;
 		}

@@ -3,14 +3,17 @@ package embox.cmd.sh
 abstract module shell_api { }
 
 module tish extends shell_api {
+	/* FIXME:
+	 * 1.it depends from embox.framework.cmd (called from tish.c)
+	 */
     option number prompt_len = 80
     option string prompt = "embox> "
     option string welcome_msg = "Welcome to Embox and have a lot of fun!"
 
-
     @IncludePath("$(THIRDPARTY_DIR)/include")
     source "tish.c"
 
+    depends embox.lib.LibC
     depends third_party.lib.linenoise
 }
 
@@ -18,6 +21,6 @@ module shell_start {
     @IncludePath("$(CONF_DIR)")
     source "shell_start.c"
 
-    depends embox.kernel.thread.core
     depends shell_api
+    depends embox.lib.LibC
 }

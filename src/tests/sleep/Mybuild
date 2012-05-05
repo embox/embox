@@ -3,6 +3,8 @@ package embox.test.kernel.timer
 module sleep_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "sleep_test.c"
-	depends embox.kernel.time
+
+	depends embox.kernel.timer.sys_timer
 	depends embox.kernel.timer.sleep_api
+	depends embox.kernel.thread.core
 }

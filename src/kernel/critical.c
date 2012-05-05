@@ -12,7 +12,7 @@
 #include <kernel/critical.h>
 #include <hal/ipl.h>
 
-critical_t __critical_count;
+critical_t __critical_count = 0;
 
 static struct critical_dispatcher *dispatch_queue;
 

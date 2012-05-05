@@ -3,6 +3,6 @@ package embox.test
 module critical {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "critical.c"
-	depends embox.kernel.critical
 
+	depends embox.kernel.critical
 }

@@ -27,7 +27,7 @@ static int print_info(struct clock_source* c_src, int num) {
 }
 
 static int clock_source_info(void) {
-	struct clock_source_head* ptr, *tmp;
+	struct clock_source_head *ptr, *tmp;
 
 	int k = 0;
 

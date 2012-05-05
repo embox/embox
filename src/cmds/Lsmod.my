@@ -9,5 +9,10 @@ package embox.cmd
 			Eldar Abusalimov
 	''')
 module lsmod {
+	/* FIXME:
+	 * 1.it depends from embox.framework.mod (called from lsmod.c)
+	 */
 	source "lsmod.c"
+
+	depends embox.lib.LibC
 }
