@@ -13,7 +13,6 @@
 #include <errno.h>
 #include <drivers/pci.h>
 #include <kernel/irq.h>
-#include <linux/init.h>
 #include <net/etherdevice.h>
 #include <net/in.h>
 #include <net/netdevice.h>
@@ -198,7 +197,7 @@ static const struct net_device_ops _netdev_ops = {
 	.ndo_set_mac_address = set_mac_address
 };
 
-static int __init unit_init(void) {
+static int unit_init(void) {
 	int res = 0;
 	uint32_t nic_base;
 	struct net_device *nic;
@@ -208,7 +207,7 @@ static int __init unit_init(void) {
 	pci_dev = pci_find_dev(PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8139);
 	if (pci_dev == NULL) {
 		LOG_WARN("Couldn't find RTL8139 PCI device\n");
-		return ENOERR;
+		return -ENODEV;
 	}
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;

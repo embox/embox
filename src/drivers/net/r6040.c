@@ -12,7 +12,6 @@
 #include <unistd.h>
 #include <types.h>
 #include <embox/unit.h>
-#include <linux/init.h>
 #include <net/etherdevice.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
@@ -344,7 +343,7 @@ static const struct net_device_ops r6040_netdev_ops = {
 };
 
 /* setup descriptors, start packet reception */
-static int __init r6040_init(void) {
+static int r6040_init(void) {
 	size_t i;
 	r6040_rx_disable();
 	r6040_tx_disable();

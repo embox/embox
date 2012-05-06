@@ -2,6 +2,8 @@ package embox.example.fs
 
 module devfs {
 	source "devfs.c"
-	depends embox.fs.driver.devfs
-	depends embox.fs.core
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.example
 }

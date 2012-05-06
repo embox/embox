@@ -53,7 +53,7 @@ static int exec(int argc, char **argv) {
 	/* assigns the address specified to by addr to the socket referred to
 	 * by the file descriptor sock. You can bind only one socket on port of concrete type */
 	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
-		printf("%s","sock can't bind!");
+		prom_printf("%s","sock can't bind!");
 		return -1;
 	}
 
@@ -65,7 +65,7 @@ static int exec(int argc, char **argv) {
 	while (1) {
 		bytes_read = recvfrom(sock, buf, 1024, 0, NULL, NULL);
 		buf[bytes_read] = '\0';
-		printf("%s",buf);
+		prom_printf("%s",buf);
 	}
 
 	return 0;

@@ -4,10 +4,11 @@ abstract module sleep_api { }
 abstract module timer_api { }
 
 module sys_timer {
-	source "timer.c", "clock.c"
-	depends embox.kernel.clock_source, embox.arch.clock,
-		embox.kernel.softirq
 	option number timer_quantity=20
+	source "timer.c", "clock.c"
+
+	depends embox.kernel.clock_source
+	depends embox.kernel.softirq
 }
 
 module timer extends timer_api {

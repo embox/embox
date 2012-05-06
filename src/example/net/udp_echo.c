@@ -11,13 +11,10 @@
  * @see example/net/sender.c
  */
 
-#include <stdio.h>
 #include <net/ip.h>
 #include <net/socket.h>
 #include <framework/example/self.h>
-#include <getopt.h>
 #include <kernel/prom_printf.h>
-#include <err.h>
 
 EMBOX_EXAMPLE(exec);
 
@@ -48,17 +45,13 @@ static int exec(int argc, char **argv) {
 
 	/* form address socket assign to*/
 	addr.sin_family = AF_INET;
-	//addr.sin_port = htons(0x1);
-	//addr.port_type = UDP_PORT;
 	addr.sin_port= htons(LOCAL_PORT);
-	/* we want assign to socket UDP port*/
-	addr.port_type = UDP_PORT;
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	/* assigns the address specified to by addr to the socket referred to
 	 * by the file descriptor sock. You can bind only one socket on port of concrete type */
 	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
-		printf("%s","sock can't bind!");
+		prom_printf("%s","sock can't bind!");
 		return -1;
 	}
 
@@ -74,14 +67,16 @@ static int exec(int argc, char **argv) {
 	while (1) {
 		if ((bytes_read = recvfrom(sock, buf, RECEIVE_BUF_LEN, 0,
 			 (struct sockaddr *)&addr, &sklen)) <= 0) {
-			continue;
+			break;
 		}
 
 		sendto(sock, buf, bytes_read, 0,
 			(struct sockaddr *)&addr, sklen);
 		buf[bytes_read] = '\0';
-		printf("%s",buf);
+		prom_printf("%s",buf);
 	}
+
+	close(sock);
 
 	return 0;
 }

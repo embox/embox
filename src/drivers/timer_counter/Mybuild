@@ -1,8 +1,8 @@
-
 package embox.driver
 
 module at91_tc {
-    @IncludePath("$(PLATFORM_DIR)/lego_nxt/include")
 	source "at91_timer_counter.c"
+
+	depends embox.lib.LibC
 	depends embox.kernel.irq
 }

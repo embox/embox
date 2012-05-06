@@ -14,8 +14,6 @@
 #include <drivers/serial.h>
 #include <fs/file_desc.h>
 
-#include <embox/unit.h>
-
 /**
  * UART registers
  *           +---------------------+---------------------+

@@ -10,9 +10,8 @@
  * @author Eldar Abusalimov
  */
 
-#include <assert.h>
-#include <string.h>
 #include <stdarg.h>
+#include <assert.h>
 
 #include <drivers/terminal.h>
 #include <kernel/diag.h>

@@ -22,7 +22,6 @@
 #include <errno.h>
 #include <drivers/pci.h>
 #include <kernel/irq.h>
-#include <linux/init.h>
 #include <net/etherdevice.h>
 #include <drivers/ne2k_pci.h>
 #include <net/netdevice.h>
@@ -64,7 +63,7 @@ static inline void show_packet(uint8_t *raw, uint16_t size, char *title) {
 }
 #endif
 
-static inline void ne2k_get_addr_from_prom(struct net_device *dev) {
+static void ne2k_get_addr_from_prom(struct net_device *dev) {
 	uint8_t i;
 
 	dev->addr_len = ETHER_ADDR_LEN;
@@ -88,13 +87,13 @@ static inline void ne2k_get_addr_from_prom(struct net_device *dev) {
 	}
 }
 
-/* configure board */
-static inline void ne2k_config(struct net_device *dev) {
+/* Configure board */
+static void ne2k_config(struct net_device *dev) {
 	unsigned int base_addr;
 
 	base_addr = dev->base_addr;
 
-	/*stop*/
+	/* Stop */
 	out8(E8390_PAGE0 | E8390_STOP, base_addr);
 	out8(0x49, base_addr + EN0_DCFG); /*16 bit & normal & 4fifo */
 
@@ -113,23 +112,23 @@ static inline void ne2k_config(struct net_device *dev) {
 //	out8(NESM_START_PG_RX, base_addr + EN1_CURPAG); /* set current page */
 }
 
-static inline void set_tx_count(uint16_t val, unsigned long base_addr) {
+static void set_tx_count(uint16_t val, unsigned long base_addr) {
 	/* Set how many bytes we're going to send. */
 	out8(val & 0xff, EN0_TBCR_LO + base_addr);
 	out8(val >> 8, EN0_TBCR_HI + base_addr);
 }
 
-static inline void set_rem_address(uint16_t val, unsigned long base_addr) {
+static void set_rem_address(uint16_t val, unsigned long base_addr) {
 	out8(val & 0xff, EN0_RSARLO + base_addr);
 	out8(val >> 8, EN0_RSARHI + base_addr);
 }
 
-static inline void set_rem_byte_count(uint16_t val, unsigned long base_addr) {
+static void set_rem_byte_count(uint16_t val, unsigned long base_addr) {
 	out8(val & 0xff, EN0_RCNTLO + base_addr);
 	out8(val >> 8, EN0_RCNTHI + base_addr);
 }
 
-static inline void copy_data_to_card(uint16_t dest, uint8_t *src,
+static void copy_data_to_card(uint16_t dest, uint8_t *src,
 				uint16_t len, unsigned long base_addr) {
 	out8(E8390_NODMA | E8390_PAGE0, base_addr + NE_CMD); // switch to PAGE0
 	set_rem_address(dest, base_addr);
@@ -395,7 +394,7 @@ static const struct net_device_ops _netdev_ops = {
 	.ndo_set_mac_address = set_mac_address
 };
 
-static int __init unit_init(void) {
+static int unit_init(void) {
 	int res;
 	uint32_t nic_base;
 	struct net_device *nic;
@@ -404,15 +403,15 @@ static int __init unit_init(void) {
 	//TODO: only RealTek RTL-8029 is available
 	pci_dev = pci_find_dev(PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8029);
 	if (pci_dev == NULL) {
-		LOG_WARN("Couldn't find NE2K_PCI device\n");
-		return ENOERR;
+		LOG_WARN("Couldn't find NE2000 PCI device\n");
+		return -ENODEV;
 	}
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 
 	nic = alloc_etherdev(0);
 	if (nic == NULL) {
-		LOG_ERROR("Couldn't alloc netdev for NE2K_PCI\n");
+		LOG_ERROR("Couldn't alloc netdev for NE2000 PCI\n");
 		return -ENOMEM;
 	}
 	nic->netdev_ops = &_netdev_ops;

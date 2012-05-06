@@ -6,4 +6,6 @@ module rdc_gpio {
 
 module stm32 {
 	source "stm32_gpio.c"
+
+	depends embox.lib.LibC
 }

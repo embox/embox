@@ -1,7 +1,17 @@
 package embox.driver.tty_ng
 
+/* FIXME:
+ * Unused files: vga.c
+ */
+
 module core {
 	@IncludePath("$(THIRDPARTY_DIR)/include/")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+
 	source "tty_ng.c"
-	depends embox.fs.driver.devfs
+
+	depends embox.lib.LibC
+	depends embox.kernel.task_api
+	depends embox.kernel.thread.core
+	depends embox.kernel.timer.sleep_api
 }

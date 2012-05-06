@@ -1,11 +1,9 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.video
 
-
 abstract module vga {
 }
 
 module vga_console extends vga {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "vga_console.c"
 }

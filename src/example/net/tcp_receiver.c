@@ -10,14 +10,12 @@
  *	- TCP version
  */
 
-#include <stdio.h>
 #include <string.h>
 #include <net/ip.h>
+#include <net/in.h>
 #include <net/socket.h>
 #include <framework/example/self.h>
-#include <getopt.h>
 #include <kernel/prom_printf.h>
-#include <err.h>
 
 EMBOX_EXAMPLE(exec);
 
@@ -31,12 +29,12 @@ static int exec(int argc, char **argv) {
 	char buff[1024];
 	int bytes_read;
 
-	printf("Hello. I'm tcp_receiver at %d port. I will print all received data.\n",
+	prom_printf("Hello. I'm tcp_receiver at %d port. I will print all received data.\n",
 			LISTENING_PORT);
 
 	res = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (res < 0) {
-		printf("can't create socket %d!\n", res);
+		prom_printf("can't create socket %d!\n", res);
 		return res;
 	}
 	sock = res;
@@ -47,24 +45,24 @@ static int exec(int argc, char **argv) {
 
 	res = bind(sock, (struct sockaddr *)&addr, sizeof(addr));
 	if (res < 0) {
-		printf("error at bind() %d!\n", res);
+		prom_printf("error at bind() %d!\n", res);
 		return res;
 	}
 
 	res = listen(sock, 1);
 	if (res < 0) {
-		printf("error at listen() %d!\n", res);
+		prom_printf("error at listen() %d!\n", res);
 		return res;
 	}
 
 	res = accept(sock, (struct sockaddr *)&dst, &dst_addr_len);
 	if (res < 0) {
-		printf("error at accept() %d\n", res);
+		prom_printf("error at accept() %d\n", res);
 		return res;
 	}
 	client = res;
 
-	printf("client from %s:%d was connected\n",
+	prom_printf("client from %s:%d was connected\n",
 			inet_ntoa(dst.sin_addr), ntohs(dst.sin_port));
 
 	/* read from sock, print */
@@ -74,9 +72,9 @@ static int exec(int argc, char **argv) {
 			break;
 		}
 		buff[bytes_read] = '\0';
-		printf("recv: '%s'\n", buff);
+		prom_printf("recv: '%s'\n", buff);
 		if (strncmp(buff, "quit", 4) == 0) {
-			printf("client gonna to close connection\n");
+			prom_printf("client gonna to close connection\n");
 			break;
 		}
 	}
@@ -84,7 +82,7 @@ static int exec(int argc, char **argv) {
 	close(client);
 	close(sock);
 
-	printf("Bye bye!\n");
+	prom_printf("Bye bye!\n");
 
 	return 0;
 }

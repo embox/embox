@@ -18,8 +18,6 @@
 #include <pnet/repo.h>
 #include <pnet/graph.h>
 
-#include <net/in.h>
-
 #include <framework/example/self.h>
 #include <kernel/prom_printf.h>
 EMBOX_EXAMPLE(match_example);

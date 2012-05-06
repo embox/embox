@@ -1,22 +1,30 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.interrupt
 
-module mb_intc extends embox.arch.interrupt{
-	source "mb_intc.c", "mb_intc.h"
-}
-
-module at91_aic extends embox.arch.interrupt{
+module at91_aic extends embox.arch.interrupt {
+	/* FIXME:
+	 * 1.it use irq_def_handler (called from at91_aic.c)
+	 */
 	source "at91_aic.c", "at91_aic.h"
+
+	depends embox.lib.LibC
+	depends embox.kernel.critical
+	depends embox.kernel.irq
 }
 
-module i8259 extends embox.arch.interrupt{
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
+module i8259 extends embox.arch.interrupt {
 	source "i8259.c", "i8259.h"
 }
 
-module irqmp extends embox.arch.interrupt{
+module irqmp extends embox.arch.interrupt {
 	source "irqmp.c", "irqmp.h"
+
 	depends embox.driver.ambapp_api
+	depends embox.lib.LibC
+}
+
+module mb_intc extends embox.arch.interrupt {
+	source "mb_intc.c", "mb_intc.h"
 }
 
 module no_interrupts extends embox.arch.interrupt {

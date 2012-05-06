@@ -166,7 +166,7 @@ static void *memory_allocate(size_t req_size) {
 }
 
 /*Resolve defragmentation with a next block*/
-static void defragmintation(struct block_desc *md) {
+static void defragmentation(struct block_desc *md) {
 	struct block_desc *next_md;
 
 	next_md = (void *) (((size_t) md) + md->size);
@@ -179,10 +179,10 @@ static void defragmintation(struct block_desc *md) {
 		/*Look at the next block and it is free, paste it*/
 		if (get_available(next_md)) {
 			md->size = md->size + next_md->size;
-			defragmintation(md);
+			defragmentation(md);
 		}
 	}
-	defragmintation(next_md);
+	defragmentation(next_md);
 }
 
 /* This procedure makes free busy block
@@ -203,7 +203,7 @@ static void memory_free(void *address) {
 	}
 
 	/*Resolve defragmentation*/
-	defragmintation(md);
+	defragmentation(md);
 
 	printf("NEW current_free_space 0x%x\n", (uint32_t) current_space);
 }

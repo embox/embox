@@ -2,7 +2,9 @@ package embox.example.net
 
 module loopback {
 	source "loopback.c"
+
 	depends embox.net.socket
-	depends embox.net.eth
-	depends embox.net.arp
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.example
 }
