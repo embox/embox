@@ -64,9 +64,9 @@ $(myfiles_mk) $(configfiles_mk) : | $$(@D)/.
 
 $(myfiles_mk) $(configfiles_mk) : $(MYBUILD_FILES_CACHE_DIR)/%.mk : %
 	@echo ' $(recipe_tag) $<'
-	@SCOPE=`echo '$<' | sum | cut -f 1 -d ' '`; \
-	$(MAKE) -f mk/script/mk-persist.mk ALLOC_SCOPE="p$$SCOPE" > $@ && \
-	echo '__resource-$@ := '".obj1p$$SCOPE" >> $@
+	@SCOPE=`echo '$<' | md5sum | cut -c -8`; \
+	$(MAKE) -f mk/script/mk-persist.mk ALLOC_SCOPE="@$$SCOPE" > $@ && \
+	echo '__resource-$@ := '".obj1@$$SCOPE" >> $@
 
 #
 # Linking files together.
