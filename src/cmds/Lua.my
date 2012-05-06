@@ -15,4 +15,5 @@ module lua {
 	source "lua.c"
 
 	depends org.lua.lua_core
+    depends embox.framework.LibFramework
 }

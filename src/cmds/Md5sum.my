@@ -20,4 +20,5 @@ module md5sum {
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.fs.core
+    depends embox.framework.LibFramework
 }

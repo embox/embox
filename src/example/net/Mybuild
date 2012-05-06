@@ -9,7 +9,7 @@ module checkopts {
 
 	depends embox.net.socket
 	depends embox.lib.LibC
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module httpd {
@@ -18,7 +18,7 @@ module httpd {
 	depends embox.lib.LibC
 	depends embox.net.socket
 	depends embox.compat.posix.LibPosix
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 
 	@InitFS
 	source "hello.html"
@@ -29,7 +29,7 @@ module r6040_example {
 
 	depends embox.lib.LibC
 	depends embox.driver.net.r6040
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module receiver {
@@ -37,7 +37,7 @@ module receiver {
 
 	depends embox.net.socket
 	depends embox.prom.printf
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module sender {
@@ -45,7 +45,7 @@ module sender {
 
 	depends embox.net.socket
 	depends embox.compat.posix.LibPosix
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module tcp_accepter {
@@ -54,7 +54,7 @@ module tcp_accepter {
 	depends embox.net.socket
 	depends embox.prom.printf
 	depends embox.compat.posix.LibPosix
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module tcp_connect {
@@ -63,7 +63,7 @@ module tcp_connect {
 	depends embox.net.socket
 	depends embox.prom.printf
 	depends embox.compat.posix.LibPosix
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module tcp_echo {
@@ -73,7 +73,7 @@ module tcp_echo {
 	depends embox.prom.printf
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module tcp_receiver {
@@ -83,7 +83,7 @@ module tcp_receiver {
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.prom.printf
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module tcp_sender {
@@ -93,7 +93,7 @@ module tcp_sender {
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.prom.printf
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module udp_echo {
@@ -102,5 +102,5 @@ module udp_echo {
 	depends embox.net.socket
 	depends embox.compat.posix.LibPosix
 	depends embox.prom.printf
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }

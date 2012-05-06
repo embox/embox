@@ -6,5 +6,5 @@ module critical_example {
 	depends embox.lib.LibC
 	depends embox.kernel.critical
 	depends embox.kernel.softirq
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }

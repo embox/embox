@@ -23,4 +23,5 @@ module mkfs {
 	depends embox.compat.posix.LibPosix
 	depends embox.fs.ramdisk
 	depends embox.fs.driver.repo
+    depends embox.framework.LibFramework
 }

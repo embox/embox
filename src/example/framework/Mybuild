@@ -5,5 +5,5 @@ module array_registry {
 	source "array_registry.c"
 
 	depends embox.lib.LibC
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }

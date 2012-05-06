@@ -7,4 +7,5 @@ module sleep_test {
 	depends embox.kernel.timer.sys_timer
 	depends embox.kernel.timer.sleep_api
 	depends embox.kernel.thread.core
+	depends embox.framework.LibFramework
 }

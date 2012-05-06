@@ -15,4 +15,5 @@ module lsmod {
 	source "lsmod.c"
 
 	depends embox.lib.LibC
+    depends embox.framework.LibFramework
 }

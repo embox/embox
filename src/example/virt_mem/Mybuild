@@ -7,5 +7,5 @@ module mmuprobe {
 	depends embox.compat.posix.LibPosix
 	depends embox.arch.x86.mm.mmu_map
 	depends embox.arch.x86.mm.mmu_core
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }

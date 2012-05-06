@@ -18,8 +18,6 @@
 #include <fs/ramdisk.h>
 #include <fs/fat.h>
 #include <embox/cmd.h>
-#include <embox/unit.h>
-#include <util/array.h>
 #include <mem/page.h>
 #include <cmd/mkfs.h>
 

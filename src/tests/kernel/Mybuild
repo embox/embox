@@ -4,19 +4,25 @@ package embox.test.kernel
 module irq_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "irq_test.c"
-	depends embox.kernel.irq
-}
 
-@TestFor(embox.kernel.timer.timer_api)
-module timer_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "timer_test.c"
-	depends embox.kernel.timer.timer_api
+	depends embox.kernel.irq
+	depends embox.framework.LibFramework
 }
 
 @TestFor(embox.kernel.softirq)
 module softirq_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "softirq_test.c"
+
 	depends embox.kernel.softirq
+	depends embox.framework.LibFramework
+}
+
+@TestFor(embox.kernel.timer.timer_api)
+module timer_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "timer_test.c"
+
+	depends embox.kernel.timer.timer_api
+	depends embox.framework.LibFramework
 }

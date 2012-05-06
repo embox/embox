@@ -11,12 +11,17 @@ static module LibUtil {
 	source "ring_buff.c"
 	source "sys_log.c"
 
+	depends embox.lib.LibC
 	/*requires embox.mem.iobjalloc.rt_alloc	*/
 }
 
-module 	hashtable {
-	source "hashtable.c"
-	depends embox.mem.heap_bm
+module hashtable {
 	option number hashtables_quantity=16
 	option number item_quntity=64
+
+	source "hashtable.c"
+
+	depends embox.lib.LibC
+	depends embox.mem.heap_bm
+	depends embox.mem.objalloc
 }

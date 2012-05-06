@@ -56,4 +56,5 @@ module ping {
 	depends embox.compat.posix.LibPosix
 	depends embox.net.core
 	depends embox.net.route
+    depends embox.framework.LibFramework
 }

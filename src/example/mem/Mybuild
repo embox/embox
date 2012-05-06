@@ -4,7 +4,7 @@ module boundary_markers {
 	source "boundary_markers.c"
 
 	depends embox.mem.page_api
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 //$_BRIEF-objalloc = demonstrates using of API for allocation fixed size object
@@ -13,21 +13,21 @@ module objalloc {
 
 	depends embox.lib.LibC
 	depends embox.mem.objalloc
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module page {
 	source "page.c"
 
 	depends embox.mem.page_api
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module pool {
 	source "pool.c"
 
 	depends embox.mem.pool
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module simple_alloc {
@@ -36,5 +36,5 @@ module simple_alloc {
 	source "simple_alloc.c"
 
 	depends embox.lib.LibC
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }

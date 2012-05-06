@@ -6,6 +6,7 @@ module inet_socket_test {
 
 	depends embox.net.socket
 	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 }
 
 module packet_socket_test {
@@ -13,4 +14,5 @@ module packet_socket_test {
 
 	depends embox.net.socket
 	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 }

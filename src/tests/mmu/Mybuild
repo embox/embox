@@ -2,4 +2,6 @@ package embox.test
 
 module mmu_core {
 	source "mmu_core.c"
+
+	depends embox.framework.LibFramework
 }

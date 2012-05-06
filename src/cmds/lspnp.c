@@ -11,7 +11,6 @@
 #include <getopt.h>
 #include <string.h>
 #include <stdio.h>
-#include <util/array.h>
 #include <err.h>
 
 #include <drivers/amba_pnp.h>

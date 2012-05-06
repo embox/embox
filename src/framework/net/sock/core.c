@@ -11,6 +11,7 @@
 #include <framework/mod/member/ops.h>
 #include <framework/net/sock/api.h>
 #include <net/protocol.h>
+#include <util/array.h>
 
 ARRAY_SPREAD_DEF(const struct net_sock, __net_sock_registry);
 
@@ -26,8 +27,8 @@ const struct mod_member_ops __net_sock_mod_ops = {
 static int net_sock_mod_enable(struct mod_member *mod) {
 	int ret = 0;
 
-	 net_proto_family_t *net_proto_family = ((net_sock_t *) mod->data)->net_proto_family;
-	//prom_printf("NET: initializing socket %s.%s: ", mod->mod->package->name, mod->mod->name);
+	net_proto_family_t *net_proto_family = ((net_sock_t *) mod->data)->net_proto_family;
+	prom_printf("NET: initializing socket %s.%s: ", mod->mod->package->name, mod->mod->name);
 
 	if (net_proto_family != NULL) {
 		ret = sock_register(net_proto_family);

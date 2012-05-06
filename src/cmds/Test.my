@@ -25,6 +25,6 @@ module test {
 	source "test.c"
 
 	depends embox.lib.LibC
-	depends embox.framework.test
 	depends embox.compat.posix.LibPosix
+    depends embox.framework.LibFramework
 }

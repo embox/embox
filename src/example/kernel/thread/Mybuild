@@ -11,7 +11,7 @@ module create_thread {
 	depends embox.kernel.thread.sched
 	depends embox.lib.LibC
 	depends embox.kernel.thread.core
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }
 
 module wakeup_thread {
@@ -21,5 +21,5 @@ module wakeup_thread {
 	depends embox.kernel.thread.sched
 	depends embox.kernel.thread.core
 	depends embox.kernel.timer.sleep_api
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }

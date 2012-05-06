@@ -28,5 +28,6 @@ module ls {
 	depends embox.compat.posix.LibPosix
 	depends embox.fs.core
 	depends embox.util.LibUtil
+    depends embox.framework.LibFramework
 }
 

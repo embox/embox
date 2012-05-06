@@ -5,5 +5,5 @@ module softirq {
 
 	depends embox.lib.LibC
 	depends embox.kernel.softirq
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }

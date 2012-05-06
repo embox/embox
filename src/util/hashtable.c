@@ -20,7 +20,7 @@
 
 #include <embox/unit.h>
 
-#include <module/embox/util/hashtable.h>
+//#include <module/embox/util/hashtable.h>
 
 #define CONFIG_HASHTABLES_QUANTITY     OPTION_GET(NUMBER,hashtables_quantity)
 #define CONFIG_HASHTABLE_ELEM_QUNTITY  OPTION_GET(NUMBER,item_quntity)

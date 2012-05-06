@@ -5,4 +5,5 @@ module critical {
 	source "critical.c"
 
 	depends embox.kernel.critical
+	depends embox.framework.LibFramework
 }

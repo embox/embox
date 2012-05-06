@@ -22,4 +22,5 @@ module rm {
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
+    depends embox.framework.LibFramework
 }

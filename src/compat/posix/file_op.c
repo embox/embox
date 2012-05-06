@@ -17,7 +17,6 @@
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
-#include <util/array.h>
 
 #include <kernel/prom_printf.h>
 

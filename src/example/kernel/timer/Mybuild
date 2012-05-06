@@ -6,5 +6,5 @@ module timer {
 
 	depends embox.lib.LibC
 	depends embox.kernel.timer.sys_timer
-	depends embox.framework.example
+	depends embox.framework.LibFramework
 }

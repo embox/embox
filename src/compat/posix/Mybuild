@@ -12,5 +12,6 @@ module LibPosix {
 	source "utsname.c"
 	source "wait.c"
 
+	depends embox.util.LibUtil
 	depends embox.kernel.task_api
 }

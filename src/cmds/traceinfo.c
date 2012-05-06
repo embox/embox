@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <embox/cmd.h>
 #include <util/array.h>
-#include <util/location.h>
 #include <profiler/tracing/trace.h>
 
 EMBOX_CMD(exec);

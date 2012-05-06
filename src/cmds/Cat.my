@@ -23,5 +23,6 @@ module cat {
 	depends embox.compat.posix.LibPosix
 	depends embox.fs.core
 	depends embox.prom.printf
+    depends embox.framework.LibFramework
 }
 

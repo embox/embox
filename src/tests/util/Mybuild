@@ -3,6 +3,8 @@ package embox.test.util
 module array_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "array_test.c"
+
+	depends embox.framework.LibFramework
 }
 
 module list_test {
@@ -10,6 +12,7 @@ module list_test {
 	source "list_test.c"
 
 	depends embox.lib.LibC
+	depends embox.framework.LibFramework
 }
 
 module slist_test {
@@ -18,11 +21,14 @@ module slist_test {
 
 	depends embox.util.LibUtil
 	depends embox.lib.LibC
+	depends embox.framework.LibFramework
 }
 
 module tree_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "tree_test.c"
+
+	depends embox.framework.LibFramework
 }
 
 module tree_set_test {
@@ -30,17 +36,20 @@ module tree_set_test {
 	source "tree_set_test.c"
 
 	depends embox.util.LibUtil
+	depends embox.framework.LibFramework
 }
 
 module math_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "math_test.c"
+	depends embox.framework.LibFramework
 }
 
 module ring_buff_test {
 	source "ring_buff_test.c"
 
 	depends embox.util.LibUtil
+	depends embox.framework.LibFramework
 }
 
 module hashtable_test {
@@ -48,10 +57,13 @@ module hashtable_test {
 
 	depends embox.lib.LibC
 	depends embox.util.hashtable
+	depends embox.framework.LibFramework
 }
 
 module dlist_test {
 	source "dlist_test.c"
+
+	depends embox.framework.LibFramework
 }
 
 module priority_q_test {
@@ -59,4 +71,5 @@ module priority_q_test {
 	source "priority_q_test.c"
 
 	depends embox.util.LibUtil
+	depends embox.framework.LibFramework
 }

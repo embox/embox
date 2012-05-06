@@ -1,9 +1,6 @@
 package embox.cmd
 
 module shell {
-	/* FIXME:
-	 * 1.it depends from embox.framework.cmd (called from shell.c)
-	 */
     option number prompt_len = 40
     option string prompt = "embox> "
     option string welcome_msg = "Welcome to Embox and have a lot of fun!"
@@ -15,5 +12,7 @@ module shell {
 		"console/screen_in.c", "console/screen_out.c"
 
 	depends embox.lib.LibC
+    depends embox.util.LibUtil
 	depends embox.driver.terminal
+    depends embox.framework.LibFramework
 }

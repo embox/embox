@@ -5,5 +5,6 @@ module ipl_test {
 
 	depends embox.kernel.irq
 	depends embox.arch.interrupt
+	depends embox.framework.LibFramework
 }
 
