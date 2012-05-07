@@ -3,8 +3,8 @@ package embox.net
 module eth {
 	source "eth.c"
 
-//	depends dev /* for dev.c */
-//	depends core /* for devinet.c */
-//	depends arp
+	depends dev /* for dev.c */
+	depends core /* for devinet.c */
+	depends arp
 	depends embox.lib.LibC
 }
