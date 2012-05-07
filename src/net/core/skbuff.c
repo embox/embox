@@ -17,7 +17,6 @@
 #include <net/skbuff.h>
 #include <string.h>
 #include <assert.h>
-//#include <err.h>
 
 
 POOL_DEF(skb_pool, struct sk_buff, CONFIG_QUANTITY_SKB);
@@ -74,9 +73,7 @@ struct sk_buff_head * alloc_skb_queue(void) {
 void kfree_skb(struct sk_buff *skb) {
 	ipl_t sp;
 
-	if (skb == NULL) {
-		return;
-	}
+	assert(skb);
 
 	net_buff_free(skb->head);
 
@@ -95,9 +92,7 @@ struct sk_buff * alloc_skb(unsigned int size, gfp_t priority) {
 	struct sk_buff *skb;
 	unsigned char *head;
 
-	if ((!size) || (size > (SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE))) {
-		return NULL;
-	}
+	assert((size > 0) && (size <= CONFIG_ETHERNET_V2_FRAME_SIZE));
 
 	head = net_buff_alloc();
 	if (head == NULL) {
@@ -113,9 +108,9 @@ struct sk_buff * alloc_skb(unsigned int size, gfp_t priority) {
 		return NULL;
 	}
 
-	memset(skb, 0, sizeof(struct sk_buff));
+	memset(skb, 0, sizeof *skb);
 	skb->head = head;
-	INIT_LIST_HEAD((struct list_head *) skb);
+	INIT_LIST_HEAD((struct list_head *)skb);
 	skb->mac.raw = skb->head + SK_BUF_EXTRA_HEADROOM;
 	/* Really skb->nh.raw (as a pointer) is also defined now,
 	 * because everything supports only Ethernet.
@@ -128,9 +123,8 @@ struct sk_buff * alloc_skb(unsigned int size, gfp_t priority) {
 void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk) {
 	ipl_t sp;
 
-	if ((newsk == NULL) || (list == NULL)) {
-		return;
-	}
+	assert(list != NULL);
+	assert(newsk != NULL);
 
 	sp = ipl_save();
 	list_move_tail((struct list_head *)newsk, (struct list_head *)list);
@@ -140,11 +134,12 @@ void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk) {
 struct sk_buff * skb_peek(struct sk_buff_head *list) {
 	struct sk_buff *next;
 
-	if (list == NULL) {
-		return NULL;
-	}
+	assert(list != NULL);
 
 	next = ((struct sk_buff *)list)->next;
+
+	assert(list->next != NULL);
+
 	if (next == (struct sk_buff *)list) {
 		return NULL;
 	}
@@ -155,9 +150,8 @@ struct sk_buff * skb_peek(struct sk_buff_head *list) {
 static void skb_unlink(struct sk_buff *skb, struct sk_buff_head *list) {
 	struct sk_buff *next, *prev;
 
-	if ((skb == NULL) || (list == NULL)) {
-		return;
-	}
+	assert(skb != NULL);
+	assert(list != NULL);
 
 	next = skb->next;
 	prev = skb->prev;
@@ -170,15 +164,12 @@ struct sk_buff * skb_dequeue(struct sk_buff_head *list) {
 	ipl_t sp;
 	struct sk_buff *skb;
 
-	if (list == NULL) {
-		return NULL;
-	}
+	assert(list != NULL);
 
 	sp = ipl_save();
 
 	skb = skb_peek(list);
 	if (skb != NULL) {
-
 		skb_unlink(skb, list);
 	}
 
@@ -191,9 +182,7 @@ void skb_queue_purge(struct sk_buff_head *queue) {
 	ipl_t sp;
 	struct sk_buff *skb;
 
-	if (queue == NULL) {
-		return;
-	}
+	assert(queue != NULL);
 
 	while ((skb = skb_dequeue(queue)) != NULL) {
 		kfree_skb(skb);
@@ -204,12 +193,14 @@ void skb_queue_purge(struct sk_buff_head *queue) {
 	ipl_restore(sp);
 }
 
+#if 0
 /**
  * Split buffer to skb queue
  */
 /* FIXME size must be less then CONFIG_ETHERNET_V2_FRAME_SIZE */
 struct sk_buff * buff_to_skb(unsigned char *buff, unsigned int size) {
 	struct sk_buff *skb;
+
 
 	if ((buff == NULL) || (size == 0)) {
 		return NULL;
@@ -229,6 +220,7 @@ struct sk_buff * buff_to_skb(unsigned char *buff, unsigned int size) {
 
 	return skb;
 }
+#endif
 
 static void skb_copydata(struct sk_buff *new_pack, const struct sk_buff *skb) {
 	memmove(new_pack->mac.raw, skb->mac.raw, skb->len);
@@ -249,9 +241,7 @@ static void skb_copydata(struct sk_buff *new_pack, const struct sk_buff *skb) {
 static inline struct sk_buff *skb_allocatecopydata(const struct sk_buff *skb, gfp_t priority) {
 	struct sk_buff *new_pack;
 
-	if (skb == NULL) {
-		return NULL;
-	}
+	assert(skb != NULL);
 
 	new_pack = alloc_skb(skb->len, priority);
 	if (new_pack == NULL) {

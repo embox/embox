@@ -1,10 +1,12 @@
 package embox.framework.net
 
 module pack {
+	/* FIXME:
+	 * 1.it depends from embox.net.dev
+	 */
 	/*FIXME mybuild make flags options */
     @DefineMacro("__FRAMEWORK__")
 	source "core.c"
 
 	depends embox.prom.printf
-	depends embox.net.dev
 }

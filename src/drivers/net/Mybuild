@@ -11,7 +11,7 @@ module loopback {
 module ne2k_pci {
 	source "ne2k_pci.c"
 
-	depends embox.net.core
+	depends embox.net.skbuff
 	depends embox.lib.LibC
 	depends embox.driver.pci
 	depends embox.net.eth
@@ -32,7 +32,7 @@ module xemaclite {
 	source "xilinx_emaclite.c"
 
 	depends embox.lib.LibC
-	depends embox.net.core
+	depends embox.net.skbuff
 	depends embox.net.eth
 	depends embox.kernel.irq
 	depends embox.net.dev

@@ -9,7 +9,6 @@
 #include <assert.h>
 #include <string.h>
 #include <net/inetdevice.h>
-#include <linux/init.h>
 #include <util/array.h>
 #include <err.h>
 #include <errno.h>
@@ -53,6 +52,7 @@ static int alloc_callback(struct in_device *in_dev, unsigned int type,
 	struct callback_info *cb_info;
 
 	assert(in_dev != NULL);
+	assert(callback != NULL);
 
 	indev_info = find_indev_info_entry(in_dev);
 	if (indev_info == NULL) {
@@ -78,10 +78,9 @@ struct in_device * in_dev_get(struct net_device *dev) {
 }
 
 int inet_dev_listen(struct in_device *in_dev, unsigned short type,
-			ETH_LISTEN_CALLBACK callback) {
-	if ((in_dev == NULL) || (callback == NULL)) {
-		return -EINVAL;
- 	}
+		ETH_LISTEN_CALLBACK callback) {
+	assert(in_dev != NULL);
+	assert(callback != NULL);
 	return alloc_callback(in_dev, type, callback);
 }
 
@@ -148,12 +147,11 @@ struct in_device * inet_dev_find_by_name(const char *if_name) {
 	struct inetdev_info *indev_info;
 	struct list_head *tmp;
 
-	if (if_name == NULL) {
-		return NULL;
-	}
+	assert(if_name != NULL);
 
 	list_for_each(tmp, &indev_info_list) {
 		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
+		assert(indev_info->in_dev.dev != NULL);
 		if (strncmp(if_name, indev_info->in_dev.dev->name,
 				ARRAY_SIZE(indev_info->in_dev.dev->name)) == 0) {
 			return &indev_info->in_dev;
@@ -174,9 +172,8 @@ int inet_dev_set_interface(const char *if_name, in_addr_t ipaddr,
 	struct inetdev_info *indev_info;
 	struct list_head *tmp;
 
-	if ((if_name == NULL) || (macaddr == NULL)) {
-		return -EINVAL;
-	}
+	assert(if_name != NULL);
+	assert(macaddr != NULL);
 
 	list_for_each(tmp, &indev_info_list) {
 		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
@@ -202,9 +199,7 @@ int inet_dev_set_interface(const char *if_name, in_addr_t ipaddr,
 }
 
 int inet_dev_set_ipaddr(struct in_device *in_dev, in_addr_t ipaddr) {
-	if (in_dev == NULL) {
-		return -EINVAL;
-	}
+	assert(in_dev != NULL);
 
 	in_dev->ifa_address = ipaddr;
 
@@ -212,9 +207,7 @@ int inet_dev_set_ipaddr(struct in_device *in_dev, in_addr_t ipaddr) {
 }
 
 int inet_dev_set_mask(struct in_device *in_dev, in_addr_t mask) {
-	if (in_dev == NULL) {
-		return -EINVAL;
-	}
+	assert(in_dev != NULL);
 
 	in_dev->ifa_mask = mask;
 	in_dev->ifa_broadcast = in_dev->ifa_address | ~in_dev->ifa_mask;
@@ -225,12 +218,10 @@ int inet_dev_set_mask(struct in_device *in_dev, in_addr_t mask) {
 int inet_dev_set_macaddr(struct in_device *in_dev, const unsigned char *macaddr) {
 	struct net_device *dev;
 
-	if ((in_dev == NULL) || (macaddr ==  NULL)) {
-		return -EINVAL;
-	}
+	assert(in_dev != NULL);
+	assert(macaddr != NULL);
 
 	dev = in_dev->dev;
-
 	assert(dev != NULL);
 
 	if (dev->netdev_ops->ndo_set_mac_address == NULL) {
@@ -242,12 +233,15 @@ int inet_dev_set_macaddr(struct in_device *in_dev, const unsigned char *macaddr)
 }
 
 in_addr_t inet_dev_get_ipaddr(struct in_device *in_dev) {
-	return (in_dev == NULL) ? 0 : in_dev->ifa_address;
+	assert(in_dev != NULL);
+	return in_dev->ifa_address;
 }
 
 int inet_dev_add_dev(struct net_device *dev) {
 	int res;
 	struct inetdev_info *indev_info;
+
+	assert(dev != NULL);
 
 	indev_info = (struct inetdev_info *)pool_alloc(&indev_info_pool);
 	if (indev_info == NULL) {
@@ -265,6 +259,7 @@ int inet_dev_add_dev(struct net_device *dev) {
 	indev_info->in_dev.dev = dev;
 	INIT_LIST_HEAD(&indev_info->cb_info_list);
 	list_add_tail(&indev_info->lnk, &indev_info_list);
+
 	return ENOERR;
 }
 
@@ -274,8 +269,9 @@ int inet_dev_remove_dev(struct in_device *in_dev) {
 	struct inetdev_info *indev_info;
 	struct list_head *tmp, *safe;
 
-	indev_info = member_cast_out(in_dev, struct inetdev_info, in_dev);
+	assert(in_dev != NULL);
 
+	indev_info = member_cast_out(in_dev, struct inetdev_info, in_dev);
 	list_del(&indev_info->lnk);
 
 	assert(indev_info->in_dev.dev != NULL);
@@ -313,6 +309,8 @@ struct in_device * inet_dev_get_first_used(void) {
 
 struct in_device * inet_dev_get_next_used(struct in_device *in_dev) {
 	struct inetdev_info *indev_info;
+
+	assert(in_dev != NULL);
 
 	indev_info = member_cast_out(in_dev, struct inetdev_info, in_dev);
 

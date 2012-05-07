@@ -60,7 +60,7 @@ const struct proto_ops packet_proto_ops = {
 	.release           = packet_sock_release,
 };
 
-static int supported_sock_type(struct socket*sock) {
+static int supported_sock_type(struct socket *sock) {
 	switch(sock->type) {
 	case SOCK_DGRAM:
 	case SOCK_RAW:

@@ -31,7 +31,7 @@ static int _udp_v4_get_hash_idx(struct sock *sk){
 	unsigned int i;
 
 	if(sk != NULL){
-		for(i=0; i<CONFIG_MAX_KERNEL_SOCKETS; i++)
+		for(i=0; i<sizeof udp_hash / sizeof udp_hash[0]; i++)
 			if(&udp_hash[i]->inet.sk == sk)
 				return i;
 	}
@@ -48,7 +48,7 @@ static struct sock *_udp_v4_lookup(unsigned int sk_hash_idx, unsigned char proto
 	struct inet_sock *inet;
 	int i;
 
-	for(i = sk_hash_idx; i<CONFIG_MAX_KERNEL_SOCKETS; i++){
+	for(i = sk_hash_idx; i<sizeof udp_hash / sizeof udp_hash[0]; i++){
 		sk_it = &udp_hash[i]->inet.sk;
 		inet = inet_sk(sk_it);
 		/* the socket is being searched for by (daddr, saddr, protocol) */
@@ -112,7 +112,7 @@ int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 #if 1
 static void udp_lib_hash(struct sock *sk) {
 	size_t i;
-	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+	for (i = 0; i< sizeof udp_hash / sizeof udp_hash[0]; i++) {
 		if (udp_hash[i] == NULL) {
 			udp_hash[i] = (udp_sock_t *) sk;
 			break;
@@ -122,7 +122,7 @@ static void udp_lib_hash(struct sock *sk) {
 
 static void udp_lib_unhash(struct sock *sk) {
 	size_t i;
-	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+	for (i = 0; i< sizeof udp_hash / sizeof udp_hash[0]; i++) {
 		if (udp_hash[i] == (udp_sock_t *) sk) {
 			udp_hash[i] = NULL;
 			break;
@@ -133,7 +133,7 @@ static void udp_lib_unhash(struct sock *sk) {
 static struct sock *udp_lookup(in_addr_t daddr, __be16 dport) {
 	struct inet_sock *inet;
 	size_t i;
-	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; i++) {
+	for (i = 0; i< sizeof udp_hash / sizeof udp_hash[0]; i++) {
 		inet = inet_sk((struct sock*) udp_hash[i]);
 		if (inet) {
 			if ((inet->rcv_saddr == INADDR_ANY || inet->rcv_saddr == daddr) &&

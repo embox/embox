@@ -7,7 +7,7 @@
  * @author Ilia Vaprol
  */
 
-
+#include <assert.h>
 #include <errno.h>
 #include <mem/misc/pool.h>
 #include <net/if.h>
@@ -28,9 +28,7 @@ struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY]; // FIXME clear b
 int register_netdev(struct net_device *dev) {
 	size_t i;
 
-	if (dev == NULL) {
-		return -EINVAL;
-	}
+	assert(dev != NULL);
 
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
 		if (opened_netdevs[i] == NULL) {
@@ -45,9 +43,7 @@ int register_netdev(struct net_device *dev) {
 void unregister_netdev(struct net_device *dev) {
 	size_t i;
 
-	if (dev == NULL) {
-		return;
-	}
+	assert(dev != NULL);
 
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
 		if (opened_netdevs[i] == dev) {
@@ -59,16 +55,12 @@ void unregister_netdev(struct net_device *dev) {
 
 struct net_device * netdev_get_by_name(const char *name) {
 	size_t i;
-	struct net_device *dev;
 
-	if (name == NULL) {
-		return NULL;
-	}
+	assert(name != NULL);
 
 	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
-		dev = opened_netdevs[i];
-		if (strncmp(name, dev->name, IFNAMSIZ) == 0) {
-			return dev;
+		if (strncmp(name, opened_netdevs[i]->name, IFNAMSIZ) == 0) {
+			return opened_netdevs[i];
 		}
 	}
 
@@ -110,9 +102,7 @@ struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 		void (*setup)(struct net_device *)) {
 	struct net_device *dev;
 
-	if ((name == NULL) || (setup == NULL)) {
-		return NULL; /* Invalid args */
-	}
+	assert((name != NULL) && (setup != NULL));
 
 	dev = (struct net_device *)pool_alloc(&netdev_pool);
 	if (dev == NULL) {
@@ -131,9 +121,7 @@ struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 }
 
 void free_netdev(struct net_device *dev) {
-	if (dev == NULL) {
-		return;
-	}
+	assert(dev != NULL);
 	pool_free(&netdev_pool, dev);
 }
 
@@ -253,12 +241,11 @@ int dev_rx_dequeued(struct net_device *dev) {
 	return 0;
 }
 
-struct net_device *dev_rx_processing(void) {
+void dev_rx_processing(void) {
 	struct net_device *dev, *save;
 
 	list_for_each_entry_safe(dev, save, &rx_dev_queue, rx_dev_link) {
 		dev->poll(dev);
 		dev_rx_dequeued(dev);
 	}
-	return NULL;
 }

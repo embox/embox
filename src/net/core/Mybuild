@@ -1,33 +1,57 @@
 package embox.net
 
-module core {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "devinet.c", "sock.c", "skbuff.c"
-	depends embox.net.dev, embox.net.util, embox.mem.slab,
-		embox.framework.LibFrameworkNet
-}
+abstract module entry_api { }
 
 module dev {
+	source "dev.c"
+
+	depends skbuff
+	depends embox.lib.LibC
+	depends embox.mem.pool
+	/* depends from network_layer.c */
+
     @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "network_layer.c", "dev.c"
-	depends entry_api
+	source "network_layer.c"
+
+	depends skbuff
+	depends embox.lib.LibC
 	depends embox.compat.linux.LibLinux
+	depends embox.framework.LibFrameworkNet
+	/* depends from dev.c */
 }
 
-abstract module entry_api {
+module skbuff {
+	source "skbuff.c"
 
+	depends embox.mem.pool
+	depends embox.lib.LibC
 }
 
-module net_entry extends entry_api{
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "net_entry.c"
+module core {
+	source "devinet.c"
+
+	depends dev /* for dev.c */
+	depends embox.mem.pool
+	depends embox.lib.LibC
+
+	source "sock.c"
+
+	depends skbuff
+	depends embox.mem.slab
+	depends embox.lib.LibC
 }
 
 module neighbour {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "neighbour.c"
+
+	depends embox.mem.pool
+	depends embox.lib.LibC
+	depends embox.kernel.timer.sys_timer
+}
+
+module net_entry extends entry_api {
+	source "net_entry.c"
+
+	depends dev /* for network_layer.c */
+	depends embox.lib.LibC
 }

@@ -1,62 +1,123 @@
 package embox.net
 
 module af_inet {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "af_inet.c", "protocol.c", "ipconfig.c"
-	depends embox.net.socket
-	depends embox.net.raw_sock
-	depends route
-}
+	source "af_inet.c"
 
-module route {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "route.c"
+	depends core /* for sock.c */
+	depends socket /* for socket_repo.c */
+	depends embox.framework.LibFrameworkNet
+
+	source "ipconfig.c"
+
+	depends dev /* for dev.c */
+	depends core /* for devinet.c */
+
+	source "protocol.c"
+	depends embox.lib.LibC
 }
 
 module arp_queue {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "arp_queue.c"
+
+	depends dev /* for network_layer.c */
+	depends skbuff
+	depends embox.kernel.timer.sys_timer
+	depends embox.kernel.thread.sched
+	depends embox.mem.objalloc
 }
 
 module arp {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "arp.c"
-	depends embox.net.neighbour, arp_queue
-}
 
-module ipv4 {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "ip_input.c", "ip_options.c", "ip_output.c", "ip_fragment.c"
+	depends dev /* for network_layer.c */
+	depends skbuff
+	depends arp_queue
+	depends neighbour
+	depends embox.lib.LibC
+	depends embox.framework.LibFrameworkNet
 }
 
 module icmp {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "icmp.c"
-	depends af_inet
+
+	depends eth
+	depends raw_sock
+	depends core /* for devinet.c */
+	depends ipv4 /* from ip_output.c */
+	depends skbuff
 	depends embox.kernel.time
+	depends embox.framework.LibFrameworkNet
 }
 
-module udp {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "udp.c"
-}
+module ipv4 {
+	/* FIXME:
+	 * 1.it depends from icmp (called from ip_options.c, ip_output.c)
+	 */
+	source "ip_fragment.c"
+	depends skbuff
+	depends embox.mem.objalloc
+	depends embox.kernel.timer.sys_timer
+	depends embox.lib.LibC
 
-module tcp {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "tcp.c"
+	source "ip_input.c"
+	depends skbuff
+	depends raw_sock
+	depends embox.lib.LibC
+	/* depends from ip_fragment.c */
+
+	source "ip_options.c"
+
+	source "ip_output.c"
+	depends dev /* for network_layer.c */
+	depends skbuff
+	depends route
+	depends eth
 }
 
 module raw_sock {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	/* FIXME:
+	 * 1.it depends from icmp
+	 * 2.it depends from ipv4
+	 */
 	source "raw_sock.c"
-	depends embox.net.socket
+
+	depends skbuff
+	depends core /* for sock.c */
+	depends embox.lib.LibC
+	depends embox.framework.LibFrameworkNet
+}
+
+module route {
+	source "route.c"
+
+	depends core /* for devinet.c */
+	depends arp
+	depends embox.mem.pool
+}
+
+module tcp {
+	source "tcp.c"
+
+	depends skbuff
+	depends route
+	depends core
+	depends ipv4 /* for ip_output.c */
+	depends af_inet /* for af_inet.c */
+	depends util
+	depends embox.kernel.critical
+	depends embox.lib.LibC
+	depends embox.kernel.timer.sys_timer
+	depends embox.mem.objalloc
+	depends embox.framework.LibFrameworkNet
+}
+
+module udp {
+	source "udp.c"
+
+	depends ipv4 /* for ip_output.c */
+	depends skbuff
+	depends icmp
+	depends core /* for sock.c */
+	depends embox.lib.LibC
+	depends embox.framework.LibFrameworkNet
 }

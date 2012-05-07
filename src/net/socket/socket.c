@@ -325,7 +325,7 @@ int socket_close(int sockfd) {
 }
 
 int getsockopt(int sockfd, int level, int optname, void *optval,
-               socklen_t *optlen){
+		socklen_t *optlen){
 	struct socket *sock;
 	int res;
 
@@ -339,7 +339,7 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 		return -1;
 	}
 	res = kernel_socket_getsockopt(sock, level, optname,
-														 optval, optlen);
+			optval, optlen);
 	if(res < 0){
 		SET_ERRNO(-res);
 		return -1;
@@ -349,7 +349,7 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 }
 
 int setsockopt(int sockfd, int level, int optname, void *optval,
-               socklen_t optlen){
+		socklen_t optlen){
 	struct socket *sock;
 	int res;
 
@@ -363,7 +363,7 @@ int setsockopt(int sockfd, int level, int optname, void *optval,
 		return -1;
 	}
 	res = kernel_socket_setsockopt(sock, level, optname,
-																 optval, optlen);
+			optval, optlen);
 	if(res < 0){
 		SET_ERRNO(-res);
 		return -1;

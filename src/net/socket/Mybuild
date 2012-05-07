@@ -1,19 +1,42 @@
 package embox.net
 
-module socket {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "socket.c", "socket_allocator.c", "socket_repo.c", "socket_registry.c"
-	source "kernel_socket.c"
-	source "socket_options.c"
-}
-
 module af_packet {
 	source "af_packet.c"
-	depends socket
 
+	depends core /* for sock.c */
+	depends socket /* for socket_repo.c */
+	depends embox.framework.LibFrameworkNet
 }
+
 module af_unix {
 	source "af_unix.c"
-	depends socket
+
+	depends core /* for sock.c */
+	depends socket /* for socket_repo.c */
+}
+
+module socket {
+	source "kernel_socket.c"
+	/* depends from socket_repo.c */
+	/* depends from socket_allocator.c */
+	/* depends from socket_options.c */
+	/* depends from socket_registry.c */
+
+	source "socket_allocator.c"
+	depends embox.mem.pool
+
+	source "socket_options.c"
+	depends embox.lib.LibC
+
+	source "socket_registry.c"
+	depends embox.mem.pool
+	depends embox.lib.LibC
+	depends embox.util.LibUtil
+
+	source "socket_repo.c"
+	depends embox.lib.ElfLib
+
+	source "socket.c"
+	depends embox.kernel.task_api
+	/* depends from kernel_socket.c */
 }

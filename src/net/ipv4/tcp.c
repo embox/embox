@@ -452,7 +452,7 @@ static void tcp_free_sock(union sock_pointer sock) {
 	union sock_pointer anticipant;
 
 	list_for_each_entry(anticipant.tcp_sk, &sock.tcp_sk->conn_wait, conn_wait) {
-		sk_common_release(anticipant.sk);
+		sk_common_release(anticipant.sk); /* TODO send RST before */
 	}
 
 	sk_common_release(sock.sk);
@@ -1164,8 +1164,8 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 		sock.tcp_sk->seq_queue += tcp_seq_len(skb);
 		tcp_set_st(sock, TCP_SYN_SENT);
 		send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
-		while (tcp_st_status(sock) != TCP_ST_SYNC);
-		res = ENOERR;
+		while (tcp_st_status(sock) == TCP_ST_NONSYNC);
+		res = (tcp_st_status(sock) == TCP_ST_SYNC ? ENOERR : -ECONNRESET);
 		break;
 	case TCP_LISTEN:
 		res = -1;
@@ -1258,9 +1258,9 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		debug_print(3, "tcp_v4_accept: newsk 0x%p for %s:%d\n", newsock.tcp_sk,
 				inet_ntoa(addr_in->sin_addr), (int)ntohs(addr_in->sin_port));
 		/* wait until something happened */
-		while (tcp_st_status(newsock) != TCP_ST_SYNC);
+		while (tcp_st_status(newsock) == TCP_ST_NONSYNC);
 		*newsk = newsock.sk;
-		return ENOERR;
+		return (tcp_st_status(newsock) == TCP_ST_SYNC ? ENOERR : -ECONNRESET);
 	}
 }
 

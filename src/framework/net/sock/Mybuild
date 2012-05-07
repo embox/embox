@@ -2,12 +2,12 @@ package embox.framework.net
 
 module sock {
 	/* FIXME:
-	 * Unused module
+	 * 1.It is unused module
+	 * 2.it depends from embox.net.socket
 	 */
 	/*FIXME mybuild make flags options */
     @DefineMacro("__FRAMEWORK__")
 	source "core.c"
 
 	depends embox.prom.printf
-	depends embox.net.socket
 }

@@ -5,7 +5,6 @@ static module LibFrameworkNet {
 	depends net.pack, net.proto, net.sock
 }
 
-
 static module LibFramework {
 	@DefineMacro("__FRAMEWORK__")
 	depends cmd, example, mod,
@@ -13,8 +12,8 @@ static module LibFramework {
 }
 
 module runlevel {
+	@DefineMacro("__FRAMEWORK__")
 	/*FIXME mybuild make flags options */
-	/*make flags "-D__FRAMEWORK__"*/
 	source "runlevel.c", "unit.c"
 
 	depends mod

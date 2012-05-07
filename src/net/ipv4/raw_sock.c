@@ -34,7 +34,7 @@ static int _raw_v4_get_hash_idx(struct sock *sk){
 	unsigned int i;
 
 	if(sk != NULL){
-		for(i=0; i<CONFIG_MAX_KERNEL_SOCKETS; i++)
+		for(i=0; i<sizeof raw_hash / sizeof raw_hash[0]; i++)
 			if(&raw_hash[i]->inet.sk == sk)
 				return i;
 	}
@@ -50,7 +50,7 @@ static struct sock *_raw_v4_lookup(unsigned int sk_hash_idx, unsigned char proto
 	struct inet_sock *inet;
 	int i;
 
-	for(i = sk_hash_idx; i<CONFIG_MAX_KERNEL_SOCKETS; i++){
+	for(i = sk_hash_idx; i<sizeof raw_hash / sizeof raw_hash[0]; i++){
 		sk_it = &raw_hash[i]->inet.sk;
 		inet = inet_sk(sk_it);
 		/* the socket is being searched for by (daddr, saddr, protocol) */
@@ -73,7 +73,7 @@ static int raw_init(struct sock *sk) {
 static struct sock *raw_lookup(__u8 proto) {
 	struct sock *sk;
 	size_t i;
-	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+	for (i = 0; i < sizeof raw_hash / sizeof raw_hash[0]; i++) {
 		sk = (struct sock*) raw_hash[i];
 		if (sk && sk->sk_protocol == proto) {
 			return sk;
@@ -91,7 +91,7 @@ int raw_rcv(sk_buff_t *skb) {
 	sk_buff_t *cloned;
 
 	iph = ip_hdr(skb);
-	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+	for (i = 0; i < sizeof raw_hash / sizeof raw_hash[0]; i++) {
 		sk = (struct sock *)raw_hash[i];
 		if (sk && sk->sk_protocol == iph->proto) {
 			cloned = skb_clone(skb, 0); // TODO without skb_clone()
@@ -141,7 +141,7 @@ static int raw_rcv_skb(struct sock *sk, sk_buff_t *skb) {
 
 static void raw_v4_hash(struct sock *sk) {
 	size_t i;
-	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+	for (i = 0; i < sizeof raw_hash / sizeof raw_hash[0]; i++) {
 		if (raw_hash[i] == NULL) {
 			raw_hash[i] = (raw_sock_t *) sk;
 			break;
@@ -151,7 +151,7 @@ static void raw_v4_hash(struct sock *sk) {
 
 static void raw_v4_unhash(struct sock *sk) {
 	size_t i;
-	for (i = 0; i < CONFIG_MAX_KERNEL_SOCKETS; i++) {
+	for (i = 0; i < sizeof raw_hash / sizeof raw_hash[0]; i++) {
 		if (raw_hash[i] == (raw_sock_t *) sk) {
 			raw_hash[i] = NULL;
 			break;

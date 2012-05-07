@@ -8,17 +8,11 @@
  * @author Nikolay Korotky
  */
 
-#include <string.h>
 #include <errno.h>
-#include <kernel/irq.h>
 #include <net/skbuff.h>
 #include <net/sock.h>
-#include <net/udp.h>
-#include <linux/init.h>
-#include <util/array.h>
 #include <mem/misc/pool.h>
-
-#include <asm/system.h> /*linux-compatible*/
+#include <hal/ipl.h>
 
 #define LOWER_BOUND 1 // lower bound of sockets count
 
@@ -39,12 +33,14 @@ POOL_DEF(socks_pool, sock_info_t, CONFIG_MAX_KERNEL_SOCKETS);
 /* allocates proto structure for specified protocol*/
 static struct sock * sk_prot_alloc(struct proto *prot, gfp_t priority) {
 	struct sock *sk;
-	unsigned long flags;
+	ipl_t sp;
 
-	local_irq_save(flags);
+	assert(prot != NULL);
 
 	sk = NULL;
+	sp = ipl_save();
 	if (prot->sock_alloc != NULL) {
+		assert(prot->sock_free != NULL);
 		sk = prot->sock_alloc();
 	}
 	else {
@@ -55,53 +51,66 @@ static struct sock * sk_prot_alloc(struct proto *prot, gfp_t priority) {
 			sk = cache_alloc(prot->cachep);
 		}
 	}
-
-	local_irq_restore(flags);
+	ipl_restore(sp);
 
 	return sk;
 }
 
 /* returns specified structure sock into pull */
 static void sk_prot_free(const struct proto *prot, struct sock *sk) {
-	unsigned long irq_old;
+	ipl_t sp;
 
-	local_irq_save(irq_old);
+	assert(prot != NULL);
+	assert(sk != NULL);
+
+	sp = ipl_save();
 	if (prot->sock_free != NULL) {
+		assert(prot->sock_alloc != NULL);
 		prot->sock_free(sk);
 	} else {
+		assert(prot->cachep != NULL);
 		cache_free(prot->cachep, sk);
 	}
-	local_irq_restore(irq_old);
+	ipl_restore(sp);
 }
 
 struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 	struct sock *sk;
+
+	assert(prot != NULL);
 
 	sk = sk_prot_alloc(prot, 0);
 	if (sk == NULL) {
 		return NULL;
 	}
 
+	sk->sk_receive_queue = alloc_skb_queue();
+	if (sk->sk_receive_queue == NULL) {
+		sk_prot_free(prot, sk);
+		return NULL;
+	}
+
+	sk->sk_write_queue = alloc_skb_queue();
+	if (sk->sk_write_queue == NULL) {
+		skb_queue_purge(sk->sk_receive_queue);
+		sk_prot_free(prot, sk);
+		return NULL;
+	}
+
 	if (prot->init != NULL) {
 		if (prot->init(sk) < 0) {
+			skb_queue_purge(sk->sk_receive_queue);
+			skb_queue_purge(sk->sk_write_queue);
 			sk_prot_free(prot, sk);
 			return NULL;
 		}
 	}
 
-	sk->sk_receive_queue = alloc_skb_queue();
-	sk->sk_write_queue = alloc_skb_queue();
-	if (unlikely(!(sk->sk_receive_queue && sk->sk_write_queue))) {
-		skb_queue_purge(sk->sk_receive_queue);
-		skb_queue_purge(sk->sk_write_queue);
-		sk_prot_free(prot, sk);
-		return NULL;
-	}
 	sk->sk_destruct = NULL;
 	sk->sk_family = family;
 	sk->sk_prot = prot;
 
-	if(prot->hash != NULL) {
+	if (prot->hash != NULL) {
 		prot->hash(sk);
 	}
 
@@ -109,7 +118,10 @@ struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 }
 
 void sk_free(struct sock *sk) {
-	if(sk->sk_prot->unhash != NULL) {
+	assert(sk != NULL);
+	assert(sk->sk_prot != NULL);
+
+	if (sk->sk_prot->unhash != NULL) {
 		sk->sk_prot->unhash(sk);
 	}
 	if (sk->sk_destruct != NULL) {
@@ -119,29 +131,43 @@ void sk_free(struct sock *sk) {
 }
 
 int sock_no_listen(struct socket *sock, int backlog) {
+	assert(sock != NULL);
 	return -EOPNOTSUPP;
 }
 
 int sock_no_accept(struct socket *sock, struct socket *newsock, int flags) {
+	assert(sock != NULL);
 	return -EOPNOTSUPP;
 }
 
 int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
+	assert(sk != NULL);
+	assert(sk->sk_receive_queue != NULL);
+	assert(skb != NULL);
+
 	skb_queue_tail(sk->sk_receive_queue, skb);
-	return 0;
+	return ENOERR;
 }
 
 int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
 			struct msghdr *msg, size_t size, int flags) {
-	struct sock *sk = sock->sk;
-	return sk->sk_prot->recvmsg(iocb, sk, msg, size, 0, flags);
+	assert(sock != NULL);
+	assert(sock->sk != NULL);
+	assert(sock->sk->sk_prot != NULL);
+	assert(sock->sk->sk_prot->recvmsg != NULL);
+
+	return sock->sk->sk_prot->recvmsg(iocb, sock->sk, msg, size, 0, flags);
 }
 
 void sk_common_release(struct sock *sk) {
-	if (sk->sk_prot->destroy) {
+	assert(sk != NULL);
+	assert(sk->sk_prot != NULL);
+	assert(sk->sk_receive_queue);
+	assert(sk->sk_write_queue);
+
+	if (sk->sk_prot->destroy != NULL) {
 		sk->sk_prot->destroy(sk);
 	}
-	//sk->sk_prot->unhash(sk);
 
 	skb_queue_purge(sk->sk_receive_queue);
 	skb_queue_purge(sk->sk_write_queue);
@@ -161,9 +187,11 @@ static int test_and_set(unsigned long *a) {
 }
 
 void sock_lock(struct sock *sk) {
+	assert(sk != NULL);
 	while(test_and_set(&sk->sk_lock.slock));
 }
 
 void sock_unlock(struct sock *sk) {
+	assert(sk != NULL);
 	sk->sk_lock.slock = 0;
 }

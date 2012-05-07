@@ -1,7 +1,10 @@
 package embox.net
 
 module eth {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "eth.c"
+
+//	depends dev /* for dev.c */
+//	depends core /* for devinet.c */
+//	depends arp
+	depends embox.lib.LibC
 }
