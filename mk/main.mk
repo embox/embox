@@ -285,7 +285,7 @@ Cleaning targets:
   clean (c)      - Remove most build artifacts (image, libraries, objects, etc.)
   confclean      - Remove build artifacts and loaded configuration
   cacheclean     - Flush Mybuild internal cache
-  distclean      - clean + confclean + cacheclean
+  distclean (dc) - clean + confclean + cacheclean
 
 Documentation targets:
   dot            - Generate a picture with module dependency graph
