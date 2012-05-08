@@ -45,11 +45,9 @@ static void neighbour_refresh(struct sys_timer *timer, void *param) {
 	struct list_head *tmp;
 	union head_ptr ptr;
 	ipl_t sp;
-#include <stdio.h>
-	printf("call neighbour_refresh\n");
+
 	list_for_each_safe(ptr.lh, tmp, &used_neighbours_list) {
 		entity = &ptr.nh->n;
-		printf("\tentity 0x%p\n", (void *)entity);
 		if (entity->flags == ATF_COM) {
 			ptr.nh->ctime += NEIGHBOUR_CHECK_INTERVAL;
 			if (ptr.nh->ctime < NEIGHBOUR_TIMEOUT) {
@@ -63,7 +61,6 @@ static void neighbour_refresh(struct sys_timer *timer, void *param) {
 			ipl_restore(sp);
 		}
 	}
-	printf("neighbour_refresh end\n");
 }
 
 uint8_t * neighbour_lookup(struct in_device *if_handler, in_addr_t ip_addr) {
