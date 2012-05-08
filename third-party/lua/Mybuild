@@ -1,5 +1,5 @@
 
-package org.lua
+package third_party.lua
 
 module lua_core {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
@@ -10,10 +10,14 @@ module lua_core {
 		"llex.c", "lmem.c", "lobject.c", "lopcodes.c",
 		"lparser.c", "lstate.c", "lstring.c",
 		"ltable.c", "ltm.c", "lundump.c", "lvm.c", "lzio.c"
+
+	depends embox.mem.heap_api
 }
 
 module lua_lib {
 	source "ltablib.c", "ldblib.c"
 	@InitFS
 	source "fib.lua"
+
+	depends third_party.lua.lua_core
 }
