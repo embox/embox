@@ -37,6 +37,7 @@ module socket {
 	depends embox.lib.ElfLib
 
 	source "socket.c"
+	depends core /* for sock.c */
 	depends embox.kernel.task_api
 	/* depends from kernel_socket.c */
 }

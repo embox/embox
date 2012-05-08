@@ -5,6 +5,7 @@ module af_inet {
 
 	depends core /* for sock.c */
 	depends socket /* for socket_repo.c */
+	depends ipv4
 	depends embox.framework.LibFrameworkNet
 
 	source "ipconfig.c"
@@ -43,7 +44,7 @@ module icmp {
 	depends eth
 	depends raw_sock
 	depends core /* for devinet.c */
-	depends ipv4 /* from ip_output.c */
+	depends ipv4 /* for ip_output.c */
 	depends skbuff
 	depends embox.kernel.time
 	depends embox.framework.LibFrameworkNet
@@ -78,6 +79,7 @@ module raw_sock {
 	/* FIXME:
 	 * 1.it depends from icmp
 	 * 2.it depends from ipv4
+	 * 3.it depends from udp
 	 */
 	source "raw_sock.c"
 
