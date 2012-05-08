@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <util/math.h>
 #include <fs/fs.h>
-#include <fs/file.h>
+#include <kernel/file.h>
 #include <fs/ioctl.h>
 #include <fs/file_desc.h>
 #include <kernel/thread/api.h>
