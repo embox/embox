@@ -22,5 +22,5 @@ module httpd {
 	depends embox.compat.posix.LibPosix
 	depends embox.net.socket
 	depends embox.fs.core
-    depends embox.framework.LibFramework
+	depends embox.framework.LibFramework
 }

@@ -23,8 +23,5 @@ module telnetd {
 	depends embox.cmd.sh.tish
 	depends embox.kernel.task_api
 	depends embox.compat.posix.LibPosix
-    depends embox.framework.LibFramework
+	depends embox.framework.LibFramework
 }
-
-
-

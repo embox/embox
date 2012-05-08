@@ -29,6 +29,5 @@ module route {
 	depends embox.net.util
 	depends embox.net.core
 	depends embox.net.route
-    depends embox.framework.LibFramework
+	depends embox.framework.LibFramework
 }
-

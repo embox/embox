@@ -16,5 +16,5 @@ module netstat {
 	depends embox.lib.LibC
 	depends embox.net.tcp
 	depends embox.net.udp
-    depends embox.framework.LibFramework
+	depends embox.framework.LibFramework
 }

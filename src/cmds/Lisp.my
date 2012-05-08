@@ -8,5 +8,5 @@ module lisp {
 	source "lisp.c"
 
 	depends third_party.lisp.lisp5000
-    depends embox.framework.LibFramework
+	depends embox.framework.LibFramework
 }

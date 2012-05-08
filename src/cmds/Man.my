@@ -20,6 +20,5 @@ module man {
 
 	depends embox.lib.LibC
 	depends embox.util.LibUtil
-    depends embox.framework.LibFramework
+	depends embox.framework.LibFramework
 }
-

@@ -24,5 +24,5 @@ module thread {
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sched
 	depends embox.compat.posix.LibPosix
-    depends embox.framework.LibFramework
+	depends embox.framework.LibFramework
 }
