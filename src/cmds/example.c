@@ -38,11 +38,10 @@ static void print_examples(void) {
 }
 
 static int exec(int argc, char **argv) {
-	int opt, number, args_enum;
+	int opt, number;
 	const struct example *example;
 
 	number = 0;
-	args_enum = 1;
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "n:h"))) {
 		switch (opt) {
@@ -55,35 +54,34 @@ static int exec(int argc, char **argv) {
 				printf("Invalid a number of example\n");
 				return -EINVAL;
 			}
-			args_enum = 2;
 			break;
 		default:
 			return -EINVAL;
 		}
 	}
-	if (argc > 1) {
-		if (number == 0) {
-			example = example_lookup(argv[1]);
-			if (example == NULL) {
-				printf("Example \"%s\" not found\n", argv[1]);
-			}
-		}
-		else {
-			example_foreach(example) {
-				if (--number == 0) {
-					break;
-				}
-			}
-			if (number != 0) {
-				printf("Invalid a number of example\n");
-				return -EINVAL;
-			}
-		}
-		example_exec(example, argc - args_enum, argv + args_enum);
-		return 0;
+
+	if (argc == 1) {
+		print_examples();
+		return ENOERR;
 	}
 
-	print_examples();
+	if (number == 0) {
+		example = example_lookup(argv[1]);
+		if (example == NULL) {
+			printf("Example \"%s\" not found\n", argv[1]);
+		}
+	}
+	else {
+		example_foreach(example) {
+			if (--number == 0) {
+				break;
+			}
+		}
+		if (number != 0) {
+			printf("Invalid a number of example\n");
+			return -EINVAL;
+		}
+	}
 
-	return ENOERR;
+	return example_exec(example, argc - 1, argv + 1);
 }
