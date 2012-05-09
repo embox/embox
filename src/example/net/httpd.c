@@ -24,6 +24,21 @@ EMBOX_EXAMPLE(httpd_exec);
 #define FILE_READ_CHUNK_SZ 2
 
 static int httpd_exec(int argc, char **argv) {
+#if 0
+	embox>example
+	  1. net.tcp_accepter
+	  2. net.tcp_connect
+	  3. net.tcp_receiver
+	  4. net.tcp_echo
+	  5. net.tcp_sender
+	  6. net.httpd
+	  7. net.checkopts
+
+	Total examples: 7
+
+	embox>example -n6
+	Cannot open file '�'
+#endif
 	int sock, connect_sock;
 	//int sock2;
 	struct sockaddr_in addr;
@@ -43,6 +58,9 @@ static int httpd_exec(int argc, char **argv) {
 			"Content-Type: text/html\n"
 			"\n");
 
+	if (argc != 2) {
+		printf("Please specify the file to transmitting\n");
+	}
 	fd = open(argv[1], 0);
 	if (fd < 0) {
 		printf("Cannot open file '%s'\n", argv[1]);

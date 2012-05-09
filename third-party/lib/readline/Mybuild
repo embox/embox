@@ -1,7 +1,9 @@
-
 package third_party.lib
 
 module linenoise {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "linenoise.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
 }
