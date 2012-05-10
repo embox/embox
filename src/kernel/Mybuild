@@ -2,14 +2,15 @@
 package embox.kernel
 
 module main {
+	/* FIXME
+	 * 1.it depends from embox.prom.printf (for init.c)
+	 */
 	source "init.c", "nosys.c"
 	/*FIXME mybuild linker scripts */
 	source "nosys.lds"
-	//depends embox.prom.printf
 	depends embox.arch.libarch
 	depends embox.arch.locore
 	depends embox.arch.interrupt
 	depends embox.arch.cpu
-	//depends embox.driver.diag.diag_api
-	//depends embox.arch.x86.kernel.arch
+	depends embox.driver.diag.diag_api
 }

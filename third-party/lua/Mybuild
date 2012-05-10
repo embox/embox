@@ -16,6 +16,9 @@ module lua_core {
 }
 
 module lua_lib {
+	/* FIXME
+	 * 1.it depends from lua_core (for ltablib.c)
+	 */
 	source "ltablib.c", "ldblib.c"
 
 	@InitFS
