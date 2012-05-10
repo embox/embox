@@ -95,6 +95,7 @@ define class-Mybuild
 	#
 	# Context:
 	#   'configuration'
+	include my.test.mod1
 	#   'issueReceiver'
 	# Return:
 	#	List of avaible moduleInstances. Some of them may not be created, then
@@ -110,7 +111,7 @@ define class-Mybuild
 
 					$(for moduleInst <- $(invoke moduleInstance,$(module)),
 						$(set moduleInst->includeMember,$(cfgInclude))
-						$(moduleInst)))),
+						$(call Mybuild.closeInstances,$(moduleInst))))),
 
 			$(call check,$1,$(chekers_list),)
 			))
@@ -146,6 +147,8 @@ define class-Mybuild
 				$(set+ recommendations,
 					$(invoke $(get $(get annot->bindings).value).toString)
 					$1))))
+
+	$(map includingInstances : ModuleInstance)
 
 	$(method closeInstances,
 		$(for inst <- $1,
@@ -530,6 +533,14 @@ define class-Mybuild
 
 			$(moduleInstance)))
 
+	$(method printCyclic,
+		$(get $(get 1->type).qualifiedName) ->
+		$(with $1,$(map-get includingInstances/$1),
+			$(if $(filter $1,$2),,
+		   		$(\s)$(get $(get 2->type).qualifiedName) ->
+				$(call $0,$1,$(map-get includingInstances/$2))))
+		$(\s)$(get $(get 1->type).qualifiedName) -> ... )
+
 	# Get ModuleInstance closure of given  Module
 	#
 	# Args:
@@ -544,6 +555,8 @@ define class-Mybuild
 			was <- was$(map-get moduleInstanceStore/$(dep)),
 			depInst <- $(invoke moduleInstance,$(dep)),
 
+			$(map-set includingInstances/$(thisInst),$(depInst))
+
 			$(if $(call getAnnotation,$(get depMember->annotations),mybuild.lang.Include),
 				$(if $(get depInst->contained),
 					$(call __addIssue,$(thisInst),error,$(get dep->qualifiedName) \
@@ -552,10 +565,17 @@ define class-Mybuild
 					$(set+ thisInst->contains,$(depInst))),
 				$(set+ thisInst->depends,$(depInst)))
 
-			$(if $(filter was,$(was)),
-				$(depInst)) \
+			$(if $(map-get includingInstances/$(depInst)),
+				$(invoke issueReceiver->addIssues,
+					$(new InstantiateIssue,,error,,
+					Cyclic dependency detected: $(invoke printCyclic,$(depInst))))
+				,
+				$(if $(filter was,$(was)),
+					$(depInst) \
+					$(invoke instanceClosure,$(depInst))))
 
-			$(invoke instanceClosure,$(depInst))))
+			$(map-set includingInstances/$(thisInst),)
+			))
 
 endef
 
