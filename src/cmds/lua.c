@@ -9,6 +9,7 @@
 #include <embox/cmd.h>
 
 #include <lua.h>
+#include <lauxlib.h>
 #include <lualib.h>
 
 EMBOX_CMD(exec);
@@ -20,6 +21,7 @@ static int exec(int argc, char **argv) {
 	if (luaL_loadfile(L, argv[1])) {
 		return -1;
 	}
+
 
 	lua_call(L, 0, LUA_MULTRET);
 

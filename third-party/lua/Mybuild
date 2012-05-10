@@ -12,6 +12,7 @@ module lua_core {
 
 	depends embox.mem.heap_api
 	depends embox.lib.LibC
+	depends lua_lib
 }
 
 module lua_lib {
@@ -20,6 +21,5 @@ module lua_lib {
 	@InitFS
 	source "fib.lua"
 
-	depends third_party.lua.lua_core
 	depends embox.lib.LibC
 }
