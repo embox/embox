@@ -1,6 +1,26 @@
 package embox.driver.bluetooth.btm
 
 module usart {
+	@Type("pin") @Unique
+	option number rx_pin = 5
+
+	@Type("pin") @Unique
+	option number tx_pin = 6
+	@Type("pin") @Unique
+	option number sck_pin = 2
+	@Type("pin") @Unique
+	option number rts_pin = 7
+	@Type("pin") @Unique
+	option number cts_pin = 8
+
+	@Type("pin") @Unique
+	option number link_pin = 27
+	@Type("pin") @Unique
+	option number rst_pin = 11
+
+	@Type("irq") @Unique
+	option number irq_num = 6
+
 	source "btm_bluetooth.c"
 
 	depends embox.kernel.timer.sleep_api

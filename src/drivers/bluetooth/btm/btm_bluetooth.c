@@ -20,11 +20,11 @@
 
 extern void bt_handle(uint8_t *buff);
 
-#define BTM_BT_RX_PIN  ((uint32_t) CONFIG_BTM_BT_RX_PIN)
-#define BTM_BT_TX_PIN  ((uint32_t) CONFIG_BTM_BT_TX_PIN)
-#define BTM_BT_SCK_PIN ((uint32_t) CONFIG_BTM_BT_SCK_PIN)
-#define BTM_BT_RTS_PIN ((uint32_t) CONFIG_BTM_BT_RTS_PIN)
-#define BTM_BT_CTS_PIN ((uint32_t) CONFIG_BTM_BT_CTS_PIN)
+#define BTM_BT_RX_PIN  ((uint32_t) (1 << OPTION_GET(NUMBER,rx_pin)))
+#define BTM_BT_TX_PIN  ((uint32_t) (1 << OPTION_GET(NUMBER,tx_pin)))
+#define BTM_BT_SCK_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,sck_pin)))
+#define BTM_BT_RTS_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,rts_pin)))
+#define BTM_BT_CTS_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,cts_pin)))
 
 static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_BTM_BT_SERIAL_PORT_OFFSET);
 
