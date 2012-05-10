@@ -131,7 +131,7 @@ endef
 define define_lib_rules
 	${eval \
 		$(call LIB_FILE,$1) : $(call module_get_objects,$1)$(\n)
-			$(\t)$(AR) $(ARFLAGS) $$@ $$(^:%= \$$(\n)	%)
+			$(\t)$(AR) $(ARFLAGS) $$@ $$(addprefix $$(\s)\$$(\n)	,$$^)
 	}
 endef
 
