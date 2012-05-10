@@ -36,6 +36,5 @@ module xemaclite {
 	depends embox.net.eth
 	depends embox.kernel.irq
 	depends embox.net.dev
-	depends embox.driver.pci
 	depends embox.net.entry_api
 }
