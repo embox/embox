@@ -47,6 +47,11 @@ LABEL-TestFor := mybuild.lang.TestFor
 excludeAnnotations := $(LABEL-IfNeed)
 leftToRightParentAnnotations := $(LABEL-IfNeed) $(LABEL-For)
 
+define getAnnotationTarget
+	$(for target<-$1,
+		$(call getAnnotation,$(get target->annotations),$2,$(value 3)))
+endef
+
 define getAnnotation
 	$(strip $(for annot <- $1,
 		annotType<-$(get annot->type),
@@ -64,7 +69,9 @@ endef
 define class-Mybuild
 	$(map moduleInstanceStore... : ModuleInstance) #by module
 	$(map activeFeatures... : ModuleInstance) #by feature
+	$(map includingInstances : ModuleInstance) #stack for cyclic detection
 	$(property-field recommendations)
+
 
 # Public:
 
@@ -115,15 +122,24 @@ define class-Mybuild
 			$(call check,$1,$(chekers_list),)
 			))
 
-	$(method __addIssue,
+	$(method addIssue,
 		$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
-			$(for includeMember <- $(get 1->includeMember),
-				$(get includeMember->eResource)),
-			$2,
-			$(for includeMember <- $(get 1->includeMember),
-				$(get includeMember->origin)),
-			$3
-			)))
+			$1,$2,$3,$4)))
+
+	$(method addIssueGlobal,
+		$(invoke addIssue,,$1,,$2))
+
+	$(method addIssueInclude,
+			$(invoke addIssue,
+				$(for includeMember <- $1,
+					$(get includeMember->eResource)),
+				$2,
+				$(for includeMember <- $1,
+					$(get includeMember->origin)),
+				$3))
+
+	$(method addIssueInstance,
+		$(invoke addIssueInclude,$(get 1->includeMember),$2,$3))
 
 	$(method processIncludeAnnotations,
 		$(if $2,,$1)
@@ -136,18 +152,13 @@ define class-Mybuild
 							$(get $(get annot->bindings).value)
 							.value)
 						.isSuperTypeOf,$1),,
-					$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
-						$(get cfgInclude->eResource),
-						error,
-						$(get cfgInclude->origin),
+					$(invoke addIssueInclude,$(cfgInclude),error,
 						Annotation $(annotName) value should be \
-							target's parent))))
+							target's parent)))
 			$(if $(eq $(annotName),$(LABEL-IfNeed)),
 				$(set+ recommendations,
 					$(invoke $(get $(get annot->bindings).value).toString)
 					$1))))
-
-	$(map includingInstances : ModuleInstance)
 
 	$(method closeInstances,
 		$(for inst <- $1,
@@ -155,26 +166,22 @@ define class-Mybuild
 			$(invoke instanceClosure,$(inst))))
 
 	$(method testAnnotTestGet,
-		$(for testModLiteral<-$(call getAnnotation,
-				$(get mod->annotations),$(LABEL-TestFor),value),
-			$(get testModLiteral->value)) \
-		$(if $(strip $(get inst->includeMember)),
-			$(for annotLiteral<-$(call getAnnotation,
-					$(get $(get inst->includeMember).annotations),
-					$(LABEL-TestFor),value),
-				$(get annotLiteral->value))))
+		$(for testModLiteral<-$(call getAnnotationTarget,
+				$(mod),$(LABEL-TestFor),value),
+			$(get testModLiteral->value)))
 
 	$(method testAnnotTestingGet,
 		$(if $(strip $(get inst->includeMember)),
 			$(for \
-				testModLiteral<-$(call getAnnotation,
-					$(get $(get inst->includeMember).annotations),
+				testModLiteral<-$(call getAnnotationTarget,
+					$(get inst->includeMember),
 					mybuild.lang.WithTest,value),
 				testMod<-$(get testModLiteral->value),
 
 				$(with \
-					$(for testModTestAnnot <- $(call getAnnotation,
-							$(get testMod->annotations),mybuild.lang.TestFor,
+					$(for testModTestAnnot <- $(call getAnnotationTarget,
+							$(testMod),
+							mybuild.lang.TestFor,
 							value),
 						testModTestTarget <- $(get testModTestAnnot->value),
 						$(if \
@@ -184,18 +191,18 @@ define class-Mybuild
 							1)),
 					$(if $(strip $1),
 						$(testMod),
-						$(invoke __addIssue,$(inst),error,
+						$(invoke addIssueInstance,$(inst),error,
 							$(get mod->qualifiedName) inclusion requested \
 							$(get testMod->qualifiedName) as test; but it is \
 							not defined test))))
 
-			$(if $(strip $(call getAnnotation,
-					$(get $(get inst->includeMember).annotations),
+			$(if $(strip $(call getAnnotationTarget,
+					$(get inst->includeMember),
 					mybuild.lang.WithAllTests)),
 				$(for \
 					buildMod <- $(call allModules),
-					testLiteral <- $(call getAnnotation,
-						$(get buildMod->annotations),mybuild.lang.TestFor,
+					testLiteral <- $(call getAnnotationTarget,
+						$(buildMod),mybuild.lang.TestFor,
 						value),
 					testMod <- $(get testLiteral->value),
 					$(if
@@ -242,8 +249,8 @@ define class-Mybuild
 								))),
 					$(strip $(for \
 						mod <- $(get inst->type),
-						annotValue <- $(call getAnnotation,
-								$(get mod->annotations),
+						annotValue <- $(call getAnnotationTarget,
+								$(mod),
 								$(LABEL-DefaultImpl),
 								value),
 						$(call check,
@@ -269,10 +276,9 @@ define class-Mybuild
 							$(get instType->subTypes)),
 						$2 $0,),
 					$(inst)
-					$(invoke issueReceiver->addIssues,
-						$(new InstantiateIssue,,error,,
+					$(invoke addIssueGlobal,error,
 							No abstract realization: \
-								$(get instType->qualifiedName)))),
+								$(get instType->qualifiedName))),
 				$(inst))))
 
 	# Helper method, returns string representation of moduleInstance origin
@@ -313,11 +319,10 @@ define class-Mybuild
 				$(for require <- $(get instType->requires),
 					$(if $(map-get activeFeatures/$(require)),#OK
 						,error#Feature not realized, error
-						$(invoke issueReceiver->addIssues,
-							$(new InstantiateIssue,,error,,
+						$(invoke addIssueGlobal,error,
 							Feature $(get require->qualifiedName) required by \
 								$(get instType->qualifiedName) is not
-								implemented))))),
+								implemented)))),
 				,$(inst))))
 
 
@@ -354,7 +359,7 @@ define class-Mybuild
 							$(set optInst->option,$(opt))
 							$(set optInst->value,$(optValue))
 							$(set+ modInst->options,$(optInst))),
-						$(invoke __addIssue,$(modInst),warning,
+						$(invoke addIssueInstance,$(modInst),warning,
 							Could not bind option $(get opt->name) in module \
 								$(get mod->qualifiedName) to a value)Error)))
 				,,$(modInst))))
@@ -366,7 +371,7 @@ define class-Mybuild
 		$(if $(and $1,$2),
 			$(map-set optionUniq/$(get 1->value),1),
 			$(if $2,
-				$(invoke __addIssue,
+				$(invoke addIssueInstance,
 					$(inst),
 					warning,
 					$(get optType->qualifiedName) has @Unique without @Type))
@@ -383,7 +388,7 @@ define class-Mybuild
 					$(if $(map-get optionUniq/$(typeId)),
 						$(for anotherOpt<-$(map-get optionSet/$(setMark)),
 							Error
-							$(invoke __addIssue,$(inst),error,
+							$(invoke addIssueInstance,$(inst),error,
 								Unique type $(typeId) assigned many times \
 								to same value in \
 								$(get optType->qualifiedName) \
@@ -401,12 +406,12 @@ define class-Mybuild
 				optType<-$(get opt->option),
 				member<-$(invoke optType->eContainer),
 				$(with \
-					$(call getAnnotation,
-						$(get member->annotations),
+					$(call getAnnotationTarget,
+						$(member),
 						mybuild.lang.Type,
 						value),
-					$(call getAnnotation,
-						$(get member->annotations),
+					$(call getAnnotationTarget,
+						$(member),
 						mybuild.lang.Unique),
 					$(inst),
 
@@ -424,14 +429,14 @@ define class-Mybuild
 				$(if $(invoke MyFile_NumberOption->isInstance,$(optType)),
 					$(with \
 						$(for cmp <- ge gt le lt,
-							val <- $(call getAnnotation,
-										$(get member->annotations),
+							val <- $(call getAnnotationTarget,
+										$(member),
 										mybuild.lang.NumConstraint,
 										$(cmp)),
 					$(if \
 						$(shell if [ ! $(optValRaw) -$(cmp) $(get val->value) ]; \
 							then echo 1; fi),
-						$(invoke __addIssue,$(inst),error,option $(get optType->qualifiedName) \
+						$(invoke addIssueInstance,$(inst),error,option $(get optType->qualifiedName) \
 							constraint check error)))))),
 
 			$(if $(strip $2),
@@ -484,17 +489,13 @@ define class-Mybuild
 				$(if $(filter $(get 1->type),$(mod) $(get mod->allSuperTypes)),
 					$1,
 					$(if $(filter $(get 1->type),$(get mod->allSubTypes)),$1,
-						$(invoke issueReceiver->addIssues,
-							$(new InstantiateIssue,
-								$(for includeMember <- $(cfgInclude),
-									$(get includeMember->eResource)),
-								error,
-								$(for includeMember <- $(cfgInclude),
-									$(get includeMember->origin)),
-								Module $(get mod->qualifiedName) extends module \
-									supertype already extended by incompatible \
-									$(invoke getInstDepsOrigin,$1)))
-					)),
+						$(invoke addIssueInclude,
+							$(cfgInclude),
+							error,
+							Module $(get mod->qualifiedName) extends module \
+								supertype already extended by incompatible \
+								$(invoke getInstDepsOrigin,$1)))
+					),
 				$(new ModuleInstance,$(mod)))))
 
 	$(method setInstanceToType,
@@ -556,18 +557,17 @@ define class-Mybuild
 
 			$(map-set includingInstances/$(thisInst),$(depInst))
 
-			$(if $(call getAnnotation,$(get depMember->annotations),mybuild.lang.Include),
+			$(if $(call getAnnotationTarget,$(depMember),mybuild.lang.Include),
 				$(if $(get depInst->contained),
-					$(call __addIssue,$(thisInst),error,$(get dep->qualifiedName) \
+					$(call addIssueInstance,$(thisInst),error,$(get dep->qualifiedName) \
 						contains in several modules: $(get mod->qualifiedName) \
 						$(get $(get $(get depInst->contained).type).qualifiedName)),
 					$(set+ thisInst->contains,$(depInst))),
 				$(set+ thisInst->depends,$(depInst)))
 
 			$(if $(map-get includingInstances/$(depInst)),
-				$(invoke issueReceiver->addIssues,
-					$(new InstantiateIssue,,error,,
-					Cyclic dependency detected: $(invoke printCyclic,$(depInst))))
+				$(invoke addIssueGlobal,error,
+					Cyclic dependency detected: $(invoke printCyclic,$(depInst)))
 				,
 				$(if $(filter was,$(was)),
 					$(depInst) \
