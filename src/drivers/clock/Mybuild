@@ -26,6 +26,7 @@ module mb_timer extends embox.arch.clock {
 }
 
 module pit extends embox.arch.clock {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "pit.c"
 
 	depends embox.kernel.timer.sys_timer
