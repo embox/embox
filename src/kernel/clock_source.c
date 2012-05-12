@@ -4,6 +4,8 @@
  *
  * @date 06.07.11
  * @author Ilia Vaprol
+ * @author Alexander Kalmuk
+ *         - timecounter
  */
 
 #include <types.h>
@@ -17,6 +19,7 @@
 #include <mem/misc/pool.h>
 
 #include <kernel/clock_source.h>
+#include <kernel/ktime.h>
 
 POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER,clocks_quantity));
 DLIST_DEFINE(clock_source_list);
@@ -83,4 +86,27 @@ useconds_t clock_source_clock_to_usec(struct clock_source *cs, clock_t cl) {
 	csh = (struct clock_source_head *) clock_source_list.next;
 
 	return (useconds_t) (((useconds_t) cl) * csh->clock_source->precision);
+}
+
+void timecounter_init(struct timecounter *tc, const struct cyclecounter *cc,
+		uint64_t start_tstamp) {
+	tc->cc = cc;
+	tc->cycle_last = cc->read(cc);
+	tc->nsec = start_tstamp;
+}
+
+uint64_t timecounter_read(struct timecounter *tc) {
+	cycle_t cycle_now;
+	uint64_t nsec;
+
+	/* delta uses to convert to nanoseconds small value. It is more fast. --Alexander */
+	cycle_now = tc->cc->read(tc->cc);
+	nsec = cycles_to_ns(tc->cc, cycle_now - tc->cycle_last);
+	tc->cycle_last = cycle_now;
+
+	/* increment time by nanoseconds since last call */
+	nsec += tc->nsec;
+	tc->nsec = nsec;
+
+	return nsec;
 }

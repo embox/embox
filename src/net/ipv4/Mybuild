@@ -46,7 +46,6 @@ module icmp {
 	depends core /* for devinet.c */
 	depends ipv4 /* for ip_output.c */
 	depends skbuff
-	depends embox.kernel.time
 	depends embox.framework.LibFrameworkNet
 }
 

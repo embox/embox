@@ -22,16 +22,35 @@
 typedef uint64_t ns_t;
 
 /*
- * Given a period in ns and frequency in khz, calculate the number of
- * cycles of frequency in period.  Note that we round up to the next
- * cycle, even if we are only slightly over.
- */
-static inline uint64_t ns_to_cycles(uint64_t ns, uint32_t khz) {
-	return (ns * khz + 999999) / 1000000;
-}
+* Hardware abstraction for a free running counter.
+* @param read  - returns the current cycle value
+* @param mult  - cycle to nanosecond multiplier
+* @param shift - cycle to nanosecond divisor (power of two)
+*/
+struct cyclecounter {
+	cycle_t (*read)(const struct cyclecounter *cc);
+#if 0
+	cycle_t mask;
+#endif
+	uint32_t mult;
+	uint32_t shift;
+};
 
-static inline ns_t cycles_to_ns(cycle_t cls, uint32_t khz) {
-	return (cls * 1000000) / khz;
+/**
+ * Layer above a cyclecounter which counts nanoseconds.
+ * @param cc         - the cycle counter used by this instance
+ * @param cycle_last - most recent cycle counter value seen by
+ *                    timecounter_read()
+ * @param nsec       - continuously increasing count
+ */
+struct timecounter {
+	const struct cyclecounter *cc;
+	cycle_t cycle_last;
+	uint64_t nsec;
+};
+
+static inline ns_t cycles_to_ns(const struct cyclecounter *cc, cycle_t cycles) {
+	return (cycles * cc->mult) >> cc->shift;
 }
 
 #endif /* KERNEL_KTIME_H_ */
