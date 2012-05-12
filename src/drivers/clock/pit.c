@@ -16,7 +16,6 @@
 #include <kernel/panic.h>
 
 #include <kernel/clock_source.h>
-#include <time.h>
 
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ0               0x0
@@ -105,11 +104,11 @@ void clock_setup(useconds_t HZ) {
 	pit_divisor = divisor;
 }
 
-uint32_t i8253_read(void) {
+cycle_t i8253_read(void) {
 	int cnt;
 	uint32_t ticks;
 
-	ticks = clock();
+	ticks = clock_sys_ticks();
 	out8(0x00, MODE_REG);
 	cnt = in8(CHANNEL0);
 	cnt |= in8(CHANNEL0) << 8;
