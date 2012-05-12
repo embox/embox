@@ -1,11 +1,5 @@
 package embox.kernel
 
-module time {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "time.c"
-	depends clock_source, embox.kernel.timer.timer_api
-}
-
 module clock_source {
 
 	@NumConstraint(ge=1)
