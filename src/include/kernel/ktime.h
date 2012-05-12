@@ -28,7 +28,7 @@ static inline uint64_t ns_to_cycles(uint64_t ns, uint32_t khz) {
 }
 
 static inline ns_t cycles_to_ns(uint64_t cls, uint32_t khz) {
-	return (cls * khz + 999999) / 1000000;
+	return (cls * 1000000) / khz;
 }
 
 #endif /* KERNEL_KTIME_H_ */
