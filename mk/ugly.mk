@@ -205,7 +205,7 @@ generate_mod_defs = $(\n)/* Mod definitions. */\
     $(mod_def) \
   ) \
   $(foreach runlevel,0 1 2 3, \
-    $(foreach mod,$(addprefix generic.runlevel$(runlevel)_,init fini), \
+    $(foreach mod,generic.runlevel$(runlevel), \
       $(mod_def) \
     ) \
   )$(\n)
@@ -238,8 +238,7 @@ generate_mod_deps = $(\n)/* Mod deps. */\
 			$(valueRaw)\
 		)), \
 	$(for valueRaw <- $(or $1,2),\
-	  $(\n)MOD_DEP_DEF(generic__runlevel$(valueRaw)_init, $(c_mod)); \
-	  $(\n)MOD_DEP_DEF($(c_mod), generic__runlevel$(valueRaw)_fini); \
+	  $(\n)MOD_CONTENTS_DEF(generic__runlevel$(valueRaw), $(c_mod)); \
      ) \
     ) \
   )$(\n)

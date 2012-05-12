@@ -28,6 +28,7 @@
 #define __MOD_PROVIDES(mod_nm) MACRO_CONCAT(__mod_provides__, mod_nm)
 #define __MOD_REQUIRES(mod_nm) MACRO_CONCAT(__mod_requires__, mod_nm)
 #define __MOD_AFTER_DEPS(mod_nm) MACRO_CONCAT(__mod_after_deps__, mod_nm)
+#define __MOD_CONTENTS(mod_nm) MACRO_CONCAT(__mod_contents__, mod_nm)
 #define __MOD_MEMBERS(mod_nm)  MACRO_CONCAT(__mod_members__,  mod_nm)
 
 #define __MOD_PACKAGE(pkg_nm)  MACRO_CONCAT(__mod_package__,  pkg_nm)

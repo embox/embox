@@ -47,6 +47,8 @@
 #define MOD_DEP_DEF(mod_nm, dep_nm) \
 	  __MOD_DEP_DEF(mod_nm, dep_nm)
 
+#define MOD_CONTENTS_DEF(mod_nm, content_nm) \
+	  __MOD_CONTENTS_DEF(mod_nm, content_nm)
 /**
  * Defines new after-loading dependency of modules
  * @param mod_nm
