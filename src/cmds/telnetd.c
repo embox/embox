@@ -62,7 +62,6 @@ static void out_msgs(const char *msg, const char *msg2, const char *msg3,
 
 	/* Executes real shell or it's emulator */
 static void run(void) {
-	printf("Welcome to telnet!\n");
 #if 0
 	while (1) {
 		char ch;
@@ -75,7 +74,42 @@ static void run(void) {
 #endif
 }
 
-#if 1
+
+	/* Skip management session */
+static void ignore_telnet_options(void) {
+	unsigned char ch = getchar();
+	while ((ch & (1 << 7)) && (ch != 255))
+		ch = getchar();		/* Something related with management, probably in string mode */
+
+	while (1) {
+		if (ch == 255) {							/* IAC */
+			unsigned char op_type = getchar();
+			unsigned char param = getchar();
+			if (op_type == 251) {					/* WILL */
+				printf("%c%c%c", 255, 254, param);	/* DON'T */
+			} else if (op_type == 253) {			/* DO */
+				printf("%c%c%c", 255, 252, param);	/* WON'T */
+			} else {
+				/* Currently do nothing, probably it's an answer for our request */
+			}
+			printf("++++++++++\n");
+		}
+		else {
+			ungetchar(ch);
+			return;
+		}
+		ch = getchar();
+	}
+}
+
+	/* Identify our wishes for the session */
+static void set_our_term_parameters(void) {
+	printf("%c%c%c", 255, 251, 3);		/* Disable GO AHEAD, RFC 858 */
+	printf("%c%c%c", 255, 252, 1);		/* Disable ECHO, RFC 857 */
+	printf("%c%c%c", 255, 254, 1);		/* Disable ECHO, RFC 857 */
+}
+
+
 	/* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
 	int *client_descr_p = (int *)args;
@@ -85,9 +119,6 @@ static void *telnet_thread_handler(void* args) {
 		/* Redirect stdin, stdout, stderr to our socket
 		 * Unfortunately it's not working. We try to treat stdout as
 		 * a socket, but we can't map 1 into a socket descriptor
-		 * ToDo:
-		 * 	It's unsertain what we should do with the original descriptors
-		 *	We can close them, but it may corrupt the original task
 		 */
 	close(0);
 	close(1);
@@ -96,49 +127,17 @@ static void *telnet_thread_handler(void* args) {
 	task_res_idx_set(t_r, 1, i_d);
 	task_res_idx_set(t_r, 2, i_d);
 
-		/* Run shell */
-	run();
-
-		/* We don't need socket any more.
-		 * Task shutdown should clear other descriptors (not implemented yet)
+		/* Hack. Emulate future output, we need a char from user to exit from
+		 * parameters mode
 		 */
-	close(*client_descr_p);
-	*client_descr_p = -1;
-	return NULL;
-}
-
-#else
-	/* Generous version */
-static void *telnet_thread_handler(void* args) {
-	int *client_descr_p = (int *)args;
-	struct task_resources *t_r = task_self_res();
-	struct idx_desc *i_d = task_res_idx_get(t_r, *client_descr_p);
-	struct socket *s= i_d->data;
-
-		/* Bad idea. Closing one of those will lead to socket close. */
-	struct idx_desc *r0 = task_idx_desc_alloc(TASK_IDX_TYPE_SOCKET, s);
-	struct idx_desc *r1 = task_idx_desc_alloc(TASK_IDX_TYPE_SOCKET, s);
-	struct idx_desc *r2 = task_idx_desc_alloc(TASK_IDX_TYPE_SOCKET, s);
-
-	if (!(r0 && r1 && r2)) {
-		out_msgs("Not enough resources\n", "Can't allocate resources\n",
-				 "idx_allocate", *client_descr_p, NULL);
-		/*
-		 * Task shutdown should clear other descriptors (not implemented yet)
-		 */
-		close(*client_descr_p);
-		*client_descr_p = -1;
-		return NULL;
+	{
+		static const char* prompt = "embox>"; /* OPTION_STRING_GET(prompt); */
+		printf("Welcome to telnet!\n%s\n\n", prompt);
 	}
 
-		/* Redirect stdin, stdout, stderr to our socket
-		 * ToDo:
-		 * 	It's unsertain what we should do with the original descriptors
-		 *	We can close them, but it may corrupt the original task
-		 */
-	task_res_idx_set(t_r, 0, r0);
-	task_res_idx_set(t_r, 1, r1);
-	task_res_idx_set(t_r, 2, r2);
+		/* Operate with settings */
+	set_our_term_parameters();
+	ignore_telnet_options();
 
 		/* Run shell */
 	run();
@@ -150,7 +149,6 @@ static void *telnet_thread_handler(void* args) {
 	*client_descr_p = -1;
 	return NULL;
 }
-#endif
 
 
 static int exec(int argc, char **argv) {
@@ -213,15 +211,14 @@ static int exec(int argc, char **argv) {
 
 			for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
 				if (clients[i] == -1) {
-					struct thread th;
-					struct thread *thds = &th;
+					static struct thread th[TELNETD_MAX_CONNECTIONS];
+					static struct thread *thds[TELNETD_MAX_CONNECTIONS];
 					clients[i] = client_descr;
 
-					/* Strange: depending of the options we might not inherit
-					 * the descriptors. Why?
-					 */
-					if ((res = thread_create(&thds, THREAD_FLAG_PRIORITY_INHERIT | THREAD_FLAG_IN_NEW_TASK,
-											 telnet_thread_handler, &clients[i]))) {
+					thds[i] = &th[i];
+					if ((res = thread_create(&thds[i],
+							THREAD_FLAG_PRIORITY_INHERIT | THREAD_FLAG_IN_NEW_TASK | THREAD_FLAG_DETACHED,
+							telnet_thread_handler, &clients[i]))) {
 						out_msgs("Internal error with shell creation\n", " failed. Can't create shell\n",
 								 "shell_create", client_descr, &client_socket);
 						MD(printf("thread_create() returned with code=%d\n", res));

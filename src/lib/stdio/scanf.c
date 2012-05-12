@@ -53,8 +53,6 @@ int ch_to_digit(char ch, int base) {
 	return -1;
 }
 
-extern int ungetchar(int ch);
-
 static void unscanchar(char **str, int ch) {
 	/*	extern int ungetchar();*/
 	if ((int) str >= 2) {

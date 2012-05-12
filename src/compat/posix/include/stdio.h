@@ -47,6 +47,9 @@ extern int getchar(void);
 
 extern int ungetc(int c, FILE *stream);
 
+/* ungetc() for stdin */
+int ungetchar(int ch);
+
 /**
  * Write formatted output to stdout from the format string FORMAT.
  */

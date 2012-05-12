@@ -111,6 +111,7 @@ static const tcp_handler_t tcp_st_handler[];
 
 static inline void debug_print(__u8 code, const char *msg, ...) {
 	va_list args;
+	return;				/* YOUR output is too annoying for others */
 
 	va_start(args, msg);
 	switch (code) {
