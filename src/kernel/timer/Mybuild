@@ -12,13 +12,11 @@ module sys_timer {
 }
 
 module timer extends timer_api {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "list_timer.c","list_timer.h"
 	depends sys_timer
 }
 
 module head_timer extends timer_api {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "head_timer.c", "head_timer.h"
 	depends sys_timer
 }

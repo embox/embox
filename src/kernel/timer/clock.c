@@ -16,12 +16,11 @@
 
 EMBOX_UNIT_INIT(module_init);
 
-static clock_t sys_ticks = 0; /* ticks after start system. */
+static cycle_t volatile sys_ticks = 0; /* ticks after start system. */
 
-clock_t clock(void) {
-	return sys_ticks;
+clock_t clock_sys_ticks(void) {
+	return (clock_t)sys_ticks;
 }
-
 /**
  * Handling of the clock tick.
  */

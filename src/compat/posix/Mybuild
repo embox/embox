@@ -11,6 +11,7 @@ module LibPosix {
 	source "select.c"
 	source "utsname.c"
 	source "wait.c"
+	source "time.c"
 
 	depends embox.util.LibUtil
 	depends embox.kernel.task_api
