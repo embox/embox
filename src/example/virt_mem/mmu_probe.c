@@ -16,7 +16,7 @@
 
 EMBOX_CMD(exec);
 
-#define START 0x9C000
+#define START 0x5C000
 #define OFFSET 0x1000
 
 
@@ -64,8 +64,7 @@ static bool mmu_show_reg() {
 #endif
 #define TLBNUM 0
 
-static bool mmu_probe(void) {
-	/* alloc mem for pages */
+static int mmu_probe(void) {
 	uint32_t address = 0;
 	uint32_t *pdt = (uint32_t *)START;
 	uint32_t *pte;
@@ -84,8 +83,9 @@ static bool mmu_probe(void) {
 	pdt[0] = (uint32_t)pte;
 	pdt[0] |= 3;
 
-	asm volatile("mov %0, %%cr3":: "b"((uint32_t *)(((int)pdt << 12) & (0xfffff00c))));
+	asm ("mov %0, %%cr3":: "b"(pdt)); /* (uint32_t *)((int)pdt & (0xfffff00c))) */
 
+#if 0
 	asm (
 		".section .data \n/t"
 		".align %0\n/t"
@@ -105,6 +105,7 @@ static bool mmu_probe(void) {
 	mmu_map_region(0, 0, 0x1000000, /* MMU_PTE_PRIV */ 0x000000000, 0x0);
 	mmu_map_region(0x44000000, 0x44000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
 	mmu_map_region(0x80000000, 0x80000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
+#endif
 
 	/* close your eyes and pray ... */
 	printf("Paging starting...\n");
@@ -124,6 +125,7 @@ static bool mmu_probe(void) {
  * return -1 another way
  */
 static int exec(int argc, char **argv) {
+
 #if 0
 	int opt;
 	getopt_init();
