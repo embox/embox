@@ -146,6 +146,10 @@ define __eObjectSerializeCrossReference
 			$($t.__serial_id__)))
 endef
 
+#
+# Container and containment references.
+#
+
 # Params:
 #   1. Property name.
 #   2. New container.
@@ -182,42 +186,16 @@ endef
 # Params:
 #   1. Property name.
 #   2. What to add.
-define __eObjectSetUnidirectional+
-	$(set-field+ $1,$2)
-endef
-
-# Params:
-#   1. Property name.
-#   2. What to add.
 #   3. Opposite property.
-define __eObjectSetBidirectional+
-	$(set-field+ $1,$2)
-	$(silent-for e <- $2,
-		$(set-field+ e->$3,$(this)))
-endef
+__eObjectSetContainment* = \
+	$(__eObjectSetContainment+)
 
 # Params:
 #   1. Property name.
 #   2. What to remove.
 #   3. Opposite property.
-define __eObjectSetContainment-
+__eObjectSetContainment- = \
 	$(foreach ,$2,$(warning $0: NIY))
-endef
-
-# Params:
-#   1. Property name.
-#   2. What to remove.
-define __eObjectSetUnidirectional-
-	$(foreach ,$2,$(warning $0: NIY))
-endef
-
-# Params:
-#   1. Property name.
-#   2. What to remove.
-#   3. Opposite property.
-define __eObjectSetBidirectional-
-	$(foreach ,$2,$(warning $0: NIY))
-endef
 
 # Params:
 #   1. Property name.
@@ -228,22 +206,15 @@ define __eObjectSetContainment
 	$(call __eObjectSetContainment+,$1,$2,$3)
 endef
 
-# Params:
-#   1. Property name.
-#   2. New value.
-define __eObjectSetUnidirectional
-	$(set-field $1,)#TODO Deresolve of link before removing not implemented
-	$(call __eObjectSetUnidirectional+,$1,$2)
-endef
+#
+# Unidirectional cross-references.
+#
 
 # Params:
 #   1. Property name.
-#   2. New value.
-#   3. Opposite property.
-define __eObjectSetBidirectional
-	$(call __eObjectSetBidirectional-,$1,$(get-field $1),$3)
-	$(call __eObjectSetBidirectional+,$1,$2,$3)
-endef
+#   2. What to add.
+__eObjectSetUnidirectional+ = \
+	$(set-field+ $1,$2)
 
 # Params:
 #   1. Property name.
@@ -259,6 +230,65 @@ define __eObjectSetUnidirectional_link+
 			# 'link./target' for resolved links, 'link./' otherwise.
 			$(link)./$(get-field link->eTarget))
 	)
+endef
+
+# Params:
+#   1. Property name.
+#   2. What to add.
+__eObjectSetUnidirectional* = \
+	$(set-field* $1,$2)
+
+# Params:
+#   1. Property name.
+#   2. What to add.
+#   3. Empty.
+#   4. Meta reference ID.
+__eObjectSetUnidirectional_link* = \
+	$(call __eObjectSetUnidirectional_link+,$1, \
+		$(filter-out $(get-field $1),$2),,$4)
+
+# Params:
+#   1. Property name.
+#   2. What to remove.
+__eObjectSetUnidirectional- = \
+	$(foreach ,$2,$(warning $0: NIY))
+
+# Params:
+#   1. Property name.
+#   2. What to remove.
+__eObjectSetUnidirectional_link- = \
+	$(foreach ,$2,$(warning $0: NIY))
+
+# Params:
+#   1. Property name.
+#   2. New value.
+define __eObjectSetUnidirectional
+	$(set-field $1,)#TODO Deresolve of link before removing not implemented
+	$(call __eObjectSetUnidirectional+,$1,$2)
+endef
+
+# Params:
+#   1. Property name.
+#   2. New value.
+#   3. Empty.
+#   4. Meta reference ID.
+define __eObjectSetUnidirectional_link
+	$(call __eObjectSetUnidirectional_link-,$1,$(get-field $1))
+	$(call __eObjectSetUnidirectional_link+,$1,$2,,$4)
+endef
+
+#
+# Bidirectional cross-references.
+#
+
+# Params:
+#   1. Property name.
+#   2. What to add.
+#   3. Opposite property.
+define __eObjectSetBidirectional+
+	$(set-field+ $1,$2)
+	$(silent-for e <- $2,
+		$(set-field+ e->$3,$(this)))
 endef
 
 # Params:
@@ -281,27 +311,41 @@ endef
 
 # Params:
 #   1. Property name.
-#   2. What to remove.
-define __eObjectSetUnidirectional_link-
-	$(foreach ,$2,$(warning $0: NIY))
-endef
+#   2. What to add.
+#   3. Opposite property.
+__eObjectSetBidirectional* = \
+	$(call __eObjectSetBidirectional+,$1,$(filter-out $(get-field $1),$2),$3)
+
+# Params:
+#   1. Property name.
+#   2. What to add.
+#   3. Opposite property.
+#   4. Meta reference ID.
+__eObjectSetBidirectional_link* = \
+	$(call __eObjectSetBidirectional_link+,$1, \
+		$(filter-out $(get-field $1),$2),$3,$4)
 
 # Params:
 #   1. Property name.
 #   2. What to remove.
 #   3. Opposite property.
-define __eObjectSetBidirectional_link-
+__eObjectSetBidirectional- = \
 	$(foreach ,$2,$(warning $0: NIY))
-endef
+
+# Params:
+#   1. Property name.
+#   2. What to remove.
+#   3. Opposite property.
+__eObjectSetBidirectional_link- = \
+	$(foreach ,$2,$(warning $0: NIY))
 
 # Params:
 #   1. Property name.
 #   2. New value.
-#   3. Empty.
-#   4. Meta reference ID.
-define __eObjectSetUnidirectional_link
-	$(call __eObjectSetUnidirectional_link-,$1,$(get-field $1))
-	$(call __eObjectSetUnidirectional_link+,$1,$2,,$4)
+#   3. Opposite property.
+define __eObjectSetBidirectional
+	$(call __eObjectSetBidirectional-,$1,$(get-field $1),$3)
+	$(call __eObjectSetBidirectional+,$1,$2,$3)
 endef
 
 # Params:
@@ -313,6 +357,10 @@ define __eObjectSetBidirectional_link
 	$(call __eObjectSetBidirectional_link-,$1,$(get-field $1),$3)
 	$(call __eObjectSetBidirectional_link+,$1,$2,$3,$4)
 endef
+
+#
+# On-demand linkage and link target resolution.
+#
 
 # Params:
 #   1. List of unresolved (at the call time) references with './' at their ends.
