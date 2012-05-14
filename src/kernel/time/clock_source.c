@@ -71,21 +71,17 @@ int clock_source_unregister(struct clock_source *cs) {
 
 
 uint32_t clock_source_get_precision(struct clock_source *cs) {
-	struct clock_source_head *csh;
+	return (uint32_t) cs->precision;
+}
 
+struct clock_source *clock_source_get_default(void) {
 	assert(!dlist_empty(&clock_source_list));
-	csh = (struct clock_source_head *) clock_source_list.next;
 
-	return (uint32_t) csh->clock_source->precision;
+	return ((struct clock_source_head *)clock_source_list.next)->clock_source;
 }
 
 useconds_t clock_source_clock_to_usec(struct clock_source *cs, clock_t cl) {
-	struct clock_source_head *csh;
-
-	assert(!dlist_empty(&clock_source_list));
-	csh = (struct clock_source_head *) clock_source_list.next;
-
-	return (useconds_t) (((useconds_t) cl) * csh->clock_source->precision);
+	return (useconds_t) (((useconds_t) cl) * cs->precision);
 }
 
 

@@ -18,7 +18,7 @@ clock_t clock(void) {
 }
 
 static useconds_t time_usec(void) {
-	return clock_source_clock_to_usec(NULL, clock());
+	return clock_source_clock_to_usec(clock_source_get_default(), clock());
 }
 
 struct timeval * get_timeval(struct timeval *tv) {

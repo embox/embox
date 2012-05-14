@@ -16,6 +16,7 @@
 #include <kernel/panic.h>
 
 #include <kernel/clock_source.h>
+#include <kernel/ktime.h>
 
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ0               0x0
@@ -73,7 +74,33 @@
 #define PIT_16BIT       0x30    /* r/w counter 16 bits, LSB first */
 #define PIT_BCD         0x01    /* count in BCD */
 
-static struct clock_source pit_clock_source;
+static useconds_t pit_divisor;
+
+static cycle_t i8253_read(const struct cyclecounter *cc) {
+	int cnt;
+	uint32_t ticks;
+
+	ticks = clock_sys_ticks();
+	out8(0x00, MODE_REG);
+	cnt = in8(CHANNEL0);
+	cnt |= in8(CHANNEL0) << 8;
+
+	cnt = (((INPUT_CLOCK + pit_divisor/2) / pit_divisor) - 1) - cnt;
+
+	return (uint32_t)(ticks * (INPUT_CLOCK + pit_divisor/2) / pit_divisor) + cnt;
+}
+
+static struct cyclecounter cc = {
+	.read = i8253_read,
+	.mult = 0,
+	.shift = 0
+};
+
+static struct clock_source pit_clock_source = {
+	.flags = 0,
+	.precision = 1000,
+	.cc = &cc
+};
 
 static irq_return_t clock_handler(int irq_nr, void *dev_id) {
 	clock_tick_handler(irq_nr, dev_id);
@@ -88,9 +115,10 @@ void clock_init(void) {
 	/* Initialization of clock source structure */
 	pit_clock_source.flags = 1;
 	pit_clock_source.precision = 1000;
+	pit_clock_source.cc = &cc;
 	clock_source_register(&pit_clock_source);
 }
-static useconds_t pit_divisor;
+
 void clock_setup(useconds_t HZ) {
 	uint32_t divisor = (INPUT_CLOCK + HZ/2) / HZ;
 
@@ -104,17 +132,4 @@ void clock_setup(useconds_t HZ) {
 	pit_divisor = divisor;
 }
 
-cycle_t i8253_read(void) {
-	int cnt;
-	uint32_t ticks;
-
-	ticks = clock_sys_ticks();
-	out8(0x00, MODE_REG);
-	cnt = in8(CHANNEL0);
-	cnt |= in8(CHANNEL0) << 8;
-
-	cnt = (((INPUT_CLOCK + pit_divisor/2) / pit_divisor) - 1) - cnt;
-
-	return (uint32_t)(ticks * (INPUT_CLOCK + pit_divisor/2) / pit_divisor) + cnt;
-}
 

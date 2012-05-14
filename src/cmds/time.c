@@ -15,8 +15,6 @@
 #include <framework/cmd/api.h>
 #include <kernel/clock_source.h>
 
-extern cycle_t i8253_read(void);
-
 EMBOX_CMD(exec);
 
 static int exec(int argc, char **argv) {
@@ -27,7 +25,7 @@ static int exec(int argc, char **argv) {
 //	}
 
 	//cmd = cmd_lookup(argc - 1);
-
+#if 0
 	volatile int i;
 	cycle_t tics_before, tics_after;
 
@@ -51,6 +49,6 @@ static int exec(int argc, char **argv) {
 	}
 	tics_after = i8253_read();
 	printf("before = %d after = %d spent = %d\n", (int)tics_before, (int)tics_after, (int)(tics_after - tics_before));
-
+#endif
 	return 0;
 }

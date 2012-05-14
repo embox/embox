@@ -39,8 +39,13 @@ static void soft_clock_handler(softirq_nr_t softirq_nr, void *data) {
  * @return 0 if success
  */
 static int module_init(void) {
+	struct clock_source *cs;
+	//TODO clock_init must be dynamic
 	clock_init();
-	clock_setup(clock_source_get_precision(NULL));
+
+	cs = clock_source_get_default();
+	clock_setup(clock_source_get_precision(cs));
+
 	softirq_install(SOFTIRQ_NR_TIMER, soft_clock_handler,NULL);
 	return 0;
 }

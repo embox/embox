@@ -10,13 +10,13 @@
 #ifndef KERNEL_TIME_H_
 #define KERNEL_TIME_H_
 
-struct timespec {
+struct ktimespec {
 	long tv_sec;    /* seconds */
 	long tv_nsec;   /* nanoseconds */
 };
 
 
-struct timeval {
+struct ktimeval {
 	long tv_sec;    /* seconds */
 	long tv_usec;   /* microseconds */
 };
