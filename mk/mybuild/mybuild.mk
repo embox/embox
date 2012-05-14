@@ -558,12 +558,12 @@ define class-Mybuild
 			$(map-set includingInstances/$(thisInst),$(depInst))
 
 			$(if $(call getAnnotationTarget,$(depMember),mybuild.lang.Include),
-				$(if $(get depInst->contained),
+				$(if $(get depInst->container),
 					$(call addIssueInstance,$(thisInst),error,$(get dep->qualifiedName) \
 						contains in several modules: $(get mod->qualifiedName) \
-						$(get $(get $(get depInst->contained).type).qualifiedName)),
-					$(set+ thisInst->contains,$(depInst))),
-				$(set+ thisInst->depends,$(depInst)))
+						$(get $(get $(get depInst->container).type).qualifiedName)),
+					$(set* thisInst->contents,$(depInst))),
+				$(set* thisInst->depends,$(depInst)))
 
 			$(if $(map-get includingInstances/$(depInst)),
 				$(invoke addIssueGlobal,error,
