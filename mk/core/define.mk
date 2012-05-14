@@ -1565,6 +1565,76 @@ for = \
 silent-for = \
 	$(warning silent-for: illegal invocation)
 
+$(def_all)
+
+#
+# Params:
+#   1. String to split. It is important to note, that it will be expanded,
+#      so you have to care about proper dollar-escaping.
+#   2. List of substrings to treat as argument separators.
+#   3. Handler function which is called with the recognized arguments.
+#      The context in which it is called is effectively the same as if it
+#      would be a builtin handler for '$(<handler> args...)'.
+#   4. (optional) Passed to the handler after the last argument.
+define builtin_split_args
+	$(assert $(and $(singleword [$3]),$(call var_defined,$3)),
+		Unknown handler function: '$3')
+
+	$(expand $$(call $$3,$(__builtin_split_args_install_hooks)))
+endef
+
+# Installs the proper hooks for the outer expansion phase.
+# See 'builtin_split_args' for the info about the arguments.
+define __builtin_split_args_install_hooks
+	# We reuse the expansion stack.
+	$$(call __def_o_push,__argsplit__-$3)
+
+	# There will be at least one argument.
+	$$(__def_o_arg)
+
+	# The inner expansion.
+	$(expand $$(foreach h,
+		$(lambda \
+			# This is called for every argument separator that was
+			# found outside any parens,
+			# except for commas for which this function is simply expanded.
+			#   1. The separator (not a comma).
+
+			$(if $(eq $0,$h),
+				# Advance the top of the expansion stack with a new
+				# argument and return the native argument separator.
+				$(,)$$(__def_o_arg),
+
+				# Escape the comma so that it will not break
+				# the current argument during the second expansion.
+				$$(,))),
+
+		# Iterate through the list of separators and install an indirect
+		# hook to '$h', which expands into the identity function inside
+		# parens and into the lambda expression above otherwise.
+		$(call list_fold,
+			$(lambda \
+				$(assert $(not $(or \
+						$(strip $(foreach bad,$$ ( , ),
+							$(findstring $(bad),$2))),
+						$(findstring $2,foreach h id call))),
+					Value '$2' can't be used as an argument separator)
+
+				# 'bar;baz' -> 'bar$(call $h,$(foreach h,id,;))baz'
+				# The inner 'foreach' avoids any possible issues with
+				# nested separators (e.g. '->' and '>'), if any.
+				$(subst $2,$$(call $$h,$$(foreach h,id,$2)),$1)),
+
+			# 'h' variable is shadowed inside any parens.
+			# '(foo)' -> '$(foreach h,id,(foo))'
+			$(subst $[,$$$[foreach h$(,)id$(,)$[,$(subst $],$]$],
+				$(subst $(,),$${$$h},$(subst $$,$$$$,$1)))),
+
+			$2)))
+
+	$$(__def_o_pop)
+endef
+
 # Finally, flush the rest and say Goodbye!
 $(def_all)
 
