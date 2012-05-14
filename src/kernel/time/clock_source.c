@@ -88,6 +88,18 @@ useconds_t clock_source_clock_to_usec(struct clock_source *cs, clock_t cl) {
 	return (useconds_t) (((useconds_t) cl) * csh->clock_source->precision);
 }
 
+
+POOL_DEF(timecounter_pool, struct timecounter, OPTION_GET(NUMBER,timecounter_quantity));
+
+struct timecounter *timecounter_alloc(void) {
+	return pool_alloc(&timecounter_pool);
+}
+
+
+void timecounter_free(struct timecounter *tc) {
+	pool_free(&timecounter_pool, tc);
+}
+
 void timecounter_init(struct timecounter *tc, const struct cyclecounter *cc,
 		uint64_t start_tstamp) {
 	tc->cc = cc;
