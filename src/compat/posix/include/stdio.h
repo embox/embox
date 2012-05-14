@@ -134,9 +134,11 @@ extern int fseek(FILE *stream, long int offset, int origin);
 extern int fioctl(FILE *fp, int request, ...);
 
 
-#include <kernel/task.h>
-/*extern FILE *stdin;*/
-#define stdin ((FILE *)(task_res_idx_get(task_self_res(), 0)->data))
+//#include <kernel/task.h>
+extern FILE *stdin;
+extern FILE *stdout;
+extern FILE *stderr;
+//#define stdin ((FILE *)(task_res_idx_get(task_self_res(), 0)->data))
 
 //TODO: stub
 
