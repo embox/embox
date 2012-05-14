@@ -250,12 +250,14 @@ __core_object_mk := 1
 #
 #   	$(set-field  field,value) # Assigns a new value to the field.
 #   	$(set-field+ field,value) # Appends a given value to the field.
+#   	$(set-field* field,value) # Unique appending.
 #   	$(set-field- field,value) # Removes any occurrence of a value.
 #
 #   	$(get  property)          # Invokes getter of the specified property.
 #
 #   	$(set  property,value)    # Sets a new value by calling setter.
 #   	$(set+ property,value)    # Append (multi-value properties only).
+#   	$(set* property,value)    # Add unique (multi-value properties only).
 #   	$(set- property,value)    # Remove (multi-value properties only).
 #
 #   Related builtin functions allows one to specify a target member in three
@@ -733,10 +735,12 @@ endif
 #
 # $(set  [{obj.|ref->}]property,value)
 # $(set+ [{obj.|ref->}]property,value)
+# $(set* [{obj.|ref->}]property,value)
 # $(set- [{obj.|ref->}]property,value)
 #
 builtin_func-set  = $(__builtin_func_set)
 builtin_func-set+ = $(__builtin_func_set)
+builtin_func-set* = $(__builtin_func_set)
 builtin_func-set- = $(__builtin_func_set)
 
 # Expanded from  'setx' builtin context. It will generate a call
@@ -765,17 +769,15 @@ $(call def,__builtin_func_set)
 #   3. Value.
 # Usage:
 #   $(call set,object,property,value)
-set = \
-	$(set 1->$2,$3)
-set+ = \
-	$(set+ 1->$2,$3)
-set- = \
-	$(set- 1->$2,$3)
+set  = $(set  1->$2,$3)
+set+ = $(set+ 1->$2,$3)
+set* = $(set* 1->$2,$3)
+set- = $(set- 1->$2,$3)
 
 ifdef OBJ_DEBUG
 # Params:
 #   1. Property name.
-#   2. '+', '-', or empty.
+#   2. '+', '*', '-', or empty.
 #   3. Value.
 # Context:
 #   '__this'
@@ -838,11 +840,12 @@ endif
 
 #
 # $(set-field  [{obj.|ref->}]field,value)
-# $(set-field+ [{obj.|ref->}]field,value)
+# $(set-field* [{obj.|ref->}]field,value)
 # $(set-field- [{obj.|ref->}]field,value)
 #
 builtin_func-set-field  = $(__builtin_func_set_field)
 builtin_func-set-field+ = $(__builtin_func_set_field)
+builtin_func-set-field* = $(__builtin_func_set_field)
 builtin_func-set-field- = $(__builtin_func_set_field)
 
 # Expanded from  'set-fieldx' builtin context. It will generate a call
@@ -882,6 +885,20 @@ define __field_set+
 
 	${eval \
 		$(__this).$(__field_check) += $$2
+	}
+endef
+
+# Params:
+#   1. Field name.
+#   2. Value.
+# Context:
+#   '__this'
+define __field_set*
+	$(__obj_trace $(__this),f-set* $($(__this)).$1: '$2')
+
+	${eval \
+		$(__this).$(__field_check) += \
+			$$(filter-out $$($(__this).$1),$$2)
 	}
 endef
 
@@ -986,10 +1003,12 @@ endif
 #
 # $(map-set  [{obj.|ref->}]map,value)
 # $(map-set+ [{obj.|ref->}]map,value)
+# $(map-set* [{obj.|ref->}]map,value)
 # $(map-set- [{obj.|ref->}]map,value)
 #
 builtin_func-map-set  = $(__builtin_func_map_set)
 builtin_func-map-set+ = $(__builtin_func_map_set)
+builtin_func-map-set* = $(__builtin_func_map_set)
 builtin_func-map-set- = $(__builtin_func_map_set)
 
 # Expanded from  'map-setx' builtin context. It will generate a call
@@ -1069,6 +1088,28 @@ endef
 #   3. Value.
 # Context:
 #   '__this'
+define __map_set*
+	$(__obj_trace $(__this),m-set* $($(__this)).$1/$2: '$3')
+
+	${eval \
+		$(if $(findstring u,$(flavor $(__this).$(__map_key_check))),
+			# New key, assign the value unconditionally.
+			$(__this).$1 += $$2$(\n)
+			$(__this).$1.$$2 := $$3,
+
+			# Key already exists, append a new value.
+			$(__this).$1.$$2 += \
+				$$(filter-out $$($(__this).$1.$$2),$$3)
+		)
+	}
+endef
+
+# Params:
+#   1. Map name.
+#   2. Key.
+#   3. Value.
+# Context:
+#   '__this'
 define __map_set-
 	$(__obj_trace $(__this),m-set- $($(__this)).$1/$2: '$3')
 
@@ -1129,8 +1170,6 @@ endef
 $(def_all)
 
 map-get = $(map-get 1->$2/$3)
-
-map-set = $(map-set 1->$2/$3,$4)
 
 #
 # Object/class structure introspection.
