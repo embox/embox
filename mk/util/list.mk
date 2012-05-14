@@ -149,6 +149,7 @@ __list_pairmap_each = \
 #
 ifndef LIST_PURE_FUNC
 __list_fold__ :=
+__cache_transient += __list_fold__
 endif
 
 ##

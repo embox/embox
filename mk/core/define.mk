@@ -1398,10 +1398,10 @@ endef
 #   This is a macro and you must not 'call' it.
 define __builtin_to_function_inline
 	$(with \
-		# We'll populate the following variable with names of the arguments
+		# We'll populate this variable with names of the arguments
 		# being inlined.
 		${eval \
-			__builtin_to_function_inline_expanded_args :=# Reset.
+			__def_tmp__ :=# Reset.
 		}
 		# Inlining is actually performed by the expansion engine.
 		# We just escape everything except recognized argument references and
@@ -1423,9 +1423,9 @@ define __builtin_to_function_inline
 				$(builtin_args_list),
 				$(lambda \
 					${eval \
-						__builtin_to_function_inline_expanded_args += $(arg)
+						__def_tmp__ += $(arg)
 					}
-					$($(arg))
+					$($(arg))# Return the value to be inlined.
 				)
 			)
 		),
@@ -1436,8 +1436,7 @@ define __builtin_to_function_inline
 				# Check the presence of each argument in the list of
 				# actually inlined arguments that we have collected during
 				# the expansion. The argument should be listed exactly once.
-				$(call not,$(call singleword,$(filter $(arg),
-						$(__builtin_to_function_inline_expanded_args)))),
+				$(call not,$(call singleword,$(filter $(arg),$(__def_tmp__)))),
 
 				# Well, the argument has been inlined more than once or has not
 				# been used at all. Check if the value of the argument contains
@@ -1457,8 +1456,7 @@ define __builtin_to_function_inline
 				# and emit the name of the bad argument.
 				$(def-ifdef DEF_DEBUG,$(call __def_debug,
 						Value of the argument $(arg) ('$($(arg))') is \
-						$(if $(filter $(arg),
-								$(__builtin_to_function_inline_expanded_args)),
+						$(if $(filter $(arg),$(__def_tmp__)),
 							used more than once,
 							not used) inside the function being inlined))
 				$(arg)
@@ -1472,9 +1470,6 @@ define __builtin_to_function_inline
 			$1)
 	)
 endef
-
-__builtin_to_function_inline_expanded_args :=
-__cache_transient += __builtin_to_function_inline_expanded_args
 
 else
 builtin_to_function_inline = $(builtin_to_function_call)
