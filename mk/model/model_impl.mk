@@ -253,6 +253,8 @@ endef
 define __eObjectSetUnidirectional_link+
 	$(set-field+ $1,
 		$(for link <- $2,
+			$(assert $(not $(get-field link->eSource)),
+				Link $(link) has already got a source)
 			$(set-field link->eSource,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
 			$(link)./$(get-field link->eTarget))
@@ -267,6 +269,8 @@ endef
 define __eObjectSetBidirectional_link+
 	$(set-field+ $1,
 		$(for link <- $2,
+			$(assert $(not $(get-field link->eSource)),
+				Link $(link) has already got a source)
 			$(set-field link->eSource,$4$(this))
 			# 'link./target' for resolved links, 'link./' otherwise.
 			$(link)./$(for target <- $(get-field link->eTarget),
@@ -332,23 +336,22 @@ define __eLinkSetTarget
 		Can't set a target on the link with no source)
 
 	$(for oldTarget <- $(get-field eTarget),
-			$(warning $0: NIY; (old target: '$(oldTarget)')))
+		$(warning $0: NIY; (old target: '$(oldTarget)')))
+
+	$(set-field eTarget,$1)
 
 	$(for newTarget <- $1,
 		source <- $(invoke eSource),
 		metaReference <- $(get eMetaReference),
 		referenceProperty <- $(get metaReference->instanceProperty),
 
-		$(set-field eTarget,$(newTarget))
-
 		$(set-field source->$(referenceProperty),
 			$(patsubst $(this)./,$(this)./$(newTarget),
 				$(get-field source->$(referenceProperty))))
 
-		$(and $(for opposite <- $(get metaReference->eOpposite),
-				$(set-field+ newTarget->$(get opposite->instanceProperty),
-					$(this)$(source))
-				x),)
+		$(for opposite <- $(get metaReference->eOpposite),
+			$(set-field+ newTarget->$(get opposite->instanceProperty),
+				$(this)$(source)))
 	)
 endef
 
