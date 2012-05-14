@@ -427,7 +427,6 @@ define class-MyModuleType
 				$(if $(filter $1,$(get superOpt->name)),,
 			       		$(superOpt)))))
 
-
 	$(setter allOptions,
 		$(error $0($1): NIY))
 	# PROTECTED REGION END
@@ -446,16 +445,14 @@ define class-MyModuleType
 	$(property allSubTypes... : MyModuleType)
 	# PROTECTED REGION ID(MyFile_ModuleType_allSubTypes) ENABLED START
 	$(getter allSubTypes,
-		$(for subType <- $(get subTypes),
-			$(subType)\
-			$(get subType->allSubTypes)))
+		$(for t <- $(get subTypes),$t $(get t->allSubTypes)))
 	# PROTECTED REGION END
 
 	# Reference 'allSuperTypes' [0..*]: bidirectional, derived, read-only.
 	$(property allSuperTypes... : MyModuleType)
 	# PROTECTED REGION ID(MyFile_ModuleType_allSuperTypes) ENABLED START
 	$(getter allSuperTypes,
-		$(get superType) $(foreach s,$(get superType),$(get s->allSuperTypes)))
+		$(for t <- $(get superType),$t $(get t->allSuperTypes)))
 	# PROTECTED REGION END
 
 	# Method 'isSubTypeOf'.
@@ -470,8 +467,7 @@ define class-MyModuleType
 	#   1. another : MyModuleType
 	# PROTECTED REGION ID(MyFile_ModuleType_isSuperTypeOf) ENABLED START
 	$(method isSuperTypeOf,
-		$(if $(invoke 1->isSubTypeOf,$(this)),
-			$1))
+		$(invoke 1->isSubTypeOf,$(this)))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_ModuleType) ENABLED START

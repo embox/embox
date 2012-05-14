@@ -13,6 +13,9 @@
         eOpposite="#//Build/modules"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="ecore:EClass myfile.ecore#//ModuleType"
         resolveProxies="false"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="allTypes" upperBound="-1"
+        eType="ecore:EClass myfile.ecore#//ModuleType" changeable="false" volatile="true"
+        transient="true" derived="true"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="dependent" upperBound="-1"
         eType="#//ModuleInstance" resolveProxies="false" eOpposite="#//ModuleInstance/depends"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="depends" upperBound="-1"
@@ -27,6 +30,9 @@
         eType="#//ModuleInstance"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="includeMember" eType="ecore:EClass configfile.ecore#//Include"
         unsettable="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="sources" upperBound="-1"
+        eType="ecore:EClass myfile.ecore#//FileName" changeable="false" volatile="true"
+        transient="true" derived="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="OptionInstance">
     <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="#//ModuleInstance"

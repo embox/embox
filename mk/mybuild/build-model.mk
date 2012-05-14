@@ -42,6 +42,7 @@ endef
 # The following features are defined:
 #   - reference 'build'
 #   - reference 'type'
+#   - reference 'allTypes'
 #   - reference 'dependent'
 #   - reference 'depends'
 #   - reference 'contents'
@@ -49,6 +50,7 @@ endef
 #   - reference 'options'
 #   - reference 'afterDepends'
 #   - reference 'includeMember'
+#   - reference 'sources'
 #
 define class-ModuleInstance
 	# Extends 'EObject' class (implicitly).
@@ -62,6 +64,13 @@ define class-ModuleInstance
 	# Property 'type : MyModuleType'.
 	$(eobject-reference Build_ModuleInstance_type,
 		type,MyModuleType,,changeable)
+
+	# Reference 'allTypes' [0..*]: derived, read-only.
+	$(property allTypes... : MyModuleType)
+	# PROTECTED REGION ID(Build_ModuleInstance_allTypes) ENABLED START
+	$(getter allTypes,
+		$(for t <- $(get type),$t $(get t->allSuperTypes)))
+	# PROTECTED REGION END
 
 	# Property 'dependent... : ModuleInstance'.
 	$(eobject-reference Build_ModuleInstance_dependent,
@@ -91,6 +100,15 @@ define class-ModuleInstance
 	# Property 'includeMember_link : ELink'.
 	$(eobject-reference Build_ModuleInstance_includeMember,
 		includeMember,CfgInclude,,changeable linkable)
+
+	# Reference 'sources' [0..*]: derived, read-only.
+	$(property sources... : MyFileName)
+	# PROTECTED REGION ID(Build_ModuleInstance_sources) ENABLED START
+	$(getter sources,
+		$(for t <- $(get allTypes),
+			src <- $(get t->sources),
+			$(get src->fileFullName)))
+	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(Build_ModuleInstance) ENABLED START
 	# PROTECTED REGION END
