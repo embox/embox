@@ -1103,7 +1103,7 @@ endef
 #   3. Optional message.
 # No return.
 define __assert_handle_failure
-	$(call $(if $(value __def_var),builtin_)error,
+	$(call $(if $(findstring automatic,$(origin __def_var)),builtin_)error,
 			ASSERTION FAILED in function '$1': '$2'$(if $(value 3),: $3))
 endef
 
