@@ -633,7 +633,7 @@ define builtin_func-invoke
 		$(call __object_member_access_wrap,$1,
 			$(def-ifdef OBJ_DEBUG,
 				$$(foreach __method_name,$2,
-					$$(foreach __args_nr,$(words $(builtin_args_list)),
+					$$(foreach __args_nr,$(builtin_arity),
 						$$(call __method_invoke_debug,$3)
 					)
 				),

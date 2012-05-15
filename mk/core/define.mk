@@ -613,7 +613,7 @@ define __def_inner_handle_function
 			# Real commas are needed to get actual arguments placed
 			# into the corresponding variables ($1,$2,...), and
 			# hooks help to construct a list of these variables.
-			$(,)$$(call __def_o_arg),
+			$(,)$$(__def_o_arg),
 
 			c[$$]# Escaped comma before the arguments.
 
@@ -902,6 +902,10 @@ endef
 # Arity checks: exact, min, max, range.
 #
 
+# Number of arguments.
+builtin_arity = \
+	$(words $(builtin_args_list))
+
 # Asserts that the actual number of arguments equals to the specified value
 # Otherwise it fails with an error.
 # Params:
@@ -939,20 +943,17 @@ builtin_check_max_arity = \
 #   Nothing.
 define builtin_check_arity_range
 	$(call __builtin_check_arity_range,
-		$(wordlist $(or $1,1),$(or $2,$(words $(builtin_args_list))),
-			$(builtin_args_list))
-	)
+		$(wordlist $(or $1,1),$(or $2,$(builtin_arity)),
+			$(builtin_args_list)))
 endef
 
 # Params:
 #   1. List of args: min .. max
 define __builtin_check_arity_range
-	$(if $(filter-out $1,$(words $(builtin_args_list))),
+	$(if $(filter-out $1,$(builtin_arity)),
 		$(call builtin_error,
-			Too $(if $1,many,few) arguments ($(words $(builtin_args_list))) \
-			to function '$(builtin_name)'
-		)
-	)
+			Too $(if $1,many,few) arguments ($(builtin_arity)) \
+			to function '$(builtin_name)'))
 endef
 
 #
@@ -1486,6 +1487,114 @@ endif # DEF_NOINLINE
 $(def_all)
 
 #
+# Generic argument splitter which handles arbitrary argument separators with
+# respect to parentheses.
+#
+# Params:
+#   1. String to split. It is important to note, that it will be expanded,
+#      so you have to care about proper dollar-escaping. It also must have
+#      a valid parens-balanced structure.
+#   2. List of substrings to treat as argument separators. The list order
+#      matters in case when some separator is a part of another one.
+#      For example '-> >' != '> ->', moreover in the latter case the '->'
+#      will not be recognized at all.
+#      It can't have dollars, commas, parens, line feeds or hashes.
+#   3. Handler function which is called with the recognized arguments.
+#      The context in which it is called is effectively the same as if it
+#      would be a builtin handler for '$(__argsplit__-(???) args...)'.
+#   4. (optional) Passed to the handler after the last argument.
+define builtin_argsplit
+	$(assert $(call var_defined,$3),
+		Unknown handler function: '$3')
+
+	$(def-ifdef DEF_DEBUG,$(call __def_debug,
+			argsplit [$1] using [$2]))
+
+	$(with \
+		${eval \
+			# It gets populated with something like '{1} ;{2}'.
+			__builtin_argsplit_tmp__ := {1}
+		}
+		# The inner expansion.
+		$(foreach p,__argsplit_hook,$(foreach h,out,$(expand \
+			# Iterate through the list of separators and install an indirect
+			# hook to '$h', which expands into the identity function inside
+			# parens and into the lambda expression above otherwise.
+			$(call list_fold,
+				$(lambda \
+					$(assert $(not $(or \
+							$(strip $(foreach bad,$$ ( , ) { } $(\n) $(\h),
+								$(findstring $(bad),$2))),
+							$(findstring $2,foreach h id call))),
+						Value '$2' can't be used as an argument separator)
+
+					# 'bar;baz' -> 'bar$(call $h,$(foreach h,id,;))baz'
+					# The inner 'foreach' avoids any possible issues with
+					# nested separators (e.g. '->' and '>'), if any.
+					$(subst $2,$$(call $$p-sep-$$h,$$(foreach h,in,$2)),$1)),
+
+				# 'h' variable is shadowed inside any parens.
+				# '(foo)' -> '$(foreach h,id,(foo))'
+				$(subst $[,$$$[foreach h$(,)in$(,)$[,$(subst $],$]$],
+					$(subst $(,),$${$$p-comma-$$h},$(subst $$,$$$$,$1)))),
+
+				$2)))),
+
+		# Arg 2.
+		$(subst $(\s),,$(__builtin_argsplit_tmp__)),
+
+		$3,$(value 4),
+
+		# The exact structure of used delimiters is encoded inside
+		# builtin name which is pushed onto the expansion stack.
+		$(call __def_o_push,
+			__argsplit__-($2))
+
+		$(expand $$(call $$3$$(__def_o_arg),$1,$$4))
+
+		$(__def_o_pop)
+	)
+endef
+
+#
+# There are four argsplit inner hooks:
+#   - a separator outside any parens
+#   - a separator inside some parens
+#   - a comma outside any parens
+#   - a comma inside some parens
+#
+# The first two also take the actual separator as the sole argument.
+#
+
+# The only meaningful work is done here.
+define __argsplit_hook-sep-out
+	$(assert $(singleword [$1]))
+	${eval \
+		# Append '<separator>{<arg_nr>}' through a space.
+		__builtin_argsplit_tmp__ += \
+			$1{$(words x $(__builtin_argsplit_tmp__))}
+	}
+	# Advance the top of the expansion stack with a new
+	# argument and return the native argument separator.
+	$(,)$$(__def_o_arg)
+endef
+
+# Return the separator as is.
+__argsplit_hook-sep-in = $1
+
+# Escape the comma so that it will not break
+# the current argument during the second expansion.
+__argsplit_hook-comma-out := $$(,)
+
+# Echo an unscaped comma.
+__argsplit_hook-comma-in := ,
+
+__builtin_argsplit_tmp__ :=
+__cache_transient += __builtin_argsplit_tmp__
+
+$(def_all)
+
+#
 # Some syntactic sugar.
 #
 
@@ -1498,56 +1607,25 @@ $(def_all)
 #
 # Note:
 #   Arrow sign ('<-') is a separator and it must appear literally.
-define builtin_func-for
+define builtin_macro-for
 	$(call builtin_check_min_arity,2)
 
 	$(subst-end $$$[foreach,,
 		$$$[foreach $(foreach a,$(nolastword $(builtin_args_list)),
-			$(call __for_variable_parse,$($a),$(lambda $1,$2,$$$[foreach)))
-	)
+			$(call builtin_argsplit,$($a),<-,$(lambda \
+					$(if $(not $(eq 2,$(builtin_arity))),
+						$(with $($(words x $(builtin_args_list))),
+							$(call builtin_error,
+								Invalid argument to '$(firstword $1)' \
+								function: '$(nofirstword $1)')))
+					# The order is inverted to avoid a leading space
+					# in cycle bodies.
+					$(trim $1),$(trim $2),$$$[foreach
+				),$(builtin_name) $($a))))
 
-	$(builtin_lastarg)# body
+	$(expand $(builtin_lastarg))# body
 
 	$(subst $(\s),,$(nolastword $(builtin_args_list:%=$])))
-endef
-
-# Params:
-#   1. Variable definition to parse in form 'var<-list'.
-#      It is assumed that there is no any commas outside parens.
-#   2. Continuation with the following args:
-#       1. Recognized variable name.
-#       2. The list.
-#       3. Optional argument.
-#   3. (optional) Argument to pass to the continuaion.
-# Return:
-#   Result of call to continuation in case of a valid definition,
-#   otherwise it aborts using 'builtin_error'.
-define __for_variable_parse
-	$(or \
-		$(expand $$(call \
-			$(lambda \
-				$(and $(eq .,$6),$(nolastword $4),$(trim $5),
-					# Escaped variable name is in $4. Escaped list is in $5.
-					$(call $1,$(call $3,$(nolastword $4)),$(call $3,$5),$2))
-			),
-
-			# 1 and 2: The continuation with its argument.
-			$$2,$$(value 3),
-
-			# 3: Unescape function which restores '<-' back.
-			$(lambda $(subst $(\s)<-$(\comma),<-,$(trim $1))),
-
-			# 4 and 5: Escaped definition with '<-' repalaced by commas.
-			$(subst <-,$(\s)<-$(\comma),
-				$(subst $(\comma),$$(\comma),$(subst $$,$$$$,$1))),
-
-			# 6: End of args marker.
-			.,
-		)),
-
-		$(call builtin_error,
-				Invalid argument to '$(builtin_name)' function: '$1')
-	)
 endef
 
 $(def_all)
@@ -1559,110 +1637,14 @@ $(def_all)
 #
 # A version of 'for' builtin that returns nothing.
 #
-define builtin_func-silent-for
-	$$(if \
-		$(for builtin_name <- for,
-			$(builtin_func-for)),
-	)
-endef
+builtin_macro-silent-for = \
+	$$(if $(builtin_macro-for),)
 
 # Expansions like $(for) or $(call for,...) are meaningless.
 for = \
 	$(warning for: illegal invocation)
 silent-for = \
 	$(warning silent-for: illegal invocation)
-
-$(def_all)
-
-#
-# Generic argument splitter which handles arbitrary argument separators with
-# respect to parentheses.
-#
-# Params:
-#   1. String to split. It is important to note, that it will be expanded,
-#      so you have to care about proper dollar-escaping. It also must have
-#      a valid parens-balanced structure.
-#   2. List of substrings to treat as argument separators. The list order
-#      matters in case when some separator is a part of another one.
-#      For example '-> >' != '> ->', moreover in the latter case the '->'
-#      will not be recognized at all.
-#   3. Handler function which is called with the recognized arguments.
-#      The context in which it is called is effectively the same as if it
-#      would be a builtin handler for '$(<???> args...)'.
-#   4. (optional) Passed to the handler after the last argument.
-define builtin_argsplit
-	$(assert $(call var_defined,$3),
-		Unknown handler function: '$3')
-
-	$(with \
-		${eval \
-			# It gets populated with something like '(1) ;(2)'.
-			__def_argsplit_tmp__ := (1)
-		}
-		# The inner expansion.
-		$(expand $$(foreach h,
-			$(lambda \
-				# This is called for every argument separator that was
-				# found outside any parens,
-				# except for commas for which this function is simply expanded.
-				#   1. The separator (not a comma).
-
-				$(if $(eq $0,$h),
-					$(assert $(singleword [$1]))
-					${eval \
-						# Append '<separator>(<arg_nr>)'
-						__def_argsplit_tmp__ += \
-							$1($(words x $(__def_argsplit_tmp__)))
-					}
-					# Advance the top of the expansion stack with a new
-					# argument and return the native argument separator.
-					$(,)$$(__def_o_arg),
-
-					# Escape the comma so that it will not break
-					# the current argument during the second expansion.
-					$$(,))),
-
-			# Iterate through the list of separators and install an indirect
-			# hook to '$h', which expands into the identity function inside
-			# parens and into the lambda expression above otherwise.
-			$(call list_fold,
-				$(lambda \
-					$(assert $(not $(or \
-							$(strip $(foreach bad,$$ ( , ) $(\n) $(\h),
-								$(findstring $(bad),$2))),
-							$(findstring $2,foreach h id call))),
-						Value '$2' can't be used as an argument separator)
-
-					# 'bar;baz' -> 'bar$(call $h,$(foreach h,id,;))baz'
-					# The inner 'foreach' avoids any possible issues with
-					# nested separators (e.g. '->' and '>'), if any.
-					$(subst $2,$$(call $$h,$$(foreach h,id,$2)),$1)),
-
-				# 'h' variable is shadowed inside any parens.
-				# '(foo)' -> '$(foreach h,id,(foo))'
-				$(subst $[,$$$[foreach h$(,)id$(,)$[,$(subst $],$]$],
-					$(subst $(,),$${$$h},$(subst $$,$$$$,$1)))),
-
-				$2))),
-
-		# Arg 2.
-		$(subst $(\s),,$(__def_argsplit_tmp__)),
-
-		$3,$(value 4),
-
-		# The exact structure of used delimiters is encoded inside
-		# builtin name which is pushed onto the expansion stack.
-		$(call __def_o_push,
-			__argsplit__-$2)
-
-		$(expand $$(call $$3$$(__def_o_arg),$1,$$4))
-
-		$(__def_o_pop)
-	)
-endef
-
-__def_argsplit_tmp__ :=
-__cache_transient += __def_argsplit_tmp__
 
 # Finally, flush the rest and say Goodbye!
 $(def_all)
