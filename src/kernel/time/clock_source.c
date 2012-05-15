@@ -9,7 +9,7 @@
  */
 
 #include <types.h>
-#include <time.h>
+#include <time.h> // posix
 #include <assert.h>
 #include <errno.h>
 
@@ -17,6 +17,8 @@
 
 #include <util/dlist.h>
 #include <mem/misc/pool.h>
+
+#include <kernel/time.h>
 
 #include <kernel/clock_source.h>
 #include <kernel/ktime.h>
@@ -185,4 +187,18 @@ void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from,
 	*shift = 0;
 }
 
+
 #endif
+
+static useconds_t time_usec(void) {
+	return clock_source_clock_to_usec(clock_source_get_default(), clock());
+}
+
+struct ktimeval * get_timeval(struct ktimeval *tv) {
+	useconds_t usec;
+
+	usec = time_usec();
+	tv->tv_sec = usec / MICROSEC_PER_SEC;
+	tv->tv_usec = usec % MICROSEC_PER_SEC;
+	return tv;
+}

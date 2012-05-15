@@ -21,4 +21,7 @@ struct ktimeval {
 	long tv_usec;   /* microseconds */
 };
 
+/* time in struct timeval from start of system */
+extern struct ktimeval * get_timeval(struct ktimeval *);
+
 #endif /* KERNEL_TIME_H_ */

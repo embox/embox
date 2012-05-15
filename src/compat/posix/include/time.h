@@ -17,15 +17,25 @@
 #define MICROSEC_PER_SEC 1000000
 
 
+struct timespec {
+	time_t tv_sec;
+	long   tv_nsec;
+};
+
 extern char *ctime(const time_t *timep, char *buff);
 
 /* clocks from beginning of start system */
 extern clock_t clock(void);
 
-/* time in struct timeval from start of system */
-extern struct timeval * get_timeval(struct timeval *);
-
 /* seconds from beginning of start system */
 extern time_t time(time_t *);
+
+extern int clock_getres(clockid_t clk_id, struct timespec *res);
+
+int clock_gettime(clockid_t clk_id, struct timespec *tp);
+
+int clock_settime(clockid_t clk_id, const struct timespec *tp);
+
+
 
 #endif /* TIME_H_ */
