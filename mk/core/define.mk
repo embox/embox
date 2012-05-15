@@ -134,6 +134,9 @@ __def = \
 		$(call __def_append_var,__def_done,$(__def_var)) \
 	)),)
 
+# Default value to use outside the def context.
+__def_var = <novar>
+
 # Appends a value (if any) to a simple variable.
 #   1. Variable.
 #   1. Value.
@@ -1572,28 +1575,28 @@ silent-for = \
 $(def_all)
 
 #
+# Generic argument splitter which handles arbitrary argument separators with
+# respect to parentheses.
+#
 # Params:
 #   1. String to split. It is important to note, that it will be expanded,
-#      so you have to care about proper dollar-escaping.
-#   2. List of substrings to treat as argument separators.
+#      so you have to care about proper dollar-escaping. It also must have
+#      a valid parens-balanced structure.
+#   2. List of substrings to treat as argument separators. The list order
+#      matters in case when some separator is a part of another one.
+#      For example '-> >' != '> ->', moreover in the latter case the '->'
+#      will not be recognized at all.
 #   3. Handler function which is called with the recognized arguments.
 #      The context in which it is called is effectively the same as if it
-#      would be a builtin handler for '$(<handler> args...)'.
+#      would be a builtin handler for '$(<???> args...)'.
 #   4. (optional) Passed to the handler after the last argument.
 define builtin_argsplit
 	$(assert $(call var_defined,$3),
 		Unknown handler function: '$3')
 
-	$(expand $$(call $$3,$(__builtin_argsplit_install_hooks)))
-endef
-
-# Installs the proper hooks for the outer expansion phase.
-# As a side effect, it populates '__def_argsplit_tmp__' variable with an encoded
-# See 'builtin_split_args' for the info about the arguments.
-define __builtin_argsplit_install_hooks
 	$(with \
 		${eval \
-			# It gets populated with something like '(1);(2)'.
+			# It gets populated with something like '(1) ;(2)'.
 			__def_argsplit_tmp__ := (1)
 		}
 		# The inner expansion.
@@ -1609,7 +1612,7 @@ define __builtin_argsplit_install_hooks
 					${eval \
 						# Append '<separator>(<arg_nr>)'
 						__def_argsplit_tmp__ += \
-							$1($(words $(__def_argsplit_tmp__)))
+							$1($(words x $(__def_argsplit_tmp__)))
 					}
 					# Advance the top of the expansion stack with a new
 					# argument and return the native argument separator.
@@ -1642,17 +1645,20 @@ define __builtin_argsplit_install_hooks
 
 				$2))),
 
+		# Arg 2.
+		$(subst $(\s),,$(__def_argsplit_tmp__)),
+
+		$3,$(value 4),
+
 		# The exact structure of used delimiters is encoded inside
 		# builtin name which is pushed onto the expansion stack.
-		$$(call __def_o_push,
-			__argsplit__-$(subst $(\s),,$(__def_argsplit_tmp__)))
+		$(call __def_o_push,
+			__argsplit__-$2)
 
-		# There is always at least one argument.
-		$$(__def_o_arg)$1
+		$(expand $$(call $$3$$(__def_o_arg),$1,$$4))
 
-		$$(__def_o_pop)
+		$(__def_o_pop)
 	)
-
 endef
 
 __def_argsplit_tmp__ :=
