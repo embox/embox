@@ -1165,7 +1165,7 @@ endef
 # '$(silent-expand code...)'
 #
 define builtin_func-silent-expand
-	$${eval \
+	$$(eval \
 		__def_tmp__ := \
 			$$$$(\0)# Preserve leading whitespace.
 			$$(subst $$(\n),$$$$(\n),# Escape newlines.
@@ -1173,7 +1173,7 @@ define builtin_func-silent-expand
 					$(subst $(\h),$$$$(\h),$(builtin_args))
 				)
 			)
-	}
+	)
 endef
 
 # Flush: builtin aux API, assert, lambda, with and expand.
@@ -1620,7 +1620,41 @@ define builtin_argsplit_sep_after
 		$(builtin_argsplit_sep_before))
 endef
 
+define builtin_argsplit_reconstruct
+	$(expand $(subst {,$${,
+		$(filter-patsubst  __argsplit__-(%),%,$(__builtin_name))))
+endef
+
 $(def_all)
+
+#
+# Extension: 'argfold' builtin function.
+#
+# Argument combinator.
+#
+# '$(argfold intial_value,arg_nrs...,combinator_fn[,optional_args...])'
+#
+# Note:
+#   Arguments [3..] are expanded for each element of the list.
+define builtin_func-argfold
+	$(with $1,$2,$3,
+		# Pack the rest arguments (if any) into arg 4.
+		$(foreach args_filter,$(lambda $(words-from 4,$1)),
+			$(__builtin_args_expand)),
+
+		# Emit the following code.
+		$$(and \
+			$$(call var_assign_simple,__argfold_tmp__,$1)
+			$$(foreach __argfold_nr__,$2,
+				$$(call var_assign_simple,__argfold_tmp__,
+					$$(call $3,$$(__argfold_tmp__),$$($$(__argfold_nr__)),
+						$4))),)
+		$$(__argfold_tmp__)
+	)
+endef
+
+__argfold_tmp__ :=
+__cache_transient += __argfold_tmp__
 
 #
 # Some syntactic sugar.
