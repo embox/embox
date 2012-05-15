@@ -1401,7 +1401,7 @@ define __builtin_to_function_inline
 		# We'll populate this variable with names of the arguments
 		# being inlined.
 		${eval \
-			__def_tmp__ :=# Reset.
+			__def_inline_tmp__ :=# Reset.
 		}
 		# Inlining is actually performed by the expansion engine.
 		# We just escape everything except recognized argument references and
@@ -1423,7 +1423,7 @@ define __builtin_to_function_inline
 				$(builtin_args_list),
 				$(lambda \
 					${eval \
-						__def_tmp__ += $(arg)
+						__def_inline_tmp__ += $(arg)
 					}
 					$($(arg))# Return the value to be inlined.
 				)
@@ -1436,7 +1436,8 @@ define __builtin_to_function_inline
 				# Check the presence of each argument in the list of
 				# actually inlined arguments that we have collected during
 				# the expansion. The argument should be listed exactly once.
-				$(call not,$(call singleword,$(filter $(arg),$(__def_tmp__)))),
+				$(call not,$(call singleword,
+					$(filter $(arg),$(__def_inline_tmp__)))),
 
 				# Well, the argument has been inlined more than once or has not
 				# been used at all. Check if the value of the argument contains
@@ -1456,7 +1457,7 @@ define __builtin_to_function_inline
 				# and emit the name of the bad argument.
 				$(def-ifdef DEF_DEBUG,$(call __def_debug,
 						Value of the argument $(arg) ('$($(arg))') is \
-						$(if $(filter $(arg),$(__def_tmp__)),
+						$(if $(filter $(arg),$(__def_inline_tmp__)),
 							used more than once,
 							not used) inside the function being inlined))
 				$(arg)
@@ -1470,6 +1471,9 @@ define __builtin_to_function_inline
 			$1)
 	)
 endef
+
+__def_inline_tmp__ :=
+__cache_transient += __def_inline_tmp__
 
 else
 builtin_to_function_inline = $(builtin_to_function_call)
@@ -1576,64 +1580,83 @@ $(def_all)
 #      The context in which it is called is effectively the same as if it
 #      would be a builtin handler for '$(<handler> args...)'.
 #   4. (optional) Passed to the handler after the last argument.
-define builtin_split_args
-	$(assert $(and $(singleword [$3]),$(call var_defined,$3)),
+define builtin_argsplit
+	$(assert $(call var_defined,$3),
 		Unknown handler function: '$3')
 
-	$(expand $$(call $$3,$(__builtin_split_args_install_hooks)))
+	$(expand $$(call $$3,$(__builtin_argsplit_install_hooks)))
 endef
 
 # Installs the proper hooks for the outer expansion phase.
+# As a side effect, it populates '__def_argsplit_tmp__' variable with an encoded
 # See 'builtin_split_args' for the info about the arguments.
-define __builtin_split_args_install_hooks
-	# We reuse the expansion stack.
-	$$(call __def_o_push,__argsplit__-$3)
-
-	# There will be at least one argument.
-	$$(__def_o_arg)
-
-	# The inner expansion.
-	$(expand $$(foreach h,
-		$(lambda \
-			# This is called for every argument separator that was
-			# found outside any parens,
-			# except for commas for which this function is simply expanded.
-			#   1. The separator (not a comma).
-
-			$(if $(eq $0,$h),
-				# Advance the top of the expansion stack with a new
-				# argument and return the native argument separator.
-				$(,)$$(__def_o_arg),
-
-				# Escape the comma so that it will not break
-				# the current argument during the second expansion.
-				$$(,))),
-
-		# Iterate through the list of separators and install an indirect
-		# hook to '$h', which expands into the identity function inside
-		# parens and into the lambda expression above otherwise.
-		$(call list_fold,
+define __builtin_argsplit_install_hooks
+	$(with \
+		${eval \
+			# It gets populated with something like '(1);(2)'.
+			__def_argsplit_tmp__ := (1)
+		}
+		# The inner expansion.
+		$(expand $$(foreach h,
 			$(lambda \
-				$(assert $(not $(or \
-						$(strip $(foreach bad,$$ ( , ),
-							$(findstring $(bad),$2))),
-						$(findstring $2,foreach h id call))),
-					Value '$2' can't be used as an argument separator)
+				# This is called for every argument separator that was
+				# found outside any parens,
+				# except for commas for which this function is simply expanded.
+				#   1. The separator (not a comma).
 
-				# 'bar;baz' -> 'bar$(call $h,$(foreach h,id,;))baz'
-				# The inner 'foreach' avoids any possible issues with
-				# nested separators (e.g. '->' and '>'), if any.
-				$(subst $2,$$(call $$h,$$(foreach h,id,$2)),$1)),
+				$(if $(eq $0,$h),
+					$(assert $(singleword [$1]))
+					${eval \
+						# Append '<separator>(<arg_nr>)'
+						__def_argsplit_tmp__ += \
+							$1($(words $(__def_argsplit_tmp__)))
+					}
+					# Advance the top of the expansion stack with a new
+					# argument and return the native argument separator.
+					$(,)$$(__def_o_arg),
 
-			# 'h' variable is shadowed inside any parens.
-			# '(foo)' -> '$(foreach h,id,(foo))'
-			$(subst $[,$$$[foreach h$(,)id$(,)$[,$(subst $],$]$],
-				$(subst $(,),$${$$h},$(subst $$,$$$$,$1)))),
+					# Escape the comma so that it will not break
+					# the current argument during the second expansion.
+					$$(,))),
 
-			$2)))
+			# Iterate through the list of separators and install an indirect
+			# hook to '$h', which expands into the identity function inside
+			# parens and into the lambda expression above otherwise.
+			$(call list_fold,
+				$(lambda \
+					$(assert $(not $(or \
+							$(strip $(foreach bad,$$ ( , ) $(\n) $(\h),
+								$(findstring $(bad),$2))),
+							$(findstring $2,foreach h id call))),
+						Value '$2' can't be used as an argument separator)
 
-	$$(__def_o_pop)
+					# 'bar;baz' -> 'bar$(call $h,$(foreach h,id,;))baz'
+					# The inner 'foreach' avoids any possible issues with
+					# nested separators (e.g. '->' and '>'), if any.
+					$(subst $2,$$(call $$h,$$(foreach h,id,$2)),$1)),
+
+				# 'h' variable is shadowed inside any parens.
+				# '(foo)' -> '$(foreach h,id,(foo))'
+				$(subst $[,$$$[foreach h$(,)id$(,)$[,$(subst $],$]$],
+					$(subst $(,),$${$$h},$(subst $$,$$$$,$1)))),
+
+				$2))),
+
+		# The exact structure of used delimiters is encoded inside
+		# builtin name which is pushed onto the expansion stack.
+		$$(call __def_o_push,
+			__argsplit__-$(subst $(\s),,$(__def_argsplit_tmp__)))
+
+		# There is always at least one argument.
+		$$(__def_o_arg)$1
+
+		$$(__def_o_pop)
+	)
+
 endef
+
+__def_argsplit_tmp__ :=
+__cache_transient += __def_argsplit_tmp__
 
 # Finally, flush the rest and say Goodbye!
 $(def_all)
