@@ -46,7 +46,7 @@ struct cyclecounter {
 struct timecounter {
 	const struct cyclecounter *cc;
 	cycle_t cycle_last;
-	uint64_t nsec;
+	useconds_t nsec;
 };
 
 static inline ns_t cycles_to_ns(const struct cyclecounter *cc, cycle_t cycles) {

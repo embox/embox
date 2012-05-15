@@ -20,6 +20,7 @@
 
 #include <kernel/clock_source.h>
 #include <kernel/ktime.h>
+#include <kernel/time/timecounter.h>
 
 POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER,clocks_quantity));
 DLIST_DEFINE(clock_source_list);
@@ -97,13 +98,13 @@ void timecounter_free(struct timecounter *tc) {
 }
 
 void timecounter_init(struct timecounter *tc, const struct cyclecounter *cc,
-		uint64_t start_tstamp) {
+		ns_t start_tstamp) {
 	tc->cc = cc;
 	tc->cycle_last = cc->read(cc);
 	tc->nsec = start_tstamp;
 }
 
-uint64_t timecounter_read(struct timecounter *tc) {
+ns_t timecounter_read(struct timecounter *tc) {
 	cycle_t cycle_now;
 	uint64_t nsec;
 

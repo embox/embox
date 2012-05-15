@@ -92,7 +92,7 @@ static cycle_t i8253_read(const struct cyclecounter *cc) {
 
 static struct cyclecounter cc = {
 	.read = i8253_read,
-	.mult = 0,
+	.mult = 1,
 	.shift = 0
 };
 
