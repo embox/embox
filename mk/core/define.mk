@@ -1642,14 +1642,13 @@ define builtin_macro-for
 		$$$[foreach $(foreach a,$(nolastword $(builtin_args_list)),
 			$(call builtin_argsplit,$($a),<-,$(lambda \
 					$(if $(not $(eq 2,$(builtin_arity))),
-						$(with $($(words x $(builtin_args_list))),
-							$(call builtin_error,
-								Invalid argument to '$(firstword $1)' \
-								function: '$(nofirstword $1)')))
+						$(call builtin_error,
+							Invalid argument to '$(builtin_caller)' \
+							function: '$($(words x $(builtin_args_list)))'))
 					# The order is inverted to avoid a leading space
 					# in cycle bodies.
 					$(trim $1),$(trim $2),$$$[foreach
-				),$(builtin_name) $($a))))
+				),$($a))))
 
 	$(expand $(builtin_lastarg))# body
 
