@@ -839,6 +839,10 @@ builtin_reconstruct = \
 #   You may simply expand this macro without 'call'ing it.
 #   In most cases you may also use $0 instead.
 builtin_name = \
+	$(__builtin_name)
+# This level of indirection is needed to let the client to safely override
+# 'builtin_name' without breaking an internal logic.
+__builtin_name = \
 	$(firstword $(__def_stack_top))
 
 # Gets a list of variable names of all arguments of a function being handled.
@@ -1591,6 +1595,30 @@ __argsplit_hook-comma-in := ,
 
 __builtin_argsplit_tmp__ :=
 __cache_transient += __builtin_argsplit_tmp__
+
+# Retrives the actual argument separator (if any) occurred before the
+# given one. For example, when called from argsplit handler of
+# string 'foo!bar:baz' splitted by '!' and ':', this function
+# returns '!' for the argument 2, ':' - for 3, and empty for the rest numbers.
+#
+# Params:
+#   1. The argument number.
+# Return:
+#   A separator (if any), or empty.
+define builtin_argsplit_sep_before
+	$(filter-patsubst %{$1},%,
+		$(subst },} ,$(filter-patsubst __argsplit__-(%),%,
+			# If we are in an argsplit context, then the builtin name looks
+			# like '__argsplit__-({1};{2}...{N})', with proper delimiters
+			# between {X}s.
+			$(__builtin_name))))
+endef
+
+# The same as 'builtin_argsplit_sep_before(N+1)'.
+define builtin_argsplit_sep_after
+	$(foreach 1,$(word $1,$(nofirstword $(builtin_args_list))),
+		$(builtin_argsplit_sep_before))
+endef
 
 $(def_all)
 
