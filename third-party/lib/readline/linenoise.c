@@ -349,6 +349,13 @@ up_down_arrow:
         case 12: /* ctrl+l, clear screen */
             linenoiseClearScreen();
             refreshLine(fd,prompt,buf,len,pos,cols);
+        case '\0': /* Telnet sends /r as /r/0. /0 means nothing in other contextes */
+        	/* So do nothing now.
+			 * We can treat it as /n /r or even as a space
+			 * All solutions have it's own disadvantages
+			 * Probably we should analyze the previous symbol for \r equality
+			 */
+            break;
         }
     }
     return len;

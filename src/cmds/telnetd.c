@@ -75,40 +75,76 @@ static void run(void) {
 }
 
 
+#define T_WILL		251
+#define T_WONT		252
+#define T_DO		253
+#define T_DONT		254
+#define T_IAC		255
+
+#define O_ECHO		1		/* Manage ECHO, RFC 857 */
+#define O_GO_AHEAD	3		/* Disable GO AHEAD, RFC 858 */
+
+	/* Normal getchar() can't work with sockets
+	 * (but it should)
+	 */
+static inline unsigned int getchar2(void) {
+	static unsigned char ch;
+	read(0, &ch, 1);
+	return ch;
+}
+
 	/* Skip management session */
 static void ignore_telnet_options(void) {
-	unsigned char ch = getchar();
-	while ((ch & (1 << 7)) && (ch != 255))
-		ch = getchar();		/* Something related with management, probably in string mode */
+	unsigned char ch = getchar2();
+	while ((ch & (1 << 7)) && (ch != T_IAC))
+		ch = getchar2();		/* Something related with management, probably in string mode */
 
 	while (1) {
-		if (ch == 255) {							/* IAC */
-			unsigned char op_type = getchar();
-			unsigned char param = getchar();
-			if (op_type == 251) {					/* WILL */
-				printf("%c%c%c", 255, 254, param);	/* DON'T */
-			} else if (op_type == 253) {			/* DO */
-				printf("%c%c%c", 255, 252, param);	/* WON'T */
+		if (ch == T_IAC) {
+			unsigned char op_type = getchar2();
+			unsigned char param = getchar2();
+			if (op_type == T_WILL) {
+				if (param == O_GO_AHEAD) {
+						/* Agree */
+					printf("%c%c%c", T_IAC, T_DO, param);
+				} else {
+						/* Decline */
+					printf("%c%c%c", T_IAC, T_DONT, param);
+				}
+			} else if (op_type == T_DO) {
+				if ( (param == O_GO_AHEAD) || (param == O_ECHO) ) {
+						/* Agree */
+					printf("%c%c%c", T_IAC, T_WILL, param);
+				} else {
+						/* Decline */
+					printf("%c%c%c", T_IAC, T_WONT, param);
+				}
 			} else {
 				/* Currently do nothing, probably it's an answer for our request */
 			}
-			printf("++++++++++\n");
 		}
 		else {
-			ungetchar(ch);
+			ungetc(ch, stdin);	/* Return this symbol, it belongs to usual traffic */
 			return;
 		}
-		ch = getchar();
+		ch = getchar2();
 	}
 }
 
 	/* Identify our wishes for the session */
 static void set_our_term_parameters(void) {
-	printf("%c%c%c", 255, 251, 3);		/* Disable GO AHEAD, RFC 858 */
-	printf("%c%c%c", 255, 252, 1);		/* Disable ECHO, RFC 857 */
-	printf("%c%c%c", 255, 254, 1);		/* Disable ECHO, RFC 857 */
+	printf("%c%c%c", T_IAC, T_WILL, O_GO_AHEAD);
+	printf("%c%c%c", T_IAC, T_WILL, O_ECHO);
 }
 
+#undef T_WILL
+#undef T_WONT
+#undef T_DO
+#undef T_DONT
+#undef T_IAC
+
+#undef O_ECHO
+#undef O_GO_AHEAD
 
 	/* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
@@ -132,7 +168,7 @@ static void *telnet_thread_handler(void* args) {
 		 */
 	{
 		static const char* prompt = "embox>"; /* OPTION_STRING_GET(prompt); */
-		printf("Welcome to telnet!\n%s\n\n", prompt);
+		printf("Welcome to telnet!\n%s", prompt);
 	}
 
 		/* Operate with settings */
