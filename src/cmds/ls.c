@@ -25,11 +25,11 @@ static void print_usage(void) {
 static void print_long_list(char *path, node_t *node, int recursive) {
 	node_t *item;
 	stat_t sb;
-	char time_buff[17];
+	char time_buff[26]; /*ctime_r requires it least 26 byte buffer lentgh */
 	printf("%s\t%s\t%s\t\t\t%s\n", "mode", "size", "mtime", "name");
 	tree_foreach_children(item, &node->tree_link, tree_link) {
 		fstat((char *) item->name, &sb);
-		ctime((time_t *) &(sb.st_mtime), time_buff);
+		ctime_r((time_t *) &(sb.st_mtime), time_buff);
 		printf("%d\t%d\t%s\t%s\n",
 			sb.st_mode,
 			sb.st_size,

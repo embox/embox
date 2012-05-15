@@ -19,7 +19,7 @@
 #define HOUR_LENGHT 3600
 #define MIN_LENGHT  60
 
-char *ctime(const time_t *t, char *buff) {
+char *ctime_r(const time_t *t, char *buff) {
 	time_t time = *t;
 	unsigned int year = EPOCH_START, month = 1, day = 1, hour = 0, min = 0;
 	long day_of_month = MONTH_31;

@@ -198,7 +198,7 @@ struct ktimeval * get_timeval(struct ktimeval *tv) {
 	useconds_t usec;
 
 	usec = time_usec();
-	tv->tv_sec = usec / MICROSEC_PER_SEC;
-	tv->tv_usec = usec % MICROSEC_PER_SEC;
+	tv->tv_sec = usec / USEC_PER_SEC;
+	tv->tv_usec = usec % USEC_PER_SEC;
 	return tv;
 }
