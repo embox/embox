@@ -74,7 +74,7 @@
 #define PIT_16BIT       0x30    /* r/w counter 16 bits, LSB first */
 #define PIT_BCD         0x01    /* count in BCD */
 
-static useconds_t pit_divisor;
+static useconds_t pit_hz;
 
 static cycle_t i8253_read(const struct cyclecounter *cc) {
 	int cnt;
@@ -85,9 +85,9 @@ static cycle_t i8253_read(const struct cyclecounter *cc) {
 	cnt = in8(CHANNEL0);
 	cnt |= in8(CHANNEL0) << 8;
 
-	cnt = (((INPUT_CLOCK + pit_divisor/2) / pit_divisor) - 1) - cnt;
+	cnt = (((INPUT_CLOCK + pit_hz / 2) / pit_hz) - 1) - cnt;
 
-	return (uint32_t)(ticks * (INPUT_CLOCK + pit_divisor/2) / pit_divisor) + cnt;
+	return (uint32_t)(ticks * (INPUT_CLOCK + pit_hz / 2) / pit_hz) + cnt;
 }
 
 static struct cyclecounter cc = {
@@ -108,7 +108,7 @@ static irq_return_t clock_handler(int irq_nr, void *dev_id) {
 }
 
 void clock_init(void) {
-	if(ENOERR != irq_attach((irq_nr_t) IRQ0,
+	if (ENOERR != irq_attach((irq_nr_t) IRQ0,
 		(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
 		panic("pit timer irq_attach failed");
 	}
@@ -116,6 +116,9 @@ void clock_init(void) {
 	pit_clock_source.flags = 1;
 	pit_clock_source.precision = 1000;
 	pit_clock_source.cc = &cc;
+
+	clocks_calc_mult_shift(&cc.mult, &cc.shift, INPUT_CLOCK,
+			NSEC_PER_SEC, 0);
 	clock_source_register(&pit_clock_source);
 }
 
@@ -129,7 +132,5 @@ void clock_setup(useconds_t HZ) {
 	out8(divisor & 0xFF, CHANNEL0);
 	out8((divisor >> 8) & 0xFF, CHANNEL0);
 
-	pit_divisor = divisor;
+	pit_hz = HZ;
 }
-
-

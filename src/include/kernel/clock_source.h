@@ -43,4 +43,7 @@ extern useconds_t clock_source_clock_to_usec(struct clock_source *cs, clock_t cl
 
 extern struct clock_source *clock_source_get_default(void);
 
+extern void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from,
+		uint32_t to, uint32_t maxsec);
+
 #endif /* KERNEL_CLOCK_SOURCE_H_ */
