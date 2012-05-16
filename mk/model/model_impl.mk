@@ -169,8 +169,7 @@ define __eObjectSetContainer
 
 	$(set-field __eContainer,$1/$3$2)
 
-	$(for newContainer <- $2,
-		$(set-field+ newContainer->__eContents,$3/$(this)))
+	$(set-field+ 2->__eContents,$3/$(this))
 endef
 
 # Params:
@@ -287,8 +286,7 @@ endef
 #   3. Opposite property.
 define __eObjectSetBidirectional+
 	$(set-field+ $1,$2)
-	$(silent-for e <- $2,
-		$(set-field+ e->$3,$(this)))
+	$(set-field+ 2->$3,$(this))
 endef
 
 # Params:
@@ -367,11 +365,10 @@ endef
 #   2. Meta reference ID.
 define __eObjectResolveLinks
 	$(and $1,$(for resource <- $(get this->eResource),
-				resourceSet <- $(get resource->resourceSet),
 #		$(for link <- $(subst ./,,$1),
 #			$(warning on-demand linkage: \
 #				[$(get link->eMetaReference)] '$(get link->name)'))
-		$(invoke $(get resourceSet->linker).resolveLinksGroup,
+		$(invoke resource->resourceSet>linker>resolveLinksGroup,
 			$(subst ./,,$1),$($2))
 	),)
 endef

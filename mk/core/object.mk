@@ -594,8 +594,10 @@ endef
 define __object_member_access_wrap
 	$$(foreach __this,
 		$(if $1,
-			$$(call __object_check,$1
-					$(def-ifdef OBJ_DEBUG,$(\comma)$(subst $$,$$$$,$1))),
+			$(def-ifdef OBJ_DEBUG,
+				$$(call __object_dispatch,$(builtin_name),
+					$1,$(subst $$,$$$$,$1)),
+				$$(suffix $1)),
 			$$(this)),
 		$2)
 endef
@@ -603,13 +605,15 @@ endef
 $(def_all)
 
 # Params:
-#   1. Object reference.
-#   2. Original code (if OBJ_DEBUG).
+#   1. Builtin name.
+#   2. Objects.
+#   3. The original code.
 # Return:
 #   The trimmed argument if it is a single word, fails with an error otherwise.
-define __object_check
-	$(or $(if $(word 2,$1),,$(suffix $1)),
-		$(error Invalid object reference: '$1'$(def-ifdef OBJ_DEBUG, ($2))))
+define __object_dispatch
+	$(__obj_trace dispatch,$1 on $(words $(suffix $2)) objects: \
+		[$2] as an expansion of [$3])
+	$(suffix $2)
 endef
 
 #
