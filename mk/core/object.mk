@@ -462,7 +462,7 @@ __obj_trace_stack :=
 #   1. Obj.
 #   2. Msg.
 __obj_trace = \
-	$(warning $(__obj_trace_stack:%=>$(\t))$1:	$2)
+	$(warning $(\t)$(__obj_trace_stack:%=>$(\t))$1  	$2)
 
 # Param:
 #   1. Obj.
@@ -611,9 +611,10 @@ $(def_all)
 # Return:
 #   The trimmed argument if it is a single word, fails with an error otherwise.
 define __object_dispatch
-	$(__obj_trace dispatch,$1 on $(words $(suffix $2)) objects: \
-		[$2] as an expansion of [$3])
-	$(suffix $2)
+	$(with $1,$2,$3,$(suffix $2),
+		$(__obj_trace $(\s)====$(\t),$1 on $(words $4) objects: \
+			[$2] as an expansion of [$3])
+		$4)
 endef
 
 #
