@@ -121,7 +121,7 @@ endef
 define eMetaFeatureBind
 	$(assert $(class-has-property \
 			$(get $(get 1->eContainingClass).instanceClass),$2),
-		Can't bind meta feature '$(get 1->name)' to undefined property '$2'
+		Can't bind meta feature '$(get 1->name)' to undefined property '$2' \
 		of class '$(get $(get 1->eContainingClass).instanceClass)')
 	$(set 1->instanceProperty,$2)
 endef

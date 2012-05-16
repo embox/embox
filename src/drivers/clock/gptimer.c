@@ -20,8 +20,6 @@
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
 
-#include <embox/unit.h>
-
 #include <module/embox/arch/system.h>
 
 #define SYS_CLOCK     OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
@@ -139,7 +137,7 @@ void clock_init(void) {
 	}
 
 	gptimer_clock_source.flags = 1;
-	gptimer_clock_source.precision = 1000;
+	gptimer_clock_source.resolution = 1000;
 	clock_source_register(&gptimer_clock_source);
 }
 

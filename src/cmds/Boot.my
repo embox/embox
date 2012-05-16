@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.arch.interrupt
-
 @Cmd(name = "boot",
 	help = "Boot application image from memory",
 	man = '''
@@ -27,7 +25,8 @@ import embox.arch.interrupt
 	''')
 module boot {
 	source "boot.c"
-	depends interrupt
-	//depends embox.mem.mmu
-	depends embox.fs.core
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 }

@@ -67,7 +67,7 @@ static int exec(int argc, char **argv) {
 		case '?':
 		case 'h':
 			print_usage();
-			/* FALLTHROUGH */
+			return 0;
 		default:
 			return 0;
 		}

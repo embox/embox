@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <embox/cmd.h>
 #include <util/array.h>
-#include <util/location.h>
 #include <profiler/tracing/trace.h>
 
 EMBOX_CMD(exec);
@@ -21,7 +20,6 @@ extern struct __trace_point * const __trace_points_array[];
 //}
 
 static int exec(int argc, char **argv) {
-
 	struct __trace_point *tp;
 
 	trace_point("trace info");

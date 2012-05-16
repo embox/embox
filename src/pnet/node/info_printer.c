@@ -39,22 +39,6 @@ static int net_info_rx_hnd(struct pnet_pack *pack) {
 	return NET_HND_FORWARD_DEFAULT;
 }
 
-#if 0
-static struct pnet_proto info_proto = {
-	.tx_hnd = net_info_tx_hnd,
-	.rx_hnd = net_info_rx_hnd
-};
-
-net_node_t pnet_get_node_info(void) {
-	net_node_t info_printer;
-
-	info_printer = (net_node_t) pnet_node_alloc(0, &info_proto);
-	pnet_node_add_name(info_printer, "info_printer");
-
-	return info_printer;
-}
-#endif
-
 PNET_NODE_DEF("info printer", {
 	.rx_hnd = net_info_rx_hnd,
 	.tx_hnd = net_info_tx_hnd

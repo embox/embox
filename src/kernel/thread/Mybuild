@@ -1,13 +1,14 @@
 package embox.kernel.thread
 
 module core {
+	option number thread_stack_size=8192
+
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "core.c"
 
 	depends sched, sync, embox.kernel.task_api
 
 	depends embox.arch.context
-
 }
 
 module sched {

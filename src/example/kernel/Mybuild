@@ -2,4 +2,9 @@ package embox.example.kernel
 
 module critical_example {
 	source "critical_example.c"
+
+	depends embox.lib.LibC
+	depends embox.kernel.critical
+	depends embox.kernel.softirq
+	depends embox.framework.LibFramework
 }

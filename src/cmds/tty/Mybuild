@@ -2,5 +2,9 @@ package embox.cmd.tty
 
 module serial_screens {
 	source "serial.c"
-	depends embox.driver.tty_ng.core, embox.cmd.sh.shell_api
+
+	depends embox.driver.diag.diag_api
+	depends embox.lib.LibC
+	depends embox.driver.tty_ng.core
+    depends embox.framework.LibFramework
 }

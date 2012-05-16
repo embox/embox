@@ -11,19 +11,17 @@
 #include <string.h>
 #include <stdio.h>
 #include <embox/unit.h>
-#include <kernel/printk.h>
-#include <linux/list.h>
-#include <linux/init.h>
+#include <lib/list.h>
 #include <net/inetdevice.h>
-#include <kernel/irq.h>
 #include <linux/interrupt.h>
+#include <kernel/irq.h>
 #include <errno.h>
 #include <net/sock.h>
 #include <net/route.h>
 #include <net/arp_queue.h>
-
 #include <framework/net/pack/api.h>
 
+EMBOX_UNIT_INIT(unit_init);
 
 /* FIXME network packet's type is L2 (device layer protocols)
  * what is dev_add_pack, why was separated ptype_base and ptype_all
@@ -58,7 +56,6 @@ void dev_remove_pack(struct packet_type *pt) {
 	}
 }
 
-
 #ifdef DEBUG
 /* we use this function in debug mode*/
 static void print_packet (sk_buff_t *skb) {
@@ -83,38 +80,44 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	const struct net_device_ops *ops;
 	net_device_stats_t *stats;
 
-	if (NULL == skb) {
-		return -EINVAL;
-	}
+	assert(skb != NULL);
 
 	dev = skb->dev;
-	if (NULL == dev) {
-		kfree_skb(skb);
-		return -EINVAL;
-	}
+	assert(dev != NULL);
 
 	ops = dev->netdev_ops;
+	assert(ops != NULL);
+
 	stats = ops->ndo_get_stats(dev);
+	assert(stats != NULL);
+
 	if (dev->flags & IFF_UP) {
+
 		res = dev->header_ops->rebuild(skb);
 		if (res < 0) {
-			if(sock_is_ready(skb->sk)) {
+			if (sock_is_ready(skb->sk)) {
+				/* If socket is ready then it was really error
+				 * but if socket isn't ready package has been saved
+				 * and will be transmitted later */
 				kfree_skb(skb);
 				stats->tx_err++;
 			}
 
 			return res;
 		}
+
 		res = ops->ndo_start_xmit(skb, dev);
 		if (res < 0) {
 			kfree_skb(skb);
 			stats->tx_err++;
 			return res;
 		}
+
 		/* update statistic */
 		stats->tx_packets++;
 		stats->tx_bytes += skb->len;
 	}
+
 	return ENOERR;
 }
 
@@ -122,8 +125,13 @@ int netif_receive_skb(sk_buff_t *skb) {
 	struct packet_type *q;
 	const struct net_pack *pack;
 
+	assert(skb != NULL);
+
 	net_pack_foreach(pack) {
+		assert(pack != NULL);
+
 		q = pack->netpack;
+		assert(q != NULL);
 		if (q->type == skb->protocol) {
 			return q->func(skb, skb->dev, q, NULL);
 		}
@@ -133,8 +141,6 @@ int netif_receive_skb(sk_buff_t *skb) {
 	return NET_RX_DROP;
 }
 
-EMBOX_UNIT_INIT(unit_init);
-
 static void net_rx_action(struct softirq_action *action) {
 	dev_rx_processing();
 }
@@ -143,7 +149,11 @@ static void net_rx_action(struct softirq_action *action) {
 void netif_rx_schedule(struct sk_buff *skb) {
 	struct net_device *dev;
 
+	assert(skb != NULL);
+
 	dev = skb->dev;
+	assert(dev != NULL);
+
 	skb_queue_tail(&(dev->dev_queue), skb);
 
 	dev_rx_queued(dev);
@@ -153,5 +163,5 @@ void netif_rx_schedule(struct sk_buff *skb) {
 
 static int unit_init(void) {
 	open_softirq(NET_RX_SOFTIRQ, net_rx_action, NULL);
-	return 0;
+	return ENOERR;
 }

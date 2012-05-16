@@ -15,4 +15,6 @@
 extern int prom_printf(const char *format, ...) __attribute__ ((format
 				(printf, 1, 2)));
 
+extern int prom_vprintf(const char *format, va_list args);
+
 #endif /* PROM_PRINTF_IMPL_H_ */

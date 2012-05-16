@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "cat",
 	help = "Concatenate files and print on the standard output",
 	man = '''
@@ -21,7 +19,9 @@ module cat {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "cat.c"
 
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
 	depends embox.fs.core
-	depends LibPosix
+	depends embox.prom.printf
+	depends embox.framework.LibFramework
 }
-

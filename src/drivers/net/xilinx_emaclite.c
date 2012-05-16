@@ -18,7 +18,6 @@
 #include <net/net.h>
 #include <net/etherdevice.h>
 #include <embox/unit.h>
-#include <linux/init.h>
 
 
 EMBOX_UNIT_INIT(unit_init);
@@ -314,7 +313,7 @@ static const struct net_device_ops _netdev_ops = {
 	.ndo_set_mac_address = set_mac_address
 };
 
-static int __init unit_init(void) {
+static int unit_init(void) {
 	/*if some module lock irq number we break initializing*/
 	int res;
 	net_device_t *net_device;

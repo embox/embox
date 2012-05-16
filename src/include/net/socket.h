@@ -14,6 +14,7 @@
 #include <stddef.h>
 #include <types.h>
 #include <net/arp_queue.h>
+#include <net/socket_options.h>
 
 /* maximum number of socket connections */
 #define MAX_SYSTEM_CONNECTIONS 4
@@ -76,6 +77,7 @@ enum supported_address_families{
 
 
 /* Setsockoptions(2) level. Thanks to BSD these must match IPPROTO_xxx */
+#define SOL_SOCKET 1
 #define SOL_IP      0
 //#define SOL_ICMP    1   /* No-no-no! Due to Linux :-) we cannot use SOL_ICMP=1 */
 //#define SOL_TCP     6
@@ -101,6 +103,7 @@ enum supported_address_families{
 //#define SOL_DCCP    269
 //#define SOL_NETLINK 270
 //#define SOL_TIPC    271
+
 
 /* IPX options */
 #define IPX_TYPE    1
@@ -143,7 +146,7 @@ typedef uint32_t in_addr_t;
 	 (to recast on sockaddr_t in AF_INET sockets) */
 typedef struct sockaddr_in {
 	unsigned short   sin_family;   /* e.g. AF_INET */
-	unsigned short   sin_port;     /* e.g. htons(3490) */
+	__be16		 sin_port;     /* e.g. htons(3490) i.e. port in big endian */
 	struct in_addr   sin_addr;     /* see struct in_addr, above */
 	char             sin_zero[8];  /* zero this if you want to */
 } sockaddr_in_t;
@@ -229,6 +232,31 @@ extern ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
  */
 extern int socket_close(int sockfd);
 extern int close(int sockfd);
+
+/**
+ * get socket options
+ * @param sockfd socket description
+ * @param level option level (SOL_SOCKET or protocol number)
+ * @param optname option name (like SO_BROADCAST or SO_LINGER)
+ * @param optval pointer to option value variable on return
+ * @param optlen pointer to length of the option value variable on return
+ * @return 0 on success. -1 on failure with errno indicating error.
+ */
+int getsockopt(int sockfd, int level, int optname, void *optval,
+               socklen_t *optlen);
+
+/**
+ * set socket options
+ * @param sockfd socket description
+ * @param level option level (SOL_SOCKET or protocol number)
+ * @param optname option name (like SO_BROADCAST or SO_LINGER)
+ * @param optval option value to set
+ * @param optlen length of the option value
+ * @return 0 on success. -1 on failure with errno indicating error.
+ */
+int setsockopt(int sockfd, int level, int optname, void *optval,
+               socklen_t optlen);
+
 
 /* TODO implement */
 extern int socket_shutdown(int socket, int how);

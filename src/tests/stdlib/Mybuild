@@ -4,21 +4,30 @@ module bsearch_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "bsearch_test.c"
 
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
+
+module getopt_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "getopt_test.c"
+
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 }
 
 module qsort_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "qsort_test.c"
 
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
 }
 
 module setjmp_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "setjmp_test.c"
 
-}
-
-module getopt_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "getopt_test.c"
+	depends embox.arch.libarch
+	depends embox.framework.LibFramework
 }

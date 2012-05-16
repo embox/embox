@@ -60,12 +60,12 @@ endif
 
 include mk/flags.mk
 
-build_model := $(__build_model)
+#build_model := $(mybuild_get_active_build)
 
 MODS_ENABLE_OBJ := \
-$(if $(call invoke,$(call get,$(build_model),issueReceiver),getIssues),\
-	$(call printIssues,$(build_model)),\
-	$(call listInstances,$(build_model)))
+	$(if $(call invoke,$(call get,$(build_model),issueReceiver),getIssues),\
+		$(call printIssues,$(build_model)),\
+		$(call listInstances,$(build_model)))
 
 #$(warning $(call printInstances,$(build_model)))
 
@@ -74,8 +74,8 @@ $(if $(call invoke,$(call get,$(build_model),issueReceiver),getIssues),\
 include mk/codegen-di.mk
 
 APIS_BUILD := $(call filter_abstract_modules,$(MODS_ENABLE_OBJ))
-LIBS_BUILD := $(call filter_static_modules,$(MODS_ENABLE_OBJ))
-MODS_BUILD := $(filter-out $(LIBS_BUILD),$(MODS_ENABLE_OBJ))
+export LIBS_BUILD := $(call filter_static_modules,$(MODS_ENABLE_OBJ))
+export MODS_BUILD := $(filter-out $(LIBS_BUILD),$(MODS_ENABLE_OBJ))
 
 SRCS_BUILD := \
 	$(foreach m,$(MODS_ENABLE_OBJ),$(call module_get_sources,$m))
@@ -98,17 +98,27 @@ $(foreach src,$(ROOTFS_SRCS_BUILD),\
 	$(eval \
 		$(call rootfs_src_to_obj,$(src)) : $(src) \
 		$(\n)$(\t)@$(MKDIR) $$(@D) && cp -T $$< $$@))
+
+__rootfs_image := $(abspath $(ROOTFS_IMAGE))
+
 #XXX
-$(OBJ_DIR)/src/fs/ramfs/ramfs_cpio.o : $(ROOTFS_IMAGE)
+$(OBJ_DIR)/src/fs/ramfs/ramfs_cpio.o : $(__rootfs_image)
 
 ROOTFS_OBJS_BUILD := $(call rootfs_src_to_obj,$(ROOTFS_SRCS_BUILD))
 
 $(ROOTFS_DIR) :
-	@mkdir $@
+	@$(MKDIR) $@
 
-$(ROOTFS_IMAGE): $(ROOTFS_DIR) $(ROOTFS_OBJS_BUILD)
+$(USER_ROOTFS_DIR) :
+	@$(MKDIR) $@
+
+$(__rootfs_image): $(ROOTFS_DIR) $(USER_ROOTFS_DIR) $(ROOTFS_OBJS_BUILD)
 	@cd $< \
-	&& find . -depth -print | cpio --quiet -H newc -o > ../$(notdir $@)
+	&& find * -depth -print 2>/dev/null | cpio --quiet -H newc -o -O $@
+	@if [ -d $(USER_ROOTFS_DIR) ]; then \
+		cd $(USER_ROOTFS_DIR); \
+		find * -depth -print 2>/dev/null | cpio --quiet -H newc -o --append -O $@; \
+	fi
 
 ifdef LDSS_BUILD
 LD_SINGLE_T_OPTION := \
@@ -147,11 +157,14 @@ $(CMDS) : FLAGS = $(subst ",,$(__FLAGS))
 
 $(CMDS) : %.cmd : %.cmd.tmp ;
 
+.SECONDEXPANSION:
 $(CMDS:%.cmd=%.cmd.tmp): $(AUTOCONF_DIR)/config.h $(AUTOCONF_DIR)/build.mk \
-		mk/image.mk $(myfiles_model_mk)
-	@$(MKDIR) $(@D)
+		mk/image.mk $(myfiles_model_mk) | $$(@D)
 	@echo '$(FLAGS) -o $(@:%.cmd.tmp=%.o) -c' > $@
 	@diff -q $@ $(subst .tmp,,$@) >/dev/null 2>&1 || cp $@ $(subst .tmp,,$@)
+
+$(sort $(dir $(CMDS))) :
+	@$(MKDIR) $@
 
 ifndef VERBOSE
 ifdef CC_SUPPORTS_@file
@@ -163,10 +176,10 @@ else
 CC_RULES = $(CC) $(patsubst -D%,-D"%",$(shell cat $<)) $(word 2,$^)
 endif
 
-$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
+$(OBJ_DIR)/%.o : $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
 	$(CC_RULES)
 
-$(OBJ_DIR)/%.o :: $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
+$(OBJ_DIR)/%.o : $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
 	$(CC_RULES)
 
 $(OBJ_DIR)/%.lds :: $(ROOT_DIR)/%.lds.S $(config_lds_h)

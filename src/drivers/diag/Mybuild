@@ -3,38 +3,41 @@ package embox.driver.diag
 abstract module diag_api {
 }
 
-module no_diag extends diag_api {
-	source "no_diag.c"
-}
-
 module apbuart extends diag_api {
 	option number baud_rate
 
 	source "apbuart.c"
-	depends embox.driver.ambapp_api
-}
-
-module serial_port extends diag_api {
-	option number baud_rate
-	source "serial_port.c"
 }
 
 module at91_uart extends diag_api {
 	option number baud_rate
+
 	source "at91_uart.c"
 }
 
 module mem_diag extends diag_api {
 	source "mem_diag.c"
+
+	depends embox.lib.LibC
+}
+
+module no_diag extends diag_api {
+	source "no_diag.c"
+}
+
+module serial_port extends diag_api {
+	option number baud_rate
+
+	source "serial_port.c"
+}
+
+module vga extends diag_api {
+	source "vga.c"
+
+	depends embox.driver.video.vga
+	depends embox.driver.keyboard
 }
 
 module xuartlite extends diag_api {
 	source "xuartlite.c"
 }
-
-module vga extends diag_api {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "vga.c"
-	depends embox.driver.video.vga, embox.driver.keyboard
-}
-

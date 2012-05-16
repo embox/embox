@@ -25,7 +25,6 @@ EMBOX_EXAMPLE(httpd_exec);
 
 static int httpd_exec(int argc, char **argv) {
 	int sock, connect_sock;
-	//int sock2;
 	struct sockaddr_in addr;
 	struct sockaddr_in dst;
 	int dst_addr_len = 0;
@@ -42,20 +41,19 @@ static int httpd_exec(int argc, char **argv) {
 			"HTTP/1.0 200 OK\n"
 			"Content-Type: text/html\n"
 			"\n");
-	if (argc == 2) {
-		fd = open(argv[1], 0);
-		if (fd < 0) {
-			printf("Cannot open file '%s'\n", argv[1]);
-			return -1;
-		}
-		while ((bytes_read = read(fd, f, FILE_READ_CHUNK_SZ)) > 0) {
-			f += bytes_read;
-		}
-		close(fd);
+
+	if (argc != 2) {
+		printf("Please specify the file to transmitting\n");
 	}
-	else {
-		f += sprintf(f, "<html><p>Hello World!</p></html>");
+	fd = open(argv[1], 0);
+	if (fd < 0) {
+		printf("Cannot open file '%s'\n", argv[1]);
+		return -1;
 	}
+	while ((bytes_read = read(fd, f, FILE_READ_CHUNK_SZ)) > 0) {
+		f += bytes_read;
+	}
+	close(fd);
 
 	// Create listen socket
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -91,7 +89,6 @@ static int httpd_exec(int argc, char **argv) {
 		sendto(connect_sock, file_buf, f - file_buf, 0,
 				(struct sockaddr *) &dst, sizeof(dst));
 		close(connect_sock);
-		printf("\n\n\n\n\n");
 	}
 
 	close(sock);

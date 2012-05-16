@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "wmem",
 	help = "Writes memory word at the specified address",
 	man = '''
@@ -26,5 +24,8 @@ import embox.compat.posix.LibPosix
 module wmem {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "wmem.c"
+
+	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 }

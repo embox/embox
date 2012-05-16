@@ -65,20 +65,30 @@ static struct inet_protosw * inet_proto_find(short int *type, int *protocol) {
 struct sock * inet_create_sock(gfp_t priority, struct proto *prot,
 		int protocol, int type) {
 	struct sock *sk;
+	struct inet_sock *inet;
 
 	sk = sk_alloc(PF_INET, 0, prot);
-	if(sk != NULL){
-		sk->sk_type = type;
-		sk->sk_protocol = protocol;
+	if (sk == NULL) {
+		return NULL;
 	}
+
+	sk->sk_type = type;
+	sk->sk_protocol = protocol;
+
+	inet = inet_sk(sk);
+	inet->id = 0;
+	inet->uc_ttl = -1; /* TODO socket setup more options  */
+	inet->mc_ttl = 1;
+	/* setup port */
+	/* socket_set_port_type(sock); */
+	/* inet->sport = htons(socket_get_free_port(inet->sport_type)); /\* inet->sport at network bytes order  */
+
 	return sk;
 }
 
 static int inet_create(struct socket *sock, int protocol) {
-	int err;
 	short int type = sock->type;
 	struct sock *sk;
-	struct inet_sock *inet;
 	struct inet_protosw *p_netsock;
 
 	p_netsock = inet_proto_find(&type, &protocol);
@@ -98,22 +108,6 @@ static int inet_create(struct socket *sock, int protocol) {
 
 	sock->sk = sk;
 	sock->ops = p_netsock->ops;
-
-	inet = inet_sk(sk);
-	inet->id = 0;
-	inet->uc_ttl = -1; /* TODO socket setup more options  */
-	inet->mc_ttl = 1;
-	/* setup port */
-	/* socket_set_port_type(sock); */
-	/* inet->sport = htons(socket_get_free_port(inet->sport_type)); /\* inet->sport at network bytes order  */
-
-	if (sk->sk_prot->init != NULL) {
-		err = sk->sk_prot->init(sk);
-		if (err < 0) {
-			sk_common_release(sk);
-			return err;
-		}
-	}
 
 	return ENOERR;
 }
@@ -227,7 +221,7 @@ int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
 
 	sk = sock->sk;
 	if (sk->sk_prot->sendmsg == NULL) {
-		return SK_NO_SUCH_METHOD;
+		return EOPNOTSUPP;
 	}
 
 	return sk->sk_prot->sendmsg(iocb, sk, msg, size);
@@ -239,7 +233,7 @@ int inet_stream_connect(struct socket *sock, struct sockaddr * addr,
 	int err;
 
 	if (sock->sk->sk_prot->connect == NULL) {
-		return SK_NO_SUCH_METHOD;
+		return EOPNOTSUPP;
 	}
 
 	sock_lock(sock->sk);
@@ -269,21 +263,19 @@ int inet_listen(struct socket *sock, int backlog) {
 
 	sk = sock->sk;
 	if (sk->sk_prot->listen == NULL) {
-		return SK_NO_SUCH_METHOD;
+		return -EOPNOTSUPP;
 	}
 
 	return sk->sk_prot->listen(sk, backlog);
 }
 
-static int inet_accept(socket_t *sock, socket_t *newsock, sockaddr_t *addr, int *addr_len) {
-	struct sock *sk;
+static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, int *addr_len) {
 
-	sk = sock->sk;
 	if (sk->sk_prot->accept == NULL) {
-		return SK_NO_SUCH_METHOD;
+		return -EOPNOTSUPP;
 	}
 
-	return sk->sk_prot->accept(sk, newsock->sk, addr, addr_len);
+	return sk->sk_prot->accept(sk, newsk, addr, addr_len);
 }
 
 /* uses for create socket */

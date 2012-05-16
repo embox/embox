@@ -11,7 +11,7 @@ include mk/model/model_impl.mk
 # Model object 'FileContentRoot'.
 #
 # The following features are defined:
-#   - reference 'configurations'
+#   - reference 'configuration'
 #   - attribute 'imports'
 #
 # The following features and operations are inherited from 'ENamedObject':
@@ -25,9 +25,9 @@ define class-CfgFileContentRoot
 	$(eobject ConfigFile_FileContentRoot,
 		CfgFileContentRoot,ENamedObject,)
 
-	# Property 'configurations... : CfgConfiguration'.
-	$(eobject-reference ConfigFile_FileContentRoot_configurations,
-		configurations,CfgConfiguration,fileContentRoot,changeable many containment)
+	# Property 'configuration : CfgConfiguration'.
+	$(eobject-reference ConfigFile_FileContentRoot_configuration,
+		configuration,CfgConfiguration,fileContentRoot,changeable containment)
 
 	# Property 'imports...'.
 	$(eobject-attribute ConfigFile_FileContentRoot_imports,
@@ -54,21 +54,20 @@ endef
 #   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-define class-CfgConfiguration # abstract
+define class-CfgConfiguration
 	# Extends 'ENamedObject', 'MyAnnotationTarget' classes.
 	$(eobject ConfigFile_Configuration,
-		CfgConfiguration,ENamedObject MyAnnotationTarget,abstract)
+		CfgConfiguration,ENamedObject MyAnnotationTarget,)
 
 	# Property 'fileContentRoot : CfgFileContentRoot'.
 	$(eobject-reference ConfigFile_Configuration_fileContentRoot,
-		fileContentRoot,CfgFileContentRoot,configurations,changeable container)
+		fileContentRoot,CfgFileContentRoot,configuration,changeable container)
 
 	# Property 'includes... : CfgInclude'.
 	$(eobject-reference ConfigFile_Configuration_includes,
 		includes,CfgInclude,,changeable many containment)
 
 	# PROTECTED REGION ID(ConfigFile_Configuration) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 

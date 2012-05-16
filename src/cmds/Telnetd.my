@@ -1,0 +1,27 @@
+package embox.cmd
+
+@Cmd(name = "telnetd",
+	help = "Start telnetd server",
+	man = '''
+		NAME
+			telnetd - telnet server
+		SYNOPSIS
+			telnetd
+		DESCRIPTION
+			Start telnetd server in the system
+		EXAMPLES
+			telnetd
+		AUTHORS
+			Vladimir Sokolov
+	''')
+module telnetd {
+	source "telnetd.c"
+
+	depends embox.lib.LibC
+	depends embox.kernel.thread.core
+	depends embox.net.socket
+	depends embox.cmd.sh.tish
+	depends embox.kernel.task_api
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}

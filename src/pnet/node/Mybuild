@@ -7,7 +7,6 @@ module match {
 }
 
 module null {
-	//source "init_null.c"
 	source "null.c"
 }
 
@@ -19,7 +18,6 @@ module linux_dev {
 
 module linux_layer {
 	source "linux_layer.c"
-	source "init_linux_layer.c"
 	depends embox.pnet.pack.PnetPackSkbuff
 	depends embox.pnet.node.skbuff.matcher
 	depends linux_dev

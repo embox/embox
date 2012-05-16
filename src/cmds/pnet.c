@@ -46,35 +46,35 @@ static int rule_set_mac(struct pnet_graph *gr, match_rule_t rule, char *rule_str
 static int rule_set_ip(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
 static int rule_set_next_node(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
 static int rule_set_priority(struct pnet_graph *gr, match_rule_t rule, char *rule_str);
-static match_rule_t rule_get_by_id(net_node_t node, char id);
+static match_rule_t rule_get_by_id(net_node_t node, char *id);
 
 /* macros to get graph, node or rule by it name */
 
 #define get_graph(graph, name, error) \
 		if (NULL == (graph = get_graph_by_name(name))) { \
-			printf("%s: no such graph ", name);		 \
+			printf("%s: no such graph \n", name);		 \
 			return -error;								 \
 		}
 
 #define get_node_from_graph(graph, node, node_name, error) \
 		if (NULL == (node = get_node_from_graph_by_name(graph, node_name))) {   \
-			printf("%s: no such node in graph '%s'", node_name, graph->name); \
+			printf("%s: no such node in graph '%s'\n", node_name, graph->name); \
 			return -error;														\
 		}
 
 #define get_node_from_repo(node, name, error) \
 		if (NULL == (node = pnet_get_module(name))) { \
-			printf("%s: no such node ", name);	  \
-			return -error;							  \
+			if (NULL == (node = pnet_get_dev_by_name(name))) { \
+				printf("%s: no such node \n", name);	 \
+				return -error;						 \
+			}										 \
 		}
 
 #define get_rule_from_node(node, rule, rule_name, error) \
-		if (NULL == (rule = rule_get_by_id(node, *rule_name))) { \
-			printf("%s: no such rule ", rule_name);				 \
+		if (NULL == (rule = rule_get_by_id(node, rule_name))) { \
+			printf("%s: no such rule \n", rule_name);				 \
 			return -error;										 \
 		}
-
-static int delete_brokens(char *str);
 
 struct rule {
 	char *option;
@@ -90,49 +90,6 @@ static struct rule rule_setters[RULE_OPTION_QUANTITY] = {
 
 static void print_usage(void) {
 	printf("Usage: pnet [options] [keys] graph [nodes | rules]\n");
-}
-
-//TODO move from here
-static int delete_brokens(char *str) {
-	int len;
-	char *cur;
-	int overlooking_words_cnt;
-
-	overlooking_words_cnt = 0;
-	len = MAX_WORD_LENGTH;
-	cur = str;
-	cur++;
-
-	while (*cur != '\'' && len) {
-		if (*cur == '\0') {
-			*cur = ' ';
-			overlooking_words_cnt++;
-		}
-		cur++; len--;
-	}
-
-	*cur = '\0';
-
-	return overlooking_words_cnt;
-}
-
-static void shift(char **argv, int begin, int shift) {
-	for (int i = begin + shift; i < MAX_TOKEN_COUNT; i++) {
-		argv[i - shift] = argv[i];
-	}
-}
-
-static void rebuild_argv(char **argv) {
-	int len = MAX_TOKEN_COUNT;
-	int i = 0;
-
-	while (NULL != argv[i] && len) {
-		if (argv[i][0] == '\'') {
-			argv[i]++;
-			shift(argv, i + 1, delete_brokens(argv[i]));
-		}
-		i++;
-	}
 }
 
 //FIXME now this function return only first graph in list if exist
@@ -166,11 +123,13 @@ static void print_graph_names(void) {
 		if (PNET_GRAPH_STARTED == gr->state)
 			printf("%s, ", gr->name);
 	}
+
 	printf("\n%s", "Stopped graphs: ");
 	list_for_each_entry(gr, &pnet_graphs, lnk) {
 		if (PNET_GRAPH_STOPPED == gr->state)
 			printf("%s, ", gr->name);
 	}
+	printf("\n");
 }
 
 static void print_list_of_graph_nodes(struct pnet_graph *gr) {
@@ -182,7 +141,11 @@ static void print_list_of_graph_nodes(struct pnet_graph *gr) {
 	}
 	printf("nodes of %s: \n", gr->name);
 	list_for_each_entry(node, &gr->nodes, gr_link) {
-		printf("	%s (type: %s)\n ", node->name, node->proto->name);
+		if(node->proto) {
+			printf("	%s (type: %s)\n", node->name, node->proto->name);
+		} else {
+			printf("	%s (%s)\n", node->name, "no protocol");
+		}
 	}
 }
 
@@ -202,9 +165,17 @@ static int print_graph(char **argv) {
 
 	node = root->rx_dfault;
 
-	printf("%s (type: %s)\n", root->name, root->proto->name);
+	if(root->proto) {
+		printf("%s (type: %s)\n", root->name, root->proto->name);
+	} else {
+		printf("%s (%s)\n", root->name, "no protocol node");
+	}
 	while (NULL != node) {
-		printf("%s (type: %s)\n", node->name, node->proto->name);
+		if(node->proto) {
+			printf("%s (type: %s)\n", node->name, node->proto->name);
+		} else {
+			printf("%s (%s)\n", node->name, "no protocol");
+		}
 		node = node->rx_dfault;
 	}
 
@@ -225,9 +196,18 @@ static void print_rules(net_node_matcher_t node) {
 		ip.s_addr = rule->skbuf->nh.iph->saddr;
 		dstaddr = inet_ntoa(ip);
 		macaddr_print(mac, rule->skbuf->mac.ethh->h_source);
-
-		printf("%d : dst IP - %s, next node - %s, dst HWaddr - %s, priority - %d \n",
-				counter, dstaddr, rule->next_node->proto->name, mac, rule->priority);
+		if (rule->next_node) {
+			if (rule->next_node->proto) {
+				printf("%d : dst IP - %s, next node - %s (type: %s), dst HWaddr - %s, priority - %d \n",
+					counter, dstaddr, rule->next_node->name, rule->next_node->proto->name, mac, rule->priority);
+			} else {
+				printf("%d : dst IP - %s, next node - %s (type: %s), dst HWaddr - %s, priority - %d \n",
+					counter, dstaddr, rule->next_node->name, "no protocol", mac, rule->priority);
+			}
+		} else {
+			printf("%d : dst IP - %s, next node - null, dst HWaddr - %s, priority - %d \n",
+				counter, dstaddr, mac, rule->priority);
+		}
 		counter++;
 	}
 }
@@ -249,16 +229,23 @@ static int add_node(char **argv) {
 
 	if (0 > (res = pnet_graph_add_node(gr, node))) {
 		if (res == -EBUSY) {
-			printf("node %s is already in use in graph %s", node->name, gr->name);
+			printf("node %s is already in use in graph %s\n", node->name, gr->name);
 		}
 		return res;
 	}
 
-	name  = malloc(strlen(argv[5]));
-	strcpy(name, argv[5]);
-	node->name = name;
+	if(*argv[5]) {
+		name  = malloc(strlen(argv[5]));
+		strcpy(name, argv[5]);
+		node->name = name;
+	} else {
+		printf("node should have the name\n");
+		return -ENOENT;
+	}
 
-	gr->state = graph_state;
+	if (graph_state == PNET_GRAPH_STARTED) {
+		pnet_graph_start(gr);
+	}
 
 	return ENOERR;
 }
@@ -284,10 +271,13 @@ static int link_node(char **argv) {
 	get_node_from_graph(gr, node, argv[4], ENOENT);
 
 	res = pnet_node_link(src, node);
-	gr->state = graph_state;
+
+	if (graph_state == PNET_GRAPH_STARTED) {
+		pnet_graph_start(gr);
+	}
 
 	if (res < 0)
-		printf("node linking error ");
+		printf("node linking error \n");
 
 	return res;
 }
@@ -312,7 +302,9 @@ static int unlink_node(char **argv) {
 	/* delete node from graph */
 	list_del(&node->gr_link);
 
-	gr->state = graph_state;
+	if (graph_state == PNET_GRAPH_STARTED) {
+		pnet_graph_start(gr);
+	}
 
 	return ENOERR;
 }
@@ -380,14 +372,15 @@ static int rule_set_priority (struct pnet_graph *gr, match_rule_t rule, char *ru
 }
 
 /* return rule specified by it position in list of rules */
-static match_rule_t rule_get_by_id(net_node_t node, char id) {
+static match_rule_t rule_get_by_id(net_node_t node, char *id) {
 	struct list_head *h;
 	match_rule_t rule;
 	net_node_matcher_t matcher;
-	int n;
+	int n = 0;
 	int counter = 1;
 
-	sscanf(&id, "%d", &n);
+	sscanf(id, "%d", &n);
+	printf("%d\n", n);
 
 	matcher = (net_node_matcher_t) node;
 	list_for_each (h, &matcher->match_rx_rules) {
@@ -413,6 +406,7 @@ static int exec(int argc, char **argv) {
 	int opt, res;
 	struct pnet_graph *gr;
 	const struct pnet_module *mod;
+	struct net_device *dev;
 	match_rule_t rule;
 	net_node_t node;
 	_rule_setter setter;
@@ -420,7 +414,6 @@ static int exec(int argc, char **argv) {
 	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "hgnt:d:p:r:s:a:l:"))) {
-		rebuild_argv(argv);
 
 		switch(opt) {
 		case 'h':
@@ -448,15 +441,22 @@ static int exec(int argc, char **argv) {
 				break;
 			}
 
-			printf("%s: no such option ", argv[2]);
+			printf("%s: no such option \n", argv[2]);
 			break;
 		case 'n' :
-			printf("nodes:\n");
+			printf("Network Interfaces:\n");
+			netdev_foreach(dev) {
+				if (dev) {
+					printf("	%s\n", dev->name);
+				}
+			}
+
+			printf("\nNodes:\n");
 			array_foreach_ptr(mod, __pnet_mod_repo, ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
 				if (mod->node)
 					printf("	%s\n", mod->node->proto->name);
 			}
-			printf("\nprotocols:\n");
+			printf("\nProtocols:\n");
 			array_foreach_ptr(mod, __pnet_mod_repo, ARRAY_SPREAD_SIZE(__pnet_mod_repo)) {
 				if (!mod->node)
 					printf("	%s\n", mod->proto->name);
@@ -473,7 +473,7 @@ static int exec(int argc, char **argv) {
 		case 'a' :
 			if (!strcmp("--graph", argv[2])) {
 				if (NULL == pnet_graph_create(argv[3])) {
-					printf("%s: graph was not created ", argv[3]);
+					printf("%s: graph was not created \n", argv[3]);
 					return -1;
 				}
 				break;
@@ -488,13 +488,13 @@ static int exec(int argc, char **argv) {
 
 			if (!strcmp("--rule", argv[2])) {
 				if (rule_alloc(argv) < 0) {
-					printf("rule was not created ");
+					printf("rule was not created \n");
 					return -1;
 				}
 				break;
 			}
 
-			printf("%s: no such option ", argv[2]);
+			printf("%s: no such option \n", argv[2]);
 			return 0;
 		case 't':
 			get_graph(gr, argv[2], 0);
@@ -503,11 +503,11 @@ static int exec(int argc, char **argv) {
 
 			if (NULL != (setter = get_setter_by_option(argv[5]))) {
 				if (setter(gr, rule, argv[6]) < 0) {
-					printf("%s: incorrect value ", argv[6]);
+					printf("%s: incorrect value \n", argv[6]);
 					return 0;
 				}
 			} else {
-				printf("%s: no such option ", argv[5]);
+				printf("%s: no such option \n", argv[5]);
 			}
 			break;
 		case 'l':
@@ -525,7 +525,7 @@ static int exec(int argc, char **argv) {
 					return 0;
 				break;
 			}
-			printf("%s: no such option ", argv[2]);
+			printf("%s: no such option \n", argv[2]);
 			return -1;
 		default:
 			return 0;

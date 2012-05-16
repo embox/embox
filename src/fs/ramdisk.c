@@ -11,13 +11,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
+#include <fs/fs_drv.h>
 #include <fs/ramfs.h>
-#include <fs/fs.h>
 #include <fs/vfs.h>
 #include <fs/node.h>
 #include <fs/ramdisk.h>
 #include <fs/fat.h>
-#include <fs/driver_registry.h>
 #include <util/array.h>
 #include <embox/unit.h>
 #include <stdlib.h>
@@ -30,7 +29,7 @@ typedef struct ramdisk_params_head {
 	ramdisk_params_t param;
 } ramdisk_params_head_t;
 
-static ramdisk_params_head_t ramdisk_pool[CONFIG_QUANTITY_RAMDISK];
+static ramdisk_params_head_t ramdisk_pool[QUANTITY_RAMDISK];
 static LIST_HEAD(ramdisk_free);
 
 #define param_to_head(fparam) \
@@ -72,18 +71,19 @@ int ramdisk_create(void *mkfs_params) {
 
 	p_mkfs_params = (mkfs_params_t *)mkfs_params;
 
-	if (NULL == (ramdisk_node = vfs_add_path(p_mkfs_params->name, NULL))) {
+	if (NULL == (ramdisk_node = vfs_add_path(p_mkfs_params->path, NULL))) {
 		return -EBUSY;/*file already exist*/
 	}
 
 	ramd_params = ramdisk_info_alloc();
 	ramdisk_node->attr = (void *) ramd_params;
 
-	if(NULL == (ramd_params->start_addr = page_alloc(p_mkfs_params->blocks))) {
+	if(NULL == (ramd_params->p_start_addr =
+			page_alloc(p_mkfs_params->blocks))) {
 		return -ENOMEM;
 	}
 
-	strcpy ((void *)&ramd_params->name, (const void *)p_mkfs_params->name);
+	strcpy ((void *)&ramd_params->path, (const void *)p_mkfs_params->path);
 	ramd_params->size = p_mkfs_params->blocks * CONFIG_PAGE_SIZE;
 	ramd_params->blocks = p_mkfs_params->blocks;
 
@@ -97,7 +97,7 @@ ramdisk_params_t *ramdisk_get_param(char *name) {
 	node_t *ramdisk_node;
 
 	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
-		return NULL;/*file already exist*/
+		return NULL;
 	}
 	return (ramdisk_params_t *) ramdisk_node->attr;
 }

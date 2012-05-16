@@ -199,7 +199,7 @@ static void buf_delete(struct dgram_buf *buf) {
 	}
 
 	list_del(&buf->next_buf);
-	pool_free(&__dgram_bufs, (void*)buf);
+	objfree(&__dgram_bufs, (void*)buf);
 }
 
 struct sk_buff *ip_defrag(struct sk_buff *skb) {

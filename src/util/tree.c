@@ -101,11 +101,12 @@ struct tree_link *tree_children_find(struct tree_link *node,
 	}
 	return NULL;
 }
-struct tree_link *tree_children_arg_find(struct tree_link *tree,
+
+struct tree_link *tree_children_arg_find(struct tree_link *node,
 		void *arg, tree_link_arg_predicate_t predicate) {
 	struct tree_link *link;
-	assert(tree != NULL);
-	tree_postorder_traversal_link(link, tree) {
+	assert(node != NULL);
+	list_foreach(link, &node->children, list_link) {
 		if (predicate(link, arg)) {
 			return link;
 		}
@@ -126,7 +127,11 @@ struct tree_link *tree_find(struct tree_link *tree,
 }
 
 struct tree_link *tree_children_begin(struct tree_link *tree) {
-	    return list_element(list_first_link(&tree->children), struct tree_link, list_link);
+	struct list_link *lnk = list_first_link(&tree->children);
+	if(NULL == (lnk = list_first_link(&tree->children))) {
+		return NULL;
+	}
+	return list_element(lnk, struct tree_link, list_link);
 }
 
 
@@ -139,4 +144,6 @@ struct tree_link *tree_children_next(struct tree_link *tree) {
 	    return list_element(tree->list_link.next, struct tree_link, list_link);
 }
 
-
+struct tree_link *tree_children_prev(struct tree_link *tree) {
+	    return list_element(tree->list_link.next, struct tree_link, list_link);
+}

@@ -13,12 +13,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fcntl.h>
 #include <fs/ramfs.h>
 #include <fs/ramdisk.h>
 #include <fs/fat.h>
 #include <embox/cmd.h>
-#include <embox/unit.h>
-#include <util/array.h>
 #include <mem/page.h>
 #include <cmd/mkfs.h>
 
@@ -61,7 +60,6 @@ static int exec(int argc, char **argv) {
 
 	mkfs_params.fs_type = DEFAULT_FS_TYPE;
 	getopt_init();
-	/* TODO add -q to create device, -F for vfat fstype 12/16/32 */
 	while (-1 != (opt = getopt(argc, argv, "ht:q:"))) {
 		switch (opt) {
 		case 't':
@@ -92,25 +90,28 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	if (argc > min_argc) {/** last arg should be block quantity*/
-		if(0 >= sscanf(argv[argc - 1], "%d", &mkfs_params.blocks)){
-			print_usage();
-			return -EINVAL;
+	if (argc > 1) {
+		if (argc > min_argc) {/** last arg should be block quantity*/
+			if(0 >= sscanf(argv[argc - 1], "%d", &mkfs_params.blocks)){
+				print_usage();
+				return -EINVAL;
+			}
+			strcpy ((void *)&(mkfs_params.path), (const void *)argv[argc - 2]);
 		}
-		strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 2]);
-	}
-	else {/** last arg should be diskname*/
-		strcpy ((void *)&(mkfs_params.name), (const void *)argv[argc - 1]);
-	}
+		else {/** last arg should be diskname*/
+			strcpy ((void *)&(mkfs_params.path), (const void *)argv[argc - 1]);
+		}
 
-	return mkfs_do_operation(&mkfs_params);
+		return mkfs_do_operation(&mkfs_params);
+	}
+	return 0;
 }
-
 
 int mkfs_do_operation(void *_mkfs_params) {
 	mkfs_params_t *mkfs_params;
 	fs_drv_t *fs_drv;
 	int rezult;
+
 
 	mkfs_params = (mkfs_params_t *) _mkfs_params;
 
@@ -118,23 +119,14 @@ int mkfs_do_operation(void *_mkfs_params) {
 		if(0 != (rezult = ramdisk_create((void *)mkfs_params))) {
 			return rezult;
 		}
-#ifdef _GAZ_DEBUG_
-		if(NULL == (ramd_params = ramdisk_get_param(mkfs_params->name))) {
-			return -ENODEV;
-		}
-
-		printf("Create ramdisk %s, size %d, filesistem %s, addr %d,\n",
-				ramd_params->name,ramd_params->size,
-				ramd_params->fs_name, (int)ramd_params->start_addr);
-#endif /*def _GAZ_DEBUG_ */
 	}
 
 	if(mkfs_params->operation_flag & MKFS_FORMAT_DEV) {
-		if(NULL == (ramd_params = ramdisk_get_param(mkfs_params->name))) {
+		if(NULL == (ramd_params = ramdisk_get_param(mkfs_params->path))) {
 			return -ENODEV;
 		}
 		/* set filesystem attribute to ramdisk */
-		strcpy ((void *)ramd_params->name, (const void *)mkfs_params->name);
+		strcpy ((void *)ramd_params->path, (const void *)mkfs_params->path);
 		strcpy ((void *)ramd_params->fs_name,
 					(const void *)mkfs_params->fs_name);
 		ramd_params->fs_type = mkfs_params->fs_type;
@@ -142,15 +134,18 @@ int mkfs_do_operation(void *_mkfs_params) {
 		fs_drv = filesystem_find_drv((const char *) &mkfs_params->fs_name);
 
 		/* format filesystem */
-		if (0 != (rezult = fs_drv->fsop->create_file((void *)ramd_params))) {
-			return rezult;/*file already exist*/
+		if (0 != (rezult = fs_drv->fsop->format((void *)ramd_params))) {
+			return rezult;
 		}
 
-#ifdef _GAZ_DEBUG_
-		fat_main("/t1.txt");
-
-		fat_main("/t2.txt");
-#endif /*def _GAZ_DEBUG_ */
+		/*
+		 * strcpy(filename, ramd_params->name);
+		 * strcat (filename, "/1/2/3/4/4.txt");
+		 * rezult = open((const char *) filename, O_WRONLY);
+		 * strcpy(filename, "file was rewrite \n");
+		 * write(rezult, (const void *) filename, strlen (filename));
+		 *
+		 */
 	}
 	return 0;
 }

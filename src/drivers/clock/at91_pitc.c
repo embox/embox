@@ -30,7 +30,7 @@ void clock_init(void) {
 	irq_attach((irq_nr_t) AT91C_ID_SYS,
 		(irq_handler_t) &clock_handler, 0, NULL, "at91 PIT");
 	at91_pit_clock_source.flags = 1;
-	at91_pit_clock_source.precision = 1000;
+	at91_pit_clock_source.resolution = 1000;
 	clock_source_register(&at91_pit_clock_source);
 }
 

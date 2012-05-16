@@ -1,31 +1,39 @@
 package embox.driver.serial
 
-abstract module serial {
+/* FIXME:
+ * Unused files: skyeye_uart.c
+ */
 
+abstract module serial {
 }
 
-module serial_port extends serial{
+module apbuart extends serial {
+	option number baud_rate
+
+	source "apbuart.c"
+
+	depends embox.lib.LibC
+	depends embox.driver.ambapp_api
+	depends embox.kernel.irq
+	depends embox.fs.driver.devfs
+}
+
+module at91_uart extends serial {
+	option number baud_rate
+
+	source "at91_uart.c"
+}
+
+module serial_port extends serial {
 	option number baud_rate
 
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "serial_port.c"
 
 	depends embox.kernel.irq
+	depends embox.util.LibUtil
 }
 
-module apbuart extends serial{
-	option number baud_rate
-	source "apbuart.c"
-	depends embox.kernel.irq
-}
-
-module xuartlite extends serial{
+module xuartlite extends serial {
 	source "xuartlite.c"
-	depends embox.kernel.irq
-}
-
-module at91_uart extends serial{
-	option number baud_rate
-	source "at91_uart.c"
-	depends embox.kernel.irq
 }

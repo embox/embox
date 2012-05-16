@@ -22,12 +22,7 @@
 
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
-#include <util/debug_msg.h>
 
-#ifndef CONFIG_MAX_KERNEL_SOCKETS
-#define CONFIG_MAX_KERNEL_SOCKETS 0x4
-#endif
-/* TODO: remove all below from here */
 
 extern const struct task_res_ops * __task_res_ops[];
 
@@ -40,11 +35,16 @@ static ssize_t this_write(int fd, const void *buf, size_t nbyte) {
 	return sendto(fd, buf, nbyte, 0, NULL, 0);
 }
 
+static int this_ioctl(int fd, int request, va_list args) {
+	return 0;
+}
+
 static struct task_res_ops ops = {
 	.type = TASK_IDX_TYPE_SOCKET,
 	.read = this_read,
 	.write = this_write,
-	.close = socket_close
+	.close = socket_close,
+	.ioctl = this_ioctl
 };
 
 ARRAY_SPREAD_ADD(__task_res_ops, &ops);
@@ -57,7 +57,7 @@ int socket(int domain, int type, int protocol) {
 	int res;
 	struct socket *sock;
 
-	res = kernel_socket_create(domain, type, protocol, &sock);
+	res = kernel_socket_create(domain, type, protocol, &sock, NULL, NULL);
 	if (res < 0) {
 		SET_ERRNO(-res);
 		return -1; /* return error code */
@@ -189,9 +189,26 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	m.msg_iov = &iov;
 
 	inet = inet_sk(sock->sk);
-	dest_addr = (struct sockaddr_in *)daddr;
-	inet->daddr = dest_addr->sin_addr.s_addr;
-	inet->dport = ntohs(dest_addr->sin_port);
+	if ( (sock->type == SOCK_STREAM) || (sock->type ==  SOCK_SEQPACKET) ) {
+		/* Quotation: "If sendto() is used on a connection-mode (SOCK_STREAM, SOCK_SEQPACKET)
+		 * socket, the arguments dest_addr and addrlen are ignored
+		 * (and the error EISCONN MAY be returned when they are not NULL and 0)"
+		 *------------
+		 * Currently we do nothing and believe that inet has correct pair address-port
+		 * from tcp_v4_accept() call. As a compromise with the old code we can
+		 * check that new parameters don't change anything. If not - return
+		 * an error.
+		 */
+	} else {
+		if(!daddr || (daddrlen < sizeof(struct sockaddr_in))) {
+			SET_ERRNO(EDESTADDRREQ);
+			return -1;
+		} else {
+			dest_addr = (struct sockaddr_in *)daddr;
+			inet->daddr = dest_addr->sin_addr.s_addr;
+			inet->dport = dest_addr->sin_port;
+		}
+	}
 
 	/* socket is ready for usage and has no data transmitting errors yet */
 	sock->sk->sk_err = -1;
@@ -203,8 +220,6 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	if(!sock_is_ready(sock->sk)){
 		sock_lock(sock->sk);
 		/* sleep until the event sock_is_ready fires */
-		debug_printf("socket is not ready going to sleep",
-								 "socket", "sendto_sock");
 		sched_sleep(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
 	  sock_unlock(sock->sk);
 		/* res = sock_get_answer(sock->sk); */
@@ -214,7 +229,7 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 		return (ssize_t)res;
 	}
 
-	return (ssize_t)len;
+	return (ssize_t)iov.iov_len;
 }
 
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
@@ -262,10 +277,12 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	}
 
 	inet = inet_sk(sock->sk);
-	dest_addr = (struct sockaddr_in *)daddr;
-	dest_addr->sin_addr.s_addr = inet->daddr;
-	dest_addr->sin_port = htons(inet->dport);
-	*daddrlen = sizeof dest_addr;
+	if ((daddr != NULL) && (daddrlen != NULL)) {
+		dest_addr = (struct sockaddr_in *)daddr;
+		dest_addr->sin_addr.s_addr = inet->daddr;
+		dest_addr->sin_port = inet->dport;
+		*daddrlen = sizeof *dest_addr;
+	}
 
 	return iov.iov_len; /* return length of received msg */
 }
@@ -305,4 +322,52 @@ int socket_close(int sockfd) {
 	}
 
 	return ENOERR;
+}
+
+int getsockopt(int sockfd, int level, int optname, void *optval,
+		socklen_t *optlen){
+	struct socket *sock;
+	int res;
+
+	if (sockfd < 0) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+	sock = idx2sock(sockfd);
+	if (sock == NULL) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+	res = kernel_socket_getsockopt(sock, level, optname,
+			optval, optlen);
+	if(res < 0){
+		SET_ERRNO(-res);
+		return -1;
+	}
+	return ENOERR;
+
+}
+
+int setsockopt(int sockfd, int level, int optname, void *optval,
+		socklen_t optlen){
+	struct socket *sock;
+	int res;
+
+	if (sockfd < 0) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+	sock = idx2sock(sockfd);
+	if (sock == NULL) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+	res = kernel_socket_setsockopt(sock, level, optname,
+			optval, optlen);
+	if(res < 0){
+		SET_ERRNO(-res);
+		return -1;
+	}
+	return ENOERR;
+
 }

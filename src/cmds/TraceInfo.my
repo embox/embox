@@ -16,5 +16,9 @@ package embox.cmd
 
 module traceinfo {
 	source "traceinfo.c"
+
+	depends embox.lib.LibC
 	depends embox.profiler.tracing
+	depends embox.util.LibUtil
+	depends embox.framework.LibFramework
 }

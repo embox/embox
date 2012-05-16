@@ -65,6 +65,7 @@ static int run_cmd(int argc, char *argv[]) {
 
 int shell_line_input(const char *const_line) {
 	char *line = cline;
+	char quote;
 	int tok_pos = 0;
 	int last_was_blank = 1;
 
@@ -73,7 +74,17 @@ int shell_line_input(const char *const_line) {
 	while (*line != '\0') {
 		char is_space = isspace(*line);
 		if (last_was_blank && !is_space) {
-			token_line[tok_pos++] = line;
+			if (*line == '\'' || *line == '\"') {
+				quote = *line;
+				line++;
+				token_line[tok_pos++] = line;
+				while (*line != quote) {
+					line++;
+				}
+				*line = '\0';
+			} else {
+				token_line[tok_pos++] = line;
+			}
 		}
 		last_was_blank = is_space;
 		if (is_space) {

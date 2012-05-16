@@ -37,7 +37,7 @@
 #include <kernel/timer.h>
 #include <hal/reg.h>
 #include <fs/node.h>
-#include <fs/file.h>
+#include <kernel/file.h>
 #include <err.h>
 
 /**

@@ -3,4 +3,8 @@ package embox.example.kernel.timer
 //$_BRIEF-timer = demonstrates using timer API
 module timer {
 	source "timer.c"
+
+	depends embox.lib.LibC
+	depends embox.kernel.timer.sys_timer
+	depends embox.framework.LibFramework
 }

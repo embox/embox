@@ -1,0 +1,22 @@
+package embox.cmd
+
+@Cmd(name = "touch",
+	help = "Create an empty file",
+	man = '''
+		NAME
+			touch - create a file
+		SYNOPSIS
+			touch  FULE
+		DESCRIPTION
+			touch is used to create a file
+		AUTHORS
+			Andrey Gazukin
+	''')
+module touch {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "touch.c"
+
+	depends embox.compat.posix.LibPosix
+	depends embox.fs.core
+	depends embox.framework.LibFramework
+}

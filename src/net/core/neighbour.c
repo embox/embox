@@ -14,30 +14,28 @@
 #include <net/neighbour.h>
 #include <stddef.h>
 #include <string.h>
+#include <hal/ipl.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
-/**
- * Wrapper for the neighbour entity
- */
 struct neighbour_head {
 	struct list_head lnk; /* pointer to next and previous element of the cache */
 	uint32_t ctime;       /* time of life */
 	struct neighbour n;   /* cache entity */
 };
 
-/**
- * Declaration of neighbour cache
- */
-POOL_DEF(neighbour_pool, struct neighbour_head, CONFIG_ARP_CACHE_SIZE);
+union head_ptr {
+	struct neighbour_head *nh;
+	struct list_head *lh;
+	unsigned char *b;
+	void *v;
+};
 
-/**
- * List of valid entity
- */
-static LIST_HEAD(used_neighbours_list);
+POOL_DEF(neighbour_pool, struct neighbour_head, CONFIG_ARP_CACHE_SIZE); /* Declaration of neighbour cache */
+static LIST_HEAD(used_neighbours_list); /* List of valid entity */
 //static LIST_HEAD(wait_neighbours_list); // TODO
-
 static struct sys_timer *neighbour_refresh_timer;
+
 
 /**
  * This function check expires of entity from neighbour cache
@@ -45,34 +43,31 @@ static struct sys_timer *neighbour_refresh_timer;
 static void neighbour_refresh(struct sys_timer *timer, void *param) {
 	struct neighbour *entity;
 	struct list_head *tmp;
-	union {
-		struct neighbour_head *nh;
-		struct list_head *lh;
-		void *v;
-	} ptr;
+	union head_ptr ptr;
+	ipl_t sp;
 
 	list_for_each_safe(ptr.lh, tmp, &used_neighbours_list) {
 		entity = &ptr.nh->n;
 		if (entity->flags == ATF_COM) {
 			ptr.nh->ctime += NEIGHBOUR_CHECK_INTERVAL;
-			if (ptr.nh->ctime >= NEIGHBOUR_TIMEOUT) {
-				list_del(ptr.lh);
-				pool_free(&neighbour_pool, ptr.v);
+			if (ptr.nh->ctime < NEIGHBOUR_TIMEOUT) {
+				continue;
 			}
+			sp = ipl_save();
+
+			list_del(ptr.lh);
+			pool_free(&neighbour_pool, ptr.v);
+
+			ipl_restore(sp);
 		}
 	}
 }
 
 uint8_t * neighbour_lookup(struct in_device *if_handler, in_addr_t ip_addr) {
 	struct neighbour *entity;
-	union {
-		struct neighbour_head *nh;
-		struct list_head *lh;
-	} ptr;
+	union head_ptr ptr;
 
-	if (if_handler == NULL) {
-		return NULL;
-	}
+	assert(if_handler != NULL);
 
 	list_for_each(ptr.lh, &used_neighbours_list) {
 		entity = &ptr.nh->n;
@@ -88,15 +83,11 @@ uint8_t * neighbour_lookup(struct in_device *if_handler, in_addr_t ip_addr) {
 int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr,
 		uint8_t *hw_addr, uint8_t flags) {
 	struct neighbour *entity;
-	union {
-		struct neighbour_head *nh;
-		struct list_head *lh;
-		void *v;
-	} ptr;
+	union head_ptr ptr;
+	ipl_t sp;
 
-	if ((if_handler == NULL) || (hw_addr == NULL)) {
-		return -EINVAL;
-	}
+	assert(if_handler != NULL);
+	assert(hw_addr != NULL);
 
 	list_for_each(ptr.lh, &used_neighbours_list) {
 		entity = &ptr.nh->n;
@@ -107,7 +98,9 @@ int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr,
 	}
 
 	if (ptr.lh == &used_neighbours_list) { /* if not found then alloc new */
+		sp = ipl_save();
 		ptr.v = pool_alloc(&neighbour_pool);
+		ipl_restore(sp);
 		if (ptr.v == NULL) {
 			return -ENOMEM;
 		}
@@ -121,7 +114,9 @@ int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr,
 	entity->ip_addr = ip_addr;
 	entity->flags = flags;
 
-	list_move(ptr.lh, &used_neighbours_list);
+	sp = ipl_save();
+	list_move_tail(ptr.lh, &used_neighbours_list);
+	ipl_restore(sp);
 
 	return ENOERR;
 }
@@ -129,22 +124,19 @@ int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr,
 int neighbour_delete(struct in_device *if_handler, in_addr_t ip_addr) {
 	struct list_head *tmp;
 	struct neighbour *entity;
-	union {
-		struct neighbour_head *nh;
-		struct list_head *lh;
-		void *v;
-	} ptr;
+	union head_ptr ptr;
+	ipl_t sp;
 
-	if (if_handler == NULL) {
-		return -EINVAL;
-	}
+	assert(if_handler != NULL);
 
 	list_for_each_safe(ptr.lh, tmp, &used_neighbours_list) {
 		entity = &ptr.nh->n;
 		if ((entity->ip_addr == ip_addr)
 				&& (entity->if_handler == if_handler)) {
+			sp = ipl_save();
 			list_del(ptr.lh);
 			pool_free(&neighbour_pool, ptr.v);
+			ipl_restore(sp);
 			return ENOERR;
 		}
 	}
@@ -153,10 +145,7 @@ int neighbour_delete(struct in_device *if_handler, in_addr_t ip_addr) {
 }
 
 struct neighbour * neighbour_get_first(void) {
-	union {
-		struct neighbour_head *nh;
-		struct list_head *lh;
-	} ptr;
+	union head_ptr ptr;
 
 	if (list_empty(&used_neighbours_list)) {
 		return NULL;
@@ -168,19 +157,14 @@ struct neighbour * neighbour_get_first(void) {
 }
 
 int neighbour_get_next(struct neighbour **pentity) {
-	union {
-		struct neighbour_head *nh;
-		struct list_head *lh;
-		unsigned char *b;
-	} ptr;
+	union head_ptr ptr;
 
-	if ((pentity == NULL) || (*pentity == NULL)) {
-		return -EINVAL;
-	}
+	assert(pentity != NULL);
+	assert(*pentity != NULL);
 
 	ptr.b = (unsigned char *)*pentity - offsetof(struct neighbour_head, n);
 	ptr.lh = ptr.lh->next; /* get next */
-	*pentity = (ptr.lh != &used_neighbours_list) ? &ptr.nh->n : NULL; /* if end => NULL */
+	*pentity = (ptr.lh != &used_neighbours_list ? &ptr.nh->n : NULL); /* if end => NULL */
 
 	return ENOERR;
 }

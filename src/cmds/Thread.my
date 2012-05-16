@@ -17,9 +17,12 @@ package embox.cmd
 		AUTHORS
 			Gleb Efimov, Alina Kramar, Roman Oderov
 	''')
-
 module thread {
 	source "thread.c"
-	depends embox.kernel.thread.core
-}
 
+	depends embox.lib.LibC
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sched
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}

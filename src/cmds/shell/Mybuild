@@ -10,4 +10,9 @@ module shell {
 	source "shell.c", "console/console.c",
 		"console/cmdline.c", "console/screen.c",
 		"console/screen_in.c", "console/screen_out.c"
+
+	depends embox.lib.LibC
+    depends embox.util.LibUtil
+	depends embox.driver.terminal
+    depends embox.framework.LibFramework
 }

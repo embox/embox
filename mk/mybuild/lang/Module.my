@@ -1,0 +1,4 @@
+package mybuild.lang
+
+/* A common super type for all modules. */
+module Module {}

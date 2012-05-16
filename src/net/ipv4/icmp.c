@@ -11,18 +11,21 @@
  * @author Ilia Vaprol
  * @author Vladimir Sokolov
  */
+#include <errno.h>
+#include <assert.h>
+
+#include <util/math.h>
 
 #include <net/inetdevice.h>
 #include <net/icmp.h>
-#include <embox/net/proto.h>
-#include <err.h>
-#include <errno.h>
-#include <assert.h>
 #include <net/raw.h>
-#include <util/math.h>
-#include <framework/net/proto/api.h>
-#include <time.h>
 
+#include <embox/net/proto.h>
+#include <framework/net/proto/api.h>
+
+#include <kernel/time.h>
+
+#include <err.h>
 
 EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 
@@ -246,7 +249,7 @@ static int icmp_echo(sk_buff_t *skb) {
 }
 
 /* Map time into a proper ICMP network format */
-static inline __be32 iptime(struct timeval *ctime) {
+static inline __be32 iptime(struct ktimeval *ctime) {
 	uint32_t t = (ctime->tv_sec % (24*60*60)) * 1000 + ctime->tv_usec / 1000;
 	return (htonl(t));
 }
@@ -254,7 +257,7 @@ static inline __be32 iptime(struct timeval *ctime) {
 static int icmp_timestamp(sk_buff_t *skb) {
 	sk_buff_t *reply;
 	__be32 *time_ptr;
-	struct timeval tv;
+	struct ktimeval tv;
 	__be32 time_field;
 	int i;
 

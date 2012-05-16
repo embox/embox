@@ -3,3 +3,11 @@ package embox.arch.arm
 module lds extends embox.arch.lds {
 	source "embox.lds.S"
 }
+
+module cpu extends embox.arch.cpu {
+	source "include/asm/hal/ipl.h"
+}
+
+module cpu_thumb extends embox.arch.cpu {
+	source "include/asm/hal/ipl_thumb.h"
+}

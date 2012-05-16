@@ -1,23 +1,27 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "mkfs",
 	help = "Display last debug messages..",
 	man = '''
-	NAME
-		mkfs - build an embox file system
-	SYNOPSIS
-		mkfs  [ -t type ] file [ blocks ]
-	DESCRIPTION
-		mkfs  is  used to build a embox file system on a device.
-		file is either the device name (e.g.  /dev/ram1).
-		blocks is the number of blocks to be used for the file system.
+		NAME
+			mkfs - build an embox file system
+		SYNOPSIS
+			mkfs  [ -t type ] file [ blocks ]
+		DESCRIPTION
+			mkfs  is  used to build a embox file system on a device.
+			file is either the device name (e.g.  /dev/ram1).
+			blocks is the number of blocks to be used for the file system.
+		AUTHORS
+			Andrey Gazukin
 	''')
 module mkfs {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "mkfs.c"
-	depends LibPosix
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
 	depends embox.fs.ramdisk
+	depends embox.fs.driver.repo
+	depends embox.framework.LibFramework
 }

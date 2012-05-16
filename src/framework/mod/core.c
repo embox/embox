@@ -89,23 +89,44 @@ static bool mod_traverse_needed(const struct mod *mod, bool op) {
 	return false;
 }
 
+static int mod_traverse_do(const struct mod **mods, bool op) {
+	const struct mod *mod;
+	array_nullterm_foreach(mod, mods) {
+		if (0 != mod_traverse(mod, op)) {
+			return -EINTR;
+		}
+	}
+	return 0;
+}
+
 // XXX What's about recursive invocations from mod ops? -- Eldar
 // TODO introduce -ELOOP or something else.
 static int mod_traverse(const struct mod *mod, bool op) {
-	const struct mod *dep;
 	const struct mod **deps = op ? mod->requires : mod->provides;
+	const struct mod **after_deps = mod->after_deps;
+	int ret;
 
 	if (!op == !mod_flag_tst(mod, MOD_FLAG_ENABLED)) {
 		return 0;
 	}
 
-	array_nullterm_foreach(dep, deps) {
-		if (0 != mod_traverse(dep, op)) {
-			return -EINTR;
-		}
+	if (!op && (ret = mod_traverse_do(after_deps, op))) {
+		return ret;
 	}
 
-	return op ? do_enable(mod) : do_disable(mod);
+	if ((ret = mod_traverse_do(deps, op))) {
+		return ret;
+	}
+
+	if ((ret = (op ? do_enable(mod) : do_disable(mod)))) {
+		return ret;
+	}
+
+	if (op && (ret = mod_traverse_do(after_deps,op))) {
+		return ret;
+	}
+
+	return 0;
 }
 
 static inline const struct mod_ops *mod_ops_deref(const struct mod *mod) {

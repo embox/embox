@@ -126,7 +126,10 @@ define class-MyAnnotation
 		bindings,MyOptionBinding,,changeable many containment)
 
 	# PROTECTED REGION ID(MyFile_Annotation) ENABLED START
-#	# TODO Add custom implementation here and remove this comment.
+	$(property qualifiedName)
+
+	$(getter qualifiedName,
+		$(get $(get type).qualifiedName))
 	# PROTECTED REGION END
 endef
 
@@ -418,12 +421,11 @@ define class-MyModuleType
 	$(getter allOptions,
 		$(with $(for opt <- $(get options),
 				$(get opt->name)),
-			$(get options) \
+			$(get options)\
 			$(for super <- $(get superType),
 				superOpt <- $(get super->allOptions),
 				$(if $(filter $1,$(get superOpt->name)),,
 			       		$(superOpt)))))
-
 
 	$(setter allOptions,
 		$(error $0($1): NIY))
@@ -443,16 +445,14 @@ define class-MyModuleType
 	$(property allSubTypes... : MyModuleType)
 	# PROTECTED REGION ID(MyFile_ModuleType_allSubTypes) ENABLED START
 	$(getter allSubTypes,
-		$(for subType <- $(get subTypes),
-			$(subType) \
-			$(get subType->allSubTypes)))
+		$(for t <- $(get subTypes),$t $(get t->allSubTypes)))
 	# PROTECTED REGION END
 
 	# Reference 'allSuperTypes' [0..*]: bidirectional, derived, read-only.
 	$(property allSuperTypes... : MyModuleType)
 	# PROTECTED REGION ID(MyFile_ModuleType_allSuperTypes) ENABLED START
 	$(getter allSuperTypes,
-		$(get superType) $(foreach s,$(get superType),$(get s->allSuperTypes)))
+		$(for t <- $(get superType),$t $(get t->allSuperTypes)))
 	# PROTECTED REGION END
 
 	# Method 'isSubTypeOf'.
@@ -466,9 +466,8 @@ define class-MyModuleType
 	# Method 'isSuperTypeOf'.
 	#   1. another : MyModuleType
 	# PROTECTED REGION ID(MyFile_ModuleType_isSuperTypeOf) ENABLED START
-#	# TODO Uncomment and implement me.
 	$(method isSuperTypeOf,
-		$(error $0($1): NIY))
+		$(invoke 1->isSubTypeOf,$(this)))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_ModuleType) ENABLED START
@@ -512,9 +511,9 @@ define class-MyOption # abstract
 	$(eobject MyFile_Option,
 		MyOption,ENamedObject MyAnnotationTarget,abstract)
 
-	# Property 'defaultValue : MyOptionValue'.
+	# Property 'defaultValue : MyLiteral'.
 	$(eobject-reference MyFile_Option_defaultValue,
-		defaultValue,MyOptionValue,,changeable containment)
+		defaultValue,MyLiteral,,changeable containment)
 
 	# Method 'validateValue'.
 	# PROTECTED REGION ID(MyFile_Option_validateValue) ENABLED START
@@ -567,7 +566,7 @@ define class-MyStringOption
 	# PROTECTED REGION ID(MyFile_StringOption_validateValue) ENABLED START
 #	# TODO Uncomment and implement me.
 	$(method validateValue,
-		$(invoke MyFile_StringOptionValue->isInstance,$1))
+		$(invoke MyFile_StringLiteral->isInstance,$1))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_StringOption) ENABLED START
@@ -605,7 +604,7 @@ define class-MyNumberOption
 	# PROTECTED REGION ID(MyFile_NumberOption_validateValue) ENABLED START
 #	# TODO Uncomment and implement me.
 	$(method validateValue,
-		$(invoke MyFile_NumberOptionValue->isInstance,$1))
+		$(invoke MyFile_NumberLiteral->isInstance,$1))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_NumberOption) ENABLED START
@@ -643,7 +642,7 @@ define class-MyBooleanOption
 	# PROTECTED REGION ID(MyFile_BooleanOption_validateValue) ENABLED START
 #	# TODO Uncomment and implement me.
 	$(method validateValue,
-		$(invoke MyFile_BooleanOptionValue->isInstance,$1))
+		$(invoke MyFile_BooleanLiteral->isInstance,$1))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_BooleanOption) ENABLED START
@@ -653,48 +652,89 @@ define class-MyBooleanOption
 endef
 
 #
-# Model object 'OptionValue'.
+# Model object 'TypeReferenceOption'.
 #
 # The following features and operations are defined:
-#   - attribute 'value'
-#   - operation 'toString'
+#   - reference 'type'
+#   - operation 'validateValue'
 #
-define class-MyOptionValue # abstract
-	# Extends 'EObject' class (implicitly).
-	$(eobject MyFile_OptionValue,
-		MyOptionValue,,abstract)
+# The following features and operations are inherited from 'Option':
+#   - reference 'defaultValue'
+#   - operation 'validateValue'
+#   - operation 'getId'
+#
+# The following features are inherited from 'AnnotationTarget':
+#   - reference 'annotations'
+#
+# The following features and operations are inherited from 'ENamedObject':
+#   - attribute 'name'
+#   - attribute 'qualifiedName'
+#   - attribute 'origin'
+#   - operation 'eInverseResolvedLinks'
+#
+define class-MyTypeReferenceOption
+	# Extends 'MyOption' class.
+	$(eobject MyFile_TypeReferenceOption,
+		MyTypeReferenceOption,MyOption,)
 
-	# Property 'value'.
-	$(eobject-attribute MyFile_OptionValue_value,
-		value,changeable)
+	# Property 'type : MyType'.
+	# Property 'type_link : ELink'.
+	$(eobject-reference MyFile_TypeReferenceOption_type,
+		type,MyType,,changeable linkable)
 
-	# Method 'toString'.
-	# PROTECTED REGION ID(MyFile_OptionValue_toString) ENABLED START
-#	# TODO Uncomment and implement me.
-	$(method toString,
-		$(error $0(): NIY))
+	# Method 'validateValue'.
+	# PROTECTED REGION ID(MyFile_TypeReferenceOption_validateValue) ENABLED START
+	$(method validateValue,
+		$(invoke MyFile_TypeReferenceLiteral->isInstance,$1))
 	# PROTECTED REGION END
 
-	# PROTECTED REGION ID(MyFile_OptionValue) ENABLED START
+	# PROTECTED REGION ID(MyFile_TypeReferenceOption) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
 #
-# Model object 'StringOptionValue'.
+# Model object 'Literal'.
 #
-# No features or operations defined.
-#
-# The following features and operations are inherited from 'OptionValue':
-#   - attribute 'value'
+# The following operations are defined:
 #   - operation 'toString'
 #
-define class-MyStringOptionValue
-	# Extends 'MyOptionValue' class.
-	$(eobject MyFile_StringOptionValue,
-		MyStringOptionValue,MyOptionValue,)
+define class-MyLiteral # abstract
+	# Extends 'EObject' class (implicitly).
+	$(eobject MyFile_Literal,
+		MyLiteral,,abstract)
 
-	# PROTECTED REGION ID(MyFile_StringOptionValue) ENABLED START
+	# Method 'toString'.
+	# PROTECTED REGION ID(MyFile_Literal_toString) ENABLED START
+#	# TODO Uncomment and implement me.
+	$(method toString,
+		$(error $0(): NIY))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_Literal) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'StringLiteral'.
+#
+# The following features are defined:
+#   - attribute 'value'
+#
+# The following operations are inherited from 'Literal':
+#   - operation 'toString'
+#
+define class-MyStringLiteral
+	# Extends 'MyLiteral' class.
+	$(eobject MyFile_StringLiteral,
+		MyStringLiteral,MyLiteral,)
+
+	# Property 'value'.
+	$(eobject-attribute MyFile_StringLiteral_value,
+		value,changeable)
+
+	# PROTECTED REGION ID(MyFile_StringLiteral) ENABLED START
 	$(method toString,
 		$(get value))
 
@@ -704,20 +744,24 @@ define class-MyStringOptionValue
 endef
 
 #
-# Model object 'NumberOptionValue'.
+# Model object 'NumberLiteral'.
 #
-# No features or operations defined.
-#
-# The following features and operations are inherited from 'OptionValue':
+# The following features are defined:
 #   - attribute 'value'
+#
+# The following operations are inherited from 'Literal':
 #   - operation 'toString'
 #
-define class-MyNumberOptionValue
-	# Extends 'MyOptionValue' class.
-	$(eobject MyFile_NumberOptionValue,
-		MyNumberOptionValue,MyOptionValue,)
+define class-MyNumberLiteral
+	# Extends 'MyLiteral' class.
+	$(eobject MyFile_NumberLiteral,
+		MyNumberLiteral,MyLiteral,)
 
-	# PROTECTED REGION ID(MyFile_NumberOptionValue) ENABLED START
+	# Property 'value'.
+	$(eobject-attribute MyFile_NumberLiteral_value,
+		value,changeable)
+
+	# PROTECTED REGION ID(MyFile_NumberLiteral) ENABLED START
 	$(method toString,
 		$(get-field value))
 
@@ -727,20 +771,24 @@ define class-MyNumberOptionValue
 endef
 
 #
-# Model object 'BooleanOptionValue'.
+# Model object 'BooleanLiteral'.
 #
-# No features or operations defined.
-#
-# The following features and operations are inherited from 'OptionValue':
+# The following features are defined:
 #   - attribute 'value'
+#
+# The following operations are inherited from 'Literal':
 #   - operation 'toString'
 #
-define class-MyBooleanOptionValue
-	# Extends 'MyOptionValue' class.
-	$(eobject MyFile_BooleanOptionValue,
-		MyBooleanOptionValue,MyOptionValue,)
+define class-MyBooleanLiteral
+	# Extends 'MyLiteral' class.
+	$(eobject MyFile_BooleanLiteral,
+		MyBooleanLiteral,MyLiteral,)
 
-	# PROTECTED REGION ID(MyFile_BooleanOptionValue) ENABLED START
+	# Property 'isValue'.
+	$(eobject-attribute MyFile_BooleanLiteral_isValue,
+		isValue,changeable)
+
+	# PROTECTED REGION ID(MyFile_BooleanLiteral) ENABLED START
 	$(method toString,
 		$(if $(get-field value),
 			1,
@@ -752,11 +800,36 @@ define class-MyBooleanOptionValue
 endef
 
 #
+# Model object 'TypeReferenceLiteral'.
+#
+# The following features are defined:
+#   - reference 'value'
+#
+# The following operations are inherited from 'Literal':
+#   - operation 'toString'
+#
+define class-MyTypeReferenceLiteral
+	# Extends 'MyLiteral' class.
+	$(eobject MyFile_TypeReferenceLiteral,
+		MyTypeReferenceLiteral,MyLiteral,)
+
+	# Property 'value : MyType'.
+	# Property 'value_link : ELink'.
+	$(eobject-reference MyFile_TypeReferenceLiteral_value,
+		value,MyType,,changeable linkable)
+
+	# PROTECTED REGION ID(MyFile_TypeReferenceLiteral) ENABLED START
+	$(method toString,
+		$(get $(get-field value).qualifiedName))
+	# PROTECTED REGION END
+endef
+
+#
 # Model object 'OptionBinding'.
 #
 # The following features are defined:
 #   - reference 'option'
-#   - reference 'optionValue'
+#   - reference 'value'
 #
 define class-MyOptionBinding
 	# Extends 'EObject' class (implicitly).
@@ -768,15 +841,15 @@ define class-MyOptionBinding
 	$(eobject-reference MyFile_OptionBinding_option,
 		option,MyOption,,changeable linkable)
 
-	# Property 'optionValue : MyOptionValue'.
-	$(eobject-reference MyFile_OptionBinding_optionValue,
-		optionValue,MyOptionValue,,changeable containment)
+	# Property 'value : MyLiteral'.
+	$(eobject-reference MyFile_OptionBinding_value,
+		value,MyLiteral,,changeable containment)
 
 	# PROTECTED REGION ID(MyFile_OptionBinding) ENABLED START
-	$(method setOptionValue,
+	$(method setLiteral,
 		$(for opt <- $(get option),
 			$(if $(invoke opt->validate,$1),
-				$(set-field optionValue,$1))))
+				$(set-field value,$1))))
 	# PROTECTED REGION END
 endef
 

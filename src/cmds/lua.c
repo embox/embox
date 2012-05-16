@@ -22,6 +22,7 @@ static int exec(int argc, char **argv) {
 		return -1;
 	}
 
+
 	lua_call(L, 0, LUA_MULTRET);
 
 	lua_close(L);

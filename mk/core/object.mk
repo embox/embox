@@ -250,12 +250,14 @@ __core_object_mk := 1
 #
 #   	$(set-field  field,value) # Assigns a new value to the field.
 #   	$(set-field+ field,value) # Appends a given value to the field.
+#   	$(set-field* field,value) # Unique appending.
 #   	$(set-field- field,value) # Removes any occurrence of a value.
 #
 #   	$(get  property)          # Invokes getter of the specified property.
 #
 #   	$(set  property,value)    # Sets a new value by calling setter.
 #   	$(set+ property,value)    # Append (multi-value properties only).
+#   	$(set* property,value)    # Add unique (multi-value properties only).
 #   	$(set- property,value)    # Remove (multi-value properties only).
 #
 #   Related builtin functions allows one to specify a target member in three
@@ -460,7 +462,7 @@ __obj_trace_stack :=
 #   1. Obj.
 #   2. Msg.
 __obj_trace = \
-	$(warning $(__obj_trace_stack:%=>$(\t))$1:	$2)
+	$(warning $(\t)$(__obj_trace_stack:%=>$(\t))$1  	$2)
 
 # Param:
 #   1. Obj.
@@ -534,58 +536,54 @@ endef
 #   Result of call to continuation in case of a valid reference,
 #   otherwise it aborts using 'builtin_error'.
 define __object_member_parse
-	$(or \
-		$(__object_member_try_parse),
-		$(call builtin_error,
-				Invalid first argument to '$(builtin_name)' function: '$1')
-	)
-endef
+	$(for __cont__ <- $2,$(call builtin_argsplit,$(subst $$,$$$$,$1),. -> >,
 
-# Params:
-#   See '__object_member_parse'.
-# Return:
-#   Result of call to continuation in case of a valid reference,
-#   empty otherwise.
-define __object_member_try_parse
-	$(expand $$(call \
-		$(lambda $(or \
-			$(and \
-				$(eq .,$6),$(nolastword $4),$(trim $5),
-				# Invocation on some object.
-				# Escaped reference is in $4. Escaped member name is in $5.
-				$(call $1,
-					# Optimize out explicit dereference of 'this'.
-					$(if $(not $(eq this ->,$(strip $4))),
-						$(call $(if $(eq ->,$(lastword $4)),$(lambda $$($1)),id),
-							$(call $3,$(nolastword $4))
-						)
-					),
-					$(call $3,$5),$2)
-			),
-			$(and \
-				$(eq .,$5),$(trim $4),
-				# Target object is implicitly 'this'.
-				# Escaped member is in $4.
-				$(call $1,,$(call $3,$4),$2)
-			)
-		)),
+		# Clients may want to get the original value of 'builtin_name'.
+		$(lambda $(for builtin_name <- $(builtin_caller),$(call $(__cont__),
 
-		# 1 and 2: The continuation with its argument.
-		$$2,$$(value 3),
+			# First argument is the target object.
+			$(argfold \
 
-		# 3: Unescape function which restores '.' and '->' back.
-		$(lambda \
-			$(trim $(subst $(\s).$(\comma),.,$(subst $(\s)->$(\comma),->,$1)))
-		),
+				# Initial target.
+				# 'foo->bar>baz' -> '$(foo)'
+				#  'foo.bar>baz' -> 'foo'
+				#      'bar>baz' -> ''
+				$(with $(trim $1),
+					$(call builtin_argsplit_sep_after,1),
 
-		# 4 .. 5: Escaped member name with '.' and '->' repalaced by commas.
-		$(subst .,$(\s).$(\comma),$(subst ->,$(\s)->$(\comma),
-			$(subst $(\comma),$$(\comma),$(subst $$,$$$$,$1))
-		)),
+					# Test whether a target object is explicitly specified.
+					$(or $(if $(eq .,$2),$1),
+						$(if $(eq ->,$2),$$($1)))),
 
-		# 5 or 6: End of args marker.
-		.,
-	))
+				# List of properties, that we need to 'get'.
+				# 'foo->bar>baz' -> '2' (bar)
+				#  'foo.bar>baz' -> '2' (bar)
+				#      'bar>baz' -> '1' (bar)
+				$(nofirstword $(eq >,$(call builtin_argsplit_sep_after,1)) \
+					$(nolastword $(builtin_args_list))),
+
+				# Params:
+				#   1. The target object.
+				#   2. Number of the argument.
+				#   3. Property to get.
+				# Return:
+				#   A getter invocation code.
+				$(lambda \
+					$(for s <- $(call builtin_argsplit_sep_after,$2),
+						$(if $(not $(eq >,$s)),
+							$(call builtin_error,Invalid \
+								argument to '$(builtin_name)' function: \
+								expected '>'$, got '$s' after '$3' in \
+								'$(builtin_argsplit_reconstruct)')))
+					$(call __builtin_func_get_object_property,$1,$3))),
+
+			# The member is in the last segment.
+			# 'foo->bar>baz' -> 'baz'
+			$(builtin_lastarg),
+
+			# Optional argument is in '$(args_nr + 1)'.
+			$($(words x $(builtin_args_list)))))),
+	$(value 3)))
 endef
 
 # Params:
@@ -596,8 +594,10 @@ endef
 define __object_member_access_wrap
 	$$(foreach __this,
 		$(if $1,
-			$$(call __object_check,$1
-					$(def-ifdef OBJ_DEBUG,$(\comma)$(subst $$,$$$$,$1))),
+			$(def-ifdef OBJ_DEBUG,
+				$$(call __object_dispatch,$(builtin_name),
+					$1,$(subst $$,$$$$,$1)),
+				$$(suffix $1)),
 			$$(this)),
 		$2)
 endef
@@ -605,13 +605,16 @@ endef
 $(def_all)
 
 # Params:
-#   1. Object reference.
-#   2. Original code (if OBJ_DEBUG).
+#   1. Builtin name.
+#   2. Objects.
+#   3. The original code.
 # Return:
 #   The trimmed argument if it is a single word, fails with an error otherwise.
-define __object_check
-	$(or $(if $(word 2,$1),,$(suffix $1)),
-		$(error Invalid object reference: '$1'$(def-ifdef OBJ_DEBUG, ($2))))
+define __object_dispatch
+	$(with $1,$2,$3,$(suffix $2),
+		$(__obj_trace $(\s)====$(\t),$1 on $(words $4) objects: \
+			[$2] as an expansion of [$3])
+		$4)
 endef
 
 #
@@ -631,7 +634,7 @@ define builtin_func-invoke
 		$(call __object_member_access_wrap,$1,
 			$(def-ifdef OBJ_DEBUG,
 				$$(foreach __method_name,$2,
-					$$(foreach __args_nr,$(words $(builtin_args_list)),
+					$$(foreach __args_nr,$(builtin_arity),
 						$$(call __method_invoke_debug,$3)
 					)
 				),
@@ -684,18 +687,21 @@ $(def_all)
 #
 define builtin_func-get
 	$(call builtin_check_max_arity,1)
-	$(call __object_member_parse,$1,$(lambda \
-		# 1. Empty for 'this', target object otherwise.
-		# 2. Property.
-		$(call __object_member_access_wrap,$1,
-			$(def-ifdef OBJ_DEBUG,
-				$$(call __property_get_debug,$2),
-				$$(call $$($$(__this)).$2.getter)
-			)
-		)
-	))
+	$(call __object_member_parse,$1,__builtin_func_get_object_property)
 endef
 $(call def,builtin_func-get)
+
+# 1. Empty for 'this', target object otherwise.
+# 2. Property.
+define __builtin_func_get_object_property
+	$(call __object_member_access_wrap,$1,
+		$(def-ifdef OBJ_DEBUG,
+			$$(call __property_get_debug,$2),
+			$$(call $$($$(__this)).$2.getter)
+		)
+	)
+endef
+$(call def,__builtin_func_get_object_property)
 
 # An alias for $(get ...) to use from plain-old Make code.
 #
@@ -733,10 +739,12 @@ endif
 #
 # $(set  [{obj.|ref->}]property,value)
 # $(set+ [{obj.|ref->}]property,value)
+# $(set* [{obj.|ref->}]property,value)
 # $(set- [{obj.|ref->}]property,value)
 #
 builtin_func-set  = $(__builtin_func_set)
 builtin_func-set+ = $(__builtin_func_set)
+builtin_func-set* = $(__builtin_func_set)
 builtin_func-set- = $(__builtin_func_set)
 
 # Expanded from  'setx' builtin context. It will generate a call
@@ -765,17 +773,15 @@ $(call def,__builtin_func_set)
 #   3. Value.
 # Usage:
 #   $(call set,object,property,value)
-set = \
-	$(set 1->$2,$3)
-set+ = \
-	$(set+ 1->$2,$3)
-set- = \
-	$(set- 1->$2,$3)
+set  = $(set  1->$2,$3)
+set+ = $(set+ 1->$2,$3)
+set* = $(set* 1->$2,$3)
+set- = $(set- 1->$2,$3)
 
 ifdef OBJ_DEBUG
 # Params:
 #   1. Property name.
-#   2. '+', '-', or empty.
+#   2. '+', '*', '-', or empty.
 #   3. Value.
 # Context:
 #   '__this'
@@ -838,11 +844,12 @@ endif
 
 #
 # $(set-field  [{obj.|ref->}]field,value)
-# $(set-field+ [{obj.|ref->}]field,value)
+# $(set-field* [{obj.|ref->}]field,value)
 # $(set-field- [{obj.|ref->}]field,value)
 #
 builtin_func-set-field  = $(__builtin_func_set_field)
 builtin_func-set-field+ = $(__builtin_func_set_field)
+builtin_func-set-field* = $(__builtin_func_set_field)
 builtin_func-set-field- = $(__builtin_func_set_field)
 
 # Expanded from  'set-fieldx' builtin context. It will generate a call
@@ -882,6 +889,20 @@ define __field_set+
 
 	${eval \
 		$(__this).$(__field_check) += $$2
+	}
+endef
+
+# Params:
+#   1. Field name.
+#   2. Value.
+# Context:
+#   '__this'
+define __field_set*
+	$(__obj_trace $(__this),f-set* $($(__this)).$1: '$2')
+
+	${eval \
+		$(__this).$(__field_check) += \
+			$$(filter-out $$($(__this).$1),$$2)
 	}
 endef
 
@@ -986,10 +1007,12 @@ endif
 #
 # $(map-set  [{obj.|ref->}]map,value)
 # $(map-set+ [{obj.|ref->}]map,value)
+# $(map-set* [{obj.|ref->}]map,value)
 # $(map-set- [{obj.|ref->}]map,value)
 #
 builtin_func-map-set  = $(__builtin_func_map_set)
 builtin_func-map-set+ = $(__builtin_func_map_set)
+builtin_func-map-set* = $(__builtin_func_map_set)
 builtin_func-map-set- = $(__builtin_func_map_set)
 
 # Expanded from  'map-setx' builtin context. It will generate a call
@@ -1069,6 +1092,28 @@ endef
 #   3. Value.
 # Context:
 #   '__this'
+define __map_set*
+	$(__obj_trace $(__this),m-set* $($(__this)).$1/$2: '$3')
+
+	${eval \
+		$(if $(findstring u,$(flavor $(__this).$(__map_key_check))),
+			# New key, assign the value unconditionally.
+			$(__this).$1 += $$2$(\n)
+			$(__this).$1.$$2 := $$3,
+
+			# Key already exists, append a new value.
+			$(__this).$1.$$2 += \
+				$$(filter-out $$($(__this).$1.$$2),$$3)
+		)
+	}
+endef
+
+# Params:
+#   1. Map name.
+#   2. Key.
+#   3. Value.
+# Context:
+#   '__this'
 define __map_set-
 	$(__obj_trace $(__this),m-set- $($(__this)).$1/$2: '$3')
 
@@ -1129,8 +1174,6 @@ endef
 $(def_all)
 
 map-get = $(map-get 1->$2/$3)
-
-map-set = $(map-set 1->$2/$3,$4)
 
 #
 # Object/class structure introspection.
@@ -1944,12 +1987,12 @@ define __object_print_var.reference_list
 			$(assert $(is-object $r),
 				Not an object '$r' inside reference field $1 \
 				of object $o [$c] being serialized as $s)
+			$(assert $(value $(suffix $r).__serial_id__),
+				No serial id: $r [$($r)] inside reference field $1 \
+					of object $o [$c] being serialized as $s)
 			# Substitute the suffix with the serial identifier of the
 			# referenced object and escape everything else.
 			$(call __object_field_escape,$(basename $r))
-			$(if $(value $(suffix $r).__serial_id__),,
-				$(warning $0: no serial id: $r [$($r)] inside reference field $1 \
-					of object $o [$c] being serialized as $s))
 			$($(suffix $r).__serial_id__))$(\n)
 endef
 
@@ -1962,12 +2005,11 @@ define __object_print_var.reference_scalar
 			$(assert $(is-object $r),
 				Not an object '$r' inside reference field $1 \
 				of object $o [$c] being serialized as $s)
+			$(assert $(value $(suffix $r).__serial_id__),
+				No serial id: $r [$($r)] inside reference field $1 \
+					of object $o [$c] being serialized as $s)
 			# See '__object_print_var_reference_list'.
 			$(call __object_field_escape,$(basename $r))
-			$(if $(value $(suffix $r).__serial_id__),,
-				$(warning $0: no serial id: $r [$($r)] inside reference field $1 \
-					of object $o [$c] being serialized as $s))
-
 			$($(suffix $r).__serial_id__))$(\n)
 endef
 

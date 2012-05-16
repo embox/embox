@@ -8,6 +8,7 @@
  */
 #include <net/net.h>
 #include <errno.h>
+#include <assert.h>
 /*
  * The protocol list. Each protocol is registered in here.
  */
@@ -16,12 +17,10 @@
 static const struct net_proto_family *net_families[NPROTO] = {0};
 
 int sock_register(const struct net_proto_family *ops) {
-	if (ops->family >= NPROTO) {
-		return -ENOBUFS; /* FIXME mb -EINVAL ? */
-	}
-	if (net_families[ops->family] != NULL) {
-		return -EEXIST;
-	}
+	assert(ops != NULL);
+	assert((0 <= ops->family) && (ops->family < NPROTO));
+
+	assert(net_families[ops->family] == NULL);
 
 	net_families[ops->family] = ops;
 
@@ -29,9 +28,7 @@ int sock_register(const struct net_proto_family *ops) {
 }
 
 void sock_unregister(int family) {
-	if ((family < 0) || (family >= NPROTO)) {
-		return;
-	}
+	assert((0 <= family) && (family < NPROTO));
 
 	net_families[family] = NULL;
 }
@@ -43,7 +40,7 @@ const struct net_proto_family * socket_repo_get_family(int family) {
 	/* if ((family < 0) || (family >= NPROTO)) { */
 	/* 	return NULL; */
 	/* } */
-	if(!is_a_valid_family(family))
+	if (!is_a_valid_family(family))
 		return NULL;
 
 	/*pf = rcu_dereference(net_families[family]);*/

@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <fs/vfs.h>
+#include <err.h>
 
 /**
  * Save first node name in path into buff variable.
@@ -35,17 +36,59 @@ static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 	return NULL;
 }
 
+int nip_tail(char *head, char *tail) {
+	char *p_tail;
+	char *p;
+
+	p = p_tail = head + strlen(head);
+	strcat(head, tail);
+
+	do {
+		p_tail--;
+		if(head >= p_tail) {
+			*p = '\0';
+			return -1;
+		}
+	} while ('/' != *p_tail);
+
+	strcpy (tail, p_tail);
+	*p_tail = '\0';
+
+	return 0;
+}
+
+int increase_tail(char *head, char *tail) {
+	char *p_tail;
+
+		p_tail = head + strlen(head);
+		strcat(head, tail);
+
+		do {
+			if('\0' == *p_tail) {
+				break;
+			}
+			p_tail++;
+		} while ('/' != *p_tail);
+
+		strcpy (tail, p_tail);
+		*p_tail = '\0';
+
+		return 0;
+}
+
+
 int vfs_add_leaf(node_t *child, node_t *parent) {
 	tree_add_link(&(parent->tree_link), &(child->tree_link));
 	return 0;
 }
 
-static node_t *vfs_add_new_path(node_t *parent, char *p_path, char *child_name) {
+static node_t *vfs_add_new_path(node_t *parent,
+		char *p_path, char *child_name) {
 	node_t *child;
 	child = alloc_node(child_name);
 	vfs_add_leaf(child, parent);
 	while (NULL != (p_path = get_next_node_name(p_path, child_name,
-													CONFIG_MAX_LENGTH_FILE_NAME))) {
+											CONFIG_MAX_LENGTH_FILE_NAME))) {
 		parent = child;
 		child = alloc_node(child_name);
 		vfs_add_leaf(child, parent);
@@ -82,10 +125,14 @@ int vfs_del_leaf(node_t *node) {
 static int compare_children_names(struct tree_link* link, void *name) {
 	node_t *node = tree_element(link, node_t, tree_link);
 	return 0 == strcmp(node->name, (char *)name);
-#if 0
-	//do not compile by sparc 3.4.4 compiler
-	return strcmp(tree_element(link, node_t, tree_link)->name, pattern_name);
-#endif
+}
+
+node_t *vfs_find_parent(const char *name, node_t *child) {
+	struct tree_link *tlink;
+
+	tlink = &child->tree_link;
+
+	return tree_element(tlink->par, struct node, tree_link);
 }
 
 node_t *vfs_find_child(const char *name, node_t *parent) {

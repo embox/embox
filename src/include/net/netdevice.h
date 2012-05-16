@@ -235,7 +235,7 @@ extern int dev_set_flags(struct net_device *dev, unsigned flags);
 extern int dev_queue_xmit(sk_buff_t *pack);
 
 extern int dev_rx_queued(struct net_device *dev);
-extern struct net_device *dev_rx_processing(void);
+extern void dev_rx_processing(void);
 
 /**
  * function must call from net drivers when packet was received

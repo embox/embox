@@ -16,6 +16,7 @@
 #include <kernel/panic.h>
 
 #include <kernel/clock_source.h>
+#include <kernel/ktime.h>
 
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ0               0x0
@@ -73,7 +74,33 @@
 #define PIT_16BIT       0x30    /* r/w counter 16 bits, LSB first */
 #define PIT_BCD         0x01    /* count in BCD */
 
-static struct clock_source pit_clock_source;
+static useconds_t pit_hz;
+
+static cycle_t i8253_read(const struct cyclecounter *cc) {
+	int cnt;
+	uint32_t ticks;
+
+	ticks = clock_sys_ticks();
+	out8(0x00, MODE_REG);
+	cnt = in8(CHANNEL0);
+	cnt |= in8(CHANNEL0) << 8;
+
+	cnt = (((INPUT_CLOCK + pit_hz / 2) / pit_hz) - 1) - cnt;
+
+	return (cycle_t)(ticks * (INPUT_CLOCK + pit_hz / 2) / pit_hz) + cnt;
+}
+
+static struct cyclecounter cc = {
+	.read = i8253_read,
+	.mult = 1,
+	.shift = 0
+};
+
+static struct clock_source pit_clock_source = {
+	.flags = 0,
+	.resolution = INPUT_CLOCK,
+	.cc = &cc
+};
 
 static irq_return_t clock_handler(int irq_nr, void *dev_id) {
 	clock_tick_handler(irq_nr, dev_id);
@@ -81,13 +108,17 @@ static irq_return_t clock_handler(int irq_nr, void *dev_id) {
 }
 
 void clock_init(void) {
-	if(ENOERR != irq_attach((irq_nr_t) IRQ0,
+	if (ENOERR != irq_attach((irq_nr_t) IRQ0,
 		(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
 		panic("pit timer irq_attach failed");
 	}
 	/* Initialization of clock source structure */
 	pit_clock_source.flags = 1;
-	pit_clock_source.precision = 1000;
+	pit_clock_source.resolution = INPUT_CLOCK;
+	pit_clock_source.cc = &cc;
+
+	clocks_calc_mult_shift(&cc.mult, &cc.shift, INPUT_CLOCK,
+			NSEC_PER_SEC, 0);
 	clock_source_register(&pit_clock_source);
 }
 
@@ -100,4 +131,6 @@ void clock_setup(useconds_t HZ) {
 	/* Send divisor */
 	out8(divisor & 0xFF, CHANNEL0);
 	out8((divisor >> 8) & 0xFF, CHANNEL0);
+
+	pit_hz = HZ;
 }

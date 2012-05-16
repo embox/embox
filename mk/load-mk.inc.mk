@@ -58,6 +58,24 @@ $(mk_model) : CACHE_REQUIRES := \
 $(mk_model) : ALLOC_SCOPE := e
 load_mk_files += $(mk_model)
 
+mk_annotations_core := $(MK_CACHE_DIR)/mk_annotations_core.mk
+$(mk_annotations_core) : CACHE_INCLUDES := \
+	mk/mybuild/annotations_core.mk
+$(mk_annotations_core) : CACHE_REQUIRES := \
+	$(mk_model)
+$(mk_annotations_core) : ALLOC_SCOPE := ac
+load_mk_files += $(mk_annotations_core)
+
+
+mk_annotations_handlers := $(wildcard $(ANNOTATION_HANDLERS)/*.mk)
+mk_annotations_handlers_mk := $(MK_CACHE_DIR)/mk_annotations_handlers.mk
+$(mk_annotations_handlers_mk) : CACHE_INCLUDES := \
+	$(mk_annotations_handlers)
+$(mk_annotations_handlers_mk) : CACHE_REQUIRES := \
+	$(mk_annotations_core)
+$(mk_annotations_handlers_mk) : ALLOC_SCOPE := ah
+load_mk_files += $(mk_annotations_handlers_mk)
+
 # Myfiles parser & model.
 mk_mybuild_myfile := $(MK_CACHE_DIR)/mk_mybuild_myfile.mk
 $(mk_mybuild_myfile) : CACHE_INCLUDES := \
@@ -68,6 +86,7 @@ $(mk_mybuild_myfile) : CACHE_INCLUDES := \
 	mk/mybuild/myfile-parser.mk
 $(mk_mybuild_myfile) : CACHE_REQUIRES := \
 	$(mk_gold_engine) \
+	$(mk_annotations_core) \
 	$(mk_model)
 $(mk_mybuild_myfile) : ALLOC_SCOPE := f
 load_mk_files += $(mk_mybuild_myfile)
@@ -78,7 +97,7 @@ $(mk_mybuild_configfile) : CACHE_INCLUDES := \
 	mk/mybuild/configfile-model.mk     \
 	mk/mybuild/configfile-metamodel.mk \
 	mk/mybuild/configfile-resource.mk  \
-	mk/mybuild/configfile-linker.mk  \
+	mk/mybuild/configfile-linker.mk    \
 	mk/mybuild/configfile-parser.mk
 $(mk_mybuild_configfile) : CACHE_REQUIRES := \
 	$(mk_mybuild_myfile) \
@@ -103,7 +122,7 @@ mk_mybuild := $(MK_CACHE_DIR)/mk_mybuild.mk
 $(mk_mybuild) : CACHE_INCLUDES := \
 	mk/mybuild/mybuild.mk
 $(mk_mybuild) : CACHE_REQUIRES := \
-	$(mk_mybuild_myfile) \
+	$(mk_mybuild_myfile)     \
 	$(mk_mybuild_configfile) \
 	$(mk_mybuild_build)
 $(mk_mybuild) : ALLOC_SCOPE := i

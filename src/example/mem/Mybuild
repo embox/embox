@@ -1,27 +1,40 @@
 package embox.example.mem
 
-module pool {
-	source "pool.c"
-}
+module boundary_markers {
+	source "boundary_markers.c"
 
-module page {
-	source "page.c"
 	depends embox.mem.page_api
-}
-
-module simple_alloc {
-	source "simple_alloc.c"
-	depends embox.framework.example
-	option number pool_size=65535
+	depends embox.framework.LibFramework
 }
 
 //$_BRIEF-objalloc = demonstrates using of API for allocation fixed size object
 module objalloc {
 	source "objalloc.c"
+
+	depends embox.lib.LibC
 	depends embox.mem.objalloc
+	depends embox.framework.LibFramework
 }
 
-module boundary_markers {
-	source "boundary_markers.c"
+module page {
+	source "page.c"
+
 	depends embox.mem.page_api
+	depends embox.framework.LibFramework
+}
+
+module pool {
+	source "pool.c"
+
+	depends embox.mem.pool
+	depends embox.framework.LibFramework
+}
+
+module simple_alloc {
+	option number pool_size=65535
+
+	source "simple_alloc.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
 }

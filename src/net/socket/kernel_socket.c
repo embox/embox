@@ -17,11 +17,12 @@
 #include <string.h>
 
 #include <net/sock.h>
-#include <util/debug_msg.h>
+#include <util/sys_log.h>
 #include <net/kernel_socket.h>
 #include <net/socket_registry.h>
 
-int kernel_socket_create(int family, int type, int protocol, struct socket **psock) {
+int kernel_socket_create(int family, int type, int protocol, struct socket **psock,
+												 struct sock *sk, struct proto_ops *sk_ops) {
 	int res;
 	struct socket *sock;
 	const struct net_proto_family *pf;
@@ -39,8 +40,7 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
     return -EAFNOSUPPORT;
 
   if (pf->create == NULL){
-    debug_printf("no create() method for protocol family",
-                 "kernel_socket", "kernel_socket_create");
+		LOG_ERROR("kernel_socket_create", "no create() method for protocol family");
 		return -EAFNOSUPPORT;
 	}
 
@@ -64,16 +64,24 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	sock->type = type;
 	sock->state = SS_UNCONNECTED;
 
-  res = pf->create(sock, protocol);
-	if (res < 0) {
-		socket_free(sock);
-		return res;
+	if(sk == NULL){
+		res = pf->create(sock, protocol);
+		if (res < 0) {
+			socket_free(sock);
+			return res;
+		}
+	}else{
+		if(sk_ops != NULL){
+			sock->sk = sk;
+			sock->ops = sk_ops;
+			sk->sk_socket = sock;
+		} else
+			return -EINVAL;
 	}
 
 	/* compare addresses method should be set, else we can't go on */
 	if(sock->ops->compare_addresses == NULL){
-		debug_printf("packet family has no compare_addresses() method",
-								 "kernel_socket", "kernel_socket_create");
+		LOG_ERROR("kernel_socket_create", "packet family has no compare_addresses() method");
 		return -EAFNOSUPPORT;
 	}
 
@@ -89,6 +97,8 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	/* addr socket entry to registry */
 	if( 0 > (res = sr_add_socket_to_registry(sock)))
 		return res;
+	/* set default socket options */
+	so_options_init(&sock->socket_node->options, type);
 	*psock = sock; /* and save structure */
 
 	return ENOERR;
@@ -98,18 +108,21 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 int kernel_socket_release(struct socket *sock) {
 	int res;
 
-	if(sk_is_connected(sock))
-		sk_set_connection_state(sock, DISCONNECTING);
+	sk_set_connection_state(sock, DISCONNECTING);
+
+	/* since we are releaseing no more connections can be accepted */
+	if(sk_is_listening(sock))
+		sock->socket_node->options.so_acceptconn = 0;
 
 	/* socket will be unbound, if it is bound else nothing happens */
 	sr_remove_saddr(sock);  /* unset saddr in registry */
 	/* remove socketentry from registry */
-	if(0 > (res = sr_remove_socket_from_registry(sock))){
-		debug_printf("couldn't remove entry from registry",
-								 "kernel_socket", "kernel_socket_release");
-		return res;
+	if(0 < (res = sr_remove_socket_from_registry(sock))){
+		LOG_WARN("kernel_socket_release","couldn't remove entry from registry");
+		/* return res; */
 	}
 
+	res = ENOERR;
 	if ((sock != NULL) && (sock->ops != NULL)
 			&& (sock->ops->release != NULL)) {
 		res = sock->ops->release(sock); /* release struct sock */
@@ -139,7 +152,6 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 	*/
 
 	if(!sock->ops->bind){
-		debug_printf("No bind() method", "kernel_socket", "kernel_socket_bind");
 		return -EOPNOTSUPP;
 	}
 
@@ -175,8 +187,7 @@ int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
 	/* try to bind */
 	res = sock->ops->bind(sock, (struct sockaddr *) addr, addrlen);
 	if(res < 0){  /* If something went wrong */
-		debug_printf("error while binding socket",
-								 "kernel_sockets", "kernel_socket_bind");
+		LOG_ERROR("kernel_socket_bind", "error binding socket");
 		/* Set the state to UNCONNECTED */
 		sk_set_connection_state(sock, UNCONNECTED);
 		return res;
@@ -196,7 +207,6 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 
 	/* no listen method is supported for that type of socket */
 	if(!sock->ops->listen){
-		debug_printf("No listen() method", "kernel_socket", "kernel_socket_listen");
 		return -EOPNOTSUPP;
 	}
 
@@ -207,8 +217,9 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 
 	/* the socket is unbound */
 	if(!sk_is_bound(sock)){  /* the socket should first be bound to an address */
-		debug_printf("Socket should be bound to accept",
-								 "kernel_socket", "kernel_socket_listen");
+		/* debug_printf("Socket should be bound to accept", */
+		/* 						 "kernel_socket", "kernel_socket_listen"); */
+		LOG_INFO("kernel_socket_listen", "socket should be bound to accept");
 		return -EDESTADDRREQ;
 	}
 
@@ -220,20 +231,23 @@ int kernel_socket_listen(struct socket *sock, int backlog) {
 	/* try to listen */
 	res = sock->ops->listen(sock, backlog);
 	if(res < 0){  /* If something went wrong */
-		debug_printf("Error setting socket in listening state",
-								 "kernel_sockets", "kernel_socket_listen");
+		/* debug_printf("Error setting socket in listening state", */
+		/* 						 "kernel_sockets", "kernel_socket_listen"); */
+		LOG_ERROR("kernel_socket_listen", "error setting socket in listening state");
 		/* socket was bound, so set back BOUND */
 		sk_set_connection_state(sock, BOUND);
 		return res;
-	}else
+	}else{
 		sk_set_connection_state(sock, LISTENING);/* Everything turned out fine*/
+		sock->socket_node->options.so_acceptconn = 1; /* socket options */
+	}
 	return res;
  }
 
 int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 												 struct sockaddr *addr, socklen_t *addrlen) {
 	int res;
-	struct socket *new_sock;
+	struct sock *newsk;
 
 	/* TODO EAGAIN or EWOULDBLOCK in case of non-blocking socket and absence
 	   of incoming connections should be returned */
@@ -245,7 +259,6 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 
 	/* accept method is not set */
 	if(!sock->ops->accept){
-		debug_printf("No accept() method", "kernel_socket", "kernel_socket_accept");
 		return -EOPNOTSUPP;
 	}
 
@@ -256,30 +269,29 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 
 	/* is the socket accepting connections */
 	if(!sk_is_listening(sock)){  /* we should connect to a listening socket */
-		debug_printf("Socket accepting a connection should be in listening state",
-								 "kernel_socket", "kernel_socket_accept");
+		LOG_ERROR("kernel_socket_accept",
+						 "socket accepting a connection should be in listening state");
 		return -EINVAL;
 	}
 
-	/* create socket with the same type, protocol and family as 'sock' */
-	res = kernel_socket_create(sock->sk->__sk_common.skc_family,
-														 sock->sk->sk_type,
-														 sock->sk->sk_protocol, &new_sock);
-	if (res < 0) {
+	/* try to accept */
+	res = sock->ops->accept(sock->sk, &newsk, addr, addrlen);
+	if (res < 0) { /* If something went wrong */
+		/* debug_printf("Error while accepting a connection", */
+		/* 						 "kernel_sockets", "kernel_socket_accept"); */
+		LOG_ERROR("kernel_socket_accept", "error while accepting a connection");
 		return res;
 	}
-	/* try to accept */
-	res = sock->ops->accept(sock, new_sock, addr, addrlen);
-	if (res < 0) { /* If something went wrong */
-		debug_printf("Error while accepting a connection",
-								 "kernel_sockets", "kernel_socket_accept");
-		kernel_socket_release(new_sock);
+
+	/* create socket with the same type, protocol and family as 'sock' */
+	res = kernel_socket_create(sock->sk->__sk_common.skc_family, sock->sk->sk_type,
+			sock->sk->sk_protocol, accepted, newsk, (struct proto_ops *)sock->ops);
+	if (res < 0) {
+		sk_common_release(newsk);
+		return res;
 	}
-	else {
-		*accepted = new_sock;
-		/* set state */
-		sk_set_connection_state(new_sock, ESTABLISHED);
-	}
+	/* set state */
+	sk_set_connection_state(*accepted, ESTABLISHED);
 	return res;
  }
 
@@ -294,8 +306,6 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 
 	/* how should this be interpreted? */
 	if(!sock->ops->connect){
-		debug_printf("No connect() method", "kernel_socket",
-								 "kernel_socket_connect");
 		return -EOPNOTSUPP;
 	}
 
@@ -350,8 +360,7 @@ int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
 		/* in case of non-blocking sockets(for the future)
 		   here should be handled situation when connect is trying to
 		   finish asynchronously */
-		debug_printf("Unable to connect on socket",
-								 "kernel_sockets", "kernel_socket_connect");
+		LOG_ERROR("kernel_socket_connect", "unable to connect on socket");
 		sk_set_connection_state(sock, BOUND);
 	}else
 		sk_set_connection_state(sock, CONNECTED);
@@ -370,13 +379,64 @@ int kernel_socket_getpeername(struct socket *sock,
 }
 
 int kernel_socket_getsockopt(struct socket *sock, int level, int optname,
-		char *optval, int *optlen) {
-	return sock->ops->getsockopt(sock, level, optname, optval, optlen);
+		char *optval, socklen_t *optlen) {
+	int res;
+
+	/* sock is not NULL */
+	if(!sock){
+		return -ENOTSOCK;
+	}
+
+	/* check if such socket exists */
+	if(!sr_socket_exists(sock)){
+		return -ENOTSOCK;
+	}
+
+	if(level == SOL_SOCKET){
+		res = so_get_socket_option(&sock->socket_node->options, optname, optval,
+															 optlen);
+		/* clear pending error if it was retrieved */
+		if(optname == SO_ERROR && res>=0)
+			sk_clear_pending_error(sock->sk);
+	}else{
+		if(sock->ops->getsockopt)
+			res = sock->ops->getsockopt(sock, level, optname, optval, optlen);
+		else
+			/* if no getsockopt or setsockopt method is set, it should
+			   probably be interpreted as no options available to get or set */
+			res = -ENOPROTOOPT;
+	}
+
+	return res;
 }
 
 int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
-		char *optval, int optlen) {
-	return sock->ops->setsockopt(sock, level, optname, optval, optlen);
+		char *optval, socklen_t optlen) {
+	int res;
+
+	/* sock is not NULL */
+	if(!sock){
+		return -ENOTSOCK;
+	}
+
+	/* check if such socket exists */
+	if(!sr_socket_exists(sock)){
+		return -ENOTSOCK;
+	}
+
+	if(level == SOL_SOCKET){
+		res = so_set_socket_option(&sock->socket_node->options, optname, optval,
+															 optlen);
+	}else{
+		if(sock->ops->setsockopt){
+			res = sock->ops->setsockopt(sock, level, optname, optval, optlen);
+		}else{
+			/* if no getsockopt or setsockopt method is set, it should
+			   probably be interpreted as no options available to get or set */
+			res = -ENOPROTOOPT;
+		}
+	}
+	return res;
 }
 
 int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,

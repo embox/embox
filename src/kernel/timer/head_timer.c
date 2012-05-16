@@ -16,10 +16,8 @@ static LIST_HEAD(sys_timers_list); /* list head to timers */
 
 void timer_strat_start(struct sys_timer *tmr) {
 	struct sys_timer *it_tmr, *tmp;
-	//TODO patch for sleep(0)
-//	if(0 == tmr->load) {
-//		tmr->load = 1;
-//	}
+
+	timer_set_started(tmr);
 
 	tmr->cnt = tmr->load;
 
@@ -30,6 +28,7 @@ void timer_strat_start(struct sys_timer *tmr) {
 			it_tmr->cnt -= tmr->cnt;
 
 			list_add_tail(&tmr->lnk, &it_tmr->lnk);
+
 			return;
 		}
 		tmr->cnt -= it_tmr->cnt;
@@ -42,10 +41,14 @@ void timer_strat_start(struct sys_timer *tmr) {
 
 void timer_strat_stop(struct sys_timer *ptimer) {
 	struct sys_timer *next_tmr;
+
+	timer_set_stopped(ptimer);
+
 	if(ptimer->lnk.next != &sys_timers_list) {
 		next_tmr = (struct sys_timer *)ptimer->lnk.next;
 		next_tmr->cnt += ptimer->cnt;
 	}
+
 	list_del(&ptimer->lnk);
 }
 
@@ -70,8 +73,9 @@ static inline void timers_schedule(void) {
 		timer->handle(timer, timer->param);
 
 		timer_strat_stop(timer);
-		timer_strat_start(timer);
-
+		if(timer_is_periodic(timer)) {
+			timer_strat_start(timer);
+		}
 		if (0 != nxt_cnt) {
 			return;
 		}

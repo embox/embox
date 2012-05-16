@@ -22,12 +22,12 @@ static void print_usage(void) {
 static int print_info(struct clock_source* c_src, int num) {
 	printf("%02d:\n", num);
 	printf("    flags: %04d\n", c_src->flags);
-	printf("    precision: %04d\n", c_src->precision);
+	printf("    precision: %04d\n", c_src->resolution);
 	return 0;
 }
 
 static int clock_source_info(void) {
-	struct clock_source_head* ptr, *tmp;
+	struct clock_source_head *ptr, *tmp;
 
 	int k = 0;
 

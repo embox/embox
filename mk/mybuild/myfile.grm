@@ -1,11 +1,154 @@
 "Name"     = 'MyFile'
 "Author"   = 'Eldar Abusalimov'
-"Version"  = '0.4'
+"Version"  = '0.6'
 "About"    = 'Mybuild file'
 
 "Case Sensitive" = True
 
 "Start Symbol" = <MyFile>
+
+! -------------------------------------------------
+! Rules
+! -------------------------------------------------
+
+<MyFile>
+        ::= <Package> <Imports> <Entities>
+
+! Package?
+<Package>
+        ::= 'package' <QualifiedName>
+         |
+
+! Import*
+<Imports>
+        ::= <Import> <Imports>
+         |
+<Import>
+        ::= 'import' <QualifiedNameWithWildcard>
+
+! AnnotatedType*
+<Entities>
+        ::= <AnnotatedType> <Entities>
+         |
+<AnnotatedType>
+        ::= <Annotations> <Type>
+<Type>
+        ::= <ModuleType>
+         |  <Interface>
+         |  <AnnotationType>
+
+! -------------------------------------------------
+! Annotation type.
+! -------------------------------------------------
+
+<AnnotationType>
+        ::= 'annotation' Identifier '{' <AnnotationMembers> '}'
+<AnnotationMembers>
+        ::= <AnnotatedAnnotationMember> <AnnotationMembers>
+         |
+<AnnotatedAnnotationMember>
+        ::= <Annotations> <Option>
+
+
+! -------------------------------------------------
+! Interfaces and features.
+! -------------------------------------------------
+
+! interface Name (extends ...)? { ... }
+<Interface>
+        ::= 'interface' Identifier <SuperInterfaces> '{' <Features> '}'
+
+! (extends ...)?
+<SuperInterfaces>
+        ::= 'extends' <ReferenceList>
+         |
+
+! AnnotatedInterfaceMember*
+<Features>
+        ::= <AnnotatedFeature> <Features>
+         |
+<AnnotatedFeature>
+        ::= <Annotations> <Feature>
+
+! feature Name (extends ...)?
+<Feature>
+        ::= 'feature' Identifier <SuperFeatures>
+
+! (extends ...)?
+<SuperFeatures>
+        ::= 'extends' <ReferenceList>
+         |
+
+! -------------------------------------------------
+! Modules.
+! -------------------------------------------------
+
+! (abstract)? module Name (extends ...)? { ... }
+<ModuleType>
+        ::= <ModuleModifiers> 'module' Identifier <SuperModule> '{' <ModuleMembers> '}'
+
+! ModuleModifier*
+<ModuleModifiers>
+        ::= <ModuleModifier> <ModuleModifiers>
+         |
+<ModuleModifier>
+        ::= 'static'
+         |  'abstract'
+
+! (extends ...)?
+<SuperModule>
+        ::= 'extends' <Reference>
+         |
+
+! AnnotatedModuleMember*
+<ModuleMembers>
+        ::= <AnnotatedModuleMember> <ModuleMembers>
+         |
+<AnnotatedModuleMember>
+        ::= <Annotations> <ModuleMember>
+<ModuleMember>
+        ::= 'depends'  <ReferenceList>
+         |  'provides' <ReferenceList>
+         |  'requires' <ReferenceList>
+         |  'source'   <FilenameList>
+         |  'object'   <FilenameList>
+         |  'option'   <Option>
+
+! Item ( , Item )*
+<ReferenceList>
+        ::= <Reference> ',' <ReferenceList>
+         |  <Reference>
+
+! ( string | number | boolean | Type ) Name ( = ...)?
+<Option>
+        ::= <OptionType> Identifier <OptionDefaultValue>
+<OptionType>
+        ::= 'string'
+         |  'number'
+         |  'boolean'
+         |  <Reference>
+<OptionDefaultValue>
+        ::= '=' <Value>
+         |
+
+<FilenameList>
+        ::= <Filename> ',' <FilenameList>
+         |  <Filename>
+<Filename>
+        ::= StringLiteral
+
+! -------------------------------------------------
+! The grammar fragments below are common for
+! both my- and config-files. These include:
+!   - Charsets and terminal definitions
+!   - Rules for annotations
+!   - Option values
+!   - Lists of key=value pairs
+!   - Qualified names and wrapping references
+!
+! When modifying them please take care to update
+! the corresponding parts in another grammar file.
+! -------------------------------------------------
 
 ! -------------------------------------------------
 ! Character Sets
@@ -44,144 +187,36 @@ NumberLiteral  = {Digit}+ ( '.' {Digit}+ )?
 
 BooleanLiteral = 'true' | 'false'
 
+
 ! -------------------------------------------------
-! Rules
+! @Annotations.
 ! -------------------------------------------------
 
-<MyFile>
-        ::= <Package> <Imports> <Entities>
-
-! Package?
-<Package>
-        ::= 'package' <QualifiedName>
+<Annotations>
+        ::= <Annotation> <Annotations>
          |
-
-! Import*
-<Imports>
-        ::= <Import> <Imports>
-         |
-<Import>
-        ::= 'import' <QualifiedNameWithWildcard>
-
-! AnnotatedType*
-<Entities>
-        ::= <AnnotatedType> <Entities>
-         |
-<AnnotatedType>
-        ::= <AnnotationSpecifiers> <Type>
-<Type>
-        ::= <Module>
-         |  <Interface>
-         |  <Annotation>
-
-! -------------------------------------------------
-! Annotations.
-! -------------------------------------------------
-
 <Annotation>
-        ::= 'annotation' Identifier '{' <AnnotationMembers> '}'
-<AnnotationMembers>
-        ::= <AnnotatedAnnotationMember> <AnnotationMembers>
-         |
-<AnnotatedAnnotationMember>
-        ::= <AnnotationSpecifiers> <Option>
-
-<AnnotationSpecifiers>
-        ::= <AnnotationSpecifier> <AnnotationSpecifiers>
-         |
-
-<AnnotationSpecifier>
         ::= '@' <Reference> <AnnotationInitializer>
 <AnnotationInitializer>
-        ::= '(' <AnnotationParametersList> ')'
+        ::= '(' <ParametersList> ')'
          |  '(' <Value> ')'
          |
-<AnnotationParametersList>
-        ::= <AnnotationParameter> ',' <AnnotationParametersList>
-         |  <AnnotationParameter>
-<AnnotationParameter>
+
+! -------------------------------------------------
+! Comma-separated list of param=value pairs.
+! -------------------------------------------------
+
+<ParametersList>
+        ::= <Parameter> ',' <ParametersList>
+         |  <Parameter>
+<Parameter>
         ::= <SimpleReference> '=' <Value>
-
-
-! -------------------------------------------------
-! Interfaces and features.
-! -------------------------------------------------
-
-! interface Name (extends ...)? { ... }
-<Interface>
-        ::= 'interface' Identifier <SuperInterfaces> '{' <Features> '}'
-
-! (extends ...)?
-<SuperInterfaces>
-        ::= 'extends' <ReferenceList>
-         |
-
-! AnnotatedInterfaceMember*
-<Features>
-        ::= <AnnotatedFeature> <Features>
-         |
-<AnnotatedFeature>
-        ::= <AnnotationSpecifiers> <Feature>
-
-! feature Name (extends ...)?
-<Feature>
-        ::= 'feature' Identifier <SuperFeatures>
-
-! (extends ...)?
-<SuperFeatures>
-        ::= 'extends' <ReferenceList>
-         |
-
-! -------------------------------------------------
-! Modules.
-! -------------------------------------------------
-
-! (abstract)? module Name (extends ...)? { ... }
-<Module>
-        ::= <ModuleModifiers> 'module' Identifier <SuperModule> '{' <ModuleMembers> '}'
-
-! ModuleModifier*
-<ModuleModifiers>
-        ::= <ModuleModifier> <ModuleModifiers>
-         |
-<ModuleModifier>
-        ::= 'static'
-         |  'abstract'
-
-! (extends ...)?
-<SuperModule>
-        ::= 'extends' <Reference>
-         |
-
-! AnnotatedModuleMember*
-<ModuleMembers>
-        ::= <AnnotatedModuleMember> <ModuleMembers>
-         |
-<AnnotatedModuleMember>
-        ::= <AnnotationSpecifiers> <ModuleMember>
-<ModuleMember>
-        ::= 'depends'  <ReferenceList>
-         |  'provides' <ReferenceList>
-         |  'requires' <ReferenceList>
-         |  'source'   <FilenameList>
-         |  'object'   <FilenameList>
-         |  'option'   <Option>
-
-! ( string | number | boolean ) Name ( = ...)?
-<Option>
-        ::= <OptionType> Identifier <OptionDefaultValue>
-<OptionType>
-        ::= 'string'
-         |  'number'
-         |  'boolean'
-<OptionDefaultValue>
-        ::= '=' <Value>
-         |
 
 <Value>
         ::= StringLiteral
          |  NumberLiteral
          |  BooleanLiteral
+         |  <Reference>
 
 ! -------------------------------------------------
 ! Datatypes.
@@ -191,20 +226,6 @@ BooleanLiteral = 'true' | 'false'
         ::= <QualifiedName>
 <SimpleReference>
         ::= Identifier
-<Filename>
-        ::= StringLiteral
-
-! -------------------------------------------------
-! Comma separated lists.
-! -------------------------------------------------
-
-! Item ( , Item )*
-<ReferenceList>
-        ::= <Reference> ',' <ReferenceList>
-         |  <Reference>
-<FilenameList>
-        ::= <Filename> ',' <FilenameList>
-         |  <Filename>
 
 ! -------------------------------------------------
 ! Extended identifiers.

@@ -35,7 +35,7 @@ static net_node_t pnet_dev_register(struct net_device *dev) {
 
 	node_dev->dev = dev;
 	dev->pnet_node = node;
-	node->rx_dfault = pnet_get_module("devs entry");
+	node->name = dev->name;
 
 	return node;
 }

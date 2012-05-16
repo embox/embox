@@ -17,10 +17,6 @@
 #include <mem/misc/pool.h>
 #include <lib/list.h>
 
-#include <embox/unit.h>
-
-
-EMBOX_UNIT_INIT(route_init);
 
 /**
  * NOTE: Linux route uses 3 structs for routing:
@@ -59,10 +55,8 @@ int rt_add_route(net_device_t *dev, in_addr_t dst,
 int rt_del_route(net_device_t *dev, in_addr_t dst,
 			    in_addr_t mask, in_addr_t gw) {
 	struct rt_entry_info *rt_info;
-	struct list_head *tmp;
 
-	list_for_each(tmp, &rt_entry_info_list) {
-		rt_info = member_cast_out(tmp, struct rt_entry_info, lnk);
+	list_for_each_entry(rt_info, &rt_entry_info_list, lnk) {
 		if (((rt_info->entry.rt_dst == dst) || (INADDR_ANY == dst)) &&
 				((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
 				((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw))) {
@@ -144,29 +138,21 @@ struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
  * Routes must be added into list with mask_len decrease.
  * In this case we'll simply take the first match
  */
-struct rt_entry* rt_fib_get_best(in_addr_t dst) {
-	struct rt_entry_info	*rt_info;
-	struct rt_entry			*rte;
-	struct list_head		*tmp;
-	int mask_len;
+struct rt_entry * rt_fib_get_best(in_addr_t dst) {
+	struct rt_entry_info *rt_info;
+	int mask_len, best_mask_len;
+	struct rt_entry *best_rte;
 
-	struct rt_entry			*best_rte = NULL;
-	int best_mask_len = -1;
-
-	list_for_each(tmp, &rt_entry_info_list) {
-		rt_info = member_cast_out(tmp, struct rt_entry_info, lnk);
-		rte = &rt_info->entry;
-		mask_len = ipv4_mask_len(rte->rt_mask);
-		if ( ((dst & rte->rt_mask) == rte->rt_dst) && (mask_len > best_mask_len)) {
-			best_rte = rte;
+	best_rte = NULL;
+	best_mask_len = -1;
+	list_for_each_entry(rt_info, &rt_entry_info_list, lnk) {
+		mask_len = ipv4_mask_len(rt_info->entry.rt_mask);
+		if (((dst & rt_info->entry.rt_mask) == rt_info->entry.rt_dst)
+				&& (mask_len > best_mask_len)) {
+			best_rte = &rt_info->entry;
 			best_mask_len = mask_len;
 		}
 	}
+
 	return best_rte;
-}
-
-
-static int route_init(void) {
-	INIT_LIST_HEAD(&rt_entry_info_list);
-	return ENOERR;
 }

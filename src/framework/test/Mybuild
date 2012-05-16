@@ -3,5 +3,9 @@ package embox.framework
 module test {
 	/*FIXME mybuild make flags options */
 	@DefineMacro("__FRAMEWORK__")
-	source "run.c", "registry.c", "emit.c"
+	source "emit.c", "registry.c", "run.c"
+
+	depends embox.lib.LibC
+	depends embox.prom.printf
+	depends embox.arch.libarch
 }

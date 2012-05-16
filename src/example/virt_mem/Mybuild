@@ -2,6 +2,10 @@ package embox.example.vmem
 
 module mmuprobe {
 	source "mmu_probe.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
 	depends embox.arch.x86.mm.mmu_map
 	depends embox.arch.x86.mm.mmu_core
+	depends embox.framework.LibFramework
 }

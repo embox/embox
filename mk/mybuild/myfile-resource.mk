@@ -27,15 +27,44 @@ define class-MyFileResourceSet
 		$(new MyFileLinker,$(this),$(this)))
 endef
 
-define myfile_create_resource_set_from_files
-	$(for rs <- $(new MyFileResourceSet,$(for f <- $1,$($f))),
+# Params:
+#   1. List of resources.
+define myfile_create_resource_set
+	$(for rs <- $(new MyFileResourceSet,$1),
 
 		$(invoke $(get rs->linker).resolveAllLinks)
+
+		$(call myfile_resources_check_optionbind,$(get rs->resources))
+
+		$(for \
+			res <- $1,
+			obj <- $(get res->contents),
+			$(if $(invoke MyFile_AnnotationTarget->isInstance,$(obj)),
+				$(call myfile_annotation_callbacks,$(obj),MyFile)))
 
 		$(for r <- $(get rs->resources),
 			$(invoke r->printIssues))
 
 		$(rs))
+endef
+
+# Check OptionBinding's for type correctness in resources of any type
+# Params:
+#   1. List of resources.
+define myfile_resources_check_optionbind
+	$(for \
+		resource <- $1,
+		containment <- $(get resource->contents),
+		optionBind <- $(invoke containment->eContentsOfType,
+			$(MyFile_OptionBinding)),
+		opt <- $(get optionBind->option),
+		val <- $(get optionBind->value),
+
+		$(if $(invoke opt->validateValue,$(val)),,
+			$(invoke $(get optionBind->eResource).addIssues,
+				$(new BaseIssue,$(get optionBind->eResource),
+					error,,	Option $(get opt->qualifiedName) \
+						is assigned to incompatible type))))
 endef
 
 $(def_all)

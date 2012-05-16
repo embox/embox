@@ -1,0 +1,5 @@
+package mybuild.lang
+
+annotation Type {
+	string value
+}

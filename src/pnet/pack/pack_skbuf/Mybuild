@@ -2,6 +2,6 @@ package embox.pnet.pack
 
 module PnetPackSkbuff {
 	source "pack.c"
-	depends embox.net.core
+	depends embox.net.skbuff
 }
 

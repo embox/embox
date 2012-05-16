@@ -6,9 +6,9 @@
  * @author Ilia Vaprol
  */
 
-#include <stdio.h>
-#include <string.h>
+#include <kernel/prom_printf.h>
 #include <net/ip.h>
+#include <net/in.h>
 #include <net/socket.h>
 #include <framework/example/self.h>
 
@@ -23,7 +23,7 @@ static int exec(int argc, char **argv) {
 
 	sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (sockfd < 0) {
-		printf("can't create socket!");
+		prom_printf("can't create socket!");
 		return -1;
 	}
 
@@ -34,17 +34,17 @@ static int exec(int argc, char **argv) {
 
 	res = bind(sockfd, (struct sockaddr *)&src, sizeof src);
 	if (res < 0) {
-		printf("sock can't bind!");
+		prom_printf("sock can't bind!");
 		return res;
 	}
 
 	res = listen(sockfd, 1);
 	if (res < 0) {
-		printf("sock can't listen!");
+		prom_printf("sock can't listen!");
 		return res;
 	}
 
-	printf("Hello. I'm tcp_accepter. I will accept all connections to %s:%d address\n",
+	prom_printf("Hello. I'm tcp_accepter. I will accept all connections to %s:%d address\n",
 			inet_ntoa(src.sin_addr), LISTENING_PORT);
 	while (1) {
 		res = accept(sockfd, (struct sockaddr *)&dst, &dst_addr_len);
@@ -52,9 +52,9 @@ static int exec(int argc, char **argv) {
 			printf("no one can't be accepted\n");
 			return res;
  		}
-		printf("\nclient from %s:%d at %d socket\n\n",
+		prom_printf("client from %s:%d at %d socket\n",
 				inet_ntoa(dst.sin_addr), ntohs(dst.sin_port), res);
-//		close(res);
+		close(res);
 	}
 
 	return 0;

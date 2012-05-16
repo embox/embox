@@ -1,17 +1,33 @@
 package embox.example.util
 
+module priority_q {
+	source "priority_q.c"
+
+	depends embox.util.LibUtil
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
+
 module readline {
+    @IncludePath("$(THIRDPARTY_DIR)/include")
 	source "readline.c"
+
+	depends embox.lib.LibC
+	depends third_party.lib.linenoise
+	depends embox.framework.LibFramework
 }
 
 module ring_buff {
 	source "ring_buff.c"
+
+	depends embox.util.LibUtil
+	depends embox.framework.LibFramework
 }
 
 module tree_set {
 	source "tree_set.c"
-}
 
-module priority_q {
-	source "priority_q.c"
+	depends embox.util.LibUtil
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
 }

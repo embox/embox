@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "tftp",
 	help = "TFTP client",
 	man = '''
@@ -27,5 +25,10 @@ module tftp {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "tftp.c"
-	depends LibPosix
+
+	depends embox.lib.LibC
+	depends embox.net.socket
+	depends embox.compat.posix.LibPosix
+	depends embox.fs.core
+	depends embox.framework.LibFramework
 }

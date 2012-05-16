@@ -22,18 +22,13 @@
 #include <errno.h>
 #include <drivers/pci.h>
 #include <kernel/irq.h>
-#include <linux/init.h>
 #include <net/etherdevice.h>
-#include <net/in.h>
 #include <drivers/ne2k_pci.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
-#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdlib.h>
 
-//#include <pnet/core.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -68,7 +63,7 @@ static inline void show_packet(uint8_t *raw, uint16_t size, char *title) {
 }
 #endif
 
-static inline void ne2k_get_addr_from_prom(struct net_device *dev) {
+static void ne2k_get_addr_from_prom(struct net_device *dev) {
 	uint8_t i;
 
 	dev->addr_len = ETHER_ADDR_LEN;
@@ -92,13 +87,13 @@ static inline void ne2k_get_addr_from_prom(struct net_device *dev) {
 	}
 }
 
-/* configure board */
-static inline void ne2k_config(struct net_device *dev) {
+/* Configure board */
+static void ne2k_config(struct net_device *dev) {
 	unsigned int base_addr;
 
 	base_addr = dev->base_addr;
 
-	/*stop*/
+	/* Stop */
 	out8(E8390_PAGE0 | E8390_STOP, base_addr);
 	out8(0x49, base_addr + EN0_DCFG); /*16 bit & normal & 4fifo */
 
@@ -117,23 +112,23 @@ static inline void ne2k_config(struct net_device *dev) {
 //	out8(NESM_START_PG_RX, base_addr + EN1_CURPAG); /* set current page */
 }
 
-static inline void set_tx_count(uint16_t val, unsigned long base_addr) {
+static void set_tx_count(uint16_t val, unsigned long base_addr) {
 	/* Set how many bytes we're going to send. */
 	out8(val & 0xff, EN0_TBCR_LO + base_addr);
 	out8(val >> 8, EN0_TBCR_HI + base_addr);
 }
 
-static inline void set_rem_address(uint16_t val, unsigned long base_addr) {
+static void set_rem_address(uint16_t val, unsigned long base_addr) {
 	out8(val & 0xff, EN0_RSARLO + base_addr);
 	out8(val >> 8, EN0_RSARHI + base_addr);
 }
 
-static inline void set_rem_byte_count(uint16_t val, unsigned long base_addr) {
+static void set_rem_byte_count(uint16_t val, unsigned long base_addr) {
 	out8(val & 0xff, EN0_RCNTLO + base_addr);
 	out8(val >> 8, EN0_RCNTHI + base_addr);
 }
 
-static inline void copy_data_to_card(uint16_t dest, uint8_t *src,
+static void copy_data_to_card(uint16_t dest, uint8_t *src,
 				uint16_t len, unsigned long base_addr) {
 	out8(E8390_NODMA | E8390_PAGE0, base_addr + NE_CMD); // switch to PAGE0
 	set_rem_address(dest, base_addr);
@@ -143,7 +138,8 @@ static inline void copy_data_to_card(uint16_t dest, uint8_t *src,
 		len++;
 	}
 	outsw(base_addr + NE_DATAPORT, src, len >> 1);
-	while (0 == (in8(base_addr + EN0_ISR) & ENISR_RDC));
+//	while (0 == (in8(base_addr + EN0_ISR) & ENISR_RDC)); /* FIXME sometimes it requires much time */
+//	out8(ENISR_RDC, base_addr + EN0_ISR);
 }
 
 static inline void copy_data_from_card(uint16_t src, uint8_t *dest,
@@ -169,7 +165,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	base_addr = dev->base_addr;
 
 	if (in8(base_addr + NE_CMD) & E8390_TRANS) { /* no matter, which page is active */
-		printf("%s: start_xmit() called with the transmitter busy.\n", dev->name);
+		LOG_ERROR("%s: start_xmit() called with the transmitter busy.\n", dev->name);
 		return -EBUSY;
 	}
 
@@ -184,7 +180,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	out8(NESM_START_PG_TX, base_addr + EN0_TPSR);
 	out8(E8390_TRANS | E8390_NODMA | E8390_START, base_addr + NE_CMD);
 	/* Wait for transmission to complete. */
-	while (in8(base_addr + NE_CMD) & E8390_TRANS) ;
+	while (in8(base_addr + NE_CMD) & E8390_TRANS);
 
 #if DEBUG
 	show_packet(skb->mac.raw, skb->len, "send");
@@ -213,9 +209,9 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length,
 	return skb;
 }
 
-static size_t ne2k_receive(struct net_device *dev) {
+static void ne2k_receive(struct net_device *dev) {
 	uint16_t total_length, ring_offset;
-	uint8_t this_frame, next_frame;//, current;
+	uint8_t this_frame, next_frame, current_page;
 	struct e8390_pkt_hdr rx_frame = {0};
 	net_device_stats_t *stat;
 	unsigned long base_addr;
@@ -224,51 +220,60 @@ static size_t ne2k_receive(struct net_device *dev) {
 	base_addr = dev->base_addr;
 	stat = get_eth_stat(dev);
 
-	/* Get the rx page (incoming packet pointer). */
-	out8(E8390_PAGE1, base_addr + E8390_CMD);
+	while (1) { /* XXX It's an infinite loop or not? */
+		/* Get the current page */
+		out8(E8390_NODMA | E8390_PAGE1, base_addr + E8390_CMD);
+		current_page = in8(base_addr + EN1_CURPAG);
+		out8(E8390_NODMA | E8390_PAGE0, base_addr + E8390_CMD);
 
-	/* Remove one frame from the ring.  Boundary is alway a page behind. */
-	out8(E8390_PAGE0 | E8390_START, base_addr + E8390_CMD);
-	this_frame = in8(base_addr + EN0_BOUNDARY) + 1;
-	if (this_frame >= NESM_STOP_PG) {
-		this_frame = NESM_START_PG_RX;
-	}
+		/* Remove one frame from the ring.  Boundary is always a page behind. */
+		this_frame = in8(base_addr + EN0_BOUNDARY) + 1;
+		if (this_frame >= NESM_STOP_PG) {
+			this_frame = NESM_START_PG_RX;
+		}
 
-	ring_offset =  this_frame << 8;
-	/* Find out where the next packet is in card memory */
-	copy_data_from_card(ring_offset, (uint8_t *) &rx_frame, sizeof(rx_frame),
-			base_addr);
-	// FIXME -O2: error: ‘rx_frame’ is used uninitialized in this function.
-	total_length = rx_frame.count - sizeof(rx_frame);
-	next_frame = this_frame + 1 + (rx_frame.count >> 8);
-	if ((rx_frame.next != next_frame)
-		&& (rx_frame.next != next_frame + 1)
-		&& (rx_frame.next != next_frame - (NESM_STOP_PG - NESM_START_PG_RX))
-		&& (rx_frame.next != next_frame + 1 - (NESM_STOP_PG - NESM_START_PG_RX))) {
-		stat->rx_err++;
-	}
-	if ((total_length < 60) || (total_length > 1518)) {
-		stat->rx_err++;
-		LOG_WARN("ne2k_receive: bad packet size\n");
-	} else if ((rx_frame.status & 0x0F) == ENRSR_RXOK) {
-		skb = get_skb_from_card(total_length, ring_offset + sizeof(struct e8390_pkt_hdr), dev);
-		if (skb) {
-			stat->rx_packets++;
-			stat->rx_bytes += skb->len;
-			netif_rx(skb);
+		if (this_frame == current_page) {
+			break; /* No any more package to receive */
+		}
+
+		ring_offset = this_frame << 8;
+		/* Find out where the next packet is in card memory */
+		copy_data_from_card(ring_offset, (uint8_t *) &rx_frame, sizeof(rx_frame),
+				base_addr);
+
+		total_length = rx_frame.count - sizeof(rx_frame);
+		next_frame = this_frame + 1 + (rx_frame.count >> 8);
+		if ((rx_frame.next != next_frame)
+			&& (rx_frame.next != next_frame + 1)
+			&& (rx_frame.next != next_frame - (NESM_STOP_PG - NESM_START_PG_RX))
+			&& (rx_frame.next != next_frame + 1 - (NESM_STOP_PG - NESM_START_PG_RX))) {
+			stat->rx_err++;
+			out8(current_page - 1, base_addr + EN0_BOUNDARY);
+			continue;
+		}
+		if ((total_length < 60) || (total_length > 1518)) {
+			stat->rx_err++;
+			LOG_WARN("ne2k_receive: bad packet size\n");
+		} else if ((rx_frame.status & 0x0F) == ENRSR_RXOK) {
+			skb = get_skb_from_card(total_length, ring_offset + sizeof(struct e8390_pkt_hdr), dev);
+			if (skb) {
+				stat->rx_packets++;
+				stat->rx_bytes += skb->len;
+				netif_rx(skb);
+			} else {
+				stat->rx_dropped++;
+				LOG_WARN("ne2k_receive: couldn't allocate memory for packet\n");
+			}
 		} else {
-			stat->rx_dropped++;
-			LOG_WARN("ne2k_receive: couldn't allocate memory for packet\n");
+			if (rx_frame.status & ENRSR_FO) {
+				stat->rx_fifo_errors++;
+			}
+			LOG_WARN("ne2k_receive: rx_frame.status=0x%X\n", rx_frame.status);
 		}
-	} else {
-		if (rx_frame.status & ENRSR_FO) {
-			stat->rx_fifo_errors++;
-		}
-		LOG_WARN("ne2k_receive: rx_frame.status=0x%X\n", rx_frame.status);
+		out8(rx_frame.next - 1, base_addr + EN0_BOUNDARY);
 	}
-	out8(rx_frame.next - 1, base_addr + EN0_BOUNDARY);
 
-	return ENOERR;
+	out8(ENISR_RX | ENISR_RX_ERR, base_addr + EN0_ISR);
 }
 
 static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
@@ -278,38 +283,57 @@ static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
 
 	stat = get_eth_stat((struct net_device *)dev_id);
 	base_addr = ((struct net_device *)dev_id)->base_addr;
-	out8(E8390_PAGE0, base_addr + E8390_CMD);
-	isr = in8(base_addr + EN0_ISR); /* Gets Interrupt Status Register */
-	out8(0xFF, base_addr + EN0_ISR); /* Clean ISR */
-	/* IF (isr & (ENISR_RDC | ENISR_TX_ERR)) DO NOTHING */
-	if (isr & ENISR_OVER) {
-		stat->rx_over_errors++;
-		out8(E8390_STOP, base_addr + E8390_CMD);
-		while ((in8(base_addr + EN0_ISR) & ENISR_RESET)) ;
-		ne2k_receive(dev_id); /* Remove packets right away. */
-		out8(E8390_TXCONFIG, base_addr + EN0_TXCR); /* xmit on. */
-	} else if (isr & (ENISR_RX + ENISR_RX_ERR)) {
-		ne2k_receive(dev_id);
-	}
-	if (isr & ENISR_TX) {
-		status = in8(base_addr + EN0_TSR);
-		if (status & ENTSR_COL) {
-			stat->collisions++;
+
+	out8(E8390_NODMA | E8390_PAGE0, base_addr + E8390_CMD);
+	/* Get Interrupt Status Register */
+	while ((isr = in8(base_addr + EN0_ISR)) != 0) {
+		if (isr & ENISR_OVER) {
+			stat->rx_over_errors++;
+			status = in8(base_addr + E8390_CMD);
+			out8(E8390_NODMA | E8390_PAGE0 | E8390_STOP, base_addr + E8390_CMD);
+			out8(0x00, base_addr + EN0_RCNTLO);
+			out8(0x00, base_addr + EN0_RCNTHI);
+			status = status ? !(isr & (ENISR_TX | ENISR_TX_ERR)) : 0;
+			out8(E8390_TXOFF, base_addr + EN0_TXCR);
+			out8(E8390_NODMA | E8390_PAGE0 | E8390_START, base_addr + E8390_CMD);
+			ne2k_receive(dev_id); /* Remove packets right away. */
+			out8(ENISR_OVER, base_addr + EN0_ISR);
+			out8(E8390_TXCONFIG, base_addr + EN0_TXCR); /* xmit on. */
+			if (status) {
+				out8(E8390_NODMA | E8390_PAGE0 | E8390_START | E8390_TRANS, base_addr + E8390_CMD); /* resend packet */
+			}
+		} else if (isr & (ENISR_RX | ENISR_RX_ERR)) {
+			ne2k_receive(dev_id);
 		}
-		if (status & ENTSR_PTX) {
-			stat->tx_packets++;
-		} else {
-			stat->tx_err++;
-			if (status & ENTSR_ABT) { stat->tx_aborted_errors++; }
-			if (status & ENTSR_CRS) { stat->tx_carrier_errors++; }
-			if (status & ENTSR_FU) { stat->tx_fifo_errors++; }
-			if (status & ENTSR_CDH) { stat->tx_heartbeat_errors++; }
-			if (status & ENTSR_OWC) { stat->tx_window_errors++; }
+		if (isr & ENISR_TX) {
+			status = in8(base_addr + EN0_TSR);
+			out8(ENISR_TX, base_addr + EN0_ISR);
+			if (status & ENTSR_COL) {
+				stat->collisions++;
+			}
+			if (status & ENTSR_PTX) {
+				stat->tx_packets++;
+			} else {
+				stat->tx_err++;
+				if (status & ENTSR_ABT) { stat->tx_aborted_errors++; }
+				if (status & ENTSR_CRS) { stat->tx_carrier_errors++; }
+				if (status & ENTSR_FU) { stat->tx_fifo_errors++; }
+				if (status & ENTSR_CDH) { stat->tx_heartbeat_errors++; }
+				if (status & ENTSR_OWC) { stat->tx_window_errors++; }
+			}
+		} else if (isr & ENISR_TX_ERR) {
+			out8(ENISR_TX_ERR, base_addr + EN0_ISR); // TODO
 		}
-	} else if (isr & ENISR_COUNTERS) {
-		stat->rx_frame_errors += in8(base_addr + EN0_COUNTER0);
-		stat->rx_crc_errors += in8(base_addr + EN0_COUNTER1);
-		stat->rx_missed_errors += in8(base_addr + EN0_COUNTER2);
+		if (isr & ENISR_COUNTERS) {
+			stat->rx_frame_errors += in8(base_addr + EN0_COUNTER0);
+			stat->rx_crc_errors += in8(base_addr + EN0_COUNTER1);
+			stat->rx_missed_errors += in8(base_addr + EN0_COUNTER2);
+			out8(ENISR_COUNTERS, base_addr + EN0_ISR);
+		}
+		if (isr & ENISR_RDC) {
+			out8(ENISR_RDC, base_addr + EN0_ISR);
+		}
+		out8(E8390_NODMA | E8390_PAGE0 | E8390_START, base_addr + E8390_CMD);
 	}
 
 	return IRQ_HANDLED;
@@ -370,7 +394,7 @@ static const struct net_device_ops _netdev_ops = {
 	.ndo_set_mac_address = set_mac_address
 };
 
-static int __init unit_init(void) {
+static int unit_init(void) {
 	int res;
 	uint32_t nic_base;
 	struct net_device *nic;
@@ -379,15 +403,15 @@ static int __init unit_init(void) {
 	//TODO: only RealTek RTL-8029 is available
 	pci_dev = pci_find_dev(PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8029);
 	if (pci_dev == NULL) {
-		LOG_WARN("Couldn't find NE2K_PCI device\n");
-		return ENOERR;
+		LOG_WARN("Couldn't find NE2000 PCI device\n");
+		return -ENODEV;
 	}
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 
 	nic = alloc_etherdev(0);
 	if (nic == NULL) {
-		LOG_ERROR("Couldn't alloc netdev for NE2K_PCI\n");
+		LOG_ERROR("Couldn't alloc netdev for NE2000 PCI\n");
 		return -ENOMEM;
 	}
 	nic->netdev_ops = &_netdev_ops;

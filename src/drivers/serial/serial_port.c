@@ -13,7 +13,6 @@
 #include <util/ring_buff.h>
 #include <drivers/serial.h>
 #include <fs/file_desc.h>
-
 #include <embox/unit.h>
 
 /**
@@ -158,7 +157,7 @@ static int uart_remove_irq_handler(void) {
 #endif
 
 #include <embox/device.h>
-#include <fs/file.h>
+#include <kernel/file.h>
 #include <drivers/tty.h>
 
 static tty_device_t tty;

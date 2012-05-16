@@ -29,7 +29,10 @@
 #include <hal/context.h>
 #include <hal/ipl.h>
 #include <util/slist.h>
+
 #include <profiler/tracing/trace.h>
+
+#include <time.h>
 
 #include "types.h"
 
@@ -58,6 +61,8 @@ static struct runq rq;
 
 static sys_timer_t *tick_timer;
 
+static clock_t prev_clock;
+
 static inline int in_harder_critical(void) {
 	return critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK));
 }
@@ -67,6 +72,7 @@ static inline int in_sched_locked(void) {
 }
 
 int sched_init(struct thread* current, struct thread *idle) {
+	prev_clock = clock();
 	runq_init(&rq, current, idle);
 	return 0;
 }
@@ -278,6 +284,7 @@ static void post_switch_if(int condition) {
  */
 static void sched_switch(void) {
 	struct thread *prev, *next;
+	clock_t new_clock;
 
 	assert(!in_sched_locked());
 
@@ -293,6 +300,11 @@ static void sched_switch(void) {
 		ipl_enable();
 
 		prev = runq_current(&rq);
+
+		new_clock = clock();
+		prev->running_time += new_clock - prev_clock;
+		prev_clock = new_clock;
+
 		if (!runq_switch(&rq)) {
 			ipl_disable();
 			goto out;

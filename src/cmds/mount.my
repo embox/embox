@@ -1,6 +1,0 @@
-package embox.cmd
-
-module mount {
-	source "mount.c"
-	depends embox.fs.ramfs, embox.fs.core
-}

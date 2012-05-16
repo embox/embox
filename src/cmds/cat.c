@@ -10,6 +10,7 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
+#include <kernel/prom_printf.h>
 
 EMBOX_CMD(exec);
 
@@ -56,9 +57,9 @@ static int exec(int argc, char **argv) {
 
 	while (fread(&buff, 1, 1, fd) > 0) {
 		if (new_line && number) {
-			printf("\t%d %c", line++, buff);
+			prom_printf("\t%d %c", line++, buff);
 		} else {
-			printf("%c", buff);
+			prom_printf("%c", buff);
 		}
 		new_line = (buff == '\n') ? 1 : 0;
 	}

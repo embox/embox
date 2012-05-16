@@ -10,15 +10,15 @@
 #include <stdio.h>
 #include <errno.h>
 #include <util/math.h>
-#include <fs/fs.h>
-#include <fs/file.h>
+#include <fs.h>
+#include <kernel/file.h>
 #include <fs/ioctl.h>
 #include <fs/file_desc.h>
 #include <kernel/thread/api.h>
 #include <lib/linenoise.h>
 #include <drivers/tty_ng.h>
 #include <embox/unit.h>
-
+#include <fcntl.h>
 #include <kernel/diag.h>
 
 EMBOX_UNIT_INIT(tty_ng_manager_init);
@@ -103,15 +103,16 @@ static void tty_putc_buf(struct tty_buf *tty, char ch) {
 static void *thread_handler(void* args) {
 	struct param *p = (struct param *) args;
 	FILE *file = (FILE *) p->file;
+	struct idx_desc *cidx = task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file);
 
-	task_res_idx_set(task_self_res(), 0, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
-	task_res_idx_set(task_self_res(), 1, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
-	task_res_idx_set(task_self_res(), 2, task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file));
-#if 0
-	freopen(stdin, file);
-	freopen(stdout, file);
-	freopen(stderr, file);
-#endif
+	close(0);
+	close(1);
+	close(2);
+
+	task_self_idx_set(0, cidx);
+	task_self_idx_set(1, cidx);
+	task_self_idx_set(2, cidx);
+
 	p->run();
 	return NULL;
 }

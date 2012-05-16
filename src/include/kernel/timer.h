@@ -27,9 +27,12 @@ struct sys_timer;
  */
 typedef void (*sys_timer_handler_t)(struct sys_timer *timer, void *param);
 
-#define TIMER_PERIODIC     0x1
-#define TIMER_ONESHOT      0x0
-#define TIMER_REALTIME     0x80000000
+#define TIMER_PERIODIC      0x1
+#define TIMER_ONESHOT       0x0
+#define TIMER_REALTIME      0x80000000
+
+#define TIMER_STATE_PREALLOC 0x1
+#define TIMER_STATE_STARTED  0x2
 
 /**
  * system timer structure
@@ -41,8 +44,32 @@ struct sys_timer {
 	uint32_t   cnt;
 	sys_timer_handler_t handle;
 	void       *param;
-	bool       is_preallocated; /**< do we use timer_set or timer_init? */
+	unsigned int flags;
+	uint32_t   state; /**< do we use timer_set or timer_init? */
 };
+
+static inline bool timer_is_preallocated(struct sys_timer *tmr) {
+	return tmr->state & TIMER_STATE_PREALLOC;
+}
+static inline void timer_set_preallocated(struct sys_timer *tmr) {
+	tmr->state |= TIMER_STATE_PREALLOC;
+}
+
+static inline bool timer_is_started(struct sys_timer *tmr) {
+	return tmr->state & TIMER_STATE_STARTED;
+}
+
+static inline void timer_set_started(struct sys_timer *tmr) {
+	tmr->state |= TIMER_STATE_STARTED;
+}
+
+static inline void timer_set_stopped(struct sys_timer *tmr) {
+	tmr->state &= ~TIMER_STATE_STARTED;
+}
+
+static inline bool timer_is_periodic(struct sys_timer *tmr) {
+	return tmr->flags & TIMER_PERIODIC;
+}
 
 /** Type declaration for system timer structure */
 typedef struct sys_timer sys_timer_t;

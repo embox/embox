@@ -11,5 +11,12 @@ package embox.cmd
 			Alexandr Batyukov
 	''')
 module help {
+	/* FIXME:
+	 * 1.it depends from embox.framework.cmd (called from help.c)
+	 */
 	source "help.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 }

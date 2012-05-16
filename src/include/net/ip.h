@@ -100,6 +100,8 @@ static inline iphdr_t *ip_hdr(const sk_buff_t *skb) {
 }
 
 /* Generate a checksum for an outgoing IP datagram. */
+/* NOTE: maybe rename ip_send_check to ip_send_cheksum for clarity?
+   current name is ambiguous*/
 static inline void ip_send_check(iphdr_t *iph) {
 	iph->check = 0;
 	iph->check = ptclbsum((void *) iph, IP_HEADER_SIZE(iph));

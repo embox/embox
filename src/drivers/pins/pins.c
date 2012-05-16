@@ -6,7 +6,6 @@
  * @author Anton Kozlov
  */
 
-#include <embox/unit.h>
 #include <drivers/pins.h>
 #include <hal/pins.h>
 

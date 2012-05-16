@@ -2,6 +2,9 @@
 package embox.init
 
 module init {
+
+    option number input_buffer = 80
+
     @IncludePath("$(CONF_DIR)")
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "init.c"

@@ -1,14 +1,21 @@
 package embox.driver.virtual
 
 module diag_device {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "diag_device.c"
-}
 
-module zero {
-	source "zero.c"
+	depends embox.fs.driver.devfs
+	depends embox.driver.diag.diag_api
 }
 
 module null {
 	source "null.c"
+
+	depends embox.fs.driver.devfs
+}
+
+module zero {
+	source "zero.c"
+
+	depends embox.lib.LibC
+	depends embox.fs.driver.devfs
 }

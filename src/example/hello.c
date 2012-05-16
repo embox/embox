@@ -12,6 +12,8 @@
 #include <errno.h>
 #include <framework/example/self.h>
 
+#include <util/macro.h>
+
 /**
  * This macro is used for registration of this example at system
  * run - function which describe work of example
@@ -24,7 +26,7 @@ EMBOX_EXAMPLE(run);
  */
 static int run(int argc, char **argv) {
 
-	printf("hello example\n");
+	printf("Hi, I'm %s\n",MACRO_STRING(__EMBUILD_MOD__));
 
 	return ENOERR;
 }

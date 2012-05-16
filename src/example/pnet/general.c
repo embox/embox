@@ -8,7 +8,7 @@
 
 #include <pnet/core.h>
 #include <pnet/node.h>
-#include <pnet/match_lin.h>
+#include <pnet/netfilter/match_lin.h>
 
 #include <framework/example/self.h>
 EMBOX_EXAMPLE(pnet_general_example);

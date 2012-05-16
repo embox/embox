@@ -1,7 +1,12 @@
-package embox.framewor.net
+package embox.framework.net
 
 module proto {
+	/* FIXME:
+	 * 1.it depends from embox.net.af_inet
+	 */
 	/*FIXME mybuild make flags options */
     @DefineMacro("__FRAMEWORK__")
 	source "core.c"
+
+	depends embox.prom.printf
 }

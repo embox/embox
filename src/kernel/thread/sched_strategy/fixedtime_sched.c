@@ -147,10 +147,12 @@ int runq_change_priority(struct runq *runq, struct thread *thread, int new_prior
 	return 0;
 }
 
+#if 0
 /* It also is in src/kernel/time.c  TODO: use it from here */
 static useconds_t time_usec(void) {
 	return clock_source_clock_to_usec(clock());
 }
+#endif
 
 /* Calculate execution time for thread  */
 static useconds_t get_exec_time(struct thread *thread) {

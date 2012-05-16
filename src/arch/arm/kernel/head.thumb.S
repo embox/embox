@@ -22,6 +22,7 @@
 .weak hardware_init_hook
 .weak software_init_hook
 .weak kernel_start
+.weak clock_handler
 
     .align 4
 

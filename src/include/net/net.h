@@ -12,8 +12,6 @@
 #include <linux/compiler.h>
 #include <linux/aio.h>
 #include <net/socket.h>
-#include <net/net.h>
-#include <net/socket_registry.h>
 
 
 #define IPV4_ADDR_LENGTH   0x04
@@ -100,7 +98,10 @@ struct proto_ops {
 	int (*connect)(struct socket *sock, struct sockaddr *vaddr,
 			int sockaddr_len, int flags);
 	int (*socketpair)(struct socket *sock1, struct socket *sock2);
-	int (*accept)(socket_t *sock, socket_t *new_sock, sockaddr_t *addr, int *addr_len);
+	/* 1st arg struct sock* - because sockets are handled on kernel sockets level
+	   2nd arg struct sock** - not to create excess struct socket, but create it based
+	    on alreadey creaed struct sock* */
+	int (*accept)(struct sock *sock, struct sock **new_sock, sockaddr_t *addr, int *addr_len);
 	int (*getname)(struct socket *sock, struct sockaddr *addr,
 			int *sockaddr_len, int peer);
 
@@ -158,6 +159,5 @@ static inline bool is_a_valid_family(int family){
 					(family == AF_INET) ||
 					(family == AF_PACKET));
 }
-
 
 #endif /* NET_NET_H_ */

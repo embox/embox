@@ -17,7 +17,6 @@ ARRAY_SPREAD_DEF(const struct pnet_pack_desc, __pnet_pack_registry);
 
 static const struct pnet_pack_desc *find_pack_desc(uint32_t type) {
 	const struct pnet_pack_desc *ptr;
-
 	array_foreach_ptr(ptr, __pnet_pack_registry,
 			ARRAY_SPREAD_SIZE(__pnet_pack_registry)) {
 		if(ptr->type == type) {

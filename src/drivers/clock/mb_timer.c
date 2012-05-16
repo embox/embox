@@ -96,7 +96,7 @@ void clock_init(void) {
 	}
 
 	mb_timer_clock_source.flags = 1;
-	mb_timer_clock_source.precision = 1000;
+	mb_timer_clock_source.resolution = 1000;
 	clock_source_register(&mb_timer_clock_source);
 }
 

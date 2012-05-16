@@ -25,7 +25,6 @@ const struct mod_ops __unit_mod_ops = {
 static int unit_mod_enable(struct mod_info *mod_info) {
 	int ret = 0;
 	struct unit *unit = (struct unit *) mod_info->data;
-//	const struct mod *mod = mod_info->mod; /* used only for trace => warning when prom_printf equeal nothing => broken compilation */
 
 	if (NULL == unit->init) {
 		return 0;
@@ -44,7 +43,6 @@ static int unit_mod_enable(struct mod_info *mod_info) {
 static int unit_mod_disable(struct mod_info *mod_info) {
 	int ret = 0;
 	struct unit *unit = (struct unit *) mod_info->data;
-//	const struct mod *mod = mod_info->mod;
 
 	if (NULL == unit->fini) {
 		return 0;

@@ -19,7 +19,7 @@ extern int pnet_node_attach(net_node_t node, net_id_t id, net_node_t parent);
  * will be called objalloc()
  */
 extern net_node_t pnet_node_alloc(net_addr_t addr, pnet_proto_t proto);
-extern net_node_t pnet_node_init(net_node_t node, net_addr_t addr, pnet_proto_t proto);
+extern net_node_t pnet_node_init(net_node_t node, pnet_proto_t proto);
 
 /**
  * Free memory allocated by node with its protocol. If protocol is NULL
@@ -27,13 +27,7 @@ extern net_node_t pnet_node_init(net_node_t node, net_addr_t addr, pnet_proto_t 
  */
 extern int pnet_node_free(net_node_t node);
 
-/**
- * There are some nodes (e.g. "devs resolver") that are not in any graph always,
- * but they uses to determine packet behavior (e.g. attach to device for "devs resolver").
- * That means such node is 'supporter'. In other words, supporters are nodes before
- * all graphs.
- */
-extern int node_is_supporter(net_node_t node);
-
+extern net_node_t pnet_get_dev_by_device(struct net_device *dev);
+extern net_node_t pnet_get_dev_by_name(char *name);
 
 #endif /* PNET_NODE_H_ */

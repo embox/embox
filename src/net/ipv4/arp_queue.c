@@ -12,14 +12,11 @@
 #include <mem/objalloc.h>
 #include <errno.h>
 #include <net/skbuff.h>
-#include <net/ip.h>
-#include <net/inetdevice.h>
-#include <net/arp.h>
-#include <kernel/timer.h>
-
-#include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
-#include <util/debug_msg.h>
+#include <kernel/timer.h>
+#include <net/sock.h>
+#include <net/ip.h>
+#include <net/arp.h>
 
 #define TTL 1000
 #define ARP_QUEUE_SIZE 0x10
@@ -30,26 +27,28 @@ struct pending_packet {
 	struct sys_timer *timer;
 };
 
-OBJALLOC_DEF(arp_queue_pool, struct pending_packet, ARP_QUEUE_SIZE);
-
+OBJALLOC_DEF(arp_queue_allocator, struct pending_packet, ARP_QUEUE_SIZE);
 static LIST_HEAD(arp_queue);
 
 void arp_queue_process(struct sk_buff *arp_pack) {
 	struct pending_packet *pack, *safe;
+	struct sk_buff *skb;
+
+	assert(arp_pack != NULL);
 
 	list_for_each_entry_safe(pack, safe, &arp_queue, link) {
-		if(arp_pack->nh.arph->ar_sip == pack->skb->nh.iph->daddr) {
+		if (arp_pack->nh.arph->ar_sip == pack->skb->nh.iph->daddr) {
+			skb = pack->skb;
+			assert(skb != NULL);
+
 			timer_close(pack->timer); //TODO it must be synchronized with drop function
-
 			list_del(&pack->link);
+			objfree(&arp_queue_allocator, pack);
 
-			sock_set_ready(pack->skb->sk);
-			debug_printf("waking up socket", "arp_queue", "arp_queue_process");
-			event_fire(&pack->skb->sk->sock_is_ready);
-			dev_queue_xmit(pack->skb);
+			sock_set_ready(skb->sk);
+			event_fire(&skb->sk->sock_is_ready);
+			dev_queue_xmit(skb);
 
-
-			pool_free(&arp_queue_pool, pack);
 		}
 	}
 }
@@ -60,20 +59,27 @@ static void arp_queue_drop(struct sys_timer *timer, void *data) {
 	struct net_device *dev;
 
 	/* it must send message, that packet was dropped */
-	deff_pack = (struct pending_packet*) data;
+	assert(data != NULL);
+	deff_pack = (struct pending_packet *)data;
+
+	assert(deff_pack->skb != NULL);
+	assert(deff_pack->skb->dev != NULL);
 	dev = deff_pack->skb->dev;
+
+	assert(dev->netdev_ops != NULL);
+	assert(dev->netdev_ops->ndo_get_stats != NULL);
 	stats = dev->netdev_ops->ndo_get_stats(dev);
+
 	stats->tx_err++;
 
 	timer_close(timer);
 	list_del(&deff_pack->link);
 
 	sock_set_ready(deff_pack->skb->sk);
-	debug_printf("launching socket event", "arp_queue", "arp_queue_drop");
 	event_fire(&deff_pack->skb->sk->sock_is_ready);
 
 	kfree_skb(deff_pack->skb);
-	pool_free(&arp_queue_pool, deff_pack);
+	objfree(&arp_queue_allocator, deff_pack);
 }
 
 int arp_queue_add(struct sk_buff *skb) {
@@ -81,10 +87,11 @@ int arp_queue_add(struct sk_buff *skb) {
 	struct pending_packet *queue_pack;
 //	struct sk_buff *new_pack;
 
-	queue_pack = (struct pending_packet*)pool_alloc(&arp_queue_pool);
+	queue_pack = (struct pending_packet *)objalloc(&arp_queue_allocator);
 	if (queue_pack == NULL) {
 		return -ENOMEM;
 	}
+
 	/* skb->sk->arp_queue_info = 0; */
 	sock_unset_ready(skb->sk);
 

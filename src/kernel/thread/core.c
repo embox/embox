@@ -39,11 +39,8 @@
 #include <hal/arch.h>
 #include <hal/ipl.h>
 
-#ifdef CONFIG_THREAD_STACK_SIZE
-# define STACK_SZ CONFIG_THREAD_STACK_SIZE
-#else
-# define STACK_SZ 0x2000
-#endif
+
+#define STACK_SZ      OPTION_GET(NUMBER,thread_stack_size)
 
 EMBOX_UNIT(unit_init, unit_fini);
 
@@ -178,6 +175,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	event_init(&t->exit_event, "thread_exit");
 	t->need_message = false;
 
+	t->running_time = 0;
 }
 
 static void thread_context_init(struct thread *t) {

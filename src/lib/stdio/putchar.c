@@ -17,6 +17,9 @@
 int putchar(int c) {
 	static char prev = 0;
 	char ch;
+		/* svv: Excellent. I'm looking forward for something like
+		 * 	cat file1 file2 > file3
+		 */
 	if (c == '\n' && prev != '\r') {
 		ch = '\r';
 		write(1, &ch, 1);

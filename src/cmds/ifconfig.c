@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <net/inetdevice.h>
 #include <net/util.h>
-#include <util/array.h>
 #include <err.h>
 
 EMBOX_CMD(exec);

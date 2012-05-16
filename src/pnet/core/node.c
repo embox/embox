@@ -15,10 +15,6 @@
 
 #include <pnet/core.h>
 
-#ifndef CONFIG_PNET_NODES_QUANTITY
-#define CONFIG_PNET_NODES_QUANTITY 0x10
-#endif
-
 OBJALLOC_DEF(net_nodes, struct net_node, CONFIG_PNET_NODES_QUANTITY);
 
 net_node_t pnet_node_init(net_node_t node, pnet_proto_t proto) {
@@ -43,14 +39,6 @@ net_node_t pnet_node_alloc(net_addr_t addr, pnet_proto_t proto) {
 
 	pnet_node_init(node, proto);
 
-#if 0
-	if (node->proto->init != NULL) {
-		if (node->proto->init(node) != 0) {
-			objfree(&net_nodes, node);
-			return NULL;
-		}
-	}
-#endif
 	return node;
 
 }
@@ -64,10 +52,6 @@ int pnet_node_free(net_node_t node) {
 	}
 	objfree(&net_nodes, node);
 	return 0;
-}
-
-int node_is_supporter(net_node_t node) {
-	return !strcmp(node->name, "devs resolver");
 }
 
 int pnet_node_attach(net_node_t node, net_id_t id, net_node_t other) {

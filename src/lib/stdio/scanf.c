@@ -12,7 +12,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <types.h>
-#include <fs/file.h>
+#include <kernel/file.h>
 
 FILE *file;
 
@@ -52,8 +52,6 @@ int ch_to_digit(char ch, int base) {
 	}
 	return -1;
 }
-
-extern int ungetchar(int ch);
 
 static void unscanchar(char **str, int ch) {
 	/*	extern int ungetchar();*/

@@ -7,17 +7,20 @@ module tish extends shell_api {
     option string prompt = "embox> "
     option string welcome_msg = "Welcome to Embox and have a lot of fun!"
 
-
     @IncludePath("$(THIRDPARTY_DIR)/include")
     source "tish.c"
 
+    depends embox.lib.LibC
     depends third_party.lib.linenoise
+    depends embox.framework.LibFramework
 }
 
 module shell_start {
     @IncludePath("$(CONF_DIR)")
     source "shell_start.c"
 
-    depends embox.kernel.thread.core
     depends shell_api
+    depends embox.lib.LibC
+    depends embox.util.LibUtil
+    depends embox.framework.LibFramework
 }

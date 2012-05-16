@@ -1,47 +1,24 @@
 package embox.example.net
 
-module tcp_echo {
-	source "tcp_echo.c"
+/* FIXME:
+ * Unused files: udp_sender.c
+ */
+
+module checkopts {
+	source "checkopts.c"
+
 	depends embox.net.socket
-}
-
-module tcp_sender {
-	source "tcp_sender.c"
-	depends embox.net.socket
-}
-
-module tcp_connect {
-	source "tcp_connect.c"
-	depends embox.net.socket
-}
-
-module tcp_accepter {
-	source "tcp_accepter.c"
-	depends embox.net.socket
-}
-
-module receiver {
-	source "receiver.c"
-	depends embox.net.socket, embox.net.eth, embox.net.arp
-	depends embox.net.af_inet, embox.net.udp
-}
-
-module udp_echo {
-	source "udp_echo.c"
-	depends embox.net.socket, embox.net.eth, embox.net.arp
-	depends embox.net.af_inet, embox.net.udp
-}
-
-module tcp_receiver {
-	source "tcp_receiver.c"
-	depends embox.net.socket
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
 }
 
 module httpd {
 	source "httpd.c"
 
+	depends embox.lib.LibC
 	depends embox.net.socket
 	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 
 	@InitFS
 	source "hello.html"
@@ -49,5 +26,81 @@ module httpd {
 
 module r6040_example {
 	source "r6040_example.c"
+
+	depends embox.lib.LibC
 	depends embox.driver.net.r6040
+	depends embox.framework.LibFramework
+}
+
+module receiver {
+	source "receiver.c"
+
+	depends embox.net.socket
+	depends embox.prom.printf
+	depends embox.framework.LibFramework
+}
+
+module sender {
+	source "sender.c"
+
+	depends embox.net.socket
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}
+
+module tcp_accepter {
+	source "tcp_accepter.c"
+
+	depends embox.net.socket
+	depends embox.prom.printf
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}
+
+module tcp_connect {
+	source "tcp_connect.c"
+
+	depends embox.net.socket
+	depends embox.prom.printf
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}
+
+module tcp_echo {
+	source "tcp_echo.c"
+
+	depends embox.net.socket
+	depends embox.prom.printf
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}
+
+module tcp_receiver {
+	source "tcp_receiver.c"
+
+	depends embox.net.socket
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.prom.printf
+	depends embox.framework.LibFramework
+}
+
+module tcp_sender {
+	source "tcp_sender.c"
+
+	depends embox.net.socket
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.prom.printf
+	depends embox.framework.LibFramework
+}
+
+module udp_echo {
+	source "udp_echo.c"
+
+	depends embox.net.socket
+	depends embox.compat.posix.LibPosix
+	depends embox.prom.printf
+	depends embox.framework.LibFramework
 }

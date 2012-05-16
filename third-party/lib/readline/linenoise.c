@@ -156,7 +156,8 @@ static void linenoiseClearScreen(void) {
     }
 }
 
-static int linenoise_prompt(int fd, char *buf, size_t buflen, const char *prompt, struct hist *history, compl_callback_t cb) {
+static int linenoise_prompt(int fd, FILE *descr, char *buf, size_t buflen, const char *prompt,
+							struct hist *history, compl_callback_t cb, bool read_raw_mode) {
     char compl[LINENOISE_COMPL_LEN];
 
     size_t plen = strlen(prompt);
@@ -179,7 +180,7 @@ static int linenoise_prompt(int fd, char *buf, size_t buflen, const char *prompt
         int nread;
         char seq[2], seq2[2];
 
-        nread = read(fd,&c,1);
+        nread = read_raw_mode ? read(fd,&c,1) : fread(&c, 1, 1, descr);
         if (nread <= 0) return len;
         /* Only autocomplete when the callback is set. It returns < 0 when
          * there was an error reading from fd. Otherwise it will return the
@@ -204,6 +205,7 @@ static int linenoise_prompt(int fd, char *buf, size_t buflen, const char *prompt
 	compl_cnt = 0;
 
         switch(c) {
+	case '\n':
         case 13:    /* enter */
 	    printf("\n");
 	    buf[len++] = '\n';
@@ -247,7 +249,13 @@ static int linenoise_prompt(int fd, char *buf, size_t buflen, const char *prompt
             goto up_down_arrow;
             break;
         case 27:    /* escape sequence */
-            if (read(fd,seq,2) == -1) break;
+			if(read_raw_mode) {
+				if (read(fd,seq,2) == -1)
+					break;
+			} else {
+				if (fread(seq, 1, 2, descr) <= 2)
+					break;
+			}
             if (seq[0] == 91 && seq[1] == 68) {
 left_arrow:
                 /* left arrow */
@@ -291,7 +299,13 @@ up_down_arrow:
                 }
             } else if (seq[0] == 91 && seq[1] > 48 && seq[1] < 55) {
                 /* extended escape */
-                if (read(fd,seq2,2) == -1) break;
+				if(read_raw_mode) {
+					if (read(fd,seq,2) == -1)
+						break;
+				} else {
+					if (fread(seq, 1, 2, descr) <= 2)
+						break;
+				}
                 if (seq[1] == 51 && seq2[0] == 126) {
                     /* delete */
                     if (len > 0 && pos < len) {
@@ -348,6 +362,13 @@ up_down_arrow:
         case 12: /* ctrl+l, clear screen */
             linenoiseClearScreen();
             refreshLine(fd,prompt,buf,len,pos,cols);
+        case '\0': /* Telnet sends /r as /r/0. /0 means nothing in other contextes */
+        	/* So do nothing now.
+			 * We can treat it as /n /r or even as a space
+			 * All solutions have it's own disadvantages
+			 * Probably we should analyze the previous symbol for \r equality
+			 */
+            break;
         }
     }
     return len;
@@ -362,11 +383,20 @@ void linenoise_history_init(struct hist *h) {
 int linenoise(const char *prompt, char *buf, int len, struct hist *history, compl_callback_t cb) {
     int fd = STDIN_FILENO;
     int mode = ioctl(fd, TTY_IOCTL_REQUEST_MODE, NULL);
+	int fd_type = task_self_idx_get(fd)->type;
     int count;
 
-    ioctl(fd, TTY_IOCTL_SET_RAW, NULL); /* this works, believe */
-    count = linenoise_prompt(fd, buf, len, prompt, history, cb);
-    ioctl(fd, mode, NULL); /* this works, believe */
+	assert( (fd_type == TASK_IDX_TYPE_FILE) || (fd_type == TASK_IDX_TYPE_SOCKET) );
+
+	if(fd_type == TASK_IDX_TYPE_FILE) {
+			/* FILE MIGHT be related with a terminal */
+		ioctl(fd, TTY_IOCTL_SET_RAW, NULL); /* this works, believe */
+		count = linenoise_prompt(fd, stdin, buf, len, prompt, history, cb, true);
+		ioctl(fd, mode, NULL); /* this works, believe */
+	} else {
+			/* SOCKET is much simpler */
+		count = linenoise_prompt(fd, stdin, buf, len, prompt, history, cb, false);
+	}
 
     return count;
 }

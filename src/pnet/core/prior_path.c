@@ -1,17 +1,14 @@
 /**
  * @file
- *
  * @brief Utilities to work with pnet paths
  *
  * @date 20.10.2011
  * @author Anton Bondarev
  * @author Alexander Kalmuk
- * 			- add node_for_each
+ *         - add node_for_each
  */
 
 #include <pnet/prior_path.h>
-
-
 
 struct pnet_path *pnet_get_dev_prior(struct net_device *dev) {
 	return NULL;
@@ -59,7 +56,7 @@ static int node_for_each_decrease_prior(net_node_t node, net_prior_t prior) {
 	cur_node = cur_node->tx_dfault;
 	while (cur_node != NULL) {
 		cur_node->prior = 0;
-		for (int i = 0; i < CHILD_CNT; i++) {
+		for (size_t i = 0; i < CHILD_CNT; i++) {
 			if (NULL != (node_child = cur_node->children[i])) {
 				if (cur_node->prior <= node_child->prior) {
 					cur_node->prior = node_child->prior;
@@ -74,15 +71,17 @@ static int node_for_each_decrease_prior(net_node_t node, net_prior_t prior) {
 static int decrease_prior_down(net_node_t node, net_prior_t prior) {
 	net_node_t node_child = node;
 
-	if (node != NULL) {
-		for (int i = 0; i < CHILD_CNT; i++) {
-			if (NULL != (node_child = node->children[i])) {
-				if (node_child->prior <= prior) {
-					break;
-				}
-				node_child->prior = prior;
-				decrease_prior_down(node_child, prior);
+	if (node == NULL) {
+		return 0;
+	}
+
+	for (size_t i = 0; i < CHILD_CNT; i++) {
+		if (NULL != (node_child = node->children[i])) {
+			if (node_child->prior <= prior) {
+				break;
 			}
+			node_child->prior = prior;
+			decrease_prior_down(node_child, prior);
 		}
 	}
 

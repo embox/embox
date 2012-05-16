@@ -10,6 +10,6 @@
 #define CMD_CMDLINE_H_
 
 // TODO in fact, this should be a part of shell interpreter, not cmd. -- Eldar
-int cmdline_tokenize(char *cmdline, char **argv);
+extern int cmdline_tokenize(char *cmdline, char **argv);
 
 #endif /* CMD_CMDLINE_H_ */

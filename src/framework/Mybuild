@@ -2,26 +2,23 @@ package embox.framework
 
 static module LibFrameworkNet {
 	@DefineMacro("__FRAMEWORK__")
-	source "net/pack/core.c",
-		"net/proto/core.c",
-		"net/sock/core.c"
+	depends net.pack, net.proto, net.sock
 }
-
 
 static module LibFramework {
 	@DefineMacro("__FRAMEWORK__")
-	source "cmd/core.c",
-		"mod/core.c",
-		"service/callback.c"
-
-	depends runlevel, test
+	depends cmd, example, mod,
+			service, test, runlevel
 }
 
 module runlevel {
+	@DefineMacro("__FRAMEWORK__")
 	/*FIXME mybuild make flags options */
-	/*make flags "-D__FRAMEWORK__"*/
-	source "runlevel.c"
-	source "unit.c"
+	source "runlevel.c", "unit.c"
+
+	depends mod
+	depends embox.prom.printf
+	depends embox.lib.LibC
 }
 
 module level_0 { /*level_arch */

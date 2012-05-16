@@ -15,11 +15,7 @@
 
 #include <kernel/prom_printf.h>
 
-#ifdef CONFIG_MAX_PROMPT_LENGTH
-#define BUF_INP_SIZE CONFIG_MAX_PROMPT_LENGTH
-#else
-#define BUF_INP_SIZE 0x30
-#endif
+#define BUF_INP_SIZE OPTION_GET(NUMBER,input_buffer)
 
 EMBOX_UNIT_INIT(run);
 

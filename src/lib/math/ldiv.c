@@ -22,5 +22,3 @@ ldiv_t ldiv(long num, long denom)
 	}
 	return (r);
 }
-
-

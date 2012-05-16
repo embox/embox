@@ -94,7 +94,7 @@ static void clear_next(struct free_block *block) {
 	nblock->size &= ~0x2;
 }
 
-void set_end_size(struct free_block *block) {
+static void set_end_size(struct free_block *block) {
 	size_t size = get_clear_size(block->size);
 
 	*(uint32_t *) ((void *) block + size - 4) = size;

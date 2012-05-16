@@ -18,4 +18,5 @@ module locore extends embox.arch.locore {
 module arch {
 	source "arch.c"
 	depends locore
+	depends embox.arch.microblaze.cpu //TODO move from here
 }

@@ -7,7 +7,7 @@
  * @author Vladimir Sokolov
  */
 
-#include <err.h>
+#include <errno.h>
 #include <net/ip.h>
 #include <net/udp.h>
 #include <net/inet_sock.h>
@@ -17,6 +17,7 @@
 #include <net/ip_fragment.h>
 #include <net/skbuff.h>
 #include <net/icmp.h>
+#include <net/socket_registry.h>
 #include <util/math.h>
 
 
@@ -33,6 +34,7 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	hdr->ttl = htons(ttl);
 	hdr->id = htons(id);
 	hdr->tos = 0;
+	hdr->frag_off = 0;
 	/* frag_off will be set during fragmentation decision */
 	hdr->proto = proto;
 	ip_send_check(hdr);
@@ -85,21 +87,21 @@ static int fragment_skb_and_send(sk_buff_t *skb, const struct rt_entry *best_rou
 
 
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
-	iphdr_t *iph = ip_hdr(skb);
-	struct rt_entry *best_route = rt_fib_get_best(iph->daddr);
+	struct rt_entry *best_route;
 
-	if (!best_route) {
-		kfree_skb(skb);
-		return -1;
+	if (sk != NULL) {
+		build_ip_packet(sk, skb);
 	}
 
-	if (sk) {
-		build_ip_packet(sk, skb);
+	best_route = rt_fib_get_best(skb->nh.iph->daddr);
+	if (best_route == NULL) {
+		kfree_skb(skb);
+		return -EHOSTUNREACH;
 	}
 
 	if (ip_route(skb, best_route) < 0) {
 		kfree_skb(skb);
-		return -1;
+		return -ENETUNREACH;  /* errno? */
 	}
 
 	if (skb->len > best_route->dev->mtu) {
@@ -108,7 +110,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 		} else {
 			/* if packet size is greater than MTU and we can't fragment it we can't go further */
 			kfree_skb(skb);
-			return -1;
+			return -EMSGSIZE;  /* errno? */
 		}
 	}
 
@@ -198,4 +200,5 @@ void ip_v4_icmp_err_notify(struct sock *sk, int type, int code){
 	/* TODO: add more specific error notification */
 
 	sk->sk_err = (type & (code<<8));
+	so_sk_set_so_error(sk, sk->sk_err);
 }

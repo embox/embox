@@ -11,16 +11,22 @@ include mk/model/model_impl.mk
 # Model object 'Build'.
 #
 # The following features are defined:
+#   - reference 'configuration'
 #   - reference 'modules'
 #
-define class-BuildBuild
+define class-Build
 	# Extends 'EObject' class (implicitly).
 	$(eobject Build_Build,
-		BuildBuild,,)
+		Build,,)
 
-	# Property 'modules... : BuildModuleInstance'.
+	# Property 'configuration : CfgConfiguration'.
+	# Property 'configuration_link : ELink'.
+	$(eobject-reference Build_Build_configuration,
+		configuration,CfgConfiguration,,changeable linkable)
+
+	# Property 'modules... : ModuleInstance'.
 	$(eobject-reference Build_Build_modules,
-		modules,BuildModuleInstance,configuration,changeable many containment)
+		modules,ModuleInstance,build,changeable many containment)
 
 	# PROTECTED REGION ID(Build_Build) ENABLED START
 	$(property-field issueReceiver : IssueReceiver)
@@ -34,42 +40,75 @@ endef
 # Model object 'ModuleInstance'.
 #
 # The following features are defined:
-#   - reference 'configuration'
+#   - reference 'build'
 #   - reference 'type'
+#   - reference 'allTypes'
 #   - reference 'dependent'
 #   - reference 'depends'
+#   - reference 'contents'
+#   - reference 'container'
 #   - reference 'options'
+#   - reference 'afterDepends'
 #   - reference 'includeMember'
+#   - reference 'sources'
 #
-define class-BuildModuleInstance
+define class-ModuleInstance
 	# Extends 'EObject' class (implicitly).
 	$(eobject Build_ModuleInstance,
-		BuildModuleInstance,,)
+		ModuleInstance,,)
 
-	# Property 'configuration : BuildBuild'.
-	$(eobject-reference Build_ModuleInstance_configuration,
-		configuration,BuildBuild,modules,changeable container)
+	# Property 'build : Build'.
+	$(eobject-reference Build_ModuleInstance_build,
+		build,Build,modules,changeable container)
 
 	# Property 'type : MyModuleType'.
 	$(eobject-reference Build_ModuleInstance_type,
 		type,MyModuleType,,changeable)
 
-	# Property 'dependent... : BuildModuleInstance'.
+	# Reference 'allTypes' [0..*]: derived, read-only.
+	$(property allTypes... : MyModuleType)
+	# PROTECTED REGION ID(Build_ModuleInstance_allTypes) ENABLED START
+	$(getter allTypes,
+		$(for t <- $(get type),$t $(get t->allSuperTypes)))
+	# PROTECTED REGION END
+
+	# Property 'dependent... : ModuleInstance'.
 	$(eobject-reference Build_ModuleInstance_dependent,
-		dependent,BuildModuleInstance,depends,changeable many)
+		dependent,ModuleInstance,depends,changeable many)
 
-	# Property 'depends... : BuildModuleInstance'.
+	# Property 'depends... : ModuleInstance'.
 	$(eobject-reference Build_ModuleInstance_depends,
-		depends,BuildModuleInstance,dependent,changeable many)
+		depends,ModuleInstance,dependent,changeable many)
 
-	# Property 'options... : BuildOptionInstance'.
+	# Property 'contents... : ModuleInstance'.
+	$(eobject-reference Build_ModuleInstance_contents,
+		contents,ModuleInstance,container,changeable many)
+
+	# Property 'container : ModuleInstance'.
+	$(eobject-reference Build_ModuleInstance_container,
+		container,ModuleInstance,contents,changeable)
+
+	# Property 'options... : OptionInstance'.
 	$(eobject-reference Build_ModuleInstance_options,
-		options,BuildOptionInstance,module,changeable many containment)
+		options,OptionInstance,module,changeable many containment)
+
+	# Property 'afterDepends... : ModuleInstance'.
+	$(eobject-reference Build_ModuleInstance_afterDepends,
+		afterDepends,ModuleInstance,,changeable many)
 
 	# Property 'includeMember : CfgInclude'.
 	# Property 'includeMember_link : ELink'.
 	$(eobject-reference Build_ModuleInstance_includeMember,
 		includeMember,CfgInclude,,changeable linkable)
+
+	# Reference 'sources' [0..*]: derived, read-only.
+	$(property sources... : MyFileName)
+	# PROTECTED REGION ID(Build_ModuleInstance_sources) ENABLED START
+	$(getter sources,
+		$(for t <- $(get allTypes),
+			src <- $(get t->sources),
+			$(get src->fileFullName)))
+	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(Build_ModuleInstance) ENABLED START
 	# PROTECTED REGION END
@@ -81,25 +120,25 @@ endef
 # The following features are defined:
 #   - reference 'module'
 #   - reference 'option'
-#   - reference 'optionValue'
+#   - reference 'value'
 #
-define class-BuildOptionInstance
+define class-OptionInstance
 	# Extends 'EObject' class (implicitly).
 	$(eobject Build_OptionInstance,
-		BuildOptionInstance,,)
+		OptionInstance,,)
 
-	# Property 'module : BuildModuleInstance'.
+	# Property 'module : ModuleInstance'.
 	$(eobject-reference Build_OptionInstance_module,
-		module,BuildModuleInstance,options,changeable container)
+		module,ModuleInstance,options,changeable container)
 
 	# Property 'option : MyOption'.
 	# Property 'option_link : ELink'.
 	$(eobject-reference Build_OptionInstance_option,
 		option,MyOption,,changeable linkable)
 
-	# Property 'optionValue : MyOptionValue'.
-	$(eobject-reference Build_OptionInstance_optionValue,
-		optionValue,MyOptionValue,,changeable)
+	# Property 'value : MyLiteral'.
+	$(eobject-reference Build_OptionInstance_value,
+		value,MyLiteral,,changeable)
 
 	# PROTECTED REGION ID(Build_OptionInstance) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.

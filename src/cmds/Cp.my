@@ -3,16 +3,19 @@ package embox.cmd
 @Cmd(name = "cp",
 	help = "Copy file",
 	man = '''
-	NAME
-		cp - copy files and directories
-	SYNOPSIS
-		cp [OPTIONS] SOURCE DEST
-	DESCRIPTION
-		Copy SOURCE to DEST
-	AUTHOR
-		Roman Evstifeev
+		NAME
+			cp - copy files and directories
+		SYNOPSIS
+			cp [OPTIONS] SOURCE DEST
+		DESCRIPTION
+			Copy SOURCE to DEST
+		AUTHOR
+			Roman Evstifeev
 	''')
 module cp {
 	source "cp.c"
-	depends embox.fs.core
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 }

@@ -12,6 +12,7 @@
 
 #include <hal/arch.h>
 #include <net/inet_sock.h>
+#include <time.h>
 #include <types.h>
 
 typedef struct tcphdr {
@@ -76,23 +77,21 @@ enum {
 };
 
 struct tcp_seq_state {
-	__be32 seq;
-	__be16 wind;
+	__u32 seq;
+	__u16 wind;
 };
 
 typedef struct tcp_sock {
 	/* inet_sock has to be the first member */
-	struct inet_sock inet;          /* Inet socket (parent) */
-	__be32 this_unack;              /* Last unacknowledged sequence number */
-	struct tcp_seq_state this;      /* Some informations about this socket */
-	struct tcp_seq_state rem;       /* Informations about remote socket */
-	__u8 lock;                      /* Tool for synchronization */
-	struct sk_buff_head *conn_wait; /* Queue of incoming requests for connection */
-	struct list_head rexmit_link;
-	__be32 seq_queue;               /* Sequence number for next package */
-	__be32 ack_flag;                /* Acknowledgment for flags (syn and fin) */
-//	__be32 ack_syn;                 /* Acknowledgment number for the SYN flag */
-//	__be32 ack_fin;                 /* Acknowledgment number for the FIN flag  */
+	struct inet_sock inet;      /* Inet socket (parent) */
+	__u32 this_unack;           /* Last unacknowledged sequence number */
+	struct tcp_seq_state this;  /* Some informations about this socket */
+	struct tcp_seq_state rem;   /* Informations about remote socket */
+	__u8 lock;                  /* Tool for synchronization */
+	struct list_head conn_wait; /* Queue of incoming connection */
+	__u32 seq_queue;            /* Sequence number for next package */
+	__u32 ack_flag;             /* Acknowledgment for flags (SYN or FIN) */
+	clock_t last_activity;      /* The time when last message was sent */
 } tcp_sock_t;
 
 #if 0

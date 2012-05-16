@@ -69,7 +69,7 @@
 #include <kernel/thread/sync/message.h>
 #include <hal/reg.h>
 #include <fs/node.h>
-#include <fs/file.h>
+#include <kernel/file.h>
 
 /**
  * include TTY specific headers

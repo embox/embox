@@ -6,12 +6,12 @@
  * @author Ilia Vaprol
  */
 
-#include <stdio.h>
 #include <string.h>
 #include <net/ip.h>
+#include <net/in.h>
 #include <net/socket.h>
 #include <framework/example/self.h>
-#include <getopt.h>
+#include <kernel/prom_printf.h>
 
 EMBOX_EXAMPLE(exec);
 
@@ -24,13 +24,13 @@ static int exec(int argc, char **argv) {
 	int dst_addr_len = 0;
 	char buff[1024];
 
-	printf("Hello, I'm tcp_sender at %d port. I will send all your messages to my client.\n",
+	prom_printf("Hello, I'm tcp_sender at %d port. I will send all your messages to my client.\n",
 			LISTENING_PORT);
 
 
 	res = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (res < 0) {
-		printf("can't create socket %d!\n", res);
+		prom_printf("can't create socket %d!\n", res);
 		return res;
 	}
 	sock = res;
@@ -41,30 +41,30 @@ static int exec(int argc, char **argv) {
 
 	res = bind(sock, (struct sockaddr *)&addr, sizeof(addr));
 	if (res < 0) {
-		printf("error at bind() %d!\n", res);
+		prom_printf("error at bind() %d!\n", res);
 		return res;
 	}
 
 	res = listen(sock, 1);
 	if (res < 0) {
-		printf("error at listen() %d!\n", res);
+		prom_printf("error at listen() %d!\n", res);
 		return res;
 	}
 
 	res = accept(sock, (struct sockaddr *)&dst, &dst_addr_len);
 	if (res < 0) {
-		printf("error at accept() %d\n", res);
+		prom_printf("error at accept() %d\n", res);
 		return res;
 	}
 	client = res;
 
-	printf("client from %s:%d was connected\n",
+	prom_printf("client from %s:%d was connected\n",
 			inet_ntoa(dst.sin_addr), ntohs(dst.sin_port));
 
 	/* read from sock, print */
 	while (1) {
 		scanf("%s", buff);
-		printf("send: '%s'\n", buff);
+		prom_printf("send: '%s'\n", buff);
 		if (strncmp(buff, "quit", 4) == 0) {
 			break;
 		}
@@ -77,7 +77,7 @@ static int exec(int argc, char **argv) {
 	close(client);
 	close(sock);
 
-	printf("Bye bye!\n");
+	prom_printf("Bye bye!\n");
 
 	return 0;
 }

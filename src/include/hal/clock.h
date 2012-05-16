@@ -23,7 +23,7 @@
  *
  * @note Implementation have to disable all system timers.
  */
-void clock_init(void);
+extern void clock_init(void);
 
 /**
  * Configures the hardware clock.
@@ -31,8 +31,10 @@ void clock_init(void);
  * @param useconds positive value as timer period in microseconds,
  * or #CLOCK_SETUP_DISABLE to disable the clock
  */
-void clock_setup(useconds_t useconds);
+extern void clock_setup(useconds_t useconds);
 
-void clock_tick_handler(int irq_num, void *dev_id);
+extern void clock_tick_handler(int irq_num, void *dev_id);
+
+extern clock_t clock_sys_ticks(void);
 
 #endif /* HAL_CLOCK_H_ */

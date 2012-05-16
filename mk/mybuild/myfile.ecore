@@ -106,7 +106,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="../model/emodel.ecore#//ENamedObject #//AnnotationTarget">
     <eOperations name="validateValue" eType="ecore:EDataType ../model/emodel.ecore#//EBoolean"/>
     <eOperations name="getId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="defaultValue" eType="#//OptionValue"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="defaultValue" eType="#//Literal"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StringOption" eSuperTypes="#//Option">
@@ -118,16 +118,28 @@
   <eClassifiers xsi:type="ecore:EClass" name="BooleanOption" eSuperTypes="#//Option">
     <eOperations name="validateValue" eType="ecore:EDataType ../model/emodel.ecore#//EBoolean"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OptionValue" abstract="true">
+  <eClassifiers xsi:type="ecore:EClass" name="TypeReferenceOption" eSuperTypes="#//Option">
+    <eOperations name="validateValue" eType="ecore:EDataType ../model/emodel.ecore#//EBoolean"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//Type"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Literal" abstract="true">
     <eOperations name="toString" eType="ecore:EDataType ../model/emodel.ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="StringLiteral" eSuperTypes="#//Literal">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType ../model/emodel.ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="StringOptionValue" eSuperTypes="#//OptionValue"/>
-  <eClassifiers xsi:type="ecore:EClass" name="NumberOptionValue" eSuperTypes="#//OptionValue"/>
-  <eClassifiers xsi:type="ecore:EClass" name="BooleanOptionValue" eSuperTypes="#//OptionValue"/>
+  <eClassifiers xsi:type="ecore:EClass" name="NumberLiteral" eSuperTypes="#//Literal">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType ../model/emodel.ecore#//EInt"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="BooleanLiteral" eSuperTypes="#//Literal">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="value" eType="ecore:EDataType ../model/emodel.ecore#//EBoolean"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="TypeReferenceLiteral" eSuperTypes="#//Literal">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Type"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="OptionBinding">
     <eStructuralFeatures xsi:type="ecore:EReference" name="option" eType="#//Option"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="optionValue" eType="#//OptionValue"
+    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Literal"
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Member" eSuperTypes="#//AnnotationTarget">

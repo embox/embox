@@ -12,7 +12,7 @@
 #include <string.h>
 #include <errno.h>
 #include <fs/ramfs.h>
-#include <fs/fs.h>
+#include <fs/fs_drv.h>
 #include <fs/vfs.h>
 #include <linux/init.h>
 #include <util/array.h>
@@ -186,18 +186,23 @@ static int ramfs_ioctl(void *file, int request, va_list ar) {
 
 /* File system operations */
 
+static int ramfs_init(void * par);
+static int ramfs_format(void * par);
+static int ramfs_mount(void * par);
 static int ramfs_create(void *params);
 static int ramfs_delete(const char *fname);
-static int ramfs_init(void * par);
-static int ramfs_mount(void * par);
 
-static fsop_desc_t ramfs_fsop = { ramfs_init, ramfs_create, ramfs_delete,
-		ramfs_mount };
+
+static fsop_desc_t ramfs_fsop = { ramfs_init, ramfs_format, ramfs_mount,
+		ramfs_create, ramfs_delete };
 
 static fs_drv_t ramfs_drv = { "ramfs", &ramfs_fop, &ramfs_fsop };
 
 DECLARE_FILE_SYSTEM_DRIVER(ramfs_drv);
 
+static int ramfs_format(void *par) {
+	return 0;
+}
 static int ramfs_create(void *params) {
 	ramfs_create_param_t *par;
 	node_t *nod;

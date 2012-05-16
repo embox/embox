@@ -9,6 +9,7 @@
 #include <types.h>
 #include <errno.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>

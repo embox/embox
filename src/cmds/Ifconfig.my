@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "ifconfig",
 	help = "Configure a network interface",
 	man = '''
@@ -36,7 +34,7 @@ import embox.compat.posix.LibPosix
 			-w 	The broadcast address to be assigned.
 			-z 	Pointipoint connection control.
 		EXAMPLES
-			ifconfig -a 10.0.0.1 -m 11:AA:22:CC:FF:00 -u eth0
+			ifconfig -a 10.0.0.1 -m 00:AA:22:CC:FF:00 -u eth0
 				This will setup new interface eth0.
 		SEE ALSO
 			route, arp
@@ -48,6 +46,11 @@ module ifconfig {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ifconfig.c"
 
+	depends embox.lib.LibC
+	depends embox.net.util
 	depends embox.net.core
-	depends LibPosix
+	depends embox.compat.posix.LibPosix
+	depends embox.net.eth
+	depends embox.net.af_inet
+	depends embox.framework.LibFramework
 }

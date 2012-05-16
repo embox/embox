@@ -26,12 +26,19 @@ const struct mod_ops __example_mod_ops = {
 };
 
 static int example_enable(struct mod_info *mod) {
+	/* FIXME
+	 * This executed only with optimization's flag (-O1 or more)
+	 */
+#if 0
+	/* Example may wait some actions from outside */
 	struct example *example = mod->data;
 
 	if (example == NULL || example->exec == NULL) {
 		return 0;
 	}
 	return example->exec(0, NULL);
+#endif
+	return 0;
 }
 
 static int parse_name(const char *full_name, char **path, char **name) {

@@ -1,0 +1,13 @@
+package embox.kernel
+
+module clock_source {
+
+	@NumConstraint(ge=1)
+    option number clocks_quantity = 4
+
+    option number timecounter_quantity = 10
+
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "clock_source.c"
+	source "timecounter.c"
+}

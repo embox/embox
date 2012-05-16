@@ -1,6 +1,9 @@
 package embox.framework
 
 module service {
+	/* FIXME:
+	 * Unused module
+	 */
 	/*FIXME mybuild make flags options */
     @DefineMacro("__FRAMEWORK__")
 	source "callback.c"

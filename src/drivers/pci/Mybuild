@@ -2,8 +2,9 @@ package embox.driver
 
 module pci {
 	option number dev_quantity = 32
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "pci.c", "pci_repo.c", "pci_utils.c"
+
+	depends embox.mem.pool
+	depends embox.util.LibUtil
 }
 

@@ -12,10 +12,10 @@
 #include <net/sock.h>
 #include <net/udp.h>
 #include <net/tcp.h>
-#include <net/port.h>
 
 EMBOX_CMD(exec);
 
+#if 0
 static unsigned int ip_addr[4];
 
 static void ip_addr_print(in_addr_t ip) {
@@ -63,4 +63,9 @@ static int exec(int argc, char **argv) {
 		}
 	}
 	return 0;
+}
+#endif
+
+static int exec(int argc, char **argv) {
+	return -1;
 }

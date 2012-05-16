@@ -37,10 +37,12 @@ const struct cmd *cmd_lookup(const char *name) {
 	return NULL;
 }
 
+#if 0
 // TODO cmdline_xxx aren't part of cmd framework,
 // move them to some utils library. -- Eldar
 static char *cmdline_next_token(const char **str) {
 	char *ret;
+	unsigned char *cur;
 	const unsigned char *ptr = (const unsigned char *) *str;
 
 	/* Skip whitespace characters. */
@@ -56,6 +58,20 @@ static char *cmdline_next_token(const char **str) {
 	/* Found start of token. */
 	ret = (char *) ptr;
 
+	/* combine tokens between quotes */
+	if (*ret == '\'' || *ret == '\"') {
+		ptr++;
+		while (*ptr != *ret) {
+			ptr++;
+		}
+		/* move start of token to symbol next after quote */
+		ret++;
+
+		/* replace right quote by space */
+		cur = (unsigned char *) ptr;
+		*cur = ' ';
+	}
+
 	/* Now skip all non-whitespace characters to get end of token. */
 	while (*ptr && !isspace(*ptr)) {
 		++ptr;
@@ -63,6 +79,7 @@ static char *cmdline_next_token(const char **str) {
 
 	/* Save end of token into the argument. */
 	*str = (const char *) ptr;
+
 	return ret;
 }
 
@@ -79,3 +96,4 @@ int cmdline_tokenize(char *cmdline, char **argv) {
 
 	return argc;
 }
+#endif

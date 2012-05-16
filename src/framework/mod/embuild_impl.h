@@ -28,18 +28,24 @@
 			__MOD_REQUIRES(mod_nm), NULL);                        \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
 			__MOD_PROVIDES(mod_nm), NULL);                        \
+	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
+			__MOD_AFTER_DEPS(mod_nm), NULL);                      \
+	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,        \
+			__MOD_CONTENTS(mod_nm), NULL);                        \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod_member *, \
 			__MOD_MEMBERS(mod_nm), NULL);                         \
 	static struct __mod_private __MOD_PRIVATE(mod_nm);            \
 	const struct mod __MOD(mod_nm) = {          \
-		.private  = &__MOD_PRIVATE(mod_nm),     \
-		.info     = &__MOD_INFO(mod_nm),        \
-		.package  = &__MOD_PACKAGE(package_nm), \
-		.name     = mod_name,                   \
-		.brief    = mod_brief,                  \
-		.details  = mod_details,                \
-		.requires = __MOD_REQUIRES(mod_nm),     \
-		.provides = __MOD_PROVIDES(mod_nm),     \
+		.private   = &__MOD_PRIVATE(mod_nm),     \
+		.info       = &__MOD_INFO(mod_nm),        \
+		.package    = &__MOD_PACKAGE(package_nm), \
+		.name       = mod_name,                   \
+		.brief      = mod_brief,                  \
+		.details    = mod_details,                \
+		.requires   = __MOD_REQUIRES(mod_nm),     \
+		.provides   = __MOD_PROVIDES(mod_nm),     \
+		.after_deps = __MOD_AFTER_DEPS(mod_nm), \
+		.contents = __MOD_CONTENTS(mod_nm),  \
 		.members  = __MOD_MEMBERS(mod_nm),      \
 	};                                          \
 	extern const struct mod *__mod_registry[];  \
@@ -48,6 +54,12 @@
 #define __MOD_DEP_DEF(mod_nm, dep_nm) \
 	ARRAY_SPREAD_ADD(__MOD_REQUIRES(mod_nm), &__MOD(dep_nm)); \
 	ARRAY_SPREAD_ADD(__MOD_PROVIDES(dep_nm), &__MOD(mod_nm))
+
+#define __MOD_CONTENTS_DEF(mod_nm, content_nm) \
+	ARRAY_SPREAD_ADD(__MOD_CONTENTS(mod_nm), &__MOD(content_nm))
+
+#define __MOD_AFTER_DEP_DEF(mod_nm, dep_nm) \
+	ARRAY_SPREAD_ADD(__MOD_AFTER_DEPS(mod_nm), &__MOD(dep_nm)); \
 
 #define __MOD_PACKAGE_DEF(package_nm, package_name) \
 	static const struct mod_package __MOD_PACKAGE(package_nm) = { \

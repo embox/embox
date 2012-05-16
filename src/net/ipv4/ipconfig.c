@@ -10,12 +10,11 @@
 #include <net/inetdevice.h>
 #include <err.h>
 #include <errno.h>
-#include <mem/misc/pool.h>
-
-
 
 int ifdev_up(const char *if_name) {
 	struct net_device *dev;
+
+	assert(if_name != NULL);
 
 	dev = netdev_get_by_name(if_name);
 	if (dev == NULL) {
@@ -27,9 +26,9 @@ int ifdev_up(const char *if_name) {
 }
 
 int ifdev_down(const char *if_name) {
-
 	struct in_device *in_dev;
 
+	assert(if_name != NULL);
 
 	in_dev = inet_dev_find_by_name(if_name);
 	if (in_dev == NULL) {
@@ -37,6 +36,5 @@ int ifdev_down(const char *if_name) {
 		return -ENOENT;
 	}
 
-	return ENOERR;			/* svv: ToDo: probably we must call inet_dev_remove_dev() here */
+	return inet_dev_remove_dev(in_dev);
 }
-

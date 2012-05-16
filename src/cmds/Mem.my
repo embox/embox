@@ -1,33 +1,34 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "mem",
 	help = "Prints the contents of memory",
 	man = '''
-	NAME
-		mem - reads from memory
-	SYNOPSIS
-		mem [-h] -a addr [-n bytes]
-	DESCRIPTION
-		Read from memory the specified number of bytes.
-	OPTIONS
-		-h
-			Shows usage
-		-a addr
-			The target memory address
-		-n bytes
-			Number of bytes to read
-	EXAMPLES
-		mem -a 0x40000000 -n 32
-	SEE ALSO
-		wmem, testmem
-	AUTHORS
-		Alexey Fomin
+		NAME
+			mem - reads from memory
+		SYNOPSIS
+			mem [-h] -a addr [-n bytes]
+		DESCRIPTION
+			Read from memory the specified number of bytes.
+		OPTIONS
+			-h
+				Shows usage
+			-a addr
+				The target memory address
+			-n bytes
+				Number of bytes to read
+		EXAMPLES
+			mem -a 0x40000000 -n 32
+		SEE ALSO
+			wmem, testmem
+		AUTHORS
+			Alexey Fomin
 	''')
 module mem {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "mem.c"
-	depends LibPosix
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 }

@@ -1,8 +1,5 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-import embox.net.af_inet
-
 @Cmd(name = "route",
 	help = "Manipilate routing table",
 	man = '''
@@ -20,14 +17,17 @@ import embox.net.af_inet
 		SEE ALSO
 			ifconfig, arp
 		AUTHOR
-			Nikolay Korotky
+			Nikolay Korotky, Ilia Vaprol, Vladimir Sokolov
 	''')
 module route {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "route.c"
 
-	depends af_inet
-	depends LibPosix
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.net.util
+	depends embox.net.core
+	depends embox.net.route
+	depends embox.framework.LibFramework
 }
-

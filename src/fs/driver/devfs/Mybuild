@@ -1,7 +1,7 @@
 package embox.fs
 
-module devfs {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "devfs.c"
-	depends embox.fs.rootfs
-}
+//module devfs {
+//    @IncludePath("$(SRC_DIR)/compat/posix/include")
+//	source "devfs.c"
+//	depends embox.fs.rootfs
+//}

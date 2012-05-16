@@ -2,6 +2,6 @@
 package mybuild.lang
 
 annotation Runlevel {
-	string value
+	number value
 }
 

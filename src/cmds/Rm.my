@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "rm",
 	help = "Remove file or directory",
 	man = '''
@@ -22,6 +20,7 @@ module rm {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "rm.c"
 
-	depends embox.fs.core
-	depends LibPosix
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 }

@@ -1,6 +1,14 @@
 package embox.example.pnet
 
+/* FIXME:
+ * Unused files: general.c
+ */
+
 module match {
 	source "match.c"
-	depends embox.pnet.core, embox.pnet.node.skbuff.matcher
+
+	depends embox.pnet.core
+	depends embox.pnet.node.skbuff.matcher
+	depends embox.prom.printf
+	depends embox.framework.LibFramework
 }

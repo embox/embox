@@ -3,3 +3,9 @@ package embox.driver.gpio
 module rdc_gpio {
 	source "rdc_gpio.c"
 }
+
+module stm32 {
+	source "stm32_gpio.c"
+
+	depends embox.lib.LibC
+}

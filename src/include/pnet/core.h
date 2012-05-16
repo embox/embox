@@ -30,8 +30,6 @@ extern int pnet_process(struct pnet_pack * pack);
 
 extern int pnet_rx_thread_add(struct pnet_pack * pack);
 
-extern net_node_t pnet_get_dev_by_device(struct net_device *dev);
-
 extern int netif_rx(void *pack);
 
 #endif /* PNET_CORE_H_ */

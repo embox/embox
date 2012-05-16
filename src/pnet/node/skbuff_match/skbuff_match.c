@@ -29,11 +29,12 @@
 
 
 #define NET_NODES_CNT 0x10
+#define PRINT_WAYS
 
 OBJALLOC_DEF(matcher_nodes, struct net_node_matcher, NET_NODES_CNT);
 
 #ifdef PRINT_WAYS
-static void print_pack_way(net_packet_t pack, match_rule_t rule , int n) {
+static void print_pack_way(struct pnet_pack *pack, match_rule_t rule , int n) {
 	net_node_t node;
 
 	printf("%s->", "matcher");
@@ -58,9 +59,9 @@ static void print_pack_way(net_packet_t pack, match_rule_t rule , int n) {
 int match_lin(struct pnet_pack *pack) {
 	unsigned char *pack_curr, *rule_curr;
 	net_node_matcher_t node;
-	match_rule_t curr;
 	struct list_head *h;
-	size_t n;
+	match_rule_t curr = NULL;
+	size_t n = 0;
 
 	node = (net_node_matcher_t) pack->node;
 

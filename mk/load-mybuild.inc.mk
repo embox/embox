@@ -37,6 +37,18 @@ export MYBUILD_FILES_CACHE_DIR := $(MYBUILD_CACHE_DIR)/files
 # Generated artifacts.
 #
 
+
+annotations_core_mk := $(MYBUILD_FILES_CACHE_DIR)/annotations_core.mk
+$(annotations_core_mk) : MAKEFILES := $(mk_annotations_core) $(mk_annotations_handlers_mk)
+$(annotations_core_mk) :
+	@echo ' ANNOTATION CORE'
+	@$(MAKE) -f mk/script/mk-persist.mk \
+		PERSIST_OBJECTS='$$(call new,AnnotationsCore,$(mk_annotations_handlers))' \
+		PERSIST_REALLOC='hnd' \
+		PERSIST_VARIABLE='annotationsCore' \
+		ALLOC_SCOPE='hnd' > $@
+load_mybuild_files += $(annotations_core_mk)
+
 # My-files.
 myfiles_mk := \
 	$(patsubst $(abspath ./%),$(MYBUILD_FILES_CACHE_DIR)/%.mk, \
@@ -64,9 +76,9 @@ $(myfiles_mk) $(configfiles_mk) : | $$(@D)/.
 
 $(myfiles_mk) $(configfiles_mk) : $(MYBUILD_FILES_CACHE_DIR)/%.mk : %
 	@echo ' $(recipe_tag) $<'
-	@SCOPE=`echo '$<' | sum | cut -f 1 -d ' '`; \
-	$(MAKE) -f mk/script/mk-persist.mk ALLOC_SCOPE="p$$SCOPE" > $@ && \
-	echo '$$(lastword $$(MAKEFILE_LIST)) := '".obj1p$$SCOPE" >> $@
+	@SCOPE=`echo '$<' | md5sum | cut -c -8`; \
+	$(MAKE) -f mk/script/mk-persist.mk ALLOC_SCOPE="@$$SCOPE" > $@ && \
+	echo '__resource-$@ := '".obj1@$$SCOPE" >> $@
 
 #
 # Linking files together.
@@ -76,11 +88,12 @@ $(myfiles_mk) $(configfiles_mk) : $(MYBUILD_FILES_CACHE_DIR)/%.mk : %
 export myfiles_model_mk := $(MYBUILD_CACHE_DIR)/myfiles-model.mk
 myfiles_mk_cached_list_mk := $(MYBUILD_CACHE_DIR)/myfiles-list.mk
 
-$(myfiles_model_mk) : MAKEFILES := $(mk_mybuild) $(myfiles_mk)
+$(myfiles_model_mk) : MAKEFILES := $(mk_mybuild_myfile) $(myfiles_mk) $(annotations_core_mk) $(mk_annotations_handlers_mk)
 $(myfiles_model_mk) :
 	@echo ' MYLINK: $(words $(myfiles_mk)) files $(__myfiles_model_stats)'
 	@$(MAKE) -f mk/script/mk-persist.mk \
-		PERSIST_OBJECTS='$$(call myfile_create_resource_set_from_files,$(myfiles_mk))' \
+		PERSIST_OBJECTS='$$(call myfile_create_resource_set, \
+				$$(foreach f,$(myfiles_mk),$$(__resource-$$f)))' \
 		PERSIST_REALLOC='my' \
 		PERSIST_VARIABLE='__myfile_resource_set' \
 		ALLOC_SCOPE='z' > $@
@@ -95,7 +108,9 @@ $(configfiles_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_mk) $(myfiles
 $(configfiles_model_mk) :
 	@echo ' CONFIGLINK'
 	@$(MAKE) -f mk/script/mk-persist.mk \
-		PERSIST_OBJECTS='$$(call config_create_resource_set_from_files,$(configfiles_mk))' \
+		PERSIST_OBJECTS='$$(call config_create_resource_set, \
+				$$(foreach f,$(configfiles_mk),$$(__resource-$$f)), \
+				$$(__myfile_resource_set))' \
 		PERSIST_REALLOC='cfg' \
 		PERSIST_VARIABLE='__config_resource_set' \
 		ALLOC_SCOPE='y' > $@
@@ -108,9 +123,10 @@ $(build_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_model_mk) $(myfiles
 $(build_model_mk) :
 	@echo ' BUILDMODEL'
 	@$(MAKE) -f mk/script/mk-persist.mk \
-		PERSIST_OBJECTS='$$(call mybuild_create_build)' \
+		PERSIST_OBJECTS='$$(call mybuild_create_build, \
+				$$(__config_resource_set))' \
 		PERSIST_REALLOC='bld' \
-		PERSIST_VARIABLE='__build_model' \
+		PERSIST_VARIABLE='build_model' \
 		ALLOC_SCOPE='x' > $@
 load_mybuild_files += $(build_model_mk)
 

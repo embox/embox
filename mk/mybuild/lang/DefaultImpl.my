@@ -1,0 +1,6 @@
+
+package mybuild.lang
+
+annotation DefaultImpl {
+	Module value
+}

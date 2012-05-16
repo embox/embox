@@ -1,0 +1,10 @@
+package embox.cmd
+
+@Cmd(name = "time",
+	help = "Shows time of a command execution",
+	man = '''
+
+	''')
+module time {
+	source "time.c"
+}

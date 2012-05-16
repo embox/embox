@@ -1,7 +1,5 @@
 package embox.cmd
 
-import embox.compat.posix.LibPosix
-
 @Cmd(name = "lspci",
 	help = "Show list pci's devices and information",
 	man = '''
@@ -21,6 +19,9 @@ module lspci {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "lspci.c"
-	depends LibPosix, embox.driver.pci
-}
 
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.driver.pci
+	depends embox.framework.LibFramework
+}
