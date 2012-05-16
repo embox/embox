@@ -13,10 +13,15 @@
 #include <mem/objalloc.h>
 #include <embox/unit.h>
 #include <util/array.h>
-#include <fs.h>
-#include <fs/driver_registry.h>
+#include <fs/fs_drv.h>
 
 EMBOX_UNIT_INIT(unit_init);
+
+typedef struct fs_driver_head {
+	struct list_head *next;
+	struct list_head *prev;
+	fs_drv_t *drv;
+} fs_driver_head_t;
 
 OBJALLOC_DEF(fs_driver_pool, struct fs_driver_head, OPTION_GET(NUMBER,drivers_quantity));
 
@@ -52,7 +57,7 @@ static int __init unit_init(void) {
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__fs_drivers_registry); i++) {
 		if (NULL == (head = filesystem_alloc(
 				(fs_drv_t *) __fs_drivers_registry[i]))) {
-			return 0;
+			return -EINVAL;
 		}
 
 		__fs_drivers_registry[i]->fsop->init(NULL);

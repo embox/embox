@@ -9,7 +9,7 @@
 #ifndef DIAG_DEVICE_H_
 #define DIAG_DEVICE_H_
 
-#include <file_op.h>
+#include <kernel/file.h>
 #include <fs/ioctl.h>
 
 extern FILE *diag_device_get(void);

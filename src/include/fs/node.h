@@ -9,7 +9,7 @@
 #ifndef FS_NODE_H_
 #define FS_NODE_H_
 
-#include <fs.h>
+#include <fs/fs_drv.h>
 #include <util/tree.h>
 
 typedef struct node {

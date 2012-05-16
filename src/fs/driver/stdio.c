@@ -7,7 +7,7 @@
  * @date 14.05.2012
  */
 
-#include <fs.h>
+#include <fs/fs_drv.h>
 #include <fs/vfs.h>
 #include <util/array.h>
 #include <stdio.h>

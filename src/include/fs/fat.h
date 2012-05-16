@@ -15,7 +15,7 @@
 /*
  * Configurable
  */
-#define CONFIG_FATFILE_QUANTITY  64
+#define MAX_FILE_QUANTITY  64
 #define MSDOS_NAME               11
 
 #define DIR_SEPARATOR	'/'	/* character separating directory components*/

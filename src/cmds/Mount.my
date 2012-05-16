@@ -23,4 +23,5 @@ module mount {
 	depends embox.compat.posix.LibPosix
 	depends embox.fs.core
 	depends embox.framework.LibFramework
+	depends embox.fs.driver.nfs
 }

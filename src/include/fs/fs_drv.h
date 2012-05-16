@@ -5,11 +5,13 @@
  * @author Nikolay Korotky
  */
 
-#ifndef FS_FS_H_
-#define FS_FS_H_
+#ifndef FS_DRV_H_
+#define FS_DRV_H_
 
 #include <lib/list.h>
-#include <file_op.h>
+#include <types.h>
+#include <stdio.h>
+#include <kernel/file.h>
 #include <unistd.h>
 #include <fs/file_desc.h>
 
@@ -70,4 +72,4 @@ extern int filesystem_register_drv(fs_drv_t *);
  */
 extern int filesystem_unregister_drv(fs_drv_t *);
 
-#endif /* FS_FS_H_ */
+#endif /* FS_DRV_H_ */

@@ -7,10 +7,10 @@
  * @author Anton Bondarev
  */
 
-#include <fs.h>
+#include <fs/fs_drv.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <file_op.h>
+#include <kernel/file.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,8 +18,8 @@
 #include <errno.h>
 #include <lib/list.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fs/rootfs.h>
+//#include <sys/stat.h>
+//#include <fs/rootfs.h>
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <fs/file_desc.h>

@@ -14,7 +14,7 @@
 
 #include <fs/fat.h>
 #include <fs/ramdisk.h>
-#include <fs.h>
+#include <fs/fs_drv.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <util/array.h>
@@ -74,7 +74,7 @@ typedef struct fat_file_description_head {
 	fat_file_description_t desc;
 } fat_file_description_head_t;
 
-static fat_file_description_head_t fat_files_pool[CONFIG_FATFILE_QUANTITY];
+static fat_file_description_head_t fat_files_pool[MAX_FILE_QUANTITY];
 static LIST_HEAD(fat_free_file);
 
 #define param_to_head_file(file_param) \
@@ -108,11 +108,10 @@ static void fat_fileinfo_free(fat_file_description_t *desc) {
 }
 
 
-uint32_t fat_get_ptn_start(void *fd,
-		uint8_t *p_scratchsector,	uint8_t pnum, uint8_t *pactive,
-		uint8_t *pptype, uint32_t *psize);
+uint32_t fat_get_ptn_start(void *fd, uint8_t *p_scratchsector,
+		uint8_t pnum, uint8_t *pactive,	uint8_t *pptype, uint32_t *psize);
 uint32_t fat_get_vol_info(void *fd,
-		uint8_t *p_scratchsector,	uint32_t startsector);
+		uint8_t *p_scratchsector, uint32_t startsector);
 int fatfs_set_path (uint8_t *tmppath, node_t *nod);
 void cut_mount_dir(char *path, char *mount_dir);
 void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch);
@@ -456,6 +455,20 @@ int fatfs_set_path (uint8_t *path, node_t *nod) {
 
 const fs_drv_t *fatfs_get_fs(void) {
     return &fatfs_drv;
+}
+
+static void set_filetime(dir_ent_t de) {
+	/* TODO set normal time */
+		de.crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
+		de.crttime_h = 0x08;
+		de.crtdate_l = 0x11;
+		de.crtdate_h = 0x34;
+		de.lstaccdate_l = 0x11;
+		de.lstaccdate_h = 0x34;
+		de.wrttime_l = 0x20;
+		de.wrttime_h = 0x08;
+		de.wrtdate_l = 0x11;
+		de.wrtdate_h = 0x34;
 }
 
 /**
@@ -1375,17 +1388,8 @@ void fatfs_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
 	memcpy(de[0].name, MSDOS_DOT, MSDOS_NAME);
 	memcpy(de[1].name, MSDOS_DOTDOT, MSDOS_NAME);
 	de[0].attr = de[1].attr = ATTR_DIRECTORY;
-	/* TODO set normal time */
-	de[0].crttime_l = de[1].crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
-	de[0].crttime_h = de[1].crttime_h = 0x08;
-	de[0].crtdate_l = de[1].crtdate_l = 0x11;
-	de[0].crtdate_h = de[1].crtdate_h = 0x34;
-	de[0].lstaccdate_l = de[1].lstaccdate_l = 0x11;
-	de[0].lstaccdate_h = de[1].lstaccdate_h = 0x34;
-	de[0].wrttime_l = de[1].wrttime_l = 0x20;
-	de[0].wrttime_h = de[1].wrttime_h = 0x08;
-	de[0].wrtdate_l = de[1].wrtdate_l = 0x11;
-	de[0].wrtdate_h = de[1].wrtdate_h = 0x34;
+	set_filetime(de[0]);
+	set_filetime(de[1]);
 
 	/*point to the directory containing cluster */
 	de[0].startclus_l_l = cluster & 0xff;
@@ -1456,17 +1460,7 @@ int fatfs_create_file(void *par) {
 	memset(&de, 0, sizeof(de));
 	memcpy(de.name, filename, MSDOS_NAME);
 	de.attr = node->properties;
-	/* TODO set normal time */
-	de.crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
-	de.crttime_h = 0x08;
-	de.crtdate_l = 0x11;
-	de.crtdate_h = 0x34;
-	de.lstaccdate_l = 0x11;
-	de.lstaccdate_h = 0x34;
-	de.wrttime_l = 0x20;
-	de.wrttime_h = 0x08;
-	de.wrtdate_l = 0x11;
-	de.wrtdate_h = 0x34;
+	set_filetime(de);
 
 	/* allocate a starting cluster for the directory entry */
 	cluster = fat_get_free_fat_(fd, sector_buff);
@@ -1641,6 +1635,7 @@ uint32_t fat_read_file(void *fdsc, uint8_t *p_scratch,
 	uint32_t result;
 	uint32_t sector;
 	uint32_t bytesread;
+	uint32_t clastersize;
 	p_file_info_t fileinfo;
 	fat_file_description_t *fd;
 
@@ -1656,6 +1651,7 @@ uint32_t fat_read_file(void *fdsc, uint8_t *p_scratch,
 	result = DFS_OK;
 	remain = len;
 	*successcount = 0;
+	clastersize = fileinfo->volinfo->secperclus * SECTOR_SIZE;
 
 	while (remain && result == DFS_OK) {
 		/* This is a bit complicated. The sector we want to read is addressed
@@ -1664,8 +1660,7 @@ uint32_t fat_read_file(void *fdsc, uint8_t *p_scratch,
 		 */
 		sector = fileinfo->volinfo->dataarea +
 		  ((fileinfo->cluster - 2) * fileinfo->volinfo->secperclus) +
-		  div(div(fileinfo->pointer,fileinfo->volinfo->secperclus *
-				  SECTOR_SIZE).rem, SECTOR_SIZE).quot;
+		  div(div(fileinfo->pointer,clastersize).rem, SECTOR_SIZE).quot;
 
 		/* Case 1 - File pointer is not on a sector boundary */
 		if (div(fileinfo->pointer, SECTOR_SIZE).rem) {
@@ -1738,10 +1733,8 @@ uint32_t fat_read_file(void *fdsc, uint8_t *p_scratch,
 		*successcount += bytesread;
 
 		/* check to see if we stepped over a cluster boundary */
-		if (div(fileinfo->pointer - bytesread,
-				fileinfo->volinfo->secperclus * SECTOR_SIZE).quot !=
-				div(fileinfo->pointer,
-						fileinfo->volinfo->secperclus * SECTOR_SIZE).quot) {
+		if (div(fileinfo->pointer - bytesread, clastersize).quot !=
+			div(fileinfo->pointer, clastersize).quot) {
 			/*
 			 * An act of minor evil - we use bytesread as a scratch integer,
 			 * knowing that its value is not used after updating *successcount
@@ -1773,7 +1766,7 @@ uint32_t fat_read_file(void *fdsc, uint8_t *p_scratch,
  * Requires a SECTOR_SIZE scratch buffer
  */
 void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch) {
-	uint32_t tempint, cluster_size;
+	uint32_t tempint, clastersize;
 	p_file_info_t fileinfo;
 	fat_file_description_t *fd;
 
@@ -1808,14 +1801,8 @@ void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch) {
 		/* NOTE NO RETURN HERE! */
 	}
 
-	/*
-	 * Case 3 - Seeking forwards
-	 * Note _intentional_ fallthrough from Case 2 above
-	 * Case 3a - Seek size does not cross cluster boundary -
-	 * very simple case
-	 */
-	cluster_size = fileinfo->volinfo->secperclus * SECTOR_SIZE;
-	if (div(fileinfo->pointer, cluster_size).quot ==
+	clastersize = fileinfo->volinfo->secperclus * SECTOR_SIZE;
+	if (div(fileinfo->pointer, clastersize).quot ==
 			div(fileinfo->pointer + offset, fileinfo->volinfo->secperclus *
 					SECTOR_SIZE).quot) {
 		fileinfo->pointer = offset;
@@ -1824,11 +1811,11 @@ void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch) {
 	else {
 		/* round file pointer down to cluster boundary */
 		fileinfo->pointer = div(fileinfo->pointer,
-				cluster_size).quot * cluster_size;
+				clastersize).quot * clastersize;
 
 		/* seek by clusters */
-		while (div(fileinfo->pointer, cluster_size).quot !=
-				div(fileinfo->pointer + offset,	cluster_size).quot) {
+		while (div(fileinfo->pointer, clastersize).quot !=
+				div(fileinfo->pointer + offset,	clastersize).quot) {
 			fileinfo->cluster = fat_get_fat_(fd, p_scratch,
 					&tempint, fileinfo->cluster);
 			/* Abort if there was an error */
@@ -2082,15 +2069,14 @@ uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
 
 				result = DFS_OK;
 			}
-			/* No else clause is required. */
 		}
 	}
-	    /* If cleared, then released to mark the clusters*/
+	    /* If cleared, then mark free clusters*/
 		if(fileinfo->filelen > fileinfo->pointer) {
 			if (div(fileinfo->filelen, clastersize).quot !=
 				div(fileinfo->pointer, clastersize).quot) {
 
-				byteswritten = 0;
+				byteswritten = 0;/* invalidate cache */
 				nextcluster = fat_get_fat_(fd, p_scratch,
 						&byteswritten, fileinfo->cluster);
 
@@ -2216,16 +2202,7 @@ int fatfs_root_create(void *fdes) {
 	memset(&de, 0, sizeof(de));
 	memcpy(de.name, "/", MSDOS_NAME);
 	de.attr = ATTR_DIRECTORY;
-	de.crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
-	de.crttime_h = 0x08;
-	de.crtdate_l = 0x11;
-	de.crtdate_h = 0x34;
-	de.lstaccdate_l = 0x11;
-	de.lstaccdate_h = 0x34;
-	de.wrttime_l = 0x20;
-	de.wrttime_h = 0x08;
-	de.wrtdate_l = 0x11;
-	de.wrtdate_h = 0x34;
+	set_filetime(de);
 
 	/* allocate a starting cluster for the directory entry */
 	cluster = fat_get_free_fat_(fd, sector_buff);
@@ -2267,7 +2244,8 @@ int fatfs_root_create(void *fdes) {
 		case FAT32:		cluster = 0x0ffffff8;	break;
 		default:		return DFS_ERRMISC;
 	}
-	fat_set_fat_(fd, sector_buff, 0, fileinfo->cluster, cluster);
+	psize = 0;
+	fat_set_fat_(fd, sector_buff, &psize, fileinfo->cluster, cluster);
 
 	return DFS_OK;
 }

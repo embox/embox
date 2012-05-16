@@ -11,13 +11,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <assert.h>
-#include <fs.h>
+#include <fs/fs_drv.h>
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <fs/node.h>
 #include <fs/ramdisk.h>
 #include <fs/fat.h>
-#include <fs/driver_registry.h>
 #include <util/array.h>
 #include <embox/unit.h>
 #include <stdlib.h>

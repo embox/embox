@@ -1,7 +1,7 @@
 package embox.fs.driver
 
 module repo {
-	option number drivers_quantity = 4
+	option number drivers_quantity = 8
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "fs_drv.c"
 }
@@ -23,5 +23,12 @@ module devfs {
 module stdio {
 	source "stdio.c"
 	depends embox.kernel.task_api
+}
+
+module nfs {
+	source "nfs.c"
+	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.driver.devfs
+	depends embox.mem.page_api
 }
 

@@ -11,7 +11,6 @@
 #include <errno.h>
 #include <err.h>
 #include <fcntl.h>
-#include <file_op.h>
 #include <lib/list.h>
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
