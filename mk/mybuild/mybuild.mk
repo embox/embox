@@ -70,8 +70,9 @@ define class-Mybuild
 	$(map moduleInstanceStore... : ModuleInstance) #by module
 	$(map activeFeatures... : ModuleInstance) #by feature
 	$(map includingInstances : ModuleInstance) #stack for cyclic detection
-	$(property-field recommendations)
+	$(map recommendations : MyModuleType)
 
+	$(property-field issueReceiver)
 
 # Public:
 
@@ -89,6 +90,7 @@ define class-Mybuild
 
 			$(set build->configuration,$(configuration))
 			$(set-field build->issueReceiver,$(issueReceiver))
+			$(set issueReceiver,$(issueReceiver))
 
 			$(set build->modules,
 				$(invoke getBuildModules))
@@ -97,6 +99,9 @@ define class-Mybuild
 	)
 
 # Private:
+
+	$(method annotationProcess,
+		$(call mybuild_annotation_process,Build,$1,$(this)))
 
 	# Gets all modulesInstance's created according configResourceSet
 	#
@@ -109,21 +114,19 @@ define class-Mybuild
 	$(method getBuildModules,
 		$(with \
 			$(for \
-				cfgInclude <- $(get configuration->includes),
-				module <- $(get cfgInclude->module),
-				$(if $(strip \
-						$(call Mybuild.processIncludeAnnotations,$(module),
-						$(get cfgInclude->annotations))),
+				cfgUnverifiedInclude <- $(get configuration->includes),
+				cfgInclude <- $(invoke annotationProcess,$(cfgUnverifiedInclude)),
+				module <- $(invoke annotationProcess,$(get cfgInclude->module)),
 
-					$(for moduleInst <- $(invoke moduleInstance,$(module)),
-						$(set moduleInst->includeMember,$(cfgInclude))
-						$(call Mybuild.closeInstances,$(moduleInst))))),
+				$(for moduleInst <- $(invoke moduleInstance,$(module)),
+					$(set moduleInst->includeMember,$(cfgInclude))
+					$(call Mybuild.closeInstances,$(moduleInst)))),
 
 			$(call check,$1,$(chekers_list),)
 			))
 
 	$(method addIssue,
-		$(invoke issueReceiver->addIssues,$(new InstantiateIssue,
+		$(invoke $(get issueReceiver).addIssues,$(new InstantiateIssue,
 			$1,$2,$3,$4)))
 
 	$(method addIssueGlobal,
@@ -141,24 +144,11 @@ define class-Mybuild
 	$(method addIssueInstance,
 		$(invoke addIssueInclude,$(get 1->includeMember),$2,$3))
 
-	$(method processIncludeAnnotations,
-		$(if $2,,$1)
-		$(for annot <-$2,
-			annotName <- $(get annot->qualifiedName),
-			$(if $(filter $(annotName),$(excludeAnnotations)),,$1)
-			$(if $(filter $(annotName),$(leftToRightParentAnnotations)),
-				$(if $(invoke \
-						$(get-field \
-							$(get $(get annot->bindings).value)
-							.value)
-						.isSuperTypeOf,$1),,
-					$(invoke addIssueInclude,$(cfgInclude),error,
-						Annotation $(annotName) value should be \
-							target's parent)))
-			$(if $(eq $(annotName),$(LABEL-IfNeed)),
-				$(set+ recommendations,
-					$(invoke $(get $(get annot->bindings).value).toString)
-					$1))))
+	$(method addRecommendationRule,
+		$(map-set recommendations/$1,$2))
+
+	$(method getRecommendation,
+		$(map-get recommendations/$1))
 
 	$(method closeInstances,
 		$(for inst <- $1,
@@ -233,30 +223,14 @@ define class-Mybuild
 
 	$(method specifyInstances,
 		$(for inst <- $1,
-			$(with $(or $(strip $(for \
-						rule<-$(get recommendations),
-						targetInstance<-$(map-get \
-							build->moduleInstanceByName/$(basename $(rule))),
-						targetModule<-$(suffix $(rule)),
-
-						$(if $(and $(filter $(inst),$(targetInstance)),
-									$(invoke targetModule->isSubTypeOf,
-										$(get targetInstance->type))),
-								$(call check,
-									$(invoke moduleInstance,
-										$(targetModule)),
-									$2 $0,)
-								))),
-					$(strip $(for \
-						mod <- $(get inst->type),
-						annotValue <- $(call getAnnotationTarget,
-								$(mod),
-								$(LABEL-DefaultImpl),
-								value),
+			$(with $(strip $(for \
+					targetModule<-$(map-get recommendations/$(get inst->type)),
+					$(if $(invoke targetModule->isSubTypeOf,$(get inst->type)),
 						$(call check,
 							$(invoke moduleInstance,
-								$(get annotValue->value)),
-							$2 $0,)))),
+								$(targetModule)),
+							$2 $0,)
+						))),
 				$(if $1,$1,$(inst)))))
 
 	# Cheker for abstract realization. If there is only one subtype of given
@@ -499,13 +473,15 @@ define class-Mybuild
 				$(new ModuleInstance,$(mod)))))
 
 	$(method setInstanceToType,
-			$(set 1->type,$2)
+		$(set 1->type,$2)
 
-			$(for super <- $2 $(get 2->allSuperTypes),
-				$(map-set build->moduleInstanceByName/$(get super->qualifiedName),
-					$1)
-				$(map-set moduleInstanceStore/$(super),
-					$1))
+		$(for super <- $2 $(get 2->allSuperTypes),
+			$(if $(map-get moduleInstanceStore/$(super)),,
+				$(if $(invoke annotationProcess,$(super)),))
+			$(map-set build->moduleInstanceByName/$(get super->qualifiedName),
+				$1)
+			$(map-set moduleInstanceStore/$(super),
+				$1))
 
 			$(for provide <- $(get 2->provides),
 				opt <- $(provide) $(get provide->allSubFeatures),
@@ -523,7 +499,7 @@ define class-Mybuild
 	#	Build realized features appends Module features
 	$(method moduleInstance,
 		$(for \
-			mod<-$1,
+			mod <- $1,
 			moduleInstance<-$(call Mybuild.moduleInstanceSuper),
 
 			$(if $(or $(if $(get moduleInstance->type),,1),

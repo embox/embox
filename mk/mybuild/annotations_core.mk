@@ -18,7 +18,8 @@ define class-AnnotationsCore
 		$(map-get avaibleAnnotations/$1/$2))
 
 	$(for fileMain <- $(value 1),
-		$(call $(fileMain),$(this)))
+		$(if $(value $(fileMain)),
+			$(call $(fileMain),$(this))))
 endef
 
 define class-AnnotationCallback
@@ -27,20 +28,18 @@ define class-AnnotationCallback
 	$(property-field annotationType)
 
 	$(method callback,
-		$(invoke $1Callback))
+		$(invoke $1Callback,$(value 2)))
 
-	$(method MyFileCallback)
-
-
+	$(method MyLinkCallback)
 	$(method BuildCallback)
 
 endef
 
 define class-AnnotationCallbackFactory
-	$(property-field annotationCallbackClassName,$1)
+	$(property-field annotationCallbackObj : AnnotationCallback,$(new $1))
 
 	$(method new,
-		$(for obj <- $(new $(get annotationCallbackClassName)),
+		$(for obj <- $(get annotationCallbackObj),
 			$(set obj->target,$1)
 			$(set obj->annotationType,$(get 2->type))
 
@@ -56,16 +55,29 @@ define class-AnnotationCallbackFactory
 
 endef
 
-define myfile_annotation_callbacks
-	$(for \
-		target <- $1,
-		annotation <- $(get target->annotations),
-		annotationType <- $(get annotation->type),
-		callbackClass <- $(invoke annotationsCore->getSupported,$2,
-			$(get annotationType->qualifiedName)),
-		callbackObj <- $(invoke callbackClass->new,$(target),$(annotation)),
+# Args:
+#	1. Build phase
+#	2. Target
+#	3. Optional
+define mybuild_annotation_process
+	$(with \
+			$1,
+			$2,
+			$(for \
+				target <- $2,
+				annotation <- $(get target->annotations),
+				annotationType <- $(get annotation->type),
 
-		$(invoke callbackObj->callback,$2))
+				callbackClass <- $(invoke annotationsCore->getSupported,$1,
+					$(get annotationType->qualifiedName)),
+				$(invoke callbackClass->new,$(target),$(annotation))),
+			$(value 3),
+
+
+		$(if $(strip $3),
+			$(invoke 3->callback,$1,$4),
+			$2))
+
 endef
 
 $(def_all)

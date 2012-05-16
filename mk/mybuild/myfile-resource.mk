@@ -36,11 +36,11 @@ define myfile_create_resource_set
 
 		$(call myfile_resources_check_optionbind,$(get rs->resources))
 
-		$(for \
+		$(silent-for \
 			res <- $1,
 			obj <- $(get res->contents),
 			$(if $(invoke MyFile_AnnotationTarget->isInstance,$(obj)),
-				$(call myfile_annotation_callbacks,$(obj),MyFile)))
+				$(call mybuild_annotation_process,MyLink,$(obj),$(res))))
 
 		$(for r <- $(get rs->resources),
 			$(invoke r->printIssues))
