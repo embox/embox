@@ -18,7 +18,7 @@ typedef uint64_t cycle_t;
 
 struct clock_source {
 	uint32_t flags; /**< periodical or not */
-	uint32_t precision;
+	uint32_t resolution;
 	struct cyclecounter *cc;
 };
 

@@ -74,7 +74,7 @@ int clock_source_unregister(struct clock_source *cs) {
 
 
 uint32_t clock_source_get_precision(struct clock_source *cs) {
-	return (uint32_t) cs->precision;
+	return (uint32_t) cs->resolution;
 }
 
 struct clock_source *clock_source_get_default(void) {
@@ -84,45 +84,12 @@ struct clock_source *clock_source_get_default(void) {
 }
 
 useconds_t clock_source_clock_to_usec(struct clock_source *cs, clock_t cl) {
-	return (useconds_t) (((useconds_t) cl) * cs->precision);
+	return (useconds_t) (((useconds_t) cl) * cs->resolution);
 }
 
-
-POOL_DEF(timecounter_pool, struct timecounter, OPTION_GET(NUMBER,timecounter_quantity));
-
-struct timecounter *timecounter_alloc(void) {
-	return pool_alloc(&timecounter_pool);
-}
-
-
-void timecounter_free(struct timecounter *tc) {
-	pool_free(&timecounter_pool, tc);
-}
-
-void timecounter_init(struct timecounter *tc, const struct cyclecounter *cc,
-		ns_t start_tstamp) {
-	tc->cc = cc;
-	tc->cycle_last = cc->read(cc);
-	tc->nsec = start_tstamp;
-}
-
-ns_t timecounter_read(struct timecounter *tc) {
-	cycle_t cycle_now;
-	uint64_t nsec;
-
-	cycle_now = tc->cc->read(tc->cc);
-	nsec = cycles_to_ns(tc->cc, cycle_now - tc->cycle_last);
-	tc->cycle_last = cycle_now;
-
-	/* increment time by nanoseconds since last call */
-	nsec += tc->nsec;
-	tc->nsec = nsec;
-
-	return nsec;
-}
 
 /* mult and shift used to correct clocks (e.g. with NTP). We try to choose
- * maximal shift, that guarantees 1 / (2^shift) precision. --Alexander */
+ * maximal shift, that guarantees 1 / (2^shift) resolution. --Alexander */
 #ifdef EXACT_CLOCKS_SCALE
 /**
  * This code from linux/kernel/time/clocksource.c. (3.3.5 kernel)

@@ -98,7 +98,7 @@ static struct cyclecounter cc = {
 
 static struct clock_source pit_clock_source = {
 	.flags = 0,
-	.precision = 1000,
+	.resolution = INPUT_CLOCK,
 	.cc = &cc
 };
 
@@ -114,7 +114,7 @@ void clock_init(void) {
 	}
 	/* Initialization of clock source structure */
 	pit_clock_source.flags = 1;
-	pit_clock_source.precision = 1000;
+	pit_clock_source.resolution = INPUT_CLOCK;
 	pit_clock_source.cc = &cc;
 
 	clocks_calc_mult_shift(&cc.mult, &cc.shift, INPUT_CLOCK,

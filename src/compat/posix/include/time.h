@@ -53,14 +53,19 @@ extern char *ctime_r(const time_t *t, char *buff);
 /* clocks from beginning of start system */
 extern clock_t clock(void);
 
-/* seconds from beginning of start system */
-extern time_t time(time_t *);
+#define CLOCK_REALTIME  3
+#define TIMER_ABSTIME   2
+#define CLOCK_MONOTONIC 1
 
 extern int clock_getres(clockid_t clk_id, struct timespec *res);
 
 extern int clock_gettime(clockid_t clk_id, struct timespec *tp);
 
 extern int clock_settime(clockid_t clk_id, const struct timespec *tp);
+
+
+/* seconds from beginning of start system */
+extern time_t time(time_t *);
 
 
 #endif /* POSIX_TIME_H_ */

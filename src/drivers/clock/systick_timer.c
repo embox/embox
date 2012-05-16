@@ -39,7 +39,7 @@ void clock_handler(void) {
 
 void clock_init(void) {
 	systick.flags = 1;
-	systick.precision = 1000;
+	systick.resolution = 1000;
 	clock_source_register(&systick);
 }
 

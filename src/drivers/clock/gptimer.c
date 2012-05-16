@@ -137,7 +137,7 @@ void clock_init(void) {
 	}
 
 	gptimer_clock_source.flags = 1;
-	gptimer_clock_source.precision = 1000;
+	gptimer_clock_source.resolution = 1000;
 	clock_source_register(&gptimer_clock_source);
 }
 
