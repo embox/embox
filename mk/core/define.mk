@@ -733,7 +733,8 @@ define __def_o_pop
 	${eval \
 		$(__def_stack_pop_mk)
 	}
-	$(call __def_debug,pop)
+	$(if $(value __def_debug),
+		$(call __def_debug,pop$(if $(filter __def_o_pop,$0), [$1])))
 endef
 
 # Handles a function expansion. Performs generic checks (arity, ...) and
@@ -743,7 +744,7 @@ endef
 define __def_o_func
 	$(if $(value __def_debug),$(call __def_debug,func [$(builtin_reconstruct)]))
 
-	$(foreach 0,$(builtin_name),
+	$(foreach builtin_name,$(__builtin_name),$(foreach 0,$(builtin_name),
 		$(foreach __builtin_handler,
 			$(or $(call var_defined,builtin_macro-$0),
 				 $(call var_defined,builtin_func-$0),
@@ -756,9 +757,11 @@ define __def_o_func
 			}
 			$(__def_tmp__)
 		)
-	)
+	))
 
-	$(__def_o_pop)
+	$(if $(value __def_debug),
+		$(call __def_o_pop,$(__def_tmp__)),
+		$(__def_o_pop))
 endef
 
 # Handles GNU Make native functions.
@@ -1511,8 +1514,7 @@ define builtin_argsplit
 	$(assert $(call var_defined,$3),
 		Unknown handler function: '$3')
 
-	$(def-ifdef DEF_DEBUG,$(call __def_debug,
-			argsplit [$1] using [$2]))
+	$(def-ifdef DEF_DEBUG,$(call __def_debug,argsplit [$1] using [$2]))
 
 	$(with \
 		${eval \
@@ -1554,9 +1556,12 @@ define builtin_argsplit
 		$(call __def_o_push,
 			__argsplit__-($2))
 
-		$(expand $$(call $$3$$(__def_o_arg),$1,$$4))
+		$(foreach builtin_name,$(__builtin_name),
+			$(expand $$(call $$3$$(__def_o_arg),$1,$$4)))
 
-		$(__def_o_pop)
+		$(def-ifdef DEF_DEBUG,
+			# TODO Using internals of 'expand'. -- Eldar
+			$(call __def_o_pop,$(__def_tmp__)),$(__def_o_pop))
 	)
 endef
 
@@ -1634,6 +1639,13 @@ $(def_all)
 #
 # '$(argfold intial_value,arg_nrs...,combinator_fn[,optional_args...])'
 #
+# Combining function takes the following arguments:
+#   1. Initial value for the first call,
+#      or intermediate value obtained from previous calls otherwise.
+#   2. A number of the argument being folded.
+#   3. A value of the argument.
+#  ... Optional arguments.
+#
 # Note:
 #   Arguments [3..] are expanded for each element of the list.
 define builtin_func-argfold
@@ -1647,14 +1659,20 @@ define builtin_func-argfold
 			$$(call var_assign_simple,__argfold_tmp__,$1)
 			$$(foreach __argfold_nr__,$2,
 				$$(call var_assign_simple,__argfold_tmp__,
-					$$(call $3,$$(__argfold_tmp__),$$($$(__argfold_nr__)),
-						$4))),)
+					$$(call $3,$$(__argfold_tmp__),
+						$$(__argfold_nr__),$$($$(__argfold_nr__)),$4))),)
 		$$(__argfold_tmp__)
 	)
 endef
 
 __argfold_tmp__ :=
 __cache_transient += __argfold_tmp__
+
+$(def_all)
+
+# It could make sence for args [4..].
+argfold = \
+	$(argfold $1,$2,$3,$(value 4))
 
 #
 # Some syntactic sugar.
