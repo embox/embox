@@ -383,9 +383,12 @@ void linenoise_history_init(struct hist *h) {
 int linenoise(const char *prompt, char *buf, int len, struct hist *history, compl_callback_t cb) {
     int fd = STDIN_FILENO;
     int mode = ioctl(fd, TTY_IOCTL_REQUEST_MODE, NULL);
+	int fd_type = task_self_idx_get(fd)->type;
     int count;
 
-	if( task_self_idx_get(fd)->type == TASK_IDX_TYPE_FILE) {
+	assert( (fd_type == TASK_IDX_TYPE_FILE) || (fd_type == TASK_IDX_TYPE_SOCKET) );
+
+	if(fd_type == TASK_IDX_TYPE_FILE) {
 			/* FILE MIGHT be related with a terminal */
 		ioctl(fd, TTY_IOCTL_SET_RAW, NULL); /* this works, believe */
 		count = linenoise_prompt(fd, stdin, buf, len, prompt, history, cb, true);
