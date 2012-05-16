@@ -69,7 +69,9 @@ static void run(void) {
 		printf("telnet!%c\n", ch);		/* Gives something reasonable */
 	}
 #else
-		/* Run tish */
+		/* Run tish.
+		 * Is it possible to overwrite its promt here?
+		 */
 	shell_run();
 #endif
 }
@@ -84,25 +86,16 @@ static void run(void) {
 #define O_ECHO		1		/* Manage ECHO, RFC 857 */
 #define O_GO_AHEAD	3		/* Disable GO AHEAD, RFC 858 */
 
-	/* Normal getchar() can't work with sockets
-	 * (but it should)
-	 */
-static inline unsigned int getchar2(void) {
-	static unsigned char ch;
-	read(0, &ch, 1);
-	return ch;
-}
-
 	/* Skip management session */
 static void ignore_telnet_options(void) {
-	unsigned char ch = getchar2();
+	unsigned char ch = getchar();
 	while ((ch & (1 << 7)) && (ch != T_IAC))
-		ch = getchar2();		/* Something related with management, probably in string mode */
+		ch = getchar();		/* Something related with management, probably in string mode */
 
 	while (1) {
 		if (ch == T_IAC) {
-			unsigned char op_type = getchar2();
-			unsigned char param = getchar2();
+			unsigned char op_type = getchar();
+			unsigned char param = getchar();
 			if (op_type == T_WILL) {
 				if (param == O_GO_AHEAD) {
 						/* Agree */
@@ -124,10 +117,10 @@ static void ignore_telnet_options(void) {
 			}
 		}
 		else {
-			ungetc(ch, stdin);	/* Return this symbol, it belongs to usual traffic */
+			ungetchar(ch);	/* Return this symbol, it belongs to usual traffic */
 			return;
 		}
-		ch = getchar2();
+		ch = getchar();
 	}
 }
 
