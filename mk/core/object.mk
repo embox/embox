@@ -536,58 +536,54 @@ endef
 #   Result of call to continuation in case of a valid reference,
 #   otherwise it aborts using 'builtin_error'.
 define __object_member_parse
-	$(or \
-		$(__object_member_try_parse),
-		$(call builtin_error,
-				Invalid first argument to '$(builtin_name)' function: '$1')
-	)
-endef
+	$(for __cont__ <- $2,$(call builtin_argsplit,$(subst $$,$$$$,$1),. -> >,
 
-# Params:
-#   See '__object_member_parse'.
-# Return:
-#   Result of call to continuation in case of a valid reference,
-#   empty otherwise.
-define __object_member_try_parse
-	$(expand $$(call \
-		$(lambda $(or \
-			$(and \
-				$(eq .,$6),$(nolastword $4),$(trim $5),
-				# Invocation on some object.
-				# Escaped reference is in $4. Escaped member name is in $5.
-				$(call $1,
-					# Optimize out explicit dereference of 'this'.
-					$(if $(not $(eq this ->,$(strip $4))),
-						$(call $(if $(eq ->,$(lastword $4)),$(lambda $$($1)),id),
-							$(call $3,$(nolastword $4))
-						)
-					),
-					$(call $3,$5),$2)
-			),
-			$(and \
-				$(eq .,$5),$(trim $4),
-				# Target object is implicitly 'this'.
-				# Escaped member is in $4.
-				$(call $1,,$(call $3,$4),$2)
-			)
-		)),
+		# Clients may want to get the original value of 'builtin_name'.
+		$(lambda $(for builtin_name <- $(builtin_caller),$(call $(__cont__),
 
-		# 1 and 2: The continuation with its argument.
-		$$2,$$(value 3),
+			# First argument is the target object.
+			$(argfold \
 
-		# 3: Unescape function which restores '.' and '->' back.
-		$(lambda \
-			$(trim $(subst $(\s).$(\comma),.,$(subst $(\s)->$(\comma),->,$1)))
-		),
+				# Initial target.
+				# 'foo->bar>baz' -> '$(foo)'
+				#  'foo.bar>baz' -> 'foo'
+				#      'bar>baz' -> ''
+				$(with $(trim $1),
+					$(call builtin_argsplit_sep_after,1),
 
-		# 4 .. 5: Escaped member name with '.' and '->' repalaced by commas.
-		$(subst .,$(\s).$(\comma),$(subst ->,$(\s)->$(\comma),
-			$(subst $(\comma),$$(\comma),$(subst $$,$$$$,$1))
-		)),
+					# Test whether a target object is explicitly specified.
+					$(or $(if $(eq .,$2),$1),
+						$(if $(eq ->,$2),$$($1)))),
 
-		# 5 or 6: End of args marker.
-		.,
-	))
+				# List of properties, that we need to 'get'.
+				# 'foo->bar>baz' -> '2' (bar)
+				#  'foo.bar>baz' -> '2' (bar)
+				#      'bar>baz' -> '1' (bar)
+				$(nofirstword $(eq >,$(call builtin_argsplit_sep_after,1)) \
+					$(nolastword $(builtin_args_list))),
+
+				# Params:
+				#   1. The target object.
+				#   2. Number of the argument.
+				#   3. Property to get.
+				# Return:
+				#   A getter invocation code.
+				$(lambda \
+					$(for s <- $(call builtin_argsplit_sep_after,$2),
+						$(if $(not $(eq >,$s)),
+							$(call builtin_error,Invalid \
+								argument to '$(builtin_name)' function: \
+								expected '>'$, got '$s' after '$3' in \
+								'$(builtin_argsplit_reconstruct)')))
+					$(call __builtin_func_get_object_property,$1,$3))),
+
+			# The member is in the last segment.
+			# 'foo->bar>baz' -> 'baz'
+			$(builtin_lastarg),
+
+			# Optional argument is in '$(args_nr + 1)'.
+			$($(words x $(builtin_args_list)))))),
+	$(value 3)))
 endef
 
 # Params:
@@ -686,18 +682,21 @@ $(def_all)
 #
 define builtin_func-get
 	$(call builtin_check_max_arity,1)
-	$(call __object_member_parse,$1,$(lambda \
-		# 1. Empty for 'this', target object otherwise.
-		# 2. Property.
-		$(call __object_member_access_wrap,$1,
-			$(def-ifdef OBJ_DEBUG,
-				$$(call __property_get_debug,$2),
-				$$(call $$($$(__this)).$2.getter)
-			)
-		)
-	))
+	$(call __object_member_parse,$1,__builtin_func_get_object_property)
 endef
 $(call def,builtin_func-get)
+
+# 1. Empty for 'this', target object otherwise.
+# 2. Property.
+define __builtin_func_get_object_property
+	$(call __object_member_access_wrap,$1,
+		$(def-ifdef OBJ_DEBUG,
+			$$(call __property_get_debug,$2),
+			$$(call $$($$(__this)).$2.getter)
+		)
+	)
+endef
+$(call def,__builtin_func_get_object_property)
 
 # An alias for $(get ...) to use from plain-old Make code.
 #
