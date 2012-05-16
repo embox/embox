@@ -87,7 +87,7 @@ static cycle_t i8253_read(const struct cyclecounter *cc) {
 
 	cnt = (((INPUT_CLOCK + pit_hz / 2) / pit_hz) - 1) - cnt;
 
-	return (uint32_t)(ticks * (INPUT_CLOCK + pit_hz / 2) / pit_hz) + cnt;
+	return (cycle_t)(ticks * (INPUT_CLOCK + pit_hz / 2) / pit_hz) + cnt;
 }
 
 static struct cyclecounter cc = {
