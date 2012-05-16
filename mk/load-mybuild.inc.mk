@@ -37,6 +37,18 @@ export MYBUILD_FILES_CACHE_DIR := $(MYBUILD_CACHE_DIR)/files
 # Generated artifacts.
 #
 
+
+annotations_core_mk := $(MYBUILD_FILES_CACHE_DIR)/annotations_core.mk
+$(annotations_core_mk) : MAKEFILES := $(mk_annotations_core) $(mk_annotations_handlers_mk)
+$(annotations_core_mk) :
+	@echo ' ANNOTATION CORE'
+	@$(MAKE) -f mk/script/mk-persist.mk \
+		PERSIST_OBJECTS='$$(call new,AnnotationsCore,$(mk_annotations_handlers))' \
+		PERSIST_REALLOC='hnd' \
+		PERSIST_VARIABLE='annotationsCore' \
+		ALLOC_SCOPE='hnd' > $@
+load_mybuild_files += $(annotations_core_mk)
+
 # My-files.
 myfiles_mk := \
 	$(patsubst $(abspath ./%),$(MYBUILD_FILES_CACHE_DIR)/%.mk, \
@@ -76,7 +88,7 @@ $(myfiles_mk) $(configfiles_mk) : $(MYBUILD_FILES_CACHE_DIR)/%.mk : %
 export myfiles_model_mk := $(MYBUILD_CACHE_DIR)/myfiles-model.mk
 myfiles_mk_cached_list_mk := $(MYBUILD_CACHE_DIR)/myfiles-list.mk
 
-$(myfiles_model_mk) : MAKEFILES := $(mk_mybuild_myfile) $(myfiles_mk)
+$(myfiles_model_mk) : MAKEFILES := $(mk_mybuild_myfile) $(myfiles_mk) $(annotations_core_mk) $(mk_annotations_handlers_mk)
 $(myfiles_model_mk) :
 	@echo ' MYLINK: $(words $(myfiles_mk)) files $(__myfiles_model_stats)'
 	@$(MAKE) -f mk/script/mk-persist.mk \

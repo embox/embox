@@ -36,6 +36,8 @@ export DOCS_OUT_DIR   := $(DOC_DIR)
 
 export CACHE_DIR      := mk/.cache
 
+export ANNOTATION_HANDLERS := mk/annotation_handlers
+
 #
 # Tools.
 #
