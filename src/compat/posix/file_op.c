@@ -97,12 +97,20 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	struct file_desc *desc;
+	char *cbuff;
 
 	if(NULL == file) {
 		return -EBADF;
 	}
 
 	desc = (struct file_desc *)file;
+	if(desc->has_ungetc) {
+		desc->has_ungetc = 0;
+		cbuff = buf;
+		cbuff[0] = (char)desc->ungetc;
+		count --;
+		buf = &cbuff[1];
+	}
 
 	return desc->ops->fread(buf, size, count, file);
 }
