@@ -52,7 +52,7 @@ static int module_init(void) {
 	clock_init();
 
 	cs = clock_source_get_default();
-	clock_setup(clock_source_get_precision(cs));
+	clock_setup(1000);
 
 	timecounter_init(&sys_timecounter, cs->cc, 0);
 
