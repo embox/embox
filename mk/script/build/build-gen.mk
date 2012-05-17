@@ -33,24 +33,37 @@ build_modules := \
 build_sources := \
 	$(call get,$(build_modules),sources)
 
-all .PHONY : $(build_model:%=genbuild-runtime-inject-c/%)
-all .PHONY : $(build_modules:%=genmodule-h/%)
-all .PHONY : $(build_sources:%=gensource-compile-cmd/%)
+all .PHONY : $(build_model:%=build-runtime-inject-c/%)
+all .PHONY : $(build_modules:%=module-h/%)
+all .PHONY : $(build_sources:%=source-compile-cmd/%)
 
-$(build_modules:%=genmodule-h/%) : genmodule-h/% :
+$(build_model:%=build-runtime-inject-c/%) : build-runtime-inject-c/% :
 	@$(call rule_cmp_mv, \
-		$(MAKE) -f mk/script/h-genmodule.mk,$(call genmodule_h,$*))
-genmodule_h = \
+		$(MAKE) -f mk/script/depsinject.mk,$(SRC_DIR)/depsinject.c)
+
+$(build_modules:%=module-h/%) : module-h/% :
+	@$(call rule_cmp_mv, \
+		$(MAKE) -f mk/script/h-module.mk,$(call module_h,$*))
+module_h = \
 	$(call fqn_to_h,$(call get,$(call get,$1,type),qualifiedName))
 
-$(build_model:%=genbuild-runtime-inject-c/%) : genbuild-runtime-inject-c/% :
-	@$(call rule_cmp_mv, \
-		$(MAKE) -f mk/script/depsinject.mk,$(SRCGEN_DIR)/depsinject.c)
-
-$(build_sources:%=gensource/%) : gensource/% :
-
-fqn_to_h = $(SRCGEN_DIR)/include/module/$(fqn_to_dir).h
+fqn_to_h = $(SRC_DIR)/include/module/$(fqn_to_dir).h
 
 fqn_to_dir = $(subst .,/,$1)#< 'qualified.name' -> 'qualified/name'
 fqn_to_id = $(subst .,__,$1)#< 'qualified.name' -> 'qualified__name'
+
+$(build_sources:%=source-/%) : source-/% : $$(source_prerequisites)
+source_prerequisites = \
+	$(foreach f,$(call get,$*,fileName), \
+		$(if $(filter %.c %.S,$f),source-cmd-cc/$*)  \
+		$(if $(filter %.lds.S,$f),source-cmd-cpp/$*))
+
+source-cmd-cc/% :
+	@$(foreach f,$(call get,$*,fileFullName),$(call rule_cmp_mv, \
+		echo '$(flags) -o $(basename $f).o -c',$f.cmd))
+source-cmd-cc/% : flags = \
+	$(CPPFLAGS) $($(if $(filter %.c,$f),C,AS)FLAGS)
+
+source-cmd-cpp/% :
+
 
