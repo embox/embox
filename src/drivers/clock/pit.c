@@ -127,23 +127,25 @@ static int pit_clock_init(void) {
 		(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
 		panic("pit timer irq_attach failed");
 	}
-	/* Initialization of clock source structure */
+	/* Initialization and registration of clock source structure */
 	pit_clock_source.flags = 1;
 	pit_clock_source.resolution = INPUT_CLOCK;
 	pit_clock_source.cc = &cc;
-
-	clocks_calc_mult_shift(&cc.mult, &cc.shift, INPUT_CLOCK,
-			NSEC_PER_SEC, 0);
 	clock_source_register(&pit_clock_source);
 
-	pit_clock_setup(CLOCK_EVT_MODE_DEFAULT);
+	/* Calculate mult/shift constants to set clock_source used by timer */
+	clock_events_calc_mult_shift(&pit_device, INPUT_CLOCK, 0);
+
+	/* Setup initial mode to allow to use timer immediately after initialization
+	 * of this module */
+	pit_clock_setup(PIT_RATEGEN);
 
 	return 0;
 }
 
 static void pit_clock_setup(uint32_t mode) {
 	uint32_t divisor = (INPUT_CLOCK + PIT_HZ / 2) /PIT_HZ;
-	/* propose switch by all modes in future */
+	/* Propose switch by all modes in future */
 	/* Set control byte */
 	out8(PIT_RATEGEN | PIT_16BIT | PIT_SEL0, MODE_REG);
 

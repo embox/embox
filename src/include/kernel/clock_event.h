@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Hardware timers abstraction
+ * @brief Hardware timers abstraction.
  *
  * @date 16.05.2012
  * @author Alexander Kalmuk
@@ -16,6 +16,11 @@
 
 /**
  * Abstraction for hardware clock sources.
+ * Every hw timer may have:
+ * 		- init function to initialize timer's internals
+ * 		  such as clock source, control registers and so on.
+ * 		  Suppose that this function called only once.
+ * 		- set_mode function to set mode
  */
 struct clock_event_device {
 	void (*set_mode)(uint32_t mode); /* XXX may be mode must be enum?? */
