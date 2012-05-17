@@ -105,7 +105,7 @@ define class-ModuleInstance
 	$(property sources... : MyFileName)
 	# PROTECTED REGION ID(Build_ModuleInstance_sources) ENABLED START
 	$(getter sources,
-		$(get allTypes>sources>fileFullName))
+		$(get allTypes>sources))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(Build_ModuleInstance) ENABLED START
