@@ -1,4 +1,4 @@
-package embox.kernel
+package embox.kernel.time
 
 module clock_source {
 
@@ -10,4 +10,8 @@ module clock_source {
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "clock_source.c"
 	source "timecounter.c"
+}
+
+module clock_event {
+	source "clock_event.c"
 }

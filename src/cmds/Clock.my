@@ -17,6 +17,6 @@ module clock {
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
-	depends embox.kernel.clock_source
+	depends embox.kernel.time.clock_source
 	depends embox.framework.LibFramework
 }

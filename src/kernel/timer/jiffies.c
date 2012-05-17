@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief
+ * @brief Time subsystem based on i8253 timer's jiffies.
  *
  * @date 10.04.2012
  * @author Anton Bondarev
@@ -9,12 +9,15 @@
 #include <embox/unit.h>
 
 #include <kernel/clock_source.h>
+#include <kernel/clock_event.h>
 #include <kernel/softirq.h>
 
 #include <hal/clock.h>
 #include <kernel/timer.h>
 #include <kernel/ktime.h>
 #include <kernel/time/timecounter.h>
+#include <util/array.h>
+#include <string.h>
 
 EMBOX_UNIT_INIT(module_init);
 
@@ -42,20 +45,21 @@ ns_t clock_get_systime(void) {
 }
 
 /**
- * Initialization of the timer subsystem.
+ * Initialization of the time subsystem.
+ * It based on PIT timer's jiffies.
  *
  * @return 0 if success
  */
 static int module_init(void) {
-	struct clock_source *cs;
-	//TODO clock_init must be dynamic
-	clock_init();
+	const struct clock_event_device *dev;
 
-	cs = clock_source_get_default();
-	clock_setup(1000);
-
-	timecounter_init(&sys_timecounter, cs->cc, 0);
-
+	/* find PIT timer */
+	dev = get_timer_by_name("pit");
+	/* set periodic mode */
+	dev->set_mode(0x04);
+	/* install timecounter value to 0 */
+	timecounter_init(&sys_timecounter, dev->cs->cc, 0);
 	softirq_install(SOFTIRQ_NR_TIMER, soft_clock_handler,NULL);
+
 	return 0;
 }
