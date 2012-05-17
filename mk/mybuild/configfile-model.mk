@@ -45,8 +45,9 @@ endef
 #   - reference 'fileContentRoot'
 #   - reference 'includes'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -84,8 +85,9 @@ endef
 #   - attribute 'origin'
 #   - operation 'eInverseResolvedLinks'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 define class-CfgInclude
 	# Extends 'MyAnnotationTarget', 'ENamedObject' classes.
