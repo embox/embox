@@ -11,7 +11,7 @@ define $(annotation_handler_init)
 		$(new AnnotationCallbackFactory,ForAnnotationCallback))
 endef
 
-include mk/annotation_handlers/ForBase.mk
+include $(ANNOTATION_HANDLERS)/ForBase.mk
 
 define class-ForAnnotationCallback
 	$(super ForBaseAnnotationCallback)

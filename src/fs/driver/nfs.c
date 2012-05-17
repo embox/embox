@@ -124,15 +124,15 @@ static file_operations_t nfsfs_fop = { nfsfs_fopen, nfsfs_fclose, nfsfs_fread,
  * file_operation
  */
 static void *nfsfs_fopen(struct file_desc *desc, const char *mode) {
-	node_t *nod;
-	uint8_t _mode;
+	/*node_t *nod;*/
+	/*uint8_t _mode;*/
 	//char path [CONFIG_MAX_LENGTH_PATH_NAME];
-	nfs_file_description_t *fd;
+	/*nfs_file_description_t *fd;*/
 
-	nod = desc->node;
-	fd = (nfs_file_description_t *)nod->attr;
+	/*nod = desc->node;*/
+	/*fd = (nfs_file_description_t *)nod->attr;*/
 
-	if ('r' == *mode) {
+	/*if ('r' == *mode) {
 		_mode = O_RDONLY;
 	}
 	else if ('w' == *mode) {
@@ -140,7 +140,7 @@ static void *nfsfs_fopen(struct file_desc *desc, const char *mode) {
 	}
 	else {
 		_mode = O_RDONLY;
-	}
+	}*/
 
 	/*nfsfs_set_path ((uint8_t *) path, nod);
 	cut_mount_dir((char *) path, fd->p_fs_dsc->root_name);
@@ -183,14 +183,14 @@ static int nfsfs_fclose(struct file_desc *desc) {
 }
 
 static size_t nfsfs_fread(void *buf, size_t size, size_t count, void *file) {
-	size_t size_to_read;
-	struct file_desc *desc;
+	/*size_t size_to_read;*/
+	/*struct file_desc *desc;*/
+	/*nfs_file_description_t *fd;*/
 	size_t rezult;
-	nfs_file_description_t *fd;
 
-	size_to_read = size * count;
+	/*size_to_read = size * count;
 	desc = (struct file_desc *) file;
-	fd = (nfs_file_description_t *)desc->node->attr;
+	fd = (nfs_file_description_t *)desc->node->attr;*/
 
 	rezult = 0; /*nfs_read_file(fd, sector_buff, buf, &bytecount, size_to_read);
 	if (0 == rezult) {
@@ -201,15 +201,15 @@ static size_t nfsfs_fread(void *buf, size_t size, size_t count, void *file) {
 
 static size_t nfsfs_fwrite(const void *buf, size_t size,
 	size_t count, void *file) {
-	size_t size_to_write;
-	struct file_desc *desc;
 	size_t rezult;
+	/*struct file_desc *desc;
 	nfs_file_description_t *fd;
+	size_t size_to_write;
 
 	size_to_write = size * count;
 	desc = (struct file_desc *) file;
 
-	fd = (nfs_file_description_t *)desc->node->attr;
+	fd = (nfs_file_description_t *)desc->node->attr;*/
 
 	rezult = 0;/*nfs_write_file(fd, sector_buff, (uint8_t *)buf,
 			&bytecount, size_to_write);

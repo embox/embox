@@ -11,7 +11,7 @@ define $(lastword $(MAKEFILE_LIST))
 		$(new AnnotationCallbackFactory,IfNeedAnnotationCallback))
 endef
 
-include mk/annotation_handlers/ForBase.mk
+include $(ANNOTATION_HANDLERS)/ForBase.mk
 
 define class-IfNeedAnnotationCallback
 	$(super ForBaseAnnotationCallback)
