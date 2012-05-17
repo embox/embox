@@ -56,7 +56,7 @@ static int module_init(void) {
 	/* find PIT timer */
 	dev = get_timer_by_name("pit");
 	/* set periodic mode */
-	dev->set_mode(0x04);
+	dev->set_mode(CLOCK_EVT_MODE_PERIODIC);
 	/* install timecounter value to 0 */
 	timecounter_init(&sys_timecounter, dev->cs->cc, 0);
 	softirq_install(SOFTIRQ_NR_TIMER, soft_clock_handler,NULL);

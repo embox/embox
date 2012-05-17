@@ -12,7 +12,9 @@
 #include <kernel/clock_source.h>
 #include <kernel/ktime.h>
 
-#define CLOCK_EVT_MODE_DEFAULT 0
+/* timer's modes */
+#define CLOCK_EVT_MODE_ONESHOT  0
+#define CLOCK_EVT_MODE_PERIODIC 1
 
 /**
  * Abstraction for hardware clock sources.
