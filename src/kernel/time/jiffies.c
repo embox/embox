@@ -50,6 +50,7 @@ static int module_init(void) {
 
 	/* find clock_event_device with maximal resolution  */
 	dev = cedev_get_best();
+	assert(dev);
 
 	/* set and register clock_source */
 	jiffies.resolution = dev->resolution;
