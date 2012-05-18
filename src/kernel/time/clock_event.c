@@ -24,17 +24,31 @@ const struct clock_event_device *cedev_get_by_name(const char *name) {
 	return NULL;
 }
 
-const struct clock_event_device *cedev_get_best(void) {
+const struct clock_event_device *cedev_get_best(enum resolution_mode mode) {
 	const struct clock_event_device *dev, *best;
 	int best_resolution;
 
 	best_resolution = 0;
 	best = NULL;
-	array_foreach(dev, __clock_devices, ARRAY_SPREAD_SIZE(__clock_devices)) {
-		if (dev->resolution > best_resolution) {
-			best_resolution = dev->resolution;
-			best = dev;
+	switch(mode) {
+	case JIFFIES:
+		array_foreach(dev, __clock_devices, ARRAY_SPREAD_SIZE(__clock_devices)) {
+			if (dev->resolution > best_resolution) {
+				best_resolution = dev->resolution;
+				best = dev;
+			}
 		}
+		break;
+	case TICKS:
+		array_foreach(dev, __clock_devices, ARRAY_SPREAD_SIZE(__clock_devices)) {
+			if (dev->cs->resolution > best_resolution) {
+				best_resolution = dev->cs->resolution;
+				best = dev;
+			}
+		}
+		break;
+	default:
+		break;
 	}
 
 	return best;

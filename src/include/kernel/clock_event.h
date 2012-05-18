@@ -16,6 +16,11 @@
 #define CLOCK_EVT_MODE_ONESHOT  0
 #define CLOCK_EVT_MODE_PERIODIC 1
 
+enum resolution_mode {
+	JIFFIES = 0,
+	TICKS = 1
+};
+
 /**
  * Abstraction for hardware clock sources.
  * Every hw timer may have:
@@ -39,7 +44,7 @@ static inline void clock_events_calc_mult_shift(const struct clock_event_device 
 }
 
 extern const struct clock_event_device *cedev_get_by_name(const char *name);
-extern const struct clock_event_device *cedev_get_best(void);
+extern const struct clock_event_device *cedev_get_best(enum resolution_mode mode);
 
 #define CLOCK_EVENT_DEVICE(cedev) \
 	extern const struct clock_event_device * __clock_devices[]; \

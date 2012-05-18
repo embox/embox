@@ -49,7 +49,7 @@ static int module_init(void) {
 	const struct clock_event_device *dev;
 
 	/* find clock_event_device with maximal resolution  */
-	dev = cedev_get_best();
+	dev = cedev_get_best(JIFFIES);
 	assert(dev);
 
 	/* set and register clock_source */

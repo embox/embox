@@ -38,9 +38,10 @@ ns_t clock_get_systime(void) {
 static int module_init(void) {
 	const struct clock_event_device *dev;
 
-	/* find PIT timer */
-	dev = cedev_get_by_name("pit");
+	/* find clock_event_device with maximal resolution  */
+	dev = cedev_get_best(TICKS);
 	/* install timecounter value to 0 */
 	timecounter_init(&sys_timecounter, dev->cs->cc, 0);
+
 	return 0;
 }
