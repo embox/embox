@@ -27,18 +27,19 @@
 struct clock_event_device {
 	void (*set_mode)(uint32_t mode); /* XXX may be mode must be enum?? */
 	uint32_t mode;
+	uint32_t resolution; /* jiffies per second */
 	struct clock_source *cs;
 	const char *name;
 };
 
 static inline void clock_events_calc_mult_shift(const struct clock_event_device *ce,
 		uint32_t freq, uint32_t minsec) {
-	return clocks_calc_mult_shift(&ce->cs->cc->mult, &ce->cs->cc->shift, NSEC_PER_SEC,
-				      freq, minsec);
+	return clocks_calc_mult_shift(&ce->cs->cc->mult, &ce->cs->cc->shift, freq, NSEC_PER_SEC,
+				      minsec);
 }
 
-extern const struct clock_event_device *get_timer_by_name(const char *name);
-
+extern const struct clock_event_device *cedev_get_by_name(const char *name);
+extern const struct clock_event_device *cedev_get_best(void);
 
 #define CLOCK_EVENT_DEVICE(cedev) \
 	extern const struct clock_event_device * __clock_devices[]; \

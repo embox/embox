@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Time subsystem based on i8253 timer's jiffies.
+ * @brief Time subsystem based on timer's jiffies.
  *
  * @date 10.04.2012
  * @author Anton Bondarev
@@ -36,17 +36,24 @@ static void soft_clock_handler(softirq_nr_t softirq_nr, void *data) {
 	timer_strat_sched();
 }
 
+static struct clock_source jiffies = {
+	.flags = 1,
+};
+
 /**
  * Initialization of the time subsystem.
- * It based on PIT timer's jiffies.
  *
  * @return 0 if success
  */
 static int module_init(void) {
 	const struct clock_event_device *dev;
 
-	/* find PIT timer */
-	dev = get_timer_by_name("pit");
+	/* find clock_event_device with maximal resolution  */
+	dev = cedev_get_best();
+
+	/* set and register clock_source */
+	jiffies.resolution = dev->resolution;
+	clock_source_register(&jiffies);
 	/* set periodic mode */
 	dev->set_mode(CLOCK_EVT_MODE_PERIODIC);
 

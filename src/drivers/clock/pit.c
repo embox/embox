@@ -111,7 +111,8 @@ static struct clock_source pit_clock_source = {
 static const struct clock_event_device pit_device = {
 	.name = "pit",
 	.set_mode = pit_clock_setup,
-	.cs = &pit_clock_source
+	.cs = &pit_clock_source,
+	.resolution = PIT_HZ
 };
 
 CLOCK_EVENT_DEVICE(&pit_device);

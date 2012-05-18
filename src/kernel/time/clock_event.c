@@ -12,7 +12,7 @@
 
 ARRAY_SPREAD_DEF(const struct clock_event_device *, __clock_devices);
 
-const struct clock_event_device *get_timer_by_name(const char *name) {
+const struct clock_event_device *cedev_get_by_name(const char *name) {
 	const struct clock_event_device *dev;
 
 	array_foreach(dev, __clock_devices, ARRAY_SPREAD_SIZE(__clock_devices)) {
@@ -22,5 +22,19 @@ const struct clock_event_device *get_timer_by_name(const char *name) {
 	}
 
 	return NULL;
+}
+
+const struct clock_event_device *cedev_get_best(void) {
+	const struct clock_event_device *dev, *best;
+	int best_resolution = 0;
+
+	array_foreach(dev, __clock_devices, ARRAY_SPREAD_SIZE(__clock_devices)) {
+		if (dev->resolution > best_resolution) {
+			best_resolution = dev->resolution;
+			best = dev;
+		}
+	}
+
+	return best;
 }
 

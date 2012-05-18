@@ -10,7 +10,7 @@ module sys_timer {
 	depends embox.kernel.time.clock_source
 	depends embox.kernel.time.clock_event
 	depends embox.kernel.softirq
-	depends embox.driver.clock.pit /* XXX */
+	depends embox.arch.clock
 }
 
 module timer extends timer_api {
