@@ -5,4 +5,4 @@ $_PACKAGE := lego_nxt.driver
 
 $_MODS += soft_ps2
 $_SRCS-soft_ps2 += soft_ps2.c
-$_DEPS-soft_ps2 += embox.driver.pins
+$_DEPS-soft_ps2 += embox.driver.gpio.at91_pins

@@ -4,6 +4,6 @@ package olimex.test
 module blinking_led {
 	@IncludePath("$(PLATFORM_DIR)/olimex/include")
 	source "blinking_led.c"
-	depends embox.driver.pins
+	depends embox.driver.gpio.at91_pins
 }
 
