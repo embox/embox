@@ -17,7 +17,7 @@
 #include <err.h>
 #include <errno.h>
 
-#define INADDR_SRV          ((unsigned long int) 0xC0A80001)
+#define INADDR_SRV          "192.168.0.1"//((unsigned long int) 0xC0A80001)
 /*
  * RPC definitions for the portmapper
  */
@@ -31,6 +31,8 @@
 #define	PMAPPROC_DUMP		4
 #define	PMAPPROC_CALLIT		5
 
+char buf[1024];
+
 static int nfs_udp_sock(void) {
 	int res, host;
 	socklen_t addr_len;
@@ -38,15 +40,16 @@ static int nfs_udp_sock(void) {
 
 	addr.sin_family = AF_INET;
 	addr.sin_port= htons(PMAPPORT);
-	addr.sin_addr.s_addr = htonl(INADDR_SRV);
+	inet_aton(INADDR_SRV, &addr.sin_addr);
 
 	/* Create listen socket */
 	host = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (host < 0) {
 		printf("Error.. can't create socket. errno=%d\n", errno);
 		return host;
-	}
 
+	}
+#if 0
 	res = bind(host, (struct sockaddr *)&addr, sizeof(addr));
 	if (res < 0) {
 		printf("Error.. bind() failed. errno=%d\n", errno);
@@ -58,16 +61,23 @@ static int nfs_udp_sock(void) {
 		printf("Error.. listen() failed. errno=%d\n", errno);
 		return res;
 	}
-	while (1) {
-		res = accept(host,(struct sockaddr *)&addr, &addr_len);
+#endif
+	for (int i=0; i<254; i++)
+	{
+		buf[i] = i;
+	}
+	//while (1) {
+		res = sendto(host, (const void *)buf, 255, 0, (struct sockaddr *)&addr, sizeof(addr));
+		usleep(100);
+		res = recvfrom(host, buf, 1024, 0, (struct sockaddr *)&addr, &addr_len);
 		if (res < 0) {
 			/* error code in client, now */
-			printf("Error.. accept() failed. errno=%d\n", errno);
-			close(host);
-			return res;
+			printf("udp rcv failed. errno=%d\n", errno);
+			//close(host);
+			//return res;
 		}
-	}
-
+		sleep(2);
+	//}
 	close(host);
 
 	return 0;
