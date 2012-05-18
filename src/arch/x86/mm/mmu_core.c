@@ -35,3 +35,9 @@ void mmu_off(void) {
 		"mov %eax, %cr0"
 	);
 }
+
+int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
+		size_t reg_size, mmu_page_flags_t flags) {
+
+	return -1;
+}

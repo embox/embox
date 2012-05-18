@@ -18,6 +18,7 @@ EMBOX_CMD(exec);
 
 #define START 0x5C000
 #define OFFSET 0x1000
+#define PAGE_SIZE 0x1000
 
 
 #if 0
@@ -64,6 +65,19 @@ static bool mmu_show_reg() {
 #endif
 #define TLBNUM 0
 
+void  __attribute__((aligned(PAGE_SIZE))) function1(void) {
+	printf("\n\tInside the first function\n");
+}
+
+void __attribute__((aligned(PAGE_SIZE))) function2(void) {
+	printf("\n\tInside the second function\n");
+}
+
+void map_region(void* obj1, void* obj2) {
+	printf("\nMapping a new function to the old address\n");
+	obj1 = obj2;
+}
+
 static int mmu_probe(void) {
 	uint32_t address = 0;
 	uint32_t *pdt = (uint32_t *)START;
@@ -77,7 +91,7 @@ static int mmu_probe(void) {
 
 	for (int i = 0; i < MMU_MTABLE_SIZE; i++) {
 		pte[i] = address | 3;
-		address += 0x1000;
+		address += PAGE_SIZE;
 	}
 
 	pdt[0] = (uint32_t)pte;
@@ -100,7 +114,7 @@ static int mmu_probe(void) {
 	);
 
 	/*"i"(MMU_PTABLE_SIZE) , 	 Page table*/
-
+x
 	/* one-on-one mapping for context 0 */
 	mmu_map_region(0, 0, 0x1000000, /* MMU_PTE_PRIV */ 0x000000000, 0x0);
 	mmu_map_region(0x44000000, 0x44000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
@@ -108,13 +122,22 @@ static int mmu_probe(void) {
 #endif
 
 	/* close your eyes and pray ... */
-	printf("Paging starting...\n");
+	printf("\nPaging starting...\n");
 
 	/* enabling paging */
 	mmu_on();
 
-	/*printf ("ending mmu testing");
-	mmu_off();*/
+	function1();
+
+	map_region(function1,function2);
+
+	function1();
+
+	printf ("\nEnding mmu testing...\n");
+
+	/* disabling paging */
+	mmu_off();
+
 	return 0;
 }
 
