@@ -15,9 +15,7 @@
 #include <hal/clock.h>
 #include <kernel/timer.h>
 #include <kernel/ktime.h>
-#include <kernel/time/timecounter.h>
-#include <util/array.h>
-#include <string.h>
+
 
 EMBOX_UNIT_INIT(module_init);
 
@@ -37,12 +35,6 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 static void soft_clock_handler(softirq_nr_t softirq_nr, void *data) {
 	timer_strat_sched();
 }
-//TODO global time timecounter is bad
-static struct timecounter sys_timecounter;
-
-ns_t clock_get_systime(void) {
-	return timecounter_read(&sys_timecounter);
-}
 
 /**
  * Initialization of the time subsystem.
@@ -57,8 +49,7 @@ static int module_init(void) {
 	dev = get_timer_by_name("pit");
 	/* set periodic mode */
 	dev->set_mode(CLOCK_EVT_MODE_PERIODIC);
-	/* install timecounter value to 0 */
-	timecounter_init(&sys_timecounter, dev->cs->cc, 0);
+
 	softirq_install(SOFTIRQ_NR_TIMER, soft_clock_handler,NULL);
 
 	return 0;

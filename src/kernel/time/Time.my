@@ -11,9 +11,9 @@ module clock_source {
 	source "clock_source.c"
 	source "timecounter.c"
 	source "ktime.c"
-	source "jiffies.c"
 }
 
 module clock_event {
 	source "clock_event.c"
+	source "jiffies.c"
 }
