@@ -14,6 +14,10 @@
 #include <util/array.h>
 #include <util/location.h>
 
+#include <kernel/clock_source.h>
+#include <kernel/ktime.h>
+#include <kernel/time/timecounter.h>
+
 struct __trace_point {
 	struct location_func location;
 	int count;
@@ -23,10 +27,12 @@ struct __trace_point {
 struct __trace_block {
 	struct __trace_point *begin;
 	struct __trace_point *end;
+	struct timecounter *tc;
+	int time;
 };
 
-extern struct __trace_point * const __trace_points_array[];
-extern struct __trace_block * const __trace_blocks_array[];
+extern struct __trace_point *const __trace_points_array[];
+extern struct __trace_block *const __trace_blocks_array[];
 
 #define __TRACE_POINT_DEF(_name, tp_name) \
 		struct __trace_point _name = {   \
@@ -41,10 +47,13 @@ extern struct __trace_block * const __trace_blocks_array[];
 
 #define __TRACE_BLOCK_DEF(tb_name)                           \
 	static struct __trace_point b;             \
-	static struct __trace_point e;             \
+	static struct __trace_point e; \
+	static struct timecounter tc;\
 	static struct __trace_block tb_name  = {         \
 			.begin = &b,      \
 			.end   = &e,                             \
+			.tc    = &tc,                          \
+			.time  = 0,                       \
 	};                                                   \
 	ARRAY_SPREAD_ADD(__trace_blocks_array, &tb_name);  \
 

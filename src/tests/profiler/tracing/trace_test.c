@@ -30,3 +30,30 @@ TEST_CASE("Value of trace block end and trace block begin should be equals") {
 	test_assert(0 == trace_block_diff(&my_trace));
 }
 
+TRACE_BLOCK_DEF(loop_time_block)
+
+static void trace_loop_func(int iteration_count) {
+	volatile int i;
+
+	trace_block_enter(&loop_time_block);
+
+	for (i = 0; i < iteration_count; ++i) {
+		;
+	}
+
+	trace_block_leave(&loop_time_block);
+}
+
+TEST_CASE(""){
+	int count_first = 0;
+	int count_second = 0;
+
+	trace_loop_func(100);
+	count_first = trace_block_get_time(&loop_time_block);
+
+	trace_loop_func(10000);
+	count_second = trace_block_get_time(&loop_time_block);
+
+	test_assert(count_first < count_second);
+}
+

@@ -11,6 +11,10 @@
 #include <util/array.h>
 #include <util/location.h>
 
+#include <kernel/clock_source.h>
+#include <kernel/ktime.h>
+#include <kernel/time/timecounter.h>
+
 #include <profiler/tracing/trace.h>
 
 ARRAY_SPREAD_DEF_TERMINATED(typeof(struct __trace_point *),
@@ -22,15 +26,21 @@ void __tracepoint_handle(struct __trace_point *tp) {
 	tp->count++;
 }
 
-void __trace_block_enter(struct __trace_block *tb) {
+void trace_block_enter(struct __trace_block *tb) {
+	timecounter_init(tb->tc, clock_source_get_default()->cc, 0);
 	__tracepoint_handle(tb->begin);
 }
 
-void __trace_block_leave(struct __trace_block *tb) {
+void trace_block_leave(struct __trace_block *tb) {
+	tb->time = (int) timecounter_read(tb->tc);
 	__tracepoint_handle(tb->end);
 }
 
-int __trace_block_diff(struct __trace_block *tb) {
+int trace_block_get_time(struct __trace_block *tb) {
+	return tb->time;
+}
+
+int trace_block_diff(struct __trace_block *tb) {
 	int a = trace_point_get_value(tb->begin);
 	int b = trace_point_get_value(tb->end);
 
