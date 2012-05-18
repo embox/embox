@@ -39,7 +39,7 @@ static int module_init(void) {
 	const struct clock_event_device *dev;
 
 	/* find PIT timer */
-	dev = get_timer_by_name("pit");
+	dev = cedev_get_by_name("pit");
 	/* install timecounter value to 0 */
 	timecounter_init(&sys_timecounter, dev->cs->cc, 0);
 	return 0;
