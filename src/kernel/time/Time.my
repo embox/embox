@@ -10,6 +10,7 @@ module clock_source {
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "clock_source.c"
 	source "timecounter.c"
+	source "ktime.c"
 }
 
 module clock_event {
