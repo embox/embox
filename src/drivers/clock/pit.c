@@ -27,7 +27,6 @@
 #define PIT_HZ 1000
 static void pit_clock_setup(uint32_t mode);
 
-extern const struct clock_event_device * __clock_devices[];
 EMBOX_UNIT_INIT(pit_clock_init);
 
 /**
@@ -115,7 +114,7 @@ static const struct clock_event_device pit_device = {
 	.cs = &pit_clock_source
 };
 
-ARRAY_SPREAD_ADD(__clock_devices, &pit_device);
+CLOCK_EVENT_DEVICE(&pit_device);
 
 static irq_return_t clock_handler(int irq_nr, void *dev_id) {
 	clock_tick_handler(irq_nr, dev_id);

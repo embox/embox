@@ -39,4 +39,9 @@ static inline void clock_events_calc_mult_shift(const struct clock_event_device 
 
 extern const struct clock_event_device *get_timer_by_name(const char *name);
 
+
+#define CLOCK_EVENT_DEVICE(cedev) \
+	extern const struct clock_event_device * __clock_devices[]; \
+	ARRAY_SPREAD_ADD(__clock_devices, cedev);
+
 #endif /* KERNEL_CLOCK_EVENT_H_ */

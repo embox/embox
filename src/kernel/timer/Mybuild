@@ -5,7 +5,7 @@ abstract module timer_api { }
 
 module sys_timer {
 	option number timer_quantity=20
-	source "timer.c", "jiffies.c"
+	source "timer.c"
 
 	depends embox.kernel.time.clock_source
 	depends embox.kernel.time.clock_event
