@@ -18,15 +18,20 @@ EMBOX_CMD(exec);
 extern struct __trace_point * const __trace_points_array[];
 
 static void print_usage(void) {
-	printf("%s\n", "Usage: trace [-h] [-p] [-b]");
+	printf("%s\n", "Usage: trace [-h] [-p] [-b] [-d <number>] [-a <number>]");
 }
 
 static void print_trace_point_stat(void) {
 	struct __trace_point *tp;
+	int number = 0;
+
+	printf("%2s %25s %7s\n", "№ ", "Location function", "Count");
 
 	array_nullterm_foreach(tp, __trace_points_array)
 	{
-		printf("%15s %25s %7d\n", tp->name, tp->location.func, tp->count);
+		if (tp->active) {
+			printf("%2d %25s %7d\n", number++, tp->location.func, tp->count);
+		}
 	}
 
 	return;
@@ -34,20 +39,39 @@ static void print_trace_point_stat(void) {
 
 static void print_trace_block_stat(void) {
 	struct __trace_block *tb;
+	int number = 0;
 
-	printf("%25s %7s %7s %10s\n", "begin location", "begin", "end", "time");
+	printf("%2s %7s %10s\n", "№ ", "count", "time");
 
 	array_nullterm_foreach(tb, __trace_blocks_array)
 	{
-		printf("%25s %7d %7d %10d\n", tb->begin->location.func,
-				tb->begin->count, tb->end->count, tb->time);
+		if (tb->active) {
+			printf("%2d %7d %10d\n", number++, tb->begin->count, tb->time);
+		}
 	}
 
 	return;
 }
 
+bool change_block_activity(int index, bool activity) {
+	struct __trace_block *tb;
+	int number = 0;
+
+	array_nullterm_foreach(tb, __trace_blocks_array)
+	{
+		if (number == index) {
+			tb->active = activity;
+			return true;
+		}
+		number++;
+	}
+
+	return false;
+}
+
 static int exec(int argc, char **argv) {
 	int opt;
+	int index;
 
 	if (argc <= 1) {
 		print_usage();
@@ -56,7 +80,7 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "hpb"))) {
+	while (-1 != (opt = getopt(argc, argv, "hpbd:a:"))) {
 		printf("\n");
 		switch (opt) {
 		case '?':
@@ -68,14 +92,30 @@ static int exec(int argc, char **argv) {
 		case 'p':
 			print_trace_point_stat();
 			break;
-		case 'b': {
+		case 'b':
 			print_trace_block_stat();
 			break;
-		}
+		case 'd':
+			if (sscanf(optarg, "%d", &index) != 1) {
+				print_usage();
+				printf("Invalid command line option\n");
+			} else if (!change_block_activity(index, false)) {
+				print_usage();
+				printf("Invalid command line option\n");
+			}
+			break;
+		case 'a':
+			if (sscanf(optarg, "%d", &index) != 1) {
+				print_usage();
+				printf("Invalid command line option\n");
+			} else if (!change_block_activity(index, true)) {
+				print_usage();
+				printf("Invalid command line option\n");
+			}
+			break;
 		default:
 			break;
 		}
 	}
-
 	return 0;
 }

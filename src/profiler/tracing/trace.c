@@ -27,13 +27,17 @@ void __tracepoint_handle(struct __trace_point *tp) {
 }
 
 void trace_block_enter(struct __trace_block *tb) {
-	timecounter_init(tb->tc, clock_source_get_default()->cc, 0);
-	__tracepoint_handle(tb->begin);
+	if (tb->active) {
+		timecounter_init(tb->tc, clock_source_get_default()->cc, 0);
+		__tracepoint_handle(tb->begin);
+	}
 }
 
 void trace_block_leave(struct __trace_block *tb) {
-	tb->time = (int) timecounter_read(tb->tc);
-	__tracepoint_handle(tb->end);
+	if (tb->active) {
+		tb->time = (int) timecounter_read(tb->tc);
+		__tracepoint_handle(tb->end);
+	}
 }
 
 int trace_block_get_time(struct __trace_block *tb) {
@@ -45,10 +49,6 @@ int trace_block_diff(struct __trace_block *tb) {
 	int b = trace_point_get_value(tb->end);
 
 	return a - b;
-}
-
-const char *trace_point_get_name(struct __trace_point *tp) {
-	return tp->name;
 }
 
 int trace_point_get_value(struct __trace_point *tp) {
