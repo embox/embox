@@ -6,27 +6,22 @@
 include mk/script/script-common.mk
 
 # Wraps the given rule with a script which compares the command output with
-# the original file (if any exists) and replaces the latter only in case when
+# the original file (if it exists) and replaces the latter only in case when
 # contents differ.
-#   1. Command to execute.
+#   1. The complete command which should output its result to the temporary
+#      file specified in the '$TMPFILE' environment variable.
 #   2. Target file.
-rule_cmp_mv = \
-	$1 > $2.tmp; __EXIT_CODE__=$$?; \
-	if [ $$__EXIT_CODE__ -eq 0 ];
-	then \
-		cmp -s $2 $2.tmp >/dev/null 2>&1 || $(MV) $2.tmp $2; exit;
-	else \
-		$(RM) $2.tmp; exit $$__EXIT_CODE__
-#rule_cmp_and_mv = \
-	if $1 > $2.tmp; \
-	then \
-		if cmp -s $2 $2.tmp >/dev/null 2>&1; \
-		then \
-			$(RM) $2.tmp; \
-		else \
-			$(MV) $2.tmp $2; \
-	else \
-		$(RM) $2.tmp && exit 1
+rule_notouch = \
+	TMPFILE=`mktemp -qt Mybuild.XXXXXXXX` && {         \
+		trap '$(RM) $$TMPFILE' INT QUIT TERM HUP EXIT; \
+		$1 && {                                        \
+			cmp -s $$TMPFILE $2 >/dev/null 2>&1        \
+				|| $(MV) $$TMPFILE $2 && trap - EXIT;  \
+		}                                              \
+	}
+
+rule_notouch_stdout = \
+	$(call rule_notouch,$1 > $$TMPFILE,$2)
 
 build_modules := \
 	$(call get,$(build_model),modules)
@@ -34,15 +29,17 @@ build_sources := \
 	$(call get,$(build_modules),sources)
 
 all .PHONY : $(build_model:%=build-runtime-inject-c/%)
-all .PHONY : $(build_modules:%=module-h/%)
-all .PHONY : $(build_sources:%=source-compile-cmd/%)
+all .PHONY : $(build_modules:%=module/%)
+all .PHONY : $(build_sources:%=source/%)
 
 $(build_model:%=build-runtime-inject-c/%) : build-runtime-inject-c/% :
-	@$(call rule_cmp_mv, \
+	@$(call rule_notouch_stdout, \
 		$(MAKE) -f mk/script/depsinject.mk,$(SRC_DIR)/depsinject.c)
 
-$(build_modules:%=module-h/%) : module-h/% :
-	@$(call rule_cmp_mv, \
+$(build_modules:%=module/%) : module/% : module-h/%
+
+module-h/% :
+	@$(call rule_notouch_stdout, \
 		$(MAKE) -f mk/script/h-module.mk,$(call module_h,$*))
 module_h = \
 	$(call fqn_to_h,$(call get,$(call get,$1,type),qualifiedName))
@@ -59,10 +56,10 @@ source_prerequisites = \
 		$(if $(filter %.lds.S,$f),source-cmd-cpp/$*))
 
 source-cmd-cc/% :
-	@$(foreach f,$(call get,$*,fileFullName),$(call rule_cmp_mv, \
-		echo '$(flags) -o $(basename $f).o -c',$f.cmd))
+	@$(foreach f,$(call get,$*,fileFullName),$(call rule_notouch_stdout, \
+		echo '$(call flags,$f) -o $(basename $f).o -c',$f.cmd))
 source-cmd-cc/% : flags = \
-	$(CPPFLAGS) $($(if $(filter %.c,$f),C,AS)FLAGS)
+	$(CPPFLAGS) $($(if $(filter %.c,$1),C,AS)FLAGS)
 
 source-cmd-cpp/% :
 
