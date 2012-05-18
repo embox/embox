@@ -8,3 +8,8 @@
 mk/.cache
 mk/GNUmakefile
 /nbproject
+scripts/qemu/auto_qemu_my
+scripts/qemu/debug_qemu
+scripts/qemu/start_script_my
+scripts/qemu/stop_script_my
+scripts/qemu/tap_dev

@@ -131,7 +131,10 @@ int mkfs_do_operation(void *_mkfs_params) {
 					(const void *)mkfs_params->fs_name);
 		ramd_params->fs_type = mkfs_params->fs_type;
 
-		fs_drv = filesystem_find_drv((const char *) &mkfs_params->fs_name);
+		if(NULL == (fs_drv =
+				filesystem_find_drv((const char *) &mkfs_params->fs_name))) {
+			return -EINVAL;
+		}
 
 		/* format filesystem */
 		if (0 != (rezult = fs_drv->fsop->format((void *)ramd_params))) {

@@ -21,10 +21,10 @@
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	printf("Usage: mount [-h] dev dir\n");
+	printf("Usage: mount [-h] [-t fstype] dev dir\n");
 }
 
-static int mount_dev(char *dev, char *dir) {
+static int mount_dev(char *dev, char *fs_type, char *dir) {
 	mount_params_t param;
 	node_t *dev_node;
 	fs_drv_t * drv;
@@ -38,6 +38,16 @@ static int mount_dev(char *dev, char *dir) {
 	}
 	param.dev_node = dev_node;
 
+	if(0 != fs_type) {
+		drv = filesystem_find_drv((const char *) fs_type);
+		if(NULL == drv) {
+			return -EINVAL;
+		}
+		else {
+			dev_node->fs_type = drv;
+		}
+	}
+
 	drv = dev_node->fs_type;
 	if (NULL == drv->fsop->mount) {
 		return  -ENODEV;
@@ -47,11 +57,18 @@ static int mount_dev(char *dev, char *dir) {
 
 static int exec(int argc, char **argv) {
 	int opt;
+	int opt_cnt;
 	char *dev, *dir;
+	char *fs_type;
 
+	opt_cnt = 0;
+	fs_type = 0;
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "h"))) {
+	while (-1 != (opt = getopt(argc, argv, "ht:"))) {
 		switch (opt) {
+		case 't':
+			opt_cnt++;
+			break;
 		case '?':
 			break;
 		case 'h':
@@ -65,7 +82,16 @@ static int exec(int argc, char **argv) {
 	if (argc > 2) {
 		dev = argv[argc - 2];
 		dir = argv[argc - 1];
-		return mount_dev(dev, dir);
+		if(argc > 3) {
+			if(opt_cnt) {
+				fs_type = argv[argc - 3];
+			}
+			else {
+				print_usage();
+				return 0;
+			}
+		}
+		return mount_dev(dev, fs_type, dir);
 	}
 	return 0;
 }
