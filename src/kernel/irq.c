@@ -103,10 +103,14 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	irq_handler_t handler = NULL;
 	void *dev_id = NULL;
 	ipl_t ipl;
+	TRACE_BLOCK_DEF(interrupt_tb);
 
 	assert(interrupt_nr_valid(interrupt_nr));
 
 	trace_point("interrupt");
+
+
+	trace_block_enter(&interrupt_tb);
 
 	ipl = ipl_save();
 	{
@@ -116,6 +120,8 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 		}
 	}
 	ipl_restore(ipl);
+
+	trace_block_leave(&interrupt_tb);
 
 	if (!action) {
 		return;

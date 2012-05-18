@@ -14,8 +14,8 @@ package embox.cmd
 			Alina Kramar
 	''')
 
-module traceinfo {
-	source "traceinfo.c"
+module trace {
+	source "trace.c"
 
 	depends embox.lib.LibC
 	depends embox.profiler.tracing
