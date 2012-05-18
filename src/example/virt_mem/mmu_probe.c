@@ -16,8 +16,6 @@
 
 EMBOX_CMD(exec);
 
-#define START 0x5C000
-#define OFFSET 0x1000
 #define PAGE_SIZE 0x1000
 
 
@@ -79,25 +77,7 @@ void map_region(void* obj1, void* obj2) {
 }
 
 static int mmu_probe(void) {
-	uint32_t address = 0;
-	uint32_t *pdt = (uint32_t *)START;
-	uint32_t *pte;
 
-	for (int i = 0; i < MMU_GTABLE_SIZE; i++) {
-		pdt[i] = 0 | 2;
-	}
-
-	pte = pdt + OFFSET;
-
-	for (int i = 0; i < MMU_MTABLE_SIZE; i++) {
-		pte[i] = address | 3;
-		address += PAGE_SIZE;
-	}
-
-	pdt[0] = (uint32_t)pte;
-	pdt[0] |= 3;
-
-	asm ("mov %0, %%cr3":: "b"(pdt)); /* (uint32_t *)((int)pdt & (0xfffff00c))) */
 
 #if 0
 	asm (
