@@ -1494,8 +1494,12 @@ endif # DEF_NOINLINE
 $(def_all)
 
 #
+# Extension: 'argsplit' builtin function.
+#
 # Generic argument splitter which handles arbitrary argument separators with
 # respect to parentheses.
+#
+# '$(argsplit string,separators...,handler_fn[,optional_args...])'
 #
 # Params:
 #   1. String to split. It is important to note, that it will be expanded,
@@ -1509,8 +1513,22 @@ $(def_all)
 #   3. Handler function which is called with the recognized arguments.
 #      The context in which it is called is effectively the same as if it
 #      would be a builtin handler for '$(__argsplit__-(???) args...)'.
-#   4. (optional) Passed to the handler after the last argument.
-define builtin_argsplit
+#  ... (optional) Passed to the handler after the last argument.
+define builtin_func-argsplit
+	$(call builtin_check_min_arity,3)
+
+	# The trick below is to be able to pass an arbitrary number of optional
+	# arguments.
+	$$(foreach __argsplit_varargs,
+		$(or $(subst $(\s),,$(patsubst %,$$(,)$$$$(%),
+				$(words-from 4,$(builtin_args_list)))),
+			$$(\0)),
+		$$(call __argsplit,$(builtin_args)))
+endef
+
+# Called with '__argsplit_varargs' set to a comma-separated list of unexpanded
+# references to the arguments starting from 4 (if any), e.g. ',$(4),$(5)'.
+define __argsplit
 	$(assert $(call var_defined,$3),
 		Unknown handler function: '$3')
 
@@ -1519,7 +1537,7 @@ define builtin_argsplit
 	$(with \
 		${eval \
 			# It gets populated with something like '{1} ;{2}'.
-			__builtin_argsplit_tmp__ := {1}
+			__argsplit_tmp__ := {1}
 		}
 		# The inner expansion.
 		$(foreach p,__argsplit_hook,$(foreach h,out,$(expand \
@@ -1534,20 +1552,20 @@ define builtin_argsplit
 							$(findstring $2,foreach h id call))),
 						Value '$2' can't be used as an argument separator)
 
-					# 'bar;baz' -> 'bar$(call $h,$(foreach h,id,;))baz'
+					# 'bar;baz' -> 'bar$(call $p-sep-$h,$(foreach h,in,;))baz'.
 					# The inner 'foreach' avoids any possible issues with
 					# nested separators (e.g. '->' and '>'), if any.
 					$(subst $2,$$(call $$p-sep-$$h,$$(foreach h,in,$2)),$1)),
 
 				# 'h' variable is shadowed inside any parens.
-				# '(foo)' -> '$(foreach h,id,(foo))'
+				# '(foo)' -> '$(foreach h,in,(foo))'.
 				$(subst $[,$$$[foreach h$(,)in$(,)$[,$(subst $],$]$],
 					$(subst $(,),$${$$p-comma-$$h},$(subst $$,$$$$,$1)))),
 
 				$2)))),
 
 		# Arg 2.
-		$(subst $(\s),,$(__builtin_argsplit_tmp__)),
+		$(subst $(\s),,$(__argsplit_tmp__)),
 
 		$3,$(value 4),
 
@@ -1557,7 +1575,7 @@ define builtin_argsplit
 			__argsplit__-($2))
 
 		$(foreach builtin_name,$(__builtin_name),
-			$(expand $$(call $$3$$(__def_o_arg),$1,$$4)))
+			$(expand $$(call $$3$$(__def_o_arg),$1$(__argsplit_varargs))))
 
 		$(def-ifdef DEF_DEBUG,
 			# TODO Using internals of 'expand'. -- Eldar
@@ -1580,8 +1598,8 @@ define __argsplit_hook-sep-out
 	$(assert $(singleword [$1]))
 	${eval \
 		# Append '<separator>{<arg_nr>}' through a space.
-		__builtin_argsplit_tmp__ += \
-			$1{$(words x $(__builtin_argsplit_tmp__))}
+		__argsplit_tmp__ += \
+			$1{$(words x $(__argsplit_tmp__))}
 	}
 	# Advance the top of the expansion stack with a new
 	# argument and return the native argument separator.
@@ -1598,8 +1616,14 @@ __argsplit_hook-comma-out := $$(,)
 # Echo an unscaped comma.
 __argsplit_hook-comma-in := ,
 
-__builtin_argsplit_tmp__ :=
-__cache_transient += __builtin_argsplit_tmp__
+__argsplit_tmp__ :=
+__cache_transient += __argsplit_tmp__
+
+$(def_all)
+
+# Limited version, which supports at most one optional argument.
+argsplit = \
+	$(argsplit $1,$2,$3,$(value 4))
 
 # Retrives the actual argument separator (if any) occurred before the
 # given one. For example, when called from argsplit handler of
@@ -1610,7 +1634,7 @@ __cache_transient += __builtin_argsplit_tmp__
 #   1. The argument number.
 # Return:
 #   A separator (if any), or empty.
-define builtin_argsplit_sep_before
+define argsplit_sep_before
 	$(filter-patsubst %{$1},%,
 		$(subst },} ,$(filter-patsubst __argsplit__-(%),%,
 			# If we are in an argsplit context, then the builtin name looks
@@ -1619,23 +1643,21 @@ define builtin_argsplit_sep_before
 			$(__builtin_name))))
 endef
 
-# The same as 'builtin_argsplit_sep_before(N+1)'.
-define builtin_argsplit_sep_after
+# The same as 'argsplit_sep_before(N+1)'.
+define argsplit_sep_after
 	$(foreach 1,$(word $1,$(nofirstword $(builtin_args_list))),
-		$(builtin_argsplit_sep_before))
+		$(argsplit_sep_before))
 endef
 
-define builtin_argsplit_reconstruct
+define argsplit_reconstruct
 	$(expand $(subst {,$${,
 		$(filter-patsubst  __argsplit__-(%),%,$(__builtin_name))))
 endef
 
-$(def_all)
-
 #
 # Extension: 'argfold' builtin function.
 #
-# Argument combinator.
+# Argument list folding.
 #
 # '$(argfold intial_value,arg_nrs...,combinator_fn[,optional_args...])'
 #
@@ -1647,8 +1669,11 @@ $(def_all)
 #  ... Optional arguments.
 #
 # Note:
-#   Arguments [3..] are expanded for each element of the list.
+#   The 'combinator_fn' and 'optional_args' arguments ([3..]) are expanded
+#   for each element of the list.
 define builtin_func-argfold
+	$(call builtin_check_min_arity,3)
+
 	$(with $1,$2,$3,
 		# Pack the rest arguments (if any) into arg 4.
 		$(foreach args_filter,$(lambda $(words-from 4,$1)),
@@ -1690,21 +1715,22 @@ argfold = \
 define builtin_macro-for
 	$(call builtin_check_min_arity,2)
 
-	$(subst-end $$$[foreach,,
-		$$$[foreach $(foreach a,$(nolastword $(builtin_args_list)),
-			$(call builtin_argsplit,$($a),<-,$(lambda \
+	# Iterate from the penultimate argument (innermost assignment)
+	# to the first one (outermost).
+	$(argfold $(expand $(builtin_lastarg)),
+		$(call list_reverse,$(nolastword $(builtin_args_list))),
+		$(lambda \
+			$(argsplit $3,<-,$(lambda \
 					$(if $(not $(eq 2,$(builtin_arity))),
 						$(call builtin_error,
 							Invalid argument to '$(builtin_caller)' \
-							function: '$($(words x $(builtin_args_list)))'))
-					# The order is inverted to avoid a leading space
-					# in cycle bodies.
-					$(trim $1),$(trim $2),$$$[foreach
-				),$($a))))
-
-	$(expand $(builtin_lastarg))# body
-
-	$(subst $(\s),,$(nolastword $(builtin_args_list:%=$])))
+							function: '$($(words x x $(builtin_args_list)))'))
+					# Wrap the result of previous steps by a '$(foreach ...)'
+					# with the recognized arguments.
+					$$(foreach $(trim $1),$(trim $2),$3)
+				),$1,$3)),
+		# The body.
+		$(expand $(builtin_lastarg)))
 endef
 
 $(def_all)

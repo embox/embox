@@ -536,7 +536,7 @@ endef
 #   Result of call to continuation in case of a valid reference,
 #   otherwise it aborts using 'builtin_error'.
 define __object_member_parse
-	$(for __cont__ <- $2,$(call builtin_argsplit,$(subst $$,$$$$,$1),. -> >,
+	$(for __cont__ <- $2,$(argsplit $(subst $$,$$$$,$1),. -> >,
 
 		# Clients may want to get the original value of 'builtin_name'.
 		$(lambda $(for builtin_name <- $(builtin_caller),$(call $(__cont__),
@@ -549,7 +549,7 @@ define __object_member_parse
 				#  'foo.bar>baz' -> 'foo'
 				#      'bar>baz' -> ''
 				$(with $(trim $1),
-					$(call builtin_argsplit_sep_after,1),
+					$(call argsplit_sep_after,1),
 
 					# Test whether a target object is explicitly specified.
 					$(or $(if $(eq .,$2),$1),
@@ -559,7 +559,7 @@ define __object_member_parse
 				# 'foo->bar>baz' -> '2' (bar)
 				#  'foo.bar>baz' -> '2' (bar)
 				#      'bar>baz' -> '1' (bar)
-				$(nofirstword $(eq >,$(call builtin_argsplit_sep_after,1)) \
+				$(nofirstword $(eq >,$(call argsplit_sep_after,1)) \
 					$(nolastword $(builtin_args_list))),
 
 				# Params:
@@ -569,12 +569,12 @@ define __object_member_parse
 				# Return:
 				#   A getter invocation code.
 				$(lambda \
-					$(for s <- $(call builtin_argsplit_sep_after,$2),
+					$(for s <- $(call argsplit_sep_after,$2),
 						$(if $(not $(eq >,$s)),
 							$(call builtin_error,Invalid \
 								argument to '$(builtin_name)' function: \
 								expected '>'$, got '$s' after '$3' in \
-								'$(builtin_argsplit_reconstruct)')))
+								'$(argsplit_reconstruct)')))
 					$(call __builtin_func_get_object_property,$1,$3))),
 
 			# The member is in the last segment.
