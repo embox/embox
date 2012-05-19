@@ -72,7 +72,6 @@ include mk/core/alloc.mk
 include mk/core/common.mk
 include mk/core/string.mk
 
-include mk/util/list.mk
 include mk/util/var/assign.mk
 include mk/util/var/info.mk
 
@@ -239,9 +238,9 @@ __def_do = \
 #   Dollars remain escaped.
 __def_strip = \
 	$(__def_strip_precheck)$(call __def_strip_unescape \
-		,$(call list_scan,__def_strip_fold,_$$n \
+		,$(call scan,_$$n \
 			,$(call __def_strip_escape \
-				,$1)))
+				,$1),__def_strip_fold))
 
 # Params:
 #   1. Code with dollars escaped.
@@ -1199,10 +1198,10 @@ define builtin_func-fx
 			$(subst $(\comma)$(\s),$(\comma),
 				$(foreach arg,$(builtin_args_list),
 					$(if $(findstring $$,$(subst $$$$,,$($(arg)))),
-						$(call list_fold,
-							$(lambda $$$$(subst $$$$($2),$$$$$$$${$2},$1)),
+						$(call fold,
 							$$$$(subst $$$$$$$$,$$$$$$$$$$$$$$$$,$$($(arg))),
-							\comma [ ]
+							\comma [ ],
+							$(lambda $$$$(subst $$$$($2),$$$$$$$${$2},$1))
 						),
 						$(subst $$,$$$$$$$$,$($(arg)))
 					)
@@ -1418,13 +1417,7 @@ define __builtin_to_function_inline
 		# We just escape everything except recognized argument references and
 		# expand it in the current context.
 		$(expand \
-			$(call list_fold,
-				$(lambda \
-					$(subst $$$$($2),$$(foreach arg,$2,$$($3)),
-						$(if $(filter 1 2 3 4 5 6 7 8 9,$2),
-							$(subst $$$$$2,$$$$($2),$1),
-							$1))
-				),
+			$(call fold,
 				$(subst $$$$$$$$,$$($$)$$($$),$(subst $$,$$$$,
 					# Any usage of arg 0 is replaced by possibly overridden
 					# value of 'builtin_name',
@@ -1432,6 +1425,12 @@ define __builtin_to_function_inline
 					$(subst $$(0),$(builtin_name),$(subst $$0,$(builtin_name),
 						$(value $(builtin_name)))))),
 				$(builtin_args_list),
+				$(lambda \
+					$(subst $$$$($2),$$(foreach arg,$2,$$($3)),
+						$(if $(filter 1 2 3 4 5 6 7 8 9,$2),
+							$(subst $$$$$2,$$$$($2),$1),
+							$1))
+				),
 				$(lambda \
 					${eval \
 						__def_inline_tmp__ += $(arg)
@@ -1459,10 +1458,10 @@ define __builtin_to_function_inline
 				# latters are guaranteed to be simply expanded variables with
 				# no possible side effects or any performance overhead.
 				$(findstring $$,
-					$(call list_fold,
-						$(lambda $(subst $$$2,,$(subst $$($2),,$1))),
+					$(call fold,
 						$(subst $$$$,,$($(arg))),
-						0 1 2 3 4 5 6 7 8 9)),
+						0 1 2 3 4 5 6 7 8 9,
+						$(lambda $(subst $$$2,,$(subst $$($2),,$1))))),
 
 				# Issue a debug message with the reason of ambiguity
 				# and emit the name of the bad argument.
@@ -1547,25 +1546,27 @@ define __argsplit
 			# Iterate through the list of separators and install an indirect
 			# hook to '$h', which expands into the identity function inside
 			# parens and into the lambda expression above otherwise.
-			$(call list_fold,
-				$(lambda \
-					$(assert $(not $(or \
-							$(strip $(foreach bad,$$ ( , ) { } $(\n) $(\h),
-								$(findstring $(bad),$2))),
-							$(findstring $2,foreach h id call))),
-						Value '$2' can't be used as an argument separator)
-
-					# 'bar;baz' -> 'bar$(call $p-sep-$h,$(foreach h,in,;))baz'.
-					# The inner 'foreach' avoids any possible issues with
-					# nested separators (e.g. '->' and '>'), if any.
-					$(subst $2,$$(call $$p-sep-$$h,$$(foreach h,in,$2)),$1)),
+			$(fold \
 
 				# 'h' variable is shadowed inside any parens.
 				# '(foo)' -> '$(foreach h,in,(foo))'.
 				$(subst $[,$$$[foreach h$(,)in$(,)$[,$(subst $],$]$],
 					$(subst $(,),$${$$p-comma-$$h},$(subst $$,$$$$,$1)))),
 
-				$2)))),
+				$2,# <- list of separators.
+
+				$(lambda \
+					$(assert $(not $(or \
+							$(strip $(foreach bad,$$ ( , ) { } $(\n) $(\h),
+								$(findstring $(bad),$2))),
+							$(findstring $2,call - sep foreach in))),
+						Value '$2' can't be used as an argument separator)
+
+					# 'bar;baz' -> 'bar$(call $p-sep-$h,$(foreach h,in,;))baz'.
+					# The inner 'foreach' avoids any possible issues with
+					# nested separators (e.g. '->' and '>'), if any.
+					$(subst $2,
+						$$(call $$p-sep-$$h,$$(foreach h,in,$2)),$1)))))),
 
 		# Arg 2.
 		$(subst $(\s),,$(__argsplit_tmp__)),
@@ -1662,14 +1663,13 @@ endef
 #
 # Argument list folding.
 #
-# '$(argfold intial_value,arg_nrs...,combinator_fn[,optional_args...])'
+# '$(argfold initial_value,arg_nrs...,combining_fn[,optional_args...])'
 #
 # Params:
 #   1. Initial value.
 #   2. List of variable names.
 #   3. Combining function.
 #  ... (optional) arguments to pass to the combining function.
-#
 # Return:
 #   The result of the last call to the combining function (if any),
 #   or the initial value in case of the empty list.
@@ -1679,12 +1679,15 @@ endef
 #      or intermediate value obtained from previous calls otherwise.
 #   2. A value of the variable.
 #  ... Optional arguments.
+# Return:
+#   The value to pass to the next function call as new intermediate value, or
+#   to use it as a return value of 'argfold' if there is no more elements.
 #
 # It also can find the name of the variable being folded in 'argfold_name'
 # variable.
 #
 # Note:
-#   The 'combinator_fn' and 'optional_args' arguments ([3..]) are expanded
+#   The 'combining_fn' and 'optional_args' arguments ([3..]) are expanded
 #   for each element of the list. 'argfold_name' is available in the context
 #   of the expansion as well.
 define builtin_func-argfold
@@ -1733,7 +1736,7 @@ define builtin_macro-for
 	# Iterate from the penultimate argument (innermost assignment)
 	# to the first one (outermost).
 	$(argfold $(expand $(builtin_lastarg)),
-		$(call list_reverse,$(nolastword $(builtin_args_list))),
+		$(reverse $(nolastword $(builtin_args_list))),
 		$(lambda \
 			$(argsplit $2,<-,$(lambda \
 					$(if $(not $(eq 2,$(builtin_arity))),

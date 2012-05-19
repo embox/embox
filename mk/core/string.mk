@@ -224,7 +224,7 @@ builtin_func-trim = $(builtin_to_function_inline)
 # Builtin function: subst-start
 #
 #      $(subst-start from,to,string), or
-# $(call subst-start from,to,string)
+# $(call subst-start,from,to,string)
 #
 # Performs a string substitution of 'from' in case when the 'string' start
 # with it.
@@ -243,7 +243,7 @@ builtin_func-subst-start = $(builtin_to_function_call)
 # Builtin function: subst-end
 #
 #      $(subst-end from,to,string), or
-# $(call subst-end from,to,string)
+# $(call subst-end,from,to,string)
 #
 # Performs a string substitution of 'from' in case when the 'string' ends
 # with it.
@@ -263,7 +263,7 @@ builtin_func-subst-end = $(builtin_to_function_call)
 # Builtin function: find-start
 #
 #      $(find-start what,string), or
-# $(call find-start what,string)
+# $(call find-start,what,string)
 #
 # Tests if the 'string' starts with 'what' prefix.
 #
@@ -281,7 +281,7 @@ builtin_func-find-start = $(builtin_to_function_call)
 # Builtin function: find-end
 #
 #      $(find-end what,string), or
-# $(call find-end what,string)
+# $(call find-end,what,string)
 #
 # Tests if the 'string' ends with 'what' suffix.
 #
@@ -295,33 +295,103 @@ find-end = \
 	$(if $(findstring $1[$2],$2[$2]),$1)
 builtin_func-find-end = $(builtin_to_function_call)
 
-##
-# Builtin function: append
-# Appends the second argument after the first using whitespace as a separator
-# (if both of the argument are non-empty strings).
 #
-# Params:
-#   1. The first string
-#   2. The second string
-# Return:
-#   The result of string concatenation.
-append = \
-	$1$(if $2,$(if $1, )$2)
-builtin_func-append = $(builtin_to_function_call)
+# List manipulations.
+#
 
 ##
-# Builtin function: prepend
-# Prepends the second argument before the first using whitespace as a separator
-# (if both of the argument are non-empty strings).
+# Builtin function: reverse
+#
+#      $(reverse list...), or
+# $(call reverse,list...)
+#
+# Reverses the specified list.
 #
 # Params:
-#   1. The first string
-#   2. The second string
+#  1. The target list.
 # Return:
-#    The result of string concatenation.
-prepend = \
-	$2$(if $1,$(if $2, )$1)
-builtin_func-prepend = $(builtin_to_function_call)
+#   The list with its elements in reverse order.
+reverse = \
+	$(strip $(call fold,,$1,__reverse_fold))
+__reverse_fold = \
+	$2 $1
+builtin_func-reverse = $(builtin_to_function_inline)
+
+#
+# Left folding functions.
+#
+
+#
+# Implementation note:
+#
+# Using imperative version (which clobbers context during iterations using
+# 'eval') intead of pure functional style implementation (using recursion) is
+# much faster (and gives O(n) complexity as seen from GNU Make sources).
+# It is about 1500 times faster on folding a list of 10000 elements using
+# the identity function as combining.
+#
+
+##
+# Builtin function: fold
+#
+#      $(fold initial_value,list...,combining_fn[,optional_args...]), or
+# $(call fold,initial_value,list...,combining_fn[,optional_args...])
+#
+# Takes the first argument and the first item of the list and applies the
+# function to them, then feeds the function with this result and the second
+# element and so on.
+#
+# Params:
+#   1. Initial value to pass as an intermediate value when calling function
+#      for the first time.
+#   2. List to iterate over applying the folding function.
+#   3. Name of the combining function.
+#   4. (optional) argument to pass when calling the function.
+# Return:
+#   The result of the last function call (if any occurred),
+#   or the initial value in case of empty list.
+#
+# The combining function takes the following arguments:
+#   1. Intermediate value obtained as the result of previous function calls
+#   2. An element from the list being folded
+#   3. Optional argument (if any)
+# Return:
+#   The value to pass to the next function call as new intermediate value, if
+#   there are more elements in the list.
+#   Otherwise this value is used as the return value of fold.
+#
+# See: scan, which preserves intermediate results.
+#
+fold = \
+	$(and ${eval __fold_tmp__ := $$1} \
+		$(foreach 2,$2,${eval __fold_tmp__ := \
+			$$(call $$3,$$(__fold_tmp__),$$2,$$(value 4))}),)$(__fold_tmp__)
+builtin_func-fold = $(builtin_to_function_call)
+
+##
+# Builtin function: scan
+#
+#      $(scan initial_value,list...,combining_fn[,optional_args...]), or
+# $(call scan,initial_value,list...,combining_fn[,optional_args...])
+#
+# Like 'fold' excepting that each intermediate result is returned (not only
+# the last one).
+#
+# Params:
+#   See 'fold'.
+# Return:
+#   The list of intermediate and final results of the function calls (if any
+#   occurred),
+#   or the initial value in case of empty list.
+scan = \
+	${eval __fold_tmp__ := \
+		$$1}$(foreach 2,$2,$(__fold_tmp__)${eval __fold_tmp__ := \
+				$$(call $$3,$$(__fold_tmp__),$$2,$$(value 4))})$(if \
+			$(firstword $2), )$(__fold_tmp__)
+builtin_func-scan = $(builtin_to_function_call)
+
+__fold_tmp__ :=
+__cache_transient += __fold_tmp__
 
 ##
 # Function: filter-patsubst
