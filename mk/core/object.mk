@@ -564,18 +564,17 @@ define __object_member_parse
 
 				# Params:
 				#   1. The target object.
-				#   2. Number of the argument.
-				#   3. Property to get.
+				#   2. Property to get.
 				# Return:
 				#   A getter invocation code.
 				$(lambda \
-					$(for s <- $(call argsplit_sep_after,$2),
+					$(for s <- $(call argsplit_sep_after,$(argfold_name)),
 						$(if $(not $(eq >,$s)),
 							$(call builtin_error,Invalid \
 								argument to '$(builtin_name)' function: \
-								expected '>'$, got '$s' after '$3' in \
+								expected '>'$, got '$s' after '$2' in \
 								'$(argsplit_reconstruct)')))
-					$(call __builtin_func_get_object_property,$1,$3))),
+					$(__builtin_func_get_object_property))),
 
 			# The member is in the last segment.
 			# 'foo->bar>baz' -> 'baz'

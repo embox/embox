@@ -1514,6 +1514,9 @@ $(def_all)
 #      The context in which it is called is effectively the same as if it
 #      would be a builtin handler for '$(__argsplit__-(???) args...)'.
 #  ... (optional) Passed to the handler after the last argument.
+#
+# Return:
+#   The result of calling the handler function.
 define builtin_func-argsplit
 	$(call builtin_check_min_arity,3)
 
@@ -1661,16 +1664,29 @@ endef
 #
 # '$(argfold intial_value,arg_nrs...,combinator_fn[,optional_args...])'
 #
-# Combining function takes the following arguments:
+# Params:
+#   1. Initial value.
+#   2. List of variable names.
+#   3. Combining function.
+#  ... (optional) arguments to pass to the combining function.
+#
+# Return:
+#   The result of the last call to the combining function (if any),
+#   or the initial value in case of the empty list.
+#
+# The combining function takes the following arguments:
 #   1. Initial value for the first call,
 #      or intermediate value obtained from previous calls otherwise.
-#   2. A number of the argument being folded.
-#   3. A value of the argument.
+#   2. A value of the variable.
 #  ... Optional arguments.
+#
+# It also can find the name of the variable being folded in 'argfold_name'
+# variable.
 #
 # Note:
 #   The 'combinator_fn' and 'optional_args' arguments ([3..]) are expanded
-#   for each element of the list.
+#   for each element of the list. 'argfold_name' is available in the context
+#   of the expansion as well.
 define builtin_func-argfold
 	$(call builtin_check_min_arity,3)
 
@@ -1682,10 +1698,9 @@ define builtin_func-argfold
 		# Emit the following code.
 		$$(and \
 			$$(call var_assign_simple,__argfold_tmp__,$1)
-			$$(foreach __argfold_nr__,$2,
+			$$(foreach argfold_name,$2,
 				$$(call var_assign_simple,__argfold_tmp__,
-					$$(call $3,$$(__argfold_tmp__),
-						$$(__argfold_nr__),$$($$(__argfold_nr__)),$4))),)
+					$$(call $3,$$(__argfold_tmp__),$$($$(argfold_name)),$4))),)
 		$$(__argfold_tmp__)
 	)
 endef
@@ -1720,7 +1735,7 @@ define builtin_macro-for
 	$(argfold $(expand $(builtin_lastarg)),
 		$(call list_reverse,$(nolastword $(builtin_args_list))),
 		$(lambda \
-			$(argsplit $3,<-,$(lambda \
+			$(argsplit $2,<-,$(lambda \
 					$(if $(not $(eq 2,$(builtin_arity))),
 						$(call builtin_error,
 							Invalid argument to '$(builtin_caller)' \
@@ -1728,7 +1743,7 @@ define builtin_macro-for
 					# Wrap the result of previous steps by a '$(foreach ...)'
 					# with the recognized arguments.
 					$$(foreach $(trim $1),$(trim $2),$3)
-				),$1,$3)),
+				),$1,$2)),
 		# The body.
 		$(expand $(builtin_lastarg)))
 endef
