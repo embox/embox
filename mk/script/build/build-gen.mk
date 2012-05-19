@@ -9,19 +9,25 @@ include mk/script/script-common.mk
 # the original file (if it exists) and replaces the latter only in case when
 # contents differ.
 #   1. The complete command which should output its result to the temporary
-#      file specified in the '$TMPFILE' environment variable.
+#      file specified in the '$OUTFILE' environment variable.
 #   2. Target file.
 rule_notouch = \
-	TMPFILE=`mktemp -qt Mybuild.XXXXXXXX` && {         \
-		trap '$(RM) $$TMPFILE' INT QUIT TERM HUP EXIT; \
-		$1 && {                                        \
-			cmp -s $$TMPFILE $2 >/dev/null 2>&1        \
-				|| $(MV) $$TMPFILE $2 && trap - EXIT;  \
-		}                                              \
-	}
+	COMMAND='$1'; OUTFILE=$(call trim,$2);                         \
+	if [ ! -f $$OUTFILE ];                                         \
+	then                                                           \
+		[ -d $(dir $2) ] || $(MKDIR) $(dir $2);                    \
+	else                                                           \
+		__COMMAND=$$COMMAND; __OUTFILE=$$OUTFILE;                  \
+		COMMAND='$$__COMMAND                                       \
+			&& { cmp -s $$OUTFILE $$__OUTFILE >/dev/null 2>&1      \
+				|| $(MV) $$OUTFILE $$__OUTFILE && trap - EXIT; }'; \
+		OUTFILE=`mktemp -qt Mybuild.XXXXXXXX`                      \
+			&& trap '$(RM) $$OUTFILE' INT QUIT TERM HUP EXIT;      \
+	fi                                                             \
+		&& eval $$COMMAND
 
 rule_notouch_stdout = \
-	$(call rule_notouch,$1 > $$TMPFILE,$2)
+	$(call rule_notouch,$1 > $$OUTFILE,$2)
 
 #
 # Global artifacts.
