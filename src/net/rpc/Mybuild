@@ -1,0 +1,9 @@
+package embox.net
+
+module rpc {
+//	source "clnt.c"
+}
+
+module xdr {
+//	source "xdr.c"
+}
