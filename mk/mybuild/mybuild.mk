@@ -8,44 +8,34 @@ __mybuild_mybuild_mk := 1
 
 include mk/mybuild/myfile-resource.mk
 
-chekers_list := \
+
+include_checkers_list :=
+include_past_checkers := \
+
+builders_list := \
 	Mybuild.closeInstances \
-	Mybuild.testsAnnotations \
 	Mybuild.specifyInstances \
+	Mybuild.optionBind
+
+checkers_list := \
 	Mybuild.checkAbstractRealization \
 	Mybuild.checkFeatureRealization \
-	Mybuild.optionBind \
 	Mybuild.optionCheckUnique \
 	Mybuild.optionCheckConstraints
 
 
 
-# Main check procedures. Check modules with checkers sequence.
-# Out of every checkers passed to next's in, so checkers can add
-# or remove instances from input. Every checkers also called with
-# passed checkers list, so cheking can be restarted for some
-# instances with already passed chekers only.
-#
+
 # Args:
 # 	1. Cheking instances
 # 	2. Checkers list
 # 	3. Passed checkers list
 define check
-	$(if $2,
-		$(call check,
-			$(call $(firstword $2),$1,$3),
-			$(wordlist 2,$(words $2),$2),
-			$3 $(firstword $2)),
-		$1)
+	$(silent-for \
+		inst <- $1,
+		checker <- $2,
+		$(call $(checker),$(inst)))
 endef
-
-LABEL-DefaultImpl := mybuild.lang.DefaultImpl
-LABEL-IfNeed      := mybuild.lang.IfNeed
-LABEL-For         := mybuild.lang.For
-LABEL-TestFor := mybuild.lang.TestFor
-
-excludeAnnotations := $(LABEL-IfNeed)
-leftToRightParentAnnotations := $(LABEL-IfNeed) $(LABEL-For)
 
 define getAnnotationTarget
 	$(for target<-$1,
@@ -64,14 +54,21 @@ define getAnnotation
 
 endef
 
+define selectUnique
+	$(if $2,
+		$(if $(filter $(firstword $2),$1),
+			$(call $0,$1,$(wordlist 2,$(words $2),$2)),
+			$(call $0,$1 $(firstword $2),$(wordlist 2,$(words $2),$2))),
+		$1)
+endef
+
 # Constructor args:
 #   1. Configuration.
 define class-Mybuild
-	$(map moduleInstanceStore... : ModuleInstance) #by module
+	$(map moduleInstanceStore : ModuleInstance) #by module
 	$(map activeFeatures... : ModuleInstance) #by feature
 	$(map includingInstances : ModuleInstance) #stack for cyclic detection
 	$(map recommendations : MyModuleType)
-
 	$(property-field issueReceiver)
 
 # Public:
@@ -84,24 +81,47 @@ define class-Mybuild
 	#   New instance of CfgBuild.
 	$(method createBuild,
 		$(assert $(singleword $1))
-		$(for configuration <- $1,
+		$(for \
+			configuration <- $1,
 			build <-$(new Build),
 			issueReceiver <- $(new IssueReceiver),
 
 			$(set build->configuration,$(configuration))
+
 			$(set-field build->issueReceiver,$(issueReceiver))
 			$(set issueReceiver,$(issueReceiver))
 
+			$(invoke includeAllBuildModules)
+
+			$(if $(call check,$(invoke listBuildModules),
+				$(checkers_list)),)
+
 			$(set build->modules,
-				$(invoke getBuildModules))
+				$(invoke listBuildModules))
 
 			$(build))
 	)
 
 # Private:
 
+	$(field current_builders_list)
+
 	$(method annotationProcess,
 		$(call mybuild_annotation_process,Build,$1,$(this)))
+
+	$(method includeModule,
+		$(for \
+			mod <- $1,
+			was <- was$(map-get moduleInstanceStore/$(mod)),
+			mod <- $(if $(filter was,$(was)),
+						$(invoke annotationProcess,$(mod)),
+						$(mod)),
+			inst <- $(invoke moduleInstance,$(mod)),
+
+			$(if $(or $(filter was,$(was)),$(filter force,$(value 2))),
+				$(call check,$(inst),$(get-field current_builders_list)))
+			$(inst)))
+
 
 	# Gets all modulesInstance's created according configResourceSet
 	#
@@ -111,19 +131,22 @@ define class-Mybuild
 	# Return:
 	#	List of avaible moduleInstances. Some of them may not be created, then
 	#	issue will be created
-	$(method getBuildModules,
-		$(with \
-			$(for \
-				cfgUnverifiedInclude <- $(get configuration->includes),
-				cfgInclude <- $(invoke annotationProcess,$(cfgUnverifiedInclude)),
-				module <- $(invoke annotationProcess,$(get cfgInclude->module)),
+	$(method includeAllBuildModules,
+		$(silent-for \
+			cfgUnverifiedInclude <- $(get configuration->includes),
+			cfgInclude <- $(invoke annotationProcess,$(cfgUnverifiedInclude)),
+			module <- $(invoke annotationProcess,$(get cfgInclude->module)),
+			inst <- $(invoke moduleInstance,$(module)),
+			$(set inst->includeMember,$(cfgInclude)))
 
-				$(for moduleInst <- $(invoke moduleInstance,$(module)),
-					$(set moduleInst->includeMember,$(cfgInclude))
-					$(call Mybuild.closeInstances,$(moduleInst)))),
+		$(silent-for f <- $(builders_list),
+			$(set-field+ current_builders_list,$f)
+			$(call $(f),$(invoke listBuildModules))))
 
-			$(call check,$1,$(chekers_list),)
-			))
+	$(method listBuildModules,
+		$(call selectUnique,,
+			$(for mod <- $(get-field moduleInstanceStore),
+				$(map-get moduleInstanceStore/$(mod)))))
 
 	$(method addIssue,
 		$(invoke $(get issueReceiver).addIssues,$(new InstantiateIssue,
@@ -152,86 +175,14 @@ define class-Mybuild
 
 	$(method closeInstances,
 		$(for inst <- $1,
-			$(inst) \
 			$(invoke instanceClosure,$(inst))))
 
-	$(method testAnnotTestGet,
-		$(for testModLiteral<-$(call getAnnotationTarget,
-				$(mod),$(LABEL-TestFor),value),
-			$(get testModLiteral->value)))
-
-	$(method testAnnotTestingGet,
-		$(if $(strip $(get inst->includeMember)),
-			$(for \
-				testModLiteral<-$(call getAnnotationTarget,
-					$(get inst->includeMember),
-					mybuild.lang.WithTest,value),
-				testMod<-$(get testModLiteral->value),
-
-				$(with \
-					$(for testModTestAnnot <- $(call getAnnotationTarget,
-							$(testMod),
-							mybuild.lang.TestFor,
-							value),
-						testModTestTarget <- $(get testModTestAnnot->value),
-						$(if \
-							$(filter $(mod),
-								$(testModTestTarget) \
-								$(get testModTestTarget->allSubTypes)),
-							1)),
-					$(if $(strip $1),
-						$(testMod),
-						$(invoke addIssueInstance,$(inst),error,
-							$(get mod->qualifiedName) inclusion requested \
-							$(get testMod->qualifiedName) as test; but it is \
-							not defined test))))
-
-			$(if $(strip $(call getAnnotationTarget,
-					$(get inst->includeMember),
-					mybuild.lang.WithAllTests)),
-				$(for \
-					buildMod <- $(call allModules),
-					testLiteral <- $(call getAnnotationTarget,
-						$(buildMod),mybuild.lang.TestFor,
-						value),
-					testMod <- $(get testLiteral->value),
-					$(if
-						$(filter $(mod),
-							$(testMod) \
-							$(get testMod->allSubTypes)),
-						$(testMod))))))
-
-	$(method testAnnotTestDo,
-		$(set+ testModInst->afterDepends,$(inst)))
-
-	$(method testAnnotTestingDo,
-		$(set+ inst->afterDepends,$(testModInst)))
-
-	$(method testsAnnotations,
+	$(method specifyInstances,
 		$(for \
 			inst <- $1,
-			mod <- $(get inst->type),
-			$(inst) \
-			$(for targetAction <-Test Testing,
-				testMod <- $(call Mybuild.testAnnot$(targetAction)Get),
-				testModWas <-was$(map-get moduleInstanceStore/$(testMod)),
-				testModInst <-$(invoke moduleInstance,$(testMod)),
-
-				$(if $(filter was,$(testModWas)),
-					$(call check,$(testModInst),$3,))
-				$(call Mybuild.testAnnot$(targetAction)Do))))
-
-	$(method specifyInstances,
-		$(for inst <- $1,
-			$(with $(strip $(for \
-					targetModule<-$(map-get recommendations/$(get inst->type)),
-					$(if $(invoke targetModule->isSubTypeOf,$(get inst->type)),
-						$(call check,
-							$(invoke moduleInstance,
-								$(targetModule)),
-							$2 $0,)
-						))),
-				$(if $1,$1,$(inst)))))
+			targetModule<-$(map-get recommendations/$(get inst->type)),
+			$(if $(invoke targetModule->isSubTypeOf,$(get inst->type)),
+				$(invoke includeModule,$(targetModule)))))
 
 	# Cheker for abstract realization. If there is only one subtype of given
 	# abstract module, it will included to build with all dependencies, which
@@ -241,19 +192,27 @@ define class-Mybuild
 	#	1. List of ModuleInstance
 	#	2. Checkers, which ModuleInstances was passed.
 	$(method checkAbstractRealization,
-		$(for inst <- $1,
+		$(for \
+			inst <- $1,
 			instType <- $(get inst->type),
-			$(if $(get instType->isAbstract),
-				$(if $(singleword $(get instType->subTypes)),
-					$(call check,
-						$(invoke moduleInstance,
-							$(get instType->subTypes)),
-						$2 $0,),
-					$(inst)
+			$(with \
+				$(if $(get instType->isAbstract),
+					$(if $(singleword $(get instType->subTypes)),
+							$(call check,
+								$(invoke moduleInstance,
+									$(get instType->subTypes)),
+								$2 $0,)
+							$(if $(get inst->type>isAbstract),
+								1,
+								),
+					 	1),
+				 ),
+
+
+				$(if $(strip $1),
 					$(invoke addIssueGlobal,error,
 							No abstract realization: \
-								$(get instType->qualifiedName))),
-				$(inst))))
+								$(get instType->qualifiedName))))))
 
 	# Helper method, returns string representation of moduleInstance origin
 	#
@@ -297,9 +256,7 @@ define class-Mybuild
 							Feature $(get require->qualifiedName) required by \
 								$(get instType->qualifiedName) is not
 								implemented)))),
-				,$(inst))))
-
-
+			)))
 
 	# Bind options for ModuleInstances (set ModuleInstance optionBinding field
 	# with option binding)
@@ -336,7 +293,7 @@ define class-Mybuild
 						$(invoke addIssueInstance,$(modInst),warning,
 							Could not bind option $(get opt->name) in module \
 								$(get mod->qualifiedName) to a value)Error)))
-				,,$(modInst))))
+				,,)))
 
 	$(map optionUniq)
 	$(map optionSet)
@@ -391,7 +348,7 @@ define class-Mybuild
 
 					$($(phase)))),
 
-				$(if $(strip $2),,$1))))
+				$(if $(strip $2),,))))
 
 	$(method optionCheckConstraints,
 		$(with $1,$(for inst<-$1,
@@ -476,8 +433,6 @@ define class-Mybuild
 		$(set 1->type,$2)
 
 		$(for super <- $2 $(get 2->allSuperTypes),
-			$(if $(map-get moduleInstanceStore/$(super)),,
-				$(if $(invoke annotationProcess,$(super)),))
 			$(map-set build->moduleInstanceByName/$(get super->qualifiedName),
 				$1)
 			$(map-set moduleInstanceStore/$(super),
@@ -510,12 +465,12 @@ define class-Mybuild
 			$(moduleInstance)))
 
 	$(method printCyclic,
-		$(get $(get 1->type).qualifiedName) ->
+		$(get 1->qualifiedName) ->
 		$(with $1,$(map-get includingInstances/$1),
 			$(if $(filter $1,$2),,
-		   		$(\s)$(get $(get 2->type).qualifiedName) ->
+		   		$(\s)$(get 2->qualifiedName) ->
 				$(call $0,$1,$(map-get includingInstances/$2))))
-		$(\s)$(get $(get 1->type).qualifiedName) -> ... )
+		$(\s)$(get 1->qualifiedName) -> ... )
 
 	# Get ModuleInstance closure of given  Module
 	#
@@ -529,28 +484,16 @@ define class-Mybuild
 			depMember <- $(get mod->dependsMembers),
 			dep <- $(get depMember->modules),
 			was <- was$(map-get moduleInstanceStore/$(dep)),
-			depInst <- $(invoke moduleInstance,$(dep)),
+			$(map-set includingInstances/$(mod),$(dep))
 
-			$(map-set includingInstances/$(thisInst),$(depInst))
+			$(if $(map-get includingInstances/$(dep)),
+				$(invoke addIssueGlobal,error,
+					Cyclic dependency detected: $(invoke printCyclic,$(dep))))
 
-			$(if $(call getAnnotationTarget,$(depMember),mybuild.lang.Include),
-				$(if $(get depInst->container),
-					$(call addIssueInstance,$(thisInst),error,$(get dep->qualifiedName) \
-						contains in several modules: $(get mod->qualifiedName) \
-						$(get $(get $(get depInst->container).type).qualifiedName)),
-					$(set* thisInst->contents,$(depInst))),
+			$(for depInst <- $(invoke includeModule,$(dep)),
 				$(set* thisInst->depends,$(depInst)))
 
-			$(if $(map-get includingInstances/$(depInst)),
-				$(invoke addIssueGlobal,error,
-					Cyclic dependency detected: $(invoke printCyclic,$(depInst)))
-				,
-				$(if $(filter was,$(was)),
-					$(depInst) \
-					$(invoke instanceClosure,$(depInst))))
-
-			$(map-set includingInstances/$(thisInst),)
-			))
+			$(map-set includingInstances/$(mod),)))
 
 endef
 

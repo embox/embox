@@ -32,11 +32,10 @@ define class-DefaultImplAnnotationCallback
 					DefaultImpl annotation value should be subtype of target and)))))
 
 	$(method BuildCallback,
-		$(warning $0: )
 		$(for \
 			abstract <- $(get target),
 			defaultImpl <- $(map-get options/value),
-			$(if 1->getRecommendation,$(abstract),,
+			$(if $(invoke 1->getRecommendation,$(abstract)),,
 				$(invoke 1->addRecommendationRule,$(abstract),$(defaultImpl)))
 			$(abstract)))
 

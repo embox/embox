@@ -2,4 +2,5 @@ package mybuild.lang
 
 annotation Type {
 	string value
+	boolean unique = false
 }
