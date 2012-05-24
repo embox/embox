@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <util/math.h>
-#include <fs.h>
+#include <fs/fs_drv.h>
 #include <kernel/file.h>
 #include <fs/ioctl.h>
 #include <fs/file_desc.h>
