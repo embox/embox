@@ -1,0 +1,24 @@
+package embox.cmd
+
+@Cmd(name = "trace_points",
+	man = '''
+		NAME
+			TODO
+		SYNOPSIS
+			TODO
+		DESCRIPTION
+			TODO
+		OPTIONS
+			TODO
+		AUTHORS
+			Alina Kramar
+	''')
+
+module trace_points {
+	source "trace_points.c"
+
+	depends embox.lib.LibC
+	depends embox.profiler.tracing
+	depends embox.util.LibUtil
+	depends embox.framework.LibFramework
+}

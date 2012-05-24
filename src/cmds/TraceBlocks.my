@@ -1,6 +1,6 @@
 package embox.cmd
 
-@Cmd(name = "traceinfo",
+@Cmd(name = "trace_blocks",
 	man = '''
 		NAME
 			TODO
@@ -14,8 +14,8 @@ package embox.cmd
 			Alina Kramar
 	''')
 
-module trace {
-	source "trace.c"
+module trace_blocks {
+	source "trace_blocks.c"
 
 	depends embox.lib.LibC
 	depends embox.profiler.tracing

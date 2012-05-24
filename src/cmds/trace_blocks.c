@@ -18,23 +18,8 @@ EMBOX_CMD(exec);
 extern struct __trace_point * const __trace_points_array[];
 
 static void print_usage(void) {
-	printf("%s\n", "Usage: trace [-h] [-p] [-b] [-d <number>] [-a <number>]");
-}
-
-static void print_trace_point_stat(void) {
-	struct __trace_point *tp;
-	int number = 0;
-
-	printf("%2s %25s %7s\n", "№ ", "Location function", "Count");
-
-	array_nullterm_foreach(tp, __trace_points_array)
-	{
-		if (tp->active) {
-			printf("%2d %25s %7d\n", number++, tp->location.func, tp->count);
-		}
-	}
-
-	return;
+	printf("%s\n",
+			"Usage: trace [-h] [-s] [-i <number>] [-d <number>] [-a <number>]");
 }
 
 static void print_trace_block_stat(void) {
@@ -47,6 +32,22 @@ static void print_trace_block_stat(void) {
 	{
 		if (tb->active) {
 			printf("%2d %7d %10d\n", number++, tb->begin->count, tb->time);
+		}
+	}
+
+	return;
+}
+
+static void print_trace_block_stat_personal(int i) {
+	struct __trace_block *tb;
+	int number = 0;
+
+	printf("%2s %7s %10s %5s\n", "№ ", "count", "time", "Act");
+
+	array_nullterm_foreach(tb, __trace_blocks_array)
+	{
+		if (number++ == i) {
+			printf("%2d %7d %10d %5s\n", number++, tb->begin->count, tb->time, tb->active ? "yes" : "no");
 		}
 	}
 
@@ -80,7 +81,7 @@ static int exec(int argc, char **argv) {
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "hpbd:a:"))) {
+	while (-1 != (opt = getopt(argc, argv, "hsi:d:a:"))) {
 		printf("\n");
 		switch (opt) {
 		case '?':
@@ -89,11 +90,15 @@ static int exec(int argc, char **argv) {
 		case 'h':
 			print_usage();
 			break;
-		case 'p':
-			print_trace_point_stat();
-			break;
-		case 'b':
+		case 's':
 			print_trace_block_stat();
+			break;
+		case 'i':
+			if (sscanf(optarg, "%d", &index) != 1) {
+				print_usage();
+				printf("Invalid command line option\n");
+			}
+			print_trace_block_stat_personal(index);
 			break;
 		case 'd':
 			if (sscanf(optarg, "%d", &index) != 1) {
