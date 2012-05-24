@@ -7,10 +7,9 @@ ifndef __mk_annotations_handler_default_impl_mk
 __mk_annotations_handler_default_impl_mk := 1
 
 define $(annotation_handler_init)
-	$(for \
-		factory <- $(new AnnotationCallbackFactory,DefaultImplAnnotationCallback),
-		context <- Build MyLink,
-		$(invoke 1->addSupported,$(context),mybuild.lang.DefaultImpl,$(factory)))
+	$(for context <- Build MyLink,
+		$(invoke 1->addSupported,$(context),mybuild.lang.DefaultImpl,
+			DefaultImplAnnotationCallback))
 endef
 
 define class-DefaultImplAnnotationCallback

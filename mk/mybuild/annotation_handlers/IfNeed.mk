@@ -8,7 +8,7 @@ __mk_annotations_handler_ifneed_mk := 1
 
 define $(lastword $(MAKEFILE_LIST))
 	$(invoke 1->addSupported,Build,mybuild.lang.IfNeed,
-		$(new AnnotationCallbackFactory,IfNeedAnnotationCallback))
+		IfNeedAnnotationCallback)
 endef
 
 include $(ANNOTATION_HANDLERS)/ForBase.mk

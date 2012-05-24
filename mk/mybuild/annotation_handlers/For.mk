@@ -8,7 +8,7 @@ __mk_annotations_handler_for_mk := 1
 
 define $(annotation_handler_init)
 	$(invoke 1->addSupported,Build,mybuild.lang.For,
-		$(new AnnotationCallbackFactory,ForAnnotationCallback))
+		ForAnnotationCallback)
 endef
 
 include $(ANNOTATION_HANDLERS)/ForBase.mk

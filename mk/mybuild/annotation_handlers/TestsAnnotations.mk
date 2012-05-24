@@ -9,10 +9,10 @@ __mk_annotations_handler_test_for_mk := 1
 define $(lastword $(MAKEFILE_LIST))
 	$(for context <- MyLink Build,
 		$(invoke 1->addSupported,$(context),mybuild.lang.TestFor,
-			$(new AnnotationCallbackFactory,TestForAnnotationCallback)))
+			TestForAnnotationCallback))
 
 	$(invoke 1->addSupported,Build,mybuild.lang.WithTest,
-		$(new AnnotationCallbackFactory,WithTestAnnotationCallback))
+		WithTestAnnotationCallback)
 
 endef
 
