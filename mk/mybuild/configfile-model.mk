@@ -94,10 +94,10 @@ define class-CfgInclude
 	$(eobject ConfigFile_Include,
 		CfgInclude,MyAnnotationTarget ENamedObject,)
 
-	# Property 'module : MyModuleType'.
-	# Property 'module_link : ELink'.
+	# Property 'module... : MyModuleType'.
+	# Property 'module_links... : ELink'.
 	$(eobject-reference ConfigFile_Include_module,
-		module,MyModuleType,,changeable linkable)
+		module,MyModuleType,,changeable many linkable)
 
 	# Property 'optionBindings... : MyOptionBinding'.
 	$(eobject-reference ConfigFile_Include_optionBindings,
