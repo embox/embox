@@ -494,6 +494,8 @@ define class-MyModuleType
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_ModuleType) ENABLED START
+	$(super CustomStorageHolder)
+
 	$(method filterInstances... : MyInstance,
 		$(error $0: NIY: \
 			ModuleType must override it with respect to the inheritance))

@@ -145,6 +145,9 @@ define class-ResourceSet
 	$(method createLinker,
 		$(new Linker,$(this)))
 
+	$(method getExportedObjectByQualifiedName,
+		$(map-get exportedObjectsMap/$1))
+
 	$(if $(value 1),
 		$(set resources,$1))
 
