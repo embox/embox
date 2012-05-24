@@ -17,9 +17,10 @@ dot: $(GRAPH_PS)
 	@echo 'Dot complete'
 
 $(GRAPH_DOT) : mk/codegen-dot.mk
-	$(MAKE) -f mk/script/dot.mk BUILD_MODEL=$(build_model) > $@
+$(GRAPH_DOT) : mk/script/dot2.mk
+	@$(MKDIR) $(SRCGEN_DIR) && $(MAKE) -f $< BUILD_MODEL=$(build_model) > $@
 
 $(GRAPH_PS) : $(GRAPH_DOT)
-	@mkdir -p $(DOT_DIR) && fdp -Tps $< -o $@
+	@$(MKDIR) $(DOT_DIR) && dot -Tps $< -o $@
 
 endif
