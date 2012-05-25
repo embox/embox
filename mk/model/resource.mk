@@ -139,8 +139,7 @@ define class-ResourceSet
 
 	$(property contents... : EObject)
 	$(getter contents,
-		$(for resource <- $(get resources),
-			$(invoke resources->contents)))
+		$(get resources>contents))
 
 	$(method createLinker,
 		$(new Linker,$(this)))
