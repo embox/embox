@@ -10,7 +10,7 @@ module clock_source {
 	source "timecounter.c"
 
 	source "ktime.c"
-	depends embox.compat.posix.LibPosix
+	//depends embox.compat.posix.LibPosix
 }
 
 module clock_event {
