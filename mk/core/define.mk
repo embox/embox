@@ -1536,7 +1536,8 @@ define __argsplit
 
 	$(def-ifdef DEF_DEBUG,$(call __def_debug,argsplit [$1] using [$2]))
 
-	$(with \
+	# The outer expansion.
+	$(expand $(with \
 		${eval \
 			# It gets populated with something like '{1} ;{2}'.
 			__argsplit_tmp__ := {1}
@@ -1571,20 +1572,18 @@ define __argsplit
 		# Arg 2.
 		$(subst $(\s),,$(__argsplit_tmp__)),
 
-		$3,$(value 4),
-
 		# The exact structure of used delimiters is encoded inside
 		# builtin name which is pushed onto the expansion stack.
-		$(call __def_o_push,
+		$$(call __def_o_push,
 			__argsplit__-($2))
 
-		$(foreach builtin_name,$(__builtin_name),
-			$(expand $$(call $$3$$(__def_o_arg),$1$(__argsplit_varargs))))
+		$$(foreach builtin_name,$$(__builtin_name),
+			$$(call $$3$$(__def_o_arg),$1$(__argsplit_varargs)))
 
 		$(def-ifdef DEF_DEBUG,
 			# TODO Using internals of 'expand'. -- Eldar
-			$(call __def_o_pop,$(__def_tmp__)),$(__def_o_pop))
-	)
+			$$(call __def_o_pop,$$(__def_tmp__)),$$(__def_o_pop))
+	))
 endef
 
 #
