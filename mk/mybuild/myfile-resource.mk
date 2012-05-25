@@ -40,12 +40,25 @@ define myfile_create_resource_set
 			res <- $1,
 			obj <- $(get res->contents),
 			$(if $(invoke MyFile_AnnotationTarget->isInstance,$(obj)),
-				$(call mybuild_annotation_process,MyLink,$(obj),$(res))))
+				$(call mybuild_annotation_process,MyLink,$(obj),$(res)))
+			$(if $(invoke MyFile_ModuleType->isInstance,$(obj)),
+				$(call check_cyclic_dependency,$(obj),,$(rs))))
 
 		$(for r <- $(get rs->resources),
 			$(invoke r->printIssues))
 
 		$(rs))
+endef
+
+define check_cyclic_dependency
+	$(if $(filter $1, $2),
+		$(warning $(for mod <- $1 $2, $(get mod->qualifiedName)):
+			cycle dependency),
+
+		$(for \
+			mod <- $1,
+			dep <- $(get mod->depends),
+			$(call $0,$(dep),$(mod) $2)))
 endef
 
 # Check OptionBinding's for type correctness in resources of any type
