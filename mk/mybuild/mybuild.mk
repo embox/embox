@@ -503,24 +503,19 @@ define class-Mybuild
 	$(method checkCyclicDependency,
 		$(for inst <- $1,
 			$(with $(inst),
-				$(warning $1: $(get 1->depends))
 				$(for \
 					inst <-$1,
 					depInst <- $(get inst->depends),
 					mod <- $(get inst->type),
 					depMod <- $(get depInst->type),
-					$(warning $(get mod->qualifiedName), $(depInst):$(get depMod->qualifiedName))
 					$(if $(map-get includingInstancesChecked/$(depMod)),,
-						$(warning $2-> $(get mod->qualifiedName))
 						$(map-set includingInstances/$(mod),$(depMod))
 
 						$(if $(invoke chkCyclic,$(depMod)),
 							$(call $0,$(depInst),$2   ))
 
-						$(warning $2<- $(get mod->qualifiedName))
 						$(map-set includingInstances/$(mod),)
 						$(map-set includingInstancesChecked/$(depMod),1)
-						$(warning marking $(get inst->type>qualifiedName))
 						))
 				)))
 
