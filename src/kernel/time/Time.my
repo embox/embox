@@ -5,12 +5,10 @@ module clock_source {
 	option number clocks_quantity = 4
 	option number timecounter_quantity = 10
 
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "clock_source.c"
 	source "timecounter.c"
 
 	source "ktime.c"
-	//depends embox.compat.posix.LibPosix
 }
 
 module clock_event {

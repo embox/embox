@@ -1,6 +1,6 @@
 package embox.compat.posix
 
-module LibPosix {
+static module LibPosix {
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "exec.c"
 	source "file_op.c"
@@ -16,4 +16,5 @@ module LibPosix {
 	depends embox.util.LibUtil
 	depends embox.kernel.task_api
 	depends embox.fs.driver.stdio
+	depends embox.lib.LibC
 }
