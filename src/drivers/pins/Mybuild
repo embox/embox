@@ -1,12 +1,3 @@
 package embox.driver
 
 
-abstract module pins {
-
-}
-
-module at91_pins extends embox.driver.pins {
-	source "at91_pins.c", "pins.c"
-
-	depends embox.kernel.irq
-}

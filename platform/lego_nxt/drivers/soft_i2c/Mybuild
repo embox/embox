@@ -6,5 +6,6 @@ module soft_i2c {
     @IncludePath("$(PLATFORM_DIR)/lego_nxt/include")
 	source "soft_i2c.c"
 
-	depends embox.driver.pins, embox.driver.at91_tc
+	depends embox.driver.gpio.at91_pins
+	depends embox.driver.at91_tc
 }

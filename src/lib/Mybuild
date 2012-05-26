@@ -17,6 +17,7 @@ static module LibC {
 	source "math/ldiv.c"
 	source "readline/readline.c"
 	source "soft-fp/df3.c"
+	source "soft-fp/lshrdi3.c"
 	source "soft-fp/divdi3.c"
 	source "soft-fp/divsi3.c"
 	source "soft-fp/moddi3.c"

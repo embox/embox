@@ -18,6 +18,7 @@
 #include <fs/fs_drv.h>
 #include <fs/node.h>
 #include <fs/nfs.h>
+#include <fs/nfs_clientstate.h>
 #include <util/array.h>
 #include <embox/device.h>
 #include <mem/page.h>
@@ -270,6 +271,7 @@ static int nfsfs_mount(void *par) {
 	mount_params_t *params;
 	node_t *dir_node, *dev_node;
 	nfs_file_description_t *fd, *dev_fd;
+	int rezult;
 
 	params = (mount_params_t *) par;
 	dev_node = params->dev_node;
@@ -290,7 +292,9 @@ static int nfsfs_mount(void *par) {
 	dir_node->file_info = (void *) &nfsfs_fop;
 	dir_node->attr = (void *) fd;
 
-	return 0;
+	rezult = Mount_NFS_Filesystem(params->dev);
+
+	return rezult;
 }
 
 static int nfsfs_create(void *par) {

@@ -1,16 +1,16 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 16.05.2012
  * @author Anton Bondarev
  */
+
 #include <types.h>
 
 uint64_t __udivdi3(uint64_t num, uint64_t den) {
 	uint64_t result = 0;
-	int steps;
+	int steps = 0;
 	int i;
 
 	if (0 == den) {

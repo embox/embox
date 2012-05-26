@@ -24,4 +24,5 @@ module mkfs {
 	depends embox.fs.ramdisk
 	depends embox.fs.driver.repo
 	depends embox.framework.LibFramework
+	depends embox.fs.driver.nfs
 }

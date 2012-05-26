@@ -25,7 +25,7 @@ module usart {
 
 	depends embox.kernel.timer.sleep_api
 	depends embox.kernel.irq
-	depends embox.driver.pins
+	depends embox.driver.gpio.at91_pins
 }
 
 module bt112 extends embox.driver.Bluetooth {

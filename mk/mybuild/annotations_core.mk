@@ -9,43 +9,25 @@ __mybuild_annotations_core_mk := 1
 include mk/core/define.mk
 
 define class-AnnotationsCore
-	$(map avaibleAnnotations : AnnotationCallbackFactory)
+	$(map avaibleAnnotations : AnnotationCallback)
 
 	$(method addSupported,
-		$(map-set avaibleAnnotations/$1/$2,$3))
+		$(map-set avaibleAnnotations/$1/$2,$(new $3)))
 
 	$(method getSupported,
 		$(map-get avaibleAnnotations/$1/$2))
 
 	$(for fileMain <- $(value 1),
-		$(call $(fileMain),$(this)))
-endef
-
-define class-AnnotationCallback
-	$(map options)
-	$(property-field target)
-	$(property-field annotationType)
-
-	$(method callback,
-		$(invoke $1Callback))
-
-	$(method MyFileCallback)
-
-
-	$(method BuildCallback)
-
-endef
-
-define class-AnnotationCallbackFactory
-	$(property-field annotationCallbackClassName,$1)
+		$(if $(value $(fileMain)),
+			$(call $(fileMain),$(this))))
 
 	$(method new,
-		$(for obj <- $(new $(get annotationCallbackClassName)),
-			$(set obj->target,$1)
-			$(set obj->annotationType,$(get 2->type))
+		$(for obj <- $1,
+			$(set obj->target,$2)
+			$(set obj->annotationType,$(get 3->type))
 
 			$(for \
-				annotation <- $2,
+				annotation <- $3,
 				annotationBinding <- $(get annotation->bindings),
 				option <- $(get annotationBinding->option),
 				optionName <- $(get option->name),
@@ -56,16 +38,43 @@ define class-AnnotationCallbackFactory
 
 endef
 
-define myfile_annotation_callbacks
-	$(for \
-		target <- $1,
-		annotation <- $(get target->annotations),
-		annotationType <- $(get annotation->type),
-		callbackClass <- $(invoke annotationsCore->getSupported,$2,
-			$(get annotationType->qualifiedName)),
-		callbackObj <- $(invoke callbackClass->new,$(target),$(annotation)),
+define class-AnnotationCallback
+	$(map options)
+	$(property-field target)
+	$(property-field annotationType)
 
-		$(invoke callbackObj->callback,$2))
+	$(method callback,
+		$(invoke $1Callback,$(value 2)))
+
+	$(method MyLinkCallback)
+	$(method BuildCallback)
+
+endef
+
+# Args:
+#	1. Build phase
+#	2. Target
+#	3. Optional
+define mybuild_annotation_process
+	$(with \
+			$1,
+			$2,
+			$(for \
+				target <- $2,
+				annotation <- $(get target->annotations),
+				annotationType <- $(get annotation->type),
+
+				callbackClass <- $(invoke annotationsCore->getSupported,$1,
+					$(get annotationType->qualifiedName)),
+				$(invoke annotationsCore->new,$(callbackClass),$(target),
+					$(annotation))),
+			$(value 3),
+
+
+		$(if $(strip $3),
+			$(invoke 3->callback,$1,$4),
+			$2))
+
 endef
 
 $(def_all)

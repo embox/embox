@@ -17,6 +17,9 @@
 #include <net/protocol.h>
 #include <net/inet_common.h>
 #include <embox/net/proto.h>
+#include <assert.h>
+#include <errno.h>
+#include <net/route.h>
 
 #include <embox/net/sock.h>
 
@@ -77,8 +80,16 @@ static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 
 int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			size_t len) {
+	struct rt_entry *rte;
+	sk_buff_t *skb;
 	struct inet_sock *inet = inet_sk(sk);
-	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
+
+	rte = rt_fib_get_best(inet->daddr);
+	if (rte == NULL) {
+		return -EHOSTUNREACH;
+	}
+
+	skb = alloc_skb(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
 				    /*inet->opt->optlen +*/ UDP_HEADER_SIZE +
 				    msg->msg_iov->iov_len, 0);
 	assert(skb);
@@ -89,6 +100,9 @@ int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 				(void *) msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 	/* Fill UDP header */
 	rebuild_udp_header(skb, inet->sport, inet->dport, len);
+	/* Setup inet_sock */
+	assert(in_dev_get(rte->dev) != NULL);
+	inet->saddr = in_dev_get(rte->dev)->ifa_address; // TODO remove this
 	return ip_send_packet(inet, skb);
 }
 

@@ -44,8 +44,9 @@ endef
 # The following features are defined:
 #   - reference 'fileContentRoot'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -73,11 +74,15 @@ endef
 # The following features are defined:
 #   - reference 'options'
 #
+# The following operations are inherited from 'InstantiatableType':
+#   - operation 'filterInstances'
+#
 # The following features are inherited from 'Type':
 #   - reference 'fileContentRoot'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -86,9 +91,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyAnnotationType
-	# Extends 'MyType' class.
+	# Extends 'MyType', 'MyInstantiatableType' classes.
 	$(eobject MyFile_AnnotationType,
-		MyAnnotationType,MyType,)
+		MyAnnotationType,MyType MyInstantiatableType,)
 
 	# Property 'options... : MyOption'.
 	$(eobject-reference MyFile_AnnotationType_options,
@@ -105,12 +110,18 @@ endef
 # The following features are defined:
 #   - reference 'type'
 #   - reference 'target'
+#
+# The following operations are inherited from 'Instance':
+#   - operation 'getType'
+#
+# The following features and operations are inherited from 'OptionBindingHolder':
 #   - reference 'bindings'
+#   - operation 'getBindingsOfOption'
 #
 define class-MyAnnotation
-	# Extends 'EObject' class (implicitly).
+	# Extends 'MyOptionBindingHolder', 'MyInstance' classes.
 	$(eobject MyFile_Annotation,
-		MyAnnotation,,)
+		MyAnnotation,MyOptionBindingHolder MyInstance,)
 
 	# Property 'type : MyAnnotationType'.
 	# Property 'type_link : ELink'.
@@ -121,23 +132,23 @@ define class-MyAnnotation
 	$(eobject-reference MyFile_Annotation_target,
 		target,MyAnnotationTarget,annotations,changeable container)
 
-	# Property 'bindings... : MyOptionBinding'.
-	$(eobject-reference MyFile_Annotation_bindings,
-		bindings,MyOptionBinding,,changeable many containment)
-
 	# PROTECTED REGION ID(MyFile_Annotation) ENABLED START
-	$(property qualifiedName)
+	$(method getType : MyInstantiatableType,
+		$(get type))
 
+	$(property qualifiedName)
 	$(getter qualifiedName,
-		$(get $(get type).qualifiedName))
+		$(get type>qualifiedName))
+
 	# PROTECTED REGION END
 endef
 
 #
 # Model object 'AnnotationTarget'.
 #
-# The following features are defined:
+# The following features and operations are defined:
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 define class-MyAnnotationTarget # abstract
 	# Extends 'EObject' class (implicitly).
@@ -147,6 +158,13 @@ define class-MyAnnotationTarget # abstract
 	# Property 'annotations... : MyAnnotation'.
 	$(eobject-reference MyFile_AnnotationTarget_annotations,
 		annotations,MyAnnotation,target,changeable many containment)
+
+	# Method 'getAnnotationsOfType... : MyAnnotation'.
+	#   1. types... : MyAnnotationType
+	# PROTECTED REGION ID(MyFile_AnnotationTarget_getAnnotationsOfType) ENABLED START
+	$(method getAnnotationsOfType... : MyAnnotation,
+		$(with $1,$(get annotations),$(invoke 1->filterInstances,$2)))
+	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_AnnotationTarget) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -162,8 +180,9 @@ endef
 # The following features are inherited from 'Type':
 #   - reference 'fileContentRoot'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -286,11 +305,15 @@ endef
 #   - operation 'isSubTypeOf'
 #   - operation 'isSuperTypeOf'
 #
+# The following operations are inherited from 'InstantiatableType':
+#   - operation 'filterInstances'
+#
 # The following features are inherited from 'Type':
 #   - reference 'fileContentRoot'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -299,9 +322,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyModuleType
-	# Extends 'MyType' class.
+	# Extends 'MyType', 'MyInstantiatableType' classes.
 	$(eobject MyFile_ModuleType,
-		MyModuleType,MyType,)
+		MyModuleType,MyType MyInstantiatableType,)
 
 	# Property 'modifiers'.
 	$(eobject-attribute MyFile_ModuleType_modifiers,
@@ -471,6 +494,12 @@ define class-MyModuleType
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_ModuleType) ENABLED START
+	$(super CustomStorageHolder)
+
+	$(method filterInstances... : MyInstance,
+		$(error $0: NIY: \
+			ModuleType must override it with respect to the inheritance))
+
 	$(setter modifiers,
 		$(set-field modifiers,$(sort $1)))
 
@@ -497,8 +526,12 @@ endef
 #   - operation 'validateValue'
 #   - operation 'getId'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following operations are inherited from 'InstantiatableType':
+#   - operation 'filterInstances'
+#
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -507,9 +540,9 @@ endef
 #   - operation 'eInverseResolvedLinks'
 #
 define class-MyOption # abstract
-	# Extends 'ENamedObject', 'MyAnnotationTarget' classes.
+	# Extends 'ENamedObject', 'MyAnnotationTarget', 'MyInstantiatableType' classes.
 	$(eobject MyFile_Option,
-		MyOption,ENamedObject MyAnnotationTarget,abstract)
+		MyOption,ENamedObject MyAnnotationTarget MyInstantiatableType,abstract)
 
 	# Property 'defaultValue : MyLiteral'.
 	$(eobject-reference MyFile_Option_defaultValue,
@@ -548,8 +581,12 @@ endef
 #   - operation 'validateValue'
 #   - operation 'getId'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following operations are inherited from 'InstantiatableType':
+#   - operation 'filterInstances'
+#
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -586,8 +623,12 @@ endef
 #   - operation 'validateValue'
 #   - operation 'getId'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following operations are inherited from 'InstantiatableType':
+#   - operation 'filterInstances'
+#
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -624,8 +665,12 @@ endef
 #   - operation 'validateValue'
 #   - operation 'getId'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following operations are inherited from 'InstantiatableType':
+#   - operation 'filterInstances'
+#
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -663,8 +708,12 @@ endef
 #   - operation 'validateValue'
 #   - operation 'getId'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following operations are inherited from 'InstantiatableType':
+#   - operation 'filterInstances'
+#
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -831,10 +880,13 @@ endef
 #   - reference 'option'
 #   - reference 'value'
 #
+# The following operations are inherited from 'Instance':
+#   - operation 'getType'
+#
 define class-MyOptionBinding
-	# Extends 'EObject' class (implicitly).
+	# Extends 'MyInstance' class.
 	$(eobject MyFile_OptionBinding,
-		MyOptionBinding,,)
+		MyOptionBinding,MyInstance,)
 
 	# Property 'option : MyOption'.
 	# Property 'option_link : ELink'.
@@ -846,10 +898,40 @@ define class-MyOptionBinding
 		value,MyLiteral,,changeable containment)
 
 	# PROTECTED REGION ID(MyFile_OptionBinding) ENABLED START
+	$(method getType : MyInstantiatableType,
+		$(get option))
 	$(method setLiteral,
 		$(for opt <- $(get option),
 			$(if $(invoke opt->validate,$1),
 				$(set-field value,$1))))
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'OptionBindingHolder'.
+#
+# The following features and operations are defined:
+#   - reference 'bindings'
+#   - operation 'getBindingsOfOption'
+#
+define class-MyOptionBindingHolder
+	# Extends 'EObject' class (implicitly).
+	$(eobject MyFile_OptionBindingHolder,
+		MyOptionBindingHolder,,)
+
+	# Property 'bindings... : MyOptionBinding'.
+	$(eobject-reference MyFile_OptionBindingHolder_bindings,
+		bindings,MyOptionBinding,,changeable many containment)
+
+	# Method 'getBindingsOfOption... : MyOptionBinding'.
+	#   1. options... : MyOption
+	# PROTECTED REGION ID(MyFile_OptionBindingHolder_getBindingsOfOption) ENABLED START
+	$(method getBindingsOfOption... : MyOptionBinding,
+		$(with $1,$(get bindings),$(invoke 1->filterInstances,$2)))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_OptionBindingHolder) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef
 
@@ -859,8 +941,9 @@ endef
 # The following features are defined:
 #   - reference 'module'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 define class-MyMember
 	# Extends 'MyAnnotationTarget' class.
@@ -915,8 +998,9 @@ endef
 # The following features are inherited from 'Member':
 #   - reference 'module'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 define class-MyDependsMember
 	# Extends 'MyMember' class.
@@ -942,8 +1026,9 @@ endef
 # The following features are inherited from 'Member':
 #   - reference 'module'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 define class-MyRequiresMember
 	# Extends 'MyMember' class.
@@ -969,8 +1054,9 @@ endef
 # The following features are inherited from 'Member':
 #   - reference 'module'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 define class-MyProvidesMember
 	# Extends 'MyMember' class.
@@ -996,8 +1082,9 @@ endef
 # The following features are inherited from 'Member':
 #   - reference 'module'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 define class-MySourceMember
 	# Extends 'MyMember' class.
@@ -1022,8 +1109,9 @@ endef
 # The following features are inherited from 'Member':
 #   - reference 'module'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 define class-MyObjectMember
 	# Extends 'MyMember' class.
@@ -1048,8 +1136,9 @@ endef
 # The following features are inherited from 'Member':
 #   - reference 'module'
 #
-# The following features are inherited from 'AnnotationTarget':
+# The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
+#   - operation 'getAnnotationsOfType'
 #
 define class-MyOptionMember
 	# Extends 'MyMember' class.
@@ -1061,6 +1150,51 @@ define class-MyOptionMember
 		options,MyOption,,changeable many containment)
 
 	# PROTECTED REGION ID(MyFile_OptionMember) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'InstantiatableType'.
+#
+# The following operations are defined:
+#   - operation 'filterInstances'
+#
+define class-MyInstantiatableType # abstract
+	# Extends 'EObject' class (implicitly).
+	$(eobject MyFile_InstantiatableType,
+		MyInstantiatableType,,abstract)
+
+	# Method 'filterInstances... : MyInstance'.
+	#   1. instances... : MyInstance
+	# PROTECTED REGION ID(MyFile_InstantiatableType_filterInstances) ENABLED START
+	$(method filterInstances... : MyInstance,
+		$(strip $(for i <- $1,$(if $(filter $(this),$(invoke i->getType)),$a))))
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_InstantiatableType) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'Instance'.
+#
+# The following operations are defined:
+#   - operation 'getType'
+#
+define class-MyInstance # abstract
+	# Extends 'EObject' class (implicitly).
+	$(eobject MyFile_Instance,
+		MyInstance,,abstract)
+
+	# Method 'getType : MyInstantiatableType'.
+	# PROTECTED REGION ID(MyFile_Instance_getType) ENABLED START
+	# Abstract, clients must override.
+	$(method getType : MyInstantiatableType)
+	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_Instance) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
 endef

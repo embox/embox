@@ -4,7 +4,7 @@ package olimex.service
 module robobot_bluetooth_car {
 	@IncludePath("$(PLATFORM_DIR)/olimex/include")
 	source "bluetooth_car.c"
-	depends embox.driver.pins
+	depends embox.driver.gpio.at91_pins
 	depends embox.driver.Bluetooth
 }
 

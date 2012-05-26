@@ -3,39 +3,36 @@ package embox.driver.clock
 module at91_pitc extends embox.arch.clock {
 	source "at91_pitc.c"
 
-	depends embox.kernel.timer.sys_timer
 	depends embox.kernel.irq
-	depends embox.kernel.clock_source
+	depends embox.kernel.time.clock_source
 }
 
 module gptimer extends embox.arch.clock {
 	source "gptimer.c"
 
-	depends embox.kernel.timer.sys_timer
+	/*depends embox.kernel.timer.sys_timer*/
 	depends embox.kernel.irq
-	depends embox.kernel.clock_source
+	depends embox.kernel.time.clock_source
 	depends embox.driver.ambapp_api
 }
 
 module mb_timer extends embox.arch.clock {
 	source "mb_timer.c"
 
-	depends embox.kernel.timer.sys_timer
 	depends embox.kernel.irq
-	depends embox.kernel.clock_source
+	depends embox.kernel.time.clock_source
 }
 
 module pit extends embox.arch.clock {
 	source "pit.c"
 
-	depends embox.kernel.timer.sys_timer
 	depends embox.kernel.irq
-	depends embox.kernel.clock_source
+	depends embox.kernel.time.clock_source
 }
 
 module systick_timer extends embox.arch.clock {
 	source "systick_timer.c"
 
-	depends embox.kernel.timer.sys_timer
-	depends embox.kernel.clock_source
+	depends embox.kernel.time.clock_source
+	depends embox.kernel.time.clock_event
 }

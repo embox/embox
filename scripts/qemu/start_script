@@ -1,5 +1,6 @@
 #!/bin/sh
 
 /sbin/ip tuntap add mode tap tap0
-/usr/sbin/ethtool -K tap0 rx off tx off gro off
-/sbin/ifconfig tap0 10.0.2.15 up
+/sbin/ethtool -K tap0 rx off tx off gro off
+/sbin/ifconfig tap0 10.0.2.10 dstaddr 10.0.2.0 netmask 255.255.255.0 down
+/sbin/ifconfig tap0 hw ether aa:bb:cc:dd:ee:ff up

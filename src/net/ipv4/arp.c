@@ -121,12 +121,12 @@ int arp_resolve(sk_buff_t *pack) {
 	/* loopback */
 	if (ipv4_is_loopback(ip->daddr) || (ip->daddr == ip->saddr)) {
 		memset(pack->mac.ethh->h_dest, 0x00, ETH_ALEN);
-		return 0;
+		return ENOERR;
 	}
 	/* broadcast */
 	if (ip->daddr == htonl(INADDR_BROADCAST)) {
 		memset(pack->mac.ethh->h_dest, 0xFF, ETH_ALEN);
-		return 0;
+		return ENOERR;
 	}
 	dev = pack->dev;
 #if 0
@@ -137,9 +137,10 @@ int arp_resolve(sk_buff_t *pack) {
 	}
 #endif
 	/* someone on the net */
-	if ((hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr)) != NULL) {
+	hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr);
+	if (hw_addr != NULL) {
 		memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
-		return 0;
+		return ENOERR;
 	}
 
 	/* send arp request and add packet in list of deferred packets */
@@ -147,7 +148,7 @@ int arp_resolve(sk_buff_t *pack) {
 	arp_send(ARPOP_REQUEST, ETH_P_ARP, ip->daddr, dev, ip->saddr, NULL,
 			dev->dev_addr, NULL);
 
-	return -1;
+	return -ENOENT;
 }
 
 /**

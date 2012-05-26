@@ -72,7 +72,6 @@ include mk/core/alloc.mk
 include mk/core/common.mk
 include mk/core/string.mk
 
-include mk/util/list.mk
 include mk/util/var/assign.mk
 include mk/util/var/info.mk
 
@@ -239,9 +238,9 @@ __def_do = \
 #   Dollars remain escaped.
 __def_strip = \
 	$(__def_strip_precheck)$(call __def_strip_unescape \
-		,$(call list_scan,__def_strip_fold,_$$n \
+		,$(call scan,_$$n \
 			,$(call __def_strip_escape \
-				,$1)))
+				,$1),__def_strip_fold))
 
 # Params:
 #   1. Code with dollars escaped.
@@ -1199,10 +1198,10 @@ define builtin_func-fx
 			$(subst $(\comma)$(\s),$(\comma),
 				$(foreach arg,$(builtin_args_list),
 					$(if $(findstring $$,$(subst $$$$,,$($(arg)))),
-						$(call list_fold,
-							$(lambda $$$$(subst $$$$($2),$$$$$$$${$2},$1)),
+						$(call fold,
 							$$$$(subst $$$$$$$$,$$$$$$$$$$$$$$$$,$$($(arg))),
-							\comma [ ]
+							\comma [ ],
+							$(lambda $$$$(subst $$$$($2),$$$$$$$${$2},$1))
 						),
 						$(subst $$,$$$$$$$$,$($(arg)))
 					)
@@ -1418,13 +1417,7 @@ define __builtin_to_function_inline
 		# We just escape everything except recognized argument references and
 		# expand it in the current context.
 		$(expand \
-			$(call list_fold,
-				$(lambda \
-					$(subst $$$$($2),$$(foreach arg,$2,$$($3)),
-						$(if $(filter 1 2 3 4 5 6 7 8 9,$2),
-							$(subst $$$$$2,$$$$($2),$1),
-							$1))
-				),
+			$(call fold,
 				$(subst $$$$$$$$,$$($$)$$($$),$(subst $$,$$$$,
 					# Any usage of arg 0 is replaced by possibly overridden
 					# value of 'builtin_name',
@@ -1432,6 +1425,12 @@ define __builtin_to_function_inline
 					$(subst $$(0),$(builtin_name),$(subst $$0,$(builtin_name),
 						$(value $(builtin_name)))))),
 				$(builtin_args_list),
+				$(lambda \
+					$(subst $$$$($2),$$(foreach arg,$2,$$($3)),
+						$(if $(filter 1 2 3 4 5 6 7 8 9,$2),
+							$(subst $$$$$2,$$$$($2),$1),
+							$1))
+				),
 				$(lambda \
 					${eval \
 						__def_inline_tmp__ += $(arg)
@@ -1459,10 +1458,10 @@ define __builtin_to_function_inline
 				# latters are guaranteed to be simply expanded variables with
 				# no possible side effects or any performance overhead.
 				$(findstring $$,
-					$(call list_fold,
-						$(lambda $(subst $$$2,,$(subst $$($2),,$1))),
+					$(call fold,
 						$(subst $$$$,,$($(arg))),
-						0 1 2 3 4 5 6 7 8 9)),
+						0 1 2 3 4 5 6 7 8 9,
+						$(lambda $(subst $$$2,,$(subst $$($2),,$1))))),
 
 				# Issue a debug message with the reason of ambiguity
 				# and emit the name of the bad argument.
@@ -1494,8 +1493,12 @@ endif # DEF_NOINLINE
 $(def_all)
 
 #
+# Extension: 'argsplit' builtin function.
+#
 # Generic argument splitter which handles arbitrary argument separators with
 # respect to parentheses.
+#
+# '$(argsplit string,separators...,handler_fn[,optional_args...])'
 #
 # Params:
 #   1. String to split. It is important to note, that it will be expanded,
@@ -1509,60 +1512,78 @@ $(def_all)
 #   3. Handler function which is called with the recognized arguments.
 #      The context in which it is called is effectively the same as if it
 #      would be a builtin handler for '$(__argsplit__-(???) args...)'.
-#   4. (optional) Passed to the handler after the last argument.
-define builtin_argsplit
+#  ... (optional) Passed to the handler after the last argument.
+#
+# Return:
+#   The result of calling the handler function.
+define builtin_func-argsplit
+	$(call builtin_check_min_arity,3)
+
+	# The trick below is to be able to pass an arbitrary number of optional
+	# arguments.
+	$$(foreach __argsplit_varargs,
+		$(or $(subst $(\s),,$(patsubst %,$$(,)$$$$(%),
+				$(words-from 4,$(builtin_args_list)))),
+			$$(\0)),
+		$$(call __argsplit,$(builtin_args)))
+endef
+
+# Called with '__argsplit_varargs' set to a comma-separated list of unexpanded
+# references to the arguments starting from 4 (if any), e.g. ',$(4),$(5)'.
+define __argsplit
 	$(assert $(call var_defined,$3),
 		Unknown handler function: '$3')
 
 	$(def-ifdef DEF_DEBUG,$(call __def_debug,argsplit [$1] using [$2]))
 
-	$(with \
+	# The outer expansion.
+	$(expand $(with \
 		${eval \
 			# It gets populated with something like '{1} ;{2}'.
-			__builtin_argsplit_tmp__ := {1}
+			__argsplit_tmp__ := {1}
 		}
 		# The inner expansion.
 		$(foreach p,__argsplit_hook,$(foreach h,out,$(expand \
 			# Iterate through the list of separators and install an indirect
 			# hook to '$h', which expands into the identity function inside
 			# parens and into the lambda expression above otherwise.
-			$(call list_fold,
+			$(fold \
+
+				# 'h' variable is shadowed inside any parens.
+				# '(foo)' -> '$(foreach h,in,(foo))'.
+				$(subst $[,$$$[foreach h$(,)in$(,)$[,$(subst $],$]$],
+					$(subst $(,),$${$$p-comma-$$h},$(subst $$,$$$$,$1)))),
+
+				$2,# <- list of separators.
+
 				$(lambda \
 					$(assert $(not $(or \
 							$(strip $(foreach bad,$$ ( , ) { } $(\n) $(\h),
 								$(findstring $(bad),$2))),
-							$(findstring $2,foreach h id call))),
+							$(findstring $2,call - sep foreach in))),
 						Value '$2' can't be used as an argument separator)
 
-					# 'bar;baz' -> 'bar$(call $h,$(foreach h,id,;))baz'
+					# 'bar;baz' -> 'bar$(call $p-sep-$h,$(foreach h,in,;))baz'.
 					# The inner 'foreach' avoids any possible issues with
 					# nested separators (e.g. '->' and '>'), if any.
-					$(subst $2,$$(call $$p-sep-$$h,$$(foreach h,in,$2)),$1)),
-
-				# 'h' variable is shadowed inside any parens.
-				# '(foo)' -> '$(foreach h,id,(foo))'
-				$(subst $[,$$$[foreach h$(,)in$(,)$[,$(subst $],$]$],
-					$(subst $(,),$${$$p-comma-$$h},$(subst $$,$$$$,$1)))),
-
-				$2)))),
+					$(subst $2,
+						$$(call $$p-sep-$$h,$$(foreach h,in,$2)),$1)))))),
 
 		# Arg 2.
-		$(subst $(\s),,$(__builtin_argsplit_tmp__)),
-
-		$3,$(value 4),
+		$(subst $(\s),,$(__argsplit_tmp__)),
 
 		# The exact structure of used delimiters is encoded inside
 		# builtin name which is pushed onto the expansion stack.
-		$(call __def_o_push,
+		$$(call __def_o_push,
 			__argsplit__-($2))
 
-		$(foreach builtin_name,$(__builtin_name),
-			$(expand $$(call $$3$$(__def_o_arg),$1,$$4)))
+		$$(foreach builtin_name,$$(__builtin_name),
+			$$(call $$3$$(__def_o_arg),$1$(__argsplit_varargs)))
 
 		$(def-ifdef DEF_DEBUG,
 			# TODO Using internals of 'expand'. -- Eldar
-			$(call __def_o_pop,$(__def_tmp__)),$(__def_o_pop))
-	)
+			$$(call __def_o_pop,$$(__def_tmp__)),$$(__def_o_pop))
+	))
 endef
 
 #
@@ -1580,8 +1601,8 @@ define __argsplit_hook-sep-out
 	$(assert $(singleword [$1]))
 	${eval \
 		# Append '<separator>{<arg_nr>}' through a space.
-		__builtin_argsplit_tmp__ += \
-			$1{$(words x $(__builtin_argsplit_tmp__))}
+		__argsplit_tmp__ += \
+			$1{$(words x $(__argsplit_tmp__))}
 	}
 	# Advance the top of the expansion stack with a new
 	# argument and return the native argument separator.
@@ -1598,8 +1619,14 @@ __argsplit_hook-comma-out := $$(,)
 # Echo an unscaped comma.
 __argsplit_hook-comma-in := ,
 
-__builtin_argsplit_tmp__ :=
-__cache_transient += __builtin_argsplit_tmp__
+__argsplit_tmp__ :=
+__cache_transient += __argsplit_tmp__
+
+$(def_all)
+
+# Limited version, which supports at most one optional argument.
+argsplit = \
+	$(argsplit $1,$2,$3,$(value 4))
 
 # Retrives the actual argument separator (if any) occurred before the
 # given one. For example, when called from argsplit handler of
@@ -1610,7 +1637,7 @@ __cache_transient += __builtin_argsplit_tmp__
 #   1. The argument number.
 # Return:
 #   A separator (if any), or empty.
-define builtin_argsplit_sep_before
+define argsplit_sep_before
 	$(filter-patsubst %{$1},%,
 		$(subst },} ,$(filter-patsubst __argsplit__-(%),%,
 			# If we are in an argsplit context, then the builtin name looks
@@ -1619,36 +1646,52 @@ define builtin_argsplit_sep_before
 			$(__builtin_name))))
 endef
 
-# The same as 'builtin_argsplit_sep_before(N+1)'.
-define builtin_argsplit_sep_after
+# The same as 'argsplit_sep_before(N+1)'.
+define argsplit_sep_after
 	$(foreach 1,$(word $1,$(nofirstword $(builtin_args_list))),
-		$(builtin_argsplit_sep_before))
+		$(argsplit_sep_before))
 endef
 
-define builtin_argsplit_reconstruct
+define argsplit_reconstruct
 	$(expand $(subst {,$${,
 		$(filter-patsubst  __argsplit__-(%),%,$(__builtin_name))))
 endef
 
-$(def_all)
-
 #
 # Extension: 'argfold' builtin function.
 #
-# Argument combinator.
+# Argument list folding.
 #
-# '$(argfold intial_value,arg_nrs...,combinator_fn[,optional_args...])'
+# '$(argfold initial_value,arg_nrs...,combining_fn[,optional_args...])'
 #
-# Combining function takes the following arguments:
+# Params:
+#   1. Initial value.
+#   2. List of variable names.
+#   3. Combining function.
+#  ... (optional) arguments to pass to the combining function.
+# Return:
+#   The result of the last call to the combining function (if any),
+#   or the initial value in case of the empty list.
+#
+# The combining function takes the following arguments:
 #   1. Initial value for the first call,
 #      or intermediate value obtained from previous calls otherwise.
-#   2. A number of the argument being folded.
-#   3. A value of the argument.
+#   2. A value of the variable.
 #  ... Optional arguments.
+# Return:
+#   The value to pass to the next function call as new intermediate value, or
+#   to use it as a return value of 'argfold' if there is no more elements.
+#
+# It also can find the name of the variable being folded in 'argfold_name'
+# variable.
 #
 # Note:
-#   Arguments [3..] are expanded for each element of the list.
+#   The 'combining_fn' and 'optional_args' arguments ([3..]) are expanded
+#   for each element of the list. 'argfold_name' is available in the context
+#   of the expansion as well.
 define builtin_func-argfold
+	$(call builtin_check_min_arity,3)
+
 	$(with $1,$2,$3,
 		# Pack the rest arguments (if any) into arg 4.
 		$(foreach args_filter,$(lambda $(words-from 4,$1)),
@@ -1657,10 +1700,9 @@ define builtin_func-argfold
 		# Emit the following code.
 		$$(and \
 			$$(call var_assign_simple,__argfold_tmp__,$1)
-			$$(foreach __argfold_nr__,$2,
+			$$(foreach argfold_name,$2,
 				$$(call var_assign_simple,__argfold_tmp__,
-					$$(call $3,$$(__argfold_tmp__),
-						$$(__argfold_nr__),$$($$(__argfold_nr__)),$4))),)
+					$$(call $3,$$(__argfold_tmp__),$$($$(argfold_name)),$4))),)
 		$$(__argfold_tmp__)
 	)
 endef
@@ -1690,21 +1732,22 @@ argfold = \
 define builtin_macro-for
 	$(call builtin_check_min_arity,2)
 
-	$(subst-end $$$[foreach,,
-		$$$[foreach $(foreach a,$(nolastword $(builtin_args_list)),
-			$(call builtin_argsplit,$($a),<-,$(lambda \
+	# Iterate from the penultimate argument (innermost assignment)
+	# to the first one (outermost).
+	$(argfold $(expand $(builtin_lastarg)),
+		$(reverse $(nolastword $(builtin_args_list))),
+		$(lambda \
+			$(argsplit $2,<-,$(lambda \
 					$(if $(not $(eq 2,$(builtin_arity))),
 						$(call builtin_error,
 							Invalid argument to '$(builtin_caller)' \
-							function: '$($(words x $(builtin_args_list)))'))
-					# The order is inverted to avoid a leading space
-					# in cycle bodies.
-					$(trim $1),$(trim $2),$$$[foreach
-				),$($a))))
-
-	$(expand $(builtin_lastarg))# body
-
-	$(subst $(\s),,$(nolastword $(builtin_args_list:%=$])))
+							function: '$($(words x x $(builtin_args_list)))'))
+					# Wrap the result of previous steps by a '$(foreach ...)'
+					# with the recognized arguments.
+					$$(foreach $(trim $1),$(trim $2),$3)
+				),$1,$2)),
+		# The body.
+		$(expand $(builtin_lastarg)))
 endef
 
 $(def_all)

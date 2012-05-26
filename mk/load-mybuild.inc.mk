@@ -88,7 +88,8 @@ $(myfiles_mk) $(configfiles_mk) : $(MYBUILD_FILES_CACHE_DIR)/%.mk : %
 export myfiles_model_mk := $(MYBUILD_CACHE_DIR)/myfiles-model.mk
 myfiles_mk_cached_list_mk := $(MYBUILD_CACHE_DIR)/myfiles-list.mk
 
-$(myfiles_model_mk) : MAKEFILES := $(mk_mybuild_myfile) $(myfiles_mk) $(annotations_core_mk) $(mk_annotations_handlers_mk)
+$(myfiles_model_mk) : MAKEFILES := $(mk_mybuild_myfile) $(myfiles_mk) \
+	$(annotations_core_mk) $(mk_annotations_handlers_mk)
 $(myfiles_model_mk) :
 	@echo ' MYLINK: $(words $(myfiles_mk)) files $(__myfiles_model_stats)'
 	@$(MAKE) -f mk/script/mk-persist.mk \
@@ -119,7 +120,8 @@ load_mybuild_files += $(configfiles_model_mk)
 # Build model is inferred from both configuration and myfiles models.
 export build_model_mk := $(MYBUILD_CACHE_DIR)/build-model.mk
 
-$(build_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_model_mk) $(myfiles_model_mk)
+$(build_model_mk) : MAKEFILES := $(mk_mybuild) $(configfiles_model_mk) $(myfiles_model_mk) \
+	$(annotations_core_mk) $(mk_annotations_handlers_mk)
 $(build_model_mk) :
 	@echo ' BUILDMODEL'
 	@$(MAKE) -f mk/script/mk-persist.mk \

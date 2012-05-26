@@ -45,7 +45,7 @@ define __configFile_init
 	$(call eMetaReferenceInit,$(ConfigFile_Configuration_includes),includes,$(ConfigFile_Include),,changeable many containment)
 
 	$(call eMetaClassInit,$(ConfigFile_Include),Include,$(MyFile_AnnotationTarget) $(EModel_ENamedObject),)
-	$(call eMetaReferenceInit,$(ConfigFile_Include_module),module,$(MyFile_ModuleType),,changeable linkable)
+	$(call eMetaReferenceInit,$(ConfigFile_Include_module),module,$(MyFile_ModuleType),,changeable many linkable)
 	$(call eMetaReferenceInit,$(ConfigFile_Include_optionBindings),optionBindings,$(MyFile_OptionBinding),,changeable many containment)
 
 endef # __configFile_init

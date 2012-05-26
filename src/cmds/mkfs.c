@@ -22,7 +22,7 @@
 #include <cmd/mkfs.h>
 
 
-#define MIN_ARGS_OF_MKFS 2 /* <mkfs /dev/ram0> must create ramdisk*/
+#define MIN_ARGS_OF_MKFS 3 /* <mkfs -q /dev/ram0> must create ramdisk*/
 #define DEFAULT_BLOCK_QTTY  0x20
 #define DEFAULT_FS_NAME  "vfat"
 #define DEFAULT_FS_TYPE  16
@@ -34,7 +34,7 @@ static mkfs_params_t mkfs_params;
 static ramdisk_params_t *ramd_params;
 
 static void print_usage(void) {
-	printf("Usage: mkfs  [ -t type ] file [ blocks ]\n");
+	printf("Usage: mkfs [ -t type ] file [ blocks ]\n");
 }
 
 static int check_invalid(int min_argc, int argc, char **argv) {
@@ -131,7 +131,10 @@ int mkfs_do_operation(void *_mkfs_params) {
 					(const void *)mkfs_params->fs_name);
 		ramd_params->fs_type = mkfs_params->fs_type;
 
-		fs_drv = filesystem_find_drv((const char *) &mkfs_params->fs_name);
+		if(NULL == (fs_drv =
+				filesystem_find_drv((const char *) &mkfs_params->fs_name))) {
+			return -EINVAL;
+		}
 
 		/* format filesystem */
 		if (0 != (rezult = fs_drv->fsop->format((void *)ramd_params))) {

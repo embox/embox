@@ -18,9 +18,9 @@
 
 #define MOD_FLAG_ENABLED       (1 << 0)
 
+#define MOD_FLAG_OPINPROGRESS  (1 << 2)
 // TODO unused for now... -- Eldar
 #define MOD_FLAG_OPFAILED      (0 << 1)
-#define MOD_FLAG_OPINPROGRESS  (0 << 2)
 
 #define mod_flag_tst(mod, mask)   ((mod)->private->flags &   (mask))
 #define mod_flag_tgl(mod, mask) do (mod)->private->flags ^=  (mask); while (0)
@@ -89,18 +89,22 @@ static bool mod_traverse_needed(const struct mod *mod, bool op) {
 	return false;
 }
 
-static int mod_traverse_do(const struct mod **mods, bool op) {
+static int mod_traverse_do(const struct mod **mods, bool op, bool soft) {
 	const struct mod *mod;
+
 	array_nullterm_foreach(mod, mods) {
+		if (soft && mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS)) {
+			continue;
+		}
+
 		if (0 != mod_traverse(mod, op)) {
 			return -EINTR;
 		}
 	}
+
 	return 0;
 }
 
-// XXX What's about recursive invocations from mod ops? -- Eldar
-// TODO introduce -ELOOP or something else.
 static int mod_traverse(const struct mod *mod, bool op) {
 	const struct mod **deps = op ? mod->requires : mod->provides;
 	const struct mod **after_deps = mod->after_deps;
@@ -110,11 +114,16 @@ static int mod_traverse(const struct mod *mod, bool op) {
 		return 0;
 	}
 
-	if (!op && (ret = mod_traverse_do(after_deps, op))) {
+	assert(0 == mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS) &&
+			"Recursive mod traversing");
+
+	mod_flag_tgl(mod, MOD_FLAG_OPINPROGRESS);
+
+	if (!op && (ret = mod_traverse_do(after_deps, op, 1))) {
 		return ret;
 	}
 
-	if ((ret = mod_traverse_do(deps, op))) {
+	if ((ret = mod_traverse_do(deps, op, 0))) {
 		return ret;
 	}
 
@@ -122,7 +131,9 @@ static int mod_traverse(const struct mod *mod, bool op) {
 		return ret;
 	}
 
-	if (op && (ret = mod_traverse_do(after_deps,op))) {
+	mod_flag_tgl(mod, MOD_FLAG_OPINPROGRESS);
+
+	if ((ret = mod_traverse_do(after_deps, op, 1))) {
 		return ret;
 	}
 
@@ -197,6 +208,7 @@ static int do_enable(const struct mod *mod) {
 
 	mod_flag_clr(mod, MOD_FLAG_OPFAILED);
 	mod_flag_tgl(mod, MOD_FLAG_ENABLED);
+
 	return 0;
 
 opfailed:

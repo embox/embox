@@ -79,9 +79,4 @@ false :=
 not = $(if $1,,1)
 builtin_func-not = $(builtin_to_function_inline)
 
-make_bool = \
-  $(if $(strip $1),$(true),$(false))
-make_bool_unstripped = \
-  $(if $1,$(true),$(false))
-
 endif # __core_common_mk

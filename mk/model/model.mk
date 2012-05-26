@@ -830,7 +830,10 @@ define class-EFreezable # abstract
 endef
 
 # PROTECTED REGION ID(EModel) ENABLED START
-# TODO Add custom implementation here and remove this comment.
+
+define class-CustomStorageHolder
+	$(map customStorage... : Object)
+endef
 # PROTECTED REGION END
 
 $(def_all)

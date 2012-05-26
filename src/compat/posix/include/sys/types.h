@@ -32,6 +32,9 @@ typedef unsigned long clock_t;
 /** Used for time in microseconds.*/
 typedef unsigned long useconds_t;
 
+/** Used for time in microseconds.*/
+typedef long suseconds_t;
+
 typedef unsigned long spinlock_t;
 typedef __s32 socklen_t;
 typedef __u32 gfp_t;

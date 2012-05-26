@@ -32,10 +32,10 @@ all : $(CACHE_DEP_FILE)
 # all needed Makefiles, so its value will be valid.
 $(CACHE_DEP_FILE) :
 	@printf '$(CACHE_DEP_TARGET):' > $@
-	@for dep in $(MAKEFILE_LIST); \
+	@for dep in $(__cache_new_makefiles); \
 		do printf ' \\\n\t%s' "$$dep" >> $@; done
 	@printf '\n' >> $@
-	@for dep in $(MAKEFILE_LIST); \
+	@for dep in $(__cache_new_makefiles); \
 		do printf '\n%s:\n' "$$dep" >> $@; done
 
 endif
@@ -49,33 +49,49 @@ include mk/core/common.mk
 # assumed to be a list, that is whitespaces in their values are considered
 # insingnificant.
 # The current implementation also restricts volatile variable to be simple.
-__cache_volatile :=
+__cache_volatile := __cache_transient
 
 # Variables listed here are only initialized to an empty string.
 # Usually, transients are temporary variables.
 __cache_transient :=
 
 __cache_preinclude_variables :=
+__cache_preinclude_makefiles :=
 __cache_postinclude_variables :=
+__cache_postinclude_makefiles :=
+
+# Includes each script only if it has not been somehow included yet.
+__cache_include_one_by_one = \
+	$(foreach __cache_include,$1, \
+		$(eval include $(filter-out $(MAKEFILE_LIST),$(__cache_include))))
 
 # Remove ourselves from the list of used scripts.
 MAKEFILE_LIST :=
 
 # Include scripts which should not be cached...
-$(foreach __cache_include,$(CACHE_REQUIRES), \
-	$(eval include $(filter-out $(MAKEFILE_LIST),$(__cache_include))))
+$(call __cache_include_one_by_one,$(CACHE_REQUIRES))
 
 # Save volatile state.
 $(foreach v,__cache_volatile $(filter $(__cache_volatile),$(.VARIABLES)), \
 	${eval __cache_volatile_variable_$$v := $$(value $$v)})
 
+# Save them to be able to determine later whether a certain makefile
+# is a newly included script or it comes from an already cached one.
+__cache_preinclude_makefiles := $(sort $(MAKEFILE_LIST))
+
 # Collect variables...
 __cache_preinclude_variables := $(.VARIABLES)
-$(foreach __cache_include,$(CACHE_INCLUDES), \
-	$(eval include $(filter-out $(MAKEFILE_LIST),$(__cache_include))))
+$(call __cache_include_one_by_one,$(CACHE_INCLUDES))
 __cache_postinclude_variables := $(.VARIABLES)
 
-MAKEFILE_LIST := $(sort $(MAKEFILE_LIST))
+__cache_postinclude_makefiles := $(sort $(MAKEFILE_LIST))
+
+# As the name suggests, this is the list of scripts,
+# that we are actually going to cache.
+__cache_new_makefiles := \
+	$(filter-out \
+		$(__cache_preinclude_makefiles), \
+		$(__cache_postinclude_makefiles))
 
 __cache_volatile := $(strip $(__cache_volatile))
 __cache_transient := $(strip $(__cache_transient))
@@ -111,7 +127,7 @@ __cache_print_volatile_variable_definitions = \
 	$(foreach 1,__cache_volatile \
 			$(call __cache_sort,$(filter \
 				$(__cache_volatile), \
-				$(.VARIABLES))), \
+				$(__cache_postinclude_variables))), \
 		$(__cache_print_volatile_variable_definition))
 
 # Arg 1: variable name.
@@ -180,6 +196,10 @@ __cache_print_requires_inclusions = \
 		mk/core/common.mk $(filter-out mk/core/common.mk,$(CACHE_REQUIRES)), \
 		$(info include $$(filter-out $$(MAKEFILE_LIST),$(mk))))
 
+__cache_print_new_makefiles = \
+	$(info MAKEFILE_LIST += \
+		$(patsubst %,\$(\n)$(\t)%,$(__cache_new_makefiles)))
+
 __cache_print_list_comment = \
 	$(info $(\h) $1:) \
 	$(foreach mk,$(or $($1),<nothing>),$(info $(\h)   $(mk)))
@@ -201,6 +221,9 @@ $(info endif)
 $(info )
 endif
 $(__cache_print_requires_inclusions)
+$(info )
+$(info # List of newly cached makefiles.)
+$(__cache_print_new_makefiles)
 $(info )
 $(info # Transient variables.)
 $(__cache_print_transient_variable_definitions)

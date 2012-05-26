@@ -9,10 +9,10 @@ $_SRCS-touch += touch.c
 $_DEPS-touch += $(PLATFORM).driver.touch_sensor $(PLATFORM).driver.nxt_motor
 
 $_SRCS-sensor += sensor.c
-$_DEPS-sensor += $(PLATFORM).driver.nxt_avr_init embox.driver.pins
+$_DEPS-sensor += $(PLATFORM).driver.nxt_avr_init embox.driver.gpio.at91_pins
 
 $_SRCS-light += light.c
-$_DEPS-light += $(PLATFORM).driver.nxt_avr_init embox.driver.pins
+$_DEPS-light += $(PLATFORM).driver.nxt_avr_init embox.driver.gpio.at91_pins
 
 $_SRCS-sonar += sonar.c
 $_DEPS-sonar += $(PLATFORM).driver.soft_i2c $(PLATFORM).driver.sonar_sensor

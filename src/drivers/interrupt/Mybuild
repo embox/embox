@@ -9,7 +9,6 @@ module at91_aic extends embox.arch.interrupt {
 
 	depends embox.lib.LibC
 	depends embox.kernel.critical
-	depends embox.kernel.irq
 }
 
 module i8259 extends embox.arch.interrupt {

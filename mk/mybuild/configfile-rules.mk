@@ -74,7 +74,7 @@ define $(gold_grammar)_produce-ReferenceWithInitializer
 	$(for link <- $1,
 		include <- $(new CfgInclude),
 
-		$(set include->module_link,$(link))
+		$(set include->module_links,$(link))
 		$(set include->optionBindings,$2)
 
 		$(include)

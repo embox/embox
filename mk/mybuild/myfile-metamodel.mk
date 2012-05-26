@@ -34,8 +34,6 @@ MyFile_Annotation_type := \
 	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_type)
 MyFile_Annotation_target := \
 	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_target)
-MyFile_Annotation_bindings := \
-	$(call eMetaReferenceCreate,$(MyFile_Annotation),MyFile_Annotation_bindings)
 
 MyFile_AnnotationTarget := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_AnnotationTarget)
@@ -158,6 +156,11 @@ MyFile_OptionBinding_option := \
 MyFile_OptionBinding_value := \
 	$(call eMetaReferenceCreate,$(MyFile_OptionBinding),MyFile_OptionBinding_value)
 
+MyFile_OptionBindingHolder := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_OptionBindingHolder)
+MyFile_OptionBindingHolder_bindings := \
+	$(call eMetaReferenceCreate,$(MyFile_OptionBindingHolder),MyFile_OptionBindingHolder_bindings)
+
 MyFile_Member := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Member)
 MyFile_Member_module := \
@@ -200,6 +203,12 @@ MyFile_OptionMember := \
 MyFile_OptionMember_options := \
 	$(call eMetaReferenceCreate,$(MyFile_OptionMember),MyFile_OptionMember_options)
 
+MyFile_InstantiatableType := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_InstantiatableType)
+
+MyFile_Instance := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_Instance)
+
 # Initializes the objects and relations between them.
 define __myFile_init
 	$(call eMetaModelInit,$(MyFile),myFile,my)
@@ -211,13 +220,12 @@ define __myFile_init
 	$(call eMetaClassInit,$(MyFile_Type),Type,$(EModel_ENamedObject) $(MyFile_AnnotationTarget),abstract)
 	$(call eMetaReferenceInit,$(MyFile_Type_fileContentRoot),fileContentRoot,$(MyFile_FileContentRoot),$(MyFile_FileContentRoot_types),changeable container)
 
-	$(call eMetaClassInit,$(MyFile_AnnotationType),AnnotationType,$(MyFile_Type),)
+	$(call eMetaClassInit,$(MyFile_AnnotationType),AnnotationType,$(MyFile_Type) $(MyFile_InstantiatableType),)
 	$(call eMetaReferenceInit,$(MyFile_AnnotationType_options),options,$(MyFile_Option),,changeable many containment)
 
-	$(call eMetaClassInit,$(MyFile_Annotation),Annotation,,)
+	$(call eMetaClassInit,$(MyFile_Annotation),Annotation,$(MyFile_OptionBindingHolder) $(MyFile_Instance),)
 	$(call eMetaReferenceInit,$(MyFile_Annotation_type),type,$(MyFile_AnnotationType),,changeable linkable)
 	$(call eMetaReferenceInit,$(MyFile_Annotation_target),target,$(MyFile_AnnotationTarget),$(MyFile_AnnotationTarget_annotations),changeable container)
-	$(call eMetaReferenceInit,$(MyFile_Annotation_bindings),bindings,$(MyFile_OptionBinding),,changeable many containment)
 
 	$(call eMetaClassInit,$(MyFile_AnnotationTarget),AnnotationTarget,,abstract)
 	$(call eMetaReferenceInit,$(MyFile_AnnotationTarget_annotations),annotations,$(MyFile_Annotation),$(MyFile_Annotation_target),changeable many containment)
@@ -234,7 +242,7 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_Feature_allSuperFeatures),allSuperFeatures,$(MyFile_Feature),$(MyFile_Feature_allSubFeatures),changeable derived many)
 	$(call eMetaReferenceInit,$(MyFile_Feature_allSubFeatures),allSubFeatures,$(MyFile_Feature),$(MyFile_Feature_allSuperFeatures),changeable derived many)
 
-	$(call eMetaClassInit,$(MyFile_ModuleType),ModuleType,$(MyFile_Type),)
+	$(call eMetaClassInit,$(MyFile_ModuleType),ModuleType,$(MyFile_Type) $(MyFile_InstantiatableType),)
 	$(call eMetaAttributeInit,$(MyFile_ModuleType_modifiers),modifiers,changeable)
 	$(call eMetaAttributeInit,$(MyFile_ModuleType_isStatic),static,changeable derived)
 	$(call eMetaAttributeInit,$(MyFile_ModuleType_isAbstract),abstract,changeable derived)
@@ -257,7 +265,7 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_ModuleType_allSubTypes),allSubTypes,$(MyFile_ModuleType),$(MyFile_ModuleType_allSuperTypes),derived many)
 	$(call eMetaReferenceInit,$(MyFile_ModuleType_allSuperTypes),allSuperTypes,$(MyFile_ModuleType),$(MyFile_ModuleType_allSubTypes),derived many)
 
-	$(call eMetaClassInit,$(MyFile_Option),Option,$(EModel_ENamedObject) $(MyFile_AnnotationTarget),abstract)
+	$(call eMetaClassInit,$(MyFile_Option),Option,$(EModel_ENamedObject) $(MyFile_AnnotationTarget) $(MyFile_InstantiatableType),abstract)
 	$(call eMetaReferenceInit,$(MyFile_Option_defaultValue),defaultValue,$(MyFile_Literal),,changeable containment)
 
 	$(call eMetaClassInit,$(MyFile_StringOption),StringOption,$(MyFile_Option),)
@@ -283,9 +291,12 @@ define __myFile_init
 	$(call eMetaClassInit,$(MyFile_TypeReferenceLiteral),TypeReferenceLiteral,$(MyFile_Literal),)
 	$(call eMetaReferenceInit,$(MyFile_TypeReferenceLiteral_value),value,$(MyFile_Type),,changeable linkable)
 
-	$(call eMetaClassInit,$(MyFile_OptionBinding),OptionBinding,,)
+	$(call eMetaClassInit,$(MyFile_OptionBinding),OptionBinding,$(MyFile_Instance),)
 	$(call eMetaReferenceInit,$(MyFile_OptionBinding_option),option,$(MyFile_Option),,changeable linkable)
 	$(call eMetaReferenceInit,$(MyFile_OptionBinding_value),value,$(MyFile_Literal),,changeable containment)
+
+	$(call eMetaClassInit,$(MyFile_OptionBindingHolder),OptionBindingHolder,,)
+	$(call eMetaReferenceInit,$(MyFile_OptionBindingHolder_bindings),bindings,$(MyFile_OptionBinding),,changeable many containment)
 
 	$(call eMetaClassInit,$(MyFile_Member),Member,$(MyFile_AnnotationTarget),)
 	$(call eMetaReferenceInit,$(MyFile_Member_module),module,$(MyFile_ModuleType),,changeable linkable)
@@ -312,6 +323,10 @@ define __myFile_init
 	$(call eMetaClassInit,$(MyFile_OptionMember),OptionMember,$(MyFile_Member),)
 	$(call eMetaReferenceInit,$(MyFile_OptionMember_options),options,$(MyFile_Option),,changeable many containment)
 
+	$(call eMetaClassInit,$(MyFile_InstantiatableType),InstantiatableType,,abstract)
+
+	$(call eMetaClassInit,$(MyFile_Instance),Instance,,abstract)
+
 endef # __myFile_init
 
 # Binds objects to instance classes and features to properties.
@@ -329,7 +344,6 @@ define __myFile_bind
 	$(call eMetaClassBind,$(MyFile_Annotation),MyAnnotation)
 	$(call eMetaFeatureBind,$(MyFile_Annotation_type),type)
 	$(call eMetaFeatureBind,$(MyFile_Annotation_target),target)
-	$(call eMetaFeatureBind,$(MyFile_Annotation_bindings),bindings)
 
 	$(call eMetaClassBind,$(MyFile_AnnotationTarget),MyAnnotationTarget)
 	$(call eMetaFeatureBind,$(MyFile_AnnotationTarget_annotations),annotations)
@@ -399,6 +413,9 @@ define __myFile_bind
 	$(call eMetaFeatureBind,$(MyFile_OptionBinding_option),option)
 	$(call eMetaFeatureBind,$(MyFile_OptionBinding_value),value)
 
+	$(call eMetaClassBind,$(MyFile_OptionBindingHolder),MyOptionBindingHolder)
+	$(call eMetaFeatureBind,$(MyFile_OptionBindingHolder_bindings),bindings)
+
 	$(call eMetaClassBind,$(MyFile_Member),MyMember)
 	$(call eMetaFeatureBind,$(MyFile_Member_module),module)
 
@@ -423,6 +440,10 @@ define __myFile_bind
 
 	$(call eMetaClassBind,$(MyFile_OptionMember),MyOptionMember)
 	$(call eMetaFeatureBind,$(MyFile_OptionMember_options),options)
+
+	$(call eMetaClassBind,$(MyFile_InstantiatableType),MyInstantiatableType)
+
+	$(call eMetaClassBind,$(MyFile_Instance),MyInstance)
 
 endef # __myFile_bind
 

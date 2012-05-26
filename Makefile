@@ -36,7 +36,7 @@ export DOCS_OUT_DIR   := $(DOC_DIR)
 
 export CACHE_DIR      := mk/.cache
 
-export ANNOTATION_HANDLERS := mk/annotation_handlers
+export ANNOTATION_HANDLERS := mk/mybuild/annotation_handlers
 
 #
 # Tools.
@@ -44,6 +44,7 @@ export ANNOTATION_HANDLERS := mk/annotation_handlers
 
 export RM     := rm -f
 export CP     := cp
+export MV     := mv
 export PRINTF := printf
 export MKDIR  := mkdir -p
 export LN     := ln -s

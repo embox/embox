@@ -13,18 +13,19 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="fileContentRoot" eType="#//FileContentRoot"
         eOpposite="#//FileContentRoot/types"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="AnnotationType" eSuperTypes="#//Type">
+  <eClassifiers xsi:type="ecore:EClass" name="AnnotationType" eSuperTypes="#//Type #//InstantiatableType">
     <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
         eType="#//Option" containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Annotation">
+  <eClassifiers xsi:type="ecore:EClass" name="Annotation" eSuperTypes="#//OptionBindingHolder #//Instance">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="#//AnnotationType"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//AnnotationTarget"
         eOpposite="#//AnnotationTarget/annotations"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="bindings" upperBound="-1"
-        eType="#//OptionBinding" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="AnnotationTarget" abstract="true">
+    <eOperations name="getAnnotationsOfType" upperBound="-1" eType="#//Annotation">
+      <eParameters name="types" upperBound="-1" eType="#//AnnotationType"/>
+    </eOperations>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//Annotation" containment="true" eOpposite="#//Annotation/target"/>
   </eClassifiers>
@@ -50,7 +51,7 @@
         eType="#//Feature" volatile="true" transient="true" unsettable="true" derived="true"
         eOpposite="#//Feature/allSuperFeatures"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ModuleType" eSuperTypes="#//Type">
+  <eClassifiers xsi:type="ecore:EClass" name="ModuleType" eSuperTypes="#//Type #//InstantiatableType">
     <eOperations name="isSubTypeOf" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean">
       <eParameters name="another" eType="#//ModuleType"/>
     </eOperations>
@@ -103,7 +104,7 @@
         eType="#//ModuleType" changeable="false" volatile="true" transient="true"
         derived="true" eOpposite="#//ModuleType/allSubTypes"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="../model/emodel.ecore#//ENamedObject #//AnnotationTarget">
+  <eClassifiers xsi:type="ecore:EClass" name="Option" abstract="true" eSuperTypes="../model/emodel.ecore#//ENamedObject #//AnnotationTarget #//InstantiatableType">
     <eOperations name="validateValue" eType="ecore:EDataType ../model/emodel.ecore#//EBoolean"/>
     <eOperations name="getId" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="defaultValue" eType="#//Literal"
@@ -137,10 +138,17 @@
   <eClassifiers xsi:type="ecore:EClass" name="TypeReferenceLiteral" eSuperTypes="#//Literal">
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Type"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OptionBinding">
+  <eClassifiers xsi:type="ecore:EClass" name="OptionBinding" eSuperTypes="#//Instance">
     <eStructuralFeatures xsi:type="ecore:EReference" name="option" eType="#//Option"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Literal"
         containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="OptionBindingHolder">
+    <eOperations name="getBindingsOfOption" upperBound="-1" eType="#//OptionBinding">
+      <eParameters name="options" upperBound="-1" eType="#//Option"/>
+    </eOperations>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="bindings" upperBound="-1"
+        eType="#//OptionBinding" containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Member" eSuperTypes="#//AnnotationTarget">
     <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="#//ModuleType"/>
@@ -174,5 +182,13 @@
   <eClassifiers xsi:type="ecore:EClass" name="OptionMember" eSuperTypes="#//Member">
     <eStructuralFeatures xsi:type="ecore:EReference" name="options" upperBound="-1"
         eType="#//Option" containment="true"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="InstantiatableType" abstract="true">
+    <eOperations name="filterInstances" upperBound="-1" eType="#//Instance">
+      <eParameters name="instances" upperBound="-1" eType="#//Instance"/>
+    </eOperations>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Instance" abstract="true">
+    <eOperations name="getType" eType="#//InstantiatableType"/>
   </eClassifiers>
 </ecore:EPackage>
