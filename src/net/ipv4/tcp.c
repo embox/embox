@@ -68,7 +68,7 @@ EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, 
 
 /* Error code of TCP handlers */
 enum {
-	TCP_RET_OK, /* all ok, don't free packet */
+	TCP_RET_OK,     /* all ok, don't free packet */
 	TCP_RET_DROP,   /* drop packet */
 	TCP_RET_SEND,   /* send answer */
 	TCP_RET_ACK,    /* send acknowledgment */

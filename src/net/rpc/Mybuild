@@ -5,5 +5,5 @@ module rpc {
 }
 
 module xdr {
-//	source "xdr.c", "xdr_mem.c"
+	source "xdr.c", "xdr_mem.c"
 }

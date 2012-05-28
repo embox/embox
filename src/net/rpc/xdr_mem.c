@@ -6,26 +6,17 @@
  */
 
 #include <net/rpc/xdr.h>
-#include <net/in.h>
+#include <lib/bits/byteswap.h>
 #include <string.h>
 #include <assert.h>
 
-static const struct xdr_ops xdrmem_ops = {
-		.x_destroy = &xdrmem_destroy,
-		.x_getint = &xdrmem_getint,
-		.x_putint = &xdrmem_putint,
-		.x_getbytes = &xdrmem_getbytes,
-		.x_putbytes = &xdrmem_putbytes,
-		.x_getpos = &xdrmem_getpos,
-		.x_setpos = &xdrmem_setpos,
-		.x_inline = &xdrmem_inline
-};
+static const struct xdr_ops xdrmem_ops;
 
-static inline long encode_int(int i) { return (int)htonl((uint32_t)i); }
-static inline long decode_int(int i) { return (int)ntohl((uint32_t)i); }
+static xdr_unit_t encode_unit(xdr_unit_t u) { return __bswap_32(u); }
+static xdr_unit_t decode_unit(xdr_unit_t u) { return __bswap_32(u); }
 
 void xdrmem_create(struct xdr *xs, char *addr,
-		unsigned int size, enum xdr_op oper) {
+		size_t size, enum xdr_op oper) {
 	assert((xs != NULL) && (addr != NULL));
 
 	xs->oper = oper;
@@ -38,35 +29,35 @@ static void xdrmem_destroy(struct xdr *xs) {
 	assert(xs != NULL);
 }
 
-static int xdrmem_getint(struct xdr *xs, int *to) {
+static int xdrmem_getunit(struct xdr *xs, xdr_unit_t *to) {
 	assert((xs != NULL) && (to != NULL));
 
-	if (xs->left < sizeof(int)) {
+	if (xs->left < BYTES_PER_XDR_UNIT) {
 		return XDR_FAILURE;
 	}
 
-	*to = decode_int(*(int *)xs->curr);
-	xs->left -= sizeof(int);
-	xs->curr += sizeof(int);
+	*to = decode_unit(*(int *)xs->curr);
+	xs->left -= BYTES_PER_XDR_UNIT;
+	xs->curr += BYTES_PER_XDR_UNIT;
 
 	return XDR_SUCCESS;
 }
 
-static int xdrmem_putint(struct xdr *xs, const int *from) {
+static int xdrmem_putunit(struct xdr *xs, const xdr_unit_t *from) {
 	assert((xs != NULL) && (from != NULL));
 
-	if (xs->left < sizeof(int)) {
+	if (xs->left < BYTES_PER_XDR_UNIT) {
 		return XDR_FAILURE;
 	}
 
-	*(int *)xs->curr = encode_int(*from);
-	xs->left -= sizeof(int);
-	xs->curr += sizeof(int);
+	*(int *)xs->curr = encode_unit(*from);
+	xs->left -= BYTES_PER_XDR_UNIT;
+	xs->curr += BYTES_PER_XDR_UNIT;
 
 	return XDR_SUCCESS;
 }
 
-static int xdrmem_getbytes(struct xdr *xs, char *to, unsigned int size) {
+static int xdrmem_getbytes(struct xdr *xs, char *to, size_t size) {
 	assert((xs != NULL) && (to != NULL));
 
 	if (xs->left < size) {
@@ -80,7 +71,7 @@ static int xdrmem_getbytes(struct xdr *xs, char *to, unsigned int size) {
 	return XDR_SUCCESS;
 }
 
-static int xdrmem_putbytes(struct xdr *xs, const char *from, unsigned int size) {
+static int xdrmem_putbytes(struct xdr *xs, const char *from, size_t size) {
 	assert((xs != NULL) && (from != NULL));
 
 	if (xs->left < size) {
@@ -94,13 +85,13 @@ static int xdrmem_putbytes(struct xdr *xs, const char *from, unsigned int size) 
 	return XDR_SUCCESS;
 }
 
-static unsigned int xdrmem_getpos(struct xdr *xs) {
+static size_t xdrmem_getpos(struct xdr *xs) {
 	assert(xs != NULL);
 
-	return (unsigned int)(xs->curr - xs->buff);
+	return (size_t)(xs->curr - xs->buff);
 }
 
-static int xdrmem_setpos(struct xdr *xs, unsigned int pos) {
+static int xdrmem_setpos(struct xdr *xs, size_t pos) {
 	assert(xs != NULL);
 
 	if (xs->buff + pos >= xs->curr + xs->left) {
@@ -114,8 +105,8 @@ static int xdrmem_setpos(struct xdr *xs, unsigned int pos) {
 	return XDR_SUCCESS;
 }
 
-static long * xdrmem_inline(struct xdr *xs, unsigned int len) {
-	long *ptr;
+static char * xdrmem_inline(struct xdr *xs, size_t len) {
+	char *ptr;
 
 	assert(xs != NULL);
 
@@ -129,3 +120,14 @@ static long * xdrmem_inline(struct xdr *xs, unsigned int len) {
 
 	return ptr;
 }
+
+static const struct xdr_ops xdrmem_ops = {
+		.x_destroy = &xdrmem_destroy,
+		.x_getunit = &xdrmem_getunit,
+		.x_putunit = &xdrmem_putunit,
+		.x_getbytes = &xdrmem_getbytes,
+		.x_putbytes = &xdrmem_putbytes,
+		.x_getpos = &xdrmem_getpos,
+		.x_setpos = &xdrmem_setpos,
+		.x_inline = &xdrmem_inline
+};
