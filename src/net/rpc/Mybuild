@@ -1,7 +1,9 @@
 package embox.net
 
 module rpc {
-//	source "clnt.c"
+	source "clnt.c", "clnt_udp.c"
+
+	depends xdr
 }
 
 module xdr {

@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief Realization of the eXternal Data Representation
+ * @details XDR: External Data Representation Standard, RFC 1832
  * @date 19.05.12
  * @author Ilia Vaprol
  */
