@@ -16,5 +16,4 @@ static module LibPosix {
 	depends embox.util.LibUtil
 	depends embox.kernel.task_api
 	depends embox.fs.driver.stdio
-	depends embox.lib.LibC
 }
