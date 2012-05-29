@@ -29,6 +29,7 @@ static int module_init(void) {
 
 	/* find clock_event_device with maximal resolution  */
 	dev = cedev_get_best(TICKS);
+	assert(dev);
 	/* install timecounter value to 0 */
 	timecounter_init(&sys_timecounter, dev->cs->cc, 0);
 
