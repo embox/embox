@@ -15,6 +15,7 @@ module rdc_gpio {
 }
 
 module stm32 {
+	@IncludePath("$(PLATFORM_DIR)/stm32vl/include")
 	source "stm32_gpio.c"
 
 	depends embox.lib.LibC
