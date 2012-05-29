@@ -9,6 +9,15 @@ module inet_socket_test {
 	depends embox.framework.LibFramework
 }
 
+module tcp_socket_test {
+	source "tcp_socket_test.c"
+
+	depends embox.net.socket
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+	depends embox.net.tcp
+}
+
 module packet_socket_test {
 	source "packet_socket_test.c"
 

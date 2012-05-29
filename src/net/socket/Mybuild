@@ -40,4 +40,6 @@ module socket {
 	depends core /* for sock.c */
 	depends embox.kernel.task_api
 	/* depends from kernel_socket.c */
+
+	source "ip_port.c"
 }

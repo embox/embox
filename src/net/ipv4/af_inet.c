@@ -20,6 +20,9 @@
 #include <net/tcp.h>
 #include <net/inetdevice.h>
 
+#include <net/ip_port.h>
+#include <net/inet_sock.h>
+
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv, inet_init);
 
 static struct inet_protosw * inet_proto_find(short int *type, int *protocol) {
@@ -247,9 +250,16 @@ int inet_stream_connect(struct socket *sock, struct sockaddr * addr,
 	case SS_CONNECTING:
 		err = -EALREADY;
 		break;
-	case SS_UNCONNECTED:
+	case SS_UNCONNECTED: {
+		unsigned short sport;
+		struct inet_sock *inet = inet_sk(sock->sk);
+		sport = ip_port_get_free(SOCK_STREAM);
+		inet->sport = sport;
+
 		err = sock->sk->sk_prot->connect(sock->sk, addr, addr_len);
 		break;
+	}
+
 	}
 	sock_unlock(sock->sk);
 
