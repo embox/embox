@@ -210,6 +210,10 @@ unlock:
 int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
 			int addr_len, int flags) {
 	struct sock *sk;
+	unsigned short sport;
+	struct inet_sock *inet = inet_sk(sock->sk);
+	sport = ip_port_get_free(SOCK_DGRAM);
+	inet->sport = sport;
 
 	sk = sock->sk;
 	if (sk->sk_prot->connect != NULL) {
