@@ -5,6 +5,7 @@
  * @author Ilia Vaprol
  */
 
+#include <net/rpc/rpc.h>
 #include <net/rpc/clnt.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -34,7 +35,15 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 		free(clnt);
 		return NULL;
 	}
+	*psock = sock;
 
+	/* Fill rpc_msg structure */
+	clnt->msg.xid = 0x01010101;
+	clnt->msg.type = CALL;
+	clnt->msg.b.call.rpcvers = RPC_VERSION;
+	clnt->msg.b.call.prog = prognum;
+	clnt->msg.b.call.vers = versnum;
+	/* Fill other filed */
 	clnt->ops = &clntudp_ops;
 	clnt->sock = sock;
 
@@ -43,7 +52,10 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 
 enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum, xdrproc_t inproc,
 		char *in, xdrproc_t outproc, char *out, struct timeval wait) {
-	return RPC_SUCCESS;
+
+	clnt->msg.b.call.proc = procnum;
+
+	return -1;
 }
 
 void clntudp_destroy(struct client *clnt) {

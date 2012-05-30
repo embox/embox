@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <net/socket.h>
 #include <sys/time.h>
+#include <net/rpc/rpc.h>
 #include <net/rpc/xdr.h>
 
 
@@ -37,6 +38,7 @@ struct clnt_ops {
 struct client {
 //	struct auth *cl_auth;
 	const struct clnt_ops *ops;
+	struct rpc_msg msg;
 	int sock;
 };
 

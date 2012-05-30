@@ -16,6 +16,7 @@ struct client * clnt_create(const char *host, __u32 prognum,
 		__u32 versnum, const char *prot) {
 	struct sockaddr_in raddr;
 	struct timeval tv;
+	int sock;
 
 	if (strcmp(prot, "udp") == 0) {
 		tv.tv_sec = 5;
@@ -23,7 +24,7 @@ struct client * clnt_create(const char *host, __u32 prognum,
 		raddr.sin_family = AF_INET;
 		inet_aton(host, &raddr.sin_addr);
 		raddr.sin_port = htons(100);
-		return clntudp_create(&raddr, prognum, versnum, tv, NULL);
+		return clntudp_create(&raddr, prognum, versnum, tv, &sock);
 	}
 
 	return NULL; /* protocol not supported */

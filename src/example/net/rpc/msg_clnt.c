@@ -5,7 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#include <net/rpc/rpc.h>
+#include <net/rpc/clnt.h>
+#include <net/rpc/xdr.h>
 #include <framework/example/self.h>
 #include <stdio.h>
 #include <string.h>
@@ -37,7 +38,7 @@ static int exec(int argc, char *argv[])
 	 * to use the udp protocol when contacting the server.
 	 */
 	clnt = clnt_create(server, MESSAGEPROG, MESSAGEVERS, "udp");
-	if (clnt != NULL) {
+	if (clnt == NULL) {
 		/*
 		 * Couldn't establish connection with server.
 		 * Print error message and die.
