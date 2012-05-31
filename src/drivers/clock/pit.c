@@ -84,16 +84,21 @@ EMBOX_UNIT_INIT(pit_clock_init);
 
 static cycle_t i8253_read(const struct cyclecounter *cc) {
 	int cnt;
-	uint32_t ticks;
 
-	ticks = clock_sys_ticks();
 	out8(0x00, MODE_REG);
+	/* mb irq_lock */
 	cnt = in8(CHANNEL0);
 	cnt |= in8(CHANNEL0) << 8;
 
 	cnt = (((INPUT_CLOCK + PIT_HZ / 2) / PIT_HZ) - 1) - cnt;
 
-	return (cycle_t)(ticks * (INPUT_CLOCK + PIT_HZ / 2) / PIT_HZ) + cnt;
+	return cnt;
+}
+
+static volatile uint32_t pit_jiffies = 0;
+
+static inline uint32_t pit_get_jiffies(void) {
+	return pit_jiffies;
 }
 
 static struct cyclecounter cc = {
@@ -108,25 +113,23 @@ static struct clock_source pit_clock_source = {
 	.cc = &cc
 };
 
-static const struct clock_event_device pit_device = {
+static struct clock_event_device pit_device = {
 	.name = "pit",
 	.set_mode = pit_clock_setup,
 	.cs = &pit_clock_source,
-	.resolution = PIT_HZ
+	.resolution = PIT_HZ,
+	.get_jiffies = pit_get_jiffies
 };
 
 CLOCK_EVENT_DEVICE(&pit_device);
 
 static irq_return_t clock_handler(int irq_nr, void *dev_id) {
+	pit_jiffies++;
 	clock_tick_handler(irq_nr, dev_id);
 	return IRQ_HANDLED;
 }
 
 static int pit_clock_init(void) {
-	if (ENOERR != irq_attach((irq_nr_t) IRQ0,
-		(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
-		panic("pit timer irq_attach failed");
-	}
 	/* Initialization and registration of clock source structure */
 	pit_clock_source.flags = 1;
 	pit_clock_source.resolution = INPUT_CLOCK;
@@ -139,6 +142,11 @@ static int pit_clock_init(void) {
 	/* Setup initial mode to allow to use timer immediately after initialization
 	 * of this module */
 	pit_clock_setup(PIT_RATEGEN);
+
+	if (ENOERR != irq_attach((irq_nr_t) IRQ0,
+		(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
+		panic("pit timer irq_attach failed");
+	}
 
 	return 0;
 }

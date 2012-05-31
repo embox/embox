@@ -33,6 +33,7 @@ struct clock_event_device {
 	void (*set_mode)(uint32_t mode); /* XXX may be mode must be enum?? */
 	uint32_t mode;
 	uint32_t resolution; /* jiffies per second */
+	uint32_t (*get_jiffies)(void); /* current count of jiffies */
 	struct clock_source *cs;
 	const char *name;
 };
@@ -45,6 +46,7 @@ static inline void clock_events_calc_mult_shift(const struct clock_event_device 
 
 extern const struct clock_event_device *cedev_get_by_name(const char *name);
 extern const struct clock_event_device *cedev_get_best(enum resolution_mode mode);
+extern cycle_t cedev_get_ticks_per_jiff(const struct clock_event_device * dev);
 
 #define CLOCK_EVENT_DEVICE(cedev) \
 	extern const struct clock_event_device * __clock_devices[]; \

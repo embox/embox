@@ -45,12 +45,19 @@ struct cyclecounter {
  */
 struct timecounter {
 	const struct cyclecounter *cc;
+	/* pointer to time device assigned to timecounter */
+	const struct clock_event_device *dev;
+	uint32_t jiffies_last;
 	cycle_t cycle_last;
-	useconds_t nsec;
+	ns_t nsec;
 };
 
 static inline ns_t cycles_to_ns(const struct cyclecounter *cc, cycle_t cycles) {
 	return (cycles * cc->mult) >> cc->shift;
 }
+
+//static inline uint64_t convert(uint64_t value, uint32_t) {
+//
+//}
 
 #endif /* KERNEL_KTIME_H_ */

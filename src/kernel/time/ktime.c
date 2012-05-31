@@ -31,7 +31,7 @@ static int module_init(void) {
 	dev = cedev_get_best(TICKS);
 	assert(dev);
 	/* install timecounter value to 0 */
-	timecounter_init(&sys_timecounter, dev->cs->cc, 0);
+	//timecounter_init(&sys_timecounter, dev, 0); //FIXME temporary
 
 	return 0;
 }

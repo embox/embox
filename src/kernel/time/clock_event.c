@@ -54,3 +54,7 @@ const struct clock_event_device *cedev_get_best(enum resolution_mode mode) {
 	return best;
 }
 
+cycle_t cedev_get_ticks_per_jiff(const struct clock_event_device * dev) {
+	return ((dev->cs->resolution + dev->resolution / 2) / dev->resolution) - 1;
+}
+
