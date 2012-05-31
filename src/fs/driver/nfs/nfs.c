@@ -246,35 +246,24 @@ static int nfsfs_init(void * par) {
 static int nfsfs_format(void *par) {
 	ramdisk_params_t *params;
 	node_t *nod;
-	nfs_fs_description_t *fs_des;
-	nfs_file_description_t *fd;
 
 	params = (ramdisk_params_t *) par;
 	if (NULL == (nod = vfs_find_node(params->path, NULL))) {
 		return -ENODEV;/*device not found*/
 	}
 
-	fs_des = nfs_fsinfo_alloc();
-	fs_des->p_device = params;
-	strcpy(fs_des->root_name, "\0");
-
-	fd = nfs_fileinfo_alloc();
-	fd->p_fs_dsc = fs_des;
-	nod->fs_type = &nfsfs_drv;
-	nod->file_info = (void *) &nfsfs_fop;
-	nod->attr = (void *)fd;
-
 	return 0;
 }
 
 static int nfsfs_mount(void *par) {
 	mount_params_t *params;
-	node_t *dir_node, *dev_node;
-	nfs_file_description_t *fd, *dev_fd;
+	node_t *dir_node;
+	nfs_fs_description_t *fs_des;
+	nfs_file_description_t *fd;
 	int rezult;
 
 	params = (mount_params_t *) par;
-	dev_node = params->dev_node;
+
 	if (NULL == (dir_node = vfs_find_node(params->dir, NULL))) {
 		/*TODO usually mount doesn't create a directory*/
 		if (NULL == (dir_node = vfs_add_path (params->dir, NULL))) {
@@ -283,16 +272,19 @@ static int nfsfs_mount(void *par) {
 		dir_node->properties = DIRECTORY_NODE_TYPE;
 	}
 
-	dev_fd = (nfs_file_description_t *) dev_node->attr;
-	strcpy(dev_fd->p_fs_dsc->root_name, params->dir);
-
+	fs_des = nfs_fsinfo_alloc();
 	fd = nfs_fileinfo_alloc();
-	fd->p_fs_dsc = dev_fd->p_fs_dsc;
+	fd->p_fs_dsc = fs_des;
+
 	dir_node->fs_type = &nfsfs_drv;
 	dir_node->file_info = (void *) &nfsfs_fop;
 	dir_node->attr = (void *) fd;
+	params->dev_node = dir_node;
 
-	rezult = Mount_NFS_Filesystem(params->dev);
+	rezult = mount_nfs_filesystem(params);
+	if(0 == rezult) {
+		memcpy(&fd->fh, &fd->p_fs_dsc->fh, sizeof(fd->fh));
+	}
 
 	return rezult;
 }

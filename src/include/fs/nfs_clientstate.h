@@ -6,19 +6,18 @@
  * @author Andrey Gazukin
  */
 
+#include <cmd/mount.h>
 
 #ifndef NFS_CLIENTSTATE_H_
 #define NFS_CLIENTSTATE_H_
 
-int Mount_NFS_Filesystem(char *dev);
+int mount_nfs_filesystem(void *par);
 
-int NFS_Getport(char *dev);
+int nfs_getports(void);
 
-int NFS_Authentication(char *dev);
+int nfs_mount(void);
 
-int NFS_Mount(char *dev);
-
-int NFS_StatFS(char *dev);
+int nfs_statfs(void);
 
 
 

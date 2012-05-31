@@ -5,7 +5,7 @@
  * @date 24.04.2012
  * @author Andrey Gazukin
  */
-
+#include <fs/node.h>
 
 #ifndef MOUNT_H_
 #define MOUNT_H_
