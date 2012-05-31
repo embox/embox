@@ -40,6 +40,7 @@ struct client {
 	const struct clnt_ops *ops;
 	struct rpc_msg msg;
 	int sock;
+	struct sockaddr_in sin;
 };
 
 extern struct client * clnt_create(const char *host, __u32 prognum, __u32 versnum,

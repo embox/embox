@@ -84,7 +84,7 @@ struct sock * inet_create_sock(gfp_t priority, struct proto *prot,
 	inet->mc_ttl = 1;
 	/* setup port */
 	/* socket_set_port_type(sock); */
-	/* inet->sport = htons(socket_get_free_port(inet->sport_type)); /\* inet->sport at network bytes order  */
+	inet->sport = htons(ip_port_get_free(inet->sport_type)); /* inet->sport at network bytes order  */
 
 	return sk;
 }
@@ -210,10 +210,10 @@ unlock:
 int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
 			int addr_len, int flags) {
 	struct sock *sk;
-	unsigned short sport;
-	struct inet_sock *inet = inet_sk(sock->sk);
-	sport = ip_port_get_free(SOCK_DGRAM);
-	inet->sport = sport;
+//	unsigned short sport;
+//	struct inet_sock *inet = inet_sk(sock->sk);
+//	sport = ip_port_get_free(SOCK_DGRAM);
+//	inet->sport = sport;
 
 	sk = sock->sk;
 	if (sk->sk_prot->connect != NULL) {

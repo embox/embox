@@ -12,6 +12,7 @@
 #include <net/socket.h>
 #include <net/net.h>
 #include <net/ip.h>
+#include <string.h>
 
 static const struct clnt_ops clntudp_ops;
 
@@ -46,14 +47,31 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	/* Fill other filed */
 	clnt->ops = &clntudp_ops;
 	clnt->sock = sock;
+	memcpy(&clnt->sin, raddr, sizeof *raddr);
 
 	return clnt;
 }
 
 enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum, xdrproc_t inproc,
 		char *in, xdrproc_t outproc, char *out, struct timeval wait) {
+	char buff[1024];
+	char zero[16]; // TODO remove this
+	struct xdr xstream;
 
 	clnt->msg.b.call.proc = procnum;
+
+	xdrmem_create(&xstream, buff, sizeof buff, XDR_ENCODE);
+
+	memset(zero, 0, sizeof zero);
+	if (xdr_u_int(&xstream, &clnt->msg.xid) && xdr_enum(&xstream, (__s32 *)&clnt->msg.type)
+			&& xdr_u_int(&xstream, &clnt->msg.b.call.rpcvers)
+			&& xdr_u_int(&xstream, &clnt->msg.b.call.prog)
+			&& xdr_u_int(&xstream, &clnt->msg.b.call.vers)
+			&& xdr_u_int(&xstream, &clnt->msg.b.call.proc)
+			&& xdr_opaque(&xstream, zero, sizeof zero)
+			&& (*inproc)(&xstream, in)) {
+		return sendto(clnt->sock, buff, xdr_getpos(&xstream), 0, (struct sockaddr *)&clnt->sin, sizeof clnt->sin);
+	}
 
 	return -1;
 }

@@ -23,7 +23,7 @@ struct client * clnt_create(const char *host, __u32 prognum,
 		tv.tv_usec = 0;
 		raddr.sin_family = AF_INET;
 		inet_aton(host, &raddr.sin_addr);
-		raddr.sin_port = htons(100);
+		raddr.sin_port = htons(762);
 		return clntudp_create(&raddr, prognum, versnum, tv, &sock);
 	}
 

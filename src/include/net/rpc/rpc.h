@@ -58,7 +58,6 @@ enum auth_flavor {
 	AUTH_UNIX = 1,
 	AUTH_SHORT = 2,
 	AUTH_DES = 3
-	/* and more to be defined */
 };
 
 struct opaque_auth {
@@ -105,9 +104,8 @@ struct call_body {
 	__u32 prog;
 	__u32 vers;
 	__u32 proc;
-	char tmp[16];
-//	struct opaque_auth cred;
-//	struct opaque_auth verf;
+	struct opaque_auth cred;
+	struct opaque_auth verf;
 };
 
 /* RPC message */

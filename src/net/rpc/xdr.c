@@ -57,7 +57,11 @@ static int xdr_align(struct xdr *xs, size_t size) {
 
 	assert(xs != NULL);
 
-	round_up = BYTES_PER_XDR_UNIT - size % BYTES_PER_XDR_UNIT;
+	round_up = size % BYTES_PER_XDR_UNIT;
+	if (round_up == 0) {
+		return XDR_SUCCESS;
+	}
+	round_up = BYTES_PER_XDR_UNIT - round_up;
 
 	if (xs->oper == XDR_DECODE) {
 		return xdr_getbytes(xs, (char *)&trash, round_up);
