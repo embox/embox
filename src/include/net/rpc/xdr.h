@@ -36,7 +36,7 @@ struct xdr_ops {
 	int (*x_putunit)(struct xdr *xs, const xdr_unit_t *from);
 	int (*x_getbytes)(struct xdr *xs, char *to, size_t size);
 	int (*x_putbytes)(struct xdr *xs, const char *from, size_t size);
-	unsigned int (*x_getpos)(struct xdr *xs);
+	size_t (*x_getpos)(struct xdr *xs);
 	int (*x_setpos)(struct xdr *xs, size_t pos);
 	char * (*x_inline)(struct xdr *xs, size_t len);
 	void (*x_destroy)(struct xdr *xs);
@@ -54,7 +54,7 @@ typedef int (*xdrproc_t)(struct xdr *, void *, ...);
 
 extern void xdrmem_create (struct xdr *xs, char *addr,
 		size_t size, enum xdr_op oper);
-extern unsigned int xdr_getpos(struct xdr *xs);
+extern size_t xdr_getpos(struct xdr *xs);
 extern int xdr_setpos(struct xdr *xs, size_t pos);
 extern char * xdr_inline(struct xdr *xs, size_t len);
 extern void xdr_destroy(struct xdr *xs);

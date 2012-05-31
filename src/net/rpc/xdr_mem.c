@@ -37,7 +37,7 @@ static int xdrmem_getunit(struct xdr *xs, xdr_unit_t *to) {
 		return XDR_FAILURE;
 	}
 
-	*to = decode_unit(*(int *)xs->curr);
+	*to = decode_unit(*(xdr_unit_t *)xs->curr);
 	xs->left -= BYTES_PER_XDR_UNIT;
 	xs->curr += BYTES_PER_XDR_UNIT;
 
@@ -89,19 +89,18 @@ static int xdrmem_putbytes(struct xdr *xs, const char *from, size_t size) {
 static size_t xdrmem_getpos(struct xdr *xs) {
 	assert(xs != NULL);
 
-	return (size_t)(xs->curr - xs->buff);
+	return (size_t)xs->curr - (size_t)xs->buff;
 }
 
 static int xdrmem_setpos(struct xdr *xs, size_t pos) {
 	assert(xs != NULL);
 
-	if (xs->buff + pos >= xs->curr + xs->left) {
-		xs->left = 0;
+	if (xs->buff + pos > xs->curr + xs->left) {
+		return XDR_FAILURE;
 	}
-	else {
-		xs->left = xs->curr + xs->left - (xs->buff + pos);
-		xs->curr = xs->buff + pos;
-	}
+
+	xs->left = xs->curr + xs->left - (xs->buff + pos);
+	xs->curr = xs->buff + pos;
 
 	return XDR_SUCCESS;
 }
