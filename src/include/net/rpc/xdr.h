@@ -51,10 +51,12 @@ struct xdr {
 typedef int (*xdrproc_t)(struct xdr *, void *, ...);
 
 #define NULL_xdrproc_t NULL
+
 struct xdr_discrim {
 	__s32 value;
 	xdrproc_t proc;
 };
+
 
 extern void xdrmem_create (struct xdr *xs, char *addr,
 		size_t size, enum xdr_op oper);

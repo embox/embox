@@ -126,7 +126,6 @@ int xdr_u_int(struct xdr *xs, __u32 *pu32) {
 }
 
 int xdr_enum(struct xdr *xs, __s32 *pe) {
-	/* TODO fix typeof pe */
 	/* According to standard enum is interpreted as int */
 	return xdr_int(xs, pe);
 }
@@ -239,6 +238,7 @@ int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
 				}
 				break;
 			}
+			choices++;
 		}
 	}
 
@@ -303,9 +303,7 @@ static int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
 		default:
 			return XDR_SUCCESS;
 		case SUCCESS:
-			// TODO;
-			assert(0);
-			break;
+			return (*(xdrproc_t)ar->d.results.outproc)(xs, ar->d.results.out);
 		case PROG_MISMATCH:
 			return xdr_u_int(xs, &ar->d.mismatch_info.low)
 					&& xdr_u_int(xs, &ar->d.mismatch_info.high);
@@ -322,7 +320,7 @@ static int xdr_rejected_reply(struct xdr *xs, struct rejected_reply *rr) {
 			return xdr_u_int(xs, &rr->d.mismatch_info.low)
 					&& xdr_u_int(xs, &rr->d.mismatch_info.high);
 		case AUTH_ERROR:
-			return xdr_enum(xs, (__s32 *)&rr->d.stat);
+			return xdr_enum(xs, (__s32 *)&rr->d.reason);
 		}
 	}
 

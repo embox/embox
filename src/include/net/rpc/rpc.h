@@ -71,7 +71,10 @@ struct accepted_reply {
 	struct opaque_auth verf;
 	enum accept_stat stat;
 	union {
-		int results;
+		struct {
+			void *out;
+			void *outproc;
+		} results;
 		struct {
 			__u32 low;
 			__u32 high;
@@ -83,7 +86,7 @@ struct accepted_reply {
 struct rejected_reply {
 	enum reject_stat stat;
 	union {
-		enum auth_stat stat;
+		enum auth_stat reason;
 		struct {
 			__u32 low;
 			__u32 high;
