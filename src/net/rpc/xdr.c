@@ -8,17 +8,21 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <net/rpc/rpc.h>
 #include <net/rpc/xdr.h>
 #include <string.h>
 #include <stddef.h>
 
+#define XDR_LAST_UINT32 ((__u32)-1)
 #define XDR_SAVE(xs, s)            \
 	s = xdr_getpos(xs)
 #define XDR_RESTORE(xs, s)         \
 	s = (size_t)xdr_setpos(xs, s); \
 	assert(s == (size_t)XDR_SUCCESS)
 
-/* Useful routines */
+/*
+ * Useful routines
+ */
 static int xdr_getunit(struct xdr *xs, xdr_unit_t *to) {
 	assert(xs != NULL);
 	assert(xs->ops != NULL);
@@ -74,6 +78,10 @@ static int xdr_align(struct xdr *xs, size_t size) {
 	return xdr_putbytes(xs, (char *)&trash, round_up);
 }
 
+
+/*
+ * Standard specification functions
+ */
 void xdr_free(xdrproc_t proc, char *obj) {
 	struct xdr tmp;
 
@@ -118,11 +126,14 @@ int xdr_u_int(struct xdr *xs, __u32 *pu32) {
 }
 
 int xdr_enum(struct xdr *xs, __s32 *pe) {
+	/* TODO fix typeof pe */
+	/* According to standard enum is interpreted as int */
 	return xdr_int(xs, pe);
 }
 
 int xdr_bool(struct xdr *xs, __s32 *pb) {
-	return xdr_int(xs, pb);
+	/* According to standard bool is interpreted as enum */
+	return xdr_enum(xs, pb);
 }
 
 int xdr_opaque(struct xdr *xs, char *pc, size_t size) {
@@ -211,7 +222,35 @@ int xdr_string(struct xdr *xs, char **pstr, __u32 maxsize) {
 }
 
 int xdr_wrapstring(struct xdr *xs, char **pstr) {
-	return xdr_string(xs, pstr, (__u32)-1);
+	return xdr_string(xs, pstr, XDR_LAST_UINT32);
+}
+
+int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
+		const struct xdr_discrim *choices, xdrproc_t dfault) {
+	size_t s;
+
+	XDR_SAVE(xs, s);
+
+	if (xdr_enum(xs, pdiscriminant)) {
+		while (choices->proc != NULL) {
+			if (choices->value == *pdiscriminant) {
+				if ((*choices->proc)(xs, punion, XDR_LAST_UINT32)) {
+					return XDR_SUCCESS;
+				}
+				break;
+			}
+		}
+	}
+
+	if (dfault != NULL) {
+		if ((*dfault)(xs, punion, XDR_LAST_UINT32)) {
+			return XDR_SUCCESS;
+		}
+	}
+
+	XDR_RESTORE(xs, s);
+
+	return XDR_FAILURE;
 }
 
 size_t xdr_getpos(struct xdr *xs) {
@@ -246,4 +285,101 @@ void xdr_destroy(struct xdr *xs) {
 	if (xs->ops->x_destroy) {
 		(*xs->ops->x_destroy)(xs);
 	}
+}
+
+
+/*
+ * Other functions for RPC
+ */
+static int xdr_opaque_auth(struct xdr *xs, struct opaque_auth *oa) {
+	// FIXME must used all fields of opaque_auth
+	return xdr_enum(xs, (__s32 *)&oa->flavor) && xdr_u_int(xs, &oa->len)
+			&& (oa->len == 0); // temporary check
+}
+
+static int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
+	if (xdr_opaque_auth(xs, &ar->verf) && xdr_enum(xs, (__s32 *)&ar->stat)) {
+//		switch (ar->stat) {
+//		case SUCCESS:
+//			;
+//		}
+;
+	}
+
+	return XDR_FAILURE;
+}
+
+static int xdr_rejected_reply(struct xdr *xs, struct rejected_reply *rr) {
+	if (xdr_enum(xs, (__s32 *)&rr->stat)) {
+		switch (rr->stat) {
+		case RPC_MISMATCH:
+			return xdr_u_int(xs, &rr->d.mismatch_info.low)
+					&& xdr_u_int(xs, &rr->d.mismatch_info.high);
+		case AUTH_ERROR:
+			return xdr_enum(xs, (__s32 *)&rr->d.stat);
+		}
+	}
+
+	return XDR_FAILURE;
+}
+
+static int xdr_call_body(struct xdr *xs, struct call_body *cb) {
+	assert(cb->rpcvers == RPC_VERSION);
+
+	return xdr_u_int(xs, &cb->rpcvers) && xdr_u_int(xs, &cb->prog)
+			&& xdr_u_int(xs, &cb->vers) && xdr_u_int(xs, &cb->proc)
+			&& xdr_opaque_auth(xs, &cb->cred) && xdr_opaque_auth(xs, &cb->verf);
+}
+
+static int xdr_reply_body(struct xdr *xs, struct reply_body *rb) {
+	const struct xdr_discrim reply_dscrm[] = {
+			{MSG_ACCEPTED, (xdrproc_t)xdr_accepted_reply},
+			{MSG_DENIED, (xdrproc_t)xdr_rejected_reply},
+			{0, NULL_xdrproc_t}
+	};
+
+	return xdr_union(xs, (__s32 *)&rb->stat, &rb->r, reply_dscrm, NULL);
+//	if (xdr_enum(xs, (__s32 *)&rb->stat)) {
+//		switch (rb->stat) {
+//		case MSG_ACCEPTED:
+//			;
+//		case MSG_DENIED:
+//		}
+//	}
+}
+
+int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg) {
+	size_t s;
+	const struct xdr_discrim msg_dscrm[] = {
+			{CALL, (xdrproc_t)xdr_call_body},
+			{REPLY, (xdrproc_t)xdr_reply_body},
+			{0, NULL_xdrproc_t}
+	};
+
+	XDR_SAVE(xs, s);
+
+	if (xdr_u_int(xs, &msg->xid) && xdr_enum(xs, (__s32 *)msg->type)) {
+#if 1
+		if (xdr_union(xs, (__s32 *)&msg->type, &msg->b, msg_dscrm, NULL)) {
+			return XDR_SUCCESS;
+		}
+#else
+		switch (msg->type) {
+		case CALL:
+			if (xdr_call_body(xs, &msg->b.call)) {
+				return XDR_SUCCESS;
+			}
+			break;
+		case REPLY:
+			if (xdr_reply_body(xs, &msg->b.reply)) {
+				return XDR_SUCCESS;
+			}
+			break;
+		}
+#endif
+	}
+
+	XDR_RESTORE(xs, s);
+
+	return XDR_FAILURE;
 }

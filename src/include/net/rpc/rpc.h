@@ -62,6 +62,8 @@ enum auth_flavor {
 
 struct opaque_auth {
 	enum auth_flavor flavor;
+	__u32 len;
+	char *data; // FIXME not used
 };
 
 /* Reply to a RPC request that was accepted by the server */
