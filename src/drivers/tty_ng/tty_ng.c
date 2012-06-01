@@ -35,14 +35,13 @@ static int _write(void *data, const void *buf, size_t nbyte);
 static int _ioctl(void *data, int request, va_list args);
 static int _close (void *data);
 
-struct task_res_ops task_res_ops_tty = {
+const struct task_res_ops task_res_ops_tty = {
 	.close = _close,
 	.read = _canon_read,
 	.write = _write,
 	.ioctl = _ioctl,
 	.type = TASK_RES_OPS_TTY,
 };
-
 
 static struct tty_buf *current_tty;
 

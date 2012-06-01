@@ -28,7 +28,7 @@ static ssize_t this_write(void *socket, const void *buf, size_t nbyte);
 static int this_ioctl(void *socket, int request, va_list args);
 static int this_close(void *socket);
 
-struct task_res_ops task_res_ops_socket = {
+const struct task_res_ops task_res_ops_socket = {
 	.read = this_read,
 	.write = this_write,
 	.close = this_close,

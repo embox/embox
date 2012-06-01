@@ -37,7 +37,7 @@ struct task_res_ops {
  * with resources by type
  */
 struct idx_desc {
-	struct task_res_ops *res_ops;
+	const struct task_res_ops *res_ops;
 	void *data;     /**< @brief Pointer for actual struct */
 	int link_count; /**< @brief Count of links in all tasks */
 };
@@ -52,7 +52,7 @@ static inline void *task_idx_desc_data(struct idx_desc *desc) {
 	return desc->data;
 }
 
-static inline struct task_res_ops *task_idx_desc_ops(struct idx_desc *desc) {
+static inline const struct task_res_ops *task_idx_desc_ops(struct idx_desc *desc) {
 	assert(desc);
 	return desc->res_ops;
 }
@@ -139,10 +139,10 @@ static inline void task_res_idx_set(struct task_resources *res, int idx, struct 
  *
  * @return
  */
-extern struct idx_desc *task_idx_desc_alloc(struct task_res_ops *res_ops, void *data);
+extern struct idx_desc *task_idx_desc_alloc(const struct task_res_ops *res_ops, void *data);
 extern void task_idx_desc_free(struct idx_desc *desc);
 
-extern int task_res_idx_alloc(struct task_resources *res, struct task_res_ops *res_ops, void *data);
+extern int task_res_idx_alloc(struct task_resources *res, const struct task_res_ops *res_ops, void *data);
 extern void task_res_idx_free(struct task_resources *res, int idx);
 
 /**
