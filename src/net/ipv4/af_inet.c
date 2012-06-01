@@ -117,7 +117,7 @@ static int inet_create(struct socket *sock, int protocol) {
 
 int inet_release(struct socket *sock) {
 	struct sock *sk;
-	/* struct inet_sock *inet; */
+	struct inet_sock *inet;
 
 	sk = sock->sk;
 	if (sk == NULL) {
@@ -126,8 +126,9 @@ int inet_release(struct socket *sock) {
 
 	sock_lock(sk);
 
-	/* inet = inet_sk(sk); */
+	inet = inet_sk(sk);
 	/* socket_port_unlock(ntohs(inet->sport), inet->sport_type); */
+	ip_port_unlock(inet->sport_type, ntohs(inet->sport));
 
 	if (sk->sk_prot->close != NULL) {
 		/* altering close() interface to return NULL
