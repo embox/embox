@@ -28,17 +28,17 @@ static int measured_loop(int cycles_loop) {
 	for (i = 0; i < cycles_loop; i++) {
 	}
 	time_after = timecounter_read(&tc);
-	//printf("spent = %d\n", (int) time_after);
+	printf("spent = %d\n", (int) time_after);
 
 	return 0;
 }
 
 static int run(int argc, char **argv) {
 	dev = cedev_get_by_name("pit");
-	//measured_loop(10000);
+	measured_loop(10000);
 	for (int i = 0; i < 100; i++) {
 		measured_loop(1000);
 	}
-	//measured_loop(100);
+	measured_loop(100);
 	return ENOERR;
 }

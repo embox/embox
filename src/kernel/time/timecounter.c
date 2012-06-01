@@ -14,7 +14,6 @@
 #include <stdio.h>
 
 POOL_DEF(timecounter_pool, struct timecounter, OPTION_GET(NUMBER,timecounter_quantity));
-#define TIMECOUNTER_DEBUG
 struct timecounter *timecounter_alloc(void) {
 	return pool_alloc(&timecounter_pool);
 }
@@ -85,11 +84,9 @@ ns_t timecounter_read(struct timecounter *tc) {
 	nsec += cycles_to_ns(tc->cc, tc->cycle_last - cycle_old);
 
 #ifdef TIMECOUNTER_DEBUG
-	if(tc->jiffies_last != (int) jiffies_old) {
 	printf("c: %d %d\n", (int) tc->cycle_last, (int) cycle_old);
 	printf("j: %d %d\n", (int) tc->jiffies_last, (int) jiffies_old);
 	printf("ns: %d \n\n", (int) nsec);
-	}
 #endif
 
 	return (tc->nsec + nsec);
