@@ -9,6 +9,7 @@
 #define NET_RPC_RPC_H_
 
 #include <stdint.h>
+#include <net/rpc/auth.h>
 //#include <net/rpc/clnt.h> /* Client side (mostly) remote procedure call */
 //#include <net/rpc/xdr.h> /* External data representation interfaces */
 
@@ -42,28 +43,9 @@ enum reject_stat {
 	AUTH_ERROR = 1    /* remote can't authenticate caller */
 };
 
-/* Errors of a authentication */
-enum auth_stat {
-	AUTH_BADCRED = 1,      /* bad credentials (seal broken) */
-	AUTH_REJECTEDCRED = 2, /* client must begin new session */
-	AUTH_BADVERF = 3,      /* bad verifier (seal broken)    */
-	AUTH_REJECTEDVERF = 4, /* verifier expired or replayed  */
-	AUTH_TOOWEAK = 5       /* rejected for security reasons */
-};
-
-typedef int opaque; // TODO
-
-enum auth_flavor {
-	AUTH_NULL = 0,
-	AUTH_UNIX = 1,
-	AUTH_SHORT = 2,
-	AUTH_DES = 3
-};
-
-struct opaque_auth {
-	enum auth_flavor flavor;
-	__u32 len;
-	char *data; // FIXME not used
+struct mismatch_info {
+	__u32 low;
+	__u32 high;
 };
 
 /* Reply to a RPC request that was accepted by the server */
@@ -71,14 +53,7 @@ struct accepted_reply {
 	struct opaque_auth verf;
 	enum accept_stat stat;
 	union {
-		struct {
-			void *out;
-			void *outproc;
-		} results;
-		struct {
-			__u32 low;
-			__u32 high;
-		} mismatch_info;
+		struct mismatch_info mminfo;
 	} d; /* data */
 };
 
@@ -87,10 +62,7 @@ struct rejected_reply {
 	enum reject_stat stat;
 	union {
 		enum auth_stat reason;
-		struct {
-			__u32 low;
-			__u32 high;
-		} mismatch_info;
+		struct mismatch_info mminfo;
 	} d; /* data */
 };
 

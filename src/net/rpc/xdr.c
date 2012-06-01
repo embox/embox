@@ -297,34 +297,28 @@ static int xdr_opaque_auth(struct xdr *xs, struct opaque_auth *oa) {
 			&& (oa->len == 0); // temporary check
 }
 
-static int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
-	if (xdr_opaque_auth(xs, &ar->verf) && xdr_enum(xs, (__s32 *)&ar->stat)) {
-		switch (ar->stat) {
-		default:
-			return XDR_SUCCESS;
-		case SUCCESS:
-			return (*(xdrproc_t)ar->d.results.outproc)(xs, ar->d.results.out);
-		case PROG_MISMATCH:
-			return xdr_u_int(xs, &ar->d.mismatch_info.low)
-					&& xdr_u_int(xs, &ar->d.mismatch_info.high);
-		}
-	}
+static int xdr_mismatch_info(struct xdr *xs, struct mismatch_info *mi) {
+	return xdr_u_int(xs, &mi->low) && xdr_u_int(xs, &mi->high);
+}
 
-	return XDR_FAILURE;
+static int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
+	const struct xdr_discrim accept_dscrm[] = {
+			{ PROG_MISMATCH, (xdrproc_t)xdr_mismatch_info },
+			{ 0, NULL_xdrproc_t }
+	};
+
+	return xdr_opaque_auth(xs, &ar->verf)
+			&& xdr_union(xs, (__s32 *)&ar->stat, &ar->d, accept_dscrm, (xdrproc_t)xdr_void);
 }
 
 static int xdr_rejected_reply(struct xdr *xs, struct rejected_reply *rr) {
-	if (xdr_enum(xs, (__s32 *)&rr->stat)) {
-		switch (rr->stat) {
-		case RPC_MISMATCH:
-			return xdr_u_int(xs, &rr->d.mismatch_info.low)
-					&& xdr_u_int(xs, &rr->d.mismatch_info.high);
-		case AUTH_ERROR:
-			return xdr_enum(xs, (__s32 *)&rr->d.reason);
-		}
-	}
+	const struct xdr_discrim reject_dscrm[] = {
+			{ RPC_MISMATCH, (xdrproc_t)xdr_mismatch_info },
+			{ AUTH_ERROR, (xdrproc_t)xdr_enum },
+			{ 0, NULL_xdrproc_t }
+	};
 
-	return XDR_FAILURE;
+	return xdr_union(xs, (__s32 *)&rr->stat, &rr->d, reject_dscrm, NULL);
 }
 
 static int xdr_call_body(struct xdr *xs, struct call_body *cb) {

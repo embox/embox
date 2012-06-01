@@ -43,7 +43,7 @@ static int exec(int argc, char *argv[])
 		 * Couldn't establish connection with server.
 		 * Print error message and die.
 		 */
-//		clnt_pcreateerror(server);
+		clnt_pcreateerror(server);
 		return -1;
 	}
 
@@ -58,7 +58,7 @@ static int exec(int argc, char *argv[])
 		 * An error occurred while calling the server.
 		 * Print error message and die
 		 */
-//		clnt_perror(clnt, server);
+		clnt_perror(clnt, server);
 		return -1;
 	}
 

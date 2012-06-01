@@ -26,9 +26,8 @@ enum xdr_op {
 	XDR_FREE
 };
 
-struct xdr;
-
 /* XDR Stream options */
+struct xdr;
 struct xdr_ops {
 	int (*x_getunit)(struct xdr *xs, xdr_unit_t *to);
 	int (*x_putunit)(struct xdr *xs, const xdr_unit_t *from);
