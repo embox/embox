@@ -71,7 +71,7 @@ struct accepted_reply {
 	struct opaque_auth verf;
 	enum accept_stat stat;
 	union {
-		opaque results;
+		int results;
 		struct {
 			__u32 low;
 			__u32 high;

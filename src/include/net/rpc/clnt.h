@@ -38,8 +38,8 @@ struct clnt_ops {
 struct client {
 //	struct auth *cl_auth;
 	const struct clnt_ops *ops;
-	struct rpc_msg msg;
 	int sock;
+	struct rpc_msg msg_call;
 	struct sockaddr_in sin;
 };
 

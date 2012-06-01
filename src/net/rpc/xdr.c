@@ -299,11 +299,17 @@ static int xdr_opaque_auth(struct xdr *xs, struct opaque_auth *oa) {
 
 static int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
 	if (xdr_opaque_auth(xs, &ar->verf) && xdr_enum(xs, (__s32 *)&ar->stat)) {
-//		switch (ar->stat) {
-//		case SUCCESS:
-//			;
-//		}
-;
+		switch (ar->stat) {
+		default:
+			return XDR_SUCCESS;
+		case SUCCESS:
+			// TODO;
+			assert(0);
+			break;
+		case PROG_MISMATCH:
+			return xdr_u_int(xs, &ar->d.mismatch_info.low)
+					&& xdr_u_int(xs, &ar->d.mismatch_info.high);
+		}
 	}
 
 	return XDR_FAILURE;
@@ -324,8 +330,6 @@ static int xdr_rejected_reply(struct xdr *xs, struct rejected_reply *rr) {
 }
 
 static int xdr_call_body(struct xdr *xs, struct call_body *cb) {
-	assert(cb->rpcvers == RPC_VERSION);
-
 	return xdr_u_int(xs, &cb->rpcvers) && xdr_u_int(xs, &cb->prog)
 			&& xdr_u_int(xs, &cb->vers) && xdr_u_int(xs, &cb->proc)
 			&& xdr_opaque_auth(xs, &cb->cred) && xdr_opaque_auth(xs, &cb->verf);
@@ -333,50 +337,27 @@ static int xdr_call_body(struct xdr *xs, struct call_body *cb) {
 
 static int xdr_reply_body(struct xdr *xs, struct reply_body *rb) {
 	const struct xdr_discrim reply_dscrm[] = {
-			{MSG_ACCEPTED, (xdrproc_t)xdr_accepted_reply},
-			{MSG_DENIED, (xdrproc_t)xdr_rejected_reply},
-			{0, NULL_xdrproc_t}
+			{ MSG_ACCEPTED, (xdrproc_t)xdr_accepted_reply },
+			{ MSG_DENIED, (xdrproc_t)xdr_rejected_reply },
+			{ 0, NULL_xdrproc_t }
 	};
 
 	return xdr_union(xs, (__s32 *)&rb->stat, &rb->r, reply_dscrm, NULL);
-//	if (xdr_enum(xs, (__s32 *)&rb->stat)) {
-//		switch (rb->stat) {
-//		case MSG_ACCEPTED:
-//			;
-//		case MSG_DENIED:
-//		}
-//	}
 }
 
 int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg) {
 	size_t s;
 	const struct xdr_discrim msg_dscrm[] = {
-			{CALL, (xdrproc_t)xdr_call_body},
-			{REPLY, (xdrproc_t)xdr_reply_body},
-			{0, NULL_xdrproc_t}
+			{ CALL, (xdrproc_t)xdr_call_body },
+			{ REPLY, (xdrproc_t)xdr_reply_body },
+			{ 0, NULL_xdrproc_t }
 	};
 
 	XDR_SAVE(xs, s);
 
-	if (xdr_u_int(xs, &msg->xid) && xdr_enum(xs, (__s32 *)msg->type)) {
-#if 1
-		if (xdr_union(xs, (__s32 *)&msg->type, &msg->b, msg_dscrm, NULL)) {
-			return XDR_SUCCESS;
-		}
-#else
-		switch (msg->type) {
-		case CALL:
-			if (xdr_call_body(xs, &msg->b.call)) {
-				return XDR_SUCCESS;
-			}
-			break;
-		case REPLY:
-			if (xdr_reply_body(xs, &msg->b.reply)) {
-				return XDR_SUCCESS;
-			}
-			break;
-		}
-#endif
+	if (xdr_u_int(xs, &msg->xid)
+			&& xdr_union(xs, (__s32 *)&msg->type, &msg->b, msg_dscrm, NULL)) {
+		return XDR_SUCCESS;
 	}
 
 	XDR_RESTORE(xs, s);

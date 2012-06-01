@@ -39,16 +39,16 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	*psock = sock;
 
 	/* Fill rpc_msg structure */
-	clnt->msg.xid = 0x01010101;
-	clnt->msg.type = CALL;
-	clnt->msg.b.call.rpcvers = RPC_VERSION;
-	clnt->msg.b.call.prog = prognum;
-	clnt->msg.b.call.vers = versnum;
+	clnt->msg_call.xid = 0x01010101;
+	clnt->msg_call.type = CALL;
+	clnt->msg_call.b.call.rpcvers = RPC_VERSION;
+	clnt->msg_call.b.call.prog = prognum;
+	clnt->msg_call.b.call.vers = versnum;
 	/* TODO move to a separate function */
-	clnt->msg.b.call.cred.flavor = AUTH_NULL;
-	clnt->msg.b.call.cred.len = 0;
-	clnt->msg.b.call.verf.flavor = AUTH_NULL;
-	clnt->msg.b.call.verf.len = 0;
+	clnt->msg_call.b.call.cred.flavor = AUTH_NULL;
+	clnt->msg_call.b.call.cred.len = 0;
+	clnt->msg_call.b.call.verf.flavor = AUTH_NULL;
+	clnt->msg_call.b.call.verf.len = 0;
 
 	/* Fill other filed */
 	clnt->ops = &clntudp_ops;
@@ -58,23 +58,47 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	return clnt;
 }
 
-enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum, xdrproc_t inproc,
-		char *in, xdrproc_t outproc, char *out, struct timeval wait) {
+static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
+		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
+		struct timeval wait) {
+	int res;
 	char buff[1024];
 	struct xdr xstream;
+	struct rpc_msg msg_reply;
+	struct sockaddr addr;
+	socklen_t addr_len;
 
-	clnt->msg.b.call.proc = procnum;
+	clnt->msg_call.b.call.proc = procnum;
 
 	xdrmem_create(&xstream, buff, sizeof buff, XDR_ENCODE);
+	if (!xdr_rpc_msg(&xstream, &clnt->msg_call)
+			|| !(*inproc)(&xstream, in)) {
+		return RPC_CANTENCODEARGS;
+	}
+	xdr_destroy(&xstream);
 
-	if (xdr_rpc_msg(&xstream, &clnt->msg) && (*inproc)(&xstream, in)) {
-		return sendto(clnt->sock, buff, xdr_getpos(&xstream), 0, (struct sockaddr *)&clnt->sin, sizeof clnt->sin);
+	res = sendto(clnt->sock, buff, xdr_getpos(&xstream), 0,
+			(struct sockaddr *)&clnt->sin, sizeof clnt->sin);
+	if (res < 0) {
+		return RPC_CANTSEND;
 	}
 
-	return -1;
+	res = recvfrom(clnt->sock, buff, sizeof buff, 0, &addr, &addr_len);
+	if (res < 0) {
+		return RPC_CANTRECV;
+	}
+
+	xdrmem_create(&xstream, buff, sizeof buff, XDR_DECODE);
+	if (!xdr_rpc_msg(&xstream, &msg_reply)
+			|| !(*outproc)(&xstream, out)) {
+		return RPC_CANTENCODEARGS;
+	}
+	xdr_destroy(&xstream);
+
+	return RPC_SUCCESS;
 }
 
-void clntudp_destroy(struct client *clnt) {
+static void clntudp_destroy(struct client *clnt) {
 	close(clnt->sock);
 	free(clnt);
 }
