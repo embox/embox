@@ -21,21 +21,37 @@
 #include <fcntl.h>
 #include <kernel/diag.h>
 
+#include <fs/posix.h>
+
 EMBOX_UNIT_INIT(tty_ng_manager_init);
 
 struct param {
-	FILE *file;
+	struct tty_buf *tty;
 	void (*run)(void);
 };
 
+static int _canon_read(void *data, void *buf, size_t size);
+static int _write(void *data, const void *buf, size_t nbyte);
+static int _ioctl(void *data, int request, va_list args);
+static int _close (void *data);
+
+struct task_res_ops task_res_ops_tty = {
+	.close = _close,
+	.read = _canon_read,
+	.write = _write,
+	.ioctl = _ioctl,
+	.type = TASK_RES_OPS_TTY,
+};
+
+
 static struct tty_buf *current_tty;
 
-static size_t _read(void *buf, size_t size, size_t count, void *file) {
+static size_t _read(void *buf, size_t size, void *data) {
 	char *ch_buf = (char *) buf;
 
-	struct tty_buf *tty = (struct tty_buf *) ((struct file_desc *) file)->ops;
+	struct tty_buf *tty = (struct tty_buf *) data;
 
-	int i = count * size;
+	int i = size;
 
 //	mutex_lock(tty->inp_mutex);
 
@@ -52,35 +68,34 @@ static size_t _read(void *buf, size_t size, size_t count, void *file) {
 
 //		mutex_unlock(tty->inp_mutex);
 	}
-	return count * size;
+	return size;
 }
 
-static size_t _canon_read(void *buf, size_t size, size_t count, void *file) {
-	struct tty_buf *tty = (struct tty_buf *) ((struct file_desc *) file)->ops;
+static int _canon_read(void *data, void *buf, size_t size) {
+	struct tty_buf *tty = (struct tty_buf *) data;
 	if (tty->canonical) {
 		int to_write;
 		if (tty->canon_left == 0) {
 			tty->canon_left = linenoise("", tty->canon_inp, TTY_CANON_INP_LEN, NULL, NULL);
 			tty->canon_pos = 0;
 		}
-		to_write = min(count * size, tty->canon_left);
+		to_write = min(size, tty->canon_left);
 		memcpy(buf, tty->canon_inp + tty->canon_pos, to_write);
 		tty->canon_left -= to_write;
 		tty->canon_pos += to_write;
 		return to_write;
 	}
-	return _read(buf, size, count, file);
+	return _read(buf, size, data);
 }
 
-static size_t _write(const void *buff, size_t size, size_t count, void *file) {
+static int _write(void *data, const void *buf, size_t size) {
 	size_t cnt = 0;
-	char *b = (char*) buff;
-	struct tty_buf *tty = (struct tty_buf *) ((struct file_desc *) file)->ops;
-
-	while (cnt != count * size) {
+	char *b = (char*) buf;
+	struct tty_buf *tty = (struct tty_buf *) data;
+	while (cnt != size) {
 		tty->putc(tty, b[cnt++]);
 	}
-	return count * size;
+	return size;
 }
 
 static void tty_putc_buf(struct tty_buf *tty, char ch) {
@@ -102,8 +117,7 @@ static void tty_putc_buf(struct tty_buf *tty, char ch) {
 
 static void *thread_handler(void* args) {
 	struct param *p = (struct param *) args;
-	FILE *file = (FILE *) p->file;
-	struct idx_desc *cidx = task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file);
+	struct idx_desc *cidx = task_idx_desc_alloc(&task_res_ops_tty, p->tty);
 
 	close(0);
 	close(1);
@@ -117,8 +131,8 @@ static void *thread_handler(void* args) {
 	return NULL;
 }
 
-static int _ioctl(void *file, int request, va_list args) {
-	struct tty_buf *tty = (struct tty_buf *) ((struct file_desc *) file)->ops;
+static int _ioctl(void *data, int request, va_list args) {
+	struct tty_buf *tty = (struct tty_buf *) data;
 	switch (request) {
 	case TTY_IOCTL_SET_RAW:
 		tty->canonical = 0;
@@ -134,18 +148,16 @@ static int _ioctl(void *file, int request, va_list args) {
 	return 0;
 }
 
-static void tty_init(struct tty_buf *tty) {
-	tty->file_op.fopen = NULL;
-	tty->file_op.fclose = NULL;
-	tty->file_op.fread = _canon_read;
-	tty->file_op.fwrite = _write;
-	tty->file_op.ioctl = _ioctl;
+static int _close (void *data) {
+	return 0;
+}
 
+static void tty_init(struct tty_buf *tty) {
 	tty->inp_begin = tty->inp_end = tty->inp_len = 0;
 
 	tty->canon_pos = tty->canon_left = 0;
-	tty->canonical = 1;
 
+	tty->canonical = 1;
 }
 
 extern fs_drv_t *devfs_get_fs(void);
@@ -153,10 +165,8 @@ extern fs_drv_t *devfs_get_fs(void);
 void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(void)) {
 	struct thread *thds[count];
 	struct tty_buf ttys[count];
-	struct file_desc descs[count];
 	struct param params[count];
 	char ch;
-	char nm[] = "0";
 
 	if (count <= 0) {
 		return;
@@ -165,10 +175,8 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 	for (size_t i = 0; i < count; i++) {
 		init(&ttys[i]);
 		tty_init(&ttys[i]);
-		descs[i].ops = &ttys[i].file_op;
-		descs[i].has_ungetc = 0;
-		nm[0]++;
-		params[i].file = (FILE *) &descs[i];
+
+		params[i].tty = &ttys[i];
 		params[i].run = run;
 		thread_create(&thds[i], THREAD_FLAG_IN_NEW_TASK, thread_handler, &params[i]);
 	}

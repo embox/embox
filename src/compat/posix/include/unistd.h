@@ -55,5 +55,6 @@ extern int rmdir(const char *pathname);
 
 extern pid_t getpid(void);
 
+extern int isatty(int fd);
 
 #endif /* UNISTD_H_ */

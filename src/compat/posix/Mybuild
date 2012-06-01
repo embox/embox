@@ -2,16 +2,17 @@ package embox.compat.posix
 
 static module LibPosix {
     @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "exec.c"
-	source "file_op.c"
-	source "file.c"
-	source "fs.c"
-	source "fork.c"
-	source "getopt.c"
-	source "select.c"
-	source "utsname.c"
-	source "wait.c"
-	source "time.c"
+	source "exec.c",
+		"file_op.c",
+		"file.c",
+		"fs.c",
+		"fork.c",
+		"getopt.c",
+		"select.c",
+		"utsname.c",
+		"wait.c",
+		"time.c",
+		"isatty.c"
 
 	depends embox.util.LibUtil
 	depends embox.kernel.task_api
