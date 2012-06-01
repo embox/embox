@@ -14,26 +14,6 @@
 
 #include <fs/file_desc.h>
 
-static int stdio_init(void * par) {
-	return 0;
-}
-
-static int stdio_format(void *par) {
-	return 0;
-}
-
-static int stdio_mount(void *par) {
-	return 0;
-}
-
-static int stdio_create(void *params) {
-	return 0;
-}
-
-static int stdio_delete(const char *fname) {
-	return 0;
-}
-
 static int _determ_flide(FILE *stream) {
 
 	if ((int) stream == (int) stdin) {
@@ -75,9 +55,6 @@ static int stdio_ioctl(void *file, int request, va_list args) {
 	return 0;
 }
 
-static fsop_desc_t stdio_fsop = { stdio_init, stdio_format, stdio_mount,
-		stdio_create, stdio_delete};
-
 static file_operations_t stdio_fop = {
        .fopen = stdio_open,
        .fclose = stdio_close,
@@ -85,12 +62,6 @@ static file_operations_t stdio_fop = {
        .fwrite = stdio_write,
        .fseek =  NULL,
        .ioctl = stdio_ioctl
-};
-
-static const fs_drv_t stdio_drv = {
-	.name = "stdio",
-	.file_op = &stdio_fop,
-	.fsop = &stdio_fsop
 };
 
 #define INIT_STDIO_FILE_DESC(_nm) \
@@ -106,4 +77,3 @@ FILE * stdin = (FILE *) &_stdin;
 FILE * stdout = (FILE *) &_stdout;
 FILE * stderr = (FILE *) &_stderr;
 
-/*DECLARE_FILE_SYSTEM_DRIVER(stdio_drv);*/
