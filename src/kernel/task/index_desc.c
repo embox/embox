@@ -19,12 +19,20 @@ void res_init(struct task_resources *res) {
 		task_res_idx_set(res, i, NULL);
 	}
 }
-
+#if 0
 struct idx_desc *task_idx_desc_alloc(int type, void *data) {
 	struct idx_desc *desc = objalloc(&idx_res_pool);
 	desc->link_count = 0;
 
-	desc->type = type;
+	desc->data = data;
+	return desc;
+}
+#endif
+struct idx_desc *task_idx_desc_alloc(struct task_res_ops *res_ops, void *data) {
+	struct idx_desc *desc = objalloc(&idx_res_pool);
+	desc->link_count = 0;
+
+	desc->res_ops = res_ops;
 	desc->data = data;
 	return desc;
 }
@@ -33,11 +41,11 @@ void task_idx_desc_free(struct idx_desc *desc) {
 	objfree(&idx_res_pool, desc);
 }
 
-int task_res_idx_alloc(struct task_resources *res, int type, void *data) {
+int task_res_idx_alloc(struct task_resources *res, struct task_res_ops *res_ops, void *data) {
 	if(NULL == data) return -1;
 	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
 		if (!task_res_idx_is_binded(res, i)) {
-			task_res_idx_set(res, i, task_idx_desc_alloc(type, data));
+			task_res_idx_set(res, i, task_idx_desc_alloc(res_ops, data));
 			return i;
 		}
 	}

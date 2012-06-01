@@ -14,25 +14,21 @@
 #include <assert.h>
 #include <stdarg.h>
 
-/**
- * @brief Enum for supported idx descriptors (numerated task resources)
- */
-enum {
-	TASK_IDX_TYPE_FILE = 0,
-	TASK_IDX_TYPE_SOCKET = 1
+enum task_res_ops_type {
+	TASK_RES_OPS_REGULAR,
+	TASK_RES_OPS_TTY
 };
 
 /**
  * Specify operations with task's resources, which be called POSIX compat lib
  */
 struct task_res_ops {
-	int	type;
-	int	(*open)(const char *path, int __oflag, va_list args);
-	int	(*close)(int idx);
-	int	(*read) (int fd, const void *buf, size_t nbyte);
-	int	(*write)(int fd, const void *buf, size_t nbyte);
-	int	(*ioctl)(int fd, int request, va_list args);
-	int (*fseek)(int fd, long int offset, int origin);
+	int	(*read) (void *data, void *buf, size_t nbyte);
+	int	(*write)(void *data, const void *buf, size_t nbyte);
+	int	(*close)(void *data);
+	int	(*ioctl)(void *data, int request, va_list args);
+	int (*fseek)(void *data, long int offset, int origin);
+	const enum task_res_ops_type type;
 };
 
 /**
@@ -41,9 +37,9 @@ struct task_res_ops {
  * with resources by type
  */
 struct idx_desc {
+	struct task_res_ops *res_ops;
 	void *data;     /**< @brief Pointer for actual struct */
 	int link_count; /**< @brief Count of links in all tasks */
-	int type;	/**< @brief Type of resource */
 };
 
 /**
@@ -51,19 +47,14 @@ struct idx_desc {
  * @param desc idx descriptor to get
  * @return resource in idx
  */
-static inline void *task_idx_desc_get_res(struct idx_desc *desc) {
+static inline void *task_idx_desc_data(struct idx_desc *desc) {
 	assert(desc);
 	return desc->data;
 }
 
-/**
- * @brief idx utillity: get type by idx
- * @param desc idx descriptor to get
- * @return type in idx
- */
-static inline int task_idx_desc_get_type(struct idx_desc *desc) {
+static inline struct task_res_ops *task_idx_desc_ops(struct idx_desc *desc) {
 	assert(desc);
-	return desc->type;
+	return desc->res_ops;
 }
 
 /**
@@ -148,10 +139,10 @@ static inline void task_res_idx_set(struct task_resources *res, int idx, struct 
  *
  * @return
  */
-extern struct idx_desc *task_idx_desc_alloc(int type, void *data);
+extern struct idx_desc *task_idx_desc_alloc(struct task_res_ops *res_ops, void *data);
 extern void task_idx_desc_free(struct idx_desc *desc);
 
-extern int task_res_idx_alloc(struct task_resources *res, int type, void *data);
+extern int task_res_idx_alloc(struct task_resources *res, struct task_res_ops *res_ops, void *data);
 extern void task_res_idx_free(struct task_resources *res, int idx);
 
 /**

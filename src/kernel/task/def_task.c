@@ -11,6 +11,8 @@
 #include <diag/diag_device.h> //TODO
 #include "index_desc.h"
 
+#include <fs/posix.h>
+
 EMBOX_UNIT_INIT(tasks_init);
 
 static struct task default_task;
@@ -33,7 +35,7 @@ struct task *task_default_get(void) {
 static int tasks_init(void) {
 	FILE* file = diag_device_get();
 	struct task_resources *res = task_get_resources(&default_task);
-	struct idx_desc *cidx = task_idx_desc_alloc(TASK_IDX_TYPE_FILE, file);
+	struct idx_desc *cidx = task_idx_desc_alloc(&task_res_ops_file, file);
 
 	task_root_init(&default_task);
 

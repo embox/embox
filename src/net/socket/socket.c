@@ -23,31 +23,19 @@
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
 
+static ssize_t this_read(void *socket, void *buf, size_t nbyte);
+static ssize_t this_write(void *socket, const void *buf, size_t nbyte);
+static int this_ioctl(void *socket, int request, va_list args);
+static int this_close(void *socket);
 
-extern const struct task_res_ops * __task_res_ops[];
-
-
-static ssize_t this_read(int fd, const void *buf, size_t nbyte) {
-	return recvfrom(fd, (void *) buf, nbyte, 0, NULL, 0);
-}
-
-static ssize_t this_write(int fd, const void *buf, size_t nbyte) {
-	return sendto(fd, buf, nbyte, 0, NULL, 0);
-}
-
-static int this_ioctl(int fd, int request, va_list args) {
-	return 0;
-}
-
-static struct task_res_ops ops = {
-	.type = TASK_IDX_TYPE_SOCKET,
+struct task_res_ops task_res_ops_socket = {
 	.read = this_read,
 	.write = this_write,
-	.close = socket_close,
+	.close = this_close,
 	.ioctl = this_ioctl
 };
 
-ARRAY_SPREAD_ADD(__task_res_ops, &ops);
+/*ARRAY_SPREAD_ADD(__task_res_ops, &ops);*/
 
 static struct socket *idx2sock(int fd) {
 	return (struct socket *) task_self_idx_get(fd)->data;
@@ -63,7 +51,7 @@ int socket(int domain, int type, int protocol) {
 		return -1; /* return error code */
 	}
 
-	res = task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_SOCKET, sock);
+	res = task_res_idx_alloc(task_self_res(), &task_res_ops_socket, sock);
 	if (res < 0) { // release socket if can't alloc idx
 		kernel_socket_release(sock);
 		/* TODO: EMFILE should be returned when no fids left for process to use.
@@ -162,7 +150,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		return -1;
 	}
 
-	res = task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_SOCKET, new_sock);
+	res = task_res_idx_alloc(task_self_res(), &task_res_ops_socket, new_sock);
 	if (res < 0) {
 		kernel_socket_release(new_sock);
 		SET_ERRNO(EMFILE);  /* also could be ENFILE */
@@ -322,6 +310,23 @@ int socket_close(int sockfd) {
 	}
 
 	return ENOERR;
+}
+
+static ssize_t this_read(void *socket, void *buf, size_t nbyte) {
+	return recvfrom_sock((struct socket *) socket, buf, nbyte, 0, NULL, 0);
+}
+
+static ssize_t this_write(void *socket, const void *buf, size_t nbyte) {
+	return sendto_sock((struct socket *) socket, buf, nbyte, 0, NULL, 0);
+}
+
+static int this_ioctl(void *socket, int request, va_list args) {
+	return 0;
+}
+
+static int this_close(void *socket) {
+	/* TODO set errno */
+	return kernel_socket_release(socket);
 }
 
 int getsockopt(int sockfd, int level, int optname, void *optval,
