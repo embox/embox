@@ -24,6 +24,7 @@ static cycle_t volatile sys_ticks = 0; /* ticks after start system. */
 clock_t clock_sys_ticks(void) {
 	return (clock_t)sys_ticks;
 }
+
 /**
  * Handling of the clock tick.
  */
@@ -40,6 +41,10 @@ static struct clock_source jiffies = {
 	.flags = 1,
 };
 
+clock_t clock_sys_sec(void) {
+	return clock_source_clock_to_sec(&jiffies, clock_sys_ticks());
+}
+
 /**
  * Initialization of the time subsystem.
  *
@@ -53,7 +58,7 @@ static int module_init(void) {
 	assert(dev);
 
 	/* set and register clock_source */
-	jiffies.resolution = dev->resolution;
+	jiffies.resolution = dev->cs->resolution;
 	clock_source_register(&jiffies);
 	/* set periodic mode */
 	dev->set_mode(CLOCK_EVT_MODE_PERIODIC);

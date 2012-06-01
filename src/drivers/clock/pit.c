@@ -109,7 +109,7 @@ static struct cyclecounter cc = {
 
 static struct clock_source pit_clock_source = {
 	.flags = 0, /* this flag will be set to correct value by set_mod function */
-	.resolution = INPUT_CLOCK,
+	.resolution = PIT_HZ,
 	.cc = &cc
 };
 
@@ -117,7 +117,7 @@ static struct clock_event_device pit_device = {
 	.name = "pit",
 	.set_mode = pit_clock_setup,
 	.cs = &pit_clock_source,
-	.resolution = PIT_HZ,
+	.resolution = INPUT_CLOCK,
 	.get_jiffies = pit_get_jiffies
 };
 

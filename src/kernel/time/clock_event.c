@@ -31,7 +31,7 @@ const struct clock_event_device *cedev_get_best(enum resolution_mode mode) {
 	best_resolution = 0;
 	best = NULL;
 	switch(mode) {
-	case JIFFIES:
+	case TICKS:
 		array_foreach(dev, __clock_devices, ARRAY_SPREAD_SIZE(__clock_devices)) {
 			if (dev->resolution > best_resolution) {
 				best_resolution = dev->resolution;
@@ -39,7 +39,7 @@ const struct clock_event_device *cedev_get_best(enum resolution_mode mode) {
 			}
 		}
 		break;
-	case TICKS:
+	case JIFFIES:
 		array_foreach(dev, __clock_devices, ARRAY_SPREAD_SIZE(__clock_devices)) {
 			if (dev->cs->resolution > best_resolution) {
 				best_resolution = dev->cs->resolution;
@@ -55,6 +55,6 @@ const struct clock_event_device *cedev_get_best(enum resolution_mode mode) {
 }
 
 cycle_t cedev_get_ticks_per_jiff(const struct clock_event_device * dev) {
-	return ((dev->cs->resolution + dev->resolution / 2) / dev->resolution) - 1;
+	return ((dev->resolution + dev->cs->resolution / 2) / dev->cs->resolution) - 1;
 }
 

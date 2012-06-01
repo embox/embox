@@ -36,5 +36,6 @@ extern void clock_setup(useconds_t useconds);
 extern void clock_tick_handler(int irq_num, void *dev_id);
 
 extern clock_t clock_sys_ticks(void);
+extern clock_t clock_sys_sec(void);
 
 #endif /* HAL_CLOCK_H_ */

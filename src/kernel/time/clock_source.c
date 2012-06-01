@@ -84,7 +84,12 @@ struct clock_source *clock_source_get_default(void) {
 }
 
 useconds_t clock_source_clock_to_usec(struct clock_source *cs, clock_t cl) {
-	return (useconds_t) (((useconds_t) cl) * cs->resolution);
+	/* TODO significant: make it with uint64_t */
+	return (useconds_t) (cl * ((uint32_t)1000000 / cs->resolution));
+}
+
+int clock_source_clock_to_sec(struct clock_source *cs, clock_t cl) {
+	return (int)(cl / cs->resolution);
 }
 
 void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from,

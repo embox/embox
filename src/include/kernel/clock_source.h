@@ -38,8 +38,11 @@ extern int clock_source_unregister(struct clock_source *cs);
 /* return driver setting */
 extern uint32_t clock_source_get_precision(struct clock_source *cs);
 
-/* convert clock to usec */
+/* convert clocks to microseconds */
 extern useconds_t clock_source_clock_to_usec(struct clock_source *cs, clock_t cl);
+
+/* convert clocks to seconds */
+extern int clock_source_clock_to_sec(struct clock_source *cs, clock_t cl);
 
 extern struct clock_source *clock_source_get_default(void);
 
