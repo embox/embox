@@ -126,7 +126,7 @@
  * RPC definitions for the mount deamon
  */
 #define MOUNT_PROGNUM 100005
-#define MOUNT_VER 1
+#define MOUNT_VER 3
 
 #define MOUNTPROC3_NULL       0
 #define MOUNTPROC3_MNT        1
@@ -145,11 +145,9 @@
 #define	MAXDIRCOUNT  4064
 
 #define AUX_UNIX        0x00000001
-#define	EMBOX_NAMELEN   11
-#define	EMBOX_STAMPLEN  36
-//#define	EMBOX_MACHNAME  "sunyya"
-#define	EMBOX_MACHNAME  "192.168.0.3"
-#define	EMBOX_STAMP     0x003EB96F
+#define	EMBOX_MACHNAME  "embox"
+#define	EMBOX_NAMELEN   sizeof(EMBOX_MACHNAME) - 1
+#define	EMBOX_STAMP     0x00fd15b7
 
 typedef struct nfs_crdt_none {
 	uint32_t flvr;
@@ -164,14 +162,16 @@ typedef struct nfs_crdt_unix {
 	uint32_t stamp;
 	uint32_t namelen;
 	char name[EMBOX_NAMELEN];
-	char opaq[1];
+	char opaq[3];
 	uint32_t uid;
 	uint32_t gid;
-	uint32_t aux_gid_qua;
+	//uint32_t aux_gid_qua;
 	uint32_t aux_gid;
 	uint32_t vrf_flvr;
 	uint32_t vrf_flvr_len;
 } nfs_crdt_unix_t;
+
+#define	EMBOX_STAMPLEN  sizeof(nfs_crdt_unix_t) - 16
 
 typedef struct nfs_call_head {
 	uint32_t xid;

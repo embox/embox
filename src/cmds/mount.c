@@ -33,8 +33,10 @@ static int mount_dev(char *dev, char *fs_type, char *dir) {
 	param.dir = dir;
 
 	if(NULL == (dev_node = vfs_find_node((const char *) dev, NULL))) {
-		LOG_ERROR("mount: no such device\n");
-		return -ENODEV;
+		if(0 != strcmp((const char *) fs_type, "nfs")) {
+			LOG_ERROR("mount: no such device\n");
+			return -ENODEV;
+		}
 	}
 	param.dev_node = dev_node;
 
@@ -44,11 +46,15 @@ static int mount_dev(char *dev, char *fs_type, char *dir) {
 			return -EINVAL;
 		}
 		else {
-			dev_node->fs_type = drv;
+			if(NULL != dev_node) {
+				dev_node->fs_type = drv;
+			}
 		}
 	}
 
-	drv = dev_node->fs_type;
+	if(NULL != dev_node) {
+		drv = dev_node->fs_type;
+	}
 	if (NULL == drv->fsop->mount) {
 		return  -ENODEV;
 	}

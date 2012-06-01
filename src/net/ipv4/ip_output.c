@@ -25,16 +25,19 @@
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,
 		in_addr_t daddr/*, ip_options_t *opt*/) {
+	static uint16_t global_id = 1230;
+
 	iphdr_t *hdr = skb->nh.iph;
 	hdr->version = 4;
 	hdr->ihl = IP_MIN_HEADER_SIZE >> 2 /* + opt->optlen */;
 	hdr->saddr = saddr; // Changed as in_addr_t is in network-ordered
 	hdr->daddr = daddr;
 	hdr->tot_len = htons(len - ETH_HEADER_SIZE);
-	hdr->ttl = htons(ttl);
-	hdr->id = htons(id);
+	//hdr->ttl = htons(ttl);
+	hdr->ttl = 64;
+	hdr->id = htons(global_id++);
 	hdr->tos = 0;
-	hdr->frag_off = 0;
+	hdr->frag_off = htons(IP_DF);
 	/* frag_off will be set during fragmentation decision */
 	hdr->proto = proto;
 	ip_send_check(hdr);

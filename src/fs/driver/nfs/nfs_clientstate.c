@@ -48,7 +48,7 @@ static void set_auth_unix(nfs_crdt_unix_t *crdt) {
 	crdt->stamp = htonl(EMBOX_STAMP);
 	crdt->namelen = htonl(EMBOX_NAMELEN);
 	memcpy(crdt->name, EMBOX_MACHNAME, EMBOX_NAMELEN);
-	crdt->aux_gid_qua = htonl(AUX_UNIX);
+	//crdt->aux_gid_qua = htonl(AUX_UNIX);
 }
 
 static int nfs_prepare(char *dev) {
@@ -222,7 +222,7 @@ static int nfs_mnt_null(void) {
 	size_t len, arglen;
 	char *point;
 	uint16_t *lenpoint;
-	uint32_t status;
+	uint32_t fh;
 	nfs_filehandle_t *p_fh;
 	socklen_t addr_len;
 	nfs_call_head_t call_head;
@@ -270,30 +270,26 @@ static int nfs_mnt_null(void) {
 		printf("mnt export failed. errno=%d\n", errno);
 		return -1;
 	}
+	else if (res > 0) {
+		point = rcv_buf;
+		fh = ntohl(*(uint32_t *)point);
+		point += sizeof(fh);
+		memcpy(&reply_head , point, len = sizeof(reply_head));
+		point += len;
 
-	point = rcv_buf;
-	memcpy(&reply_head , point, len = sizeof(reply_head));
-	point += len;
-
-	/* TODO check reply_head status */
-	status = ntohl(*(int *)point);
-	point += sizeof(status);
-
-	if(STATUS_OK == status) {
-		return 0;
+		if(STATUS_OK == reply_head.accept_state) {
+			return 0;
+		}
 	}
 	return -1;
 }
-
-
-
 
 static int nfs_mnt_mount(void) {
 	int res, dirlen;
 	size_t len, arglen;
 	char *point;
 	uint16_t *lenpoint;
-	uint32_t status;
+	uint32_t fh, status;
 	nfs_filehandle_t *p_fh;
 	socklen_t addr_len;
 	nfs_call_head_t call_head;
@@ -351,26 +347,29 @@ static int nfs_mnt_mount(void) {
 		printf("mnt export failed. errno=%d\n", errno);
 		return -1;
 	}
+	else if (res > 0) {
+		point = rcv_buf;
+		fh = ntohl(*(uint32_t *)point);
+		point += sizeof(fh);
+		memcpy(&reply_head , point, len = sizeof(reply_head));
+		point += len;
 
-	point = rcv_buf;
-	memcpy(&reply_head , point, len = sizeof(reply_head));
-	point += len;
+		/* TODO check reply_head status */
+		status = ntohl(*(int *)point);
+		point += sizeof(status);
 
-	/* TODO check reply_head status */
-	status = ntohl(*(int *)point);
-	point += sizeof(status);
+		if(STATUS_OK == status) {
+			memset(p_fh, 0, FHSIZE3);
+			p_fh->len = *(int *)point;
+			len = ntohl(p_fh->len);
+			if(0 < len) {
+				point += sizeof(p_fh->len);
 
-	if(STATUS_OK == status) {
-		memset(p_fh, 0, FHSIZE3);
-		p_fh->len = *(int *)point;
-		len = ntohl(p_fh->len);
-		if(0 < len) {
-			point += sizeof(p_fh->len);
-
-			memcpy(p_fh->name, point, len);
-			p_fh->count = DIRCOUNT;
-			p_fh->maxcount = MAXDIRCOUNT;
-			return 0;
+				memcpy(p_fh->name, point, len);
+				p_fh->count = htonl(DIRCOUNT);
+				p_fh->maxcount = htonl(MAXDIRCOUNT);
+				return 0;
+			}
 		}
 	}
 	return -1;
