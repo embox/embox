@@ -10,14 +10,15 @@
 
 /* Errors of a authentication */
 enum auth_stat {
-	AUTH_OK = 0,
-	AUTH_BADCRED = 1,      /* bad credentials (seal broken) */
-	AUTH_REJECTEDCRED = 2, /* client must begin new session */
-	AUTH_BADVERF = 3,      /* bad verifier (seal broken)    */
-	AUTH_REJECTEDVERF = 4, /* verifier expired or replayed  */
-	AUTH_TOOWEAK = 5,      /* rejected for security reasons */
-	AUTH_INVALIDRESP = 6,  /* bogus response verifier */
-	AUTH_FAILED = 7        /* some unknown reason */
+	AUTH_OK,
+	AUTH_BADCRED,      /* bad credentials (seal broken) */
+	AUTH_REJECTEDCRED, /* client must begin new session */
+	AUTH_BADVERF,      /* bad verifier (seal broken)    */
+	AUTH_REJECTEDVERF, /* verifier expired or replayed  */
+	AUTH_TOOWEAK,      /* rejected for security reasons */
+	AUTH_INVALIDRESP,  /* bogus response verifier */
+	AUTH_FAILED,       /* some unknown reason */
+	AUTH_MAX
 };
 
 enum auth_flavor {

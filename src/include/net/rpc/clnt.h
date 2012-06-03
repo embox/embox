@@ -21,40 +21,41 @@ struct rpc_err;
 struct rpc_msg;
 
 enum clnt_stat {
-	RPC_SUCCESS = 0,            /* call succeeded */
-	RPC_CANTENCODEARGS = 1,     /* can't encode arguments */
-	RPC_CANTDECODERES = 2,      /* can't decode results */
-	RPC_CANTSEND = 3,           /* failure in sending call */
-	RPC_CANTRECV = 4,           /* failure in receiving result */
-	RPC_TIMEDOUT = 5,           /* call timed out */
-	RPC_VERSMISMATCH = 6,       /* RPC versions not compatible */
-	RPC_AUTHERROR = 7,          /* authentication error */
-	RPC_PROGUNAVAIL = 8,        /* program not available */
-	RPC_PROGVERSMISMATCH = 9,   /* program version mismatched */
-	RPC_PROCUNAVAIL = 10,       /* procedure unavailable */
-	RPC_CANTDECODEARGS = 11,    /* decode arguments error */
-	RPC_SYSTEMERROR = 12,       /* generic "other problem" */
-	RPC_UNKNOWNHOST = 13,       /* unknown host name */
-	RPC_PMAPFAILURE = 14,       /* portmapper failed in its call */
-	RPC_PROGNOTREGISTERED = 15, /* remote program is not registered */
-	RPC_FAILED = 16,
-	RPC_UNKNOWNPROTO = 17,      /* unknown protocol */
-	RPC_INTR = 18,
-	RPC_UNKNOWNADDR = 19,       /* remote address unknown */
-	RPC_TLIERROR = 20,
-	RPC_NOBROADCAST = 21,       /* broadcasting not supported */
-	RPC_N2AXLATEFAILURE = 22,   /* name to addr translation failed */
-	RPC_UDERROR = 23,
-	RPC_INPROGRESS = 24,
-	RPC_STALERACHANDLE = 25
+	RPC_SUCCESS,           /* call succeeded */
+	RPC_CANTENCODEARGS,    /* can't encode arguments */
+	RPC_CANTDECODERES,     /* can't decode results */
+	RPC_CANTSEND,          /* failure in sending call */
+	RPC_CANTRECV,          /* failure in receiving result */
+	RPC_TIMEDOUT,          /* call timed out */
+	RPC_VERSMISMATCH,      /* RPC versions not compatible */
+	RPC_AUTHERROR,         /* authentication error */
+	RPC_PROGUNAVAIL,       /* program not available */
+	RPC_PROGVERSMISMATCH,  /* program version mismatched */
+	RPC_PROCUNAVAIL,       /* procedure unavailable */
+	RPC_CANTDECODEARGS,    /* decode arguments error */
+	RPC_SYSTEMERROR,       /* generic "other problem" */
+	RPC_UNKNOWNHOST,       /* unknown host name */
+	RPC_PMAPFAILURE,       /* portmapper failed in its call */
+	RPC_PROGNOTREGISTERED, /* remote program is not registered */
+	RPC_FAILED,
+	RPC_UNKNOWNPROTO,      /* unknown protocol */
+	RPC_INTR,
+	RPC_UNKNOWNADDR,       /* remote address unknown */
+	RPC_TLIERROR,
+	RPC_NOBROADCAST,       /* broadcasting not supported */
+	RPC_N2AXLATEFAILURE,   /* name to addr translation failed */
+	RPC_UDERROR,
+	RPC_INPROGRESS,
+	RPC_STALERACHANDLE,
+	RPC_MAX
 };
 
 struct rpc_err {
 	enum clnt_stat status;
 	union {
-		int code;
+		int error;
 		enum auth_stat reason;
-		struct mismatch_info vers;
+		struct mismatch_info mminfo;
 	} extra;
 };
 
@@ -74,6 +75,13 @@ struct client {
 	struct sockaddr_in sin;
 };
 
+struct rpc_createerr {
+	enum clnt_stat stat;
+	struct rpc_err error;
+};
+
+extern struct rpc_createerr rpc_create_error;
+
 extern struct client * clnt_create(const char *host, __u32 prognum, __u32 versnum,
 		const char *prot);
 extern struct client * clntudp_create(struct sockaddr_in *addr, __u32 prognum,
@@ -91,13 +99,13 @@ extern struct client * clnttcp_create(struct sockaddr_in *addr, __u32 prognum, 	
 		int *psock, unsigned int sendsz, unsigned int __recvsz);
 #endif
 
-extern char * clnt_spcreateerror(const char *s);
-extern void clnt_pcreateerror(const char *s);
-
 extern char * clnt_sperrno(enum clnt_stat stat);
 extern void clnt_perrno(enum clnt_stat stat);
 
-//extern char * clnt_sperror(struct client *clnt, const char *s);
+extern char * clnt_sperror(struct client *clnt, const char *s);
 extern void clnt_perror(struct client *clnt, const char *s);
+
+extern char * clnt_spcreateerror(const char *s);
+extern void clnt_pcreateerror(const char *s);
 
 #endif /* NET_RPC_CLNT_H_ */

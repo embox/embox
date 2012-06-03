@@ -16,6 +16,8 @@
 #include <errno.h>
 #include <err.h>
 
+#define UDP_MSG_MAX_SZ 1024
+
 static const struct clnt_ops clntudp_ops;
 
 struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
@@ -65,11 +67,14 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
 		struct timeval wait) {
 	int res;
-	char buff[1024];
+	char buff[UDP_MSG_MAX_SZ];
 	struct xdr xstream;
 	struct rpc_msg msg_reply, *mcall, *mreply;
 	struct sockaddr addr;
 	socklen_t addr_len;
+
+	assert((clnt != NULL) && (inproc != NULL) && (in != NULL)
+			&& (outproc != NULL) && (out != NULL));
 
 	mcall = &clnt->msg;
 	mreply = &msg_reply;
@@ -88,14 +93,14 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 			(struct sockaddr *)&clnt->sin, sizeof clnt->sin);
 	if (res < 0) {
 		clnt->err.status = RPC_CANTSEND;
-		clnt->err.extra.code = errno;
+		clnt->err.extra.error = errno;
 		return clnt->err.status;
 	}
 
 	res = recvfrom(clnt->sock, buff, sizeof buff, 0, &addr, &addr_len);
 	if (res < 0) {
 		clnt->err.status = RPC_CANTRECV;
-		clnt->err.extra.code = errno;
+		clnt->err.extra.error = errno;
 		return clnt->err.status;
 	}
 
@@ -112,10 +117,14 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 }
 
 static void clntudp_geterr(struct client *clnt, struct rpc_err *perr) {
+	assert((clnt != NULL) && (perr != NULL));
+
 	memcpy(perr, &clnt->err, sizeof clnt->err);
 }
 
 static void clntudp_destroy(struct client *clnt) {
+	assert(clnt != NULL);
+
 	close(clnt->sock);
 	free(clnt);
 }
