@@ -303,6 +303,7 @@ static int xdr_mismatch_info(struct xdr *xs, struct mismatch_info *mi) {
 
 static int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
 	const struct xdr_discrim accept_dscrm[] = {
+			{ SUCCESS, (xdrproc_t)ar->d.result.decoder },
 			{ PROG_MISMATCH, (xdrproc_t)xdr_mismatch_info },
 			{ 0, NULL_xdrproc_t }
 	};

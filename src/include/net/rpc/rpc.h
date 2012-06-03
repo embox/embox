@@ -53,6 +53,10 @@ struct accepted_reply {
 	struct opaque_auth verf;
 	enum accept_stat stat;
 	union {
+		struct {
+			void *arg; /* XXX It must be first */
+			void *decoder;
+		} result;
 		struct mismatch_info mminfo;
 	} d; /* data */
 };

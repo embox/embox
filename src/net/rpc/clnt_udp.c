@@ -108,8 +108,9 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	}
 
 	xdrmem_create(&xstream, buff, sizeof buff, XDR_DECODE);
-	if (!xdr_rpc_msg(&xstream, mreply)
-			|| !(*outproc)(&xstream, out)) {
+	mreply->b.reply.r.accepted.d.result.arg = out;
+	mreply->b.reply.r.accepted.d.result.decoder = outproc;
+	if (!xdr_rpc_msg(&xstream, mreply)) {
 		clnt->err.status = RPC_CANTDECODERES;
 		return clnt->err.status;
 	}
