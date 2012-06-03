@@ -50,6 +50,7 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	if (sock < 0) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = errno;
+		LOG_ERROR("can't create socket\n");
 		goto error;
 	}
 	*psock = sock;
@@ -78,6 +79,7 @@ error:
 	return NULL;
 }
 
+int usleep(unsigned long);// TODO REMOVE THIS
 static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
 		struct timeval wait) {
@@ -112,6 +114,7 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 		return clnt->err.status;
 	}
 
+	usleep(10);
 	res = recvfrom(clnt->sock, buff, sizeof buff, 0, &addr, &addr_len);
 	if (res < 0) {
 		clnt->err.status = RPC_CANTRECV;
