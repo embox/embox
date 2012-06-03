@@ -29,6 +29,8 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 
 	clnt = (struct client *)malloc(sizeof *clnt);
 	if (clnt == NULL) {
+		rpc_create_error.stat = RPC_SYSTEMERROR;
+		rpc_create_error.err.extra.error = ENOMEM;
 		LOG_ERROR("no memory\n");
 		return NULL;
 	}
@@ -37,7 +39,8 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock < 0) {
-		/* TODO insert error handling there */
+		rpc_create_error.stat = RPC_SYSTEMERROR;
+		rpc_create_error.err.extra.error = errno;
 		free(clnt);
 		return NULL;
 	}

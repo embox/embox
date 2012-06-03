@@ -103,11 +103,26 @@ static char * get_auth_msg(enum auth_stat stat) {
 }
 
 char * clnt_spcreateerror(const char *msg) {
+	/* FIXME should use snprintf instead sprintf */
 	static char buff[ERROR_STR_MAX_SZ];
-//	char *curr;
+	char *curr;
 
 	assert(msg != NULL);
 
+	curr = buff;
+	curr += sprintf(curr, "%s: %s", msg, clnt_sperrno(rpc_create_error.stat));
+	switch (rpc_create_error.stat) {
+	default:
+		break;
+	case RPC_PMAPFAILURE:
+		curr += sprintf(curr, " - %s", clnt_sperrno(rpc_create_error.err.status));
+		break;
+	case RPC_SYSTEMERROR:
+		curr += sprintf(curr, " - %s", strerror(rpc_create_error.err.extra.error));
+		break;
+	}
+
+	assert(curr < buff + sizeof buff); // TODO remove this
 
 	return buff;
 }
@@ -118,7 +133,7 @@ char * clnt_sperrno(enum clnt_stat stat) {
 }
 
 char * clnt_sperror(struct client *clnt, const char *msg) {
-	/* TODO should use snprintf instead sprintf */
+	/* FIXME should use snprintf instead sprintf */
 	static char buff[ERROR_STR_MAX_SZ];
 	struct rpc_err err;
 	char *curr, *auth_msg;
@@ -172,22 +187,19 @@ char * clnt_sperror(struct client *clnt, const char *msg) {
 		break;
 	}
 
-	*curr++ = '\n';
-	*curr = '\0';
-
-	assert(curr < buff + sizeof buff);
+	assert(curr < buff + sizeof buff); // TODO remove this
 
 	return buff;
 }
 
 void clnt_pcreateerror(const char *msg) {
-	printf("%s\n", clnt_spcreateerror(msg));
+	fprintf(stderr, "%s\n", clnt_spcreateerror(msg));
 }
 
 void clnt_perrno(enum clnt_stat stat) {
-	printf("%s\n", clnt_sperrno(stat));
+	fprintf(stderr, "%s\n", clnt_sperrno(stat));
 }
 
 void clnt_perror(struct client *clnt, const char *msg) {
-	printf("%s", clnt_sperror(clnt, msg));
+	fprintf(stderr, "%s\n", clnt_sperror(clnt, msg));
 }

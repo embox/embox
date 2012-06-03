@@ -77,7 +77,7 @@ struct client {
 
 struct rpc_createerr {
 	enum clnt_stat stat;
-	struct rpc_err error;
+	struct rpc_err err;
 };
 
 extern struct rpc_createerr rpc_create_error;
