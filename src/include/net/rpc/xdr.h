@@ -80,6 +80,7 @@ extern int xdr_wrapstring(struct xdr *xs, char **pstr);
 extern int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
 		const struct xdr_discrim *choices, xdrproc_t dfault);
 
+struct rpc_msg;
 extern int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg);
 extern int xdr_pmap(struct xdr *xs, struct pmap *pmp);
 

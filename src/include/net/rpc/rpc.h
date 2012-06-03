@@ -54,8 +54,8 @@ struct accepted_reply {
 	enum accept_stat stat;
 	union {
 		struct {
-			void *arg; /* XXX It must be first */
 			void *decoder;
+			void *param;
 		} result;
 		struct mismatch_info mminfo;
 	} d; /* data */

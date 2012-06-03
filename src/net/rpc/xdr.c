@@ -328,14 +328,18 @@ static int xdr_mismatch_info(struct xdr *xs, struct mismatch_info *mi) {
 }
 
 static int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
-	const struct xdr_discrim accept_dscrm[] = {
-			{ SUCCESS, (xdrproc_t)ar->d.result.decoder },
-			{ PROG_MISMATCH, (xdrproc_t)xdr_mismatch_info },
-			{ 0, NULL_xdrproc_t }
-	};
+	if (xdr_opaque_auth(xs, &ar->verf) && xdr_enum(xs, (__s32 *)&ar->stat)) {
+		switch (ar->stat) {
+		default:
+			return XDR_SUCCESS;
+		case SUCCESS:
+			return (*(xdrproc_t)ar->d.result.decoder)(xs, ar->d.result.param, XDR_LAST_UINT32);
+		case PROG_MISMATCH:
+			return xdr_mismatch_info(xs, &ar->d.mminfo);
+		}
+	}
 
-	return xdr_opaque_auth(xs, &ar->verf)
-			&& xdr_union(xs, (__s32 *)&ar->stat, &ar->d, accept_dscrm, (xdrproc_t)xdr_void);
+	return XDR_FAILURE;
 }
 
 static int xdr_rejected_reply(struct xdr *xs, struct rejected_reply *rr) {

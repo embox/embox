@@ -38,7 +38,7 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 		goto error;
 	}
 
-	port = raddr->sin_port;
+	port = ntohs(raddr->sin_port);
 	if (port == 0) {
 		port = pmap_getport(raddr, prognum, versnum, IPPROTO_UDP);
 		if (port == 0) {
@@ -70,7 +70,7 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	clnt->ops = &clntudp_ops;
 	clnt->sock = sock;
 	memcpy(&clnt->sin, raddr, sizeof *raddr);
-	clnt->sin.sin_port = port;
+	clnt->sin.sin_port = htons(port);
 
 	return clnt;
 error:
@@ -119,9 +119,9 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 		return clnt->err.status;
 	}
 
-	xdrmem_create(&xstream, buff, sizeof buff, XDR_DECODE);
-	mreply->b.reply.r.accepted.d.result.arg = out;
+	xdrmem_create(&xstream, buff, res, XDR_DECODE);
 	mreply->b.reply.r.accepted.d.result.decoder = outproc;
+	mreply->b.reply.r.accepted.d.result.param = out;
 	if (!xdr_rpc_msg(&xstream, mreply)) {
 		clnt->err.status = RPC_CANTDECODERES;
 		return clnt->err.status;
