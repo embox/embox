@@ -15,6 +15,8 @@
 #include <string.h>
 #include <errno.h>
 #include <err.h>
+#include <types.h>
+#include <net/ip.h>
 
 #define UDP_MSG_MAX_SZ 1024
 
@@ -24,6 +26,7 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 		__u32 versnum, struct timeval wait, int *psock) {
 	struct client *clnt;
 	int sock;
+	__u16 port;
 
 	assert((raddr != NULL) && (psock != NULL));
 
@@ -32,17 +35,22 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = ENOMEM;
 		LOG_ERROR("no memory\n");
-		return NULL;
+		goto error;
 	}
 
-	assert(raddr->sin_port != 0); // else call port-mapper
+	port = raddr->sin_port;
+	if (port == 0) {
+		port = pmap_getport(raddr, prognum, versnum, IPPROTO_UDP);
+		if (port == 0) {
+			goto error;
+		}
+	}
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock < 0) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = errno;
-		free(clnt);
-		return NULL;
+		goto error;
 	}
 	*psock = sock;
 
@@ -62,8 +70,12 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	clnt->ops = &clntudp_ops;
 	clnt->sock = sock;
 	memcpy(&clnt->sin, raddr, sizeof *raddr);
+	clnt->sin.sin_port = port;
 
 	return clnt;
+error:
+	free(clnt);
+	return NULL;
 }
 
 static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,

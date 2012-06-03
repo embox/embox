@@ -125,6 +125,32 @@ int xdr_u_int(struct xdr *xs, __u32 *pu32) {
 	return XDR_FAILURE; /* unknown operation */
 }
 
+int xdr_short(struct xdr *xs, __s16 *ps16) {
+	__s32 s32;
+
+	s32 = *ps16;
+	if (!xdr_int(xs, &s32)) {
+		return XDR_FAILURE;
+	}
+
+	*ps16 = (__s16)s32;
+
+	return XDR_SUCCESS;
+}
+
+int xdr_u_short(struct xdr *xs, __u16 *pu16) {
+	__u32 u32;
+
+	u32 = *pu16;
+	if (!xdr_u_int(xs, &u32)) {
+		return XDR_FAILURE;
+	}
+
+	*pu16 = (__u16)u32;
+
+	return XDR_SUCCESS;
+}
+
 int xdr_enum(struct xdr *xs, __s32 *pe) {
 	/* According to standard enum is interpreted as int */
 	return xdr_int(xs, pe);
@@ -350,6 +376,21 @@ int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg) {
 
 	if (xdr_u_int(xs, &msg->xid)
 			&& xdr_union(xs, (__s32 *)&msg->type, &msg->b, msg_dscrm, NULL_xdrproc_t)) {
+		return XDR_SUCCESS;
+	}
+
+	XDR_RESTORE(xs, s);
+
+	return XDR_FAILURE;
+}
+
+int xdr_pmap(struct xdr *xs, struct pmap *pmp) {
+	size_t s;
+
+	XDR_SAVE(xs, s);
+
+	if (xdr_u_int(xs, &pmp->prog) && xdr_u_int(xs, &pmp->vers)
+			&& xdr_u_int(xs, &pmp->prot) && xdr_u_int(xs, &pmp->port)) {
 		return XDR_SUCCESS;
 	}
 

@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <types.h>
 #include <net/rpc/rpc.h>
+#include <net/rpc/pmap.h>
 
 /* Standard size of XDR unit is 4 bytes */
 #define BYTES_PER_XDR_UNIT 4
@@ -69,6 +70,8 @@ extern void xdr_free(xdrproc_t proc, char *obj);
 extern int xdr_void(void);
 extern int xdr_int(struct xdr *xs, __s32 *pi);
 extern int xdr_u_int(struct xdr *xs, __u32 *pui);
+extern int xdr_short(struct xdr *xs, __s16 *ps);
+extern int xdr_u_short(struct xdr *xs, __u16 *pus);
 extern int xdr_enum(struct xdr *xs, __s32 *pe);
 extern int xdr_bool(struct xdr *xs, __s32 *pb);
 extern int xdr_opaque(struct xdr *xs, char *pc, size_t size);
@@ -78,5 +81,6 @@ extern int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
 		const struct xdr_discrim *choices, xdrproc_t dfault);
 
 extern int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg);
+extern int xdr_pmap(struct xdr *xs, struct pmap *pmp);
 
 #endif /* NET_RPC_XDR_H_ */

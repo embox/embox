@@ -18,7 +18,7 @@
 
 #define ERROR_STR_MAX_SZ 256
 
-struct rpc_createerr rpc_create_error;
+struct rpc_createerr rpc_create_error; // TODO rename
 
 /* List of AUTH errors */
 static char *auth_errlist[AUTH_MAX] = {
@@ -66,7 +66,7 @@ struct client * clnt_create(const char *host, __u32 prognum,
 		tv.tv_usec = 0;
 		raddr.sin_family = AF_INET;
 		inet_aton(host, &raddr.sin_addr);
-		raddr.sin_port = htons(725);
+		raddr.sin_port = 0;
 		return clntudp_create(&raddr, prognum, versnum, tv, &sock);
 	}
 

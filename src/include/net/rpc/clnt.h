@@ -15,11 +15,6 @@
 #include <net/rpc/xdr.h>
 #include <net/rpc/auth.h>
 
-/* Prototypes */
-struct client;
-struct rpc_err;
-struct rpc_msg;
-
 enum clnt_stat {
 	RPC_SUCCESS,           /* call succeeded */
 	RPC_CANTENCODEARGS,    /* can't encode arguments */
@@ -58,6 +53,8 @@ struct rpc_err {
 		struct mismatch_info mminfo;
 	} extra;
 };
+
+struct client;
 
 struct clnt_ops {
 	enum clnt_stat (*cl_call)(struct client *clnt, __u32 procnum, xdrproc_t inproc,
