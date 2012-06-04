@@ -8,14 +8,12 @@
  */
 #include <embox/unit.h>
 
-#include <time.h>
-#include <kernel/ktime.h>
 #include <kernel/clock_event.h>
 #include <kernel/time/timecounter.h>
 
+#include <kernel/ktime.h>
+
 EMBOX_UNIT_INIT(module_init);
-
-
 
 //TODO global time timecounter is bad
 static struct timecounter sys_timecounter;
@@ -30,12 +28,15 @@ static int module_init(void) {
 	/* find clock_event_device with maximal resolution  */
 	dev = cedev_get_best(TICKS);
 	assert(dev);
+
 	/* install timecounter value to 0 */
 	//timecounter_init(&sys_timecounter, dev, 0); //FIXME temporary
 
 	return 0;
 }
 
+//TODO ktime has bad function
+#include <kernel/time.h>
 static useconds_t time_usec(void) {
 	return timecounter_read(&sys_timecounter);
 }

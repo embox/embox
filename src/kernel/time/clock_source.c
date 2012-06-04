@@ -9,7 +9,6 @@
  */
 
 #include <types.h>
-//#include <time.h> // posix
 #include <assert.h>
 #include <errno.h>
 
@@ -77,12 +76,15 @@ uint32_t clock_source_get_precision(struct clock_source *cs) {
 	return (uint32_t) cs->resolution;
 }
 
-struct clock_source *clock_source_get_default(void) {
-	assert(!dlist_empty(&clock_source_list));
 
-	return ((struct clock_source_head *)clock_source_list.next)->clock_source;
+
+void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from,
+		uint32_t to, uint32_t maxsec) {
+	*mult = to / from;
+	*shift = 0;
 }
 
+//TODO clock source bad style
 useconds_t clock_source_clock_to_usec(struct clock_source *cs, clock_t cl) {
 	/* TODO significant: make it with uint64_t */
 	return (useconds_t) (cl * ((uint32_t)1000000 / cs->resolution));
@@ -92,8 +94,9 @@ int clock_source_clock_to_sec(struct clock_source *cs, clock_t cl) {
 	return (int)(cl / cs->resolution);
 }
 
-void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from,
-		uint32_t to, uint32_t maxsec) {
-	*mult = to / from;
-	*shift = 0;
+//TODO clock_source_get_default is a bad hack
+struct clock_source *clock_source_get_default(void) {
+	assert(!dlist_empty(&clock_source_list));
+
+	return ((struct clock_source_head *)clock_source_list.next)->clock_source;
 }

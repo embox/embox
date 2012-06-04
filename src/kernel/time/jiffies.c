@@ -12,9 +12,7 @@
 #include <kernel/clock_event.h>
 #include <kernel/softirq.h>
 
-#include <hal/clock.h>
 #include <kernel/timer.h>
-#include <kernel/ktime.h>
 
 
 EMBOX_UNIT_INIT(module_init);

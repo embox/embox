@@ -6,12 +6,11 @@
  * @date 15.05.2012
  * @author Anton Bondarev
  */
-#include <mem/misc/pool.h>
-#include <kernel/time/timecounter.h>
-#include <kernel/clock_event.h>
-#include <kernel/irq.h>
+
 #include <embox/unit.h>
-#include <stdio.h>
+#include <mem/misc/pool.h>
+
+#include <kernel/time/timecounter.h>
 
 POOL_DEF(timecounter_pool, struct timecounter, OPTION_GET(NUMBER,timecounter_quantity));
 struct timecounter *timecounter_alloc(void) {
