@@ -26,6 +26,7 @@
 
 #define PIT_HZ 1000
 static void pit_clock_setup(uint32_t mode);
+static int pit_clock_init(void);
 
 EMBOX_UNIT_INIT(pit_clock_init);
 
@@ -116,6 +117,7 @@ static struct clock_source pit_clock_source = {
 static struct clock_event_device pit_device = {
 	.name = "pit",
 	.set_mode = pit_clock_setup,
+	.init = pit_clock_init,
 	.cs = &pit_clock_source,
 	.resolution = INPUT_CLOCK,
 	.get_jiffies = pit_get_jiffies

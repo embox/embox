@@ -30,7 +30,8 @@ enum resolution_mode {
  * 		- set_mode function to set mode
  */
 struct clock_event_device {
-	void (*set_mode)(uint32_t mode); /* XXX may be mode must be enum?? */
+	void (*set_mode)(uint32_t mode);
+	int (*init)(void);
 	uint32_t mode;
 	uint32_t resolution; /* jiffies per second */
 	uint32_t (*get_jiffies)(void); /* current count of jiffies */
