@@ -39,6 +39,7 @@ __u16 pmap_getport(struct sockaddr_in *raddr, __u32 prognum,
 			call_timeout) != RPC_SUCCESS) {
 		rpc_create_error.stat = RPC_PMAPFAILURE;
 		clnt_geterr(clnt, &rpc_create_error.err);
+		port = 0;
 	} else if (port == 0) {
 		rpc_create_error.stat = RPC_PROGNOTREGISTERED;
 	}
