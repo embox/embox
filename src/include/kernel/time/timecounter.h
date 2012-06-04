@@ -10,11 +10,11 @@
 #ifndef KERNEL_TIME_TIMECOUNTER_H_
 #define KERNEL_TIME_TIMECOUNTER_H_
 
-#include <kernel/clock_event.h>
+#include <kernel/clock_source.h>
 #include <kernel/ktime.h>
 
 extern void timecounter_init(struct timecounter *tc,
-		const struct clock_event_device *dev, ns_t start_tstamp);
+		struct clock_source *cs, ns_t start_tstamp);
 
 extern ns_t timecounter_read(struct timecounter *tc);
 

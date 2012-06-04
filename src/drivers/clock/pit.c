@@ -15,7 +15,7 @@
 #include <kernel/irq.h>
 #include <kernel/panic.h>
 #include <util/array.h>
-#include <embox/unit.h>
+//#include <embox/unit.h>
 
 #include <kernel/clock_source.h>
 #include <kernel/clock_event.h>
@@ -27,8 +27,9 @@
 #define PIT_HZ 1000
 static void pit_clock_setup(uint32_t mode);
 static int pit_clock_init(void);
+static struct clock_source pit_clock_source;
 
-EMBOX_UNIT_INIT(pit_clock_init);
+//EMBOX_UNIT_INIT(pit_clock_init);
 
 /**
  * The PIT chip uses the following I/O ports:
@@ -108,20 +109,24 @@ static struct cyclecounter cc = {
 	.shift = 0
 };
 
-static struct clock_source pit_clock_source = {
-	.flags = 0, /* this flag will be set to correct value by set_mod function */
-	.resolution = PIT_HZ,
-	.cc = &cc
-};
-
 static struct clock_event_device pit_device = {
-	.name = "pit",
 	.set_mode = pit_clock_setup,
 	.init = pit_clock_init,
 	.cs = &pit_clock_source,
 	.resolution = INPUT_CLOCK,
-	.get_jiffies = pit_get_jiffies
+	//.get_jiffies = pit_get_jiffies
+	.name = "pit"
 };
+
+static struct clock_source pit_clock_source = {
+	.name = "pit",
+	.flags = 0, /* this flag will be set to correct value by set_mod function */
+	.resolution = PIT_HZ,
+	.dev = &pit_device,
+	.read = pit_get_jiffies,
+	.cc = &cc
+};
+
 
 CLOCK_EVENT_DEVICE(&pit_device);
 
@@ -139,7 +144,7 @@ static int pit_clock_init(void) {
 	clock_source_register(&pit_clock_source);
 
 	/* Calculate mult/shift constants to set clock_source used by timer */
-	clock_events_calc_mult_shift(&pit_device, INPUT_CLOCK, 0);
+	clock_source_calc_mult_shift(&pit_clock_source, INPUT_CLOCK, 0);
 
 	/* Setup initial mode to allow to use timer immediately after initialization
 	 * of this module */

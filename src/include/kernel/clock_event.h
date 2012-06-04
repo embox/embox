@@ -10,7 +10,8 @@
 #define KERNEL_CLOCK_EVENT_H_
 
 #include <kernel/clock_source.h>
-#include <kernel/ktime.h>
+//#include <kernel/ktime.h>
+#include <stdint.h>
 
 /* timer's modes */
 #define CLOCK_EVT_MODE_ONESHOT  0
@@ -34,20 +35,13 @@ struct clock_event_device {
 	int (*init)(void);
 	uint32_t mode;
 	uint32_t resolution; /* jiffies per second */
-	uint32_t (*get_jiffies)(void); /* current count of jiffies */
-	struct clock_source *cs;
+	struct clock_source *cs; /* back link to clock source */
+	//uint32_t (*get_jiffies)(void); /* current count of jiffies */
 	const char *name;
 };
 
-static inline void clock_events_calc_mult_shift(const struct clock_event_device *ce,
-		uint32_t freq, uint32_t minsec) {
-	return clocks_calc_mult_shift(&ce->cs->cc->mult, &ce->cs->cc->shift, freq, NSEC_PER_SEC,
-				      minsec);
-}
-
 extern const struct clock_event_device *cedev_get_by_name(const char *name);
 extern const struct clock_event_device *cedev_get_best(enum resolution_mode mode);
-extern cycle_t cedev_get_ticks_per_jiff(const struct clock_event_device * dev);
 
 #define CLOCK_EVENT_DEVICE(cedev) \
 	extern const struct clock_event_device * __clock_devices[]; \

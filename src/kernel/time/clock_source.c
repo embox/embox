@@ -11,6 +11,7 @@
 #include <types.h>
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 
 #include <embox/unit.h>
 
@@ -21,7 +22,6 @@
 
 #include <kernel/clock_source.h>
 #include <kernel/ktime.h>
-#include <kernel/time/timecounter.h>
 
 POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER,clocks_quantity));
 DLIST_DEFINE(clock_source_list);
@@ -78,10 +78,15 @@ uint32_t clock_source_get_precision(struct clock_source *cs) {
 
 
 
-void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from,
+static void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from,
 		uint32_t to, uint32_t maxsec) {
 	*mult = to / from;
 	*shift = 0;
+}
+
+void clock_source_calc_mult_shift(struct clock_source *cs,
+		uint32_t freq, uint32_t minsec) {
+	clocks_calc_mult_shift(&cs->cc->mult, &cs->cc->shift, freq, NSEC_PER_SEC, minsec);
 }
 
 //TODO clock source bad style

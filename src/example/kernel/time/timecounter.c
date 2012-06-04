@@ -24,7 +24,7 @@ static int measured_loop(int cycles_loop) {
 	ns_t time_after;
 	struct timecounter tc;
 
-	timecounter_init(&tc, dev, 0);
+	timecounter_init(&tc, dev->cs, 0);
 	for (i = 0; i < cycles_loop; i++) {
 	}
 	time_after = timecounter_read(&tc);

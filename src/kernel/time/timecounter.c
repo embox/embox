@@ -27,29 +27,28 @@ void timecounter_free(struct timecounter *tc) {
 static int protect_read_cycles(struct timecounter *tc) {
 	int old_jiffies;
 
-	old_jiffies = tc->dev->get_jiffies();
-	tc->cycle_last = tc->cc->read(tc->cc);
-	tc->jiffies_last = tc->dev->get_jiffies();
+	old_jiffies = tc->cs->read();
+	tc->cycle_last = tc->cs->cc->read(tc->cs->cc);
+	tc->jiffies_last = tc->cs->read();
 
 	return (old_jiffies == tc->jiffies_last ? 1 : 0);
 }
 
-void timecounter_init(struct timecounter *tc, const struct clock_event_device *dev,
+void timecounter_init(struct timecounter *tc, struct clock_source *cs,
 		ns_t start_tstamp) {
 	int jiff;
 
 	assert(tc);
-	assert(dev);
-	assert(dev->cs);
-	assert(dev->cs->cc);
+	assert(cs);
+	assert(cs->dev);
+	assert(cs->cc);
 
-	tc->dev = dev;
-	tc->cc = dev->cs->cc;
+	tc->cs = cs;
 
-	jiff = dev->get_jiffies();
-	while (dev->get_jiffies() == jiff);
-	tc->jiffies_last = dev->get_jiffies();
-	tc->cycle_last = tc->cc->read(tc->cc);
+	jiff = cs->read();
+	while (cs->read() == jiff);
+	tc->jiffies_last = cs->read();
+	tc->cycle_last = cs->cc->read(cs->cc);
 
 	tc->nsec = start_tstamp;
 }
@@ -58,10 +57,13 @@ ns_t timecounter_read(struct timecounter *tc) {
 	cycle_t cycle_old;
 	uint32_t jiffies_old;
 	ns_t nsec;
+	struct clock_source *cs;
 	int res;
+	int ticks_per_jiff;
 
 	assert(tc);
-	assert(tc->dev);
+	assert(tc->cs);
+	cs = tc->cs;
 
 	jiffies_old = tc->jiffies_last;
 	cycle_old = tc->cycle_last;
@@ -79,8 +81,10 @@ ns_t timecounter_read(struct timecounter *tc) {
 		tc->cycle_last = 0;
 	}
 
-	nsec += cycles_to_ns(tc->cc, (tc->jiffies_last - jiffies_old) * cedev_get_ticks_per_jiff(tc->dev));
-	nsec += cycles_to_ns(tc->cc, tc->cycle_last - cycle_old);
+	ticks_per_jiff = ((cs->dev->resolution +cs->resolution / 2) / cs->resolution) - 1;
+
+	nsec += cycles_to_ns(cs->cc, (tc->jiffies_last - jiffies_old) * ticks_per_jiff);
+	nsec += cycles_to_ns(cs->cc, tc->cycle_last - cycle_old);
 
 #ifdef TIMECOUNTER_DEBUG
 	printf("c: %d %d\n", (int) tc->cycle_last, (int) cycle_old);
