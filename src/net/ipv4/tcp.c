@@ -1500,5 +1500,5 @@ struct proto tcp_prot = {
 		.unhash     = tcp_v4_unhash,
 		.sock_alloc = tcp_v4_sock_alloc,
 		.sock_free  = tcp_v4_sock_free,
-		.obj_size   = sizeof(struct tcp_sock),
+		.obj_size   = sizeof(struct tcp_sock)
 };

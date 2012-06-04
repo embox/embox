@@ -8,6 +8,9 @@
 #ifndef NET_RPC_AUTH_H_
 #define NET_RPC_AUTH_H_
 
+
+#define MAX_AUTH_BYTES	400
+
 /* Errors of a authentication */
 enum auth_stat {
 	AUTH_OK,
@@ -30,8 +33,22 @@ enum auth_flavor {
 
 struct opaque_auth {
 	enum auth_flavor flavor;
+	char *data;
 	__u32 len;
-	char *data; // FIXME not used
 };
+
+struct auth;
+
+struct auth_ops {
+	void (*ah_destroy)(struct auth *);
+};
+
+struct auth {
+	struct opaque_auth cred;
+	struct opaque_auth verf;
+	struct auth_ops *ops;
+};
+
+extern const struct opaque_auth __auth_null;
 
 #endif /* NET_RPC_AUTH_H_ */

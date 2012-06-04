@@ -128,6 +128,8 @@ int xdr_u_int(struct xdr *xs, __u32 *pu32) {
 int xdr_short(struct xdr *xs, __s16 *ps16) {
 	__s32 s32;
 
+	assert(ps16 != NULL);
+
 	s32 = *ps16;
 	if (!xdr_int(xs, &s32)) {
 		return XDR_FAILURE;
@@ -140,6 +142,8 @@ int xdr_short(struct xdr *xs, __s16 *ps16) {
 
 int xdr_u_short(struct xdr *xs, __u16 *pu16) {
 	__u32 u32;
+
+	assert(pu16 != NULL);
 
 	u32 = *pu16;
 	if (!xdr_u_int(xs, &u32)) {
@@ -159,6 +163,64 @@ int xdr_enum(struct xdr *xs, __s32 *pe) {
 int xdr_bool(struct xdr *xs, __s32 *pb) {
 	/* According to standard bool is interpreted as enum */
 	return xdr_enum(xs, pb);
+}
+
+int xdr_bytes(struct xdr *xs, char **ppc, __u32 *psize, __u32 maxsize) {
+	size_t s;
+	__u32 size;
+	char need_free;
+
+	assert((xs != NULL) && (ppc != NULL) && (psize != NULL));
+
+	XDR_SAVE(xs, s);
+
+	switch (xs->oper) {
+	case XDR_DECODE:
+		if (!xdr_u_int(xs, &size) || (size > maxsize)) {
+			break;
+		}
+		if (size == 0) {
+			return XDR_SUCCESS;
+		}
+		if (*ppc == NULL) {
+			*ppc = (char *)malloc(size);
+			if (*ppc == NULL) {
+				break;
+			}
+			need_free = 1;
+		}
+		else {
+			need_free = 0;
+		}
+		if (xdr_getbytes(xs, *ppc, size) && xdr_align(xs, size)) {
+			*psize = size;
+			return XDR_SUCCESS;
+		}
+		if (need_free) {
+			free(*ppc);
+		}
+		break;
+		return XDR_SUCCESS;
+	case XDR_ENCODE:
+		if (*psize > maxsize) {
+			break;
+		}
+		if (xdr_u_int(xs, psize) && xdr_putbytes(xs, *ppc, *psize)
+				&& xdr_align(xs, *psize)) {
+			return XDR_SUCCESS;
+		}
+		break;
+	case XDR_FREE:
+		if (*ppc != NULL) {
+			free(*ppc);
+			*ppc = NULL;
+		}
+		return XDR_SUCCESS;
+	}
+
+	XDR_RESTORE(xs, s);
+
+	return XDR_FAILURE;
 }
 
 int xdr_opaque(struct xdr *xs, char *pc, size_t size) {
@@ -203,7 +265,7 @@ int xdr_string(struct xdr *xs, char **pstr, __u32 maxsize) {
 			break;
 		}
 		if (*pstr == NULL) {
-			*pstr = malloc(size + 1); /* plus one for \0 at the end of string */
+			*pstr = (char *)malloc(size + 1); /* plus one for \0 at the end of string */
 			if (*pstr == NULL) {
 				break;
 			}
@@ -254,11 +316,14 @@ int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
 		const struct xdr_discrim *choices, xdrproc_t dfault) {
 	size_t s;
 
+	assert((pdiscriminant != NULL) && (choices != NULL));
+
 	XDR_SAVE(xs, s);
 
 	if (xdr_enum(xs, pdiscriminant)) {
 		while (choices->proc != NULL) {
 			if (choices->value == *pdiscriminant) {
+				assert(choices->proc != NULL);
 				if ((*choices->proc)(xs, punion, XDR_LAST_UINT32)) {
 					return XDR_SUCCESS;
 				}
@@ -318,21 +383,27 @@ void xdr_destroy(struct xdr *xs) {
  * Other functions for RPC
  */
 static int xdr_opaque_auth(struct xdr *xs, struct opaque_auth *oa) {
-	// FIXME must used all fields of opaque_auth
-	return xdr_enum(xs, (__s32 *)&oa->flavor) && xdr_u_int(xs, &oa->len)
-			&& (oa->len == 0); // temporary check
+	assert(oa != NULL);
+
+	return xdr_enum(xs, (__s32 *)&oa->flavor)
+			&& xdr_bytes(xs, &oa->data, &oa->len, MAX_AUTH_BYTES);
 }
 
 static int xdr_mismatch_info(struct xdr *xs, struct mismatch_info *mi) {
+	assert(mi != NULL);
+
 	return xdr_u_int(xs, &mi->low) && xdr_u_int(xs, &mi->high);
 }
 
 static int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
+	assert(ar != NULL);
+
 	if (xdr_opaque_auth(xs, &ar->verf) && xdr_enum(xs, (__s32 *)&ar->stat)) {
 		switch (ar->stat) {
 		default:
 			return XDR_SUCCESS;
 		case SUCCESS:
+			assert(ar->d.result.decoder != NULL);
 			return (*(xdrproc_t)ar->d.result.decoder)(xs, ar->d.result.param, XDR_LAST_UINT32);
 		case PROG_MISMATCH:
 			return xdr_mismatch_info(xs, &ar->d.mminfo);
@@ -349,10 +420,14 @@ static int xdr_rejected_reply(struct xdr *xs, struct rejected_reply *rr) {
 			{ 0, NULL_xdrproc_t }
 	};
 
+	assert(rr != NULL);
+
 	return xdr_union(xs, (__s32 *)&rr->stat, &rr->d, reject_dscrm, NULL_xdrproc_t);
 }
 
 static int xdr_call_body(struct xdr *xs, struct call_body *cb) {
+	assert(cb != NULL);
+
 	return xdr_u_int(xs, &cb->rpcvers) && xdr_u_int(xs, &cb->prog)
 			&& xdr_u_int(xs, &cb->vers) && xdr_u_int(xs, &cb->proc)
 			&& xdr_opaque_auth(xs, &cb->cred) && xdr_opaque_auth(xs, &cb->verf);
@@ -365,16 +440,20 @@ static int xdr_reply_body(struct xdr *xs, struct reply_body *rb) {
 			{ 0, NULL_xdrproc_t }
 	};
 
+	assert(rb != NULL);
+
 	return xdr_union(xs, (__s32 *)&rb->stat, &rb->r, reply_dscrm, NULL_xdrproc_t);
 }
 
 int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg) {
-	size_t s;
 	const struct xdr_discrim msg_dscrm[] = {
 			{ CALL, (xdrproc_t)xdr_call_body },
 			{ REPLY, (xdrproc_t)xdr_reply_body },
 			{ 0, NULL_xdrproc_t }
 	};
+	size_t s;
+
+	assert(msg != NULL);
 
 	XDR_SAVE(xs, s);
 
@@ -390,6 +469,8 @@ int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg) {
 
 int xdr_pmap(struct xdr *xs, struct pmap *pmp) {
 	size_t s;
+
+	assert(pmp != NULL);
 
 	XDR_SAVE(xs, s);
 

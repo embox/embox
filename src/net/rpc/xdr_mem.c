@@ -59,7 +59,7 @@ static int xdrmem_putunit(struct xdr *xs, const xdr_unit_t *from) {
 }
 
 static int xdrmem_getbytes(struct xdr *xs, char *to, size_t size) {
-	assert((xs != NULL) && (to != NULL));
+	assert((xs != NULL) && ((to != NULL) || (size == 0)));
 
 	if (xs->left < size) {
 		return XDR_FAILURE;
@@ -73,7 +73,7 @@ static int xdrmem_getbytes(struct xdr *xs, char *to, size_t size) {
 }
 
 static int xdrmem_putbytes(struct xdr *xs, const char *from, size_t size) {
-	assert((xs != NULL) && (from != NULL));
+	assert((xs != NULL) && ((from != NULL) || (size == 0)));
 
 	if (xs->left < size) {
 		return XDR_FAILURE;

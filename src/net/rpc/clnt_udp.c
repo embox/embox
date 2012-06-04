@@ -105,8 +105,7 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	struct timeval *resend;
 	int iter = 0; // TODO remove this
 
-	assert((clnt != NULL) && (inproc != NULL) && (in != NULL)
-			&& (outproc != NULL) && (out != NULL));
+	assert((clnt != NULL) && (inproc != NULL));
 
 	mcall = &clnt->msg;
 	mreply = &msg_reply;
@@ -211,5 +210,5 @@ static void clntudp_destroy(struct client *clnt) {
 static const struct clnt_ops clntudp_ops = {
 		.cl_call = clntudp_call,
 		.cl_geterr = clntudp_geterr,
-		.cl_destroy = clntudp_destroy,
+		.cl_destroy = clntudp_destroy
 };
