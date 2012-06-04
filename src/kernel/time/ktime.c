@@ -30,22 +30,18 @@ static int module_init(void) {
 	assert(dev);
 
 	/* install timecounter value to 0 */
-	//timecounter_init(&sys_timecounter, dev, 0); //FIXME temporary
+	dev->init();
+	timecounter_init(&sys_timecounter, dev, 0);
 
 	return 0;
 }
 
 //TODO ktime has bad function
-#include <kernel/time.h>
-static useconds_t time_usec(void) {
-	return timecounter_read(&sys_timecounter);
-}
-
 struct ktimeval * get_timeval(struct ktimeval *tv) {
-	useconds_t usec;
+	ns_t ns;
 
-	usec = time_usec();
-	tv->tv_sec = usec / NSEC_PER_SEC;
-	tv->tv_usec = usec % NSEC_PER_SEC;
+	ns = timecounter_read(&sys_timecounter);
+	tv->tv_sec = ns / NSEC_PER_SEC;
+	tv->tv_usec = (ns % NSEC_PER_SEC) / 1000;
 	return tv;
 }
