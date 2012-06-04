@@ -7,6 +7,7 @@
 
 #include <net/rpc/rpc.h>
 #include <net/rpc/clnt.h>
+#include <net/rpc/auth.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <net/socket.h>
@@ -37,6 +38,7 @@ extern int usleep(unsigned long usec);
 struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 		__u32 versnum, struct timeval resend, int *psock) {
 	struct client *clnt;
+	struct auth *ath;
 	int sock;
 	__u16 port;
 
@@ -44,6 +46,14 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 
 	clnt = (struct client *)malloc(sizeof *clnt);
 	if (clnt == NULL) {
+		rpc_create_error.stat = RPC_SYSTEMERROR;
+		rpc_create_error.err.extra.error = ENOMEM;
+		LOG_ERROR("no memory\n");
+		goto exit_with_error;
+	}
+
+	ath = authnone_create();
+	if (ath == NULL) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = ENOMEM;
 		LOG_ERROR("no memory\n");
@@ -73,21 +83,19 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	clnt->msg.b.call.rpcvers = RPC_VERSION;
 	clnt->msg.b.call.prog = prognum;
 	clnt->msg.b.call.vers = versnum;
-	/* TODO move to a separate function */
-	clnt->msg.b.call.cred.flavor = AUTH_NULL;
-	clnt->msg.b.call.cred.len = 0;
-	clnt->msg.b.call.verf.flavor = AUTH_NULL;
-	clnt->msg.b.call.verf.len = 0;
+	memcpy(&clnt->msg.b.call.cred, &ath->cred, sizeof ath->cred);
+	memcpy(&clnt->msg.b.call.verf, &ath->verf, sizeof ath->verf);
 
 	/* Fill other filed */
 	clnt->ops = &clntudp_ops;
 	clnt->sock = sock;
+	clnt->ath = ath;
 	memcpy(&clnt->resend, &resend, sizeof resend);
 	memcpy(&clnt->sin, raddr, sizeof *raddr);
 	clnt->sin.sin_port = htons(port);
-
 	return clnt;
 exit_with_error:
+	auth_destroy(ath);
 	free(clnt);
 	return NULL;
 }
@@ -201,10 +209,11 @@ static void clntudp_geterr(struct client *clnt, struct rpc_err *perr) {
 }
 
 static void clntudp_destroy(struct client *clnt) {
-	assert(clnt != NULL);
-
-	close(clnt->sock);
-	free(clnt);
+	if (clnt != NULL) {
+		auth_destroy(clnt->ath);
+		close(clnt->sock);
+		free(clnt);
+	}
 }
 
 static const struct clnt_ops clntudp_ops = {

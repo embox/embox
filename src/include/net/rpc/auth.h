@@ -8,6 +8,7 @@
 #ifndef NET_RPC_AUTH_H_
 #define NET_RPC_AUTH_H_
 
+#include <types.h>
 
 #define MAX_AUTH_BYTES	400
 
@@ -46,9 +47,13 @@ struct auth_ops {
 struct auth {
 	struct opaque_auth cred;
 	struct opaque_auth verf;
-	struct auth_ops *ops;
+	const struct auth_ops *ops;
 };
 
 extern const struct opaque_auth __auth_null;
+
+extern struct auth * authnone_create(void);
+
+extern void auth_destroy(struct auth *ath);
 
 #endif /* NET_RPC_AUTH_H_ */

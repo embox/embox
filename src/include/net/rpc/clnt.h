@@ -64,7 +64,7 @@ struct clnt_ops {
 };
 
 struct client {
-//	struct auth *cl_auth;
+	struct auth *ath;
 	const struct clnt_ops *ops;
 	int sock;
 	struct rpc_msg msg;

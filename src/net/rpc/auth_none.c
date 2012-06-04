@@ -7,6 +7,8 @@
 
 #include <stdlib.h>
 #include <net/rpc/auth.h>
+#include <string.h>
+#include <stdlib.h>
 
 static struct auth_ops authnone_ops;
 
@@ -25,7 +27,7 @@ struct auth * authnone_create(void) {
 	return ath;
 }
 
-void authnone_destroy(struct auth *ath) {
+static void authnone_destroy(struct auth *ath) {
 	free(ath);
 }
 

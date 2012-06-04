@@ -6,6 +6,8 @@
  */
 
 #include <net/rpc/auth.h>
+#include <assert.h>
+#include <stdlib.h>
 
 const struct opaque_auth __auth_null = {
 		.flavor = AUTH_NULL,
@@ -14,9 +16,10 @@ const struct opaque_auth __auth_null = {
 };
 
 void auth_destroy(struct auth *ath) {
-	assert(ath != NULL);
-	assert(ath->ops != NULL);
-	assert(ath->ops->ah_destroy != NULL);
+	if (ath != NULL) {
+		assert(ath->ops != NULL);
+		assert(ath->ops->ah_destroy != NULL);
 
-	(*ath->ops->ah_destroy)(ath);
+		(*ath->ops->ah_destroy)(ath);
+	}
 }

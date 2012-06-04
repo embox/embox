@@ -95,11 +95,12 @@ void clnt_geterr(struct client *clnt, struct rpc_err *perr) {
 }
 
 void clnt_destroy(struct client *clnt) {
-	assert(clnt != NULL);
-	assert(clnt->ops != NULL);
-	assert(clnt->ops->cl_destroy != NULL);
+	if (clnt != NULL) {
+		assert(clnt->ops != NULL);
+		assert(clnt->ops->cl_destroy != NULL);
 
-	return (*clnt->ops->cl_destroy)(clnt);
+		return (*clnt->ops->cl_destroy)(clnt);
+	}
 }
 
 static char * get_auth_msg(enum auth_stat stat) {
