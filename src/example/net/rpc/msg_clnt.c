@@ -62,6 +62,8 @@ static int exec(int argc, char *argv[])
 		return -1;
 	}
 
+	clnt_destroy(clnt);
+
 	/*
 	 * Okay, we successfully called the remote procedure
 	 */

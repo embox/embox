@@ -17,13 +17,25 @@
 #include <err.h>
 #include <types.h>
 #include <net/ip.h>
+#include <kernel/time.h>
+#include <kernel/ktime.h>
 
 #define UDP_MSG_MAX_SZ 1024
 
 static const struct clnt_ops clntudp_ops;
 
+/*
+ * TODO remove this and use get_timeval instead
+ * after Issue 432 will be fixed
+ */
+static void tmp_get_timeval(struct ktimeval *kt) {
+	kt->tv_sec = 0;
+	kt->tv_usec = 0;
+}
+extern int usleep(unsigned long usec);
+
 struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
-		__u32 versnum, struct timeval wait, int *psock) {
+		__u32 versnum, struct timeval resend, int *psock) {
 	struct client *clnt;
 	int sock;
 	__u16 port;
@@ -35,14 +47,14 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = ENOMEM;
 		LOG_ERROR("no memory\n");
-		goto error;
+		goto exit_with_error;
 	}
 
 	port = ntohs(raddr->sin_port);
 	if (port == 0) {
 		port = pmap_getport(raddr, prognum, versnum, IPPROTO_UDP);
 		if (port == 0) {
-			goto error;
+			goto exit_with_error;
 		}
 	}
 
@@ -51,7 +63,7 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = errno;
 		LOG_ERROR("can't create socket\n");
-		goto error;
+		goto exit_with_error;
 	}
 	*psock = sock;
 
@@ -70,31 +82,35 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	/* Fill other filed */
 	clnt->ops = &clntudp_ops;
 	clnt->sock = sock;
+	memcpy(&clnt->resend, &resend, sizeof resend);
 	memcpy(&clnt->sin, raddr, sizeof *raddr);
 	clnt->sin.sin_port = htons(port);
 
 	return clnt;
-error:
+exit_with_error:
 	free(clnt);
 	return NULL;
 }
 
-int usleep(unsigned long);// TODO REMOVE THIS
 static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
-		struct timeval wait) {
+		struct timeval timeout) {
 	int res;
 	char buff[UDP_MSG_MAX_SZ];
 	struct xdr xstream;
 	struct rpc_msg msg_reply, *mcall, *mreply;
 	struct sockaddr addr;
 	socklen_t addr_len;
+	struct ktimeval was_sended, now, elapsed;
+	struct timeval *resend;
+	int iter = 0; // TODO remove this
 
 	assert((clnt != NULL) && (inproc != NULL) && (in != NULL)
 			&& (outproc != NULL) && (out != NULL));
 
 	mcall = &clnt->msg;
 	mreply = &msg_reply;
+	resend = &clnt->resend;
 
 	mcall->b.call.proc = procnum;
 
@@ -102,24 +118,67 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	if (!xdr_rpc_msg(&xstream, mcall)
 			|| !(*inproc)(&xstream, in)) {
 		clnt->err.status = RPC_CANTENCODEARGS;
-		return clnt->err.status;
+		goto exit_with_status;
 	}
 	xdr_destroy(&xstream);
+
+send_again:
+	tmp_get_timeval(&was_sended);
 
 	res = sendto(clnt->sock, buff, xdr_getpos(&xstream), 0,
 			(struct sockaddr *)&clnt->sin, sizeof clnt->sin);
 	if (res < 0) {
 		clnt->err.status = RPC_CANTSEND;
 		clnt->err.extra.error = errno;
-		return clnt->err.status;
+		goto exit_with_status;
 	}
 
-	usleep(10);
+	usleep(20);
+recv_again:
+	iter++;
 	res = recvfrom(clnt->sock, buff, sizeof buff, 0, &addr, &addr_len);
 	if (res < 0) {
 		clnt->err.status = RPC_CANTRECV;
 		clnt->err.extra.error = errno;
-		return clnt->err.status;
+		goto exit_with_status;
+	}
+
+	if (res == 0) { /* Reply was not received, resend request or exit with error */
+
+		/* Calculate elapsed time */
+		tmp_get_timeval(&now);
+		elapsed.tv_sec = now.tv_sec - was_sended.tv_sec;
+		elapsed.tv_usec = now.tv_usec - was_sended.tv_usec;
+		if (elapsed.tv_usec < 0) {
+			elapsed.tv_usec += USEC_PER_SEC;
+			elapsed.tv_sec--;
+		}
+
+		/* how much time we can wait yet */
+		timeout.tv_sec -= elapsed.tv_sec;
+		if (timeout.tv_usec >= elapsed.tv_usec) {
+			timeout.tv_usec -= elapsed.tv_usec;
+		}
+		else {
+			timeout.tv_sec--;
+			timeout.tv_usec += USEC_PER_SEC - elapsed.tv_usec;
+		}
+
+		/* check timeout */
+		if ((iter > 20) || (timeout.tv_sec < 0)
+				|| ((timeout.tv_sec == 0) && (timeout.tv_usec == 0))) {
+			clnt->err.status = RPC_TIMEDOUT;
+			goto exit_with_status;
+		}
+
+		/* check resend time */
+		if ((elapsed.tv_sec > resend->tv_sec)
+				|| ((elapsed.tv_sec == resend->tv_sec)
+						&& (elapsed.tv_usec >= resend->tv_usec))) {
+			goto send_again;
+		}
+
+		goto recv_again;
 	}
 
 	xdrmem_create(&xstream, buff, res, XDR_DECODE);
@@ -127,11 +186,12 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	mreply->b.reply.r.accepted.d.result.param = out;
 	if (!xdr_rpc_msg(&xstream, mreply)) {
 		clnt->err.status = RPC_CANTDECODERES;
-		return clnt->err.status;
+		goto exit_with_status;
 	}
 	xdr_destroy(&xstream);
 
 	clnt->err.status = RPC_SUCCESS;
+exit_with_status:
 	return clnt->err.status;
 }
 

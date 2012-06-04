@@ -70,6 +70,7 @@ struct client {
 	struct rpc_msg msg;
 	struct rpc_err err;
 	struct sockaddr_in sin;
+	struct timeval resend;
 };
 
 struct rpc_createerr {

@@ -13,8 +13,8 @@
 
 __u16 pmap_getport(struct sockaddr_in *raddr, __u32 prognum,
 		__u32 versnum, __u32 protocol) {
-	const struct timeval create_timeout = { 5, 0 };
-	const struct timeval call_timeout = { 60, 0 };
+	const struct timeval resend_every = { 5, 0 };
+	const struct timeval timeout = { 60, 0 };
 	__u16 port;
 	int sock;
 	struct client *clnt;
@@ -24,7 +24,7 @@ __u16 pmap_getport(struct sockaddr_in *raddr, __u32 prognum,
 	memcpy(&addr, raddr, sizeof *raddr);
 	addr.sin_port = htons(PMAPPORT);
 	clnt = clntudp_create(&addr, PMAPPROG, PMAPVERS,
-			create_timeout, &sock);
+			resend_every, &sock);
 	if (clnt == NULL) {
 		return 0;
 	}
@@ -36,7 +36,7 @@ __u16 pmap_getport(struct sockaddr_in *raddr, __u32 prognum,
 	if (clnt_call(clnt, PMAPPROC_GETPORT,
 			(xdrproc_t)xdr_pmap, (char *)&pm,
 			(xdrproc_t)xdr_u_short, (char *)&port,
-			call_timeout) != RPC_SUCCESS) {
+			timeout) != RPC_SUCCESS) {
 		rpc_create_error.stat = RPC_PMAPFAILURE;
 		clnt_geterr(clnt, &rpc_create_error.err);
 		port = 0;
