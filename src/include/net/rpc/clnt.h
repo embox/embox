@@ -85,6 +85,9 @@ extern struct client * clnt_create(const char *host, __u32 prognum, __u32 versnu
 extern struct client * clntudp_create(struct sockaddr_in *addr, __u32 prognum,
 		__u32 versnum, struct timeval wait, int *psock);
 
+extern struct client * clnttcp_create(struct sockaddr_in *addr, __u32 prognum,
+		__u32 versnum, struct timeval wait, int *psock);
+
 extern enum clnt_stat clnt_call(struct client *clnt, __u32 procnum, xdrproc_t inproc,
 		char *in, xdrproc_t outproc, char *out, struct timeval wait);
 

@@ -61,13 +61,17 @@ struct client * clnt_create(const char *host, __u32 prognum,
 	struct timeval tv;
 	int sock;
 
+
+	tv.tv_sec = 5;
+	tv.tv_usec = 0;
+	raddr.sin_family = AF_INET;
+	inet_aton(host, &raddr.sin_addr);
+	raddr.sin_port = 0;
 	if (strcmp(prot, "udp") == 0) {
-		tv.tv_sec = 5;
-		tv.tv_usec = 0;
-		raddr.sin_family = AF_INET;
-		inet_aton(host, &raddr.sin_addr);
-		raddr.sin_port = 0;
 		return clntudp_create(&raddr, prognum, versnum, tv, &sock);
+	}
+	else if (strcmp(prot, "tcp") == 0){
+		return clnttcp_create(&raddr, prognum, versnum, tv, &sock);
 	}
 
 	return NULL; /* protocol not supported */
