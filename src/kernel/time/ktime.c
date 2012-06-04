@@ -30,7 +30,7 @@ static int module_init(void) {
 	assert(dev);
 
 	/* install timecounter value to 0 */
-	dev->init();
+//	dev->init();
 	timecounter_init(&sys_timecounter, dev, 0);
 
 	return 0;

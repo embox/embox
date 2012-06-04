@@ -9,6 +9,8 @@ module clock_source {
 	source "timecounter.c"
 
 	source "ktime.c"
+
+	depends embox.arch.clock
 }
 
 module clock_event {
