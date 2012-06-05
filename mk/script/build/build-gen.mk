@@ -12,7 +12,7 @@ include mk/script/script-common.mk
 #   2. The complete command which should output its result to the temporary
 #      file specified in the '$OUTFILE' environment variable.
 cmd_notouch = \
-	COMMAND='{ $2 }'; OUTFILE=$(call trim,$1);                     \
+	COMMAND='{ $2; }'; OUTFILE=$(call trim,$1);                    \
 	$(eval_command)
 
 eval_command = \
@@ -34,12 +34,12 @@ eval_command = \
 #   1. Output file.
 #   2. The command which outputs its result to stdout.
 cmd_notouch_stdout = \
-	$(call cmd_notouch,$1,$2 > $$OUTFILE)
+	$(call cmd_notouch,$1,{ $2; } > $$OUTFILE)
 
 sh_quote = \
 	'$(subst ','"'"',$1)'
 fmt_line = \
-	$1$(subst $(\n),$(\n)$1,$2)
+	$(if $2,$1)$(subst $(\n),$(\n)$1,$2)
 
 # 1. Text to comment.
 gen_comment = \
@@ -54,6 +54,29 @@ gen_make_rule = \
 		$(call sh_quote,$1)     \
 		$(call sh_quote,$2)     \
 		$(call sh_quote,$(call fmt_line,$(\t),$3))
+
+# 1. Target.
+# 2. Prerequisites.
+gen_make_dep = \
+	$(PRINTF) '%s : %s\n\n' \
+		$(call sh_quote,$1) \
+		$(call sh_quote,$2)
+
+# 1. Target.
+# 2. Variable name.
+# 3. Value (assumed to be a list).
+gen_make_tsvar_list = \
+	$(PRINTF) '%s : %s := $s\n\n' \
+		$(call sh_quote,$1) \
+		$(call sh_quote,$2) \
+		$(call sh_quote,$(patsubst %,\$(\n)%,$3))
+
+# Working with these lists...
+
+build_modules := \
+	$(call get,$(build_model),modules)
+build_sources := \
+	$(call get,$(build_modules),sources)
 
 #
 # Global artifacts.
@@ -70,29 +93,37 @@ $(filter build-runtime-inject-c/%,$(build_model_targets)) : build-runtime-inject
 		$(MAKE) -f mk/script/depsinject.mk)
 
 $(filter build-cmd-ld-image/%,$(build_model_targets)) : build-cmd-ld-image/% :
-	@$(foreach f,$(call get,$*,fileFullName),$(call cmd_gen_make_rule,$f., \
+	@$(foreach f,$(TARGET),$(call cmd_notouch_stdout,$(call gen_make_tsvar_list,,target_objects, \
 		echo '$(call flags,$f) -o $(basename $f).o -c'))
 build-cmd-ld-image/% : flags = \
-	$(CPPFLAGS) $($(if $(filter %.c,$1),C,AS)FLAGS)
+	$(LDFLAGS)
 
 #
 # Per-module artifacts.
 #
 
-build_modules := \
-	$(call get,$(build_model),modules)
 module_targets := \
-	$(build_modules:%=module-h/%)
+	$(build_modules:%=module-h/%) \
+	$(patsubst %,module-cmd-ar/%,$(call filter_static_modules,$(build_modules)))
 
 all .PHONY : $(module_targets)
 
-$(module_targets) : module-h/% :
-	@$(call cmd_notouch_stdout, \
-		$(MAKE) -f mk/script/h-genmodule.mk,$(call module_h,$*))
-module_h = \
-	$(call fqn_to_h,$(call get,$(call get,$1,type),qualifiedName))
+$(filter module-cmd-ar/%,$(module_targets)) : module-cmd-ar/% :
+	@$(foreach o,$(call module_a,$*),$(call cmd_notouch_stdout,$o.cmd, \
+		$(call gen_comment,Auto-generated file.); \
+		$(call gen_make_tsvar_list,))
+module-cmd-ar/% : module_a = \
+	$(LIB_DIR)/$(call fqn_to_dir,$(call module_fqn,$*)).a
 
-fqn_to_h = $(SRC_DIR)/include/module/$(fqn_to_dir).h
+$(filter module-h/%,$(module_targets)) : module-h/% :
+	@$(call cmd_notouch_stdout,$(call module_h,$*), \
+		$(MAKE) -f mk/script/h-genmodule.mk)
+module_h = \
+	$(SRCGEN_DIR)/include/module/$(call fqn_to_dir,$(module_fqn)).h
+
+# Fully qualified name of the given module instance.
+module_fqn = \
+	$(call get,$(call get,$1,type),qualifiedName)
 
 fqn_to_dir = $(subst .,/,$1)#< 'qualified.name' -> 'qualified/name'
 fqn_to_id = $(subst .,__,$1)#< 'qualified.name' -> 'qualified__name'
@@ -101,8 +132,6 @@ fqn_to_id = $(subst .,__,$1)#< 'qualified.name' -> 'qualified__name'
 # Per-source artifacts.
 #
 
-build_sources := \
-	$(call get,$(build_modules),sources)
 source_targets := \
 	$(foreach s,$(build_sources), \
 		$(foreach f,$(call get,$s,fileName), \
@@ -112,14 +141,8 @@ source_targets := \
 all .PHONY : $(source_targets)
 
 $(filter source-cmd-cc/%,$(source_targets)) : source-cmd-cc/% :
-	@$(foreach f,$(call get,$*,fileFullName),$(call cmd_notouch_stdout, \
-		echo '$(call flags,$f) -o $(basename $f).o -c',$f.cmd))
-source-cmd-cc/% : flags = \
-	$(CPPFLAGS) $($(if $(filter %.c,$1),C,AS)FLAGS)
-
-$(filter source-cc-mk/%,$(source_targets)) : source-cc-mk/% :
-	@$(foreach f,$(call get,$*,fileFullName),$(call cmd_notouch_stdout, \
-		echo '$(call flags,$f) -o $(basename $f).o -c',$f.cmd))
+	@$(foreach o,$(call get,$*,fileFullName),$(call cmd_notouch_stdout,$o.cmd, \
+		echo '$(call flags,$o) -o $(basename $o).o -c'))
 source-cmd-cc/% : flags = \
 	$(CPPFLAGS) $($(if $(filter %.c,$1),C,AS)FLAGS)
 
