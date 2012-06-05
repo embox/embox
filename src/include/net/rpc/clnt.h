@@ -57,20 +57,30 @@ struct rpc_err {
 struct client;
 
 struct clnt_ops {
-	enum clnt_stat (*cl_call)(struct client *clnt, __u32 procnum, xdrproc_t inproc,
+	enum clnt_stat (*call)(struct client *clnt, __u32 procnum, xdrproc_t inproc,
 			char *in, xdrproc_t outproc, char *out, struct timeval wait);
-	void (*cl_geterr)(struct client *clnt, struct rpc_err *perr);
-	void (*cl_destroy)(struct client *clnt);
+	void (*geterr)(struct client *clnt, struct rpc_err *perr);
+	void (*destroy)(struct client *clnt);
 };
 
 struct client {
 	struct auth *ath;
 	const struct clnt_ops *ops;
 	int sock;
-	struct rpc_msg msg;
 	struct rpc_err err;
-	struct sockaddr_in sin;
-	struct timeval resend;
+	__u32 prognum;
+	__u32 versnum;
+	/* Protocol specific options */
+	union {
+		struct {
+			struct sockaddr_in sin;
+			struct timeval resend;
+		} udp;
+		struct {
+			unsigned int sendsz;
+			unsigned int recvsz;
+		} tcp;
+	} extra;
 };
 
 struct rpc_createerr {
@@ -86,7 +96,7 @@ extern struct client * clntudp_create(struct sockaddr_in *addr, __u32 prognum,
 		__u32 versnum, struct timeval wait, int *psock);
 
 extern struct client * clnttcp_create(struct sockaddr_in *addr, __u32 prognum,
-		__u32 versnum, struct timeval wait, int *psock);
+		__u32 versnum, int *psock, unsigned int sendsz, unsigned int recvsz);
 
 extern enum clnt_stat clnt_call(struct client *clnt, __u32 procnum, xdrproc_t inproc,
 		char *in, xdrproc_t outproc, char *out, struct timeval wait);

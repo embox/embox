@@ -14,7 +14,7 @@
 //#include <net/rpc/xdr.h> /* External data representation interfaces */
 
 #define RPC_VERSION 2
-
+#define RPC_ANYSOCK -1
 
 /* Type of RPC message */
 enum msg_type {

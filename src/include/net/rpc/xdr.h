@@ -27,42 +27,71 @@ enum xdr_op {
 	XDR_FREE
 };
 
-/* XDR Stream options */
+union xdrrec_hdr {
+	struct {
+		__u32 len:31,
+			is_last:1;
+	} h;
+	xdr_unit_t unit;
+};
+
 struct xdr;
+
+typedef int (*xdrproc_t)(struct xdr *, void *, ...);
+typedef int (*xdrrec_hnd_t)(char *, char *, int);
+
 struct xdr_ops {
-	int (*x_getunit)(struct xdr *xs, xdr_unit_t *to);
-	int (*x_putunit)(struct xdr *xs, const xdr_unit_t *from);
-	int (*x_getbytes)(struct xdr *xs, char *to, size_t size);
-	int (*x_putbytes)(struct xdr *xs, const char *from, size_t size);
-	size_t (*x_getpos)(struct xdr *xs);
-	int (*x_setpos)(struct xdr *xs, size_t pos);
-	char * (*x_inline)(struct xdr *xs, size_t len);
-	void (*x_destroy)(struct xdr *xs);
+	int (*getunit)(struct xdr *xs, xdr_unit_t *to);
+	int (*putunit)(struct xdr *xs, const xdr_unit_t *from);
+	int (*getbytes)(struct xdr *xs, char *to, size_t size);
+	int (*putbytes)(struct xdr *xs, const char *from, size_t size);
+	size_t (*getpos)(struct xdr *xs);
+	int (*setpos)(struct xdr *xs, size_t pos);
+	void (*destroy)(struct xdr *xs);
 };
 
 struct xdr {
 	enum xdr_op oper;
 	const struct xdr_ops *ops;
-	char *buff;
-	char *curr;
-	size_t left;
+	/* Specific options */
+	union {
+		struct {
+			char *buff;
+			char *curr;
+			size_t left;
+		} mem;
+		struct {
+			char *handle;
+			/* in-coming */
+			xdrrec_hnd_t in_hnd;
+			char *in_base;
+			char *in_hdr;
+			char *in_curr;
+			char *in_boundry;
+			size_t in_prep;
+			size_t in_left;
+			char in_last;
+			/* out-going */
+			xdrrec_hnd_t out_hnd;
+			char *out_base;
+			char *out_hdr;
+			char *out_curr;
+			char *out_boundry;
+		} rec;
+	} extra;
 };
 
-typedef int (*xdrproc_t)(struct xdr *, void *, ...);
-
-#define NULL_xdrproc_t NULL
-
 struct xdr_discrim {
-	__s32 value;
+	int value;
 	xdrproc_t proc;
 };
 
-
-extern void xdrmem_create (struct xdr *xs, char *addr,
-		size_t size, enum xdr_op oper);
+extern void xdrmem_create(struct xdr *xs, char *addr, size_t size, enum xdr_op oper);
+extern void xdrrec_create(struct xdr *xs, unsigned int sendsz, unsigned int recvsz,
+		char *handle, xdrrec_hnd_t readit, xdrrec_hnd_t writeit);
+extern int xdrrec_endofrecord(struct xdr *xs, int sendnow);
 extern size_t xdr_getpos(struct xdr *xs);
 extern int xdr_setpos(struct xdr *xs, size_t pos);
-extern char * xdr_inline(struct xdr *xs, size_t len);
 extern void xdr_destroy(struct xdr *xs);
 extern void xdr_free(xdrproc_t proc, char *obj);
 
@@ -81,7 +110,6 @@ extern int xdr_wrapstring(struct xdr *xs, char **pstr);
 extern int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
 		const struct xdr_discrim *choices, xdrproc_t dfault);
 
-struct rpc_msg;
 extern int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg);
 extern int xdr_pmap(struct xdr *xs, struct pmap *pmp);
 

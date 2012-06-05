@@ -37,7 +37,7 @@ static int exec(int argc, char *argv[])
 	 * designated on the command line.  We tell the RPC package
 	 * to use the udp protocol when contacting the server.
 	 */
-	clnt = clnt_create(server, MESSAGEPROG, MESSAGEVERS, "udp");
+	clnt = clnt_create(server, MESSAGEPROG, MESSAGEVERS, "tcp");
 	if (clnt == NULL) {
 		/*
 		 * Couldn't establish connection with server.

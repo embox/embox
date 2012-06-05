@@ -44,16 +44,8 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 
 	assert((raddr != NULL) && (psock != NULL));
 
-	clnt = (struct client *)malloc(sizeof *clnt);
-	if (clnt == NULL) {
-		rpc_create_error.stat = RPC_SYSTEMERROR;
-		rpc_create_error.err.extra.error = ENOMEM;
-		LOG_ERROR("no memory\n");
-		goto exit_with_error;
-	}
-
-	ath = authnone_create();
-	if (ath == NULL) {
+	clnt = (struct client *)malloc(sizeof *clnt), ath = authnone_create();
+	if ((clnt == NULL) || (ath == NULL)) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = ENOMEM;
 		LOG_ERROR("no memory\n");
@@ -68,6 +60,7 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 		}
 	}
 
+	assert(*psock < 0); /* TODO remove this */
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock < 0) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
@@ -75,24 +68,19 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 		LOG_ERROR("can't create socket\n");
 		goto exit_with_error;
 	}
-	*psock = sock;
 
-	/* Fill rpc_msg structure */
-	clnt->msg.xid = 0x01010101;
-	clnt->msg.type = CALL;
-	clnt->msg.b.call.rpcvers = RPC_VERSION;
-	clnt->msg.b.call.prog = prognum;
-	clnt->msg.b.call.vers = versnum;
-	memcpy(&clnt->msg.b.call.cred, &ath->cred, sizeof ath->cred);
-	memcpy(&clnt->msg.b.call.verf, &ath->verf, sizeof ath->verf);
-
-	/* Fill other filed */
+	/* Fill client structure */
 	clnt->ops = &clntudp_ops;
 	clnt->sock = sock;
 	clnt->ath = ath;
-	memcpy(&clnt->resend, &resend, sizeof resend);
-	memcpy(&clnt->sin, raddr, sizeof *raddr);
-	clnt->sin.sin_port = htons(port);
+	memcpy(&clnt->extra.udp.sin, raddr, sizeof *raddr);
+	clnt->extra.udp.sin.sin_port = htons(port);
+	clnt->prognum = prognum;
+	clnt->versnum = versnum;
+	memcpy(&clnt->extra.udp.resend, &resend, sizeof resend);
+
+	*psock = sock;
+
 	return clnt;
 exit_with_error:
 	auth_destroy(ath);
@@ -106,34 +94,42 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	int res;
 	char buff[UDP_MSG_MAX_SZ];
 	struct xdr xstream;
-	struct rpc_msg msg_reply, *mcall, *mreply;
+	struct rpc_msg msg_reply, msg_call;
 	struct sockaddr addr;
 	socklen_t addr_len;
+	size_t buff_len;
 	struct ktimeval was_sended, now, elapsed;
 	struct timeval *resend;
 	int iter = 0; // TODO remove this
 
 	assert((clnt != NULL) && (inproc != NULL));
 
-	mcall = &clnt->msg;
-	mreply = &msg_reply;
-	resend = &clnt->resend;
+	resend = &clnt->extra.udp.resend;
 
-	mcall->b.call.proc = procnum;
+	msg_call.xid = 0x01010101;
+	msg_call.type = CALL;
+	msg_call.b.call.rpcvers = RPC_VERSION;
+	msg_call.b.call.prog = clnt->prognum;
+	msg_call.b.call.vers = clnt->versnum;
+	msg_call.b.call.proc = procnum;
+	memcpy(&msg_call.b.call.cred, &clnt->ath->cred, sizeof clnt->ath->cred);
+	memcpy(&msg_call.b.call.verf, &clnt->ath->verf, sizeof clnt->ath->verf);
 
 	xdrmem_create(&xstream, buff, sizeof buff, XDR_ENCODE);
-	if (!xdr_rpc_msg(&xstream, mcall)
+	if (!xdr_rpc_msg(&xstream, &msg_call)
 			|| !(*inproc)(&xstream, in)) {
 		clnt->err.status = RPC_CANTENCODEARGS;
+		xdr_destroy(&xstream);
 		goto exit_with_status;
 	}
+	buff_len = xdr_getpos(&xstream);
 	xdr_destroy(&xstream);
 
 send_again:
 	tmp_get_timeval(&was_sended);
 
 	res = sendto(clnt->sock, buff, xdr_getpos(&xstream), 0,
-			(struct sockaddr *)&clnt->sin, sizeof clnt->sin);
+			(struct sockaddr *)&clnt->extra.udp.sin, sizeof clnt->extra.udp.sin);
 	if (res < 0) {
 		clnt->err.status = RPC_CANTSEND;
 		clnt->err.extra.error = errno;
@@ -189,10 +185,11 @@ recv_again:
 	}
 
 	xdrmem_create(&xstream, buff, res, XDR_DECODE);
-	mreply->b.reply.r.accepted.d.result.decoder = outproc;
-	mreply->b.reply.r.accepted.d.result.param = out;
-	if (!xdr_rpc_msg(&xstream, mreply)) {
+	msg_reply.b.reply.r.accepted.d.result.decoder = outproc;
+	msg_reply.b.reply.r.accepted.d.result.param = out;
+	if (!xdr_rpc_msg(&xstream, &msg_reply)) {
 		clnt->err.status = RPC_CANTDECODERES;
+		xdr_destroy(&xstream);
 		goto exit_with_status;
 	}
 	xdr_destroy(&xstream);
@@ -209,15 +206,15 @@ static void clntudp_geterr(struct client *clnt, struct rpc_err *perr) {
 }
 
 static void clntudp_destroy(struct client *clnt) {
-	if (clnt != NULL) {
-		auth_destroy(clnt->ath);
-		close(clnt->sock);
-		free(clnt);
-	}
+	assert(clnt != NULL);
+
+	auth_destroy(clnt->ath);
+	close(clnt->sock);
+	free(clnt);
 }
 
 static const struct clnt_ops clntudp_ops = {
-		.cl_call = clntudp_call,
-		.cl_geterr = clntudp_geterr,
-		.cl_destroy = clntudp_destroy
+		.call = clntudp_call,
+		.geterr = clntudp_geterr,
+		.destroy = clntudp_destroy
 };

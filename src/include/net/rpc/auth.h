@@ -41,7 +41,7 @@ struct opaque_auth {
 struct auth;
 
 struct auth_ops {
-	void (*ah_destroy)(struct auth *);
+	void (*destroy)(struct auth *);
 };
 
 struct auth {
@@ -50,7 +50,7 @@ struct auth {
 	const struct auth_ops *ops;
 };
 
-extern const struct opaque_auth __auth_null;
+extern const struct opaque_auth __opaque_auth_null;
 
 extern struct auth * authnone_create(void);
 

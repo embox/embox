@@ -23,6 +23,7 @@ __u16 pmap_getport(struct sockaddr_in *raddr, __u32 prognum,
 
 	memcpy(&addr, raddr, sizeof *raddr);
 	addr.sin_port = htons(PMAPPORT);
+	sock = RPC_ANYSOCK;
 	clnt = clntudp_create(&addr, PMAPPROG, PMAPVERS,
 			resend_every, &sock);
 	if (clnt == NULL) {

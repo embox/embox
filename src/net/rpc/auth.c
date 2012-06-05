@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-const struct opaque_auth __auth_null = {
+const struct opaque_auth __opaque_auth_null = {
 		.flavor = AUTH_NULL,
 		.len = 0,
 		.data = NULL
@@ -18,8 +18,8 @@ const struct opaque_auth __auth_null = {
 void auth_destroy(struct auth *ath) {
 	if (ath != NULL) {
 		assert(ath->ops != NULL);
-		assert(ath->ops->ah_destroy != NULL);
+		assert(ath->ops->destroy != NULL);
 
-		(*ath->ops->ah_destroy)(ath);
+		(*ath->ops->destroy)(ath);
 	}
 }

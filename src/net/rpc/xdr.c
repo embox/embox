@@ -17,8 +17,7 @@
 #define XDR_SAVE(xs, s)            \
 	s = xdr_getpos(xs)
 #define XDR_RESTORE(xs, s)         \
-	s = (size_t)xdr_setpos(xs, s); \
-	assert(s == (size_t)XDR_SUCCESS)
+	xdr_setpos(xs, s)
 
 /*
  * Useful routines
@@ -26,33 +25,33 @@
 static int xdr_getunit(struct xdr *xs, xdr_unit_t *to) {
 	assert(xs != NULL);
 	assert(xs->ops != NULL);
-	assert(xs->ops->x_getunit != NULL);
+	assert(xs->ops->getunit != NULL);
 
-	return (*xs->ops->x_getunit)(xs, to);
+	return (*xs->ops->getunit)(xs, to);
 }
 
 static int xdr_putunit(struct xdr *xs, const xdr_unit_t *from) {
 	assert(xs != NULL);
 	assert(xs->ops != NULL);
-	assert(xs->ops->x_putunit != NULL);
+	assert(xs->ops->putunit != NULL);
 
-	return (*xs->ops->x_putunit)(xs, from);
+	return (*xs->ops->putunit)(xs, from);
 }
 
 static int xdr_getbytes(struct xdr *xs, char *to, size_t size) {
 	assert(xs != NULL);
 	assert(xs->ops != NULL);
-	assert(xs->ops->x_getbytes != NULL);
+	assert(xs->ops->getbytes != NULL);
 
-	return (*xs->ops->x_getbytes)(xs, to, size);
+	return (*xs->ops->getbytes)(xs, to, size);
 }
 
 static int xdr_putbytes(struct xdr *xs, const char *from, size_t size) {
 	assert(xs != NULL);
 	assert(xs->ops != NULL);
-	assert(xs->ops->x_putbytes != NULL);
+	assert(xs->ops->putbytes != NULL);
 
-	return (*xs->ops->x_putbytes)(xs, from, size);
+	return (*xs->ops->putbytes)(xs, from, size);
 }
 
 static int xdr_align(struct xdr *xs, size_t size) {
@@ -61,11 +60,7 @@ static int xdr_align(struct xdr *xs, size_t size) {
 
 	assert(xs != NULL);
 
-	round_up = size % BYTES_PER_XDR_UNIT;
-	if (round_up == 0) {
-		return XDR_SUCCESS;
-	}
-	round_up = BYTES_PER_XDR_UNIT - round_up;
+	round_up = (BYTES_PER_XDR_UNIT - size % BYTES_PER_XDR_UNIT) % BYTES_PER_XDR_UNIT;
 
 	if (xs->oper == XDR_DECODE) {
 		return xdr_getbytes(xs, (char *)&trash, round_up);
@@ -333,7 +328,7 @@ int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
 		}
 	}
 
-	if (dfault != NULL_xdrproc_t) {
+	if (dfault != NULL) {
 		if ((*dfault)(xs, punion, XDR_LAST_UINT32)) {
 			return XDR_SUCCESS;
 		}
@@ -347,35 +342,25 @@ int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
 size_t xdr_getpos(struct xdr *xs) {
 	assert(xs != NULL);
 	assert(xs->ops != NULL);
-	assert(xs->ops->x_getpos != NULL);
+	assert(xs->ops->getpos != NULL);
 
-	return (*xs->ops->x_getpos)(xs);
+	return (*xs->ops->getpos)(xs);
 }
 
 int xdr_setpos(struct xdr *xs, size_t pos) {
 	assert(xs != NULL);
 	assert(xs->ops != NULL);
-	assert(xs->ops->x_setpos != NULL);
+	assert(xs->ops->setpos != NULL);
 
-	return (*xs->ops->x_setpos)(xs, pos);
-}
-
-char * xdr_inline(struct xdr *xs, size_t len) {
-	assert(xs != NULL);
-	assert(xs->ops != NULL);
-	assert(xs->ops->x_inline != NULL);
-
-	return (*xs->ops->x_inline)(xs, len);
+	return (*xs->ops->setpos)(xs, pos);
 }
 
 void xdr_destroy(struct xdr *xs) {
 	assert(xs != NULL);
 	assert(xs->ops != NULL);
-	assert(xs->ops->x_destroy != NULL);
+	assert(xs->ops->destroy != NULL);
 
-	if (xs->ops->x_destroy) {
-		(*xs->ops->x_destroy)(xs);
-	}
+	(*xs->ops->destroy)(xs);
 }
 
 
@@ -417,12 +402,12 @@ static int xdr_rejected_reply(struct xdr *xs, struct rejected_reply *rr) {
 	const struct xdr_discrim reject_dscrm[] = {
 			{ RPC_MISMATCH, (xdrproc_t)xdr_mismatch_info },
 			{ AUTH_ERROR, (xdrproc_t)xdr_enum },
-			{ 0, NULL_xdrproc_t }
+			{ 0, NULL }
 	};
 
 	assert(rr != NULL);
 
-	return xdr_union(xs, (__s32 *)&rr->stat, &rr->d, reject_dscrm, NULL_xdrproc_t);
+	return xdr_union(xs, (__s32 *)&rr->stat, &rr->d, reject_dscrm, NULL);
 }
 
 static int xdr_call_body(struct xdr *xs, struct call_body *cb) {
@@ -437,19 +422,19 @@ static int xdr_reply_body(struct xdr *xs, struct reply_body *rb) {
 	const struct xdr_discrim reply_dscrm[] = {
 			{ MSG_ACCEPTED, (xdrproc_t)xdr_accepted_reply },
 			{ MSG_DENIED, (xdrproc_t)xdr_rejected_reply },
-			{ 0, NULL_xdrproc_t }
+			{ 0, NULL }
 	};
 
 	assert(rb != NULL);
 
-	return xdr_union(xs, (__s32 *)&rb->stat, &rb->r, reply_dscrm, NULL_xdrproc_t);
+	return xdr_union(xs, (__s32 *)&rb->stat, &rb->r, reply_dscrm, NULL);
 }
 
 int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg) {
 	const struct xdr_discrim msg_dscrm[] = {
 			{ CALL, (xdrproc_t)xdr_call_body },
 			{ REPLY, (xdrproc_t)xdr_reply_body },
-			{ 0, NULL_xdrproc_t }
+			{ 0, NULL }
 	};
 	size_t s;
 
@@ -458,7 +443,7 @@ int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg) {
 	XDR_SAVE(xs, s);
 
 	if (xdr_u_int(xs, &msg->xid)
-			&& xdr_union(xs, (__s32 *)&msg->type, &msg->b, msg_dscrm, NULL_xdrproc_t)) {
+			&& xdr_union(xs, (__s32 *)&msg->type, &msg->b, msg_dscrm, NULL)) {
 		return XDR_SUCCESS;
 	}
 
