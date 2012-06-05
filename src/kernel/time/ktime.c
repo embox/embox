@@ -15,11 +15,19 @@
 
 EMBOX_UNIT_INIT(module_init);
 
-//TODO global time timecounter is bad
 static struct timecounter sys_timecounter;
 
 ns_t ktime_get_ns(void) {
 	return timecounter_read(&sys_timecounter);
+}
+
+struct ktimeval * ktime_get_timeval(struct ktimeval *tv) {
+	ns_t ns;
+
+	ns = ktime_get_ns();
+	tv->tv_sec = ns / NSEC_PER_SEC;
+	tv->tv_usec = (ns % NSEC_PER_SEC) / 1000;
+	return tv;
 }
 
 static int module_init(void) {
@@ -37,12 +45,3 @@ static int module_init(void) {
 	return 0;
 }
 
-//TODO ktime has bad function
-struct ktimeval * ktime_get_timeval(struct ktimeval *tv) {
-	ns_t ns;
-
-	ns = ktime_get_ns();
-	tv->tv_sec = ns / NSEC_PER_SEC;
-	tv->tv_usec = (ns % NSEC_PER_SEC) / 1000;
-	return tv;
-}
