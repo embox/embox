@@ -23,7 +23,7 @@
 #include <embox/net/proto.h>
 #include <framework/net/proto/api.h>
 
-#include <kernel/time.h>
+#include <kernel/ktime.h>
 
 #include <err.h>
 
@@ -276,7 +276,7 @@ static int icmp_timestamp(sk_buff_t *skb) {
 	reply->h.icmph->type = ICMP_TIMESTAMPREPLY;
 
 	/* Fix time fields. Similar fields will do for us */
-	get_timeval(&tv);
+	ktime_get_timeval(&tv);
 	time_field = iptime(&tv);
 	time_ptr = (__be32 *)(reply->h.raw + ICMP_HEADER_SIZE);
 	for ( i = 0; i < 3; i++, time_ptr++) {

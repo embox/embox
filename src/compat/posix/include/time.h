@@ -16,6 +16,13 @@
 #include <signal.h>
 
 
+/* Parameters used to convert the time specific values */
+#define MSEC_PER_SEC    1000L
+#define USEC_PER_MSEC   1000L
+#define NSEC_PER_USEC   1000L
+#define USEC_PER_SEC    1000000L
+#define NSEC_PER_SEC    1000000000L
+
 struct tm {
 	int    tm_sec;   /*Seconds [0,60].*/
 	int    tm_min;   /*Minutes [0,59].*/

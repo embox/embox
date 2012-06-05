@@ -11,7 +11,7 @@
 
 #include <types.h>
 #include <util/dlist.h>
-#include <kernel/time.h>
+//#include <kernel/ktime.h>
 #include <kernel/clock_event.h>
 
 typedef uint64_t cycle_t;

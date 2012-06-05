@@ -18,7 +18,7 @@
 #include <util/dlist.h>
 #include <mem/misc/pool.h>
 
-#include <kernel/time.h>
+#include <kernel/ktime.h>
 
 #include <kernel/clock_source.h>
 #include <kernel/ktime.h>

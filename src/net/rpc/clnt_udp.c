@@ -18,7 +18,7 @@
 #include <err.h>
 #include <types.h>
 #include <net/ip.h>
-#include <kernel/time.h>
+//#include <kernel/time.h>
 #include <kernel/ktime.h>
 
 #define UDP_MSG_MAX_SZ 1024

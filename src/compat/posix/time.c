@@ -14,7 +14,6 @@
 #include <kernel/clock_source.h>
 #include <kernel/ktime.h>
 
-extern ns_t clock_get_systime(void);
 
 clock_t clock(void) {
 	return clock_sys_ticks();
@@ -40,7 +39,7 @@ int clock_gettime(clockid_t clk_id, struct timespec *ts) {
 
 //	cs =  clock_source_get_default();
 
-	ns2timespec(clock_get_systime(), ts);
+	ns2timespec(ktime_get_ns(), ts);
 	return 0;
 }
 
