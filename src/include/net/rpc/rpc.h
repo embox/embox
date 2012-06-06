@@ -15,7 +15,6 @@
 
 #define RPC_VERSION 2
 #define RPC_ANYSOCK -1
-
 /* Type of RPC message */
 enum msg_type {
 	CALL = 0,
@@ -98,5 +97,32 @@ struct rpc_msg {
 		struct reply_body reply;
 	} b; /* body */
 };
+
+typedef struct nfs_filehandle {
+	char name[52];
+	uint32_t len;
+	uint32_t count;
+	uint32_t maxcount;
+} nfs_filehandle_t;
+
+/* RPC string */
+typedef struct rpc_string {
+	char name[CONFIG_MAX_LENGTH_PATH_NAME];
+	size_t len;
+} rpc_string_t;
+
+/* Body of a RPC replay to MOUNT Export command */
+typedef struct export_dir {
+	__u32 follow;
+	rpc_string_t dir;
+} export_dir_t;
+
+
+/* Body of a RPC MOUNT service replay */
+typedef struct mount_service {
+	__u32 status;
+	nfs_filehandle_t fh;
+	__u32 flv;
+} mount_service_t;
 
 #endif /* NET_RPC_RPC_H_ */

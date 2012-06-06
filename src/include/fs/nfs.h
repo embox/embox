@@ -15,6 +15,7 @@
 #include <fs/ramdisk.h>
 #include <net/ip.h>
 #include <net/socket.h>
+#include <net/rpc/rpc.h>
 
 #define MAX_FILE_QUANTITY  64
 
@@ -149,93 +150,21 @@
 #define	EMBOX_NAMELEN   sizeof(EMBOX_MACHNAME) - 1
 #define	EMBOX_STAMP     0x00fd15b7
 
-typedef struct nfs_crdt_none {
-	uint32_t flvr;
-	uint32_t flvr_len;
-	uint32_t vrf_flvr;
-	uint32_t vrf_flvr_len;
-} nfs_crdt_none_t;
-
-typedef struct nfs_crdt_unix {
-	uint32_t aux_unix;
-	uint32_t len;
-	uint32_t stamp;
-	uint32_t namelen;
-	char name[EMBOX_NAMELEN];
-	char opaq[3];
-	uint32_t uid;
-	uint32_t gid;
-	//uint32_t aux_gid_qua;
-	uint32_t aux_gid;
-	uint32_t vrf_flvr;
-	uint32_t vrf_flvr_len;
-} nfs_crdt_unix_t;
-
-#define	EMBOX_STAMPLEN  sizeof(nfs_crdt_unix_t) - 16
-
-typedef struct nfs_call_head {
-	uint32_t xid;
-	uint32_t msg_type;
-	uint32_t rpc_ver;
-	uint32_t prog_num;
-	uint32_t prog_ver;
-	uint32_t proc;
-} nfs_call_head_t;
-
-typedef struct nfs_reply_head {
-	uint32_t xid;
-	uint32_t msg_type;
-	uint32_t reply_state;
-	uint32_t flvr;
-	uint32_t flvr_len;
-	uint32_t accept_state;
-} nfs_reply_head_t;
-
-typedef struct nfs_getport_args {
-	uint32_t prog;
-	uint32_t ver;
-	uint32_t proto;
-	uint32_t port;
-} nfs_getport_args_t;
-
-typedef struct nfs_filehandle {
-	uint32_t len;
-	char name[52];
-	uint32_t count;
-	uint32_t maxcount;
-} nfs_filehandle_t;
-
-typedef struct nfs_node_name {
-	uint32_t len;
-	char srcname[CONFIG_MAX_LENGTH_PATH_NAME];
-} nfs_node_name_t;
-
-typedef struct nfs_sock {
-	int sock;
-	struct sockaddr_in addr;
-}nfs_sock_t;
-
 typedef struct nfs_fs_description {
 	char srv_name[CONFIG_MAX_LENGTH_PATH_NAME];
 	char srv_dir[CONFIG_MAX_LENGTH_PATH_NAME];
-	nfs_node_name_t exp_dir;
+	export_dir_t export;
 	nfs_filehandle_t fh;
-	nfs_crdt_unix_t auth_head;
+	//nfs_crdt_unix_t auth_head;
 	char mnt_point[CONFIG_MAX_LENGTH_PATH_NAME];
-	nfs_sock_t pm;
-	nfs_sock_t mnt;
-	nfs_getport_args_t mnt_arg;
-	nfs_sock_t nfs;
-	nfs_getport_args_t nfs_arg;
+	struct client *mnt;
+	struct client *nfs;
 } nfs_fs_description_t;
-
-
 
 typedef struct nfs_file_description {
 	file_info_t fi;
 	nfs_filehandle_t fh;
 	nfs_fs_description_t *p_fs_dsc;
 } nfs_file_description_t;
-
 
 #endif /* NFS_H_ */
