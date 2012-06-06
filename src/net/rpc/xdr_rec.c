@@ -50,6 +50,7 @@ void xdrrec_create(struct xdr *xs, unsigned int sendsz, unsigned int recvsz,
 	}
 
 	xs->ops = &xdrrec_ops;
+	xs->extra.rec.handle = handle;
 
 	xs->extra.rec.in_hnd = readit;
 	xs->extra.rec.in_base = xs->extra.rec.in_hdr = xs->extra.rec.in_curr = buff;

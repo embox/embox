@@ -55,6 +55,7 @@ struct client * clnttcp_create(struct sockaddr_in *raddr, __u32 prognum,
 			|| (connect(sock, (struct sockaddr *)&sin, sizeof sin) < 0)) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = errno;
+		close(sock);
 		goto exit_with_error;
 	}
 
