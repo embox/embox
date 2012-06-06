@@ -199,8 +199,8 @@ static int fill_data(struct xdr *xs) {
 		len = xs->extra.rec.in_left;
 	}
 	else {
-		if ((*xs->extra.rec.in_hnd)(xs->extra.rec.handle, xs->extra.rec.in_curr,
-				xs->extra.rec.in_left) != xs->extra.rec.in_left) {
+		if ((*xs->extra.rec.in_hnd)(xs->extra.rec.handle,
+				(char *)&hdr, sizeof hdr) != sizeof hdr) {
 			return XDR_FAILURE;
 		}
 		hdr.unit = decode_unit(hdr.unit);
