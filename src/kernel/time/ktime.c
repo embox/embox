@@ -26,7 +26,7 @@ struct ktimeval * ktime_get_timeval(struct ktimeval *tv) {
 
 	ns = ktime_get_ns();
 	tv->tv_sec = ns / NSEC_PER_SEC;
-	tv->tv_usec = (ns % NSEC_PER_SEC) / 1000;
+	tv->tv_usec = (ns % NSEC_PER_SEC) / NSEC_PER_USEC;
 	return tv;
 }
 

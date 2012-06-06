@@ -18,22 +18,11 @@
 #include <err.h>
 #include <types.h>
 #include <net/ip.h>
-//#include <kernel/time.h>
 #include <kernel/ktime.h>
 
 #define UDP_MSG_MAX_SZ 1024
 
 static const struct clnt_ops clntudp_ops;
-
-/*
- * TODO remove this and use get_timeval instead
- * after Issue 432 will be fixed
- */
-static void tmp_get_timeval(struct ktimeval *kt) {
-	kt->tv_sec = 0;
-	kt->tv_usec = 0;
-}
-extern int usleep(unsigned long usec);
 
 struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 		__u32 versnum, struct timeval resend, int *psock) {
@@ -88,6 +77,8 @@ exit_with_error:
 	return NULL;
 }
 
+extern int usleep(unsigned logn);
+
 static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
 		struct timeval timeout) {
@@ -98,13 +89,14 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	struct sockaddr addr;
 	socklen_t addr_len;
 	size_t buff_len;
-	struct ktimeval was_sended, now, elapsed;
-	struct timeval *resend;
-	int iter = 0; // TODO remove this
+	useconds_t was_sended, elapsed, wait_timeout, wait_resend;
+	struct ktimeval tmp;
 
 	assert((clnt != NULL) && (inproc != NULL));
 
-	resend = &clnt->extra.udp.resend;
+	wait_resend = clnt->extra.udp.resend.tv_sec * USEC_PER_SEC + clnt->extra.udp.resend.tv_usec;
+	wait_timeout = timeout.tv_sec * USEC_PER_SEC + timeout.tv_usec;
+	assert(wait_timeout != 0); // TODO remove this
 
 	msg_call.xid = get_xid();
 	msg_call.type = CALL;
@@ -126,8 +118,6 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	xdr_destroy(&xstream);
 
 send_again:
-	tmp_get_timeval(&was_sended);
-
 	res = sendto(clnt->sock, buff, xdr_getpos(&xstream), 0,
 			(struct sockaddr *)&clnt->extra.udp.sin, sizeof clnt->extra.udp.sin);
 	if (res < 0) {
@@ -136,9 +126,11 @@ send_again:
 		goto exit_with_status;
 	}
 
-	usleep(20);
+	ktime_get_timeval(&tmp);
+	was_sended = tmp.tv_sec * USEC_PER_SEC + tmp.tv_usec;
+
+	usleep(50);
 recv_again:
-	iter++;
 	res = recvfrom(clnt->sock, buff, sizeof buff, 0, &addr, &addr_len);
 	if (res < 0) {
 		clnt->err.status = RPC_CANTRECV;
@@ -149,35 +141,19 @@ recv_again:
 	if (res == 0) { /* Reply was not received, resend request or exit with error */
 
 		/* Calculate elapsed time */
-		tmp_get_timeval(&now);
-		elapsed.tv_sec = now.tv_sec - was_sended.tv_sec;
-		elapsed.tv_usec = now.tv_usec - was_sended.tv_usec;
-		if (elapsed.tv_usec < 0) {
-			elapsed.tv_usec += USEC_PER_SEC;
-			elapsed.tv_sec--;
-		}
+		ktime_get_timeval(&tmp);
+		assert((tmp.tv_sec * USEC_PER_SEC + tmp.tv_usec) >= was_sended);
+		elapsed = (tmp.tv_sec * USEC_PER_SEC + tmp.tv_usec) - was_sended;
 
-		/* how much time we can wait yet */
-		timeout.tv_sec -= elapsed.tv_sec;
-		if (timeout.tv_usec >= elapsed.tv_usec) {
-			timeout.tv_usec -= elapsed.tv_usec;
-		}
-		else {
-			timeout.tv_sec--;
-			timeout.tv_usec += USEC_PER_SEC - elapsed.tv_usec;
-		}
-
-		/* check timeout */
-		if ((iter > 20) || (timeout.tv_sec < 0)
-				|| ((timeout.tv_sec == 0) && (timeout.tv_usec == 0))) {
+		/* Check timeout and set up new value */
+		if (wait_timeout < elapsed) {
 			clnt->err.status = RPC_TIMEDOUT;
 			goto exit_with_status;
 		}
+		wait_timeout -= elapsed;
 
-		/* check resend time */
-		if ((elapsed.tv_sec > resend->tv_sec)
-				|| ((elapsed.tv_sec == resend->tv_sec)
-						&& (elapsed.tv_usec >= resend->tv_usec))) {
+		/* Check resend time */
+		if (elapsed > wait_resend) {
 			goto send_again;
 		}
 

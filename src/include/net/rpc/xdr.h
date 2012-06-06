@@ -112,7 +112,5 @@ extern int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
 
 extern int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg);
 extern int xdr_pmap(struct xdr *xs, struct pmap *pmp);
-extern int xdr_mnt_export(struct xdr *xs, void *export);
-extern int xdr_mnt_service(struct xdr *xs, void *mnt_srvc);
 
 #endif /* NET_RPC_XDR_H_ */

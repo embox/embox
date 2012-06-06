@@ -25,6 +25,9 @@
 
 #define DEBUG_TCP_MNTPORT 49488
 
+static int xdr_mnt_export(struct xdr *xs, export_dir_t *export);
+static int xdr_mnt_service(struct xdr *xs, mount_service_t *mnt_srvc);
+
 char snd_buf[1024];
 char rcv_buf[4096];
 
@@ -215,4 +218,63 @@ int nfs_statfs(void) {
 	nfs_call(NFSPROC3_FSSTAT);
 	nfs_call(NFSPROC3_FSINFO);
 	return 0;
+}
+
+static int xdr_mnt_export(struct xdr *xs, export_dir_t *export) {
+	char *point;
+
+	assert(export != NULL);
+
+	if (xdr_u_int(xs, &export->follow)) {
+		if (VALUE_FOLLOWS_YES == export->follow) {
+			point = export->dir.name;
+			if (xdr_bytes(xs, (char **)&point,
+					&export->dir.len, sizeof export->dir.name)) {
+				return XDR_SUCCESS;
+			}
+		}
+	}
+
+	return XDR_FAILURE;
+}
+
+static int xdr_mnt_service(struct xdr *xs, mount_service_t *mnt_srvc) {
+	char *point;
+
+	assert(mnt_srvc != NULL);
+
+	if (xdr_u_int(xs, &mnt_srvc->status)) {
+		if (STATUS_OK == mnt_srvc->status) {
+			point = mnt_srvc->fh.name;
+			if (xdr_bytes(xs, (char **)&point,
+					&mnt_srvc->fh.len, sizeof mnt_srvc->fh.name)) {
+				if (xdr_u_int(xs, &mnt_srvc->flv)) {
+					return XDR_SUCCESS;
+				}
+			}
+		}
+	}
+
+	return XDR_FAILURE;
+}
+
+
+int xdr_nfs_readdirplus(struct xdr *xs, mount_service_t *mnt_srvc) {
+	char *point;
+
+	assert(mnt_srvc != NULL);
+
+	if (xdr_u_int(xs, &mnt_srvc->status)) {
+		if (STATUS_OK == mnt_srvc->status) {
+			point = mnt_srvc->fh.name;
+			if (xdr_bytes(xs, (char **)&point,
+					&mnt_srvc->fh.len, sizeof mnt_srvc->fh.name)) {
+				if (xdr_u_int(xs, &mnt_srvc->flv)) {
+					return XDR_SUCCESS;
+				}
+			}
+		}
+	}
+
+	return XDR_FAILURE;
 }
