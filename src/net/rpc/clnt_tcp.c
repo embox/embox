@@ -16,6 +16,7 @@
 #include <net/net.h>
 #include <net/ip.h>
 #include <string.h>
+#include <net/in.h>
 
 #define TCP_MSG_MAX_SZ 1024
 
@@ -42,7 +43,7 @@ struct client * clnttcp_create(struct sockaddr_in *raddr, __u32 prognum,
 
 	memcpy(&sin, raddr, sizeof *raddr);
 	if (sin.sin_port == 0) {
-		sin.sin_port = pmap_getport(raddr, prognum, versnum, IPPROTO_TCP);
+		sin.sin_port = htons(pmap_getport(raddr, prognum, versnum, IPPROTO_TCP));
 		if (sin.sin_port == 0) {
 			goto exit_with_error;
 		}
