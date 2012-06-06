@@ -107,6 +107,11 @@ static enum clnt_stat clnttcp_call(struct client *clnt, __u32 procnum,
 		goto exit_with_status;
 	}
 
+	if (!xdrrec_endofrecord(&xstream, 1)) {
+		clnt->err.status = RPC_CANTSEND;
+		goto exit_with_status;
+	}
+
 	xstream.oper = XDR_DECODE;
 
 	msg_reply.b.reply.r.accepted.d.result.decoder = outproc;
