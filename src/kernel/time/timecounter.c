@@ -73,15 +73,16 @@ ns_t timecounter_read(struct timecounter *tc) {
 
 	nsec = 0;
 
-	if (res && cycle_old > tc->cycle_last) {
-		tc->jiffies_last++;
-	}
-
 	if (!res) {
 		tc->cycle_last = 0;
 	}
 
-	ticks_per_jiff = ((cs->dev->resolution +cs->resolution / 2) / cs->resolution) - 1;
+	ticks_per_jiff = ((cs->dev->resolution + cs->resolution / 2) / cs->resolution) - 1;
+
+	if (cycle_old > tc->cycle_last) {
+		tc->jiffies_last++;
+		cycle_old -= ticks_per_jiff;
+	}
 
 	nsec += cycles_to_ns(cs->cc, (tc->jiffies_last - jiffies_old) * ticks_per_jiff);
 	nsec += cycles_to_ns(cs->cc, tc->cycle_last - cycle_old);
