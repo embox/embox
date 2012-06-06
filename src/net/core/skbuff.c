@@ -285,7 +285,7 @@ struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb, int headroom, int tail
 	int free_space = SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE - (skb->len + headroom + tailroom);
 
 		/* Stupid situations during shrink */
-	assert((-headroom) < (skb->len + tailroom));
+	assert((long)(-headroom) < (long)(skb->len + tailroom));
 
 	if (likely((headroom <= free_headroom) && (tailroom <= free_tailroom))) {
 		/* Simplest case, do nothing */
