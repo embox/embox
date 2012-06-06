@@ -166,10 +166,10 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 	case SEEK_SET:
 		break;
 	case SEEK_CUR:
-		curr_offset += fd->fi.pointer;
+		//curr_offset += fd->fi.pointer;
 		break;
 	case SEEK_END:
-		curr_offset = fd->fi.filelen;
+		//curr_offset = fd->fi.filelen;
 		break;
 	default:
 		return -1;

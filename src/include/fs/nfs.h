@@ -159,7 +159,7 @@ typedef struct nfs_filehandle {
 
 /* RPC string */
 typedef struct rpc_string {
-	char name[CONFIG_MAX_LENGTH_PATH_NAME];
+	char data[CONFIG_MAX_LENGTH_PATH_NAME];
 	size_t len;
 } rpc_string_t;
 
@@ -169,12 +169,53 @@ typedef struct export_dir {
 	rpc_string_t dir;
 } export_dir_t;
 
+
 /* Body of a RPC MOUNT service replay */
 typedef struct mount_service {
 	__u32 status;
 	nfs_filehandle_t fh;
 	__u32 flv;
 } mount_service_t;
+
+/* name of file */
+typedef struct file_name {
+	__u64 file_id;
+	rpc_string_t name;
+} file_name_t;
+
+/* time of create file */
+typedef struct time_sec {
+	__u32 second;
+	__u32 nano_sec;
+} time_sec_t;
+
+/* attribute of file, reply in READDIRPLUS command */
+typedef struct file_attribute_rep {
+	__u32 type;
+	__u32 mode;
+	__u32 nlink;
+	__u32 uid;
+	__u32 gid;
+	__u64 size;
+	__u64 used;
+	__u32 specdata1;
+	__u32 specdata2;
+	__u64 fsid;
+	__u64 file_id;
+	time_sec_t atime;
+	time_sec_t mtime;
+	time_sec_t ctime;
+} file_attribute_rep_t;
+
+/* READDIRPLUS command reply*/
+typedef struct readdir_reply {
+	__u32 vf_name;
+	file_name_t file_name;
+	__u32 vf_attr;
+	file_attribute_rep_t file_attr;
+	__u32 vf_fh;
+	nfs_filehandle_t file_handle;
+} readdir_reply_t;
 
 typedef struct nfs_fs_description {
 	char srv_name[CONFIG_MAX_LENGTH_PATH_NAME];
@@ -188,7 +229,8 @@ typedef struct nfs_fs_description {
 } nfs_fs_description_t;
 
 typedef struct nfs_file_description {
-	file_info_t fi;
+	file_name_t name;
+	file_attribute_rep_t attr;
 	nfs_filehandle_t fh;
 	nfs_fs_description_t *p_fs_dsc;
 } nfs_file_description_t;
