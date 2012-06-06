@@ -85,7 +85,7 @@ static enum clnt_stat clnttcp_call(struct client *clnt, __u32 procnum,
 
 	assert((clnt != NULL) && (inproc != NULL));
 
-	msg_call.xid = 0x01010101;
+	msg_call.xid = get_xid();
 	msg_call.type = CALL;
 	msg_call.b.call.rpcvers = RPC_VERSION;
 	msg_call.b.call.prog = clnt->prognum;
