@@ -118,6 +118,9 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	xdr_destroy(&xstream);
 
 send_again:
+	ktime_get_timeval(&tmp);
+	was_sended = tmp.tv_sec * USEC_PER_SEC + tmp.tv_usec;
+
 	res = sendto(clnt->sock, buff, xdr_getpos(&xstream), 0,
 			(struct sockaddr *)&clnt->extra.udp.sin, sizeof clnt->extra.udp.sin);
 	if (res < 0) {
@@ -125,9 +128,6 @@ send_again:
 		clnt->err.extra.error = errno;
 		goto exit_with_status;
 	}
-
-	ktime_get_timeval(&tmp);
-	was_sended = tmp.tv_sec * USEC_PER_SEC + tmp.tv_usec;
 
 recv_again:
 	res = recvfrom(clnt->sock, buff, sizeof buff, 0, &addr, &addr_len);
@@ -138,10 +138,14 @@ recv_again:
 	}
 
 	if (res == 0) { /* Reply was not received, resend request or exit with error */
+#if 0
+		printf("ws %u, e %u, wt %u, wr %u\n",
+				(unsigned int)was_sended, (unsigned int)elapsed,
+				(unsigned int)wait_timeout, (unsigned int)wait_resend);
+#endif
 
 		/* Calculate elapsed time */
 		ktime_get_timeval(&tmp);
-		assert((tmp.tv_sec * USEC_PER_SEC + tmp.tv_usec) >= was_sended);
 		elapsed = (tmp.tv_sec * USEC_PER_SEC + tmp.tv_usec) - was_sended;
 
 		/* Check timeout and set up new value */
