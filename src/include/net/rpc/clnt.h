@@ -11,9 +11,12 @@
 #include <stdint.h>
 #include <net/socket.h>
 #include <sys/time.h>
-#include <net/rpc/rpc.h>
 #include <net/rpc/xdr.h>
-#include <net/rpc/auth.h>
+#include <net/rpc/rpc_msg.h>
+
+/* Prototypes */
+struct client;
+struct auth;
 
 enum clnt_stat {
 	RPC_SUCCESS,           /* call succeeded */
@@ -54,7 +57,6 @@ struct rpc_err {
 	} extra;
 };
 
-struct client;
 
 struct clnt_ops {
 	enum clnt_stat (*call)(struct client *clnt, __u32 procnum, xdrproc_t inproc,
@@ -105,10 +107,8 @@ extern void clnt_geterr(struct client * clnt, struct rpc_err *perr);
 
 extern void clnt_destroy(struct client *clnt);
 
-#if 0
 extern struct client * clnttcp_create(struct sockaddr_in *addr, __u32 prognum, 	__u32 versnum,
 		int *psock, unsigned int sendsz, unsigned int __recvsz);
-#endif
 
 extern char * clnt_sperrno(enum clnt_stat stat);
 extern void clnt_perrno(enum clnt_stat stat);

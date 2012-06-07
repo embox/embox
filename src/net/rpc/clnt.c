@@ -5,9 +5,9 @@
  * @author Ilia Vaprol
  */
 
-#include <net/rpc/rpc.h>
 #include <net/rpc/clnt.h>
 #include <net/rpc/auth.h>
+#include <net/rpc/rpc.h>
 #include <string.h>
 #include <assert.h>
 #include <sys/time.h>
@@ -18,7 +18,7 @@
 
 #define ERROR_STR_MAX_SZ 256
 
-struct rpc_createerr rpc_create_error; // TODO rename
+struct rpc_createerr rpc_create_error; // TODO rename and move
 
 /* List of AUTH errors */
 static char *auth_errlist[AUTH_MAX] = {

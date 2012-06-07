@@ -6,15 +6,13 @@
  * @author Ilia Vaprol
  */
 
+#include <net/rpc/xdr.h>
+#include <types.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <fs/nfs.h>
-#include <net/rpc/rpc.h>
-#include <net/rpc/xdr.h>
 #include <string.h>
-#include <stddef.h>
 
-#define XDR_LAST_UINT32 ((__u32)-1)
+
 #define XDR_SAVE(xs, s)            \
 	s = xdr_getpos(xs)
 #define XDR_RESTORE(xs, s)         \
@@ -196,7 +194,6 @@ int xdr_bytes(struct xdr *xs, char **ppc, __u32 *psize, __u32 maxsize) {
 			free(*ppc);
 		}
 		break;
-		return XDR_SUCCESS;
 	case XDR_ENCODE:
 		if (*psize > maxsize) {
 			break;
@@ -362,110 +359,4 @@ void xdr_destroy(struct xdr *xs) {
 	assert(xs->ops->destroy != NULL);
 
 	(*xs->ops->destroy)(xs);
-}
-
-
-/*
- * Other functions for RPC
- */
-static int xdr_opaque_auth(struct xdr *xs, struct opaque_auth *oa) {
-	assert(oa != NULL);
-
-	return xdr_enum(xs, (__s32 *)&oa->flavor)
-			&& xdr_bytes(xs, &oa->data, &oa->len, MAX_AUTH_BYTES);
-}
-
-static int xdr_mismatch_info(struct xdr *xs, struct mismatch_info *mi) {
-	assert(mi != NULL);
-
-	return xdr_u_int(xs, &mi->low) && xdr_u_int(xs, &mi->high);
-}
-
-static int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
-	assert(ar != NULL);
-
-	if (xdr_opaque_auth(xs, &ar->verf) && xdr_enum(xs, (__s32 *)&ar->stat)) {
-		switch (ar->stat) {
-		default:
-			return XDR_SUCCESS;
-		case SUCCESS:
-			assert(ar->d.result.decoder != NULL);
-			return (*(xdrproc_t)ar->d.result.decoder)(xs, ar->d.result.param, XDR_LAST_UINT32);
-		case PROG_MISMATCH:
-			return xdr_mismatch_info(xs, &ar->d.mminfo);
-		}
-	}
-
-	return XDR_FAILURE;
-}
-
-static int xdr_rejected_reply(struct xdr *xs, struct rejected_reply *rr) {
-	const struct xdr_discrim reject_dscrm[] = {
-			{ RPC_MISMATCH, (xdrproc_t)xdr_mismatch_info },
-			{ AUTH_ERROR, (xdrproc_t)xdr_enum },
-			{ 0, NULL }
-	};
-
-	assert(rr != NULL);
-
-	return xdr_union(xs, (__s32 *)&rr->stat, &rr->d, reject_dscrm, NULL);
-}
-
-static int xdr_call_body(struct xdr *xs, struct call_body *cb) {
-	assert(cb != NULL);
-
-	return xdr_u_int(xs, &cb->rpcvers) && xdr_u_int(xs, &cb->prog)
-			&& xdr_u_int(xs, &cb->vers) && xdr_u_int(xs, &cb->proc)
-			&& xdr_opaque_auth(xs, &cb->cred) && xdr_opaque_auth(xs, &cb->verf);
-}
-
-static int xdr_reply_body(struct xdr *xs, struct reply_body *rb) {
-	const struct xdr_discrim reply_dscrm[] = {
-			{ MSG_ACCEPTED, (xdrproc_t)xdr_accepted_reply },
-			{ MSG_DENIED, (xdrproc_t)xdr_rejected_reply },
-			{ 0, NULL }
-	};
-
-	assert(rb != NULL);
-
-	return xdr_union(xs, (__s32 *)&rb->stat, &rb->r, reply_dscrm, NULL);
-}
-
-int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg) {
-	const struct xdr_discrim msg_dscrm[] = {
-			{ CALL, (xdrproc_t)xdr_call_body },
-			{ REPLY, (xdrproc_t)xdr_reply_body },
-			{ 0, NULL }
-	};
-	size_t s;
-
-	assert(msg != NULL);
-
-	XDR_SAVE(xs, s);
-
-	if (xdr_u_int(xs, &msg->xid)
-			&& xdr_union(xs, (__s32 *)&msg->type, &msg->b, msg_dscrm, NULL)) {
-		return XDR_SUCCESS;
-	}
-
-	XDR_RESTORE(xs, s);
-
-	return XDR_FAILURE;
-}
-
-int xdr_pmap(struct xdr *xs, struct pmap *pmp) {
-	size_t s;
-
-	assert(pmp != NULL);
-
-	XDR_SAVE(xs, s);
-
-	if (xdr_u_int(xs, &pmp->prog) && xdr_u_int(xs, &pmp->vers)
-			&& xdr_u_int(xs, &pmp->prot) && xdr_u_int(xs, &pmp->port)) {
-		return XDR_SUCCESS;
-	}
-
-	XDR_RESTORE(xs, s);
-
-	return XDR_FAILURE;
 }

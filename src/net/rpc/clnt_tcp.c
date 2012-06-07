@@ -7,6 +7,10 @@
  */
 
 #include <net/rpc/clnt.h>
+#include <net/rpc/rpc.h>
+#include <net/rpc/rpc_msg.h>
+#include <net/rpc/auth.h>
+#include <net/rpc/pmap.h>
 #include <assert.h>
 #include <types.h>
 #include <net/socket.h>

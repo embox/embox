@@ -11,6 +11,9 @@
 #include <types.h>
 #include <net/socket.h>
 
+/* Prototypes */
+struct xdr;
+
 #define PMAPPORT         111
 #define PMAPPROG         100000
 #define PMAPVERS         2
@@ -25,5 +28,7 @@ struct pmap {
 
 extern __u16 pmap_getport(struct sockaddr_in *raddr,
 		__u32 prognum, __u32 versnum, __u32 protocol);
+
+extern int xdr_pmap(struct xdr *xs, struct pmap *pmp);
 
 #endif /* NET_RPC_PMAP_H_ */

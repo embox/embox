@@ -5,9 +5,11 @@
  * @author Ilia Vaprol
  */
 
-#include <net/rpc/rpc.h>
 #include <net/rpc/clnt.h>
 #include <net/rpc/auth.h>
+#include <net/rpc/rpc.h>
+#include <net/rpc/rpc_msg.h>
+#include <net/rpc/pmap.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <net/socket.h>
@@ -77,8 +79,6 @@ exit_with_error:
 	return NULL;
 }
 
-extern int usleep(unsigned logn);
-
 static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
 		struct timeval timeout) {
@@ -129,7 +129,6 @@ send_again:
 	ktime_get_timeval(&tmp);
 	was_sended = tmp.tv_sec * USEC_PER_SEC + tmp.tv_usec;
 
-	usleep(50);
 recv_again:
 	res = recvfrom(clnt->sock, buff, sizeof buff, 0, &addr, &addr_len);
 	if (res < 0) {

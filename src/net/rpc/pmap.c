@@ -5,9 +5,11 @@
  * @author Ilia Vaprol
  */
 
-#include <types.h>
 #include <net/rpc/pmap.h>
+#include <net/rpc/xdr.h>
 #include <net/rpc/clnt.h>
+#include <net/rpc/rpc.h>
+#include <types.h>
 #include <net/in.h>
 #include <string.h>
 
@@ -48,4 +50,15 @@ __u16 pmap_getport(struct sockaddr_in *raddr, __u32 prognum,
 	clnt_destroy(clnt);
 
 	return port;
+}
+
+int xdr_pmap(struct xdr *xs, struct pmap *pmp) {
+	assert(pmp != NULL);
+
+	if (xdr_u_int(xs, &pmp->prog) && xdr_u_int(xs, &pmp->vers)
+			&& xdr_u_int(xs, &pmp->prot) && xdr_u_int(xs, &pmp->port)) {
+		return XDR_SUCCESS;
+	}
+
+	return XDR_FAILURE;
 }

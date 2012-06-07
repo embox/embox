@@ -3,6 +3,7 @@ package embox.net
 module rpc {
 	source "clnt.c", "clnt_udp.c", "clnt_tcp.c"
 	source "xdr.c", "xdr_mem.c", "xdr_rec.c"
-	source "pmap.c"
 	source "auth.c", "auth_none.c"
+	source "pmap.c"
+	source "rpc_msg.c"
 }

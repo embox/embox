@@ -10,6 +10,10 @@
 
 #include <types.h>
 
+/* Prototypes */
+struct xdr;
+struct auth;
+
 #define MAX_AUTH_BYTES	400
 
 /* Errors of a authentication */
@@ -38,8 +42,6 @@ struct opaque_auth {
 	__u32 len;
 };
 
-struct auth;
-
 struct auth_ops {
 	void (*destroy)(struct auth *);
 };
@@ -55,5 +57,7 @@ extern const struct opaque_auth __opaque_auth_null;
 extern struct auth * authnone_create(void);
 
 extern void auth_destroy(struct auth *ath);
+
+extern int xdr_opaque_auth(struct xdr *xs, struct opaque_auth *oa);
 
 #endif /* NET_RPC_AUTH_H_ */
