@@ -79,20 +79,25 @@ ns_t timecounter_read(struct timecounter *tc) {
 
 	ticks_per_jiff = ((cs->dev->resolution + cs->resolution / 2) / cs->resolution) - 1;
 
-	if (cycle_old > tc->cycle_last) {
-		tc->jiffies_last++;
-		cycle_old -= ticks_per_jiff;
-	}
+//	if (cycle_old > tc->cycle_last) {
+//		tc->jiffies_last++;
+//		cycle_old -= ticks_per_jiff;
+//	}
 
 	nsec += cycles_to_ns(cs->cc, (tc->jiffies_last - jiffies_old) * ticks_per_jiff);
-	nsec += cycles_to_ns(cs->cc, tc->cycle_last - cycle_old);
+	if (cycle_old > tc->cycle_last) {
+		nsec -= cycles_to_ns(cs->cc, cycle_old - tc->cycle_last);
+	}
+	else {
+		nsec += cycles_to_ns(cs->cc, tc->cycle_last - cycle_old);
+	}
 
 #ifdef TIMECOUNTER_DEBUG
-	printf("c: %d %d\n", (int) tc->cycle_last, (int) cycle_old);
-	printf("j: %d %d\n", (int) tc->jiffies_last, (int) jiffies_old);
-	printf("ns: %d \n\n", (int) nsec);
+	printf("c: %lu %lu\n", (unsigned long)tc->cycle_last, (unsigned long)cycle_old);
+	printf("j: %u %u\n", tc->jiffies_last, jiffies_old);
+	printf("ns: %lu \n\n", (unsigned long)nsec);
 #endif
 
-	return (tc->nsec + nsec);
+	return (tc->nsec += nsec);
 }
 
