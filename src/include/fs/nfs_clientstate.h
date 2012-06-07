@@ -13,12 +13,4 @@
 
 int mount_nfs_filesystem(void *par);
 
-int nfs_getports(void);
-
-int nfs_mount(void);
-
-int nfs_statfs(void);
-
-
-
 #endif /* NFS_CLIENTSTATE_H_ */

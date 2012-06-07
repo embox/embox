@@ -151,8 +151,10 @@
 #define	EMBOX_STAMP     0x00fd15b7
 
 typedef struct nfs_filehandle {
-	char name[52];
 	uint32_t len;
+	char name[64];
+	uint64_t cookie;
+	uint64_t cookieverf;
 	uint32_t count;
 	uint32_t maxcount;
 } nfs_filehandle_t;

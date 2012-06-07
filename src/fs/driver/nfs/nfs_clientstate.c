@@ -27,6 +27,8 @@
 
 static int xdr_mnt_export(struct xdr *xs, export_dir_t *export);
 static int xdr_mnt_service(struct xdr *xs, mount_service_t *mnt_srvc);
+static int xdr_nfs_set_fh(struct xdr *xs, nfs_filehandle_t *fh);
+static int xdr_nfs_readdirplus(struct xdr *xs, nfs_filehandle_t *fh) ;
 
 char snd_buf[1024];
 char rcv_buf[4096];
@@ -133,13 +135,104 @@ static int nfs_mnt_mount(void) {
 		 */
 		clnt_perror(p_fs_fd->mnt, p_fs_fd->srv_name);
 		/* error code in client, now */
-		printf("mnt null failed. errno=%d\n", errno);
+		printf("mnt mount failed. errno=%d\n", errno);
 		return -1;
 	}
 
 	memcpy(p_fh, &mnt_svc.fh, sizeof(mnt_svc.fh));
 	p_fh->count = DIRCOUNT;
 	p_fh->maxcount = MAXDIRCOUNT;
+
+	return 0;
+}
+
+static int nfs_nfs_null(nfs_filehandle_t *p_fh) {
+	struct timeval timeout = { 25, 0 };
+	char *point;
+
+	point = (char *) p_fh;
+
+	if (clnt_call(p_fs_fd->nfs, NFSPROC3_NULL,
+		(xdrproc_t)xdr_void, 0,
+		(xdrproc_t)xdr_void, 0,
+		timeout) != RPC_SUCCESS) {
+		/*
+		 * An error occurred while calling the server.
+		 * Print error message and die
+		 */
+		clnt_perror(p_fs_fd->nfs, p_fs_fd->srv_name);
+		/* error code in client, now */
+		printf("nfs null failed. errno=%d\n", errno);
+		return -1;
+	}
+
+	return 0;
+}
+
+static int nfs_nfs_fsstat(nfs_filehandle_t *p_fh) {
+	struct timeval timeout = { 25, 0 };
+	char *point;
+
+	point = (char *) p_fh;
+
+	if (clnt_call(p_fs_fd->nfs, NFSPROC3_FSSTAT,
+		(xdrproc_t)xdr_nfs_set_fh, point,
+		(xdrproc_t)xdr_void, 0,
+		timeout) != RPC_SUCCESS) {
+		/*
+		 * An error occurred while calling the server.
+		 * Print error message and die
+		 */
+		clnt_perror(p_fs_fd->nfs, p_fs_fd->srv_name);
+		/* error code in client, now */
+		printf("nfs null failed. errno=%d\n", errno);
+		return -1;
+	}
+
+	return 0;
+}
+
+static int nfs_nfs_fsinfo(nfs_filehandle_t *p_fh) {
+	struct timeval timeout = { 25, 0 };
+	char *point;
+
+	point = (char *) p_fh;
+
+	if (clnt_call(p_fs_fd->nfs, NFSPROC3_FSINFO,
+		(xdrproc_t)xdr_nfs_set_fh, point,
+		(xdrproc_t)xdr_void, 0,
+		timeout) != RPC_SUCCESS) {
+		/*
+		 * An error occurred while calling the server.
+		 * Print error message and die
+		 */
+		clnt_perror(p_fs_fd->nfs, p_fs_fd->srv_name);
+		/* error code in client, now */
+		printf("nfs null failed. errno=%d\n", errno);
+		return -1;
+	}
+
+	return 0;
+}
+static int nfs_nfs_readdirplus(nfs_filehandle_t *p_fh) {
+	struct timeval timeout = { 25, 0 };
+	char *point;
+
+	point = (char *) p_fh;
+
+	if (clnt_call(p_fs_fd->nfs, NFSPROC3_READDIRPLUS,
+		(xdrproc_t)xdr_nfs_readdirplus, point,
+		(xdrproc_t)xdr_void, rcv_buf,
+		timeout) != RPC_SUCCESS) {
+		/*
+		 * An error occurred while calling the server.
+		 * Print error message and die
+		 */
+		clnt_perror(p_fs_fd->nfs, p_fs_fd->srv_name);
+		/* error code in client, now */
+		printf("nfs readdirplus failed. errno=%d\n", errno);
+		return -1;
+	}
 
 	return 0;
 }
@@ -170,6 +263,35 @@ static int nfs_client_init(void) {
 	return 0;
 }
 
+static int nfs_mount(void) {
+	if (0 > nfs_mnt_export()) {
+		return -1;
+	}
+	if (0 > nfs_mnt_null()) {
+		return -1;
+	}
+	if (0 > nfs_mnt_mount()) {
+		return -1;
+	}
+	clnt_destroy(p_fs_fd->mnt);
+	p_fs_fd->mnt = NULL;
+
+	if(0 >  nfs_nfs_null(&p_fs_fd->fh)) {
+		return -1;
+	}
+	if(0 >  nfs_nfs_fsstat(&p_fs_fd->fh)) {
+		return -1;
+	}
+	if(0 >  nfs_nfs_fsinfo(&p_fs_fd->fh)) {
+		return -1;
+	}
+	if(0 >  nfs_nfs_readdirplus(&p_fs_fd->fh)) {
+		return -1;
+	}
+	return 0;
+}
+
+
 int mount_nfs_filesystem(void *par) {
 	mount_params_t *params;
 	node_t *node;
@@ -191,24 +313,10 @@ int mount_nfs_filesystem(void *par) {
 		return -1;
 	}
 
-	nfs_statfs();
-	nfs_clnt_destroy(p_fs_fd);
 
-	return 0;
-}
+	//nfs_statfs();
+	//nfs_clnt_destroy(p_fs_fd);
 
-int nfs_mount(void) {
-	if (0 > nfs_mnt_export()) {
-		return -1;
-	}
-	if (0 > nfs_mnt_null()) {
-		return -1;
-	}
-	if (0 > nfs_mnt_mount()) {
-		return -1;
-	}
-	clnt_destroy(p_fs_fd->mnt);
-	p_fs_fd->mnt = NULL;
 	return 0;
 }
 
@@ -258,18 +366,32 @@ static int xdr_mnt_service(struct xdr *xs, mount_service_t *mnt_srvc) {
 	return XDR_FAILURE;
 }
 
-
-int xdr_nfs_readdirplus(struct xdr *xs, mount_service_t *mnt_srvc) {
+static int xdr_nfs_set_fh(struct xdr *xs, nfs_filehandle_t *fh) {
 	char *point;
 
-	assert(mnt_srvc != NULL);
+	assert(fh != NULL);
 
-	if (xdr_u_int(xs, &mnt_srvc->status)) {
-		if (STATUS_OK == mnt_srvc->status) {
-			point = mnt_srvc->fh.name;
-			if (xdr_bytes(xs, (char **)&point,
-					&mnt_srvc->fh.len, sizeof mnt_srvc->fh.name)) {
-				if (xdr_u_int(xs, &mnt_srvc->flv)) {
+	point = fh->name;
+	if(xdr_bytes(xs, (char **)&point, &fh->len, sizeof(*fh))) {
+		return XDR_SUCCESS;
+	}
+
+	return XDR_FAILURE;
+}
+
+static int xdr_nfs_readdirplus(struct xdr *xs, nfs_filehandle_t *fh) {
+	char *point;
+	__u32 size;
+
+	assert(fh != NULL);
+
+	point = fh->name;
+	if(xdr_bytes(xs, (char **)&point, &fh->len, sizeof(*fh))) {
+		point = (char *)&fh->cookie;
+		size = sizeof(fh->cookie) + sizeof(fh->cookieverf);
+		if(xdr_opaque(xs, point, size)) {
+			if (xdr_u_int(xs, &fh->count)) {
+				if (xdr_u_int(xs, &fh->maxcount)) {
 					return XDR_SUCCESS;
 				}
 			}
