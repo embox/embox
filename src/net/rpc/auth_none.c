@@ -5,12 +5,13 @@
  * @author Ilia Vaprol
  */
 
-#include <stdlib.h>
 #include <net/rpc/auth.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdlib.h>
 
 static struct auth_ops authnone_ops;
+
 static struct auth authnone_default = { .ops = NULL };
 
 struct auth * authnone_create(void) {
