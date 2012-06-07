@@ -8,24 +8,26 @@
 #include <net/rpc/auth.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdlib.h>
 
 static struct auth_ops authnone_ops;
 
-static struct auth authnone_default = { .ops = NULL };
-
 struct auth * authnone_create(void) {
-	if (authnone_default.ops == NULL) {
-		memcpy(&authnone_default.cred, &__opaque_auth_null, sizeof __opaque_auth_null);
-		memcpy(&authnone_default.verf, &__opaque_auth_null, sizeof __opaque_auth_null);
-		authnone_default.ops = &authnone_ops;
+	struct auth *ath;
+
+	ath = (struct auth *)malloc(sizeof *ath);
+	if (ath == NULL) {
+		return NULL;
 	}
 
-	return &authnone_default;
+	ath->ops = &authnone_ops;
+	memcpy(&ath->cred, &__opaque_auth_null, sizeof __opaque_auth_null);
+	memcpy(&ath->verf, &__opaque_auth_null, sizeof __opaque_auth_null);
+
+	return ath;
 }
 
 static void authnone_destroy(struct auth *ath) {
-	;
+	free(ath);
 }
 
 static struct auth_ops authnone_ops = {
