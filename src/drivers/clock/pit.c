@@ -114,7 +114,6 @@ static struct clock_event_device pit_device = {
 	.init = pit_clock_init,
 	.cs = &pit_clock_source,
 	.resolution = INPUT_CLOCK,
-	//.get_jiffies = pit_get_jiffies
 	.name = "pit"
 };
 
@@ -139,8 +138,6 @@ static irq_return_t clock_handler(int irq_nr, void *dev_id) {
 static int pit_clock_init(void) {
 	/* Initialization and registration of clock source structure */
 	pit_clock_source.flags = 1;
-	pit_clock_source.resolution = INPUT_CLOCK;
-	pit_clock_source.cc = &cc;
 	clock_source_register(&pit_clock_source);
 
 	/* Calculate mult/shift constants to set clock_source used by timer */
