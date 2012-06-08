@@ -98,7 +98,7 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	wait_timeout = timeout.tv_sec * USEC_PER_SEC + timeout.tv_usec;
 	assert(wait_timeout != 0); // TODO remove this
 
-	msg_call.xid = get_xid();
+	msg_call.xid = (__u32)rand();
 	msg_call.type = CALL;
 	msg_call.b.call.rpcvers = RPC_VERSION;
 	msg_call.b.call.prog = clnt->prognum;

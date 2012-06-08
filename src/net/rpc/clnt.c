@@ -211,9 +211,3 @@ void clnt_perrno(enum clnt_stat stat) {
 void clnt_perror(struct client *clnt, const char *msg) {
 	fprintf(stderr, "%s\n", clnt_sperror(clnt, msg));
 }
-
-__u32 get_xid(void) {
-	static __u32 next_xid = 0x01010101;
-
-	return next_xid++;
-}

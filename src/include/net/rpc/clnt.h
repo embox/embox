@@ -119,6 +119,4 @@ extern void clnt_perror(struct client *clnt, const char *s);
 extern char * clnt_spcreateerror(const char *s);
 extern void clnt_pcreateerror(const char *s);
 
-extern __u32 get_xid(void); // TODO move from this
-
 #endif /* NET_RPC_CLNT_H_ */

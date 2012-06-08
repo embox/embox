@@ -30,7 +30,7 @@ struct auth * authunix_create(char *host, int uid, int gid,
 		goto exit_with_error;
 	}
 
-	aup.stamp = 0x00fd15b7;
+	aup.stamp = (__u32)rand(); /* get unique id */
 	aup.host = host;
 	aup.uid = uid;
 	aup.gid = gid;
