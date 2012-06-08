@@ -65,16 +65,6 @@ static int nfs_clnt_destroy (nfs_fs_description_t *p_fsfd) {
 
 static int nfs_prepare(char *dev) {
 	char *src, *dst;
-	nfs_crdt_unix_t *crdt;
-
-	/* set unix auth */
-	crdt = &p_fs_fd->auth_head;
-	memset(crdt, 0, sizeof(*crdt));
-	crdt->aux_unix = AUX_UNIX;
-	crdt->len = EMBOX_STAMPLEN;
-	crdt->stamp = htonl(EMBOX_STAMP);
-	crdt->namelen = htonl(EMBOX_NAMELEN);
-	memcpy(crdt->name, EMBOX_MACHNAME, EMBOX_NAMELEN);
 
 	/* copy name of server and mount filesystem server directory*/
 	src = dev;
