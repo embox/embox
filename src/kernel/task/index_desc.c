@@ -20,7 +20,7 @@ void res_init(struct task_resources *res) {
 	}
 }
 
-static struct idx_desc *task_idx_desc_alloc(const struct task_res_ops *res_ops, void *data) {
+struct idx_desc *task_idx_desc_alloc(const struct task_res_ops *res_ops, void *data) {
 	struct idx_desc *desc = objalloc(&idx_res_pool);
 	desc->link_count = 0;
 
@@ -29,7 +29,7 @@ static struct idx_desc *task_idx_desc_alloc(const struct task_res_ops *res_ops, 
 	return desc;
 }
 
-static void task_idx_desc_free(struct idx_desc *desc) {
+void task_idx_desc_free(struct idx_desc *desc) {
 	objfree(&idx_res_pool, desc);
 }
 
