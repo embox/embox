@@ -28,7 +28,7 @@ static int clients[TELNETD_MAX_CONNECTIONS];
 #define TELNETD_PORT 23
 
 	/* Allow to turn off/on extra debugging information */
-#if 1
+#if 0
 #	define MD(x) do {\
 		x;\
 	} while (0);
@@ -142,19 +142,14 @@ static void set_our_term_parameters(void) {
 	/* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
 	int *client_descr_p = (int *)args;
-	struct task_resources *t_r = task_self_res();
-	struct idx_desc *i_d = task_res_idx_get(t_r, *client_descr_p);
 
-		/* Redirect stdin, stdout, stderr to our socket
-		 * Unfortunately it's not working. We try to treat stdout as
-		 * a socket, but we can't map 1 into a socket descriptor
-		 */
 	close(0);
 	close(1);
 	close(2);
-	task_res_idx_set(t_r, 0, i_d);
-	task_res_idx_set(t_r, 1, i_d);
-	task_res_idx_set(t_r, 2, i_d);
+
+	dup(*client_descr_p);
+	dup(*client_descr_p);
+	dup(*client_descr_p);
 
 		/* Hack. Emulate future output, we need a char from user to exit from
 		 * parameters mode
