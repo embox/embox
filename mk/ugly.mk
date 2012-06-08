@@ -53,7 +53,7 @@ endef
 
 SRC_TO_OBJ = \
 	$(call filter-patsubst, \
-		$(abspath $(ROOT_DIR))%.c $(abspath $(ROOT_DIR))%.S,$(OBJ_DIR)%.o, \
+		$(abspath $(ROOT_DIR))%.cpp $(abspath $(ROOT_DIR))%.c $(abspath $(ROOT_DIR))%.S,$(OBJ_DIR)%.o, \
 		$(filter-out %.lds.S,$(abspath $1)))
 
 LIB_FILE = \
@@ -64,7 +64,7 @@ moduleInst_get_files = $(call module_get_files,$(get 1->type))
 module_get_files = \
 	$(foreach s,$(get 1->sources),$(get s->fileFullName))
 module_get_sources = \
-	$(filter %.c %.S,$(moduleInst_get_files))
+	$(filter %.c %.cpp %.S,$(moduleInst_get_files))
 module_get_headers = \
 	$(filter %.h,$(moduleInst_get_files))
 module_get_objects = \

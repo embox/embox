@@ -147,12 +147,14 @@ __CMDS = \
   $(patsubst $(abspath $(ROOT_DIR))%.$1,$(OBJ_DIR)%.cmd,$(filter %.$1,$(abspath $(SRCS_BUILD))))
 
 CMDS_C := $(call __CMDS,c)
+CMDS_CPP := $(call __CMDS,cpp)
 CMDS_S := $(call __CMDS,S)
 
-CMDS := $(CMDS_C) $(CMDS_S)
+CMDS := $(CMDS_C) $(CMDS_CPP) $(CMDS_S)
 
 $(CMDS_C) : __FLAGS = $(CFLAGS) $(CPPFLAGS) $(CCFLAGS)
 $(CMDS_S) : __FLAGS = $(ASFLAGS) $(CPPFLAGS) $(CCFLAGS)
+$(CMDS_CPP) : __FLAGS = $(CXXFLAGS) $(CPPFLAGS) $(CCFLAGS)
 
 $(CMDS) : FLAGS = $(subst ",,$(__FLAGS))
 
@@ -177,8 +179,14 @@ else
 CC_RULES = $(CC) $(patsubst -D%,-D"%",$(shell cat $<)) $(word 2,$^)
 endif
 
+CPP_RULES = g++ `@$<` $(word 2,$^)
+
 $(OBJ_DIR)/%.o : $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
 	$(CC_RULES)
+
+$(OBJ_DIR)/%.o : $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.cpp
+	$(CPP_RULES)
+
 
 $(OBJ_DIR)/%.o : $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.S
 	$(CC_RULES)

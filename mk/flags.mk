@@ -27,6 +27,7 @@ $(error Only single value for OPTIMIZE flag is permitted)
 endif
 
 override CFLAGS += -O$(OPTIMIZE)
+override CXXFLAGS += -O$(OPTIMIZE)
 
 endif
 
@@ -50,6 +51,16 @@ asflags := $(CFLAGS)
 override ASFLAGS  = -pipe
 override ASFLAGS += $(asflags)
 
+
+cxxflags := $(CFLAGS)
+override CXXFLAGS = -pipe
+override CXXFLAGS += -fno-strict-aliasing -fno-common
+override CXXFLAGS += -Wall -Werror
+override CXXFLAGS += cxxflags
+override CXXFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
+override CXXFLAGS += -Wformat -Wformat-nonliteral
+override CXXFLAGS += $(cxxflags)
+
 # Compiler flags
 cflags := $(CFLAGS)
 override CFLAGS  = -std=gnu99
@@ -70,6 +81,8 @@ override LDFLAGS += --cref --relax
 override LDFLAGS += $(ldflags)
 
 override ARFLAGS = rcs
+
+
 
 CCFLAGS ?=
 
