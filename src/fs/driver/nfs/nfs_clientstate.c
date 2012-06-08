@@ -35,7 +35,25 @@ char rcv_buf[4096];
 
 nfs_fs_description_t *p_fs_fd;
 
-int nfs_clnt_destroy (nfs_fs_description_t *p_fsfd) {
+static int nfs_unix_auth_set(struct client *clnt) {
+	struct opaque_auth *unix_crdt;
+
+	if (NULL == clnt)  {
+		return -1;
+	}
+	if (NULL != clnt->ath) {
+		auth_destroy(clnt->ath);
+	}
+	clnt->ath = authunix_create(NULL, 0, 0, 0, NULL);
+	unix_crdt = &clnt->ath->cred;
+
+	unix_crdt->flavor = p_fs_fd->auth_head.aux_unix;
+	unix_crdt->len = p_fs_fd->auth_head.len;
+	unix_crdt->data = (char *)&p_fs_fd->auth_head.stamp;
+	return 1;
+}
+
+static int nfs_clnt_destroy (nfs_fs_description_t *p_fsfd) {
 
 	if (NULL != p_fsfd->mnt) {
 		clnt_destroy(p_fsfd->mnt);
@@ -50,9 +68,18 @@ int nfs_clnt_destroy (nfs_fs_description_t *p_fsfd) {
 
 static int nfs_prepare(char *dev) {
 	char *src, *dst;
+	nfs_crdt_unix_t *crdt;
 
-	//xid = 0x0001e242;
+	/* set unix auth */
+	crdt = &p_fs_fd->auth_head;
+	memset(crdt, 0, sizeof(*crdt));
+	crdt->aux_unix = AUX_UNIX;
+	crdt->len = EMBOX_STAMPLEN;
+	crdt->stamp = htonl(EMBOX_STAMP);
+	crdt->namelen = htonl(EMBOX_NAMELEN);
+	memcpy(crdt->name, EMBOX_MACHNAME, EMBOX_NAMELEN);
 
+	/* copy name of server and mount filesystem server directory*/
 	src = dev;
 	dst = p_fs_fd->srv_name;
 
@@ -254,12 +281,15 @@ static int nfs_client_init(void) {
 		clnt_pcreateerror(p_fs_fd->srv_name);
 		return -1;
 	}
+	nfs_unix_auth_set(p_fs_fd->mnt);
 
 	p_fs_fd->nfs = clnt_create(p_fs_fd->srv_name, NFS_PROGNUM, NFS_VER, "tcp");
 	if (p_fs_fd->nfs == NULL) {
 		clnt_pcreateerror(p_fs_fd->srv_name);
 		return -1;
 	}
+
+	nfs_unix_auth_set(p_fs_fd->nfs);
 	return 0;
 }
 

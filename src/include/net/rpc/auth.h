@@ -55,6 +55,8 @@ struct auth {
 extern const struct opaque_auth __opaque_auth_null;
 
 extern struct auth * authnone_create(void);
+extern struct auth * authunix_create(char *host, int uid, int gid,
+		int len, int *aup_gids);
 
 extern void auth_destroy(struct auth *ath);
 

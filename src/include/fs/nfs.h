@@ -22,7 +22,7 @@
 
 /*
  *    "rpcinfo -p" example:
- *    прог-ма верс прото   порт
+ *    prog    vers proto  port
  *    100000    2   tcp    111  portmapper
  *    100000    2   udp    111  portmapper
  *    100024    1   udp  44725  status
@@ -150,6 +150,22 @@
 #define	EMBOX_NAMELEN   sizeof(EMBOX_MACHNAME) - 1
 #define	EMBOX_STAMP     0x00fd15b7
 
+typedef struct nfs_crdt_unix {
+	uint32_t aux_unix;
+	uint32_t len;
+	uint32_t stamp;
+	uint32_t namelen;
+	char name[EMBOX_NAMELEN];
+	char opaq[3];
+	uint32_t uid;
+	uint32_t gid;
+	uint32_t aux_gid;
+	uint32_t vrf_flvr;
+	uint32_t vrf_flvr_len;
+} nfs_crdt_unix_t;
+
+#define	EMBOX_STAMPLEN  sizeof(nfs_crdt_unix_t) - 16
+
 typedef struct nfs_filehandle {
 	uint32_t len;
 	char name[64];
@@ -224,7 +240,7 @@ typedef struct nfs_fs_description {
 	char srv_dir[CONFIG_MAX_LENGTH_PATH_NAME];
 	export_dir_t export;
 	nfs_filehandle_t fh;
-	//nfs_crdt_unix_t auth_head;
+	nfs_crdt_unix_t auth_head;
 	char mnt_point[CONFIG_MAX_LENGTH_PATH_NAME];
 	struct client *mnt;
 	struct client *nfs;
