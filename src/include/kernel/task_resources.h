@@ -58,6 +58,17 @@ static inline const struct task_res_ops *task_idx_desc_ops(struct idx_desc *desc
 }
 
 /**
+ * @brief Allocate idx descriptor structure with type and data
+ *
+ * @param type idx descriptor type
+ * @param data pointer for idx descriptor data
+ *
+ * @return
+ */
+extern struct idx_desc *task_idx_desc_alloc(const struct task_res_ops *res_ops, void *data);
+extern void task_idx_desc_free(struct idx_desc *desc);
+
+/**
  * @brief idx utillity: get reference count by idx
  * @param desc idx descriptor to get
  * @return count of references to idx resource
@@ -79,22 +90,9 @@ static inline int task_idx_desc_link_count_add(struct idx_desc *desc, int d) {
 }
 
 /**
- * @brief Tells, if next free on idx free idx
- * @param desc idx_desc to check
- *
- * @return Not 0 on positive
- * 0 on negative
- */
-static inline int task_idx_desc_link_count_remove(struct idx_desc *desc) {
-	assert(desc);
-	return (desc->link_count == 1);
-}
-
-/**
  * @brief Task resources container
  */
 struct task_resources {
-	// heap desc
 	struct idx_desc *idx[CONFIG_TASKS_RES_QUANTITY];
 };
 
@@ -118,32 +116,9 @@ static inline struct idx_desc *task_res_idx_get(struct task_resources *res, int 
  * @param idx number to set
  * @param desc idx descriptor to store in task resources
  */
-static inline void task_res_idx_set(struct task_resources *res, int idx, struct idx_desc *desc) {
-	assert(res);
-	if (res->idx[idx]) {
-		task_idx_desc_link_count_add(res->idx[idx], -1);
-	}
+void task_res_idx_set(struct task_resources *res, int idx, struct idx_desc *desc);
 
-	res->idx[idx] = desc;
-
-	if (desc) {
-		task_idx_desc_link_count_add(desc, 1);
-	}
-}
-
-/**
- * @brief Allocate idx descriptor structure with type and data
- *
- * @param type idx descriptor type
- * @param data pointer for idx descriptor data
- *
- * @return
- */
-extern struct idx_desc *task_idx_desc_alloc(const struct task_res_ops *res_ops, void *data);
-extern void task_idx_desc_free(struct idx_desc *desc);
-
-extern int task_res_idx_alloc(struct task_resources *res, const struct task_res_ops *res_ops, void *data);
-extern void task_res_idx_free(struct task_resources *res, int idx);
+extern int task_res_idx_first_unbinded(struct task_resources *res);
 
 /**
  * @brief Check if task resource number is occupied

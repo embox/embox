@@ -72,10 +72,8 @@ static inline int task_valid_fd(int fd) {
 	return 0 <= fd && fd <= CONFIG_TASKS_RES_QUANTITY;
 }
 
-
 /**
- * @brief Default task, which is associated with running thread after
- * threads initialization
+ * @brief Kernel task
  *
  * @return Pointer to default task
  */
@@ -90,14 +88,8 @@ static inline struct task_resources *task_self_res(void) {
 	return task_get_resources(task_self());
 }
 
-/**
- * @brief Get idx descriptor from self task
- *
- * @param fd idx number
- *
- * @return Pointer to idx descriptor
- */
 static inline struct idx_desc *task_self_idx_get(int fd) {
+	assert(task_valid_fd(fd));
 	return task_res_idx_get(task_self_res(), fd);
 }
 
@@ -109,6 +101,20 @@ static inline struct idx_desc *task_self_idx_get(int fd) {
  */
 static inline void task_self_idx_set(int fd, struct idx_desc *desc) {
 	task_res_idx_set(task_self_res(), fd, desc);
+}
+
+extern int task_self_idx_alloc(const struct task_res_ops *res_ops, void *data);
+
+static inline int task_self_idx_first_unbinded(void) {
+	return task_res_idx_first_unbinded(task_self_res());
+}
+
+static inline int task_valid_binded_fd(int fd) {
+	return task_valid_fd(fd) && task_res_idx_is_binded(task_self_res(), fd);
+}
+
+static inline int task_valid_unbinded_fd(int fd) {
+	return task_valid_fd(fd) && !task_res_idx_is_binded(task_self_res(), fd);
 }
 
 #endif /* TASK_H_ */
