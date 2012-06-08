@@ -103,11 +103,13 @@ extern int xdr_short(struct xdr *xs, __s16 *ps);
 extern int xdr_u_short(struct xdr *xs, __u16 *pus);
 extern int xdr_enum(struct xdr *xs, __s32 *pe);
 extern int xdr_bool(struct xdr *xs, __s32 *pb);
+extern int xdr_array(struct xdr *xs, char **parray, __u32 *psize, __u32 maxsize,
+		__u32 elem_size, xdrproc_t elem_proc);
 extern int xdr_bytes(struct xdr *xs, char **ppc, __u32 *psize, __u32 maxsize);
 extern int xdr_opaque(struct xdr *xs, char *pc, size_t size);
 extern int xdr_string(struct xdr *xs, char **pstr, __u32 maxsize);
 extern int xdr_wrapstring(struct xdr *xs, char **pstr);
-extern int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
+extern int xdr_union(struct xdr *xs, __s32 *pdscm, void *pun,
 		const struct xdr_discrim *choices, xdrproc_t dfault);
 
 #endif /* NET_RPC_XDR_H_ */

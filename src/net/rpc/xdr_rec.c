@@ -24,7 +24,7 @@ static xdr_unit_t decode_unit(xdr_unit_t u) { return __bswap_32(u); }
 #define BUFF_RECV_SZ  1024
 
 static int flush_data(struct xdr *xs, char is_last);
-static int fill_data(struct xdr *xs);
+static int prepare_data(struct xdr *xs, __u32 necessary);
 
 void xdrrec_create(struct xdr *xs, unsigned int sendsz, unsigned int recvsz,
 		char *handle, xdrrec_hnd_t readit, xdrrec_hnd_t writeit) {
@@ -73,8 +73,7 @@ static void xdrrec_destroy(struct xdr *xs) {
 static int xdrrec_getunit(struct xdr *xs, xdr_unit_t *to) {
 	assert((xs != NULL) && (to != NULL));
 
-	if ((xs->extra.rec.in_prep < BYTES_PER_XDR_UNIT)
-			&& !fill_data(xs)) {
+	if (!prepare_data(xs, BYTES_PER_XDR_UNIT)) {
 		return XDR_FAILURE;
 	}
 
@@ -105,8 +104,7 @@ static int xdrrec_getbytes(struct xdr *xs, char *to, size_t size) {
 	assert((xs != NULL) && ((to != NULL) || (size == 0)));
 
 	while (size > 0) {
-		if ((xs->extra.rec.in_prep == 0) &&
-				!fill_data(xs)) {
+		if (!prepare_data(xs, 1)) {
 			return XDR_FAILURE;
 		}
 		bytes = (size < xs->extra.rec.in_prep ? size : xs->extra.rec.in_prep);
@@ -190,11 +188,16 @@ static int flush_data(struct xdr *xs, char is_last) {
 	return XDR_SUCCESS;
 }
 
-static int fill_data(struct xdr *xs) {
-	__u32 len, bytes;
+static int prepare_data(struct xdr *xs, __u32 necessary) {
+	__u32 len, bytes, res;
 	union xdrrec_hdr hdr;
 
-	/* How much bytes left in current message */
+	/* Can we give required amount of data? */
+	if (necessary <= xs->extra.rec.in_prep) {
+		return XDR_SUCCESS;
+	}
+
+	/* How much bytes left in current message? */
 	if (xs->extra.rec.in_left != 0) {
 		len = xs->extra.rec.in_left;
 	}
@@ -214,20 +217,20 @@ static int fill_data(struct xdr *xs) {
 		xs->extra.rec.in_curr = xs->extra.rec.in_base + xs->extra.rec.in_prep;
 	}
 
-	/* How much bytes we will try receive */
+	/* How much bytes we will try receive ? */
 	bytes = xs->extra.rec.in_boundry - xs->extra.rec.in_curr;
 	bytes = (len < bytes ? len : bytes);
 
 	/* Receiving of data */
-	if ((*xs->extra.rec.in_hnd)(xs->extra.rec.handle, xs->extra.rec.in_curr,
-			bytes) != bytes) {
+	res = (*xs->extra.rec.in_hnd)(xs->extra.rec.handle, xs->extra.rec.in_curr, bytes);
+	if (res <= 0) {
 		return XDR_FAILURE;
 	}
 
-	xs->extra.rec.in_prep = bytes;
-	xs->extra.rec.in_left = len - bytes;
+	xs->extra.rec.in_prep = res;
+	xs->extra.rec.in_left = len - res;
 
-	return XDR_SUCCESS;
+	return (necessary <= xs->extra.rec.in_prep ? XDR_SUCCESS : XDR_FAILURE);
 }
 
 static const struct xdr_ops xdrrec_ops = {

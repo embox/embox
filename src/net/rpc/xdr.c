@@ -159,10 +159,76 @@ int xdr_bool(struct xdr *xs, __s32 *pb) {
 	return xdr_enum(xs, pb);
 }
 
+int xdr_array(struct xdr *xs, char **parr, __u32 *psize, __u32 maxsize,
+		__u32 elem_size, xdrproc_t elem_proc) {
+	size_t s;
+	__u32 i, size;
+	__u8 need_free;
+	char *pelem;
+
+	assert((xs != NULL) && (parr != NULL) && (psize != NULL)
+			&& (elem_size != 0) && (elem_proc != NULL));
+
+	XDR_SAVE(xs, s);
+
+	switch (xs->oper) {
+	case XDR_DECODE:
+		if (!xdr_u_int(xs, &size) || (size > maxsize)) {
+			break;
+		}
+		if (size == 0) {
+			return XDR_SUCCESS;
+		}
+		if (*parr == NULL) {
+			*parr = (char *)malloc(size * elem_size);
+			if (*parr == NULL) {
+				break;
+			}
+			need_free = 1;
+		}
+		else {
+			need_free = 0;
+		}
+		for (i = 0, pelem = *parr;
+				(*elem_proc)(xs, pelem, XDR_LAST_UINT32);
+				++i, pelem += elem_size) {
+			if (i == size) {
+				*psize = size;
+				return XDR_SUCCESS;
+			}
+		}
+		if (need_free) {
+			free(*parr);
+			*parr = NULL;
+		}
+		break;
+	case XDR_ENCODE:
+		if ((*psize <= maxsize) && xdr_u_int(xs, psize)) {
+			for (i = 0, pelem = *parr;
+					(i < *psize) && (*elem_proc)(xs, pelem, XDR_LAST_UINT32);
+					++i, pelem += elem_size);
+			if (i == *psize) {
+				return XDR_SUCCESS;
+			}
+		}
+		break;
+	case XDR_FREE:
+		if (*parr != NULL) {
+			free(*parr);
+			*parr = NULL;
+		}
+		return XDR_SUCCESS;
+	}
+
+	XDR_RESTORE(xs, s);
+
+	return XDR_FAILURE;
+}
+
 int xdr_bytes(struct xdr *xs, char **ppc, __u32 *psize, __u32 maxsize) {
 	size_t s;
 	__u32 size;
-	char need_free;
+	__u8 need_free;
 
 	assert((xs != NULL) && (ppc != NULL) && (psize != NULL));
 
@@ -192,6 +258,7 @@ int xdr_bytes(struct xdr *xs, char **ppc, __u32 *psize, __u32 maxsize) {
 		}
 		if (need_free) {
 			free(*ppc);
+			*ppc = NULL;
 		}
 		break;
 	case XDR_ENCODE:
@@ -246,7 +313,7 @@ int xdr_opaque(struct xdr *xs, char *pc, size_t size) {
 int xdr_string(struct xdr *xs, char **pstr, __u32 maxsize) {
 	size_t s;
 	__u32 size;
-	char need_free;
+	__u8 need_free;
 
 	assert((xs != NULL) && (pstr != NULL));
 
@@ -273,6 +340,7 @@ int xdr_string(struct xdr *xs, char **pstr, __u32 maxsize) {
 		}
 		if (need_free) {
 			free(*pstr);
+			*pstr = NULL;
 		}
 		break;
 	case XDR_ENCODE:
@@ -305,19 +373,19 @@ int xdr_wrapstring(struct xdr *xs, char **pstr) {
 	return xdr_string(xs, pstr, XDR_LAST_UINT32);
 }
 
-int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
+extern int xdr_union(struct xdr *xs, __s32 *pdscm, void *pun,
 		const struct xdr_discrim *choices, xdrproc_t dfault) {
 	size_t s;
 
-	assert((pdiscriminant != NULL) && (choices != NULL));
+	assert((pdscm != NULL) && (choices != NULL));
 
 	XDR_SAVE(xs, s);
 
-	if (xdr_enum(xs, pdiscriminant)) {
+	if (xdr_enum(xs, pdscm)) {
 		while (choices->proc != NULL) {
-			if (choices->value == *pdiscriminant) {
+			if (choices->value == *pdscm) {
 				assert(choices->proc != NULL);
-				if ((*choices->proc)(xs, punion, XDR_LAST_UINT32)) {
+				if ((*choices->proc)(xs, pun, XDR_LAST_UINT32)) {
 					return XDR_SUCCESS;
 				}
 				break;
@@ -327,7 +395,7 @@ int xdr_union(struct xdr *xs, __s32 *pdiscriminant, void *punion,
 	}
 
 	if (dfault != NULL) {
-		if ((*dfault)(xs, punion, XDR_LAST_UINT32)) {
+		if ((*dfault)(xs, pun, XDR_LAST_UINT32)) {
 			return XDR_SUCCESS;
 		}
 	}

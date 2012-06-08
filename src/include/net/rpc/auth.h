@@ -14,7 +14,9 @@
 struct xdr;
 struct auth;
 
-#define MAX_AUTH_BYTES	400
+#define AUTH_DATA_MAX_SZ 400
+#define HOST_NAME_MAX_SZ 255
+#define GIDS_MAX_SZ      16
 
 /* Errors of a authentication */
 enum auth_stat {
@@ -39,7 +41,7 @@ enum auth_flavor {
 struct opaque_auth {
 	enum auth_flavor flavor;
 	char *data;
-	__u32 len;
+	__u32 data_len;
 };
 
 struct auth_ops {
@@ -52,14 +54,24 @@ struct auth {
 	const struct auth_ops *ops;
 };
 
+struct authunix_parms {
+	__u32 stamp;
+	char *host;
+	__u32 uid;
+	__u32 gid;
+	__u32 *gids;
+	__u32 gids_len;
+};
+
 extern const struct opaque_auth __opaque_auth_null;
 
 extern struct auth * authnone_create(void);
 extern struct auth * authunix_create(char *host, int uid, int gid,
-		int len, int *aup_gids);
+		int user_gids_len, int *user_gids);
 
 extern void auth_destroy(struct auth *ath);
 
 extern int xdr_opaque_auth(struct xdr *xs, struct opaque_auth *oa);
+extern int xdr_authunix_parms(struct xdr *xs, struct authunix_parms *aup);
 
 #endif /* NET_RPC_AUTH_H_ */

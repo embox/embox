@@ -36,20 +36,17 @@ char rcv_buf[4096];
 nfs_fs_description_t *p_fs_fd;
 
 static int nfs_unix_auth_set(struct client *clnt) {
-	struct opaque_auth *unix_crdt;
-
 	if (NULL == clnt)  {
 		return -1;
 	}
 	if (NULL != clnt->ath) {
 		auth_destroy(clnt->ath);
 	}
-	clnt->ath = authunix_create(NULL, 0, 0, 0, NULL);
-	unix_crdt = &clnt->ath->cred;
+	clnt->ath = authunix_create(EMBOX_MACHNAME, 0, 0, 0, NULL);
+	if (clnt->ath == NULL) {
+		return -1;
+	}
 
-	unix_crdt->flavor = p_fs_fd->auth_head.aux_unix;
-	unix_crdt->len = p_fs_fd->auth_head.len;
-	unix_crdt->data = (char *)&p_fs_fd->auth_head.stamp;
 	return 1;
 }
 
