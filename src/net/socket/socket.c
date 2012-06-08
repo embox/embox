@@ -51,7 +51,7 @@ int socket(int domain, int type, int protocol) {
 		return -1; /* return error code */
 	}
 
-	res = task_res_idx_alloc(task_self_res(), &task_res_ops_socket, sock);
+	res = task_self_idx_alloc(&task_res_ops_socket, sock);
 	if (res < 0) { // release socket if can't alloc idx
 		kernel_socket_release(sock);
 		/* TODO: EMFILE should be returned when no fids left for process to use.
@@ -150,7 +150,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		return -1;
 	}
 
-	res = task_res_idx_alloc(task_self_res(), &task_res_ops_socket, new_sock);
+	res = task_self_idx_alloc(&task_res_ops_socket, new_sock);
 	if (res < 0) {
 		kernel_socket_release(new_sock);
 		SET_ERRNO(EMFILE);  /* also could be ENFILE */

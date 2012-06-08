@@ -25,7 +25,7 @@ int open(const char *path, int __oflag, ...) {
 		mode = 'r';
 	}
 
-	return task_res_idx_alloc(task_self_res(), &task_res_ops_file, \
+	return task_self_idx_alloc(&task_res_ops_file, \
 			fopen(path, (const char *) &mode));
 }
 
@@ -37,11 +37,7 @@ int close(int fd) {
 	assert(ops);
 	assert(ops->close);
 
-	if (task_idx_desc_link_count_remove(desc)) {
-		res = ops->close(task_idx_desc_data(desc));
-	}
-
-	task_res_idx_free(task_self_res(), fd);
+	task_res_idx_unbind(task_self_res(), fd);
 
 	return res;
 }

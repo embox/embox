@@ -12,7 +12,8 @@ static module LibPosix {
 		"utsname.c",
 		"wait.c",
 		"time.c",
-		"isatty.c"
+		"isatty.c",
+		"dup.c"
 
 	depends embox.util.LibUtil
 	depends embox.kernel.task_api

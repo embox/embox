@@ -57,4 +57,7 @@ extern pid_t getpid(void);
 
 extern int isatty(int fd);
 
+extern int dup(int flides);
+extern int dup2(int flides, int flides2);
+
 #endif /* UNISTD_H_ */
