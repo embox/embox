@@ -11,7 +11,7 @@ include mk/script/script-common.mk
 #   1. Output file.
 #   2. The complete command which should output its result to the temporary
 #      file specified in the '$OUTFILE' environment variable.
-cmd_notouch = $(warning $(call sh_quote,{ $2; }))\
+cmd_notouch = \
 	COMMAND=$(call sh_quote,{ $2; }); OUTFILE=$(call trim,$1);     \
 	$(eval_command)
 
@@ -106,8 +106,8 @@ build-cmd-ld-image/% : flags = \
 #
 
 @module_h := $(build_modules:%=module-h/%)
-@module_ar_rule_mk := \
-	$(patsubst %,module-cmd-ar/%,$(call filter_static_modules,$(build_modules)))
+@module_ar_rule_mk := $(patsubst %,module-ar-rule-mk/%, \
+	$(call filter_static_modules,$(build_modules)))
 
 @module_all = \
 	$(@module_h) \
@@ -122,11 +122,11 @@ m_ar :$(@module_ar_rule_mk)
 #	@$(call cmd_notouch_stdout,test, \
 #		$(call gen_make_tsvar_list,target,objs,foo bar))
 
-$(@module_ar_rule_mk) : a_file   = $$(OBJ_DIR)/$(fqn_dir).a
-$(@module_ar_rule_mk) : cmd_file = $(SRCGEN_DIR)/$(fqn_dir).rule.mk
-$(@module_ar_rule_mk) : objs     = $(call module_get_objects,$@)
+$(@module_ar_rule_mk) : a_file  = $$(OBJ_DIR)/$(fqn_dir).a
+$(@module_ar_rule_mk) : mk_file = $(SRCGEN_DIR)/$(fqn_dir).rule.mk
+$(@module_ar_rule_mk) : objs    = $(call module_get_objects,$@)
 $(@module_ar_rule_mk) :
-	@$(foreach fqn,$(fqn),$(call cmd_notouch_stdout,$(cmd_file), \
+	@$(foreach fqn,$(fqn),$(call cmd_notouch_stdout,$(mk_file), \
 		$(gen_banner); \
 		$(call gen_make_dep,$(a_file),$$(LAST_MAKEFILE)); \
 		$(call gen_make_tsvar_list,$(a_file),objs,$(objs))))
@@ -136,31 +136,37 @@ $(@module_h) :
 	@$(call cmd_notouch_stdout,$(h_file), \
 		$(MAKE) -f mk/script/h-genmodule.mk)
 
-# Fully qualified name of the given module instance.
-module_fqn = \
-	$(call get,$(call get,$1,type),qualifiedName)
-
-fqn_to_dir = $(subst .,/,$1)#< 'qualified.name' -> 'qualified/name'
-fqn_to_id = $(subst .,__,$1)#< 'qualified.name' -> 'qualified__name'
-
 #
 # Per-source artifacts.
 #
 
-source_targets := \
+@source_all := \
 	$(foreach s,$(build_sources), \
 		$(foreach f,$(call get,$s,fileName), \
-			$(if $(filter %.c %.S,$f),source-cmd-cc/$s)  \
-			$(if $(filter %.lds.S,$f),source-cmd-cpp/$s)))
+			$(if $(filter %.lds.S,$f),source-cpp-rule-mk/$s, \
+				$(if $(filter %.c %.S,$f),source-cc-rule-mk/$s))))
 
-all .PHONY : $(source_targets)
+@source_cc_rule_mk  := $(filter source-cc-rule-mk/%,$(source_targets))
+@source_cpp_rule_mk := $(filter source-cpp-rule-mk/%,$(source_targets))
 
-$(filter source-cmd-cc/%,$(source_targets)) : source-cmd-cc/% :
+all .PHONY : $(@source_all)
+
+$(@source_all) : file      = $(call get,$*,fileFullName)
+$(@source_all) : file_base = $(basename $(file))
+
+$(@source_all) : bindings_of = $(call invoke,$*,getAnnotationBindingsOfOption,$1)
+$(@source_all) : values_of = $(call get,$(bindings_of),value)
+
+my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
+my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
+
+$(@source_all) : includes = $(call values_of,$(my_incpath_val))
+$(@source_all) : defines  = $(call values_of,$(my_defmacro_val))
+
+$(@source_cc_rule_mk) : o_file  = $$(OBJ_DIR)/$(file_base).o
+$(@source_cc_rule_mk) : mk_file = $(SRCGEN_DIR)/$(file_base).rule.mk
+$(@source_cc_rule_mk) :
 	@$(foreach o,$(call get,$*,fileFullName),$(call cmd_notouch_stdout,$o.cmd, \
 		echo '$(call flags,$o) -o $(basename $o).o -c'))
-source-cmd-cc/% : flags = \
-	$(CPPFLAGS) $($(if $(filter %.c,$1),C,AS)FLAGS)
-
-$(filter source-cmd-cpp/%,$(source_targets)) : source-cmd-cpp/% :
 
 
