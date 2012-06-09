@@ -48,6 +48,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -88,6 +89,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 define class-CfgInclude
 	# Extends 'MyAnnotationTarget', 'ENamedObject' classes.

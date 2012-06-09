@@ -47,6 +47,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -83,6 +84,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -149,6 +151,7 @@ endef
 # The following features and operations are defined:
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 define class-MyAnnotationTarget # abstract
 	# Extends 'EObject' class (implicitly).
@@ -164,6 +167,13 @@ define class-MyAnnotationTarget # abstract
 	# PROTECTED REGION ID(MyFile_AnnotationTarget_getAnnotationsOfType) ENABLED START
 	$(method getAnnotationsOfType... : MyAnnotation,
 		$(with $1,$(get annotations),$(invoke 1->filterInstances,$2)))
+	# PROTECTED REGION END
+
+	# Method 'getAnnotationBindingsOfOption... : MyOptionBinding'.
+	#   1. options... : MyOption
+	# PROTECTED REGION ID(MyFile_AnnotationTarget_getAnnotationBindingsOfOption) ENABLED START
+	$(method getAnnotationBindingsOfOption... : MyOptionBinding,
+		$(invoke annotations>getBindingsOfOption,$1))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_AnnotationTarget) ENABLED START
@@ -183,6 +193,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -314,6 +325,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -532,6 +544,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -587,6 +600,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -629,6 +643,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -671,6 +686,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -714,6 +730,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -944,6 +961,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 define class-MyMember
 	# Extends 'MyAnnotationTarget' class.
@@ -1001,6 +1019,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 define class-MyDependsMember
 	# Extends 'MyMember' class.
@@ -1029,6 +1048,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 define class-MyRequiresMember
 	# Extends 'MyMember' class.
@@ -1057,6 +1077,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 define class-MyProvidesMember
 	# Extends 'MyMember' class.
@@ -1085,6 +1106,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 define class-MySourceMember
 	# Extends 'MyMember' class.
@@ -1112,6 +1134,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 define class-MyObjectMember
 	# Extends 'MyMember' class.
@@ -1139,6 +1162,7 @@ endef
 # The following features and operations are inherited from 'AnnotationTarget':
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
+#   - operation 'getAnnotationBindingsOfOption'
 #
 define class-MyOptionMember
 	# Extends 'MyMember' class.
@@ -1169,7 +1193,7 @@ define class-MyInstantiatableType # abstract
 	#   1. instances... : MyInstance
 	# PROTECTED REGION ID(MyFile_InstantiatableType_filterInstances) ENABLED START
 	$(method filterInstances... : MyInstance,
-		$(strip $(for i <- $1,$(if $(filter $(this),$(invoke i->getType)),$a))))
+		$(strip $(for i <- $1,$(if $(filter $(this),$(invoke i->getType)),$i))))
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(MyFile_InstantiatableType) ENABLED START

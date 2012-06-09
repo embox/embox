@@ -26,6 +26,9 @@
     <eOperations name="getAnnotationsOfType" upperBound="-1" eType="#//Annotation">
       <eParameters name="types" upperBound="-1" eType="#//AnnotationType"/>
     </eOperations>
+    <eOperations name="getAnnotationBindingsOfOption" upperBound="-1" eType="#//OptionBinding">
+      <eParameters name="options" upperBound="-1" eType="#//Option"/>
+    </eOperations>
     <eStructuralFeatures xsi:type="ecore:EReference" name="annotations" upperBound="-1"
         eType="#//Annotation" containment="true" eOpposite="#//Annotation/target"/>
   </eClassifiers>
