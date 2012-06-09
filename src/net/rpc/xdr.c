@@ -149,6 +149,64 @@ int xdr_u_short(struct xdr *xs, __u16 *pu16) {
 	return XDR_SUCCESS;
 }
 
+int xdr_hyper(struct xdr *xs, __s64 *ps64) {
+	size_t s;
+
+	assert(xs != NULL);
+
+	XDR_SAVE(xs, s);
+
+	switch (xs->oper) {
+	case XDR_DECODE:
+		if (xdr_getunit(xs, (xdr_unit_t *)ps64)
+				&& xdr_getunit(xs, (xdr_unit_t *)ps64 + 1)) {
+			return XDR_SUCCESS;
+		}
+		break;
+	case XDR_ENCODE:
+		if (xdr_putunit(xs, (xdr_unit_t *)ps64)
+				&& xdr_putunit(xs, (xdr_unit_t *)ps64 + 1)) {
+			return XDR_SUCCESS;
+		}
+		break;
+	case XDR_FREE:
+		return XDR_SUCCESS;
+	}
+
+	XDR_RESTORE(xs, s);
+
+	return XDR_FAILURE;
+}
+
+int xdr_u_hyper(struct xdr *xs, __u64 *pu64) {
+	size_t s;
+
+	assert(xs != NULL);
+
+	XDR_SAVE(xs, s);
+
+	switch (xs->oper) {
+	case XDR_DECODE:
+		if (xdr_getunit(xs, (xdr_unit_t *)pu64)
+				&& xdr_getunit(xs, (xdr_unit_t *)pu64 + 1)) {
+			return XDR_SUCCESS;
+		}
+		break;
+	case XDR_ENCODE:
+		if (xdr_putunit(xs, (xdr_unit_t *)pu64)
+				&& xdr_putunit(xs, (xdr_unit_t *)pu64 + 1)) {
+			return XDR_SUCCESS;
+		}
+		break;
+	case XDR_FREE:
+		return XDR_SUCCESS;
+	}
+
+	XDR_RESTORE(xs, s);
+
+	return XDR_FAILURE;
+}
+
 int xdr_enum(struct xdr *xs, __s32 *pe) {
 	/* According to standard enum is interpreted as int */
 	return xdr_int(xs, pe);
