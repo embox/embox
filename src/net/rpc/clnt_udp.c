@@ -88,7 +88,7 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	struct rpc_msg msg_reply, msg_call;
 	struct sockaddr addr;
 	socklen_t addr_len;
-	size_t buff_len;
+	/*size_t buff_len;*/
 	useconds_t was_sended, elapsed, wait_timeout, wait_resend;
 	struct ktimeval tmp;
 
@@ -114,7 +114,8 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 		xdr_destroy(&xstream);
 		goto exit_with_status;
 	}
-	buff_len = xdr_getpos(&xstream);
+	/*buff_len = xdr_getpos(&xstream);*/
+	xdr_getpos(&xstream);
 	xdr_destroy(&xstream);
 
 send_again:
