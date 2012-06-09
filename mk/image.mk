@@ -29,6 +29,7 @@ image_prepare:
 
 CC      = $(CROSS_COMPILE)gcc
 CPP     = $(CC) -E
+CXX     = $(CROSS_COMPILE)g++
 AR      = $(CROSS_COMPILE)ar
 AS      = $(CROSS_COMPILE)as
 LD      = $(CROSS_COMPILE)ld
@@ -179,7 +180,7 @@ else
 CC_RULES = $(CC) $(patsubst -D%,-D"%",$(shell cat $<)) $(word 2,$^)
 endif
 
-CPP_RULES = g++ `@$<` $(word 2,$^)
+CPP_RULES = $(CXX) `cat $<` $(word 2,$^)
 
 $(OBJ_DIR)/%.o : $(OBJ_DIR)/%.cmd $(ROOT_DIR)/%.c
 	$(CC_RULES)

@@ -23,6 +23,7 @@ SECTIONS {
 	.text : {
 		*(.trap_table.text)
 		*(.text)
+		*(.text.*)
 		*(.init.text)
 		ALIGNMENT();
 		*(.eh_frame)

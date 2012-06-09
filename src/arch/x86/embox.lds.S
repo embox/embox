@@ -12,11 +12,13 @@ MEMORY {
 
 _text_start = _text_vma;
 _text_end = _text_vma + _text_len;
+
 SECTIONS {
 	.text : {
 		ALIGNMENT();
 		*(.multiboot)
 		*(.text)
+		*(.text.*)
 		*(.init.text)
 		ALIGNMENT();
 		. = ALIGN(0x100);

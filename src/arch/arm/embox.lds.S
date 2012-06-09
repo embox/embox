@@ -19,10 +19,12 @@ _data_image_start = _data_lma;
 _text_start = _text_vma;
 _text_end = _text_vma + _text_len;
 /*_reloc_end = _reloc_start + _reloc_len; */
+
 SECTIONS {
 	.text : {
 		*(.trap_table)
 		*(.text)
+		*(.text.*)
 		*(.init.text)
 		ALIGNMENT();
 		*(.eh_frame)

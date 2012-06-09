@@ -56,9 +56,10 @@ cxxflags := $(CFLAGS)
 override CXXFLAGS = -pipe
 override CXXFLAGS += -fno-strict-aliasing -fno-common
 override CXXFLAGS += -Wall -Werror
-override CXXFLAGS += cxxflags
 override CXXFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 override CXXFLAGS += -Wformat -Wformat-nonliteral
+#	C++ has build-in type bool
+override CXXFLAGS += -DSTDBOOL_H_
 override CXXFLAGS += $(cxxflags)
 
 # Compiler flags

@@ -34,6 +34,7 @@ SECTIONS {
 		_ivt_end = .;
 		. = ALIGN(0x100);
 		*(.text)
+		*(.text.*)
 		*(.init.text)
 		ALIGNMENT();
 	} SECTION_REGION(text)
