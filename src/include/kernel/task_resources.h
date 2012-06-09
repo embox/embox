@@ -65,8 +65,7 @@ static inline const struct task_res_ops *task_idx_desc_ops(struct idx_desc *desc
  *
  * @return
  */
-extern struct idx_desc *task_idx_desc_alloc(const struct task_res_ops *res_ops, void *data);
-extern void task_idx_desc_free(struct idx_desc *desc);
+//extern struct idx_desc *task_idx_desc_alloc(const struct task_res_ops *res_ops, void *data);
 
 /**
  * @brief idx utillity: get reference count by idx

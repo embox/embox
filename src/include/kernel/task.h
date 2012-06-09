@@ -75,9 +75,9 @@ static inline int task_valid_fd(int fd) {
 /**
  * @brief Kernel task
  *
- * @return Pointer to default task
+ * @return Pointer to kernel task
  */
-extern struct task *task_default_get(void);
+extern struct task *task_kernel_task(void);
 
 /**
  * @brief Get task resources of self task
