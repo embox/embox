@@ -512,7 +512,7 @@ define class-Mybuild
 						$(map-set includingInstances/$(mod),$(depMod))
 
 						$(if $(invoke chkCyclic,$(depMod)),
-							$(call $0,$(depInst),$2   ))
+							$(call $0,$(depInst)))
 
 						$(map-set includingInstances/$(mod),)
 						$(map-set includingInstancesChecked/$(depMod),1)
