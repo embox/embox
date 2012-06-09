@@ -162,10 +162,11 @@ static int nfs_mnt_mount(void) {
 
 static int nfs_nfs_null(nfs_filehandle_t *p_fh) {
 	struct timeval timeout = { 25, 0 };
+#if 0
 	char *point;
 
 	point = (char *) p_fh;
-
+#endif
 	if (clnt_call(p_fs_fd->nfs, NFSPROC3_NULL,
 		(xdrproc_t)xdr_void, 0,
 		(xdrproc_t)xdr_void, 0,
