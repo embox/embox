@@ -23,7 +23,7 @@ union dw_union {
 #define WORD_LENGTH 32
 
 #define highpart(v) (v >> (WORD_LENGTH / 2))
-#define lowpart(v)  (v & (WORD_LENGTH - 1))
+#define lowpart(v)  (v & ((1 << (WORD_LENGTH / 2)) - 1))
 
 uint64_t __muldi3(int64_t u, int64_t v) {
 	union dw_union res;
