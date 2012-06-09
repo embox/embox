@@ -159,17 +159,16 @@ int xdr_u_hyper(struct xdr *xs, __u64 *pu64) {
 
 	switch (xs->oper) {
 	case XDR_DECODE:
-		unit1 = (xdr_unit_t)((*pu64) >> 32);
-		unit2 = (xdr_unit_t)(*pu64);
-		if (xdr_getunit(xs, &unit1)
-				&& xdr_getunit(xs, &unit2)) {
+		if (xdr_getunit(xs, &unit1) && xdr_getunit(xs, &unit2)) {
+			*pu64 = ((__u64)unit1) << 32;
+			*pu64 |= (__u32)unit2;
 			return XDR_SUCCESS;
 		}
 		break;
 	case XDR_ENCODE:
+		unit1 = (xdr_unit_t)((*pu64) >> 32);
+		unit2 = (xdr_unit_t)(*pu64);
 		if (xdr_putunit(xs, &unit1) && xdr_putunit(xs, &unit2)) {
-			*pu64 = ((__u64)unit1) << 32;
-			*pu64 |= (__u32)unit2;
 			return XDR_SUCCESS;
 		}
 		break;
