@@ -151,10 +151,7 @@ $(@module_h) :
 
 all .PHONY : $(@source_all)
 
-$(@source_all) : file      = $(call get,$*,fileFullName)
-$(@source_all) : file_base = $(basename $(file))
-
-$(@source_all) : bindings_of = $(call invoke,$*,getAnnotationBindingsOfOption,$1)
+$(@source_all) : bindings_of = $(call invoke,$@,getAnnotationBindingsOfOption,$1)
 $(@source_all) : values_of = $(call get,$(bindings_of),value)
 
 my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
@@ -163,10 +160,16 @@ my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
 $(@source_all) : includes = $(call values_of,$(my_incpath_val))
 $(@source_all) : defines  = $(call values_of,$(my_defmacro_val))
 
+$(@source_all) : flags  = $(error NIY)
+
+$(@source_all) : file      = $(call get,$@,fileFullName)
+$(@source_all) : file_base = $(basename $(file))
+
 $(@source_cc_rule_mk) : o_file  = $$(OBJ_DIR)/$(file_base).o
 $(@source_cc_rule_mk) : mk_file = $(SRCGEN_DIR)/$(file_base).rule.mk
 $(@source_cc_rule_mk) :
-	@$(foreach o,$(call get,$*,fileFullName),$(call cmd_notouch_stdout,$o.cmd, \
-		echo '$(call flags,$o) -o $(basename $o).o -c'))
-
+	@$(foreach file,$(file),$(call cmd_notouch_stdout,$(mk_file), \
+		$(gen_banner); \
+		$(call gen_make_dep,$(o_file),$$(LAST_MAKEFILE)); \
+		$(call gen_make_tsvar,$(o_file),flags,$(flags))))
 
