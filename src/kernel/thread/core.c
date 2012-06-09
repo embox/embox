@@ -81,7 +81,6 @@ static int thread_create_task(struct thread **p_thread, unsigned int flags,
 	struct thread *t;
 	int save_ptr = (flags & THREAD_FLAG_SUSPENDED)
 			|| !(flags & THREAD_FLAG_DETACHED);
-
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
 			&& (flags & THREAD_FLAG_PRIORITY_HIGHER)) {
 		return -EINVAL;
@@ -125,6 +124,13 @@ static int thread_create_task(struct thread **p_thread, unsigned int flags,
 int thread_create(struct thread **p_thread, unsigned int flags,
 		void *(*run)(void *), void *arg) {
 	struct task *tsk = task_self();
+	int ret = 0;
+
+	if (flags & THREAD_FLAG_IN_NEW_TASK) {
+		if ((ret = task_create(&tsk, task_self())) < 0) {
+			return ret;
+		}
+	}
 
 	return thread_create_task(p_thread, flags, run, arg, tsk);
 }
@@ -374,26 +380,26 @@ static void *idle_run(void *arg) {
 static int unit_init(void) {
 	static struct thread bootstrap;
 	struct thread *idle;
-	struct task *default_task;
+	struct task *kernel_task;
 	id_counter = 0;
 
 	bootstrap.id = id_counter++;
 	list_add_tail(&bootstrap.thread_link, &__thread_list);
 
-	default_task = task_default_get();
+	kernel_task = task_kernel_task();
 
-	thread_init(&bootstrap, 0, NULL, NULL, default_task);
+	thread_init(&bootstrap, 0, NULL, NULL, kernel_task);
 	// TODO priority for bootstrap thread -- Eldar
 	bootstrap.priority = THREAD_PRIORITY_NORMAL;
 
 	if (!(idle = thread_new())) {
 		return -ENOMEM;
 	}
-	thread_init(idle, 0, idle_run, NULL, default_task);
+	thread_init(idle, 0, idle_run, NULL, kernel_task);
 	thread_context_init(idle);
 
-	bootstrap.task = default_task;
-	idle->task = default_task;
+	bootstrap.task = kernel_task;
+	idle->task = kernel_task;
 
 	idle->priority = THREAD_PRIORITY_MIN;
 

@@ -6,16 +6,20 @@
  * @author Anton Kozlov
  */
 
+#include <errno.h>
 #include <kernel/task.h>
-//#include <kernel/file.h>
+#include <kernel/task_resources.h>
+
 #include "index_desc.h"
 
 int task_create(struct task **new, struct task *parent) {
-	*new = parent;
-	return 0;
+	return -EPERM;
 }
 
 struct task *task_self(void) {
-	return task_default_get();
+	/* Since there is no task, actually it means there are only
+	 * one task -- kernel task
+	 */
+	return task_kernel_task();
 }
 

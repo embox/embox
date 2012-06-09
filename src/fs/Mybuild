@@ -24,7 +24,6 @@ module core {
 		"kernel_posix_plugin.c"
 	depends file_desc, node, rootfs
 	depends embox.fs.driver.repo
-	depends embox.kernel.task_api
 }
 
 module ramdisk {

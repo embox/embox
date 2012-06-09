@@ -10,7 +10,6 @@
 #include <kernel/thread/api.h>
 #include <mem/objalloc.h>
 #include <kernel/task.h>
-//#include <kernel/file.h>
 #include "index_desc.h"
 
 #include <embox/unit.h>
@@ -18,13 +17,12 @@
 OBJALLOC_DEF(task_pool, struct task, OPTION_GET(NUMBER, tasks_quantity));
 
 static void task_init(struct task *new_task, struct task *parent) {
-	//struct __fd_list *fdl, *par_fdl;
 	struct idx_desc *par_idx_desc;
 	struct task_resources *res = task_get_resources(new_task);
 	struct task_resources *par_res = task_get_resources(parent);
 	new_task->parent = parent;
 
-	res_init(res);
+	task_res_idx_init(res);
 
 	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
 		if (!task_res_idx_is_binded(par_res, i)) {
@@ -43,16 +41,13 @@ static void task_init(struct task *new_task, struct task *parent) {
 }
 
 int task_create(struct task **new, struct task *parent) {
+	assert(parent != NULL);
 
 	if (NULL == (*new = (struct task *) objalloc(&task_pool))) {
 		return -ENOMEM;
 	}
 
-	if (parent != NULL) {
-		task_init(*new, parent);
-	} else {
-		task_root_init(*new);
-	}
+	task_init(*new, parent);
 
 	return ENOERR;
 }

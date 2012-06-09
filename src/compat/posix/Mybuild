@@ -16,6 +16,17 @@ static module LibPosix {
 		"dup.c"
 
 	depends embox.util.LibUtil
-	depends embox.kernel.task_api
+	depends posix_env
 	depends embox.fs.driver.stdio
+}
+
+@DefaultImpl(bootstrap_posix_env)
+abstract module posix_env { }
+
+module bootstrap_posix_env extends posix_env {
+
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
+    source "env/bs_posix_env.c"
+
+    depends embox.kernel.task.api
 }

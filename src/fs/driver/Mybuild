@@ -22,7 +22,7 @@ module devfs {
 
 module stdio {
 	source "stdio.c"
-	depends embox.kernel.task_api
+	depends embox.kernel.task.api
 }
 
 

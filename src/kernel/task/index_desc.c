@@ -14,13 +14,13 @@
 
 OBJALLOC_DEF(idx_res_pool, struct idx_desc, CONFIG_TASKS_RES_QUANTITY);
 
-void res_init(struct task_resources *res) {
+void task_res_idx_init(struct task_resources *res) {
 	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
 		task_res_idx_set(res, i, NULL);
 	}
 }
 
-struct idx_desc *task_idx_desc_alloc(const struct task_res_ops *res_ops, void *data) {
+static struct idx_desc *task_idx_desc_alloc(const struct task_res_ops *res_ops, void *data) {
 	struct idx_desc *desc = objalloc(&idx_res_pool);
 	desc->link_count = 0;
 
@@ -29,7 +29,7 @@ struct idx_desc *task_idx_desc_alloc(const struct task_res_ops *res_ops, void *d
 	return desc;
 }
 
-void task_idx_desc_free(struct idx_desc *desc) {
+static void task_idx_desc_free(struct idx_desc *desc) {
 	objfree(&idx_res_pool, desc);
 }
 

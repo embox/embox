@@ -6,8 +6,6 @@
  * @author Anton Kozlov
  */
 
-//#include <kernel/task.h>
-//TODO
-extern void task_root_init(struct task *new_task);
+#include <kernel/task.h>
 
-extern void res_init(struct task_resources *res);
+extern void task_res_idx_init(struct task_resources *res);
