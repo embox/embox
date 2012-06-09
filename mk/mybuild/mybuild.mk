@@ -535,14 +535,16 @@ define mybuild_get_active_configuration
 		$(get root->configuration))
 endef
 
-define allModules
-	$(sort \
-		$(for \
-			resource <- $(get __myfile_resource_set->resources),
-			obj <- $(get resource->contents),
-			$(if $(invoke MyFile_ModuleType->isInstance,$(obj)),
-				$(obj))))
-endef
+# Resolves an instance of ENamedObject typed exported by myfiles model.
+#   1. Qualified name.
+# Return:
+#   Resolved instance, if any.
+mybuild_resolve = \
+	$(invoke __myfile_resource_set->resolve,$1)
+
+mybuild_resolve_or_die = \
+	$(or $(mybuild_resolve), \
+		$(error Couldn't resolve Object '$1'))
 
 define printInstance
 	$(for inst<-$1,
