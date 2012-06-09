@@ -147,7 +147,7 @@ define class-Linker
 		$(if $(strip $1),$(with \
 			# 1. List of matching objects with proper type.
 			$(for normalizedName <- $(call Linker.normalizeLinkName,$1),
-				matchingObject <- $(map-get sourceSet->exportedObjectsMap
+				matchingObject <- $(map-get sourceSet->exports
 						/$(normalizedName)),
 
 				# Check the type of the object.
@@ -200,7 +200,7 @@ define class-Linker
 	$(method searchGlobalScopeByFullName,
 		$(suffix \
 			$(for matchingObject <-
-				$(map-get sourceSet->exportedObjectsMap/$(linkName)),
+				$(map-get sourceSet->exports/$(linkName)),
 
 				$(if $(invoke targetType->isInstance,$(matchingObject)),
 					$(matchingObject)))
