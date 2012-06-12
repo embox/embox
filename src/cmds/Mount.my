@@ -11,7 +11,7 @@ import embox.compat.posix.LibPosix
 			mount [-h]  [ -t type ] dev dir
 		DESCRIPTION
 			Note that one does not really mount a device, one mounts
-	        a filesystem (of the given type) found on the device.
+			a filesystem (of the given type) found on the device.
 		AUTHORS
 			Nikolay Korotky
 	''')
