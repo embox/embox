@@ -1,6 +1,6 @@
 #!/bin/bash
 
-QEMU=qemu
+QEMU=qemu-system-i386
 IMAGE=../../build/base/bin/embox
 
 sudo $QEMU -kernel $IMAGE \
