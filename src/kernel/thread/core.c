@@ -161,10 +161,6 @@ static void thread_init(struct thread *t, unsigned int flags,
 		t->priority++;
 	}
 
-	if (flags & THREAD_FLAG_IN_NEW_TASK) {
-		task_create(&tsk, tsk);
-	}
-
 	t->task = tsk;
 	list_add(&t->task_link, &tsk->threads);
 

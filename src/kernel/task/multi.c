@@ -17,9 +17,9 @@
 OBJALLOC_DEF(task_pool, struct task, OPTION_GET(NUMBER, tasks_quantity));
 
 static void task_init(struct task *new_task, struct task *parent) {
-	struct idx_desc *par_idx_desc;
 	struct task_resources *res = task_get_resources(new_task);
 	struct task_resources *par_res = task_get_resources(parent);
+
 	new_task->parent = parent;
 
 	task_res_idx_init(res);
@@ -29,10 +29,7 @@ static void task_init(struct task *new_task, struct task *parent) {
 			continue;
 		}
 
-		par_idx_desc = task_res_idx_get(task_get_resources(parent), i);
-
-		task_res_idx_set(res, i, par_idx_desc);
-		task_idx_desc_link_count_add(par_idx_desc, 1);
+		task_res_idx_set(res, i, task_res_idx_get(par_res, i));
 	}
 
 	INIT_LIST_HEAD(&new_task->threads);
