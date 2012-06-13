@@ -151,6 +151,7 @@ static void *telnet_thread_handler(void* args) {
 	dup(*client_descr_p);
 	dup(*client_descr_p);
 
+	close(*client_descr_p);
 		/* Hack. Emulate future output, we need a char from user to exit from
 		 * parameters mode
 		 */
@@ -166,11 +167,12 @@ static void *telnet_thread_handler(void* args) {
 		/* Run shell */
 	run();
 
-		/* We don't need socket any more.
-		 * Task shutdown should clear other descriptors (not implemented yet)
-		 */
-	close(*client_descr_p);
+	close(0);
+	close(1);
+	close(2);
+
 	*client_descr_p = -1;
+
 	return NULL;
 }
 
@@ -246,11 +248,11 @@ static int exec(int argc, char **argv) {
 						out_msgs("Internal error with shell creation\n", " failed. Can't create shell\n",
 								 "shell_create", client_descr, &client_socket);
 						MD(printf("thread_create() returned with code=%d\n", res));
-						close(client_descr);
 						clients[i] = -1;
 					} else {
 						MD(printf(" success\n"));
 					}
+					close(client_descr);
 					client_descr = -1;
 					break;
 				} /* if - if we have space for this connection */

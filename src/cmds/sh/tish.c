@@ -99,13 +99,18 @@ void shell_run(void) {
 	const char *prompt = OPTION_STRING_GET(prompt);
 	char inp_buf[BUF_INP_SIZE];
 	struct hist h;
+	int ret = 0;
 
 	linenoise_history_init(&h);
 
 	printf("\n%s\n\n", OPTION_STRING_GET(welcome_msg));
 
 	while (1) {
-		linenoise(prompt, inp_buf, BUF_INP_SIZE, &h, (compl_callback_t) cmd_compl);
+		if ((ret = linenoise(prompt, inp_buf, BUF_INP_SIZE, &h,
+			(compl_callback_t) cmd_compl)) < 0) {
+			return;
+		}
+
 		inp_buf[strlen(inp_buf) - 1] = '\0';
 		linenoise_history_add(inp_buf, &h);
 		shell_line_input(inp_buf);
