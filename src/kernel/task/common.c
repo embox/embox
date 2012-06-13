@@ -14,8 +14,7 @@ EMBOX_UNIT_INIT(tasks_init);
 
 static struct task kernel_task;
 
-
-void task_root_init(struct task *new_task) {
+static void task_root_init(struct task *new_task) {
 	INIT_LIST_HEAD(&new_task->threads);
 	INIT_LIST_HEAD(&new_task->children);
 	INIT_LIST_HEAD(&new_task->link);
