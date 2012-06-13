@@ -3,4 +3,4 @@
 "route -n 127.0.0.0 -m 255.0.0.0 -d lo add",
 "route -n 192.168.0.0 -m 255.255.255.0 -d eth0 add",
 "mkfs -t vfat -q /dev/ram1 456",
-"mount /dev/ram1 /t",
+"mount /dev/ram1 /fat",
