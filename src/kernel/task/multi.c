@@ -12,7 +12,7 @@
 #include <kernel/task.h>
 #include "index_desc.h"
 
-#include <embox/unit.h>
+#include <embox/unit.h> /* For options */
 
 OBJALLOC_DEF(task_pool, struct task, OPTION_GET(NUMBER, tasks_quantity));
 
