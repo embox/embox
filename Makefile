@@ -27,6 +27,7 @@ export BIN_DIR        := $(BUILD_DIR)/bin
 export OBJ_DIR        := $(BUILD_DIR)/obj
 export LIB_DIR        := $(BUILD_DIR)/lib
 export SRCGEN_DIR     := $(BUILD_DIR)/src-gen
+export MKGEN_DIR      := $(SRCGEN_DIR)
 export AUTOCONF_DIR   := $(SRCGEN_DIR)
 export ROOTFS_DIR     := $(OBJ_DIR)/rootfs
 export ROOTFS_IMAGE   := $(OBJ_DIR)/rootfs.cpio
