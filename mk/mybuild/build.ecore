@@ -8,7 +8,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="modules" upperBound="-1"
         eType="#//ModuleInstance" containment="true" eOpposite="#//ModuleInstance/build"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="ModuleInstance">
+  <eClassifiers xsi:type="ecore:EClass" name="ModuleInstance" eSuperTypes="myfile.ecore#//Instance">
     <eStructuralFeatures xsi:type="ecore:EReference" name="build" eType="#//Build"
         eOpposite="#//Build/modules"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" eType="ecore:EClass myfile.ecore#//ModuleType"
@@ -34,10 +34,8 @@
         eType="ecore:EClass myfile.ecore#//FileName" changeable="false" volatile="true"
         transient="true" derived="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="OptionInstance">
+  <eClassifiers xsi:type="ecore:EClass" name="OptionInstance" eSuperTypes="myfile.ecore#//OptionBinding">
     <eStructuralFeatures xsi:type="ecore:EReference" name="module" eType="#//ModuleInstance"
         eOpposite="#//ModuleInstance/options"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="option" eType="ecore:EClass myfile.ecore#//Option"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="ecore:EClass myfile.ecore#//Literal"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -126,6 +126,9 @@ MyFile_TypeReferenceOption := \
 MyFile_TypeReferenceOption_type := \
 	$(call eMetaReferenceCreate,$(MyFile_TypeReferenceOption),MyFile_TypeReferenceOption_type)
 
+MyFile_Value := \
+	$(call eMetaClassCreate,$(MyFile),MyFile_Value)
+
 MyFile_Literal := \
 	$(call eMetaClassCreate,$(MyFile),MyFile_Literal)
 
@@ -266,7 +269,7 @@ define __myFile_init
 	$(call eMetaReferenceInit,$(MyFile_ModuleType_allSuperTypes),allSuperTypes,$(MyFile_ModuleType),$(MyFile_ModuleType_allSubTypes),derived many)
 
 	$(call eMetaClassInit,$(MyFile_Option),Option,$(EModel_ENamedObject) $(MyFile_AnnotationTarget) $(MyFile_InstantiatableType),abstract)
-	$(call eMetaReferenceInit,$(MyFile_Option_defaultValue),defaultValue,$(MyFile_Literal),,changeable containment)
+	$(call eMetaReferenceInit,$(MyFile_Option_defaultValue),defaultValue,$(MyFile_Value),,changeable containment)
 
 	$(call eMetaClassInit,$(MyFile_StringOption),StringOption,$(MyFile_Option),)
 
@@ -277,7 +280,9 @@ define __myFile_init
 	$(call eMetaClassInit,$(MyFile_TypeReferenceOption),TypeReferenceOption,$(MyFile_Option),)
 	$(call eMetaReferenceInit,$(MyFile_TypeReferenceOption_type),type,$(MyFile_Type),,changeable linkable)
 
-	$(call eMetaClassInit,$(MyFile_Literal),Literal,,abstract)
+	$(call eMetaClassInit,$(MyFile_Value),Value,,abstract)
+
+	$(call eMetaClassInit,$(MyFile_Literal),Literal,$(MyFile_Value),abstract)
 
 	$(call eMetaClassInit,$(MyFile_StringLiteral),StringLiteral,$(MyFile_Literal),)
 	$(call eMetaAttributeInit,$(MyFile_StringLiteral_value),value,changeable)
@@ -293,7 +298,7 @@ define __myFile_init
 
 	$(call eMetaClassInit,$(MyFile_OptionBinding),OptionBinding,$(MyFile_Instance),)
 	$(call eMetaReferenceInit,$(MyFile_OptionBinding_option),option,$(MyFile_Option),,changeable linkable)
-	$(call eMetaReferenceInit,$(MyFile_OptionBinding_value),value,$(MyFile_Literal),,changeable containment)
+	$(call eMetaReferenceInit,$(MyFile_OptionBinding_value),value,$(MyFile_Value),,changeable containment)
 
 	$(call eMetaClassInit,$(MyFile_OptionBindingHolder),OptionBindingHolder,,)
 	$(call eMetaReferenceInit,$(MyFile_OptionBindingHolder_bindings),bindings,$(MyFile_OptionBinding),,changeable many containment)
@@ -394,6 +399,8 @@ define __myFile_bind
 
 	$(call eMetaClassBind,$(MyFile_TypeReferenceOption),MyTypeReferenceOption)
 	$(call eMetaFeatureBind,$(MyFile_TypeReferenceOption_type),type)
+
+	$(call eMetaClassBind,$(MyFile_Value),MyValue)
 
 	$(call eMetaClassBind,$(MyFile_Literal),MyLiteral)
 

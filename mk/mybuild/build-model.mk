@@ -52,10 +52,13 @@ endef
 #   - reference 'includeMember'
 #   - reference 'sources'
 #
+# The following operations are inherited from 'Instance':
+#   - operation 'getType'
+#
 define class-ModuleInstance
-	# Extends 'EObject' class (implicitly).
+	# Extends 'MyInstance' class.
 	$(eobject Build_ModuleInstance,
-		ModuleInstance,,)
+		ModuleInstance,MyInstance,)
 
 	# Property 'build : Build'.
 	$(eobject-reference Build_ModuleInstance_build,
@@ -117,26 +120,22 @@ endef
 #
 # The following features are defined:
 #   - reference 'module'
+#
+# The following features are inherited from 'OptionBinding':
 #   - reference 'option'
 #   - reference 'value'
 #
+# The following operations are inherited from 'Instance':
+#   - operation 'getType'
+#
 define class-OptionInstance
-	# Extends 'EObject' class (implicitly).
+	# Extends 'MyOptionBinding' class.
 	$(eobject Build_OptionInstance,
-		OptionInstance,,)
+		OptionInstance,MyOptionBinding,)
 
 	# Property 'module : ModuleInstance'.
 	$(eobject-reference Build_OptionInstance_module,
 		module,ModuleInstance,options,changeable container)
-
-	# Property 'option : MyOption'.
-	# Property 'option_link : ELink'.
-	$(eobject-reference Build_OptionInstance_option,
-		option,MyOption,,changeable linkable)
-
-	# Property 'value : MyLiteral'.
-	$(eobject-reference Build_OptionInstance_value,
-		value,MyLiteral,,changeable)
 
 	# PROTECTED REGION ID(Build_OptionInstance) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.

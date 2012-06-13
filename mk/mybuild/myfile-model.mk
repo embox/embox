@@ -48,6 +48,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -85,6 +86,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -119,6 +121,7 @@ endef
 # The following features and operations are inherited from 'OptionBindingHolder':
 #   - reference 'bindings'
 #   - operation 'getBindingsOfOption'
+#   - operation 'getValuesOfOption'
 #
 define class-MyAnnotation
 	# Extends 'MyOptionBindingHolder', 'MyInstance' classes.
@@ -152,6 +155,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 define class-MyAnnotationTarget # abstract
 	# Extends 'EObject' class (implicitly).
@@ -176,6 +180,13 @@ define class-MyAnnotationTarget # abstract
 		$(invoke annotations>getBindingsOfOption,$1))
 	# PROTECTED REGION END
 
+	# Method 'getAnnotationValuesOfOption... : MyValue'.
+	#   1. options... : MyOption
+	# PROTECTED REGION ID(MyFile_AnnotationTarget_getAnnotationValuesOfOption) ENABLED START
+	$(method getAnnotationValuesOfOption... : MyValue,
+		$(get $(invoke getAnnotationBindingsOfOption,$1).value))
+	# PROTECTED REGION END
+
 	# PROTECTED REGION ID(MyFile_AnnotationTarget) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
@@ -194,6 +205,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -326,6 +338,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -545,6 +558,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -557,9 +571,9 @@ define class-MyOption # abstract
 	$(eobject MyFile_Option,
 		MyOption,ENamedObject MyAnnotationTarget MyInstantiatableType,abstract)
 
-	# Property 'defaultValue : MyLiteral'.
+	# Property 'defaultValue : MyValue'.
 	$(eobject-reference MyFile_Option_defaultValue,
-		defaultValue,MyLiteral,,changeable containment)
+		defaultValue,MyValue,,changeable containment)
 
 	# Method 'validateValue'.
 	# PROTECTED REGION ID(MyFile_Option_validateValue) ENABLED START
@@ -601,6 +615,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -644,6 +659,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -687,6 +703,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -731,6 +748,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 # The following features and operations are inherited from 'ENamedObject':
 #   - attribute 'name'
@@ -760,22 +778,40 @@ define class-MyTypeReferenceOption
 endef
 
 #
-# Model object 'Literal'.
+# Model object 'Value'.
 #
 # The following operations are defined:
 #   - operation 'toString'
 #
-define class-MyLiteral # abstract
+define class-MyValue # abstract
 	# Extends 'EObject' class (implicitly).
-	$(eobject MyFile_Literal,
-		MyLiteral,,abstract)
+	$(eobject MyFile_Value,
+		MyValue,,abstract)
 
 	# Method 'toString'.
-	# PROTECTED REGION ID(MyFile_Literal_toString) ENABLED START
+	# PROTECTED REGION ID(MyFile_Value_toString) ENABLED START
 #	# TODO Uncomment and implement me.
 	$(method toString,
 		$(error $0(): NIY))
 	# PROTECTED REGION END
+
+	# PROTECTED REGION ID(MyFile_Value) ENABLED START
+#	# TODO Add custom implementation here and remove this comment.
+	# PROTECTED REGION END
+endef
+
+#
+# Model object 'Literal'.
+#
+# No features or operations defined.
+#
+# The following operations are inherited from 'Value':
+#   - operation 'toString'
+#
+define class-MyLiteral # abstract
+	# Extends 'MyValue' class.
+	$(eobject MyFile_Literal,
+		MyLiteral,MyValue,abstract)
 
 	# PROTECTED REGION ID(MyFile_Literal) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
@@ -788,7 +824,9 @@ endef
 # The following features are defined:
 #   - attribute 'value'
 #
-# The following operations are inherited from 'Literal':
+# No features or operations inherited from 'Literal'.
+#
+# The following operations are inherited from 'Value':
 #   - operation 'toString'
 #
 define class-MyStringLiteral
@@ -815,7 +853,9 @@ endef
 # The following features are defined:
 #   - attribute 'value'
 #
-# The following operations are inherited from 'Literal':
+# No features or operations inherited from 'Literal'.
+#
+# The following operations are inherited from 'Value':
 #   - operation 'toString'
 #
 define class-MyNumberLiteral
@@ -829,10 +869,10 @@ define class-MyNumberLiteral
 
 	# PROTECTED REGION ID(MyFile_NumberLiteral) ENABLED START
 	$(method toString,
-		$(get-field value))
+		$(get value))
 
 	$(if $(value 1),
-		$(set-field value,$1))
+		$(set value,$1))
 	# PROTECTED REGION END
 endef
 
@@ -842,7 +882,9 @@ endef
 # The following features are defined:
 #   - attribute 'value'
 #
-# The following operations are inherited from 'Literal':
+# No features or operations inherited from 'Literal'.
+#
+# The following operations are inherited from 'Value':
 #   - operation 'toString'
 #
 define class-MyBooleanLiteral
@@ -871,7 +913,9 @@ endef
 # The following features are defined:
 #   - reference 'value'
 #
-# The following operations are inherited from 'Literal':
+# No features or operations inherited from 'Literal'.
+#
+# The following operations are inherited from 'Value':
 #   - operation 'toString'
 #
 define class-MyTypeReferenceLiteral
@@ -886,7 +930,7 @@ define class-MyTypeReferenceLiteral
 
 	# PROTECTED REGION ID(MyFile_TypeReferenceLiteral) ENABLED START
 	$(method toString,
-		$(get $(get-field value).qualifiedName))
+		$(get value>qualifiedName))
 	# PROTECTED REGION END
 endef
 
@@ -910,17 +954,16 @@ define class-MyOptionBinding
 	$(eobject-reference MyFile_OptionBinding_option,
 		option,MyOption,,changeable linkable)
 
-	# Property 'value : MyLiteral'.
+	# Property 'value : MyValue'.
 	$(eobject-reference MyFile_OptionBinding_value,
-		value,MyLiteral,,changeable containment)
+		value,MyValue,,changeable containment)
 
 	# PROTECTED REGION ID(MyFile_OptionBinding) ENABLED START
 	$(method getType : MyInstantiatableType,
 		$(get option))
 	$(method setLiteral,
-		$(for opt <- $(get option),
-			$(if $(invoke opt->validate,$1),
-				$(set-field value,$1))))
+		$(if $(invoke option>validate,$1),
+			$(set-field value,$1)))
 	# PROTECTED REGION END
 endef
 
@@ -930,6 +973,7 @@ endef
 # The following features and operations are defined:
 #   - reference 'bindings'
 #   - operation 'getBindingsOfOption'
+#   - operation 'getValuesOfOption'
 #
 define class-MyOptionBindingHolder
 	# Extends 'EObject' class (implicitly).
@@ -947,6 +991,13 @@ define class-MyOptionBindingHolder
 		$(with $1,$(get bindings),$(invoke 1->filterInstances,$2)))
 	# PROTECTED REGION END
 
+	# Method 'getValuesOfOption... : MyValue'.
+	#   1. options... : MyOption
+	# PROTECTED REGION ID(MyFile_OptionBindingHolder_getValuesOfOption) ENABLED START
+	$(method getValuesOfOption... : MyValue,
+		$(get $(invoke getBindingsOfOption,$1)))
+	# PROTECTED REGION END
+
 	# PROTECTED REGION ID(MyFile_OptionBindingHolder) ENABLED START
 #	# TODO Add custom implementation here and remove this comment.
 	# PROTECTED REGION END
@@ -962,6 +1013,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 define class-MyMember
 	# Extends 'MyAnnotationTarget' class.
@@ -998,7 +1050,7 @@ define class-MyFileName
 	$(property fileFullName)
 	# PROTECTED REGION ID(MyFile_FileName_fileFullName) ENABLED START
 	$(getter fileFullName,
-		$(dir $(get $(get eResource).fileName))$(get fileName))
+		$(dir $(get eResource>fileName))$(get fileName))
 
 	# PROTECTED REGION END
 
@@ -1020,6 +1072,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 define class-MyDependsMember
 	# Extends 'MyMember' class.
@@ -1049,6 +1102,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 define class-MyRequiresMember
 	# Extends 'MyMember' class.
@@ -1078,6 +1132,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 define class-MyProvidesMember
 	# Extends 'MyMember' class.
@@ -1107,6 +1162,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 define class-MySourceMember
 	# Extends 'MyMember' class.
@@ -1135,6 +1191,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 define class-MyObjectMember
 	# Extends 'MyMember' class.
@@ -1163,6 +1220,7 @@ endef
 #   - reference 'annotations'
 #   - operation 'getAnnotationsOfType'
 #   - operation 'getAnnotationBindingsOfOption'
+#   - operation 'getAnnotationValuesOfOption'
 #
 define class-MyOptionMember
 	# Extends 'MyMember' class.
