@@ -11,8 +11,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include <hal/clock.h>
 
+#include <hal/clock.h>
+#include <kernel/ktime.h>
 #include <kernel/clock_source.h>
 
 EMBOX_CMD(exec);
@@ -136,6 +137,7 @@ static void set_date(char *new_date) {
 
 static int exec(int argc, char **argv) {
 	int opt;
+	struct ktimeval tv;
 
 	getopt_init();
 
@@ -153,9 +155,11 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	/* show date */
+	/* show date and kernel time */
 	if (argc == 1) {
 		show_date();
+		ktime_get_timeval(&tv);
+		printf("ktime_get_timeval %d:%d (s:ms)\n", (int)tv.tv_sec, (int)tv.tv_usec/1000);
 		return 0;
 	}
 
