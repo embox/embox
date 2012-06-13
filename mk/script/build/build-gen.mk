@@ -111,14 +111,12 @@ build_model_targets := \
 #all .PHONY : $(build_model_targets)
 
 $(filter build-runtime-inject-c/%,$(build_model_targets)) : build-runtime-inject-c/% :
-	@$(call cmd_notouch_stdout,$(SRC_DIR)/depsinject.c, \
+	@$(call cmd_notouch_stdout,$(SRCGEN_DIR)/depsinject.c, \
 		$(MAKE) -f mk/script/depsinject.mk)
 
 $(filter build-cmd-ld-image/%,$(build_model_targets)) : build-cmd-ld-image/% :
 	@$(foreach f,$(TARGET),$(call cmd_notouch_stdout,$(call gen_make_tsvar_list,,target_objects, \
 		echo '$(call flags,$f) -o $(basename $f).o -c'))
-build-cmd-ld-image/% : flags = \
-	$(LDFLAGS)
 
 #
 # Per-module artifacts.
@@ -165,14 +163,15 @@ $(@module_h) :
 # Per-source artifacts.
 #
 
-@source_all := \
+@source_gen := $(build_sources:%=source-gen/%)
+@source_rulemk := \
 	$(foreach s,$(build_sources), \
 		$(foreach f,$(call get,$s,fileName), \
-			$(if $(filter %.lds.S,$f),source-cpp-rule-mk/$s, \
-				$(if $(filter %.c %.S,$f),source-cc-rule-mk/$s))))
+			$(if $(filter %.S %.c %.cpp %.cxx,$f),source-rule-mk/$s)))
 
-@source_cc_rulemk  := $(filter source-cc-rule-mk/%,$(@source_all))
-@source_cpp_rulemk := $(filter source-cpp-rule-mk/%,$(@source_all))
+@source_all := \
+	$(@source_gen) \
+	$(@source_rulemk)
 
 all .PHONY : $(@source_all)
 
@@ -180,37 +179,47 @@ all .PHONY : $(@source_all)
 #	@$(call cmd_notouch_stdout,test, \
 #		$(call gen_make_tsvar_list,target,objs,foo bar))
 
-$(@source_all) : bindings_of = \
-		$(call invoke,$(call invoke,$@,eContainer),getAnnotationBindingsOfOption,$1)
-$(@source_all) : values_of = $(call get,$(bindings_of),value)
-
-my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
-my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
-
-$(@source_all) : includes = $(call values_of,$(my_incpath_val))
-$(@source_all) : defines  = $(call values_of,$(my_defmacro_val))
-
-$(@source_all) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
-$(@source_all) : flags = $(call trim, \
-		$(call do_flags,-I,$(includes)) \
-		$(call do_flags,-D,$(defines)))
-
 source_file = $(call get,$1,fileFullName)
 source_base = $(basename $(source_file))
 
 $(@source_all) : file = $(call source_file,$@)
 $(@source_all) : base = $(call source_base,$@)
 
-source_cc_rulemk_mk_pat = $(MKGEN_DIR)/%.rule.mk
-source_cc_rulemk_o_pat  = $(OBJ_DIR)/%.o
+$(@source_all) : member = $(call invoke,$@,eContainer)
+$(@source_all) : values_of = $(call invoke,$(member),getAnnotationValuesOfOption,$1)
 
-$(@source_cc_rulemk) : @file   = $(base:%=$(source_cc_rulemk_mk_pat))
-$(@source_cc_rulemk) : mk_file = $(patsubst %,$(value source_cc_rulemk_mk_pat),$$(source_base))
-$(@source_cc_rulemk) : o_file  = $(patsubst %,$(value source_cc_rulemk_o_pat),$$(source_base))
+my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
+my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
 
-$(@source_cc_rulemk) :
+$(@source_rulemk) : includes = $(call values_of,$(my_incpath_val))
+$(@source_rulemk) : defines  = $(call values_of,$(my_defmacro_val))
+
+$(@source_rulemk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
+$(@source_rulemk) : flags = $(call trim, \
+		$(call do_flags,-I,$(includes)) \
+		$(call do_flags,-D,$(defines)))
+
+source_rulemk_mk_pat = $(MKGEN_DIR)/%.rule.mk
+source_rulemk_o_pat  = $(OBJ_DIR)/%.o
+
+$(@source_rulemk) : @file   = $(base:%=$(source_rulemk_mk_pat))
+$(@source_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$$(source_base))
+$(@source_rulemk) : o_file  = $(patsubst %,$(value source_rulemk_o_pat),$$(source_base))
+
+$(@source_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
+		$(call gen_make_var,source_base,$(base)); \
 		$(call gen_make_dep,$(o_file),$(mk_file)); \
-		$(call gen_make_tsvar,$(o_file),cc_flags,$(flags)))
+		$(call gen_make_tsvar,$(o_file),flags,$(flags)))
+
+my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
+
+$(@source_gen) : gen_script = $(call values_of,$(my_gen_script))
+
+$(@source_gen) : @file = $(MKGEN_DIR)/$(file)
+
+$(@source_gen) :
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(gen_script))
 
