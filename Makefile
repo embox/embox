@@ -50,8 +50,6 @@ export PRINTF := printf
 export MKDIR  := mkdir -p
 export LN     := ln -s
 
-ifndef __mk_ready
-
 # Check Make version (we need at least GNU Make 3.81). Fortunately,
 # '.FEATURES' built-in variable has been introduced exactly in GNU Make 3.81.
 ifneq ($(origin .FEATURES),default)
@@ -77,13 +75,7 @@ export PS1 :=
 # properly, at the same time executing each target in parallel.
 .NOTPARALLEL :
 
-.PHONY : all $(filter-out all,$(MAKECMDGOALS))
-all $(filter-out all,$(MAKECMDGOALS)) :
-	@$(MAKE) -C $(dir $(lastword $(MAKEFILE_LIST))) __mk_ready=1 $@
-
-else
-
-include mk/main.mk
-
-endif
+.PHONY : $(sort all $(MAKECMDGOALS))
+$(sort all $(MAKECMDGOALS)) :
+	@$(MAKE) -C $(dir $(lastword $(MAKEFILE_LIST))) -f mk/main.mk $@
 
