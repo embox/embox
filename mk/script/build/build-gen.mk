@@ -104,15 +104,13 @@ build_sources := \
 # Global artifacts.
 #
 
-build_model_targets := \
-	$(build_model:%=build-runtime-inject-c/%) \
+@build_image := \
 	$(build_model:%=build-cmd-ld-image/%)
 
-#all .PHONY : $(build_model_targets)
+@build_all = \
+	$(@build_image)
 
-$(filter build-runtime-inject-c/%,$(build_model_targets)) : build-runtime-inject-c/% :
-	@$(call cmd_notouch_stdout,$(SRCGEN_DIR)/depsinject.c, \
-		$(MAKE) -f mk/script/depsinject.mk)
+all .PHONY : $(@build_all)
 
 $(filter build-cmd-ld-image/%,$(build_model_targets)) : build-cmd-ld-image/% :
 	@$(foreach f,$(TARGET),$(call cmd_notouch_stdout,$(call gen_make_tsvar_list,,target_objects, \
@@ -163,13 +161,23 @@ $(@module_h) :
 # Per-source artifacts.
 #
 
-@source_gen := $(build_sources:%=source-gen/%)
+source_member = $(call invoke,$1,eContainer)
+source_annotation_values = \
+	$(call invoke,$(source_member),getAnnotationValuesOfOption,$2)
+
+my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
+
+@source_gen := \
+	$(foreach s,$(build_sources), \
+		$(patsubst %,source-gen/%$s, \
+			$(call source_annotation_values,$s,$(my_gen_script))))
+
 @source_rulemk := \
 	$(foreach s,$(build_sources), \
 		$(foreach f,$(call get,$s,fileName), \
 			$(if $(filter %.S %.c %.cpp %.cxx,$f),source-rule-mk/$s)))
 
-@source_all := \
+@source_all = \
 	$(@source_gen) \
 	$(@source_rulemk)
 
@@ -185,8 +193,7 @@ source_base = $(basename $(source_file))
 $(@source_all) : file = $(call source_file,$@)
 $(@source_all) : base = $(call source_base,$@)
 
-$(@source_all) : member = $(call invoke,$@,eContainer)
-$(@source_all) : values_of = $(call invoke,$(member),getAnnotationValuesOfOption,$1)
+$(@source_all) : values_of = $(call source_annotation_values,$@,$1)
 
 my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
 my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
@@ -213,13 +220,10 @@ $(@source_rulemk) :
 		$(call gen_make_dep,$(o_file),$(mk_file)); \
 		$(call gen_make_tsvar,$(o_file),flags,$(flags)))
 
-my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
-
-$(@source_gen) : gen_script = $(call values_of,$(my_gen_script))
-
-$(@source_gen) : @file = $(MKGEN_DIR)/$(file)
+$(@source_gen) : @file = $(SRCGEN_DIR)/$(file)
+$(@source_gen) : script = $(call expand,$(call get,$(basename $@),value))
 
 $(@source_gen) :
 	@$(call cmd_notouch_stdout,$(@file), \
-		$(gen_script))
+		$(script))
 
