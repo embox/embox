@@ -245,4 +245,6 @@ typedef struct nfs_file_description {
 	nfs_fs_description_t *p_fs_dsc;
 } nfs_file_description_t;
 
+int mount_nfs_filesystem(void *par);
+
 #endif /* NFS_H_ */

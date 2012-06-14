@@ -21,7 +21,6 @@
 #include <fs/fs_drv.h>
 #include <fs/node.h>
 #include <fs/nfs.h>
-#include <fs/nfs_clientstate.h>
 #include <framework/example/self.h>
 #include <mem/page.h>
 #include <net/rpc/clnt.h>
