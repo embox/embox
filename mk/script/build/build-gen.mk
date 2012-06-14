@@ -110,9 +110,9 @@ build_sources := \
 @build_all = \
 	$(@build_image)
 
-all .PHONY : $(@build_all)
+#all .PHONY : $(@build_all)
 
-$(filter build-cmd-ld-image/%,$(build_model_targets)) : build-cmd-ld-image/% :
+$(@build_all) :
 	@$(foreach f,$(TARGET),$(call cmd_notouch_stdout,$(call gen_make_tsvar_list,,target_objects, \
 		echo '$(call flags,$f) -o $(basename $f).o -c'))
 
