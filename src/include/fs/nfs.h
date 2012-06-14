@@ -140,27 +140,34 @@
 #define MNTNAMLEN     255  /* Maximum bytes in a name */
 #define FHSIZE3        64  /* Maximum bytes in a V3 file handle */
 
-#define	VALUE_FOLLOWS_YES		0x00000001
 #define	STATUS_OK		        0x00000000
-#define	DIRCOUNT     2048
-#define	MAXDIRCOUNT  4064
+#define	VALUE_FOLLOWS_YES		0x00000001
+#define	NFS_EOF         		0x00000001
+#define	NFS_DIRECTORY_NODE_TYPE 0x2
+
+#define	DIRCOUNT     1024
+#define	MAXDIRCOUNT  2048
 
 #define	EMBOX_MACHNAME  "embox"
 
-typedef struct nfs_filehandle {
-	uint32_t len;
-	char name[64];
-	uint64_t cookie;
-	uint64_t cookieverf;
-	uint32_t count;
-	uint32_t maxcount;
-} nfs_filehandle_t;
-
 /* RPC string */
 typedef struct rpc_string {
-	char data[CONFIG_MAX_LENGTH_PATH_NAME];
 	size_t len;
+	char data[CONFIG_MAX_LENGTH_FILE_NAME];
 } rpc_string_t;
+
+typedef struct rpc_fh_string {
+	size_t len;
+	char data[FHSIZE3];
+} rpc_fh_string_t;
+
+typedef struct nfs_filehandle {
+	rpc_fh_string_t name_fh;
+	__u64 cookie;
+	__u64 cookieverf;
+	__u32 count;
+	__u32 maxcount;
+} nfs_filehandle_t;
 
 /* Body of a RPC replay to MOUNT Export command */
 typedef struct export_dir {
@@ -180,6 +187,7 @@ typedef struct mount_service {
 typedef struct file_name {
 	__u64 file_id;
 	rpc_string_t name;
+	__u64 cookie;
 } file_name_t;
 
 /* time of create file */
@@ -206,15 +214,19 @@ typedef struct file_attribute_rep {
 	time_sec_t ctime;
 } file_attribute_rep_t;
 
+typedef struct dir_attribute_rep {
+	file_attribute_rep_t dir_attr;
+	__u64 verifier;
+}dir_attribute_rep_t;
+
 /* READDIRPLUS command reply*/
-typedef struct readdir_reply {
-	__u32 vf_name;
+typedef struct readdir_desc {
 	file_name_t file_name;
 	__u32 vf_attr;
 	file_attribute_rep_t file_attr;
 	__u32 vf_fh;
 	nfs_filehandle_t file_handle;
-} readdir_reply_t;
+} readdir_desc_t;
 
 typedef struct nfs_fs_description {
 	char srv_name[CONFIG_MAX_LENGTH_PATH_NAME];
@@ -227,7 +239,7 @@ typedef struct nfs_fs_description {
 } nfs_fs_description_t;
 
 typedef struct nfs_file_description {
-	file_name_t name;
+	file_name_t name_dsc;
 	file_attribute_rep_t attr;
 	nfs_filehandle_t fh;
 	nfs_fs_description_t *p_fs_dsc;
