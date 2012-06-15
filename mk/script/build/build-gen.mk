@@ -12,24 +12,21 @@ include mk/script/script-common.mk
 #   2. The complete command which should output its result to the temporary
 #      file specified in the '$OUTFILE' environment variable.
 cmd_notouch = \
-	COMMAND=$(call sh_quote,{ $2; }); OUTFILE=$(call trim,$1);     \
-	$(eval_command)
-
-eval_command := \
-	if [ ! -f $$OUTFILE ];                                         \
-	then                                                           \
-		__OUTDIR=`dirname $$OUTFILE`;                              \
-			[ -d $$__OUTDIR ] || $(MKDIR) $$__OUTDIR;              \
-	else                                                           \
-		__COMMAND="$$COMMAND"; __OUTFILE=$$OUTFILE;                \
-		COMMAND='eval "$$__COMMAND"                                \
-			&& { cmp -s $$OUTFILE $$__OUTFILE >/dev/null 2>&1      \
-				|| $(MV) $$OUTFILE $$__OUTFILE && trap - EXIT; }   \
-			&& { COMMAND="$$__COMMAND"; OUTFILE=$$__OUTFILE; }';   \
-		OUTFILE=`mktemp -qt Mybuild.XXXXXXXX`                      \
-			&& trap "$(RM) $$OUTFILE" INT QUIT TERM HUP EXIT;      \
-	fi                                                             \
-		&& eval "$$COMMAND"
+	set_on_error_trap() { trap "$$1" INT QUIT TERM HUP EXIT; };            \
+	COMMAND=$(call sh_quote,set_on_error_trap "$(RM) $$OUTFILE"; { $2; }); \
+	OUTFILE=$(call trim,$1);                                               \
+	if [ ! -f $$OUTFILE ];                                                 \
+	then                                                                   \
+		__OUTDIR=`dirname $$OUTFILE`;                                      \
+		{ [ -d $$__OUTDIR ] || $(MKDIR) $$__OUTDIR; }                      \
+			&& eval "$$COMMAND" && set_on_error_trap -;                    \
+	else                                                                   \
+		__OUTFILE=$$OUTFILE; OUTFILE=$${TMPDIR:-/tmp}/Mybuild.$$$$;        \
+		eval "$$COMMAND"                                                   \
+			&& { cmp -s $$OUTFILE $$__OUTFILE >/dev/null 2>&1              \
+					|| { $(MV) $$OUTFILE $$__OUTFILE                       \
+							&& set_on_error_trap -; }; };                  \
+	fi
 
 #cmd_notouch = \
 	OUTFILE=$(call trim,$1); { $2; }
@@ -105,16 +102,24 @@ build_sources := \
 #
 
 @build_image := \
-	$(build_model:%=build-cmd-ld-image/%)
+	$(build_model:%=build-image-rule-mk/%)
 
 @build_all = \
 	$(@build_image)
 
 #all .PHONY : $(@build_all)
 
-$(@build_all) :
-	@$(foreach f,$(TARGET),$(call cmd_notouch_stdout,$(call gen_make_tsvar_list,,target_objects, \
-		echo '$(call flags,$f) -o $(basename $f).o -c'))
+build_image_rulemk_mk_pat = $(MKGEN_DIR)/%.rule.mk
+
+$(@build_image) : filename = image
+$(@build_image) : @file    = $(filename:%=$(build_image_rulemk_mk_pat))
+
+$(@build_image) :
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(gen_banner); \
+		$(call gen_make_var,module_path,$(path)); \
+		$(call gen_make_dep,$(a_file),$(mk_file)); \
+		$(call gen_make_tsvar_list,$(a_file),ar_objects,$(objs)))
 
 #
 # Per-module artifacts.
@@ -224,6 +229,8 @@ $(@source_gen) : @file = $(SRCGEN_DIR)/$(file)
 $(@source_gen) : script = $(call expand,$(call get,$(basename $@),value))
 
 $(@source_gen) :
-	@$(call cmd_notouch_stdout,$(@file), \
+# Plus sign is for case when generator script is also Make-based.
+# Avoids 'jobserver unavailable' warning for parallel builds.
+	+@$(call cmd_notouch_stdout,$(@file), \
 		$(script))
 
