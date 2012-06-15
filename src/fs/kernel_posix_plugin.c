@@ -39,7 +39,7 @@ static int this_ioctl(void *data, int request, va_list args) {
 	return fioctl(file, request, args);
 }
 
-const struct task_res_ops task_res_ops_file = {
+const struct task_idx_ops task_idx_ops_file = {
 	.close = this_close,
 	.read  = this_read,
 	.write = this_write,

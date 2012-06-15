@@ -21,7 +21,7 @@ static void task_root_init(struct task *new_task) {
 
 	new_task->parent = NULL;
 
-	task_res_idx_init(task_get_resources(new_task));
+	task_idx_table_init(task_idx_table(new_task));
 }
 
 struct task *task_kernel_task(void) {

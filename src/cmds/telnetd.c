@@ -224,17 +224,6 @@ static int exec(int argc, char **argv) {
 			MD(printf("Attempt to connect from address %s:%d",
 					inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)) );
 
-			{
-				/* Useless paranoidal check for descriptor allocation */
-				struct task_resources *t_r = task_self_res();
-				struct idx_desc *i_d = task_res_idx_get(t_r, client_descr);
-
-				if (!i_d) {
-					fatal_error("Socked descriptor doesn't belong to task resources", client_descr);
-				}
-			}
-
-
 			for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
 				if (clients[i] == -1) {
 					static struct thread th[TELNETD_MAX_CONNECTIONS];

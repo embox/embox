@@ -57,9 +57,9 @@ static int exec(int argc, char **argv) {
 
 	while (fread(&buff, 1, 1, fd) > 0) {
 		if (new_line && number) {
-			prom_printf("\t%d %c", line++, buff);
+			printf("\t%d %c", line++, buff);
 		} else {
-			prom_printf("%c", buff);
+			printf("%c", buff);
 		}
 		new_line = (buff == '\n') ? 1 : 0;
 	}

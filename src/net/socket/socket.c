@@ -28,14 +28,12 @@ static ssize_t this_write(void *socket, const void *buf, size_t nbyte);
 static int this_ioctl(void *socket, int request, va_list args);
 static int this_close(void *socket);
 
-const struct task_res_ops task_res_ops_socket = {
+const struct task_idx_ops task_idx_ops_socket = {
 	.read = this_read,
 	.write = this_write,
 	.close = this_close,
 	.ioctl = this_ioctl
 };
-
-/*ARRAY_SPREAD_ADD(__task_res_ops, &ops);*/
 
 static struct socket *idx2sock(int fd) {
 	return (struct socket *) task_self_idx_get(fd)->data;
@@ -51,7 +49,7 @@ int socket(int domain, int type, int protocol) {
 		return -1; /* return error code */
 	}
 
-	res = task_self_idx_alloc(&task_res_ops_socket, sock);
+	res = task_self_idx_alloc(&task_idx_ops_socket, sock);
 	if (res < 0) { // release socket if can't alloc idx
 		kernel_socket_release(sock);
 		/* TODO: EMFILE should be returned when no fids left for process to use.
@@ -150,7 +148,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		return -1;
 	}
 
-	res = task_self_idx_alloc(&task_res_ops_socket, new_sock);
+	res = task_self_idx_alloc(&task_idx_ops_socket, new_sock);
 	if (res < 0) {
 		kernel_socket_release(new_sock);
 		SET_ERRNO(EMFILE);  /* also could be ENFILE */

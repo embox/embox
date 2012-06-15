@@ -8,4 +8,4 @@
 
 #include <kernel/task.h>
 
-extern void task_res_idx_init(struct task_resources *res);
+extern void task_idx_table_init(struct task_idx_table *res);

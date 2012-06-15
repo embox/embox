@@ -988,7 +988,7 @@ static size_t get_sizeof_readdirentry(readdir_desc_t *file) {
 static int xdr_nfs_get_dirlist(struct xdr *xs, char *buff) {
 	char *point;
 	__u32 vf;
-	readdir_desc_t *file;
+	/*readdir_desc_t *file;*/
 
 	assert(buff != NULL);
 	point = buff;
@@ -1006,7 +1006,7 @@ static int xdr_nfs_get_dirlist(struct xdr *xs, char *buff) {
 								if(VALUE_FOLLOWS_YES ==
 										(*(__u32 *) point = vf)) {
 									point += sizeof(vf);
-									file = (readdir_desc_t *)point;
+									/*file = (readdir_desc_t *)point;*/
 									if(XDR_SUCCESS == xdr_nfs_get_dirdesc(xs,
 											point)) {
 										point += sizeof(readdir_desc_t);

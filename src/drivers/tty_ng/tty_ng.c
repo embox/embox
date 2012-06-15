@@ -25,6 +25,8 @@
 
 EMBOX_UNIT_INIT(tty_ng_manager_init);
 
+#define MAX_TTYS 10
+
 struct param {
 	struct tty_buf *tty;
 	void (*run)(void);
@@ -35,7 +37,7 @@ static int _write(void *data, const void *buf, size_t nbyte);
 static int _ioctl(void *data, int request, va_list args);
 static int _close (void *data);
 
-const struct task_res_ops task_res_ops_tty = {
+const struct task_idx_ops task_idx_ops_tty = {
 	.close = _close,
 	.read = _canon_read,
 	.write = _write,
@@ -52,20 +54,16 @@ static size_t _read(void *buf, size_t size, void *data) {
 
 	int i = size;
 
-//	mutex_lock(tty->inp_mutex);
-
 	while (i--) {
 		while (tty->inp_len == 0) {
-//			mutex_unlock(tty->inp_mutex);
+			/*thread_suspend(thread_self());*/
 			sleep(0);
-//			mutex_lock(tty->inp_mutex);
 		}
 
 		tty->inp_len -= 1;
 		*(ch_buf++) = tty->inp[tty->inp_begin];
 		tty->inp_begin = (tty->inp_begin + 1) % TTY_INP_Q_LEN;
 
-//		mutex_unlock(tty->inp_mutex);
 	}
 	return size;
 }
@@ -98,25 +96,19 @@ static int _write(void *data, const void *buf, size_t size) {
 }
 
 static void tty_putc_buf(struct tty_buf *tty, char ch) {
-
-//	mutex_lock(tty->inp_mutex);
-
 	while (tty->inp_len >= TTY_INP_Q_LEN) {
-//		mutex_unlock(tty->inp_mutex);
 		sleep(0);
-//		mutex_lock(tty->inp_mutex);
 	}
 
 	tty->inp[tty->inp_end] = ch;
 	tty->inp_end = (tty->inp_end + 1) % TTY_INP_Q_LEN;
 	tty->inp_len += 1;
 
-//	mutex_unlock(tty->inp_mutex);
 }
 
 static void *thread_handler(void* args) {
 	struct param *p = (struct param *) args;
-	struct idx_desc *cidx = task_idx_desc_alloc(&task_res_ops_tty, p->tty);
+	struct idx_desc *cidx = task_idx_desc_alloc(&task_idx_ops_tty, p->tty);
 
 	close(0);
 	close(1);
@@ -159,15 +151,14 @@ static void tty_init(struct tty_buf *tty) {
 	tty->canonical = 1;
 }
 
-extern fs_drv_t *devfs_get_fs(void);
+struct thread *thds[MAX_TTYS];
+struct tty_buf ttys[MAX_TTYS];
+struct param params[MAX_TTYS];
 
 void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(void)) {
-	struct thread *thds[count];
-	struct tty_buf ttys[count];
-	struct param params[count];
 	char ch;
 
-	if (count <= 0) {
+	if (count <= 0 || count > MAX_TTYS) {
 		return;
 	}
 
