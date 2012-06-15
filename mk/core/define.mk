@@ -1098,6 +1098,7 @@ define builtin_func-assert
 		)
 	)
 endef
+$(call def,builtin_func-assert)
 
 # Params:
 #   1. Function name.
@@ -1109,8 +1110,13 @@ define __assert_handle_failure
 			ASSERTION FAILED in function '$1': '$2'$(if $(value 3),: $3))
 endef
 
+# Does not support reporting the actual code that caused the failure.
+assert = \
+	$(assert $(call id,$1,the code is not available),$(value 2))
+
 else
 builtin_func-assert :=
+assert :=
 endif # DEF_NOASSERT
 
 #
@@ -1182,9 +1188,10 @@ endef
 $(def_all)
 
 # Expands the first argument.
-expand = $(expand $1)
-$(call def,expand)
-
+expand = \
+	$(expand $1)
+silent-expand = \
+	$(silent-expand $1)
 #
 # Extension: 'fx' builtin function.
 #
