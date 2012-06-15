@@ -107,27 +107,44 @@ build_sources := \
 @build_all = \
 	$(@build_image)
 
-#all .PHONY : $(@build_all)
+all .PHONY : $(@build_all)
 
-build_image_rulemk_mk_pat = $(MKGEN_DIR)/%.rule.mk
+build_image_rulemk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
+build_image_rulemk_target_pat = $(BIN_DIR)/%
 
-$(@build_image) : filename = image
-$(@build_image) : @file    = $(filename:%=$(build_image_rulemk_mk_pat))
+$(@build_image) : image = image
+
+$(@build_image) : @file    = $(image:%=$(build_image_rulemk_mk_pat))
+$(@build_image) : mk_file  = \
+		$(patsubst %,$(value build_image_rulemk_mk_pat),$$(build_image))
+$(@build_image) : target_file = \
+		$(patsubst %,$(value build_image_rulemk_target_pat),$$(build_image))
+
+$(@build_image) : archived_modules = $(suffix $(@module_ar_rulemk))
+$(@build_image) : normal_modules = $(filter-out $(archived_modules),$(build_modules))
+$(@build_image) : normal_sources = $(call get,$(normal_modules),sources)
+
+$(@build_image) : objs = $(patsubst %,$(source_rulemk_o_pat), \
+		$(call source_base,$(normal_sources)))
+$(@build_image) : libs = $(patsubst %,$(module_ar_rulemk_a_pat), \
+		$(call module_path,$(archived_modules)))
 
 $(@build_image) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
-		$(call gen_make_var,module_path,$(path)); \
-		$(call gen_make_dep,$(a_file),$(mk_file)); \
-		$(call gen_make_tsvar_list,$(a_file),ar_objects,$(objs)))
+		$(call gen_make_var,build_image,$(image)); \
+		$(call gen_make_dep,$(target_file),$(mk_file)); \
+		$(call gen_make_tsvar_list,$(target_file),ld_objs,$(objs)); \
+		$(call gen_make_tsvar_list,$(target_file),ld_libs,$(libs)))
 
 #
 # Per-module artifacts.
 #
 
 @module_h := $(build_modules:%=module-h/%)
-@module_ar_rulemk := $(patsubst %,module-ar-rule-mk/%, \
-	$(call filter_static_modules,$(build_modules)))
+@module_ar_rulemk := \
+	$(patsubst %,module-ar-rule-mk/%, \
+		$(call filter_static_modules,$(build_modules)))
 
 @module_all = \
 	$(@module_h) \
@@ -136,7 +153,7 @@ $(@build_image) :
 all .PHONY : $(@module_ar_rulemk)
 
 module_fqn  = $(call get,$(call get,$1,type),qualifiedName)
-module_path = $(subst .,/,$(fqn))
+module_path = $(subst .,/,$(module_fqn))
 
 $(@module_all) : fqn   = $(call module_fqn,$@)
 $(@module_all) : path  = $(call module_path,$@)
@@ -154,7 +171,7 @@ $(@module_ar_rulemk) :
 		$(gen_banner); \
 		$(call gen_make_var,module_path,$(path)); \
 		$(call gen_make_dep,$(a_file),$(mk_file)); \
-		$(call gen_make_tsvar_list,$(a_file),ar_objects,$(objs)))
+		$(call gen_make_tsvar_list,$(a_file),ar_objs,$(objs)))
 
 $(@module_h) : h_file = $(SRCGEN_DIR)/include/module/$(path).h
 
