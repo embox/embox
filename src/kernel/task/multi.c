@@ -10,31 +10,24 @@
 #include <kernel/thread/api.h>
 #include <mem/objalloc.h>
 #include <kernel/task.h>
-#include "index_desc.h"
+#include "common.h"
 
 #include <embox/unit.h> /* For options */
 
 OBJALLOC_DEF(task_pool, struct task, OPTION_GET(NUMBER, tasks_quantity));
 
-static void task_init(struct task *new_task, struct task *parent) {
-	struct task_idx_table *res = task_idx_table(new_task);
-	struct task_idx_table *par_res = task_idx_table(parent);
+static void task_init(struct task *task, struct task *parent) {
+	const struct task_resource_desc *res_desc;
+	task->parent = parent;
 
-	new_task->parent = parent;
+	INIT_LIST_HEAD(&task->threads);
 
-	task_idx_table_init(res);
+	list_add(&task->link, &parent->children);
 
-	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
-		if (!task_idx_table_is_binded(par_res, i)) {
-			continue;
-		}
-
-		task_idx_table_set(res, i, task_idx_table_get(par_res, i));
+	task_resource_foreach(res_desc) {
+		res_desc->inherit(task, parent);
 	}
 
-	INIT_LIST_HEAD(&new_task->threads);
-
-	list_add(&new_task->link, &parent->children);
 }
 
 int task_create(struct task **new, struct task *parent) {

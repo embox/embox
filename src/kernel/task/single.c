@@ -9,8 +9,6 @@
 #include <errno.h>
 #include <kernel/task.h>
 
-#include "index_desc.h"
-
 int task_create(struct task **new, struct task *parent) {
 	return -EPERM;
 }

@@ -8,15 +8,30 @@
 #include <embox/unit.h>
 #include <kernel/task.h>
 #include <mem/objalloc.h>
-
-#include "index_desc.h"
-
+#include "common.h"
 
 OBJALLOC_DEF(idx_res_pool, struct idx_desc, CONFIG_TASKS_RES_QUANTITY);
 
-void task_idx_table_init(struct task_idx_table *res) {
+void task_idx_table_init(struct task *task) {
+	struct task_idx_table *idx_table = task_idx_table(task);
+
 	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
-		task_idx_table_set(res, i, NULL);
+		task_idx_table_set(idx_table, i, NULL);
+	}
+}
+
+void task_idx_table_inherit(struct task *task, struct task *parent) {
+	struct task_idx_table *idx_table = task_idx_table(task);
+	struct task_idx_table *parent_idx_table = task_idx_table(parent);
+
+	task_idx_table_init(task);
+
+	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
+		if (!task_idx_table_is_binded(parent_idx_table, i)) {
+			continue;
+		}
+
+		task_idx_table_set(idx_table, i, task_idx_table_get(parent_idx_table, i));
 	}
 }
 
@@ -79,3 +94,10 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *data) {
 	return new_fd;
 }
 
+static const struct task_resource_desc idx_resource = {
+	.init = task_idx_table_init,
+	.inherit = task_idx_table_inherit,
+	.resource_size = sizeof(struct task_idx_table),
+};
+
+TASK_RESOURCE_DESC(&idx_resource);

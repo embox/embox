@@ -1,21 +1,32 @@
 package embox.kernel.task
 
-abstract module api { }
+abstract module api {
+}
+
+module task_environment { }
 
 module multi extends api {
 	option number tasks_quantity = 20
 
 	source "multi.c"
-	source "common.c", "index_desc.c"
+	source "common.c"
+
+	depends idx_table /* just for now */
 
 	depends embox.kernel.thread.sched
-	depends embox.driver.virtual.diag_device
 
 }
 
 module single extends api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "single.c"
-	source "common.c", "index_desc.c"
-	depends embox.driver.virtual.diag_device
+
+	source "common.c"
+
+	depends idx_table /* just for now */
 }
+
+module idx_table extends task_environment {
+	source "index_desc.c"
+}
+
