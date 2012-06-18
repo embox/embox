@@ -14,26 +14,37 @@
 
 EMBOX_UNIT_INIT(diag_env_init);
 
+static int check_valid(int fd, int reference_fd) {
+	if (fd == reference_fd) {
+		return 0;
+	}
+
+	for (int i = 0; i < reference_fd; i++) {
+		close(i);
+	}
+
+	if (fd < 0) {
+		return fd;
+	}
+
+	close(fd);
+	return -1;
+}
+
+
 int diag_env_init(void) {
 	int fd = open("/dev/diag", O_RDWR);
+	int res = 0;
 
-	if (fd != 0) {
-		close(fd);
-		return 1;
+	if ((res = check_valid(fd, 0)) != 0) {
+		return res;
 	}
 
-	/* Duplicating diag device for stdout */
-	if (1 != (fd = dup(0))) {
-		close(0);
-		close(fd);
-		return 1;
-	}
-
-	if (2 != (fd = dup(0))) {
-		close(0);
-		close(1);
-		close(fd);
-		return 1;
+	for (int i = 1; i <= 2; i++) {
+		fd = dup(0);
+		if ((res = check_valid(fd, i)) != 0) {
+			return res;
+		}
 	}
 
 	return 0;
