@@ -29,4 +29,5 @@ module bootstrap_posix_env extends posix_env {
     source "env/bs_posix_env.c"
 
     depends embox.kernel.task.api
+    depends embox.driver.virtual.diag_device
 }
