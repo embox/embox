@@ -11,6 +11,7 @@
 #include <mem/misc/pool.h>
 
 #include <kernel/time/timecounter.h>
+#include <hal/clock.h>
 
 POOL_DEF(timecounter_pool, struct timecounter, OPTION_GET(NUMBER,timecounter_quantity));
 struct timecounter *timecounter_alloc(void) {
@@ -45,9 +46,9 @@ void timecounter_init(struct timecounter *tc, struct clock_source *cs,
 
 	tc->cs = cs;
 
-	jiff = cs->read();
-	while (cs->read() == jiff);
-	tc->jiffies_last = cs->read();
+	jiff = clock_sys_ticks();
+	while (clock_sys_ticks() == jiff);
+	tc->jiffies_last = clock_sys_ticks();
 	tc->cycle_last = cs->cc->read(cs->cc);
 
 	tc->nsec = start_tstamp;

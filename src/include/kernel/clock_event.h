@@ -10,6 +10,7 @@
 #define KERNEL_CLOCK_EVENT_H_
 
 #include <kernel/clock_source.h>
+#include <util/array.h>
 //#include <kernel/ktime.h>
 #include <stdint.h>
 
