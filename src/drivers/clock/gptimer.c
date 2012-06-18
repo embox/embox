@@ -160,7 +160,7 @@ static int dev_regs_init(irq_nr_t *irq_nr) {
 static int dev_regs_init(irq_nr_t *irq_nr) {
 	assert(NULL != irq_nr);
 	dev_regs = (volatile struct gptimer_regs *) OPTION_GET(NUMBER,gptimer_base);
-	*irq_nr = CONFIG_GPTIMER_IRQ;
+	*irq_nr = OPTION_GET(NUMBER,irq_num);
 	return 0;
 }
 #else

@@ -81,7 +81,8 @@ static int unit_init(void) {
 	return 0;
 }
 
-#ifdef DRIVER_AMBAPP1
+
+#ifdef DRIVER_AMBAPP
 static int dev_regs_init(void) {
 	amba_dev_t amba_dev;
 	if (-1 == capture_amba_dev(&amba_dev, AMBAPP_VENDOR_GAISLER,

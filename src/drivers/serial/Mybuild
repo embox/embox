@@ -9,6 +9,9 @@ abstract module serial {
 
 module apbuart extends serial {
 	option number baud_rate
+	option number apbuart_base=2147483904
+	option number irq_num=2
+
 
 	source "apbuart.c"
 
@@ -16,6 +19,7 @@ module apbuart extends serial {
 	depends embox.driver.ambapp_api
 	depends embox.kernel.irq
 	depends embox.fs.driver.devfs
+
 }
 
 module at91_uart extends serial {
