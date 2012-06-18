@@ -22,16 +22,16 @@
 /* Supported address families. */
 #define N_FAMILIES_SUPPORTED 4
 enum supported_address_families{
-	AF_UNSPEC =  0,
-	AF_UNIX = 1,  /* Unix domain sockets */
-	AF_INET = 2,  /* Internet IP Protocol */
-	AF_PACKET = 17  /* Packet family */
+	AF_UNSPEC = 0,
+	AF_UNIX   = 1,  /* Unix domain sockets */
+	AF_INET   = 2,  /* Internet IP Protocol */
+	AF_PACKET = 17, /* Packet family */
+	AF_MAX
 };
 /* socket types are somewhy defined in net.h */
 
 #define AF_LOCAL AF_UNIX /* POSIX name for AF_UNIX */
 /* this should be removed. the link is socket_repo.c and so on */
-#define AF_MAX AF_PACKET /* valid only if AF_PACKET is last on list */
 
 /* Protocol families, same as address families. */
 #define PF_UNSPEC	AF_UNSPEC

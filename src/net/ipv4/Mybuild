@@ -1,22 +1,5 @@
 package embox.net
 
-module af_inet {
-	source "af_inet.c"
-
-	depends core /* for sock.c */
-	depends socket /* for socket_repo.c */
-	depends ipv4
-	depends embox.framework.LibFrameworkNet
-
-	source "ipconfig.c"
-
-	depends dev /* for dev.c */
-	depends core /* for devinet.c */
-
-	source "protocol.c"
-	depends embox.lib.LibC
-}
-
 module arp_queue {
 	source "arp_queue.c"
 
@@ -74,20 +57,6 @@ module ipv4 {
 	depends eth
 }
 
-module raw_sock {
-	/* FIXME:
-	 * 1.it depends from icmp
-	 * 2.it depends from ipv4
-	 * 3.it depends from udp
-	 */
-	source "raw_sock.c"
-
-	depends skbuff
-	depends core /* for sock.c */
-	depends embox.lib.LibC
-	depends embox.framework.LibFrameworkNet
-}
-
 module route {
 	source "route.c"
 
@@ -100,7 +69,6 @@ module tcp {
 	source "tcp.c"
 
 	depends skbuff
-	depends route
 	depends core
 	depends ipv4 /* for ip_output.c */
 	depends af_inet /* for af_inet.c */
@@ -108,7 +76,6 @@ module tcp {
 	depends embox.kernel.critical
 	depends embox.lib.LibC
 	depends embox.kernel.timer.sys_timer
-	depends embox.mem.objalloc
 	depends embox.framework.LibFrameworkNet
 }
 

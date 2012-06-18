@@ -211,7 +211,7 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 		/* res = sock_get_answer(sock->sk); */
 	 }
 
-	if(res < 0) {
+	if (res < 0) {
 		return (ssize_t)res;
 	}
 

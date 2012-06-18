@@ -100,12 +100,13 @@ struct net_device * ip_dev_find(in_addr_t addr) {
 
 bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
 	struct inetdev_info *indev_info;
-	struct list_head *tmp;
+	struct in_device *in_dev;
+	in_addr_t indev_anycast, indev_subnet, indev_broadcast;
 
-	if (check_broadcast)
-	{
-		if (addr == htonl(INADDR_BROADCAST))
+	if (check_broadcast) {
+		if (addr == htonl(INADDR_BROADCAST)) {
 			return true;
+		}
 
 #if 0	/* Obsoleted broadcast */
 		/* RFC 919/922 Section 7 - deprecated
@@ -117,31 +118,27 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
 #endif
 	}
 
-	if ( ipv4_is_multicast(addr) && check_multicast )
-	{
+	if (ipv4_is_multicast(addr) && check_multicast) {
 		return true;
 	}
 
-	list_for_each(tmp, &indev_info_list) {
-		indev_info = member_cast_out(tmp, struct inetdev_info, lnk);
+	list_for_each_entry(indev_info, &indev_info_list, lnk) {
 		if (indev_info->in_dev.ifa_address == addr) {
 			return true;
 		}
-		if (check_broadcast)
-		{
-			in_addr_t broad1 = indev_info->in_dev.ifa_anycast;									/* It MUST be init to INADDR_BROADCAST by default */
-			in_addr_t broad2 = indev_info->in_dev.ifa_address & indev_info->in_dev.ifa_mask;	/* Obsoleted broadcast, not used any more */
-			in_addr_t broad3 = indev_info->in_dev.ifa_broadcast;								/* If someone inited it to something strange */
-
-			if ( (addr == broad1) || (addr == broad2) || (addr == broad3) ) {
+		if (check_broadcast) {
+			in_dev = &indev_info->in_dev;
+			indev_anycast = in_dev->ifa_anycast; /* It MUST be init to INADDR_BROADCAST by default */
+			indev_subnet = in_dev->ifa_address & in_dev->ifa_mask; /* Obsoleted broadcast, not used any more */
+			indev_broadcast = in_dev->ifa_broadcast; /* If someone inited it to something strange */
+			if ((addr == indev_anycast) || (addr == indev_subnet) || (addr == indev_broadcast)) {
 				return true;
 			}
 		}
 	}
+
 	return false;
 }
-
-
 
 struct in_device * inet_dev_find_by_name(const char *if_name) {
 	struct inetdev_info *indev_info;

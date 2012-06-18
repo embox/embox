@@ -140,15 +140,15 @@ int sock_no_accept(struct socket *sock, struct socket *newsock, int flags) {
 	return -EOPNOTSUPP;
 }
 
-int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
+void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	assert(sk != NULL);
 	assert(sk->sk_receive_queue != NULL);
 	assert(skb != NULL);
 
 	skb_queue_tail(sk->sk_receive_queue, skb);
-	return ENOERR;
 }
 
+// TODO remove this
 int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
 			struct msghdr *msg, size_t size, int flags) {
 	assert(sock != NULL);

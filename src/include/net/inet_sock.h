@@ -75,7 +75,6 @@ typedef struct inet_sock {
 	struct ip_options *opt;
 	__be16         dport;
 	__be16         sport;
-	__u16          sport_type;
 	__u16          num;
 	in_addr_t      saddr;
 	__s16          uc_ttl;

@@ -15,7 +15,7 @@ module tcp_socket_test {
 	depends embox.net.socket
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
-	depends embox.net.tcp
+	depends embox.net.tcp_sock
 }
 
 module packet_socket_test {

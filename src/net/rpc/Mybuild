@@ -6,4 +6,6 @@ module rpc {
 	source "auth.c", "auth_none.c", "auth_unix.c"
 	source "pmap.c"
 	source "rpc_msg.c"
+
+	depends embox.mem.heap_api
 }

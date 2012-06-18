@@ -85,7 +85,7 @@ typedef struct sock {
 	void (* sk_error_report)(struct sock *sk);
 	int (* sk_backlog_rcv)(struct sock *sk, sk_buff_t *pack);
 	void (* sk_destruct)(struct sock *sk);
-	int (* get_port)(struct sock *sk, unsigned short num);
+//	int (* get_port)(struct sock *sk, unsigned short num); // TODO
 	int32_t sk_err;
 	bool ready;
 	struct event sock_is_ready;
@@ -120,7 +120,7 @@ enum sock_flags {
 typedef struct proto {
 	void (*close)(sock_t *sk, long timeout);
 	int (*connect)(sock_t *sk, sockaddr_t *addr, int addr_len);
-	int (*disconnect)(sock_t *sk, int flags);
+//	int (*disconnect)(sock_t *sk, int flags);
 	int (*listen)(sock_t *sk, int backlog);
 	int (*accept)(sock_t *sk, sock_t **newsk, sockaddr_t *addr, int *addr_len);
 	int (*ioctl)(struct sock *sk, int cmd, unsigned long arg);
@@ -163,7 +163,7 @@ extern sock_t *sk_alloc(/*struct net *net,*/int family, gfp_t priority,
 extern void sk_free(sock_t *sk);
 
 /** This function used by all transports to attempt to queue received packets*/
-extern int sock_queue_rcv_skb(sock_t *sk, sk_buff_t *skb);
+extern void sock_queue_rcv_skb(sock_t *sk, sk_buff_t *skb);
 
 /**
  * Functions to fill in entries in struct proto_ops when a protocol
