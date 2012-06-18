@@ -38,8 +38,13 @@ static int xdr_nfs_readdirplus(struct xdr *xs, nfs_filehandle_t *fh);
 static int xdr_nfs_get_dirlist(struct xdr *xs, char *buff);
 static int xdr_nfs_get_dirdesc(struct xdr *xs, char *point);
 static int xdr_nfs_get_attr(struct xdr *xs, char *point);
+static int xdr_nfs_read_file(struct xdr *xs, char *point);
+static int xdr_nfs_lookup(struct xdr *xs, char *point);
+static int xdr_nfs_write_file(struct xdr *xs, char *point);
 
 static int nfs_nfs_readdirplus(char *point, char *buff);
+static int nfs_lookup(node_t *node, nfs_file_description_t *fd);
+
 
 char snd_buf[MAXDIRCOUNT];
 char rcv_buf[MAXDIRCOUNT];
@@ -145,61 +150,51 @@ static file_operations_t nfsfs_fop = { nfsfs_fopen, nfsfs_fclose, nfsfs_fread,
  * file_operation
  */
 static void *nfsfs_fopen(struct file_desc *desc, const char *mode) {
-#if 0
+
 	node_t *nod;
-	uint8_t _mode;
-	//char path [CONFIG_MAX_LENGTH_PATH_NAME];
 	nfs_file_description_t *fd;
 
 	nod = desc->node;
 	fd = (nfs_file_description_t *)nod->attr;
 
 	if ('r' == *mode) {
-		_mode = O_RDONLY;
+		fd->fi.mode = O_RDONLY;
 	}
 	else if ('w' == *mode) {
-		_mode = O_WRONLY;
+		fd->fi.mode = O_WRONLY;
 	}
 	else {
-		_mode = O_RDONLY;
+		fd->fi.mode = O_RDONLY;
 	}
+	fd->fi.offset = 0;
 
-	/*nfsfs_set_path ((uint8_t *) path, nod);
-	cut_mount_dir((char *) path, fd->p_fs_dsc->root_name);
-
-	if(0 == nfs_open_file(fd, (uint8_t *)path, _mode, sector_buff)) {
+	if(0 == nfs_lookup(nod, fd)) {
 		return desc;
-	}*/
-#endif
+	}
 	return NULL;
 }
 
 static int nfsfs_fseek(void *file, long offset, int whence) {
-#if 0
+
 	struct file_desc *desc;
 	nfs_file_description_t *fd;
-	uint32_t curr_offset;
-
-	curr_offset = offset;
 
 	desc = (struct file_desc *) file;
 	fd = (nfs_file_description_t *)desc->node->attr;
 
 	switch (whence) {
 	case SEEK_SET:
+		fd->fi.offset = offset;
 		break;
 	case SEEK_CUR:
-		//curr_offset += fd->fi.pointer;
+		fd->fi.offset += offset;
 		break;
 	case SEEK_END:
-		//curr_offset = fd->fi.filelen;
+		fd->fi.offset = fd->attr.size;
 		break;
 	default:
 		return -1;
 	}
-
-	/*nfs_fseek(fd, curr_offset, sector_buff);*/
-#endif
 	return 0;
 }
 
@@ -208,44 +203,73 @@ static int nfsfs_fclose(struct file_desc *desc) {
 }
 
 static size_t nfsfs_fread(void *buf, size_t size, size_t count, void *file) {
-	size_t rezult;
-#if 0
+	struct timeval timeout = { 25, 0 };
+
 	size_t size_to_read;
 	struct file_desc *desc;
-	size_t rezult;
 	nfs_file_description_t *fd;
+	read_req_t req;
+	read_reply_t reply;
 
 	size_to_read = size * count;
 	desc = (struct file_desc *) file;
 	fd = (nfs_file_description_t *)desc->node->attr;
-#endif
-	rezult = 0; /*nfs_read_file(fd, sector_buff, buf, &bytecount, size_to_read);
-	if (0 == rezult) {
-		return bytecount;
-	}*/
-	return rezult;
+
+	/* set read structure */
+	req.count = size_to_read;
+	req.offset = fd->fi.offset;
+	req.fh = &fd->fh.name_fh;
+	reply.data = (char *) buf;
+
+	/* send read command */
+	if (clnt_call(p_fs_fd->nfs, NFSPROC3_READ,
+		(xdrproc_t)xdr_nfs_read_file, (char *) &req,
+		(xdrproc_t)xdr_nfs_read_file, (char *) &reply,
+		timeout) != RPC_SUCCESS) {
+		clnt_perror(p_fs_fd->nfs, p_fs_fd->srv_name);
+		printf("read file failed. errno=%d\n", errno);
+		return 0;
+	}
+	fd->fi.offset += size_to_read;
+
+	return reply.datalen;
 }
 
 static size_t nfsfs_fwrite(const void *buf, size_t size,
 	size_t count, void *file) {
-	size_t rezult;
-#if 0
+	struct timeval timeout = { 25, 0 };
+
 	size_t size_to_write;
 	struct file_desc *desc;
-	size_t rezult;
 	nfs_file_description_t *fd;
+	write_req_t req;
+	write_reply_t reply;
 
 	size_to_write = size * count;
 	desc = (struct file_desc *) file;
-
 	fd = (nfs_file_description_t *)desc->node->attr;
-#endif
-	rezult = 0;/*nfs_write_file(fd, sector_buff, (uint8_t *)buf,
-			&bytecount, size_to_write);
-	if (0 == rezult) {
-		return bytecount;
-	}*/
-	return rezult;
+
+	/* set read structure */
+	req.count = req.datalen = size_to_write;
+	req.data = (char *) buf;
+	req.offset = fd->fi.offset;
+	req.fh = &fd->fh.name_fh;
+	req.stable = FILE_SYNC;
+
+	reply.attr = &fd->attr;
+
+	/* send read command */
+	if (clnt_call(p_fs_fd->nfs, NFSPROC3_WRITE,
+		(xdrproc_t)xdr_nfs_write_file, (char *) &req,
+		(xdrproc_t)xdr_nfs_write_file, (char *) &reply,
+		timeout) != RPC_SUCCESS) {
+		clnt_perror(p_fs_fd->nfs, p_fs_fd->srv_name);
+		printf("write file failed. errno=%d\n", errno);
+		return 0;
+	}
+	fd->fi.offset += reply.count;
+
+	return reply.count;
 }
 
 static int nfsfs_ioctl(void *file, int request, va_list args) {
@@ -317,7 +341,7 @@ static int nfsfs_mount(void *par) {
 	return rezult;
 }
 
-static int create_dir_entry(char *parent) {
+int create_dir_entry(char *parent) {
 	node_t *parent_node, *node;
 	__u32 vf;
 	char *point;
@@ -349,14 +373,15 @@ static int create_dir_entry(char *parent) {
 		}
 
 		point = rcv_buf;
+
 		vf = *(__u32 *)point;
 		if(STATUS_OK != vf) {
 			free(rcv_buf);
 			return -1;
 		}
 		point += sizeof(vf);
-		vf = *(__u32 *)point;
 
+		vf = *(__u32 *)point;
 		if(VALUE_FOLLOWS_YES != vf) {
 			break;
 		}
@@ -409,10 +434,9 @@ static int create_dir_entry(char *parent) {
 			node->file_info = (void *) &nfsfs_fop;
 			node->attr = (void *)fd;
 
-			if (NFS_DIRECTORY_NODE_TYPE ==
-					(node->properties = (int) fd->attr.type)){
+			if (NFS_DIRECTORY_NODE_TYPE == fd->attr.type) {
 				if((0 != strcmp(fd->name_dsc.name.data, "."))
-						&& (0 != strcmp(fd->name_dsc.name.data, ".."))) {
+					&& (0 != strcmp(fd->name_dsc.name.data, ".."))) {
 					create_dir_entry(full_path);
 				}
 
@@ -452,36 +476,24 @@ static int nfsfs_create(void *par) {
 		node_quantity = 1;
 	}
 
-	for (int count = 0; count < node_quantity; count ++) {
-		if(0 < count) {
-			if(1 == count) {
-				strcat(param->path, "/.");
-			}
-			else if(2 == count) {
-				strcat(param->path, ".");
-			}
-			node = vfs_add_path (param->path, NULL);
-		}
+	node = vfs_add_path (param->path, NULL);
 
-		fd = nfs_fileinfo_alloc();
-		fd->p_fs_dsc = ((nfs_file_description_t *)
-				parents_node->attr)->p_fs_dsc;
-		node->fs_type = &nfsfs_drv;
-		node->file_info = (void *) &nfsfs_fop;
-		node->attr = (void *)fd;
+	fd = nfs_fileinfo_alloc();
+	fd->p_fs_dsc = ((nfs_file_description_t *)
+			parents_node->attr)->p_fs_dsc;
+	node->fs_type = &nfsfs_drv;
+	node->file_info = (void *) &nfsfs_fop;
+	node->attr = (void *)fd;
 
-		/*
-		 * nfsfs_create_file called only once for the newly created directory.
-		 * Creation of dir . and .. occurs into the function nfsfs_create_file.
-		 */
-		/*if(0 >= count) {
-			nfsfs_create_file(par);
-		}*/
-	}
-	/* cut /.. from end of PATH, if need */
-	if (1 < node_quantity) {
-		param->path[strlen(param->path) - 3] = '\0';
-	}
+	/* set dir filehandle	 */
+
+	/* set new file name */
+
+	/* set attribute of new file */
+
+	/* send nfs CREATE command*/
+
+	/* set new file filehandle and attribute*/
 
 	return 0;
 }
@@ -508,6 +520,39 @@ static int nfsfs_delete(const char *fname) {
 }
 
 DECLARE_FILE_SYSTEM_DRIVER(nfsfs_drv);
+
+
+static int nfs_lookup(node_t *node, nfs_file_description_t *fd){
+	struct timeval timeout = { 25, 0 };
+
+	node_t *dir_node;
+	nfs_file_description_t *dir_fd;
+	lookup_req_t req;
+	lookup_reply_t reply;
+	if(NULL ==
+			(dir_node = vfs_find_parent((const char *) &node->name, node))) {
+		return -1;
+	}
+
+	/* set lookup structure */
+	req.fname = &fd->name_dsc.name;
+	dir_fd = (nfs_file_description_t *) dir_node->attr;
+	req.dir_fh = &dir_fd->fh.name_fh;
+
+	reply.fh = &fd->fh.name_fh;
+
+	/* send read command */
+	if (clnt_call(p_fs_fd->nfs, NFSPROC3_LOOKUP,
+		(xdrproc_t)xdr_nfs_lookup, (char *) &req,
+		(xdrproc_t)xdr_nfs_lookup, (char *) &reply,
+		timeout) != RPC_SUCCESS) {
+		clnt_perror(p_fs_fd->mnt, p_fs_fd->srv_name);
+		printf("nfs lookup failed. errno=%d\n", errno);
+		return -1;
+	}
+	return 0;
+}
+
 
 static int nfs_unix_auth_set(struct client *clnt) {
 	if (NULL == clnt)  {
@@ -686,12 +731,6 @@ static int nfs_nfs_readdirplus(char *point, char *buff) {
 	return 0;
 }
 
-static int nfs_call(uint32_t proc) {
-
-	return 0;
-
-}
-
 static int nfs_client_init(void) {
 
 	nfs_clnt_destroy(p_fs_fd);
@@ -787,14 +826,6 @@ int mount_nfs_filesystem(void *par) {
 	return 0;
 }
 
-int nfs_statfs(void) {
-
-	nfs_call(NFSPROC3_NULL);
-	nfs_call(NFSPROC3_FSSTAT);
-	nfs_call(NFSPROC3_FSINFO);
-	return 0;
-}
-
 static int xdr_mnt_export(struct xdr *xs, export_dir_t *export) {
 	char *point;
 
@@ -859,6 +890,128 @@ static int xdr_nfs_name_fh(struct xdr *xs, rpc_fh_string_t *fh) {
 	}
 
 	return XDR_FAILURE;
+}
+
+static int xdr_nfs_lookup(struct xdr *xs, char *point) {
+
+	lookup_req_t *req;
+	lookup_reply_t *reply;
+
+	assert(point != NULL);
+
+	switch (xs->oper) {
+		case XDR_DECODE:
+			reply = (lookup_reply_t *)point;
+			if (xdr_u_int(xs, &reply->status) && (STATUS_OK == reply->status)
+				&& xdr_nfs_name_fh(xs, reply->fh)
+				&& xdr_u_int(xs, &reply->obj_vf)
+				&& (VALUE_FOLLOWS_YES == reply->obj_vf)
+				&& xdr_nfs_get_attr(xs, (char *) &reply->attr)
+				&& xdr_u_int(xs, &reply->dir_vf)
+				&& (VALUE_FOLLOWS_YES == reply->dir_vf)
+				&& xdr_nfs_get_attr(xs, (char *) &reply->dir_attr)) {
+				return XDR_SUCCESS;
+			}
+			break;
+		case XDR_ENCODE:
+			req = (lookup_req_t *)point;
+
+			if (xdr_nfs_name_fh(xs, req->dir_fh)
+					&& xdr_nfs_namestring(xs, req->fname)) {
+				return XDR_SUCCESS;
+			}
+			break;
+		case XDR_FREE:
+			return XDR_SUCCESS;
+		}
+
+		return XDR_FAILURE;
+}
+
+static int xdr_nfs_read_file(struct xdr *xs, char *point) {
+
+	read_req_t *req;
+	read_reply_t *reply;
+	char *data;
+
+	assert(point != NULL);
+
+	switch (xs->oper) {
+		case XDR_DECODE:
+			reply = (read_reply_t *)point;
+			data = reply->data;
+			if (xdr_u_int(xs, &reply->status) && (STATUS_OK == reply->status)
+				&& xdr_u_int(xs, &reply->vf)
+				&& (VALUE_FOLLOWS_YES == reply->vf)
+				&& xdr_nfs_get_attr(xs, (char *) &reply->attr)
+				&& xdr_u_int(xs, &reply->count)
+				&& xdr_u_int(xs, &reply->eof)
+				&& xdr_bytes(xs, (char **)&data, &reply->datalen, DIRCOUNT)) {
+				return XDR_SUCCESS;
+			}
+			break;
+		case XDR_ENCODE:
+			req = (read_req_t *)point;
+
+			if (xdr_nfs_name_fh(xs, req->fh)
+					&& xdr_u_hyper(xs, &req->offset)
+					&& xdr_u_int(xs, &req->count)) {
+				return XDR_SUCCESS;
+			}
+			break;
+		case XDR_FREE:
+			return XDR_SUCCESS;
+		}
+
+		return XDR_FAILURE;
+}
+
+static int xdr_nfs_write_file(struct xdr *xs, char *point) {
+
+	write_req_t *req;
+	write_reply_t *reply;
+	char *data;
+
+	assert(point != NULL);
+
+	switch (xs->oper) {
+		case XDR_DECODE:
+			reply = (write_reply_t *)point;
+			if (xdr_u_int(xs, &reply->status) && (STATUS_OK == reply->status)
+				&& xdr_u_int(xs, &reply->before_vf)) {
+
+				if (VALUE_FOLLOWS_YES == reply->before_vf) {
+					if (XDR_SUCCESS != xdr_nfs_get_attr(xs,
+						(char *) &reply->before_attr)) {
+							break;
+						}
+					}
+
+				if (xdr_u_int(xs, &reply->vf)
+					&& (VALUE_FOLLOWS_YES == reply->vf)
+					&& xdr_nfs_get_attr(xs, (char *) reply->attr)
+					&& xdr_u_int(xs, &reply->count)
+					&& xdr_u_int(xs, &reply->comitted)
+					&& xdr_u_hyper(xs, &reply->cookie_vrf)) {
+						return XDR_SUCCESS;
+					}
+			}
+			break;
+		case XDR_ENCODE:
+			req = (write_req_t *)point;
+			data = req->data;
+
+			if (xdr_nfs_name_fh(xs, req->fh) && xdr_u_hyper(xs, &req->offset)
+				&& xdr_u_int(xs, &req->count) && xdr_u_int(xs, &req->stable)
+				&&  xdr_bytes(xs, (char **)&data, &req->datalen, DIRCOUNT)) {
+				return XDR_SUCCESS;
+			}
+			break;
+		case XDR_FREE:
+			return XDR_SUCCESS;
+		}
+
+		return XDR_FAILURE;
 }
 
 static int xdr_nfs_readdirplus(struct xdr *xs, nfs_filehandle_t *fh) {

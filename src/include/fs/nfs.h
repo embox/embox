@@ -11,7 +11,6 @@
 #define NFS_H_
 
 #include <stdint.h>
-#include <fs/fat.h>
 #include <fs/ramdisk.h>
 #include <net/ip.h>
 #include <net/socket.h>
@@ -123,6 +122,8 @@
 #define NFSPROC3_PATHCONF       20
 #define NFSPROC3_COMMIT         21
 
+#define FILE_SYNC      2
+
 /*
  * RPC definitions for the mount deamon
  */
@@ -228,6 +229,67 @@ typedef struct readdir_desc {
 	nfs_filehandle_t file_handle;
 } readdir_desc_t;
 
+/* LOOKUP file request*/
+typedef struct lookup_req {
+	rpc_fh_string_t *dir_fh;
+	rpc_string_t *fname;
+}lookup_req_t;
+
+/* LOOKUP file reply*/
+typedef struct lookup_reply {
+	__u32 status;
+	rpc_fh_string_t *fh;
+	__u32 obj_vf;
+	file_attribute_rep_t attr;
+	__u32 dir_vf;
+	file_attribute_rep_t dir_attr;
+}lookup_reply_t;
+
+/* READ file request*/
+typedef struct read_req {
+	rpc_fh_string_t *fh;
+	__u64 offset;
+	__u32 count;
+}read_req_t;
+
+/* READ file reply*/
+typedef struct read_reply {
+	__u32 status;
+	__u32 vf;
+	file_attribute_rep_t attr;
+	__u32 count;
+	__u32 eof;
+	__u32 datalen;
+	char *data;
+}read_reply_t;
+
+/* WRITE file request*/
+typedef struct write_req {
+	rpc_fh_string_t *fh;
+	__u64 offset;
+	__u32 count;
+	__u32 stable;
+	__u32 datalen;
+	char *data;
+}write_req_t;
+
+/* WRITE file reply*/
+typedef struct write_reply {
+	__u32 status;
+	__u32 before_vf;
+	file_attribute_rep_t before_attr;
+	__u32 vf;
+	file_attribute_rep_t *attr;
+	__u32 count;
+	__u32 comitted;
+	__u64 cookie_vrf;
+}write_reply_t;
+
+typedef struct fileinfo {
+	uint8_t mode;				/* mode in which this file was opened */
+	__u64 offset;			/* current (BYTE) pointer */
+} file_info_t;
+
 typedef struct nfs_fs_description {
 	char srv_name[CONFIG_MAX_LENGTH_PATH_NAME];
 	char srv_dir[CONFIG_MAX_LENGTH_PATH_NAME];
@@ -243,6 +305,7 @@ typedef struct nfs_file_description {
 	file_attribute_rep_t attr;
 	nfs_filehandle_t fh;
 	nfs_fs_description_t *p_fs_dsc;
+	file_info_t fi;
 } nfs_file_description_t;
 
 int mount_nfs_filesystem(void *par);
