@@ -30,6 +30,7 @@ struct time_event_device {
 	void (*event_handler)(void);
 	int (*config)(enum device_config conf, void *param);
 	uint32_t resolution;
+	uint32_t jiffies;
 	const char *name;
 };
 

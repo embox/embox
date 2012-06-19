@@ -24,6 +24,22 @@ void clock_source_init(const struct clock_source *cs) {
 	}
 }
 
+ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device *cd) {
+		int old_jiffies;
+		cycle_t cycles, cycles_all;
+		int cycles_per_jiff = cd->resolution /
+				ed->resolution;
+
+		do {
+			old_jiffies = ed->jiffies;
+			cycles = cd->read();
+		} while(old_jiffies != ed->jiffies);
+
+		cycles_all = cycles + old_jiffies * cycles_per_jiff;
+
+		return cycles_to_ns(cd, cycles_all);
+}
+
 const struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	const struct clock_source *cs, *best;
 	int best_resolution;

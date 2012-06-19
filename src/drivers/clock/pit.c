@@ -99,45 +99,29 @@ static cycle_t i8253_read(void) {
 	return cnt;
 }
 
-static int volatile jiffies = 0;
-
-static ns_t read(void) {
-		int old_jiffies;
-		cycle_t cycles, cycles_all;
-		int cycles_per_jiff = pit_clock_source.counter_device->resolution /
-				pit_clock_source.event_device->resolution;
-
-		do {
-			old_jiffies = jiffies;
-			cycles = i8253_read();
-		} while(old_jiffies != jiffies);
-
-		cycles_all = cycles + old_jiffies * cycles_per_jiff;
-
-		return cycles_to_ns(pit_clock_source.counter_device, cycles_all);
-}
-
 static irq_return_t clock_handler(int irq_nr, void *dev_id) {
-		jiffies++;
+		pit_event_device.jiffies++;
         clock_tick_handler(irq_nr, dev_id);
         return IRQ_HANDLED;
 }
 
 static struct time_event_device pit_event_device = {
 	.init = pit_clock_init,
+	.jiffies = 0,
 	.config = pit_clock_setup,
 	.resolution = PIT_HZ
 };
 
 static struct time_counter_device pit_counter_device = {
-	.resolution = INPUT_CLOCK,
+	.read = i8253_read,
+	.resolution = INPUT_CLOCK
 };
 
 static struct clock_source pit_clock_source = {
 	.name = "pit",
 	.event_device = &pit_event_device,
 	.counter_device = &pit_counter_device,
-	.read = read
+	.read = clock_source_read /* attach default read function */
 };
 
 CLOCK_SOURCE(&pit_clock_source);

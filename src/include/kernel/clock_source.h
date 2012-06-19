@@ -41,7 +41,7 @@ struct clock_source {
 	struct time_event_device *event_device;
 	struct time_counter_device *counter_device;
 	uint32_t flags; /**< periodical or not */
-	ns_t (*read)(void);
+	ns_t (*read)(struct time_event_device *ed, struct time_counter_device *cd);
 };
 
 extern uint32_t clock_source_clock_to_sec(struct clock_source *cs, uint32_t sys_ticks);
@@ -53,6 +53,8 @@ static inline ns_t cycles_to_ns(struct time_counter_device *counter, cycle_t cyc
 extern const struct clock_source *clock_source_get_best(enum clock_source_property property);
 
 extern void clock_source_init(const struct clock_source *cs);
+
+extern ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device *cd);
 
 #define CLOCK_SOURCE(ts) \
         extern const struct clock_source * __clock_devices[]; \

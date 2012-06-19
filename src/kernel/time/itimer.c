@@ -30,9 +30,9 @@ void itimer_init(struct itimer *it, const struct clock_source *cs,
 	assert(cs);
 
 	it->cs = cs;
-	it->start_value = start_tstamp + cs->read();
+	it->start_value = start_tstamp + cs->read(cs->event_device, cs->counter_device);
 }
 
 ns_t itimer_read(struct itimer *it) {
-	return it->cs->read() - it->start_value;
+	return it->cs->read(it->cs->event_device, it->cs->counter_device) - it->start_value;
 }
