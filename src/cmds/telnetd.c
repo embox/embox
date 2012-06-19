@@ -167,10 +167,6 @@ static void *telnet_thread_handler(void* args) {
 		/* Run shell */
 	run();
 
-	close(0);
-	close(1);
-	close(2);
-
 	*client_descr_p = -1;
 
 	return NULL;
@@ -226,14 +222,9 @@ static int exec(int argc, char **argv) {
 
 			for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
 				if (clients[i] == -1) {
-					static struct thread th[TELNETD_MAX_CONNECTIONS];
-					static struct thread *thds[TELNETD_MAX_CONNECTIONS];
 					clients[i] = client_descr;
 
-					thds[i] = &th[i];
-					if ((res = thread_create(&thds[i],
-							THREAD_FLAG_PRIORITY_INHERIT | THREAD_FLAG_IN_NEW_TASK | THREAD_FLAG_DETACHED,
-							telnet_thread_handler, &clients[i]))) {
+					if ((res = new_task(telnet_thread_handler, &clients[i]))) {
 						out_msgs("Internal error with shell creation\n", " failed. Can't create shell\n",
 								 "shell_create", client_descr, &client_socket);
 						MD(printf("thread_create() returned with code=%d\n", res));

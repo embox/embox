@@ -5,6 +5,8 @@
  * @date 16.09.11
  * @author Anton Kozlov
  */
+
+#include <string.h>
 #include <embox/unit.h>
 #include <kernel/task.h>
 #include <mem/objalloc.h>
@@ -12,28 +14,33 @@
 
 OBJALLOC_DEF(idx_res_pool, struct idx_desc, CONFIG_TASKS_RES_QUANTITY);
 
-void task_idx_table_init(struct task *task) {
-	struct task_idx_table *idx_table = task_idx_table(task);
+static void task_idx_table_init(struct task *task, void* _idx_table) {
+	struct task_idx_table *idx_table = (struct task_idx_table *) _idx_table;
+	task->idx_table = idx_table;
 
-	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
-		task_idx_table_set(idx_table, i, NULL);
-	}
+	memset(idx_table, 0, sizeof(struct task_idx_table));
+
 }
 
-void task_idx_table_inherit(struct task *task, struct task *parent) {
+static void task_idx_table_inherit(struct task *task, struct task *parent) {
 	struct task_idx_table *idx_table = task_idx_table(task);
 	struct task_idx_table *parent_idx_table = task_idx_table(parent);
 
-	task_idx_table_init(task);
-
 	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
-		if (!task_idx_table_is_binded(parent_idx_table, i)) {
-			continue;
-		}
-
 		task_idx_table_set(idx_table, i, task_idx_table_get(parent_idx_table, i));
 	}
 }
+
+static void task_idx_table_deinit(struct task *task) {
+	struct task_idx_table *idx_table = task_idx_table(task);
+
+	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
+		task_idx_table_unbind(idx_table, i);
+	}
+
+	task->idx_table = NULL;
+}
+
 
 /*static*/ struct idx_desc *task_idx_desc_alloc(const struct task_idx_ops *res_ops, void *data) {
 	struct idx_desc *desc = objalloc(&idx_res_pool);
@@ -97,6 +104,7 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *data) {
 static const struct task_resource_desc idx_resource = {
 	.init = task_idx_table_init,
 	.inherit = task_idx_table_inherit,
+	.deinit = task_idx_table_deinit,
 	.resource_size = sizeof(struct task_idx_table),
 };
 

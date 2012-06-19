@@ -26,7 +26,7 @@ struct task {
 
 	struct list_head threads; /**< @brief Threads which have task pointer this task */
 
-	struct task_idx_table idx_table; /**< @brief Resources which task have */
+	struct task_idx_table *idx_table; /**< @brief Resources which task have */
 
 	int errno; /**< @brief Last occured error code */
 };
@@ -37,18 +37,10 @@ struct task {
  * @return Task resources from task
  */
 static inline struct task_idx_table *task_idx_table(struct task *task) {
-	return &task->idx_table;
+	return task->idx_table;
 }
 
-/**
- * @brief Create new task with resources inhereted from parent task
- *
- * @param new Pointer where new task's pointer will be stored
- * @param parent Pointer to a parent task
- *
- * @return 0 for success, negative on error occur
- */
-extern int task_create(struct task **new, struct task *parent);
+extern int new_task(void *(*run)(void *), void *arg);
 
 /**
  * @brief Get self task (task which current execution thread associated with)
@@ -56,15 +48,6 @@ extern int task_create(struct task **new, struct task *parent);
  * @return Pointer to self task
  */
 extern struct task *task_self(void);
-
-/**
- * @brief TODO
- *
- * @param tsk
- *
- * @return
- */
-extern int task_delete(struct task *tsk);
 
 /**
  * @brief Kernel task

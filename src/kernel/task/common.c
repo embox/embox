@@ -6,17 +6,32 @@
  * @date 06.12.2011
  * @author Anton Bondarev
  */
+
+#include <errno.h>
 #include <embox/unit.h>
 #include <kernel/task.h>
+#include <kernel/thread/sched_lock.h>
+#include <lib/list.h>
+#include <kernel/thread/api.h>
 #include "common.h"
 
 EMBOX_UNIT_INIT(tasks_init);
 
-static struct task kernel_task;
+#define MAX_RES_SUM_SIZE OPTION_GET(NUMBER, max_resource_size)
+
+static char kernel_task[sizeof(struct task) + MAX_RES_SUM_SIZE];
 
 ARRAY_SPREAD_DEF(const struct task_resource_desc *, task_resource_desc_array);
 
-static void task_root_init(struct task *task) {
+static size_t resource_sum_size = 0;
+
+size_t task_resource_sum_size(void) {
+	return resource_sum_size;
+}
+
+struct task *task_init(void *task_n_res_space) {
+	struct task *task = (struct task *) task_n_res_space;
+	void *res_ptr = task_n_res_space + sizeof(struct task);
 	const struct task_resource_desc *res_desc;
 
 	INIT_LIST_HEAD(&task->threads);
@@ -26,18 +41,30 @@ static void task_root_init(struct task *task) {
 	task->parent = NULL;
 
 	task_resource_foreach(res_desc) {
-		res_desc->init(task);
+		res_desc->init(task, res_ptr);
+		res_ptr += res_desc->resource_size;
 	}
+
+	return task;
 
 }
 
 struct task *task_kernel_task(void) {
-	return &kernel_task;
+	return (struct task *) kernel_task;
 }
 
 static int tasks_init(void) {
+	const struct task_resource_desc *res_desc;
 
-	task_root_init(&kernel_task);
+	task_resource_foreach(res_desc) {
+		resource_sum_size += res_desc->resource_size;
+	}
+
+	if (MAX_RES_SUM_SIZE < resource_sum_size) {
+		return -ENOMEM;
+	}
+
+	task_init(kernel_task);
 
 	return 0;
 }

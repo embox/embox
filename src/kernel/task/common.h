@@ -10,12 +10,17 @@
 #include <util/array.h>
 
 struct task_resource_desc {
-	void (*init)(struct task *task);
+	void (*init)(struct task *task, void *resource_space);
 	void (*inherit)(struct task *task, struct task *parent_task);
+	void (*deinit)(struct task *task);
 	size_t resource_size; /* to be used in on-stack allocation */
 };
 
 extern const struct task_resource_desc *task_resource_desc_array[];
+
+extern size_t task_resource_sum_size(void);
+
+extern struct task *task_init(void *task_n_res_space);
 
 #define TASK_RESOURCE_DESC(...) \
 	ARRAY_SPREAD_ADD(task_resource_desc_array, __VA_ARGS__)

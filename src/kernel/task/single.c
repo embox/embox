@@ -8,8 +8,9 @@
 
 #include <errno.h>
 #include <kernel/task.h>
+#include "common.h"
 
-int task_create(struct task **new, struct task *parent) {
+int new_task(void *(*run)(void *), void *arg) {
 	return -EPERM;
 }
 
@@ -19,4 +20,3 @@ struct task *task_self(void) {
 	 */
 	return task_kernel_task();
 }
-

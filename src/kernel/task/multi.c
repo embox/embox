@@ -8,15 +8,79 @@
 
 #include <errno.h>
 #include <kernel/thread/api.h>
-#include <mem/objalloc.h>
+#include <mem/misc/pool.h>
 #include <kernel/task.h>
 #include "common.h"
 
 #include <embox/unit.h> /* For options */
 
-OBJALLOC_DEF(task_pool, struct task, OPTION_GET(NUMBER, tasks_quantity));
+typedef void *(*run_fn)(void *);
 
-static void task_init(struct task *task, struct task *parent) {
+/* used for passing params from caller to thread creator*/
+struct task_creat_param {
+	run_fn run;
+	void *arg;
+};
+
+/* struct's livecycle is short: created in new_task,
+ * freed at first in new task's thread */
+POOL_DEF(creat_param, struct task_creat_param, 5);
+
+static void *task_trampoline(void *arg);
+static void thread_set_task(struct thread *t, struct task *tsk);
+static void task_init_parent(struct task *task, struct task *parent);
+
+int new_task(void *(*run)(void *), void *arg) {
+	struct task_creat_param *param = (struct task_creat_param *) pool_alloc(&creat_param);
+	struct thread *thd = NULL;
+	struct task *self_task = NULL;
+	int res = 0;
+	const int task_sz = task_resource_sum_size() + sizeof(struct task);
+
+	if (!param) {
+		return -EAGAIN;
+	}
+
+	param->run = run;
+	param->arg = arg;
+
+	if (0 != (res = thread_create(&thd, THREAD_FLAG_SUSPENDED, task_trampoline, param))) {
+		return res;
+	}
+
+	/* alloc space for task & resources on top of created thread's stack */
+
+	self_task = task_init(thd->stack);
+
+	thd->stack += task_sz;
+	thd->stack_sz -= task_sz;
+
+	context_set_stack(&thd->context, thd->stack + thd->stack_sz);
+
+	/* init new task */
+
+	thread_set_task(thd, self_task);
+
+	task_init_parent(self_task, task_self());
+
+	thread_detach(thd);
+
+	thread_resume(thd);
+
+	return 0;
+
+}
+
+struct task *task_self(void) {
+	return thread_self()->task;
+}
+
+static void thread_set_task(struct thread *t, struct task *tsk) {
+	t->task = tsk;
+	list_move_tail(&t->task_link, &tsk->threads);
+}
+
+static void task_init_parent(struct task *task, struct task *parent) {
 	const struct task_resource_desc *res_desc;
 	task->parent = parent;
 
@@ -30,22 +94,41 @@ static void task_init(struct task *task, struct task *parent) {
 
 }
 
-int task_create(struct task **new, struct task *parent) {
-	assert(parent != NULL);
+static void task_remove(struct task *task) {
+	struct thread *thread;
+	const struct task_resource_desc *res_desc;
 
-	if (NULL == (*new = (struct task *) objalloc(&task_pool))) {
-		return -ENOMEM;
+	list_del(&task->link);
+
+	sched_lock();
+
+	/* suspend everything except us */
+	list_for_each_entry(thread, &task->threads, task_link) {
+		if (thread == thread_self()) {
+			continue;
+		}
+		thread_suspend(thread);
 	}
 
-	task_init(*new, parent);
+	sched_unlock();
 
-	return ENOERR;
+	task_resource_foreach(res_desc) {
+		res_desc->deinit(task);
+	}
 }
 
-struct task *task_self(void) {
-	return thread_self()->task;
+static void *task_trampoline(void *arg) {
+	struct task_creat_param *param = (struct task_creat_param *) arg;
+	void *run_arg = param->arg;
+	run_fn run = param->run;
+	void *res = NULL;
+
+	pool_free(&creat_param, param);
+
+	res = run(run_arg);
+
+	task_remove(task_self());
+
+	return res;
 }
 
-int task_delete(struct task *tsk) {
-	return 0;
-}

@@ -15,6 +15,7 @@
 #include <fs/ioctl.h>
 #include <fs/file_desc.h>
 #include <kernel/thread/api.h>
+#include <kernel/task.h>
 #include <lib/linenoise.h>
 #include <drivers/tty_ng.h>
 #include <embox/unit.h>
@@ -168,7 +169,7 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 
 		params[i].tty = &ttys[i];
 		params[i].run = run;
-		thread_create(&thds[i], THREAD_FLAG_IN_NEW_TASK, thread_handler, &params[i]);
+		new_task(thread_handler, &params[i]);
 	}
 
 	current_tty = &ttys[0];

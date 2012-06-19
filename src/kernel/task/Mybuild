@@ -1,15 +1,20 @@
 package embox.kernel.task
 
-abstract module api {
+module api {
+	option number max_resource_size = 256
+	source "common.c"
+	depends embox.kernel.thread.core
+	depends api_impl
 }
+
+abstract module api_impl { }
 
 module task_environment { }
 
-module multi extends api {
+module multi extends api_impl {
 	option number tasks_quantity = 20
 
 	source "multi.c"
-	source "common.c"
 
 	depends idx_table /* just for now */
 
@@ -17,11 +22,10 @@ module multi extends api {
 
 }
 
-module single extends api {
+module single extends api_impl {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "single.c"
 
-	source "common.c"
 
 	depends idx_table /* just for now */
 }
