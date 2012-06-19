@@ -12,33 +12,33 @@
 
 #include <kernel/clock_source.h>
 #include <kernel/clock_event.h>
-#include <kernel/ktime.h>
-#include <kernel/time/timecounter.h>
+#include <kernel/time/ktime.h>
+#include <kernel/time/itimer.h>
 
 EMBOX_EXAMPLE(run);
 
-static const struct clock_event_device *dev;
+static const struct clock_source *cs;
 
 static int measured_loop(int cycles_loop) {
 	volatile int i;
 	ns_t time_after;
-	struct timecounter tc;
+	struct itimer it;
 
-	timecounter_init(&tc, dev->cs, 0);
+	itimer_init(&it, cs, 0);
 	for (i = 0; i < cycles_loop; i++) {
 	}
-	time_after = timecounter_read(&tc);
-	printf("spent = %d\n", (int) time_after);
+	time_after = itimer_read(&it);
+	printf("			spent = %d\n", (int) time_after);
 
 	return 0;
 }
 
 static int run(int argc, char **argv) {
-	dev = cedev_get_by_name("pit");
-	measured_loop(10000);
+	cs = clock_source_get_best(CYCLES);
+	//measured_loop(10000);
 	for (int i = 0; i < 100; i++) {
 		measured_loop(1000);
 	}
-	measured_loop(100);
+	//measured_loop(100);
 	return ENOERR;
 }

@@ -5,7 +5,7 @@
  * @date 16.05.2012
  * @author Alexander Kalmuk
  */
-
+#if 0
 #include <util/array.h>
 #include <string.h>
 #include <kernel/clock_event.h>
@@ -22,6 +22,10 @@ const struct clock_event_device *cedev_get_by_name(const char *name) {
 	}
 
 	return NULL;
+}
+
+uint32_t clock_source_clock_to_sec(struct clock_source *cs, uint32_t ticks) {
+	return ticks / cs->event_device->resolution;
 }
 
 const struct clock_event_device *cedev_get_best(enum resolution_mode mode) {
@@ -53,3 +57,4 @@ const struct clock_event_device *cedev_get_best(enum resolution_mode mode) {
 
 	return best;
 }
+#endif

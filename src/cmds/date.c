@@ -13,7 +13,7 @@
 #include <stdint.h>
 
 #include <hal/clock.h>
-#include <kernel/ktime.h>
+#include <kernel/time/ktime.h>
 #include <kernel/clock_source.h>
 
 EMBOX_CMD(exec);

@@ -23,7 +23,7 @@
 #include <embox/net/proto.h>
 #include <framework/net/proto/api.h>
 
-#include <kernel/ktime.h>
+#include <kernel/time/ktime.h>
 
 #include <err.h>
 

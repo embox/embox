@@ -8,19 +8,25 @@
 #ifndef KERNEL_TIME_KTIME_H_
 #define KERNEL_TIME_KTIME_H_
 
-struct timespec {
-	long sec;    /* seconds */
-	long nsec;   /* nanoseconds */
+#include <kernel/clock_source.h>
+
+//move to posix
+struct ktimespec {
+	long tv_sec;    /* seconds */
+	long tv_nsec;   /* nanoseconds */
 };
 
-struct timeval {
-	long sec;    /* seconds */
-	long usec;   /* microseconds */
+//move to posix
+struct ktimeval {
+	long tv_sec;    /* seconds */
+	long tv_usec;   /* microseconds */
 };
 
-struct timehw {
-	long events;
-	long cycles;
-};
+extern struct ktimeval *ktime_get_timeval(struct ktimeval *tv);
+extern struct ktimespec *ktime_get_timespec(struct ktimespec *ts);
+extern ns_t ktime_get_ns(void);
+
+/* Return active time source. */
+extern struct clock_source *ktime_get_time_source(void);
 
 #endif /* KERNEL_TIME_KTIME_H_ */

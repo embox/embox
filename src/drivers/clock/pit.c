@@ -15,19 +15,22 @@
 #include <kernel/irq.h>
 #include <kernel/panic.h>
 #include <util/array.h>
-//#include <embox/unit.h>
+#include <stdio.h>
 
 #include <kernel/clock_source.h>
 #include <kernel/clock_event.h>
-#include <kernel/ktime.h>
+#include <kernel/time/ktime.h>
 
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ0               0x0
 
 #define PIT_HZ 1000
-static void pit_clock_setup(uint32_t mode);
+static int pit_clock_setup(enum device_config conf, void *param);
 static int pit_clock_init(void);
+
 static struct clock_source pit_clock_source;
+static struct time_event_device pit_event_device;
+static struct time_counter_device pit_counter_device;
 
 //EMBOX_UNIT_INIT(pit_clock_init);
 
@@ -84,11 +87,10 @@ static struct clock_source pit_clock_source;
 #define PIT_16BIT       0x30    /* r/w counter 16 bits, LSB first */
 #define PIT_BCD         0x01    /* count in BCD */
 
-static cycle_t i8253_read(const struct cyclecounter *cc) {
+static cycle_t i8253_read(void) {
 	int cnt;
 
 	out8(0x00, MODE_REG);
-	/* mb irq_lock */
 	cnt = in8(CHANNEL0);
 	cnt |= in8(CHANNEL0) << 8;
 
@@ -97,66 +99,71 @@ static cycle_t i8253_read(const struct cyclecounter *cc) {
 	return cnt;
 }
 
-static volatile uint32_t pit_jiffies = 0;
+static int volatile jiffies = 0;
 
-static inline uint32_t pit_get_jiffies(void) {
-	return pit_jiffies;
+static ns_t read(int *jiff) {
+		int old_jiffies;
+		cycle_t cycles, cycles_all;
+		int cycles_per_jiff = pit_clock_source.counter_device->resolution /
+				pit_clock_source.event_device->resolution;
+
+		do {
+			old_jiffies = jiffies;
+			cycles = i8253_read();
+		} while(old_jiffies != jiffies);
+
+		cycles_all = cycles + old_jiffies * cycles_per_jiff;
+
+		return cycles_to_ns(pit_clock_source.counter_device, cycles_all);
 }
 
-static struct cyclecounter cc = {
-	.read = i8253_read,
-	.mult = 1,
-	.shift = 0
+static irq_return_t clock_handler(int irq_nr, void *dev_id) {
+		jiffies++;
+        clock_tick_handler(irq_nr, dev_id);
+        return IRQ_HANDLED;
+}
+
+static struct time_event_device pit_event_device = {
+	.init = pit_clock_init,
+	.config = pit_clock_setup,
+	.resolution = PIT_HZ
 };
 
-static struct clock_event_device pit_device = {
-	.set_mode = pit_clock_setup,
-	.init = pit_clock_init,
-	.cs = &pit_clock_source,
+static struct time_counter_device pit_counter_device = {
 	.resolution = INPUT_CLOCK,
-	.name = "pit"
 };
 
 static struct clock_source pit_clock_source = {
 	.name = "pit",
-	.flags = 0, /* this flag will be set to correct value by set_mod function */
-	.resolution = PIT_HZ,
-	.dev = &pit_device,
-	.read = pit_get_jiffies,
-	.cc = &cc
+	.event_device = &pit_event_device,
+	.counter_device = &pit_counter_device,
+	.read = read
 };
 
+CLOCK_SOURCE(&pit_clock_source);
 
-CLOCK_EVENT_DEVICE(&pit_device);
-
-static irq_return_t clock_handler(int irq_nr, void *dev_id) {
-	pit_jiffies++;
-	clock_tick_handler(irq_nr, dev_id);
-	return IRQ_HANDLED;
-}
+static int inited = 0;
 
 static int pit_clock_init(void) {
-	/* Initialization and registration of clock source structure */
-	pit_clock_source.flags = 1;
-	clock_source_register(&pit_clock_source);
+	if	(!inited) {
+		pit_clock_setup(PIT_RATEGEN, NULL);
 
-	/* Calculate mult/shift constants to set clock_source used by timer */
-	clock_source_calc_mult_shift(&pit_clock_source, INPUT_CLOCK, 0);
+		if (ENOERR != irq_attach((irq_nr_t) IRQ0,
+			(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
+			panic("pit timer irq_attach failed");
+		}
 
-	/* Setup initial mode to allow to use timer immediately after initialization
-	 * of this module */
-	pit_clock_setup(PIT_RATEGEN);
-
-	if (ENOERR != irq_attach((irq_nr_t) IRQ0,
-		(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
-		panic("pit timer irq_attach failed");
+		inited = 1;
 	}
 
-	return 0;
+	return ENOERR;
 }
 
-static void pit_clock_setup(uint32_t mode) {
+static int pit_clock_setup(enum device_config conf, void *param) {
 	uint32_t divisor = (INPUT_CLOCK + PIT_HZ / 2) /PIT_HZ;
+
+	pit_clock_source.flags = 1;
+
 	/* Propose switch by all modes in future */
 	/* Set control byte */
 	out8(PIT_RATEGEN | PIT_16BIT | PIT_SEL0, MODE_REG);
@@ -164,4 +171,6 @@ static void pit_clock_setup(uint32_t mode) {
 	/* Send divisor */
 	out8(divisor & 0xFF, CHANNEL0);
 	out8((divisor >> 8) & 0xFF, CHANNEL0);
+
+	return ENOERR;
 }

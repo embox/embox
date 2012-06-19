@@ -39,7 +39,8 @@ static struct clock_source jiffies = {
 	.flags = 1,
 };
 
-clock_t clock_sys_sec(void) {
+
+uint32_t clock_sys_sec(void) {
 	return clock_source_clock_to_sec(&jiffies, clock_sys_ticks());
 }
 
@@ -49,18 +50,17 @@ clock_t clock_sys_sec(void) {
  * @return 0 if success
  */
 static int module_init(void) {
-	const struct clock_event_device *dev;
+	const struct clock_source *cs;
 
 	/* find clock_event_device with maximal resolution  */
-	dev = cedev_get_best(JIFFIES);
-	assert(dev);
-	assert(dev->cs);
+	cs = clock_source_get_best(JIFFIES);
+	assert(cs);
 
-	/* set and register clock_source */
-	jiffies.resolution = dev->cs->resolution;
-	clock_source_register(&jiffies);
+	jiffies.event_device = cs->event_device;
+
 	/* set periodic mode */
-	dev->set_mode(CLOCK_EVT_MODE_PERIODIC);
+	clock_source_init(&jiffies);
+	cs->event_device->config(EVENT_PERIODIC, NULL);
 
 	softirq_install(SOFTIRQ_NR_TIMER, soft_clock_handler,NULL);
 

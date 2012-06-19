@@ -6,8 +6,8 @@
  * @author Alexander Kalmuk
  */
 
-#ifndef KERNEL_TIME_SOURCE_H_
-#define KERNEL_TIME_SOURCE_H_
+#ifndef KERNEL_TIME_TIME_SOURCE_H_
+#define KERNEL_TIME_TIME_SOURCE_H_
 
 #include <lib/list.h>
 #include <kernel/time/ktime.h>
@@ -26,4 +26,4 @@ struct time_source {
 	const char *name;
 };
 
-#endif /* KERNEL_TIME_SOURCE_H_ */
+#endif /* KERNEL_TIME_TIME_SOURCE_H_ */

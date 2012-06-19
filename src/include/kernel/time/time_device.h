@@ -5,17 +5,15 @@
  * @author Alexander Kalmuk
  */
 
-#ifndef KERNEL_TIME_DEVICE_H_
-#define KERNEL_TIME_DEVICE_H_
+#ifndef KERNEL_TIME_TIME_DEVICE_H_
+#define KERNEL_TIME_TIME_DEVICE_H_
+
+#include <stdint.h>
+#include <kernel/time/time_types.h>
 
 enum device_config {
 	EVENT_ONESHOT = 1,
 	EVENT_PERIODIC = 0
-};
-
-enum counter_type {
-	COUNTER_MONOTONIC = 0,
-	COUNTER_PERIODIC = 1
 };
 
 /**
@@ -42,13 +40,11 @@ struct time_event_device {
  * @param init - init function.
  * @param resolution - number of cycles per second.
  * @param read - return current number of cycles.
- * @param type - periodic or monotonic
  */
 struct time_counter_device {
 	int (*init)(void);
 	uint32_t resolution;
 	cycle_t (*read)(void);
-	enum counter_type type;
 };
 
-#endif /* KERNEL_TIME_DEVICE_H_ */
+#endif /* KERNEL_TIME_TIME_DEVICE_H_ */

@@ -1,10 +1,10 @@
 package embox.cmd
 
-@Cmd(name = "clock",
+@Cmd(name = "date",
 	help = "Print or set the system date and times",
 	man = '''
 		NAME
-			clock - Print or set the system date and time
+			date - Print or set the system date and time
 		SYNOPSIS
 			date [[[[[CC]YY]MM]DD]hh]mm[.ss]
 		DESCRIPTION

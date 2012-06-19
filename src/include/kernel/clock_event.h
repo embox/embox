@@ -9,6 +9,7 @@
 #ifndef KERNEL_CLOCK_EVENT_H_
 #define KERNEL_CLOCK_EVENT_H_
 
+#if 0
 #include <kernel/clock_source.h>
 #include <util/array.h>
 //#include <kernel/ktime.h>
@@ -17,11 +18,6 @@
 /* timer's modes */
 #define CLOCK_EVT_MODE_ONESHOT  0
 #define CLOCK_EVT_MODE_PERIODIC 1
-
-enum resolution_mode {
-	JIFFIES = 0,
-	TICKS = 1
-};
 
 /**
  * Abstraction for hardware clock sources.
@@ -47,5 +43,6 @@ extern const struct clock_event_device *cedev_get_best(enum resolution_mode mode
 #define CLOCK_EVENT_DEVICE(cedev) \
 	extern const struct clock_event_device * __clock_devices[]; \
 	ARRAY_SPREAD_ADD(__clock_devices, cedev);
+#endif
 
 #endif /* KERNEL_CLOCK_EVENT_H_ */
