@@ -26,18 +26,13 @@ void itimer_free(struct itimer *it) {
 
 void itimer_init(struct itimer *it, const struct clock_source *cs,
 		ns_t start_tstamp) {
-	int s;
 	assert(it);
 	assert(cs);
 
 	it->cs = cs;
-	it->start_value = start_tstamp + cs->read(&s);
+	it->start_value = start_tstamp + cs->read();
 }
 
 ns_t itimer_read(struct itimer *it) {
-	int f;
-	ns_t s;
-	s= it->cs->read(&f);
-	printf("%d ",f);
-	return s - it->start_value;
+	return it->cs->read() - it->start_value;
 }

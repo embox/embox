@@ -41,7 +41,7 @@ struct clock_source {
 	struct time_event_device *event_device;
 	struct time_counter_device *counter_device;
 	uint32_t flags; /**< periodical or not */
-	ns_t (*read)(int *);
+	ns_t (*read)(void);
 };
 
 extern uint32_t clock_source_clock_to_sec(struct clock_source *cs, uint32_t sys_ticks);

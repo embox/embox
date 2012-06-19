@@ -101,7 +101,7 @@ static cycle_t i8253_read(void) {
 
 static int volatile jiffies = 0;
 
-static ns_t read(int *jiff) {
+static ns_t read(void) {
 		int old_jiffies;
 		cycle_t cycles, cycles_all;
 		int cycles_per_jiff = pit_clock_source.counter_device->resolution /
