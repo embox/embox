@@ -12,13 +12,13 @@
 #include <time.h>
 #include <hal/clock.h>
 #include <kernel/clock_source.h>
-#include <kernel/ktime.h>
+#include <kernel/time/ktime.h>
 
 
 clock_t clock(void) {
 	return clock_sys_ticks();
 }
-
+#if 0
 int clock_getres(clockid_t clk_id, struct timespec *res) {
 	struct clock_source *cs;
 	cs =  clock_source_get_default();
@@ -28,6 +28,8 @@ int clock_getres(clockid_t clk_id, struct timespec *res) {
 
 	return cs->resolution;
 }
+#endif
+
 static struct timespec *ns2timespec(ns_t ns, struct timespec *ts) {
 	ts->tv_sec = ns / USEC_PER_SEC;
 	ts->tv_nsec = ns % USEC_PER_SEC;
