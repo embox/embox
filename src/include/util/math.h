@@ -61,7 +61,7 @@
  * @param val Value
  * @return Number of first 1 in Value
  */
-static inline int blog2(int val);
+extern int blog2(int val);
 
 extern double floor(double x);
 extern float floorf(float x);

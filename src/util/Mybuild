@@ -10,6 +10,7 @@ static module LibUtil {
 	source "binary_heap.c"
 	source "ring_buff.c"
 	source "sys_log.c"
+	source "math.c"
 
 	depends embox.lib.LibC
 	/*requires embox.mem.iobjalloc.rt_alloc	*/
