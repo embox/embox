@@ -275,6 +275,15 @@ typedef struct create_reply {
 	file_attribute_rep_t obj_attr;
 }create_reply_t;
 
+/* DELETE file reply*/
+typedef struct delete_reply {
+	__u32 status;
+	__u32 before_vf;
+	file_attribute_rep_t before_attr;
+	__u32 dir_vf;
+	file_attribute_rep_t *dir_attr;
+} delete_reply_t;
+
 /* READ file request*/
 typedef struct read_req {
 	rpc_fh_string_t *fh;

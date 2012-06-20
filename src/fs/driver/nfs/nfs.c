@@ -42,6 +42,7 @@ static int xdr_nfs_read_file(struct xdr *xs, char *point);
 static int xdr_nfs_lookup(struct xdr *xs, char *point);
 static int xdr_nfs_write_file(struct xdr *xs, char *point);
 static int xdr_nfs_create(struct xdr *xs, char *point);
+static int xdr_nfs_delete(struct xdr *xs, char *point);
 
 static int nfs_nfs_readdirplus(char *point, char *buff);
 static int nfs_lookup(node_t *node, nfs_file_description_t *fd);
@@ -87,12 +88,14 @@ static nfs_fs_description_t *nfs_fsinfo_alloc(void) {
 	return desc;
 }
 
+/*
 static void nfs_fsinfo_free(nfs_fs_description_t *desc) {
 	if (NULL == desc) {
 		return;
 	}
 	list_add((struct list_head*) param_to_head_fs(desc), &nfs_free_fs);
 }
+*/
 
 /* nfs file description pool */
 
@@ -441,11 +444,14 @@ int create_dir_entry(char *parent) {
 			node->attr = (void *)fd;
 
 			if (NFS_DIRECTORY_NODE_TYPE == fd->attr.type) {
+				node->properties = DIRECTORY_NODE_TYPE;
 				if((0 != strcmp(fd->name_dsc.name.data, "."))
 					&& (0 != strcmp(fd->name_dsc.name.data, ".."))) {
 					create_dir_entry(full_path);
 				}
-
+			}
+			else {
+				node->properties = FILE_NODE_TYPE;
 			}
 
 			point += sizeof(*predesc);
@@ -534,23 +540,50 @@ static int nfsfs_create(void *par) {
 }
 
 static int nfsfs_delete(const char *fname) {
+	struct timeval timeout = { 25, 0 };
+
 	nfs_file_description_t *fd;
-	node_t *nod;
-	//char path [CONFIG_MAX_LENGTH_PATH_NAME];
+	node_t *node;
+	node_t *dir_node;
+	nfs_file_description_t *dir_fd;
+	lookup_req_t req;
+	delete_reply_t reply;
+	__u32 procnum;
 
-	nod = vfs_find_node(fname, NULL);
-	fd = nod->attr;
+	node = vfs_find_node(fname, NULL);
+	fd = (nfs_file_description_t *) node->attr;
 
-	/*nfsfs_set_path ((uint8_t *) path, nod);
-	cut_mount_dir((char *) path, fd->p_fs_dsc->root_name);
-
-	if(nfs_unlike_file(fd, (uint8_t *) path, (uint8_t *) sector_buff)) {
+	if(NULL ==
+			(dir_node = vfs_find_parent((const char *) &node->name, node))) {
 		return -1;
-	}*/
+	}
+
+	/* set delete structure */
+	req.fname = &fd->name_dsc.name;
+	dir_fd = (nfs_file_description_t *) dir_node->attr;
+	req.dir_fh = &dir_fd->fh.name_fh;
+
+	if (DIRECTORY_NODE_TYPE == (node->properties & DIRECTORY_NODE_TYPE)) {
+		procnum = NFSPROC3_RMDIR;
+	}
+	else {
+		procnum = NFSPROC3_REMOVE;
+	}
+
+	reply.dir_attr = &dir_fd->attr;
+
+	/* send delete command */
+	if (clnt_call(p_fs_fd->nfs, procnum,
+		(xdrproc_t)xdr_nfs_delete, (char *) &req,
+		(xdrproc_t)xdr_nfs_delete, (char *) &reply,
+		timeout) != RPC_SUCCESS) {
+		clnt_perror(p_fs_fd->mnt, p_fs_fd->srv_name);
+		printf("nfs delete failed. errno=%d\n", errno);
+		return -1;
+	}
 
 	nfs_fileinfo_free(fd);
-	if(0)nfs_fsinfo_free(fd->p_fs_dsc);
-	vfs_del_leaf(nod);
+	vfs_del_leaf(node);
 	return 0;
 }
 
@@ -946,6 +979,46 @@ static int xdr_nfs_lookup(struct xdr *xs, char *point) {
 				&& (VALUE_FOLLOWS_YES == reply->dir_vf)
 				&& xdr_nfs_get_attr(xs, (char *) &reply->dir_attr)) {
 				return XDR_SUCCESS;
+			}
+			break;
+		case XDR_ENCODE:
+			req = (lookup_req_t *)point;
+
+			if (xdr_nfs_name_fh(xs, req->dir_fh)
+					&& xdr_nfs_namestring(xs, req->fname)) {
+				return XDR_SUCCESS;
+			}
+			break;
+		case XDR_FREE:
+			return XDR_SUCCESS;
+		}
+
+		return XDR_FAILURE;
+}
+
+static int xdr_nfs_delete(struct xdr *xs, char *point) {
+
+	lookup_req_t *req;
+	delete_reply_t *reply;
+
+	assert(point != NULL);
+
+	switch (xs->oper) {
+		case XDR_DECODE:
+			reply = (delete_reply_t *)point;
+			if (xdr_u_int(xs, &reply->status) && (STATUS_OK == reply->status)
+				&& xdr_u_int(xs, &reply->before_vf)) {
+				if (VALUE_FOLLOWS_YES == reply->before_vf) {
+					if(XDR_SUCCESS !=
+						xdr_nfs_get_attr(xs, (char *) &reply->before_attr)) {
+						break;
+					}
+				}
+				if (xdr_u_int(xs, &reply->dir_vf)
+					&& (VALUE_FOLLOWS_YES == reply->dir_vf)
+					&& xdr_nfs_get_attr(xs, (char *) reply->dir_attr)) {
+					return XDR_SUCCESS;
+				}
 			}
 			break;
 		case XDR_ENCODE:
