@@ -30,7 +30,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 1) {
-		creat(argv[argc - 1], 0);
+		return creat(argv[argc - 1], 0);
 	}
 
 	return 0;

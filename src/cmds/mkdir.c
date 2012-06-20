@@ -31,7 +31,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 1) {
-		mkdir(argv[argc - 1], 0);
+		return mkdir(argv[argc - 1], 0);
 	}
 
 	return 0;

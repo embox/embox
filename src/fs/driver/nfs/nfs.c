@@ -41,6 +41,7 @@ static int xdr_nfs_get_attr(struct xdr *xs, char *point);
 static int xdr_nfs_read_file(struct xdr *xs, char *point);
 static int xdr_nfs_lookup(struct xdr *xs, char *point);
 static int xdr_nfs_write_file(struct xdr *xs, char *point);
+static int xdr_nfs_create(struct xdr *xs, char *point);
 
 static int nfs_nfs_readdirplus(char *point, char *buff);
 static int nfs_lookup(node_t *node, nfs_file_description_t *fd);
@@ -219,6 +220,7 @@ static size_t nfsfs_fread(void *buf, size_t size, size_t count, void *file) {
 	req.count = size_to_read;
 	req.offset = fd->fi.offset;
 	req.fh = &fd->fh.name_fh;
+	reply.datalen = 0;
 	reply.data = (char *) buf;
 
 	/* send read command */
@@ -324,8 +326,10 @@ static int nfsfs_mount(void *par) {
 		dir_node->properties = DIRECTORY_NODE_TYPE;
 	}
 
-	fs_des = nfs_fsinfo_alloc();
-	fd = nfs_fileinfo_alloc();
+	if ((NULL == (fs_des = nfs_fsinfo_alloc())) ||
+			(NULL == (fd = nfs_fileinfo_alloc()))) {
+		return -ENOMEM;
+	}
 	fd->p_fs_dsc = fs_des;
 
 	dir_node->fs_type = &nfsfs_drv;
@@ -409,7 +413,9 @@ int create_dir_entry(char *parent) {
 					free(rcv_buf);
 					return -1;/*device not found*/
 				}
-				fd = nfs_fileinfo_alloc();
+				if(NULL == (fd = nfs_fileinfo_alloc())) {
+					return -1;
+				}
 			}
 			else {
 				fd = (nfs_file_description_t *) node->attr;
@@ -459,43 +465,72 @@ int create_dir_entry(char *parent) {
 }
 
 static int nfsfs_create(void *par) {
+	struct timeval timeout = { 25, 0 };
+
 	file_create_param_t *param;
-	nfs_file_description_t *fd;
+	nfs_file_description_t *par_fd, *fd;
 	node_t *node, *parents_node;
-	int node_quantity;
+	create_req_t  req;
+	rpc_string_t name;
+	create_reply_t reply;
+	__u32 procnum;
+	char path[CONFIG_MAX_LENGTH_FILE_NAME];
+	char tail[CONFIG_MAX_LENGTH_FILE_NAME];
 
 	param = (file_create_param_t *) par;
 
 	node = (node_t *)param->node;
 	parents_node = (node_t *)param->parents_node;
+	par_fd = (nfs_file_description_t *) parents_node->attr;
 
 	if (DIRECTORY_NODE_TYPE == (node->properties & DIRECTORY_NODE_TYPE)) {
-		node_quantity = 3; /* need create . and .. directory */
+		req.create_mode = UNCHECKED_MODE;
+		req.mode = 0x01ff;
+		req.type = NFS_DIRECTORY_NODE_TYPE;
+		req.size = 512;
+		procnum = NFSPROC3_MKDIR;
 	}
 	else {
-		node_quantity = 1;
+		req.create_mode = GURDED_MODE;
+		req.mode = 0x31ff;
+		req.type = NFS_FILE_NODE_TYPE;
+		req.size = 0;
+		procnum = NFSPROC3_CREATE;
 	}
 
-	node = vfs_add_path (param->path, NULL);
-
-	fd = nfs_fileinfo_alloc();
-	fd->p_fs_dsc = ((nfs_file_description_t *)
-			parents_node->attr)->p_fs_dsc;
-	node->fs_type = &nfsfs_drv;
-	node->file_info = (void *) &nfsfs_fop;
-	node->attr = (void *)fd;
-
-	/* set dir filehandle	 */
+	/* set dir filehandle */
+	req.new.dir_fh = &par_fd->fh.name_fh;
 
 	/* set new file name */
+	memset((void *) &name, 0, sizeof(name));
+	strcpy(name.data, node->name);
+	name.len = strlen(node->name);
+	req.new.fname = &name;
 
 	/* set attribute of new file */
+	req.mode_vf = req.uid_vf = req.gid_vf = req.size_vf =
+			req.set_atime =	req.set_mtime =  0x00000001;
+	req.uid = req.gid = 0;
 
-	/* send nfs CREATE command*/
+	/* send nfs CREATE command   */
+	if (clnt_call(p_fs_fd->nfs, procnum,
+		(xdrproc_t)xdr_nfs_create, (char *) &req,
+		(xdrproc_t)xdr_nfs_create, (char *) &reply,
+		timeout) != RPC_SUCCESS) {
+		clnt_perror(p_fs_fd->mnt, p_fs_fd->srv_name);
+		printf("nfs create failed. errno=%d\n", errno);
+		return -1;
+	}
 
-	/* set new file filehandle and attribute*/
+	/* need create . and .. directory */
+	if(NULL == (fd = nfs_fileinfo_alloc())) {
+		return -1;
+	}
+	node->attr = (void *) fd;
+	strcpy(path, param->path);
+	nip_tail(path, tail);
 
-	return 0;
+	return create_dir_entry (path);
 }
 
 static int nfsfs_delete(const char *fname) {
@@ -831,8 +866,8 @@ static int xdr_mnt_export(struct xdr *xs, export_dir_t *export) {
 
 	assert(export != NULL);
 
-	if (xdr_u_int(xs, &export->follow)) {
-		if (VALUE_FOLLOWS_YES == export->follow) {
+	if (xdr_u_int(xs, &export->vf)) {
+		if (VALUE_FOLLOWS_YES == export->vf) {
 			point = export->dir.data;
 			if (xdr_bytes(xs, (char **)&point,
 					&export->dir.len, sizeof export->dir.data)) {
@@ -928,6 +963,62 @@ static int xdr_nfs_lookup(struct xdr *xs, char *point) {
 		return XDR_FAILURE;
 }
 
+static int xdr_nfs_create(struct xdr *xs, char *point) {
+
+	create_req_t *req;
+	create_reply_t *reply;
+
+	assert(point != NULL);
+
+	switch (xs->oper) {
+		case XDR_DECODE:
+			reply = (create_reply_t *)point;
+			if (xdr_u_int(xs, &reply->status) && (STATUS_OK == reply->status)
+				&& xdr_u_int(xs, &reply->fh_vf)
+				&& (VALUE_FOLLOWS_YES == reply->fh_vf)
+				&& xdr_nfs_name_fh(xs, &reply->obj_fh)
+				&& xdr_u_int(xs, &reply->attr_vf)
+				&& (VALUE_FOLLOWS_YES == reply->attr_vf)
+				&& xdr_nfs_get_attr(xs, (char *) &reply->obj_attr)) {
+				return XDR_SUCCESS;
+			}
+			break;
+		case XDR_ENCODE:
+			req = (create_req_t *)point;
+
+			if (xdr_nfs_name_fh(xs, req->new.dir_fh)
+				&& xdr_nfs_namestring(xs, req->new.fname)) {
+				if(NFS_FILE_NODE_TYPE == req->type) {
+					if(XDR_SUCCESS != xdr_u_int(xs, &req->create_mode)) {
+						break;
+					}
+				}
+				if ((NFS_DIRECTORY_NODE_TYPE == req->type) ||
+					(GURDED_MODE == req->create_mode)) {
+					if (xdr_u_int(xs, &req->mode_vf)
+						&& xdr_u_int(xs, &req->mode)
+						&& xdr_u_int(xs, &req->uid_vf)
+						&& xdr_u_int(xs, &req->uid)
+						&& xdr_u_int(xs, &req->gid_vf)
+						&& xdr_u_int(xs, &req->gid)
+						&& xdr_u_int(xs, &req->size_vf)
+						&& xdr_u_hyper(xs, &req->size)
+						&& xdr_u_int(xs, &req->set_atime)
+						&& xdr_u_int(xs, &req->set_mtime)){
+						return XDR_SUCCESS;
+					}
+					break;
+				}
+				return XDR_SUCCESS;
+			}
+			break;
+		case XDR_FREE:
+			return XDR_SUCCESS;
+		}
+		return XDR_FAILURE;
+}
+
+
 static int xdr_nfs_read_file(struct xdr *xs, char *point) {
 
 	read_req_t *req;
@@ -952,10 +1043,9 @@ static int xdr_nfs_read_file(struct xdr *xs, char *point) {
 			break;
 		case XDR_ENCODE:
 			req = (read_req_t *)point;
-
 			if (xdr_nfs_name_fh(xs, req->fh)
-					&& xdr_u_hyper(xs, &req->offset)
-					&& xdr_u_int(xs, &req->count)) {
+				&& xdr_u_hyper(xs, &req->offset)
+				&& xdr_u_int(xs, &req->count)) {
 				return XDR_SUCCESS;
 			}
 			break;

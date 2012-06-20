@@ -16,7 +16,7 @@
 #include <net/socket.h>
 #include <net/rpc/rpc.h>
 
-#define MAX_FILE_QUANTITY  64
+#define MAX_FILE_QUANTITY  256
 
 
 /*
@@ -124,6 +124,10 @@
 
 #define FILE_SYNC      2
 
+#define UNCHECKED_MODE  0
+#define GURDED_MODE     0x01
+#define EXCLUSIVE_MODE  0x02
+
 /*
  * RPC definitions for the mount deamon
  */
@@ -144,6 +148,7 @@
 #define	STATUS_OK		        0x00000000
 #define	VALUE_FOLLOWS_YES		0x00000001
 #define	NFS_EOF         		0x00000001
+#define	NFS_FILE_NODE_TYPE      0x1
 #define	NFS_DIRECTORY_NODE_TYPE 0x2
 
 #define	DIRCOUNT     1024
@@ -172,7 +177,7 @@ typedef struct nfs_filehandle {
 
 /* Body of a RPC replay to MOUNT Export command */
 typedef struct export_dir {
-	__u32 follow;
+	__u32 vf;
 	rpc_string_t dir;
 } export_dir_t;
 
@@ -218,7 +223,7 @@ typedef struct file_attribute_rep {
 typedef struct dir_attribute_rep {
 	file_attribute_rep_t dir_attr;
 	__u64 verifier;
-}dir_attribute_rep_t;
+} dir_attribute_rep_t;
 
 /* READDIRPLUS command reply*/
 typedef struct readdir_desc {
@@ -243,14 +248,39 @@ typedef struct lookup_reply {
 	file_attribute_rep_t attr;
 	__u32 dir_vf;
 	file_attribute_rep_t dir_attr;
-}lookup_reply_t;
+} lookup_reply_t;
+
+/* create file/dir request*/
+typedef struct create_req {
+	lookup_req_t new;
+	__u32 type;
+	__u32 create_mode;
+	__u32 mode_vf;
+	__u32 mode;
+	__u32 uid_vf;
+	__u32 uid;
+	__u32 gid_vf;
+	__u32 gid;
+	__u32 size_vf;
+	__u64 size;
+	__u32 set_atime;
+	__u32 set_mtime;
+} create_req_t;
+
+typedef struct create_reply {
+	__u32 status;
+	__u32 fh_vf;
+	rpc_fh_string_t obj_fh;
+	__u32 attr_vf;
+	file_attribute_rep_t obj_attr;
+}create_reply_t;
 
 /* READ file request*/
 typedef struct read_req {
 	rpc_fh_string_t *fh;
 	__u64 offset;
 	__u32 count;
-}read_req_t;
+} read_req_t;
 
 /* READ file reply*/
 typedef struct read_reply {
@@ -261,7 +291,7 @@ typedef struct read_reply {
 	__u32 eof;
 	__u32 datalen;
 	char *data;
-}read_reply_t;
+} read_reply_t;
 
 /* WRITE file request*/
 typedef struct write_req {
@@ -271,7 +301,7 @@ typedef struct write_req {
 	__u32 stable;
 	__u32 datalen;
 	char *data;
-}write_req_t;
+} write_req_t;
 
 /* WRITE file reply*/
 typedef struct write_reply {
@@ -283,7 +313,7 @@ typedef struct write_reply {
 	__u32 count;
 	__u32 comitted;
 	__u64 cookie_vrf;
-}write_reply_t;
+} write_reply_t;
 
 typedef struct fileinfo {
 	uint8_t mode;				/* mode in which this file was opened */

@@ -261,11 +261,15 @@ static int fatfs_format(void *par) {
 		return -ENODEV;/*device not found*/
 	}
 
-	fs_des = fat_fsinfo_alloc();
+	if((NULL == (fs_des = fat_fsinfo_alloc())) ||
+			(NULL == (fd = fat_fileinfo_alloc()))) {
+		return -ENOMEM;
+	}
 	fs_des->p_device = params;
 	strcpy(fs_des->root_name, "\0");
 
-	fd = fat_fileinfo_alloc();
+
+
 	fd->p_fs_dsc = fs_des;
 	nod->fs_type = &fatfs_drv;
 	nod->file_info = (void *) &fatfs_fop;
@@ -295,7 +299,9 @@ static int fatfs_mount(void *par) {
 	dev_fd = (fat_file_description_t *) dev_node->attr;
 	strcpy(dev_fd->p_fs_dsc->root_name, params->dir);
 
-	fd = fat_fileinfo_alloc();
+	if(NULL == (fd = fat_fileinfo_alloc())) {
+		return -ENOMEM;
+	}
 	fd->p_fs_dsc = dev_fd->p_fs_dsc;
 	dir_node->fs_type = &fatfs_drv;
 	dir_node->file_info = (void *) &fatfs_fop;
@@ -333,7 +339,9 @@ static int fatfs_create(void *par) {
 			node = vfs_add_path (param->path, NULL);
 		}
 
-		fd = fat_fileinfo_alloc();
+		if(NULL == (fd = fat_fileinfo_alloc())) {
+			return -ENOMEM;
+		}
 		fd->p_fs_dsc = ((fat_file_description_t *)
 				parents_node->attr)->p_fs_dsc;
 		node->fs_type = &fatfs_drv;
