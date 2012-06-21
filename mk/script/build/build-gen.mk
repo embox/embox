@@ -122,9 +122,11 @@ $(@build_image) : target_file = \
 
 $(@build_image) : archived_modules = $(suffix $(@module_ar_rulemk))
 $(@build_image) : normal_modules = $(filter-out $(archived_modules),$(build_modules))
-$(@build_image) : normal_sources = $(call get,$(normal_modules),sources)
+$(@build_image) : normal_sources = \
+		$(foreach s,$(call get,$(normal_modules),sources), \
+			$(if $(filter $(source_cc_pats),$(call get,$s,fileName)),$s))
 
-$(@build_image) : objs = $(patsubst %,$(source_rulemk_o_pat), \
+$(@build_image) : objs = $(patsubst %,$(source_cc_rulemk_o_pat), \
 		$(call source_base,$(normal_sources)))
 $(@build_image) : libs = $(patsubst %,$(module_ar_rulemk_a_pat), \
 		$(call module_path,$(archived_modules)))
@@ -194,10 +196,17 @@ my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
 		$(patsubst %,source-gen/%$s, \
 			$(call source_annotation_values,$s,$(my_gen_script))))
 
+source_cpp_pats := %.lds.S
+source_cc_pats  := %.S %.c %.cpp %.cxx
+
 @source_rulemk := \
 	$(foreach s,$(build_sources), \
 		$(foreach f,$(call get,$s,fileName), \
-			$(if $(filter %.S %.c %.cpp %.cxx,$f),source-rule-mk/$s)))
+			$(if $(filter $(source_cpp_pats),$f),source-cpp-rule-mk/$s, \
+				$(if $(filter $(source_cc_pats),$f),source-cc-rule-mk/$s))))
+
+@source_cpp_rulemk := $(filter source-cpp-rule-mk/%,$(source_rulemk))
+@source_cc_rulemk  := $(filter source-cc-rule-mk/%,$(source_rulemk))
 
 @source_all = \
 	$(@source_gen) \
@@ -228,12 +237,16 @@ $(@source_rulemk) : flags = $(call trim, \
 		$(call do_flags,-I,$(includes)) \
 		$(call do_flags,-D,$(defines)))
 
-source_rulemk_mk_pat = $(MKGEN_DIR)/%.rule.mk
-source_rulemk_o_pat  = $(OBJ_DIR)/%.o
+source_rulemk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
 $(@source_rulemk) : @file   = $(base:%=$(source_rulemk_mk_pat))
 $(@source_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$$(source_base))
-$(@source_rulemk) : o_file  = $(patsubst %,$(value source_rulemk_o_pat),$$(source_base))
+
+source_cc_rulemk_o_pat  = $(OBJ_DIR)/%.o
+source_cpp_rulemk_o_pat = $(OBJ_DIR)/%# foo.lds.S -> foo.lds
+
+$(@source_cc_rulemk)  : o_file = $(patsubst %,$(value source_cc_rulemk_o_pat),$$(source_base))
+$(@source_cpp_rulemk) : o_file = $(patsubst %,$(value source_cpp_rulemk_o_pat),$$(source_base))
 
 $(@source_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -241,6 +254,7 @@ $(@source_rulemk) :
 		$(call gen_make_var,source_base,$(base)); \
 		$(call gen_make_dep,$(o_file),$(mk_file)); \
 		$(call gen_make_tsvar,$(o_file),flags,$(flags)))
+
 
 $(@source_gen) : @file = $(SRCGEN_DIR)/$(file)
 $(@source_gen) : script = $(call expand,$(call get,$(basename $@),value))
