@@ -18,10 +18,9 @@
 #include <net/rpc/clnt.h>
 #include <net/rpc/xdr.h>
 
+static int create_dir_entry(char *parent);
 
 static int nfs_mount_proc(void);
-static int create_filechain (void);
-
 static int nfs_nfs_readdirplus(char *point, char *buff);
 static int nfs_lookup(node_t *node, nfs_file_description_t *fd);
 
@@ -185,35 +184,51 @@ static int nfsfs_fclose(struct file_desc *desc) {
 static size_t nfsfs_fread(void *buf, size_t size, size_t count, void *file) {
 	struct timeval timeout = { 25, 0 };
 
-	size_t size_to_read;
+	size_t size_to_read, read_size;
 	struct file_desc *desc;
 	nfs_file_description_t *fd;
 	read_req_t req;
 	read_reply_t reply;
+	size_t datalen;
 
-	size_to_read = size * count;
+	read_size = size * count;
 	desc = (struct file_desc *) file;
 	fd = (nfs_file_description_t *)desc->node->attr;
+	datalen = 0;
 
-	/* set read structure */
-	req.count = size_to_read;
-	req.offset = fd->fi.offset;
-	req.fh = &fd->fh.name_fh;
-	reply.datalen = 0;
-	reply.data = (char *) buf;
+	while(1) {
+		if (read_size > DIRCOUNT) {
+			size_to_read = DIRCOUNT;
+		}
+		else {
+			size_to_read = read_size;
+		}
+		read_size -= size_to_read;
+		/* set read structure */
+		req.count = size_to_read;
+		req.offset = fd->fi.offset;
+		req.fh = &fd->fh.name_fh;
+		reply.datalen = 0;
+		reply.data = (char *) buf + datalen;
 
-	/* send read command */
-	if (clnt_call(p_fs_fd->nfs, NFSPROC3_READ,
-		(xdrproc_t)xdr_nfs_read_file, (char *) &req,
-		(xdrproc_t)xdr_nfs_read_file, (char *) &reply,
-		timeout) != RPC_SUCCESS) {
-		clnt_perror(p_fs_fd->nfs, p_fs_fd->srv_name);
-		printf("read file failed. errno=%d\n", errno);
-		return 0;
+		/* send read command */
+		if (clnt_call(p_fs_fd->nfs, NFSPROC3_READ,
+			(xdrproc_t)xdr_nfs_read_file, (char *) &req,
+			(xdrproc_t)xdr_nfs_read_file, (char *) &reply,
+			timeout) != RPC_SUCCESS) {
+			clnt_perror(p_fs_fd->nfs, p_fs_fd->srv_name);
+			printf("read file failed. errno=%d\n", errno);
+			return 0;
+		}
+
+		fd->fi.offset += size_to_read;
+		datalen += reply.datalen;
+
+		if (reply.eof || (0 >= read_size )) {
+			break;
+		}
 	}
-	fd->fi.offset += size_to_read;
-
-	return reply.datalen;
+	return datalen;
 }
 
 static size_t nfsfs_fwrite(const void *buf, size_t size,
@@ -388,13 +403,19 @@ static int nfsfs_mount(void *par) {
 	if(0 >  nfs_client_init(params->dev)) {
 		return -1;
 	}
-	if((0 >  nfs_mount_proc()) || (0 >  create_filechain())) {
+
+	if(0 >  nfs_mount_proc()) {
 		nfs_clnt_destroy(p_fs_fd);
 		return -1;
 	}
 
 	/* copy filesystem filehandle to root directory filehandle */
 	memcpy(&fd->fh, &fd->p_fs_dsc->fh, sizeof(fd->fh));
+
+	if(0 >  create_dir_entry(p_fs_fd->mnt_point)) {
+		nfs_clnt_destroy(p_fs_fd);
+		return -1;
+	}
 	return 0;
 }
 
@@ -534,27 +555,6 @@ static int create_dir_entry(char *parent) {
 	return 0;
 }
 
-static int create_filechain (void) {
-	char *parent;
-	node_t *node;
-	nfs_file_description_t *parent_fd;
-
-	parent = p_fs_fd->mnt_point;
-	if (NULL == (node = vfs_find_node(parent, NULL))) {
-		return -1;/*device not found*/
-	}
-
-	parent_fd = (nfs_file_description_t *) node->attr;
-
-	/* copy filesystem filehandle to root filesystem mountpoint directory */
-	memcpy(&parent_fd->fh, &p_fs_fd->fh, sizeof(p_fs_fd->fh));
-
-	if(0 >  create_dir_entry(parent)) {
-		return -1;
-	}
-	return 0;
-}
-
 static int nfsfs_create(void *par) {
 	struct timeval timeout = { 25, 0 };
 
@@ -597,7 +597,7 @@ static int nfsfs_create(void *par) {
 	req.new.fname = &name;
 	/* set attribute of new file */
 	req.mode_vf = req.uid_vf = req.gid_vf = req.size_vf =
-			req.set_atime =	req.set_mtime =  0x00000001;
+			req.set_atime =	req.set_mtime =  VALUE_FOLLOWS_YES;
 	req.uid = req.gid = 0;
 
 	/* send nfs CREATE command   */
