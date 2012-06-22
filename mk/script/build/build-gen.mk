@@ -100,7 +100,7 @@ gen_make_include = \
 # 1. Makefiles...
 # 2. Whether to use silent '-include'.
 gen_make_include_list = \
-	$(PRINTF) '%sinclude $(foreach ,$1,\\\n\t\t%s)\n\n' \
+	$(PRINTF) '%sinclude $(foreach ,$1,\\\n\t%s)\n\n' \
 		$(call sh_quote,$(if $(value 2),-)) \
 		$(foreach v,$1,$(call sh_quote,$v))
 
@@ -119,24 +119,30 @@ build_sources := \
 @build_image := \
 	$(build_model:%=build-image-rule-mk/%)
 
+@build_include_mk := \
+	$(build_model:%=build-include-mk/%)
+
 @build_all = \
-	$(@build_image)
+	$(@build_image) \
+	$(@build_include_mk)
 
 all .PHONY : $(@build_all)
 
+$(@build_all) : archived_modules = $(suffix $(@module_ar_rulemk))
+$(@build_all) : normal_modules = $(filter-out $(archived_modules),$(build_modules))
+
+build_image := image
+
+$(@build_image) : image = $(build_image)
+
 build_image_rulemk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
 build_image_rulemk_target_pat = $(BIN_DIR)/%
-
-$(@build_image) : image = image
 
 $(@build_image) : @file    = $(image:%=$(build_image_rulemk_mk_pat))
 $(@build_image) : mk_file  = \
 		$(patsubst %,$(value build_image_rulemk_mk_pat),$$(build_image))
 $(@build_image) : target_file = \
 		$(patsubst %,$(value build_image_rulemk_target_pat),$$(build_image))
-
-$(@build_image) : archived_modules = $(suffix $(@module_ar_rulemk))
-$(@build_image) : normal_modules = $(filter-out $(archived_modules),$(build_modules))
 
 $(@build_image) : objs = $(patsubst %,$(value source_cc_rulemk_o_pat), \
 			$(basename $(call module_cc_source_files,$(normal_modules))))
@@ -151,6 +157,23 @@ $(@build_image) :
 		$(call gen_make_tsvar,$(target_file),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar_list,$(target_file),ld_objs,$(objs)); \
 		$(call gen_make_tsvar_list,$(target_file),ld_libs,$(libs)))
+
+$(@build_include_mk) : @file = $(MKGEN_DIR)/include.mk
+$(@build_include_mk) : image_rulemk = \
+		$(patsubst %,$(value build_image_rulemk_mk_pat),$(build_image))
+$(@build_include_mk) : source_rulemk = \
+		$(patsubst %,$(value source_rulemk_mk_pat), \
+			$(call source_base,$(@source_rulemk)))
+$(@build_include_mk) : module_ar_rulemk = \
+		$(patsubst %,$(value module_ar_rulemk_mk_pat), \
+			$(call module_path,$(@module_ar_rulemk)))
+
+$(@build_include_mk) :
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(gen_banner); \
+		$(call gen_make_include,$(image_rulemk)); \
+		$(call gen_make_include_list,$(source_rulemk)); \
+		$(call gen_make_include_list,$(module_ar_rulemk)))
 
 #
 # Per-module artifacts.
