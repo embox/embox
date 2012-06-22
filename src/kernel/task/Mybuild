@@ -46,3 +46,8 @@ module idx_table extends task_environment {
 module signal {
 	source "signal.c"
 }
+
+
+module notask extends api_impl {
+
+}

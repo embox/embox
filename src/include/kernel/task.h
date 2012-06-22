@@ -11,7 +11,6 @@
 
 #include <lib/list.h>
 #include <kernel/task/idx.h>
-#include <kernel/thread/api.h>
 
 struct task_signal_table;
 
@@ -34,7 +33,7 @@ struct task {
 
 	struct task_signal_table *signal_table;
 
-	int errno; /**< @brief Last occured error code */
+	int errno; /**< @brief Last occurred error code */
 };
 
 /**
@@ -62,6 +61,7 @@ extern struct task *task_self(void);
  */
 extern struct task *task_kernel_task(void);
 
+struct thread;
 extern int task_notify_switch(struct thread *prev, struct thread *next);
 
 #endif /* TASK_H_ */
