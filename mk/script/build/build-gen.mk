@@ -90,6 +90,20 @@ gen_make_tsvar_list = \
 		$(call sh_quote,$2) \
 		$(foreach v,$3,$(call sh_quote,$v))
 
+# 1. Makefile
+# 2. Whether to use silent '-include'.
+gen_make_include = \
+	$(PRINTF) '%sinclude %s\n\n' \
+		$(call sh_quote,$(if $(value 2),-)) \
+		$(call sh_quote,$1)
+
+# 1. Makefiles...
+# 2. Whether to use silent '-include'.
+gen_make_include_list = \
+	$(PRINTF) '%sinclude $(foreach ,$1,\\\n\t\t%s)\n\n' \
+		$(call sh_quote,$(if $(value 2),-)) \
+		$(foreach v,$1,$(call sh_quote,$v))
+
 # Working with these lists...
 
 build_modules := \
@@ -262,7 +276,8 @@ $(@source_rulemk) :
 		$(gen_banner); \
 		$(call gen_make_var,source_base,$(base)); \
 		$(call gen_make_dep,$(o_file),$(mk_file)); \
-		$(call gen_make_tsvar,$(o_file),flags,$(flags)))
+		$(call gen_make_tsvar,$(o_file),flags,$(flags)); \
+		$(call gen_make_include,$$(source_base).d,silent))
 
 $(@source_gen) : @file = $(SRCGEN_DIR)/$(file)
 $(@source_gen) : gen_string = $(basename $(basename $@))
