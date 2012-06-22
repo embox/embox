@@ -7,52 +7,28 @@
  */
 
 #include <errno.h>
-#include <err.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <cmd/mount.h>
-#include <embox/cmd.h>
-#include <embox/device.h>
 #include <fs/vfs.h>
-#include <fs/ramdisk.h>
-#include <fs/fs_drv.h>
-#include <fs/node.h>
 #include <fs/nfs.h>
-#include <framework/example/self.h>
-#include <mem/page.h>
+#include <fs/xdr_nfs.h>
 #include <net/rpc/clnt.h>
 #include <net/rpc/xdr.h>
-#include <net/ip.h>
-#include <net/socket.h>
-#include <sys/time.h>
-#include <util/array.h>
 
-static int xdr_mnt_export(struct xdr *xs, export_dir_t *export);
-static int xdr_mnt_service(struct xdr *xs, mount_service_t *mnt_srvc);
-static int xdr_nfs_namestring(struct xdr *xs, rpc_string_t *str);
-static int xdr_nfs_name_fh(struct xdr *xs, rpc_fh_string_t *fh);
-static int xdr_nfs_readdirplus(struct xdr *xs, nfs_filehandle_t *fh);
-static int xdr_nfs_get_dirlist(struct xdr *xs, char *buff);
-static int xdr_nfs_get_dirdesc(struct xdr *xs, char *point);
-static int xdr_nfs_get_attr(struct xdr *xs, char *point);
-static int xdr_nfs_read_file(struct xdr *xs, char *point);
-static int xdr_nfs_lookup(struct xdr *xs, char *point);
-static int xdr_nfs_write_file(struct xdr *xs, char *point);
-static int xdr_nfs_create(struct xdr *xs, char *point);
-static int xdr_nfs_delete(struct xdr *xs, char *point);
+
+static int nfs_mount_proc(void);
+static int create_filechain (void);
 
 static int nfs_nfs_readdirplus(char *point, char *buff);
 static int nfs_lookup(node_t *node, nfs_file_description_t *fd);
-
 
 char snd_buf[MAXDIRCOUNT];
 char rcv_buf[MAXDIRCOUNT];
 
 nfs_fs_description_t *p_fs_fd;
-nfs_file_description_t *p_rootfd;
 
 /* nfs filesystem description pool */
 
@@ -312,12 +288,79 @@ static int nfsfs_format(void *par) {
 	return 0;
 }
 
+static int nfs_unix_auth_set(struct client *clnt) {
+	if (NULL == clnt)  {
+		return -1;
+	}
+	if (NULL != clnt->ath) {
+		auth_destroy(clnt->ath);
+	}
+	clnt->ath = authunix_create(EMBOX_MACHNAME, 0, 0, 0, NULL);
+	if (clnt->ath == NULL) {
+		return -1;
+	}
+
+	return 0;
+}
+
+static int nfs_clnt_destroy (nfs_fs_description_t *p_fsfd) {
+
+	if (NULL != p_fsfd->mnt) {
+		clnt_destroy(p_fsfd->mnt);
+		p_fsfd->mnt = NULL;
+	}
+	if (NULL != p_fsfd->nfs) {
+		clnt_destroy(p_fsfd->nfs);
+		p_fsfd->nfs = NULL;
+	}
+	return 0;
+}
+
+static int nfs_client_init(char *dev) {
+	char *src, *dst;
+
+	/* copy name of server and mount filesystem server directory*/
+	src = dev;
+	dst = p_fs_fd->srv_name;
+
+	do {
+		if ('\0' == *src) {
+			return -1;
+		}
+		*dst++ = *src++;
+	} while (':' != *src);
+
+	src++;
+	dst = p_fs_fd->srv_dir;
+	do {
+		*dst++ = *src++;
+	} while ('\0' != *src);
+
+	nfs_clnt_destroy(p_fs_fd);
+	/* Create nfs programm clients */
+	p_fs_fd->mnt = clnt_create(p_fs_fd->srv_name,
+			MOUNT_PROGNUM, MOUNT_VER, "tcp");
+	if (p_fs_fd->mnt == NULL) {
+		clnt_pcreateerror(p_fs_fd->srv_name);
+		return -1;
+	}
+	if(0 != nfs_unix_auth_set(p_fs_fd->mnt)) {
+		return -1;
+	}
+
+	p_fs_fd->nfs = clnt_create(p_fs_fd->srv_name, NFS_PROGNUM, NFS_VER, "tcp");
+	if (p_fs_fd->nfs == NULL) {
+		clnt_pcreateerror(p_fs_fd->srv_name);
+		return -1;
+	}
+
+	return nfs_unix_auth_set(p_fs_fd->nfs);
+}
+
 static int nfsfs_mount(void *par) {
 	mount_params_t *params;
 	node_t *dir_node;
-	nfs_fs_description_t *fs_des;
 	nfs_file_description_t *fd;
-	int rezult;
 
 	params = (mount_params_t *) par;
 
@@ -329,26 +372,72 @@ static int nfsfs_mount(void *par) {
 		dir_node->properties = DIRECTORY_NODE_TYPE;
 	}
 
-	if ((NULL == (fs_des = nfs_fsinfo_alloc())) ||
+	if ((NULL == (p_fs_fd = nfs_fsinfo_alloc())) ||
 			(NULL == (fd = nfs_fileinfo_alloc()))) {
 		return -ENOMEM;
 	}
-	fd->p_fs_dsc = fs_des;
+	fd->p_fs_dsc = p_fs_fd;
 
 	dir_node->fs_type = &nfsfs_drv;
 	dir_node->file_info = (void *) &nfsfs_fop;
 	dir_node->attr = (void *) fd;
 	params->dev_node = dir_node;
 
-	rezult = mount_nfs_filesystem(params);
-	if(0 == rezult) {
-		memcpy(&fd->fh, &fd->p_fs_dsc->fh, sizeof(fd->fh));
+	strcpy(p_fs_fd->mnt_point, params->dir);
+
+	if(0 >  nfs_client_init(params->dev)) {
+		return -1;
+	}
+	if((0 >  nfs_mount_proc()) || (0 >  create_filechain())) {
+		nfs_clnt_destroy(p_fs_fd);
+		return -1;
 	}
 
-	return rezult;
+	/* copy filesystem filehandle to root directory filehandle */
+	memcpy(&fd->fh, &fd->p_fs_dsc->fh, sizeof(fd->fh));
+	return 0;
 }
 
-int create_dir_entry(char *parent) {
+static node_t  *create_nfs_file (char *full_name, readdir_desc_t *predesc) {
+	node_t  *node;
+	nfs_file_description_t *fd;
+
+	if (NULL == (node = vfs_find_node(full_name, NULL))) {
+		/*TODO usually mount doesn't create a directory*/
+		if (NULL == (node = vfs_add_path (full_name, NULL))) {
+			return NULL;/*device not found*/
+		}
+		if(NULL == (fd = nfs_fileinfo_alloc())) {
+			return NULL;
+		}
+	}
+	else {
+		fd = (nfs_file_description_t *) node->attr;
+	}
+
+	/* copy read the description in the created file*/
+	memcpy(&fd->name_dsc, &predesc->file_name,
+			sizeof(predesc->file_name));
+
+	if(VALUE_FOLLOWS_YES == predesc->vf_attr) {
+		memcpy(&fd->attr, &predesc->file_attr,
+				sizeof(predesc->file_attr));
+	}
+	if(VALUE_FOLLOWS_YES == predesc->vf_fh) {
+		memcpy(&fd->fh, &predesc->file_handle,
+				sizeof(predesc->file_handle));
+		fd->fh.count = fd->fh.maxcount = DIRCOUNT;
+		fd->fh.cookie = 0;
+	}
+
+	fd->p_fs_dsc = p_fs_fd;
+	node->fs_type = &nfsfs_drv;
+	node->file_info = (void *) &nfsfs_fop;
+	node->attr = (void *)fd;
+	return node;
+}
+
+static int create_dir_entry(char *parent) {
 	node_t *parent_node, *node;
 	__u32 vf;
 	char *point;
@@ -380,7 +469,7 @@ int create_dir_entry(char *parent) {
 		}
 
 		point = rcv_buf;
-
+		/* check status */
 		vf = *(__u32 *)point;
 		if(STATUS_OK != vf) {
 			free(rcv_buf);
@@ -388,6 +477,7 @@ int create_dir_entry(char *parent) {
 		}
 		point += sizeof(vf);
 
+		/* check if a directory attributes */
 		vf = *(__u32 *)point;
 		if(VALUE_FOLLOWS_YES != vf) {
 			break;
@@ -396,6 +486,8 @@ int create_dir_entry(char *parent) {
 
 		/*TODO copy root dir attr*/
 		point += sizeof(dir_attribute_rep_t);
+
+		/* check if a new files attributes */
 		vf = *(__u32 *)point;
 		if(VALUE_FOLLOWS_YES != vf) {
 			break;
@@ -410,39 +502,13 @@ int create_dir_entry(char *parent) {
 			strcpy(full_path, parent);
 			strcat(full_path, "/");
 			strcat(full_path, (const char *) predesc->file_name.name.data);
-			if (NULL == (node = vfs_find_node(full_path, NULL))) {
-				/*TODO usually mount doesn't create a directory*/
-				if (NULL == (node = vfs_add_path (full_path, NULL))) {
-					free(rcv_buf);
-					return -1;/*device not found*/
-				}
-				if(NULL == (fd = nfs_fileinfo_alloc())) {
-					return -1;
-				}
-			}
-			else {
-				fd = (nfs_file_description_t *) node->attr;
+
+			if (NULL == (node = create_nfs_file (full_path, predesc))) {
+				free(rcv_buf);
+				return -1;
 			}
 
-			memcpy(&fd->name_dsc, &predesc->file_name,
-					sizeof(predesc->file_name));
-
-			if(VALUE_FOLLOWS_YES == predesc->vf_attr) {
-				memcpy(&fd->attr, &predesc->file_attr,
-						sizeof(predesc->file_attr));
-			}
-			if(VALUE_FOLLOWS_YES == predesc->vf_fh) {
-				memcpy(&fd->fh, &predesc->file_handle,
-						sizeof(predesc->file_handle));
-				fd->fh.count = fd->fh.maxcount = DIRCOUNT;
-				fd->fh.cookie = 0;
-			}
-
-			fd->p_fs_dsc = p_fs_fd;
-			node->fs_type = &nfsfs_drv;
-			node->file_info = (void *) &nfsfs_fop;
-			node->attr = (void *)fd;
-
+			fd = (nfs_file_description_t *) node->attr;
 			if (NFS_DIRECTORY_NODE_TYPE == fd->attr.type) {
 				node->properties = DIRECTORY_NODE_TYPE;
 				if((0 != strcmp(fd->name_dsc.name.data, "."))
@@ -453,9 +519,7 @@ int create_dir_entry(char *parent) {
 			else {
 				node->properties = FILE_NODE_TYPE;
 			}
-
 			point += sizeof(*predesc);
-
 		}
 		point += sizeof(vf);
 		if(NFS_EOF == *(__u32 *)point) {
@@ -467,6 +531,27 @@ int create_dir_entry(char *parent) {
 		}
 	}
 	free(rcv_buf);
+	return 0;
+}
+
+static int create_filechain (void) {
+	char *parent;
+	node_t *node;
+	nfs_file_description_t *parent_fd;
+
+	parent = p_fs_fd->mnt_point;
+	if (NULL == (node = vfs_find_node(parent, NULL))) {
+		return -1;/*device not found*/
+	}
+
+	parent_fd = (nfs_file_description_t *) node->attr;
+
+	/* copy filesystem filehandle to root filesystem mountpoint directory */
+	memcpy(&parent_fd->fh, &p_fs_fd->fh, sizeof(p_fs_fd->fh));
+
+	if(0 >  create_dir_entry(parent)) {
+		return -1;
+	}
 	return 0;
 }
 
@@ -490,29 +575,26 @@ static int nfsfs_create(void *par) {
 	par_fd = (nfs_file_description_t *) parents_node->attr;
 
 	if (DIRECTORY_NODE_TYPE == (node->properties & DIRECTORY_NODE_TYPE)) {
+		procnum = NFSPROC3_MKDIR;
+		req.type = NFS_DIRECTORY_NODE_TYPE;
 		req.create_mode = UNCHECKED_MODE;
 		req.mode = 0x01ff;
-		req.type = NFS_DIRECTORY_NODE_TYPE;
 		req.size = 512;
-		procnum = NFSPROC3_MKDIR;
 	}
 	else {
+		procnum = NFSPROC3_CREATE;
+		req.type = NFS_FILE_NODE_TYPE;
 		req.create_mode = GURDED_MODE;
 		req.mode = 0x31ff;
-		req.type = NFS_FILE_NODE_TYPE;
 		req.size = 0;
-		procnum = NFSPROC3_CREATE;
 	}
-
 	/* set dir filehandle */
 	req.new.dir_fh = &par_fd->fh.name_fh;
-
 	/* set new file name */
 	memset((void *) &name, 0, sizeof(name));
 	strcpy(name.data, node->name);
 	name.len = strlen(node->name);
 	req.new.fname = &name;
-
 	/* set attribute of new file */
 	req.mode_vf = req.uid_vf = req.gid_vf = req.size_vf =
 			req.set_atime =	req.set_mtime =  0x00000001;
@@ -523,12 +605,11 @@ static int nfsfs_create(void *par) {
 		(xdrproc_t)xdr_nfs_create, (char *) &req,
 		(xdrproc_t)xdr_nfs_create, (char *) &reply,
 		timeout) != RPC_SUCCESS) {
-		clnt_perror(p_fs_fd->mnt, p_fs_fd->srv_name);
+		clnt_perror(p_fs_fd->nfs, p_fs_fd->srv_name);
 		printf("nfs create failed. errno=%d\n", errno);
 		return -1;
 	}
 
-	/* need create . and .. directory */
 	if(NULL == (fd = nfs_fileinfo_alloc())) {
 		return -1;
 	}
@@ -588,89 +669,6 @@ static int nfsfs_delete(const char *fname) {
 }
 
 DECLARE_FILE_SYSTEM_DRIVER(nfsfs_drv);
-
-
-static int nfs_lookup(node_t *node, nfs_file_description_t *fd){
-	struct timeval timeout = { 25, 0 };
-
-	node_t *dir_node;
-	nfs_file_description_t *dir_fd;
-	lookup_req_t req;
-	lookup_reply_t reply;
-	if(NULL ==
-			(dir_node = vfs_find_parent((const char *) &node->name, node))) {
-		return -1;
-	}
-
-	/* set lookup structure */
-	req.fname = &fd->name_dsc.name;
-	dir_fd = (nfs_file_description_t *) dir_node->attr;
-	req.dir_fh = &dir_fd->fh.name_fh;
-
-	reply.fh = &fd->fh.name_fh;
-
-	/* send read command */
-	if (clnt_call(p_fs_fd->nfs, NFSPROC3_LOOKUP,
-		(xdrproc_t)xdr_nfs_lookup, (char *) &req,
-		(xdrproc_t)xdr_nfs_lookup, (char *) &reply,
-		timeout) != RPC_SUCCESS) {
-		clnt_perror(p_fs_fd->mnt, p_fs_fd->srv_name);
-		printf("nfs lookup failed. errno=%d\n", errno);
-		return -1;
-	}
-	return 0;
-}
-
-
-static int nfs_unix_auth_set(struct client *clnt) {
-	if (NULL == clnt)  {
-		return -1;
-	}
-	if (NULL != clnt->ath) {
-		auth_destroy(clnt->ath);
-	}
-	clnt->ath = authunix_create(EMBOX_MACHNAME, 0, 0, 0, NULL);
-	if (clnt->ath == NULL) {
-		return -1;
-	}
-
-	return 0;
-}
-
-static int nfs_clnt_destroy (nfs_fs_description_t *p_fsfd) {
-
-	if (NULL != p_fsfd->mnt) {
-		clnt_destroy(p_fsfd->mnt);
-		p_fsfd->mnt = NULL;
-	}
-	if (NULL != p_fsfd->nfs) {
-		clnt_destroy(p_fsfd->nfs);
-		p_fsfd->nfs = NULL;
-	}
-	return 0;
-}
-
-static int nfs_prepare(char *dev) {
-	char *src, *dst;
-
-	/* copy name of server and mount filesystem server directory*/
-	src = dev;
-	dst = p_fs_fd->srv_name;
-
-	do {
-		if ('\0' == *src) {
-			return -1;
-		}
-		*dst++ = *src++;
-	} while (':' != *src);
-
-	src++;
-	dst = p_fs_fd->srv_dir;
-	do {
-		*dst++ = *src++;
-	} while ('\0' != *src);
-	return 0;
-}
 
 static int nfs_mnt_export(void) {
 	struct timeval timeout = { 25, 0 };
@@ -782,6 +780,38 @@ static int nfs_nfs_fsinfo(char *point) {
 
 	return 0;
 }
+
+static int nfs_lookup(node_t *node, nfs_file_description_t *fd){
+	struct timeval timeout = { 25, 0 };
+
+	node_t *dir_node;
+	nfs_file_description_t *dir_fd;
+	lookup_req_t req;
+	lookup_reply_t reply;
+	if(NULL ==
+			(dir_node = vfs_find_parent((const char *) &node->name, node))) {
+		return -1;
+	}
+
+	/* set lookup structure */
+	req.fname = &fd->name_dsc.name;
+	dir_fd = (nfs_file_description_t *) dir_node->attr;
+	req.dir_fh = &dir_fd->fh.name_fh;
+
+	reply.fh = &fd->fh.name_fh;
+
+	/* send read command */
+	if (clnt_call(p_fs_fd->nfs, NFSPROC3_LOOKUP,
+		(xdrproc_t)xdr_nfs_lookup, (char *) &req,
+		(xdrproc_t)xdr_nfs_lookup, (char *) &reply,
+		timeout) != RPC_SUCCESS) {
+		clnt_perror(p_fs_fd->mnt, p_fs_fd->srv_name);
+		printf("nfs lookup failed. errno=%d\n", errno);
+		return -1;
+	}
+	return 0;
+}
+
 static int nfs_nfs_readdirplus(char *point, char *buff) {
 	struct timeval timeout = { 25, 0 };
 
@@ -799,50 +829,7 @@ static int nfs_nfs_readdirplus(char *point, char *buff) {
 	return 0;
 }
 
-static int nfs_client_init(void) {
-
-	nfs_clnt_destroy(p_fs_fd);
-	/* Create nfs programm clients */
-	p_fs_fd->mnt = clnt_create(p_fs_fd->srv_name,
-			MOUNT_PROGNUM, MOUNT_VER, "tcp");
-	if (p_fs_fd->mnt == NULL) {
-		clnt_pcreateerror(p_fs_fd->srv_name);
-		return -1;
-	}
-	if(0 != nfs_unix_auth_set(p_fs_fd->mnt)) {
-		return -1;
-	}
-
-	p_fs_fd->nfs = clnt_create(p_fs_fd->srv_name, NFS_PROGNUM, NFS_VER, "tcp");
-	if (p_fs_fd->nfs == NULL) {
-		clnt_pcreateerror(p_fs_fd->srv_name);
-		return -1;
-	}
-
-	return nfs_unix_auth_set(p_fs_fd->nfs);
-}
-
-static int create_filechain (void) {
-	char *parent;
-	node_t *node;
-	nfs_file_description_t *parent_fd;
-
-	parent = p_fs_fd->mnt_point;
-	if (NULL == (node = vfs_find_node(parent, NULL))) {
-		return -1;/*device not found*/
-	}
-
-	parent_fd = (nfs_file_description_t *) node->attr;
-	memcpy(&parent_fd->fh, &p_fs_fd->fh, sizeof(p_fs_fd->fh));
-
-	if(0 >  create_dir_entry(parent)) {
-		return -1;
-	}
-	return 0;
-}
-
-
-static int nfs_mount(void) {
+static int nfs_mount_proc(void) {
 
 	if (0 > nfs_mnt_export()) {
 		return -1;
@@ -862,488 +849,6 @@ static int nfs_mount(void) {
 	if(0 >  nfs_nfs_fsinfo((char *)&p_fs_fd->fh)) {
 		return -1;
 	}
-	if(0 >  create_filechain()) {
-		return -1;
-	}
 
 	return 0;
 }
-
-
-int mount_nfs_filesystem(void *par) {
-	mount_params_t *params;
-	node_t *node;
-	nfs_file_description_t *fd;
-
-	params = (mount_params_t *) par;
-	node = params->dev_node;
-	fd = p_rootfd = (nfs_file_description_t *)node->attr;
-	p_fs_fd = fd->p_fs_dsc;
-	strcpy(p_fs_fd->mnt_point, params->dir);
-
-	if(0 >  nfs_prepare(params->dev)) {
-		return -1;
-	}
-	if(0 >  nfs_client_init()) {
-		return -1;
-	}
-	if(0 >  nfs_mount()) {
-		nfs_clnt_destroy(p_fs_fd);
-		return -1;
-	}
-	return 0;
-}
-
-static int xdr_mnt_export(struct xdr *xs, export_dir_t *export) {
-	char *point;
-
-	assert(export != NULL);
-
-	if (xdr_u_int(xs, &export->vf)) {
-		if (VALUE_FOLLOWS_YES == export->vf) {
-			point = export->dir.data;
-			if (xdr_bytes(xs, (char **)&point,
-					&export->dir.len, sizeof export->dir.data)) {
-				return XDR_SUCCESS;
-			}
-		}
-	}
-
-	return XDR_FAILURE;
-}
-
-static int xdr_mnt_service(struct xdr *xs, mount_service_t *mnt_srvc) {
-	char *point;
-
-	assert(mnt_srvc != NULL);
-
-	if (xdr_u_int(xs, &mnt_srvc->status)) {
-		if (STATUS_OK == mnt_srvc->status) {
-			point = mnt_srvc->fh.name_fh.data;
-			if (xdr_bytes(xs, (char **)&point, &mnt_srvc->fh.name_fh.len,
-					sizeof mnt_srvc->fh.name_fh)) {
-				if (xdr_u_int(xs, &mnt_srvc->flv)) {
-					return XDR_SUCCESS;
-				}
-			}
-		}
-	}
-
-	return XDR_FAILURE;
-}
-
-static int xdr_nfs_namestring(struct xdr *xs, rpc_string_t *fh) {
-	char *point;
-
-	assert(fh != NULL);
-
-	point = fh->data;
-	if(xdr_bytes(xs, (char **)&point, &fh->len, sizeof(*fh))) {
-		point += fh->len;
-		*point = 0;
-		return XDR_SUCCESS;
-	}
-
-	return XDR_FAILURE;
-}
-
-static int xdr_nfs_name_fh(struct xdr *xs, rpc_fh_string_t *fh) {
-	char *point;
-
-	assert(fh != NULL);
-
-	point = fh->data;
-	if(xdr_bytes(xs, (char **)&point, &fh->len, sizeof(*fh))) {
-		return XDR_SUCCESS;
-	}
-
-	return XDR_FAILURE;
-}
-
-static int xdr_nfs_lookup(struct xdr *xs, char *point) {
-
-	lookup_req_t *req;
-	lookup_reply_t *reply;
-
-	assert(point != NULL);
-
-	switch (xs->oper) {
-		case XDR_DECODE:
-			reply = (lookup_reply_t *)point;
-			if (xdr_u_int(xs, &reply->status) && (STATUS_OK == reply->status)
-				&& xdr_nfs_name_fh(xs, reply->fh)
-				&& xdr_u_int(xs, &reply->obj_vf)
-				&& (VALUE_FOLLOWS_YES == reply->obj_vf)
-				&& xdr_nfs_get_attr(xs, (char *) &reply->attr)
-				&& xdr_u_int(xs, &reply->dir_vf)
-				&& (VALUE_FOLLOWS_YES == reply->dir_vf)
-				&& xdr_nfs_get_attr(xs, (char *) &reply->dir_attr)) {
-				return XDR_SUCCESS;
-			}
-			break;
-		case XDR_ENCODE:
-			req = (lookup_req_t *)point;
-
-			if (xdr_nfs_name_fh(xs, req->dir_fh)
-					&& xdr_nfs_namestring(xs, req->fname)) {
-				return XDR_SUCCESS;
-			}
-			break;
-		case XDR_FREE:
-			return XDR_SUCCESS;
-		}
-
-		return XDR_FAILURE;
-}
-
-static int xdr_nfs_delete(struct xdr *xs, char *point) {
-
-	lookup_req_t *req;
-	delete_reply_t *reply;
-
-	assert(point != NULL);
-
-	switch (xs->oper) {
-		case XDR_DECODE:
-			reply = (delete_reply_t *)point;
-			if (xdr_u_int(xs, &reply->status) && (STATUS_OK == reply->status)
-				&& xdr_u_int(xs, &reply->before_vf)) {
-				if (VALUE_FOLLOWS_YES == reply->before_vf) {
-					if(XDR_SUCCESS !=
-						xdr_nfs_get_attr(xs, (char *) &reply->before_attr)) {
-						break;
-					}
-				}
-				if (xdr_u_int(xs, &reply->dir_vf)
-					&& (VALUE_FOLLOWS_YES == reply->dir_vf)
-					&& xdr_nfs_get_attr(xs, (char *) reply->dir_attr)) {
-					return XDR_SUCCESS;
-				}
-			}
-			break;
-		case XDR_ENCODE:
-			req = (lookup_req_t *)point;
-
-			if (xdr_nfs_name_fh(xs, req->dir_fh)
-					&& xdr_nfs_namestring(xs, req->fname)) {
-				return XDR_SUCCESS;
-			}
-			break;
-		case XDR_FREE:
-			return XDR_SUCCESS;
-		}
-
-		return XDR_FAILURE;
-}
-
-static int xdr_nfs_create(struct xdr *xs, char *point) {
-
-	create_req_t *req;
-	create_reply_t *reply;
-
-	assert(point != NULL);
-
-	switch (xs->oper) {
-		case XDR_DECODE:
-			reply = (create_reply_t *)point;
-			if (xdr_u_int(xs, &reply->status) && (STATUS_OK == reply->status)
-				&& xdr_u_int(xs, &reply->fh_vf)
-				&& (VALUE_FOLLOWS_YES == reply->fh_vf)
-				&& xdr_nfs_name_fh(xs, &reply->obj_fh)
-				&& xdr_u_int(xs, &reply->attr_vf)
-				&& (VALUE_FOLLOWS_YES == reply->attr_vf)
-				&& xdr_nfs_get_attr(xs, (char *) &reply->obj_attr)) {
-				return XDR_SUCCESS;
-			}
-			break;
-		case XDR_ENCODE:
-			req = (create_req_t *)point;
-
-			if (xdr_nfs_name_fh(xs, req->new.dir_fh)
-				&& xdr_nfs_namestring(xs, req->new.fname)) {
-				if(NFS_FILE_NODE_TYPE == req->type) {
-					if(XDR_SUCCESS != xdr_u_int(xs, &req->create_mode)) {
-						break;
-					}
-				}
-				if ((NFS_DIRECTORY_NODE_TYPE == req->type) ||
-					(GURDED_MODE == req->create_mode)) {
-					if (xdr_u_int(xs, &req->mode_vf)
-						&& xdr_u_int(xs, &req->mode)
-						&& xdr_u_int(xs, &req->uid_vf)
-						&& xdr_u_int(xs, &req->uid)
-						&& xdr_u_int(xs, &req->gid_vf)
-						&& xdr_u_int(xs, &req->gid)
-						&& xdr_u_int(xs, &req->size_vf)
-						&& xdr_u_hyper(xs, &req->size)
-						&& xdr_u_int(xs, &req->set_atime)
-						&& xdr_u_int(xs, &req->set_mtime)){
-						return XDR_SUCCESS;
-					}
-					break;
-				}
-				return XDR_SUCCESS;
-			}
-			break;
-		case XDR_FREE:
-			return XDR_SUCCESS;
-		}
-		return XDR_FAILURE;
-}
-
-
-static int xdr_nfs_read_file(struct xdr *xs, char *point) {
-
-	read_req_t *req;
-	read_reply_t *reply;
-	char *data;
-
-	assert(point != NULL);
-
-	switch (xs->oper) {
-		case XDR_DECODE:
-			reply = (read_reply_t *)point;
-			data = reply->data;
-			if (xdr_u_int(xs, &reply->status) && (STATUS_OK == reply->status)
-				&& xdr_u_int(xs, &reply->vf)
-				&& (VALUE_FOLLOWS_YES == reply->vf)
-				&& xdr_nfs_get_attr(xs, (char *) &reply->attr)
-				&& xdr_u_int(xs, &reply->count)
-				&& xdr_u_int(xs, &reply->eof)
-				&& xdr_bytes(xs, (char **)&data, &reply->datalen, DIRCOUNT)) {
-				return XDR_SUCCESS;
-			}
-			break;
-		case XDR_ENCODE:
-			req = (read_req_t *)point;
-			if (xdr_nfs_name_fh(xs, req->fh)
-				&& xdr_u_hyper(xs, &req->offset)
-				&& xdr_u_int(xs, &req->count)) {
-				return XDR_SUCCESS;
-			}
-			break;
-		case XDR_FREE:
-			return XDR_SUCCESS;
-		}
-
-		return XDR_FAILURE;
-}
-
-static int xdr_nfs_write_file(struct xdr *xs, char *point) {
-
-	write_req_t *req;
-	write_reply_t *reply;
-	char *data;
-
-	assert(point != NULL);
-
-	switch (xs->oper) {
-		case XDR_DECODE:
-			reply = (write_reply_t *)point;
-			if (xdr_u_int(xs, &reply->status) && (STATUS_OK == reply->status)
-				&& xdr_u_int(xs, &reply->before_vf)) {
-
-				if (VALUE_FOLLOWS_YES == reply->before_vf) {
-					if (XDR_SUCCESS != xdr_nfs_get_attr(xs,
-						(char *) &reply->before_attr)) {
-							break;
-						}
-					}
-
-				if (xdr_u_int(xs, &reply->vf)
-					&& (VALUE_FOLLOWS_YES == reply->vf)
-					&& xdr_nfs_get_attr(xs, (char *) reply->attr)
-					&& xdr_u_int(xs, &reply->count)
-					&& xdr_u_int(xs, &reply->comitted)
-					&& xdr_u_hyper(xs, &reply->cookie_vrf)) {
-						return XDR_SUCCESS;
-					}
-			}
-			break;
-		case XDR_ENCODE:
-			req = (write_req_t *)point;
-			data = req->data;
-
-			if (xdr_nfs_name_fh(xs, req->fh) && xdr_u_hyper(xs, &req->offset)
-				&& xdr_u_int(xs, &req->count) && xdr_u_int(xs, &req->stable)
-				&&  xdr_bytes(xs, (char **)&data, &req->datalen, DIRCOUNT)) {
-				return XDR_SUCCESS;
-			}
-			break;
-		case XDR_FREE:
-			return XDR_SUCCESS;
-		}
-
-		return XDR_FAILURE;
-}
-
-static int xdr_nfs_readdirplus(struct xdr *xs, nfs_filehandle_t *fh) {
-	char *point;
-	__u32 size;
-
-	assert(fh != NULL);
-
-	point = fh->name_fh.data;
-	if(xdr_bytes(xs, (char **)&point, &fh->name_fh.len, sizeof(*fh))) {
-		point = (char *)&fh->cookie;
-		size = sizeof(fh->cookie) + sizeof(fh->cookieverf);
-		if(xdr_opaque(xs, point, size)) {
-			if (xdr_u_int(xs, &fh->count)) {
-				if (xdr_u_int(xs, &fh->maxcount)) {
-					return XDR_SUCCESS;
-				}
-			}
-		}
-	}
-
-	return XDR_FAILURE;
-}
-
-static int xdr_nfs_get_dirattr(struct xdr *xs, char *point) {
-	dir_attribute_rep_t *dir_attr;
-
-	assert(point != NULL);
-
-	dir_attr = (dir_attribute_rep_t *) point;
-	if(XDR_SUCCESS == xdr_nfs_get_attr(xs, point)) {
-		if (xdr_opaque(xs, (char *)&dir_attr->verifier,
-				sizeof(dir_attr->verifier))) {
-			return XDR_SUCCESS;
-		}
-	}
-	return XDR_FAILURE;
-}
-
-static int xdr_nfs_get_name(struct xdr *xs, char *point) {
-	file_name_t *file;
-
-	assert(point != NULL);
-
-	file = (file_name_t *) point;
-	return (xdr_opaque(xs, (char *)&file->file_id, sizeof(file->file_id))
-			&& xdr_nfs_namestring(xs, &file->name)
-			&& xdr_opaque(xs, (char *)&file->cookie, sizeof(file->cookie))
-			&& (int)(0 != (p_fs_fd->fh.cookie = file->cookie)));
-}
-
-static int xdr_nfs_get_attr(struct xdr *xs, char *point) {
-	file_attribute_rep_t *attr;
-
-	assert(point != NULL);
-
-	attr = (file_attribute_rep_t *) point;
-	return (xdr_u_int(xs, &attr->type) && xdr_u_int(xs, &attr->mode)
-			&& xdr_u_int(xs, &attr->nlink) && xdr_u_int(xs, &attr->uid)
-			&& xdr_u_int(xs, &attr->gid) && xdr_u_hyper(xs, &attr->size)
-			&& xdr_u_hyper(xs, &attr->used) && xdr_u_int(xs, &attr->specdata1)
-			&& xdr_u_int(xs, &attr->specdata2) && xdr_u_hyper(xs, &attr->fsid)
-			&& xdr_u_hyper(xs, &attr->file_id)
-			&& xdr_u_int(xs, &attr->atime.second)
-			&& xdr_u_int(xs, &attr->atime.nano_sec)
-			&& xdr_u_int(xs, &attr->mtime.second)
-			&& xdr_u_int(xs, &attr->mtime.nano_sec)
-			&& xdr_u_int(xs, &attr->ctime.second)
-			&& xdr_u_int(xs, &attr->ctime.nano_sec));
-}
-
-static int xdr_nfs_get_dirdesc(struct xdr *xs, char *point) {
-	readdir_desc_t *desc;
-	__u32 *vf;
-
-	assert(point != NULL);
-
-	desc = (readdir_desc_t *) point;
-	while(1) {
-		if(XDR_SUCCESS != xdr_nfs_get_name(xs,
-				(char *) &desc->file_name)) {
-			break;
-		}
-
-		vf = &desc->vf_attr;
-		if (xdr_u_int(xs, vf)) {
-			if(VALUE_FOLLOWS_YES == *vf) {
-				if(XDR_SUCCESS != xdr_nfs_get_attr(xs,
-						(char *) &desc->file_attr)) {
-					break;
-				}
-			}
-		}
-
-		vf = &desc->vf_fh;
-		if (xdr_u_int(xs, vf)) {
-			if(VALUE_FOLLOWS_YES == *vf) {
-				if(XDR_SUCCESS != xdr_nfs_name_fh(xs,
-						&desc->file_handle.name_fh)) {
-					break;
-				}
-			}
-		}
-		return XDR_SUCCESS;
-	}
-	return XDR_FAILURE;
-}
-
-/*
-static size_t get_sizeof_readdirentry(readdir_desc_t *file) {
-	size_t len;
-
-	len = sizeof(file->file_name.file_id);
-	len += sizeof(file->file_name.cookie);
-	len += file->file_name.name.len + sizeof(file->file_name.name.len);
-
-	len += sizeof(file->vf_attr);
-	len += sizeof(file->file_attr);
-
-	len += sizeof(file->vf_fh);
-	len += file->file_handle.name_fh.len +
-			sizeof(file->file_handle.name_fh.len);
-	return len;
-}
-*/
-
-static int xdr_nfs_get_dirlist(struct xdr *xs, char *buff) {
-	char *point;
-	__u32 vf;
-	/*readdir_desc_t *file;*/
-
-	assert(buff != NULL);
-	point = buff;
-
-	if (xdr_u_int(xs, &vf)) {
-		if(STATUS_OK == (*(__u32 *) point = vf)) {
-			point += sizeof(vf);
-			if (xdr_u_int(xs,  &vf)) {
-				if(VALUE_FOLLOWS_YES == (*(__u32 *) point = vf)) {
-					point += sizeof(vf);
-					if(xdr_nfs_get_dirattr(xs, point)) {
-						point += sizeof(dir_attribute_rep_t);
-						while(1) {
-							if (xdr_u_int(xs, &vf)) {
-								if(VALUE_FOLLOWS_YES ==
-										(*(__u32 *) point = vf)) {
-									point += sizeof(vf);
-									/*file = (readdir_desc_t *)point;*/
-									if(XDR_SUCCESS == xdr_nfs_get_dirdesc(xs,
-											point)) {
-										point += sizeof(readdir_desc_t);
-									}
-								}
-								else {
-									point += sizeof(vf);
-									break;
-								}
-							}
-						}
-						/*read EOF */
-						if (xdr_u_int(xs, (__u32 *) point)) {
-							return XDR_SUCCESS;
-						}
-					}
-				}
-			}
-		}
-	}
-	return XDR_FAILURE;
-}
-
-

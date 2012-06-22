@@ -2,6 +2,7 @@ package embox.fs.driver
 
 module nfs {
 	source "nfs.c"
+	source "xdr_nfs.c"
 
 	depends embox.net.rpc
 	depends embox.fs.node, embox.fs.driver.repo
