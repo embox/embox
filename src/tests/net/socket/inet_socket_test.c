@@ -9,8 +9,8 @@
 
 #include <embox/test.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
+#include <net/ip.h>
+#include <net/net.h>
 
 EMBOX_TEST_SUITE("network/socket/inet test");
 
