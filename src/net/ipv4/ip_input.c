@@ -131,5 +131,6 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		}
 	}
 
+	kfree_skb(skb);
 	return NET_RX_DROP;				/* Nobody wants this packet */
 }

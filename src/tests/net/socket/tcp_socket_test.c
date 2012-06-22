@@ -21,7 +21,7 @@ TEST_CASE("Create TCP socket") {
 
 
 	sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	test_assert(sockfd > 0);
+	test_assert(sockfd >= 0);
 
 	dst.sin_family = AF_INET;
 	dst.sin_port = htons((unsigned short)12345);

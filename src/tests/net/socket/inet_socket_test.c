@@ -18,7 +18,7 @@ TEST_CASE("Create raw IP (internet) socket") {
 	int sockfd;
 
 	sockfd = socket(PF_INET, SOCK_RAW, IPPROTO_RAW);
-	test_assert(sockfd);
+	test_assert(sockfd >= 0);
 
 	close(sockfd);
 }

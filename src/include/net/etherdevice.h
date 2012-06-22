@@ -80,14 +80,16 @@ static inline bool compare_ether_addr(const uint8_t *a, const uint8_t *b)
  */
 
 
-/* Packet types.
- * Do we want to pack them into a enum?
+/*
+ * Packet types.
  */
-#define PACKET_HOST             0	/* To us */
-#define PACKET_BROADCAST        1	/* To all */
-#define PACKET_MULTICAST        2	/* To group */
-#define PACKET_OTHERHOST        3	/* To someone else */
-#define PACKET_LOOPBACK         4	/* We are in loopback, it overwrites everything */
+enum {
+	PACKET_HOST,      /* To us */
+	PACKET_BROADCAST, /* To all */
+	PACKET_MULTICAST, /* To group */
+	PACKET_OTHERHOST, /* To someone else */
+	PACKET_LOOPBACK   /* We are in loopback, it overwrites everything */
+};
 
 /**
  * eth_packet_type - determine the packet type (See above)

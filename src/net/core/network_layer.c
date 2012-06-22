@@ -132,6 +132,7 @@ int netif_receive_skb(sk_buff_t *skb) {
 
 		q = pack->netpack;
 		assert(q != NULL);
+
 		if (q->type == skb->protocol) {
 			return q->func(skb, skb->dev, q, NULL);
 		}

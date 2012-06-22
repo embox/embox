@@ -18,7 +18,7 @@ TEST_CASE("Create raw PF_PACKET socket") {
 	int sockfd;
 
 	sockfd = socket(PF_PACKET, SOCK_RAW, 0);
-	test_assert(sockfd);
+	test_assert(sockfd >= 0);
 
 	close(sockfd);
 }

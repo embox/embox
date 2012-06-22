@@ -20,6 +20,8 @@
 #include <errno.h>
 #include <net/neighbour.h>
 #include <time.h>
+#include <assert.h>
+//#include <kernel/thread/sched.h>
 
 #include <net/arp_queue.h>
 
@@ -41,78 +43,86 @@
 
 EMBOX_NET_PACK(ETH_P_ARP, arp_rcv, arp_init);
 
-static int arp_header(sk_buff_t *skb, int type, int ptype,
-		in_addr_t dest_ip, net_device_t *dev, in_addr_t src_ip,
+static int arp_header(struct sk_buff *skb, struct net_device *dev,
+		int oper, int protocol, in_addr_t dest_ip, in_addr_t src_ip,
 		const unsigned char *dest_hw, const unsigned char *src_hw,
 		const unsigned char *target_hw) {
-	struct arphdr *arp;
+	int res;
+	struct arphdr *arph;
 
-	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
-	arp = skb->nh.arph;
+	assert((skb != NULL) && (dev != NULL));
 
 	skb->dev = dev;
-	skb->protocol = ptype;
-	if (src_hw == NULL) {
-		src_hw = dev->dev_addr;
-	}
-	if (dest_hw == NULL) {
-		dest_hw = dev->broadcast;
-	}
+	skb->protocol = protocol;
+	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
+
+	src_hw = (src_hw != NULL ? src_hw : dev->dev_addr);
+	dest_hw = (dest_hw != NULL ? dest_hw : dev->broadcast);
 
 	/*
 	 * Fill the device header for the ARP frame
 	 */
-	if (dev_hard_header(skb, dev, ptype, (void *)dest_hw,
-			(void *)src_hw, skb->len) < 0) {
-		return -1;
+	res = dev_hard_header(skb, dev, protocol,
+			(void *)dest_hw, (void *)src_hw, skb->len);
+	if (res < 0) {
+		return res;
 	}
 
 	/*
 	 * Fill out the arp protocol part.
 	 */
-	arp->ar_hrd = htons(ARPHRD_ETHER);
-	arp->ar_pro = htons(ETH_P_IP);
-	arp->ar_hln = dev->addr_len;
-	arp->ar_pln = IPV4_ADDR_LENGTH;
-	arp->ar_op = htons(type);
-	memcpy(arp->ar_sha, src_hw, ETH_ALEN);
-	arp->ar_sip = src_ip;
-	memcpy(arp->ar_tha, dest_hw, ETH_ALEN);
-	arp->ar_tip = dest_ip;
+	arph = skb->nh.arph;
+	assert(arph != NULL);
 
-	return 0;
+	arph->ar_hrd = htons(ARPHRD_ETHER);
+	arph->ar_pro = htons(ETH_P_IP);
+	arph->ar_hln = dev->addr_len;
+	arph->ar_pln = IPV4_ADDR_LENGTH;
+	arph->ar_op = htons(oper);
+	memcpy(arph->ar_sha, src_hw, ETH_ALEN);
+	arph->ar_sip = src_ip;
+	memcpy(arph->ar_tha, dest_hw, ETH_ALEN);
+	arph->ar_tip = dest_ip;
+
+	return ENOERR;
 }
 
-static int arp_xmit(sk_buff_t *skb) {
+static int arp_xmit(struct sk_buff *skb) {
+	assert(skb != NULL);
+
 	return dev_queue_xmit(skb);
 }
 
-int arp_send(int type, int ptype, in_addr_t dest_ip,
-		struct net_device *dev, in_addr_t src_ip,
+int arp_send(int type, int ptype, struct net_device *dev,
+		in_addr_t dest_ip, in_addr_t src_ip,
 		const unsigned char *dest_hw, const unsigned char *src_hw,
 		const unsigned char *th) {
+	int res;
 	struct sk_buff *skb;
 
-	if (!dev) {
-		return -1;
-	}
-	/*
-	 * No arp on this interface.
-	 */
+	assert(dev != NULL);
+
 	if (dev->flags & IFF_NOARP) {
-		return -1;
+		return -EINVAL;
 	}
-	if (!(skb = alloc_skb(ETH_HEADER_SIZE + ARP_HEADER_SIZE, 0))) {
-		return -1;
+
+	skb = alloc_skb(ETH_HEADER_SIZE + ARP_HEADER_SIZE, 0);
+	if (skb == NULL) {
+		return -ENOMEM;
 	}
-	if (arp_header(skb, type, ptype, dest_ip, dev, src_ip, dest_hw, src_hw, th)) {
+
+	res = arp_header(skb, dev, type, ptype, dest_ip, src_ip,
+			dest_hw, src_hw, th);
+	if (res < 0) {
 		kfree_skb(skb);
-		return -1;
+		return res;
 	}
+
 	return arp_xmit(skb);
 }
 
 int arp_resolve(sk_buff_t *pack) {
+	int res;
 	uint8_t *hw_addr;
 	net_device_t *dev;
 	iphdr_t *ip;
@@ -144,85 +154,131 @@ int arp_resolve(sk_buff_t *pack) {
 	}
 
 	/* send arp request and add packet in list of deferred packets */
-	arp_queue_add(pack);
-	arp_send(ARPOP_REQUEST, ETH_P_ARP, ip->daddr, dev, ip->saddr, NULL,
-			dev->dev_addr, NULL);
+	res = arp_queue_add(pack);
+	if (res < 0) {
+		return res;
+	}
 
-	return -ENOENT;
+	res = arp_send(ARPOP_REQUEST, ETH_P_ARP, dev, ip->daddr, ip->saddr, NULL,
+			dev->dev_addr, NULL);
+	if (res < 0) {
+		return res;
+	}
+
+#if 0
+	sched_sleep(&pack->sk->sock_is_ready, SCHED_TIMEOUT_INFINITE); // FIXME not want to work
+#endif
+
+	return (sock_is_ready(pack->sk) ? ENOERR : -ENOENT);
 }
 
 /**
  * receive ARP response, update ARP table
  */
-static int received_resp(sk_buff_t *pack) {
-	arphdr_t *arp;
+static int received_resp(struct sk_buff *skb, struct net_device *dev) {
+	struct arphdr *arph;
 
-	arp = pack->nh.arph;
+	assert((skb != NULL) && (dev != NULL));
+
+	arph = skb->nh.arph;
+	assert(arph != NULL);
+
 	/*TODO need add function for getting ip addr*/
 	/* add record into arp_tables */
-	return neighbour_add(in_dev_get(pack->dev), arp->ar_sip, arp->ar_sha, ATF_COM);
+	return neighbour_add(in_dev_get(dev), arph->ar_sip, arph->ar_sha, ATF_COM);
 }
 
 /**
  * receive ARP request, send ARP response
  */
-static int received_req(sk_buff_t *skb) {
-	arphdr_t *arp;
+static int received_req(struct sk_buff *skb, struct net_device *dev) {
+	int res;
+	struct arphdr *arph;
 
-	arp = skb->nh.arph;
-	if (arp_header(skb, ARPOP_REPLY, ETH_P_ARP, arp->ar_sip, skb->dev, arp->ar_tip, arp->ar_sha, skb->dev->dev_addr, NULL)) {
+	assert((skb != NULL) && (dev != NULL));
+
+	arph = skb->nh.arph;
+	assert(arph != NULL);
+
+	res = arp_header(skb, dev, ARPOP_REPLY, ETH_P_ARP, arph->ar_sip,
+			arph->ar_tip, arph->ar_sha, dev->dev_addr, NULL);
+	if (res < 0) {
 		kfree_skb(skb);
-		return -1;
+		return res;
 	}
+
 	return arp_xmit(skb);
 }
 
 /**
  * Process an arp request.
  */
-static int arp_process(sk_buff_t *skb) {
+static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 	int res;
-	arphdr_t *arp;
+	struct arphdr *arph;
+	struct in_device *in_dev;
 
-	arp = skb->nh.arph;
-	if (ipv4_is_loopback(arp->ar_tip) || ipv4_is_multicast(arp->ar_tip)) {
+	assert((skb != NULL) && (dev != NULL));
+
+	arph = skb->nh.arph;
+	assert(arph != NULL);
+
+	if (ipv4_is_loopback(arph->ar_tip) || ipv4_is_multicast(arph->ar_tip)) {
 		kfree_skb(skb);
 		return 0;
 	}
-	if (arp->ar_tip != in_dev_get(skb->dev)->ifa_address) {
-		if (arp->ar_tip == arp->ar_sip) { /* RFC 3927 - ARP Announcement */
-			neighbour_add(in_dev_get(skb->dev), arp->ar_sip, arp->ar_sha, ATF_COM);
+
+	in_dev = in_dev_get(dev);
+	assert(in_dev != NULL);
+
+	if (arph->ar_tip != in_dev->ifa_address) {
+		if (arph->ar_tip == arph->ar_sip) { /* RFC 3927 - ARP Announcement */
+			neighbour_add(in_dev, arph->ar_sip, arph->ar_sha, ATF_COM);
 		}
 		kfree_skb(skb);
 		return -1;
 	}
-	switch (ntohs(arp->ar_op)) {
+
+	switch (ntohs(arph->ar_op)) {
 		case ARPOP_REPLY:
-			res = received_resp(skb);
+			res = received_resp(skb, dev);
 			arp_queue_process(skb);
 			kfree_skb(skb);
 			return res;
 		case ARPOP_REQUEST:
-			received_resp(skb);
-			return received_req(skb);
+			received_resp(skb, dev);
+			return received_req(skb, dev);
 	}
+
 	kfree_skb(skb);
 	return -1;
 }
 
-int arp_rcv(sk_buff_t *skb, net_device_t *dev, packet_type_t *pt,
-		net_device_t *orig_dev) {
-	arphdr_t *arp = skb->nh.arph;
-	uint8_t pkt_type = eth_packet_type(skb);
+int arp_rcv(struct sk_buff *skb, struct net_device *dev,
+		struct packet_type *pt, struct net_device *orig_dev) {
+	struct arphdr *arph;
 
-	if ((arp->ar_hln != dev->addr_len) || (dev->flags & IFF_NOARP)
-			|| (pkt_type == PACKET_OTHERHOST)
-			|| (pkt_type == PACKET_LOOPBACK)
-			|| (arp->ar_pln != 4)) {
-		kfree_skb(skb);
-		return NET_RX_SUCCESS;
+	assert((skb != NULL) && (dev != NULL));
+
+	arph = skb->nh.arph;
+	assert(arph != NULL);
+
+	switch (eth_packet_type(skb)) {
+	case PACKET_HOST:
+	case PACKET_BROADCAST:
+	case PACKET_MULTICAST:
+		if (!(dev->flags & IFF_NOARP)
+				&& (arph->ar_hrd == htons(ARPHRD_ETHER))
+				&& (arph->ar_pro == htons(ETH_P_IP))
+				&& (arph->ar_hln == dev->addr_len)
+				&& (arph->ar_pln == IPV4_ADDR_LENGTH)) {
+			return (arp_process(skb, dev) < 0 ? NET_RX_DROP : NET_RX_SUCCESS);
+		}
+		break;
 	}
-	return (arp_process(skb) ? NET_RX_DROP : NET_RX_SUCCESS);
+
+	kfree_skb(skb);
+	return NET_RX_DROP;
 }
 
 static int arp_init(void) {

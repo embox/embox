@@ -30,16 +30,14 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	iphdr_t *hdr = skb->nh.iph;
 	hdr->version = 4;
 	hdr->ihl = IP_MIN_HEADER_SIZE >> 2 /* + opt->optlen */;
-	hdr->saddr = saddr; // Changed as in_addr_t is in network-ordered
-	hdr->daddr = daddr;
-	hdr->tot_len = htons(len - ETH_HEADER_SIZE);
-	//hdr->ttl = htons(ttl);
-	hdr->ttl = 64;
-	hdr->id = htons(global_id++);
 	hdr->tos = 0;
-	hdr->frag_off = htons(IP_DF);
-	/* frag_off will be set during fragmentation decision */
+	hdr->tot_len = htons(len - ETH_HEADER_SIZE);
+	hdr->id = htons(global_id++);
+	hdr->frag_off = htons(IP_DF); /* frag_off will be set during fragmentation decision */
+	hdr->ttl = 64; /* htons(ttl); */
 	hdr->proto = proto;
+	hdr->saddr = saddr; /* Changed as in_addr_t is in network-ordered */
+	hdr->daddr = daddr;
 	ip_send_check(hdr);
 	return 0;
 }
