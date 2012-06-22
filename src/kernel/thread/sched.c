@@ -286,11 +286,12 @@ static void sched_switch(void) {
 	assert(!in_sched_locked());
 
 	sched_lock();
-	{
+
+	do {
 		startq_flush();
 
 		if (!switch_posted) {
-			goto out;
+			break;
 		}
 		switch_posted = 0;
 
@@ -304,7 +305,7 @@ static void sched_switch(void) {
 
 		if (!runq_switch(&rq)) {
 			ipl_disable();
-			goto out;
+			break;
 		}
 
 		next = runq_current(&rq);
@@ -314,9 +315,11 @@ static void sched_switch(void) {
 
 		ipl_disable();
 
+		task_notify_switch(prev, next);
 		context_switch(&prev->context, &next->context);
-	}
-	out: sched_unlock_noswitch();
+	} while (0);
+
+	sched_unlock_noswitch();
 }
 
 struct startq {

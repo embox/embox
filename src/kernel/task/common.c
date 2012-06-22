@@ -8,6 +8,7 @@
  */
 
 #include <errno.h>
+#include <string.h>
 #include <embox/unit.h>
 #include <kernel/task.h>
 #include <kernel/thread/sched_lock.h>
@@ -22,6 +23,7 @@ EMBOX_UNIT_INIT(tasks_init);
 static char kernel_task[sizeof(struct task) + MAX_RES_SUM_SIZE];
 
 ARRAY_SPREAD_DEF(const struct task_resource_desc *, task_resource_desc_array);
+ARRAY_SPREAD_DEF(const task_notifing_resource_hnd, task_notifing_resource);
 
 static size_t resource_sum_size = 0;
 
@@ -33,6 +35,8 @@ struct task *task_init(void *task_n_res_space) {
 	struct task *task = (struct task *) task_n_res_space;
 	void *res_ptr = task_n_res_space + sizeof(struct task);
 	const struct task_resource_desc *res_desc;
+
+	memset(task_n_res_space, 0, sizeof(struct task) + resource_sum_size);
 
 	INIT_LIST_HEAD(&task->threads);
 	INIT_LIST_HEAD(&task->children);
@@ -47,6 +51,23 @@ struct task *task_init(void *task_n_res_space) {
 
 	return task;
 
+}
+
+int task_notify_switch(struct thread *prev, struct thread *next) {
+	task_notifing_resource_hnd notify_res;
+	int res;
+
+	if (prev->task == next->task) {
+		return 0;
+	}
+
+	task_notifing_resource_foreach(notify_res) {
+		if (0 != (res = notify_res(prev, next))) {
+			return res;
+		}
+	}
+
+	return 0;
 }
 
 struct task *task_kernel_task(void) {
