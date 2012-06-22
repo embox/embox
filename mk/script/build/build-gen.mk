@@ -52,7 +52,7 @@ gen_banner = \
 # 1. Variable name.
 # 2. Value.
 gen_make_var = \
-	$(PRINTF) '%s := %s\n\n' \
+	$(PRINTF) '%s = %s\n\n' \
 		$(call sh_quote,$1) \
 		$(call sh_quote,$2)
 
@@ -76,7 +76,7 @@ gen_make_dep = \
 # 2. Variable name.
 # 3. Value.
 gen_make_tsvar = \
-	$(PRINTF) '%s : %s := %s\n\n' \
+	$(PRINTF) '%s : %s = %s\n\n' \
 		$(call sh_quote,$1) \
 		$(call sh_quote,$2) \
 		$(call sh_quote,$3)
@@ -85,7 +85,7 @@ gen_make_tsvar = \
 # 2. Variable name.
 # 3. Value (assumed to be a list).
 gen_make_tsvar_list = \
-	$(PRINTF) '%s : %s := $(foreach ,$3,\\\n\t\t%s)\n\n' \
+	$(PRINTF) '%s : %s = $(foreach ,$3,\\\n\t\t%s)\n\n' \
 		$(call sh_quote,$1) \
 		$(call sh_quote,$2) \
 		$(foreach v,$3,$(call sh_quote,$v))
