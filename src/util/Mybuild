@@ -26,3 +26,14 @@ module hashtable {
 	depends embox.mem.heap_bm
 	depends embox.mem.objalloc
 }
+
+abstract module num_alloc { }
+
+module num_alloc_array extends num_alloc {
+	source "num_alloc_array.c", "num_alloc_array.h"
+}
+
+module idx_table {
+	depends num_alloc
+}
+
