@@ -123,14 +123,11 @@ $(@build_image) : target_file = \
 
 $(@build_image) : archived_modules = $(suffix $(@module_ar_rulemk))
 $(@build_image) : normal_modules = $(filter-out $(archived_modules),$(build_modules))
-$(@build_image) : normal_sources = \
-		$(foreach s,$(call get,$(normal_modules),sources), \
-			$(if $(filter $(source_cc_pats),$(call get,$s,fileName)),$s))
 
-$(@build_image) : objs = $(patsubst %,$(source_cc_rulemk_o_pat), \
-		$(call source_base,$(normal_sources)))
-$(@build_image) : libs = $(patsubst %,$(module_ar_rulemk_a_pat), \
-		$(call module_path,$(archived_modules)))
+$(@build_image) : objs = $(patsubst %,$(value source_cc_rulemk_o_pat), \
+			$(basename $(call module_cc_source_files,$(normal_modules))))
+$(@build_image) : libs = $(patsubst %,$(value module_ar_rulemk_a_pat), \
+			$(call module_path,$(archived_modules)))
 
 $(@build_image) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -169,7 +166,12 @@ $(@module_ar_rulemk) : @file   = $(path:%=$(module_ar_rulemk_mk_pat))
 $(@module_ar_rulemk) : mk_file = $(patsubst %,$(value module_ar_rulemk_mk_pat),$$(module_path))
 $(@module_ar_rulemk) : a_file  = $(patsubst %,$(value module_ar_rulemk_a_pat),$$(module_path))
 
-$(@module_ar_rulemk) : objs    = $(call module_get_objects,$@)
+module_cc_source_files = \
+	$(filter $(source_cc_pats),$(filter-out $(source_cpp_pats), \
+		$(call source_file,$(call get,$1,sources))))
+
+$(@module_ar_rulemk) : objs = $(patsubst %,$(value source_cc_rulemk_o_pat), \
+			$(basename $(call module_cc_source_files,$@)))
 
 $(@module_ar_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
