@@ -16,6 +16,21 @@ enum device_config {
 	EVENT_PERIODIC = 0
 };
 
+
+struct time_dev_conf {
+	enum {
+		TIMER_PERIOD,
+		TIMER_ONESHOOT,
+	} period_type;
+	int counter_period;
+	int event_period;
+	int mode;
+	enum {
+		RISING_EDGE,
+		FALLING_EDGE,
+	} edge_type;
+};
+
 /**
  * Time device, that generate interrupts.
  *

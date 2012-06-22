@@ -3,7 +3,6 @@ package embox.kernel.task
 module api {
 	option number max_resource_size = 256
 	source "common.c"
-	depends embox.kernel.thread.core
 	depends api_impl
 }
 

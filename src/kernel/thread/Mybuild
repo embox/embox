@@ -6,7 +6,7 @@ module core {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "core.c"
 
-	depends sched, sync, embox.kernel.task.api_impl
+	depends sched, sync, embox.kernel.task.api
 
 	depends embox.arch.context
 }
