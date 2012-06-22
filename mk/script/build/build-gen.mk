@@ -205,8 +205,8 @@ source_cc_pats  := %.S %.c %.cpp %.cxx
 			$(if $(filter $(source_cpp_pats),$f),source-cpp-rule-mk/$s, \
 				$(if $(filter $(source_cc_pats),$f),source-cc-rule-mk/$s))))
 
-@source_cpp_rulemk := $(filter source-cpp-rule-mk/%,$(source_rulemk))
-@source_cc_rulemk  := $(filter source-cc-rule-mk/%,$(source_rulemk))
+@source_cpp_rulemk := $(filter source-cpp-rule-mk/%,$(@source_rulemk))
+@source_cc_rulemk  := $(filter source-cc-rule-mk/%,$(@source_rulemk))
 
 @source_all = \
 	$(@source_gen) \
@@ -254,7 +254,6 @@ $(@source_rulemk) :
 		$(call gen_make_var,source_base,$(base)); \
 		$(call gen_make_dep,$(o_file),$(mk_file)); \
 		$(call gen_make_tsvar,$(o_file),flags,$(flags)))
-
 
 $(@source_gen) : @file = $(SRCGEN_DIR)/$(file)
 $(@source_gen) : script = $(call expand,$(call get,$(basename $@),value))
