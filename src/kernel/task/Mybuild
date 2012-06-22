@@ -16,8 +16,10 @@ module multi extends api_impl {
 
 	source "multi.c"
 
-	depends idx_table /* just for now */
+	/*source "task_table.c"
 
+	depends idx_table [> just for now <]*/
+	depends embox.util.idx_table
 	depends embox.kernel.thread.sched
 
 }
@@ -32,5 +34,9 @@ module single extends api_impl {
 
 module idx_table extends task_environment {
 	source "index_desc.c"
+	depends embox.util.idx_table
 }
 
+/*module signal {
+	source "signal.c"
+}*/
