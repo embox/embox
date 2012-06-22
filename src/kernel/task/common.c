@@ -26,9 +26,29 @@ ARRAY_SPREAD_DEF(const struct task_resource_desc *, task_resource_desc_array);
 ARRAY_SPREAD_DEF(const task_notifing_resource_hnd, task_notifing_resource);
 
 static size_t resource_sum_size = 0;
+static size_t on_demand_memorize_fn(void);
+
+static size_t (*on_demand_calc)(void) = on_demand_memorize_fn;
+
+static size_t on_demand_get_memorized(void) {
+	return resource_sum_size;
+}
+
+static size_t on_demand_memorize_fn(void) {
+	const struct task_resource_desc *res_desc;
+
+	task_resource_foreach(res_desc) {
+		resource_sum_size += res_desc->resource_size;
+	}
+
+	on_demand_calc = on_demand_get_memorized;
+
+	return resource_sum_size;
+}
+
 
 size_t task_resource_sum_size(void) {
-	return resource_sum_size;
+	return on_demand_calc();
 }
 
 struct task *task_init(void *task_n_res_space) {
@@ -75,11 +95,6 @@ struct task *task_kernel_task(void) {
 }
 
 static int tasks_init(void) {
-	const struct task_resource_desc *res_desc;
-
-	task_resource_foreach(res_desc) {
-		resource_sum_size += res_desc->resource_size;
-	}
 
 	if (MAX_RES_SUM_SIZE < resource_sum_size) {
 		return -ENOMEM;
