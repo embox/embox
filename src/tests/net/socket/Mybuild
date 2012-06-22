@@ -1,4 +1,4 @@
-package embox.test.network.socket
+package embox.test.net.socket
 
 
 module inet_socket_test {
