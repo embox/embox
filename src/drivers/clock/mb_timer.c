@@ -16,7 +16,7 @@
 #include <hal/clock.h>
 #include <kernel/clock_source.h>
 #include <kernel/clock_event.h>
-#include <kernel/ktime.h>
+#include <kernel/time/ktime.h>
 
 #include <module/embox/arch/system.h>
 
@@ -52,11 +52,6 @@
 /** set down count mode*/
 #define TIMER_DOWN_COUNT    REVERSE_MASK(TIMER_UDT_BIT)
 
-static struct clock_source mb_timer_clock_source = {
-	.name = "mb_timer"
-};
-
-
 /**
  * Structure one of two timers. Both timers need only for pwm mode
  */
@@ -87,36 +82,28 @@ static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	clock_tick_handler(irq_nr,dev_id);
 	return IRQ_HANDLED;
 }
-static int mb_clock_init(void);
 
-
-static void mb_clock_setup(uint32_t mode) {
-
-}
-
-
-static struct clock_event_device mb_timer_device = {
-	.set_mode = mb_clock_setup,
-	.init = mb_clock_init,
-	.cs = &mb_timer_clock_source,
-	.resolution = 1000,
-	.name = "mb_timer"
-};
-
-CLOCK_EVENT_DEVICE(&mb_timer_device);
-
-static cycle_t mb_timer_read(const struct cyclecounter *cc) {
+static cycle_t mb_cycle_read(void) {
 	return timer0->tcr;
 
 }
 
-static struct cyclecounter cc = {
-	.read = mb_timer_read,
-	.mult = 1,
-	.shift = 0
-};
+static int inited = 0;
 
 static int mb_clock_init(void) {
+	if (inited) {
+		return 0;
+	}
+
+	if (0 != irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, NULL, "mbtimer")) {
+		panic("mbtimer irq_attach failed");
+	}
+
+	inited = 1;
+	return 0;
+}
+
+static int mb_clock_setup(enum device_config cfg, void *param) {
 	/*set clocks period*/
 	timer0->tlr = TIMER_PRELOAD;
 	/*clear interrupts bit and load value from tlr register*/
@@ -125,18 +112,26 @@ static int mb_clock_init(void) {
 	timer0->tcsr = TIMER_ENABLE | TIMER_INT_ENABLE | TIMER_RELOAD
 			| TIMER_DOWN_COUNT;
 
-	if (0 != irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, NULL, "mbtimer")) {
-		panic("mbtimer irq_attach failed");
-	}
-
-	mb_timer_clock_source.flags = 1;
-	mb_timer_clock_source.resolution = 1000;
-	mb_timer_clock_source.dev = &mb_timer_device;
-	mb_timer_clock_source.cc = &cc;
-	clock_source_register(&mb_timer_clock_source);
-
-	/* Calculate mult/shift constants to set clock_source used by timer */
-	clock_source_calc_mult_shift(&mb_timer_clock_source, SYS_CLOCK, 0);
-
 	return 0;
 }
+
+static struct time_event_device mb_ed = {
+	.config = mb_clock_setup,
+	.init = mb_clock_init,
+	.resolution = 1000,
+	.name = "mb_timer"
+};
+
+static struct time_counter_device mb_cd = {
+	.read = mb_cycle_read,
+	.resolution = SYS_CLOCK,
+};
+
+static struct clock_source mb_cs = {
+	.name = "gptimer",
+	.event_device = &mb_ed,
+	.counter_device = &mb_cd,
+	.read = clock_source_read,
+};
+
+CLOCK_SOURCE(&mb_cs);
