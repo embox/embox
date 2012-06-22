@@ -7,10 +7,12 @@
  */
 
 #include <errno.h>
+#include <kernel/task/task_table.h>
 #include <kernel/thread/api.h>
 #include <mem/misc/pool.h>
 #include <kernel/task.h>
 #include "common.h"
+
 
 #include <embox/unit.h> /* For options */
 
@@ -22,9 +24,12 @@ struct task_creat_param {
 	void *arg;
 };
 
+/* Maximum simultaneous creating task number */
+#define SIMULTANEOUS_TASK_CREAT 5
+
 /* struct's livecycle is short: created in new_task,
  * freed at first in new task's thread */
-POOL_DEF(creat_param, struct task_creat_param, 5);
+POOL_DEF(creat_param, struct task_creat_param, SIMULTANEOUS_TASK_CREAT);
 
 static void *task_trampoline(void *arg);
 static void thread_set_task(struct thread *t, struct task *tsk);
@@ -39,6 +44,11 @@ int new_task(void *(*run)(void *), void *arg) {
 
 	if (!param) {
 		return -EAGAIN;
+	}
+
+	if (! task_table_has_space()) {
+		pool_free(&creat_param, param);
+		return -ENOMEM;
 	}
 
 	param->run = run;
@@ -67,7 +77,7 @@ int new_task(void *(*run)(void *), void *arg) {
 
 	thread_resume(thd);
 
-	return 0;
+	return task_table_add(self_task);
 
 }
 
@@ -108,6 +118,7 @@ static void task_remove(struct task *task) {
 			continue;
 		}
 		thread_suspend(thread);
+		/*thread_delete(thread);*/
 	}
 
 	sched_unlock();
@@ -115,6 +126,8 @@ static void task_remove(struct task *task) {
 	task_resource_foreach(res_desc) {
 		res_desc->deinit(task);
 	}
+
+	task_table_del(task->tid);
 }
 
 static void *task_trampoline(void *arg) {

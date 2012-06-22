@@ -11,6 +11,9 @@
 
 #include <lib/list.h>
 #include <kernel/task/idx.h>
+#include <kernel/thread/api.h>
+
+struct task_signal_table;
 
 /**
  * @brief Task resources container
@@ -19,6 +22,7 @@
  * @brief Task describing struct
  */
 struct task {
+	int tid;
 	struct task *parent; /**< @brief Task's parent */
 
 	struct list_head children; /**< @brief Task's children */
@@ -27,6 +31,8 @@ struct task {
 	struct list_head threads; /**< @brief Threads which have task pointer this task */
 
 	struct task_idx_table *idx_table; /**< @brief Resources which task have */
+
+	struct task_signal_table *signal_table;
 
 	int errno; /**< @brief Last occured error code */
 };
@@ -55,5 +61,7 @@ extern struct task *task_self(void);
  * @return Pointer to kernel task
  */
 extern struct task *task_kernel_task(void);
+
+extern int task_notify_switch(struct thread *prev, struct thread *next);
 
 #endif /* TASK_H_ */
