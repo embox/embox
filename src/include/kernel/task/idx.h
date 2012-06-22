@@ -87,9 +87,10 @@ static inline int task_idx_desc_link_count_add(struct idx_desc *desc, int d) {
 	assert(desc);
 	return (desc->link_count += d);
 }
+#include <util/idx_table.h>
 
 struct task_idx_table {
-	struct idx_desc *idx[CONFIG_TASKS_RES_QUANTITY];
+	UTIL_IDX_TABLE_DEF_INLINE(struct idx_desc *, idx, CONFIG_TASKS_RES_QUANTITY);
 };
 
 /**
@@ -102,7 +103,7 @@ struct task_idx_table {
  */
 static inline struct idx_desc *task_idx_table_get(struct task_idx_table *res, int idx) {
 	assert(res);
-	return res->idx[idx];
+	return (struct idx_desc *) util_idx_table_get((util_idx_table_t *) &res->idx, idx);
 }
 
 /**

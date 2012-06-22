@@ -12,13 +12,24 @@
 #include <mem/objalloc.h>
 #include "common.h"
 
+#include <util/idx_table.h>
+
 OBJALLOC_DEF(idx_res_pool, struct idx_desc, CONFIG_TASKS_RES_QUANTITY);
 
 static void task_idx_table_init(struct task *task, void* _idx_table) {
-	struct task_idx_table *idx_table = (struct task_idx_table *) _idx_table;
-	task->idx_table = idx_table;
+	util_num_alloc_t *num_alloc = _idx_table;
+	util_idx_table_t *idx_table;
+	struct task_idx_table *task_idx_table;
 
-	memset(idx_table, 0, sizeof(struct task_idx_table));
+	util_num_alloc_init(num_alloc, CONFIG_TASKS_RES_QUANTITY);
+
+	idx_table = (util_idx_table_t *) ((void *) num_alloc +
+			UTIL_NUM_ALLOC_CALC(CONFIG_TASKS_RES_QUANTITY));
+
+	util_idx_table_init(idx_table, CONFIG_TASKS_RES_QUANTITY, num_alloc);
+
+	task_idx_table = (struct task_idx_table *) idx_table;
+	task->idx_table = task_idx_table;
 
 }
 
@@ -56,12 +67,7 @@ static void task_idx_desc_free(struct idx_desc *desc) {
 }
 
 int task_idx_table_first_unbinded(struct task_idx_table *res) {
-	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
-		if (!task_idx_table_is_binded(res, i)) {
-			return i;
-		}
-	}
-	return -1;
+	return util_idx_table_next_alloc((util_idx_table_t *) &res->idx);
 }
 
 int task_idx_table_set(struct task_idx_table *res, int idx, struct idx_desc *desc) {
@@ -75,7 +81,7 @@ int task_idx_table_set(struct task_idx_table *res, int idx, struct idx_desc *des
 		}
 	}
 
-	res->idx[idx] = desc;
+	util_idx_table_set((util_idx_table_t *) &res->idx, idx, desc);
 
 	if (desc) {
 		task_idx_desc_link_count_add(desc, 1);
@@ -105,7 +111,8 @@ static const struct task_resource_desc idx_resource = {
 	.init = task_idx_table_init,
 	.inherit = task_idx_table_inherit,
 	.deinit = task_idx_table_deinit,
-	.resource_size = sizeof(struct task_idx_table),
+	.resource_size = UTIL_IDX_TABLE_CALC(struct idx_desc *, CONFIG_TASKS_RES_QUANTITY) +
+		UTIL_NUM_ALLOC_CALC(CONFIG_TASKS_RES_QUANTITY)
 };
 
 TASK_RESOURCE_DESC(&idx_resource);
