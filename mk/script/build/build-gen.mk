@@ -147,7 +147,8 @@ $(@build_image) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,build_image,$(image)); \
-		$(call gen_make_dep,$(target_file),$(mk_file)); \
+		$(call gen_make_dep,$(target_file),$$$$(image_prerequisites)); \
+		$(call gen_make_tsvar,$(target_file),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar_list,$(target_file),ld_objs,$(objs)); \
 		$(call gen_make_tsvar_list,$(target_file),ld_libs,$(libs)))
 
@@ -191,7 +192,8 @@ $(@module_ar_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,module_path,$(path)); \
-		$(call gen_make_dep,$(a_file),$(mk_file)); \
+		$(call gen_make_dep,$(a_file),$$$$(ar_prerequisites)); \
+		$(call gen_make_tsvar,$(a_file),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar_list,$(a_file),ar_objs,$(objs)))
 
 $(@module_h) : h_file = $(SRCGEN_DIR)/include/module/$(path).h
@@ -264,20 +266,24 @@ source_rulemk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
 $(@source_rulemk) : @file   = $(base:%=$(source_rulemk_mk_pat))
 $(@source_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$$(source_base))
+$(@source_rulemk) : prereqs =
 
 source_cc_rulemk_o_pat  = $(OBJ_DIR)/%.o
 source_cpp_rulemk_o_pat = $(OBJ_DIR)/%# foo.lds.S -> foo.lds
 
-$(@source_cc_rulemk)  : o_file = $(patsubst %,$(value source_cc_rulemk_o_pat),$$(source_base))
-$(@source_cpp_rulemk) : o_file = $(patsubst %,$(value source_cpp_rulemk_o_pat),$$(source_base))
+$(@source_rulemk)  : o_file = $(patsubst %,$(value source_$(kind)_rulemk_o_pat),$$(source_base))
 
 $(@source_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,source_base,$(base)); \
-		$(call gen_make_dep,$(o_file),$(mk_file)); \
+		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(o_file),flags,$(flags)); \
 		$(call gen_make_include,$$(source_base).d,silent))
+
+$(@source_cc_rulemk)  : kind := cc
+$(@source_cpp_rulemk) : kind := cpp
 
 $(@source_gen) : @file = $(SRCGEN_DIR)/$(file)
 $(@source_gen) : gen_string = $(basename $(basename $@))
