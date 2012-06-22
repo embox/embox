@@ -19,3 +19,13 @@ void context_set_stack(struct context *ctx, void *sp) {
 void context_set_entry(struct context *ctx, void(*pc)(void)) {
 	ctx->eip = (uint32_t) pc;
 }
+
+void context_enter_frame(struct context *ctx, void (*pc)(void)) {
+	void *stack = (uint32_t *) ctx->esp;
+
+	stack -= sizeof(uint32_t);
+	*(uint32_t *) stack = ctx->eip;
+
+	ctx->esp = ((uint32_t) stack);
+	context_set_entry(ctx, pc);
+}

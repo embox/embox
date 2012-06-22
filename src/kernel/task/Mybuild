@@ -37,6 +37,6 @@ module idx_table extends task_environment {
 	depends embox.util.idx_table
 }
 
-/*module signal {
+module signal {
 	source "signal.c"
-}*/
+}
