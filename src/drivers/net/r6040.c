@@ -17,6 +17,9 @@
 #include <net/netdevice.h>
 #include <drivers/r6040.h>
 
+
+#define INTERRUPTS_ENABLE 0
+
 /* PHY CHIP Address */
 #define PHY1_ADDR      1       /* For MAC1 */
 #define PHY2_ADDR      3       /* For MAC2 */
@@ -181,7 +184,7 @@ static void r6040_set_rx_start(eth_desc_t* desc) {
 	tmp >>= 16;
 	out16((tmp & 0xffff), RX_START_HIGH);
 }
-#if 0
+#if INTERRUPTS_ENABLE
 /* The RDC interrupt handler */
 static irq_return_t irq_handler(irq_nr_t irq_num, void *dev_id) {
 	uint16_t misr, status;
@@ -323,7 +326,7 @@ int r6040_wait_linkup(void) {
 	}
 	return 0;
 }
-#if 0
+#if INTERRUPTS_ENABLE
 static int r6040_open(net_device_t *dev) {
 	if (-1 == irq_attach(0x0a, irq_handler, 0, dev, "RDC r6040")) {
 		return -1;
