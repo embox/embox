@@ -96,7 +96,7 @@ struct task *task_kernel_task(void) {
 
 static int tasks_init(void) {
 
-	if (MAX_RES_SUM_SIZE < resource_sum_size) {
+	if (MAX_RES_SUM_SIZE < task_resource_sum_size()) {
 		return -ENOMEM;
 	}
 
