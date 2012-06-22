@@ -95,7 +95,8 @@ gen_make_tsvar_list = \
 build_modules := \
 	$(call get,$(build_model),modules)
 build_sources := \
-	$(call get,$(build_modules),sources)
+	$(foreach m,$(build_modules), \
+		$(addprefix $m,$(call get,$m,sources)))
 
 #
 # Global artifacts.
@@ -156,6 +157,7 @@ all .PHONY : $(@module_ar_rulemk)
 
 module_fqn  = $(call get,$(call get,$1,type),qualifiedName)
 module_path = $(subst .,/,$(module_fqn))
+module_id   = $(subst .,__,$(module_fqn))
 
 $(@module_all) : fqn   = $(call module_fqn,$@)
 $(@module_all) : path  = $(call module_path,$@)
@@ -166,6 +168,7 @@ module_ar_rulemk_a_pat  = $(OBJ_DIR)/%.a
 $(@module_ar_rulemk) : @file   = $(path:%=$(module_ar_rulemk_mk_pat))
 $(@module_ar_rulemk) : mk_file = $(patsubst %,$(value module_ar_rulemk_mk_pat),$$(module_path))
 $(@module_ar_rulemk) : a_file  = $(patsubst %,$(value module_ar_rulemk_a_pat),$$(module_path))
+
 $(@module_ar_rulemk) : objs    = $(call module_get_objects,$@)
 
 $(@module_ar_rulemk) :
@@ -208,6 +211,7 @@ source_cc_pats  := %.S %.c %.cpp %.cxx
 @source_cpp_rulemk := $(filter source-cpp-rule-mk/%,$(@source_rulemk))
 @source_cc_rulemk  := $(filter source-cc-rule-mk/%,$(@source_rulemk))
 
+# task/???.module.source
 @source_all = \
 	$(@source_gen) \
 	$(@source_rulemk)
@@ -217,6 +221,8 @@ all .PHONY : $(@source_all)
 #m_ar :$(@source_all)
 #	@$(call cmd_notouch_stdout,test, \
 #		$(call gen_make_tsvar_list,target,objs,foo bar))
+
+$(@source_all) : module = $(basename $@)
 
 source_file = $(call get,$1,fileFullName)
 source_base = $(basename $(source_file))
@@ -234,8 +240,9 @@ $(@source_rulemk) : defines  = $(call values_of,$(my_defmacro_val))
 
 $(@source_rulemk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
 $(@source_rulemk) : flags = $(call trim, \
-		$(call do_flags,-I,$(includes)) \
-		$(call do_flags,-D,$(defines)))
+			$(call do_flags,-I,$(includes)) \
+			-D__EMBUILD_MOD__=$(call module_id,$(module)) \
+			$(call do_flags,-D,$(defines)))
 
 source_rulemk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
@@ -256,7 +263,8 @@ $(@source_rulemk) :
 		$(call gen_make_tsvar,$(o_file),flags,$(flags)))
 
 $(@source_gen) : @file = $(SRCGEN_DIR)/$(file)
-$(@source_gen) : script = $(call expand,$(call get,$(basename $@),value))
+$(@source_gen) : gen_string = $(basename $(basename $@))
+$(@source_gen) : script = $(call expand,$(call get,$(gen_string),value))
 
 $(@source_gen) :
 # Plus sign is for case when generator script is also Make-based.
