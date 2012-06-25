@@ -165,9 +165,14 @@ int arp_resolve(sk_buff_t *pack) {
 		return res;
 	}
 
-#if 0
-	sched_sleep(&pack->sk->sock_is_ready, SCHED_TIMEOUT_INFINITE); // FIXME not want to work
-#endif
+	/* FIXME:
+	 * Really it's waiting until event_fire have not been called
+	 * and third argument is SCHED_TIMEOUT_INFINITE but in this case
+	 * we have a problem:
+	 * sched_sleep is called after that arp-reply was received,
+	 * so we wait until the NEXT reply is received.
+	 */
+	sched_sleep(&pack->sk->sock_is_ready, 500/*SCHED_TIMEOUT_INFINITE*/);
 
 	return (sock_is_ready(pack->sk) ? ENOERR : -ENOENT);
 }
