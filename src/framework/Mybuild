@@ -1,14 +1,11 @@
 package embox.framework
 
-static module LibFrameworkNet {
-	@DefineMacro("__FRAMEWORK__")
+module LibFrameworkNet {
 	depends net.pack, net.proto, net.sock
 }
 
-static module LibFramework {
-	@DefineMacro("__FRAMEWORK__")
-	depends cmd, example, mod,
-			service, test, runlevel
+module LibFramework {
+	depends cmd, example, mod, service, test, runlevel
 }
 
 module runlevel {
