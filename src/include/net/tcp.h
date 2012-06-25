@@ -14,6 +14,7 @@
 #include <net/inet_sock.h>
 #include <time.h>
 #include <types.h>
+#include <sys/types.h>
 
 typedef struct tcphdr {
 	__be16 source;
@@ -91,7 +92,8 @@ typedef struct tcp_sock {
 	struct list_head conn_wait; /* Queue of incoming connection */
 	__u32 seq_queue;            /* Sequence number for next package */
 	__u32 ack_flag;             /* Acknowledgment for flags (SYN or FIN) */
-	clock_t last_activity;      /* The time when last message was sent */
+	useconds_t last_activity;   /* The time when last message was sent */
+	useconds_t oper_timeout;    /* Time out for socket functions */
 } tcp_sock_t;
 
 #if 0
@@ -105,6 +107,7 @@ enum {
 #define TCP_TIMER_FREQUENCY   1000 /* Frequency for tcp_tmr_default */
 #define TCP_TIMEWAIT_DELAY    2000 /* Delay for TIME-WAIT state */
 #define TCP_REXMIT_DELAY      2000 /* Delay between rexmitting */
+#define TCP_OPER_TIMEOUT      5000 /* Time-out */
 #define TCP_WINDOW_DEFAULT    500  /* Default size of widnow */
 #define TCP_MAX_DATA_LEN      (CONFIG_ETHERNET_V2_FRAME_SIZE\
 		- (ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE))  /* Maximum size of data */
@@ -149,5 +152,6 @@ extern size_t tcp_data_left(struct sk_buff *skb);
 extern void send_from_sock(union sock_pointer sock, struct sk_buff *skb_send, int xmit_mod);
 extern int tcp_st_status(union sock_pointer sock);
 extern void debug_print(__u8 code, const char *msg, ...);
+extern useconds_t tcp_get_usec(void);
 
 #endif /* NET_TCP_H_ */

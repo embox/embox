@@ -73,6 +73,7 @@ module tcp {
 	depends ipv4 /* for ip_output.c */
 	depends af_inet /* for af_inet.c */
 	depends util
+	depends embox.kernel.time.clock_source
 	depends embox.kernel.critical
 	depends embox.lib.LibC
 	depends embox.kernel.timer.sys_timer

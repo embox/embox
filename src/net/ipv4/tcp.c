@@ -28,6 +28,8 @@
 #include <kernel/timer.h>
 #include <embox/net/proto.h>
 #include <kernel/softirq_lock.h>
+#include <kernel/time/time_types.h>
+#include <kernel/time/ktime.h>
 
 
 EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
@@ -45,7 +47,7 @@ EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
  * +9. Add rexmit
  * +-10. Add window
  * 11. Add options
- * 12. Add timeout (i.e. sockopts) to tcp_sock.c
+ * +-12. Add timeout (i.e. sockopts) to tcp_sock.c
  */
 
 
@@ -258,6 +260,12 @@ int tcp_st_status(union sock_pointer sock) {
 	}
 }
 
+useconds_t tcp_get_usec(void) {
+	struct ktimeval tv;
+	ktime_get_timeval(&tv);
+	return (useconds_t)tv.tv_sec * USEC_PER_SEC + (useconds_t)tv.tv_usec;
+}
+
 static __u16 tcp_checksum(__be32 saddr, __be32 daddr, __u8 proto,
 		struct tcphdr *tcph, __u16 size) {
 	struct tcp_pseudohdr ptcph;
@@ -346,7 +354,7 @@ static int tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 
 	tcp_obj_unlock(sock, TCP_SYNC_WRITE_QUEUE);
 
-	sock.tcp_sk->last_activity = clock(); /* set last xmit time */
+	sock.tcp_sk->last_activity = tcp_get_usec(); /* set last xmit time */
 
 	return tcp_xmit(sock, skb_send);
 }
@@ -968,7 +976,7 @@ static struct tcp_sock * tcp_lookup(in_addr_t saddr, __be16 sport, in_addr_t dad
  * Main function of TCP protocol
  */
 static void tcp_process(union sock_pointer sock, struct sk_buff *skb) {
-	sock.tcp_sk->last_activity = clock(); /* set last activity time */
+	sock.tcp_sk->last_activity = tcp_get_usec(); /* set last activity time */
 
 	switch (tcp_handle(sock, skb, pre_process)) {
 	default: /* error code and other TCP_RET_XXX */
