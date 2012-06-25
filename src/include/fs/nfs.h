@@ -159,13 +159,14 @@
 /* RPC string */
 typedef struct rpc_string {
 	size_t len;
-	char data[CONFIG_MAX_LENGTH_PATH_NAME];
+	char data[CONFIG_MAX_LENGTH_FILE_NAME];
 } rpc_string_t;
 
 typedef struct rpc_fh_string {
 	size_t len;
 	char data[FHSIZE3];
 } rpc_fh_string_t;
+
 
 typedef struct nfs_filehandle {
 	rpc_fh_string_t name_fh;
@@ -178,7 +179,8 @@ typedef struct nfs_filehandle {
 /* Body of a RPC replay to MOUNT Export command */
 typedef struct export_dir {
 	__u32 vf;
-	rpc_string_t dir;
+	size_t dir_len;
+	char dir_name[CONFIG_MAX_LENGTH_PATH_NAME];
 } export_dir_t;
 
 

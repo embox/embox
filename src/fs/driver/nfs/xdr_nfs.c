@@ -17,9 +17,9 @@ int xdr_mnt_export(struct xdr *xs, export_dir_t *export) {
 
 	if (xdr_u_int(xs, &export->vf)) {
 		if (VALUE_FOLLOWS_YES == export->vf) {
-			point = export->dir.data;
+			point = export->dir_name;
 			if (xdr_bytes(xs, (char **)&point,
-					&export->dir.len, sizeof export->dir.data)) {
+					&export->dir_len, sizeof export->dir_name)) {
 				return XDR_SUCCESS;
 			}
 		}

@@ -687,7 +687,7 @@ static int nfs_mnt_export(void) {
 		printf("mnt export failed. errno=%d\n", errno);
 		return -1;
 	}
-	if(0 == strcmp(p_fs_fd->srv_dir, p_fs_fd->export.dir.data)) {
+	if(0 == strcmp(p_fs_fd->srv_dir, p_fs_fd->export.dir_name)) {
 		return 0;
 	}
 	return -1;
@@ -716,7 +716,7 @@ static int nfs_mnt_mount(void) {
 	struct mount_service mnt_svc;
 	memset(&mnt_svc, 0, sizeof(mnt_svc));
 
-	point = p_fs_fd->export.dir.data;
+	point = p_fs_fd->export.dir_name;
 	p_fh = &p_fs_fd->fh;
 
 	if (clnt_call(p_fs_fd->mnt, MOUNTPROC3_MNT,
