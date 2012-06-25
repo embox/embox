@@ -95,7 +95,7 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 		sock.tcp_sk->seq_queue += tcp_seq_len(skb);
 		tcp_set_st(sock, TCP_SYN_SENT);
 		send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
-		started = tcp_get_usec();
+		now = started = tcp_get_usec();
 		while (tcp_st_status(sock) == TCP_ST_NONSYNC) {
 			now = tcp_get_usec();
 			if (now - started >= sock.tcp_sk->oper_timeout) {
