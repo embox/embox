@@ -15,7 +15,7 @@
 #include <fs/ioctl.h>
 #include <fs/file_desc.h>
 #include <kernel/thread/api.h>
-#include <kernel/task.h>
+#include <kernel/task/idx.h>
 #include <lib/linenoise.h>
 #include <drivers/tty_ng.h>
 #include <embox/unit.h>

@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include <kernel/task.h>
+#include <kernel/task/idx.h>
 #include <net/socket.h>
 #include <util/array.h>
 #include <fs/posix.h>

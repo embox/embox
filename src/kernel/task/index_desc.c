@@ -6,9 +6,10 @@
  * @author Anton Kozlov
  */
 
+#include <assert.h>
 #include <string.h>
 #include <embox/unit.h>
-#include <kernel/task.h>
+#include <kernel/task/idx.h>
 #include <mem/objalloc.h>
 #include "common.h"
 

@@ -10,9 +10,10 @@
 #define TASK_H_
 
 #include <lib/list.h>
-#include <kernel/task/idx.h>
 
 struct task_signal_table;
+struct task_idx_table;
+struct thread;
 
 /**
  * @brief Task resources container

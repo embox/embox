@@ -18,6 +18,7 @@
 #include <types.h>
 #include <util/array.h>
 #include <kernel/task.h>
+#include <kernel/task/idx.h>
 #include <net/arp_queue.h>
 
 #include <kernel/thread/api.h>

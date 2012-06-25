@@ -9,6 +9,8 @@
 #ifndef UTIL_IDX_TABLE_H_
 #define UTIL_IDX_TABLE_H_
 
+
+#include <assert.h>
 #include <util/num_alloc.h>
 
 typedef struct util_idx_table_struct {

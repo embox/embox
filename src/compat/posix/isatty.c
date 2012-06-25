@@ -6,8 +6,10 @@
  * @date    31.05.12
  */
 
-#include <kernel/task.h>
+#include <types.h>
 #include <unistd.h>
+#include <kernel/task.h>
+#include <kernel/task/idx.h>
 
 int isatty(int fd) {
 	struct idx_desc *desc = task_self_idx_get(fd);

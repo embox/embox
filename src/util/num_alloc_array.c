@@ -6,6 +6,7 @@
  * @date    21.06.2012
  */
 
+#include <assert.h>
 #include <errno.h>
 #include <string.h>
 #include <util/num_alloc.h>

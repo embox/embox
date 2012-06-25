@@ -9,6 +9,7 @@
 
 #include <unistd.h>
 #include <kernel/task.h>
+#include <kernel/task/idx.h>
 
 //TODO set errno on every return -1
 

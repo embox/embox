@@ -8,6 +8,7 @@
  */
 
 #include <kernel/task.h>
+#include <kernel/task/idx.h>
 #include <util/array.h>
 #include <stdio.h>
 #include <fcntl.h>
