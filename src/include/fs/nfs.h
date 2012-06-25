@@ -159,7 +159,7 @@
 /* RPC string */
 typedef struct rpc_string {
 	size_t len;
-	char data[CONFIG_MAX_LENGTH_FILE_NAME];
+	char data[CONFIG_MAX_LENGTH_PATH_NAME];
 } rpc_string_t;
 
 typedef struct rpc_fh_string {

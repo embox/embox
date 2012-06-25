@@ -104,10 +104,12 @@ enum {
 };
 #endif
 
+/* Delays in milliseconds */
 #define TCP_TIMER_FREQUENCY   1000 /* Frequency for tcp_tmr_default */
 #define TCP_TIMEWAIT_DELAY    2000 /* Delay for TIME-WAIT state */
 #define TCP_REXMIT_DELAY      2000 /* Delay between rexmitting */
 #define TCP_OPER_TIMEOUT      5000 /* Time-out */
+
 #define TCP_WINDOW_DEFAULT    500  /* Default size of widnow */
 #define TCP_MAX_DATA_LEN      (CONFIG_ETHERNET_V2_FRAME_SIZE\
 		- (ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE))  /* Maximum size of data */

@@ -41,7 +41,7 @@ static int tcp_v4_init_sock(struct sock *sk) {
 	sock.tcp_sk->this.wind = TCP_WINDOW_DEFAULT;
 	sock.tcp_sk->lock = 0;
 	sock.tcp_sk->last_activity = 0; // TODO 0 or not?
-	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT;
+	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT * USEC_PER_MSEC;
 	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
 
 	return ENOERR;
@@ -102,7 +102,7 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 				break;
 			}
 		}
-		if (now - started >= TCP_OPER_TIMEOUT) {
+		if (now - started >= sock.tcp_sk->oper_timeout) {
 			res = -ETIMEDOUT;
 		}
 		else {

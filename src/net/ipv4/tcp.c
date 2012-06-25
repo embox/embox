@@ -109,7 +109,7 @@ static inline void packet_print(union sock_pointer sock, struct sk_buff *skb, ch
 		in_addr_t ip, uint16_t port) {
 	debug_print(1, "%lu %s:%d %s sk 0x%p skb 0x%p seq %u ack %u seq_len %u flags %s %s %s %s %s %s %s %s\n",
 			// info
-			clock(), inet_ntoa(*(struct in_addr*)&ip), ntohs(port), msg, sock.tcp_sk, skb,
+			tcp_get_usec(), inet_ntoa(*(struct in_addr*)&ip), ntohs(port), msg, sock.tcp_sk, skb,
 			// seq, ack, seq_len
 			ntohl(skb->h.th->seq), ntohl(skb->h.th->ack_seq), tcp_seq_len(skb),
 			// flags
@@ -318,7 +318,7 @@ static int tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 
 	/* check time wait */
 	if (!(xmit_mod & TCP_XMIT_IGNORE_DELAY)
-			&& (clock() - sock.tcp_sk->last_activity < TCP_REXMIT_DELAY)) {
+			&& (tcp_get_usec() - sock.tcp_sk->last_activity < TCP_REXMIT_DELAY * USEC_PER_MSEC)) {
 		return ENOERR;
 	}
 
@@ -1019,7 +1019,7 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 
 static void tcp_tmr_timewait(union sock_pointer sock) {
 	assert(sock.sk->sk_state == TCP_TIMEWAIT);
-	if (clock() - sock.tcp_sk->last_activity >= TCP_TIMEWAIT_DELAY) {
+	if (tcp_get_usec() - sock.tcp_sk->last_activity >= TCP_TIMEWAIT_DELAY * USEC_PER_MSEC) {
 		tcp_set_st(sock, TCP_CLOSED);
 		debug_print(7, "TIMER: tcp_tmr_timewait: release sk 0x%p\n", sock.tcp_sk);
 		sk_common_release(sock.sk);
