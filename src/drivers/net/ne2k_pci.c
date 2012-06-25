@@ -216,11 +216,13 @@ static void ne2k_receive(struct net_device *dev) {
 	net_device_stats_t *stat;
 	unsigned long base_addr;
 	struct sk_buff *skb;
+	uint8_t tries;
 
 	base_addr = dev->base_addr;
 	stat = get_eth_stat(dev);
 
-	while (1) { /* XXX It's an infinite loop or not? */
+	tries = 10;
+	while (--tries) { /* XXX It's an infinite loop or not? */
 		/* Get the current page */
 		out8(E8390_NODMA | E8390_PAGE1, base_addr + E8390_CMD);
 		current_page = in8(base_addr + EN1_CURPAG);
@@ -253,7 +255,7 @@ static void ne2k_receive(struct net_device *dev) {
 		}
 		if ((total_length < 60) || (total_length > 1518)) {
 			stat->rx_err++;
-			LOG_WARN("ne2k_receive: bad packet size\n");
+			LOG_ERROR("ne2k_receive: bad packet size\n");
 		} else if ((rx_frame.status & 0x0F) == ENRSR_RXOK) {
 			skb = get_skb_from_card(total_length, ring_offset + sizeof(struct e8390_pkt_hdr), dev);
 			if (skb) {
@@ -262,15 +264,18 @@ static void ne2k_receive(struct net_device *dev) {
 				netif_rx(skb);
 			} else {
 				stat->rx_dropped++;
-				LOG_WARN("ne2k_receive: couldn't allocate memory for packet\n");
+				LOG_ERROR("ne2k_receive: couldn't allocate memory for packet\n");
 			}
 		} else {
 			if (rx_frame.status & ENRSR_FO) {
 				stat->rx_fifo_errors++;
 			}
-			LOG_WARN("ne2k_receive: rx_frame.status=0x%X\n", rx_frame.status);
+			LOG_ERROR("ne2k_receive: rx_frame.status=0x%X\n", rx_frame.status);
 		}
 		out8(rx_frame.next - 1, base_addr + EN0_BOUNDARY);
+	}
+	if (!tries) {
+		LOG_ERROR("ne2k_receive: break from infinite loops");
 	}
 
 	out8(ENISR_RX | ENISR_RX_ERR, base_addr + EN0_ISR);
