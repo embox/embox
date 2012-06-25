@@ -29,6 +29,8 @@ define options
 	];
 	edge [
 		penwidth = "3"
+		style = "filled"
+		arrowsize = "1.5"
 	];
   overlap=false;
 endef
@@ -51,10 +53,9 @@ $(foreach t,$(module_types), \
 		color="$(\h)$(if $(call get,$t,isAbstract),93ee93,b2c6df)", \
 		fillcolor="$(\h)$(if $(call get,$t,isAbstract),dcfadc,e7eef5)"];) \
 	$(foreach s,$(call get,$t,superType), \
-		$(info $(\t)"$t" -> "$s" [color="$(\h)b3b3ff", \
-			headport=s,tailport=n];)) \
+		$(info $(\t)"$t" -> "$s" [color="$(\h)b3b3ff", weight=10];)) \
 	$(foreach d,$(call get,$t,depends), \
-		$(info $(\t)"$t" -> "$d" [color="$(\h)ffb3b3"];)))))
+		$(info $(\t)"$t" -> "$d" [color="$(\h)ffb3b3", arrowhead=open];)))))
 $(info })
 #		$(info $(\t){ rank="source"; "$t"; "$s"; }) \
 
