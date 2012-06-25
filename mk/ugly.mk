@@ -40,7 +40,7 @@ $(for modName <- $2,
 		option <- $(get optionInstance->option),
 		optionId <- $(invoke option->getId),
 		optionValue <- $(get optionInstance->value),
-		$(\n)$(\n)$(\h)define $(subst .,__,$(optionId)) $(invoke optionValue->toString))
+		$(\n)$(\h)define $(subst .,__,$(optionId)) $(invoke optionValue->toString)$(\n))
 
 	$(\n)$(\h)endif /* __MOD_HEADER__$(subst .,__,$(modName)) */$(\n)
 )
