@@ -179,7 +179,10 @@ $(@build_include_mk) :
 # Per-module artifacts.
 #
 
-@module_h := $(build_modules:%=module-h/%)
+@module_h := \
+	$(foreach m,$(build_modules), \
+		$(patsubst %,module-h/%$m, \
+			$(call get,$m,allTypes)))
 @module_ar_rulemk := \
 	$(patsubst %,module-ar-rule-mk/%, \
 		$(call filter_static_modules,$(build_modules)))
@@ -188,7 +191,7 @@ $(@build_include_mk) :
 	$(@module_h) \
 	$(@module_ar_rulemk)
 
-all .PHONY : $(@module_ar_rulemk)
+all .PHONY : $(@module_all)
 
 module_fqn  = $(call get,$(call get,$1,type),qualifiedName)
 module_path = $(subst .,/,$(module_fqn))
@@ -219,11 +222,17 @@ $(@module_ar_rulemk) :
 		$(call gen_make_tsvar,$(a_file),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar_list,$(a_file),ar_objs,$(objs)))
 
-$(@module_h) : h_file = $(SRCGEN_DIR)/include/module/$(path).h
+$(@module_h) : type = $(basename $@)
+$(@module_h) : type_fqn = $(call get,$(type),qualifiedName)
+$(@module_h) : type_path = $(subst .,/,$(type_fqn))
+
+$(@module_h) : @file = $(SRCGEN_DIR)/include/module/$(type_path).h
+$(@module_h) : printf_escape = $(subst $(\t),\t,$(subst $(\n),\n,$(subst \,\\,$1)))
+$(@module_h) : content = $(call __header_template,$@,$(type_fqn))
 
 $(@module_h) :
-	@$(call cmd_notouch_stdout,$(h_file), \
-		$(MAKE) -f mk/script/h-genmodule.mk)
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(PRINTF) '%b' $(call sh_quote,$(call printf_escape,$(content))))
 
 #
 # Per-source artifacts.
