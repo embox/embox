@@ -144,6 +144,8 @@ $(@build_image) : mk_file  = \
 $(@build_image) : target_file = \
 		$(patsubst %,$(value build_image_rulemk_target_pat),$$(build_image))
 
+$(@build_image) : scripts = $(patsubst %,$(value source_cpp_rulemk_o_pat), \
+			$(call source_base,$(@source_cpp_rulemk)))
 $(@build_image) : objs = $(patsubst %,$(value source_cc_rulemk_o_pat), \
 			$(basename $(call module_cc_source_files,$(normal_modules))))
 $(@build_image) : libs = $(patsubst %,$(value module_ar_rulemk_a_pat), \
@@ -155,6 +157,7 @@ $(@build_image) :
 		$(call gen_make_var,build_image,$(image)); \
 		$(call gen_make_dep,$(target_file),$$$$(image_prerequisites)); \
 		$(call gen_make_tsvar,$(target_file),mk_file,$(mk_file)); \
+		$(call gen_make_tsvar_list,$(target_file),ld_scripts,$(scripts)); \
 		$(call gen_make_tsvar_list,$(target_file),ld_objs,$(objs)); \
 		$(call gen_make_tsvar_list,$(target_file),ld_libs,$(libs)))
 
@@ -213,6 +216,8 @@ module_cc_source_files = \
 
 $(@module_ar_rulemk) : objs = $(patsubst %,$(value source_cc_rulemk_o_pat), \
 			$(basename $(call module_cc_source_files,$@)))
+$(@module_ar_rulemk) : check_objs = $(or $(strip $1), \
+	$$(warning static module '$(fqn)' must specify at least one source file.))
 
 $(@module_ar_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -220,13 +225,15 @@ $(@module_ar_rulemk) :
 		$(call gen_make_var,module_path,$(path)); \
 		$(call gen_make_dep,$(a_file),$$$$(ar_prerequisites)); \
 		$(call gen_make_tsvar,$(a_file),mk_file,$(mk_file)); \
-		$(call gen_make_tsvar_list,$(a_file),ar_objs,$(objs)))
+		$(call gen_make_tsvar_list,$(a_file),ar_objs,$(call check_objs,$(objs))))
 
 $(@module_h) : type = $(basename $@)
 $(@module_h) : type_fqn = $(call get,$(type),qualifiedName)
 $(@module_h) : type_path = $(subst .,/,$(type_fqn))
 
-$(@module_h) : @file = $(SRCGEN_DIR)/include/module/$(type_path).h
+module_h_pat = $(SRCGEN_DIR)/include/module/%.h
+
+$(@module_h) : @file = $(type_path:%=$(module_h_pat))
 $(@module_h) : printf_escape = $(subst $(\t),\t,$(subst $(\n),\n,$(subst \,\\,$1)))
 $(@module_h) : content = $(call __header_template,$@,$(type_fqn))
 
@@ -291,6 +298,7 @@ $(@source_rulemk) : defines  = $(call values_of,$(my_defmacro_val))
 $(@source_rulemk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
 $(@source_rulemk) : flags = $(call trim, \
 			$(call do_flags,-I,$(includes)) \
+			-include $(patsubst %,$(value module_h_pat),$(call module_path,$(module))) \
 			-D__EMBUILD_MOD__=$(call module_id,$(module)) \
 			$(call do_flags,-D,$(defines)))
 
