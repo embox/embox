@@ -1,15 +1,23 @@
 #
+# Invoked with all scripts preloaded by the bootstrap sript.
+# See 'mk/load.mk' for details about environment variables available in the
+# invocation context.
+#
 #   Date: Apr 4, 2012
 # Author: Anton Kozlov
 #
 
+ifndef BUILDGEN
 include mk/configure.mk #FIXME
+endif # BUILDGEN
+
 include mk/codegen-dot.mk
 
 include mk/help-module.mk
 
 .PHONY : build image prepare docsgen dot
 
+ifndef BUILDGEN
 build : image
 	@echo 'Build complete'
 
@@ -25,6 +33,19 @@ prepare:
 	@$(MKDIR) $(ROOTFS_DIR)
 	@$(MKDIR) $(AUTOCONF_DIR)
 	@$(MKDIR) $(DOCS_OUT_DIR)
+
+else # BUILDGEN
+
+build_gen_ts := $(MKGEN_DIR)/build-gen.timestamp
+
+build : $(build_gen_ts)
+	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
+	@$(MAKE) -f mk/image2.mk MAKEFILES=''
+
+$(build_gen_ts) : mk/script/build/build-gen.mk $(load_mybuild_files)
+	@$(MAKE) -f $< && touch $@
+
+endif # BUILDGEN
 
 docsgen:
 	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)
