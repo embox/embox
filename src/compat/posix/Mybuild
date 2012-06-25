@@ -16,7 +16,9 @@ static module LibPosix {
 		"dup.c"
 
 	depends embox.util.LibUtil
+	depends embox.kernel.task.api
 	depends posix_env
+	depends embox.kernel.task.errno
 	depends embox.fs.driver.stdio
 }
 

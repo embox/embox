@@ -34,7 +34,7 @@ struct task {
 
 	struct task_signal_table *signal_table;
 
-	int errno; /**< @brief Last occurred error code */
+	int err; /**< @brief Last occurred error code */
 };
 
 /**

@@ -28,6 +28,9 @@ module task_table {
 	depends embox.util.idx_table
 }
 
+module signal {
+	source "signal.c"
+}
 
 module single extends api_impl {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
@@ -43,10 +46,9 @@ module idx_table extends task_environment {
 	depends embox.util.idx_table
 }
 
-module signal {
-	source "signal.c"
+module errno {
+	source "errno.c"
 }
-
 
 module notask extends api_impl {
 

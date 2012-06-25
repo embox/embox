@@ -14,7 +14,7 @@
 #include <cmd/shell.h>
 #include <err.h>
 #include <errno.h>
-
+#include <kernel/task.h>
 EMBOX_CMD(exec);
 
 	/* Upper limit of concurent telnet connections.
