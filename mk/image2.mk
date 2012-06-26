@@ -10,6 +10,10 @@ all : image
 include mk/core/common.mk
 
 include $(MKGEN_DIR)/build.mk
+
+TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))
+TARGET := $(TARGET)$(if $(value LOCALVERSION),-$(LOCALVERSION))
+
 include mk/flags.mk # It must be included after a user-defined config.
 
 .SECONDEXPANSION:
@@ -18,10 +22,7 @@ include $(MKGEN_DIR)/include.mk
 .SECONDARY:
 .DELETE_ON_ERROR:
 
-TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))
-TARGET := $(TARGET)$(if $(value LOCALVERSION),-$(LOCALVERSION))
-
-IMAGE       = $(BIN_DIR)/image
+IMAGE       = $(BIN_DIR)/$(TARGET)
 IMAGE_DIS   = $(IMAGE).dis
 IMAGE_BIN   = $(IMAGE).bin
 IMAGE_SREC  = $(IMAGE).srec

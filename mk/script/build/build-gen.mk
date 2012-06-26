@@ -135,12 +135,12 @@ all .PHONY : $(@build_all)
 $(@build_all) : archived_modules = $(suffix $(@module_ar_rulemk))
 $(@build_all) : normal_modules = $(filter-out $(archived_modules),$(build_modules))
 
-build_image := image
+build_image = image
 
 $(@build_image) : image = $(build_image)
 
 build_image_rulemk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
-build_image_rulemk_target_pat = $(BIN_DIR)/%
+build_image_rulemk_target_pat = $(BIN_DIR)/$(TARGET)
 
 $(@build_image) : @file    = $(image:%=$(build_image_rulemk_mk_pat))
 $(@build_image) : mk_file  = \
