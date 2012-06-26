@@ -198,9 +198,6 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length,
 	if (skb == NULL) {
 		return NULL;
 	}
-	if (skb == (void *)0x1b7420) {
-		LOG_ERROR("warning: assert waiting youuu....");
-	}
 
 	skb->dev = dev;
 	copy_data_from_card(offset, skb->mac.raw, total_length, dev->base_addr);
