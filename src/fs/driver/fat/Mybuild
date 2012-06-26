@@ -1,0 +1,9 @@
+package embox.fs.driver
+
+module fat {
+	source "fat.c"
+	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.driver.devfs
+	depends embox.mem.page_api
+}
+
