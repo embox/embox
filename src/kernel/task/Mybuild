@@ -49,7 +49,3 @@ module idx_table extends task_environment {
 module errno {
 	source "errno.c"
 }
-
-module notask extends api_impl {
-
-}
