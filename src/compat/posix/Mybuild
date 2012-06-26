@@ -1,10 +1,11 @@
 package embox.compat.posix
 
 static module LibPosix {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "exec.c",
-		"file_op.c",
 		"file.c",
+		"file_op.c",
+		"stdio.c",
 		"fs.c",
 		"fork.c",
 		"getopt.c",
@@ -17,9 +18,8 @@ static module LibPosix {
 
 	depends embox.util.LibUtil
 	depends embox.kernel.task.api
-	depends posix_env
 	depends embox.kernel.task.errno
-	depends embox.fs.driver.stdio
+	depends posix_env
 }
 
 @DefaultImpl(bootstrap_posix_env)
@@ -33,3 +33,4 @@ module bootstrap_posix_env extends posix_env {
     depends embox.kernel.task.api
     depends embox.driver.virtual.diag_device
 }
+

@@ -16,15 +16,19 @@
 
 static int _determ_flide(FILE *stream) {
 
+	assert(stream == stdin || stream == stdout || stream == stderr);
+
 	if ((int) stream == (int) stdin) {
 		return 0;
-	} else if ((int) stream == (int) stdout) {
-		return 1;
-	} else if ((int) stream == (int) stderr) {
-		return 3;
 	}
 
-	assert (0 == 1);
+	if ((int) stream == (int) stdout) {
+		return 1;
+	}
+
+	if ((int) stream == (int) stderr) {
+		return 3;
+	}
 
 	return -1;
 }

@@ -19,10 +19,3 @@ module devfs {
 	source "devfs.c"
 	depends embox.fs.rootfs
 }
-
-module stdio {
-	source "stdio.c"
-	depends embox.kernel.task.api
-}
-
-
