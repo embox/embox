@@ -83,7 +83,7 @@ $(ROOTFS_IMAGE) : | $$(@D)/.
 	cd $(ROOTFS_DIR) \
 		&& ls -1R $(rel_cpio_files) | cpio --quiet -H newc -o -O $(abspath $@)
 	cd $(USER_ROOTFS_DIR) \
-		&& ls -1R * | cpio --quiet -H newc -o --append -O $(abspath $@)
+		&& ls -1R * || exit 0 | cpio --quiet -H newc -o --append -O $(abspath $@)
 #XXX
 $(OBJ_DIR)/src/fs/ramfs/ramfs_cpio.o : $(ROOTFS_IMAGE)
 
