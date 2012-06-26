@@ -10,11 +10,14 @@
 #include <asm/io.h>
 #include <drivers/keyboard.h>
 #include <kernel/irq.h>
+#include <kernel/printk.h>
 
 #define  I8042_CMD_READ_MODE   0x20
 #define  I8042_CMD_WRITE_MODE  0x60
 
 #define  I8042_MODE_XLATE      0x40
+#define  I8042_MODE_DISABLE    0x10
+
 
 #define  KEY_CURSOR_UP         0xb8
 #define  KEY_CURSOR_DOWN       0xb2
@@ -186,7 +189,7 @@ int keyboard_has_symbol(void) {
 
 char keyboard_getc(void) {
 	static unsigned shift_state;
-	unsigned status, scan_code;
+	uint8_t status, scan_code;
 	char ch;
 
 	while (1) {
@@ -198,6 +201,7 @@ char keyboard_getc(void) {
 		if ((status & 0x20) != 0) {
 			continue;
 		}
+
 		if ((scan_code & 0x7f) >= sizeof(keymap)/sizeof(keymap[0])) {
 			continue;
 		}
@@ -238,19 +242,19 @@ void keyboard_init(void) {
 	if (inb(0x64) == 0xFF) {
 		return;
 	}
-
 	/* Empty keyboard buffer */
 	while (keyboard_havechar()) keyboard_getc();
 
 	/* Read the current mode */
 	mode = keyboard_get_mode();
-
 	/* Turn on scancode translate mode so that we can
 	 use the scancode set 1 tables */
 	mode |= I8042_MODE_XLATE;
-
+	/* Enable keyboard. */
+	mode &= ~I8042_MODE_DISABLE;
 	/* Write the new mode */
 	keyboard_set_mode(mode);
+	printk("Keyboard init OK! \n");
 
 	//irq_attach(IRQ1, kbd_handler, 0, NULL, "kbd");
 }
