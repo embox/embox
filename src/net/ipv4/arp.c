@@ -165,6 +165,7 @@ int arp_resolve(sk_buff_t *pack) {
 		return res;
 	}
 
+#if 0 // TODO it's a temporary solution
 	/* FIXME:
 	 * Really it's waiting until event_fire have not been called
 	 * and third argument is SCHED_TIMEOUT_INFINITE but in this case
@@ -174,7 +175,15 @@ int arp_resolve(sk_buff_t *pack) {
 	 */
 	sched_sleep(&pack->sk->sock_is_ready, 500/*SCHED_TIMEOUT_INFINITE*/);
 
+	/* FIXME:
+	 * if there return ENOERR then package will sended two times:
+	 * 1. by arp_queue_process
+	 * 2. in the course of execution this thread
+	 */
 	return (sock_is_ready(pack->sk) ? ENOERR : -ENOENT);
+#else
+	return -ENOENT;
+#endif
 }
 
 /**

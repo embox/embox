@@ -494,7 +494,6 @@ static int icmp_rcv(sk_buff_t *pack) {
 	int res;
 
 		/* Check skb and headers */
-//	printf("icmp_rcv 0x%p, iph 0x%p\n", pack, &pack->nh.iph);
 	assert(pack);
 	assert(pack->nh.iph);
 	assert(pack->h.icmph);
