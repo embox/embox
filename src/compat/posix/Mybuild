@@ -5,7 +5,6 @@ static module LibPosix {
 	source "exec.c",
 		"file.c",
 		"file_op.c",
-		"stdio.c",
 		"fs.c",
 		"fork.c",
 		"getopt.c",
@@ -19,7 +18,14 @@ static module LibPosix {
 	depends embox.util.LibUtil
 	depends embox.kernel.task.api
 	depends embox.kernel.task.errno
+	depends embox.fs.core
 	depends posix_env
+	depends stdio
+}
+
+module stdio {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "stdio.c"
 }
 
 @DefaultImpl(bootstrap_posix_env)
