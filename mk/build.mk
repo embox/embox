@@ -7,34 +7,11 @@
 # Author: Anton Kozlov
 #
 
-ifdef NOBUILDGEN
-include mk/configure.mk #FIXME
-endif # NOBUILDGEN
-
 include mk/codegen-dot.mk
 
 include mk/help-module.mk
 
 .PHONY : build image prepare docsgen dot
-
-ifdef NOBUILDGEN
-build : image
-	@echo 'Build complete'
-
-image : prepare
-
-include mk/image.mk #FIXME move it upper. -- Eldar
-
-prepare:
-	@$(MKDIR) $(BUILD_DIR)
-	@$(MKDIR) $(BIN_DIR)
-	@$(MKDIR) $(OBJ_DIR)
-	@$(MKDIR) $(LIB_DIR)
-	@$(MKDIR) $(ROOTFS_DIR)
-	@$(MKDIR) $(AUTOCONF_DIR)
-	@$(MKDIR) $(DOCS_OUT_DIR)
-
-else # NOBUILDGEN
 
 build_gen_ts := $(MKGEN_DIR)/build-gen.timestamp
 
@@ -44,8 +21,6 @@ build : $(build_gen_ts)
 
 $(build_gen_ts) : mk/script/build/build-gen.mk $(load_mybuild_files)
 	@$(MAKE) -f $< && touch $@
-
-endif # NOBUILDGEN
 
 docsgen:
 	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)
