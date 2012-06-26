@@ -13,7 +13,7 @@
 #include <fcntl.h>
 
 #include <fs/fat.h>
-#include <fs/ramdisk.h>
+#include <drivers/ramdisk.h>
 #include <fs/fs_drv.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
