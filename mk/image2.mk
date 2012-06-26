@@ -43,16 +43,14 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 SIZE    := $(CROSS_COMPILE)size
 
 # This must be expanded in a secondary expansion context.
-# 1. Pattern.
-target_rulemk = $(patsubst $(abspath $1),$(MKGEN_DIR)/%.rule.mk,$(abspath $@))
-common_prereqs := mk/image2.mk $(MKGEN_DIR)/build.mk
+common_prereqs = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk $(mk_file)
 
 VPATH = $(SRCGEN_DIR)
 
 %/. :
 	@$(MKDIR) $*
 
-cc_prerequisites    = $(call target_rulemk,$(OBJ_DIR)/%.o) $(common_prereqs)
+cc_prerequisites    = $(common_prereqs)
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c | $$(@D)/.
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
@@ -65,18 +63,35 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cpp | $$(@D)/.
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx | $$(@D)/.
 	$(CC) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
-cpp_prerequisites   = $(call target_rulemk,$(OBJ_DIR)/%)   $(common_prereqs)
+cpp_prerequisites   = $(common_prereqs)
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
 	$(CPP) -P -undef $(CPPFLAGS) -imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
+initfs_cp_prerequisites = $(common_prereqs) $(src_file)
+$(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
+	@$(CP) -T $(src_file) $@
+$(ROOTFS_DIR)/. :
+	@$(MKDIR) $(@D)
+
 fmt_line = $(addprefix \$(\n)$(\t)$(\t),$1)
 
-ar_prerequisites    = $(call target_rulemk,$(OBJ_DIR)/%.a) $(ar_objs)
+initfs_prerequisites = $(common_prereqs) $(cpio_files)
+$(ROOTFS_IMAGE) : rel_cpio_files = \
+		$(patsubst $(abspath $(ROOTFS_DIR))/%,%,$(abspath $(cpio_files)))
+$(ROOTFS_IMAGE) : | $$(@D)/.
+	cd $(ROOTFS_DIR) \
+		&& ls -1R $(rel_cpio_files) | cpio --quiet -H newc -o -O $(abspath $@)
+	cd $(USER_ROOTFS_DIR) \
+		&& ls -1R * | cpio --quiet -H newc -o --append -O $(abspath $@)
+#XXX
+$(OBJ_DIR)/src/fs/ramfs/ramfs_cpio.o : $(ROOTFS_IMAGE)
+
+ar_prerequisites    = $(common_prereqs) $(ar_objs)
 $(OBJ_DIR)/%.a : | $$(@D)/.
 	$(AR) $(ARFLAGS) $@ $(call fmt_line,$(ar_objs))
 
-image_prerequisites = $(call target_rulemk,$(BIN_DIR)/%) \
+image_prerequisites = $(mk_file) \
 	$(ld_scripts) $(ld_objs) $(ld_libs)
 $(IMAGE): | $$(@D)/.
 	$(LD) $(LDFLAGS) $(call fmt_line,$(ld_scripts:%=-T%)) \

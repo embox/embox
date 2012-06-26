@@ -190,7 +190,7 @@ build_initfs := initfs
 $(@build_initfs) : initfs = $(build_initfs)
 
 build_initfs_rulemk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
-build_initfs_rulemk_target_pat = $(OBJ_DIR)/%.cpio
+build_initfs_rulemk_target_pat = $(ROOTFS_IMAGE)
 
 $(@build_initfs) : @file    = $(initfs:%=$(build_initfs_rulemk_mk_pat))
 $(@build_initfs) : mk_file  = \
