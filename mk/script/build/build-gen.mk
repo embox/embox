@@ -122,9 +122,13 @@ build_sources := \
 @build_include_mk := \
 	$(build_model:%=build-include-mk/%)
 
+@build_initfs := \
+	$(build_model:%=build-initfs-rule-mk/%)
+
 @build_all = \
 	$(@build_image) \
-	$(@build_include_mk)
+	$(@build_include_mk) \
+	$(@build_initfs)
 
 all .PHONY : $(@build_all)
 
@@ -170,13 +174,41 @@ $(@build_include_mk) : source_rulemk = \
 $(@build_include_mk) : module_ar_rulemk = \
 		$(patsubst %,$(value module_ar_rulemk_mk_pat), \
 			$(call module_path,$(@module_ar_rulemk)))
+$(@build_include_mk) : initfs_rulemk = \
+		$(patsubst %,$(value build_initfs_rulemk_mk_pat),$(build_initfs))
 
 $(@build_include_mk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_include,$(image_rulemk)); \
+		$(call gen_make_include,$(initfs_rulemk)); \
 		$(call gen_make_include_list,$(source_rulemk)); \
 		$(call gen_make_include_list,$(module_ar_rulemk)))
+
+build_initfs := initfs
+
+$(@build_initfs) : initfs = $(build_initfs)
+
+build_initfs_rulemk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
+build_initfs_rulemk_target_pat = $(OBJ_DIR)/%.cpio
+
+$(@build_initfs) : @file    = $(initfs:%=$(build_initfs_rulemk_mk_pat))
+$(@build_initfs) : mk_file  = \
+		$(patsubst %,$(value build_initfs_rulemk_mk_pat),$$(build_initfs))
+$(@build_initfs) : target_file = \
+		$(patsubst %,$(value build_initfs_rulemk_target_pat),$$(build_initfs))
+
+$(@build_initfs) : cpio_files = \
+		$(addprefix $$(ROOTFS_DIR)/, \
+			$(notdir $(call get,$(@source_initfs_cp_rulemk),fileName)))
+
+$(@build_initfs) :
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(gen_banner); \
+		$(call gen_make_var,build_initfs,$(initfs)); \
+		$(call gen_make_dep,$(target_file),$$$$(initfs_prerequisites)); \
+		$(call gen_make_tsvar,$(target_file),mk_file,$(mk_file)); \
+		$(call gen_make_tsvar_list,$(target_file),cpio_files,$(cpio_files)))
 
 #
 # Per-module artifacts.
@@ -248,6 +280,8 @@ $(@module_h) :
 source_member = $(call invoke,$1,eContainer)
 source_annotation_values = \
 	$(call invoke,$(source_member),getAnnotationValuesOfOption,$2)
+source_annotations = \
+	$(call invoke,$(source_member),getAnnotationsOfType,$2)
 
 my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
 
@@ -255,6 +289,12 @@ my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
 	$(foreach s,$(build_sources), \
 		$(patsubst %,source-gen/%$s, \
 			$(call source_annotation_values,$s,$(my_gen_script))))
+
+my_initfs := $(call mybuild_resolve_or_die,mybuild.lang.InitFS)
+
+@source_initfs_cp_rulemk := \
+	$(foreach s,$(build_sources), \
+		$(if $(call source_annotations,$s,$(my_initfs)),source-initfs-cp-rulemk/$s))
 
 source_cpp_pats := %.lds.S
 source_cc_pats  := %.S %.c %.cpp %.cxx
@@ -265,8 +305,15 @@ source_cc_pats  := %.S %.c %.cpp %.cxx
 			$(if $(filter $(source_cpp_pats),$f),source-cpp-rule-mk/$s, \
 				$(if $(filter $(source_cc_pats),$f),source-cc-rule-mk/$s))))
 
+@source_rulemk := \
+	$(filter-out $(addprefix %,$(suffix $(@source_initfs_cp_rulemk))), \
+		$(@source_rulemk))
+
 @source_cpp_rulemk := $(filter source-cpp-rule-mk/%,$(@source_rulemk))
 @source_cc_rulemk  := $(filter source-cc-rule-mk/%,$(@source_rulemk))
+
+@source_rulemk += \
+	$(@source_initfs_cp_rulemk)
 
 # task/???.module.source
 @source_all = \
@@ -306,14 +353,13 @@ source_rulemk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
 $(@source_rulemk) : @file   = $(base:%=$(source_rulemk_mk_pat))
 $(@source_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$$(source_base))
-$(@source_rulemk) : prereqs =
 
 source_cc_rulemk_o_pat  = $(OBJ_DIR)/%.o
 source_cpp_rulemk_o_pat = $(OBJ_DIR)/%# foo.lds.S -> foo.lds
 
 $(@source_rulemk)  : o_file = $(patsubst %,$(value source_$(kind)_rulemk_o_pat),$$(source_base))
 
-$(@source_rulemk) :
+$(filter-out $(@source_initfs_cp_rulemk),$(@source_rulemk)) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,source_base,$(base)); \
@@ -324,6 +370,19 @@ $(@source_rulemk) :
 
 $(@source_cc_rulemk)  : kind := cc
 $(@source_cpp_rulemk) : kind := cpp
+
+$(@source_initfs_cp_rulemk) : @file   = $(base:%=$(source_rulemk_mk_pat))
+$(@source_initfs_cp_rulemk) : o_file  = $$(ROOTFS_DIR)/$(notdir $(file))
+$(@source_initfs_cp_rulemk) : src_file = $(file)
+$(@source_initfs_cp_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$(base))
+$(@source_initfs_cp_rulemk) : kind := initfs_cp
+
+$(@source_initfs_cp_rulemk) :
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(gen_banner); \
+		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(o_file),src_file,$(src_file)); \
+		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)))
 
 $(@source_gen) : @file = $(SRCGEN_DIR)/$(file)
 $(@source_gen) : gen_string = $(basename $(basename $@))
