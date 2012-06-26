@@ -5,6 +5,7 @@
 
 .PHONY : all image
 all : image
+	@echo 'Build complete'
 
 include mk/core/common.mk
 
