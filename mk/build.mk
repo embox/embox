@@ -7,9 +7,9 @@
 # Author: Anton Kozlov
 #
 
-ifndef BUILDGEN
+ifdef NOBUILDGEN
 include mk/configure.mk #FIXME
-endif # BUILDGEN
+endif # NOBUILDGEN
 
 include mk/codegen-dot.mk
 
@@ -17,7 +17,7 @@ include mk/help-module.mk
 
 .PHONY : build image prepare docsgen dot
 
-ifndef BUILDGEN
+ifdef NOBUILDGEN
 build : image
 	@echo 'Build complete'
 
@@ -34,7 +34,7 @@ prepare:
 	@$(MKDIR) $(AUTOCONF_DIR)
 	@$(MKDIR) $(DOCS_OUT_DIR)
 
-else # BUILDGEN
+else # NOBUILDGEN
 
 build_gen_ts := $(MKGEN_DIR)/build-gen.timestamp
 
@@ -45,7 +45,7 @@ build : $(build_gen_ts)
 $(build_gen_ts) : mk/script/build/build-gen.mk $(load_mybuild_files)
 	@$(MAKE) -f $< && touch $@
 
-endif # BUILDGEN
+endif # NOBUILDGEN
 
 docsgen:
 	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)

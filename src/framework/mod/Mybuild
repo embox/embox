@@ -2,6 +2,10 @@ package embox.framework
 
 module mod {
 	/*FIXME mybuild make flags options */
-    @DefineMacro("__FRAMEWORK__")
+	@DefineMacro("__FRAMEWORK__")
 	source "core.c"
+
+	@DefineMacro("__EMBUILD__")
+	@Generated(script="$(MAKE) -f mk/script/c-runtime-inject.mk")
+	source "depsinject.c"
 }
