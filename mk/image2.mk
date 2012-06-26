@@ -76,14 +76,30 @@ $(ROOTFS_DIR)/. :
 
 fmt_line = $(addprefix \$(\n)$(\t)$(\t),$1)
 
-initfs_prerequisites = $(common_prereqs) $(cpio_files)
+initfs_prerequisites = $(common_prereqs) $(cpio_files) \
+	$(wildcard $(USER_ROOTFS_DIR) $(USER_ROOTFS_DIR)/*)
 $(ROOTFS_IMAGE) : rel_cpio_files = \
 		$(patsubst $(abspath $(ROOTFS_DIR))/%,%,$(abspath $(cpio_files)))
 $(ROOTFS_IMAGE) : | $$(@D)/.
+$(ROOTFS_IMAGE) :
 	cd $(ROOTFS_DIR) \
-		&& ls -1R $(rel_cpio_files) | cpio --quiet -H newc -o -O $(abspath $@)
-	cd $(USER_ROOTFS_DIR) \
-		&& ls -1R * || exit 0 | cpio --quiet -H newc -o --append -O $(abspath $@)
+		&& find $(rel_cpio_files) -depth -print | cpio --quiet -H newc -o -O $(abspath $@)
+	if [ -d $(USER_ROOTFS_DIR) ]; \
+	then \
+		cd $(USER_ROOTFS_DIR) \
+			&& find * -depth -print | cpio --quiet -H newc -o --append -O $(abspath $@); \
+	fi
+	@FILES=`find $(cpio_files) $(USER_ROOTFS_DIR)/* -depth -print 2>/dev/null`; \
+	{                                            \
+		printf '$(ROOTFS_IMAGE):';               \
+		for dep in $$FILES;                      \
+			do printf ' \\\n\t%s' "$$dep"; done; \
+		printf '\n';                             \
+		for dep in $$FILES;                      \
+			do printf '\n%s:\n' "$$dep"; done;   \
+	} > $@.d
+-include $(ROOTFS_IMAGE).d
+
 #XXX
 $(OBJ_DIR)/src/fs/ramfs/ramfs_cpio.o : $(ROOTFS_IMAGE)
 
