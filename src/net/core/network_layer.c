@@ -99,7 +99,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 				/* If socket is ready then it was really error
 				 * but if socket isn't ready package has been saved
 				 * and will be transmitted later */
-				kfree_skb(skb);
+				skb_free(skb);
 				stats->tx_err++;
 			}
 
@@ -108,7 +108,7 @@ int dev_queue_xmit(struct sk_buff *skb) {
 
 		res = ops->ndo_start_xmit(skb, dev);
 		if (res < 0) {
-			kfree_skb(skb);
+			skb_free(skb);
 			stats->tx_err++;
 			return res;
 		}
@@ -138,7 +138,7 @@ int netif_receive_skb(sk_buff_t *skb) {
 		}
 	}
 
-	kfree_skb(skb);
+	skb_free(skb);
 	return NET_RX_DROP;
 }
 
@@ -155,7 +155,7 @@ void netif_rx_schedule(struct sk_buff *skb) {
 	dev = skb->dev;
 	assert(dev != NULL);
 
-	skb_queue_tail(&(dev->dev_queue), skb);
+	skb_queue_push(&(dev->dev_queue), skb);
 
 	dev_rx_queued(dev);
 

@@ -305,7 +305,7 @@ check_state:
 	case TCP_FINWAIT_1:
 	case TCP_FINWAIT_2:
 	case TCP_CLOSEWAIT:
-		skb = skb_peek_datagram(sk, flags, 0, 0);
+		skb = skb_queue_front(sk->sk_receive_queue);
 		if (skb == NULL) {
 			if (sock.sk->sk_state == TCP_CLOSEWAIT) {
 				return -1; /* error: connection closing */
@@ -332,8 +332,8 @@ check_state:
 				skb->p_data += bytes;
 				break;
 			}
-			kfree_skb(skb);
-		} while ((len > 0) && ((skb = skb_peek_datagram(sk, flags, 0, 0)) != NULL));
+			skb_free(skb);
+		} while ((len > 0) && ((skb = skb_queue_front(sk->sk_receive_queue)) != NULL));
 		msg->msg_iov->iov_len -= len;
 		return ENOERR;
 	case TCP_CLOSING:

@@ -185,7 +185,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 #if DEBUG
 	show_packet(skb->mac.raw, skb->len, "send");
 #endif
-	kfree_skb(skb); /* free packet */
+	skb_free(skb); /* free packet */
 
 	return ENOERR;
 }
@@ -194,9 +194,12 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length,
 				uint16_t offset, struct net_device *dev) {
 	struct sk_buff *skb;
 
-	skb = alloc_skb(total_length, 0);
+	skb = skb_alloc(total_length);
 	if (skb == NULL) {
 		return NULL;
+	}
+	if (skb == (void *)0x1b7420) {
+		LOG_ERROR("warning: assert waiting youuu....");
 	}
 
 	skb->dev = dev;

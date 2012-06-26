@@ -10,6 +10,7 @@
 #include <net/inetdevice.h>
 #include <err.h>
 #include <errno.h>
+#include <assert.h>
 
 int ifdev_up(const char *if_name) {
 	struct net_device *dev;

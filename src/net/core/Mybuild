@@ -21,7 +21,7 @@ module dev {
 }
 
 module skbuff {
-	source "skbuff.c"
+	source "skb.c", "skb_queue.c"
 
 	depends embox.mem.pool
 	depends embox.lib.LibC

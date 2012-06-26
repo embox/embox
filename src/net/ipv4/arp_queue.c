@@ -83,7 +83,7 @@ static void arp_queue_drop(struct sys_timer *timer, void *data) {
 	sock_set_ready(deff_pack->skb->sk);
 	event_fire(&deff_pack->skb->sk->sock_is_ready);
 
-	kfree_skb(deff_pack->skb);
+	skb_free(deff_pack->skb);
 	objfree(&arp_queue_allocator, deff_pack);
 }
 

@@ -9,6 +9,7 @@
 #include <net/protocol.h>
 #include <net/in.h>
 #include <errno.h>
+#include <assert.h>
 
 //TODO inet_protos not use now
 const net_protocol_t *inet_protos[MAX_INET_PROTOS];

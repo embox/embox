@@ -78,11 +78,11 @@ static int fragment_skb_and_send(sk_buff_t *skb, const struct rt_entry *best_rou
 	int res = tx_buf ? 0 : -1;
 	struct sk_buff *s_tmp;
 
-	kfree_skb(skb);
-	while ((res >= 0) && (s_tmp = skb_dequeue(tx_buf))) {
+	skb_free(skb);
+	while ((res >= 0) && (s_tmp = skb_queue_pop(tx_buf))) {
 		res = min(ip_queue_xmit(s_tmp, 0), res);
 	}
-	skb_queue_purge(tx_buf);
+	skb_queue_free(tx_buf);
 	return res;
 }
 
@@ -96,12 +96,12 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 
 	best_route = rt_fib_get_best(skb->nh.iph->daddr);
 	if (best_route == NULL) {
-		kfree_skb(skb);
+		skb_free(skb);
 		return -EHOSTUNREACH;
 	}
 
 	if (ip_route(skb, best_route) < 0) {
-		kfree_skb(skb);
+		skb_free(skb);
 		return -ENETUNREACH;  /* errno? */
 	}
 
@@ -110,7 +110,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 			return fragment_skb_and_send(skb, best_route);
 		} else {
 			/* if packet size is greater than MTU and we can't fragment it we can't go further */
-			kfree_skb(skb);
+			skb_free(skb);
 			return -EMSGSIZE;  /* errno? */
 		}
 	}
@@ -129,7 +129,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 		 * And, of course, loopback packets must not be processed here
 		 */
 	if ( (eth_packet_type(skb) != PACKET_HOST) || ipv4_is_multicast(iph->daddr) ) {
-		kfree_skb(skb);
+		skb_free(skb);
 		return 0;
 	}
 
@@ -159,7 +159,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 
 		/* Should we send ICMP redirect */
 	if (skb->dev == best_route->dev) {
-		struct sk_buff *s_new = skb_copy(skb, 0);
+		struct sk_buff *s_new = skb_duplicate(skb);
 		if (s_new) {
 			icmp_send(s_new, ICMP_REDIRECT, (best_route->rt_gateway == INADDR_ANY),
 					  best_route->rt_gateway);

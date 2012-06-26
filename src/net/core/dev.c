@@ -209,7 +209,7 @@ int dev_set_flags(struct net_device *dev, unsigned int flags) {
 static int process_backlog(struct net_device *dev) {
 	struct sk_buff *skb;
 
-	while ((skb = skb_dequeue(&(dev->dev_queue))) != NULL) {
+	while ((skb = skb_queue_pop(&(dev->dev_queue))) != NULL) {
 		netif_receive_skb(skb);
 	}
 

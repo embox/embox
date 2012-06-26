@@ -12,6 +12,7 @@
 #include <types.h>
 #include <net/in.h>
 #include <string.h>
+#include <assert.h>
 
 __u16 pmap_getport(struct sockaddr_in *raddr, __u32 prognum,
 		__u32 versnum, __u32 protocol) {

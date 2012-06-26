@@ -45,7 +45,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	if (iph->ihl < 5 || iph->version != 4) {
 		LOG_ERROR("invalid IPv4 header\n");
 		stats->rx_err++;
-		kfree_skb(skb);
+		skb_free(skb);
 		return NET_RX_DROP;
 	}
 
@@ -53,7 +53,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	if (skb->len < len || len < IP_HEADER_SIZE(iph)) {
 		LOG_ERROR("invalid IPv4 header length\n");
 		stats->rx_length_errors++;
-		kfree_skb(skb);
+		skb_free(skb);
 		return NET_RX_DROP;
 	}
 
@@ -62,7 +62,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	if (tmp != ptclbsum(iph, IP_HEADER_SIZE(iph))) {
 		LOG_ERROR("bad ip checksum\n");
 		stats->rx_crc_errors++;
-		kfree_skb(skb);
+		skb_free(skb);
 		return NET_RX_DROP;
 	}
 
@@ -79,12 +79,12 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		opts->optlen = optlen;
 		if (ip_options_compile(skb, opts)) {
 			stats->rx_err++;
-			kfree_skb(skb);
+			skb_free(skb);
 			return NET_RX_DROP;
 		}
 		if (ip_options_handle_srr(skb)) {
 			stats->tx_err++;
-			kfree_skb(skb);
+			skb_free(skb);
 			return NET_RX_DROP;
 		}
 	}
@@ -131,6 +131,6 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		}
 	}
 
-	kfree_skb(skb);
+	skb_free(skb);
 	return NET_RX_DROP;				/* Nobody wants this packet */
 }

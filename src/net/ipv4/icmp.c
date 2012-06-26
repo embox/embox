@@ -238,7 +238,7 @@ static int icmp_prepare_reply(sk_buff_t *reply) {
 
 
 static int icmp_echo(sk_buff_t *skb) {
-	sk_buff_t *reply = skb_copy(skb, 0);	/* We are going to fix the data */
+	sk_buff_t *reply = skb_duplicate(skb);	/* We are going to fix the data */
 
 	if (!likely(reply))
 		return -1;
@@ -269,7 +269,7 @@ static int icmp_timestamp(sk_buff_t *skb) {
 		return -1;
 	}
 
-	if (!likely(reply = skb_copy(skb, 0))) 	/* We are going to fix the data */
+	if (!likely(reply = skb_duplicate(skb))) 	/* We are going to fix the data */
 		return -1;
 
 	/* Mark it as a reply */
@@ -348,13 +348,13 @@ static inline void __icmp_send(sk_buff_t *skb_in, __be16 type, __be16 code, __be
 
 
 	if (!likely(icmp_send_usability_check(skb_in))) {
-		kfree_skb(skb_in);
+		skb_free(skb_in);
 		return;
 	}
 
 		/* Check presence of extra space for new headers and modification permission*/
 	if (!likely(skb = skb_checkcopy_expand(skb_in, realloc_shift, 0, 0))) {
-		kfree_skb(skb_in);
+		skb_free(skb_in);
 		return;
 	}
 
@@ -494,6 +494,7 @@ static int icmp_rcv(sk_buff_t *pack) {
 	int res;
 
 		/* Check skb and headers */
+//	printf("icmp_rcv 0x%p, iph 0x%p\n", pack, &pack->nh.iph);
 	assert(pack);
 	assert(pack->nh.iph);
 	assert(pack->h.icmph);
@@ -503,7 +504,6 @@ static int icmp_rcv(sk_buff_t *pack) {
 
 	res = __icmp_rcv(pack);
 	pack->dev->stats.rx_err += (res < 0);
-	kfree_skb(pack);
+	skb_free(pack);
 	return res;
 }
-

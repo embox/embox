@@ -92,7 +92,7 @@ int raw_rcv(struct sk_buff *skb) {
 	for (i = 0; i < sizeof raw_table / sizeof raw_table[0]; ++i) {
 		sk = (struct sock *)raw_table[i];
 		if ((sk != NULL) && (sk->sk_protocol == skb->nh.iph->proto)) {
-			cloned = skb_clone(skb, 0); // TODO without skb_clone()
+			cloned = skb_duplicate(skb); // TODO without skb_clone()
 			if (cloned == NULL) {
 				LOG_ERROR("couldn't clone socket buffer\n");
 				continue;
@@ -101,7 +101,7 @@ int raw_rcv(struct sk_buff *skb) {
 			res = raw_rcv_skb(sk, cloned);
 			if (res < 0) {
 				LOG_ERROR("sk 0x%p can't received packet\n", sk);
-				kfree_skb(cloned);
+				skb_free(cloned);
 			}
 		}
 	}
@@ -167,7 +167,7 @@ static void raw_unhash(struct sock *sk) {
 static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 		size_t len) {
 	struct inet_sock *inet = inet_sk(sk);
-	sk_buff_t *skb = alloc_skb(ETH_HEADER_SIZE + len, 0);
+	sk_buff_t *skb = skb_alloc(ETH_HEADER_SIZE + len);
 
 	assert(skb);
 
@@ -190,14 +190,14 @@ static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 			size_t len, int noblock, int flags) {
 	struct sk_buff *skb;
 
-	skb = skb_recv_datagram(sk, flags, 0, 0);
+	skb = skb_queue_front(sk->sk_receive_queue);
 	if (skb && (skb->len > 0)) {
 		if (len > (skb->len - ETH_HEADER_SIZE)) {
 			len = skb->len - ETH_HEADER_SIZE;
 		}
 		memcpy((void*) msg->msg_iov->iov_base,
 				(void*) (skb->mac.raw + ETH_HEADER_SIZE), len);
-		kfree_skb(skb);
+		skb_free(skb);
 	} else {
 		len = 0;
 	}

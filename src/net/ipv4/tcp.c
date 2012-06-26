@@ -124,9 +124,9 @@ static inline void packet_print(union sock_pointer sock, struct sk_buff *skb, ch
 struct sk_buff * alloc_prep_skb(size_t addit_len) {
 	struct sk_buff *skb;
 
-	skb = alloc_skb(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
+	skb = skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
 				    /*inet->opt->optlen +*/ TCP_V4_HEADER_MIN_SIZE +
-				    addit_len, 0);
+				    addit_len);
 	if (skb == NULL) {
 		LOG_ERROR("no memory or len is too big. len=%u\n", addit_len);
 		return NULL;
@@ -324,7 +324,7 @@ static int tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 
 	tcp_obj_lock(sock, TCP_SYNC_WRITE_QUEUE);
 	/* get next skb for sending */
-	skb = skb_peek(sock.sk->sk_write_queue);
+	skb = skb_queue_front(sock.sk->sk_write_queue);
 	if (skb == NULL) {
 		/* TODO
 		 * seq_queue is set in the function up the stack,
@@ -338,7 +338,7 @@ static int tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 	}
 	seq_len = tcp_seq_len(skb);
 	if (seq_len > 0) {
-		skb_send = skb_clone(skb, 0);
+		skb_send = skb_duplicate(skb);
 		if (skb_send == NULL) {
 			LOG_ERROR("no memory\n");
 			tcp_obj_unlock(sock, TCP_SYNC_WRITE_QUEUE);
@@ -347,7 +347,7 @@ static int tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 		debug_print(9, "tcp_sock_xmit: send skb 0x%p, postponed 0x%p\n", skb_send, skb);
 	}
 	else {
-		skb_send = skb_dequeue(sock.sk->sk_write_queue);
+		skb_send = skb_queue_pop(sock.sk->sk_write_queue);
 		assert(skb_send == skb);
 		debug_print(9, "tcp_sock_xmit: send skb 0x%p\n", skb_send);
 	}
@@ -366,7 +366,7 @@ static void send_ack_from_sock(union sock_pointer sock, struct sk_buff *skb_ackn
 	struct sk_buff *skb;
 
 	/* FIXME skb may be freed by free_rexmitting_queue */
-	skb = skb_peek(sock.sk->sk_write_queue);
+	skb = skb_queue_front(sock.sk->sk_write_queue);
 	if (skb == NULL) {
 		/* send skb_ackn if no skb in outgoing queue */
 		debug_print(9, "send_ack_from_sock: send 0x%p\n", skb_ackn);
@@ -376,7 +376,7 @@ static void send_ack_from_sock(union sock_pointer sock, struct sk_buff *skb_ackn
 		/* If there, set ack flag and free skb_ackn */
 		skb->h.th->ack = 1;
 		debug_print(9, "send_ack_from_sock: add ack to 0x%p\n", skb);
-		kfree_skb(skb_ackn);
+		skb_free(skb_ackn);
 
 		tcp_sock_xmit(sock, TCP_XMIT_IGNORE_DELAY);
 	}
@@ -387,7 +387,7 @@ static void send_ack_from_sock(union sock_pointer sock, struct sk_buff *skb_ackn
  */
 void send_from_sock(union sock_pointer sock, struct sk_buff *skb_send, int xmit_mod) {
 	/* correct xmit_mod if queue is empty */
-	if (skb_peek(sock.sk->sk_write_queue) == NULL) { /* TODO it doesn't synchronize */
+	if (skb_queue_front(sock.sk->sk_write_queue) == NULL) { /* TODO it doesn't synchronize */
 		xmit_mod |= TCP_XMIT_IGNORE_DELAY;
 	}
 	/* TODO
@@ -397,7 +397,7 @@ void send_from_sock(union sock_pointer sock, struct sk_buff *skb_send, int xmit_
 	skb_send->p_data = skb_send->h.raw + TCP_V4_HEADER_SIZE(skb_send->h.th);
 	/* save skb */
 //	list_add_tail((struct list_head *)skb_send, (struct list_head *)sock.sk->sk_write_queue);
-	skb_queue_tail(sock.sk->sk_write_queue, skb_send);
+	skb_queue_push(sock.sk->sk_write_queue, skb_send);
 	debug_print(9, "send_from_sock: save 0x%p to outgoing queue\n", skb_send);
 	/* send packet */
 	tcp_sock_xmit(sock, xmit_mod);
@@ -409,12 +409,12 @@ static void free_rexmitting_queue(union sock_pointer sock, __u32 ack, __u32 unac
 
 	ack_len = ack - unack;
 	while ((ack_len != 0)
-			&& ((sent_skb = skb_peek(sock.sk->sk_write_queue)) != NULL)) {
+			&& ((sent_skb = skb_queue_front(sock.sk->sk_write_queue)) != NULL)) {
 		seq_left = tcp_seq_left(sent_skb);
 		if (seq_left <= ack_len) {
 			ack_len -= seq_left;
 			debug_print(9, "free_rexmitting_queue: remove skb 0x%p\n", sent_skb);
-			kfree_skb(sent_skb); /* list_del will done at kfree_skb */
+			skb_free(sent_skb); /* list_del will done at skb_free */
 		}
 		else {
 			sent_skb->p_data += ack_len;
@@ -923,7 +923,7 @@ static int tcp_handle(union sock_pointer sock, struct sk_buff *skb, tcp_handler_
 
 	switch (res) {
 	default: /* error code, TCP_RET_DROP, TCP_RET_FREE */
-		kfree_skb(skb);
+		skb_free(skb);
 		break;
 	case TCP_RET_SEND:
 	case TCP_RET_ACK:

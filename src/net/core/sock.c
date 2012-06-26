@@ -84,23 +84,23 @@ struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 		return NULL;
 	}
 
-	sk->sk_receive_queue = alloc_skb_queue();
+	sk->sk_receive_queue = skb_queue_alloc();
 	if (sk->sk_receive_queue == NULL) {
 		sk_prot_free(prot, sk);
 		return NULL;
 	}
 
-	sk->sk_write_queue = alloc_skb_queue();
+	sk->sk_write_queue = skb_queue_alloc();
 	if (sk->sk_write_queue == NULL) {
-		skb_queue_purge(sk->sk_receive_queue);
+		skb_queue_free(sk->sk_receive_queue);
 		sk_prot_free(prot, sk);
 		return NULL;
 	}
 
 	if (prot->init != NULL) {
 		if (prot->init(sk) < 0) {
-			skb_queue_purge(sk->sk_receive_queue);
-			skb_queue_purge(sk->sk_write_queue);
+			skb_queue_free(sk->sk_receive_queue);
+			skb_queue_free(sk->sk_write_queue);
 			sk_prot_free(prot, sk);
 			return NULL;
 		}
@@ -145,7 +145,7 @@ void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	assert(sk->sk_receive_queue != NULL);
 	assert(skb != NULL);
 
-	skb_queue_tail(sk->sk_receive_queue, skb);
+	skb_queue_push(sk->sk_receive_queue, skb);
 }
 
 // TODO remove this
@@ -169,8 +169,8 @@ void sk_common_release(struct sock *sk) {
 		sk->sk_prot->destroy(sk);
 	}
 
-	skb_queue_purge(sk->sk_receive_queue);
-	skb_queue_purge(sk->sk_write_queue);
+	skb_queue_free(sk->sk_receive_queue);
+	skb_queue_free(sk->sk_write_queue);
 
 	sk_free(sk);
 }

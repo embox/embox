@@ -45,7 +45,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 		dev->base_addr + RTL8139_TX_STAT_0 + (entry * 4));
 	cur_tx++;
 
-	kfree_skb(skb); /* free packet */
+	skb_free(skb); /* free packet */
 	return ENOERR;
 }
 
@@ -74,7 +74,7 @@ static void rtl8139_rx(struct net_device *dev) {
 		uint16_t rx_size =  *(uint16_t *) (buf_ptr + 2);
 		uint16_t pkt_len = rx_size - 4;
 
-		skb = alloc_skb(pkt_len, 0);
+		skb = skb_alloc(pkt_len);
 		assert(skb);
 		wrap_copy(skb->mac.raw, rx_buf, (ring_offset + 4) % RX_BUF_SIZE, skb->len);
 		skb->dev = dev;

@@ -131,7 +131,7 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	tmp = buf->next_skbuff;
 
 	ihlen = (tmp->h.raw - tmp->mac.raw);
-	skb = alloc_skb(buf->len + ihlen, 0);
+	skb = skb_alloc(buf->len + ihlen);
 		/* Strange:
 		 *	- it might return NULL, because length is too big now.
 		 *	- ihlen has upper limit. So it's more wise to has such
@@ -151,7 +151,7 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 		memcpy(skb->mac.raw + ihlen + offset, tmp->mac.raw + ihlen, tmp->len - ihlen);
 		offset += tmp->len - ihlen;
 		list_del((struct list_head *)tmp);
-		kfree_skb(tmp);
+		skb_free(tmp);
 		tmp = buf->next_skbuff;
 	}
 
@@ -195,7 +195,7 @@ static void buf_delete(struct dgram_buf *buf) {
 	while(!list_empty((struct list_head *)buf)) {
 		tmp = buf->next_skbuff;
 		list_del((struct list_head*)tmp);
-		kfree_skb(tmp);
+		skb_free(tmp);
 	}
 
 	list_del(&buf->next_buf);
@@ -217,7 +217,7 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	if(offset || mf_flag) {
 		if (df_flag(skb)) {
 				/* For some reason we don't like situation when someone used forced fragmentation */
-			kfree_skb(skb);
+			skb_free(skb);
 			skb = (sk_buff_t *)NULL;
 			return skb;
 		}
@@ -241,7 +241,7 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 }
 
 struct sk_buff_head *ip_frag(const struct sk_buff *skb, uint32_t mtu) {
-	struct sk_buff_head *tx_buf = alloc_skb_queue();
+	struct sk_buff_head *tx_buf = skb_queue_alloc();
 	struct sk_buff *fragment;
 	int len = ETH_HEADER_SIZE + IP_HEADER_SIZE(skb->nh.iph);
 	int offset = len;		/* offset from skb start (== mac.raw) */
@@ -255,8 +255,8 @@ struct sk_buff_head *ip_frag(const struct sk_buff *skb, uint32_t mtu) {
 
 		/* copy sk_buff without last fragment. All this fragments have size MTU */
 	while(offset < skb->len - align_MTU) {
-		if(unlikely(!(fragment = alloc_skb(align_MTU, 0)))) {
-			skb_queue_purge(tx_buf);
+		if(unlikely(!(fragment = skb_alloc(align_MTU)))) {
+			skb_queue_free(tx_buf);
 			return NULL;
 		}
 
@@ -268,14 +268,14 @@ struct sk_buff_head *ip_frag(const struct sk_buff *skb, uint32_t mtu) {
 		fragment->nh.iph->frag_off = htons(
 					(((offset - len) >> 3) /* data offset / 8 */) | IP_MF);
 		ip_send_check(fragment->nh.iph);
-		skb_queue_tail(tx_buf, fragment);
+		skb_queue_push(tx_buf, fragment);
 		offset += (align_MTU - len);
 	}
 
 	/* copy last fragment */
 	if(offset < skb->len) {
-		if(unlikely(!(fragment = alloc_skb(skb->len - offset + len, 0)))) {
-			skb_queue_purge(tx_buf);
+		if(unlikely(!(fragment = skb_alloc(skb->len - offset + len)))) {
+			skb_queue_free(tx_buf);
 			return NULL;
 		}
 
@@ -286,7 +286,7 @@ struct sk_buff_head *ip_frag(const struct sk_buff *skb, uint32_t mtu) {
 		fragment->nh.raw = fragment->mac.raw + ETH_HEADER_SIZE;
 		fragment->nh.iph->frag_off = htons(((offset - len) >> 3));
 		ip_send_check(fragment->nh.iph);
-		skb_queue_tail(tx_buf, fragment);
+		skb_queue_push(tx_buf, fragment);
 	}
 
 	return tx_buf;

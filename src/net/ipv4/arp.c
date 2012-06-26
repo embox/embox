@@ -106,7 +106,7 @@ int arp_send(int type, int ptype, struct net_device *dev,
 		return -EINVAL;
 	}
 
-	skb = alloc_skb(ETH_HEADER_SIZE + ARP_HEADER_SIZE, 0);
+	skb = skb_alloc(ETH_HEADER_SIZE + ARP_HEADER_SIZE);
 	if (skb == NULL) {
 		return -ENOMEM;
 	}
@@ -114,7 +114,7 @@ int arp_send(int type, int ptype, struct net_device *dev,
 	res = arp_header(skb, dev, type, ptype, dest_ip, src_ip,
 			dest_hw, src_hw, th);
 	if (res < 0) {
-		kfree_skb(skb);
+		skb_free(skb);
 		return res;
 	}
 
@@ -208,7 +208,7 @@ static int received_req(struct sk_buff *skb, struct net_device *dev) {
 	res = arp_header(skb, dev, ARPOP_REPLY, ETH_P_ARP, arph->ar_sip,
 			arph->ar_tip, arph->ar_sha, dev->dev_addr, NULL);
 	if (res < 0) {
-		kfree_skb(skb);
+		skb_free(skb);
 		return res;
 	}
 
@@ -229,7 +229,7 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 	assert(arph != NULL);
 
 	if (ipv4_is_loopback(arph->ar_tip) || ipv4_is_multicast(arph->ar_tip)) {
-		kfree_skb(skb);
+		skb_free(skb);
 		return 0;
 	}
 
@@ -240,7 +240,7 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 		if (arph->ar_tip == arph->ar_sip) { /* RFC 3927 - ARP Announcement */
 			neighbour_add(in_dev, arph->ar_sip, arph->ar_sha, ATF_COM);
 		}
-		kfree_skb(skb);
+		skb_free(skb);
 		return -1;
 	}
 
@@ -248,14 +248,14 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 		case ARPOP_REPLY:
 			res = received_resp(skb, dev);
 			arp_queue_process(skb);
-			kfree_skb(skb);
+			skb_free(skb);
 			return res;
 		case ARPOP_REQUEST:
 			received_resp(skb, dev);
 			return received_req(skb, dev);
 	}
 
-	kfree_skb(skb);
+	skb_free(skb);
 	return -1;
 }
 
@@ -282,7 +282,7 @@ int arp_rcv(struct sk_buff *skb, struct net_device *dev,
 		break;
 	}
 
-	kfree_skb(skb);
+	skb_free(skb);
 	return NET_RX_DROP;
 }
 

@@ -45,9 +45,9 @@ static int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	}
 
 	/* FIXME if msg->msg_iov->iov_len more than ETHERNET_V2_FRAME_SIZE */
-	skb = alloc_skb(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
+	skb = skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
 				    /*inet->opt->optlen +*/ UDP_HEADER_SIZE +
-				    msg->msg_iov->iov_len, 0);
+				    msg->msg_iov->iov_len);
 	if (skb == NULL) {
 		return -ENOMEM;
 	}
@@ -69,14 +69,14 @@ static int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 		size_t len, int noblock, int flags) {
 	struct sk_buff *skb;
 
-	skb = skb_recv_datagram(sk, flags, 0, 0);
+	skb = skb_queue_front(sk->sk_receive_queue);
 	if (skb && skb->len > 0) {
 		if (len > (ntohs(skb->h.uh->len) - UDP_HEADER_SIZE)) {
 			len = ntohs(skb->h.uh->len) - UDP_HEADER_SIZE;
 		}
 		memcpy((void *) msg->msg_iov->iov_base,
 				(void *) (skb->h.raw + UDP_HEADER_SIZE), len);
-		kfree_skb(skb); /* FIXME `skb` may contains more data than `len` */
+		skb_free(skb); /* FIXME `skb` may contains more data than `len` */
 	} else {
 		len = 0;
 	}

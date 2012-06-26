@@ -15,6 +15,8 @@
 #include <net/if_ether.h>
 #include <net/netdevice.h>
 #include <string.h>
+#include <assert.h>
+#include <compiler.h>
 
 static struct net_device *registered_etherdev[CONFIG_NET_DEVICES_QUANTITY]; // TODO before using must be cleared
 
