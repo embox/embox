@@ -1,5 +1,5 @@
 /**
- * @file ramdisk.h
+ * @file
  * @brief
  *
  * @date 27.03.2012

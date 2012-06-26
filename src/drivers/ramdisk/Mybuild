@@ -1,0 +1,7 @@
+package embox.driver
+
+module ramdisk {
+	source "ramdisk.c"
+	depends embox.fs.node
+	depends embox.mem.page_api
+}

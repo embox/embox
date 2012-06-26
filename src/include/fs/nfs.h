@@ -11,7 +11,6 @@
 #define NFS_H_
 
 #include <stdint.h>
-#include <fs/ramdisk.h>
 #include <net/ip.h>
 #include <net/socket.h>
 #include <net/rpc/rpc.h>
@@ -155,6 +154,12 @@
 #define	MAXDIRCOUNT  2048
 
 #define	EMBOX_MACHNAME  "embox"
+
+typedef struct create_params {
+	const char      path[CONFIG_MAX_LENGTH_PATH_NAME];
+	const char      fs_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	unsigned int    fs_type;
+} create_params_t;
 
 /* RPC string */
 typedef struct rpc_string {

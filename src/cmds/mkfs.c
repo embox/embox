@@ -1,5 +1,5 @@
 /**
- * @file mkfs.c
+ * @file
  * @brief
  *
  * @date 27.03.2012
@@ -15,7 +15,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <fs/ramfs.h>
-#include <fs/ramdisk.h>
+#include <drivers/ramdisk.h>
 #include <fs/fat.h>
 #include <embox/cmd.h>
 #include <mem/page.h>

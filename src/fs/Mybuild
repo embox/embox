@@ -26,10 +26,3 @@ module core {
 	depends embox.fs.driver.repo
 }
 
-module ramdisk {
-	source "ramdisk.c"
-	depends node
-	depends embox.fs.driver.devfs
-	depends embox.fs.driver.fat
-	depends embox.mem.page_api
-}

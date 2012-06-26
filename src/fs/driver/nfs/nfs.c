@@ -35,7 +35,7 @@ typedef struct nfs_fs_description_head {
 	nfs_fs_description_t desc;
 } nfs_fs_description_head_t;
 
-static nfs_fs_description_head_t nfs_fs_pool[QUANTITY_RAMDISK * 3];
+static nfs_fs_description_head_t nfs_fs_pool[7];
 static LIST_HEAD(nfs_free_fs);
 
 #define param_to_head_fs(fs_param) \
@@ -280,10 +280,10 @@ static int nfsfs_init(void * par) {
 }
 
 static int nfsfs_format(void *par) {
-	ramdisk_params_t *params;
+	create_params_t *params;
 	node_t *nod;
 
-	params = (ramdisk_params_t *) par;
+	params = (create_params_t *) par;
 	if (NULL == (nod = vfs_find_node(params->path, NULL))) {
 		return -ENODEV;/*device not found*/
 	}

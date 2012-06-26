@@ -10,7 +10,7 @@
 #define FAT_H_
 
 #include <stdint.h>
-#include <fs/ramdisk.h>
+#include <drivers/ramdisk.h>
 
 /*
  * Configurable

@@ -1,8 +1,9 @@
-/*
- * mkfs.h
+/**
+ * @file
+ * @brief
  *
- *  Created on: 03.04.2012
- *      Author: Andrey Gazukin
+ * @date 03.04.2012
+ * @author Andrey Gazukin
  */
 
 #ifndef MKFS_H_

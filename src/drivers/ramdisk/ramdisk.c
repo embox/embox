@@ -1,27 +1,19 @@
 /**
- * @file ramdisk.c
+ * @file
  * @brief
  *
  * @date 27.03.2012
  * @author Andrey Gazukin
  */
 
-#include <types.h>
 #include <errno.h>
-#include <unistd.h>
 #include <string.h>
-#include <assert.h>
-#include <fs/fs_drv.h>
-#include <fs/ramfs.h>
-#include <fs/vfs.h>
-#include <fs/node.h>
-#include <fs/ramdisk.h>
-#include <fs/fat.h>
-#include <util/array.h>
-#include <embox/unit.h>
-#include <stdlib.h>
-#include <mem/page.h>
 #include <cmd/mkfs.h>
+#include <embox/unit.h>
+#include <fs/vfs.h>
+#include <drivers/ramdisk.h>
+#include <mem/page.h>
+#include <util/array.h>
 
 typedef struct ramdisk_params_head {
 	struct list_head *next;
