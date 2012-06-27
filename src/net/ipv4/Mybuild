@@ -3,6 +3,7 @@ package embox.net
 module arp_queue {
 	source "arp_queue.c"
 
+	depends embox.util.hashtable
 	depends dev /* for network_layer.c */
 	depends skbuff
 	depends embox.kernel.timer.sys_timer

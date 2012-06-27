@@ -202,7 +202,7 @@ int sched_sleep(struct event *e, uint32_t timeout) {
 		sleep_data.timeout_event = &event;
 		sleep_data.thread = sched_current();
 		if (0 != timer_init(&tmr, 0, timeout, timeout_handler, &sleep_data)) {
-			return EBUSY;
+			return -EBUSY;
 		}
 	}
 

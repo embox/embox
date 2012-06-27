@@ -1,114 +1,105 @@
 /**
  * @file
  * @brief Handle queue of packets waiting for ARP resolving.
- *
  * @date 13.12.11
  * @author Alexander Kalmuk
+ * @author Ilia Vaprol
  */
 
 #include <net/arp_queue.h>
-#include <types.h>
-#include <util/list.h>
-#include <mem/objalloc.h>
-#include <errno.h>
-#include <net/skbuff.h>
+#include <util/hashtable.h>
 #include <kernel/thread/event.h>
-#include <kernel/timer.h>
-#include <net/sock.h>
-#include <net/ip.h>
+#include <embox/unit.h>
+#include <net/socket.h>
+#include <errno.h>
+#include <mem/misc/pool.h>
 #include <net/arp.h>
-#include <assert.h>
+#include <net/ip.h>
 
-#define TTL 1000
-#define ARP_QUEUE_SIZE 0x10
+EMBOX_UNIT_INIT(arp_queue_init);
 
-struct pending_packet {
-	struct list_head link;
-	struct sk_buff *skb;
-	struct sys_timer *timer;
+#define ARP_QUEUE_SIZE      0x10
+#define ARP_HASHTABLE_WIDTH 10
+
+struct htable_entity {
+	in_addr_t dest_ip;
+	struct event resolved;
+	char reply_received;
 };
 
-OBJALLOC_DEF(arp_queue_allocator, struct pending_packet, ARP_QUEUE_SIZE);
-static LIST_HEAD(arp_queue);
+static struct hashtable *arp_wait_table;
+POOL_DEF(htable_entity_pool, struct htable_entity, ARP_QUEUE_SIZE);
 
 void arp_queue_process(struct sk_buff *arp_pack) {
-	struct pending_packet *pack, *safe;
-	struct sk_buff *skb;
+	struct htable_entity *entity;
+	in_addr_t dst;
 
-	assert(arp_pack != NULL);
-
-	list_for_each_entry_safe(pack, safe, &arp_queue, link) {
-		if (arp_pack->nh.arph->ar_sip == pack->skb->nh.iph->daddr) {
-			skb = pack->skb;
-			assert(skb != NULL);
-
-			timer_close(pack->timer); //TODO it must be synchronized with drop function
-			list_del(&pack->link);
-			objfree(&arp_queue_allocator, pack);
-
-			sock_set_ready(skb->sk);
-			event_fire(&skb->sk->sock_is_ready);
-			dev_queue_xmit(skb);
-		}
+	dst = arp_pack->nh.arph->ar_sip;
+	entity = hashtable_get(arp_wait_table, (void *)&dst);
+	if (entity != NULL) {
+		event_fire(&entity->resolved);
+		entity->reply_received = 1;
+		// TODO
+//		hashtable_del(arp_wait_table, (void *)&dst);
+//		pool_free(&htable_entity_pool, entity);
 	}
-}
-
-static void arp_queue_drop(struct sys_timer *timer, void *data) {
-	int res;
-	struct pending_packet *deff_pack;
-	net_device_stats_t *stats;
-	struct net_device *dev;
-
-	/* it must send message, that packet was dropped */
-	assert((timer != NULL) && (data != NULL));
-
-	deff_pack = (struct pending_packet *)data;
-
-	assert(deff_pack->skb != NULL);
-	assert(deff_pack->skb->dev != NULL);
-
-	dev = deff_pack->skb->dev;
-
-	assert(dev->netdev_ops != NULL);
-	assert(dev->netdev_ops->ndo_get_stats != NULL);
-	stats = dev->netdev_ops->ndo_get_stats(dev);
-
-	stats->tx_err++;
-
-	res = timer_close(timer);
-	assert(res == ENOERR);
-
-	list_del(&deff_pack->link);
-
-	sock_set_ready(deff_pack->skb->sk);
-	event_fire(&deff_pack->skb->sk->sock_is_ready);
-
-	skb_free(deff_pack->skb);
-	objfree(&arp_queue_allocator, deff_pack);
 }
 
 int arp_queue_add(struct sk_buff *skb) {
-	int res;
-	struct pending_packet *queue_pack;
+	struct htable_entity *entity;
+	in_addr_t dst;
 
-	assert(skb != NULL);
+	dst = skb->nh.iph->daddr;
+	entity = hashtable_get(arp_wait_table, (void *)&dst);
+	if (entity != NULL) {
+		return ENOERR;
+	}
 
-	queue_pack = (struct pending_packet *)objalloc(&arp_queue_allocator);
-	if (queue_pack == NULL) {
+	entity = (struct htable_entity *)pool_alloc(&htable_entity_pool);
+	if (entity == NULL) {
 		return -ENOMEM;
 	}
+	entity->dest_ip = dst;
+	event_init(&entity->resolved, NULL);
+	entity->reply_received = 0;
 
-	queue_pack->skb = skb;
+	hashtable_put(arp_wait_table, (void *)&entity->dest_ip, (void *)entity);
 
-	res = timer_set(&queue_pack->timer, TIMER_ONESHOT, TTL, arp_queue_drop, queue_pack);
-	if (res < 0) {
-		objfree(&arp_queue_allocator, queue_pack);
-		return res;
+	return ENOERR;
+}
+
+int arp_queue_wait_resolve(struct sk_buff *skb) {
+	struct htable_entity *entity;
+	in_addr_t dst;
+
+	dst = skb->nh.iph->daddr;
+	entity = hashtable_get(arp_wait_table, (void *)&dst);
+	if (entity == NULL) {
+		return -EINVAL;
 	}
 
-	list_add_tail(&queue_pack->link, &arp_queue);
-	/* skb->sk->arp_queue_info = 0; */
-	sock_unset_ready(skb->sk);
+	sched_sleep(&entity->resolved, MAX_WAIT_TIME);
+
+	return (entity->reply_received ? ENOERR : -ENOENT);
+}
+
+static size_t get_hash(void *key) {
+	return (size_t)*(in_addr_t *)key;
+}
+
+static int cmp_key(void *key1, void *key2) {
+	in_addr_t ip1, ip2;
+
+	ip1 = *(in_addr_t *)key1;
+	ip2 = *(in_addr_t *)key2;
+	return (ip1 < ip2 ? -1 : ip1 > ip2);
+}
+
+static int arp_queue_init(void) {
+	arp_wait_table = hashtable_create(ARP_HASHTABLE_WIDTH, get_hash, cmp_key);
+	if (arp_wait_table == NULL) {
+		return -ENOMEM;
+	}
 
 	return ENOERR;
 }

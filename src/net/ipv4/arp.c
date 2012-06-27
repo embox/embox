@@ -176,14 +176,27 @@ int arp_resolve(sk_buff_t *pack) {
 	sched_sleep(&pack->sk->sock_is_ready, 500/*SCHED_TIMEOUT_INFINITE*/);
 
 	/* FIXME:
-	 * if there return ENOERR then package will sended two times:
+	 * if there return ENOERR then package will be send two times:
 	 * 1. by arp_queue_process
 	 * 2. in the course of execution this thread
 	 */
 	return (sock_is_ready(pack->sk) ? ENOERR : -ENOENT);
 #else
-	return -ENOENT;
+//	return -ENOENT;
 #endif
+
+	res = arp_queue_wait_resolve(pack);
+	if (res < 0) {
+		return res;
+	}
+
+	/* try again */
+	hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr);
+	assert(hw_addr != NULL);
+
+	memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
+
+	return ENOERR;
 }
 
 /**

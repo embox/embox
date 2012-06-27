@@ -27,5 +27,7 @@ extern void arp_queue_process(sk_buff_t *arp_pack);
  */
 extern int arp_queue_add(struct sk_buff *pack);
 
+extern int arp_queue_wait_resolve(struct sk_buff *pack);
+
 
 #endif /* NET_ARP_QUEUE_H_ */
