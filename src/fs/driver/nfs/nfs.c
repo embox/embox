@@ -287,7 +287,6 @@ static int nfsfs_format(void *par) {
 	if (NULL == (nod = vfs_find_node(params->path, NULL))) {
 		return -ENODEV;/*device not found*/
 	}
-
 	return 0;
 }
 
