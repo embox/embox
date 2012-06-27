@@ -362,7 +362,7 @@ $(filter-out $(@source_initfs_cp_rulemk),$(@source_rulemk)) :
 		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
 		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(o_file),flags,$(flags)); \
-		$(call gen_make_include,$$(source_base).d,silent))
+		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))
 
 $(@source_cc_rulemk)  : kind := cc
 $(@source_cpp_rulemk) : kind := cpp
