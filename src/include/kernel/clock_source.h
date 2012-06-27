@@ -57,6 +57,7 @@ extern const struct clock_source *clock_source_get_best(enum clock_source_proper
 extern void clock_source_init(const struct clock_source *cs);
 
 extern ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device *cd);
+extern ns_t clock_source_counter_read(struct time_event_device *ed, struct time_counter_device *cd);
 
 #define CLOCK_SOURCE(ts) \
         extern const struct clock_source * __clock_devices[]; \
