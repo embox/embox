@@ -112,7 +112,7 @@ void *hashtable_get(struct hashtable *ht, void* key) {
 	return NULL;
 }
 
-void hashtable_del(struct hashtable *ht, void *key, void *value) {
+void hashtable_del(struct hashtable *ht, void *key) {
 	size_t idx;
 	struct hashtable_element *htel;
 

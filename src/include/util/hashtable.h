@@ -77,6 +77,6 @@ extern void *hashtable_get(struct hashtable *ht, void* key);
  * @param hash_tab - hash-table from which will be deleted the element
  * @param key - key identifier of the element
  */
-extern void hashtable_del(struct hashtable *ht, void *key, void *value);
+extern void hashtable_del(struct hashtable *ht, void *key);
 
 #endif /* UTIL_HASHTABLE_H_ */
