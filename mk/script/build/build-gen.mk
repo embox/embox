@@ -322,10 +322,6 @@ source_cc_pats  := %.S %.c %.cpp %.cxx
 
 all .PHONY : $(@source_all)
 
-#m_ar :$(@source_all)
-#	@$(call cmd_notouch_stdout,test, \
-#		$(call gen_make_tsvar_list,target,objs,foo bar))
-
 $(@source_all) : module = $(basename $@)
 
 source_file = $(call get,$1,fileFullName)

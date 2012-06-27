@@ -53,7 +53,8 @@ $(info )
 
 $(info /* Module definitions. */)
 $(foreach m,$(modules),$(foreach n,$(basename $m), \
-	$(info MOD_DEF($(call fqn2id,$n), $(call fqn2id,$(basename $n)), "$n", \
+	$(info MOD_DEF($(call fqn2id,$n), $(call fqn2id,$(basename $n)), \
+		"$(subst .,,$(suffix $n))", \
 		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_help))), \
 		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_man))));)))
 $(info )
