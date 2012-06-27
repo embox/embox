@@ -38,3 +38,7 @@ module systick_timer extends embox.arch.clock {
 //	depends embox.kernel.time.clock_source
 	depends embox.kernel.time.clock_event
 }
+
+module tsc {
+	source "tsc.c"
+}

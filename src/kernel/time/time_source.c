@@ -7,7 +7,6 @@
 
 #include <util/array.h>
 #include <kernel/clock_source.h>
-#include <kernel/prom_printf.h>
 
 ARRAY_SPREAD_DEF(const struct clock_source *, __clock_devices);
 
@@ -26,8 +25,7 @@ void clock_source_init(const struct clock_source *cs) {
 }
 
 ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device *cd) {
-		volatile int old_jiffies;
-		static cycle_t old_cyrcles = 0;
+		int old_jiffies;
 		cycle_t cycles, cycles_all;
 		int cycles_per_jiff = cd->resolution /
 				ed->resolution;
@@ -38,8 +36,6 @@ ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device 
 		} while(old_jiffies != ed->jiffies);
 
 		cycles_all = cycles + old_jiffies * cycles_per_jiff;
-
-		old_cyrcles = cycles_all;
 
 		return cycles_to_ns(cd, cycles_all);
 }
