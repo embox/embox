@@ -11,9 +11,7 @@
 #include <string.h>
 #include <embox/unit.h>
 #include <kernel/task.h>
-#include <kernel/thread/sched_lock.h>
 #include <lib/list.h>
-#include <kernel/thread/api.h>
 #include "common.h"
 
 EMBOX_UNIT_INIT(tasks_init);
@@ -53,23 +51,6 @@ struct task *task_init(void *task_n_res_space) {
 
 	return task;
 
-}
-
-int task_notify_switch(struct thread *prev, struct thread *next) {
-	task_notifing_resource_hnd notify_res;
-	int res;
-
-	if (prev->task == next->task) {
-		return 0;
-	}
-
-	task_notifing_resource_foreach(notify_res) {
-		if (0 != (res = notify_res(prev, next))) {
-			return res;
-		}
-	}
-
-	return 0;
 }
 
 struct task *task_kernel_task(void) {

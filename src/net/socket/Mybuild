@@ -92,7 +92,8 @@ module socket {
 
 	source "socket.c"
 	depends core /* for sock.c */
-	depends embox.kernel.task.api
+	depends embox.kernel.task.idx_table
+	depends embox.kernel.task.errno
 	/* depends from kernel_socket.c */
 
 	source "ip_port.c"

@@ -85,6 +85,23 @@ struct task *task_self(void) {
 	return thread_self()->task;
 }
 
+int task_notify_switch(struct thread *prev, struct thread *next) {
+	task_notifing_resource_hnd notify_res;
+	int res;
+
+	if (prev->task == next->task) {
+		return 0;
+	}
+
+	task_notifing_resource_foreach(notify_res) {
+		if (0 != (res = notify_res(prev, next))) {
+			return res;
+		}
+	}
+
+	return 0;
+}
+
 static void thread_set_task(struct thread *t, struct task *tsk) {
 	t->task = tsk;
 	list_move_tail(&t->task_link, &tsk->threads);

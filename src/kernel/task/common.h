@@ -8,7 +8,8 @@
 
 #include <kernel/task.h>
 #include <util/array.h>
-#include <kernel/thread/api.h>
+
+struct thread;
 
 struct task_resource_desc {
 	void (*init)(struct task *task, void *resource_space);

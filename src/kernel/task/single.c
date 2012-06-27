@@ -20,3 +20,7 @@ struct task *task_self(void) {
 	 */
 	return task_kernel_task();
 }
+
+int task_notify_switch(struct thread *prev, struct thread *next) {
+	return 0;
+}
