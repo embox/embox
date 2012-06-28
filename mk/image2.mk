@@ -82,7 +82,7 @@ initfs_prerequisites = $(common_prereqs) $(cpio_files) \
 	$(wildcard $(USER_ROOTFS_DIR) $(USER_ROOTFS_DIR)/*)
 $(ROOTFS_IMAGE) : rel_cpio_files = \
 		$(patsubst $(abspath $(ROOTFS_DIR))/%,%,$(abspath $(cpio_files)))
-$(ROOTFS_IMAGE) : | $$(@D)/.
+$(ROOTFS_IMAGE) : | $$(@D)/. $(ROOTFS_DIR)/.
 $(ROOTFS_IMAGE) :
 	cd $(ROOTFS_DIR) \
 		&& find $(rel_cpio_files) -depth -print | cpio --quiet -H newc -o -O $(abspath $@)
