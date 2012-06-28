@@ -36,18 +36,10 @@ int __print(void (*printchar_handler)(char **str, int c),
 		char **out, const char *format, va_list args);
 
 static void display_printchar(char **str, int c) {
-	char ch = (char) c;
-	static int prev = 0;
 
 	assert(str == NULL);
 
-	if (c == '\n' && prev != '\r') {
-		char tmp = '\r';
-		write(1, &tmp, 1);
-	}
-
-	write(1, &ch, 1);
-	prev = c;
+	putchar(c);
 }
 
 int vprintf(const char *format, va_list args) {

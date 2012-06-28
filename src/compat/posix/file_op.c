@@ -159,22 +159,6 @@ int fioctl(FILE *fp, int request, ...) {
 	return desc->ops->ioctl(fp, request, args);
 }
 
-int fgetc(FILE *file) {
-	struct file_desc *desc = (struct file_desc *) file;
-	char ch;
-	if (NULL == desc) {
-		return -EBADF;
-	}
-	if (desc->has_ungetc) {
-		desc->has_ungetc = 0;
-		return desc->ungetc;
-	}
-	if (fread(&ch, 1, 1, file) == 0) {
-		ch = EOF;
-	}
-	return ch;
-}
-
 int ungetc(int ch, FILE *file) {
 	struct file_desc *desc = (struct file_desc *) file;
 	desc->ungetc = (char) ch;

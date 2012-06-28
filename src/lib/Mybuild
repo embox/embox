@@ -5,48 +5,27 @@ static module ElfLib {
 	source "elf/elf_reader.c"
 }
 
-static module LibC {
+static module LibCDiagnostic {
 	source "assert.c"
+	depends LibCStdio
+}
+
+static module LibCMisc {
 	source "crypt/crc32.c"
 	source "crypt/md5.c"
 	source "ctype/ctype.c"
-	source "malloc/malloc.c"
-	source "math/floor.c"
-	source "math/pow.c"
-	source "math/div.c"
-	source "math/ldiv.c"
-	source "readline/readline.c"
-	source "soft-fp/df3.c"
-	source "gcc/lshrdi3.c"
-	source "gcc/divdi3.c"
-	source "gcc/divsi3.c"
-	source "gcc/moddi3.c"
-	source "gcc/modsi3.c"
-	source "soft-fp/sf3.c"
-	source "soft-fp/softfloat.c"
-	source "soft-fp/softfloat-macros.c"
-	source "soft-fp/softfloat-spec.c"
-	source "gcc/udivdi3.c"
-	source "gcc/udivsi3.c"
-	source "gcc/umoddi3.c"
-	source "gcc/umodsi3.c"
-	source "gcc/muldi3.c"
-	source "stdio/fgetc.c"
-	source "stdio/getchar.c"
-	source "stdio/gets.c"
-	source "stdio/printf.c"
-	source "stdio/sprintf.c"
-	source "stdio/printf_impl.c"
-	source "stdio/printk.c"
-	source "stdio/putchar.c"
-	source "stdio/puts.c"
-	source "stdio/scanf.c"
+}
+
+static module LibCStdlib {
 	source "stdlib/bsearch.c"
 	source "stdlib/qsort.c"
 	source "stdlib/rand.c"
 	source "stdlib/strtod.c"
 	source "stdlib/strtol.c"
 	source "stdlib/strtoul.c"
+}
+
+static module LibCString {
 	source "string/memchr.c"
 	source "string/memcmp.c"
 	source "string/memmove.c"
@@ -67,8 +46,71 @@ static module LibC {
 	source "string/strspn.c"
 	source "string/strstr.c"
 	source "string/strupr.c"
+}
+
+static module LibCMath {
+	source "math/floor.c"
+	source "math/pow.c"
+	source "math/div.c"
+	source "math/ldiv.c"
+	source "soft-fp/df3.c"
+	source "soft-fp/sf3.c"
+	source "soft-fp/softfloat.c"
+	source "soft-fp/softfloat-macros.c"
+	source "soft-fp/softfloat-spec.c"
+	source "gcc/lshrdi3.c"
+	source "gcc/divdi3.c"
+	source "gcc/divsi3.c"
+	source "gcc/moddi3.c"
+	source "gcc/modsi3.c"
+	source "gcc/udivdi3.c"
+	source "gcc/udivsi3.c"
+	source "gcc/umoddi3.c"
+	source "gcc/umodsi3.c"
+	source "gcc/muldi3.c"
+}
+
+static module LibCStdio {
+	source "stdio/fgetc.c"
+	source "stdio/fputc.c"
+	source "stdio/getchar.c"
+	source "stdio/gets.c"
+	source "stdio/sprintf.c"
+	source "stdio/printf.c"
+	source "stdio/printf_impl.c"
+	source "stdio/printk.c"
+	source "stdio/puts.c"
+	source "stdio/scanf.c"
+	depends LibCFs
+	depends LibCMath
+}
+
+static module LibC {
+	source "malloc/malloc.c"
 	source "time/ctime.c"
+
+	depends LibCDiagnostic
+	depends LibCMisc
+	depends LibCStdlib
+	depends LibCString
+	depends LibCMath
+	depends	LibCStdio
+/* not here */
 	source "shell/tokenizer.c"
+	source "readline/readline.c"
 
 //	source "stacktrace.c"
+}
+
+@DefaultImpl(LibCFsNone)
+abstract module LibCFs { }
+
+static module LibCFsPosix extends LibCFs {
+	source "stdio/stdio.c"
+	source "stdio/putchar.c"
+	depends embox.compat.posix.LibPosixFs
+}
+
+static module LibCFsNone extends LibCFs {
+	source "stdio/putchar_nofile.c"
 }

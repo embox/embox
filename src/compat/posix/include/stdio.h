@@ -21,7 +21,7 @@ typedef int FILE;
 
 struct stat;
 
-extern int fputc(FILE *f, int c);
+extern int fputc(int c, FILE *f);
 extern int fgetc(FILE *f);
 
 #define getc(file) fgetc(file)

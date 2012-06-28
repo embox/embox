@@ -3,9 +3,6 @@ package embox.compat.posix
 static module LibPosix {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "exec.c",
-		"file.c",
-		"file_op.c",
-		"fs.c",
 		"fork.c",
 		"getopt.c",
 		"select.c",
@@ -16,17 +13,21 @@ static module LibPosix {
 		"dup.c"
 
 	depends embox.util.LibUtil
-	depends embox.kernel.task.api
-	depends embox.kernel.task.errno
-	depends embox.fs.core
+	depends LibPosixFs
 	depends posix_env
-	depends stdio
 }
 
-module stdio {
+static module LibPosixFs {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "stdio.c"
+	source "file.c", "fs.c"
+	source "file_op.c" // actually, this is LibC
+
+	depends embox.kernel.task.api
+	depends embox.kernel.task.idx_table
+	depends embox.fs.posix_compat
+	depends embox.kernel.task.errno
 }
+
 
 @DefaultImpl(bootstrap_posix_env)
 abstract module posix_env { }
