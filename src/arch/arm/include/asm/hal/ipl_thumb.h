@@ -19,9 +19,20 @@ static inline void ipl_init(void) {
 }
 
 static inline __ipl_t ipl_save(void) {
-	uint32_t r = 0;
+	register uint32_t r;
+	__asm__ __volatile__ (
+		"mrs %0, PRIMASK;\n\t"
+		"cpsid i \n\t"
+		: "=r"(r)
+		:
+		:);
 	return r;
 }
 
 static inline void ipl_restore(__ipl_t ipl) {
+	__asm__ __volatile__ (
+		"msr PRIMASK, %0;\n\t"
+		:
+		: "r"(ipl)
+		:);
 }
