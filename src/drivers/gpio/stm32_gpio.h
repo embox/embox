@@ -1,23 +1,21 @@
 /**
  * @file
  *
- * @brief GPIO driver for STM32 mcu that will be the base to
- * genereal gpio driver, then all mcu's specific data types and
- * defenitions will go to right place for them.
+ * @brief GPIO driver for STM32 mcu
  *
  * @author Anton Kozlov
  * @date 20.04.2012
  */
 
-#ifndef DRIVERS_GPIO_H_
-#define DRIVERS_GPIO_H_
+#ifndef STM32_GPIO_H_
+#define STM32_GPIO_H_
 
 #define GPIO_PORT_SIZE 0x400
 #define GPIO_PORT_BASE 0x40010800
 
 #define GPIO_PORT_NUM 5
 
-typedef volatile u32_t gpio_mask_t;
+typedef volatile unsigned long __gpio_mask_t;
 
 typedef volatile unsigned int stm32_reg_t;
 
@@ -37,10 +35,4 @@ struct gpio {
 #define GPIO_D ((struct gpio *) (GPIO_PORT_BASE + 3 * GPIO_PORT_SIZE))
 #define GPIO_E ((struct gpio *) (GPIO_PORT_BASE + 4 * GPIO_PORT_SIZE))
 
-extern void gpio_conf_out(struct gpio *gpio, gpio_mask_t mask);
-extern void gpio_out_set(struct gpio *gpio, gpio_mask_t mask);
-extern void gpio_conf_in_pull_up(struct gpio *gpio, gpio_mask_t mask);
-extern void gpio_conf_in_pull_down(struct gpio *gpio, gpio_mask_t mask);
-extern gpio_mask_t gpio_in_get(struct gpio *gpio, gpio_mask_t mask);
-
-#endif /* DRIVERS_GPIO_H_ */
+#endif /* STM32_GPIO_H_ */

@@ -31,6 +31,7 @@ static int stm32_gpio_init(void) {
 
 static void set_state(struct gpio *gpio, gpio_mask_t mask, int new_state) {
 	volatile unsigned int *reg = &(gpio->crl);
+	assert(gpio);
 	assert((new_state & ~(0xf)) == 0);
 	for (int lo = 0; lo < 2; lo++) {
 		unsigned int gpio_state = REG_LOAD(reg);
@@ -46,35 +47,47 @@ static void set_state(struct gpio *gpio, gpio_mask_t mask, int new_state) {
 
 }
 
-void gpio_conf_out(struct gpio *gpio, gpio_mask_t mask) {
+
+int gpio_in(struct gpio *gpio, gpio_mask_t mask, int mode) {
+	int mode_val = 4;
+	assert(gpio);
+
+	if (mode) {
+		mode_val = 8;
+
+		if (mode & GPIO_MODE_IN_PULL_UP) {
+			REG_STORE(&(gpio->bsrr), mask);
+		}
+
+		if (mode & GPIO_MODE_IN_PULL_DOWN) {
+			REG_STORE(&(gpio->brr), mask);
+		}
+	}
+
+	set_state(gpio, mask, mode_val);
+
+	return 0;
+}
+
+int gpio_out(struct gpio *gpio, gpio_mask_t mask, int mode) {
 	set_state(gpio, mask, 1);
+	return 0;
 }
 
-
-void gpio_conf_in(struct gpio *gpio, gpio_mask_t mask) {
-	set_state(gpio, mask, 4);
-}
-
-void gpio_out_set(struct gpio *gpio, gpio_mask_t mask) {
+void gpio_set(struct gpio *gpio, gpio_mask_t mask) {
+	assert(gpio);
 	assert((mask & ~((1 << 16) - 1)) == 0);
-	REG_STORE(&(gpio->odr), mask);
-}
-
-gpio_mask_t gpio_out_get(struct gpio *gpio, gpio_mask_t mask) {
-	return mask & REG_LOAD(&(gpio->idr));
-}
-
-gpio_mask_t gpio_in_get(struct gpio *gpio, gpio_mask_t mask) {
-	return mask & REG_LOAD(&(gpio->idr));
-}
-
-void gpio_conf_in_pull_up(struct gpio *gpio, gpio_mask_t mask) {
-	set_state(gpio, mask, 8);
 	REG_STORE(&(gpio->bsrr), mask);
 }
 
-void gpio_conf_in_pull_down(struct gpio *gpio, gpio_mask_t mask) {
-	set_state(gpio, mask, 8);
+void gpio_clear(struct gpio *gpio, gpio_mask_t mask) {
+	assert(gpio);
+	assert((mask & ~((1 << 16) - 1)) == 0);
 	REG_STORE(&(gpio->brr), mask);
 }
 
+
+gpio_mask_t gpio_level(struct gpio *gpio, gpio_mask_t mask) {
+	assert(gpio);
+	return mask & REG_LOAD(&(gpio->idr));
+}
