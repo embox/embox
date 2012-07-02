@@ -18,10 +18,11 @@ void clock_source_init(const struct clock_source *cs) {
 	if (cs->event_device && cs->event_device->init) {
 		cs->event_device->init();
 	}
-
+#if 0
 	if (cs->event_device && cs->event_device->init) {
 		cs->event_device->init();
 	}
+#endif
 }
 
 ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device *cd) {

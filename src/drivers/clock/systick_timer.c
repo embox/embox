@@ -56,16 +56,20 @@ static int this_config(enum device_config cfg, void *param) {
 	return 0;
 }
 
+static cycle_t this_read(void) {
+	return 0;
+}
+
 static struct time_event_device this_event = {
 	.init = this_init,
 	.jiffies = 0,
 	.config = this_config ,
-	.resolution = 10,
+	.resolution = 1000,
 };
 
 
 static struct time_counter_device this_counter = {
-	.read = NULL,
+	.read = this_read,
 	.resolution = 1000000,
 };
 
