@@ -31,12 +31,19 @@
 #define SCB_SHP_BASE ((unsigned int *) 0xe000ed18)
 #define SCB_SHP_PERIF_N 8
 
-void clock_handler(void) {
-	clock_tick_handler(SYSTICK_IRQ, NULL);
+static irq_return_t clock_handler(irq_nr_t irq_nr, void *data) {
+	clock_tick_handler(irq_nr, data);
+	return IRQ_HANDLED;
 }
 
+static char init_flag = 0;
+
 static int this_init(void) {
-	return 0;
+	if (init_flag) {
+		return 0;
+	}
+
+	return irq_attach(SYSTICK_IRQ, clock_handler, 0, NULL, "stm32 systick timer");
 }
 
 static int this_config(enum device_config cfg, void *param) {
