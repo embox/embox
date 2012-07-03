@@ -67,7 +67,7 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx | $$(@D)/.
 
 cpp_prerequisites   = $(common_prereqs)
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
-	$(CPP) -P -undef $(CPPFLAGS) -imacros $(SRCGEN_DIR)/config.lds.h \
+	$(CPP) -P -undef $(CPPFLAGS) $(flags) -imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
 initfs_cp_prerequisites = $(common_prereqs) $(src_file)
