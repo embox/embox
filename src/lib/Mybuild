@@ -73,7 +73,6 @@ static module LibCMath {
 static module LibCStdio {
 	source "stdio/fgetc.c"
 	source "stdio/fputc.c"
-	source "stdio/getchar.c"
 	source "stdio/gets.c"
 	source "stdio/sprintf.c"
 	source "stdio/printf.c"
@@ -108,9 +107,11 @@ abstract module LibCFs { }
 static module LibCFsPosix extends LibCFs {
 	source "stdio/stdio.c"
 	source "stdio/putchar.c"
+	source "stdio/getchar.c"
 	depends embox.compat.posix.LibPosixFs
 }
 
 static module LibCFsNone extends LibCFs {
+	source "stdio/getchar_nofile.c"
 	source "stdio/putchar_nofile.c"
 }
