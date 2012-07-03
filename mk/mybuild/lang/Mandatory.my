@@ -1,0 +1,4 @@
+package mybuild.lang
+
+/* Marks certain modules to be included unconditionally. */
+annotation Mandatory { }

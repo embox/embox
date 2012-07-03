@@ -1,6 +1,7 @@
 /*FIXME mybuild libarch is bad packet */
 package embox.kernel
 
+@Mandatory
 module main {
 	/* FIXME
 	 * 1.it depends from embox.prom.printf (for init.c)
