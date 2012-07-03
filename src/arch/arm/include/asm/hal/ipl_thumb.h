@@ -16,10 +16,7 @@ typedef uint32_t __ipl_t;
 
 static inline void ipl_init(void) {
 	__asm__ __volatile__ (
-		"cpsie i \n\t"
-		:
-		:
-		:);
+		"cpsie i \n\t");
 
 }
 
@@ -28,9 +25,7 @@ static inline __ipl_t ipl_save(void) {
 	__asm__ __volatile__ (
 		"mrs %0, PRIMASK;\n\t"
 		"cpsid i \n\t"
-		: "=r"(r)
-		:
-		:);
+		: "=r"(r));
 	return r;
 }
 
@@ -38,6 +33,5 @@ static inline void ipl_restore(__ipl_t ipl) {
 	__asm__ __volatile__ (
 		"msr PRIMASK, %0;\n\t"
 		:
-		: "r"(ipl)
-		:);
+		: "r"(ipl));
 }
