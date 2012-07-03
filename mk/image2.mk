@@ -111,8 +111,13 @@ $(OBJ_DIR)/%.a : | $$(@D)/.
 
 image_prerequisites = $(mk_file) \
 	$(ld_scripts) $(ld_objs) $(ld_libs)
+ifndef LD_SINGLE_T_OPTION
+$(IMAGE): ld_scripts_flag = $(ld_scripts:%=-T%)
+else
+$(IMAGE): ld_scripts_flag = -T $(ld_scripts)
+endif
 $(IMAGE): | $$(@D)/.
-	$(LD) $(LDFLAGS) $(call fmt_line,$(ld_scripts:%=-T%)) \
+	$(LD) $(LDFLAGS) $(call fmt_line,$(ld_scripts_flag)) \
 	$(call fmt_line,$(ld_objs)) \
 	$(call fmt_line,$(ld_libs)) \
 	-Map $@.map \
