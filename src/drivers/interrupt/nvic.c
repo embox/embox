@@ -117,4 +117,5 @@ void interrupt_handle(void) {
 	critical_leave(CRITICAL_IRQ_HANDLER);
 
 	critical_dispatch_pending();
+
 }

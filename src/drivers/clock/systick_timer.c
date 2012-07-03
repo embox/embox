@@ -13,6 +13,13 @@
 #include <types.h>
 #include <hal/interrupt.h>
 
+#include <embox/unit.h>
+
+#include <module/embox/arch/system.h>
+
+#define CORE_FREQ OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
+#define CLOCK_DIVIDER 8
+
 #define SYSTICK_IRQ 15
 
 #define SYSTICK_BASE 0xe000e010
@@ -47,11 +54,11 @@ static int this_init(void) {
 }
 
 static int this_config(enum device_config cfg, void *param) {
-	int ticks_per_10ms = REG_LOAD(SYSTICK_CALIB) & 0xffffff;
+	int reload = CORE_FREQ / (CLOCK_DIVIDER * 1000);
 
 	REG_STORE(SYSTICK_CTRL, 0);
 
-	REG_STORE(SYSTICK_RELOAD, ticks_per_10ms /10 - 1);
+	REG_STORE(SYSTICK_RELOAD, reload - 1);
 
 	REG_STORE(SYSTICK_VAL, 0);
 
@@ -77,7 +84,7 @@ static struct time_event_device this_event = {
 
 static struct time_counter_device this_counter = {
 	.read = this_read,
-	.resolution = 1000000,
+	.resolution = CORE_FREQ / CLOCK_DIVIDER,
 };
 
 static struct clock_source this_clock_source = {
