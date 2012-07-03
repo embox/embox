@@ -10,7 +10,6 @@
 
 #include <hal/arch.h>
 #include <hal/ipl.h>
-//#include <kernel/timer.h>
 #include <kernel/diag.h>
 #include <embox/runlevel.h>
 #include <kernel/prom_printf.h>

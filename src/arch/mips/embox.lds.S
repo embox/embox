@@ -1,5 +1,6 @@
 
 #include <asm-generic/embox.lds.h>
+#include <framework/mod/options.h>
 
 OUTPUT_FORMAT("elf32-bigmips", "elf32-bigmips", "elf32-littlemips")
 
@@ -65,7 +66,7 @@ SECTIONS {
 	.stack (NOLOAD): {
 		ALIGNMENT();
 		_stack_bottom = .;
-		. += CONFIG_STACK_SIZE;
+		. += OPTION_GET(NUMBER,stack_size);
 		ALIGNMENT();
 		_stack_top = .;
 		_stack = _stack_top;

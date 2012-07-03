@@ -19,6 +19,7 @@
 #define FRAMEWORK_MOD_SELF_H_
 
 #include <framework/mod/ops.h>
+#include <framework/mod/options.h>
 
 #include __impl_x(framework/mod/self_impl.h)
 
