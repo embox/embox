@@ -25,7 +25,7 @@ module no_diag extends diag_api {
 	source "no_diag.c"
 }
 
-module 8250 extends diag_api {
+module i8250 extends diag_api {
 	option number baud_rate
 	source "8250.c"
 }
