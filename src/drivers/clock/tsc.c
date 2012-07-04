@@ -9,21 +9,13 @@
 #include <types.h>
 #include <errno.h>
 #include <util/array.h>
+#include <asm/regs.h>
 
 #include <kernel/clock_source.h>
 #include <kernel/clock_event.h>
 #include <kernel/time/ktime.h>
 
-/* configurable */
-#define TSC_HZ 1000000000L
-
 static int tsc_init(void);
-
-static inline unsigned long long rdtsc(void) {
-  unsigned hi, lo;
-  __asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-  return ( (unsigned long long)lo) | ( ((unsigned long long)hi) << 32 );
-}
 
 static struct time_counter_device tsc = {
 	.init = tsc_init,

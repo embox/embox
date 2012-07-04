@@ -39,7 +39,9 @@ module systick_timer extends embox.arch.clock {
 	depends embox.kernel.time.clock_event
 }
 
+/* TOOD Can be used with pit. That means tsc not implements embox.arch.clock */
 module tsc {
+	option number TSC_HZ = 1000000000
 	source "tsc.c"
 }
 
