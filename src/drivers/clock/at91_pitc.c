@@ -27,15 +27,7 @@ irq_return_t clock_handler(int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static char init_flag = 0;
-
 static int at91_pitc_init(void) {
-	if (init_flag) {
-		return 0;
-	}
-
-	init_flag = 1;
-
 	REG_STORE(AT91C_PMC_PCER, AT91C_ID_SYS);
 	return irq_attach((irq_nr_t) AT91C_ID_SYS,
 		(irq_handler_t) &clock_handler, 0, NULL, "at91 PIT");
@@ -44,7 +36,6 @@ static int at91_pitc_init(void) {
 static int at91_pitc_config(struct time_dev_conf * conf);
 
 static struct time_event_device at91_pitc_event = {
-	.init = at91_pitc_init,
 	.jiffies = 0,
 	.config = at91_pitc_config,
 	.resolution = AT91_PIT_EVENT_RES,
@@ -75,4 +66,5 @@ static int at91_pitc_config(struct time_dev_conf * conf) {
 }
 
 CLOCK_SOURCE(&at91_pitc_clock_source);
+EMBOX_UNIT_INIT(at91_pitc_init);
 

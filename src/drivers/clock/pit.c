@@ -16,6 +16,7 @@
 #include <kernel/panic.h>
 #include <util/array.h>
 #include <stdio.h>
+#include <embox/unit.h>
 
 #include <kernel/clock_source.h>
 #include <kernel/clock_event.h>
@@ -106,7 +107,6 @@ static irq_return_t clock_handler(int irq_nr, void *dev_id) {
 }
 
 static struct time_event_device pit_event_device = {
-	.init = pit_clock_init,
 	.jiffies = 0,
 	.config = pit_clock_setup,
 	.resolution = PIT_HZ
@@ -125,19 +125,14 @@ static struct clock_source pit_clock_source = {
 };
 
 CLOCK_SOURCE(&pit_clock_source);
-
-static int inited = 0;
+EMBOX_UNIT_INIT(pit_clock_init);
 
 static int pit_clock_init(void) {
-	if	(!inited) {
-		pit_clock_setup(NULL);
+	pit_clock_setup(NULL);
 
-		if (ENOERR != irq_attach((irq_nr_t) IRQ0,
-			(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
-			panic("pit timer irq_attach failed");
-		}
-
-		inited = 1;
+	if (ENOERR != irq_attach((irq_nr_t) IRQ0,
+		(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
+		panic("pit timer irq_attach failed");
 	}
 
 	return ENOERR;

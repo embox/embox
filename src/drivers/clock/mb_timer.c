@@ -88,18 +88,10 @@ static cycle_t mb_cycle_read(void) {
 
 }
 
-static int inited = 0;
-
 static int mb_clock_init(void) {
-	if (inited) {
-		return 0;
-	}
-
 	if (0 != irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, NULL, "mbtimer")) {
 		panic("mbtimer irq_attach failed");
 	}
-
-	inited = 1;
 	return 0;
 }
 
@@ -117,7 +109,6 @@ static int mb_clock_setup(struct time_dev_conf * conf) {
 
 static struct time_event_device mb_ed = {
 	.config = mb_clock_setup,
-	.init = mb_clock_init,
 	.resolution = 1000,
 	.name = "mb_timer"
 };
@@ -135,3 +126,4 @@ static struct clock_source mb_cs = {
 };
 
 CLOCK_SOURCE(&mb_cs);
+EMBOX_UNIT_INIT(mb_clock_init);

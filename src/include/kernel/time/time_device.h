@@ -35,7 +35,6 @@ struct time_dev_conf {
  * @name - name of device
  */
 struct time_event_device {
-	int (*init)(void);
 	void (*event_handler)(void);
 	int (*config)(struct time_dev_conf *);
 	uint32_t resolution;
@@ -52,7 +51,6 @@ struct time_event_device {
  * @param read - return current number of cycles.
  */
 struct time_counter_device {
-	int (*init)(void);
 	uint32_t resolution;
 	cycle_t (*read)(void);
 };

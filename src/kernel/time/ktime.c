@@ -36,7 +36,6 @@ static int module_init(void) {
 	cs = clock_source_get_best(CYCLES);
 	assert(cs);
 
-	clock_source_init(cs);
 	itimer_init(&sys_timecounter, cs, 0);
 
 	return 0;

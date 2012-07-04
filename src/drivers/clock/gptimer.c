@@ -140,7 +140,6 @@ static cycle_t gptimer_read(void) {
 }
 
 static struct time_event_device gptimer_ed = {
-	.init = gptimer_init,
 	.jiffies = 0,
 	.config = gptimer_config ,
 	.resolution = TIMER0_RELOAD + 1,
@@ -172,6 +171,7 @@ static struct clock_source gptimer_cs = {
 };
 
 CLOCK_SOURCE(&gptimer_cs);
+EMBOX_UNIT_INIT(gptimer_init);
 
 #ifdef DRIVER_AMBAPP
 static int dev_regs_init(irq_nr_t *irq_nr) {

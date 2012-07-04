@@ -15,12 +15,13 @@
 #include <kernel/clock_event.h>
 #include <kernel/time/ktime.h>
 
+#include <embox/unit.h>
+
 static int tsc_init(void);
 
 static unsigned int cpu_hz = 1000000000L;
 
 static struct time_counter_device tsc = {
-	.init = tsc_init,
 	.read = rdtsc
 };
 
@@ -31,10 +32,12 @@ static struct clock_source tsc_clock_source = {
 	.read = clock_source_counter_read /* attach default read function */
 };
 
-CLOCK_SOURCE(&tsc_clock_source);
-
 static int tsc_init(void) {
 	/* TODO get CPU hz */
 	tsc.resolution = cpu_hz;
 	return ENOERR;
 }
+
+CLOCK_SOURCE(&tsc_clock_source);
+EMBOX_UNIT_INIT(tsc_init);
+

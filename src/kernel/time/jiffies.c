@@ -63,7 +63,6 @@ static int module_init(void) {
 	jiffies.event_device = cs->event_device;
 
 	/* set periodic mode */
-	clock_source_init(&jiffies);
 	cs->event_device->config(&jiffies_conf);
 
 	softirq_install(SOFTIRQ_NR_TIMER, soft_clock_handler,NULL);

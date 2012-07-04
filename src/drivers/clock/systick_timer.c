@@ -43,13 +43,7 @@ static irq_return_t clock_handler(irq_nr_t irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static char init_flag = 0;
-
 static int this_init(void) {
-	if (init_flag) {
-		return 0;
-	}
-
 	return irq_attach(SYSTICK_IRQ, clock_handler, 0, NULL, "stm32 systick timer");
 }
 
@@ -75,7 +69,6 @@ static cycle_t this_read(void) {
 }
 
 static struct time_event_device this_event = {
-	.init = this_init,
 	.jiffies = 0,
 	.config = this_config ,
 	.resolution = 1000,
@@ -95,4 +88,4 @@ static struct clock_source this_clock_source = {
 };
 
 CLOCK_SOURCE(&this_clock_source);
-
+EMBOX_UNIT_INIT(this_init);

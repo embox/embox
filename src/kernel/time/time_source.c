@@ -14,15 +14,6 @@ uint32_t clock_source_clock_to_sec(struct clock_source *cs, uint32_t ticks) {
 	return ticks / cs->event_device->resolution;
 }
 
-void clock_source_init(const struct clock_source *cs) {
-	if (cs->event_device && cs->event_device->init) {
-		cs->event_device->init();
-	}
-	if (cs->counter_device && cs->counter_device->init) {
-		cs->counter_device->init();
-	}
-}
-
 ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device *cd) {
 		int old_jiffies;
 		cycle_t cycles, cycles_all;
