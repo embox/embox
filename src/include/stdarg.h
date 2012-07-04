@@ -42,6 +42,10 @@ Boston, MA 02110-1301, USA.  */
 #ifndef STDARG_H_
 #define STDARG_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef __builtin_va_list va_list;
 
 #define va_start(v,l) __builtin_va_start(v,l)
@@ -49,4 +53,9 @@ typedef __builtin_va_list va_list;
 #define va_arg(v,l)   __builtin_va_arg(v,l)
 #define va_copy(d,s)  __builtin_va_copy(d,s)
 
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #endif /* STDARG_H_ */
+

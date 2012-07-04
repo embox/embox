@@ -17,7 +17,8 @@ void * operator new(std::size_t sz) {
 }
 
 void * operator new[](std::size_t sz) {
-	return ::operator new(sz);
+//	return ::operator new(sz);
+	return std::malloc(sz);
 }
 
 void operator delete(void* ptr) {
@@ -25,6 +26,7 @@ void operator delete(void* ptr) {
 }
 
 void operator delete[](void* ptr) {
-	return ::operator delete(ptr);
+//	return ::operator delete(ptr);
+	return std::free(ptr);
 }
 

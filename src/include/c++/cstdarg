@@ -1,0 +1,18 @@
+/**
+ * @file
+ * @brief C++ forwarding header
+ * @date 04.06.12
+ * @author Ilia Vaprol
+ */
+
+#ifndef CSTDARG_
+#define CSTDARG_
+
+#include <stdarg.h>
+
+namespace std {
+	using ::va_list;
+} // namespace std
+
+#endif // CSTDARG_
+

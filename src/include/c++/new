@@ -9,9 +9,7 @@
 #ifndef NEW_
 #define NEW_
 
-namespace std {
-	typedef __SIZE_TYPE__ size_t;
-}
+#include <cstddef>
 
 extern "C++" {
 void* operator new(std::size_t);

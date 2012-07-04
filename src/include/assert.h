@@ -11,6 +11,10 @@
 #ifndef ASSERT_H_
 #define ASSERT_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include __impl_x(lib/assert_impl.h)
 
 /**
@@ -46,4 +50,9 @@ extern void assert(int condition, ...);
 	(void)__assert;			\
 	} while (0)
 
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #endif /* ASSERT_H_ */
+

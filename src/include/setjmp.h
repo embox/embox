@@ -12,6 +12,10 @@
 
 #include <asm/setjmp.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * An array type suitable for holding the information needed to restore a
  * calling environment.
@@ -47,4 +51,9 @@ extern int setjmp(jmp_buf env);
  */
 extern void longjmp(jmp_buf env, int value) __attribute__ ((noreturn));
 
+#ifdef __cplusplus
+} // extern "C"
+#endif
+
 #endif /* SETJMP_H_ */
+
