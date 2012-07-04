@@ -13,7 +13,7 @@ ARRAY_SPREAD_DEF(const struct clock_source *, __clock_sources);
 uint32_t clock_source_clock_to_sec(struct clock_source *cs, uint32_t ticks) {
 	return ticks / cs->event_device->resolution;
 }
-
+extern clock_t clock_sys_ticks(void);
 ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device *cd) {
 		int old_jiffies;
 		cycle_t cycles, cycles_all;
@@ -21,9 +21,9 @@ ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device 
 				ed->resolution;
 
 		do {
-			old_jiffies = ed->jiffies;
+			old_jiffies = clock_sys_ticks();
 			cycles = cd->read();
-		} while(old_jiffies != ed->jiffies);
+		} while(old_jiffies != clock_sys_ticks());
 
 		cycles_all = cycles + old_jiffies * cycles_per_jiff;
 
