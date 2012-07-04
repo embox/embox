@@ -83,7 +83,7 @@ TEST_CASE("Write file") {
 	test_assert(0 <=  (file = open(FS_FILE1, O_WRONLY)));
 	test_assert_zero(lseek(file, 0, SEEK_END));
 	test_assert(0 < write(file, FS_TESTDATA, strlen(FS_TESTDATA)));
-	close(file);
+	test_assert_zero(close(file));
 }
 
 #define FS_FILE2  "/test/1/2/3/2.txt"
@@ -105,8 +105,8 @@ TEST_CASE("Copy file") {
 		test_assert(0 < write (dst_file, buf, bytesread));
 	}
 
-	close(src_file);
-	close(dst_file);
+	test_assert_zero(close(src_file));
+	test_assert_zero(close(dst_file));
 }
 
 TEST_CASE("Read file") {
@@ -119,7 +119,7 @@ TEST_CASE("Read file") {
 	test_assert(0 <= read(file, buf, CONFIG_PAGE_SIZE));
 	test_assert_zero(strcmp(FS_TESTDATA, buf));
 
-	close(file);
+	test_assert_zero(close(file));
 }
 
 TEST_CASE("Delete file") {
