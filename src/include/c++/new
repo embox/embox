@@ -1,0 +1,24 @@
+/**
+ * @file
+ * @brief Dynamic memory management header
+ * @date 25.06.12
+ * @author Vladimir Sokolov
+ * @author Ilia Vaprol
+ */
+
+#ifndef NEW_
+#define NEW_
+
+namespace std {
+	typedef __SIZE_TYPE__ size_t;
+}
+
+extern "C++" {
+void* operator new(std::size_t);
+void* operator new[](std::size_t);
+void operator delete(void*);
+void operator delete[](void*);
+} // extern "C++"
+
+#endif // NEW_
+

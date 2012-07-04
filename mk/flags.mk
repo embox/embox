@@ -61,6 +61,7 @@ override CXXFLAGS += -Wformat -Wformat-nonliteral
 #	C++ has build-in type bool
 override CXXFLAGS += -DSTDBOOL_H_
 override CXXFLAGS += $(cxxflags)
+override CXXFLAGS += -I$(SRC_DIR)/include/c++
 
 # Compiler flags
 cflags := $(CFLAGS)

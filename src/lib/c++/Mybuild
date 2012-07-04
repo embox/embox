@@ -1,0 +1,8 @@
+package embox.lib
+
+static module LibCXX {
+	source "new.cpp"
+
+	depends embox.lib.LibC
+}
+
