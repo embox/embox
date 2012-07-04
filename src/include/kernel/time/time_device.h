@@ -11,16 +11,10 @@
 #include <stdint.h>
 #include <kernel/time/time_types.h>
 
-enum device_config {
-	EVENT_ONESHOT = 1,
-	EVENT_PERIODIC = 0
-};
-
-
 struct time_dev_conf {
 	enum {
-		TIMER_PERIOD,
-		TIMER_ONESHOOT,
+		HW_TIMER_PERIOD,
+		HW_TIMER_ONESHOOT,
 	} period_type;
 	int counter_period;
 	int event_period;
@@ -43,7 +37,7 @@ struct time_dev_conf {
 struct time_event_device {
 	int (*init)(void);
 	void (*event_handler)(void);
-	int (*config)(enum device_config conf, void *param);
+	int (*config)(struct time_dev_conf *);
 	uint32_t resolution;
 	uint32_t jiffies;
 	const char *name;

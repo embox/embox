@@ -44,6 +44,10 @@ uint32_t clock_sys_sec(void) {
 	return clock_source_clock_to_sec(&jiffies, clock_sys_ticks());
 }
 
+struct time_dev_conf jiffies_conf = {
+	HW_TIMER_PERIOD
+};
+
 /**
  * Initialization of the time subsystem.
  *
@@ -60,7 +64,7 @@ static int module_init(void) {
 
 	/* set periodic mode */
 	clock_source_init(&jiffies);
-	cs->event_device->config(EVENT_PERIODIC, NULL);
+	cs->event_device->config(&jiffies_conf);
 
 	softirq_install(SOFTIRQ_NR_TIMER, soft_clock_handler,NULL);
 

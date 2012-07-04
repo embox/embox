@@ -35,10 +35,10 @@ static int measured_loop(int cycles_loop) {
 
 static int run(int argc, char **argv) {
 	cs = clock_source_get_best(CYCLES);
-	//measured_loop(10000);
+
 	for (int i = 0; i < 100; i++) {
 		measured_loop(1000);
 	}
-	//measured_loop(100);
+
 	return ENOERR;
 }

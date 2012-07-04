@@ -25,7 +25,7 @@
 #define IRQ0               0x0
 
 #define PIT_HZ 1000
-static int pit_clock_setup(enum device_config conf, void *param);
+static int pit_clock_setup(struct time_dev_conf * conf);
 static int pit_clock_init(void);
 
 static struct clock_source pit_clock_source;
@@ -130,7 +130,7 @@ static int inited = 0;
 
 static int pit_clock_init(void) {
 	if	(!inited) {
-		pit_clock_setup(PIT_RATEGEN, NULL);
+		pit_clock_setup(NULL);
 
 		if (ENOERR != irq_attach((irq_nr_t) IRQ0,
 			(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
@@ -143,7 +143,7 @@ static int pit_clock_init(void) {
 	return ENOERR;
 }
 
-static int pit_clock_setup(enum device_config conf, void *param) {
+static int pit_clock_setup(struct time_dev_conf * conf) {
 	uint32_t divisor = (INPUT_CLOCK + PIT_HZ / 2) /PIT_HZ;
 
 	pit_clock_source.flags = 1;

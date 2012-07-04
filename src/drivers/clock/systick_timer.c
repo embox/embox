@@ -53,7 +53,7 @@ static int this_init(void) {
 	return irq_attach(SYSTICK_IRQ, clock_handler, 0, NULL, "stm32 systick timer");
 }
 
-static int this_config(enum device_config cfg, void *param) {
+static int this_config(struct time_dev_conf * conf) {
 	int reload = CORE_FREQ / (CLOCK_DIVIDER * 1000);
 
 	REG_STORE(SYSTICK_CTRL, 0);
