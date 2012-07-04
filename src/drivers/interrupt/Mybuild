@@ -31,6 +31,10 @@ module stm_nvic extends embox.arch.interrupt {
 	source "nvic.c", "nvic.h"
 }
 
+module mips_intc extends embox.arch.interrupt {
+	source "mips_intc.c", "mips_intc.h"
+}
+
 module no_interrupts extends embox.arch.interrupt {
 	source "no_interrupts.h"
 }

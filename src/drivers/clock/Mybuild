@@ -42,3 +42,7 @@ module systick_timer extends embox.arch.clock {
 module tsc {
 	source "tsc.c"
 }
+
+module mips_clk extends embox.arch.clock {
+	source "mips_clk.c"
+}
