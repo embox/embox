@@ -17,10 +17,11 @@
 
 static int tsc_init(void);
 
+static unsigned int cpu_hz = 1000000000L;
+
 static struct time_counter_device tsc = {
 	.init = tsc_init,
-	.read = rdtsc,
-	.resolution = TSC_HZ
+	.read = rdtsc
 };
 
 static struct clock_source tsc_clock_source = {
@@ -34,6 +35,6 @@ CLOCK_SOURCE(&tsc_clock_source);
 
 static int tsc_init(void) {
 	/* TODO get CPU hz */
-	tsc.resolution = TSC_HZ;
+	tsc.resolution = cpu_hz;
 	return ENOERR;
 }

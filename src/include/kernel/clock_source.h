@@ -60,8 +60,8 @@ extern ns_t clock_source_read(struct time_event_device *ed, struct time_counter_
 extern ns_t clock_source_counter_read(struct time_event_device *ed, struct time_counter_device *cd);
 
 #define CLOCK_SOURCE(ts) \
-        extern const struct clock_source * __clock_devices[]; \
-        ARRAY_SPREAD_ADD(__clock_devices, ts);
+        extern const struct clock_source * __clock_sources[]; \
+        ARRAY_SPREAD_ADD(__clock_sources, ts);
 
 
 #if 0
