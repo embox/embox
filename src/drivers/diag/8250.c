@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief diag interface for serial port
+ * @brief diag interface for 8250/16550-type serial ports
  *
  * @date 08.09.11
  * @author Anton Kozlov

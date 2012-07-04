@@ -25,10 +25,9 @@ module no_diag extends diag_api {
 	source "no_diag.c"
 }
 
-module serial_port extends diag_api {
+module 8250 extends diag_api {
 	option number baud_rate
-
-	source "serial_port.c"
+	source "8250.c"
 }
 
 module vga extends diag_api {
