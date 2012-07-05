@@ -1,0 +1,38 @@
+/**
+ * @file
+ * @brief C++ forwarding header
+ * @date 05.07.12
+ * @author Ilia Vaprol
+ */
+
+#ifndef CSTDLIB_
+#define CSTDLIB_
+
+#include <stdlib.h>
+
+namespace std {
+	using ::atof;
+	using ::atoi;
+	using ::atol;
+	using ::strtod;
+	using ::strtol;
+	using ::strtoul;
+	using ::rand;
+	using ::srand;
+	using ::calloc;
+	using ::free;
+	using ::malloc;
+	using ::realloc;
+	using ::bsearch;
+	using ::qsort;
+//	using ::abs;
+	using ::div;
+//	using ::labs;
+	using ::ldiv;
+	using ::div_t;
+	using ::ldiv_t;
+	using ::size_t;
+} // namespace std
+
+#endif // CSTDLIB_
+

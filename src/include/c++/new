@@ -9,7 +9,7 @@
 #ifndef NEW_
 #define NEW_
 
-#include <cstddef>
+#include <cstdlib>
 
 extern "C++" {
 void* operator new(std::size_t);

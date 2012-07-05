@@ -7,11 +7,6 @@
 
 #include <new>
 
-namespace std {
-	extern "C" void * malloc(std::size_t);
-	extern "C" void free(void *);
-}
-
 void * operator new(std::size_t sz) {
 	return std::malloc(sz);
 }

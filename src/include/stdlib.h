@@ -17,6 +17,10 @@
 #include <stddef.h>
 #include <sys/wait.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct ldiv{
    long int quot;
    long int rem;
@@ -103,5 +107,9 @@ extern long long atoq(const char *nptr);
 extern double strtod(const char *nptr, char **endptr);
 extern float strtof(const char *nptr, char **endptr);
 extern long double strtold(const char *nptr, char **endptr);
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif /* STDLIB_H_ */
