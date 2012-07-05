@@ -36,7 +36,6 @@ static int at91_pitc_init(void) {
 static int at91_pitc_config(struct time_dev_conf * conf);
 
 static struct time_event_device at91_pitc_event = {
-	.jiffies = 0,
 	.config = at91_pitc_config,
 	.resolution = AT91_PIT_EVENT_RES,
 };

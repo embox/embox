@@ -38,7 +38,6 @@ struct time_event_device {
 	void (*event_handler)(void);
 	int (*config)(struct time_dev_conf *);
 	uint32_t resolution;
-	uint32_t jiffies;
 	const char *name;
 };
 

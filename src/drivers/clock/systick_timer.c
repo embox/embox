@@ -69,7 +69,6 @@ static cycle_t this_read(void) {
 }
 
 static struct time_event_device this_event = {
-	.jiffies = 0,
 	.config = this_config ,
 	.resolution = 1000,
 };

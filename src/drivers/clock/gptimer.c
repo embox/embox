@@ -140,7 +140,6 @@ static cycle_t gptimer_read(void) {
 }
 
 static struct time_event_device gptimer_ed = {
-	.jiffies = 0,
 	.config = gptimer_config ,
 	.resolution = TIMER0_RELOAD + 1,
 };

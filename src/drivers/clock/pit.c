@@ -101,13 +101,11 @@ static cycle_t i8253_read(void) {
 }
 
 static irq_return_t clock_handler(int irq_nr, void *dev_id) {
-		pit_event_device.jiffies++;
         clock_tick_handler(irq_nr, dev_id);
         return IRQ_HANDLED;
 }
 
 static struct time_event_device pit_event_device = {
-	.jiffies = 0,
 	.config = pit_clock_setup,
 	.resolution = PIT_HZ
 };
