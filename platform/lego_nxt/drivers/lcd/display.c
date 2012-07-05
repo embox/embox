@@ -7,7 +7,7 @@
  */
 
 #include <hal/reg.h>
-#include <util/math.h>
+#include <math.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/nxt/lcd.h>
 #include <string.h>

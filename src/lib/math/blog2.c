@@ -7,7 +7,7 @@
  * @date    20.06.2012
  */
 
-#include <util/math.h>
+#include <math.h>
 
 int blog2(int val) {
 	static unsigned long log2_magic = 73743071;

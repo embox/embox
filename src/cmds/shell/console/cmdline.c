@@ -7,7 +7,7 @@
  */
 
 #include "cmdline.h"
-#include <util/math.h>
+#include <math.h>
 #include <string.h>
 #include <util/array.h>
 

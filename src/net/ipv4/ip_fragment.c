@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <string.h>
 #include <kernel/timer.h>
-#include <util/math.h>
+#include <math.h>
 #include <net/icmp.h>
 #include <net/ip.h>
 #include <errno.h>

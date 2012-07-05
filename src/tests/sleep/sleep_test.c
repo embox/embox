@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 #include <unistd.h>
-#include <util/math.h>
+#include <stdlib.h>
 #include <time.h>
 #include <kernel/thread/api.h>
 

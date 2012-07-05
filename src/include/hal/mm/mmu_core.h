@@ -11,7 +11,7 @@
 
 #include <hal/mm/mmu_types.h>
 #include <asm/hal/mm/mmu_core.h>
-#include <util/math.h>
+#include <math.h>
 
 /** Allows caching for this page*/
 #define MMU_PAGE_CACHEABLE    __MMU_PAGE_CACHEABLE

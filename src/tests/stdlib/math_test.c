@@ -8,7 +8,7 @@
  */
 
 #include <embox/test.h>
-#include <util/math.h>
+#include <math.h>
 
 
 EMBOX_TEST_SUITE("math library");

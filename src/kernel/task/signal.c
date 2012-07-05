@@ -6,7 +6,7 @@
  * @date    20.06.2012
  */
 
-#include <util/math.h>
+#include <math.h>
 #include <kernel/task/task_table.h>
 #include <kernel/task/signal.h>
 #include "common.h"

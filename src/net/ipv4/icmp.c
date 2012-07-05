@@ -13,8 +13,7 @@
  */
 #include <errno.h>
 #include <assert.h>
-
-#include <util/math.h>
+#include <math.h>
 
 #include <net/inetdevice.h>
 #include <net/icmp.h>

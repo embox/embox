@@ -26,7 +26,7 @@
 #include <string.h>
 
 #include <mem/misc/pool.h>
-#include <util/math.h>
+#include <math.h>
 #include <util/member.h>
 #include <kernel/critical.h>
 #include <kernel/thread/api.h>

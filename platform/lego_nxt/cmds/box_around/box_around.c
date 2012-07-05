@@ -12,7 +12,8 @@
 #include <unistd.h>
 #include <drivers/nxt_buttons.h>
 #include <drivers/nxt_sonar_sensor.h>
-#include <util/math.h>
+#include <stdlib.h>
+
 
 #include <drivers/nxt_motor.h>
 

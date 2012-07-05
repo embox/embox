@@ -1,7 +1,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <util/math.h>
+#include <math.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>

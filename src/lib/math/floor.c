@@ -6,7 +6,7 @@
  * @author Anton Bondarev
  */
 
-#include <util/math.h>
+#include <math.h>
 
 double floor(double x) {
 	return 0;

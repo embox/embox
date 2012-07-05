@@ -21,7 +21,7 @@
 #include <kernel/thread/api.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sched.h>
-#include <util/math.h>
+#include <math.h>
 
 static int trylock_sched_locked(struct mutex *m, struct thread *current);
 

@@ -6,7 +6,7 @@
  * @author Nikolay Korotkiy
  */
 
-#include <util/math.h>
+#include <math.h>
 
 double pow(double x, double y) {
 	return 0;

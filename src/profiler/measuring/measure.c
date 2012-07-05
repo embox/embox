@@ -9,7 +9,7 @@
 #include <types.h>
 #include <hal/measure_unit.h>
 #include <hal/interrupt.h>
-#include <util/math.h>
+#include <math.h>
 #include <profiler/measuring/measure.h>
 #include <time.h>
 #include <embox/unit.h>

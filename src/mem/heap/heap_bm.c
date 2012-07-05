@@ -9,7 +9,7 @@
 #include <types.h>
 #include <mem/page.h>
 #include <string.h>
-#include <util/math.h>
+#include <math.h>
 #include <embox/unit.h>
 
 #include <stdlib.h>
