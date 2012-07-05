@@ -17,10 +17,6 @@
 #include <stddef.h>
 #include <sys/wait.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct ldiv {
    long int quot;
    long int rem;
@@ -30,6 +26,8 @@ typedef struct div {
    int quot;
    int rem;
 } div_t;
+
+__BEGIN_DECLS
 
 /**
  * Converts the initial part of the string in @a nptr to a long integer value
@@ -120,8 +118,7 @@ extern long double strtold(const char *nptr, char **endptr);
 static inline int abs(int x) { return x < 0 ? -x : x; } // TODO move from here
 static inline long labs(long x) { return x < 0 ? -x : x; }
 
-#ifdef __cplusplus
-} // extern "C"
-#endif
+__END_DECLS
 
 #endif /* STDLIB_H_ */
+

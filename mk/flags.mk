@@ -58,10 +58,12 @@ override CXXFLAGS += -fno-strict-aliasing -fno-common
 override CXXFLAGS += -Wall -Werror
 override CXXFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 override CXXFLAGS += -Wformat -Wformat-nonliteral
+override CXXFLAGS += -I$(SRC_DIR)/include/c++
+override CXXFLAGS += -D"__BEGIN_DECLS=extern \"C\" {"
+override CXXFLAGS += -D"__END_DECLS=}"
 #	C++ has build-in type bool
 override CXXFLAGS += -DSTDBOOL_H_
 override CXXFLAGS += $(cxxflags)
-override CXXFLAGS += -I$(SRC_DIR)/include/c++
 
 # Compiler flags
 cflags := $(CFLAGS)
@@ -72,6 +74,8 @@ override CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
 override CFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 override CFLAGS += -Wformat -Wformat-nonliteral -Wno-format-zero-length
 override CFLAGS += -pipe
+override CFLAGS += -D"__BEGIN_DECLS="
+override CFLAGS += -D"__END_DECLS="
 override CFLAGS += $(cflags)
 
 # Linker flags

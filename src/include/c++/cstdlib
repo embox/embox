@@ -25,9 +25,9 @@ namespace std {
 	using ::realloc;
 	using ::bsearch;
 	using ::qsort;
-//	using ::abs;
+	using ::abs;
 	using ::div;
-//	using ::labs;
+	using ::labs;
 	using ::ldiv;
 	using ::div_t;
 	using ::ldiv_t;

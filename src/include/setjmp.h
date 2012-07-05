@@ -12,9 +12,7 @@
 
 #include <asm/setjmp.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+__BEGIN_DECLS
 
 /**
  * An array type suitable for holding the information needed to restore a
@@ -51,9 +49,7 @@ extern int setjmp(jmp_buf env);
  */
 extern void longjmp(jmp_buf env, int value) __attribute__ ((noreturn));
 
-#ifdef __cplusplus
-} // extern "C"
-#endif
+__END_DECLS
 
 #endif /* SETJMP_H_ */
 

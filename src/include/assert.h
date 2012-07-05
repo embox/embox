@@ -11,10 +11,6 @@
 #ifndef ASSERT_H_
 #define ASSERT_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include __impl_x(lib/assert_impl.h)
 
 /**
@@ -36,9 +32,15 @@ extern "C" {
 /* Hide assert internals from CDT macro expansion and code formatter. */
 #ifdef __CDT_PARSER__
 # undef assert
+
+__BEGIN_DECLS
+
 /* Actually assert is a macro, but it is hidden from Eclipse CDT macro
  * expansion. Check assert_impl.h for the details. */
 extern void assert(int condition, ...);
+
+__END_DECLS
+
 #endif /* __CDT_PARSER__ */
 
 /* It's an ability to perform check like ususal assert() does, but in compile time
@@ -49,10 +51,6 @@ extern void assert(int condition, ...);
 	int __assert[!!(cond) - 1];	\
 	(void)__assert;			\
 	} while (0)
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
 
 #endif /* ASSERT_H_ */
 

@@ -11,10 +11,6 @@
 #ifndef STDDEF_H_
 #define STDDEF_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <asm/types.h>
 
 #if __GNUC__ < 4 || defined(__CDT_PARSER__)
@@ -38,10 +34,6 @@ typedef __size_t size_t;
 #define __ptrdiff_t_defined
 typedef __ptrdiff_t ptrdiff_t;
 #endif/*__ptrdiff_t_defined */
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
 
 #endif /* STDDEF_H_ */
 

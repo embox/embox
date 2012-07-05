@@ -10,10 +10,6 @@
 #ifndef ERRNO_H_
 #define ERRNO_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <posix_errno.h>
 
 #define ENOERR           0     /* No error */
@@ -93,10 +89,6 @@ extern "C" {
 
 #define EHOSTDOWN        364   /* Host is down */
 #define EHOSTUNREACH     365   /* No route to host */
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
 
 #endif /* ERRNO_H_ */
 
