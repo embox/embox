@@ -18,6 +18,8 @@
 
 #include <stddef.h>
 
+__BEGIN_DECLS
+
 /**
  * Calculates the length of the specified null-terminated string.
  *
@@ -337,5 +339,7 @@ extern size_t strcspn(const char *s, const char *reject);
  * @retval NULL no such character is found
  */
 extern char *strpbrk(const char *s, const char *accept);
+
+__END_DECLS
 
 #endif /* STRING_H_ */

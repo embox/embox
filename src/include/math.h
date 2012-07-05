@@ -9,6 +9,8 @@
 #ifndef MATH_H_
 #define MATH_H_
 
+__BEGIN_DECLS
+
 /**
  * First 1 in val
  * @param val Value
@@ -23,6 +25,8 @@ extern long double floorl(long double x);
 extern double pow(double x, double y);
 extern float powf(float x, float y);
 extern long double powl(long double x, long double y);
+
+__END_DECLS
 
 /* FIXME max, min and clamp not a part of C Standard Library */
 /**

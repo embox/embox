@@ -1,0 +1,61 @@
+/**
+ * @file
+ * @brief C++ forwarding header
+ * @date 05.07.12
+ * @author Ilia Vaprol
+ */
+
+#ifndef CSTDIO_
+#define CSTDIO_
+
+#include <stdio.h>
+
+namespace std {
+	using ::remove;
+//	using ::rename;
+//	using ::tmpfile;
+//	using ::tmpnam;
+	using ::fclose;
+//	using ::fflush;
+	using ::fopen;
+	using ::freopen;
+//	using ::setbuf;
+//	using ::setvbuf;
+//	using ::fprintf;
+	using ::fscanf;
+	using ::printf;
+	using ::scanf;
+	using ::sprintf;
+	using ::sscanf;
+//	using ::vfprintf;
+	using ::vprintf;
+	using ::vsprintf;
+	using ::fgetc;
+//	using ::fgets;
+	using ::fputc;
+//	using ::fputs;
+//	using ::getc;
+	using ::getchar;
+	using ::gets;
+//	using ::putc;
+	using ::putchar;
+	using ::puts;
+	using ::ungetc;
+	using ::fread;
+	using ::fwrite;
+//	using ::fgetpos;
+	using ::fseek;
+//	using ::fsetpos;
+//	using ::ftell;
+//	using ::rewind;
+	using ::clearerr;
+	using ::feof;
+	using ::ferror;
+//	using ::perror;
+	using ::FILE;
+//	using ::fpos_t;
+	using ::size_t;
+} // namespace std
+
+#endif // CSTDIO_
+

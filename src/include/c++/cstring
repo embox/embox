@@ -1,0 +1,37 @@
+/**
+ * @file
+ * @brief C++ forwarding header
+ * @date 05.07.12
+ * @author Ilia Vaprol
+ */
+
+#ifndef CSTRING_
+#define CSTRING_
+
+#include <string.h>
+
+namespace std {
+	using ::strlen;
+	using ::strcpy;
+	using ::strncpy;
+	using ::strcat;
+	using ::strncat;
+	using ::strcmp;
+	using ::strncmp;
+	using ::strchr;
+	using ::strrchr;
+	using ::strstr;
+	using ::strerror;
+	using ::memcpy;
+	using ::memmove;
+	using ::memset;
+	using ::memcmp;
+	using ::memchr;
+	using ::strspn;
+	using ::strcspn;
+	using ::strpbrk;
+	using ::size_t;
+} // namespace std
+
+#endif // CSTRING_
+

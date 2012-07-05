@@ -1,0 +1,23 @@
+/**
+ * @file
+ * @brief C++ forwarding header
+ * @date 05.07.12
+ * @author Ilia Vaprol
+ */
+
+#ifndef CMATH_
+#define CMATH_
+
+#include <math.h>
+
+namespace std {
+	using ::floor;
+	inline float floor(float x) { return floorf(x); }
+	inline long double floor(long double x) { return floorl(x); }
+	using ::pow;
+	inline float pow(float x, float y) { return powf(x, y); }
+	inline long double pow(long double x, long double y) { return powl(x, y); }
+} // namespace std
+
+#endif // CMATH_
+
