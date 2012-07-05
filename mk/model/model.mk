@@ -91,15 +91,10 @@ define class-EObject
 	#   1. someClass : EMetaClass
 	# PROTECTED REGION ID(EModel_EObject_eContentsOfType) ENABLED START
 	$(method eContentsOfType... : EObject,
-		$(for metaReference <- $(get $(get eMetaClass).eAllContainments),
-			$(if $(invoke 1->isSuperTypeOf,
-					$(get metaReference->eReferenceType)),
-				$(get $(get metaReference->instanceProperty)),
-				$(for child <- $(get $(get metaReference->instanceProperty)),
-					$(invoke child->eContentsOfType,$1))
-			)
-		)
-	)
+		$(for child <- $(get-field __eContents),
+			$(if $(invoke 1->isInstance,$(child)),
+				$(child),
+				$(invoke child->eContentsOfType,$1))))
 	# PROTECTED REGION END
 
 	# Method 'eAllContents... : EObject'.
