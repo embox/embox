@@ -98,7 +98,7 @@ int i8259_irq_pending(interrupt_nr_t irq) {
 	if (irq < 8) {
 		ret = in8(PIC1_COMMAND) & mask;
 	} else {
-		ret = inb(PIC2_COMMAND) & (mask >> 8);
+		ret = in8(PIC2_COMMAND) & (mask >> 8);
 	}
 
 	return ret;
