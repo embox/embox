@@ -2,7 +2,7 @@
 package embox.kernel
 
 @Mandatory
-module main {
+module Kernel {
 	/* FIXME
 	 * 1.it depends from embox.prom.printf (for init.c)
 	 */
