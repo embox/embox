@@ -11,7 +11,11 @@
 #define MIPS_SETJMP_H_
 
 typedef struct {
-	unsigned int r0;
+	unsigned int s[9];     /* common registers */
+	unsigned int fp;       /* frame pointer */
+	unsigned int ret_addr; /* return address */
+	unsigned int gp;       /* global pointer */
+	unsigned int sp;       /* stack pointer */
 } __jmp_buf[1];
 
 

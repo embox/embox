@@ -20,6 +20,7 @@ _text_end = _text_vma + _text_len;
 
 SECTIONS {
 	.text : {
+		. = + 0x400;
 		ALIGNMENT();
 		_ivt_start = .;
 		*(.trap_table)

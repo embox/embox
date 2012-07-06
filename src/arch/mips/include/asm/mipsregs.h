@@ -14,8 +14,10 @@
 /*
  * Coprocessor 0 registers.
  */
+#define CP0_CONTEXT   4    /* The Pointer to an entry in (PTE) array */
 #define CP0_BADVADDR  8    /* Virtual address of last exception */
 #define CP0_COUNT     9    /* Processor cycle count */
+#define CP0_COMPARE  11    /* Comparator value to generate timer IRQ7 */
 #define CP0_STATUS   12    /* Processor status and control */
 #define CP0_CAUSE    13    /* Cause of last exception */
 #define CP0_EPC      14    /* Program counter at last exception */
