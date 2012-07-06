@@ -18,7 +18,7 @@
 #include <module/embox/arch/system.h>
 
 #define CORE_FREQ OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
-#define CLOCK_DIVIDER 8
+#define CLOCK_DIVIDER 1
 
 #define SYSTICK_IRQ 15
 
