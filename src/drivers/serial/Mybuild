@@ -12,7 +12,6 @@ module apbuart extends serial {
 	option number apbuart_base=2147483904
 	option number irq_num=2
 
-
 	source "apbuart.c"
 
 	depends embox.lib.LibC
@@ -31,7 +30,7 @@ module at91_uart extends serial {
 module serial_port extends serial {
 	option number baud_rate
 
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "serial_port.c"
 
 	depends embox.kernel.irq
@@ -40,4 +39,13 @@ module serial_port extends serial {
 
 module xuartlite extends serial {
 	source "xuartlite.c"
+}
+
+module stm32_usart extends serial {
+	option number baud_rate
+	/*option boolean hw_flow = false*/
+
+	source "stm32_usart.c"
+
+	depends embox.driver.gpio.stm32
 }
