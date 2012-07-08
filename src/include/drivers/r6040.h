@@ -9,6 +9,8 @@
 #ifndef NET_R6040_H_
 #define NET_R6040_H_
 
+#include <net/netdevice.h>
+
 #define R6040_RX_DESCRIPTORS 32
 #if 0
 /* setup descriptors, start packet reception */

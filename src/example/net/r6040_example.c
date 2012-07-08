@@ -77,6 +77,7 @@ static void check_for_packets(void) {
 
 	// Send the response
 	r6040_tx((unsigned char*)g_pkt, 64);
+	while(1) {};
 }
 
 static int exec(int argc, char **argv) {
@@ -104,7 +105,7 @@ static int exec(int argc, char **argv) {
 //		return 0;
 //	}
 //	r6040_init();
-	//r6040_open();
+	r6040_open(NULL);
 	printf("Waiting for packets...\r\n");
 	while (1) {
 		check_for_packets();
