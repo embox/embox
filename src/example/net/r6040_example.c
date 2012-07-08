@@ -81,7 +81,7 @@ static void check_for_packets(void) {
 
 static int exec(int argc, char **argv) {
 	int opt;
-	int t_linkup = 0;
+//	int t_linkup = 0;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "h"))) {
@@ -95,15 +95,15 @@ static int exec(int argc, char **argv) {
 	}
 
 	printf("Embox Ethernet packet reception example.\n");
-	// Wait up to 2 seconds for the PHY link to come up
-	t_linkup = r6040_wait_linkup();
-	if (t_linkup) { // link came up.
-		printf("Cable is plugged in!\r\n");
-	} else {
-		printf("Plug in the ethernet cable and try again.\r\n");
-		return 0;
-	}
-	r6040_init();
+//	// Wait up to 2 seconds for the PHY link to come up
+//	t_linkup = r6040_wait_linkup();
+//	if (t_linkup) { // link came up.
+//		printf("Cable is plugged in!\r\n");
+//	} else {
+//		printf("Plug in the ethernet cable and try again.\r\n");
+//		return 0;
+//	}
+//	r6040_init();
 	printf("Waiting for packets...\r\n");
 	while (1) {
 		check_for_packets();
