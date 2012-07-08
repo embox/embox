@@ -17,6 +17,7 @@
 #include <net/netdevice.h>
 #include <drivers/r6040.h>
 
+EMBOX_UNIT_INIT(r6040_init);
 
 #define INTERRUPTS_ENABLE 0
 
@@ -136,8 +137,6 @@ static eth_desc_t *rxd_init(size_t pkt_size) {
 	/* Clear it */
 	memset(rxd, 0, sizeof(eth_desc_t));
 
-
-
 	/* clear pkt area */
 	memset(pkt, 0, pkt_size);
 
@@ -213,25 +212,6 @@ static irq_return_t irq_handler(irq_nr_t irq_num, void *dev_id) {
 eth_desc_t *g_rx_descriptor_list[R6040_RX_DESCRIPTORS];
 eth_desc_t *g_rx_descriptor_next;
 eth_desc_t *g_tx_descriptor_next;
-
-void r6040_init(void) {
-	int i;
-	r6040_rx_disable();
-	r6040_tx_disable();
-	for (i = 0; i < R6040_RX_DESCRIPTORS; i++) {
-		/* most packets will be no larger than this */
-		g_rx_descriptor_list[i] = rxd_init(1536);
-		if (i)
-			g_rx_descriptor_list[i-1]->DNX = g_rx_descriptor_list[i];
-	}
-	// Make ring buffer.
-	g_rx_descriptor_list[R6040_RX_DESCRIPTORS-1]->DNX = g_rx_descriptor_list[0];
-	r6040_set_rx_start(g_rx_descriptor_list[0]);
-	g_rx_descriptor_next = g_rx_descriptor_list[0];
-
-	g_tx_descriptor_next = rxd_init(1536);
-	r6040_rx_enable();
-}
 
 /* Disable packet reception */
 void r6040_done(void) {
@@ -344,10 +324,12 @@ static const struct net_device_ops r6040_netdev_ops = {
 //	.ndo_get_stats  = r6040_get_eth_stat,
 //	.ndo_set_mac_address = set_mac_address
 };
+#endif
 
 /* setup descriptors, start packet reception */
 static int r6040_init(void) {
 	size_t i;
+	r6040_wait_linkup();
 	r6040_rx_disable();
 	r6040_tx_disable();
 	for (i = 0; i < R6040_RX_DESCRIPTORS; i++) {
@@ -366,4 +348,3 @@ static int r6040_init(void) {
 	r6040_rx_enable();
 	return 0;
 }
-#endif
