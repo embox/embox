@@ -178,7 +178,7 @@ static int linenoise_prompt(int fd, FILE *descr, char *buf, size_t buflen, const
     while(1) {
         char c;
         int nread;
-        char seq[2], seq2[2];
+        char seq[2], seq2[2]= {0};
 
         nread = read_raw_mode ? read(fd,&c,1) : fread(&c, 1, 1, descr);
         if (nread <= 0) return len;
