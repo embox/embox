@@ -16,6 +16,7 @@
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <drivers/r6040.h>
+#include <kernel/irq.h>
 
 EMBOX_UNIT_INIT(r6040_init);
 
@@ -213,10 +214,12 @@ eth_desc_t *g_rx_descriptor_list[R6040_RX_DESCRIPTORS];
 eth_desc_t *g_rx_descriptor_next;
 eth_desc_t *g_tx_descriptor_next;
 
+#if 0
 /* Disable packet reception */
 void r6040_done(void) {
 	out8(0, MCR0);
 }
+#endif
 
 static void discard_descriptor(void) {
 	/* reset the length field to original value. */
@@ -306,25 +309,32 @@ int r6040_wait_linkup(void) {
 	}
 	return 0;
 }
+
+int r6040_open(net_device_t *dev) {
 #if INTERRUPTS_ENABLE
-static int r6040_open(net_device_t *dev) {
 	if (-1 == irq_attach(0x0a, irq_handler, 0, dev, "RDC r6040")) {
 		return -1;
 	}
-}
 
+#endif
+	return 0;
+
+}
+#if INTERRUPTS_ENABLE
 static int r6040_stop(net_device_t *dev) {
+	return 0;
 
 }
 
 static const struct net_device_ops r6040_netdev_ops = {
-	.ndo_start_xmit = r6040_start_xmit,
+//	.ndo_start_xmit = r6040_start_xmit,
 	.ndo_open       = r6040_open,
 	.ndo_stop       = r6040_stop,
 //	.ndo_get_stats  = r6040_get_eth_stat,
 //	.ndo_set_mac_address = set_mac_address
 };
 #endif
+
 
 /* setup descriptors, start packet reception */
 static int r6040_init(void) {

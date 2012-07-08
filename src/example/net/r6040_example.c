@@ -104,6 +104,7 @@ static int exec(int argc, char **argv) {
 //		return 0;
 //	}
 //	r6040_init();
+	//r6040_open();
 	printf("Waiting for packets...\r\n");
 	while (1) {
 		check_for_packets();
