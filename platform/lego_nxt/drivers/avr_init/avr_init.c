@@ -10,7 +10,7 @@
 #include <string.h>
 #include <hal/reg.h>
 #include <unistd.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/twi.h>
 #include <drivers/nxt/buttons.h>

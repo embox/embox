@@ -29,8 +29,6 @@ module pit extends embox.arch.clock {
 
 module stm32_systick extends embox.arch.clock {
 	source "stm32_systick.c"
-
-	depends embox.kernel.time.clock_event
 }
 
 // TODO Can be used with pit. That means tsc not implements embox.arch.clock

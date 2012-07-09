@@ -64,7 +64,7 @@
 #include <asm/io.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/sync/message.h>
 #include <hal/reg.h>

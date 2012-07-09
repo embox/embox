@@ -19,8 +19,7 @@
 
 #include <hal/clock.h>
 
-#include <kernel/clock_source.h>
-#include <kernel/clock_event.h>
+#include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 
 #include <module/embox/arch/system.h>

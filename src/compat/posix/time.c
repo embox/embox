@@ -11,7 +11,7 @@
 
 #include <time.h>
 #include <hal/clock.h>
-#include <kernel/clock_source.h>
+#include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 
 

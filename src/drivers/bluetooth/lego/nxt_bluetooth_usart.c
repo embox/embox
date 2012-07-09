@@ -15,7 +15,7 @@
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>
 #include <drivers/blue_core4.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 
 #include <embox/unit.h>
 

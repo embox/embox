@@ -18,8 +18,7 @@
 #include <stdio.h>
 #include <embox/unit.h>
 
-#include <kernel/clock_source.h>
-#include <kernel/clock_event.h>
+#include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */

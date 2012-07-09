@@ -25,7 +25,7 @@
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <kernel/task.h>
 #include <hal/context.h>
 #include <hal/ipl.h>

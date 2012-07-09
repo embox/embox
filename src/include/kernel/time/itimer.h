@@ -10,7 +10,7 @@
 #ifndef KERNEL_TIME_TIMECOUNTER_H_
 #define KERNEL_TIME_TIMECOUNTER_H_
 
-#include <kernel/clock_source.h>
+#include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 
 struct itimer {

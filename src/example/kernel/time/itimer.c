@@ -10,8 +10,7 @@
 #include <errno.h>
 #include <framework/example/self.h>
 
-#include <kernel/clock_source.h>
-#include <kernel/clock_event.h>
+#include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/itimer.h>
 

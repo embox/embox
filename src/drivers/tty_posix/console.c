@@ -43,7 +43,7 @@
 #include <asm/io.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <hal/reg.h>
 #include <fs/node.h>
 #include <kernel/file.h>

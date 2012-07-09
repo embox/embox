@@ -8,7 +8,6 @@ module sys_timer {
 	source "timer.c"
 
 	depends embox.kernel.time.clock_source
-	depends embox.kernel.time.clock_event
 	depends embox.kernel.softirq
 	depends embox.arch.clock
 }

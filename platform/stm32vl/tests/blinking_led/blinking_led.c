@@ -8,7 +8,7 @@
 
 #include <unistd.h>
 #include <hal/reg.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <drivers/gpio.h>
 #include <embox/test.h>
 

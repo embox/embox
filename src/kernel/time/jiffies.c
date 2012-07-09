@@ -8,11 +8,10 @@
  */
 #include <embox/unit.h>
 
-#include <kernel/clock_source.h>
-#include <kernel/clock_event.h>
+#include <kernel/time/clock_source.h>
 #include <kernel/softirq.h>
 
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 
 
 EMBOX_UNIT_INIT(module_init);

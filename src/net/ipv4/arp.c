@@ -11,7 +11,7 @@
  */
 
 #include <string.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <net/icmp.h>
 #include <net/inetdevice.h>
 #include <net/arp.h>

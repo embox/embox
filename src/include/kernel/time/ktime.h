@@ -8,7 +8,7 @@
 #ifndef KERNEL_TIME_KTIME_H_
 #define KERNEL_TIME_KTIME_H_
 
-#include <kernel/clock_source.h>
+#include <kernel/time/clock_source.h>
 
 //move to posix
 struct ktimespec {

@@ -10,7 +10,7 @@
 
 #include <kernel/time/itimer.h>
 #include <kernel/time/ktime.h>
-#include <kernel/clock_source.h>
+#include <kernel/time/clock_source.h>
 
 EMBOX_UNIT_INIT(module_init);
 

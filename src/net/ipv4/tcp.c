@@ -25,7 +25,7 @@
 #include <net/sock.h>
 #include <time.h>
 
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <embox/net/proto.h>
 #include <kernel/softirq_lock.h>
 #include <kernel/time/time_types.h>

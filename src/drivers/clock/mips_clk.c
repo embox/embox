@@ -8,7 +8,7 @@
  */
 
 #include <asm/mipsregs.h>
-#include <kernel/clock_source.h>
+#include <kernel/time/clock_source.h>
 
 static struct clock_source mips_clock_source = {
 	.name = "mips_clk",

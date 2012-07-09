@@ -8,7 +8,7 @@
 
 #include <embox/unit.h>
 #include <errno.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <lib/list.h>
 #include <mem/misc/pool.h>
 #include <net/neighbour.h>

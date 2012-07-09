@@ -3,17 +3,23 @@ package embox.kernel.time
 module clock_source {
 	@NumConstraint(ge=1)
 	option number clocks_quantity = 4
-	option number itimer_quantity = 10
 
-	source "time_source.c"
-	source "itimer.c"
-
-	source "ktime.c"
+	source "clock_source.c"
 
 	depends embox.arch.clock
+	depends jiffies
+	depends kernel_time
 }
 
-module clock_event {
-	source "clock_event.c"
+module itimer {
+	option number itimer_quantity = 10
+	source "itimer.c"
+}
+
+module kernel_time {
+	source "ktime.c"
+}
+
+module jiffies {
 	source "jiffies.c"
 }

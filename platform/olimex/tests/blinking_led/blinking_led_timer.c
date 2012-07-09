@@ -9,7 +9,7 @@
 #include <embox/test.h>
 #include <drivers/at91_olimex_debug_led.h>
 #include <drivers/pins.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <unistd.h>
 
 EMBOX_TEST(blinking_led);

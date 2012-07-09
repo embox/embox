@@ -11,7 +11,7 @@
 #include <mem/objalloc.h>
 #include <errno.h>
 #include <string.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <math.h>
 #include <net/icmp.h>
 #include <net/ip.h>

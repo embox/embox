@@ -9,7 +9,7 @@
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
-#include <kernel/clock_source.h>
+#include <kernel/time/clock_source.h>
 #include <types.h>
 #include <hal/interrupt.h>
 #include <drivers/at91sam7s256.h>

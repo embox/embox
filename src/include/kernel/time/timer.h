@@ -17,7 +17,7 @@
 
 #include <types.h>
 
-#include <kernel/timer_strat.h>
+#include <kernel/time/timer_strat.h>
 
 struct sys_timer;
 

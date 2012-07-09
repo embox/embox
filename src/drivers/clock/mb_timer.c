@@ -14,8 +14,7 @@
 #include <kernel/panic.h>
 
 #include <hal/clock.h>
-#include <kernel/clock_source.h>
-#include <kernel/clock_event.h>
+#include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 
 #include <module/embox/arch/system.h>
@@ -122,7 +121,7 @@ static struct clock_source mb_cs = {
 	.name = "gptimer",
 	.event_device = &mb_ed,
 	.counter_device = &mb_cd,
-	.read = clock_source_read,
+	.read = event_device_read,
 };
 
 CLOCK_SOURCE(&mb_cs);
