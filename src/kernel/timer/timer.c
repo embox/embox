@@ -10,7 +10,7 @@
 #include <embox/unit.h>
 #include <mem/misc/pool.h>
 
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
 

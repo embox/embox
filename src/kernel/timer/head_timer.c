@@ -9,7 +9,7 @@
  */
 
 #include <lib/list.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 
 
 static LIST_HEAD(sys_timers_list); /* list head to timers */

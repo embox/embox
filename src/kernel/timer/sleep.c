@@ -11,7 +11,7 @@
 #include <types.h>
 #include <time.h>
 
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/event.h>
 

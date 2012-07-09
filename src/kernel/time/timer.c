@@ -6,11 +6,9 @@
  */
 
 #include <embox/unit.h>
-
 #include <kernel/time/clock_source.h>
-#include <kernel/softirq.h>
-
 #include <kernel/time/timer.h>
+#include <kernel/softirq.h>
 
 EMBOX_UNIT_INIT(init);
 

@@ -7,12 +7,7 @@
  * @author Anton Bondarev
  */
 #include <embox/unit.h>
-
 #include <kernel/time/clock_source.h>
-#include <kernel/softirq.h>
-
-#include <kernel/time/timer.h>
-
 
 EMBOX_UNIT_INIT(module_init);
 
