@@ -18,8 +18,8 @@
 #include <util/array.h>
 
 enum clock_source_property {
-	JIFFIES = 0,
-	CYCLES = 1
+	CS_WITH_IRQ = 0,
+	CS_ANY = 1
 };
 
 /**

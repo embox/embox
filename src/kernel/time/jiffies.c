@@ -56,7 +56,7 @@ static int module_init(void) {
 	const struct clock_source *cs;
 
 	/* find clock_event_device with maximal resolution  */
-	cs = clock_source_get_best(JIFFIES);
+	cs = clock_source_get_best(CS_WITH_IRQ);
 	assert(cs);
 
 	jiffies.event_device = cs->event_device;

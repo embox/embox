@@ -33,7 +33,7 @@ static int module_init(void) {
 	const struct clock_source *cs;
 
 	/* find clock_event_device with maximal resolution  */
-	cs = clock_source_get_best(CYCLES);
+	cs = clock_source_get_best(CS_ANY);
 	assert(cs);
 
 	itimer_init(&sys_timecounter, cs, 0);

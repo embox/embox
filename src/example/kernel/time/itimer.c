@@ -33,7 +33,7 @@ static int measured_loop(int cycles_loop) {
 }
 
 static int run(int argc, char **argv) {
-	cs = clock_source_get_best(CYCLES);
+	cs = clock_source_get_best(CS_ANY);
 
 	for (int i = 0; i < 100; i++) {
 		measured_loop(1000);
