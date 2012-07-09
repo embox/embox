@@ -13,6 +13,7 @@ module clock_source {
 
 module kernel_time {
 	source "ktime.c"
+	depends embox.kernel.timer.itimer
 }
 
 module jiffies {
