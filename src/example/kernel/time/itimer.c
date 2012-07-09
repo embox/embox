@@ -28,7 +28,7 @@ static int measured_loop(int cycles_loop) {
 	for (i = 0; i < cycles_loop; i++) {
 	}
 	time_after = itimer_read(&it);
-	printf("			spent = %d\n", (int) time_after);
+	printf("spent = %d\n", (int) time_after);
 
 	return 0;
 }

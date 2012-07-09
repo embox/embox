@@ -13,8 +13,11 @@ ARRAY_SPREAD_DEF(const struct clock_source *, __clock_sources);
 uint32_t clock_source_clock_to_sec(struct clock_source *cs, uint32_t ticks) {
 	return ticks / cs->event_device->resolution;
 }
+
 extern clock_t clock_sys_ticks(void);
+
 ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device *cd) {
+		static cycle_t prev_cycles;
 		int old_jiffies;
 		cycle_t cycles, cycles_all;
 		int cycles_per_jiff = cd->resolution /
@@ -26,6 +29,13 @@ ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device 
 		} while(old_jiffies != clock_sys_ticks());
 
 		cycles_all = cycles + old_jiffies * cycles_per_jiff;
+
+		/* TODO cheat. read() will miss for one jiff sometimes. */
+		if (cycles_all < prev_cycles) {
+			cycles_all += cycles_per_jiff;
+		}
+
+		prev_cycles = cycles_all;
 
 		return cycles_to_ns(cd, cycles_all);
 }

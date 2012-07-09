@@ -95,7 +95,7 @@ static cycle_t i8253_read(void) {
 	cnt = in8(CHANNEL0);
 	cnt |= in8(CHANNEL0) << 8;
 
-	cnt = (((INPUT_CLOCK + PIT_HZ / 2) / PIT_HZ) - 1) - cnt;
+	cnt = ((INPUT_CLOCK + PIT_HZ ) / PIT_HZ) - cnt;
 
 	return cnt;
 }
