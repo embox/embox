@@ -233,4 +233,3 @@
 #define AMBAPP_DEVICE_OPENCORES_ETHMAC     0x005 /**< Ethernet MAC */
 
 #endif /* AMBAPP_H_ */
-

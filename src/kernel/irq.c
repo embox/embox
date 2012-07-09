@@ -124,4 +124,3 @@ void irq_dispatch(interrupt_nr_t interrupt_nr) {
 	assert(handler != NULL);
 	handler(irq_nr, dev_id);
 }
-

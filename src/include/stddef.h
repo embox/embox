@@ -36,4 +36,3 @@ typedef __ptrdiff_t ptrdiff_t;
 #endif/*__ptrdiff_t_defined */
 
 #endif /* STDDEF_H_ */
-

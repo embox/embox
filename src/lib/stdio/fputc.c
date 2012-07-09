@@ -17,4 +17,3 @@ int fputc(int c, FILE *stream) {
 
 	return c;
 }
-

@@ -61,4 +61,3 @@ __END_DECLS
 #define toascii(c) (((unsigned char)(c))&0x7f)
 
 #endif /* CTYPE_H_ */
-

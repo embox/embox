@@ -38,4 +38,3 @@ static int task_table_unit_init(void) {
 	UTIL_IDX_TABLE_INIT(&task_table, TASK_QUANT);
 	return 0;
 }
-

@@ -52,5 +52,3 @@ void uart_putc(char ch) {
 	}
 	REG_STORE(AT91C_US0_THR, (unsigned long) ch);
 }
-
-

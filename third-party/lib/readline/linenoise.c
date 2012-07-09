@@ -408,4 +408,3 @@ int linenoise(const char *prompt, char *buf, int len, struct hist *history, comp
 	}
     return count;
 }
-

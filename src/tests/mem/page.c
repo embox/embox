@@ -46,5 +46,3 @@ TEST_CASE("Mixed single and multi page allocation") {
 	test_assert_not_null(page);
 	page_free(page, 1);
 }
-
-

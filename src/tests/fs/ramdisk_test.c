@@ -33,5 +33,3 @@ TEST_CASE("Create ramdisk") {
 TEST_CASE("Delete ramdisk") {
 	test_assert_zero(ramdisk_delete(FS_DEV));
 }
-
-

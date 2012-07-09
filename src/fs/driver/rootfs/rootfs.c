@@ -71,4 +71,3 @@ static int unit_init(void) {
 	rootfs_mount(NULL);
 	return 0;
 }
-

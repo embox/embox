@@ -53,4 +53,3 @@ __END_DECLS
 	} while (0)
 
 #endif /* ASSERT_H_ */
-

@@ -109,4 +109,3 @@ extern int sched_sleep_locked(struct event *event);
 
 
 #endif /* KERNEL_THREAD_SCHED_H_ */
-

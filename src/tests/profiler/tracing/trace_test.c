@@ -28,4 +28,3 @@ static void my_traced_function(int n) {
 	}
 	trace_block_leave(&my_trace);
 } */
-

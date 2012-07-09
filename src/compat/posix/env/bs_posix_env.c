@@ -49,4 +49,3 @@ int diag_env_init(void) {
 
 	return 0;
 }
-

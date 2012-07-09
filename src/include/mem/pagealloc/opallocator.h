@@ -34,4 +34,3 @@ extern void *page_alloc(void);
 extern void page_free(void* paddr);
 
 #endif /* MEM_PAGELLOC_OPALLOCATOR_H_ */
-

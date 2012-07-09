@@ -20,4 +20,3 @@ int task_errno(struct task *task) {
 void task_errno_set(struct task *task, int errno) {
 	task->err = errno;
 }
-

@@ -41,4 +41,3 @@ extern struct task *task_init(void *task_n_res_space);
 #define task_notifing_resource_foreach(item) \
 	array_foreach(item, task_notifing_resource, \
 		ARRAY_SPREAD_SIZE(task_notifing_resource))
-

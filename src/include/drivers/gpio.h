@@ -34,4 +34,3 @@ extern void gpio_clear(struct gpio *gpio, gpio_mask_t mask);
 extern gpio_mask_t gpio_level(struct gpio *gpio, gpio_mask_t mask);
 
 #endif /* DRIVERS_GPIO_H_ */
-

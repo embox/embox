@@ -443,7 +443,3 @@ int xdr_nfs_get_dirlist(struct xdr *xs, char *buff) {
 	}
 	return XDR_FAILURE;
 }
-
-
-
-

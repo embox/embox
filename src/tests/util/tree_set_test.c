@@ -412,4 +412,3 @@ TEST_CASE("Test for clear method of test_set") {
 	tree_set_clear(set, tree_set_int_dispose);
 	test_assert(compare());
 }
-

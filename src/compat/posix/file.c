@@ -82,4 +82,3 @@ int ioctl(int fd, int request, ...) {
 int fsync(int fd) {
 	return 0;
 }
-

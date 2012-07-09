@@ -1265,4 +1265,3 @@ static void vid_mem_copy(unsigned src, u16_t * dst, unsigned count)
 		*(dst + i) = *((u16_t*)vid_base + src + i);
 	}
 }
-

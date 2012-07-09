@@ -203,4 +203,3 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 static int tty_ng_manager_init(void) {
 	return 0;
 }
-

@@ -243,4 +243,3 @@ struct thread *sleepq_get_thread(struct sleepq *sq) {
 	pq = prioq_empty(&sq->pq) ? &sq->suspended : &sq->pq;
 	return prioq_peek(thread_prio_comparator, pq, struct thread, sched.pq_link);
 }
-

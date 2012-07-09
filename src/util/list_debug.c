@@ -197,4 +197,3 @@ struct list_link *list_remove_last_link(struct list *list) {
 }
 
 #endif
-

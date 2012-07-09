@@ -191,4 +191,3 @@ static int nxt_bluecore_start(struct net_node *node) {
 static int nxt_bluecore_init(void) {
 	return 0;
 }
-

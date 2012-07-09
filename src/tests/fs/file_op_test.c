@@ -132,4 +132,3 @@ static int teardown_suite(void) {
 	}
 	return 0;
 }
-

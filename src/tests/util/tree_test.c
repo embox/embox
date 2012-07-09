@@ -253,4 +253,3 @@ TEST_CASE("Delete subtree") {
 	push(10);
 	compare(root);
 }
-

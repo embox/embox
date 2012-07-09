@@ -518,4 +518,3 @@ struct tree_set_link *tree_set_prev_link(struct tree_set_link *link) {
 		return par;
 	}
 }
-

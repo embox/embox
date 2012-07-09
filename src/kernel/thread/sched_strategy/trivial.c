@@ -206,4 +206,3 @@ struct thread *sleepq_get_thread(struct sleepq *sleepq) {
 	q = dlist_empty(&sleepq->rq) ? &sleepq->sq : &sleepq->rq;
 	return dlist_entry(q->next, struct thread, sched.l_link);
 }
-

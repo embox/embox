@@ -25,4 +25,3 @@ int netif_rx(void *data) {
 
 	return NET_RX_DROP;
 }
-

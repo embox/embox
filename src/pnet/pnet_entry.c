@@ -21,5 +21,3 @@ int pnet_entry(struct pnet_pack *pack) {
 	pnet_rx_thread_add(pack);
 	return 0;
 }
-
-

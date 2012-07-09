@@ -42,4 +42,3 @@ TEST_CASE("create task and send signal") {
 	test_assert(flag != 0);
 
 }
-

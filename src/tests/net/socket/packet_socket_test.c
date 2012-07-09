@@ -22,5 +22,3 @@ TEST_CASE("Create raw PF_PACKET socket") {
 
 	close(sockfd);
 }
-
-

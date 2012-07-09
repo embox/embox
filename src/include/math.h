@@ -88,4 +88,3 @@ __END_DECLS
 	})
 
 #endif /* MATH_H_ */
-

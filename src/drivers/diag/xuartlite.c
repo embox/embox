@@ -73,4 +73,3 @@ void diag_putc(char ch) {
 	while (!can_tx_trans());
 	uart->tx_data = (unsigned int)ch;
 }
-

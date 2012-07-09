@@ -66,4 +66,3 @@ static int at91_pitc_config(struct time_dev_conf * conf) {
 
 CLOCK_SOURCE(&at91_pitc_clock_source);
 EMBOX_UNIT_INIT(at91_pitc_init);
-

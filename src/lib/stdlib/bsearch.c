@@ -64,5 +64,3 @@ void *bsearch(const void *key, const void *base,
 		return NULL;
 	}
 }
-
-

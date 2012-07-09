@@ -103,4 +103,3 @@ gpio_mask_t gpio_level(struct gpio *gpio, gpio_mask_t mask) {
 	assert(gpio);
 	return mask & REG_LOAD(&(gpio->idr));
 }
-

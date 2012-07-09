@@ -109,4 +109,3 @@ TEST_CASE("Allocates several objects with different size and fill them than free
 	free(small);
 	free(unaligned);
 }
-

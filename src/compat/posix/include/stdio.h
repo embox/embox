@@ -155,4 +155,3 @@ extern int fileno(FILE *stream);
 __END_DECLS
 
 #endif /* STDIO_H_ */
-

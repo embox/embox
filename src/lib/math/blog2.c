@@ -24,5 +24,3 @@ int blog2(int val) {
 
 	return log2_magic_offsets[(log2_magic * (val & (~val + 1))) >> 27];
 }
-
-

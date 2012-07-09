@@ -243,4 +243,3 @@ opfailed:
 	mod_flag_set(mod, MOD_FLAG_OPFAILED);
 	return -EINTR;
 }
-

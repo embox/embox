@@ -52,4 +52,3 @@ extern void longjmp(jmp_buf env, int value) __attribute__ ((noreturn));
 __END_DECLS
 
 #endif /* SETJMP_H_ */
-

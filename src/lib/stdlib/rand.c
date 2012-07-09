@@ -21,4 +21,3 @@ int rand(void) {
 	seed = (unsigned int)(seed * 16546134871 + 513585871) % (204814687);
 	return (int)seed >> 1;
 }
-

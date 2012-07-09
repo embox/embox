@@ -161,4 +161,3 @@ static void *task_trampoline(void *arg) {
 
 	return res;
 }
-

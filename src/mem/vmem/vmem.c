@@ -68,5 +68,3 @@ static int vmem_init(void) {
 
 	return 0;
 }
-
-

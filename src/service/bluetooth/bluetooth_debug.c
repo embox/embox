@@ -35,5 +35,3 @@ int bluetooth_debug_init(void) {
 	CALLBACK_REG(bluetooth_uart, (callback_t) handler);
 	return 0;
 }
-
-

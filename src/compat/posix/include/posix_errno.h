@@ -16,4 +16,3 @@
 #define SET_ERRNO(e) (errno = e)
 
 #endif /* COMPAT_POSIX_ERRNO_H_ */
-

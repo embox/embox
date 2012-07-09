@@ -18,4 +18,3 @@ int task_errno(struct task *task);
 void task_errno_set(struct task *task, int errno);
 
 #endif /* KERNEL_TASK_H_ */
-

@@ -197,4 +197,3 @@ static int dev_regs_init(irq_nr_t *irq_nr) {
 #else
 # error "Either DRIVER_AMBAPP or gptimer_base must be defined"
 #endif /* DRIVER_AMBAPP */
-

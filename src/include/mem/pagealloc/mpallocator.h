@@ -24,4 +24,3 @@ extern void mpfree(void *pointer);
 extern void mpget_blocks_info(struct list_head* list);
 
 #endif /* MEM_PAGEALLOC_MPALLOCATOR_H_ */
-

@@ -80,4 +80,3 @@ INIT_STDIO_FILE_DESC(_stderr);
 FILE * stdin = (FILE *) &_stdin;
 FILE * stdout = (FILE *) &_stdout;
 FILE * stderr = (FILE *) &_stderr;
-

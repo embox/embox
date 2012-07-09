@@ -111,4 +111,3 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 				(unsigned) mmap->type);
 	}
 }
-

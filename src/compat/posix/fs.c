@@ -169,4 +169,3 @@ int fstat(const char *path, stat_t *buf) {
 	struct file_desc *desc;*/
 	return 0;
 }
-

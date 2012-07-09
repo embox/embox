@@ -96,4 +96,3 @@ static int stm32_usart_init(void) {
 
 	return 0;
 }
-

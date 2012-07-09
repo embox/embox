@@ -121,4 +121,3 @@ static inline long labs(long x) { return x < 0 ? -x : x; }
 __END_DECLS
 
 #endif /* STDLIB_H_ */
-

@@ -45,4 +45,3 @@ extern int task_table_has_space(void);
 
 
 #endif /* KERNEL_TASK_TASK_TABLE_H_ */
-

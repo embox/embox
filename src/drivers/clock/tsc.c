@@ -40,4 +40,3 @@ static int tsc_init(void) {
 
 CLOCK_SOURCE(&tsc_clock_source);
 EMBOX_UNIT_INIT(tsc_init);
-
