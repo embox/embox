@@ -16,10 +16,12 @@ uint32_t clock_source_clock_to_sec(struct clock_source *cs, uint32_t ticks) {
 
 extern clock_t clock_sys_ticks(void);
 
-ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device *cd) {
-		static cycle_t prev_cycles;
+ns_t clock_source_read(const struct clock_source *cs) {
+		static cycle_t prev_cycles, cycles, cycles_all;
 		int old_jiffies;
-		cycle_t cycles, cycles_all;
+		struct time_event_device *ed = cs->event_device;
+		struct time_counter_device *cd = cs->counter_device;
+
 		int cycles_per_jiff = cd->resolution /
 				ed->resolution;
 
@@ -40,8 +42,8 @@ ns_t clock_source_read(struct time_event_device *ed, struct time_counter_device 
 		return cycles_to_ns(cd, cycles_all);
 }
 
-ns_t clock_source_counter_read(struct time_event_device *ed, struct time_counter_device *cd) {
-	return cycles_to_ns(cd, cd->read());
+ns_t clock_source_counter_read(const struct clock_source *cs) {
+	return cycles_to_ns(cs->counter_device, cs->counter_device->read());
 }
 
 const struct clock_source *clock_source_get_best(enum clock_source_property pr) {
