@@ -26,5 +26,6 @@ typedef struct ramdisk_params {
 
 extern int ramdisk_create(void *mkfs_params);
 extern ramdisk_params_t *ramdisk_get_param(char *name);
+extern int ramdisk_delete(const char *name);
 
 #endif /* RAMDISK_H_ */

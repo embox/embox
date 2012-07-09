@@ -68,8 +68,3 @@ module priority_q_test {
 	depends embox.framework.LibFramework
 }
 
-module fs_test {
-	source "fs_test.c"
-
-	depends embox.framework.LibFramework
-}

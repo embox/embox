@@ -1,0 +1,32 @@
+package embox.test.fs
+
+
+module ramdisk_test {
+	source "ramdisk_test.c"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.driver.devfs
+	depends embox.mem.page_api
+	depends embox.framework.LibFramework
+}
+
+module filesystem_test {
+	source "filesystem_op_test.c"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.driver.devfs
+	depends embox.mem.page_api
+	depends embox.framework.LibFramework
+}
+
+module file_test {
+	source "file_op_test.c"
+
+	depends embox.driver.ramdisk
+	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.driver.devfs
+	depends embox.mem.page_api
+	depends embox.framework.LibFramework
+}
