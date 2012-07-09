@@ -7,13 +7,8 @@ module clock_source {
 	source "clock_source.c"
 
 	depends embox.arch.clock
-	depends jiffies
 	depends kernel_time
-}
-
-module itimer {
-	option number itimer_quantity = 10
-	source "itimer.c"
+	depends timer
 }
 
 module kernel_time {
@@ -22,4 +17,9 @@ module kernel_time {
 
 module jiffies {
 	source "jiffies.c"
+}
+
+module timer {
+	source "timer.c"
+	depends jiffies
 }

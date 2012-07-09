@@ -34,3 +34,9 @@ module sleep_nosched extends sleep_api {
 	depends timer_api
 }
 
+module itimer {
+	option number itimer_quantity = 10
+	source "itimer.c"
+}
+
+

@@ -16,25 +16,13 @@
 
 EMBOX_UNIT_INIT(module_init);
 
-static cycle_t volatile sys_ticks = 0; /* ticks after start system. */
+cycle_t volatile sys_ticks = 0; /* ticks after start system. */
 
 clock_t clock_sys_ticks(void) {
 	return (clock_t)sys_ticks;
 }
 
-/**
- * Handling of the clock tick.
- */
-void clock_tick_handler(int irq_num, void *dev_id) {
-	sys_ticks++;
-	softirq_raise(SOFTIRQ_NR_TIMER);
-}
-
-static void soft_clock_handler(softirq_nr_t softirq_nr, void *data) {
-	timer_strat_sched();
-}
-
-static struct clock_source jiffies = {
+struct clock_source jiffies = {
 	.flags = 1,
 };
 
@@ -47,11 +35,8 @@ struct time_dev_conf jiffies_conf = {
 	HW_TIMER_PERIOD
 };
 
-/**
- * Initialization of the time subsystem.
- *
- * @return 0 if success
- */
+CLOCK_SOURCE(&jiffies);
+
 static int module_init(void) {
 	const struct clock_source *cs;
 
@@ -63,8 +48,6 @@ static int module_init(void) {
 
 	/* set periodic mode */
 	cs->event_device->config(&jiffies_conf);
-
-	softirq_install(SOFTIRQ_NR_TIMER, soft_clock_handler,NULL);
 
 	return 0;
 }
