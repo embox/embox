@@ -40,3 +40,8 @@ module vga extends diag_api {
 module xuartlite extends diag_api {
 	source "xuartlite.c"
 }
+
+module stm32_usart extends diag_api {
+	source "stm32_usart.c"
+	depends embox.driver.gpio.stm32
+}

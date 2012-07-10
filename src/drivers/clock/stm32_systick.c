@@ -71,6 +71,7 @@ static cycle_t this_read(void) {
 static struct time_event_device this_event = {
 	.config = this_config ,
 	.resolution = 1000,
+	.irq_nr = SYSTICK_IRQ,
 };
 
 

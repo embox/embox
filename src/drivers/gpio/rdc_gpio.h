@@ -1,17 +1,17 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 08.07.2012
- * @author Anton Bondarev
+ * @author  Anton Kozlov
+ * @author  Anton Bondarev
+ * @date    02.07.2012
  */
 
 #ifndef RDC_GPIO_H_
 #define RDC_GPIO_H_
 
-typedef volatile unsigned long __gpio_mask_t;
+struct gpio { };
 
-//typedef volatile unsigned int stm32_reg_t;
+typedef volatile unsigned long __gpio_mask_t;
 
 #endif /* RDC_GPIO_H_ */
