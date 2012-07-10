@@ -9,6 +9,7 @@
 
 #include <fs/fs_drv.h>
 #include <util/array.h>
+#include <assert.h>
 #include <stdio.h>
 
 #include <fs/file_desc.h>
