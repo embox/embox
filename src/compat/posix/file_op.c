@@ -31,7 +31,7 @@ FILE *fopen(const char *path, const char *mode) {
 			return NULL;
 		}
 
-		if (-1 == creat(path, 0)) {
+		if (-1 == create(path, 0)) {
 			errno = -EINVAL;
 			return NULL;
 		}

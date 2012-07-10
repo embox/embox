@@ -119,7 +119,7 @@ static int setup_suite(void) {
 		return -1;
 	}
 
-	return creat(FS_FILE1, 0);
+	return create(FS_FILE1, 0);
 }
 
 static int teardown_suite(void) {

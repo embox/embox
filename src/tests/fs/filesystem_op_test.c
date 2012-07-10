@@ -42,12 +42,12 @@ TEST_CASE("Mount fat filesystem") {
 
 #define FS_FILE1  "/test_fsop/1/2/3/1.txt"
 TEST_CASE("Create file 1") {
-	test_assert_zero(creat(FS_FILE1, 0));
+	test_assert_zero(create(FS_FILE1, 0));
 }
 
 #define FS_FILE2  "/test_fsop/1/2/2.txt"
 TEST_CASE("Create file 2") {
-	test_assert_zero(creat(FS_FILE2, 0));
+	test_assert_zero(create(FS_FILE2, 0));
 }
 
 TEST_CASE("Delete file") {

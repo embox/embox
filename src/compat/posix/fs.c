@@ -80,7 +80,7 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 	return node;
 }
 
-int creat(const char *pathname, mode_t mode) {
+int create(const char *pathname, mode_t mode) {
 	node_t *nod;
 
 	if (NULL != (nod = vfs_find_node(pathname, NULL))) {
