@@ -121,7 +121,7 @@ static struct clock_source mb_cs = {
 	.name = "gptimer",
 	.event_device = &mb_ed,
 	.counter_device = &mb_cd,
-	.read = event_device_read,
+	.read = clock_source_read,
 };
 
 CLOCK_SOURCE(&mb_cs);
