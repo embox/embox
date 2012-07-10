@@ -34,66 +34,20 @@ TEST_CASE("Create fat filesystem") {
 	test_assert_zero(fs_drv->fsop->format((void *)&ramd_params));
 }
 
-#define FS_DIR  "/test"
+#define FS_DIR  "/test_fsop"
 TEST_CASE("Mount fat filesystem") {
 
 	test_assert_zero(fs_drv->fsop->mount((void *) &mount_param));
 }
 
-#define FS_FILE1  "/test/1/2/3/1.txt"
+#define FS_FILE1  "/test_fsop/1/2/3/1.txt"
 TEST_CASE("Create file 1") {
 	test_assert_zero(creat(FS_FILE1, 0));
 }
-/*
-#define FS_FILE4  "/tst2/4/5/6/4.txt"
+
+#define FS_FILE2  "/test_fsop/1/2/2.txt"
 TEST_CASE("Create file 2") {
-	test_assert_zero(creat(FS_FILE4, 0));
-}
-*/
-#define FS_TESTDATA  "qwerty\n"
-TEST_CASE("Write file") {
-	int file;
-
-	test_assert(0 <=  (file = open(FS_FILE1, O_WRONLY)));
-	test_assert_zero(lseek(file, 0, SEEK_END));
-	test_assert(0 < write(file, FS_TESTDATA, strlen(FS_TESTDATA)));
-	test_assert_zero(close(file));
-}
-
-#define FS_FILE2  "/test/1/2/2.txt"
-TEST_CASE("Copy file") {
-	int src_file, dst_file;
-	char buf[CONFIG_PAGE_SIZE];
-	int bytesread;
-
-	test_assert(0 <=  (src_file = open(FS_FILE1, O_WRONLY)));
-	test_assert(0 <=  (dst_file = open(FS_FILE2, O_WRONLY)));
-	test_assert_zero(lseek(dst_file, 0, SEEK_SET));
-
-	bytesread = 0;
-	while (1) {
-		test_assert(0 <=  (bytesread = read(src_file, buf, CONFIG_PAGE_SIZE)));
-		if(0 >= bytesread) {
-			break;
-		}
-		test_assert(0 < write (dst_file, buf, bytesread));
-	}
-
-	test_assert_zero(close(src_file));
-	test_assert_zero(close(dst_file));
-}
-
-TEST_CASE("Read file") {
-	int file;
-	char buf[CONFIG_PAGE_SIZE];
-
-	test_assert(0 <=  (file = open(FS_FILE2, O_RDONLY)));
-	test_assert_zero(lseek(file, 0, SEEK_SET));
-
-	test_assert(0 <= read(file, buf, CONFIG_PAGE_SIZE));
-	test_assert_zero(strcmp(FS_TESTDATA, buf));
-
-	test_assert_zero(close(file));
+	test_assert_zero(creat(FS_FILE2, 0));
 }
 
 TEST_CASE("Delete file") {

@@ -8,6 +8,7 @@ module ramdisk_test {
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.fs.driver.devfs
 	depends embox.mem.page_api
+	depends embox.mem.pool
 	depends embox.framework.LibFramework
 }
 
@@ -18,6 +19,7 @@ module filesystem_test {
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.fs.driver.devfs
 	depends embox.mem.page_api
+	depends embox.mem.pool
 	depends embox.framework.LibFramework
 }
 
@@ -28,5 +30,6 @@ module file_test {
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.fs.driver.devfs
 	depends embox.mem.page_api
+	depends embox.mem.pool
 	depends embox.framework.LibFramework
 }

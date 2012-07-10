@@ -58,13 +58,6 @@ FILE *fopen(const char *path, const char *mode) {
 		desc->ops = (struct file_operations *) drv->file_op;
 	}
 
-	/*if (NULL == drv->file_op->fopen) {
-		errno = -EINVAL;
-		LOG_ERROR("fop->fopen is NULL handler\n");
-		return NULL;
-	}
-	file = drv->file_op->fopen(desc, mode);*/
-
 	if (NULL == desc->ops->fopen) {
 			errno = -EBADF;
 			LOG_ERROR("fop->fopen is NULL handler\n");

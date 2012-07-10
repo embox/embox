@@ -6,5 +6,6 @@ module ramfs {
 	source "cpio.c", "ramfs.c", "ramfs_cpio.S"
 	source "ramfs_lds.lds.S"
 	depends embox.fs.core
+	depends embox.mem.pool
 	option number fdesc_quantity=32
 }

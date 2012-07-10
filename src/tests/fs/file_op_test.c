@@ -28,8 +28,8 @@ static fs_drv_t *fs_drv;
 #define FS_DEV  "/dev/ramdisk"
 #define FS_TYPE  16
 #define FS_BLOCKS  124
-#define FS_DIR  "/test"
-#define FS_FILE1  "/test/1/2/3/1.txt"
+#define FS_DIR  "/test_fop"
+#define FS_FILE1  "/test_fop/1/2/3/1.txt"
 
 #define FS_TESTDATA  "qwerty\n"
 TEST_CASE("Write file") {
@@ -41,7 +41,7 @@ TEST_CASE("Write file") {
 	test_assert_zero(close(file));
 }
 
-#define FS_FILE2  "/test/1/2/3/2.txt"
+#define FS_FILE2  "/test_fop/1/2/3/2.txt"
 TEST_CASE("Copy file") {
 	int src_file, dst_file;
 	char buf[CONFIG_PAGE_SIZE];

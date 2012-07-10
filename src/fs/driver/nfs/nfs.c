@@ -15,6 +15,7 @@
 #include <fs/vfs.h>
 #include <fs/nfs.h>
 #include <fs/xdr_nfs.h>
+#include <mem/misc/pool.h>
 #include <net/rpc/clnt.h>
 #include <net/rpc/xdr.h>
 
@@ -28,88 +29,10 @@ static int nfs_lookup(node_t *node, nfs_file_description_t *fd);
 nfs_fs_description_t *p_fs_fd;
 
 /* nfs filesystem description pool */
-
-typedef struct nfs_fs_description_head {
-	struct list_head *next;
-	struct list_head *prev;
-	nfs_fs_description_t desc;
-} nfs_fs_description_head_t;
-
-static nfs_fs_description_head_t nfs_fs_pool[7];
-static LIST_HEAD(nfs_free_fs);
-
-#define param_to_head_fs(fs_param) \
-	(uint32_t)(fs_param - offsetof(nfs_fs_description_head_t, desc))
-
-static void init_nfs_fsinfo_pool(void) {
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(nfs_fs_pool); i++) {
-		list_add((struct list_head *) &nfs_fs_pool[i], &nfs_free_fs);
-	}
-}
-
-static nfs_fs_description_t *nfs_fsinfo_alloc(void) {
-	nfs_fs_description_head_t *head;
-	nfs_fs_description_t *desc;
-
-	if (list_empty(&nfs_free_fs)) {
-		return NULL;
-	}
-	head = (nfs_fs_description_head_t *) (&nfs_free_fs)->next;
-	list_del((&nfs_free_fs)->next);
-	desc = &(head->desc);
-	return desc;
-}
-
-
-static void nfs_fsinfo_free(nfs_fs_description_t *desc) {
-	if (NULL == desc) {
-		return;
-	}
-	list_add((struct list_head*) param_to_head_fs(desc), &nfs_free_fs);
-}
-
+POOL_DEF (nfs_fs_pool, struct nfs_fs_description, 5);
 
 /* nfs file description pool */
-
-typedef struct nfs_file_description_head {
-	struct list_head *next;
-	struct list_head *prev;
-	nfs_file_description_t desc;
-} nfs_file_description_head_t;
-
-static nfs_file_description_head_t nfs_files_pool[MAX_FILE_QUANTITY];
-static LIST_HEAD(nfs_free_file);
-
-#define param_to_head_file(file_param) \
-	(uint32_t)(file_param - offsetof(nfs_file_description_head_t, desc))
-
-static void init_nfs_fileinfo_pool(void) {
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(nfs_files_pool); i++) {
-		list_add((struct list_head *) &nfs_files_pool[i], &nfs_free_file);
-	}
-}
-
-static nfs_file_description_t *nfs_fileinfo_alloc(void) {
-	nfs_file_description_head_t *head;
-	nfs_file_description_t *desc;
-
-	if (list_empty(&nfs_free_file)) {
-		return NULL;
-	}
-	head = (nfs_file_description_head_t *) (&nfs_free_file)->next;
-	list_del((&nfs_free_file)->next);
-	desc = &(head->desc);
-	return desc;
-}
-
-static void nfs_fileinfo_free(nfs_file_description_t *desc) {
-	if (NULL == desc) {
-		return;
-	}
-	list_add((struct list_head*) param_to_head_file(desc), &nfs_free_file);
-}
+POOL_DEF (nfs_file_pool, struct nfs_file_description, MAX_FILE_QUANTITY);
 
 /* File operations */
 
@@ -274,8 +197,8 @@ static fsop_desc_t nfsfs_fsop = { nfsfs_init, nfsfs_format, nfsfs_mount,
 static fs_drv_t nfsfs_drv = { "nfs", &nfsfs_fop, &nfsfs_fsop };
 
 static int nfsfs_init(void * par) {
-	init_nfs_fsinfo_pool();
-	init_nfs_fileinfo_pool();
+	//init_nfs_fsinfo_pool();
+	//init_nfs_fileinfo_pool();
 	return 0;
 }
 
@@ -378,8 +301,8 @@ static int nfsfs_mount(void *par) {
 		dir_node->properties = DIRECTORY_NODE_TYPE;
 	}
 
-	if ((NULL == (p_fs_fd = nfs_fsinfo_alloc())) ||
-			(NULL == (fd = nfs_fileinfo_alloc()))) {
+	if ((NULL == (p_fs_fd = pool_alloc(&nfs_fs_pool))) ||
+			(NULL == (fd = pool_alloc(&nfs_file_pool)))) {
 		return -ENOMEM;
 	}
 	fd->p_fs_dsc = p_fs_fd;
@@ -400,7 +323,8 @@ static int nfsfs_mount(void *par) {
 
 	if(0 >  nfs_mount_proc()) {
 		nfs_clnt_destroy(p_fs_fd);
-		nfs_fsinfo_free(p_fs_fd);
+		//nfs_fsinfo_free(p_fs_fd);
+		pool_free(&nfs_fs_pool, p_fs_fd);
 		return -1;
 	}
 
@@ -409,7 +333,8 @@ static int nfsfs_mount(void *par) {
 
 	if(0 >  create_dir_entry(p_fs_fd->mnt_point)) {
 		nfs_clnt_destroy(p_fs_fd);
-		nfs_fsinfo_free(p_fs_fd);
+		//nfs_fsinfo_free(p_fs_fd);
+		pool_free(&nfs_fs_pool, p_fs_fd);
 		return -1;
 	}
 	return 0;
@@ -424,7 +349,7 @@ static node_t  *create_nfs_file (char *full_name, readdir_desc_t *predesc) {
 		if (NULL == (node = vfs_add_path (full_name, NULL))) {
 			return NULL;/*device not found*/
 		}
-		if(NULL == (fd = nfs_fileinfo_alloc())) {
+		if(NULL == (fd = pool_alloc(&nfs_file_pool))) {
 			return NULL;
 		}
 	}
@@ -603,7 +528,7 @@ static int nfsfs_create(void *par) {
 		return -1;
 	}
 
-	if(NULL == (fd = nfs_fileinfo_alloc())) {
+	if(NULL == (fd = pool_alloc(&nfs_file_pool))) {
 		return -1;
 	}
 	node->attr = (void *) fd;
@@ -649,7 +574,7 @@ static int nfsfs_delete(const char *fname) {
 		return -1;
 	}
 
-	nfs_fileinfo_free(fd);
+	pool_free(&nfs_file_pool, fd);
 	vfs_del_leaf(node);
 	return 0;
 }

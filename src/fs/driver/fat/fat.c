@@ -20,93 +20,17 @@
 #include <util/array.h>
 #include <embox/device.h>
 #include <mem/page.h>
+#include <mem/misc/pool.h>
 #include <cmd/mount.h>
 
 static uint8_t sector_buff[SECTOR_SIZE];
 static uint32_t bytecount;
 
 /* fat filesystem description pool */
-
-typedef struct fat_fs_description_head {
-	struct list_head *next;
-	struct list_head *prev;
-	fat_fs_description_t desc;
-} fat_fs_description_head_t;
-
-static fat_fs_description_head_t fat_fs_pool[QUANTITY_RAMDISK];
-static LIST_HEAD(fat_free_fs);
-
-#define param_to_head_fs(fs_param) \
-	(uint32_t)(fs_param - offsetof(fat_fs_description_head_t, desc))
-
-static void init_fat_fsinfo_pool(void) {
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(fat_fs_pool); i++) {
-		list_add((struct list_head *) &fat_fs_pool[i], &fat_free_fs);
-	}
-}
-
-static fat_fs_description_t *fat_fsinfo_alloc(void) {
-	fat_fs_description_head_t *head;
-	fat_fs_description_t *desc;
-
-	if (list_empty(&fat_free_fs)) {
-		return NULL;
-	}
-	head = (fat_fs_description_head_t *) (&fat_free_fs)->next;
-	list_del((&fat_free_fs)->next);
-	desc = &(head->desc);
-	return desc;
-}
-
-static void fat_fsinfo_free(fat_fs_description_t *desc) {
-	if (NULL == desc) {
-		return;
-	}
-	list_add((struct list_head*) param_to_head_fs(desc), &fat_free_fs);
-}
+POOL_DEF (fat_fs_pool, struct fat_fs_description, QUANTITY_RAMDISK);
 
 /* fat file description pool */
-
-typedef struct fat_file_description_head {
-	struct list_head *next;
-	struct list_head *prev;
-	fat_file_description_t desc;
-} fat_file_description_head_t;
-
-static fat_file_description_head_t fat_files_pool[MAX_FILE_QUANTITY];
-static LIST_HEAD(fat_free_file);
-
-#define param_to_head_file(file_param) \
-	(uint32_t)(file_param - offsetof(fat_file_description_head_t, desc))
-
-static void init_fat_fileinfo_pool(void) {
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(fat_files_pool); i++) {
-		list_add((struct list_head *) &fat_files_pool[i], &fat_free_file);
-	}
-}
-
-static fat_file_description_t *fat_fileinfo_alloc(void) {
-	fat_file_description_head_t *head;
-	fat_file_description_t *desc;
-
-	if (list_empty(&fat_free_file)) {
-		return NULL;
-	}
-	head = (fat_file_description_head_t *) (&fat_free_file)->next;
-	list_del((&fat_free_file)->next);
-	desc = &(head->desc);
-	return desc;
-}
-
-static void fat_fileinfo_free(fat_file_description_t *desc) {
-	if (NULL == desc) {
-		return;
-	}
-	list_add((struct list_head*) param_to_head_file(desc), &fat_free_file);
-}
-
+POOL_DEF (fat_file_pool, struct _fat_file_description, MAX_FILE_QUANTITY);
 
 uint32_t fat_get_ptn_start(void *fd, uint8_t *p_scratchsector,
 		uint8_t pnum, uint8_t *pactive,	uint8_t *pptype, uint32_t *psize);
@@ -245,8 +169,8 @@ static fsop_desc_t fatfs_fsop = { fatfs_init, fatfs_format, fatfs_mount,
 static fs_drv_t fatfs_drv = { "vfat", &fatfs_fop, &fatfs_fsop };
 
 static int fatfs_init(void * par) {
-	init_fat_fsinfo_pool();
-	init_fat_fileinfo_pool();
+	//init_fat_fsinfo_pool();
+	//init_fat_fileinfo_pool();
 	return 0;
 }
 
@@ -261,8 +185,8 @@ static int fatfs_format(void *par) {
 		return -ENODEV;/*device not found*/
 	}
 
-	if((NULL == (fs_des = fat_fsinfo_alloc())) ||
-			(NULL == (fd = fat_fileinfo_alloc()))) {
+	if((NULL == (fs_des = pool_alloc(&fat_fs_pool))) ||
+			(NULL == (fd = pool_alloc(&fat_file_pool)))) {
 		return -ENOMEM;
 	}
 	fs_des->p_device = params;
@@ -299,7 +223,7 @@ static int fatfs_mount(void *par) {
 	dev_fd = (fat_file_description_t *) dev_node->attr;
 	strcpy(dev_fd->p_fs_dsc->root_name, params->dir);
 
-	if(NULL == (fd = fat_fileinfo_alloc())) {
+	if(NULL == (fd = pool_alloc(&fat_file_pool))) {
 		return -ENOMEM;
 	}
 	fd->p_fs_dsc = dev_fd->p_fs_dsc;
@@ -312,7 +236,7 @@ static int fatfs_mount(void *par) {
 
 static int fatfs_create(void *par) {
 	file_create_param_t *param;
-	fat_file_description_t *fd;
+	fat_file_description_t *fd, *parents_fd;
 	node_t *node, *parents_node;
 	int node_quantity;
 
@@ -320,6 +244,7 @@ static int fatfs_create(void *par) {
 
 	node = (node_t *)param->node;
 	parents_node = (node_t *)param->parents_node;
+	parents_fd = (fat_file_description_t *) parents_node->attr;
 
 	if (DIRECTORY_NODE_TYPE == (node->properties & DIRECTORY_NODE_TYPE)) {
 		node_quantity = 3; /* need create . and .. directory */
@@ -339,11 +264,10 @@ static int fatfs_create(void *par) {
 			node = vfs_add_path (param->path, NULL);
 		}
 
-		if(NULL == (fd = fat_fileinfo_alloc())) {
+		if(NULL == (fd = pool_alloc(&fat_file_pool))) {
 			return -ENOMEM;
 		}
-		fd->p_fs_dsc = ((fat_file_description_t *)
-				parents_node->attr)->p_fs_dsc;
+		fd->p_fs_dsc = parents_fd->p_fs_dsc;
 		node->fs_type = &fatfs_drv;
 		node->file_info = (void *) &fatfs_fop;
 		node->attr = (void *)fd;
@@ -366,21 +290,44 @@ static int fatfs_create(void *par) {
 
 static int fatfs_delete(const char *fname) {
 	fat_file_description_t *fd;
-	node_t *nod;
+	node_t *nod, *pointnod;
 	char path [CONFIG_MAX_LENGTH_PATH_NAME];
 
-	nod = vfs_find_node(fname, NULL);
-	fd = nod->attr;
+	if(NULL == (nod = vfs_find_node(fname, NULL))) {
+		return -1;
+	}
+	fd = (fat_file_description_t *)nod->attr;
 
 	fatfs_set_path ((uint8_t *) path, nod);
+
+	/* need delete "." and ".." node for directory */
+	if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
+
+		strcat(path, "/.");
+		pointnod = vfs_find_node(path, NULL);
+		vfs_del_leaf(pointnod);
+
+		strcat(path, ".");
+		pointnod = vfs_find_node(path, NULL);
+		vfs_del_leaf(pointnod);
+
+		path[strlen(path) - 3] = '\0';
+	}
+
+	/* remove the root name to give a name to fat filesystem name*/
 	cut_mount_dir((char *) path, fd->p_fs_dsc->root_name);
 
+	/* delete file from fat fs*/
 	if(fat_unlike_file(fd, (uint8_t *) path, (uint8_t *) sector_buff)) {
 		return -1;
 	}
 
-	fat_fileinfo_free(fd);
-	if(0)fat_fsinfo_free(fd->p_fs_dsc);
+	pool_free(&fat_file_pool, fd);
+
+	/* delete filesystem descriptor when delete root dir*/
+	if(0 == *path) {
+		pool_free(&fat_fs_pool, fd->p_fs_dsc);
+	}
 	vfs_del_leaf(nod);
 	return 0;
 }
@@ -465,18 +412,18 @@ const fs_drv_t *fatfs_get_fs(void) {
     return &fatfs_drv;
 }
 
-static void set_filetime(dir_ent_t de) {
+static void set_filetime(dir_ent_t *de) {
 	/* TODO set normal time */
-		de.crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
-		de.crttime_h = 0x08;
-		de.crtdate_l = 0x11;
-		de.crtdate_h = 0x34;
-		de.lstaccdate_l = 0x11;
-		de.lstaccdate_h = 0x34;
-		de.wrttime_l = 0x20;
-		de.wrttime_h = 0x08;
-		de.wrtdate_l = 0x11;
-		de.wrtdate_h = 0x34;
+		de->crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
+		de->crttime_h = 0x08;
+		de->crtdate_l = 0x11;
+		de->crtdate_h = 0x34;
+		de->lstaccdate_l = 0x11;
+		de->lstaccdate_h = 0x34;
+		de->wrttime_l = 0x20;
+		de->wrttime_h = 0x08;
+		de->wrtdate_l = 0x11;
+		de->wrtdate_h = 0x34;
 }
 
 /**
@@ -1396,8 +1343,8 @@ void fatfs_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
 	memcpy(de[0].name, MSDOS_DOT, MSDOS_NAME);
 	memcpy(de[1].name, MSDOS_DOTDOT, MSDOS_NAME);
 	de[0].attr = de[1].attr = ATTR_DIRECTORY;
-	set_filetime(de[0]);
-	set_filetime(de[1]);
+	set_filetime(&de[0]);
+	set_filetime(&de[1]);
 
 	/*point to the directory containing cluster */
 	de[0].startclus_l_l = cluster & 0xff;
@@ -1439,6 +1386,7 @@ int fatfs_create_file(void *par) {
 	fileinfo = &fd->fi;
 
 	memset(fileinfo, 0, sizeof(file_info_t));
+	fileinfo->volinfo = volinfo;
 
 	/* Get a local copy of the path. */
 	strncpy((char *) tmppath,
@@ -1468,7 +1416,7 @@ int fatfs_create_file(void *par) {
 	memset(&de, 0, sizeof(de));
 	memcpy(de.name, filename, MSDOS_NAME);
 	de.attr = node->properties;
-	set_filetime(de);
+	set_filetime(&de);
 
 	/* allocate a starting cluster for the directory entry */
 	cluster = fat_get_free_fat_(fd, sector_buff);
@@ -1859,8 +1807,6 @@ uint32_t fat_unlike_file(void *fdsc, uint8_t *path,
 
 	cache = 0;
 
-
-
 	/* fat_open_file gives us all the information we need to delete it */
 	if (DFS_OK != fat_open_file(fd, path, O_RDONLY, p_scratch)) {
 		return DFS_NOTFOUND;
@@ -2210,7 +2156,7 @@ int fatfs_root_create(void *fdes) {
 	memset(&de, 0, sizeof(de));
 	memcpy(de.name, "/", MSDOS_NAME);
 	de.attr = ATTR_DIRECTORY;
-	set_filetime(de);
+	set_filetime(&de);
 
 	/* allocate a starting cluster for the directory entry */
 	cluster = fat_get_free_fat_(fd, sector_buff);

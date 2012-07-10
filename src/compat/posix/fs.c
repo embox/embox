@@ -67,7 +67,8 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 
 		param.node = (void *) new_node;
 		param.parents_node = (void *) node;
-		if(-1 == drv->fsop->create_file ((void *)&param)) {
+		if(0 > drv->fsop->create_file ((void *)&param)) {
+			vfs_del_leaf(new_node);
 			return NULL;
 		}
 
