@@ -28,6 +28,7 @@ module mb_intc extends embox.arch.interrupt {
 }
 
 module stm32_nvic extends embox.arch.interrupt {
+	option number irq_table_size = 16
 	source "stm32_nvic.c", "stm32_nvic.h"
 }
 

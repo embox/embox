@@ -8,7 +8,6 @@
  */
 
 #include <fs/fs_drv.h>
-#include <fs/vfs.h>
 #include <util/array.h>
 #include <stdio.h>
 

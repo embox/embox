@@ -48,7 +48,8 @@ ns_t clock_source_counter_read(const struct clock_source *cs) {
 
 const struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	const struct clock_source *cs, *best;
-	uint32_t best_resolution, resolution;
+	uint32_t best_resolution = 0;
+	uint32_t resolution = 0;
 
 	best_resolution = 0;
 	best = NULL;

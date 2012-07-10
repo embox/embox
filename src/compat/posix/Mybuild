@@ -13,11 +13,13 @@ static module LibPosix {
 		"dup.c"
 
 	depends embox.util.LibUtil
-	depends LibPosixFs
-	depends posix_env
+	depends LibPosixFsApi
 }
 
-static module LibPosixFs {
+@DefaultImpl(LibPosixFsNone)
+abstract module LibPosixFsApi { }
+
+static module LibPosixFs extends LibPosixFsApi {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "file.c", "fs.c"
 	source "file_op.c" // actually, this is LibC
@@ -26,8 +28,11 @@ static module LibPosixFs {
 	depends embox.kernel.task.idx_table
 	depends embox.fs.posix_compat
 	depends embox.kernel.task.errno
+	depends posix_env
 }
-
+static module LibPosixFsNone extends LibPosixFsApi {
+	source "file_fs_none.c"
+}
 
 @DefaultImpl(bootstrap_posix_env)
 abstract module posix_env { }

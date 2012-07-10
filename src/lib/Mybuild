@@ -109,7 +109,7 @@ static module LibCFsPosix extends LibCFs {
 	source "stdio/stdio.c"
 	source "stdio/putchar.c"
 	source "stdio/getchar.c"
-	depends embox.compat.posix.LibPosixFs
+	depends embox.compat.posix.LibPosixFsApi
 }
 
 static module LibCFsNone extends LibCFs {

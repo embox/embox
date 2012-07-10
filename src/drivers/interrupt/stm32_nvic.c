@@ -29,7 +29,7 @@
 #define SCB_ICSR (SCB_BASE + 0x04)
 #define SCB_VTOR (SCB_BASE + 0x08)
 
-#define EXCEPTION_TABLE_SZ 0x20
+#define EXCEPTION_TABLE_SZ OPTION_GET(NUMBER,irq_table_size)
 
 /**
  * ENABLE, CLEAR, SET_PEND, CLR_PEND, ACTIVE is a base of bit arrays
