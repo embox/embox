@@ -1,0 +1,34 @@
+/**
+ * @file
+ * @brief Exception Handling support header
+ * @date 11.07.12
+ * @author Ilia Vaprol
+ */
+
+#ifndef EXCEPTION_
+#define EXCEPTION_
+
+extern "C++" {
+
+namespace std {
+
+	class exception {
+	public:
+		exception() throw() { }
+		virtual ~exception() throw() { }
+		virtual const char* what() const throw() { return "std::exception"; }
+	};
+
+	class bad_exception : public exception {
+	public:
+		bad_exception() throw() { }
+		virtual ~bad_exception() throw() { }
+		virtual const char* what() const throw() { return "std::bad_exception"; }
+	};
+
+} // namespace std
+
+} // extern "C++"
+
+#endif // EXCEPTION_
+

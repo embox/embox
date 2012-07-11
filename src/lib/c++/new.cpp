@@ -10,7 +10,7 @@
 const std::nothrow_t std::nothrow;
 
 // Implementation of new and delete operators for single object
-void* operator new(std::size_t size) {
+void* operator new(std::size_t size) throw(std::bad_alloc) {
 	return std::malloc(size);
 }
 
@@ -28,7 +28,7 @@ void operator delete(void* ptr, const std::nothrow_t* nothrow_const) throw() {
 
 
 // Forwarding functions for array of objects
-void* operator new[](std::size_t size) {
+void* operator new[](std::size_t size) throw(std::bad_alloc) {
 	return ::operator new(size);
 }
 

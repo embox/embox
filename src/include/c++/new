@@ -10,22 +10,33 @@
 #define NEW_
 
 #include <cstdlib>
+#include <exception>
 
 extern "C++" {
 
 namespace std {
+
+	class bad_alloc : public exception {
+	public:
+		bad_alloc() throw() { }
+		virtual ~bad_alloc() throw() { }
+		virtual const char* what() const throw() { return "std::bad_alloc"; }
+	};
+
 	struct nothrow_t { };
+
 	extern const struct nothrow_t nothrow;
+
 } // namespace std
 
 // Single new and delete operators
-void* operator new(std::size_t);
+void* operator new(std::size_t) throw(std::bad_alloc);
 void* operator new(std::size_t, const std::nothrow_t&) throw();
 void operator delete(void*) throw();
 void operator delete(void*, const std::nothrow_t&) throw();
 
 // Array new and delete operators (same)
-void* operator new[](std::size_t);
+void* operator new[](std::size_t) throw(std::bad_alloc);
 void* operator new[](std::size_t, const std::nothrow_t&) throw();
 void operator delete[](void*) throw();
 void operator delete[](void*, const std::nothrow_t&) throw();
