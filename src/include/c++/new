@@ -27,6 +27,10 @@ namespace std {
 
 	extern const struct nothrow_t nothrow;
 
+	typedef void (*new_handler)();
+
+	new_handler set_new_handler(new_handler) throw();
+
 } // namespace std
 
 // Single new and delete operators
