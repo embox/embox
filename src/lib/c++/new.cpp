@@ -63,7 +63,7 @@ void operator delete(void* ptr) throw() {
 	std::free(ptr);
 }
 
-void operator delete(void* ptr, const std::nothrow_t* nothrow_const) throw() {
+void operator delete(void* ptr, const std::nothrow_t& nothrow_const) throw() {
 	::operator delete(ptr);
 }
 
@@ -81,7 +81,7 @@ void operator delete[](void* ptr) throw() {
 	::operator delete(ptr);
 }
 
-void operator delete[](void* ptr, const std::nothrow_t* nothrow_const) throw() {
+void operator delete[](void* ptr, const std::nothrow_t& nothrow_const) throw() {
 	::operator delete(ptr, nothrow_const);
 }
 
