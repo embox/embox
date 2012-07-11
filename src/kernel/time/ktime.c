@@ -29,6 +29,15 @@ struct timeval *ktime_get_timeval(struct timeval *tv) {
 	return tv;
 }
 
+struct timespec *ktime_get_timespec(struct timespec *ts) {
+	ns_t ns;
+
+	ns = ktime_get_ns();
+	ts->tv_sec = ns / NSEC_PER_SEC;
+	ts->tv_nsec = ns % NSEC_PER_SEC;
+	return ts;
+}
+
 static int module_init(void) {
 	const struct clock_source *cs;
 

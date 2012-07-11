@@ -15,7 +15,4 @@ extern struct timeval *ktime_get_timeval(struct timeval *tv);
 extern struct timespec *ktime_get_timespec(struct timespec *ts);
 extern ns_t ktime_get_ns(void);
 
-/* Return active time source. */
-extern struct clock_source *ktime_get_time_source(void);
-
 #endif /* KERNEL_TIME_KTIME_H_ */
