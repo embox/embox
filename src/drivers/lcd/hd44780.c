@@ -1,7 +1,8 @@
 /**
  * @file
  * @brief Simple driver for Hitachi HD44780. There is some limitation:
- *
+ *	* Control pins must be on same gpio port
+ *	* Data pins must be attached sequentially to same port
  *
  * @author  Anton Kozlov
  * @date    10.07.2012
