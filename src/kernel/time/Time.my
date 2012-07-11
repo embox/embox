@@ -12,6 +12,7 @@ module clock_source {
 }
 
 module kernel_time {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ktime.c"
 	depends embox.kernel.timer.itimer
 }

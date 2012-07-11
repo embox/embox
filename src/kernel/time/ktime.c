@@ -20,7 +20,7 @@ ns_t ktime_get_ns(void) {
 	return itimer_read(&sys_timecounter);
 }
 
-struct ktimeval *ktime_get_timeval(struct ktimeval *tv) {
+struct timeval *ktime_get_timeval(struct timeval *tv) {
 	ns_t ns;
 
 	ns = ktime_get_ns();

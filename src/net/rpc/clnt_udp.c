@@ -90,7 +90,7 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	socklen_t addr_len;
 	size_t buff_len;
 	useconds_t was_sended, elapsed, wait_timeout, wait_resend;
-	struct ktimeval tmp;
+	struct timeval tmp;
 
 	assert((clnt != NULL) && (inproc != NULL));
 

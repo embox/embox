@@ -261,7 +261,7 @@ int tcp_st_status(union sock_pointer sock) {
 }
 
 useconds_t tcp_get_usec(void) {
-	struct ktimeval tv;
+	struct timeval tv;
 	ktime_get_timeval(&tv);
 	return (useconds_t)tv.tv_sec * USEC_PER_SEC + (useconds_t)tv.tv_usec;
 }

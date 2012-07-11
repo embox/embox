@@ -248,7 +248,7 @@ static int icmp_echo(sk_buff_t *skb) {
 }
 
 /* Map time into a proper ICMP network format */
-static inline __be32 iptime(struct ktimeval *ctime) {
+static inline __be32 iptime(struct timeval *ctime) {
 	uint32_t t = (ctime->tv_sec % (24*60*60)) * 1000 + ctime->tv_usec / 1000;
 	return (htonl(t));
 }
@@ -256,7 +256,7 @@ static inline __be32 iptime(struct ktimeval *ctime) {
 static int icmp_timestamp(sk_buff_t *skb) {
 	sk_buff_t *reply;
 	__be32 *time_ptr;
-	struct ktimeval tv;
+	struct timeval tv;
 	__be32 time_field;
 	int i;
 

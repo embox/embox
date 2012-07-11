@@ -137,7 +137,7 @@ static void set_date(char *new_date) {
 
 static int exec(int argc, char **argv) {
 	int opt;
-	struct ktimeval tv;
+	struct timeval tv;
 
 	getopt_init();
 
