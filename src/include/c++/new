@@ -12,10 +12,30 @@
 #include <cstdlib>
 
 extern "C++" {
+
+namespace std {
+	struct nothrow_t { };
+	extern const struct nothrow_t nothrow;
+} // namespace std
+
+// Single new and delete operators
 void* operator new(std::size_t);
+void* operator new(std::size_t, const std::nothrow_t&) throw();
+void operator delete(void*) throw();
+void operator delete(void*, const std::nothrow_t&) throw();
+
+// Array new and delete operators (same)
 void* operator new[](std::size_t);
-void operator delete(void*);
-void operator delete[](void*);
+void* operator new[](std::size_t, const std::nothrow_t&) throw();
+void operator delete[](void*) throw();
+void operator delete[](void*, const std::nothrow_t&) throw();
+
+// Default placement versions of new and delete operators
+inline void* operator new(std::size_t, void* ptr) throw() { return ptr; }
+inline void* operator new[](std::size_t, void* ptr) throw() { return ptr; }
+inline void operator delete(void*, void*) throw() { }
+inline void operator delete[](void*, void*) throw() { }
+
 } // extern "C++"
 
 #endif // NEW_
