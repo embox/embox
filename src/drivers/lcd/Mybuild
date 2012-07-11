@@ -1,0 +1,36 @@
+
+package embox.driver.lcd
+
+module hd44780 {
+
+	option string control_port
+
+	option number reg_select_pin
+	option number rw_pin
+	option number clock_pin
+
+	option string data_port
+	option number data_pins_offset
+
+	option number line_n
+	option number line_width
+
+	source "hd44780.c"
+
+	depends embox.driver.gpio.api
+}
+/* include example (suitable for stm32vl)
+
+	@Runlevel(2) include embox.driver.lcd.hd44780(
+		line_n=2,
+		line_width=16,
+
+		control_port="GPIO_C",
+		reg_select_pin=0,
+		rw_pin=1,
+		clock_pin=2,
+
+		data_port="GPIO_A",
+		data_pins_offset=0)
+*/
+
