@@ -30,6 +30,10 @@ ns_t clock_source_read(const struct clock_source *cs) {
 			cycles = cd->read();
 		} while(old_jiffies != clock_sys_ticks());
 
+		if (ed->pending && ed->pending(ed->irq_nr)) {
+			old_jiffies++;
+		}
+
 		cycles_all = cycles + old_jiffies * cycles_per_jiff;
 
 		/* TODO cheat. read() will miss for one jiff sometimes. */
