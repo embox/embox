@@ -26,6 +26,12 @@ namespace std {
 		virtual const char* what() const throw() { return "std::bad_exception"; }
 	};
 
+	typedef void (*terminate_handler)();
+
+	terminate_handler set_terminate(terminate_handler) throw();
+
+	void terminate();
+
 } // namespace std
 
 } // extern "C++"

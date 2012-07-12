@@ -23,6 +23,7 @@ namespace std {
 	using ::free;
 	using ::malloc;
 	using ::realloc;
+	using ::abort;
 	using ::bsearch;
 	using ::qsort;
 	using ::abs;

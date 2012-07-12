@@ -23,6 +23,7 @@ static module LibCStdlib {
 	source "stdlib/strtod.c"
 	source "stdlib/strtol.c"
 	source "stdlib/strtoul.c"
+	source "stdlib/abort.c"
 }
 
 static module LibCString {

@@ -105,6 +105,7 @@ extern long long atoq(const char *nptr);
 extern double strtod(const char *nptr, char **endptr);
 extern float strtof(const char *nptr, char **endptr);
 extern long double strtold(const char *nptr, char **endptr);
+extern void abort(void);
 
 /**
  * Returns the absolute value of an argument. If the argument is not negative,
