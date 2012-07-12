@@ -80,17 +80,17 @@ static void clear_prev(struct free_block *block) {
 
 static void mark_next(struct free_block *block) {
 	struct free_block *nblock; /* next block */
+	size_t size = get_clear_size(block->size);
 
-	nblock =
-			(struct free_block *) ((char *) block + get_clear_size(block->size));
+	nblock = (struct free_block *) ((char *) block + size);
 	nblock->size |= 0x2;
 }
 
 static void clear_next(struct free_block *block) {
 	struct free_block *nblock; /* next block */
+	size_t size = get_clear_size(block->size);
 
-	nblock =
-			(struct free_block *) ((char *) block + get_clear_size(block->size));
+	nblock = (struct free_block *) ((char *) block + size);
 	nblock->size &= ~0x2;
 }
 
@@ -121,14 +121,14 @@ static struct free_block * concatenate_next(struct free_block *block) {
 	size_t size;
 	struct free_block *nblock; /* next block */
 
-	nblock =
-			(struct free_block *) ((char *) block + get_clear_size(block->size));
+	size   = get_clear_size(block->size);
+	nblock = (struct free_block *) ((char *) block + size);
 
 	if (block_is_busy(nblock)) {
 		return block;
 	}
 
-	size = get_clear_size(nblock->size) + get_clear_size(block->size);
+	size += get_clear_size(nblock->size);
 	block->size = size | get_flags(block->size);
 	set_end_size(block);
 	block_unlink(nblock);
@@ -143,16 +143,18 @@ static void block_set_size(struct free_block *block, size_t size) {
 
 static struct free_block * cut(struct free_block *block, size_t size) {
 	struct free_block *nblock; /* new block */
-	nblock =
-			(struct free_block *) ((char *) block + size + sizeof(block->size));
+	size_t offset;
+
+	offset = size + sizeof(block->size);
+	nblock = (struct free_block *) ((char *) block + offset);
 
 	block_unlink(block);
 	block_link(nblock);
 
-	nblock->size = get_clear_size(block->size) - size - sizeof(block->size);
+	nblock->size = get_clear_size(block->size) - offset;
 	set_end_size(nblock);
 
-	block_set_size(block, size + sizeof(block->size));
+	block_set_size(block, offset);
 
 	mark_prev(nblock);
 

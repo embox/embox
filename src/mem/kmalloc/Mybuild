@@ -10,4 +10,3 @@ module slab_fit extends kmalloc {
 	source "slab_fit.c"
 	depends embox.mem.slab
 }
-
