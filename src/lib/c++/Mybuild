@@ -2,6 +2,7 @@ package embox.lib
 
 static module LibCXX {
 	source "new.cpp"
+	source "unwind.c"
 
 	depends embox.lib.LibC
 }

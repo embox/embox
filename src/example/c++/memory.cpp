@@ -20,18 +20,21 @@ public: // methods
 };
 
 static int run(int argc, char **argv) {
-	{ // Hello without args
+	{
+		std::puts("Hello without any arguments -- on stack");
 		Hello hello_noarg;
 	}
-	{ // Hello with one arg
+	{
+		std::puts("Hello with one argument -- on stack");
 		Hello hello_arg("foo");
 	}
-#if 0
-	{ // pointer to Hello creating by operator new(sz, ptr)
+	{
+		std::puts("Hello without any arguments -- via operator new(sz, ptr)");
 		char storage[sizeof(Hello)];
 		Hello *hello_ptr = new(&storage[0]) Hello();
 		hello_ptr->~Hello();
 	}
+#if 0
 	{ // pointer to Hello creating by operator new(sz)
 		Hello *hello_ptr = new Hello();
 		delete hello_ptr;
