@@ -39,7 +39,7 @@ struct timespec *ktime_get_timespec(struct timespec *ts) {
 }
 
 static int module_init(void) {
-	const struct clock_source *cs;
+	struct clock_source *cs;
 
 	/* find clock_event_device with maximal resolution  */
 	cs = clock_source_get_best(CS_ANY);

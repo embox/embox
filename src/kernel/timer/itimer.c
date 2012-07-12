@@ -24,7 +24,7 @@ void itimer_free(struct itimer *it) {
 	pool_free(&itimer_pool, it);
 }
 
-void itimer_init(struct itimer *it, const struct clock_source *cs,
+void itimer_init(struct itimer *it, struct clock_source *cs,
 		ns_t start_tstamp) {
 	assert(it);
 	assert(cs);

@@ -32,7 +32,7 @@ struct clock_source {
 	struct time_event_device *event_device;
 	struct time_counter_device *counter_device;
 	uint32_t flags; /**< periodical or not */
-	ns_t (*read)(const struct clock_source *cs);
+	ns_t (*read)(struct clock_source *cs);
 };
 
 extern uint32_t clock_source_clock_to_sec(struct clock_source *cs, uint32_t sys_ticks);
@@ -41,13 +41,25 @@ static inline ns_t cycles_to_ns(struct time_counter_device *counter, cycle_t cyc
 	return (cycles * (cycle_t)1000000000) / (cycle_t)counter->resolution;
 }
 
-extern const struct clock_source *clock_source_get_best(enum clock_source_property property);
+extern struct clock_source *clock_source_get_best(enum clock_source_property property);
 
-extern ns_t clock_source_read(const struct clock_source *cs);
-extern ns_t clock_source_counter_read(const struct clock_source *cs);
+extern ns_t clock_source_read(struct clock_source *cs);
+extern ns_t clock_source_counter_read(struct clock_source *cs);
 
-#define CLOCK_SOURCE(ts) \
-        extern const struct clock_source * __clock_sources[]; \
-        ARRAY_SPREAD_ADD(__clock_sources, ts);
+extern int clock_source_register(struct clock_source *cs);
+extern int clock_source_unregister(struct clock_source *cs);
+
+struct clock_source_head {
+	struct dlist_head lnk;
+	struct clock_source *clock_source;
+};
+
+#define TIME_EVENT_DEVICE(ted) \
+        extern const struct time_event_device * __event_devices[]; \
+        ARRAY_SPREAD_ADD(__event_devices, ted);
+
+#define TIME_COUNTER_DEVICE(tcd) \
+        extern const struct time_counter_device * __counter_devices[]; \
+        ARRAY_SPREAD_ADD(__counter_devices, tcd);
 
 #endif /* KERNEL_CLOCK_SOURCE_H_ */

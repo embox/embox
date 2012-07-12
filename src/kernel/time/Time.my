@@ -5,23 +5,22 @@ module clock_source {
 	option number clocks_quantity = 4
 
 	source "clock_source.c"
-
-	depends embox.arch.clock
-	depends kernel_time
-	depends timer
 }
 
 module kernel_time {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ktime.c"
 	depends embox.kernel.timer.itimer
+	depends embox.arch.clock
 }
 
 module jiffies {
 	source "jiffies.c"
+	depends embox.arch.clock
 }
 
 module timer {
 	source "timer.c"
 	depends jiffies
+	depends embox.arch.clock
 }

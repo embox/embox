@@ -97,6 +97,9 @@ static volatile struct gptimer_regs *dev_regs;
 
 static int dev_regs_init(irq_nr_t *irq_nr);
 
+static struct time_event_device gptimer_ed;
+static struct clock_source gptimer_cs;
+
 static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	// XXX clock_hander is called from arch part
 	clock_tick_handler(irq_nr,dev_id);
@@ -117,6 +120,8 @@ static int gptimer_init(void) {
 	}
 	assert(NULL != dev_regs);
 
+	gptimer_ed.irq_nr = irq_nr;
+
 	cfg_reg = REG_LOAD(&dev_regs->cfg);
 	for (i = 0; i < CFG_NTIMERS(cfg_reg); ++i) {
 		REG_STORE(&dev_regs->timer[i].ctrl, 0x0);
@@ -124,6 +129,8 @@ static int gptimer_init(void) {
 
 	REG_STORE(&dev_regs->scaler_reload, SCALER_RELOAD);
 	REG_STORE(&dev_regs->scaler_counter, 0);
+
+	clock_source_register(&gptimer_cs);
 
 	if (0 != irq_attach(irq_nr, clock_handler, 0, NULL, "gptimer")) {
 		panic("gptimer irq_attach failed");
@@ -168,7 +175,6 @@ static struct clock_source gptimer_cs = {
 	.read = clock_source_read,
 };
 
-CLOCK_SOURCE(&gptimer_cs);
 EMBOX_UNIT_INIT(gptimer_init);
 
 #ifdef DRIVER_AMBAPP

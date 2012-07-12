@@ -25,4 +25,5 @@ module timer_test {
 
 	depends embox.kernel.timer.timer_api
 	/*depends embox.framework.LibFramework*/
+	depends embox.kernel.time.timer
 }

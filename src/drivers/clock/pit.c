@@ -123,11 +123,11 @@ static struct clock_source pit_clock_source = {
 	.read = clock_source_read /* attach default read function */
 };
 
-CLOCK_SOURCE(&pit_clock_source);
 EMBOX_UNIT_INIT(pit_clock_init);
 
 static int pit_clock_init(void) {
 	pit_clock_setup(NULL);
+	clock_source_register(&pit_clock_source);
 
 	if (ENOERR != irq_attach((irq_nr_t) IRQ0,
 		(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {

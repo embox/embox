@@ -30,8 +30,6 @@ struct time_dev_conf jiffies_conf = {
 	HW_TIMER_PERIOD
 };
 
-CLOCK_SOURCE(&jiffies);
-
 static int module_init(void) {
 	const struct clock_source *cs;
 

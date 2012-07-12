@@ -51,6 +51,9 @@
 /** set down count mode*/
 #define TIMER_DOWN_COUNT    REVERSE_MASK(TIMER_UDT_BIT)
 
+static struct clock_source mb_cs;
+static struct time_event_device mb_ed;
+
 /**
  * Structure one of two timers. Both timers need only for pwm mode
  */
@@ -88,6 +91,7 @@ static cycle_t mb_cycle_read(void) {
 }
 
 static int mb_clock_init(void) {
+	clock_source_register(&mb_cs);
 	if (0 != irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, NULL, "mbtimer")) {
 		panic("mbtimer irq_attach failed");
 	}
@@ -109,7 +113,8 @@ static int mb_clock_setup(struct time_dev_conf * conf) {
 static struct time_event_device mb_ed = {
 	.config = mb_clock_setup,
 	.resolution = 1000,
-	.name = "mb_timer"
+	.name = "mb_timer",
+	.irq_nr = CONFIG_XILINX_TIMER_IRQ
 };
 
 static struct time_counter_device mb_cd = {
@@ -124,5 +129,4 @@ static struct clock_source mb_cs = {
 	.read = clock_source_read,
 };
 
-CLOCK_SOURCE(&mb_cs);
 EMBOX_UNIT_INIT(mb_clock_init);

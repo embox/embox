@@ -16,7 +16,7 @@
 
 EMBOX_EXAMPLE(run);
 
-static const struct clock_source *cs;
+static struct clock_source *cs;
 
 static int measured_loop(int cycles_loop) {
 	volatile int i;

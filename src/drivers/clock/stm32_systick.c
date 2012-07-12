@@ -38,12 +38,15 @@
 #define SCB_SHP_BASE ((unsigned int *) 0xe000ed18)
 #define SCB_SHP_PERIF_N 8
 
+static struct clock_source this_clock_source;
+
 static irq_return_t clock_handler(irq_nr_t irq_nr, void *data) {
 	clock_tick_handler(irq_nr, data);
 	return IRQ_HANDLED;
 }
 
 static int this_init(void) {
+	clock_source_register(&this_clock_source);
 	return irq_attach(SYSTICK_IRQ, clock_handler, 0, NULL, "stm32 systick timer");
 }
 
@@ -87,5 +90,4 @@ static struct clock_source this_clock_source = {
 	.read = clock_source_read,
 };
 
-CLOCK_SOURCE(&this_clock_source);
 EMBOX_UNIT_INIT(this_init);

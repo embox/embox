@@ -34,8 +34,8 @@ static struct clock_source tsc_clock_source = {
 static int tsc_init(void) {
 	/* TODO get CPU hz */
 	tsc.resolution = cpu_hz;
+	clock_source_register(&tsc_clock_source);
 	return ENOERR;
 }
 
-CLOCK_SOURCE(&tsc_clock_source);
 EMBOX_UNIT_INIT(tsc_init);

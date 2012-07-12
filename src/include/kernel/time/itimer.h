@@ -15,11 +15,11 @@
 
 struct itimer {
 	ns_t start_value;
-	const struct clock_source *cs;
+	struct clock_source *cs;
 };
 
 extern void itimer_init(struct itimer *it,
-		const struct clock_source *cs, ns_t start_tstamp);
+		struct clock_source *cs, ns_t start_tstamp);
 
 extern ns_t itimer_read(struct itimer *it);
 

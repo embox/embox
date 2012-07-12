@@ -19,6 +19,8 @@
 #define AT91_PIT_COUNTER_RES (SYS_CLOCK / 16)
 #define AT91_PIT_EVENT_RES 1000
 
+static struct clock_source at91_pitc_clock_source;
+
 irq_return_t clock_handler(int irq_num, void *dev_id) {
 	if (REG_LOAD(AT91C_PITC_PISR)) {
 		REG_LOAD(AT91C_PITC_PIVR);
@@ -28,6 +30,7 @@ irq_return_t clock_handler(int irq_num, void *dev_id) {
 }
 
 static int at91_pitc_init(void) {
+	clock_source_register(&at91_pitc_clock_source);
 	REG_STORE(AT91C_PMC_PCER, AT91C_ID_SYS);
 	return irq_attach((irq_nr_t) AT91C_ID_SYS,
 		(irq_handler_t) &clock_handler, 0, NULL, "at91 PIT");
@@ -38,6 +41,7 @@ static int at91_pitc_config(struct time_dev_conf * conf);
 static struct time_event_device at91_pitc_event = {
 	.config = at91_pitc_config,
 	.resolution = AT91_PIT_EVENT_RES,
+	.irq_nr = AT91C_ID_SYS
 };
 
 
