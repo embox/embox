@@ -11,6 +11,7 @@
 #include <string.h>
 #include <math.h>
 #include <embox/unit.h>
+#include <mem/heap.h>
 
 #include <stdlib.h>
 
@@ -278,17 +279,17 @@ void *calloc(size_t nmemb, size_t size) {
 static int heap_init(void) {
 	struct free_block *block;
 
-	pool = page_alloc((CONFIG_HEAP_SIZE / 2) / PAGE_SIZE());
+	pool = page_alloc((HEAP_SIZE() / 2) / PAGE_SIZE());
 
 	block = (struct free_block *) pool;
-	block->size = CONFIG_HEAP_SIZE / 2 - sizeof(block->size);
+	block->size = HEAP_SIZE() / 2 - sizeof(block->size);
 	set_end_size(block);
 
 	mark_prev(block);
 	block_link(block);
 
 	/* last work we mark as persistence busy */
-	block = (void *) ((char *) pool + CONFIG_HEAP_SIZE - sizeof(block->size));
+	block = (void *) ((char *) pool + HEAP_SIZE() - sizeof(block->size));
 	mark_block(block);
 
 	return 0;

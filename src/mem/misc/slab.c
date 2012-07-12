@@ -20,6 +20,7 @@
 
 #include <mem/misc/slab.h>
 #include <mem/page.h>
+#include <mem/heap.h>
 #include <framework/mod/member/ops.h>
 
 /**
@@ -49,7 +50,7 @@ extern char _heap_end;
 #define HEAP_START_PTR         (&_heap_start)
 #define HEAP_END_PTR           (&_heap_end)
 
-static page_info_t pages[CONFIG_HEAP_SIZE / PAGE_SIZE()];
+static page_info_t pages[HEAP_SIZE() / PAGE_SIZE()];
 
 /* macros to finding the cache and slab which an obj belongs to */
 #define SET_PAGE_CACHE(pg, x)  ((pg)->list.next = (struct list_head *)(x))

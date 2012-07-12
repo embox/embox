@@ -9,6 +9,7 @@
 #include <embox/test.h>
 #include <stdlib.h>
 #include <mem/page.h>
+#include <mem/heap.h>
 
 EMBOX_TEST_SUITE("heap allocation test");
 
@@ -36,7 +37,7 @@ TEST_CASE("Allocates big object") {
 	free(obj);
 }
 
-#define MAX_MALLOC_SIZE (CONFIG_HEAP_SIZE /2 - 8) //XXX based on current impl
+#define MAX_MALLOC_SIZE (HEAP_SIZE() /2 - 8) //XXX based on current impl
 #define BIG_MALLOC_SIZE (1024 * 1024)
 
 #if BIG_MALLOC_SIZE + 100 <= MAX_MALLOC_SIZE

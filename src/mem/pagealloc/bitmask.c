@@ -12,6 +12,7 @@
 #include <util/array.h>
 
 #include <mem/page.h>
+#include <mem/heap.h>
 
 EMBOX_UNIT_INIT(page_alloc_init);
 
@@ -22,9 +23,9 @@ EMBOX_UNIT_INIT(page_alloc_init);
 extern char *_heap_start; //TODO page : calculate free memory dynamic
 #define FREE_MEM_BASE (uint32_t)&_heap_start
 /* _heap_start _heap_end */
-static uint32_t bitmask[((CONFIG_HEAP_SIZE/PAGE_SIZE())/32) + 1];
+static uint32_t bitmask[((HEAP_SIZE()/PAGE_SIZE())/32) + 1];
 
-#define REST_MASK_BIT     (32 - (CONFIG_HEAP_SIZE/PAGE_SIZE()) / 32)
+#define REST_MASK_BIT     (32 - (HEAP_SIZE()/PAGE_SIZE()) / 32)
 
 static void *search_single_page(void) {
 	int word_offset;
