@@ -1,9 +1,7 @@
 package embox.mem
 
 abstract module heap_api {
-	// Option handling is not yet implemented
-	option number HEAP_SIZE
-	option number PAGE_SIZE = 4096
+	option number heap_size = 1048576
 }
 
 module heap_bm extends heap_api {

@@ -11,6 +11,8 @@
 
 #include <mem/pagealloc/mpallocator.h>
 #include <mem/kmalloc.h>
+#include <mem/page.h>
+
 #include <lib/list.h>
 #include <stdlib.h>
 
@@ -107,7 +109,7 @@ void kfree(void *ptr) {
 		return;
 	/* forward direction */
 	tmp_begin = (tag_free_t*) ((char*) END_TAG(ptr_begin) + sizeof(tag_t));
-	if ((char*) tmp_begin - (char*) begin_pool_ptr < CONFIG_PAGE_SIZE
+	if ((char*) tmp_begin - (char*) begin_pool_ptr < PAGE_SIZE()
 			* CONFIG_MALLOC_SIZE && tmp_begin->tag.free == HOLE) {
 		/* del tag & moving adresses*/
 		list_del((struct list_head *) tmp_begin);
@@ -150,7 +152,7 @@ static inline int allocate_mem_block(int pages) {
 		return 0;
 	}
 	/* calculate size etc. */
-	tmp_begin->tag.size = CONFIG_PAGE_SIZE * pages - sizeof(tag_free_t)
+	tmp_begin->tag.size = PAGE_SIZE() * pages - sizeof(tag_free_t)
 			- sizeof(tag_t);
 	tmp_begin->tag.free = HOLE;
 	/* write tag at the end */
@@ -208,7 +210,7 @@ static inline void eat_mem(size_t size, tag_free_t* ext) {
 void kmget_blocks_info(struct list_head* list) {
 	block_info_t* tmp_info;
 	tag_free_t* tmp_ptr;
-	int pool_size = CONFIG_MALLOC_SIZE * CONFIG_PAGE_SIZE;
+	int pool_size = CONFIG_MALLOC_SIZE * PAGE_SIZE();
 
 	if (!inited) {
 		int expr = allocate_mem_block(CONFIG_MALLOC_SIZE);

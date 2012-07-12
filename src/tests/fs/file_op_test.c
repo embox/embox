@@ -10,6 +10,7 @@
 #include <cmd/mkfs.h>
 #include <cmd/mount.h>
 #include <drivers/ramdisk.h>
+#include <mem/page.h>
 #include <embox/test.h>
 #include <fs/vfs.h>
 
@@ -44,7 +45,7 @@ TEST_CASE("Write file") {
 #define FS_FILE2  "/test_fop/1/2/3/2.txt"
 TEST_CASE("Copy file") {
 	int src_file, dst_file;
-	char buf[CONFIG_PAGE_SIZE];
+	char buf[PAGE_SIZE()];
 	int bytesread;
 
 	test_assert(0 <=  (src_file = open(FS_FILE1, O_WRONLY)));
@@ -53,7 +54,7 @@ TEST_CASE("Copy file") {
 
 	bytesread = 0;
 	while (1) {
-		test_assert(0 <=  (bytesread = read(src_file, buf, CONFIG_PAGE_SIZE)));
+		test_assert(0 <=  (bytesread = read(src_file, buf, PAGE_SIZE())));
 		if(0 >= bytesread) {
 			break;
 		}
@@ -66,12 +67,12 @@ TEST_CASE("Copy file") {
 
 TEST_CASE("Read file") {
 	int file;
-	char buf[CONFIG_PAGE_SIZE];
+	char buf[PAGE_SIZE()];
 
 	test_assert(0 <=  (file = open(FS_FILE2, O_RDONLY)));
 	test_assert_zero(lseek(file, 0, SEEK_SET));
 
-	test_assert(0 <= read(file, buf, CONFIG_PAGE_SIZE));
+	test_assert(0 <= read(file, buf, PAGE_SIZE()));
 	test_assert_zero(strcmp(FS_TESTDATA, buf));
 
 	test_assert_zero(close(file));

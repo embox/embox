@@ -10,6 +10,7 @@
 #include <types.h>
 #include <string.h>
 #include <embox/unit.h>
+#include <mem/page.h>
 
 #include <mem/pagealloc/opallocator.h>
 
@@ -39,12 +40,12 @@ void *page_alloc(void) {
 	}
 	res = find_free_page(root, 0, 0);
 	mark_page(res, 1);
-	return (void *) (page_pool + res * CONFIG_PAGE_SIZE);
+	return (void *) (page_pool + res * PAGE_SIZE());
 }
 
 void page_free(void *page) {
 	int addr = (int) page;
-	mark_page((addr - (int) page_pool) / CONFIG_PAGE_SIZE, 0);
+	mark_page((addr - (int) page_pool) / PAGE_SIZE(), 0);
 }
 
 void find_page_pool(void) {
@@ -52,24 +53,24 @@ void find_page_pool(void) {
 	extern int _mem_begin;
 	extern int _mem_length;
 	int tree_size;
-	static const int page_mask = (CONFIG_PAGE_SIZE - 1);
+	static const int page_mask = (PAGE_SIZE() - 1);
 
 	page_pool = (uint8_t *) (((int) &_free_mem) & ((int) ~page_mask));
 
 	if ((int) &_free_mem & page_mask) {
-		page_pool += CONFIG_PAGE_SIZE;
+		page_pool += PAGE_SIZE();
 	}
 
-	page_num = (((int) &_mem_begin + (int) &_mem_length) - (int) page_pool) / CONFIG_PAGE_SIZE;
+	page_num = (((int) &_mem_begin + (int) &_mem_length) - (int) page_pool) / PAGE_SIZE();
 
 	tree = (word_t *) page_pool;
-	tree_size = ((2 * (page_num / 8)) / CONFIG_PAGE_SIZE) + 1;
+	tree_size = ((2 * (page_num / 8)) / PAGE_SIZE()) + 1;
 
 	page_pool += tree_size;
-	page_pool = (uint8_t *) ((int) page_pool & ~(page_mask)) + CONFIG_PAGE_SIZE;
+	page_pool = (uint8_t *) ((int) page_pool & ~(page_mask)) + PAGE_SIZE();
 	page_num -= tree_size;
 
-	memset(tree, 0, CONFIG_PAGE_SIZE * tree_size);
+	memset(tree, 0, PAGE_SIZE() * tree_size);
 }
 
 static int find_first_zero(int val) {

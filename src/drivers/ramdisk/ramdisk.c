@@ -76,7 +76,7 @@ int ramdisk_create(void *mkfs_params) {
 	}
 
 	strcpy ((void *)&ramd_params->path, (const void *)p_mkfs_params->path);
-	ramd_params->size = p_mkfs_params->blocks * CONFIG_PAGE_SIZE;
+	ramd_params->size = p_mkfs_params->blocks * PAGE_SIZE();
 	ramd_params->blocks = p_mkfs_params->blocks;
 
 	strcpy ((void *)&ramd_params->fs_name,

@@ -17,6 +17,8 @@
 #include <string.h>
 #include <fcntl.h>
 
+#include <mem/page.h>
+
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
@@ -25,7 +27,7 @@ static void print_usage(void) {
 
 static int exec(int argc, char **argv) {
 	int opt, src_file, dst_file;
-	char buf[CONFIG_PAGE_SIZE];
+	char buf[PAGE_SIZE()];
 	int bytesread;
 	const char *src_path,*dst_path;
 	getopt_init();
@@ -62,7 +64,7 @@ static int exec(int argc, char **argv) {
 
 	// buf optimized for whole block write
 	bytesread = 0;
-	while ((bytesread = read(src_file, buf, CONFIG_PAGE_SIZE)) > 0) {
+	while ((bytesread = read(src_file, buf, PAGE_SIZE())) > 0) {
 		if (write (dst_file, buf, bytesread)<=0) {
 			printf ("WR ERR!\n");
 			break;

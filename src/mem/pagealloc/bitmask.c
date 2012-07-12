@@ -22,9 +22,9 @@ EMBOX_UNIT_INIT(page_alloc_init);
 extern char *_heap_start; //TODO page : calculate free memory dynamic
 #define FREE_MEM_BASE (uint32_t)&_heap_start
 /* _heap_start _heap_end */
-static uint32_t bitmask[((CONFIG_HEAP_SIZE/CONFIG_PAGE_SIZE)/32) + 1];
+static uint32_t bitmask[((CONFIG_HEAP_SIZE/PAGE_SIZE())/32) + 1];
 
-#define REST_MASK_BIT     (32 - (CONFIG_HEAP_SIZE/CONFIG_PAGE_SIZE) / 32)
+#define REST_MASK_BIT     (32 - (CONFIG_HEAP_SIZE/PAGE_SIZE()) / 32)
 
 static void *search_single_page(void) {
 	int word_offset;
@@ -43,7 +43,7 @@ static void *search_single_page(void) {
 
 			if (0 == (word & mask)) { /* page is free */
 				bitmask[word_offset] |= mask;
-				page = (void*) (FREE_MEM_BASE + CONFIG_PAGE_SIZE
+				page = (void*) (FREE_MEM_BASE + PAGE_SIZE()
 						* ((word_offset << 5) + bit_offset));
 				return page;
 			}
@@ -55,7 +55,7 @@ static void *search_single_page(void) {
 		for (bit_offset = 0; bit_offset < REST_MASK_BIT; ++bit_offset) {
 			if (0 == (word & mask)) { /* page is free */
 				bitmask[word_offset] |= mask;
-				page = (void*) (FREE_MEM_BASE + CONFIG_PAGE_SIZE
+				page = (void*) (FREE_MEM_BASE + PAGE_SIZE()
 						* ((word_offset << 5) + bit_offset));
 			}
 		}
@@ -243,7 +243,7 @@ static void *search_multi_page(size_t page_q) {
 	while(-1 != (page_n = search_first_free(page_n))) {
 		if(page_q == (found_page_q = check_n_free(page_n, page_q))) {
 			mark_n_busy(page_n, page_q);
-			return (void*) (FREE_MEM_BASE + CONFIG_PAGE_SIZE * page_n);
+			return (void*) (FREE_MEM_BASE + PAGE_SIZE() * page_n);
 		}
 		page_n += found_page_q;
 	}
@@ -264,7 +264,7 @@ void page_free(void *page, size_t page_q) {
 	int bit_offset;
 	size_t page_n;
 
-	page_n = ((uint32_t)page - (uint32_t)FREE_MEM_BASE) / CONFIG_PAGE_SIZE;
+	page_n = ((uint32_t)page - (uint32_t)FREE_MEM_BASE) / PAGE_SIZE();
 	word_offset = page_n / 32;
 	bit_offset = page_n % 32;
 

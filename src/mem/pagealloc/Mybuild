@@ -1,6 +1,8 @@
 package embox.mem
 
-abstract module page_api { }
+abstract module page_api {
+	option number page_size=4096
+}
 
 module bitmask extends page_api {
 	source "bitmask.c"
