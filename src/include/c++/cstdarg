@@ -15,4 +15,3 @@ namespace std {
 } // namespace std
 
 #endif // CSTDARG_
-

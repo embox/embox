@@ -27,4 +27,3 @@ namespace std {
 } // namespace std
 
 #endif // CCTYPE_
-

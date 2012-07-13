@@ -58,4 +58,3 @@ namespace std {
 } // namespace std
 
 #endif // CSTDIO_
-

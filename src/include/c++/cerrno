@@ -11,4 +11,3 @@
 #include <errno.h>
 
 #endif // CERRNO_
-

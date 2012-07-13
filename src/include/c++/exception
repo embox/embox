@@ -28,13 +28,18 @@ namespace std {
 
 	typedef void (*terminate_handler)();
 
+	typedef void (*unexpected_handler)();
+
 	terminate_handler set_terminate(terminate_handler) throw();
 
 	void terminate();
+
+	unexpected_handler set_unexpected(unexpected_handler) throw();
+
+	void unexpected();
 
 } // namespace std
 
 } // extern "C++"
 
 #endif // EXCEPTION_
-

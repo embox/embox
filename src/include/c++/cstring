@@ -34,4 +34,3 @@ namespace std {
 } // namespace std
 
 #endif // CSTRING_
-

@@ -20,4 +20,3 @@ namespace std {
 } // namespace std
 
 #endif // CMATH_
-

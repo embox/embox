@@ -7,8 +7,7 @@
 
 struct _Unwind_Exception;
 
-void _Unwind_Resume(struct _Unwind_Exception *obj)
-{
+extern void _Unwind_Resume(struct _Unwind_Exception *obj) {
 	/* TODO */
 }
 
