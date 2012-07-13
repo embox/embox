@@ -28,6 +28,15 @@ extern "C" void __cxa_throw(void *, std::type_info *, void (*)(void *)) {
 extern "C" void __cxa_call_unexpected(void*) {
 	// TODO
 	std::terminate();
-	while(1); // hack
+	while(1); // hack, cos it's [noreturn] function
+}
+
+extern "C" void* __cxa_begin_catch(void *) throw() {
+	// TODO
+	return NULL;
+}
+
+extern "C" void __cxa_end_catch() {
+	// TODO
 }
 

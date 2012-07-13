@@ -48,4 +48,4 @@ namespace std {
 
 } // extern "C++"
 
-#endif // TYPEINFON_
+#endif // TYPEINFO_

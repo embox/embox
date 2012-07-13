@@ -5,9 +5,9 @@
  * @author Ilia Vaprol
  */
 
-struct _Unwind_Exception;
+struct _Unwind_Exception; /* TODO */
 
-extern void _Unwind_Resume(struct _Unwind_Exception *obj) {
+void _Unwind_Resume(struct _Unwind_Exception *obj) {
 	/* TODO */
 }
 

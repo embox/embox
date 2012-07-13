@@ -36,7 +36,6 @@ void* operator new(std::size_t size) throw(std::bad_alloc) {
 	return ptr;
 }
 
-#if 0
 void* operator new(std::size_t size, const std::nothrow_t& nothrow_const) throw() {
 	void *ptr;
 
@@ -59,7 +58,6 @@ void* operator new(std::size_t size, const std::nothrow_t& nothrow_const) throw(
 
 	return ptr;
 }
-#endif
 
 void operator delete(void* ptr) throw() {
 	std::free(ptr);
@@ -75,9 +73,9 @@ void* operator new[](std::size_t size) throw(std::bad_alloc) {
 	return ::operator new(size);
 }
 
-//void* operator new[](std::size_t size, const std::nothrow_t& nothrow_const) throw() {
-//	return ::operator new(size, nothrow_const);
-//}
+void* operator new[](std::size_t size, const std::nothrow_t& nothrow_const) throw() {
+	return ::operator new(size, nothrow_const);
+}
 
 void operator delete[](void* ptr) throw() {
 	::operator delete(ptr);
