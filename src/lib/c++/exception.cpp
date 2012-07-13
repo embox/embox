@@ -19,8 +19,14 @@ std::terminate_handler std::set_terminate(std::terminate_handler handler) throw(
 	return prev_handler;
 }
 
-void std::terminate() {
-	__terminate_handler();
+void std::terminate() throw() {
+	try {
+		__terminate_handler();
+		std::abort();
+	}
+	catch (...) {
+		std::abort();
+	}
 }
 
 std::unexpected_handler set_unexpected(std::unexpected_handler handler) throw() {
@@ -31,5 +37,6 @@ std::unexpected_handler set_unexpected(std::unexpected_handler handler) throw() 
 
 void std::unexpected() {
 	__unexpected_handler();
+	std::terminate();
 }
 

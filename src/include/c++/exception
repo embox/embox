@@ -32,7 +32,7 @@ namespace std {
 
 	terminate_handler set_terminate(terminate_handler) throw();
 
-	void terminate();
+	void terminate() throw();
 
 	unexpected_handler set_unexpected(unexpected_handler) throw();
 
