@@ -91,3 +91,10 @@ module udp {
 	depends embox.lib.LibC
 	depends embox.framework.LibFrameworkNet
 }
+
+module ntp {
+	source "ntp.c"
+
+	depends udp
+	depends embox.framework.LibFrameworkNet
+}
