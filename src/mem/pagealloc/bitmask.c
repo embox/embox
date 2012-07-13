@@ -25,7 +25,7 @@ extern char *_heap_start; //TODO page : calculate free memory dynamic
 /* _heap_start _heap_end */
 static uint32_t bitmask[((HEAP_SIZE()/PAGE_SIZE())/32) + 1];
 
-#define REST_MASK_BIT     (32 - (HEAP_SIZE()/PAGE_SIZE()) / 32)
+#define REST_MASK_BIT     ((HEAP_SIZE()/PAGE_SIZE()) % 32)
 
 static void *search_single_page(void) {
 	int word_offset;
@@ -69,7 +69,10 @@ static size_t search_first_free(size_t start_page) {
 	uint32_t word;
 	size_t word_offset = start_page / 32;
 	int bit_offset = start_page % 32;
-	//uint32_t mask;
+
+	if(HEAP_SIZE()/PAGE_SIZE() <= start_page) {
+		return -1;
+	}
 
 	if (0 != bit_offset) {
 		word = bitmask[word_offset];
@@ -112,12 +115,10 @@ static size_t check_n_free(size_t start_page, size_t page_q) {
 	uint32_t word;
 	size_t word_offset = start_page / 32;
 	int bit_offset = start_page % 32;
-	//uint32_t mask;
 	size_t page_cnt = page_q;
 
 	if (0 != bit_offset) {
 		word = bitmask[word_offset];
-		//mask = 1 << bit_offset;
 
 		for (; bit_offset < 32; bit_offset++) {
 			if (0 == (word & (1 << bit_offset)) && (0 == --page_cnt)) { /* page is free */
@@ -132,7 +133,6 @@ static size_t check_n_free(size_t start_page, size_t page_q) {
 
 	for (; word_offset < ARRAY_SIZE(bitmask) - 1; ++word_offset) {
 		word = bitmask[word_offset];
-		//mask = 1;
 
 		if (word == -1) {
 			page_cnt = page_q;
@@ -151,7 +151,6 @@ static size_t check_n_free(size_t start_page, size_t page_q) {
 
 	if (REST_MASK_BIT) {
 		word = bitmask[ARRAY_SIZE(bitmask) - 1];
-		//mask = 1;
 
 		for (bit_offset = 0; bit_offset < REST_MASK_BIT; ++bit_offset) {
 			if (0 == (word & (1 << bit_offset)) && (0 == --page_cnt)) { /* page is free */

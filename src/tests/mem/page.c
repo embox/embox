@@ -8,6 +8,7 @@
  */
 #include <embox/test.h>
 #include <mem/page.h>
+#include <mem/heap.h>
 
 EMBOX_TEST_SUITE("page allocation test");
 
@@ -45,4 +46,11 @@ TEST_CASE("Mixed single and multi page allocation") {
 	page = page_alloc(1);
 	test_assert_not_null(page);
 	page_free(page, 1);
+}
+
+TEST_CASE("Try allocate too lot of pages") {
+	void *page;
+
+	page = page_alloc(HEAP_SIZE()/PAGE_SIZE() + 1);
+	test_assert_null(page);
 }
