@@ -36,14 +36,17 @@ public:
 };
 
 static int run(int argc, char **argv) {
+	// stack
 	{
 		std::puts("Hello without any arguments -- on stack");
-		Hello hello_noarg;
+		Hello hello;
 	}
 	{
 		std::puts("Hello with one argument -- on stack");
-		Hello hello_arg("foo");
+		Hello hello("foo");
 	}
+
+	// operator new(size_t, void*)
 	{
 		std::puts("Hello without any arguments -- via operator new(sz, ptr)");
 		char storage[sizeof(Hello)];
@@ -51,8 +54,33 @@ static int run(int argc, char **argv) {
 		hello_ptr->~Hello();
 	}
 	{
-		std::puts("Hello with one argument -- via operator new(sz)");
+		std::puts("Hello with one argument -- via operator new(sz, ptr)");
+		char storage[sizeof(Hello)];
+		Hello *hello_ptr = new(&storage[0]) Hello("bar");
+		hello_ptr->~Hello();
+	}
+
+	// operator new(size_t)
+	{
+		std::puts("Hello without any arguments -- via operator new(sz)");
 		Hello *hello_ptr = new Hello();
+		delete hello_ptr;
+	}
+	{
+		std::puts("Hello with one argument -- via operator new(sz)");
+		Hello *hello_ptr = new Hello("baz");
+		delete hello_ptr;
+	}
+
+	// operator new(size_t, const nothrow_t&)
+	{
+		std::puts("Hello without any arguments -- via operator new(sz, nothrow)");
+		Hello *hello_ptr = new(std::nothrow) Hello();
+		delete hello_ptr;
+	}
+	{
+		std::puts("Hello with one argument -- via operator new(sz, nothrow)");
+		Hello *hello_ptr = new(std::nothrow) Hello("qux");
 		delete hello_ptr;
 	}
 	return 0;
