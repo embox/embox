@@ -7,6 +7,8 @@
 
 #include <new>
 
+#include "cxxabi.hpp"
+
 const std::nothrow_t std::nothrow = { };
 
 static std::new_handler __new_handler = 0;

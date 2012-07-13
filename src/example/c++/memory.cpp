@@ -50,13 +50,11 @@ static int run(int argc, char **argv) {
 		Hello *hello_ptr = new(&storage[0]) Hello;
 		hello_ptr->~Hello();
 	}
-#if 0
 	{
 		std::puts("Hello with one argument -- via operator new(sz)");
 		Hello *hello_ptr = new Hello();
 		delete hello_ptr;
 	}
-#endif
 	return 0;
 }
 

@@ -19,7 +19,7 @@ std::terminate_handler std::set_terminate(std::terminate_handler handler) throw(
 	return prev_handler;
 }
 
-void std::terminate() throw() {
+void std::terminate() {
 	try {
 		__terminate_handler();
 		std::abort();
