@@ -60,31 +60,27 @@ TEST_CASE("Delete file") {
 static int setup_suite(void) {
 	mkfs_params.blocks = FS_BLOCKS;
 	mkfs_params.fs_type = FS_TYPE;
+
 	strcpy((void *)&mkfs_params.fs_name, FS_NAME);
 	strcpy((void *)&mkfs_params.path, FS_DEV);
 
-	if (0 != ramdisk_create((void *)&mkfs_params)) {
-		return -1;
-	}
+	test_assert_zero(ramdisk_create((void *)&mkfs_params));
 
 	/* set filesystem attribute to ramdisk */
 	strcpy((void *)ramd_params.path, (const void *)mkfs_params.path);
-	strcpy((void *)ramd_params.fs_name,
-				(const void *)mkfs_params.fs_name);
+	strcpy((void *)ramd_params.fs_name, (const void *)mkfs_params.fs_name);
+
 	ramd_params.fs_type = mkfs_params.fs_type;
 
-	if(NULL == (fs_drv =
-			filesystem_find_drv((const char *) &mkfs_params.fs_name))) {
-		return -1;
-	}
+	fs_drv = filesystem_find_drv((const char *) &mkfs_params.fs_name);
+	test_assert_not_null(fs_drv);
 
 	mount_param.dev = FS_DEV;
 	mount_param.dir = FS_DIR;
 
-	if(NULL ==	(mount_param.dev_node =
-			vfs_find_node(mount_param.dev, NULL))) {
-		return -1;
-	}
+	mount_param.dev_node = vfs_find_node(mount_param.dev, NULL);
+	test_assert_not_null(mount_param.dev_node);
+
 	/* set created ramdisc attribute from dev_node */
 	memcpy(&ramd_params, mount_param.dev_node->attr, sizeof(ramd_params));
 
@@ -93,8 +89,7 @@ static int setup_suite(void) {
 
 static int teardown_suite(void) {
 
-	if (ramdisk_delete(FS_DEV)) {
-		return -1;
-	}
+	test_assert_zero(ramdisk_delete(FS_DEV));
+
 	return 0;
 }
