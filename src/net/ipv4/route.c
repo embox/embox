@@ -10,16 +10,17 @@
 
 #include <net/route.h>
 #include <net/arp.h>
-#include <net/in.h>
-#include <linux/init.h>
 #include <errno.h>
 #include <util/member.h>
 #include <mem/misc/pool.h>
+
 #include <lib/list.h>
+
+#include <framework/mod/options.h>
 
 
 /**
- * NOTE: Linux route uses 3 structs for routing:
+ * NOTE: Linux route uses 3 structures for routing:
  *    + Forwarding Information Base (FIB)
  *    - routing cache (256 chains)
  *    + neighbour table (ARP cache)
@@ -30,7 +31,7 @@ struct rt_entry_info {
 	struct rt_entry entry;
 };
 
-POOL_DEF(rt_entry_info_pool, struct rt_entry_info, CONFIG_ROUTE_FIB_TABLE_SIZE);
+POOL_DEF(rt_entry_info_pool, struct rt_entry_info, OPTION_GET(NUMBER,route_table_size));
 static LIST_HEAD(rt_entry_info_list);
 
 int rt_add_route(net_device_t *dev, in_addr_t dst,

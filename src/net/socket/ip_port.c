@@ -11,9 +11,11 @@
 #include <net/ip.h>
 #include <kernel/thread/sched_lock.h>
 
-#define WORD_LENGTH 32
-#define AROUND_QUANTITY	(CONFIG_QUANTITY_PROTOCOL_PORTS + WORD_LENGTH - 1)\
-	- (CONFIG_QUANTITY_PROTOCOL_PORTS + WORD_LENGTH - 1) % WORD_LENGTH
+#include <framework/mod/options.h>
+
+#define WORD_LENGTH       32
+#define AROUND_QUANTITY   (OPTION_GET(NUMBER,protocol_ports_quantity) + WORD_LENGTH - 1) \
+	- (OPTION_GET(NUMBER,protocol_ports_quantity) + WORD_LENGTH - 1) % WORD_LENGTH
 #define PORT_NUMBER_OFFSET 1 /* need because port number 1 stored at the zero position */
 
 static uint32_t tcp_ports[AROUND_QUANTITY / WORD_LENGTH] = { 0 };

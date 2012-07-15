@@ -10,13 +10,14 @@
 #include <net/skbuff.h>
 #include <hal/ipl.h>
 #include <mem/misc/pool.h>
-#include <lib/list.h>
 #include <assert.h>
 #include <string.h>
 #include <compiler.h>
+#include <framework/mod/options.h>
 
+#include <lib/list.h>
 
-POOL_DEF(skb_pool, struct sk_buff, CONFIG_QUANTITY_SKB);
+POOL_DEF(skb_pool, struct sk_buff, OPTION_GET(NUMBER,skb_quantity));
 POOL_DEF(net_buff_pool, unsigned char[SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE], CONFIG_PACK_POOL_SIZE);
 
 static unsigned char * net_buff_alloc(void) {

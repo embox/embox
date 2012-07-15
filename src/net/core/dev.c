@@ -18,19 +18,23 @@
 #include <string.h>
 #include <hal/ipl.h>
 
+
 /*--------------------------------------------
  * network device registry and name calculator
  * -------------------------------------------
  */
+#include <framework/mod/options.h>
+
+#define NET_DEVICES_QUANTITY OPTION_GET(NUMBER,net_dev_quantity)
 //TODO use hash table instead this
-struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY]; // FIXME clear before using
+struct net_device *opened_netdevs[NET_DEVICES_QUANTITY]; // FIXME clear before using
 
 int register_netdev(struct net_device *dev) {
 	size_t i;
 
 	assert(dev != NULL);
 
-	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+	for (i = 0; i < NET_DEVICES_QUANTITY; ++i) {
 		if (opened_netdevs[i] == NULL) {
 			opened_netdevs[i] = dev;
 			return ENOERR;
@@ -45,7 +49,7 @@ void unregister_netdev(struct net_device *dev) {
 
 	assert(dev != NULL);
 
-	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+	for (i = 0; i < NET_DEVICES_QUANTITY; ++i) {
 		if (opened_netdevs[i] == dev) {
 			opened_netdevs[i] = NULL;
 			return;
@@ -58,7 +62,7 @@ struct net_device * netdev_get_by_name(const char *name) {
 
 	assert(name != NULL);
 
-	for (i = 0; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+	for (i = 0; i < NET_DEVICES_QUANTITY; ++i) {
 		if (strncmp(name, opened_netdevs[i]->name, IFNAMSIZ) == 0) {
 			return opened_netdevs[i];
 		}
@@ -69,7 +73,7 @@ struct net_device * netdev_get_by_name(const char *name) {
 
 #if 0
 struct net_device * get_dev_by_idx(int idx) {
-	if ((idx < 0) || (idx >= CONFIG_NET_DEVICES_QUANTITY)) {
+	if ((idx < 0) || (idx >= NET_DEVICES_QUANTITY)) {
 		return NULL;
 	}
 
@@ -80,7 +84,7 @@ struct net_device * dev_getbyhwaddr(unsigned short type, char *hw_addr) {
 	size_t i;
 	struct net_device *dev;
 
-	for (i = 1; i < CONFIG_NET_DEVICES_QUANTITY; ++i) {
+	for (i = 1; i < NET_DEVICES_QUANTITY; ++i) {
 		dev = opened_netdevs[i];
 		if ((dev != NULL) && (memcmp(hw_addr, dev->dev_addr, dev->addr_len) == 0)) {
 			return dev;
@@ -96,7 +100,7 @@ struct net_device * dev_getbyhwaddr(unsigned short type, char *hw_addr) {
  * ------------------------------------------
  */
 static int process_backlog(struct net_device *dev);
-POOL_DEF(netdev_pool, struct net_device, CONFIG_NET_DEVICES_QUANTITY);
+POOL_DEF(netdev_pool, struct net_device, NET_DEVICES_QUANTITY);
 
 struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 		void (*setup)(struct net_device *)) {

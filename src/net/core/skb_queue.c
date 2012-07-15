@@ -8,11 +8,15 @@
 #include <net/skbuff.h>
 #include <hal/ipl.h>
 #include <mem/misc/pool.h>
-#include <lib/list.h>
 #include <assert.h>
+#include <framework/mod/options.h>
+
+#include <lib/list.h>
 
 
-POOL_DEF(skb_queue_pool, struct sk_buff_head, CONFIG_QUANTITY_SKB_QUEUE);
+
+
+POOL_DEF(skb_queue_pool, struct sk_buff_head, OPTION_GET(NUMBER,skb_queue_quantity));
 
 struct sk_buff_head * skb_queue_alloc(void) {
 	ipl_t sp;

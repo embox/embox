@@ -18,7 +18,9 @@
 #include <assert.h>
 #include <compiler.h>
 
-static struct net_device *registered_etherdev[CONFIG_NET_DEVICES_QUANTITY]; // TODO before using must be cleared
+#include <framework/mod/options.h>
+
+static struct net_device *registered_etherdev[OPTION_GET(NUMBER,eth_dev_quantity)]; // TODO before using must be cleared
 
 int eth_header(sk_buff_t *pack, struct net_device *dev, unsigned short type,
 			void *daddr, void *saddr, unsigned len) {

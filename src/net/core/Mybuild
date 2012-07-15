@@ -4,6 +4,7 @@ abstract module entry_api { }
 
 module dev {
 	source "dev.c"
+	option number net_dev_quantity=8
 
 	depends skbuff
 	depends embox.lib.LibC
@@ -22,6 +23,9 @@ module dev {
 
 module skbuff {
 	source "skb.c", "skb_queue.c"
+	option number skb_quantity=64
+	option number skb_queue_quantity=16
+
 
 	depends embox.mem.pool
 	depends embox.lib.LibC
@@ -29,6 +33,8 @@ module skbuff {
 
 module core {
 	source "devinet.c"
+	option number net_callback_quantity=16
+	option number net_interfaces_quantity=4
 
 	depends dev /* for dev.c */
 	depends embox.mem.pool
@@ -43,6 +49,7 @@ module core {
 
 module neighbour {
 	source "neighbour.c"
+	option number arp_cache_size=16
 
 	depends embox.mem.pool
 	depends embox.lib.LibC

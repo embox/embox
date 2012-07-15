@@ -259,11 +259,13 @@ static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
 	}
 	return dev->header_ops->create(skb, dev, type, daddr, saddr, len);
 }
-
+#if 0
 extern struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY];
 
 #define netdev_foreach(device) \
 		array_foreach(device, opened_netdevs, CONFIG_NET_DEVICES_QUANTITY)
+
+#endif
 
 #if 0
 static inline void netif_start_queue(net_device_t *dev) {

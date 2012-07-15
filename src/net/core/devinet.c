@@ -8,13 +8,15 @@
  */
 #include <assert.h>
 #include <string.h>
-#include <net/inetdevice.h>
 #include <util/array.h>
-#include <err.h>
 #include <errno.h>
 #include <util/member.h>
 #include <mem/misc/pool.h>
+#include <net/inetdevice.h>
+#include <framework/mod/options.h>
+
 #include <lib/list.h>
+#include <err.h>
 
 struct callback_info {
 	struct list_head lnk;
@@ -28,8 +30,8 @@ struct inetdev_info {
 	struct list_head cb_info_list;
 };
 
-POOL_DEF(indev_info_pool, struct inetdev_info, CONFIG_NET_INTERFACES_QUANTITY);
-POOL_DEF(callback_info_pool, struct callback_info, CONFIG_NET_CALLBACK_QUANTITY);
+POOL_DEF(indev_info_pool, struct inetdev_info, OPTION_GET(NUMBER,net_interfaces_quantity));
+POOL_DEF(callback_info_pool, struct callback_info, OPTION_GET(NUMBER,net_callback_quantity));
 static LIST_HEAD(indev_info_list);
 
 static struct inetdev_info * find_indev_info_entry(struct in_device *in_dev) {

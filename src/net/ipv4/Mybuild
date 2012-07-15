@@ -60,6 +60,7 @@ module ipv4 {
 
 module route {
 	source "route.c"
+	option number route_table_size=8
 
 	depends core /* for devinet.c */
 	depends arp
