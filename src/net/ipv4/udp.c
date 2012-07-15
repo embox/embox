@@ -18,7 +18,6 @@
 #include <net/in.h>
 #include <net/netdevice.h>
 
-
 EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
 
 struct udp_sock *udp_table[CONFIG_MAX_KERNEL_SOCKETS];
@@ -52,8 +51,8 @@ static struct sock *_udp_v4_lookup(unsigned int sk_hash_idx,
 		inet = inet_sk(sk_it);
 		/* the socket is being searched for by (daddr, saddr, protocol) */
 		if (!(inet->daddr != daddr && inet->daddr) &&
-			 !(inet->rcv_saddr != saddr && inet->rcv_saddr) &&
-			 (inet->sport == sport) && (inet->dport == dport) &&
+		    !(inet->rcv_saddr != saddr && inet->rcv_saddr) &&
+		    (inet->sport == sport) && (inet->dport == dport) &&
 			 /* sk_it->sk_bound_dev_if struct sock doesn't have device binding? */
 			 sk_it->sk_protocol == protocol){
 			return sk_it;
@@ -70,8 +69,9 @@ static struct sock * udp_lookup(in_addr_t daddr, __be16 dport) {
 	for (i = 0; i< sizeof udp_table / sizeof udp_table[0]; ++i) {
 		inet = (struct inet_sock *)udp_table[i];
 		if (inet != NULL) {
-			if (((inet->rcv_saddr == INADDR_ANY) || (inet->rcv_saddr == daddr)) &&
-					(inet->sport == dport)) {
+			if (((inet->rcv_saddr == INADDR_ANY) ||
+			    (inet->rcv_saddr == daddr)) &&
+			    (inet->sport == dport)) {
 				return (struct sock *)inet;
 			}
 		}

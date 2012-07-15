@@ -141,7 +141,7 @@ int arp_resolve(sk_buff_t *pack) {
 	dev = pack->dev;
 #if 0
 	/* our machine on our device? */
-	if(ip->daddr == inet_dev_get_ipaddr(in_dev_get(dev))){
+	if (ip->daddr == inet_dev_get_ipaddr(in_dev_get(dev))){
 		memcpy(pack->mac.ethh->h_dest, dev->dev_addr, ETH_ALEN);
 		return 0;
 	}
@@ -267,14 +267,14 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 	}
 
 	switch (ntohs(arph->ar_op)) {
-		case ARPOP_REPLY:
-			res = received_resp(skb, dev);
-			arp_queue_process(skb);
-			skb_free(skb);
-			return res;
-		case ARPOP_REQUEST:
-			received_resp(skb, dev);
-			return received_req(skb, dev);
+	case ARPOP_REPLY:
+		res = received_resp(skb, dev);
+		arp_queue_process(skb);
+		skb_free(skb);
+		return res;
+	case ARPOP_REQUEST:
+		received_resp(skb, dev);
+		return received_req(skb, dev);
 	}
 
 	skb_free(skb);

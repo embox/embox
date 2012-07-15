@@ -11,7 +11,7 @@ module dev {
 	depends embox.mem.pool
 	/* depends from network_layer.c */
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	source "network_layer.c"
 
 	depends skbuff

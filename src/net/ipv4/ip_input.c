@@ -6,7 +6,7 @@
  * @author Alexandr Batyukov
  * @author Nikolay Korotky
  * @author Vladimir Sokolov
-*/
+ */
 
 #include <err.h>
 #include <string.h>
@@ -21,7 +21,6 @@
 #include <net/protocol.h>
 #include <framework/net/proto/api.h>
 #include <net/ip_fragment.h>
-
 
 int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 			packet_type_t *pt, net_device_t *orig_dev) {
@@ -89,14 +88,14 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		}
 	}
 
-		/* It's very useful for us to have complete packet even for forwarding
-		 * (we may apply any filter, we may perform NAT etc),
-		 * but it'll break routing if different parts of a fragmented
-		 * packet will use different routes. So they can't be assembled.
-		 * See RFC 1812 for details
-		 */
-	if((complete_skb = ip_defrag(skb)) == NULL) {
-		if(skb == NULL) {
+	/* It's very useful for us to have complete packet even for forwarding
+	 * (we may apply any filter, we may perform NAT etc),
+	 * but it'll break routing if different parts of a fragmented
+	 * packet will use different routes. So they can't be assembled.
+	 * See RFC 1812 for details
+	 */
+	if ((complete_skb = ip_defrag(skb)) == NULL) {
+		if (skb == NULL) {
 			return NET_RX_DROP;
 		}
 		return NET_RX_SUCCESS;
@@ -110,7 +109,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	 * which have been bound to its protocol or to socket with concrete protocol */
 	raw_rcv(skb);
 
-#if 0		/* Forwarding */
+#if 0	/* Forwarding */
 	/**
 	 * Check the destination address, and if it doesn't match
 	 * any of own addresses, retransmit packet according to the routing table.
@@ -132,5 +131,5 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	}
 
 	skb_free(skb);
-	return NET_RX_DROP;				/* Nobody wants this packet */
+	return NET_RX_DROP; /* Nobody wants this packet */
 }

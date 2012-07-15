@@ -1,4 +1,5 @@
-/*
+/**
+ * @file
  * @brief NTP implementation over IPv4
  *
  * @date 13.07.2012
@@ -19,14 +20,14 @@
 #define PROC  6
 
 static int ntp_table[7][5] = {
-		   /* nopeer  */   { NEWPS, DSCRD, FXMIT, MANY, NEWBC  },
-		   /* active  */   { PROC,  PROC,  DSCRD, DSCRD, DSCRD },
-		   /* passv   */   { PROC,  ERR,   DSCRD, DSCRD, DSCRD },
-		   /* client  */   { DSCRD, DSCRD, DSCRD, PROC,  DSCRD },
-		   /* server  */   { DSCRD, DSCRD, DSCRD, DSCRD, DSCRD },
-		   /* bcast   */   { DSCRD, DSCRD, DSCRD, DSCRD, DSCRD },
-		   /* bclient */   { DSCRD, DSCRD, DSCRD, DSCRD, PROC  }
-		   };
+	/* nopeer  */   { NEWPS, DSCRD, FXMIT, MANY, NEWBC  },
+	/* active  */   { PROC,  PROC,  DSCRD, DSCRD, DSCRD },
+	/* passv   */   { PROC,  ERR,   DSCRD, DSCRD, DSCRD },
+	/* client  */   { DSCRD, DSCRD, DSCRD, PROC,  DSCRD },
+	/* server  */   { DSCRD, DSCRD, DSCRD, DSCRD, DSCRD },
+	/* bcast   */   { DSCRD, DSCRD, DSCRD, DSCRD, DSCRD },
+	/* bclient */   { DSCRD, DSCRD, DSCRD, DSCRD, PROC  }
+};
 
 int ntp_proc(struct ntphdr *pack) {
 	return 0;

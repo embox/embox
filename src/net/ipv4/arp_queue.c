@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief Handle queue of packets waiting for ARP resolving.
+ *
  * @date 13.12.11
  * @author Alexander Kalmuk
  * @author Ilia Vaprol
