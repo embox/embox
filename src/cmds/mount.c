@@ -16,7 +16,7 @@
 #include <string.h>
 #include <err.h>
 #include <errno.h>
-#include <cmd/mount.h>
+#include <fs/mount.h>
 
 EMBOX_CMD(exec);
 

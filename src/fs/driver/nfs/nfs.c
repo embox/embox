@@ -11,7 +11,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <cmd/mount.h>
+#include <fs/mount.h>
 #include <fs/vfs.h>
 #include <fs/nfs.h>
 #include <fs/xdr_nfs.h>

@@ -11,34 +11,32 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <util/array.h>
+#include <mem/misc/pool.h>
 
-#include <fs/fat.h>
-#include <drivers/ramdisk.h>
+//#include <drivers/ramdisk.h>
+
 #include <fs/fs_drv.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
-#include <util/array.h>
-#include <embox/device.h>
+#include <fs/fat.h>
+
 #include <mem/page.h>
-#include <mem/misc/pool.h>
-#include <cmd/mount.h>
+
+#include <fs/mount.h>
 
 static uint8_t sector_buff[SECTOR_SIZE];
 static uint32_t bytecount;
 
 /* fat filesystem description pool */
-POOL_DEF (fat_fs_pool, struct fat_fs_description, QUANTITY_RAMDISK);
+POOL_DEF(fat_fs_pool, struct fat_fs_description, QUANTITY_RAMDISK);
 
 /* fat file description pool */
-POOL_DEF (fat_file_pool, struct _fat_file_description, MAX_FILE_QUANTITY);
+POOL_DEF(fat_file_pool, struct _fat_file_description, MAX_FILE_QUANTITY);
 
-uint32_t fat_get_ptn_start(void *fd, uint8_t *p_scratchsector,
-		uint8_t pnum, uint8_t *pactive,	uint8_t *pptype, uint32_t *psize);
-uint32_t fat_get_vol_info(void *fd,
-		uint8_t *p_scratchsector, uint32_t startsector);
-int fatfs_set_path (uint8_t *tmppath, node_t *nod);
-void cut_mount_dir(char *path, char *mount_dir);
-void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch);
+static int fatfs_set_path (uint8_t *tmppath, node_t *nod);
+static void cut_mount_dir(char *path, char *mount_dir);
+static void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch);
 
 /* File operations */
 
@@ -380,7 +378,7 @@ int fatfs_partition(void *fdes) {
 	return fat_write_sector(fd, sector_buff, 0, 1);
 }
 
-int fatfs_set_path (uint8_t *path, node_t *nod) {
+static int fatfs_set_path (uint8_t *path, node_t *nod) {
 
 	node_t *parent, *node;
 	char buff[MAX_LENGTH_PATH_NAME];
@@ -435,7 +433,7 @@ static void set_filetime(dir_ent_t *de) {
  *	If pptype is non-NULL, this function also returns the partition type.
  *	If psize is non-NULL, this function also returns the partition size.
  */
-uint32_t fat_get_ptn_start(void *fd,
+static uint32_t fat_get_ptn_start(void *fd,
 		uint8_t *p_scratchsector,	uint8_t pnum, uint8_t *pactive,
 		uint8_t *pptype, uint32_t *psize) {
 	uint32_t result;
@@ -482,7 +480,7 @@ uint32_t fat_get_ptn_start(void *fd,
  * Attempts to read BPB and glean information about the FS from that.
  * Returns 0 OK, nonzero for any error.
  */
-uint32_t fat_get_vol_info(void *fd,
+static uint32_t fat_get_vol_info(void *fd,
 		uint8_t *p_scratchsector,	uint32_t startsector) {
 	p_vol_info_t volinfo;
 	fat_file_description_t *fdsc;
@@ -1321,7 +1319,7 @@ void get_filename(uint8_t *tmppath, uint8_t *filename) {
 /*
  * Cut mount directory name from path to get the path in filesysytem
  */
-void cut_mount_dir(char *path, char *mount_dir) {
+static void cut_mount_dir(char *path, char *mount_dir) {
 		char *p;
 
 		p = path;
@@ -1721,7 +1719,7 @@ uint32_t fat_read_file(void *fdsc, uint8_t *p_scratch,
  * to see where the pointer wound up.
  * Requires a SECTOR_SIZE scratch buffer
  */
-void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch) {
+static void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch) {
 	uint32_t tempint, clastersize;
 	p_file_info_t fileinfo;
 	fat_file_description_t *fd;
