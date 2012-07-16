@@ -15,6 +15,10 @@ module file_desc {
 
 module core {
 	source "vfs.c"
+
+	option number file_name_length=32
+	option number path_length=256
+
 	depends file_desc, node, rootfs
 	depends embox.fs.driver.repo
 }

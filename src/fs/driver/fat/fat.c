@@ -14,25 +14,22 @@
 #include <util/array.h>
 #include <mem/misc/pool.h>
 
-//#include <drivers/ramdisk.h>
-
 #include <fs/fs_drv.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/fat.h>
-
-#include <mem/page.h>
-
 #include <fs/mount.h>
+
+#include <framework/mod/options.h>
 
 static uint8_t sector_buff[SECTOR_SIZE];
 static uint32_t bytecount;
 
 /* fat filesystem description pool */
-POOL_DEF(fat_fs_pool, struct fat_fs_description, QUANTITY_RAMDISK);
+POOL_DEF(fat_fs_pool, struct fat_fs_description, OPTION_GET(NUMBER,fat_descriptor_quantity));
 
 /* fat file description pool */
-POOL_DEF(fat_file_pool, struct _fat_file_description, MAX_FILE_QUANTITY);
+POOL_DEF(fat_file_pool, struct _fat_file_description, OPTION_GET(NUMBER,inode_quantity));
 
 static int fatfs_set_path (uint8_t *tmppath, node_t *nod);
 static void cut_mount_dir(char *path, char *mount_dir);

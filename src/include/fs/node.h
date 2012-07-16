@@ -12,8 +12,14 @@
 #include <fs/fs_drv.h>
 #include <util/tree.h>
 
-#define MAX_LENGTH_PATH_NAME  0x100
-#define MAX_LENGTH_FILE_NAME  0x20
+#include <module/embox/fs/core.h>
+#include <framework/mod/options.h>
+
+
+//#define MAX_LENGTH_FILE_NAME  0x20
+#define MAX_LENGTH_FILE_NAME  OPTION_MODULE_GET(embox__fs__core,NUMBER,file_name_length)
+//#define MAX_LENGTH_PATH_NAME  0x100
+#define MAX_LENGTH_PATH_NAME  OPTION_MODULE_GET(embox__fs__core,NUMBER,path_length)
 
 typedef struct node {
 	const char            name[MAX_LENGTH_FILE_NAME];

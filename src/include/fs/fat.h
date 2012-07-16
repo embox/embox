@@ -12,10 +12,7 @@
 #include <stdint.h>
 #include <drivers/ramdisk.h>
 
-/*
- * Configurable
- */
-#define MAX_FILE_QUANTITY  64
+
 #define MSDOS_NAME               11
 
 #define DIR_SEPARATOR	'/'	/* character separating directory components*/
@@ -280,6 +277,7 @@ typedef struct fileinfo {
 	uint32_t cluster;			/* current cluster */
 	uint32_t pointer;			/* current (BYTE) pointer */
 } file_info_t, *p_file_info_t;
+
 
 typedef struct fat_fs_description {
 	ramdisk_params_t * p_device;

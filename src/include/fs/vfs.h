@@ -11,6 +11,7 @@
 
 #include <fs/node.h>
 
+
 #define LAST_IN_PATH         0x01
 #define FILE_NODE_TYPE       0x00
 #define DIRECTORY_NODE_TYPE  0x10

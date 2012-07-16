@@ -21,7 +21,7 @@ typedef struct ramdisk_params_head {
 	ramdisk_params_t param;
 } ramdisk_params_head_t;
 
-static ramdisk_params_head_t ramdisk_pool[QUANTITY_RAMDISK];
+static ramdisk_params_head_t ramdisk_pool[OPTION_GET(NUMBER,ramdisk_quantity)];
 static LIST_HEAD(ramdisk_free);
 
 #define param_to_head(fparam) \
