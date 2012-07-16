@@ -10,7 +10,6 @@
 #include <kernel/file.h>
 #include <kernel/diag.h>
 #include <embox/device.h>
-#include <diag/diag_device.h>
 #include <errno.h>
 
 static int nonblocking = 0;
