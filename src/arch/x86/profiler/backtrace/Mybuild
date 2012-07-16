@@ -1,0 +1,5 @@
+package embox.arch.x86
+
+module frame extends embox.arch.frame {
+	source "frame.h", "frame.c"
+}
