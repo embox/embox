@@ -6,6 +6,7 @@
  */
 
 #ifndef CXXABI_HPP_
+#define CXXABI_HPP_
 
 #include <typeinfo>
 
@@ -26,4 +27,4 @@ namespace __cxxabiv1 {
 
 } // namespace __cxxabiv1
 
-#endif // CXXABI_HPP
+#endif // CXXABI_HPP_

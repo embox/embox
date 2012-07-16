@@ -83,6 +83,7 @@ static int run(int argc, char **argv) {
 		Hello *hello_ptr = new(std::nothrow) Hello("qux");
 		delete hello_ptr;
 	}
+
 	return 0;
 }
 
