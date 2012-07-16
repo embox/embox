@@ -29,10 +29,10 @@ static int nfs_lookup(node_t *node, nfs_file_description_t *fd);
 nfs_fs_description_t *p_fs_fd;
 
 /* nfs filesystem description pool */
-POOL_DEF (nfs_fs_pool, struct nfs_fs_description, 5);
+POOL_DEF (nfs_fs_pool, struct nfs_fs_description, OPTION_GET(NUMBER,nfs_descriptor_quantity));
 
 /* nfs file description pool */
-POOL_DEF (nfs_file_pool, struct nfs_file_description, MAX_FILE_QUANTITY);
+POOL_DEF (nfs_file_pool, struct nfs_file_description, OPTION_GET(NUMBER,inode_quantity));
 
 /* File operations */
 

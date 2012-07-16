@@ -61,7 +61,7 @@ static int exec(int argc, char **argv) {
 	//int long_list = 0;
 	int opt_cnt = 0;
 	node_t *nod;
-	char path[CONFIG_MAX_LENGTH_FILE_NAME];
+	char path[MAX_LENGTH_FILE_NAME];
 
 	int recursive = 0;
 	volatile print_func_t print_func = print_folder;

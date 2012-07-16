@@ -198,7 +198,7 @@ static void *open_factory(const char *fname, const char *_mode) {
 //	int line;
 	node_t * node_factory;
 	node_t * node_line;
-	char node_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	char node_name[MAX_LENGTH_FILE_NAME];
 	console_t *cons;
 
 	if (strcmp(strupr((char *)mode),"W") != 0)
@@ -250,7 +250,7 @@ static void *open(const char *fname, const char *_mode) {
 	int line;
 	node_t * node_factory;
 	node_t * node_line;
-	char node_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	char node_name[MAX_LENGTH_FILE_NAME];
 	console_t *cons;
 	char *p_path;
 

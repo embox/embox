@@ -13,7 +13,7 @@
 typedef struct _ramfs_create_param {
 	unsigned long start_addr;
 	size_t        size;
-	char          name[CONFIG_MAX_LENGTH_FILE_NAME];
+	char          name[MAX_LENGTH_FILE_NAME];
 	unsigned int  mode;
 	unsigned int  mtime;
 } ramfs_create_param_t;

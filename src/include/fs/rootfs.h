@@ -20,7 +20,7 @@
 #define FILE_MODE_RWX   0x7 /*all           */
 
 typedef struct _FILE_INFO {
-	char file_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	char file_name[MAX_LENGTH_FILE_NAME];
 	unsigned int size_in_bytes;
 	unsigned int size_on_disk;
 	unsigned int mode;

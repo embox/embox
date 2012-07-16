@@ -13,7 +13,7 @@
 #include <fs/vfs.h>
 #include <drivers/ramdisk.h>
 #include <mem/page.h>
-#include <util/array.h>
+#include <mem/misc/pool.h>
 
 typedef struct ramdisk_params_head {
 	struct list_head *next;
@@ -21,38 +21,7 @@ typedef struct ramdisk_params_head {
 	ramdisk_params_t param;
 } ramdisk_params_head_t;
 
-static ramdisk_params_head_t ramdisk_pool[OPTION_GET(NUMBER,ramdisk_quantity)];
-static LIST_HEAD(ramdisk_free);
-
-#define param_to_head(fparam) \
-	(uint32_t)(fparam - offsetof(ramdisk_params_head_t, param))
-
-static void init_ramdisk_info_pool(void) {
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(ramdisk_pool); i++) {
-		list_add((struct list_head *) &ramdisk_pool[i], &ramdisk_free);
-	}
-}
-
-static ramdisk_params_t *ramdisk_info_alloc(void) {
-	ramdisk_params_head_t *head;
-	ramdisk_params_t *param;
-
-	if (list_empty(&ramdisk_free)) {
-		return NULL;
-	}
-	head = (ramdisk_params_head_t *) (&ramdisk_free)->next;
-	list_del((&ramdisk_free)->next);
-	param = &(head->param);
-	return param;
-}
-
-static void ramdisk_info_free(ramdisk_params_t *param) {
-	if (NULL == param) {
-		return;
-	}
-	list_add((struct list_head*) param_to_head(param), &ramdisk_free);
-}
+POOL_DEF ( ramdisk_pool, struct ramdisk_params_head, OPTION_GET(NUMBER,ramdisk_quantity ));
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -67,7 +36,7 @@ int ramdisk_create(void *mkfs_params) {
 		return -EBUSY;/*file already exist*/
 	}
 
-	ramd_params = ramdisk_info_alloc();
+	ramd_params = pool_alloc(&ramdisk_pool);
 	ramdisk_node->attr = (void *) ramd_params;
 
 	if(NULL == (ramd_params->p_start_addr =
@@ -103,12 +72,12 @@ int ramdisk_delete(const char *name) {
 	}
 	ramd_params = ramdisk_node->attr;
 
-	ramdisk_info_free(ramd_params);
+	pool_free(&ramdisk_pool, ramd_params);
 	vfs_del_leaf(ramdisk_node);
 	return 0;
 }
 
 static int unit_init(void) {
-	init_ramdisk_info_pool();
+	//init_ramdisk_info_pool();
 	return 0;
 }

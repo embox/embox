@@ -88,7 +88,7 @@ static node_t *vfs_add_new_path(node_t *parent,
 	child = alloc_node(child_name);
 	vfs_add_leaf(child, parent);
 	while (NULL != (p_path = get_next_node_name(p_path, child_name,
-											CONFIG_MAX_LENGTH_FILE_NAME))) {
+											MAX_LENGTH_FILE_NAME))) {
 		parent = child;
 		child = alloc_node(child_name);
 		vfs_add_leaf(child, parent);
@@ -101,7 +101,7 @@ extern node_t *rootfs_get_node (void);
 
 node_t *vfs_add_path(const char *path, node_t *parent) {
 	node_t *node = parent;
-	char node_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	char node_name[MAX_LENGTH_FILE_NAME];
 	char *p_path = (char *) path;
 
 	if (NULL == parent) {
@@ -145,7 +145,7 @@ node_t *vfs_find_child(const char *name, node_t *parent) {
 
 node_t *vfs_find_node(const char *path, node_t *parent) {
 	node_t *node = parent;
-	char node_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	char node_name[MAX_LENGTH_FILE_NAME];
 	char *p_path = (char *) path;
 
 	if (NULL == parent) {

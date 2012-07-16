@@ -16,36 +16,6 @@
 #include <net/socket.h>
 #include <net/rpc/rpc.h>
 
-#define MAX_FILE_QUANTITY  256
-
-
-/*
- *    "rpcinfo -p" example:
- *    prog    vers proto  port
- *    100000    2   tcp    111  portmapper
- *    100000    2   udp    111  portmapper
- *    100024    1   udp  44725  status
- *    100024    1   tcp  40865  status
- *    100021    1   udp  60786  nlockmgr
- *    100021    3   udp  60786  nlockmgr
- *    100021    4   udp  60786  nlockmgr
- *    100021    1   tcp  41219  nlockmgr
- *    100021    3   tcp  41219  nlockmgr
- *    100021    4   tcp  41219  nlockmgr
- *    100003    2   udp   2049  nfs
- *    100003    3   udp   2049  nfs
- *    100003    4   udp   2049  nfs
- *    100003    2   tcp   2049  nfs
- *    100003    3   tcp   2049  nfs
- *    100003    4   tcp   2049  nfs
- *    100005    1   udp  35933  mountd
- *    100005    1   tcp  56887  mountd
- *    100005    2   udp  35933  mountd
- *    100005    2   tcp  56887  mountd
- *    100005    3   udp  35933  mountd
- *    100005    3   tcp  56887  mountd
- */
-
 /*
  * RPC definitions for the portmapper
  */

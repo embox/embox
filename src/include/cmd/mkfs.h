@@ -17,7 +17,7 @@
 typedef struct mkfs_params {
 	size_t       blocks;
 	char         path[MAX_LENGTH_PATH_NAME];
-	const char   fs_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	const char   fs_name[MAX_LENGTH_FILE_NAME];
 	unsigned int fs_type;
 	unsigned int operation_flag;
 } mkfs_params_t;

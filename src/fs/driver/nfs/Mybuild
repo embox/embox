@@ -3,6 +3,8 @@ package embox.fs.driver
 module nfs {
 	source "nfs.c"
 	source "xdr_nfs.c"
+	option number inode_quantity=264
+	option number nfs_descriptor_quantity=4
 
 	depends embox.net.rpc
 	depends embox.fs.node, embox.fs.driver.repo

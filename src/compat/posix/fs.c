@@ -32,7 +32,7 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 	file_create_param_t param;
 	fs_drv_t *drv;
 	node_t *node, *new_node;
-	char tail[CONFIG_MAX_LENGTH_FILE_NAME];
+	char tail[MAX_LENGTH_FILE_NAME];
 
 	count_dir = 0;
 	tail[0] = '\0';
