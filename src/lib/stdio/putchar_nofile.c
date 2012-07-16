@@ -10,7 +10,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <kernel/diag.h>
+#include <prom/diag.h>
 
 int putchar(int c) {
 	diag_putc(c);

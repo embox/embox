@@ -9,9 +9,7 @@
 #include <types.h>
 #include <kernel/file.h>
 #include <fs/node.h>
-#include <kernel/diag.h>
 #include <embox/device.h>
-#include <diag/diag_device.h>
 
 static void *null_open(const char *fname, const char *mode);
 static int null_close(void *file);

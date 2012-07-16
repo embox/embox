@@ -16,7 +16,7 @@
 #include <string.h>
 #include <setjmp.h>
 
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 #include <util/location.h>
 
 #include <framework/test/api.h>

@@ -11,7 +11,7 @@
 #include <string.h>
 #include <mem/misc/pool.h>
 #include <util/sys_log.h>
-#include <kernel/prom_printf.h>
+
 
 static bool annoy = false;
 static bool annoy_types[] = {true, true, true, true};

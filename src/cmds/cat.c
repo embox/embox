@@ -10,7 +10,6 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
-#include <kernel/prom_printf.h>
 
 EMBOX_CMD(exec);
 

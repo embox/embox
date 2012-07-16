@@ -5,7 +5,7 @@
  * @date 05.07.11
  * @author Dmitry Zubarevich
  */
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 #include <string.h>
 #include <framework/mod/ops.h>
 #include <framework/mod/member/ops.h>

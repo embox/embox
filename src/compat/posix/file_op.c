@@ -17,7 +17,6 @@
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
 
-#include <kernel/prom_printf.h>
 
 FILE *fopen(const char *path, const char *mode) {
 	node_t *nod;

@@ -22,7 +22,6 @@
 
 #include <pnet/node/direct_comm.h>
 
-#include <kernel/prom_printf.h>
 
 EMBOX_UNIT_INIT(node_dc_init);
 

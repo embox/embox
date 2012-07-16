@@ -10,7 +10,7 @@
 #define ERR_H_
 
 #include <stdio.h>
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 
 #define LOGGER()   prom_printf("%s (%s:%d) ", __FUNCTION__, __FILE__, __LINE__)
 

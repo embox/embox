@@ -7,7 +7,7 @@
  * @author Anton Bondarev
  */
 
-#include <kernel/diag.h>
+#include <prom/diag.h>
 
 
 void diag_init(void) {

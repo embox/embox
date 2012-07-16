@@ -8,9 +8,10 @@
 
 #include <types.h>
 #include <kernel/file.h>
-#include <kernel/diag.h>
+#include <prom/diag.h>
 #include <embox/device.h>
 #include <errno.h>
+#include <fs/ioctl.h>
 
 static int nonblocking = 0;
 

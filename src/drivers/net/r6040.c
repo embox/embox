@@ -184,7 +184,7 @@ static void r6040_set_rx_start(eth_desc_t* desc) {
 	tmp >>= 16;
 	out16((tmp & 0xffff), RX_START_HIGH);
 }
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 #if INTERRUPTS_ENABLE
 /* The RDC interrupt handler */
 static irq_return_t irq_handler(irq_nr_t irq_num, void *dev_id) {

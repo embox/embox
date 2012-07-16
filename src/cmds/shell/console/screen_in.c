@@ -8,7 +8,7 @@
 #include "screen.h"
 #include <assert.h>
 #include "console.h"
-#include <kernel/diag.h>
+#include <prom/diag.h>
 #include <kernel/softirq.h>
 #include <kernel/irq.h>
 

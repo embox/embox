@@ -12,7 +12,6 @@
 #include <net/tcp.h>
 #include <string.h>
 #include <mem/objalloc.h>
-#include <kernel/prom_printf.h>
 
 #include <net/inetdevice.h>
 #include <net/socket.h>

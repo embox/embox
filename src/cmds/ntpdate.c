@@ -5,7 +5,6 @@
  * @author Alexander Kalmuk
  */
 
-#include <kernel/prom_printf.h>
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <net/ip.h>
@@ -30,7 +29,7 @@ int ntpdate(char *dstip) {
 	struct sockaddr_in dst;
 
 	if (!inet_aton(dstip, &dst.sin_addr)) {
-		prom_printf("Error: Invalid ip address '%s'", dstip);
+		printf("Error: Invalid ip address '%s'", dstip);
 		return -1;
 	}
 
@@ -50,14 +49,14 @@ int ntpdate(char *dstip) {
 	x.xmt_ts.fraction = 0;
 
 	if (0 >= sendto(sock, (void*) &x, sizeof(x), 0, (struct sockaddr *)&dst, sizeof(dst))) {
-		prom_printf("%s\n", "Sending error");
+		printf("%s\n", "Sending error");
 	}
 
 	while(0 == recvfrom(sock, buf, sizeof(x), 0, NULL, NULL));
 
 	r = (struct ntphdr *) buf;
 
-	prom_printf("%d %d\n", (int)r->stratum, (int)r->status);
+	printf("%d %d\n", (int)r->stratum, (int)r->status);
 
 	printf("%s",buf);
 

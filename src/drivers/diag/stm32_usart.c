@@ -11,7 +11,7 @@
 #include <hal/reg.h>
 #include <drivers/gpio.h>
 
-#include <kernel/diag.h>
+#include <prom/diag.h>
 
 #define RCC_APB1RSTR  0x40021010
 #define RCC_APB2ENR   0x40021018

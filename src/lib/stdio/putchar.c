@@ -10,7 +10,6 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <kernel/diag.h>
 #include <drivers/vconsole.h>
 #include <drivers/tty_action.h>
 

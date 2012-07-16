@@ -7,7 +7,7 @@
  */
 
 #include <stdio.h>
-#include <kernel/diag.h>
+#include <prom/diag.h>
 #include <drivers/vconsole.h>
 #include <drivers/tty_action.h>
 

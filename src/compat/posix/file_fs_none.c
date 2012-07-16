@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include <kernel/diag.h>
+#include <prom/diag.h>
 #include <util/array.h>
 
 int open(const char *path, int __oflag, ...) {

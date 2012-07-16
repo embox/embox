@@ -7,7 +7,7 @@
  */
 
 #include <errno.h>
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 
 #include <embox/runlevel.h>
 

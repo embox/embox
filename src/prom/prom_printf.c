@@ -9,8 +9,8 @@
 #include <types.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <kernel/prom_printf.h>
-#include <kernel/diag.h>
+#include <prom/prom_printf.h>
+#include <prom/diag.h>
 
 extern int __print(void(*printchar_handler)(char **str, int c), char **out,
 		const char *format, va_list args);

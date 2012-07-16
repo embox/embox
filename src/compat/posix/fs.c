@@ -25,7 +25,6 @@
 #include <fs/file_desc.h>
 #include <util/array.h>
 
-#include <kernel/prom_printf.h>
 
 node_t *create_filechain(const char *path, uint8_t node_type){
 	int count_dir;

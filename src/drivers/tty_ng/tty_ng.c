@@ -20,7 +20,6 @@
 #include <drivers/tty_ng.h>
 #include <embox/unit.h>
 #include <fcntl.h>
-#include <kernel/diag.h>
 
 #include <fs/posix.h>
 

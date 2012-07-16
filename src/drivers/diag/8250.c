@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <kernel/diag.h>
+#include <prom/diag.h>
 #include <asm/io.h>
 
 #include <embox/unit.h>

@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <kernel/diag.h>
+#include <prom/diag.h>
 #include <drivers/keyboard.h>
 #include <drivers/vga.h>
 
