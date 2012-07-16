@@ -58,7 +58,7 @@ static file_operations_t fatfs_fop = { fatfs_fopen, fatfs_fclose, fatfs_fread,
 static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
 	node_t *nod;
 	uint8_t _mode;
-	char path [CONFIG_MAX_LENGTH_PATH_NAME];
+	char path [MAX_LENGTH_PATH_NAME];
 	fat_file_description_t *fd;
 
 	nod = desc->node;
@@ -291,7 +291,7 @@ static int fatfs_create(void *par) {
 static int fatfs_delete(const char *fname) {
 	fat_file_description_t *fd;
 	node_t *nod, *pointnod;
-	char path [CONFIG_MAX_LENGTH_PATH_NAME];
+	char path [MAX_LENGTH_PATH_NAME];
 
 	if(NULL == (nod = vfs_find_node(fname, NULL))) {
 		return -1;
@@ -383,7 +383,7 @@ int fatfs_partition(void *fdes) {
 int fatfs_set_path (uint8_t *path, node_t *nod) {
 
 	node_t *parent, *node;
-	char buff[CONFIG_MAX_LENGTH_PATH_NAME];
+	char buff[MAX_LENGTH_PATH_NAME];
 
 	*path = *buff= 0;
 	node = nod;
@@ -400,8 +400,8 @@ int fatfs_set_path (uint8_t *path, node_t *nod) {
 		strcpy((char *) buff, (const char *) path);
 	}
 
-	strncpy((char *) buff, (char *) path, CONFIG_MAX_LENGTH_PATH_NAME);
-	buff[CONFIG_MAX_LENGTH_PATH_NAME - 1] = 0;
+	strncpy((char *) buff, (char *) path, MAX_LENGTH_PATH_NAME);
+	buff[MAX_LENGTH_PATH_NAME - 1] = 0;
 	if (strcmp((char *) path,(char *) buff)) {
 		return DFS_PATHLEN;
 	}
@@ -1365,7 +1365,7 @@ void fatfs_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
  * was created and can be used.
  */
 int fatfs_create_file(void *par) {
-	uint8_t tmppath[CONFIG_MAX_LENGTH_PATH_NAME];
+	uint8_t tmppath[MAX_LENGTH_PATH_NAME];
 	uint8_t filename[12];
 	dir_info_t di;
 	dir_ent_t de;
@@ -1390,7 +1390,7 @@ int fatfs_create_file(void *par) {
 
 	/* Get a local copy of the path. */
 	strncpy((char *) tmppath,
-			(char *) param->path, CONFIG_MAX_LENGTH_PATH_NAME);
+			(char *) param->path, MAX_LENGTH_PATH_NAME);
 
 	cut_mount_dir((char *) tmppath, fd->p_fs_dsc->root_name);
 
@@ -1495,7 +1495,7 @@ int fatfs_create_file(void *par) {
  */
 uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 		uint8_t *p_scratch) {
-	uint8_t tmppath[CONFIG_MAX_LENGTH_PATH_NAME];
+	uint8_t tmppath[MAX_LENGTH_PATH_NAME];
 	uint8_t filename[12];
 	dir_info_t di;
 	dir_ent_t de;
@@ -1515,8 +1515,8 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 	fileinfo->mode = mode;
 
 	/* Get a local copy of the path. If it's longer than MAX_PATH, abort.*/
-	strncpy((char *) tmppath, (char *) path, CONFIG_MAX_LENGTH_PATH_NAME);
-	tmppath[CONFIG_MAX_LENGTH_PATH_NAME - 1] = 0;
+	strncpy((char *) tmppath, (char *) path, MAX_LENGTH_PATH_NAME);
+	tmppath[MAX_LENGTH_PATH_NAME - 1] = 0;
 	if (strcmp((char *) path,(char *) tmppath)) {
 		return DFS_PATHLEN;
 	}

@@ -68,7 +68,7 @@ static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
 int cpio_unpack(void) {
 	extern char _ramfs_start, _ramfs_end;
 	cpio_newc_header_t *cpio_h, *cpio_next;
-	char buff_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	char buff_name[MAX_LENGTH_FILE_NAME];
 
 	if (&_ramfs_end == &_ramfs_start) {
 		printk("No available initramfs\n");

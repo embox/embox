@@ -27,7 +27,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define FS_NAME  "vfat"
 #define FS_DEV  "/dev/ramdisk"
 #define FS_TYPE  16
-#define FS_BLOCKS  256
+#define FS_BLOCKS  124
 
 TEST_CASE("Create fat filesystem") {
 

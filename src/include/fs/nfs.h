@@ -11,6 +11,7 @@
 #define NFS_H_
 
 #include <stdint.h>
+#include <fs/node.h>
 #include <net/ip.h>
 #include <net/socket.h>
 #include <net/rpc/rpc.h>
@@ -156,15 +157,15 @@
 #define	EMBOX_MACHNAME  "embox"
 
 typedef struct create_params {
-	const char      path[CONFIG_MAX_LENGTH_PATH_NAME];
-	const char      fs_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	const char      path[MAX_LENGTH_PATH_NAME];
+	const char      fs_name[MAX_LENGTH_FILE_NAME];
 	unsigned int    fs_type;
 } create_params_t;
 
 /* RPC string */
 typedef struct rpc_string {
 	size_t len;
-	char data[CONFIG_MAX_LENGTH_FILE_NAME];
+	char data[MAX_LENGTH_FILE_NAME];
 } rpc_string_t;
 
 typedef struct rpc_fh_string {
@@ -185,7 +186,7 @@ typedef struct nfs_filehandle {
 typedef struct export_dir {
 	__u32 vf;
 	size_t dir_len;
-	char dir_name[CONFIG_MAX_LENGTH_PATH_NAME];
+	char dir_name[MAX_LENGTH_PATH_NAME];
 } export_dir_t;
 
 
@@ -337,11 +338,11 @@ typedef struct fileinfo {
 } file_info_t;
 
 typedef struct nfs_fs_description {
-	char srv_name[CONFIG_MAX_LENGTH_PATH_NAME];
-	char srv_dir[CONFIG_MAX_LENGTH_PATH_NAME];
+	char srv_name[MAX_LENGTH_PATH_NAME];
+	char srv_dir[MAX_LENGTH_PATH_NAME];
 	export_dir_t export;
 	nfs_filehandle_t fh;
-	char mnt_point[CONFIG_MAX_LENGTH_PATH_NAME];
+	char mnt_point[MAX_LENGTH_PATH_NAME];
 	struct client *mnt;
 	struct client *nfs;
 } nfs_fs_description_t;

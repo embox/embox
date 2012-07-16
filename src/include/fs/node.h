@@ -12,8 +12,11 @@
 #include <fs/fs_drv.h>
 #include <util/tree.h>
 
+#define MAX_LENGTH_PATH_NAME  0x100
+#define MAX_LENGTH_FILE_NAME  0x20
+
 typedef struct node {
-	const char            name[CONFIG_MAX_LENGTH_FILE_NAME];
+	const char            name[MAX_LENGTH_FILE_NAME];
 	int                   properties;
 	void                 *file_info; /* WTF? maybe introduce Node Attribute Structure(NAS)? (sikmir) */
 	struct fs_drv        *fs_type;
@@ -24,7 +27,7 @@ typedef struct node {
 typedef struct file_create_param {
 	void  *node;
 	void  *parents_node;
-	char   path[CONFIG_MAX_LENGTH_PATH_NAME];
+	char   path[MAX_LENGTH_PATH_NAME];
 } file_create_param_t;
 
 extern node_t *alloc_node(const char *name);

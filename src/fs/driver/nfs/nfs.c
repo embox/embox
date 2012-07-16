@@ -387,7 +387,7 @@ static int create_dir_entry(char *parent) {
 	nfs_filehandle_t *fh;
 	readdir_desc_t *predesc;
 
-	char full_path[CONFIG_MAX_LENGTH_PATH_NAME];
+	char full_path[MAX_LENGTH_PATH_NAME];
 	char *rcv_buf;
 
 	if (NULL == (parent_node = vfs_find_node(parent, NULL))) {
@@ -488,8 +488,8 @@ static int nfsfs_create(void *par) {
 	rpc_string_t name;
 	create_reply_t reply;
 	__u32 procnum;
-	char path[CONFIG_MAX_LENGTH_FILE_NAME];
-	char tail[CONFIG_MAX_LENGTH_FILE_NAME];
+	char path[MAX_LENGTH_FILE_NAME];
+	char tail[MAX_LENGTH_FILE_NAME];
 
 	param = (file_create_param_t *) par;
 
