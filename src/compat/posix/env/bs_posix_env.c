@@ -7,7 +7,6 @@
  */
 
 #include <embox/unit.h>
-#include <diag/diag_device.h>
 
 #include <fcntl.h>
 #include <unistd.h>
