@@ -1,14 +1,14 @@
 package embox.fs
 
 module node {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "node.c"
 	option number fnode_quantity=64
 }
 
 module file_desc {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "file_desc.c"
 	option number fdesc_quantity=32
 }
