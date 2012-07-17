@@ -1,0 +1,18 @@
+#!/bin/bash
+
+QEMU=~/qemu-1.0.1/i386-softmmu/qemu-system-i386
+
+IMAGE=../../build/base/bin/embox
+
+TAP_DEV=$(tunctl -b)
+echo $TAP_DEV > tap_dev
+sync
+whoami
+echo $TAP_DEV
+#echo sudo $QEMU -s -kernel $IMAGE \
+#	-net nic,model=ne2k_pci,macaddr=AA:BB:CC:DD:EE:02 \
+#	-net tap,name=$TAP_DEV,script=start_script,downscript=stop_script -nographic $@
+sudo $QEMU -s -kernel $IMAGE \
+	-net nic,model=ne2k_pci,macaddr=AA:BB:CC:DD:EE:02 \
+	-net tap,ifname=tap0,script=start_script_my,downscript=stop_script_my -nographic $@
+#$TAP_DEV
