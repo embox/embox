@@ -6,9 +6,8 @@ module Kernel {
 	/* FIXME
 	 * 1.it depends from embox.prom.printf (for init.c)
 	 */
-	source "init.c", "nosys.c"
-	/*FIXME mybuild linker scripts */
-	source "nosys.lds"
+	source "init.c"
+
 	depends embox.arch.libarch
 	depends embox.arch.locore
 	depends embox.arch.interrupt
