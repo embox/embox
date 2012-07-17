@@ -8,3 +8,4 @@ echo stoping $TAP_DEV
 /sbin/ifconfig tap0 down
 tunctl -d tap0
 #$TAP_DEV
+#for i in $(seq 0 4); do ifconfig tap$i down; tunctl -d tap$i; done
