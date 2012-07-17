@@ -5,13 +5,13 @@
  * @date 29.09.10
  * @author Nikolay Korotky
  */
+#include <stdlib.h>
+#include <string.h>
 
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
-#include <lib/list.h>
 #include <cpio.h>
-#include <stdlib.h>
-#include <string.h>
+
 
 /**
  * The pathname is followed by NUL bytes so that the total size of the fixed

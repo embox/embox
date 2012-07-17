@@ -7,15 +7,12 @@
  */
 
 #include <embox/cmd.h>
+#include <stdio.h>
 #include <getopt.h>
-#include <fs/rootfs.h>
-#include <fs/vfs.h>
-#include <lib/list.h>
-#include <cpio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <err.h>
 #include <errno.h>
+
+#include <fs/vfs.h>
 #include <fs/mount.h>
 
 EMBOX_CMD(exec);
@@ -34,7 +31,7 @@ static int mount_dev(char *dev, char *fs_type, char *dir) {
 
 	if(NULL == (dev_node = vfs_find_node((const char *) dev, NULL))) {
 		if(0 != strcmp((const char *) fs_type, "nfs")) {
-			LOG_ERROR("mount: no such device\n");
+			printf("mount: no such device\n");
 			return -ENODEV;
 		}
 	}

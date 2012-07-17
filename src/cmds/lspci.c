@@ -8,7 +8,7 @@
  */
 #include <types.h>
 #include <embox/cmd.h>
-#include <lib/list.h>
+
 #include <getopt.h>
 #include <stdio.h>
 
