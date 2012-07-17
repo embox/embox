@@ -8,3 +8,7 @@ module heap_bm extends heap_api {
 	source "heap_bm.c"
 	depends page_api
 }
+
+module heap_simple extends heap_api {
+	source "malloc.c"
+}

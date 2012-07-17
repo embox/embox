@@ -6,17 +6,20 @@
  * @author Nikolay Korotky
  */
 
-#include <err.h>
+
 #include <string.h>
 #include <stdlib.h>
-
-#define MEM_POOL_SIZE 0x200000
+#include <embox/unit.h>
+#include <mem/heap.h>
+#include <mem/page.h>
 
 static int has_initialized = 0;
 static char *managed_memory_start;
 static char *last_valid_address;
 
-static char mem_pool[MEM_POOL_SIZE];
+
+#define MEM_POOL_SIZE  ((HEAP_SIZE() / 2) / PAGE_SIZE())
+static void *mem_pool;
 
 struct mem_control_block {
 	char is_available;
@@ -25,6 +28,8 @@ struct mem_control_block {
 
 static void malloc_init(void) {
 	struct mem_control_block *init_mcb;
+	mem_pool = page_alloc(MEM_POOL_SIZE);
+
 	managed_memory_start = (void*) mem_pool;
 	last_valid_address   = managed_memory_start;
 	has_initialized      = 1;
@@ -52,7 +57,7 @@ static void _mem_defrag(void) {
 	}
 }
 
-void free_dep(void *ptr) {
+void free(void *ptr) {
 	struct mem_control_block *mcb;
 	mcb = (void *)((char *) ptr - sizeof(struct mem_control_block));
 	mcb->is_available = 1;
@@ -60,8 +65,7 @@ void free_dep(void *ptr) {
 	return;
 }
 
-/*FIXME ATTENTION: memory size must be aligned!*/
-void *malloc_dep(size_t size) {
+void *malloc(size_t size) {
 	char *current_location;
 	struct mem_control_block *current_location_mcb;
 	char *memory_location = NULL;
@@ -86,7 +90,6 @@ void *malloc_dep(size_t size) {
 		memory_location = last_valid_address;
 		last_valid_address += size;
 		if (last_valid_address > managed_memory_start + MEM_POOL_SIZE) {
-			LOG_ERROR("mem_pool is full!\n");
 			return NULL;
 		}
 		current_location_mcb = (struct mem_control_block *) memory_location;
@@ -97,13 +100,13 @@ void *malloc_dep(size_t size) {
 	return memory_location;
 }
 
-void *calloc_dep(size_t nmemb, size_t size) {
+void *calloc(size_t nmemb, size_t size) {
 	void *tmp = malloc(nmemb * size);
 	memset(tmp, 0, nmemb * size);
 	return tmp;
 }
 
-void *realloc_dep(void *ptr, size_t size) {
+void *realloc(void *ptr, size_t size) {
 	struct mem_control_block *mcb;
 	char *tmp = malloc(size);
 	if (ptr == NULL) {
