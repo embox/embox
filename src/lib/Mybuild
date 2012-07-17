@@ -87,7 +87,6 @@ static module LibCStdio {
 }
 
 static module LibC {
-	source "malloc/malloc.c"
 	source "time/ctime.c"
 
 	depends LibCDiagnostic
