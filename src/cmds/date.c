@@ -15,17 +15,22 @@
 #include <hal/clock.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
+#include <abstime.h>
 
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
-	/* TODO usecase printf("Usage: date [[[[[CC]YY]MM]DD]hh]mm[.ss]\n"); */
 	printf("Usage: date CCYYMMDDhhmm.ss\n");
 }
 
-#define SEC_PER_DAY 86400
-#define SEC_PER_HOUR 3600
-#define SEC_PER_MINUTE 60
+#define SEC_PER_MINUTE  60
+#define SEC_PER_HOUR    3600
+#define SEC_PER_DAY     86400
+#define SEC_PER_YEAR    31536000 /* 86400 * 365 */
+#define SEC_PER_CENTURY 3155760000
+
+static uint32_t sec_per_month[12] = { 2678400, 2419200, 2678400, 2592000,
+		2678400, 2592000, 2678400, 2678400, 2592000, 2678400, 2592000, 2678400 };
 
 struct date {
 	int CC; /*< century */
@@ -37,62 +42,48 @@ struct date {
 	int ss; /*< second */
 };
 
-/* Time in seconds since last show_date() or set_date() call. */
-static clock_t last_sec = 0;
-
-/* There are one and only one such structure in system.
- * Access to it throw show_date/set_date functions. */
 static struct date date;
 
-/* TODO Now I suppose that time refresh at least once at day.
- * Date bound to timer */
-static void sec_to_date(int sec) {
-	short ss, mm, hh, DD;
-	int tmp;
+static void sec_to_date(uint32_t sec) {
+	int leap_year_count, i;
 
-	tmp = sec;
+	date.CC = 20;
+	date.YY = sec / SEC_PER_YEAR; /* years since 1900 */
+	leap_year_count = date.YY / 4;
+	date.YY -= 100;
+	sec = sec % SEC_PER_YEAR - leap_year_count * SEC_PER_DAY;
 
-	DD = tmp / SEC_PER_DAY;
-	tmp -= DD * SEC_PER_DAY;
-
-	hh = tmp / SEC_PER_HOUR;
-	tmp -= hh * SEC_PER_HOUR;
-
-	mm = tmp / SEC_PER_MINUTE;
-	tmp -=  mm * SEC_PER_MINUTE;
-
-	ss = tmp;
-
-	date.DD += DD;
-	date.hh += hh;
-	date.mm += mm;
-	date.ss += ss;
-
-	/* check for overflows */
-	if (date.ss >= 60) {
-		date.ss -= 60;
-		date.mm++;
+	/* Add to February one day if current year is a leap year */
+	if (date.YY % 4 == 0) {
+		sec += SEC_PER_DAY;
+		sec_per_month[1] += SEC_PER_DAY;
 	}
 
-	if (date.mm >= 60) {
-		date.mm -= 60;
-		date.hh++;
+	for (i = 0; i < 12 && sec > sec_per_month[i]; i++) {
+		sec -= sec_per_month[i];
 	}
+	sec_per_month[1] -= SEC_PER_DAY;
 
-	if (date.hh >= 24) {
-		date.hh -= 24;
-		date.DD++;
-	}
+	/* Numeration of days starts with 1 */
+	date.MM = i + 1;
 
-	/* TODO YY and CC. YY may be leap-year. */
+	date.DD = sec / SEC_PER_DAY + 1;
+	sec %= SEC_PER_DAY;
+
+	date.hh = sec / SEC_PER_HOUR;
+	sec %= SEC_PER_HOUR;
+
+	date.mm = sec / SEC_PER_MINUTE;
+	sec %= SEC_PER_MINUTE;
+
+	date.ss = sec;
 }
 
 static void show_date(void) {
-	clock_t delta;
+	struct timespec ts;
 
-	delta = clock_sys_sec() - last_sec;
-	last_sec += delta;
-	sec_to_date(delta);
+	gettimeofday(&ts);
+	sec_to_date(ts.tv_sec);
 
 	printf("%d.%d.%d%d %d:%d:%d\n", date.DD, date.MM, date.CC, date.YY,
 			date.hh, date.mm, date.ss);

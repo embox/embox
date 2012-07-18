@@ -9,7 +9,7 @@
 #define KERNEL_TIME_KTIME_H_
 
 #include <kernel/time/clock_source.h>
-#include <../include/time.h>
+#include <time.h>
 
 extern struct timeval *ktime_get_timeval(struct timeval *tv);
 extern struct timespec *ktime_get_timespec(struct timespec *ts);

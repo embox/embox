@@ -10,13 +10,23 @@
 #include <net/ip.h>
 #include <net/in.h>
 #include <net/socket.h>
+#include <stdio.h>
+#include <err.h>
+#include <errno.h>
+#include <abstime.h>
 
+#include <kernel/time/timer.h>
 #include <net/ntp.h>
-static struct ntphdr x;
-char buf[sizeof(x)];
-static struct ntphdr *r = (struct ntphdr *)buf;
 
 #define NTP_PORT 123
+#define DEFAULT_WAIT_TIME 1000
+
+static struct ntphdr x;
+static char buf[sizeof(x)];
+static struct ntphdr *r = (struct ntphdr *) buf;
+
+static uint32_t ntp_server_timeout = DEFAULT_WAIT_TIME;
+static struct sys_timer ntp_timer;
 
 EMBOX_CMD(exec);
 
@@ -24,9 +34,15 @@ static void print_usage(void) {
 	printf("Usage: ntpdate [-q] server");
 }
 
-int ntpdate(char *dstip) {
-	int sock;
+void wake_on_server_resp(struct sys_timer *timer, void *param) {
+	*(int*)param = false;
+}
+
+int ntpdate_common(char *dstip) {
+	int sock, res;
+	struct sockaddr_in our;
 	struct sockaddr_in dst;
+	bool wait_response = true; /* wait for server response */
 
 	if (!inet_aton(dstip, &dst.sin_addr)) {
 		printf("Error: Invalid ip address '%s'", dstip);
@@ -34,6 +50,18 @@ int ntpdate(char *dstip) {
 	}
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+	our.sin_family = AF_INET;
+	/* FIXME */
+	our.sin_port = htons(512);
+	our.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	res = bind(sock, (struct sockaddr *)&our, sizeof(our));
+
+	if (res < 0) {
+		printf("error at bind() %d!\n", res);
+		return res;
+	}
 
 	dst.sin_family = AF_INET;
 	dst.sin_port = htons((__u16)NTP_PORT);
@@ -43,42 +71,61 @@ int ntpdate(char *dstip) {
 	x.stratum = NTP_SERVER_UNSPEC;
 	x.poll = 3;
 	x.precision = 0xfa;
-	x.rootdelay.sec = 1;
-	x.rootdisp.sec = 1;
-	x.xmt_ts.sec = (__u32)0xD3AA9D5E;
+	x.rootdelay.sec = htons(0x0001);
+	x.rootdisp.sec = htons(0x0001);
+	x.xmt_ts.sec = htonl(0xD3AFBB82);
 	x.xmt_ts.fraction = 0;
 
 	if (0 >= sendto(sock, (void*) &x, sizeof(x), 0, (struct sockaddr *)&dst, sizeof(dst))) {
 		printf("%s\n", "Sending error");
 	}
 
-	while(0 == recvfrom(sock, buf, sizeof(x), 0, NULL, NULL));
+	/* wait for server response or quit with timeout */
+	timer_init(&ntp_timer, 0, ntp_server_timeout, wake_on_server_resp, &wait_response);
+	while (!(res = recvfrom(sock, buf, sizeof(x), 0, NULL, NULL)) && wait_response);
 
-	r = (struct ntphdr *) buf;
+	printf("%d %d %d\n", (int)(r->stratum), (int)(r->poll), (int)(r->status & 7));
 
-	printf("%d %d\n", (int)r->stratum, (int)r->status);
+	close(sock);
 
-	printf("%s",buf);
-
-	return 0;
+	return res == 0 ? ENOERR : -ETIMEDOUT;
 }
 
 static int exec(int argc, char **argv) {
 	int opt;
+	bool query = false;
+	struct timespec ts;
 
 	getopt_init();
 
-	while (-1 != (opt = getopt(argc, argv, "hq:t"))) {
+	while (-1 != (opt = getopt(argc, argv, "hq:t:"))) {
 		printf("\n");
 		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
-		case 'q':
-			return ntpdate(argv[2]);
-		default:
+		case 'q': /* Query only - don't set the clock */
+			query = true;
+			break;
+		case 't': /* Maximum time waiting for a server response */
+			if (1 != sscanf(optarg, "%d", &ntp_server_timeout)) {
+				LOG_ERROR("wrong -t argument %s\n", optarg);
+				return -1;
+			}
+			break;
+		default:  /* Set system clock */
 			break;
 		}
+	}
+
+	ntpdate_common(argv[argc - 1]);
+
+	if (!query) {
+		ts.tv_sec = ntohl(r->xmt_ts.sec);
+		/* convert pico to nanoseconds (RFC 5905, data types) */
+		ts.tv_nsec = (r->xmt_ts.fraction * 1000) / 232;
+		time_update(&ts);
+		printf("s:%d, ns:%d\n", (int)ts.tv_sec, (int)r->xmt_ts.fraction);
 	}
 
 	return 0;

@@ -25,7 +25,7 @@ typedef struct ntphdr {
 	__u8 status; /*< LI, VN, Mode */
 	__u8 stratum;
 	__u8 poll;
-	__u8 precision;
+	__s8 precision;
 	struct s_ntpdata rootdelay;
 	struct s_ntpdata rootdisp; /*< root dispersion */
 	__be32 refid;

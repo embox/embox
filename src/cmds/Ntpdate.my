@@ -14,6 +14,8 @@ package embox.cmd
 	''')
 
 module ntpdate {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ntpdate.c"
 	depends embox.net.ntp
+	depends embox.kernel.time.abstime
 }
