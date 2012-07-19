@@ -1,5 +1,5 @@
 /*
- * @brief NTPv4 client
+ * @brief SNTPv4 client
  *
  * @date 13.07.2012
  * @author Alexander Kalmuk
@@ -43,6 +43,7 @@ int ntpdate_common(char *dstip) {
 	struct sockaddr_in our;
 	struct sockaddr_in dst;
 	bool wait_response = true; /* wait for server response */
+	struct timespec ts;
 
 	if (!inet_aton(dstip, &dst.sin_addr)) {
 		printf("Error: Invalid ip address '%s'", dstip);
@@ -73,7 +74,8 @@ int ntpdate_common(char *dstip) {
 	x.precision = 0xfa;
 	x.rootdelay.sec = htons(0x0001);
 	x.rootdisp.sec = htons(0x0001);
-	x.xmt_ts.sec = htonl(0xD3AFBB82);
+	gettimeofday(&ts);
+	x.xmt_ts.sec = htonl(ts.tv_sec);
 	x.xmt_ts.fraction = 0;
 
 	if (0 >= sendto(sock, (void*) &x, sizeof(x), 0, (struct sockaddr *)&dst, sizeof(dst))) {
@@ -130,4 +132,3 @@ static int exec(int argc, char **argv) {
 
 	return 0;
 }
-
