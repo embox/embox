@@ -4,7 +4,7 @@ module arp_queue {
 	source "arp_queue.c"
 
 	depends embox.util.hashtable
-	depends dev /* for network_layer.c */
+	depends network_layer /* for network_layer.c */
 	depends skbuff
 	depends embox.kernel.timer.sys_timer
 	depends embox.kernel.thread.sched
@@ -14,7 +14,7 @@ module arp_queue {
 module arp {
 	source "arp.c"
 
-	depends dev /* for network_layer.c */
+	depends network_layer /* for network_layer.c */
 	depends skbuff
 	depends arp_queue
 	depends neighbour
@@ -52,7 +52,7 @@ module ipv4 {
 	source "ip_options.c"
 
 	source "ip_output.c"
-	depends dev /* for network_layer.c */
+	depends network_layer /* for network_layer.c */
 	depends skbuff
 	depends route
 	depends eth

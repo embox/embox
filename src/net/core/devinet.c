@@ -21,7 +21,7 @@
 struct callback_info {
 	struct list_head lnk;
 	unsigned short type;
-	ETH_LISTEN_CALLBACK func;
+	devinet_callback_t func;
 };
 
 struct inetdev_info {
@@ -49,7 +49,7 @@ static struct inetdev_info * find_indev_info_entry(struct in_device *in_dev) {
 }
 
 static int alloc_callback(struct in_device *in_dev, unsigned int type,
-				ETH_LISTEN_CALLBACK callback) {
+				devinet_callback_t callback) {
 	struct inetdev_info *indev_info;
 	struct callback_info *cb_info;
 
@@ -80,7 +80,7 @@ struct in_device * in_dev_get(struct net_device *dev) {
 }
 
 int inet_dev_listen(struct in_device *in_dev, unsigned short type,
-		ETH_LISTEN_CALLBACK callback) {
+		devinet_callback_t callback) {
 	assert(in_dev != NULL);
 	assert(callback != NULL);
 	return alloc_callback(in_dev, type, callback);
@@ -317,3 +317,4 @@ struct in_device * inet_dev_get_next_used(struct in_device *in_dev) {
 
 	return (&indev_info->lnk == &indev_info_list) ? NULL : &indev_info->in_dev;
 }
+

@@ -17,92 +17,36 @@
 #include <stdlib.h>
 #include <string.h>
 #include <hal/ipl.h>
+#include <lib/list.h>
+#include <util/hashtable.h>
+#include <embox/unit.h>
 
+EMBOX_UNIT_INIT(unit_init);
 
-/*--------------------------------------------
- * network device registry and name calculator
- * -------------------------------------------
- */
 #include <framework/mod/options.h>
 
-#define NET_DEVICES_QUANTITY OPTION_GET(NUMBER,net_dev_quantity)
-//TODO use hash table instead this
-struct net_device *opened_netdevs[NET_DEVICES_QUANTITY]; // FIXME clear before using
+static int process_backlog(struct net_device *dev);
 
-int register_netdev(struct net_device *dev) {
-	size_t i;
+POOL_DEF(netdev_pool, struct net_device, OPTION_GET(NUMBER,netdev_quantity));
+struct hashtable *netdevs_table;
+static LIST_HEAD(rx_dev_queue);
 
-	assert(dev != NULL);
-
-	for (i = 0; i < NET_DEVICES_QUANTITY; ++i) {
-		if (opened_netdevs[i] == NULL) {
-			opened_netdevs[i] = dev;
-			return ENOERR;
-		}
-	}
-
-	return -ENOMEM;
+int netdev_register(struct net_device *dev) {
+	assert((dev != NULL) && (dev->name != NULL));
+	return hashtable_put(netdevs_table, (void *)dev->name, (void *)dev);
 }
 
-void unregister_netdev(struct net_device *dev) {
-	size_t i;
-
-	assert(dev != NULL);
-
-	for (i = 0; i < NET_DEVICES_QUANTITY; ++i) {
-		if (opened_netdevs[i] == dev) {
-			opened_netdevs[i] = NULL;
-			return;
-		}
-	}
+int netdev_unregister(struct net_device *dev) {
+	assert((dev != NULL) && (dev->name != NULL));
+	return hashtable_del(netdevs_table, (void *)dev->name);
 }
 
 struct net_device * netdev_get_by_name(const char *name) {
-	size_t i;
-
 	assert(name != NULL);
-
-	for (i = 0; i < NET_DEVICES_QUANTITY; ++i) {
-		if (strncmp(name, opened_netdevs[i]->name, IFNAMSIZ) == 0) {
-			return opened_netdevs[i];
-		}
-	}
-
-	return NULL;
+	return hashtable_get(netdevs_table, (void *)name);
 }
 
-#if 0
-struct net_device * get_dev_by_idx(int idx) {
-	if ((idx < 0) || (idx >= NET_DEVICES_QUANTITY)) {
-		return NULL;
-	}
-
-	return opened_netdevs[idx];
-}
-
-struct net_device * dev_getbyhwaddr(unsigned short type, char *hw_addr) {
-	size_t i;
-	struct net_device *dev;
-
-	for (i = 1; i < NET_DEVICES_QUANTITY; ++i) {
-		dev = opened_netdevs[i];
-		if ((dev != NULL) && (memcmp(hw_addr, dev->dev_addr, dev->addr_len) == 0)) {
-			return dev;
-		}
-	}
-
-	return NULL;
-}
-#endif
-
-/*-------------------------------------------
- * network device pool
- * ------------------------------------------
- */
-static int process_backlog(struct net_device *dev);
-POOL_DEF(netdev_pool, struct net_device, NET_DEVICES_QUANTITY);
-
-struct net_device * alloc_netdev(int sizeof_priv, const char *name,
+struct net_device * netdev_alloc(/*int sizeof_priv, */const char *name,
 		void (*setup)(struct net_device *)) {
 	struct net_device *dev;
 
@@ -119,12 +63,12 @@ struct net_device * alloc_netdev(int sizeof_priv, const char *name,
 	dev->dev_queue.prev = (struct sk_buff *)(&(dev->dev_queue));
 	dev->poll = process_backlog;
 
-	strncpy(dev->name, name, IFNAMSIZ);
+	strncpy(dev->name, name, sizeof dev->name);
 
 	return dev;
 }
 
-void free_netdev(struct net_device *dev) {
+void netdev_free(struct net_device *dev) {
 	assert(dev != NULL);
 	pool_free(&netdev_pool, dev);
 }
@@ -220,8 +164,6 @@ static int process_backlog(struct net_device *dev) {
 	return ENOERR;
 }
 
-static LIST_HEAD(rx_dev_queue);
-
 int dev_rx_queued(struct net_device *dev) {
 	ipl_t sp;
 
@@ -253,3 +195,23 @@ void dev_rx_processing(void) {
 		dev_rx_dequeued(dev);
 	}
 }
+
+size_t netdev_hash(const char *name) {
+	size_t hash;
+	hash = 0;
+	while (*name != '\0') {
+		hash ^= *name++;
+	}
+	return hash;
+}
+
+static int unit_init(void) {
+	printf("net_table_sz %d\n", OPTION_GET(NUMBER,netdev_table_sz));
+	netdevs_table = hashtable_create(OPTION_GET(NUMBER,netdev_table_sz),
+			(get_hash_ft)&netdev_hash, (ht_cmp_ft)&strcmp);
+	if (netdevs_table == NULL) {
+		return -ENOMEM;
+	}
+	return ENOERR;
+}
+

@@ -59,8 +59,10 @@ extern void hashtable_destroy(struct hashtable *ht);
  * @param hash_tab - hash-table handler which you want to be the item inserted
  * @param key - key identifier of inserted element
  * @param value - inserted element
+ *
+ * @return error code
  */
-extern void hashtable_put(struct hashtable *ht, void *key, void *value);
+extern int hashtable_put(struct hashtable *ht, void *key, void *value);
 
 /**
  * Search element in the hash-table by key. It returns first appropriate object
@@ -76,7 +78,28 @@ extern void *hashtable_get(struct hashtable *ht, void* key);
  *
  * @param hash_tab - hash-table from which will be deleted the element
  * @param key - key identifier of the element
+ *
+ * @return error code
  */
-extern void hashtable_del(struct hashtable *ht, void *key);
+extern int hashtable_del(struct hashtable *ht, void *key);
+
+/**
+ * Get initial pointer to key from the hash-table
+ *
+ * @param hash_tab - hash-table on which we will iterate
+ *
+ * @return pointer to first key or NULL if no more entries in hash-table
+ */
+extern void *hashtable_get_key_first(struct hashtable *ht);
+
+/**
+ * Get next pointer to key from the hash-table
+ *
+ * @param hash_tab - hash-table on which we iterate
+ * @param prev_key - pointer to previous key
+ *
+ * @return pointer to next key or NULL if no more entries in hash-table
+ */
+extern void *hashtable_get_key_next(struct hashtable *ht, void *prev_key);
 
 #endif /* UTIL_HASHTABLE_H_ */

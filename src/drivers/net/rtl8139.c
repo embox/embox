@@ -212,7 +212,7 @@ static int unit_init(void) {
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 
-	nic = alloc_etherdev(0);
+	nic = alloc_etherdev(/*0*/);
 	if (nic == NULL) {
 		LOG_ERROR("Couldn't alloc netdev for RTL8139 PCI\n");
 		return -ENOMEM;
@@ -226,5 +226,5 @@ static int unit_init(void) {
 		return res;
 	}
 
-	return register_netdev(nic);
+	return netdev_register(nic);
 }

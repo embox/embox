@@ -73,11 +73,11 @@ struct net_device *loopback_dev;
  */
 static int __init unit_init(void) {
 
-	loopback_dev = alloc_netdev(0, "lo", loopback_setup);
+	loopback_dev = netdev_alloc(/*0, */"lo", loopback_setup);
 	if (loopback_dev == NULL) {
 		LOG_ERROR("Can't allocate net device\n");
 		return -ENOMEM;
 	}
 
-	return register_netdev(loopback_dev);
+	return netdev_register(loopback_dev);
 }

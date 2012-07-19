@@ -62,7 +62,7 @@ static int arp_header(struct sk_buff *skb, struct net_device *dev,
 	/*
 	 * Fill the device header for the ARP frame
 	 */
-	res = dev_hard_header(skb, dev, protocol,
+	res = dev->header_ops->create(skb, dev, protocol,
 			(void *)dest_hw, (void *)src_hw, skb->len);
 	if (res < 0) {
 		return res;

@@ -10,14 +10,12 @@
 #ifndef NET_ETHERDEVICE_H_
 #define NET_ETHERDEVICE_H_
 
-#define NET_TYPE_ALL_PROTOCOL 0
+//#define NET_TYPE_ALL_PROTOCOL 0
 
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <net/socket.h>
 #include <stdint.h>
-
-typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
 
 /**
  * Determine if the Ethernet address is a multicast.
@@ -76,11 +74,6 @@ static inline bool compare_ether_addr(const uint8_t *a, const uint8_t *b)
 }
 
 /**
- * Functions provided by eth.c
- */
-
-
-/*
  * Packet types.
  */
 enum {
@@ -92,6 +85,15 @@ enum {
 };
 
 /**
+ * Functions provided by eth.c
+ */
+
+/**
+ * get_eth_header_ops - returns methods for working with ethernet header
+ */
+extern const struct header_ops * get_eth_header_ops(void);
+
+/**
  * eth_packet_type - determine the packet type (See above)
  * @param skb: skb holding incoming packet
  * (at least LL info and incoming device)
@@ -99,11 +101,13 @@ enum {
 extern uint8_t eth_packet_type(struct sk_buff *skb);
 
 /**
- * Extract hardware address from packet.
- * @param pack packet to extract header from
- * @param haddr destination buffer
+ * Determine the packet's protocol ID.
  */
-extern int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr);
+extern __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev);
+
+/**
+ * Functions provided by eth_dev.c
+ */
 
 /**
  * Set new Ethernet hardware address.
@@ -113,53 +117,30 @@ extern int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr);
 extern int eth_mac_addr(struct net_device *dev, struct sockaddr *addr);
 
 /**
- * Create the Ethernet header
- * @param pack buffer to alter
- * @param dev source device
- * @param type Ethernet type field
- * @param daddr destination address (NULL leave destination address)
- * @param saddr source address (NULL use device source address)
- * @paramlen packet length (<= pack->len)
- */
-extern int eth_header(sk_buff_t *pack, struct net_device *dev,
-			unsigned short type, void *daddr, void *saddr, unsigned len);
-
-/**
- * Rebuild the Ethernet MAC header.
- * @param pack socket buffer to update
- */
-extern int eth_rebuild_header(sk_buff_t *pack);
-
-/**
  * Set new MTU size
  * @param dev network device
  * @param new_mtu new Maximum Transfer Unit
  */
 extern int eth_change_mtu(struct net_device *dev, int new_mtu);
 
+#if 0
 /**
  * Setup Ethernet network device
  * @param dev network device
  * Fill in the fields of the device structure with Ethernet-generic values.
  */
-extern void ether_setup(struct net_device *dev);
-
-extern const header_ops_t * get_eth_header_ops(void);
+extern void etherdev_setup(struct net_device *dev);
+#endif
 
 /**
  * Allocates and sets up an Ethernet device
  */
-extern struct net_device * alloc_etherdev(int sizeof_priv);
+extern struct net_device * alloc_etherdev(void/*int sizeof_priv*/);
 
 /**
  * Frees an Ethernet device
  */
 extern void free_etherdev(struct net_device *dev);
-
-/**
- * Determine the packet's protocol ID.
- */
-extern __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev);
 
 extern int eth_flag_up(struct net_device *dev, int flag_type);
 extern int eth_flag_down(struct net_device *dev, int flag_type);

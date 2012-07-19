@@ -15,6 +15,8 @@
 #include <net/in.h>
 #include <lib/list.h>
 
+#include <util/hashtable.h>
+
 /* Backlog congestion levels */
 #define NET_RX_SUCCESS       0
 #define NET_RX_DROP          1
@@ -85,10 +87,10 @@ typedef struct net_device_ops {
 } net_device_ops_t;
 
 typedef struct header_ops {
-	int (*rebuild)(sk_buff_t *pack);
-	int (*create)(sk_buff_t *pack, struct net_device *dev, unsigned short type,
-			void *daddr, void *saddr, unsigned len);
-	int (*parse)(const sk_buff_t *pack, unsigned char *haddr);
+	int (*create)(struct sk_buff *skb, struct net_device *dev,
+			unsigned short type, void *daddr, void *saddr, unsigned len);
+	int (*rebuild)(struct sk_buff *skb);
+	int (*parse)(const struct sk_buff *skb, unsigned char *haddr);
 } header_ops_t;
 
 /**
@@ -126,15 +128,19 @@ typedef struct net_device {
 	net_device_stats_t stats;
 	const net_device_ops_t *netdev_ops; /**< Management operations        */
 	const header_ops_t *header_ops; /**< Hardware header description  */
+#if 0
 	void *priv; /**< pointer to private data      */
+#endif
 	struct sk_buff_head dev_queue;
 	int (*poll)(struct net_device *dev);
 	struct net_node *pnet_node;
 } net_device_t;
 
+#if 0
 static inline void *netdev_priv(struct net_device *dev) {
 	return dev->priv;
 }
+#endif
 
 /**
  * Find an network device by its name
@@ -158,26 +164,32 @@ extern struct net_device * dev_getbyhwaddr(unsigned short type, char *hwaddr);
  * @param name device name format string
  * @param callback to initialize device
  */
-extern struct net_device * alloc_netdev(int sizeof_priv, const char *name,
-		void(*setup)(struct net_device *));
+extern struct net_device * netdev_alloc(/*int sizeof_priv,*/const char *name,
+		void (*setup)(struct net_device *));
 
 /**
  * Free network device
  * @param dev net_device handler
  */
-extern void free_netdev(struct net_device *dev);
+extern void netdev_free(struct net_device *dev);
 
 /**
  * Register network device
  * @param dev net_device handler
  */
-extern int register_netdev(struct net_device *dev);
+extern int netdev_register(struct net_device *dev);
 
 /**
  * Unregister network device
  * @param dev net_device handler
  */
-extern void unregister_netdev(struct net_device *dev);
+extern int netdev_unregister(struct net_device *dev);
+
+extern struct hashtable *netdevs_table;
+#define netdev_foreach(device)                                                      \
+	for (char **dev_name_ptr = hashtable_get_key_first(netdevs_table);              \
+			(dev_name_ptr != NULL) && (device = netdev_get_by_name(*dev_name_ptr)); \
+			dev_name_ptr = hashtable_get_key_next(netdevs_table, dev_name_ptr))
 
 /**
  * Add packet handler
@@ -252,6 +264,7 @@ extern void netif_rx_schedule(struct sk_buff *skb);
 
 extern int netif_receive_skb(sk_buff_t *skb);
 
+#if 0
 static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
 		unsigned short type, void *daddr, void *saddr, unsigned len) {
 	if (!dev->header_ops || !dev->header_ops->create) {
@@ -259,12 +272,6 @@ static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
 	}
 	return dev->header_ops->create(skb, dev, type, daddr, saddr, len);
 }
-#if 0
-extern struct net_device *opened_netdevs[CONFIG_NET_DEVICES_QUANTITY];
-
-#define netdev_foreach(device) \
-		array_foreach(device, opened_netdevs, CONFIG_NET_DEVICES_QUANTITY)
-
 #endif
 
 #if 0

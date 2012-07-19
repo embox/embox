@@ -4,13 +4,17 @@ abstract module entry_api { }
 
 module dev {
 	source "dev.c"
-	option number net_dev_quantity=8
+	option number netdev_quantity=8
+	option number netdev_table_sz=3
 
 	depends skbuff
 	depends embox.lib.LibC
 	depends embox.mem.pool
-	/* depends from network_layer.c */
+	depends embox.util.hashtable
+	depends network_layer /* depends from network_layer.c */
+}
 
+module network_layer {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	source "network_layer.c"
 
@@ -59,6 +63,6 @@ module neighbour {
 module net_entry extends entry_api {
 	source "net_entry.c"
 
-	depends dev /* for network_layer.c */
+	depends network_layer /* for network_layer.c */
 	depends embox.lib.LibC
 }

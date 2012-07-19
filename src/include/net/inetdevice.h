@@ -12,6 +12,8 @@
 #include <net/netdevice.h>
 #include <net/net.h>
 
+typedef void (*devinet_callback_t)(void *pack);
+
 /**
  * structute of inet(IP) device
  */
@@ -40,7 +42,7 @@ extern in_device_t *in_dev_get(net_device_t *dev);
  * not need set interface to PROMISC mode now
  */
 extern int inet_dev_listen(in_device_t *in_dev, unsigned short type,
-					    ETH_LISTEN_CALLBACK callback);
+					    devinet_callback_t callback);
 
 /**
  * find known netdev device has pointed ip address

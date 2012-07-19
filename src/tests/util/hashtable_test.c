@@ -73,3 +73,23 @@ TEST_CASE("Add three elements to hashtable") {
 		}
 	}
 }
+
+TEST_CASE("Add tree elements and comparer there on each iteration") {
+	int i;
+	struct hashtable *ht;
+	char **key_iter;
+
+	ht = hashtable_create(0x1, get_hash, cmp_keys);
+
+	for (i = 0; i < ARRAY_SIZE(el); i++) {
+		hashtable_put(ht, (void *)key[i], &el[i]);
+	}
+
+	for (key_iter = hashtable_get_key_first(ht), i = 0;
+			key_iter != NULL;
+			key_iter = hashtable_get_key_next(ht, key_iter), ++i) {
+		test_assert_zero(strcmp(*key_iter, key[i]));
+	}
+
+	hashtable_destroy(ht);
+}
