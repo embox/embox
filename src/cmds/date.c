@@ -15,7 +15,7 @@
 #include <hal/clock.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
-#include <abstime.h>
+#include <kernel/time/time.h>
 
 EMBOX_CMD(exec);
 
@@ -82,7 +82,7 @@ static void sec_to_date(uint32_t sec) {
 static void show_date(void) {
 	struct timespec ts;
 
-	gettimeofday(&ts);
+	gettimeofday(&ts, NULL);
 	sec_to_date(ts.tv_sec);
 
 	printf("%d.%d.%d%d %d:%d:%d\n", date.DD, date.MM, date.CC, date.YY,

@@ -45,6 +45,11 @@ struct itimerspec {
 	struct timespec it_value;     /* Timer expiration. */
 };
 
+struct timezone {
+    int tz_minuteswest;     /* minutes west of Greenwich */
+    int tz_dsttime;         /* type of DST correction */
+};
+
 /**
  * Converts the calendar time t into a null-terminated string of the form
  * "Wed Jun 30 21:49:08 1993\n".
@@ -70,6 +75,7 @@ extern int clock_gettime(clockid_t clk_id, struct timespec *tp);
 
 extern int clock_settime(clockid_t clk_id, const struct timespec *tp);
 
+extern void gettimeofday(struct timespec *ts, struct timezone *tz);
 
 /* seconds from beginning of start system */
 extern time_t time(time_t *);

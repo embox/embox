@@ -13,7 +13,8 @@
 #include <stdio.h>
 #include <err.h>
 #include <errno.h>
-#include <abstime.h>
+#include <time.h>
+#include <kernel/time/time.h>
 
 #include <kernel/time/timer.h>
 #include <net/ntp.h>
@@ -73,7 +74,7 @@ int ntpdate_common(char *dstip) {
 	x.precision = 0xfa;
 	x.rootdelay.sec = htons(0x0001);
 	x.rootdisp.sec = htons(0x0001);
-	gettimeofday(&ts);
+	gettimeofday(&ts, NULL);
 	x.xmt_ts.sec = htonl(ts.tv_sec);
 	x.xmt_ts.fraction = 0;
 
@@ -86,6 +87,7 @@ int ntpdate_common(char *dstip) {
 	while (!(res = recvfrom(sock, buf, sizeof(x), 0, NULL, NULL)) && wait_response);
 
 	close(sock);
+	timer_close(&ntp_timer);
 
 	if (res <= 0) {
 		printf("Server timeout\n");
@@ -124,13 +126,13 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	 ntpdate_common(argv[argc - 1]);
+	ntpdate_common(argv[argc - 1]);
 
 	if (!query) {
 		ts.tv_sec = ntohl(r->xmt_ts.sec);
 		/* convert pico to nanoseconds (RFC 5905, data types) */
 		ts.tv_nsec = (r->xmt_ts.fraction * 1000) / 232;
-		time_update(&ts);
+		settimeofday(&ts, NULL);
 	}
 
 	return 0;

@@ -25,8 +25,8 @@ module timer {
 	depends embox.arch.clock
 }
 
-module abstime {
+module time {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "abstime.c"
+	source "time.c"
 	depends kernel_time
 }

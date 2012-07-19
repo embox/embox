@@ -7,8 +7,8 @@
 
 #include <kernel/time/clock_source.h>
 #include <kernel/time/itimer.h>
+#include <kernel/time/time.h>
 #include <time.h>
-#include <abstime.h>
 
 #include <embox/unit.h>
 
@@ -27,13 +27,13 @@ static void time_set_clock_source(struct clock_source *cs) {
 	abstime.cs = cs;
 }
 
-void time_update(struct timespec *newtime) {
+void settimeofday(struct timespec *newtime, struct timezone *tz) {
 	abstime.time.tv_sec = newtime->tv_sec;
 	abstime.time.tv_nsec = newtime->tv_nsec;
 	itimer_init(&itimer, abstime.cs, 0);
 }
 
-void gettimeofday(struct timespec *t) {
+void gettimeofday(struct timespec *t, struct timezone *tz) {
 	ns_t cur = itimer.cs->read(itimer.cs);
 
 	t->tv_sec = abstime.time.tv_sec + cur / NSEC_PER_SEC;

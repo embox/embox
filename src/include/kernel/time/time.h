@@ -10,7 +10,7 @@
 
 #include <time.h>
 
-extern void time_update(struct timespec *ts);
-extern void gettimeofday(struct timespec *ts);
+/* gettimeofday is posix function, but settimeofday is not. */
+extern void settimeofday(struct timespec *ts, struct timezone *tz);
 
 #endif /* ABSTIME_H_ */
