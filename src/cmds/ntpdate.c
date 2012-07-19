@@ -40,10 +40,9 @@ void wake_on_server_resp(struct sys_timer *timer, void *param) {
 
 int ntpdate_common(char *dstip) {
 	int sock, res;
-	struct sockaddr_in our;
-	struct sockaddr_in dst;
-	bool wait_response = true; /* wait for server response */
+	struct sockaddr_in our, dst;
 	struct timespec ts;
+	bool wait_response = true; /* wait for server response */
 
 	if (!inet_aton(dstip, &dst.sin_addr)) {
 		printf("Error: Invalid ip address '%s'", dstip);
@@ -86,17 +85,22 @@ int ntpdate_common(char *dstip) {
 	timer_init(&ntp_timer, 0, ntp_server_timeout, wake_on_server_resp, &wait_response);
 	while (!(res = recvfrom(sock, buf, sizeof(x), 0, NULL, NULL)) && wait_response);
 
-	printf("%d %d %d\n", (int)(r->stratum), (int)(r->poll), (int)(r->status & 7));
-
 	close(sock);
 
-	return res == 0 ? ENOERR : -ETIMEDOUT;
+	if (res <= 0) {
+		printf("Server timeout\n");
+		return -ETIMEDOUT;
+	}
+
+	printf("server %s, stratum %d\n", dstip, (int)(r->stratum));
+
+	return ENOERR;
 }
 
 static int exec(int argc, char **argv) {
 	int opt;
-	bool query = false;
 	struct timespec ts;
+	bool query = false;
 
 	getopt_init();
 
@@ -120,14 +124,13 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	ntpdate_common(argv[argc - 1]);
+	 ntpdate_common(argv[argc - 1]);
 
 	if (!query) {
 		ts.tv_sec = ntohl(r->xmt_ts.sec);
 		/* convert pico to nanoseconds (RFC 5905, data types) */
 		ts.tv_nsec = (r->xmt_ts.fraction * 1000) / 232;
 		time_update(&ts);
-		printf("s:%d, ns:%d\n", (int)ts.tv_sec, (int)r->xmt_ts.fraction);
 	}
 
 	return 0;
