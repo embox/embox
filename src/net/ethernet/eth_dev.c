@@ -17,8 +17,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include <framework/mod/options.h>
-
 static unsigned char etherdev_idx = 0;
 
 int eth_mac_addr(struct net_device *dev, struct sockaddr *addr) {

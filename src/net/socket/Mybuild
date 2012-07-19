@@ -47,7 +47,7 @@ module af_inet {
 
 	source "ipconfig.c"
 
-	depends network_layer /* for dev.c */
+	depends dev /* for dev.c */
 	depends core /* for devinet.c */
 
 	source "protocol.c"

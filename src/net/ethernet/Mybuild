@@ -2,7 +2,6 @@ package embox.net
 
 module eth {
 	source "eth.c", "eth_dev.c"
-	option number eth_dev_quantity=4
 
 	depends dev /* for dev.c */
 	depends core /* for devinet.c */
