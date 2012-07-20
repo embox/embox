@@ -1,4 +1,4 @@
-/*
+/**
  * @brief SNTPv4 client
  *
  * @date 13.07.2012
@@ -59,7 +59,7 @@ int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r) {
 	res = bind(sock, (struct sockaddr *)&our, sizeof(our));
 
 	if (res < 0) {
-		printf("error at bind() %d!\n", res);
+		printf("error at bind()\n");
 		goto error;
 	}
 
@@ -86,8 +86,6 @@ int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r) {
 		goto error;
 	}
 
-	printf("server %s, stratum %d\n", dstip, (int)(r->stratum));
-
 	return ENOERR;
 
 error:
@@ -96,7 +94,8 @@ error:
 }
 
 static int exec(int argc, char **argv) {
-	int opt, res;
+	int opt;
+	int delay;
 	struct timespec ts;
 	bool query = false;
 	struct ntphdr r;
@@ -124,12 +123,18 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	res = ntpdate_common(argv[argc - 1], ntp_server_timeout, &r);
+	if (0 > ntpdate_common(argv[argc - 1], ntp_server_timeout, &r)) {
+		return 0;
+	}
 
-	if (res >= 0 && !query) {
-		ts.tv_sec = ntohl(r.xmt_ts.sec);
-		/* convert pico to nanoseconds (RFC 5905, data types) */
-		ts.tv_nsec = (r.xmt_ts.fraction * 1000) / 232;
+	gettimeofday(&ts, NULL);
+	printf("server %s, stratum %d, delay %d (ms)\n", argv[argc - 1], (int)(r.stratum),
+			(delay = ntp_delay(&r) / 1000));
+
+	if (!query) {
+		ntp_format_to_timespec(&ts, r.xmt_ts);
+		ts.tv_sec  += delay / NSEC_PER_SEC;
+		ts.tv_nsec += delay % NSEC_PER_SEC;
 		settimeofday(&ts, NULL);
 	}
 

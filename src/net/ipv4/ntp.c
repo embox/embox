@@ -20,7 +20,7 @@ int ntp_client_xmit(int sock, struct sockaddr_in *dst) {
 
 	x.status = NTP_LI_NO_WARNING | NTP_V_4 | NTP_CLIENT;
 	gettimeofday(&ts, NULL);
-	x.xmt_ts.sec = htonl(ts.tv_sec);
+	x.xmt_ts.sec = htonl((ts.tv_sec / 232) * 1000);
 
 	return sendto(sock, (void*) &x, sizeof(x), 0, (struct sockaddr *)dst, sizeof(*dst));
 }
@@ -49,4 +49,31 @@ int ntp_client_receive(struct sock *sk, struct sk_buff *skb) {
 free_and_drop:
 	skb_free(skb);
 	return -NET_RX_DROP;
+}
+
+void ntp_format_to_timespec(struct timespec *ts, struct l_ntpdata ld) {
+	ts->tv_sec = ntohl(ld.sec);
+	ts->tv_nsec = (ntohl(ld.fraction) / 1000) * 232;
+}
+
+int ntp_delay(struct ntphdr *ntp) {
+	struct timespec client_r, server_x, server_r, client_x, res;
+	int delay;
+
+	gettimeofday(&client_r, NULL);
+	ntp_format_to_timespec(&client_x, ntp->org_ts);
+	ntp_format_to_timespec(&server_x, ntp->xmt_ts);
+	ntp_format_to_timespec(&server_r, ntp->rec_ts);
+
+	res = timespec_sub(client_r, client_x);
+	res = timespec_add(res, server_r);
+	res = timespec_sub(res, server_x);
+
+	delay = (res.tv_sec * NSEC_PER_SEC + res.tv_nsec);
+
+	return delay;
+}
+
+int ntp_offset(struct ntphdr *ntp) {
+	return 0;
 }

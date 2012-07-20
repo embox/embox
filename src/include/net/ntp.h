@@ -1,4 +1,4 @@
-/*
+/**
  * @brief NTP
  *
  * @date 13.07.2012
@@ -9,6 +9,7 @@
 #define NET_NTP_H_
 
 #include <types.h>
+#include <kernel/time/time.h>
 
 struct s_ntpdata {
 	__u16 sec;
@@ -63,6 +64,10 @@ typedef struct ntphdr {
  * specify complex NTP options. See RFC 4030, client operations */
 extern int ntp_client_xmit(int sock, struct sockaddr_in *dst);
 extern int ntp_client_receive(struct sock *sk, struct sk_buff *skb);
+
+extern void ntp_format_to_timespec(struct timespec *ts, struct l_ntpdata ld);
+extern int ntp_delay(struct ntphdr *ntp);
+extern int ntp_offset(struct ntphdr *ntp);
 
 static inline __u8 get_mode(struct ntphdr *ntp) {
 	return (ntp->status & 7);

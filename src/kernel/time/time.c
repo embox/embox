@@ -40,6 +40,42 @@ void gettimeofday(struct timespec *t, struct timezone *tz) {
 	t->tv_nsec = abstime.time.tv_nsec + cur % NSEC_PER_SEC;
 }
 
+static void set_normalized_timespec(struct timespec *ts,
+		time_t sec, long nsec) {
+	while (nsec >= NSEC_PER_SEC) {
+		nsec -= NSEC_PER_SEC;
+		sec++;
+	}
+
+	while (nsec < 0) {
+		nsec += NSEC_PER_SEC;
+		sec--;
+	}
+
+	ts->tv_sec = sec;
+	ts->tv_nsec = nsec;
+}
+
+struct timespec timespec_add(struct timespec t1,
+		struct timespec t2) {
+	struct timespec ts;
+
+	set_normalized_timespec(&ts, t1.tv_sec + t2.tv_sec,
+			t1.tv_nsec + t2.tv_nsec);
+
+	return ts;
+}
+
+struct timespec timespec_sub(struct timespec t1,
+		struct timespec t2) {
+	struct timespec ts;
+
+	set_normalized_timespec(&ts, t1.tv_sec - t2.tv_sec,
+			t1.tv_nsec - t2.tv_nsec);
+
+	return ts;
+}
+
 static int time_init(void) {
 	struct clock_source *cs;
 
