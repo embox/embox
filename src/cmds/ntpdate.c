@@ -23,12 +23,6 @@
 #define NTP_PORT 123
 #define DEFAULT_WAIT_TIME 1000
 
-static char buf[sizeof(struct ntphdr)];
-static struct ntphdr *r = (struct ntphdr *) buf;
-
-static uint32_t ntp_server_timeout = DEFAULT_WAIT_TIME;
-static struct sys_timer ntp_timer;
-
 EMBOX_CMD(exec);
 
 static void print_usage(void) {
@@ -39,17 +33,22 @@ void wake_on_server_resp(struct sys_timer *timer, void *param) {
 	*(int*)param = false;
 }
 
-int ntpdate_common(char *dstip) {
+int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r) {
 	int sock, res;
 	struct sockaddr_in our, dst;
+	struct sys_timer ntp_timer;
 	bool wait_response = true; /* wait for server response */
 
 	if (!inet_aton(dstip, &dst.sin_addr)) {
-		printf("Error: Invalid ip address '%s'", dstip);
-		return -1;
+		printf("Invalid ip address %s\n", dstip);
+		return -ENOENT;
 	}
 
-	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (0 > (sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))) {
+		printf("Can't to alloc socket\n");
+		return sock;
+	}
+
 	socket_set_encap_recv(sock, ntp_client_receive);
 
 	our.sin_family = AF_INET;
@@ -61,37 +60,47 @@ int ntpdate_common(char *dstip) {
 
 	if (res < 0) {
 		printf("error at bind() %d!\n", res);
-		return res;
+		goto error;
 	}
 
 	dst.sin_family = AF_INET;
 	dst.sin_port = htons((__u16)NTP_PORT);
 
-	if (0 >= ntp_client_xmit(sock, &dst)) {
+	if (0 >= (res = ntp_client_xmit(sock, &dst))) {
 		printf("Sending error\n");
+		goto error;
 	}
 
 	/* wait for server response or quit with timeout */
 	timer_init(&ntp_timer, 0, ntp_server_timeout, wake_on_server_resp, &wait_response);
-	while (!(res = recvfrom(sock, buf, sizeof(struct ntphdr), 0, NULL, NULL)) && wait_response);
+
+	while (0 >= (res = recvfrom(sock, r, sizeof(struct ntphdr), 0, NULL, NULL))
+			&& wait_response);
 
 	close(sock);
 	timer_close(&ntp_timer);
 
 	if (res <= 0) {
 		printf("Server timeout\n");
-		return -ETIMEDOUT;
+		timer_close(&ntp_timer);
+		goto error;
 	}
 
 	printf("server %s, stratum %d\n", dstip, (int)(r->stratum));
 
 	return ENOERR;
+
+error:
+	close(sock);
+	return res;
 }
 
 static int exec(int argc, char **argv) {
-	int opt;
+	int opt, res;
 	struct timespec ts;
 	bool query = false;
+	struct ntphdr r;
+	uint32_t ntp_server_timeout = DEFAULT_WAIT_TIME;
 
 	getopt_init();
 
@@ -115,12 +124,12 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	ntpdate_common(argv[argc - 1]);
+	res = ntpdate_common(argv[argc - 1], ntp_server_timeout, &r);
 
-	if (!query) {
-		ts.tv_sec = ntohl(r->xmt_ts.sec);
+	if (res >= 0 && !query) {
+		ts.tv_sec = ntohl(r.xmt_ts.sec);
 		/* convert pico to nanoseconds (RFC 5905, data types) */
-		ts.tv_nsec = (r->xmt_ts.fraction * 1000) / 232;
+		ts.tv_nsec = (r.xmt_ts.fraction * 1000) / 232;
 		settimeofday(&ts, NULL);
 	}
 
