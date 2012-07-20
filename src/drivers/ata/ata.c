@@ -88,12 +88,13 @@ int reg_config(void) {
 
 	   pio_outbyte(CB_DH, dev);
 	   usleep(1);
-	   /* see if dev0 used */
+	   /* see if dev0 used
 	   read_reg = pio_inbyte(CB_DH);
 	   if (CB_DH_DS0 != (CB_DH_DS0 & read_reg)) {
 		   read_reg = pio_inbyte(CB_ERR);
 	   }
 	   else {
+	   */
 
 		   /* see if devX ready*/
 		   count = 0;
@@ -114,7 +115,7 @@ int reg_config(void) {
 
 		   /* read  drive Identification */
 		   read_data = pio_inword(CB_DATA);
-	   }
+	   //}
 
 	   if (CB_DH_DEV0 == dev) {
 		   dev = CB_DH_DEV1;
