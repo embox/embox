@@ -10,66 +10,12 @@
 #define ATA_H_
 
 
-#define MIN_ATA_DRIVER_VERSION "0H"
+#define INCLUDE_ATA_DMA   0   // not zero to include ATA_DMA
 
-#define INCLUDE_ATA_DMA   1   // not zero to include ATA_DMA
+#define INCLUDE_ATAPI_PIO 0   // not zero to include ATAPI PIO
 
-#define INCLUDE_ATAPI_PIO 1   // not zero to include ATAPI PIO
+#define INCLUDE_ATAPI_DMA 0   // not zero to include ATAPI DMA
 
-#define INCLUDE_ATAPI_DMA 1   // not zero to include ATAPI DMA
-
-// You must supply a function that waits for an interrupt from the
-// ATA controller. This function should return 0 when the interrupt
-// is received and a non zero value if the interrupt is not received
-// within the time out period.
-
-//extern int SYSTEM_WAIT_INTR_OR_TIMEOUT( void );
-
-// You must supply a function that returns a system timer value. This
-// should be a value that increments at some constant rate.
-
-//extern long SYSTEM_READ_TIMER( void );
-
-// This defines the number of system timer ticks per second.
-
-#define SYSTEM_TIMER_TICKS_PER_SECOND  1000000L
-
-//********************************************************************
-//
-// !!! ATA controller hardware specific data
-//
-//********************************************************************
-
-// ATA Command Block base address
-// (the address of the ATA Data register)
-#define PIO_BASE_ADDR1 ( (unsigned char *) 0x1000 )
-
-// ATA Control Block base address
-// (the address of the ATA DevCtrl
-//  and AltStatus registers)
-#define PIO_BASE_ADDR2 ( (unsigned char *) 0x2000 )
-
-// BMIDE base address (address of
-// the BMIDE Command register for
-// the Primary or Secondary side of
-// the PCI ATA controller)
-#define PIO_BMIDE_BASE_ADDR ( (unsigned char *) 0x3000 )
-
-// Size of the ATA Data register - allowed values are 8, 16 and 32
-#define PIO_DEFAULT_XFER_WIDTH 16
-
-// Interrupts or polling mode - not zero to use interrrupts
-// Note: Interrupt mode is required for DMA
-#define INT_DEFAULT_INTERRUPT_MODE 0
-
-// Command time out in seconds
-#define TMR_TIME_OUT 20
-
-//**************************************************************
-//
-// Data that MINDRVR makes available.
-//
-//**************************************************************
 
 // public interrupt handler data
 
@@ -120,7 +66,7 @@ struct _reg_cmd_info
    // additional result info
    long totalBytesXfer;       // total bytes transfered
    long drqPackets;           // number of PIO DRQ packets
-} reg_cmd_info_t;
+};
 
 extern struct _reg_cmd_info reg_cmd_info;
 
@@ -133,6 +79,8 @@ extern int reg_config_info[2];
 #define REG_CONFIG_TYPE_UNKN  1
 #define REG_CONFIG_TYPE_ATA   2
 #define REG_CONFIG_TYPE_ATAPI 3
+
+#define DEFAULT_BASE_ADDR 0x01f0
 
 //**************************************************************
 //
@@ -189,8 +137,9 @@ extern int reg_config_info[2];
 // #define CB_DH_DEV0 0xa0    // select device 0 (old definition)
 // #define CB_DH_DEV1 0xb0    // select device 1 (old definition)
 
-#define CB_DH_DS0 0x10    // selected device 0
-#define CB_DH_DS1 0x01    // selected device 1
+// bits 1-0 of the device adress (CB_DA) reg
+#define CB_DA_DS0 0x02    // selected device 0
+#define CB_DA_DS1 0x01    // selected device 1
 
 // status reg (CB_STAT and CB_ASTAT) bits
 
@@ -284,47 +233,9 @@ extern int reg_config_info[2];
 
 // config and reset funcitons
 
-extern int reg_config( void );
+extern int detection_drive(uint32_t addr);
 
 extern int reg_reset( unsigned char devRtrn );
-
-// ATA Non-Data command funnctions (for LBA28 and LBA48)
-
-extern int reg_non_data_lba28( unsigned char dev, unsigned char cmd,
-                               unsigned int fr, unsigned int sc,
-                               unsigned long lba );
-
-extern int reg_non_data_lba48( unsigned char dev, unsigned char cmd,
-                               unsigned int fr, unsigned int sc,
-                               unsigned long lbahi, unsigned long lbalo );
-
-// ATA PIO Data In command functions (for LBA28 and LBA48)
-
-extern int reg_pio_data_in_lba28( unsigned char dev, unsigned char cmd,
-                                  unsigned int fr, unsigned int sc,
-                                  unsigned long lba,
-                                  unsigned char * bufAddr,
-                                  long numSect, int multiCnt );
-
-extern int reg_pio_data_in_lba48( unsigned char dev, unsigned char cmd,
-                                  unsigned int fr, unsigned int sc,
-                                  unsigned long lbahi, unsigned long lbalo,
-                                  unsigned char * bufAddr,
-                                  long numSect, int multiCnt );
-
-// ATA PIO Data Out command functions (for LBA28 and LBA48)
-
-extern int reg_pio_data_out_lba28( unsigned char dev, unsigned char cmd,
-                                   unsigned int fr, unsigned int sc,
-                                   unsigned long lba,
-                                   unsigned char * bufAddr,
-                                   long numSect, int multiCnt );
-
-extern int reg_pio_data_out_lba48( unsigned char dev, unsigned char cmd,
-                                   unsigned int fr, unsigned int sc,
-                                   unsigned long lbahi, unsigned long lbalo,
-                                   unsigned char * bufAddr,
-                                   long numSect, int multiCnt );
 
 #if INCLUDE_ATAPI_PIO
 

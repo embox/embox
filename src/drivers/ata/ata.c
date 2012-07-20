@@ -19,7 +19,7 @@
 
 unsigned char int_ata_status;    /* ATA status read by interrupt handler */
 unsigned char int_bmide_status;  /* BMIDE status read by interrupt handler */
-unsigned char int_use_intr_flag = INT_DEFAULT_INTERRUPT_MODE;
+//unsigned char int_use_intr_flag = INT_DEFAULT_INTERRUPT_MODE;
 struct _reg_cmd_info reg_cmd_info;
 int reg_config_info[2];
 unsigned char * pio_bmide_base_addr = 0;//PIO_BMIDE_BASE_ADDR;
@@ -46,9 +46,14 @@ static void pio_outdword(int addr, unsigned long data);
 
 static uint32_t base_addr;
 
-EMBOX_UNIT_INIT(ata_init);
+//EMBOX_UNIT_INIT(ata_init);
 
-static int ata_init(void) {
+int ata_init(void) {
+
+	if(detection_drive(0)) {
+		return 0;
+	}
+
 	pci_dev = pci_find_dev(PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_IDE_82371SB);
 	if (pci_dev == NULL) {
 		//LOG_WARN("Couldn't find Intel 82371SB (PIIX3) IDE PCI device\n");
@@ -56,13 +61,14 @@ static int ata_init(void) {
 		return -1;
 	}
 
-	base_addr = pci_dev->bar[4] & PCI_BASE_ADDR_IO_MASK;
-	reg_config();
-	return 0;
+	if(detection_drive(pci_dev->bar[4] & PCI_BASE_ADDR_IO_MASK)) {
+		return 0;
+	}
+	return -1;
 }
 
 /*
- *  reg_config() - Check the host adapter and determine the
+ *  detection_drive() - Check the host adapter and determine the
  *  number and type of drives attached.
  *
  *  This process is not documented by any of the ATA standards.
@@ -71,21 +77,34 @@ static int ata_init(void) {
  *  reg_config_info[] -- see ata.h
  *
  */
-int reg_config(void) {
+int detection_drive(uint32_t addr) {
    unsigned char read_reg;
    unsigned int read_data;
    unsigned char dev;
 
+   if(addr) {
+	   base_addr = addr;
+   }
+   else {
+	   base_addr = DEFAULT_BASE_ADDR;
+   }
+
 
    dev = CB_DH_DEV0;
-   while(1) {
-	   while (1) {
-		   read_reg = pio_inbyte(CB_STAT);
-		   if(!(read_reg & CB_STAT_BSY)) {
-			   break;
-		   }
-	   }
 
+   count = 0;
+   while (1) {
+	   read_reg = pio_inbyte(CB_STAT);
+	   if(!(read_reg & CB_STAT_BSY)) {
+		   break;
+	   }
+	   usleep(1);
+	   if (1000 < count++) {
+		   break;
+	   }
+   }
+
+   while(1) {
 	   pio_outbyte(CB_DH, dev);
 	   usleep(1);
 	   /* see if dev0 used
@@ -109,9 +128,16 @@ int reg_config(void) {
 			   }
 		   }
 
+		   pio_outbyte(CB_SC, 0);
+		   pio_outbyte(CB_SN, 0);
+		   pio_outbyte(CB_CL, 0);
+		   pio_outbyte(CB_CH, 0);
+
+
 		   pio_outbyte(CB_CMD, 0xEC);
 		   sleep(10);
 		   read_reg = pio_inbyte(CB_STAT);
+		   read_reg = pio_inbyte(CB_ERR);
 
 		   /* read  drive Identification */
 		   read_data = pio_inword(CB_DATA);
