@@ -151,6 +151,12 @@ typedef struct sockaddr_in {
 	char             sin_zero[8];  /* zero this if you want to */
 } sockaddr_in_t;
 
+/**
+ * Handle encapsulated protocol.
+ * @return 0 on success.
+ * @return -1 on failure and drop packet.
+ */
+typedef int (* sk_encap_hnd) (struct sock *sk, sk_buff_t *pack);
 
 /**
  * create an endpoint for communication.
@@ -262,5 +268,7 @@ int setsockopt(int sockfd, int level, int optname, void *optval,
 extern int socket_shutdown(int socket, int how);
 
 extern int check_icmp_err(int sockfd);
+
+extern void socket_set_encap_recv(int sockfd, sk_encap_hnd hnd);
 
 #endif /* NET_SOCKET_H_ */

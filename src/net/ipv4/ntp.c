@@ -11,7 +11,7 @@
 #include <net/udp.h>
 #include <net/ip.h>
 #include <net/ntp.h>
-
+#include <errno.h>
 #include <kernel/time/time.h>
 
 int ntp_client_xmit(int sock, struct sockaddr_in *dst) {
@@ -25,26 +25,28 @@ int ntp_client_xmit(int sock, struct sockaddr_in *dst) {
 	return sendto(sock, (void*) &x, sizeof(x), 0, (struct sockaddr *)dst, sizeof(*dst));
 }
 
-int ntp_client_receive(struct sk_buff *skb, struct socket *sock) {
+int ntp_client_receive(struct sock *sk, struct sk_buff *skb) {
 	struct ntphdr *r;
 	udphdr_t *udph = udp_hdr(skb);
 	iphdr_t *iph = ip_hdr(skb);
-	struct inet_sock *inet = inet_sk(sock->sk);
+	struct inet_sock *inet = inet_sk(sk);
 
 	if (inet->daddr != INADDR_BROADCAST && inet->daddr != iph->saddr)
-		return -NET_RX_DROP;
+		goto free_and_drop;
 
 	if (inet->dport != udph->source)
-		return -NET_RX_DROP;
+		goto free_and_drop;
 
 	r = (struct ntphdr*)(skb->h.raw + UDP_HEADER_SIZE);
 
 	if ((r->xmt_ts.sec == 0 && r->xmt_ts.fraction == 0) ||
 			r->stratum >= NTP_SERVER_UNSYNC ||
 			(get_mode(r) != NTP_BROADCAST && get_mode(r) != NTP_SERVER))
-		return -NET_RX_DROP;
+		goto free_and_drop;
 
+	return ENOERR;
 	/* TODO check Key Identifier (optional) */
-
-	return 0;
+free_and_drop:
+	skb_free(skb);
+	return -NET_RX_DROP;
 }

@@ -987,12 +987,21 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 	iphdr_t *iph;
 	tcphdr_t *tcph;
 	union sock_pointer sock;
+	struct sock *sk;
+	int res;
 
 	assert(skb != NULL);
 
 	iph = ip_hdr(skb);
 	tcph = tcp_hdr(skb);
 	sock.tcp_sk = tcp_lookup(iph->daddr, tcph->dest, iph->saddr, tcph->source);
+	sk = &sock.tcp_sk->inet.sk;
+
+	if (sk->sk_encap_rcv) {
+		if (0 > (res = sk->sk_encap_rcv(sk, skb)))
+			return -res;
+	}
+
 	packet_print(sock, skb, "=>", skb->nh.iph->saddr, skb->h.th->source);
 	if (sock.tcp_sk == NULL) {
 		tcp_handle(tcp_sock_default, skb, tcp_st_handler[TCP_CLOSED]);

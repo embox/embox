@@ -53,6 +53,7 @@ struct sock_common {
  * @param sk_error_report: callback to indicate errors (e.g. %MSG_ERRQUEUE)
  * @param sk_backlog_rcv: callback to process the backlog
  * @param sk_destruct: called at sock freeing time, i.e. when all refcnt == 0
+ * @param sk_encap_rcv: called before put skbuff data on socket. Handle encapsulated proto
  * @param get_port TODO add description
  * @param arp_queue_info: arp_queue related parameter
  * @param sock_is_ready: event for waking up socket when the packet is added to arp_queue
@@ -85,6 +86,7 @@ typedef struct sock {
 	void (* sk_error_report)(struct sock *sk);
 	int (* sk_backlog_rcv)(struct sock *sk, sk_buff_t *pack);
 	void (* sk_destruct)(struct sock *sk);
+	sk_encap_hnd sk_encap_rcv;
 //	int (* get_port)(struct sock *sk, unsigned short num); // TODO
 	int32_t sk_err;
 	bool ready;

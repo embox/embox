@@ -85,6 +85,7 @@ static int udp_rcv(struct sk_buff *skb) {
 	udphdr_t *udph;
 	struct sock *sk;
 	struct inet_sock *inet;
+	int res;
 
 	assert(skb != NULL);
 
@@ -95,6 +96,11 @@ static int udp_rcv(struct sk_buff *skb) {
 		inet = inet_sk(sk);
 		inet->dport = udph->source;
 		inet->daddr = iph->saddr;
+
+		if (sk->sk_encap_rcv) {
+			if (0 > (res = sk->sk_encap_rcv(sk, skb)))
+				return -res;
+		}
 
 		assert(udp_prot.backlog_rcv != NULL);
 		(*udp_prot.backlog_rcv)(sk, skb);

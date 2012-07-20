@@ -62,7 +62,7 @@ typedef struct ntphdr {
 /* Use it if you send request to SNTP server or won't to
  * specify complex NTP options. See RFC 4030, client operations */
 extern int ntp_client_xmit(int sock, struct sockaddr_in *dst);
-extern int ntp_client_receive(struct sk_buff *skb, struct socket *sock);
+extern int ntp_client_receive(struct sock *sk, struct sk_buff *skb);
 
 static inline __u8 get_mode(struct ntphdr *ntp) {
 	return (ntp->status & 7);

@@ -50,6 +50,7 @@ int ntpdate_common(char *dstip) {
 	}
 
 	sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	socket_set_encap_recv(sock, ntp_client_receive);
 
 	our.sin_family = AF_INET;
 	/* FIXME */
