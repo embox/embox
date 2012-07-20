@@ -39,7 +39,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	if(addr_set) {
-		if (EOF == scanf("%u", &addr)) {
+		if (EOF == sscanf(argv[argc - 1], "%u", &addr)) {
 			return -1;
 		}
 	}
