@@ -5,25 +5,25 @@
  * @author Alexander Kalmuk
  */
 
-#include <embox/cmd.h>
-#include <getopt.h>
-#include <net/ip.h>
-#include <net/in.h>
-#include <net/socket.h>
 #include <stdio.h>
 #include <err.h>
 #include <errno.h>
+#include <embox/cmd.h>
+#include <getopt.h>
+
+#include <net/ip.h>
+#include <net/in.h>
+#include <net/socket.h>
+#include <net/ntp.h>
+
 #include <time.h>
 #include <kernel/time/time.h>
-
 #include <kernel/time/timer.h>
-#include <net/ntp.h>
 
 #define NTP_PORT 123
 #define DEFAULT_WAIT_TIME 1000
 
-static struct ntphdr x;
-static char buf[sizeof(x)];
+static char buf[sizeof(struct ntphdr)];
 static struct ntphdr *r = (struct ntphdr *) buf;
 
 static uint32_t ntp_server_timeout = DEFAULT_WAIT_TIME;
@@ -42,7 +42,6 @@ void wake_on_server_resp(struct sys_timer *timer, void *param) {
 int ntpdate_common(char *dstip) {
 	int sock, res;
 	struct sockaddr_in our, dst;
-	struct timespec ts;
 	bool wait_response = true; /* wait for server response */
 
 	if (!inet_aton(dstip, &dst.sin_addr)) {
@@ -67,24 +66,13 @@ int ntpdate_common(char *dstip) {
 	dst.sin_family = AF_INET;
 	dst.sin_port = htons((__u16)NTP_PORT);
 
-	/* TODO */
-	x.status = NTP_CLOCK_UNSYNC | NTP_V_4 | NTP_CLIENT;
-	x.stratum = NTP_SERVER_UNSPEC;
-	x.poll = 3;
-	x.precision = 0xfa;
-	x.rootdelay.sec = htons(0x0001);
-	x.rootdisp.sec = htons(0x0001);
-	gettimeofday(&ts, NULL);
-	x.xmt_ts.sec = htonl(ts.tv_sec);
-	x.xmt_ts.fraction = 0;
-
-	if (0 >= sendto(sock, (void*) &x, sizeof(x), 0, (struct sockaddr *)&dst, sizeof(dst))) {
-		printf("%s\n", "Sending error");
+	if (0 >= ntp_client_xmit(sock, &dst)) {
+		printf("Sending error\n");
 	}
 
 	/* wait for server response or quit with timeout */
 	timer_init(&ntp_timer, 0, ntp_server_timeout, wake_on_server_resp, &wait_response);
-	while (!(res = recvfrom(sock, buf, sizeof(x), 0, NULL, NULL)) && wait_response);
+	while (!(res = recvfrom(sock, buf, sizeof(struct ntphdr), 0, NULL, NULL)) && wait_response);
 
 	close(sock);
 	timer_close(&ntp_timer);

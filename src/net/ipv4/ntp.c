@@ -1,49 +1,50 @@
 /**
  * @file
- * @brief NTP implementation over IPv4
+ * @brief SNTP implementation over IPv4
  *
  * @date 13.07.2012
  * @author Alexander Kalmuk
  */
 
-#include <stdlib.h>
-#include <net/ip.h>
+#include <net/skbuff.h>
+#include <net/inet_sock.h>
 #include <net/udp.h>
+#include <net/ip.h>
 #include <net/ntp.h>
 
-#define NEWPS 0
-#define DSCRD 1
-#define FXMIT 2
-#define MANY  3
-#define NEWBC 4
-#define ERR   5
-#define PROC  6
+#include <kernel/time/time.h>
 
-static int ntp_table[7][5] = {
-	/* nopeer  */   { NEWPS, DSCRD, FXMIT, MANY, NEWBC  },
-	/* active  */   { PROC,  PROC,  DSCRD, DSCRD, DSCRD },
-	/* passv   */   { PROC,  ERR,   DSCRD, DSCRD, DSCRD },
-	/* client  */   { DSCRD, DSCRD, DSCRD, PROC,  DSCRD },
-	/* server  */   { DSCRD, DSCRD, DSCRD, DSCRD, DSCRD },
-	/* bcast   */   { DSCRD, DSCRD, DSCRD, DSCRD, DSCRD },
-	/* bclient */   { DSCRD, DSCRD, DSCRD, DSCRD, PROC  }
-};
+int ntp_client_xmit(int sock, struct sockaddr_in *dst) {
+	struct ntphdr x;
+	struct timespec ts;
 
-int ntp_proc(struct ntphdr *pack) {
-	return 0;
+	x.status = NTP_LI_NO_WARNING | NTP_V_4 | NTP_CLIENT;
+	gettimeofday(&ts, NULL);
+	x.xmt_ts.sec = htonl(ts.tv_sec);
+
+	return sendto(sock, (void*) &x, sizeof(x), 0, (struct sockaddr *)dst, sizeof(*dst));
 }
 
-int ntp_receive(struct ntphdr *client_pack, struct ntphdr *server_pack) {
-	__u8 client_mode = get_mode(client_pack);
-	__u8 server_mode = get_mode(server_pack);
+int ntp_client_receive(struct sk_buff *skb, struct socket *sock) {
+	struct ntphdr *r;
+	udphdr_t *udph = udp_hdr(skb);
+	iphdr_t *iph = ip_hdr(skb);
+	struct inet_sock *inet = inet_sk(sock->sk);
 
-	switch (ntp_table[client_mode][server_mode]) {
-	case PROC:
-		ntp_proc(server_pack);
-		break;
-	default:
-		break;
-	}
+	if (inet->daddr != INADDR_BROADCAST && inet->daddr != iph->saddr)
+		return -NET_RX_DROP;
+
+	if (inet->dport != udph->source)
+		return -NET_RX_DROP;
+
+	r = (struct ntphdr*)(skb->h.raw + UDP_HEADER_SIZE);
+
+	if ((r->xmt_ts.sec == 0 && r->xmt_ts.fraction == 0) ||
+			r->stratum >= NTP_SERVER_UNSYNC ||
+			(get_mode(r) != NTP_BROADCAST && get_mode(r) != NTP_SERVER))
+		return -NET_RX_DROP;
+
+	/* TODO check Key Identifier (optional) */
 
 	return 0;
 }

@@ -48,8 +48,9 @@ typedef struct ntphdr {
 #define NTP_V_4 0x20
 
 /* TODO Mode */
-#define NTP_CLIENT 3
-#define NTP_SERVER 4
+#define NTP_CLIENT    3
+#define NTP_SERVER    4
+#define NTP_BROADCAST 5
 
 /* Stratum */
 #define NTP_SERVER_UNSPEC    0
@@ -58,8 +59,10 @@ typedef struct ntphdr {
 #define NTP_SERVER_UNSYNC    16
 /* RFC 5905: 17-255 reserved*/
 
-extern int ntp_proc(struct ntphdr *pack);
-extern int ntp_receive(struct ntphdr *client_pack, struct ntphdr *server_pack);
+/* Use it if you send request to SNTP server or won't to
+ * specify complex NTP options. See RFC 4030, client operations */
+extern int ntp_client_xmit(int sock, struct sockaddr_in *dst);
+extern int ntp_client_receive(struct sk_buff *skb, struct socket *sock);
 
 static inline __u8 get_mode(struct ntphdr *ntp) {
 	return (ntp->status & 7);
