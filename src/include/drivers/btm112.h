@@ -1,9 +1,9 @@
 /**
  * @file
- * @brief
+ * @brief BTM 112 high-level routines
  *
- * @date
- * @author
+ * @date 15.11.11
+ * @author Anton Kozlov
  */
 
 #ifndef BTM112_H_
