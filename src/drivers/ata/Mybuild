@@ -1,0 +1,9 @@
+package embox.driver
+
+module ata {
+	option number dev_quantity = 2
+	source "ata.c"
+
+	depends embox.driver.pci
+	depends embox.util.LibUtil
+}
