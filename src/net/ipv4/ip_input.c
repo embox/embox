@@ -21,6 +21,7 @@
 #include <net/protocol.h>
 #include <framework/net/proto/api.h>
 #include <net/ip_fragment.h>
+#include <net/neighbour.h>
 
 int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 			packet_type_t *pt, net_device_t *orig_dev) {
@@ -104,6 +105,11 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		iph = ip_hdr(complete_skb);
 	}
 	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(iph);
+
+	/* Have we it in the neighbors table?*/
+	if (neighbour_lookup(in_dev_get(dev), iph->saddr) == NULL) {
+		neighbour_add(in_dev_get(dev), iph->saddr, skb->mac.ethh->h_source, ATF_COM);
+	}
 
 	/* When a packet is received, it is passed to any raw sockets
 	 * which have been bound to its protocol or to socket with concrete protocol */
