@@ -74,6 +74,27 @@ static void print_packet (sk_buff_t *skb) {
 }
 #endif
 
+int dev_queue_send(struct sk_buff *skb) {
+	int res;
+
+	assert(skb != NULL);
+	assert(skb->dev != NULL);
+
+	res = skb->dev->header_ops->rebuild(skb);
+	if (res < 0) {
+		if (sock_is_ready(skb->sk)) {
+			/* If socket is ready then it was really error
+			 * but if socket isn't ready package has been saved
+			 * and will be transmitted later */
+			skb_free(skb);
+		}
+
+		return res;
+	}
+
+	return dev_queue_xmit(skb);
+}
+
 int dev_queue_xmit(struct sk_buff *skb) {
 	int res;
 	net_device_t *dev;
@@ -92,19 +113,6 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	assert(stats != NULL);
 
 	if (dev->flags & IFF_UP) {
-
-		res = dev->header_ops->rebuild(skb);
-		if (res < 0) {
-			if (sock_is_ready(skb->sk)) {
-				/* If socket is ready then it was really error
-				 * but if socket isn't ready package has been saved
-				 * and will be transmitted later */
-				skb_free(skb);
-				stats->tx_err++;
-			}
-
-			return res;
-		}
 
 		res = ops->ndo_start_xmit(skb, dev);
 		if (res < 0) {

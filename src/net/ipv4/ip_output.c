@@ -63,7 +63,7 @@ static inline void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 
 int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
 	skb->protocol = ETH_P_IP;
-	return dev_queue_xmit(skb);
+	return dev_queue_send(skb);
 }
 
 /* Fragments skb and sends it to the interface.

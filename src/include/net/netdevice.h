@@ -240,9 +240,17 @@ extern int dev_set_flags(struct net_device *dev, unsigned flags);
 /**
  * this function call ip protocol,
  * it call rebuild mac header function,
- * if can resolve dest addr else it send arp packet and drop this packet
- * and send packet by calling ndo_start_xmit() function
+ * if can resolve dest addr else it send arp packet,
+ * and will trying send packet late. After this
+ * it send packet by calling dev_queue_xmit() function
  * return 0 if success else -1
+ */
+extern int dev_queue_send(sk_buff_t *pack);
+
+/**
+ * this function call xmit functions of network device
+ * if this device is works (i.e. flags has IFF_UP bit)
+ * return 0 if success
  */
 extern int dev_queue_xmit(sk_buff_t *pack);
 
