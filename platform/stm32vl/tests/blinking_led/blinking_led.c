@@ -28,7 +28,7 @@ static inline void led1_off(void) {
 
 static void timer_hdn(sys_timer_t *tmd, void *param) {
 	static int state;
-	int *count = (int *) param;
+	volatile int *count = (volatile int *) param;
 
 	state ^= 1;
 	*count -= 1;
@@ -44,13 +44,13 @@ static void timer_hdn(sys_timer_t *tmd, void *param) {
 
 static int blinking_led(void) {
 	sys_timer_t tmr;
-	int count = 10;
+	volatile int count = 10;
 
 	gpio_out(GPIO_C, LED_BLUE | LED_GREEN, 0);
 	gpio_clear(GPIO_C, LED_BLUE);
 	gpio_set(GPIO_C, LED_GREEN);
 
-	timer_init(&tmr, TIMER_PERIODIC, 1000, timer_hdn, &count);
+	timer_init(&tmr, TIMER_PERIODIC, 1000, timer_hdn, (void *) &count);
 
 	while (count) { } ;
 
