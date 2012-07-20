@@ -898,9 +898,14 @@ define class-MyBooleanLiteral
 
 	# PROTECTED REGION ID(MyFile_BooleanLiteral) ENABLED START
 	$(method toString,
-		$(if $(get-field value),
+		$(if $(get value),
 			1,
 			0))
+
+	# Let it be compatible with other option types.
+	$(property value)
+	$(getter value,$(get isValue))
+	$(setter value,$(set isValue,$1,$2))
 
 	$(if $(value 1),
 		$(set value,$1))
