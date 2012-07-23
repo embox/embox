@@ -14,10 +14,6 @@
 #include <errno.h>
 #include <kernel/time/time.h>
 
-#define NTP_DEBUG
-
-#include <stdio.h>
-
 static inline void s_data_ntohs(struct s_ntpdata *data) {
 	data->sec = ntohs(data->sec);
 	data->fraction = ntohs(data->fraction);
@@ -28,7 +24,7 @@ static inline void l_data_ntohs(struct l_ntpdata *data) {
 	data->fraction = ntohl(data->fraction);
 }
 
-static void ntp_ntohs(struct ntphdr *ntp) {
+static void ntp_ntoh(struct ntphdr *ntp) {
 	ntp->refid = ntohs(ntp->refid);
 	s_data_ntohs(&ntp->rootdelay);
 	s_data_ntohs(&ntp->rootdisp);
@@ -63,7 +59,7 @@ int ntp_client_receive(struct sock *sk, struct sk_buff *skb) {
 
 	r = (struct ntphdr*)(skb->h.raw + UDP_HEADER_SIZE);
 
-	ntp_ntohs(r);
+	ntp_ntoh(r);
 
 	if ((r->xmt_ts.sec == 0 && r->xmt_ts.fraction == 0) ||
 			r->stratum >= NTP_SERVER_UNSYNC ||
