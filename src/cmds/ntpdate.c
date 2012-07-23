@@ -20,7 +20,6 @@
 #include <kernel/time/time.h>
 #include <kernel/time/timer.h>
 
-#define NTP_PORT 123
 #define DEFAULT_WAIT_TIME 1000
 
 EMBOX_CMD(exec);
@@ -49,7 +48,7 @@ int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r) {
 		return sock;
 	}
 
-	socket_set_encap_recv(sock, ntp_client_receive);
+	socket_set_encap_recv(sock, ntp_receive);
 
 	our.sin_family = AF_INET;
 	/* FIXME */
@@ -64,7 +63,7 @@ int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r) {
 	}
 
 	dst.sin_family = AF_INET;
-	dst.sin_port = htons((__u16)NTP_PORT);
+	dst.sin_port = htons((__u16)NTP_SERVER_PORT);
 
 	if (0 >= (res = ntp_client_xmit(sock, &dst))) {
 		printf("Sending error\n");

@@ -36,6 +36,8 @@ typedef struct ntphdr {
 	struct l_ntpdata xmt_ts;
 } __attribute__((packed)) ntphdr_t;
 
+#define NTP_SERVER_PORT 123
+
 /* Leap second Indicator constants (LI) */
 #define NTP_LI_NO_WARNING 0x00
 #define NTP_OVERFLOW      0x40 /* 61 sec in last minute of mouth */
@@ -52,6 +54,7 @@ typedef struct ntphdr {
 #define NTP_CLIENT    3
 #define NTP_SERVER    4
 #define NTP_BROADCAST 5
+#define NTP_BROADCAST_CLIENT 6
 
 /* Stratum */
 #define NTP_SERVER_UNSPEC    0
@@ -60,10 +63,16 @@ typedef struct ntphdr {
 #define NTP_SERVER_UNSYNC    16
 /* RFC 5905: 17-255 reserved*/
 
+/* Kiss-o'-Death codes (KoD), that marked with "MUST" in RFC */
+#define NTP_DENY    100
+#define NTP_RSTR    101
+#define NTP_RATE    102
+#define NTP_IGNORED 103
+
 /* Use it if you send request to SNTP server or won't to
- * specify complex NTP options. See RFC 4030, client operations */
+ * specify complex NTP options. See RFC 4030, client operations. */
 extern int ntp_client_xmit(int sock, struct sockaddr_in *dst);
-extern int ntp_client_receive(struct sock *sk, struct sk_buff *skb);
+extern int ntp_receive(struct sock *sk, struct sk_buff *skb);
 
 extern void ntp_format_to_timespec(struct timespec *ts, struct l_ntpdata ld);
 extern struct timespec ntp_delay(struct ntphdr *ntp);
@@ -71,6 +80,14 @@ extern int ntp_offset(struct ntphdr *ntp);
 
 static inline __u8 get_mode(struct ntphdr *ntp) {
 	return (ntp->status & 7);
+}
+
+static inline __u8 get_leap(struct ntphdr *ntp) {
+	return (ntp->status & 0xC0);
+}
+
+static inline __u8 get_version(struct ntphdr *ntp) {
+	return (ntp->status & 0x38);
 }
 
 #endif /* NET_NTP_H_ */
