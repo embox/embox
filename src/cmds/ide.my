@@ -6,11 +6,11 @@ package embox.cmd
 		NAME
 			ide - check IDE drive
 		SYNOPSIS
-			ide [OPTIONS]
+			ide
 		DESCRIPTION
 			ide scan ports and find ide drives
 		OPTIONS
-			-a - scan ports with address
+			none
 		AUTHOR
 			Andrey Gazukin
 	''')

@@ -11,25 +11,15 @@
 
 
 #define INCLUDE_ATA_DMA   0   // not zero to include ATA_DMA
-
 #define INCLUDE_ATAPI_PIO 0   // not zero to include ATAPI PIO
-
 #define INCLUDE_ATAPI_DMA 0   // not zero to include ATAPI DMA
 
 
 // public interrupt handler data
 
 extern unsigned char int_ata_status;    // ATA status read by interrupt handler
-
 extern unsigned char int_bmide_status;  // BMIDE status read by interrupt handler
 
-// Interrupt or Polling mode flag.
-
-extern unsigned char int_use_intr_flag;   // not zero to use interrupts
-
-// ATA Data register width (8, 16 or 32)
-
-extern unsigned char pio_xfer_width;
 
 // Command and extended error information returned by the
 // reg_reset(), reg_non_data_*(), reg_pio_data_in_*(),
@@ -80,8 +70,21 @@ extern int reg_config_info[2];
 #define REG_CONFIG_TYPE_ATA   2
 #define REG_CONFIG_TYPE_ATAPI 3
 
-#define DEFAULT_BASE_ADDR 0x01f0
+#define PRIMARY_COMMAND_REG_BASE_ADDR    0x01F0
+#define PRIMARY_CONTROL_REG_BASE_ADDR    0x03F6
+#define PRIMARY_IRQ                      14
 
+#define SECONDARY_COMMAND_REG_BASE_ADDR  0x0170
+#define SECONDARY_CONTROL_REG_BASE_ADDR  0x0376
+#define SECONDARY_IRQ                    15
+
+#define THIRD_COMMAND_REG_BASE_ADDR      0x01E8
+#define THIRD_CONTROL_REG_BASE_ADDR      0x03E6
+#define THIRD_IRQ
+
+#define FOURTH_COMMAND_REG_BASE_ADDR     0x0168
+#define FOURTH_CONTROL_REG_BASE_ADDR     0x0366
+#define FOURTH_IRQ
 //**************************************************************
 //
 // Global defines -- ATA register and register bits.
@@ -233,7 +236,7 @@ extern int reg_config_info[2];
 
 // config and reset funcitons
 
-extern int detection_drive(uint32_t addr);
+extern int detection_drive(void);
 
 extern int reg_reset( unsigned char devRtrn );
 
