@@ -66,7 +66,7 @@ extern int ntp_client_xmit(int sock, struct sockaddr_in *dst);
 extern int ntp_client_receive(struct sock *sk, struct sk_buff *skb);
 
 extern void ntp_format_to_timespec(struct timespec *ts, struct l_ntpdata ld);
-extern int ntp_delay(struct ntphdr *ntp);
+extern struct timespec ntp_delay(struct ntphdr *ntp);
 extern int ntp_offset(struct ntphdr *ntp);
 
 static inline __u8 get_mode(struct ntphdr *ntp) {

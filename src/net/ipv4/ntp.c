@@ -14,6 +14,30 @@
 #include <errno.h>
 #include <kernel/time/time.h>
 
+#define NTP_DEBUG
+
+#include <stdio.h>
+
+static inline void s_data_ntohs(struct s_ntpdata *data) {
+	data->sec = ntohs(data->sec);
+	data->fraction = ntohs(data->fraction);
+}
+
+static inline void l_data_ntohs(struct l_ntpdata *data) {
+	data->sec = ntohl(data->sec);
+	data->fraction = ntohl(data->fraction);
+}
+
+static void ntp_ntohs(struct ntphdr *ntp) {
+	ntp->refid = ntohs(ntp->refid);
+	s_data_ntohs(&ntp->rootdelay);
+	s_data_ntohs(&ntp->rootdisp);
+	l_data_ntohs(&ntp->org_ts);
+	l_data_ntohs(&ntp->rec_ts);
+	l_data_ntohs(&ntp->ref_ts);
+	l_data_ntohs(&ntp->xmt_ts);
+}
+
 int ntp_client_xmit(int sock, struct sockaddr_in *dst) {
 	struct ntphdr x;
 	struct timespec ts;
@@ -39,6 +63,8 @@ int ntp_client_receive(struct sock *sk, struct sk_buff *skb) {
 
 	r = (struct ntphdr*)(skb->h.raw + UDP_HEADER_SIZE);
 
+	ntp_ntohs(r);
+
 	if ((r->xmt_ts.sec == 0 && r->xmt_ts.fraction == 0) ||
 			r->stratum >= NTP_SERVER_UNSYNC ||
 			(get_mode(r) != NTP_BROADCAST && get_mode(r) != NTP_SERVER))
@@ -52,13 +78,12 @@ free_and_drop:
 }
 
 void ntp_format_to_timespec(struct timespec *ts, struct l_ntpdata ld) {
-	ts->tv_sec = ntohl(ld.sec);
-	ts->tv_nsec = (ntohl(ld.fraction) / 1000) * 232;
+	ts->tv_sec = ld.sec;
+	ts->tv_nsec = (ld.fraction / 1000) * 232;
 }
 
-int ntp_delay(struct ntphdr *ntp) {
+struct timespec ntp_delay(struct ntphdr *ntp) {
 	struct timespec client_r, server_x, server_r, client_x, res;
-	int delay;
 
 	gettimeofday(&client_r, NULL);
 	ntp_format_to_timespec(&client_x, ntp->org_ts);
@@ -66,12 +91,9 @@ int ntp_delay(struct ntphdr *ntp) {
 	ntp_format_to_timespec(&server_r, ntp->rec_ts);
 
 	res = timespec_sub(client_r, client_x);
-	res = timespec_add(res, server_r);
-	res = timespec_sub(res, server_x);
+	res = timespec_sub(res, timespec_sub(server_x, server_r));
 
-	delay = (res.tv_sec * NSEC_PER_SEC + res.tv_nsec);
-
-	return delay;
+	return res;
 }
 
 int ntp_offset(struct ntphdr *ntp) {

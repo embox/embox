@@ -95,10 +95,9 @@ error:
 
 static int exec(int argc, char **argv) {
 	int opt;
-	int delay;
-	struct timespec ts;
-	bool query = false;
 	struct ntphdr r;
+	struct timespec ts, delay;
+	bool query = false;
 	uint32_t ntp_server_timeout = DEFAULT_WAIT_TIME;
 
 	getopt_init();
@@ -128,13 +127,13 @@ static int exec(int argc, char **argv) {
 	}
 
 	gettimeofday(&ts, NULL);
-	printf("server %s, stratum %d, delay %d (ms)\n", argv[argc - 1], (int)(r.stratum),
-			(delay = ntp_delay(&r) / 1000));
+	delay = ntp_delay(&r);
+	printf("server %s, stratum %d, delay %d:%d (s:ms)\n", argv[argc - 1], (int)(r.stratum),
+			(int)delay.tv_sec, (int)delay.tv_nsec / 1000);
 
 	if (!query) {
 		ntp_format_to_timespec(&ts, r.xmt_ts);
-		ts.tv_sec  += delay / NSEC_PER_SEC;
-		ts.tv_nsec += delay % NSEC_PER_SEC;
+		ts = timespec_add(ts, delay);
 		settimeofday(&ts, NULL);
 	}
 
