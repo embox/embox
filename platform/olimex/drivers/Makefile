@@ -1,1 +1,0 @@
-$_PACKAGE := $(PLATFORM).driver
