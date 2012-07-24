@@ -1,0 +1,10 @@
+package lego_nxt.example
+
+import lego_nxt.driver.*
+
+module box_around {
+	source "box_around.c"
+
+	depends sonar_sensor, nxt_motor, nxt_avr_init
+}
+
