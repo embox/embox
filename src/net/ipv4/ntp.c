@@ -11,15 +11,26 @@
 #include <net/udp.h>
 #include <net/ip.h>
 #include <net/ntp.h>
-#include <errno.h>
 #include <kernel/time/time.h>
+#include <kernel/time/timer.h>
+#include <embox/unit.h>
+#include <errno.h>
 #include <string.h>
+#include <prom/prom_printf.h>
+
+#define MIN_POLL 4 /* By RFC 4330 minimum poll interval is about 15 seconds */
+static __u8 max_poll;
 
 static char kod[3][4] = {"DENY", "RSTR", "RATE"};
 
 static struct ntphdr ntp_config;
-/* socket binded to port 123 */
+static struct ntphdr client_config;
+/* Socket binded to port 123 */
 static int ntp_sock;
+/* Current server address for unicast interaction */
+static struct sockaddr_in available_server;
+/* Periodical timer for sending new request each tick */
+struct sys_timer ntp_poll_timer;
 
 static inline void ntp_data_ntohs(struct s_ntpdata *data) {
 	data->sec = ntohs(data->sec);
@@ -42,18 +53,21 @@ static void ntp_ntoh(struct ntphdr *ntp) {
 }
 
 int ntp_client_xmit(int sock, struct sockaddr_in *dst) {
-	struct ntphdr x;
 	struct timespec ts;
+	struct ntphdr x;
+
+	memcpy(&x, &client_config, sizeof(struct ntphdr));
 
 	x.status = NTP_LI_NO_WARNING | NTP_V_4 | NTP_CLIENT;
 	gettimeofday(&ts, NULL);
-	x.xmt_ts.sec = htonl(ts.tv_sec);
-	x.xmt_ts.fraction = htonl((ts.tv_nsec / 232) * 1000);
+	x.xmt_ts = timespec_to_ntp(ts);
+
+	ntp_ntoh(&x);
 
 	return sendto(sock, (void*) &x, sizeof(x), 0, (struct sockaddr *)dst, sizeof(*dst));
 }
 
-static int ntp_server_reply(struct ntphdr *r, int mode, struct sockaddr_in *dst) {
+static int ntp_server_reply(struct ntphdr *r, struct timespec rec, struct sockaddr_in *dst) {
 	struct ntphdr x;
 	struct timespec ts;
 
@@ -71,9 +85,11 @@ static int ntp_server_reply(struct ntphdr *r, int mode, struct sockaddr_in *dst)
 	x.refid = ntp_config.refid;
 	x.ref_ts = ntp_config.ref_ts;
 	x.org_ts = r->xmt_ts;
+	x.rec_ts = timespec_to_ntp(rec);
 	gettimeofday(&ts, NULL);
-	x.xmt_ts.sec = htonl(ts.tv_sec);
-	x.xmt_ts.fraction = htonl((ts.tv_nsec / 232) * 1000);
+	x.xmt_ts = timespec_to_ntp(ts);
+
+	ntp_ntoh(&x);
 
 	return sendto(ntp_sock, (void*) &x, sizeof(x), 0, (struct sockaddr *)dst, sizeof(*dst));
 }
@@ -81,9 +97,12 @@ static int ntp_server_reply(struct ntphdr *r, int mode, struct sockaddr_in *dst)
 int ntp_receive(struct sock *sk, struct sk_buff *skb) {
 	struct ntphdr *r;
 	int mode, res = NET_RX_DROP;
+	struct timespec ts;
 	iphdr_t *iph = ip_hdr(skb);
 	udphdr_t *udph = udp_hdr(skb);
 	struct inet_sock *inet = inet_sk(sk);
+
+	gettimeofday(&ts, NULL);
 
 	/* check for NTP packet */
 	if (ntohs(inet->dport) != NTP_SERVER_PORT &&
@@ -97,8 +116,8 @@ int ntp_receive(struct sock *sk, struct sk_buff *skb) {
 	if ((mode = get_mode(r)) == NTP_CLIENT || mode == NTP_BROADCAST_CLIENT) {
 		struct sockaddr_in dst;
 		dst.sin_port = udph->source;
-		dst.sin_addr.s_addr = iph->daddr;
-		ntp_server_reply(r, NTP_SERVER, &dst);
+		dst.sin_addr.s_addr = iph->saddr;
+		ntp_server_reply(r, ts, &dst);
 		return ENOERR;
 	}
 
@@ -126,28 +145,54 @@ free_and_drop:
 	return -res;
 }
 
-void ntp_format_to_timespec(struct timespec *ts, struct l_ntpdata ld) {
-	ts->tv_sec = ld.sec;
-	ts->tv_nsec = (ld.fraction / 1000) * 232;
-}
-
 struct timespec ntp_delay(struct ntphdr *ntp) {
 	struct timespec client_r, server_x, server_r, client_x, res;
 
 	gettimeofday(&client_r, NULL);
-	ntp_format_to_timespec(&client_x, ntp->org_ts);
-	ntp_format_to_timespec(&server_x, ntp->xmt_ts);
-	ntp_format_to_timespec(&server_r, ntp->rec_ts);
+	client_x = ntp_to_timespec(ntp->org_ts);
+	server_x = ntp_to_timespec(ntp->xmt_ts);
+	server_r = ntp_to_timespec(ntp->rec_ts);
 
 	res = timespec_sub(client_r, client_x);
 	res = timespec_sub(res, timespec_sub(server_x, server_r));
 
 	res.tv_sec /= 2;
 	res.tv_nsec /= 2;
-
 	return res;
 }
 
 int ntp_offset(struct ntphdr *ntp) {
 	return 0;
+}
+
+static void send_request(struct sys_timer *timer, void *param) {
+	if (available_server.sin_addr.s_addr)
+		ntp_client_xmit(ntp_sock, &available_server);
+}
+
+EMBOX_UNIT(ntp_init, ntp_fini);
+
+static int ntp_init(void) {
+	int res;
+
+	available_server.sin_port = NTP_SERVER_PORT;
+	client_config.poll = max_poll;
+
+	if (0 > (res = ntp_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))) {
+		prom_printf("Can't to allocate NTP socket");
+		return res;
+	}
+	if (0 > (res = timer_init(&ntp_poll_timer, 1, max_poll, send_request, NULL))) {
+		prom_printf("Can't to initialize NTP timer");
+		return res;
+	}
+
+	return ENOERR;
+}
+
+static int ntp_fini(void) {
+	close(ntp_sock);
+	timer_close(&ntp_poll_timer);
+
+	return ENOERR;
 }

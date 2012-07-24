@@ -20,7 +20,7 @@
 #include <kernel/time/time.h>
 #include <kernel/time/timer.h>
 
-#define DEFAULT_WAIT_TIME 1000
+#define DEFAULT_WAIT_TIME 10000
 
 EMBOX_CMD(exec);
 
@@ -28,7 +28,7 @@ static void print_usage(void) {
 	printf("Usage: ntpdate [-q] server");
 }
 
-void wake_on_server_resp(struct sys_timer *timer, void *param) {
+static void wake_on_server_resp(struct sys_timer *timer, void *param) {
 	*(int*)param = false;
 }
 
@@ -52,7 +52,7 @@ int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r) {
 
 	our.sin_family = AF_INET;
 	/* FIXME */
-	our.sin_port = htons(512);
+	our.sin_port = htons(768);
 	our.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	res = bind(sock, (struct sockaddr *)&our, sizeof(our));
@@ -131,7 +131,7 @@ static int exec(int argc, char **argv) {
 			(int)delay.tv_sec, (int)delay.tv_nsec / 1000);
 
 	if (!query) {
-		ntp_format_to_timespec(&ts, r.xmt_ts);
+		ts = ntp_to_timespec(r.xmt_ts);
 		ts = timespec_add(ts, delay);
 		settimeofday(&ts, NULL);
 	}

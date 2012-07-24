@@ -73,10 +73,22 @@ typedef struct ntphdr {
  * specify complex NTP options. See RFC 4030, client operations. */
 extern int ntp_client_xmit(int sock, struct sockaddr_in *dst);
 extern int ntp_receive(struct sock *sk, struct sk_buff *skb);
-
-extern void ntp_format_to_timespec(struct timespec *ts, struct l_ntpdata ld);
 extern struct timespec ntp_delay(struct ntphdr *ntp);
 extern int ntp_offset(struct ntphdr *ntp);
+
+static inline struct timespec ntp_to_timespec(struct l_ntpdata ld) {
+	struct timespec ts;
+	ts.tv_sec = ld.sec;
+	ts.tv_nsec = (ld.fraction / 1000) * 232;
+	return ts;
+}
+
+static inline struct l_ntpdata timespec_to_ntp(struct timespec ts) {
+	struct l_ntpdata ld;
+	ld.sec = ts.tv_sec;
+	ld.fraction = (ts.tv_nsec / 232) * 1000;
+	return ld;
+}
 
 static inline __u8 get_mode(struct ntphdr *ntp) {
 	return (ntp->status & 7);
