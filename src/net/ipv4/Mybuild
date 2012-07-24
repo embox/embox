@@ -100,5 +100,7 @@ module ntp {
 	source "ntp.c"
 
 	depends udp
+	depends embox.kernel.time.time
+	depends embox.kernel.timer.sys_timer
 	depends embox.framework.LibFrameworkNet
 }
