@@ -30,7 +30,6 @@
  * RFC 3927
  * ARP Announcement && ARP Probe
  */
-
 /* RFC1122 Status:
  *  2.3.2.1 (ARP Cache Validation):
  *    MUST provide mechanism to flush stale cache entries
@@ -153,50 +152,13 @@ int arp_resolve(sk_buff_t *pack) {
 		return ENOERR;
 	}
 
-	/* send arp request and add packet in list of deferred packets */
-	res = arp_queue_add(pack);
-	if (res < 0) {
-		return res;
-	}
-
 	res = arp_send(ARPOP_REQUEST, ETH_P_ARP, dev, ip->daddr, ip->saddr, NULL,
 			dev->dev_addr, NULL);
 	if (res < 0) {
 		return res;
 	}
 
-#if 0 // TODO it's a temporary solution
-	/* FIXME:
-	 * Really it's waiting until event_fire have not been called
-	 * and third argument is SCHED_TIMEOUT_INFINITE but in this case
-	 * we have a problem:
-	 * sched_sleep is called after that arp-reply was received,
-	 * so we wait until the NEXT reply is received.
-	 */
-	sched_sleep(&pack->sk->sock_is_ready, 500/*SCHED_TIMEOUT_INFINITE*/);
-
-	/* FIXME:
-	 * if there return ENOERR then package will be send two times:
-	 * 1. by arp_queue_process
-	 * 2. in the course of execution this thread
-	 */
-	return (sock_is_ready(pack->sk) ? ENOERR : -ENOENT);
-#else
-//	return -ENOENT;
-#endif
-
-	res = arp_queue_wait_resolve(pack);
-	if (res < 0) {
-		return res;
-	}
-
-	/* try again */
-	hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr);
-	assert(hw_addr != NULL);
-
-	memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
-
-	return ENOERR;
+	return -ENOENT;
 }
 
 /**

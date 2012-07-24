@@ -82,6 +82,14 @@ int dev_queue_send(struct sk_buff *skb) {
 
 	res = skb->dev->header_ops->rebuild(skb);
 	if (res < 0) {
+		/* send arp request and add packet in list of deferred packets */
+		res = arp_queue_add(skb);
+		if (res < 0) {
+			skb_free(skb);
+			return res;
+		}
+		return -EINPROGRESS;
+#if 0
 		if (sock_is_ready(skb->sk)) {
 			/* If socket is ready then it was really error
 			 * but if socket isn't ready package has been saved
@@ -90,6 +98,7 @@ int dev_queue_send(struct sk_buff *skb) {
 		}
 
 		return res;
+#endif
 	}
 
 	return dev_queue_xmit(skb);
@@ -124,6 +133,9 @@ int dev_queue_xmit(struct sk_buff *skb) {
 		/* update statistic */
 		stats->tx_packets++;
 		stats->tx_bytes += skb->len;
+	}
+	else {
+		skb_free(skb);
 	}
 
 	return ENOERR;
