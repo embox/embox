@@ -14,6 +14,7 @@
 #include <drivers/pci.h>
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
+#include <net/if_ether.h>
 #include <net/in.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
@@ -140,7 +141,7 @@ static int open(struct net_device *dev) {
 		out8(0xFF, dev->base_addr + RTL8139_MAR0 + i);
 	}
 
-	for (int i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (int i = 0; i < ETH_ALEN; i++) {
 		dev->dev_addr[i] = in8(dev->base_addr + RTL8139_MAC0);
 	}
 
@@ -181,10 +182,10 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 		return -EINVAL;
 	}
 
-	for (size_t i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (size_t i = 0; i < ETH_ALEN; i++) {
 		out8(*((uint8_t *) addr + i), dev->base_addr + RTL8139_MAR0 + i);
 	}
-	memcpy(dev->dev_addr, addr, ETHER_ADDR_LEN);
+	memcpy(dev->dev_addr, addr, ETH_ALEN);
 
 	return ENOERR;
 }

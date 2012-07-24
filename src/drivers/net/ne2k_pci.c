@@ -23,6 +23,7 @@
 #include <drivers/pci.h>
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
+#include <net/if_ether.h>
 #include <drivers/ne2k_pci.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
@@ -66,7 +67,7 @@ static inline void show_packet(uint8_t *raw, uint16_t size, char *title) {
 static void ne2k_get_addr_from_prom(struct net_device *dev) {
 	uint8_t i;
 
-	dev->addr_len = ETHER_ADDR_LEN;
+	dev->addr_len = ETH_ALEN;
 	/* Copy the station address into the DS8390 registers,
 	   and set the multicast hash bitmap to receive all multicasts. */
 	out8(NE_PAGE1_STOP, dev->base_addr); /* 0x61 */
@@ -74,14 +75,14 @@ static void ne2k_get_addr_from_prom(struct net_device *dev) {
 
 	/* Get mac-address from prom*/
 	out8(E8390_PAGE0 | E8390_RREAD, dev->base_addr + E8390_CMD);
-	for (i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (i = 0; i < ETH_ALEN; i++) {
 		dev->dev_addr[i] = in8(dev->base_addr + NE_DATAPORT);
 	}
 
 	/* Copy the station address and set the multicast
 	 * hash bitmap to recive all multicast */
 	out8(E8390_PAGE1 | E8390_START, dev->base_addr + E8390_CMD);
-	for (i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (i = 0; i < ETH_ALEN; i++) {
 		out8(dev->dev_addr[i], dev->base_addr + EN1_PHYS_SHIFT(i));
 		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
 	}
@@ -356,13 +357,13 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 	}
 
 	out8(E8390_PAGE1, dev->base_addr + E8390_CMD);
-	for (i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (i = 0; i < ETH_ALEN; i++) {
 		out8(*((uint8_t *)addr + i), dev->base_addr + EN1_PHYS_SHIFT(i));
 #if 0
 		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
 #endif
 	}
-	memcpy(dev->dev_addr, addr, ETHER_ADDR_LEN);
+	memcpy(dev->dev_addr, addr, ETH_ALEN);
 
 	return ENOERR;
 }

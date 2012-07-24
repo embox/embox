@@ -20,7 +20,9 @@
 /* Backlog congestion levels */
 #define NET_RX_SUCCESS       0
 #define NET_RX_DROP          1
+#if 0
 #define NET_RX_BAD           2
+#endif
 
 /* Driver transmit return codes */
 #define NETDEV_TX_OK        0
@@ -28,7 +30,6 @@
 
 /** Largest hardware address length */
 #define MAX_ADDR_LEN    32
-#define ETHER_ADDR_LEN  6
 
 struct net_node;
 
