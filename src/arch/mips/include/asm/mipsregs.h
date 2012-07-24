@@ -29,8 +29,11 @@
 #define CP0_DESAVE   31    /* Debug handler scratchpad register */
 
 
-
 #define ST0_IM       0x0000ff00
+
+#define ST0_IE       0x00000001
+#define ST0_EXL      0x00000002
+#define ST0_ERL      0x00000004
 
 
 #define __read_32bit_c0_register(source, sel)				\

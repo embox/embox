@@ -6,6 +6,8 @@ module context extends embox.arch.context {
 
 module locore extends embox.arch.locore {
 	source "boot.S"
+	source "entry.S"
+	source "exception.c"
 }
 
 
