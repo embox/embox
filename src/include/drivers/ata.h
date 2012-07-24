@@ -9,17 +9,89 @@
 #ifndef ATA_H_
 #define ATA_H_
 
+#include <fs/node.h>
 
 #define INCLUDE_ATA_DMA   0   // not zero to include ATA_DMA
 #define INCLUDE_ATAPI_PIO 0   // not zero to include ATAPI PIO
 #define INCLUDE_ATAPI_DMA 0   // not zero to include ATAPI DMA
-
 
 // public interrupt handler data
 
 extern unsigned char int_ata_status;    // ATA status read by interrupt handler
 extern unsigned char int_bmide_status;  // BMIDE status read by interrupt handler
 
+typedef struct _dev_ide_ata_identif
+{
+	uint16_t config;           /*General configuration bit-significant information*/
+	uint16_t num_cyl;          /*Number of cylinders */
+	uint16_t rsrv1;            /*Reserved */
+	uint16_t num_head;         /* Number of heads */
+	uint16_t bytes_pr_track;   /*Number of unformatted bytes per track */
+	uint16_t bytes_pr_sect;    /*Number of unformatted bytes per sector */
+	uint16_t sect_pr_track;    /* Number of sectors per track */
+	uint16_t vendor[3];        /* Vendor unique */
+	uint8_t  sn[20];           /* Serial number (20 ASCII characters, 0000h=not specified)*/
+	uint16_t buff_type;        /* Buffer type */
+	uint16_t buff_size;        /* Buffer size in 512 byte increments (0000h=not specified) */
+	uint16_t num_ecc;          /* # of ECC bytes avail on read/write long cmds (0000h=not spec'd) | */
+	uint8_t  fw_rev[8];        /* Firmware revision (8 ASCII characters, 0000h=not specified) */
+	uint8_t  model_numb[40];   /* Model number (40 ASCII characters, 0000h=not specified) */
+	uint16_t numb_transfer;    /* 15-8 Vendor unique
+	 	 	 	 	 	 	    *  7-0 00h = Read/write multiple commands not implemented
+	 	 	 	 	 	 	    *      xxh = Maximum number of sectors that can be transferred
+	 	 	 	 	 	 	    *     	per interrupt on read and write multiple commands
+	 	 	 	 	 	 	    */
+	uint16_t dbl_word_flg;     /* 0000h = cannot perform doubleword I/O	Included for backwards
+							    * 0001h = can perform doubleword I/O
+							    * Compatible VU use
+							    */
+	uint16_t capabilities;     /* 15-10 0=reserved
+							    *     9 1=LBA supported
+							    *     8 1=DMA supported
+							    *   7-0 Vendor unique
+							    */
+	uint16_t rsrv2;            /* Reserved */
+	uint16_t pio_timing_mode;  /* 15-8 PIO data transfer cycle timing mode
+							    *  7-0 Vendor unique
+							    */
+	uint16_t dma_timing_mode;  /* 15-8 DMA data transfer cycle timing mode
+	 	 	 	 	 	 	    *  7-0 Vendor unique
+	 	 	 	 	 	 	    */
+	uint16_t valid;            /*15-1 Reserved
+	                            *   0 1=the fields reported in words 54-58 are valid
+	                            *     0=the fields reported in words 54-58 may be valid
+	                            */
+	uint16_t cur_num_cyl;      /* Number of current cylinders */
+	uint16_t cur_num_head;     /* Number of current heads */
+	uint16_t cur_sct_pr_track; /* Number of current sectors per track */
+	uint32_t capacity;         /* Current capacity in sectors */
+	uint16_t num_in_multiple;  /* 15-9 Reserved
+	                            *    8 1 = Multiple sector setting is valid
+	                            *  7-0 xxh = Current setting for number of sectors that can be
+	                            *      transferred per interrupt on R/W multiple commands
+	                            */
+	uint32_t num_user_sect;    /* Total number of user addressable sectors (LBA mode only)*/
+	uint16_t dma_mode;         /* 15-8 Single word DMA transfer mode active
+	                            *  7-0 Single word DMA transfer modes supported (see 11-3a)
+	                            */
+	uint16_t multiword_dma;    /* 15-8 Multiword DMA transfer mode active
+	                            *  7-0 Multiword DMA transfer modes supported (see 11-3b)
+	                            */
+	uint16_t rsrv3[64];        /*  64-127 Reserved */
+	uint8_t  vendor_uniq[64];  /* 128-159 Vendor unique */
+	                           /* 160-255 Reserved */
+} dev_ide_ata_identif_t;
+
+typedef struct _dev_ide_ata {
+	uint32_t base_cmd_addr;
+	uint32_t base_ctrl_addr;
+	uint8_t  irq;
+
+	char dev_name[MAX_LENGTH_FILE_NAME];
+	node_t *dev_node;
+
+	dev_ide_ata_identif_t identification;
+} dev_ide_ata_t;
 
 // Command and extended error information returned by the
 // reg_reset(), reg_non_data_*(), reg_pio_data_in_*(),
@@ -80,11 +152,11 @@ extern int reg_config_info[2];
 
 #define THIRD_COMMAND_REG_BASE_ADDR      0x01E8
 #define THIRD_CONTROL_REG_BASE_ADDR      0x03E6
-#define THIRD_IRQ
+#define THIRD_IRQ                        0
 
 #define FOURTH_COMMAND_REG_BASE_ADDR     0x0168
 #define FOURTH_CONTROL_REG_BASE_ADDR     0x0366
-#define FOURTH_IRQ
+#define FOURTH_IRQ                       0
 //**************************************************************
 //
 // Global defines -- ATA register and register bits.

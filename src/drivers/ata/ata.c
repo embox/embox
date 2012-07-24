@@ -7,6 +7,7 @@
  */
 
 #include <asm/io.h>
+#include <fs/vfs.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
 #include <embox/unit.h>
@@ -16,17 +17,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <mem/misc/pool.h>
 
 
-unsigned char int_ata_status;    /* ATA status read by interrupt handler */
-unsigned char int_bmide_status;  /* BMIDE status read by interrupt handler */
-//unsigned char int_use_intr_flag = INT_DEFAULT_INTERRUPT_MODE;
-struct _reg_cmd_info reg_cmd_info;
-int reg_config_info[2];
-
-struct timespec ts;
-pci_dev_t *pci_dev;
-
+static int num_dev;
 /*
  * functions internal and private to this ATA drv
  */
@@ -34,6 +28,7 @@ static int scan_drive(uint32_t addr);
 static unsigned char pio_inbyte(int addr);
 static void pio_outbyte(int addr, unsigned char data);
 static unsigned int pio_inword(int addr);
+static dev_ide_ata_t *ide_drive_create(int *dev_number);
 /*
 static void pio_outword(int addr, unsigned int data);
 static unsigned long pio_indword(int addr);
@@ -43,13 +38,25 @@ static void pio_outdword(int addr, unsigned long data);
 #define PCI_VENDOR_ID_INTEL 0x8086
 #define PCI_DEV_ID_INTEL_IDE_82371SB 0x7010
 
-//EMBOX_UNIT_INIT(ata_init);
+#define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
+
+EMBOX_UNIT_INIT(ata_init);
+/* ide ata devices pool */
+POOL_DEF(ide_dev_pool, struct _dev_ide_ata, MAX_DEV_QUANTITY);
+
+int ata_init(void) {
+
+	num_dev = 0;
+	return 0;
+}
 
 /*
  *  detection_drive() - Check the host adapter and determine the
  *  number and type of drives attached.
  */
 int detection_drive(void) {
+	pci_dev_t *pci_dev;
+	num_dev = 0;
 
 	scan_drive(PRIMARY_COMMAND_REG_BASE_ADDR);
 	scan_drive(SECONDARY_COMMAND_REG_BASE_ADDR);
@@ -90,24 +97,24 @@ static void base_regaddr_set(uint32_t addr,
 
 int scan_drive(uint32_t addr) {
    unsigned char read_reg;
-   unsigned int read_data;
-   unsigned char dev, num_dev;
+   uint16_t read_data, *p_data;
+   unsigned char dev;
    int count;
    uint32_t base_cmd_addr, base_ctrl_addr;
+   dev_ide_ata_t *dev_ide;
 
    base_regaddr_set(addr, &base_cmd_addr, &base_ctrl_addr);
 
    dev = CB_DH_DEV0;
    count = 0;
-   num_dev = 0;
 
-    do {
+   do {
 	   read_reg = pio_inbyte(base_cmd_addr + CB_STAT);
 	   usleep(100);
 	   if (1000 < count++) {
-		   break;
+		   return 0;
 	   }
-   } while (read_reg & CB_STAT_BSY);
+   } while(read_reg & CB_STAT_BSY);
 
    while(1) {
 	   pio_outbyte(base_cmd_addr + CB_DH, dev);
@@ -127,8 +134,8 @@ int scan_drive(uint32_t addr) {
 			   }
 		   }
 
-		   if (0 != read_reg) {
-			   num_dev++;
+		   if ((0 != read_reg) &&
+			  (NULL != (dev_ide = ide_drive_create(&num_dev)))) {
 
 			   pio_outbyte(base_cmd_addr + CB_SC, 0);
 			   pio_outbyte(base_cmd_addr + CB_SN, 0);
@@ -140,9 +147,16 @@ int scan_drive(uint32_t addr) {
 			   read_reg = pio_inbyte(base_cmd_addr + CB_STAT);
 			   read_reg = pio_inbyte(base_cmd_addr + CB_ERR);
 
+			   p_data = (uint16_t *)&dev_ide->identification;
 			   /* read  drive Identification */
-			   for(int i =0; i< 256; i++) {
+			   for(int i =0; i< 160; i++) {
+				   *p_data++ = read_data = pio_inword(base_cmd_addr + CB_DATA);
+				   printf("%c%c", (read_data & 0xFF00) >> 8, read_data & 0x00FF);
+			   }
+
+			   for(int i =160; i< 256; i++) {
 				   read_data = pio_inword(base_cmd_addr + CB_DATA);
+				   /* TODO print IDE detect drive normally */
 				   printf("%c%c", (read_data & 0xFF00) >> 8, read_data & 0x00FF);
 			   }
 		   }
@@ -158,6 +172,43 @@ int scan_drive(uint32_t addr) {
    return num_dev;
 }
 
+
+static dev_ide_ata_t *ide_drive_create(int *dev_number) {
+	dev_ide_ata_t *dev_ide;
+	node_t *dev_node;
+	char dev_path[MAX_LENGTH_PATH_NAME];
+	char dev_name[MAX_LENGTH_FILE_NAME];
+
+	if (MAX_DEV_QUANTITY <= *dev_number) {
+		return NULL;
+	}
+
+	*dev_path = 0;
+	strcat(dev_path, "/dev/");
+	dev_name[0] = 'h';
+	dev_name[1] = 'd';
+	dev_name[2] = 'a' + *dev_number;
+	dev_name[3] = 0;
+	strcat(dev_path, dev_name);
+
+	if (NULL == (dev_node = vfs_add_path(dev_path, NULL))) {
+		if (NULL == (dev_node = vfs_find_node(dev_path, NULL))) {
+			return NULL;
+		}
+		else {
+			return (dev_ide_ata_t *) dev_node->attr;/*dev already exist*/
+		}
+	}
+
+	if(NULL == (dev_ide = pool_alloc(&ide_dev_pool))) {
+		return dev_ide;
+	}
+	(*dev_number)++;
+	strcpy(dev_ide->dev_name, dev_name);
+	dev_ide->dev_node = dev_node;
+	dev_ide->dev_node->attr = (void *) dev_ide;
+	return dev_ide;
+}
 
 
 /* These functions do basic IN/OUT of byte and word values: */
