@@ -280,8 +280,8 @@ static int exec(int argc, char **argv) {
 				int_set = 1;
 			}else
 				duplicate = 1;
+			i_opt++;
 			break;
-
 		case 'p':										/* pattern */
 			if(!pat_set){
 				if (sscanf(optarg, "%d", &pinfo.pattern) != 1) {
