@@ -60,6 +60,7 @@ static module LibCMath {
 	source "soft-fp/softfloat.c"
 	source "soft-fp/softfloat-macros.c"
 	source "soft-fp/softfloat-spec.c"
+	source "gcc/clzsi2.c"
 	source "gcc/lshrdi3.c"
 	source "gcc/divdi3.c"
 	source "gcc/divsi3.c"

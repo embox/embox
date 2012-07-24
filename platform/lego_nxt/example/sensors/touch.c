@@ -34,7 +34,7 @@ static void touch_handler(nxt_sensor_t *sensor) {
 	flag = 0;
 }
 
-static int touch_example(void) {
+static int touch_example(int argc, char *argv[]) {
 	touch_sensor_init(TOUCH_PORT, (touch_hnd_t) touch_handler);
 	nxt_motor_set_power(NXT_MOTOR_A, MOTOR_POWER);
 	nxt_motor_set_power(NXT_MOTOR_B, MOTOR_POWER);

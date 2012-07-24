@@ -6,17 +6,18 @@
  * @author Anton Kozlov
  */
 
+#include <stdio.h>
+#include <unistd.h>
 #include <drivers/soft_i2c.h>
 #include <drivers/nxt/buttons.h>
 #include <drivers/nxt/sonar_sensor.h>
 #include <embox/example.h>
 #include <drivers/at91sam7s256.h>
-#include <unistd.h>
 
 EMBOX_EXAMPLE(sonar_example);
 
 
-static int sonar_test(void) {
+static int sonar_example(int argc, char *argv[]) {
 	int buts;
 	/* init sensor as sonar sensor */
 	nxt_sonar_init(NXT_SENSOR_1);

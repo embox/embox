@@ -9,6 +9,7 @@
  */
 
 #include <types.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <framework/example/self.h>
 

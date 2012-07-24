@@ -14,7 +14,7 @@
 
 EMBOX_EXAMPLE(run_sound);
 
-static const sample_t patterns[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
+static const sampleword_t patterns[SOUNDVOLUMESTEPS + 1][SAMPLETONENO] =
 {
     {
 	0xF0F0F0F0,0xF0F0F0F0, // Step 0 = silence
@@ -90,7 +90,7 @@ sample_t sound_handler(void) {
 	return (sample_t) patterns[i];
 }
 
-static int run_sound(void) {
+static int run_sound(int argc, char *argv[]) {
 	int count = 5;
 	while (count--) {
 		sound_start_play(TONE_C, DURATION, (sample_t) patterns[0],
