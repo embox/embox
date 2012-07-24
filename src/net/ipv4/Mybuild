@@ -1,7 +1,6 @@
 package embox.net
 
 module arp_queue {
-	option number amount_host=10
 	option number amount_package=20
 	option number htable_width=3
 	option number package_timeout=1000
