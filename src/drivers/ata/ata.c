@@ -20,20 +20,26 @@
 #include <mem/misc/pool.h>
 
 
-static int num_dev;
+static uint8_t num_dev;
+ide_ata_slot_t ide_ata_slot;
 /*
  * functions internal and private to this ATA drv
  */
-static int scan_drive(uint32_t addr);
+static int scan_drive(uint8_t *bus_number);
 static unsigned char pio_inbyte(int addr);
 static void pio_outbyte(int addr, unsigned char data);
 static unsigned int pio_inword(int addr);
-static dev_ide_ata_t *ide_drive_create(int *dev_number);
 /*
 static void pio_outword(int addr, unsigned int data);
 static unsigned long pio_indword(int addr);
 static void pio_outdword(int addr, unsigned long data);
  */
+static dev_ide_ata_t *ide_drive_create(uint8_t *dev_number);
+static void read_identification (dev_ide_ata_identif_t *identif,
+								 uint32_t base_cmd_addr);
+static void read_id_string(uint8_t *p_data,
+		                   size_t size, uint32_t base_cmd_addr);
+
 
 #define PCI_VENDOR_ID_INTEL 0x8086
 #define PCI_DEV_ID_INTEL_IDE_82371SB 0x7010
@@ -46,6 +52,23 @@ POOL_DEF(ide_dev_pool, struct _dev_ide_ata, MAX_DEV_QUANTITY);
 
 int ata_init(void) {
 
+	ide_ata_slot.ide_bus[0].base_cmd_addr =
+	ide_ata_slot.ide_bus[1].base_cmd_addr = PRIMARY_COMMAND_REG_BASE_ADDR;
+	ide_ata_slot.ide_bus[0].base_ctrl_addr =
+	ide_ata_slot.ide_bus[1].base_ctrl_addr = PRIMARY_CONTROL_REG_BASE_ADDR;
+	ide_ata_slot.ide_bus[2].base_cmd_addr =
+	ide_ata_slot.ide_bus[3].base_cmd_addr = SECONDARY_COMMAND_REG_BASE_ADDR;
+	ide_ata_slot.ide_bus[2].base_ctrl_addr =
+	ide_ata_slot.ide_bus[3].base_ctrl_addr = SECONDARY_CONTROL_REG_BASE_ADDR;
+	ide_ata_slot.ide_bus[4].base_cmd_addr =
+	ide_ata_slot.ide_bus[5].base_cmd_addr = THIRD_COMMAND_REG_BASE_ADDR;
+	ide_ata_slot.ide_bus[4].base_ctrl_addr =
+	ide_ata_slot.ide_bus[5].base_ctrl_addr = THIRD_CONTROL_REG_BASE_ADDR;
+	ide_ata_slot.ide_bus[6].base_cmd_addr =
+	ide_ata_slot.ide_bus[7].base_cmd_addr = FOURTH_COMMAND_REG_BASE_ADDR;
+	ide_ata_slot.ide_bus[6].base_ctrl_addr =
+	ide_ata_slot.ide_bus[7].base_ctrl_addr = FOURTH_CONTROL_REG_BASE_ADDR;
+
 	num_dev = 0;
 	return 0;
 }
@@ -54,22 +77,27 @@ int ata_init(void) {
  *  detection_drive() - Check the host adapter and determine the
  *  number and type of drives attached.
  */
-int detection_drive(void) {
-	pci_dev_t *pci_dev;
-	num_dev = 0;
+ide_ata_slot_t *detection_drive(void) {
+	//pci_dev_t *pci_dev;
+	static uint8_t bus_num;
 
-	scan_drive(PRIMARY_COMMAND_REG_BASE_ADDR);
-	scan_drive(SECONDARY_COMMAND_REG_BASE_ADDR);
+	bus_num = num_dev = 0;
+	for(int i = 0; i < MAX_DEV_QUANTITY; i += 2) {
+		scan_drive(&bus_num);
+	}
 
+	/*
 	pci_dev = pci_find_dev(PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_IDE_82371SB);
 	if (pci_dev != NULL) {
 		if(scan_drive(pci_dev->bar[4] & PCI_BASE_ADDR_IO_MASK)) {
 			return 0;
 		}
 	}
-	return 0;
+	*/
+	return &ide_ata_slot;
 }
 
+/*
 static void base_regaddr_set(uint32_t addr,
 		uint32_t *base_cmd_addr, uint32_t *base_ctrl_addr) {
 
@@ -93,17 +121,19 @@ static void base_regaddr_set(uint32_t addr,
 	   *base_ctrl_addr = PRIMARY_CONTROL_REG_BASE_ADDR;
 	}
 }
+*/
 
-
-int scan_drive(uint32_t addr) {
+static int scan_drive(uint8_t *bus_number) {
    unsigned char read_reg;
-   uint16_t read_data, *p_data;
+   uint16_t read_data;//, *p_data;
    unsigned char dev;
    int count;
    uint32_t base_cmd_addr, base_ctrl_addr;
    dev_ide_ata_t *dev_ide;
 
-   base_regaddr_set(addr, &base_cmd_addr, &base_ctrl_addr);
+   //base_regaddr_set(addr, &base_cmd_addr, &base_ctrl_addr);
+   base_cmd_addr = ide_ata_slot.ide_bus[*bus_number].base_cmd_addr;
+   base_ctrl_addr = ide_ata_slot.ide_bus[*bus_number].base_ctrl_addr;
 
    dev = CB_DH_DEV0;
    count = 0;
@@ -117,6 +147,7 @@ int scan_drive(uint32_t addr) {
    } while(read_reg & CB_STAT_BSY);
 
    while(1) {
+	   ide_ata_slot.ide_bus[*bus_number].dev_ide_ata = NULL;
 	   pio_outbyte(base_cmd_addr + CB_DH, dev);
 	   usleep(1);
 	   if((dev | 0xA0) == (read_reg = pio_inbyte(base_cmd_addr + CB_DH))) {
@@ -137,6 +168,8 @@ int scan_drive(uint32_t addr) {
 		   if ((0 != read_reg) &&
 			  (NULL != (dev_ide = ide_drive_create(&num_dev)))) {
 
+			   ide_ata_slot.ide_bus[*bus_number].dev_ide_ata = dev_ide;
+
 			   pio_outbyte(base_cmd_addr + CB_SC, 0);
 			   pio_outbyte(base_cmd_addr + CB_SN, 0);
 			   pio_outbyte(base_cmd_addr + CB_CL, 0);
@@ -147,23 +180,22 @@ int scan_drive(uint32_t addr) {
 			   read_reg = pio_inbyte(base_cmd_addr + CB_STAT);
 			   read_reg = pio_inbyte(base_cmd_addr + CB_ERR);
 
-			   p_data = (uint16_t *)&dev_ide->identification;
 			   /* read  drive Identification */
-			   for(int i =0; i< 160; i++) {
-				   *p_data++ = read_data = pio_inword(base_cmd_addr + CB_DATA);
-				   printf("%c%c", (read_data & 0xFF00) >> 8, read_data & 0x00FF);
-			   }
+			   read_identification(&dev_ide->identification, base_cmd_addr);
 
 			   for(int i =160; i< 256; i++) {
 				   read_data = pio_inword(base_cmd_addr + CB_DATA);
-				   /* TODO print IDE detect drive normally */
-				   printf("%c%c", (read_data & 0xFF00) >> 8, read_data & 0x00FF);
 			   }
+			   dev_ide->base_cmd_addr = base_cmd_addr;
+			   dev_ide->base_ctrl_addr = base_ctrl_addr;
+			   //dev_ide->irq = irq;
 		   }
 	   }
-
-	   if (CB_DH_DEV0 == dev) {
+	   (*bus_number)++;
+	   if(CB_DH_DEV0 == dev) {
 		   dev = CB_DH_DEV1;
+		   base_cmd_addr = ide_ata_slot.ide_bus[*bus_number].base_cmd_addr;
+		   base_ctrl_addr = ide_ata_slot.ide_bus[*bus_number].base_ctrl_addr;
 	   }
 	   else {
 		   break;
@@ -172,8 +204,81 @@ int scan_drive(uint32_t addr) {
    return num_dev;
 }
 
+static void read_identification (dev_ide_ata_identif_t *identif,
+										uint32_t base_cmd_addr) {
+	uint16_t *p_data16;
 
-static dev_ide_ata_t *ide_drive_create(int *dev_number) {
+	identif->config = pio_inword(base_cmd_addr + CB_DATA);
+	identif->num_cyl = pio_inword(base_cmd_addr + CB_DATA);
+	identif->rsrv1 = pio_inword(base_cmd_addr + CB_DATA);
+	identif->num_head = pio_inword(base_cmd_addr + CB_DATA);
+	identif->bytes_pr_track = pio_inword(base_cmd_addr + CB_DATA);
+	identif->bytes_pr_sect = pio_inword(base_cmd_addr + CB_DATA);
+	identif->sect_pr_track = pio_inword(base_cmd_addr + CB_DATA);
+
+	read_id_string((uint8_t *)identif->vendor,
+					       sizeof(identif->vendor)/2, base_cmd_addr);
+
+	read_id_string((uint8_t *)identif->sn,
+				       sizeof(identif->sn)/2, base_cmd_addr);
+
+	identif->buff_type = pio_inword(base_cmd_addr + CB_DATA);
+	identif->buff_size = pio_inword(base_cmd_addr + CB_DATA);
+	identif->num_ecc = pio_inword(base_cmd_addr + CB_DATA);
+
+	read_id_string((uint8_t *)identif->fw_rev,
+			       sizeof(identif->fw_rev)/2, base_cmd_addr);
+
+	read_id_string((uint8_t *)identif->model_numb,
+			       sizeof(identif->model_numb)/2, base_cmd_addr);
+
+	identif->numb_transfer = pio_inword(base_cmd_addr + CB_DATA);
+	identif->dbl_word_flg = pio_inword(base_cmd_addr + CB_DATA);
+	identif->capabilities = pio_inword(base_cmd_addr + CB_DATA);
+	identif->rsrv2 = pio_inword(base_cmd_addr + CB_DATA);
+	identif->pio_timing_mode = pio_inword(base_cmd_addr + CB_DATA);
+	identif->dma_timing_mode = pio_inword(base_cmd_addr + CB_DATA);
+	identif->valid = pio_inword(base_cmd_addr + CB_DATA);
+	identif->cur_num_cyl = pio_inword(base_cmd_addr + CB_DATA);
+	identif->cur_num_head = pio_inword(base_cmd_addr + CB_DATA);
+	identif->cur_sct_pr_track = pio_inword(base_cmd_addr + CB_DATA);
+
+	p_data16 = (uint16_t *)&identif->capacity;
+	*p_data16 = pio_inword(base_cmd_addr + CB_DATA);
+	p_data16++;
+	*p_data16 = pio_inword(base_cmd_addr + CB_DATA);
+
+	identif->num_in_multiple = pio_inword(base_cmd_addr + CB_DATA);
+
+	p_data16 = (uint16_t *)&identif->num_user_sect;
+	*p_data16 = pio_inword(base_cmd_addr + CB_DATA);
+	p_data16++;
+	*p_data16 = pio_inword(base_cmd_addr + CB_DATA);
+
+	identif->dma_mode = pio_inword(base_cmd_addr + CB_DATA);
+	identif->multiword_dma = pio_inword(base_cmd_addr + CB_DATA);
+
+	read_id_string((uint8_t *)identif->rsrv3,
+				       sizeof(identif->rsrv3)/2, base_cmd_addr);
+
+	read_id_string((uint8_t *)identif->vendor_uniq,
+				       sizeof(identif->vendor_uniq)/2, base_cmd_addr);
+}
+
+static void read_id_string(uint8_t *p_data,
+		                    size_t size, uint32_t base_cmd_addr) {
+	uint16_t data;
+
+	for(int i =0; i < size; i++) {
+		data = pio_inword(base_cmd_addr + CB_DATA);
+		*p_data++ = (data & 0xFF00) >> 8;
+		*p_data++ = data & 0x00FF;
+	}
+	/*set string null determine */
+	*p_data = 0;
+}
+
+static dev_ide_ata_t *ide_drive_create(uint8_t *dev_number) {
 	dev_ide_ata_t *dev_ide;
 	node_t *dev_node;
 	char dev_path[MAX_LENGTH_PATH_NAME];
@@ -196,6 +301,7 @@ static dev_ide_ata_t *ide_drive_create(int *dev_number) {
 			return NULL;
 		}
 		else {
+			(*dev_number)++;
 			return (dev_ide_ata_t *) dev_node->attr;/*dev already exist*/
 		}
 	}

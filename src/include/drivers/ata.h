@@ -29,13 +29,13 @@ typedef struct _dev_ide_ata_identif
 	uint16_t bytes_pr_track;   /*Number of unformatted bytes per track */
 	uint16_t bytes_pr_sect;    /*Number of unformatted bytes per sector */
 	uint16_t sect_pr_track;    /* Number of sectors per track */
-	uint16_t vendor[3];        /* Vendor unique */
-	uint8_t  sn[20];           /* Serial number (20 ASCII characters, 0000h=not specified)*/
+	uint8_t vendor[6 + 1];     /* Vendor unique */
+	uint8_t  sn[20 + 1];       /* Serial number (20 ASCII characters, 0000h=not specified)*/
 	uint16_t buff_type;        /* Buffer type */
 	uint16_t buff_size;        /* Buffer size in 512 byte increments (0000h=not specified) */
 	uint16_t num_ecc;          /* # of ECC bytes avail on read/write long cmds (0000h=not spec'd) | */
-	uint8_t  fw_rev[8];        /* Firmware revision (8 ASCII characters, 0000h=not specified) */
-	uint8_t  model_numb[40];   /* Model number (40 ASCII characters, 0000h=not specified) */
+	uint8_t  fw_rev[8 + 1];    /* Firmware revision (8 ASCII characters, 0000h=not specified) */
+	uint8_t  model_numb[40 + 1];   /* Model number (40 ASCII characters, 0000h=not specified) */
 	uint16_t numb_transfer;    /* 15-8 Vendor unique
 	 	 	 	 	 	 	    *  7-0 00h = Read/write multiple commands not implemented
 	 	 	 	 	 	 	    *      xxh = Maximum number of sectors that can be transferred
@@ -77,8 +77,8 @@ typedef struct _dev_ide_ata_identif
 	uint16_t multiword_dma;    /* 15-8 Multiword DMA transfer mode active
 	                            *  7-0 Multiword DMA transfer modes supported (see 11-3b)
 	                            */
-	uint16_t rsrv3[64];        /*  64-127 Reserved */
-	uint8_t  vendor_uniq[64];  /* 128-159 Vendor unique */
+	uint16_t rsrv3[64 + 1];    /*  64-127 Reserved */
+	uint8_t  vendor_uniq[64 + 1];  /* 128-159 Vendor unique */
 	                           /* 160-255 Reserved */
 } dev_ide_ata_identif_t;
 
@@ -86,12 +86,20 @@ typedef struct _dev_ide_ata {
 	uint32_t base_cmd_addr;
 	uint32_t base_ctrl_addr;
 	uint8_t  irq;
-
 	char dev_name[MAX_LENGTH_FILE_NAME];
 	node_t *dev_node;
-
 	dev_ide_ata_identif_t identification;
 } dev_ide_ata_t;
+
+typedef struct _ide_ata_bus {
+	dev_ide_ata_t *dev_ide_ata;
+	uint32_t base_cmd_addr;
+	uint32_t base_ctrl_addr;
+} ide_ata_bus_t;
+
+typedef struct _ide_ata_slot {
+	ide_ata_bus_t ide_bus[8];
+} ide_ata_slot_t;
 
 // Command and extended error information returned by the
 // reg_reset(), reg_non_data_*(), reg_pio_data_in_*(),
@@ -308,7 +316,7 @@ extern int reg_config_info[2];
 
 // config and reset funcitons
 
-extern int detection_drive(void);
+extern ide_ata_slot_t *detection_drive(void);
 
 extern int reg_reset( unsigned char devRtrn );
 

@@ -17,6 +17,22 @@ static void print_usage(void) {
 	printf("Usage: ide \n");
 }
 
+static void print_drive (ide_ata_slot_t *ide) {
+	for(int i  = 0; i < 4; i++) {
+		printf("\nide%02d:", i);
+		if(NULL == ide->ide_bus[i].dev_ide_ata) {
+			printf(" none");
+		}
+		else {
+			printf(" %s", ide->ide_bus[i].dev_ide_ata->identification.sn);
+			printf(" %s",
+				ide->ide_bus[i].dev_ide_ata->identification.model_numb);
+		}
+	}
+
+}
+
+
 static int exec(int argc, char **argv) {
 	int opt;
 
@@ -33,5 +49,6 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	return detection_drive();
+	print_drive(detection_drive());
+	return 0;
 }

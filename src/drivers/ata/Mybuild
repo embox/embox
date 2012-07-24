@@ -1,7 +1,7 @@
 package embox.driver
 
 module ata {
-	option number dev_quantity = 5
+	option number dev_quantity = 4
 	source "ata.c"
 
 	depends embox.driver.pci
