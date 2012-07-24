@@ -20,9 +20,6 @@
 /* Backlog congestion levels */
 #define NET_RX_SUCCESS       0
 #define NET_RX_DROP          1
-#if 0
-#define NET_RX_BAD           2
-#endif
 
 /* Driver transmit return codes */
 #define NETDEV_TX_OK        0
@@ -87,6 +84,9 @@ typedef struct net_device_ops {
 	net_device_stats_t* (*ndo_get_stats)(struct net_device *dev);
 } net_device_ops_t;
 
+/**
+ * structure for control header
+ */
 typedef struct header_ops {
 	int (*create)(struct sk_buff *skb, struct net_device *dev,
 			unsigned short type, void *daddr, void *saddr, unsigned len);
@@ -129,19 +129,10 @@ typedef struct net_device {
 	net_device_stats_t stats;
 	const net_device_ops_t *netdev_ops; /**< Management operations        */
 	const header_ops_t *header_ops; /**< Hardware header description  */
-#if 0
-	void *priv; /**< pointer to private data      */
-#endif
 	struct sk_buff_head dev_queue;
 	int (*poll)(struct net_device *dev);
 	struct net_node *pnet_node;
 } net_device_t;
-
-#if 0
-static inline void *netdev_priv(struct net_device *dev) {
-	return dev->priv;
-}
-#endif
 
 /**
  * Find an network device by its name
@@ -149,16 +140,6 @@ static inline void *netdev_priv(struct net_device *dev) {
  * @return NULL is returned if no matching device is found.
  */
 extern struct net_device * netdev_get_by_name(const char *name);
-
-#if 0
-/**
- * Find an network device by its hw addr
- * @param type
- * @param hwaddr addr to find
- * @return NULL is returned if no matching device is found.
- */
-extern struct net_device * dev_getbyhwaddr(unsigned short type, char *hwaddr);
-#endif
 
 /**
  * Allocate network device
@@ -186,6 +167,7 @@ extern int netdev_register(struct net_device *dev);
  */
 extern int netdev_unregister(struct net_device *dev);
 
+/* TODO this use only for pnet */
 extern struct hashtable *netdevs_table;
 #define netdev_foreach(device)                                                      \
 	for (char **dev_name_ptr = hashtable_get_key_first(netdevs_table);              \
@@ -255,7 +237,24 @@ extern int dev_queue_send(sk_buff_t *pack);
  */
 extern int dev_queue_xmit(sk_buff_t *pack);
 
-extern int dev_rx_queued(struct net_device *dev);
+/**
+ * this function add `dev` to list of those that
+ * must be processed
+ * @param dev - net_device to be processed
+ */
+extern void dev_rx_queued(struct net_device *dev);
+
+/**
+ * this function remove `dev` from queue of device
+ * that have received packages
+ * @param dev - net_device to be processed
+ */
+extern void dev_rx_queued(struct net_device *dev);
+
+/**
+ * this function processing a device which had received
+ * packages
+ */
 extern void dev_rx_processing(void);
 
 /**
@@ -269,24 +268,17 @@ extern int netif_rx(void *pack);
 /**
  * Called by irq handler.
  */
+
+/**
+ * Save sk_buff to queue of incoming packages of corresponding
+ * net_device and prepare this device for processing
+ */
 extern void netif_rx_schedule(struct sk_buff *skb);
 
-extern int netif_receive_skb(sk_buff_t *skb);
-
-#if 0
-static inline int dev_hard_header(sk_buff_t *skb, net_device_t *dev,
-		unsigned short type, void *daddr, void *saddr, unsigned len) {
-	if (!dev->header_ops || !dev->header_ops->create) {
-		return 0;
-	}
-	return dev->header_ops->create(skb, dev, type, daddr, saddr, len);
-}
-#endif
-
-#if 0
-static inline void netif_start_queue(net_device_t *dev) {
-	/*TODO:*/
-}
-#endif
+/**
+ * This funciton starts stack handling of incoming package
+ * @param skb - incoming package which should be handled
+ */
+extern int netif_receive_skb(struct sk_buff *skb);
 
 #endif /* NET_DEVICE_H_ */

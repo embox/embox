@@ -164,7 +164,7 @@ static int process_backlog(struct net_device *dev) {
 	return ENOERR;
 }
 
-int dev_rx_queued(struct net_device *dev) {
+void dev_rx_queued(struct net_device *dev) {
 	ipl_t sp;
 
 	sp = ipl_save();
@@ -172,10 +172,9 @@ int dev_rx_queued(struct net_device *dev) {
 		list_add_tail(&dev->rx_dev_link, &rx_dev_queue);
 	}
 	ipl_restore(sp);
-	return 0;
 }
 
-int dev_rx_dequeued(struct net_device *dev) {
+void dev_rx_dequeued(struct net_device *dev) {
 	ipl_t sp;
 
 	sp = ipl_save();
@@ -183,8 +182,6 @@ int dev_rx_dequeued(struct net_device *dev) {
 	list_del(&dev->rx_dev_link);
 
 	ipl_restore(sp);
-
-	return 0;
 }
 
 void dev_rx_processing(void) {
