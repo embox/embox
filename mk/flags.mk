@@ -41,7 +41,7 @@ override CPPFLAGS += -imacros $(AUTOCONF_DIR)/config.h
 override CPPFLAGS += -I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
 override CPPFLAGS += -I$(SRCGEN_DIR)/include
 # XXX reduntand flags, agrrrr -- Eldar
-override CPPFLAGS += -I$(PLATFORM_DIR)/$(PLATFORM)/include
+override CPPFLAGS += $(if $(value PLATFORM),-I$(PLATFORM_DIR)/$(PLATFORM)/include)
 override CPPFLAGS += -I$(SRC_DIR)/compat/linux/include -I$(SRC_DIR)/compat/posix/include
 override CPPFLAGS += -nostdinc
 override CPPFLAGS += -MMD -MP# -MT $@ -MF $(@:.o=.d)
