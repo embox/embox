@@ -176,7 +176,7 @@ static int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 	inet = inet_sk(sk);
 	inet->rcv_saddr = addr_in->sin_addr.s_addr;
 	if (addr_in->sin_port != 0) {
-		res = ip_port_lock(sk->sk_protocol, addr_in->sin_port);
+		res = ip_port_lock(sk->sk_protocol, ntohs(addr_in->sin_port));
 		if (res < 0) {
 			goto exit_with_error;
 		}

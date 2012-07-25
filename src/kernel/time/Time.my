@@ -30,3 +30,9 @@ module time {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "time.c"
 }
+
+module timekeeper {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "timekeeping.c"
+	depends kernel_time
+}

@@ -17,5 +17,5 @@ module date {
 
 	depends embox.lib.LibC
 	depends embox.kernel.time.clock_source
-	depends embox.kernel.time.time
+	depends embox.kernel.time.timekeeper
 }
