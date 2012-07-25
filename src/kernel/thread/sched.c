@@ -180,14 +180,17 @@ int sched_sleep_locked(struct event *e, uint32_t timeout) {
 	struct sched_sleep_data sleep_data;
 	struct event event;
 	struct sys_timer tmr;
+	struct thread *current = sched_current();
 
 	assert(in_sched_locked());
+
+	current->sleep_res = 0; /* clean out sleep_res */
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		event_init(&event, NULL);
 		sleep_data.timeout_event = &event;
-		sleep_data.thread = sched_current();
-		ret = timer_init(&tmr, 0, timeout, timeout_handler, &sleep_data);
+		sleep_data.thread = current;
+		ret = timer_init(&tmr, TIMER_ONESHOT, timeout, timeout_handler, &sleep_data);
 		if (ret != ENOERR) {
 			return ret;
 		}
@@ -195,19 +198,19 @@ int sched_sleep_locked(struct event *e, uint32_t timeout) {
 
 	do_event_sleep_locked(e);
 
-	sched_unlock();
-
-	/* At this point we have been awakened and are ready to go. */
-	assert(!in_sched_locked());
-	assert(thread_state_running(sched_current()->state));
-
-	sched_lock();
-
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		timer_close(&tmr);
 	}
 
-	return sched_current()->sleep_res;
+	sched_unlock();
+
+	/* At this point we have been awakened and are ready to go. */
+	assert(!in_sched_locked());
+	assert(thread_state_running(current->state));
+
+	sched_lock();
+
+	return current->sleep_res;
 }
 
 int sched_sleep(struct event *e, uint32_t timeout) {
