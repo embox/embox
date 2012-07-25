@@ -76,6 +76,30 @@ struct timespec timespec_sub(struct timespec t1,
 	return ts;
 }
 
+struct timespec ns_to_timespec(const __s64 nsec) {
+	struct timespec ts;
+
+	ts.tv_sec = nsec / NSEC_PER_SEC;
+	ts.tv_nsec = nsec % NSEC_PER_SEC;
+	/* and normalize result */
+	if (nsec < 0) {
+		ts.tv_sec--;
+		ts.tv_nsec += NSEC_PER_SEC;
+	}
+
+	return ts;
+}
+
+struct timeval ns_to_timeval(const __s64 nsec) {
+	struct timeval tv;
+	struct timespec ts = ns_to_timespec(nsec);
+
+	tv.tv_sec = ts.tv_sec;
+	tv.tv_usec = (suseconds_t) ts.tv_nsec / NSEC_PER_USEC;
+
+	return tv;
+}
+
 static int time_init(void) {
 	struct clock_source *cs;
 

@@ -18,8 +18,8 @@ ARRAY_SPREAD_DEF(const struct time_counter_device *, __counter_devices);
 POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER, clocks_quantity));
 DLIST_DEFINE(clock_source_list);
 
-uint32_t clock_source_clock_to_sec(struct clock_source *cs, uint32_t ticks) {
-	return ticks / cs->event_device->resolution;
+ms_t clock_source_clock_to_ms(struct clock_source *cs, clock_t ticks) {
+	return (ticks * cs->event_device->resolution) / 1000;
 }
 
 static struct clock_source_head *clock_source_find(struct clock_source *cs) {

@@ -19,5 +19,6 @@
 
 typedef uint64_t cycle_t;
 typedef uint64_t ns_t;
+typedef uint64_t ms_t;
 
 #endif /* KERNEL_TIME_TIME_TYPES_H_ */

@@ -21,9 +21,8 @@ struct clock_source jiffies = {
 	.flags = 1,
 };
 
-
-uint32_t clock_sys_sec(void) {
-	return clock_source_clock_to_sec(&jiffies, clock_sys_ticks());
+ms_t clock_sys_ms(void) {
+	return clock_source_clock_to_ms(&jiffies, clock_sys_ticks());
 }
 
 struct time_dev_conf jiffies_conf = {

@@ -11,6 +11,7 @@
 #include <kernel/time/itimer.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
+#include <kernel/time/time.h>
 
 EMBOX_UNIT_INIT(module_init);
 
@@ -21,20 +22,15 @@ ns_t ktime_get_ns(void) {
 }
 
 struct timeval *ktime_get_timeval(struct timeval *tv) {
-	ns_t ns;
-
-	ns = ktime_get_ns();
-	tv->tv_sec = ns / NSEC_PER_SEC;
-	tv->tv_usec = (ns % NSEC_PER_SEC) / NSEC_PER_USEC;
+	ns_t ns = ktime_get_ns();
+	*tv = ns_to_timeval(ns);
 	return tv;
 }
 
 struct timespec *ktime_get_timespec(struct timespec *ts) {
-	ns_t ns;
+	ns_t ns = ktime_get_ns();
 
-	ns = ktime_get_ns();
-	ts->tv_sec = ns / NSEC_PER_SEC;
-	ts->tv_nsec = ns % NSEC_PER_SEC;
+	*ts = ns_to_timespec(ns);
 	return ts;
 }
 
