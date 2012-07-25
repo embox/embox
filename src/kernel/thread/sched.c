@@ -175,7 +175,7 @@ static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	}
 }
 
-int sched_sleep_locked(struct event *e, uint32_t timeout) {
+int sched_sleep_locked(struct event *e, unsigned long timeout) {
 	int ret;
 	struct sched_sleep_data sleep_data;
 	struct event event;
@@ -190,7 +190,7 @@ int sched_sleep_locked(struct event *e, uint32_t timeout) {
 		event_init(&event, NULL);
 		sleep_data.timeout_event = &event;
 		sleep_data.thread = current;
-		ret = timer_init(&tmr, TIMER_ONESHOT, timeout, timeout_handler, &sleep_data);
+		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, &sleep_data);
 		if (ret != ENOERR) {
 			return ret;
 		}
@@ -213,7 +213,7 @@ int sched_sleep_locked(struct event *e, uint32_t timeout) {
 	return current->sleep_res;
 }
 
-int sched_sleep(struct event *e, uint32_t timeout) {
+int sched_sleep(struct event *e, unsigned long timeout) {
 	int sleep_res;
 
 	assert(!in_sched_locked());
