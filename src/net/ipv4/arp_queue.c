@@ -20,6 +20,7 @@
 #include <kernel/time/ktime.h>
 #include <framework/mod/options.h>
 #include <assert.h>
+#include <kernel/softirq_lock.h>
 
 EMBOX_UNIT_INIT(arp_queue_init);
 
@@ -113,6 +114,8 @@ int arp_queue_add(struct sk_buff *skb) {
 	int res;
 	struct arp_queue_item *waiting_item;
 
+	softirq_lock();
+
 	waiting_item = (struct arp_queue_item *)pool_alloc(&arp_queue_item_pool);
 	if (waiting_item == NULL) {
 		return -ENOMEM;
@@ -127,6 +130,8 @@ int arp_queue_add(struct sk_buff *skb) {
 		pool_free(&arp_queue_item_pool, waiting_item);
 		return res;
 	}
+
+	softirq_unlock();
 
 	return ENOERR;
 }

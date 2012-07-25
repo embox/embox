@@ -235,7 +235,7 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	} else {
 		assert(sleepq_empty(&t->exit_event.sleepq));
-		sched_sleep_locked(&t->exit_event);
+		sched_sleep_locked(&t->exit_event, SCHED_TIMEOUT_INFINITE);
 
 		/* At this point the target thread has already deleted itself.
 		 * So we mustn't refer it anymore. */

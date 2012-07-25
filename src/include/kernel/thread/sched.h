@@ -105,7 +105,7 @@ extern void sched_wake_one(struct event *event);
  * @retval 0
  *   Always. TODO sleep cancellation is not implemented.
  */
-extern int sched_sleep_locked(struct event *event);
+extern int sched_sleep_locked(struct event *event, uint32_t timeout);
 
 
 #endif /* KERNEL_THREAD_SCHED_H_ */

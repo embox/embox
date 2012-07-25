@@ -39,7 +39,7 @@ int usleep(useconds_t usec) {
 			goto out_unlock;
 		}
 
-		sched_sleep_locked(&wait_event);
+		sched_sleep_locked(&wait_event, SCHED_TIMEOUT_INFINITE);
 
 		timer_close(&tmr);
 	}

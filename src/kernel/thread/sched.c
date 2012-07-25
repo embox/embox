@@ -155,22 +155,6 @@ static void do_event_sleep_locked(struct event *e) {
 	post_switch_if(1);
 }
 
-int sched_sleep_locked(struct event *e) {
-	struct thread *current = runq_current(&rq);
-
-	do_event_sleep_locked(e);
-
-	sched_unlock();
-
-	/* At this point we have been awakened and are ready to go. */
-	assert(!in_sched_locked());
-	assert(thread_state_running(current->state));
-
-	sched_lock();
-
-	return 0;
-}
-
 struct sched_sleep_data {
 	struct event *timeout_event;
 	struct thread *thread;
@@ -191,32 +175,53 @@ static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	}
 }
 
-int sched_sleep(struct event *e, uint32_t timeout) {
+int sched_sleep_locked(struct event *e, uint32_t timeout) {
+	int ret;
 	struct sched_sleep_data sleep_data;
 	struct event event;
 	struct sys_timer tmr;
 
-	assert(!in_sched_locked());
-	if(timeout != SCHED_TIMEOUT_INFINITE) {
+	assert(in_sched_locked());
+
+	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		event_init(&event, NULL);
 		sleep_data.timeout_event = &event;
 		sleep_data.thread = sched_current();
-		if (0 != timer_init(&tmr, 0, timeout, timeout_handler, &sleep_data)) {
-			return -EBUSY;
+		ret = timer_init(&tmr, 0, timeout, timeout_handler, &sleep_data);
+		if (ret != ENOERR) {
+			return ret;
 		}
 	}
 
-	sched_lock();
-	{
-		do_event_sleep_locked(e);
-	}
+	do_event_sleep_locked(e);
+
 	sched_unlock();
 
-	if(timeout != SCHED_TIMEOUT_INFINITE) {
-			timer_close(&tmr);
+	/* At this point we have been awakened and are ready to go. */
+	assert(!in_sched_locked());
+	assert(thread_state_running(sched_current()->state));
+
+	sched_lock();
+
+	if (timeout != SCHED_TIMEOUT_INFINITE) {
+		timer_close(&tmr);
 	}
 
 	return sched_current()->sleep_res;
+}
+
+int sched_sleep(struct event *e, uint32_t timeout) {
+	int sleep_res;
+
+	assert(!in_sched_locked());
+
+	sched_lock();
+
+	sleep_res = sched_sleep_locked(e, timeout);
+
+	sched_unlock();
+
+	return sleep_res;
 }
 
 void sched_yield(void) {
