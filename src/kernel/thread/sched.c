@@ -198,10 +198,6 @@ int sched_sleep_locked(struct event *e, uint32_t timeout) {
 
 	do_event_sleep_locked(e);
 
-	if (timeout != SCHED_TIMEOUT_INFINITE) {
-		timer_close(&tmr);
-	}
-
 	sched_unlock();
 
 	/* At this point we have been awakened and are ready to go. */
@@ -209,6 +205,10 @@ int sched_sleep_locked(struct event *e, uint32_t timeout) {
 	assert(thread_state_running(current->state));
 
 	sched_lock();
+
+	if (timeout != SCHED_TIMEOUT_INFINITE) {
+		timer_close(&tmr);
+	}
 
 	return current->sleep_res;
 }
