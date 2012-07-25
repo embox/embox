@@ -17,7 +17,7 @@
 #include __impl_x(kernel/thread/sched_impl.h)
 #include __impl_x(kernel/thread/types.h)
 
-#define SCHED_TIMEOUT_INFINITE     (useconds_t)(-1)
+#define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
 #define SCHED_TIMEOUT_HAPPENED        1
 
