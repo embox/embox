@@ -16,3 +16,11 @@ int fgetc(FILE *file) {
 	return (int)ch;
 
 }
+
+int getchar(void) {
+	return getc(stdin);
+}
+
+int ungetchar(int ch) {
+	return ungetc(ch, stdin);
+}

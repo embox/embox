@@ -17,3 +17,7 @@ int fputc(int c, FILE *stream) {
 
 	return c;
 }
+
+int putchar(int c) {
+	return fputc(c, stdout);
+}

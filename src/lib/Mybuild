@@ -83,7 +83,7 @@ static module LibCStdio {
 	source "stdio/printk.c"
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
-	depends LibCFs
+	depends LibCFileApi
 	depends LibCMath
 }
 
@@ -103,17 +103,24 @@ static module LibC {
 //	source "stacktrace.c"
 }
 
-@DefaultImpl(LibCFsNone)
-abstract module LibCFs { }
+@DefaultImpl(LibCFileDiag)
+abstract module LibCFileApi { }
 
-static module LibCFsPosix extends LibCFs {
-	source "stdio/stdio.c"
-	source "stdio/putchar.c"
-	source "stdio/getchar.c"
+static module LibCFileFsPosix extends LibCFileApi {
+	source "stdio/fs.c"
+	source "stdio/stdio_posix.c"
+
+	depends embox.fs.core
 	depends embox.compat.posix.LibPosixFsApi
 }
 
-static module LibCFsNone extends LibCFs {
-	source "stdio/getchar_nofile.c"
-	source "stdio/putchar_nofile.c"
+static module LibCFileFsDiag extends LibCFileApi {
+	source "stdio/fs.c"
+	source "stdio/stdio_diag.c"
+
+	depends embox.fs.core
+}
+
+static module LibCFileDiag extends LibCFileApi {
+	source "stdio/fs_none.c"
 }

@@ -26,6 +26,7 @@ module hashtable {
 	depends embox.mem.objalloc
 }
 
+@DefaultImpl(num_alloc_array)
 abstract module num_alloc { }
 
 module num_alloc_array extends num_alloc {

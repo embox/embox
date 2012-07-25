@@ -12,7 +12,7 @@ module lua_core {
 
 	depends embox.mem.heap_api
 	depends embox.lib.LibC
-	depends embox.lib.LibCFsPosix
+	depends embox.lib.LibCFileFsPosix
 	depends lua_lib
 }
 

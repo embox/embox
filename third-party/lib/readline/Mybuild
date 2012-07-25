@@ -5,6 +5,6 @@ module linenoise {
 	source "linenoise.c"
 
 	depends embox.lib.LibC
-	depends embox.lib.LibCFsPosix
+	depends embox.lib.LibCFileFsPosix
 	depends embox.compat.posix.LibPosix
 }
