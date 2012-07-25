@@ -7,6 +7,8 @@
  * @author Anton Bondarev
  */
 #include <asm/traps.h>
+#include <asm/ptrace.h>
+
 void exception_handler(pt_regs_t *regs) {
 
 }

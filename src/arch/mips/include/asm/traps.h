@@ -10,21 +10,8 @@
 #ifndef MIPS_TRAPS_H_
 #define MIPS_TRAPS_H_
 
-#ifndef __ASSEMBLER__
 
-typedef struct pt_regs {
-	unsigned int reg[25];
-	unsigned int gp; /* global pointer */
-	unsigned int sp; /* stack pointer */
-	unsigned int fp; /* frame pointer */
-	unsigned int ra;
-	unsigned int lo;
-	unsigned int hi;
-	unsigned int cp0_status;
-	unsigned int pc;
-}pt_regs_t;
-
-#else
+#ifdef __ASSEMBLER__
 #define RVECENT(f,n) \
    b f; nop
 

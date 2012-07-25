@@ -11,6 +11,7 @@
 C_ENTRY(_start):
 	.set noat
 	move    $1, $zero
+	.set at
 	move    $2, $zero
 	move    $3, $zero
 	move    $4, $zero
@@ -52,20 +53,22 @@ C_ENTRY(_start):
 	move   $a1, $zero
 	la     $a2, _bss_len
 	jal   memset
+	nop
 
 	la   $v0, _data_vma
 	la   $v1, _data_lma
 	beq    $v0, $v1, 1f
+	nop
 	/*data section*/
 	la   $a2, _data_len
 	la   $a1, _data_lma
 	la   $a0, _data_vma
 	jal   memcpy
+	nop
 1:
 
 	jal       kernel_start
 	nop
-	.set at
 
 	.section    ".text"
 	.align  4
