@@ -19,6 +19,7 @@
 #include <unistd.h>
 #include <mem/misc/pool.h>
 
+int ide_dev_quantity;
 
 static uint8_t num_dev;
 ide_ata_slot_t ide_ata_slot;
@@ -61,15 +62,16 @@ int ata_init(void) {
 	ide_ata_slot.ide_bus[2].base_ctrl_addr =
 	ide_ata_slot.ide_bus[3].base_ctrl_addr = SECONDARY_CONTROL_REG_BASE_ADDR;
 	ide_ata_slot.ide_bus[4].base_cmd_addr =
-	ide_ata_slot.ide_bus[5].base_cmd_addr = THIRD_COMMAND_REG_BASE_ADDR;
+	ide_ata_slot.ide_bus[5].base_cmd_addr = TERTIARY_COMMAND_REG_BASE_ADDR;
 	ide_ata_slot.ide_bus[4].base_ctrl_addr =
-	ide_ata_slot.ide_bus[5].base_ctrl_addr = THIRD_CONTROL_REG_BASE_ADDR;
+	ide_ata_slot.ide_bus[5].base_ctrl_addr = TERTIARY_CONTROL_REG_BASE_ADDR;
 	ide_ata_slot.ide_bus[6].base_cmd_addr =
-	ide_ata_slot.ide_bus[7].base_cmd_addr = FOURTH_COMMAND_REG_BASE_ADDR;
+	ide_ata_slot.ide_bus[7].base_cmd_addr = QUATERNARY_COMMAND_REG_BASE_ADDR;
 	ide_ata_slot.ide_bus[6].base_ctrl_addr =
-	ide_ata_slot.ide_bus[7].base_ctrl_addr = FOURTH_CONTROL_REG_BASE_ADDR;
+	ide_ata_slot.ide_bus[7].base_ctrl_addr = QUATERNARY_CONTROL_REG_BASE_ADDR;
 
 	num_dev = 0;
+	ide_dev_quantity = MAX_DEV_QUANTITY;
 	return 0;
 }
 

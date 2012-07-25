@@ -18,17 +18,26 @@ static void print_usage(void) {
 }
 
 static void print_drive (ide_ata_slot_t *ide) {
-	for(int i  = 0; i < 4; i++) {
-		printf("\nide%02d:", i);
-		if(NULL == ide->ide_bus[i].dev_ide_ata) {
-			printf(" none");
+	for(int i  = 0; i < ide_dev_quantity; i++) {
+		printf("\nIDE Channel %d-%d: ", i/2, i%2);
+
+		if(i%2){
+			printf(" Slave  Disk:");
 		}
 		else {
+			printf(" Master Disk:");
+		}
+		if(NULL == ide->ide_bus[i].dev_ide_ata) {
+			printf(" None");
+		}
+		else {
+			printf(" %s;", ide->ide_bus[i].dev_ide_ata->dev_name);
 			printf(" %s", ide->ide_bus[i].dev_ide_ata->identification.sn);
 			printf(" %s",
 				ide->ide_bus[i].dev_ide_ata->identification.model_numb);
 		}
 	}
+	printf("\n");
 
 }
 

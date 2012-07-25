@@ -15,10 +15,7 @@
 #define INCLUDE_ATAPI_PIO 0   // not zero to include ATAPI PIO
 #define INCLUDE_ATAPI_DMA 0   // not zero to include ATAPI DMA
 
-// public interrupt handler data
-
-extern unsigned char int_ata_status;    // ATA status read by interrupt handler
-extern unsigned char int_bmide_status;  // BMIDE status read by interrupt handler
+extern int ide_dev_quantity;
 
 typedef struct _dev_ide_ata_identif
 {
@@ -158,13 +155,13 @@ extern int reg_config_info[2];
 #define SECONDARY_CONTROL_REG_BASE_ADDR  0x0376
 #define SECONDARY_IRQ                    15
 
-#define THIRD_COMMAND_REG_BASE_ADDR      0x01E8
-#define THIRD_CONTROL_REG_BASE_ADDR      0x03E6
-#define THIRD_IRQ                        0
+#define TERTIARY_COMMAND_REG_BASE_ADDR      0x01E8
+#define TERTIARY_CONTROL_REG_BASE_ADDR      0x03E6
+#define TERTIARY_IRQ                        11
 
-#define FOURTH_COMMAND_REG_BASE_ADDR     0x0168
-#define FOURTH_CONTROL_REG_BASE_ADDR     0x0366
-#define FOURTH_IRQ                       0
+#define QUATERNARY_COMMAND_REG_BASE_ADDR     0x0168
+#define QUATERNARY_CONTROL_REG_BASE_ADDR     0x0366
+#define QUATERNARY_IRQ                       10
 //**************************************************************
 //
 // Global defines -- ATA register and register bits.
