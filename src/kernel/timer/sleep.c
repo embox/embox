@@ -15,24 +15,39 @@
 #include <kernel/thread/sched.h>
 #include <kernel/thread/event.h>
 
+static void restore_thread(sys_timer_t *timer, void *param) {
+	sched_wake((struct event *) param);
+}
+
 /* system library function */
 int usleep(useconds_t usec) {
-	int res_sleep;
-	struct event never_happen;
+	int ret = 0;
 
-	if (usec == 0) {
+	if(0 == usec) {
 		sched_yield();
-		return 0;
+		return ret;
 	}
 
-	event_init(&never_happen, NULL);
+	sched_lock();
+	{
+		struct event wait_event;
+		struct sys_timer tmr; /* we allocate timer structure on the stack */
 
-	res_sleep = sched_sleep(&never_happen, usec);
+		event_init(&wait_event, NULL);
+		if (0 != timer_init(&tmr, TIMER_ONESHOT, usec, &restore_thread, &wait_event)) {
+			ret = -EBUSY;
+			goto out_unlock;
+		}
 
-	return res_sleep == SCHED_TIMEOUT_HAPPENED ? 0 : res_sleep;
+		sched_sleep_locked(&wait_event, SCHED_TIMEOUT_INFINITE);
+
+		timer_close(&tmr);
+	}
+	out_unlock: sched_unlock();
+
+	return ret;
 }
 
 int sleep(unsigned int seconds) {
 	return usleep(seconds * 1000);
 }
-
