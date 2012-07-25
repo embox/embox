@@ -19,6 +19,6 @@ module example {
 	source "example.c"
 
 	depends embox.lib.LibC
-	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.LibPosixUtil
 	depends embox.framework.LibFramework
 }

@@ -2,18 +2,34 @@ package embox.compat.posix
 
 static module LibPosix {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
+
+	depends LibPosixUtil
+	depends LibPosixProc
+	depends LibPosixIdx
+
+}
+
+static module LibPosixUtil {
+	source "getopt.c",
+		"utsname.c",
+		"time.c"
+	depends embox.util.LibUtil
+}
+
+static module LibPosixProc {
 	source "exec.c",
 		"fork.c",
-		"getopt.c",
-		"select.c",
-		"utsname.c",
-		"wait.c",
-		"time.c",
-		"isatty.c",
-		"dup.c"
-
+		"wait.c"
 	depends embox.util.LibUtil
+}
+
+static module LibPosixIdx {
+	source "isatty.c",
+		"select.c",
+		"dup.c"
+	depends embox.kernel.task.api
 	depends LibPosixFsApi
+	depends embox.util.LibUtil
 }
 
 @DefaultImpl(LibPosixFsNone)
@@ -22,7 +38,6 @@ abstract module LibPosixFsApi { }
 static module LibPosixFs extends LibPosixFsApi {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "file.c", "fs.c"
-	source "file_op.c" // actually, this is LibC
 
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idx_table

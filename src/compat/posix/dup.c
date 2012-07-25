@@ -5,6 +5,7 @@
  *
  * @date 05.06.2012
  * @author Anton Bondarev
+ * @author Anton Kozlov
  */
 
 #include <unistd.h>
