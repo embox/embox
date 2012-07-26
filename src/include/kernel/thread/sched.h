@@ -19,7 +19,8 @@
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
-#define SCHED_TIMEOUT_HAPPENED        1
+#define SCHED_SLEEP_TIMEOUT        1
+#define SCHED_SLEEP_INTERRUPT      2
 
 struct thread;
 struct event;
@@ -66,6 +67,19 @@ extern void sched_set_priority(struct thread *thread,
  *   Timeout happened.
  */
 extern int sched_sleep(struct event *event, unsigned long timeout);
+
+/**
+ * @brief Makes thread to run regardless of it's state
+ * @param thread Thread to operate with
+ *
+ * @return
+ *   Operation result
+ * @retval 0
+ *   On success.
+ * @retval non-zero
+ *   On operation fail.
+ */
+extern int sched_setrun(struct thread *thread);
 
 /**
  * Wakes up all threads that sleep on the given @a event.

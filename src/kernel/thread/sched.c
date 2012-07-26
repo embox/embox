@@ -44,6 +44,7 @@ EMBOX_UNIT(unit_init, unit_fini);
 static void startq_flush(void);
 static void startq_enqueue_wake(struct event *e, int wake_all);
 static void startq_enqueue_resume(struct thread *t);
+static void startq_enqueue_wake_force(struct thread *t);
 
 static void do_thread_resume(struct thread *t);
 static void do_event_wake(struct event *e, int wake_all);
@@ -121,6 +122,7 @@ void sched_suspend(struct thread *t) {
 	sched_unlock();
 }
 
+
 void __sched_wake(struct event *e, int wake_all) {
 	if (in_harder_critical()) {
 		startq_enqueue_wake(e, wake_all);
@@ -155,34 +157,52 @@ static void do_event_sleep_locked(struct event *e) {
 	post_switch_if(1);
 }
 
+static int thread_wake_force(struct thread *thread) {
+	struct event *e = thread->sleep_event;
+	if (!thread_state_sleeping(thread->state)) {
+		return 0;
+	}
+
+	if (in_harder_critical()) {
+		startq_enqueue_wake_force(thread);
+	} else {
+		if (thread_state_suspended(thread->state)) {
+			sleepq_wake_suspended_thread(&e->sleepq, thread);
+		} else {
+			return sleepq_wake_resumed_thread(&rq, &e->sleepq, thread);
+		}
+	}
+
+	return 0;
+}
+
 struct sched_sleep_data {
 	struct event *timeout_event;
 	struct thread *thread;
 };
 
 static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
-	struct thread *thread = ((struct sched_sleep_data *)sleep_data)->thread;
-	struct event *e = ((struct sched_sleep_data *)sleep_data)->timeout_event;
+	struct thread *thread = (struct thread *) sleep_data;
 
-	thread->sleep_res = SCHED_TIMEOUT_HAPPENED;
+	thread->sleep_res = SCHED_SLEEP_TIMEOUT;
 
-	sched_wake(e); /* XXX this need wake specific thread (not all) */
+	post_switch_if(thread_wake_force(thread));
+
+	/*sched_wake(thread->sleep_event);*/
 }
 
 int sched_sleep_locked(struct event *e, unsigned long timeout) {
 	int ret;
-	struct sched_sleep_data sleep_data;
 	struct sys_timer tmr;
 	struct thread *current = sched_current();
 
 	assert(in_sched_locked());
 
 	current->sleep_res = 0; /* clean out sleep_res */
+	current->sleep_event = e;
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
-		sleep_data.timeout_event = e;
-		sleep_data.thread = current;
-		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, &sleep_data);
+		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
 		if (ret != ENOERR) {
 			return ret;
 		}
@@ -217,6 +237,23 @@ int sched_sleep(struct event *e, unsigned long timeout) {
 	sched_unlock();
 
 	return sleep_res;
+}
+
+int sched_setrun(struct thread *t) {
+	sched_lock();
+	{
+		if (thread_state_sleeping(t->state)) {
+			t->sleep_res = SCHED_SLEEP_INTERRUPT;
+			/*sched_wake(t->sleep_event);*/
+			thread_wake_force(t);
+		}
+
+		if (thread_state_suspended(t->state)) {
+			do_thread_resume(t);
+		}
+	}
+	sched_unlock();
+	return 0;
 }
 
 void sched_yield(void) {
@@ -326,12 +363,15 @@ static void sched_switch(void) {
 struct startq {
 	struct slist event_wake;
 	struct slist thread_resume;
+	struct slist thread_force_wake;
 };
 
 static struct startq startq = {
-			.event_wake = SLIST_INIT(&startq.event_wake),
-			.thread_resume = SLIST_INIT(&startq.thread_resume),
-	};
+	.event_wake = SLIST_INIT(&startq.event_wake),
+	.thread_resume = SLIST_INIT(&startq.thread_resume),
+	.thread_force_wake = SLIST_INIT(&startq.thread_force_wake),
+
+};
 
 /**
  * Called outside any interrupt handler as part of critical dispatcher
@@ -359,6 +399,14 @@ static void startq_flush(void) {
 		do_thread_resume(t);
 		ipl_disable();
 	}
+
+	while ((t = slist_remove_first(&startq.thread_force_wake,
+			struct thread, startq_link))) {
+
+		ipl_enable();
+		thread_wake_force(t);
+		ipl_disable();
+	}
 }
 
 static void startq_enqueue_wake(struct event *e, int wake_all) {
@@ -381,6 +429,18 @@ static void startq_enqueue_resume(struct thread *t) {
 	{
 		if (slist_alone(t, startq_link)) {
 			slist_add_first(t, &startq.thread_resume, startq_link);
+		}
+	}
+	ipl_restore(ipl);
+
+	critical_request_dispatch(&sched_critical);
+}
+
+static void startq_enqueue_wake_force(struct thread *t) {
+	ipl_t ipl = ipl_save();
+	{
+		if (slist_alone(t, startq_link)) {
+			slist_add_first(t, &startq.thread_force_wake, startq_link);
 		}
 	}
 	ipl_restore(ipl);
