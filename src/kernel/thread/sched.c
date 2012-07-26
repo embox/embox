@@ -166,19 +166,12 @@ static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 
 	thread->sleep_res = SCHED_TIMEOUT_HAPPENED;
 
-	if (thread_state_suspended(thread->state)) {
-		// XXX Probably we should run thread via startq ???
-		sleepq_wake_suspended_thread(&e->sleepq, thread);
-		// switch ???
-	} else {
-		sleepq_wake_resumed_thread(&rq, &e->sleepq, thread);
-	}
+	sched_wake(e); /* XXX this need wake specific thread (not all) */
 }
 
 int sched_sleep_locked(struct event *e, unsigned long timeout) {
 	int ret;
 	struct sched_sleep_data sleep_data;
-	struct event event;
 	struct sys_timer tmr;
 	struct thread *current = sched_current();
 
@@ -187,8 +180,7 @@ int sched_sleep_locked(struct event *e, unsigned long timeout) {
 	current->sleep_res = 0; /* clean out sleep_res */
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
-		event_init(&event, NULL);
-		sleep_data.timeout_event = &event;
+		sleep_data.timeout_event = e;
 		sleep_data.thread = current;
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, &sleep_data);
 		if (ret != ENOERR) {
