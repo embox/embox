@@ -183,14 +183,16 @@ static int received_resp(struct sk_buff *skb, struct net_device *dev) {
 static int received_req(struct sk_buff *skb, struct net_device *dev) {
 	int res;
 	struct arphdr *arph;
+	unsigned char dest_hw[ETH_ALEN];
 
 	assert((skb != NULL) && (dev != NULL));
 
 	arph = skb->nh.arph;
 	assert(arph != NULL);
 
+	memcpy(dest_hw, arph->ar_sha, sizeof dest_hw); /* save dest hardware address */
 	res = arp_header(skb, dev, ARPOP_REPLY, ETH_P_ARP, arph->ar_sip,
-			arph->ar_tip, arph->ar_sha, dev->dev_addr, NULL);
+			arph->ar_tip, &dest_hw[0], dev->dev_addr, NULL);
 	if (res < 0) {
 		skb_free(skb);
 		return res;
