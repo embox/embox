@@ -75,6 +75,9 @@ extern int ntp_client_xmit(int sock, struct sockaddr_in *dst);
 extern int ntp_receive(struct sock *sk, struct sk_buff *skb);
 extern struct timespec ntp_delay(struct ntphdr *ntp);
 extern int ntp_offset(struct ntphdr *ntp);
+extern int ntp_start(void);
+extern int ntp_stop(void);
+
 
 static inline struct timespec ntp_to_timespec(struct l_ntpdata ld) {
 	struct timespec ts;

@@ -117,6 +117,7 @@ static int exec(int argc, char **argv) {
 			}
 			break;
 		default:  /* Set system clock */
+			return 0;
 			break;
 		}
 	}
@@ -125,7 +126,6 @@ static int exec(int argc, char **argv) {
 		return 0;
 	}
 
-	gettimeofday(&ts, NULL);
 	delay = ntp_delay(&r);
 	printf("server %s, stratum %d, delay %d:%d (s:ms)\n", argv[argc - 1], (int)(r.stratum),
 			(int)delay.tv_sec, (int)delay.tv_nsec / 1000);

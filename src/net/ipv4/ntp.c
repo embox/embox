@@ -13,13 +13,14 @@
 #include <net/ntp.h>
 #include <kernel/time/time.h>
 #include <kernel/time/timer.h>
-#include <embox/unit.h>
 #include <errno.h>
 #include <string.h>
 #include <prom/prom_printf.h>
+#include <unistd.h>
 
-#define MIN_POLL 4 /* By RFC 4330 minimum poll interval is about 15 seconds */
-static __u8 max_poll;
+#define MIN_POLL 2 /* By RFC 4330 minimum poll interval is about 15 seconds */
+#define MAX_POLL 16
+#define NTPD_RUNNING_TIME 60
 
 static char kod[3][4] = {"DENY", "RSTR", "RATE"};
 
@@ -30,7 +31,8 @@ static int ntp_sock;
 /* Current server address for unicast interaction */
 static struct sockaddr_in available_server;
 /* Periodical timer for sending new request each tick */
-struct sys_timer ntp_poll_timer;
+static sys_timer_t *ntp_poll_timer;
+static bool is_server_reply = false;
 
 static inline void ntp_data_ntohs(struct s_ntpdata *data) {
 	data->sec = ntohs(data->sec);
@@ -50,6 +52,10 @@ static void ntp_ntoh(struct ntphdr *ntp) {
 	ntp_data_ntohl(&ntp->rec_ts);
 	ntp_data_ntohl(&ntp->ref_ts);
 	ntp_data_ntohl(&ntp->xmt_ts);
+}
+
+static inline bool is_ntp_sock(struct sock *sk) {
+	return (inet_sk(sk)->sport == NTP_SERVER_PORT ? true : false);
 }
 
 int ntp_client_xmit(int sock, struct sockaddr_in *dst) {
@@ -127,15 +133,22 @@ int ntp_receive(struct sock *sk, struct sk_buff *skb) {
 
 	/* check for server KoD */
 	if (r->stratum == 0) {
-		if (strcmp((char *)&r->refid, kod[0])) {
-			res = NTP_DENY;
-		} else if (strcmp((char *)&r->refid, kod[1])) {
-			res = NTP_RSTR;
-		} else if (strcmp((char *)&r->refid, kod[2])) {
-			res = NTP_RATE;
+		if (strcmp((char *)&r->refid, kod[2])) {
+			if (client_config.poll > MIN_POLL)
+				client_config.poll--;
+		} else if (strcmp((char *)&r->refid, kod[0]) ||
+				strcmp((char *)&r->refid, kod[1])) {
+			available_server.sin_addr.s_addr = 0;
 		}
-		res = NTP_IGNORED;
+
+		res = NET_RX_DROP;
 		goto free_and_drop;
+	}
+
+	if (is_ntp_sock(sk)) {
+		ts = ntp_to_timespec(r->xmt_ts);
+		ts = timespec_add(ts, ntp_delay(r));
+		settimeofday(&ts, NULL);
 	}
 
 	return ENOERR;
@@ -166,33 +179,51 @@ int ntp_offset(struct ntphdr *ntp) {
 }
 
 static void send_request(struct sys_timer *timer, void *param) {
-	if (available_server.sin_addr.s_addr)
-		ntp_client_xmit(ntp_sock, &available_server);
+	if (available_server.sin_addr.s_addr) {
+		if (0 > ntp_client_xmit(ntp_sock, &available_server))
+			is_server_reply = true;
+	}
 }
 
-EMBOX_UNIT(ntp_init, ntp_fini);
-
-static int ntp_init(void) {
-	int res;
+int ntp_start(void) {
+	struct sockaddr_in our;
+	int sec = NTPD_RUNNING_TIME;
 
 	available_server.sin_port = NTP_SERVER_PORT;
-	client_config.poll = max_poll;
+	client_config.poll = MAX_POLL;
 
-	if (0 > (res = ntp_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))) {
+	if (0 > (ntp_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))) {
 		prom_printf("Can't to allocate NTP socket");
-		return res;
+		return -ENOMEM;
 	}
-	if (0 > (res = timer_init(&ntp_poll_timer, 1, max_poll, send_request, NULL))) {
+
+	socket_set_encap_recv(ntp_sock, ntp_receive);
+
+	our.sin_family = AF_INET;
+	our.sin_port = htons((__u16)NTP_SERVER_PORT);
+	our.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if (0 > bind(ntp_sock, (struct sockaddr *)&our, sizeof(our))) {
+		prom_printf("error at bind()\n");
+		return -EBUSY;
+	}
+
+	if (0 > timer_set(&ntp_poll_timer, TIMER_PERIODIC, (1 << MIN_POLL) * MSEC_PER_SEC,
+			send_request, NULL)) {
 		prom_printf("Can't to initialize NTP timer");
-		return res;
+		return -ENOENT;
+	}
+
+	while (sec--) {
+		usleep(1000);
 	}
 
 	return ENOERR;
 }
 
-static int ntp_fini(void) {
+int ntp_stop(void) {
 	close(ntp_sock);
-	timer_close(&ntp_poll_timer);
+	timer_close(ntp_poll_timer);
 
 	return ENOERR;
 }

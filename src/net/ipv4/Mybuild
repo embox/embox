@@ -97,6 +97,7 @@ module udp {
 }
 
 module ntp {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ntp.c"
 
 	depends udp
