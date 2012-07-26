@@ -13,7 +13,6 @@
 #include <net/if.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <hal/ipl.h>
@@ -203,7 +202,6 @@ size_t netdev_hash(const char *name) {
 }
 
 static int unit_init(void) {
-	printf("net_table_sz %d\n", OPTION_GET(NUMBER,netdev_table_sz));
 	netdevs_table = hashtable_create(OPTION_GET(NUMBER,netdev_table_sz),
 			(get_hash_ft)&netdev_hash, (ht_cmp_ft)&strcmp);
 	if (netdevs_table == NULL) {
