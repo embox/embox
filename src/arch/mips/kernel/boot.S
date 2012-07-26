@@ -4,13 +4,14 @@
 
 	.section    ".text"
 	.align  4
- 	.weak hardware_init_hook
- 	.weak software_init_hook
+	.weak hardware_init_hook
+	.weak software_init_hook
 
 
 C_ENTRY(_start):
+	/* clean all registers */
 	.set noat
-	move    $1, $zero
+	move    $1, $zero /* $at */
 	.set at
 	move    $2, $zero
 	move    $3, $zero
@@ -42,34 +43,34 @@ C_ENTRY(_start):
 	move    $29, $zero
 	move    $30, $zero
 	move    $31, $zero
+	/* clean hi and lo registers */
 	mtlo    $zero
 	mthi    $zero
 
-
-/* setup stack pointer */
+	/* setup stack pointer */
 	PTR_LA  $sp, __stack
 
-	la     $a0, _bss_vma
-	move   $a1, $zero
-	la     $a2, _bss_len
-	jal   memset
+	PTR_LA  $a0, _bss_vma
+	move    $a1, $zero
+	PTR_LA  $a2, _bss_len
+	jal     memset
 	nop
 
-	la   $v0, _data_vma
-	la   $v1, _data_lma
-	beq    $v0, $v1, 1f
+	/* check whether copy data section */
+	PTR_LA  $v0, _data_vma
+	PTR_LA  $v1, _data_lma
+	beq     $v0, $v1, 1f
 	nop
-	/*data section*/
-	la   $a2, _data_len
-	la   $a1, _data_lma
-	la   $a0, _data_vma
-	jal   memcpy
+	/* copy data section*/
+	PTR_LA  $a2, _data_len
+	PTR_LA  $a1, _data_lma
+	PTR_LA  $a0, _data_vma
+	jal     memcpy
 	nop
 1:
-
-	jal       kernel_start
+	/* call C-code */
+	jal     kernel_start
 	nop
 
 	.section    ".text"
-	.align  4
-
+	.align      4

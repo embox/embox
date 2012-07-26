@@ -3,9 +3,13 @@
 #include <asm/entry.h>
 
 
-
+//http://linux.junsun.net/porting-howto/
+//http://winfred-lu.blogspot.com/2011/04/mips-exceptions-initialization-and.html
 //http://stackoverflow.com/questions/4211555/clock-implementation-in-mips
+
 C_ENTRY(_exeption):
+	SAVE_AT
+	SAVE_STATIC
 	SAVE_ALL
 
 	move $a0, $sp
@@ -16,16 +20,14 @@ C_ENTRY(_exeption):
 
 	RESTORE_ALL
 
-/* Do not use k0/k1 here, as interrupts are still enabled */
-	lw    $31, (16+PT_STATUS*4) ($sp)  /* K0 = saved status */
-	ori   $31, ST0_EXL                     /* Set EXL */
-	mtc0  $k0, $CP0_STATUS          /* put SR back: disable interrupts */
+	lw    $31, (16+PT_STATUS*4) ($sp) /* K0 = saved status */
+	ori   $31, ST0_EXL                /* Set EXL exception level */
+	mtc0  $k0, $CP0_STATUS            /* put CP0_STATUS back: disable interrupts */
 		ehb /* hazard barier */
 
 
-	lw    $k0, (16+PT_PC*4) ($sp)    /* K0 = EPC */
-	mtc0  $k0, $CP0_EPC                 /* put PC in EPC */
-//            ext     $k1, $31, 27, 1                 # get RP bit: single-step request
+	lw    $k0, (16+PT_PC*4) ($sp)     /* K0 = EPC */
+	mtc0  $k0, $CP0_EPC               /* put PC in EPC */
 
 	lw    $31, (16+PT_RA*4) ($sp)
 	lw    $sp, (16+PT_SP*4) ($sp)  /* Restore stack */
@@ -33,3 +35,4 @@ C_ENTRY(_exeption):
 	/* Return from exception */
 	ehb
 	rfe //eret   /* PC <= EPC; EXL <= 0 */
+	nop

@@ -8,7 +8,9 @@
 #ifndef MIPS_LINKAGE_H_
 #define MIPS_LINKAGE_H_
 
-#define C_ENTRY(name)	.globl name; .align 4; name
+//#include <asm/regdef.h>
+
+#define C_ENTRY(name) .globl name; .align 4; name
 
 
 #define PTR_ADD     add
@@ -46,8 +48,9 @@
 #define LONG        .word
 
 
-
-   /*
+//#define sp      $29     /* stack pointer */
+//#define ra      $r31    /* return address */
+/*
  * LEAF - declare leaf routine
  */
 #define LEAF(symbol)                        \
@@ -55,7 +58,7 @@
 	.align 2;                              \
 	.type  symbol, @function;              \
 	.ent   symbol, 0;                      \
-symbol:    .frame  sp, 0, ra
+symbol:    .frame  $sp, 0, $ra
 
 /*
  * NESTED - declare nested routine entry point

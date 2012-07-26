@@ -43,41 +43,43 @@ typedef struct pt_regs {
 /*
  * Offsets of register values in saved context.
  */
-#define PT_R1     0
-#define PT_R2     1
-#define PT_R3     2
-#define PT_R4     3
-#define PT_R5     4
-#define PT_R6     5
-#define PT_R7     6
-#define PT_R8     7
-#define PT_R9     8
-#define PT_R10    9
-#define PT_R11    10
-#define PT_R12    11
-#define PT_R13    12
-#define PT_R14    13
-#define PT_R15    14
-#define PT_R16    15
-#define PT_R17    16
-#define PT_R18    17
-#define PT_R19    18
-#define PT_R20    19
-#define PT_R21    20
-#define PT_R22    21
-#define PT_R23    22
-#define PT_R24    23
-#define PT_R25    24
-#define PT_GP     25
-#define PT_SP     26
-#define PT_FP     27
-#define PT_RA     28
-#define PT_LO     29
-#define PT_HI     30
-#define PT_STATUS 31
-#define PT_PC     32
+#define PT_R1     0x00
+#define PT_R2     0x04
+#define PT_R3     0x08
+#define PT_R4     0x0C
+#define PT_R5     0x10
+#define PT_R6     0x14
+#define PT_R7     0x16
+#define PT_R8     0x1C
+#define PT_R9     0x20
+#define PT_R10    0x24
+#define PT_R11    0x28
+#define PT_R12    0x2C
+#define PT_R13    0x30
+#define PT_R14    0x34
+#define PT_R15    0x38
+#define PT_R16    0x3C
+#define PT_R17    0x40
+#define PT_R18    0x44
+#define PT_R19    0x48
+#define PT_R20    0x4C
+#define PT_R21    0x50
+#define PT_R22    0x54
+#define PT_R23    0x58
+#define PT_R24    0x5C
+#define PT_R25    0x60
+#define PT_GP     0x64
+#define PT_SP     0x68
+#define PT_FP     0x6C
+#define PT_RA     0x70
 
-#define PT_WORDS  33
+#define PT_LO     0x74
+#define PT_HI     0x78
+#define PT_STATUS 0x7C
+#define PT_PC     0x80
+
+#define PT_SIZE   0x84
 #endif /* __ASSEMBLER__ */
+
 
 #endif /* MIPS_PTRACE_H_ */
