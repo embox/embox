@@ -9,6 +9,7 @@
 #include <math.h>
 #include <kernel/task/task_table.h>
 #include <kernel/task/signal.h>
+#include <kernel/thread/sched.h>
 #include "common.h"
 
 extern void context_enter_frame(struct context *ctx, void (*pc)(void));
@@ -16,8 +17,11 @@ extern void context_enter_frame(struct context *ctx, void (*pc)(void));
 void kill(int tid, int sig) {
 	struct task *task = task_table_get(tid);
 	struct task_signal_table *sig_table = task->signal_table;
+	struct thread *hnd_thread = member_cast_out(task->threads.next, struct thread, task_link);
 
 	sig_table->sig_mask |= 1 << sig;
+
+	/*sched_setrun(hnd_thread);*/
 }
 
 void signal(int sig, void (*hnd)(int)) {
@@ -40,7 +44,7 @@ static void task_signal_table_init(struct task *task, void *_signal_table) {
 }
 
 static void task_signal_table_inherit(struct task *task, struct task *parent_task) {
-	/* TODO Implement me */
+
 }
 
 static void task_signal_table_deinit(struct task *task) {

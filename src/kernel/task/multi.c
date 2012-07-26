@@ -69,9 +69,9 @@ int new_task(void *(*run)(void *), void *arg) {
 
 	/* init new task */
 
-	thread_set_task(thd, self_task);
-
 	task_init_parent(self_task, task_self());
+
+	thread_set_task(thd, self_task);
 
 	thread_detach(thd);
 
