@@ -8,6 +8,7 @@
 
 #include <asm/io.h>
 #include <fs/vfs.h>
+#include <fs/fat.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
 #include <embox/unit.h>
@@ -23,9 +24,7 @@ int ide_dev_quantity;
 
 static uint8_t num_dev;
 ide_ata_slot_t ide_ata_slot;
-/*
- * functions internal and private to this ATA drv
- */
+
 static int scan_drive(uint8_t *bus_number);
 static unsigned char pio_inbyte(int addr);
 static void pio_outbyte(int addr, unsigned char data);
@@ -40,7 +39,12 @@ static void read_identification (dev_ide_ata_identif_t *identif,
 								 uint32_t base_cmd_addr);
 static void read_id_string(uint8_t *p_data,
 		                   size_t size, uint32_t base_cmd_addr);
-
+static int set_lba_cmd(dev_ide_ata_t *drive);
+static int read_sectors_lba_cmd(dev_ide_ata_t *drive, unsigned long lba);
+static int set_sector_count_cmd(dev_ide_ata_t *drive,
+		                        unsigned char sect_count);
+static int read_sectors_lba(char *buff, dev_ide_ata_t *drive,
+						unsigned char sect_count, unsigned long lba);
 
 #define PCI_VENDOR_ID_INTEL 0x8086
 #define PCI_DEV_ID_INTEL_IDE_82371SB 0x7010
@@ -80,7 +84,7 @@ int ata_init(void) {
  *  number and type of drives attached.
  */
 ide_ata_slot_t *detection_drive(void) {
-	//pci_dev_t *pci_dev;
+	/*pci_dev_t *pci_dev; */
 	static uint8_t bus_num;
 
 	bus_num = num_dev = 0;
@@ -99,41 +103,19 @@ ide_ata_slot_t *detection_drive(void) {
 	return &ide_ata_slot;
 }
 
-/*
-static void base_regaddr_set(uint32_t addr,
-		uint32_t *base_cmd_addr, uint32_t *base_ctrl_addr) {
-
-	if(addr) {
-	   *base_cmd_addr = addr;
-	   if(PRIMARY_COMMAND_REG_BASE_ADDR == *base_cmd_addr) {
-		   *base_ctrl_addr = PRIMARY_CONTROL_REG_BASE_ADDR;
-	   }
-	   else if(SECONDARY_COMMAND_REG_BASE_ADDR == *base_cmd_addr) {
-		   *base_ctrl_addr = SECONDARY_CONTROL_REG_BASE_ADDR;
-	   }
-	   else if(THIRD_COMMAND_REG_BASE_ADDR == *base_cmd_addr) {
-		   *base_ctrl_addr = THIRD_CONTROL_REG_BASE_ADDR;
-	   }
-	   else if(FOURTH_COMMAND_REG_BASE_ADDR == *base_cmd_addr) {
-		   *base_ctrl_addr = FOURTH_CONTROL_REG_BASE_ADDR;
-	   }
-	}
-	else {
-	   *base_cmd_addr = PRIMARY_COMMAND_REG_BASE_ADDR;
-	   *base_ctrl_addr = PRIMARY_CONTROL_REG_BASE_ADDR;
-	}
-}
-*/
-
 static int scan_drive(uint8_t *bus_number) {
+	vol_info_t *volinfo;
+	mbr_t *mbr;
+	lbr_t *lbr;
+	char buff[1024];
+
    unsigned char read_reg;
-   uint16_t read_data;//, *p_data;
+   uint16_t read_data;
    unsigned char dev;
    int count;
    uint32_t base_cmd_addr, base_ctrl_addr;
    dev_ide_ata_t *dev_ide;
 
-   //base_regaddr_set(addr, &base_cmd_addr, &base_ctrl_addr);
    base_cmd_addr = ide_ata_slot.ide_bus[*bus_number].base_cmd_addr;
    base_ctrl_addr = ide_ata_slot.ide_bus[*bus_number].base_ctrl_addr;
 
@@ -191,6 +173,24 @@ static int scan_drive(uint8_t *bus_number) {
 			   dev_ide->base_cmd_addr = base_cmd_addr;
 			   dev_ide->base_ctrl_addr = base_ctrl_addr;
 			   //dev_ide->irq = irq;
+			   dev_ide->master_flg = dev;
+			   set_lba_cmd(dev_ide);
+			   for (int i=0; i<500; i++){
+				   read_sectors_lba(buff, dev_ide, 1, i);
+				   volinfo = (vol_info_t *)buff;
+				   if(volinfo->filesystem == FAT32){
+					   printf("!!!");
+				   }
+				   mbr = (mbr_t *)buff;
+				   if((mbr->sig_55 == 0x55) || (mbr->sig_55 != 0)) {
+					   printf("\nqwe");
+				   }
+
+				   lbr = (lbr_t *)buff;
+				   if((lbr->sig_55 == 0x55)|| (lbr->sig_55 != 0)) {
+					   printf("\newry");
+				   }
+			   }
 		   }
 	   }
 	   (*bus_number)++;
@@ -351,5 +351,77 @@ static unsigned long pio_indword(int addr) {
 static void pio_outdword(int addr, unsigned long data) {
 	// * ((unsigned long *) pio_reg_addrs[ addr ]) = data;
 	out32(data, addr);
+}
+*/
+
+static int set_lba_cmd(dev_ide_ata_t *drive) {
+	unsigned char data;
+
+	data = drive->master_flg | CB_LBA_MODE;
+
+	if(drive->identification.capabilities & LBA_SUPP) {
+		pio_outbyte(drive->base_cmd_addr + CB_DH, data);
+		return 0;
+	}
+	else {
+		return -1;
+	}
+}
+
+static int set_sector_count_cmd(dev_ide_ata_t *drive, unsigned char sect_count) {
+
+    pio_outbyte(drive->base_cmd_addr + CB_SC, sect_count);
+    return 0;
+}
+
+static  int read_sectors_lba_cmd(dev_ide_ata_t *drive, unsigned long lba) {
+
+    pio_outbyte(drive->base_cmd_addr + CB_LBA_000L, lba & 0xFF);
+    pio_outbyte(drive->base_cmd_addr + CB_LBA_00H0, (lba >> 8) & 0xFF);
+    pio_outbyte(drive->base_cmd_addr + CB_LBA_0L00, (lba >> 16) & 0xFF);
+    pio_outbyte(drive->base_cmd_addr + CB_LBA_H000, (lba >> 24) & 0xFF);
+
+    pio_outbyte(drive->base_cmd_addr + CB_CMD, CMD_READ_SECTORS);
+    usleep(10);
+	return 0;
+}
+
+static int read_sectors_lba(char *buff, dev_ide_ata_t *drive,
+		unsigned char sect_count, unsigned long lba) {
+	char *p_data;
+	uint16_t reg;
+	unsigned char count;
+
+	p_data = buff;
+	count = sect_count;
+	set_sector_count_cmd(drive, sect_count);
+	read_sectors_lba_cmd(drive, lba);
+	do {
+
+		for(int i =0; i < (drive->identification.bytes_pr_sect / 2); i++) {
+			reg = pio_inword(drive->base_cmd_addr + CB_DATA);
+			*p_data++ = reg & 0xFF;
+			*p_data++ = (reg >> 8) & 0xFF;
+		}
+
+	} while (--count);
+
+	return 0;
+}
+
+/*
+static int format_drive_cmd(dev_ide_ata_t *drive) {
+
+	return 0;
+}
+
+static int write_sector_lba_cmd(dev_ide_ata_t *drive, unsigned long lba) {
+
+	return 0;
+}
+
+static int seek_cmd(dev_ide_ata_t *drive) {
+
+	return 0;
 }
 */

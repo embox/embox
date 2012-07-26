@@ -18,6 +18,7 @@ static void print_usage(void) {
 }
 
 static void print_drive (ide_ata_slot_t *ide) {
+	double size;
 	for(int i  = 0; i < ide_dev_quantity; i++) {
 		printf("\nIDE Channel %d-%d: ", i/2, i%2);
 
@@ -35,6 +36,13 @@ static void print_drive (ide_ata_slot_t *ide) {
 			printf(" %s", ide->ide_bus[i].dev_ide_ata->identification.sn);
 			printf(" %s",
 				ide->ide_bus[i].dev_ide_ata->identification.model_numb);
+			size =
+			(double) ide->ide_bus[i].dev_ide_ata->identification.num_cyl *
+			(double) ide->ide_bus[i].dev_ide_ata->identification.num_head *
+			(double) ide->ide_bus[i].dev_ide_ata->identification.bytes_pr_sect *
+			(double) (ide->ide_bus[i].dev_ide_ata->identification.sect_pr_track + 1) /
+			1024 / 1024;
+			printf(" %5dM", (int)size);
 		}
 	}
 	printf("\n");

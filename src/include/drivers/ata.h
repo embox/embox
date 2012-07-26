@@ -47,6 +47,9 @@ typedef struct _dev_ide_ata_identif
 							    *     8 1=DMA supported
 							    *   7-0 Vendor unique
 							    */
+
+	#define DMA_SUPP (1 << 8)
+	#define LBA_SUPP (1 << 9)
 	uint16_t rsrv2;            /* Reserved */
 	uint16_t pio_timing_mode;  /* 15-8 PIO data transfer cycle timing mode
 							    *  7-0 Vendor unique
@@ -80,9 +83,10 @@ typedef struct _dev_ide_ata_identif
 } dev_ide_ata_identif_t;
 
 typedef struct _dev_ide_ata {
-	uint32_t base_cmd_addr;
-	uint32_t base_ctrl_addr;
+	int base_cmd_addr;
+	int base_ctrl_addr;
 	uint8_t  irq;
+	unsigned char master_flg;
 	char dev_name[MAX_LENGTH_FILE_NAME];
 	node_t *dev_node;
 	dev_ide_ata_identif_t identification;
@@ -184,6 +188,10 @@ extern int reg_config_info[2];
 #define CB_ASTAT 8   // alternate status in     ctrl_blk_base2+6
 #define CB_DC    8   // device control      out ctrl_blk_base2+6
 
+#define CB_LBA_000L    3   // LBA bits 0-7
+#define CB_LBA_00H0    4   // LBA bits 8-15
+#define CB_LBA_0L00    5   // LBA bits 16-23
+#define CB_LBA_H000    6   // LBA bits 24-27
 // error reg (CB_ERR) bits
 
 #define CB_ER_ICRC 0x80    // ATA Ultra DMA bad CRC
@@ -218,8 +226,9 @@ extern int reg_config_info[2];
 // #define CB_DH_DEV1 0xb0    // select device 1 (old definition)
 
 // bits 1-0 of the device adress (CB_DA) reg
-#define CB_DA_DS0 0x02    // selected device 0
-#define CB_DA_DS1 0x01    // selected device 1
+#define CB_DA_DS0 0x02    // selected device 0 Master
+#define CB_DA_DS1 0x01    // selected device 1 Slave
+#define CB_LBA_MODE 0x40; // L
 
 // status reg (CB_STAT and CB_ASTAT) bits
 
