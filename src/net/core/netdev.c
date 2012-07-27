@@ -45,7 +45,7 @@ struct net_device * netdev_get_by_name(const char *name) {
 	return hashtable_get(netdevs_table, (void *)name);
 }
 
-struct net_device * netdev_alloc(/*int sizeof_priv, */const char *name,
+struct net_device * netdev_alloc(const char *name,
 		void (*setup)(struct net_device *)) {
 	struct net_device *dev;
 
@@ -56,7 +56,7 @@ struct net_device * netdev_alloc(/*int sizeof_priv, */const char *name,
 		return NULL;
 	}
 
-	setup(dev);
+	(*setup)(dev);
 
 	dev->dev_queue.next = (struct sk_buff *)(&(dev->dev_queue));
 	dev->dev_queue.prev = (struct sk_buff *)(&(dev->dev_queue));
@@ -76,7 +76,7 @@ void netdev_free(struct net_device *dev) {
  * network device interface
  * -------------------------------
  */
-int dev_open(struct net_device *dev) {
+int netdev_open(struct net_device *dev) {
 	int res;
 	const struct net_device_ops *ops;
 
@@ -103,7 +103,7 @@ int dev_open(struct net_device *dev) {
 	return res;
 }
 
-int dev_close(struct net_device *dev) {
+int netdev_close(struct net_device *dev) {
 	int res;
 	const struct net_device_ops *ops;
 
@@ -129,19 +129,19 @@ int dev_close(struct net_device *dev) {
 	return res;
 }
 
-unsigned int dev_get_flags(const struct net_device *dev) {
+unsigned int netdev_get_flags(const struct net_device *dev) {
 	return dev->flags;
 }
 
-int dev_set_flags(struct net_device *dev, unsigned int flags) {
+int netdev_set_flags(struct net_device *dev, unsigned int flags) {
 	int res, old_flags;
 	int (*func)(struct net_device *);
 
 	res = ENOERR;
 	old_flags = dev->flags;
 	if ((old_flags ^ flags) & IFF_UP) { /* i.e. IFF_UP bit was inverted */
-		func = (flags & IFF_UP) ? &dev_open : &dev_close;
-		res = func(dev);
+		func = (flags & IFF_UP) ? &netdev_open : &netdev_close;
+		res = (*func)(dev);
 	}
 
 	dev->flags = flags;

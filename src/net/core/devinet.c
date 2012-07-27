@@ -248,7 +248,7 @@ int inet_dev_add_dev(struct net_device *dev) {
 		return -ENOMEM;
 	}
 
-	res = dev_open(dev);
+	res = netdev_open(dev);
 	if (res < 0) {
 		LOG_ERROR("ifdev up: can't open device with name %s\n", dev->name);
 		pool_free(&indev_info_pool, indev_info);
@@ -275,7 +275,7 @@ int inet_dev_remove_dev(struct in_device *in_dev) {
 
 	assert(indev_info->in_dev.dev != NULL);
 
-	res = dev_close(indev_info->in_dev.dev);
+	res = netdev_close(indev_info->in_dev.dev);
 	if (res < 0) {
 		LOG_ERROR("ifdev down: can't close device with name %s\n", in_dev->dev->name);
 		list_add_tail(&indev_info->lnk, &indev_info_list);

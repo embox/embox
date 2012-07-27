@@ -146,7 +146,7 @@ extern struct net_device * netdev_get_by_name(const char *name);
  * @param name device name format string
  * @param callback to initialize device
  */
-extern struct net_device * netdev_alloc(/*int sizeof_priv,*/const char *name,
+extern struct net_device * netdev_alloc(const char *name,
 		void (*setup)(struct net_device *));
 
 /**
@@ -199,26 +199,26 @@ extern void dev_remove_pack(packet_type_t *pt);
  * Pepare an interface for use.
  * @param dev device to open
  */
-extern int dev_open(struct net_device *dev);
+extern int netdev_open(struct net_device *dev);
 
 /**
  * Shutdown an interface.
  * @param dev device to close
  */
-extern int dev_close(struct net_device *dev);
+extern int netdev_close(struct net_device *dev);
 
 /**
  * Get flags from device.
  * @param dev device to get flags
  */
-extern unsigned int dev_get_flags(const struct net_device *dev);
+extern unsigned int netdev_get_flags(const struct net_device *dev);
 
 /**
  * Set the flags on device.
  * @param dev device to set flags
  * @param flags
  */
-extern int dev_set_flags(struct net_device *dev, unsigned flags);
+extern int netdev_set_flags(struct net_device *dev, unsigned flags);
 
 /**
  * this function call ip protocol,
