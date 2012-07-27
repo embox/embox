@@ -163,7 +163,7 @@ int netif_receive_skb(sk_buff_t *skb) {
 }
 
 static void net_rx_action(struct softirq_action *action) {
-	dev_rx_processing();
+	netdev_rx_processing();
 }
 
 
@@ -177,7 +177,7 @@ void netif_rx_schedule(struct sk_buff *skb) {
 
 	skb_queue_push(&(dev->dev_queue), skb);
 
-	dev_rx_queued(dev);
+	netdev_rx_queued(dev);
 
 	raise_softirq(NET_RX_SOFTIRQ);
 }

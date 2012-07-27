@@ -19,30 +19,21 @@
 #include <lib/list.h>
 #include <util/hashtable.h>
 #include <embox/unit.h>
-
-EMBOX_UNIT_INIT(unit_init);
-
 #include <framework/mod/options.h>
 
-static int process_backlog(struct net_device *dev);
+EMBOX_UNIT_INIT(netdev_init);
 
-POOL_DEF(netdev_pool, struct net_device, OPTION_GET(NUMBER,netdev_quantity));
+POOL_DEF(netdev_pool, struct net_device, OPTION_GET(NUMBER, netdev_quantity));
 struct hashtable *netdevs_table;
-static LIST_HEAD(rx_dev_queue);
 
-int netdev_register(struct net_device *dev) {
-	assert((dev != NULL) && (dev->name != NULL));
-	return hashtable_put(netdevs_table, (void *)dev->name, (void *)dev);
-}
+static int netdev_process_backlog(struct net_device *dev) {
+	struct sk_buff *skb;
 
-int netdev_unregister(struct net_device *dev) {
-	assert((dev != NULL) && (dev->name != NULL));
-	return hashtable_del(netdevs_table, (void *)dev->name);
-}
+	while ((skb = skb_queue_pop(&(dev->dev_queue))) != NULL) {
+		netif_receive_skb(skb);
+	}
 
-struct net_device * netdev_get_by_name(const char *name) {
-	assert(name != NULL);
-	return hashtable_get(netdevs_table, (void *)name);
+	return ENOERR;
 }
 
 struct net_device * netdev_alloc(const char *name,
@@ -60,7 +51,7 @@ struct net_device * netdev_alloc(const char *name,
 
 	dev->dev_queue.next = (struct sk_buff *)(&(dev->dev_queue));
 	dev->dev_queue.prev = (struct sk_buff *)(&(dev->dev_queue));
-	dev->poll = process_backlog;
+	dev->poll = &netdev_process_backlog;
 
 	strncpy(dev->name, name, sizeof dev->name);
 
@@ -72,10 +63,21 @@ void netdev_free(struct net_device *dev) {
 	pool_free(&netdev_pool, dev);
 }
 
-/*--------------------------------
- * network device interface
- * -------------------------------
- */
+int netdev_register(struct net_device *dev) {
+	assert((dev != NULL) && (dev->name != NULL));
+	return hashtable_put(netdevs_table, (void *)dev->name, (void *)dev);
+}
+
+int netdev_unregister(struct net_device *dev) {
+	assert((dev != NULL) && (dev->name != NULL));
+	return hashtable_del(netdevs_table, (void *)dev->name);
+}
+
+struct net_device * netdev_get_by_name(const char *name) {
+	assert(name != NULL);
+	return hashtable_get(netdevs_table, (void *)name);
+}
+
 int netdev_open(struct net_device *dev) {
 	int res;
 	const struct net_device_ops *ops;
@@ -122,7 +124,7 @@ int netdev_close(struct net_device *dev) {
 		dev->state |= __LINK_STATE_START;
 	} else {
 		/* Device is now down. */
-		/*TODO: IFF_RUNNING sets not here*/
+		/* TODO: IFF_RUNNING sets not here*/
 		dev->flags &= ~(IFF_UP | IFF_RUNNING);
 	}
 
@@ -149,50 +151,7 @@ int netdev_set_flags(struct net_device *dev, unsigned int flags) {
 	return res;
 }
 
-
-/*------------------------------------------------
- *  data processing
- *  --------------------------------------------- */
-static int process_backlog(struct net_device *dev) {
-	struct sk_buff *skb;
-
-	while ((skb = skb_queue_pop(&(dev->dev_queue))) != NULL) {
-		netif_receive_skb(skb);
-	}
-
-	return ENOERR;
-}
-
-void dev_rx_queued(struct net_device *dev) {
-	ipl_t sp;
-
-	sp = ipl_save();
-	if((NULL == dev->rx_dev_link.next) && (NULL == dev->rx_dev_link.prev)) {
-		list_add_tail(&dev->rx_dev_link, &rx_dev_queue);
-	}
-	ipl_restore(sp);
-}
-
-void dev_rx_dequeued(struct net_device *dev) {
-	ipl_t sp;
-
-	sp = ipl_save();
-
-	list_del(&dev->rx_dev_link);
-
-	ipl_restore(sp);
-}
-
-void dev_rx_processing(void) {
-	struct net_device *dev, *save;
-
-	list_for_each_entry_safe(dev, save, &rx_dev_queue, rx_dev_link) {
-		dev->poll(dev);
-		dev_rx_dequeued(dev);
-	}
-}
-
-size_t netdev_hash(const char *name) {
+static size_t netdev_hash(const char *name) {
 	size_t hash;
 	hash = 0;
 	while (*name != '\0') {
@@ -201,7 +160,7 @@ size_t netdev_hash(const char *name) {
 	return hash;
 }
 
-static int unit_init(void) {
+static int netdev_init(void) {
 	netdevs_table = hashtable_create(OPTION_GET(NUMBER,netdev_table_sz),
 			(get_hash_ft)&netdev_hash, (ht_cmp_ft)&strcmp);
 	if (netdevs_table == NULL) {

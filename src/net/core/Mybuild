@@ -3,7 +3,7 @@ package embox.net
 abstract module entry_api { }
 
 module dev {
-	source "netdev.c"
+	source "netdev.c", "netdev_process.c"
 	option number netdev_quantity=8
 	option number netdev_table_sz=3
 

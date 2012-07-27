@@ -242,20 +242,20 @@ extern int dev_queue_xmit(sk_buff_t *pack);
  * must be processed
  * @param dev - net_device to be processed
  */
-extern void dev_rx_queued(struct net_device *dev);
+extern void netdev_rx_queued(struct net_device *dev);
 
 /**
  * this function remove `dev` from queue of device
  * that have received packages
  * @param dev - net_device to be processed
  */
-extern void dev_rx_queued(struct net_device *dev);
+extern void netdev_rx_queued(struct net_device *dev);
 
 /**
  * this function processing a device which had received
  * packages
  */
-extern void dev_rx_processing(void);
+extern void netdev_rx_processing(void);
 
 /**
  * function must call from net drivers when packet was received
