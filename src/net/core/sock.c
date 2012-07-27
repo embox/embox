@@ -14,7 +14,9 @@
 #include <mem/misc/pool.h>
 #include <hal/ipl.h>
 
-#define LOWER_BOUND 1 // lower bound of sockets count
+#include <framework/mod/options.h>
+
+#define MODOPS_MIN_AMOUNT_SOCK OPTION_GET(NUMBER, min_amount_sock)
 
 #if 0
 typedef struct sock_info {
@@ -45,7 +47,8 @@ static struct sock * sk_prot_alloc(struct proto *prot, gfp_t priority) {
 	}
 	else {
 		if (prot->cachep == NULL) {
-			prot->cachep = cache_create(prot->name, prot->obj_size, LOWER_BOUND);
+			prot->cachep = cache_create(prot->name, prot->obj_size,
+					MODOPS_MIN_AMOUNT_SOCK);
 		}
 		if (prot->cachep != NULL) {
 			sk = cache_alloc(prot->cachep);

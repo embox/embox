@@ -23,7 +23,7 @@
 
 EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, true);
 
-OBJALLOC_DEF(objalloc_tcp_socks, struct tcp_sock, CONFIG_MAX_KERNEL_SOCKETS); /* Allocator for tcp_sock structure */
+OBJALLOC_DEF(objalloc_tcp_socks, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK); /* Allocator for tcp_sock structure */
 
 
 /************************ Socket's functions ***************************/
@@ -397,7 +397,7 @@ static void tcp_v4_hash(struct sock *sk) {
 	size_t i;
 
 	debug_print(4, "tcp_v4_hash: sk 0x%p\n", sk);
-	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; ++i) {
+	for (i = 0; i < sizeof tcp_table / sizeof tcp_table[0]; ++i) {
 		if (tcp_table[i] == NULL) {
 			tcp_table[i] = (struct tcp_sock *)sk;
 			break;
@@ -409,7 +409,7 @@ static void tcp_v4_unhash(struct sock *sk) {
 	size_t i;
 
 	debug_print(4, "tcp_v4_unhash: sk 0x%p\n", sk);
-	for (i = 0; i< CONFIG_MAX_KERNEL_SOCKETS; ++i) {
+	for (i = 0; i < sizeof tcp_table / sizeof tcp_table[0]; ++i) {
 		if (tcp_table[i] == (struct tcp_sock *)sk) {
 			tcp_table[i] = NULL;
 			break;

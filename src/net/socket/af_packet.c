@@ -15,6 +15,10 @@
 #include <net/ip.h>
 #include <stdlib.h>
 
+#include <framework/mod/options.h>
+
+#define MODOPS_AMOUNT_SOCKETS OPTION_GET(NUMBER, amount_sockets)
+
 EMBOX_NET_PACK(ETH_P_ALL, ip_rcv, packet_init);
 
 struct packet_sock {
@@ -26,7 +30,7 @@ struct packet_sock {
 static const struct proto_ops packet_proto_ops;
 static const struct proto packet_proto;
 
-static struct packet_sock *packet_table[CONFIG_MAX_KERNEL_SOCKETS];
+static struct packet_sock *packet_table[MODOPS_AMOUNT_SOCKETS];
 
 static void packet_hash(struct sock *sk) {
 	size_t i;
@@ -107,3 +111,4 @@ static const struct proto packet_proto = {
 static int packet_init(void) {
 	return sock_register(&packet_family_ops);
 }
+

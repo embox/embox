@@ -3,10 +3,11 @@ package embox.net
 abstract module entry_api { }
 
 module dev {
+	source "netdev.c"
 	option number netdev_quantity=8
 	option number netdev_table_sz=3
 
-	source "netdev.c", "netdev_process.c"
+	source "netdev_process.c"
 
 	depends skbuff
 	depends embox.lib.LibC
@@ -40,16 +41,16 @@ module skbuff {
 }
 
 module core {
+	source "inetdev.c"
 	option number net_callback_quantity=16
 	option number net_interfaces_quantity=4
-
-	source "inetdev.c"
 
 	depends dev /* for dev.c */
 	depends embox.mem.pool
 	depends embox.lib.LibC
 
 	source "sock.c"
+	option number min_amount_sock=1
 
 	depends skbuff
 	depends embox.mem.slab
@@ -57,9 +58,8 @@ module core {
 }
 
 module neighbour {
-	option number arp_cache_size=16
-
 	source "neighbour.c"
+	option number arp_cache_size=16
 
 	depends embox.mem.pool
 	depends embox.lib.LibC

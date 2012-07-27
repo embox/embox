@@ -20,7 +20,7 @@
 
 EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
 
-struct udp_sock *udp_table[CONFIG_MAX_KERNEL_SOCKETS];
+struct udp_sock *udp_table[MODOPS_AMOUNT_UDP_SOCK];
 
 /* static method for getting socket index in hash table */
 static int _udp_v4_get_hash_idx(struct sock *sk) {
@@ -145,3 +145,4 @@ void udp_err(sk_buff_t *skb, uint32_t info) {
 void * get_udp_sockets(void) {
 	return (void *)udp_table;
 }
+

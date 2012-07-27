@@ -17,6 +17,11 @@
 #include <sys/types.h>
 #include <net/if_ether.h>
 
+#include <framework/mod/options.h>
+#include <module/embox/net/tcp_sock.h>
+
+#define MODOPS_AMOUNT_TCP_SOCK OPTION_MODULE_GET(embox__net__tcp_sock, NUMBER, amount_tcp_sock)
+
 typedef struct tcphdr {
 	__be16 source;
 	__be16 dest;
@@ -145,7 +150,7 @@ static inline struct tcphdr * tcp_hdr(const struct sk_buff *skb) {
 
 extern void * get_tcp_sockets(void);
 extern const struct proto tcp_prot;
-extern struct tcp_sock *tcp_table[CONFIG_MAX_KERNEL_SOCKETS];
+extern struct tcp_sock *tcp_table[MODOPS_AMOUNT_TCP_SOCK];
 
 /* Others functionality */
 extern void tcp_free_sock(union sock_pointer sock);

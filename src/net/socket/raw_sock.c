@@ -19,13 +19,16 @@
 #include <err.h>
 #include <assert.h>
 
+#include <framework/mod/options.h>
+
+#define MODOPS_AMOUNT_RAW_SOCK OPTION_GET(NUMBER, amount_raw_sock)
 
 static struct proto raw_prot;
 
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_IP, raw_prot, inet_raw_ops, 0, true);
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, raw_prot, inet_raw_ops, 0, false);
 
-static struct raw_sock *raw_table[CONFIG_MAX_KERNEL_SOCKETS];
+static struct raw_sock *raw_table[MODOPS_AMOUNT_RAW_SOCK];
 
 static int raw_rcv_skb(struct sock *sk, struct sk_buff *skb);
 

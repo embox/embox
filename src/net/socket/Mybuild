@@ -2,6 +2,7 @@ package embox.net
 
 module tcp_sock {
 	source "tcp_sock.c"
+	option number amount_tcp_sock=20
 
 	depends tcp
 	depends route
@@ -13,6 +14,7 @@ module tcp_sock {
 
 module udp_sock {
 	source "udp_sock.c"
+	option number amount_udp_sock=20
 
 	depends udp
 	depends route
@@ -30,6 +32,7 @@ module raw_sock {
 	 * 3.it depends from udp
 	 */
 	source "raw_sock.c"
+	option number amount_raw_sock=20
 
 	depends skbuff
 	depends core /* for sock.c */
@@ -56,6 +59,7 @@ module af_inet {
 
 module af_packet {
 	source "af_packet.c"
+	option number amount_sockets=20
 
 	depends core /* for sock.c */
 	depends socket /* for socket_repo.c */
@@ -77,6 +81,7 @@ module socket {
 	/* depends from socket_registry.c */
 
 	source "socket_allocator.c"
+	option number amount_socket=20
 	depends embox.mem.pool
 
 	source "socket_options.c"

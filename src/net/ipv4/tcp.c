@@ -30,9 +30,7 @@
 #include <kernel/time/time_types.h>
 #include <kernel/time/ktime.h>
 
-
 EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
-
 
 /** TODO
  * +1. Create default socket for resetting
@@ -65,7 +63,7 @@ typedef int (*tcp_handler_t)(union sock_pointer sock,
 		struct sk_buff **skb, struct tcphdr *tcph, struct tcphdr *out_tcph);
 
 
-struct tcp_sock *tcp_table[CONFIG_MAX_KERNEL_SOCKETS]; /* All TCP sockets in system */
+struct tcp_sock *tcp_table[MODOPS_AMOUNT_TCP_SOCK]; /* All TCP sockets in system */
 static union sock_pointer tcp_sock_default; /* Default socket for TCP protocol. */
 static struct sys_timer tcp_tmr_default; /* Timer structure for rexmitting or TIME-WAIT satate */
 

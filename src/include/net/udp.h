@@ -11,6 +11,11 @@
 
 #include <net/inet_sock.h>
 
+#include <framework/mod/options.h>
+#include <module/embox/net/udp_sock.h>
+
+#define MODOPS_AMOUNT_UDP_SOCK OPTION_MODULE_GET(embox__net__udp_sock, NUMBER, amount_udp_sock)
+
 struct sock;
 
 typedef struct udphdr {
@@ -53,7 +58,7 @@ extern int udp_disconnect(struct sock *sk, int flags);
 
 extern void *get_udp_sockets(void);
 
-extern struct udp_sock *udp_table[CONFIG_MAX_KERNEL_SOCKETS];
+extern struct udp_sock *udp_table[MODOPS_AMOUNT_UDP_SOCK];
 extern const struct proto udp_prot;
 
 #endif /* NET_UDP_H_ */
