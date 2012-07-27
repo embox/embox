@@ -113,6 +113,9 @@ free_item:
 int arp_queue_add(struct sk_buff *skb) {
 	int res;
 	struct arp_queue_item *waiting_item;
+	struct iphdr *iph;
+
+	iph = ip_hdr(skb);
 
 	softirq_lock();
 
@@ -123,7 +126,7 @@ int arp_queue_add(struct sk_buff *skb) {
 
 	waiting_item->was_posted = get_msec();
 	waiting_item->skb = skb;
-	waiting_item->dest_ip = skb->nh.iph->daddr;
+	waiting_item->dest_ip = iph->daddr;
 
 	res = hashtable_put(arp_queue_table, (void *)&waiting_item->dest_ip, (void *)waiting_item);
 	if (res < 0) {
@@ -132,6 +135,12 @@ int arp_queue_add(struct sk_buff *skb) {
 	}
 
 	softirq_unlock();
+
+	res = arp_send(ARPOP_REQUEST, ETH_P_ARP, skb->dev, iph->daddr, iph->saddr, NULL,
+			skb->dev->dev_addr, NULL);
+	if (res < 0) {
+		return res;
+	}
 
 	return ENOERR;
 }

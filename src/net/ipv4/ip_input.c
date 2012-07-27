@@ -106,11 +106,6 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	}
 	skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(iph);
 
-	/* Have we it in the neighbors table? */
-	if (neighbour_lookup(in_dev_get(dev), iph->saddr) == NULL) {
-		neighbour_add(in_dev_get(dev), iph->saddr, skb->mac.ethh->h_source, ATF_COM);
-	}
-
 	/* When a packet is received, it is passed to any raw sockets
 	 * which have been bound to its protocol or to socket with concrete protocol */
 	raw_rcv(skb);

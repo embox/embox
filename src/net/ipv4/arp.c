@@ -120,24 +120,21 @@ int arp_send(int type, int ptype, struct net_device *dev,
 	return arp_xmit(skb);
 }
 
-int arp_resolve(sk_buff_t *pack) {
-	int res;
+int arp_resolve(struct sk_buff *skb) {
 	uint8_t *hw_addr;
-	net_device_t *dev;
 	iphdr_t *ip;
 
-	ip = pack->nh.iph;
+	ip = skb->nh.iph;
 	/* loopback */
 	if (ipv4_is_loopback(ip->daddr) || (ip->daddr == ip->saddr)) {
-		memset(pack->mac.ethh->h_dest, 0x00, ETH_ALEN);
+		memset(skb->mac.ethh->h_dest, 0x00, ETH_ALEN);
 		return ENOERR;
 	}
 	/* broadcast */
 	if (ip->daddr == htonl(INADDR_BROADCAST)) {
-		memset(pack->mac.ethh->h_dest, 0xFF, ETH_ALEN);
+		memset(skb->mac.ethh->h_dest, 0xFF, ETH_ALEN);
 		return ENOERR;
 	}
-	dev = pack->dev;
 #if 0
 	/* our machine on our device? */
 	if (ip->daddr == inet_dev_get_ipaddr(in_dev_get(dev))){
@@ -146,16 +143,10 @@ int arp_resolve(sk_buff_t *pack) {
 	}
 #endif
 	/* someone on the net */
-	hw_addr = neighbour_lookup(in_dev_get(dev), ip->daddr);
+	hw_addr = neighbour_lookup(in_dev_get(skb->dev), ip->daddr);
 	if (hw_addr != NULL) {
-		memcpy(pack->mac.ethh->h_dest, hw_addr, ETH_ALEN);
+		memcpy(skb->mac.ethh->h_dest, hw_addr, ETH_ALEN);
 		return ENOERR;
-	}
-
-	res = arp_send(ARPOP_REQUEST, ETH_P_ARP, dev, ip->daddr, ip->saddr, NULL,
-			dev->dev_addr, NULL);
-	if (res < 0) {
-		return res;
 	}
 
 	return -ENOENT;
