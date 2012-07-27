@@ -10,6 +10,8 @@
 
 #include <types.h>
 #include <kernel/time/time.h>
+#include <net/skbuff.h>
+#include <net/socket.h>
 
 struct s_ntpdata {
 	__u16 sec;
@@ -76,7 +78,7 @@ extern int ntp_receive(struct sock *sk, struct sk_buff *skb);
 extern struct timespec ntp_delay(struct ntphdr *ntp);
 extern int ntp_start(void);
 extern int ntp_stop(void);
-
+void ntp_server_set(uint32_t s_addr);
 
 static inline struct timespec ntp_to_timespec(struct l_ntpdata ld) {
 	struct timespec ts;
