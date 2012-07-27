@@ -97,35 +97,6 @@ void skb_free(struct sk_buff *skb) {
 	ipl_restore(sp);
 }
 
-#if 0
-/**
- * Split buffer to skb queue
- */
-/* FIXME size must be less then CONFIG_ETHERNET_V2_FRAME_SIZE */
-struct sk_buff * buff_to_skb(unsigned char *buff, unsigned int size) {
-	struct sk_buff *skb;
-
-
-	if ((buff == NULL) || (size == 0)) {
-		return NULL;
-	}
-
-	skb = skb_alloc(size);
-	if (skb == NULL) {
-		return NULL;
-	}
-
-	memcpy(skb->mac.raw, buff, size * sizeof(unsigned char));
-	skb->protocol = ntohs(skb->mac.ethh->h_proto);
-	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
-	if (skb->protocol == ETH_P_IP) {
-		skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(skb->nh.iph);
-	}
-
-	return skb;
-}
-#endif
-
 static void skb_copy_data(struct sk_buff *to, const struct sk_buff *from) {
 	assert((to->mac.raw != NULL) && (from->mac.raw != NULL));
 	memcpy(to->mac.raw, from->mac.raw, from->len);
