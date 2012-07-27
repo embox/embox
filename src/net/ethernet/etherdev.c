@@ -79,14 +79,14 @@ int etherdev_set_broadcast_addr(struct net_device *dev, unsigned char *broadcast
 	assert(broadcast_addr != NULL);
 
 	memcpy((void *)dev->broadcast, (void *)broadcast_addr, ETH_ALEN);
-	LOG_ERROR("not realized\n");
 
-	return 0;
+	return ENOERR;
 }
 
 static void etherdev_setup(struct net_device *dev) {
 	assert(dev != NULL);
-	dev->header_ops    = get_eth_header_ops();
+
+	dev->header_ops    = eth_get_header_ops();
 	dev->type          = ARPHRD_ETHER;
 	dev->mtu           = ETH_FRAME_LEN;
 	dev->addr_len      = ETH_ALEN;
@@ -99,7 +99,8 @@ struct net_device * etherdev_alloc(void) {
 	char buff[IFNAMSIZ];
 
 	sprintf(buff, "eth%u", etherdev_idx++); /* TODO use snprintf instead */
-	return netdev_alloc(buff, etherdev_setup);
+
+	return netdev_alloc(buff, &etherdev_setup);
 }
 
 void etherdev_free(struct net_device *dev) {

@@ -64,7 +64,7 @@ static void loopback_setup(struct net_device *dev) {
 	dev->type               = ARPHRD_LOOPBACK;
 	dev->flags              = IFF_LOOPBACK;
 	dev->netdev_ops         = &loopback_ops;
-	dev->header_ops         = get_eth_header_ops();
+	dev->header_ops         = eth_get_header_ops();
 }
 
 struct net_device *loopback_dev;
@@ -73,7 +73,7 @@ struct net_device *loopback_dev;
  */
 static int __init unit_init(void) {
 
-	loopback_dev = netdev_alloc(/*0, */"lo", loopback_setup);
+	loopback_dev = netdev_alloc("lo", &loopback_setup);
 	if (loopback_dev == NULL) {
 		LOG_ERROR("Can't allocate net device\n");
 		return -ENOMEM;
@@ -81,3 +81,4 @@ static int __init unit_init(void) {
 
 	return netdev_register(loopback_dev);
 }
+

@@ -89,9 +89,9 @@ enum {
  */
 
 /**
- * get_eth_header_ops - returns methods for working with ethernet header
+ * eth_get_header_ops - returns methods for working with ethernet header
  */
-extern const struct header_ops * get_eth_header_ops(void);
+extern const struct header_ops * eth_get_header_ops(void);
 
 /**
  * eth_packet_type - determine the packet type (See above)
@@ -99,11 +99,6 @@ extern const struct header_ops * get_eth_header_ops(void);
  * (at least LL info and incoming device)
  */
 extern uint8_t eth_packet_type(struct sk_buff *skb);
-
-/**
- * Determine the packet's protocol ID.
- */
-extern __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev);
 
 /**
  * Functions provided by etherdev.c
