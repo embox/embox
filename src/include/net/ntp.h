@@ -74,7 +74,6 @@ typedef struct ntphdr {
 extern int ntp_client_xmit(int sock, struct sockaddr_in *dst);
 extern int ntp_receive(struct sock *sk, struct sk_buff *skb);
 extern struct timespec ntp_delay(struct ntphdr *ntp);
-extern int ntp_offset(struct ntphdr *ntp);
 extern int ntp_start(void);
 extern int ntp_stop(void);
 

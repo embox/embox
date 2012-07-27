@@ -20,7 +20,6 @@
 
 #define MIN_POLL 2 /* By RFC 4330 minimum poll interval is about 15 seconds */
 #define MAX_POLL 16
-#define NTPD_RUNNING_TIME 60
 
 static char kod[3][4] = {"DENY", "RSTR", "RATE"};
 
@@ -32,7 +31,7 @@ static int ntp_sock;
 static struct sockaddr_in available_server;
 /* Periodical timer for sending new request each tick */
 static sys_timer_t *ntp_poll_timer;
-static bool is_server_reply = false;
+//static bool is_server_reply = false;
 
 static inline void ntp_data_ntohs(struct s_ntpdata *data) {
 	data->sec = ntohs(data->sec);
@@ -55,7 +54,7 @@ static void ntp_ntoh(struct ntphdr *ntp) {
 }
 
 static inline bool is_ntp_sock(struct sock *sk) {
-	return (inet_sk(sk)->sport == NTP_SERVER_PORT ? true : false);
+	return (inet_sk(sk)->sport == htons(NTP_SERVER_PORT) ? true : false);
 }
 
 int ntp_client_xmit(int sock, struct sockaddr_in *dst) {
@@ -136,6 +135,8 @@ int ntp_receive(struct sock *sk, struct sk_buff *skb) {
 		if (strcmp((char *)&r->refid, kod[2])) {
 			if (client_config.poll > MIN_POLL)
 				client_config.poll--;
+			else
+				available_server.sin_addr.s_addr = 0;
 		} else if (strcmp((char *)&r->refid, kod[0]) ||
 				strcmp((char *)&r->refid, kod[1])) {
 			available_server.sin_addr.s_addr = 0;
@@ -174,20 +175,30 @@ struct timespec ntp_delay(struct ntphdr *ntp) {
 	return res;
 }
 
-int ntp_offset(struct ntphdr *ntp) {
-	return 0;
+struct timespec ntp_offset(struct ntphdr *ntp) {
+	struct timespec client_r, server_x, server_r, client_x, res;
+
+	gettimeofday(&client_r, NULL);
+	client_x = ntp_to_timespec(ntp->org_ts);
+	server_x = ntp_to_timespec(ntp->xmt_ts);
+	server_r = ntp_to_timespec(ntp->rec_ts);
+
+	res = timespec_sub(server_r, client_x);
+	res = timespec_add(res, timespec_sub(server_x, client_r));
+
+	res.tv_sec /= 2;
+	res.tv_nsec /= 2;
+	return res;
 }
 
 static void send_request(struct sys_timer *timer, void *param) {
 	if (available_server.sin_addr.s_addr) {
-		if (0 > ntp_client_xmit(ntp_sock, &available_server))
-			is_server_reply = true;
+		ntp_client_xmit(ntp_sock, &available_server);
 	}
 }
 
 int ntp_start(void) {
 	struct sockaddr_in our;
-	int sec = NTPD_RUNNING_TIME;
 
 	available_server.sin_port = NTP_SERVER_PORT;
 	client_config.poll = MAX_POLL;
@@ -212,10 +223,6 @@ int ntp_start(void) {
 			send_request, NULL)) {
 		prom_printf("Can't to initialize NTP timer");
 		return -ENOENT;
-	}
-
-	while (sec--) {
-		usleep(1000);
 	}
 
 	return ENOERR;

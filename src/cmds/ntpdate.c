@@ -32,7 +32,7 @@ static void wake_on_server_resp(struct sys_timer *timer, void *param) {
 	*(int*)param = false;
 }
 
-int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r) {
+int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r, bool query) {
 	int sock, res;
 	struct sockaddr_in our, dst;
 	struct sys_timer ntp_timer;
@@ -51,9 +51,14 @@ int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r) {
 	socket_set_encap_recv(sock, ntp_receive);
 
 	our.sin_family = AF_INET;
-	/* FIXME */
-	our.sin_port = htons(768);
 	our.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if (!query) {
+		our.sin_port = htons(NTP_SERVER_PORT);
+	} else {
+		/* FIXME */
+		our.sin_port = htons(768);
+	}
 
 	res = bind(sock, (struct sockaddr *)&our, sizeof(our));
 
@@ -76,16 +81,14 @@ int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r) {
 	while (0 >= (res = recvfrom(sock, r, sizeof(struct ntphdr), 0, NULL, NULL))
 			&& wait_response);
 
-	close(sock);
 	timer_close(&ntp_timer);
 
 	if (res <= 0) {
 		printf("Server timeout\n");
-		timer_close(&ntp_timer);
 		goto error;
 	}
 
-	return ENOERR;
+	res = ENOERR;
 
 error:
 	close(sock);
@@ -95,7 +98,7 @@ error:
 static int exec(int argc, char **argv) {
 	int opt;
 	struct ntphdr r;
-	struct timespec ts, delay;
+	struct timespec delay;
 	bool query = false;
 	uint32_t ntp_server_timeout = DEFAULT_WAIT_TIME;
 
@@ -122,18 +125,14 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	if (0 > ntpdate_common(argv[argc - 1], ntp_server_timeout, &r)) {
+	if (0 > ntpdate_common(argv[argc - 1], ntp_server_timeout, &r, query)) {
 		return 0;
 	}
 
-	delay = ntp_delay(&r);
-	printf("server %s, stratum %d, delay %d:%d (s:ms)\n", argv[argc - 1], (int)(r.stratum),
-			(int)delay.tv_sec, (int)delay.tv_nsec / 1000);
-
-	if (!query) {
-		ts = ntp_to_timespec(r.xmt_ts);
-		ts = timespec_add(ts, delay);
-		settimeofday(&ts, NULL);
+	if (query) {
+		delay = ntp_delay(&r);
+		printf("server %s, stratum %d, delay %d:%d (s:ms)\n", argv[argc - 1], (int)(r.stratum),
+				(int)delay.tv_sec, (int)delay.tv_nsec / 1000);
 	}
 
 	return 0;
