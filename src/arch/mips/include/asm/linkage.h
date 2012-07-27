@@ -68,7 +68,7 @@ symbol:    .frame  $sp, 0, $ra
 	.align 2;                             \
 	.type  symbol, @function;              \
 	.ent   symbol, 0;                       \
-symbol:    .frame sp, framesize, rpc
+symbol:    .frame $sp, framesize, rpc
 
 
 /*

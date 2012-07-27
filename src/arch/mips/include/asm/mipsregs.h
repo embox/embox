@@ -34,6 +34,9 @@
 #define ST0_IE       0x00000001
 #define ST0_EXL      0x00000002
 #define ST0_ERL      0x00000004
+#define ST0_BEV      1 << 22
+
+#define CAUSE_IV     1 << 23
 
 
 #define __read_32bit_c0_register(source, sel)				\
