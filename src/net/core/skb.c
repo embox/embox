@@ -14,11 +14,14 @@
 #include <string.h>
 #include <compiler.h>
 #include <framework/mod/options.h>
-
 #include <lib/list.h>
 
-POOL_DEF(skb_pool, struct sk_buff, OPTION_GET(NUMBER,skb_quantity));
-POOL_DEF(net_buff_pool, unsigned char[SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE], CONFIG_PACK_POOL_SIZE);
+#define MODOPS_AMOUNT_SKB      OPTION_GET(NUMBER, amount_skb)
+#define MODOPS_AMOUNT_SKB_BUFF OPTION_GET(NUMBER, amount_skb_buff)
+#define MODOPS_SKB_BUFF_SIZE   OPTION_GET(NUMBER, skb_buff_size)
+
+POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
+POOL_DEF(net_buff_pool, unsigned char[SK_BUF_EXTRA_HEADROOM + MODOPS_SKB_BUFF_SIZE], MODOPS_AMOUNT_SKB_BUFF);
 
 static unsigned char * net_buff_alloc(void) {
 	ipl_t sp;
@@ -46,7 +49,7 @@ struct sk_buff * skb_alloc(unsigned int size) {
 	struct sk_buff *skb;
 	unsigned char *head;
 
-	if ((size == 0) || (size > CONFIG_ETHERNET_V2_FRAME_SIZE)) {
+	if ((size == 0) || (size > MODOPS_SKB_BUFF_SIZE)) {
 		return NULL;
 	}
 
@@ -161,8 +164,8 @@ struct sk_buff * skb_duplicate(struct sk_buff *skb) {
 
 struct sk_buff *skb_checkcopy_expand(struct sk_buff *skb, int headroom, int tailroom, gfp_t priority) {
 	int free_headroom = skb->mac.raw - skb->head;
-	int free_tailroom = SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE - (free_headroom + skb->len);
-	int free_space = SK_BUF_EXTRA_HEADROOM + CONFIG_ETHERNET_V2_FRAME_SIZE - (skb->len + headroom + tailroom);
+	int free_tailroom = SK_BUF_EXTRA_HEADROOM + MODOPS_SKB_BUFF_SIZE - (free_headroom + skb->len);
+	int free_space = SK_BUF_EXTRA_HEADROOM + MODOPS_SKB_BUFF_SIZE - (skb->len + headroom + tailroom);
 
 		/* Stupid situations during shrink */
 	assert(((long)(-headroom)) < ((long)skb->len + (long)tailroom));
@@ -194,3 +197,4 @@ void skb_shifthead(struct sk_buff *skb, int headshift) {
 	assert((int)skb->len >= (-headshift));
 	skb->len += headshift;
 }
+

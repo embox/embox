@@ -10,13 +10,11 @@
 #include <mem/misc/pool.h>
 #include <assert.h>
 #include <framework/mod/options.h>
-
 #include <lib/list.h>
 
+#define MODOPS_AMOUNT_SKB_QUEUE OPTION_GET(NUMBER, amount_skb_queue)
 
-
-
-POOL_DEF(skb_queue_pool, struct sk_buff_head, OPTION_GET(NUMBER,skb_queue_quantity));
+POOL_DEF(skb_queue_pool, struct sk_buff_head, MODOPS_AMOUNT_SKB_QUEUE);
 
 struct sk_buff_head * skb_queue_alloc(void) {
 	ipl_t sp;
@@ -87,10 +85,11 @@ struct sk_buff * skb_queue_pop(struct sk_buff_head *queue) {
 
 	skb = skb_queue_front(queue);
 	if (skb != NULL) {
-		list_del_init((struct list_head *)skb); // TODO use list_del
+		list_del_init((struct list_head *)skb);
 	}
 
 	ipl_restore(sp);
 
 	return skb;
 }
+

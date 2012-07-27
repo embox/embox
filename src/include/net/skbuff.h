@@ -121,15 +121,16 @@ typedef struct sk_buff {        /* Socket buffer */
 
 /**
  * Allocate one instance of structure sk_buff. With pointed size and flags.
- * @return If size is more then mtu (now it is defined by macros
- * CONFIG_ETHERNET_V2_FRAME_SIZE) function will return queue of sk_buff.
- * Else function return single sk_buff.
+ * @return If size is more then mtu (now it is defined by module option
+ * skb_buff_size) function will return queue of sk_buff. Else function
+ * return single sk_buff.
  * Function return NULL if function can't allocate demanded buffer
+ * TODO make skb_queue if `size` more than mtu
  */
 extern struct sk_buff * skb_alloc(unsigned int size);
 
 /**
- * Free skb allocated by alloc_skb
+ * Free skb allocated by skb_alloc
  */
 extern void skb_free(struct sk_buff *skb);
 

@@ -3,9 +3,10 @@ package embox.net
 abstract module entry_api { }
 
 module dev {
-	source "netdev.c", "netdev_process.c"
 	option number netdev_quantity=8
 	option number netdev_table_sz=3
+
+	source "netdev.c", "netdev_process.c"
 
 	depends skbuff
 	depends embox.lib.LibC
@@ -26,19 +27,23 @@ module network_layer {
 }
 
 module skbuff {
-	source "skb.c", "skb_queue.c"
-	option number skb_quantity=64
-	option number skb_queue_quantity=16
+	source "skb.c"
+	option number amount_skb=200
+	option number amount_skb_buff=200
+	option number skb_buff_size=1514 /* for example */
 
+	source "skb_queue.c"
+	option number amount_skb_queue=16
 
 	depends embox.mem.pool
 	depends embox.lib.LibC
 }
 
 module core {
-	source "inetdev.c"
 	option number net_callback_quantity=16
 	option number net_interfaces_quantity=4
+
+	source "inetdev.c"
 
 	depends dev /* for dev.c */
 	depends embox.mem.pool
@@ -52,8 +57,9 @@ module core {
 }
 
 module neighbour {
-	source "neighbour.c"
 	option number arp_cache_size=16
+
+	source "neighbour.c"
 
 	depends embox.mem.pool
 	depends embox.lib.LibC

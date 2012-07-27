@@ -15,6 +15,7 @@
 #include <time.h>
 #include <types.h>
 #include <sys/types.h>
+#include <net/if_ether.h>
 
 typedef struct tcphdr {
 	__be16 source;
@@ -111,8 +112,11 @@ enum {
 #define TCP_OPER_TIMEOUT      5000 /* Time-out */
 
 #define TCP_WINDOW_DEFAULT    500  /* Default size of widnow */
-#define TCP_MAX_DATA_LEN      (CONFIG_ETHERNET_V2_FRAME_SIZE\
-		- (ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE))  /* Maximum size of data */
+/* TODO TCP_MAX_DATA_LEN is temporary thing, becouse skb_alloc return NULL
+ * if package the big, but it should return skb_queue instead
+ */
+#define TCP_MAX_DATA_LEN      (ETH_DATA_LEN\
+		- (IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE))  /* Maximum size of data */
 /* TCP xmit options */
 #define TCP_XMIT_DEFAULT      0    /* Default options for xmitting */
 #define TCP_XMIT_IGNORE_DELAY 1    /* Send ignoring delay (checking by default) */
