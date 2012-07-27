@@ -319,7 +319,7 @@ static int unit_init(void) {
 	net_device_t *net_device;
 	/*initialize net_device structures and save
 	 * information about them to local massive */
-	net_device = alloc_etherdev(/*0*/);
+	net_device = etherdev_alloc();
 	if (net_device == NULL) {
 		return -ENOMEM;
 	}

@@ -258,43 +258,43 @@ static int exec(int argc, char **argv) {
 //		in_dev = inet_dev_find_by_name(iname);
 //	}
 	if (no_arp == 1) {	  /* set flag IFF_NOARP. Default 0 means ARP enabled.*/
-		eth_flag_up(in_dev->dev, IFF_NOARP);
+		etherdev_flag_up(in_dev->dev, IFF_NOARP);
 	} else {
-		eth_flag_down(in_dev->dev, IFF_NOARP);
+		etherdev_flag_down(in_dev->dev, IFF_NOARP);
 	}
 
 	if (promisc == 1) {	 /* set flag IFF_PROMISC. Default 0.*/
-		eth_flag_up(in_dev->dev, IFF_PROMISC);
+		etherdev_flag_up(in_dev->dev, IFF_PROMISC);
 	} else {
-		eth_flag_down(in_dev->dev, IFF_PROMISC);
+		etherdev_flag_down(in_dev->dev, IFF_PROMISC);
 	}
 
 	if (allmulti == 1) {	/* set flag IFF_ALLMULTI. Default 0. */
-		eth_flag_up(in_dev->dev, IFF_ALLMULTI);
+		etherdev_flag_up(in_dev->dev, IFF_ALLMULTI);
 	} else {
-		eth_flag_down(in_dev->dev, IFF_ALLMULTI);
+		etherdev_flag_down(in_dev->dev, IFF_ALLMULTI);
 	}
 
 	if (multicast == 1) {   /* set flag IFF_MULTICAST. Default 0.*/
-		eth_flag_up(in_dev->dev, IFF_MULTICAST);
+		etherdev_flag_up(in_dev->dev, IFF_MULTICAST);
 	} else {
-		eth_flag_down(in_dev->dev, IFF_MULTICAST);
+		etherdev_flag_down(in_dev->dev, IFF_MULTICAST);
 	}
 
 	if (mtu != 0) {		 /* new MTU value set */
-		eth_change_mtu(in_dev->dev, mtu);
+		etherdev_change_mtu(in_dev->dev, mtu);
 	}
 
 	if (irq_num != 0) {
-		eth_set_irq(in_dev->dev, irq_num);
+		etherdev_set_irq(in_dev->dev, irq_num);
 	}
 
 	if (base_addr != 0) {   /* set new base addr */
-		eth_set_baseaddr(in_dev->dev, base_addr);
+		etherdev_set_baseaddr(in_dev->dev, base_addr);
 	}
 
 	if (tx_queue_len != 0) {	/* set new max packet length */
-		eth_set_txqueuelen(in_dev->dev, tx_queue_len);
+		etherdev_set_txqueuelen(in_dev->dev, tx_queue_len);
 	}
 
 	if (broadcastaddr[0] != 0) {
@@ -304,15 +304,15 @@ static int exec(int argc, char **argv) {
 			return -1;
 		}
 		if (!down) {	/* set broadcast addr */
-			eth_set_broadcast_addr(in_dev->dev, broadcastaddr);
-			eth_flag_up(in_dev->dev, IFF_BROADCAST);
+			etherdev_set_broadcast_addr(in_dev->dev, broadcastaddr);
+			etherdev_flag_up(in_dev->dev, IFF_BROADCAST);
 		}
 	}
 
 	if (p2p == 1) {							   /* set flag IFF_POINTOPOINT */
-		eth_flag_up(in_dev->dev, IFF_POINTOPOINT);
+		etherdev_flag_up(in_dev->dev, IFF_POINTOPOINT);
 	} else {
-		eth_flag_down(in_dev->dev, IFF_POINTOPOINT);
+		etherdev_flag_down(in_dev->dev, IFF_POINTOPOINT);
 	}
 
 	if (down) {	/* down net iface */

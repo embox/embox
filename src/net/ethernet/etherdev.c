@@ -19,7 +19,7 @@
 
 static unsigned char etherdev_idx = 0;
 
-int eth_mac_addr(struct net_device *dev, struct sockaddr *addr) {
+int etherdev_mac_addr(struct net_device *dev, struct sockaddr *addr) {
 	assert(dev != NULL);
 	assert(addr != NULL);
 
@@ -32,7 +32,7 @@ int eth_mac_addr(struct net_device *dev, struct sockaddr *addr) {
 	return ENOERR;
 }
 
-int eth_change_mtu(struct net_device *dev, int new_mtu) {
+int etherdev_change_mtu(struct net_device *dev, int new_mtu) {
 	assert(dev != NULL);
 
 	if ((new_mtu < 68) || (new_mtu > ETH_FRAME_LEN)) {
@@ -44,37 +44,37 @@ int eth_change_mtu(struct net_device *dev, int new_mtu) {
 	return ENOERR;
 }
 
-int eth_flag_up(struct net_device *dev, int flag_type) {
+int etherdev_flag_up(struct net_device *dev, int flag_type) {
 	assert(dev != NULL);
 	dev->flags |= flag_type;
 	return ENOERR;
 }
 
-int eth_flag_down(struct net_device *dev, int flag_type) {
+int etherdev_flag_down(struct net_device *dev, int flag_type) {
 	assert(dev != NULL);
 	dev->flags &= ~flag_type;
 	return ENOERR;
 }
 
-int eth_set_irq(struct net_device *dev, int irq_num) {
+int etherdev_set_irq(struct net_device *dev, int irq_num) {
 	assert(dev != NULL);
 	dev->irq = irq_num;
 	return ENOERR;
 }
 
-int eth_set_baseaddr(struct net_device *dev, unsigned long base_addr) {
+int etherdev_set_baseaddr(struct net_device *dev, unsigned long base_addr) {
 	assert(dev != NULL);
 	dev->base_addr = base_addr;
 	return ENOERR;
 }
 
-int eth_set_txqueuelen(struct net_device *dev, unsigned long new_len) {
+int etherdev_set_txqueuelen(struct net_device *dev, unsigned long new_len) {
 	assert(dev != NULL);
 	dev->tx_queue_len = new_len;
 	return ENOERR;
 }
 
-int eth_set_broadcast_addr(struct net_device *dev, unsigned char *broadcast_addr) {
+int etherdev_set_broadcast_addr(struct net_device *dev, unsigned char *broadcast_addr) {
 	assert(dev != NULL);
 	assert(broadcast_addr != NULL);
 
@@ -95,14 +95,14 @@ static void etherdev_setup(struct net_device *dev) {
 	memset(dev->broadcast, 0xFF, ETH_ALEN);
 }
 
-struct net_device * alloc_etherdev(/*int sizeof_priv*/) {
+struct net_device * etherdev_alloc(void) {
 	char buff[IFNAMSIZ];
 
 	sprintf(buff, "eth%u", etherdev_idx++); /* TODO use snprintf instead */
-	return netdev_alloc(/*sizeof_priv,*/ buff, etherdev_setup);
+	return netdev_alloc(buff, etherdev_setup);
 }
 
-void free_etherdev(struct net_device *dev) {
+void etherdev_free(struct net_device *dev) {
 	netdev_free(dev);
 }
 

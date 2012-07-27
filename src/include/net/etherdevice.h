@@ -106,7 +106,7 @@ extern uint8_t eth_packet_type(struct sk_buff *skb);
 extern __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev);
 
 /**
- * Functions provided by eth_dev.c
+ * Functions provided by etherdev.c
  */
 
 /**
@@ -114,14 +114,14 @@ extern __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev);
  * @param dev network device
  * @param addr socket address
  */
-extern int eth_mac_addr(struct net_device *dev, struct sockaddr *addr);
+extern int etherdev_mac_addr(struct net_device *dev, struct sockaddr *addr);
 
 /**
  * Set new MTU size
  * @param dev network device
  * @param new_mtu new Maximum Transfer Unit
  */
-extern int eth_change_mtu(struct net_device *dev, int new_mtu);
+extern int etherdev_change_mtu(struct net_device *dev, int new_mtu);
 
 #if 0
 /**
@@ -135,18 +135,18 @@ extern void etherdev_setup(struct net_device *dev);
 /**
  * Allocates and sets up an Ethernet device
  */
-extern struct net_device * alloc_etherdev(void/*int sizeof_priv*/);
+extern struct net_device * etherdev_alloc(void);
 
 /**
  * Frees an Ethernet device
  */
-extern void free_etherdev(struct net_device *dev);
+extern void etherdev_free(struct net_device *dev);
 
-extern int eth_flag_up(struct net_device *dev, int flag_type);
-extern int eth_flag_down(struct net_device *dev, int flag_type);
-extern int eth_set_irq(struct net_device *dev, int irq_num);
-extern int eth_set_baseaddr(struct net_device *dev, unsigned long base_addr);
-extern int eth_set_txqueuelen(struct net_device *dev, unsigned long new_len);
-extern int eth_set_broadcast_addr(struct net_device *dev, unsigned char broadcast_addr[]);
+extern int etherdev_flag_up(struct net_device *dev, int flag_type);
+extern int etherdev_flag_down(struct net_device *dev, int flag_type);
+extern int etherdev_set_irq(struct net_device *dev, int irq_num);
+extern int etherdev_set_baseaddr(struct net_device *dev, unsigned long base_addr);
+extern int etherdev_set_txqueuelen(struct net_device *dev, unsigned long new_len);
+extern int etherdev_set_broadcast_addr(struct net_device *dev, unsigned char broadcast_addr[]);
 
 #endif /* NET_ETHERDEVICE_H_ */

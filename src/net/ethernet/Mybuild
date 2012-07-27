@@ -1,7 +1,7 @@
 package embox.net
 
 module eth {
-	source "eth.c", "eth_dev.c"
+	source "eth.c", "etherdev.c"
 
 	depends dev /* for dev.c */
 	depends core /* for devinet.c */
