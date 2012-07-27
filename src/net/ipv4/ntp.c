@@ -85,9 +85,9 @@ static int ntp_server_reply(struct ntphdr *r, struct timespec rec, struct sockad
 	struct ntphdr x;
 	struct timespec ts;
 
-	x.status = NTP_SERVER;
+	x.status = get_leap(&ntp_config);
 	x.status |= get_version(r);
-	x.status |= get_mode(&ntp_config);
+	x.status |= NTP_SERVER; /* get_mode(&ntp_config); */
 
 	if (ntp_config.stratum > NTP_SERVER_UNSYNC)
 		x.stratum = 0;
@@ -168,7 +168,7 @@ int ntp_receive(struct sock *sk, struct sk_buff *skb) {
 		/* set server and ntp_config if now no server specified */
 		if (available_server.sin_addr.s_addr == 0) {
 			available_server.sin_addr.s_addr = iph->saddr;
-			/* XXX ntp_config.stratum++; */
+			/* XXX ntp_config.stratum++ */
 			memcpy(&ntp_config, r, sizeof(struct ntphdr));
 		}
 
