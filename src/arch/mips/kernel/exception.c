@@ -45,4 +45,9 @@ void mips_exception_init(void) {
 	write_c0_cause(tmp);
 
 	memcpy((void *)(EBASE + 0x180), &mips_first_exception_handler, 0x80);
+	for(tmp = 0; tmp < 32; tmp ++) {
+		exception_handlers[tmp] = mips_second_exception_handler;
+	}
+
+	//asm("syscall\n");
 }

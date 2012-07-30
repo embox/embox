@@ -32,33 +32,36 @@ END(mips_first_exception_handler)
 //https://www.d.umn.edu/~cprince/courses/cs2521fall09/programming/lab8/
 
 NESTED(mips_second_exception_handler, PT_SIZE, $sp)
-	SAVE_AT
-	SAVE_STATIC
+	addi  $sp, -PT_SIZE
 	SAVE_ALL
 
-	move $a0, $sp
-	addi $a0, 16            /* Arg 0: saved regs. */
+	move $a0, $sp    /* Arg 0: saved regs. */
 	jal  mips_c_exception_handler  /* Call C code. */
-	lui  $gp, 0x8000        /* Set global pointer (delay slot) */
+	nop
+	//lui  $gp, 0x8000        /* Set global pointer (delay slot) */
 
 
 	RESTORE_ALL
 
-	lw    $31, (16+PT_STATUS) ($sp) /* K0 = saved status */
-	ori   $31, ST0_EXL                /* Set EXL exception level */
-	mtc0  $k0, $CP0_STATUS            /* put CP0_STATUS back: disable interrupts */
-		ehb /* hazard barier */
+//	lw    $k0, (PT_STATUS) ($sp) /* K0 = saved status */
+//	ori   $k0, ST0_EXL                /* Set EXL exception level */
+//	mtc0  $k0, $CP0_STATUS            /* put CP0_STATUS back: disable interrupts */
+//		ehb /* hazard barier */
 
 
-	lw    $k0, (16+PT_PC) ($sp)     /* K0 = EPC */
+	lw    $k0, (PT_PC) ($sp)     /* K0 = EPC */
+	addiu $k0, 4
 	mtc0  $k0, $CP0_EPC               /* put PC in EPC */
 
-	lw    $31, (16+PT_RA) ($sp)
-	lw    $sp, (16+PT_SP) ($sp)  /* Restore stack */
+
+	lw    $31, (PT_RA) ($sp)
+//	addi  $sp, PT_SIZE /* Restore stack */
 
 	/* Return from exception */
-	ehb
-	//eret   /* PC <= EPC; EXL <= 0 */
-	rfe
-	jr $k0
+	//ehb
+	eret   /* PC <= EPC; EXL <= 0 */
+	nop
+//	rfe
+//	jr $k0
+	RESTORE_SP_AND_RET
 END(mips_second_exception_handler)

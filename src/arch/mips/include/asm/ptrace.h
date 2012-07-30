@@ -49,7 +49,7 @@ typedef struct pt_regs {
 #define PT_R4     0x0C
 #define PT_R5     0x10
 #define PT_R6     0x14
-#define PT_R7     0x16
+#define PT_R7     0x18
 #define PT_R8     0x1C
 #define PT_R9     0x20
 #define PT_R10    0x24
