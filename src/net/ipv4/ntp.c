@@ -223,12 +223,9 @@ struct timespec ntp_offset(struct ntphdr *ntp) {
 	return res;
 }
 
-extern clock_t clock_sys_ticks(void);
-
 /* Send request to avaliable_server on each ntp_poll_timer reload */
 static void send_request(struct sys_timer *timer, void *param) {
 	if (available_server.sin_addr.s_addr) {
-		printf("%d\n", (int)clock_sys_ticks());
 		/* if no reply from server, then increase polling interval */
 		if (!is_server_reply && client_config.poll < MAX_POLL) {
 			client_config.poll++;
