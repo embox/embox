@@ -22,8 +22,8 @@ static void print_usage(void) {
 }
 
 static void *ntpd_run(void *arg) {
-	ntp_start();
-	while(1);
+	if (ntp_start() == ENOERR)
+		while(1);
 	return NULL;
 }
 

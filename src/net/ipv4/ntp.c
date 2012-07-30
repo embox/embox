@@ -38,6 +38,7 @@ static struct sockaddr_in available_server;
 static sys_timer_t *ntp_poll_timer;
 /* Check for availability(reply) of server */
 static bool is_server_reply = false;
+static bool ntp_in_use = false;
 
 static inline void ntp_data_ntohs(struct s_ntpdata *data) {
 	data->sec = ntohs(data->sec);
@@ -242,6 +243,9 @@ static void send_request(struct sys_timer *timer, void *param) {
 int ntp_start(void) {
 	struct sockaddr_in our;
 
+	if (ntp_in_use)
+		return -EBUSY;
+
 	available_server.sin_port = htons((__u16)NTP_SERVER_PORT);
 	/* set minimum polling interval */
 	client_config.poll = MIN_POLL;
@@ -270,12 +274,15 @@ int ntp_start(void) {
 		return -ENOENT;
 	}
 
+	ntp_in_use = true;
+
 	return ENOERR;
 }
 
 int ntp_stop(void) {
 	close(ntp_sock);
 	timer_close(ntp_poll_timer);
+	ntp_in_use = false;
 
 	return ENOERR;
 }
