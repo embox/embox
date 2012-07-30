@@ -19,6 +19,5 @@ module ntpd {
 
 	depends embox.kernel.task.api
 	depends embox.framework.LibFramework
-	depends embox.kernel.task.signal
 	depends embox.net.ntp
 }

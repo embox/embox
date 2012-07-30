@@ -19,15 +19,17 @@
 #include <unistd.h>
 #include <math.h>
 
-#define MIN_POLL 2 /* By RFC 4330 minimum poll interval is about 15 seconds */
+#define MIN_POLL 3 /* By RFC 4330 minimum poll interval is about 15 seconds */
 #define MAX_POLL 16
 
 static char kod[3][4] = {"DENY", "RSTR", "RATE"};
 
 /* Config witch we use as server */
-static struct ntphdr ntp_config;
+static struct ntphdr server_config;
 /* Config witch we use as client */
-static struct ntphdr client_config;
+static struct ntphdr client_config = {
+		.status = NTP_LI_NO_WARNING | NTP_V_4 | NTP_CLIENT
+};
 /* Socket binded to port 123 */
 static int ntp_sock;
 /* Current server address for unicast interaction */
@@ -69,9 +71,9 @@ int ntp_client_xmit(int sock, struct sockaddr_in *dst) {
 	struct timespec ts;
 	struct ntphdr x;
 
-	memcpy(&x, &client_config, sizeof(struct ntphdr));
+	x.status = client_config.status;
+	x.poll = client_config.poll;
 
-	x.status = NTP_LI_NO_WARNING | NTP_V_4 | NTP_CLIENT;
 	gettimeofday(&ts, NULL);
 	x.xmt_ts = timespec_to_ntp(ts);
 
@@ -85,20 +87,20 @@ static int ntp_server_reply(struct ntphdr *r, struct timespec rec, struct sockad
 	struct ntphdr x;
 	struct timespec ts;
 
-	x.status = get_leap(&ntp_config);
+	x.status = get_leap(&server_config);
 	x.status |= get_version(r);
 	x.status |= NTP_SERVER; /* get_mode(&ntp_config); */
 
-	if (ntp_config.stratum > NTP_SERVER_UNSYNC)
+	if (server_config.stratum > NTP_SERVER_UNSYNC)
 		x.stratum = 0;
 	else
-		x.stratum = ntp_config.stratum;
+		x.stratum = server_config.stratum;
 
 	x.poll = max(r->poll, MIN_POLL);
 	/* TODO take into account our system clock source precision. */
-	x.precision = ntp_config.precision;
-	x.refid = ntp_config.refid;
-	x.ref_ts = ntp_config.ref_ts;
+	x.precision = server_config.precision;
+	x.refid = server_config.refid;
+	x.ref_ts = server_config.ref_ts;
 	x.org_ts = r->xmt_ts;
 	x.rec_ts = timespec_to_ntp(rec);
 	gettimeofday(&ts, NULL);
@@ -120,8 +122,8 @@ int ntp_receive(struct sock *sk, struct sk_buff *skb) {
 	gettimeofday(&ts, NULL);
 
 	/* check for NTP packet */
-	if (ntohs(inet->dport) != NTP_SERVER_PORT &&
-			ntohs(udph->dest) != NTP_SERVER_PORT)
+	if (ntohs(inet->sport) != NTP_SERVER_PORT &&
+			ntohs(udph->source) != NTP_SERVER_PORT)
 		goto free_and_drop;
 
 	r = (struct ntphdr*)(skb->h.raw + UDP_HEADER_SIZE);
@@ -169,7 +171,7 @@ int ntp_receive(struct sock *sk, struct sk_buff *skb) {
 		if (available_server.sin_addr.s_addr == 0) {
 			available_server.sin_addr.s_addr = iph->saddr;
 			/* XXX ntp_config.stratum++ */
-			memcpy(&ntp_config, r, sizeof(struct ntphdr));
+			memcpy(&server_config, r, sizeof(struct ntphdr));
 		}
 
 		/* update reply statstic */
@@ -177,7 +179,9 @@ int ntp_receive(struct sock *sk, struct sk_buff *skb) {
 			is_server_reply = true;
 
 		/* update Reference Timestamp */
-		ntp_config.ref_ts = timespec_to_ntp(ts);
+		server_config.ref_ts = timespec_to_ntp(ts);
+		/* update poll interval. It is different from our request if server reply is broadcast. */
+		client_config.poll = r->poll;
 	}
 
 	return ENOERR;
@@ -219,12 +223,16 @@ struct timespec ntp_offset(struct ntphdr *ntp) {
 	return res;
 }
 
+extern clock_t clock_sys_ticks(void);
+
 /* Send request to avaliable_server on each ntp_poll_timer reload */
 static void send_request(struct sys_timer *timer, void *param) {
 	if (available_server.sin_addr.s_addr) {
+		printf("%d\n", (int)clock_sys_ticks());
 		/* if no reply from server, then increase polling interval */
 		if (!is_server_reply && client_config.poll < MAX_POLL) {
 			client_config.poll++;
+			timer_close(ntp_poll_timer);
 			timer_set(&ntp_poll_timer, TIMER_PERIODIC, (1 << client_config.poll) * MSEC_PER_SEC,
 						send_request, NULL);
 		}
@@ -241,7 +249,7 @@ int ntp_start(void) {
 	/* set minimum polling interval */
 	client_config.poll = MIN_POLL;
 	/* our server is unsync now*/
-	ntp_config.stratum = 0;
+	server_config.stratum = 0;
 
 	if (0 > (ntp_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))) {
 		prom_printf("Can't to allocate NTP socket");
