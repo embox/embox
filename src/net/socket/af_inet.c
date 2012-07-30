@@ -17,7 +17,7 @@
 #include <net/sock.h>
 #include <net/socket.h>
 #include <net/inet_sock.h>
-#include <net/tcp.h>
+//#include <net/tcp.h>
 #include <net/inetdevice.h>
 
 #include <net/ip_port.h>
