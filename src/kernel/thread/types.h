@@ -64,7 +64,6 @@ struct thread {
 	struct list_head  messages;      /**< Messages sent to the thread. */
 	struct event      msg_event;     /**< Thread receives a message. */
 
-	struct event	 *sleep_event;	 /**< Event sleeping on, if state is sleeping */
 	int               sleep_res;     /**< Result shed_sleep */
 
 	struct task      *task;          /**< Task belong to. */

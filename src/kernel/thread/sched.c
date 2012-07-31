@@ -157,19 +157,23 @@ static void do_event_sleep_locked(struct event *e) {
 	post_switch_if(1);
 }
 
-static int thread_wake_force(struct thread *thread) {
-	struct event *e = thread->sleep_event;
+static int thread_wake_force(struct thread *thread, int sleep_result) {
+
 	if (!thread_state_sleeping(thread->state)) {
 		return 0;
+	}
+
+	if (sleep_result != SCHED_SLEEP_DONTCHANGE) {
+		thread->sleep_res = sleep_result;
 	}
 
 	if (in_harder_critical()) {
 		startq_enqueue_wake_force(thread);
 	} else {
 		if (thread_state_suspended(thread->state)) {
-			sleepq_wake_suspended_thread(&e->sleepq, thread);
+			sleepq_wake_suspended_thread(thread->sleepq, thread);
 		} else {
-			return sleepq_wake_resumed_thread(&rq, &e->sleepq, thread);
+			return sleepq_wake_resumed_thread(&rq, thread->sleepq, thread);
 		}
 	}
 
@@ -184,11 +188,8 @@ struct sched_sleep_data {
 static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	struct thread *thread = (struct thread *) sleep_data;
 
-	thread->sleep_res = SCHED_SLEEP_TIMEOUT;
+	post_switch_if(thread_wake_force(thread, SCHED_SLEEP_TIMEOUT));
 
-	post_switch_if(thread_wake_force(thread));
-
-	/*sched_wake(thread->sleep_event);*/
 }
 
 int sched_sleep_locked(struct event *e, unsigned long timeout) {
@@ -199,7 +200,6 @@ int sched_sleep_locked(struct event *e, unsigned long timeout) {
 	assert(in_sched_locked());
 
 	current->sleep_res = 0; /* clean out sleep_res */
-	current->sleep_event = e;
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
@@ -245,7 +245,7 @@ int sched_setrun(struct thread *t) {
 		if (thread_state_sleeping(t->state)) {
 			t->sleep_res = SCHED_SLEEP_INTERRUPT;
 			/*sched_wake(t->sleep_event);*/
-			thread_wake_force(t);
+			thread_wake_force(t, SCHED_SLEEP_INTERRUPT);
 		}
 
 		if (thread_state_suspended(t->state)) {
@@ -404,7 +404,7 @@ static void startq_flush(void) {
 			struct thread, startq_link))) {
 
 		ipl_enable();
-		thread_wake_force(t);
+		thread_wake_force(t, SCHED_SLEEP_DONTCHANGE);
 		ipl_disable();
 	}
 }

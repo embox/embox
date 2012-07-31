@@ -19,8 +19,9 @@
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
+#define SCHED_SLEEP_DONTCHANGE	   -1
 #define SCHED_SLEEP_TIMEOUT        1
-#define SCHED_SLEEP_INTERRUPT      2
+#define SCHED_SLEEP_INTERRUPT      3
 
 struct thread;
 struct event;
