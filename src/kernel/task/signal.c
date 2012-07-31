@@ -21,7 +21,7 @@ void kill(int tid, int sig) {
 
 	sig_table->sig_mask |= 1 << sig;
 
-	/*sched_setrun(hnd_thread);*/
+	sched_setrun(hnd_thread);
 }
 
 void signal(int sig, void (*hnd)(int)) {
@@ -34,7 +34,11 @@ void signal(int sig, void (*hnd)(int)) {
 static void task_global_sig_handler(void) {
 	struct task_signal_table *sig_table = task_self()->signal_table;
 
+	sched_unlock();
+
 	task_signal_table_get(sig_table, sig_table->last_sig)(sig_table->last_sig);
+
+	sched_lock();
 }
 
 static void task_signal_table_init(struct task *task, void *_signal_table) {

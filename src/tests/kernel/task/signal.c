@@ -7,6 +7,7 @@
  * @author Anton Bondarev
  */
 
+#include <types.h>
 #include <unistd.h>
 #include <embox/test.h>
 #include <kernel/task.h>
@@ -21,24 +22,23 @@ extern void signal(int sig, void (*hnd)(int));
 
 static void sig_hnd(int sig) {
 	flag = 1;
+	task_exit(0);
 }
 
 static void *task_hnd(void *arg) {
-	int cnt = 5;
 
 	signal(9, sig_hnd);
 
-	while (cnt--) {
-		usleep(1000);
-	}
+	while(1);
+
 	return NULL;
 }
 
 TEST_CASE("create task and send signal") {
 	int tid = new_task(task_hnd, NULL);
-	usleep(2500);
+	usleep(100);
 	kill(tid, 9);
-	usleep(10000);
+	usleep(100);
 	test_assert(flag != 0);
 
 }

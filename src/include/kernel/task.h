@@ -56,6 +56,13 @@ extern int new_task(void *(*run)(void *), void *arg);
 extern struct task *task_self(void);
 
 /**
+ * @brief Exit from current task
+ *
+ * @param res Return code
+ */
+extern void __attribute__((noreturn)) task_exit(void *res);
+
+/**
  * @brief Kernel task
  *
  * @return Pointer to kernel task

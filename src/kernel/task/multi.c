@@ -11,6 +11,7 @@
 #include <kernel/thread/api.h>
 #include <mem/misc/pool.h>
 #include <kernel/task.h>
+#include <kernel/panic.h>
 #include "common.h"
 
 
@@ -121,30 +122,39 @@ static void task_init_parent(struct task *task, struct task *parent) {
 
 }
 
-static void task_remove(struct task *task) {
+void __attribute__((noreturn)) task_exit(void *res) {
+	struct task *this_task = task_self();
 	struct thread *thread;
 	const struct task_resource_desc *res_desc;
 
-	list_del(&task->link);
+	list_del(&this_task->link);
 
 	sched_lock();
 
 	/* suspend everything except us */
-	list_for_each_entry(thread, &task->threads, task_link) {
+	list_for_each_entry(thread, &this_task->threads, task_link) {
 		if (thread == thread_self()) {
 			continue;
 		}
 		thread_suspend(thread);
-		/*thread_delete(thread);*/
 	}
 
 	sched_unlock();
 
 	task_resource_foreach(res_desc) {
-		res_desc->deinit(task);
+		res_desc->deinit(this_task);
 	}
 
-	task_table_del(task->tid);
+	task_table_del(this_task->tid);
+
+	list_for_each_entry(thread, &this_task->threads, task_link) {
+		if (thread == thread_self()) {
+			continue;
+		}
+		/*thread_delete(thread);*/
+	}
+
+	thread_exit(res);
 }
 
 static void *task_trampoline(void *arg) {
@@ -157,7 +167,12 @@ static void *task_trampoline(void *arg) {
 
 	res = run(run_arg);
 
-	task_remove(task_self());
+	task_exit(res);
+
+	/* NOTREACHED */
+
+	panic("Returning from task_trampoline()");
 
 	return res;
 }
+

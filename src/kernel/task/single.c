@@ -21,6 +21,10 @@ struct task *task_self(void) {
 	return task_kernel_task();
 }
 
+void __attribute__((noreturn)) task_exit(int res) {
+	while(1);
+}
+
 int task_notify_switch(struct thread *prev, struct thread *next) {
 	return 0;
 }
