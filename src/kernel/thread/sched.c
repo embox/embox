@@ -47,6 +47,7 @@ static void startq_enqueue_resume(struct thread *t);
 static void startq_enqueue_wake_force(struct thread *t);
 
 static void do_thread_resume(struct thread *t);
+static int do_thread_wake_force(struct thread *thread);
 static void do_event_wake(struct event *e, int wake_all);
 static void do_event_sleep_locked(struct event *e);
 
@@ -157,27 +158,34 @@ static void do_event_sleep_locked(struct event *e) {
 	post_switch_if(1);
 }
 
-static int thread_wake_force(struct thread *thread, int sleep_result) {
+static int do_thread_wake_force(struct thread *thread) {
 
-	if (!thread_state_sleeping(thread->state)) {
-		return 0;
+	if (thread_state_suspended(thread->state)) {
+		sleepq_wake_suspended_thread(thread->sleepq, thread);
+	} else {
+		return sleepq_wake_resumed_thread(&rq, thread->sleepq, thread);
 	}
 
-	if (sleep_result != SCHED_SLEEP_DONTCHANGE) {
-		thread->sleep_res = sleep_result;
-	}
+	return 0;
+}
+
+
+static int thread_wake_force(struct thread *thread) {
 
 	if (in_harder_critical()) {
 		startq_enqueue_wake_force(thread);
 	} else {
-		if (thread_state_suspended(thread->state)) {
-			sleepq_wake_suspended_thread(thread->sleepq, thread);
-		} else {
-			return sleepq_wake_resumed_thread(&rq, thread->sleepq, thread);
-		}
+		return do_thread_wake_force(thread);
 	}
 
 	return 0;
+}
+
+static int thread_wake_force_res(struct thread *thread, int sleep_result) {
+
+	thread->sleep_res = sleep_result;
+
+	return thread_wake_force(thread);
 }
 
 struct sched_sleep_data {
@@ -188,7 +196,7 @@ struct sched_sleep_data {
 static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	struct thread *thread = (struct thread *) sleep_data;
 
-	post_switch_if(thread_wake_force(thread, SCHED_SLEEP_TIMEOUT));
+	post_switch_if(thread_wake_force_res(thread, SCHED_SLEEP_TIMEOUT));
 
 }
 
@@ -243,9 +251,7 @@ int sched_setrun(struct thread *t) {
 	sched_lock();
 	{
 		if (thread_state_sleeping(t->state)) {
-			t->sleep_res = SCHED_SLEEP_INTERRUPT;
-			/*sched_wake(t->sleep_event);*/
-			thread_wake_force(t, SCHED_SLEEP_INTERRUPT);
+			thread_wake_force_res(t, SCHED_SLEEP_INTERRUPT);
 		}
 
 		if (thread_state_suspended(t->state)) {
@@ -404,7 +410,7 @@ static void startq_flush(void) {
 			struct thread, startq_link))) {
 
 		ipl_enable();
-		thread_wake_force(t, SCHED_SLEEP_DONTCHANGE);
+		do_thread_wake_force(t);
 		ipl_disable();
 	}
 }
