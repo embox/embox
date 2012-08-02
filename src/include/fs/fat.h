@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include <drivers/ramdisk.h>
+#include <embox/block_dev.h>
 
 
 #define MSDOS_NAME               11
@@ -280,7 +281,7 @@ typedef struct fileinfo {
 
 
 typedef struct fat_fs_description {
-	ramdisk_params_t * p_device;
+	dev_image_t *p_device;
 	char root_name[MAX_LENGTH_FILE_NAME];
 	vol_info_t vi;
 } fat_fs_description_t;

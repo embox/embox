@@ -21,7 +21,7 @@ TEST_SETUP_SUITE(setup_suite);
 TEST_TEARDOWN_SUITE(teardown_suite);
 
 static mkfs_params_t mkfs_params;
-static ramdisk_params_t ramd_params;
+static dev_ramdisk_t ramdisk;
 static mount_params_t mount_param;
 static fs_drv_t *fs_drv;
 
@@ -90,10 +90,10 @@ static int setup_suite(void) {
 	}
 
 	/* set filesystem attribute to ramdisk */
-	strcpy((void *)ramd_params.path, (const void *)mkfs_params.path);
-	strcpy((void *)ramd_params.fs_name,
+	strcpy((void *)ramdisk.path, (const void *)mkfs_params.path);
+	strcpy((void *)ramdisk.fs_name,
 				(const void *)mkfs_params.fs_name);
-	ramd_params.fs_type = mkfs_params.fs_type;
+	ramdisk.fs_type = mkfs_params.fs_type;
 
 	if(NULL == (fs_drv =
 			filesystem_find_drv((const char *) &mkfs_params.fs_name))) {
@@ -108,10 +108,10 @@ static int setup_suite(void) {
 		return -1;
 	}
 	/* set created ramdisc attribute from dev_node */
-	memcpy(&ramd_params, mount_param.dev_node->attr, sizeof(ramd_params));
+	memcpy(&ramdisk, mount_param.dev_node->attr, sizeof(ramdisk));
 
 	/* format filesystem */
-	if(0 != fs_drv->fsop->format((void *)&ramd_params)) {
+	if(0 != fs_drv->fsop->format((void *)&ramdisk.path)) {
 		return -1;
 	}
 

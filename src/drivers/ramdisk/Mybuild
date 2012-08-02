@@ -5,4 +5,5 @@ module ramdisk {
 	option number ramdisk_quantity=4
 	depends embox.fs.node
 	depends embox.mem.page_api
+	depends embox.driver.block
 }

@@ -16,6 +16,7 @@
 #define INCLUDE_ATAPI_DMA 0   // not zero to include ATAPI DMA
 
 extern int ide_dev_quantity;
+#define INT_DEFAULT_INTERRUPT_MODE 0
 
 typedef struct _dev_ide_ata_identif
 {
@@ -83,19 +84,19 @@ typedef struct _dev_ide_ata_identif
 } dev_ide_ata_identif_t;
 
 typedef struct _dev_ide_ata {
+	node_t *dev_node;
+	size_t size;
 	int base_cmd_addr;
 	int base_ctrl_addr;
 	uint8_t  irq;
-	unsigned char master_flg;
-	char dev_name[MAX_LENGTH_FILE_NAME];
-	node_t *dev_node;
+	unsigned char master_select;
 	dev_ide_ata_identif_t identification;
 } dev_ide_ata_t;
 
 typedef struct _ide_ata_bus {
 	dev_ide_ata_t *dev_ide_ata;
-	uint32_t base_cmd_addr;
-	uint32_t base_ctrl_addr;
+	int base_cmd_addr;
+	int base_ctrl_addr;
 } ide_ata_bus_t;
 
 typedef struct _ide_ata_slot {
@@ -151,6 +152,9 @@ extern int reg_config_info[2];
 #define REG_CONFIG_TYPE_ATA   2
 #define REG_CONFIG_TYPE_ATAPI 3
 
+#define COMMAND    0x01
+#define CONTROL    0x00
+
 #define PRIMARY_COMMAND_REG_BASE_ADDR    0x01F0
 #define PRIMARY_CONTROL_REG_BASE_ADDR    0x03F6
 #define PRIMARY_IRQ                      14
@@ -159,19 +163,15 @@ extern int reg_config_info[2];
 #define SECONDARY_CONTROL_REG_BASE_ADDR  0x0376
 #define SECONDARY_IRQ                    15
 
-#define TERTIARY_COMMAND_REG_BASE_ADDR      0x01E8
-#define TERTIARY_CONTROL_REG_BASE_ADDR      0x03E6
-#define TERTIARY_IRQ                        11
+#define TERTIARY_COMMAND_REG_BASE_ADDR   0x01E8
+#define TERTIARY_CONTROL_REG_BASE_ADDR   0x03E6
+#define TERTIARY_IRQ                     11
 
-#define QUATERNARY_COMMAND_REG_BASE_ADDR     0x0168
-#define QUATERNARY_CONTROL_REG_BASE_ADDR     0x0366
-#define QUATERNARY_IRQ                       10
-//**************************************************************
-//
-// Global defines -- ATA register and register bits.
-// command block & control block regs
-//
-//**************************************************************
+#define QUATERNARY_COMMAND_REG_BASE_ADDR 0x0168
+#define QUATERNARY_CONTROL_REG_BASE_ADDR 0x0366
+#define QUATERNARY_IRQ                   10
+
+#define TMR_TIME_OUT 5
 
 // These are the offsets into pio_reg_addrs[]
 
@@ -185,8 +185,9 @@ extern int reg_config_info[2];
 #define CB_DH    6   // device head      in/out cmd_blk_base1+6
 #define CB_STAT  7   // primary status   in     cmd_blk_base1+7
 #define CB_CMD   7   // command             out cmd_blk_base1+7
-#define CB_ASTAT 8   // alternate status in     ctrl_blk_base2+6
-#define CB_DC    8   // device control      out ctrl_blk_base2+6
+
+#define CB_ASTAT 0   // alternate status
+#define CB_DC    0   // device control
 
 #define CB_LBA_000L    3   // LBA bits 0-7
 #define CB_LBA_00H0    4   // LBA bits 8-15

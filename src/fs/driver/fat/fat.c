@@ -20,6 +20,8 @@
 #include <fs/fat.h>
 #include <fs/mount.h>
 
+#include <embox/block_dev.h>
+
 #include <framework/mod/options.h>
 
 static uint8_t sector_buff[SECTOR_SIZE];
@@ -153,7 +155,7 @@ static int fatfs_ioctl(void *file, int request, va_list args) {
 /* File system operations */
 
 static int fatfs_init(void * par);
-static int fatfs_format(void * par);
+static int fatfs_format(void * dev);
 static int fatfs_mount(void * par);
 static int fatfs_create(void *par);
 static int fatfs_delete(const char *fname);
@@ -169,14 +171,12 @@ static int fatfs_init(void * par) {
 	return 0;
 }
 
-static int fatfs_format(void *par) {
-	ramdisk_params_t *params;
+static int fatfs_format(void *path) {
 	node_t *nod;
 	fat_fs_description_t *fs_des;
 	fat_file_description_t *fd;
 
-	params = (ramdisk_params_t *) par;
-	if (NULL == (nod = vfs_find_node(params->path, NULL))) {
+	if (NULL == (nod = vfs_find_node((char *) path, NULL))) {
 		return -ENODEV;/*device not found*/
 	}
 
@@ -184,14 +184,12 @@ static int fatfs_format(void *par) {
 			(NULL == (fd = pool_alloc(&fat_file_pool)))) {
 		return -ENOMEM;
 	}
-	fs_des->p_device = params;
+	fs_des->p_device = nod->attr;
 	strcpy(fs_des->root_name, "\0");
-
-
 
 	fd->p_fs_dsc = fs_des;
 	nod->fs_type = &fatfs_drv;
-	nod->file_info = (void *) &fatfs_fop;
+	//nod->file_info = (void *) &fatfs_fop; !!!!!!!!!!!!!!!!!!
 	nod->attr = (void *)fd;
 
 	fatfs_partition(fd);
@@ -2085,32 +2083,29 @@ uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
 
 int fat_read_sector(void *fdsc, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
-	char *read_addr;
-	uint32_t size;
 	fat_file_description_t *fd;
+	block_dev_operations_t *block_dev_op;
 
 	fd = (fat_file_description_t *) fdsc;
 
-	size = SECTOR_SIZE * count;
-	read_addr = fd->p_fs_dsc->p_device->p_start_addr + (sector * SECTOR_SIZE);
+	block_dev_op = fd->p_fs_dsc->p_device->dev_node->file_info;
+	block_dev_op->blk_read(fd->p_fs_dsc->p_device, (char *) buffer, sector, count);
 
-	memcpy(buffer, read_addr, size);
 	return DFS_OK;
 }
 
 
 int fat_write_sector(void *fdsc, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
-	char *write_addr;
-	uint32_t size;
 	fat_file_description_t *fd;
+	block_dev_operations_t *block_dev_op;
 
 	fd = (fat_file_description_t *) fdsc;
 
-	size = SECTOR_SIZE * count;
-	write_addr = fd->p_fs_dsc->p_device->p_start_addr + (sector * SECTOR_SIZE);
+	block_dev_op =
+			(block_dev_operations_t *)fd->p_fs_dsc->p_device->dev_node->file_info;
+	block_dev_op->blk_write(fd->p_fs_dsc->p_device, (char *) buffer, sector, count);
 
-	memcpy(write_addr, buffer, size);
 	return DFS_OK;
 }
 

@@ -32,7 +32,7 @@ static void print_drive (ide_ata_slot_t *ide) {
 			printf(" None");
 		}
 		else {
-			printf(" %s;", ide->ide_bus[i].dev_ide_ata->dev_name);
+			printf(" %s;", ide->ide_bus[i].dev_ide_ata->dev_node->name);
 			printf(" %s", ide->ide_bus[i].dev_ide_ata->identification.sn);
 			printf(" %s",
 				ide->ide_bus[i].dev_ide_ata->identification.model_numb);

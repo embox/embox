@@ -16,7 +16,7 @@
 EMBOX_TEST_SUITE("fs/filesystem test");
 
 static mkfs_params_t mkfs_params;
-static ramdisk_params_t ramd_params;
+static dev_ramdisk_t ramdisk;
 static mount_params_t mount_param;
 static fs_drv_t *fs_drv;
 
@@ -31,7 +31,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 
 TEST_CASE("Create fat filesystem") {
 
-	test_assert_zero(fs_drv->fsop->format((void *)&ramd_params));
+	test_assert_zero(fs_drv->fsop->format((void *)&ramdisk.path));
 }
 
 #define FS_DIR  "/test_fsop"
@@ -67,10 +67,10 @@ static int setup_suite(void) {
 	test_assert_zero(ramdisk_create((void *)&mkfs_params));
 
 	/* set filesystem attribute to ramdisk */
-	strcpy((void *)ramd_params.path, (const void *)mkfs_params.path);
-	strcpy((void *)ramd_params.fs_name, (const void *)mkfs_params.fs_name);
+	strcpy((void *)ramdisk.path, (const void *)mkfs_params.path);
+	strcpy((void *)ramdisk.fs_name, (const void *)mkfs_params.fs_name);
 
-	ramd_params.fs_type = mkfs_params.fs_type;
+	ramdisk.fs_type = mkfs_params.fs_type;
 
 	fs_drv = filesystem_find_drv((const char *) &mkfs_params.fs_name);
 	test_assert_not_null(fs_drv);
@@ -82,7 +82,7 @@ static int setup_suite(void) {
 	test_assert_not_null(mount_param.dev_node);
 
 	/* set created ramdisc attribute from dev_node */
-	memcpy(&ramd_params, mount_param.dev_node->attr, sizeof(ramd_params));
+	memcpy(&ramdisk, mount_param.dev_node->attr, sizeof(ramdisk));
 
 	return 0;
 }

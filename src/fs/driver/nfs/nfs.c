@@ -202,14 +202,13 @@ static int nfsfs_init(void * par) {
 	return 0;
 }
 
-static int nfsfs_format(void *par) {
-	create_params_t *params;
+static int nfsfs_format(void *path) {
 	node_t *nod;
 
-	params = (create_params_t *) par;
-	if (NULL == (nod = vfs_find_node(params->path, NULL))) {
+	if (NULL == (nod = vfs_find_node((char *) path, NULL))) {
 		return -ENODEV;/*device not found*/
 	}
+	/* TODO format command support */
 	return 0;
 }
 
