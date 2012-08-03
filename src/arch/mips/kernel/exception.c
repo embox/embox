@@ -9,6 +9,7 @@
 #include <asm/traps.h>
 #include <asm/ptrace.h>
 #include <asm/mipsregs.h>
+#include <assert.h>
 
 #include <string.h>
 
@@ -49,5 +50,6 @@ void mips_exception_init(void) {
 		exception_handlers[tmp] = mips_second_exception_handler;
 	}
 
-	//asm("syscall\n");
 }
+
+

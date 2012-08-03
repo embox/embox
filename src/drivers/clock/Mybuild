@@ -43,5 +43,7 @@ module tsc {
 
 module mips_clk extends embox.arch.clock {
 	source "mips_clk.c"
+
+	depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
 }

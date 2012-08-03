@@ -4,5 +4,6 @@ module irq {
     @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "irq.c", "irq_lock.c"
 	depends embox.mem.objalloc, embox.arch.interrupt
+	depends embox.kernel.critical
 }
 

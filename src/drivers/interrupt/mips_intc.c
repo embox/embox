@@ -9,6 +9,8 @@
 
 #include <embox/unit.h>
 #include <asm/mipsregs.h>
+#include <kernel/irq.h>
+#include <assert.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -16,7 +18,36 @@ EMBOX_UNIT_INIT(unit_init);
  * Initialize MIPS build-in interrupts controller
  */
 static int unit_init(void) {
-	write_c0_status(~ST0_IM);
-//	write_c0_cause(~CAUSEF_IP);
+	uint32_t c0_status;
+	c0_status = read_c0_status();
+	c0_status &= ~(ST0_IM);
+//	c0_status &= ~(ST0_ERL);
+	write_c0_status(c0_status);
+
+	//mips_intr_enable();
+
+
 	return 0;
+}
+
+
+void interrupt_enable(interrupt_nr_t interrupt_nr) {
+	uint32_t c0;
+
+	assert(interrupt_nr_valid(interrupt_nr));
+
+	c0 = read_c0_status();
+	c0 |= 1 << (interrupt_nr + ST0_IRQ_MASK_OFFSET);
+	write_c0_status(c0);
+}
+
+void interrupt_disable(interrupt_nr_t interrupt_nr) {
+	uint32_t c0;
+
+	assert(interrupt_nr_valid(interrupt_nr));
+
+	c0 = read_c0_status();
+	c0 &= ~(1 << (interrupt_nr + ST0_IRQ_MASK_OFFSET));
+	write_c0_status(c0);
+
 }
