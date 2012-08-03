@@ -111,15 +111,18 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	raw_rcv(skb);
 
 #if 0	/* Forwarding */
-	/**
-	 * Check the destination address, and if it doesn't match
-	 * any of own addresses, retransmit packet according to the routing table.
-	 */
-	if (!ip_is_local(iph->daddr, true, false)) {
-		if (ip_forward_packet(skb) <= 0) {
-			return NET_RX_DROP;
+	/* TODO check for BOOTP packet. It is special case, when */
+	if (1/*is_not_bootp(skb)*/) {
+		/**
+		 * Check the destination address, and if it doesn't match
+		 * any of own addresses, retransmit packet according to the routing table.
+		 */
+		if (!ip_is_local(iph->daddr, true, false)) {
+			if (ip_forward_packet(skb) <= 0) {
+				return NET_RX_DROP;
+			}
+			return NET_RX_SUCCESS;
 		}
-		return NET_RX_SUCCESS;
 	}
 #endif
 
