@@ -13,6 +13,7 @@
 #include <net/inet_sock.h>
 #include <net/inetdevice.h>
 #include <net/route.h>
+#include <net/bootp.h>
 #include <linux/init.h>
 #include <net/ip_fragment.h>
 #include <net/skbuff.h>
@@ -85,9 +86,25 @@ static int fragment_skb_and_send(sk_buff_t *skb, const struct rt_entry *best_rou
 
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	struct rt_entry *best_route;
+	struct rt_entry bootp_route;
+	net_device_t *dev;
 
 	if (sk != NULL) {
 		build_ip_packet(sk, skb);
+	}
+
+
+	/* Process BOOTP */
+	if (ntohs(sk->sport) == BOOTP_PORT_CLIENT) {
+		dev = bootp_get_dev((bootphdr_t *)(skb->h.raw + UDP_HEADER_SIZE));
+		/* if iface is not initialized */
+		if (in_dev_get(dev)->ifa_address == 0) {
+			/* create new route for bootp */
+			memset(&bootp_route, 0, sizeof(struct rt_entry));
+			bootp_route.dev = dev;
+			best_route = &bootp_route;
+			goto ip_send;
+		}
 	}
 
 	best_route = rt_fib_get_best(skb->nh.iph->daddr);
@@ -96,6 +113,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 		return -EHOSTUNREACH;
 	}
 
+ip_send:
 	if (ip_route(skb, best_route) < 0) {
 		skb_free(skb);
 		return -ENETUNREACH;  /* errno? */

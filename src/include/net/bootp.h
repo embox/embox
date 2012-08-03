@@ -12,6 +12,7 @@
 
 #include <net/ip.h>
 #include <net/net.h>
+#include <string.h>
 
 //#define HOSTNAME "embox"
 //#define DHCP_SUPPORT 1
@@ -188,6 +189,17 @@ struct sk_buff;
 struct sock;
 
 extern int bootp_receive(struct sock *sk, struct sk_buff *skb);
+extern int bootp_client_send(int sock,bootphdr_t *bootp, net_device_t *dev,
+		struct sockaddr_in *dst);
+
+static inline net_device_t *bootp_get_dev(bootphdr_t *bootp) {
+	net_device_t *dev;
+	netdev_foreach(dev) {
+		if (!strncmp((void*)dev->dev_addr, (void*)bootp->chaddr, ETH_ALEN))
+			break;
+	}
+	return dev;
+}
 
 /**
  * Return current bootp info

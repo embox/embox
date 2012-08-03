@@ -23,6 +23,7 @@ static void process_options(in_device_t *in_dev, struct bootphdr *r) {
 	struct in_addr addr;
 	unsigned int magic_number = 0x63538263;
 	unsigned char *op = r->options;
+	in_addr_t mask;
 	const unsigned char *op_begin = op;
 
 	if (*((unsigned int*)op) != magic_number)
@@ -43,8 +44,11 @@ static void process_options(in_device_t *in_dev, struct bootphdr *r) {
 			break;
 		case TAG_SUBNET_MASK: /* set mask */
 			op += 2;
-			addr.s_addr = *((in_addr_t*)op);
+			mask = *((in_addr_t*)op);
+			addr.s_addr = mask;
 			inet_dev_set_mask(in_dev, addr.s_addr);
+			rt_add_route(in_dev->dev, r->siaddr & mask, mask,
+						INADDR_ANY, 0);
 			op += IP_ADDR_LEN;
 			break;
 		default:
@@ -52,6 +56,19 @@ static void process_options(in_device_t *in_dev, struct bootphdr *r) {
 			break;
 		}
 	}
+}
+
+int bootp_client_send(int sock, bootphdr_t *bphdr, net_device_t *dev, struct sockaddr_in *dst) {
+	unsigned int magic_cookie = htonl(0x63825363);
+
+	bphdr->op = BOOTPREQUEST;
+	bphdr->htype = HTYPE_ETHERNET;
+	bphdr->hlen = ETH_ALEN;
+
+	memcpy(bphdr->chaddr, dev->dev_addr, 6);
+	memcpy(bphdr->options, &magic_cookie, 4);
+
+	return sendto(sock, (void*) bphdr, sizeof(*bphdr), 0, (struct sockaddr *)dst, sizeof(*dst));
 }
 
 int bootp_receive(struct sock *sk, struct sk_buff *skb) {
