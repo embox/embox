@@ -1,4 +1,5 @@
-/*
+/**
+ * @file
  * @brief BOOTP implementation (client) over IPv4.
  *
  * @date 01.08.2012

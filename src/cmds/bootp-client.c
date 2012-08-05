@@ -1,4 +1,5 @@
-/*
+/**
+ * @file
  * @brief Simple BOOTP client
  *
  * @date 30.07.2012
