@@ -61,7 +61,7 @@
 ({ int __res;								\
 	if (sel == 0)							\
 		__asm__ __volatile__(					\
-			"mfc0\t%0, " #source "\n\t"			\
+			"mfc0\t%0, " #source "\n\t  ehb"			\
 			: "=r" (__res));				\
 	else								\
 		__asm__ __volatile__(					\
@@ -76,7 +76,7 @@
 do {									\
 	if (sel == 0)							\
 		__asm__ __volatile__(					\
-			"mtc0\t%z0, " #register "\n\t"			\
+			"mtc0\t%z0, " #register "\n\t ehb"			\
 			: : "Jr" ((unsigned int)(value)));		\
 	else								\
 		__asm__ __volatile__(					\

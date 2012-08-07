@@ -28,7 +28,6 @@ END(mips_first_exception_handler)
 
 //http://linux.junsun.net/porting-howto/
 //http://winfred-lu.blogspot.com/2011/04/mips-exceptions-initialization-and.html
-//http://stackoverflow.com/questions/4211555/clock-implementation-in-mips
 //https://www.d.umn.edu/~cprince/courses/cs2521fall09/programming/lab8/
 
 NESTED(mips_second_exception_handler, PT_SIZE, $sp)
@@ -38,30 +37,49 @@ NESTED(mips_second_exception_handler, PT_SIZE, $sp)
 	move $a0, $sp    /* Arg 0: saved regs. */
 	jal  mips_c_exception_handler  /* Call C code. */
 	nop
-	//lui  $gp, 0x8000        /* Set global pointer (delay slot) */
-
 
 	RESTORE_ALL
-
-//	lw    $k0, (PT_STATUS) ($sp) /* K0 = saved status */
-//	ori   $k0, ST0_EXL                /* Set EXL exception level */
-//	mtc0  $k0, $CP0_STATUS            /* put CP0_STATUS back: disable interrupts */
-//		ehb /* hazard barier */
-
 
 	lw    $k0, (PT_PC) ($sp)     /* K0 = EPC */
 	addiu $k0, 4
 	mtc0  $k0, $CP0_EPC               /* put PC in EPC */
 
 
-	lw    $31, (PT_RA) ($sp)
-//	addi  $sp, PT_SIZE /* Restore stack */
+	addi  $sp, PT_SIZE /* Restore stack */
 
 	/* Return from exception */
-	//ehb
 	eret   /* PC <= EPC; EXL <= 0 */
 	nop
 //	rfe
 //	jr $k0
-	RESTORE_SP_AND_RET
+//	RESTORE_SP_AND_RET
 END(mips_second_exception_handler)
+
+
+NESTED(mips_interrupt_handler, PT_SIZE, $sp)
+	addi  $sp, -PT_SIZE
+	SAVE_ALL
+
+#if 0
+    LONG_L  s0, TI_REGS($28)
+    LONG_S  sp, TI_REGS($28)
+    PTR_LA  ra, ret_from_irq
+    j    plat_irq_dispatch
+#endif
+
+	move $a0, $sp                  /* Arg 0: saved regs. */
+	jal  mips_c_interrupt_handler  /* Call C code. */
+	nop
+
+		RESTORE_ALL
+
+	lw    $k0, (PT_PC) ($sp)     /* K0 = EPC */
+	mtc0  $k0, $CP0_EPC               /* put PC in EPC */
+
+
+	addi  $sp, PT_SIZE /* Restore stack */
+
+	/* Return from exception */
+	eret   /* PC <= EPC; EXL <= 0 */
+	nop
+END(mips_interrupt_handler)

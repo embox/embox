@@ -22,6 +22,8 @@ static int unit_init(void) {
 	c0_status = read_c0_status();
 	c0_status &= ~(ST0_IM);
 //	c0_status &= ~(ST0_ERL);
+	c0_status &= ~(ST0_EXL);
+	c0_status |= ST0_IE;
 	write_c0_status(c0_status);
 
 	//mips_intr_enable();

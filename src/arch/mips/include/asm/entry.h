@@ -125,7 +125,8 @@
 	lw    $24, (PT_R24) ($sp); \
 	lw    $25, (PT_R25) ($sp); \
 	lw    $28, (PT_GP) ($sp);  \
-	lw    $30, (PT_FP) ($sp);
+	lw    $30, (PT_FP) ($sp);  \
+	lw    $31, (PT_RA) ($sp);
 
 
 #endif
