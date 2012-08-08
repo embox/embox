@@ -13,7 +13,6 @@
 #include <net/ip.h>
 #include <net/in.h>
 #include <ctype.h>
-#include <unistd.h>
 #include <embox/cmd.h>
 
 EMBOX_CMD(exec);
@@ -104,7 +103,7 @@ static struct fm_info ftp_mtds[] = {
 	{ "bye", "bye", "terminate ftp session and exit", &fs_cmd_bye }
 };
 
-/* Execute the command for current FTP Session */
+/* Send command in the current session */
 static int fs_snd_request(const char *cmd, struct fs_info *session) {
 	int ret;
 
@@ -117,20 +116,20 @@ static int fs_snd_request(const char *cmd, struct fs_info *session) {
 	return FTP_RET_OK;
 }
 
+/* Receive reply in the current session */
 static int fs_rcv_reply(struct fs_info *session) {
 	int ret;
-	char answer[256];
 
-	ret = recvfrom(session->cmd_sock, &answer[0], sizeof answer - 1, 0, 0, 0);
+	ret = recvfrom(session->cmd_sock, &session->cmd_buff[0], sizeof session->cmd_buff - 1, 0, 0, 0);
 	if (ret <= 0) {
 		fprintf(stderr, "Can't receive data\n");
 		return FTP_RET_ERROR;
 	}
 
-	answer[ret] = '\0';
-	fprintf(stdout, "%s", answer);
+	session->cmd_buff[ret] = '\0';
+	fprintf(stdout, "%s", &session->cmd_buff[0]);
 
-	ret = sscanf(answer, "%d", &session->stat_code);
+	ret = sscanf(&session->cmd_buff[0], "%d", &session->stat_code);
 	if (ret != 1) {
 		return FTP_RET_ERROR;
 	}
@@ -138,6 +137,7 @@ static int fs_rcv_reply(struct fs_info *session) {
 	return FTP_RET_OK;
 }
 
+/* Execute command in the current session (send request and receive response */
 static int fs_execute(const char *cmd, struct fs_info *session) {
 	int ret;
 
@@ -154,11 +154,120 @@ static int fs_execute(const char *cmd, struct fs_info *session) {
 	return FTP_RET_OK;
 }
 
-/* Realization of ftp client's commands */
-static int fs_cmd_open(struct fs_info *session) {
+/* Create socket */
+static int make_socket(int *out_sock) {
+	int sock;
+
+	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (sock < 0) {
+		fprintf(stderr, "Can't create socket.\n");
+		return FTP_RET_ERROR;
+	}
+
+	*out_sock = sock;
+
+	return FTP_RET_OK;
+}
+
+/* Create socket and connect to remote address */
+static int make_active_socket(in_addr_t remote_ip, uint16_t remote_port, int *out_sock) {
+	int ret, sock;
 	struct sockaddr_in remote_addr;
+
+	ret = make_socket(&sock);
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	memset(&remote_addr, 0, sizeof remote_addr);
+
+	remote_addr.sin_addr.s_addr = remote_ip;
+	remote_addr.sin_port = htons(remote_port);
+	remote_addr.sin_family = AF_INET;
+
+	ret = connect(sock, (struct sockaddr *)&remote_addr, sizeof remote_addr);
+	if (ret < 0) {
+		fprintf(stderr, "Can't connect to host %s:%d.\n", inet_ntoa(remote_addr.sin_addr), (int)remote_port);
+		close(sock);
+		return FTP_RET_ERROR;
+	}
+
+	*out_sock = sock;
+
+	return FTP_RET_OK;
+}
+
+/* Create socket for data transfering */
+static int make_data_socket(struct fs_info *session, int *out_sock) {
+	/* FIXME only PASV command is supported */
+	int ret, sock, ip_part[4], port_part[2];
+	char *tmp;
+	in_addr_t ip_full;
+	uint16_t port_full;
+
+	ret = fs_execute("PASV\r\n", session); /* XXX only passive connection now */
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	/* Parse destonation address */
+	if (!(tmp = strchr(&session->cmd_buff[0], '(')) || (sscanf(++tmp, "%d", &ip_part[0]) != 1)
+			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[1]) != 1)
+			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[2]) != 1)
+			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[3]) != 1)
+			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &port_part[0]) != 1)
+			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &port_part[1]) != 1)) {
+		fprintf(stderr, "Can't parse remote address.\n");
+		return FTP_RET_FAIL;
+	}
+
+	ip_full = (ip_part[3] << 24) | (ip_part[2] << 16) | (ip_part[1] << 8) | (ip_part[0] << 0);
+	port_full = (port_part[0] << 8) | (port_part[1] << 0);
+
+	ret = make_active_socket(ip_full, port_full, &sock);
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	*out_sock = sock;
+
+	return FTP_RET_OK;
+}
+
+static int save_all_data(FILE *file_to, int sock_from, char *buff, size_t buff_sz) {
+	int received, written;
+
+	while (1) {
+		received = recvfrom(sock_from, buff, buff_sz, 0, 0, 0);
+		if (received < 0) {
+			fprintf(stderr, "Can't receive data.\n");
+			return FTP_RET_ERROR;
+		}
+
+		if (received == 0) {
+			break;
+		}
+
+		written = fwrite(buff, 1, received, file_to);
+		if (written != received) {
+			fprintf(stderr, "Can't save data to 0x%p.\n", (void *)file_to);
+			return FTP_RET_ERROR;
+		}
+	}
+
+	return FTP_RET_OK;
+}
+
+
+/**
+ * Realization of ftp client's commands
+ */
+
+static int fs_cmd_open(struct fs_info *session) {
+	int ret;
 	char *tmp, *arg_hostname, *arg_port;
-	unsigned int arg_port_int;
+	struct in_addr remote_ip;
+	unsigned int remote_port;
 
 	if (session->is_connected) {
 		fprintf(stderr, "Already connected, use close first.\n");
@@ -186,43 +295,33 @@ static int fs_cmd_open(struct fs_info *session) {
 	}
 	/* --- END OF Get args --- */
 
-	memset(&remote_addr, 0, sizeof remote_addr);
-
-	if (!inet_aton(arg_hostname, &remote_addr.sin_addr)) {
+	if (!inet_aton(arg_hostname, &remote_ip)) {
 		fprintf(stderr, "Can't parse IP address.\n");
 		errno = EINVAL;
 		return FTP_RET_ERROR;
 	}
 	if (arg_port == NULL) {
-		arg_port_int = 21; /* Use default settings */
+		remote_port = 21; /* Use default settings */
 	}
 	else {
-		if (sscanf(arg_port, "%u", &arg_port_int) != 1) {
+		if (sscanf(arg_port, "%u", &remote_port) != 1) {
 			fprintf(stderr, "Can't parse port '%s`.\n", arg_port);
 			errno = EINVAL;
 			return FTP_RET_ERROR;
 		}
 	}
-	remote_addr.sin_port = htons(arg_port_int);
-	remote_addr.sin_family = AF_INET;
 
-	session->cmd_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (session->cmd_sock < 0) {
-		fprintf(stderr, "Can't create command socket.\n");
-		return FTP_RET_ERROR;
+	ret = make_active_socket(remote_ip.s_addr, (uint16_t)remote_port, &session->cmd_sock);
+	if (ret != FTP_RET_OK) {
+		return ret;
 	}
 
-	if (connect(session->cmd_sock, (struct sockaddr *)&remote_addr, sizeof remote_addr) < 0) {
-		fprintf(stderr, "Can't connect to remote host %s:%u.\n", arg_hostname, arg_port_int);
-		close(session->cmd_sock);
-		return FTP_RET_ERROR;
-	}
-
-	fprintf(stdout, "Connected to %s:%u.\n", arg_hostname, arg_port_int);
+	fprintf(stdout, "Connected to %s:%u.\n", arg_hostname, remote_port);
 	session->is_connected = 1;
 
-	if (fs_rcv_reply(session) != 0) {
-		return FTP_RET_ERROR;
+	ret = fs_rcv_reply(session);
+	if (ret != FTP_RET_OK) {
+		return ret;
 	}
 
 	return FTP_RET_OK;
@@ -299,7 +398,7 @@ static int fs_cmd_rmdir(struct fs_info *session) { return FTP_RET_FAIL; }
 static int fs_cmd_mv(struct fs_info *session) { return FTP_RET_FAIL; }
 
 static int fs_cmd_ls(struct fs_info *session) {
-	int ret;
+	int ret, data_sock;
 	char *tmp, *arg_remotedir;
 
 	if (!session->is_connected) {
@@ -319,14 +418,29 @@ static int fs_cmd_ls(struct fs_info *session) {
 	}
 	/* --- END OF Get args --- */
 
-	if (arg_remotedir == NULL) {
-		sprintf(&session->cmd_buff[0], "LIST\r\n");
-	}
-	else {
-		sprintf(&session->cmd_buff[0], "LIST %s\r\n", arg_remotedir);
+	ret = make_data_socket(session, &data_sock);
+	if (ret != FTP_RET_OK) {
+		return ret;
 	}
 
+	sprintf(&session->cmd_buff[0],
+			(arg_remotedir == NULL) ? "LIST\r\n" : "LIST %s\r\n",
+			arg_remotedir);
+
 	ret = fs_execute(&session->cmd_buff[0], session);
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	ret = save_all_data(stdout, data_sock, &session->cmd_buff[0], sizeof session->cmd_buff);
+	if (ret != FTP_RET_OK) {
+		close(data_sock);
+		return ret;
+	}
+
+	close(data_sock);
+
+	ret = fs_rcv_reply(session);
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
