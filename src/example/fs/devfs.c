@@ -40,7 +40,7 @@ static int run(int argc, char **argv) {
 			break;
 		}
 		fread(&in_buff[i-1], 1, 1, file);
-	} while(in_buff[i-1] != '\r');
+	} while(in_buff[i-1] != '\n');
 	in_buff[i] = '\0';
 
 	printf("read from uart: %s\n", in_buff);
