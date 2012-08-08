@@ -18,7 +18,10 @@ int fgetc(FILE *file) {
 }
 
 int getchar(void) {
-	return getc(stdin);
+	int c;
+	c = getc(stdin);
+	putchar(c);
+	return c;
 }
 
 int ungetchar(int ch) {
