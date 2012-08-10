@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <kernel/file.h>
+#include <ctype.h>
 
 int fgetc(FILE *file) {
 	unsigned char ch;
@@ -20,7 +21,9 @@ int fgetc(FILE *file) {
 int getchar(void) {
 	int c;
 	c = getc(stdin);
-	putchar(c);
+	if (isalnum(c) || isspace(c)) {
+		putchar(c);
+	}
 	return c;
 }
 
