@@ -20,6 +20,8 @@ package embox.cmd
 	''')
 module ftp {
 	source "ftp.c"
+	option number cmd_buff_sz=128
+	option number data_buff_sz=1024
 
 	depends embox.lib.LibC
 	depends embox.net.socket

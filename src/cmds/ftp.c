@@ -6,16 +6,23 @@
  * @author Ilia Vaprol
  */
 
+#include <ctype.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <unistd.h>
+#include <stdarg.h>
 #include <net/socket.h>
 #include <net/ip.h>
 #include <net/in.h>
-#include <ctype.h>
 #include <embox/cmd.h>
 
 EMBOX_CMD(exec);
+
+#include <framework/mod/options.h>
+
+#define MODOPS_CMD_BUFF_SZ  OPTION_GET(NUMBER, cmd_buff_sz)
+#define MODOPS_DATA_BUFF_SZ OPTION_GET(NUMBER, data_buff_sz)
 
 /* Global return codes */
 enum {
@@ -55,10 +62,11 @@ enum {
 
 /* FTP Session info */
 struct fs_info {
-	char cmd_buff[128]; /* command buffer */
-	int cmd_sock;       /* command socket */
-	int is_connected;   /* connection is esteblishment */
-	int stat_code;      /* result of last command */
+	char buff[MODOPS_DATA_BUFF_SZ];    /* general buffer for commands and data transfering */
+	char cmd_buff[MODOPS_CMD_BUFF_SZ]; /* command buffer */
+	int cmd_sock;                      /* command socket */
+	int is_connected;                  /* connection is esteblishment */
+	int stat_code;                     /* result of last command */
 };
 
 /* FTP Method info */
@@ -104,7 +112,7 @@ static struct fm_info ftp_mtds[] = {
 };
 
 /* Send command in the current session */
-static int fs_snd_request(const char *cmd, struct fs_info *session) {
+static int fs_snd_request(struct fs_info *session, const char *cmd) {
 	int ret;
 
 	ret = sendto(session->cmd_sock, cmd, strlen(cmd), 0, 0, 0);
@@ -113,23 +121,24 @@ static int fs_snd_request(const char *cmd, struct fs_info *session) {
 		return FTP_RET_ERROR;
 	}
 
+	printf("-->%s", cmd);
+
 	return FTP_RET_OK;
 }
 
 /* Receive reply in the current session */
-static int fs_rcv_reply(struct fs_info *session) {
+static int fs_rcv_reply(struct fs_info *session, char *buff, size_t buff_sz) {
 	int ret;
 
-	ret = recvfrom(session->cmd_sock, &session->cmd_buff[0], sizeof session->cmd_buff - 1, 0, 0, 0);
+	ret = recvfrom(session->cmd_sock, buff, buff_sz, 0, 0, 0);
 	if (ret <= 0) {
 		fprintf(stderr, "Can't receive data\n");
 		return FTP_RET_ERROR;
 	}
 
-	session->cmd_buff[ret] = '\0';
-	fprintf(stdout, "%s", &session->cmd_buff[0]);
+	fwrite(buff, 1, ret, stdout);
 
-	ret = sscanf(&session->cmd_buff[0], "%d", &session->stat_code);
+	ret = sscanf(buff, "%d", &session->stat_code);
 	if (ret != 1) {
 		return FTP_RET_ERROR;
 	}
@@ -138,15 +147,20 @@ static int fs_rcv_reply(struct fs_info *session) {
 }
 
 /* Execute command in the current session (send request and receive response */
-static int fs_execute(const char *cmd, struct fs_info *session) {
+static int fs_execute(struct fs_info *session, const char *cmd_format, ...) {
 	int ret;
+	va_list args;
 
-	ret = fs_snd_request(cmd, session);
+	va_start(args, cmd_format);
+	vsprintf(&session->buff[0], cmd_format, args);
+	va_end(args);
+
+	ret = fs_snd_request(session, &session->buff[0]);
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
 
-	ret = fs_rcv_reply(session);
+	ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
@@ -205,13 +219,13 @@ static int make_data_socket(struct fs_info *session, int *out_sock) {
 	in_addr_t ip_full;
 	uint16_t port_full;
 
-	ret = fs_execute("PASV\r\n", session); /* XXX only passive connection now */
+	ret = fs_execute(session, "PASV\r\n"); /* XXX only passive connection now */
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
 
 	/* Parse destonation address */
-	if (!(tmp = strchr(&session->cmd_buff[0], '(')) || (sscanf(++tmp, "%d", &ip_part[0]) != 1)
+	if (!(tmp = strchr(&session->buff[0], '(')) || (sscanf(++tmp, "%d", &ip_part[0]) != 1)
 			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[1]) != 1)
 			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[2]) != 1)
 			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[3]) != 1)
@@ -234,6 +248,7 @@ static int make_data_socket(struct fs_info *session, int *out_sock) {
 	return FTP_RET_OK;
 }
 
+/* Receive all from socket and write to file using buff */
 static int save_all_data(FILE *file_to, int sock_from, char *buff, size_t buff_sz) {
 	int received, written;
 
@@ -250,7 +265,7 @@ static int save_all_data(FILE *file_to, int sock_from, char *buff, size_t buff_s
 
 		written = fwrite(buff, 1, received, file_to);
 		if (written != received) {
-			fprintf(stderr, "Can't save data to 0x%p.\n", (void *)file_to);
+			fprintf(stderr, "Can't save data.\n");
 			return FTP_RET_ERROR;
 		}
 	}
@@ -264,6 +279,7 @@ static int save_all_data(FILE *file_to, int sock_from, char *buff, size_t buff_s
  */
 
 static int fs_cmd_open(struct fs_info *session) {
+	/* Usage: open <host-name> [port] */
 	int ret;
 	char *tmp, *arg_hostname, *arg_port;
 	struct in_addr remote_ip;
@@ -274,7 +290,7 @@ static int fs_cmd_open(struct fs_info *session) {
 		return FTP_RET_FAIL;
 	}
 
-	/* Get args. Format: open <host-name> [port] */
+	/* Get args */
 	tmp = &session->cmd_buff[0];
 	skip_spaces(tmp); skip_word(tmp); skip_spaces(tmp);
 	arg_hostname = tmp;
@@ -319,7 +335,7 @@ static int fs_cmd_open(struct fs_info *session) {
 	fprintf(stdout, "Connected to %s:%u.\n", arg_hostname, remote_port);
 	session->is_connected = 1;
 
-	ret = fs_rcv_reply(session);
+	ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
@@ -328,6 +344,7 @@ static int fs_cmd_open(struct fs_info *session) {
 }
 
 static int fs_cmd_close(struct fs_info *session) {
+	/* Usage: close */
 	int ret;
 
 	if (!session->is_connected) {
@@ -335,7 +352,7 @@ static int fs_cmd_close(struct fs_info *session) {
 		return FTP_RET_FAIL;
 	}
 
-	ret = fs_execute("QUIT\r\n", session);
+	ret = fs_execute(session, "QUIT\r\n");
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
@@ -347,15 +364,16 @@ static int fs_cmd_close(struct fs_info *session) {
 }
 
 static int fs_cmd_user(struct fs_info *session) {
+	/* Usage: user <user-name> */
 	int ret;
-	char *tmp, *arg_username, password[32];
+	char *tmp, *arg_username;
 
 	if (!session->is_connected) {
 		fprintf(stderr, "Not connected.\n");
 		return FTP_RET_FAIL;
 	}
 
-	/* Get args. Format: user <user-name> */
+	/* Get args */
 	tmp = &session->cmd_buff[0];
 	skip_spaces(tmp); skip_word(tmp); skip_spaces(tmp);
 	arg_username = tmp;
@@ -369,21 +387,17 @@ static int fs_cmd_user(struct fs_info *session) {
 	}
 	/* --- END OF Get args --- */
 
-	sprintf(&session->cmd_buff[0], "USER %s\r\n", arg_username);
-
-	ret = fs_execute(&session->cmd_buff[0], session);
+	ret = fs_execute(session, "USER %s\r\n", arg_username);
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
 
 	fprintf(stdout, "Password: ");
-	if (fgets(&password[0], sizeof password, stdin) == NULL) {
+	if (fgets(&session->cmd_buff[0], sizeof session->cmd_buff, stdin) == NULL) {
 		return FTP_RET_FAIL;
 	}
 
-	sprintf(&session->cmd_buff[0], "PASS %s\r\n", &password[0]);
-
-	ret = fs_execute(&session->cmd_buff[0], session);
+	ret = fs_execute(session, "PASS %s\r\n", &session->cmd_buff[0]);
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
@@ -391,13 +405,161 @@ static int fs_cmd_user(struct fs_info *session) {
 	return FTP_RET_OK;
 }
 
-static int fs_cmd_cd(struct fs_info *session) { return FTP_RET_FAIL; }
-static int fs_cmd_pwd(struct fs_info *session) { return FTP_RET_FAIL; }
-static int fs_cmd_mkdir(struct fs_info *session) { return FTP_RET_FAIL; }
-static int fs_cmd_rmdir(struct fs_info *session) { return FTP_RET_FAIL; }
-static int fs_cmd_mv(struct fs_info *session) { return FTP_RET_FAIL; }
+static int fs_cmd_cd(struct fs_info *session) {
+	/* Usage: cd <remote-directory> */
+	int ret;
+	char *tmp, *arg_remotedir;
+
+	if (!session->is_connected) {
+		fprintf(stderr, "Not connected.\n");
+		return FTP_RET_FAIL;
+	}
+
+	/* Get args */
+	tmp = &session->cmd_buff[0];
+	skip_spaces(tmp); skip_word(tmp); skip_spaces(tmp);
+	arg_remotedir = tmp;
+
+	split_word(arg_remotedir);
+
+	if (*arg_remotedir == '\0') {
+		fprintf(stderr, "Remote directory is not specified.\n");
+		errno = EINVAL;
+		return FTP_RET_ERROR;
+	}
+	/* --- END OF Get args --- */
+
+	ret = fs_execute(session, "CWD %s\r\n", arg_remotedir);
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	return FTP_RET_OK;
+}
+
+static int fs_cmd_pwd(struct fs_info *session) {
+	/* Usage: pwd */
+	int ret;
+
+	if (!session->is_connected) {
+		fprintf(stderr, "Not connected.\n");
+		return FTP_RET_FAIL;
+	}
+
+	ret = fs_execute(session, "PWD\r\n");
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	return FTP_RET_OK;
+}
+
+static int fs_cmd_mkdir(struct fs_info *session) {
+	/* Usage: mkdir <directory-name> */
+	int ret;
+	char *tmp, *arg_dirname;
+
+	if (!session->is_connected) {
+		fprintf(stderr, "Not connected.\n");
+		return FTP_RET_FAIL;
+	}
+
+	/* Get args */
+	tmp = &session->cmd_buff[0];
+	skip_spaces(tmp); skip_word(tmp); skip_spaces(tmp);
+	arg_dirname = tmp;
+
+	split_word(arg_dirname);
+
+	if (*arg_dirname == '\0') {
+		fprintf(stderr, "Directory name is not specified.\n");
+		errno = EINVAL;
+		return FTP_RET_ERROR;
+	}
+	/* --- END OF Get args --- */
+
+	ret = fs_execute(session, "MKD %s\r\n", arg_dirname);
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	return FTP_RET_OK;
+}
+
+static int fs_cmd_rmdir(struct fs_info *session) {
+	/* Usage: rmdir <directory-name> */
+	int ret;
+	char *tmp, *arg_dirname;
+
+	if (!session->is_connected) {
+		fprintf(stderr, "Not connected.\n");
+		return FTP_RET_FAIL;
+	}
+
+	/* Get args */
+	tmp = &session->cmd_buff[0];
+	skip_spaces(tmp); skip_word(tmp); skip_spaces(tmp);
+	arg_dirname = tmp;
+
+	split_word(arg_dirname);
+
+	if (*arg_dirname == '\0') {
+		fprintf(stderr, "Directory name is not specified.\n");
+		errno = EINVAL;
+		return FTP_RET_ERROR;
+	}
+	/* --- END OF Get args --- */
+
+	ret = fs_execute(session, "RMD %s\r\n", arg_dirname);
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	return FTP_RET_OK;
+}
+
+static int fs_cmd_mv(struct fs_info *session) {
+	/* Usage: mv <from-name> <to-name> */
+	int ret;
+	char *tmp, *arg_fromname, *arg_toname;
+
+	if (!session->is_connected) {
+		fprintf(stderr, "Not connected.\n");
+		return FTP_RET_FAIL;
+	}
+
+	/* Get args */
+	tmp = &session->cmd_buff[0];
+	skip_spaces(tmp); skip_word(tmp); skip_spaces(tmp);
+	arg_fromname = tmp;
+	skip_word(tmp); skip_spaces(tmp);
+	arg_toname = tmp;
+
+	split_word(arg_fromname);
+	split_word(arg_toname);
+
+	if ((*arg_fromname == '\0') || (*arg_toname == '\0')) {
+		fprintf(stderr, "Please specify source and destonation names.\n");
+		errno = EINVAL;
+		return FTP_RET_ERROR;
+	}
+	/* --- END OF Get args --- */
+
+	ret = fs_execute(session, "RNFR %s\r\n", arg_fromname);
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	ret = fs_execute(session, "RNTO %s\r\n", arg_toname);
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	return FTP_RET_OK;
+}
 
 static int fs_cmd_ls(struct fs_info *session) {
+	/* Usage: ls [remote-directory] */
 	int ret, data_sock;
 	char *tmp, *arg_remotedir;
 
@@ -406,7 +568,7 @@ static int fs_cmd_ls(struct fs_info *session) {
 		return FTP_RET_FAIL;
 	}
 
-	/* Get args. Format: ls [remote-directory] */
+	/* Get args */
 	tmp = &session->cmd_buff[0];
 	skip_spaces(tmp); skip_word(tmp); skip_spaces(tmp);
 	arg_remotedir = tmp;
@@ -423,16 +585,14 @@ static int fs_cmd_ls(struct fs_info *session) {
 		return ret;
 	}
 
-	sprintf(&session->cmd_buff[0],
-			(arg_remotedir == NULL) ? "LIST\r\n" : "LIST %s\r\n",
-			arg_remotedir);
-
-	ret = fs_execute(&session->cmd_buff[0], session);
+	ret = (arg_remotedir == NULL)
+		? fs_execute(session, "LIST\r\n")
+		: fs_execute(session, "LIST %s\r\n", arg_remotedir);
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
 
-	ret = save_all_data(stdout, data_sock, &session->cmd_buff[0], sizeof session->cmd_buff);
+	ret = save_all_data(stdout, data_sock, &session->buff[0], sizeof session->buff);
 	if (ret != FTP_RET_OK) {
 		close(data_sock);
 		return ret;
@@ -440,7 +600,7 @@ static int fs_cmd_ls(struct fs_info *session) {
 
 	close(data_sock);
 
-	ret = fs_rcv_reply(session);
+	ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
@@ -448,11 +608,50 @@ static int fs_cmd_ls(struct fs_info *session) {
 	return FTP_RET_OK;
 }
 
-static int fs_cmd_get(struct fs_info *session) { return FTP_RET_FAIL; }
-static int fs_cmd_put(struct fs_info *session) { return FTP_RET_FAIL; }
-static int fs_cmd_rm(struct fs_info *session) { return FTP_RET_FAIL; }
+static int fs_cmd_get(struct fs_info *session) {
+	/* Usage: get <remote-file> [local-file] */
+	return FTP_RET_FAIL;
+}
+
+static int fs_cmd_put(struct fs_info *session) {
+	/* Usage: put <local-file> <remote-file> */
+	return FTP_RET_FAIL;
+}
+
+static int fs_cmd_rm(struct fs_info *session) {
+	/* Usage: rm <remote-file> */
+	int ret;
+	char *tmp, *arg_remotefile;
+
+	if (!session->is_connected) {
+		fprintf(stderr, "Not connected.\n");
+		return FTP_RET_FAIL;
+	}
+
+	/* Get args */
+	tmp = &session->cmd_buff[0];
+	skip_spaces(tmp); skip_word(tmp); skip_spaces(tmp);
+	arg_remotefile = tmp;
+
+	split_word(arg_remotefile);
+
+	if (*arg_remotefile == '\0') {
+		fprintf(stderr, "File name is not specified.\n");
+		errno = EINVAL;
+		return FTP_RET_ERROR;
+	}
+	/* --- END OF Get args --- */
+
+	ret = fs_execute(session, "DELE %s\r\n", arg_remotefile);
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	return FTP_RET_OK;
+}
 
 static int fs_cmd_help(struct fs_info *session) {
+	/* Usage: help */
 	size_t i;
 
 	fprintf(stdout, "Use the next commands:\n");
@@ -464,6 +663,7 @@ static int fs_cmd_help(struct fs_info *session) {
 }
 
 static int fs_cmd_bye(struct fs_info *session) {
+	/* Usage: bye */
 	if (session->is_connected) {
 		fs_cmd_close(session);
 	}
