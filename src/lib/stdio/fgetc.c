@@ -21,7 +21,7 @@ int fgetc(FILE *file) {
 int getchar(void) {
 	int c;
 	c = getc(stdin);
-	if (isalnum(c) || isspace(c)) {
+	if (!iscntrl(c) || isspace(c)) {
 		putchar(c);
 	}
 	return c;
