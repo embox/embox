@@ -319,7 +319,8 @@ check_state:
 		skb = skb_queue_front(sk->sk_receive_queue);
 		if (skb == NULL) {
 			if (sock.sk->sk_state == TCP_CLOSEWAIT) {
-				return -1; /* error: connection closing */
+				msg->msg_iov->iov_len = 0;
+				return 0; /* no more data to receive */
 			}
 			if (tcp_get_usec() - started >= sock.tcp_sk->oper_timeout) {
 				return -ETIMEDOUT; /* error: timeout */
