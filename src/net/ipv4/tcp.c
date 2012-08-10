@@ -118,23 +118,29 @@ static inline void packet_print(union sock_pointer sock, struct sk_buff *skb, ch
 
 
 /************************ Auxiliary functions **************************/
-struct sk_buff * alloc_prep_skb(size_t addit_len) {
+struct sk_buff * alloc_prep_skb(size_t opts_len, size_t data_len) {
 	struct sk_buff *skb;
+	size_t eth_hdr_sz, ip_hdr_sz, tcp_hdr_sz;
 
-	skb = skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
-				    /*inet->opt->optlen +*/ TCP_V4_HEADER_MIN_SIZE +
-				    addit_len);
+	opts_len = (opts_len + 3) & ~(size_t)3; /* round */
+
+	eth_hdr_sz = ETH_HEADER_SIZE;
+	ip_hdr_sz = IP_MIN_HEADER_SIZE /*+ inet->opt->optlen*/;
+	tcp_hdr_sz = TCP_V4_HEADER_MIN_SIZE + opts_len;
+
+	skb = skb_alloc(eth_hdr_sz + ip_hdr_sz + tcp_hdr_sz + data_len);
 	if (skb == NULL) {
-		LOG_ERROR("no memory or len is too big. len=%u\n", addit_len);
+		LOG_ERROR("no memory or len is too big. len=%lu\n",
+				(unsigned long)(eth_hdr_sz + ip_hdr_sz + tcp_hdr_sz + data_len));
 		return NULL;
 	}
 
-	skb->nh.raw = skb->mac.raw + ETH_HEADER_SIZE;
-	skb->nh.iph->ihl = IP_MIN_HEADER_SIZE / 4;
-	skb->nh.iph->tot_len = htons(IP_MIN_HEADER_SIZE + TCP_V4_HEADER_MIN_SIZE + addit_len);
-	skb->h.raw = skb->nh.raw + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
-	memset(skb->h.raw, 0, TCP_V4_HEADER_MIN_SIZE);
-	skb->h.th->doff = TCP_V4_HEADER_MIN_SIZE / 4;
+	skb->nh.raw = skb->mac.raw + eth_hdr_sz;
+	skb->nh.iph->ihl = ip_hdr_sz / 4;
+	skb->nh.iph->tot_len = htons(ip_hdr_sz + tcp_hdr_sz + data_len);
+	skb->h.raw = skb->nh.raw + ip_hdr_sz;
+	memset(skb->h.raw, 0, tcp_hdr_sz);
+	skb->h.th->doff = tcp_hdr_sz / 4;
 
 	return skb;
 }
@@ -286,7 +292,6 @@ static void rebuild_tcp_header(__be32 ip_src, __be32 ip_dest,
 	tcph->dest = dest;
 	tcph->seq = htonl(seq);
 	tcph->ack_seq = htonl(ack_seq);
-	tcph->doff = TCP_V4_HEADER_MIN_SIZE / 4;
 	tcph->window = htons(window);
 	tcph->check = 0;
 	tcph->check = tcp_checksum(ip_src, ip_dest, IPPROTO_TCP,
@@ -550,7 +555,7 @@ static int tcp_st_estabil(union sock_pointer sock, struct sk_buff **pskb,
 	data_len = tcp_data_len(*pskb);
 	if (data_len > 0) {
 		/* Allocate new sk_buff_t for sending ack's flag */
-		answer = alloc_prep_skb(0);
+		answer = alloc_prep_skb(0, 0);
 		if (answer == NULL) {
 			return -ENOMEM;
 		}
@@ -585,7 +590,7 @@ static int tcp_st_finwait_1(union sock_pointer sock, struct sk_buff **pskb,
 	data_len = tcp_data_len(*pskb);
 	if (data_len > 0) {
 		/* Allocate new sk_buff_t for sending ack's flag */
-		answer = alloc_prep_skb(0);
+		answer = alloc_prep_skb(0, 0);
 		if (answer == NULL) {
 			return -ENOMEM;
 		}
@@ -633,7 +638,7 @@ static int tcp_st_finwait_2(union sock_pointer sock, struct sk_buff **pskb,
 	data_len = tcp_data_len(*pskb);
 	if (data_len > 0) {
 		/* Allocate new sk_buff_t for sending ack's flag */
-		answer = alloc_prep_skb(0);
+		answer = alloc_prep_skb(0, 0);
 		if (answer == NULL) {
 			return -ENOMEM;
 		}

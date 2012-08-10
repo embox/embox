@@ -157,7 +157,7 @@ extern void tcp_free_sock(union sock_pointer sock);
 extern void tcp_set_st(union sock_pointer sock, unsigned char new_state);
 extern void tcp_obj_lock(union sock_pointer sock, int obj);
 extern void tcp_obj_unlock(union sock_pointer sock, int obj);
-extern struct sk_buff * alloc_prep_skb(size_t addit_len);
+extern struct sk_buff * alloc_prep_skb(size_t ops_len, size_t data_len);
 extern size_t tcp_seq_len(struct sk_buff *skb);
 extern size_t tcp_data_left(struct sk_buff *skb);
 extern void send_from_sock(union sock_pointer sock, struct sk_buff *skb_send, int xmit_mod);

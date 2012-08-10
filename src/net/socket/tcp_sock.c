@@ -55,6 +55,16 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 	struct rt_entry *rte;
 	int res;
 	useconds_t started, now;
+	__u8 magic_opts[] = { /* TODO This is a bad way to get perrmission on remote machine, but it's works */
+		0x02, 0x04,      /* Maximum segment size:             */
+				0x40, 0x0C,             /* 16396 bytes  */
+		0x04, 0x02,      /* TCP SACK Permitted Option: True   */
+		0x08, 0x0A,      /* Timestamps:                       */
+				0x00, 0x0E, 0x3C, 0xCD, /* TSval 933069 */
+				0x00, 0x00, 0x00, 0x00, /* TSecr 0      */
+		0x01,            /* No-Operation                      */
+		0x03, 0x03, 0x07 /* Window scale: 7 (multiply by 128) */
+	};
 
 	assert(sk != NULL);
 	assert(addr != NULL);
@@ -84,8 +94,8 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 		sock.inet_sk->saddr = in_dev_get(rte->dev)->ifa_address; // TODO remove this
 		sock.inet_sk->daddr = addr_in->sin_addr.s_addr;
 		sock.inet_sk->dport = addr_in->sin_port;
-		/* make skb */
-		skb = alloc_prep_skb(0);
+		/* make skb with options */
+		skb = alloc_prep_skb(sizeof magic_opts, 0);
 		if (skb == NULL) {
 			res = -ENOMEM;
 			break;
@@ -93,6 +103,7 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 		tcph = tcp_hdr(skb);
 		tcph->syn = 1;
 		sock.tcp_sk->seq_queue += tcp_seq_len(skb);
+		memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
 		tcp_set_st(sock, TCP_SYN_SENT);
 		send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
 		now = started = tcp_get_usec();
@@ -245,7 +256,7 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 		while (len > 0) {
 			bytes = (len > max_len ? max_len : len);
 			debug_print(3, "tcp_v4_sendmsg: sending len %d\n", bytes);
-			skb = alloc_prep_skb(bytes);
+			skb = alloc_prep_skb(0, bytes);
 			if (skb == NULL) {
 				if (len != msg->msg_iov->iov_len) {
 					break;
@@ -371,7 +382,7 @@ static void tcp_v4_close(struct sock *sk, long timeout) {
 	case TCP_SYN_RECV:
 	case TCP_ESTABIL:
 	case TCP_CLOSEWAIT:
-		skb = alloc_prep_skb(0);
+		skb = alloc_prep_skb(0, 0);
 		if (skb == NULL) {
 			break;
 		}
