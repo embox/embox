@@ -39,7 +39,7 @@ typedef struct pt_regs {
 	unsigned int pc;
 }pt_regs_t;
 
-#else
+#else /* assembler */
 /*
  * Offsets of register values in saved context.
  */
@@ -79,6 +79,7 @@ typedef struct pt_regs {
 #define PT_PC     0x80
 
 #define PT_SIZE   0x84
+
 #endif /* __ASSEMBLER__ */
 
 

@@ -6,7 +6,6 @@
  * @date 24.07.2012
  * @author Anton Bondarev
  */
-#include <asm/traps.h>
 #include <asm/ptrace.h>
 #include <asm/mipsregs.h>
 #include <assert.h>
@@ -36,14 +35,14 @@ void mips_exception_init(void) {
 	unsigned int tmp;
 
 	/* clear BEV bit */
-	tmp = read_c0_status();
+	tmp = mips_read_c0_status();
 	tmp &= ~(ST0_BEV);
-	write_c0_status(tmp);
+	mips_write_c0_status(tmp);
 
 	/* crear CauseIV bit */
-	tmp = read_c0_cause();
+	tmp = mips_read_c0_cause();
 	tmp &= ~(CAUSE_IV);
-	write_c0_cause(tmp);
+	mips_write_c0_cause(tmp);
 
 	/* copy first exception handler to correct place */
 	memcpy((void *)(EBASE + 0x180), &mips_first_exception_handler, 0x80);
@@ -55,7 +54,7 @@ void mips_exception_init(void) {
 	exception_handlers[0] = mips_interrupt_handler;
 
 	/* clear EXL bit */
-	tmp = read_c0_status();
+	tmp = mips_read_c0_status();
 	tmp &= ~(ST0_ERL);
-	write_c0_status(tmp);
+	mips_write_c0_status(tmp);
 }

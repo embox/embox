@@ -12,12 +12,13 @@
 
 #ifndef __ASSEMBLER__
 typedef struct {
-	unsigned int s[8]; /* common registers */
+	unsigned int s[8];     /* static registers */
 	unsigned int fp;       /* frame pointer */
 	unsigned int ra;       /* return address */
 	unsigned int gp;       /* global pointer */
 	unsigned int sp;       /* stack pointer */
 } __jmp_buf[1];
+
 #else
 
 #define SETJMP_S0 0x00

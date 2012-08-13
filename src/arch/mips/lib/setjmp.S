@@ -12,8 +12,7 @@
 	.section ".text"
 /* a0 conteinst pointer to the setjmp buffer */
 LEAF(setjmp)
-//C_ENTRY(setjmp):
-	sw   $s0, (SETJMP_S0) ($a0)
+	sw   $s0, (SETJMP_S0) ($a0)    /* save static registers s0-s8 */
 	sw   $s1, (SETJMP_S1) ($a0)
 	sw   $s2, (SETJMP_S2) ($a0)
 	sw   $s3, (SETJMP_S3) ($a0)
@@ -36,8 +35,7 @@ END(setjmp)
  * a1 - return value
  */
 LEAF(longjmp)
-//C_ENTRY(longjmp):
-	lw   $s0, (SETJMP_S0) ($a0)  /* restore register variables s0-s8 */
+	lw   $s0, (SETJMP_S0) ($a0)  /* restore static registers s0-s8 */
 	lw   $s1, (SETJMP_S1) ($a0)
 	lw   $s2, (SETJMP_S2) ($a0)
 	lw   $s3, (SETJMP_S3) ($a0)

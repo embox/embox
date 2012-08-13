@@ -4,7 +4,7 @@
  * @brief
  *
  * @date 26.07.2012
- * @author anton
+ * @author Anton Bondarev
  */
 
 #ifndef MIPS_REGDEF_H_

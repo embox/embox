@@ -8,9 +8,8 @@
 #ifndef MIPS_LINKAGE_H_
 #define MIPS_LINKAGE_H_
 
-//#include <asm/regdef.h>
+#ifdef __ASSEMBLER__
 
-#define C_ENTRY(name) .globl name; .align 4; name
 
 
 #define PTR_ADD     add
@@ -48,8 +47,8 @@
 #define LONG        .word
 
 
-//#define sp      $29     /* stack pointer */
-//#define ra      $r31    /* return address */
+#define C_ENTRY(name) .globl name; .align 2; name
+
 /*
  * LEAF - declare leaf routine
  */
@@ -78,5 +77,6 @@ symbol:    .frame $sp, framesize, rpc
 	.end  function;                         \
 	.size function, .-function
 
+#endif /* __ASEEMBLER__ */
 
 #endif /* MIPS_LINKAGE_H_ */

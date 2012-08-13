@@ -19,12 +19,12 @@ EMBOX_UNIT_INIT(unit_init);
  */
 static int unit_init(void) {
 	uint32_t c0_status;
-	c0_status = read_c0_status();
+	c0_status = mips_read_c0_status();
 	c0_status &= ~(ST0_IM);
 //	c0_status &= ~(ST0_ERL);
 	c0_status &= ~(ST0_EXL);
 	c0_status |= ST0_IE;
-	write_c0_status(c0_status);
+	mips_write_c0_status(c0_status);
 
 	//mips_intr_enable();
 
@@ -38,9 +38,9 @@ void interrupt_enable(interrupt_nr_t interrupt_nr) {
 
 	assert(interrupt_nr_valid(interrupt_nr));
 
-	c0 = read_c0_status();
+	c0 = mips_read_c0_status();
 	c0 |= 1 << (interrupt_nr + ST0_IRQ_MASK_OFFSET);
-	write_c0_status(c0);
+	mips_write_c0_status(c0);
 }
 
 void interrupt_disable(interrupt_nr_t interrupt_nr) {
@@ -48,8 +48,8 @@ void interrupt_disable(interrupt_nr_t interrupt_nr) {
 
 	assert(interrupt_nr_valid(interrupt_nr));
 
-	c0 = read_c0_status();
+	c0 = mips_read_c0_status();
 	c0 &= ~(1 << (interrupt_nr + ST0_IRQ_MASK_OFFSET));
-	write_c0_status(c0);
+	mips_write_c0_status(c0);
 
 }

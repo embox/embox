@@ -26,14 +26,14 @@
 //http://stackoverflow.com/questions/4211555/clock-implementation-in-mips
 
 static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
-	uint32_t count = read_c0_count();
-	write_c0_compare(count + 10000);
+	uint32_t count = mips_read_c0_count();
+	mips_write_c0_compare(count + 10000);
 	return IRQ_HANDLED;
 }
 
 static int mips_clock_setup(struct time_dev_conf * conf) {
-	uint32_t count = read_c0_count();
-	write_c0_compare(count + 10000);
+	uint32_t count = mips_read_c0_count();
+	mips_write_c0_compare(count + 10000);
 
 	return ENOERR;
 }

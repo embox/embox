@@ -10,7 +10,7 @@
 #include <kernel/irq.h>
 
 void mips_c_interrupt_handler(void) {
-	unsigned int pending = read_c0_cause() & read_c0_status() & ST0_IM;
+	unsigned int pending = mips_read_c0_cause() & mips_read_c0_status() & ST0_IM;
 	int irq;
 	for(irq = 15; irq > 7; irq--) {
 		if(pending & (1 << irq)) {
@@ -18,3 +18,4 @@ void mips_c_interrupt_handler(void) {
 		}
 	}
 }
+
