@@ -35,6 +35,7 @@ enum {
 /* Getters fo status code */
 #define FTP_STAT_TYPE(stat) (stat / 100)
 #define FTP_STAT_KIND(stat) (stat % 100 / 10)
+#define FTP_STAT_FINI(stat) (stat % 10)
 
 /* Useful commands */
 #define skip_spaces(ptr) while (*ptr && isspace(*ptr)) ptr++
@@ -121,7 +122,36 @@ static int fs_snd_request(struct fs_info *session, const char *cmd) {
 		return FTP_RET_ERROR;
 	}
 
-	printf("-->%s", cmd);
+	return FTP_RET_OK;
+}
+
+/* Check status code and make needed actions */
+static int fs_check_stat(struct fs_info *session) {
+	int stat;
+
+	stat = session->stat_code;
+
+	switch (FTP_STAT_TYPE(stat)) {
+	default:
+		break;
+	case FTP_STAT_TYPE_TRANSIENT_NEGATIVE_COMPLETION:
+		switch (FTP_STAT_KIND(stat)) {
+		default:
+			break;
+		case FTP_STAT_KIND_CONNECTIONS:
+			switch (FTP_STAT_FINI(stat)) {
+			case 1:
+				close(session->cmd_sock);
+				session->is_connected = 0;
+				break;
+			}
+			break;
+
+		}
+		return FTP_RET_FAIL;
+	case FTP_STAT_TYPE_PERMANENT_NEGATIVE_COMPLETION:
+		return FTP_RET_FAIL;
+	}
 
 	return FTP_RET_OK;
 }
@@ -141,6 +171,11 @@ static int fs_rcv_reply(struct fs_info *session, char *buff, size_t buff_sz) {
 	ret = sscanf(buff, "%d", &session->stat_code);
 	if (ret != 1) {
 		return FTP_RET_ERROR;
+	}
+
+	ret = fs_check_stat(session);
+	if (ret != FTP_RET_OK) {
+		return ret;
 	}
 
 	return FTP_RET_OK;
@@ -370,18 +405,12 @@ static int fs_cmd_open(struct fs_info *session) {
 
 static int fs_cmd_close(struct fs_info *session) {
 	/* Usage: close */
-	int ret;
-
 	if (!session->is_connected) {
 		fprintf(stderr, "Not connected.\n");
 		return FTP_RET_FAIL;
 	}
 
-	ret = fs_execute(session, "QUIT\r\n");
-	if (ret != FTP_RET_OK) {
-		return ret;
-	}
-
+	fs_execute(session, "QUIT\r\n");
 	close(session->cmd_sock);
 	session->is_connected = 0;
 
@@ -569,6 +598,8 @@ static int fs_cmd_mv(struct fs_info *session) {
 		return FTP_RET_ERROR;
 	}
 	/* --- END OF Get args --- */
+
+	fprintf(stdout, "from: '%s`, to: '%s`\n", arg_fromname, arg_toname);
 
 	ret = fs_execute(session, "RNFR %s\r\n", arg_fromname);
 	if (ret != FTP_RET_OK) {
