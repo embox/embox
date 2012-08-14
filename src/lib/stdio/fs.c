@@ -30,8 +30,7 @@ FILE *fopen(const char *path, const char *mode) {
 			return NULL;
 		}
 
-		if (-1 == create(path, 0)) {
-			errno = EINVAL;
+		if (create(path, 0) < 0) {
 			return NULL;
 		}
 
@@ -43,7 +42,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	/* allocate new descriptor */
 	if (NULL == (desc = file_desc_alloc())) {
-		errno = EINVAL;
+		errno = ENOMEM;
 		return NULL;
 	}
 
@@ -51,10 +50,12 @@ FILE *fopen(const char *path, const char *mode) {
 	desc->node = nod;
 
 	drv = nod->fs_type;
+	assert(drv != NULL);
+
 	if (NULL != nod->file_info) {
 		desc->ops = (struct file_operations *)nod->file_info;
 	} else {
-		desc->ops = (struct file_operations *) drv->file_op;
+		desc->ops = (struct file_operations *)drv->file_op;
 	}
 
 	if (NULL == desc->ops->fopen) {

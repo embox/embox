@@ -46,6 +46,7 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 	} while (NULL == (node = vfs_find_node(param.path, NULL)));
 	/* check drv of parents */
 	drv = node->fs_type;
+	assert(drv != NULL);
 	if (NULL == drv->fsop->create_file) {
 		LOG_ERROR("fsop->create_file is NULL handler\n");
 		return NULL;
@@ -59,6 +60,7 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 			return NULL;
 		}
 
+		new_node->fs_type = node->fs_type;
 		new_node->properties = DIRECTORY_NODE_TYPE;
 		if ((LAST_IN_PATH == count_dir) && (FILE_NODE_TYPE == node_type)) {
 			new_node->properties &= ~DIRECTORY_NODE_TYPE;

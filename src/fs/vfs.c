@@ -45,7 +45,7 @@ int nip_tail(char *head, char *tail) {
 
 	do {
 		p_tail--;
-		if(head >= p_tail) {
+		if (head > p_tail) {
 			*p = '\0';
 			return -1;
 		}

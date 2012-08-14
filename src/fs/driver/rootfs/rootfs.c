@@ -12,6 +12,7 @@
 #include <fs/fs_drv.h>
 #include <fs/node.h>
 #include <util/array.h>
+#include <errno.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(unit_init);
@@ -68,6 +69,10 @@ DECLARE_FILE_SYSTEM_DRIVER(rootfs_drv);
 
 static int unit_init(void) {
 	root_node = alloc_node("/");
+	if (root_node == NULL) {
+		return -ENOMEM;
+	}
+	root_node->fs_type = (struct fs_drv *)&rootfs_drv;
 	rootfs_mount(NULL);
 	return 0;
 }
