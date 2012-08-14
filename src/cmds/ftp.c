@@ -115,7 +115,7 @@ static struct fm_info ftp_mtds[] = {
 static int fs_snd_request(struct fs_info *session, const char *cmd) {
 	int ret;
 
-	ret = sendto(session->cmd_sock, cmd, strlen(cmd), 0, 0, 0);
+	ret = sendto(session->cmd_sock, cmd, strlen(cmd), 0, NULL, 0);
 	if (ret <= 0) {
 		fprintf(stderr, "Can't send data\n");
 		return FTP_RET_ERROR;
@@ -130,7 +130,7 @@ static int fs_snd_request(struct fs_info *session, const char *cmd) {
 static int fs_rcv_reply(struct fs_info *session, char *buff, size_t buff_sz) {
 	int ret;
 
-	ret = recvfrom(session->cmd_sock, buff, buff_sz, 0, 0, 0);
+	ret = recvfrom(session->cmd_sock, buff, buff_sz, 0, NULL, NULL);
 	if (ret <= 0) {
 		fprintf(stderr, "Can't receive data\n");
 		return FTP_RET_ERROR;
@@ -249,11 +249,11 @@ static int make_data_socket(struct fs_info *session, int *out_sock) {
 }
 
 /* Receive all from socket and write to file using buff */
-static int flush_socket_to_file(int sock, FILE *file, char *buff, size_t buff_sz) {
+static int fill_file_from_socket(FILE *file, int sock, char *buff, size_t buff_sz) {
 	int received, written;
 
 	while (1) {
-		received = recvfrom(sock, buff, buff_sz, 0, 0, 0);
+		received = recvfrom(sock, buff, buff_sz, 0, NULL, NULL);
 		if (received < 0) {
 			fprintf(stderr, "Can't receive data.\n");
 			return FTP_RET_ERROR;
@@ -266,6 +266,31 @@ static int flush_socket_to_file(int sock, FILE *file, char *buff, size_t buff_sz
 		written = fwrite(buff, 1, received, file);
 		if (written != received) {
 			fprintf(stderr, "Can't save data.\n");
+			return FTP_RET_ERROR;
+		}
+	}
+
+	return FTP_RET_OK;
+}
+
+/* Read all from file and send to remote side via sock using buff */
+static int flush_file_to_socket(FILE *file, int sock, char *buff, size_t buff_sz) {
+	int readed, posted;
+
+	while (1) {
+		readed = fread(buff, 1, buff_sz, file);
+		if (readed < 0) {
+			fprintf(stderr, "Can't read data from file.\n");
+			return FTP_RET_ERROR;
+		}
+
+		if (readed == 0) {
+			break;
+		}
+
+		posted = sendto(sock, buff, readed, 0, NULL, 0);
+		if (posted != readed) {
+			fprintf(stderr, "Can't send data.\n");
 			return FTP_RET_ERROR;
 		}
 	}
@@ -593,7 +618,7 @@ static int fs_cmd_ls(struct fs_info *session) {
 		return ret;
 	}
 
-	ret = flush_socket_to_file(data_sock, stdout, &session->buff[0], sizeof session->buff);
+	ret = fill_file_from_socket(stdout, data_sock, &session->buff[0], sizeof session->buff);
 	if (ret != FTP_RET_OK) {
 		close(data_sock);
 		return ret;
@@ -613,7 +638,7 @@ static int fs_cmd_get(struct fs_info *session) {
 	/* Usage: get <remote-file> [local-file] */
 	int ret, data_sock;
 	char *tmp, *arg_remotefile, *arg_localfile;
-	FILE *new_file;
+	FILE *file;
 
 	if (!session->is_connected) {
 		fprintf(stderr, "Not connected.\n");
@@ -646,33 +671,35 @@ static int fs_cmd_get(struct fs_info *session) {
 	}
 	/* --- END OF Get args --- */
 
-	new_file = fopen(arg_localfile, "w");
-	if (new_file == NULL) {
+	fprintf(stdout, "remote: '%s`, local: '%s`\n", arg_remotefile, arg_localfile);
+
+	file = fopen(arg_localfile, "w");
+	if (file == NULL) {
 		fprintf(stderr, "Can't open file '%s` for writing.\n", arg_localfile);
 		return FTP_RET_ERROR;
 	}
 
 	ret = make_data_socket(session, &data_sock);
 	if (ret != FTP_RET_OK) {
-		fclose(new_file);
+		fclose(file);
 		return ret;
 	}
 
 	ret = fs_execute(session, "RETR %s\r\n", arg_remotefile);
 	if (ret != FTP_RET_OK) {
-		fclose(new_file);
+		fclose(file);
 		close(data_sock);
 		return ret;
 	}
 
-	ret = flush_socket_to_file(data_sock, new_file, &session->buff[0], sizeof session->buff);
+	ret = fill_file_from_socket(file, data_sock, &session->buff[0], sizeof session->buff);
 	if (ret != FTP_RET_OK) {
-		fclose(new_file);
+		fclose(file);
 		close(data_sock);
 		return ret;
 	}
 
-	fclose(new_file);
+	fclose(file);
 	close(data_sock);
 
 	ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
@@ -685,7 +712,69 @@ static int fs_cmd_get(struct fs_info *session) {
 
 static int fs_cmd_put(struct fs_info *session) {
 	/* Usage: put <local-file> <remote-file> */
-	return FTP_RET_FAIL;
+	int ret, data_sock;
+	char *tmp, *arg_localfile, *arg_remotefile;
+	FILE *file;
+
+	if (!session->is_connected) {
+		fprintf(stderr, "Not connected.\n");
+		return FTP_RET_FAIL;
+	}
+
+	/* Get args */
+	tmp = &session->cmd_buff[0];
+	skip_spaces(tmp); skip_word(tmp); skip_spaces(tmp);
+	arg_localfile = tmp;
+	skip_word(tmp); skip_spaces(tmp);
+	arg_remotefile = tmp;
+
+	split_word(arg_localfile);
+	split_word(arg_remotefile);
+
+	if ((*arg_localfile == '\0') && (*arg_remotefile == '\0')) {
+		fprintf(stderr, "Please specify names of local and remote files.\n");
+		errno = EINVAL;
+		return FTP_RET_ERROR;
+	}
+	/* --- END OF Get args --- */
+
+	fprintf(stdout, "local: '%s`, remote: '%s`\n", arg_localfile, arg_remotefile);
+
+	file = fopen(arg_localfile, "r");
+	if (file == NULL) {
+		fprintf(stderr, "Can't open file '%s` for reading.\n", arg_localfile);
+		return FTP_RET_ERROR;
+	}
+
+	ret = make_data_socket(session, &data_sock);
+	if (ret != FTP_RET_OK) {
+		fclose(file);
+		return ret;
+	}
+
+	ret = fs_execute(session, "STOR %s\r\n", arg_remotefile);
+	if (ret != FTP_RET_OK) {
+		fclose(file);
+		close(data_sock);
+		return ret;
+	}
+
+	ret = flush_file_to_socket(file, data_sock, &session->buff[0], sizeof session->buff);
+	if (ret != FTP_RET_OK) {
+		fclose(file);
+		close(data_sock);
+		return ret;
+	}
+
+	fclose(file);
+	close(data_sock);
+
+	ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
+	if (ret != FTP_RET_OK) {
+		return ret;
+	}
+
+	return FTP_RET_OK;
 }
 
 static int fs_cmd_rm(struct fs_info *session) {
