@@ -65,7 +65,7 @@ struct pt_regs {
 #define PT_ESR (PT_OFFSET + 0x88)
 #define PT_FSR (PT_OFFSET + 0x8C)
 
-/* sizeof(pt_regs_t */
+/* sizeof(pt_regs_t) */
 #define PT_SIZE 0x90
 
 

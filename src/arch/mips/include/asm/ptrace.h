@@ -29,10 +29,10 @@
  */
 typedef struct pt_regs {
 	unsigned int reg[25];
-	unsigned int gp; /* global pointer */
-	unsigned int sp; /* stack pointer */
-	unsigned int fp; /* frame pointer */
-	unsigned int ra; /* return address */
+	unsigned int gp; /* global pointer r28 */
+	unsigned int sp; /* stack pointer r29 */
+	unsigned int fp; /* frame pointer r30 */
+	unsigned int ra; /* return address 31*/
 	unsigned int lo;
 	unsigned int hi;
 	unsigned int cp0_status;
@@ -40,6 +40,8 @@ typedef struct pt_regs {
 }pt_regs_t;
 
 #else /* assembler */
+
+
 /*
  * Offsets of register values in saved context.
  */
@@ -78,6 +80,7 @@ typedef struct pt_regs {
 #define PT_STATUS 0x7C
 #define PT_PC     0x80
 
+/* sizeof(pt_regs) */
 #define PT_SIZE   0x84
 
 #endif /* __ASSEMBLER__ */
