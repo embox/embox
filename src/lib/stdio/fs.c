@@ -25,13 +25,13 @@ FILE *fopen(const char *path, const char *mode) {
 	struct file_desc *desc;
 
 	if (NULL == (nod = vfs_find_node(path, NULL))) {
-		if ('w' != *mode) {
-			errno = -ENOENT;
+		if (strchr(mode, 'w') == NULL) {
+			errno = ENOENT;
 			return NULL;
 		}
 
 		if (-1 == create(path, 0)) {
-			errno = -EINVAL;
+			errno = EINVAL;
 			return NULL;
 		}
 
@@ -43,7 +43,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	/* allocate new descriptor */
 	if (NULL == (desc = file_desc_alloc())) {
-		errno = -EINVAL;
+		errno = EINVAL;
 		return NULL;
 	}
 
@@ -51,14 +51,14 @@ FILE *fopen(const char *path, const char *mode) {
 	desc->node = nod;
 
 	drv = nod->fs_type;
-	if(NULL != nod->file_info) {
+	if (NULL != nod->file_info) {
 		desc->ops = (struct file_operations *)nod->file_info;
 	} else {
 		desc->ops = (struct file_operations *) drv->file_op;
 	}
 
 	if (NULL == desc->ops->fopen) {
-			errno = -EBADF;
+			errno = EBADF;
 			LOG_ERROR("fop->fopen is NULL handler\n");
 			return NULL;
 		}
@@ -85,16 +85,17 @@ int ferror(FILE *file) {
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 	struct file_desc *desc;
 
-	if(NULL == file) {
-		return -EBADF;
+	if (NULL == file) {
+		errno = EBADF;
+		return -1;
 	}
 
 	desc = (struct file_desc *)file;
 
 	if (NULL == desc->ops->fwrite) {
-		errno = -EBADF;
+		errno = EBADF;
 		LOG_ERROR("fop->fwrite is NULL handler\n");
-		return errno;
+		return -1;
 	}
 
 	return desc->ops->fwrite(buf, size, count, file);
@@ -105,8 +106,9 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	char *cbuff;
 	uint addon = 0;
 
-	if(NULL == file) {
-		return -EBADF;
+	if (NULL == file) {
+		errno = EBADF;
+		return -1;
 	}
 
 	desc = (struct file_desc *)file;
@@ -120,9 +122,9 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	}
 
 	if (NULL == desc->ops->fread) {
-		errno = -EBADF;
+		errno = EBADF;
 		LOG_ERROR("fop->fread is NULL handler\n");
-		return errno;
+		return -1;
 	}
 
 	return (addon + desc->ops->fread(buf, size, count, file));
@@ -132,16 +134,17 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 int fclose(FILE *file) {
 	struct file_desc *desc;
 
-	if(NULL == file) {
-		return -EBADF;
+	if (NULL == file) {
+		errno = EBADF;
+		return -1;
 	}
 
 	desc = (struct file_desc *)file;
 
 	if (NULL == desc->ops->fclose) {
-		errno = -EBADF;
+		errno = EBADF;
 		LOG_ERROR("fop->fclose is NULL handler\n");
-		return errno;
+		return -1;
 	}
 
 	desc->ops->fclose(desc);
@@ -153,16 +156,17 @@ int fclose(FILE *file) {
 int fseek(FILE *file, long int offset, int origin) {
 	struct file_desc *desc;
 
-	if(NULL == file) {
-		return -EBADF;
+	if (NULL == file) {
+		errno = EBADF;
+		return -1;
 	}
 
 	desc = (struct file_desc *)file;
 
 	if (NULL == desc->ops->fseek) {
-		errno = -EBADF;
+		errno = EBADF;
 		LOG_ERROR("fop->fseec is NULL handler\n");
-		return errno;
+		return -1;
 	}
 
 	return desc->ops->fseek(file, offset, origin);
@@ -174,13 +178,14 @@ int fioctl(FILE *fp, int request, ...) {
 	va_start(args, request);
 
 	if (NULL == fp) {
-		return -EBADF;
+		errno = EBADF;
+		return -1;
 	}
 
 	if (NULL == desc->ops->ioctl) {
-		errno = -EBADF;
+		errno = EBADF;
 		LOG_ERROR("fop->ioctl is NULL handler\n");
-		return errno;
+		return -1;
 	}
 	return desc->ops->ioctl(fp, request, args);
 }
@@ -191,3 +196,4 @@ int ungetc(int ch, FILE *file) {
 	desc->has_ungetc = 1;
 	return ch;
 }
+

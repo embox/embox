@@ -83,7 +83,7 @@ int create(const char *pathname, mode_t mode) {
 	node_t *nod;
 
 	if (NULL != (nod = vfs_find_node(pathname, NULL))) {
-		errno = -EBUSY;
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -91,7 +91,7 @@ int create(const char *pathname, mode_t mode) {
 
 
 	if (NULL == (nod = create_filechain(pathname, FILE_NODE_TYPE))) {
-		errno = -EINVAL;
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -102,7 +102,7 @@ int mkdir(const char *pathname, mode_t mode) {
 	node_t *nod;
 
 	if (NULL != (nod = vfs_find_node(pathname, NULL))) {
-		errno = -EBUSY;
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -110,7 +110,7 @@ int mkdir(const char *pathname, mode_t mode) {
 
 
 	if (NULL == (nod = create_filechain(pathname, DIRECTORY_NODE_TYPE))) {
-		errno = -EINVAL;
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -122,13 +122,13 @@ int remove(const char *pathname) {
 	fs_drv_t *drv;
 
 	if (NULL == (node = vfs_find_node(pathname, NULL))) {
-		errno = -ENOENT;
+		errno = ENOENT;
 		return -1;
 	}
 
 	drv = node->fs_type;
 	if (NULL == drv->fsop->delete_file) {
-		errno = -EINVAL;
+		errno = EINVAL;
 		LOG_ERROR("fsop->delete_file is NULL handler\n");
 		return -1;
 	}
