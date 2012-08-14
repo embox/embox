@@ -61,5 +61,5 @@ void mips_exception_init(void) {
 }
 
 void mips_exception_setup(mips_exception_type_t type, second_exception_handler_t handler) {
-	exception_handlers[type] = mips_second_exception_handler;
+	exception_handlers[type] = handler;
 }

@@ -33,7 +33,7 @@ static int unit_init(void) {
 	/* read cause register for cleaning all pending bits */
 	c0_reg = mips_read_c0_cause();
 	c0_reg &= ~(ST0_IM);              /* clear all interrupts pending bits */
-	mips_write_c0_status(c0_reg);  /* write back cause register */
+	mips_write_c0_cause(c0_reg);  /* write back cause register */
 
 	return 0;
 }
