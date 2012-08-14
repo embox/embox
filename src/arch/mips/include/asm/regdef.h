@@ -10,6 +10,7 @@
 #ifndef MIPS_REGDEF_H_
 #define MIPS_REGDEF_H_
 
+//http://www.doc.ic.ac.uk/lab/secondyear/spim/node10.html
 /*
  * Symbolic register names for 32 bit ABI
  */
