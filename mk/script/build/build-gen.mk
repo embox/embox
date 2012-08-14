@@ -174,6 +174,9 @@ $(@build_include_mk) : source_rulemk = \
 $(@build_include_mk) : module_ar_rulemk = \
 		$(patsubst %,$(value module_ar_rulemk_mk_pat), \
 			$(call module_path,$(@module_ar_rulemk)))
+$(@build_include_mk) : module_extbld_rulemk = \
+		$(patsubst %,$(value module_extbld_rulemk_mk_pat), \
+			$(call module_path,$(@module_extbld_rulemk)))
 $(@build_include_mk) : initfs_rulemk = \
 		$(patsubst %,$(value build_initfs_rulemk_mk_pat),$(build_initfs))
 
@@ -183,6 +186,7 @@ $(@build_include_mk) :
 		$(call gen_make_include,$(image_rulemk)); \
 		$(call gen_make_include,$(initfs_rulemk)); \
 		$(call gen_make_include_list,$(source_rulemk)); \
+		$(call gen_make_include_list,$(module_extbld_rulemk)); \
 		$(call gen_make_include_list,$(module_ar_rulemk)))
 
 build_initfs := initfs
@@ -222,9 +226,17 @@ $(@build_initfs) :
 	$(patsubst %,module-ar-rule-mk/%, \
 		$(call filter_static_modules,$(build_modules)))
 
+my_bld_script := $(call mybuild_resolve_or_die,mybuild.lang.Build.script)
+
+@module_extbld_rulemk := \
+	$(foreach m,$(build_modules), \
+		$(patsubst %,module-extbld-rulemk/%$m, \
+			$(call invoke,$(call get,$m,allTypes),getAnnotationValuesOfOption,$(my_bld_script))))
+
 @module_all = \
 	$(@module_h) \
-	$(@module_ar_rulemk)
+	$(@module_ar_rulemk) \
+	$(@module_extbld_rulemk)
 
 all .PHONY : $(@module_all)
 
@@ -258,6 +270,26 @@ $(@module_ar_rulemk) :
 		$(call gen_make_dep,$(a_file),$$$$(ar_prerequisites)); \
 		$(call gen_make_tsvar,$(a_file),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar_list,$(a_file),ar_objs,$(call check_objs,$(objs))))
+
+module_extbld_rulemk_mk_pat     = $(MKGEN_DIR)/%.extbld_rule.mk
+module_extbld_rulemk_target_pat = __extbld-%
+
+$(@module_extbld_rulemk) : @file   = $(path:%=$(module_extbld_rulemk_mk_pat))
+$(@module_extbld_rulemk) : mk_file = $(patsubst %,$(value module_extbld_rulemk_mk_pat),$$(module_path))
+$(@module_extbld_rulemk) : target = $(patsubst %,$(value module_extbld_rulemk_target_pat),$$(module_path))
+$(@module_extbld_rulemk) : gen_string = $(basename $@)
+$(@module_extbld_rulemk) : script = $(call get,$(gen_string),value)
+$(@module_extbld_rulemk) : kind := extbld
+
+$(@module_extbld_rulemk) :
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(gen_banner); \
+		$(call gen_make_var,module_path,$(path)); \
+		$(call gen_make_dep,__extbld .PHONY,$(target)); \
+		$(call gen_make_dep,$(target),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
+		$(call gen_make_rule,$(target),,$(script)))
+
 
 $(@module_h) : type = $(basename $@)
 $(@module_h) : type_fqn = $(call get,$(type),qualifiedName)
@@ -305,10 +337,6 @@ source_cc_pats  := %.S %.c %.cpp %.cxx
 			$(if $(filter $(source_cpp_pats),$f),source-cpp-rule-mk/$s, \
 				$(if $(filter $(source_cc_pats),$f),source-cc-rule-mk/$s))))
 
-@source_rulemk := \
-	$(filter-out $(addprefix %,$(suffix $(@source_initfs_cp_rulemk))), \
-		$(@source_rulemk))
-
 @source_cpp_rulemk := $(filter source-cpp-rule-mk/%,$(@source_rulemk))
 @source_cc_rulemk  := $(filter source-cc-rule-mk/%,$(@source_rulemk))
 
@@ -331,6 +359,10 @@ $(@source_all) : file = $(call source_file,$@)
 $(@source_all) : base = $(call source_base,$@)
 
 $(@source_all) : values_of = $(call source_annotation_values,$@,$1)
+
+my_rule_prereqs = $(call mybuild_resolve_or_die,mybuild.lang.Rule.prerequisites)
+
+$(@source_all) : prereqs = $(call get,$(call values_of,$(my_rule_prereqs)),value)
 
 my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
 my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
@@ -355,11 +387,12 @@ source_cpp_rulemk_o_pat = $(OBJ_DIR)/%# foo.lds.S -> foo.lds
 
 $(@source_rulemk)  : o_file = $(patsubst %,$(value source_$(kind)_rulemk_o_pat),$$(source_base))
 
-$(filter-out $(@source_initfs_cp_rulemk),$(@source_rulemk)) :
+$(@source_cpp_rulemk) $(@source_cc_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,source_base,$(base)); \
 		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(o_file),extra_prereqs,$(prereqs)); \
 		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(o_file),flags,$(flags)); \
 		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))
@@ -367,7 +400,6 @@ $(filter-out $(@source_initfs_cp_rulemk),$(@source_rulemk)) :
 $(@source_cc_rulemk)  : kind := cc
 $(@source_cpp_rulemk) : kind := cpp
 
-$(@source_initfs_cp_rulemk) : @file   = $(base:%=$(source_rulemk_mk_pat))
 $(@source_initfs_cp_rulemk) : o_file  = $$(ROOTFS_DIR)/$(notdir $(file))
 $(@source_initfs_cp_rulemk) : src_file = $(file)
 $(@source_initfs_cp_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$(base))
@@ -377,6 +409,7 @@ $(@source_initfs_cp_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(o_file),extra_prereqs,$(prereqs)); \
 		$(call gen_make_tsvar,$(o_file),src_file,$(src_file)); \
 		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)))
 

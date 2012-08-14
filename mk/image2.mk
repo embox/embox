@@ -7,6 +7,11 @@
 all : image
 	@echo 'Build complete'
 
+# Run external builders prior to anything else.
+-include __extbld
+.PHONY : __extbld
+__extbld :
+
 include mk/core/common.mk
 
 include $(MKGEN_DIR)/build.mk
@@ -46,13 +51,14 @@ SIZE    := $(CROSS_COMPILE)size
 
 # This must be expanded in a secondary expansion context.
 common_prereqs = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk $(mk_file)
+extbld_prerequisites = $(common_prereqs)
 
 VPATH = $(SRCGEN_DIR)
 
 %/. :
 	@$(MKDIR) $*
 
-cc_prerequisites    = $(common_prereqs)
+cc_prerequisites    = $(common_prereqs) $(extra_prereqs)
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c | $$(@D)/.
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
@@ -65,12 +71,12 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cpp | $$(@D)/.
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx | $$(@D)/.
 	$(CC) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
-cpp_prerequisites   = $(common_prereqs)
+cpp_prerequisites   = $(common_prereqs) $(extra_prereqs)
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
 	$(CPP) -P -undef $(CPPFLAGS) $(flags) -imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
-initfs_cp_prerequisites = $(common_prereqs) $(src_file)
+initfs_cp_prerequisites = $(common_prereqs) $(src_file) $(extra_prereqs)
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
 	@$(CP) -T $(src_file) $@
 $(ROOTFS_DIR)/. :
@@ -85,11 +91,11 @@ $(ROOTFS_IMAGE) : rel_cpio_files = \
 $(ROOTFS_IMAGE) : | $$(@D)/. $(ROOTFS_DIR)/.
 $(ROOTFS_IMAGE) :
 	cd $(ROOTFS_DIR) \
-		&& find $(rel_cpio_files) -depth -print | cpio --quiet -H newc -o -O $(abspath $@)
+		&& find $(rel_cpio_files) -depth -print | cpio -L --quiet -H newc -o -O $(abspath $@)
 	if [ -d $(USER_ROOTFS_DIR) ]; \
 	then \
 		cd $(USER_ROOTFS_DIR) \
-			&& find * -depth -print | cpio --quiet -H newc -o --append -O $(abspath $@); \
+			&& find * -depth -print | cpio -L --quiet -H newc -o --append -O $(abspath $@); \
 	fi
 	@FILES=`find $(cpio_files) $(USER_ROOTFS_DIR)/* -depth -print 2>/dev/null`; \
 	{                                            \
