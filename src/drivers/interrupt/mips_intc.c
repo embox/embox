@@ -9,6 +9,7 @@
 
 #include <embox/unit.h>
 #include <asm/mipsregs.h>
+#include <asm/entry.h>
 #include <kernel/irq.h>
 #include <assert.h>
 
@@ -18,16 +19,21 @@ EMBOX_UNIT_INIT(unit_init);
  * Initialize MIPS build-in interrupts controller
  */
 static int unit_init(void) {
-	uint32_t c0_status;
-	c0_status = mips_read_c0_status();
-	c0_status &= ~(ST0_IM);
-//	c0_status &= ~(ST0_ERL);
-	c0_status &= ~(ST0_EXL);
-	c0_status |= ST0_IE;
-	mips_write_c0_status(c0_status);
+	uint32_t c0_reg;
 
-	//mips_intr_enable();
+	/* set interrupt handler exception */
+	mips_exception_setup(MIPS_EXCEPTION_TYPE_IRQ, mips_interrupt_handler);
 
+	/* read status registers for cleaning interrupts mask */
+	c0_reg = mips_read_c0_status();
+	c0_reg &= ~(ST0_IM);           /* clear all interrupts mask */
+	c0_reg |= ST0_IE;              /* global enable interrupt */
+	mips_write_c0_status(c0_reg);  /* write back status register */
+
+	/* read cause register for cleaning all pending bits */
+	c0_reg = mips_read_c0_cause();
+	c0_reg &= ~(ST0_IM);              /* clear all interrupts pending bits */
+	mips_write_c0_status(c0_reg);  /* write back cause register */
 
 	return 0;
 }
