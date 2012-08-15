@@ -1,3 +1,11 @@
+/**
+ * @file
+ *
+ * @brief
+ *
+ * @date 22.06.2012
+ * @author Anton Bondarev
+ */
 
 #include <asm/linkage.h>
 #include <asm/asm.h>

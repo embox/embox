@@ -1,3 +1,12 @@
+/**
+ * @file
+ *
+ * @brief
+ *
+ * @date 22.06.2012
+ * @author Anton Bondarev
+ */
+
 #include <asm/linkage.h>
 #include <asm/mipsregs.h>
 #include <asm/entry.h>
@@ -24,11 +33,7 @@ NESTED(mips_first_exception_handler, 0, $sp)
 	.set      pop                  /* restore the previous status of flags */
 END(mips_first_exception_handler)
 
-
-//https://www.ibm.com/developerworks/mydeveloperworks/blogs/ddou/entry/implementing_mips_interrupts_for_u_boot28?lang=en
-//http://winfred-lu.blogspot.com/2011/04/mips-exceptions-initialization-and.html
 NESTED(mips_second_exception_handler, PT_SIZE, $sp)
-	LONG_ADDIU $sp, -PT_SIZE
 	SAVE_ALL
 
 	move $a0, $sp                  /* Arg 0: saved regs. */
@@ -40,7 +45,6 @@ END(mips_second_exception_handler)
 
 
 NESTED(mips_interrupt_handler, PT_SIZE, $sp)
-	LONG_ADDIU $sp, -PT_SIZE
 	SAVE_ALL
 
 	move $a0, $sp                  /* Arg 0: saved regs. */

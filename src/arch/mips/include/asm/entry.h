@@ -48,15 +48,10 @@ extern void mips_interrupt_handler(void);
 
 	.macro SAVE_SOME
 		.set    push
-		/* Save special MIPS registers */
-		mfc0    $k0, $CP0_STATUS
-		LONG_S  $k0, PT_STATUS ($sp);
-		mfhi    $k0;
-		LONG_S  $k0, (PT_HI) ($sp);
-		mflo    $k0;
-		LONG_S  $k0, (PT_LO) ($sp);
-		mfc0    $k0, $CP0_EPC;
-		LONG_S  $k0, (PT_PC) ($sp);
+
+		move    $k0, $sp
+		addi    $k0,  PT_SIZE
+		LONG_S  $k0, (PT_SP) ($sp); /* save sp in a new frame */
 
 		LONG_S  $2, (PT_R2) ($sp);
 		LONG_S  $3, (PT_R3) ($sp);
@@ -66,9 +61,18 @@ extern void mips_interrupt_handler(void);
 		LONG_S  $7, (PT_R7) ($sp);
 
 		LONG_S  $28, (PT_GP) ($sp);
-		LONG_S  $29, (PT_SP) ($sp);
 		LONG_S  $30, (PT_FP) ($sp);
 		LONG_S  $31, (PT_RA) ($sp);
+
+		/* Save special MIPS registers */
+		mfc0    $k0, $CP0_STATUS
+		LONG_S  $k0, PT_STATUS ($sp);
+		mfhi    $k0;
+		LONG_S  $k0, (PT_HI) ($sp);
+		mflo    $k0;
+		LONG_S  $k0, (PT_LO) ($sp);
+		mfc0    $k0, $CP0_EPC;
+		LONG_S  $k0, (PT_PC) ($sp);
 
 		.set    pop
 	.endm
@@ -106,6 +110,7 @@ extern void mips_interrupt_handler(void);
 		LONG_S  $30, PT_FP($sp)  /* s8 */
 	.endm
 
+	/* restore without stack frame */
 	.macro RESTORE_SOME
 		.set    push
 
@@ -117,8 +122,8 @@ extern void mips_interrupt_handler(void);
 		LONG_L  $7, (PT_R7) ($sp);
 
 		LONG_L  $28, (PT_GP) ($sp);
-		LONG_L  $29, (PT_SP) ($sp);
 		LONG_L  $30, (PT_FP) ($sp);
+		LONG_L  $31, (PT_RA) ($sp);
 
 		/* Restore special MIPS registers */
 		mfc0    $k0, $CP0_STATUS
