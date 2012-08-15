@@ -151,7 +151,6 @@ static void *telnet_thread_handler(void* args) {
 	dup(*client_descr_p);
 	dup(*client_descr_p);
 
-	close(*client_descr_p);
 		/* Hack. Emulate future output, we need a char from user to exit from
 		 * parameters mode
 		 */
@@ -167,6 +166,7 @@ static void *telnet_thread_handler(void* args) {
 		/* Run shell */
 	run();
 
+	close(*client_descr_p);
 	*client_descr_p = -1;
 
 	return NULL;

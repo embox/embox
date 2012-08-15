@@ -181,7 +181,21 @@ static int linenoise_prompt(int fd, FILE *descr, char *buf, size_t buflen, const
         char seq[2], seq2[2]= {0};
 
         nread = read_raw_mode ? read(fd,&c,1) : fread(&c, 1, 1, descr);
-        if (nread <= 0) return len;
+        if (nread <= 0) {
+			/**
+			 * FIXME
+			 * Quick hack to get telnet to work correctly.
+			 * Telnet is based on stream sockets, so after some time
+			 * tcp_v4_recvmsg will return ETIMEDOUT, but we supposed
+			 * that somebody pressed Enter. It's incorrect.
+			 * To fix it need to add a socket options
+			 * and set receive's timeout more, than we have now
+			 */
+			if (-nread == ETIMEDOUT) {
+				continue;
+			}
+			return len;
+		}
         /* Only autocomplete when the callback is set. It returns < 0 when
          * there was an error reading from fd. Otherwise it will return the
          * character that should be handled next. */
