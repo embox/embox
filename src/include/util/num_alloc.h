@@ -1,9 +1,10 @@
 /**
  * @file
- * @brief Interface for number alloc struct. Structure has requests:
+ * @brief Interface for number alloc struct.
+ * @details Structure has requests:
  *  * Alloc number -- returns minimal free number and mark it as busy.
  *  * Free number -- mark number as free
- * Optionaly, it can handle with range arguments:
+ * Optionally, it can handle with range arguments:
  *  * Alloc number range -- returns range of numbers, all are free
  *  * Free range -- mark range as free
  *
@@ -43,7 +44,7 @@ typedef __util_num_alloc_t util_num_alloc_t;
  * @param space Pointer for space which can store struct with capacity n
  * @param n Capacity of initializing num_alloc
  *
- * @return Pointer for initilized num_alloc
+ * @return Pointer for initialized num_alloc
  */
 util_num_alloc_t *util_num_alloc_init(void *space, int n);
 
@@ -57,7 +58,7 @@ util_num_alloc_t *util_num_alloc_init(void *space, int n);
 int util_num_alloc(util_num_alloc_t *num_alloc);
 
 /**
- * @brief Allocata specified number
+ * @brief Allocate specified number
  *
  * @param num_alloc
  * @param n
