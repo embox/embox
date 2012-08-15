@@ -9,8 +9,6 @@
 #ifndef HAL_CLOCK_H_
 #define HAL_CLOCK_H_
 
-#include <asm/hal/clock.h>
-
 #include <sys/types.h>
 
 /**
