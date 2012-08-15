@@ -16,17 +16,17 @@
 #include <fs/posix.h>
 
 int open(const char *path, int __oflag, ...) {
-	char mode;
+	char mode[] = "-";
 
 	if ((O_RDWR == __oflag) || (O_WRONLY == __oflag)) {
-		mode = 'w';
+		mode[0] = 'w';
 	}
 	else {
-		mode = 'r';
+		mode[0] = 'r';
 	}
 
 	return task_self_idx_alloc(&task_idx_ops_file, \
-			fopen(path, (const char *) &mode));
+			fopen(path, (const char *)&mode[0]));
 }
 
 int close(int fd) {
