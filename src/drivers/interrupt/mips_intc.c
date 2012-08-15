@@ -15,6 +15,7 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
+extern void mips_c_interrupt_handler(pt_regs_t *regs);
 /**
  * Initialize MIPS build-in interrupts controller
  */
@@ -22,7 +23,7 @@ static int unit_init(void) {
 	uint32_t c0_reg;
 
 	/* set interrupt handler exception */
-	mips_exception_setup(MIPS_EXCEPTION_TYPE_IRQ, mips_interrupt_handler);
+	mips_exception_setup(MIPS_EXCEPTION_TYPE_IRQ, mips_c_interrupt_handler);
 
 	/* read status registers for cleaning interrupts mask */
 	c0_reg = mips_read_c0_status();
