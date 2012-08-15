@@ -19,4 +19,3 @@ void mips_c_interrupt_handler(pt_regs_t *regs) {
 		}
 	}
 }
-

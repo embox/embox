@@ -13,11 +13,11 @@
 
 #include <string.h>
 
-second_exception_handler_t exception_handlers[MIPS_EXCEPTIONS_QUANTITY] = {mips_second_exception_handler};
-
-
 void mips_c_exception_handler(pt_regs_t *regs) {
+	regs->pc += 4;
 }
+
+second_exception_handler_t exception_handlers[MIPS_EXCEPTIONS_QUANTITY] = {mips_c_exception_handler};
 
 /*
 * Copy the generic exception handlers to their final destination.
@@ -29,7 +29,7 @@ static void mips_setup_exc_table(void) {
 
 	/* set all exception handler */
 	for(i = 0; i < MIPS_EXCEPTIONS_QUANTITY; i ++) {
-		exception_handlers[i] = mips_second_exception_handler;
+		exception_handlers[i] = mips_c_exception_handler;
 	}
 }
 
@@ -56,8 +56,6 @@ void mips_exception_init(void) {
 	tmp = mips_read_c0_status();
 	tmp &= ~(ST0_ERL);
 	mips_write_c0_status(tmp);
-
-//	asm("syscall\n");
 }
 
 void mips_exception_setup(mips_exception_type_t type, second_exception_handler_t handler) {

@@ -33,7 +33,7 @@ typedef  enum MIPS_EXCEPTION_TYPE mips_exception_type_t;
  *  type for second exception handlers these handlers is hold in array and called
  * from first exception handler
  */
-typedef void (*second_exception_handler_t)(void);
+typedef void (*second_exception_handler_t)(pt_regs_t *);
 
 extern void mips_exception_setup(mips_exception_type_t type, second_exception_handler_t handler);
 
@@ -126,14 +126,14 @@ extern void mips_interrupt_handler(void);
 		LONG_L  $31, (PT_RA) ($sp);
 
 		/* Restore special MIPS registers */
-		mfc0    $k0, $CP0_STATUS
 		LONG_L  $k0, PT_STATUS ($sp);
-		mfhi    $k0;
+		mtc0    $k0, $CP0_STATUS
 		LONG_L  $k0, (PT_HI) ($sp);
-		mflo    $k0;
+		mthi    $k0;
 		LONG_L  $k0, (PT_LO) ($sp);
-		mfc0    $k0, $CP0_EPC;
+		mtlo    $k0;
 		LONG_L  $k0, (PT_PC) ($sp);
+		mtc0    $k0, $CP0_EPC;
 
 		.set    pop
 	.endm
