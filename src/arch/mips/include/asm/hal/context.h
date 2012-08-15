@@ -11,7 +11,10 @@
 #define MIPS_CONTEXT_H_
 
 struct context {
-	unsigned int r0;
+	unsigned int s[9]; /* static registers s0-s8 */
+	unsigned int gp;   /* global pointer */
+	unsigned int ra;   /* return address */
+	unsigned int sp;   /* stack pointer */
 };
 
 #endif /* MIPS_CONTEXT_H_ */
