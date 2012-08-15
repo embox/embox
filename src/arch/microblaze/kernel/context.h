@@ -1,9 +1,5 @@
-#ifndef HAL_CONTEXT_H_
-# error "Do not include this file directly!"
-#endif /* HAL_CONTEXT_H_ */
-
-#ifndef MICROBLAZE_CONTEXT_H
-#define MICROBLAZE_CONTEXT_H
+#ifndef ARCH_MICROBLAZE_CONTEXT_H_
+#define ARCH_MICROBLAZE_CONTEXT_H_
 
 #include <types.h>
 
@@ -73,6 +69,4 @@ struct context {
 #define CC_RESR    0x5C
 #define CC_RFSR    0x60
 
-
-
-#endif /* MICROBLAZE_CONTEXT_H */
+#endif /* ARCH_MICROBLAZE_CONTEXT_H_ */

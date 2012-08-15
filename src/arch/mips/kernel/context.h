@@ -7,8 +7,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef MIPS_CONTEXT_H_
-#define MIPS_CONTEXT_H_
+#ifndef ARCH_MIPS_CONTEXT_H_
+#define ARCH_MIPS_CONTEXT_H_
 
 struct context {
 	unsigned int s[9]; /* static registers s0-s8 */
@@ -17,4 +17,4 @@ struct context {
 	unsigned int sp;   /* stack pointer */
 };
 
-#endif /* MIPS_CONTEXT_H_ */
+#endif /* ARCH_MIPS_CONTEXT_H_ */

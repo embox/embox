@@ -1,6 +1,5 @@
-#ifndef HAL_CONTEXT_H_
-# error "Do not include this file directly!"
-#endif /* HAL_CONTEXT_H_ */
+#ifndef ARCH_SPARC_CONTEXT_H_
+#define ARCH_SPARC_CONTEXT_H_
 
 #include <types.h>
 
@@ -29,3 +28,5 @@ struct context {
 #define CTX_WIM    0x10
 
 #endif /* __ASSEMBLER__ */
+
+#endif /* ARCH_SPARC_CONTEXT_H_ */

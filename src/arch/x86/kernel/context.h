@@ -1,6 +1,5 @@
-#ifndef HAL_CONTEXT_H_
-# error "Do not include this file directly!"
-#endif /* HAL_CONTEXT_H_ */
+#ifndef ARCH_X86_CONTEXT_H_
+#define ARCH_X86_CONTEXT_H_
 
 #include <types.h>
 
@@ -17,3 +16,5 @@ struct context {
 };
 
 #endif /* __ASSEMBLER__ */
+
+#endif /* ARCH_X86_CONTEXT_H_ */
