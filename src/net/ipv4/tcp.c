@@ -77,14 +77,14 @@ static const tcp_handler_t tcp_st_handler[];
 
 void debug_print(__u8 code, const char *msg, ...) {
 	va_list args;
-	return;				/* YOUR output is too annoying for others */
+//	return;				/* YOUR output is too annoying for others */
 
 	va_start(args, msg);
 	switch (code) {
 //default:
-	case 0:  /* default */
-	case 1:  /* in/out package print */
-//	case 2:  /* socket state */
+//	case 0:  /* default */
+//	case 1:  /* in/out package print */
+	case 2:  /* socket state */
 	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
@@ -1060,7 +1060,7 @@ static int tcp_v4_init(void) {
 	}
 
 	/* Create default socket */
-	tcp_sock_default.sk = inet_create_sock(0, (struct proto *)&tcp_prot, IPPROTO_TCP, SOCK_STREAM);
+	tcp_sock_default.sk = inet_create_sock(0, (struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
 	if (tcp_sock_default.sk == NULL) {
 		return -ENOMEM;
 	}
