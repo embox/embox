@@ -29,8 +29,8 @@ module network_layer {
 
 module skbuff {
 	source "skb.c"
-	option number amount_skb=200
-	option number amount_skb_buff=200
+	option number amount_skb=500
+	option number amount_skb_buff=500
 	option number skb_buff_size=1514 /* for example */
 
 	source "skb_queue.c"
