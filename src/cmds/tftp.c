@@ -1,9 +1,11 @@
 /**
  * @file
  * @brief Easy TFTP client
+ * @details RFC 1350
  *
  * @date 12.03.10
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  */
 
 #include <embox/cmd.h>
@@ -11,132 +13,410 @@
 #include <string.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include "tftp.h"
+#include <types.h>
+#include <net/socket.h>
+#include <net/ip.h>
+#include <net/in.h>
+#include <errno.h>
 
 EMBOX_CMD(exec);
 
-static void print_usage(void) {
-	printf("Usage: tftp <server> <file>\n");
+/*
+ * Trivial File Transfer Protocol (IEN-133)
+ */
+#define SEGSIZE 512       /* data segment size */
+#define PKTSIZE SEGSIZE+4 /* full packet size */
+
+#define TFTP_TRANSFER_PORT 69 /* default well known port */
+
+/*
+ * Packet types.
+ */
+#define RRQ     1	/* read request */
+#define WRQ     2	/* write request */
+#define DATA    3	/* data packet */
+#define ACK     4	/* acknowledgement */
+#define ERROR   5	/* error code */
+#define OACK    6	/* options acknowledgment */
+
+struct tftp_msg {
+	__be16 opcode;
+	union {
+		struct {
+			char name_and_mode[2];
+		} cmd /*__attribute__ ((packed))*/;
+		struct {
+			__be16 block_num;
+			char stuff[SEGSIZE];
+		} data /*__attribute__ ((packed))*/;
+		struct {
+			__be16 block_num;
+		} ack /*__attribute__ ((packed))*/;
+		struct {
+			__be16 error_code;
+			char error_msg[1];
+		} err /*__attriibute__ ((packed))*/;
+	} op /*__attribute__ ((packed))*/;
+} __attribute__ ((packed));
+
+/*
+ * Errors
+ */
+
+/* These initial 7 are passed across the net in "ERROR" packets. */
+#define	TFTP_EUNDEF      0	/* not defined */
+#define	TFTP_ENOTFOUND   1	/* file not found */
+#define	TFTP_EACCESS     2	/* access violation */
+#define	TFTP_ENOSPACE    3	/* disk full or allocation exceeded */
+#define	TFTP_EBADOP      4	/* illegal TFTP operation */
+#define	TFTP_EBADID      5	/* unknown transfer ID */
+#define	TFTP_EEXISTS     6	/* file already exists */
+#define	TFTP_ENOUSER     7	/* no such user */
+/* These extensions are return codes in our API, *never* passed on the net. */
+#define TFTP_TIMEOUT     8	/* operation timed out */
+#define TFTP_NETERR      9	/* some sort of network error */
+#define TFTP_INVALID    10	/* invalid parameter */
+#define TFTP_PROTOCOL   11	/* protocol violation */
+#define TFTP_TOOLARGE   12	/* file is larger than buffer */
+
+static int open_socket(int *out_sock) {
+	int ret;
+
+	ret = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (ret < 0) {
+		fprintf(stderr, "Can't open socket\n");
+		return -errno;
+	}
+
+	*out_sock = ret;
+
+	return 0;
 }
 
-#define MAX_FILENAME_LEN 0x40
-
-static int create_socket(struct sockaddr_in *addr) {
-	int sock;
-
-	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-		printf("Creation socket impossible");
-		return -1;
+static int close_socket(int sock) {
+	if (close(sock) < 0) {
+		fprintf(stderr, "Can't close socket\n");
+		return -errno;
 	}
 
-	addr->sin_family = AF_INET;
-	addr->sin_addr.s_addr = htonl(INADDR_ANY);
-	addr->sin_port = htons(38666); /* TODO: catch some availible port */
-
-	if (bind(sock, (struct sockaddr *) addr,
-			sizeof(struct sockaddr_in)) == -1) {
-		printf("Attachement socket impossible.\n");
-		close(sock);
-		return -1;
-	}
-	return sock;
+	return 0;
 }
 
-static int tftp_receive(struct sockaddr_in *to, char *mode,
-					char *name, FILE *file) {
-	int desc;
-	size_t size, dsize = 0;
-	socklen_t fromlen;
-	struct sockaddr_in from;
-	char buf[PKTSIZE], ackbuf[PKTSIZE], *cp;
-	tftphdr_t *dp, *ap;
-	dp = (tftphdr_t *) buf;
-	ap = (tftphdr_t *) ackbuf;
-//	dat = (char *) &dp->th_data[0];
-	cp = (char *) &ap->th_stuff[0];
+static int make_remote_addr(char *hostname, struct sockaddr *out_raddr, socklen_t *out_raddr_len) {
+	int ret;
+	struct sockaddr_in *raddr_in;
 
-	if ((desc = create_socket(&from)) < 0) {
-		return -1;
+	raddr_in = (struct sockaddr_in *)out_raddr;
+	memset(out_raddr, 0, sizeof *out_raddr);
+	raddr_in->sin_family = AF_INET;
+	raddr_in->sin_port = htons(TFTP_TRANSFER_PORT);
+	ret = inet_aton(hostname, &raddr_in->sin_addr);
+	if (!ret) {
+		fprintf(stderr, "Can't parse remote address '%s`\n", hostname);
+		return -EINVAL;
 	}
 
-	ap->th_opcode = htons((short) RRQ);
-	strcpy(cp, name);
-	cp += strlen(name);
-	*cp++ = '\0';
-	strcpy(cp, mode);
-	cp += strlen(mode);
-	*cp++ = '\0';
-	strcpy(cp, "tsize");
-	cp += strlen("tsize");
-	*cp++ = '\0';
-	strcpy(cp, "0");
-	cp += strlen("0");
-	*cp++ = '\0';
-	size = (unsigned long) cp - (unsigned long) ackbuf;
-	fromlen = sizeof(struct sockaddr_in);
-	sendto(desc, ap, size, 0, (struct sockaddr *) to, fromlen);
+	*out_raddr_len = sizeof *raddr_in;
+
+	return 0;
+}
+
+static char * get_file_mode_r(char binary_on) {
+	return binary_on ? "rb" : "r";
+}
+
+/*static*/ char * get_file_mode_w(char binary_on) {
+	return binary_on ? "wb" : "w";
+}
+
+static char * get_transfer_mode(char binary_on) {
+	return binary_on ? "octet" : "netascii";
+}
+
+static int open_file(char *filename, char *mode, FILE **out_fp) {
+	FILE *fp;
+
+	fp = fopen(filename, mode);
+	if (fp == NULL) {
+		fprintf(stderr, "Can't open file '%s` with mode \"%s\"\n", filename, mode);
+		return -errno;
+	}
+
+	*out_fp = fp;
+
+	return 0;
+}
+
+static int close_file(FILE *fp) {
+	if (fclose(fp) < 0) {
+		fprintf(stderr, "Can't close file\n");
+		return -errno;
+	}
+
+	return 0;
+}
+
+static int build_cmd(struct tftp_msg *msg, size_t *msg_len, uint16_t type, char *filename, char *mode) {
+	char *ptr;
+	size_t sz;
+
+	msg->opcode = htons(type);
+	*msg_len = sizeof msg->opcode;
+
+	ptr = msg->op.cmd.name_and_mode;
+	sz = strlen(filename) + 1;
+	memcpy(ptr, filename, sz * sizeof(char));
+	*msg_len += sz * sizeof(char);
+
+	ptr += sz;
+	sz = strlen(mode) + 1;
+	memcpy(ptr, mode, sz * sizeof(char));
+	*msg_len += sz * sizeof(char);
+
+	return 0;
+}
+
+static int build_data(struct tftp_msg *msg, size_t *msg_len, FILE *fp, uint16_t block_num) {
+	int ret;
+
+	msg->opcode = htons(DATA);
+	*msg_len = sizeof msg->opcode;
+
+	msg->op.data.block_num = htons(block_num);
+	*msg_len += sizeof msg->op.data.block_num;
+
+	ret = fread(&msg->op.data.stuff[0], 1, sizeof msg->op.data.stuff, fp);
+	if (ret < 0) {
+		fprintf(stderr, "Can't read data from file\n");
+		return -errno;
+	}
+	*msg_len += (size_t)ret;
+
+	return 0;
+}
+
+static int msg_with_correct_len(struct tftp_msg *msg, size_t msg_len) {
+	size_t field_sz, left_sz;
+	char *tmp;
+
+	left_sz = msg_len;
+
+	field_sz = sizeof msg->opcode;
+	if (left_sz < field_sz) return 0;
+
+	left_sz -= field_sz;
+
+	switch (ntohs(msg->opcode)) {
+	default: /* unknown operation */
+		return 0;
+	case RRQ:
+	case WRQ:
+		tmp = &msg->op.cmd.name_and_mode[0];
+		/* filename */
+		do
+			if (left_sz-- == 0) return 0;
+		while (*tmp++ != '\0');
+		/* mode */
+		do
+			if (left_sz-- == 0) return 0;
+		while (*tmp++ != '\0');
+		break;
+	case DATA:
+		/* block number */
+		field_sz = sizeof msg->op.data.block_num;
+		if (left_sz < field_sz) return 0;
+		left_sz -= field_sz;
+		/* data */
+		left_sz = 0;
+		break;
+	case ACK:
+		/* block number */
+		field_sz = sizeof msg->op.ack.block_num;
+		if (left_sz < field_sz) return 0;
+		left_sz -= field_sz;
+		break;
+	case ERROR:
+		/* error code */
+		field_sz = sizeof msg->op.err.error_code;
+		if (left_sz < field_sz) return 0;
+		left_sz -= field_sz;
+		/* error message */
+		tmp = &msg->op.err.error_msg[0];
+		do
+			if (left_sz-- == 0) return 0;
+		while (*tmp++ != '\0');
+		break;
+	}
+
+	return !!left_sz;
+}
+
+static int tftp_send_file(char *filename, char *hostname, char binary_on) {
+	int ret, sock;
+	struct sockaddr remote_addr;
+	socklen_t remote_addr_len;
+	FILE *fp;
+	struct tftp_msg snd, rcv;
+	size_t snd_len, rcv_len;
+	uint16_t pkg_number;
+
+	ret = make_remote_addr(hostname, &remote_addr, &remote_addr_len);
+	if (ret != 0) { sock = -1; fp = NULL; goto error; }
+
+	ret = open_socket(&sock);
+	if (ret != 0) { sock = -1; fp = NULL; goto error; }
+
+	ret = open_file(filename, get_file_mode_r(binary_on), &fp);
+	if (ret != 0) { fp = NULL; goto error; }
+
+	pkg_number = 0;
+
+	ret = build_cmd(&snd, &snd_len, WRQ, filename, get_transfer_mode(binary_on));
+	if (ret != 0) goto error;
+
+	goto send_msg;
+
 	while (1) {
-		size = recvfrom(desc, dp, PKTSIZE, 0,
-			(struct sockaddr *) &from, &fromlen);
-		if (size > 0) {
-			if (dp->th_opcode == ERROR) {
-				printf("Error %d\n", dp->th_u.tu_code);
-				break;
+		/* receive reply */
+		ret = recvfrom(sock, (char *)&rcv, sizeof rcv, 0, &remote_addr, &remote_addr_len); /* TODO verify the sender */
+		if (ret <= 0) {
+			fprintf(stderr, "Can't recive data\n");
+			ret = -errno;
+			goto error;
+		}
+		rcv_len = (size_t)ret;
+
+		/* check message length */
+		if (!msg_with_correct_len(&rcv, rcv_len)) {
+#if 0
+			printf("incorrect msg\n");
+#endif
+			goto send_msg;
+		}
+
+		/* handling of the reply msg */
+		switch (ntohs(rcv.opcode)) {
+		default:
+			goto send_msg;
+		case ACK:
+			if (ntohs(rcv.op.ack.block_num) != pkg_number) {
+				goto send_msg;
 			}
-			if (dp->th_opcode == DATA) {
-				//printf("data: %s\n", dp->th_data);
-				fwrite(dp->th_data, size - 4, 1, file);
-				dsize += size - 4;
-				if (dsize % 0x1000 == 0) {
-					printf("Download: %d bytes\r", dsize);
-				}
-				ap->th_opcode = htons((short)ACK);
-				ap->th_block = dp->th_block;
-				if (sendto(desc, ap, 4, 0,
-				    (struct sockaddr *) &from, fromlen) < 0) {
-					printf("Error occured\n");
-				}
-				if (size < PKTSIZE) {
-					break;
-				}
-			}
-			if (dp->th_opcode == OACK) {
-				/* TODO: check availible memory capacity */
-				ap->th_opcode = htons((short) ACK);
-				ap->th_block = dp->th_block;
-				if (sendto(desc, ap, 4, 0,
-				    (struct sockaddr *) &from, fromlen) < 0) {
-					printf("Error occured\n");
-				}
-				break;
-			}
+			break;
+		case ERROR:
+			fprintf(stderr, "%s: error: code=%d, msg='%s`\n",
+					hostname, (int)ntohs(rcv.op.err.error_code), &rcv.op.err.error_msg[0]);
+			goto error;
+		}
+
+		/* whether we have more data to transfer? */
+		if ((pkg_number > 0) && (snd_len != sizeof snd.op.data.stuff)) {
+			break; /* no more data */
+		}
+
+		ret = build_data(&snd, &snd_len, fp, ++pkg_number);
+		if (ret != 0) goto error;
+
+send_msg:
+		ret = sendto(sock, (char *)&snd, snd_len, 0, &remote_addr, remote_addr_len);
+		if (ret <= 0) {
+			fprintf(stderr, "Can't send data to %s\n", hostname);
+			ret = -errno;
+			goto error;
 		}
 	}
-	printf("Downloaded: %d bytes\n", dsize);
-	close(desc);
+
+	ret = close_file(fp);
+	if (ret != 0) { fp = NULL; goto error; }
+
+	ret = close_socket(sock);
+	if (ret != 0) { sock = -1; fp = NULL; goto error; }
+
+	fprintf(stdout, "File '%s` was transferred\n", filename);
+
 	return 0;
+
+error:
+	if (sock >= 0) close(sock);
+	if (fp) fclose(fp);
+	return ret;
+}
+
+static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
+	printf("recv %s to %s\n", filename, hostname);
+	return -ENOSYS;
 }
 
 static int exec(int argc, char **argv) {
-	struct sockaddr_in server;
-	FILE *f;
-	char fname[MAX_FILENAME_LEN];
+	int ret, i;
+	char param_ascii, param_binary, param_get, param_put;
+	int (*file_hnd)(char *, char *, char);
 
-	if (argc < 3) {
-		print_usage();
+	/* Initialize objects */
+	param_ascii = param_binary = param_get = param_put = 0;
+	getopt_init();
+
+	/* Get options */
+	while ((ret = getopt(argc, argv, "habgp")) != -1) {
+		switch (ret) {
+		default:
+		case '?':
+			fprintf(stderr, "%s: error: unrecognized option '%c`\n", argv[0], (char)optopt);
+			fprintf(stderr, "Try -h for more information\n");
+			return -1;
+		case 'h':
+			fprintf(stdout, "Usage: %s [-ha] -[g|p] files destination\n", argv[0]);
+			return 0;
+		case 'a':
+		case 'b':
+			if (param_ascii || param_binary) {
+				fprintf(stderr, "%s: error: already using %s mode to transfer files\n",
+						argv[0], get_transfer_mode(!param_ascii));
+				return -1;
+			}
+			*(ret == 'a' ? &param_ascii : &param_binary) = 1;
+			break;
+		case 'g':
+		case 'p':
+			if (param_get || param_put) {
+				fprintf(stderr, "%s: error: %s mode already was selected\n",
+						argv[0], param_get ? "forwarding" : "receiving");
+				return -1;
+			}
+			*(ret == 'g' ? &param_get : &param_put) = 1;
+			break;
+		}
+	}
+
+	/* Check transfering mode options */
+	if (!param_ascii && !param_binary) {
+		param_binary = 1; /* default mode */
+	}
+
+	/* Check action flags */
+	if (!param_get && !param_put) {
+		fprintf(stderr, "%s: error: please specify action on files\n", argv[0]);
 		return -1;
 	}
-	server.sin_family = AF_INET;
-	server.sin_port = htons(TFTP_TRANSFER_PORT);
-	server.sin_addr.s_addr = inet_addr(argv[1]);
 
-	sprintf(fname, "%s", argv[2]);
-
-	if (NULL == (f = fopen(fname, "wb"))) {
-		printf("Can't open file %s\n", fname);
+	/* Check presence of files names and address of remote machine */
+	if (argc - (--optind) < 2) {
+		fprintf(stderr, "%s: erorr: please specify at least one file and address of remote host\n",
+				argv[0]);
 		return -1;
 	}
-	tftp_receive(&server, "octet", argv[2], f);
-	fclose(f);
+
+	/* Handling */
+	file_hnd = param_get ? &tftp_send_file : &tftp_recv_file;
+	for (i = optind; i < argc - 1; ++i) {
+		ret = (*file_hnd)(argv[i], argv[argc - 1], param_binary);
+		if (ret != 0) {
+			fprintf(stderr, "%s: error: error occured when handled file '%s`\n",
+					argv[0], argv[i]);
+			return ret;
+		}
+	}
+
 	return 0;
 }
+
