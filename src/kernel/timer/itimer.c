@@ -28,6 +28,7 @@ void itimer_init(struct itimer *it, struct clock_source *cs,
 		ns_t start_tstamp) {
 	assert(it);
 	assert(cs);
+	assert(cs->read);
 
 	it->cs = cs;
 	it->start_value = start_tstamp + cs->read(it->cs);

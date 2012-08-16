@@ -17,8 +17,13 @@ clock_t clock_sys_ticks(void) {
 	return (clock_t)sys_ticks;
 }
 
+static ns_t jiffies_cs_read(struct clock_source *cs) {
+	return clock_sys_ticks();
+}
+
 struct clock_source jiffies = {
 	.flags = 1,
+	.read = jiffies_cs_read
 };
 
 ms_t clock_sys_ms(void) {
