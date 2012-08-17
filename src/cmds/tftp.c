@@ -251,6 +251,38 @@ static int msg_with_correct_len(struct tftp_msg *msg, size_t msg_len) {
 	return !!left_sz;
 }
 
+static int tftp_msg_send(struct tftp_msg *msg, size_t msg_len, int sock,
+		struct sockaddr *to_addr, socklen_t to_addr_len) {
+	int ret;
+
+	ret = sendto(sock, (char *)msg, msg_len, 0, to_addr, to_addr_len);
+	if ((ret <= 0) || ((size_t)ret != msg_len)) {
+		fprintf(stderr, "Can't send data\n");
+		return -errno;
+	}
+
+	return 0;
+}
+
+static int tftp_msg_recv(struct tftp_msg *msg, size_t *msg_len, int sock,
+		struct sockaddr *from_addr, socklen_t from_addr_len) {
+	int ret;
+	struct sockaddr addr;
+	socklen_t addr_len;
+
+	do {
+		ret = recvfrom(sock, (char *)msg, sizeof *msg, 0, &addr, &addr_len);
+		if (ret <= 0) {
+			fprintf(stderr, "Can't recive data\n");
+			return -errno;
+		}
+	} while ((memcmp(&addr, from_addr, sizeof addr) != 0) || (from_addr_len != addr_len));
+
+	*msg_len = (size_t)ret;
+
+	return 0;
+}
+
 static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 	int ret, sock;
 	struct sockaddr remote_addr;
@@ -274,24 +306,20 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 	ret = build_cmd(&snd, &snd_len, WRQ, filename, get_transfer_mode(binary_on));
 	if (ret != 0) goto error;
 
+	/* Send Write Request */
 	goto send_msg;
 
 	while (1) {
 		/* receive reply */
-		ret = recvfrom(sock, (char *)&rcv, sizeof rcv, 0, &remote_addr, &remote_addr_len); /* TODO verify the sender */
-		if (ret <= 0) {
-			fprintf(stderr, "Can't recive data\n");
-			ret = -errno;
-			goto error;
-		}
-		rcv_len = (size_t)ret;
+		ret = tftp_msg_recv(&rcv, &rcv_len, sock, &remote_addr, remote_addr_len);
+		if (ret != 0) goto error;
 
 		/* check message length */
 		if (!msg_with_correct_len(&rcv, rcv_len)) {
 #if 0
 			printf("incorrect msg\n");
 #endif
-			goto send_msg;
+			goto send_msg; /* bad packet, send again */
 		}
 
 		/* handling of the reply msg */
@@ -300,7 +328,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 			goto send_msg;
 		case ACK:
 			if (ntohs(rcv.op.ack.block_num) != pkg_number) {
-				goto send_msg;
+				goto send_msg; /* invalid acknowledgment, send again */
 			}
 			break;
 		case ERROR:
@@ -314,16 +342,14 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 			break; /* no more data */
 		}
 
+		/* get next stuff of data */
 		ret = build_data(&snd, &snd_len, fp, ++pkg_number);
 		if (ret != 0) goto error;
 
 send_msg:
-		ret = sendto(sock, (char *)&snd, snd_len, 0, &remote_addr, remote_addr_len);
-		if (ret <= 0) {
-			fprintf(stderr, "Can't send data to %s\n", hostname);
-			ret = -errno;
-			goto error;
-		}
+		/* send request / data */
+		ret = tftp_msg_send(&snd, snd_len, sock, &remote_addr, remote_addr_len);
+		if (ret != 0) goto error;
 	}
 
 	ret = close_file(fp);
