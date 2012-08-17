@@ -156,7 +156,33 @@ static int close_file(FILE *fp) {
 	return 0;
 }
 
-static int build_cmd(struct tftp_msg *msg, size_t *msg_len, uint16_t type, char *filename, char *mode) {
+static int read_file(FILE *fp, char *buff, size_t buff_sz, size_t *out_bytes) {
+	int ret;
+
+	ret = fread(buff, 1, buff_sz, fp);
+	if (ret < 0) {
+		fprintf(stderr, "Can't read data from file\n");
+		return -errno;
+	}
+
+	*out_bytes = (size_t)ret;
+
+	return 0;
+}
+
+static int write_file(FILE *fp, char *data, size_t data_sz) {
+	int ret;
+
+	ret = fwrite(data, 1, data_sz, fp);
+	if ((ret < 0) || ((size_t)ret != data_sz)) {
+		fprintf(stderr, "Can't write data to file\n");
+		return -errno;
+	}
+
+	return 0;
+}
+
+static int tftp_build_msg_cmd(struct tftp_msg *msg, size_t *msg_len, uint16_t type, char *filename, char *mode) {
 	char *ptr;
 	size_t sz;
 
@@ -176,8 +202,9 @@ static int build_cmd(struct tftp_msg *msg, size_t *msg_len, uint16_t type, char 
 	return 0;
 }
 
-static int build_data(struct tftp_msg *msg, size_t *msg_len, FILE *fp, uint16_t block_num) {
+static int tftp_build_msg_data(struct tftp_msg *msg, size_t *msg_len, FILE *fp, uint16_t block_num) {
 	int ret;
+	size_t bytes;
 
 	msg->opcode = htons(DATA);
 	*msg_len = sizeof msg->opcode;
@@ -185,12 +212,19 @@ static int build_data(struct tftp_msg *msg, size_t *msg_len, FILE *fp, uint16_t 
 	msg->op.data.block_num = htons(block_num);
 	*msg_len += sizeof msg->op.data.block_num;
 
-	ret = fread(&msg->op.data.stuff[0], 1, sizeof msg->op.data.stuff, fp);
-	if (ret < 0) {
-		fprintf(stderr, "Can't read data from file\n");
-		return -errno;
-	}
-	*msg_len += (size_t)ret;
+	ret = read_file(fp, &msg->op.data.stuff[0], sizeof msg->op.data.stuff, &bytes);
+	if (ret != 0) return ret;
+	*msg_len += bytes;
+
+	return 0;
+}
+
+static int tftp_build_msg_ack(struct tftp_msg *msg, size_t *msg_len, uint16_t block_num) {
+	msg->opcode = htons(ACK);
+	*msg_len = sizeof msg->opcode;
+
+	msg->op.ack.block_num = htons(block_num);
+	*msg_len += sizeof msg->op.ack.block_num;
 
 	return 0;
 }
@@ -255,6 +289,8 @@ static int tftp_msg_send(struct tftp_msg *msg, size_t msg_len, int sock,
 		struct sockaddr *to_addr, socklen_t to_addr_len) {
 	int ret;
 
+	assert(msg_with_correct_len(msg, msg_len)); /* debug msg_with_correct_len */
+
 	ret = sendto(sock, (char *)msg, msg_len, 0, to_addr, to_addr_len);
 	if ((ret <= 0) || ((size_t)ret != msg_len)) {
 		fprintf(stderr, "Can't send data\n");
@@ -303,7 +339,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 
 	pkg_number = 0;
 
-	ret = build_cmd(&snd, &snd_len, WRQ, filename, get_transfer_mode(binary_on));
+	ret = tftp_build_msg_cmd(&snd, &snd_len, WRQ, filename, get_transfer_mode(binary_on));
 	if (ret != 0) goto error;
 
 	/* Send Write Request */
@@ -315,12 +351,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 		if (ret != 0) goto error;
 
 		/* check message length */
-		if (!msg_with_correct_len(&rcv, rcv_len)) {
-#if 0
-			printf("incorrect msg\n");
-#endif
-			goto send_msg; /* bad packet, send again */
-		}
+		if (!msg_with_correct_len(&rcv, rcv_len)) goto send_msg; /* bad packet, send again */
 
 		/* handling of the reply msg */
 		switch (ntohs(rcv.opcode)) {
@@ -328,7 +359,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 			goto send_msg;
 		case ACK:
 			if (ntohs(rcv.op.ack.block_num) != pkg_number) {
-				goto send_msg; /* invalid acknowledgment, send again */
+				goto send_msg; /* invalid acknowledgement, send again */
 			}
 			break;
 		case ERROR:
@@ -338,13 +369,13 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 		}
 
 		/* whether we have more data to transfer? */
-		if ((pkg_number > 0) && (snd_len != sizeof snd.op.data.stuff)) {
+		if ((pkg_number != 0) && (snd_len != sizeof snd)) {
 			break; /* no more data */
 		}
 
 		/* get next stuff of data */
-		ret = build_data(&snd, &snd_len, fp, ++pkg_number);
-		if (ret != 0) goto error;
+		ret = tftp_build_msg_data(&snd, &snd_len, fp, ++pkg_number);
+		if (ret != 0) goto error; /* TODO send error package */
 
 send_msg:
 		/* send request / data */
@@ -369,8 +400,84 @@ error:
 }
 
 static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
-	printf("recv %s to %s\n", filename, hostname);
-	return -ENOSYS;
+	int ret, sock;
+	struct sockaddr remote_addr;
+	socklen_t remote_addr_len;
+	FILE *fp;
+	struct tftp_msg snd, rcv;
+	size_t snd_len, rcv_len, data_len;
+	uint16_t pkg_number;
+
+	ret = make_remote_addr(hostname, &remote_addr, &remote_addr_len);
+	if (ret != 0) { sock = -1; fp = NULL; goto error; }
+
+	ret = open_socket(&sock);
+	if (ret != 0) { sock = -1; fp = NULL; goto error; }
+
+	ret = open_file(filename, get_file_mode_w(binary_on), &fp);
+	if (ret != 0) { fp = NULL; goto error; }
+
+	pkg_number = 0;
+
+	ret = tftp_build_msg_cmd(&snd, &snd_len, RRQ, filename, get_transfer_mode(binary_on));
+	if (ret != 0) goto error;
+
+	/* Send Write Request */
+	goto send_msg;
+
+	do {
+		/* receive reply */
+		ret = tftp_msg_recv(&rcv, &rcv_len, sock, &remote_addr, remote_addr_len);
+		if (ret != 0) goto error;
+
+		/* check message length */
+		if (!msg_with_correct_len(&rcv, rcv_len)) goto send_msg; /* bad packet, send again */
+
+		/* handling of the reply msg */
+		switch (ntohs(rcv.opcode)) {
+		default:
+			goto send_msg;
+		case DATA:
+			if (ntohs(rcv.op.ack.block_num) != pkg_number + 1) {
+				goto send_msg; /* invalid data package, send again */
+			}
+			/* save data */
+			data_len = rcv_len - (sizeof rcv - sizeof rcv.op.data.stuff);
+			ret = write_file(fp, &rcv.op.data.stuff[0], data_len);
+			if (ret != 0) goto error;
+			break;
+		case ERROR:
+			fprintf(stderr, "%s: error: code=%d, msg='%s`\n",
+					hostname, (int)ntohs(rcv.op.err.error_code), &rcv.op.err.error_msg[0]);
+			goto error;
+		}
+
+		/* send ack */
+		ret = tftp_build_msg_ack(&snd, &snd_len, ++pkg_number);
+		if (ret != 0) goto error;
+
+send_msg:
+		/* send request / ack */
+		ret = tftp_msg_send(&snd, snd_len, sock, &remote_addr, remote_addr_len);
+		if (ret != 0) goto error;
+
+		/* whether we get more data? */
+	} while ((pkg_number == 0) || (rcv_len == sizeof rcv));
+
+	ret = close_file(fp);
+	if (ret != 0) { fp = NULL; goto error; }
+
+	ret = close_socket(sock);
+	if (ret != 0) { sock = -1; fp = NULL; goto error; }
+
+	fprintf(stdout, "File '%s` was transferred\n", filename);
+
+	return 0;
+
+error:
+	if (sock >= 0) close(sock);
+	if (fp) fclose(fp);
+	return ret;
 }
 
 static int exec(int argc, char **argv) {
