@@ -213,7 +213,8 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	 }
 
 	if (res < 0) {
-		return (ssize_t)res;
+		SET_ERRNO(-res);
+		return -1;
 	}
 
 	return (ssize_t)iov.iov_len;
@@ -251,7 +252,8 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	struct sockaddr_in *dest_addr;
 
 	if (sock == NULL) {
-		return -EBADF;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
 
 	iov.iov_base = buf;
@@ -260,7 +262,8 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 
 	res = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
 	if (res < 0) {
-		return res;
+		SET_ERRNO(-res);
+		return -1;
 	}
 
 	inet = inet_sk(sock->sk);
