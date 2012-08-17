@@ -500,7 +500,7 @@ static int exec(int argc, char **argv) {
 			fprintf(stderr, "Try -h for more information\n");
 			return -1;
 		case 'h':
-			fprintf(stdout, "Usage: %s [-ha] -[g|p] files destination\n", argv[0]);
+			fprintf(stdout, "Usage: %s [-hab] -[g|p] files destination\n", argv[0]);
 			return 0;
 		case 'a':
 		case 'b':
