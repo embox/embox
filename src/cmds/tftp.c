@@ -136,7 +136,7 @@ static char * get_transfer_mode(char binary_on) {
 static int open_file(char *filename, char *mode, FILE **out_fp) {
 	FILE *fp;
 
-	fp = fopen(filename, mode);
+	fp = fopen("/hello.html", mode);
 	if (fp == NULL) {
 		fprintf(stderr, "Can't open file '%s` with mode \"%s\"\n", filename, mode);
 		return -errno;
@@ -189,7 +189,7 @@ static int tftp_build_msg_cmd(struct tftp_msg *msg, size_t *msg_len, uint16_t ty
 	msg->opcode = htons(type);
 	*msg_len = sizeof msg->opcode;
 
-	ptr = msg->op.cmd.name_and_mode;
+	ptr = &msg->op.cmd.name_and_mode[0];
 	sz = strlen(filename) + 1;
 	memcpy(ptr, filename, sz * sizeof(char));
 	*msg_len += sz * sizeof(char);
@@ -282,7 +282,7 @@ static int msg_with_correct_len(struct tftp_msg *msg, size_t msg_len) {
 		break;
 	}
 
-	return !!left_sz;
+	return !left_sz;
 }
 
 static int tftp_msg_send(struct tftp_msg *msg, size_t msg_len, int sock,
@@ -540,7 +540,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	/* Handling */
-	file_hnd = param_get ? &tftp_send_file : &tftp_recv_file;
+	file_hnd = param_get ? &tftp_recv_file : &tftp_send_file;
 	for (i = optind; i < argc - 1; ++i) {
 		ret = (*file_hnd)(argv[i], argv[argc - 1], param_binary);
 		if (ret != 0) {

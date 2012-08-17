@@ -80,6 +80,10 @@ static int exec(int argc, char **argv) {
 				printf("arp: invalid MAC address: %s\n", optarg);
 				return -1;
 			}
+			if (ifdev == NULL) {
+				printf("arp: please first specify the interface\n");
+				return -1;
+			}
 			//TODO checked interface and use default
 			neighbour_add(ifdev, addr.s_addr, hwaddr, ATF_PERM);
 			return 0;
