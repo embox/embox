@@ -130,11 +130,9 @@ static size_t fatfs_fwrite(const void *buf, size_t size,
 	struct file_desc *desc;
 	size_t rezult;
 	fat_file_description_t *fd;
-	char *snd_buff;
 
 	size_to_write = size * count;
 	desc = (struct file_desc *) file;
-	snd_buff = (char *) buf;
 
 	fd = (fat_file_description_t *)desc->node->fd;
 
@@ -2119,7 +2117,6 @@ int fatfs_root_create(void *fdes) {
 
 static int fat_mount_files (void *dir_node) {
 	uint32_t cluster;
-	p_vol_info_t volinfo;
 	node_t *node, *root_node;
 	uint32_t pstart, psize;
 	uint8_t pactive, ptype;
@@ -2131,7 +2128,6 @@ static int fat_mount_files (void *dir_node) {
 
 	root_node = (node_t *)dir_node;
 	root_fd = (fat_file_description_t *) root_node->fd;
-	volinfo = (p_vol_info_t) &root_fd->p_fs_dsc->vi;
 
 	/* Obtain pointer to first partition */
 	pstart = fat_get_ptn_start(root_fd, sector_buff, 0, &pactive, &ptype, &psize);
