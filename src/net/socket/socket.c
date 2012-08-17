@@ -160,7 +160,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 
 static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen) {
-	int res;
+	int res, res_sleep;
 	struct inet_sock *inet;
 	struct iovec iov;
 	struct msghdr m;
@@ -201,16 +201,17 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	sock->sk->sk_err = -1;
 	sock_set_ready(sock->sk);
 
+	sched_lock();
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
-
-	/* if(sock->sk && sock_was_transmitted(sock->sk) != 0) { */
-	if(!sock_is_ready(sock->sk)){
-		sock_lock(sock->sk);
-		/* sleep until the event sock_is_ready fires */
-		sched_sleep(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
-	  sock_unlock(sock->sk);
-		/* res = sock_get_answer(sock->sk); */
-	 }
+	if (res == -EINPROGRESS) {
+		/* wait until resolving destonation ip */
+		res_sleep = sched_sleep_locked(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
+		if (res_sleep == SCHED_SLEEP_INTERRUPT) {
+			/* was resolved */
+			res = 1;
+		}
+	}
+	sched_unlock();
 
 	if (res < 0) {
 		SET_ERRNO(-res);
