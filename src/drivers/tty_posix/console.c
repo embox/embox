@@ -147,7 +147,7 @@ int tty_posix_console_diag_init(void)
 		return -1;
 	}
 	node = (node_t*) f0;
-	cons = (console_t *)node->attr;
+	cons = (console_t *)node->dev_attr;
 
 	fk = fopen("/dev/kbd", "r");
 	if (NULL == fk) {
@@ -191,7 +191,7 @@ int tty_posix_console_diag_init(void)
  * @return console_t*
  *
  * fname could be 'console'
- * nod->attr - will be used for console_t* !!!
+ * nod->dev_attr - will be used for console_t* !!!
  */
 static void *open_factory(const char *fname, const char *_mode) {
 //	struct tty *tp;
@@ -217,7 +217,7 @@ static void *open_factory(const char *fname, const char *_mode) {
 			node_line 				= vfs_add_path(node_name,node_factory);
 			node_line->file_info 	= (void*) &file_op;
 			cons 					= &cons_table[i];
-			node_line->attr 		= cons;
+			node_line->dev_attr		= cons;
 			cons->cons_line			= i;
 			node_line->fs_type 		= &devfs_drv;
 		}
@@ -243,7 +243,7 @@ static int ioctl_factory(void *file, int request, va_list args) {
  * @return console_t*
  *
  * fname could be '0'...'4'
- * nod->attr - will be used for console_t* !!!
+ * nod->dev_attr - will be used for console_t* !!!
  */
 static void *open(const char *fname, const char *_mode) {
 	struct tty *tp;
@@ -273,7 +273,7 @@ static void *open(const char *fname, const char *_mode) {
 		return NULL;
 
 	// link both together
-	cons = node_line->attr;
+	cons = node_line->dev_attr;
 	tp = getTTY_Cons(line);
 	cons->c_tty = tp;
 	tp->tty_priv = cons;
@@ -311,7 +311,7 @@ static int getLine(const char* fname) {
 static console_t* getConsole(void* file) {
 	node_t * node_line = file;
 
-	return (console_t*) node_line->attr;
+	return (console_t*) node_line->dev_attr;
 }
 /**
  * get tty structure

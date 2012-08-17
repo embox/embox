@@ -108,7 +108,7 @@ static int setup_suite(void) {
 		return -1;
 	}
 	/* set created ramdisc attribute from dev_node */
-	memcpy(&ramdisk, mount_param.dev_node->attr, sizeof(ramdisk));
+	memcpy(&ramdisk, mount_param.dev_node->dev_attr, sizeof(ramdisk));
 
 	/* format filesystem */
 	if(0 != fs_drv->fsop->format((void *)&ramdisk.path)) {

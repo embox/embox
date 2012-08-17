@@ -42,7 +42,7 @@ static void *ramfs_fopen(struct file_desc *desc, const char *mode) {
 
 
 	nod = desc->node;
-	fd = (ramfs_file_description_t*) nod->attr;
+	fd = (ramfs_file_description_t*) nod->fd;
 	fd->cur_pointer = 0;
 	fd->lock = 1;
 	return desc;
@@ -52,7 +52,7 @@ static int ramfs_fclose(struct file_desc *desc) {
 //	ramfs_file_description_t *fd;
 
 //	node_t *nod = (node_t *) file;
-//	fd = (ramfs_file_description_t*) nod->attr;
+//	fd = (ramfs_file_description_t*) nod->fd;
 //	fd->lock = 0;
 	return 0;
 }
@@ -64,7 +64,7 @@ static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 
 	size_to_read = size * count;
 	desc = (struct file_desc *) file;
-	fd = (ramfs_file_description_t*) desc->node->attr;
+	fd = (ramfs_file_description_t*) desc->node->fd;
 
 	if (fd == NULL) {
 		return -ENOENT;
@@ -86,7 +86,7 @@ static size_t ramfs_fwrite(const void *buf, size_t size, size_t count,
 	node_t *nod;
 	size_t size_to_write = size * count;
 	nod = (node_t *) file;
-	fd = (ramfs_file_description_t*) nod->attr;
+	fd = (ramfs_file_description_t*) nod->fd;
 
 	if (fd == NULL) {
 		return -ENOENT;
@@ -107,7 +107,7 @@ static int ramfs_fseek(void *file, long offset, int whence) {
 	node_t *nod;
 	int new_offset;
 	nod = (node_t *) file;
-	fd = (ramfs_file_description_t*) nod->attr;
+	fd = (ramfs_file_description_t*) nod->fd;
 
 	if (fd == NULL) {
 		return -ENOENT;
@@ -145,7 +145,7 @@ static int ramfs_ioctl(void *file, int request, va_list ar) {
 	addr = (uint32_t *) va_arg(args, unsigned long);
 	va_end(args);
 	nod = (node_t *) file;
-	fd = (ramfs_file_description_t*) nod->attr;
+	fd = (ramfs_file_description_t*) nod->fd;
 	*addr = fd->start_addr;
 	return 0;
 }
@@ -182,7 +182,8 @@ static int ramfs_create(void *params) {
 	fd = pool_alloc(&fdesc_pool);
 	nod->fs_type = &ramfs_drv;
 	nod->file_info = (void *) &ramfs_fop;
-	nod->attr = (void *) fd;
+	nod->fd = (void *) fd;
+	nod->dev_attr = nod->dev_type = NULL;
 
 	fd->start_addr = par->start_addr;
 	fd->size = par->size;
@@ -195,7 +196,7 @@ static int ramfs_create(void *params) {
 static int ramfs_delete(const char *fname) {
 	ramfs_file_description_t *fd;
 	node_t *nod = vfs_find_node(fname, NULL);
-	fd = nod->attr;
+	fd = nod->fd;
 
 	pool_free(&fdesc_pool, fd);
 	vfs_del_leaf(nod);

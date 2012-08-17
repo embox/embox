@@ -53,6 +53,9 @@ static int mount_dev(char *dev, char *fs_type, char *dir) {
 		drv = dev_node->fs_type;
 	}
 	if (NULL == drv->fsop->mount) {
+		if(0 == fs_type) {
+			printf("try to set \"-t [fstype]\" option\n");
+		}
 		return  -ENODEV;
 	}
 	return drv->fsop->mount((void *) &param);

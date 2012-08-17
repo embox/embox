@@ -72,7 +72,7 @@ static int exec(int argc, char **argv) {
 			break;
 		case 'q':
 			min_argc += 1;
-			mkfs_params.operation_flag |= MKFS_CREATE_DEV;
+			mkfs_params.operation_flag |= MKFS_CREATE_RAMDISK;
 			if(check_invalid(min_argc, argc, argv)){
 				return -EINVAL;
 			}
@@ -115,21 +115,23 @@ int mkfs_do_operation(void *_mkfs_params) {
 
 	mkfs_params = (mkfs_params_t *) _mkfs_params;
 
-	if(mkfs_params->operation_flag & MKFS_CREATE_DEV) {
+	if(mkfs_params->operation_flag & MKFS_CREATE_RAMDISK) {
 		if(0 != (rezult = ramdisk_create((void *)mkfs_params))) {
 			return rezult;
 		}
 	}
 
 	if(mkfs_params->operation_flag & MKFS_FORMAT_DEV) {
-		if(NULL == (ramdisk = ramdisk_get_param(mkfs_params->path))) {
-			return -ENODEV;
+		if(MKFS_CREATE_RAMDISK) {
+			/* set filesystem attribute to ramdisk */
+			if(NULL == (ramdisk = ramdisk_get_param(mkfs_params->path))) {
+						return -ENODEV;
+					}
+			strcpy ((void *)ramdisk->path, (const void *)mkfs_params->path);
+			strcpy ((void *)ramdisk->fs_name,
+						(const void *)mkfs_params->fs_name);
+			ramdisk->fs_type = mkfs_params->fs_type;
 		}
-		/* set filesystem attribute to ramdisk */
-		strcpy ((void *)ramdisk->path, (const void *)mkfs_params->path);
-		strcpy ((void *)ramdisk->fs_name,
-					(const void *)mkfs_params->fs_name);
-		ramdisk->fs_type = mkfs_params->fs_type;
 
 		if(NULL == (fs_drv =
 				filesystem_find_drv((const char *) &mkfs_params->fs_name))) {

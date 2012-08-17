@@ -172,7 +172,7 @@ static tty_t * getTty(void* file) {
 	tty_t *tp;
 
 	nod = (node_t *) file;
-	tp	= (tty_t*) nod->attr;
+	tp	= (tty_t*) nod->dev_attr;
 
 	return tp;
 }

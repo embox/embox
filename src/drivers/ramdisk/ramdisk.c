@@ -51,13 +51,13 @@ int ramdisk_create(void *mkfs_params) {
 	}
 
 	ram_disk = pool_alloc(&ramdisk_pool);
-	ramdisk_node->attr = (void *) ram_disk;
+	ramdisk_node->dev_attr = (void *) ram_disk;
 	ram_disk->dev_node = ramdisk_node;
 
 	if(NULL == (block_dev = block_dev_find("ramdisk"))) {
 		return -ENODEV;
 	}
-	ramdisk_node->file_info = (void *) block_dev->dev_ops;
+	ramdisk_node->dev_type = (void *) block_dev->dev_ops;
 
 	if(NULL == (ram_disk->p_start_addr =
 			page_alloc(p_mkfs_params->blocks))) {
@@ -81,7 +81,7 @@ dev_ramdisk_t *ramdisk_get_param(char *name) {
 	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
 		return NULL;
 	}
-	return (dev_ramdisk_t *) ramdisk_node->attr;
+	return (dev_ramdisk_t *) ramdisk_node->dev_attr;
 }
 
 int ramdisk_delete(const char *name) {
@@ -91,7 +91,7 @@ int ramdisk_delete(const char *name) {
 	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
 		return -1;
 	}
-	ram_disk = ramdisk_node->attr;
+	ram_disk = ramdisk_node->dev_attr;
 
 	pool_free(&ramdisk_pool, ram_disk);
 	vfs_del_leaf(ramdisk_node);

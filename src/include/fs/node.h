@@ -16,17 +16,17 @@
 #include <framework/mod/options.h>
 
 
-//#define MAX_LENGTH_FILE_NAME  0x20
 #define MAX_LENGTH_FILE_NAME  OPTION_MODULE_GET(embox__fs__core,NUMBER,file_name_length)
-//#define MAX_LENGTH_PATH_NAME  0x100
 #define MAX_LENGTH_PATH_NAME  OPTION_MODULE_GET(embox__fs__core,NUMBER,path_length)
 
 typedef struct node {
 	const char            name[MAX_LENGTH_FILE_NAME];
 	int                   properties;
 	void                 *file_info; /* WTF? maybe introduce Node Attribute Structure(NAS)? (sikmir) */
-	struct fs_drv        *fs_type;
-	void                 *attr;
+	void                 *dev_type;    /* device driver operation */
+	void                 *dev_attr;    /* information about device, where is the file */
+	struct fs_drv        *fs_type;     /* filesystem driver operation */
+	void                 *fd;          /* file description */
 	struct tree_link      tree_link;
 } node_t;
 

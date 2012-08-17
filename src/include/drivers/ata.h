@@ -89,7 +89,7 @@ typedef struct _dev_ide_ata {
 	int base_cmd_addr;
 	int base_ctrl_addr;
 	uint8_t  irq;
-	unsigned char master_select;
+	unsigned char dev_select;
 	dev_ide_ata_identif_t identification;
 } dev_ide_ata_t;
 

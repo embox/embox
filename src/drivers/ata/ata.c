@@ -104,6 +104,8 @@ int ata_init(void) {
 
 	num_dev = 0;
 	ide_dev_quantity = MAX_DEV_QUANTITY;
+
+	detection_drive();
 	return 0;
 }
 
@@ -132,21 +134,23 @@ ide_ata_slot_t *detection_drive(void) {
 }
 
 static int scan_drive(uint8_t *bus_number) {
-	vol_info_t *volinfo;
+	/*vol_info_t *volinfo;
 	mbr_t *mbr;
 	lbr_t *lbr;
 	char buff[1024];
+	*/
 
    unsigned char read_reg;
-   unsigned char dev;
+   unsigned char dev_select;
    int count;
    int base_cmd_addr, base_ctrl_addr;
    dev_ide_ata_t *dev_ide;
+   double size;
 
    base_cmd_addr = ide_ata_slot.ide_bus[*bus_number].base_cmd_addr;
    base_ctrl_addr = ide_ata_slot.ide_bus[*bus_number].base_ctrl_addr;
 
-   dev = CB_DH_DEV0;
+   dev_select = CB_DH_DEV0;
    count = 0;
 
    do {
@@ -160,9 +164,9 @@ static int scan_drive(uint8_t *bus_number) {
    while(1) {
 	   tmr_set_timeout();
 	   ide_ata_slot.ide_bus[*bus_number].dev_ide_ata = NULL;
-	   pio_outbyte(NULL, COMMAND, base_cmd_addr + CB_DH, dev);
+	   pio_outbyte(NULL, COMMAND, base_cmd_addr + CB_DH, dev_select);
 
-	   if((dev | 0xA0) ==
+	   if((dev_select | 0xA0) ==
 			   (read_reg = pio_inbyte(NULL, COMMAND, base_cmd_addr + CB_DH))) {
 	       /* see if devX ready or none*/
 		   count = 0;
@@ -172,26 +176,33 @@ static int scan_drive(uint8_t *bus_number) {
 				   break;
 			   }
 
-			   usleep(1);
+			   usleep(10);
 			   if (1000 < count++) {
 				   break;
 			   }
 		   }
 
-		   if ((0 != read_reg) &&
-			  (NULL != (dev_ide = ide_drive_create(&num_dev)))) {
-
-			   ide_ata_slot.ide_bus[*bus_number].dev_ide_ata = dev_ide;
+		   if (0 != read_reg) {
 
 			   pio_outbyte(NULL, COMMAND, base_cmd_addr + CB_SC, 0);
 			   pio_outbyte(NULL, COMMAND, base_cmd_addr + CB_SN, 0);
 			   pio_outbyte(NULL, COMMAND, base_cmd_addr + CB_CL, 0);
 			   pio_outbyte(NULL, COMMAND, base_cmd_addr + CB_CH, 0);
-
 			   pio_outbyte(NULL, COMMAND, base_cmd_addr + CB_CMD, 0xEC);
 			   usleep(10);
 			   read_reg = pio_inbyte(NULL, COMMAND, base_cmd_addr + CB_STAT);
-			   read_reg = pio_inbyte(NULL, COMMAND, base_cmd_addr + CB_ERR);
+
+			   if(read_reg & CB_STAT_ERR) {
+				   read_reg = pio_inbyte(NULL, COMMAND, base_cmd_addr + CB_ERR);
+				   if(read_reg & CB_ER_ABRT) {
+					   return -1;
+				   }
+			   }
+
+			   if(NULL == (dev_ide = ide_drive_create(&num_dev))) {
+				   return -1;
+			   }
+			   ide_ata_slot.ide_bus[*bus_number].dev_ide_ata = dev_ide;
 
 			   /* read  drive Identification */
 			   read_identification(&dev_ide->identification, base_cmd_addr);
@@ -199,8 +210,15 @@ static int scan_drive(uint8_t *bus_number) {
 			   dev_ide->base_cmd_addr = base_cmd_addr;
 			   dev_ide->base_ctrl_addr = base_ctrl_addr;
 			   //dev_ide->irq = irq;
-			   dev_ide->master_select = dev;
-			   for (int i=0; i<50; i++){
+			   dev_ide->dev_select = dev_select;
+
+			   size =
+			   		(double) dev_ide->identification.num_cyl *
+			   		(double) dev_ide->identification.num_head *
+			   		(double) dev_ide->identification.bytes_pr_sect *
+			   		(double) (dev_ide->identification.sect_pr_track + 1);
+			   		dev_ide->size = (size_t)size;
+			   /*for (int i=0; i<50; i++){
 				   read_sectors_lba(dev_ide, buff, i, 1);
 				   volinfo = (vol_info_t *)buff;
 				   if(volinfo->filesystem == FAT16){
@@ -215,13 +233,14 @@ static int scan_drive(uint8_t *bus_number) {
 				   if((lbr->sig_55 == 0x55) && (mbr->sig_aa == 0xAA)) {
 					   printf("%s", lbr->ebpb.ebpb.label);
 				   }
+				   //if((0 == i)||(1 == i))memset(buff, 0, sizeof(buff));
 				   write_sectors_lba(dev_ide, buff, i, 1);
-			   }
+			   }*/
 		   }
 	   }
 	   (*bus_number)++;
-	   if(CB_DH_DEV0 == dev) {
-		   dev = CB_DH_DEV1;
+	   if(CB_DH_DEV0 == dev_select) {
+		   dev_select = CB_DH_DEV1;
 		   base_cmd_addr = ide_ata_slot.ide_bus[*bus_number].base_cmd_addr;
 		   base_ctrl_addr = ide_ata_slot.ide_bus[*bus_number].base_ctrl_addr;
 	   }
@@ -325,7 +344,6 @@ static dev_ide_ata_t *ide_drive_create(uint8_t *dev_number) {
 	block_dev_module_t *block_dev;
 	char dev_path[MAX_LENGTH_PATH_NAME];
 	char dev_name[MAX_LENGTH_FILE_NAME];
-	double size;
 
 	if (MAX_DEV_QUANTITY <= *dev_number) {
 		return NULL;
@@ -345,7 +363,7 @@ static dev_ide_ata_t *ide_drive_create(uint8_t *dev_number) {
 		}
 		else {
 			(*dev_number)++;
-			return (dev_ide_ata_t *) dev_node->attr;/*dev already exist*/
+			return (dev_ide_ata_t *) dev_node->dev_attr;/*dev already exist*/
 		}
 	}
 
@@ -353,33 +371,22 @@ static dev_ide_ata_t *ide_drive_create(uint8_t *dev_number) {
 		return dev_ide;
 	}
 	(*dev_number)++;
-	//strcpy(dev_ide->dev_name, dev_name);
 	dev_ide->dev_node = dev_node;
 
 	if(NULL == (block_dev = block_dev_find("harddisk"))) {
 		return NULL;
 	}
-	dev_node->file_info = (void *) block_dev->dev_ops;
+	dev_node->dev_type = (void *) block_dev->dev_ops;
+	dev_node->dev_attr = (void *) dev_ide;
+	dev_ide->dev_node->dev_attr = (void *) dev_ide;
 
-	dev_ide->dev_node->attr = (void *) dev_ide;
-	size =
-		(double) dev_ide->identification.num_cyl *
-		(double) dev_ide->identification.num_head *
-		(double) dev_ide->identification.bytes_pr_sect *
-		(double) (dev_ide->identification.sect_pr_track + 1) / 1024 / 1024;
-		dev_ide->size = (size_t)size;
 	return dev_ide;
 }
 
 static unsigned long pio_set_base(dev_ide_ata_t *drive, char cmd) {
 	if(NULL == drive) {
 		/* if drive not set, base can be set in addr */
-		if(cmd) {
-			return 0;
-		}
-		else {
-			return 0;
-		}
+		return 0;
 	}
 	else {
 		if(cmd) {
@@ -449,7 +456,7 @@ static int enable_lba_cmd(dev_ide_ata_t *drive) {
 	if(NULL == drive) {
 			return -1;
 		}
-	data = drive->master_select | CB_LBA_MODE;
+	data = drive->dev_select | CB_LBA_MODE;
 
 	if(drive->identification.capabilities & LBA_SUPP) {
 		if(sub_wait_poll(drive->base_ctrl_addr)) {
@@ -467,7 +474,7 @@ static int enable_lba_cmd(dev_ide_ata_t *drive) {
 static int disable_lba_cmd(dev_ide_ata_t *drive) {
 	unsigned char data;
 
-	data = drive->master_select & ~CB_LBA_MODE;
+	data = drive->dev_select & ~CB_LBA_MODE;
 
 	if(drive->identification.capabilities & LBA_SUPP) {
 		if(sub_wait_poll(drive->base_ctrl_addr)) {
@@ -495,7 +502,7 @@ static  int set_lba_addr(dev_ide_ata_t *drive, unsigned long lba) {
 	pio_outbyte(drive, COMMAND, CB_LBA_000L, lba & 0xFF);
     pio_outbyte(drive, COMMAND, CB_LBA_00H0, (lba >> 8) & 0xFF);
     pio_outbyte(drive, COMMAND, CB_LBA_0L00, (lba >> 16) & 0xFF);
-    data_reg = drive->master_select;
+    data_reg = drive->dev_select;
     data_reg |= ((lba >> 24) & 0x0F) | CB_LBA_MODE;
     pio_outbyte(drive, COMMAND, CB_LBA_H000, data_reg);
 

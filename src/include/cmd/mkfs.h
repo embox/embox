@@ -11,8 +11,8 @@
 
 #include <fs/node.h>
 
-#define MKFS_CREATE_DEV 0x00000001
-#define MKFS_FORMAT_DEV 0x00000002
+#define MKFS_CREATE_RAMDISK 0x00000001
+#define MKFS_FORMAT_DEV     0x00000002
 
 typedef struct mkfs_params {
 	size_t       blocks;

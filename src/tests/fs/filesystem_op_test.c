@@ -82,7 +82,7 @@ static int setup_suite(void) {
 	test_assert_not_null(mount_param.dev_node);
 
 	/* set created ramdisc attribute from dev_node */
-	memcpy(&ramdisk, mount_param.dev_node->attr, sizeof(ramdisk));
+	memcpy(&ramdisk, mount_param.dev_node->dev_attr, sizeof(ramdisk));
 
 	return 0;
 }

@@ -55,7 +55,7 @@ static void *nfsfs_fopen(struct file_desc *desc, const char *mode) {
 	nfs_file_description_t *fd;
 
 	nod = desc->node;
-	fd = (nfs_file_description_t *)nod->attr;
+	fd = (nfs_file_description_t *)nod->fd;
 
 	if ('r' == *mode) {
 		fd->fi.mode = O_RDONLY;
@@ -80,7 +80,7 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 	nfs_file_description_t *fd;
 
 	desc = (struct file_desc *) file;
-	fd = (nfs_file_description_t *)desc->node->attr;
+	fd = (nfs_file_description_t *) desc->node->fd;
 
 	switch (whence) {
 	case SEEK_SET:
@@ -112,7 +112,7 @@ static size_t nfsfs_fread(void *buf, size_t size, size_t count, void *file) {
 
 	read_size = size * count;
 	desc = (struct file_desc *) file;
-	fd = (nfs_file_description_t *)desc->node->attr;
+	fd = (nfs_file_description_t *)desc->node->fd;
 	datalen = 0;
 
 	while(1) {
@@ -157,7 +157,7 @@ static size_t nfsfs_fwrite(const void *buf, size_t size,
 
 	size_to_write = size * count;
 	desc = (struct file_desc *) file;
-	fd = (nfs_file_description_t *)desc->node->attr;
+	fd = (nfs_file_description_t *)desc->node->fd;
 
 	/* set read structure */
 	req.count = req.datalen = size_to_write;
@@ -307,8 +307,9 @@ static int nfsfs_mount(void *par) {
 	fd->p_fs_dsc = p_fs_fd;
 
 	dir_node->fs_type = &nfsfs_drv;
-	dir_node->file_info = (void *) &nfsfs_fop;
-	dir_node->attr = (void *) fd;
+	dir_node->fd = (void *) fd;
+	dir_node->dev_attr = params->dev_node->dev_attr;
+	dir_node->dev_type = params->dev_node->dev_type;
 	params->dev_node = dir_node;
 
 	strcpy(p_fs_fd->mnt_point, params->dir);
@@ -353,7 +354,7 @@ static node_t  *create_nfs_file (char *full_name, readdir_desc_t *predesc) {
 		}
 	}
 	else {
-		fd = (nfs_file_description_t *) node->attr;
+		fd = (nfs_file_description_t *) node->fd;
 	}
 
 	/* copy read the description in the created file*/
@@ -374,7 +375,8 @@ static node_t  *create_nfs_file (char *full_name, readdir_desc_t *predesc) {
 	fd->p_fs_dsc = p_fs_fd;
 	node->fs_type = &nfsfs_drv;
 	node->file_info = (void *) &nfsfs_fop;
-	node->attr = (void *)fd;
+	node->dev_type = node->dev_attr = NULL;
+	node->fd = (void *)fd;
 	return node;
 }
 
@@ -393,7 +395,7 @@ static int create_dir_entry(char *parent) {
 		return -1;/*device not found*/
 	}
 
-	parent_fd = (nfs_file_description_t *) parent_node->attr;
+	parent_fd = (nfs_file_description_t *) parent_node->fd;
 	fh = &parent_fd->fh;
 	fh->count = fh->maxcount = DIRCOUNT;
 	fh->cookie = 0;
@@ -452,7 +454,7 @@ static int create_dir_entry(char *parent) {
 				return -1;
 			}
 
-			fd = (nfs_file_description_t *) node->attr;
+			fd = (nfs_file_description_t *) node->fd;
 			if (NFS_DIRECTORY_NODE_TYPE == fd->attr.type) {
 				node->properties = DIRECTORY_NODE_TYPE;
 				if((0 != strcmp(fd->name_dsc.name.data, "."))
@@ -494,7 +496,7 @@ static int nfsfs_create(void *par) {
 
 	node = (node_t *)param->node;
 	parents_node = (node_t *)param->parents_node;
-	par_fd = (nfs_file_description_t *) parents_node->attr;
+	par_fd = (nfs_file_description_t *) parents_node->fd;
 
 	if (DIRECTORY_NODE_TYPE == (node->properties & DIRECTORY_NODE_TYPE)) {
 		procnum = NFSPROC3_MKDIR;
@@ -530,7 +532,7 @@ static int nfsfs_create(void *par) {
 	if(NULL == (fd = pool_alloc(&nfs_file_pool))) {
 		return -1;
 	}
-	node->attr = (void *) fd;
+	node->fd = (void *) fd;
 	strcpy(path, param->path);
 	nip_tail(path, tail);
 
@@ -547,7 +549,7 @@ static int nfsfs_delete(const char *fname) {
 	__u32 procnum;
 
 	node = vfs_find_node(fname, NULL);
-	fd = (nfs_file_description_t *) node->attr;
+	fd = (nfs_file_description_t *) node->fd;
 
 	if(NULL ==
 			(dir_node = vfs_find_parent((const char *) &node->name, node))) {
@@ -556,7 +558,7 @@ static int nfsfs_delete(const char *fname) {
 
 	/* set delete structure */
 	req.fname = &fd->name_dsc.name;
-	dir_fd = (nfs_file_description_t *) dir_node->attr;
+	dir_fd = (nfs_file_description_t *) dir_node->fd;
 	req.dir_fh = &dir_fd->fh.name_fh;
 
 	if (DIRECTORY_NODE_TYPE == (node->properties & DIRECTORY_NODE_TYPE)) {
@@ -754,7 +756,7 @@ static int nfs_lookup(node_t *node, nfs_file_description_t *fd) {
 
 	/* set lookup structure */
 	req.fname = &fd->name_dsc.name;
-	dir_fd = (nfs_file_description_t *) dir_node->attr;
+	dir_fd = (nfs_file_description_t *) dir_node->fd;
 	req.dir_fh = &dir_fd->fh.name_fh;
 
 	reply.fh = &fd->fh.name_fh;
