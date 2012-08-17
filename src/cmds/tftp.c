@@ -136,7 +136,7 @@ static char * get_transfer_mode(char binary_on) {
 static int open_file(char *filename, char *mode, FILE **out_fp) {
 	FILE *fp;
 
-	fp = fopen("/hello.html", mode);
+	fp = fopen(filename, mode);
 	if (fp == NULL) {
 		fprintf(stderr, "Can't open file '%s` with mode \"%s\"\n", filename, mode);
 		return -errno;
@@ -301,18 +301,20 @@ static int tftp_msg_send(struct tftp_msg *msg, size_t msg_len, int sock,
 }
 
 static int tftp_msg_recv(struct tftp_msg *msg, size_t *msg_len, int sock,
-		struct sockaddr *from_addr, socklen_t from_addr_len) {
-	int ret;
-	struct sockaddr addr;
-	socklen_t addr_len;
+		struct sockaddr *from_addr, socklen_t *from_addr_len) {
+	int ret, times;
 
+	times = 100;
 	do {
-		ret = recvfrom(sock, (char *)msg, sizeof *msg, 0, &addr, &addr_len);
-		if (ret <= 0) {
+		/* FIXME verifying remote side (using its address) */
+		ret = recvfrom(sock, (char *)msg, sizeof *msg, 0, from_addr, from_addr_len);
+		if (ret < 0) {
 			fprintf(stderr, "Can't recive data\n");
 			return -errno;
 		}
-	} while ((memcmp(&addr, from_addr, sizeof addr) != 0) || (from_addr_len != addr_len));
+
+	} while (--times && ret <= 0);
+
 
 	*msg_len = (size_t)ret;
 
@@ -347,7 +349,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 
 	while (1) {
 		/* receive reply */
-		ret = tftp_msg_recv(&rcv, &rcv_len, sock, &remote_addr, remote_addr_len);
+		ret = tftp_msg_recv(&rcv, &rcv_len, sock, &remote_addr, &remote_addr_len);
 		if (ret != 0) goto error;
 
 		/* check message length */
@@ -427,7 +429,7 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
 
 	do {
 		/* receive reply */
-		ret = tftp_msg_recv(&rcv, &rcv_len, sock, &remote_addr, remote_addr_len);
+		ret = tftp_msg_recv(&rcv, &rcv_len, sock, &remote_addr, &remote_addr_len);
 		if (ret != 0) goto error;
 
 		/* check message length */
