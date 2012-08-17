@@ -20,6 +20,7 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <net/arp_queue.h>
+#include <string.h>
 
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
@@ -270,8 +271,10 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	inet = inet_sk(sock->sk);
 	if ((daddr != NULL) && (daddrlen != NULL)) {
 		dest_addr = (struct sockaddr_in *)daddr;
+		dest_addr->sin_family = AF_INET;
 		dest_addr->sin_addr.s_addr = inet->daddr;
 		dest_addr->sin_port = inet->dport;
+		memset(&dest_addr->sin_zero[0], 0, sizeof dest_addr->sin_zero);
 		*daddrlen = sizeof *dest_addr;
 	}
 
