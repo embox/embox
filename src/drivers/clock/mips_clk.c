@@ -10,6 +10,7 @@
 
 #include <kernel/time/clock_source.h>
 #include <kernel/irq.h>
+#include <hal/clock.h>
 #include <errno.h>
 
 #include <asm/mipsregs.h>
@@ -28,6 +29,7 @@
 static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	uint32_t count = mips_read_c0_count();
 	mips_write_c0_compare(count + 10000);
+	clock_tick_handler(irq_nr, dev_id);
 	return IRQ_HANDLED;
 }
 

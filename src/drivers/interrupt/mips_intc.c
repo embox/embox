@@ -20,8 +20,20 @@ extern void mips_c_interrupt_handler(pt_regs_t *regs);
  * Initialize MIPS build-in interrupts controller
  */
 static int unit_init(void) {
+	unsigned int c0_reg;
 	/* set interrupt handler exception */
 	mips_exception_setup(MIPS_EXCEPTION_TYPE_IRQ, mips_c_interrupt_handler);
+
+	/* read status registers for cleaning interrupts mask */
+	c0_reg = mips_read_c0_status();
+	c0_reg &= ~(ST0_IM);           /* clear all interrupts mask */
+	c0_reg |= ST0_IE;              /* global enable interrupt */
+	mips_write_c0_status(c0_reg);  /* write back status register */
+
+	/* read cause register for cleaning all pending bits */
+	c0_reg = mips_read_c0_cause();
+	c0_reg &= ~(ST0_IM);           /* clear all interrupts pending bits */
+	mips_write_c0_cause(c0_reg);   /* write back cause register */
 	return 0;
 }
 
