@@ -95,6 +95,9 @@ int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr,
 		entity = &ptr.nh->n;
 		if ((entity->ip_addr == ip_addr)
 				&& (entity->if_handler == if_handler)) {
+			if (entity->flags == ATF_PERM) {
+				return -EEXIST;
+			}
 			break;
 		}
 	}
