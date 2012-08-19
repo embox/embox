@@ -18,7 +18,6 @@ typedef struct pt_regs {
 	uint32_t esp, ss; /*Pushed by the processor automatically in case of priority level change. Are invalid otherwise (use esp2, ss2 instead) */
 } pt_regs_t;
 
-// TODO: Delete it
 struct stackframe {
 	void* fp;
 	void* pc;
