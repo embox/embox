@@ -4,7 +4,7 @@
  * which is used to convert IP addresses into a low-level hardware address.
  * @details RFC 826
  *
- * @date 11.05.11
+ * @date 11.03.09
  * @author Anton Bondarev
  * @author Nikolay Korotky
  * @author Ilia Vaprol
