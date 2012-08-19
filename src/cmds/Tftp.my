@@ -14,7 +14,7 @@ package embox.cmd
 		OPTIONS
 			files        list of files for transmitting
 			destination  ip address tftp server
-			-h           print help messagek
+			-h           print help message
 			-a           use ascii mode to transfer
 			-b           use binary mode to transfer
 			-g           get files from remote machine
