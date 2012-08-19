@@ -31,5 +31,5 @@ abstract module boot {
 abstract module lds {
 }
 
-abstract module frame {
+abstract module stackframe {
 }

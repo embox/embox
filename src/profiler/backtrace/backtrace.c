@@ -6,20 +6,26 @@
  * @author Bulychev Anton
  */
 
-#include <module/embox/arch/frame.h>
+#include "stackframe.h"
+#include <types.h>
+#include <stdio.h>
+
+struct stackframe {
+	void* fp;
+	void* pc;
+};
 
 void backtrace_fd(void) {
-	struct frame f = get_current_frame();
-	int depth = 0;
+	struct stackframe f;
+	stackframe_set_current(&f);
 
 	printf("\nBacktrace:\n");
-	printf("[%d] pc == 0x%p fp == %p\n", depth++, f.pc, f.fp);
-	while (f.fp != NULL) {
-		f = get_prev_frame(&f);
-		if (f.pc == NULL) {
-			break;
-		}
-		printf("[%d] pc == 0x%p fp == %p\n", depth++, f.pc, f.fp);
+	stackframe_print(&f);
+	//printk("[%d] pc == 0x%p fp == %p\n", depth++, f.pc, f.fp);
+	while (stackframe_set_prev(&f)) {
+
+		stackframe_print(&f);
+		//printk("[%d] pc == 0x%p fp == %p\n", depth++, f.pc, f.fp);
 	}
 	printf("\n");
 }
