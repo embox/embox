@@ -6,8 +6,7 @@
  * @author Eldar Abusalimov
  */
 
-#define HAL_CONTEXT_H_
-#include <asm/hal/context.h>
+#include <module/embox/arch/context.h>
 
 #include <asm/regs.h>
 #include <asm/wim.h>
