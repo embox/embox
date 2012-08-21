@@ -1,8 +1,8 @@
 /**
  * @file
- * @brief Example of using gethostent function
+ * @brief Example of using gethostbyname function
  *
- * @date 20.08.12
+ * @date 21.08.12
  * @author Ilia Vaprol
  */
 
@@ -41,13 +41,18 @@ static void print_info(struct hostent *he) {
 static int exec(int argc, char *argv[]) {
 	struct hostent *he;
 
-	sethostent(1);
-
-	while ((he = gethostent()) != NULL) {
-		print_info(he);
+	if (argc != 2) {
+		printf("Usage: %s <hostname>\n", argv[0]);
+		return 0;
 	}
 
-	endhostent();
+	he = gethostbyname(argv[1]);
+	if (he == NULL) {
+		printf("%s: unknown host %s\n", argv[0], argv[1]);
+		return -1;
+	}
+
+	print_info(he);
 
 	return 0;
 }
