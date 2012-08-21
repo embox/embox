@@ -81,6 +81,7 @@ static int unit_init(void) {
 	return 0;
 }
 
+
 #ifdef DRIVER_AMBAPP
 static int dev_regs_init(void) {
 	amba_dev_t amba_dev;

@@ -6,11 +6,10 @@
  * @author Anton Kozlov
  */
 
-#ifndef MEASURE_H_
-#define MEASURE_H_
+#ifndef PROFILER_MEASURING_MEASURE_H_
+#define PROFILER_MEASURING_MEASURE_H_
 
 #include <types.h>
-#include <hal/measure_unit.h>
 #include <hal/interrupt.h>
 
 typedef struct {
@@ -51,4 +50,5 @@ extern measure_time_t *measure_get_time(void);
 extern void measure_start(void);
 
 extern measure_time_t *measure_stop(void);
-#endif /* MEASURE_H_ */
+
+#endif /* PROFILER_MEASURING_MEASURE_H_ */

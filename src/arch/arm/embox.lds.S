@@ -1,7 +1,8 @@
 
 #include <asm-generic/embox.lds.h>
+#include <framework/mod/options.h>
 
-/*OUTPUT_FORMAT("elf32-rc", "elf32-sparc", "elf32-sparc") */
+/*OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm") */
 OUTPUT_ARCH(arm)
 ENTRY(start)
 
@@ -19,10 +20,12 @@ _data_image_start = _data_lma;
 _text_start = _text_vma;
 _text_end = _text_vma + _text_len;
 /*_reloc_end = _reloc_start + _reloc_len; */
+
 SECTIONS {
 	.text : {
 		*(.trap_table)
 		*(.text)
+		*(.text.*)
 		*(.init.text)
 		ALIGNMENT();
 		*(.eh_frame)
@@ -63,7 +66,7 @@ SECTIONS {
 	.stack (NOLOAD): {
 		ALIGNMENT();
 		_stack_bottom = .;
-		. += CONFIG_STACK_SIZE;
+		. += OPTION_GET(NUMBER,stack_size);
 		ALIGNMENT();
 		_stack_top = .;
 		_stack = _stack_top;

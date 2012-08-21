@@ -1,0 +1,9 @@
+package lego_nxt.cmd
+
+import lego_nxt.driver.*
+
+module menu {
+	source "menu.c"
+
+	depends nxt_lcd, nxt_avr_init
+}

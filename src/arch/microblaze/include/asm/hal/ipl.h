@@ -26,34 +26,14 @@ static inline void ipl_init(void) {
 }
 #include "stdio.h"
 static inline __ipl_t ipl_save(void) {
-#if 0
-	/* it will be better to use irq_ctrl mask but we can't expect every
-	 * irq_ctrl driver has implemented own get_mask and set mask functions
-	 */
-	__ipl_t ipl_status = irqc_get_mask();
-	irqc_set_mask(0);
-
-	return ipl_status;
-#endif
-
 	__ipl_t ipl = msr_get_bit(MSR_IE_BIT);
 
 	msr_clr_ie();
 
-	//prom_printf("get ipl = 0x%X\n", ipl);
 	return ipl;
 }
 
 static inline void ipl_restore(__ipl_t ipl) {
-#if 0
-	/* it will be better to use irq_ctrl mask but we can't expect every
-	 * irq_ctrl driver has implemented own get_mask and set mask functions
-	 */
-	irqc_set_mask(ipl);
-#endif
 
 	ipl ? msr_set_ie() : msr_clr_ie();
-
-
-	//msr_set_value(msr_get_value() | ipl);
 }

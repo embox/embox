@@ -26,6 +26,6 @@ extern int  inet_getname(struct socket *sock,
 extern int  inet_ioctl(struct socket *sock,
 				unsigned int cmd, unsigned long arg);
 extern bool inet_address_compare(struct sockaddr *addr1,
-																 struct sockaddr *addr2);
+		struct sockaddr *addr2);
 
 #endif /* INET_COMMON_H_ */

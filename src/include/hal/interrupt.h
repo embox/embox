@@ -85,4 +85,6 @@ void interrupt_force(interrupt_nr_t interrupt_nr);
  */
 interrupt_mask_t interrupt_get_status(void);
 
+extern int i8259_irq_pending(interrupt_nr_t irq);
+
 #endif /* HAL_INTERRUPT_H_ */

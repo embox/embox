@@ -115,5 +115,3 @@ static inline unsigned short ptclbsum(void *addr, int len) {
 }
 
 #endif /* NET_CHECKSUM_H_ */
-
-

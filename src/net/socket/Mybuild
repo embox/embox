@@ -1,7 +1,65 @@
 package embox.net
 
+module tcp_sock {
+	source "tcp_sock.c"
+	option number amount_tcp_sock=20
+
+	depends tcp
+	depends route
+	depends util
+	depends embox.lib.LibC
+	depends embox.mem.objalloc
+	depends embox.framework.LibFrameworkNet
+}
+
+module udp_sock {
+	source "udp_sock.c"
+	option number amount_udp_sock=20
+
+	depends udp
+	depends route
+	depends ipv4 /* for ip_output.c */
+	depends skbuff
+	depends core /* for sock.c */
+	depends embox.lib.LibC
+	depends embox.framework.LibFrameworkNet
+}
+
+module raw_sock {
+	/* FIXME:
+	 * 1.it depends from icmp
+	 * 2.it depends from ipv4
+	 * 3.it depends from udp
+	 */
+	source "raw_sock.c"
+	option number amount_raw_sock=20
+
+	depends skbuff
+	depends core /* for sock.c */
+	depends embox.lib.LibC
+	depends embox.framework.LibFrameworkNet
+}
+
+module af_inet {
+	source "af_inet.c"
+
+	depends core /* for sock.c */
+	depends socket /* for socket_repo.c */
+	depends ipv4
+	depends embox.framework.LibFrameworkNet
+
+	source "ipconfig.c"
+
+	depends dev /* for dev.c */
+	depends core /* for devinet.c */
+
+	source "protocol.c"
+	depends embox.lib.LibC
+}
+
 module af_packet {
 	source "af_packet.c"
+	option number amount_sockets=20
 
 	depends core /* for sock.c */
 	depends socket /* for socket_repo.c */
@@ -23,6 +81,7 @@ module socket {
 	/* depends from socket_registry.c */
 
 	source "socket_allocator.c"
+	option number amount_socket=20
 	depends embox.mem.pool
 
 	source "socket_options.c"
@@ -38,6 +97,10 @@ module socket {
 
 	source "socket.c"
 	depends core /* for sock.c */
-	depends embox.kernel.task_api
+	depends embox.kernel.task.idx_table
+	depends embox.kernel.task.errno
 	/* depends from kernel_socket.c */
+
+	source "ip_port.c"
+	option number protocol_ports_quantity=128
 }

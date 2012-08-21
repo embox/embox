@@ -12,8 +12,12 @@
 #include <net/socket.h>
 #include <hal/ipl.h>
 
+#include <framework/mod/options.h>
+
+#define MODOPS_AMOUNT_SOCKET OPTION_GET(NUMBER, amount_socket)
+
 /* pool for allocate sockets */
-POOL_DEF(socket_pool, struct socket, CONFIG_MAX_KERNEL_SOCKETS);
+POOL_DEF(socket_pool, struct socket, MODOPS_AMOUNT_SOCKET);
 
 struct socket * socket_alloc(void) {
 	struct socket *sock;
@@ -37,3 +41,4 @@ void socket_free(struct socket *sock) {
 
 	ipl_restore(flags);
 }
+

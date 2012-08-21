@@ -14,11 +14,13 @@
 
 #include <kernel/irq.h>
 #include <kernel/panic.h>
-#include <kernel/printk.h>
-#include <hal/clock.h>
-#include <kernel/clock_source.h>
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
+
+#include <hal/clock.h>
+
+#include <kernel/time/clock_source.h>
+#include <kernel/time/ktime.h>
 
 #include <module/embox/arch/system.h>
 
@@ -41,7 +43,6 @@
 #define CFG_IRQ(cfg_reg)    ((cfg_reg >> 3) & 0x1f)
 #define CFG_SI(cfg_reg)     ((cfg_reg >> 8) & 0x1) /**< Separate interrupts. */
 
-static struct clock_source gptimer_clock_source;
 /**
  * General Purpose Timer Unit registers.
  */
@@ -96,15 +97,8 @@ static volatile struct gptimer_regs *dev_regs;
 
 static int dev_regs_init(irq_nr_t *irq_nr);
 
-void clock_setup(useconds_t useconds) {
-	if (useconds > 0) {
-		REG_STORE(&dev_regs->timer[0].reload, useconds);
-		REG_STORE(&dev_regs->timer[0].counter, 0);
-		REG_STORE(&dev_regs->timer[0].ctrl, CTRL_INITIAL);
-	} else {
-		REG_STORE(&dev_regs->timer[0].ctrl, 0x0);
-	}
-}
+static struct time_event_device gptimer_ed;
+static struct clock_source gptimer_cs;
 
 static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	// XXX clock_hander is called from arch part
@@ -112,17 +106,21 @@ static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-void clock_init(void) {
+static int gptimer_init(void) {
 	uint32_t cfg_reg;
 	irq_nr_t irq_nr;
 	int i;
 
-	assert(NULL == dev_regs);
+	if (NULL != dev_regs) {
+		return 0;
+	}
 
 	if (0 != dev_regs_init(&irq_nr)) {
 		panic("Unable to initialize gptimer dev_regs");
 	}
 	assert(NULL != dev_regs);
+
+	gptimer_ed.irq_nr = irq_nr;
 
 	cfg_reg = REG_LOAD(&dev_regs->cfg);
 	for (i = 0; i < CFG_NTIMERS(cfg_reg); ++i) {
@@ -132,14 +130,52 @@ void clock_init(void) {
 	REG_STORE(&dev_regs->scaler_reload, SCALER_RELOAD);
 	REG_STORE(&dev_regs->scaler_counter, 0);
 
+	clock_source_register(&gptimer_cs);
+
 	if (0 != irq_attach(irq_nr, clock_handler, 0, NULL, "gptimer")) {
 		panic("gptimer irq_attach failed");
 	}
-
-	gptimer_clock_source.flags = 1;
-	gptimer_clock_source.resolution = 1000;
-	clock_source_register(&gptimer_clock_source);
+	return 0;
 }
+
+
+static int gptimer_config(struct time_dev_conf * conf);
+
+static cycle_t gptimer_read(void) {
+	return TIMER0_RELOAD - REG_LOAD(&dev_regs->timer[0].counter);
+}
+
+static struct time_event_device gptimer_ed = {
+	.config = gptimer_config ,
+	.resolution = TIMER0_RELOAD + 1,
+};
+
+
+static int gptimer_config(struct time_dev_conf * conf) {
+	if (1 > 0) {
+		/*REG_STORE(&dev_regs->timer[0].reload, useconds);*/
+		REG_STORE(&dev_regs->timer[0].reload, gptimer_ed.resolution - 1);
+		REG_STORE(&dev_regs->timer[0].counter, 0);
+		REG_STORE(&dev_regs->timer[0].ctrl, CTRL_INITIAL);
+	} else {
+		REG_STORE(&dev_regs->timer[0].ctrl, 0x0);
+	}
+	return 0;
+}
+
+static struct time_counter_device gptimer_cd = {
+	.read = gptimer_read,
+	.resolution = 1000000,
+};
+
+static struct clock_source gptimer_cs = {
+	.name = "gptimer",
+	.event_device = &gptimer_ed,
+	.counter_device = &gptimer_cd,
+	.read = clock_source_read,
+};
+
+EMBOX_UNIT_INIT(gptimer_init);
 
 #ifdef DRIVER_AMBAPP
 static int dev_regs_init(irq_nr_t *irq_nr) {
@@ -160,7 +196,7 @@ static int dev_regs_init(irq_nr_t *irq_nr) {
 static int dev_regs_init(irq_nr_t *irq_nr) {
 	assert(NULL != irq_nr);
 	dev_regs = (volatile struct gptimer_regs *) OPTION_GET(NUMBER,gptimer_base);
-	*irq_nr = CONFIG_GPTIMER_IRQ;
+	*irq_nr = OPTION_GET(NUMBER,irq_num);
 	return 0;
 }
 #else

@@ -3,7 +3,7 @@
  * @brief Definitions for the ARP protocol.
  * @details RFC 826
  *
- * @date 11.05.11
+ * @date 11.03.09
  * @author Anton Bondarev
  * @author Nikolay Korotky
  * @author Ilia Vaprol
@@ -37,9 +37,9 @@ extern int arp_resolve(sk_buff_t *pack);
 /**
  * Create and send an arp packet.
  */
-extern int arp_send(int type, int ptype, in_addr_t dest_ip,
-			struct net_device *dev, in_addr_t src_ip,
-			const unsigned char *dest_hw,
-			const unsigned char *src_hw, const unsigned char *th);
+extern int arp_send(int type, int ptype, struct net_device *dev,
+		in_addr_t dest_ip, in_addr_t src_ip,
+		const unsigned char *dest_hw,
+		const unsigned char *src_hw, const unsigned char *th);
 
 #endif /* NET_ARP_H_ */

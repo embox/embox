@@ -26,7 +26,7 @@
 OBJALLOC_DEF(net_packs, struct pnet_pack, CONFIG_PNET_PACKETS_QUANTITY);
 
 static void pnet_pack_free(struct pnet_pack *pack) {
-	//kfree_skb(pack->data);
+	//skb_free(pack->data);
 
 	objfree(&net_packs, pack);
 }
@@ -39,7 +39,7 @@ static struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
 	}
 
 	if(NULL == data) {
-		if(NULL == (pack->data = alloc_skb(len, 0))) {
+		if(NULL == (pack->data = skb_alloc(len))) {
 			pnet_pack_free(pack);
 			return NULL;
 		}

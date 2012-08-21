@@ -1,26 +1,13 @@
 package embox.net
 
-module af_inet {
-	source "af_inet.c"
-
-	depends core /* for sock.c */
-	depends socket /* for socket_repo.c */
-	depends ipv4
-	depends embox.framework.LibFrameworkNet
-
-	source "ipconfig.c"
-
-	depends dev /* for dev.c */
-	depends core /* for devinet.c */
-
-	source "protocol.c"
-	depends embox.lib.LibC
-}
-
 module arp_queue {
+	option number amount_package=20
+	option number htable_width=3
+	option number package_timeout=1000
 	source "arp_queue.c"
 
-	depends dev /* for network_layer.c */
+	depends embox.util.hashtable
+	depends network_layer /* for network_layer.c */
 	depends skbuff
 	depends embox.kernel.timer.sys_timer
 	depends embox.kernel.thread.sched
@@ -30,7 +17,7 @@ module arp_queue {
 module arp {
 	source "arp.c"
 
-	depends dev /* for network_layer.c */
+	depends network_layer /* for network_layer.c */
 	depends skbuff
 	depends arp_queue
 	depends neighbour
@@ -68,28 +55,15 @@ module ipv4 {
 	source "ip_options.c"
 
 	source "ip_output.c"
-	depends dev /* for network_layer.c */
+	depends network_layer /* for network_layer.c */
 	depends skbuff
 	depends route
 	depends eth
 }
 
-module raw_sock {
-	/* FIXME:
-	 * 1.it depends from icmp
-	 * 2.it depends from ipv4
-	 * 3.it depends from udp
-	 */
-	source "raw_sock.c"
-
-	depends skbuff
-	depends core /* for sock.c */
-	depends embox.lib.LibC
-	depends embox.framework.LibFrameworkNet
-}
-
 module route {
 	source "route.c"
+	option number route_table_size=8
 
 	depends core /* for devinet.c */
 	depends arp
@@ -100,15 +74,14 @@ module tcp {
 	source "tcp.c"
 
 	depends skbuff
-	depends route
 	depends core
 	depends ipv4 /* for ip_output.c */
 	depends af_inet /* for af_inet.c */
 	depends util
+	depends embox.kernel.time.clock_source
 	depends embox.kernel.critical
 	depends embox.lib.LibC
 	depends embox.kernel.timer.sys_timer
-	depends embox.mem.objalloc
 	depends embox.framework.LibFrameworkNet
 }
 
@@ -120,5 +93,23 @@ module udp {
 	depends icmp
 	depends core /* for sock.c */
 	depends embox.lib.LibC
+	depends embox.framework.LibFrameworkNet
+}
+
+module ntp {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "ntp.c"
+
+	depends udp
+	depends embox.kernel.time.timekeeper
+	depends embox.kernel.timer.sys_timer
+	depends embox.framework.LibFrameworkNet
+}
+
+module bootp {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "bootp.c"
+
+	depends udp
 	depends embox.framework.LibFrameworkNet
 }

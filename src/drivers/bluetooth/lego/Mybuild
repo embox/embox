@@ -27,7 +27,6 @@ module blue_core extends embox.driver.Bluetooth {
 	source "blue_core4.c"
 
 	depends usart
-	depends embox.driver.Bluetooth
 	depends embox.lib.LibC
 }
 

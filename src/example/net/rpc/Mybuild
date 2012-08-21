@@ -1,0 +1,7 @@
+package embox.example.net.rpc
+
+module msg_clnt {
+	source "msg_clnt.c"
+
+	depends embox.net.rpc
+}

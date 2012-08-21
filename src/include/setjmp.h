@@ -12,6 +12,8 @@
 
 #include <asm/setjmp.h>
 
+__BEGIN_DECLS
+
 /**
  * An array type suitable for holding the information needed to restore a
  * calling environment.
@@ -46,5 +48,7 @@ extern int setjmp(jmp_buf env);
  * @param value the return value for @c setjmp call
  */
 extern void longjmp(jmp_buf env, int value) __attribute__ ((noreturn));
+
+__END_DECLS
 
 #endif /* SETJMP_H_ */

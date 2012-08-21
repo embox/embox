@@ -11,7 +11,7 @@
 #include <net/in.h>
 #include <net/socket.h>
 #include <framework/example/self.h>
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 
 EMBOX_EXAMPLE(exec);
 

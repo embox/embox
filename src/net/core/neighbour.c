@@ -8,13 +8,15 @@
 
 #include <embox/unit.h>
 #include <errno.h>
-#include <kernel/timer.h>
-#include <lib/list.h>
+#include <kernel/time/timer.h>
+
 #include <mem/misc/pool.h>
 #include <net/neighbour.h>
 #include <stddef.h>
 #include <string.h>
 #include <hal/ipl.h>
+
+#include <lib/list.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -30,8 +32,8 @@ union head_ptr {
 	unsigned char *b;
 	void *v;
 };
-
-POOL_DEF(neighbour_pool, struct neighbour_head, CONFIG_ARP_CACHE_SIZE); /* Declaration of neighbour cache */
+/* Declaration of neighbour cache */
+POOL_DEF(neighbour_pool, struct neighbour_head, OPTION_GET(NUMBER,arp_cache_size));
 static LIST_HEAD(used_neighbours_list); /* List of valid entity */
 //static LIST_HEAD(wait_neighbours_list); // TODO
 static struct sys_timer *neighbour_refresh_timer;
@@ -93,6 +95,9 @@ int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr,
 		entity = &ptr.nh->n;
 		if ((entity->ip_addr == ip_addr)
 				&& (entity->if_handler == if_handler)) {
+			if (entity->flags == ATF_PERM) {
+				return -EEXIST;
+			}
 			break;
 		}
 	}

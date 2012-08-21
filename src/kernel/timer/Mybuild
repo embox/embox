@@ -1,6 +1,8 @@
 package embox.kernel.timer
 
 abstract module sleep_api { }
+
+@DefaultImpl(head_timer)
 abstract module timer_api { }
 
 module sys_timer {
@@ -8,7 +10,6 @@ module sys_timer {
 	source "timer.c"
 
 	depends embox.kernel.time.clock_source
-	depends embox.kernel.time.clock_event
 	depends embox.kernel.softirq
 	depends embox.arch.clock
 }
@@ -34,4 +35,10 @@ module sleep_nosched extends sleep_api {
 	source "sleep_nosched.c"
 	depends timer_api
 }
+
+module itimer {
+	option number itimer_quantity = 10
+	source "itimer.c"
+}
+
 

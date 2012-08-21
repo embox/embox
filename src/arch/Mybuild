@@ -30,3 +30,6 @@ abstract module boot {
 
 abstract module lds {
 }
+
+abstract module stackframe {
+}

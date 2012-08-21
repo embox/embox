@@ -9,7 +9,6 @@
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/repo.h>
-#include <kernel/prom_printf.h>
 #include <pnet/pnet_pack.h>
 
 static int net_null_tx_hnd(struct pnet_pack *pack) {

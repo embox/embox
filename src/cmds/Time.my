@@ -3,7 +3,15 @@ package embox.cmd
 @Cmd(name = "time",
 	help = "Shows time of a command execution",
 	man = '''
-
+		NAME
+			time - time a simple command or give resource usage
+		SYNOPSIS
+			time <command> [arguments]
+		DESCRIPTION
+			The time command runs the specified program command with
+			the given arguments.
+		AUTHOR
+			Anton Bondarev
 	''')
 module time {
 	source "time.c"

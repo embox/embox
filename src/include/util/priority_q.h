@@ -57,4 +57,3 @@ extern void priority_q_pop(struct priority_q *pq);
 #define priority_q_empty(pq) (pq->size == 0)
 
 #endif /* PRIORITY_Q_ */
-

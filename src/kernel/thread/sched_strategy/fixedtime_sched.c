@@ -9,7 +9,7 @@
 #include <kernel/thread/api.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 
 #define USEC_PRIORITY_MULTIPLIER 1000
 

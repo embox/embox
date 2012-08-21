@@ -12,7 +12,7 @@
 #include <lib/list.h>
 
 #include <kernel/thread/sched_priority.h>
-#include <kernel/clock_source.h>
+#include <kernel/time/clock_source.h>
 #include <time.h>
 
 struct thread;

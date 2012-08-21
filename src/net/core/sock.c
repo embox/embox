@@ -14,7 +14,9 @@
 #include <mem/misc/pool.h>
 #include <hal/ipl.h>
 
-#define LOWER_BOUND 1 // lower bound of sockets count
+#include <framework/mod/options.h>
+
+#define MODOPS_MIN_AMOUNT_SOCK OPTION_GET(NUMBER, min_amount_sock)
 
 #if 0
 typedef struct sock_info {
@@ -45,7 +47,8 @@ static struct sock * sk_prot_alloc(struct proto *prot, gfp_t priority) {
 	}
 	else {
 		if (prot->cachep == NULL) {
-			prot->cachep = cache_create(prot->name, prot->obj_size, LOWER_BOUND);
+			prot->cachep = cache_create(prot->name, prot->obj_size,
+					MODOPS_MIN_AMOUNT_SOCK);
 		}
 		if (prot->cachep != NULL) {
 			sk = cache_alloc(prot->cachep);
@@ -84,23 +87,23 @@ struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 		return NULL;
 	}
 
-	sk->sk_receive_queue = alloc_skb_queue();
+	sk->sk_receive_queue = skb_queue_alloc();
 	if (sk->sk_receive_queue == NULL) {
 		sk_prot_free(prot, sk);
 		return NULL;
 	}
 
-	sk->sk_write_queue = alloc_skb_queue();
+	sk->sk_write_queue = skb_queue_alloc();
 	if (sk->sk_write_queue == NULL) {
-		skb_queue_purge(sk->sk_receive_queue);
+		skb_queue_free(sk->sk_receive_queue);
 		sk_prot_free(prot, sk);
 		return NULL;
 	}
 
 	if (prot->init != NULL) {
 		if (prot->init(sk) < 0) {
-			skb_queue_purge(sk->sk_receive_queue);
-			skb_queue_purge(sk->sk_write_queue);
+			skb_queue_free(sk->sk_receive_queue);
+			skb_queue_free(sk->sk_write_queue);
 			sk_prot_free(prot, sk);
 			return NULL;
 		}
@@ -140,15 +143,15 @@ int sock_no_accept(struct socket *sock, struct socket *newsock, int flags) {
 	return -EOPNOTSUPP;
 }
 
-int sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
+void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	assert(sk != NULL);
 	assert(sk->sk_receive_queue != NULL);
 	assert(skb != NULL);
 
-	skb_queue_tail(sk->sk_receive_queue, skb);
-	return ENOERR;
+	skb_queue_push(sk->sk_receive_queue, skb);
 }
 
+// TODO remove this
 int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
 			struct msghdr *msg, size_t size, int flags) {
 	assert(sock != NULL);
@@ -169,8 +172,8 @@ void sk_common_release(struct sock *sk) {
 		sk->sk_prot->destroy(sk);
 	}
 
-	skb_queue_purge(sk->sk_receive_queue);
-	skb_queue_purge(sk->sk_write_queue);
+	skb_queue_free(sk->sk_receive_queue);
+	skb_queue_free(sk->sk_write_queue);
 
 	sk_free(sk);
 }

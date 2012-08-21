@@ -597,4 +597,3 @@ typedef struct {
 #endif
 
 #endif /* LIB_ELF_TYPES_H_ */
-

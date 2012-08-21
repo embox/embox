@@ -42,6 +42,7 @@ char *strerror(int errnum) {
 	case EEOF:         return "End of file reached";
 	case ENOSUPP:      return "Operation not supported";
 	case EDEVNOSUPP:   return "Device does not support this operation";
+	case ETIMEDOUT:    return "Connection timed out";
 	default:           return "Unknown error code";
 	}
 }

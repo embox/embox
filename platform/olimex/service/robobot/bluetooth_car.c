@@ -163,4 +163,3 @@ static int robobot_bluetooth_car(void) {
 
 	return 0;
 }
-

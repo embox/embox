@@ -215,4 +215,3 @@ extern void critical_dispatch_pending(void);
 #endif
 
 #endif /* KERNEL_CRITICAL_H_ */
-

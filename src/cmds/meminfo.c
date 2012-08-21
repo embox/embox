@@ -46,9 +46,9 @@ static void print_kmstatistic(struct list_head* list) {
 		cur_block = (block_info_t*) cur_elem;
 		free_blocks_count += (cur_block->free ? 1 : 0);
 		free_bytes_count += (cur_block->free ? cur_block->size
-				* CONFIG_PAGE_SIZE : 0);
+				* PAGE_SIZE() : 0);
 		busy_bytes_count += (cur_block->free ? 0 : cur_block->size
-				* CONFIG_PAGE_SIZE);
+				* PAGE_SIZE());
 
 		if (cur_block->free) {
 			printf("%d. free      %d\n", i, cur_block->size);

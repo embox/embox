@@ -1,3 +1,0 @@
-
-$_PACKAGE = $(PLATFORM).service
-

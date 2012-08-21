@@ -1,0 +1,29 @@
+
+package lego_nxt.example.sensor
+
+import lego_nxt.driver.*
+
+module touch {
+	source "touch.c"
+	depends touch_sensor, nxt_motor
+}
+
+module sensor {
+	source "sensor.c"
+	depends nxt_avr_init, embox.driver.gpio.at91_pins
+}
+
+module light {
+	source "light.c"
+	depends nxt_avr_init, embox.driver.gpio.at91_pins
+}
+
+module sonar {
+	source "sonar.c"
+	depends soft_i2c, sonar_sensor
+}
+
+module angle {
+	source "angle.c"
+	depends soft_i2c, angle_sensor
+}

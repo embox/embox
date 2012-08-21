@@ -3,15 +3,37 @@ package embox.kernel.time
 module clock_source {
 	@NumConstraint(ge=1)
 	option number clocks_quantity = 4
-	option number timecounter_quantity = 10
 
 	source "clock_source.c"
-	source "timecounter.c"
-
-	source "ktime.c"
+	depends embox.mem.pool
 }
 
-module clock_event {
-	source "clock_event.c"
+module kernel_time {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "ktime.c"
+	depends embox.kernel.timer.itimer
+	depends embox.arch.clock
+	depends time
+}
+
+module jiffies {
 	source "jiffies.c"
+	depends embox.arch.clock
+}
+
+module timer {
+	source "timer.c"
+	depends jiffies
+	depends embox.arch.clock
+}
+
+module time {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "time.c"
+}
+
+module timekeeper {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "timekeeping.c"
+	depends kernel_time
 }

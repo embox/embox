@@ -17,4 +17,3 @@ void *objalloc(objalloc_t *allocator) {
 void objfree(objalloc_t *allocator, void *object) {
 	pool_free(allocator, object);
 }
-

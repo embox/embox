@@ -74,6 +74,36 @@ static void print_packet (sk_buff_t *skb) {
 }
 #endif
 
+int dev_queue_send(struct sk_buff *skb) {
+	int res;
+
+	assert(skb != NULL);
+	assert(skb->dev != NULL);
+
+	res = skb->dev->header_ops->rebuild(skb);
+	if (res < 0) {
+		/* send arp request and add packet in list of deferred packets */
+		res = arp_queue_add(skb);
+		if (res < 0) {
+			skb_free(skb);
+			return res;
+		}
+		return -EINPROGRESS;
+#if 0
+		if (sock_is_ready(skb->sk)) {
+			/* If socket is ready then it was really error
+			 * but if socket isn't ready package has been saved
+			 * and will be transmitted later */
+			skb_free(skb);
+		}
+
+		return res;
+#endif
+	}
+
+	return dev_queue_xmit(skb);
+}
+
 int dev_queue_xmit(struct sk_buff *skb) {
 	int res;
 	net_device_t *dev;
@@ -93,22 +123,9 @@ int dev_queue_xmit(struct sk_buff *skb) {
 
 	if (dev->flags & IFF_UP) {
 
-		res = dev->header_ops->rebuild(skb);
-		if (res < 0) {
-			if (sock_is_ready(skb->sk)) {
-				/* If socket is ready then it was really error
-				 * but if socket isn't ready package has been saved
-				 * and will be transmitted later */
-				kfree_skb(skb);
-				stats->tx_err++;
-			}
-
-			return res;
-		}
-
 		res = ops->ndo_start_xmit(skb, dev);
 		if (res < 0) {
-			kfree_skb(skb);
+			skb_free(skb);
 			stats->tx_err++;
 			return res;
 		}
@@ -116,6 +133,9 @@ int dev_queue_xmit(struct sk_buff *skb) {
 		/* update statistic */
 		stats->tx_packets++;
 		stats->tx_bytes += skb->len;
+	}
+	else {
+		skb_free(skb);
 	}
 
 	return ENOERR;
@@ -132,17 +152,18 @@ int netif_receive_skb(sk_buff_t *skb) {
 
 		q = pack->netpack;
 		assert(q != NULL);
+
 		if (q->type == skb->protocol) {
 			return q->func(skb, skb->dev, q, NULL);
 		}
 	}
 
-	kfree_skb(skb);
+	skb_free(skb);
 	return NET_RX_DROP;
 }
 
 static void net_rx_action(struct softirq_action *action) {
-	dev_rx_processing();
+	netdev_rx_processing();
 }
 
 
@@ -154,9 +175,9 @@ void netif_rx_schedule(struct sk_buff *skb) {
 	dev = skb->dev;
 	assert(dev != NULL);
 
-	skb_queue_tail(&(dev->dev_queue), skb);
+	skb_queue_push(&(dev->dev_queue), skb);
 
-	dev_rx_queued(dev);
+	netdev_rx_queued(dev);
 
 	raise_softirq(NET_RX_SOFTIRQ);
 }

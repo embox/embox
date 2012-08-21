@@ -1,9 +1,11 @@
 package embox.net
 
 module rpc {
-//	source "clnt.c"
-}
+	source "clnt.c", "clnt_udp.c", "clnt_tcp.c"
+	source "xdr.c", "xdr_mem.c", "xdr_rec.c"
+	source "auth.c", "auth_none.c", "auth_unix.c"
+	source "pmap.c"
+	source "rpc_msg.c"
 
-module xdr {
-//	source "xdr.c", "xdr_mem.c"
+	depends embox.mem.heap_api
 }

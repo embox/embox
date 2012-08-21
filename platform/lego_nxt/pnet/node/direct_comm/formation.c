@@ -78,4 +78,3 @@ static int ctrl_rx(struct pnet_pack *pack) {
 static int dc_pnet_init(void) {
 	return 0;
 }
-

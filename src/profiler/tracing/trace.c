@@ -11,9 +11,9 @@
 #include <util/array.h>
 #include <util/location.h>
 
-#include <kernel/clock_source.h>
-#include <kernel/ktime.h>
-#include <kernel/time/timecounter.h>
+#include <kernel/time/clock_source.h>
+#include <kernel/time/ktime.h>
+#include <kernel/time/itimer.h>
 
 #include <profiler/tracing/trace.h>
 
@@ -28,14 +28,16 @@ void __tracepoint_handle(struct __trace_point *tp) {
 
 void trace_block_enter(struct __trace_block *tb) {
 	if (tb->active) {
-		timecounter_init(tb->tc, clock_source_get_default()->cc, 0);
+		//timecounter_init(tb->tc, clock_source_get_default()->cc, 0);
+		itimer_init(tb->tc, clock_source_get_best(CS_ANY), 0);
 		__tracepoint_handle(tb->begin);
 	}
 }
 
 void trace_block_leave(struct __trace_block *tb) {
 	if (tb->active) {
-		tb->time = (int) timecounter_read(tb->tc);
+		//tb->time = (int) timecounter_read(tb->tc);
+		tb->time = (int) itimer_read(tb->tc);
 		__tracepoint_handle(tb->end);
 	}
 }

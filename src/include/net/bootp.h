@@ -7,11 +7,12 @@
  * @author Andrey Baboshin
  */
 
-#ifndef BOOTP_H_
-#define BOOTP_H_
+#ifndef NET_BOOTP_H_
+#define NET_BOOTP_H_
 
 #include <net/ip.h>
 #include <net/net.h>
+#include <string.h>
 
 //#define HOSTNAME "embox"
 //#define DHCP_SUPPORT 1
@@ -28,7 +29,7 @@
 /*
 	BOOTP support. For details read RFC951 and RFC1395.
 */
-struct _bootp_header_t {
+typedef struct bootphdr {
 	unsigned char    op;                     /* packet op code / message type */
 	unsigned char    htype;                  /* hardware addr type */
 	unsigned char    hlen;                   /* hardware addr length */
@@ -44,14 +45,14 @@ struct _bootp_header_t {
 	char             sname[64];              /* server host name */
 	char             file[128];              /* boot file name */
 	unsigned char    options[VEND_LEN];
-} __attribute__((packed)) bootp_header_t;
+} __attribute__((packed)) bootphdr_t;
 
 #define __MAX(a,b) ((a)>(b)?(a):(b))
-#define BOOTP_HEADER_SIZE __MAX(sizeof(struct _bootp_header_t), MINPKTSZ)
+#define BOOTP_HEADER_SIZE __MAX(sizeof(struct bootphdr), MINPKTSZ)
 
 // UDP port numbers, server and client.
-#define PORT_BOOTP_SERVER           67
-#define PORT_BOOTP_CLIENT           68
+#define BOOTP_PORT_SERVER           67
+#define BOOTP_PORT_CLIENT           68
 
 // opcodes
 #define BOOTPREQUEST             1
@@ -184,10 +185,26 @@ struct _bootp_header_t {
  */
 int bootp_discover (void* ifdev);
 
+struct sk_buff;
+struct sock;
+
+extern int bootp_receive(struct sock *sk, struct sk_buff *skb);
+extern int bootp_client_send(int sock,bootphdr_t *bootp, net_device_t *dev,
+		struct sockaddr_in *dst);
+
+static inline net_device_t *bootp_get_dev(bootphdr_t *bootp) {
+	net_device_t *dev;
+	netdev_foreach(dev) {
+		if (!strncmp((void*)dev->dev_addr, (void*)bootp->chaddr, ETH_ALEN))
+			break;
+	}
+	return dev;
+}
+
 /**
  * Return current bootp info
  */
-const struct _bootp_header_t const* get_bootp_info (void);
+//const struct bootphdr const* get_bootp_info (void);
 
 /**
  * Return ip address obtained from bootp/dhcp
@@ -204,4 +221,4 @@ in_addr_t const get_ip_mask (void);
  */
 in_addr_t const get_ip_gate (void);
 
-#endif /* BOOTP_H_ */
+#endif /* NET_BOOTP_H_ */

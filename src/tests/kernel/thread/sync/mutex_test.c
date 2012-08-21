@@ -12,7 +12,7 @@
 
 static struct thread *first, *second;
 static struct mutex m;
-static int fl = 0;
+static int fl;
 
 EMBOX_TEST_SUITE("Mutex test");
 
@@ -38,15 +38,16 @@ static void *second_run(void *arg) {
 	while (!fl) ;
 	mutex_lock(&m);
 	test_emit('c');
+	mutex_unlock(&m);
 	return NULL;
 }
 
 
 static int setup(void) {
 	mutex_init(&m);
+	fl = 0;
 	test_assert_zero(thread_create(&second, 0, second_run, NULL));
 	test_assert_zero(thread_create(&first, 0, first_run, NULL));
 
 	return 0;
 }
-

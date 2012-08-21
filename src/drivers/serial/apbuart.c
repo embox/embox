@@ -127,13 +127,12 @@ static int dev_regs_init() {
 #elif OPTION_DEFINED(NUMBER,apbuart_base)
 static int dev_regs_init() {
 	dev_regs = (volatile struct apbuart_regs *) OPTION_GET(NUMBER,apbuart_base);
-	irq_num = CONFIG_APBUART_IRQ;
+	irq_num = OPTION_GET(NUMBER,irq_num);
 	return 0;
 }
 #else
 # error "Either DRIVER_AMBAPP or apbuart_base option must be defined"
 #endif /* DRIVER_AMBAPP */
-
 
 
 /* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */

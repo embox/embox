@@ -1,30 +1,26 @@
 #
+# Invoked with all scripts preloaded by the bootstrap sript.
+# See 'mk/load.mk' for details about environment variables available in the
+# invocation context.
+#
 #   Date: Apr 4, 2012
 # Author: Anton Kozlov
 #
 
-include mk/configure.mk #FIXME
 include mk/codegen-dot.mk
 
 include mk/help-module.mk
 
 .PHONY : build image prepare docsgen dot
 
-build : image
-	@echo 'Build complete'
+build_gen_ts := $(MKGEN_DIR)/build-gen.timestamp
 
-image : prepare
+build : $(build_gen_ts)
+	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
+	@$(MAKE) -f mk/image2.mk MAKEFILES=''
 
-include mk/image.mk #FIXME move it upper. -- Eldar
-
-prepare:
-	@$(MKDIR) $(BUILD_DIR)
-	@$(MKDIR) $(BIN_DIR)
-	@$(MKDIR) $(OBJ_DIR)
-	@$(MKDIR) $(LIB_DIR)
-	@$(MKDIR) $(ROOTFS_DIR)
-	@$(MKDIR) $(AUTOCONF_DIR)
-	@$(MKDIR) $(DOCS_OUT_DIR)
+$(build_gen_ts) : mk/script/build/build-gen.mk $(load_mybuild_files)
+	@$(MAKE) -f $< && touch $@
 
 docsgen:
 	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)

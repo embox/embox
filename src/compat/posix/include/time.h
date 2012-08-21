@@ -16,6 +16,13 @@
 #include <signal.h>
 
 
+/* Parameters used to convert the time specific values */
+#define MSEC_PER_SEC    1000L
+#define USEC_PER_MSEC   1000L
+#define NSEC_PER_USEC   1000L
+#define USEC_PER_SEC    1000000L
+#define NSEC_PER_SEC    1000000000L
+
 struct tm {
 	int    tm_sec;   /*Seconds [0,60].*/
 	int    tm_min;   /*Minutes [0,59].*/
@@ -36,6 +43,11 @@ struct timespec {
 struct itimerspec {
 	struct timespec it_interval;  /* Timer period. */
 	struct timespec it_value;     /* Timer expiration. */
+};
+
+struct timezone {
+    int tz_minuteswest;     /* minutes west of Greenwich */
+    int tz_dsttime;         /* type of DST correction */
 };
 
 /**
@@ -63,6 +75,7 @@ extern int clock_gettime(clockid_t clk_id, struct timespec *tp);
 
 extern int clock_settime(clockid_t clk_id, const struct timespec *tp);
 
+extern void gettimeofday(struct timespec *ts, struct timezone *tz);
 
 /* seconds from beginning of start system */
 extern time_t time(time_t *);

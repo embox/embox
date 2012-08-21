@@ -1,0 +1,19 @@
+/**
+ * @file
+ * @brief C++ forwarding header
+ * @date 04.07.12
+ * @author Ilia Vaprol
+ */
+
+#ifndef CSETJMP_
+#define CSETJMP_
+
+#include <setjmp.h>
+
+namespace std {
+	using ::jmp_buf;
+	using ::setjmp;
+	using ::longjmp;
+} // namespace std
+
+#endif // CSETJMP_

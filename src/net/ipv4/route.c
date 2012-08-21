@@ -10,16 +10,17 @@
 
 #include <net/route.h>
 #include <net/arp.h>
-#include <net/in.h>
-#include <linux/init.h>
 #include <errno.h>
 #include <util/member.h>
 #include <mem/misc/pool.h>
+
 #include <lib/list.h>
+
+#include <framework/mod/options.h>
 
 
 /**
- * NOTE: Linux route uses 3 structs for routing:
+ * NOTE: Linux route uses 3 structures for routing:
  *    + Forwarding Information Base (FIB)
  *    - routing cache (256 chains)
  *    + neighbour table (ARP cache)
@@ -30,7 +31,7 @@ struct rt_entry_info {
 	struct rt_entry entry;
 };
 
-POOL_DEF(rt_entry_info_pool, struct rt_entry_info, CONFIG_ROUTE_FIB_TABLE_SIZE);
+POOL_DEF(rt_entry_info_pool, struct rt_entry_info, OPTION_GET(NUMBER,route_table_size));
 static LIST_HEAD(rt_entry_info_list);
 
 int rt_add_route(net_device_t *dev, in_addr_t dst,
@@ -42,7 +43,7 @@ int rt_add_route(net_device_t *dev, in_addr_t dst,
 		return -ENOMEM;
 	}
 	rt_info->entry.dev = dev;
-	rt_info->entry.rt_dst = dst;			/* We assume that host bits are zeroes here */
+	rt_info->entry.rt_dst = dst; /* We assume that host bits are zeroes here */
 	rt_info->entry.rt_mask = mask;
 	rt_info->entry.rt_gateway = gw;
 	rt_info->entry.rt_flags = RTF_UP | flags;
@@ -58,8 +59,8 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
 
 	list_for_each_entry(rt_info, &rt_entry_info_list, lnk) {
 		if (((rt_info->entry.rt_dst == dst) || (INADDR_ANY == dst)) &&
-				((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
-				((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw))) {
+		    ((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
+		    ((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw))) {
 			list_del(&rt_info->lnk);
 			pool_free(&rt_entry_info_pool, rt_info);
 			return ENOERR;
@@ -88,7 +89,7 @@ int ip_route(sk_buff_t *skb, struct rt_entry *suggested_route) {
 	/* if source and destination addresses are equal send via LB interface
 	 * svv: suspicious. There is no check (src == dst) in ip_input
 	 */
-	if(skb->nh.iph->daddr  == skb->nh.iph->saddr)
+	if (skb->nh.iph->daddr  == skb->nh.iph->saddr)
 		skb->dev = inet_get_loopback_dev();
 
 	/* if the packet should be sent using gateway */

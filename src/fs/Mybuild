@@ -1,36 +1,32 @@
 package embox.fs
 
 module node {
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "node.c"
-	option number fnode_quantity=32
+	option number fnode_quantity=64
 }
 
 module file_desc {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "file_desc.c"
 	option number fdesc_quantity=32
 }
 
-module rootfs {
-	source "rootfs.c"
-	depends node, driver.repo
-}
-
 module core {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "vfs.c",
-		"kernel_posix_plugin.c"
+	source "vfs.c"
+
+	option number file_name_length=32
+	option number path_length=256
+
 	depends file_desc, node, rootfs
 	depends embox.fs.driver.repo
-	depends embox.kernel.task_api
 }
 
-module ramdisk {
-	source "ramdisk.c"
-	depends node
-	depends embox.fs.driver.devfs
-	depends embox.fs.driver.fat
-	depends embox.mem.page_api
+module posix_compat {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "kernel_posix_plugin.c"
+	depends core
+	depends embox.kernel.task.idx_table
 }
+

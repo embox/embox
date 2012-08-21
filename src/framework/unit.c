@@ -7,7 +7,7 @@
  */
 
 #include <string.h>
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 
 #include <framework/mod/ops.h>
 #include <framework/mod/api.h>

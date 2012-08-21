@@ -12,8 +12,10 @@
 #include <embox/unit.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
-#include <kernel/clock_source.h>
+
 #include <hal/clock.h>
+#include <kernel/time/clock_source.h>
+#include <kernel/time/ktime.h>
 
 #include <module/embox/arch/system.h>
 
@@ -49,7 +51,8 @@
 /** set down count mode*/
 #define TIMER_DOWN_COUNT    REVERSE_MASK(TIMER_UDT_BIT)
 
-static struct clock_source mb_timer_clock_source;
+static struct clock_source mb_cs;
+static struct time_event_device mb_ed;
 
 /**
  * Structure one of two timers. Both timers need only for pwm mode
@@ -82,7 +85,20 @@ static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-void clock_init(void) {
+static cycle_t mb_cycle_read(void) {
+	return TIMER_PRELOAD - timer0->tcr;
+
+}
+
+static int mb_clock_init(void) {
+	clock_source_register(&mb_cs);
+	if (0 != irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, NULL, "mbtimer")) {
+		panic("mbtimer irq_attach failed");
+	}
+	return 0;
+}
+
+static int mb_clock_setup(struct time_dev_conf * conf) {
 	/*set clocks period*/
 	timer0->tlr = TIMER_PRELOAD;
 	/*clear interrupts bit and load value from tlr register*/
@@ -91,15 +107,26 @@ void clock_init(void) {
 	timer0->tcsr = TIMER_ENABLE | TIMER_INT_ENABLE | TIMER_RELOAD
 			| TIMER_DOWN_COUNT;
 
-	if (0 != irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, NULL, "mbtimer")) {
-		panic("mbtimer irq_attach failed");
-	}
-
-	mb_timer_clock_source.flags = 1;
-	mb_timer_clock_source.resolution = 1000;
-	clock_source_register(&mb_timer_clock_source);
+	return 0;
 }
 
-void clock_setup(useconds_t useconds) {
+static struct time_event_device mb_ed = {
+	.config = mb_clock_setup,
+	.resolution = 1000,
+	.name = "mb_timer",
+	.irq_nr = CONFIG_XILINX_TIMER_IRQ
+};
 
-}
+static struct time_counter_device mb_cd = {
+	.read = mb_cycle_read,
+	.resolution = SYS_CLOCK,
+};
+
+static struct clock_source mb_cs = {
+	.name = "gptimer",
+	.event_device = &mb_ed,
+	.counter_device = &mb_cd,
+	.read = clock_source_read,
+};
+
+EMBOX_UNIT_INIT(mb_clock_init);

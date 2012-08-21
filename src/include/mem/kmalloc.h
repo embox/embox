@@ -30,4 +30,3 @@ extern void *kmalloc(size_t size);
 extern void kfree(void *ptr);
 
 #endif /* MEM_KMALLOC_H_ */
-

@@ -6,7 +6,7 @@
  * @author Alexandr Batyukov
  * @author Nikolay Korotky
  * @author Vladimir Sokolov
-*/
+ */
 
 #include <err.h>
 #include <string.h>
@@ -21,7 +21,7 @@
 #include <net/protocol.h>
 #include <framework/net/proto/api.h>
 #include <net/ip_fragment.h>
-
+#include <net/neighbour.h>
 
 int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 			packet_type_t *pt, net_device_t *orig_dev) {
@@ -45,7 +45,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	if (iph->ihl < 5 || iph->version != 4) {
 		LOG_ERROR("invalid IPv4 header\n");
 		stats->rx_err++;
-		kfree_skb(skb);
+		skb_free(skb);
 		return NET_RX_DROP;
 	}
 
@@ -53,7 +53,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	if (skb->len < len || len < IP_HEADER_SIZE(iph)) {
 		LOG_ERROR("invalid IPv4 header length\n");
 		stats->rx_length_errors++;
-		kfree_skb(skb);
+		skb_free(skb);
 		return NET_RX_DROP;
 	}
 
@@ -62,7 +62,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	if (tmp != ptclbsum(iph, IP_HEADER_SIZE(iph))) {
 		LOG_ERROR("bad ip checksum\n");
 		stats->rx_crc_errors++;
-		kfree_skb(skb);
+		skb_free(skb);
 		return NET_RX_DROP;
 	}
 
@@ -79,24 +79,24 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		opts->optlen = optlen;
 		if (ip_options_compile(skb, opts)) {
 			stats->rx_err++;
-			kfree_skb(skb);
+			skb_free(skb);
 			return NET_RX_DROP;
 		}
 		if (ip_options_handle_srr(skb)) {
 			stats->tx_err++;
-			kfree_skb(skb);
+			skb_free(skb);
 			return NET_RX_DROP;
 		}
 	}
 
-		/* It's very useful for us to have complete packet even for forwarding
-		 * (we may apply any filter, we may perform NAT etc),
-		 * but it'll break routing if different parts of a fragmented
-		 * packet will use different routes. So they can't be assembled.
-		 * See RFC 1812 for details
-		 */
-	if((complete_skb = ip_defrag(skb)) == NULL) {
-		if(skb == NULL) {
+	/* It's very useful for us to have complete packet even for forwarding
+	 * (we may apply any filter, we may perform NAT etc),
+	 * but it'll break routing if different parts of a fragmented
+	 * packet will use different routes. So they can't be assembled.
+	 * See RFC 1812 for details
+	 */
+	if ((complete_skb = ip_defrag(skb)) == NULL) {
+		if (skb == NULL) {
 			return NET_RX_DROP;
 		}
 		return NET_RX_SUCCESS;
@@ -110,16 +110,19 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	 * which have been bound to its protocol or to socket with concrete protocol */
 	raw_rcv(skb);
 
-#if 0		/* Forwarding */
-	/**
-	 * Check the destination address, and if it doesn't match
-	 * any of own addresses, retransmit packet according to the routing table.
-	 */
-	if (!ip_is_local(iph->daddr, true, false)) {
-		if (ip_forward_packet(skb) <= 0) {
-			return NET_RX_DROP;
+#if 0	/* Forwarding */
+	/* TODO check for BOOTP packet. It is special case, when */
+	if (1/*is_not_bootp(skb)*/) {
+		/**
+		 * Check the destination address, and if it doesn't match
+		 * any of own addresses, retransmit packet according to the routing table.
+		 */
+		if (!ip_is_local(iph->daddr, true, false)) {
+			if (ip_forward_packet(skb) <= 0) {
+				return NET_RX_DROP;
+			}
+			return NET_RX_SUCCESS;
 		}
-		return NET_RX_SUCCESS;
 	}
 #endif
 
@@ -131,5 +134,6 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		}
 	}
 
-	return NET_RX_DROP;				/* Nobody wants this packet */
+	skb_free(skb);
+	return NET_RX_DROP; /* Nobody wants this packet */
 }

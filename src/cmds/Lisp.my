@@ -1,7 +1,15 @@
 package embox.cmd
 
 @Cmd(name = "lisp",
-	help = "Lisp interpreter")
+	help = "Lisp interpreter",
+	man = '''
+		NAME
+			lisp - Lisp interpreter
+		SYNOPSIS
+			lisp [script]
+		AUTHORS
+			Anton Bondarev
+	''')
 module lisp {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")

@@ -78,7 +78,7 @@ static int exec(int argc, char **argv) {
 	printf("ARPING %s from %s %s\n", dst_b, from_b, in_dev->dev->name);
 	for (i = 1; i <= cnt; i++) {
 		neighbour_delete(in_dev, dst.s_addr);
-		arp_send(ARPOP_REQUEST, ETH_P_ARP, dst.s_addr, in_dev->dev,
+		arp_send(ARPOP_REQUEST, ETH_P_ARP, in_dev->dev, dst.s_addr,
 				in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
 		usleep(NEIGHBOUR_RES_TIME);
 		if ((hw_addr = neighbour_lookup(in_dev, dst.s_addr))) {

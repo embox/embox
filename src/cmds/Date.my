@@ -1,0 +1,21 @@
+package embox.cmd
+
+@Cmd(name = "date",
+	help = "Print or set the system date and times",
+	man = '''
+		NAME
+			date - Print or set the system date and time
+		SYNOPSIS
+			date [[[[[CC]YY]MM]DD]hh]mm[.ss]
+		DESCRIPTION
+			TODO
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module date {
+	source "date.c"
+
+	depends embox.lib.LibC
+	depends embox.kernel.time.clock_source
+	depends embox.kernel.time.timekeeper
+}

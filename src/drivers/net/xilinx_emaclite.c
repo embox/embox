@@ -157,7 +157,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	TX_LEN_REG = skb->len & XEL_TPLR_LENGTH_MASK;
 	TX_CTRL_REG |= XEL_TSR_XMIT_BUSY_MASK;
 
-	kfree_skb(skb);
+	skb_free(skb);
 
 	return skb->len;
 }
@@ -196,7 +196,7 @@ static void pack_receiving(void *dev_id) {
 
 	/* Read from the EmacLite device */
 
-	skb = alloc_skb(len + 4, 0);
+	skb = skb_alloc(len + 4);
 	if (NULL == skb) {
 		LOG_ERROR("Can't allocate packet, pack_pool is full\n");
 		current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
@@ -319,7 +319,7 @@ static int unit_init(void) {
 	net_device_t *net_device;
 	/*initialize net_device structures and save
 	 * information about them to local massive */
-	net_device = alloc_etherdev(0);
+	net_device = etherdev_alloc();
 	if (net_device == NULL) {
 		return -ENOMEM;
 	}

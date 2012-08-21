@@ -21,7 +21,7 @@
 #include <pnet/pnet_pack.h>
 #include <pnet/pack/pack_alone.h>
 
-#include <kernel/prom_printf.h>
+
 
 EMBOX_UNIT_INIT(nxt_bluecore_init);
 
@@ -51,6 +51,7 @@ static struct bc_msg out_msg;
 
 /*#define DEBUG*/
 #ifdef DEBUG
+#include <prom/prom_printf.h>
 static void print_msg(struct bc_msg_body *msg) {
 	prom_printf("P%x:", msg->type);
 }
@@ -191,4 +192,3 @@ static int nxt_bluecore_start(struct net_node *node) {
 static int nxt_bluecore_init(void) {
 	return 0;
 }
-

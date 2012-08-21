@@ -171,11 +171,10 @@ extern int ip_options_compile(sk_buff_t *skb, ip_options_t *opt);
  */
 extern int ip_options_handle_srr(sk_buff_t *skb);
 
-extern struct proto tcp_prot;
-
-extern const struct proto_ops inet_stream_ops;
-
 extern struct net_proto_family inet_family_ops;
+extern const struct proto_ops inet_stream_ops;
+extern const struct proto_ops inet_dgram_ops;
+extern const struct proto_ops inet_raw_ops;
 
 
 /**

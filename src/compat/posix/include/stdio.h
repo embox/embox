@@ -21,7 +21,9 @@ typedef int FILE;
 
 struct stat;
 
-extern int fputc(FILE *f, int c);
+__BEGIN_DECLS
+
+extern int fputc(int c, FILE *f);
 extern int fgetc(FILE *f);
 
 #define getc(file) fgetc(file)
@@ -41,7 +43,7 @@ extern int putchar(int c);
  */
 extern char *gets(char *s);
 
-#define fgets(s, size, stream) gets(s)
+extern char *fgets(char *s, int n, FILE *stream);
 
 extern int getchar(void);
 
@@ -149,5 +151,7 @@ extern int feof(FILE *stream);
 extern int ferror(FILE *stream);
 
 extern int fileno(FILE *stream);
+
+__END_DECLS
 
 #endif /* STDIO_H_ */

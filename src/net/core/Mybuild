@@ -3,14 +3,21 @@ package embox.net
 abstract module entry_api { }
 
 module dev {
-	source "dev.c"
+	source "netdev.c"
+	option number netdev_quantity=8
+	option number netdev_table_sz=3
+
+	source "netdev_process.c"
 
 	depends skbuff
 	depends embox.lib.LibC
 	depends embox.mem.pool
-	/* depends from network_layer.c */
+	depends embox.util.hashtable
+	depends network_layer /* depends from network_layer.c */
+}
 
-    @IncludePath("$(SRC_DIR)/compat/linux/include")
+module network_layer {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	source "network_layer.c"
 
 	depends skbuff
@@ -21,20 +28,29 @@ module dev {
 }
 
 module skbuff {
-	source "skbuff.c"
+	source "skb.c"
+	option number amount_skb=500
+	option number amount_skb_buff=500
+	option number skb_buff_size=1514 /* for example */
+
+	source "skb_queue.c"
+	option number amount_skb_queue=16
 
 	depends embox.mem.pool
 	depends embox.lib.LibC
 }
 
 module core {
-	source "devinet.c"
+	source "inetdev.c"
+	option number net_callback_quantity=16
+	option number net_interfaces_quantity=4
 
 	depends dev /* for dev.c */
 	depends embox.mem.pool
 	depends embox.lib.LibC
 
 	source "sock.c"
+	option number min_amount_sock=1
 
 	depends skbuff
 	depends embox.mem.slab
@@ -43,6 +59,7 @@ module core {
 
 module neighbour {
 	source "neighbour.c"
+	option number arp_cache_size=16
 
 	depends embox.mem.pool
 	depends embox.lib.LibC
@@ -52,6 +69,6 @@ module neighbour {
 module net_entry extends entry_api {
 	source "net_entry.c"
 
-	depends dev /* for network_layer.c */
+	depends network_layer /* for network_layer.c */
 	depends embox.lib.LibC
 }

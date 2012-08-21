@@ -178,10 +178,24 @@ static int linenoise_prompt(int fd, FILE *descr, char *buf, size_t buflen, const
     while(1) {
         char c;
         int nread;
-        char seq[2], seq2[2];
+        char seq[2], seq2[2]= {0};
 
         nread = read_raw_mode ? read(fd,&c,1) : fread(&c, 1, 1, descr);
-        if (nread <= 0) return len;
+        if (nread <= 0) {
+			/**
+			 * FIXME
+			 * Quick hack to get telnet to work correctly.
+			 * Telnet is based on stream sockets, so after some time
+			 * tcp_v4_recvmsg will return ETIMEDOUT, but we supposed
+			 * that somebody pressed Enter. It's incorrect.
+			 * To fix it need to add a socket options
+			 * and set receive's timeout more, than we have now
+			 */
+			if (-nread == ETIMEDOUT) {
+				continue;
+			}
+			return len;
+		}
         /* Only autocomplete when the callback is set. It returns < 0 when
          * there was an error reading from fd. Otherwise it will return the
          * character that should be handled next. */
@@ -383,21 +397,28 @@ void linenoise_history_init(struct hist *h) {
 int linenoise(const char *prompt, char *buf, int len, struct hist *history, compl_callback_t cb) {
     int fd = STDIN_FILENO;
     int mode = ioctl(fd, TTY_IOCTL_REQUEST_MODE, NULL);
-	int fd_type = task_self_idx_get(fd)->type;
     int count;
 
+/*
+	int fd_type = task_self_idx_get(fd)->type;
 	assert( (fd_type == TASK_IDX_TYPE_FILE) || (fd_type == TASK_IDX_TYPE_SOCKET) );
 
 	if(fd_type == TASK_IDX_TYPE_FILE) {
-			/* FILE MIGHT be related with a terminal */
-		ioctl(fd, TTY_IOCTL_SET_RAW, NULL); /* this works, believe */
+			[> FILE MIGHT be related with a terminal <]
+		ioctl(fd, TTY_IOCTL_SET_RAW, NULL); [> this works, believe <]
 		count = linenoise_prompt(fd, stdin, buf, len, prompt, history, cb, true);
-		ioctl(fd, mode, NULL); /* this works, believe */
+		ioctl(fd, mode, NULL); [> this works, believe <]
 	} else {
-			/* SOCKET is much simpler */
+			[> SOCKET is much simpler <]
 		count = linenoise_prompt(fd, stdin, buf, len, prompt, history, cb, false);
 	}
-
+*/
+	if (isatty(0)) {
+		ioctl(fd, TTY_IOCTL_SET_RAW, NULL);
+		count = linenoise_prompt(fd, stdin, buf, len, prompt, history, cb, true);
+		ioctl(fd, mode, NULL);
+	} else {
+		count = linenoise_prompt(fd, stdin, buf, len, prompt, history, cb, false);
+	}
     return count;
 }
-

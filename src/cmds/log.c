@@ -1,9 +1,9 @@
 /**
  * @file
- * @brief Ping hosts by ARP requests/replies.
+ * @brief See last debug message
  *
- * @date 23.12.09
- * @author Nikolay Korotky
+ * @date 14.03.12
+ * @author Timur Abdukadyrov
  */
 
 #include <embox/cmd.h>

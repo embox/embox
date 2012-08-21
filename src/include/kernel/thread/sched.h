@@ -17,9 +17,10 @@
 #include __impl_x(kernel/thread/sched_impl.h)
 #include __impl_x(kernel/thread/types.h)
 
-#define SCHED_TIMEOUT_INFINITE     (uint32_t)(-1)
+#define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
-#define SCHED_TIMEOUT_HAPPENED        1
+#define SCHED_SLEEP_TIMEOUT        1
+#define SCHED_SLEEP_INTERRUPT      3
 
 struct thread;
 struct event;
@@ -56,12 +57,29 @@ extern void sched_set_priority(struct thread *thread,
  *
  * @param event
  *   The event to sleep on.
+ * @param timeout
+ *   Max waiting time of event.
  * @return
  *   Operation result.
  * @retval 0
- *   Always. TODO sleep cancellation is not implemented.
+ *   On success. TODO sleep cancellation is not implemented.
+ * @retval SCHED_TIMEOUT_HAPPENED
+ *   Timeout happened.
  */
-extern int sched_sleep(struct event *event, uint32_t timeout);
+extern int sched_sleep(struct event *event, unsigned long timeout);
+
+/**
+ * @brief Makes thread to run regardless of it's state
+ * @param thread Thread to operate with
+ *
+ * @return
+ *   Operation result
+ * @retval 0
+ *   On success.
+ * @retval non-zero
+ *   On operation fail.
+ */
+extern int sched_setrun(struct thread *thread);
 
 /**
  * Wakes up all threads that sleep on the given @a event.
@@ -100,13 +118,16 @@ extern void sched_wake_one(struct event *event);
  *
  * @param event
  *   The event to sleep on.
+ * @param timeout
+ *   Max waiting time of event.
  * @return
  *   Operation result.
  * @retval 0
- *   Always. TODO sleep cancellation is not implemented.
+ *   On success. TODO sleep cancellation is not implemented.
+ * @retval SCHED_TIMEOUT_HAPPENED
+ *   Timeout happened.
  */
-extern int sched_sleep_locked(struct event *event);
+extern int sched_sleep_locked(struct event *event, unsigned long timeout);
 
 
 #endif /* KERNEL_THREAD_SCHED_H_ */
-

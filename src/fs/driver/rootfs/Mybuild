@@ -1,0 +1,8 @@
+package embox.fs
+
+module rootfs {
+	source "rootfs.c"
+	depends node, driver.repo
+}
+
+

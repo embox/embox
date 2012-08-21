@@ -8,7 +8,7 @@
 
 #include <types.h>
 
-#include <kernel/diag.h>
+#include <prom/diag.h>
 #include <hal/reg.h>
 
 #include <embox/unit.h>

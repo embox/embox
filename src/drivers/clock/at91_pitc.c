@@ -9,12 +9,17 @@
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
-#include <kernel/clock_source.h>
+#include <kernel/time/clock_source.h>
 #include <types.h>
 #include <hal/interrupt.h>
 #include <drivers/at91sam7s256.h>
 
-static struct clock_source at91_pit_clock_source;
+#include <system.h>
+
+#define AT91_PIT_COUNTER_RES (SYS_CLOCK / 16)
+#define AT91_PIT_EVENT_RES 1000
+
+static struct clock_source at91_pitc_clock_source;
 
 irq_return_t clock_handler(int irq_num, void *dev_id) {
 	if (REG_LOAD(AT91C_PITC_PISR)) {
@@ -24,18 +29,43 @@ irq_return_t clock_handler(int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-void clock_init(void) {
+static int at91_pitc_init(void) {
+	clock_source_register(&at91_pitc_clock_source);
 	REG_STORE(AT91C_PMC_PCER, AT91C_ID_SYS);
-	// TODO check return code.
-	irq_attach((irq_nr_t) AT91C_ID_SYS,
+	return irq_attach((irq_nr_t) AT91C_ID_SYS,
 		(irq_handler_t) &clock_handler, 0, NULL, "at91 PIT");
-	at91_pit_clock_source.flags = 1;
-	at91_pit_clock_source.resolution = 1000;
-	clock_source_register(&at91_pit_clock_source);
 }
 
-void clock_setup(useconds_t useconds) {
+static int at91_pitc_config(struct time_dev_conf * conf);
+
+static struct time_event_device at91_pitc_event = {
+	.config = at91_pitc_config,
+	.resolution = AT91_PIT_EVENT_RES,
+	.irq_nr = AT91C_ID_SYS
+};
+
+
+static cycle_t at91_pitc_read(void) {
+	return 0; //REG_LOAD(AT91C_PITC_PIVR);
+}
+
+static struct time_counter_device at91_pitc_counter = {
+	.read = at91_pitc_read,
+	.resolution = AT91_PIT_COUNTER_RES,
+};
+
+static struct clock_source at91_pitc_clock_source = {
+	.name = "at91_pitc",
+	.event_device = &at91_pitc_event,
+	.counter_device = &at91_pitc_counter,
+	.read = clock_source_read,
+};
+
+static int at91_pitc_config(struct time_dev_conf * conf) {
 	REG_LOAD(AT91C_PITC_PIVR);
 	REG_STORE(AT91C_PITC_PIMR, AT91C_PITC_PITEN | AT91C_PITC_PITIEN |
-	    (useconds * AT91C_PIT_USECOND));
+	    (at91_pitc_counter.resolution / at91_pitc_event.resolution));
+	return 0;
 }
+
+EMBOX_UNIT_INIT(at91_pitc_init);

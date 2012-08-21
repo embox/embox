@@ -1,0 +1,18 @@
+/**
+ * @file
+ * @brief C++ forwarding header
+ * @date 04.07.12
+ * @author Ilia Vaprol
+ */
+
+#ifndef CSTDDEF_
+#define CSTDDEF_
+
+#include <stddef.h>
+
+namespace std {
+	using ::ptrdiff_t;
+	using ::size_t;
+} // namespace std
+
+#endif // CSTDDEF_

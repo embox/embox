@@ -16,16 +16,13 @@ include mk/model/issue.mk
 # Constructor args:
 #   1. (optional) File to load the resource from.
 define class-Resource
-
+	$(super ExportingObjects)
 	$(super IssueReceiver)
 
 	$(property fileName)
 	$(field fileName)
 	$(getter fileName,
 		$(get-field fileName))
-
-	# Name-to-object mapping.
-	$(map exportedObjectsMap... : ENamedObject)
 
 	# List of all objects in the containment hierarchy.
 	# Empty for not yet loaded resource.
@@ -70,7 +67,7 @@ define class-Resource
 
 		$(silent-for oldRootObject <- $(get-field contentsRoot),
 			$(set-field oldRootObject->__eContainer,)
-			$(map-unset exportedObjectsMap,%))
+			$(map-unset exports,%))
 
 		$(set-field contentsRoot,$(suffix $1))
 
@@ -85,7 +82,7 @@ define class-Resource
 			$(set-field newRootObject->__eContainer,$(this))
 			$(for exportedObject <- $(suffix $(invoke getExportedObjects)),
 				qualifiedName <- $(get exportedObject->qualifiedName),
-				$(map-set+ exportedObjectsMap/$(qualifiedName),
+				$(map-set+ exports/$(qualifiedName),
 					$(exportedObject))))
 	)
 
@@ -115,9 +112,7 @@ define class-Resource
 endef
 
 define class-ResourceSet
-
-	# Name-to-object mapping.
-	$(map exportedObjectsMap... : ENamedObject)
+	$(super ExportingObjects)
 
 	$(property-field resources... : Resource)
 	$(setter resources,
@@ -126,9 +121,9 @@ define class-ResourceSet
 				$(silent-for newResource <- $(suffix $1),
 					$(set newResource->resourceSet,$(this))
 					$(for qualifiedName <-
-							$(get-field newResource->exportedObjectsMap),
-						$(map-set+ exportedObjectsMap/$(qualifiedName),
-							$(map-get newResource->exportedObjectsMap/
+							$(get-field newResource->exports),
+						$(map-set+ exports/$(qualifiedName),
+							$(map-get newResource->exports/
 								$(qualifiedName))))),
 				$(if $1,$(warning $0: NIY))),
 			$(set- resources,$(get-field resources))
@@ -144,13 +139,24 @@ define class-ResourceSet
 	$(method createLinker,
 		$(new Linker,$(this)))
 
-	$(method getExportedObjectByQualifiedName,
-		$(map-get exportedObjectsMap/$1))
-
 	$(if $(value 1),
 		$(set resources,$1))
 
 	$(set linker,$(invoke createLinker))
+
+endef
+
+define class-ExportingObjects
+
+	# Name-to-object mapping.
+	$(map exports... : ENamedObject)
+
+	# Retrieves an instance by the given qualified name.
+	#   1. The qualified name.
+	# Return:
+	#   Resolved instance, if any.
+	$(method resolve : ENamedObject,
+		$(singleword $(map-get exports/$1)))
 
 endef
 

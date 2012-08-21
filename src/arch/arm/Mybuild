@@ -2,6 +2,7 @@ package embox.arch.arm
 
 module lds extends embox.arch.lds {
 	source "embox.lds.S"
+	option number stack_size=4096
 }
 
 module cpu extends embox.arch.cpu {

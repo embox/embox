@@ -26,7 +26,7 @@
 #include <string.h>
 
 #include <mem/misc/pool.h>
-#include <util/math.h>
+#include <math.h>
 #include <util/member.h>
 #include <kernel/critical.h>
 #include <kernel/thread/api.h>
@@ -76,12 +76,11 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	thread_exit(current->run(current->run_arg));
 }
 
-static int thread_create_task(struct thread **p_thread, unsigned int flags,
-		void *(*run)(void *), void *arg, struct task *tsk) {
+int thread_create(struct thread **p_thread, unsigned int flags,
+		void *(*run)(void *), void *arg) {
 	struct thread *t;
 	int save_ptr = (flags & THREAD_FLAG_SUSPENDED)
 			|| !(flags & THREAD_FLAG_DETACHED);
-
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
 			&& (flags & THREAD_FLAG_PRIORITY_HIGHER)) {
 		return -EINVAL;
@@ -102,7 +101,7 @@ static int thread_create_task(struct thread **p_thread, unsigned int flags,
 		return -ENOMEM;
 	}
 
-	thread_init(t, flags, run, arg, tsk);
+	thread_init(t, flags, run, arg, task_self());
 	thread_context_init(t);
 
 	if (!(flags & THREAD_FLAG_SUSPENDED)) {
@@ -120,13 +119,6 @@ static int thread_create_task(struct thread **p_thread, unsigned int flags,
 	sched_unlock();
 
 	return 0;
-}
-
-int thread_create(struct thread **p_thread, unsigned int flags,
-		void *(*run)(void *), void *arg) {
-	struct task *tsk = task_self();
-
-	return thread_create_task(p_thread, flags, run, arg, tsk);
 }
 
 static void thread_init(struct thread *t, unsigned int flags,
@@ -153,10 +145,6 @@ static void thread_init(struct thread *t, unsigned int flags,
 		t->priority--;
 	} else if (flags & THREAD_FLAG_PRIORITY_HIGHER) {
 		t->priority++;
-	}
-
-	if (flags & THREAD_FLAG_IN_NEW_TASK) {
-		task_create(&tsk, tsk);
 	}
 
 	t->task = tsk;
@@ -247,7 +235,7 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	} else {
 		assert(sleepq_empty(&t->exit_event.sleepq));
-		sched_sleep_locked(&t->exit_event);
+		sched_sleep_locked(&t->exit_event, SCHED_TIMEOUT_INFINITE);
 
 		/* At this point the target thread has already deleted itself.
 		 * So we mustn't refer it anymore. */
@@ -374,26 +362,24 @@ static void *idle_run(void *arg) {
 static int unit_init(void) {
 	static struct thread bootstrap;
 	struct thread *idle;
-	struct task *default_task;
+	struct task *kernel_task = task_kernel_task();
 	id_counter = 0;
 
 	bootstrap.id = id_counter++;
 	list_add_tail(&bootstrap.thread_link, &__thread_list);
 
-	default_task = task_default_get();
-
-	thread_init(&bootstrap, 0, NULL, NULL, default_task);
+	thread_init(&bootstrap, 0, NULL, NULL, kernel_task);
 	// TODO priority for bootstrap thread -- Eldar
 	bootstrap.priority = THREAD_PRIORITY_NORMAL;
 
 	if (!(idle = thread_new())) {
 		return -ENOMEM;
 	}
-	thread_init(idle, 0, idle_run, NULL, default_task);
+	thread_init(idle, 0, idle_run, NULL, kernel_task);
 	thread_context_init(idle);
 
-	bootstrap.task = default_task;
-	idle->task = default_task;
+	bootstrap.task = kernel_task;
+	idle->task = kernel_task;
 
 	idle->priority = THREAD_PRIORITY_MIN;
 
@@ -443,18 +429,18 @@ static void thread_delete(struct thread *t) {
 
 #define THREAD_POOL_SZ 0x10
 
-union thread_pool_entry {
+typedef struct thread_pool_entry {
 	struct thread thread;
 	char stack[STACK_SZ];
-};
+} thread_pool_entry_t;
 
-POOL_DEF(thread_pool, union thread_pool_entry, THREAD_POOL_SZ);
+POOL_DEF(thread_pool, thread_pool_entry_t, THREAD_POOL_SZ);
 
 static struct thread *thread_alloc(void) {
-	union thread_pool_entry *block;
+	thread_pool_entry_t *block;
 	struct thread *t;
 
-	if (!(block = (union thread_pool_entry *) pool_alloc(&thread_pool))) {
+	if (!(block = (thread_pool_entry_t *) pool_alloc(&thread_pool))) {
 		return NULL;
 	}
 
@@ -467,11 +453,11 @@ static struct thread *thread_alloc(void) {
 }
 
 static void thread_free(struct thread *t) {
-	union thread_pool_entry *block;
+	thread_pool_entry_t *block;
 
 	assert(t != NULL);
 
 	// TODO may be this is not the best way... -- Eldar
-	block = member_cast_out(t, union thread_pool_entry, thread);
+	block = member_cast_out(t, thread_pool_entry_t, thread);
 	pool_free(&thread_pool, block);
 }

@@ -8,10 +8,7 @@
 #ifndef NET_RPC_RPC_H_
 #define NET_RPC_RPC_H_
 
-/* Client side (mostly) remote procedure call */
-#include <net/rpc/clnt.h>
-
-/* External data representation interfaces */
-#include <net/rpc/xdr.h>
+#define RPC_VERSION 2
+#define RPC_ANYSOCK -1
 
 #endif /* NET_RPC_RPC_H_ */

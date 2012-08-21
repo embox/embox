@@ -42,4 +42,3 @@ TEST_CASE("An interrupt forced after a call to ipl_save() must not run until "
 
 	test_assert_emitted("{[]0}");
 }
-

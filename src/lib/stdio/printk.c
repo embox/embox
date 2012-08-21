@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <types.h>
-#include <kernel/diag.h>
+#include <prom/diag.h>
 
 int __print(void (*printchar_handler)(char **str, int c),
 		char **out, const char *format, va_list args);

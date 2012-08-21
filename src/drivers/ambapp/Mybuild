@@ -9,11 +9,11 @@ module ambapp_dumb extends ambapp_api {
 
 module ambapp extends ambapp_api {
 	source "ambapp.h"
-	source "ambapp.c"
 }
 
 module amba_registry {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "amba_registry.c"
+	source "ambapp.c"
 }

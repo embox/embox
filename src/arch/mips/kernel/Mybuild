@@ -1,0 +1,22 @@
+package embox.arch.mips.kernel
+
+module context extends embox.arch.context {
+	source "context.c", "context_switch.S", "context.h"
+}
+
+
+module boot extends embox.arch.boot {
+	source "boot.S"
+}
+module entry extends embox.arch.entry {
+	source "entry.S"
+	source "exception.c"
+	source "interrupt.c"
+}
+
+//module entry extends embox.arch.interrupt {
+//}
+
+module arch {
+	source "arch.c"
+}

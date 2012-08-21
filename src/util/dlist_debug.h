@@ -18,6 +18,7 @@
 #ifndef DLIST_DEBUG_H_
 #define DLIST_DEBUG_H_
 
+#include <types.h>
 #include <assert.h> /*it's required for assertion operation */
 
 /**

@@ -1,8 +1,8 @@
 package embox.example.kernel.time
 
 
-module timecounter {
-	source "timecounter.c"
+module itimer {
+	source "itimer.c"
 
 	depends embox.framework.LibFramework
 }

@@ -1,0 +1,12 @@
+package embox.cmd
+
+@Build(script="$(MAKE) -C ../linux MAKEFLAGS=")
+module load {
+	option string image = "../linux/build/bin/piggy"
+
+	@Rule(prerequisites="../linux/build/bin/piggy")
+	source "load_incbin.S"
+
+	source "load.c", "load.lds.S"
+}
+

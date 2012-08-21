@@ -8,42 +8,44 @@
  */
 #include <embox/unit.h>
 
-#include <time.h>
-#include <kernel/ktime.h>
-#include <kernel/clock_event.h>
-#include <kernel/time/timecounter.h>
+#include <kernel/time/itimer.h>
+#include <kernel/time/ktime.h>
+#include <kernel/time/clock_source.h>
+#include <kernel/time/time.h>
 
 EMBOX_UNIT_INIT(module_init);
 
+static struct itimer sys_timecounter;
 
-
-//TODO global time timecounter is bad
-static struct timecounter sys_timecounter;
-
-ns_t clock_get_systime(void) {
-	return timecounter_read(&sys_timecounter);
+ns_t ktime_get_ns(void) {
+	return itimer_read(&sys_timecounter);
 }
+
+struct timeval *ktime_get_timeval(struct timeval *tv) {
+	ns_t ns = ktime_get_ns();
+	*tv = ns_to_timeval(ns);
+	return tv;
+}
+
+struct timespec *ktime_get_timespec(struct timespec *ts) {
+	ns_t ns = ktime_get_ns();
+
+	*ts = ns_to_timespec(ns);
+	return ts;
+}
+extern struct clock_source jiffies;
 
 static int module_init(void) {
-	const struct clock_event_device *dev;
+	struct clock_source *cs;
 
 	/* find clock_event_device with maximal resolution  */
-	dev = cedev_get_best(TICKS);
-	/* install timecounter value to 0 */
-	timecounter_init(&sys_timecounter, dev->cs->cc, 0);
+	cs = clock_source_get_best(CS_ANY);
+	assert(cs);
+	if(NULL == cs->read) {
+		cs = &jiffies;
+	}
+
+	itimer_init(&sys_timecounter, cs, 0);
 
 	return 0;
-}
-
-static useconds_t time_usec(void) {
-	return timecounter_read(&sys_timecounter);
-}
-
-struct ktimeval * get_timeval(struct ktimeval *tv) {
-	useconds_t usec;
-
-	usec = time_usec();
-	tv->tv_sec = usec / USEC_PER_SEC;
-	tv->tv_usec = usec % USEC_PER_SEC;
-	return tv;
 }

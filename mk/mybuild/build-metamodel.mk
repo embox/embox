@@ -47,10 +47,6 @@ Build_OptionInstance := \
 	$(call eMetaClassCreate,$(Build),Build_OptionInstance)
 Build_OptionInstance_module := \
 	$(call eMetaReferenceCreate,$(Build_OptionInstance),Build_OptionInstance_module)
-Build_OptionInstance_option := \
-	$(call eMetaReferenceCreate,$(Build_OptionInstance),Build_OptionInstance_option)
-Build_OptionInstance_value := \
-	$(call eMetaReferenceCreate,$(Build_OptionInstance),Build_OptionInstance_value)
 
 # Initializes the objects and relations between them.
 define __build_init
@@ -60,7 +56,7 @@ define __build_init
 	$(call eMetaReferenceInit,$(Build_Build_configuration),configuration,$(ConfigFile_Configuration),,changeable linkable)
 	$(call eMetaReferenceInit,$(Build_Build_modules),modules,$(Build_ModuleInstance),$(Build_ModuleInstance_build),changeable many containment)
 
-	$(call eMetaClassInit,$(Build_ModuleInstance),ModuleInstance,,)
+	$(call eMetaClassInit,$(Build_ModuleInstance),ModuleInstance,$(MyFile_Instance),)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_build),build,$(Build_Build),$(Build_Build_modules),changeable container)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_type),type,$(MyFile_ModuleType),,changeable)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_allTypes),allTypes,$(MyFile_ModuleType),,derived many)
@@ -73,10 +69,8 @@ define __build_init
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_includeMember),includeMember,$(ConfigFile_Include),,changeable linkable)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_sources),sources,$(MyFile_FileName),,derived many)
 
-	$(call eMetaClassInit,$(Build_OptionInstance),OptionInstance,,)
+	$(call eMetaClassInit,$(Build_OptionInstance),OptionInstance,$(MyFile_OptionBinding),)
 	$(call eMetaReferenceInit,$(Build_OptionInstance_module),module,$(Build_ModuleInstance),$(Build_ModuleInstance_options),changeable container)
-	$(call eMetaReferenceInit,$(Build_OptionInstance_option),option,$(MyFile_Option),,changeable linkable)
-	$(call eMetaReferenceInit,$(Build_OptionInstance_value),value,$(MyFile_Literal),,changeable)
 
 endef # __build_init
 
@@ -101,8 +95,6 @@ define __build_bind
 
 	$(call eMetaClassBind,$(Build_OptionInstance),OptionInstance)
 	$(call eMetaFeatureBind,$(Build_OptionInstance_module),module)
-	$(call eMetaFeatureBind,$(Build_OptionInstance_option),option)
-	$(call eMetaFeatureBind,$(Build_OptionInstance_value),value)
 
 endef # __build_bind
 

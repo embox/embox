@@ -1,0 +1,21 @@
+package lego_nxt.driver
+
+import lego_nxt.driver.*
+
+module touch_sensor {
+	source "touch.c"
+
+	depends nxt_avr_init
+}
+
+module sonar_sensor {
+	source "sonar.c"
+
+	depends nxt_avr_init, soft_i2c
+}
+
+module angle_sensor {
+	source "angle.c"
+
+	depends nxt_avr_init, soft_i2c
+}

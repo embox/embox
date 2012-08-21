@@ -15,7 +15,7 @@
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>
 #include <drivers/blue_core4.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 
 #include <embox/unit.h>
 
@@ -185,4 +185,3 @@ static int nxt_bluetooth_init(void) {
 	//TODO may be it must set when bt has been connected?
 	return timer_set(&ntx_bt_timer, TIMER_PERIODIC, 200, nxt_bt_timer_handler, NULL);
 }
-

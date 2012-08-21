@@ -14,7 +14,7 @@
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>
 #include <drivers/btm112.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <string.h>
 #include <unistd.h>
 

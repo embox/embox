@@ -100,5 +100,3 @@ TEST_CASE("Sort array with equal elements") {
 	test_assert(a[0] == 0 && a[1] == 0 && a[2] == 1
 			&& a[3] == 1 && a[4] == 2 && a[5] == 2);
 }
-
-

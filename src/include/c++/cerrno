@@ -1,0 +1,13 @@
+/**
+ * @file
+ * @brief C++ forwarding header
+ * @date 04.07.12
+ * @author Ilia Vaprol
+ */
+
+#ifndef CERRNO_
+#define CERRNO_
+
+#include <errno.h>
+
+#endif // CERRNO_

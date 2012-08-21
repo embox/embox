@@ -27,6 +27,7 @@ $(error Only single value for OPTIMIZE flag is permitted)
 endif
 
 override CFLAGS += -O$(OPTIMIZE)
+override CXXFLAGS += -O$(OPTIMIZE)
 
 endif
 
@@ -40,6 +41,7 @@ override CPPFLAGS += -imacros $(AUTOCONF_DIR)/config.h
 override CPPFLAGS += -I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
 override CPPFLAGS += -I$(SRCGEN_DIR)/include
 # XXX reduntand flags, agrrrr -- Eldar
+override CPPFLAGS += $(if $(value PLATFORM),-I$(PLATFORM_DIR)/$(PLATFORM)/include)
 override CPPFLAGS += -I$(SRC_DIR)/compat/linux/include -I$(SRC_DIR)/compat/posix/include
 override CPPFLAGS += -nostdinc
 override CPPFLAGS += -MMD -MP# -MT $@ -MF $(@:.o=.d)
@@ -50,6 +52,20 @@ asflags := $(CFLAGS)
 override ASFLAGS  = -pipe
 override ASFLAGS += $(asflags)
 
+
+cxxflags := $(CFLAGS)
+override CXXFLAGS = -pipe
+override CXXFLAGS += -fno-strict-aliasing -fno-common
+override CXXFLAGS += -Wall -Werror
+override CXXFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
+override CXXFLAGS += -Wformat -Wformat-nonliteral
+override CXXFLAGS += -I$(SRC_DIR)/include/c++
+override CXXFLAGS += -D"__BEGIN_DECLS=extern \"C\" {"
+override CXXFLAGS += -D"__END_DECLS=}"
+#	C++ has build-in type bool
+override CXXFLAGS += -DSTDBOOL_H_
+override CXXFLAGS += $(cxxflags)
+
 # Compiler flags
 cflags := $(CFLAGS)
 override CFLAGS  = -std=gnu99
@@ -59,6 +75,8 @@ override CFLAGS += -Wstrict-prototypes -Wdeclaration-after-statement
 override CFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 override CFLAGS += -Wformat -Wformat-nonliteral -Wno-format-zero-length
 override CFLAGS += -pipe
+override CFLAGS += -D"__BEGIN_DECLS="
+override CFLAGS += -D"__END_DECLS="
 override CFLAGS += $(cflags)
 
 # Linker flags
@@ -70,6 +88,8 @@ override LDFLAGS += --cref --relax
 override LDFLAGS += $(ldflags)
 
 override ARFLAGS = rcs
+
+
 
 CCFLAGS ?=
 

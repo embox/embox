@@ -77,4 +77,3 @@ static int vga_con_manager(void) {
 	tty_ng_manager(VGA_N_CON, tty_vga_init, run);
 	return 0;
 }
-

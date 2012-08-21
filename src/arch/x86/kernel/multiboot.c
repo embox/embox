@@ -8,7 +8,7 @@
  */
 
 #include <asm/multiboot.h>
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 #include <kernel/panic.h>
 
 /* Check if the bit BIT in FLAGS is set. */
@@ -111,4 +111,3 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 				(unsigned) mmap->type);
 	}
 }
-

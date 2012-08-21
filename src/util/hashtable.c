@@ -11,7 +11,7 @@
  */
 #include <stdlib.h>
 #include <mem/objalloc.h>
-
+#include <errno.h>
 
 #include <util/array.h>
 #include <util/list.h>
@@ -27,6 +27,7 @@
 
 struct hashtable_element {
 	struct list_link lnk;
+	struct list_link general_lnk;
 	void *key;
 	void *value;
 };
@@ -47,6 +48,7 @@ struct hashtable {
 	get_hash_ft get_hash_key; /**< handler of the calculation index function */
 	ht_cmp_ft cmp; /** < handler of the compare elements function */
 	size_t table_size; /** size of the array of the table entry */
+	struct list all;
 };
 
 
@@ -74,18 +76,19 @@ struct hashtable *hashtable_create(size_t table_size, get_hash_ft get_hash, ht_c
 	ht->get_hash_key = get_hash;
 	ht->table_size = table_size;
 	ht->cmp = cmp;
+	list_init(&ht->all);
 
 	return ht;
 }
 
-void hashtable_put(struct hashtable *ht, void *key, void *value) {
+int hashtable_put(struct hashtable *ht, void *key, void *value) {
 	size_t idx;
 	struct hashtable_element *htel;
 
 	assert(ht);
 
 	if (NULL == (htel = objalloc(&ht_elem_pool))) {
-		return;
+		return -ENOMEM;
 	}
 	htel->key = key;
 	htel->value = value;
@@ -94,6 +97,10 @@ void hashtable_put(struct hashtable *ht, void *key, void *value) {
 
 	list_add_first_link(&htel->lnk, &ht->table[idx].list);
 	ht->table[idx].cnt ++;
+
+	list_add_last_link(&htel->general_lnk, &ht->all);
+
+	return ENOERR;
 }
 
 void *hashtable_get(struct hashtable *ht, void* key) {
@@ -112,7 +119,7 @@ void *hashtable_get(struct hashtable *ht, void* key) {
 	return NULL;
 }
 
-void hashtable_del(struct hashtable *ht, void *key, void *value) {
+int hashtable_del(struct hashtable *ht, void *key) {
 	size_t idx;
 	struct hashtable_element *htel;
 
@@ -122,10 +129,13 @@ void hashtable_del(struct hashtable *ht, void *key, void *value) {
 	list_foreach(htel, &ht->table[idx].list, lnk) {
 		if(0 == ht->cmp(key, htel->key)) {
 			list_unlink_link(&htel->lnk);
+			list_unlink_link(&htel->general_lnk);
 			objfree(&ht_elem_pool, htel);
-			return;
+			return ENOERR;
 		}
 	}
+
+	return -ENOENT;
 }
 
 void hashtable_destroy(struct hashtable *ht) {
@@ -136,11 +146,42 @@ void hashtable_destroy(struct hashtable *ht) {
 
 	for(i = 0; i < ARRAY_SIZE(ht->table); i ++) {
 		list_foreach(htel, &ht->table[i].list, lnk) {
-			list_unlink_link(&htel->lnk);
+//			list_unlink_link(&htel->lnk); // no matter
 			objfree(&ht_elem_pool, htel);
 		}
 
 	}
 	free(ht->table);
 	objfree(&ht_pool, ht);
+}
+
+void *hashtable_get_key_first(struct hashtable *ht) {
+	struct hashtable_element *htel;
+
+	assert(ht);
+
+	if (list_is_empty(&ht->all)) {
+		return NULL;
+	}
+
+	htel = list_element(list_first_link(&ht->all), struct hashtable_element, general_lnk);
+	return &htel->key;
+}
+
+void *hashtable_get_key_next(struct hashtable *ht, void *prev_key) {
+	struct hashtable_element *htel;
+
+	assert(ht);
+
+	if (list_is_empty(&ht->all)) {
+		return NULL;
+	}
+
+	htel = member_cast_out(prev_key, struct hashtable_element, key);
+	if (list_last_link(&ht->all) == &htel->general_lnk) {
+		return NULL;
+	}
+
+	htel = list_element(htel->general_lnk.next, struct hashtable_element, general_lnk);
+	return &htel->key;
 }

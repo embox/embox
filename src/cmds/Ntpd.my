@@ -1,0 +1,23 @@
+package embox.cmd
+
+@Cmd(name = "ntpd",
+	help = "Network Time Protocol (NTP) daemon",
+	man = '''
+		NAME
+			ntpd - Network Time Protocol (NTP) daemon
+		SYNOPSIS
+			ntpd server
+		DESCRIPTION
+			TODO
+		AUTHORS
+			Alexander Kalmuk
+	''')
+
+module ntpd {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "ntpd.c"
+
+	depends embox.kernel.task.api
+	depends embox.framework.LibFramework
+	depends embox.net.ntp
+}

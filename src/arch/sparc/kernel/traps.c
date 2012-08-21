@@ -5,7 +5,7 @@
  * @author Nikolay Korotky
  */
 
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 #include <types.h>
 #include <asm/winmacro.h>
 #include <asm/ptrace.h>

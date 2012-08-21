@@ -41,8 +41,6 @@ void scl_set_high(pin_mask_t mask) {
 	pin_set_output(mask);
 }
 
-i2c_state_t wait_state;
-
 static void i2c_port_process(i2c_port_t *port) {
 	REG_LOAD(AT91C_TC0_SR); //it's norm
 	switch (port->state) {

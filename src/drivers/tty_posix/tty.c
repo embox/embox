@@ -64,7 +64,7 @@
 #include <asm/io.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/sync/message.h>
 #include <hal/reg.h>
@@ -314,7 +314,7 @@ PRIVATE void tty_init(tty_t *tp,int line)
 			return -1;
 		}
 		node = (node_t*) fc;
-		cons = (console_t *)node->attr;
+		cons = (console_t *)node->dev_attr;
 
 		if (tp == tty_addr(CONFIG_NR_CONS)) {
 			fk = fopen("/dev/kbd", "r");

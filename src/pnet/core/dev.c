@@ -61,4 +61,3 @@ static int net_dev_init(void) {
 
 	return 0;
 }
-

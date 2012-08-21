@@ -28,4 +28,3 @@ struct net_node *pnet_get_module(const char *name) {
 	}
 	return NULL;
 }
-

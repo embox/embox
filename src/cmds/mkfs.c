@@ -1,5 +1,5 @@
 /**
- * @file mkfs.c
+ * @file
  * @brief
  *
  * @date 27.03.2012
@@ -15,7 +15,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <fs/ramfs.h>
-#include <fs/ramdisk.h>
+#include <drivers/ramdisk.h>
 #include <fs/fat.h>
 #include <embox/cmd.h>
 #include <mem/page.h>
@@ -31,7 +31,7 @@
 EMBOX_CMD(exec);
 
 static mkfs_params_t mkfs_params;
-static ramdisk_params_t *ramd_params;
+static dev_ramdisk_t *ramdisk;
 
 static void print_usage(void) {
 	printf("Usage: mkfs [ -t type ] file [ blocks ]\n");
@@ -72,7 +72,7 @@ static int exec(int argc, char **argv) {
 			break;
 		case 'q':
 			min_argc += 1;
-			mkfs_params.operation_flag |= MKFS_CREATE_DEV;
+			mkfs_params.operation_flag |= MKFS_CREATE_RAMDISK;
 			if(check_invalid(min_argc, argc, argv)){
 				return -EINVAL;
 			}
@@ -115,21 +115,23 @@ int mkfs_do_operation(void *_mkfs_params) {
 
 	mkfs_params = (mkfs_params_t *) _mkfs_params;
 
-	if(mkfs_params->operation_flag & MKFS_CREATE_DEV) {
+	if(mkfs_params->operation_flag & MKFS_CREATE_RAMDISK) {
 		if(0 != (rezult = ramdisk_create((void *)mkfs_params))) {
 			return rezult;
 		}
 	}
 
 	if(mkfs_params->operation_flag & MKFS_FORMAT_DEV) {
-		if(NULL == (ramd_params = ramdisk_get_param(mkfs_params->path))) {
-			return -ENODEV;
+		if(MKFS_CREATE_RAMDISK) {
+			/* set filesystem attribute to ramdisk */
+			if(NULL == (ramdisk = ramdisk_get_param(mkfs_params->path))) {
+						return -ENODEV;
+					}
+			strcpy ((void *)ramdisk->path, (const void *)mkfs_params->path);
+			strcpy ((void *)ramdisk->fs_name,
+						(const void *)mkfs_params->fs_name);
+			ramdisk->fs_type = mkfs_params->fs_type;
 		}
-		/* set filesystem attribute to ramdisk */
-		strcpy ((void *)ramd_params->path, (const void *)mkfs_params->path);
-		strcpy ((void *)ramd_params->fs_name,
-					(const void *)mkfs_params->fs_name);
-		ramd_params->fs_type = mkfs_params->fs_type;
 
 		if(NULL == (fs_drv =
 				filesystem_find_drv((const char *) &mkfs_params->fs_name))) {
@@ -137,12 +139,12 @@ int mkfs_do_operation(void *_mkfs_params) {
 		}
 
 		/* format filesystem */
-		if (0 != (rezult = fs_drv->fsop->format((void *)ramd_params))) {
+		if (0 != (rezult = fs_drv->fsop->format((void *) &mkfs_params->path))) {
 			return rezult;
 		}
 
 		/*
-		 * strcpy(filename, ramd_params->name);
+		 * strcpy(filename, ramdisk->name);
 		 * strcat (filename, "/1/2/3/4/4.txt");
 		 * rezult = open((const char *) filename, O_WRONLY);
 		 * strcpy(filename, "file was rewrite \n");

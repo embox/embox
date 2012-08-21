@@ -6,20 +6,25 @@ package embox.cmd
 		NAME
 			tftp - IPv4 Trivial File Transfer Protocol client
 		SYNOPSIS
-			tftp <host> <file>
+			tftp [-hab] -[g|p] files destination
 		DESCRIPTION
 			tftp is a client for the IPv4 Trivial file Transfer
 			Protocol, which can be used to transfer files from
 			remote machines.
 		OPTIONS
-			<host> - address of the server.
-			<file> - name of the file to Receive.
+			files        list of files for transmitting
+			destination  ip address tftp server
+			-h           print help message
+			-a           use ascii mode to transfer
+			-b           use binary mode to transfer
+			-g           get files from remote machine
+			-p           put files to remote machine
 		EXAMPLES
-			tftp 192.168.0.59 image
+			tftp -g hello.html 10.0.2.10
 		SEE ALSO
-			boot, goto
+			ftp, telnet
 		AUTHORS
-			Andrey Baboshin, Nikolay Korotky
+			Andrey Baboshin, Nikolay Korotky, Ilia Vaprol
 	''')
 module tftp {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")

@@ -23,6 +23,7 @@
 #include <drivers/pci.h>
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
+#include <net/if_ether.h>
 #include <drivers/ne2k_pci.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
@@ -66,7 +67,7 @@ static inline void show_packet(uint8_t *raw, uint16_t size, char *title) {
 static void ne2k_get_addr_from_prom(struct net_device *dev) {
 	uint8_t i;
 
-	dev->addr_len = ETHER_ADDR_LEN;
+	dev->addr_len = ETH_ALEN;
 	/* Copy the station address into the DS8390 registers,
 	   and set the multicast hash bitmap to receive all multicasts. */
 	out8(NE_PAGE1_STOP, dev->base_addr); /* 0x61 */
@@ -74,14 +75,14 @@ static void ne2k_get_addr_from_prom(struct net_device *dev) {
 
 	/* Get mac-address from prom*/
 	out8(E8390_PAGE0 | E8390_RREAD, dev->base_addr + E8390_CMD);
-	for (i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (i = 0; i < ETH_ALEN; i++) {
 		dev->dev_addr[i] = in8(dev->base_addr + NE_DATAPORT);
 	}
 
 	/* Copy the station address and set the multicast
 	 * hash bitmap to recive all multicast */
 	out8(E8390_PAGE1 | E8390_START, dev->base_addr + E8390_CMD);
-	for (i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (i = 0; i < ETH_ALEN; i++) {
 		out8(dev->dev_addr[i], dev->base_addr + EN1_PHYS_SHIFT(i));
 		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
 	}
@@ -185,7 +186,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 #if DEBUG
 	show_packet(skb->mac.raw, skb->len, "send");
 #endif
-	kfree_skb(skb); /* free packet */
+	skb_free(skb); /* free packet */
 
 	return ENOERR;
 }
@@ -194,7 +195,7 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length,
 				uint16_t offset, struct net_device *dev) {
 	struct sk_buff *skb;
 
-	skb = alloc_skb(total_length, 0);
+	skb = skb_alloc(total_length);
 	if (skb == NULL) {
 		return NULL;
 	}
@@ -216,11 +217,13 @@ static void ne2k_receive(struct net_device *dev) {
 	net_device_stats_t *stat;
 	unsigned long base_addr;
 	struct sk_buff *skb;
+	uint8_t tries;
 
 	base_addr = dev->base_addr;
 	stat = get_eth_stat(dev);
 
-	while (1) { /* XXX It's an infinite loop or not? */
+	tries = 10;
+	while (--tries) { /* XXX It's an infinite loop or not? */
 		/* Get the current page */
 		out8(E8390_NODMA | E8390_PAGE1, base_addr + E8390_CMD);
 		current_page = in8(base_addr + EN1_CURPAG);
@@ -253,7 +256,7 @@ static void ne2k_receive(struct net_device *dev) {
 		}
 		if ((total_length < 60) || (total_length > 1518)) {
 			stat->rx_err++;
-			LOG_WARN("ne2k_receive: bad packet size\n");
+			LOG_ERROR("ne2k_receive: bad packet size\n");
 		} else if ((rx_frame.status & 0x0F) == ENRSR_RXOK) {
 			skb = get_skb_from_card(total_length, ring_offset + sizeof(struct e8390_pkt_hdr), dev);
 			if (skb) {
@@ -262,15 +265,18 @@ static void ne2k_receive(struct net_device *dev) {
 				netif_rx(skb);
 			} else {
 				stat->rx_dropped++;
-				LOG_WARN("ne2k_receive: couldn't allocate memory for packet\n");
+				LOG_ERROR("ne2k_receive: couldn't allocate memory for packet\n");
 			}
 		} else {
 			if (rx_frame.status & ENRSR_FO) {
 				stat->rx_fifo_errors++;
 			}
-			LOG_WARN("ne2k_receive: rx_frame.status=0x%X\n", rx_frame.status);
+			LOG_ERROR("ne2k_receive: rx_frame.status=0x%X\n", rx_frame.status);
 		}
 		out8(rx_frame.next - 1, base_addr + EN0_BOUNDARY);
+	}
+	if (!tries) {
+		LOG_ERROR("ne2k_receive: break from infinite loops");
 	}
 
 	out8(ENISR_RX | ENISR_RX_ERR, base_addr + EN0_ISR);
@@ -351,13 +357,13 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 	}
 
 	out8(E8390_PAGE1, dev->base_addr + E8390_CMD);
-	for (i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (i = 0; i < ETH_ALEN; i++) {
 		out8(*((uint8_t *)addr + i), dev->base_addr + EN1_PHYS_SHIFT(i));
 #if 0
 		out8(0xFF, dev->base_addr + EN1_MULT_SHIFT(i));
 #endif
 	}
-	memcpy(dev->dev_addr, addr, ETHER_ADDR_LEN);
+	memcpy(dev->dev_addr, addr, ETH_ALEN);
 
 	return ENOERR;
 }
@@ -409,7 +415,7 @@ static int unit_init(void) {
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 
-	nic = alloc_etherdev(0);
+	nic = etherdev_alloc();
 	if (nic == NULL) {
 		LOG_ERROR("Couldn't alloc netdev for NE2000 PCI\n");
 		return -ENOMEM;
@@ -423,5 +429,5 @@ static int unit_init(void) {
 		return res;
 	}
 
-	return register_netdev(nic);
+	return netdev_register(nic);
 }

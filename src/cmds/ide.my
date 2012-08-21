@@ -1,0 +1,26 @@
+package embox.cmd
+
+@Cmd(name = "ide",
+	help = "Check IDE drive",
+	man = '''
+		NAME
+			ide - check IDE drive
+		SYNOPSIS
+			ide
+		DESCRIPTION
+			ide scan ports and find ide drives
+		OPTIONS
+			none
+		AUTHOR
+			Andrey Gazukin
+	''')
+module ide {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "ide.c"
+
+	depends embox.driver.ata
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}

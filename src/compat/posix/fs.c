@@ -25,14 +25,13 @@
 #include <fs/file_desc.h>
 #include <util/array.h>
 
-#include <kernel/prom_printf.h>
 
 node_t *create_filechain(const char *path, uint8_t node_type){
 	int count_dir;
 	file_create_param_t param;
 	fs_drv_t *drv;
 	node_t *node, *new_node;
-	char tail[CONFIG_MAX_LENGTH_FILE_NAME];
+	char tail[MAX_LENGTH_FILE_NAME];
 
 	count_dir = 0;
 	tail[0] = '\0';
@@ -47,6 +46,7 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 	} while (NULL == (node = vfs_find_node(param.path, NULL)));
 	/* check drv of parents */
 	drv = node->fs_type;
+	assert(drv != NULL);
 	if (NULL == drv->fsop->create_file) {
 		LOG_ERROR("fsop->create_file is NULL handler\n");
 		return NULL;
@@ -60,6 +60,7 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 			return NULL;
 		}
 
+		new_node->fs_type = node->fs_type;
 		new_node->properties = DIRECTORY_NODE_TYPE;
 		if ((LAST_IN_PATH == count_dir) && (FILE_NODE_TYPE == node_type)) {
 			new_node->properties &= ~DIRECTORY_NODE_TYPE;
@@ -67,7 +68,10 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 
 		param.node = (void *) new_node;
 		param.parents_node = (void *) node;
-		drv->fsop->create_file ((void *)&param);
+		if(0 > drv->fsop->create_file ((void *)&param)) {
+			vfs_del_leaf(new_node);
+			return NULL;
+		}
 
 		node = new_node;
 		count_dir--;
@@ -77,11 +81,11 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 	return node;
 }
 
-int creat(const char *pathname, mode_t mode) {
+int create(const char *pathname, mode_t mode) {
 	node_t *nod;
 
 	if (NULL != (nod = vfs_find_node(pathname, NULL))) {
-		errno = -EBUSY;
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -89,7 +93,7 @@ int creat(const char *pathname, mode_t mode) {
 
 
 	if (NULL == (nod = create_filechain(pathname, FILE_NODE_TYPE))) {
-		errno = -EINVAL;
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -100,7 +104,7 @@ int mkdir(const char *pathname, mode_t mode) {
 	node_t *nod;
 
 	if (NULL != (nod = vfs_find_node(pathname, NULL))) {
-		errno = -EBUSY;
+		errno = EBUSY;
 		return -1;
 	}
 
@@ -108,7 +112,7 @@ int mkdir(const char *pathname, mode_t mode) {
 
 
 	if (NULL == (nod = create_filechain(pathname, DIRECTORY_NODE_TYPE))) {
-		errno = -EINVAL;
+		errno = EINVAL;
 		return -1;
 	}
 
@@ -120,13 +124,13 @@ int remove(const char *pathname) {
 	fs_drv_t *drv;
 
 	if (NULL == (node = vfs_find_node(pathname, NULL))) {
-		errno = -ENOENT;
+		errno = ENOENT;
 		return -1;
 	}
 
 	drv = node->fs_type;
 	if (NULL == drv->fsop->delete_file) {
-		errno = -EINVAL;
+		errno = EINVAL;
 		LOG_ERROR("fsop->delete_file is NULL handler\n");
 		return -1;
 	}
@@ -167,4 +171,3 @@ int fstat(const char *path, stat_t *buf) {
 	struct file_desc *desc;*/
 	return 0;
 }
-

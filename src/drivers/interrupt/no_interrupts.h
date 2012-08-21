@@ -19,4 +19,3 @@ typedef unsigned long __interrupt_mask_t;
 #endif /*__ASSEMBLER__*/
 
 #endif /* DRIVERS_INTERRUPT_NO_INTERRUPTS */
-

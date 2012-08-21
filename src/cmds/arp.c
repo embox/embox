@@ -63,6 +63,10 @@ static int exec(int argc, char **argv) {
 				printf("arp: invalid IP address: %s\n", optarg);
 				return -1;
 			}
+			if (ifdev == NULL) {
+				printf("arp: please first specify the interface\n");
+				return -1;
+			}
 			//TODO checked interface and use default
 			neighbour_delete(ifdev, addr.s_addr);
 			return 0;
@@ -78,6 +82,10 @@ static int exec(int argc, char **argv) {
 			optarg = argv[optind++];
 			if (NULL == macaddr_scan((const unsigned char *) optarg, hwaddr)) {
 				printf("arp: invalid MAC address: %s\n", optarg);
+				return -1;
+			}
+			if (ifdev == NULL) {
+				printf("arp: please first specify the interface\n");
 				return -1;
 			}
 			//TODO checked interface and use default

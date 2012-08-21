@@ -15,19 +15,24 @@
 #include <kernel/irq.h>
 #include <kernel/panic.h>
 #include <util/array.h>
+#include <stdio.h>
 #include <embox/unit.h>
 
-#include <kernel/clock_source.h>
-#include <kernel/clock_event.h>
-#include <kernel/ktime.h>
+#include <kernel/time/clock_source.h>
+#include <kernel/time/ktime.h>
 
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ0               0x0
 
 #define PIT_HZ 1000
-static void pit_clock_setup(uint32_t mode);
+static int pit_clock_setup(struct time_dev_conf * conf);
+static int pit_clock_init(void);
 
-EMBOX_UNIT_INIT(pit_clock_init);
+static struct clock_source pit_clock_source;
+static struct time_event_device pit_event_device;
+static struct time_counter_device pit_counter_device;
+
+//EMBOX_UNIT_INIT(pit_clock_init);
 
 /**
  * The PIT chip uses the following I/O ports:
@@ -82,69 +87,61 @@ EMBOX_UNIT_INIT(pit_clock_init);
 #define PIT_16BIT       0x30    /* r/w counter 16 bits, LSB first */
 #define PIT_BCD         0x01    /* count in BCD */
 
-static cycle_t i8253_read(const struct cyclecounter *cc) {
+static cycle_t i8253_read(void) {
 	int cnt;
-	uint32_t ticks;
 
-	ticks = clock_sys_ticks();
 	out8(0x00, MODE_REG);
 	cnt = in8(CHANNEL0);
 	cnt |= in8(CHANNEL0) << 8;
 
-	cnt = (((INPUT_CLOCK + PIT_HZ / 2) / PIT_HZ) - 1) - cnt;
+	cnt = ((INPUT_CLOCK + PIT_HZ ) / PIT_HZ) - cnt;
 
-	return (cycle_t)(ticks * (INPUT_CLOCK + PIT_HZ / 2) / PIT_HZ) + cnt;
+	return cnt;
 }
 
-static struct cyclecounter cc = {
+static irq_return_t clock_handler(int irq_nr, void *dev_id) {
+        clock_tick_handler(irq_nr, dev_id);
+        return IRQ_HANDLED;
+}
+
+static struct time_event_device pit_event_device = {
+	.config = pit_clock_setup,
+	.resolution = PIT_HZ,
+	.irq_nr = IRQ0,
+	.pending = i8259_irq_pending
+};
+
+static struct time_counter_device pit_counter_device = {
 	.read = i8253_read,
-	.mult = 1,
-	.shift = 0
+	.resolution = INPUT_CLOCK
 };
 
 static struct clock_source pit_clock_source = {
-	.flags = 0, /* this flag will be set to correct value by set_mod function */
-	.resolution = INPUT_CLOCK,
-	.cc = &cc
-};
-
-static const struct clock_event_device pit_device = {
 	.name = "pit",
-	.set_mode = pit_clock_setup,
-	.cs = &pit_clock_source,
-	.resolution = PIT_HZ
+	.event_device = &pit_event_device,
+	.counter_device = &pit_counter_device,
+	.read = clock_source_read /* attach default read function */
 };
 
-CLOCK_EVENT_DEVICE(&pit_device);
-
-static irq_return_t clock_handler(int irq_nr, void *dev_id) {
-	clock_tick_handler(irq_nr, dev_id);
-	return IRQ_HANDLED;
-}
+EMBOX_UNIT_INIT(pit_clock_init);
 
 static int pit_clock_init(void) {
+	pit_clock_setup(NULL);
+	clock_source_register(&pit_clock_source);
+
 	if (ENOERR != irq_attach((irq_nr_t) IRQ0,
 		(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
 		panic("pit timer irq_attach failed");
 	}
-	/* Initialization and registration of clock source structure */
-	pit_clock_source.flags = 1;
-	pit_clock_source.resolution = INPUT_CLOCK;
-	pit_clock_source.cc = &cc;
-	clock_source_register(&pit_clock_source);
 
-	/* Calculate mult/shift constants to set clock_source used by timer */
-	clock_events_calc_mult_shift(&pit_device, INPUT_CLOCK, 0);
-
-	/* Setup initial mode to allow to use timer immediately after initialization
-	 * of this module */
-	pit_clock_setup(PIT_RATEGEN);
-
-	return 0;
+	return ENOERR;
 }
 
-static void pit_clock_setup(uint32_t mode) {
+static int pit_clock_setup(struct time_dev_conf * conf) {
 	uint32_t divisor = (INPUT_CLOCK + PIT_HZ / 2) /PIT_HZ;
+
+	pit_clock_source.flags = 1;
+
 	/* Propose switch by all modes in future */
 	/* Set control byte */
 	out8(PIT_RATEGEN | PIT_16BIT | PIT_SEL0, MODE_REG);
@@ -152,4 +149,6 @@ static void pit_clock_setup(uint32_t mode) {
 	/* Send divisor */
 	out8(divisor & 0xFF, CHANNEL0);
 	out8((divisor >> 8) & 0xFF, CHANNEL0);
+
+	return ENOERR;
 }

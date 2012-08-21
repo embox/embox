@@ -83,7 +83,7 @@ static int scanchar(char **str) {
 	} if ((int)str == 1) {
 	    return getc(file);
 	} else {
-		if ('\r' == (ch = getchar())) {
+		if ('\n' == (ch = getchar())) {
 			return EOF;
 		}
 		return ch;

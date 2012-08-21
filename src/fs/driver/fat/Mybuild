@@ -1,0 +1,14 @@
+package embox.fs.driver
+
+module fat {
+	source "fat.c"
+	source "fatfs_subr.c"
+	option number inode_quantity=64
+	option number fat_descriptor_quantity=4
+
+	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.driver.devfs
+	depends embox.mem.page_api
+	depends embox.mem.pool
+}
+

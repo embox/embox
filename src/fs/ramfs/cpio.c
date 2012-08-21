@@ -5,13 +5,13 @@
  * @date 29.09.10
  * @author Nikolay Korotky
  */
+#include <stdlib.h>
+#include <string.h>
 
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
-#include <lib/list.h>
 #include <cpio.h>
-#include <stdlib.h>
-#include <string.h>
+
 
 /**
  * The pathname is followed by NUL bytes so that the total size of the fixed
@@ -68,7 +68,7 @@ static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
 int cpio_unpack(void) {
 	extern char _ramfs_start, _ramfs_end;
 	cpio_newc_header_t *cpio_h, *cpio_next;
-	char buff_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	char buff_name[MAX_LENGTH_FILE_NAME];
 
 	if (&_ramfs_end == &_ramfs_start) {
 		printk("No available initramfs\n");

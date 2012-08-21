@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <framework/example/self.h>
 
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 
 #define TEST_TIMER_TICKS 100 /* 100ms */
 

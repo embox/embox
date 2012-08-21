@@ -56,4 +56,3 @@ TEST_CASE(""){
 
 	test_assert(count_first < count_second);
 }
-

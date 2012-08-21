@@ -51,4 +51,3 @@ extern void show_log(unsigned int count, bool *disp_types);
 																							func_name, LT_WARNING)
 
 #endif
-

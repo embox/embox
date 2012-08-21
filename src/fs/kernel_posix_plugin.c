@@ -8,54 +8,42 @@
  */
 
 #include <kernel/task.h>
+#include <kernel/task/idx.h>
 #include <util/array.h>
 #include <stdio.h>
 #include <fcntl.h>
 
-extern const struct task_res_ops * __task_res_ops[];
+#include <fs/posix.h>
 
-static int this_open(const char *path, int __oflag, va_list args) {
-	char mode;
-	if ((O_RDWR == __oflag) || (O_WRONLY == __oflag)) {
-		mode = 'w';
-	}
-	else {
-		mode = 'r';
-	}
-	return task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_FILE, fopen(path, (const char *) &mode));
-}
-
-static int this_close(int fd) {
-	FILE *file = (FILE *) task_self_idx_get(fd)->data;
+static int this_close(void *data) {
+	FILE *file = (FILE *) data;
 	return fclose(file);
 }
 
-static ssize_t this_read(int fd, const void *buf, size_t nbyte) {
-	FILE *file = (FILE *) task_self_idx_get(fd)->data;
-	return fread((void *) buf, 1, nbyte, file);
+static ssize_t this_read(void *data, void *buf, size_t nbyte) {
+	FILE *file = (FILE *) data;
+	return fread(buf, 1, nbyte, file);
 }
 
-static ssize_t this_write(int fd, const void *buf, size_t nbyte) {
-	FILE *file = (FILE *) task_self_idx_get(fd)->data;
+static ssize_t this_write(void *data, const void *buf, size_t nbyte) {
+	FILE *file = (FILE *) data;
 	return fwrite(buf, 1, nbyte, file);
 }
 
-static int this_lseek(int fd, long int offset, int origin) {
-	FILE *file = (FILE *) task_self_idx_get(fd)->data;
+static int this_lseek(void *data, long int offset, int origin) {
+	FILE *file = (FILE *) data;
 	return fseek(file, offset, origin);
 }
 
-static int this_ioctl(int fd, int request, va_list args) {
-	return fioctl(task_self_idx_get(fd)->data, request, args);
+static int this_ioctl(void *data, int request, va_list args) {
+	FILE *file = (FILE *) data;
+	return fioctl(file, request, args);
 }
-static struct task_res_ops ops = {
-	.type  = TASK_IDX_TYPE_FILE,
-	.open  = this_open,
+
+const struct task_idx_ops task_idx_ops_file = {
 	.close = this_close,
 	.read  = this_read,
 	.write = this_write,
 	.fseek = this_lseek,
 	.ioctl = this_ioctl,
 };
-
-ARRAY_SPREAD_ADD(__task_res_ops, &ops);

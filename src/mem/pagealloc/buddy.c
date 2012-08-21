@@ -41,7 +41,7 @@ extern char *_heap_end;
 # define HEAP_END_PTR		_heap_end
 
 #define PAGE_QUANTITY \
-	( (((size_t) HEAP_END_PTR - (size_t) HEAP_START_PTR) ) / CONFIG_PAGE_SIZE )
+	( (((size_t) HEAP_END_PTR - (size_t) HEAP_START_PTR) ) / PAGE_SIZE() )
 
 #define SET_BIT1(ind,bit) set_bits( ind , get_bits(ind) | (bit) )
 #define SET_BIT0(ind,bit) set_bits( ind , get_bits(ind) & (255^(bit)) )
@@ -88,7 +88,7 @@ static inline char get_bits(taddr addr) {
 static int dfs_init(taddr addr, char * ptr, size_t size) {
 	int marked = 0;
 
-	if ((ptr + (size * CONFIG_PAGE_SIZE)) <= HEAP_END_PTR) {
+	if ((ptr + (size * PAGE_SIZE())) <= HEAP_END_PTR) {
 		/* block is in heap */
 		set_bits(addr, 0);
 	} else {
@@ -105,7 +105,7 @@ static int dfs_init(taddr addr, char * ptr, size_t size) {
 			marked = 1;
 		}
 		/* initialize right subtree */
-		if (dfs_init(2 * addr + 1, ptr + CONFIG_PAGE_SIZE * size / 2, size / 2)) {
+		if (dfs_init(2 * addr + 1, ptr + PAGE_SIZE() * size / 2, size / 2)) {
 			SET_BIT1( addr , 2 );
 			marked = 1;
 		}
@@ -127,9 +127,9 @@ static int page_alloc_init(void) {
 	sizeoftree = 2 * rootblocksize; /* one byte for one page (no bit pack) */
 
 	/* (sizeoftree - 1) / 0x1000 + 1 // quantity of pages for tree */
-	qpt = ((sizeoftree - 1) / CONFIG_PAGE_SIZE + 1);
+	qpt = ((sizeoftree - 1) / PAGE_SIZE() + 1);
 
-	heap_start = (HEAP_START_PTR) + CONFIG_PAGE_SIZE * qpt;
+	heap_start = (HEAP_START_PTR) + PAGE_SIZE() * qpt;
 	sizeofpool = PAGE_QUANTITY - qpt;
 
 	maxblocksize = rootblocksize == sizeofpool ? rootblocksize : rootblocksize
@@ -146,7 +146,7 @@ static void * taddr_to_ptr(taddr addr) {
 
 	for (; addr < rootblocksize; addr *= 2)
 		;
-	return heap_start + (addr - rootblocksize) * CONFIG_PAGE_SIZE;
+	return heap_start + (addr - rootblocksize) * PAGE_SIZE();
 }
 
 /**
@@ -161,7 +161,7 @@ static inline int is_avail(taddr addr) {
  */
 static inline int in_heap(taddr addr, size_t length) {
 	return (((unsigned long) taddr_to_ptr(addr) + (unsigned long) length
-			* CONFIG_PAGE_SIZE) <= (unsigned long) HEAP_END_PTR);
+			* PAGE_SIZE()) <= (unsigned long) HEAP_END_PTR);
 }
 
 /**
@@ -228,9 +228,9 @@ void * page_alloc(size_t size) {
 void page_free(void * ptr, size_t size) {
 	taddr parent, before, addr;
 	// TODO addr and addr, wtf? -- sikmir, Eldar
-	addr = ((size_t) ptr - (size_t) heap_start) / CONFIG_PAGE_SIZE;
+	addr = ((size_t) ptr - (size_t) heap_start) / PAGE_SIZE();
 	addr = rootblocksize + ((size_t) ptr - (size_t) heap_start)
-			/ CONFIG_PAGE_SIZE;
+			/ PAGE_SIZE();
 	/* in OLD version was different and WORK!!! */
 	for (before = 0; (addr > 0) && (!get_bits(addr)) && !(before & 1); addr
 			= (before = addr) >> 1)

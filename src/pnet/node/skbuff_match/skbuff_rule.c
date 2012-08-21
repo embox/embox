@@ -23,12 +23,12 @@ match_rule_t pnet_rule_alloc(void) {
 	match_rule_t rule = (match_rule_t) objalloc(&match_rules);
 
 	/* alloc memory only for header */
-	skb = alloc_skb(MAX_PACK_HEADER_SIZE, 0);
+	skb = skb_alloc(MAX_PACK_HEADER_SIZE);
 
 	rule->skbuf = skb;
-	/* FIXME mac.raw initialized in alloc_skb. I think nh.raw also is uniquely determined.
+	/* FIXME mac.raw initialized in skb_alloc. I think nh.raw also is uniquely determined.
 	 * But now we initialize it in net/core/net_entry.c. So, temporary I suppose
-	 * that is no initialization of nh in alloc_skb() --Alexander */
+	 * that is no initialization of nh in skb_alloc() --Alexander */
 	rule->skbuf->nh.raw = rule->skbuf->mac.raw + ETH_HEADER_SIZE;
 
 	/* Fill data with 255 per byte. It means '*', i.e. any value is suitable. */
@@ -46,6 +46,6 @@ void pnet_rule_free(match_rule_t rule) {
 	if (NULL == rule) {
 		return;
 	}
-	kfree_skb(rule->skbuf);
+	skb_free(rule->skbuf);
 	objfree(&match_rules, rule);
 }

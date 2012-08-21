@@ -49,22 +49,17 @@ typedef struct ip_options {
  * @brief Representation of INET sockets (FixMe)
  *
  * @var sk - ancestor class
- * @var pinet6 - pointer to IPv6 control block
  * @var daddr - Foreign IPv4 addr
  * @var rcv_saddr - Bound local IPv4 addr
+ * @var opt - IPv4 options
  * @var dport - Destination port
+ * @var sport - Source port
  * @var num - Local port
  * @var saddr - Sending source
  * @var uc_ttl - Unicast TTL
- * @var sport - Source port
  * @var id - ID counter for DF pkts
  * @var tos - TOS
  * @var mc_ttl - Multicasting TTL
- * @var is_icsk - is this an inet_connection_sock?
- * @var mc_index - Multicast device index
- * @var mc_list - Group array
- * @var cork - info to build ip hdr on each ip frag while socket is corked
- * @var port_type - identificator
  */
 typedef struct inet_sock {
 	/* sk have to be the first member of inet_sock */
@@ -75,8 +70,9 @@ typedef struct inet_sock {
 	struct ip_options *opt;
 	__be16         dport;
 	__be16         sport;
-	__u16          sport_type;
+#if 0
 	__u16          num;
+#endif
 	in_addr_t      saddr;
 	__s16          uc_ttl;
 	__u16          id;

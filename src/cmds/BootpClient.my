@@ -1,0 +1,19 @@
+package embox.cmd
+
+@Cmd(name = "bootp-client",
+	help = "BOOTP client. Set IP address specified  by server",
+	man = '''
+		NAME
+			bootp-client - BOOTP client. Set IP address specified by server.
+		SYNOPSIS
+			bootp-client server
+		DESCRIPTION
+			TODO
+		AUTHORS
+			Alexander Kalmuk
+	''')
+
+module bootp {
+	source "bootp-client.c"
+	depends embox.net.bootp
+}

@@ -1,18 +1,20 @@
 package embox.mem
 
-abstract module page_api { }
+abstract module page_api {
+	option number page_size=4096
+}
 
 module bitmask extends page_api {
 	source "bitmask.c"
-	//source "../heap.lsd.S"
+	depends heap_lds
 }
 
 module buddy extends page_api {
 	source "buddy.c"
-	//source "../heap.lsd.S"
+	depends heap_lds
 }
 
 module almostbuddy extends page_api {
 	source "almostbuddy.c"
-	//source "../heap.lsd.S"
+	depends heap_lds
 }

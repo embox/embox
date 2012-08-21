@@ -11,7 +11,7 @@
  */
 
 #include "console.h"
-#include <kernel/diag.h>
+#include <prom/diag.h>
 #include <string.h>
 #include <drivers/terminal.h>
 

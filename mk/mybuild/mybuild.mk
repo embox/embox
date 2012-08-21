@@ -25,8 +25,6 @@ checkers_list := \
 	Mybuild.optionCheckConstraints
 
 
-
-
 # Args:
 # 	1. Cheking instances
 # 	2. Checkers list
@@ -93,7 +91,12 @@ define class-Mybuild
 			$(set-field build->issueReceiver,$(issueReceiver))
 			$(set issueReceiver,$(issueReceiver))
 
+			$(invoke includeMandatoryModules)
 			$(invoke includeAllBuildModules)
+
+			$(silent-for f <- $(builders_list),
+				$(set-field+ current_builders_list,$f)
+				$(call $(f),$(invoke listBuildModules)))
 
 			$(if $(call check,$(invoke listBuildModules),
 				$(checkers_list)),)
@@ -124,26 +127,28 @@ define class-Mybuild
 				$(call check,$(inst),$(get-field current_builders_list)))
 			$(inst)))
 
+	$(method includeMandatoryModules,
+		$(silent-for \
+			mandatory <- $(call mybuild_resolve_or_die,mybuild.lang.Mandatory),
+			module <- $(get $(invoke $(invoke __myfile_resource_set->
+				resources>contentsRoot>eContentsOfType,
+				$(MyFile_ModuleType))
+					.getAnnotationsOfType,$(mandatory))
+						.target),
+			$(invoke moduleInstance,$(module))))
 
 	# Gets all modulesInstance's created according configResourceSet
 	#
 	# Context:
 	#   'configuration'
 	#   'issueReceiver'
-	# Return:
-	#	List of avaible moduleInstances. Some of them may not be created, then
-	#	issue will be created
 	$(method includeAllBuildModules,
 		$(silent-for \
 			cfgUnverifiedInclude <- $(get configuration->includes),
 			cfgInclude <- $(invoke annotationProcess,$(cfgUnverifiedInclude)),
 			module <- $(invoke annotationProcess,$(get cfgInclude->module)),
 			inst <- $(invoke moduleInstance,$(module)),
-			$(set inst->includeMember,$(cfgInclude)))
-
-		$(silent-for f <- $(builders_list),
-			$(set-field+ current_builders_list,$f)
-			$(call $(f),$(invoke listBuildModules))))
+			$(set inst->includeMember,$(cfgInclude))))
 
 	$(method listBuildModules,
 		$(call selectUnique,,
@@ -512,7 +517,7 @@ define class-Mybuild
 						$(map-set includingInstances/$(mod),$(depMod))
 
 						$(if $(invoke chkCyclic,$(depMod)),
-							$(call $0,$(depInst),$2   ))
+							$(call $0,$(depInst)))
 
 						$(map-set includingInstances/$(mod),)
 						$(map-set includingInstancesChecked/$(depMod),1)
@@ -535,14 +540,16 @@ define mybuild_get_active_configuration
 		$(get root->configuration))
 endef
 
-define allModules
-	$(sort \
-		$(for \
-			resource <- $(get __myfile_resource_set->resources),
-			obj <- $(get resource->contents),
-			$(if $(invoke MyFile_ModuleType->isInstance,$(obj)),
-				$(obj))))
-endef
+# Resolves an instance of ENamedObject typed exported by myfiles model.
+#   1. Qualified name.
+# Return:
+#   Resolved instance, if any.
+mybuild_resolve = \
+	$(invoke __myfile_resource_set->resolve,$1)
+
+mybuild_resolve_or_die = \
+	$(or $(mybuild_resolve), \
+		$(error Couldn't resolve Object '$1'))
 
 define printInstance
 	$(for inst<-$1,

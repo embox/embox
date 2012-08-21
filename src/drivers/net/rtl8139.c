@@ -14,6 +14,7 @@
 #include <drivers/pci.h>
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
+#include <net/if_ether.h>
 #include <net/in.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
@@ -45,7 +46,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 		dev->base_addr + RTL8139_TX_STAT_0 + (entry * 4));
 	cur_tx++;
 
-	kfree_skb(skb); /* free packet */
+	skb_free(skb); /* free packet */
 	return ENOERR;
 }
 
@@ -74,7 +75,7 @@ static void rtl8139_rx(struct net_device *dev) {
 		uint16_t rx_size =  *(uint16_t *) (buf_ptr + 2);
 		uint16_t pkt_len = rx_size - 4;
 
-		skb = alloc_skb(pkt_len, 0);
+		skb = skb_alloc(pkt_len);
 		assert(skb);
 		wrap_copy(skb->mac.raw, rx_buf, (ring_offset + 4) % RX_BUF_SIZE, skb->len);
 		skb->dev = dev;
@@ -140,7 +141,7 @@ static int open(struct net_device *dev) {
 		out8(0xFF, dev->base_addr + RTL8139_MAR0 + i);
 	}
 
-	for (int i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (int i = 0; i < ETH_ALEN; i++) {
 		dev->dev_addr[i] = in8(dev->base_addr + RTL8139_MAC0);
 	}
 
@@ -181,10 +182,10 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 		return -EINVAL;
 	}
 
-	for (size_t i = 0; i < ETHER_ADDR_LEN; i++) {
+	for (size_t i = 0; i < ETH_ALEN; i++) {
 		out8(*((uint8_t *) addr + i), dev->base_addr + RTL8139_MAR0 + i);
 	}
-	memcpy(dev->dev_addr, addr, ETHER_ADDR_LEN);
+	memcpy(dev->dev_addr, addr, ETH_ALEN);
 
 	return ENOERR;
 }
@@ -212,7 +213,7 @@ static int unit_init(void) {
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 
-	nic = alloc_etherdev(0);
+	nic = etherdev_alloc();
 	if (nic == NULL) {
 		LOG_ERROR("Couldn't alloc netdev for RTL8139 PCI\n");
 		return -ENOMEM;
@@ -226,5 +227,5 @@ static int unit_init(void) {
 		return res;
 	}
 
-	return register_netdev(nic);
+	return netdev_register(nic);
 }

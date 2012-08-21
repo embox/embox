@@ -1,9 +1,8 @@
-/*FIXME mybuild couldn't add linker script */
-/*FIXME mybuild how to exclude include folder */
 package embox.arch.x86
 
 module lds extends embox.arch.lds {
 	source "embox.lds.S"
+	option number stack_size=65536
 }
 
 module cpu extends embox.arch.cpu {

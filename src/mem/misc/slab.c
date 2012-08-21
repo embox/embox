@@ -17,8 +17,10 @@
 #include <lib/list.h>
 #include <util/binalign.h>
 //#include <kernel/printk.h>
+
 #include <mem/misc/slab.h>
 #include <mem/page.h>
+#include <mem/heap.h>
 #include <framework/mod/member/ops.h>
 
 /**
@@ -48,7 +50,7 @@ extern char _heap_end;
 #define HEAP_START_PTR         (&_heap_start)
 #define HEAP_END_PTR           (&_heap_end)
 
-static page_info_t pages[CONFIG_HEAP_SIZE / CONFIG_PAGE_SIZE];
+static page_info_t pages[HEAP_SIZE() / PAGE_SIZE()];
 
 /* macros to finding the cache and slab which an obj belongs to */
 #define SET_PAGE_CACHE(pg, x)  ((pg)->list.next = (struct list_head *)(x))
@@ -84,14 +86,14 @@ void print_slab_info(cache_t *cachep, slab_t *slabp) {
 /* return information about page which an object belongs to */
 static page_info_t* virt_to_page(void *objp) {
 	unsigned int index = ((unsigned int) objp - (unsigned int) HEAP_START_PTR)
-			/ CONFIG_PAGE_SIZE;
+			/ PAGE_SIZE();
 	return &(pages[index]);
 }
 
 /* main cache which will contain another descriptors of caches */
 cache_t cache_chain = {
 	.name = "__cache_chain",
-	.num  = (CONFIG_PAGE_SIZE * CACHE_CHAIN_SIZE
+	.num  = (PAGE_SIZE() * CACHE_CHAIN_SIZE
 				- binalign_bound(sizeof(slab_t), 4))
 				/ binalign_bound(sizeof(cache_t), 4),
 	.obj_size = binalign_bound(sizeof(cache_t), sizeof(struct list_head)),
@@ -189,7 +191,7 @@ static int cache_grow(cache_t *cachep) {
 static void cache_estimate(unsigned int gfporder, size_t size,
 		size_t *left_over, unsigned int *num) {
 	int count;
-	size_t wastage = CONFIG_PAGE_SIZE << gfporder; /* total size being asked for */
+	size_t wastage = PAGE_SIZE() << gfporder; /* total size being asked for */
 	size_t base = 0;
 
 	base = sizeof(slab_t);
@@ -230,7 +232,7 @@ int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 			continue;
 		}
 
-		if (left_over * MAX_INT_FRAGM_ORDER <= CONFIG_PAGE_SIZE
+		if (left_over * MAX_INT_FRAGM_ORDER <= PAGE_SIZE()
 				<< cachep->slab_order)
 			break; /* Acceptable internal fragmentation. */
 
@@ -265,7 +267,7 @@ cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 	cache_t *cachep;
 
 	if (!name || strlen(name) >= __CACHE_NAMELEN - 1 || obj_size <= 0
-			|| obj_size >= CONFIG_PAGE_SIZE << MAX_OBJ_ORDER)
+			|| obj_size >= PAGE_SIZE() << MAX_OBJ_ORDER)
 		return NULL;
 
 	if (!(cachep = (cache_t *) cache_alloc(&cache_chain))) {

@@ -75,7 +75,9 @@ excep_stub:
 	mov	    %esp, %ebp		/* Save current stack */
 	pushl   %ebp            /* first parameter struct pt_regs *regs */
 
+	.global exception_handler_call_pointer
 	call    exception_handler
+exception_handler_call_pointer:
 
 	movl    %ebp, %esp		/* Restore original stack */
 	add	$8, %esp
@@ -96,7 +98,10 @@ irq_stub:
 
 	mov	    %esp, %ebp		/* Save current stack */
 	pushl   %ebp            /* first parameter struct pt_regs *regs */
+
+	.global irq_handler_call_pointer
 	call    irq_handler
+irq_handler_call_pointer:
 
 	movl    %ebp, %esp		/* Restore original stack */
 	add	$(8), %esp

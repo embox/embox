@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 #include <unistd.h>
-#include <util/math.h>
+#include <stdlib.h>
 #include <time.h>
 #include <kernel/thread/api.h>
 
@@ -24,7 +24,6 @@ EMBOX_TEST_SUITE("sleep suite");
  */
 
 TEST_CASE("one sleep") {
-	/* TODO: change uint32_t to system time_t type */
 	clock_t cur_time, epsilon;
 
 	cur_time = clock();
@@ -67,7 +66,6 @@ TEST_CASE("simple multi-threaded check") {
  * run NUM_THREADS threads and with progressive time to sleep
  * after execute buffer2 must be "87654321"
  */
-
 static void * handler2(void* args) {
 	usleep(TIME_TO_SLEEP * (NUM_THREADS - (uint32_t) args) + 1);
 	test_emit('1' + (uint32_t) args);

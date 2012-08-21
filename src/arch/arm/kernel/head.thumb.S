@@ -27,30 +27,21 @@
     .align 4
 
     .global start
-;.extern irq_handler
 
 .type reset_handler, %function
 .type undef_handler, %function
 .type hard_fault, %function
 
+.global trap_table_start
+.global trap_table_end
+
 .section .trap_table, "x"
+trap_table_start:
     .word _stack_top
     .word reset_handler
     .word undef_handler
     .word hard_fault
-    .word undef_handler
-    .word undef_handler
-    .word undef_handler
-    .word undef_handler
-    .word undef_handler
-    .word undef_handler
-    .word undef_handler
-    .word undef_handler
-    .word undef_handler
-    .word undef_handler
-    .word undef_handler
-    .word clock_handler
-
+trap_table_end:
 
 /* stubs */
 undef_handler:

@@ -19,7 +19,7 @@
 #include <pnet/graph.h>
 
 #include <framework/example/self.h>
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 EMBOX_EXAMPLE(match_example);
 
 static int match_example(int argc, char **argv) {

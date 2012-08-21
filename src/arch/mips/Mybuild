@@ -1,0 +1,10 @@
+package embox.arch.mips
+
+module lds extends embox.arch.lds {
+	source "embox.lds.S"
+	option number stack_size=65536
+}
+
+module cpu extends embox.arch.cpu {
+	source "include/asm/hal/ipl.h"
+}

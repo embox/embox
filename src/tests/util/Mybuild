@@ -39,12 +39,6 @@ module tree_set_test {
 	depends embox.framework.LibFramework
 }
 
-module math_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "math_test.c"
-	depends embox.framework.LibFramework
-}
-
 module ring_buff_test {
 	source "ring_buff_test.c"
 
@@ -73,3 +67,4 @@ module priority_q_test {
 	depends embox.util.LibUtil
 	depends embox.framework.LibFramework
 }
+

@@ -86,6 +86,7 @@ void macaddr_print(unsigned char *buf, const unsigned char *addr) {
 	    addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]);
 }
 
+#if 0
 int is_addr_from_net(const unsigned char *uip, const unsigned char *nip, unsigned char msk) {
 	const unsigned shift = 0xFFFFFFFF;
 	struct in_addr addr;
@@ -102,3 +103,4 @@ int is_addr_from_net(const unsigned char *uip, const unsigned char *nip, unsigne
 
 	return (__bswap_32(netip) & shiftMask) == (__bswap_32(userip) & shiftMask) ? 0 : -1;
 }
+#endif

@@ -43,7 +43,7 @@
 #include <asm/io.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <hal/reg.h>
 #include <fs/node.h>
 #include <kernel/file.h>
@@ -147,7 +147,7 @@ int tty_posix_console_diag_init(void)
 		return -1;
 	}
 	node = (node_t*) f0;
-	cons = (console_t *)node->attr;
+	cons = (console_t *)node->dev_attr;
 
 	fk = fopen("/dev/kbd", "r");
 	if (NULL == fk) {
@@ -191,14 +191,14 @@ int tty_posix_console_diag_init(void)
  * @return console_t*
  *
  * fname could be 'console'
- * nod->attr - will be used for console_t* !!!
+ * nod->dev_attr - will be used for console_t* !!!
  */
 static void *open_factory(const char *fname, const char *_mode) {
 //	struct tty *tp;
 //	int line;
 	node_t * node_factory;
 	node_t * node_line;
-	char node_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	char node_name[MAX_LENGTH_FILE_NAME];
 	console_t *cons;
 
 	if (strcmp(strupr((char *)mode),"W") != 0)
@@ -217,7 +217,7 @@ static void *open_factory(const char *fname, const char *_mode) {
 			node_line 				= vfs_add_path(node_name,node_factory);
 			node_line->file_info 	= (void*) &file_op;
 			cons 					= &cons_table[i];
-			node_line->attr 		= cons;
+			node_line->dev_attr		= cons;
 			cons->cons_line			= i;
 			node_line->fs_type 		= &devfs_drv;
 		}
@@ -243,14 +243,14 @@ static int ioctl_factory(void *file, int request, va_list args) {
  * @return console_t*
  *
  * fname could be '0'...'4'
- * nod->attr - will be used for console_t* !!!
+ * nod->dev_attr - will be used for console_t* !!!
  */
 static void *open(const char *fname, const char *_mode) {
 	struct tty *tp;
 	int line;
 	node_t * node_factory;
 	node_t * node_line;
-	char node_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	char node_name[MAX_LENGTH_FILE_NAME];
 	console_t *cons;
 	char *p_path;
 
@@ -273,7 +273,7 @@ static void *open(const char *fname, const char *_mode) {
 		return NULL;
 
 	// link both together
-	cons = node_line->attr;
+	cons = node_line->dev_attr;
 	tp = getTTY_Cons(line);
 	cons->c_tty = tp;
 	tp->tty_priv = cons;
@@ -311,7 +311,7 @@ static int getLine(const char* fname) {
 static console_t* getConsole(void* file) {
 	node_t * node_line = file;
 
-	return (console_t*) node_line->attr;
+	return (console_t*) node_line->dev_attr;
 }
 /**
  * get tty structure
@@ -1265,4 +1265,3 @@ static void vid_mem_copy(unsigned src, u16_t * dst, unsigned count)
 		*(dst + i) = *((u16_t*)vid_base + src + i);
 	}
 }
-

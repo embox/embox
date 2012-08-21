@@ -21,7 +21,7 @@ extern char *_heap_end;
 
 
 #define PAGE_QUANTITY ((((size_t)HEAP_END_PTR - \
-			(size_t)HEAP_START_PTR)) / CONFIG_PAGE_SIZE)
+			(size_t)HEAP_START_PTR)) / PAGE_SIZE())
 
 typedef size_t taddr; /* addres in tree */
 static char* heap_start;     /* real heap_start */
@@ -46,7 +46,7 @@ static char get_bits(taddr addr) {
  * Mark block if it isn't in heap.
  */
 static void rec_init(taddr addr, char *ptr, size_t size) {
-	if ((ptr + (size * CONFIG_PAGE_SIZE)) <= HEAP_END_PTR) {
+	if ((ptr + (size * PAGE_SIZE())) <= HEAP_END_PTR) {
 		set_bits(addr, 0);
 	} else {
 		set_bits(addr, 1);
@@ -54,7 +54,7 @@ static void rec_init(taddr addr, char *ptr, size_t size) {
 	if (size > 1) {
 		rec_init(2 * addr, ptr, size / 2);
 		rec_init(2 * addr + 1,
-			ptr + CONFIG_PAGE_SIZE * size / 2, size / 2);
+			ptr + PAGE_SIZE() * size / 2, size / 2);
 	}
 }
 
@@ -82,9 +82,9 @@ static int page_alloc_init(void) {
 	// sizeoftree = maxblocksize / 4;
 
 	/* (sizeoftree - 1) / 0x1000 + 1 // quantity of pages for tree */
-	qpt = ((sizeoftree - 1) / CONFIG_PAGE_SIZE + 1);
+	qpt = ((sizeoftree - 1) / PAGE_SIZE() + 1);
 
-	heap_start = (HEAP_START_PTR) + CONFIG_PAGE_SIZE * qpt;
+	heap_start = (HEAP_START_PTR) + PAGE_SIZE() * qpt;
 	sizeofpool = PAGE_QUANTITY - qpt;
 
 	rec_init(1, heap_start, maxblocksize);
@@ -97,7 +97,7 @@ static int page_alloc_init(void) {
 static void *taddr_to_ptr(taddr addr) {
 	//taddr saddr = addr;
 	for ( ; addr < maxblocksize; addr *= 2);
-	return heap_start + (addr - maxblocksize) * CONFIG_PAGE_SIZE;
+	return heap_start + (addr - maxblocksize) * PAGE_SIZE();
 }
 
 /**
@@ -195,7 +195,7 @@ void *page_alloc(size_t size) {
  */
 static void robin_taddr(void *ptr) {
 	taddr before = 0; /* for no warinings */
-	taddr saddr = ((size_t)ptr - (size_t)heap_start) / CONFIG_PAGE_SIZE;
+	taddr saddr = ((size_t)ptr - (size_t)heap_start) / PAGE_SIZE();
 	saddr += maxblocksize;
 
 	for ( ; !(saddr & 1) && marked(saddr); saddr = (before = saddr) >> 1);

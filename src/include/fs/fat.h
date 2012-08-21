@@ -10,14 +10,13 @@
 #define FAT_H_
 
 #include <stdint.h>
-#include <fs/ramdisk.h>
+#include <drivers/ramdisk.h>
+#include <embox/block_dev.h>
 
-/*
- * Configurable
- */
-#define MAX_FILE_QUANTITY  64
+
 #define MSDOS_NAME               11
 
+#define ROOT_DIR "/"
 #define DIR_SEPARATOR	'/'	/* character separating directory components*/
 
 /* 32-bit error codes */
@@ -281,9 +280,10 @@ typedef struct fileinfo {
 	uint32_t pointer;			/* current (BYTE) pointer */
 } file_info_t, *p_file_info_t;
 
+
 typedef struct fat_fs_description {
-	ramdisk_params_t * p_device;
-	char root_name[CONFIG_MAX_LENGTH_FILE_NAME];
+	dev_image_t *p_device;
+	uint8_t root_name[MAX_LENGTH_FILE_NAME];
 	vol_info_t vi;
 } fat_fs_description_t;
 
@@ -326,9 +326,12 @@ uint32_t fat_open_file(void *fd, uint8_t *path, uint8_t mode,
 		uint8_t *scratch);
 
 /*
+ * Seek file pointer to a given position
+ */
+void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch);
+
+/*
  *	Read an open file
- *	You must supply a prepopulated FILEINFO as provided by DFS_OpenFile, and a
- *	pointer to a SECTOR_SIZE scratch buffer.
  *	Note that returning DFS_EOF is not an error condition. This function updates the
  *	successcount field with the number of bytes actually read.
  */
@@ -337,8 +340,6 @@ uint32_t fat_read_file(void *fd, uint8_t *scratch,
 
 /*
  *	Write an open file
- *	You must supply a prepopulated FILEINFO as provided by DFS_OpenFile, and a
- *	pointer to a SECTOR_SIZE scratch buffer.
  *	This function updates the successcount field with the number of
  *	bytes actually written.
  */
@@ -346,51 +347,39 @@ uint32_t fat_write_file(void *fd, uint8_t *scratch,
 		uint8_t *buffer, uint32_t *successcount, uint32_t len);
 
 /*
- *	Seek file pointer to a given position
- *	This function does not return status - refer to the fileinfo->pointer value
- *	to see where the pointer wound up.
- *	Requires a SECTOR_SIZE scratch buffer
- */
-void fat_seek(void *fd, uint32_t offset, uint8_t *scratch);
-
-/*
- *	Delete a file
- *	scratch must point to a sector-sized buffer
- */
-uint32_t fat_unlike_file(void *fd, uint8_t *path, uint8_t *scratch);
-
-
-/*
  *	Read a sectors to the buffer
  */
 int fat_read_sector(void *fd, uint8_t *buffer,
 		uint32_t sector, uint32_t count);
-
 /*
  *	Write a sectors from the buffer
  */
 int fat_write_sector(void *fd, uint8_t *buffer,
 		uint32_t sector, uint32_t count);
 
+uint8_t *fat_dir_to_canonical(uint8_t *dest, uint8_t *src, uint8_t dir);
+
+uint8_t *fat_canonical_to_dir(uint8_t *dest, uint8_t *src);
 /*
- *	Create a file or a directory in the filesystem
+ *  Parse filename off the end of the supplied path
  */
-int fatfs_create_file(void *par);
+void get_filename(uint8_t *tmppath, uint8_t *filename);
 
 /*
- *	Create a partition and format it
+ *  Set time for created file
  */
-int fatfs_partition (void *fdes);
-
-
-/*
- * Used functions
- */
-extern int fat_main(const void *name);
+void set_filetime(dir_ent_t *de);
 
 /*
- *	Write a root directory into the filesistem
+ *  Set full path name from root to this node
  */
-int fatfs_root_create(void *fdesc);
+int fatfs_set_path (uint8_t *path, node_t *nod);
+
+/*
+ * Cut mount directory name from path to get the path in file system
+ */
+void cut_mount_dir(uint8_t *path, uint8_t *mount_dir);
+
+
 
 #endif /* FAT_H_ */

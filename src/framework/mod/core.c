@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <assert.h>
 
 #include <util/array.h>
 #include <framework/mod/api.h>
@@ -242,4 +243,3 @@ opfailed:
 	mod_flag_set(mod, MOD_FLAG_OPFAILED);
 	return -EINTR;
 }
-

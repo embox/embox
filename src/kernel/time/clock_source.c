@@ -1,31 +1,26 @@
 /**
- * @file
- * @brief API for registration of time's device
+ * @brief
  *
- * @date 06.07.11
- * @author Ilia Vaprol
+ * @date 19.06.2012
  * @author Alexander Kalmuk
- *         - timecounter
  */
 
-#include <types.h>
-//#include <time.h> // posix
-#include <assert.h>
+#include <util/array.h>
+#include <kernel/time/clock_source.h>
+#include <mem/misc/pool.h>
+#include <util/dlist.h>
 #include <errno.h>
-
 #include <embox/unit.h>
 
-#include <util/dlist.h>
-#include <mem/misc/pool.h>
+ARRAY_SPREAD_DEF(const struct time_event_device *, __event_devices);
+ARRAY_SPREAD_DEF(const struct time_counter_device *, __counter_devices);
 
-#include <kernel/time.h>
-
-#include <kernel/clock_source.h>
-#include <kernel/ktime.h>
-#include <kernel/time/timecounter.h>
-
-POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER,clocks_quantity));
+POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER, clocks_quantity));
 DLIST_DEFINE(clock_source_list);
+
+ms_t clock_source_clock_to_ms(struct clock_source *cs, clock_t ticks) {
+	return (ticks * cs->event_device->resolution) / 1000;
+}
 
 static struct clock_source_head *clock_source_find(struct clock_source *cs) {
 	struct clock_source_head *csh;
@@ -72,23 +67,69 @@ int clock_source_unregister(struct clock_source *cs) {
 	return ENOERR;
 }
 
+extern clock_t clock_sys_ticks(void);
 
-uint32_t clock_source_get_precision(struct clock_source *cs) {
-	return (uint32_t) cs->resolution;
+ns_t clock_source_read(struct clock_source *cs) {
+		static cycle_t prev_cycles, cycles, cycles_all;
+		int old_jiffies, safe;
+		struct time_event_device *ed = cs->event_device;
+		struct time_counter_device *cd = cs->counter_device;
+
+		int cycles_per_jiff = cd->resolution /
+				ed->resolution;
+		safe = 0;
+
+		do {
+			old_jiffies = clock_sys_ticks();
+			cycles = cd->read();
+			safe++;
+		} while(old_jiffies != clock_sys_ticks() && safe < 3);
+
+		if (ed->pending && ed->pending(ed->irq_nr)) {
+			old_jiffies++;
+		}
+
+		cycles_all = cycles + old_jiffies * cycles_per_jiff;
+
+		/* TODO cheat. read() will miss for one jiff sometimes. */
+		if (cycles_all < prev_cycles) {
+			cycles_all += cycles_per_jiff;
+		}
+
+		prev_cycles = cycles_all;
+
+		return cycles_to_ns(cd, cycles_all);
 }
 
-struct clock_source *clock_source_get_default(void) {
-	assert(!dlist_empty(&clock_source_list));
-
-	return ((struct clock_source_head *)clock_source_list.next)->clock_source;
+ns_t clock_source_counter_read(struct clock_source *cs) {
+	return cycles_to_ns(cs->counter_device, cs->counter_device->read());
 }
 
-useconds_t clock_source_clock_to_usec(struct clock_source *cs, clock_t cl) {
-	return (useconds_t) (((useconds_t) cl) * cs->resolution);
-}
+struct clock_source *clock_source_get_best(enum clock_source_property pr) {
+	struct clock_source *cs, *best;
+	struct clock_source_head *csh;
+	struct dlist_head *tmp, *csh_lnk;
+	uint32_t best_resolution = 0;
+	uint32_t resolution = 0;
 
-void clocks_calc_mult_shift(uint32_t *mult, uint32_t *shift, uint32_t from,
-		uint32_t to, uint32_t maxsec) {
-	*mult = to / from;
-	*shift = 0;
+	best = NULL;
+
+	dlist_foreach(csh_lnk,tmp,&clock_source_list) {
+		csh = dlist_entry(csh_lnk, struct clock_source_head, lnk);
+		cs = csh->clock_source;
+
+		if (cs->event_device) {
+			resolution = cs->event_device->resolution;
+		} else if (pr == CS_ANY && cs->counter_device &&
+				cs->counter_device->resolution > resolution) {
+			resolution = cs->counter_device->resolution;
+		}
+
+		if (resolution > best_resolution) {
+			best_resolution = resolution;
+			best = cs;
+		}
+	}
+
+	return best;
 }

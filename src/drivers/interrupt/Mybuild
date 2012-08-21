@@ -20,10 +20,20 @@ module irqmp extends embox.arch.interrupt {
 
 	depends embox.driver.ambapp_api
 	depends embox.lib.LibC
+	option number irqmp_base=2147484160
 }
 
 module mb_intc extends embox.arch.interrupt {
 	source "mb_intc.c", "mb_intc.h"
+}
+
+module stm32_nvic extends embox.arch.interrupt {
+	option number irq_table_size = 16
+	source "stm32_nvic.c", "stm32_nvic.h"
+}
+
+module mips_intc extends embox.arch.interrupt {
+	source "mips_intc.c", "mips_intc.h"
 }
 
 module no_interrupts extends embox.arch.interrupt {

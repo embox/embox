@@ -21,7 +21,7 @@
 #include <kernel/thread/api.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sched.h>
-#include <util/math.h>
+#include <math.h>
 
 static int trylock_sched_locked(struct mutex *m, struct thread *current);
 
@@ -49,7 +49,7 @@ void mutex_lock(struct mutex *m) {
 			/* We have to wait for a mutex to be released. */
 
 			priority_inherit(current);
-			sched_sleep_locked(&m->event); /* Sleep here... */
+			sched_sleep_locked(&m->event, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
 		}
 
 		current->mutex_waiting = NULL;

@@ -11,8 +11,8 @@
 #include <mem/objalloc.h>
 #include <errno.h>
 #include <string.h>
-#include <kernel/timer.h>
-#include <util/math.h>
+#include <kernel/time/timer.h>
+#include <math.h>
 #include <net/icmp.h>
 #include <net/ip.h>
 #include <errno.h>
@@ -131,16 +131,16 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	tmp = buf->next_skbuff;
 
 	ihlen = (tmp->h.raw - tmp->mac.raw);
-	skb = alloc_skb(buf->len + ihlen, 0);
-		/* Strange:
-		 *	- it might return NULL, because length is too big now.
-		 *	- ihlen has upper limit. So it's more wise to has such
-		 *	amount of extra space in the pool (NOT shared with ICMP)
-		 */
+	skb = skb_alloc(buf->len + ihlen);
+	/* Strange:
+	 *	- it might return NULL, because length is too big now.
+	 *	- ihlen has upper limit. So it's more wise to has such
+	 *	amount of extra space in the pool (NOT shared with ICMP)
+	 */
 	assert(skb);
 	memcpy(skb->mac.raw, tmp->mac.raw, tmp->len);
 
-		/* Terrible. Some pointers might be NULL here. sk pointer is omitted */
+	/* Terrible. Some pointers might be NULL here. sk pointer is omitted */
 	skb->h.raw = skb->mac.raw + (tmp->h.raw - tmp->mac.raw);
 	skb->nh.raw = skb->mac.raw + (tmp->nh.raw - tmp->mac.raw);
 	skb->protocol = tmp->protocol;
@@ -151,7 +151,7 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 		memcpy(skb->mac.raw + ihlen + offset, tmp->mac.raw + ihlen, tmp->len - ihlen);
 		offset += tmp->len - ihlen;
 		list_del((struct list_head *)tmp);
-		kfree_skb(tmp);
+		skb_free(tmp);
 		tmp = buf->next_skbuff;
 	}
 
@@ -195,7 +195,7 @@ static void buf_delete(struct dgram_buf *buf) {
 	while(!list_empty((struct list_head *)buf)) {
 		tmp = buf->next_skbuff;
 		list_del((struct list_head*)tmp);
-		kfree_skb(tmp);
+		skb_free(tmp);
 	}
 
 	list_del(&buf->next_buf);
@@ -214,10 +214,10 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 	offset &= IP_OFFSET;
 	offset <<= 3;
 	/* if it is not complete packet */
-	if(offset || mf_flag) {
+	if (offset || mf_flag) {
 		if (df_flag(skb)) {
-				/* For some reason we don't like situation when someone used forced fragmentation */
-			kfree_skb(skb);
+			/* For some reason we don't like situation when someone used forced fragmentation */
+			skb_free(skb);
 			skb = (sk_buff_t *)NULL;
 			return skb;
 		}
@@ -227,7 +227,7 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 
 		ip_frag_dgram_buf(buf, skb);
 
-		if(buf->uncomplete)
+		if (buf->uncomplete)
 			buf->uncomplete = mf_flag;
 
 		if (!buf->uncomplete && buf->meat == buf->len) {
@@ -241,52 +241,52 @@ struct sk_buff *ip_defrag(struct sk_buff *skb) {
 }
 
 struct sk_buff_head *ip_frag(const struct sk_buff *skb, uint32_t mtu) {
-	struct sk_buff_head *tx_buf = alloc_skb_queue();
+	struct sk_buff_head *tx_buf = skb_queue_alloc();
 	struct sk_buff *fragment;
 	int len = ETH_HEADER_SIZE + IP_HEADER_SIZE(skb->nh.iph);
-	int offset = len;		/* offset from skb start (== mac.raw) */
+	int offset = len; /* offset from skb start (== mac.raw) */
 
-		/* Note: correct MTU, because fragment offset must divide on 8*/
+	/* Note: correct MTU, because fragment offset must divide on 8*/
 	int align_MTU = mtu - (mtu - len) % 8;
 
-	if(unlikely(!tx_buf)) {
+	if (unlikely(!tx_buf)) {
 		return NULL;
 	}
 
-		/* copy sk_buff without last fragment. All this fragments have size MTU */
-	while(offset < skb->len - align_MTU) {
-		if(unlikely(!(fragment = alloc_skb(align_MTU, 0)))) {
-			skb_queue_purge(tx_buf);
+	/* copy sk_buff without last fragment. All this fragments have size MTU */
+	while (offset < skb->len - align_MTU) {
+		if (unlikely(!(fragment = skb_alloc(align_MTU)))) {
+			skb_queue_free(tx_buf);
 			return NULL;
 		}
 
-			/* Copy IP and MAC headers */
+		/* Copy IP and MAC headers */
 		memcpy(fragment->mac.raw, skb->mac.raw, len);
-			/* Copy IP content */
+		/* Copy IP content */
 		memcpy(fragment->mac.raw + len, skb->mac.raw + offset, align_MTU);
 		fragment->nh.raw = fragment->mac.raw + ETH_HEADER_SIZE;
 		fragment->nh.iph->frag_off = htons(
 					(((offset - len) >> 3) /* data offset / 8 */) | IP_MF);
 		ip_send_check(fragment->nh.iph);
-		skb_queue_tail(tx_buf, fragment);
+		skb_queue_push(tx_buf, fragment);
 		offset += (align_MTU - len);
 	}
 
 	/* copy last fragment */
-	if(offset < skb->len) {
-		if(unlikely(!(fragment = alloc_skb(skb->len - offset + len, 0)))) {
-			skb_queue_purge(tx_buf);
+	if (offset < skb->len) {
+		if (unlikely(!(fragment = skb_alloc(skb->len - offset + len)))) {
+			skb_queue_free(tx_buf);
 			return NULL;
 		}
 
-			/* Copy IP and MAC headers */
+		/* Copy IP and MAC headers */
 		memcpy(fragment->mac.raw, skb->mac.raw, len);
-			/* Copy IP content */
+		/* Copy IP content */
 		memcpy(fragment->mac.raw + len, skb->mac.raw + offset, skb->len - offset);
 		fragment->nh.raw = fragment->mac.raw + ETH_HEADER_SIZE;
 		fragment->nh.iph->frag_off = htons(((offset - len) >> 3));
 		ip_send_check(fragment->nh.iph);
-		skb_queue_tail(tx_buf, fragment);
+		skb_queue_push(tx_buf, fragment);
 	}
 
 	return tx_buf;

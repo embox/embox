@@ -1,0 +1,21 @@
+package embox.cmd
+
+@Cmd(name = "ntpdate",
+	help = "Set the date and time via NTP",
+	man = '''
+		NAME
+			ntpdate - Set the date and time via NTP
+		SYNOPSIS
+			ntpdate [keys] server
+		DESCRIPTION
+			TODO
+		AUTHORS
+			Alexander Kalmuk
+	''')
+
+module ntpdate {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "ntpdate.c"
+	depends embox.net.ntp
+	depends embox.kernel.time.timekeeper
+}

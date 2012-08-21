@@ -6,7 +6,7 @@ package embox.cmd
 		NAME
 			example - an interface to Embox examples execution
 		SYNOPSIS
-			test [-h] <example_name>
+			example [-h] <example_name>
 		DESCRIPTION
 			Shows example available in the system and executes the specified ones
 		OPTIONS
@@ -19,6 +19,6 @@ module example {
 	source "example.c"
 
 	depends embox.lib.LibC
-	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.LibPosixUtil
 	depends embox.framework.LibFramework
 }

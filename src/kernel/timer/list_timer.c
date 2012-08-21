@@ -7,7 +7,7 @@
  * @author Ilia Vaprol
  */
 #include <lib/list.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <profiler/tracing/trace.h>
 
 static LIST_HEAD(sys_timers_list);

@@ -62,4 +62,3 @@ void critical_request_dispatch(struct critical_dispatcher *d) {
 
 	critical_dispatch_pending();
 }
-

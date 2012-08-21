@@ -1,6 +1,15 @@
 /**
  * @file
- * @brief show list of plug and play devices
+ * @brief show list of AMBA plug and play devices
+ * @details There is a special mechanism in Leon3 processor which allows to get
+ *       information about hardware devices available on the AMBA bus. This
+ *       mechanism is called 'ampapp' or AMBA plug and play. The main principle
+ *       of it is each device declares own specification into the repository.
+ *       This declaration contains memory areas description required IRQ,
+ *       identification and so on. The repository is available from address
+ *       space of a processor.
+ *       This command show the information from the repository in understandable
+ *       form.
  *
  * @date 20.02.09
  * @author Alexandr Batyukov
@@ -22,14 +31,13 @@ static void print_usage(void) {
 	printf("Usage: lspnp [-b bus_type] [-n dev_id] [-h]\n");
 }
 
-//static int bus_type;
 
 #define AMBA_BT_AHBM  1
 #define AMBA_BT_AHBSL 2
 #define AMBA_BT_APB   3
 #define AMBA_BT_ALL   0
 
-//-------------Utils---------------------------------------------------
+/*-------------Utils---------------------------------------------------*/
 
 
 static inline void print_table_row(int n, int ven_id, int dev_id,
@@ -63,17 +71,7 @@ static inline void show_bar_info(amba_bar_info_t *bar) {
 		printf("%X\n", bar->start);
 	}
 }
-#if 0
-static void show_bars_infos(amba_dev_t *dev) {
-	int i;
-	for (i = 0; i < ARRAY_SIZE(dev->bar); i++) {
-		if (dev->bar[i].used) {
-			show_bars_type(&dev->bar[i]);
-			printf("%X\n", dev->bar[i].start);
-		}
-	}
-}
-#endif
+
 const char UNKNOWN[] = "<unknown>";
 
 static void show_dev(amba_dev_t *dev, bool show_user) {
@@ -153,21 +151,7 @@ static int print_apb_pnp_devs(void) {
 	count += print_apb_entries(APB_QUANTITY);
 	return count;
 }
-#if 0
-/**
- * Print list of all connected plug and play devices on ahb && apb buses
- */
-static void print_all_pnp_devs(void) {
-	int count = 0;
-	printf("\nListing AMBA PNP devices..\n");
-	count +=print_ahbm_pnp_devs();
-	count +=print_ahbsl_pnp_devs();
-	printf("\n..Total: %d\n\n", count);
-	count = 0;
-	count += print_apb_pnp_devs();
-	printf("\n..Total: %d\n\n", count);
-}
-#endif
+
 static void print_ahbm_pnp_dev(uint32_t slot) {
 	amba_dev_t dev;
 	if (slot >AHB_MASTERS_QUANTITY) {

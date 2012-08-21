@@ -2,105 +2,166 @@
  * @file
  * @brief Handle queue of packets waiting for ARP resolving.
  *
- * @date 13.12.2011
+ * @date 13.12.11
  * @author Alexander Kalmuk
+ * @author Ilia Vaprol
  */
 
 #include <net/arp_queue.h>
-#include <types.h>
-#include <util/list.h>
-#include <mem/objalloc.h>
-#include <errno.h>
-#include <net/skbuff.h>
+#include <util/hashtable.h>
 #include <kernel/thread/event.h>
-#include <kernel/timer.h>
-#include <net/sock.h>
-#include <net/ip.h>
+#include <embox/unit.h>
+#include <net/socket.h>
+#include <errno.h>
+#include <mem/misc/pool.h>
 #include <net/arp.h>
+#include <net/ip.h>
+#include <kernel/time/time_types.h>
+#include <kernel/time/ktime.h>
+#include <framework/mod/options.h>
+#include <assert.h>
+#include <kernel/softirq_lock.h>
 
-#define TTL 1000
-#define ARP_QUEUE_SIZE 0x10
+EMBOX_UNIT_INIT(arp_queue_init);
 
-struct pending_packet {
-	struct list_head link;
-	struct sk_buff *skb;
-	struct sys_timer *timer;
+/**
+ * Declaration module constants
+ */
+#define ARP_QUEUE_AMOUNT_PACKAGE  OPTION_GET(NUMBER, amount_package)
+#define ARP_QUEUE_HTABLE_WIDTH    OPTION_GET(NUMBER, htable_width)
+#define ARP_QUEUE_PACKAGE_TIMEOUT OPTION_GET(NUMBER, package_timeout)
+
+
+/**
+ * Packing for a sk_buff
+ */
+struct arp_queue_item {
+	in_addr_t dest_ip;   /* IP address of destanation host */
+	struct sk_buff *skb; /* outgoing package */
+	uint32_t was_posted; /* time in which he was queued */
 };
 
-OBJALLOC_DEF(arp_queue_allocator, struct pending_packet, ARP_QUEUE_SIZE);
-static LIST_HEAD(arp_queue);
 
-void arp_queue_process(struct sk_buff *arp_pack) {
-	struct pending_packet *pack, *safe;
-	struct sk_buff *skb;
+/**
+ * Hashtable of awaiting packages
+ * Structure:
+ * 	 ip_addr => arp_queue_item
+ * ip_addr -- destonation IP address
+ * arp_queue_item -- waiting pakage
+ */
+static struct hashtable *arp_queue_table;
 
-	assert(arp_pack != NULL);
+/* Allocators */
+POOL_DEF(arp_queue_item_pool, struct arp_queue_item, ARP_QUEUE_AMOUNT_PACKAGE);
 
-	list_for_each_entry_safe(pack, safe, &arp_queue, link) {
-		if (arp_pack->nh.arph->ar_sip == pack->skb->nh.iph->daddr) {
-			skb = pack->skb;
-			assert(skb != NULL);
-
-			timer_close(pack->timer); //TODO it must be synchronized with drop function
-			list_del(&pack->link);
-			objfree(&arp_queue_allocator, pack);
-
-			sock_set_ready(skb->sk);
-			event_fire(&skb->sk->sock_is_ready);
-			dev_queue_xmit(skb);
-
-		}
-	}
+/* Get time in milliseconds */
+static uint32_t get_msec(void) {
+	return ktime_get_ns() / (NSEC_PER_USEC * USEC_PER_MSEC);
 }
 
-static void arp_queue_drop(struct sys_timer *timer, void *data) {
-	struct pending_packet *deff_pack;
-	net_device_stats_t *stats;
-	struct net_device *dev;
+void arp_queue_process(struct sk_buff *arp_skb) {
+	int res;
+	uint32_t now, lifetime;
+	in_addr_t resolved_ip;
+	struct arp_queue_item *waiting_item;
+	struct event *sock_ready;
 
-	/* it must send message, that packet was dropped */
-	assert(data != NULL);
-	deff_pack = (struct pending_packet *)data;
+	assert(arp_skb != NULL);
+	assert(arp_skb->nh.raw != NULL);
 
-	assert(deff_pack->skb != NULL);
-	assert(deff_pack->skb->dev != NULL);
-	dev = deff_pack->skb->dev;
+	now = get_msec();
+	resolved_ip = arp_skb->nh.arph->ar_sip;
 
-	assert(dev->netdev_ops != NULL);
-	assert(dev->netdev_ops->ndo_get_stats != NULL);
-	stats = dev->netdev_ops->ndo_get_stats(dev);
+	while ((waiting_item = hashtable_get(arp_queue_table, &resolved_ip)) != NULL) {
+		assert(waiting_item->skb != NULL);
 
-	stats->tx_err++;
+		/* calculate experience */
+		lifetime = now - waiting_item->was_posted;
+		if (lifetime >= ARP_QUEUE_PACKAGE_TIMEOUT) {
+			goto free_skb_and_item; /* time is up! drop this package */
+		}
 
-	timer_close(timer);
-	list_del(&deff_pack->link);
+		/* try to rebuild */
+		assert(waiting_item->skb->dev != NULL);
+		assert(waiting_item->skb->dev->header_ops != NULL);
+		assert(waiting_item->skb->dev->header_ops->rebuild != NULL);
+		res = waiting_item->skb->dev->header_ops->rebuild(waiting_item->skb);
+		if (res < 0) {
+			goto free_skb_and_item; /* XXX it's not normal */
+		}
 
-	sock_set_ready(deff_pack->skb->sk);
-	event_fire(&deff_pack->skb->sk->sock_is_ready);
+		/* save final event */
+		assert(waiting_item->skb->sk != NULL);
+		sock_ready = &waiting_item->skb->sk->sock_is_ready;
 
-	kfree_skb(deff_pack->skb);
-	objfree(&arp_queue_allocator, deff_pack);
+		/* try to xmit */
+		if (dev_queue_xmit(waiting_item->skb) == ENOERR) {
+			event_fire(sock_ready);
+		}
+
+		/* free resourse */
+		goto free_item;
+
+free_skb_and_item:
+		skb_free(waiting_item->skb);
+free_item:
+		hashtable_del(arp_queue_table, &resolved_ip);
+		pool_free(&arp_queue_item_pool, waiting_item);
+	}
 }
 
 int arp_queue_add(struct sk_buff *skb) {
-	struct sys_timer *timer;
-	struct pending_packet *queue_pack;
-//	struct sk_buff *new_pack;
+	int res;
+	struct arp_queue_item *waiting_item;
+	struct iphdr *iph;
 
-	queue_pack = (struct pending_packet *)objalloc(&arp_queue_allocator);
-	if (queue_pack == NULL) {
+	iph = ip_hdr(skb);
+
+	softirq_lock();
+
+	waiting_item = (struct arp_queue_item *)pool_alloc(&arp_queue_item_pool);
+	if (waiting_item == NULL) {
 		return -ENOMEM;
 	}
 
-	/* skb->sk->arp_queue_info = 0; */
-	sock_unset_ready(skb->sk);
+	waiting_item->was_posted = get_msec();
+	waiting_item->skb = skb;
+	waiting_item->dest_ip = iph->daddr;
 
-	timer_set(&timer, TIMER_ONESHOT, TTL, arp_queue_drop, queue_pack);
-	queue_pack->timer = timer;
+	res = hashtable_put(arp_queue_table, (void *)&waiting_item->dest_ip, (void *)waiting_item);
+	if (res < 0) {
+		pool_free(&arp_queue_item_pool, waiting_item);
+		return res;
+	}
 
-	queue_pack->skb = skb;
+	softirq_unlock();
 
-	list_add_tail(&queue_pack->link, &arp_queue);
+	res = arp_send(ARPOP_REQUEST, ETH_P_ARP, skb->dev, iph->daddr, iph->saddr, NULL,
+			skb->dev->dev_addr, NULL);
+	if (res < 0) {
+		return res;
+	}
+
+	return ENOERR;
+}
+
+static size_t get_hash(void *key) {
+	return (size_t)*(in_addr_t *)key;
+}
+
+static int cmp_key(void *key1, void *key2) {
+	in_addr_t ip1, ip2;
+
+	ip1 = *(in_addr_t *)key1;
+	ip2 = *(in_addr_t *)key2;
+	return (ip1 < ip2 ? -1 : ip1 > ip2);
+}
+
+static int arp_queue_init(void) {
+	arp_queue_table = hashtable_create(ARP_QUEUE_HTABLE_WIDTH, get_hash, cmp_key);
+	if (arp_queue_table == NULL) {
+		return -ENOMEM;
+	}
 
 	return ENOERR;
 }

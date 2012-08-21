@@ -174,4 +174,3 @@ void idt_init(void) {
 	/* Load IDT */
 	SET_IDT(&idt_ptr);
 }
-

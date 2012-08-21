@@ -11,7 +11,7 @@ module core {
 	source "tty_ng.c"
 
 	depends embox.lib.LibC
-	depends embox.kernel.task_api
+	depends embox.kernel.task.api
 	depends embox.kernel.thread.core
 	depends embox.kernel.timer.sleep_api
 }

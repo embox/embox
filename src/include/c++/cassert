@@ -1,0 +1,13 @@
+/**
+ * @file
+ * @brief C++ forwarding header
+ * @date 04.07.12
+ * @author Ilia Vaprol
+ */
+
+#ifndef CASSERT_
+#define CASSERT_
+
+#include <assert.h>
+
+#endif // CASSERT_

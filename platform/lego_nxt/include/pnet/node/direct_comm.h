@@ -15,4 +15,3 @@
 #define PNET_NODE_DIRECT_COMM_EXECUTER  "direct comm executer"
 
 #endif
-

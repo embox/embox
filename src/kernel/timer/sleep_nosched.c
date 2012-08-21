@@ -9,7 +9,7 @@
 
 #include <types.h>
 #include <time.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <hal/arch.h>
 
 static void wake_up(sys_timer_t *timer, void *param) {

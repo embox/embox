@@ -1,20 +1,50 @@
-package embox.kernel
+package embox.kernel.task
 
-abstract module task_api { }
+abstract module api {
+	option number max_resource_size = 256
+}
 
-module multi_task extends task_api {
+module task_environment { }
+
+module kernel_task {
+	source "common.c"
+}
+
+module multi extends api {
 	option number tasks_quantity = 20
 
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "multi_task.c", "def_task.c", "index_desc.c"
+	source "multi.c"
 
-	depends embox.driver.virtual.diag_device
-	depends embox.kernel.thread.sched
+	depends task_table
+	depends kernel_task
+
+	depends embox.kernel.thread.core
 
 }
 
-module single_task extends task_api {
+module task_table {
+	source "task_table.c"
+	depends embox.util.idx_table
+}
+
+module signal {
+	source "signal.c"
+}
+
+module single extends api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "single_task.c", "def_task.c", "index_desc.c"
-	depends embox.driver.virtual.diag_device
+	source "single.c"
+
+	depends kernel_task
+}
+
+module idx_table extends task_environment {
+	source "index_desc.c"
+	depends embox.util.idx_table
+	depends api
+}
+
+module errno {
+	source "errno.c"
+	depends api
 }

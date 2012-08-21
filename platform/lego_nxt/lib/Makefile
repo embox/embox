@@ -1,3 +1,0 @@
-$_PACKAGE := $(PLATFORM).lib
-
-$_CPPFLAGS += -I$(SRC_DIR)/compat/linux/include

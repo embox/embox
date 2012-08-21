@@ -5,7 +5,7 @@ package embox.arch.x86.kernel
  */
 
 module context extends embox.arch.context {
-	source "context.c", "context_switch.S"
+	source "context.c", "context_switch.S", "context.h"
 }
 
 /*FIXME mybuild may be split this to differernt modules */

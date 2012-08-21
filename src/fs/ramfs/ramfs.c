@@ -14,48 +14,14 @@
 #include <fs/ramfs.h>
 #include <fs/fs_drv.h>
 #include <fs/vfs.h>
-#include <linux/init.h>
+#include <mem/misc/pool.h>
 #include <util/array.h>
 #include <embox/unit.h>
 
-typedef struct ramfs_file_description_head {
-	struct list_head *next;
-	struct list_head *prev;
-	ramfs_file_description_t desc;
-} ramfs_file_description_head_t;
 
-static ramfs_file_description_head_t fdesc_pool[OPTION_GET(NUMBER,fdesc_quantity)];
-static LIST_HEAD(fdesc_free);
-
-#define desc_to_head(fdesc) \
-	(uint32_t)(fdesc - offsetof(ramfs_file_description_head_t, desc))
-
-static void init_ramfs_info_pool(void) {
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(fdesc_pool); i++) {
-		list_add((struct list_head *) &fdesc_pool[i], &fdesc_free);
-	}
-}
-
-static ramfs_file_description_t *ramfs_info_alloc(void) {
-	ramfs_file_description_head_t *head;
-	ramfs_file_description_t *desc;
-
-	if (list_empty(&fdesc_free)) {
-		return NULL;
-	}
-	head = (ramfs_file_description_head_t *) (&fdesc_free)->next;
-	list_del((&fdesc_free)->next);
-	desc = &(head->desc);
-	return desc;
-}
-
-static void ramfs_info_free(ramfs_file_description_t *desc) {
-	if (NULL == desc) {
-		return;
-	}
-	list_add((struct list_head*) desc_to_head(desc), &fdesc_free);
-}
+/* file description pool */
+POOL_DEF (fdesc_pool, struct _ramfs_file_description,
+		OPTION_GET(NUMBER,fdesc_quantity));
 
 /* File operations */
 
@@ -76,7 +42,7 @@ static void *ramfs_fopen(struct file_desc *desc, const char *mode) {
 
 
 	nod = desc->node;
-	fd = (ramfs_file_description_t*) nod->attr;
+	fd = (ramfs_file_description_t*) nod->fd;
 	fd->cur_pointer = 0;
 	fd->lock = 1;
 	return desc;
@@ -86,7 +52,7 @@ static int ramfs_fclose(struct file_desc *desc) {
 //	ramfs_file_description_t *fd;
 
 //	node_t *nod = (node_t *) file;
-//	fd = (ramfs_file_description_t*) nod->attr;
+//	fd = (ramfs_file_description_t*) nod->fd;
 //	fd->lock = 0;
 	return 0;
 }
@@ -98,7 +64,7 @@ static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 
 	size_to_read = size * count;
 	desc = (struct file_desc *) file;
-	fd = (ramfs_file_description_t*) desc->node->attr;
+	fd = (ramfs_file_description_t*) desc->node->fd;
 
 	if (fd == NULL) {
 		return -ENOENT;
@@ -120,7 +86,7 @@ static size_t ramfs_fwrite(const void *buf, size_t size, size_t count,
 	node_t *nod;
 	size_t size_to_write = size * count;
 	nod = (node_t *) file;
-	fd = (ramfs_file_description_t*) nod->attr;
+	fd = (ramfs_file_description_t*) nod->fd;
 
 	if (fd == NULL) {
 		return -ENOENT;
@@ -141,7 +107,7 @@ static int ramfs_fseek(void *file, long offset, int whence) {
 	node_t *nod;
 	int new_offset;
 	nod = (node_t *) file;
-	fd = (ramfs_file_description_t*) nod->attr;
+	fd = (ramfs_file_description_t*) nod->fd;
 
 	if (fd == NULL) {
 		return -ENOENT;
@@ -179,7 +145,7 @@ static int ramfs_ioctl(void *file, int request, va_list ar) {
 	addr = (uint32_t *) va_arg(args, unsigned long);
 	va_end(args);
 	nod = (node_t *) file;
-	fd = (ramfs_file_description_t*) nod->attr;
+	fd = (ramfs_file_description_t*) nod->fd;
 	*addr = fd->start_addr;
 	return 0;
 }
@@ -213,10 +179,11 @@ static int ramfs_create(void *params) {
 		return 0;/*file already exist*/
 	}
 
-	fd = ramfs_info_alloc();
+	fd = pool_alloc(&fdesc_pool);
 	nod->fs_type = &ramfs_drv;
 	nod->file_info = (void *) &ramfs_fop;
-	nod->attr = (void *) fd;
+	nod->fd = (void *) fd;
+	nod->dev_attr = nod->dev_type = NULL;
 
 	fd->start_addr = par->start_addr;
 	fd->size = par->size;
@@ -229,20 +196,20 @@ static int ramfs_create(void *params) {
 static int ramfs_delete(const char *fname) {
 	ramfs_file_description_t *fd;
 	node_t *nod = vfs_find_node(fname, NULL);
-	fd = nod->attr;
+	fd = nod->fd;
 
-	ramfs_info_free(fd);
+	pool_free(&fdesc_pool, fd);
 	vfs_del_leaf(nod);
 	return 0;
 }
 
-static int __init ramfs_init(void * par) {
-	init_ramfs_info_pool();
+static int ramfs_init(void * par) {
+	//init_ramfs_info_pool();
 
 	return 0;
 }
 
-static int __init ramfs_mount(void * par) {
+static int ramfs_mount(void * par) {
 	cpio_unpack();
 	return 0;
 }

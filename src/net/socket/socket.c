@@ -18,36 +18,24 @@
 #include <types.h>
 #include <util/array.h>
 #include <kernel/task.h>
+#include <kernel/task/idx.h>
 #include <net/arp_queue.h>
+#include <string.h>
 
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
 
+static ssize_t this_read(void *socket, void *buf, size_t nbyte);
+static ssize_t this_write(void *socket, const void *buf, size_t nbyte);
+static int this_ioctl(void *socket, int request, va_list args);
+static int this_close(void *socket);
 
-extern const struct task_res_ops * __task_res_ops[];
-
-
-static ssize_t this_read(int fd, const void *buf, size_t nbyte) {
-	return recvfrom(fd, (void *) buf, nbyte, 0, NULL, 0);
-}
-
-static ssize_t this_write(int fd, const void *buf, size_t nbyte) {
-	return sendto(fd, buf, nbyte, 0, NULL, 0);
-}
-
-static int this_ioctl(int fd, int request, va_list args) {
-	return 0;
-}
-
-static struct task_res_ops ops = {
-	.type = TASK_IDX_TYPE_SOCKET,
+const struct task_idx_ops task_idx_ops_socket = {
 	.read = this_read,
 	.write = this_write,
-	.close = socket_close,
+	.close = this_close,
 	.ioctl = this_ioctl
 };
-
-ARRAY_SPREAD_ADD(__task_res_ops, &ops);
 
 static struct socket *idx2sock(int fd) {
 	return (struct socket *) task_self_idx_get(fd)->data;
@@ -63,7 +51,7 @@ int socket(int domain, int type, int protocol) {
 		return -1; /* return error code */
 	}
 
-	res = task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_SOCKET, sock);
+	res = task_self_idx_alloc(&task_idx_ops_socket, sock);
 	if (res < 0) { // release socket if can't alloc idx
 		kernel_socket_release(sock);
 		/* TODO: EMFILE should be returned when no fids left for process to use.
@@ -162,7 +150,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		return -1;
 	}
 
-	res = task_res_idx_alloc(task_self_res(), TASK_IDX_TYPE_SOCKET, new_sock);
+	res = task_self_idx_alloc(&task_idx_ops_socket, new_sock);
 	if (res < 0) {
 		kernel_socket_release(new_sock);
 		SET_ERRNO(EMFILE);  /* also could be ENFILE */
@@ -173,7 +161,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 
 static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen) {
-	int res;
+	int res, res_sleep;
 	struct inet_sock *inet;
 	struct iovec iov;
 	struct msghdr m;
@@ -214,19 +202,21 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	sock->sk->sk_err = -1;
 	sock_set_ready(sock->sk);
 
+	sched_lock();
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
+	if (res == -EINPROGRESS) {
+		/* wait until resolving destonation ip */
+		res_sleep = sched_sleep_locked(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
+		if (res_sleep == SCHED_SLEEP_INTERRUPT) {
+			/* was resolved */
+			res = 1;
+		}
+	}
+	sched_unlock();
 
-	/* if(sock->sk && sock_was_transmitted(sock->sk) != 0) { */
-	if(!sock_is_ready(sock->sk)){
-		sock_lock(sock->sk);
-		/* sleep until the event sock_is_ready fires */
-		sched_sleep(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
-	  sock_unlock(sock->sk);
-		/* res = sock_get_answer(sock->sk); */
-	 }
-
-	if(res < 0) {
-		return (ssize_t)res;
+	if (res < 0) {
+		SET_ERRNO(-res);
+		return -1;
 	}
 
 	return (ssize_t)iov.iov_len;
@@ -264,7 +254,8 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	struct sockaddr_in *dest_addr;
 
 	if (sock == NULL) {
-		return -EBADF;
+		SET_ERRNO(EBADF);
+		return -1;
 	}
 
 	iov.iov_base = buf;
@@ -273,14 +264,17 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 
 	res = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
 	if (res < 0) {
-		return res;
+		SET_ERRNO(-res);
+		return -1;
 	}
 
 	inet = inet_sk(sock->sk);
 	if ((daddr != NULL) && (daddrlen != NULL)) {
 		dest_addr = (struct sockaddr_in *)daddr;
+		dest_addr->sin_family = AF_INET;
 		dest_addr->sin_addr.s_addr = inet->daddr;
 		dest_addr->sin_port = inet->dport;
+		memset(&dest_addr->sin_zero[0], 0, sizeof dest_addr->sin_zero);
 		*daddrlen = sizeof *dest_addr;
 	}
 
@@ -322,6 +316,23 @@ int socket_close(int sockfd) {
 	}
 
 	return ENOERR;
+}
+
+static ssize_t this_read(void *socket, void *buf, size_t nbyte) {
+	return recvfrom_sock((struct socket *) socket, buf, nbyte, 0, NULL, 0);
+}
+
+static ssize_t this_write(void *socket, const void *buf, size_t nbyte) {
+	return sendto_sock((struct socket *) socket, buf, nbyte, 0, NULL, 0);
+}
+
+static int this_ioctl(void *socket, int request, va_list args) {
+	return 0;
+}
+
+static int this_close(void *socket) {
+	/* TODO set errno */
+	return kernel_socket_release(socket);
 }
 
 int getsockopt(int sockfd, int level, int optname, void *optval,
@@ -370,4 +381,9 @@ int setsockopt(int sockfd, int level, int optname, void *optval,
 	}
 	return ENOERR;
 
+}
+
+void socket_set_encap_recv(int sockfd, sk_encap_hnd hnd) {
+	struct socket *sock = idx2sock(sockfd);
+	sock->sk->sk_encap_rcv = hnd;
 }

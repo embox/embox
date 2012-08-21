@@ -1,0 +1,11 @@
+#!/bin/sh
+
+TAP_DEV=$(cat tap_dev)
+
+echo stoping $TAP_DEV
+
+#/sbin/ip tuntap del mode tap tap0
+/sbin/ifconfig tap0 down
+tunctl -d tap0
+#$TAP_DEV
+#for i in $(seq 0 4); do ifconfig tap$i down; tunctl -d tap$i; done

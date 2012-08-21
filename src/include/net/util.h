@@ -11,7 +11,9 @@
 extern unsigned char *ipaddr_scan(const unsigned char *addr, unsigned char *res);
 extern unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res);
 extern void macaddr_print(unsigned char *buf, const unsigned char *addr);
+#if 0
 extern int is_addr_from_net(const unsigned char *uip,
 		    const unsigned char *nip, unsigned char msk);
+#endif
 
 #endif /* NET_UTIL_H_ */

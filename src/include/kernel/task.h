@@ -10,12 +10,19 @@
 #define TASK_H_
 
 #include <lib/list.h>
-#include <kernel/task_resources.h>
 
+struct task_signal_table;
+struct task_idx_table;
+struct thread;
+
+/**
+ * @brief Task resources container
+ */
 /**
  * @brief Task describing struct
  */
 struct task {
+	int tid;
 	struct task *parent; /**< @brief Task's parent */
 
 	struct list_head children; /**< @brief Task's children */
@@ -23,20 +30,23 @@ struct task {
 
 	struct list_head threads; /**< @brief Threads which have task pointer this task */
 
-	struct task_resources resources; /**< @brief Resources which task have */
+	struct task_idx_table *idx_table; /**< @brief Resources which task have */
 
-	int errno; /**< @brief Last occured error code */
+	struct task_signal_table *signal_table;
+
+	int err; /**< @brief Last occurred error code */
 };
 
 /**
- * @brief Create new task with resources inhereted from parent task
- *
- * @param new Pointer where new task's pointer will be stored
- * @param parent Pointer to a parent task
- *
- * @return 0 for success, negative on error occur
+ * @brief Get task resources struct from task
+ * @param task Task to get from
+ * @return Task resources from task
  */
-extern int task_create(struct task **new, struct task *parent);
+static inline struct task_idx_table *task_idx_table(struct task *task) {
+	return task->idx_table;
+}
+
+extern int new_task(void *(*run)(void *), void *arg);
 
 /**
  * @brief Get self task (task which current execution thread associated with)
@@ -46,69 +56,20 @@ extern int task_create(struct task **new, struct task *parent);
 extern struct task *task_self(void);
 
 /**
- * @brief TODO
+ * @brief Exit from current task
  *
- * @param tsk
- *
- * @return
+ * @param res Return code
  */
-extern int task_delete(struct task *tsk);
-
+extern void __attribute__((noreturn)) task_exit(void *res);
 
 /**
- * @brief Get task resources struct from task
- * @param task Task to get from
- * @return Task resources from task
- */
-static inline struct task_resources *task_get_resources(struct task *task) {
-	return &task->resources;
-}
-/**
- * @brief Determ is given fd is valid to use with tasks
- * @param fd File descriptor number to test
- * @return If given fs is valid to use with tasks
- */
-static inline int task_valid_fd(int fd) {
-	return 0 <= fd && fd <= CONFIG_TASKS_RES_QUANTITY;
-}
-
-
-/**
- * @brief Default task, which is associated with running thread after
- * threads initialization
+ * @brief Kernel task
  *
- * @return Pointer to default task
+ * @return Pointer to kernel task
  */
-extern struct task *task_default_get(void);
+extern struct task *task_kernel_task(void);
 
-/**
- * @brief Get task resources of self task
- *
- * @return Task resources of self task
- */
-static inline struct task_resources *task_self_res(void) {
-	return task_get_resources(task_self());
-}
-
-/**
- * @brief Get idx descriptor from self task
- *
- * @param fd idx number
- *
- * @return Pointer to idx descriptor
- */
-static inline struct idx_desc *task_self_idx_get(int fd) {
-	return task_res_idx_get(task_self_res(), fd);
-}
-
-/**
- * @brief Set idx descriptor of self task
- *
- * @param fd idx descriptor number
- * @param desc idx descriptor pointer to associate with number
- */
-static inline void task_self_idx_set(int fd, struct idx_desc *desc) {
-	task_res_idx_set(task_self_res(), fd, desc);
-}
+struct thread;
+extern int task_notify_switch(struct thread *prev, struct thread *next);
 
 #endif /* TASK_H_ */

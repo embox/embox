@@ -10,17 +10,17 @@ module at91_pitc extends embox.arch.clock {
 module gptimer extends embox.arch.clock {
 	source "gptimer.c"
 
-	/*depends embox.kernel.timer.sys_timer*/
 	depends embox.kernel.irq
-	depends embox.kernel.time.clock_source
 	depends embox.driver.ambapp_api
+	depends embox.kernel.time.clock_source
+	option number gptimer_base=2147484416
+	option number irq_num=8
 }
 
 module mb_timer extends embox.arch.clock {
 	source "mb_timer.c"
 
 	depends embox.kernel.irq
-	depends embox.kernel.time.clock_source
 }
 
 module pit extends embox.arch.clock {
@@ -30,9 +30,20 @@ module pit extends embox.arch.clock {
 	depends embox.kernel.time.clock_source
 }
 
-module systick_timer extends embox.arch.clock {
-	source "systick_timer.c"
-
+module stm32_systick extends embox.arch.clock {
+	source "stm32_systick.c"
 	depends embox.kernel.time.clock_source
-	depends embox.kernel.time.clock_event
+}
+
+// TODO Can be used with pit. That means tsc not implements embox.arch.clock
+module tsc {
+	source "tsc.c"
+	depends embox.kernel.time.clock_source
+}
+
+module mips_clk extends embox.arch.clock {
+	source "mips_clk.c"
+
+	depends embox.kernel.irq
+	depends embox.kernel.time.clock_source
 }

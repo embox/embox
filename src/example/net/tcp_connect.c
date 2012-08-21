@@ -6,7 +6,7 @@
  * @author Ilia Vaprol
  */
 
-#include <kernel/prom_printf.h>
+#include <prom/prom_printf.h>
 #include <net/ip.h>
 #include <net/in.h>
 #include <net/socket.h>

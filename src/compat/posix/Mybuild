@@ -1,20 +1,66 @@
 package embox.compat.posix
 
-static module LibPosix {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "exec.c"
-	source "file_op.c"
-	source "file.c"
-	source "fs.c"
-	source "fork.c"
-	source "getopt.c"
-	source "select.c"
-	source "utsname.c"
-	source "wait.c"
-	source "time.c"
+module LibPosix {
+
+	depends LibPosixUtil
+	depends LibPosixProc
+	depends LibPosixIdx
+}
+
+static module LibPosixUtil {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "getopt.c",
+		"utsname.c",
+		"time.c"
 
 	depends embox.util.LibUtil
-	depends embox.kernel.task_api
-	depends embox.fs.driver.stdio
-	depends embox.lib.LibC
 }
+
+static module LibPosixProc {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "exec.c",
+		"fork.c",
+		"wait.c"
+
+	depends embox.util.LibUtil
+}
+
+static module LibPosixIdx {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "isatty.c",
+		"select.c",
+		"dup.c"
+
+	depends embox.kernel.task.api
+	depends LibPosixFsApi
+	depends embox.util.LibUtil
+}
+
+@DefaultImpl(LibPosixFsNone)
+abstract module LibPosixFsApi { }
+
+static module LibPosixFs extends LibPosixFsApi {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "file.c", "fs.c"
+
+	depends embox.kernel.task.api
+	depends embox.kernel.task.idx_table
+	depends embox.fs.posix_compat
+	depends embox.kernel.task.errno
+	depends posix_env
+}
+static module LibPosixFsNone extends LibPosixFsApi {
+	source "file_fs_none.c"
+}
+
+@DefaultImpl(bootstrap_posix_env)
+abstract module posix_env { }
+
+module bootstrap_posix_env extends posix_env {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "env/bs_posix_env.c"
+
+	depends embox.kernel.task.api
+	depends embox.driver.virtual.diag_device
+}
+

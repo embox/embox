@@ -1,0 +1,7 @@
+package lego_nxt.cmd
+
+module power_mng {
+	source "power.c"
+
+	depends lego_nxt.driver.nxt_avr_init
+}

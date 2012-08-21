@@ -34,7 +34,7 @@
 #include <asm/io.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
-#include <kernel/timer.h>
+#include <kernel/time/timer.h>
 #include <hal/reg.h>
 #include <fs/node.h>
 #include <kernel/file.h>
@@ -172,7 +172,7 @@ static tty_t * getTty(void* file) {
 	tty_t *tp;
 
 	nod = (node_t *) file;
-	tp	= (tty_t*) nod->attr;
+	tp	= (tty_t*) nod->dev_attr;
 
 	return tp;
 }

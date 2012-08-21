@@ -10,14 +10,12 @@
 #ifndef NET_ETHERDEVICE_H_
 #define NET_ETHERDEVICE_H_
 
-#define NET_TYPE_ALL_PROTOCOL 0
+//#define NET_TYPE_ALL_PROTOCOL 0
 
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <net/socket.h>
 #include <stdint.h>
-
-typedef void (*ETH_LISTEN_CALLBACK)(void * pack);
 
 /**
  * Determine if the Ethernet address is a multicast.
@@ -76,18 +74,24 @@ static inline bool compare_ether_addr(const uint8_t *a, const uint8_t *b)
 }
 
 /**
+ * Packet types.
+ */
+enum {
+	PACKET_HOST,      /* To us */
+	PACKET_BROADCAST, /* To all */
+	PACKET_MULTICAST, /* To group */
+	PACKET_OTHERHOST, /* To someone else */
+	PACKET_LOOPBACK   /* We are in loopback, it overwrites everything */
+};
+
+/**
  * Functions provided by eth.c
  */
 
-
-/* Packet types.
- * Do we want to pack them into a enum?
+/**
+ * eth_get_header_ops - returns methods for working with ethernet header
  */
-#define PACKET_HOST             0	/* To us */
-#define PACKET_BROADCAST        1	/* To all */
-#define PACKET_MULTICAST        2	/* To group */
-#define PACKET_OTHERHOST        3	/* To someone else */
-#define PACKET_LOOPBACK         4	/* We are in loopback, it overwrites everything */
+extern const struct header_ops * eth_get_header_ops(void);
 
 /**
  * eth_packet_type - determine the packet type (See above)
@@ -97,73 +101,47 @@ static inline bool compare_ether_addr(const uint8_t *a, const uint8_t *b)
 extern uint8_t eth_packet_type(struct sk_buff *skb);
 
 /**
- * Extract hardware address from packet.
- * @param pack packet to extract header from
- * @param haddr destination buffer
+ * Functions provided by etherdev.c
  */
-extern int eth_header_parse(const sk_buff_t *pack, unsigned char *haddr);
 
 /**
  * Set new Ethernet hardware address.
  * @param dev network device
  * @param addr socket address
  */
-extern int eth_mac_addr(struct net_device *dev, struct sockaddr *addr);
-
-/**
- * Create the Ethernet header
- * @param pack buffer to alter
- * @param dev source device
- * @param type Ethernet type field
- * @param daddr destination address (NULL leave destination address)
- * @param saddr source address (NULL use device source address)
- * @paramlen packet length (<= pack->len)
- */
-extern int eth_header(sk_buff_t *pack, struct net_device *dev,
-			unsigned short type, void *daddr, void *saddr, unsigned len);
-
-/**
- * Rebuild the Ethernet MAC header.
- * @param pack socket buffer to update
- */
-extern int eth_rebuild_header(sk_buff_t *pack);
+extern int etherdev_mac_addr(struct net_device *dev, struct sockaddr *addr);
 
 /**
  * Set new MTU size
  * @param dev network device
  * @param new_mtu new Maximum Transfer Unit
  */
-extern int eth_change_mtu(struct net_device *dev, int new_mtu);
+extern int etherdev_change_mtu(struct net_device *dev, int new_mtu);
 
+#if 0
 /**
  * Setup Ethernet network device
  * @param dev network device
  * Fill in the fields of the device structure with Ethernet-generic values.
  */
-extern void ether_setup(struct net_device *dev);
-
-extern const header_ops_t * get_eth_header_ops(void);
+extern void etherdev_setup(struct net_device *dev);
+#endif
 
 /**
  * Allocates and sets up an Ethernet device
  */
-extern struct net_device * alloc_etherdev(int sizeof_priv);
+extern struct net_device * etherdev_alloc(void);
 
 /**
  * Frees an Ethernet device
  */
-extern void free_etherdev(struct net_device *dev);
+extern void etherdev_free(struct net_device *dev);
 
-/**
- * Determine the packet's protocol ID.
- */
-extern __be16 eth_type_trans(struct sk_buff *skb, struct net_device *dev);
-
-extern int eth_flag_up(struct net_device *dev, int flag_type);
-extern int eth_flag_down(struct net_device *dev, int flag_type);
-extern int eth_set_irq(struct net_device *dev, int irq_num);
-extern int eth_set_baseaddr(struct net_device *dev, unsigned long base_addr);
-extern int eth_set_txqueuelen(struct net_device *dev, unsigned long new_len);
-extern int eth_set_broadcast_addr(struct net_device *dev, unsigned char broadcast_addr[]);
+extern int etherdev_flag_up(struct net_device *dev, int flag_type);
+extern int etherdev_flag_down(struct net_device *dev, int flag_type);
+extern int etherdev_set_irq(struct net_device *dev, int irq_num);
+extern int etherdev_set_baseaddr(struct net_device *dev, unsigned long base_addr);
+extern int etherdev_set_txqueuelen(struct net_device *dev, unsigned long new_len);
+extern int etherdev_set_broadcast_addr(struct net_device *dev, unsigned char broadcast_addr[]);
 
 #endif /* NET_ETHERDEVICE_H_ */

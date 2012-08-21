@@ -34,25 +34,5 @@
 #define __MOD_PACKAGE(pkg_nm)  MACRO_CONCAT(__mod_package__,  pkg_nm)
 #endif /*__ASSEMBLER__*/
 
-#define __OPTION_MODULE_GET(mod,type,name) \
-		OPTION_##type##_##mod##__##name
 
-#define OPTION_MODULE_GET(mod,type,name) \
-	__OPTION_MODULE_GET(mod,type,name)
-
-#define OPTION_GET(type,name) \
-	OPTION_MODULE_GET(__EMBUILD_MOD__,type,name)
-
-#define __OPTION_MODULE_DEFINED(mod,type,name) \
-	defined(OPTION_##type##_##mod##__##name)
-
-#define OPTION_MODULE_DEFINED(mod,type,name) \
-	  __OPTION_MODULE_DEFINED(mod,type,name)
-
-#define OPTION_DEFINED(type,name) \
-	OPTION_MODULE_DEFINED(__EMBUILD_MOD__,type,name)
-
-/* Performs additional stringification, handy in string options */
-#define OPTION_STRING_GET(name) \
-	MACRO_STRING(OPTION_GET(STRING,name))
 #endif /* FRAMEWORK_MOD_DECLS_H_ */

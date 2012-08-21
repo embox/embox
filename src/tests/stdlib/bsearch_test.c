@@ -65,4 +65,3 @@ TEST_CASE("Test that existing not-unique item will be found. "
 			"Result must be the rightmost one") {
 	found(find(2), 3);
 }
-

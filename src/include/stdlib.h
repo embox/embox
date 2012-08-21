@@ -17,15 +17,17 @@
 #include <stddef.h>
 #include <sys/wait.h>
 
-typedef struct ldiv{
+typedef struct ldiv {
    long int quot;
    long int rem;
 } ldiv_t;
 
-typedef struct div{
+typedef struct div {
    int quot;
    int rem;
 } div_t;
+
+__BEGIN_DECLS
 
 /**
  * Converts the initial part of the string in @a nptr to a long integer value
@@ -103,5 +105,20 @@ extern long long atoq(const char *nptr);
 extern double strtod(const char *nptr, char **endptr);
 extern float strtof(const char *nptr, char **endptr);
 extern long double strtold(const char *nptr, char **endptr);
+extern void abort(void);
+
+/**
+ * Returns the absolute value of an argument. If the argument is not negative,
+ * the argument is returned. If the argument is negative, the negation of the
+ * argument is returned.
+ *
+ * @param x the argument whose absolute value is to be determined
+ *
+ * @return the absolute value of the argument
+ */
+static inline int abs(int x) { return x < 0 ? -x : x; } // TODO move from here
+static inline long labs(long x) { return x < 0 ? -x : x; }
+
+__END_DECLS
 
 #endif /* STDLIB_H_ */

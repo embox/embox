@@ -15,7 +15,7 @@
 #define HAL_CONTEXT_H_
 
 #include <types.h>
-#include <asm/hal/context.h>
+#include <module/embox/arch/context.h>
 
 #ifndef __ASSEMBLER__
 
