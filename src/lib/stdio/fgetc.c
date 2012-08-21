@@ -13,7 +13,9 @@
 
 int fgetc(FILE *file) {
 	unsigned char ch;
-	fread(&ch, 1, 1, file);
+	if (fread(&ch, 1, 1, file) != 1) {
+		return EOF;
+	}
 	return (int)ch;
 
 }

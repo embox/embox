@@ -43,7 +43,7 @@ extern int putchar(int c);
  */
 extern char *gets(char *s);
 
-#define fgets(s, size, stream) gets(s)
+extern char *fgets(char *s, int n, FILE *stream);
 
 extern int getchar(void);
 

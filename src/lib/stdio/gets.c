@@ -9,6 +9,31 @@
 #include <stdio.h>
 #include <types.h>
 
+char * fgets(char *s, int n, FILE *file) {
+	int c;
+	char *ptr;
+
+	if (n <= 0) {
+		return NULL;
+	}
+
+	ptr = s;
+	while ((--n > 0) && ((c = getc(file)) != EOF)) {
+		*ptr++ = c;
+		if (c == '\n') {
+			break;
+		}
+	}
+
+	if ((c == EOF) && (ptr == s)) {
+		return NULL;
+	}
+
+	*ptr = '\0';
+
+	return s;
+}
+
 char *gets(char *s) {
 	int c;
 	char *ptr;
