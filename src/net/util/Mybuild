@@ -3,8 +3,4 @@ package embox.net
 module util {
 	source "inet_addr.c", "misc.c"
 	depends embox.lib.LibC
-
-	source "netdb.c"
-	option string path_to_hosts="/hosts"
-	depends embox.lib.LibC
 }

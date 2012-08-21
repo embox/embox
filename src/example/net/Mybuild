@@ -7,7 +7,7 @@ package embox.example.net
 module gethostent {
 	source "gethostent.c"
 
-	depends embox.net.util
+	depends embox.net.netdb
 }
 
 module checkopts {

@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <err.h>
 #include <ctype.h>
+#include <errno.h>
 
 #include <framework/mod/options.h>
 #define MODOPS_PATH_TO_HOSTS OPTION_STRING_GET(path_to_hosts)
@@ -50,13 +51,10 @@ void endhostent(void) {
 static void split_word(char *ptr) { skip_word(ptr); *ptr = '\0'; }
 
 struct hostent * gethostent(void) {
-	static struct hostent he;
-	static struct in_addr *he_addr[2];
-	static struct in_addr he_ip;
-	static char *he_aliases[2];
-	static char he_buff[HOSTENT_BUFF_SZ];
-	char *tmp, *ip_str;
-	struct hostent *result;
+	char hostent_buff[HOSTENT_BUFF_SZ];
+	struct hostent *he, *result;
+	char *tmp, *ip_str, *name;
+	struct in_addr ip_addr;
 
 	/* prepare file (if needed) */
 	if (hosts == NULL) {
@@ -66,12 +64,18 @@ struct hostent * gethostent(void) {
 	result = NULL;
 
 	/* read hostent from file */
-	while ((tmp = fgets(&he_buff[0], sizeof he_buff, hosts)) != NULL) {
+	while ((tmp = fgets(&hostent_buff[0], sizeof hostent_buff, hosts)) != NULL) {
 		/* Format: <addr> <name> [aliase] */
 
 		/* skip comments */
-		if (he_buff[0] == '#') {
+		if (*tmp == '#') {
 			continue;
+		}
+
+		/* create hostent structure */
+		he = hostent_create();
+		if (he == NULL) {
+			break;
 		}
 
 		/* get ipv4 address */
@@ -80,38 +84,40 @@ struct hostent * gethostent(void) {
 			continue; /* invalid format */
 		}
 		*tmp++ = '\0';
-		if (!inet_aton(ip_str, &he_ip)) {
+		if (!inet_aton(ip_str, &ip_addr)) {
 			continue; /* bad ip */
 		}
-		he.h_addrtype = AF_INET;
-		he.h_length = sizeof he_ip;
-		he_addr[0] = &he_ip;
-		he_addr[1] = NULL;
-		he.h_addr_list = (char **)&he_addr;
+		if (hostent_set_addr_info(he, AF_INET, sizeof ip_addr) != 0) {
+			break; /* error occurred */
+		}
+		if (hostent_add_addr(he, (char *)&ip_addr) != 0) {
+			break; /* error occurred */
+		}
 
 		/* get main name */
 		skip_spaces(tmp);
-		he.h_name = tmp;
+		name = tmp;
 		skip_word(tmp);
-		if (*tmp == '\0') {
+		*tmp++ = '\0';
+		if (*name == '\0') {
 			continue; /* unspecified official name */
 		}
-		*tmp++ = '\0';
+		if (hostent_set_name(he, name) != 0) {
+			break; /* error occurred */
+		}
 
 		/* get alternate name */
 		skip_spaces(tmp);
-		if (*tmp != '\0') {
-			he_aliases[0] = tmp;
-			he_aliases[1] = NULL;
-			split_word(tmp);
+		name = tmp;
+		split_word(tmp);
+		if (*name != '\0') {
+			if (hostent_add_alias(he, name) != 0) {
+				break;
+			}
 		}
-		else {
-			he_aliases[0] = NULL;
-		}
-		he.h_aliases = (char **)&he_aliases[0];
 
 		/* save result */
-		result = &he;
+		result = he;
 
 		/* exit */
 		break;
