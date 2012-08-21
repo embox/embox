@@ -7,62 +7,82 @@
  * @author Gleb Efimov
  */
 
-
 #include <embox/unit.h>
 
 #include <hal/mm/mmu_core.h>
 #include <asm/hal/mm/mmu_core.h>
 
-#define START 0x5C0000
-
+//http://www.acm.uiuc.edu/sigops/roll_your_own/i386/vm.html
 
 EMBOX_UNIT_INIT(mmu_init);
 
-void mmu_init(void) {
-		uint32_t address = 0x0;
-		uint32_t *pdt = (uint32_t *)START;
-		uint32_t *pte;
+static void set_cr3(unsigned int pagedir)
+{
+   asm ("mov %0, %%cr3": :"r" (pagedir));
+}
 
-		for (int i = 0; i < MMU_GTABLE_SIZE; i++) {
-			pte = pdt + (i + 1) * MMU_PAGE_SIZE;
-			pdt[i] = ((uint32_t)&pte) | 3;
+static unsigned int get_cr3(void)
+{
+   unsigned int _cr3;
 
-			for (int i = 0; i < MMU_MTABLE_SIZE; i++) {
+   asm ("mov %%cr3, %0":"=r" (_cr3));
+   return _cr3;
+}
+
+static unsigned int get_cr2(void) {
+    unsigned int _cr2;
+
+    asm ("mov %%cr2, %0":"=r" (_cr2):);
+    return _cr2;
+}
+
+mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx) {
+	mmu_pgd_t * pagedir;
+	pagedir = (mmu_pgd_t *)get_cr3();
+	return &pagedir[ctx];
+}
+
+#define START 0x5C0000
+
+static int mmu_init(void) {
+	uint32_t address = 0x0;
+	uint32_t *pdt = (uint32_t *) START;
+	uint32_t *pte;
+
+	for (int i = 0; i < MMU_GTABLE_SIZE; i++) {
+		pte = pdt + (i + 1) * MMU_PAGE_SIZE;
+		pdt[i] = ((uint32_t) &pte) | 3;
+
+		for (int i = 0; i < MMU_MTABLE_SIZE; i++) {
 			pte[i] = address | 3;
 			address += MMU_PAGE_SIZE;
-			}
 		}
+	}
 
-		pdt[0] = (uint32_t)pte;
-		pdt[0] |= 3;
+	pdt[0] = (uint32_t) pte;
+	pdt[0] |= 3;
 
-		asm ("mov %0, %%cr3":: "b"(pdt));
+	set_cr3((uint32_t)pdt);
+	return 0;
 }
 
 void mmu_on(void) {
 
 	asm (
-		"mov %cr0, %eax\n"
-		"or  $0x80000000, %eax\n"
-		"mov %eax, %cr0"
+			"mov %cr0, %eax\n"
+			"or  $0x80000000, %eax\n"
+			"mov %eax, %cr0"
 	);
 }
 
 void mmu_off(void) {
 	asm (
-		"mov %cr0, %eax\n"
-		"and  $0x7fffffff, %eax\n"
-		"mov %eax, %cr0"
+			"mov %cr0, %eax\n"
+			"and  $0x7fffffff, %eax\n"
+			"mov %eax, %cr0"
 	);
 }
 
-int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
-		size_t reg_size, mmu_page_flags_t flags) {
-	int* pointer_entry;
-	int pde_index = (uint32_t)virt_addr >> 22;
-	int pte_index = (uint32_t)virt_addr >> 12 & 0x03ff;
-
-	if (pde_index & 0x1 == 0)
-
-	return -1;
+vaddr_t mmu_get_fault_address(void) {
+	return get_cr2();
 }

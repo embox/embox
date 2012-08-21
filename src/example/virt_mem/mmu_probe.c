@@ -8,13 +8,13 @@
  * @author Gleb Efimov
  */
 
-#include <embox/cmd.h>
+#include <embox/example.h>
 #include <getopt.h>
 #include <types.h>
 #include <hal/mm/mmu_core.h>
 #include <stdio.h>
 
-EMBOX_CMD(exec);
+EMBOX_EXAMPLE(exec);
 
 #define PAGE_SIZE 0x1000
 
@@ -25,6 +25,7 @@ static void print_usage(void) {
 }
 
 static bool mmu_show_ctrl() {
+
 	unsigned int ctrl_reg = mmu_get_mmureg(LEON_CNR_CTRL);
 	printf("CTLR REG:\t0x%08X\n", ctrl_reg);
 	printf("\tIMPL:\t0x%01X\n", (ctrl_reg & MMU_CTRL_IMPL) >> 28);
@@ -33,11 +34,13 @@ static bool mmu_show_ctrl() {
 	printf("\tPSO:\t%d\n",      (ctrl_reg & MMU_CTRL_PSO) >> 7);
 	printf("\tNF:\t%d\n",       (ctrl_reg & MMU_CTRL_NF) >> 1);
 	printf("\tE:\t%d\n",         ctrl_reg & MMU_CTRL_E);
+
 	return 0;
 }
 
 static bool mmu_show_fault_status() {
 	unsigned int fault_reg = mmu_get_mmureg(LEON_CNR_F);
+
 	printf("FAULT STATUS:\t0x%08X\n", fault_reg);
 	printf("\tEBE:\t0x%02X\n", (fault_reg & MMU_F_EBE) >> 10);
 	printf("\tL:\t0x%01X\n",   (fault_reg & MMU_F_L) >> 8);
@@ -45,61 +48,46 @@ static bool mmu_show_fault_status() {
 	printf("\tFT:\t0x%01X\n",  (fault_reg & MMU_F_FT) >> 2);
 	printf("\tFAV:\t%d\n",     (fault_reg & MMU_F_FAV) >> 1);
 	printf("\tOW:\t%d\n",       fault_reg & MMU_F_OW);
+
 	return 0;
 }
-
+#endif
+#if 0
 /**
  * show MMU register
  */
-static bool mmu_show_reg() {
+static bool mmu_show_reg(void) {
+
 	printf("Registers MMU:\n");
 	mmu_show_ctrl();
 	printf("CTXTBL PTR:\t0x%08X\n", mmu_get_mmureg(LEON_CNR_CTXP));
 	printf("CTX REG:\t0x%08X\n", mmu_get_mmureg(LEON_CNR_CTX));
 	mmu_show_fault_status();
 	printf("FAULT ADDR:\t0x%08X\n", mmu_get_mmureg(LEON_CNR_CTX));
+
 	return 0;
 }
 #endif
-#define TLBNUM 0
-
-void  __attribute__((aligned(PAGE_SIZE))) function1(void) {
+typedef void (*vfunc_t)(void);
+static void  __attribute__((aligned(PAGE_SIZE))) function1(void) {
 	printf("\n\tInside the first function\n");
 }
 
-void __attribute__((aligned(PAGE_SIZE))) function2(void) {
+static void __attribute__((aligned(PAGE_SIZE))) function2(void) {
 	printf("\n\tInside the second function\n");
 }
 
-void map_region(void* obj1, void* obj2) {
-	printf("\nMapping a new function to the old address\n");
-	obj1 = obj2;
-}
+//static uint32_t mmu_translate(uint32_t phy_addr) {
+//	return 0;
+//}
 
 static int mmu_probe(void) {
-
-
-#if 0
-	asm (
-		".section .data \n/t"
-		".align %0\n/t"
-		"page0: .skip %1\n/t"
-		"page1: .skip %2\n/t"
-		"page2: .skip %3\n\t"
-		".text\n"
-		: : "i" (MMU_PAGE_SIZE),/* Page Size */
-		"i"(MMU_GTABLE_SIZE) ,	/* Directory of tables*/
-		"i"(MMU_MTABLE_SIZE) ,	/* Table of pages */
-		"i"((3)*MMU_PAGE_SIZE)
-	);
-
-	/*"i"(MMU_PTABLE_SIZE) , 	 Page table*/
-x
+	vfunc_t vfunc = 0;
 	/* one-on-one mapping for context 0 */
-	mmu_map_region(0, 0, 0x1000000, /* MMU_PTE_PRIV */ 0x000000000, 0x0);
-	mmu_map_region(0x44000000, 0x44000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
-	mmu_map_region(0x80000000, 0x80000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
-#endif
+//	mmu_map_region(0, 0, 0x1000000, /* MMU_PTE_PRIV */ 0x000000000, 0x0);
+//	mmu_map_region(0x44000000, 0x44000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
+//	mmu_map_region(0x80000000, 0x80000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
+
 
 	/* close your eyes and pray ... */
 	printf("\nPaging starting...\n");
@@ -107,11 +95,13 @@ x
 	/* enabling paging */
 	mmu_on();
 
-	function1();
+	mmu_map_region(0, (paddr_t )function1, (vaddr_t)vfunc, PAGE_SIZE, 0);
+	vfunc();
 
-	map_region(function1,function2);
+	mmu_map_region(0, (paddr_t )function2, (vaddr_t)vfunc, PAGE_SIZE, 0);
+	vfunc();
 
-	function1();
+
 
 	printf ("\nEnding mmu testing...\n");
 
@@ -124,14 +114,15 @@ x
 /**
  * handler of command "mmu_probe"
  * It starts tests of mmu mode
- * return 0 if successed
+ * return 0 if success
  * return -1 another way
  */
 static int exec(int argc, char **argv) {
-
 #if 0
 	int opt;
+
 	getopt_init();
+
 	while (-1 != (opt = getopt(argc, argv, "rh"))) {
 		switch(opt) {
 		case 'h':
@@ -139,6 +130,9 @@ static int exec(int argc, char **argv) {
 			return 0;
 		case 'r':
 			mmu_show_reg();
+			return 0;
+		case 'p':
+			mmu_translate(0);
 			return 0;
 		default:
 			return 0;
