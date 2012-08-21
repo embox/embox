@@ -76,7 +76,7 @@ struct hostent * gethostent(void) {
 
 		/* get ipv4 address */
 		skip_spaces(tmp); ip_str = tmp; skip_word(tmp);
-		if (tmp == '\0') {
+		if (*tmp == '\0') {
 			continue; /* invalid format */
 		}
 		*tmp++ = '\0';
