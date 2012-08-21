@@ -27,6 +27,7 @@
 #include <err.h>
 #include <errno.h>
 #include <net/route.h>
+#include <net/netdb.h>
 
 EMBOX_CMD(exec);
 
@@ -66,7 +67,7 @@ static void print_usage(void) {
 		"            [-I interface] [-W timeout] destination\n");
 }
 
-static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack) {
+static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack, char *name) {
 	uint32_t start, delta;
 	union packet rx_pack;
 	struct sockaddr_in from;
@@ -87,14 +88,14 @@ static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack) {
 		}
 		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack.hdr.ip_hdr.saddr);
 		if (delta < 1) {
-			printf("%d bytes from %s: icmp_seq=%d ttl=%d time <1ms\n",
+			printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time <1ms\n",
 					(int)(ntohs(rx_pack.hdr.ip_hdr.tot_len) - IP_MIN_HEADER_SIZE - ICMP_HEADER_SIZE),
-					dst_addr_str, ntohs(rx_pack.hdr.icmp_hdr.un.echo.sequence), rx_pack.hdr.ip_hdr.ttl);
+					name, dst_addr_str, ntohs(rx_pack.hdr.icmp_hdr.un.echo.sequence), rx_pack.hdr.ip_hdr.ttl);
 		}
 		else {
-			printf("%d bytes from %s: icmp_seq=%d ttl=%d time=%d ms\n",
+			printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time=%d ms\n",
 					(int)(ntohs(rx_pack.hdr.ip_hdr.tot_len) - IP_MIN_HEADER_SIZE - ICMP_HEADER_SIZE),
-					dst_addr_str, ntohs(rx_pack.hdr.icmp_hdr.un.echo.sequence), rx_pack.hdr.ip_hdr.ttl, delta);
+					name, dst_addr_str, ntohs(rx_pack.hdr.icmp_hdr.un.echo.sequence), rx_pack.hdr.ip_hdr.ttl, delta);
 		}
 		return 1;
 	}
@@ -102,7 +103,7 @@ static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack) {
 }
 
 
-static int ping(struct ping_info *pinfo) {
+static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	uint32_t timeout, total;
 	size_t i;
 	int cnt_resp, cnt_err, sk;
@@ -138,8 +139,7 @@ static int ping(struct ping_info *pinfo) {
 
 	to.sin_addr.s_addr = pinfo->dst.s_addr;
 
-	printf("PING %s %d bytes of data. id=%d\n",
-			inet_ntoa(pinfo->dst), pinfo->padding_size, ntohs(tx_pack.hdr.icmp_hdr.un.echo.id));
+	printf("PING %s (%s) %d bytes of data\n", name, inet_ntoa(pinfo->dst), pinfo->padding_size);
 
 	total = clock();
 	i = 0;
@@ -155,11 +155,11 @@ static int ping(struct ping_info *pinfo) {
 		sendto(sk, tx_pack.packet_buff, ntohs(tx_pack.hdr.ip_hdr.tot_len), 0, (struct sockaddr *)&to, sizeof to);
 
 		/* try to fetch response */
-		if (sent_result(sk, timeout, &tx_pack))
+		if (sent_result(sk, timeout, &tx_pack, official_name))
 			cnt_resp++;								/* if response was fetched proceed */
 		else {											/* else output diagnostics */
 			/* that is not right. fetch error message */
-			printf("From %s icmp_seq=%d Destination Host Unreachable\n", inet_ntoa(pinfo->dst), i); // TODO
+			printf("From %s icmp_seq=%d Destination Host Unreachable\n", inet_ntoa(pinfo->from), i); // TODO
 			cnt_err++;
 		}
 
@@ -186,6 +186,8 @@ static int exec(int argc, char **argv) {
 	struct ping_info pinfo;
 	int iface_set, cnt_set, ttl_set, tout_set, psize_set, int_set, pat_set, ip_set;
 	int garbage, duplicate;
+	struct hostent *he;
+	char *hostname;
 	duplicate = garbage =	iface_set = cnt_set = ttl_set = tout_set = psize_set = int_set = pat_set = ip_set = 0;
 
 	in_dev = NULL;
@@ -300,11 +302,14 @@ static int exec(int argc, char **argv) {
 
 		case -1:										/* non-option argument, should be ip*/
 		  if(!ip_set){
-				if (inet_aton(argv[i_opt + 1], &pinfo.dst) == 0) {
+			  he = gethostbyname(argv[i_opt + 1]);
+			  if (he == NULL) {
 					printf("ping: bad ip address (%s)\n", argv[argc - 1]);
 					print_usage();
 					return -1;
 				}
+			  hostname = argv[i_opt + 1];
+			  pinfo.dst.s_addr = ((struct in_addr *)he->h_addr_list[0])->s_addr;
 				ip_set = 1;
 			}else
 				garbage = 1;						/* in case of garbage in option string */
@@ -341,7 +346,8 @@ static int exec(int argc, char **argv) {
 		pinfo.from.s_addr = in_dev_get(rte->dev)->ifa_address;
 	}
 	/* ping! */
-	ping(&pinfo);
+	ping(&pinfo, hostname, he->h_name);
 
 	return 0;
 }
+
