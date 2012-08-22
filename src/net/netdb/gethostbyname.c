@@ -9,6 +9,7 @@
 #include <net/in.h>
 #include <stdlib.h>
 #include <string.h>
+#include "hostent_api.h"
 
 static struct hostent * get_hostent_from_ip(const char *ip_str) {
 	struct hostent *he;

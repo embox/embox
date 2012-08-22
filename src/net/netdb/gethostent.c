@@ -12,6 +12,7 @@
 #include <err.h>
 #include <ctype.h>
 #include <errno.h>
+#include "hostent_api.h"
 
 #include <framework/mod/options.h>
 #define MODOPS_PATH_TO_HOSTS OPTION_STRING_GET(path_to_hosts)

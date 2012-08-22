@@ -1,7 +1,7 @@
 package embox.net
 
 module netdb {
-	source "hostent.c"
+	source "hostent_api.c", "hostent_api.h"
 	option number max_name_len=32
 	option number max_aliases_num=10
 	option number max_addr_len=4 /* now only ipv4 is used */

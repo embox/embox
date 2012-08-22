@@ -1,15 +1,16 @@
 /**
  * @file
+ * @brief Useful functions for manipulations with a hostent structure
  *
  * @date 20.08.12
  * @author Ilia Vaprol
  */
 
-#include <net/netdb.h>
-#include <net/in.h>
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+#include <net/netdb.h>
+#include "hostent_api.h"
 
 #include <framework/mod/options.h>
 #define MODOPS_MAX_NAME_LEN OPTION_GET(NUMBER, max_name_len)
