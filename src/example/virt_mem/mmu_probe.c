@@ -69,25 +69,17 @@ static bool mmu_show_reg(void) {
 }
 #endif
 typedef void (*vfunc_t)(void);
-static void  __attribute__((aligned(PAGE_SIZE))) function1(void) {
-	printf("\n\tInside the first function\n");
-}
-
-static void __attribute__((aligned(PAGE_SIZE))) function2(void) {
-	printf("\n\tInside the second function\n");
-}
-
-//static uint32_t mmu_translate(uint32_t phy_addr) {
-//	return 0;
+//static void  __attribute__((aligned(PAGE_SIZE))) function1(void) {
+//	printf("\n\tInside the first function\n");
+//}
+//
+//static void __attribute__((aligned(PAGE_SIZE))) function2(void) {
+//	printf("\n\tInside the second function\n");
 //}
 
-static int mmu_probe(void) {
-	vfunc_t vfunc = 0;
-	/* one-on-one mapping for context 0 */
-//	mmu_map_region(0, 0, 0x1000000, /* MMU_PTE_PRIV */ 0x000000000, 0x0);
-//	mmu_map_region(0x44000000, 0x44000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
-//	mmu_map_region(0x80000000, 0x80000000, 0x1000000, /* MMU_PTE_PRIV */ 0x00000000, 0x0);
 
+static int mmu_probe(void) {
+	//vfunc_t vfunc = 0;
 
 	/* close your eyes and pray ... */
 	printf("\nPaging starting...\n");
@@ -95,19 +87,18 @@ static int mmu_probe(void) {
 	/* enabling paging */
 	mmu_on();
 
-	mmu_map_region(0, (paddr_t )function1, (vaddr_t)vfunc, PAGE_SIZE, 0);
-	vfunc();
+	//mmu_map_region(0, (paddr_t )function1, (vaddr_t)vfunc, PAGE_SIZE, 0);
+	//vfunc();
 
-	mmu_map_region(0, (paddr_t )function2, (vaddr_t)vfunc, PAGE_SIZE, 0);
-	vfunc();
+	//mmu_map_region(0, (paddr_t )function2, (vaddr_t)vfunc, PAGE_SIZE, 0);
+	//vfunc();
 
 
 
-	printf ("\nEnding mmu testing...\n");
 
 	/* disabling paging */
 	mmu_off();
-
+	printf ("\nEnding mmu testing...\n");
 	return 0;
 }
 
