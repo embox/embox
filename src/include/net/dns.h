@@ -14,22 +14,55 @@
 #include <stdlib.h>
 #include <types.h>
 
-/* Protocol's specific constants */
+/**
+ * Protocol's specific constants
+ */
 #define DNS_MAX_LABEL_SZ   64
 #define DNS_MAX_NAME_SZ    256
 #define DNS_MAX_MESSAGE_SZ 512
 
+/**
+ * Types of messages
+ */
+enum dns_msg_type {
+	DNS_MSG_TYPE_QUERY = 0, /* a request message */
+	DNS_MSG_TYPE_REPLY = 1  /* a reply message */
+};
+
+/**
+ * Types of operations
+ */
+enum dns_oper_code {
+	DNS_OPER_CODE_QUERY = 0,  /* a standard query */
+	DNS_OPER_CODE_IQUERY = 1, /* an inverse query */
+	DNS_OPER_CODE_STATUS = 2  /* a server status requset */
+};
+
+/**
+ * Operation retrun code
+ */
+enum dns_resp_code {
+	DNS_RESP_CODE_OK = 0,      /* ok */
+	DNS_RESP_CODE_EFORMAT = 1, /* format error */
+	DNS_RESP_CODE_ESERVER = 2, /* server failure */
+	DNS_RESP_CODE_NONAME = 3,  /* name error */
+	DNS_RESP_CODE_NOIMPL = 4,  /* not implemented */
+	DNS_RESP_CODE_REFUSE = 5   /* refused */
+};
+
+#define __LITTLE_ENDIAN
+
 typedef struct dnshdr {
-	__be16 id;
+	__be16 id;      /* unique id */
 #if defined(__LITTLE_ENDIAN)
-	__u16 qr:1,
-		opcode:4,
-		aa:1,
-		tc:1,
-		rd:1,
-		ra:1,
-		z:3,
-		rcode:4;
+	__u16 qr:1,     /* type of the message */
+		opcode:4,   /* type of the operation */
+		aa:1,       /* authoritative answer */
+		tc:1,       /* truncation */
+		rd:1,       /* recursion desired */
+		ra:1,       /* recursion available */
+		z:3,        /* reserved (must be zero) */
+		rcode:4;    /* response code */
 #elif defined(__BIG_ENDIAN)
 	__u16 rd:1,
 		tc:1,
@@ -40,17 +73,17 @@ typedef struct dnshdr {
 		z:3,
 		ra:1;
 #endif
-	__be16 qdcount;
-	__be16 ancount;
-	__be16 nscount;
-	__be16 arcount;
+	__be16 qdcount; /* number of questions */
+	__be16 ancount; /* number of answers */
+	__be16 nscount; /* number of authority records */
+	__be16 arcount; /* number of additional records */
 } dnshdr_t;
 
 /**
  * DNS Types
  */
 enum dns_type {
-	/* Resource Records types: */
+	/* Resource Records types */
 	DNS_RR_TYPE_A = 1,      /* a host address */
 	DNS_RR_TYPE_NS = 2,     /* an authoritative name server */
 	DNS_RR_TYPE_MD = 3,     /* a mail destination (use MX insted) */
@@ -68,7 +101,7 @@ enum dns_type {
 	DNS_RR_TYPE_MX = 15,    /* mail exchange */
 	DNS_RR_TYPE_TXT = 16,   /* text strings */
 
-	/* Questions types: */
+	/* Questions types */
 	DNS_Q_TYPE_AXFR = 252,  /* a request for a transfer of an entire zone */
 	DNS_Q_TYPE_MAILB = 253, /* a request for mailbox-related records (MB, MG or MR) */
 	DNS_Q_TYPE_MAILA = 254, /* a request for mail agent RRs (use MX instead) */
@@ -76,7 +109,7 @@ enum dns_type {
 };
 
 /**
- * Resource data formats:
+ * Resource data formats
  */
 struct dns_rr_a { uint32_t address; }; /* Host address format */
 struct dns_rr_ns { char nsdname[DNS_MAX_NAME_SZ]; }; /* Authoritative name server format */
@@ -101,13 +134,13 @@ struct dns_rr_txt { char *txt_data; }; /* Text strings format */
  * DNS Classes
  */
 enum dns_class {
-	/* Resource Records classes: */
+	/* Resource Records classes */
 	DNS_RR_CLASS_IN = 1, /* the Internet */
 	DNS_RR_CLASS_CS = 2, /* the CSNET class */
 	DNS_RR_CLASS_CH = 3, /* the CHAOS class */
 	DNS_RR_CLASS_HS = 4, /* Hesiod */
 
-	/* Question classes: */
+	/* Question classes */
 	DNS_Q_ANY = 255      /* any class */
 };
 
@@ -116,8 +149,8 @@ enum dns_class {
  */
 struct dns_rr {
 	char owner[DNS_MAX_NAME_SZ]; /* an owner name */
-	enum dns_type rtype;         /* type of a record */
-	enum dns_class rclass;       /* class of a record */
+	uint16_t rtype;              /* type of a record */
+	uint16_t rclass;             /* class of a record */
 	int32_t rttl;                /* time life of this record */
 	uint16_t rdlength;           /* size of rdata field */
 	union {
@@ -145,14 +178,14 @@ struct dns_rr {
  */
 struct dns_q {
 	char qname[DNS_MAX_NAME_SZ]; /* domain name */
-	enum dns_type qtype;         /* type of the query */
-	enum dns_class qclass;       /* class of the query */
+	uint16_t qtype;              /* type of the query */
+	uint16_t qclass;             /* class of the query */
 };
 
 /**
  * dns_query - make query with specified type and class
  */
-extern int dns_query(const char *query, uint16_t qtype, uint16_t qclass,
+extern int dns_query(const char *query, enum dns_type qtype, enum dns_class qclass,
 		struct dns_rr **out_result, size_t *out_amount);
 
 #endif /* NET_DNS_H_ */
