@@ -13,7 +13,6 @@ struct stackframe;
 
 void stackframe_set_current(struct stackframe*);
 int stackframe_set_prev(struct stackframe*);
-
 void stackframe_print(struct stackframe*);
 
-#endif /* FRAME_H_ */
+#endif /* STACKFRAME_H_ */

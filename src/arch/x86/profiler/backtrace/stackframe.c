@@ -7,16 +7,7 @@
  */
 
 #include <stdio.h>
-
-// TODO: Delete it
-typedef struct pt_regs {
-	uint32_t esp2, ss2;  // stack pointer just before entering the handler if there was no priority change. Are invalid otherwise, use esp, ss instead
-	uint32_t gs, fs, es, ds;
-	uint32_t edi, esi, ebp, cr2, ebx, edx, ecx, eax; /*pusha*/
-	uint32_t trapno, err;              /*push by isr*/
-	uint32_t eip, cs, eflags; /*Pushed by the processor automatically*/
-	uint32_t esp, ss; /*Pushed by the processor automatically in case of priority level change. Are invalid otherwise (use esp2, ss2 instead) */
-} pt_regs_t;
+#include <asm/traps.h>
 
 struct stackframe {
 	void* fp;
@@ -45,7 +36,8 @@ int stackframe_set_prev(struct stackframe *f) {
 	} else {
 		if (*p == NULL) {
 			f->fp = NULL;
-			f->pc = NULL;
+			//f->pc = NULL;
+			f->pc = *(p+1);
 			return 0;
 		} else {
 			f->fp = p;
