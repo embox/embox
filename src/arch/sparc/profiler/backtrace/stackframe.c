@@ -2,7 +2,7 @@
  * @file
  * @brief TODO: brief
  *
- * @date 16 Aug, 2012
+ * @date 24 Aug, 2012
  * @author Bulychev Anton
  */
 
@@ -23,9 +23,6 @@ void stackframe_set_current(struct stackframe* f) {
 // TODO: May be add type of previous: through interruption or not?
 // TODO: __builtin_extract_return_address!!!
 int stackframe_set_prev(struct stackframe *f) {
-	extern void irq_handler_call_pointer(void);
-	extern void exception_handler_call_pointer(void);
-
 	struct stack_frame* sf = f->fp;
 	f->fp = sf->reg_window.fp;
 	if (f->fp == NULL) {
