@@ -16,8 +16,6 @@
 
 EMBOX_EXAMPLE(exec);
 
-#define PAGE_SIZE 0x1000
-
 
 #if 0
 static void print_usage(void) {
@@ -69,17 +67,21 @@ static bool mmu_show_reg(void) {
 }
 #endif
 typedef void (*vfunc_t)(void);
-//static void  __attribute__((aligned(PAGE_SIZE))) function1(void) {
-//	printf("\n\tInside the first function\n");
-//}
-//
-//static void __attribute__((aligned(PAGE_SIZE))) function2(void) {
-//	printf("\n\tInside the second function\n");
-//}
+static void  __attribute__((aligned(MMU_PAGE_SIZE))) function1(void) {
+	printf("\n\tInside the first function\n");
+}
 
+static void __attribute__((aligned(MMU_PAGE_SIZE))) function2(void) {
+	printf("\n\tInside the second function\n");
+}
+
+static inline void __native_flush_tlb_single(unsigned long addr)
+{
+   asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
+}
 
 static int mmu_probe(void) {
-	//vfunc_t vfunc = 0;
+	vfunc_t vfunc = (void*)function1;
 
 	/* close your eyes and pray ... */
 	printf("\nPaging starting...\n");
@@ -87,8 +89,11 @@ static int mmu_probe(void) {
 	/* enabling paging */
 	mmu_on();
 
-	//mmu_map_region(0, (paddr_t )function1, (vaddr_t)vfunc, PAGE_SIZE, 0);
-	//vfunc();
+	function1();
+	mmu_map_region(0, (paddr_t )function2, (vaddr_t)vfunc, MMU_PAGE_SIZE, 0);
+	__native_flush_tlb_single((uint32_t)vfunc);
+	vfunc();
+	function2();
 
 	//mmu_map_region(0, (paddr_t )function2, (vaddr_t)vfunc, PAGE_SIZE, 0);
 	//vfunc();

@@ -19,7 +19,7 @@
 #define __MMU_GTABLE_SIZE   0x400UL
 
 /** 4K-byte pages */
-#define __MMU_PAGE_SIZE		0x400UL
+#define __MMU_PAGE_SIZE		0x1000UL
 
 #define MMU_PTE_CACHE        0x08
 
