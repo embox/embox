@@ -9,21 +9,21 @@
 #include <stdio.h>
 #include <asm/stack.h>
 
+#define RET_ADDR_SHIFT 8
+
 struct stackframe {
 	void* fp;
 	void* pc;
 	struct stack_frame* sf;
 };
 
-// TODO: __builtin_extract_return_address!!!
 void stackframe_set_current(struct stackframe* f) {
 	f->fp = __builtin_frame_address(0);
-	f->pc = __builtin_return_address(0);
+	f->pc = __builtin_return_address(0) + RET_ADDR_SHIFT;
 	f->sf = NULL;
 }
 
 // TODO: May be add type of previous: through interruption or not?
-// TODO: __builtin_extract_return_address!!!
 int stackframe_set_prev(struct stackframe *f) {
 	f->sf = f->fp;
 	f->fp = f->sf->reg_window.fp;
@@ -32,7 +32,7 @@ int stackframe_set_prev(struct stackframe *f) {
 		f->sf = NULL;
 		return 0;
 	}
-	f->pc = f->sf->reg_window.ret_pc;
+	f->pc = f->sf->reg_window.ret_pc + RET_ADDR_SHIFT;
 
 	return 1;
 }
