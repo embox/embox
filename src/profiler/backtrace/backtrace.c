@@ -20,11 +20,11 @@ void backtrace_fd(void) {
 	struct stackframe f;
 	stackframe_set_current(&f);
 
-	printk("\nBacktrace:\n");
+	printk("\nStart backtrace:\n\n");
 	stackframe_print(&f);
 	while (stackframe_set_prev(&f)) {
 		stackframe_print(&f);
 	}
 	//printk("last pc: 0x%p\n", f.pc);
-	printk("\n");
+	printk("End backtrace\n\n");
 }

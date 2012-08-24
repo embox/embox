@@ -49,5 +49,5 @@ int stackframe_set_prev(struct stackframe *f) {
 }
 
 void stackframe_print(struct stackframe* f) {
-	printk("fp = 0x%p, pc = 0x%p  \n", f->fp, f->pc);
+	printk("frame_address = 0x%p, return_address = 0x%p  \n", f->fp, f->pc);
 }
