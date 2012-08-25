@@ -20,7 +20,7 @@ int stack_iter_next(stack_iter_t *f) {
 	void *fp = (*f)->reg_window.fp;
 	*f = fp;
 
-	if (fp == NULL) {
+	if ((*f)->reg_window.fp == NULL) {
 		return 0;
 	} else {
 		return 1;
