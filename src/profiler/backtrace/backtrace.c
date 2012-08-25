@@ -18,6 +18,5 @@ void backtrace_fd(void) {
 	while (stack_iter_next(&f)) {
 		stack_iter_print(&f);
 	}
-	//printk("last pc: 0x%p\n", f.pc);
 	printk("End backtrace\n\n");
 }

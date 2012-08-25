@@ -11,10 +11,6 @@
 
 #include <asm/stack.h>
 
-typedef struct stack_iter {
-	void* fp;
-	void* pc;
-	struct stack_frame* sf;
-} stack_iter_t;
+typedef struct stack_frame * stack_iter_t;
 
 #endif /* SPARC_STACK_ITER_H_ */
