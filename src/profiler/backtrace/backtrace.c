@@ -6,24 +6,17 @@
  * @author Bulychev Anton
  */
 
-#include "stackframe.h"
-#include <types.h>
 #include <stdio.h>
-
-// TODO: Delete it
-struct stackframe {
-	void* fp;
-	void* pc;
-};
+#include "backtrace.h"
 
 void backtrace_fd(void) {
-	struct stackframe f;
-	stackframe_set_current(&f);
+	stack_iter_t f;
+	stack_iter_current(&f);
 
 	printk("\nStart backtrace:\n\n");
-	stackframe_print(&f);
-	while (stackframe_set_prev(&f)) {
-		stackframe_print(&f);
+	stack_iter_print(&f);
+	while (stack_iter_next(&f)) {
+		stack_iter_print(&f);
 	}
 	//printk("last pc: 0x%p\n", f.pc);
 	printk("End backtrace\n\n");

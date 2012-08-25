@@ -8,19 +8,14 @@
 
 #include <stdio.h>
 #include <asm/traps.h>
+#include "stack_iter.h"
 
-struct stackframe {
-	void* fp;
-	void* pc;
-};
-
-void stackframe_set_current(struct stackframe* f) {
+void stack_iter_current(stack_iter_t* f) {
 	f->fp = __builtin_frame_address(0);
 	f->pc = __builtin_return_address(0);
 }
 
-// TODO: May be add type of previous: through interruption or not?
-int stackframe_set_prev(struct stackframe *f) {
+int stack_iter_next(stack_iter_t* f) {
 	extern void irq_handler_call_pointer(void);
 	extern void exception_handler_call_pointer(void);
 
@@ -48,6 +43,6 @@ int stackframe_set_prev(struct stackframe *f) {
 	return 1;
 }
 
-void stackframe_print(struct stackframe* f) {
+void stack_iter_print(stack_iter_t* f) {
 	printk("frame_address = 0x%p, return_address = 0x%p  \n", f->fp, f->pc);
 }

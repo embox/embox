@@ -7,24 +7,18 @@
  */
 
 #include <stdio.h>
-#include <asm/stack.h>
+#include "stack_iter.h"
 
 #define RET_ADDR_SHIFT 8
 
-struct stackframe {
-	void* fp;
-	void* pc;
-	struct stack_frame* sf;
-};
-
-void stackframe_set_current(struct stackframe* f) {
+void stack_iter_current(stack_iter_t* f) {
 	f->fp = __builtin_frame_address(0);
 	f->pc = __builtin_return_address(0) + RET_ADDR_SHIFT;
 	f->sf = NULL;
 }
 
 // TODO: May be add type of previous: through interruption or not?
-int stackframe_set_prev(struct stackframe *f) {
+int stack_iter_next(stack_iter_t* f) {
 	f->sf = f->fp;
 	f->fp = f->sf->reg_window.fp;
 	if (f->fp == NULL) {
@@ -46,7 +40,7 @@ void reg_window_print(struct reg_window* rw) {
                     rw->ins[4], rw->ins[5], (uint32_t) rw->fp, (uint32_t) rw->ret_pc);
 }
 
-void stackframe_print(struct stackframe* f) {
+void stack_iter_print(stack_iter_t* f) {
 	printk("frame_address = 0x%p, return_address = 0x%p  \n", f->fp, f->pc);
 	if (f->sf != NULL) {
         reg_window_print(&f->sf->reg_window);

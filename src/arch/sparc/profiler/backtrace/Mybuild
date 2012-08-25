@@ -1,5 +1,5 @@
 package embox.arch.sparc
 
 module stackframe extends embox.arch.stackframe {
-	source "stackframe.c"
+	source "stack_iter.h", "stack_iter.c"
 }

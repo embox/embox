@@ -1,6 +1,6 @@
 package embox.profiler
 
 static module backtrace {
-	source "backtrace.c", "stackframe.h"
+	source "backtrace.h", "backtrace.c"
 	depends embox.arch.stackframe
 }
