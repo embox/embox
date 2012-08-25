@@ -72,8 +72,15 @@ interrupt_entry:
 winflush_entry:
 	SAVE_ALL
 
+	/* Enable traps. */
+	wr %t_psr, PSR_ET, %psr
+	 nop
+
 	call winflush
 	 nop
+
+	wr %t_psr, %g0, %psr
+	 nop; nop; nop;
 
 	RESTORE_ALL
 

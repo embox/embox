@@ -13,13 +13,20 @@
 
 #ifdef __ASSEMBLER__
 
-/** Entry for traps which jump to a programmer-specified trap handler.  */
+/** Entry for traps which jump to a programmer-specified trap handler. */
 #define TRAP_ENTRY(trap_handler) \
 	ba trap_handler; \
 	 rd %psr, %t_psr;\
 	nop; nop;
 
-/** Entry for traps which jump to a programmer-specified trap handler.  */
+/** Entry for trap handlers that skip the instruction caused the trap. */
+#define TRAP_ENTRY_SKIP(trap_handler) \
+	mov %t_npc, %t_pc;     \
+	add %t_npc, 4, %t_npc; \
+	ba trap_handler;       \
+	 rd %psr, %t_psr;
+
+/** Entry for interrupting traps. */
 #define TRAP_ENTRY_INTERRUPT(nr) \
 	rd %psr, %t_psr;    \
 	ba interrupt_entry; \
