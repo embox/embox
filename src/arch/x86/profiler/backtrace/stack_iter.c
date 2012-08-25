@@ -10,12 +10,12 @@
 #include <asm/traps.h>
 #include "stack_iter.h"
 
-void stack_iter_current(stack_iter_t* f) {
+void stack_iter_current(stack_iter_t *f) {
 	f->fp = __builtin_frame_address(0);
 	f->pc = __builtin_return_address(0);
 }
 
-int stack_iter_next(stack_iter_t* f) {
+int stack_iter_next(stack_iter_t *f) {
 	extern void irq_handler_call_pointer(void);
 	extern void exception_handler_call_pointer(void);
 
@@ -43,6 +43,6 @@ int stack_iter_next(stack_iter_t* f) {
 	return 1;
 }
 
-void stack_iter_print(stack_iter_t* f) {
-	printk("frame_address = 0x%p, return_address = 0x%p  \n", f->fp, f->pc);
+void stack_iter_print(stack_iter_t *f) {
+	printk("frame_address = 0x%08x, return_address = 0x%08x  \n", (uint32_t) f->fp, (uint32_t) f->pc);
 }

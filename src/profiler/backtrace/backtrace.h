@@ -11,8 +11,8 @@
 
 #include <module/embox/arch/stackframe.h>
 
-void stack_iter_current(stack_iter_t*);
-int stack_iter_next(stack_iter_t*);
-void stack_iter_print(stack_iter_t*);
+void stack_iter_current(stack_iter_t *);
+int stack_iter_next(stack_iter_t *);
+void stack_iter_print(stack_iter_t *);
 
 #endif /* BACKTRACE_H_ */
