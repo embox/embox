@@ -12,6 +12,7 @@
 #define RETPC_OFFSET 8
 
 void stack_iter_current(stack_iter_t *f) {
+	winflush();
 	*f = __builtin_frame_address(0);
 }
 
