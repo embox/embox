@@ -12,11 +12,10 @@
 #define RETPC_OFFSET 8
 
 void stack_iter_current(stack_iter_t *f) {
-	winflush();
+	winflush();   /* Doesn't work without it */
 	*f = __builtin_frame_address(0);
 }
 
-// TODO: May be add type of previous: through interruption or not?
 int stack_iter_next(stack_iter_t *f) {
 	void *fp = (*f)->reg_window.fp;
 	*f = fp;
@@ -38,15 +37,9 @@ static void reg_window_print(struct reg_window *rw) {
 }
 
 void stack_iter_print(stack_iter_t *f) {
-	struct stack_frame *sf = *f;
-	struct reg_window *rw = &sf->reg_window;
-
-	// TODO: RETPC_OFFSET
-
+	struct reg_window *rw = &(*f)->reg_window;
     printk("frame_address = 0x%08x, return_address = 0x%08x  \n",
-			(uint32_t) rw->fp, (uint32_t) rw->ret_pc);
-
+			(uint32_t) rw->fp, (uint32_t) rw->ret_pc + RETPC_OFFSET);
 	reg_window_print(rw);
-
     printk("\n");
 }
