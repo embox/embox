@@ -10,6 +10,7 @@
 #ifndef NET_DNS_H_
 #define NET_DNS_H_
 
+#include <hal/arch.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <types.h>
@@ -50,20 +51,9 @@ enum dns_resp_code {
 	DNS_RESP_CODE_REFUSE = 5   /* refused */
 };
 
-#define __LITTLE_ENDIAN
-
 typedef struct dnshdr {
 	__be16 id;      /* unique id */
 #if defined(__LITTLE_ENDIAN)
-	__u16 qr:1,     /* type of the message */
-		opcode:4,   /* type of the operation */
-		aa:1,       /* authoritative answer */
-		tc:1,       /* truncation */
-		rd:1,       /* recursion desired */
-		ra:1,       /* recursion available */
-		z:3,        /* reserved (must be zero) */
-		rcode:4;    /* response code */
-#elif defined(__BIG_ENDIAN)
 	__u16 rd:1,
 		tc:1,
 		aa:1,
@@ -72,12 +62,21 @@ typedef struct dnshdr {
 		rcode:4,
 		z:3,
 		ra:1;
+#elif defined(__BIG_ENDIAN)
+	__u16 qr:1,     /* type of the message */
+		opcode:4,   /* type of the operation */
+		aa:1,       /* authoritative answer */
+		tc:1,       /* truncation */
+		rd:1,       /* recursion desired */
+		ra:1,       /* recursion available */
+		z:3,        /* reserved (must be zero) */
+		rcode:4;    /* response code */
 #endif
 	__be16 qdcount; /* number of questions */
 	__be16 ancount; /* number of answers */
 	__be16 nscount; /* number of authority records */
 	__be16 arcount; /* number of additional records */
-} dnshdr_t;
+} __attribute__((packed)) dnshdr_t;
 
 /**
  * DNS Types
