@@ -180,20 +180,26 @@ static int dns_result_parse(char *buff, size_t buff_sz,
 static int dns_execute(struct dns_q *query,
 		struct dns_rr **out_result, size_t *out_result_amount) {
 	int ret;
-	char in[DNS_MAX_MESSAGE_SZ], out[DNS_MAX_MESSAGE_SZ];
-	size_t in_sz, out_sz;
+    union {
+        char raw[DNS_MAX_MESSAGE_SZ];
+        struct {
+            struct dnshdr h;
+            char d[1];
+        } dns;
+    } msg_in, msg_out;
+	size_t msg_in_sz, msg_out_sz;
 
-    ret = dns_query_format(query, &out[0], sizeof out, &out_sz);
+    ret = dns_query_format(query, &msg_out.raw[0], sizeof msg_out.raw, &msg_out_sz);
     if (ret != 0) {
         return ret;
     }
 
-    ret = dns_query_execute(&out[0], out_sz, &in[0], &in_sz);
+    ret = dns_query_execute(&msg_out.raw[0], msg_out_sz, &msg_in.raw[0], &msg_in_sz);
     if (ret != 0) {
         return ret;
     }
 
-    ret = dns_result_parse(&in[0], in_sz, out_result, out_result_amount);
+    ret = dns_result_parse(&msg_in.dns.d[0], msg_in_sz - sizeof msg_in.dns.h, out_result, out_result_amount);
     if (ret != 0) {
         return ret;
     }
