@@ -7,11 +7,15 @@
  */
 
 #include <stdio.h>
+#include <debug/symbol.h>
 #include "backtrace.h"
 
 void backtrace_fd(void) {
 	stack_iter_t f;
+	const struct symbol *s;
+	void *fp, *pc;
 	int k = 1;
+
 	printk("\n\nBacktrace:\n\n");
 	printk("  #         fp         pc\n");
 	printk("--- ---------- ----------\n");
@@ -25,9 +29,17 @@ void backtrace_fd(void) {
 	/* Printing frames */
 	stack_iter_current(&f);
 	do {
-		printk("%3d 0x%08x 0x%08x\n",
-				k--, (uint32_t) stack_iter_get_fp(&f),
-				(uint32_t) stack_iter_get_retpc(&f));
+		fp = stack_iter_get_fp(&f);
+		pc = stack_iter_get_retpc(&f);
+		s = symbol_lookup(pc);
+		if (s == NULL) {
+			printk("%3d 0x%08x 0x%08x\n",
+				k--, (uint32_t) fp, (uint32_t) pc);
+		} else {
+			printk("%3d 0x%08x 0x%08x %s+0x%08x\n",
+				k--, (uint32_t) fp, (uint32_t) pc,
+				s->name, (uint32_t) pc - (uint32_t) s->addr);
+		}
 	} while (stack_iter_next(&f));
 
 	printk("\n");
