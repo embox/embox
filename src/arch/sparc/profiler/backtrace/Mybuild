@@ -1,4 +1,4 @@
-package embox.arch.x86
+package embox.arch.sparc
 
 module stackframe extends embox.arch.stackframe {
 	source "stack_iter.h", "stack_iter.c"

@@ -4,10 +4,16 @@ package embox.example.net
  * Unused files: udp_sender.c
  */
 
+module gethostbyname {
+	source "gethostbyname.c"
+
+	depends embox.net.netdb
+}
+
 module gethostent {
 	source "gethostent.c"
 
-	depends embox.net.util
+	depends embox.net.netdb
 }
 
 module checkopts {

@@ -9,6 +9,10 @@
 #ifndef NET_NETDB_H_
 #define NET_NETDB_H_
 
+
+/**
+ * Host name entity
+ */
 struct hostent {
 	char *h_name;       /* official name of host */
 	char **h_aliases;   /* alias list */

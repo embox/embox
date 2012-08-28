@@ -6,27 +6,29 @@
  * @author Bulychev Anton
  */
 
-#include "stackframe.h"
-#include <types.h>
 #include <stdio.h>
-
-// TODO: Delete it
-struct stackframe {
-	void* fp;
-	void* pc;
-};
+#include "backtrace.h"
 
 void backtrace_fd(void) {
-	struct stackframe f;
-	stackframe_set_current(&f);
+	stack_iter_t f;
+	int k = 1;
+	printk("\n\nBacktrace:\n\n");
+	printk("  #         fp         pc\n");
+	printk("--- ---------- ----------\n");
 
-	printf("\nBacktrace:\n");
-	stackframe_print(&f);
-	//printk("[%d] pc == 0x%p fp == %p\n", depth++, f.pc, f.fp);
-	while (stackframe_set_prev(&f)) {
-
-		stackframe_print(&f);
-		//printk("[%d] pc == 0x%p fp == %p\n", depth++, f.pc, f.fp);
+	/* Counting frames */
+	stack_iter_current(&f);
+	while (stack_iter_next(&f)) {
+		k++;
 	}
-	printf("\n");
+
+	/* Printing frames */
+	stack_iter_current(&f);
+	do {
+		printk("%3d 0x%08x 0x%08x\n",
+				k--, (uint32_t) stack_iter_get_fp(&f),
+				(uint32_t) stack_iter_get_retpc(&f));
+	} while (stack_iter_next(&f));
+
+	printk("\n");
 }
