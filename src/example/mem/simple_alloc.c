@@ -30,9 +30,6 @@
 
 EMBOX_EXAMPLE(run);
 
-#include <module/embox/example/mem/simple_alloc.h>
-
-
 /* This structure describes memory block header. It contains two fields:
  * @available - is a state flag whether the block is now using or not
  * @size      - size of memory block (default - all dedicated space); */
@@ -79,8 +76,7 @@ static void set_not_available(struct block_desc *block) {
 }
 
 /* This function checks whether the block has suit size for allocation*/
-//TODO may be called suit_size or appropriate_size
-static int correct_size(struct block_desc *md, size_t req_size) {
+static int suit_size(struct block_desc *md, size_t req_size) {
 	return ((uint32_t) md->size
 			>= (uint32_t) req_size + (uint32_t) BLOCK_DESC_SIZE);
 }
@@ -106,7 +102,7 @@ static struct block_desc *find_suit_block(size_t req_size) {
 	 * or req_size of current block less then req_size.
 	 * If the iterator exceed the end of the our available memory we couldn't
 	 *  allocate appropriate block and return NULL */
-	while ((!get_available(md)) || (!correct_size(md, req_size))) {
+	while ((!get_available(md)) || (!suit_size(md, req_size))) {
 		md = (void *) (((size_t) md) + md->size);
 #if 0
 		printf("md = 0x%X\n", (uint32_t)md);

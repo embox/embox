@@ -64,6 +64,7 @@ SECTIONS {
 		_stack = _stack_top;
 		__stack = _stack;
 	} SECTION_REGION(stack)
+	SECTION_SYMBOLS(stack)
 
 	.plt 0 : {
 		*(.plt) *(.iplt)

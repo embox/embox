@@ -10,7 +10,7 @@
 #ifndef X86_MMU_CORE_H_
 #define X86_MMU_CORE_H_
 
-#include <hal/mm/mmu_core.h>
+//#include <hal/mm/mmu_core.h>
 
 
 /** Level-2 Table:1024 entries, 4 bytes a piece */
@@ -19,10 +19,11 @@
 #define __MMU_GTABLE_SIZE   0x400UL
 
 /** 4K-byte pages */
-#define __MMU_PAGE_SIZE		0x400UL
+#define __MMU_PAGE_SIZE		0x1000UL
 
 #define MMU_PTE_CACHE        0x08
 
 #define __MMU_PAGE_CACHEABLE   MMU_PTE_CACHE
+#define __MMU_PAGE_WRITEABLE    (1 << 1)
 
 #endif /* X86_MMU_CORE_H_ */

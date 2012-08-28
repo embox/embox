@@ -30,6 +30,9 @@
 #include <hal/context.h>
 #include <hal/ipl.h>
 #include <util/slist.h>
+
+#include <profiler/tracing/trace.h>
+
 #include <time.h>
 
 #include "types.h"
@@ -356,6 +359,8 @@ static void sched_switch(void) {
 
 		assert(thread_state_running(next->state));
 		assert(next != prev);
+
+		trace_point("context switch");
 
 		ipl_disable();
 
