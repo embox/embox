@@ -66,39 +66,39 @@ static bool mmu_show_reg(void) {
 	return 0;
 }
 #endif
-typedef void (*vfunc_t)(void);
-static void  __attribute__((aligned(MMU_PAGE_SIZE))) function1(void) {
-	printf("\n\tInside the first function\n");
+typedef int (*vfunc_t)(void);
+static int  __attribute__((aligned(MMU_PAGE_SIZE))) function1(void) {
+	return 1;
 }
 
-static void __attribute__((aligned(MMU_PAGE_SIZE))) function2(void) {
-	printf("\n\tInside the second function\n");
+static int __attribute__((aligned(MMU_PAGE_SIZE))) function2(void) {
+	return 2;
 }
 
-static inline void __native_flush_tlb_single(unsigned long addr)
-{
-   asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
-}
+
+
+extern void mmu_flush_tlb(void);
 
 static int mmu_probe(void) {
-	vfunc_t vfunc = (void*)function1;
+	vfunc_t vfunc = (void*)0x0;
+	int res;
 
 	/* close your eyes and pray ... */
 	printf("\nPaging starting...\n");
 
 	/* enabling paging */
 	mmu_on();
+	/* map first function to address 0 */
+	mmu_map_region(0, (paddr_t )function1, (vaddr_t)vfunc, MMU_PAGE_SIZE, MMU_PAGE_WRITEABLE);
+	/* call function from address 0 */
+	res = vfunc();
+	printf("from address 0x%X called function %d \n", (uint32_t)vfunc, res);
 
-	function1();
-	mmu_map_region(0, (paddr_t )function2, (vaddr_t)vfunc, MMU_PAGE_SIZE, 0);
-	__native_flush_tlb_single((uint32_t)vfunc);
-	vfunc();
-	function2();
-
-	//mmu_map_region(0, (paddr_t )function2, (vaddr_t)vfunc, PAGE_SIZE, 0);
-	//vfunc();
-
-
+	/* map second function to address 0 */
+	mmu_map_region(0, (paddr_t )function2, (vaddr_t)vfunc, MMU_PAGE_SIZE, MMU_PAGE_WRITEABLE);
+	/* call function from address 0 */
+	res = vfunc();
+	printf("from address 0x%X called function %d \n", (uint32_t)vfunc, res);
 
 
 	/* disabling paging */

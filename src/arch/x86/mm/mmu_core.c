@@ -78,8 +78,11 @@ mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx) {
 	return &pagedir[ctx];
 }
 
-uint32_t global_pdt[0x400] __attribute__((aligned(MMU_PAGE_SIZE)));
-//#define global_pdt 0x600000
+void mmu_flush_tlb(void) {
+	set_cr3(get_cr3());
+}
+static uint32_t global_pdt[0x400] __attribute__((aligned(MMU_PAGE_SIZE)));
+
 static int mmu_init(void) {
 	uint32_t *pdt;
 
@@ -101,16 +104,6 @@ static int mmu_init(void) {
 
 
 	mmu_map_region(0, (paddr_t)0, (vaddr_t)0, (size_t)0x300000, MMU_PAGE_WRITEABLE);
-//	for (int i = 0; i < MMU_GTABLE_SIZE; i++) {
-//		pte = pdt + (i + 1) * MMU_PAGE_SIZE;
-//		pdt[i] = ((uint32_t) &pte) | 3;
-//
-//		for (int i = 0; i < MMU_MTABLE_SIZE; i++) {
-//			pte[i] = address | 3;
-//			address += MMU_PAGE_SIZE;
-//		}
-//	}
-
 
 	return 0;
 }
@@ -132,3 +125,8 @@ void mmu_off(void) {
 vaddr_t mmu_get_fault_address(void) {
 	return get_cr2();
 }
+
+void mmu_flush_tlb_single(unsigned long addr) {
+   asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
+}
+
