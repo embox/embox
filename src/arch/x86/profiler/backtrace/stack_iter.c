@@ -27,7 +27,6 @@ int stack_iter_next(stack_iter_t *f) {
 		pt_regs_t *r = (pt_regs_t *) p;
 		f->fp = (void *) r->ebp;
 		f->pc = (void *) r->eip;
-		printk("Through interruption: \n");
 	} else {
 		if (*p == NULL) {
 			f->fp = NULL;
@@ -43,6 +42,10 @@ int stack_iter_next(stack_iter_t *f) {
 	return 1;
 }
 
-void stack_iter_print(stack_iter_t *f) {
-	printk("frame_address = 0x%08x, return_address = 0x%08x  \n", (uint32_t) f->fp, (uint32_t) f->pc);
+void* stack_iter_get_fp(stack_iter_t *f) {
+	return f->fp;
+}
+
+void* stack_iter_get_retpc(stack_iter_t *f) {
+	return f->pc;
 }
