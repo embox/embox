@@ -7,12 +7,12 @@
  */
 
 #include <asm/multiboot.h>
+#include <asm/linkage.h>
 
 	.section .multiboot
 
-	.globl	start, _start
-start:
-_start:
+/* system entry point */
+C_ENTRY(_start):
 	jmp	multiboot_entry
 
 	/* Align 32 bits boundary.  */
@@ -39,6 +39,7 @@ multiboot_header:
 	.long	multiboot_entry
 #endif /* ! __ELF__ */
 
+/* real entry code */
 	.section .text
 	.align	4
 multiboot_entry:
@@ -46,25 +47,28 @@ multiboot_entry:
 	cli
 	cld
 	/* Initialize the stack pointer. */
-	movl	$_stack, %esp
+	movl	$_stack_vma, %esp /* load base address for system stack */
+	addl    $_stack_len, %esp /* setup correct system stack pointer */
 
 	/* Reset EFLAGS. */
 	pushl	$0
 	popf
 
-	movl   $_bss_len, 0x8(%esp)
-	movl   $0x0, 0x4(%esp)
-	movl   $_bss_vma, 0x0(%esp)
-	call   memset
+/* we must clean bss section */
+	movl   $_bss_len, 0x8(%esp) /* push bss len as 3 parameter on the stack */
+	movl   $0x0, 0x4(%esp)      /* push zero as 2 parameter on the stack */
+	movl   $_bss_vma, 0x0(%esp) /* push bss start as 1 parameter on the stack */
+	call   memset               /* clear bss section */
 
+/* check whether load data section */
 	mov   $_data_vma, %eax
 	cmp   $_data_lma, %eax
-	je    1f
-	/*data section*/
-	movl   $_data_len, 0x8(%esp)
-	movl   $_data_lma, 0x4(%esp)
-	movl   $_data_vma, 0x0(%esp)
-	call   memcpy
+	je    1f        /* if data_vma=data_lma section have correct place */
+	/* copy data section to a correct place*/
+	movl   $_data_len, 0x8(%esp) /* push data len as 3 parameter on the stack */
+	movl   $_data_lma, 0x4(%esp) /* push data lma as 2 parameter on the stack */
+	movl   $_data_vma, 0x0(%esp) /* push data vma as 1 parameter on the stack */
+	call   memcpy                /* copy data section */
 1:
 
 
@@ -73,13 +77,11 @@ multiboot_entry:
 	pushl	%ebx
 	/* Push the magic value. */
 	pushl	%eax
-	call	EXT_C(multiboot_check)
-	addl    $8, %esp ;
+	call	multiboot_check
+	addl    $8, %esp
 #endif
 
-	call	EXT_C(kernel_start)
+	call	kernel_start /* call C code */
 
-loop:	hlt
+loop:	hlt             /* if we return from kernel_start it's error */
 	jmp	loop
-
-	.section .text

@@ -4,15 +4,12 @@
 
 OUTPUT_FORMAT("elf32-i386", "elf32-i386", "elf32-i386")
 OUTPUT_ARCH(i386)
-ENTRY(start)
+ENTRY(_start)
 
 MEMORY {
 	MEMORY_REGION(sdram)
 	MEMORY_REGION(flash)
 }
-
-_text_start = _text_vma;
-_text_end = _text_vma + _text_len;
 
 SECTIONS {
 	.text : {
@@ -22,7 +19,6 @@ SECTIONS {
 		*(.text.*)
 		*(.init.text)
 		ALIGNMENT();
-		. = ALIGN(0x100);
 	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)
 
@@ -33,19 +29,15 @@ SECTIONS {
 
 	.data : {
 		ALIGNMENT();
-		_data_start = .;
 		*(.data)
 		ALIGNMENT();
-		_data_end = .;
 	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
 	.bss : {
 		ALIGNMENT();
-		_bstart = .;
 		*(.bss)
 		ALIGNMENT();
-		_bend = .;
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 
@@ -57,19 +49,17 @@ SECTIONS {
 
 	.stack (NOLOAD): {
 		ALIGNMENT();
-		_stack_bottom = .;
 		. += OPTION_GET(NUMBER,stack_size);
 		ALIGNMENT();
-		_stack_top = .;
-		_stack = _stack_top;
-		__stack = _stack;
 	} SECTION_REGION(stack)
 	SECTION_SYMBOLS(stack)
 
-	.plt 0 : {
+#if 0
+/* this is required for dynamic linkage library */
+	.plt 0 : { /* procedure linkage table */
 		*(.plt) *(.iplt)
 	}
-	.got 0 : {
+	.got 0 : { /* global offset table */
 		*(.got) *(.igot)
 	}
 	.got.plt 0 : {
@@ -94,6 +84,8 @@ SECTIONS {
 		*(.rel.plt)
 		*(.rel.iplt)
 	}
+#endif
+
 	/DISCARD/ : {
 		*(.note)
 		*(.note.ABI-tag)
@@ -101,3 +93,6 @@ SECTIONS {
 		*(.comment)
 	}
 }
+
+_mem_begin = LDS_REGION_BASE_sdram;
+_mem_length = LDS_REGION_SIZE_sdram;
