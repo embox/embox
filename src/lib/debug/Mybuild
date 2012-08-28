@@ -1,0 +1,5 @@
+package embox.lib.debug
+
+static module Symbol {
+	source "symbol.c"
+}
