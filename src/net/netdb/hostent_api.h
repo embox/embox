@@ -12,9 +12,9 @@
 struct hostent;
 
 extern struct hostent * hostent_create(void);
-extern int hostent_set_name(struct hostent *he, char *name);
-extern int hostent_add_alias(struct hostent *he, char *alias);
+extern int hostent_set_name(struct hostent *he, const char *name);
+extern int hostent_add_alias(struct hostent *he, const char *alias);
 extern int hostent_set_addr_info(struct hostent *he, int addrtype, int addrlen);
-extern int hostent_add_addr(struct hostent *he, char *addr);
+extern int hostent_add_addr(struct hostent *he, const void *addr);
 
 #endif /* NET_NETDB_HOSTENT_API_H_ */

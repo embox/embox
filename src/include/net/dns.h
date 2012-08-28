@@ -21,6 +21,7 @@
 #define DNS_MAX_LABEL_SZ   64
 #define DNS_MAX_NAME_SZ    256
 #define DNS_MAX_MESSAGE_SZ 512
+#define DNS_PORT_NUMBER    53
 
 /**
  * Types of messages
@@ -51,6 +52,9 @@ enum dns_resp_code {
 	DNS_RESP_CODE_REFUSE = 5   /* refused */
 };
 
+/**
+ * Header for DNS messages
+ */
 typedef struct dnshdr {
 	__be16 id;      /* unique id */
 #if defined(__LITTLE_ENDIAN)
@@ -147,7 +151,7 @@ enum dns_class {
  * DNS Resource Record header
  */
 struct dns_rr {
-	char owner[DNS_MAX_NAME_SZ]; /* an owner name */
+	char rname[DNS_MAX_NAME_SZ]; /* an owner name */
 	uint16_t rtype;              /* type of a record */
 	uint16_t rclass;             /* class of a record */
 	int32_t rttl;                /* time life of this record */
@@ -185,6 +189,6 @@ struct dns_q {
  * dns_query - make query with specified type and class
  */
 extern int dns_query(const char *query, enum dns_type qtype, enum dns_class qclass,
-		struct dns_rr **out_result, size_t *out_amount);
+		struct dns_rr **out_results, size_t *out_amount);
 
 #endif /* NET_DNS_H_ */

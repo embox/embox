@@ -37,7 +37,7 @@ struct hostent * hostent_create(void) {
 	return &hentry_storage;
 }
 
-int hostent_set_name(struct hostent *he, char *name) {
+int hostent_set_name(struct hostent *he, const char *name) {
 	size_t name_sz;
 
 	assert((he != NULL) && (name != NULL));
@@ -56,7 +56,7 @@ int hostent_set_name(struct hostent *he, char *name) {
 	return 0;
 }
 
-int hostent_add_alias(struct hostent *he, char *alias) {
+int hostent_add_alias(struct hostent *he, const char *alias) {
 	size_t alias_sz;
 
 	assert((he != NULL) && (alias != NULL));
@@ -93,7 +93,7 @@ int hostent_set_addr_info(struct hostent *he, int addrtype, int addrlen) {
 	return 0;
 }
 
-int hostent_add_addr(struct hostent *he, char *addr) {
+int hostent_add_addr(struct hostent *he, const void *addr) {
 	assert((he != NULL) && (addr != NULL));
 
 	assert(he->h_length != 0); /* EINVAL */

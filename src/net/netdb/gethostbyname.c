@@ -9,6 +9,8 @@
 #include <net/in.h>
 #include <stdlib.h>
 #include <string.h>
+#include <net/dns.h>
+#include <assert.h>
 #include "hostent_api.h"
 
 static struct hostent * get_hostent_from_ip(const char *ip_str) {
@@ -57,6 +59,43 @@ static struct hostent * get_hostent_from_file(const char *hostname) {
 	return he;
 }
 
+static struct hostent * get_hostent_from_net(const char *hostname) {
+	struct hostent *he;
+	struct dns_rr *records, *record;
+	size_t i, records_sz, addr_len;
+
+	if (dns_query(hostname, DNS_RR_TYPE_A, DNS_RR_CLASS_IN, &records, &records_sz) != 0) {
+		return NULL;
+	}
+
+	if (records_sz == 0) {
+		return NULL;
+	}
+
+	assert(records != NULL);
+	addr_len = (*(records + 0)).rdlength;
+
+	if (((he = hostent_create()) == NULL)
+			|| (hostent_set_name(he, hostname) != 0)
+			|| (hostent_set_addr_info(he, AF_INET, addr_len) != 0)) {
+		return NULL;
+	}
+
+	for (i = 0, record = records; i < records_sz; ++i, ++record) {
+		if ((record->rtype == DNS_RR_TYPE_A)
+				&& (record->rclass = DNS_RR_CLASS_IN)) {
+			assert(record->rdlength == addr_len);
+			if (hostent_add_addr(he, &record->rdata.a.address) != 0) {
+				return NULL;
+			}
+		}
+	}
+
+	free(records);
+
+	return he;
+}
+
 struct hostent * gethostbyname(const char *hostname) {
 	struct hostent *he;
 
@@ -72,6 +111,7 @@ struct hostent * gethostbyname(const char *hostname) {
 		return he;
 	}
 
-	return NULL;
+	/* 3. Finally, try to get answer from nameserver */
+	return get_hostent_from_net(hostname);
 }
 
