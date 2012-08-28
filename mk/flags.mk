@@ -81,10 +81,7 @@ override CFLAGS += $(cflags)
 
 # Linker flags
 ldflags := $(LDFLAGS)
-override LDFLAGS  = -static
-override LDFLAGS += -nostdlib
-override LDFLAGS += --cref --relax
-#override LDFLAGS += $(SUBDIRS_LDFLAGS)
+override LDFLAGS  = -static -nostdlib
 override LDFLAGS += $(ldflags)
 
 override ARFLAGS = rcs

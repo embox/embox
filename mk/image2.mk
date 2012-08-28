@@ -19,6 +19,13 @@ include $(MKGEN_DIR)/build.mk
 TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))
 TARGET := $(TARGET)$(if $(value LOCALVERSION),-$(LOCALVERSION))
 
+IMAGE       = $(BIN_DIR)/$(TARGET)
+IMAGE_DIS   = $(IMAGE).dis
+IMAGE_BIN   = $(IMAGE).bin
+IMAGE_SREC  = $(IMAGE).srec
+IMAGE_SIZE  = $(IMAGE).size
+IMAGE_PIGGY = $(IMAGE).piggy
+
 include mk/flags.mk # It must be included after a user-defined config.
 
 .SECONDEXPANSION:
@@ -26,13 +33,6 @@ include $(MKGEN_DIR)/include.mk
 
 .SECONDARY:
 .DELETE_ON_ERROR:
-
-IMAGE       = $(BIN_DIR)/$(TARGET)
-IMAGE_DIS   = $(IMAGE).dis
-IMAGE_BIN   = $(IMAGE).bin
-IMAGE_SREC  = $(IMAGE).srec
-IMAGE_SIZE  = $(IMAGE).size
-IMAGE_PIGGY = $(IMAGE).piggy
 
 image: $(IMAGE)
 image: $(IMAGE_DIS) $(IMAGE_BIN) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
@@ -45,15 +45,17 @@ CXX     := $(CROSS_COMPILE)g++
 AR      := $(CROSS_COMPILE)ar
 AS      := $(CROSS_COMPILE)as
 LD      := $(CROSS_COMPILE)ld
+NM      := $(CROSS_COMPILE)nm
 OBJDUMP := $(CROSS_COMPILE)objdump
 OBJCOPY := $(CROSS_COMPILE)objcopy
 SIZE    := $(CROSS_COMPILE)size
 
 # This must be expanded in a secondary expansion context.
-common_prereqs = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk $(mk_file)
+common_prereqs_nomk  = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk
+common_prereqs       = $(common_prereqs_nomk) $(mk_file)
 extbld_prerequisites = $(common_prereqs)
 
-VPATH = $(SRCGEN_DIR)
+VPATH := $(SRCGEN_DIR)
 
 %/. :
 	@$(MKDIR) $*
@@ -115,22 +117,76 @@ ar_prerequisites    = $(common_prereqs) $(ar_objs)
 $(OBJ_DIR)/%.a : | $$(@D)/.
 	$(AR) $(ARFLAGS) $@ $(call fmt_line,$(ar_objs))
 
+# Here goes image creation rules...
+
+symbols_pass1_c = $(OBJ_DIR)/symbols_pass1.c
+symbols_pass2_c = $(OBJ_DIR)/symbols_pass2.c
+
+symbols_c_files = \
+	$(symbols_pass1_c) \
+	$(symbols_pass2_c)
+
+$(symbols_pass1_c) : image_o = $(image_nosymbols_o)
+$(symbols_pass2_c) : image_o = $(image_pass1_o)
+
+$(symbols_c_files) : flags :=
+$(symbols_c_files) : $$(common_prereqs_nomk) mk/script/nm2c.awk | $$(@D)/.
+$(symbols_c_files) : $$(image_o)
+	$(NM) -n $< | awk -f mk/script/nm2c.awk > $@
+
+symbols_pass1_ar = $(OBJ_DIR)/symbols_pass1.ar
+symbols_pass2_ar = $(OBJ_DIR)/symbols_pass2.ar
+
+symbols_ar_files = \
+	$(symbols_pass1_ar) \
+	$(symbols_pass2_ar)
+
+$(symbols_ar_files) : %.ar : %.o
+	$(AR) $(ARFLAGS) $@ $<
+
+# workaround to get VPATH and GPATH to work with an OBJ_DIR.
+$(shell $(MKDIR) $(OBJ_DIR) 2> /dev/null)
+GPATH := $(OBJ_DIR:$(ROOT_DIR)/%=%)
+VPATH += $(GPATH)
+
+image_nosymbols_o = $(OBJ_DIR)/image_nosymbols.o
+image_pass1_o = $(OBJ_DIR)/image_pass1.o
+
+image_files := $(IMAGE) $(image_nosymbols_o) $(image_pass1_o)
+
+__define_image_rules = $(eval $(value __image_rule))
+$(call __define_image_rules,$(image_files))
+
 image_prerequisites = $(mk_file) \
 	$(ld_scripts) $(ld_objs) $(ld_libs)
 ifndef LD_SINGLE_T_OPTION
-$(IMAGE): ld_scripts_flag = $(ld_scripts:%=-T%)
+$(image_files): ld_scripts_flag = $(ld_scripts:%=-T%)
 else
-$(IMAGE): ld_scripts_flag = -T $(ld_scripts)
+$(image_files): ld_scripts_flag = -T $(ld_scripts)
 endif
-$(IMAGE): | $$(@D)/.
-	$(LD) $(LDFLAGS) $(call fmt_line,$(ld_scripts_flag)) \
+$(image_files): ldflags_all = $(LDFLAGS) $(call fmt_line,$(ld_scripts_flag))
+
+$(image_nosymbols_o): | $$(@D)/. $(dir $(IMAGE).map).
+	$(LD) --relocatable $(ldflags) \
 	$(call fmt_line,$(ld_objs)) \
 	$(call fmt_line,$(ld_libs)) \
-	-Map $@.map \
-	-o   $@
+	--cref -Map $(IMAGE).map \
+	-o $@
+
+$(image_pass1_o) : $(image_nosymbols_o) $(symbols_pass1_ar) | $$(@D)/.
+	$(LD) --relax $(ldflags_all) \
+		$(image_nosymbols_o) \
+		$(symbols_pass1_ar) \
+	-o $@
+
+$(IMAGE): $(image_nosymbols_o) $(symbols_pass2_ar) | $$(@D)/.
+	$(LD) --relax $(ldflags_all) \
+		$(image_nosymbols_o) \
+		$(symbols_pass2_ar) \
+	-o $@
 
 $(IMAGE_DIS): $(IMAGE)
-	@$(OBJDUMP) -S $< > $@
+	$(OBJDUMP) -S $< > $@
 
 $(IMAGE_SREC): $(IMAGE)
 	@$(OBJCOPY) -O srec $< $@

@@ -43,11 +43,12 @@ fmt_line = \
 
 # 1. Text to comment.
 gen_comment = \
-	$(PRINTF) '%s\n\n' \
+	$(PRINTF) '%s\n' \
 		$(call sh_quote,$(call fmt_line,$(\h) ,$1))
 
 gen_banner = \
-	$(call gen_comment,$(GEN_BANNER))
+	$(PRINTF) '%s\n\n' \
+		$(call sh_quote,$(call fmt_line,$(\h) ,$(GEN_BANNER)))
 
 # 1. Variable name.
 # 2. Value.
@@ -135,18 +136,14 @@ all .PHONY : $(@build_all)
 $(@build_all) : archived_modules = $(suffix $(@module_ar_rulemk))
 $(@build_all) : normal_modules = $(filter-out $(archived_modules),$(build_modules))
 
-build_image = image
-
-$(@build_image) : image = $(build_image)
-
 build_image_rulemk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
-build_image_rulemk_target_pat = $(BIN_DIR)/$(TARGET)
+build_image_rulemk_target_pat = $1
 
-$(@build_image) : @file    = $(image:%=$(build_image_rulemk_mk_pat))
+$(@build_image) : @file    = $(patsubst %,$(build_image_rulemk_mk_pat),image)
 $(@build_image) : mk_file  = \
-		$(patsubst %,$(value build_image_rulemk_mk_pat),$$(build_image))
+		$(patsubst %,$(value build_image_rulemk_mk_pat),image)
 $(@build_image) : target_file = \
-		$(patsubst %,$(value build_image_rulemk_target_pat),$$(build_image))
+		$(patsubst %,$(value build_image_rulemk_target_pat),image)
 
 $(@build_image) : scripts = $(patsubst %,$(value source_cpp_rulemk_o_pat), \
 			$(call source_base,$(@source_cpp_rulemk)))
@@ -158,16 +155,19 @@ $(@build_image) : libs = $(patsubst %,$(value module_ar_rulemk_a_pat), \
 $(@build_image) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
-		$(call gen_make_var,build_image,$(image)); \
+		$(call gen_comment,Arg: target file(s) to define rules for.); \
+		$(PRINTF) 'define __image_rule\n\n'; \
 		$(call gen_make_dep,$(target_file),$$$$(image_prerequisites)); \
 		$(call gen_make_tsvar,$(target_file),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar_list,$(target_file),ld_scripts,$(scripts)); \
 		$(call gen_make_tsvar_list,$(target_file),ld_objs,$(objs)); \
-		$(call gen_make_tsvar_list,$(target_file),ld_libs,$(libs)))
+		$(call gen_make_tsvar_list,$(target_file),ld_libs,$(libs)); \
+		$(PRINTF) 'endef '; \
+		$(call gen_comment,__image_rule))
 
 $(@build_include_mk) : @file = $(MKGEN_DIR)/include.mk
 $(@build_include_mk) : image_rulemk = \
-		$(patsubst %,$(value build_image_rulemk_mk_pat),$(build_image))
+		$(patsubst %,$(value build_image_rulemk_mk_pat),image)
 $(@build_include_mk) : source_rulemk = \
 		$(patsubst %,$(value source_rulemk_mk_pat), \
 			$(call source_base,$(@source_rulemk)))
