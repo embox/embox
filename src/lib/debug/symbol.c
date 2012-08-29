@@ -13,9 +13,13 @@ extern const struct symbol __symbol_table[];
 extern const size_t __symbol_table_size;
 
 const struct symbol *symbol_lookup(void *addr) {
-	size_t l = 0, r = __symbol_table_size, m;
-
 	/* Binary search */
+	size_t l = 0, r = __symbol_table_size - 1, m;
+
+	if (__symbol_table[0].addr > addr) {
+		return NULL;
+	}
+
 	while (l < r) {
 		m = (l + r + 1) / 2;
 		if (__symbol_table[m].addr <= addr) {
@@ -25,10 +29,6 @@ const struct symbol *symbol_lookup(void *addr) {
 		}
 	}
 
-	if (l == __symbol_table_size) {
-		return NULL;
-	} else {
-		return &__symbol_table[l];
-	}
+	return &__symbol_table[l];
 }
 

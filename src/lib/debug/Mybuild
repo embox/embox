@@ -3,3 +3,9 @@ package embox.lib.debug
 static module Symbol {
 	source "symbol.c"
 }
+
+static module Backtrace {
+	source "backtrace.c"
+	depends embox.arch.stackframe
+	depends embox.lib.debug.Symbol
+}

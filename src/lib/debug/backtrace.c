@@ -10,11 +10,17 @@
 #include <stddef.h>
 #include <string.h>
 #include <kernel/printk.h>
+#include <debug/backtrace.h>
 #include <debug/symbol.h>
-#include "backtrace.h"
 #include <math.h>
+#include <module/embox/arch/stackframe.h>
 
-void backtrace_fd(void) {
+extern void stack_iter_current(stack_iter_t *);
+extern int stack_iter_next(stack_iter_t *);
+extern void *stack_iter_get_fp(stack_iter_t *);
+extern void *stack_iter_get_retpc(stack_iter_t *);
+
+void backtrace(void) {
 	stack_iter_t f;
 	int depth = 0;
 
