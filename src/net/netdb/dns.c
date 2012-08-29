@@ -113,8 +113,6 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 		}
 		*out_name++ = '.';
 		bytes_left -= sizeof(char);
-		label++;
-		out_name++;
 	}
 
 	/**
@@ -220,7 +218,7 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 		return sock;
 	}
 
-	do {
+	while (1) {
 		/* Send request */
 		bytes = sendto(sock, &req->raw[0], req_sz, 0,
 				(struct sockaddr *)&nameserver_addr, nameserver_addr_sz);
@@ -229,23 +227,24 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 			return errno ? -errno : -1; /* if errno equal to zero O_o */
 		}
 
-		/* Receive reply */
-		bytes = recvfrom(sock, &rep->raw[0], sizeof *rep, 0,
-				(struct sockaddr *)&nameserver_addr, &nameserver_addr_sz);
-		if (bytes < 0) {
-			close(sock);
-			return errno ? -errno : -1; /* if errno equal to zero O_o */
-		}
-		else if (bytes < sizeof(struct dnshdr)) {
-			continue; /* bad size, try again */
-		}
+		do {
+			/* Receive reply */
+			bytes = recvfrom(sock, &rep->raw[0], sizeof *rep, 0,
+					(struct sockaddr *)&nameserver_addr, &nameserver_addr_sz);
+			if (bytes < 0) {
+				close(sock);
+				return errno ? -errno : -1; /* if errno equal to zero O_o */
+			}
+		} while (bytes < sizeof(struct dnshdr)); /* bad size, try again */
 
 		/* Is it my? */
 		if (req->msg.hdr.id != rep->msg.hdr.id) {
 			continue;
 		}
 
-	} while (0);
+		/* all ok, done */
+		break;
+	}
 
 	/* Close our socket */
 	close(sock);
@@ -256,25 +255,146 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 	return 0;
 }
 
-static int dns_rr_a_parse(struct dns_rr *curr, const char *data,
-		const char *buff, size_t buff_sz) {
-	curr->rdata.a.address = *(uint32_t *)data;
+static int dns_q_parse(struct dns_q *q, const char *data,
+		const char *buff, size_t buff_sz, size_t *out_field_sz) {
+	int ret;
+	size_t field_sz;
+	const char *curr, *end;
+
+	curr = data;
+	end = buff + buff_sz;
+
+	/* parse name */
+	ret = label_to_name(curr, buff, buff_sz,
+			sizeof q->qname, &q->qname[0], &field_sz);
+	if (ret != 0) {
+		return ret;
+	}
+	curr += field_sz;
+
+	/* parse type */
+	field_sz = sizeof(uint16_t);
+	if (curr + field_sz >= end) {
+		return -EINVAL;
+	}
+	q->qtype = ntohs(*(uint16_t *)curr);
+	curr += field_sz;
+
+	/* parse class */
+	field_sz = sizeof(uint16_t);
+	if (curr + field_sz >= end) {
+		return -EINVAL;
+	}
+	q->qclass = (uint16_t)ntohs(*(uint16_t *)curr);
+	curr += field_sz;
+
+	*out_field_sz = curr - data;
+
 	return 0;
 }
 
-static int dns_rr_cname_parse(struct dns_rr *curr, const char *data,
+static int dns_rr_a_parse(struct dns_rr *rr, const char *data,
 		const char *buff, size_t buff_sz) {
-	return label_to_name(data, buff, buff_sz, sizeof curr->rdata.cname.cname,
-			&curr->rdata.cname.cname[0], NULL);
+	rr->rdata.a.address = *(uint32_t *)data;
+	return 0;
+}
+
+static int dns_rr_cname_parse(struct dns_rr *rr, const char *data,
+		const char *buff, size_t buff_sz) {
+	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.cname.cname,
+			&rr->rdata.cname.cname[0], NULL);
+}
+
+static int dns_rr_parse(struct dns_rr *rr, const char *data,
+		const char *buff, size_t buff_sz, size_t *out_field_sz) {
+	int ret;
+	size_t field_sz;
+	const char *curr, *end;
+
+	curr = data;
+	end = buff + buff_sz;
+
+	/* parse name */
+	ret = label_to_name(curr, buff, buff_sz,
+			sizeof rr->rname, &rr->rname[0], &field_sz);
+	if (ret != 0) {
+		return ret;
+	}
+	curr += field_sz;
+
+	/* parse type */
+	field_sz = sizeof(uint16_t);
+	if (curr + field_sz >= end) {
+		return -EINVAL;
+	}
+	rr->rtype = ntohs(*(uint16_t *)curr);
+	curr += field_sz;
+
+	/* parse class */
+	field_sz = sizeof(uint16_t);
+	if (curr + field_sz >= end) {
+		return -EINVAL;
+	}
+	rr->rclass = (uint16_t)ntohs(*(uint16_t *)curr);
+	curr += field_sz;
+
+	/* parse ttl */
+	field_sz = sizeof(int16_t);
+	if (curr + field_sz >= end) {
+		return -EINVAL;
+	}
+	rr->rttl = ntohs(*(int16_t *)curr);
+	curr += field_sz;
+
+	/* parse data length */
+	field_sz = sizeof(uint16_t);
+	if (curr + field_sz >= end) {
+		return -EINVAL;
+	}
+	rr->rdlength = (uint16_t)ntohs(*(uint16_t *)curr);
+	curr += field_sz;
+
+	/* parse data */
+	field_sz = rr->rdlength;
+	if (curr + field_sz >= end) {
+		return -EINVAL;
+	}
+	switch (rr->rtype) { /* TODO use table of methods instead */
+	default:
+		ret = -ENOSYS;
+		LOG_ERROR("can't parse type %d\n", rr->rtype);
+		break;
+	case DNS_RR_TYPE_A:
+		ret = dns_rr_a_parse(rr, curr, buff, buff_sz);
+		break;
+	case DNS_RR_TYPE_CNAME:
+		ret = dns_rr_cname_parse(rr, curr, buff, buff_sz);
+		break;
+	}
+	if (ret != 0) {
+		return ret;
+	}
+	curr += field_sz;
+
+	*out_field_sz = curr - data;
+
+	return 0;
 }
 
 static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 		struct dns_rr **out_result, size_t *out_amount) {
 	int ret;
-	const char *curr, *start, *end;
-	struct dns_rr *arr, *rr;
-	size_t i, arr_sz, field_sz;
+	const char *curr;
+	struct dns_q unused_q;
+	struct dns_rr unused_rr, *rrs;
+	size_t i, rrs_sz, section_sz;
+	uint16_t qd, an, ns, ar;
 
+	curr = &dm->msg.data[0];
+
+	/**
+	 * Parse Header section
+	 */
 	if (dm->msg.hdr.qr != DNS_MSG_TYPE_REPLY) {
 		return -EINVAL;
 	}
@@ -284,79 +404,69 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 		return -1;
 	}
 
-	arr_sz = ntohs(dm->msg.hdr.ancount);
-	arr = malloc(arr_sz * sizeof(struct dns_rr));
-	if (arr == NULL) {
+	qd = htons(dm->msg.hdr.qdcount);
+	an = htons(dm->msg.hdr.ancount);
+	ns = htons(dm->msg.hdr.nscount);
+	ar = htons(dm->msg.hdr.arcount);
+
+	/**
+	 * Parse Question section
+	 */
+	for (i = 0; i < qd; ++i) {
+		/* result doesn't matter */
+		ret = dns_q_parse(&unused_q, curr, &dm->raw[0], dm_sz, &section_sz);
+		if (ret != 0) {
+			return ret;
+		}
+		curr += section_sz;
+	}
+
+	/**
+	 * Parse Answer section
+	 */
+	rrs_sz = an;
+	rrs = malloc(rrs_sz * sizeof(struct dns_rr));
+	if (rrs == NULL) {
 		return -ENOMEM;
 	}
 
-	curr = &dm->msg.data[0];
-	start = &dm->raw[0];
-	end = start + dm_sz;
-	for (i = 0, rr = arr; i < arr_sz; ++i, ++rr) {
-
-		/* parse name */
-		ret = label_to_name(curr, start, end - start,
-				sizeof rr->rname, &rr->rname[0], &field_sz);
+	for (i = 0; i < rrs_sz; ++i) {
+		ret = dns_rr_parse(rrs + i, curr, &dm->raw[0], dm_sz, &section_sz);
 		if (ret != 0) {
 			return ret;
 		}
-		curr += field_sz;
-
-		/* parse type */
-		field_sz = sizeof(uint16_t);
-		if (curr + field_sz >= end) {
-			return -EINVAL;
-		}
-		rr->rtype = ntohs(*(uint16_t *)curr);
-		curr += field_sz;
-
-		/* parse class */
-		field_sz = sizeof(uint16_t);
-		if (curr + field_sz >= end) {
-			return -EINVAL;
-		}
-		rr->rclass = (uint16_t)ntohs(*(uint16_t *)curr);
-		curr += field_sz;
-
-		/* parse ttl */
-		field_sz = sizeof(int16_t);
-		if (curr + field_sz >= end) {
-			return -EINVAL;
-		}
-		rr->rttl = ntohs(*(int16_t *)curr);
-		curr += field_sz;
-
-		/* parse data length */
-		field_sz = sizeof(uint16_t);
-		if (curr + field_sz >= end) {
-			return -EINVAL;
-		}
-		rr->rdlength = (uint16_t)ntohs(*(uint16_t *)curr);
-		curr += field_sz;
-
-		/* parse data */
-		field_sz = rr->rdlength;
-		if (curr + field_sz >= end) {
-			return -EINVAL;
-		}
-		switch (rr->rtype) { /* TODO use table of methods instead */
-		default:
-			ret = -ENOSYS;
-			LOG_ERROR("can't parse type %d\n", rr->rtype);
-			break;
-		case DNS_RR_TYPE_A:
-			ret = dns_rr_a_parse(rr, curr, start, end - start);
-			break;
-		case DNS_RR_TYPE_CNAME:
-			ret = dns_rr_cname_parse(rr, curr, start, end - start);
-			break;
-		}
-		if (ret != 0) {
-			return ret;
-		}
-		curr += field_sz;
+		curr += section_sz;
 	}
+
+	/**
+	 * Parse Authority section
+	 */
+	for (i = 0; i < ns; ++i) {
+		/* result doesn't matter */
+		ret = dns_rr_parse(&unused_rr, curr, &dm->raw[0], dm_sz, &section_sz);
+		if (ret != 0) {
+			return ret;
+		}
+		curr += section_sz;
+	}
+
+	/**
+	 * Parse Additional section
+	 */
+	for (i = 0; i < ar; ++i) {
+		/* result doesn't matter */
+		ret = dns_rr_parse(&unused_rr, curr, &dm->raw[0], dm_sz, &section_sz);
+		if (ret != 0) {
+			return ret;
+		}
+		curr += section_sz;
+	}
+
+	/**
+	 * Save result
+	 */
+	*out_result = rrs;
+	*out_amount = rrs_sz;
 
 	return 0;
 }

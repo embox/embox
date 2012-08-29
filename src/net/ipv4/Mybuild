@@ -9,6 +9,7 @@ module arp_queue {
 	depends embox.util.hashtable
 	depends network_layer /* for network_layer.c */
 	depends skbuff
+	depends route
 	depends embox.kernel.timer.sys_timer
 	depends embox.kernel.thread.sched
 	depends embox.mem.objalloc
@@ -20,6 +21,7 @@ module arp {
 	depends network_layer /* for network_layer.c */
 	depends skbuff
 	depends arp_queue
+	depends route
 	depends neighbour
 	depends embox.lib.LibC
 	depends embox.framework.LibFrameworkNet
@@ -65,8 +67,7 @@ module route {
 	source "route.c"
 	option number route_table_size=8
 
-	depends core /* for devinet.c */
-	depends arp
+	depends core /* for inetdev.c */
 	depends embox.mem.pool
 }
 

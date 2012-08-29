@@ -9,11 +9,11 @@
  */
 
 #include <net/route.h>
-#include <net/arp.h>
 #include <errno.h>
 #include <util/member.h>
 #include <mem/misc/pool.h>
 #include <assert.h>
+#include <net/inetdevice.h>
 
 #include <lib/list.h>
 
@@ -22,9 +22,9 @@
 
 /**
  * NOTE: Linux route uses 3 structures for routing:
- *    + Forwarding Information Base (FIB)
- *    - routing cache (256 chains)
- *    + neighbour table (ARP cache)
+ *	+ Forwarding Information Base (FIB)
+ *	- routing cache (256 chains)
+ *	+ neighbour table (ARP cache)
  */
 
 struct rt_entry_info {
@@ -57,15 +57,15 @@ int rt_add_route(net_device_t *dev, in_addr_t dst,
 }
 
 int rt_del_route(net_device_t *dev, in_addr_t dst,
-			    in_addr_t mask, in_addr_t gw) {
+				in_addr_t mask, in_addr_t gw) {
 	struct rt_entry_info *rt_info;
 
 	assert(dev != NULL);
 
 	list_for_each_entry(rt_info, &rt_entry_info_list, lnk) {
 		if (((rt_info->entry.rt_dst == dst) || (INADDR_ANY == dst)) &&
-		    ((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
-		    ((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw))) {
+			((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
+			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw))) {
 			list_del(&rt_info->lnk);
 			pool_free(&rt_entry_info_pool, rt_info);
 			return ENOERR;
