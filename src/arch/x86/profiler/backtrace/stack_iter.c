@@ -6,13 +6,12 @@
  * @author Bulychev Anton
  */
 
-#include <stdio.h>
 #include <asm/traps.h>
 #include "stack_iter.h"
 
 void stack_iter_current(stack_iter_t *f) {
-	f->fp = __builtin_frame_address(0);
-	f->pc = __builtin_return_address(0);
+	f->fp = __builtin_frame_address(1);
+	f->pc = __builtin_return_address(1);
 }
 
 int stack_iter_next(stack_iter_t *f) {
@@ -23,22 +22,20 @@ int stack_iter_next(stack_iter_t *f) {
 	p = *p;
 
 	if (f->pc == irq_handler_call_pointer || f->pc == exception_handler_call_pointer) {
-		// Through interruption
+		/* Through interruption */
 		pt_regs_t *r = (pt_regs_t *) p;
 		f->fp = (void *) r->ebp;
 		f->pc = (void *) r->eip;
 	} else {
 		if (*p == NULL) {
 			f->fp = NULL;
-			//f->pc = NULL;
-			f->pc = *(p+1);
+			f->pc = NULL;
 			return 0;
 		} else {
 			f->fp = p;
 			f->pc = *(p+1);
 		}
 	}
-
 	return 1;
 }
 
@@ -49,3 +46,4 @@ void* stack_iter_get_fp(stack_iter_t *f) {
 void* stack_iter_get_retpc(stack_iter_t *f) {
 	return f->pc;
 }
+
