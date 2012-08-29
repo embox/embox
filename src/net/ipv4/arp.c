@@ -128,6 +128,12 @@ int arp_resolve(struct sk_buff *skb) {
 
 	assert(skb != NULL);
 
+	/* get ip after routing */
+	ret = rt_fib_route_ip(skb->nh.iph->daddr, &daddr);
+	if (ret != 0) {
+		return ret;
+	}
+
 	/* loopback */
 	if (ipv4_is_loopback(daddr) || (daddr == skb->nh.iph->saddr)) {
 		memset(skb->mac.ethh->h_dest, 0x00, ETH_ALEN);
@@ -149,12 +155,6 @@ int arp_resolve(struct sk_buff *skb) {
 #endif
 
 	/* someone on the net */
-
-	ret = rt_fib_route_ip(skb->nh.iph->daddr, &daddr);
-	if (ret != 0) {
-		return ret;
-	}
-
 	hw_addr = neighbour_lookup(in_dev_get(skb->dev), daddr);
 	if (hw_addr != NULL) {
 		memcpy(skb->mac.ethh->h_dest, hw_addr, ETH_ALEN);

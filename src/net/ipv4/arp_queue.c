@@ -142,7 +142,7 @@ int arp_queue_add(struct sk_buff *skb) {
 
 	softirq_unlock();
 
-	ret = arp_send(ARPOP_REQUEST, ETH_P_ARP, skb->dev, daddr, ip_hdr(skb)->saddr, NULL,
+	ret = arp_send(ARPOP_REQUEST, ETH_P_ARP, skb->dev, daddr, skb->nh.iph->saddr, NULL,
 			skb->dev->dev_addr, NULL);
 	if (ret != 0) {
 		return ret;

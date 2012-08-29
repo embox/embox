@@ -14,7 +14,6 @@
 #include <util/member.h>
 #include <mem/misc/pool.h>
 #include <assert.h>
-#include <net/inet_sock.h>
 
 #include <lib/list.h>
 
@@ -103,7 +102,8 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 		skb->dev = inet_get_loopback_dev();
 	}
 
-	/* if the packet should be sent using gateway */
+	/* if the packet should be sent using gateway
+	 * nothing todo there. all will be done in arp_resolve */
 #if 0
 	if (rte->rt_gateway != INADDR_ANY) {
 		/* the next line coerses arp_resolve to set HW destination address
@@ -114,6 +114,7 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 		 *				eth_rebuild_header()
 		 *	will do the same again and overwrite the result
 		 */
+		int arp_resolve_result;
 		skb->nh.iph->daddr = rte->rt_gateway;
 		arp_resolve_result = arp_resolve(skb);
 		/* so here we need to return the original destination address */
