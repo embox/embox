@@ -6,40 +6,47 @@
  * @author Bulychev Anton
  */
 
-#include <stdio.h>
+#include <assert.h>
+#include <stddef.h>
+#include <string.h>
+#include <kernel/printk.h>
 #include <debug/symbol.h>
 #include "backtrace.h"
+#include <math.h>
 
 void backtrace_fd(void) {
 	stack_iter_t f;
-	const struct symbol *s;
-	void *fp, *pc;
-	int k = 1;
-
-	printk("\n\nBacktrace:\n\n");
-	printk("  #         fp         pc\n");
-	printk("--- ---------- ----------\n");
+	int depth = 0;
 
 	/* Counting frames */
 	stack_iter_current(&f);
-	while (stack_iter_next(&f)) {
-		k++;
-	}
+	do {
+		depth++;
+	} while (stack_iter_next(&f));
+
+	printk("\n\nBacktrace:\n\n");
+	printk("     sp        pc        func + offset\n");
+	printk("---  --------  --------  --------------------------\n");
 
 	/* Printing frames */
 	stack_iter_current(&f);
 	do {
-		fp = stack_iter_get_fp(&f);
-		pc = stack_iter_get_retpc(&f);
+		const struct symbol *s;
+
+		void *fp = stack_iter_get_fp(&f);
+		void *pc = stack_iter_get_retpc(&f);
+
+		printk("%3d  %08x  %08x",
+			depth--, (unsigned) fp, (unsigned) pc);
+
 		s = symbol_lookup(pc);
-		if (s == NULL) {
-			printk("%3d 0x%08x 0x%08x\n",
-				k--, (uint32_t) fp, (uint32_t) pc);
-		} else {
-			printk("%3d 0x%08x 0x%08x %s+0x%08x\n",
-				k--, (uint32_t) fp, (uint32_t) pc,
-				s->name, (uint32_t) pc - (uint32_t) s->addr);
+		if (s) {
+			ptrdiff_t offset = (char *) pc - (char *) s->addr;
+			assert(offset >= 0);
+			printk("  %s + %x", s->name, (unsigned) offset);
 		}
+
+		printk("\n");
 	} while (stack_iter_next(&f));
 
 	printk("\n");

@@ -3,4 +3,5 @@ package embox.profiler
 static module backtrace {
 	source "backtrace.h", "backtrace.c"
 	depends embox.arch.stackframe
+	depends embox.lib.debug.Symbol
 }
