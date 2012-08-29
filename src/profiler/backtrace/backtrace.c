@@ -25,8 +25,8 @@ void backtrace_fd(void) {
 	} while (stack_iter_next(&f));
 
 	printk("\n\nBacktrace:\n\n");
-	printk("     sp        pc        func + offset\n");
-	printk("---  --------  --------  --------------------------\n");
+	printk("     sp        pc         func + offset\n");
+	printk("     --------  --------  --------------------------\n");
 
 	/* Printing frames */
 	stack_iter_current(&f);
@@ -43,7 +43,7 @@ void backtrace_fd(void) {
 		if (s) {
 			ptrdiff_t offset = (char *) pc - (char *) s->addr;
 			assert(offset >= 0);
-			printk("  %s + %x", s->name, (unsigned) offset);
+			printk("  <%s+0x%x>", s->name, (unsigned) offset);
 		}
 
 		printk("\n");
