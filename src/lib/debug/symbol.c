@@ -13,18 +13,22 @@ extern const struct symbol __symbol_table[];
 extern const size_t __symbol_table_size;
 
 const struct symbol *symbol_lookup(void *addr) {
-	const struct symbol *last = NULL;
+	size_t l = 0, r = __symbol_table_size, m;
 
-	/* Plain search. */
-	for (const struct symbol *s = __symbol_table;
-			s < __symbol_table + __symbol_table_size; ++s) {
-
-		if (s->addr > addr) {
-			break;
+	/* Binary search */
+	while (l < r) {
+		m = (l + r + 1) / 2;
+		if (__symbol_table[m].addr <= addr) {
+			l = m;
+		} else {
+			r = m - 1;
 		}
-		last = s;
 	}
 
-	return last;
+	if (l == __symbol_table_size) {
+		return NULL;
+	} else {
+		return &__symbol_table[l];
+	}
 }
 
