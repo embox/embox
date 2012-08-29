@@ -129,20 +129,22 @@ symbols_c_files = \
 $(symbols_pass1_c) : image_o = $(image_nosymbols_o)
 $(symbols_pass2_c) : image_o = $(image_pass1_o)
 
-$(symbols_c_files) : flags :=
+$(symbols_c_files) :
 $(symbols_c_files) : $$(common_prereqs_nomk) mk/script/nm2c.awk | $$(@D)/.
 $(symbols_c_files) : $$(image_o)
 	$(NM) -n $< | awk -f mk/script/nm2c.awk > $@
 
-symbols_pass1_ar = $(OBJ_DIR)/symbols_pass1.ar
-symbols_pass2_ar = $(OBJ_DIR)/symbols_pass2.ar
+symbols_pass1_a = $(OBJ_DIR)/symbols_pass1.a
+symbols_pass2_a = $(OBJ_DIR)/symbols_pass2.a
 
-symbols_ar_files = \
-	$(symbols_pass1_ar) \
-	$(symbols_pass2_ar)
+symbols_a_files = \
+	$(symbols_pass1_a) \
+	$(symbols_pass2_a)
 
-$(symbols_ar_files) : %.ar : %.o
+$(symbols_a_files) : %.a : %.o
 	$(AR) $(ARFLAGS) $@ $<
+
+$(symbols_a_files:%.a=%.o) : flags :=
 
 # workaround to get VPATH and GPATH to work with an OBJ_DIR.
 $(shell $(MKDIR) $(OBJ_DIR) 2> /dev/null)
@@ -173,16 +175,16 @@ $(image_nosymbols_o): | $$(@D)/. $(dir $(IMAGE).map).
 	--cref -Map $(IMAGE).map \
 	-o $@
 
-$(image_pass1_o) : $(image_nosymbols_o) $(symbols_pass1_ar) | $$(@D)/.
+$(image_pass1_o) : $(image_nosymbols_o) $(symbols_pass1_a) | $$(@D)/.
 	$(LD) --relax $(ldflags_all) \
 		$(image_nosymbols_o) \
-		$(symbols_pass1_ar) \
+		$(symbols_pass1_a) \
 	-o $@
 
-$(IMAGE): $(image_nosymbols_o) $(symbols_pass2_ar) | $$(@D)/.
+$(IMAGE): $(image_nosymbols_o) $(symbols_pass2_a) | $$(@D)/.
 	$(LD) --relax $(ldflags_all) \
 		$(image_nosymbols_o) \
-		$(symbols_pass2_ar) \
+		$(symbols_pass2_a) \
 	-o $@
 
 $(IMAGE_DIS): $(IMAGE)
