@@ -84,12 +84,8 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
 int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	in_addr_t daddr = skb->nh.iph->daddr;
 	struct rt_entry *rte = (suggested_route ? suggested_route : rt_fib_get_best(daddr));
-	struct inet_sock *inet;
 
 	assert(skb != NULL);
-
-	assert(skb->sk != NULL);
-	inet = (struct inet_sock *)skb->sk;
 
 	if (!rte) {
 		return -ENETUNREACH;
@@ -108,7 +104,6 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	}
 
 	/* if the packet should be sent using gateway */
-	inet->snd_daddr = (rte->rt_gateway == INADDR_ANY ? daddr : rte->rt_gateway);
 #if 0
 	if (rte->rt_gateway != INADDR_ANY) {
 		/* the next line coerses arp_resolve to set HW destination address
@@ -126,6 +121,19 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 		return arp_resolve_result;
 	}
 #endif
+
+	return ENOERR;
+}
+
+int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr) {
+	struct rt_entry *rte;
+
+	rte = rt_fib_get_best(source_addr);
+	if (rte == NULL) {
+		return -ENETUNREACH;
+	}
+
+	*new_addr = (rte->rt_gateway == INADDR_ANY ? source_addr : rte->rt_gateway);
 
 	return ENOERR;
 }

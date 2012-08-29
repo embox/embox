@@ -21,8 +21,7 @@
 #include <framework/mod/options.h>
 #include <assert.h>
 #include <kernel/softirq_lock.h>
-#include <net/inet_sock.h>
-#include <net/in.h>
+#include <net/route.h>
 
 EMBOX_UNIT_INIT(arp_queue_init);
 
@@ -113,18 +112,16 @@ free_item:
 }
 
 int arp_queue_add(struct sk_buff *skb) {
-	int res;
+	int ret;
 	struct arp_queue_item *waiting_item;
-	struct inet_sock *inet;
 	in_addr_t daddr;
 
 	assert(skb != NULL);
 
-	assert(skb->sk != NULL);
-	inet = (struct inet_sock *)skb->sk;
-
-	assert(inet->snd_daddr != INADDR_ANY);
-	daddr = inet->snd_daddr;
+	ret = rt_fib_route_ip(skb->nh.iph->daddr, &daddr);
+	if (ret != 0) {
+		return ret;
+	}
 
 	softirq_lock();
 
@@ -137,18 +134,18 @@ int arp_queue_add(struct sk_buff *skb) {
 	waiting_item->skb = skb;
 	waiting_item->dest_ip = daddr;
 
-	res = hashtable_put(arp_queue_table, (void *)&waiting_item->dest_ip, (void *)waiting_item);
-	if (res < 0) {
+	ret = hashtable_put(arp_queue_table, (void *)&waiting_item->dest_ip, (void *)waiting_item);
+	if (ret != 0) {
 		pool_free(&arp_queue_item_pool, waiting_item);
-		return res;
+		return ret;
 	}
 
 	softirq_unlock();
 
-	res = arp_send(ARPOP_REQUEST, ETH_P_ARP, skb->dev, daddr, ip_hdr(skb)->saddr, NULL,
+	ret = arp_send(ARPOP_REQUEST, ETH_P_ARP, skb->dev, daddr, ip_hdr(skb)->saddr, NULL,
 			skb->dev->dev_addr, NULL);
-	if (res < 0) {
-		return res;
+	if (ret != 0) {
+		return ret;
 	}
 
 	return ENOERR;

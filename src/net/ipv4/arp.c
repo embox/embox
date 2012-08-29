@@ -21,8 +21,7 @@
 #include <net/neighbour.h>
 #include <time.h>
 #include <assert.h>
-#include <net/inet_sock.h>
-#include <net/in.h>
+#include <net/route.h>
 //#include <kernel/thread/sched.h>
 
 #include <net/arp_queue.h>
@@ -123,28 +122,24 @@ int arp_send(int type, int ptype, struct net_device *dev,
 }
 
 int arp_resolve(struct sk_buff *skb) {
+	int ret;
 	uint8_t *hw_addr;
-	struct inet_sock *inet;
 	in_addr_t daddr;
 
 	assert(skb != NULL);
-
-	assert(skb->sk != NULL);
-	inet = (struct inet_sock *)skb->sk;
-
-	assert(inet->snd_daddr != INADDR_ANY);
-	daddr = inet->snd_daddr;
 
 	/* loopback */
 	if (ipv4_is_loopback(daddr) || (daddr == skb->nh.iph->saddr)) {
 		memset(skb->mac.ethh->h_dest, 0x00, ETH_ALEN);
 		return ENOERR;
 	}
+
 	/* broadcast */
 	if (daddr == htonl(INADDR_BROADCAST)) {
 		memset(skb->mac.ethh->h_dest, 0xFF, ETH_ALEN);
 		return ENOERR;
 	}
+
 #if 0
 	/* our machine on our device? */
 	if (ip->daddr == inet_dev_get_ipaddr(in_dev_get(dev))){
@@ -152,7 +147,14 @@ int arp_resolve(struct sk_buff *skb) {
 		return 0;
 	}
 #endif
+
 	/* someone on the net */
+
+	ret = rt_fib_route_ip(skb->nh.iph->daddr, &daddr);
+	if (ret != 0) {
+		return ret;
+	}
+
 	hw_addr = neighbour_lookup(in_dev_get(skb->dev), daddr);
 	if (hw_addr != NULL) {
 		memcpy(skb->mac.ethh->h_dest, hw_addr, ETH_ALEN);

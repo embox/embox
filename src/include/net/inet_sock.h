@@ -69,8 +69,6 @@ typedef struct inet_sock {
 	in_addr_t      rcv_saddr; /* address from which the socket receives packets
 								 (this equals to saddr or INADDR_ANY) */
 	in_addr_t      daddr;     /* really address of destonation host */
-	in_addr_t      snd_daddr; /* address on which packet will sended
-								 (this equals to daddr or gateway for daddr) */
 	struct ip_options *opt;
 	__be16         dport;
 	__be16         sport;

@@ -69,6 +69,15 @@ extern int rt_del_route(net_device_t *dev, in_addr_t dst,
 extern int ip_route(sk_buff_t *skb, struct rt_entry *suggested_route);
 
 /**
+ * Get IP address of the next machine after routing
+ * After this new_addr will be equal to source_addr or to gateway for this IP
+ * @param ip address
+ * @param pointer to result
+ * @return error code
+ */
+extern int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr);
+
+/**
  * Get first element from route from table.
  * @return pointer to first entity
  * @retval NULL if entity not found
