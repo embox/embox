@@ -13,19 +13,10 @@ MEMORY {
 	MEMORY_REGION(flash)
 }
 
-_data_image_start = _data_lma;
-
-_text_start = _text_vma;
-_text_end = _text_vma + _text_len;
-
 SECTIONS {
 	.text : {
-		. = + 0x400;
+		. = + 0x400; /* reserve for exception table */
 		ALIGNMENT();
-		_ivt_start = .;
-		*(.trap_table)
-		_ivt_end = .;
-		. = ALIGN(0x100);
 		*(.text)
 		*(.text.*)
 		*(.init.text)
@@ -40,21 +31,17 @@ SECTIONS {
 
 	.data : {
 		ALIGNMENT();
-		_data_start = .;
 		*(.data)
 		*(.sdata)
 		ALIGNMENT();
-		_data_end = .;
 	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
 	.bss : {
 		ALIGNMENT();
-		_bstart = .;
 		*(.bss)
 		*(.sbss)
 		ALIGNMENT();
-		_bend = .;
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 
@@ -66,12 +53,8 @@ SECTIONS {
 
 	.stack (NOLOAD): {
 		ALIGNMENT();
-		_stack_bottom = .;
 		. += OPTION_GET(NUMBER,stack_size);
 		ALIGNMENT();
-		_stack_top = .;
-		_stack = _stack_top;
-		__stack = _stack;
 	} SECTION_REGION(stack)
 	SECTION_SYMBOLS(stack)
 
@@ -86,6 +69,5 @@ SECTIONS {
 	}
 }
 
-_free_mem = _stack_top;
 _mem_begin = LDS_REGION_BASE_sdram;
 _mem_length = LDS_REGION_SIZE_sdram;
