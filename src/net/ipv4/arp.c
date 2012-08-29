@@ -21,6 +21,8 @@
 #include <net/neighbour.h>
 #include <time.h>
 #include <assert.h>
+#include <net/inet_sock.h>
+#include <net/in.h>
 //#include <kernel/thread/sched.h>
 
 #include <net/arp_queue.h>
@@ -122,16 +124,24 @@ int arp_send(int type, int ptype, struct net_device *dev,
 
 int arp_resolve(struct sk_buff *skb) {
 	uint8_t *hw_addr;
-	iphdr_t *ip;
+	struct inet_sock *inet;
+	in_addr_t daddr;
 
-	ip = skb->nh.iph;
+	assert(skb != NULL);
+
+	assert(skb->sk != NULL);
+	inet = (struct inet_sock *)skb->sk;
+
+	assert(inet->snd_daddr != INADDR_ANY);
+	daddr = inet->snd_daddr;
+
 	/* loopback */
-	if (ipv4_is_loopback(ip->daddr) || (ip->daddr == ip->saddr)) {
+	if (ipv4_is_loopback(daddr) || (daddr == skb->nh.iph->saddr)) {
 		memset(skb->mac.ethh->h_dest, 0x00, ETH_ALEN);
 		return ENOERR;
 	}
 	/* broadcast */
-	if (ip->daddr == htonl(INADDR_BROADCAST)) {
+	if (daddr == htonl(INADDR_BROADCAST)) {
 		memset(skb->mac.ethh->h_dest, 0xFF, ETH_ALEN);
 		return ENOERR;
 	}
@@ -143,7 +153,7 @@ int arp_resolve(struct sk_buff *skb) {
 	}
 #endif
 	/* someone on the net */
-	hw_addr = neighbour_lookup(in_dev_get(skb->dev), ip->daddr);
+	hw_addr = neighbour_lookup(in_dev_get(skb->dev), daddr);
 	if (hw_addr != NULL) {
 		memcpy(skb->mac.ethh->h_dest, hw_addr, ETH_ALEN);
 		return ENOERR;

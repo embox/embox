@@ -13,6 +13,8 @@
 #include <errno.h>
 #include <util/member.h>
 #include <mem/misc/pool.h>
+#include <assert.h>
+#include <net/inet_sock.h>
 
 #include <lib/list.h>
 
@@ -38,6 +40,8 @@ int rt_add_route(net_device_t *dev, in_addr_t dst,
 			in_addr_t mask, in_addr_t gw, int flags) {
 	struct rt_entry_info *rt_info;
 
+	assert(dev != NULL);
+
 	rt_info = (struct rt_entry_info *)pool_alloc(&rt_entry_info_pool);
 	if (rt_info == NULL) {
 		return -ENOMEM;
@@ -57,6 +61,8 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
 			    in_addr_t mask, in_addr_t gw) {
 	struct rt_entry_info *rt_info;
 
+	assert(dev != NULL);
+
 	list_for_each_entry(rt_info, &rt_entry_info_list, lnk) {
 		if (((rt_info->entry.rt_dst == dst) || (INADDR_ANY == dst)) &&
 		    ((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
@@ -75,26 +81,36 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
  * 			style must be the same
  *		2) Carrier without ARP can't be supported
  */
-int ip_route(sk_buff_t *skb, struct rt_entry *suggested_route) {
+int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	in_addr_t daddr = skb->nh.iph->daddr;
 	struct rt_entry *rte = (suggested_route ? suggested_route : rt_fib_get_best(daddr));
+	struct inet_sock *inet;
+
+	assert(skb != NULL);
+
+	assert(skb->sk != NULL);
+	inet = (struct inet_sock *)skb->sk;
 
 	if (!rte) {
-		return -ENOENT;
+		return -ENETUNREACH;
 	}
 
 	/* set the device for current destination address */
+	assert(rte->dev != NULL);
 	skb->dev = rte->dev;
 
 	/* if source and destination addresses are equal send via LB interface
 	 * svv: suspicious. There is no check (src == dst) in ip_input
 	 */
-	if (skb->nh.iph->daddr  == skb->nh.iph->saddr)
+	if (ipv4_is_loopback(daddr)
+			|| (daddr == skb->nh.iph->saddr)) {
 		skb->dev = inet_get_loopback_dev();
+	}
 
 	/* if the packet should be sent using gateway */
+	inet->snd_daddr = (rte->rt_gateway == INADDR_ANY ? daddr : rte->rt_gateway);
+#if 0
 	if (rte->rt_gateway != INADDR_ANY) {
-		int arp_resolve_result;
 		/* the next line coerses arp_resolve to set HW destination address
 		 * to gateway's HW address.
 		 * Suspicious:
@@ -109,6 +125,7 @@ int ip_route(sk_buff_t *skb, struct rt_entry *suggested_route) {
 		skb->nh.iph->daddr = daddr;
 		return arp_resolve_result;
 	}
+#endif
 
 	return ENOERR;
 }

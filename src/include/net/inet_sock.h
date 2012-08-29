@@ -65,15 +65,18 @@ typedef struct inet_sock {
 	/* sk have to be the first member of inet_sock */
 	sock_t         sk;
 
-	in_addr_t      daddr;
-	in_addr_t      rcv_saddr;
+	in_addr_t      saddr;     /* really source address of socket */
+	in_addr_t      rcv_saddr; /* address from which the socket receives packets
+								 (this equals to saddr or INADDR_ANY) */
+	in_addr_t      daddr;     /* really address of destonation host */
+	in_addr_t      snd_daddr; /* address on which packet will sended
+								 (this equals to daddr or gateway for daddr) */
 	struct ip_options *opt;
 	__be16         dport;
 	__be16         sport;
 #if 0
 	__u16          num;
 #endif
-	in_addr_t      saddr;
 	__s16          uc_ttl;
 	__u16          id;
 	__u8           tos;

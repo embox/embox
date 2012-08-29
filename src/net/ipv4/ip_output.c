@@ -85,6 +85,7 @@ static int fragment_skb_and_send(sk_buff_t *skb, const struct rt_entry *best_rou
 }
 
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
+	int ret;
 	struct rt_entry *best_route;
 	struct rt_entry bootp_route;
 	net_device_t *dev;
@@ -92,7 +93,6 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	if (sk != NULL) {
 		build_ip_packet(sk, skb);
 	}
-
 
 	/* Process BOOTP */
 	if (ntohs(sk->sport) == BOOTP_PORT_CLIENT) {
@@ -114,9 +114,10 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	}
 
 ip_send:
-	if (ip_route(skb, best_route) < 0) {
+	ret = ip_route(skb, best_route);
+	if (ret != 0) {
 		skb_free(skb);
-		return -ENETUNREACH;  /* errno? */
+		return ret;  /* errno? */
 	}
 
 	if (skb->len > best_route->dev->mtu) {

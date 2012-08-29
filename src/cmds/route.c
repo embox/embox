@@ -47,29 +47,28 @@ static int exec(int argc, char *argv[]) {
 	in_device_t *ifdev;
 	struct rt_entry *rt;
 	size_t l;
-	in_addr_t net, mask, gw;
-	struct in_addr addr;
+	struct in_addr net, mask, gw;
 	char buff[BUFF_SZ], *str;
 
 	ifdev = NULL;
-	net = mask = gw = INADDR_ANY;
+	net.s_addr = mask.s_addr = gw.s_addr = INADDR_ANY;
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "n:m:d:g:h"))) {
 		switch ((char)opt) {
 		case 'n':
-			if ((net = inet_addr(optarg)) == INADDR_NONE) {
+			if (!inet_aton(optarg, &net)) {
 				printf("Unknown host\n");
 				return -1;
 			}
 			break;
 		case 'm':
-			if ((mask = inet_addr(optarg)) == INADDR_NONE) {
+			if (!inet_aton(optarg, &mask)) {
 				printf("Unknown mask\n");
 				return -1;
 			}
 			break;
 		case 'g':
-			if ((gw = inet_addr(optarg)) == INADDR_NONE) {
+			if (!inet_aton(optarg, &gw)) {
 				printf("Unknown gateway\n");
 				return -1;
 			}
@@ -91,17 +90,16 @@ static int exec(int argc, char *argv[]) {
 		}
 	}
 	/* ToDo: check that mask is correct (leading ones etc) */
-	net = net & mask;
+	net.s_addr = net.s_addr & mask.s_addr;
 
 	if (!strcmp(argv[argc - 1], "add")) {
 		/* ToDo:
 		 * 	reject route if there is a route with the same length of the mask
 		 * 	We don't allow the similar routes in the kernel
 		 */
-		rt_add_route(ifdev->dev, net, mask, gw, ((gw == INADDR_ANY) ? RTF_UP : RTF_UP | RTF_GATEWAY));
-		return 0;
+		return rt_add_route(ifdev->dev, net.s_addr, mask.s_addr, gw.s_addr, ((gw.s_addr == INADDR_ANY) ? RTF_UP : RTF_UP | RTF_GATEWAY));
 	} else if (!strcmp(argv[argc - 1], "del")) {
-		rt_del_route(ifdev->dev, net, mask, gw);
+		return rt_del_route(ifdev->dev, net.s_addr, mask.s_addr, gw.s_addr);
 	} else {
 		printf("Destination     Gateway         Genmask         Flags Iface\n");
 
@@ -110,19 +108,23 @@ static int exec(int argc, char *argv[]) {
 		while (rt != NULL) {
 			memset(&buff[0], ' ', (BUFF_SZ - 1) * sizeof(char));
 
-			addr.s_addr = rt->rt_dst;
-			str = inet_ntoa(addr);
+			/* Get route info */
+			net.s_addr = rt->rt_dst;
+			gw.s_addr = rt->rt_gateway;
+			mask.s_addr = rt->rt_mask;
+
+			/* Parse network */
+			str = inet_ntoa(net);
 			l = strlen(str);
 			memcpy(&buff[OFFSET_DEST], str, (l < LEN_DEST ? l : LEN_DEST) * sizeof(char));
 
-
-			addr.s_addr = rt->rt_gateway;
-			str = (addr.s_addr == INADDR_ANY) ? "*" : inet_ntoa(addr);
+			/* Parse gateway */
+			str = (gw.s_addr == INADDR_ANY) ? "*" : inet_ntoa(gw);
 			l = strlen(str);
 			memcpy(&buff[OFFSET_GW], str, (l < LEN_GW ? l : LEN_GW) * sizeof(char));
 
-			addr.s_addr = rt->rt_mask;
-			str = inet_ntoa(addr);
+			/* Parse mask */
+			str = inet_ntoa(mask);
 			l = strlen(str);
 			memcpy(&buff[OFFSET_NMASK], str, (l < LEN_NMASK ? l : LEN_NMASK) * sizeof(char));
 
