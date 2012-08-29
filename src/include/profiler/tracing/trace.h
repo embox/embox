@@ -9,7 +9,10 @@
 #ifndef PROFILER_TRACING_TRACE_H_
 #define PROFILER_TRACING_TRACE_H_
 
-#include __impl_x(profiler/tracing/trace_impl.h)
+struct __trace_point;
+struct __trace_block;
+
+#include <module/embox/profiler/trace.h>
 
 #define TRACE_POINT_DEF(name, tp_name) \
 	  __TRACE_POINT_DEF(name, tp_name)
@@ -19,6 +22,7 @@
 
 #define trace_point(name) \
 	  __trace_point(name)
+
 
 extern void __tracepoint_handle(struct __trace_point *tp);
 

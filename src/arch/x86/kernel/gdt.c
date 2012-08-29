@@ -13,7 +13,7 @@
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <kernel/panic.h>
-
+//http://dims.karelia.ru/x86/env_1.shtml
 #define GDT_SIZE 8
 
 typedef struct gdt_gate {

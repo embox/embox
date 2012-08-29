@@ -1,5 +1,13 @@
 package embox.profiler
 
-module tracing {
-	source "trace.c"
+@DefaultImpl(no_tracing)
+abstract module trace {
+}
+
+module no_tracing extends trace {
+	source "no_trace_impl.h"
+}
+
+module tracing extends trace {
+	source "trace.c", "trace_impl.h"
 }
