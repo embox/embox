@@ -22,9 +22,9 @@
 
 /**
  * NOTE: Linux route uses 3 structures for routing:
- *	+ Forwarding Information Base (FIB)
- *	- routing cache (256 chains)
- *	+ neighbour table (ARP cache)
+ *    + Forwarding Information Base (FIB)
+ *    - routing cache (256 chains)
+ *    + neighbour table (ARP cache)
  */
 
 struct rt_entry_info {
@@ -36,7 +36,7 @@ POOL_DEF(rt_entry_info_pool, struct rt_entry_info, OPTION_GET(NUMBER,route_table
 static LIST_HEAD(rt_entry_info_list);
 
 int rt_add_route(net_device_t *dev, in_addr_t dst,
-			in_addr_t mask, in_addr_t gw, int flags) {
+		in_addr_t mask, in_addr_t gw, int flags) {
 	struct rt_entry_info *rt_info;
 
 	assert(dev != NULL);
@@ -57,16 +57,16 @@ int rt_add_route(net_device_t *dev, in_addr_t dst,
 }
 
 int rt_del_route(net_device_t *dev, in_addr_t dst,
-				in_addr_t mask, in_addr_t gw) {
+		in_addr_t mask, in_addr_t gw) {
 	struct rt_entry_info *rt_info;
 
 	assert(dev != NULL);
 
 	list_for_each_entry(rt_info, &rt_entry_info_list, lnk) {
 		if (((rt_info->entry.rt_dst == dst) || (INADDR_ANY == dst)) &&
-			((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
-			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw))) {
-			list_del(&rt_info->lnk);
+                ((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
+    			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw))) {
+    		list_del(&rt_info->lnk);
 			pool_free(&rt_entry_info_pool, rt_info);
 			return ENOERR;
 		}
@@ -76,9 +76,9 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
 }
 
 /* svv: ToDo:
- * 		1) this function returns -ENOENT/ENOERR, but arp_resolve -1/0
- * 			style must be the same
- *		2) Carrier without ARP can't be supported
+ *      1) this function returns -ENOENT/ENOERR, but arp_resolve -1/0
+ *         style must be the same
+ *      2) Carrier without ARP can't be supported
  */
 int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	in_addr_t daddr = skb->nh.iph->daddr;
