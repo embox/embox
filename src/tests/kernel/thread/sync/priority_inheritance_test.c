@@ -1,6 +1,11 @@
 /**
  * @file
- * @brief TODO documentation for core_test.c -- Alina Kramar
+ * @brief Tests thread priority inheritance.
+ *
+ * @details The test creates three threads: with low, mid and high priorities.
+ *      All of them is created with (suspend) flag THREAD_FLAG_SUSPENDED. Than
+ *      low priority thread is waked up and it is executing while it will not
+ *      finish. The test checks a correct sequence of stages.
  *
  * @date 01.05.11
  * @author Alina Kramar
@@ -21,7 +26,7 @@ static struct thread *low;
 static struct thread *mid;
 static struct thread *high;
 
-TEST_CASE("without inheritance") {
+TEST_CASE("with inheritance") {
 	struct mutex mutex;
 	thread_priority_t l = 10, m = 20, h = 30;
 

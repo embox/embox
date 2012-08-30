@@ -117,13 +117,8 @@ void mutex_unlock(struct mutex *m) {
 	out: sched_unlock();
 }
 
-#if 0
-static int priority_inherit(struct mutex *m, struct thread *t) {
-	struct event *e;
-
-	if (t == m->holder) {
-		return -EDEADLOCK;
-	}
+static int priority_inherit(struct thread *t) {
+	struct mutex *m = t->mutex_waiting;
 
 	if (m->holder->priority >= t->priority) {
 		return 0;
@@ -131,27 +126,10 @@ static int priority_inherit(struct mutex *m, struct thread *t) {
 
 	sched_change_scheduling_priority(m->holder, t->priority);
 
-	if (thread_state_sleeping(m->holder->state)) {
-		e = list_entry(&m->holder->sched_list, struct event, sleep_queue);
-
-		if (strcmp(e->name, "mutex")) {
-			return 0;
-		}
-
-		priority_inherit(list_entry(e, struct mutex, event),
-				list_entry(e, struct mutex, event)->holder);
-	}
-
 	return 0;
 }
 
 static void priority_uninherit(struct thread *t) {
-	sched_set_priority(t, t->initial_priority);
+	sched_change_scheduling_priority(t, t->initial_priority);
 }
-#else
-static int priority_inherit(struct thread *t) {
-	return 0;
-}
-static void priority_uninherit(struct thread *t) {
-}
-#endif
+
