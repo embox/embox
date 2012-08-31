@@ -104,7 +104,7 @@ int hostent_add_addr(struct hostent *he, const void *addr) {
 
 	memcpy(&hentry_addrs_storage[hentry_addrs_sz][0], addr, he->h_length);
 
-	hentry_addrs[hentry_addrs_sz] = &hentry_addrs_storage[hentry_aliases_sz][0];
+	hentry_addrs[hentry_addrs_sz] = &hentry_addrs_storage[hentry_addrs_sz][0];
 	hentry_addrs[++hentry_addrs_sz] = NULL;
 
 	return 0;
