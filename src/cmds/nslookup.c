@@ -30,13 +30,22 @@ static int exec(int argc, char **argv) {
 
 	printf("Server: %s\n", MODOPS_DNS_NAMESERVER);
 	printf("Address: %s#%d\n", MODOPS_DNS_NAMESERVER, DNS_PORT_NUMBER);
-	printf("Answer:\n");
+
+	printf("\nAnswers:\n");
 	for (i = 0, rr = result.an; i < result.ancount; ++i, ++rr) {
 		if (rr->rtype == DNS_RR_TYPE_A) {
 			printf("Name: %s\tAddress: %s\n", &rr->rname[0],
 					inet_ntoa(*(struct in_addr *)&rr->rdata.a.address[0]));
 		}
 	}
+
+	printf("\nAuthoritative nameservers:\n");
+	for (i = 0, rr = result.ns; i < result.nscount; ++i, ++rr) {
+		printf("Name: %s\tNameserver: %s\n", &rr->rname[0],
+				&rr->rdata.ns.nsdname[0]);
+	}
+
+	dns_result_free(&result);
 
 	return 0;
 }
