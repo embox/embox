@@ -31,7 +31,10 @@
 	OPTION_MODULE_DEFINED(__EMBUILD_MOD__,type,name)
 
 /* Performs additional stringification, handy in string options */
+#define OPTION_MODULE_STRING_GET(mod,name) \
+	MACRO_STRING(OPTION_MODULE_GET(mod,STRING,name))
+
 #define OPTION_STRING_GET(name) \
-	MACRO_STRING(OPTION_GET(STRING,name))
+	OPTION_MODULE_STRING_GET(__EMBUILD_MOD__,name)
 
 #endif /* FRAMEWORK_MOD_OPTIONS_H_ */
