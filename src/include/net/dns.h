@@ -20,6 +20,7 @@
  * DNS nameservers
  */
 #include <framework/mod/options.h>
+#include <module/embox/net/netdb.h>
 #define MODOPS_DNS_NAMESERVER OPTION_MODULE_STRING_GET(embox__net__netdb, dns_nameserver)
 
 /**
