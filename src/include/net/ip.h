@@ -17,6 +17,7 @@
 #include <net/checksum.h>
 
 #define IP_ADDR_LEN      4
+#define IPv6_ADDR_LEN    16
 #define ICMP_PROTO_TYPE  (unsigned short)0x01
 #define UDP_PROTO_TYPE   (unsigned short)0x11
 
