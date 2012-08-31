@@ -293,26 +293,32 @@ static int dns_q_parse(struct dns_q *q, const char *data,
 	return 0;
 }
 
-static int dns_rr_a_parse(struct dns_rr *rr, const char *data,
+static int dns_rr_a_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 		const char *buff, size_t buff_sz) {
+	if (field_sz != sizeof rr->rdata.a.address) {
+		return -EINVAL;
+	}
 	memcpy(&rr->rdata.a.address[0], data, sizeof rr->rdata.a.address);
 	return 0;
 }
 
-static int dns_rr_ns_parse(struct dns_rr *rr, const char *data,
+static int dns_rr_ns_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 		const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.ns.nsdname,
 			&rr->rdata.ns.nsdname[0], NULL);
 }
 
-static int dns_rr_cname_parse(struct dns_rr *rr, const char *data,
+static int dns_rr_cname_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 		const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.cname.cname,
 			&rr->rdata.cname.cname[0], NULL);
 }
 
-static int dns_rr_aaaa_parse(struct dns_rr *rr, const char *data,
+static int dns_rr_aaaa_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 		const char *buff, size_t buff_sz) {
+	if (field_sz != sizeof rr->rdata.aaaa.address) {
+		return -EINVAL;
+	}
 	memcpy(&rr->rdata.aaaa.address[0], data, sizeof rr->rdata.aaaa.address);
 	return 0;
 }
@@ -377,16 +383,16 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 		LOG_ERROR("can't parse type %d\n", rr->rtype);
 		break;
 	case DNS_RR_TYPE_A:
-		ret = dns_rr_a_parse(rr, curr, buff, buff_sz);
+		ret = dns_rr_a_parse(rr, curr, field_sz, buff, buff_sz);
 		break;
 	case DNS_RR_TYPE_NS:
-		ret = dns_rr_ns_parse(rr, curr, buff, buff_sz);
+		ret = dns_rr_ns_parse(rr, curr, field_sz, buff, buff_sz);
 		break;
 	case DNS_RR_TYPE_CNAME:
-		ret = dns_rr_cname_parse(rr, curr, buff, buff_sz);
+		ret = dns_rr_cname_parse(rr, curr, field_sz, buff, buff_sz);
 		break;
 	case DNS_RR_TYPE_AAAA:
-		ret = dns_rr_aaaa_parse(rr, curr, buff, buff_sz);
+		ret = dns_rr_aaaa_parse(rr, curr, field_sz, buff, buff_sz);
 		break;
 	}
 	if (ret != 0) {
