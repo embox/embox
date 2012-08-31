@@ -11,10 +11,12 @@ module gptimer extends embox.arch.clock {
 	source "gptimer.c"
 
 	depends embox.kernel.irq
-	depends embox.driver.ambapp_api
 	depends embox.kernel.time.clock_source
-	option number gptimer_base=2147484416
-	option number irq_num=8
+
+
+	depends embox.driver.ambapp_api /*if ampa pnp enable option not required */
+	option number gptimer_base=2147484416 /* if amba pnp disable */
+	option number irq_num=8               /* if amba pnp disable */
 }
 
 module mb_timer extends embox.arch.clock {
