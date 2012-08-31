@@ -42,11 +42,9 @@ endef
 
 # Symbol: NumberLiteral
 define $(gold_grammar)_create-NumberLiteral
-	$(or \
-		$(filter-out 0x%,$(gold_default_create)),
-		$(call gold_report_warning,
-				NYI: Hex literals)
-	)
+	$(for num <- $(gold_default_create),
+		$(or $(filter-out 0x%,$(num)),
+			$(shell printf '%d' '$(num)')))
 endef
 
 # Symbol: StringLiteral

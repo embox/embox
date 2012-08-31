@@ -20,7 +20,7 @@ module irqmp extends embox.arch.interrupt {
 
 	depends embox.driver.ambapp_api
 	depends embox.lib.LibC
-	option number irqmp_base=2147484160
+	option number irqmp_base=0x80000200
 }
 
 module mb_intc extends embox.arch.interrupt {
