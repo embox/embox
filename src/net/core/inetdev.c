@@ -124,6 +124,10 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast) {
 		return true;
 	}
 
+	if (ipv4_is_loopback(addr)) {
+		return true;
+	}
+
 	list_for_each_entry(indev_info, &indev_info_list, lnk) {
 		if (indev_info->in_dev.ifa_address == addr) {
 			return true;
