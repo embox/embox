@@ -2,10 +2,10 @@ package embox.net
 
 module netdb {
 	source "hostent_api.c", "hostent_api.h"
-	option number max_name_len=32
-	option number max_aliases_num=10
-	option number max_addr_len=4 /* now only ipv4 is used */
-	option number max_addrs_num=10
+	option number max_name_len=256
+	option number max_aliases_num=40
+	option number max_addr_len=16
+	option number max_addrs_num=40
 	depends embox.lib.LibC
 
 	source "gethostent.c"
@@ -16,7 +16,7 @@ module netdb {
 	depends embox.lib.LibC
 
 	source "dns.c"
-	option string nameserver="192.168.0.1"
+	option string dns_nameserver="10.0.0.11"
 	depends embox.net.socket
     depends embox.lib.LibC
     depends embox.mem.heap_api

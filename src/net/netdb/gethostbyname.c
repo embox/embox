@@ -60,38 +60,48 @@ static struct hostent * get_hostent_from_file(const char *hostname) {
 }
 
 static struct hostent * get_hostent_from_net(const char *hostname) {
+	int ret;
 	struct hostent *he;
-	struct dns_rr *records, *record;
-	size_t i, records_sz, addr_len;
+	struct dns_result result;
+	struct dns_rr *rr;
+	size_t i, addr_len;
 
-	if (dns_query(hostname, DNS_RR_TYPE_A, DNS_RR_CLASS_IN, &records, &records_sz) != 0) {
+	ret = dns_query(hostname, DNS_RR_TYPE_A, DNS_RR_CLASS_IN, &result);
+	if (ret != 0) {
 		return NULL;
 	}
 
-	if (records_sz == 0) {
-		return NULL;
-	}
-
-	assert(records != NULL);
-	addr_len = (*(records + 0)).rdlength;
+	addr_len = result.an->rdlength;
 
 	if (((he = hostent_create()) == NULL)
 			|| (hostent_set_name(he, hostname) != 0)
 			|| (hostent_set_addr_info(he, AF_INET, addr_len) != 0)) {
+		dns_result_free(&result);
 		return NULL;
 	}
 
-	for (i = 0, record = records; i < records_sz; ++i, ++record) {
-		if ((record->rtype == DNS_RR_TYPE_A)
-				&& (record->rclass = DNS_RR_CLASS_IN)) {
-			assert(record->rdlength == addr_len);
-			if (hostent_add_addr(he, &record->rdata.a.address) != 0) {
-				return NULL;
-			}
+	for (i = 0, rr = result.an; i < result.ancount; ++i, ++rr) {
+		if (rr->rdlength != addr_len) {
+			continue;
+		}
+		switch (rr->rtype) {
+		default:
+			ret = 0;
+			break;
+		case DNS_RR_TYPE_A:
+			ret = hostent_add_addr(he, &rr->rdata.a.address[0]);
+			break;
+		case DNS_RR_TYPE_AAAA:
+			ret = hostent_add_addr(he, &rr->rdata.aaaa.address[0]);
+			break;
+		}
+		if (ret != 0) {
+			dns_result_free(&result);
+			return NULL;
 		}
 	}
 
-	free(records);
+	dns_result_free(&result);
 
 	return he;
 }

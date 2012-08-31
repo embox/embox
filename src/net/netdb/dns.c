@@ -17,9 +17,6 @@
 #include <stdio.h>
 #include <err.h>
 
-#include <framework/mod/options.h>
-#define MODOPS_NAMESERVER OPTION_STRING_GET(nameserver)
-
 union dns_msg {
 	char raw[DNS_MAX_MESSAGE_SZ];
 	struct {
@@ -86,7 +83,10 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 
 	while ((label_sz = *(uint8_t *)label++) != 0) {
 		if (label_sz == 0xC0) { /* it's a pointer to other label */
-			one_line = 0;
+			if (one_line) {
+				field_sz += 2 * sizeof(char); /* plus size of pointer */
+				one_line = 0;
+			}
 			offset = *(uint8_t *)label;
 			label = buff + offset; /* get new address of label */
 			if (label >= buff_end) { /* check boundary */
@@ -95,7 +95,7 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 			continue;
 		}
 
-		if ((label_sz > bytes_left) || (label + label_sz >= buff_end)) {
+		if ((label_sz > bytes_left) || (label + label_sz > buff_end)) {
 			return -ENOMEM;
 		}
 		memcpy(out_name, label, label_sz * sizeof(char));
@@ -121,7 +121,7 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 	 */
 	if (bytes_left != max_name_sz) {
 		out_name--;
-	} else if ((sizeof(char) > bytes_left) || (label + 1 >= buff_end)) {
+	} else if ((sizeof(char) > bytes_left) || (label + 1 > buff_end)) {
 		return -ENOMEM;
 	} else {
 		bytes_left -= sizeof(char);
@@ -129,7 +129,7 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 	*out_name++ = 0;
 
 	if (out_field_sz != NULL) {
-		*out_field_sz = field_sz + sizeof(char); /* plus one byte at the end of the loop */
+		*out_field_sz = field_sz + (one_line ? sizeof(char) : 0); /* plus one byte at the end of the loop if it's haven't labels */
 	}
 
 	return 0;
@@ -207,7 +207,7 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 	memset(&nameserver_addr, 0, sizeof nameserver_addr);
 	nameserver_addr.sin_family = AF_INET;
 	nameserver_addr.sin_port = htons(DNS_PORT_NUMBER);
-	if (!inet_aton(MODOPS_NAMESERVER, &nameserver_addr.sin_addr)) {
+	if (!inet_aton(MODOPS_DNS_NAMESERVER, &nameserver_addr.sin_addr)) {
 		return -EINVAL;
 	}
 	nameserver_addr_sz = sizeof nameserver_addr;
@@ -274,7 +274,7 @@ static int dns_q_parse(struct dns_q *q, const char *data,
 
 	/* parse type */
 	field_sz = sizeof(uint16_t);
-	if (curr + field_sz >= end) {
+	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
 	q->qtype = ntohs(*(uint16_t *)curr);
@@ -282,7 +282,7 @@ static int dns_q_parse(struct dns_q *q, const char *data,
 
 	/* parse class */
 	field_sz = sizeof(uint16_t);
-	if (curr + field_sz >= end) {
+	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
 	q->qclass = (uint16_t)ntohs(*(uint16_t *)curr);
@@ -295,14 +295,26 @@ static int dns_q_parse(struct dns_q *q, const char *data,
 
 static int dns_rr_a_parse(struct dns_rr *rr, const char *data,
 		const char *buff, size_t buff_sz) {
-	rr->rdata.a.address = *(uint32_t *)data;
+	memcpy(&rr->rdata.a.address[0], data, sizeof rr->rdata.a.address);
 	return 0;
+}
+
+static int dns_rr_ns_parse(struct dns_rr *rr, const char *data,
+		const char *buff, size_t buff_sz) {
+	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.ns.nsdname,
+			&rr->rdata.ns.nsdname[0], NULL);
 }
 
 static int dns_rr_cname_parse(struct dns_rr *rr, const char *data,
 		const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.cname.cname,
 			&rr->rdata.cname.cname[0], NULL);
+}
+
+static int dns_rr_aaaa_parse(struct dns_rr *rr, const char *data,
+		const char *buff, size_t buff_sz) {
+	memcpy(&rr->rdata.aaaa.address[0], data, sizeof rr->rdata.aaaa.address);
+	return 0;
 }
 
 static int dns_rr_parse(struct dns_rr *rr, const char *data,
@@ -324,7 +336,7 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 
 	/* parse type */
 	field_sz = sizeof(uint16_t);
-	if (curr + field_sz >= end) {
+	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
 	rr->rtype = ntohs(*(uint16_t *)curr);
@@ -332,23 +344,23 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 
 	/* parse class */
 	field_sz = sizeof(uint16_t);
-	if (curr + field_sz >= end) {
+	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
 	rr->rclass = (uint16_t)ntohs(*(uint16_t *)curr);
 	curr += field_sz;
 
 	/* parse ttl */
-	field_sz = sizeof(int16_t);
-	if (curr + field_sz >= end) {
+	field_sz = sizeof(uint32_t);
+	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
-	rr->rttl = ntohs(*(int16_t *)curr);
+	rr->rttl = ntohl(*(uint32_t *)curr);
 	curr += field_sz;
 
 	/* parse data length */
 	field_sz = sizeof(uint16_t);
-	if (curr + field_sz >= end) {
+	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
 	rr->rdlength = (uint16_t)ntohs(*(uint16_t *)curr);
@@ -356,7 +368,7 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 
 	/* parse data */
 	field_sz = rr->rdlength;
-	if (curr + field_sz >= end) {
+	if (curr + field_sz > end) {
 		return -EINVAL;
 	}
 	switch (rr->rtype) { /* TODO use table of methods instead */
@@ -367,8 +379,14 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 	case DNS_RR_TYPE_A:
 		ret = dns_rr_a_parse(rr, curr, buff, buff_sz);
 		break;
+	case DNS_RR_TYPE_NS:
+		ret = dns_rr_ns_parse(rr, curr, buff, buff_sz);
+		break;
 	case DNS_RR_TYPE_CNAME:
 		ret = dns_rr_cname_parse(rr, curr, buff, buff_sz);
+		break;
+	case DNS_RR_TYPE_AAAA:
+		ret = dns_rr_aaaa_parse(rr, curr, buff, buff_sz);
 		break;
 	}
 	if (ret != 0) {
@@ -382,19 +400,17 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 }
 
 static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
-		struct dns_rr **out_result, size_t *out_amount) {
+		struct dns_result *out_result) {
 	int ret;
 	const char *curr;
-	struct dns_q unused_q;
-	struct dns_rr unused_rr, *rrs;
-	size_t i, rrs_sz, section_sz;
-	uint16_t qd, an, ns, ar;
+	struct dns_q *qs;
+	struct dns_rr *rrs;
+	size_t i, amount, section_sz;
 
 	curr = &dm->msg.data[0];
+	memset(out_result, 0, sizeof *out_result);
 
-	/**
-	 * Parse Header section
-	 */
+	/* Parse Header section */
 	if (dm->msg.hdr.qr != DNS_MSG_TYPE_REPLY) {
 		return -EINVAL;
 	}
@@ -404,75 +420,91 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 		return -1;
 	}
 
-	qd = htons(dm->msg.hdr.qdcount);
-	an = htons(dm->msg.hdr.ancount);
-	ns = htons(dm->msg.hdr.nscount);
-	ar = htons(dm->msg.hdr.arcount);
+	/* Parse Question section */
+	amount = htons(dm->msg.hdr.qdcount);
+	qs = malloc(amount * sizeof *qs);
+	if (qs == NULL) {
+		ret = -ENOMEM;
+		goto error;
+	}
 
-	/**
-	 * Parse Question section
-	 */
-	for (i = 0; i < qd; ++i) {
-		/* result doesn't matter */
-		ret = dns_q_parse(&unused_q, curr, &dm->raw[0], dm_sz, &section_sz);
+	out_result->qdcount = amount;
+	out_result->qd = qs;
+
+	for (i = 0; i < amount; ++i) {
+		ret = dns_q_parse(qs++, curr, &dm->raw[0], dm_sz, &section_sz);
 		if (ret != 0) {
-			return ret;
+			goto error;
 		}
 		curr += section_sz;
 	}
 
-	/**
-	 * Parse Answer section
-	 */
-	rrs_sz = an;
-	rrs = malloc(rrs_sz * sizeof(struct dns_rr));
+	/* Parse Answer section */
+	amount = htons(dm->msg.hdr.ancount);
+	rrs = malloc(amount * sizeof *rrs);
 	if (rrs == NULL) {
-		return -ENOMEM;
+		ret = -ENOMEM;
+		goto error;
 	}
 
-	for (i = 0; i < rrs_sz; ++i) {
-		ret = dns_rr_parse(rrs + i, curr, &dm->raw[0], dm_sz, &section_sz);
+	out_result->ancount = amount;
+	out_result->an = rrs;
+
+	for (i = 0; i < amount; ++i) {
+		ret = dns_rr_parse(rrs++, curr, &dm->raw[0], dm_sz, &section_sz);
 		if (ret != 0) {
-			return ret;
+			goto error;
 		}
 		curr += section_sz;
 	}
 
-	/**
-	 * Parse Authority section
-	 */
-	for (i = 0; i < ns; ++i) {
-		/* result doesn't matter */
-		ret = dns_rr_parse(&unused_rr, curr, &dm->raw[0], dm_sz, &section_sz);
+	/* Parse Authority section */
+	amount = htons(dm->msg.hdr.nscount);
+	rrs = malloc(amount * sizeof *rrs);
+	if (rrs == NULL) {
+		ret = -ENOMEM;
+		goto error;
+	}
+
+	out_result->nscount = amount;
+	out_result->ns = rrs;
+
+	for (i = 0; i < amount; ++i) {
+		ret = dns_rr_parse(rrs++, curr, &dm->raw[0], dm_sz, &section_sz);
 		if (ret != 0) {
-			return ret;
+			goto error;
 		}
 		curr += section_sz;
 	}
 
-	/**
-	 * Parse Additional section
-	 */
-	for (i = 0; i < ar; ++i) {
-		/* result doesn't matter */
-		ret = dns_rr_parse(&unused_rr, curr, &dm->raw[0], dm_sz, &section_sz);
+	/* Parse Additional section */
+	amount = htons(dm->msg.hdr.arcount);
+	rrs = malloc(amount * sizeof *rrs);
+	if (rrs == NULL) {
+		ret = -ENOMEM;
+		goto error;
+	}
+
+	out_result->arcount = amount;
+	out_result->ar = rrs;
+
+	for (i = 0; i < amount; ++i) {
+		ret = dns_rr_parse(rrs++, curr, &dm->raw[0], dm_sz, &section_sz);
 		if (ret != 0) {
-			return ret;
+			goto error;
 		}
 		curr += section_sz;
 	}
 
-	/**
-	 * Save result
-	 */
-	*out_result = rrs;
-	*out_amount = rrs_sz;
-
+	/* All ok, done */
 	return 0;
+
+error:
+	dns_result_free(out_result);
+	return ret;
 }
 
-static int dns_execute(struct dns_q *query,
-		struct dns_rr **out_results, size_t *out_amount) {
+static int dns_execute(struct dns_q *query, struct dns_result *out_result) {
 	int ret;
 	union dns_msg msg_in, msg_out;
 	size_t msg_in_sz, msg_out_sz;
@@ -487,7 +519,7 @@ static int dns_execute(struct dns_q *query,
 		return ret;
 	}
 
-	ret = dns_result_parse(&msg_in, msg_in_sz, out_results, out_amount);
+	ret = dns_result_parse(&msg_in, msg_in_sz, out_result);
 	if (ret != 0) {
 		return ret;
 	}
@@ -496,7 +528,7 @@ static int dns_execute(struct dns_q *query,
 }
 
 int dns_query(const char *qname, enum dns_type qtype, enum dns_class qclass,
-		struct dns_rr **out_results, size_t *out_amount) {
+		struct dns_result *out_result) {
 	struct dns_q query;
 	size_t qname_sz;
 
@@ -509,6 +541,14 @@ int dns_query(const char *qname, enum dns_type qtype, enum dns_class qclass,
 	query.qtype = qtype;
 	query.qclass = qclass;
 
-	return dns_execute(&query, out_results, out_amount);
+	return dns_execute(&query, out_result);
+}
+
+int dns_result_free(struct dns_result *result) {
+	free(result->qd);
+	free(result->an);
+	free(result->ns);
+	free(result->ar);
+	return 0;
 }
 

@@ -14,6 +14,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <types.h>
+#include <net/ip.h>
+
+/**
+ * DNS nameservers
+ */
+#include <framework/mod/options.h>
+#define MODOPS_DNS_NAMESERVER OPTION_MODULE_STRING_GET(embox__net__netdb, dns_nameserver)
 
 /**
  * Protocol's specific constants
@@ -103,6 +110,7 @@ enum dns_type {
 	DNS_RR_TYPE_MINFO = 14, /* mailbox or mail list information */
 	DNS_RR_TYPE_MX = 15,    /* mail exchange */
 	DNS_RR_TYPE_TXT = 16,   /* text strings */
+	DNS_RR_TYPE_AAAA = 28,  /* a host IPv6 address */
 
 	/* Questions types */
 	DNS_Q_TYPE_AXFR = 252,  /* a request for a transfer of an entire zone */
@@ -114,7 +122,7 @@ enum dns_type {
 /**
  * Resource data formats
  */
-struct dns_rr_a { uint32_t address; }; /* Host address format */
+struct dns_rr_a {  char address[IP_ADDR_LEN]; }; /* Host address format */
 struct dns_rr_ns { char nsdname[DNS_MAX_NAME_SZ]; }; /* Authoritative name server format */
 struct dns_rr_md { char madname[DNS_MAX_NAME_SZ]; }; /* Mail destination format */
 struct dns_rr_mf { char madname[DNS_MAX_NAME_SZ]; }; /* Mail forwarder format */
@@ -132,6 +140,7 @@ struct dns_rr_minfo { char rmailbx[DNS_MAX_NAME_SZ];
 		char emailbx[DNS_MAX_NAME_SZ]; }; /* Mailbox (mail list) information format */
 struct dns_rr_mx { int16_t preference; char exchange[DNS_MAX_NAME_SZ]; }; /* Mail exchange format */
 struct dns_rr_txt { char *txt_data; }; /* Text strings format */
+struct dns_rr_aaaa {  char address[IPv6_ADDR_LEN]; }; /* Host IPv6 address format */
 
 /**
  * DNS Classes
@@ -154,7 +163,7 @@ struct dns_rr {
 	char rname[DNS_MAX_NAME_SZ]; /* an owner name */
 	uint16_t rtype;              /* type of a record */
 	uint16_t rclass;             /* class of a record */
-	int32_t rttl;                /* time life of this record */
+	uint32_t rttl;               /* time life of this record */
 	uint16_t rdlength;           /* size of rdata field */
 	union {
 		struct dns_rr_a a;
@@ -173,6 +182,7 @@ struct dns_rr {
 		struct dns_rr_minfo minfo;
 		struct dns_rr_mx mx;
 		struct dns_rr_txt txt;
+		struct dns_rr_aaaa aaaa;
 	} rdata;                    /* resource data */
 };
 
@@ -186,9 +196,32 @@ struct dns_q {
 };
 
 /**
+ * DNS Result
+ */
+struct dns_result {
+	/* Queries */
+	size_t qdcount;
+	struct dns_q *qd;
+	/* Answers */
+	size_t ancount;
+	struct dns_rr *an;
+	/* Authoitative nameservers */
+	size_t nscount;
+	struct dns_rr *ns;
+	/* Additional records */
+	size_t arcount;
+	struct dns_rr *ar;
+};
+
+/**
  * dns_query - make query with specified type and class
  */
 extern int dns_query(const char *query, enum dns_type qtype, enum dns_class qclass,
-		struct dns_rr **out_results, size_t *out_amount);
+		struct dns_result *out_result);
+
+/**
+ * dns_result_free - free resource from dns_result structure
+ */
+extern int dns_result_free(struct dns_result *result);
 
 #endif /* NET_DNS_H_ */
