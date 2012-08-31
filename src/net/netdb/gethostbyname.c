@@ -68,6 +68,7 @@ static struct hostent * get_hostent_from_net(const char *hostname) {
 
 	ret = dns_query(hostname, DNS_RR_TYPE_A, DNS_RR_CLASS_IN, &result);
 	if (ret != 0) {
+		h_errno = HOST_NOT_FOUND;
 		return NULL;
 	}
 
@@ -108,6 +109,8 @@ static struct hostent * get_hostent_from_net(const char *hostname) {
 
 struct hostent * gethostbyname(const char *hostname) {
 	struct hostent *he;
+
+	h_errno = NETDB_SUCCESS;
 
 	/* 1. If it's IP address (not symbolic name) */
 	he = get_hostent_from_ip(hostname);

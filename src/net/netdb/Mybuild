@@ -20,5 +20,8 @@ module netdb {
 	depends embox.net.socket
 	depends embox.lib.LibC
 	depends embox.mem.heap_api
+
+	source "herror.c"
+	depends embox.lib.LibC
 }
 

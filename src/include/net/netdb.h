@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Definitions for network databaes operations
+ * @brief Definitions for network database operations
  *
  * @date 20.08.12
  * @author Ilia Vaprol
@@ -9,6 +9,26 @@
 #ifndef NET_NETDB_H_
 #define NET_NETDB_H_
 
+/**
+ * Error return value for networt database operations
+ */
+extern int h_errno;
+
+/**
+ * Possible error codes
+ */
+#define NETDB_SUCCESS   0  /* Ok */
+#define HOST_NOT_FOUND  1  /* Authoritative Answer Host not found */
+#define TRY_AGAIN       2  /* Non-Authoritative Host not found, or SERVERFAIL */
+#define NO_RECOVERY     3  /* Non recoverable errors, FORMERR, REFUSED, NOTIMP */
+#define NO_DATA         4  /* Valid name, no data record of requested type */
+#define NO_ADDRESS NO_DATA
+
+/**
+ * Manipulation with error codes
+ */
+extern void herror(const char *msg);
+extern const char * hstrerror(int err);
 
 /**
  * Host name entity

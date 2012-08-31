@@ -304,8 +304,7 @@ static int exec(int argc, char **argv) {
 		  if(!ip_set){
 			  he = gethostbyname(argv[i_opt + 1]);
 			  if (he == NULL) {
-					printf("ping: bad ip address (%s)\n", argv[argc - 1]);
-					print_usage();
+			        printf("%s: %s %s\n", argv[0], hstrerror(h_errno), argv[i_opt + 1]);
 					return -1;
 				}
 			  hostname = argv[i_opt + 1];
