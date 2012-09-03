@@ -7,7 +7,12 @@ module system {
 abstract module cpu {
 }
 
-abstract module interrupt {
+@Mandatory
+@DefaultImpl(no_interrupt)
+abstract module interrupt { }
+
+module no_interrupt extends interrupt {
+	// TODO make a stub for IPL.
 }
 
 abstract module clock {

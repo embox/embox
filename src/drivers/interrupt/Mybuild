@@ -1,7 +1,9 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.interrupt
 
-module at91_aic extends embox.arch.interrupt {
+abstract module irqctrl_api { }
+
+module at91_aic extends irqctrl_api {
 	/* FIXME:
 	 * 1.it use irq_def_handler (called from at91_aic.c)
 	 */
@@ -11,11 +13,11 @@ module at91_aic extends embox.arch.interrupt {
 	depends embox.kernel.critical
 }
 
-module i8259 extends embox.arch.interrupt {
+module i8259 extends irqctrl_api {
 	source "i8259.c", "i8259.h"
 }
 
-module irqmp extends embox.arch.interrupt {
+module irqmp extends irqctrl_api {
 	source "irqmp.c", "irqmp.h"
 
 	depends embox.driver.ambapp_api
@@ -23,19 +25,19 @@ module irqmp extends embox.arch.interrupt {
 	option number irqmp_base=0x80000200
 }
 
-module mb_intc extends embox.arch.interrupt {
+module mb_intc extends irqctrl_api {
 	source "mb_intc.c", "mb_intc.h"
 }
 
-module stm32_nvic extends embox.arch.interrupt {
+module stm32_nvic extends irqctrl_api {
 	option number irq_table_size = 16
 	source "stm32_nvic.c", "stm32_nvic.h"
 }
 
-module mips_intc extends embox.arch.interrupt {
+module mips_intc extends irqctrl_api {
 	source "mips_intc.c", "mips_intc.h"
 }
 
-module no_interrupts extends embox.arch.interrupt {
+module no_interrupts extends irqctrl_api {
 	source "no_interrupts.h"
 }
