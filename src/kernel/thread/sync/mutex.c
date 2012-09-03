@@ -98,7 +98,7 @@ void mutex_unlock(struct mutex *m) {
 	struct thread *current = sched_current();
 
 	assert(m);
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
 	sched_lock();
 	{
