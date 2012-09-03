@@ -9,48 +9,48 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-#include <linux/init.h>
-#include <mem/objalloc.h>
 #include <embox/unit.h>
+
+#include <mem/misc/pool.h>
+#include <util/dlist.h>
+
 #include <util/array.h>
 #include <fs/fs_drv.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
 typedef struct fs_driver_head {
-	struct list_head *next;
-	struct list_head *prev;
+	struct dlist_head link;
 	fs_drv_t *drv;
 } fs_driver_head_t;
 
-OBJALLOC_DEF(fs_driver_pool, struct fs_driver_head, OPTION_GET(NUMBER,drivers_quantity));
+POOL_DEF(fs_driver_pool, struct fs_driver_head, OPTION_GET(NUMBER,drivers_quantity));
 
 ARRAY_SPREAD_DEF(const fs_drv_t *, __fs_drivers_registry);
 
-static LIST_HEAD(file_systems);
-
-#define drv_to_head(fs_drv) (uint32_t)(fs_drv - offsetof(fs_driver_head_t, drv))
+static DLIST_DEFINE(file_systems);
 
 
 static fs_driver_head_t *filesystem_alloc(fs_drv_t *drv) {
 	fs_driver_head_t *head;
 
-	head = objalloc(&fs_driver_pool);
+	head = pool_alloc(&fs_driver_pool);
 	head->drv = drv;
-	list_add((struct list_head*) head, &file_systems);
+
+	dlist_add_next(dlist_head_init((struct dlist_head*)head), &file_systems);
 
 	return head;
 }
 
 static void filesystem_free(fs_drv_t *drv) {
-	fs_driver_head_t *head = (fs_driver_head_t *)drv_to_head(drv);
+	fs_driver_head_t *head = (fs_driver_head_t *)drv;
 
-	list_del((struct list_head*) head);
-	objfree(&fs_driver_pool, head);
+	dlist_del((struct dlist_head *)head);
+	pool_free(&fs_driver_pool, head);
 	return;
 }
 
-static int __init unit_init(void) {
+static int unit_init(void) {
 	fs_driver_head_t *head;
 	size_t i;
 
@@ -67,10 +67,12 @@ static int __init unit_init(void) {
 }
 
 fs_drv_t *filesystem_find_drv(const char *name) {
-	struct list_head *p;
-	list_for_each(p, &file_systems) {
-		if (0 == strcmp(((fs_driver_head_t *) p)->drv->name, name)) {
-			return ((fs_driver_head_t *) p)->drv;
+	struct fs_driver_head *tmp;
+	struct fs_driver_head *fs_drv;
+
+	dlist_foreach_entry(fs_drv, tmp, &file_systems, link) {
+		if (0 == strcmp(fs_drv->drv->name, name)) {
+			return fs_drv->drv;
 		}
 	}
 	return NULL;
@@ -88,9 +90,6 @@ int filesystem_register_drv(fs_drv_t *fs) {
 	if (NULL != p) {
 		return -EBUSY;
 	}
-//	if (NULL == filesystem_alloc(fs)) {
-//		return -EBUSY;
-//	}
 
 	return res;
 }
