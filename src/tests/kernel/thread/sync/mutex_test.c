@@ -16,7 +16,7 @@
 #include <kernel/thread/sync/mutex.h>
 #include <unistd.h>
 
-static struct thread *first, *second;
+static struct thread *low, *high;
 static struct mutex m;
 
 EMBOX_TEST_SUITE("Mutex test");
@@ -24,34 +24,40 @@ EMBOX_TEST_SUITE("Mutex test");
 TEST_SETUP(setup);
 
 TEST_CASE("General") {
-	test_assert_zero(thread_resume(first));
-	test_assert_zero(thread_join(first, NULL));
-	test_assert_zero(thread_join(second, NULL));
-	test_assert_emitted("abc");
+	test_assert_zero(thread_resume(low));
+	test_assert_zero(thread_join(low, NULL));
+	test_assert_zero(thread_join(high, NULL));
+	test_assert_emitted("abcdefg");
 }
 
-static void *first_run(void *arg) {
-	mutex_lock(&m);
+static void *low_run(void *arg) {
 	test_emit('a');
-	test_assert_zero(thread_resume(second));
-	usleep(1000);
-	test_emit('b');
-	mutex_unlock(&m);
-	return NULL;
-}
-
-static void *second_run(void *arg) {
 	mutex_lock(&m);
-	test_emit('c');
+	test_emit('b');
+	test_assert_zero(thread_resume(high));
+	test_emit('d');
 	mutex_unlock(&m);
+	test_emit('g');
 	return NULL;
 }
 
+static void *high_run(void *arg) {
+	test_emit('c');
+	mutex_lock(&m);
+	test_emit('e');
+	mutex_unlock(&m);
+	test_emit('f');
+	return NULL;
+}
 
 static int setup(void) {
-	mutex_init(&m);
-	test_assert_zero(thread_create(&second, THREAD_FLAG_SUSPENDED, second_run, NULL));
-	test_assert_zero(thread_create(&first, THREAD_FLAG_SUSPENDED, first_run, NULL));
+	thread_priority_t l = 10, h = 20;
 
+	mutex_init(&m);
+	test_assert_zero(thread_create(&low, THREAD_FLAG_SUSPENDED, low_run, NULL));
+	test_assert_zero(thread_create(&high, THREAD_FLAG_SUSPENDED, high_run, NULL));
+	test_assert_zero(thread_set_priority(low, l));
+	test_assert_zero(thread_set_priority(high, h));
 	return 0;
 }
+
