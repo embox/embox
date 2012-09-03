@@ -13,7 +13,7 @@
 static struct thread *low, *high;
 static barrier_t b;
 
-EMBOX_TEST_SUITE("Mutex test");
+EMBOX_TEST_SUITE("Barrier test");
 
 TEST_SETUP(setup);
 
