@@ -21,7 +21,7 @@ struct task *task_self(void) {
 	return task_kernel_task();
 }
 
-void __attribute__((noreturn)) task_exit(int res) {
+void __attribute__((noreturn)) task_exit(void *res) {
 	while(1);
 }
 

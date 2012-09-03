@@ -209,16 +209,16 @@ static inline net_device_t *bootp_get_dev(bootphdr_t *bootp) {
 /**
  * Return ip address obtained from bootp/dhcp
  */
-in_addr_t const get_ip_addr (void);
+extern in_addr_t get_ip_addr(void);
 
 /**
  * Return network mask obtained from bootp/dhcp
  */
-in_addr_t const get_ip_mask (void);
+extern in_addr_t get_ip_mask(void);
 
 /**
  * Return gateway obtained from bootp/dhcp
  */
-in_addr_t const get_ip_gate (void);
+extern in_addr_t get_ip_gate(void);
 
 #endif /* NET_BOOTP_H_ */
