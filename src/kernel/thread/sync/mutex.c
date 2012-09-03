@@ -62,7 +62,7 @@ int mutex_trylock(struct mutex *m) {
 	struct thread *current = sched_current();
 
 	assert(m);
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
 	sched_lock();
 	{
@@ -119,6 +119,7 @@ void mutex_unlock(struct mutex *m) {
 
 static int priority_inherit(struct thread *t) {
 	struct mutex *m = t->mutex_waiting;
+	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
 	if (m->holder->priority >= t->priority) {
 		return 0;
@@ -130,6 +131,7 @@ static int priority_inherit(struct thread *t) {
 }
 
 static void priority_uninherit(struct thread *t) {
+	assert(critical_inside(CRITICAL_SCHED_LOCK));
 	sched_change_scheduling_priority(t, t->initial_priority);
 }
 

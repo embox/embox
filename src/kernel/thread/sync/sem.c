@@ -46,9 +46,8 @@ int tryenter_sched_lock(struct thread *current, sem_t *s) {
 }
 
 void sem_leave(sem_t *s) {
-	//struct thread *current = sched_current();
 	assert(s);
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
 	sched_lock();
 	{
