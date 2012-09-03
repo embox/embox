@@ -1,7 +1,6 @@
 /**
  * @file
  * @brief Defines mutex structure and methods associated with it.
- * Implemented in src/kernel/mutex.c .
  *
  * @date 05.05.10
  * @author Nikolay Malkovsky

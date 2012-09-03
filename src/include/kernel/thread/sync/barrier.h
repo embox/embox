@@ -1,7 +1,6 @@
 /**
  * @file
  * @brief Defines barrier structure and methods associated with it.
- * Implemented in src/kernel/barrier.c .
  *
  * @date 03.09.2012
  * @author Anton Bulychev

@@ -1,7 +1,6 @@
 /**
  * @file
  * @brief Defines semaphore structure and methods associated with it.
- * Implemented in src/kernel/mutex.c .
  *
  * @date 02.09.12
  * @author Anton Bulychev
