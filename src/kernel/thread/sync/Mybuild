@@ -1,6 +1,6 @@
 package embox.kernel.thread
 
 module sync {
-	source "mutex.c", "message.c", "sem.c"
+	source "mutex.c", "message.c", "sem.c", "barrier.c"
 }
 
