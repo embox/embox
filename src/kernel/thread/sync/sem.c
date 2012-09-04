@@ -11,7 +11,7 @@
 #include <kernel/thread/sync/sem.h>
 #include <kernel/thread/sched.h>
 
-int tryenter_sched_lock(struct thread *t, sem_t *s);
+static int tryenter_sched_lock(sem_t *s);
 
 void sem_init(sem_t *s, int val) {
 	event_init(&s->event, "sem");
@@ -20,7 +20,6 @@ void sem_init(sem_t *s, int val) {
 }
 
 void sem_enter(sem_t *s) {
-	struct thread *current = sched_current();
 	assert(s);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
@@ -33,8 +32,8 @@ void sem_enter(sem_t *s) {
 	sched_unlock();
 }
 
-int tryenter_sched_lock(struct thread *current, sem_t *s) {
-	assert(s && current);
+static int tryenter_sched_lock(sem_t *s) {
+	assert(s);
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
 	if (s->value == s->max_value) {

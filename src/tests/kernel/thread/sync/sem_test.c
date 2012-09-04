@@ -2,8 +2,7 @@
  * @file
  * @brief Tests semaphore enter/leave methods.
  *
- *
- * @date Apr 30, 2012
+ * @date Sep 03, 2012
  * @author Bulychev Anton
  */
 

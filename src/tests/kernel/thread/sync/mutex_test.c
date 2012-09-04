@@ -7,7 +7,6 @@
  *      and it is executing while it will not finish. The test checks a correct
  *      sequence of stages.
  *
- *
  * @date Apr 18, 2012
  * @author Bulychev Anton
  */

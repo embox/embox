@@ -33,21 +33,13 @@ void cond_signal(cond_t *c) {
 	assert(c);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-	sched_lock();
-	{
-		sched_wake_one(&c->event);
-	}
-	sched_unlock();
+	sched_wake_one(&c->event);
 }
 
 void cond_broadcast(cond_t *c) {
 	assert(c);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-	sched_lock();
-	{
-		sched_wake(&c->event);
-	}
-	sched_unlock();
+	sched_wake(&c->event);
 }
 
