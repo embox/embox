@@ -39,6 +39,9 @@ module serial_port extends serial {
 
 module xuartlite extends serial {
 	source "xuartlite.c"
+
+	option number xuartlite_base
+	option number irq_num
 }
 
 module stm32_usart extends serial {

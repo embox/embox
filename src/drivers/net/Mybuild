@@ -31,6 +31,9 @@ module r6040 {
 module xemaclite {
 	source "xilinx_emaclite.c"
 
+	option number xemaclite_base
+	option number irq_num
+
 	depends embox.lib.LibC
 	depends embox.net.skbuff
 	depends embox.net.eth

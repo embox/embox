@@ -25,6 +25,8 @@ module irqmp extends embox.arch.interrupt {
 
 module mb_intc extends embox.arch.interrupt {
 	source "mb_intc.c", "mb_intc.h"
+
+	option number mbintc_base
 }
 
 module stm32_nvic extends embox.arch.interrupt {

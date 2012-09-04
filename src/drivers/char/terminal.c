@@ -225,7 +225,10 @@ bool terminal_transmit_va(TERMINAL *terminal, TERMINAL_TOKEN token, int params_l
 		...) {
 	va_list args;
 	size_t i;
-	short params[params_len];
+	short params[VTPARSE_TOKEN_PARAMS_MAX];
+	//short params[0x20];
+
+	assert(params_len <= VTPARSE_TOKEN_PARAMS_MAX);
 
 	if (terminal == NULL) {
 		return false;
