@@ -10,6 +10,7 @@
 #define SPARC_HEAD_H_
 
 #include <asm/regs.h>
+#include <module/embox/arch/interrupt_api.h>
 
 #ifdef __ASSEMBLER__
 
@@ -26,12 +27,18 @@
 	ba trap_handler;       \
 	 rd %psr, %t_psr;
 
+#ifdef INTERRUPT_IMPLEMENTED
+
 /** Entry for interrupting traps. */
 #define TRAP_ENTRY_INTERRUPT(nr) \
 	rd %psr, %t_psr;    \
 	ba interrupt_entry; \
 	 mov nr, %local;    \
 	nop;
+
+#else
+#define TRAP_ENTRY_INTERRUPT(nr) BAD_TRAP
+#endif /* INTERRUPT_IMPLEMENTED */
 
 /** Entry point for window overflow trap handler. */
 #define WOF_TRAP \
