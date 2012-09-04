@@ -29,11 +29,12 @@ $(for modName <- $2,
 	$(\n)
 	$(\h)ifndef __MOD_HEADER__$(subst .,__,$(modName)) $(\n)
 	$(\h)define __MOD_HEADER__$(subst .,__,$(modName)) $(\n)
-	$(foreach impl,$(get $(get 1->type).allSuperTypes),
-		$(\n)// impl: $(get $(get 1->type).qualifiedName)$(\n)
-		$(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
-				 $(abspath $(call module_get_headers,$1)))) \
-		      ,$(\h)include <../$(header)>$(\n)$(\n)))
+	$(foreach impl,$(get 1->type) $(get 1->type>allSuperTypes),
+		$(\n)// module: $(get impl->qualifiedName)$(\n)
+		$(or $(foreach header,$(strip $(patsubst $(abspath $(SRC_DIR))/%,%,
+				 $(abspath $(call module_get_headers,$(impl))))) \
+		      ,$(\h)include <../$(header)>$(\n)),
+		     // no headers to include$(\n)))
 
 	$(for moduleInstance <- $1,
 		optionInstance <- $(get moduleInstance->options),
@@ -47,12 +48,10 @@ $(for modName <- $2,
 endef
 
 
-moduleInst_get_files = $(call module_get_files,$(get 1->type))
-
+module_get_headers = \
+	$(filter %.h,$(module_get_files))
 module_get_files = \
 	$(foreach s,$(get 1->sources),$(get s->fileFullName))
-module_get_headers = \
-	$(filter %.h,$(moduleInst_get_files))
 
 
 # Performs topological sort of library modules.
