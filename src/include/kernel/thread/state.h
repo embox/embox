@@ -21,11 +21,11 @@ extern bool thread_state_active(thread_state_t state);
 extern bool thread_state_sleeping(thread_state_t state);
 extern bool thread_state_exited(thread_state_t state);
 extern bool thread_state_detached(thread_state_t state);
+extern bool thread_state_started(thread_state_t state);
 extern bool thread_state_running(thread_state_t state);
 extern bool thread_state_dead(thread_state_t state);
 
-extern thread_state_t thread_state_do_active(thread_state_t state);
-extern thread_state_t thread_state_do_inactive(thread_state_t state);
+extern thread_state_t thread_state_do_activate(thread_state_t state);
 extern thread_state_t thread_state_do_sleep(thread_state_t state);
 extern thread_state_t thread_state_do_wake(thread_state_t state);
 extern thread_state_t thread_state_do_exit(thread_state_t state);
