@@ -273,7 +273,16 @@ int thread_launch(struct thread *t) {
 int thread_terminate(struct thread *t) {
 	assert(t);
 
-	sched_finish(t);
+	sched_lock();
+	{
+		if (thread_state_exited(t->state)) {
+			sched_unlock();
+			return -ESRCH;
+		}
+
+		sched_finish(t);
+	}
+	sched_unlock();
 
 	return 0;
 }
@@ -288,14 +297,13 @@ int thread_set_priority(struct thread *t, thread_priority_t new) {
 	}
 
 	sched_lock();
-
-	if (t->priority == new) {
-		sched_unlock();
-		return 0;
+	{
+		if (t->priority == new) {
+			sched_unlock();
+			return 0;
+		}
+		sched_set_priority(t, new);
 	}
-
-	sched_set_priority(t, new);
-
 	sched_unlock();
 
 	return 0;
