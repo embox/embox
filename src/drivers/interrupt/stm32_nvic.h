@@ -11,7 +11,6 @@
 
 #define __INTERRUPT_NRS_TOTAL 80
 
-typedef unsigned char __unsigned int;
 typedef unsigned long __interrupt_mask_t; //FIXME 83 exceptions in total
 
 

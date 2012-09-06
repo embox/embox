@@ -11,7 +11,6 @@
 
 #define __INTERRUPT_NRS_TOTAL 15
 
-typedef unsigned char __unsigned int;
 typedef unsigned long __interrupt_mask_t;
 
 // TODO namespace? -- Eldar

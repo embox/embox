@@ -13,7 +13,6 @@
 
 #ifndef __ASSEMBLER__
 
-typedef unsigned char __unsigned int;
 typedef unsigned long __interrupt_mask_t;
 
 #endif /*__ASSEMBLER__*/
