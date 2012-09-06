@@ -129,6 +129,11 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr) {
 	struct rt_entry *rte;
 
+	if (source_addr == INADDR_BROADCAST) {
+		*new_addr = source_addr;
+		return ENOERR;
+	}
+
 	rte = rt_fib_get_best(source_addr);
 	if (rte == NULL) {
 		return -ENETUNREACH;
