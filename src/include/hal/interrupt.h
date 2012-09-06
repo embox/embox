@@ -10,45 +10,27 @@
 #define HAL_INTERRUPT_H_
 
 #include <module/embox/driver/interrupt/irqctrl_api.h>
-
-/**
- * Total amount of interrupt lines available on the controller.
- *
- * @note Implementation should provide @c __INTERRUPT_NRS_TOTAL definition
- * indicating positive constant.
- */
-#define INTERRUPT_NRS_TOTAL __INTERRUPT_NRS_TOTAL
-
-/**
- * Checks if the specified @c interrupt_nr is less then #INTERRUPT_NRS_TOTAL
- * value.
- *
- * @param interrupt_nr the number to check
- * @return comparison result
- *
- * @note Most HAL methods uses @link #assert() @endlink instead of checking the
- * input arguments, so kernel should perform necessary checks by itself.
- */
-#define interrupt_nr_valid(interrupt_nr) \
-	((interrupt_nr_t) interrupt_nr < (interrupt_nr_t) INTERRUPT_NRS_TOTAL)
+#include <arch/interrupt.h>
 
 /**
  * Type representing interrupt line number.
  *
+ * XXX outdated comment below... -- Eldar
  * @note Implementation should provide @c __interrupt_nr_t type indicating
  * unsigned (it is essential!) integer suitable to hold up to
  * #INTERRUPT_NRS_TOTAL values.
  */
-typedef __interrupt_nr_t interrupt_nr_t;
+typedef unsigned int interrupt_nr_t;
 
 /**
  * Type representing interrupt mask(pending) register.
  *
+ * XXX outdated comment below... -- Eldar
  * @note Implementation should provide @c __interrupt_nr_t type indicating
  * unsigned (it is essential!) integer suitable to hold up to
  * (1 << #INTERRUPT_NRS_TOTAL)  values.
  */
-typedef __interrupt_mask_t interrupt_mask_t;
+typedef unsigned int interrupt_mask_t;
 
 /**
  * Enables the specified IRQ.

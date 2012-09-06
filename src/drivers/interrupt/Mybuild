@@ -18,7 +18,7 @@ module i8259 extends irqctrl_api {
 }
 
 module irqmp extends irqctrl_api {
-	source "irqmp.c", "irqmp.h"
+	source "irqmp.c"
 
 	depends embox.driver.ambapp_api
 	depends embox.lib.LibC

@@ -25,7 +25,7 @@ module boot extends embox.arch.boot {
 }
 
 module interrupt extends embox.arch.interrupt {
-	source "interrupt_entry.S"
+	source "interrupt_entry.S", "interrupt_impl.h"
 	depends locore
 }
 
