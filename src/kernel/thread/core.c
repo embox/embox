@@ -105,7 +105,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 	thread_context_init(t);
 
 	if (!(flags & THREAD_FLAG_SUSPENDED)) {
-		thread_resume(t);
+		thread_launch(t);
 	}
 
 	if (flags & THREAD_FLAG_DETACHED) {
@@ -183,9 +183,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 	sched_lock();
 	{
-		sched_suspend(current);
-
-		current->state = thread_state_do_exit(current->state);
+		sched_terminate(current);
 
 		if (thread_state_dead(current->state)) {
 			/* Thread is detached. Should be deleted by itself. */
@@ -237,58 +235,45 @@ int thread_detach(struct thread *t) {
 	assert(t);
 
 	sched_lock();
+	{
+		t->state = thread_state_do_detach(t->state);
 
-	t->state = thread_state_do_detach(t->state);
-
-	if (thread_state_dead(t->state)) {
-		/* The target thread has finished, free it here. */
-		thread_delete(t);
+		if (thread_state_dead(t->state)) {
+			/* The target thread has finished, free it here. */
+			thread_delete(t);
+		}
 	}
-
 	sched_unlock();
 
 	return 0;
 }
 
-int thread_suspend(struct thread *t) {
+int thread_launch(struct thread *t) {
 	assert(t);
 
 	sched_lock();
+	{
+		if (thread_state_started(t->state)) {
+			sched_unlock();
+			return -EINVAL;
+		}
 
-	if (thread_state_exited(t->state)) {
-		sched_unlock();
-		return -ESRCH;
+		if (thread_state_exited(t->state)) {
+			sched_unlock();
+			return -ESRCH;
+		}
+
+		sched_start(t);
 	}
-
-	if (!(t->suspend_count++)) {
-		sched_suspend(t);
-	}
-
 	sched_unlock();
 
 	return 0;
 }
 
-int thread_resume(struct thread *t) {
+int thread_terminate(struct thread *t) {
 	assert(t);
 
-	sched_lock();
-
-	if (thread_state_exited(t->state)) {
-		sched_unlock();
-		return -ESRCH;
-	}
-
-	if (!t->suspend_count) {
-		sched_unlock();
-		return -EINVAL;
-	}
-
-	if (!(--t->suspend_count)) {
-		sched_resume(t);
-	}
-
-	sched_unlock();
+	sched_terminate(t);
 
 	return 0;
 }

@@ -46,10 +46,8 @@ EMBOX_UNIT(unit_init, unit_fini);
 
 static void startq_flush(void);
 static void startq_enqueue_wake(struct event *e, int wake_all);
-static void startq_enqueue_resume(struct thread *t);
 static void startq_enqueue_wake_force(struct thread *t);
 
-static void do_thread_resume(struct thread *t);
 static int do_thread_wake_force(struct thread *thread);
 static void do_event_wake(struct event *e, int wake_all);
 static void do_event_sleep_locked(struct event *e);
@@ -90,8 +88,21 @@ void sched_start(struct thread *t) {
 
 	sched_lock();
 	{
-		post_switch_if(runq_resume(&rq, t));
+		post_switch_if(runq_start(&rq, t));
 		assert(thread_state_started(t->state));
+	}
+	sched_unlock();
+}
+
+void sched_terminate(struct thread *t) {
+	assert(!in_harder_critical());
+	sched_lock();
+	{
+		if (thread_state_running(t->state)) {
+			post_switch_if(runq_terminate(&rq, t));
+		} else {
+
+		}
 	}
 	sched_unlock();
 }
@@ -129,7 +140,7 @@ static void do_event_sleep_locked(struct event *e) {
 }
 
 static int do_thread_wake_force(struct thread *thread) {
-	return sleepq_wake_resumed_thread(&rq, thread->sleepq, thread);
+	return sleepq_wake_thread(&rq, thread->sleepq, thread);
 }
 
 
@@ -215,10 +226,11 @@ int sched_setrun(struct thread *t) {
 		if (thread_state_sleeping(t->state)) {
 			thread_wake_force_res(t, SCHED_SLEEP_INTERRUPT);
 		}
-
+		/*
 		if (thread_state_suspended(t->state)) {
 			do_thread_resume(t);
 		}
+		*/
 	}
 	sched_unlock();
 	return 0;

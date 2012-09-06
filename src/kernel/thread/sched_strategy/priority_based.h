@@ -27,7 +27,6 @@ struct runq {
 
 struct sleepq {
 	struct prioq pq;
-	struct prioq suspended;
 };
 
 static inline void sched_strategy_init(struct sched_strategy_data *s) {
@@ -36,7 +35,6 @@ static inline void sched_strategy_init(struct sched_strategy_data *s) {
 
 static inline void sleepq_init(struct sleepq *sq) {
 	prioq_init(&sq->pq);
-	prioq_init(&sq->suspended);
 }
 
 static inline struct thread *runq_current(struct runq *rq) {

@@ -62,7 +62,7 @@ extern struct thread *runq_current(struct runq *runq);
  * @retval non-zero
  *   Switching of current thread is required.
  */
-extern int runq_suspend(struct runq *runq, struct thread *thread);
+extern int runq_terminate(struct runq *runq, struct thread *thread);
 
 /**
  * Resumes thread which is not sleeping. Thread must be suspended.
@@ -75,7 +75,7 @@ extern int runq_suspend(struct runq *runq, struct thread *thread);
  * @retval non-zero
  *   Switching of current thread is required.
  */
-extern int runq_resume(struct runq *runq, struct thread *thread);
+extern int runq_start(struct runq *runq, struct thread *thread);
 
 /**
  * Wakes up threads from sleeping queue and adds them to running queue.
@@ -119,8 +119,9 @@ extern void runq_sleep(struct runq *runq, struct sleepq *sleepq);
  * @retval non-zero
  *   Switching of current thread is required.
  */
-extern int sleepq_wake_resumed_thread(struct runq *runq, struct sleepq *sleepq, struct thread *thread);
+extern int sleepq_wake_thread(struct runq *runq, struct sleepq *sleepq, struct thread *thread);
 
+#if 0
 /**
  * Wakes up suspended sleeping thread.
  *
@@ -130,7 +131,7 @@ extern int sleepq_wake_resumed_thread(struct runq *runq, struct sleepq *sleepq, 
  *   Thread which will be resumed.
  */
 extern void sleepq_wake_suspended_thread(struct sleepq *sleepq, struct thread *thread);
-
+#endif
 
 /**
  * Sets priority of running thread.

@@ -18,7 +18,7 @@ EMBOX_TEST_SUITE("Barrier test");
 TEST_SETUP(setup);
 
 TEST_CASE("General") {
-	test_assert_zero(thread_resume(low));
+	test_assert_zero(thread_launch(low));
 	test_assert_zero(thread_join(low, NULL));
 	test_assert_zero(thread_join(high, NULL));
 	test_assert_emitted("abcde");
@@ -26,7 +26,7 @@ TEST_CASE("General") {
 
 static void *low_run(void *arg) {
 	test_emit('a');
-	test_assert_zero(thread_resume(high));
+	test_assert_zero(thread_launch(high));
 	test_emit('c');
 	barrier_wait(&b);
 	test_emit('e');

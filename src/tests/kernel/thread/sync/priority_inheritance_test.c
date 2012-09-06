@@ -47,14 +47,13 @@ TEST_CASE("with inheritance") {
 	test_assert_not_null(high);
 	test_assert_zero(thread_set_priority(high, h));
 
-	thread_resume(low);
+	thread_launch(low);
 
 	test_assert_zero(thread_join(low, NULL));
 	test_assert_zero(thread_join(mid, NULL));
 	test_assert_zero(thread_join(high, NULL));
 
 	test_assert_emitted("abcdefghijk");
-//	TRACE("%s", test_get_emitted_into(&buff));
 }
 
 static void *low_run(void *arg) {
@@ -66,9 +65,9 @@ static void *low_run(void *arg) {
 
 	test_emit('b');
 
-	thread_resume(high);
+	thread_launch(high);
 	test_emit('d');
-	thread_resume(mid);
+	thread_launch(mid);
 
 	test_emit('e');
 

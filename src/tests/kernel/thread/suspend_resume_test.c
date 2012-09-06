@@ -37,13 +37,13 @@ TEST_CASE() {
 
 	test_emit('a');
 
-	test_assert_zero(thread_resume(low));
+	test_assert_zero(thread_launch(low));
 	test_assert_zero(thread_join(low, &ret));
 	test_assert_null(ret);
 
 	test_emit('e');
 
-	test_assert_zero(thread_resume(high));
+	test_assert_zero(thread_launch(high));
 	test_assert_zero(thread_join(high, &ret));
 	test_assert_null(ret);
 
@@ -54,7 +54,7 @@ static void *low_run(void *arg) {
 	struct thread *high = (struct thread *) arg;
 
 	test_emit('b');
-	thread_resume(high);
+	thread_launch(high);
 	test_emit('d');
 
 	return NULL;

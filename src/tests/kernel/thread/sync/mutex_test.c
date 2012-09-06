@@ -23,7 +23,7 @@ EMBOX_TEST_SUITE("Mutex test");
 TEST_SETUP(setup);
 
 TEST_CASE("General") {
-	test_assert_zero(thread_resume(low));
+	test_assert_zero(thread_launch(low));
 	test_assert_zero(thread_join(low, NULL));
 	test_assert_zero(thread_join(high, NULL));
 	test_assert_emitted("abcdefg");
@@ -33,7 +33,7 @@ static void *low_run(void *arg) {
 	test_emit('a');
 	mutex_lock(&m);
 	test_emit('b');
-	test_assert_zero(thread_resume(high));
+	test_assert_zero(thread_launch(high));
 	test_emit('d');
 	mutex_unlock(&m);
 	test_emit('g');

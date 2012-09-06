@@ -94,9 +94,9 @@ extern void sched_wake(struct event *event);
  */
 extern void sched_yield(void);
 
-extern void sched_suspend(struct thread *thread);
+extern void sched_terminate(struct thread *thread);
 
-extern void sched_resume(struct thread *thread);
+extern void sched_start(struct thread *thread);
 
 
 extern int sched_change_scheduling_priority(struct thread *t,
