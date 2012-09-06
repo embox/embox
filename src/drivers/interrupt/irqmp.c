@@ -34,26 +34,26 @@ static volatile struct irqmp_regs *dev_regs;
 
 static int dev_regs_init(void);
 
-void interrupt_enable(unsigned int interrupt_nr) {
+void irqctrl_enable(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	assert(NULL != dev_regs);
 	REG_ORIN(&dev_regs->mask, 1 << interrupt_nr);
 }
 
-void interrupt_disable(unsigned int interrupt_nr) {
+void irqctrl_disable(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	assert(NULL != dev_regs);
 	REG_ANDIN(&dev_regs->mask, ~(1 << interrupt_nr));
 }
 
-void interrupt_clear(unsigned int interrupt_nr) {
+void irqctrl_clear(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	assert(NULL != dev_regs);
 	REG_ORIN(&dev_regs->clear, 1 << interrupt_nr);
 	REG_ANDIN(&dev_regs->force, ~(1 << interrupt_nr));
 }
 
-void interrupt_force(unsigned int interrupt_nr) {
+void irqctrl_force(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	assert(NULL != dev_regs);
 	REG_ORIN(&dev_regs->force, 1 << interrupt_nr);

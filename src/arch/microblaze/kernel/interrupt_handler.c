@@ -25,7 +25,7 @@ void interrupt_handler(void) {
 		for (irq_num = 0; irq_num < INTERRUPT_NRS_TOTAL; irq_num++) {
 			if (pending & (1 << irq_num)) {
 				//TODO we must clear whole pending register
-				interrupt_clear(irq_num);
+				irqctrl_clear(irq_num);
 
 				/*now we allow nested irq*/
 				msr_set_ie();

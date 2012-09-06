@@ -67,7 +67,7 @@ int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, unsigned int flags,
 
 	irq_table[irq_nr] = action;
 
-	interrupt_enable(irq_nr);
+	irqctrl_enable(irq_nr);
 
 	out_unlock: irq_unlock();
 	return ret;
@@ -93,7 +93,7 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 	objfree(&irq_actions, action);
 	irq_table[irq_nr] = NULL;
 
-	interrupt_disable(irq_nr);
+	irqctrl_disable(irq_nr);
 
 	out_unlock: irq_unlock();
 	return ret;

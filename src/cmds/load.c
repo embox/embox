@@ -59,7 +59,7 @@ static __attribute__ ((noreturn))
 
 	ipl_disable();
 	for (interrupt_nr = 0; interrupt_nr < INTERRUPT_NRS_TOTAL; ++interrupt_nr) {
-		interrupt_disable(interrupt_nr);
+		irqctrl_disable(interrupt_nr);
 	}
 
 	callme = (typeof(callme)) image_vma;

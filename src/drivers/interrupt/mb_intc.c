@@ -51,20 +51,20 @@ static int unit_init(void) {
 	return 0;
 }
 
-void interrupt_enable(unsigned int irq_num) {
+void irqctrl_enable(unsigned int irq_num) {
 	set_bit(&irqc->ier, irq_num);
 }
 
-void interrupt_disable(unsigned int irq_num) {
+void irqctrl_disable(unsigned int irq_num) {
 	clear_bit(&irqc->ier, irq_num);
 }
 
 //TODO this not set in microblaze
-void interrupt_force(unsigned int irq_num) {
+void irqctrl_force(unsigned int irq_num) {
 
 }
 
-void interrupt_clear(unsigned int irq_num) {
+void irqctrl_clear(unsigned int irq_num) {
 	set_bit(&irqc->iar,irq_num);
 }
 

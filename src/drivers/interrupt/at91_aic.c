@@ -42,7 +42,7 @@ static int unit_init(void) {
 	return 0;
 }
 
-void interrupt_enable(unsigned int interrupt_nr) {
+void irqctrl_enable(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	REG_STORE(AT91C_AIC_SMR + interrupt_nr,
 			AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED);
@@ -50,17 +50,17 @@ void interrupt_enable(unsigned int interrupt_nr) {
 	REG_STORE(AT91C_AIC_IECR, 1 << interrupt_nr);
 }
 
-void interrupt_disable(unsigned int interrupt_nr) {
+void irqctrl_disable(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	REG_STORE(AT91C_AIC_IDCR, 1 << interrupt_nr);
 }
 
-void interrupt_clear(unsigned int interrupt_nr) {
+void irqctrl_clear(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	REG_STORE(AT91C_AIC_ICCR, 1 << interrupt_nr);
 }
 
-void interrupt_force(unsigned int interrupt_nr) {
+void irqctrl_force(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	REG_STORE(AT91C_AIC_ISCR, 1 << interrupt_nr);
 }

@@ -53,7 +53,7 @@ static int unit_init(void) {
 	out8(PICM_MASK, PIC1_DATA);
 	out8(PICS_MASK, PIC2_DATA);
 
-	interrupt_enable(2); /* enable slave irq controller irq 8-16 */
+	irqctrl_enable(2); /* enable slave irq controller irq 8-16 */
 
 	return 0;
 }
@@ -62,7 +62,7 @@ void apic_init(void) {
 	unit_init();
 }
 
-void interrupt_enable(unsigned int int_nr) {
+void irqctrl_enable(unsigned int int_nr) {
 	if (int_nr > 8) {
 		out8(in8(PIC2_DATA) & ~(1 << (int_nr - 8)), PIC2_DATA);
 	} else {
@@ -70,7 +70,7 @@ void interrupt_enable(unsigned int int_nr) {
 	}
 }
 
-void interrupt_disable(unsigned int int_nr) {
+void irqctrl_disable(unsigned int int_nr) {
 	if (int_nr > 8) {
 		out8(in8(PIC2_DATA) | (1 << (int_nr - 8)), PIC2_DATA);
 	} else {
@@ -78,7 +78,7 @@ void interrupt_disable(unsigned int int_nr) {
 	}
 }
 
-void interrupt_force(unsigned int irq_num) {
+void irqctrl_force(unsigned int irq_num) {
 	// TODO Emm?.. -- Eldar
 }
 

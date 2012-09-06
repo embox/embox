@@ -19,7 +19,7 @@ void irq_handler(pt_regs_t *regs) {
 	int irqn = regs->trapno - 0x20;
 	/* Send an EOI (end of interrupt) signal to the PICs.
 	   If this interrupt involved the slave. */
-	interrupt_disable(irqn);
+	irqctrl_disable(irqn);
 	ipl_enable();
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 	critical_enter(CRITICAL_IRQ_HANDLER);
@@ -32,7 +32,7 @@ void irq_handler(pt_regs_t *regs) {
 
 	irq_dispatch(irqn);
 
-	interrupt_enable(irqn);
+	irqctrl_enable(irqn);
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
 }

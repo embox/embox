@@ -31,7 +31,7 @@ TEST_CASE("An interrupt forced after a call to ipl_save() must not run until "
 	ipl = ipl_save();
 
 	test_emit('[');
-	interrupt_force(TEST_IRQ_NR);
+	irqctrl_force(TEST_IRQ_NR);
 	test_emit(']');
 
 	ipl_restore(ipl);

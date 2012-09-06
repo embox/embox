@@ -72,26 +72,26 @@ static int nvic_init(void) {
 	return 0;
 }
 
-void interrupt_enable(unsigned int interrupt_nr) {
+void irqctrl_enable(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 
 	REG_STORE(NVIC_ENABLE_BASE + interrupt_nr / 8,
 			1 << (interrupt_nr / (8 * sizeof(int)) ));
 }
 
-void interrupt_disable(unsigned int interrupt_nr) {
+void irqctrl_disable(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	REG_STORE(NVIC_CLEAR_BASE + interrupt_nr / 8,
 			1 << (interrupt_nr / (8 * sizeof(int)) ));
 }
 
-void interrupt_clear(unsigned int interrupt_nr) {
+void irqctrl_clear(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	REG_STORE(NVIC_CLR_PEND_BASE + interrupt_nr / 8,
 			1 << (interrupt_nr / (8 * sizeof(int)) ));
 }
 
-void interrupt_force(unsigned int interrupt_nr) {
+void irqctrl_force(unsigned int interrupt_nr) {
 	assert(interrupt_nr_valid(interrupt_nr));
 	REG_STORE(NVIC_SET_PEND_BASE + interrupt_nr / 8,
 			1 << (interrupt_nr / (8 * sizeof(int)) ));
