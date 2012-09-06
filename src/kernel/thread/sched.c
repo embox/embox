@@ -84,56 +84,23 @@ struct thread *sched_current(void) {
 	return runq_current(&rq);
 }
 
-void sched_resume(struct thread *t) {
-	if (in_harder_critical()) {
-		startq_enqueue_resume(t);
-
-	} else {
-		do_thread_resume(t);
-
-	}
-}
-
-static void do_thread_resume(struct thread *t) {
+void sched_start(struct thread *t) {
 	assert(!in_harder_critical());
+	assert(!thread_state_started(t->state));
 
 	sched_lock();
 	{
-		assert(thread_state_suspended(t->state));
-		if (!thread_state_sleeping(t->state)) {
-			post_switch_if(runq_resume(&rq, t));
-		} else {
-			sleepq_resume(t->sleepq, t);
-		}
-		assert(!thread_state_suspended(t->state));
+		post_switch_if(runq_resume(&rq, t));
+		assert(thread_state_started(t->state));
 	}
 	sched_unlock();
 }
-
-void sched_suspend(struct thread *t) {
-	assert(!in_harder_critical());
-
-	sched_lock();
-	{
-		assert(!thread_state_suspended(t->state));
-		if (thread_state_running(t->state)) {
-			post_switch_if(runq_suspend(t->runq, t));
-		} else {
-			sleepq_suspend(t->sleepq, t);
-		}
-		assert(thread_state_suspended(t->state));
-	}
-	sched_unlock();
-}
-
 
 void __sched_wake(struct event *e, int wake_all) {
 	if (in_harder_critical()) {
 		startq_enqueue_wake(e, wake_all);
-
 	} else {
 		do_event_wake(e, wake_all);
-
 	}
 }
 
@@ -162,14 +129,7 @@ static void do_event_sleep_locked(struct event *e) {
 }
 
 static int do_thread_wake_force(struct thread *thread) {
-
-	if (thread_state_suspended(thread->state)) {
-		sleepq_wake_suspended_thread(thread->sleepq, thread);
-	} else {
-		return sleepq_wake_resumed_thread(&rq, thread->sleepq, thread);
-	}
-
-	return 0;
+	return sleepq_wake_resumed_thread(&rq, thread->sleepq, thread);
 }
 
 
@@ -238,13 +198,12 @@ int sched_sleep_locked(struct event *e, unsigned long timeout) {
 
 int sched_sleep(struct event *e, unsigned long timeout) {
 	int sleep_res;
-
 	assert(!in_sched_locked());
 
 	sched_lock();
-
-	sleep_res = sched_sleep_locked(e, timeout);
-
+	{
+		sleep_res = sched_sleep_locked(e, timeout);
+	}
 	sched_unlock();
 
 	return sleep_res;
@@ -404,13 +363,6 @@ static void startq_flush(void) {
 		ipl_disable();
 	}
 
-	while ((t = slist_remove_first(&startq.thread_resume,
-			struct thread, startq_link))) {
-		ipl_enable();
-		do_thread_resume(t);
-		ipl_disable();
-	}
-
 	while ((t = slist_remove_first(&startq.thread_force_wake,
 			struct thread, startq_link))) {
 
@@ -428,18 +380,6 @@ static void startq_enqueue_wake(struct event *e, int wake_all) {
 			e->startq_wake_all = wake_all;
 		} else {
 			e->startq_wake_all |= wake_all;
-		}
-	}
-	ipl_restore(ipl);
-
-	critical_request_dispatch(&sched_critical);
-}
-
-static void startq_enqueue_resume(struct thread *t) {
-	ipl_t ipl = ipl_save();
-	{
-		if (slist_alone(t, startq_link)) {
-			slist_add_first(t, &startq.thread_resume, startq_link);
 		}
 	}
 	ipl_restore(ipl);
