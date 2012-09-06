@@ -60,7 +60,7 @@ int runq_start(struct runq *rq, struct thread *t) {
 	return (t->priority > rq->current->priority);
 }
 
-int runq_terminate(struct runq *rq, struct thread *t) {
+int runq_finish(struct runq *rq, struct thread *t) {
 	int is_current;
 	assert(rq && t);
 	assert(thread_state_running(t->state));
@@ -111,6 +111,14 @@ int sleepq_wake(struct runq *rq, struct sleepq *sq, int wake_all) {
 	}
 
 	return ret;
+}
+
+void sleepq_finish(struct sleepq *sq, struct thread *t) {
+    assert(thread_state_sleeping(t->state));
+
+    prioq_remove(t, thread_prio_comparator, sched.pq_link);
+    t->state = thread_state_do_exit(t->state);
+    t->sleepq = NULL;
 }
 
 void runq_sleep(struct runq *rq, struct sleepq *sq) {

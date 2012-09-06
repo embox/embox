@@ -73,8 +73,9 @@ static inline __thread_state_t thread_state_do_wake(__thread_state_t state) {
 }
 
 static inline __thread_state_t thread_state_do_exit(__thread_state_t state) {
-	assert(thread_state_active(state) && !thread_state_sleeping(state));
-	return (state & ~__THREAD_STATE_ACTIVE) | __THREAD_STATE_EXITED;
+	assert(!thread_state_exited(state));
+	return ((state & ~__THREAD_STATE_ACTIVE) & ~__THREAD_STATE_SLEEPING)
+			| __THREAD_STATE_EXITED;
 }
 
 static inline __thread_state_t thread_state_do_detach(__thread_state_t state) {

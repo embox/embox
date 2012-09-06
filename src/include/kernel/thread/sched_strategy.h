@@ -62,7 +62,10 @@ extern struct thread *runq_current(struct runq *runq);
  * @retval non-zero
  *   Switching of current thread is required.
  */
-extern int runq_terminate(struct runq *runq, struct thread *thread);
+extern int runq_finish(struct runq *runq, struct thread *thread);
+
+extern void sleepq_finish(struct sleepq *sleepq, struct thread *thread);
+
 
 /**
  * Resumes thread which is not sleeping. Thread must be suspended.

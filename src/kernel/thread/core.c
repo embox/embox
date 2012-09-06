@@ -183,7 +183,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 	sched_lock();
 	{
-		sched_terminate(current);
+		thread_terminate(current);
 
 		if (thread_state_dead(current->state)) {
 			/* Thread is detached. Should be deleted by itself. */
@@ -273,7 +273,7 @@ int thread_launch(struct thread *t) {
 int thread_terminate(struct thread *t) {
 	assert(t);
 
-	sched_terminate(t);
+	sched_finish(t);
 
 	return 0;
 }

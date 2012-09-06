@@ -94,15 +94,22 @@ void sched_start(struct thread *t) {
 	sched_unlock();
 }
 
-void sched_terminate(struct thread *t) {
+void sched_finish(struct thread *t) {
 	assert(!in_harder_critical());
+	assert(!thread_state_exited(t->state));
+
 	sched_lock();
 	{
 		if (thread_state_running(t->state)) {
-			post_switch_if(runq_terminate(&rq, t));
+			post_switch_if(runq_finish(&rq, t));
 		} else {
-
+			if (thread_state_sleeping(t->state)) {
+				sleepq_finish(t->sleepq, t);
+			} else {
+				t->state = thread_state_do_exit(t->state);
+			}
 		}
+		assert(thread_state_exited(t->state));
 	}
 	sched_unlock();
 }
@@ -127,8 +134,8 @@ static void do_event_wake(struct event *e, int wake_all) {
 
 static void do_event_sleep_locked(struct event *e) {
 	struct thread *current = runq_current(&rq);
-
 	assert(!in_harder_critical());
+	assert(in_sched_locked());
 	assert(thread_state_running(current->state));
 
 	runq_sleep(&rq, &e->sleepq);
@@ -143,23 +150,14 @@ static int do_thread_wake_force(struct thread *thread) {
 	return sleepq_wake_thread(&rq, thread->sleepq, thread);
 }
 
-
-static int thread_wake_force(struct thread *thread) {
-
+static int thread_wake_force(struct thread *thread, int sleep_result) {
+	thread->sleep_res = sleep_result;
 	if (in_harder_critical()) {
 		startq_enqueue_wake_force(thread);
 	} else {
 		return do_thread_wake_force(thread);
 	}
-
 	return 0;
-}
-
-static int thread_wake_force_res(struct thread *thread, int sleep_result) {
-
-	thread->sleep_res = sleep_result;
-
-	return thread_wake_force(thread);
 }
 
 struct sched_sleep_data {
@@ -170,7 +168,7 @@ struct sched_sleep_data {
 static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	struct thread *thread = (struct thread *) sleep_data;
 
-	post_switch_if(thread_wake_force_res(thread, SCHED_SLEEP_TIMEOUT));
+	post_switch_if(thread_wake_force(thread, SCHED_SLEEP_TIMEOUT));
 
 }
 
@@ -224,7 +222,7 @@ int sched_setrun(struct thread *t) {
 	sched_lock();
 	{
 		if (thread_state_sleeping(t->state)) {
-			thread_wake_force_res(t, SCHED_SLEEP_INTERRUPT);
+			thread_wake_force(t, SCHED_SLEEP_INTERRUPT);
 		}
 		/*
 		if (thread_state_suspended(t->state)) {
@@ -344,13 +342,11 @@ static void sched_switch(void) {
 
 struct startq {
 	struct slist event_wake;
-	struct slist thread_resume;
 	struct slist thread_force_wake;
 };
 
 static struct startq startq = {
 	.event_wake = SLIST_INIT(&startq.event_wake),
-	.thread_resume = SLIST_INIT(&startq.thread_resume),
 	.thread_force_wake = SLIST_INIT(&startq.thread_force_wake),
 
 };
