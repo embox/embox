@@ -14,7 +14,7 @@
 #include <drivers/at91sam7s256.h>
 #include <kernel/irq.h>
 #include <hal/arch.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 #include <hal/reg.h>
 
 #include <embox/unit.h>

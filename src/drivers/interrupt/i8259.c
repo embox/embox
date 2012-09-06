@@ -19,7 +19,7 @@
 #include <drivers/i8259.h>
 #include <hal/arch.h>
 #include <hal/reg.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 #include <embox/unit.h>
 

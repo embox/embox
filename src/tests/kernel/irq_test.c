@@ -7,7 +7,7 @@
 
 #include <embox/test.h>
 #include <kernel/irq.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 EMBOX_TEST_SUITE("IRQ tests");
 

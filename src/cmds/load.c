@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 #include <hal/ipl.h>
 
 EMBOX_CMD(exec);

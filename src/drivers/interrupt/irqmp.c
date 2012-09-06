@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <types.h>
 
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
 

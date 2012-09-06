@@ -11,7 +11,7 @@
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 #include <types.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 #include <embox/unit.h>
 

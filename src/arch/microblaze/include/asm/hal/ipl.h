@@ -17,7 +17,7 @@
 
 #include <types.h>
 #include <asm/msr.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 typedef uint32_t __ipl_t;
 

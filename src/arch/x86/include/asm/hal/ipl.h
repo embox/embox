@@ -12,7 +12,7 @@
 #include <types.h>
 #include <asm/flags.h>
 
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 typedef uint32_t __ipl_t;
 

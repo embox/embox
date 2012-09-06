@@ -12,7 +12,7 @@
 #include <kernel/critical.h>
 #include <hal/reg.h>
 #include <hal/ipl.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 #include <kernel/irq.h>
 #include <embox/unit.h>

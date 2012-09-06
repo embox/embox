@@ -23,7 +23,7 @@
 #include <kernel/irq.h>
 #include <kernel/irq_lock.h>
 #include <kernel/critical.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 #include <hal/ipl.h>
 #include <mem/objalloc.h>
 #include <profiler/tracing/trace.h>

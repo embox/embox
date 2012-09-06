@@ -9,7 +9,7 @@
  */
 
 #include <kernel/irq.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 #include <asm/msr.h>
 
 /* we havn't interrupts acknowledgment in microblaze architecture

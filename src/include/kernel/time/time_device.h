@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 #include <kernel/time/time_types.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 struct time_dev_conf {
 	enum {

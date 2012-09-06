@@ -11,7 +11,7 @@
 
 #include <asm/io.h>
 #include <hal/clock.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
 #include <util/array.h>

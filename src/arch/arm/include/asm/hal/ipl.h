@@ -10,7 +10,7 @@
 #endif /* HAL_IPL_H_ */
 
 #include <types.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 #include <asm/modes.h>
 #include <asm/hal/reg.h>

@@ -10,7 +10,7 @@
 #define PROFILER_MEASURING_MEASURE_H_
 
 #include <types.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 typedef struct {
 	uint32_t ticks; /* system ticks */

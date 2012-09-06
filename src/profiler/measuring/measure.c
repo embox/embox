@@ -8,7 +8,7 @@
 
 #include <types.h>
 #include <hal/measure_unit.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 #include <math.h>
 #include <profiler/measuring/measure.h>
 #include <time.h>

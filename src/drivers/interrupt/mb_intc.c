@@ -9,7 +9,7 @@
 #include <types.h>
 #include <bitops.h>
 
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 #include <embox/unit.h>
 
