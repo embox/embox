@@ -104,8 +104,6 @@ static irq_return_t clock_handler(int irq_nr, void *dev_id) {
         return IRQ_HANDLED;
 }
 
-extern int i8259_irq_pending(unsigned int irq);
-
 static struct time_event_device pit_event_device = {
 	.config = pit_clock_setup,
 	.resolution = PIT_HZ,

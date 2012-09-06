@@ -11,7 +11,4 @@
 
 #define __INTERRUPT_NRS_TOTAL 80
 
-typedef unsigned long __interrupt_mask_t; //FIXME 83 exceptions in total
-
-
 #endif /* HAL_INTERRUPT_NVIC_H_ */

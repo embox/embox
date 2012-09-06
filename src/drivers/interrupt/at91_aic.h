@@ -11,10 +11,4 @@
 
 #define __INTERRUPT_NRS_TOTAL 32
 
-#ifndef __ASSEMBLER__
-
-typedef unsigned long __interrupt_mask_t;
-
-#endif /*__ASSEMBLER__*/
-
 #endif /* HAL_INTERRUPT_AT91_AIC_H_ */

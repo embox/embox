@@ -76,10 +76,3 @@ unsigned int mb_intc_get_pending(void) {
 	return irqc->isr;
 }
 
-void irqc_set_mask(__interrupt_mask_t mask) {
-	irqc->ier = mask;
-}
-
-__interrupt_mask_t irqc_get_mask(void) {
-	return irqc->ier;
-}

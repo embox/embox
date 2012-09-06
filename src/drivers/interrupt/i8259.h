@@ -11,11 +11,7 @@
 
 #define __INTERRUPT_NRS_TOTAL 15
 
-typedef unsigned long __interrupt_mask_t;
-
-// TODO namespace? -- Eldar
-extern void irqc_set_mask(__interrupt_mask_t mask);
-extern __interrupt_mask_t irqc_get_mask(void);
+extern int i8259_irq_pending(unsigned int irq);
 
 // TODO the following defs seem to be unused, may be throw them out? -- Eldar
 #if 0

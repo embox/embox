@@ -13,12 +13,6 @@
 #include <arch/interrupt.h>
 
 /**
- * Type representing interrupt mask(pending) register.
- * XXX throw it away -- Eldar
- */
-typedef unsigned int interrupt_mask_t;
-
-/**
  * Enables the specified IRQ.
  *
  * @param interrupt_nr the IRQ number to enable

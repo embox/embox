@@ -82,15 +82,6 @@ void interrupt_force(unsigned int irq_num) {
 	// TODO Emm?.. -- Eldar
 }
 
-void irqc_set_mask(__interrupt_mask_t mask) {
-	out8(mask & 0xff, PIC1_DATA);
-	out8((mask >> 8) & 0xff, PIC2_DATA);
-}
-
-__interrupt_mask_t irqc_get_mask(void) {
-	return (in8(PIC2_DATA) << 8) | in8(PIC1_DATA);
-}
-
 int i8259_irq_pending(unsigned int irq) {
 	int ret;
 	unsigned int mask = 1 << irq;
