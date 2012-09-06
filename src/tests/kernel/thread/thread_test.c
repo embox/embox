@@ -56,21 +56,21 @@ TEST_CASE("thread_join should retrieve the result of thread execution") {
 }
 
 
-TEST_CASE("thread_resume should return 0 if the thread was created with "
+TEST_CASE("thread_launch should return 0 if the thread was created with "
 		"THREAD_FLAG_SUSPENDED flag") {
 	struct thread *foo;
 
 	test_assert_zero(
 			thread_create(&foo, THREAD_FLAG_SUSPENDED, arg_invert_run, NULL));
-	test_assert_zero(thread_resume(foo));
+	test_assert_zero(thread_launch(foo));
 	test_assert_zero(thread_detach(foo));
 }
 
-TEST_CASE("thread_resume should return an error if the thread hasn't been "
+TEST_CASE("thread_launch should return an error if the thread hasn't been "
 		"initially suspended") {
 	struct thread *foo;
 
 	test_assert_zero(thread_create(&foo, 0, arg_invert_run, NULL));
-	test_assert_not_zero(thread_resume(foo));
+	test_assert_not_zero(thread_launch(foo));
 	test_assert_zero(thread_detach(foo));
 }

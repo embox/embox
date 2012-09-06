@@ -19,7 +19,7 @@ EMBOX_TEST_SUITE("Condition variable test");
 TEST_SETUP(setup);
 
 TEST_CASE("General") {
-	test_assert_zero(thread_resume(low));
+	test_assert_zero(thread_launch(low));
 	test_assert_zero(thread_join(low, NULL));
 	test_assert_zero(thread_join(high, NULL));
 	test_assert_emitted("abcdefgh");
@@ -27,7 +27,7 @@ TEST_CASE("General") {
 
 static void *low_run(void *arg) {
 	test_emit('a');
-	test_assert_zero(thread_resume(high));
+	test_assert_zero(thread_launch(high));
 	test_emit('d');
 	mutex_lock(&m);
 	test_emit('e');

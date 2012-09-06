@@ -13,7 +13,6 @@
 #include <kernel/thread/sched_strategy.h>
 #include <util/slist.h>
 
-
 struct event {
 	struct sleepq sleepq;
 	struct {
@@ -38,6 +37,7 @@ static inline const char *event_name(struct event *e) {
 #endif
 
 static inline void event_fire(struct event *e) {
+	extern void sched_wake(struct event *event);
 	sched_wake(e);
 }
 

@@ -76,7 +76,7 @@ int new_task(void *(*run)(void *), void *arg) {
 
 	thread_detach(thd);
 
-	thread_resume(thd);
+	thread_launch(thd);
 
 	return task_table_add(self_task);
 
@@ -136,7 +136,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		if (thread == thread_self()) {
 			continue;
 		}
-		thread_suspend(thread);
+		thread_terminate(thread);
 	}
 
 	sched_unlock();

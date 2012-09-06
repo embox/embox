@@ -17,19 +17,19 @@ typedef __thread_state_t thread_state_t;
 
 extern thread_state_t thread_state_init(void);
 
+extern bool thread_state_active(thread_state_t state);
 extern bool thread_state_sleeping(thread_state_t state);
-extern bool thread_state_suspended(thread_state_t state);
 extern bool thread_state_exited(thread_state_t state);
 extern bool thread_state_detached(thread_state_t state);
-extern bool thread_state_blocked(thread_state_t state);
+extern bool thread_state_started(thread_state_t state);
 extern bool thread_state_running(thread_state_t state);
 extern bool thread_state_dead(thread_state_t state);
 
+extern thread_state_t thread_state_do_activate(thread_state_t state);
 extern thread_state_t thread_state_do_sleep(thread_state_t state);
 extern thread_state_t thread_state_do_wake(thread_state_t state);
-extern thread_state_t thread_state_do_suspend(thread_state_t state);
-extern thread_state_t thread_state_do_resume(thread_state_t state);
 extern thread_state_t thread_state_do_exit(thread_state_t state);
 extern thread_state_t thread_state_do_detach(thread_state_t state);
 
 #endif /* KERNEL_THREAD_STATE_H_ */
+

@@ -18,7 +18,7 @@ EMBOX_TEST_SUITE("Read-write lock test");
 TEST_SETUP(setup);
 
 TEST_CASE("General") {
-	test_assert_zero(thread_resume(low));
+	test_assert_zero(thread_launch(low));
 	test_assert_zero(thread_join(low, NULL));
 	test_assert_zero(thread_join(mid, NULL));
 	test_assert_zero(thread_join(high, NULL));
@@ -29,7 +29,7 @@ static void *low_run(void *arg) {
 	test_emit('a');
 	rwlock_write_up(&r);
 	test_emit('b');
-	test_assert_zero(thread_resume(mid));
+	test_assert_zero(thread_launch(mid));
 	test_emit('d');
 	rwlock_write_down(&r);
 	test_emit('k');
@@ -40,7 +40,7 @@ static void *mid_run(void *arg) {
 	test_emit('c');
 	rwlock_read_up(&r);
 	test_emit('e');
-	test_assert_zero(thread_resume(high));
+	test_assert_zero(thread_launch(high));
 	test_emit('i');
 	rwlock_read_down(&r);
 	test_emit('j');

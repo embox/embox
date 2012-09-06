@@ -105,7 +105,7 @@ int thread_create(struct thread **p_thread, unsigned int flags,
 	thread_context_init(t);
 
 	if (!(flags & THREAD_FLAG_SUSPENDED)) {
-		thread_resume(t);
+		thread_launch(t);
 	}
 
 	if (flags & THREAD_FLAG_DETACHED) {
@@ -178,35 +178,22 @@ static void thread_context_init(struct thread *t) {
 
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
-	struct thread *joining;
-	struct sleepq *exit_sq;
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	sched_lock();
+	{
+		thread_terminate(current);
 
-	sched_suspend(current);
-
-	current->state = thread_state_do_exit(current->state);
-	/* Copy exit code to a joining thread (if any) so that the current thread
-	 * could be safely reclaimed in case that it has already been detached
-	 * without waiting for the joining thread to get the control. */
-	// XXX just for now. -- Eldar
-	exit_sq = &current->exit_event.sleepq;
-	if (!sleepq_empty(exit_sq)) {
-		joining = sleepq_get_thread(exit_sq);
-		joining->join_ret = ret;
+		if (thread_state_dead(current->state)) {
+			/* Thread is detached. Should be deleted by itself. */
+			thread_delete(current);
+		} else {
+			/* Thread is attached. Joining thread delete it.    */
+			current->run_ret = ret;
+			sched_wake_one(&current->exit_event);
+		}
 	}
-
-	/* Wake up a joining thread (if any). */
-	sched_wake(&current->exit_event);
-
-	if (thread_state_dead(current->state)) {
-		thread_delete(current);
-	} else {
-		current->run_ret = ret;
-	}
-
 	sched_unlock();
 
 	/* NOTREACHED */
@@ -224,29 +211,21 @@ int thread_join(struct thread *t, void **p_ret) {
 	}
 
 	sched_lock();
-
-	t->state = thread_state_do_detach(t->state);
-
-	if (thread_state_dead(t->state)) {
-		/* The target thread has exited but it has not been detached before
-		 * thread_join() call. Get its return value and free it. */
+	{
+		if (!thread_state_exited(t->state)) {
+			/* Target thread is not exited. Waiting for his exiting. */
+			/* Only one can join. TODO: rewrite it. */
+			assert(sleepq_empty(&t->exit_event.sleepq));
+			sched_sleep_locked(&t->exit_event, SCHED_TIMEOUT_INFINITE);
+		}
 		join_ret = t->run_ret;
+		t->state = thread_state_do_detach(t->state);
 		thread_delete(t);
 
-	} else {
-		assert(sleepq_empty(&t->exit_event.sleepq));
-		sched_sleep_locked(&t->exit_event, SCHED_TIMEOUT_INFINITE);
-
-		/* At this point the target thread has already deleted itself.
-		 * So we mustn't refer it anymore. */
-		join_ret = current->join_ret;
-
+		if (p_ret) {
+			*p_ret = join_ret;
+		}
 	}
-
-	if (p_ret) {
-		*p_ret = join_ret;
-	}
-
 	sched_unlock();
 
 	return 0;
@@ -256,57 +235,53 @@ int thread_detach(struct thread *t) {
 	assert(t);
 
 	sched_lock();
+	{
+		t->state = thread_state_do_detach(t->state);
 
-	t->state = thread_state_do_detach(t->state);
-
-	if (thread_state_dead(t->state)) {
-		/* The target thread has finished, free it here. */
-		thread_delete(t);
+		if (thread_state_dead(t->state)) {
+			/* The target thread has finished, free it here. */
+			thread_delete(t);
+		}
 	}
-
 	sched_unlock();
 
 	return 0;
 }
 
-int thread_suspend(struct thread *t) {
+int thread_launch(struct thread *t) {
 	assert(t);
 
 	sched_lock();
+	{
+		if (thread_state_started(t->state)) {
+			sched_unlock();
+			return -EINVAL;
+		}
 
-	if (thread_state_exited(t->state)) {
-		sched_unlock();
-		return -ESRCH;
+		if (thread_state_exited(t->state)) {
+			sched_unlock();
+			return -ESRCH;
+		}
+
+		sched_start(t);
 	}
-
-	if (!(t->suspend_count++)) {
-		sched_suspend(t);
-	}
-
 	sched_unlock();
 
 	return 0;
 }
 
-int thread_resume(struct thread *t) {
+int thread_terminate(struct thread *t) {
 	assert(t);
 
 	sched_lock();
+	{
+		if (thread_state_exited(t->state)) {
+			sched_unlock();
+			return -ESRCH;
+		}
 
-	if (thread_state_exited(t->state)) {
-		sched_unlock();
-		return -ESRCH;
+		sched_finish(t);
 	}
-
-	if (!t->suspend_count) {
-		sched_unlock();
-		return -EINVAL;
-	}
-
-	if (!(--t->suspend_count)) {
-		sched_resume(t);
-	}
-
 	sched_unlock();
 
 	return 0;
@@ -322,14 +297,13 @@ int thread_set_priority(struct thread *t, thread_priority_t new) {
 	}
 
 	sched_lock();
-
-	if (t->priority == new) {
-		sched_unlock();
-		return 0;
+	{
+		if (t->priority == new) {
+			sched_unlock();
+			return 0;
+		}
+		sched_set_priority(t, new);
 	}
-
-	sched_set_priority(t, new);
-
 	sched_unlock();
 
 	return 0;

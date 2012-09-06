@@ -194,7 +194,7 @@ extern void thread_yield(void);
  * @retval 0
  *   If successful.
  */
-extern int thread_suspend(struct thread *thread);
+extern int thread_terminate(struct thread *thread);
 
 /**
  * Decrement the count of suspending. If it is zero, resumes a @a thread.
@@ -211,7 +211,7 @@ extern int thread_suspend(struct thread *thread);
  * @retval -EINVAL
  *   If @thread isn't suspended.
  */
-extern int thread_resume(struct thread *thread);
+extern int thread_launch(struct thread *thread);
 
 extern int thread_set_priority(struct thread *thread,
 		thread_priority_t priority);
