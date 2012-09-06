@@ -52,6 +52,8 @@ static int do_thread_wake_force(struct thread *thread);
 static void do_event_wake(struct event *e, int wake_all);
 static void do_event_sleep_locked(struct event *e);
 
+static void __sched_wake(struct event *e, int wake_all);
+
 static void post_switch_if(int condition);
 
 static void sched_switch(void);
@@ -74,7 +76,12 @@ static inline int in_sched_locked(void) {
 
 int sched_init(struct thread* current, struct thread *idle) {
 	prev_clock = clock();
+
 	runq_init(&rq, current, idle);
+
+	assert(thread_state_started(current->state));
+	assert(thread_state_started(idle->state));
+
 	return 0;
 }
 
@@ -84,10 +91,10 @@ struct thread *sched_current(void) {
 
 void sched_start(struct thread *t) {
 	assert(!in_harder_critical());
-	assert(!thread_state_started(t->state));
 
 	sched_lock();
 	{
+		assert(!thread_state_started(t->state));
 		post_switch_if(runq_start(&rq, t));
 		assert(thread_state_started(t->state));
 	}
@@ -96,10 +103,11 @@ void sched_start(struct thread *t) {
 
 void sched_finish(struct thread *t) {
 	assert(!in_harder_critical());
-	assert(!thread_state_exited(t->state));
 
 	sched_lock();
 	{
+		assert(!thread_state_exited(t->state));
+
 		if (thread_state_running(t->state)) {
 			post_switch_if(runq_finish(&rq, t));
 		} else {
@@ -109,9 +117,18 @@ void sched_finish(struct thread *t) {
 				t->state = thread_state_do_exit(t->state);
 			}
 		}
+
 		assert(thread_state_exited(t->state));
 	}
 	sched_unlock();
+}
+
+void sched_wake(struct event *e) {
+	__sched_wake(e, 1);
+}
+
+void sched_wake_one(struct event *e) {
+	__sched_wake(e, 0);
 }
 
 void __sched_wake(struct event *e, int wake_all) {
@@ -134,8 +151,7 @@ static void do_event_wake(struct event *e, int wake_all) {
 
 static void do_event_sleep_locked(struct event *e) {
 	struct thread *current = runq_current(&rq);
-	assert(!in_harder_critical());
-	assert(in_sched_locked());
+	assert(in_sched_locked() && !in_harder_critical());
 	assert(thread_state_running(current->state));
 
 	runq_sleep(&rq, &e->sleepq);
@@ -147,16 +163,19 @@ static void do_event_sleep_locked(struct event *e) {
 }
 
 static int do_thread_wake_force(struct thread *thread) {
+	assert(!in_harder_critical());
 	return sleepq_wake_thread(&rq, thread->sleepq, thread);
 }
 
 static int thread_wake_force(struct thread *thread, int sleep_result) {
 	thread->sleep_res = sleep_result;
+
 	if (in_harder_critical()) {
 		startq_enqueue_wake_force(thread);
 	} else {
 		return do_thread_wake_force(thread);
 	}
+
 	return 0;
 }
 
@@ -167,9 +186,7 @@ struct sched_sleep_data {
 
 static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	struct thread *thread = (struct thread *) sleep_data;
-
 	post_switch_if(thread_wake_force(thread, SCHED_SLEEP_TIMEOUT));
-
 }
 
 int sched_sleep_locked(struct event *e, unsigned long timeout) {
@@ -178,6 +195,7 @@ int sched_sleep_locked(struct event *e, unsigned long timeout) {
 	struct thread *current = sched_current();
 
 	assert(in_sched_locked());
+	assert(thread_state_running(current->state));
 
 	current->sleep_res = 0; /* clean out sleep_res */
 
@@ -218,6 +236,7 @@ int sched_sleep(struct event *e, unsigned long timeout) {
 	return sleep_res;
 }
 
+#if 0
 int sched_setrun(struct thread *t) {
 	sched_lock();
 	{
@@ -233,6 +252,7 @@ int sched_setrun(struct thread *t) {
 	sched_unlock();
 	return 0;
 }
+#endif
 
 void sched_yield(void) {
 	sched_lock();
@@ -246,22 +266,14 @@ int sched_change_scheduling_priority(struct thread *t,
 		__thread_priority_t new_priority) {
 	sched_lock();
 	{
-		if (thread_state_exited(t->state)) {
-			assert(0);
-			// XXX
-			sched_unlock();
-			return -ESRCH;
-		}
+		assert(!thread_state_exited(t->state));
 
 		if (thread_state_running(t->state)) {
 			post_switch_if(runq_change_priority(t->runq, t, new_priority));
-
 		} else if (thread_state_sleeping(t->state)) {
 			sleepq_change_priority(t->sleepq, t, new_priority);
-
 		} else {
 			t->priority = new_priority;
-
 		}
 
 		assert(t->priority == new_priority);
@@ -273,10 +285,12 @@ int sched_change_scheduling_priority(struct thread *t,
 
 void sched_set_priority(struct thread *t, __thread_priority_t new) {
 	sched_lock();
-
-	sched_change_scheduling_priority(t, new);
-	t->initial_priority = new;
-
+	{
+		if (!thread_state_exited(t->state)) {
+			sched_change_scheduling_priority(t, new);
+		}
+		t->initial_priority = new;
+	}
 	sched_unlock();
 }
 
@@ -284,7 +298,6 @@ static int switch_posted;
 
 static void post_switch_if(int condition) {
 	assert(in_sched_locked());
-//	assert(!in_harder_critical());
 
 	if (condition) {
 		switch_posted = 1;
@@ -303,11 +316,11 @@ static void sched_switch(void) {
 
 	sched_lock();
 
-	do {
+	{
 		startq_flush();
 
 		if (!switch_posted) {
-			break;
+			goto out;
 		}
 		switch_posted = 0;
 
@@ -321,7 +334,7 @@ static void sched_switch(void) {
 
 		if (!runq_switch(&rq)) {
 			ipl_disable();
-			break;
+			goto out;
 		}
 
 		next = runq_current(&rq);
@@ -335,8 +348,9 @@ static void sched_switch(void) {
 
 		task_notify_switch(prev, next);
 		context_switch(&prev->context, &next->context);
-	} while (0);
+	}
 
+out:
 	sched_unlock_noswitch();
 }
 
