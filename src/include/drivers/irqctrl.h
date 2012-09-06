@@ -14,11 +14,7 @@
 
 /**
  * Type representing interrupt mask(pending) register.
- *
- * XXX outdated comment below... -- Eldar
- * @note Implementation should provide @c __unsigned int type indicating
- * unsigned (it is essential!) integer suitable to hold up to
- * (1 << #INTERRUPT_NRS_TOTAL)  values.
+ * XXX throw it away -- Eldar
  */
 typedef unsigned int interrupt_mask_t;
 
@@ -57,6 +53,5 @@ void interrupt_force(unsigned int interrupt_nr);
  */
 interrupt_mask_t interrupt_get_status(void);
 
-extern int i8259_irq_pending(unsigned int irq);
 
 #endif /* HAL_INTERRUPT_H_ */
