@@ -20,7 +20,7 @@ void interrupt_handler(void) {
 	__interrupt_mask_t irq_stat;
 
 	while (0 != (irq_stat = interrupt_get_status())) {
-		interrupt_nr_t irq_num;
+		unsigned int irq_num;
 
 		for (irq_num = 0; irq_num < INTERRUPT_NRS_TOTAL; irq_num++) {
 			if (irq_stat & (1 << irq_num)) {

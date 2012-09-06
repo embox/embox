@@ -48,7 +48,7 @@ inval:
 
 static __attribute__ ((noreturn))
 		void load_and_run(char *image_vma, char *image_lma, size_t image_len) {
-	interrupt_nr_t interrupt_nr;
+	unsigned int interrupt_nr;
 	void (*callme)(void) __attribute__ ((noreturn));
 
 	printf("load: copying image into 0x%08x, from 0x%08x, size %d bytes\n",

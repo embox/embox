@@ -13,20 +13,10 @@
 #include <arch/interrupt.h>
 
 /**
- * Type representing interrupt line number.
- *
- * XXX outdated comment below... -- Eldar
- * @note Implementation should provide @c __interrupt_nr_t type indicating
- * unsigned (it is essential!) integer suitable to hold up to
- * #INTERRUPT_NRS_TOTAL values.
- */
-typedef unsigned int interrupt_nr_t;
-
-/**
  * Type representing interrupt mask(pending) register.
  *
  * XXX outdated comment below... -- Eldar
- * @note Implementation should provide @c __interrupt_nr_t type indicating
+ * @note Implementation should provide @c __unsigned int type indicating
  * unsigned (it is essential!) integer suitable to hold up to
  * (1 << #INTERRUPT_NRS_TOTAL)  values.
  */
@@ -37,28 +27,28 @@ typedef unsigned int interrupt_mask_t;
  *
  * @param interrupt_nr the IRQ number to enable
  */
-void interrupt_enable(interrupt_nr_t interrupt_nr);
+void interrupt_enable(unsigned int interrupt_nr);
 
 /**
  * Disables the specified IRQ.
  *
  * @param interrupt_nr the IRQ number to disable
  */
-void interrupt_disable(interrupt_nr_t interrupt_nr);
+void interrupt_disable(unsigned int interrupt_nr);
 
 /**
  * Clears pending status for the specified IRQ.
  *
  * @param interrupt_nr the IRQ number to clear
  */
-void interrupt_clear(interrupt_nr_t interrupt_nr);
+void interrupt_clear(unsigned int interrupt_nr);
 
 /**
  * Forces interrupt controller to generate the specified IRQ.
  *
  * @param interrupt_nr the IRQ number to force
  */
-void interrupt_force(interrupt_nr_t interrupt_nr);
+void interrupt_force(unsigned int interrupt_nr);
 
 /**
  * Receives status of interrupt controller.
@@ -67,6 +57,6 @@ void interrupt_force(interrupt_nr_t interrupt_nr);
  */
 interrupt_mask_t interrupt_get_status(void);
 
-extern int i8259_irq_pending(interrupt_nr_t irq);
+extern int i8259_irq_pending(unsigned int irq);
 
 #endif /* HAL_INTERRUPT_H_ */

@@ -41,7 +41,7 @@ struct time_event_device {
 	int (*config)(struct time_dev_conf *);
 	uint32_t resolution;
 	uint32_t irq_nr;
-	int (*pending) (interrupt_nr_t nr);
+	int (*pending) (unsigned int nr);
 	const char *name;
 };
 

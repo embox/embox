@@ -62,7 +62,7 @@ void apic_init(void) {
 	unit_init();
 }
 
-void interrupt_enable(interrupt_nr_t int_nr) {
+void interrupt_enable(unsigned int int_nr) {
 	if (int_nr > 8) {
 		out8(in8(PIC2_DATA) & ~(1 << (int_nr - 8)), PIC2_DATA);
 	} else {
@@ -70,7 +70,7 @@ void interrupt_enable(interrupt_nr_t int_nr) {
 	}
 }
 
-void interrupt_disable(interrupt_nr_t int_nr) {
+void interrupt_disable(unsigned int int_nr) {
 	if (int_nr > 8) {
 		out8(in8(PIC2_DATA) | (1 << (int_nr - 8)), PIC2_DATA);
 	} else {
@@ -78,7 +78,7 @@ void interrupt_disable(interrupt_nr_t int_nr) {
 	}
 }
 
-void interrupt_force(interrupt_nr_t irq_num) {
+void interrupt_force(unsigned int irq_num) {
 	// TODO Emm?.. -- Eldar
 }
 
@@ -91,7 +91,7 @@ __interrupt_mask_t irqc_get_mask(void) {
 	return (in8(PIC2_DATA) << 8) | in8(PIC1_DATA);
 }
 
-int i8259_irq_pending(interrupt_nr_t irq) {
+int i8259_irq_pending(unsigned int irq) {
 	int ret;
 	unsigned int mask = 1 << irq;
 

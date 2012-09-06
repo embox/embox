@@ -38,7 +38,7 @@ static int unit_init(void) {
 }
 
 
-void interrupt_enable(interrupt_nr_t interrupt_nr) {
+void interrupt_enable(unsigned int interrupt_nr) {
 	uint32_t c0;
 
 	assert(interrupt_nr_valid(interrupt_nr));
@@ -48,7 +48,7 @@ void interrupt_enable(interrupt_nr_t interrupt_nr) {
 	mips_write_c0_status(c0);
 }
 
-void interrupt_disable(interrupt_nr_t interrupt_nr) {
+void interrupt_disable(unsigned int interrupt_nr) {
 	uint32_t c0;
 
 	assert(interrupt_nr_valid(interrupt_nr));

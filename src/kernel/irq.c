@@ -99,7 +99,7 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 	return ret;
 }
 
-void irq_dispatch(interrupt_nr_t interrupt_nr) {
+void irq_dispatch(unsigned int interrupt_nr) {
 	irq_nr_t irq_nr = interrupt_nr;
 	struct irq_action *action;
 	irq_handler_t handler = NULL;

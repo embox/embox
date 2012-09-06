@@ -67,7 +67,7 @@ measure_time_t *measure_stop(void) {
 	return get_delta(last_time, cur_time);
 }
 
-void measure_irq_process(interrupt_nr_t interrupt, measure_time_t *time) {
+void measure_irq_process(unsigned int interrupt, measure_time_t *time) {
 	irq_process[interrupt] = *time;
 }
 

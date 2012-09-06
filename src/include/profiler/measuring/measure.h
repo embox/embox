@@ -27,7 +27,7 @@ extern measure_time_t measure_overhead;
  * @param interrupt measured interrupt
  * @param ticks count of ticks spent in handler
  */
-extern void measure_irq_process(interrupt_nr_t interrupt, measure_time_t *time);
+extern void measure_irq_process(unsigned int interrupt, measure_time_t *time);
 
 /**
  * Process measuring of pre-dispatch irq handler

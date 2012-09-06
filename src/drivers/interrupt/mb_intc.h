@@ -13,7 +13,7 @@
 
 #ifndef __ASSEMBLER__
 
-typedef unsigned char __interrupt_nr_t;
+typedef unsigned char __unsigned int;
 typedef unsigned int __interrupt_mask_t;
 
 /**

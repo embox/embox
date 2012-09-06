@@ -33,9 +33,9 @@
 
 /**
  * Type representing interrupt request number.
- * @note The same as HAL #interrupt_nr_t type.
+ * @note The same as HAL #unsigned int type.
  */
-typedef interrupt_nr_t irq_nr_t;
+typedef unsigned int irq_nr_t;
 
 #define IRQ_NONE    0 /**< Interrupt has not been handled. */
 #define IRQ_HANDLED 1 /**< Interrupt has been processed by the handler*/
@@ -118,6 +118,6 @@ extern int irq_detach(irq_nr_t irq_nr, void *data);
  * Called by interrupt handler code.
  * @param interrupt_nr the number of interrupt to dispatch
  */
-extern void irq_dispatch(interrupt_nr_t interrupt_nr);
+extern void irq_dispatch(unsigned int interrupt_nr);
 
 #endif /* KERNEL_IRQ_H_ */
