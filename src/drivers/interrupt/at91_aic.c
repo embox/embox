@@ -65,10 +65,6 @@ void interrupt_force(unsigned int interrupt_nr) {
 	REG_STORE(AT91C_AIC_ISCR, 1 << interrupt_nr);
 }
 
-interrupt_mask_t interrupt_get_status(void) {
-	return REG_LOAD(AT91C_AIC_IMR);
-}
-
 static inline void disable_interrupts(void) {
 	__set_cpsr(__get_cpsr() | I_BIT | F_BIT);
 }

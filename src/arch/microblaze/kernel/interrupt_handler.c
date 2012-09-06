@@ -17,13 +17,13 @@
  * pending register
  */
 void interrupt_handler(void) {
-	__interrupt_mask_t irq_stat;
+	unsigned int pending;
 
-	while (0 != (irq_stat = interrupt_get_status())) {
+	while (0 != (pending = mb_intc_get_pending())) {
 		unsigned int irq_num;
 
 		for (irq_num = 0; irq_num < INTERRUPT_NRS_TOTAL; irq_num++) {
-			if (irq_stat & (1 << irq_num)) {
+			if (pending & (1 << irq_num)) {
 				//TODO we must clear whole pending register
 				interrupt_clear(irq_num);
 

@@ -97,12 +97,6 @@ void interrupt_force(unsigned int interrupt_nr) {
 			1 << (interrupt_nr / (8 * sizeof(int)) ));
 }
 
-interrupt_mask_t interrupt_get_status(void) {
-	return REG_LOAD(NVIC_ACTIVE_BASE) |
-		REG_LOAD(NVIC_ACTIVE_BASE + 4)
-		| REG_LOAD(NVIC_ACTIVE_BASE + 8);
-}
-
 void interrupt_handle(void) {
 	uint32_t source;
 

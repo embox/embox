@@ -46,12 +46,4 @@ void interrupt_clear(unsigned int interrupt_nr);
  */
 void interrupt_force(unsigned int interrupt_nr);
 
-/**
- * Receives status of interrupt controller.
- *
- * @return pending register from interrupt controller
- */
-interrupt_mask_t interrupt_get_status(void);
-
-
 #endif /* HAL_INTERRUPT_H_ */

@@ -59,10 +59,6 @@ void interrupt_force(unsigned int interrupt_nr) {
 	REG_ORIN(&dev_regs->force, 1 << interrupt_nr);
 }
 
-interrupt_mask_t interrupt_get_status(void) {
-	return (REG_LOAD(&dev_regs->pending)) | REG_LOAD(&dev_regs->force);
-}
-
 static int unit_init(void) {
 	int error;
 

@@ -72,7 +72,7 @@ void interrupt_clear(unsigned int irq_num) {
  * Microblaze specific functions:
  */
 
-__interrupt_mask_t interrupt_get_status(void) {
+unsigned int mb_intc_get_pending(void) {
 	return irqc->isr;
 }
 
