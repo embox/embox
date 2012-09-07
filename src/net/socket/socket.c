@@ -245,6 +245,8 @@ int check_icmp_err(int sockfd) {
 	return err;
 }
 
+#include <stdio.h>
+
 static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
 	int res;
@@ -258,14 +260,20 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 		return -1;
 	}
 
+receive:
 	iov.iov_base = buf;
 	iov.iov_len = len;
 	m.msg_iov = &iov;
-
 	res = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
 	if (res < 0) {
 		SET_ERRNO(-res);
 		return -1;
+	}
+
+	/* if no data on socket, than wait on data arrived, and try receive it again. */
+	if (!iov.iov_len) {
+		sched_sleep(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
+		goto receive;
 	}
 
 	inet = inet_sk(sock->sk);
@@ -278,9 +286,11 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 		*daddrlen = sizeof *dest_addr;
 	}
 
+
+	//softirq_unlock();
+
 	return iov.iov_len; /* return length of received msg */
 }
-
 
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {

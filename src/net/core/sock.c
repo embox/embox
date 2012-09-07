@@ -142,12 +142,13 @@ int sock_no_accept(struct socket *sock, struct socket *newsock, int flags) {
 	assert(sock != NULL);
 	return -EOPNOTSUPP;
 }
-
+#include <stdio.h>
 void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	assert(sk != NULL);
 	assert(sk->sk_receive_queue != NULL);
 	assert(skb != NULL);
-
+	printf("A\n");
+	event_fire(&sk->sock_is_not_empty);
 	skb_queue_push(sk->sk_receive_queue, skb);
 }
 

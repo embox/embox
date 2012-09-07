@@ -98,19 +98,14 @@ module udp {
 }
 
 module ntp {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ntp.c"
 
 	depends udp
 	depends embox.kernel.time.timekeeper
 	depends embox.kernel.timer.sys_timer
-	depends embox.framework.LibFrameworkNet
 }
 
 module bootp {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "bootp.c"
-
 	depends udp
-	depends embox.framework.LibFrameworkNet
 }
