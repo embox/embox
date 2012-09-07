@@ -16,6 +16,7 @@
 #include <net/in.h>
 #include <net/sock.h>
 #include <net/socket.h>
+#include <net/socket_registry.h>
 #include <net/inet_sock.h>
 //#include <net/tcp.h>
 #include <net/inetdevice.h>
@@ -320,8 +321,6 @@ static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, i
 
 	return res;
 }
-
-#include <net/socket_registry.h>
 
 static int inet_setsockopt(struct socket *sock, int level, int optname,
 		char __user *optval, int optlen) {
