@@ -26,6 +26,11 @@ extern void event_init(struct event *event, const char *name);
 
 //extern const char *event_name(struct event *event);
 
-extern void event_fire(struct event *event);
+extern int event_wait(struct event *e, unsigned long timeout);
+
+extern void event_notify(struct event *e);
+
+extern void event_notify_all(struct event *e);
 
 #endif /* KERNEL_THREAD_EVENT_H_ */
+
