@@ -18,7 +18,6 @@
 
 #include <asm/io.h>
 #include <embox/unit.h>
-#include <err.h>
 #include <errno.h>
 #include <drivers/pci.h>
 #include <kernel/irq.h>
@@ -31,7 +30,7 @@
 #include <string.h>
 
 
-EMBOX_UNIT_INIT(unit_init);
+PCI_DRIVER("ne2k_pci", ne2k_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8029);
 
 static net_device_stats_t *get_eth_stat(struct net_device *dev);
 
@@ -166,7 +165,6 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	base_addr = dev->base_addr;
 
 	if (in8(base_addr + NE_CMD) & E8390_TRANS) { /* no matter, which page is active */
-		LOG_ERROR("%s: start_xmit() called with the transmitter busy.\n", dev->name);
 		return -EBUSY;
 	}
 
@@ -256,7 +254,6 @@ static void ne2k_receive(struct net_device *dev) {
 		}
 		if ((total_length < 60) || (total_length > 1518)) {
 			stat->rx_err++;
-			LOG_ERROR("ne2k_receive: bad packet size\n");
 		} else if ((rx_frame.status & 0x0F) == ENRSR_RXOK) {
 			skb = get_skb_from_card(total_length, ring_offset + sizeof(struct e8390_pkt_hdr), dev);
 			if (skb) {
@@ -265,18 +262,16 @@ static void ne2k_receive(struct net_device *dev) {
 				netif_rx(skb);
 			} else {
 				stat->rx_dropped++;
-				LOG_ERROR("ne2k_receive: couldn't allocate memory for packet\n");
 			}
 		} else {
 			if (rx_frame.status & ENRSR_FO) {
 				stat->rx_fifo_errors++;
 			}
-			LOG_ERROR("ne2k_receive: rx_frame.status=0x%X\n", rx_frame.status);
 		}
 		out8(rx_frame.next - 1, base_addr + EN0_BOUNDARY);
 	}
 	if (!tries) {
-		LOG_ERROR("ne2k_receive: break from infinite loops");
+
 	}
 
 	out8(ENISR_RX | ENISR_RX_ERR, base_addr + EN0_ISR);
@@ -400,24 +395,17 @@ static const struct net_device_ops _netdev_ops = {
 	.ndo_set_mac_address = set_mac_address
 };
 
-static int unit_init(void) {
+static int ne2k_init(struct pci_slot_dev *pci_dev) {
 	int res;
 	uint32_t nic_base;
 	struct net_device *nic;
-	struct pci_dev *pci_dev;
 
-	//TODO: only RealTek RTL-8029 is available
-	pci_dev = pci_find_dev(PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8029);
-	if (pci_dev == NULL) {
-		LOG_WARN("Couldn't find NE2000 PCI device\n");
-		return -ENODEV;
-	}
+	assert(pci_dev != NULL);
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 
 	nic = etherdev_alloc();
 	if (nic == NULL) {
-		LOG_ERROR("Couldn't alloc netdev for NE2000 PCI\n");
 		return -ENOMEM;
 	}
 	nic->netdev_ops = &_netdev_ops;

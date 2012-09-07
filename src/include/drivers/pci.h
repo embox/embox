@@ -12,8 +12,9 @@
 #include <types.h>
 #include <drivers/pci_id.h>
 #include <util/slist.h>
+#include <util/array.h>
 #include <drivers/pci_utils.h>
-
+#include <drivers/pci_driver.h>
 
 
 /**
@@ -64,6 +65,10 @@ enum {
 #define PCI_LATENCY_TIMER       0x0D   /* 8 bits  */
 #define PCI_HEADER_TYPE         0x0e   /* 8 bits  */
 #define PCI_BIST                0x0f   /* 8 bits  */
+
+#define PCI_VENDOR_WRONG        0xFFFFFFFF /* device is not found in the slot */
+#define PCI_VENDOR_NONE         0x00000000 /* device is not found in the slot */
+
 /**
  * +------------+------------+---------+-----------+
  * |31         4|           3|2       1|          0|
@@ -158,7 +163,7 @@ enum {
 #define PCI_BASE_CLASS_SIGNAL_PROC      0x11
 #define PCI_CLASS_OTHERS                0xff
 
-typedef struct pci_dev {
+struct pci_slot_dev {
 	struct slist_link lst;
 	uint32_t busn;
 	uint8_t slot;
@@ -170,12 +175,9 @@ typedef struct pci_dev {
 	uint8_t subclass;
 	uint8_t irq;
 	uint32_t bar[6];
-} pci_dev_t;
+};
 
-//TODO now scanning enable only during start system
-extern int pci_scan_start(void);
-
-extern struct pci_dev *pci_find_dev(uint16_t ven_id, uint16_t dev_id);
+//extern struct pci_slot_dev *pci_find_dev(uint16_t ven_id, uint16_t dev_id);
 
 #define pci_foreach_dev(pci_dev) \
 	slist_foreach(pci_dev, __extension__ ({   \

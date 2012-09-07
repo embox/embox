@@ -1,6 +1,11 @@
 /**
  * @file
- * @brief Peripheral Component Interconnect
+ * @brief Peripheral Component Interconnect (PCI) bus module
+ *
+ * @details This module scans PCI bus when system starting, and loads every
+ *          available PCI drivers. When scan active the module collects slots
+ *          information in a single linked list and then required drivers can
+ *          be loaded manually.
  *
  * @date 20.01.11
  * @author Nikolay Korotky
@@ -28,29 +33,23 @@ typedef struct pci_slot {
 	uint32_t bar[6];
 } pci_slot_t;
 
-POOL_DEF(devs_pool, struct pci_dev, OPTION_GET(NUMBER,dev_quantity));
+POOL_DEF(devs_pool, struct pci_slot_dev, OPTION_GET(NUMBER,dev_quantity));
 
+/* repository */
 struct slist __pci_devs_list = SLIST_INIT(&__pci_devs_list);
 
-static int pci_init(void) {
-	if(-1 == pci_is_supported()) {
-		return 0;
-	}
-	/*scan bus*/
-	pci_scan_start();
-	return 0;
-}
-
-static inline uint32_t pci_get_vendor_id(uint32_t bus, uint32_t devfn) {
+/* check whether correct pci device in the slot bus */
+static uint32_t pci_get_vendor_id(uint32_t bus, uint32_t devfn) {
 	uint32_t vendor;
 	pci_read_config32(bus, devfn, PCI_VENDOR_ID, &vendor);
-	if (vendor == 0xffffffff || vendor == 0x00000000) {
+	if ((vendor == PCI_VENDOR_NONE) || (vendor == PCI_VENDOR_WRONG)) {
 		return (uint32_t)-1;
 	}
 	return vendor;
 }
 
-static inline int pci_get_slot_info(struct pci_dev *dev) {
+/* receive information about single slot on the pci bus */
+static int pci_get_slot_info(struct pci_slot_dev *dev) {
 	int bar_num;
 	uint32_t devfn = dev->func;
 
@@ -68,19 +67,21 @@ static inline int pci_get_slot_info(struct pci_dev *dev) {
 
 	return 0;
 }
-
+/* global quantity founded pci devices */
 static int dev_cnt = 0;
 
-static inline int pci_add_dev(struct pci_dev *dev) {
+/* insert information about pci device into the repository */
+static inline int pci_add_dev(struct pci_slot_dev *dev) {
 	slist_link_init(&dev->lst);
 	slist_add_first(dev, &__pci_devs_list, lst);
 	dev_cnt ++;
 	return 0;
 }
 
-int pci_scan_start(void) {
+/* collecting information about available device on the pci bus */
+static int pci_scan_start(void) {
 	uint32_t bus, devfn;
-	struct pci_dev *new_dev;
+	struct pci_slot_dev *new_dev;
 
 	if (!slist_empty(&__pci_devs_list)) {
 		return dev_cnt;
@@ -109,12 +110,23 @@ int pci_scan_start(void) {
 	return dev_cnt;
 }
 
-struct pci_dev *pci_find_dev(uint16_t ven_id, uint16_t dev_id) {
-	struct pci_dev *dev;
+/* load every available pci driver */
+static void pci_load(void) {
+	struct pci_slot_dev *dev;
 	pci_foreach_dev(dev) {
-		if(ven_id == dev->vendor && dev_id == dev->device) {
-			return dev;
-		}
+		pci_driver_load(dev);
 	}
-	return NULL;
+}
+
+static int pci_init(void) {
+	if(-1 == pci_is_supported()) {
+		return 0;
+	}
+	/* scan bus */
+	pci_scan_start();
+
+	/* load all available pci drivers */
+	pci_load();
+
+	return 0;
 }

@@ -43,7 +43,7 @@ static inline size_t pci_get_region_size(uint32_t region_reg) {
 
 static int exec(int argc, char **argv) {
 	int opt;
-	struct pci_dev *pci_dev;
+	struct pci_slot_dev *pci_dev;
 
 	int full = 0;
 

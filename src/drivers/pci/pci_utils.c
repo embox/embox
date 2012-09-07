@@ -8,7 +8,6 @@
  */
 
 #include <types.h>
-#include <err.h>
 #include <drivers/pci.h>
 
 //TODO separate common and architecture pci's part
@@ -21,7 +20,6 @@ int pci_is_supported(void) {
 	out32(PCI_CONFIG_ADDRESS, 0);
 	out32(PCI_CONFIG_ADDRESS + 0x2, 0);
 	if (in32(PCI_CONFIG_ADDRESS) == 0 && in32(PCI_CONFIG_ADDRESS + 0x2) == 0) {
-		LOG_ERROR("PCI is not supported\n");
 		return -1;
 	}
 	return 0;
