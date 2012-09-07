@@ -23,3 +23,10 @@ module sched {
 	depends embox.kernel.thread.sched_policy.api
 }
 
+module event {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "event.c"
+
+	depends sched
+}
+
