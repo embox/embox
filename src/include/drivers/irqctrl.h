@@ -10,34 +10,33 @@
 #define HAL_INTERRUPT_H_
 
 #include <module/embox/driver/interrupt/irqctrl_api.h>
-#include <arch/interrupt.h>
 
 /**
  * Enables the specified IRQ.
  *
- * @param interrupt_nr the IRQ number to enable
+ * @param irq the IRQ number to enable
  */
-void irqctrl_enable(unsigned int interrupt_nr);
+void irqctrl_enable(unsigned int irq);
 
 /**
  * Disables the specified IRQ.
  *
- * @param interrupt_nr the IRQ number to disable
+ * @param irq the IRQ number to disable
  */
-void irqctrl_disable(unsigned int interrupt_nr);
+void irqctrl_disable(unsigned int irq);
 
 /**
  * Clears pending status for the specified IRQ.
  *
- * @param interrupt_nr the IRQ number to clear
+ * @param irq the IRQ number to clear
  */
-void irqctrl_clear(unsigned int interrupt_nr);
+void irqctrl_clear(unsigned int irq);
 
 /**
  * Forces interrupt controller to generate the specified IRQ.
  *
- * @param interrupt_nr the IRQ number to force
+ * @param irq the IRQ number to force
  */
-void irqctrl_force(unsigned int interrupt_nr);
+void irqctrl_force(unsigned int irq);
 
 #endif /* HAL_INTERRUPT_H_ */

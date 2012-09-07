@@ -15,7 +15,7 @@
 #define KERNEL_IRQ_H_
 
 #include <kernel/irq_lock.h>
-#include <drivers/irqctrl.h>
+#include <arch/interrupt.h>
 
 /**
  * Total amount of possible IRQs in the system.

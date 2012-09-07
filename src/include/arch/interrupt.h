@@ -17,7 +17,8 @@
  * @note Implementation should provide @c __INTERRUPT_NRS_TOTAL definition
  * indicating positive constant.
  */
-#define INTERRUPT_NRS_TOTAL (unsigned int) __INTERRUPT_NRS_TOTAL
+#define INTERRUPT_NRS_TOTAL \
+	((unsigned int) __INTERRUPT_NRS_TOTAL)
 
 /**
  * Checks if the specified @c interrupt_nr is less then #INTERRUPT_NRS_TOTAL
