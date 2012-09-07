@@ -262,17 +262,24 @@ receive:
 	iov.iov_base = buf;
 	iov.iov_len = len;
 	m.msg_iov = &iov;
+
+	sched_lock();
+
 	res = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
 	if (res < 0) {
 		SET_ERRNO(-res);
+		sched_unlock();
 		return -1;
 	}
 
 	/* if no data on socket, than wait on data arrived, and try receive it again. */
 	if (!iov.iov_len) {
-		sched_sleep(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
+		sched_sleep_locked(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
+		sched_unlock();
 		goto receive;
 	}
+
+	sched_unlock();
 
 	inet = inet_sk(sock->sk);
 	if ((daddr != NULL) && (daddrlen != NULL)) {
