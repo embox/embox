@@ -191,7 +191,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 		} else {
 			/* Thread is attached. Joining thread delete it.    */
 			current->run_ret = ret;
-			sched_wake_one(&current->exit_event);
+			event_notify(&current->exit_event);
 		}
 	}
 	sched_unlock();
@@ -216,7 +216,7 @@ int thread_join(struct thread *t, void **p_ret) {
 			/* Target thread is not exited. Waiting for his exiting. */
 			/* Only one can join. TODO: rewrite it. */
 			assert(sleepq_empty(&t->exit_event.sleepq));
-			sched_sleep_locked(&t->exit_event, SCHED_TIMEOUT_INFINITE);
+			event_wait(&t->exit_event, SCHED_TIMEOUT_INFINITE);
 		}
 		join_ret = t->run_ret;
 		t->state = thread_state_do_detach(t->state);

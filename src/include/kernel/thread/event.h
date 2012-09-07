@@ -11,14 +11,9 @@
 #define KERNEL_THREAD_EVENT_H_
 
 #include <kernel/thread/sched_strategy.h>
-#include <util/slist.h>
 
 struct event {
 	struct sleepq sleepq;
-	struct {
-		struct slist_link startq_link;
-		int               startq_wake_all;
-	} /* unnamed */;   /**< For wakes called inside critical. */
 	const char *name;
 };
 

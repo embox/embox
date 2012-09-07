@@ -65,7 +65,7 @@ extern void sched_set_priority(struct thread *thread,
  * @retval SCHED_TIMEOUT_HAPPENED
  *   Timeout happened.
  */
-extern int sched_sleep(struct event *event, unsigned long timeout);
+extern int sched_sleep(struct sleepq *sleepq, unsigned long timeout);
 
 /**
  * @brief Makes thread to run regardless of it's state
@@ -86,7 +86,7 @@ extern int sched_setrun(struct thread *thread);
  * @param event
  *   The occurred event.
  */
-extern void sched_wake(struct event *event);
+extern void sched_wake(struct sleepq *sleepq);
 
 /**
  * Wakes up one of the threads sleeping on the given @a event.
@@ -94,7 +94,7 @@ extern void sched_wake(struct event *event);
  * @param event
  *   The occurred event.
  */
-extern void sched_wake_one(struct event *event);
+extern void sched_wake_one(struct sleepq *sleepq);
 
 /**
  * Moves the current thread to the end of the queue for its priority.
@@ -126,7 +126,7 @@ extern int sched_change_scheduling_priority(struct thread *t,
  * @retval SCHED_TIMEOUT_HAPPENED
  *   Timeout happened.
  */
-extern int sched_sleep_locked(struct event *event, unsigned long timeout);
+extern int sched_sleep_locked(struct sleepq *sleepq, unsigned long timeout);
 
 
 #endif /* KERNEL_THREAD_SCHED_H_ */
