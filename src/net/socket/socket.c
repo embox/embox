@@ -245,8 +245,6 @@ int check_icmp_err(int sockfd) {
 	return err;
 }
 
-#include <stdio.h>
-
 static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
 	int res;
@@ -285,9 +283,6 @@ receive:
 		memset(&dest_addr->sin_zero[0], 0, sizeof dest_addr->sin_zero);
 		*daddrlen = sizeof *dest_addr;
 	}
-
-
-	//softirq_unlock();
 
 	return iov.iov_len; /* return length of received msg */
 }
