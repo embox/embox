@@ -108,6 +108,7 @@ static int inet_create(struct socket *sock, int protocol) {
 	}
 
 	sock->sk = sk;
+	sk->sk_socket = sock;
 	sock->ops = p_netsock->ops;
 
 	return ENOERR;
@@ -320,6 +321,24 @@ static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, i
 	return res;
 }
 
+#include <net/socket_registry.h>
+
+static int inet_setsockopt(struct socket *sock, int level, int optname,
+		char __user *optval, int optlen) {
+	net_device_t *dev;
+	struct socket_opt_state *ops;
+
+	if (optname == SO_BINDTODEVICE) {
+		dev = netdev_get_by_name(optval);
+		if (!dev)
+			return -ENOENT;
+		ops = &sock->socket_node->options;
+		ops->so_bindtodev = dev;
+	}
+
+	return ENOERR;
+}
+
 /**
  * predicate to compare two internet address structures
  **/
@@ -347,6 +366,7 @@ const struct proto_ops inet_dgram_ops = {
 		.sendmsg           = inet_sendmsg,
 		.recvmsg           = inet_recvmsg,
 		.compare_addresses = inet_address_compare,
+		.setsockopt        = inet_setsockopt,
 };
 
 const struct proto_ops inet_stream_ops = {

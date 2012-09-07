@@ -87,40 +87,33 @@ static int fragment_skb_and_send(sk_buff_t *skb, const struct rt_entry *best_rou
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	int ret;
 	struct rt_entry *best_route;
-	struct rt_entry bootp_route;
-	net_device_t *dev;
+	struct socket_opt_state *ops;
 
 	if (sk != NULL) {
 		build_ip_packet(sk, skb);
 	}
 
-	/* Process BOOTP */
-	if (ntohs(sk->sport) == BOOTP_PORT_CLIENT) {
-		dev = bootp_get_dev((bootphdr_t *)(skb->h.raw + UDP_HEADER_SIZE));
-		/* if iface is not initialized */
-		if (in_dev_get(dev)->ifa_address == 0) {
-			/* create new route for bootp */
-			memset(&bootp_route, 0, sizeof(struct rt_entry));
-			bootp_route.dev = dev;
-			best_route = &bootp_route;
-			goto ip_send;
-		}
-	}
-
 	best_route = rt_fib_get_best(skb->nh.iph->daddr);
-	if (best_route == NULL) {
+	if (best_route == NULL && skb->nh.iph->daddr != INADDR_BROADCAST) {
 		skb_free(skb);
 		return -EHOSTUNREACH;
 	}
-
-ip_send:
 	ret = ip_route(skb, best_route);
+
+	/* Change device if it specified by socket option */
+	ops = &sk->sk.sk_socket->socket_node->options;
+	if (ops->so_bindtodev) {
+		skb->dev = ops->so_bindtodev;
+	}
+
+	sk->saddr = in_dev_get(skb->dev)->ifa_address;
+
 	if (ret != 0) {
 		skb_free(skb);
 		return ret;  /* errno? */
 	}
 
-	if (skb->len > best_route->dev->mtu) {
+	if (skb->len > skb->dev->mtu) {
 		if (!(skb->nh.iph->frag_off & htons(IP_DF))) {
 			return fragment_skb_and_send(skb, best_route);
 		} else {

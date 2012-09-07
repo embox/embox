@@ -36,36 +36,9 @@ static int rebuild_udp_header(sk_buff_t *skb, __be16 source,
 
 static int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 		size_t len) {
-	struct rt_entry *rte;
 	sk_buff_t *skb;
-	net_device_t *dev;
-	struct rt_entry bootp_rte;
 
 	struct inet_sock *inet = inet_sk(sk);
-
-
-	/* Process BOOTP */
-	if (ntohs(inet->sport) == BOOTP_PORT_CLIENT) {
-		dev = bootp_get_dev((bootphdr_t *) msg->msg_iov->iov_base);
-		/* if iface is not initialized */
-		if (in_dev_get(dev)->ifa_address == 0) {
-			/* create new route for bootp */
-			memset(&bootp_rte, 0, sizeof(struct rt_entry));
-			bootp_rte.dev = dev;
-			rte = &bootp_rte;
-			goto build_skb;
-		}
-	}
-
-	rte = rt_fib_get_best(inet->daddr);
-	if (rte == NULL) {
-		return -EHOSTUNREACH;
-	}
-
-build_skb:
-	/* Setup inet_sock */
-	assert(in_dev_get(rte->dev) != NULL);
-	inet->saddr = in_dev_get(rte->dev)->ifa_address; // TODO remove this
 
 	/* FIXME if msg->msg_iov->iov_len more than ETHERNET_V2_FRAME_SIZE */
 	skb = skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE +
@@ -145,7 +118,6 @@ int udp_disconnect(struct sock *sk, int flags) {
 const struct proto udp_prot = {
 	.name        = "UDP",
 	.close       = udp_close,
-//	.disconnect  = udp_disconnect,
 	.sendmsg     = udp_sendmsg,
 	.recvmsg     = udp_recvmsg,
 	.backlog_rcv = udp_queue_rcv_skb,

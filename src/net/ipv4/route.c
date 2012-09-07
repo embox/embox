@@ -86,6 +86,10 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 
 	assert(skb != NULL);
 
+	if (daddr == INADDR_BROADCAST) {
+		return ENOERR;
+	}
+
 	if (!rte) {
 		return -ENETUNREACH;
 	}

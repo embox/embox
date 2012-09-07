@@ -79,6 +79,8 @@ int bootp_client(int bootp_server_timeout, in_device_t *dev) {
 	dst.sin_addr.s_addr = htonl(INADDR_BROADCAST);
 	dst.sin_port = htons((__u16)BOOTP_PORT_SERVER);
 
+	setsockopt(bootp_sock, IPPROTO_IP, SO_BINDTODEVICE, dev->dev->name, 6);
+
 	memset(&bphdr, 0, sizeof(bphdr));
 
 	/* request option all option list from server */

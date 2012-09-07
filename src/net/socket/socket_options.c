@@ -32,6 +32,7 @@ static const struct socket_opt_state DEFAULT_STREAM_OPTS = {
 	.so_sndlowat = DEFAULT_SNDLOWAT,
 	.so_rcvtimeo = DEFAULT_TIMEO,  /* no timeout.  posix default */
 	.so_type = SOCK_STREAM,  /* stream socket =) */
+	.so_bindtodev = NULL
 };
 
 /**
@@ -54,6 +55,7 @@ static const struct socket_opt_state DEFAULT_DGRAM_OPTS = {
 	.so_sndlowat = DEFAULT_SNDLOWAT,
 	.so_rcvtimeo = DEFAULT_TIMEO,  /* no timeout.  posix default */
 	.so_type = SOCK_DGRAM,  /* stream socket =) */
+	.so_bindtodev = NULL
 };
 
 /**
