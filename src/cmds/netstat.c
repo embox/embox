@@ -87,8 +87,16 @@ static void print_inet_socket_info (struct ns_external_socket_array_node * sinfo
 	printf ("Remote port: %d\n", get_port(dsa_in));
 }
 
+static void print_generic_socket_info (struct ns_external_socket_array_node * sinfo) {
+	printf ("State: ");
+	print_socket_state (sinfo->socket_connection_state);
+}
+
 static void print_socket_info (struct ns_external_socket_array_node * sinfo) {
-	print_inet_socket_info (sinfo);
+	if (sinfo->saddr.sa_family == AF_INET)
+		print_inet_socket_info (sinfo);
+	else
+		print_generic_socket_info(sinfo);
 }
 
 int exec (int argc, char ** argv) {
