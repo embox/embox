@@ -1,7 +1,8 @@
 /**
  * @file
  * @brief Print network statistic
- * @date 07.09.2012
+ * @date 30.12.11
+ * @author Alexander Kalmuk
  * @author Alexandr Chernakov
  */
 
