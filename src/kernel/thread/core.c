@@ -160,7 +160,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 
 	INIT_LIST_HEAD(&t->messages);
 	event_init(&t->msg_event, "msg");
-	event_init(&t->exit_event, "thread_exit");
+	sleepq_init(&t->exit_sleepq);
 	t->need_message = false;
 
 	t->running_time = 0;
@@ -191,7 +191,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 		} else {
 			/* Thread is attached. Joining thread delete it.    */
 			current->run_ret = ret;
-			event_notify(&current->exit_event);
+			sched_wake_one(&current->exit_sleepq);
 		}
 	}
 	sched_unlock();
@@ -214,9 +214,8 @@ int thread_join(struct thread *t, void **p_ret) {
 	{
 		if (!thread_state_exited(t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
-			/* Only one can join. TODO: rewrite it. */
-			assert(sleepq_empty(&t->exit_event.sleepq));
-			event_wait(&t->exit_event, SCHED_TIMEOUT_INFINITE);
+			assert(sleepq_empty(&t->exit_sleepq));
+			sched_sleep_locked(&t->exit_sleepq, SCHED_TIMEOUT_INFINITE);
 		}
 		join_ret = t->run_ret;
 		t->state = thread_state_do_detach(t->state);

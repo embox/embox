@@ -86,7 +86,7 @@ extern int sched_setrun(struct thread *thread);
  * @param event
  *   The occurred event.
  */
-extern void sched_wake(struct sleepq *sleepq);
+extern void sched_wake_all(struct sleepq *sleepq);
 
 /**
  * Wakes up one of the threads sleeping on the given @a event.

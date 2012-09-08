@@ -24,7 +24,7 @@ void message_send(struct message *message, struct thread *thread) {
 	list_add_tail(&message->list, &thread->messages);
 	if (thread->need_message) {
 		thread->need_message = false;
-		sched_wake(&thread->msg_event);
+		event_notify(&thread->msg_event);
 	}
 	sched_unlock();
 }
@@ -34,7 +34,7 @@ struct message *message_receive(void) {
 
 	if (list_empty(&thread_self()->messages)) {
 		thread_self()->need_message = true;
-		sched_sleep(&thread_self()->msg_event, SCHED_TIMEOUT_INFINITE);
+		event_wait(&thread_self()->msg_event, SCHED_TIMEOUT_INFINITE);
 	}
 
 	ret = thread_self()->messages.next;

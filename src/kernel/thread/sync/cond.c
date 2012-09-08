@@ -12,7 +12,7 @@
 #include <kernel/thread/sched.h>
 
 void cond_init(cond_t *c) {
-	event_init(&c->event, "cond");
+	sleepq_init(&c->sq);
 }
 
 void cond_wait(cond_t *c, struct mutex *m) {
@@ -22,7 +22,7 @@ void cond_wait(cond_t *c, struct mutex *m) {
 	sched_lock();
 	{
 		mutex_unlock(m);
-		sched_sleep_locked(&c->event, SCHED_TIMEOUT_INFINITE);
+		sched_sleep_locked(&c->sq, SCHED_TIMEOUT_INFINITE);
 	}
 	sched_unlock();
 
@@ -33,13 +33,13 @@ void cond_signal(cond_t *c) {
 	assert(c);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-	sched_wake_one(&c->event);
+	sched_wake_one(&c->sq);
 }
 
 void cond_broadcast(cond_t *c) {
 	assert(c);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-	sched_wake(&c->event);
+	sched_wake_all(&c->sq);
 }
 

@@ -20,7 +20,7 @@ static void do_down(rwlock_t *r);
 static int tryenter_sched_lock(rwlock_t *s, int status);
 
 void rwlock_init(rwlock_t *r) {
-	event_init(&r->event, "rwlock");
+	sleepq_init(&r->sq);
 	r->status = RWLOCK_STATUS_NONE;
 	r->count = 0;
 }
@@ -46,7 +46,7 @@ static void do_up(rwlock_t *r, int status) {
 	sched_lock();
 	{
 		while (tryenter_sched_lock(r, status) != 0) {
-			sched_sleep_locked(&r->event, SCHED_TIMEOUT_INFINITE);
+			sched_sleep_locked(&r->sq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();
@@ -93,7 +93,7 @@ static void do_down(rwlock_t *r) {
 		r->count--;
 		if (r->count == 0) {
 			r->status = RWLOCK_STATUS_NONE;
-			sched_wake(&r->event);
+			sched_wake_all(&r->sq);
 		}
 	}
 	sched_unlock();

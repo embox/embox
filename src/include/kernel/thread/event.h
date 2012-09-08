@@ -25,7 +25,9 @@ extern int event_wait(struct event *e, unsigned long timeout);
 
 extern void event_notify(struct event *e);
 
-extern void event_notify_all(struct event *e);
+#if 0
+extern void event_notify_one(struct event *e);
+#endif
 
 #endif /* KERNEL_THREAD_EVENT_H_ */
 

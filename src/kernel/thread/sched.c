@@ -123,7 +123,7 @@ void sched_finish(struct thread *t) {
 	sched_unlock();
 }
 
-void sched_wake(struct sleepq *sq) {
+void sched_wake_all(struct sleepq *sq) {
 	__sched_wake(sq, 1);
 }
 

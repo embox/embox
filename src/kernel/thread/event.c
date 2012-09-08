@@ -31,10 +31,12 @@ int event_wait(struct event *e, unsigned long timeout) {
 }
 
 void event_notify(struct event *e) {
-	sched_wake_one(&e->sleepq);
+	sched_wake_all(&e->sleepq);
 }
 
-void event_notify_all(struct event *e) {
+#if 0
+void event_notify_one(struct event *e) {
 	sched_wake(&e->sleepq);
 }
+#endif
 

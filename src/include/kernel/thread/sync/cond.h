@@ -13,7 +13,7 @@
 #include <kernel/thread/sync/mutex.h>
 
 struct cond {
-	struct event event;
+	struct sleepq sq;
 };
 
 typedef struct cond cond_t;

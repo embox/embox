@@ -12,7 +12,7 @@
 #include <kernel/thread/api.h>
 
 struct sem {
-	struct event event;
+	struct sleepq sq;
 	int value;
 	int max_value;
 };

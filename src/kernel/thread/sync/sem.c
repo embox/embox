@@ -14,7 +14,7 @@
 static int tryenter_sched_lock(sem_t *s);
 
 void sem_init(sem_t *s, int val) {
-	event_init(&s->event, "sem");
+	sleepq_init(&s->sq);
 	s->value = 0;
 	s->max_value = val;
 }
@@ -26,7 +26,7 @@ void sem_enter(sem_t *s) {
 	sched_lock();
 	{
 		while (tryenter_sched_lock(s) != 0) {
-			sched_sleep_locked(&s->event, SCHED_TIMEOUT_INFINITE);
+			sched_sleep_locked(&s->sq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();
@@ -51,7 +51,7 @@ void sem_leave(sem_t *s) {
 	sched_lock();
 	{
 		s->value--;
-		sched_wake_one(&s->event);
+		sched_wake_one(&s->sq);
 	}
 	sched_unlock();
 }

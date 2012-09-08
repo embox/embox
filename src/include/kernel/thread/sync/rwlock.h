@@ -12,7 +12,7 @@
 #include <kernel/thread/api.h>
 
 struct rwlock {
-	struct event event;
+	struct sleepq sq;
 	int status;
 	int count;
 };

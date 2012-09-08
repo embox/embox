@@ -12,7 +12,7 @@
 #include <kernel/thread/api.h>
 
 struct barrier {
-	struct event event;
+	struct sleepq sq;
 	int current_count;
 	int count;
 };
