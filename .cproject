@@ -16,6 +16,10 @@
 					<path value=""/>
 				</doc-comment-owner>
 			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.pathentry">
+				<pathentry excluding="src/net/netstat/" kind="src" path=""/>
+				<pathentry kind="out" path=""/>
+			</storageModule>
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="refreshScope"/>

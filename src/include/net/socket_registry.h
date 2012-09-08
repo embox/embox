@@ -41,6 +41,19 @@ extern bool sr_socket_exists(struct socket *sock);
 extern bool sr_is_saddr_free(struct socket *sock, struct sockaddr *addr);
 extern bool sr_is_daddr_free(struct socket *sock, struct sockaddr *addr);
 
+/**
+ * @brief This structure is used to provide access to the opened sockets from common applications
+ * @see  get_all_sockets_array, remove_all_sockets_array, get_all_sockets_count
+ */
+struct ns_external_socket_array_node{
+	struct sockaddr saddr;
+	struct sockaddr daddr;
+	enum socket_connection_state_t socket_connection_state;
+};
+extern struct ns_external_socket_array_node * get_all_sockets_array (int * length);
+extern void free_all_sockets_array (struct ns_external_socket_array_node * array);
+extern int get_all_sockets_count (void);
+
 /* socket information node connection info methods. could be excess */
 static inline void sk_set_connection_state(struct socket *sock, enum socket_connection_state_t state){
 	sock->socket_node->socket_connection_state = state;
