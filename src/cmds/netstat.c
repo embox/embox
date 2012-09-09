@@ -115,16 +115,14 @@ int exec (int argc, char ** argv) {
 	bind (ts, (struct sockaddr *)&saddr, sizeof(struct sockaddr));
 	#endif
 
-	if (!(sock_array = get_all_sockets_array (&count)));
-	{
+	if (!(sock_array = get_all_sockets_array (&count))) {
 		free_all_sockets_array(sock_array);
 		#ifdef __NS_TEST_SOCKET_CREATE__
 		close(ts);
 		#endif
 	}
 	printf ("Array sockets count: %d\n", count);
-	for (i = 0; i < count; i++)
-	{
+	for (i = 0; i < count; i++) {
 		print_socket_info(sock_array + i);
 	}
 
