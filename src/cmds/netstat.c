@@ -92,11 +92,11 @@ static void print_generic_socket_info (struct ns_external_socket_array_node * si
 static void print_socket_info (struct ns_external_socket_array_node * sinfo) {
 	switch (sinfo->saddr.sa_family) {
 	case AF_INET:
-		break;
 		print_inet_socket_info (sinfo);
-	default:
 		break;
+	default:
 		print_generic_socket_info(sinfo);
+		break;
 	}
 }
 
