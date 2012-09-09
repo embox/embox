@@ -12,19 +12,15 @@
 #include <net/sock.h>
 #include <net/udp.h>
 #include <net/tcp.h>
-
-#include <net/ip.h>
-#include <net/socket.h>
-#include <net/inetdevice.h>
-
-
 #include <net/socket_registry.h>
 #include <net/socket.h>
-#include <util/dlist.h>
+#include <net/ip.h>
+
+#define __NS_TEST_SOCKET_CREATE__ /*Undefine it, if testing socket is not nessessary*/
 
 EMBOX_CMD(exec);
 
-static inline short get_port (struct sockaddr_in * sa) {
+static unsigned short get_port (struct sockaddr_in * sa) {
 	return ntohs(sa->sin_port);
 }
 
@@ -94,10 +90,14 @@ static void print_generic_socket_info (struct ns_external_socket_array_node * si
 }
 
 static void print_socket_info (struct ns_external_socket_array_node * sinfo) {
-	if (sinfo->saddr.sa_family == AF_INET)
+	switch (sinfo->saddr.sa_family) {
+	case AF_INET:
+		break;
 		print_inet_socket_info (sinfo);
-	else
+	default:
+		break;
 		print_generic_socket_info(sinfo);
+	}
 }
 
 int exec (int argc, char ** argv) {
@@ -106,21 +106,33 @@ int exec (int argc, char ** argv) {
 	struct ns_external_socket_array_node * sock_array;
 	struct sockaddr_in saddr;
 
-	ts = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); //Just creating a socket for testing to be sure that
-	                                                //at least one socket exists
+	#ifdef __NS_TEST_SOCKET_CREATE__
+	ts = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); /*Just creating a socket for testing to be sure that
+	                                                at least one socket exists*/
 	saddr.sin_family = AF_INET;
 	saddr.sin_port= htons(1234);
 	saddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	bind (ts, (struct sockaddr *)&saddr, sizeof(struct sockaddr));
+	#endif
 
-	sock_array = get_all_sockets_array (&count);
+	if (!(sock_array = get_all_sockets_array (&count)));
+	{
+		free_all_sockets_array(sock_array);
+		#ifdef __NS_TEST_SOCKET_CREATE__
+		close(ts);
+		#endif
+	}
 	printf ("Array sockets count: %d\n", count);
 	for (i = 0; i < count; i++)
 	{
 		print_socket_info(sock_array + i);
 	}
 
+	free_all_sockets_array(sock_array);
+
+	#ifdef __NS_TEST_SOCKET_CREATE__
 	close(ts);
+	#endif
 
 	return 0;
 }
