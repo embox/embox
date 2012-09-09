@@ -14,7 +14,7 @@
 #include <util/dlist.h>
 
 enum socket_connection_state_t {UNCONNECTED,
- CLOSED, LISTENING, BOUND, CONNECTING, CONNECTED, ESTABLISHED, DISCONNECTING};
+ CLOSED, LISTENING, BOUND, CONNECTING, CONNECTED, ESTABLISHED, DISCONNECTING, SOCK_CONN_STATE_MAX};
 
 /**
  * @param sock socket connected to addr

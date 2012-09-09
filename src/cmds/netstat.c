@@ -20,40 +20,18 @@
 
 EMBOX_CMD(exec);
 
+static char * con_st_string[SOCK_CONN_STATE_MAX + 1] = {"UNCONNECTED", "CLOSED", "LISTENING", "BOUND",
+		"CONNECTING", "CONNECTED", "ESTABLISHED", "DISCONNECTING", "UNKNOWN_STATE"};
+
 static unsigned short get_port (struct sockaddr_in * sa) {
 	return ntohs(sa->sin_port);
 }
 
-static void print_socket_state (enum socket_connection_state_t st) {
-	switch (st) {
-	case UNCONNECTED:
-		printf ("UNCONNECTED ");
-		break;
-	case CONNECTED:
-		printf ("CONNECTED ");
-		break;
-	case CONNECTING:
-		printf ("CONNECTING ");
-		break;
-	case CLOSED:
-		printf ("CLOSED ");
-		break;
-	case LISTENING:
-		printf ("LISTENING ");
-		break;
-	case BOUND:
-		printf ("BOUND ");
-		break;
-	case ESTABLISHED:
-		printf ("ESTABLISHED ");
-		break;
-	case DISCONNECTING:
-		printf ("DISCONNECTING ");
-		break;
-	default:
-		printf ("UNKNOWN STATE ");
-		break;
-	}
+static char * socket_state_string (enum socket_connection_state_t st) {
+	if (st >= 0 && st < SOCK_CONN_STATE_MAX)
+		return con_st_string [st];
+	else
+		return con_st_string [SOCK_CONN_STATE_MAX];
 }
 
 static void print_ip_addr(in_addr_t ip) {
@@ -72,8 +50,7 @@ static void print_ip_addr(in_addr_t ip) {
 static void print_inet_socket_info (struct ns_external_socket_array_node * sinfo) {
 	struct sockaddr_in * ssa_in = (struct sockaddr_in *) &(sinfo->saddr);
 	struct sockaddr_in * dsa_in = (struct sockaddr_in *) &(sinfo->daddr);
-	printf ("State: ");
-	print_socket_state (sinfo->socket_connection_state);
+	printf ("State: %s ", socket_state_string(sinfo->socket_connection_state));
 
 	printf ("Local IP: ");
 	print_ip_addr (ssa_in->sin_addr.s_addr);
@@ -85,8 +62,7 @@ static void print_inet_socket_info (struct ns_external_socket_array_node * sinfo
 }
 
 static void print_generic_socket_info (struct ns_external_socket_array_node * sinfo) {
-	printf ("State: ");
-	print_socket_state (sinfo->socket_connection_state);
+	printf ("State: %s ", socket_state_string(sinfo->socket_connection_state));
 }
 
 static void print_socket_info (struct ns_external_socket_array_node * sinfo) {
