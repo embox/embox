@@ -27,7 +27,7 @@
     .align 4
 
 .extern irq_handler
-.extern start
+.global start
 .section .trap_table, "x"
 /* trap table
  * this code specific for ARM7TDMI cores
@@ -72,16 +72,8 @@ fiq_handler:
 /* initialize stacks in some modes */
 start:
 reset_handler:
-    msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
-    ldr	    r0, =0
-    ldr	    r1, =start
-loop_excpt:
-    ldr	    r2, [r1], #0x4
-    str	    r2, [r0], #0x4
-    cmp	    r0, #0x20
-    bne    loop_excpt
 
-    ldr r0, =_stack_top
+    ldr r0, =__stack
 
     msr CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
     mov sp, r0

@@ -24,7 +24,7 @@
 
 .section .trap_table, "x"
 trap_table_start:
-    .word _stack_top
+    .word __stack
     .word start
     .word undef_handler
     .word hard_fault
