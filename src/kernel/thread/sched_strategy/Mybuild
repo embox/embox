@@ -2,15 +2,13 @@ package embox.kernel.thread.sched_policy
 
 abstract module api { }
 
+module priority_based extends api {
+	source "priority_based.c", "priority_based.h"
+}
+
 module trivial extends api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "trivial.c", "trivial.h"
-
-}
-
-module priority_based extends api {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "priority_based.c", "priority_based.h"
 
 }
 

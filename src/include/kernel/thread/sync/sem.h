@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_SYNC_SEM_H_
 #define KERNEL_THREAD_SYNC_SEM_H_
 
-#include <kernel/thread/api.h>
+#include <kernel/thread/sched_strategy.h>
 
 struct sem {
 	struct sleepq sq;

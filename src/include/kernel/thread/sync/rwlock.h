@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_SYNC_RWLOCK_H_
 #define KERNEL_THREAD_SYNC_RWLOCK_H_
 
-#include <kernel/thread/api.h>
+#include <kernel/thread/sched_strategy.h>
 
 struct rwlock {
 	struct sleepq sq;

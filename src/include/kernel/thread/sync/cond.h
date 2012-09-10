@@ -9,8 +9,9 @@
 #ifndef KERNEL_THREAD_SYNC_COND_H_
 #define KERNEL_THREAD_SYNC_COND_H_
 
-#include <kernel/thread/api.h>
 #include <kernel/thread/sync/mutex.h>
+#include <kernel/thread/sched_strategy.h>
+
 
 struct cond {
 	struct sleepq sq;
