@@ -15,12 +15,6 @@ void event_init(struct event *e, const char *name) {
 	e->name = name;
 }
 
-#if 0
-static inline const char *event_name(struct event *e) {
-	return e->name;
-}
-#endif
-
 int event_wait(struct event *e, unsigned long timeout) {
 	int res = 0;
 
@@ -52,6 +46,14 @@ void event_notify(struct event *e) {
 }
 
 #if 0
+void event_clear(struct event *e) {
+	e->flag = 0;
+}
+
+static inline const char *event_name(struct event *e) {
+	return e->name;
+}
+
 void event_notify_one(struct event *e) {
 	sched_wake_one(&e->sleepq);
 }

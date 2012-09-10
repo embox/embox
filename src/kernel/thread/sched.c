@@ -21,7 +21,6 @@
 
 #include <kernel/critical.h>
 #include <kernel/irq_lock.h>
-#include <kernel/thread/event.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
@@ -50,7 +49,7 @@ static void startq_enqueue_wake_force(struct thread *t);
 
 static int do_thread_wake_force(struct thread *thread);
 static void do_event_wake(struct sleepq *sq, int wake_all);
-static void do_event_sleep_locked(struct sleepq *sq);
+static void do_sleep_locked(struct sleepq *sq);
 
 static void __sched_wake(struct sleepq *sq, int wake_all);
 
@@ -149,24 +148,6 @@ static void do_event_wake(struct sleepq *sq, int wake_all) {
 	sched_unlock();
 }
 
-static void do_event_sleep_locked(struct sleepq *sq) {
-	struct thread *current = runq_current(&rq);
-	assert(in_sched_locked() && !in_harder_critical());
-	assert(thread_state_running(current->state));
-
-	runq_sleep(&rq, sq);
-
-	assert(current->sleepq == sq);
-	assert(thread_state_sleeping(current->state));
-
-	post_switch_if(1);
-}
-
-static int do_thread_wake_force(struct thread *thread) {
-	assert(!in_harder_critical());
-	return sleepq_wake_thread(&rq, thread->sleepq, thread);
-}
-
 static int thread_wake_force(struct thread *thread, int sleep_result) {
 	thread->sleep_res = sleep_result;
 
@@ -177,6 +158,24 @@ static int thread_wake_force(struct thread *thread, int sleep_result) {
 	}
 
 	return 0;
+}
+
+static int do_thread_wake_force(struct thread *thread) {
+	assert(!in_harder_critical());
+	return sleepq_wake_thread(&rq, thread->sleepq, thread);
+}
+
+static void do_sleep_locked(struct sleepq *sq) {
+	struct thread *current = runq_current(&rq);
+	assert(in_sched_locked() && !in_harder_critical());
+	assert(thread_state_running(current->state));
+
+	runq_sleep(&rq, sq);
+
+	assert(current->sleepq == sq);
+	assert(thread_state_sleeping(current->state));
+
+	post_switch_if(1);
 }
 
 struct sched_sleep_data {
@@ -194,7 +193,7 @@ int sched_sleep_locked(struct sleepq *sq, unsigned long timeout) {
 	struct sys_timer tmr;
 	struct thread *current = sched_current();
 
-	assert(in_sched_locked());
+	assert(in_sched_locked() && !in_harder_critical());
 	assert(thread_state_running(current->state));
 
 	current->sleep_res = 0; /* clean out sleep_res */
@@ -206,7 +205,7 @@ int sched_sleep_locked(struct sleepq *sq, unsigned long timeout) {
 		}
 	}
 
-	do_event_sleep_locked(sq);
+	do_sleep_locked(sq);
 
 	sched_unlock();
 
