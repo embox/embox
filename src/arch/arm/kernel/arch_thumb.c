@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief XXX this is not arch code but platfrom
+ * @brief
  *
  * @date 21.06.10
  * @author Anton Kozlov

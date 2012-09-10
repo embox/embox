@@ -3,12 +3,14 @@ package embox.arch.arm.kernel
 
 /*FIXME mybuild may be split this to differernt modules */
 module locore extends embox.arch.locore {
+	source "arm7_exception_table.S"
 	source "entry.S"
 	source "head.S"
 }
 
 module locore_thumb extends embox.arch.locore {
-	source "head.thumb.S"
+	source "thumb_exception_table.S"
+	source "head.S"
 	source "entry.thumb.S"
 }
 
