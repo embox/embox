@@ -25,7 +25,7 @@
 #define MIN_ARGS_OF_MKFS 3 /* <mkfs -q /dev/ram0> must create ramdisk*/
 #define DEFAULT_BLOCK_QTTY  0x20
 #define DEFAULT_FS_NAME  "vfat"
-#define DEFAULT_FS_TYPE  16
+#define DEFAULT_FS_TYPE  12
 
 
 EMBOX_CMD(exec);
@@ -116,7 +116,7 @@ int mkfs_do_operation(void *_mkfs_params) {
 	mkfs_params = (mkfs_params_t *) _mkfs_params;
 
 	if(mkfs_params->operation_flag & MKFS_CREATE_RAMDISK) {
-		if(0 != (rezult = ramdisk_create((void *)mkfs_params))) {
+		if(0 < (rezult = ramdisk_create((void *)mkfs_params))) {
 			return rezult;
 		}
 	}
@@ -125,8 +125,8 @@ int mkfs_do_operation(void *_mkfs_params) {
 		if(MKFS_CREATE_RAMDISK) {
 			/* set filesystem attribute to ramdisk */
 			if(NULL == (ramdisk = ramdisk_get_param(mkfs_params->path))) {
-						return -ENODEV;
-					}
+				return -ENODEV;
+			}
 			strcpy ((void *)ramdisk->path, (const void *)mkfs_params->path);
 			strcpy ((void *)ramdisk->fs_name,
 						(const void *)mkfs_params->fs_name);

@@ -19,7 +19,7 @@ module ide {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ide.c"
 
-	depends embox.driver.ata
+	depends embox.driver.ide
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework

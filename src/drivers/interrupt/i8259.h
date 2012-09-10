@@ -9,7 +9,7 @@
 #ifndef HAL_INTERRUPT_I8259_H_
 #define HAL_INTERRUPT_I8259_H_
 
-#define __INTERRUPT_NRS_TOTAL 15
+#define __INTERRUPT_NRS_TOTAL 16
 
 typedef unsigned char __interrupt_nr_t;
 typedef unsigned long __interrupt_mask_t;

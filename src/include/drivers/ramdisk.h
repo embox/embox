@@ -16,6 +16,7 @@
 
 typedef struct dev_ramdisk {
 	node_t         *dev_node;
+	dev_t           devnum;
 	size_t          size;
 	char           *p_start_addr;
 	size_t          blocks;

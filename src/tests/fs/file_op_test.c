@@ -12,6 +12,7 @@
 #include <drivers/ramdisk.h>
 #include <mem/page.h>
 #include <embox/test.h>
+#include <embox/block_dev.h>
 #include <fs/vfs.h>
 
 EMBOX_TEST_SUITE("fs/file test");
@@ -27,7 +28,7 @@ static fs_drv_t *fs_drv;
 
 #define FS_NAME  "vfat"
 #define FS_DEV  "/dev/ramdisk"
-#define FS_TYPE  16
+#define FS_TYPE  12
 #define FS_BLOCKS  124
 #define FS_DIR  "/test_fop"
 #define FS_FILE1  "/test_fop/1/2/3/1.txt"
@@ -80,6 +81,8 @@ TEST_CASE("Read file") {
 
 
 static int setup_suite(void) {
+	dev_t devnum;
+
 	mkfs_params.blocks = FS_BLOCKS;
 	mkfs_params.fs_type = FS_TYPE;
 	strcpy((void *)&mkfs_params.fs_name, FS_NAME);
@@ -108,7 +111,8 @@ static int setup_suite(void) {
 		return -1;
 	}
 	/* set created ramdisc attribute from dev_node */
-	memcpy(&ramdisk, mount_param.dev_node->dev_attr, sizeof(ramdisk));
+	devnum = *((dev_t *)mount_param.dev_node->dev_attr);
+	memcpy(&ramdisk, device(devnum)->privdata, sizeof(ramdisk));
 
 	/* format filesystem */
 	if(0 != fs_drv->fsop->format((void *)&ramdisk.path)) {

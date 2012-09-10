@@ -19,7 +19,7 @@ static mkfs_params_t mkfs_params;
 
 #define FS_NAME  "vfat"
 #define FS_DEV  "/dev/ramdisk"
-#define FS_TYPE  16
+#define FS_TYPE  12
 #define FS_BLOCKS  124
 TEST_CASE("Create ramdisk") {
 	mkfs_params.blocks = FS_BLOCKS;

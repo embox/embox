@@ -480,7 +480,6 @@ static int disable_lba_cmd(dev_ide_ata_t *drive) {
 		if(sub_wait_poll(drive->base_ctrl_addr)) {
 			return -1;
 		}
-
 		pio_outbyte(drive, COMMAND, CB_DH, data);
 		return 0;
 	}
@@ -514,8 +513,7 @@ static  int read_sectors_lba_cmd(dev_ide_ata_t *drive, unsigned long lba) {
 	set_lba_addr(drive, lba);
 
     pio_outbyte(drive, COMMAND, CB_CMD, CMD_READ_SECTORS);
-    usleep(10);
-	return 0;
+    return 0;
 }
 
 static  int write_sectors_lba_cmd(dev_ide_ata_t *drive, unsigned long lba) {
@@ -523,8 +521,7 @@ static  int write_sectors_lba_cmd(dev_ide_ata_t *drive, unsigned long lba) {
 	set_lba_addr(drive, lba);
 
     pio_outbyte(drive, COMMAND, CB_CMD, CMD_WRITE_SECTORS);
-    usleep(10);
-	return 0;
+    return 0;
 }
 
 static size_t read_sectors_lba(void *dev, char *buff,

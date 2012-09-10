@@ -9,7 +9,8 @@
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <stdio.h>
-#include <drivers/ata.h>
+#include <drivers/ide.h>
+#include <embox/block_dev.h>
 
 EMBOX_CMD(exec);
 
@@ -17,9 +18,10 @@ static void print_usage(void) {
 	printf("Usage: ide \n");
 }
 
-static void print_drive (ide_ata_slot_t *ide) {
-	double size;
-	for(int i  = 0; i < ide_dev_quantity; i++) {
+static void print_drive (slot_t *ide) {
+	hd_t *drive;
+
+	for(int i  = 0; i < 4; i++) {
 		printf("\nIDE Channel %d-%d: ", i/2, i%2);
 
 		if(i%2){
@@ -28,21 +30,15 @@ static void print_drive (ide_ata_slot_t *ide) {
 		else {
 			printf(" Master Disk:");
 		}
-		if(NULL == ide->ide_bus[i].dev_ide_ata) {
+		if(NULL == ide->drive[i]) {
 			printf(" None");
 		}
 		else {
-			printf(" %s;", ide->ide_bus[i].dev_ide_ata->dev_node->name);
-			printf(" %s", ide->ide_bus[i].dev_ide_ata->identification.sn);
-			printf(" %s",
-				ide->ide_bus[i].dev_ide_ata->identification.model_numb);
-			size =
-			(double) ide->ide_bus[i].dev_ide_ata->identification.num_cyl *
-			(double) ide->ide_bus[i].dev_ide_ata->identification.num_head *
-			(double) ide->ide_bus[i].dev_ide_ata->identification.bytes_pr_sect *
-			(double) (ide->ide_bus[i].dev_ide_ata->identification.sect_pr_track + 1) /
-			1024 / 1024;
-			printf(" %5dM", (int)size);
+			drive = (hd_t *) ide->drive[i];
+			printf(" %s;", device(drive->devno)->dev_node->name);
+			printf(" %s", drive->param.serial);
+			printf(" %s", drive->param.model);
+			printf(" %5dM", drive->size);
 		}
 	}
 	printf("\n");
@@ -66,6 +62,6 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	print_drive(detection_drive());
+	print_drive(get_ide_drive());
 	return 0;
 }

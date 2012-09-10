@@ -10,6 +10,7 @@
 #include <cmd/mkfs.h>
 #include <fs/mount.h>
 #include <drivers/ramdisk.h>
+#include <embox/block_dev.h>
 #include <embox/test.h>
 #include <fs/vfs.h>
 
@@ -26,7 +27,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 
 #define FS_NAME  "vfat"
 #define FS_DEV  "/dev/ramdisk"
-#define FS_TYPE  16
+#define FS_TYPE  12
 #define FS_BLOCKS  124
 
 TEST_CASE("Create fat filesystem") {
@@ -58,6 +59,8 @@ TEST_CASE("Delete file") {
 }
 
 static int setup_suite(void) {
+	dev_t devnum;
+
 	mkfs_params.blocks = FS_BLOCKS;
 	mkfs_params.fs_type = FS_TYPE;
 
@@ -82,7 +85,8 @@ static int setup_suite(void) {
 	test_assert_not_null(mount_param.dev_node);
 
 	/* set created ramdisc attribute from dev_node */
-	memcpy(&ramdisk, mount_param.dev_node->dev_attr, sizeof(ramdisk));
+	devnum = *((dev_t *)mount_param.dev_node->dev_attr);
+	memcpy(&ramdisk, device(devnum)->privdata, sizeof(ramdisk));
 
 	return 0;
 }
