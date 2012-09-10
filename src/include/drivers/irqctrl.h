@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef HAL_INTERRUPT_H_
-#define HAL_INTERRUPT_H_
+#ifndef DRIVER_IRQCTRL_H_
+#define DRIVER_IRQCTRL_H_
 
 #include <module/embox/driver/interrupt/irqctrl_api.h>
 
@@ -39,4 +39,4 @@ void irqctrl_clear(unsigned int irq);
  */
 void irqctrl_force(unsigned int irq);
 
-#endif /* HAL_INTERRUPT_H_ */
+#endif /* DRIVER_IRQCTRL_H_ */
