@@ -14,7 +14,7 @@
 
 struct event {
 	struct sleepq sleepq;
-	int flag;
+	int status;
 	const char *name;
 };
 

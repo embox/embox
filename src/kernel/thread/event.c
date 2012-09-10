@@ -9,9 +9,13 @@
 #include <kernel/thread/event.h>
 #include <kernel/thread/sched.h>
 
+#define EVENT_STATUS_NONE     0
+#define EVENT_STATUS_WAITING  1
+#define EVENT_STATUS_HAPPEND  2
+
 void event_init(struct event *e, const char *name) {
 	sleepq_init(&e->sleepq);
-	e->flag = 0;
+	e->status = EVENT_STATUS_NONE;
 	e->name = name;
 }
 
@@ -22,9 +26,10 @@ int event_wait(struct event *e, unsigned long timeout) {
 
 	sched_lock();
 	{
-		if (e->flag) {
-			e->flag = 0;
+		if (e->status == EVENT_STATUS_HAPPEND) {
+			e->status = EVENT_STATUS_NONE;
 		} else {
+			e->status = EVENT_STATUS_WAITING;
 			res = sched_sleep_locked(&e->sleepq, timeout);
 		}
 	}
@@ -36,17 +41,23 @@ int event_wait(struct event *e, unsigned long timeout) {
 void event_notify(struct event *e) {
 	sched_lock();
 	{
-		if (sleepq_empty(&e->sleepq)) {
-			e->flag = 1;
-		} else {
+		if (e->status == EVENT_STATUS_WAITING) {
 			sched_wake_all(&e->sleepq);
+		} else {
+			e->status = EVENT_STATUS_HAPPEND;
 		}
 	}
 	sched_unlock();
 }
 
 void event_clear(struct event *e) {
-	e->flag = 0;
+	sched_lock();
+	{
+		if (e->status == EVENT_STATUS_HAPPEND) {
+			e->status = EVENT_STATUS_NONE;
+		}
+	}
+	sched_unlock();
 }
 
 #if 0
