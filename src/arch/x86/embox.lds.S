@@ -88,12 +88,6 @@ SECTIONS {
 	}
 #endif
 
-	/DISCARD/ : {
-		*(.note)
-		*(.note.ABI-tag)
-		*(.eh_frame)
-		*(.comment)
-	}
 }
 
 _mem_begin = LDS_REGION_BASE_sdram;

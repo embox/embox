@@ -26,10 +26,13 @@ SECTIONS {
 		*(.trap_table)
 		*(.text)
 		*(.text.*)
+
+		/*
 		*(.init.text)
 		ALIGNMENT();
 		*(.eh_frame)
 		ALIGNMENT();
+		*/
 		*(.glue_7t) *(.glue_7)
 		ALIGNMENT();
 	} SECTION_REGION(text)
