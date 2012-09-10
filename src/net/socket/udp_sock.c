@@ -11,7 +11,6 @@
 #include <net/net.h>
 #include <net/ip.h>
 #include <net/udp.h>
-#include <net/bootp.h>
 #include <types.h>
 #include <errno.h>
 #include <net/route.h>

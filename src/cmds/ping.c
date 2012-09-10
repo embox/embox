@@ -337,7 +337,7 @@ static int exec(int argc, char **argv) {
 	if (in_dev != NULL)
 		pinfo.from.s_addr = inet_dev_get_ipaddr(in_dev);
 	else {
-		struct rt_entry *rte = rt_fib_get_best(pinfo.dst.s_addr);
+		struct rt_entry *rte = rt_fib_get_best(pinfo.dst.s_addr, NULL);
 		if (rte == NULL) {
 			return -EHOSTUNREACH;
 		}

@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <net/socket.h>
+#include <net/socket_options.h>
 #include <net/net.h>
 
 /**
@@ -185,83 +186,44 @@ int so_get_socket_option(struct socket_opt_state *opts, unsigned int option,
 
 	switch(option){
 	case SO_ACCEPTCONN:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_acceptconn;
-		*option_len = sizeof(unsigned int);
 		break;
 	case SO_ERROR:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_error;
-		*option_len = sizeof(unsigned int);
 		opts->so_error = 0;  /* clear pending error. posix */
 		break;
 	case SO_TYPE:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_type;
-		*option_len = sizeof(unsigned int);
 		break;
 	case SO_BROADCAST:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_broadcast;
-		*option_len = sizeof(unsigned int);
 		break;
 	case SO_DEBUG:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_debug;
-		*option_len = sizeof(unsigned int);
 		break;
 	case SO_DONTROUTE:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_dontroute;
-		*option_len = sizeof(unsigned int);
 		break;
 	case SO_KEEPALIVE:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_keepalive;
-		*option_len = sizeof(unsigned int);
 		break;
 	case SO_OOBINLINE:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_oobinline;
-		*option_len = sizeof(unsigned int);
 		break;
 	case SO_RCVBUF:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_rcvbuf;
-		*option_len = sizeof(unsigned int);
 		break;
 	case SO_RCVLOWAT:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_rcvlowat;
-		*option_len = sizeof(unsigned int);
 		break;
 	case SO_REUSEADDR:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_reuseaddr;
-		*option_len = sizeof(unsigned int);
 		break;
 	case SO_SNDBUF:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_sndbuf;
-		*option_len = sizeof(unsigned int);
 		break;
 	case SO_SNDLOWAT:
-		if(*option_len != sizeof(unsigned int))
-			return -EINVAL;
 		*((unsigned int*)option_value) = opts->so_sndlowat;
-		*option_len = sizeof(unsigned int);
 		break;
 		/* non-integer valued options */
 	case SO_LINGER:
@@ -270,28 +232,34 @@ int so_get_socket_option(struct socket_opt_state *opts, unsigned int option,
 		((struct linger*)option_value)->l_onoff = opts->so_linger.l_onoff;
 		((struct linger*)option_value)->l_linger = opts->so_linger.l_linger;
 		*option_len = sizeof(struct linger);
-		break;
+		return ENOERR;
 	case SO_RCVTIMEO:
-		if(*option_len < sizeof(struct timeval))
-			return -EINVAL;
-		if(*option_len > sizeof(struct timeval))
-			return -EDOM;
 		((struct timeval*)option_value)->tv_sec = opts->so_rcvtimeo.tv_sec;
 		((struct timeval*)option_value)->tv_usec = opts->so_rcvtimeo.tv_usec;
-		*option_len = sizeof(struct timeval);
-		break;
+		goto option_check_timeval;
 	case SO_SNDTIMEO:
-		if(*option_len < sizeof(struct timeval))
-			return -EINVAL;
-		if(*option_len > sizeof(struct timeval))
-			return -EDOM;
 		((struct timeval*)option_value)->tv_sec = opts->so_sndtimeo.tv_sec;
 		((struct timeval*)option_value)->tv_usec = opts->so_sndtimeo.tv_usec;
-		*option_len = sizeof(struct timeval);
+		goto option_check_timeval;
+	case SO_BINDTODEVICE:
+		option_value = opts->so_bindtodev;
 		break;
 	default:
 		return -ENOPROTOOPT;
-		break;
 	};
+
+	if(*option_len != sizeof(unsigned int))
+		return -EINVAL;
+	*option_len = sizeof(unsigned int);
+
+	return ENOERR;
+
+option_check_timeval:
+	if (*option_len < sizeof(struct timeval))
+		return -EINVAL;
+	if (*option_len > sizeof(struct timeval))
+		return -EDOM;
+	*option_len = sizeof(struct timeval);
+
 	return ENOERR;
 }

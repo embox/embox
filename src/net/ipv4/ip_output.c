@@ -87,31 +87,27 @@ static int fragment_skb_and_send(sk_buff_t *skb, const struct rt_entry *best_rou
 int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	int ret;
 	struct rt_entry *best_route;
-	struct socket_opt_state *ops;
 
-	if (sk != NULL) {
-		build_ip_packet(sk, skb);
-	}
+	/* this is for ip_route */
+	skb->nh.iph->daddr = sk->daddr;
 
-	best_route = rt_fib_get_best(skb->nh.iph->daddr);
-	if (best_route == NULL && skb->nh.iph->daddr != INADDR_BROADCAST) {
+	best_route = rt_fib_get_best(sk->daddr, NULL);
+
+	if (best_route == NULL && sk->daddr != INADDR_BROADCAST) {
 		skb_free(skb);
 		return -EHOSTUNREACH;
 	}
+
 	ret = ip_route(skb, best_route);
-
-	/* Change device if it specified by socket option */
-	ops = &sk->sk.sk_socket->socket_node->options;
-	if (ops->so_bindtodev) {
-		skb->dev = ops->so_bindtodev;
-	}
-
-	sk->saddr = in_dev_get(skb->dev)->ifa_address;
 
 	if (ret != 0) {
 		skb_free(skb);
 		return ret;  /* errno? */
 	}
+
+	sk->saddr = in_dev_get(skb->dev)->ifa_address;
+
+	build_ip_packet(sk, skb);
 
 	if (skb->len > skb->dev->mtu) {
 		if (!(skb->nh.iph->frag_off & htons(IP_DF))) {
@@ -129,7 +125,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 int ip_forward_packet(sk_buff_t *skb) {
 	iphdr_t *iph = ip_hdr(skb);
 	int optlen = IP_HEADER_SIZE(iph) - IP_MIN_HEADER_SIZE;
-	struct rt_entry *best_route = rt_fib_get_best(iph->daddr);
+	struct rt_entry *best_route = rt_fib_get_best(iph->daddr, NULL);
 
 	/* Drop broadcast and multicast addresses of 2 and 3 layers
 	 * Note, that some kinds of those addresses we can't get here, because

@@ -11,26 +11,21 @@
 #include <net/inetdevice.h>
 #include <net/udp.h>
 #include <net/ip.h>
-#include <net/in.h>
 #include <net/route.h>
 #include <net/bootp.h>
-#include <kernel/time/time.h>
-#include <kernel/time/timer.h>
 #include <errno.h>
-#include <string.h>
-#include <prom/prom_printf.h>
 
 static void process_options(in_device_t *in_dev, struct bootphdr *r) {
 	struct in_addr addr;
-	unsigned int magic_number = 0x63538263;
-	unsigned char *op = r->options;
 	in_addr_t mask;
+	unsigned char *op = r->options;
 	const unsigned char *op_begin = op;
 
-	if (*((unsigned int*)op) != magic_number)
+	if (*((unsigned int*)op) != DHCP_MAGIC_COOKIE) {
 		return;
+	}
 
-	op += sizeof(magic_number);
+	op += sizeof(DHCP_MAGIC_COOKIE);
 
 	while (*op != TAG_END && op < op_begin + VEND_LEN) {
 		switch(*op) {
@@ -60,14 +55,12 @@ static void process_options(in_device_t *in_dev, struct bootphdr *r) {
 }
 
 int bootp_client_send(int sock, bootphdr_t *bphdr, net_device_t *dev, struct sockaddr_in *dst) {
-	unsigned int magic_cookie = htonl(0x63825363);
-
 	bphdr->op = BOOTPREQUEST;
 	bphdr->htype = HTYPE_ETHERNET;
 	bphdr->hlen = ETH_ALEN;
 
-	memcpy(bphdr->chaddr, dev->dev_addr, 6);
-	memcpy(bphdr->options, &magic_cookie, 4);
+	memcpy(bphdr->chaddr, dev->dev_addr, ETH_ALEN);
+	*(unsigned int*)bphdr->options = DHCP_MAGIC_COOKIE;
 
 	return sendto(sock, (void*) bphdr, sizeof(*bphdr), 0, (struct sockaddr *)dst, sizeof(*dst));
 }

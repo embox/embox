@@ -85,7 +85,7 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 		}
 		addr_in = (struct sockaddr_in *)addr;
 		/* setup inet_sock */
-		rte = rt_fib_get_best(addr_in->sin_addr.s_addr);
+		rte = rt_fib_get_best(addr_in->sin_addr.s_addr, NULL);
 		if (rte == NULL) {
 			res = -EHOSTUNREACH;
 			break;
