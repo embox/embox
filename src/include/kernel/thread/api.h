@@ -216,6 +216,5 @@ extern int thread_launch(struct thread *thread);
 extern int thread_set_priority(struct thread *thread,
 		thread_priority_t priority);
 
-extern void* thread_get_stack_start(struct thread const*);
-
 #endif /* KERNEL_THREAD_API_H_ */
+
