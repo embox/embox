@@ -9,8 +9,6 @@
 #ifndef HAL_INTERRUPT_I8259_H_
 #define HAL_INTERRUPT_I8259_H_
 
-#define __INTERRUPT_NRS_TOTAL 15
-
 extern int i8259_irq_pending(unsigned int irq);
 
 // TODO the following defs seem to be unused, may be throw them out? -- Eldar
