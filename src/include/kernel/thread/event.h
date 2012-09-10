@@ -21,9 +21,9 @@ struct event {
 extern void event_init(struct event *event, const char *name);
 extern int event_wait(struct event *e, unsigned long timeout);
 extern void event_notify(struct event *e);
+extern void event_clear(struct event *e);
 
 #if 0
-extern void event_clear(struct event *e);
 extern const char *event_name(struct event *event);
 extern void event_notify_one(struct event *e);
 #endif

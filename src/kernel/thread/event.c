@@ -45,10 +45,12 @@ void event_notify(struct event *e) {
 	sched_unlock();
 }
 
-#if 0
 void event_clear(struct event *e) {
 	e->flag = 0;
 }
+
+#if 0
+
 
 static inline const char *event_name(struct event *e) {
 	return e->name;
