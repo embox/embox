@@ -145,7 +145,7 @@ static inline socket_node_t *get_sock_node_by_socket(struct socket *sock){
 	return sock ? sock->socket_node : NULL;
 }
 
-int get_all_sockets_count (void) {
+int sr_get_all_sockets_count (void) {
 	int i = 0;
 	socket_node_t *node, *tmp;
 	dlist_foreach_entry(node, tmp, &socket_registry, link) {
@@ -154,14 +154,14 @@ int get_all_sockets_count (void) {
 	return i;
 }
 
-struct ns_external_socket_array_node * get_all_sockets_array (int * length) {
+struct sr_external_socket_array_node * sr_get_all_sockets_array (int * length) {
 	int count, i = 0;
 	socket_node_t *node, *tmp;
-	struct ns_external_socket_array_node * array;
+	struct sr_external_socket_array_node * array;
 
-	count = get_all_sockets_count();
+	count = sr_get_all_sockets_count();
 	*length = count;
-	array = malloc (sizeof(struct ns_external_socket_array_node) * (count + 1));
+	array = malloc (sizeof(struct sr_external_socket_array_node) * (count + 1));
 	if (!array)
 		return NULL;
 
@@ -176,7 +176,7 @@ struct ns_external_socket_array_node * get_all_sockets_array (int * length) {
 	return array;
 }
 
-void free_all_sockets_array (struct ns_external_socket_array_node * array) {
+void sr_free_all_sockets_array (struct sr_external_socket_array_node * array) {
 	if (array)
 		free(array);
 }

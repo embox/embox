@@ -47,7 +47,7 @@ static void print_ip_addr(in_addr_t ip) {
 	printf("%d ", ip_addr[0]);
 }
 
-static void print_inet_socket_info (const struct ns_external_socket_array_node * sinfo) {
+static void print_inet_socket_info (const struct sr_external_socket_array_node * sinfo) {
 	struct sockaddr_in * ssa_in = (struct sockaddr_in *) &(sinfo->saddr);
 	struct sockaddr_in * dsa_in = (struct sockaddr_in *) &(sinfo->daddr);
 	printf ("State: %s ", socket_state_string(sinfo->socket_connection_state));
@@ -61,11 +61,11 @@ static void print_inet_socket_info (const struct ns_external_socket_array_node *
 	printf ("Remote port: %d\n", get_port(dsa_in));
 }
 
-static void print_generic_socket_info (const struct ns_external_socket_array_node * sinfo) {
+static void print_generic_socket_info (const struct sr_external_socket_array_node * sinfo) {
 	printf ("State: %s ", socket_state_string(sinfo->socket_connection_state));
 }
 
-static void print_socket_info (const struct ns_external_socket_array_node * sinfo) {
+static void print_socket_info (const struct sr_external_socket_array_node * sinfo) {
 	switch (sinfo->saddr.sa_family) {
 	case AF_INET:
 		print_inet_socket_info (sinfo);
@@ -79,7 +79,7 @@ static void print_socket_info (const struct ns_external_socket_array_node * sinf
 int exec (int argc, char ** argv) {
 	int i, count;
 	int ts;
-	struct ns_external_socket_array_node * sock_array;
+	struct sr_external_socket_array_node * sock_array;
 	struct sockaddr_in saddr;
 
 	#ifdef __NS_TEST_SOCKET_CREATE__
@@ -91,7 +91,7 @@ int exec (int argc, char ** argv) {
 	bind (ts, (struct sockaddr *)&saddr, sizeof(struct sockaddr));
 	#endif
 
-	if (!(sock_array = get_all_sockets_array (&count))) {
+	if (!(sock_array = sr_get_all_sockets_array (&count))) {
 		#ifdef __NS_TEST_SOCKET_CREATE__
 		close(ts);
 		#endif
@@ -103,7 +103,7 @@ int exec (int argc, char ** argv) {
 		print_socket_info(sock_array + i);
 	}
 
-	free_all_sockets_array(sock_array);
+	sr_free_all_sockets_array(sock_array);
 
 	#ifdef __NS_TEST_SOCKET_CREATE__
 	close(ts);
