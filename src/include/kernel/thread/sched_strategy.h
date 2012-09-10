@@ -31,8 +31,8 @@ struct sleepq;				/* Queue of sleeping threads */
 extern void sched_strategy_init(struct sched_strategy_data *data);
 
 /**
- * Initializes queue of running threads. Resumes current and idle threads.
- * Current and idle threads must be suspended.
+ * Initializes queue of running threads. Makes activate current and idle
+ * threads. Current and idle threads must be inactive.
  *
  * @param runq
  *   Running queue.
@@ -45,34 +45,28 @@ extern void runq_init(struct runq *runq, struct thread *current,
 		struct thread *idle);
 
 /**
- * Returns current executing thread.
+ * Initializes queue of sleeping threads.
+ *
+ * @param sleepq
+ *   Sleeping queue.
+ */
+extern void sleepq_init(struct sleepq *sleepq);
+
+/**
+ * Returns pointer to the currently executing thread.
+ *
  * @param runq
  *   Running queue.
  */
 extern struct thread *runq_current(struct runq *runq);
 
 /**
- * Suspends thread from running queue. Thread must be resumed.
+ * Makes activate thread state and puts it in running queue.
+ *
  * @param runq
  *   Running queue.
  * @param thread
- *   Thread which will be resumed.
- * @retval 0
- *   Switching of current thread is not required.
- * @retval non-zero
- *   Switching of current thread is required.
- */
-extern int runq_finish(struct runq *runq, struct thread *thread);
-
-extern void sleepq_finish(struct sleepq *sleepq, struct thread *thread);
-
-
-/**
- * Resumes thread which is not sleeping. Thread must be suspended.
- * @param runq
- *   Running queue.
- * @param thread
- *   Thread which will be resumed.
+ *   Thread which will be started.
  * @retval 0
  *   Switching of current thread is not required.
  * @retval non-zero
@@ -81,7 +75,41 @@ extern void sleepq_finish(struct sleepq *sleepq, struct thread *thread);
 extern int runq_start(struct runq *runq, struct thread *thread);
 
 /**
- * Wakes up threads from sleeping queue and adds them to running queue.
+ * Makes exit thread state and removes from running queue.
+ *
+ * @param runq
+ *   Running queue.
+ * @param thread
+ *   Thread which will be finished.
+ * @retval 0
+ *   Switching of current thread is not required.
+ * @retval non-zero
+ *   Switching of current thread is required.
+ */
+extern int runq_finish(struct runq *runq, struct thread *thread);
+
+/**
+ * Makes exit thread state and removes from sleeping queue.
+ *
+ * @param sleepq
+ *   Sleeping queue.
+ * @param thread
+ *   Thread which will be finished.
+ */
+extern void sleepq_finish(struct sleepq *sleepq, struct thread *thread);
+
+/**
+ * Makes sleep current thread state and adds it to sleeping queue.
+ *
+ * @param runq
+ *   Running queue.
+ * @param sleepq
+ *   Sleeping queue.
+ */
+extern void runq_sleep(struct runq *runq, struct sleepq *sleepq);
+
+/**
+ * Moves threads from sleeping queue to running one and makes running their states.
  * If wake_all = 0 then wakes up only one thread from sleepq, else wakes up
  * all threads.
  *
@@ -99,17 +127,7 @@ extern int runq_start(struct runq *runq, struct thread *thread);
 extern int sleepq_wake(struct runq *runq, struct sleepq *sleepq, int wake_all);
 
 /**
- * Makes sleep current thread and adds it to sleeping queue.
- *
- * @param runq
- *   Running queue.
- * @param sleepq
- *   Sleeping queue.
- */
-extern void runq_sleep(struct runq *runq, struct sleepq *sleepq);
-
-/**
- * Wakes up resumed sleeping thread and adds it to running queue.
+ * Moves thread from sleeping queue to running one and makes it running.
  *
  * @param runq
  * 	 Runninq queue.
@@ -124,20 +142,20 @@ extern void runq_sleep(struct runq *runq, struct sleepq *sleepq);
  */
 extern int sleepq_wake_thread(struct runq *runq, struct sleepq *sleepq, struct thread *thread);
 
-#if 0
 /**
- * Wakes up suspended sleeping thread.
+ * Switches current thread.
  *
- * @param sleepq
- *   Sleeping queue.
- * @param thread
- *   Thread which will be resumed.
+ * @param runq
+ *   Running queue.
+ * @retval 0
+ *   Current thread is not switched.
+ * @retval non-zero
+ *   Current thread is switched.
  */
-extern void sleepq_wake_suspended_thread(struct sleepq *sleepq, struct thread *thread);
-#endif
+extern int runq_switch(struct runq *runq);
 
 /**
- * Sets priority of running thread.
+ * Sets scheduling priority of running thread.
  *
  * @param runq
  *   Running queue.
@@ -154,45 +172,12 @@ extern int runq_change_priority(struct runq *runq, struct thread *thread,
 		int new_priority);
 
 /**
- * Switches current thread.
- *
- * @param runq
- *   Running queue.
- * @retval 0
- *   Current thread is not switched.
- * @retval 0
- *   Current thread is switched.
- */
-extern int runq_switch(struct runq *runq);
-
-/**
- * Initializes queue of sleeping threads.
- *
- * @param sleepq
- *   Sleeping queue.
- */
-extern void sleepq_init(struct sleepq *sleepq);
-
-/**
- * !!!
- *
- * @param sleepq
- *   Sleeping queue.
- * @retval
- *
- */
-extern int sleepq_empty(struct sleepq *sleepq);
-
-#define sleepq_foreach(thread, sleepq) \
-	  __sleepq_foreach(thread, sleepq)
-
-/**
- * Sets priority of sleeping thread.
+ * Sets scheduling priority of sleeping thread.
  *
  * @param sleepq
  *   Sleeping queue.
  * @param thread
- *   Thread from sleeping thread.
+ *   Thread from sleeping queue.
  * @param new_priority
  *   New priority.
  */
@@ -200,33 +185,28 @@ extern void sleepq_change_priority(struct sleepq *sleepq, struct thread *thread,
 		int new_priority);
 
 /**
- * Suspends sleeping thread. Thread must be resumed.
+ * Returns is empty queue.
  *
  * @param sleepq
  *   Sleeping queue.
- * @param thread
- *   Thread which will be suspended.
+ * @retval 0
+ *   Queue is not empty.
+ * @retval non-zero
+ *   Queue is empty.
  */
-extern void sleepq_suspend(struct sleepq *sleepq, struct thread *thread);
+extern int sleepq_empty(struct sleepq *sleepq);
 
 /**
- * Resumes sleeping thread. Thread must be suspended.
+ * Returns pointer of first thread in sleeping queue
  *
  * @param sleepq
  *   Sleeping queue.
- * @param thread
- *   Thread which will be resumed.
- */
-extern void sleepq_resume(struct sleepq *sleepq, struct thread *thread);
-
-/**
- * !!!
- *
- * @param sleepq
- *
  * @retval
- *
+ *   First thread.
  */
 extern struct thread *sleepq_get_thread(struct sleepq *sleepq);
+
+#define sleepq_foreach(thread, sleepq) \
+	  __sleepq_foreach(thread, sleepq)
 
 #endif /* KERNEL_THREAD_SCHED_STRATEGY_H_ */
