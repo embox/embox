@@ -18,7 +18,6 @@ SECTIONS {
 		*(.multiboot)
 		*(.text)
 		*(.text.*)
-		*(.init.text)
 		ALIGNMENT();
 		. = ALIGN(0x100);
 	} SECTION_REGION(text)
@@ -55,39 +54,6 @@ SECTIONS {
 		ALIGNMENT();
 	} SECTION_REGION(stack)
 	SECTION_SYMBOLS(stack)
-
-#if 0
-/* this is required for dynamic linkage library */
-	.plt 0 : { /* procedure linkage table */
-		*(.plt) *(.iplt)
-	}
-	.got 0 : { /* global offset table */
-		*(.got) *(.igot)
-	}
-	.got.plt 0 : {
-		*(.got.plt)  *(.igot.plt)
-	}
-	.rel.dyn 0 : {
-		*(.rel.init)
-		*(.rel.text .rel.text.* .rel.gnu.linkonce.t.*)
-		*(.rel.fini)
-		*(.rel.rodata .rel.rodata.* .rel.gnu.linkonce.r.*)
-		*(.rel.data.rel.ro* .rel.gnu.linkonce.d.rel.ro.*)
-		*(.rel.data .rel.data.* .rel.gnu.linkonce.d.*)
-		*(.rel.tdata .rel.tdata.* .rel.gnu.linkonce.td.*)
-		*(.rel.tbss .rel.tbss.* .rel.gnu.linkonce.tb.*)
-		*(.rel.ctors)
-		*(.rel.dtors)
-		*(.rel.got)
-		*(.rel.bss .rel.bss.* .rel.gnu.linkonce.b.*)
-		*(.rel.ifunc)
-	}
-	.rel.plt 0 : {
-		*(.rel.plt)
-		*(.rel.iplt)
-	}
-#endif
-
 }
 
 _mem_begin = LDS_REGION_BASE_sdram;
