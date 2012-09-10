@@ -36,7 +36,7 @@ void event_notify(struct event *e) {
 
 #if 0
 void event_notify_one(struct event *e) {
-	sched_wake(&e->sleepq);
+	sched_wake_one(&e->sleepq);
 }
 #endif
 
