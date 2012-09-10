@@ -11,6 +11,7 @@
 
 void event_init(struct event *e, const char *name) {
 	sleepq_init(&e->sleepq);
+	e->flag = 0;
 	e->name = name;
 }
 
@@ -21,17 +22,33 @@ static inline const char *event_name(struct event *e) {
 #endif
 
 int event_wait(struct event *e, unsigned long timeout) {
+	int res = 0;
+
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-	if (critical_allows(CRITICAL_SCHED_LOCK)) {
-		return sched_sleep(&e->sleepq, timeout);
-	} else {
-		return sched_sleep_locked(&e->sleepq, timeout);
+	sched_lock();
+	{
+		if (e->flag) {
+			e->flag = 0;
+		} else {
+			res = sched_sleep_locked(&e->sleepq, timeout);
+		}
 	}
+	sched_unlock();
+
+	return res;
 }
 
 void event_notify(struct event *e) {
-	sched_wake_all(&e->sleepq);
+	sched_lock();
+	{
+		if (sleepq_empty(&e->sleepq)) {
+			e->flag = 1;
+		} else {
+			sched_wake_all(&e->sleepq);
+		}
+	}
+	sched_unlock();
 }
 
 #if 0
