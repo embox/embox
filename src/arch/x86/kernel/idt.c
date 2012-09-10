@@ -20,7 +20,7 @@
 /**
  * IDT entry, Interrupt Gates
  */
-typedef struct idt_gate {
+struct idt_gate {
 	/**
 	 * Lower part of the interrupt function's offset address (pointer).
 	 */
@@ -57,120 +57,62 @@ typedef struct idt_gate {
 	 * Higher part of the offset.
 	 */
 	uint16_t offset_high;
-} __attribute__((packed)) idt_gate_t ;
+} __attribute__((packed));
 
-typedef struct idt_pointer {
+struct idt_pointer {
 	uint16_t limit;
 	uint32_t base;
-} __attribute__((packed)) idt_pointer_t ;
+} __attribute__((packed));
 
-#define SET_IDT(idt_ptr)                  \
-	__asm__ __volatile__(             \
-		"lidt %0\n\t" :           \
-		: "m"((idt_ptr)->limit),  \
-		  "m"(*idt_ptr)           \
-	)
-
-#define IDT_ENTRY(nr) \
-	idt_set_gate(nr, (unsigned) t_excep##nr, 0x08, 0x8E)
-
-idt_gate_t _idt[IDT_SIZE];
-idt_pointer_t idt_ptr;
+static struct idt_gate idt[IDT_SIZE];
 
 void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr) {
-	_idt[nr].offset_low  = base & 0xFFFF;
-	_idt[nr].offset_high = (base >> 16) & 0xFFFF;
-	_idt[nr]._zero       = 0;
-	_idt[nr].selector    = sel;
-	_idt[nr].attr        = attr;
+	idt[nr].offset_low  = base & 0xFFFF;
+	idt[nr].offset_high = (base >> 16) & 0xFFFF;
+	idt[nr]._zero       = 0;
+	idt[nr].selector    = sel;
+	idt[nr].attr        = attr;
 }
 
-extern void t_excep0(void);
-extern void t_excep1(void);
-extern void t_excep2(void);
-extern void t_excep3(void);
-extern void t_excep4(void);
-extern void t_excep5(void);
-extern void t_excep6(void);
-extern void t_excep7(void);
-extern void t_excep8(void);
-extern void t_excep9(void);
-extern void t_excep10(void);
-extern void t_excep11(void);
-extern void t_excep12(void);
-extern void t_excep13(void);
-extern void t_excep14(void);
-extern void t_excep15(void);
-extern void t_excep16(void);
-extern void t_excep17(void);
-extern void t_excep18(void);
-extern void t_excep19(void);
-extern void t_excep20(void);
-extern void t_excep21(void);
-extern void t_excep22(void);
-extern void t_excep23(void);
-extern void t_excep24(void);
-extern void t_excep25(void);
-extern void t_excep26(void);
-extern void t_excep27(void);
-extern void t_excep28(void);
-extern void t_excep29(void);
-extern void t_excep30(void);
-extern void t_excep31(void);
+#define __FWD_DECL(sym) ({ extern void sym(void); &sym; })
 
-extern void irq0(void);
-extern void irq1(void);
-extern void irq2(void);
-extern void irq3(void);
-extern void irq4(void);
-extern void irq5(void);
-extern void irq6(void);
-extern void irq7(void);
-extern void irq8(void);
-extern void irq9(void);
-extern void irq10(void);
-extern void irq11(void);
-extern void irq12(void);
-extern void irq13(void);
-extern void irq14(void);
-extern void irq15(void);
+#define IDT_EXCEPT(nr) \
+	idt_set_gate(nr, (unsigned) __FWD_DECL(t_excep##nr), 0x08, 0x8E)
+
+#define IDT_IRQ(nr) \
+	idt_set_gate(nr + 32, (unsigned) __FWD_DECL(irq##nr), 0x08, 0x8E)
 
 void idt_init(void) {
-	idt_ptr.limit = sizeof(_idt) - 1;
-	idt_ptr.base = (uint32_t)_idt;
+	static struct idt_pointer idt_ptr;
+
+	idt_ptr.limit = sizeof(idt) - 1;
+	idt_ptr.base = (uint32_t) idt;
 
 	/* zero IDT */
-	memset((unsigned char*)&_idt, 0, sizeof(idt_gate_t) * IDT_SIZE);
+	memset((unsigned char*) &idt, 0, sizeof(idt));
 
-	IDT_ENTRY(0);  IDT_ENTRY(1);  IDT_ENTRY(2);  IDT_ENTRY(3);
-	IDT_ENTRY(4);  IDT_ENTRY(5);  IDT_ENTRY(6);  IDT_ENTRY(7);
-	IDT_ENTRY(8);  IDT_ENTRY(9);  IDT_ENTRY(10); IDT_ENTRY(11);
-	IDT_ENTRY(12); IDT_ENTRY(13); IDT_ENTRY(14); IDT_ENTRY(15);
-	IDT_ENTRY(16); IDT_ENTRY(17); IDT_ENTRY(18); IDT_ENTRY(19);
-	IDT_ENTRY(20); IDT_ENTRY(21); IDT_ENTRY(22); IDT_ENTRY(23);
-	IDT_ENTRY(24); IDT_ENTRY(25); IDT_ENTRY(26); IDT_ENTRY(27);
-	IDT_ENTRY(28); IDT_ENTRY(29); IDT_ENTRY(30); IDT_ENTRY(31);
+	IDT_EXCEPT(0);  IDT_EXCEPT(1);  IDT_EXCEPT(2);  IDT_EXCEPT(3);
+	IDT_EXCEPT(4);  IDT_EXCEPT(5);  IDT_EXCEPT(6);  IDT_EXCEPT(7);
+	IDT_EXCEPT(8);  IDT_EXCEPT(9);  IDT_EXCEPT(10); IDT_EXCEPT(11);
+	IDT_EXCEPT(12); IDT_EXCEPT(13); IDT_EXCEPT(14); IDT_EXCEPT(15);
+	IDT_EXCEPT(16); IDT_EXCEPT(17); IDT_EXCEPT(18); IDT_EXCEPT(19);
+	IDT_EXCEPT(20); IDT_EXCEPT(21); IDT_EXCEPT(22); IDT_EXCEPT(23);
+	IDT_EXCEPT(24); IDT_EXCEPT(25); IDT_EXCEPT(26); IDT_EXCEPT(27);
+	IDT_EXCEPT(28); IDT_EXCEPT(29); IDT_EXCEPT(30); IDT_EXCEPT(31);
 
 	/* Master PIC */
-	idt_set_gate(32, (unsigned) irq0,  0x08, 0x8E);
-	idt_set_gate(33, (unsigned) irq1,  0x08, 0x8E);
-	idt_set_gate(34, (unsigned) irq2,  0x08, 0x8E);
-	idt_set_gate(35, (unsigned) irq3,  0x08, 0x8E);
-	idt_set_gate(36, (unsigned) irq4,  0x08, 0x8E);
-	idt_set_gate(37, (unsigned) irq5,  0x08, 0x8E);
-	idt_set_gate(38, (unsigned) irq6,  0x08, 0x8E);
-	idt_set_gate(39, (unsigned) irq7,  0x08, 0x8E);
+	IDT_IRQ(0);  IDT_IRQ(1);  IDT_IRQ(2);  IDT_IRQ(3);
+	IDT_IRQ(4);  IDT_IRQ(5);  IDT_IRQ(6);  IDT_IRQ(7);
 
 	/* Slave PIC */
-	idt_set_gate(40, (unsigned) irq8,  0x08, 0x8E);
-	idt_set_gate(41, (unsigned) irq9,  0x08, 0x8E);
-	idt_set_gate(42, (unsigned) irq10, 0x08, 0x8E);
-	idt_set_gate(43, (unsigned) irq11, 0x08, 0x8E);
-	idt_set_gate(44, (unsigned) irq12, 0x08, 0x8E);
-	idt_set_gate(45, (unsigned) irq13, 0x08, 0x8E);
-	idt_set_gate(46, (unsigned) irq14, 0x08, 0x8E);
-	idt_set_gate(47, (unsigned) irq15, 0x08, 0x8E);
+	IDT_IRQ(8);  IDT_IRQ(9);  IDT_IRQ(10); IDT_IRQ(11);
+	IDT_IRQ(12); IDT_IRQ(13); IDT_IRQ(14); IDT_IRQ(15);
 
 	/* Load IDT */
-	SET_IDT(&idt_ptr);
+	__asm__ __volatile__(
+		"lidt %0\n\t"
+		:
+		: "m"(idt_ptr.limit),
+		  "m"(idt_ptr)
+	);
 }
