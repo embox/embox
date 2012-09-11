@@ -42,6 +42,7 @@ void event_notify(struct event *e) {
 	sched_lock();
 	{
 		if (e->status == EVENT_STATUS_WAITING) {
+			e->status = EVENT_STATUS_NONE;
 			sched_wake_all(&e->sleepq);
 		} else {
 			e->status = EVENT_STATUS_HAPPEND;
