@@ -9,6 +9,7 @@
 .weak kernel_start
 
 .global bootldr_start
+.type bootldr_start, %function
 
 .text
 bootldr_start:

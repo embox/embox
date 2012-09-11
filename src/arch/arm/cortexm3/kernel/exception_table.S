@@ -5,16 +5,8 @@
  * @author Anton Kozlov
 
  */
-.weak hardware_init_hook
-.weak software_init_hook
-.weak kernel_start
-
-.align 4
-
-.extern bootldr_start
 
 .type start, %function
-.type bootldr_start, %function
 .type undef_handler, %function
 .type hard_fault, %function
 
@@ -30,8 +22,12 @@ trap_table_start:
     .word hard_fault
 trap_table_end:
 
+
 start:
-    b bootldr_start
+    ldr r1, =bootldr_start
+    bx r1
+die:
+    b 	    die
 
 /* stubs */
 undef_handler:
@@ -39,10 +35,4 @@ undef_handler:
 
 hard_fault:
     b hard_fault
-
-SWI_handler:
-IRQ_handler:
-FIQ_handler:
-die:
-    b 	    die
 
