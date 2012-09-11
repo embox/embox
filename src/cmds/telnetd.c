@@ -23,17 +23,17 @@ EMBOX_CMD(exec);
 #define TELNETD_MAX_CONNECTIONS 10
 static int clients[TELNETD_MAX_CONNECTIONS];
 	/* Telnetd address bind to */
-#define RLOGIN_ADDR INADDR_ANY
+#define TELNETD_ADDR INADDR_ANY
 	/* Telnetd port bind to */
-#define RLOGIN_PORT 23
+#define TELNETD_PORT 23
 
 	/* Allow to turn off/on extra debugging information */
 #if 0
-#	define RLOGIN_DEBUG(x) do {\
+#	define MD(x) do {\
 		x;\
 	} while (0);
 #else
-#	define RLOGIN_DEBUG(x) do{\
+#	define MD(x) do{\
 	} while (0);
 #endif
 
@@ -42,7 +42,7 @@ static void fatal_error(const char *msg, int code) {
 #if 0	/* LOG_ERROR might be off now */
 	LOG_ERROR("%s, code=%d, last errno=%d\n", msg, code, errno);
 #else
-	RLOGIN_DEBUG(printf("%s, code=%d, last errno=%d\n", msg, code, errno));
+	MD(printf("%s, code=%d, last errno=%d\n", msg, code, errno));
 #endif
 	telnetd_retval = -1;
 	thread_exit(&telnetd_retval);
@@ -53,10 +53,10 @@ static void fatal_error(const char *msg, int code) {
 static void out_msgs(const char *msg, const char *msg2, const char *msg3,
 					int client_descr, struct sockaddr_in *client_socket) {
 	const int m_len = strlen(msg) + 1;
-	RLOGIN_DEBUG(printf("%s", msg2));
+	MD(printf("%s", msg2));
 	if(m_len != sendto(client_descr, msg, m_len, 0,
 					   (struct sockaddr *)client_socket, sizeof(*client_socket))) {
-		RLOGIN_DEBUG(printf("Can't write to the socket (%s)\n", msg3));
+		MD(printf("Can't write to the socket (%s)\n", msg3));
 	}
 }
 
@@ -185,11 +185,11 @@ static int exec(int argc, char **argv) {
 	}
 
 	listening_socket.sin_family = AF_INET;
-	listening_socket.sin_port= htons(RLOGIN_PORT);
-	listening_socket.sin_addr.s_addr = htonl(RLOGIN_ADDR);
+	listening_socket.sin_port= htons(TELNETD_PORT);
+	listening_socket.sin_addr.s_addr = htonl(TELNETD_ADDR);
 
-	if (!((RLOGIN_ADDR == INADDR_ANY) || ip_is_local(RLOGIN_ADDR, false, false) )) {
-		fatal_error("telnetd address is incorrect", RLOGIN_ADDR);
+	if (!((TELNETD_ADDR == INADDR_ANY) || ip_is_local(TELNETD_ADDR, false, false) )) {
+		fatal_error("telnetd address is incorrect", TELNETD_ADDR);
 	}
 
 	if ((listening_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -205,7 +205,7 @@ static int exec(int argc, char **argv) {
 		fatal_error("listen() failed", res);
 	}
 
-	RLOGIN_DEBUG(printf("telnetd is ready to accept connections\n"));
+	MD(printf("telnetd is ready to accept connections\n"));
 	while (1) {
 		struct sockaddr_in client_socket;
 		int client_socket_len = sizeof(client_socket);
@@ -213,11 +213,11 @@ static int exec(int argc, char **argv) {
 								  &client_socket_len);
 
 		if (client_descr < 0) {
-			RLOGIN_DEBUG(printf("accept() failed. code=%d\n", client_descr));
+			MD(printf("accept() failed. code=%d\n", client_descr));
 		} else {
 			uint i;
 
-			RLOGIN_DEBUG(printf("Attempt to connect from address %s:%d",
+			MD(printf("Attempt to connect from address %s:%d",
 					inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)) );
 
 			for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
@@ -227,10 +227,10 @@ static int exec(int argc, char **argv) {
 					if ((res = new_task(telnet_thread_handler, &clients[i]))) {
 						out_msgs("Internal error with shell creation\n", " failed. Can't create shell\n",
 								 "shell_create", client_descr, &client_socket);
-						RLOGIN_DEBUG(printf("thread_create() returned with code=%d\n", res));
+						MD(printf("thread_create() returned with code=%d\n", res));
 						clients[i] = -1;
 					} else {
-						RLOGIN_DEBUG(printf(" success\n"));
+						MD(printf(" success\n"));
 					}
 					close(client_descr);
 					client_descr = -1;
