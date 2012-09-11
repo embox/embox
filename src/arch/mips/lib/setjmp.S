@@ -9,7 +9,7 @@
 #include <asm/setjmp.h>
 
 
-	.section ".text"
+	.section .text
 /* a0 conteinst pointer to the setjmp buffer */
 LEAF(setjmp)
 	sw   $s0, (SETJMP_S0) ($a0)    /* save static registers s0-s8 */
