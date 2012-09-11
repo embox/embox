@@ -447,10 +447,11 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 		*/
 		/* Check for errors */
 		if (hdc->status & HDCS_ERR) {
-			unsigned char error;
+			/*unsigned char error;
 
 			error = inb(hdc->iobase + HDC_ERR);
-			/*kprintf(KERN_ERR "hd: atapi packet read error (status=0x%02x,error=0x%02x)\n", hdc->status, error); */
+
+			kprintf(KERN_ERR "hd: atapi packet read error (status=0x%02x,error=0x%02x)\n", hdc->status, error); */
 			hdc->result = -EIO;
 
 			break;
@@ -495,7 +496,7 @@ static int atapi_read_capacity(hd_t *hd) {
 	unsigned char pkt[12];
 	unsigned long buf[2];
 	unsigned long blks;
-	unsigned long blksize;
+	//unsigned long blksize;
 	int rc;
 
 	memset(pkt, 0, 12);
@@ -510,8 +511,8 @@ static int atapi_read_capacity(hd_t *hd) {
 	}
 
 	blks = ntohl(buf[0]);
-	blksize = ntohl(buf[1]);
-	/*
+	/*blksize = ntohl(buf[1]);
+
 	if (blksize != CDSECTORSIZE) {
 		kprintf("%s: unexpected block size (%d)\n", device(hd->devno)->name, blksize);
 	}
@@ -1203,8 +1204,8 @@ block_dev_driver_t partition_driver = {
 static int create_partitions(hd_t *hd) {
 	mbr_t mbrdata;
 	mbr_t *mbr = &mbrdata;
-	lbr_t lbrdata;
-	lbr_t *lbr = &lbrdata;
+	//lbr_t lbrdata;
+	//lbr_t *lbr = &lbrdata;
 	int rc;
 	/* dev_t devno; */
 	/* int i; */
@@ -1216,7 +1217,7 @@ static int create_partitions(hd_t *hd) {
 		/* kprintf(KERN_ERR "%s: error %d reading partition table\n", device(hd->devno)->name, rc); */
 		return rc;
 	}
-	lbr = (lbr_t *) mbr;
+	//lbr = (lbr_t *) mbr;
 
 	/* Create partition devices */
 	if ((mbr->sig_55 != 0x55) || (mbr->sig_aa != 0xAA)) {
