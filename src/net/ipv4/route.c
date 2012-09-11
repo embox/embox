@@ -81,25 +81,23 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
  *         style must be the same
  *      2) Carrier without ARP can't be supported
  */
-#include <stdio.h>
+
 int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	struct socket_opt_state *ops;
 	in_addr_t saddr, daddr = skb->nh.iph->daddr;
 	struct rt_entry *rte = (suggested_route ? suggested_route : rt_fib_get_best(daddr, NULL));
 
 	assert(skb != NULL);
-	assert(skb->sk);
-	assert(skb->sk->sk_socket);
 
-	/*kernel_socket_getsockopt(sk->sk.sk_socket, SOL_IP, SO_BINDTODEVICE,
-			(char*)dev, NULL);*/
-	/* FIXME */
-	ops = &skb->sk->sk_socket->socket_node->options;
+	if (skb->sk && skb->sk->sk_socket) {
+		/* kernel_socket_getsockopt(sk->sk.sk_socket, SOL_IP, SO_BINDTODEVICE,
+				(char*)dev, NULL); */
+		ops = &skb->sk->sk_socket->socket_node->options;
 
-	if (ops->so_bindtodev) {
-		rte = rt_fib_get_best(skb->nh.iph->daddr, ops->so_bindtodev);
-		skb->dev = ops->so_bindtodev;
-		printf("ASDA\n");
+		if (ops->so_bindtodev) {
+			rte = rt_fib_get_best(skb->nh.iph->daddr, ops->so_bindtodev);
+			skb->dev = ops->so_bindtodev;
+		}
 	}
 
 	/* SO_BROADCAST assert. */
