@@ -15,16 +15,31 @@
 #include <err.h>
 #include <errno.h>
 #include <kernel/task.h>
+#include <stdlib.h>
 
 EMBOX_CMD(exec);
 
 #include <framework/mod/options.h>
 
 #define RLOGIN_MAX_CONNECTIONS  OPTION_GET(NUMBER, max_conn_count)
+#define MAX_USER_INFO_LENGTH 100
 static int connection_count = 0;
 
 #define RLOGIN_ADDR INADDR_ANY
 #define RLOGIN_PORT (unsigned int)513
+
+/* FIXME make it local variable for exec() */
+struct sockaddr_in dst;
+
+const char *client = "embox";
+char *server;
+
+//struct user_info {
+//	char client_user_name[10];
+//	char server_user_name[10];
+//	char terminal_type[10];
+//	unsigned int terminal_speed;
+//};
 
 	/* Allow to turn off/on extra debugging information */
 #if 0
@@ -49,6 +64,8 @@ static void fatal_error(const char *msg, int code) {
 
 	/* Shell thread for telnet */
 static void *rlogin_thread_handler(void* args) {
+	char *buf;
+	int len = 0;
 	int *client_descr_p = (int *)args;
 
 	close(STDIN_FILENO);
@@ -59,13 +76,18 @@ static void *rlogin_thread_handler(void* args) {
 	dup(*client_descr_p);
 	dup(*client_descr_p);
 
-		/* Hack. Emulate future output, we need a char from user to exit from
-		 * parameters mode
-		 */
-	{
-		static const char* prompt = "embox>"; /* OPTION_STRING_GET(prompt); */
-		printf("Welcome to rlogin!\n%s", prompt);
-	}
+	/* send "Start HandShake" */
+	printf("%c", '\0');
+
+	buf = malloc(strlen(client) + strlen(server) + 2);
+
+	memcpy(buf, client, strlen(client));
+	len += strlen(client) + 1;
+
+	memcpy(buf + len, server, strlen(server));
+	len += strlen(server) + 1;
+
+	sendto(*client_descr_p, buf, len, 0, (struct sockaddr *) &dst, sizeof dst);
 
 	/* Run shell */
 	shell_run();
@@ -76,10 +98,9 @@ static void *rlogin_thread_handler(void* args) {
 	return NULL;
 }
 
-
 static int exec(int argc, char **argv) {
 	int res = -1, sockfd;
-	struct sockaddr_in our, dst;
+	struct sockaddr_in our;
 
 	if (connection_count >= RLOGIN_MAX_CONNECTIONS)
 		return -1;
@@ -111,6 +132,8 @@ static int exec(int argc, char **argv) {
 	dst.sin_family = AF_INET;
 	dst.sin_port = htons(RLOGIN_PORT);
 
+	server = argv[argc - 2];
+
 	if (connect(sockfd, (struct sockaddr *)&dst, sizeof dst) < 0) {
 		printf("Error... Cant connect to remote address %s:%d\n",
 				inet_ntoa(dst.sin_addr), RLOGIN_PORT);
@@ -127,7 +150,10 @@ static int exec(int argc, char **argv) {
 
 	res = ENOERR;
 
+	while(1);
+
 exit:
-	close(sockfd);
+	connection_count--;
+	//close(sockfd);
 	return res;
 }
