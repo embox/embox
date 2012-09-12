@@ -10,7 +10,6 @@
 #include <embox/unit.h>
 #include <err.h>
 #include <errno.h>
-#include <linux/init.h>
 #include <net/etherdevice.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
@@ -71,7 +70,7 @@ struct net_device *loopback_dev;
 /**
  * The initialization of loopback device
  */
-static int __init unit_init(void) {
+static int unit_init(void) {
 
 	loopback_dev = netdev_alloc("lo", &loopback_setup);
 	if (loopback_dev == NULL) {
