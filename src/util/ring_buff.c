@@ -23,8 +23,7 @@ int ring_buff_empty(struct ring_buff *buf) {
 }
 
 int ring_buff_enque(struct ring_buff *buf, void *elem, size_t cnt) {
-	char *buf_pool = buf->storage;
-	void *write_to = buf_pool + (buf->p_write * buf->elem_size);
+	void *write_to = buf->storage + (buf->p_write * buf->elem_size);
 
 	if (buf->cnt >= buf->capacity) {
 		return -1;
@@ -42,8 +41,7 @@ int ring_buff_enque(struct ring_buff *buf, void *elem, size_t cnt) {
 }
 
 int ring_buff_deque(struct ring_buff *buf, void *elem, size_t cnt) {
-	char *buf_pool = buf->storage;
-	void *read_from = buf_pool + (buf->p_read * buf->elem_size);
+	void *read_from = buf->storage + (buf->p_read * buf->elem_size);
 
 	if (buf->cnt == 0) {
 		return -1;
