@@ -26,7 +26,7 @@ PROVIDE(_min_heap_size = 0) ;
 /*************************************************************************
  * For interrupt vector handling
  *************************************************************************/
-PROVIDE(_vector_spacing = 0x00000001);
+_vector_spacing = 0x00000001;
 _ebase_address  = 0x9D003000;
 
 /*************************************************************************
@@ -550,6 +550,7 @@ SECTIONS
     *(.bss .bss.* .gnu.linkonce.b.*)
 		ALIGNMENT();
 		_bend = .;
+	_bss_end = .;
   } >kseg1_data_mem
 	/* } SECTION_REGION(bss) */
 	SECTION_SYMBOLS(bss)
