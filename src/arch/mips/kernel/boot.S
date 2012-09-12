@@ -11,7 +11,7 @@
 #include <asm/asm.h>
 
 
-	.section    ".text"
+	.section    .text
 	.align  4
 	.weak hardware_init_hook
 	.weak software_init_hook
@@ -84,5 +84,5 @@ C_ENTRY(_start):
 	jal     kernel_start
 	nop
 
-	.section    ".text"
+	.section    .text
 	.align      4

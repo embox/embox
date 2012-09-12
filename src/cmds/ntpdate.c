@@ -18,7 +18,6 @@
 
 #include <time.h>
 #include <kernel/time/time.h>
-#include <kernel/time/timer.h>
 
 #define DEFAULT_WAIT_TIME 10000
 
@@ -28,15 +27,9 @@ static void print_usage(void) {
 	printf("Usage: ntpdate [-q] server");
 }
 
-static void wake_on_server_resp(struct sys_timer *timer, void *param) {
-	*(int*)param = false;
-}
-
 int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r, bool query) {
 	int sock, res;
 	struct sockaddr_in our, dst;
-	struct sys_timer ntp_timer;
-	bool wait_response = true; /* wait for server response */
 
 	if (!inet_aton(dstip, &dst.sin_addr)) {
 		printf("Invalid ip address %s\n", dstip);
@@ -54,9 +47,10 @@ int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r, bool q
 	our.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (!query) {
+		/* we want, that ntp module set system time if receive request. */
 		our.sin_port = htons(NTP_SERVER_PORT);
 	} else {
-		/* FIXME */
+		/* FIXME any free port except NTP_SERVER_PORT */
 		our.sin_port = htons(768);
 	}
 
@@ -71,25 +65,14 @@ int ntpdate_common(char *dstip, int ntp_server_timeout, struct ntphdr *r, bool q
 	dst.sin_port = htons((__u16)NTP_SERVER_PORT);
 
 	if (0 >= (res = ntp_client_xmit(sock, &dst))) {
+		/* FIXME  It is not sending error always. In case, if packet sends by us at first,
+		 * it put in arp_queue and we will think that it is sending error. */
 		printf("Sending error\n");
 		goto error;
 	}
 
-	/* wait for server response or quit with timeout */
-	timer_init(&ntp_timer, 0, ntp_server_timeout, wake_on_server_resp, &wait_response);
-
-	while (0 >= (res = recvfrom(sock, r, sizeof(struct ntphdr), 0, NULL, NULL))
-			&& wait_response);
-
-	timer_close(&ntp_timer);
-
-	if (res <= 0) {
-		printf("Server timeout\n");
-		goto error;
-	}
-
-	res = ENOERR;
-
+	/* TODO set O_NONBLOCK on socket's file descriptor */
+	res = recvfrom(sock, r, sizeof(struct ntphdr), 0, NULL, NULL);
 error:
 	close(sock);
 	return res;

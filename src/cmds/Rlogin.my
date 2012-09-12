@@ -1,0 +1,28 @@
+package embox.cmd
+
+@Cmd(name = "telnetd",
+	help = "Rlogin client",
+	man = '''
+		NAME
+			rlogin - rlogin client
+		SYNOPSIS
+			rlogin
+		DESCRIPTION
+			Start rlogin client in the system
+		EXAMPLES
+			rlogin
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module rlogin {
+	source "rlogin.c"
+
+	option number max_conn_count=10
+
+	depends embox.lib.LibC
+	depends embox.kernel.thread.core
+	depends embox.net.socket
+	depends embox.cmd.sh.tish
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}

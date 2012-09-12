@@ -19,7 +19,6 @@ SECTIONS {
 		ALIGNMENT();
 		*(.text)
 		*(.text.*)
-		*(.init.text)
 		ALIGNMENT();
 	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)

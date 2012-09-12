@@ -23,6 +23,7 @@
 #define EWOULDBLOCK      EAGAIN
 #define ENOMEM           12    /* Out of memory */
 #define EFAULT           14    /* Bad adress posix.1 */
+#define ENOTBLK          15    /* Not block device */
 #define EBUSY            16    /* Resource busy */
 #define EXDEV            18    /* Cross-device link */
 #define ENODEV           19    /* No such device */

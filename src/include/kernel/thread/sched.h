@@ -14,7 +14,6 @@
 #include <kernel/thread/sched_lock.h>
 #include <kernel/thread/sched_priority.h>
 
-#include __impl_x(kernel/thread/sched_impl.h)
 #include __impl_x(kernel/thread/types.h)
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
@@ -90,25 +89,25 @@ extern int sched_setrun(struct thread *thread);
 extern void sched_wake(struct event *event);
 
 /**
- * Moves the current thread to the end of the queue for its priority.
- */
-extern void sched_yield(void);
-
-extern void sched_suspend(struct thread *thread);
-
-extern void sched_resume(struct thread *thread);
-
-
-extern int sched_change_scheduling_priority(struct thread *t,
-		__thread_priority_t new);
-
-/**
  * Wakes up one of the threads sleeping on the given @a event.
  *
  * @param event
  *   The occurred event.
  */
 extern void sched_wake_one(struct event *event);
+
+/**
+ * Moves the current thread to the end of the queue for its priority.
+ */
+extern void sched_yield(void);
+
+extern void sched_finish(struct thread *thread);
+
+extern void sched_start(struct thread *thread);
+
+
+extern int sched_change_scheduling_priority(struct thread *t,
+		__thread_priority_t new);
 
 /**
  * Does the same as #sched_sleep() but assumes that the scheduler is

@@ -29,6 +29,8 @@ struct linger{
 	int l_linger; /* linger time. Posix.1g. in seconds */
 };
 
+struct net_device;
+
 /**
  * socket options state structure
  */
@@ -49,6 +51,7 @@ typedef struct socket_opt_state{
 	int so_sndlowat;
 	struct timeval so_sndtimeo;
 	int so_type;
+	struct net_device *so_bindtodev; /* name of interface socket bind to*/
 } socket_opt_state_t;
 
 
@@ -87,6 +90,7 @@ typedef struct socket_opt_state{
 #define	SO_SNDLOWAT     13/* int *//* Minimum amount of data to send for output operations (in bytes). */
 #define	SO_SNDTIMEO     14/* struct timeval *//* Timeout value for a socket send operation. */
 #define	SO_TYPE         15/* int *//* Identify socket type ( getsockopt() only). */
+#define SO_BINDTODEVICE 16/* Bind socket to send packet from specified device */
 /* }; */
 
 /* methods */

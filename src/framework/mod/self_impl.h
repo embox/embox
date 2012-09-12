@@ -24,11 +24,20 @@
 #define __MOD_INFO_BIND(_mod_ops, _mod_data) \
 	__MOD_INFO_DEF(__EMBUILD_MOD__, _mod_ops, _mod_data)
 
+#ifndef __cplusplus
 #define __MOD_INFO_DEF(mod_nm, _ops, _data) \
 	const struct mod_info __MOD_INFO(mod_nm) = { \
 		.mod = &__MOD(mod_nm),                   \
 		.ops = _ops,                             \
 		.data = (void *) _data,                  \
 	}
+#else
+#define __MOD_INFO_DEF(mod_nm, _ops, _data) \
+	const struct mod_info __MOD_INFO(mod_nm) = { \
+		&__MOD(mod_nm),                   \
+		_ops,                             \
+		(void *) _data,                  \
+	}
+#endif
 
 #endif /* FRAMEWORK_MOD_SELF_IMPL_H_ */

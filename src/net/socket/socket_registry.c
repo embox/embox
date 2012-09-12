@@ -9,6 +9,7 @@
 /* clean out unnecessary headers */
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <net/sock.h>
 #include <util/sys_log.h>
@@ -142,4 +143,40 @@ static socket_node_t *get_sock_node_by_dst_address(struct socket *sock,
 
 static inline socket_node_t *get_sock_node_by_socket(struct socket *sock){
 	return sock ? sock->socket_node : NULL;
+}
+
+int sr_get_all_sockets_count (void) {
+	int i = 0;
+	socket_node_t *node, *tmp;
+	dlist_foreach_entry(node, tmp, &socket_registry, link) {
+		i++;
+	}
+	return i;
+}
+
+struct sr_external_socket_array_node * sr_get_all_sockets_array (int * length) {
+	int count, i = 0;
+	socket_node_t *node, *tmp;
+	struct sr_external_socket_array_node * array;
+
+	count = sr_get_all_sockets_count();
+	*length = count;
+	array = malloc (sizeof(struct sr_external_socket_array_node) * (count + 1));
+	if (!array)
+		return NULL;
+
+	dlist_foreach_entry(node, tmp, &socket_registry, link) {
+		if (i == count)
+			break;
+		memcpy (&(array[i].saddr), &(node->saddr), sizeof(struct sockaddr));
+		memcpy (&(array[i].daddr), &(node->daddr), sizeof(struct sockaddr));
+		array[i].socket_connection_state = node->socket_connection_state;
+		i++;
+	}
+	return array;
+}
+
+void sr_free_all_sockets_array (struct sr_external_socket_array_node * array) {
+	if (array)
+		free(array);
 }

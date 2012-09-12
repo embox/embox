@@ -51,6 +51,17 @@ typedef int dev_t;
 
 typedef int clockid_t;
 
+typedef unsigned int ino_t;
+
+typedef unsigned short nlink_t;
+
+typedef unsigned short uid_t;
+
+typedef unsigned short gid_t;
+
+typedef unsigned int blkno_t;
+
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* SYS_TYPES_H_ */

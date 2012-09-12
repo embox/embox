@@ -10,7 +10,8 @@
 #include <types.h>
 
 char * fgets(char *s, int n, FILE *file) {
-	int c;
+	int c = EOF; // has to add it, since compiler claims it's uninited --Anton Kozlov
+		     // if 'while' below not taken, c in test for EOF really undefined
 	char *ptr;
 
 	if (n <= 0) {

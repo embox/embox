@@ -21,7 +21,9 @@ void kill(int tid, int sig) {
 
 	sig_table->sig_mask |= 1 << sig;
 
+#if 0
 	sched_setrun(hnd_thread);
+#endif
 }
 
 void signal(int sig, void (*hnd)(int)) {

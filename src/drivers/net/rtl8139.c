@@ -9,7 +9,6 @@
 
 #include <asm/io.h>
 #include <embox/unit.h>
-#include <err.h>
 #include <errno.h>
 #include <drivers/pci.h>
 #include <kernel/irq.h>
@@ -24,7 +23,8 @@
 #include <stdlib.h>
 #include <drivers/rtl8139.h>
 
-EMBOX_UNIT_INIT(unit_init);
+PCI_DRIVER("rtl8139", rtl8139_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8139);
+
 
 #define RX_BUF_SIZE (32 * 1024)
 #define TX_BUF_SIZE 1536
@@ -198,24 +198,17 @@ static const struct net_device_ops _netdev_ops = {
 	.ndo_set_mac_address = set_mac_address
 };
 
-static int unit_init(void) {
+static int rtl8139_init(struct pci_slot_dev *pci_dev) {
 	int res = 0;
 	uint32_t nic_base;
 	struct net_device *nic;
-	struct pci_dev *pci_dev;
+	struct pci_slot_dev *pci_dev;
 
-	//TODO: only RealTek RTL-8139 is available
-	pci_dev = pci_find_dev(PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8139);
-	if (pci_dev == NULL) {
-		LOG_WARN("Couldn't find RTL8139 PCI device\n");
-		return -ENODEV;
-	}
 
 	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 
 	nic = etherdev_alloc();
 	if (nic == NULL) {
-		LOG_ERROR("Couldn't alloc netdev for RTL8139 PCI\n");
 		return -ENOMEM;
 	}
 	nic->netdev_ops = &_netdev_ops;

@@ -281,16 +281,25 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	return iov.iov_len; /* return length of received msg */
 }
 
-
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
 	int res;
+	struct socket *sock = idx2sock(sockfd);
 
-	res = recvfrom_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
-	if(res <0){
+	sched_lock();
+	res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
+	/* if !O_NONBLOCK on socket's file descriptor {*/
+	if (!res) {
+		sched_sleep_locked(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
+		res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
+	}
+	/* } */
+	sched_unlock();
+	if (res < 0){
 		SET_ERRNO(-res);
 		return -1;
 	}
+
 	return res;
 }
 

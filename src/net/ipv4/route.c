@@ -9,6 +9,7 @@
  */
 
 #include <net/route.h>
+#include <net/socket_registry.h>
 #include <errno.h>
 #include <util/member.h>
 #include <mem/misc/pool.h>
@@ -80,11 +81,29 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
  *         style must be the same
  *      2) Carrier without ARP can't be supported
  */
+
 int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
-	in_addr_t daddr = skb->nh.iph->daddr;
-	struct rt_entry *rte = (suggested_route ? suggested_route : rt_fib_get_best(daddr));
+	struct socket_opt_state *ops;
+	in_addr_t saddr, daddr = skb->nh.iph->daddr;
+	struct rt_entry *rte = (suggested_route ? suggested_route : rt_fib_get_best(daddr, NULL));
 
 	assert(skb != NULL);
+
+	if (skb->sk && skb->sk->sk_socket) {
+		/* kernel_socket_getsockopt(sk->sk.sk_socket, SOL_IP, SO_BINDTODEVICE,
+				(char*)dev, NULL); */
+		ops = &skb->sk->sk_socket->socket_node->options;
+
+		if (ops->so_bindtodev) {
+			rte = rt_fib_get_best(skb->nh.iph->daddr, ops->so_bindtodev);
+			skb->dev = ops->so_bindtodev;
+		}
+	}
+
+	/* SO_BROADCAST assert. */
+	if (daddr == INADDR_BROADCAST) {
+		return ENOERR;
+	}
 
 	if (!rte) {
 		return -ENETUNREACH;
@@ -93,12 +112,13 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	/* set the device for current destination address */
 	assert(rte->dev != NULL);
 	skb->dev = rte->dev;
+	saddr = in_dev_get(skb->dev)->ifa_address;
 
 	/* if source and destination addresses are equal send via LB interface
 	 * svv: suspicious. There is no check (src == dst) in ip_input
 	 */
 	if (ipv4_is_loopback(daddr)
-			|| (daddr == skb->nh.iph->saddr)) {
+			|| (daddr == saddr)) {
 		skb->dev = inet_get_loopback_dev();
 	}
 
@@ -129,7 +149,12 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr) {
 	struct rt_entry *rte;
 
-	rte = rt_fib_get_best(source_addr);
+	if (source_addr == INADDR_BROADCAST) {
+		*new_addr = source_addr;
+		return ENOERR;
+	}
+
+	rte = rt_fib_get_best(source_addr, NULL);
 	if (rte == NULL) {
 		return -ENETUNREACH;
 	}
@@ -165,7 +190,7 @@ struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
  * Routes must be added into list with mask_len decrease.
  * In this case we'll simply take the first match
  */
-struct rt_entry * rt_fib_get_best(in_addr_t dst) {
+struct rt_entry * rt_fib_get_best(in_addr_t dst, net_device_t *out_dev) {
 	struct rt_entry_info *rt_info;
 	int mask_len, best_mask_len;
 	struct rt_entry *best_rte;
@@ -175,6 +200,7 @@ struct rt_entry * rt_fib_get_best(in_addr_t dst) {
 	list_for_each_entry(rt_info, &rt_entry_info_list, lnk) {
 		mask_len = ipv4_mask_len(rt_info->entry.rt_mask);
 		if (((dst & rt_info->entry.rt_mask) == rt_info->entry.rt_dst)
+				&& (out_dev == NULL || out_dev == rt_info->entry.dev)
 				&& (mask_len > best_mask_len)) {
 			best_rte = &rt_info->entry;
 			best_mask_len = mask_len;

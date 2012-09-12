@@ -56,7 +56,8 @@ struct sock_common {
  * @param sk_encap_rcv: called before put skbuff data on socket. Handle encapsulated proto
  * @param get_port TODO add description
  * @param arp_queue_info: arp_queue related parameter
- * @param sock_is_ready: event for waking up socket when the packet is added to arp_queue
+ * @param sock_is_ready: event for waking up socket, when the packet is added to arp_queue
+ * @param sock_is_not_empty: event for waking up in recvfrom(), when some data were put on sock
  */
 typedef struct sock {
 	struct sock_common __sk_common;
@@ -91,6 +92,7 @@ typedef struct sock {
 	int32_t sk_err;
 	bool ready;
 	struct event sock_is_ready;
+	struct event sock_is_not_empty;
 } sock_t;
 
 static inline void sock_set_ready(struct sock *sk) {

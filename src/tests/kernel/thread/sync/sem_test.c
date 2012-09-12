@@ -2,8 +2,7 @@
  * @file
  * @brief Tests semaphore enter/leave methods.
  *
- *
- * @date Apr 30, 2012
+ * @date Sep 03, 2012
  * @author Bulychev Anton
  */
 
@@ -19,7 +18,7 @@ EMBOX_TEST_SUITE("Semaphore test");
 TEST_SETUP(setup);
 
 TEST_CASE("General") {
-	test_assert_zero(thread_resume(low));
+	test_assert_zero(thread_launch(low));
 	test_assert_zero(thread_join(low, NULL));
 	test_assert_zero(thread_join(mid, NULL));
 	test_assert_zero(thread_join(high, NULL));
@@ -30,7 +29,7 @@ static void *low_run(void *arg) {
 	test_emit('a');
 	sem_enter(&s);
 	test_emit('b');
-	test_assert_zero(thread_resume(mid));
+	test_assert_zero(thread_launch(mid));
 	test_emit('j');
 	sem_leave(&s);
 	test_emit('k');
@@ -41,7 +40,7 @@ static void *mid_run(void *arg) {
 	test_emit('c');
 	sem_enter(&s);
 	test_emit('d');
-	test_assert_zero(thread_resume(high));
+	test_assert_zero(thread_launch(high));
 	test_emit('f');
 	sem_leave(&s);
 	test_emit('i');

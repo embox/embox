@@ -9,27 +9,13 @@ ENTRY(start)
 MEMORY {
 	MEMORY_REGION(sdram)
 	MEMORY_REGION(flash)
-	/*MEMORY_REGION(internal) */
 }
-
-/*_stack = _bend + 0x10000;*/
-/*__stack = _stack;*/
-/*__checksum = 0x00000000;*/
-_data_image_start = _data_lma;
-
-_text_start = _text_vma;
-_text_end = _text_vma + _text_len;
-/*_reloc_end = _reloc_start + _reloc_len; */
 
 SECTIONS {
 	.text : {
 		*(.trap_table)
 		*(.text)
 		*(.text.*)
-		*(.init.text)
-		ALIGNMENT();
-		*(.eh_frame)
-		ALIGNMENT();
 		*(.glue_7t) *(.glue_7)
 		ALIGNMENT();
 	} SECTION_REGION(text)
@@ -42,18 +28,14 @@ SECTIONS {
 
 	.data : {
 		ALIGNMENT();
-		_data_start = .;
 		*(.data)
-		_data_end = .;
 	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
 	.bss : {
 		ALIGNMENT();
-		_bstart = .;
 		*(.bss)
 		ALIGNMENT();
-		_bend = .;
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 
@@ -65,11 +47,8 @@ SECTIONS {
 
 	.stack (NOLOAD): {
 		ALIGNMENT();
-		_stack_bottom = .;
 		. += OPTION_GET(NUMBER,stack_size);
 		ALIGNMENT();
-		_stack_top = .;
-		_stack = _stack_top;
-		__stack = _stack;
+		__stack = .;
 	} SECTION_REGION(stack)
 }

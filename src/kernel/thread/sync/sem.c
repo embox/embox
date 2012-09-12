@@ -11,7 +11,7 @@
 #include <kernel/thread/sync/sem.h>
 #include <kernel/thread/sched.h>
 
-int tryenter_sched_lock(struct thread *t, sem_t *s);
+static int tryenter_sched_lock(sem_t *s);
 
 void sem_init(sem_t *s, int val) {
 	event_init(&s->event, "sem");
@@ -20,21 +20,20 @@ void sem_init(sem_t *s, int val) {
 }
 
 void sem_enter(sem_t *s) {
-	struct thread *current = sched_current();
 	assert(s);
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	sched_lock();
 	{
-		while (tryenter_sched_lock(current, s) != 0) {
+		while (tryenter_sched_lock(s) != 0) {
 			sched_sleep_locked(&s->event, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();
 }
 
-int tryenter_sched_lock(struct thread *current, sem_t *s) {
-	assert(s && current);
+static int tryenter_sched_lock(sem_t *s) {
+	assert(s);
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
 	if (s->value == s->max_value) {
@@ -46,9 +45,8 @@ int tryenter_sched_lock(struct thread *current, sem_t *s) {
 }
 
 void sem_leave(sem_t *s) {
-	//struct thread *current = sched_current();
 	assert(s);
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
 	sched_lock();
 	{

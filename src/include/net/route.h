@@ -85,10 +85,12 @@ extern int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr);
 extern struct rt_entry * rt_fib_get_first(void);
 
 /**
+ * @param dst - ip address of destination
+ * @param out_dev - device, from witch data will be send to dst.
  * @return pointer to best match entity for dst
  * @retval NULL if entity not found
  */
-extern struct rt_entry* rt_fib_get_best(in_addr_t dst);
+extern struct rt_entry* rt_fib_get_best(in_addr_t dst, net_device_t *out_dev);
 
 /**
  * Get next element from route from table uses

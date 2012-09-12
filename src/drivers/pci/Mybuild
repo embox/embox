@@ -2,9 +2,10 @@ package embox.driver
 
 module pci {
 	option number dev_quantity = 32
-	source "pci.c", "pci_repo.c", "pci_utils.c"
+	source "pci.c", "pci_repo.c", "pci_utils.c", "pci_driver.c"
 
 	depends embox.mem.pool
+	depends embox.kernel.irq
 	depends embox.util.LibUtil
 }
 

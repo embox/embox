@@ -14,8 +14,8 @@
 	.section ".trap_table.text", #alloc, #execinstr
 	.align 0x1000
 
-	.global start
-start:
+	.global _start
+_start:
 	.global trap_table
 trap_table:
 #include "trap_table.inc"

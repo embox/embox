@@ -1,0 +1,19 @@
+
+package microchip.arch.mips
+
+module lds {
+	source "maximite.lds.S"
+	option number stack_size=65536
+}
+
+module boot {
+	@IncludePath("/opt/microchip/mplabc32/v2.02/pic32-libs/include/")
+	source "maximite/crt0.S"
+	, "maximite/default-bootstrap-exception-handler.c"
+	, "maximite/default-general-exception-handler.c"
+	, "maximite/default-nmi-handler.S"
+	, "maximite/default-on-bootstrap.c"
+	, "maximite/default-on-reset.c"
+	, "maximite/general-exception.S"
+	source "maximite/blink.c"
+}

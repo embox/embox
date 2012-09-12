@@ -19,6 +19,7 @@
 extern const struct example __example_registry[];
 extern const struct mod_ops __example_mod_ops;
 
+#ifndef __cplusplus
 #define EMBOX_EXAMPLE(_exec)                                   \
 	static int _exec(int argc, char **argv);                   \
 	ARRAY_SPREAD_ADD_NAMED(__example_registry, __example,   {  \
@@ -26,6 +27,16 @@ extern const struct mod_ops __example_mod_ops;
 			.exec = _exec,                                     \
 		});                                                    \
 	MOD_INFO_BIND(&__example_mod_ops, __example)
+#else
+#define EMBOX_EXAMPLE(_exec)                                   \
+	static int _exec(int argc, char **argv);                   \
+	ARRAY_SPREAD_ADD_NAMED(__example_registry, __example,   {  \
+			&mod_self,                                  \
+			_exec,                                     \
+		});                                                    \
+	MOD_INFO_BIND(&__example_mod_ops, __example)
+#endif
+
 
 #ifdef __CDT_PARSER__
 

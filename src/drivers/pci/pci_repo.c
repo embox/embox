@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief
+ * @brief TODO only for lspci command
  *
  * @date 28.06.2011
  * @author Anton Bondarev

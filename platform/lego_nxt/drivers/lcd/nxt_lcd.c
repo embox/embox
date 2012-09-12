@@ -181,7 +181,7 @@ void nxt_lcd_force_update(void) {
 	}
 }
 
-int __init lcd_init(void) {
+int lcd_init(void) {
 	REG_STORE(AT91C_PMC_PCER, (1L << AT91C_ID_SPI)); /* Enable MCK clock */
 	REG_STORE(AT91C_PIOA_PER, AT91C_PIO_PA12); /*EnableA0onPA12*/
 	REG_STORE(AT91C_PIOA_OER, AT91C_PIO_PA12);

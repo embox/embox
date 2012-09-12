@@ -1,6 +1,6 @@
 package embox.lib
 
-static module LibCXX {
+module LibCXX {
 	/* Generic files */
 	source "new.cpp"
 	source "exception.cpp"
@@ -8,6 +8,10 @@ static module LibCXX {
 	/* Private C++ files */
 	source "unwind.c"
 	source "eh_routines.cpp"
+
+	/*linker sections */
+	source "cxx.lds.S"
+	source "cxx_init.c"
 
 	depends embox.lib.LibC
 }

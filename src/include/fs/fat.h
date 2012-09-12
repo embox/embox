@@ -282,7 +282,8 @@ typedef struct fileinfo {
 
 
 typedef struct fat_fs_description {
-	dev_image_t *p_device;
+	//dev_image_t *p_device;
+	dev_t devnum;
 	uint8_t root_name[MAX_LENGTH_FILE_NAME];
 	vol_info_t vi;
 } fat_fs_description_t;

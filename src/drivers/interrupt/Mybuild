@@ -27,6 +27,8 @@ module irqmp extends irqctrl_api {
 
 module mb_intc extends irqctrl_api {
 	source "mb_intc.c", "mb_intc.h"
+
+	option number mbintc_base
 }
 
 module stm32_nvic extends irqctrl_api {

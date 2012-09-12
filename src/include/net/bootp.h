@@ -26,6 +26,8 @@
 #define MINPKTSZ	300
 #endif
 
+#define DHCP_MAGIC_COOKIE (unsigned int)0x63538263
+
 /*
 	BOOTP support. For details read RFC951 and RFC1395.
 */
@@ -191,15 +193,6 @@ struct sock;
 extern int bootp_receive(struct sock *sk, struct sk_buff *skb);
 extern int bootp_client_send(int sock,bootphdr_t *bootp, net_device_t *dev,
 		struct sockaddr_in *dst);
-
-static inline net_device_t *bootp_get_dev(bootphdr_t *bootp) {
-	net_device_t *dev;
-	netdev_foreach(dev) {
-		if (!strncmp((void*)dev->dev_addr, (void*)bootp->chaddr, ETH_ALEN))
-			break;
-	}
-	return dev;
-}
 
 /**
  * Return current bootp info

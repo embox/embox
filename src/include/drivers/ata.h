@@ -18,6 +18,7 @@
 extern int ide_dev_quantity;
 #define INT_DEFAULT_INTERRUPT_MODE 0
 
+
 typedef struct _dev_ide_ata_identif
 {
 	uint16_t config;           /*General configuration bit-significant information*/
@@ -27,7 +28,7 @@ typedef struct _dev_ide_ata_identif
 	uint16_t bytes_pr_track;   /*Number of unformatted bytes per track */
 	uint16_t bytes_pr_sect;    /*Number of unformatted bytes per sector */
 	uint16_t sect_pr_track;    /* Number of sectors per track */
-	uint8_t vendor[6 + 1];     /* Vendor unique */
+	uint8_t  vendor[6 + 1];     /* Vendor unique */
 	uint8_t  sn[20 + 1];       /* Serial number (20 ASCII characters, 0000h=not specified)*/
 	uint16_t buff_type;        /* Buffer type */
 	uint16_t buff_size;        /* Buffer size in 512 byte increments (0000h=not specified) */
