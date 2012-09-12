@@ -20,9 +20,9 @@ struct ring_buff {
 	int elem_size;     /**< size of element */
 };
 
-extern int ring_buff_enque(struct ring_buff *buf, void *elem);
+extern int ring_buff_enque(struct ring_buff *buf, void *elem, size_t cnt);
 
-extern int ring_buff_deque(struct ring_buff *buf, void *elem);
+extern int ring_buff_deque(struct ring_buff *buf, void *elem, size_t cnt);
 
 extern int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count, void *storage);
 
