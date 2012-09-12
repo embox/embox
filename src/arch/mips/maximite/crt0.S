@@ -44,19 +44,11 @@
 
 #include <p32xxxx.h>
 
-#if 0
-#define USE_OLD_INIT
-#define USE_OLD_DOTSECTION
-#endif
 
         ##################################################################
         # Entry point of the entire application
         ##################################################################
-#if defined(USE_OLD_DOTSECTION)
-        .section .reset,"ax",@progbits
-#else
         .section .reset,code
-#endif
         .set noreorder
         .ent _reset
 _reset:
@@ -70,11 +62,7 @@ _reset:
         ##################################################################
         # Startup code
         ##################################################################
-#if defined(USE_OLD_DOTSECTION)
-        .section .startup,"ax",@progbits
-#else
         .section .reset.startup,code
-#endif
         .set noreorder
         .ent _startup
 _startup:
@@ -147,69 +135,6 @@ _bss_check:
         bltu    t0,t1,_bss_init
         nop
 
-#if defined(USE_OLD_INIT)
-
-        ##################################################################
-        # Copy initialized data from program flash to data memory
-        #   src=_data_image_begin dst=_data_begin stop=_data_end
-        ##################################################################
-        la      t0,_data_image_begin
-        la      t1,_data_begin
-        la      t2,_data_end
-        b       _init_check
-        nop
-
-_init_data:
-        lw      t3,(t0)
-        sw      t3,(t1)
-        addu    t0,4
-        addu    t1,4
-_init_check:
-        bltu    t1,t2,_init_data
-        nop
-
-        ##################################################################
-        # If there are no RAM functions, skip the next two sections --
-        # copying RAM functions from program flash to data memory and
-        # initializing bus matrix registers.
-        ##################################################################
-        la      t1,_ramfunc_length
-        beqz    t1,_ramfunc_done
-        nop
-
-        ##################################################################
-        # Copy RAM functions from program flash to data memory
-        #   src=_ramfunc_image_begin dst=_ramfunc_begin stop=_ramfunc_end
-        ##################################################################
-        la      t0,_ramfunc_image_begin
-        la      t1,_ramfunc_begin
-        la      t2,_ramfunc_end
-
-_init_ramfunc:
-        lw      t3,(t0)
-        sw      t3,(t1)
-        addu    t0,4
-        addu    t1,4
-_ramfunc_check:
-        bltu    t1,t2,_init_ramfunc
-        nop
-
-        ##################################################################
-        # Initialize bus matrix registers if RAM functions exist in the
-        # application
-        ##################################################################
-        la      t1,_bmxdkpba_address
-        la      t2,BMXDKPBA
-        sw      t1,0(t2)
-        la      t1,_bmxdudba_address
-        la      t2,BMXDUDBA
-        sw      t1,0(t2)
-        la      t1,_bmxdupba_address
-        la      t2,BMXDUPBA
-        sw      t1,0(t2)
-_ramfunc_done:
-
-#else
         ##################################################################
         # Initialize data using the linker-generated .dinit table
         ##################################################################
@@ -283,7 +208,6 @@ _dinit_end:
 #endif
 _ramfunc_done:
 
-#endif
 
         ##################################################################
         # Initialize CP0 registers
@@ -377,11 +301,7 @@ _ramfunc_done:
         # Boot Exception Vector Handler
         # Jumps to _bootstrap_exception_handler
         ##################################################################
-#if defined(USE_OLD_DOTSECTION)
-        .section .bev_handler,"ax",@progbits
-#else
         .section .bev_handler,code
-#endif
         .set noreorder
         .ent _bev_exception
 _bev_exception:
@@ -395,11 +315,7 @@ _bev_exception:
         # General Exception Vector Handler
         # Jumps to _general_exception_handler
         ##################################################################
-#if defined(USE_OLD_DOTSECTION)
-        .section .gen_handler,"ax",@progbits
-#else
         .section .gen_handler,code
-#endif
         .set noreorder
         .ent _gen_exception
 _gen_exception:
@@ -409,11 +325,7 @@ _gen_exception:
 
         .end _gen_exception
 
-#if defined(USE_OLD_DOTSECTION)
-        .text
-#else
         .section .text,code
-#endif
         .ent _main_entry
 _main_entry:
         ##################################################################
