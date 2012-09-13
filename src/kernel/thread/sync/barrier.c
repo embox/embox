@@ -12,7 +12,7 @@
 #include <kernel/thread/sched.h>
 
 void barrier_init(barrier_t *b, int count) {
-	event_init(&b->event, "barrier");
+	sleepq_init(&b->sq);
 	b->current_count = 0;
 	b->count = count;
 }
@@ -25,10 +25,10 @@ void barrier_wait(barrier_t *b) {
 	{
 		if (b->count == b->current_count + 1) {
 			b->current_count = 0;
-			sched_wake(&b->event);
+			sched_wake_all(&b->sq);
 		} else {
 			b->current_count++;
-			sched_sleep_locked(&b->event, SCHED_TIMEOUT_INFINITE);
+			sched_sleep_locked(&b->sq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();

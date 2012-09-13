@@ -58,7 +58,7 @@ struct thread {
 	__thread_id_t     id;            /**< Unique identifier. */
 	struct list_head  thread_link;   /**< Linkage on all threads. */
 	int               suspend_count; /**< Depth of #thread_suspend() calls. */
-	struct event      exit_event;    /**< Thread exit event. */
+	struct sleepq     exit_sleepq;   /**< Thread exit event. */
 
 	bool              need_message;  /**< Waiting for message. */
 	struct list_head  messages;      /**< Messages sent to the thread. */

@@ -55,6 +55,7 @@ module core {
 	depends skbuff
 	depends embox.mem.slab
 	depends embox.lib.LibC
+	depends embox.kernel.thread.event
 }
 
 module neighbour {

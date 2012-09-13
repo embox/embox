@@ -2,5 +2,7 @@ package embox.kernel.thread
 
 module sync {
 	source "mutex.c", "message.c", "sem.c", "barrier.c", "cond.c", "rwlock.c"
+
+	depends embox.kernel.thread.sched
 }
 

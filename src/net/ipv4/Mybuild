@@ -12,6 +12,7 @@ module arp_queue {
 	depends route
 	depends embox.kernel.timer.sys_timer
 	depends embox.kernel.thread.sched
+	depends embox.kernel.thread.event
 	depends embox.mem.objalloc
 }
 

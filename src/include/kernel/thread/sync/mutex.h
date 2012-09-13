@@ -16,7 +16,7 @@
  * Defines Mutex structure.
  */
 struct mutex {
-	struct event event;
+	struct sleepq sq;
 	struct thread *holder;
 	int priority;
 	int lock_count;

@@ -33,7 +33,7 @@ static void *thread_handler(void *args) {
 			thread_self()->id);
 
 
-	sched_sleep(event, SCHED_TIMEOUT_INFINITE);/* sleeping here*/
+	event_wait(event, SCHED_TIMEOUT_INFINITE);/* sleeping here*/
 
 	/* print a thread structure address and a thread's ID */
 	for(i = 0; i < CONF_HANDLER_REPEAT_NUMBER; i ++) {
@@ -68,7 +68,7 @@ static int run(int argc, char **argv) {
 	}
 
 	printf("wake up all threads");
-	event_fire(&e);
+	event_notify(&e);
 
 	/* waiting until all threads finish and print return value*/
 	for(i = 0; i < ARRAY_SIZE(thr); i ++) {

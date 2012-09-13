@@ -27,7 +27,7 @@ int usleep(useconds_t usec) {
 
 	event_init(&never_happen, NULL);
 
-	res_sleep = sched_sleep(&never_happen, usec);
+	res_sleep = event_wait(&never_happen, usec);
 
 	return res_sleep == SCHED_SLEEP_TIMEOUT ? 0 : res_sleep;
 }

@@ -97,7 +97,7 @@ void arp_queue_process(struct sk_buff *arp_skb) {
 
 		/* try to xmit */
 		if (dev_queue_xmit(waiting_item->skb) == ENOERR) {
-			event_fire(sock_ready);
+			event_notify(sock_ready);
 		}
 
 		/* free resourse */
