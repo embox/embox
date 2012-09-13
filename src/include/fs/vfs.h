@@ -16,6 +16,8 @@
 #define FILE_NODE_TYPE       0x00
 #define DIRECTORY_NODE_TYPE  0x10
 
+extern int set_path (char *path, node_t *nod);
+extern void cut_mount_dir(char *path, char *mount_dir) ;
 extern int nip_tail(char *head, char *tail);
 extern int increase_tail(char *head, char *tail);
 extern int vfs_add_leaf(node_t *child, node_t *parrent);

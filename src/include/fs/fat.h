@@ -290,7 +290,7 @@ typedef struct fat_fs_description {
 
 typedef struct _fat_file_description {
 	file_info_t fi;
-	fat_fs_description_t *p_fs_dsc;
+	fat_fs_description_t *fs;
 } fat_file_description_t;
 
 
@@ -364,7 +364,7 @@ uint8_t *fat_canonical_to_dir(uint8_t *dest, uint8_t *src);
 /*
  *  Parse filename off the end of the supplied path
  */
-void get_filename(uint8_t *tmppath, uint8_t *filename);
+void get_filename(char *tmppath, char *filename);
 
 /*
  *  Set time for created file
@@ -375,12 +375,6 @@ void set_filetime(dir_ent_t *de);
  *  Set full path name from root to this node
  */
 int fatfs_set_path (uint8_t *path, node_t *nod);
-
-/*
- * Cut mount directory name from path to get the path in file system
- */
-void cut_mount_dir(uint8_t *path, uint8_t *mount_dir);
-
 
 
 #endif /* FAT_H_ */

@@ -12,6 +12,34 @@
 #include <fs/vfs.h>
 #include <err.h>
 
+int set_path (char *path, node_t *nod) {
+
+	node_t *parent, *node;
+	char buff[MAX_LENGTH_PATH_NAME];
+
+	*path = *buff= 0;
+	node = nod;
+	strcpy((char *) buff, (const char *) &node->name);
+
+	while(NULL !=
+			(parent = vfs_find_parent((const char *) &node->name, node))) {
+		strcpy((char *) path, (const char *) &parent->name);
+		if('/' != *path) {
+			strcat((char *) path, (const char *) "/");
+		}
+		strcat((char *) path, (const char *) buff);
+		node = parent;
+		strcpy((char *) buff, (const char *) path);
+	}
+
+	strncpy((char *) buff, (char *) path, MAX_LENGTH_PATH_NAME);
+	buff[MAX_LENGTH_PATH_NAME - 1] = 0;
+	if (strcmp((char *) path,(char *) buff)) {
+		return -1;
+	}
+	return 0;
+}
+
 /**
  * Save first node name in path into buff variable.
  * Return the remaining part of path.
@@ -34,6 +62,17 @@ static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 	}
 
 	return NULL;
+}
+
+void cut_mount_dir(char *path, char *mount_dir) {
+	char *p;
+
+	p = path;
+	while (*mount_dir && (*mount_dir == *p)) {
+		mount_dir++;
+		p++;
+	}
+	strcpy((char *) path, (const char *) p);
 }
 
 int nip_tail(char *head, char *tail) {

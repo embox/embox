@@ -156,6 +156,7 @@ static int hd_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout) {
 			return -EIO;
 		}
 	}
+	return -ETIMEDOUT;
 }
 
 static void hd_select_drive(hd_t *hd) {
@@ -404,6 +405,7 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	bufleft = bufsize;
 	hdc->dir = HD_XFER_IGNORE;
 	hdc->active = hd;
+	hdc->result = 0;
 	/* reset_event(&hdc->ready); */
 
 	/* Setup registers */
@@ -430,6 +432,7 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	}
 
 	/* Command packet transfer */
+	hdc->result = 0;
 	pio_write_buffer(hd, (char *) pkt, pktlen);
 
 	/* Data transfer */
@@ -1113,6 +1116,7 @@ void hd_dpc(void *arg) {
 	case HD_XFER_IGNORE:
 		/* Read status to acknowledge interrupt */
 		hdc->status = inb(hdc->iobase + HDC_STATUS);
+		//hdc->result = 1;
 		/* set_event(&hdc->ready);*/
 		break;
 
@@ -1124,7 +1128,8 @@ void hd_dpc(void *arg) {
 		break;
 	}
 
-	if(0 == hdc->result) {
+	if((0 == hdc->result) && (HD_XFER_IDLE != hdc->dir)
+			              && (HD_XFER_IGNORE != hdc->dir)) {
 		hdc->result = 1;
 	}
 }
@@ -1434,8 +1439,8 @@ static int ide_devnode_create(dev_t *dev_number) {
 		}
 	}
 
-	dev_node->dev_type = (void *)device(*dev_number)->driver;
-	dev_node->dev_attr = (void *)dev_number;
+	dev_node->dev_type = (void *) device(*dev_number)->driver;
+	dev_node->dev_attr = (void *) dev_number;
 	device(*dev_number)->dev_node = dev_node;
 
 	return *dev_number;
@@ -1543,18 +1548,6 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 		else {
 			hd->devno = dev_make(devname, &harddisk_pio_driver, hd);
 		}
-		if(0 <= hd->devno) {
-			if(0 > ide_devnode_create(&hd->devno)) {
-				dev_destroy (hd->devno);
-				return;
-			}
-			size =
-			(double) hd->param.cylinders *
-			(double) hd->param.heads *
-			(double) hd->param.unfbytes *
-			(double) (hd->param.sectors + 1);
-			device(hd->devno)->size = (size_t) size;
-		}
 	}
 	else if (hd->media == IDE_CDROM) {
 		hd->devno = dev_make("cd#", &cdrom_pio_driver, hd);
@@ -1563,8 +1556,25 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 		/* kprintf(KERN_ERR "%s: unknown media type 0x%02x (iftype %d, config 0x%04x)\n", devname, hd->media, hd->iftype, hd->param.config); */
 		return;
 	}
+
+	if(0 <= hd->devno) {
+		if(0 > ide_devnode_create(&hd->devno)) {
+			dev_destroy (hd->devno);
+			return;
+		}
+		size =
+		(double) hd->param.cylinders *
+		(double) hd->param.heads *
+		(double) hd->param.unfbytes *
+		(double) (hd->param.sectors + 1);
+		device(hd->devno)->size = (size_t) size;
+	}
+
 	if (hd->media == IDE_DISK) {
 		create_partitions(hd);
+	}
+	else {
+		hd->blks = 0;
 	}
 	/*
 	kprintf(KERN_INFO "%s: %s", device(hd->devno)->name, hd->param.model);
