@@ -11,6 +11,14 @@
 
 #include <module/embox/arch/interrupt_api.h>
 
+#ifndef INTERRUPT_IMPLEMENTED
+// XXX don't like it...
+typedef unsigned int __ipl_t;
+static inline void ipl_init(void) { }
+static inline __ipl_t ipl_save(void) { return 0; }
+static inline void ipl_restore(__ipl_t ipl) { }
+#endif /* INTERRUPT_IMPLEMENTED */
+
 /**
  * The implementation-dependent type suitable to hold IPL flags.
  */

@@ -11,6 +11,10 @@
 
 #include <module/embox/arch/interrupt_api.h>
 
+#ifndef INTERRUPT_IMPLEMENTED
+#define __INTERRUPT_NRS_TOTAL 0
+#endif /* INTERRUPT_IMPLEMENTED */
+
 /**
  * Total amount of interrupt lines that CPU can handle.
  *

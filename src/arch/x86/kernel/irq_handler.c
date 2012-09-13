@@ -12,6 +12,7 @@
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <asm/io.h>
+#include <drivers/irqctrl.h>
 #include <drivers/i8259.h>
 #include <assert.h>
 
