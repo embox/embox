@@ -47,7 +47,7 @@ extern void startq_enqueue_wake(struct sleepq *sq, int wake_all);
 extern void startq_enqueue_wake_force(struct thread *t);
 
 int do_thread_wake_force(struct thread *thread);
-void do_event_wake(struct sleepq *sq, int wake_all);
+void do_sleepq_wake(struct sleepq *sq, int wake_all);
 
 static void do_sleep_locked(struct sleepq *sq);
 
@@ -135,11 +135,11 @@ void __sched_wake(struct sleepq *sq, int wake_all) {
 		startq_enqueue_wake(sq, wake_all);
 		critical_request_dispatch(&sched_critical);
 	} else {
-		do_event_wake(sq, wake_all);
+		do_sleepq_wake(sq, wake_all);
 	}
 }
 
-void do_event_wake(struct sleepq *sq, int wake_all) {
+void do_sleepq_wake(struct sleepq *sq, int wake_all) {
 	assert(!in_harder_critical());
 
 	sched_lock();
@@ -164,6 +164,8 @@ static int thread_wake_force(struct thread *thread, int sleep_result) {
 
 int do_thread_wake_force(struct thread *thread) {
 	assert(!in_harder_critical());
+	assert(thread_state_sleeping(thread->state));
+
 	return sleepq_wake_thread(&rq, thread->sleepq, thread);
 }
 

@@ -8,64 +8,93 @@
 
 #include <hal/ipl.h>
 #include <kernel/critical.h>
-#include <util/slist.h>
+#include <kernel/thread/startq.h>
+#include <kernel/thread/state.h>
+#include <util/dlist.h>
 #include "types.h"
 
-#define STARTQ_TYPE_SLEEPQ_ONE 0
-#define STARTQ_TYPE_SLEEPQ_ALL 1
-#define STARTQ_TYPE_THREAD     2
-
 extern int do_thread_wake_force(struct thread *thread);
-extern void do_event_wake(struct sleepq *sleepq, int wake_all);
+extern void do_sleepq_wake(struct sleepq *sleepq, int wake_all);
 
-struct startq {
-	struct slist sleepq_wake;
-	struct slist thread_force_wake;
-};
-
-static struct startq startq = {
-	.sleepq_wake = SLIST_INIT(&startq.sleepq_wake),
-	.thread_force_wake = SLIST_INIT(&startq.thread_force_wake),
-
-};
+static DLIST_DEFINE(startq);
 
 /**
  * Called outside any interrupt handler as part of critical dispatcher
  * with IRQs disabled and the scheduler locked.
  */
 void startq_flush(void) {
-	struct thread *t;
-	struct sleepq *sq;
+	static struct thread *t;
+	static struct sleepq *sq;
+	static struct startq_data *sd;
+	static int wake_all;
 
 	assert(!critical_allows(CRITICAL_SCHED_LOCK));
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-	while ((sq = slist_remove_first(&startq.sleepq_wake,
-			struct sleepq, startq_link))) {
-		int wake_all = sq->startq_wake_all;
+	/* Run through all items in startq. */
+	while (!dlist_empty(&startq)) {
+		/* Get startq data of first item. */
+		sd = dlist_entry(startq.next, struct startq_data, startq_link);
 
-		ipl_enable();
-		do_event_wake(sq, wake_all);
-		ipl_disable();
-	}
+		/* Determine type of item. */
+		if (sd->info == STARTQ_WAKE_THREAD) {
+			/* Item is a thread, get it. */
+			t = dlist_entry(startq.next, struct thread, startq_data.startq_link);
 
-	while ((t = slist_remove_first(&startq.thread_force_wake,
-			struct thread, startq_link))) {
+			/* Delete item from the startq list. */
+			dlist_del(&sd->startq_link);
+			sd->info = STARTQ_DATA_NOT_IN_LIST;
 
-		ipl_enable();
-		do_thread_wake_force(t);
-		ipl_disable();
+			/* Check if thread sleeping. It was added inside interruption and
+			 * we could not check this at that time. */
+			if (thread_state_sleeping(t->state)) {
+				/* Enable interrupts, wake up thread and disable again. */
+				ipl_enable();
+				do_thread_wake_force(t);
+				ipl_disable();
+			}
+		} else {
+			/* Item is a sleepq, get it. */
+			sq = dlist_entry(startq.next, struct sleepq, startq_data.startq_link);
+
+			/* Should we wake up all sleepq? */
+			if (sd->info == STARTQ_WAKE_SLEEPQ_ALL) {
+				wake_all = 1;
+			} else {
+				wake_all = 0;
+			}
+
+			/* Delete item from the startq list. */
+			dlist_del(&sd->startq_link);
+			sd->info = STARTQ_DATA_NOT_IN_LIST;
+
+			/* Enable interrupts, wake up sleepq and disable again. */
+			ipl_enable();
+			do_sleepq_wake(sq, wake_all);
+			ipl_disable();
+		}
 	}
 }
 
 void startq_enqueue_wake(struct sleepq *sq, int wake_all) {
 	ipl_t ipl = ipl_save();
 	{
-		if (slist_alone(sq, startq_link)) {
-			slist_add_first(sq, &startq.sleepq_wake, startq_link);
-			sq->startq_wake_all = wake_all;
+		/* Add if sleepq is not in startq list. */
+		if (sq->startq_data.info == STARTQ_DATA_NOT_IN_LIST) {
+			/* Add sleepq to the end of the list. */
+			dlist_add_prev(&sq->startq_data.startq_link, &startq);
+
+			/* Set up startq data info. */
+			if (wake_all) {
+				sq->startq_data.info = STARTQ_WAKE_SLEEPQ_ALL;
+			} else {
+				sq->startq_data.info = STARTQ_WAKE_SLEEPQ_ONE;
+			}
 		} else {
-			sq->startq_wake_all |= wake_all;
+			/* Already in list. Checks if we should wake all sleepq. */
+			if (wake_all) {
+				sq->startq_data.info = STARTQ_WAKE_SLEEPQ_ALL;
+			}
 		}
 	}
 	ipl_restore(ipl);
@@ -74,8 +103,13 @@ void startq_enqueue_wake(struct sleepq *sq, int wake_all) {
 void startq_enqueue_wake_force(struct thread *t) {
 	ipl_t ipl = ipl_save();
 	{
-		if (slist_alone(t, startq_link)) {
-			slist_add_first(t, &startq.thread_force_wake, startq_link);
+		/* Add if thread is not in startq list. */
+		if (t->startq_data.info == STARTQ_DATA_NOT_IN_LIST) {
+			/* Add thread to the end of the list. */
+			dlist_add_prev(&t->startq_data.startq_link, &startq);
+
+			/* Set up startq data info. */
+			t->startq_data.info = STARTQ_WAKE_THREAD;
 		}
 	}
 	ipl_restore(ipl);

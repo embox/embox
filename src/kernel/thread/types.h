@@ -46,7 +46,7 @@ struct thread {
 	__thread_priority_t initial_priority; /**< Scheduling priority. */
 	__thread_priority_t priority;    /**< Current scheduling priority. */
 
-	struct slist_link startq_link;   /**< Resuming the thread from critical. */
+	struct startq_data startq_data;   /**< Resuming the thread from critical. */
 
 	union {
 		struct runq      *runq;      /**< For running/ready state. */
