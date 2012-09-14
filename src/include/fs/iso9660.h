@@ -59,7 +59,7 @@
 
 #pragma pack(push, 1)
 
-struct iso_volume_descriptor {
+typedef struct iso_volume_descriptor {
   unsigned char type                    [ISODCL(  1,   1)]; /* 711 */
   unsigned char id                      [ISODCL(  2,   6)];
   unsigned char version                 [ISODCL(  7,   7)]; /* 711 */
@@ -93,9 +93,9 @@ struct iso_volume_descriptor {
   unsigned char unused2                 [ISODCL(883, 883)];
   unsigned char application_data        [ISODCL(884, 1395)];
   unsigned char unused3                 [ISODCL(1396, 2048)];
-};
+} iso_volume_descriptor_t;
 
-struct iso_directory_record {
+typedef struct iso_directory_record {
   unsigned char length                  [ISODCL( 1,  1)]; /* 711 */
   unsigned char ext_attr_length         [ISODCL( 2,  2)]; /* 711 */
   unsigned char extent                  [ISODCL( 3, 10)]; /* 733 */
@@ -107,9 +107,9 @@ struct iso_directory_record {
   unsigned char volume_sequence_number  [ISODCL(29, 32)]; /* 723 */
   unsigned char name_len                [ISODCL(33, 33)]; /* 711 */
   unsigned char name                    [0];
-};
+} iso_directory_record_t;
 
-struct iso_extended_attributes {
+typedef struct iso_extended_attributes {
   unsigned char owner                   [ISODCL(  1,   4)]; /* 723 */
   unsigned char group                   [ISODCL(  5,   8)]; /* 723 */
   unsigned char perm                    [ISODCL(  9,  10)]; /* 9.5.3 */
@@ -126,7 +126,7 @@ struct iso_extended_attributes {
   unsigned char len_esc                 [ISODCL(182, 182)]; /* 711 */
   unsigned char reserved                [ISODCL(183, 246)];
   unsigned char len_au                  [ISODCL(247, 250)]; /* 723 */
-};
+} iso_extended_attributes_t;
 
 typedef struct iso_pathtable_record {
   unsigned char length;
@@ -197,7 +197,7 @@ typedef unsigned short wchar_t;
 #define __int64 long long
 typedef __int64 off64_t;
 
-struct cdfs {
+typedef struct cdfs {
 	dev_t devno;
 	int blks;
 	int volblks;
@@ -206,13 +206,13 @@ struct cdfs {
 	unsigned char *path_table_buffer;
 	struct iso_pathtable_record **path_table;
 	int path_table_records;
-};
+} cdfs_t;
 
-struct cdfs_file {
+typedef struct cdfs_file {
 	int extent;
 	int size;
 	time_t date;
-};
+} cdfs_file_t;
 
 #define VFS_LOCK_TIMEOUT        60000     /* Timeout for file system locks */
 
@@ -282,14 +282,14 @@ typedef struct buf {
 	char *data;
 } buf_t;
 
-struct direntry {
+typedef struct direntry {
 	ino_t ino;
 	unsigned int reclen;
 	unsigned int namelen;
 	char name[MAX_LENGTH_PATH_NAME];
-};
+} direntry_t;
 
-struct statfs  {
+typedef struct statfs  {
 	unsigned int bsize;        /* Fundamental file system block size */
 	unsigned int iosize;       /* Optimal transfer block size */
 	unsigned int blocks;       /* Total data blocks in file system */
@@ -300,7 +300,7 @@ struct statfs  {
 	char fstype[MAX_LENGTH_FILE_NAME];   /* File system type name */
 	char mntto[MAX_LENGTH_PATH_NAME];       /* Directory on which mounted */
 	char mntfrom[MAX_LENGTH_PATH_NAME];     /* Mounted file system */
-};
+} statfs_t;
 
 struct fsops {
 	unsigned long reentrant;
@@ -312,7 +312,7 @@ struct fsops {
 	int (*mount)(node_t *root_node);
 	int (*umount)(cdfs_fs_description_t *fs);
 
-	int (*statfs)(cdfs_fs_description_t *fs, struct statfs *buf);
+	int (*statfs)(cdfs_fs_description_t *fs, statfs_t *buf);
 
 	int (*open)(cdfs_file_description_t *filp, char *name);
 	int (*close)(cdfs_file_description_t *filp);
@@ -348,7 +348,7 @@ struct fsops {
 	int (*unlink)(cdfs_fs_description_t *fs, char *name);
 
 	int (*opendir)(cdfs_file_description_t *filp, char *name);
-	int (*readdir)(cdfs_file_description_t *filp, struct direntry *dirp, int count);
+	int (*readdir)(cdfs_file_description_t *filp, direntry_t *dirp, int count);
 };
 /*
 struct tm {

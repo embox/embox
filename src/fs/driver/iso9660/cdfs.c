@@ -71,6 +71,7 @@ POOL_DEF(cdfs_fs_pool, struct cdfs_fs_description, OPTION_GET(NUMBER,cdfs_descri
 POOL_DEF(cdfs_file_pool, struct cdfs_file_description, OPTION_GET(NUMBER,inode_quantity));
 
 static int cdfs_open(cdfs_file_description_t *filp, char *name);
+static int create_dir_entry (node_t *node);
 
 static int isonum_711(unsigned char *p) {
   return p[0];
@@ -85,7 +86,7 @@ static int isonum_733(unsigned char *p) {
 }
 
 static unsigned char num_buff;
-struct buf *get_buffer(dev_t devno, blkno_t blkno){
+buf_t *get_buffer(dev_t devno, blkno_t blkno){
 	buf_t *buf;
 
 	num_buff++;
@@ -99,7 +100,7 @@ struct buf *get_buffer(dev_t devno, blkno_t blkno){
 	return buf;
 }
 
-static int cdfs_fnmatch(struct cdfs *cdfs, char *fn1, int len1, char *fn2, int len2) {
+static int cdfs_fnmatch(cdfs_t *cdfs, char *fn1, int len1, char *fn2, int len2) {
 	wchar_t *wfn2;
 	int wlen2;
 
@@ -141,8 +142,8 @@ static int cdfs_fnmatch(struct cdfs *cdfs, char *fn1, int len1, char *fn2, int l
 	}
 }
 
-static int cdfs_read_path_table(struct cdfs *cdfs, struct iso_volume_descriptor *vd) {
-	struct buf *buf;
+static int cdfs_read_path_table(cdfs_t *cdfs, iso_volume_descriptor_t *vd) {
+	buf_t *buf;
 	unsigned char *pt;
 	int ptblk;
 	int ptlen;
@@ -223,7 +224,7 @@ static int cdfs_read_path_table(struct cdfs *cdfs, struct iso_volume_descriptor 
 	return 0;
 }
 
-static int cdfs_find_dir(struct cdfs *cdfs, char *name, int len) {
+static int cdfs_find_dir(cdfs_t *cdfs, char *name, int len) {
 	char *p;
 	int l;
 	int dir = 2;
@@ -285,10 +286,10 @@ static int cdfs_find_dir(struct cdfs *cdfs, char *name, int len) {
 	return -ENOENT;
 }
 
-static int cdfs_find_in_dir(struct cdfs *cdfs, int dir, char *name, int len, struct buf **dirbuf, struct iso_directory_record **dirrec) {
-	struct buf *buf;
+static int cdfs_find_in_dir(cdfs_t *cdfs, int dir, char *name, int len, buf_t **dirbuf, iso_directory_record_t **dirrec) {
+	buf_t *buf;
 	char *p;
-	struct iso_directory_record *rec;
+	iso_directory_record_t *rec;
 	int blk;
 	int left;
 	int reclen;
@@ -303,7 +304,7 @@ static int cdfs_find_in_dir(struct cdfs *cdfs, int dir, char *name, int len, str
 
 	/* Get length of directory from the first record */
 	p = buf->data;
-	rec = (struct iso_directory_record *) p;
+	rec = (iso_directory_record_t *) p;
 	left = isonum_733(rec->size);
 
 	/* Find named entry in directory */
@@ -324,7 +325,7 @@ static int cdfs_find_in_dir(struct cdfs *cdfs, int dir, char *name, int len, str
 		}
 
 		/* Check for match */
-		rec = (struct iso_directory_record *) p;
+		rec = (iso_directory_record_t *) p;
 		reclen = isonum_711(rec->length);
 		namelen = isonum_711(rec->name_len);
 
@@ -349,12 +350,12 @@ static int cdfs_find_in_dir(struct cdfs *cdfs, int dir, char *name, int len, str
 	return -ENOENT;
 }
 
-static int cdfs_find_file(struct cdfs *cdfs, char *name, int len,
-				struct buf **buf, struct iso_directory_record **rec) {
+static int cdfs_find_file(cdfs_t *cdfs, char *name, int len,
+				buf_t **buf, iso_directory_record_t **rec) {
 	int dir;
 	int split;
 	int n;
-	struct iso_volume_descriptor *vd;
+	iso_volume_descriptor_t *vd;
 
 	/* If root get directory record from volume descriptor */
 	if (len == 0) {
@@ -362,8 +363,8 @@ static int cdfs_find_file(struct cdfs *cdfs, char *name, int len,
 		if (!*buf) {
 			return -EIO;
 		}
-		vd = (struct iso_volume_descriptor *) (*buf)->data;
-		*rec = (struct iso_directory_record *) vd->root_directory_record;
+		vd = (iso_volume_descriptor_t *) (*buf)->data;
+		*rec = (iso_directory_record_t *) vd->root_directory_record;
 		return 0;
 	}
 
@@ -409,12 +410,12 @@ static time_t cdfs_isodate(unsigned char *date)
 //int cdfs_mount(cdfs_fs_description_t *fs)
 int cdfs_mount(node_t *root_node)
 {
-	struct cdfs *cdfs;
+	cdfs_t *cdfs;
 	dev_t devno;
 	int rc;
 	int blk;
-	struct buf *buf;
-	struct iso_volume_descriptor *vd;
+	buf_t *buf;
+	iso_volume_descriptor_t *vd;
 	int type;
 	unsigned char *esc;
 	cdfs_fs_description_t *fs;
@@ -446,8 +447,8 @@ int cdfs_mount(node_t *root_node)
 	}
 
 	/* Allocate file system */
-	cdfs = (struct cdfs *) malloc(sizeof(struct cdfs));
-	memset(cdfs, 0, sizeof(struct cdfs));
+	cdfs = (cdfs_t *) malloc(sizeof(cdfs_t));
+	memset(cdfs, 0, sizeof(cdfs_t));
 	cdfs->devno = devno;
 	cdfs->blks = dev_ioctl(devno, IOCTL_GETDEVSIZE, NULL, 0);
 	if (cdfs->blks < 0) {
@@ -469,7 +470,7 @@ int cdfs_mount(node_t *root_node)
 		if (!buf) {
 			return -EIO;
 		}
-		vd = (struct iso_volume_descriptor *) buf->data;
+		vd = (iso_volume_descriptor_t *) buf->data;
 
 		type = isonum_711(vd->type);
 		esc = vd->escape_sequences;
@@ -505,7 +506,7 @@ int cdfs_mount(node_t *root_node)
 	if (!buf) {
 		return -EIO;
 	}
-	vd = (struct iso_volume_descriptor *) buf->data;
+	vd = (iso_volume_descriptor_t *) buf->data;
 
 	cdfs->volblks = isonum_733(vd->volume_space_size);
 
@@ -516,6 +517,7 @@ int cdfs_mount(node_t *root_node)
 
 	/* Device mounted successfully */
 	fs->data = cdfs;
+	create_dir_entry (root_node);
 
 	cdfs_open((cdfs_file_description_t *) root_node->fd,
 			"/PROGRAM/ACRONIS/DE.ICO");
@@ -524,7 +526,7 @@ int cdfs_mount(node_t *root_node)
 
 
 int cdfs_umount(cdfs_fs_description_t *fs) {
-	struct cdfs *cdfs = (struct cdfs *) fs->data;
+	cdfs_t *cdfs = (cdfs_t *) fs->data;
 
 	/* Free cache */
 	/*if (cdfs->cache) free_buffer_pool(cdfs->cache); */
@@ -544,8 +546,8 @@ int cdfs_umount(cdfs_fs_description_t *fs) {
 	return 0;
 }
 
-int cdfs_statfs(cdfs_fs_description_t *fs, struct statfs *buf) {
-	struct cdfs *cdfs = (struct cdfs *) fs->data;
+int cdfs_statfs(cdfs_fs_description_t *fs, statfs_t *buf) {
+	cdfs_t *cdfs = (cdfs_t *) fs->data;
 
 	buf->bsize = CDFS_BLOCKSIZE;
 	buf->iosize = CDFS_BLOCKSIZE;
@@ -559,10 +561,10 @@ int cdfs_statfs(cdfs_fs_description_t *fs, struct statfs *buf) {
 }
 
 static int cdfs_open(cdfs_file_description_t *filp, char *name) {
-	struct cdfs *cdfs = (struct cdfs *) filp->fs->data;
-	struct iso_directory_record *rec;
-	struct cdfs_file *cdfile;
-	struct buf *buf;
+	cdfs_t *cdfs = (cdfs_t *) filp->fs->data;
+	iso_directory_record_t *rec;
+	cdfs_file_t *cdfile;
+	buf_t *buf;
 	time_t date;
 	int size;
 	int extent;
@@ -586,7 +588,7 @@ static int cdfs_open(cdfs_file_description_t *filp, char *name) {
 	size = isonum_733(rec->size);
 
 	/* Allocate and initialize file block */
-	cdfile = (struct cdfs_file *) malloc(sizeof(struct cdfs_file));
+	cdfile = (cdfs_file_t *) malloc(sizeof(cdfs_file_t));
 	if (!cdfile) {
 		return -ENOMEM;
 	}
@@ -604,7 +606,7 @@ static int cdfs_open(cdfs_file_description_t *filp, char *name) {
 }
 
 static int cdfs_close(cdfs_file_description_t *filp) {
-	struct cdfs_file *cdfile = (struct cdfs_file *) filp->data;
+	cdfs_file_t *cdfile = (cdfs_file_t *) filp->data;
 
 	if (cdfile) {
 		free(cdfile);
@@ -617,8 +619,8 @@ static int cdfs_fsync(cdfs_file_description_t *filp) {
 }
 
 static int cdfs_read(cdfs_file_description_t *filp, void *data, size_t size, off64_t pos) {
-	struct cdfs_file *cdfile = (struct cdfs_file *) filp->data;
-	struct cdfs *cdfs = (struct cdfs *) filp->fs->data;
+	cdfs_file_t *cdfile = (cdfs_file_t *) filp->data;
+	cdfs_t *cdfs = (cdfs_t *) filp->fs->data;
 	size_t read;
 	size_t count;
 	size_t left;
@@ -626,7 +628,7 @@ static int cdfs_read(cdfs_file_description_t *filp, void *data, size_t size, off
 	int iblock;
 	int start;
 	int blk;
-	struct buf *buf;
+	buf_t *buf;
 
 	read = 0;
 	p = (char *) data;
@@ -679,7 +681,7 @@ static off64_t cdfs_tell(cdfs_file_description_t *filp) {
 }
 
 static off64_t cdfs_lseek(cdfs_file_description_t *filp, off64_t offset, int origin) {
-	struct cdfs_file *cdfile = (struct cdfs_file *) filp->data;
+	cdfs_file_t *cdfile = (cdfs_file_t *) filp->data;
 
 	switch (origin) {
 	case SEEK_END:
@@ -700,11 +702,11 @@ static off64_t cdfs_lseek(cdfs_file_description_t *filp, off64_t offset, int ori
 }
 
 static int cdfs_fstat(cdfs_file_description_t *filp, stat_t *buffer) {
-	struct cdfs_file *cdfile = (struct cdfs_file *) filp->data;
-	struct cdfs *cdfs = (struct cdfs *) filp->fs->data;
+	cdfs_file_t *cdfile = (cdfs_file_t *) filp->data;
+	cdfs_t *cdfs = (cdfs_t *) filp->fs->data;
 
 	if (buffer) {
-		memset(buffer, 0, sizeof(struct stat));
+		memset(buffer, 0, sizeof(stat_t));
 
 		if (filp->flags & F_DIR) {
 			buffer->st_mode = S_IFDIR | S_IRUSR | S_IXUSR |
@@ -726,9 +728,9 @@ static int cdfs_fstat(cdfs_file_description_t *filp, stat_t *buffer) {
 }
 
 static int cdfs_stat(cdfs_fs_description_t *fs, char *name, stat_t *buffer) {
-	struct cdfs *cdfs = (struct cdfs *) fs->data;
-	struct iso_directory_record *rec;
-	struct buf *buf;
+	cdfs_t *cdfs = (cdfs_t *) fs->data;
+	iso_directory_record_t *rec;
+	buf_t *buf;
 	int rc;
 	int size;
 
@@ -740,7 +742,7 @@ static int cdfs_stat(cdfs_fs_description_t *fs, char *name, stat_t *buffer) {
 	size = isonum_733(rec->size);
 
 	if (buffer) {
-		memset(buffer, 0, sizeof(struct stat));
+		memset(buffer, 0, sizeof(stat_t));
 
 		if (rec->flags[0] & 2) {
 			buffer->st_mode = S_IFDIR | S_IRUSR | S_IXUSR |
@@ -763,10 +765,10 @@ static int cdfs_stat(cdfs_fs_description_t *fs, char *name, stat_t *buffer) {
 }
 
 static int cdfs_opendir(cdfs_file_description_t *filp, char *name) {
-	struct cdfs *cdfs = (struct cdfs *) filp->fs->data;
-	struct iso_directory_record *rec;
-	struct cdfs_file *cdfile;
-	struct buf *buf;
+	cdfs_t *cdfs = (cdfs_t *) filp->fs->data;
+	iso_directory_record_t *rec;
+	cdfs_file_t *cdfile;
+	buf_t *buf;
 	time_t date;
 	int size;
 	int extent;
@@ -789,7 +791,7 @@ static int cdfs_opendir(cdfs_file_description_t *filp, char *name) {
 	}
 
 	/* Allocate and initialize file block */
-	cdfile = (struct cdfs_file *) malloc(sizeof(struct cdfs_file));
+	cdfile = (cdfs_file_t *) malloc(sizeof(cdfs_file_t));
 	if (!cdfile) {
 		return -ENOMEM;
 	}
@@ -803,11 +805,11 @@ static int cdfs_opendir(cdfs_file_description_t *filp, char *name) {
 	return 0;
 }
 
-static int cdfs_readdir(cdfs_file_description_t *filp, struct direntry *dirp, int count) {
-	struct cdfs_file *cdfile = (struct cdfs_file *) filp->data;
-	struct cdfs *cdfs = (struct cdfs *) filp->fs->data;
-	struct iso_directory_record *rec;
-	struct buf *buf;
+static int cdfs_readdir(cdfs_file_description_t *filp, direntry_t *dirp, int count) {
+	cdfs_file_t *cdfile = (cdfs_file_t *) filp->data;
+	cdfs_t *cdfs = (cdfs_t *) filp->fs->data;
+	iso_directory_record_t *rec;
+	buf_t *buf;
 	int namelen;
 	int reclen;
 	int blkleft;
@@ -831,7 +833,7 @@ static int cdfs_readdir(cdfs_file_description_t *filp, struct direntry *dirp, in
 
 	/* Locate directory record */
   recagain:
-	rec = (struct iso_directory_record *) (buf->data +
+	rec = (iso_directory_record_t *) (buf->data +
 			(int) filp->pos % CDFS_BLOCKSIZE);
 	reclen = isonum_711(rec->length);
 	namelen = isonum_711(rec->name_len);
@@ -851,7 +853,7 @@ static int cdfs_readdir(cdfs_file_description_t *filp, struct direntry *dirp, in
 
 	/* Get info from directory record */
 	dirp->ino = isonum_733(rec->extent);
-	dirp->reclen = sizeof(struct direntry) - MAX_LENGTH_PATH_NAME + namelen + 1;
+	dirp->reclen = sizeof(direntry_t) - MAX_LENGTH_PATH_NAME + namelen + 1;
 	if (cdfs->joliet) {
 		namelen /= 2;
 		wname = (wchar_t *) rec->name;
@@ -962,6 +964,7 @@ struct fsops cdfsops = {
 	cdfs_opendir,
 	cdfs_readdir
 };
+
 
 void init_cdfs(void) {
 	/*register_filesystem("cdfs", &cdfsops); */
@@ -1104,4 +1107,54 @@ static int cdfsfs_mount(void *par) {
 	dir_node->fd = (void *) fd;
 
 	return cdfs_mount(dir_node);
+}
+
+static int create_dir_entry (node_t *node) {
+		int n;
+		iso_pathtable_record_t *pathrec;
+		cdfs_file_description_t *fd, *parents_fd;
+		cdfs_t *cdfs;
+		node_t *parent_node;
+		int namelen;
+		int reclen;
+		char path[MAX_LENGTH_PATH_NAME];
+		char name[MAX_LENGTH_PATH_NAME];
+
+		parent_node = node;
+		parents_fd = (cdfs_file_description_t *) parent_node->fd;
+		cdfs = parents_fd->fs->data;
+
+		memcpy(path, parents_fd->fs->mntto, strlen(parents_fd->fs->mntto));
+
+		/* Setup pointers into path table buffer */
+		//for (n = 1; n < cdfs->path_table_records; n++) {
+		for (n = 1; n < 40; n++) {
+			pathrec = cdfs->path_table[n];
+			namelen = pathrec->length;
+			reclen = sizeof(iso_pathtable_record_t) + namelen + (namelen & 1);
+
+			memcpy(name, pathrec->name, namelen);
+			name[namelen] = 0;
+			/* root dir name empty */
+			if(0 == name[0]) {
+				continue;
+			}
+			if(NULL == (node = vfs_add_path (name, parent_node))) {
+				//return -ENOMEM;
+				continue;
+			}
+
+			if(NULL == (fd = pool_alloc(&cdfs_file_pool))) {
+				return -ENOMEM;
+			}
+			fd->fs = parents_fd->fs;
+			node->fs_type = &cdfsfs_drv;
+			node->dev_type = parent_node->dev_type;
+			node->dev_attr = parent_node->dev_attr;
+			node->fd = (void *)fd;
+
+			//pathrec->extent;
+		}
+
+	return 0;
 }
