@@ -57,6 +57,8 @@
 #define ISO_VD_PARTITION    3
 #define ISO_VD_END          255
 
+#pragma pack(push, 1)
+
 struct iso_volume_descriptor {
   unsigned char type                    [ISODCL(  1,   1)]; /* 711 */
   unsigned char id                      [ISODCL(  2,   6)];
@@ -126,13 +128,20 @@ struct iso_extended_attributes {
   unsigned char len_au                  [ISODCL(247, 250)]; /* 723 */
 };
 
-struct iso_pathtable_record {
+typedef struct iso_pathtable_record {
   unsigned char length;
   unsigned char ext_attr_length;
   unsigned long extent;
-  unsigned short parent;
+  unsigned short int parent;
   char name[0];
-};
+} iso_pathtable_record_t;
+
+#pragma pack(pop)
+/*
+ * This option is necessary to deal with align by type
+ * sizeof(iso_pathtable_record_t) returned 12
+ */
+#define PATHTABLE_SIZE  8
 
 #define CDFS_DEFAULT_CACHESIZE 128
 #define CDFS_BLOCKSIZE         2048
@@ -245,7 +254,7 @@ struct cdfs_file {
 typedef struct cdfs_fs_description {
 	char *name;
 	dev_t devnum;
-	node_t *dev_node;
+	//node_t *dev_node;
 	char mntfrom[MAX_LENGTH_PATH_NAME];
 	char mntto[MAX_LENGTH_PATH_NAME];
 	struct fsops *ops;
@@ -300,7 +309,7 @@ struct fsops {
 	void (*unlockfs)(cdfs_fs_description_t *fs);
 
 	int (*mkfs)(char *devname, char *opts);
-	int (*mount)(cdfs_fs_description_t *fs);
+	int (*mount)(node_t *root_node);
 	int (*umount)(cdfs_fs_description_t *fs);
 
 	int (*statfs)(cdfs_fs_description_t *fs, struct statfs *buf);

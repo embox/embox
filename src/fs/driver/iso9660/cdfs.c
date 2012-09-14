@@ -62,7 +62,7 @@
 
 
 buf_t b_buffer;
-char sector_buff [3][CDFS_BLOCKSIZE];
+char sector_buff [10][CDFS_BLOCKSIZE];
 
 /* cdfs filesystem description pool */
 POOL_DEF(cdfs_fs_pool, struct cdfs_fs_description, OPTION_GET(NUMBER,cdfs_descriptor_quantity));
@@ -91,7 +91,7 @@ struct buf *get_buffer(dev_t devno, blkno_t blkno){
 	num_buff++;
 
 	buf = &b_buffer;
-	buf->data = (char *) &sector_buff[num_buff%3][0];
+	buf->data = (char *) &sector_buff[num_buff%10][0];
 	buf->blkno = blkno;
 
 	dev_read(devno, buf->data, CDFS_BLOCKSIZE, buf->blkno);
@@ -148,9 +148,10 @@ static int cdfs_read_path_table(struct cdfs *cdfs, struct iso_volume_descriptor 
 	int ptlen;
 	int ptpos;
 	int n;
-	struct iso_pathtable_record *pathrec;
+	iso_pathtable_record_t *pathrec;
 	int namelen;
 	int reclen;
+	char name[128];
 
 	/* Determine size and location of path table and allocate buffer */
 	ptlen = isonum_733(vd->path_table_size);
@@ -185,20 +186,24 @@ static int cdfs_read_path_table(struct cdfs *cdfs, struct iso_volume_descriptor 
 	pt = cdfs->path_table_buffer;
 	n = 1;
 	while (pt < cdfs->path_table_buffer + ptlen) {
-		pathrec = (struct iso_pathtable_record *) pt;
+		pathrec = (iso_pathtable_record_t *) pt;
 		namelen = pathrec->length;
-		reclen = sizeof(struct iso_pathtable_record) + namelen + (namelen & 1);
+		reclen = sizeof(iso_pathtable_record_t) + namelen + (namelen & 1);
 
 		n++;
 		pt += reclen;
+		memcpy(name, (char *)(pathrec + sizeof(iso_pathtable_record_t)), namelen);
+	}
+	if((0 == name[0]) && (0 == name[1])) {
+		name[0] = 33;
 	}
 
 	cdfs->path_table_records = n;
 
 	/* Allocate path table */
-	cdfs->path_table = (struct iso_pathtable_record **)
+	cdfs->path_table = (iso_pathtable_record_t **)
 							malloc(cdfs->path_table_records *
-							sizeof(struct iso_pathtable_record **));
+							sizeof(iso_pathtable_record_t **));
 	if (!cdfs->path_table) {
 		return -ENOMEM;
 	}
@@ -207,9 +212,9 @@ static int cdfs_read_path_table(struct cdfs *cdfs, struct iso_volume_descriptor 
 	/* Setup pointers into path table buffer */
 	pt = cdfs->path_table_buffer;
 	for (n = 1; n < cdfs->path_table_records; n++) {
-		pathrec = (struct iso_pathtable_record *) pt;
+		pathrec = (iso_pathtable_record_t *) pt;
 		namelen = pathrec->length;
-		reclen = sizeof(struct iso_pathtable_record) + namelen + (namelen & 1);
+		reclen = sizeof(iso_pathtable_record_t) + namelen + (namelen & 1);
 
 		cdfs->path_table[n] = pathrec;
 		pt += reclen;
@@ -247,8 +252,8 @@ static int cdfs_find_dir(struct cdfs *cdfs, char *name, int len) {
 			if (cdfs->path_table[dir]->parent != parent) {
 				return -ENOENT;
 			}
-			if (cdfs_fnmatch(cdfs, name, l, cdfs->path_table[dir]->name,
-										  cdfs->path_table[dir]->length)) {
+			if (cdfs_fnmatch(cdfs, name, l,
+				cdfs->path_table[dir]->name, cdfs->path_table[dir]->length)) {
 				break;
 			}
 			dir++;
@@ -401,7 +406,8 @@ static time_t cdfs_isodate(unsigned char *date)
 	return (time_t) &tm; /*mktime(&tm); */
 }
 
-int cdfs_mount(cdfs_fs_description_t *fs)
+//int cdfs_mount(cdfs_fs_description_t *fs)
+int cdfs_mount(node_t *root_node)
 {
 	struct cdfs *cdfs;
 	dev_t devno;
@@ -411,6 +417,9 @@ int cdfs_mount(cdfs_fs_description_t *fs)
 	struct iso_volume_descriptor *vd;
 	int type;
 	unsigned char *esc;
+	cdfs_fs_description_t *fs;
+
+	fs = ((cdfs_file_description_t *) root_node->fd)->fs;
 
 	devno = fs->devnum;
 
@@ -508,10 +517,11 @@ int cdfs_mount(cdfs_fs_description_t *fs)
 	/* Device mounted successfully */
 	fs->data = cdfs;
 
-	cdfs_open((cdfs_file_description_t *) fs->dev_node->fd,
-			"/RECOVERY MANAGER/f11.cfg");
+	cdfs_open((cdfs_file_description_t *) root_node->fd,
+			"/PROGRAM/ACRONIS/DE.ICO");
 	return 0;
 }
+
 
 int cdfs_umount(cdfs_fs_description_t *fs) {
 	struct cdfs *cdfs = (struct cdfs *) fs->data;
@@ -1093,5 +1103,5 @@ static int cdfsfs_mount(void *par) {
 	dir_node->dev_type = dev_node->dev_type;
 	dir_node->fd = (void *) fd;
 
-	return cdfs_mount(fd->fs);
+	return cdfs_mount(dir_node);
 }
