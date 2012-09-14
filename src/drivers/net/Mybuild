@@ -41,3 +41,13 @@ module xemaclite {
 	depends embox.net.dev
 	depends embox.net.entry_api
 }
+
+
+module greth {
+	source "greth.c"
+	depends embox.net.skbuff
+	depends embox.net.eth
+	depends embox.kernel.irq
+	depends embox.net.dev
+	depends embox.net.entry_api
+}
