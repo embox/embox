@@ -13,7 +13,7 @@ module core {
 
 module sched {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "sched.c"
+	source "sched.c", "startq.c"
 
 	depends embox.kernel.timer.timer_api // for timeslices support
 	depends embox.arch.context // context_switch

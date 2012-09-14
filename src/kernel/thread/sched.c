@@ -28,7 +28,6 @@
 #include <kernel/task.h>
 #include <hal/context.h>
 #include <hal/ipl.h>
-#include <util/slist.h>
 
 #include <profiler/tracing/trace.h>
 
@@ -43,12 +42,13 @@
 
 EMBOX_UNIT(unit_init, unit_fini);
 
-static void startq_flush(void);
-static void startq_enqueue_wake(struct sleepq *sq, int wake_all);
-static void startq_enqueue_wake_force(struct thread *t);
+extern void startq_flush(void);
+extern void startq_enqueue_wake(struct sleepq *sq, int wake_all);
+extern void startq_enqueue_wake_force(struct thread *t);
 
-static int do_thread_wake_force(struct thread *thread);
-static void do_event_wake(struct sleepq *sq, int wake_all);
+int do_thread_wake_force(struct thread *thread);
+void do_event_wake(struct sleepq *sq, int wake_all);
+
 static void do_sleep_locked(struct sleepq *sq);
 
 static void __sched_wake(struct sleepq *sq, int wake_all);
@@ -133,12 +133,13 @@ void sched_wake_one(struct sleepq *sq) {
 void __sched_wake(struct sleepq *sq, int wake_all) {
 	if (in_harder_critical()) {
 		startq_enqueue_wake(sq, wake_all);
+		critical_request_dispatch(&sched_critical);
 	} else {
 		do_event_wake(sq, wake_all);
 	}
 }
 
-static void do_event_wake(struct sleepq *sq, int wake_all) {
+void do_event_wake(struct sleepq *sq, int wake_all) {
 	assert(!in_harder_critical());
 
 	sched_lock();
@@ -153,6 +154,7 @@ static int thread_wake_force(struct thread *thread, int sleep_result) {
 
 	if (in_harder_critical()) {
 		startq_enqueue_wake_force(thread);
+		critical_request_dispatch(&sched_critical);
 	} else {
 		return do_thread_wake_force(thread);
 	}
@@ -160,7 +162,7 @@ static int thread_wake_force(struct thread *thread, int sleep_result) {
 	return 0;
 }
 
-static int do_thread_wake_force(struct thread *thread) {
+int do_thread_wake_force(struct thread *thread) {
 	assert(!in_harder_critical());
 	return sleepq_wake_thread(&rq, thread->sleepq, thread);
 }
@@ -351,73 +353,6 @@ static void sched_switch(void) {
 
 out:
 	sched_unlock_noswitch();
-}
-
-struct startq {
-	struct slist sleepq_wake;
-	struct slist thread_force_wake;
-};
-
-static struct startq startq = {
-	.sleepq_wake = SLIST_INIT(&startq.sleepq_wake),
-	.thread_force_wake = SLIST_INIT(&startq.thread_force_wake),
-
-};
-
-/**
- * Called outside any interrupt handler as part of critical dispatcher
- * with IRQs disabled and the scheduler locked.
- */
-static void startq_flush(void) {
-	struct thread *t;
-	struct sleepq *sq;
-
-	assert(in_sched_locked());
-	assert(!in_harder_critical());
-
-	while ((sq = slist_remove_first(&startq.sleepq_wake,
-			struct sleepq, startq_link))) {
-		int wake_all = sq->startq_wake_all;
-
-		ipl_enable();
-		do_event_wake(sq, wake_all);
-		ipl_disable();
-	}
-
-	while ((t = slist_remove_first(&startq.thread_force_wake,
-			struct thread, startq_link))) {
-
-		ipl_enable();
-		do_thread_wake_force(t);
-		ipl_disable();
-	}
-}
-
-static void startq_enqueue_wake(struct sleepq *sq, int wake_all) {
-	ipl_t ipl = ipl_save();
-	{
-		if (slist_alone(sq, startq_link)) {
-			slist_add_first(sq, &startq.sleepq_wake, startq_link);
-			sq->startq_wake_all = wake_all;
-		} else {
-			sq->startq_wake_all |= wake_all;
-		}
-	}
-	ipl_restore(ipl);
-
-	critical_request_dispatch(&sched_critical);
-}
-
-static void startq_enqueue_wake_force(struct thread *t) {
-	ipl_t ipl = ipl_save();
-	{
-		if (slist_alone(t, startq_link)) {
-			slist_add_first(t, &startq.thread_force_wake, startq_link);
-		}
-	}
-	ipl_restore(ipl);
-
-	critical_request_dispatch(&sched_critical);
 }
 
 static void sched_tick(sys_timer_t *timer, void *param) {
