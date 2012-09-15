@@ -7,16 +7,15 @@
  */
 
 #include <embox/cmd.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <framework/mod/api.h>
 
 EMBOX_CMD(exec);
 
-#if 0
 static void print_usage(void) {
-	printf("Usage: lsmod\n");
+	printf("Usage: lsmod [-qh]\n");
 }
-#endif
 
 static void mod_print(const struct mod *mod) {
 	printf("%s.%s ", mod->package->name, mod->name);
@@ -25,22 +24,42 @@ static void mod_print(const struct mod *mod) {
 
 static int exec(int argc, char **argv) {
 	const struct mod *mod, *dep;
+	int quiet = 0;
+
+	int opt;
+	getopt_init();
+	while (-1 != (opt = getopt(argc, argv, "qh"))) {
+		switch (opt) {
+		case 'q':
+			quiet = 1;
+			break;
+		case 'h':
+			print_usage();
+			return 0;
+		case '?':
+			break;
+		default:
+			return -1;
+		}
+	}
 
 	mod_foreach(mod) {
 		printf("\n");
 		mod_print(mod);
 
-		printf("\n\t-> ");
-		mod_foreach_requires(dep, mod) {
-			mod_print(dep);
-		}
+		if (!quiet) {
+			printf("\n\t-> ");
+			mod_foreach_requires(dep, mod) {
+				mod_print(dep);
+			}
 
-		printf("\n\t<- ");
-		mod_foreach_provides(dep, mod) {
-			mod_print(dep);
-		}
+			printf("\n\t<- ");
+			mod_foreach_provides(dep, mod) {
+				mod_print(dep);
+			}
 
-		printf("\n");
+			printf("\n");
+		}
 	}
 
 	return 0;
