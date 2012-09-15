@@ -9,6 +9,7 @@
 #include <embox/test.h>
 #include <kernel/irq.h>
 #include <hal/ipl.h>
+#include <drivers/irqctrl.h>
 
 EMBOX_TEST_SUITE("Interrupt priority level tests");
 
