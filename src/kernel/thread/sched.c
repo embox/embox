@@ -182,11 +182,6 @@ static void do_sleep_locked(struct sleepq *sq) {
 	post_switch_if(1);
 }
 
-struct sched_sleep_data {
-	struct event *timeout_event;
-	struct thread *thread;
-};
-
 static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	struct thread *thread = (struct thread *) sleep_data;
 	post_switch_if(thread_wake_force(thread, SCHED_SLEEP_TIMEOUT));
