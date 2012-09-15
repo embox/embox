@@ -1,5 +1,6 @@
 /.dep.inc
 /.dropbox
+/.sublime-*
 /.tmp
 /GNUmakefile
 /build
