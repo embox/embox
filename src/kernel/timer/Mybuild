@@ -27,7 +27,7 @@ module head_timer extends timer_api {
 module sleep extends sleep_api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "sleep.c"
-	depends timer_api, embox.kernel.thread.core
+	depends timer_api, embox.kernel.thread.core, embox.kernel.thread.event
 }
 
 module sleep_nosched extends sleep_api {
