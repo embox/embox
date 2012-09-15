@@ -59,22 +59,41 @@ struct greth_bd {
 	uint32_t status;
 	uint32_t address;
 };
+
 #define GRETH_RX_DESC_QUANTITY    0x8
+#define GRETH_TX_DESC_QUANTITY    0x1
 
-static char tx_descriptor[0x600] __attribute__((aligned(0x400));
-static char tx_descriptor[0x600][GRETH_RX_DESC_QUANTITY] __attribute__((aligned(0x400));
+/* we must align buffer by 1k, for aligned each buffer item (frame if 0x600 byte)
+ * we need set item site to 0x800 byte
+ */
+static char tx_buff[GRETH_TX_DESC_QUANTITY][0x800] __attribute__((aligned(0x400)));
+static char rx_buff[GRETH_RX_DESC_QUANTITY][0x800] __attribute__((aligned(0x400)));
 
-static struct greth_bd tx_bd_base[1];
-static struct greth_bd rx_bd_base[0x10];
+static struct greth_bd tx_bd_array[GRETH_TX_DESC_QUANTITY];
+static struct greth_bd rx_bd_array[GRETH_RX_DESC_QUANTITY];
 
 static void greth_bd_setup(struct greth_bd *bd) {
 
 }
 
 static void greth_rings_init(void) {
+	int i;
+
 	/* Initialize descriptor base address */
-	REG_STORE(&dev_regs->tx_desc_p, (uint32_t)tx_bd_base);
-	REG_STORE(&dev_regs->rx_desc_p, (uint32_t)rx_bd_base);
+	REG_STORE(&dev_regs->tx_desc_p, (uint32_t)tx_bd_array);
+	REG_STORE(&dev_regs->rx_desc_p, (uint32_t)rx_bd_array);
+
+	/* initialize tx ring buffer descriptors */
+	for(i = 0; i < ARRAY_SIZE(tx_bd_array); i ++) {
+		tx_bd_array[i].address = (uint32_t)tx_buff[i];
+		greth_bd_setup(&tx_bd_array[i]);
+	}
+
+	/* initialize rx ring buffer descriptors */
+	for(i = 0; i < ARRAY_SIZE(rx_bd_array); i ++) {
+		rx_bd_array[i].address = (uint32_t)rx_buff[i];
+		greth_bd_setup(&tx_bd_array[i]);
+	}
 }
 
 static int greth_xmit(sk_buff_t *skb, struct net_device *dev) {
