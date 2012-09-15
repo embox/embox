@@ -70,7 +70,7 @@ inline void add_dev_to_ven(const amba_registry_device_info_t * dev,
 	list_add((struct list_head *) entry, &ven_entry->dev_list);
 }
 
-static int __init init(void) {
+static int init(void) {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(vendors_table); i++) {
 		(&vendors_pool[i])->ven_info
