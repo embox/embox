@@ -11,7 +11,11 @@
 #include <asm/entry.h>
 #include <assert.h>
 
+#include <embox/unit.h>
+
 #include <string.h>
+
+EMBOX_UNIT_INIT(mips_exception_init);
 
 void mips_c_exception_handler(pt_regs_t *regs) {
 	regs->pc += 4;
@@ -34,7 +38,7 @@ static void mips_setup_exc_table(void) {
 }
 
 /* setup correct exception table and enable exceptions */
-void mips_exception_init(void) {
+static int mips_exception_init(void) {
 	unsigned int tmp;
 
 	/* clear BEV bit */
@@ -56,6 +60,8 @@ void mips_exception_init(void) {
 	tmp = mips_read_c0_status();
 	tmp &= ~(ST0_ERL);
 	mips_write_c0_status(tmp);
+
+	return 0;
 }
 
 void mips_exception_setup(mips_exception_type_t type, second_exception_handler_t handler) {
