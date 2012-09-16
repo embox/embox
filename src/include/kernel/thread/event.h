@@ -10,14 +10,21 @@
 #ifndef KERNEL_THREAD_EVENT_H_
 #define KERNEL_THREAD_EVENT_H_
 
-#include __impl_x(kernel/thread/event_impl.h)
+#include <kernel/thread/sched_strategy.h>
 
-struct event;
+struct event {
+	struct sleepq sleepq;
+	const char *name;
+};
 
 extern void event_init(struct event *event, const char *name);
+extern int event_wait(struct event *event, unsigned long timeout);
+extern void event_notify(struct event *event);
 
-//extern const char *event_name(struct event *event);
-
-extern void event_fire(struct event *event);
+#if 0
+extern const char *event_name(struct event *event);
+extern void event_notify_one(struct event *event);
+#endif
 
 #endif /* KERNEL_THREAD_EVENT_H_ */
+

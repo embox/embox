@@ -14,3 +14,8 @@ module idx_desc_test {
 	depends embox.kernel.task.api
 	depends embox.framework.LibFramework
 }
+
+module pipe_test {
+	source "pipe_test.c"
+	depends embox.compat.posix.LibPosixIdx
+}

@@ -10,8 +10,10 @@
 #define KERNEL_THREAD_SCHED_STRATEGY_PRIORITY_BASED_H_
 
 #include <lib/list.h>
+#include <util/slist.h>
 #include <util/prioq.h>
 
+#include <kernel/thread/startq.h>
 #include <kernel/thread/sched_priority.h>
 
 struct thread;
@@ -27,6 +29,7 @@ struct runq {
 
 struct sleepq {
 	struct prioq pq;
+	struct startq_data startq_data;
 };
 
 static inline void sched_strategy_init(struct sched_strategy_data *s) {
@@ -35,6 +38,7 @@ static inline void sched_strategy_init(struct sched_strategy_data *s) {
 
 static inline void sleepq_init(struct sleepq *sq) {
 	prioq_init(&sq->pq);
+	startq_init(&sq->startq_data);
 }
 
 static inline struct thread *runq_current(struct runq *rq) {

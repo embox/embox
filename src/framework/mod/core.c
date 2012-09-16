@@ -31,6 +31,7 @@
 ARRAY_SPREAD_DEF_TERMINATED(const struct mod *, __mod_registry, NULL);
 
 static int mod_traverse(const struct mod *mod, bool op);
+static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool recursive_safe);
 static bool mod_traverse_needed(const struct mod *mod, bool op);
 static int do_enable(const struct mod *mod);
 static int do_disable(const struct mod *mod);
@@ -39,18 +40,27 @@ bool mod_is_running(const struct mod *mod) {
 	return mod && mod_flag_tst(mod, MOD_FLAG_ENABLED);
 }
 
-int mod_enable(const struct mod *mod) {
+int mod_enable_rec_safe(const struct mod *mod, bool recursive_safe) {
 	if (!mod) {
 		return -EINVAL;
 	}
-	return mod_traverse(mod, true);
+	return mod_traverse_rec_safe(mod, true, recursive_safe);
+}
+
+
+int mod_enable(const struct mod *mod) {
+	return mod_enable_rec_safe(mod, false);
+}
+
+int mod_disable_rec_safe(const struct mod *mod, bool recursive_safe) {
+	if (!mod) {
+		return -EINVAL;
+	}
+	return mod_traverse_rec_safe(mod, false, recursive_safe);
 }
 
 int mod_disable(const struct mod *mod) {
-	if (!mod) {
-		return -EINVAL;
-	}
-	return mod_traverse(mod, false);
+	return mod_disable_rec_safe(mod, false);
 }
 
 int mod_enable_nodep(const struct mod *mod) {
@@ -106,7 +116,7 @@ static int mod_traverse_do(const struct mod **mods, bool op, bool soft) {
 	return 0;
 }
 
-static int mod_traverse(const struct mod *mod, bool op) {
+static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool recursive_safe) {
 	const struct mod **deps = op ? mod->requires : mod->provides;
 	const struct mod **after_deps = mod->after_deps;
 	int ret;
@@ -115,8 +125,14 @@ static int mod_traverse(const struct mod *mod, bool op) {
 		return 0;
 	}
 
-	assert(0 == mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS) &&
-			"Recursive mod traversing");
+	if (!recursive_safe) {
+		assert(0 == mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS) &&
+				"Recursive mod traversing");
+	} else {
+		if (mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS)) {
+			return 0;
+		}
+	}
 
 	mod_flag_tgl(mod, MOD_FLAG_OPINPROGRESS);
 
@@ -140,6 +156,11 @@ static int mod_traverse(const struct mod *mod, bool op) {
 
 	return 0;
 }
+
+static int mod_traverse(const struct mod *mod, bool op) {
+	return mod_traverse_rec_safe(mod, op, false);
+}
+
 
 static inline const struct mod_ops *mod_ops_deref(const struct mod *mod) {
 	const struct mod_info *info = mod->info;

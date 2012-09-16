@@ -4,7 +4,9 @@ package embox.cmd
 	help = "Lists mod info emitted by EMBuild",
 	man = '''
 		NAME
-			lsmod
+			lsmod [-q]
+		OPTIONS
+			-q  - quiet output (no dependencies)
 		AUTHORS
 			Eldar Abusalimov
 	''')

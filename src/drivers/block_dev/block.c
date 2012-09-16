@@ -198,4 +198,3 @@ int dev_ioctl(dev_t devno, int cmd, void *args, size_t size) {
 
 	return dev->driver->ioctl(dev, cmd, args, size);
 }
-

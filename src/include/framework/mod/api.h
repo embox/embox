@@ -32,6 +32,8 @@ struct mod_package;
  * the mods on which the given one depends will also be enabled.
  * If the mod has already been enabled then nothing special is done and this
  * function returns zero.
+ * Althoug, when module has been not enabled, but it depends on modules that are in
+ * enabling state, it produce error since it may be caused by cyclic dependecies.
  *
  * @param mod
  *   The mod to enable.
@@ -46,6 +48,21 @@ struct mod_package;
  *   dependencies.
  */
 extern int mod_enable(const struct mod *mod);
+
+/**
+ * @brief Enables specified #mod resolving it's dependencies. If #recursive_safe
+ * flag is set, founded possible cyclic dependendicies ignored and not generating
+ * errors
+ *
+ * @param mod
+ *   The mod to enable
+ * @param recursive_safe
+ *   Cyclic detection flag. When set cyclic detection not generating error.
+ *
+ * @return
+ *   Same as #mod_enable
+ */
+extern int mod_enable_rec_safe(const struct mod *mod, bool recursive_safe);
 
 /**
  * Disables the specified #mod resolving its dependencies. This implies that
@@ -66,6 +83,21 @@ extern int mod_enable(const struct mod *mod);
  *   dependencies.
  */
 extern int mod_disable(const struct mod *mod);
+
+/**
+ * @brief Disable specified #mod resolving it's dependencies. If #recursive_safe
+ * flag is set, founded possible cyclic dependendicies ignored and not generating
+ * errors
+ *
+ * @param mod
+ *   The mod to enable
+ * @param recursive_safe
+ *   Cyclic detection flag. When set cyclic detection not generating error.
+ *
+ * @return
+ *   Same as #mod_disable
+ */
+extern int mod_disable_rec_safe(const struct mod *mod, bool recursive_safe);
 
 /**
  * The weak version of #mod_enable().

@@ -19,8 +19,8 @@ TEST_CASE("Write/read single element to ring buffer") {
 	int rd = 5;
 	int wr = 0;
 
-	ring_buff_enque(&test_rbuff, &rd);
-	ring_buff_deque(&test_rbuff, &wr);
+	ring_buff_enque(&test_rbuff, &rd, 1);
+	ring_buff_deque(&test_rbuff, &wr, 1);
 
 	test_assert_equal(wr, rd);
 }
@@ -30,11 +30,11 @@ TEST_CASE("Test capacity of buffer") {
 	int wr = 0;
 	int cnt = BUFF_LENGTH;
 
-	while(-1 != ring_buff_enque(&test_rbuff, &rd)) {
+	while(-1 != ring_buff_enque(&test_rbuff, &rd, 1)) {
 		cnt --;
 	}
 	test_assert_zero(cnt);
-	while(-1 != ring_buff_deque(&test_rbuff, &wr)) {
+	while(-1 != ring_buff_deque(&test_rbuff, &wr, 1)) {
 		cnt ++;
 	}
 

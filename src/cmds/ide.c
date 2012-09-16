@@ -24,7 +24,7 @@ static void print_drive (slot_t *ide) {
 	for(int i  = 0; i < 4; i++) {
 		printf("\nIDE Channel %d-%d: ", i/2, i%2);
 
-		if(i%2){
+		if(i%2) {
 			printf(" Slave  Disk:");
 		}
 		else {

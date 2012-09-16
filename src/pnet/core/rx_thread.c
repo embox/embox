@@ -40,7 +40,7 @@ static void *pnet_rx_thread_hnd(void *args) {
 			thread_suspend(thread_self());
 			continue;
 		}
-		ring_buff_deque(buf, &pack);
+		ring_buff_deque(buf, &pack, 1);
 		pnet_process(pack);
 	}
 	return NULL;
@@ -71,7 +71,7 @@ int pnet_rx_thread_add(struct pnet_pack *pack) {
 	uint32_t prio;
 
 	prio = pack->priority;
-	ring_buff_enque(&c_bufs[prio], &pack);
+	ring_buff_enque(&c_bufs[prio], &pack, 1);
 	thread_resume(pnet_rx_threads[prio]);
 
 #ifdef PNET_THREAD_DEBUG

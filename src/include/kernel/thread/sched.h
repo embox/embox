@@ -41,21 +41,38 @@ struct event;
  */
 extern int sched_init(struct thread *current, struct thread *idle);
 
+/**
+ * Obtains a pointer to the currently executing thread.
+ *
+ * @return
+ *   The currently executing thread.
+ */
 extern struct thread *sched_current(void);
 
-extern void sched_set_priority(struct thread *thread,
-		__thread_priority_t new_priority);
+/**
+ * Makes active thread and adds thread to the queue of ready to executing
+ * threads.
+ *
+ * @param thread
+ *   Thread which will be added.
+ */
+extern void sched_start(struct thread *thread);
 
 /**
- * Makes the current thread sleep until the specified @a event occurs.
- * Execution is suspended until #sched_wake() or #sched_wake_one() is called on
- * the @a event.
+ * Makes exit thread and removes thread from scheduler.
+ */
+extern void sched_finish(struct thread *thread);
+
+/**
+ * Makes sleep the current thread and puts it in sleeping queue.
+ * Execution is suspended until sched_wake_one() or sched_wake_all()
+ * is called.
  *
  * <b>Must not</b> be called with the scheduler @link #sched_lock()
  * locked @endlink or within any other critical context.
  *
- * @param event
- *   The event to sleep on.
+ * @param sleepq
+ *   Sleeping queue which will be containing thread.
  * @param timeout
  *   Max waiting time of event.
  * @return
@@ -65,7 +82,69 @@ extern void sched_set_priority(struct thread *thread,
  * @retval SCHED_TIMEOUT_HAPPENED
  *   Timeout happened.
  */
-extern int sched_sleep(struct event *event, unsigned long timeout);
+extern int sched_sleep(struct sleepq *sleepq, unsigned long timeout);
+
+/**
+ * Does the same as #sched_sleep() but assumes that the scheduler is
+ * @link #sched_lock() locked @endlink once. However it still must not be
+ * called inside any other critical section or with the scheduler locked more
+ * than once.
+ *
+ * @param sleepq
+ *   Sleeping queue which will be containing thread.
+ * @param timeout
+ *   Max waiting time of event.
+ * @return
+ *   Operation result.
+ * @retval 0
+ *   On success. TODO sleep cancellation is not implemented.
+ * @retval SCHED_TIMEOUT_HAPPENED
+ *   Timeout happened.
+ */
+extern int sched_sleep_locked(struct sleepq *sleepq, unsigned long timeout);
+
+/**
+ * Wakes up one of the threads contained in the given sleeping queue.
+ *
+ * @param sleepq
+ *   The sleeping queue.
+ */
+extern void sched_wake_one(struct sleepq *sleepq);
+
+/**
+ * Wakes up all threads contained in the given sleeping queue.
+ *
+ * @param sleepq
+ *   The sleeping queue.
+ */
+extern void sched_wake_all(struct sleepq *sleepq);
+
+/**
+ * Moves the current thread to the end of the queue for its priority.
+ */
+extern void sched_yield(void);
+
+/**
+ * Changes priority of the thread.
+ *
+ * @param thread
+ *   Thread to operate with.
+ * @param new_priority
+ *   New priority of the the thread.
+ */
+extern void sched_set_priority(struct thread *thread,
+		__thread_priority_t new_priority);
+
+/**
+ * Changes scheduling priority of the thread.
+ *
+ * @param thread
+ *   Thread to operate with.
+ * @param new_priority
+ *   New scheduling priority of the the thread.
+ */
+extern int sched_change_scheduling_priority(struct thread *t,
+		__thread_priority_t new_priority);
 
 /**
  * @brief Makes thread to run regardless of it's state
@@ -80,53 +159,5 @@ extern int sched_sleep(struct event *event, unsigned long timeout);
  */
 extern int sched_setrun(struct thread *thread);
 
-/**
- * Wakes up all threads that sleep on the given @a event.
- *
- * @param event
- *   The occurred event.
- */
-extern void sched_wake(struct event *event);
-
-/**
- * Wakes up one of the threads sleeping on the given @a event.
- *
- * @param event
- *   The occurred event.
- */
-extern void sched_wake_one(struct event *event);
-
-/**
- * Moves the current thread to the end of the queue for its priority.
- */
-extern void sched_yield(void);
-
-extern void sched_finish(struct thread *thread);
-
-extern void sched_start(struct thread *thread);
-
-
-extern int sched_change_scheduling_priority(struct thread *t,
-		__thread_priority_t new);
-
-/**
- * Does the same as #sched_sleep() but assumes that the scheduler is
- * @link #sched_lock() locked @endlink once. However it still must not be
- * called inside any other critical section or with the scheduler locked more
- * than once.
- *
- * @param event
- *   The event to sleep on.
- * @param timeout
- *   Max waiting time of event.
- * @return
- *   Operation result.
- * @retval 0
- *   On success. TODO sleep cancellation is not implemented.
- * @retval SCHED_TIMEOUT_HAPPENED
- *   Timeout happened.
- */
-extern int sched_sleep_locked(struct event *event, unsigned long timeout);
-
-
 #endif /* KERNEL_THREAD_SCHED_H_ */
+

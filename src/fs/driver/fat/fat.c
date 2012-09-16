@@ -67,8 +67,8 @@ static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
 		_mode = O_RDONLY;
 	}
 
-	fatfs_set_path (path, nod);
-	cut_mount_dir(path, fd->p_fs_dsc->root_name);
+	set_path ((char *) path, nod);
+	cut_mount_dir((char *) path, (char *) fd->fs->root_name);
 
 	if(DFS_OK == fat_open_file(fd, (uint8_t *)path, _mode, sector_buff)) {
 		return desc;
@@ -192,7 +192,7 @@ static int fatfs_format(void *path) {
 	fs_des->devnum = *((dev_t *)nod->dev_attr);
 	strcpy((char *) fs_des->root_name, "\0");
 
-	fd->p_fs_dsc = fs_des;
+	fd->fs = fs_des;
 	nod->fs_type = &fatfs_drv;
 	nod->file_info = (void *) &fatfs_fop;
 	nod->fd = (void *)fd;
@@ -221,22 +221,22 @@ static int fatfs_mount(void *par) {
 	/* If dev_node created, but not attached to the filesystem driver */
 	if (NULL == (dev_fd = (fat_file_description_t *) dev_node->fd)) {
 		if((NULL == (dev_fd = pool_alloc(&fat_file_pool))) ||
-				(NULL == (dev_fd->p_fs_dsc = pool_alloc(&fat_fs_pool)))) {
+				(NULL == (dev_fd->fs = pool_alloc(&fat_fs_pool)))) {
 			return -ENOMEM;
 		}
 		dev_node->fd = dev_fd;
-		dev_fd->p_fs_dsc->devnum = *((dev_t *)dev_node->dev_attr);
+		dev_fd->fs->devnum = *((dev_t *)dev_node->dev_attr);
 		dev_node->file_info = (void *) &fatfs_fop;
 	}
 
-	strcpy((char *) dev_fd->p_fs_dsc->root_name, params->dir);
+	strcpy((char *) dev_fd->fs->root_name, params->dir);
 
 	if(NULL == (fd = pool_alloc(&fat_file_pool))) {
 		return -ENOMEM;
 	}
 
-	fd->p_fs_dsc = dev_fd->p_fs_dsc;
-	//fd->p_fs_dsc->devnum = dev_node->dev_attr;
+	fd->fs = dev_fd->fs;
+	//fd->fs->devnum = dev_node->dev_attr;
 	dir_node->fs_type = &fatfs_drv;
 	dir_node->dev_type = dev_node->dev_type;
 	dir_node->fd = (void *) fd;
@@ -279,7 +279,7 @@ static int fatfs_create(void *par) {
 		if(NULL == (fd = pool_alloc(&fat_file_pool))) {
 			return -ENOMEM;
 		}
-		fd->p_fs_dsc = parents_fd->p_fs_dsc;
+		fd->fs = parents_fd->fs;
 		node->fs_type = &fatfs_drv;
 		node->dev_type = parents_node->dev_type;
 		node->dev_attr = parents_node->dev_attr;
@@ -311,7 +311,7 @@ static int fatfs_delete(const char *fname) {
 	}
 	fd = (fat_file_description_t *)nod->fd;
 
-	fatfs_set_path ((uint8_t *) path, nod);
+	set_path (path, nod);
 
 	/* need delete "." and ".." node for directory */
 	if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
@@ -328,7 +328,7 @@ static int fatfs_delete(const char *fname) {
 	}
 
 	/* remove the root name to give a name to fat filesystem name*/
-	cut_mount_dir((uint8_t *) path, fd->p_fs_dsc->root_name);
+	cut_mount_dir(path, (char *) fd->fs->root_name);
 	if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
 		if(fat_unlike_directory(fd, (uint8_t *) path, (uint8_t *) sector_buff)) {
 			return -1;
@@ -344,7 +344,7 @@ static int fatfs_delete(const char *fname) {
 
 	/* delete filesystem descriptor when delete root dir*/
 	if(0 == *path) {
-		pool_free(&fat_fs_pool, fd->p_fs_dsc);
+		pool_free(&fat_fs_pool, fd->fs);
 	}
 	vfs_del_leaf(nod);
 	return 0;
@@ -394,7 +394,7 @@ int fatfs_partition(void *fdes) {
 	lbr.sig_aa = 0xAA;
 	memcpy(lbr.ebpb.ebpb.system + 8, bootcode, 130);
 
-	num_sect = device(fd->p_fs_dsc->devnum)->size / bytepersec;
+	num_sect = device(fd->fs->devnum)->size / bytepersec;
 	if (0xFFFF > num_sect)	{
 		lbr.bpb.sectors_s_l = (uint8_t)(0x00000FF & num_sect);
 		lbr.bpb.sectors_s_h = (uint8_t)(0x00000FF & (num_sect >> 8));
@@ -502,7 +502,7 @@ static uint32_t fat_get_vol_info(void *fd,
 
 	fdsc = (fat_file_description_t *) fd;
 
-	volinfo = &fdsc->p_fs_dsc->vi;
+	volinfo = &fdsc->fs->vi;
 	volinfo->startsector = startsector;
 
 	if(fat_read_sector(fd, p_scratchsector, startsector, 1)) {
@@ -624,7 +624,7 @@ uint32_t fat_get_fat_(void *fd, uint8_t *p_scratch,
 
 	fdsc = (fat_file_description_t *) fd;
 
-	volinfo = &fdsc->p_fs_dsc->vi;
+	volinfo = &fdsc->fs->vi;
 
 	if (volinfo->filesystem == FAT12) {
 		offset = cluster + (cluster / 2);
@@ -740,7 +740,7 @@ uint32_t fat_set_fat_(void *fd, uint8_t *p_scratch,
 
 	fdsc = (fat_file_description_t *) fd;
 
-	volinfo = &fdsc->p_fs_dsc->vi;
+	volinfo = &fdsc->fs->vi;
 
 	if (volinfo->filesystem == FAT12) {
 		offset = cluster + (cluster / 2);
@@ -925,7 +925,7 @@ uint32_t fat_get_free_fat_(void *fd, uint8_t *p_scratch) {
 
 	fdsc = (fat_file_description_t *) fd;
 
-	volinfo = &fdsc->p_fs_dsc->vi;
+	volinfo = &fdsc->fs->vi;
 
 	/*
 	 * Search starts at cluster 2, which is the first usable cluster
@@ -956,7 +956,7 @@ uint32_t fat_open_dir(void *fd,
 
 	fdsc = (fat_file_description_t *) fd;
 
-	volinfo = &fdsc->p_fs_dsc->vi;
+	volinfo = &fdsc->fs->vi;
 	/* Default behavior is a regular search for existing entries */
 	dirinfo->flags = 0;
 
@@ -1094,7 +1094,7 @@ uint32_t fat_get_next(void *fd,
 
 	fdsc = (fat_file_description_t *) fd;
 
-	volinfo = &fdsc->p_fs_dsc->vi;
+	volinfo = &fdsc->fs->vi;
 
 	/* Do we need to read the next sector of the directory? */
 	if (dirinfo->currententry >= SECTOR_SIZE / sizeof(dir_ent_t)) {
@@ -1209,7 +1209,7 @@ uint32_t fat_get_free_dir_ent(void *fd, uint8_t *path,
 
 	fdsc = (fat_file_description_t *) fd;
 
-	volinfo = &fdsc->p_fs_dsc->vi;
+	volinfo = &fdsc->fs->vi;
 
 	if (fat_open_dir(fd, path, di)) {
 		return DFS_NOTFOUND;
@@ -1312,7 +1312,7 @@ void fatfs_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
  * was created and can be used.
  */
 int fatfs_create_file(void *par) {
-	uint8_t tmppath[MAX_LENGTH_PATH_NAME];
+	char tmppath[MAX_LENGTH_PATH_NAME];
 	uint8_t filename[12];
 	dir_info_t di;
 	dir_ent_t de;
@@ -1329,7 +1329,7 @@ int fatfs_create_file(void *par) {
 	node = (node_t *) param->node;
 	fd = (fat_file_description_t *) node->fd;
 
-	volinfo = &fd->p_fs_dsc->vi;
+	volinfo = &fd->fs->vi;
 	fileinfo = &fd->fi;
 
 	memset(fileinfo, 0, sizeof(file_info_t));
@@ -1339,23 +1339,23 @@ int fatfs_create_file(void *par) {
 	strncpy((char *) tmppath,
 			(char *) param->path, MAX_LENGTH_PATH_NAME);
 
-	cut_mount_dir(tmppath, fd->p_fs_dsc->root_name);
+	cut_mount_dir(tmppath, (char *) fd->fs->root_name);
 
-	get_filename(tmppath, filename);
+	get_filename(tmppath, (char *) filename);
 
 	/*
 	 *  At this point, if our path was MYDIR/MYDIR2/FILE.EXT,
 	 *  filename = "FILE    EXT" and  tmppath = "MYDIR/MYDIR2".
 	 */
 	di.p_scratch = sector_buff;
-	if (fat_open_dir(fd, tmppath, &di)) {
+	if (fat_open_dir(fd, (uint8_t *) tmppath, &di)) {
 		return DFS_NOTFOUND;
 	}
 
 	while (!fat_get_next(fd, &di, &de));
 
 	/* Locate or create a directory entry for this file */
-	if (DFS_OK != fat_get_free_dir_ent(fd, tmppath, &di, &de)) {
+	if (DFS_OK != fat_get_free_dir_ent(fd, (uint8_t *) tmppath, &di, &de)) {
 		return DFS_ERRMISC;
 	}
 
@@ -1442,7 +1442,7 @@ int fatfs_create_file(void *par) {
  */
 uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 		uint8_t *p_scratch) {
-	uint8_t tmppath[MAX_LENGTH_PATH_NAME];
+	char tmppath[MAX_LENGTH_PATH_NAME];
 	uint8_t filename[12];
 	dir_info_t di;
 	dir_ent_t de;
@@ -1453,7 +1453,7 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 
 	fd = (fat_file_description_t *) fdsc;
 
-	volinfo = &fd->p_fs_dsc->vi;
+	volinfo = &fd->fs->vi;
 	fileinfo = &fd->fi;
 
 	memset(fileinfo, 0, sizeof(file_info_t));
@@ -1468,7 +1468,7 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 		return DFS_PATHLEN;
 	}
 
-	get_filename(tmppath, filename);
+	get_filename(tmppath, (char *) filename);
 
 	/*
 	 *  At this point, if our path was MYDIR/MYDIR2/FILE.EXT,
@@ -1476,7 +1476,7 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 	 */
 
 	di.p_scratch = p_scratch;
-	if (fat_open_dir(fd, tmppath, &di)) {
+	if (fat_open_dir(fd, (uint8_t *) tmppath, &di)) {
 		return DFS_NOTFOUND;
 	}
 
@@ -1751,7 +1751,7 @@ int fat_unlike_file(void *fdsc, uint8_t *path,
 	fat_file_description_t *fd;
 
 	fd = (fat_file_description_t *) fdsc;
-	volinfo = &fd->p_fs_dsc->vi;
+	volinfo = &fd->fs->vi;
 	fileinfo = &fd->fi;
 
 	cache = 0;
@@ -1797,7 +1797,7 @@ int fat_unlike_directory(void *fdsc, uint8_t *path,
 	fat_file_description_t *fd;
 
 	fd = (fat_file_description_t *) fdsc;
-	volinfo = &fd->p_fs_dsc->vi;
+	volinfo = &fd->fs->vi;
 	fileinfo = &fd->fi;
 
 	cache = 0;
@@ -2094,16 +2094,16 @@ int fat_read_sector(void *fdsc, uint8_t *buffer,
 	fd = (fat_file_description_t *) fdsc;
 
 	block_dev_op = (block_dev_operations_t *)
-			fd->p_fs_dsc->devnum->dev_node->dev_type;
+			fd->fs->devnum->dev_node->dev_type;
 	if(NULL != block_dev_op) {
-		block_dev_op->blk_read(fd->p_fs_dsc->devnum->dev_node->dev_attr,
+		block_dev_op->blk_read(fd->fs->devnum->dev_node->dev_attr,
 				(char *) buffer, sector, count);
 		return DFS_OK;
 	}
 	return DFS_ERRMISC;
 */
 	fd = (fat_file_description_t *) fdsc;
-	devnum = fd->p_fs_dsc->devnum;
+	devnum = fd->fs->devnum;
 	if(0 > dev_read(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
 	}
@@ -2121,15 +2121,15 @@ int fat_write_sector(void *fdsc, uint8_t *buffer,
 	fd = (fat_file_description_t *) fdsc;
 
 	block_dev_op = (block_dev_operations_t *)
-			fd->p_fs_dsc->devnum->dev_node->dev_type;
+			fd->fs->devnum->dev_node->dev_type;
 	if(NULL != block_dev_op) {
-		block_dev_op->blk_write(fd->p_fs_dsc->devnum->dev_node->dev_attr,
+		block_dev_op->blk_write(fd->fs->devnum->dev_node->dev_attr,
 				(char *) buffer, sector, count);
 		return DFS_OK;
 	}
 */
 	fd = (fat_file_description_t *) fdsc;
-	devnum = fd->p_fs_dsc->devnum;
+	devnum = fd->fs->devnum;
 	if(0 > dev_write(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
 	}
@@ -2151,7 +2151,7 @@ int fatfs_root_create(void *fdes) {
 	fd = (fat_file_description_t *) fdes;
 
 	fileinfo = &fd->fi;
-	volinfo = (p_vol_info_t) &fd->p_fs_dsc->vi;
+	volinfo = (p_vol_info_t) &fd->fs->vi;
 
 	/* Obtain pointer to first partition on first (only) unit */
 	pstart = fat_get_ptn_start(fd, sector_buff, 0, &pactive, &ptype, &psize);
@@ -2258,7 +2258,7 @@ static int fat_mount_files (void *dir_node) {
 			fat_dir_to_canonical(name, de.name, de.attr & ATTR_DIRECTORY);
 			/* Create node and file descriptor*/
 			memset(full_path, 0, sizeof(full_path));
-			strcpy(full_path, (const char *) root_fd->p_fs_dsc->root_name);
+			strcpy(full_path, (const char *) root_fd->fs->root_name);
 			strcat(full_path, "/");
 			strcat (full_path, (const char *) name);
 
@@ -2268,7 +2268,7 @@ static int fat_mount_files (void *dir_node) {
 			if(NULL == (fd = pool_alloc(&fat_file_pool))) {
 				return -ENOMEM;
 			}
-			fd->p_fs_dsc = root_fd->p_fs_dsc;
+			fd->fs = root_fd->fs;
 			node->fs_type = &fatfs_drv;
 			node->dev_type = root_node->dev_type;
 			node->dev_attr = root_node->dev_attr;
@@ -2312,7 +2312,7 @@ static int fat_create_dir_entry(char *dir_name) {
 	memset(rcv_buf, 0, sizeof(rcv_buf));
 	di.p_scratch = rcv_buf;
 
-	cut_mount_dir((uint8_t *) dir_name, parent_fd->p_fs_dsc->root_name);
+	cut_mount_dir(dir_name, (char *)parent_fd->fs->root_name);
 	if (fat_open_dir(parent_fd, (uint8_t *) dir_name, &di)) {
 		free(rcv_buf);
 		return -ENODEV;
@@ -2323,7 +2323,7 @@ static int fat_create_dir_entry(char *dir_name) {
 			fat_dir_to_canonical(name, de.name, de.attr & ATTR_DIRECTORY);
 			/* Create node and file descriptor*/
 			memset(full_path, 0, sizeof(full_path));
-			strcpy(full_path, (const char *) parent_fd->p_fs_dsc->root_name);
+			strcpy(full_path, (const char *) parent_fd->fs->root_name);
 			strcat(full_path, dir_name);
 			strcat(full_path, "/");
 			strncat (full_path, (const char *) name, MSDOS_NAME);
@@ -2334,7 +2334,7 @@ static int fat_create_dir_entry(char *dir_name) {
 			if(NULL == (fd = pool_alloc(&fat_file_pool))) {
 				return -ENOMEM;
 			}
-			fd->p_fs_dsc = parent_fd->p_fs_dsc;
+			fd->fs = parent_fd->fs;
 			node->fs_type = &fatfs_drv;
 			node->dev_type = parent_node->dev_type;
 			node->dev_attr = parent_node->dev_attr;

@@ -10,12 +10,18 @@ module boot extends embox.arch.boot {
 }
 module entry extends embox.arch.entry {
 	source "entry.S"
-	source "exception.c"
-	source "interrupt.c"
+	//source "exception.c"
+	//source "interrupt.c"
 }
 
-//module entry extends embox.arch.interrupt {
-//}
+module exception {
+	source "exception.c"
+}
+
+module interrupt {
+	source "interrupt.c"
+	depends exception
+}
 
 module arch {
 	source "arch.c"

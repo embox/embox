@@ -29,9 +29,14 @@ static module LibPosixIdx {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "isatty.c",
 		"select.c",
-		"dup.c"
+		"dup.c",
+		"pipe.c"
+
+	/* pipe options */
+	option number pipe_buffer_size=256
 
 	depends embox.kernel.task.api
+	depends embox.mem.heap_api
 	depends LibPosixFsApi
 	depends embox.util.LibUtil
 }

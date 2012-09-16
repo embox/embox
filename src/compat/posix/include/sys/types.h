@@ -61,6 +61,8 @@ typedef unsigned short gid_t;
 
 typedef unsigned int blkno_t;
 
+typedef unsigned int mode_t;
+
 
 #endif /* __ASSEMBLER__ */
 

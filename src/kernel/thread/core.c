@@ -156,11 +156,11 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->priority = t->initial_priority;
 
 	sched_strategy_init(&t->sched);
-	slist_link_init(&t->startq_link);
+	startq_init(&t->startq_data);
 
 	INIT_LIST_HEAD(&t->messages);
 	event_init(&t->msg_event, "msg");
-	event_init(&t->exit_event, "thread_exit");
+	sleepq_init(&t->exit_sleepq);
 	t->need_message = false;
 
 	t->running_time = 0;
@@ -191,7 +191,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 		} else {
 			/* Thread is attached. Joining thread delete it.    */
 			current->run_ret = ret;
-			sched_wake_one(&current->exit_event);
+			sched_wake_one(&current->exit_sleepq);
 		}
 	}
 	sched_unlock();
@@ -214,9 +214,8 @@ int thread_join(struct thread *t, void **p_ret) {
 	{
 		if (!thread_state_exited(t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
-			/* Only one can join. TODO: rewrite it. */
-			assert(sleepq_empty(&t->exit_event.sleepq));
-			sched_sleep_locked(&t->exit_event, SCHED_TIMEOUT_INFINITE);
+			assert(sleepq_empty(&t->exit_sleepq));
+			sched_sleep_locked(&t->exit_sleepq, SCHED_TIMEOUT_INFINITE);
 		}
 		join_ret = t->run_ret;
 		t->state = thread_state_do_detach(t->state);
@@ -308,8 +307,6 @@ int thread_set_priority(struct thread *t, thread_priority_t new) {
 
 	return 0;
 }
-
-void* thread_get_stack_start(struct thread const* t) { return t -> stack; }
 
 struct thread *thread_lookup(thread_id_t id) {
 	struct thread *t;

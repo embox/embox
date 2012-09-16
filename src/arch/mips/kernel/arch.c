@@ -12,7 +12,6 @@
 extern void mips_exception_init(void);
 
 void arch_init(void) {
-	/*mips_exception_init();*/
 }
 
 void arch_idle(void) {

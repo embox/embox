@@ -78,8 +78,8 @@ uint8_t *fat_dir_to_canonical(uint8_t *dest,
         return dst;
 }
 
-void get_filename(uint8_t *tmppath, uint8_t *filename) {
-	uint8_t *p;
+void get_filename(char *tmppath, char *filename) {
+	char *p;
 
 	p = tmppath;
 	/* strip leading path separators */
@@ -95,52 +95,13 @@ void get_filename(uint8_t *tmppath, uint8_t *filename) {
 	if (*p == DIR_SEPARATOR) {
 		p++;
 	}
-	fat_canonical_to_dir(filename, p);
+	fat_canonical_to_dir((uint8_t *) filename, (uint8_t *) p);
 	if (p > tmppath) {
 		p--;
 	}
 	if (*p == DIR_SEPARATOR || p == tmppath) {
 		*p = 0;
 	}
-}
-
-void cut_mount_dir(uint8_t *path, uint8_t *mount_dir) {
-		uint8_t *p;
-
-		p = path;
-		while (*mount_dir && (*mount_dir == *p)) {
-			mount_dir++;
-			p++;
-		}
-		strcpy((char *) path, (const char *) p);
-	}
-
-int fatfs_set_path (uint8_t *path, node_t *nod) {
-
-	node_t *parent, *node;
-	char buff[MAX_LENGTH_PATH_NAME];
-
-	*path = *buff= 0;
-	node = nod;
-	strcpy((char *) buff, (const char *) &node->name);
-
-	while(NULL !=
-			(parent = vfs_find_parent((const char *) &node->name, node))) {
-		strcpy((char *) path, (const char *) &parent->name);
-		if('/' != *path) {
-			strcat((char *) path, (const char *) "/");
-		}
-		strcat((char *) path, (const char *) buff);
-		node = parent;
-		strcpy((char *) buff, (const char *) path);
-	}
-
-	strncpy((char *) buff, (char *) path, MAX_LENGTH_PATH_NAME);
-	buff[MAX_LENGTH_PATH_NAME - 1] = 0;
-	if (strcmp((char *) path,(char *) buff)) {
-		return DFS_PATHLEN;
-	}
-	return DFS_OK;
 }
 
 void set_filetime(dir_ent_t *de) {

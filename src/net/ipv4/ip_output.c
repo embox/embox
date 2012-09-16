@@ -87,6 +87,9 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	int ret;
 	struct rt_entry *best_route;
 
+	if (sk == NULL)
+		goto xmit;
+
 	/* this is for ip_route */
 	skb->nh.iph->daddr = sk->daddr;
 
@@ -108,6 +111,7 @@ int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
 
 	build_ip_packet(sk, skb);
 
+xmit:
 	if (skb->len > skb->dev->mtu) {
 		if (!(skb->nh.iph->frag_off & htons(IP_DF))) {
 			return fragment_skb_and_send(skb, best_route);

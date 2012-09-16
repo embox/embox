@@ -39,27 +39,20 @@ static void print_stat(void) {
 		if (thread_state_running(s)) {
 			state = "running";
 			running++;
-		} else {
-			if (thread_state_sleeping(s)) {
+		} else if (thread_state_sleeping(s)) {
 				state = "sleeping";
 				sleeping++;
-			}
-			if (thread_state_suspended(s)) {
-				state = state ? "sleeping_suspended" : "suspended";
-				suspended++;
-			}
 		}
 
 		printf(" %4d%c %8d %18s\n", thread->id,
 				thread == thread_self() ? '*' : ' ', thread->priority, state);
 	}
 
-	total = running + sleeping + suspended;
+	total = running + sleeping;
 
 	printf("Total %d threads: \n"
 		"\t%d running\n"
-		"\t%d sleeping\n"
-		"\t%d suspended\n", total, running, sleeping, suspended);
+		"\t%d sleeping\n", total, running, sleeping);
 }
 
 static void kill_thread(thread_id_t thread_id) {

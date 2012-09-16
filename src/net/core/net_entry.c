@@ -23,5 +23,5 @@ int netif_rx(void *data) {
 	//skb_queue_push(&(dev->dev_queue), skb);
 	netif_rx_schedule(skb);
 
-	return NET_RX_DROP;
+	return NET_RX_SUCCESS;
 }

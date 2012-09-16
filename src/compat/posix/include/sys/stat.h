@@ -28,8 +28,6 @@ typedef struct stat {
 	unsigned  st_ctime;   /* time of last status change */
 } stat_t;
 
-typedef unsigned int mode_t;
-
 /**
  * Get file status (size, mode, mtime and so on)
  */

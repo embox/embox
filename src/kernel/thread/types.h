@@ -46,7 +46,7 @@ struct thread {
 	__thread_priority_t initial_priority; /**< Scheduling priority. */
 	__thread_priority_t priority;    /**< Current scheduling priority. */
 
-	struct slist_link startq_link;   /**< Resuming the thread from critical. */
+	struct startq_data startq_data;   /**< Resuming the thread from critical. */
 
 	union {
 		struct runq      *runq;      /**< For running/ready state. */
@@ -58,7 +58,7 @@ struct thread {
 	__thread_id_t     id;            /**< Unique identifier. */
 	struct list_head  thread_link;   /**< Linkage on all threads. */
 	int               suspend_count; /**< Depth of #thread_suspend() calls. */
-	struct event      exit_event;    /**< Thread exit event. */
+	struct sleepq     exit_sleepq;   /**< Thread exit event. */
 
 	bool              need_message;  /**< Waiting for message. */
 	struct list_head  messages;      /**< Messages sent to the thread. */

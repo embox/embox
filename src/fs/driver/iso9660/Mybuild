@@ -2,8 +2,8 @@ package embox.fs.driver
 
 module cdfs {
 	source "cdfs.c"
-	option number inode_quantity=264
-	option number nfs_descriptor_quantity=4
+	option number inode_quantity=1024
+	option number cdfs_descriptor_quantity=2
 
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.mem.page_api

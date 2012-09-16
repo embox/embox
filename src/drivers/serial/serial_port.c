@@ -180,7 +180,7 @@ static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
 	int ch;
 	if(uart_has_symbol()) {
 		ch = uart_getc();
-		ring_buff_enque(&dev_buff, &ch);
+		ring_buff_enque(&dev_buff, &ch, 1);
 	}
 
 	return 0;
@@ -212,7 +212,7 @@ static size_t dev_read(void *buff, size_t size, size_t count, void *file) {
 	}
 
 	for(;0 < count;--count) {
-		ring_buff_deque(&dev_buff, buff);
+		ring_buff_deque(&dev_buff, buff, 1);
 		buff = (void *)(((uint32_t)buff) + size);
 	}
 

@@ -29,7 +29,7 @@ static int priority_inherit(struct thread *t);
 static void priority_uninherit(struct thread *t);
 
 void mutex_init(struct mutex *m) {
-	event_init(&m->event, "mutex");
+	sleepq_init(&m->sq);
 	m->lock_count = 0;
 	m->holder = NULL;
 	m->priority = THREAD_PRIORITY_MIN;
@@ -49,7 +49,7 @@ void mutex_lock(struct mutex *m) {
 			/* We have to wait for a mutex to be released. */
 
 			priority_inherit(current);
-			sched_sleep_locked(&m->event, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
+			sched_sleep_locked(&m->sq, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
 		}
 
 		current->mutex_waiting = NULL;
@@ -112,7 +112,7 @@ void mutex_unlock(struct mutex *m) {
 		priority_uninherit(current);
 
 		m->holder = NULL;
-		sched_wake_one(&m->event);
+		sched_wake_one(&m->sq);
 	}
 	out: sched_unlock();
 }

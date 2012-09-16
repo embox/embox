@@ -8,14 +8,12 @@
  */
 
 #include <embox/unit.h>
-#include <err.h>
 #include <errno.h>
 #include <net/etherdevice.h>
 #include <net/if_arp.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
-#include <stdlib.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -66,7 +64,7 @@ static void loopback_setup(struct net_device *dev) {
 	dev->header_ops         = eth_get_header_ops();
 }
 
-struct net_device *loopback_dev;
+static struct net_device *loopback_dev;
 /**
  * The initialization of loopback device
  */
@@ -74,7 +72,6 @@ static int unit_init(void) {
 
 	loopback_dev = netdev_alloc("lo", &loopback_setup);
 	if (loopback_dev == NULL) {
-		LOG_ERROR("Can't allocate net device\n");
 		return -ENOMEM;
 	}
 

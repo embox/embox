@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 #include <kernel/thread/sync/sem.h>
-#include <unistd.h>
+#include <kernel/thread/api.h>
 
 static struct thread *low, *mid, *high;
 static sem_t s;
