@@ -13,15 +13,17 @@
 
 #include <types.h>
 
+#include <asm/io.h>
 #include <asm/regs.h>
 #include <asm/traps.h>
-#include <asm/io.h>
 #include <drivers/i8259.h>
+#include <drivers/irqctrl.h>
 #include <hal/arch.h>
 #include <hal/reg.h>
-#include <drivers/irqctrl.h>
 
 #include <embox/unit.h>
+
+#include "i8259_regs.h"
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -62,35 +64,40 @@ void apic_init(void) {
 	unit_init();
 }
 
-void irqctrl_enable(unsigned int int_nr) {
-	if (int_nr > 8) {
-		out8(in8(PIC2_DATA) & ~(1 << (int_nr - 8)), PIC2_DATA);
+void irqctrl_enable(unsigned int irq) {
+	if (irq < 8) {
+		out8(in8(PIC1_DATA) & ~(1 << irq), PIC1_DATA);
 	} else {
-		out8(in8(PIC1_DATA) & ~(1 << int_nr), PIC1_DATA);
+		out8(in8(PIC2_DATA) & ~(1 << (irq - 8)), PIC2_DATA);
 	}
 }
 
-void irqctrl_disable(unsigned int int_nr) {
-	if (int_nr > 8) {
-		out8(in8(PIC2_DATA) | (1 << (int_nr - 8)), PIC2_DATA);
+void irqctrl_disable(unsigned int irq) {
+	if (irq < 8) {
+		out8(in8(PIC1_DATA) | (1 << irq), PIC1_DATA);
 	} else {
-		out8(in8(PIC1_DATA) | (1 << int_nr), PIC1_DATA);
+		out8(in8(PIC2_DATA) | (1 << (irq - 8)), PIC2_DATA);
 	}
 }
 
-void irqctrl_force(unsigned int irq_num) {
+void irqctrl_force(unsigned int irq) {
 	// TODO Emm?.. -- Eldar
 }
 
 int i8259_irq_pending(unsigned int irq) {
-	int ret;
-	unsigned int mask = 1 << irq;
-
 	if (irq < 8) {
-		ret = in8(PIC1_COMMAND) & mask;
+		return in8(PIC1_COMMAND) & (1 << irq);
 	} else {
-		ret = in8(PIC2_COMMAND) & (mask >> 8);
+		return in8(PIC2_COMMAND) & (1 << (irq - 8));
 	}
+}
 
-	return ret;
+/* Sends an EOI (end of interrupt) signal to the PICs. */
+void i8259_send_eoi(unsigned int irq) {
+	if (irq >= 8) {
+		/* Send reset signal to slave. */
+		out8(NON_SPEC_EOI, PIC2_COMMAND);
+	}
+	/* Send reset signal to master. (As well as to slave, if necessary). */
+	out8(NON_SPEC_EOI, PIC1_COMMAND);
 }

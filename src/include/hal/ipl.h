@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Interrupt Priority Level
+ * @brief Interrupt Priority Level.
  *
  * @date 25.11.09
  * @author Eldar Abusalimov
@@ -9,15 +9,7 @@
 #ifndef HAL_IPL_H_
 #define HAL_IPL_H_
 
-#include <module/embox/arch/interrupt_api.h>
-
-#ifndef INTERRUPT_IMPLEMENTED
-// XXX don't like it...
-typedef unsigned int __ipl_t;
-static inline void ipl_init(void) { }
-static inline __ipl_t ipl_save(void) { return 0; }
-static inline void ipl_restore(__ipl_t ipl) { }
-#endif /* INTERRUPT_IMPLEMENTED */
+#include <module/embox/arch/interrupt.h>
 
 /**
  * The implementation-dependent type suitable to hold IPL flags.

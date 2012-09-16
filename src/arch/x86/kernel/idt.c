@@ -8,12 +8,15 @@
  * @author Nikolay Korotky
  */
 
+#include <string.h>
 #include <types.h>
+
+#include <asm/io.h>
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <kernel/panic.h>
-#include <asm/io.h>
-#include <string.h>
+
+#include <module/embox/arch/interrupt.h>
 
 #define IDT_SIZE 256
 
@@ -90,7 +93,7 @@ static void idt_init_except(void) {
 	IDT_EXCEPT(28); IDT_EXCEPT(29); IDT_EXCEPT(30); IDT_EXCEPT(31);
 }
 
-#ifdef INTERRUPT_IMPLEMENTED
+#ifndef INTERRUPT_STUB
 
 #define IDT_IRQ(nr) \
 	idt_set_gate(nr + 32, (unsigned) __FWD_DECL(irq##nr), 0x08, 0x8E)
@@ -106,7 +109,7 @@ static void idt_init_irq(void) {
 
 #else
 #define idt_init_irq() do { } while(0)
-#endif /* INTERRUPT_IMPLEMENTED */
+#endif /* INTERRUPT_STUB */
 
 void idt_init(void) {
 	static struct idt_pointer idt_ptr;

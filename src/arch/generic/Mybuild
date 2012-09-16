@@ -1,0 +1,6 @@
+package embox.arch.generic
+
+module interrupt_stub extends embox.arch.interrupt {
+	source "interrupt_stub.h"
+}
+

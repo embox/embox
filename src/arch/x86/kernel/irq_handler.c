@@ -6,34 +6,34 @@
  * @author Anton Bondarev
  */
 
+#include <assert.h>
 #include <types.h>
-#include <hal/reg.h>
-#include <kernel/irq.h>
+
+#include <asm/io.h>
 #include <asm/regs.h>
 #include <asm/traps.h>
-#include <asm/io.h>
 #include <drivers/irqctrl.h>
 #include <drivers/i8259.h>
-#include <assert.h>
+#include <hal/reg.h>
+#include <kernel/irq.h>
 
 void irq_handler(pt_regs_t *regs) {
-	int irqn = regs->trapno - 0x20;
-	/* Send an EOI (end of interrupt) signal to the PICs.
-	   If this interrupt involved the slave. */
-	irqctrl_disable(irqn);
-	ipl_enable();
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
+
 	critical_enter(CRITICAL_IRQ_HANDLER);
-	if (irqn > 7) {
-		/* Send reset signal to slave. */
-		out8(NON_SPEC_EOI, PIC2_COMMAND);
+	{
+		int irq = regs->trapno - 0x20;
+
+		irqctrl_disable(irq);
+		ipl_enable();
+
+		i8259_send_eoi(irq);
+
+		irq_dispatch(irq);
+
+		ipl_disable();
+		irqctrl_enable(irq);
 	}
-	/* Send reset signal to master. (As well as slave, if necessary). */
-	out8(NON_SPEC_EOI, PIC1_COMMAND);
-
-	irq_dispatch(irqn);
-
-	irqctrl_enable(irqn);
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
 }

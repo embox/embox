@@ -8,18 +8,17 @@
 
 #include <types.h>
 #include <errno.h>
+#include <stdio.h>
 
 #include <asm/io.h>
+#include <drivers/i8259.h>
+#include <embox/unit.h>
 #include <hal/clock.h>
-#include <drivers/irqctrl.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
-#include <util/array.h>
-#include <stdio.h>
-#include <embox/unit.h>
-
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
+#include <util/array.h>
 
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ0               0x0

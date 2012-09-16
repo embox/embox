@@ -8,17 +8,8 @@ abstract module cpu {
 }
 
 @Mandatory
-@DefaultImpl(no_interrupt)
-abstract module interrupt_api { }
-
-module no_interrupt extends interrupt_api {
-	// TODO make a stub for IPL.
-}
-
-abstract module interrupt extends interrupt_api {
-	@Generated(script="echo '#define INTERRUPT_IMPLEMENTED'")
-	source "interrupt_impl.h"
-}
+@DefaultImpl(embox.arch.generic.interrupt_stub)
+abstract module interrupt { }
 
 abstract module clock {
 }
