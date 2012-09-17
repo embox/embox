@@ -5,7 +5,7 @@ abstract module api { }
 module priority_based extends api {
 	source "priority_based.c", "priority_based.h"
 
-	option number SCHED_TICK_INTERVAL=100
+	option number tick_interval = 100
 }
 
 module trivial extends api {

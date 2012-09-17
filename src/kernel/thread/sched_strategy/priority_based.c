@@ -56,7 +56,8 @@ void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
 
 	/* Initializing tick timer. */
 	/* TODO: Error if not set timer and timer close. */
-	if (timer_set(&tick_timer, TIMER_PERIODIC, OPTION_GET(NUMBER, SCHED_TICK_INTERVAL), sched_tick, NULL)) {
+	if (timer_set(&tick_timer, TIMER_PERIODIC,
+			OPTION_GET(NUMBER, tick_interval), sched_tick, NULL)) {
 		return ;
 	}
 }
