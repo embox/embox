@@ -18,13 +18,13 @@
 
 struct startq_data {
 	struct dlist_head startq_link;
-	int               info;
-	int               sleep_res;      /* Used only for threads. */
+	int               in_list;
+	void              (*dequeue)(struct startq_data *startq_data);
+	/* This field is sleep result for thread and wake all for sleepq. */
+	int               data;
 };
 
-static inline void startq_init(struct startq_data *startq_data) {
-	dlist_head_init(&startq_data->startq_link);
-	startq_data->info = STARTQ_DATA_NOT_IN_LIST;
-}
+extern void startq_init_thread(struct startq_data *startq_data);
+extern void startq_init_sleepq(struct startq_data *startq_data);
 
 #endif /* KERNEL_THREAD_STARTQ_H_ */

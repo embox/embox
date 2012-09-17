@@ -156,7 +156,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->priority = t->initial_priority;
 
 	sched_strategy_init(&t->sched);
-	startq_init(&t->startq_data);
+	startq_init_thread(&t->startq_data);
 
 	INIT_LIST_HEAD(&t->messages);
 	event_init(&t->msg_event, "msg");
