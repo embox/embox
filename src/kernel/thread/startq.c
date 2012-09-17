@@ -13,8 +13,8 @@
 #include <util/dlist.h>
 #include "types.h"
 
-extern int do_thread_wake_force(struct thread *thread, int sleep_result);
-extern void do_sleepq_wake(struct sleepq *sleepq, int wake_all);
+extern void do_wake_thread(struct thread *thread, int sleep_result);
+extern void do_wake_sleepq(struct sleepq *sleepq, int wake_all);
 
 static DLIST_DEFINE(startq);
 
@@ -54,7 +54,7 @@ void startq_flush(void) {
 
 				/* Enable interrupts, wake up thread and disable again. */
 				ipl_enable();
-				do_thread_wake_force(t, sleep_res);
+				do_wake_thread(t, sleep_res);
 				ipl_disable();
 			}
 		} else {
@@ -74,7 +74,7 @@ void startq_flush(void) {
 
 			/* Enable interrupts, wake up sleepq and disable again. */
 			ipl_enable();
-			do_sleepq_wake(sq, wake_all);
+			do_wake_sleepq(sq, wake_all);
 			ipl_disable();
 		}
 	}
