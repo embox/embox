@@ -19,6 +19,7 @@
 struct startq_data {
 	struct dlist_head startq_link;
 	int               info;
+	int               sleep_res;      /* Used only for threads. */
 };
 
 static inline void startq_init(struct startq_data *startq_data) {

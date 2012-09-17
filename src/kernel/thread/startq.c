@@ -13,7 +13,7 @@
 #include <util/dlist.h>
 #include "types.h"
 
-extern int do_thread_wake_force(struct thread *thread);
+extern int do_thread_wake_force(struct thread *thread, int sleep_result);
 extern void do_sleepq_wake(struct sleepq *sleepq, int wake_all);
 
 static DLIST_DEFINE(startq);
@@ -27,6 +27,7 @@ void startq_flush(void) {
 	struct sleepq *sq;
 	struct startq_data *sd;
 	int wake_all;
+	int sleep_res;
 
 	assert(!critical_allows(CRITICAL_SCHED_LOCK));
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
@@ -48,9 +49,12 @@ void startq_flush(void) {
 			/* Check if thread sleeping. It was added inside interruption and
 			 * we could not check this at that time. */
 			if (thread_state_sleeping(t->state)) {
+				/* Remember sleep result before enabling interruption. */
+				sleep_res = sd->sleep_res;
+
 				/* Enable interrupts, wake up thread and disable again. */
 				ipl_enable();
-				do_thread_wake_force(t);
+				do_thread_wake_force(t, sleep_res);
 				ipl_disable();
 			}
 		} else {
@@ -76,7 +80,7 @@ void startq_flush(void) {
 	}
 }
 
-void startq_enqueue_wake(struct sleepq *sq, int wake_all) {
+void startq_enqueue_sleepq(struct sleepq *sq, int wake_all) {
 	ipl_t ipl = ipl_save();
 	{
 		/* Add if sleepq is not in startq list. */
@@ -100,7 +104,7 @@ void startq_enqueue_wake(struct sleepq *sq, int wake_all) {
 	ipl_restore(ipl);
 }
 
-void startq_enqueue_wake_force(struct thread *t) {
+void startq_enqueue_thread(struct thread *t, int sleep_result) {
 	ipl_t ipl = ipl_save();
 	{
 		/* Add if thread is not in startq list. */
@@ -110,6 +114,9 @@ void startq_enqueue_wake_force(struct thread *t) {
 
 			/* Set up startq data info. */
 			t->startq_data.info = STARTQ_WAKE_THREAD;
+
+			/* Remember sleep result. It will be set in sleepq_flush(). */
+			t->startq_data.sleep_res = sleep_result;
 		}
 	}
 	ipl_restore(ipl);
