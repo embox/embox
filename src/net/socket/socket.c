@@ -207,7 +207,7 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	if (res == -EINPROGRESS) {
 		/* wait until resolving destonation ip */
 		res_sleep = event_wait(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
-		if (res_sleep == SCHED_SLEEP_INTERRUPT) {
+		if (res_sleep == ENOERR) {
 			/* was resolved */
 			res = 1;
 		}

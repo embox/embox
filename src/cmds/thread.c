@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <time.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/state.h>
 
@@ -28,26 +29,29 @@ static void print_stat(void) {
 	int running, sleeping, suspended;
 	int total;
 
-	printf(" %4s  %8s %18s\n", "Id", "Priority", "State");
+	printf(" %4s  %8s %18s %6s\n", "Id", "Priority", "State", "Time");
 
 	running = sleeping = suspended = 0;
 
-	thread_foreach(thread) {
-		thread_state_t s = thread->state;
-		const char *state = NULL;
+	sched_lock();
+	{
+		thread_foreach(thread) {
+			thread_state_t s = thread->state;
+			const char *state = NULL;
 
-		if (thread_state_running(s)) {
-			state = "running";
-			running++;
-		} else if (thread_state_sleeping(s)) {
+			if (thread_state_running(s)) {
+				state = "running";
+				running++;
+			} else if (thread_state_sleeping(s)) {
 				state = "sleeping";
 				sleeping++;
+			}
+
+			printf(" %4d%c %8d %18s %5ld\n", thread->id,
+				thread == thread_self() ? '*' : ' ', thread->priority, state,
+				thread->running_time/CLOCKS_PER_SEC);
 		}
-
-		printf(" %4d%c %8d %18s\n", thread->id,
-				thread == thread_self() ? '*' : ' ', thread->priority, state);
 	}
-
 	total = running + sleeping;
 
 	printf("Total %d threads: \n"

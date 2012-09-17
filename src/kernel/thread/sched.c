@@ -37,17 +37,15 @@
 
 #include <embox/unit.h>
 
-/** Interval, what scheduler_tick is called in. */
-#define SCHED_TICK_INTERVAL 100
-
 EMBOX_UNIT(unit_init, unit_fini);
 
+/* Functions to work with waking up in interrupt. Implemented in startq.c */
 extern void startq_flush(void);
-extern void startq_enqueue_wake(struct sleepq *sq, int wake_all);
-extern void startq_enqueue_wake_force(struct thread *t);
+extern void startq_enqueue_sleepq(struct sleepq *sq, int wake_all);
+extern void startq_enqueue_thread(struct thread *t, int sleep_result);
 
-int do_thread_wake_force(struct thread *thread);
-void do_sleepq_wake(struct sleepq *sq, int wake_all);
+void do_wake_thread(struct thread *thread, int sleep_result);
+void do_wake_sleepq(struct sleepq *sq, int wake_all);
 
 static void do_sleep_locked(struct sleepq *sq);
 
@@ -57,11 +55,11 @@ static void post_switch_if(int condition);
 
 static void sched_switch(void);
 
+void sched_request_switch(void);
+
 CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch, CRITICAL_SCHED_LOCK);
 
 static struct runq rq;
-
-static sys_timer_t *tick_timer;
 
 static clock_t prev_clock;
 
@@ -132,14 +130,14 @@ void sched_wake_one(struct sleepq *sq) {
 
 void __sched_wake(struct sleepq *sq, int wake_all) {
 	if (in_harder_critical()) {
-		startq_enqueue_wake(sq, wake_all);
+		startq_enqueue_sleepq(sq, wake_all);
 		critical_request_dispatch(&sched_critical);
 	} else {
-		do_sleepq_wake(sq, wake_all);
+		do_wake_sleepq(sq, wake_all);
 	}
 }
 
-void do_sleepq_wake(struct sleepq *sq, int wake_all) {
+void do_wake_sleepq(struct sleepq *sq, int wake_all) {
 	assert(!in_harder_critical());
 
 	sched_lock();
@@ -149,24 +147,25 @@ void do_sleepq_wake(struct sleepq *sq, int wake_all) {
 	sched_unlock();
 }
 
-static int thread_wake_force(struct thread *thread, int sleep_result) {
-	thread->sleep_res = sleep_result;
-
+void thread_wake_force(struct thread *thread, int sleep_result) {
 	if (in_harder_critical()) {
-		startq_enqueue_wake_force(thread);
+		startq_enqueue_thread(thread, sleep_result);
 		critical_request_dispatch(&sched_critical);
 	} else {
-		return do_thread_wake_force(thread);
+		do_wake_thread(thread, sleep_result);
 	}
-
-	return 0;
 }
 
-int do_thread_wake_force(struct thread *thread) {
+void do_wake_thread(struct thread *thread, int sleep_result) {
 	assert(!in_harder_critical());
 	assert(thread_state_sleeping(thread->state));
 
-	return sleepq_wake_thread(&rq, thread->sleepq, thread);
+	sched_lock();
+	{
+		thread->sleep_res = sleep_result;
+		post_switch_if(sleepq_wake_thread(&rq, thread->sleepq, thread));
+	}
+	sched_unlock();
 }
 
 static void do_sleep_locked(struct sleepq *sq) {
@@ -184,7 +183,7 @@ static void do_sleep_locked(struct sleepq *sq) {
 
 static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	struct thread *thread = (struct thread *) sleep_data;
-	post_switch_if(thread_wake_force(thread, SCHED_SLEEP_TIMEOUT));
+	thread_wake_force(thread, -ETIMEDOUT);
 }
 
 int sched_sleep_locked(struct sleepq *sq, unsigned long timeout) {
@@ -195,7 +194,7 @@ int sched_sleep_locked(struct sleepq *sq, unsigned long timeout) {
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(thread_state_running(current->state));
 
-	current->sleep_res = 0; /* clean out sleep_res */
+	current->sleep_res = ENOERR; /* clean out sleep_res */
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
@@ -303,6 +302,10 @@ static void post_switch_if(int condition) {
 	}
 }
 
+void sched_request_switch(void) {
+	post_switch_if(1);
+}
+
 /**
  * Called by critical dispatching code with IRQs disabled.
  */
@@ -352,20 +355,10 @@ out:
 	sched_unlock_noswitch();
 }
 
-static void sched_tick(sys_timer_t *timer, void *param) {
-	post_switch_if(1);
-}
-
 static int unit_init(void) {
-	if (timer_set(&tick_timer, TIMER_PERIODIC, SCHED_TICK_INTERVAL, sched_tick, NULL)) {
-		return -EBUSY;
-	}
-
 	return 0;
 }
 
 static int unit_fini(void) {
-	timer_close(tick_timer);
-
 	return 0;
 }
