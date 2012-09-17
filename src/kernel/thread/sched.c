@@ -186,7 +186,7 @@ static void do_sleep_locked(struct sleepq *sq) {
 
 static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	struct thread *thread = (struct thread *) sleep_data;
-	thread_wake_force(thread, SCHED_SLEEP_TIMEOUT);
+	thread_wake_force(thread, -ETIMEDOUT);
 }
 
 int sched_sleep_locked(struct sleepq *sq, unsigned long timeout) {
@@ -197,7 +197,7 @@ int sched_sleep_locked(struct sleepq *sq, unsigned long timeout) {
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(thread_state_running(current->state));
 
-	current->sleep_res = 0; /* clean out sleep_res */
+	current->sleep_res = ENOERR; /* clean out sleep_res */
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
 		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);

@@ -11,15 +11,13 @@
 #ifndef KERNEL_THREAD_SCHED_H_
 #define KERNEL_THREAD_SCHED_H_
 
+#include <errno.h>
 #include <kernel/thread/sched_lock.h>
 #include <kernel/thread/sched_priority.h>
 
 #include __impl_x(kernel/thread/types.h)
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
-
-#define SCHED_SLEEP_TIMEOUT        1
-#define SCHED_SLEEP_INTERRUPT      3
 
 struct thread;
 struct event;

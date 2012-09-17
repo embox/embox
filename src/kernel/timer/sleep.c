@@ -29,7 +29,7 @@ int usleep(useconds_t usec) {
 
 	res_sleep = event_wait(&never_happen, usec);
 
-	return res_sleep == SCHED_SLEEP_TIMEOUT ? 0 : res_sleep;
+	return res_sleep == -ETIMEDOUT ? 0 : res_sleep;
 }
 
 int sleep(unsigned int seconds) {
