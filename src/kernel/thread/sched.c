@@ -37,9 +37,6 @@
 
 #include <embox/unit.h>
 
-/** Interval, what scheduler_tick is called in. */
-#define SCHED_TICK_INTERVAL 100
-
 EMBOX_UNIT(unit_init, unit_fini);
 
 /* Functions to work with waking up in interrupt. Implemented in startq.c */
@@ -58,11 +55,11 @@ static void post_switch_if(int condition);
 
 static void sched_switch(void);
 
+void sched_request_switch(void);
+
 CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch, CRITICAL_SCHED_LOCK);
 
 static struct runq rq;
-
-static sys_timer_t *tick_timer;
 
 static clock_t prev_clock;
 
@@ -305,6 +302,10 @@ static void post_switch_if(int condition) {
 	}
 }
 
+void sched_request_switch(void) {
+	post_switch_if(1);
+}
+
 /**
  * Called by critical dispatching code with IRQs disabled.
  */
@@ -354,20 +355,10 @@ out:
 	sched_unlock_noswitch();
 }
 
-static void sched_tick(sys_timer_t *timer, void *param) {
-	post_switch_if(1);
-}
-
 static int unit_init(void) {
-	if (timer_set(&tick_timer, TIMER_PERIODIC, SCHED_TICK_INTERVAL, sched_tick, NULL)) {
-		return -EBUSY;
-	}
-
 	return 0;
 }
 
 static int unit_fini(void) {
-	timer_close(tick_timer);
-
 	return 0;
 }

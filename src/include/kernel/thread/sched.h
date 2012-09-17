@@ -48,6 +48,11 @@ extern int sched_init(struct thread *current, struct thread *idle);
 extern struct thread *sched_current(void);
 
 /**
+ * Requests switching of the current thread.
+ */
+extern void sched_request_switch(void);
+
+/**
  * Makes active thread and adds thread to the queue of ready to executing
  * threads.
  *
