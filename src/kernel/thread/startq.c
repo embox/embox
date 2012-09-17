@@ -23,10 +23,10 @@ static DLIST_DEFINE(startq);
  * with IRQs disabled and the scheduler locked.
  */
 void startq_flush(void) {
-	static struct thread *t;
-	static struct sleepq *sq;
-	static struct startq_data *sd;
-	static int wake_all;
+	struct thread *t;
+	struct sleepq *sq;
+	struct startq_data *sd;
+	int wake_all;
 
 	assert(!critical_allows(CRITICAL_SCHED_LOCK));
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
