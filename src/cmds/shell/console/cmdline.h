@@ -11,7 +11,9 @@
 
 #include <types.h>
 
-#define CMDLINE_MAX_LENGTH      127
+#include <embox/unit.h>
+
+#define CMDLINE_MAX_LENGTH      OPTION_GET(NUMBER, prompt_len)
 #define CMDLINE_HISTORY_SIZE    8
 
 /**
