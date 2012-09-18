@@ -8,6 +8,11 @@ module context extends embox.arch.context {
 module boot extends embox.arch.boot {
 	source "boot.S"
 }
+
+module reset {
+	source "reset.S"
+}
+
 module entry extends embox.arch.entry {
 	source "entry.S"
 	//source "exception.c"
@@ -25,4 +30,8 @@ module interrupt {
 
 module arch {
 	source "arch.c"
+}
+
+module arch_maximite {
+	source "arch_maximite.c"
 }

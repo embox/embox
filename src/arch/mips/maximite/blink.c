@@ -11,14 +11,11 @@
 #define PORTB            0xBF886050
 
 void __blink(void) {
-	static int state;
 	REG_STORE(TRISB, 0);
 
-	if (!state) {
-		REG_STORE(PORTB, 0xffff);
-	} else {
-		REG_STORE(PORTB, 0);
-	}
+	REG_STORE(PORTB, 0xffff);
+
 }
+
 
 
