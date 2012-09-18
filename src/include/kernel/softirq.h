@@ -14,10 +14,12 @@
 
 #include <kernel/softirq_lock.h>
 
+#include <embox/unit.h>
+
 /**
  * Total amount of possible soft IRQs.
  */
-#define SOFTIRQ_NRS_TOTAL 32
+#define SOFTIRQ_NRS_TOTAL OPTION_GET(NUMBER,nrs_total)
 
 #define SOFTIRQ_NR_TEST 31
 #define SOFTIRQ_NR_UART 30
