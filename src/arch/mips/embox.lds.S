@@ -67,6 +67,7 @@ SECTIONS {
 		*(.reginfo)
 		*(.comment)
 		*(.note)
+		*(.mdebug.* .gnu.attributes .debug*)
 	}
 }
 

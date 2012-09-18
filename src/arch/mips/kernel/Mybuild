@@ -26,6 +26,7 @@ module exception {
 module interrupt {
 	source "interrupt.c"
 	depends exception
+	depends embox.kernel.irq
 }
 
 module arch {
