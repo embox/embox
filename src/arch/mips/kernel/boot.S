@@ -17,6 +17,7 @@
 	.weak software_init_hook
 
 
+        .ent _start
 C_ENTRY(_start):
 	/* clean all registers */
 	.set noat
@@ -48,7 +49,9 @@ C_ENTRY(_start):
 	move    $25, $zero
 	move    $26, $zero
 	move    $27, $zero
+#if 0
 	move    $28, $zero
+#endif
 	move    $29, $zero
 	move    $30, $zero
 	move    $31, $zero
@@ -67,22 +70,17 @@ C_ENTRY(_start):
 	jal     memset
 	nop
 
-
-	/* check whether copy data section */
-	PTR_LA  $v0, _data_vma
-	PTR_LA  $v1, _data_lma
-	beq     $v0, $v1, 1f
-	nop
 	/* copy data section*/
 	PTR_LA  $a2, _data_len
 	PTR_LA  $a1, _data_lma
 	PTR_LA  $a0, _data_vma
 	jal     memcpy
 	nop
-1:
+
 	/* call C-code */
 	jal     kernel_start
 	nop
 
-	.section    .text
-	.align      4
+        .globl _start
+
+	.end _start
