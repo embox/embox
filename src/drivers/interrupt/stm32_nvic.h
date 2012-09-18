@@ -1,14 +1,13 @@
 /**
  * @file
- * @brief
  *
  * @author  Anton Kozlov
  * @date    02.07.2012
  */
 
-#ifndef HAL_INTERRUPT_NVIC_H_
-#define HAL_INTERRUPT_NVIC_H_
+#ifndef IRQCTRL_NVIC_IMPL_H_
+#define IRQCTRL_NVIC_IMPL_H_
 
-#define __INTERRUPT_NRS_TOTAL 80
+#define __IRQCTRL_IRQS_TOTAL 80
 
-#endif /* HAL_INTERRUPT_NVIC_H_ */
+#endif /* IRQCTRL_NVIC_IMPL_H_ */

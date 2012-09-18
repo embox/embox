@@ -14,11 +14,11 @@ module at91_aic extends irqctrl_api {
 }
 
 module i8259 extends irqctrl_api {
-	source "i8259.c"
+	source "i8259.c", "i8259.h"
 }
 
 module irqmp extends irqctrl_api {
-	source "irqmp.c"
+	source "irqmp.c", "irqmp.h"
 
 	depends embox.driver.ambapp_api
 	depends embox.lib.LibC

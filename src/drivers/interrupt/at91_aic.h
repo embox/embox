@@ -6,9 +6,9 @@
  * @author Anton Kozlov
  */
 
-#ifndef HAL_INTERRUPT_AT91_AIC_H_
-#define HAL_INTERRUPT_AT91_AIC_H_
+#ifndef IRQCTRL_AT91_AIC_IMPL_H_
+#define IRQCTRL_AT91_AIC_IMPL_H_
 
-#define __INTERRUPT_NRS_TOTAL 32
+#define __IRQCTRL_IRQS_TOTAL 32
 
-#endif /* HAL_INTERRUPT_AT91_AIC_H_ */
+#endif /* IRQCTRL_AT91_AIC_IMPL_H_ */

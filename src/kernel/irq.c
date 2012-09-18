@@ -99,18 +99,16 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 	return ret;
 }
 
-void irq_dispatch(unsigned int interrupt_nr) {
-	irq_nr_t irq_nr = interrupt_nr;
+void irq_dispatch(unsigned int irq_nr) {
 	struct irq_action *action;
 	irq_handler_t handler = NULL;
 	void *dev_id = NULL;
 	ipl_t ipl;
 	TRACE_BLOCK_DEF(interrupt_tb);
 
-	assert(interrupt_nr_valid(interrupt_nr));
+	assert(irq_nr_valid(irq_nr));
 
 	trace_point("interrupt");
-
 
 	trace_block_enter(&interrupt_tb);
 

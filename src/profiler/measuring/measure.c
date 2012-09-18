@@ -7,7 +7,6 @@
  */
 
 #include <types.h>
-#include <hal/measure_unit.h>
 #include <drivers/irqctrl.h>
 #include <math.h>
 #include <profiler/measuring/measure.h>
@@ -18,13 +17,13 @@ EMBOX_UNIT_INIT(measure_init);
 
 static uint32_t unit_clocks_per_tick = 0;
 
-measure_time_t irq_process[INTERRUPT_NRS_TOTAL];
+measure_time_t irq_process[IRQCTRL_IRQS_TOTAL];
 measure_time_t irq_head, irq_tail;
 measure_time_t measure_overhead;
 
 static int measure_init() {
 	size_t i;
-	for (i = 0; i < INTERRUPT_NRS_TOTAL; i++) {
+	for (i = 0; i < IRQCTRL_IRQS_TOTAL; i++) {
 		irq_process[i].ticks = 0;
 		irq_process[i].clocks = 0;
 	}

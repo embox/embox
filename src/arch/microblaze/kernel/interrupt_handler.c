@@ -8,7 +8,6 @@
  * @author Anton Bondarev
  */
 
-#include <kernel/irq.h>
 #include <drivers/irqctrl.h>
 #include <asm/msr.h>
 
@@ -22,7 +21,7 @@ void interrupt_handler(void) {
 	while (0 != (pending = mb_intc_get_pending())) {
 		unsigned int irq_num;
 
-		for (irq_num = 0; irq_num < INTERRUPT_NRS_TOTAL; irq_num++) {
+		for (irq_num = 0; irq_num < IRQCTRL_IRQS_TOTAL; irq_num++) {
 			if (pending & (1 << irq_num)) {
 				//TODO we must clear whole pending register
 				irqctrl_clear(irq_num);

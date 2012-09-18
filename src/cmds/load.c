@@ -48,7 +48,7 @@ inval:
 
 static __attribute__ ((noreturn))
 		void load_and_run(char *image_vma, char *image_lma, size_t image_len) {
-	unsigned int interrupt_nr;
+	unsigned int irq;
 	void (*callme)(void) __attribute__ ((noreturn));
 
 	printf("load: copying image into 0x%08x, from 0x%08x, size %d bytes\n",
@@ -58,8 +58,8 @@ static __attribute__ ((noreturn))
 	printf("load: calling 0x%08x ...\n", (unsigned int) image_vma);
 
 	ipl_disable();
-	for (interrupt_nr = 0; interrupt_nr < INTERRUPT_NRS_TOTAL; ++interrupt_nr) {
-		irqctrl_disable(interrupt_nr);
+	for (irq = 0; irq < IRQCTRL_IRQS_TOTAL; ++irq) {
+		irqctrl_disable(irq);
 	}
 
 	callme = (typeof(callme)) image_vma;

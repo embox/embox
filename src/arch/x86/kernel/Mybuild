@@ -24,7 +24,7 @@ module locore extends embox.arch.locore {
 }
 
 module interrupt extends embox.arch.interrupt {
-	source "interrupt_entry.S", "interrupt_impl.h", "ipl_impl.h"
+	source "interrupt_entry.S", "ipl_impl.h"
 	depends locore
 }
 

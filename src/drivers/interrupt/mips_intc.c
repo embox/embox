@@ -43,8 +43,6 @@ static int unit_init(void) {
 void irqctrl_enable(unsigned int interrupt_nr) {
 	uint32_t c0;
 
-	assert(interrupt_nr_valid(interrupt_nr));
-
 	c0 = mips_read_c0_status();
 	c0 |= 1 << (interrupt_nr + ST0_IRQ_MASK_OFFSET);
 	mips_write_c0_status(c0);
@@ -52,8 +50,6 @@ void irqctrl_enable(unsigned int interrupt_nr) {
 
 void irqctrl_disable(unsigned int interrupt_nr) {
 	uint32_t c0;
-
-	assert(interrupt_nr_valid(interrupt_nr));
 
 	c0 = mips_read_c0_status();
 	c0 &= ~(1 << (interrupt_nr + ST0_IRQ_MASK_OFFSET));

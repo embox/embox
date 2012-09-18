@@ -15,25 +15,20 @@
 #define KERNEL_IRQ_H_
 
 #include <kernel/irq_lock.h>
-#include <arch/interrupt.h>
+#include <drivers/irqctrl.h>
 
-/**
- * Total amount of possible IRQs in the system.
- * @note Equals to HAL #INTERRUPT_NRS_TOTAL value.
- */
+/** Total amount of IRQs supported by the system. */
 #define IRQ_NRS_TOTAL \
-	INTERRUPT_NRS_TOTAL
+	IRQCTRL_IRQS_TOTAL
 
 /**
- * Checks if the specified irq_nr represents valid IRQ number.
- * @note The same as HAL @link interrupt_nr_valid() @endlink macro.
+ * Checks if the specified @c irq_nr represents a valid IRQ number.
  */
 #define irq_nr_valid(irq_nr) \
-	interrupt_nr_valid(irq_nr)
+	((unsigned int) irq_nr < IRQ_NRS_TOTAL)
 
 /**
  * Type representing interrupt request number.
- * @note The same as HAL #unsigned int type.
  */
 typedef unsigned int irq_nr_t;
 

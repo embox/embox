@@ -11,8 +11,6 @@
 
 #define INTERRUPT_STUB
 
-#define __INTERRUPT_NRS_TOTAL 0
-
 #ifndef __ASSEMBLER__
 
 typedef unsigned int __ipl_t;

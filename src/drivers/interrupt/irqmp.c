@@ -11,7 +11,6 @@
 #include <errno.h>
 #include <types.h>
 
-#include <arch/interrupt.h>
 #include <hal/reg.h>
 #include <drivers/irqctrl.h>
 #include <drivers/amba_pnp.h>
@@ -36,27 +35,23 @@ static volatile struct irqmp_regs *dev_regs;
 static int dev_regs_init(void);
 
 void irqctrl_enable(unsigned int irq) {
-	assert(interrupt_nr_valid(irq));
-	assert(NULL != dev_regs);
+	assert(dev_regs);
 	REG_ORIN(&dev_regs->mask, 1 << irq);
 }
 
 void irqctrl_disable(unsigned int irq) {
-	assert(interrupt_nr_valid(irq));
-	assert(NULL != dev_regs);
+	assert(dev_regs);
 	REG_ANDIN(&dev_regs->mask, ~(1 << irq));
 }
 
 void irqctrl_clear(unsigned int irq) {
-	assert(interrupt_nr_valid(irq));
-	assert(NULL != dev_regs);
+	assert(dev_regs);
 	REG_ORIN(&dev_regs->clear, 1 << irq);
 	REG_ANDIN(&dev_regs->force, ~(1 << irq));
 }
 
 void irqctrl_force(unsigned int irq) {
-	assert(interrupt_nr_valid(irq));
-	assert(NULL != dev_regs);
+	assert(dev_regs);
 	REG_ORIN(&dev_regs->force, 1 << irq);
 }
 
@@ -67,7 +62,7 @@ static int unit_init(void) {
 	if (0 != (error = dev_regs_init())) {
 		return error;
 	}
-	assert(NULL != dev_regs);
+	assert(dev_regs);
 
 	REG_STORE(&dev_regs->level, 0x0);
 	REG_STORE(&dev_regs->mask, 0x0);

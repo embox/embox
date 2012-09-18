@@ -18,7 +18,7 @@ typedef struct {
 	/* choosed so for good packing (is it good?) */
 } measure_time_t;
 
-extern measure_time_t irq_process[INTERRUPT_NRS_TOTAL];
+extern measure_time_t irq_process[IRQCTRL_IRQS_TOTAL];
 extern measure_time_t irq_head, irq_tail;
 extern measure_time_t measure_overhead;
 

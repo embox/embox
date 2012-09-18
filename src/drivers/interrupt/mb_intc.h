@@ -6,10 +6,10 @@
  * @author Anton Bondarev
  */
 
-#ifndef HAL_INTERRUPT_MB_INTC_H_
-#define HAL_INTERRUPT_MB_INTC_H_
+#ifndef IRQCTRL_MB_INTC_IMPL_H_
+#define IRQCTRL_MB_INTC_IMPL_H_
 
-#define __INTERRUPT_NRS_TOTAL 16
+#define __IRQCTRL_IRQS_TOTAL 16
 
 #ifndef __ASSEMBLER__
 
@@ -20,4 +20,4 @@ extern unsigned int mb_intc_get_pending(void);
 
 #endif /*__ASSEMBLER__*/
 
-#endif /* HAL_INTERRUPT_MB_INTC_H_ */
+#endif /* IRQCTRL_MB_INTC_IMPL_H_ */

@@ -12,6 +12,15 @@
 #include <module/embox/driver/interrupt/irqctrl_api.h>
 
 /**
+ * Total amount of interrupt lines that the controller can handle.
+ *
+ * @note Implementation should provide @c __IRQCTRL_IRQS_TOTAL definition
+ * indicating positive constant.
+ */
+#define IRQCTRL_IRQS_TOTAL \
+	((unsigned int) __IRQCTRL_IRQS_TOTAL)
+
+/**
  * Enables the specified IRQ.
  *
  * @param irq the IRQ number to enable
