@@ -172,19 +172,21 @@ $(image_nosymbols_o): | $$(@D)/. $(dir $(IMAGE).map).
 	$(LD) --relocatable $(ldflags) \
 	$(call fmt_line,$(ld_objs)) \
 	$(call fmt_line,$(ld_libs)) \
-	--cref -Map $(IMAGE).map \
+	--cref -Map $(IMAGE)_nosymbols.map \
 	-o $@
 
 $(image_pass1_o) : $(image_nosymbols_o) $(symbols_pass1_a) | $$(@D)/.
 	$(LD) --relax $(ldflags_all) \
 		$(image_nosymbols_o) \
 		$(symbols_pass1_a) \
+		--cref -Map $(IMAGE)_pass1.map \
 	-o $@
 
 $(IMAGE): $(image_nosymbols_o) $(symbols_pass2_a) | $$(@D)/.
 	$(LD) --relax $(ldflags_all) \
 		$(image_nosymbols_o) \
 		$(symbols_pass2_a) \
+		--cref -Map $(IMAGE).map \
 	-o $@
 
 $(IMAGE_DIS): $(IMAGE)
