@@ -1,7 +1,0 @@
-
-package embox.arch.arm.arm7
-
-module cpu extends embox.arch.cpu {
-
-	source "include/asm/hal/ipl.h"
-}

@@ -1,7 +1,7 @@
 package embox.arch.arm.kernel
 
 module head {
-        source "head.S"
+	source "head.S"
 }
 
 module arch {
