@@ -156,8 +156,8 @@ static void linenoiseClearScreen(void) {
     }
 }
 
-static int linenoise_prompt(int fd, FILE *descr, char *buf, size_t buflen, const char *prompt,
-							struct hist *history, compl_callback_t cb, bool read_raw_mode) {
+static int linenoise_prompt(int fd_in, int fd_out, char *buf, size_t buflen, const char *prompt,
+							struct hist *history, compl_callback_t cb) {
     char compl[LINENOISE_COMPL_LEN];
 
     size_t plen = strlen(prompt);
@@ -174,27 +174,16 @@ static int linenoise_prompt(int fd, FILE *descr, char *buf, size_t buflen, const
     buf[0] = '\0';
     buflen--; /* Make sure there is always space for the nulterm */
 
-    if (write(fd,prompt,plen) == -1) return -1;
+    if (write(fd_out,prompt,plen) == -1) return -1;
     while(1) {
         char c;
         int nread;
         char seq[2], seq2[2]= {0};
 
-        nread = read_raw_mode ? read(fd,&c,1) : fread(&c, 1, 1, descr);
+        nread = read(fd_in,&c,1);
         if (nread <= 0) {
-			/**
-			 * FIXME
-			 * Quick hack to get telnet to work correctly.
-			 * Telnet is based on stream sockets, so after some time
-			 * tcp_v4_recvmsg will return ETIMEDOUT, but we supposed
-			 * that somebody pressed Enter. It's incorrect.
-			 * To fix it need to add a socket options
-			 * and set receive's timeout more, than we have now
-			 */
-			if (-nread == ETIMEDOUT) {
-				continue;
-			}
-			return len;
+        	sleep(0);
+        	continue;
 		}
         /* Only autocomplete when the callback is set. It returns < 0 when
          * there was an error reading from fd. Otherwise it will return the
@@ -210,9 +199,9 @@ static int linenoise_prompt(int fd, FILE *descr, char *buf, size_t buflen, const
 		len = strlen(buf);
 		pos = len;
 	    } else {
-		print_compl(fd, compl_cnt, compl);
+		print_compl(fd_out, compl_cnt, compl);
 	    }
-	    refreshLine(fd,prompt,buf,len,pos,cols);
+	    refreshLine(fd_out,prompt,buf,len,pos,cols);
 	    continue;
         }
 
@@ -234,7 +223,7 @@ static int linenoise_prompt(int fd, FILE *descr, char *buf, size_t buflen, const
                 pos--;
                 len--;
                 buf[len] = '\0';
-                refreshLine(fd,prompt,buf,len,pos,cols);
+                refreshLine(fd_out,prompt,buf,len,pos,cols);
             }
             break;
         case 4:     /* ctrl-d, remove char at right of cursor */
@@ -248,7 +237,7 @@ static int linenoise_prompt(int fd, FILE *descr, char *buf, size_t buflen, const
                 buf[pos-1] = buf[pos];
                 buf[pos] = aux;
                 if (pos != len-1) pos++;
-                refreshLine(fd,prompt,buf,len,pos,cols);
+                refreshLine(fd_out,prompt,buf,len,pos,cols);
             }
             break;
         case 2:     /* ctrl-b */
@@ -263,26 +252,21 @@ static int linenoise_prompt(int fd, FILE *descr, char *buf, size_t buflen, const
             goto up_down_arrow;
             break;
         case 27:    /* escape sequence */
-			if(read_raw_mode) {
-				if (read(fd,seq,2) == -1)
+			if (read(fd_in,seq,2) == -1)
 					break;
-			} else {
-				if (fread(seq, 1, 2, descr) <= 2)
-					break;
-			}
             if (seq[0] == 91 && seq[1] == 68) {
 left_arrow:
                 /* left arrow */
                 if (pos > 0) {
                     pos--;
-                    refreshLine(fd,prompt,buf,len,pos,cols);
+                    refreshLine(fd_out,prompt,buf,len,pos,cols);
                 }
             } else if (seq[0] == 91 && seq[1] == 67) {
 right_arrow:
                 /* right arrow */
                 if (pos != len) {
                     pos++;
-                    refreshLine(fd,prompt,buf,len,pos,cols);
+                    refreshLine(fd_out,prompt,buf,len,pos,cols);
                 }
             } else if (seq[0] == 91 && (seq[1] == 65 || seq[1] == 66)) {
 up_down_arrow:
@@ -309,24 +293,19 @@ up_down_arrow:
 		    history_index = (history_index + LINENOISE_HISTORY_COUNT) % LINENOISE_HISTORY_COUNT;
                     strcpy(buf,history->h[history_index]);
                     len = pos = strlen(buf);
-                    refreshLine(fd,prompt,buf,len,pos,cols);
+                    refreshLine(fd_out,prompt,buf,len,pos,cols);
                 }
             } else if (seq[0] == 91 && seq[1] > 48 && seq[1] < 55) {
                 /* extended escape */
-				if(read_raw_mode) {
-					if (read(fd,seq,2) == -1)
+					if (read(fd_in,seq,2) == -1)
 						break;
-				} else {
-					if (fread(seq, 1, 2, descr) <= 2)
-						break;
-				}
                 if (seq[1] == 51 && seq2[0] == 126) {
                     /* delete */
                     if (len > 0 && pos < len) {
                         memmove(buf+pos,buf+pos+1,len-pos-1);
                         len--;
                         buf[len] = '\0';
-                        refreshLine(fd,prompt,buf,len,pos,cols);
+                        refreshLine(fd_out,prompt,buf,len,pos,cols);
                     }
                 }
             }
@@ -341,9 +320,9 @@ up_down_arrow:
                     if (plen+len < cols) {
                         /* Avoid a full update of the line in the
                          * trivial case. */
-                        if (write(fd,&c,1) == -1) return -1;
+                        if (write(fd_out,&c,1) == -1) return -1;
                     } else {
-                        refreshLine(fd,prompt,buf,len,pos,cols);
+                        refreshLine(fd_out,prompt,buf,len,pos,cols);
                     }
                 } else {
                     memmove(buf+pos+1,buf+pos,len-pos);
@@ -351,31 +330,31 @@ up_down_arrow:
                     len++;
                     pos++;
                     buf[len] = '\0';
-                    refreshLine(fd,prompt,buf,len,pos,cols);
+                    refreshLine(fd_out,prompt,buf,len,pos,cols);
                 }
             }
             break;
         case 21: /* Ctrl+u, delete the whole line. */
             buf[0] = '\0';
             pos = len = 0;
-            refreshLine(fd,prompt,buf,len,pos,cols);
+            refreshLine(fd_out,prompt,buf,len,pos,cols);
             break;
         case 11: /* Ctrl+k, delete from current to end of line. */
             buf[pos] = '\0';
             len = pos;
-            refreshLine(fd,prompt,buf,len,pos,cols);
+            refreshLine(fd_out,prompt,buf,len,pos,cols);
             break;
         case 1: /* Ctrl+a, go to the start of the line */
             pos = 0;
-            refreshLine(fd,prompt,buf,len,pos,cols);
+            refreshLine(fd_out,prompt,buf,len,pos,cols);
             break;
         case 5: /* ctrl+e, go to the end of the line */
             pos = len;
-            refreshLine(fd,prompt,buf,len,pos,cols);
+            refreshLine(fd_out,prompt,buf,len,pos,cols);
             break;
         case 12: /* ctrl+l, clear screen */
             linenoiseClearScreen();
-            refreshLine(fd,prompt,buf,len,pos,cols);
+            refreshLine(fd_out,prompt,buf,len,pos,cols);
         case '\0': /* Telnet sends /r as /r/0. /0 means nothing in other contextes */
         	/* So do nothing now.
 			 * We can treat it as /n /r or even as a space
@@ -395,8 +374,8 @@ void linenoise_history_init(struct hist *h) {
 }
 
 int linenoise(const char *prompt, char *buf, int len, struct hist *history, compl_callback_t cb) {
-    int fd = STDIN_FILENO;
-    int mode = ioctl(fd, TTY_IOCTL_REQUEST_MODE, NULL);
+    int in = STDIN_FILENO, out = STDOUT_FILENO;
+    int mode = ioctl(in, TTY_IOCTL_REQUEST_MODE, NULL);
     int count;
 
 /*
@@ -414,11 +393,11 @@ int linenoise(const char *prompt, char *buf, int len, struct hist *history, comp
 	}
 */
 	if (isatty(0)) {
-		ioctl(fd, TTY_IOCTL_SET_RAW, NULL);
-		count = linenoise_prompt(fd, stdin, buf, len, prompt, history, cb, true);
-		ioctl(fd, mode, NULL);
+		ioctl(in, TTY_IOCTL_SET_RAW, NULL);
+		count = linenoise_prompt(in, out, buf, len, prompt, history, cb);
+		ioctl(in, mode, NULL);
 	} else {
-		count = linenoise_prompt(fd, stdin, buf, len, prompt, history, cb, false);
+		count = linenoise_prompt(in, out, buf, len, prompt, history, cb);
 	}
     return count;
 }

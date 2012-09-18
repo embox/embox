@@ -9,7 +9,6 @@ static module LibUtil {
 	source "priority_q.c"
 	source "binary_heap.c"
 	source "ring_buff.c"
-	source "async_ring_buff.c"
 	source "sys_log.c"
 
 	depends embox.lib.LibC

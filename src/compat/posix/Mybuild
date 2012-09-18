@@ -38,6 +38,7 @@ static module LibPosixIdx {
 	depends embox.kernel.task.api
 	depends embox.mem.heap_api
 	depends LibPosixFsApi
+	depends embox.util.LibSync
 	depends embox.util.LibUtil
 }
 

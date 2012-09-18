@@ -8,7 +8,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
-#include <util/ring_buff.h>
+#include <util/async_ring_buff.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <framework/mod/options.h>
@@ -32,10 +32,10 @@ static const struct task_idx_ops pipe_ops = {
 
 int pipe(int pipefd[2]) {
 	int res;
-	struct ring_buff *pipe_buff = malloc(sizeof(struct ring_buff));
+	struct async_ring_buff *pipe_buff = malloc(sizeof(struct async_ring_buff));
 	void *storage = malloc(PIPE_BUFFER_SIZE);
 
-	ring_buff_init(pipe_buff, 1, PIPE_BUFFER_SIZE, storage);
+	async_ring_buff_init(pipe_buff, 1, PIPE_BUFFER_SIZE, storage);
 
 	pipefd[0] = task_self_idx_alloc(&pipe_ops, pipe_buff);
 	if (pipefd[0] < 0) {
@@ -60,9 +60,9 @@ int pipe(int pipefd[2]) {
 }
 
 static int pipe_close(void *data) {
-	struct ring_buff *pipe_buff = (struct ring_buff*) data;
+	struct async_ring_buff *pipe_buff = (struct async_ring_buff*) data;
 
-	free(pipe_buff->storage);
+	free(pipe_buff->buffer.storage);
 	free(pipe_buff);
 
 	return 0;
@@ -73,7 +73,7 @@ static int pipe_read(void *data, void *buf, size_t nbyte) {
 		return -1;
 	}
 
-	return ring_buff_deque((struct ring_buff*)data, buf, nbyte);
+	return async_ring_buff_deque((struct async_ring_buff*)data, buf, nbyte);
 }
 
 static int pipe_write(void *data, const void *buf, size_t nbyte) {
@@ -81,7 +81,7 @@ static int pipe_write(void *data, const void *buf, size_t nbyte) {
 		return -1;
 	}
 
-	return ring_buff_enque((struct ring_buff*)data, (void*)buf, nbyte);
+	return async_ring_buff_enque((struct async_ring_buff*)data, (void*)buf, nbyte);
 }
 
 static int pipe_ioctl(void *data, int request, va_list args) {

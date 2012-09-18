@@ -8,7 +8,6 @@
 
 #include <stddef.h>
 #include <string.h>
-#include <kernel/thread/sched_lock.h>
 #include <util/ring_buff.h>
 
 int ring_buff_get_cnt(struct ring_buff *buf) {

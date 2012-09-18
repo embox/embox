@@ -22,6 +22,9 @@ EMBOX_CMD(exec);
 	 */
 #define TELNETD_MAX_CONNECTIONS 10
 static int clients[TELNETD_MAX_CONNECTIONS];
+/* Pipes for shell and this task communication */
+static int pipefd1[TELNETD_MAX_CONNECTIONS][2];
+static int pipefd2[TELNETD_MAX_CONNECTIONS][2];
 	/* Telnetd address bind to */
 #define TELNETD_ADDR INADDR_ANY
 	/* Telnetd port bind to */
@@ -60,22 +63,6 @@ static void out_msgs(const char *msg, const char *msg2, const char *msg3,
 	}
 }
 
-	/* Executes real shell or it's emulator */
-static void run(void) {
-#if 0
-	while (1) {
-		char ch;
-		read(0, &ch, 1);				/* Not working. Treats socket as a file */
-		printf("telnet!%c\n", ch);		/* Gives something reasonable */
-	}
-#else
-		/* Run tish.
-		 * Is it possible to overwrite its promt here?
-		 */
-	shell_run();
-#endif
-}
-
 
 #define T_WILL		251
 #define T_WONT		252
@@ -87,15 +74,18 @@ static void run(void) {
 #define O_GO_AHEAD	3		/* Disable GO AHEAD, RFC 858 */
 
 	/* Skip management session */
-static void ignore_telnet_options(void) {
-	unsigned char ch = getchar();
-	while ((ch & (1 << 7)) && (ch != T_IAC))
-		ch = getchar();		/* Something related with management, probably in string mode */
+static void ignore_telnet_options(int sock) {
+	unsigned char ch, op_type, param;
+
+	read(sock, &ch, 1);
+	while ((ch & (1 << 7)) && (ch != T_IAC)) {
+		read(sock, &ch, 1);
+	}
 
 	while (1) {
 		if (ch == T_IAC) {
-			unsigned char op_type = getchar();
-			unsigned char param = getchar();
+			read(sock, &op_type, 1);
+			read(sock, &param, 1);
 			if (op_type == T_WILL) {
 				if (param == O_GO_AHEAD) {
 						/* Agree */
@@ -117,11 +107,26 @@ static void ignore_telnet_options(void) {
 			}
 		}
 		else {
-			ungetchar(ch);	/* Return this symbol, it belongs to usual traffic */
+			/* Get this symbol to shell, it belongs to usual traffic */
+			write(pipefd1[sock][0], &ch, 1);
 			return;
 		}
-		ch = getchar();
+		while (read(sock, &ch, 1) <= 0);
 	}
+}
+
+static void *shell_hnd(void* args) {
+	int sock = *(int *) args;
+
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+
+	dup2(pipefd1[sock][1], STDIN_FILENO);
+	dup2(pipefd2[sock][0], STDOUT_FILENO);
+
+	shell_run();
+
+	return NULL;
 }
 
 	/* Identify our wishes for the session */
@@ -141,15 +146,16 @@ static void set_our_term_parameters(void) {
 
 	/* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
-	int *client_descr_p = (int *)args;
+	unsigned char buf[128];
+	int sock = *(int *)args;
 
-	close(0);
-	close(1);
-	close(2);
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
 
-	dup(*client_descr_p);
-	dup(*client_descr_p);
-	dup(*client_descr_p);
+	dup(sock);
+	dup(sock);
+	dup(sock);
 
 		/* Hack. Emulate future output, we need a char from user to exit from
 		 * parameters mode
@@ -159,15 +165,32 @@ static void *telnet_thread_handler(void* args) {
 		printf("Welcome to telnet!\n%s", prompt);
 	}
 
+	pipe(pipefd1[sock]);
+	pipe(pipefd2[sock]);
+
 		/* Operate with settings */
 	set_our_term_parameters();
-	ignore_telnet_options();
+	ignore_telnet_options(sock);
 
-		/* Run shell */
-	run();
+	new_task(shell_hnd, &sock);
 
-	close(*client_descr_p);
-	*client_descr_p = -1;
+	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
+	 * and than receive from it the result of command running, and send it back to
+	 * client. */
+	while(1) {
+		int len;
+
+		if ((len = read(pipefd2[sock][1], buf, 128)) > 0) {
+			write(sock, buf, len);
+		}
+
+		if ((len = read(sock, buf, 128)) > 0) {
+			write(pipefd1[sock][0], buf, len);
+		}
+	}
+
+	close(sock);
+	*(int *)args = -1;
 
 	return NULL;
 }

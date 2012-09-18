@@ -94,9 +94,6 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 	 err = security_socket_post_create(sock, family, type, protocol, kern);
 	 */
 
-	/* initialize socket_is_ready event */
-	event_init(&sock->sk->sock_is_ready, "socket_is_ready");
-	event_init(&sock->sk->sock_is_not_empty, "socket_is_not_empty");
 	sock_set_ready(sock->sk);
 	/* newly created socket is UNCONNECTED for sure */
 	sk_set_connection_state(sock, UNCONNECTED);
