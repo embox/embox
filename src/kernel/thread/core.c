@@ -156,7 +156,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->priority = t->initial_priority;
 
 	sched_strategy_init(&t->sched);
-	startq_init(&t->startq_data);
+	startq_init_thread(&t->startq_data);
 
 	INIT_LIST_HEAD(&t->messages);
 	event_init(&t->msg_event, "msg");
@@ -306,6 +306,10 @@ int thread_set_priority(struct thread *t, thread_priority_t new) {
 	sched_unlock();
 
 	return 0;
+}
+
+clock_t thread_get_running_time(struct thread *thread) {
+	return sched_get_running_time(thread);
 }
 
 struct thread *thread_lookup(thread_id_t id) {

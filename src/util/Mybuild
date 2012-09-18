@@ -15,6 +15,13 @@ static module LibUtil {
 	/*requires embox.mem.iobjalloc.rt_alloc	*/
 }
 
+static module LibSync {
+	source "async_ring_buff.c"
+
+	depends LibUtil
+	depends embox.kernel.thread.sync
+}
+
 module hashtable {
 	option number hashtables_quantity=16
 	option number item_quntity=64

@@ -20,9 +20,17 @@
 #include <util/array.h>
 #include <util/prioq.h>
 
+#include <framework/mod/options.h>
+
 #include <kernel/thread/api.h>
+#include <kernel/thread/sched.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
+#include <kernel/time/timer.h>
+
+static void sched_tick(sys_timer_t *timer, void *param);
+
+static sys_timer_t *tick_timer;
 
 static void change_thread_priority(struct prioq *pq, struct thread *t,
 		int new_priority);
@@ -45,6 +53,17 @@ void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
 	rq->current = current;
 
 	runq_start(rq, idle);
+
+	/* Initializing tick timer. */
+	/* TODO: Error if not set timer and timer close. */
+	if (timer_set(&tick_timer, TIMER_PERIODIC,
+			OPTION_GET(NUMBER, tick_interval), sched_tick, NULL)) {
+		return ;
+	}
+}
+
+static void sched_tick(sys_timer_t *timer, void *param) {
+	sched_request_switch();
 }
 
 int runq_start(struct runq *rq, struct thread *t) {

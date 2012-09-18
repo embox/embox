@@ -13,6 +13,7 @@
 #include <net/sock.h>
 #include <mem/misc/pool.h>
 #include <hal/ipl.h>
+#include <kernel/thread/event.h>
 
 #include <framework/mod/options.h>
 
@@ -112,6 +113,10 @@ struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 	sk->sk_destruct = NULL;
 	sk->sk_family = family;
 	sk->sk_prot = prot;
+
+	/* FIXME in tcp.c tcp_default_sock is created without call socket() */
+	event_init(&sk->sock_is_not_empty, "socket_is_not_empty");
+	event_init(&sk->sock_is_ready, "socket_is_ready");
 
 	if (prot->hash != NULL) {
 		prot->hash(sk);

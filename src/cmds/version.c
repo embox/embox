@@ -31,12 +31,14 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	printf("                ____\n");
-	printf("               |  _ \\\n");
-	printf("  ___ _ __ ___ | |_) | _____  __\n");
-	printf(" / _ \\ '_ ` _ \\|  _ < / _ \\ \\/ /\n");
-	printf("|  __/ | | | | | |_) | (_) >  <  \n");
-	printf(" \\___|_| |_| |_|____/ \\___/_/\\_\\\n");
+        printf("\n");
+        printf(".------.          _\n");
+        printf("|  ____|         | | \n");
+        printf("| |____ _ __ ___ | |_    _____  __\n");
+        printf("|  ____| '_ ` _ \\|  _ \\ / _ \\ \\/ /\n");
+        printf("| |____| | | | | | |_) | (_) >  <  \n");
+        printf("|______|_| |_| |_|____/ \\___/_/\\_\\\n");
+        printf("\n");
 	printf("Date: %12s\n", __DATE__);
 	printf("Time: %9s\n", __TIME__);
 	printf("Compiler: %s\n", __VERSION__);

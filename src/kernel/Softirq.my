@@ -1,6 +1,8 @@
 package embox.kernel
 
 module softirq {
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+        option number nrs_total = 32
+
+        @IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "softirq.c"
 }

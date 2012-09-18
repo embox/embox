@@ -17,6 +17,7 @@ typedef unsigned int __thread_state_t;
 #include <lib/list.h>
 #include <hal/context.h>
 #include <kernel/thread/event.h>
+#include <kernel/thread/startq.h>
 #include <kernel/thread/sched_strategy.h>
 #include <util/slist.h>
 

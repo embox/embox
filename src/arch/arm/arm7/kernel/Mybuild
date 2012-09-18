@@ -6,7 +6,6 @@ module locore extends embox.arch.locore {
 	source "entry.S"
 
 	depends embox.arch.arm.kernel.head
-	depends embox.arch.arm.arm7.cpu
 }
 
 module interrupt extends embox.arch.interrupt {

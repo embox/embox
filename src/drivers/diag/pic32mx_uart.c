@@ -14,7 +14,9 @@
 
 #define UART_NM 5
 
-#define BAUD_RATE 0
+#define BAUD_RATE 38400
+
+#define PERPH_CLK (80 * 1000000)
 
 #define U1ABRG 0xBF806040
 #define U1ABRGCLR 0xBF806044
@@ -196,17 +198,34 @@
 #define UxTXREG UxREG(TXREG) /* Transmit buffer */
 
 #define MODE_ON   0x8000     /* UART Enable */
+#define MODE_RTSSMD (1 << 11)
 
 #define STA_URXEN 0x1000     /* Receive enable */
 #define STA_UTXEN 0x400	     /* Transmit enable */
 #define STA_URXDA 0x1        /* Receive data avaible */
-#define STA_UTXBF 0x200      /* Transmit data full */
+#define STA_UTXBF (1 << 9)      /* Transmit data full */
+#define STA_UTRMT (1 << 8)
+
+#define BRG_VAL (PERPH_CLK / (16 * BAUD_RATE) - 1)
+
+
+extern void mips_delay(int cnt);
+
+#define TRISB            0xBF886040
+#define PORTB            0xBF886050
 
 void diag_init(void) {
-	REG_STORE(UxBRG,  BAUD_RATE);
-	REG_STORE(UxMODE, MODE_ON);
+	REG_STORE(TRISB, 0);
+	REG_STORE(PORTB, 0);
 
+	REG_STORE(UxMODE, 0);
+	REG_STORE(UxBRG,  BRG_VAL);
+
+	REG_STORE(UxMODE, MODE_ON);
 	REG_STORE(UxSTA,  STA_URXEN | STA_UTXEN);
+
+	mips_delay(100000);
+
 }
 
 void diag_putc(char c) {

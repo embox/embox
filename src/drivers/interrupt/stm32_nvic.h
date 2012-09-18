@@ -8,6 +8,6 @@
 #ifndef IRQCTRL_NVIC_IMPL_H_
 #define IRQCTRL_NVIC_IMPL_H_
 
-#define __IRQCTRL_IRQS_TOTAL 80
+#define __IRQCTRL_IRQS_TOTAL 16
 
 #endif /* IRQCTRL_NVIC_IMPL_H_ */

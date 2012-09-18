@@ -38,7 +38,7 @@ static inline void sched_strategy_init(struct sched_strategy_data *s) {
 
 static inline void sleepq_init(struct sleepq *sq) {
 	prioq_init(&sq->pq);
-	startq_init(&sq->startq_data);
+	startq_init_sleepq(&sq->startq_data);
 }
 
 static inline struct thread *runq_current(struct runq *rq) {
