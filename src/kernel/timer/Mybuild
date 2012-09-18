@@ -10,13 +10,13 @@ module sys_timer {
 	source "timer.c"
 
 	depends embox.kernel.time.clock_source
-	depends embox.kernel.softirq
 	depends embox.arch.clock
 }
 
 module timer extends timer_api {
 	source "list_timer.c","list_timer.h"
 	depends sys_timer
+	depends embox.kernel.softirq
 }
 
 module head_timer extends timer_api {

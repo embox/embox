@@ -9,7 +9,7 @@
 #ifndef HAL_INTERRUPT_NVIC_H_
 #define HAL_INTERRUPT_NVIC_H_
 
-#define __INTERRUPT_NRS_TOTAL 80
+#define __INTERRUPT_NRS_TOTAL 16
 
 typedef unsigned char __interrupt_nr_t;
 typedef unsigned long __interrupt_mask_t; //FIXME 83 exceptions in total
