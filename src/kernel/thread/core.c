@@ -308,6 +308,10 @@ int thread_set_priority(struct thread *t, thread_priority_t new) {
 	return 0;
 }
 
+clock_t thread_get_running_time(struct thread *thread) {
+	return sched_get_running_time(thread);
+}
+
 struct thread *thread_lookup(thread_id_t id) {
 	struct thread *t;
 

@@ -306,6 +306,21 @@ void sched_request_switch(void) {
 	post_switch_if(1);
 }
 
+clock_t sched_get_running_time(struct thread *thread) {
+	if (thread == sched_current()) {
+		/* Recalculate time of the current thread. */
+		sched_lock();
+		{
+			clock_t	new_clock = clock();
+			thread->running_time += new_clock - prev_clock;
+			prev_clock = new_clock;
+		}
+		sched_unlock();
+	}
+
+	return thread->running_time;
+}
+
 /**
  * Called by critical dispatching code with IRQs disabled.
  */
@@ -329,14 +344,14 @@ static void sched_switch(void) {
 
 		prev = runq_current(&rq);
 
-		new_clock = clock();
-		prev->running_time += new_clock - prev_clock;
-		prev_clock = new_clock;
-
 		if (!runq_switch(&rq)) {
 			ipl_disable();
 			goto out;
 		}
+
+		new_clock = clock();
+		prev->running_time += new_clock - prev_clock;
+		prev_clock = new_clock;
 
 		next = runq_current(&rq);
 

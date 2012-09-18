@@ -216,5 +216,16 @@ extern int thread_launch(struct thread *thread);
 extern int thread_set_priority(struct thread *thread,
 		thread_priority_t priority);
 
+/**
+ * Returns running time of the thread. To get better precision should be
+ * called inside sched_lock().
+ *
+ * @param thread
+ *   Thread
+ * @return
+ *   Running time in clocks.
+ */
+extern clock_t thread_get_running_time(struct thread *thread);
+
 #endif /* KERNEL_THREAD_API_H_ */
 

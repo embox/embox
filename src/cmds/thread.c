@@ -29,7 +29,7 @@ static void print_stat(void) {
 	int running, sleeping, suspended;
 	int total;
 
-	printf(" %4s  %8s %18s %6s\n", "Id", "Priority", "State", "Time");
+	printf(" %4s  %8s %18s %10s\n", "Id", "Priority", "State", "Time");
 
 	running = sleeping = suspended = 0;
 
@@ -47,9 +47,9 @@ static void print_stat(void) {
 				sleeping++;
 			}
 
-			printf(" %4d%c %8d %18s %5ld\n", thread->id,
+			printf(" %4d%c %8d %18s %9lds\n", thread->id,
 				thread == thread_self() ? '*' : ' ', thread->priority, state,
-				thread->running_time/CLOCKS_PER_SEC);
+				thread_get_running_time(thread)/CLOCKS_PER_SEC);
 		}
 	}
 	total = running + sleeping;

@@ -150,6 +150,17 @@ extern int sched_change_scheduling_priority(struct thread *t,
 		__thread_priority_t new_priority);
 
 /**
+ * Returns running time of the thread. To get better precision should be
+ * called inside sched_lock().
+ *
+ * @param thread
+ *   Thread
+ * @return
+ *   Running time in clocks.
+ */
+extern clock_t sched_get_running_time(struct thread *thread);
+
+/**
  * @brief Makes thread to run regardless of it's state
  * @param thread Thread to operate with
  *
