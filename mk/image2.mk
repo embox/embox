@@ -169,7 +169,7 @@ endif
 $(image_files): ldflags_all = $(LDFLAGS) $(call fmt_line,$(ld_scripts_flag))
 
 $(image_nosymbols_o): | $$(@D)/. $(dir $(IMAGE).map).
-	$(LD) --relocatable $(ldflags_all) \
+	$(LD) --relocatable $(ldflags) \
 	$(call fmt_line,$(ld_objs)) \
 	$(call fmt_line,$(ld_libs)) \
 	--cref -Map $(IMAGE).map \
