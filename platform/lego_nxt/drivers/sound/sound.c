@@ -20,7 +20,7 @@ EMBOX_UNIT_INIT(sound_init);
 
 static sound_handler_t current_handler = NULL;
 
-static irq_return_t sound_interrupt(int irq_num, void *dev_id) {
+static irq_return_t sound_interrupt(unsigned int irq_num, void *dev_id) {
 	sampleword_t *next_buff;
 	if (current_handler == NULL) { /*inefficient */
 		return IRQ_HANDLED;
@@ -38,9 +38,10 @@ void sound_stop_play(void) {
 
 static int sound_init(void) {
 	int res = 0;
-	res = irq_attach((irq_nr_t) AT91C_ID_SSC,
-		(irq_handler_t) &sound_interrupt, 0,
-		NULL, "Sound Buffer Transfer End");
+	res = irq_attach(AT91C_ID_SSC, sound_interrupt, 0, NULL,
+			"Sound Buffer Transfer End");
+	// TODO error handling?
+
 	/* Enable MCK clock   */
 	REG_STORE(AT91C_PMC_PCER, (1L << AT91C_ID_SSC));
 	/* Disable TD on PA17  */ //???

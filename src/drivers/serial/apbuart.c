@@ -79,7 +79,7 @@ struct apbuart_regs {
 static volatile struct apbuart_regs *dev_regs;
 
 static int dev_regs_init(void);
-static irq_nr_t irq_num;
+static unsigned int irq_num;
 
 
 static int uart_init(void) {

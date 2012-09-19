@@ -37,7 +37,7 @@ OBJALLOC_DEF(irq_actions, struct irq_action, IRQ_NRS_TOTAL);
 
 static struct irq_action *irq_table[IRQ_NRS_TOTAL];
 
-int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, unsigned int flags,
+int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 		void *dev_id, const char *dev_name) {
 	struct irq_action *action;
 	int ret = ENOERR;
@@ -73,7 +73,7 @@ int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, unsigned int flags,
 	return ret;
 }
 
-int irq_detach(irq_nr_t irq_nr, void *dev_id) {
+int irq_detach(unsigned int irq_nr, void *dev_id) {
 	struct irq_action *action;
 	int ret = ENOERR;
 

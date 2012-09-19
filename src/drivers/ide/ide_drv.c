@@ -1134,7 +1134,7 @@ void hd_dpc(void *arg) {
 	}
 }
 
-int hdc_handler(irq_nr_t irq_num, void *arg) {
+static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
   	hd_dpc(arg);
 
 	return IRQ_HANDLED;

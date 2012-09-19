@@ -98,7 +98,7 @@ static cycle_t i8253_read(void) {
 	return cnt;
 }
 
-static irq_return_t clock_handler(int irq_nr, void *dev_id) {
+static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
         clock_tick_handler(irq_nr, dev_id);
         return IRQ_HANDLED;
 }
@@ -128,8 +128,7 @@ static int pit_clock_init(void) {
 	pit_clock_setup(NULL);
 	clock_source_register(&pit_clock_source);
 
-	if (ENOERR != irq_attach((irq_nr_t) IRQ0,
-		(irq_handler_t) &clock_handler, 0, NULL, "PIT")) {
+	if (ENOERR != irq_attach(IRQ0, clock_handler, 0, NULL, "PIT")) {
 		panic("pit timer irq_attach failed");
 	}
 

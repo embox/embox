@@ -54,7 +54,7 @@ void bluetooth_hw_soft_reset(void) {
 	pin_clear_output(CMD_PIN);
 }
 
-static irq_return_t nxt_bt_us_handler(irq_nr_t irq_nr, void *data) {
+static irq_return_t nxt_bt_us_handler(unsigned int irq_nr, void *data) {
 	if (!data_pack) {
 		return IRQ_HANDLED;
 	}
@@ -175,8 +175,9 @@ static int nxt_bluetooth_init(void) {
 
 	data_pack = NULL;
 
-	irq_attach((irq_nr_t) CONFIG_NXT_BT_US_IRQ,
+	irq_attach(CONFIG_NXT_BT_US_IRQ,
 		nxt_bt_us_handler, 0, NULL, "nxt bt reader");
+	// TODO error handling?
 
 	init_usart();
 	init_control_pins();

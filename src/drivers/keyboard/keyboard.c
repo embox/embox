@@ -226,7 +226,7 @@ char keyboard_getc(void) {
 
 
 #if 0
-static irq_return_t kbd_handler(irq_nr_t irq_nr, void *data) {
+static irq_return_t kbd_handler(unsigned int irq_nr, void *data) {
 	uint8_t scancode;
 	scancode = in8(DATA_PORT);
 	//TODO:

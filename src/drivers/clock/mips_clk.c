@@ -22,7 +22,7 @@
 //http://stackoverflow.com/questions/4211555/clock-implementation-in-mips
 // XXX Anton, what is it above? -- Eldar
 
-static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
+static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	uint32_t count = mips_read_c0_count();
 	mips_write_c0_compare(count + 10000);
 	clock_tick_handler(irq_nr, dev_id);
@@ -53,8 +53,9 @@ static struct clock_source mips_clock_source = {
 static int mips_clock_init(void) {
 	clock_source_register(&mips_clock_source);
 
-	if (ENOERR != irq_attach((irq_nr_t) MIPS_IRQN_TIMER ,
-		(irq_handler_t) &clock_handler, 0, NULL, "mips_clk")) {
+	if (ENOERR != irq_attach(MIPS_IRQN_TIMER, clock_handler, 0, NULL,
+			"mips_clk")) {
+		// TODO error handling? -- Eldar
 	}
 
 	return 0;

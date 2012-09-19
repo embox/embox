@@ -57,7 +57,7 @@
  * static functions
  */
 
-static irq_return_t	keyboard_int_handler(irq_nr_t irq_num, void *data);
+static irq_return_t	keyboard_int_handler(unsigned int irq_num, void *data);
 static void 	*kbd_open					(struct file_desc *desc, const char *mode);
 static int 		kbd_close					(struct file_desc *desc);
 static size_t 	kbd_read					(void *buf, size_t size, size_t count, void *file);
@@ -194,7 +194,7 @@ static void *kbd_open(struct file_desc *desc, const char *mode) {
 
 static int kbd_close(struct file_desc *desc) {
 	//tty_t *tp = getTty(file);
-	irq_detach((irq_nr_t) KEYBOARD_IRQ,NULL);
+	irq_detach(KEYBOARD_IRQ,NULL);
 	irqInitialized = true;
 	return 0;
 }
@@ -225,7 +225,7 @@ static int kbd_ioctl(void *file, int request, va_list ar) {
 /**
  * @brief Keyboard Interrupt handler
  */
-irq_return_t keyboard_int_handler(irq_nr_t irq_num, void *data) {
+irq_return_t keyboard_int_handler(unsigned int irq_num, void *data) {
 	int scode;
 	int ch;
 
@@ -503,7 +503,7 @@ tty_t *tp;
 
 	if (!irqInitialized) {
 		/* Set interrupt handler and enable keyboard IRQ. */
-		irq_attach((irq_nr_t) KEYBOARD_IRQ,keyboard_int_handler, 0, NULL, "keyboard");
+		irq_attach(KEYBOARD_IRQ, keyboard_int_handler, 0, NULL, "keyboard");
 		irqInitialized = true;
 	}
 	tp->tty_devread = kb_read;	/* Input function */

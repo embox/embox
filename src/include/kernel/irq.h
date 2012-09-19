@@ -28,17 +28,12 @@
 	((unsigned int) irq_nr < IRQ_NRS_TOTAL)
 
 /**
- * Type representing interrupt request number.
+ * IRQ handler return type.
  */
-typedef unsigned int irq_nr_t;
-
-#define IRQ_NONE    0 /**< Interrupt has not been handled. */
-#define IRQ_HANDLED 1 /**< Interrupt has been processed by the handler*/
-
-/**
- * IRQ handler return type. Must be either #IRQ_HANDLED or #IRQ_NONE.
- */
-typedef int irq_return_t;
+typedef enum {
+	IRQ_NONE    = 0, /**< Interrupt has not been handled. */
+	IRQ_HANDLED = 1, /**< Interrupt has been processed by the handler*/
+} irq_return_t;
 
 /**
  * Interrupt Service Routine type.
@@ -50,16 +45,16 @@ typedef int irq_return_t;
  *
  * @return
  *   Interrupt handling result.
- * @retval IRQ_NONE
+ * @retval #IRQ_NONE
  *   If the ISR didn't actually handled this interrupt.
- * @retval IRQ_HANDLED
+ * @retval #IRQ_HANDLED
  *   If the interrupt has been successfully handled.
  */
-typedef irq_return_t (*irq_handler_t)(irq_nr_t irq_nr, void *data);
+typedef irq_return_t (*irq_handler_t)(unsigned int irq_nr, void *data);
 
 /**
  * Attaches an @link #irq_handler_t interrupt service routine @endlink to the
- * specified @link #irq_nr_t IRQ number @endlink.
+ * specified IRQ.
  *
  * @param irq_nr
  *   The IRQ number to attach the @a handler to.
@@ -85,11 +80,11 @@ typedef irq_return_t (*irq_handler_t)(irq_nr_t irq_nr, void *data);
  * @retval -ENOSYS
  *   If kernel is compiled without IRQ support.
  */
-extern int irq_attach(irq_nr_t irq_nr, irq_handler_t handler,
+extern int irq_attach(unsigned int irq_nr, irq_handler_t handler,
 		unsigned int flags, void *data, const char *dev_name);
 
 /**
- * Detaches ISR from the specified @link #irq_nr_t IRQ number @endlink.
+ * Detaches ISR from the specified IRQ.
  *
  * @param irq_nr
  *   The IRQ number to detach the ISR from.
@@ -107,7 +102,7 @@ extern int irq_attach(irq_nr_t irq_nr, irq_handler_t handler,
  * @retval -ENOSYS
  *   If kernel is compiled without IRQ support.
  */
-extern int irq_detach(irq_nr_t irq_nr, void *data);
+extern int irq_detach(unsigned int irq_nr, void *data);
 
 /**
  * Called by interrupt handler code.

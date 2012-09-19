@@ -92,7 +92,7 @@ static void rtl8139_rx(struct net_device *dev) {
 	}
 }
 
-static irq_return_t rtl8139_interrupt(irq_nr_t irq_num, void *dev_id) {
+static irq_return_t rtl8139_interrupt(unsigned int irq_num, void *dev_id) {
 	unsigned long base_addr = ((struct net_device *) dev_id)->base_addr;
 	uint16_t status = in16(base_addr + RTL8139_ISR);
 

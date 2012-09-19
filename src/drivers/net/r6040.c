@@ -187,7 +187,7 @@ static void r6040_set_rx_start(eth_desc_t* desc) {
 #include <prom/prom_printf.h>
 #if INTERRUPTS_ENABLE
 /* The RDC interrupt handler */
-static irq_return_t irq_handler(irq_nr_t irq_num, void *dev_id) {
+static irq_return_t irq_handler(unsigned int irq_num, void *dev_id) {
 	uint16_t misr, status;
 
 	prom_printf("IRQ!\n");

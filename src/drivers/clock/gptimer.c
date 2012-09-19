@@ -91,12 +91,12 @@ struct gptimer_regs {
 
 static volatile struct gptimer_regs *dev_regs;
 
-static int dev_regs_init(irq_nr_t *irq_nr);
+static int dev_regs_init(unsigned int *irq_nr);
 
 static struct time_event_device gptimer_ed;
 static struct clock_source gptimer_cs;
 
-static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
+static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	// XXX clock_hander is called from arch part
 	clock_tick_handler(irq_nr,dev_id);
 	return IRQ_HANDLED;
@@ -104,7 +104,7 @@ static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 
 static int gptimer_init(void) {
 	uint32_t cfg_reg;
-	irq_nr_t irq_nr;
+	unsigned int irq_nr;
 	int i;
 
 	if (NULL != dev_regs) {
@@ -174,7 +174,7 @@ static struct clock_source gptimer_cs = {
 EMBOX_UNIT_INIT(gptimer_init);
 
 #ifdef DRIVER_AMBAPP
-static int dev_regs_init(irq_nr_t *irq_nr) {
+static int dev_regs_init(unsigned int *irq_nr) {
 	amba_dev_t amba_dev;
 
 	assert(NULL != irq_nr);
@@ -189,7 +189,7 @@ static int dev_regs_init(irq_nr_t *irq_nr) {
 	return 0;
 }
 #elif OPTION_DEFINED(NUMBER,gptimer_base)
-static int dev_regs_init(irq_nr_t *irq_nr) {
+static int dev_regs_init(unsigned int *irq_nr) {
 	assert(NULL != irq_nr);
 	dev_regs = (volatile struct gptimer_regs *) OPTION_GET(NUMBER,gptimer_base);
 	*irq_nr = OPTION_GET(NUMBER,irq_num);

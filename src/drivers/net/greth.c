@@ -159,13 +159,13 @@ static const struct net_device_ops greth_ops = {
 
 };
 
-static irq_return_t greth_irq_handler(irq_nr_t irq_num, void *dev_id) {
+static irq_return_t greth_irq_handler(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
 #ifdef DRIVER_AMBAPP
 #include <kernel/printk.h>
-static int dev_regs_init(irq_nr_t *irq_nr) {
+static int dev_regs_init(unsigned int *irq_nr) {
 	amba_dev_t amba_dev;
 
 	assert(NULL != irq_nr);
@@ -180,7 +180,7 @@ static int dev_regs_init(irq_nr_t *irq_nr) {
 	return 0;
 }
 #elif OPTION_DEFINED(NUMBER,gptimer_base)
-static int dev_regs_init(irq_nr_t *irq_nr) {
+static int dev_regs_init(unsigned int *irq_nr) {
 	assert(NULL != irq_nr);
 	dev_regs = (volatile struct gptimer_regs *) OPTION_GET(NUMBER,greth_base);
 	*irq_nr = OPTION_GET(NUMBER,irq_num);
@@ -196,7 +196,7 @@ static int dev_regs_init(irq_nr_t *irq_nr) {
 static int greth_init(void) {
 	struct net_device *nic;
 	int res;
-	irq_nr_t irq;
+	unsigned int irq;
 
 
 	nic = etherdev_alloc();

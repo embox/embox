@@ -15,7 +15,7 @@ EMBOX_TEST_SUITE("Interrupt priority level tests");
 
 #define TEST_IRQ_NR 10
 
-static irq_return_t test_isr(irq_nr_t irq_nr, void *dev_id) {
+static irq_return_t test_isr(unsigned int irq_nr, void *dev_id) {
 	test_emit((int) dev_id);
 	return IRQ_HANDLED;
 }

@@ -204,7 +204,7 @@ void i2c_write(i2c_port_t *port, uint8_t addr, uint8_t *data, uint32_t count) {
 	port->state = SOFT_I2C_START;
 }
 
-static irq_return_t timer_handler(irq_nr_t irq_nr, void *data) {
+static irq_return_t timer_handler(unsigned int irq_nr, void *data) {
 	size_t i;
 	REG_LOAD(((uint8_t *) AT91C_TC0_SR) + TIMER * sizeof(AT91S_TCB));
 	for (i = 0; i < port_count; i++) {

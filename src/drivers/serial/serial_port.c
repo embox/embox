@@ -176,7 +176,7 @@ static file_operations_t file_op = {
 
 RING_BUFFER_DEF(dev_buff, int, 0x20);
 
-static irq_return_t irq_handler(irq_nr_t irq_nr, void *data) {
+static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
 	int ch;
 	if(uart_has_symbol()) {
 		ch = uart_getc();

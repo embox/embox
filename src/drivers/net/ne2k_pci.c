@@ -277,7 +277,7 @@ static void ne2k_receive(struct net_device *dev) {
 	out8(ENISR_RX | ENISR_RX_ERR, base_addr + EN0_ISR);
 }
 
-static irq_return_t ne2k_handler(irq_nr_t irq_num, void *dev_id) {
+static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 	uint8_t isr, status;
 	net_device_stats_t *stat;
 	unsigned long base_addr;

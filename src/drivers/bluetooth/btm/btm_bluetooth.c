@@ -47,7 +47,7 @@ static int nop(void) {
 CALLBACK_INIT_DEF(btm_bt_rx_handle_t, __bt_rx, nop_rx);
 CALLBACK_INIT_DEF(nxt_bt_state_handle_t, bt_state, nop);
 
-static irq_return_t btm_bt_us_handler(int irq_num, void *dev_id) {
+static irq_return_t btm_bt_us_handler(unsigned int irq_num, void *dev_id) {
 
 	CALLBACK(__bt_rx)(btm_bt_read_len, btm_bt_read_buff);
 
@@ -102,8 +102,8 @@ void bluetooth_hw_hard_reset(void) {
 }
 
 static int btm_bluetooth_init(void) {
-	irq_attach((irq_nr_t) CONFIG_BTM_BT_US_IRQ,
-		(irq_handler_t) &btm_bt_us_handler, 0, NULL, "bt reader");
+	irq_attach(CONFIG_BTM_BT_US_IRQ, btm_bt_us_handler, 0, NULL, "bt reader");
+	// TODO error handling?
 
 	init_usart();
 	return 0;
