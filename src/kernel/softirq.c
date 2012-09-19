@@ -19,6 +19,10 @@
 #include <kernel/critical.h>
 #include <hal/ipl.h>
 
+#if !softirq_nr_valid(SOFTIRQ_NRS_TOTAL - 1)
+# error "Illegal value for SOFTIRQ_NRS_TOTAL"
+#endif
+
 static void softirq_dispatch(void);
 
 CRITICAL_DISPATCHER_DEF(softirq_critical, softirq_dispatch,
