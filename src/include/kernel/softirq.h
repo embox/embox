@@ -15,6 +15,7 @@
 #include <kernel/softirq_lock.h>
 
 #include <embox/unit.h>
+#include <module/embox/kernel/softirq.h>
 
 /**
  * Total amount of possible soft IRQs.
@@ -27,6 +28,10 @@
  */
 #define softirq_nr_valid(softirq_nr) \
 	(1U << (softirq_nr))
+
+#if !softirq_nr_valid(SOFTIRQ_NRS_TOTAL - 1)
+# error "Illegal value for SOFTIRQ_NRS_TOTAL"
+#endif
 
 #define SOFTIRQ_NR_TEST 31
 #define SOFTIRQ_NR_UART 30
