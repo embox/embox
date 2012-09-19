@@ -8,9 +8,11 @@
 
 #include <types.h>
 #include <unistd.h>
-#include <hal/reg.h>
+
 #include <drivers/gpio.h>
 #include <embox/unit.h>
+#include <hal/reg.h>
+#include <hal/system.h>
 
 #define RCC_APB1RSTR  0x40021010
 #define RCC_APB2ENR   0x40021018
@@ -32,9 +34,6 @@ struct uart_stm32 {
 	uint16_t gtpr;
 } __attribute__ ((packed));
 
-#include <module/embox/arch/system.h>
-
-#define CORE_FREQ    OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
 #define BAUD_RATE    OPTION_GET(NUMBER,baud_rate)
 #if 0
 #define HW_FLOW_CTRL OPTION_GET(BOOLEAN,hw_flow)
@@ -89,7 +88,7 @@ static int stm32_usart_init(void) {
 	REG_ORIN(&uart1->cr3, USART_FLAG_RTSE | USART_FLAG_CTSE);
 #endif
 
-	REG_STORE(&uart1->brr, CORE_FREQ / BAUD_RATE);
+	REG_STORE(&uart1->brr, SYS_CLOCK / BAUD_RATE);
 	REG_ORIN(&uart1->cr1, USART_FLAG_RE | USART_FLAG_TE);
 
 	REG_ORIN(&uart1->cr1, USART_FLAG_UE);

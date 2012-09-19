@@ -7,24 +7,20 @@
  * @author Anton Bondarev
  */
 
-
-#include <kernel/time/clock_source.h>
-#include <kernel/irq.h>
-#include <hal/clock.h>
 #include <errno.h>
 
 #include <asm/mipsregs.h>
+#include <hal/clock.h>
+#include <hal/system.h>
+#include <kernel/irq.h>
+#include <kernel/time/clock_source.h>
 
 #include <embox/unit.h>
 
-#include <module/embox/arch/system.h>
-
-#define SYS_CLOCK     OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
-
 #define HZ 1000
 
-
 //http://stackoverflow.com/questions/4211555/clock-implementation-in-mips
+// XXX Anton, what is it above? -- Eldar
 
 static irq_return_t clock_handler(irq_nr_t irq_nr, void *dev_id) {
 	uint32_t count = mips_read_c0_count();

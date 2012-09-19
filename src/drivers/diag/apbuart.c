@@ -8,11 +8,10 @@
 
 #include <types.h>
 
-#include <prom/diag.h>
-#include <hal/reg.h>
-
 #include <embox/unit.h>
-#include <system.h>
+#include <hal/reg.h>
+#include <hal/system.h>
+#include <prom/diag.h>
 
 #define APBUART_BASE  0x80000100
 #define DATA_REG             0x0
@@ -20,8 +19,11 @@
 #define CTRL_REG             0x8
 #define SCALER_REG           0xc
 
+#define BAUD_RATE \
+	OPTION_GET(NUMBER, baud_rate)
+
 #define SCALER_VAL \
-	((((SYS_CLOCK * 10) / (8 * OPTION_GET(NUMBER,baud_rate))) - 5) / 10)
+	(((SYS_CLOCK * 10) / (BAUD_RATE * 8) - 5) / 10)
 
 void diag_init(void) {
 	REG_STORE((volatile uint32_t *) (APBUART_BASE + SCALER_REG), SCALER_VAL);

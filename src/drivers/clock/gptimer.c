@@ -10,21 +10,17 @@
 #include <assert.h>
 #include <types.h>
 #include <errno.h>
-#include <embox/unit.h>
 
+#include <drivers/amba_pnp.h>
+#include <hal/clock.h>
+#include <hal/reg.h>
+#include <hal/system.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
-#include <hal/reg.h>
-#include <drivers/amba_pnp.h>
-
-#include <hal/clock.h>
-
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 
-#include <module/embox/arch/system.h>
-
-#define SYS_CLOCK     OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
+#include <embox/unit.h>
 
 #define SCALER_RELOAD (SYS_CLOCK / 1000000 - 1)
 #define TIMER0_RELOAD (1000000 / 1000 - 1)

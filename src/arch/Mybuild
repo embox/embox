@@ -1,5 +1,6 @@
 package embox.arch
 
+@Mandatory
 module system {
 	option number core_freq
 }

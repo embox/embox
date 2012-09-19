@@ -8,16 +8,17 @@
 
 #include <types.h>
 #include <unistd.h>
-#include <hal/reg.h>
-#include <drivers/gpio.h>
 
+#include <drivers/gpio.h>
+#include <hal/reg.h>
+#include <hal/system.h>
 #include <prom/diag.h>
+
+#include <embox/unit.h>
 
 #define RCC_APB1RSTR  0x40021010
 #define RCC_APB2ENR   0x40021018
 #define RCC_APB2ENR_USART1EN (1 << 14)
-
-#include <embox/unit.h>
 
 struct uart_stm32 {
 	uint16_t sr;
@@ -35,9 +36,6 @@ struct uart_stm32 {
 	uint16_t gtpr;
 } __attribute__ ((packed));
 
-#include <module/embox/arch/system.h>
-
-#define CORE_FREQ    OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
 #define BAUD_RATE    115200
 
 #define UART1 ((struct uart_stm32 *) 0x40013800)
@@ -88,7 +86,7 @@ void diag_init(void) {
 	gpio_out(UART_GPIO, TX_PIN , GPIO_MODE_OUT_ALTERNATE);
 	gpio_in(UART_GPIO, RX_PIN, 0);
 
-	REG_STORE(&uart1->brr, CORE_FREQ / BAUD_RATE);
+	REG_STORE(&uart1->brr, SYS_CLOCK / BAUD_RATE);
 	REG_ORIN(&uart1->cr1, USART_FLAG_RE | USART_FLAG_TE);
 
 	REG_ORIN(&uart1->cr1, USART_FLAG_UE);

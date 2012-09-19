@@ -6,15 +6,15 @@
  * @author Anton Kozlov
  */
 
+#include <types.h>
+
+#include <drivers/at91sam7s256.h>
+#include <drivers/irqctrl.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
+#include <hal/system.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
-#include <types.h>
-#include <drivers/irqctrl.h>
-#include <drivers/at91sam7s256.h>
-
-#include <system.h>
 
 #define AT91_PIT_COUNTER_RES (SYS_CLOCK / 16)
 #define AT91_PIT_EVENT_RES 1000

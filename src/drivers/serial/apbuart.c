@@ -8,18 +8,20 @@
 #include <types.h>
 #include <errno.h>
 
-#include <kernel/irq.h>
-#include <hal/reg.h>
 #include <drivers/amba_pnp.h>
-#include <kernel/printk.h>
 #include <embox/device.h>
+#include <hal/reg.h>
+#include <hal/system.h>
+#include <kernel/irq.h>
+#include <kernel/printk.h>
 
 #include <embox/unit.h>
 
-#include <system.h>
+#define BAUD_RATE \
+	OPTION_GET(NUMBER, baud_rate)
 
 #define UART_SCALER_VAL \
-	((((SYS_CLOCK * 10) / (8 * OPTION_GET(NUMBER,baud_rate))) - 5) / 10)
+	(((SYS_CLOCK * 10) / (BAUD_RATE * 8) - 5) / 10)
 
 /* status register bit masks */
 #define UART_STAT_DR (1 << 0) /**< Data is available for read in RX register*/

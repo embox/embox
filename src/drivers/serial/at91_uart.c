@@ -9,12 +9,17 @@
 #include <hal/reg.h>
 #include <drivers/at91sam7s256.h>
 
-#include <system.h>
+#include <hal/system.h>
 
 /* Baudrate=SYS_CLOCK/(8(2-Over)CD) = MCK/16CD = 18432000/(16*30) = 38400
  * CD = SYS_CLOCK / (16 * UART_BAUD_RATE)
  */
-#define UART_CLOCK_DIVIDER (SYS_CLOCK / (16 * OPTION_GET(NUMBER,baud_rate)))
+#define BAUD_RATE \
+	OPTION_GET(NUMBER, baud_rate)
+
+#define UART_CLOCK_DIVIDER \
+	(SYS_CLOCK / (BAUD_RATE * 16))
+
 #define TTGR_DISABLE 0
 
 int uart_init(void) {

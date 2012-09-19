@@ -6,18 +6,17 @@
  * @author Anton Kozlov
  */
 
+#include <types.h>
+
+#include <drivers/irqctrl.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
+#include <hal/system.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
-#include <types.h>
-#include <drivers/irqctrl.h>
 
 #include <embox/unit.h>
 
-#include <module/embox/arch/system.h>
-
-#define CORE_FREQ OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
 #define CLOCK_DIVIDER 1
 
 #define SYSTICK_IRQ 15
@@ -51,7 +50,7 @@ static int this_init(void) {
 }
 
 static int this_config(struct time_dev_conf * conf) {
-	int reload = CORE_FREQ / (CLOCK_DIVIDER * 1000);
+	int reload = SYS_CLOCK / (CLOCK_DIVIDER * 1000);
 
 	REG_STORE(SYSTICK_CTRL, 0);
 
@@ -80,7 +79,7 @@ static struct time_event_device this_event = {
 
 static struct time_counter_device this_counter = {
 	.read = this_read,
-	.resolution = CORE_FREQ / CLOCK_DIVIDER,
+	.resolution = SYS_CLOCK / CLOCK_DIVIDER,
 };
 
 static struct clock_source this_clock_source = {
