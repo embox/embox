@@ -7,7 +7,8 @@
  */
 
 #include <types.h>
-#include <bitops.h>
+#include <asm/bitops.h>
+#include <hal/reg.h>
 
 #include <drivers/irqctrl.h>
 
@@ -51,12 +52,12 @@ static int unit_init(void) {
 	return 0;
 }
 
-void irqctrl_enable(unsigned int irq_num) {
-	set_bit(&irqc->ier, irq_num);
+void irqctrl_enable(unsigned int irq) {
+	REG_ORIN(&irqc->ier, 1UL << irq);
 }
 
-void irqctrl_disable(unsigned int irq_num) {
-	clear_bit(&irqc->ier, irq_num);
+void irqctrl_disable(unsigned int irq) {
+	REG_ANDIN(&irqc->ier, ~(1UL << irq));
 }
 
 //TODO this not set in microblaze
@@ -64,8 +65,8 @@ void irqctrl_force(unsigned int irq_num) {
 
 }
 
-void irqctrl_clear(unsigned int irq_num) {
-	set_bit(&irqc->iar,irq_num);
+void irqctrl_clear(unsigned int irq) {
+	REG_ORIN(&irqc->iar, 1UL << irq);
 }
 
 /*

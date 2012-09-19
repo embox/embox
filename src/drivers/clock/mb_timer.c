@@ -8,7 +8,7 @@
  */
 
 #include <types.h>
-#include <bitops.h>
+#include <asm/bitops.h>
 #include <embox/unit.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>

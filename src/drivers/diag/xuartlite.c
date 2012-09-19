@@ -8,7 +8,7 @@
  */
 
 #include <types.h>
-#include <bitops.h>
+#include <asm/bitops.h>
 #include <prom/diag.h>
 
 typedef struct diag_regs {

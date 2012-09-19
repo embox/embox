@@ -8,7 +8,7 @@
  */
 
 #include <types.h>
-#include <bitops.h>
+#include <asm/bitops.h>
 #include <kernel/irq.h>
 
 typedef struct uart_regs {
