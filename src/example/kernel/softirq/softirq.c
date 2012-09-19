@@ -25,7 +25,7 @@ EMBOX_EXAMPLE(run);
  * Data should be zero terminated char*
  * Output string and set global flag
  */
-static void handler_hello(softirq_nr_t nt, void* data) {
+static void handler_hello(unsigned int nt, void* data) {
 	printf("softirq #%d, data: %s\n", nt, (char*) data);
 }
 
@@ -33,7 +33,7 @@ static void handler_hello(softirq_nr_t nt, void* data) {
  * Data should be int*.
  * Raise itself several times
  */
-static void handler_recursion(softirq_nr_t nt, void* data) {
+static void handler_recursion(unsigned int nt, void* data) {
 	int* count = (int*) data;
 
 	printf("softirq #%d, data: %d\n", nt, *count);

@@ -19,21 +19,22 @@
 /**
  * Total amount of possible soft IRQs.
  */
-#define SOFTIRQ_NRS_TOTAL OPTION_GET(NUMBER,nrs_total)
-
-#define SOFTIRQ_NR_TEST 31
-#define SOFTIRQ_NR_UART 30
-#define SOFTIRQ_NR_TIMER 0
+#define SOFTIRQ_NRS_TOTAL \
+	OPTION_GET(NUMBER,nrs_total)
 
 /**
  * Checks if the specified softirq_nr represents valid soft IRQ number.
  */
-#define softirq_nr_valid(softirq_nr) ((1 << softirq_nr))
+#define softirq_nr_valid(softirq_nr) \
+	(1U << (softirq_nr))
 
-/**
- * Type representing soft IRQ number.
- */
-typedef unsigned int softirq_nr_t;
+#if !softirq_nr_valid(SOFTIRQ_NRS_TOTAL - 1)
+# error "Illegal value for SOFTIRQ_NRS_TOTAL"
+#endif
+
+#define SOFTIRQ_NR_TEST 31
+#define SOFTIRQ_NR_UART 30
+#define SOFTIRQ_NR_TIMER 0
 
 /**
  * Deferred Interrupt Service Routine type.
@@ -41,7 +42,7 @@ typedef unsigned int softirq_nr_t;
  * @param softirq_nr the interrupt request number being handled
  * @param data the device tag specified at #softirq_install() time
  */
-typedef void (*softirq_handler_t)(softirq_nr_t softirq_nr, void *data);
+typedef void (*softirq_handler_t)(unsigned int softirq_nr, void *data);
 
 /**
  * Installs the handler on the specified soft IRQ number replacing an old one
@@ -57,7 +58,7 @@ typedef void (*softirq_handler_t)(softirq_nr_t softirq_nr, void *data);
  *
  * @see #softirq_nr_valid()
  */
-extern int softirq_install(softirq_nr_t nr, softirq_handler_t handler,
+extern int softirq_install(unsigned int nr, softirq_handler_t handler,
 		void *data);
 
 /**
@@ -70,6 +71,6 @@ extern int softirq_install(softirq_nr_t nr, softirq_handler_t handler,
  * @retval 0 if the activation is done
  * @retval -EINVAL if the @c nr doesn't represent valid soft IRQ number
  */
-extern int softirq_raise(softirq_nr_t nr);
+extern int softirq_raise(unsigned int nr);
 
 #endif /* KERNEL_SOFTIRQ_H_ */

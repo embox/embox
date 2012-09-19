@@ -49,7 +49,7 @@ struct event_msg {
 /**
  * Call handles for all message in queue.
  */
-extern void event_dispatch(softirq_nr_t softirq_nr, void *data);
+extern void event_dispatch(unsigned int softirq_nr, void *data);
 
 /**
  * Send message to handler

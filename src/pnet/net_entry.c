@@ -51,7 +51,7 @@ int netif_rx(void *data) {
 
 static net_node_t entry;
 
-static void pnet_rx_action(softirq_nr_t nr, void *data) {
+static void pnet_rx_action(unsigned int nr, void *data) {
 	struct pnet_pack *pack, *safe;
 	struct list_head *curr, *n;
 	struct pnet_pack *skb_pack;

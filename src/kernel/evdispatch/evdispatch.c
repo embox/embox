@@ -46,7 +46,7 @@ static int event_dispatcher_init(void) {
 	return 0;
 }
 
-void event_dispatch(softirq_nr_t softirq_nr, void *data) {
+void event_dispatch(unsigned int softirq_nr, void *data) {
 	while (!list_empty(&msg_queue)) {
 		struct list_head *result = msg_queue.next;
 		struct event_msg *msg = list_entry(result, struct event_msg, list);

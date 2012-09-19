@@ -25,7 +25,7 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 	}
 }
 
-static void soft_clock_handler(softirq_nr_t softirq_nr, void *data) {
+static void soft_clock_handler(unsigned int softirq_nr, void *data) {
 	timer_strat_sched();
 }
 

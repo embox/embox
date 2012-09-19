@@ -19,7 +19,7 @@
  */
 EMBOX_EXAMPLE(run);
 
-static void softirq_handler(softirq_nr_t softirq_nr, void *data) {
+static void softirq_handler(unsigned int softirq_nr, void *data) {
 	char *param_string = *((char **)data);
 	printk("Softirq handler: %s\n", param_string);
 }

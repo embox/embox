@@ -11,7 +11,7 @@
 #include <linux/interrupt.h>
 #include <kernel/softirq.h>
 
-static void softirq_wrap(softirq_nr_t nr, void *data) {
+static void softirq_wrap(unsigned int nr, void *data) {
 	struct softirq_action *softirq_action = (struct softirq_action *) data;
 
 	softirq_action->action(softirq_action);

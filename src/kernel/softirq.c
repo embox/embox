@@ -36,7 +36,7 @@ static uint32_t softirq_handling;
 typedef uint32_t softipl_t;
 
 
-static softipl_t softipl_save(softirq_nr_t nm) {
+static softipl_t softipl_save(unsigned int nm) {
 	softipl_t sipl = softirq_handling;
 
 	softirq_handling = 1 << nm;
@@ -49,7 +49,7 @@ static void softipl_restore(softipl_t sipl) {
 }
 
 
-int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *data) {
+int softirq_install(unsigned int nr, softirq_handler_t handler, void *data) {
 	ipl_t ipl;
 
 	if (!softirq_nr_valid(nr)) {
@@ -64,7 +64,7 @@ int softirq_install(softirq_nr_t nr, softirq_handler_t handler, void *data) {
 	return 0;
 }
 
-int softirq_raise(softirq_nr_t nr) {
+int softirq_raise(unsigned int nr) {
 	ipl_t ipl;
 
 	if (!softirq_nr_valid(nr)) {
@@ -80,8 +80,8 @@ int softirq_raise(softirq_nr_t nr) {
 	return 0;
 }
 
-static softirq_nr_t softirq_get_dispatch_nm(void) {
-	softirq_nr_t nm;
+static unsigned int softirq_get_dispatch_nm(void) {
+	unsigned int nm;
 	uint32_t pending;
 
 	if(0 == (pending = softirq_pending)) {
@@ -103,7 +103,7 @@ static softirq_nr_t softirq_get_dispatch_nm(void) {
 static void softirq_dispatch(void) {
 	softirq_handler_t handler;
 	void *data;
-	softirq_nr_t nr;
+	unsigned int nr;
 	softipl_t sipl;
 
 	critical_enter(CRITICAL_SOFTIRQ_HANDLER);

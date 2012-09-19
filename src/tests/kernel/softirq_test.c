@@ -16,7 +16,7 @@
 
 EMBOX_TEST_SUITE("basic softirq tests");
 
-static void test_softirq_handler(softirq_nr_t softirq_nr, void *data) {
+static void test_softirq_handler(unsigned int softirq_nr, void *data) {
 	test_emit('c');
 	test_emit((int) data);
 	test_emit('e');
