@@ -15,12 +15,13 @@
 #include <kernel/softirq_lock.h>
 
 #include <embox/unit.h>
+#include <module/embox/kernel/softirq.h>
 
 /**
  * Total amount of possible soft IRQs.
  */
 #define SOFTIRQ_NRS_TOTAL \
-	OPTION_GET(NUMBER,nrs_total)
+	OPTION_MODULE_GET(embox__kernel__softirq, NUMBER, nrs_total)
 
 /**
  * Checks if the specified softirq_nr represents valid soft IRQ number.
