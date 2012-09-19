@@ -8,7 +8,7 @@
 
 #include <embox/cmd.h>
 #include <getopt.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 #include <hal/mm/mmu_core.h>
 #include <stdio.h>
 #include <err.h>

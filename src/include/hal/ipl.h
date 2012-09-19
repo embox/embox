@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Interrupt Priority Level
+ * @brief Interrupt Priority Level.
  *
  * @date 25.11.09
  * @author Eldar Abusalimov
@@ -9,8 +9,7 @@
 #ifndef HAL_IPL_H_
 #define HAL_IPL_H_
 
-/*#include <asm/hal/ipl.h>*/
-#include <module/embox/arch/cpu.h>
+#include <module/embox/arch/interrupt.h>
 
 /**
  * The implementation-dependent type suitable to hold IPL flags.

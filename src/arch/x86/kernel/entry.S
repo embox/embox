@@ -8,6 +8,8 @@
 #include <asm/traps.h>
 #include <asm/entry.h>
 
+	.text
+
 EXCEPTION(0x00, t_excep0)    /* Divide By Zero Exception */
 EXCEPTION(0x01, t_excep1)    /* Debug Exception */
 EXCEPTION(0x02, t_excep2)    /* Non Maskable Interrupt Exception */
@@ -41,24 +43,6 @@ EXCEPTION(0x1d, t_excep29)   /* Reserved Exception */
 EXCEPTION(0x1e, t_excep30)   /* Reserved Exception */
 EXCEPTION(0x1f, t_excep31)   /* Reserved Exception */
 
-IRQ_ENTRY(0) /* system timer (cannot be changed) */
-IRQ_ENTRY(1) /* keyboard controller (cannot be changed) */
-IRQ_ENTRY(2) /* cascaded signals from IRQs 8–15 */
-IRQ_ENTRY(3) /* serial port controller for COM2(shared with COM4, if present) */
-IRQ_ENTRY(4) /* serial port controller for COM1(shared with COM3, if present) */
-IRQ_ENTRY(5) /* LPT port 2  or  sound card */
-IRQ_ENTRY(6) /* floppy disk controller */
-IRQ_ENTRY(7) /* LPT port 1 or sound card(8-bit Sound Blaster and compatibles) */
-
-IRQ_ENTRY(8)  /* real-time clock */
-IRQ_ENTRY(9)  /* open interrupt/available or SCSI host adapter */
-IRQ_ENTRY(10) /* open interrupt / available  or  SCSI  or  NIC */
-IRQ_ENTRY(11) /* open interrupt / available  or  SCSI  or  NIC */
-IRQ_ENTRY(12) /* mouse on PS/2 connector */
-IRQ_ENTRY(13) /* math co-processor/integrated FPU/inter-processor interrupt(use depends on OS) */
-IRQ_ENTRY(14) /* primary ATA channel */
-IRQ_ENTRY(15) /* secondary ATA channel */
-
 // TODO: if ss/esp is changed in the pt_regs structure by a debugger the change must be implemented
 // even if we return without privilege level change. This is not the case now
 
@@ -86,26 +70,3 @@ exception_handler_call_pointer:
 	add     $8, %esp
 	iret
 
-irq_stub:
-	SAVE_ALL
-
-	SETUP_SEGMENTS
-
-	pushl %ss
-	mov	%esp, %eax
-	add	$(21 * 4 - 4 + 8), %eax
-	pushl	%eax
-
-	mov	    %esp, %ebp		/* Save current stack */
-	pushl   %ebp            /* first parameter struct pt_regs *regs */
-
-	.global irq_handler_call_pointer
-	call    irq_handler
-irq_handler_call_pointer:
-
-	movl    %ebp, %esp		/* Restore original stack */
-	add	$(8), %esp
-
-	RESTORE_ALL
-	add     $8, %esp
-	iret

@@ -6,16 +6,9 @@
  * @author Anton Kozlov
  */
 
-#ifndef HAL_INTERRUPT_AT91_AIC_H_
-#define HAL_INTERRUPT_AT91_AIC_H_
+#ifndef IRQCTRL_AT91_AIC_IMPL_H_
+#define IRQCTRL_AT91_AIC_IMPL_H_
 
-#define __INTERRUPT_NRS_TOTAL 32
+#define __IRQCTRL_IRQS_TOTAL 32
 
-#ifndef __ASSEMBLER__
-
-typedef unsigned char __interrupt_nr_t;
-typedef unsigned long __interrupt_mask_t;
-
-#endif /*__ASSEMBLER__*/
-
-#endif /* HAL_INTERRUPT_AT91_AIC_H_ */
+#endif /* IRQCTRL_AT91_AIC_IMPL_H_ */

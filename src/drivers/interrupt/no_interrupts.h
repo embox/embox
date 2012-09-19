@@ -1,21 +1,14 @@
 /**
  * @file
- * @brief No interrupts
+ * @brief No interrupts.
  *
  * @date 24.03.2012
  * @author Anton Kozlov
  */
 
-#ifndef DRIVERS_INTERRUPT_NO_INTERRUPTS
-#define DRIVERS_INTERRUPT_NO_INTERRUPTS
+#ifndef IRQCTRL_STUB_IMPL_H_
+#define IRQCTRL_STUB_IMPL_H_
 
-#define __INTERRUPT_NRS_TOTAL 32
+#define __IRQCTRL_IRQS_TOTAL 0
 
-#ifndef __ASSEMBLER__
-
-typedef unsigned char __interrupt_nr_t;
-typedef unsigned long __interrupt_mask_t;
-
-#endif /*__ASSEMBLER__*/
-
-#endif /* DRIVERS_INTERRUPT_NO_INTERRUPTS */
+#endif /* IRQCTRL_STUB_IMPL_H_ */

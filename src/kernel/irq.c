@@ -23,7 +23,7 @@
 #include <kernel/irq.h>
 #include <kernel/irq_lock.h>
 #include <kernel/critical.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 #include <hal/ipl.h>
 #include <mem/objalloc.h>
 #include <profiler/tracing/trace.h>
@@ -67,7 +67,7 @@ int irq_attach(irq_nr_t irq_nr, irq_handler_t handler, unsigned int flags,
 
 	irq_table[irq_nr] = action;
 
-	interrupt_enable(irq_nr);
+	irqctrl_enable(irq_nr);
 
 	out_unlock: irq_unlock();
 	return ret;
@@ -93,24 +93,22 @@ int irq_detach(irq_nr_t irq_nr, void *dev_id) {
 	objfree(&irq_actions, action);
 	irq_table[irq_nr] = NULL;
 
-	interrupt_disable(irq_nr);
+	irqctrl_disable(irq_nr);
 
 	out_unlock: irq_unlock();
 	return ret;
 }
 
-void irq_dispatch(interrupt_nr_t interrupt_nr) {
-	irq_nr_t irq_nr = interrupt_nr;
+void irq_dispatch(unsigned int irq_nr) {
 	struct irq_action *action;
 	irq_handler_t handler = NULL;
 	void *dev_id = NULL;
 	ipl_t ipl;
 	TRACE_BLOCK_DEF(interrupt_tb);
 
-	assert(interrupt_nr_valid(interrupt_nr));
+	assert(irq_nr_valid(irq_nr));
 
 	trace_point("interrupt");
-
 
 	trace_block_enter(&interrupt_tb);
 

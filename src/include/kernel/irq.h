@@ -15,27 +15,22 @@
 #define KERNEL_IRQ_H_
 
 #include <kernel/irq_lock.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
-/**
- * Total amount of possible IRQs in the system.
- * @note Equals to HAL #INTERRUPT_NRS_TOTAL value.
- */
+/** Total amount of IRQs supported by the system. */
 #define IRQ_NRS_TOTAL \
-	INTERRUPT_NRS_TOTAL
+	IRQCTRL_IRQS_TOTAL
 
 /**
- * Checks if the specified irq_nr represents valid IRQ number.
- * @note The same as HAL @link interrupt_nr_valid() @endlink macro.
+ * Checks if the specified @c irq_nr represents a valid IRQ number.
  */
 #define irq_nr_valid(irq_nr) \
-	interrupt_nr_valid(irq_nr)
+	((unsigned int) irq_nr < IRQ_NRS_TOTAL)
 
 /**
  * Type representing interrupt request number.
- * @note The same as HAL #interrupt_nr_t type.
  */
-typedef interrupt_nr_t irq_nr_t;
+typedef unsigned int irq_nr_t;
 
 #define IRQ_NONE    0 /**< Interrupt has not been handled. */
 #define IRQ_HANDLED 1 /**< Interrupt has been processed by the handler*/
@@ -118,6 +113,6 @@ extern int irq_detach(irq_nr_t irq_nr, void *data);
  * Called by interrupt handler code.
  * @param interrupt_nr the number of interrupt to dispatch
  */
-extern void irq_dispatch(interrupt_nr_t interrupt_nr);
+extern void irq_dispatch(unsigned int interrupt_nr);
 
 #endif /* KERNEL_IRQ_H_ */

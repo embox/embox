@@ -5,14 +5,15 @@
  * @author Nikolay Korotky
  */
 
-#ifndef HAL_IPL_H_
-# error "Do not include this file directly!"
-#endif /* HAL_IPL_H_ */
+#ifndef X86_IPL_IMPL_H_
+#define X86_IPL_IMPL_H_
+
+#ifndef __ASSEMBLER__
 
 #include <types.h>
 #include <asm/flags.h>
 
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 typedef uint32_t __ipl_t;
 
@@ -50,3 +51,7 @@ static inline void ipl_restore(unsigned int ipl) {
 		__asm__ __volatile__ ("sti;\n\t" : : : "memory");
 	}
 }
+
+#endif /* __ASSEMBLER__ */
+
+#endif /* X86_IPL_IMPL_H_ */

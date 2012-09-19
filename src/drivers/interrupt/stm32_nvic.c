@@ -12,7 +12,7 @@
 #include <kernel/critical.h>
 #include <hal/reg.h>
 #include <hal/ipl.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 #include <kernel/irq.h>
 #include <embox/unit.h>
@@ -72,35 +72,24 @@ static int nvic_init(void) {
 	return 0;
 }
 
-void interrupt_enable(interrupt_nr_t interrupt_nr) {
-	assert(interrupt_nr_valid(interrupt_nr));
-
+void irqctrl_enable(unsigned int interrupt_nr) {
 	REG_STORE(NVIC_ENABLE_BASE + interrupt_nr / 8,
 			1 << (interrupt_nr / (8 * sizeof(int)) ));
 }
 
-void interrupt_disable(interrupt_nr_t interrupt_nr) {
-	assert(interrupt_nr_valid(interrupt_nr));
+void irqctrl_disable(unsigned int interrupt_nr) {
 	REG_STORE(NVIC_CLEAR_BASE + interrupt_nr / 8,
 			1 << (interrupt_nr / (8 * sizeof(int)) ));
 }
 
-void interrupt_clear(interrupt_nr_t interrupt_nr) {
-	assert(interrupt_nr_valid(interrupt_nr));
+void irqctrl_clear(unsigned int interrupt_nr) {
 	REG_STORE(NVIC_CLR_PEND_BASE + interrupt_nr / 8,
 			1 << (interrupt_nr / (8 * sizeof(int)) ));
 }
 
-void interrupt_force(interrupt_nr_t interrupt_nr) {
-	assert(interrupt_nr_valid(interrupt_nr));
+void irqctrl_force(unsigned int interrupt_nr) {
 	REG_STORE(NVIC_SET_PEND_BASE + interrupt_nr / 8,
 			1 << (interrupt_nr / (8 * sizeof(int)) ));
-}
-
-interrupt_mask_t interrupt_get_status(void) {
-	return REG_LOAD(NVIC_ACTIVE_BASE) |
-		REG_LOAD(NVIC_ACTIVE_BASE + 4)
-		| REG_LOAD(NVIC_ACTIVE_BASE + 8);
 }
 
 void interrupt_handle(void) {

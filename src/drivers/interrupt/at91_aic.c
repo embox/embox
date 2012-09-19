@@ -14,7 +14,7 @@
 #include <drivers/at91sam7s256.h>
 #include <kernel/irq.h>
 #include <hal/arch.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 #include <hal/reg.h>
 
 #include <embox/unit.h>
@@ -42,31 +42,23 @@ static int unit_init(void) {
 	return 0;
 }
 
-void interrupt_enable(interrupt_nr_t interrupt_nr) {
-	assert(interrupt_nr_valid(interrupt_nr));
+void irqctrl_enable(unsigned int interrupt_nr) {
 	REG_STORE(AT91C_AIC_SMR + interrupt_nr,
 			AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED);
 	REG_STORE(AT91C_AIC_SVR + interrupt_nr, 0);
 	REG_STORE(AT91C_AIC_IECR, 1 << interrupt_nr);
 }
 
-void interrupt_disable(interrupt_nr_t interrupt_nr) {
-	assert(interrupt_nr_valid(interrupt_nr));
+void irqctrl_disable(unsigned int interrupt_nr) {
 	REG_STORE(AT91C_AIC_IDCR, 1 << interrupt_nr);
 }
 
-void interrupt_clear(interrupt_nr_t interrupt_nr) {
-	assert(interrupt_nr_valid(interrupt_nr));
+void irqctrl_clear(unsigned int interrupt_nr) {
 	REG_STORE(AT91C_AIC_ICCR, 1 << interrupt_nr);
 }
 
-void interrupt_force(interrupt_nr_t interrupt_nr) {
-	assert(interrupt_nr_valid(interrupt_nr));
+void irqctrl_force(unsigned int interrupt_nr) {
 	REG_STORE(AT91C_AIC_ISCR, 1 << interrupt_nr);
-}
-
-interrupt_mask_t interrupt_get_status(void) {
-	return REG_LOAD(AT91C_AIC_IMR);
 }
 
 static inline void disable_interrupts(void) {

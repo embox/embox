@@ -1,18 +1,13 @@
 /**
  * @file
- * @brief
  *
  * @author  Anton Kozlov
  * @date    02.07.2012
  */
 
-#ifndef HAL_INTERRUPT_NVIC_H_
-#define HAL_INTERRUPT_NVIC_H_
+#ifndef IRQCTRL_NVIC_IMPL_H_
+#define IRQCTRL_NVIC_IMPL_H_
 
-#define __INTERRUPT_NRS_TOTAL 16
+#define __IRQCTRL_IRQS_TOTAL 16
 
-typedef unsigned char __interrupt_nr_t;
-typedef unsigned long __interrupt_mask_t; //FIXME 83 exceptions in total
-
-
-#endif /* HAL_INTERRUPT_NVIC_H_ */
+#endif /* IRQCTRL_NVIC_IMPL_H_ */

@@ -39,7 +39,10 @@ override CPPFLAGS  = -D__EMBOX__
 override CPPFLAGS += -D"__impl_x(path)=<../path>"
 override CPPFLAGS += -imacros $(AUTOCONF_DIR)/config.h
 override CPPFLAGS += -I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
-override CPPFLAGS += -I$(SRCGEN_DIR)/include
+override CPPFLAGS += -I$(SRCGEN_DIR)/include -I$(SRCGEN_DIR)/src/include
+__srcgen_includes := $(addprefix $(SRCGEN_DIR)/src/,include arch/$(ARCH)/include)
+$(and $(shell $(MKDIR) $(__srcgen_includes)),)
+override CPPFLAGS += $(__srcgen_includes:%=-I%)
 # XXX reduntand flags, agrrrr -- Eldar
 override CPPFLAGS += $(if $(value PLATFORM),-I$(PLATFORM_DIR)/$(PLATFORM)/include)
 override CPPFLAGS += -I$(SRC_DIR)/compat/linux/include -I$(SRC_DIR)/compat/posix/include

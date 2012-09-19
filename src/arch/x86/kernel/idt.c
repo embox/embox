@@ -8,12 +8,15 @@
  * @author Nikolay Korotky
  */
 
+#include <string.h>
 #include <types.h>
+
+#include <asm/io.h>
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <kernel/panic.h>
-#include <asm/io.h>
-#include <string.h>
+
+#include <module/embox/arch/interrupt.h>
 
 #define IDT_SIZE 256
 
@@ -79,8 +82,34 @@ void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr) {
 #define IDT_EXCEPT(nr) \
 	idt_set_gate(nr, (unsigned) __FWD_DECL(t_excep##nr), 0x08, 0x8E)
 
+static void idt_init_except(void) {
+	IDT_EXCEPT(0);  IDT_EXCEPT(1);  IDT_EXCEPT(2);  IDT_EXCEPT(3);
+	IDT_EXCEPT(4);  IDT_EXCEPT(5);  IDT_EXCEPT(6);  IDT_EXCEPT(7);
+	IDT_EXCEPT(8);  IDT_EXCEPT(9);  IDT_EXCEPT(10); IDT_EXCEPT(11);
+	IDT_EXCEPT(12); IDT_EXCEPT(13); IDT_EXCEPT(14); IDT_EXCEPT(15);
+	IDT_EXCEPT(16); IDT_EXCEPT(17); IDT_EXCEPT(18); IDT_EXCEPT(19);
+	IDT_EXCEPT(20); IDT_EXCEPT(21); IDT_EXCEPT(22); IDT_EXCEPT(23);
+	IDT_EXCEPT(24); IDT_EXCEPT(25); IDT_EXCEPT(26); IDT_EXCEPT(27);
+	IDT_EXCEPT(28); IDT_EXCEPT(29); IDT_EXCEPT(30); IDT_EXCEPT(31);
+}
+
+#ifndef INTERRUPT_STUB
+
 #define IDT_IRQ(nr) \
 	idt_set_gate(nr + 32, (unsigned) __FWD_DECL(irq##nr), 0x08, 0x8E)
+
+static void idt_init_irq(void) {
+	/* Master PIC */
+	IDT_IRQ(0);  IDT_IRQ(1);  IDT_IRQ(2);  IDT_IRQ(3);
+	IDT_IRQ(4);  IDT_IRQ(5);  IDT_IRQ(6);  IDT_IRQ(7);
+	/* Slave PIC */
+	IDT_IRQ(8);  IDT_IRQ(9);  IDT_IRQ(10); IDT_IRQ(11);
+	IDT_IRQ(12); IDT_IRQ(13); IDT_IRQ(14); IDT_IRQ(15);
+}
+
+#else
+#define idt_init_irq() do { } while(0)
+#endif /* INTERRUPT_STUB */
 
 void idt_init(void) {
 	static struct idt_pointer idt_ptr;
@@ -91,22 +120,8 @@ void idt_init(void) {
 	/* zero IDT */
 	memset((unsigned char*) &idt, 0, sizeof(idt));
 
-	IDT_EXCEPT(0);  IDT_EXCEPT(1);  IDT_EXCEPT(2);  IDT_EXCEPT(3);
-	IDT_EXCEPT(4);  IDT_EXCEPT(5);  IDT_EXCEPT(6);  IDT_EXCEPT(7);
-	IDT_EXCEPT(8);  IDT_EXCEPT(9);  IDT_EXCEPT(10); IDT_EXCEPT(11);
-	IDT_EXCEPT(12); IDT_EXCEPT(13); IDT_EXCEPT(14); IDT_EXCEPT(15);
-	IDT_EXCEPT(16); IDT_EXCEPT(17); IDT_EXCEPT(18); IDT_EXCEPT(19);
-	IDT_EXCEPT(20); IDT_EXCEPT(21); IDT_EXCEPT(22); IDT_EXCEPT(23);
-	IDT_EXCEPT(24); IDT_EXCEPT(25); IDT_EXCEPT(26); IDT_EXCEPT(27);
-	IDT_EXCEPT(28); IDT_EXCEPT(29); IDT_EXCEPT(30); IDT_EXCEPT(31);
-
-	/* Master PIC */
-	IDT_IRQ(0);  IDT_IRQ(1);  IDT_IRQ(2);  IDT_IRQ(3);
-	IDT_IRQ(4);  IDT_IRQ(5);  IDT_IRQ(6);  IDT_IRQ(7);
-
-	/* Slave PIC */
-	IDT_IRQ(8);  IDT_IRQ(9);  IDT_IRQ(10); IDT_IRQ(11);
-	IDT_IRQ(12); IDT_IRQ(13); IDT_IRQ(14); IDT_IRQ(15);
+	idt_init_except();
+	idt_init_irq();
 
 	/* Load IDT */
 	__asm__ __volatile__(

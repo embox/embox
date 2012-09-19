@@ -10,7 +10,7 @@
 #define PROFILER_MEASURING_MEASURE_H_
 
 #include <types.h>
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 typedef struct {
 	uint32_t ticks; /* system ticks */
@@ -18,7 +18,7 @@ typedef struct {
 	/* choosed so for good packing (is it good?) */
 } measure_time_t;
 
-extern measure_time_t irq_process[INTERRUPT_NRS_TOTAL];
+extern measure_time_t irq_process[IRQCTRL_IRQS_TOTAL];
 extern measure_time_t irq_head, irq_tail;
 extern measure_time_t measure_overhead;
 
@@ -27,7 +27,7 @@ extern measure_time_t measure_overhead;
  * @param interrupt measured interrupt
  * @param ticks count of ticks spent in handler
  */
-extern void measure_irq_process(interrupt_nr_t interrupt, measure_time_t *time);
+extern void measure_irq_process(unsigned int interrupt, measure_time_t *time);
 
 /**
  * Process measuring of pre-dispatch irq handler

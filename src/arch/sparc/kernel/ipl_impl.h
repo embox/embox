@@ -1,7 +1,14 @@
+/**
+ * @file
+ *
+ * @date 25.11.09
+ * @author Eldar Abusalimov
+ */
+
+#ifndef SPARC_IPL_IMPL_H_
+#define SPARC_IPL_IMPL_H_
+
 #ifndef __ASSEMBLER__
-#ifndef HAL_IPL_H_
-# error "Do not include this file directly!"
-#endif /* HAL_IPL_H_ */
 
 #include <asm/psr.h>
 
@@ -54,3 +61,6 @@ static inline void ipl_restore(unsigned int ipl) {
 }
 
 #endif /* __ASSEMBLER__ */
+
+#endif /* SPARC_IPL_IMPL_H_ */
+

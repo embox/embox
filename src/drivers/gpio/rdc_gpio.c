@@ -7,7 +7,6 @@
  */
 
 #include <asm/io.h>
-#include <linux/init.h>
 #include <embox/unit.h>
 
 #include <drivers/gpio.h>

@@ -20,8 +20,12 @@ module locore extends embox.arch.locore {
 	source "ipl.c", "exception_handler.c", "traps_core.c"
 
 	depends embox.lib.LibC
-	depends embox.arch.interrupt
 	depends embox.kernel.critical
+}
+
+module interrupt extends embox.arch.interrupt {
+	source "interrupt_entry.S", "ipl_impl.h"
+	depends locore
 }
 
 /*FIXME mybuild arch module what is it */

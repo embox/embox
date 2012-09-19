@@ -13,15 +13,17 @@
 
 #include <types.h>
 
+#include <asm/io.h>
 #include <asm/regs.h>
 #include <asm/traps.h>
-#include <asm/io.h>
 #include <drivers/i8259.h>
+#include <drivers/irqctrl.h>
 #include <hal/arch.h>
 #include <hal/reg.h>
-#include <hal/interrupt.h>
 
 #include <embox/unit.h>
+
+#include "i8259_regs.h"
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -53,7 +55,7 @@ static int unit_init(void) {
 	out8(PICM_MASK, PIC1_DATA);
 	out8(PICS_MASK, PIC2_DATA);
 
-	interrupt_enable(2); /* enable slave irq controller irq 8-16 */
+	irqctrl_enable(2); /* enable slave irq controller irq 8-16 */
 
 	return 0;
 }
@@ -62,44 +64,40 @@ void apic_init(void) {
 	unit_init();
 }
 
-void interrupt_enable(interrupt_nr_t int_nr) {
-	if (int_nr > 8) {
-		out8(in8(PIC2_DATA) & ~(1 << (int_nr - 8)), PIC2_DATA);
+void irqctrl_enable(unsigned int irq) {
+	if (irq < 8) {
+		out8(in8(PIC1_DATA) & ~(1 << irq), PIC1_DATA);
 	} else {
-		out8(in8(PIC1_DATA) & ~(1 << int_nr), PIC1_DATA);
+		out8(in8(PIC2_DATA) & ~(1 << (irq - 8)), PIC2_DATA);
 	}
 }
 
-void interrupt_disable(interrupt_nr_t int_nr) {
-	if (int_nr > 8) {
-		out8(in8(PIC2_DATA) | (1 << (int_nr - 8)), PIC2_DATA);
+void irqctrl_disable(unsigned int irq) {
+	if (irq < 8) {
+		out8(in8(PIC1_DATA) | (1 << irq), PIC1_DATA);
 	} else {
-		out8(in8(PIC1_DATA) | (1 << int_nr), PIC1_DATA);
+		out8(in8(PIC2_DATA) | (1 << (irq - 8)), PIC2_DATA);
 	}
 }
 
-void interrupt_force(interrupt_nr_t irq_num) {
+void irqctrl_force(unsigned int irq) {
 	// TODO Emm?.. -- Eldar
 }
 
-void irqc_set_mask(__interrupt_mask_t mask) {
-	out8(mask & 0xff, PIC1_DATA);
-	out8((mask >> 8) & 0xff, PIC2_DATA);
-}
-
-__interrupt_mask_t irqc_get_mask(void) {
-	return (in8(PIC2_DATA) << 8) | in8(PIC1_DATA);
-}
-
-int i8259_irq_pending(interrupt_nr_t irq) {
-	int ret;
-	unsigned int mask = 1 << irq;
-
+int i8259_irq_pending(unsigned int irq) {
 	if (irq < 8) {
-		ret = in8(PIC1_COMMAND) & mask;
+		return in8(PIC1_COMMAND) & (1 << irq);
 	} else {
-		ret = in8(PIC2_COMMAND) & (mask >> 8);
+		return in8(PIC2_COMMAND) & (1 << (irq - 8));
 	}
+}
 
-	return ret;
+/* Sends an EOI (end of interrupt) signal to the PICs. */
+void i8259_send_eoi(unsigned int irq) {
+	if (irq >= 8) {
+		/* Send reset signal to slave. */
+		out8(NON_SPEC_EOI, PIC2_COMMAND);
+	}
+	/* Send reset signal to master. (As well as to slave, if necessary). */
+	out8(NON_SPEC_EOI, PIC1_COMMAND);
 }

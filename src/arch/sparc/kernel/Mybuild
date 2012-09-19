@@ -6,23 +6,26 @@ module context extends embox.arch.context {
 
 module leon3 extends embox.arch.cpu {
 	option number nwindows=8
-	source "../include/asm/hal/ipl.h"
 }
 
-/*FIXME mybuild may be split this to differernt modules */
 module locore extends embox.arch.locore {
 	source "entry.S"
-	source "traps.c"
 	source "trap_save.S"
 	source "trap_restore.S"
-	//source "traps_core.c"
+	source "traps.c"
 	source "winflush.S"
+
 	depends boot
 	depends leon3
 }
 
 module boot extends embox.arch.boot {
 	source "head.S"
+}
+
+module interrupt extends embox.arch.interrupt {
+	source "interrupt_entry.S", "ipl_impl.h"
+	depends locore
 }
 
 /*FIXME mybuild arch module what is it */

@@ -135,7 +135,7 @@ define class-Mybuild
 				$(MyFile_ModuleType))
 					.getAnnotationsOfType,$(mandatory))
 						.target),
-			$(invoke moduleInstance,$(module))))
+			$(invoke moduleInstance,$(invoke annotationProcess,$(module)))))
 
 	# Gets all modulesInstance's created according configResourceSet
 	#

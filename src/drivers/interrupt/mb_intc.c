@@ -9,7 +9,7 @@
 #include <types.h>
 #include <bitops.h>
 
-#include <hal/interrupt.h>
+#include <drivers/irqctrl.h>
 
 #include <embox/unit.h>
 
@@ -51,20 +51,20 @@ static int unit_init(void) {
 	return 0;
 }
 
-void interrupt_enable(interrupt_nr_t irq_num) {
+void irqctrl_enable(unsigned int irq_num) {
 	set_bit(&irqc->ier, irq_num);
 }
 
-void interrupt_disable(interrupt_nr_t irq_num) {
+void irqctrl_disable(unsigned int irq_num) {
 	clear_bit(&irqc->ier, irq_num);
 }
 
 //TODO this not set in microblaze
-void interrupt_force(interrupt_nr_t irq_num) {
+void irqctrl_force(unsigned int irq_num) {
 
 }
 
-void interrupt_clear(interrupt_nr_t irq_num) {
+void irqctrl_clear(unsigned int irq_num) {
 	set_bit(&irqc->iar,irq_num);
 }
 
@@ -72,14 +72,7 @@ void interrupt_clear(interrupt_nr_t irq_num) {
  * Microblaze specific functions:
  */
 
-__interrupt_mask_t interrupt_get_status(void) {
+unsigned int mb_intc_get_pending(void) {
 	return irqc->isr;
 }
 
-void irqc_set_mask(__interrupt_mask_t mask) {
-	irqc->ier = mask;
-}
-
-__interrupt_mask_t irqc_get_mask(void) {
-	return irqc->ier;
-}

@@ -6,24 +6,18 @@
  * @author Anton Bondarev
  */
 
-#ifndef HAL_INTERRUPT_MB_INTC_H_
-#define HAL_INTERRUPT_MB_INTC_H_
+#ifndef IRQCTRL_MB_INTC_IMPL_H_
+#define IRQCTRL_MB_INTC_IMPL_H_
 
-#define __INTERRUPT_NRS_TOTAL 16
+#define __IRQCTRL_IRQS_TOTAL 16
 
 #ifndef __ASSEMBLER__
 
-typedef unsigned char __interrupt_nr_t;
-typedef unsigned int __interrupt_mask_t;
-
 /**
- * return isr register for mb_intc
+ * return ISR register for mb_intc.
  */
-extern __interrupt_mask_t interrupt_get_status(void);
-
-extern void irqc_set_mask(__interrupt_mask_t mask);
-extern __interrupt_mask_t irqc_get_mask(void);
+extern unsigned int mb_intc_get_pending(void);
 
 #endif /*__ASSEMBLER__*/
 
-#endif /* HAL_INTERRUPT_MB_INTC_H_ */
+#endif /* IRQCTRL_MB_INTC_IMPL_H_ */

@@ -7,8 +7,9 @@ module system {
 abstract module cpu {
 }
 
-abstract module interrupt {
-}
+@Mandatory
+@DefaultImpl(embox.arch.generic.interrupt_stub)
+abstract module interrupt { }
 
 abstract module clock {
 }

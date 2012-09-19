@@ -14,7 +14,6 @@
 #include <net/inetdevice.h>
 #include <net/route.h>
 #include <net/bootp.h>
-#include <linux/init.h>
 #include <net/ip_fragment.h>
 #include <net/skbuff.h>
 #include <net/icmp.h>

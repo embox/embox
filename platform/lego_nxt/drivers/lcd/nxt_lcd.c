@@ -7,7 +7,6 @@
  */
 
 #include <embox/unit.h>
-#include <linux/init.h>
 #include <hal/reg.h>
 #include <string.h>
 #include <drivers/at91sam7s256.h>
