@@ -10,11 +10,15 @@
 #include <net/ip.h>
 #include <net/socket.h>
 #include <net/inetdevice.h>
+#include <util/ring_buff.h>
 #include <embox/cmd.h>
 #include <cmd/shell.h>
 #include <err.h>
 #include <errno.h>
 #include <kernel/task.h>
+#include <fs/ioctl.h>
+#include <sys/ioctl.h>
+
 EMBOX_CMD(exec);
 
 	/* Upper limit of concurent telnet connections.
@@ -124,6 +128,9 @@ static void *shell_hnd(void* args) {
 	dup2(pipefd1[sock][1], STDIN_FILENO);
 	dup2(pipefd2[sock][0], STDOUT_FILENO);
 
+	/* block shell on writing */
+	ioctl(pipefd2[sock][0], O_NONBLOCK, 0);
+
 	shell_run();
 
 	return NULL;
@@ -146,7 +153,10 @@ static void set_our_term_parameters(void) {
 
 	/* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
-	unsigned char buf[128];
+	unsigned char sbuff[128], pbuff[128];
+	unsigned char *s = sbuff, *p = pbuff;
+	int sock_data_len = 0; /* len of rest of socket data in local buffer sbuff */
+	int pipe_data_len = 0; /* len of rest of pipe data in local buffer pbuff */
 	int sock = *(int *)args;
 
 	close(STDIN_FILENO);
@@ -180,12 +190,24 @@ static void *telnet_thread_handler(void* args) {
 	while(1) {
 		int len;
 
-		if ((len = read(pipefd2[sock][1], buf, 128)) > 0) {
-			write(sock, buf, len);
+		if (pipe_data_len > 0) {
+			if ((len = write(sock, p, pipe_data_len)) > 0) {
+				pipe_data_len -= len;
+				p += len;
+			}
+		} else {
+			p = pbuff;
+			pipe_data_len = read(pipefd2[sock][1], p, 128);
 		}
 
-		if ((len = read(sock, buf, 128)) > 0) {
-			write(pipefd1[sock][0], buf, len);
+		if (sock_data_len > 0) {
+			if ((len = write(pipefd1[sock][0], s, sock_data_len)) > 0) {
+				sock_data_len -= len;
+				s += len;
+			}
+		} else {
+			s = sbuff;
+			sock_data_len = read(sock, s, 128);
 		}
 	}
 
@@ -194,7 +216,6 @@ static void *telnet_thread_handler(void* args) {
 
 	return NULL;
 }
-
 
 static int exec(int argc, char **argv) {
 	int res;

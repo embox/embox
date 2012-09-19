@@ -21,7 +21,7 @@ static int pipefd[2];
 static const char *str = "EMBOX PIPE TEST";
 static char buf[64];
 
-static void *write_task_hnd(void *arg) {
+static void *read_task_hnd(void *arg) {
 	int cnt = 0;
 
 	while (read(pipefd[1], buf + cnt, 1) >= 0) {
@@ -33,16 +33,16 @@ static void *write_task_hnd(void *arg) {
 	return NULL;
 }
 
-static void *read_task_hnd(void *arg) {
+static void *write_task_hnd(void *arg) {
 	pipe(pipefd);
 
 	write(pipefd[0], (void*)str, strlen(str));
 
-	tid_write = new_task(write_task_hnd, NULL);
+	tid_write = new_task(read_task_hnd, NULL);
 
 	return NULL;
 }
 
 TEST_CASE("test read/write pipe operations: Running two tasks and link them by pipe") {
-	tid_read = new_task(read_task_hnd, NULL);
+	tid_read = new_task(write_task_hnd, NULL);
 }

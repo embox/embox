@@ -9,7 +9,6 @@
 #ifndef FS_IOCTL_H_
 #define FS_IOCTL_H_
 
-#define O_NONBLOCK_SET 1
-#define O_NONBLOCK_CLEAR 2
+#define O_NONBLOCK 0
 
 #endif

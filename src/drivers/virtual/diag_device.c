@@ -111,15 +111,13 @@ static size_t diag_write(const void *buff, size_t size, size_t count, void *file
 
 static int diag_ctl(void *file, int request, va_list args) {
 	switch (request) {
-	case O_NONBLOCK_SET:
-		nonblocking = 1;
-		break;
-	case O_NONBLOCK_CLEAR:
-		nonblocking = 0;
-		break;
+	case O_NONBLOCK:
+		nonblocking = va_arg(args, int);
 	default:
-		break;
+		/* SET_ERRNO(EINVAL) */
+		return -1; /* no such request value */
 	}
+
 	return 0;
 }
 

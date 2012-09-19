@@ -11,6 +11,7 @@
 #include <util/async_ring_buff.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <fs/ioctl.h> /* it must be sys/ioctl.h --Alexander */
 #include <framework/mod/options.h>
 
 #define PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
@@ -30,12 +31,22 @@ static const struct task_idx_ops pipe_ops = {
 		.type = TASK_RES_OPS_REGULAR /* it is so? */
 };
 
+struct pipe {
+	struct async_ring_buff buff;
+	struct event nonfull; /* activates the writer */
+	struct event nonempty; /* activates the reader */
+	int nonblock;
+};
+
 int pipe(int pipefd[2]) {
 	int res;
-	struct async_ring_buff *pipe_buff = malloc(sizeof(struct async_ring_buff));
+	struct pipe *pipe = malloc(sizeof(struct pipe));
+	struct async_ring_buff *pipe_buff = &pipe->buff;
 	void *storage = malloc(PIPE_BUFFER_SIZE);
 
 	async_ring_buff_init(pipe_buff, 1, PIPE_BUFFER_SIZE, storage);
+
+	pipe->nonblock = 1; /* pipe is non block by default */
 
 	pipefd[0] = task_self_idx_alloc(&pipe_ops, pipe_buff);
 	if (pipefd[0] < 0) {
@@ -60,32 +71,75 @@ int pipe(int pipefd[2]) {
 }
 
 static int pipe_close(void *data) {
-	struct async_ring_buff *pipe_buff = (struct async_ring_buff*) data;
+	struct pipe *pipe= (struct pipe*) data;
 
-	free(pipe_buff->buffer.storage);
-	free(pipe_buff);
+	free(pipe->buff.buffer.storage);
+	free(pipe);
 
 	return 0;
 }
 
 static int pipe_read(void *data, void *buf, size_t nbyte) {
+	int len;
+	struct pipe *pipe = (struct pipe*)data;
+
 	if (!buf) {
 		return -1;
 	}
 
-	return async_ring_buff_deque((struct async_ring_buff*)data, buf, nbyte);
+	if (!pipe->nonblock) {
+		while ((len = async_ring_buff_deque(&pipe->buff, (void*)buf, nbyte)) <= 0) {
+			event_wait(&pipe->nonempty, SCHED_TIMEOUT_INFINITE);
+		}
+
+		if (len > 0)
+			event_notify(&pipe->nonfull);
+	} else {
+		return async_ring_buff_deque(&pipe->buff, (void*)buf, nbyte);
+	}
+
+	return len;
 }
 
 static int pipe_write(void *data, const void *buf, size_t nbyte) {
+	int len;
+	struct pipe *pipe = (struct pipe*)data;
+
 	if (!buf) {
 		return -1;
 	}
 
-	return async_ring_buff_enque((struct async_ring_buff*)data, (void*)buf, nbyte);
+	if (!pipe->nonblock) {
+		while ((len = async_ring_buff_enque(&pipe->buff, (void*)buf, nbyte)) <= 0) {
+			event_wait(&pipe->nonfull, SCHED_TIMEOUT_INFINITE);
+		}
+
+		if (len > 0)
+			event_notify(&pipe->nonempty);
+	} else {
+		return async_ring_buff_enque(&pipe->buff, (void*)buf, nbyte);
+	}
+
+	return len;
 }
 
 static int pipe_ioctl(void *data, int request, va_list args) {
-	return 0; /* do nothing */
+	struct pipe *pipe = (struct pipe*)data;
+
+	switch (request) {
+	case O_NONBLOCK:
+		pipe->nonblock = va_arg(args, int);
+		if (!pipe->nonblock) {
+			event_init(&pipe->nonfull, "pipe_is_nonfull");
+			event_init(&pipe->nonempty, "pipe_is_nonempty");
+		}
+		break;
+	default:
+		/* SET_ERRNO(EINVAL) */
+		return -1; /* no such request value */
+	}
+
+	return 0;
 }
 
 static int pipe_fseek(void *data, long int offset, int origin) {
