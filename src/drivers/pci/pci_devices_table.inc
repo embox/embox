@@ -10,7 +10,11 @@
 /* Atheros */
 { PCI_VENDOR_ID_ATHEROS,  PCI_DEV_ID_ATHEROS_AR9283,         "AR928X Wireless Network Adapter"},
 /* RDC */
-{ PCI_VENDOR_ID_RDC,      PCI_DEVICE_ID_RDC_R6040,           "R6040 MAC Controller"},
+{ PCI_VENDOR_ID_RDC,      PCI_DEV_ID_RDC_R6020,              "North Bridge"},
+{ PCI_VENDOR_ID_RDC,      PCI_DEV_ID_RDC_R6030,              "ISA Bridge"},
+{ PCI_VENDOR_ID_RDC,      PCI_DEV_ID_RDC_R6040,              "R6040 MAC Controller"},
+{ PCI_VENDOR_ID_RDC,      PCI_DEV_ID_RDC_R6060,              "USB 1.1 Controller"},
+{ PCI_VENDOR_ID_RDC,      PCI_DEV_ID_RDC_R6061,              "USB 2.0 Controller"},
 /* Intel */
 { PCI_VENDOR_ID_INTEL,    PCI_DEV_ID_INTEL_82441,            "Intel 82441 CPU to PCI bridge"},
 { PCI_VENDOR_ID_INTEL,    PCI_DEV_ID_INTEL_82801BAM_PCI,     "82801 Mobile PCI Bridge"},

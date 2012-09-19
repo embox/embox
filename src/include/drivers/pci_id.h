@@ -25,7 +25,11 @@
 #define PCI_DEV_ID_REALTEK_8139           0x8139
 
 /* RDC device id's */
-#define PCI_DEVICE_ID_RDC_R6040           0x6040
+#define PCI_DEV_ID_RDC_R6020              0x6020
+#define PCI_DEV_ID_RDC_R6030              0x6030
+#define PCI_DEV_ID_RDC_R6040              0x6040
+#define PCI_DEV_ID_RDC_R6060              0x6060
+#define PCI_DEV_ID_RDC_R6061              0x6061
 
 /* Ricoh device id's */
 #define PCI_DEV_ID_RICOH_RL5C476          0x0476
