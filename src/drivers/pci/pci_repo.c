@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief TODO only for lspci command
  *
  * @date 28.06.2011
@@ -12,7 +11,6 @@
 #include <drivers/pci_id.h>
 #include <drivers/pci_repo.h>
 #include <drivers/pci.h>
-
 
 typedef struct pci_vendor {
 	uint16_t    ven_id;

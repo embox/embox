@@ -1,21 +1,19 @@
 /**
  * @file
  *
- * @date Sep 6, 2012
- * @author: Anton Bondarev
+ * @date 06.09.12
+ * @author Anton Bondarev
  */
 
 #include <drivers/pci.h>
 #include <framework/mod/api.h>
 
-ARRAY_SPREAD_DEF(const struct pci_driver *,
-		__pci_driver_registry);
-
+ARRAY_SPREAD_DEF(const struct pci_driver *, __pci_driver_registry);
 
 static const struct pci_driver * pci_driver_find(uint16_t ven_id, uint16_t dev_id) {
 	const struct pci_driver *pci_drv;
 	array_foreach(pci_drv, __pci_driver_registry, ARRAY_SPREAD_SIZE(__pci_driver_registry)) {
-		if(ven_id == pci_drv->ven_id &&  dev_id == pci_drv->dev_id) {
+		if (ven_id == pci_drv->ven_id && dev_id == pci_drv->dev_id) {
 			return pci_drv;
 		}
 	}
@@ -30,7 +28,7 @@ int pci_driver_load(struct pci_slot_dev *dev) {
 
 	drv = pci_driver_find(dev->vendor, dev->device);
 
-	if(NULL == drv) {
+	if (NULL == drv) {
 		return -1;
 	}
 
@@ -45,5 +43,3 @@ int pci_driver_load(struct pci_slot_dev *dev) {
 
 	return 0;
 }
-
-

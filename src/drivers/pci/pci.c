@@ -58,17 +58,18 @@ static int pci_get_slot_info(struct pci_slot_dev *dev) {
 	pci_read_config8(dev->busn, devfn, PCI_REVISION_ID, &dev->rev);
 	pci_read_config8(dev->busn, devfn, PCI_INTERRUPT_LINE, &dev->irq);
 
-	for(bar_num = 0; bar_num < ARRAY_SIZE(dev->bar); bar_num ++) {
-		pci_read_config32(dev->busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2),
-						&dev->bar[bar_num]);
+	for (bar_num = 0; bar_num < ARRAY_SIZE(dev->bar); bar_num ++) {
+		pci_read_config32(dev->busn, devfn,
+			PCI_BASE_ADDR_REG_0 + (bar_num << 2), &dev->bar[bar_num]);
 	}
 	dev->func = PCI_FUNC(devfn);
 	dev->slot = PCI_SLOT(devfn);
 
 	return 0;
 }
+
 /* global quantity founded pci devices */
-static int dev_cnt = 0;
+static size_t dev_cnt = 0;
 
 /* insert information about pci device into the repository */
 static inline int pci_add_dev(struct pci_slot_dev *dev) {
@@ -81,7 +82,7 @@ static inline int pci_add_dev(struct pci_slot_dev *dev) {
 /* collecting information about available device on the pci bus */
 static int pci_scan_start(void) {
 	uint32_t bus, devfn;
-	unsigned char hdr_type, is_multi = 0;
+	uint8_t hdr_type, is_multi = 0;
 	struct pci_slot_dev *new_dev;
 
 	if (!slist_empty(&__pci_devs_list)) {
@@ -102,8 +103,8 @@ static int pci_scan_start(void) {
 			pci_read_config8(bus, devfn, PCI_HEADER_TYPE, &hdr_type);
 			if (!PCI_FUNC(devfn)) {
 				/* If bit 7 of this register is set, the device
-				has multiple functions; otherwise,
-				it is a single function device */
+				 * has multiple functions;
+				 * otherwise, it is a single function device */
 				is_multi = hdr_type & (1 << 7);
 			}
 
@@ -114,11 +115,11 @@ static int pci_scan_start(void) {
 
 			/*add bus and device to list*/
 			new_dev = pool_alloc(&devs_pool);
-			new_dev->busn = (uint8_t)bus;
-			new_dev->func = (uint8_t)devfn;
+			new_dev->busn = (uint8_t) bus;
+			new_dev->func = (uint8_t) devfn;
 
-			new_dev->vendor = (uint16_t)vendor_reg & 0xffff;
-			new_dev->device = (uint16_t)(vendor_reg >> 16) & 0xffff;
+			new_dev->vendor = (uint16_t) vendor_reg & 0xffff;
+			new_dev->device = (uint16_t) (vendor_reg >> 16) & 0xffff;
 
 			pci_get_slot_info(new_dev);
 
@@ -137,7 +138,7 @@ static void pci_load(void) {
 }
 
 static int pci_init(void) {
-	if(-1 == pci_is_supported()) {
+	if (-1 == pci_is_supported()) {
 		return 0;
 	}
 	/* scan bus */
