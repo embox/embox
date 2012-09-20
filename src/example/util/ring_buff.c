@@ -19,11 +19,11 @@ RING_BUFFER_DEF(test_buffer, int, 10);
 static int rbuff_example_run(int argc, char *argv[]) {
 	int a = 5;
 
-	ring_buff_enque(&test_buffer, &a, 1);
+	ring_buff_push(&test_buffer, &a, 1);
 
 	a = 6;
 
-	ring_buff_deque(&test_buffer, &a, 1);
+	ring_buff_pop(&test_buffer, &a, 1);
 
 	return 0;
 }

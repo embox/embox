@@ -12,23 +12,23 @@
 #include <stddef.h>
 
 struct ring_buff {
-	int capacity;      /**< capacity of buffer in elements */
-	volatile int cnt;           /**< element counter in buffer*/
+	size_t capacity;      /**< capacity of buffer in elements */
+	size_t cnt;           /**< element counter in buffer*/
 	int p_write;       /**< pointer to next write element*/
 	int p_read;        /**< pointer to next read element*/
 	void *storage;     /**< storage */
-	int elem_size;     /**< size of element */
+	size_t elem_size;     /**< size of element */
 };
 
-extern int ring_buff_enque(struct ring_buff *buf, void *elem, size_t cnt);
+extern size_t ring_buff_push(struct ring_buff *buf, void *elem, size_t cnt);
 
-extern int ring_buff_deque(struct ring_buff *buf, void *elem, size_t cnt);
+extern size_t ring_buff_pop(struct ring_buff *buf, void *elem, size_t cnt);
 
-extern int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count, void *storage);
+extern int ring_buff_init(struct ring_buff *buf, size_t elem_size, size_t count, void *storage);
 
-extern int ring_buff_empty(struct ring_buff *buf);
+extern size_t ring_buff_get_cnt(struct ring_buff *buf);
 
-extern int ring_buff_available_space(struct ring_buff *buf);
+extern size_t ring_buff_get_space(struct ring_buff *buf);
 
 #define RING_BUFFER_DEF(name, elem_type, req_len) \
 	static elem_type name##_storage[req_len];     \

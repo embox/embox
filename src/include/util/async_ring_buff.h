@@ -16,14 +16,14 @@ struct async_ring_buff {
 	struct mutex mutex;
 };
 
-extern int async_ring_buff_enque(struct async_ring_buff *buf, void *elem, size_t cnt);
+extern size_t async_ring_buff_push(struct async_ring_buff *buf, void *elem, size_t cnt);
 
-extern int async_ring_buff_deque(struct async_ring_buff *buf, void *elem, size_t cnt);
+extern size_t async_ring_buff_pop(struct async_ring_buff *buf, void *elem, size_t cnt);
 
-extern int async_ring_buff_init(struct async_ring_buff *buf, size_t elem_size, int count, void *storage);
+extern int async_ring_buff_init(struct async_ring_buff *buf, size_t elem_size, size_t count, void *storage);
 
-extern int async_ring_buff_empty(struct async_ring_buff *buf);
+extern size_t async_ring_get_cnt(struct async_ring_buff *buf);
 
-extern int async_ring_buff_available_space(struct async_ring_buff *buf);
+extern size_t async_ring_buff_get_space(struct async_ring_buff *buf);
 
 #endif /* UTIL_ASYNC_RING_BUFF_H_ */

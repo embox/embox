@@ -10,19 +10,15 @@
 #include <string.h>
 #include <util/ring_buff.h>
 
-int ring_buff_get_cnt(struct ring_buff *buf) {
+size_t ring_buff_get_cnt(struct ring_buff *buf) {
 	return buf->cnt;
 }
 
-int ring_buff_available_space(struct ring_buff *buf) {
+size_t ring_buff_get_space(struct ring_buff *buf) {
 	return buf->capacity - buf->cnt;
 }
 
-int ring_buff_empty(struct ring_buff *buf) {
-	return !buf->cnt;
-}
-
-int ring_buff_enque(struct ring_buff *buf, void *elem, size_t cnt) {
+size_t ring_buff_push(struct ring_buff *buf, void *elem, size_t cnt) {
 	int space, rest;
 	void *write_to = (char*)buf->storage + (buf->p_write * buf->elem_size);
 	rest = buf->capacity - buf->p_write;
@@ -31,7 +27,7 @@ int ring_buff_enque(struct ring_buff *buf, void *elem, size_t cnt) {
 		return -1;
 	}
 
-	if ((space = ring_buff_available_space(buf)) < cnt) {
+	if ((space = ring_buff_get_space(buf)) < cnt) {
 		cnt = space;
 	}
 
@@ -49,7 +45,7 @@ int ring_buff_enque(struct ring_buff *buf, void *elem, size_t cnt) {
 	return cnt;
 }
 
-int ring_buff_deque(struct ring_buff *buf, void *elem, size_t cnt) {
+size_t ring_buff_pop(struct ring_buff *buf, void *elem, size_t cnt) {
 	int rest = buf->capacity - buf->p_read;
 	void *read_from = (char*)buf->storage + (buf->p_read * buf->elem_size);
 
@@ -75,7 +71,7 @@ int ring_buff_deque(struct ring_buff *buf, void *elem, size_t cnt) {
 	return cnt;
 }
 
-int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count, void *storage) {
+int ring_buff_init(struct ring_buff *buf, size_t elem_size, size_t count, void *storage) {
 	buf->capacity  = count;
 	buf->cnt = 0;
 	buf->p_write  = 0;
