@@ -2,7 +2,7 @@
 #include <asm-generic/embox.lds.h>
 #include <framework/mod/options.h>
 
-/*OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm") */
+OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
 ENTRY(start)
 
