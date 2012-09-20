@@ -3,7 +3,7 @@
  * @brief Peripheral Component Interconnect
  *
  * @date 20.01.11
- * @author NIkolay Korotky
+ * @author Nikolay Korotky
  */
 
 #ifndef PCI_H_
@@ -44,6 +44,13 @@ enum {
 };
 
 /**
+ * The slot/func address of each device is encoded in a single byte as follows:
+ *   7:3 = slot, 2:0 = function
+ */
+#define PCI_SLOT(devfn)         (((devfn) >> 3) & 0x1f)
+#define PCI_FUNC(devfn)         ((devfn) & 0x07)
+
+/**
  * PCI configuration space
  * (Each device on the bus has a 256 bytes configuration space,
  * the first 64 bytes are standardized)
@@ -64,6 +71,9 @@ enum {
 #define PCI_CACHE_LINE_SIZE     0x0C   /* 8 bits  */
 #define PCI_LATENCY_TIMER       0x0D   /* 8 bits  */
 #define PCI_HEADER_TYPE         0x0e   /* 8 bits  */
+#define   PCI_HEADER_TYPE_NORMAL  0x0
+#define   PCI_HEADER_TYPE_BRIDGE  0x1
+#define   PCI_HEADER_TYPE_CARDBUS 0x2
 #define PCI_BIST                0x0f   /* 8 bits  */
 
 #define PCI_VENDOR_WRONG        0xFFFFFFFF /* device is not found in the slot */

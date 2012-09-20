@@ -21,15 +21,15 @@ struct pci_driver {
 	uint16_t dev_id;
 };
 
-#define __PCI_DRIVER(drv_name,init_func,vid,did,driver_struct_nm,mod_ptr)      \
+#define __PCI_DRIVER(drv_name,init_func,vid,did,driver_struct_nm,mod_ptr) \
 		extern const struct pci_driver *__pci_driver_registry[]; \
 		static int init_func(struct pci_slot_dev *pci_dev);      \
-		static const struct pci_driver driver_struct_nm = { \
-			.init = init_func,                                   \
-			.mod = &mod_ptr,				     \
-			.name = "" drv_name,                                 \
-			.ven_id = vid,                                       \
-			.dev_id = did                                        \
+		static const struct pci_driver driver_struct_nm = {      \
+			.init = init_func,                               \
+			.mod = &mod_ptr,				 \
+			.name = "" drv_name,                             \
+			.ven_id = vid,                                   \
+			.dev_id = did                                    \
 		};                                                       \
 		ARRAY_SPREAD_ADD(__pci_driver_registry, &driver_struct_nm)
 

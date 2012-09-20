@@ -62,8 +62,8 @@ static int pci_get_slot_info(struct pci_slot_dev *dev) {
 		pci_read_config32(dev->busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2),
 						&dev->bar[bar_num]);
 	}
-	dev->func = devfn & 0x07;
-	dev->slot = (devfn >> 3) & 0x1f;
+	dev->func = PCI_FUNC(devfn);
+	dev->slot = PCI_SLOT(devfn);
 
 	return 0;
 }
@@ -81,6 +81,7 @@ static inline int pci_add_dev(struct pci_slot_dev *dev) {
 /* collecting information about available device on the pci bus */
 static int pci_scan_start(void) {
 	uint32_t bus, devfn;
+	unsigned char hdr_type, is_multi = 0;
 	struct pci_slot_dev *new_dev;
 
 	if (!slist_empty(&__pci_devs_list)) {
@@ -90,7 +91,24 @@ static int pci_scan_start(void) {
 	for (bus = 0; bus < PCI_BUS_QUANTITY; ++bus) {
 		for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
 			uint32_t vendor_reg;
+
+			/* Devices are required to implement function 0, so if
+			 * it's missing then there is no device here. */
+			if (PCI_FUNC(devfn) && !is_multi) {
+				/* Not a multiple function device */
+				continue;
+			}
+
+			pci_read_config8(bus, devfn, PCI_HEADER_TYPE, &hdr_type);
+			if (!PCI_FUNC(devfn)) {
+				/* If bit 7 of this register is set, the device
+				has multiple functions; otherwise,
+				it is a single function device */
+				is_multi = hdr_type & (1 << 7);
+			}
+
 			if (-1 == (vendor_reg = pci_get_vendor_id(bus, devfn))) {
+				is_multi = 0;
 				continue;
 			}
 
