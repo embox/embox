@@ -41,3 +41,11 @@ TEST_CASE("generic test for bit_ffs and bit_fls") {
 	}
 }
 
+TEST_CASE("generic test for bit_ctz and bit_clz") {
+	for (int i = 0; i < sizeof(unsigned long); ++i) {
+		test_assert_equal(bit_ctz(0x1ul << i), i);
+		test_assert_equal(bit_clz(0x1ul << i),
+				sizeof(unsigned long) * 8 - i - 1);
+	}
+}
+
