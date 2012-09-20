@@ -7,6 +7,12 @@ module array_test {
 	depends embox.framework.LibFramework
 }
 
+module bit_test {
+	source "bit_test.c"
+
+	depends embox.framework.LibFramework
+}
+
 module list_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "list_test.c"
