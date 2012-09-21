@@ -74,4 +74,20 @@ static inline int bit_fls(unsigned long x) {
 	return x ? (sizeof(x) * 8 - bit_clz(x)) : 0;
 }
 
+/**
+ * For-like macro which iterates over set bits
+ * of the given @code unsigned long x @endcode starting
+ * from the least significant bit and using zero-based counting.
+ *
+ * @param bit
+ *   @c int loop variable.
+ * @param x
+ */
+#define bit_foreach(bit, x) \
+    __bit_foreach(bit, x, MACRO_GUARD(__bit))
+#define __bit_foreach(bit, _x, it) \
+	for(struct { unsigned long x; int b; } it = { .x = (_x), .b = 0, }; \
+		it.x ? (bit = it.b = bit_ctz(it.x)), 1 : 0;                     \
+		it.x &= ~(0x1ul << it.b))
+
 #endif /* UTIL_BIT_H_ */
