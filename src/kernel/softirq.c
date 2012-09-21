@@ -18,6 +18,7 @@
 #include <kernel/softirq.h>
 #include <kernel/critical.h>
 #include <hal/ipl.h>
+#include <util/bit.h>
 
 static void softirq_dispatch(void);
 
@@ -30,24 +31,7 @@ struct softirq_action {
 };
 
 static struct softirq_action softirq_actions[SOFTIRQ_NRS_TOTAL];
-static uint32_t softirq_pending;
-static uint32_t softirq_handling;
-
-typedef uint32_t softipl_t;
-
-
-static softipl_t softipl_save(unsigned int nm) {
-	softipl_t sipl = softirq_handling;
-
-	softirq_handling = 1 << nm;
-
-	return sipl;
-}
-
-static void softipl_restore(softipl_t sipl) {
-	softirq_handling = sipl;
-}
-
+static unsigned long softirq_pending;
 
 int softirq_install(unsigned int nr, softirq_handler_t handler, void *data) {
 	ipl_t ipl;
@@ -80,48 +64,41 @@ int softirq_raise(unsigned int nr) {
 	return 0;
 }
 
-static unsigned int softirq_get_dispatch_nm(void) {
-	unsigned int nm;
-	uint32_t pending;
-
-	if(0 == (pending = softirq_pending)) {
-		return -1;
-	}
-
-	for (nm = 0; pending & (softirq_handling - 1); pending >>= 1, ++nm) {
-		if (pending & 0x1) {
-			return nm;
-		}
-	}
-
-	return -1;
-}
-
 /**
- * Called by critical dispatching code with max IPL (all IRQ disabled).
+ * Called by critical dispatching code with all hardware IRQs disabled.
+ * Note that it must by reentrant by design.
  */
 static void softirq_dispatch(void) {
-	softirq_handler_t handler;
-	void *data;
-	unsigned int nr;
-	softipl_t sipl;
+	static unsigned long softipl = ~0x0ul; /* permit anything */
 
 	critical_enter(CRITICAL_SOFTIRQ_HANDLER);
+	{
+		unsigned long saved_softipl = softipl;
+		unsigned long mask;
+		unsigned int nr;
 
-	while (-1 != (nr = softirq_get_dispatch_nm())) {
-		softirq_pending &= ~(1 << nr);
-		if ((handler = softirq_actions[nr].handler)) {
-			data = softirq_actions[nr].data;
+		while ((mask = softirq_pending & saved_softipl)) {
+			/* Handle softirqs permitted by the softipl of this context. */
+			bit_foreach(nr, mask) {
+				softirq_handler_t handler;
+				void *data;
 
-			sipl = softipl_save(nr);
-			ipl_enable();
+				softirq_pending &= ~(0x1ul << nr); /* mark as handled */
 
-			handler(nr, data);
+				if ((handler = softirq_actions[nr].handler)) {
+					data = softirq_actions[nr].data;
 
-			ipl_disable();
-			softipl_restore(sipl);
+					softipl = (0x1ul << nr) - 1; /* mask out lower softirqs */
+
+					ipl_enable();
+					handler(nr, data);
+					ipl_disable();
+				}
+			}
 		}
-	}
 
+		softipl = saved_softipl;
+	}
 	critical_leave(CRITICAL_SOFTIRQ_HANDLER);
 }
+

@@ -23,15 +23,15 @@
 #define SOFTIRQ_NRS_TOTAL \
 	OPTION_MODULE_GET(embox__kernel__softirq, NUMBER, nrs_total)
 
+#if !(1UL << (SOFTIRQ_NRS_TOTAL - 1))
+# error "Illegal value for SOFTIRQ_NRS_TOTAL"
+#endif
+
 /**
  * Checks if the specified softirq_nr represents valid soft IRQ number.
  */
 #define softirq_nr_valid(softirq_nr) \
-	(1U << (softirq_nr))
-
-#if !softirq_nr_valid(SOFTIRQ_NRS_TOTAL - 1)
-# error "Illegal value for SOFTIRQ_NRS_TOTAL"
-#endif
+	((unsigned int) (softirq_nr) < (unsigned int) SOFTIRQ_NRS_TOTAL)
 
 #define SOFTIRQ_NR_TIMER 0
 #define SOFTIRQ_NR_UART 20
