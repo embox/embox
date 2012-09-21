@@ -30,8 +30,15 @@ int open(const char *path, int __oflag, ...) {
 }
 
 int close(int fd) {
+	const struct task_idx_ops *ops;
 	struct idx_desc *desc = task_self_idx_get(fd);
-	const struct task_idx_ops *ops = task_idx_desc_ops(desc);
+
+	if (!desc) {
+		SET_ERRNO(-EBADF);
+		return -1;
+	}
+
+	ops = task_idx_desc_ops(desc);
 
 	assert(ops);
 	assert(ops->close);
@@ -40,24 +47,55 @@ int close(int fd) {
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
+	const struct task_idx_ops *ops;
 	struct idx_desc *desc = task_self_idx_get(fd);
-	const struct task_idx_ops *ops = task_idx_desc_ops(desc);
+
+	if (!desc) {
+		SET_ERRNO(-EBADF);
+		return -1;
+	}
+
+	if (!buf) {
+		SET_ERRNO(-EFAULT);
+		return -1;
+	}
+
+	ops = task_idx_desc_ops(desc);
 	assert(ops);
 	assert(ops->write);
 	return ops->write(task_idx_desc_data(desc), buf, nbyte);
 }
 
 ssize_t read(int fd, void *buf, size_t nbyte) {
+	const struct task_idx_ops *ops;
 	struct idx_desc *desc = task_self_idx_get(fd);
-	const struct task_idx_ops *ops = task_idx_desc_ops(desc);
+
+	if (!desc) {
+		SET_ERRNO(-EBADF);
+		return -1;
+	}
+
+	if (!buf) {
+		SET_ERRNO(-EFAULT);
+		return -1;
+	}
+
+	ops = task_idx_desc_ops(desc);
 	assert(ops);
 	assert(ops->read);
 	return ops->read(task_idx_desc_data(desc), buf, nbyte);
 }
 
 int lseek(int fd, long int offset, int origin) {
+	const struct task_idx_ops *ops;
 	struct idx_desc *desc = task_self_idx_get(fd);
-	const struct task_idx_ops *ops = task_idx_desc_ops(desc);
+
+	if (!desc) {
+		SET_ERRNO(-EBADF);
+		return -1;
+	}
+
+	ops = task_idx_desc_ops(desc);
 	assert(ops);
 	assert(ops->fseek);
 	return ops->fseek(task_idx_desc_data(desc), offset, origin);
@@ -65,9 +103,16 @@ int lseek(int fd, long int offset, int origin) {
 
 int ioctl(int fd, int request, ...) {
 	va_list args;
+	const struct task_idx_ops *ops;
 	int ret = -ENOTSUP;
 	struct idx_desc *desc = task_self_idx_get(fd);
-	const struct task_idx_ops *ops = task_idx_desc_ops(desc);
+
+	if (!desc) {
+		SET_ERRNO(-EBADF);
+		return -1;
+	}
+
+	ops = task_idx_desc_ops(desc);
 
 	assert(ops);
 	assert(ops->ioctl);

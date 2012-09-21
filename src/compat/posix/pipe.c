@@ -83,10 +83,6 @@ static int pipe_read(void *data, void *buf, size_t nbyte) {
 	int len;
 	struct pipe *pipe = (struct pipe*)data;
 
-	if (!buf) {
-		return -1;
-	}
-
 	if (!nbyte) {
 		return nbyte;
 	}
@@ -107,10 +103,6 @@ static int pipe_read(void *data, void *buf, size_t nbyte) {
 static int pipe_write(void *data, const void *buf, size_t nbyte) {
 	int len;
 	struct pipe *pipe = (struct pipe*)data;
-
-	if (!buf) {
-		return -1;
-	}
 
 	if (!nbyte) {
 		return nbyte;
