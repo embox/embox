@@ -70,12 +70,3 @@ TEST_CASE("test for bit_foreach") {
 	}
 }
 
-TEST_CASE("test for bit_foreach") {
-	int bit;
-
-	bit_foreach(bit, 0x12345678) {
-		printf("");
-	}
-}
-
-
