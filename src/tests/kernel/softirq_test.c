@@ -11,10 +11,35 @@
 #include <ctype.h>
 #include <stddef.h>
 #include <kernel/softirq.h>
+#include <util/array.h>
 
 EMBOX_TEST_SUITE("basic softirq tests");
 
-static void test_softirq_handler(unsigned int softirq_nr, void *data) {
+struct test_softirq_tuple {
+	unsigned int nr;
+	softirq_handler_t handler;
+	void *data;
+};
+
+static void install_test_softirqs(const struct test_softirq_tuple *handlers,
+		size_t size) {
+	const struct test_softirq_tuple *t;
+
+	array_foreach_ptr(t, handlers, size) {
+		test_assert_zero(softirq_install(t->nr, t->handler, t->data));
+	}
+}
+
+static void uninstall_test_softirqs(const struct test_softirq_tuple *handlers,
+		size_t size) {
+	const struct test_softirq_tuple *t;
+
+	array_foreach_ptr(t, handlers, size) {
+		test_assert_zero(softirq_install(t->nr, NULL, NULL));
+	}
+}
+
+static void emitting_softirq(unsigned int softirq_nr, void *data) {
 	int code = 'k' + softirq_nr - SOFTIRQ_NR_TEST; /* j/k/l */
 
 	test_emit(code);
@@ -22,7 +47,7 @@ static void test_softirq_handler(unsigned int softirq_nr, void *data) {
 	test_emit(toupper(code));
 }
 
-static void delegating_softirq_handler(unsigned int softirq_nr, void *data) {
+static void delegating_softirq(unsigned int softirq_nr, void *data) {
 	int code = 'k' + softirq_nr - SOFTIRQ_NR_TEST; /* j/k/l */
 
 	test_emit(code);
@@ -34,7 +59,7 @@ TEST_CASE("softirq_raise called outside any hardware ISR should invoke "
 		"the handler immediately") {
 	test_emit('a');
 	test_assert_zero(softirq_install(
-			SOFTIRQ_NR_TEST, test_softirq_handler, (void *) 'x'));
+			SOFTIRQ_NR_TEST, emitting_softirq, (void *) 'x'));
 
 	test_emit('b');
 	test_assert_zero(softirq_raise(SOFTIRQ_NR_TEST));
@@ -49,7 +74,7 @@ TEST_CASE("softirq_raise called within softirq_lock/softirq_unlock "
 		"must defer a call to the handler") {
 	test_emit('a');
 	test_assert_zero(softirq_install(
-			SOFTIRQ_NR_TEST, test_softirq_handler, (void *) 'x'));
+			SOFTIRQ_NR_TEST, emitting_softirq, (void *) 'x'));
 
 	softirq_lock();
 	{
@@ -68,62 +93,59 @@ TEST_CASE("softirq_raise called within softirq_lock/softirq_unlock "
 
 TEST_CASE("softirq with lower priority shouldn't preempt another with "
 		"higher priority") {
+	const struct test_softirq_tuple layout[] = {
+		{ SOFTIRQ_NR_TEST_HI, delegating_softirq, (void *) SOFTIRQ_NR_TEST },
+		{ SOFTIRQ_NR_TEST,    delegating_softirq, (void *) SOFTIRQ_NR_TEST_LO },
+		{ SOFTIRQ_NR_TEST_LO, emitting_softirq,   (void *) 'x' },
+	};
+
 	test_emit('a');
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI,
-			delegating_softirq_handler, (void *) SOFTIRQ_NR_TEST));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST,
-			delegating_softirq_handler, (void *) SOFTIRQ_NR_TEST_LO));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_LO,
-			test_softirq_handler, (void *) 'x'));
+	install_test_softirqs(layout, ARRAY_SIZE(layout));
 
 	test_emit('b');
 	test_assert_zero(softirq_raise(SOFTIRQ_NR_TEST_HI));
 	test_emit('c');
 
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST, NULL, NULL));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_LO, NULL, NULL));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI, NULL, NULL));
+	uninstall_test_softirqs(layout, ARRAY_SIZE(layout));
 
 	test_assert_emitted("abjJkKlxLc");
 }
 
 TEST_CASE("softirq with higher priority should preempt another with "
 		"lower priority") {
+	const struct test_softirq_tuple layout[] = {
+		{ SOFTIRQ_NR_TEST_LO, delegating_softirq, (void *) SOFTIRQ_NR_TEST },
+		{ SOFTIRQ_NR_TEST,    delegating_softirq, (void *) SOFTIRQ_NR_TEST_HI },
+		{ SOFTIRQ_NR_TEST_HI, emitting_softirq,   (void *) 'x' },
+	};
+
 	test_emit('a');
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_LO,
-			delegating_softirq_handler, (void *) SOFTIRQ_NR_TEST));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST,
-			delegating_softirq_handler, (void *) SOFTIRQ_NR_TEST_HI));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI,
-			test_softirq_handler, (void *) 'x'));
+	install_test_softirqs(layout, ARRAY_SIZE(layout));
 
 	test_emit('b');
 	test_assert_zero(softirq_raise(SOFTIRQ_NR_TEST_LO));
 	test_emit('c');
 
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST, NULL, NULL));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_LO, NULL, NULL));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI, NULL, NULL));
+	uninstall_test_softirqs(layout, ARRAY_SIZE(layout));
 
 	test_assert_emitted("ablkjxJKLc");
 }
 
 TEST_CASE("mixed test case for softirq with priorities") {
+	const struct test_softirq_tuple layout[] = {
+		{ SOFTIRQ_NR_TEST,    delegating_softirq, (void *) SOFTIRQ_NR_TEST_HI },
+		{ SOFTIRQ_NR_TEST_HI, delegating_softirq, (void *) SOFTIRQ_NR_TEST_LO },
+		{ SOFTIRQ_NR_TEST_LO, emitting_softirq,   (void *) 'x' },
+	};
+
 	test_emit('a');
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST,
-			delegating_softirq_handler, (void *) SOFTIRQ_NR_TEST_HI));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI,
-			delegating_softirq_handler, (void *) SOFTIRQ_NR_TEST_LO));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_LO,
-			test_softirq_handler, (void *) 'x'));
+	install_test_softirqs(layout, ARRAY_SIZE(layout));
 
 	test_emit('b');
 	test_assert_zero(softirq_raise(SOFTIRQ_NR_TEST));
 	test_emit('c');
 
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST, NULL, NULL));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_LO, NULL, NULL));
-	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI, NULL, NULL));
+	uninstall_test_softirqs(layout, ARRAY_SIZE(layout));
 
 	test_assert_emitted("abkjJKlxLc");
 }
