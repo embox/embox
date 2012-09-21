@@ -33,9 +33,12 @@
 # error "Illegal value for SOFTIRQ_NRS_TOTAL"
 #endif
 
-#define SOFTIRQ_NR_TEST 31
-#define SOFTIRQ_NR_UART 30
 #define SOFTIRQ_NR_TIMER 0
+#define SOFTIRQ_NR_UART 20
+
+#define SOFTIRQ_NR_TEST_HI 29
+#define SOFTIRQ_NR_TEST    30
+#define SOFTIRQ_NR_TEST_LO 31
 
 /**
  * Deferred Interrupt Service Routine type.
