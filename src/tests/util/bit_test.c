@@ -1,16 +1,14 @@
 /**
  * @file
- * @brief TODO
  *
  * @date Sep 20, 2012
- * @author eldar
+ * @author Eldar Abusalimov
  */
 
 #include <embox/test.h>
 
 #include <util/bit.h>
 #include <util/array.h>
-#include <stdio.h>
 
 EMBOX_TEST_SUITE("util/bit test");
 
