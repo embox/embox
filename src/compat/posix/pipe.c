@@ -87,15 +87,18 @@ static int pipe_read(void *data, void *buf, size_t nbyte) {
 		return -1;
 	}
 
+	if (!nbyte) {
+		return nbyte;
+	}
+
 	if (!pipe->nonblock) {
-		while ((len = async_ring_buff_pop(&pipe->buff, (void*)buf, nbyte)) <= 0) {
+		while (!(len = async_ring_buff_dequeue(&pipe->buff, (void*)buf, nbyte))) {
 			event_wait(&pipe->nonempty, SCHED_TIMEOUT_INFINITE);
 		}
 
-		if (len > 0)
-			event_notify(&pipe->nonfull);
+		event_notify(&pipe->nonfull);
 	} else {
-		return async_ring_buff_pop(&pipe->buff, (void*)buf, nbyte);
+		return async_ring_buff_dequeue(&pipe->buff, (void*)buf, nbyte);
 	}
 
 	return len;
@@ -109,15 +112,18 @@ static int pipe_write(void *data, const void *buf, size_t nbyte) {
 		return -1;
 	}
 
+	if (!nbyte) {
+		return nbyte;
+	}
+
 	if (!pipe->nonblock) {
-		while ((len = async_ring_buff_push(&pipe->buff, (void*)buf, nbyte)) <= 0) {
+		while (!(len = async_ring_buff_enqueue(&pipe->buff, (void*)buf, nbyte))) {
 			event_wait(&pipe->nonfull, SCHED_TIMEOUT_INFINITE);
 		}
 
-		if (len > 0)
-			event_notify(&pipe->nonempty);
+		event_notify(&pipe->nonempty);
 	} else {
-		return async_ring_buff_push(&pipe->buff, (void*)buf, nbyte);
+		return async_ring_buff_enqueue(&pipe->buff, (void*)buf, nbyte);
 	}
 
 	return len;

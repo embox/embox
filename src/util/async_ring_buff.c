@@ -21,21 +21,21 @@ int async_ring_buff_init(struct async_ring_buff *buf, size_t elem_size, size_t c
 	return ring_buff_init(&buf->buffer, elem_size, count, storage);
 }
 
-size_t async_ring_buff_push(struct async_ring_buff *buf, void *elem, size_t cnt) {
+size_t async_ring_buff_enqueue(struct async_ring_buff *buf, void *elem, size_t cnt) {
 	int len;
 
 	mutex_lock(&buf->mutex);
-	len = ring_buff_push(&buf->buffer, elem, cnt);
+	len = ring_buff_enqueue(&buf->buffer, elem, cnt);
 	mutex_unlock(&buf->mutex);
 
 	return len;
 }
 
-size_t async_ring_buff_pop(struct async_ring_buff *buf, void *elem, size_t cnt) {
+size_t async_ring_buff_dequeue(struct async_ring_buff *buf, void *elem, size_t cnt) {
 	int len;
 
 	mutex_lock(&buf->mutex);
-	len = ring_buff_pop(&buf->buffer, elem, cnt);
+	len = ring_buff_dequeue(&buf->buffer, elem, cnt);
 	mutex_unlock(&buf->mutex);
 
 	return len;

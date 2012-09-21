@@ -18,13 +18,13 @@ size_t ring_buff_get_space(struct ring_buff *buf) {
 	return buf->capacity - buf->cnt;
 }
 
-size_t ring_buff_push(struct ring_buff *buf, void *elem, size_t cnt) {
+size_t ring_buff_enqueue(struct ring_buff *buf, void *elem, size_t cnt) {
 	int space, rest;
 	void *write_to = (char*)buf->storage + (buf->p_write * buf->elem_size);
 	rest = buf->capacity - buf->p_write;
 
 	if (buf->cnt >= buf->capacity) {
-		return -1;
+		return 0;
 	}
 
 	if ((space = ring_buff_get_space(buf)) < cnt) {
@@ -45,12 +45,12 @@ size_t ring_buff_push(struct ring_buff *buf, void *elem, size_t cnt) {
 	return cnt;
 }
 
-size_t ring_buff_pop(struct ring_buff *buf, void *elem, size_t cnt) {
+size_t ring_buff_dequeue(struct ring_buff *buf, void *elem, size_t cnt) {
 	int rest = buf->capacity - buf->p_read;
 	void *read_from = (char*)buf->storage + (buf->p_read * buf->elem_size);
 
 	if (buf->cnt == 0) {
-		return -1;
+		return 0;
 	}
 
 	if (buf->cnt < cnt) {
