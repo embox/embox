@@ -23,11 +23,10 @@ static void test_softirq_handler(unsigned int softirq_nr, void *data) {
 }
 
 static void delegating_softirq_handler(unsigned int softirq_nr, void *data) {
-	unsigned int target_softirq = (unsigned int) data;
 	int code = 'k' + softirq_nr - SOFTIRQ_NR_TEST; /* j/k/l */
 
 	test_emit(code);
-	test_assert_zero(softirq_raise(target_softirq));
+	test_assert_zero(softirq_raise((unsigned int) data));
 	test_emit(toupper(code));
 }
 
@@ -70,6 +69,47 @@ TEST_CASE("softirq_raise called within softirq_lock/softirq_unlock "
 TEST_CASE("softirq with lower priority shouldn't preempt another with "
 		"higher priority") {
 	test_emit('a');
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI,
+			delegating_softirq_handler, (void *) SOFTIRQ_NR_TEST));
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST,
+			delegating_softirq_handler, (void *) SOFTIRQ_NR_TEST_LO));
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_LO,
+			test_softirq_handler, (void *) 'x'));
+
+	test_emit('b');
+	test_assert_zero(softirq_raise(SOFTIRQ_NR_TEST_HI));
+	test_emit('c');
+
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST, NULL, NULL));
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_LO, NULL, NULL));
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI, NULL, NULL));
+
+	test_assert_emitted("abjJkKlxLc");
+}
+
+TEST_CASE("softirq with higher priority should preempt another with "
+		"lower priority") {
+	test_emit('a');
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_LO,
+			delegating_softirq_handler, (void *) SOFTIRQ_NR_TEST));
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST,
+			delegating_softirq_handler, (void *) SOFTIRQ_NR_TEST_HI));
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI,
+			test_softirq_handler, (void *) 'x'));
+
+	test_emit('b');
+	test_assert_zero(softirq_raise(SOFTIRQ_NR_TEST_LO));
+	test_emit('c');
+
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST, NULL, NULL));
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_LO, NULL, NULL));
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI, NULL, NULL));
+
+	test_assert_emitted("ablkjxJKLc");
+}
+
+TEST_CASE("mixed test case for softirq with priorities") {
+	test_emit('a');
 	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST,
 			delegating_softirq_handler, (void *) SOFTIRQ_NR_TEST_HI));
 	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI,
@@ -82,6 +122,8 @@ TEST_CASE("softirq with lower priority shouldn't preempt another with "
 	test_emit('c');
 
 	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST, NULL, NULL));
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_LO, NULL, NULL));
+	test_assert_zero(softirq_install(SOFTIRQ_NR_TEST_HI, NULL, NULL));
 
 	test_assert_emitted("abkjJKlxLc");
 }
