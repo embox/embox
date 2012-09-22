@@ -6,6 +6,7 @@
  * @author Anton Kozlov
  */
 
+#include <embox/unit.h>
 #include <hal/reg.h>
 #include <drivers/at91sam7s256.h>
 
