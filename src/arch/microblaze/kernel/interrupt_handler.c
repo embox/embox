@@ -10,6 +10,7 @@
 
 #include <drivers/irqctrl.h>
 #include <asm/msr.h>
+#include <kernel/irq.h>
 
 /* we havn't interrupts acknowledgment in microblaze architecture
  * and must receive interrupt number our self and then clear pending bit in
