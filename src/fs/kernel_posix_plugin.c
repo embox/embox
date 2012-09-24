@@ -15,28 +15,32 @@
 
 #include <fs/posix.h>
 
+static inline FILE *data2FILE(struct idx_desc_data *data) {
+	return (FILE *) data->fd_struct;
+}
+
 static int this_close(struct idx_desc_data *data) {
-	FILE *file = (FILE *) data;
+	FILE *file = data2FILE(data);
 	return fclose(file);
 }
 
 static ssize_t this_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
-	FILE *file = (FILE *) data;
+	FILE *file = data2FILE(data);
 	return fread(buf, 1, nbyte, file);
 }
 
 static ssize_t this_write(struct idx_desc_data *data, const void *buf, size_t nbyte) {
-	FILE *file = (FILE *) data;
+	FILE *file = data2FILE(data);
 	return fwrite(buf, 1, nbyte, file);
 }
 
 static int this_lseek(struct idx_desc_data *data, long int offset, int origin) {
-	FILE *file = (FILE *) data;
+	FILE *file = data2FILE(data);
 	return fseek(file, offset, origin);
 }
 
 static int this_ioctl(struct idx_desc_data *data, int request, va_list args) {
-	FILE *file = (FILE *) data;
+	FILE *file = data2FILE(data);
 	return fioctl(file, request, args);
 }
 
