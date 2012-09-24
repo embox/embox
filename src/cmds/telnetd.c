@@ -163,6 +163,8 @@ static void *telnet_thread_handler(void* args) {
 	dup(sock);
 	dup(sock);
 
+	fcntl(sock, F_SETFD, O_NONBLOCK);
+
 		/* Hack. Emulate future output, we need a char from user to exit from
 		 * parameters mode
 		 */
