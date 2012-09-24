@@ -12,10 +12,10 @@ MEMORY {
 }
 
 SECTIONS {
-	. = ALIGN(0x1000);
-	__KERNEL_START = .;
-
 	.text : {
+		. = ALIGN(0x1000);
+		__KERNEL_START = .;
+
 		ALIGNMENT();
 		. = ALIGN(0x100);
 		*(.multiboot)
@@ -58,7 +58,7 @@ SECTIONS {
 	} SECTION_REGION(stack)
 	SECTION_SYMBOLS(stack)
 
-	KERNEL_END = .;
+	__KERNEL_END = .;
 }
 
 _mem_begin = LDS_REGION_BASE_sdram;

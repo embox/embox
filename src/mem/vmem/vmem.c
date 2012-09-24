@@ -14,8 +14,15 @@
 #include <hal/env/traps_core.h>
 #include <hal/test/traps_core.h>
 
+extern char _mem_begin;
+extern char _mem_length;
+
 extern char __KERNEL_START;
 extern char __KERNEL_END;
+
+#define MEM_BEGIN       (&_mem_begin)
+#define MEM_LENGTH      (&_mem_length)
+#define MEM_END         (MEM_BEGIN + MEM_LENGTH)
 
 #define KERNEL_START 	(&__KERNEL_START)
 #define KERNEL_END		(&__KERNEL_END)
@@ -60,6 +67,10 @@ static int vmem_init(void) {
 	printf("KERNEL_START = 0x%08x\n", (unsigned int) KERNEL_START);
 	printf("KERNEL_END = 0x%08x\n", (unsigned int) KERNEL_END);
 	printf("KERNEL_SIZE = 0x%08x\n", (unsigned int) KERNEL_SIZE);
+	printf("\n");
+	printf("\n");
+	printf("MEM_BEGIN = 0x%08x\n", (unsigned int) MEM_BEGIN);
+	printf("MEM_LENGTH = 0x%08x\n", (unsigned int) MEM_LENGTH);
 	printf("\n");
 #endif
 
