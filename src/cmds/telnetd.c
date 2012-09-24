@@ -127,9 +127,6 @@ static void *shell_hnd(void* args) {
 	dup2(pipefd1[sock][1], STDIN_FILENO);
 	dup2(pipefd2[sock][0], STDOUT_FILENO);
 
-	/* block shell on writing */
-	//ioctl(pipefd2[sock][0], O_NONBLOCK, 0);
-
 	shell_run();
 
 	return NULL;
@@ -178,8 +175,6 @@ static void *telnet_thread_handler(void* args) {
 	pipe(pipefd2[sock]);
 
 	fcntl(pipefd1[sock][0], F_SETFD, O_NONBLOCK);
-	fcntl(pipefd1[sock][1], F_SETFD, O_NONBLOCK);
-	fcntl(pipefd2[sock][0], F_SETFD, O_NONBLOCK);
 	fcntl(pipefd2[sock][1], F_SETFD, O_NONBLOCK);
 
 		/* Operate with settings */

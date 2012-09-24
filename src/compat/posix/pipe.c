@@ -93,12 +93,14 @@ static int pipe_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
 	}
 
 	if (data->flags & O_NONBLOCK) {
-		return async_ring_buff_dequeue(&pipe->buff, (void*)buf, nbyte);
+		len = async_ring_buff_dequeue(&pipe->buff, (void*)buf, nbyte);
 	} else {
 		while (!(len = async_ring_buff_dequeue(&pipe->buff, (void*)buf, nbyte))) {
 			event_wait(&pipe->nonempty, SCHED_TIMEOUT_INFINITE);
 		}
+	}
 
+	if (len > 0) {
 		event_notify(&pipe->nonfull);
 	}
 
@@ -114,12 +116,14 @@ static int pipe_write(struct idx_desc_data *data, const void *buf, size_t nbyte)
 	}
 
 	if (data->flags & O_NONBLOCK) {
-		return async_ring_buff_enqueue(&pipe->buff, (void*)buf, nbyte);
+		len = async_ring_buff_enqueue(&pipe->buff, (void*)buf, nbyte);
 	} else {
 		while (!(len = async_ring_buff_enqueue(&pipe->buff, (void*)buf, nbyte))) {
 			event_wait(&pipe->nonfull, SCHED_TIMEOUT_INFINITE);
 		}
+	}
 
+	if (len > 0) {
 		event_notify(&pipe->nonempty);
 	}
 
