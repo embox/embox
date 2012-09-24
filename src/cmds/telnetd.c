@@ -16,8 +16,7 @@
 #include <err.h>
 #include <errno.h>
 #include <kernel/task.h>
-#include <fs/ioctl.h>
-#include <sys/ioctl.h>
+#include <fcntl.h>
 
 EMBOX_CMD(exec);
 
@@ -129,7 +128,7 @@ static void *shell_hnd(void* args) {
 	dup2(pipefd2[sock][0], STDOUT_FILENO);
 
 	/* block shell on writing */
-	ioctl(pipefd2[sock][0], O_NONBLOCK, 0);
+	//ioctl(pipefd2[sock][0], O_NONBLOCK, 0);
 
 	shell_run();
 
@@ -177,6 +176,11 @@ static void *telnet_thread_handler(void* args) {
 
 	pipe(pipefd1[sock]);
 	pipe(pipefd2[sock]);
+
+	fcntl(pipefd1[sock][0], F_SETFD, O_NONBLOCK);
+	fcntl(pipefd1[sock][1], F_SETFD, O_NONBLOCK);
+	fcntl(pipefd2[sock][0], F_SETFD, O_NONBLOCK);
+	fcntl(pipefd2[sock][1], F_SETFD, O_NONBLOCK);
 
 		/* Operate with settings */
 	set_our_term_parameters();

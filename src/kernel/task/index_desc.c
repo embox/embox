@@ -60,6 +60,7 @@ static void task_idx_table_deinit(struct task *task) {
 
 	desc->res_ops = res_ops;
 	desc->data.fd_struct = fd_struct;
+	desc->data.flags = 0;
 	return desc;
 }
 

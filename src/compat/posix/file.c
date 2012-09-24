@@ -126,7 +126,7 @@ int ioctl(int fd, int request, ...) {
 
 int fcntl(int fd, int cmd, ...) {
 	va_list args;
-	int res, flags;
+	int res;
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
@@ -140,8 +140,7 @@ int fcntl(int fd, int cmd, ...) {
 		res = desc->data.flags;
 		break;
 	case F_SETFD:
-		flags = va_arg(args, int);
-		desc->data.flags = flags;
+		desc->data.flags = va_arg(args, int);
 		break;
 	default:
 		/*SET_ERRNO(EINVAL);*/
