@@ -103,7 +103,7 @@ static int mmu_init(void) {
 //	mmu_map_region(0, (paddr_t)&_bss_vma, (paddr_t)&_bss_vma, (size_t)&_bss_len, MMU_PAGE_WRITEABLE);
 
 
-	mmu_map_region(0, (paddr_t)0, (vaddr_t)0, (size_t)0x300000, MMU_PAGE_WRITEABLE);
+//	mmu_map_region(0, (paddr_t)0, (vaddr_t)0, (size_t)0x300000, MMU_PAGE_WRITEABLE);
 
 	return 0;
 }

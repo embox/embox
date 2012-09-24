@@ -1,0 +1,11 @@
+package embox.mem
+
+module vmem {
+	source "vmem.c", "table_alloc.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.arch.x86.mm.mmu_map
+	depends embox.arch.x86.mm.mmu_core
+	depends embox.framework.LibFramework
+}

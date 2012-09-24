@@ -12,4 +12,7 @@ SECTIONS {
 		_heap_end = .;
 	} SECTION_REGION(heap)
 	SECTION_SYMBOLS(heap)
+
+	. = ALIGN(0x1000);
+	__KERNEL_END = .;
 }
