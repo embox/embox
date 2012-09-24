@@ -32,7 +32,7 @@
 static int rl_mod_enable(struct mod_info *mod_info);
 static int rl_mod_disable(struct mod_info *mod_info);
 
-struct mod_ops __runlevel_mod_ops = {
+const struct mod_ops __runlevel_mod_ops = {
 	.enable = rl_mod_enable,
 	.disable = rl_mod_disable
 };

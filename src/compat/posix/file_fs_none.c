@@ -25,7 +25,7 @@ ssize_t write(int fd, const void *buf, size_t nbyte) {
 	const char *ch = buf;
 	int cnt = nbyte;
 
-	if (fd != 0 && fd != 2) {
+	if (fd != 1 && fd != 2) {
 		return -1;
 	}
 
@@ -41,7 +41,7 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	char *ch = buf;
 	int cnt = nbyte;
 
-	if (fd != 1) {
+	if (fd != 0) {
 		return -1;
 	}
 
