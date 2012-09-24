@@ -16,11 +16,11 @@
 
 #define PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
 
-static int pipe_close(void *data);
-static int pipe_read(void *data, void *buf, size_t nbyte);
-static int pipe_write(void *data, const void *buf, size_t nbyte);
-static int pipe_ioctl(void *data, int request, va_list args);
-static int pipe_fseek(void *data, long int offset, int origin);
+static int pipe_close(struct idx_desc_data *data);
+static int pipe_read(struct idx_desc_data *data, void *buf, size_t nbyte);
+static int pipe_write(struct idx_desc_data *data, const void *buf, size_t nbyte);
+static int pipe_ioctl(struct idx_desc_data *data, int request, va_list args);
+static int pipe_fseek(struct idx_desc_data *data, long int offset, int origin);
 
 static const struct task_idx_ops pipe_ops = {
 		.read = pipe_read,
@@ -50,7 +50,8 @@ int pipe(int pipefd[2]) {
 
 	pipefd[0] = task_self_idx_alloc(&pipe_ops, pipe_buff);
 	if (pipefd[0] < 0) {
-		pipe_close(pipe_buff);
+		free(storage);
+		free(pipe);
 		return -1;
 	/* SET_ERRNO(-1); */
 	}
@@ -70,7 +71,7 @@ int pipe(int pipefd[2]) {
 	return 0;
 }
 
-static int pipe_close(void *data) {
+static int pipe_close(struct idx_desc_data *data) {
 	struct pipe *pipe= (struct pipe*) data;
 
 	free(pipe->buff.buffer.storage);
@@ -79,7 +80,7 @@ static int pipe_close(void *data) {
 	return 0;
 }
 
-static int pipe_read(void *data, void *buf, size_t nbyte) {
+static int pipe_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
 	int len;
 	struct pipe *pipe = (struct pipe*)data;
 
@@ -100,7 +101,7 @@ static int pipe_read(void *data, void *buf, size_t nbyte) {
 	return len;
 }
 
-static int pipe_write(void *data, const void *buf, size_t nbyte) {
+static int pipe_write(struct idx_desc_data *data, const void *buf, size_t nbyte) {
 	int len;
 	struct pipe *pipe = (struct pipe*)data;
 
@@ -121,7 +122,7 @@ static int pipe_write(void *data, const void *buf, size_t nbyte) {
 	return len;
 }
 
-static int pipe_ioctl(void *data, int request, va_list args) {
+static int pipe_ioctl(struct idx_desc_data *data, int request, va_list args) {
 	struct pipe *pipe = (struct pipe*)data;
 
 	switch (request) {
@@ -140,6 +141,6 @@ static int pipe_ioctl(void *data, int request, va_list args) {
 	return 0;
 }
 
-static int pipe_fseek(void *data, long int offset, int origin) {
+static int pipe_fseek(struct idx_desc_data *data, long int offset, int origin) {
 	return 0; /* do nothing */
 }

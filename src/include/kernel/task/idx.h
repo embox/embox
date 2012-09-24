@@ -19,15 +19,23 @@ enum task_idx_ops_type {
 	TASK_RES_OPS_TTY
 };
 
+typedef unsigned int idx_flags_t;
+
+struct idx_desc_data {
+	void *fd_struct;     /**< @brief Pointer for actual struct */
+	idx_flags_t flags;
+};
+
+
 /**
  * Specify operations with task's resources, which be called POSIX compat lib
  */
 struct task_idx_ops {
-	int	(*read) (void *data, void *buf, size_t nbyte);
-	int	(*write)(void *data, const void *buf, size_t nbyte);
-	int	(*close)(void *data);
-	int	(*ioctl)(void *data, int request, va_list args);
-	int (*fseek)(void *data, long int offset, int origin);
+	int	(*read) (struct idx_desc_data *data, void *buf, size_t nbyte);
+	int	(*write)(struct idx_desc_data *data, const void *buf, size_t nbyte);
+	int	(*close)(struct idx_desc_data *data);
+	int	(*ioctl)(struct idx_desc_data *data, int request, va_list args);
+	int	(*fseek)(struct idx_desc_data *data, long int offset, int origin);
 	const enum task_idx_ops_type type;
 };
 
@@ -38,8 +46,9 @@ struct task_idx_ops {
  */
 struct idx_desc {
 	const struct task_idx_ops *res_ops;
-	void *data;     /**< @brief Pointer for actual struct */
 	int link_count; /**< @brief Count of links in all tasks */
+
+	struct idx_desc_data data;
 };
 
 /**
@@ -47,9 +56,9 @@ struct idx_desc {
  * @param desc idx descriptor to get
  * @return resource in idx
  */
-static inline void *task_idx_desc_data(struct idx_desc *desc) {
+static inline struct idx_desc_data *task_idx_desc_data(struct idx_desc *desc) {
 	assert(desc);
-	return desc->data;
+	return &desc->data;
 }
 
 static inline const struct task_idx_ops *task_idx_desc_ops(struct idx_desc *desc) {
