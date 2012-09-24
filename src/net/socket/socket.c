@@ -38,7 +38,8 @@ const struct task_idx_ops task_idx_ops_socket = {
 };
 
 static struct socket *idx2sock(int fd) {
-	return (struct socket *) task_idx_desc_data(task_self_idx_get(fd));
+	struct idx_desc_data *data = task_idx_desc_data(task_self_idx_get(fd));
+	return (struct socket *)data->fd_struct;
 }
 
 int socket(int domain, int type, int protocol) {
@@ -331,8 +332,8 @@ static ssize_t this_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
 	return recvfrom_sock((struct socket *) data->fd_struct, buf, nbyte, data->flags, NULL, 0);
 }
 
-static ssize_t this_write(struct idx_desc_data *socket, const void *buf, size_t nbyte) {
-	return sendto_sock((struct socket *) socket, buf, nbyte, 0, NULL, 0);
+static ssize_t this_write(struct idx_desc_data *data, const void *buf, size_t nbyte) {
+	return sendto_sock((struct socket *) data->fd_struct, buf, nbyte, 0, NULL, 0);
 }
 
 static int this_ioctl(struct idx_desc_data *socket, int request, va_list args) {

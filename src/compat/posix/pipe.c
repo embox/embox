@@ -72,7 +72,7 @@ int pipe(int pipefd[2]) {
 }
 
 static int pipe_close(struct idx_desc_data *data) {
-	struct pipe *pipe= (struct pipe*) data;
+	struct pipe *pipe= (struct pipe*) data->fd_struct;
 
 	free(pipe->buff.buffer.storage);
 	free(pipe);
@@ -82,7 +82,7 @@ static int pipe_close(struct idx_desc_data *data) {
 
 static int pipe_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
 	int len;
-	struct pipe *pipe = (struct pipe*)data;
+	struct pipe *pipe = (struct pipe*)data->fd_struct;
 
 	if (!nbyte) {
 		return nbyte;
@@ -103,7 +103,7 @@ static int pipe_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
 
 static int pipe_write(struct idx_desc_data *data, const void *buf, size_t nbyte) {
 	int len;
-	struct pipe *pipe = (struct pipe*)data;
+	struct pipe *pipe = (struct pipe*)data->fd_struct;
 
 	if (!nbyte) {
 		return nbyte;
@@ -123,7 +123,7 @@ static int pipe_write(struct idx_desc_data *data, const void *buf, size_t nbyte)
 }
 
 static int pipe_ioctl(struct idx_desc_data *data, int request, va_list args) {
-	struct pipe *pipe = (struct pipe*)data;
+	struct pipe *pipe = (struct pipe*)data->fd_struct;
 
 	switch (request) {
 	case O_NONBLOCK:
