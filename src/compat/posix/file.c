@@ -34,7 +34,7 @@ int close(int fd) {
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
@@ -51,12 +51,12 @@ ssize_t write(int fd, const void *buf, size_t nbyte) {
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
 	if (!buf) {
-		SET_ERRNO(-EFAULT);
+		SET_ERRNO(EFAULT);
 		return -1;
 	}
 
@@ -71,12 +71,12 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
 	if (!buf) {
-		SET_ERRNO(-EFAULT);
+		SET_ERRNO(EFAULT);
 		return -1;
 	}
 
@@ -91,7 +91,7 @@ int lseek(int fd, long int offset, int origin) {
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
@@ -108,7 +108,7 @@ int ioctl(int fd, int request, ...) {
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
@@ -122,6 +122,36 @@ int ioctl(int fd, int request, ...) {
 	va_end(args);
 
 	return ret;
+}
+
+int fcntl(int fd, int cmd, ...) {
+	va_list args;
+	int res, flags;
+	struct idx_desc *desc = task_self_idx_get(fd);
+
+	if (!desc) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	va_start(args, cmd);
+	switch(cmd) {
+	case F_GETFD:
+		res = desc->data.flags;
+		break;
+	case F_SETFD:
+		flags = va_arg(args, int);
+		desc->data.flags = flags;
+		break;
+	default:
+		/*SET_ERRNO(EINVAL);*/
+		res = -1;
+		break;
+	}
+	/* ops->foctl(task_idx_desc_data(desc), cmd, args); */
+	va_end(args);
+
+	return res;
 }
 
 int fsync(int fd) {
