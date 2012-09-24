@@ -83,7 +83,7 @@ static module LibCStdio {
 	source "stdio/printk.c"
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
-	depends FileApi
+	depends LibCFileApi
 	depends LibCMath
 }
 
@@ -103,18 +103,24 @@ static module LibC {
 //	source "stacktrace.c"
 }
 
-@DefaultImpl(FileStdio)
-abstract module FileApi { }
+@DefaultImpl(LibCFileDiag)
+abstract module LibCFileApi { }
 
-static module FileFS extends FileApi {
+static module LibCFileFsPosix extends LibCFileApi {
 	source "stdio/fs.c"
 	source "stdio/stdio_posix.c"
 
 	depends embox.fs.core
-	depends embox.compat.posix.FileApi
+	depends embox.compat.posix.LibPosixFsApi
 }
 
-static module FileStdio extends FileApi{
+static module LibCFileFsDiag extends LibCFileApi {
+	source "stdio/fs.c"
+	source "stdio/stdio_diag.c"
+
+	depends embox.fs.core
+}
+
+static module LibCFileDiag extends LibCFileApi {
 	source "stdio/fs_none.c"
-	depends embox.compat.posix.FileApi
 }

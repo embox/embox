@@ -327,8 +327,8 @@ int socket_close(int sockfd) {
 	return ENOERR;
 }
 
-static ssize_t this_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
-	return recvfrom_sock((struct socket *) data->data, buf, nbyte, data->flags, NULL, 0);
+static ssize_t this_read(void *socket, void *buf, size_t nbyte) {
+	return recvfrom_sock((struct socket *) socket, buf, nbyte, 0, NULL, 0);
 }
 
 static ssize_t this_write(void *socket, const void *buf, size_t nbyte) {

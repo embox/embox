@@ -31,13 +31,6 @@ struct task_idx_ops {
 	const enum task_idx_ops_type type;
 };
 
-typedef unsigned int idx_flags_t;
-
-struct idx_desc_data {
-	void *data;     /**< @brief Pointer for actual struct */
-	idx_flags flags;
-}
-
 /**
  * Descriptor for numerated item for resource (int flides / int socket)
  * Task stores resources in this form, dynamically resolve operations
@@ -45,9 +38,8 @@ struct idx_desc_data {
  */
 struct idx_desc {
 	const struct task_idx_ops *res_ops;
+	void *data;     /**< @brief Pointer for actual struct */
 	int link_count; /**< @brief Count of links in all tasks */
-
-	struct idx_desc_data;
 };
 
 /**

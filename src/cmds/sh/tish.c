@@ -21,6 +21,9 @@
 
 #define BUF_INP_SIZE OPTION_GET(NUMBER, prompt_len)
 
+static char *token_line[(BUF_INP_SIZE + 1) / 2];
+static char cline[BUF_INP_SIZE];
+
 static int cmd_compl(char *buf, char *out_buf) {
 	const struct cmd *cmd = NULL;
 	int buf_len = strlen(buf);
@@ -61,13 +64,10 @@ static int run_cmd(int argc, char *argv[]) {
 }
 
 int shell_line_input(const char *const_line) {
-	char *token_line[(BUF_INP_SIZE + 1) / 2];
-	char cline[BUF_INP_SIZE];
 	char *line = cline;
 	char quote;
 	int tok_pos = 0;
 	int last_was_blank = 1;
-
 
         strncpy(cline, const_line, BUF_INP_SIZE);
 
@@ -99,14 +99,15 @@ void shell_run(void) {
 	const char *prompt = OPTION_STRING_GET(prompt);
 	char inp_buf[BUF_INP_SIZE];
 	struct hist h;
+	int ret = 0;
 
 	linenoise_history_init(&h);
 
 	printf("\n%s\n\n", OPTION_STRING_GET(welcome_msg));
 
 	while (1) {
-		if (linenoise(prompt, inp_buf, BUF_INP_SIZE, &h,
-			(compl_callback_t) cmd_compl) < 0) {
+		if ((ret = linenoise(prompt, inp_buf, BUF_INP_SIZE, &h,
+			(compl_callback_t) cmd_compl)) < 0) {
 			return;
 		}
 
