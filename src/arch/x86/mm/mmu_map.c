@@ -55,5 +55,26 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 }
 
 paddr_t mmu_translate(mmu_ctx_t ctx, vaddr_t vaddr) {
-	return 0;
+	mmu_pgd_t *pdt;
+	mmu_pte_t *pte_table;
+	uint32_t pdt_idx, pte_idx, offset;
+	paddr_t paddr;
+
+	pdt_idx = (vaddr & 0xFFC00000) >> 22;
+	pte_idx = (vaddr & 0x003FF000) >> 12;
+	offset  = (vaddr & 0x00000FFF);
+	pdt = mmu_get_root(ctx);
+
+	if (0 == (uint32_t) (pdt[pdt_idx] & MMU_PAGE_PRESENT)) { /* we have been not allocated page for this region yet */
+		return 0;
+	} else {
+		pte_table = (mmu_pte_t *) (pdt[pdt_idx] & (~((1 << 12) - 1)));
+	}
+
+	if (0 == (uint32_t) (pte_table[pte_idx] & MMU_PAGE_PRESENT)) {
+		return 0;
+	}
+
+	paddr = (paddr_t) ((pte_table[pte_idx] & 0xFFFFF000) | offset);
+	return paddr;
 }

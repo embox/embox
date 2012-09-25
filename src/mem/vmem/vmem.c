@@ -8,6 +8,7 @@
 
 #include <embox/unit.h>
 
+#include <assert.h>
 #include <types.h>
 #include <stdio.h>
 #include <hal/mm/mmu_core.h>
@@ -76,6 +77,10 @@ static int vmem_init(void) {
 
 	vmem_map_kernel((mmu_ctx_t) 0);
 	vmem_on();
+
+	for (char *i = KERNEL_START; i < KERNEL_END; i++) {
+		assert(mmu_translate((mmu_ctx_t) 0, (vaddr_t) i) == (paddr_t) i);
+	}
 
 	return 0;
 }

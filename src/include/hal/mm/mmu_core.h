@@ -227,6 +227,8 @@ extern int mmu_valid_entry(mmu_pte_t pte);
  */
 extern mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx);
 
+extern paddr_t mmu_translate(mmu_ctx_t ctx, vaddr_t vaddr);
+
 extern vaddr_t mmu_get_fault_address(void);
 
 extern void mmu_flush_tlb_single(unsigned long addr);
