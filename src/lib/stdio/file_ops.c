@@ -16,34 +16,25 @@
 
 POOL_DEF(file_pool, FILE, OPTION_MODULE_GET(embox__fs__file_desc,NUMBER,fdesc_quantity));
 
-static inline int lopen(const char *path, const char *mode, FILE *file) {
-	file->_.desc = kopen(path, mode);
-	return (file->_.desc == NULL ? -1 : 0);
-}
 
-static inline size_t lwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	return kwrite(buf, size, count, file->_.desc);
-}
+FILE stdin_struct = {
+	.file_int = INIT_STDIN
+};
+FILE stdout_struct = {
+	.file_int = INIT_STDOUT
+};
 
-static inline size_t lread(void *buf, size_t size, size_t count, FILE *file) {
-	return kread(buf, size, count, file->_.desc);
-}
+FILE stderr_struct = {
+	.file_int = INIT_STDERR
+};
 
-static inline int lclose(FILE *file) {
-	return kclose(file->_.desc);
-}
-
-static inline int lseek(FILE *file, long int offset, int origin) {
-	return kseek(file->_.desc, offset, origin);
-}
-
-static inline int lioctl(FILE *file, int request, va_list args) {
-	return kioctl(file->_.desc, request, args);
-}
+FILE *stdin = &stdin_struct;
+FILE *stdout = &stdout_struct;
+FILE *stderr = &stderr_struct;
 
 FILE *fopen(const char *path, const char *mode) {
 	FILE *file = pool_alloc(&file_pool);
-	if (lopen(path, mode, file) < 0) {
+	if (lopen(path, mode, (struct file_struct_int *) file) < 0) {
 		return NULL;
 	}
 	return file;
@@ -65,7 +56,7 @@ int ferror(FILE *file) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	return lwrite(buf, size, count, file);
+	return lwrite(buf, size, count, (struct file_struct_int *) file);
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
@@ -86,24 +77,24 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		addon = 1;
 	}
 
-	return (addon + lread(buf, size, count, file));
+	return (addon + lread(buf, size, count, (struct file_struct_int *) file));
 }
 
 
 int fclose(FILE *file) {
-	int res = lclose(file);
+	int res = lclose((struct file_struct_int *) file);
 	pool_free(&file_pool, file);
 	return res;
 }
 
 int fseek(FILE *file, long int offset, int origin) {
-	return lseek(file, offset, origin);
+	return llseek((struct file_struct_int *) file, offset, origin);
 }
 
 int fioctl(FILE *fp, int request, ...) {
 	va_list args;
 	va_start(args, request);
-	return lioctl(fp, request, args);
+	return lioctl((struct file_struct_int *) fp, request, args);
 }
 
 int ungetc(int ch, FILE *file) {

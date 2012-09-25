@@ -89,6 +89,7 @@ static module LibCStdio {
 
 static module LibC {
 	source "time/ctime.c"
+	source "stdio/file_ops.c"
 
 	depends LibCDiagnostic
 	depends LibCMisc
@@ -103,15 +104,14 @@ static module LibC {
 //	source "stacktrace.c"
 }
 
-@DefaultImpl(FileStdio)
+@DefaultImpl(FileFS)
 abstract module FileApi { }
 
 static module FileFS extends FileApi {
-	source "stdio/fs.c"
-	source "stdio/stdio_posix.c"
+	source "stdio/file_fs.h"
+	source "stdio/file_fs.c"
 
 	depends embox.fs.core
-	depends embox.compat.posix.FileApi
 }
 
 static module FileStdio extends FileApi{

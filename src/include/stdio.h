@@ -15,15 +15,12 @@
 #include <types.h>
 #include <kernel/printk.h>
 
+#include <module/embox/lib/FileApi.h>
+
 #define EOF (-1)
 
-union file_struct_int {
-	int fd;
-	struct file_desc *desc;
-};
-
 typedef struct file_struct {
-	union file_struct_int _;
+	struct file_struct_int file_int;
 	char has_ungetc;
 	int ungetc;
 } FILE;
@@ -145,12 +142,9 @@ extern int fseek(FILE *stream, long int offset, int origin);
  */
 extern int fioctl(FILE *fp, int request, ...);
 
-
-//#include <kernel/task.h>
 extern FILE *stdin;
 extern FILE *stdout;
 extern FILE *stderr;
-//#define stdin ((FILE *)(task_res_idx_get(task_self_res(), 0)->data))
 
 //TODO: stub
 
