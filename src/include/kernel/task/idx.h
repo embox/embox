@@ -9,7 +9,7 @@
 #ifndef TASK_IDX_H_
 #define TASK_IDX_H_
 
-#define CONFIG_TASKS_RES_QUANTITY 16
+#define CONFIG_TASKS_RES_QUANTITY 32
 
 #include <assert.h>
 #include <stdarg.h>
