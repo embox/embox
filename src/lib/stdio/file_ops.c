@@ -10,11 +10,13 @@
 #include <mem/misc/pool.h>
 
 #include <framework/mod/options.h>
-#include <module/embox/fs/file_desc.h>
 
 #include <fs/core.h>
 
+#include <module/embox/fs/file_desc.h>
+
 POOL_DEF(file_pool, FILE, OPTION_MODULE_GET(embox__fs__file_desc,NUMBER,fdesc_quantity));
+
 
 
 FILE stdin_struct = {

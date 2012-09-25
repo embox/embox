@@ -104,7 +104,7 @@ static module LibC {
 //	source "stacktrace.c"
 }
 
-@DefaultImpl(FileFS)
+@DefaultImpl(FilePosix)
 abstract module FileApi { }
 
 static module FileFS extends FileApi {
@@ -112,6 +112,14 @@ static module FileFS extends FileApi {
 	source "stdio/file_fs.c"
 
 	depends embox.fs.core
+}
+
+/* static module must have .c file, so this isn't a static */
+module FilePosix extends FileApi {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "stdio/file_posix.h"
+
+	depends embox.compat.posix.FileApi
 }
 
 static module FileStdio extends FileApi{
