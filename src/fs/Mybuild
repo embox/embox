@@ -14,7 +14,7 @@ module file_desc {
 }
 
 module core {
-	source "vfs.c"
+	source "vfs.c", "core.c"
 
 	option number file_name_length=32
 	option number path_length=256
@@ -25,7 +25,7 @@ module core {
 
 module posix_compat {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "kernel_posix_plugin.c"
+	source "posix_compat.c"
 	depends core
 	depends embox.kernel.task.idx_table
 }
