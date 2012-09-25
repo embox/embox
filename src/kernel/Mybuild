@@ -12,4 +12,5 @@ module Kernel {
 	depends embox.arch.locore
 	depends embox.arch.cpu
 	depends embox.driver.diag.diag_api
+	depends embox.kernel.stack
 }

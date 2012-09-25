@@ -2,6 +2,6 @@ package embox.arch.sparc
 
 module lds extends embox.arch.lds {
 	source "embox.lds.S"
-	option number stack_size=0x10000
+	//option number stack_size=0x10000
 }
 
