@@ -73,10 +73,7 @@ static file_operations_t stdio_fop = {
 		.ops = &stdio_fop, \
 	}
 
-INIT_STDIO_FILE_DESC(_stdin);
-INIT_STDIO_FILE_DESC(_stdout);
-INIT_STDIO_FILE_DESC(_stderr);
+INIT_STDIO_FILE_DESC(stdin);
+INIT_STDIO_FILE_DESC(stdout);
+INIT_STDIO_FILE_DESC(stderr);
 
-FILE * stdin = (FILE *) &_stdin;
-FILE * stdout = (FILE *) &_stdout;
-FILE * stderr = (FILE *) &_stderr;

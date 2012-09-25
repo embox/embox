@@ -5,71 +5,52 @@
  * @author Anton Bondarev
  */
 
-#include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <errno.h>
-#include <err.h>
-#include <fcntl.h>
-#include <lib/list.h>
-#include <fs/rootfs.h>
-#include <fs/ramfs.h>
-#include <fs/vfs.h>
-#include <fs/file_desc.h>
+#include <mem/misc/pool.h>
 
+#include <framework/mod/options.h>
+#include <module/embox/fs/file_desc.h>
+
+#include <fs/core.h>
+
+POOL_DEF(file_pool, FILE, OPTION_MODULE_GET(embox__fs__file_desc,NUMBER,fdesc_quantity));
+
+static inline int lopen(const char *path, const char *mode, FILE *file) {
+	file->_.desc = kopen(path, mode);
+	return (file->_.desc == NULL ? -1 : 0);
+}
+
+static inline size_t lwrite(const void *buf, size_t size, size_t count, FILE *file) {
+	return kwrite(buf, size, count, file->_.desc);
+}
+
+static inline size_t lread(void *buf, size_t size, size_t count, FILE *file) {
+	return kread(buf, size, count, file->_.desc);
+}
+
+static inline int lclose(FILE *file) {
+	return kclose(file->_.desc);
+}
+
+static inline int lseek(FILE *file, long int offset, int origin) {
+	return kseek(file->_.desc, offset, origin);
+}
+
+static inline int lioctl(FILE *file, int request, va_list args) {
+	return kioctl(file->_.desc, request, args);
+}
 
 FILE *fopen(const char *path, const char *mode) {
-	node_t *nod;
-	fs_drv_t *drv;
-	FILE *file;
-	struct file_desc *desc;
-
-	if (NULL == (nod = vfs_find_node(path, NULL))) {
-		if (strchr(mode, 'w') == NULL) {
-			errno = ENOENT;
-			return NULL;
-		}
-
-		if (create(path, 0) < 0) {
-			return NULL;
-		}
-
-		if (NULL == (nod = vfs_find_node(path, NULL))) {
-			return NULL;
-		}
-	}
-	/* check permissions */
-
-	/* allocate new descriptor */
-	if (NULL == (desc = file_desc_alloc())) {
-		errno = ENOMEM;
+	FILE *file = pool_alloc(&file_pool);
+	if (lopen(path, mode, file) < 0) {
 		return NULL;
 	}
-
-	desc->cursor = 0;
-	desc->node = nod;
-
-	drv = nod->fs_type;
-	assert(drv != NULL);
-
-	if (NULL != nod->file_info) {
-		desc->ops = (struct file_operations *)nod->file_info;
-	} else {
-		desc->ops = (struct file_operations *)drv->file_op;
-	}
-
-	if (NULL == desc->ops->fopen) {
-			errno = EBADF;
-			LOG_ERROR("fop->fopen is NULL handler\n");
-			return NULL;
-		}
-	file = desc->ops->fopen(desc, mode);
-
 	return file;
+
 }
 
 FILE *freopen(const char *path, const char *mode, FILE *file) {
-	//TODO:
 	return NULL;
 }
 
@@ -84,26 +65,10 @@ int ferror(FILE *file) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	struct file_desc *desc;
-
-	if (NULL == file) {
-		errno = EBADF;
-		return -1;
-	}
-
-	desc = (struct file_desc *)file;
-
-	if (NULL == desc->ops->fwrite) {
-		errno = EBADF;
-		LOG_ERROR("fop->fwrite is NULL handler\n");
-		return -1;
-	}
-
-	return desc->ops->fwrite(buf, size, count, file);
+	return lwrite(buf, size, count, file);
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
-	struct file_desc *desc;
 	char *cbuff;
 	uint addon = 0;
 
@@ -112,89 +77,38 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		return -1;
 	}
 
-	desc = (struct file_desc *)file;
-	if(desc->has_ungetc) {
-		desc->has_ungetc = 0;
+	if(file->has_ungetc) {
+		file->has_ungetc = 0;
 		cbuff = buf;
-		cbuff[0] = (char)desc->ungetc;
+		cbuff[0] = (char)file->ungetc;
 		count --;
 		buf = &cbuff[1];
 		addon = 1;
 	}
 
-	if (NULL == desc->ops->fread) {
-		errno = EBADF;
-		LOG_ERROR("fop->fread is NULL handler\n");
-		return -1;
-	}
-
-	return (addon + desc->ops->fread(buf, size, count, file));
+	return (addon + lread(buf, size, count, file));
 }
 
 
 int fclose(FILE *file) {
-	struct file_desc *desc;
-
-	if (NULL == file) {
-		errno = EBADF;
-		return -1;
-	}
-
-	desc = (struct file_desc *)file;
-
-	if (NULL == desc->ops->fclose) {
-		errno = EBADF;
-		LOG_ERROR("fop->fclose is NULL handler\n");
-		return -1;
-	}
-
-	desc->ops->fclose(desc);
-	file_desc_free(desc);
-
-	return 0;
+	int res = lclose(file);
+	pool_free(&file_pool, file);
+	return res;
 }
 
 int fseek(FILE *file, long int offset, int origin) {
-	struct file_desc *desc;
-
-	if (NULL == file) {
-		errno = EBADF;
-		return -1;
-	}
-
-	desc = (struct file_desc *)file;
-
-	if (NULL == desc->ops->fseek) {
-		errno = EBADF;
-		LOG_ERROR("fop->fseec is NULL handler\n");
-		return -1;
-	}
-
-	return desc->ops->fseek(file, offset, origin);
+	return lseek(file, offset, origin);
 }
 
 int fioctl(FILE *fp, int request, ...) {
-	struct file_desc *desc = (struct file_desc *) fp;
 	va_list args;
 	va_start(args, request);
-
-	if (NULL == fp) {
-		errno = EBADF;
-		return -1;
-	}
-
-	if (NULL == desc->ops->ioctl) {
-		errno = EBADF;
-		LOG_ERROR("fop->ioctl is NULL handler\n");
-		return -1;
-	}
-	return desc->ops->ioctl(fp, request, args);
+	return lioctl(fp, request, args);
 }
 
 int ungetc(int ch, FILE *file) {
-	struct file_desc *desc = (struct file_desc *) file;
-	desc->ungetc = (char) ch;
-	desc->has_ungetc = 1;
+	file->ungetc = (char) ch;
+	file->has_ungetc = 1;
 	return ch;
 }
 

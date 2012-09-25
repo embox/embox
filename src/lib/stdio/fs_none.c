@@ -7,7 +7,9 @@
  */
 
 #include <stdio.h>
-#include <prom/diag.h>
+
+extern ssize_t write(int fd, const void *buf, size_t nbyte);
+extern ssize_t read(int fd, void *buf, size_t nbyte);
 
 #define MAGIC_VAL 0xbadb0100
 
@@ -32,33 +34,23 @@ int ferror(FILE *file) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	char *cbuf = (char *) buf;
-	char *cbufe = (char *) buf + size * count;
+	int fd;
 
 	if (file != stdout && file != stderr) {
 		return 0;
 	}
 
-	while (cbuf != cbufe) {
-		diag_putc(*cbuf);
-		cbuf++;
-	}
-	return size * count;
+	fd = (file == stdout ? 1 : 2);
+	return write(fd, buf, size * count);
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
-	char *cbuf = (char *) buf;
-	char *cbufe = (char *) buf + size * count;
 
 	if (file != stdin) {
 		return 0;
 	}
 
-	while (cbuf != cbufe) {
-		*cbuf = diag_getc();
-		cbuf++;
-	}
-	return 0;
+	return read(0, buf, size * count);
 }
 
 

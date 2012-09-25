@@ -14,6 +14,7 @@
 #include <net/socket.h>
 #include <util/array.h>
 #include <fs/posix.h>
+#include <fs/core.h>
 
 int open(const char *path, int __oflag, ...) {
 	char mode[] = "-";
