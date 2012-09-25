@@ -17,7 +17,17 @@
 
 #define EOF (-1)
 
-typedef int FILE;
+union file_struct_int {
+	int fd;
+	struct file_desc *desc;
+};
+
+typedef struct file_struct {
+	union file_struct_int _;
+	char has_ungetc;
+	int ungetc;
+} FILE;
+
 
 struct stat;
 
