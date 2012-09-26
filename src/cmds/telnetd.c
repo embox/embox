@@ -23,11 +23,8 @@ EMBOX_CMD(exec);
 	/* Upper limit of concurent telnet connections.
 	 * ToDo: move those into config files
 	 */
-#define TELNETD_MAX_CONNECTIONS 3
+#define TELNETD_MAX_CONNECTIONS 5
 static int clients[TELNETD_MAX_CONNECTIONS];
-/* Pipes for shell and this task communication */
-static int pipefd1[TELNETD_MAX_CONNECTIONS][2];
-static int pipefd2[TELNETD_MAX_CONNECTIONS][2];
 	/* Telnetd address bind to */
 #define TELNETD_ADDR INADDR_ANY
 	/* Telnetd port bind to */
@@ -76,8 +73,9 @@ static void telnet_cmd(int sock, unsigned char op, unsigned char param) {
 }
 
 	/* Skip management session */
-static void ignore_telnet_options(int sock) {
+static void ignore_telnet_options(int msg[2]) {
 	unsigned char ch, op_type, param;
+	int sock = msg[0];
 
 	read(sock, &ch, 1);
 	while ((ch & (1 << 7)) && (ch != T_IAC)) {
@@ -111,7 +109,7 @@ static void ignore_telnet_options(int sock) {
 		}
 		else {
 			/* Get this symbol to shell, it belongs to usual traffic */
-			write(pipefd1[sock][0], &ch, 1);
+			write(msg[1], &ch, 1);
 			return;
 		}
 
@@ -122,17 +120,13 @@ static void ignore_telnet_options(int sock) {
 }
 
 static void *shell_hnd(void* args) {
-	int sock = *(int *) args;
+	int *msg = (int*)args;
 
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);
 
-	dup2(pipefd1[sock][1], STDIN_FILENO);
-	dup2(pipefd2[sock][0], STDOUT_FILENO);
-
-	/* Close unused ends of pipes. */
-	close(pipefd1[sock][0]);
-	close(pipefd2[sock][1]);
+	dup2(msg[0], STDIN_FILENO);
+	dup2(msg[1], STDOUT_FILENO);
 
 	shell_run();
 
@@ -166,26 +160,31 @@ static void *telnet_thread_handler(void* args) {
 	int sock_data_len = 0; /* len of rest of socket data in local buffer sbuff */
 	int pipe_data_len = 0; /* len of rest of pipe data in local buffer pbuff */
 	int sock = *(int *)args;
+	int pipefd1[2], pipefd2[2], msg[2];
 
 	fcntl(sock, F_SETFD, O_NONBLOCK);
 
-	pipe(pipefd1[sock]);
-	pipe(pipefd2[sock]);
+	pipe(pipefd1);
+	pipe(pipefd2);
 
-	fcntl(pipefd1[sock][0], F_SETFD, O_NONBLOCK);
-	fcntl(pipefd2[sock][1], F_SETFD, O_NONBLOCK);
+	fcntl(pipefd1[0], F_SETFD, O_NONBLOCK);
+	fcntl(pipefd2[1], F_SETFD, O_NONBLOCK);
 
 	/* Set our parameters */
 	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
 	telnet_cmd(sock, T_WILL, O_ECHO);
 
-	ignore_telnet_options(sock);
+	msg[0] = sock;
+	msg[1] = pipefd1[0];
+	ignore_telnet_options(msg);
 
-	new_task(shell_hnd, &sock);
+	msg[0] = pipefd1[1];
+	msg[1] = pipefd2[0];
+	new_task(shell_hnd, &msg);
 
 	/* Close unused ends of pipes. */
-	close(pipefd1[sock][1]);
-	close(pipefd2[sock][0]);
+	close(pipefd1[1]);
+	close(pipefd2[0]);
 
 	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
 	 * and than receive from it the result of command running, and send it back to
@@ -200,12 +199,12 @@ static void *telnet_thread_handler(void* args) {
 			}
 		} else {
 			p = pbuff;
-			pipe_data_len = read(pipefd2[sock][1], tmpbuff, 64);
+			pipe_data_len = read(pipefd2[1], tmpbuff, 64);
 			pipe_data_len = buf_copy(pbuff, tmpbuff, pipe_data_len);
 		}
 
 		if (sock_data_len > 0) {
-			if ((len = write(pipefd1[sock][0], s, sock_data_len)) > 0) {
+			if ((len = write(pipefd1[0], s, sock_data_len)) > 0) {
 				sock_data_len -= len;
 				s += len;
 			}
@@ -284,6 +283,7 @@ static int exec(int argc, char **argv) {
 
 			if (connectlimit) {
 				telnet_cmd(client_descr, T_INTERRUPT, 0);
+				printf("%s\n", "limit");
 				MD(printf("%s\n", "limit of connections"));
 			}
 		}
