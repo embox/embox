@@ -4,8 +4,8 @@ module signal {
 	source "signal.c"
 
 	depends embox.kernel.task.api
-	depends embox.framework.LibFramework
 	depends embox.kernel.task.signal
+	depends embox.framework.LibFramework
 }
 
 module idx_desc_test {
@@ -17,5 +17,8 @@ module idx_desc_test {
 
 module pipe_test {
 	source "pipe_test.c"
-	depends embox.compat.posix.LibPosixIdx
+
+	depends embox.compat.posix.FileApi
+	depends embox.compat.posix.idx.pipe
+	depends embox.framework.LibFramework
 }

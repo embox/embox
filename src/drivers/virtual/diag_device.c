@@ -12,6 +12,7 @@
 #include <embox/device.h>
 #include <errno.h>
 #include <fs/ioctl.h>
+#include <fcntl.h>
 
 static int nonblocking = 0;
 

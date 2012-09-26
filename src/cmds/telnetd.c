@@ -16,15 +16,14 @@
 #include <err.h>
 #include <errno.h>
 #include <kernel/task.h>
-#include <fs/ioctl.h>
-#include <sys/ioctl.h>
+#include <fcntl.h>
 
 EMBOX_CMD(exec);
 
 	/* Upper limit of concurent telnet connections.
 	 * ToDo: move those into config files
 	 */
-#define TELNETD_MAX_CONNECTIONS 10
+#define TELNETD_MAX_CONNECTIONS 3
 static int clients[TELNETD_MAX_CONNECTIONS];
 /* Pipes for shell and this task communication */
 static int pipefd1[TELNETD_MAX_CONNECTIONS][2];
@@ -44,18 +43,7 @@ static int pipefd2[TELNETD_MAX_CONNECTIONS][2];
 	} while (0);
 #endif
 
-static int telnetd_retval = -1;
-static void fatal_error(const char *msg, int code) {
-#if 0	/* LOG_ERROR might be off now */
-	LOG_ERROR("%s, code=%d, last errno=%d\n", msg, code, errno);
-#else
-	MD(printf("%s, code=%d, last errno=%d\n", msg, code, errno));
-#endif
-	telnetd_retval = -1;
-	thread_exit(&telnetd_retval);
-	assert(0);
-}
-
+#if 0
 	/* Out a bunch of different error messages to the output and to the socket */
 static void out_msgs(const char *msg, const char *msg2, const char *msg3,
 					int client_descr, struct sockaddr_in *client_socket) {
@@ -66,16 +54,26 @@ static void out_msgs(const char *msg, const char *msg2, const char *msg3,
 		MD(printf("Can't write to the socket (%s)\n", msg3));
 	}
 }
-
+#endif
 
 #define T_WILL		251
 #define T_WONT		252
 #define T_DO		253
 #define T_DONT		254
 #define T_IAC		255
+#define T_INTERRUPT 244
 
 #define O_ECHO		1		/* Manage ECHO, RFC 857 */
 #define O_GO_AHEAD	3		/* Disable GO AHEAD, RFC 858 */
+
+static void telnet_cmd(int sock, unsigned char op, unsigned char param) {
+	unsigned char cmd[3];
+
+	cmd[0] = T_IAC;
+	cmd[1] = op;
+	cmd[2] = param;
+	write(sock, cmd, 3);
+}
 
 	/* Skip management session */
 static void ignore_telnet_options(int sock) {
@@ -89,22 +87,23 @@ static void ignore_telnet_options(int sock) {
 	while (1) {
 		if (ch == T_IAC) {
 			read(sock, &op_type, 1);
-			read(sock, &param, 1);
+
+			if (op_type == T_WILL || op_type == T_DO ||
+					op_type == T_WONT || op_type == T_DONT) {
+				read(sock, &param, 1);
+			}
+
 			if (op_type == T_WILL) {
 				if (param == O_GO_AHEAD) {
-						/* Agree */
-					printf("%c%c%c", T_IAC, T_DO, param);
+					telnet_cmd(sock, T_DO, param);
 				} else {
-						/* Decline */
-					printf("%c%c%c", T_IAC, T_DONT, param);
+					telnet_cmd(sock, T_DONT, param);
 				}
 			} else if (op_type == T_DO) {
 				if ( (param == O_GO_AHEAD) || (param == O_ECHO) ) {
-						/* Agree */
-					printf("%c%c%c", T_IAC, T_WILL, param);
+					telnet_cmd(sock, T_WILL, param);
 				} else {
-						/* Decline */
-					printf("%c%c%c", T_IAC, T_WONT, param);
+					telnet_cmd(sock, T_WONT, param);
 				}
 			} else {
 				/* Currently do nothing, probably it's an answer for our request */
@@ -115,7 +114,10 @@ static void ignore_telnet_options(int sock) {
 			write(pipefd1[sock][0], &ch, 1);
 			return;
 		}
-		while (read(sock, &ch, 1) <= 0);
+
+		if (read(sock, &ch, 1) <= 0) {
+			return;
+		}
 	}
 }
 
@@ -128,61 +130,62 @@ static void *shell_hnd(void* args) {
 	dup2(pipefd1[sock][1], STDIN_FILENO);
 	dup2(pipefd2[sock][0], STDOUT_FILENO);
 
-	/* block shell on writing */
-	ioctl(pipefd2[sock][0], O_NONBLOCK, 0);
+	/* Close unused ends of pipes. */
+	close(pipefd1[sock][0]);
+	close(pipefd2[sock][1]);
 
 	shell_run();
 
 	return NULL;
 }
 
-	/* Identify our wishes for the session */
-static void set_our_term_parameters(void) {
-	printf("%c%c%c", T_IAC, T_WILL, O_GO_AHEAD);
-	printf("%c%c%c", T_IAC, T_WILL, O_ECHO);
+/* in echo mode \n -> \r\n. See RFC 854 for NVT options */
+static size_t buf_copy(unsigned char *dst, const unsigned char *src, size_t n) {
+	size_t len = 0;
+
+	for (int i = 0; i < n; i++) {
+		if (*src != '\n') {
+			*dst++ = *src++;
+			len++;
+		} else {
+			*dst++ = '\r';
+			*dst++ = *src++;
+			len += 2;
+		}
+	}
+
+	return len;
 }
-
-#undef T_WILL
-#undef T_WONT
-#undef T_DO
-#undef T_DONT
-#undef T_IAC
-
-#undef O_ECHO
-#undef O_GO_AHEAD
 
 	/* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
-	unsigned char sbuff[128], pbuff[128];
+	/* Choose tmpbuff size a half of size of pbuff to make
+	 * replacement: \n\n...->\r\n\r\n... */
+	unsigned char sbuff[128], pbuff[128], tmpbuff[64];
 	unsigned char *s = sbuff, *p = pbuff;
 	int sock_data_len = 0; /* len of rest of socket data in local buffer sbuff */
 	int pipe_data_len = 0; /* len of rest of pipe data in local buffer pbuff */
 	int sock = *(int *)args;
 
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
-	close(STDERR_FILENO);
-
-	dup(sock);
-	dup(sock);
-	dup(sock);
-
-		/* Hack. Emulate future output, we need a char from user to exit from
-		 * parameters mode
-		 */
-	{
-		static const char* prompt = "embox>"; /* OPTION_STRING_GET(prompt); */
-		printf("Welcome to telnet!\n%s", prompt);
-	}
+	fcntl(sock, F_SETFD, O_NONBLOCK);
 
 	pipe(pipefd1[sock]);
 	pipe(pipefd2[sock]);
 
-		/* Operate with settings */
-	set_our_term_parameters();
+	fcntl(pipefd1[sock][0], F_SETFD, O_NONBLOCK);
+	fcntl(pipefd2[sock][1], F_SETFD, O_NONBLOCK);
+
+	/* Set our parameters */
+	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
+	telnet_cmd(sock, T_WILL, O_ECHO);
+
 	ignore_telnet_options(sock);
 
 	new_task(shell_hnd, &sock);
+
+	/* Close unused ends of pipes. */
+	close(pipefd1[sock][1]);
+	close(pipefd2[sock][0]);
 
 	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
 	 * and than receive from it the result of command running, and send it back to
@@ -197,7 +200,8 @@ static void *telnet_thread_handler(void* args) {
 			}
 		} else {
 			p = pbuff;
-			pipe_data_len = read(pipefd2[sock][1], p, 128);
+			pipe_data_len = read(pipefd2[sock][1], tmpbuff, 64);
+			pipe_data_len = buf_copy(pbuff, tmpbuff, pipe_data_len);
 		}
 
 		if (sock_data_len > 0) {
@@ -219,39 +223,37 @@ static void *telnet_thread_handler(void* args) {
 
 static int exec(int argc, char **argv) {
 	int res;
-
-	struct sockaddr_in listening_socket;
 	int listening_descr;
+	struct sockaddr_in listening_socket;
 
-	clients[0] = -1;
-	for (res = 1; res < TELNETD_MAX_CONNECTIONS; res++) {
-		memcpy(&clients[res], &clients[0], sizeof(clients[0]));
+	for (res = 0; res < TELNETD_MAX_CONNECTIONS; res++) {
+		clients[res] = -1;
 	}
 
 	listening_socket.sin_family = AF_INET;
 	listening_socket.sin_port= htons(TELNETD_PORT);
 	listening_socket.sin_addr.s_addr = htonl(TELNETD_ADDR);
 
-	if (!((TELNETD_ADDR == INADDR_ANY) || ip_is_local(TELNETD_ADDR, false, false) )) {
-		fatal_error("telnetd address is incorrect", TELNETD_ADDR);
-	}
-
 	if ((listening_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-		fatal_error("can't create socket", listening_descr);
+		printf("can't create socket\n");
+		return -1;
 	}
 
 	if ((res = bind(listening_descr, (struct sockaddr *)&listening_socket,
 					sizeof(listening_socket))) < 0) {
-		fatal_error("bind() failed", res);
+		printf("bind() failed\n");
+		goto listen_failed;
 	}
 
 	if ((res = listen(listening_descr, TELNETD_MAX_CONNECTIONS)) < 0) {
-		fatal_error("listen() failed", res);
+		printf("listen() failed\n");
+		goto listen_failed;
 	}
 
 	MD(printf("telnetd is ready to accept connections\n"));
 	while (1) {
 		struct sockaddr_in client_socket;
+		bool connectlimit = true;
 		int client_socket_len = sizeof(client_socket);
 		int client_descr = accept(listening_descr, (struct sockaddr *)&client_socket,
 								  &client_socket_len);
@@ -260,6 +262,7 @@ static int exec(int argc, char **argv) {
 			MD(printf("accept() failed. code=%d\n", client_descr));
 		} else {
 			uint i;
+			struct thread *thread;
 
 			MD(printf("Attempt to connect from address %s:%d",
 					inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)) );
@@ -268,28 +271,23 @@ static int exec(int argc, char **argv) {
 				if (clients[i] == -1) {
 					clients[i] = client_descr;
 
-					if ((res = new_task(telnet_thread_handler, &clients[i]))) {
-						out_msgs("Internal error with shell creation\n", " failed. Can't create shell\n",
-								 "shell_create", client_descr, &client_socket);
+					if (0 != thread_create(&thread, 0, telnet_thread_handler, &clients[i])) {
+						telnet_cmd(client_descr, T_INTERRUPT, 0);
 						MD(printf("thread_create() returned with code=%d\n", res));
 						clients[i] = -1;
-					} else {
-						MD(printf(" success\n"));
 					}
-					close(client_descr);
-					client_descr = -1;
+
+					connectlimit = false;
 					break;
 				} /* if - if we have space for this connection */
-			} /* for */
-			if (client_descr != -1) {
-					/* No space for this connection */
-				out_msgs("Limit of concurrent connections was reached\n",
-					 " failed. Too many existent connections\n",
-					 "too_many", client_descr, &client_socket);
-				close(client_descr);
 			}
-		} /* if - accept() is sucessful */
-	} /* endless cycle */
+
+			if (connectlimit) {
+				telnet_cmd(client_descr, T_INTERRUPT, 0);
+				MD(printf("%s\n", "limit of connections"));
+			}
+		}
+	} /* while(1) */
 
 	assert(0);
 	{
@@ -306,4 +304,8 @@ static int exec(int argc, char **argv) {
 	}
 
 	return ENOERR;
+
+listen_failed:
+	close(listening_descr);
+	return -1;
 }

@@ -126,7 +126,7 @@ static int mod_traverse_rec_safe(const struct mod *mod, bool op, bool recursive_
 	}
 
 	if (!recursive_safe) {
-		assert(0 == mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS) &&
+		assert(0 == mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS),
 				"Recursive mod traversing");
 	} else {
 		if (mod_flag_tst(mod, MOD_FLAG_OPINPROGRESS)) {

@@ -180,11 +180,8 @@ static int linenoise_prompt(int fd_in, int fd_out, char *buf, size_t buflen, con
         int nread;
         char seq[2], seq2[2]= {0};
 
-        nread = read(fd_in,&c,1);
-        if (nread <= 0) {
-        	sleep(0);
-        	continue;
-		}
+        while ((nread = read(fd_in,&c,1)) <= 0) {}
+
         /* Only autocomplete when the callback is set. It returns < 0 when
          * there was an error reading from fd. Otherwise it will return the
          * character that should be handled next. */
@@ -392,7 +389,7 @@ int linenoise(const char *prompt, char *buf, int len, struct hist *history, comp
 		count = linenoise_prompt(fd, stdin, buf, len, prompt, history, cb, false);
 	}
 */
-	if (isatty(0)) {
+	if (1) {
 		ioctl(in, TTY_IOCTL_SET_RAW, NULL);
 		count = linenoise_prompt(in, out, buf, len, prompt, history, cb);
 		ioctl(in, mode, NULL);

@@ -25,10 +25,10 @@
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
 
-static ssize_t this_read(void *socket, void *buf, size_t nbyte);
-static ssize_t this_write(void *socket, const void *buf, size_t nbyte);
-static int this_ioctl(void *socket, int request, va_list args);
-static int this_close(void *socket);
+static ssize_t this_read(struct idx_desc_data *socket, void *buf, size_t nbyte);
+static ssize_t this_write(struct idx_desc_data *socket, const void *buf, size_t nbyte);
+static int this_ioctl(struct idx_desc_data *socket, int request, va_list args);
+static int this_close(struct idx_desc_data *socket);
 
 const struct task_idx_ops task_idx_ops_socket = {
 	.read = this_read,
@@ -38,7 +38,8 @@ const struct task_idx_ops task_idx_ops_socket = {
 };
 
 static struct socket *idx2sock(int fd) {
-	return (struct socket *) task_self_idx_get(fd)->data;
+	struct idx_desc_data *data = task_idx_desc_data(task_self_idx_get(fd));
+	return (struct socket *)data->fd_struct;
 }
 
 int socket(int domain, int type, int protocol) {
@@ -327,21 +328,21 @@ int socket_close(int sockfd) {
 	return ENOERR;
 }
 
-static ssize_t this_read(void *socket, void *buf, size_t nbyte) {
-	return recvfrom_sock((struct socket *) socket, buf, nbyte, 0, NULL, 0);
+static ssize_t this_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
+	return recvfrom_sock((struct socket *) data->fd_struct, buf, nbyte, data->flags, NULL, 0);
 }
 
-static ssize_t this_write(void *socket, const void *buf, size_t nbyte) {
-	return sendto_sock((struct socket *) socket, buf, nbyte, 0, NULL, 0);
+static ssize_t this_write(struct idx_desc_data *data, const void *buf, size_t nbyte) {
+	return sendto_sock((struct socket *) data->fd_struct, buf, nbyte, 0, NULL, 0);
 }
 
-static int this_ioctl(void *socket, int request, va_list args) {
+static int this_ioctl(struct idx_desc_data *socket, int request, va_list args) {
 	return 0;
 }
 
-static int this_close(void *socket) {
+static int this_close(struct idx_desc_data *socket) {
 	/* TODO set errno */
-	return kernel_socket_release(socket);
+	return kernel_socket_release(socket->fd_struct);
 }
 
 int getsockopt(int sockfd, int level, int optname, void *optval,

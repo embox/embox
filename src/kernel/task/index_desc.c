@@ -54,12 +54,13 @@ static void task_idx_table_deinit(struct task *task) {
 }
 
 
-/*static*/ struct idx_desc *task_idx_desc_alloc(const struct task_idx_ops *res_ops, void *data) {
+/*static*/ struct idx_desc *task_idx_desc_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
 	struct idx_desc *desc = objalloc(&idx_res_pool);
 	desc->link_count = 0;
 
 	desc->res_ops = res_ops;
-	desc->data = data;
+	desc->data.fd_struct = fd_struct;
+	desc->data.flags = 0;
 	return desc;
 }
 
@@ -77,7 +78,7 @@ int task_idx_table_set(struct task_idx_table *res, int idx, struct idx_desc *des
 	assert(res);
 	if (old_idx) {
 		if (0 == task_idx_desc_link_count_add(old_idx, -1)) {
-			ret = task_idx_desc_ops(old_idx)->close(old_idx->data);
+			ret = task_idx_desc_ops(old_idx)->close(task_idx_desc_data(old_idx));
 			task_idx_desc_free(old_idx);
 		}
 	}

@@ -20,6 +20,7 @@
 #include <embox/net/sock.h>
 #include <net/route.h>
 #include <net/inetdevice.h>
+#include <fcntl.h>
 
 EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, true);
 
@@ -324,6 +325,10 @@ check_state:
 			}
 			if (tcp_get_usec() - started >= sock.tcp_sk->oper_timeout) {
 				return -ETIMEDOUT; /* error: timeout */
+			}
+
+			if (flags & O_NONBLOCK) {
+				return -ETIMEDOUT;
 			}
 			/* wait received packet or another state */
 			goto check_state;

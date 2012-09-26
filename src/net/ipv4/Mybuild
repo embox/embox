@@ -10,6 +10,7 @@ module arp_queue {
 	depends network_layer /* for network_layer.c */
 	depends skbuff
 	depends route
+	depends embox.kernel.time.kernel_time
 	depends embox.kernel.timer.sys_timer
 	depends embox.kernel.thread.sched
 	depends embox.kernel.thread.event
@@ -36,6 +37,7 @@ module icmp {
 	depends core /* for devinet.c */
 	depends ipv4 /* for ip_output.c */
 	depends skbuff
+	depends embox.kernel.time.kernel_time
 	depends embox.framework.LibFrameworkNet
 }
 
@@ -80,6 +82,7 @@ module tcp {
 	depends ipv4 /* for ip_output.c */
 	depends af_inet /* for af_inet.c */
 	depends util
+	depends embox.kernel.time.kernel_time
 	depends embox.kernel.time.clock_source
 	depends embox.kernel.critical
 	depends embox.lib.LibC

@@ -17,11 +17,9 @@
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
 
-
-FILE *fopen(const char *path, const char *mode) {
+struct file_desc *kopen(const char *path, const char *mode) {
 	node_t *nod;
 	fs_drv_t *drv;
-	FILE *file;
 	struct file_desc *desc;
 
 	if (NULL == (nod = vfs_find_node(path, NULL))) {
@@ -63,63 +61,32 @@ FILE *fopen(const char *path, const char *mode) {
 			LOG_ERROR("fop->fopen is NULL handler\n");
 			return NULL;
 		}
-	file = desc->ops->fopen(desc, mode);
+	return desc->ops->fopen(desc, mode);
 
-	return file;
 }
 
-FILE *freopen(const char *path, const char *mode, FILE *file) {
-	//TODO:
-	return NULL;
-}
-
-int feof(FILE *file) {
-	//TODO:
-	return 0;
-}
-
-int ferror(FILE *file) {
-	//TODO:
-	return 0;
-}
-
-size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	struct file_desc *desc;
+size_t kwrite(const void *buf, size_t size, size_t count, struct file_desc *file) {
 
 	if (NULL == file) {
 		errno = EBADF;
 		return -1;
 	}
 
-	desc = (struct file_desc *)file;
 
-	if (NULL == desc->ops->fwrite) {
+	if (NULL == file->ops->fwrite) {
 		errno = EBADF;
 		LOG_ERROR("fop->fwrite is NULL handler\n");
 		return -1;
 	}
 
-	return desc->ops->fwrite(buf, size, count, file);
+	return file->ops->fwrite(buf, size, count, file);
 }
 
-size_t fread(void *buf, size_t size, size_t count, FILE *file) {
-	struct file_desc *desc;
-	char *cbuff;
-	uint addon = 0;
+size_t kread(void *buf, size_t size, size_t count, struct file_desc *desc) {
 
-	if (NULL == file) {
+	if (NULL == desc) {
 		errno = EBADF;
 		return -1;
-	}
-
-	desc = (struct file_desc *)file;
-	if(desc->has_ungetc) {
-		desc->has_ungetc = 0;
-		cbuff = buf;
-		cbuff[0] = (char)desc->ungetc;
-		count --;
-		buf = &cbuff[1];
-		addon = 1;
 	}
 
 	if (NULL == desc->ops->fread) {
@@ -128,19 +95,16 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		return -1;
 	}
 
-	return (addon + desc->ops->fread(buf, size, count, file));
+	return desc->ops->fread(buf, size, count, desc);
 }
 
 
-int fclose(FILE *file) {
-	struct file_desc *desc;
+int kclose(struct file_desc *desc) {
 
-	if (NULL == file) {
+	if (NULL == desc) {
 		errno = EBADF;
 		return -1;
 	}
-
-	desc = (struct file_desc *)file;
 
 	if (NULL == desc->ops->fclose) {
 		errno = EBADF;
@@ -154,15 +118,12 @@ int fclose(FILE *file) {
 	return 0;
 }
 
-int fseek(FILE *file, long int offset, int origin) {
-	struct file_desc *desc;
+int kseek(struct file_desc *desc, long int offset, int origin) {
 
-	if (NULL == file) {
+	if (NULL == desc) {
 		errno = EBADF;
 		return -1;
 	}
-
-	desc = (struct file_desc *)file;
 
 	if (NULL == desc->ops->fseek) {
 		errno = EBADF;
@@ -170,10 +131,10 @@ int fseek(FILE *file, long int offset, int origin) {
 		return -1;
 	}
 
-	return desc->ops->fseek(file, offset, origin);
+	return desc->ops->fseek(desc, offset, origin);
 }
 
-int fioctl(FILE *fp, int request, ...) {
+int kioctl(struct file_desc *fp, int request, ...) {
 	struct file_desc *desc = (struct file_desc *) fp;
 	va_list args;
 	va_start(args, request);
@@ -190,11 +151,3 @@ int fioctl(FILE *fp, int request, ...) {
 	}
 	return desc->ops->ioctl(fp, request, args);
 }
-
-int ungetc(int ch, FILE *file) {
-	struct file_desc *desc = (struct file_desc *) file;
-	desc->ungetc = (char) ch;
-	desc->has_ungetc = 1;
-	return ch;
-}
-

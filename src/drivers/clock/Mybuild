@@ -13,7 +13,6 @@ module gptimer extends embox.arch.clock {
 	depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
 
-
 	depends embox.driver.ambapp_api /*if ampa pnp enable option not required */
 	option number gptimer_base=2147484416 /* if amba pnp disable */
 	option number irq_num=8               /* if amba pnp disable */
@@ -37,7 +36,10 @@ module pit extends embox.arch.clock {
 
 module stm32_systick extends embox.arch.clock {
 	source "stm32_systick.c"
+
+	depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
+
 }
 
 // TODO Can be used with pit. That means tsc not implements embox.arch.clock
