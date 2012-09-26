@@ -37,7 +37,7 @@ FILE *stderr = &stderr_struct;
 
 FILE *fopen(const char *path, const char *mode) {
 	FILE *file = pool_alloc(&file_pool);
-	if (lopen(path, mode, (struct file_struct_int *) file) < 0) {
+	if (__libc_open(path, mode, (struct file_struct_int *) file) < 0) {
 		return NULL;
 	}
 	return file;
@@ -59,7 +59,7 @@ int ferror(FILE *file) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	return lwrite(buf, size, count, (struct file_struct_int *) file);
+	return __libc_write(buf, size, count, (struct file_struct_int *) file);
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
@@ -80,24 +80,24 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		addon = 1;
 	}
 
-	return (addon + lread(buf, size, count, (struct file_struct_int *) file));
+	return (addon + __libc_read(buf, size, count, (struct file_struct_int *) file));
 }
 
 
 int fclose(FILE *file) {
-	int res = lclose((struct file_struct_int *) file);
+	int res = __libc_close((struct file_struct_int *) file);
 	pool_free(&file_pool, file);
 	return res;
 }
 
 int fseek(FILE *file, long int offset, int origin) {
-	return llseek((struct file_struct_int *) file, offset, origin);
+	return __libc_lseek((struct file_struct_int *) file, offset, origin);
 }
 
 int fioctl(FILE *fp, int request, ...) {
 	va_list args;
 	va_start(args, request);
-	return lioctl((struct file_struct_int *) fp, request, args);
+	return __libc_ioctl((struct file_struct_int *) fp, request, args);
 }
 
 int ungetc(int ch, FILE *file) {
