@@ -46,6 +46,9 @@ static void vmem_map_kernel(mmu_ctx_t ctx) {
 			KERNEL_SIZE, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 }
 
+void vmem_create_virtual_space(mmu_ctx_t ctx) {
+	vmem_map_kernel(ctx);
+}
 
 /*
 
@@ -75,7 +78,7 @@ static int vmem_init(void) {
 	printf("\n");
 #endif
 
-	vmem_map_kernel((mmu_ctx_t) 0);
+	vmem_create_virtual_space((mmu_ctx_t) 0);
 	vmem_on();
 
 	for (char *i = KERNEL_START; i < KERNEL_END; i++) {

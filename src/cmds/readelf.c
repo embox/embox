@@ -529,7 +529,7 @@ static int exec(int argc, char **argv) {
 
 	fclose(elf_file);
 
-	// XXX: relocate it?
+	// XXX: replace it?
 	if (elf_header != NULL) free(elf_header);
 	if (section_headers != NULL) free(section_headers);
 	if (program_headers != NULL) free(program_headers);
