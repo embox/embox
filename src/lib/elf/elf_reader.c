@@ -47,8 +47,8 @@ int32_t elf_read_segments_table(FILE *fd, Elf32_Ehdr *head,
 	long offset = L_REV(head->e_phoff, rev);
 	if (offset) {
 		fseek(fd, offset, 0);
-		size  = S_REV(head->e_shentsize, rev);
-		nmemb = S_REV(head->e_shnum, rev);
+		size  = S_REV(head->e_phentsize, rev);
+		nmemb = S_REV(head->e_phnum, rev);
 		return fread(st_table, size, nmemb, fd);
 	} else {/*Table doesn't exist*/
 		return -1;
@@ -149,12 +149,14 @@ int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *hdr,
 }
 
 int32_t read_name(int8_t *names_array, int32_t index, int8_t *name) {
-	int32_t i = index;
+	int32_t i = 0;
 
 	do {
-		name[i - index] = names_array[i];
+		name[index - i] = names_array[i];
 		i++;
-	} while ((names_array[i - 1] != '\0') && (i < MAX_NAME_LENGTH));
+	} while ((names_array[i - 1] != '\0') && ((i - index) < MAX_NAME_LENGTH));
+
+	name[i] = '\0';
 
 	return (i == MAX_NAME_LENGTH) ? 0 : i;
 }
@@ -162,8 +164,8 @@ int32_t read_name(int8_t *names_array, int32_t index, int8_t *name) {
 int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 			Elf32_Shdr *section_hdr_table, int8_t *sections_names,
 	                             int8_t *symb_names, int32_t *ret_length) {
-	size_t size, i, length;
-	int8_t section_name[100];
+	size_t size, i;
+	char *section_name;
 	long offset;
 	uint8_t rev = hdr->e_ident[EI_DATA];
 
@@ -182,11 +184,9 @@ int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 		if (L_REV(section_hdr_table[i].sh_type, rev) != SHT_STRTAB) {
 			continue;
 		}
-		length = read_name(sections_names ,L_REV(
-		                           section_hdr_table[i].sh_name,
-		                           rev), section_name);
 
-		if (length && strstr((const char*) section_name, ".strtab")) {
+		section_name = ((char *)(sections_names + section_hdr_table[i].sh_name));
+		if (!strcmp(section_name, ".strtab")) {
 			/*We found section with name .strtab and type SHT_STRTAB*/
 			/*such strings ,must contain symbol names*/
 			offset = L_REV(section_hdr_table[i].sh_offset, rev);
@@ -194,7 +194,7 @@ int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 
 			size = L_REV(section_hdr_table[i].sh_size, rev);
 			fread(symb_names, size, 1, fd);
-			*ret_length = L_REV(section_hdr_table[i].sh_size, rev);
+			*ret_length = size;
 			return *ret_length;
 		}
 	}

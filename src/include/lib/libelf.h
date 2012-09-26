@@ -21,7 +21,7 @@
  *                 - property talking about data type
  */
 #define L_REV(num, rev) \
-	(((rev) == ELFDATA2LSB) ?       \
+	(((rev) == ELFDATA2MSB) ?       \
 	((((num) & 0x000000ff) << 24)   \
 	+ (((num) & 0x0000ff00) << 8)   \
 	+ (((num) & 0x00ff0000) >> 8)   \
@@ -38,7 +38,7 @@
  *                 - property talking about data type
  */
 #define S_REV(num, rev) \
-	(((rev) == ELFDATA2LSB) ?  \
+	(((rev) == ELFDATA2MSB) ?  \
 	((((num) & 0x00ff ) << 8)  \
 	+ (((num) & 0xff00) >> 8)) \
 	: (num))

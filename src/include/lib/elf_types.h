@@ -35,7 +35,7 @@ typedef __libelf_u32_t    Elf32_Word;
 #define MAX_NAME_LENGTH                 150
 
 #define MAX_SEGMENTS     100
-#define MAX_SYMB         1000
+#define MAX_SYMB         100000
 #define MAX_SYMB_NAMES   100000
 
 /**
@@ -149,7 +149,6 @@ typedef struct {
 #define ELFDATANONE     0
 #define ELFDATA2LSB     1
 #define ELFDATA2MSB     2
-#define ELFDATANUM      3
 
 /*
  * e_ident[EI_OSABI]

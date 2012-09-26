@@ -298,6 +298,10 @@ static const header_item_t segment_types[] = {
 	{ PT_TLS,     "TLS"     },
 };
 
+#define SEGMENT_NAME(type)\
+	((x > PT_TLS) ? "<unknown>" : \
+	((const char*)segment_types[x].desc))
+
 static void print_segments(Elf32_Ehdr *head, Elf32_Phdr *segments) {
 	size_t i, x;
 	Elf32_Phdr *seg;
@@ -309,7 +313,7 @@ static void print_segments(Elf32_Ehdr *head, Elf32_Phdr *segments) {
 		seg = &segments[i];
 		x = L_REV(seg->p_type, rev);
 		printf("  %s\t0x%08x\t0x%08x\t0x%08x\t0x%05x\t0x%05x\t0x%x\t0x%x\n",
-			segment_types[x].desc,
+			SEGMENT_NAME(segment_types[x].desc),
 			L_REV(seg->p_offset, rev),
 			L_REV(seg->p_vaddr,  rev),
 			L_REV(seg->p_paddr,  rev),
@@ -390,13 +394,13 @@ static int exec(int argc, char **argv) {
 	int show_segments = 0;
 	int show_reloc    = 0;
 	int show_symb     = 0;
-	Elf32_Ehdr elf_header;
-	Elf32_Shdr section_headers[MAX_NUMBER_OF_SECTIONS];
-	Elf32_Phdr program_headers[MAX_SEGMENTS];
-	Elf32_Rel  rel[MAX_REL_ARRAY_LENGTH];
-	Elf32_Sym  dynamic_symbols[MAX_SYMB];
-	int8_t     string_table[MAX_NAME_LENGTH];
-	int8_t     symb_names[MAX_SYMB_NAMES];
+	static Elf32_Ehdr elf_header;
+	static Elf32_Shdr section_headers[MAX_NUMBER_OF_SECTIONS];
+	static Elf32_Phdr program_headers[MAX_SEGMENTS];
+	static Elf32_Rel  rel[MAX_REL_ARRAY_LENGTH];
+	static Elf32_Sym  dynamic_symbols[MAX_SYMB];
+	static int8_t     string_table[MAX_NAME_LENGTH];
+	static int8_t     symb_names[MAX_SYMB_NAMES];
 
 	int opt, err, cnt = 0;
 	FILE *elf_file;
