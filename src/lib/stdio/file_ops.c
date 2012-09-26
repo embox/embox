@@ -11,13 +11,14 @@
 
 #include <framework/mod/options.h>
 
-#include <fs/core.h>
 
-#include <module/embox/fs/file_desc.h>
+#ifdef __FILE_QUANTITY
+  #define FILE_QUANTITY __FILE_QUANTITY
+#else
+  #define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)
+#endif
 
-POOL_DEF(file_pool, FILE, OPTION_MODULE_GET(embox__fs__file_desc,NUMBER,fdesc_quantity));
-
-
+POOL_DEF(file_pool, FILE, FILE_QUANTITY);
 
 FILE stdin_struct = {
 	.file_int = INIT_STDIN
@@ -66,7 +67,7 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	uint addon = 0;
 
 	if (NULL == file) {
-		errno = EBADF;
+		/*errno = EBADF;*/
 		return -1;
 	}
 

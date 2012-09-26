@@ -13,6 +13,11 @@
 #include <stdarg.h>
 #include <fs/core.h>
 
+#include <framework/mod/options.h>
+#include <module/embox/fs/file_desc.h>
+
+#define __FILE_QUANTITY OPTION_MODULE_GET(embox__fs__file_desc,NUMBER,fdesc_quantity)
+
 struct file_struct_int {
 	struct file_desc *desc;
 };

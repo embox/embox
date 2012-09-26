@@ -16,6 +16,8 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
+#define __FILE_QUANTITY 16
+
 struct file_struct_int {
 	int fd;
 };

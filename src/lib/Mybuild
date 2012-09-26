@@ -74,6 +74,7 @@ static module LibCMath {
 }
 
 static module LibCStdio {
+	source "stdio/file_ops.c"
 	source "stdio/fgetc.c"
 	source "stdio/fputc.c"
 	source "stdio/gets.c"
@@ -89,7 +90,6 @@ static module LibCStdio {
 
 static module LibC {
 	source "time/ctime.c"
-	source "stdio/file_ops.c"
 
 	depends LibCDiagnostic
 	depends LibCMisc
