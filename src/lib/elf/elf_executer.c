@@ -13,31 +13,34 @@
 #include <stdio.h>
 #include <hal/ipl.h>
 
-int elf_execve(unsigned long *file_addr, char *argv[]) {
+static inline int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *EPH, int8_t *dst) {
+	uint8_t rev = head->e_ident[EI_DATA];
+	size_t size;
+	long offset;
+
+	offset = L_REV(EPH->p_offset, rev);
+	size = L_REV(EPH->p_memsz, rev);
+
+	if (size) {
+		fseek(fd, offset, 0);
+		return (1 == fread(dst, size, 1, fd)) ? 1 : -1;
+	} else {
+		/* Empty segment. */
+		return 0;
+	}
+}
+
+int elf_execve(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
 	int (*function_main)(int argc, char * argv[]);
 	int result, counter;
-	Elf32_Ehdr *EH;
-	Elf32_Phdr *EPH;
 	ipl_t ipl;
-
-	EH = (Elf32_Ehdr *) file_addr;
-
-	if (EH->e_ident[EI_MAG0] != ELFMAG0 ||
-	    EH->e_ident[EI_MAG1] != ELFMAG1 ||
-	    EH->e_ident[EI_MAG2] != ELFMAG2 ||
-	    EH->e_ident[EI_MAG3] != ELFMAG3) {
-		printf("not an ELF file\n");
-		return -1;
-	}
-
-	EPH = (Elf32_Phdr *) ((char *) EH + EH->e_phoff);
 
 	ipl = ipl_save();
 	counter = EH->e_phnum;
 	while (counter--) {
 		if (EPH->p_type == PT_LOAD) {
 			/* Physical address equals to virtual. */
-			memcpy((void *) EPH->p_paddr, (char *) EH + EPH->p_offset, EPH->p_memsz);
+			elf_read_segment(fd, EH, EPH, (int8_t *)EPH->p_paddr);
 		}
 		EPH = (Elf32_Phdr *) ((unsigned char *) EPH + EH->e_phentsize);
 	}
@@ -46,7 +49,7 @@ int elf_execve(unsigned long *file_addr, char *argv[]) {
 	printf("Trying to start at %ld(0x%x)\n\n\n", (long) EH->e_entry, (uint32_t)EH->e_entry);
 
 	function_main = (int (*)(int argc, char *argv[])) EH->e_entry;
-	result = function_main (0, argv);
+	result = function_main (0, NULL);
 	ipl_restore(ipl);
 
 	printf("\n result : %d\n", result);

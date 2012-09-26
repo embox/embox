@@ -11,75 +11,92 @@
 
 #include <lib/libelf.h>
 #include <string.h>
+#include <stdlib.h>
 
-int32_t elf_read_header(FILE *fd, Elf32_Ehdr *head) {
-	size_t size;
-	size = fread(head, sizeof(Elf32_Ehdr), 1, fd);
-	if (head->e_ident[EI_MAG0] != ELFMAG0 ||
-            head->e_ident[EI_MAG1] != ELFMAG1 ||
-            head->e_ident[EI_MAG2] != ELFMAG2 ||
-            head->e_ident[EI_MAG3] != ELFMAG3) {
-                printf("Not an ELF file: wrong magic bytes at the start\n");
+int32_t elf_read_header(FILE *fd, Elf32_Ehdr **head) {
+	*head = malloc(sizeof(Elf32_Ehdr));
+	if (1 != fread(*head, sizeof(Elf32_Ehdr), 1, fd)) return -1;
+
+	if ((*head)->e_ident[EI_MAG0] != ELFMAG0 ||
+			(*head)->e_ident[EI_MAG1] != ELFMAG1 ||
+			(*head)->e_ident[EI_MAG2] != ELFMAG2 ||
+			(*head)->e_ident[EI_MAG3] != ELFMAG3) {
                 return -1;
-        }
-        return size;
+	}
+
+	return 1;
 }
 
 int32_t elf_read_sections_table(FILE *fd, Elf32_Ehdr *head,
-				Elf32_Shdr *sh_table) {
-	size_t size, nmemb;
+				Elf32_Shdr **sh_table) {
+	size_t size, num;
 	uint8_t rev = head->e_ident[EI_DATA];
 	long offset = L_REV(head->e_shoff, rev);
+
 	if (offset) {
-		fseek(fd, offset, 0);
 		size  = S_REV(head->e_shentsize, rev);
-		nmemb = S_REV(head->e_shnum, rev);
-		return fread(sh_table, size, nmemb, fd);
-	} else {/*Table doesn't exist*/
+		num = S_REV(head->e_shnum, rev);
+		*sh_table = malloc(size * num);
+
+		fseek(fd, offset, 0);
+		return (num == fread(*sh_table, size, num, fd)) ? 1 : -1;
+	} else {
+		/* Table doesn't exist. */
 		return -1;
 	}
 }
 
 int32_t elf_read_segments_table(FILE *fd, Elf32_Ehdr *head,
-	                        Elf32_Phdr *st_table) {
-	size_t size, nmemb;
+	                        Elf32_Phdr **st_table) {
+	size_t size, num;
 	uint8_t rev = head->e_ident[EI_DATA];
 	long offset = L_REV(head->e_phoff, rev);
+
 	if (offset) {
-		fseek(fd, offset, 0);
 		size  = S_REV(head->e_phentsize, rev);
-		nmemb = S_REV(head->e_phnum, rev);
-		return fread(st_table, size, nmemb, fd);
-	} else {/*Table doesn't exist*/
+		num = S_REV(head->e_phnum, rev);
+		*st_table = malloc(size * num);
+
+		fseek(fd, offset, 0);
+		return (num == fread(*st_table, size, num, fd)) ? 1 : -1;
+	} else {
+		/* Table doesn't exist. */
 		return -1;
 	}
 }
 
 int32_t elf_read_string_table(FILE *fd, Elf32_Ehdr *head,
-		Elf32_Shdr *sh_table, int8_t *string_table) {
+		Elf32_Shdr *sh_table, int8_t **string_table) {
 	size_t idx, size;
 	long offset;
 	uint8_t rev = head->e_ident[EI_DATA];
+
 	if (L_REV(head->e_shoff, rev) == 0) {
 		return -2;
 	}
+
 	idx = S_REV(head->e_shstrndx, rev);
 	if (idx) {
 		offset = L_REV(sh_table[idx].sh_offset, rev);
-		fseek(fd, offset, 0);
 		size = L_REV(sh_table[idx].sh_size, rev);
-		return fread(string_table, size, 1, fd);
-	} else {/*Not found*/
+		*string_table = malloc(size);
+
+		fseek(fd, offset, 0);
+		return (1 == fread(*string_table, size, 1, fd)) ? 1 : -1;
+	} else {
+		/* Not found. */
 		return -1;
 	}
 }
 
 int32_t elf_read_symbol_table(FILE *fd, Elf32_Ehdr *hdr,
 	                      Elf32_Shdr *section_header_table,
-	                      Elf32_Sym *symbol_table, int32_t *count) {
+	                      Elf32_Sym **symbol_table, int32_t *count) {
 	size_t size, i;
 	long offset;
 	uint8_t rev = hdr->e_ident[EI_DATA];
+
+
 	if (L_REV(hdr->e_shoff, rev) == 0) {
 		return -2;
 	}
@@ -89,41 +106,51 @@ int32_t elf_read_symbol_table(FILE *fd, Elf32_Ehdr *hdr,
 	for (i = 0; i < S_REV(hdr->e_shnum, rev); i++) {
 		if (L_REV(section_header_table[i].sh_type, rev) == SHT_SYMTAB) {
 			offset = L_REV(section_header_table[i].sh_offset, rev);
-			fseek(fd, offset, 0);
 			size = L_REV(section_header_table[i].sh_size, rev);
-			fread(symbol_table, size, 1, fd);
+			*symbol_table = malloc(size);
+
+			fseek(fd, offset, 0);
+			if (1 != fread(*symbol_table, size, 1, fd)) return -1;
+
 			*count = L_REV(section_header_table[i].sh_size, rev)
 							    / sizeof(Elf32_Sym);
 			return *count;
 		}
 	}
-	return (*count == 0) ? -1 : -3;
+	return -1;
 }
 
 int32_t elf_read_rel_table(FILE *fd, Elf32_Ehdr *hdr,
 	                   Elf32_Shdr *section_hdr_table,
-	                   Elf32_Rel *rel_table, int32_t *count) {
+	                   Elf32_Rel **rel_table, int32_t *count) {
 	size_t size, i;
 	long offset;
 	uint8_t rev = hdr->e_ident[EI_DATA];
+
 	if (L_REV(hdr->e_shoff, rev) == 0) {
 		return -2;
 	}
+
 	*count = 0;
 
 	for (i = 0; i < S_REV(hdr->e_shnum, rev) ; i++) {
 		if (L_REV(section_hdr_table[i].sh_type, rev) == SHT_REL) {
 			offset = L_REV(section_hdr_table[i].sh_offset, rev);
-			fseek(fd, offset, 0);
 			size = L_REV(section_hdr_table[i].sh_size, rev);
-			fread(rel_table + *count, size, 1, fd);
+			*rel_table = malloc(size); // TODO: fix it
+
+			fseek(fd, offset, 0);
+			if (fread(*rel_table + *count, size, 1, fd) != 1) return -1;
+
 			*count += L_REV(section_hdr_table[i].sh_size, rev)
 							/ sizeof(Elf32_Rel);
 		}
 	}
+
 	return *count;
 }
 
+#if 0
 int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *hdr,
 	                    Elf32_Shdr *section_hdr_table,
 	                    Elf32_Rela *rela_table, int32_t *count) {
@@ -161,9 +188,11 @@ int32_t read_name(int8_t *names_array, int32_t index, int8_t *name) {
 	return (i == MAX_NAME_LENGTH) ? 0 : i;
 }
 
+#endif
+
 int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 			Elf32_Shdr *section_hdr_table, int8_t *sections_names,
-	                             int8_t *symb_names, int32_t *ret_length) {
+	                             int8_t **symb_names, int32_t *ret_length) {
 	size_t size, i;
 	char *section_name;
 	long offset;
@@ -190,13 +219,16 @@ int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 			/*We found section with name .strtab and type SHT_STRTAB*/
 			/*such strings ,must contain symbol names*/
 			offset = L_REV(section_hdr_table[i].sh_offset, rev);
-			fseek(fd, offset, 0);
-
 			size = L_REV(section_hdr_table[i].sh_size, rev);
-			fread(symb_names, size, 1, fd);
+			*symb_names = malloc(size);
+
+			fseek(fd, offset, 0);
+			if (fread(*symb_names, size, 1, fd) != 1) return -1;
 			*ret_length = size;
+
 			return *ret_length;
 		}
 	}
+
 	return -1;
 }

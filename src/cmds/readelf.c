@@ -17,6 +17,7 @@
 #include <lib/libelf.h>
 #include <string.h>
 #include <errno.h>
+#include <stdlib.h>
 
 EMBOX_CMD(exec);
 
@@ -394,13 +395,13 @@ static int exec(int argc, char **argv) {
 	int show_segments = 0;
 	int show_reloc    = 0;
 	int show_symb     = 0;
-	static Elf32_Ehdr elf_header;
-	static Elf32_Shdr section_headers[MAX_NUMBER_OF_SECTIONS];
-	static Elf32_Phdr program_headers[MAX_SEGMENTS];
-	static Elf32_Rel  rel[MAX_REL_ARRAY_LENGTH];
-	static Elf32_Sym  dynamic_symbols[MAX_SYMB];
-	static int8_t     string_table[MAX_NAME_LENGTH];
-	static int8_t     symb_names[MAX_SYMB_NAMES];
+	Elf32_Ehdr *elf_header = NULL;
+	Elf32_Shdr *section_headers = NULL;
+	Elf32_Phdr *program_headers = NULL;
+	Elf32_Rel  *rel = NULL;
+	Elf32_Sym  *dynamic_symbols = NULL;
+	int8_t     *string_table = NULL;
+	int8_t     *symb_names = NULL;
 
 	int opt, err, cnt = 0;
 	FILE *elf_file;
@@ -447,18 +448,20 @@ static int exec(int argc, char **argv) {
 	}
 
 	elf_file = fopen(argv[argc - 1], "r");
+
 	if (elf_file == NULL) {
 		printf("Cannot open file %s\n", argv[argc - 1]);
 		return -1;
 	}
+
 	if ((err = elf_read_header(elf_file, &elf_header)) < 0) {
 		return -1;
 	}
-	rev = elf_header.e_ident[EI_DATA];
+	rev = elf_header->e_ident[EI_DATA];
 
 	if (show_sections || show_reloc || show_symb) {
-		if ((err = elf_read_sections_table(elf_file, &elf_header,
-						    section_headers)) < 0) {
+		if ((err = elf_read_sections_table(elf_file, elf_header,
+						    &section_headers)) < 0) {
 			printf("Cannot read sections table: %d\n", err);
 			show_sections = 0;
 			show_reloc = 0;
@@ -466,49 +469,49 @@ static int exec(int argc, char **argv) {
 		}
 	}
 	if (show_sections || show_symb) {
-		if ((err = elf_read_string_table(elf_file, &elf_header,
-		    section_headers, string_table)) < 0) {
+		if ((err = elf_read_string_table(elf_file, elf_header,
+		    section_headers, &string_table)) < 0) {
 			printf("Cannot read string table: %d\n", err);
 			show_sections = 0;
 		}
 	}
 	if (show_segments) {
-		if ((err = elf_read_segments_table(elf_file, &elf_header,
-							program_headers)) < 0) {
+		if ((err = elf_read_segments_table(elf_file, elf_header,
+							&program_headers)) < 0) {
 			printf("Cannot read segments table: %d\n", err);
 			show_segments = 0;
 		}
 	}
 	if (show_reloc) {
-		if ((err = elf_read_rel_table(elf_file, &elf_header,
-				section_headers, rel, &rel_count)) < 0) {
+		if ((err = elf_read_rel_table(elf_file, elf_header,
+				section_headers, &rel, &rel_count)) < 0) {
 			printf("Cannot read rel table: %d\n", err);
 			show_reloc = 0;
 		}
 	}
 	if (show_symb) {
-		if ((err = elf_read_symbol_table(elf_file, &elf_header,
-		    section_headers, dynamic_symbols, &symb_count)) < 0) {
+		if ((err = elf_read_symbol_table(elf_file, elf_header,
+		    section_headers, &dynamic_symbols, &symb_count)) < 0) {
 			printf("Cannot read symbol table: %d\n", err);
 			show_symb = 0;
 		}
-		if ((err = elf_read_symbol_string_table(elf_file, &elf_header,
-		    section_headers, string_table, symb_names, &symb_names_l)) < 0) {
+		if ((err = elf_read_symbol_string_table(elf_file, elf_header,
+		    section_headers, string_table, &symb_names, &symb_names_l)) < 0) {
 			printf("Cannot read symbol names: %d\n", err);
 			symb_names_l = 0;
 		}
 	}
 
 	if (show_head) {
-		print_header(&elf_header);
+		print_header(elf_header);
 	}
 
 	if (show_sections) {
-		print_sections(&elf_header, section_headers, string_table);
+		print_sections(elf_header, section_headers, string_table);
 	}
 
 	if (show_segments) {
-		print_segments(&elf_header, program_headers);
+		print_segments(elf_header, program_headers);
 	}
 	if (show_reloc) {
 		print_relocations(rel, rel_count);
@@ -517,6 +520,23 @@ static int exec(int argc, char **argv) {
 		print_symb(dynamic_symbols,
 			(symb_names_l != 0) ? symb_names : NULL, symb_count);
 	}
+
+#if 0
+	if (show_segments) {
+		elf_execve(elf_file, elf_header, program_headers);
+	}
+#endif
+
 	fclose(elf_file);
+
+	// XXX: relocate it?
+	if (elf_header != NULL) free(elf_header);
+	if (section_headers != NULL) free(section_headers);
+	if (program_headers != NULL) free(program_headers);
+	if (rel != NULL) free(rel);
+	if (dynamic_symbols != NULL) free(dynamic_symbols);
+	if (string_table != NULL) free(string_table);
+	if (symb_names != NULL) free(symb_names);
+
 	return 0;
 }
