@@ -24,21 +24,6 @@ typedef __libelf_i32_t    Elf32_Sword;
 typedef __libelf_u32_t    Elf32_Word;
 
 /**
- * Until dynamic memory applied array length constrain used
- */
-#define MAX_NUMBER_OF_SECTIONS          100
-#define MAX_STRING_TABLE_LENGTH         500
-#define MAX_SYMBOL_TABLE_LENGTH         3000
-#define MAX_SYMBOL_STRING_TABLE_LENGTH  50000
-#define MAX_REL_ARRAY_LENGTH            10000
-#define MAX_RELA_ARRAY_LENGTH           10000
-#define MAX_NAME_LENGTH                 150
-
-#define MAX_SEGMENTS     100
-#define MAX_SYMB         100000
-#define MAX_SYMB_NAMES   100000
-
-/**
  * Length in bytes of main field in Elf-header structure
  */
 #define EI_NIDENT           16
