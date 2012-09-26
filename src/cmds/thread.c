@@ -52,6 +52,7 @@ static void print_stat(void) {
 				thread_get_running_time(thread)/CLOCKS_PER_SEC);
 		}
 	}
+	sched_unlock();
 	total = running + sleeping;
 
 	printf("Total %d threads: \n"
