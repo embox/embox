@@ -179,6 +179,7 @@ $(image_pass1_o) : $(image_nosymbols_o) $(symbols_pass1_a) | $$(@D)/.
 	$(LD) --relax $(ldflags_all) \
 		$(image_nosymbols_o) \
 		$(symbols_pass1_a) \
+		$(call fmt_line,$(ld_libs)) \
 		--cref -Map $(IMAGE)_pass1.map \
 	-o $@
 
@@ -186,6 +187,7 @@ $(IMAGE): $(image_nosymbols_o) $(symbols_pass2_a) | $$(@D)/.
 	$(LD) --relax $(ldflags_all) \
 		$(image_nosymbols_o) \
 		$(symbols_pass2_a) \
+		$(call fmt_line,$(ld_libs)) \
 		--cref -Map $(IMAGE).map \
 	-o $@
 
