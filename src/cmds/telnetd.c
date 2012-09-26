@@ -167,24 +167,24 @@ static void *telnet_thread_handler(void* args) {
 	pipe(pipefd1);
 	pipe(pipefd2);
 
-	fcntl(pipefd1[0], F_SETFD, O_NONBLOCK);
-	fcntl(pipefd2[1], F_SETFD, O_NONBLOCK);
+	fcntl(pipefd1[1], F_SETFD, O_NONBLOCK);
+	fcntl(pipefd2[0], F_SETFD, O_NONBLOCK);
 
 	/* Set our parameters */
 	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
 	telnet_cmd(sock, T_WILL, O_ECHO);
 
 	msg[0] = sock;
-	msg[1] = pipefd1[0];
+	msg[1] = pipefd1[1];
 	ignore_telnet_options(msg);
 
-	msg[0] = pipefd1[1];
-	msg[1] = pipefd2[0];
+	msg[0] = pipefd1[0];
+	msg[1] = pipefd2[1];
 	new_task(shell_hnd, &msg);
 
 	/* Close unused ends of pipes. */
-	close(pipefd1[1]);
-	close(pipefd2[0]);
+	close(pipefd1[0]);
+	close(pipefd2[1]);
 
 	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
 	 * and than receive from it the result of command running, and send it back to
@@ -199,12 +199,12 @@ static void *telnet_thread_handler(void* args) {
 			}
 		} else {
 			p = pbuff;
-			pipe_data_len = read(pipefd2[1], tmpbuff, 64);
+			pipe_data_len = read(pipefd2[0], tmpbuff, 64);
 			pipe_data_len = buf_copy(pbuff, tmpbuff, pipe_data_len);
 		}
 
 		if (sock_data_len > 0) {
-			if ((len = write(pipefd1[0], s, sock_data_len)) > 0) {
+			if ((len = write(pipefd1[1], s, sock_data_len)) > 0) {
 				sock_data_len -= len;
 				s += len;
 			}
@@ -214,6 +214,8 @@ static void *telnet_thread_handler(void* args) {
 		}
 	}
 
+	close(pipefd1[1]);
+	close(pipefd2[0]);
 	close(sock);
 	*(int *)args = -1;
 

@@ -53,7 +53,7 @@ int pipe(int pipefd[2]) {
 	event_init(&pipe->nonfull, "pipe_is_nonfull");
 	event_init(&pipe->nonempty, "pipe_is_nonempty");
 
-	pipefd[0] = task_self_idx_alloc(&write_ops, pipe_buff);
+	pipefd[1] = task_self_idx_alloc(&write_ops, pipe_buff);
 	if (pipefd[0] < 0) {
 		free(storage);
 		free(pipe);
@@ -61,7 +61,7 @@ int pipe(int pipefd[2]) {
 		return -1;
 	}
 
-	pipefd[1] = task_self_idx_alloc(&read_ops, pipe_buff);
+	pipefd[0] = task_self_idx_alloc(&read_ops, pipe_buff);
 	if (pipefd[1] < 0) {
 		task_self_idx_table_unbind(pipefd[0]);
 		free(storage);
