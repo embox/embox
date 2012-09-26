@@ -43,14 +43,6 @@ SECTIONS {
 	/* TODO memory region for reserve output section. */
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(reserve)
-
-	.stack (NOLOAD): {
-		ALIGNMENT();
-		. += OPTION_GET(NUMBER,stack_size);
-		ALIGNMENT();
-		__stack = .;
-	} SECTION_REGION(stack)
-	SECTION_SYMBOLS(stack)
 }
 
 _mem_begin = LDS_REGION_BASE_sdram;

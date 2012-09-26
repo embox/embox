@@ -1,0 +1,7 @@
+package embox.kernel
+
+module stack {
+	source "stack.lds.S"
+
+	option number stack_size=65536
+}

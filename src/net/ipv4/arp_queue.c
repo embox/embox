@@ -91,13 +91,16 @@ void arp_queue_process(struct sk_buff *arp_skb) {
 			goto free_skb_and_item; /* XXX it's not normal */
 		}
 
-		/* save final event */
-		assert(waiting_item->skb->sk != NULL);
-		sock_ready = &waiting_item->skb->sk->sock_is_ready;
+		/* save socket's event if it exist */
+		sock_ready = ((waiting_item->skb->sk == NULL) ? NULL
+				: &waiting_item->skb->sk->sock_is_ready);
 
 		/* try to xmit */
 		if (dev_queue_xmit(waiting_item->skb) == ENOERR) {
-			event_notify(sock_ready);
+			/* notify owning socket */
+			if (sock_ready != NULL) {
+				event_notify(sock_ready);
+			}
 		}
 
 		/* free resourse */
@@ -148,7 +151,7 @@ int arp_queue_add(struct sk_buff *skb) {
 		return ret;
 	}
 
-	return ENOERR;
+	return 0;
 }
 
 static size_t get_hash(void *key) {

@@ -150,10 +150,8 @@ int sock_no_accept(struct socket *sock, struct socket *newsock, int flags) {
 
 void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	assert(sk != NULL);
-	assert(sk->sk_receive_queue != NULL);
-	assert(skb != NULL);
-	event_notify(&sk->sock_is_not_empty);
 	skb_queue_push(sk->sk_receive_queue, skb);
+	event_notify(&sk->sock_is_not_empty);
 }
 
 // TODO remove this
