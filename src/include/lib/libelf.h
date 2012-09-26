@@ -10,6 +10,16 @@
 #define LIB_ELF_H_
 
 #include <lib/elf_types.h>
+#include <hal/arch.h>
+
+#if defined(__LITTLE_ENDIAN)
+#define REV(rev) \
+	((rev) == ELFDATA2MSB)
+#elif defined(__BIG_ENDIAN)
+#define REV(rev) \
+	((rev) == ELFDATA2LSB)
+#endif
+
 
 /**
  * Function reverses order of bytes in received integer with size 4-bytes
@@ -21,7 +31,7 @@
  *                 - property talking about data type
  */
 #define L_REV(num, rev) \
-	(((rev) == ELFDATA2MSB) ?       \
+	(REV(rev) ?                     \
 	((((num) & 0x000000ff) << 24)   \
 	+ (((num) & 0x0000ff00) << 8)   \
 	+ (((num) & 0x00ff0000) >> 8)   \
@@ -38,7 +48,7 @@
  *                 - property talking about data type
  */
 #define S_REV(num, rev) \
-	(((rev) == ELFDATA2MSB) ?  \
+	(REV(rev) ?                \
 	((((num) & 0x00ff ) << 8)  \
 	+ (((num) & 0xff00) >> 8)) \
 	: (num))
