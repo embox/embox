@@ -12,7 +12,6 @@
 #include <util/async_ring_buff.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <fs/ioctl.h> /* it must be sys/ioctl.h --Alexander */
 #include <framework/mod/options.h>
 
 #define PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
@@ -58,8 +57,8 @@ int pipe(int pipefd[2]) {
 	if (pipefd[0] < 0) {
 		free(storage);
 		free(pipe);
+		SET_ERRNO(EMFILE);
 		return -1;
-	/* SET_ERRNO(-1); */
 	}
 
 	pipefd[1] = task_self_idx_alloc(&read_ops, pipe_buff);
@@ -67,6 +66,7 @@ int pipe(int pipefd[2]) {
 		task_self_idx_table_unbind(pipefd[0]);
 		free(storage);
 		free(pipe);
+		SET_ERRNO(EMFILE);
 		return -1;
 	}
 
@@ -88,8 +88,8 @@ static int pipe_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
 	int len;
 	struct pipe *pipe = (struct pipe*)data->fd_struct;
 
-	if (!nbyte) {
-		return nbyte;
+	if (!nbyte || pipe->ends_count == 1) {
+		return 0;
 	}
 
 	if (data->flags & O_NONBLOCK) {
@@ -110,6 +110,11 @@ static int pipe_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
 static int pipe_write(struct idx_desc_data *data, const void *buf, size_t nbyte) {
 	int len;
 	struct pipe *pipe = (struct pipe*)data->fd_struct;
+
+	if (pipe->ends_count == 1) {
+		SET_ERRNO(EPIPE);
+		return -1;
+	}
 
 	if (!nbyte) {
 		return nbyte;

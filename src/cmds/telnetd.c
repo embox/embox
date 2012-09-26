@@ -130,6 +130,10 @@ static void *shell_hnd(void* args) {
 	dup2(pipefd1[sock][1], STDIN_FILENO);
 	dup2(pipefd2[sock][0], STDOUT_FILENO);
 
+	/* Close unused ends of pipes. */
+	close(pipefd1[sock][0]);
+	close(pipefd2[sock][1]);
+
 	shell_run();
 
 	return NULL;
@@ -178,6 +182,10 @@ static void *telnet_thread_handler(void* args) {
 	ignore_telnet_options(sock);
 
 	new_task(shell_hnd, &sock);
+
+	/* Close unused ends of pipes. */
+	close(pipefd1[sock][1]);
+	close(pipefd2[sock][0]);
 
 	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
 	 * and than receive from it the result of command running, and send it back to
