@@ -36,8 +36,9 @@ module pit extends embox.arch.clock {
 
 module stm32_systick extends embox.arch.clock {
 	source "stm32_systick.c"
+
+	depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
-	depends embox.kernel.time.timer
 
 }
 
