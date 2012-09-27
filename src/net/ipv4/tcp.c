@@ -489,6 +489,7 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		tcp_handle(newsock, *pskb, tcp_st_handler[TCP_SYN_RECV_PRE]);
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		list_add_tail(&newsock.tcp_sk->conn_wait, &sock.tcp_sk->conn_wait);
+		event_notify(&sock.tcp_sk->new_conn);
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 		return TCP_RET_OK;
 	}
