@@ -12,6 +12,8 @@
 
 #include <kernel/thread/sched_strategy.h>
 
+#define EVENT_TIMEOUT_INFINITE ((unsigned int)(-1))
+
 struct event {
 	struct sleepq sleepq;
 	const char *name;
