@@ -521,10 +521,6 @@ static int exec(int argc, char **argv) {
 			(symb_names_l != 0) ? symb_names : NULL, symb_count);
 	}
 
-	if (show_segments) {
-		elf_execve(elf_file, elf_header, program_headers);
-	}
-
 	fclose(elf_file);
 
 	// XXX: replace it?

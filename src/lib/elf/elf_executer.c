@@ -11,7 +11,7 @@
 #include <types.h>
 #include <errno.h>
 #include <stdio.h>
-#include <hal/ipl.h>
+#include <kernel/task.h>
 
 static inline int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *EPH, int8_t *dst) {
 	uint8_t rev = head->e_ident[EI_DATA];
@@ -31,11 +31,8 @@ static inline int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *E
 }
 
 int elf_execve(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
-	int (*function_main)(int argc, char * argv[]);
-	int result, counter;
-	ipl_t ipl;
+	int counter;
 
-	ipl = ipl_save();
 	counter = EH->e_phnum;
 	while (counter--) {
 		if (EPH->p_type == PT_LOAD) {
@@ -46,12 +43,10 @@ int elf_execve(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
 	}
 
 	printf("Data allocated.\n");
-	printf("Trying to start at %ld(0x%x)\n\n\n", (long) EH->e_entry, (uint32_t)EH->e_entry);
+	printf("Trying to start at 0x%x\n", (uint32_t)EH->e_entry);
 
-	function_main = (int (*)(int argc, char *argv[])) EH->e_entry;
-	result = function_main (0, NULL);
-	ipl_restore(ipl);
+	new_task((void *(*)(void *)) EH->e_entry, NULL);
 
-	printf("\n result : %d\n", result);
-	return result;
+	//printf("result : %d", result);
+	return 0;
 }
