@@ -521,11 +521,9 @@ static int exec(int argc, char **argv) {
 			(symb_names_l != 0) ? symb_names : NULL, symb_count);
 	}
 
-#if 0
 	if (show_segments) {
 		elf_execve(elf_file, elf_header, program_headers);
 	}
-#endif
 
 	fclose(elf_file);
 

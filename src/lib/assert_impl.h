@@ -39,7 +39,7 @@ extern void __attribute__ ((noreturn)) __assertion_handle_failure(
 # define __assert(condition, expr_str, message...) \
 	do { \
 		if (!(likely(condition))) {                                             \
-			extern char *__assertion_message_buff;                      \
+			extern char __assertion_message_buff[];                     \
 			static const struct __assertion_point __assertion_point = { \
 				.location = LOCATION_FUNC_INIT,                         \
 				.expression = expr_str,                                 \

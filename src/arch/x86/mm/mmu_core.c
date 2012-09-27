@@ -108,13 +108,8 @@ static int mmu_init(void) {
 	return 0;
 }
 
-extern void setup_gp_flag(void);
 void mmu_on(void) {
-	//setup_gp_flag();
-	uint32_t cr0;
-    asm volatile("mov %%cr0, %0": "=r"(cr0));
-    cr0 |= X86_CR0_PG; /* Enable paging!*/
-    asm volatile("mov %0, %%cr0":: "r"(cr0));
+    set_cr0(get_cr0() | X86_CR0_PG);
 }
 
 void mmu_off(void) {
