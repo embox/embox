@@ -1,5 +1,10 @@
 package embox.test.kernel.task
 
+module core {
+	source "task.c"
+	depends embox.kernel.task.api
+}
+
 module signal {
 	source "signal.c"
 
