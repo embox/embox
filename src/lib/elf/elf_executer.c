@@ -32,7 +32,6 @@ static inline int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *E
 int elf_execve(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
 	int (*function_main)(int argc, char * argv[]);
 	int result, counter;
-	char c;
 
 	counter = EH->e_phnum;
 	while (counter--) {

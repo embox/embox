@@ -93,21 +93,6 @@ mmu_ctx_t mmu_create_context(void) {
 }
 
 static int mmu_init(void) {
-//	extern char _text_vma, _data_vma, _stack_vma, _bss_vma;
-//	extern size_t _text_len, _data_len, _stack_len, _bss_len;
-
-//	mmu_ctx_t ctx = mmu_create_context();
-//	switch_mm(ctx, ctx);
-
-	/* one-on-one mapping for context 0 */
-//	mmu_map_region(0, (paddr_t)&_text_vma, (vaddr_t)&_text_vma, (size_t)&_text_len, MMU_PAGE_WRITEABLE);
-//	mmu_map_region(0, (paddr_t)&_data_vma, (paddr_t) &_data_vma, (size_t)&_data_len, MMU_PAGE_WRITEABLE);
-//	mmu_map_region(0, (paddr_t)&_stack_vma, (paddr_t)&_stack_vma, (size_t)&_stack_len, MMU_PAGE_WRITEABLE);
-//	mmu_map_region(0, (paddr_t)&_bss_vma, (paddr_t)&_bss_vma, (size_t)&_bss_len, MMU_PAGE_WRITEABLE);
-
-
-//	mmu_map_region(0, (paddr_t)0, (vaddr_t)0, (size_t)0x300000, MMU_PAGE_WRITEABLE);
-
 	return 0;
 }
 

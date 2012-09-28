@@ -48,8 +48,20 @@ void vmem_off(void) {
 }
 
 static inline void vmem_map_kernel(mmu_ctx_t ctx) {
-	mmu_map_region(ctx, (paddr_t) KERNEL_START, (vaddr_t) KERNEL_START,
-			KERNEL_SIZE, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
+	extern char _text_vma, _data_vma, _stack_vma, _bss_vma, _heap_vma, _rodata_vma;
+	extern size_t _text_len, _data_len, _stack_len, _bss_len, _heap_len, _rodata_len;
+
+	/* one-on-one mapping for context 0 */
+	mmu_map_region(0, (paddr_t)&_text_vma, (vaddr_t)&_text_vma, (size_t)&_text_len, MMU_PAGE_WRITEABLE);
+	mmu_map_region(0, (paddr_t)&_data_vma, (paddr_t) &_data_vma, (size_t)&_data_len, MMU_PAGE_WRITEABLE);
+	mmu_map_region(0, (paddr_t)&_stack_vma, (paddr_t)&_stack_vma, (size_t)&_stack_len, MMU_PAGE_WRITEABLE);
+	mmu_map_region(0, (paddr_t)&_bss_vma, (paddr_t)&_bss_vma, (size_t)&_bss_len, MMU_PAGE_WRITEABLE);
+	mmu_map_region(0, (paddr_t)&_heap_vma, (paddr_t)&_heap_vma, (size_t)&_heap_len, MMU_PAGE_WRITEABLE);
+	mmu_map_region(0, (paddr_t)&_rodata_vma, (paddr_t)&_rodata_vma, (size_t)&_rodata_len, MMU_PAGE_WRITEABLE);
+
+
+/*	mmu_map_region(ctx, (paddr_t) KERNEL_START, (vaddr_t) KERNEL_START,
+			KERNEL_SIZE, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE); */
 }
 
 static inline void vmem_create_space_after_kernel(mmu_ctx_t ctx) {
@@ -67,7 +79,7 @@ static inline void vmem_create_space_after_kernel(mmu_ctx_t ctx) {
 
 void vmem_create_virtual_space(mmu_ctx_t ctx) {
 	vmem_map_kernel(ctx);
-	//vmem_create_space_after_kernel(ctx);
+	vmem_create_space_after_kernel(ctx);
 }
 
 /*
@@ -86,16 +98,6 @@ static int pagefault_handler(uint32_t nr, void *data) {
 
 */
 
-/* Checks mapping */
-static inline void vmem_test_mem(void) {
-	char c;
-	for (char *i = KERNEL_START; i < KERNEL_END; i++) {
-		assert(mmu_translate((mmu_ctx_t) 0, (vaddr_t) i) == (paddr_t) i);
-		c = *i;
-		c = c;
-	}
-}
-
 static int vmem_init(void) {
 #if 0
 	printf("\n\n");
@@ -108,10 +110,7 @@ static int vmem_init(void) {
 	printf("\n");
 #endif
 
-
 	vmem_on();
-
-	vmem_test_mem();
 
 	return 0;
 }
