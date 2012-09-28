@@ -13,10 +13,11 @@
 
 #define FP_SEG(x) (uint16_t)((uint32_t)(x) >> 16)
 #define FP_OFF(x) (uint16_t)((uint32_t)(x))
+#define MK_FP(seg,off) ((void *) (((unsigned long)(seg) << 16) | (unsigned)(off))
 
 
 #define	inportb(P)		in16(P)
-#define	outportb(P,V)		out16(P,V)
+#define	outportb(P,V)		out16(V, P)
 
 /* CauseWay DOS extender only */
 #define	peekb(S,O)		*(unsigned char *)(16uL * (S) + (O))
@@ -24,10 +25,9 @@
 #define	pokew(S,O,V)		*(unsigned short *)(16uL * (S) + (O)) = (V)
 #define	_vmemwr(DS,DO,S,N)	memcpy((char *)((DS) * 16 + (DO)), S, N)
 
-/*
-#define	peekb(S,O)		*(unsigned char far *)MK_FP(S, O)
-#define	pokeb(S,O,V)		*(unsigned char far *)MK_FP(S, O) = (V)
-#define	pokew(S,O,V)		*(unsigned short far *)MK_FP(S, O) = (V)
+/*#define	peekb(S,O)		*(unsigned char *)MK_FP(S, O)
+#define	pokeb(S,O,V)		*(unsigned char *)MK_FP(S, O) = (V)
+#define	pokew(S,O,V)		*(unsigned short *)MK_FP(S, O) = (V)
 #define	_vmemwr(DS,DO,S,N)	movedata(FP_SEG(S), FP_OFF(S), DS, DO, N)
 */
 
@@ -1030,14 +1030,16 @@ static void vmemwr(unsigned dst_off, unsigned char *src, unsigned count)
 *****************************************************************************/
 static void vpokeb(unsigned off, unsigned val)
 {
-	pokeb(get_fb_seg(), off, val);
+	unsigned fb_seg = get_fb_seg();
+	pokeb(fb_seg, off, val);
 }
 /*****************************************************************************
 *****************************************************************************/
-/*static unsigned vpeekb(unsigned off)
+static unsigned vpeekb(unsigned off)
 {
-	return peekb(get_fb_seg(), off);
-}*/
+	unsigned fb_seg = get_fb_seg();
+	return peekb(fb_seg, off);
+}
 /*****************************************************************************
 write font to plane P4 (assuming planes are named P1, P2, P4, P8)
 *****************************************************************************/
@@ -1116,7 +1118,7 @@ static unsigned g_wd, g_ht;
 }*/
 /*****************************************************************************
 *****************************************************************************/
-/*static void write_pixel2(unsigned x, unsigned y, unsigned c)
+static void write_pixel2(unsigned x, unsigned y, unsigned c)
 {
 	unsigned wd_in_bytes, off, mask;
 
@@ -1126,10 +1128,10 @@ static unsigned g_wd, g_ht;
 	x = (x & 3) * 2;
 	mask = 0xC0 >> x;
 	vpokeb(off, (vpeekb(off) & ~mask) | (c & mask));
-}*/
+}
 /*****************************************************************************
 *****************************************************************************/
-/*static void write_pixel4p(unsigned x, unsigned y, unsigned c)
+static void write_pixel4p(unsigned x, unsigned y, unsigned c)
 {
 	unsigned wd_in_bytes, off, mask, p, pmask;
 
@@ -1147,7 +1149,7 @@ static unsigned g_wd, g_ht;
 			vpokeb(off, vpeekb(off) & ~mask);
 		pmask <<= 1;
 	}
-}*/
+}
 /*****************************************************************************
 *****************************************************************************/
 static void write_pixel8(unsigned x, unsigned y, unsigned c)
@@ -1161,7 +1163,7 @@ static void write_pixel8(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-/*static void write_pixel8x(unsigned x, unsigned y, unsigned c)
+static void write_pixel8x(unsigned x, unsigned y, unsigned c)
 {
 	unsigned wd_in_bytes;
 	unsigned off;
@@ -1170,7 +1172,7 @@ static void write_pixel8(unsigned x, unsigned y, unsigned c)
 	off = wd_in_bytes * y + x / 4;
 	set_plane(x & 3);
 	vpokeb(off, c);
-}*/
+}
 /*****************************************************************************
 *****************************************************************************/
 static void draw_x(void)
@@ -1245,17 +1247,17 @@ void demo_graphics(void)
 	printf("Screen-clear in 16-color mode will be VERY SLOW\n"
 		"don't Press a key to continue\n");
 /* 4-color */
-/*	write_regs(g_320x200x4);
+	write_regs(g_320x200x4);
 	g_wd = 320;
 	g_ht = 200;
 	g_write_pixel = write_pixel2;
-	draw_x();*/
+	draw_x();
 /* 16-color */
-/*	write_regs(g_640x480x16);
+	write_regs(g_640x480x16);
 	g_wd = 640;
 	g_ht = 480;
 	g_write_pixel = write_pixel4p;
-	draw_x();*/
+	draw_x();
 /* 256-color */
 	write_regs(g_320x200x256);
 	g_wd = 320;
@@ -1263,11 +1265,11 @@ void demo_graphics(void)
 	g_write_pixel = write_pixel8;
 	draw_x();
 /* 256-color Mode-X */
-/*	write_regs(g_320x200x256_modex);
+	write_regs(g_320x200x256_modex);
 	g_wd = 320;
 	g_ht = 200;
 	g_write_pixel = write_pixel8x;
-	draw_x();*/
+	draw_x();
 /* go back to 80x25 text mode */
 	set_text_mode(0);
 }
