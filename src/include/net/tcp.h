@@ -16,6 +16,7 @@
 #include <types.h>
 #include <sys/types.h>
 #include <net/if_ether.h>
+#include <kernel/thread/event.h>
 
 #include <framework/mod/options.h>
 #include <module/embox/net/tcp_sock.h>
@@ -96,6 +97,7 @@ typedef struct tcp_sock {
 	struct tcp_seq_state rem;   /* Informations about remote socket */
 	__u8 lock;                  /* Tool for synchronization */
 	struct list_head conn_wait; /* Queue of incoming connection */
+	struct event new_conn;      /* Event for new connection notification */
 	__u32 seq_queue;            /* Sequence number for next package */
 	__u32 ack_flag;             /* Acknowledgment for flags (SYN or FIN) */
 	useconds_t last_activity;   /* The time when last message was sent */

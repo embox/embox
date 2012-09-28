@@ -24,7 +24,7 @@ static char buf[64];
 static void *read_task_hnd(void *arg) {
 	int cnt = 0;
 
-	while (read(pipefd[1], buf + cnt, 1) >= 0) {
+	while (read(pipefd[0], buf + cnt, 1) >= 0) {
 		cnt++;
 	}
 
@@ -36,7 +36,7 @@ static void *read_task_hnd(void *arg) {
 static void *write_task_hnd(void *arg) {
 	pipe(pipefd);
 
-	write(pipefd[0], (void*)str, strlen(str));
+	write(pipefd[1], (void*)str, strlen(str));
 
 	tid_write = new_task(read_task_hnd, NULL);
 

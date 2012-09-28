@@ -40,7 +40,7 @@ int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 	return 0;
 }
 
-static inline void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
+static void build_ip_packet(struct inet_sock *sk, sk_buff_t *skb) {
 	/* IP header has already been built */
 	if (sk->sk.sk_type == SOCK_RAW)
 		return;
@@ -70,51 +70,51 @@ int ip_queue_xmit(sk_buff_t *skb, int ipfragok) {
  * Returns -1 in case of error
  * As side effect frees incoming skb
  */
-static int fragment_skb_and_send(sk_buff_t *skb, const struct rt_entry *best_route) {
-	struct sk_buff_head *tx_buf = ip_frag(skb, best_route->dev->mtu);
+static int fragment_skb_and_send(struct sk_buff *skb, struct net_device *dev) {
+	struct sk_buff_head *tx_buf = ip_frag(skb, dev->mtu);
 	int res = tx_buf ? 0 : -1;
 	struct sk_buff *s_tmp;
 
 	skb_free(skb);
 	while ((res >= 0) && (s_tmp = skb_queue_pop(tx_buf))) {
+		s_tmp->dev = dev;
 		res = min(ip_queue_xmit(s_tmp, 0), res);
 	}
 	skb_queue_free(tx_buf);
 	return res;
 }
 
-int ip_send_packet(struct inet_sock *sk, sk_buff_t *skb) {
+int ip_send_packet(struct inet_sock *sk, struct sk_buff *skb) {
 	int ret;
+	in_addr_t dest;
 	struct rt_entry *best_route;
 
-	if (sk == NULL)
-		goto xmit;
+	dest = ((sk == NULL) ? skb->nh.iph->daddr : sk->daddr);
 
-	/* this is for ip_route */
-	skb->nh.iph->daddr = sk->daddr;
-
-	best_route = rt_fib_get_best(sk->daddr, NULL);
-
-	if (best_route == NULL && sk->daddr != INADDR_BROADCAST) {
+	best_route = rt_fib_get_best(dest, NULL);
+	if ((best_route == NULL) && (dest != INADDR_BROADCAST)) {
 		skb_free(skb);
-		return -EHOSTUNREACH;
+		return -ENETUNREACH;
+	}
+	else if ((best_route != NULL) && (sk != NULL)) {
+		sk->saddr = in_dev_get(best_route->dev)->ifa_address;
+	}
+
+	if (sk != NULL) {
+		build_ip_packet(sk, skb);
 	}
 
 	ret = ip_route(skb, best_route);
-
 	if (ret != 0) {
 		skb_free(skb);
-		return ret;  /* errno? */
+		return ret;
 	}
 
-	sk->saddr = in_dev_get(skb->dev)->ifa_address;
+	assert(skb->dev != NULL);
 
-	build_ip_packet(sk, skb);
-
-xmit:
 	if (skb->len > skb->dev->mtu) {
 		if (!(skb->nh.iph->frag_off & htons(IP_DF))) {
-			return fragment_skb_and_send(skb, best_route);
+			return fragment_skb_and_send(skb, skb->dev);
 		} else {
 			/* if packet size is greater than MTU and we can't fragment it we can't go further */
 			skb_free(skb);
@@ -188,7 +188,7 @@ int ip_forward_packet(sk_buff_t *skb) {
 	if (skb->len > best_route->dev->mtu) {
 		if (!(iph->frag_off & htons(IP_DF))) {
 			/* We can perform fragmentation */
-			return fragment_skb_and_send(skb, best_route);
+			return fragment_skb_and_send(skb, best_route->dev);
 		} else {
 			/* Fragmentation is disabled */
 			icmp_send(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED,
@@ -206,3 +206,4 @@ void ip_v4_icmp_err_notify(struct sock *sk, int type, int code) {
 	sk->sk_err = (type & (code<<8));
 	so_sk_set_so_error(sk, sk->sk_err);
 }
+

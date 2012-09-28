@@ -74,6 +74,7 @@ static module LibCMath {
 }
 
 static module LibCStdio {
+	source "stdio/file_ops.c"
 	source "stdio/fgetc.c"
 	source "stdio/fputc.c"
 	source "stdio/gets.c"
@@ -83,7 +84,7 @@ static module LibCStdio {
 	source "stdio/printk.c"
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
-	depends LibCFileApi
+	depends FileApi
 	depends LibCMath
 }
 
@@ -103,24 +104,26 @@ static module LibC {
 //	source "stacktrace.c"
 }
 
-@DefaultImpl(LibCFileDiag)
-abstract module LibCFileApi { }
+@DefaultImpl(FilePosix)
+abstract module FileApi { }
 
-static module LibCFileFsPosix extends LibCFileApi {
-	source "stdio/fs.c"
-	source "stdio/stdio_posix.c"
-
-	depends embox.fs.core
-	depends embox.compat.posix.LibPosixFsApi
-}
-
-static module LibCFileFsDiag extends LibCFileApi {
-	source "stdio/fs.c"
-	source "stdio/stdio_diag.c"
+static module FileFS extends FileApi {
+	source "stdio/file_fs.h"
+	source "stdio/file_fs.c"
 
 	depends embox.fs.core
 }
 
-static module LibCFileDiag extends LibCFileApi {
+/* static module must have .c file, so this isn't a static */
+module FilePosix extends FileApi {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "stdio/file_posix.h"
+
+	depends embox.compat.posix.FileApi
+}
+
+static module FileStdio extends FileApi{
 	source "stdio/fs_none.c"
+
+	depends embox.compat.posix.FileApi
 }

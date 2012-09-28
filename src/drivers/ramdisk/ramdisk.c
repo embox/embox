@@ -33,12 +33,12 @@ static block_dev_operations_t block_dev_op = {
 */
 static int read_sectors(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno);
 static int write_sectors(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno);
-static int ioctl(block_dev_t *dev, int cmd, void *args, size_t size);
+static int ram_ioctl(block_dev_t *dev, int cmd, void *args, size_t size);
 
 block_dev_driver_t ramdisk_pio_driver = {
   "ramdisk_drv",
   DEV_TYPE_BLOCK,
-  ioctl,
+  ram_ioctl,
   read_sectors,
   write_sectors
 };
@@ -166,7 +166,7 @@ static int write_sectors(block_dev_t *dev,
 }
 
 /*static int ioctl(void *dev) {*/
-static int ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
+static int ram_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 
 	return 0;
 }

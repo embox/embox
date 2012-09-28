@@ -81,36 +81,47 @@ int rt_del_route(net_device_t *dev, in_addr_t dst,
  *         style must be the same
  *      2) Carrier without ARP can't be supported
  */
-
 int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
+	in_addr_t saddr, daddr;
+	struct rt_entry *rte;
+	struct net_device *wanna_dev;
 	struct socket_opt_state *ops;
-	in_addr_t saddr, daddr = skb->nh.iph->daddr;
-	struct rt_entry *rte = (suggested_route ? suggested_route : rt_fib_get_best(daddr, NULL));
 
 	assert(skb != NULL);
 
-	if (skb->sk && skb->sk->sk_socket) {
+	assert(skb->nh.iph != NULL);
+	daddr = skb->nh.iph->daddr;
+
+	wanna_dev = NULL;
+
+	if ((skb->sk != NULL) && (skb->sk->sk_socket != NULL)) {
+		assert(skb->sk->sk_socket->socket_node != NULL);
+
+		ops = &skb->sk->sk_socket->socket_node->options;
+		assert(ops != NULL);
+
 		/* kernel_socket_getsockopt(sk->sk.sk_socket, SOL_IP, SO_BINDTODEVICE,
 				(char*)dev, NULL); */
-		ops = &skb->sk->sk_socket->socket_node->options;
-
-		if (ops->so_bindtodev) {
-			rte = rt_fib_get_best(skb->nh.iph->daddr, ops->so_bindtodev);
-			skb->dev = ops->so_bindtodev;
-		}
+		wanna_dev = ops->so_bindtodev;
 	}
 
 	/* SO_BROADCAST assert. */
 	if (daddr == INADDR_BROADCAST) {
+		skb->dev = wanna_dev;
 		return ENOERR;
 	}
 
-	if (!rte) {
+	/* route destanation address */
+	rte = ((wanna_dev == NULL)
+		? (suggested_route == NULL) ? rt_fib_get_best(daddr, NULL) : suggested_route
+		: rt_fib_get_best(daddr, wanna_dev));
+	if (rte == NULL) {
 		return -ENETUNREACH;
 	}
 
 	/* set the device for current destination address */
 	assert(rte->dev != NULL);
+	assert((wanna_dev == NULL) || (wanna_dev == rte->dev));
 	skb->dev = rte->dev;
 	saddr = in_dev_get(skb->dev)->ifa_address;
 
@@ -119,29 +130,13 @@ int ip_route(struct sk_buff *skb, struct rt_entry *suggested_route) {
 	 */
 	if (ipv4_is_loopback(daddr)
 			|| (daddr == saddr)) {
+		/* FIXME it's the wrong check. need to check all interfaces
+		 * XXX even if saddr and skb->nh.iph->saddr are different? */
 		skb->dev = inet_get_loopback_dev();
 	}
 
 	/* if the packet should be sent using gateway
 	 * nothing todo there. all will be done in arp_resolve */
-#if 0
-	if (rte->rt_gateway != INADDR_ANY) {
-		/* the next line coerses arp_resolve to set HW destination address
-		 * to gateway's HW address.
-		 * Suspicious:
-		 *	probably	dev_queue_xmit()->
-		 *				dev->header_ops->rebuild()->
-		 *				eth_rebuild_header()
-		 *	will do the same again and overwrite the result
-		 */
-		int arp_resolve_result;
-		skb->nh.iph->daddr = rte->rt_gateway;
-		arp_resolve_result = arp_resolve(skb);
-		/* so here we need to return the original destination address */
-		skb->nh.iph->daddr = daddr;
-		return arp_resolve_result;
-	}
-#endif
 
 	return ENOERR;
 }
@@ -209,3 +204,4 @@ struct rt_entry * rt_fib_get_best(in_addr_t dst, net_device_t *out_dev) {
 
 	return best_rte;
 }
+

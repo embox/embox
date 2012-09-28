@@ -19,7 +19,7 @@ C_ENTRY(boot_start):
 	mts	rmsr, reg_zero	/* disable cache, interrupts, exceptions */
 
 	/*set stack pointer*/
-	addi  reg_sp, reg_zero, _stack
+	addi  reg_sp, reg_zero, __stack
 
 	brlid r15, setup_trap_table
 	 nop
@@ -64,7 +64,7 @@ clear_bss:
 	/*clear register*/
 	REGS_INIT();
 	/*set stack pointer again*/
-	addi  reg_sp, reg_zero, _stack
+	addi  reg_sp, reg_zero, __stack
 
 	/*call hardware_init_hook if it set */
 	addik reg_tmp1, reg_zero, hardware_init_hook

@@ -25,6 +25,7 @@ module timer {
 	source "timer.c"
 	depends jiffies
 	depends embox.arch.clock
+	depends embox.kernel.softirq
 }
 
 module time {

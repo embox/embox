@@ -14,6 +14,7 @@
 #include <net/socket.h>
 #include <util/array.h>
 #include <fs/posix.h>
+#include <fs/core.h>
 
 int open(const char *path, int __oflag, ...) {
 	char mode[] = "-";
@@ -26,7 +27,7 @@ int open(const char *path, int __oflag, ...) {
 	}
 
 	return task_self_idx_alloc(&task_idx_ops_file, \
-			fopen(path, (const char *)&mode[0]));
+			kopen(path, (const char *)&mode[0]));
 }
 
 int close(int fd) {
@@ -34,7 +35,7 @@ int close(int fd) {
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
@@ -51,12 +52,12 @@ ssize_t write(int fd, const void *buf, size_t nbyte) {
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
 	if (!buf) {
-		SET_ERRNO(-EFAULT);
+		SET_ERRNO(EFAULT);
 		return -1;
 	}
 
@@ -71,12 +72,12 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
 	if (!buf) {
-		SET_ERRNO(-EFAULT);
+		SET_ERRNO(EFAULT);
 		return -1;
 	}
 
@@ -91,7 +92,7 @@ int lseek(int fd, long int offset, int origin) {
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
@@ -108,7 +109,7 @@ int ioctl(int fd, int request, ...) {
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
-		SET_ERRNO(-EBADF);
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
@@ -122,6 +123,35 @@ int ioctl(int fd, int request, ...) {
 	va_end(args);
 
 	return ret;
+}
+
+int fcntl(int fd, int cmd, ...) {
+	va_list args;
+	int res;
+	struct idx_desc *desc = task_self_idx_get(fd);
+
+	if (!desc) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	va_start(args, cmd);
+	switch(cmd) {
+	case F_GETFD:
+		res = desc->data.flags;
+		break;
+	case F_SETFD:
+		desc->data.flags = va_arg(args, int);
+		break;
+	default:
+		/*SET_ERRNO(EINVAL);*/
+		res = -1;
+		break;
+	}
+	/* ops->foctl(task_idx_desc_data(desc), cmd, args); */
+	va_end(args);
+
+	return res;
 }
 
 int fsync(int fd) {

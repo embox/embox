@@ -4,3 +4,9 @@
 `which ethtool` -K tap0 rx off tx off gro off
 /sbin/ifconfig tap0 10.0.2.10 dstaddr 10.0.2.0 netmask 255.255.255.0 down
 /sbin/ifconfig tap0 hw ether aa:bb:cc:dd:ee:ff up
+
+echo "Enable IP Forwarding"
+iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+

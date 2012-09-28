@@ -51,13 +51,6 @@ SECTIONS {
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(reserve)
 
-	.stack (NOLOAD): {
-		ALIGNMENT();
-		. += OPTION_GET(NUMBER,stack_size);
-		ALIGNMENT();
-	} SECTION_REGION(stack)
-	SECTION_SYMBOLS(stack)
-
 	__KERNEL_END = .;
 }
 

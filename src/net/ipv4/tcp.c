@@ -489,6 +489,7 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		tcp_handle(newsock, *pskb, tcp_st_handler[TCP_SYN_RECV_PRE]);
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		list_add_tail(&newsock.tcp_sk->conn_wait, &sock.tcp_sk->conn_wait);
+		event_notify(&sock.tcp_sk->new_conn);
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 		return TCP_RET_OK;
 	}
@@ -990,7 +991,6 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 	iphdr_t *iph;
 	tcphdr_t *tcph;
 	union sock_pointer sock;
-	struct sock *sk;
 	int res;
 
 	assert(skb != NULL);
@@ -998,11 +998,12 @@ static int tcp_v4_rcv(struct sk_buff *skb) {
 	iph = ip_hdr(skb);
 	tcph = tcp_hdr(skb);
 	sock.tcp_sk = tcp_lookup(iph->daddr, tcph->dest, iph->saddr, tcph->source);
-	sk = &sock.tcp_sk->inet.sk;
 
-	if (sk->sk_encap_rcv) {
-		if (0 > (res = sk->sk_encap_rcv(sk, skb)))
-			return -res;
+	if ((sock.sk != NULL) && (sock.sk->sk_encap_rcv != NULL)) {
+		res = sock.sk->sk_encap_rcv(sock.sk, skb);
+		if (res < 0) {
+			return res;
+		}
 	}
 
 	packet_print(sock, skb, "=>", skb->nh.iph->saddr, skb->h.th->source);

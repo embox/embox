@@ -32,10 +32,10 @@ struct param {
 	void (*run)(void);
 };
 
-static int _canon_read(void *data, void *buf, size_t size);
-static int _write(void *data, const void *buf, size_t nbyte);
-static int _ioctl(void *data, int request, va_list args);
-static int _close (void *data);
+static int _canon_read(struct idx_desc_data *data, void *buf, size_t size);
+static int _write(struct idx_desc_data *data, const void *buf, size_t nbyte);
+static int _ioctl(struct idx_desc_data *data, int request, va_list args);
+static int _close (struct idx_desc_data *data);
 
 const struct task_idx_ops task_idx_ops_tty = {
 	.close = _close,
@@ -47,10 +47,14 @@ const struct task_idx_ops task_idx_ops_tty = {
 
 static struct tty_buf *current_tty;
 
-static size_t _read(void *buf, size_t size, void *data) {
+static inline struct tty_buf *data2tty_buf(struct idx_desc_data *data) {
+	return data->fd_struct;
+}
+
+static size_t _read(void *buf, size_t size, struct idx_desc_data *data) {
 	char *ch_buf = (char *) buf;
 
-	struct tty_buf *tty = (struct tty_buf *) data;
+	struct tty_buf *tty = data2tty_buf(data);
 
 	int i = size;
 
@@ -68,8 +72,8 @@ static size_t _read(void *buf, size_t size, void *data) {
 	return size;
 }
 
-static int _canon_read(void *data, void *buf, size_t size) {
-	struct tty_buf *tty = (struct tty_buf *) data;
+static int _canon_read(struct idx_desc_data *data, void *buf, size_t size) {
+	struct tty_buf *tty = data2tty_buf(data);
 	if (tty->canonical) {
 		int to_write;
 		if (tty->canon_left == 0) {
@@ -85,10 +89,10 @@ static int _canon_read(void *data, void *buf, size_t size) {
 	return _read(buf, size, data);
 }
 
-static int _write(void *data, const void *buf, size_t size) {
+static int _write(struct idx_desc_data *data, const void *buf, size_t size) {
 	size_t cnt = 0;
 	char *b = (char*) buf;
-	struct tty_buf *tty = (struct tty_buf *) data;
+	struct tty_buf *tty = data2tty_buf(data);
 	while (cnt != size) {
 		tty->putc(tty, b[cnt++]);
 	}
@@ -122,8 +126,8 @@ static void *thread_handler(void* args) {
 	return NULL;
 }
 
-static int _ioctl(void *data, int request, va_list args) {
-	struct tty_buf *tty = (struct tty_buf *) data;
+static int _ioctl(struct idx_desc_data *data, int request, va_list args) {
+	struct tty_buf *tty = data2tty_buf(data);
 	switch (request) {
 	case TTY_IOCTL_SET_RAW:
 		tty->canonical = 0;
@@ -139,7 +143,7 @@ static int _ioctl(void *data, int request, va_list args) {
 	return 0;
 }
 
-static int _close (void *data) {
+static int _close (struct idx_desc_data *data) {
 	return 0;
 }
 
