@@ -15,6 +15,7 @@
 #include <hal/env/traps_core.h>
 #include <hal/test/traps_core.h>
 #include <mem/page.h>
+#include <kernel/task.h>
 
 extern char _mem_begin;
 extern char _mem_length;
@@ -30,13 +31,15 @@ extern char __KERNEL_END;
 #define KERNEL_END		(&__KERNEL_END)
 #define KERNEL_SIZE     (KERNEL_END - KERNEL_START)
 
-#define INITIAL_SPACE   3*1024*4096
+#define INITIAL_SPACE   1*1024*1024
 
 EMBOX_UNIT(vmem_init, vmem_fini);
 
-static void vmem_map_kernel(mmu_ctx_t ctx);
+static inline void vmem_map_kernel(mmu_ctx_t ctx);
+static inline void vmem_create_space_after_kernel(mmu_ctx_t ctx);
 
 void vmem_on(void) {
+	switch_mm((mmu_ctx_t) 0, task_self()->ctx);
 	mmu_on();
 }
 
@@ -44,23 +47,27 @@ void vmem_off(void) {
 	mmu_off();
 }
 
-static void vmem_map_kernel(mmu_ctx_t ctx) {
+static inline void vmem_map_kernel(mmu_ctx_t ctx) {
 	mmu_map_region(ctx, (paddr_t) KERNEL_START, (vaddr_t) KERNEL_START,
 			KERNEL_SIZE, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 }
 
-void vmem_create_virtual_space(mmu_ctx_t ctx) {
+static inline void vmem_create_space_after_kernel(mmu_ctx_t ctx) {
 	int page_count;
 	void *addr;
 
-	vmem_map_kernel(ctx);
-
 	page_count = INITIAL_SPACE / MMU_PAGE_SIZE;
 	addr = page_alloc(page_count);
+	assert(addr != NULL);
 
 	// Map INITIAL_SPACE after KERNEL_END
 	mmu_map_region(ctx, (paddr_t) addr, (vaddr_t) KERNEL_END,
 			INITIAL_SPACE, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
+}
+
+void vmem_create_virtual_space(mmu_ctx_t ctx) {
+	vmem_map_kernel(ctx);
+	//vmem_create_space_after_kernel(ctx);
 }
 
 /*
@@ -101,7 +108,6 @@ static int vmem_init(void) {
 	printf("\n");
 #endif
 
-	vmem_create_virtual_space((mmu_ctx_t) 0);
 
 	vmem_on();
 

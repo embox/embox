@@ -11,6 +11,7 @@
 
 #include <hal/mm/mmu_types.h>
 
+extern mmu_pmd_t *alloc_pmd_table(void);
 extern mmu_pte_t *alloc_pte_table(void);
 
 #endif /* VMEM_TABLE_ALLOC_H_ */

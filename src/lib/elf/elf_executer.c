@@ -11,7 +11,6 @@
 #include <types.h>
 #include <errno.h>
 #include <stdio.h>
-#include <kernel/task.h>
 
 static inline int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *EPH, int8_t *dst) {
 	uint8_t rev = head->e_ident[EI_DATA];
@@ -31,7 +30,9 @@ static inline int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *E
 }
 
 int elf_execve(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
-	int counter;
+	int (*function_main)(int argc, char * argv[]);
+	int result, counter;
+	char c;
 
 	counter = EH->e_phnum;
 	while (counter--) {
@@ -45,8 +46,9 @@ int elf_execve(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
 	printf("Data allocated.\n");
 	printf("Trying to start at 0x%x\n", (uint32_t)EH->e_entry);
 
-	new_task((void *(*)(void *)) EH->e_entry, NULL);
+    function_main = (int (*)(int argc, char *argv[])) EH->e_entry;
+    result = function_main (0, NULL);
 
-	//printf("result : %d", result);
+	printf("result : %d", result);
 	return 0;
 }

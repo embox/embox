@@ -1,0 +1,7 @@
+package embox.mem.vmem
+
+module virtallocator {
+	source "table_alloc.c"
+
+	depends embox.mem.page_api
+}
