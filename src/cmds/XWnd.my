@@ -1,0 +1,19 @@
+package embox.cmd
+
+@Cmd(name = "xwnd",
+	help = "XWindow-like thing for Embox",
+	man = '''
+		NAME
+			xwnd - window system for Embox
+		AUTHORS
+			Alexandr Chernakov
+	''')
+module xwnd {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/include/drivers")
+	source "xwnd.c"
+
+	depends embox.lib.LibC
+	depends embox.driver.video.vesadrv
+}

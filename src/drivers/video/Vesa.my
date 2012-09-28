@@ -1,0 +1,8 @@
+package embox.driver.video
+
+abstract module vesa {
+}
+
+module vesadrv extends vesa {
+	source "vesa.c"
+}
