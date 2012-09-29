@@ -11,7 +11,7 @@
 
 #include <hal/mm/mmu_core.h>
 #include <asm/hal/mm/mmu_core.h>
-#include <mem/vmem/table_alloc.h>
+#include <mem/vmem/virtalloc.h>
 #include <asm/flags.h>
 #include <string.h>
 //http://rus-linux.net/MyLDP/kernel/toyos/sozdaem-unix-like-os-06.html

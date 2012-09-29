@@ -5,8 +5,9 @@ module vmem {
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 	depends embox.arch.x86.mm.mmu_map
 	depends embox.arch.x86.mm.mmu_core
-	depends embox.framework.LibFramework
+	depends embox.mem.vmem.virtallocator
 	depends embox.mem.page_api
 }

@@ -43,7 +43,7 @@ int elf_execve(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
 	}
 
 	printf("Data allocated.\n");
-	printf("Trying to start at 0x%x\n", (uint32_t)EH->e_entry);
+	printf("Trying to start at 0x%08x\n", (uint32_t)EH->e_entry);
 
     function_main = (int (*)(int argc, char *argv[])) EH->e_entry;
     result = function_main (0, NULL);

@@ -7,7 +7,7 @@
  */
 
 #include <assert.h>
-#include <mem/vmem/table_alloc.h>
+#include <mem/vmem/virtalloc.h>
 #include <hal/mm/mmu_core.h>
 
 #define COUNT 100

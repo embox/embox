@@ -9,7 +9,7 @@
 #include <hal/mm/mmu_core.h>
 #include <asm/hal/mm/mmu_types.h>
 #include <util/binalign.h>
-#include <mem/vmem/table_alloc.h>
+#include <mem/vmem/virtalloc.h>
 
 #define MMU_PAGE_PRESENT 0x1
 
