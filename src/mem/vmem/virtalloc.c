@@ -6,25 +6,20 @@
  * @author Anton Bulychev
  */
 
-#include <assert.h>
 #include <mem/vmem/virtalloc.h>
 #include <hal/mm/mmu_core.h>
-
-#define COUNT 100
-
-static mmu_pte_t pte_table[COUNT][0x400] __attribute__((aligned(MMU_PAGE_SIZE)));
-static int pte_c = 0;
-
-static mmu_pmd_t pmd_table[COUNT][0x400] __attribute__((aligned(MMU_PAGE_SIZE)));
-static int pmd_c = 0;
+#include <mem/page.h>
 
 mmu_pte_t *alloc_pte_table() {
-	assert(pte_c < COUNT);
-	return (mmu_pte_t *) pte_table[pte_c++];
+	return (mmu_pte_t *) page_alloc(1);
 }
 
 mmu_pmd_t *alloc_pmd_table() {
-	assert(pmd_c < COUNT);
-	return (mmu_pmd_t *) pmd_table[pmd_c++];
+	return (mmu_pmd_t *) page_alloc(1);
+}
+
+void *alloc_virt_memory(size_t size) {
+	/* XXX: size must be equal x*MMU_PAGE_SIZE */
+	return page_alloc(size / MMU_PAGE_SIZE);
 }
 

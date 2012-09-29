@@ -12,13 +12,10 @@
 #include <types.h>
 #include <stdio.h>
 #include <hal/mm/mmu_core.h>
-#include <hal/env/traps_core.h>
-#include <hal/test/traps_core.h>
-#include <mem/page.h>
 #include "../kernel/task/common.h"
 #include "../kernel/thread/types.h"
 #include <mem/vmem.h>
-#include <kernel/task/task_table.h>
+#include <mem/vmem/virtalloc.h>
 
 
 extern char _mem_begin;
@@ -33,7 +30,7 @@ extern char _text_len, _rodata_len, _bss_len, _data_len, _stack_len, _heap_len;
 #define MEM_END         (MEM_BEGIN + MEM_LENGTH)
 
 #define USER_MEM_START	((vaddr_t) &_heap_vma + (vaddr_t) &_heap_len)
-#define USER_MEM_SIZE   (3*1024*1024)
+#define USER_MEM_SIZE   (2*1024*1024)
 
 EMBOX_UNIT(vmem_init, vmem_fini);
 
@@ -62,12 +59,8 @@ static inline void vmem_map_kernel(mmu_ctx_t ctx) {
 }
 
 static inline void vmem_create_space_after_kernel(mmu_ctx_t ctx) {
-	int page_count;
-	void *addr;
-
-	page_count = USER_MEM_SIZE / MMU_PAGE_SIZE;
-	addr = page_alloc(page_count);
-	assert(addr != NULL);
+	void *addr = alloc_virt_memory((size_t) USER_MEM_SIZE);
+	assert(addr);
 
 	// Map INITIAL_SPACE after end of heap
 	mmu_map_region(ctx, (paddr_t) addr, USER_MEM_START,

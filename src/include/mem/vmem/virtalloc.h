@@ -13,5 +13,6 @@
 
 extern mmu_pmd_t *alloc_pmd_table(void);
 extern mmu_pte_t *alloc_pte_table(void);
+extern void *alloc_virt_memory(size_t size);
 
 #endif /* VMEM_VIRT_ALLOC_H_ */
