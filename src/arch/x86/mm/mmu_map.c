@@ -37,6 +37,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	if(0 == (reg_size = __binalign_mask(reg_size, MMU_PAGE_MASK))) {
 		return 0;
 	}
+
 	virt_addr = __binalign_mask(virt_addr, MMU_PAGE_MASK);
 	phy_addr = __binalign_mask(phy_addr, MMU_PAGE_MASK);
 

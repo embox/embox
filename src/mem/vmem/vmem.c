@@ -20,18 +20,16 @@
 extern char _mem_begin;
 extern char _mem_length;
 
-extern char __KERNEL_START;
-extern char __KERNEL_END;
+/* Section pointers. */
+extern char _text_vma, _rodata_vma, _bss_vma, _data_vma, _stack_vma, _heap_vma;
+extern char _text_len, _rodata_len, _bss_len, _data_len, _stack_len, _heap_len;
 
 #define MEM_BEGIN       (&_mem_begin)
 #define MEM_LENGTH      (&_mem_length)
 #define MEM_END         (MEM_BEGIN + MEM_LENGTH)
 
-#define KERNEL_START 	(&__KERNEL_START)
-#define KERNEL_END		(&__KERNEL_END)
-#define KERNEL_SIZE     (KERNEL_END - KERNEL_START)
-
-#define INITIAL_SPACE   1*1024*1024
+#define USER_MEM_START	((vaddr_t) &_heap_vma + (vaddr_t) &_heap_len)
+#define USER_MEM_SIZE   (3*1024*1024)
 
 EMBOX_UNIT(vmem_init, vmem_fini);
 
@@ -48,33 +46,28 @@ void vmem_off(void) {
 }
 
 static inline void vmem_map_kernel(mmu_ctx_t ctx) {
-	extern char _text_vma, _data_vma, _stack_vma, _bss_vma, _heap_vma, _rodata_vma;
-	extern size_t _text_len, _data_len, _stack_len, _bss_len, _heap_len, _rodata_len;
-
 	/* one-on-one mapping for context 0 */
-	mmu_map_region(0, (paddr_t)&_text_vma, (vaddr_t)&_text_vma, (size_t)&_text_len, MMU_PAGE_WRITEABLE);
-	mmu_map_region(0, (paddr_t)&_data_vma, (paddr_t) &_data_vma, (size_t)&_data_len, MMU_PAGE_WRITEABLE);
-	mmu_map_region(0, (paddr_t)&_stack_vma, (paddr_t)&_stack_vma, (size_t)&_stack_len, MMU_PAGE_WRITEABLE);
-	mmu_map_region(0, (paddr_t)&_bss_vma, (paddr_t)&_bss_vma, (size_t)&_bss_len, MMU_PAGE_WRITEABLE);
-	mmu_map_region(0, (paddr_t)&_heap_vma, (paddr_t)&_heap_vma, (size_t)&_heap_len, MMU_PAGE_WRITEABLE);
-	mmu_map_region(0, (paddr_t)&_rodata_vma, (paddr_t)&_rodata_vma, (size_t)&_rodata_len, MMU_PAGE_WRITEABLE);
-
-
-/*	mmu_map_region(ctx, (paddr_t) KERNEL_START, (vaddr_t) KERNEL_START,
-			KERNEL_SIZE, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE); */
+	mmu_map_region(ctx, (paddr_t)&_text_vma, (vaddr_t)&_text_vma, (size_t)&_text_len, MMU_PAGE_WRITEABLE);
+	mmu_map_region(ctx, (paddr_t)&_rodata_vma, (vaddr_t)&_rodata_vma, (size_t)&_rodata_len, MMU_PAGE_WRITEABLE);
+	mmu_map_region(ctx, (paddr_t)&_bss_vma, (vaddr_t)&_bss_vma, (size_t)&_bss_len, MMU_PAGE_WRITEABLE);
+	mmu_map_region(ctx, (paddr_t)&_data_vma, (vaddr_t)&_data_vma, (size_t)&_data_len, MMU_PAGE_WRITEABLE);
+	/* reserve section. */
+	mmu_map_region(ctx, (paddr_t)&_data_vma + (paddr_t)&_data_len, (vaddr_t)&_data_vma + (vaddr_t)&_data_len, (size_t)&_stack_vma - (size_t)&_data_vma - (size_t)&_data_len, MMU_PAGE_WRITEABLE);
+	mmu_map_region(ctx, (paddr_t)&_stack_vma, (vaddr_t)&_stack_vma, (size_t)&_stack_len, MMU_PAGE_WRITEABLE);
+	mmu_map_region(ctx, (paddr_t)&_heap_vma, (vaddr_t)&_heap_vma, (size_t)&_heap_len, MMU_PAGE_WRITEABLE);
 }
 
 static inline void vmem_create_space_after_kernel(mmu_ctx_t ctx) {
 	int page_count;
 	void *addr;
 
-	page_count = INITIAL_SPACE / MMU_PAGE_SIZE;
+	page_count = USER_MEM_SIZE / MMU_PAGE_SIZE;
 	addr = page_alloc(page_count);
 	assert(addr != NULL);
 
-	// Map INITIAL_SPACE after KERNEL_END
-	mmu_map_region(ctx, (paddr_t) addr, (vaddr_t) KERNEL_END,
-			INITIAL_SPACE, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
+	// Map INITIAL_SPACE after end of heap
+	mmu_map_region(ctx, (paddr_t) addr, USER_MEM_START,
+			USER_MEM_SIZE, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 }
 
 void vmem_create_virtual_space(mmu_ctx_t ctx) {
@@ -99,17 +92,6 @@ static int pagefault_handler(uint32_t nr, void *data) {
 */
 
 static int vmem_init(void) {
-#if 0
-	printf("\n\n");
-	printf("KERNEL_START = 0x%08x\n", (unsigned int) KERNEL_START);
-	printf("KERNEL_END = 0x%08x\n", (unsigned int) KERNEL_END);
-	printf("KERNEL_SIZE = 0x%08x\n", (unsigned int) KERNEL_SIZE);
-	printf("\n");
-	printf("MEM_BEGIN = 0x%08x\n", (unsigned int) MEM_BEGIN);
-	printf("MEM_LENGTH = 0x%08x\n", (unsigned int) MEM_LENGTH);
-	printf("\n");
-#endif
-
 	vmem_on();
 
 	return 0;

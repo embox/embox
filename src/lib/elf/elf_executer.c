@@ -22,7 +22,7 @@ static inline int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *E
 
 	if (size) {
 		fseek(fd, offset, 0);
-		return (1 == fread(dst, size, 1, fd)) ? 1 : -1;
+		return (fread(dst, size, 1, fd)) ? 1 : -1;
 	} else {
 		/* Empty segment. */
 		return 0;

@@ -15,7 +15,7 @@
 
 int32_t elf_read_header(FILE *fd, Elf32_Ehdr **head) {
 	*head = malloc(sizeof(Elf32_Ehdr));
-	if (1 != fread(*head, sizeof(Elf32_Ehdr), 1, fd)) return -1;
+	if (!fread(*head, sizeof(Elf32_Ehdr), 1, fd)) return -1;
 
 	if ((*head)->e_ident[EI_MAG0] != ELFMAG0 ||
 			(*head)->e_ident[EI_MAG1] != ELFMAG1 ||
@@ -39,7 +39,7 @@ int32_t elf_read_sections_table(FILE *fd, Elf32_Ehdr *head,
 		*sh_table = malloc(size * num);
 
 		fseek(fd, offset, 0);
-		return (num == fread(*sh_table, size, num, fd)) ? 1 : -1;
+		return (fread(*sh_table, size, num, fd)) ? 1 : -1;
 	} else {
 		/* Table doesn't exist. */
 		return -1;
@@ -58,7 +58,7 @@ int32_t elf_read_segments_table(FILE *fd, Elf32_Ehdr *head,
 		*st_table = malloc(size * num);
 
 		fseek(fd, offset, 0);
-		return (num == fread(*st_table, size, num, fd)) ? 1 : -1;
+		return (fread(*st_table, size, num, fd)) ? 1 : -1;
 	} else {
 		/* Table doesn't exist. */
 		return -1;
@@ -82,7 +82,7 @@ int32_t elf_read_string_table(FILE *fd, Elf32_Ehdr *head,
 		*string_table = malloc(size);
 
 		fseek(fd, offset, 0);
-		return (1 == fread(*string_table, size, 1, fd)) ? 1 : -1;
+		return (fread(*string_table, size, 1, fd)) ? 1 : -1;
 	} else {
 		/* Not found. */
 		return -1;
@@ -110,7 +110,7 @@ int32_t elf_read_symbol_table(FILE *fd, Elf32_Ehdr *hdr,
 			*symbol_table = malloc(size);
 
 			fseek(fd, offset, 0);
-			if (1 != fread(*symbol_table, size, 1, fd)) return -1;
+			if (!fread(*symbol_table, size, 1, fd)) return -1;
 
 			*count = L_REV(section_header_table[i].sh_size, rev)
 							    / sizeof(Elf32_Sym);
@@ -140,7 +140,7 @@ int32_t elf_read_rel_table(FILE *fd, Elf32_Ehdr *hdr,
 			*rel_table = malloc(size); // TODO: fix it
 
 			fseek(fd, offset, 0);
-			if (fread(*rel_table + *count, size, 1, fd) != 1) return -1;
+			if (!fread(*rel_table + *count, size, 1, fd)) return -1;
 
 			*count += L_REV(section_hdr_table[i].sh_size, rev)
 							/ sizeof(Elf32_Rel);
@@ -223,7 +223,7 @@ int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 			*symb_names = malloc(size);
 
 			fseek(fd, offset, 0);
-			if (fread(*symb_names, size, 1, fd) != 1) return -1;
+			if (!fread(*symb_names, size, 1, fd)) return -1;
 			*ret_length = size;
 
 			return *ret_length;
