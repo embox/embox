@@ -15,7 +15,11 @@
 #include <hal/env/traps_core.h>
 #include <hal/test/traps_core.h>
 #include <mem/page.h>
-#include <kernel/task.h>
+#include "../kernel/task/common.h"
+#include "../kernel/thread/types.h"
+#include <mem/vmem.h>
+#include <kernel/task/task_table.h>
+
 
 extern char _mem_begin;
 extern char _mem_length;
@@ -37,7 +41,7 @@ static inline void vmem_map_kernel(mmu_ctx_t ctx);
 static inline void vmem_create_space_after_kernel(mmu_ctx_t ctx);
 
 void vmem_on(void) {
-	switch_mm((mmu_ctx_t) 0, task_self()->ctx);
+	switch_mm((mmu_ctx_t) 0, task_self()->vmem_data->ctx);
 	mmu_on();
 }
 
@@ -103,3 +107,34 @@ static int vmem_fini(void) {
 	return 0;
 }
 
+static void task_vmem_init(struct task *task, void *_vmem_data) {
+	struct task_vmem_data *vmem_data = (struct task_vmem_data *) _vmem_data;
+	task->vmem_data = vmem_data;
+
+	vmem_data->ctx = mmu_create_context();
+	vmem_create_virtual_space(vmem_data->ctx);
+}
+
+static void task_vmem_inherit(struct task *task, struct task *parent_task) {
+
+}
+
+static void task_vmem_deinit(struct task *task) {
+
+}
+
+static const struct task_resource_desc vmem_resource = {
+	.init = task_vmem_init,
+	.inherit = task_vmem_inherit,
+	.deinit = task_vmem_deinit,
+	.resource_size = sizeof(struct task_vmem_data),
+};
+
+static int task_switch_handler(struct thread *prev, struct thread *next) {
+	switch_mm(prev->task->vmem_data->ctx, next->task->vmem_data->ctx);
+
+	return 0;
+}
+
+TASK_RESOURCE_DESC(&vmem_resource);
+TASK_RESOURCE_NOTIFY(task_switch_handler);

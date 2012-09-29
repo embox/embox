@@ -14,9 +14,6 @@
 #include <lib/list.h>
 #include "common.h"
 
-#include <mem/vmem.h>
-#include <hal/mm/mmu_core.h>
-
 EMBOX_UNIT_INIT(tasks_init);
 
 #include <module/embox/kernel/task/api.h>
@@ -46,9 +43,6 @@ struct task *task_init(void *task_n_res_space) {
 	INIT_LIST_HEAD(&task->link);
 
 	task->parent = NULL;
-
-	task->ctx = mmu_create_context();
-	vmem_create_virtual_space(task->ctx);
 
 	task_resource_foreach(res_desc) {
 		res_desc->init(task, res_ptr);

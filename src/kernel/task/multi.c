@@ -14,8 +14,6 @@
 #include <kernel/panic.h>
 #include "common.h"
 
-#include <hal/mm/mmu_core.h>
-
 #include <embox/unit.h> /* For options */
 
 typedef void *(*run_fn)(void *);
@@ -94,8 +92,6 @@ int task_notify_switch(struct thread *prev, struct thread *next) {
 	if (prev->task == next->task) {
 		return 0;
 	}
-
-	switch_mm(prev->task->ctx, next->task->ctx);
 
 	task_notifing_resource_foreach(notify_res) {
 		if (0 != (res = notify_res(prev, next))) {

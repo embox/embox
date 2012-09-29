@@ -11,11 +11,10 @@
 
 #include <lib/list.h>
 
-#include <hal/mm/mmu_core.h>
-
 struct task_signal_table;
 struct task_idx_table;
 struct thread;
+struct task_vmem_data;
 
 /**
  * @brief Task resources container
@@ -36,7 +35,7 @@ struct task {
 
 	struct task_signal_table *signal_table;
 
-	mmu_ctx_t ctx;
+	struct task_vmem_data *vmem_data;
 
 	int err; /**< @brief Last occurred error code */
 };
