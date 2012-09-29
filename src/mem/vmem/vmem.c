@@ -17,17 +17,9 @@
 #include <mem/vmem.h>
 #include <mem/vmem/virtalloc.h>
 
-
-extern char _mem_begin;
-extern char _mem_length;
-
 /* Section pointers. */
 extern char _text_vma, _rodata_vma, _bss_vma, _data_vma, _stack_vma, _heap_vma;
 extern char _text_len, _rodata_len, _bss_len, _data_len, _stack_len, _heap_len;
-
-#define MEM_BEGIN       (&_mem_begin)
-#define MEM_LENGTH      (&_mem_length)
-#define MEM_END         (MEM_BEGIN + MEM_LENGTH)
 
 #define USER_MEM_START	((vaddr_t) &_heap_vma + (vaddr_t) &_heap_len)
 #define USER_MEM_SIZE   (2*1024*1024)
@@ -62,7 +54,7 @@ static inline void vmem_create_space_after_kernel(mmu_ctx_t ctx) {
 	void *addr = alloc_virt_memory((size_t) USER_MEM_SIZE);
 	assert(addr);
 
-	// Map INITIAL_SPACE after end of heap
+	// Map space after kernel
 	mmu_map_region(ctx, (paddr_t) addr, USER_MEM_START,
 			USER_MEM_SIZE, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
 }
