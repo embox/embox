@@ -21,8 +21,13 @@
 extern char _text_vma, _rodata_vma, _bss_vma, _data_vma, _stack_vma, _heap_vma;
 extern char _text_len, _rodata_len, _bss_len, _data_len, _stack_len, _heap_len;
 
+// TODO: do it normal
+#define _reserve_vma ((paddr_t) &_data_vma + (paddr_t) &_data_len)
+#define _reserve_len ((size_t) &_stack_vma - (size_t) &_data_vma - (size_t) &_data_len)
+
 #define USER_MEM_START	((vaddr_t) &_heap_vma + (vaddr_t) &_heap_len)
 #define USER_MEM_SIZE   (2*1024*1024)
+
 
 EMBOX_UNIT(vmem_init, vmem_fini);
 
@@ -44,8 +49,7 @@ static inline void vmem_map_kernel(mmu_ctx_t ctx) {
 	mmu_map_region(ctx, (paddr_t)&_rodata_vma, (vaddr_t)&_rodata_vma, (size_t)&_rodata_len, MMU_PAGE_WRITEABLE);
 	mmu_map_region(ctx, (paddr_t)&_bss_vma, (vaddr_t)&_bss_vma, (size_t)&_bss_len, MMU_PAGE_WRITEABLE);
 	mmu_map_region(ctx, (paddr_t)&_data_vma, (vaddr_t)&_data_vma, (size_t)&_data_len, MMU_PAGE_WRITEABLE);
-	/* reserve section. */
-	mmu_map_region(ctx, (paddr_t)&_data_vma + (paddr_t)&_data_len, (vaddr_t)&_data_vma + (vaddr_t)&_data_len, (size_t)&_stack_vma - (size_t)&_data_vma - (size_t)&_data_len, MMU_PAGE_WRITEABLE);
+	mmu_map_region(ctx, (paddr_t) _reserve_vma, (vaddr_t) _reserve_vma, (size_t) _reserve_len, MMU_PAGE_WRITEABLE);
 	mmu_map_region(ctx, (paddr_t)&_stack_vma, (vaddr_t)&_stack_vma, (size_t)&_stack_len, MMU_PAGE_WRITEABLE);
 	mmu_map_region(ctx, (paddr_t)&_heap_vma, (vaddr_t)&_heap_vma, (size_t)&_heap_len, MMU_PAGE_WRITEABLE);
 }

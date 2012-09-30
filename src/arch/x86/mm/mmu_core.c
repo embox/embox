@@ -73,7 +73,7 @@ static unsigned int get_cr2(void) {
 //    return _tr7;
 //}
 
-static uint32_t ctx_table[0xFF] __attribute__((aligned(MMU_PAGE_SIZE)));
+static uint32_t ctx_table[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
 
 mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
 	return (mmu_pgd_t *)ctx_table[ctx];
