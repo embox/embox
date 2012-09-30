@@ -16,8 +16,6 @@
 #include <net/if_arp.h>
 #include <net/inetdevice.h>
 
-#define ARP_RESOLVE_TIMEOUT 100
-
 /**
  * Handle arp packet. This function called protocal stack
  * when arp packet has been received
