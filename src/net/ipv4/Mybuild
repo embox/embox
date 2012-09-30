@@ -29,6 +29,16 @@ module arp {
 	depends embox.framework.LibFrameworkNet
 }
 
+module rarp {
+	source "rarp.c"
+
+	depends network_layer
+	depends skbuff
+	depends neighbour
+	depends embox.lib.LibC
+	depends embox.framework.LibFrameworkNet
+}
+
 module icmp {
 	source "icmp.c"
 

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Global definitions for the ARP (RFC 826) protocol.
+ * @brief Global definitions for the ARP (RFC 826) and RARP (RFC 903) protocols
  *
  * @date 10.08.09
  * @author Nikolay Korotky

@@ -22,7 +22,6 @@
 #include <time.h>
 #include <assert.h>
 #include <net/route.h>
-//#include <kernel/thread/sched.h>
 
 #include <net/arp_queue.h>
 
