@@ -9,37 +9,41 @@
 #include <string.h>
 #include <net/ip.h>
 #include <net/socket.h>
-#include <net/inetdevice.h>
+#include <fcntl.h>
 #include <embox/cmd.h>
-#include <cmd/shell.h>
+#include <getopt.h>
 #include <err.h>
 #include <errno.h>
-#include <kernel/task.h>
 #include <stdlib.h>
 
 EMBOX_CMD(exec);
 
-#include <framework/mod/options.h>
-
-#define RLOGIN_MAX_CONNECTIONS  OPTION_GET(NUMBER, max_conn_count)
-#define MAX_USER_INFO_LENGTH 100
-static int connection_count = 0;
-
 #define RLOGIN_ADDR INADDR_ANY
-#define RLOGIN_PORT (unsigned int)513
 
-/* FIXME make it local variable for exec() */
-struct sockaddr_in dst;
+/* rlogin port */
+#define RLOGIN_PORT 513
 
-const char *client = "embox";
-char *server;
+/* control bytes */
+#define R_DISCARD_All 0x02
+#define R_RAW         0x10
+#define R_RESUME      0x20
+#define R_WINDOW_SZ   0x80
 
-//struct user_info {
-//	char client_user_name[10];
-//	char server_user_name[10];
-//	char terminal_type[10];
-//	unsigned int terminal_speed;
-//};
+/* start, stop output on local terminal */
+#define R_START       0x11
+#define R_STOP        0x13
+
+/* client mode */
+#define MODE_COOKED   0
+#define MODE_RAW      R_RAW
+
+/* FIXME cheat for now */
+static const char *client = "embox";
+static const char *term = "xterm/38000";
+
+static void print_usage(void) {
+	printf("Usage: rlogin [-l username] <server> \n");
+}
 
 	/* Allow to turn off/on extra debugging information */
 #if 0
@@ -51,59 +55,121 @@ char *server;
 	} while (0);
 #endif
 
-static int error = -1;
+/**
+ * @brief handle code if it is control byte
+ * @return result if @c code is control byte
+ * @retval -1 if not
+ * @retval 0 if it is
+ */
+static int handle_cntl_byte(unsigned char code, int *state, int *mode) {
+	switch (code) {
+	case R_DISCARD_All:
+		*state = R_STOP;
+		break;
+	case R_RAW:
+		*mode = MODE_RAW;
+		break;
+	case R_RESUME:
+		if (*mode == MODE_RAW) {
+			*state = R_START;
+			*mode = MODE_COOKED;
+			break;
+		}
+		return -1;
+	case R_WINDOW_SZ:
+		break;
+	case R_START:
+		if (*mode != MODE_RAW) {
+			*state = R_START;
+			break;
+		}
+		return -1;
+	case R_STOP:
+		if (*mode != MODE_RAW) {
+			*state = R_STOP;
+		} else {
+			return -1;
+		}
+		break;
+	default:
+		return -1;
+	}
 
-static void fatal_error(const char *msg, int code) {
-#if 0	/* LOG_ERROR might be off now */
-	LOG_ERROR("%s, code=%d, last errno=%d\n", msg, code, errno);
-#else
-	RLOGIN_DEBUG(printf("%s, code=%d, last errno=%d\n", msg, code, errno));
-#endif
-	thread_exit(&error);
+	return 0;
 }
 
-	/* Shell thread for telnet */
-static void *rlogin_thread_handler(void* args) {
-	char *buf;
-	int len = 0;
-	int *client_descr_p = (int *)args;
+static void rlogin_handle(int sock) {
+	int sock_data_len = 0, stdin_data_len = 0;
+	unsigned char c;
+	unsigned char buf[128];
+	unsigned char *s = buf;
+	int state = R_START, mode = MODE_COOKED;
 
-	close(STDIN_FILENO);
-	close(STDOUT_FILENO);
-	close(STDERR_FILENO);
+	ioctl(STDIN_FILENO, O_NONBLOCK, 1);
+	fcntl(sock, F_SETFD, O_NONBLOCK);
 
-	dup(*client_descr_p);
-	dup(*client_descr_p);
-	dup(*client_descr_p);
+	while (1) {
+		if (stdin_data_len > 0) {
+			if (write(sock, &c, 1) == 1) {
+				stdin_data_len -= 1;
+			}
+		} else {
+			stdin_data_len = read(STDIN_FILENO, &c, 1);
+			/* XXX NVT terminal requires '\r' as enter */
+			if ( c == '\n') {
+				c = '\r';
+			}
+		}
 
-	/* send "Start HandShake" */
-	printf("%c", '\0');
-
-	buf = malloc(strlen(client) + strlen(server) + 2);
-
-	memcpy(buf, client, strlen(client));
-	len += strlen(client) + 1;
-
-	memcpy(buf + len, server, strlen(server));
-	len += strlen(server) + 1;
-
-	sendto(*client_descr_p, buf, len, 0, (struct sockaddr *) &dst, sizeof dst);
-
-	/* Run shell */
-	shell_run();
-
-	close(*client_descr_p);
-	*client_descr_p = -1;
-
-	return NULL;
+		if (sock_data_len > 0) {
+			bool handeled;
+			/* Try to handle each byte of server data. */
+			do {
+				handeled = false;
+				if (!handle_cntl_byte(*s, &state, &mode) || state == R_STOP
+						|| (write(STDOUT_FILENO, s, 1) == 1)) {
+					sock_data_len -= 1;
+					s += 1;
+					handeled = true;
+				}
+			} while (handeled && sock_data_len > 0);
+		} else {
+			s = buf;
+			sock_data_len = read(sock, s, 128);
+		}
+	} /* while (1) */
 }
 
 static int exec(int argc, char **argv) {
-	int res = -1, sockfd;
-	struct sockaddr_in our;
+	int res = -1, sock, opt;
+	struct sockaddr_in our, dst;
+	int len;
+	char *buf;
+	char *server = (char*)client;
 
-	if (connection_count >= RLOGIN_MAX_CONNECTIONS)
-		return -1;
+	if (argc < 2) {
+		print_usage();
+		return 0;
+	}
+
+	getopt_init();
+	while (-1 != (opt = getopt(argc, argv, "hl:"))) {
+		switch (opt) {
+		case 'h':
+			print_usage();
+			return 0;
+		case 'l':
+			server = optarg;
+			break;
+		default:
+			printf("error: unsupported option %c\n", optopt);
+			return -1;
+		}
+	}
+
+	len = strlen(client) + strlen(server) + strlen(term) + 3;
+	buf = malloc(len);
+	memset(buf, 0, len);
 
 	if (!inet_aton(argv[argc -1], &dst.sin_addr)) {
 		printf("Invalid ip address %s\n", argv[argc -1]);
@@ -114,46 +180,51 @@ static int exec(int argc, char **argv) {
 	our.sin_port= htons(RLOGIN_PORT);
 	our.sin_addr.s_addr = htonl(RLOGIN_ADDR);
 
-	if (!((RLOGIN_ADDR == INADDR_ANY) || ip_is_local(RLOGIN_ADDR, false, false))) {
-		fatal_error("rlogin address is incorrect", RLOGIN_ADDR);
-		return -1;
+	if ((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+		printf("can not allocate socket\n");
+		return -ENOMEM;
 	}
 
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-		fatal_error("can't create socket", sockfd);
-		return -1;
-	}
-
-	if ((res = bind(sockfd, (struct sockaddr *)&our, sizeof(our))) < 0) {
-		fatal_error("bind() failed", res);
+	if ((res = bind(sock, (struct sockaddr *)&our, sizeof(our))) < 0) {
+		printf("can not bind socket\n");
 		goto exit;
 	}
 
 	dst.sin_family = AF_INET;
 	dst.sin_port = htons(RLOGIN_PORT);
 
-	server = argv[argc - 2];
-
-	if (connect(sockfd, (struct sockaddr *)&dst, sizeof dst) < 0) {
+	if (connect(sock, (struct sockaddr *)&dst, sizeof dst) < 0) {
 		printf("Error... Cant connect to remote address %s:%d\n",
 				inet_ntoa(dst.sin_addr), RLOGIN_PORT);
-		close(sockfd);
-		return -1;
+		goto exit;
 	}
-
-	connection_count++;
-
 	RLOGIN_DEBUG(printf("connected\n"));
 
-	if ((res = new_task(rlogin_thread_handler, &sockfd)))
-		RLOGIN_DEBUG(printf("new_task() returned with code=%d\n", res));
+	/* send Handshake */
+	if (write(sock, buf, 1) < 0) {
+		goto exit;
+	}
+
+	len = 0;
+	memcpy(buf, client, strlen(client));
+	len += strlen(client) + 1;
+
+	memcpy(buf + len, server, strlen(server));
+	len += strlen(server) + 1;
+
+	memcpy(buf + len, term, strlen(term));
+	len += strlen(term) + 1;
+	/* send user info */
+	if (write(sock, buf, len) < 0) {
+		goto exit;
+	}
 
 	res = ENOERR;
 
-	while(1);
+	rlogin_handle(sock);
 
 exit:
-	connection_count--;
-	//close(sockfd);
+	free(buf);
+	close(sock);
 	return res;
 }
