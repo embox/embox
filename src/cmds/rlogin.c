@@ -167,10 +167,6 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	len = strlen(client) + strlen(server) + strlen(term) + 3;
-	buf = malloc(len);
-	memset(buf, 0, len);
-
 	if (!inet_aton(argv[argc -1], &dst.sin_addr)) {
 		printf("Invalid ip address %s\n", argv[argc -1]);
 		return -ENOENT;
@@ -184,6 +180,10 @@ static int exec(int argc, char **argv) {
 		printf("can not allocate socket\n");
 		return -ENOMEM;
 	}
+
+	len = strlen(client) + strlen(server) + strlen(term) + 3;
+	buf = malloc(len);
+	memset(buf, 0, len);
 
 	if ((res = bind(sock, (struct sockaddr *)&our, sizeof(our))) < 0) {
 		printf("can not bind socket\n");
