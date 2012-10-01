@@ -19,7 +19,7 @@ struct neighbour {
 	unsigned char hlen;                /* Length of hw address */
 	unsigned char paddr[MAX_ADDR_LEN]; /* Protocol address */
 	unsigned char plen;                /* Length of protocol address */
-	const struct net_device *dev;       /* Network device */
+	const struct net_device *dev;      /* Network device */
 	unsigned char flags;               /* Additional information */
 };
 

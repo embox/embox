@@ -13,6 +13,11 @@
 #include <net/skbuff.h>
 
 /**
+ * Prototypes
+ */
+struct sk_buff;
+
+/**
  * IEEE 802.3 Ethernet magic constants.
  */
 #define ETH_ALEN        6               /* Octets in one ethernet addr */

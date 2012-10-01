@@ -58,7 +58,7 @@ static void loopback_setup(struct net_device *dev) {
 	dev->mtu                = (16 * 1024) + 20 + 20 + 12;
 	dev->addr_len           = ETH_ALEN;
 	dev->tx_queue_len       = 0;
-	dev->type               = ARPHRD_LOOPBACK;
+	dev->type               = ARPG_HRD_LOOPBACK;
 	dev->flags              = IFF_LOOPBACK;
 	dev->netdev_ops         = &loopback_ops;
 	dev->header_ops         = eth_get_header_ops();

@@ -82,7 +82,7 @@ static int exec(int argc, char **argv) {
 	for (i = 1; i <= cnt; i++) {
 		neighbour_del(NULL, 0, (const unsigned char *)&dst, sizeof dst,
 				in_dev->dev);
-		arp_send(ARPOP_REQUEST, ETH_P_ARP, in_dev->dev, dst.s_addr,
+		arp_send(ARP_OPER_REQUEST, ETH_P_ARP, in_dev->dev, dst.s_addr,
 				in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
 		usleep(DEFAULT_INTERVAL);
 		if ((neighbour_get_hardware_address((const unsigned char *)&dst,

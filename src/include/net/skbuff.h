@@ -29,7 +29,7 @@ struct tcphdr;
 struct udphdr;
 struct icmphdr;
 struct iphdr;
-struct arphdr;
+struct arpghdr;
 struct ethhdr;
 
 
@@ -86,8 +86,7 @@ typedef struct sk_buff {        /* Socket buffer */
 		 */
 	union {
 		struct iphdr *iph;
-		struct arphdr *arph;
-		struct arphdr *rarph;
+		struct arpghdr *arpgh;
 		unsigned char *raw;
 	} nh;
 
