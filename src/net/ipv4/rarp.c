@@ -100,7 +100,7 @@ static int rarp_hnd_ip(struct arphdr *rarph, struct sk_buff *skb,
 	assert(rarph != NULL);
 	assert(dev != NULL);
 
-	if (rarph->ar_pln != IPV4_ADDR_LENGTH) {
+	if (rarph->ar_pln != IP_ADDR_LEN) {
 		skb_free(skb);
 		return -1; /* error: bad protocol address length */
 	}

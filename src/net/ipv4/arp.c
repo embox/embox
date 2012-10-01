@@ -76,7 +76,7 @@ static int arp_header(struct sk_buff *skb, struct net_device *dev,
 	arph->ar_hrd = htons(ARPHRD_ETHER);
 	arph->ar_pro = htons(ETH_P_IP);
 	arph->ar_hln = dev->addr_len;
-	arph->ar_pln = IPV4_ADDR_LENGTH;
+	arph->ar_pln = IP_ADDR_LEN;
 	arph->ar_op = htons(oper);
 	memcpy(arph->ar_sha, src_hw, ETH_ALEN);
 	arph->ar_sip = src_ip;

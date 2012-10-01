@@ -14,8 +14,6 @@
 #include <net/socket.h>
 
 
-#define IPV4_ADDR_LENGTH   0x04
-
 #define NPROTO          AF_MAX /* a number of net protocols id in system */
 
 #define SYS_SOCKET      1     /* sys_socket(2) */
