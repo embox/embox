@@ -36,11 +36,6 @@ static int netdev_process_backlog(struct net_device *dev) {
 	return ENOERR;
 }
 
-static inline void skb_head_init(struct sk_buff_head *head) {
-	head->next = (struct sk_buff *)(head);
-	head->prev = (struct sk_buff *)(head);
-}
-
 struct net_device * netdev_alloc(const char *name,
 		void (*setup)(struct net_device *)) {
 	struct net_device *dev;
@@ -54,9 +49,9 @@ struct net_device * netdev_alloc(const char *name,
 
 	(*setup)(dev);
 
-	skb_head_init(&dev->dev_queue);
-	skb_head_init(&dev->tx_dev_queue);
-	skb_head_init(&dev->txing_queue);
+	skb_queue_init(&dev->dev_queue);
+	skb_queue_init(&dev->tx_dev_queue);
+	skb_queue_init(&dev->txing_queue);
 	dev->poll = &netdev_process_backlog;
 
 	strncpy(dev->name, name, sizeof dev->name);

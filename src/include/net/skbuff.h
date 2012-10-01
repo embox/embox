@@ -186,6 +186,11 @@ extern struct sk_buff *skb_duplicate(struct sk_buff *skb);
 extern struct sk_buff_head * skb_queue_alloc(void);
 
 /**
+ * Initialize sk_buff_head
+ */
+extern void skb_queue_init(struct sk_buff_head *queue);
+
+/**
  * Free sk_buff_head structure with his elements
  */
 extern void skb_queue_free(struct sk_buff_head *queue);
