@@ -14,6 +14,8 @@
 #include <net/if_ether.h> /* for ETH_A_LEN */
 #include <assert.h>
 #include <net/skbuff.h>
+#include <net/ip.h>
+#include <net/inetdevice.h>
 #include <embox/net/pack.h>
 
 EMBOX_NET_PACK(ETH_P_RARP, rarp_rcv, rarp_init);
@@ -46,10 +48,10 @@ static int rarp_build(struct sk_buff *skb, unsigned short oper,
 
 	rarph = skb->nh.rarph;
 	assert(rarph != NULL);
-	rarph->ar_hrd = htons(ARPHRD_ETHER);
+	rarph->ar_hrd = htons(dev->type);
 	rarph->ar_pro = htons(ETH_P_IP);
 	rarph->ar_hln = dev->addr_len;
-	rarph->ar_pln = IPV4_ADDR_LENGTH;
+	rarph->ar_pln = IP_ADDR_LEN;
 	rarph->ar_op = htons(oper);
 	memcpy(&rarph->ar_sha[0], src_hw, rarph->ar_hln);
 	rarph->ar_sip = src_ip;
@@ -122,7 +124,9 @@ static int rarp_hnd_ip(struct arphdr *rarph, struct sk_buff *skb,
 		/* and send */
 		return rarp_xmit(skb);
 	case ARPOP_RREPLY:
-		ret = neighbour_add(in_dev_get(dev), rarph->ar_sip, &rarph->ar_sha[0], ATF_COM);
+		ret = neighbour_add(&rarph->ar_sha[0], rarph->ar_hln,
+				(const unsigned char *)&rarph->ar_sip, rarph->ar_pln,
+				dev, NEIGHBOUR_FLAG_PERMANENT);
 		skb_free(skb);
 		return ret;
 	}

@@ -2,103 +2,100 @@
  * @file
  * @brief Implementation of ARP Cache
  *
- * @date 12.08.2011
+ * @date 12.08.11
  * @author Ilia Vaprol
  */
 
 #ifndef NET_NEIGHBOUR_H_
 #define NET_NEIGHBOUR_H_
 
-#include <net/if_ether.h>
-#include <net/in.h>
-#include <net/inetdevice.h>
-#include <stdint.h>
+#include <net/netdevice.h>
 
 /**
- * ARP Cache entity
+ * Neighbour entity
  */
-typedef struct neighbour {
-	uint8_t hw_addr[ETH_ALEN];    /* MAC address, corresponding ip_addr */
-	struct in_device *if_handler; /* Local interface */
-	in_addr_t ip_addr;            /* IP address of detonation machine */
-	uint8_t flags;                /* Status of entity (ATF_COM or ATF_PERM) */
-} neighbour_t;
+struct neighbour {
+	unsigned char haddr[MAX_ADDR_LEN]; /* Hardware address */
+	unsigned char hlen;                /* Length of hw address */
+	unsigned char paddr[MAX_ADDR_LEN]; /* Protocol address */
+	unsigned char plen;                /* Length of protocol address */
+	const struct net_device *dev;       /* Network device */
+	unsigned char flags;               /* Additional information */
+};
 
 /**
- * Status flag
+ * Neighbour flags
  */
-#define ATF_COM     0x02 /* Completed entity
-                          * It will be removed from cache
-                          * after NEIGHBOUR_TIMEOUT ticks */
-#define ATF_PERM    0x04 /* Permanent entry
-                          * It will be saved in cache, until the
-                          * neighbour_delete() function hasn't been called */
+#define NEIGHBOUR_FLAG_PERMANENT 0x01 /* Permanent entity */
 
 /**
- * After that time, an unused entry is deleted from the arp cache.
- * RFC1122 recommends set it to 60*HZ, if your site uses proxy arp
- * and dynamic routing.
- */
-#define NEIGHBOUR_TIMEOUT        60000
-
-/**
- * How often is ARP cache checked for expire.
- */
-#define NEIGHBOUR_CHECK_INTERVAL 10000
-
-/**
- * Timeout between repeatable ARP requests
- * RFC1122: Throttles ARPing, as per 2.3.2.1. (MUST)
- * The recommended minimum timeout is 1 second per destination.
- */
-#define NEIGHBOUR_RES_TIME       1000
-
-/**
- * This function search entry from arp table if can
- * @param in_dev (handler of inet_dev struct)
- * @param destination ip address
- * @return hardware address if can else NULL
- */
-extern uint8_t * neighbour_lookup(struct in_device *if_handler, in_addr_t ip_addr);
-
-/**
- * This function add entry in neighbour (rewrite)
- * @param in_dev (handler of inet_dev struct) which identificate network interface where address can resolve
- * @param ip_addr destination IP address
- * @param hw_addr destination MAC
- * @param ATF_COM or ATF_PERM
+ * This function add entry in neighbour (rewrite non-permanent entity)
+ * @param haddr - hardware address
+ * @param hlen  - length of haddr
+ * @param paddr - protocol address
+ * @param plen  - length of paddr
+ * @param dev   - network device
+ * @param flags - flags for this entity
  * @return error code
- * @retval ENOERR
- * @retval -EINVAL
- * @retval -ENOMEM
  */
-extern int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr, uint8_t *hw_addr, uint8_t flags);
+extern int neighbour_add(const unsigned char *haddr, unsigned char hlen,
+		const unsigned char *paddr, unsigned char plen,
+		const struct net_device *dev, unsigned char flags);
 
 /**
  * This function delete entry from neighbour if can
- * @param in_dev (handler of inet_dev struct) which identificate network interface where address can resolve
- * @param ip_addr destination IP address
+ * @param haddr - hardware address
+ * @param hlen  - length of haddr
+ * @param paddr - protocol address
+ * @param plen  - length of paddr
+ * @param dev   - network device
  * @return error code
- * @retval ENOERR (if deleted or entity not found)
- * @retval -EINVAL
  */
-extern int neighbour_delete(struct in_device *if_handler, in_addr_t ip_addr);
+extern int neighbour_del(const unsigned char *haddr, unsigned char hlen,
+		const unsigned char *paddr, unsigned char plen,
+		const struct net_device *dev);
 
 /**
- * This function is the first step to get all valid neighbour entities
- * Used before neighbour_get_next() function
- * @return pointer to first neighbour entity if arp cache not empty else NULL
+ * This function search entry by protocol address
+ * @param paddr     - protocol address
+ * @param plen      - length of paddr
+ * @param dev       - network device
+ * @param hlen_max  - max size of hardware address
+ * @param out_haddr - pointer to the location to write the hardware address
+ * @param out_hlen  - pointer to the location to write length of the out_haddr
+ * @return error code
  */
-extern struct neighbour * neighbour_get_first(void);
+extern int neighbour_get_hardware_address(const unsigned char *paddr,
+		unsigned char plen, const struct net_device *dev, unsigned char hlen_max,
+		unsigned char *out_haddr, unsigned char *out_hlen);
 
 /**
- * This function gets next entity from ARP cache
- * Used after neighbour_get_first() function
- * @param pentity pointer to current entity in the cache
- * @return pointer to neighbour entity if exist, else NULL
- * @retval ENOERR that means next entity has been written in memory pointed by pentity
- * @retval -EINVAL if pointer is NULL or reached the end of the list
+ * This function search entry by hardware address
+ * @param haddr     - hardware address
+ * @param hlen      - length of haddr
+ * @param dev       - network device
+ * @param plen_max  - max size of protocol address
+ * @param out_paddr - pointer to the location to write the protocol address
+ * @param out_plen  - pointer to the location to write length of the out_paddr
+ * @return error code
  */
-extern int neighbour_get_next(struct neighbour **pentity);
+extern int neighbour_get_protocol_address(const unsigned char *haddr,
+		unsigned char hlen, const struct net_device *dev, unsigned char plen_max,
+		unsigned char *out_paddr, unsigned char *out_plen);
+
+/**
+ * Type of handler for neighbour_foreach function
+ */
+typedef int (*neighbour_foreach_handler_t)(const struct neighbour *n, void *args);
+
+/**
+ * This function processes each entry in the table with func handler.
+ * If during the processing of the entity handler returns an error,
+ * the process is interrupted.
+ * @param func - handler for each entity
+ * @param args - additional arguments for func
+ * @return error code
+ */
+extern int neighbour_foreach(neighbour_foreach_handler_t func, void *args);
 
 #endif /* NET_NEIGHBOUR_H_ */

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <errno.h>
 
 #include <net/util.h>
 #include <net/arp.h>
@@ -20,6 +21,8 @@
 
 
 EMBOX_CMD(exec);
+
+#define DEFAULT_INTERVAL 1000
 
 static void print_usage(void) {
 	printf("Usage: arping [-I if] [-c cnt] host\n");
@@ -33,7 +36,7 @@ static int exec(int argc, char **argv) {
 	char dst_b[] = "xxx.xxx.xxx.xxx";
 	char from_b[] = "xxx.xxx.xxx.xxx";
 	struct in_addr from;
-	unsigned char mac[18], *hw_addr;
+	unsigned char mac[18], hw_addr[ETH_ALEN], hw_addr_len;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
@@ -77,11 +80,15 @@ static int exec(int argc, char **argv) {
 	strncpy(from_b, inet_ntoa(from), sizeof(from_b));
 	printf("ARPING %s from %s %s\n", dst_b, from_b, in_dev->dev->name);
 	for (i = 1; i <= cnt; i++) {
-		neighbour_delete(in_dev, dst.s_addr);
+		neighbour_del(NULL, 0, (const unsigned char *)&dst, sizeof dst,
+				in_dev->dev);
 		arp_send(ARPOP_REQUEST, ETH_P_ARP, in_dev->dev, dst.s_addr,
 				in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
-		usleep(NEIGHBOUR_RES_TIME);
-		if ((hw_addr = neighbour_lookup(in_dev, dst.s_addr))) {
+		usleep(DEFAULT_INTERVAL);
+		if ((neighbour_get_hardware_address((const unsigned char *)&dst,
+						sizeof dst, in_dev->dev, sizeof hw_addr, &hw_addr[0],
+						&hw_addr_len) == ENOERR)
+				&& (hw_addr_len == ETH_ALEN)) {
 			macaddr_print(mac, hw_addr);
 			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, 0);
 			cnt_resp++;
