@@ -10,8 +10,6 @@ EMBOX_CMD(main);
 
 int main (int argc, char ** argv) {
 	dump_state();
-	set_text_mode(argc > 1);
 	demo_graphics();
-	font512();
 	return 0;
 }

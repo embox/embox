@@ -16,8 +16,8 @@
 #define MK_FP(seg,off) ((void *) (((unsigned long)(seg) << 16) | (unsigned)(off))
 
 
-#define	inportb(P)		in16(P)
-#define	outportb(P,V)		out16(V, P)
+#define	inportb(P)		in8(P)
+#define	outportb(P,V)		out8(V, P)
 
 /* CauseWay DOS extender only */
 #define	peekb(S,O)		*(unsigned char *)(16uL * (S) + (O))
@@ -1126,7 +1126,8 @@ static void write_pixel2(unsigned x, unsigned y, unsigned c)
 	wd_in_bytes = g_wd / 4;
 	off = wd_in_bytes * y + x / 4;
 	x = (x & 3) * 2;
-	mask = 0xC0 >> x;
+	//mask = 0xC0 >> x;
+	mask = 0x03 << (sizeof(mask) - x);
 	vpokeb(off, (vpeekb(off) & ~mask) | (c & mask));
 }
 /*****************************************************************************
@@ -1247,17 +1248,17 @@ void demo_graphics(void)
 	printf("Screen-clear in 16-color mode will be VERY SLOW\n"
 		"don't Press a key to continue\n");
 /* 4-color */
-	write_regs(g_320x200x4);
+/*  write_regs(g_320x200x4);
 	g_wd = 320;
 	g_ht = 200;
 	g_write_pixel = write_pixel2;
-	draw_x();
+	draw_x();*/
 /* 16-color */
-	write_regs(g_640x480x16);
+/*	write_regs(g_640x480x16);
 	g_wd = 640;
 	g_ht = 480;
 	g_write_pixel = write_pixel4p;
-	draw_x();
+	draw_x();*/
 /* 256-color */
 	write_regs(g_320x200x256);
 	g_wd = 320;
@@ -1265,13 +1266,13 @@ void demo_graphics(void)
 	g_write_pixel = write_pixel8;
 	draw_x();
 /* 256-color Mode-X */
-	write_regs(g_320x200x256_modex);
+/*	write_regs(g_320x200x256_modex);
 	g_wd = 320;
 	g_ht = 200;
 	g_write_pixel = write_pixel8x;
-	draw_x();
+	draw_x();*/
 /* go back to 80x25 text mode */
-	set_text_mode(0);
+	/*set_text_mode(0);*/
 }
 /*****************************************************************************
 *****************************************************************************/
@@ -1382,6 +1383,10 @@ so attribute bit b3 is no longer used for 'intense' */
 *****************************************************************************/
 int main(int arg_c, char *arg_v[])
 {
+	write_pixel2(1, 1, 1);
+	write_pixel4p(1, 1, 1);
+	write_pixel8x(1, 1, 1);
+	write_pixel8(1, 1, 1);
 	dump_state();
 	set_text_mode(arg_c > 1);
 	demo_graphics();

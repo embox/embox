@@ -1,0 +1,19 @@
+package embox.cmd
+
+@Cmd(name = "vtest",
+	help = "vtest - testing some routines for xwnd",
+	man = '''
+		NAME
+			vtest - testing tool for xwnd routines
+		AUTHORS
+			Alexandr Chernakov
+	''')
+module vtest {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/include/drivers")
+	source "vtest.c"
+
+	depends embox.lib.LibC
+	depends embox.driver.video.vesadrv
+}
