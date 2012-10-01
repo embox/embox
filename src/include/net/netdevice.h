@@ -130,6 +130,8 @@ typedef struct net_device {
 	const net_device_ops_t *netdev_ops; /**< Management operations        */
 	const header_ops_t *header_ops; /**< Hardware header description  */
 	struct sk_buff_head dev_queue;
+	struct sk_buff_head tx_dev_queue;
+	struct sk_buff_head txing_queue;
 	int (*poll)(struct net_device *dev);
 	struct net_node *pnet_node;
 } net_device_t;
