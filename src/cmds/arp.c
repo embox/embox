@@ -12,6 +12,7 @@
 #include <net/util.h>
 #include <net/if_arp.h>
 #include <net/neighbour.h>
+#include <net/inetdevice.h>
 #include <stdio.h>
 
 EMBOX_CMD(exec);
@@ -20,33 +21,25 @@ static void print_usage(void) {
 	printf("Usage: arp [-i if] [-s|d] [-a host] [-m hwaddr] [-h]\n");
 }
 
-static void print_arp_cache(void *ifdev) {
-	unsigned char mac[18];
-	net_device_t *net_dev;
+static int print_arp_entity(const struct neighbour *n,
+		struct in_device *in_dev) {
 	struct in_addr addr;
-	struct neighbour *entity;
+	unsigned char mac[18];
 
-	entity = neighbour_get_first();
-
-	if (entity == NULL) {
-		return;
+	if ((in_dev->dev == n->dev) || (in_dev == NULL)) {
+		macaddr_print(mac, &n->haddr[0]);
+		addr.s_addr = *(in_addr_t *)&n->paddr[0];
+		printf("%15s %6s %17s %5s %5s\n", inet_ntoa(addr),
+				(n->dev->type == ARPHRD_ETHER) ? "ether" : "",
+				mac, (!(n->flags & NEIGHBOUR_FLAG_PERMANENT) ? "C" : "P"),
+				n->dev->name);
 	}
+	return 0;
+}
 
+static void print_arp_cache(struct in_device *in_dev) {
 	printf("Address         HWtype  HWaddress         Flags Iface\n");
-
-	do {
-		if ((ifdev == entity->if_handler)
-				|| (ifdev == NULL)) {
-			net_dev = entity->if_handler->dev;
-			macaddr_print(mac, entity->hw_addr);
-			addr.s_addr = entity->ip_addr;
-			printf("%15s %6s %17s %5s %5s\n", inet_ntoa(addr),
-					(net_dev->type == ARPHRD_ETHER) ? "ether" : "",
-					mac, entity->flags == ATF_COM ? "C" : "P",
-					net_dev->name);
-		}
-		neighbour_get_next(&entity);
-	} while (entity != NULL);
+	neighbour_foreach((neighbour_foreach_handler_t)&print_arp_entity, in_dev);
 }
 
 static int exec(int argc, char **argv) {
@@ -68,8 +61,8 @@ static int exec(int argc, char **argv) {
 				return -1;
 			}
 			//TODO checked interface and use default
-			neighbour_delete(ifdev, addr.s_addr);
-			return 0;
+			return neighbour_del(NULL, 0, (const unsigned char *)&addr,
+					sizeof addr, ifdev->dev);
 		case 's':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);
@@ -89,8 +82,9 @@ static int exec(int argc, char **argv) {
 				return -1;
 			}
 			//TODO checked interface and use default
-			neighbour_add(ifdev, addr.s_addr, hwaddr, ATF_PERM);
-			return 0;
+			return neighbour_add(&hwaddr[0], sizeof hwaddr,
+					(const unsigned char *)&addr, sizeof addr, ifdev->dev,
+					NEIGHBOUR_FLAG_PERMANENT);
 		case 'a':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);

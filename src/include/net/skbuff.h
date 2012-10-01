@@ -87,6 +87,7 @@ typedef struct sk_buff {        /* Socket buffer */
 	union {
 		struct iphdr *iph;
 		struct arphdr *arph;
+		struct arphdr *rarph;
 		unsigned char *raw;
 	} nh;
 

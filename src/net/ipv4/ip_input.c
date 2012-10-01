@@ -21,7 +21,6 @@
 #include <net/protocol.h>
 #include <framework/net/proto/api.h>
 #include <net/ip_fragment.h>
-#include <net/neighbour.h>
 
 int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 			packet_type_t *pt, net_device_t *orig_dev) {
@@ -129,8 +128,10 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	net_proto_foreach(net_proto_ptr) {
 		p_netproto = net_proto_ptr->netproto;
 		if (p_netproto->type == iph->proto) {
-			/* if we are here then socket is registered in one of hash tables */
-			return p_netproto->handler(skb); // handler must free skb
+			/* if we are here then socket is registered in one of hash tables. */
+			return ((p_netproto->handler(skb) == ENOERR) /* handler must free skb */
+					? NET_RX_SUCCESS
+					: NET_RX_DROP);
 		}
 	}
 

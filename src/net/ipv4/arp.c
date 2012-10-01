@@ -22,7 +22,6 @@
 #include <time.h>
 #include <assert.h>
 #include <net/route.h>
-//#include <kernel/thread/sched.h>
 
 #include <net/arp_queue.h>
 
@@ -77,7 +76,7 @@ static int arp_header(struct sk_buff *skb, struct net_device *dev,
 	arph->ar_hrd = htons(ARPHRD_ETHER);
 	arph->ar_pro = htons(ETH_P_IP);
 	arph->ar_hln = dev->addr_len;
-	arph->ar_pln = IPV4_ADDR_LENGTH;
+	arph->ar_pln = IP_ADDR_LEN;
 	arph->ar_op = htons(oper);
 	memcpy(arph->ar_sha, src_hw, ETH_ALEN);
 	arph->ar_sip = src_ip;
@@ -123,7 +122,7 @@ int arp_send(int type, int ptype, struct net_device *dev,
 
 int arp_resolve(struct sk_buff *skb) {
 	int ret;
-	uint8_t *hw_addr;
+	unsigned char hw_addr_len;
 	in_addr_t daddr;
 
 	assert(skb != NULL);
@@ -155,13 +154,15 @@ int arp_resolve(struct sk_buff *skb) {
 #endif
 
 	/* someone on the net */
-	hw_addr = neighbour_lookup(in_dev_get(skb->dev), daddr);
-	if (hw_addr != NULL) {
-		memcpy(skb->mac.ethh->h_dest, hw_addr, ETH_ALEN);
-		return ENOERR;
+	ret = neighbour_get_hardware_address((const unsigned char *)&daddr,
+			sizeof daddr, skb->dev, sizeof skb->mac.ethh->h_dest,
+			skb->mac.ethh->h_dest, &hw_addr_len);
+	if (ret != ENOERR) {
+		return ret;
 	}
+	assert(hw_addr_len == sizeof skb->mac.ethh->h_dest); /* FIXME */
 
-	return -ENOENT;
+	return ENOERR;
 }
 
 /**
@@ -177,7 +178,8 @@ static int received_resp(struct sk_buff *skb, struct net_device *dev) {
 
 	/*TODO need add function for getting ip addr*/
 	/* add record into arp_tables */
-	return neighbour_add(in_dev_get(dev), arph->ar_sip, arph->ar_sha, ATF_COM);
+	return neighbour_add(&arph->ar_sha[0], arph->ar_hln,
+			(const unsigned char *)&arph->ar_sip, arph->ar_pln, dev, 0);
 }
 
 /**
@@ -227,7 +229,8 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 
 	if (arph->ar_tip != in_dev->ifa_address) {
 		if (arph->ar_tip == arph->ar_sip) { /* RFC 3927 - ARP Announcement */
-			neighbour_add(in_dev, arph->ar_sip, arph->ar_sha, ATF_COM);
+			neighbour_add(arph->ar_sha, arph->ar_hln,
+					(const unsigned char *)arph->ar_sip, arph->ar_pln, dev, 0);
 		}
 		skb_free(skb);
 		return -1;
@@ -265,7 +268,7 @@ int arp_rcv(struct sk_buff *skb, struct net_device *dev,
 				&& (arph->ar_hrd == htons(ARPHRD_ETHER))
 				&& (arph->ar_pro == htons(ETH_P_IP))
 				&& (arph->ar_hln == dev->addr_len)
-				&& (arph->ar_pln == IPV4_ADDR_LENGTH)) {
+				&& (arph->ar_pln == IP_ADDR_LEN)) {
 			return (arp_process(skb, dev) < 0 ? NET_RX_DROP : NET_RX_SUCCESS);
 		}
 		break;
@@ -278,3 +281,4 @@ int arp_rcv(struct sk_buff *skb, struct net_device *dev,
 static int arp_init(void) {
 	return ENOERR;
 }
+

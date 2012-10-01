@@ -16,7 +16,7 @@ module netdb {
 	depends embox.lib.LibC
 
 	source "dns.c"
-	option string dns_nameserver="10.0.0.11"
+	option string dns_nameserver="8.8.8.8"
 	depends embox.net.socket
 	depends embox.lib.LibC
 	depends embox.mem.heap_api

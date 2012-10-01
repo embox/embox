@@ -60,11 +60,12 @@ module core {
 
 module neighbour {
 	source "neighbour.c"
-	option number arp_cache_size=16
+	option number neighbour_quantity=10
+	option number neighbour_expire=60
 
+	depends embox.compat.posix.util.time /* for time() */
 	depends embox.mem.pool
 	depends embox.lib.LibC
-	depends embox.kernel.timer.sys_timer
 }
 
 module net_entry extends entry_api {

@@ -33,7 +33,7 @@
 
 #define	VGA_AC_INDEX		0x3C0
 #define	VGA_AC_WRITE		0x3C0
-#define	VGA_AC_READ		0x3C1
+#define	VGA_AC_READ			0x3C1
 #define	VGA_MISC_WRITE		0x3C2
 #define VGA_SEQ_INDEX		0x3C4
 #define VGA_SEQ_DATA		0x3C5
@@ -1174,6 +1174,14 @@ static void write_pixel8x(unsigned x, unsigned y, unsigned c)
 	set_plane(x & 3);
 	vpokeb(off, c);
 }
+
+void vesa_clear_screen (void) {
+	unsigned x, y;
+	/* clear screen */
+	for(y = 0; y < g_ht; y++)
+		for(x = 0; x < g_wd; x++)
+			g_write_pixel(x, y, 0);
+}
 /*****************************************************************************
 *****************************************************************************/
 static void draw_x(void)
@@ -1191,11 +1199,15 @@ static void draw_x(void)
 		g_write_pixel((g_ht + g_wd) / 2 - y, y, 2);
 	}
 }
+
+void vesa_put_pixel (unsigned x, unsigned y, unsigned c) {
+	g_write_pixel (x, y, c);
+}
 /*****************************************************************************
 READ AND DUMP VGA REGISTER VALUES FOR CURRENT VIDEO MODE
 This is where g_40x25_text[], g_80x50_text[], etc. came from :)
 *****************************************************************************/
-void dump_state(void)
+void vesa_dump_state(void)
 {
 	unsigned char state[VGA_NUM_REGS];
 
@@ -1243,7 +1255,7 @@ void set_text_mode(int hi_res)
 /*****************************************************************************
 DEMO GRAPHICS MODES
 *****************************************************************************/
-void demo_graphics(void)
+void vesa_demo_graphics(void)
 {
 	printf("Screen-clear in 16-color mode will be VERY SLOW\n"
 		"don't Press a key to continue\n");
@@ -1379,6 +1391,15 @@ so attribute bit b3 is no longer used for 'intense' */
 		vpokeb((80 * 16 + 40 + i) * 2 + 1, 0x0F);
 	}
 }
+
+unsigned int vesa_get_width (void) {
+	return g_wd;
+}
+unsigned int vesa_get_height (void) {
+	return g_ht;
+}
+
+
 /*****************************************************************************
 *****************************************************************************/
 int main(int arg_c, char *arg_v[])
@@ -1387,9 +1408,9 @@ int main(int arg_c, char *arg_v[])
 	write_pixel4p(1, 1, 1);
 	write_pixel8x(1, 1, 1);
 	write_pixel8(1, 1, 1);
-	dump_state();
+	vesa_dump_state();
 	set_text_mode(arg_c > 1);
-	demo_graphics();
+	vesa_demo_graphics();
 	font512();
 	return 0;
 }
