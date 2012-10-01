@@ -29,7 +29,7 @@ static DLIST_DEFINE(neighbour_list); /* List of valid entity */
 
 #define NEIGHBOUR_CHECK_EXPIRE(neighbour_head, current_time)            \
 	if ((neighbour_head->expire < current_time)                         \
-			&& (neighbour_head->n.flags & ~NEIGHBOUR_FLAG_PERMANENT)) { \
+			&& !(neighbour_head->n.flags & NEIGHBOUR_FLAG_PERMANENT)) { \
 		dlist_del(&neighbour_head->lnk);                                \
 		pool_free(&neighbour_pool, neighbour_head);                     \
 		continue;                                                       \
