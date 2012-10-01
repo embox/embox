@@ -1,10 +1,10 @@
 /**
  * @file
- * @brief Device driver for RealTek RTL8139 Fast Ethernet.
+ * @brief Intel e1000 gigabyte NIC series driver
  *
- * @date 18.12.11
- * @author Nikolay Korotkiy
- *         - Initial implementation
+ * @date 01.10.2012
+ * @author Anton Kozlov
+ *
  */
 
 #include <asm/io.h>
@@ -21,8 +21,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-
-#include <prom/prom_printf.h>
 
 #include <net/in.h>
 #include <hal/reg.h>
@@ -94,8 +92,6 @@ static int e1000_start_xmit(struct net_device *dev) {
 		return 0;
 	}
 
-	prom_printf("e1000: do_start_xmit 0x%x\n", (unsigned int) skb);
-
 	tx_descs[tail].buffer_address = (uint32_t) skb->mac.raw;
 	tx_descs[tail].status = 0;
 	tx_descs[tail].cmd = E1000_TX_CMD_EOP |
@@ -114,7 +110,7 @@ static int e1000_start_xmit(struct net_device *dev) {
 }
 
 static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
-	prom_printf("e1000: start_xmit 0x%x\n", (unsigned int) skb);
+	/*prom_printf("e1000: start_xmit 0x%x\n", (unsigned int) skb);*/
 	skb_queue_push((struct sk_buff_head *) &dev->tx_dev_queue, skb);
 
 	e1000_start_xmit(dev);
@@ -153,8 +149,6 @@ static void e1000_rx(struct net_device *dev) {
 			/*stat->rx_packets++;*/
 			/*stat->rx_bytes += skb->len;*/
 
-			prom_printf("e1000: rx 0x%x\n", (unsigned int) skb);
-
 			netif_rx(skb);
 		} else {
 			/*stat->rx_dropped++;*/
@@ -171,7 +165,6 @@ static void e1000_rx(struct net_device *dev) {
 
 static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 	int cause = REG_LOAD(e1000_reg(dev_id, E1000_REG_ICR));
-	prom_printf("e1000: int 0x%x\n", cause);
 
 	if (cause & (E1000_REG_ICR_RXO | E1000_REG_ICR_RXT)) {
 		e1000_rx(dev_id);
@@ -187,8 +180,6 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 
 static int e1000_open(struct net_device *dev) {
 
-	char mac_addr[] = {0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff};
-
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_RST);
 
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_SLU | E1000_REG_CTRL_ASDE);
@@ -200,8 +191,6 @@ static int e1000_open(struct net_device *dev) {
 	REG_STORE(e1000_reg(dev, E1000_REG_FCT), 0);
 	REG_STORE(e1000_reg(dev, E1000_REG_FCTTV), 0);
 	REG_ANDIN(e1000_reg(dev, E1000_REG_CTRL), ~E1000_REG_CTRL_VME);
-
-	prom_printf("e1000: ctrl is 0x%lx\n", REG_LOAD(e1000_reg(dev, E1000_REG_CTRL)));
 
 	/* Clear Multicast Table Array (MTA). */
 	for (int i = 0; i < 128; i++)
@@ -219,11 +208,6 @@ static int e1000_open(struct net_device *dev) {
 		REG_LOAD(r);
 	}
 #endif
-	memcpy(dev->dev_addr, mac_addr, 6);
-
-	REG_STORE(e1000_reg(dev, E1000_REG_RAL), *(uint32_t *) &mac_addr[0]);
-	REG_STORE(e1000_reg(dev, E1000_REG_RAH), *(uint16_t *) &mac_addr[4]);
-	REG_ORIN(e1000_reg(dev, E1000_REG_RAH), E1000_REG_RAH_AV);
 	REG_ORIN(e1000_reg(dev, E1000_REG_RCTL),  E1000_REG_RCTL_MPE);
 
 	for (int i = 0; i < E1000_RXDESC_NR; i ++) {
@@ -267,6 +251,17 @@ static net_device_stats_t *get_eth_stat(struct net_device *dev) {
 }
 
 static int set_mac_address(struct net_device *dev, void *addr) {
+
+	REG_ANDIN(e1000_reg(dev, E1000_REG_RAH), ~E1000_REG_RAH_AV);
+
+	REG_STORE(e1000_reg(dev, E1000_REG_RAL), *(uint32_t *) addr);
+	REG_STORE(e1000_reg(dev, E1000_REG_RAH), *(uint16_t *) (addr + 4));
+
+	REG_ORIN(e1000_reg(dev, E1000_REG_RAH), E1000_REG_RAH_AV);
+	REG_ORIN(e1000_reg(dev, E1000_REG_RCTL),  E1000_REG_RCTL_MPE);
+
+	memcpy(dev->dev_addr, addr, ETH_ALEN);
+
 	return ENOERR;
 }
 
