@@ -1,9 +1,9 @@
 /**
  * @file
- * @brief Ping hosts by ARP requests/replies.
+ * @brief Ping hosts by RARP requests/replies.
  *
- * @date 23.12.09
- * @author Nikolay Korotky
+ * @date 02.10.12
+ * @author Ilia Vaprol
  */
 
 #include <embox/cmd.h>
@@ -28,7 +28,7 @@ EMBOX_CMD(exec);
 #define DEFAULT_INTERVAL 1000
 
 static void print_usage(void) {
-	printf("Usage: arping [-I if] [-c cnt] host\n");
+	printf("Usage: rarping [-I if] [-c cnt] host\n");
 }
 
 static int exec(int argc, char **argv) {
@@ -38,21 +38,21 @@ static int exec(int argc, char **argv) {
 	unsigned char hln = ETH_ALEN, pln = IP_ADDR_LEN, tmp;
 	unsigned char sha[MAX_ADDR_LEN], tha[MAX_ADDR_LEN];
 	unsigned char spa[MAX_ADDR_LEN], tpa[MAX_ADDR_LEN];
-	char *sha_str = "xx.xx.xx.xx.xx.xx", *tha_str = "xx.xx.xx.xx.xx.xx";
-	char *spa_str = "xxx.xxx.xxx.xxx", *tpa_str = "xxx.xxx.xxx.xxx";
+	char sha_str[] = "xx.xx.xx.xx.xx.xx", tha_str[] = "xx.xx.xx.xx.xx.xx";
+	char spa_str[] = "xxx.xxx.xxx.xxx", tpa_str[] = "xxx.xxx.xxx.xxx";
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
 		switch (opt) {
 		case 'I': /* get interface */
 			if (NULL == (in_dev = inet_dev_find_by_name(optarg))) {
-				printf("arping: unknown iface %s\n", optarg);
+				printf("rarping: unknown iface %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'c': /* get ping cnt */
 			if (1 != sscanf(optarg, "%d", &cnt)) {
-				printf("arping: bad number of packets to transmit.\n");
+				printf("rarping: bad number of packets to transmit.\n");
 				return -1;
 			}
 			break;
@@ -74,7 +74,7 @@ static int exec(int argc, char **argv) {
 
 	/* Get destination hardware address. */
 	if (macaddr_scan((const unsigned char *)argv[argc - 1], &tha[0]) == NULL) {
-		printf("arping: invalid MAC address: %s\n", argv[argc - 1]);
+		printf("rarping: invalid MAC address: %s\n", argv[argc - 1]);
 		return -1;
 	}
 
@@ -101,7 +101,7 @@ static int exec(int argc, char **argv) {
 		if (ret == ENOERR) {
 			assert(tmp == pln);
 			strcpy(&tpa_str[0], inet_ntoa(*(struct in_addr *)&tpa[0]));
-			printf("Unicast reply from %s(%s)  %dms\n", &tha_str[0], &tpa_str[0], 0);
+			printf("Unicast reply from %s(%s)  %dms\n", &tha_str[0], &tpa_str[0], -1);
 			cnt_resp++;
 		}
 	}
