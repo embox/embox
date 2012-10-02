@@ -67,7 +67,7 @@ int neighbour_get_hardware_address(const unsigned char *paddr,
 	struct neighbour_head *nh;
 
 	assert((paddr != NULL) && (plen != 0));
-	assert((hlen_max != 0) && (out_haddr != NULL) && (out_hlen != NULL));
+	assert((hlen_max != 0) && (out_haddr != NULL));
 
 	/* lock softirq context */
 	softirq_lock();
@@ -79,15 +79,18 @@ int neighbour_get_hardware_address(const unsigned char *paddr,
 		return -ENOENT;
 	}
 
-	/* check boundary */
-	if (nh->n.hlen > hlen_max) {
+	/* check hardware address length */
+	if ((nh->n.hlen > hlen_max)
+			|| ((out_hlen == NULL) && (nh->n.hlen != hlen_max))) {
 		softirq_unlock();
 		return -EINVAL;
 	}
 
 	/* save results */
 	memcpy(out_haddr, &nh->n.haddr[0], nh->n.hlen);
-	*out_hlen = nh->n.hlen;
+	if (out_hlen != NULL) {
+		*out_hlen = nh->n.hlen;
+	}
 
 	/* unlock softirq context */
 	softirq_unlock();
@@ -101,7 +104,7 @@ int neighbour_get_protocol_address(const unsigned char *haddr,
 	struct neighbour_head *nh;
 
 	assert((haddr != NULL) && (hlen != 0));
-	assert((plen_max != 0) && (out_paddr != NULL) && (out_plen != NULL));
+	assert((plen_max != 0) && (out_paddr != NULL));
 
 	/* lock softirq context */
 	softirq_lock();
@@ -113,15 +116,18 @@ int neighbour_get_protocol_address(const unsigned char *haddr,
 		return -ENOENT;
 	}
 
-	/* check boundary */
-	if (nh->n.plen > plen_max) {
+	/* check protocol address length */
+	if ((nh->n.plen > plen_max)
+			|| ((out_plen == NULL) && (nh->n.plen != plen_max))) {
 		softirq_unlock();
 		return -EINVAL;
 	}
 
 	/* save results */
 	memcpy(out_paddr, &nh->n.paddr[0], nh->n.plen);
-	*out_plen = nh->n.plen;
+	if (out_plen != NULL) {
+		*out_plen = nh->n.plen;
+	}
 
 	/* unlock softirq context */
 	softirq_unlock();
