@@ -36,7 +36,7 @@ static int exec(int argc, char **argv) {
 	char dst_b[] = "xxx.xxx.xxx.xxx";
 	char from_b[] = "xxx.xxx.xxx.xxx";
 	struct in_addr from;
-	unsigned char mac[18], hw_addr[ETH_ALEN], hw_addr_len;
+	unsigned char mac[18], hw_addr[ETH_ALEN];
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
@@ -85,12 +85,11 @@ static int exec(int argc, char **argv) {
 		arp_send(ARP_OPER_REQUEST, ETH_P_ARP, in_dev->dev, dst.s_addr,
 				in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
 		usleep(DEFAULT_INTERVAL);
-		if ((neighbour_get_hardware_address((const unsigned char *)&dst,
-						sizeof dst, in_dev->dev, sizeof hw_addr, &hw_addr[0],
-						&hw_addr_len) == ENOERR)
-				&& (hw_addr_len == ETH_ALEN)) {
+		if (neighbour_get_hardware_address((const unsigned char *)&dst,
+					sizeof dst, in_dev->dev, sizeof hw_addr, &hw_addr[0],
+					NULL) == ENOERR) {
 			macaddr_print(mac, hw_addr);
-			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, 0);
+			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, -1);
 			cnt_resp++;
 		}
 	}

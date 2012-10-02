@@ -121,7 +121,6 @@ int arp_send(int type, int ptype, struct net_device *dev,
 
 int arp_resolve(struct sk_buff *skb) {
 	int ret;
-	unsigned char hw_addr_len;
 	in_addr_t daddr;
 
 	assert(skb != NULL);
@@ -155,11 +154,10 @@ int arp_resolve(struct sk_buff *skb) {
 	/* someone on the net */
 	ret = neighbour_get_hardware_address((const unsigned char *)&daddr,
 			sizeof daddr, skb->dev, sizeof skb->mac.ethh->h_dest,
-			skb->mac.ethh->h_dest, &hw_addr_len);
+			skb->mac.ethh->h_dest, NULL);
 	if (ret != ENOERR) {
 		return ret;
 	}
-	assert(hw_addr_len == sizeof skb->mac.ethh->h_dest); /* FIXME */
 
 	return ENOERR;
 }

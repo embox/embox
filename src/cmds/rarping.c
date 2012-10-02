@@ -35,7 +35,7 @@ static int exec(int argc, char **argv) {
 	int opt, ret;
 	int cnt = 4, cnt_resp = 0, i;
 	in_device_t *in_dev = inet_dev_find_by_name("eth0");
-	unsigned char hln = ETH_ALEN, pln = IP_ADDR_LEN, tmp;
+	unsigned char hln = ETH_ALEN, pln = IP_ADDR_LEN;
 	unsigned char sha[MAX_ADDR_LEN], tha[MAX_ADDR_LEN];
 	unsigned char spa[MAX_ADDR_LEN], tpa[MAX_ADDR_LEN];
 	char sha_str[] = "xx.xx.xx.xx.xx.xx", tha_str[] = "xx.xx.xx.xx.xx.xx";
@@ -97,9 +97,8 @@ static int exec(int argc, char **argv) {
 			&tha[0], NULL, NULL, in_dev->dev);
 		usleep(DEFAULT_INTERVAL);
 		ret = neighbour_get_protocol_address(&tha[0], hln, in_dev->dev,
-				sizeof tpa, &tpa[0], &tmp);
+				pln, &tpa[0], NULL);
 		if (ret == ENOERR) {
-			assert(tmp == pln);
 			strcpy(&tpa_str[0], inet_ntoa(*(struct in_addr *)&tpa[0]));
 			printf("Unicast reply from %s(%s)  %dms\n", &tha_str[0], &tpa_str[0], -1);
 			cnt_resp++;
