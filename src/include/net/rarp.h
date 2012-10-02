@@ -33,6 +33,6 @@ extern int rarp_send(unsigned short oper, unsigned short paddr_space,
 		unsigned char haddr_len, unsigned char paddr_len,
 		const unsigned char *src_haddr, const unsigned char *src_paddr,
 		const unsigned char *dst_haddr, const unsigned char *dst_paddr,
-		struct net_device *dev);
+		const unsigned char *target_haddr, struct net_device *dev);
 
 #endif /* NET_RARP_H_ */

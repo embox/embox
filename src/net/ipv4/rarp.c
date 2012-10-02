@@ -22,15 +22,19 @@ static int rarp_build(struct sk_buff *skb, unsigned short oper,
 		unsigned short paddr_space, unsigned char haddr_len, unsigned char paddr_len,
 		const unsigned char *src_haddr, const unsigned char *src_paddr,
 		const unsigned char *dst_haddr, const unsigned char *dst_paddr,
-		struct net_device *dev) {
+		const unsigned char *target_haddr, struct net_device *dev) {
 	int ret;
 	struct arpghdr *rarph;
 	struct arpg_stuff rarph_stuff;
 
 	assert(skb != NULL);
-	assert((haddr_len != 0) && (src_haddr != NULL) && (dst_haddr != NULL));
-	assert((paddr_len != 0) && (src_paddr != NULL) && (dst_paddr != NULL));
+	assert((haddr_len != 0) && (paddr_len != 0));
+	assert((src_haddr != NULL) && (dst_haddr != NULL));
 	assert(dev != NULL);
+
+	/* Get default arguments */
+	assert(haddr_len == dev->addr_len);
+	target_haddr = ((target_haddr != NULL) ? target_haddr : &dev->broadcast[0]);
 
 	/* Setup some fields */
 	skb->dev = dev;
@@ -41,7 +45,7 @@ static int rarp_build(struct sk_buff *skb, unsigned short oper,
 	assert(dev->header_ops != NULL);
 	assert(dev->header_ops->create != NULL);
 	ret = dev->header_ops->create(skb, dev, skb->protocol,
-			(void *)dst_haddr, (void *)src_haddr, skb->len);
+			(void *)target_haddr, (void *)src_haddr, skb->len);
 	if (ret != ENOERR) {
 		return ret;
 	}
@@ -58,9 +62,19 @@ static int rarp_build(struct sk_buff *skb, unsigned short oper,
 	/* Setup variable-length fields */
 	arpg_make_stuff(rarph, &rarph_stuff);
 	memcpy(rarph_stuff.sha, src_haddr, haddr_len);
-	memcpy(rarph_stuff.spa, src_paddr, paddr_len);
+	if (src_paddr != NULL) {
+		memcpy(rarph_stuff.spa, src_paddr, paddr_len);
+	}
+	else {
+		memset(rarph_stuff.spa, 0, paddr_len);
+	}
 	memcpy(rarph_stuff.tha, dst_haddr, haddr_len);
-	memcpy(rarph_stuff.tpa, dst_paddr, paddr_len);
+	if (dst_paddr != NULL) {
+		memcpy(rarph_stuff.tpa, dst_paddr, paddr_len);
+	}
+	else {
+		memset(rarph_stuff.tpa, 0, paddr_len);
+	}
 
 	assert(ETH_HEADER_SIZE + ARPG_HEADER_SIZE(rarph) == skb->len); /* FIXME */
 
@@ -76,7 +90,7 @@ int rarp_send(unsigned short oper, unsigned short paddr_space,
 		unsigned char haddr_len, unsigned char paddr_len,
 		const unsigned char *src_haddr, const unsigned char *src_paddr,
 		const unsigned char *dst_haddr, const unsigned char *dst_paddr,
-		struct net_device *dev) {
+		const unsigned char *target_haddr, struct net_device *dev) {
 	int ret;
 	struct sk_buff *skb;
 
@@ -96,7 +110,7 @@ int rarp_send(unsigned short oper, unsigned short paddr_space,
 
 	/* build package */
 	ret = rarp_build(skb, oper, paddr_space, haddr_len, paddr_len,
-			src_haddr, src_paddr, dst_haddr, dst_paddr, dev);
+			src_haddr, src_paddr, dst_haddr, dst_paddr, target_haddr, dev);
 	if (ret != ENOERR) {
 		skb_free(skb);
 		return ret;
@@ -108,6 +122,7 @@ int rarp_send(unsigned short oper, unsigned short paddr_space,
 
 static int rarp_hnd_request(struct arpghdr *rarph, struct arpg_stuff *rarps,
 		struct sk_buff *skb, struct net_device *dev) {
+#if 0
 	int ret;
 	unsigned char haddr_len, paddr_len;
 	unsigned char haddr_src[MAX_ADDR_LEN], haddr_dest[MAX_ADDR_LEN];
@@ -137,8 +152,8 @@ static int rarp_hnd_request(struct arpghdr *rarph, struct arpg_stuff *rarps,
 
 	/* build reply */
 	ret = rarp_build(skb, RARP_OPER_REPLY, ntohs(rarph->pa_space),
-			haddr_len, paddr_len, &haddr_src[0], &paddr_src[0],
-			&haddr_dest[0], &paddr_dest[0], dev);
+			haddr_len, paddr_len, &haddr_dest[0], &paddr_dest[0],
+			&haddr_src[0], &paddr_src[0], &haddr_src[0], dev);
 	if (ret != ENOERR) {
 		skb_free(skb);
 		return ret;
@@ -146,6 +161,9 @@ static int rarp_hnd_request(struct arpghdr *rarph, struct arpg_stuff *rarps,
 
 	/* and send */
 	return rarp_xmit(skb);
+#endif
+	skb_free(skb);
+	return -ENOSYS;
 }
 
 static int rarp_hnd_reply(struct arpghdr *rarph, struct arpg_stuff *rarps,
@@ -156,7 +174,7 @@ static int rarp_hnd_reply(struct arpghdr *rarph, struct arpg_stuff *rarps,
 	assert(rarps != NULL);
 
 	/* save destination hardware and protocol addresses */
-	ret = neighbour_add(rarps->sha, rarph->ha_len, rarps->spa, rarph->pa_len,
+	ret = neighbour_add(rarps->tha, rarph->ha_len, rarps->tpa, rarph->pa_len,
 			dev, 0);
 	skb_free(skb);
 	return ret;
@@ -173,7 +191,7 @@ static int rarp_process(struct sk_buff *skb, struct net_device *dev) {
 	assert(rarph != NULL);
 
 	/* check hardware and protocol address lengths */
-	if ((skb->nh.raw - skb->mac.raw) + ARPG_HEADER_SIZE(rarph) != skb->len) {
+	if ((skb->nh.raw - skb->mac.raw) + ARPG_HEADER_SIZE(rarph) > skb->len) {
 		skb_free(skb);
 		return -1; /* error: bad packet */
 	}
@@ -186,13 +204,6 @@ static int rarp_process(struct sk_buff *skb, struct net_device *dev) {
 	}
 
 	arpg_make_stuff(rarph, &rarph_stuff);
-
-	/* check recipient by hardware address */
-	if (memcmp(rarph_stuff.tha, &dev->dev_addr[0],
-				rarph->ha_len) != 0) {
-		skb_free(skb);
-		return -1; /* error: not for us */
-	}
 
 	/* process the packet by the operation code */
 	switch (ntohs(rarph->oper)) {
