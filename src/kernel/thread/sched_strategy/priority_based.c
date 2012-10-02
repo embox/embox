@@ -28,6 +28,8 @@
 #include <kernel/thread/state.h>
 #include <kernel/time/timer.h>
 
+#include <stdio.h>
+
 static void sched_tick(sys_timer_t *timer, void *param);
 
 static sys_timer_t *tick_timer;
@@ -58,7 +60,7 @@ void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
 	/* TODO: Error if not set timer and timer close. */
 	if (timer_set(&tick_timer, TIMER_PERIODIC,
 			OPTION_GET(NUMBER, tick_interval), sched_tick, NULL)) {
-		return ;
+		printf("Scheduler initialization failed!\n");
 	}
 }
 

@@ -1,13 +1,7 @@
-package embox.arch.x86.mm
+package embox.arch.x86
 
-module mmu_core {
-	source "mmu_core.c"
-
-	depends embox.mem.vmem.virtallocator
-}
-
-module mmu_map {
-	source "mmu_map.c"
+module mm extends embox.arch.mm {
+	source "mmu_core.c", "mmu_map.c"
 
 	depends embox.mem.vmem.virtallocator
 }

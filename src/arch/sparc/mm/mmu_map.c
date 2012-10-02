@@ -8,53 +8,73 @@
 #include <hal/mm/mmu_core.h>
 #include <asm/hal/mm/table_alloc.h>
 #include <asm/hal/mm/mmu_core.h>
-#include <mem/pagealloc/opallocator.h>
+#include <mem/vmem/virtalloc.h>
+#include <prom/prom_printf.h>
+#include <util/binalign.h>
 #include <math.h>
 #include <err.h>
 
-static mmu_pte_t *context[] = {NULL, NULL, NULL, NULL, NULL };
+#define MMU_IS_PTD       1
+#define MMU_IS_PTE       2
+#define MMU_PAGE_PRESENT 3
 
-unsigned long mmu_page_table_sizes[] = {
-	0,
-	MMU_GTABLE_SIZE * sizeof(mmu_pte_t),
-	MMU_MTABLE_SIZE * sizeof(mmu_pte_t),
-	MMU_PTABLE_SIZE * sizeof(mmu_pte_t),
-	0
-};
+static void mmu_map_single_pte(mmu_ctx_t ctx, uint32_t pgd_idx, uint32_t ptd_idx, uint32_t pte_idx, uint32_t addr, mmu_page_flags_t flags) {
+	mmu_pgd_t *pgd_table;
+	mmu_pmd_t *ptd_table;
+	mmu_pte_t *pte_table;
 
-unsigned long mmu_table_masks[] = {
-	-1,
-	MMU_GTABLE_MASK,
-	MMU_MTABLE_MASK,
-	MMU_PTABLE_MASK,
-	MMU_PAGE_MASK,
-	0
-};
+	int fl = (0x3) << 2;
 
-unsigned long mmu_level_capacity[] = {
-	-1,
-	MMU_MTABLE_SIZE * MMU_PTABLE_SIZE * MMU_PAGE_SIZE,
-	MMU_PTABLE_SIZE * MMU_PAGE_SIZE,
-	MMU_PAGE_SIZE,
-	1
-};
+	pgd_table = mmu_get_root(ctx);
 
-mmu_page_table_set_t mmu_page_table_sets[] = {
-	NULL,
-	(mmu_page_table_set_t) &mmu_pgd_set, /* XXX incompatible pointer type */
-	(mmu_page_table_set_t) &mmu_pmd_set, /* XXX incompatible pointer type */
-	(mmu_page_table_set_t) &mmu_set_pte, /* XXX incompatible pointer type */
-	NULL
-};
+	/* Get ptd_table */
+	if (0 == (uint32_t) (pgd_table[pgd_idx] & MMU_PAGE_PRESENT)) { /* we have been not allocated page for this region yet */
+		ptd_table = alloc_pte_table();
+		pgd_table[pgd_idx] = ((uint32_t) ptd_table) | MMU_IS_PTD; /* writable and presented */
+	} else {
+		ptd_table = (mmu_pte_t *) (pgd_table[pgd_idx] & (~((1 << 12) - 1)));
+	}
 
-mmu_page_table_get_t mmu_page_table_gets[] = {
-	NULL,
-	(mmu_page_table_get_t) &mmu_pgd_get, /* XXX incompatible pointer type */
-	(mmu_page_table_get_t) &mmu_pmd_get, /* XXX incompatible pointer type */
-	(mmu_page_table_get_t) &mmu_pmd_get, /* XXX incompatible pointer type */
-	NULL
-};
+	/* Get pte_table */
+	if (0 == (uint32_t) (ptd_table[ptd_idx] & MMU_PAGE_PRESENT)) { /* we have been not allocated page for this region yet */
+		pte_table = alloc_pte_table();
+		ptd_table[ptd_idx] = ((uint32_t) pte_table) | MMU_IS_PTD; /* writable and presented */
+	} else {
+		pte_table = (mmu_pte_t *) (ptd_table[ptd_idx] & (~((1 << 12) - 1)));
+	}
 
+	pte_table[pte_idx] = (addr & ~MMU_PAGE_MASK);
+	pte_table[pte_idx] |= fl | MMU_IS_PTE; /* writable and presented */
+}
+
+int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
+		size_t reg_size, mmu_page_flags_t flags) {
+	uint32_t pgd_idx, ptd_idx, pte_idx;
+
+	if(0 == (reg_size = __binalign_mask(reg_size, MMU_PAGE_MASK))) {
+		return 0;
+	}
+
+	virt_addr = __binalign_mask(virt_addr, MMU_PAGE_MASK);
+	phy_addr = __binalign_mask(phy_addr, MMU_PAGE_MASK);
+
+	while(reg_size > 0) {
+		pgd_idx = (virt_addr & 0xFF000000) >> 24;
+		ptd_idx = (virt_addr & 0x00FC0000) >> 18;
+		pte_idx = (virt_addr & 0x0003F000) >> 12;
+
+		mmu_map_single_pte(ctx, pgd_idx, ptd_idx, pte_idx, phy_addr, flags);
+
+		virt_addr += MMU_PAGE_SIZE;
+		phy_addr += MMU_PAGE_SIZE;
+		reg_size -= MMU_PAGE_SIZE;
+	}
+
+	return 0;
+}
+
+
+#if 0
 /* FIXME: cleanup function, actually, this is a Spaghetti code */
 int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 		size_t reg_size, mmu_page_flags_t flags) {
@@ -112,7 +132,7 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 				}
 			}
 			/* if there is no next-level page table */
-			printf("0x%x, 0x%x\n", *(context[cur_level] + cur_offset),
+			prom_printf("0x%x, 0x%x\n", *(context[cur_level] + cur_offset),
 				mmu_valid_entry(*(context[cur_level] + cur_offset)));
 			if (!mmu_valid_entry(*(context[cur_level] + cur_offset))) {
 				LOG_DEBUG("no mapping\n");
@@ -142,3 +162,4 @@ int mmu_map_region(mmu_ctx_t ctx, paddr_t phy_addr, vaddr_t virt_addr,
 	}
 	return 0;
 }
+#endif

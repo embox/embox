@@ -65,7 +65,7 @@ static inline void vmem_create_space_after_kernel(mmu_ctx_t ctx) {
 
 void vmem_create_virtual_space(mmu_ctx_t ctx) {
 	vmem_map_kernel(ctx);
-	vmem_create_space_after_kernel(ctx);
+	//vmem_create_space_after_kernel(ctx);
 }
 
 /*
@@ -84,7 +84,21 @@ static int pagefault_handler(uint32_t nr, void *data) {
 
 */
 
+static inline void vmem_print_kernel_mapping(void) {
+	printf("\n");
+	printf("   text: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_text_vma, (unsigned int) &_text_len);
+	printf(" rodata: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_rodata_vma, (unsigned int) &_rodata_len);
+	printf("    bss: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_bss_vma, (unsigned int) &_bss_len);
+	printf("   data: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_data_vma, (unsigned int) &_data_len);
+	printf("reserve: start = 0x%08x, size = 0x%08x\n", (unsigned int) _reserve_vma, (unsigned int) _reserve_len);
+	printf("  stack: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_stack_vma, (unsigned int) &_stack_len);
+	printf("   heap: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_heap_vma, (unsigned int) &_heap_len);
+}
+
+
 static int vmem_init(void) {
+	vmem_print_kernel_mapping();
+
 	vmem_on();
 
 	return 0;
