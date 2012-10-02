@@ -122,38 +122,40 @@ int rarp_send(unsigned short oper, unsigned short paddr_space,
 
 static int rarp_hnd_request(struct arpghdr *rarph, struct arpg_stuff *rarps,
 		struct sk_buff *skb, struct net_device *dev) {
-#if 0
 	int ret;
 	unsigned char haddr_len, paddr_len;
-	unsigned char haddr_src[MAX_ADDR_LEN], haddr_dest[MAX_ADDR_LEN];
-	unsigned char paddr_src[MAX_ADDR_LEN], paddr_dest[MAX_ADDR_LEN];
+	unsigned char haddr_source[MAX_ADDR_LEN], paddr_source[MAX_ADDR_LEN];
+	unsigned char haddr_dest[MAX_ADDR_LEN], paddr_dest[MAX_ADDR_LEN];
+	unsigned char haddr_target[MAX_ADDR_LEN];
 	struct in_device *in_dev;
 
-	/* save source and destination hardware addreesses */
-	haddr_len = rarph->ha_len;
-	memcpy(&haddr_src[0], rarps->tha, haddr_len);
-	memcpy(&haddr_dest[0], rarps->sha, haddr_len);
+	in_dev = in_dev_get(dev);
+	assert(in_dev != NULL);
 
-	/* get destination protocol address */
-	/*paddr_len = rarph->pa_len;*/
+	haddr_len = rarph->ha_len;
+	paddr_len = rarph->pa_len;
+
+	/* get source addresses */
+	memcpy(&haddr_source[0], &dev->dev_addr[0], haddr_len);
+	assert(paddr_len == sizeof in_dev->ifa_address); /* FIXME */
+	memcpy(&paddr_source[0], &in_dev->ifa_address, paddr_len);
+
+	/* get dest addresses */
+	memcpy(&haddr_dest[0], rarps->tha, haddr_len);
 	ret = neighbour_get_protocol_address(&haddr_dest[0], haddr_len,
-			dev, sizeof paddr_dest, &paddr_dest[0], &paddr_len);
+			dev, paddr_len, &paddr_dest[0], NULL);
 	if (ret != ENOERR) {
 		skb_free(skb);
 		return ret;
 	}
 
-	in_dev = in_dev_get(dev);
-	assert(in_dev != NULL);
-
-	/* get source protocol address */
-	assert(paddr_len == sizeof in_dev->ifa_address); /* FIXME */
-	memcpy(&paddr_src[0], &in_dev->ifa_address, paddr_len);
+	/* get target hardware address */
+	memcpy(&haddr_target[0], rarps->sha, haddr_len);
 
 	/* build reply */
 	ret = rarp_build(skb, RARP_OPER_REPLY, ntohs(rarph->pa_space),
-			haddr_len, paddr_len, &haddr_dest[0], &paddr_dest[0],
-			&haddr_src[0], &paddr_src[0], &haddr_src[0], dev);
+			haddr_len, paddr_len, &haddr_source[0], &paddr_source[0],
+			&haddr_dest[0], &paddr_dest[0], &haddr_target[0], dev);
 	if (ret != ENOERR) {
 		skb_free(skb);
 		return ret;
@@ -161,9 +163,6 @@ static int rarp_hnd_request(struct arpghdr *rarph, struct arpg_stuff *rarps,
 
 	/* and send */
 	return rarp_xmit(skb);
-#endif
-	skb_free(skb);
-	return -ENOSYS;
 }
 
 static int rarp_hnd_reply(struct arpghdr *rarph, struct arpg_stuff *rarps,
