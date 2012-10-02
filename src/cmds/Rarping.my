@@ -1,0 +1,38 @@
+package embox.cmd
+
+@Cmd(name = "rarping",
+	help = "Send RARP REQUEST to a neighbour host",
+	man = '''
+		NAME
+			rarping - send RARP REQUEST to a neighbour host
+		SYNOPSIS
+			rarping [ -c count] [-I iface] destination
+		DESCRIPTION
+			Ping destination on device interface by RARP packets,
+			using source address source.
+		OPTIONS
+			-I interface
+				Set source address to specified interface address.
+				by default: eth0
+			-c count
+				Stop after sending count ECHO_REQUEST packets.
+				by default: 4 (-1 infinity)
+		EXAMPLES
+			rarping -c 3 aa:bb:cc:dd:ee:ff
+		SEE ALSO
+			arp, ping, arping
+		AUTHORS
+			Ilia Vaprol
+	''')
+module rarping {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "rarping.c"
+
+	depends embox.lib.LibC
+	depends embox.net.util
+	depends embox.net.neighbour
+	depends embox.net.rarp
+	depends embox.kernel.timer.sleep_api
+	depends embox.framework.LibFramework
+}
