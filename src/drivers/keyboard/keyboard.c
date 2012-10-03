@@ -36,7 +36,7 @@
 
 #define  IRQ1 1
 
-static const unsigned char keymap[][2] = {
+static const unsigned int keymap[][4] = {
 	{0       },    /* 0 */
 	{27,	27 },  /* 1 - ESC */
 	{'1',	'!'},  /* 2 */
@@ -108,50 +108,21 @@ static const unsigned char keymap[][2] = {
 	{0,	 0},   /* 68 - F10 */
 	{0,	 0},   /* 69 - Num Lock */
 	{0,	 0},   /* 70 - Scroll Lock */
-	{0xb7,0xb7},   /* 71 - Numeric keypad 7 */
-	{0xb8,0xb8},   /* 72 - Numeric keypad 8 */
-	{0xb9,0xb9},   /* 73 - Numeric keypad 9 */
+	{0xb7,0xb7,0x485b1b},   /* 71 - Numeric keypad 7, Home */
+	{0xb8,0xb8,0x415b1b},   /* 72 - Numeric keypad 8, Up Arrow */
+	{0xb9,0xb9,0x7e355b1b},   /* 73 - Numeric keypad 9, Page up */
 	{'-',  '-'},   /* 74 - Numeric keypad '-' */
-	{0xb4,0xb4},   /* 75 - Numeric keypad 4 */
+	{0xb4,0xb4,0x445b1b},   /* 75 - Numeric keypad 4, Left Arrow*/
 	{0xb5,0xb5},   /* 76 - Numeric keypad 5 */
-	{0xb6,0xb6},   /* 77 - Numeric keypad 6 */
+	{0xb6,0xb6,0x435b1b},   /* 77 - Numeric keypad 6, Right Arrow*/
 	{'+',  '+'},   /* 78 - Numeric keypad '+' */
-	{0xb1,0xb1},   /* 79 - Numeric keypad 1 */
-	{0xb2,0xb2},   /* 80 - Numeric keypad 2 */
-	{0xb3,0xb3},   /* 81 - Numeric keypad 3 */
-	{0xb0,0xb0},   /* 82 - Numeric keypad 0 */
-	{0xae,0xae},   /* 83 - Numeric keypad '.' */
+	{0xb1,0xb1,0x485b1b},   /* 79 - Numeric keypad 1, End*/
+	{0xb2,0xb2,0x425b1b},   /* 80 - Numeric keypad 2, Down Arrow */
+	{0xb3,0xb3,0x7e365b1b},   /* 81 - Numeric keypad 3, Page Down*/
+	{0xb0,0xb0,0x7e325b1b},   /* 82 - Numeric keypad 0, Insert*/
+	{0xae,0xae,0x7e335b1b},   /* 83 - Numeric keypad '.', Delete */
 };
-#if 0
-static int keyboard_get_scancode(void) {
-	static unsigned shift_state;
-	unsigned status, scan_code, ch;
-	status = inb(CMD_PORT);
-	scan_code = inb(DATA_PORT);
-	if ((status & 0x20) != 0) {
-		return -1;
-	}
-	if ((scan_code & 0x7f) >= sizeof(keymap) / sizeof(keymap[0])) {
-		return -1;
-	}
-	if (scan_code & 0x80) {
-		scan_code &= 0x7f;
-		if (keymap[scan_code][0] == 0xff) {
-			shift_state = 0;
-		}
-		return -1;
-	}
-	ch = keymap[scan_code][shift_state];
-	if (ch == (unsigned) 0xff) {
-		shift_state = 1;
-		return -1;
-	}
-	if (ch == 0) {
-		return -1;
-	}
-	return ch;
-}
-#endif
+
 static int keyboard_havechar(void) {
 	unsigned char c = inb(0x64);
 	return (c == 0xFF) ? 0 : c & 1;
@@ -188,11 +159,18 @@ int keyboard_has_symbol(void) {
 }
 
 char keyboard_getc(void) {
-	static unsigned shift_state;
+	static unsigned int shift_state;
+	static unsigned int outp;
 	uint8_t status, scan_code;
-	char ch;
+	unsigned char extended_state;
 
 	while (1) {
+		if (outp) {
+			unsigned char ch = outp & 0xff;
+			outp >>=8;
+			return ch;
+		}
+
 		status = inb(CMD_PORT);
 		if ((status & 0x01) == 0) {
 			continue;
@@ -202,25 +180,32 @@ char keyboard_getc(void) {
 			continue;
 		}
 
-		if ((scan_code & 0x7f) >= sizeof(keymap)/sizeof(keymap[0])) {
+		if (scan_code == 0xe0) {
+			extended_state = 2;
 			continue;
 		}
+
 		if (scan_code & 0x80) {
 			scan_code &= 0x7f;
 			if (keymap[scan_code][0] == 0xff) {
 				shift_state = 0;
 			}
+			extended_state = 0;
 			continue;
 		}
-		ch = keymap[scan_code][shift_state];
-		if (ch == (unsigned) 0xff) {
+
+		if ((scan_code & 0x7f) >= sizeof(keymap)/sizeof(keymap[0])) {
+			continue;
+		}
+
+
+		outp = keymap[scan_code][extended_state ? extended_state : shift_state];
+
+		extended_state = 0;
+
+		if (outp == 0xff) {
 			shift_state = 1;
-			continue;
 		}
-		if (ch == 0) {
-			continue;
-		}
-		return ch;
 	}
 }
 
