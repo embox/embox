@@ -20,7 +20,6 @@ void diag_putc(char c) {
 }
 
 char diag_getc(void) {
-	blink_cursor(vga_console_diag()->x, vga_console_diag()->y);
 	return keyboard_getc();
 }
 

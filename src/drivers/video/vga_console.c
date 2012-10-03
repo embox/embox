@@ -118,7 +118,7 @@ static void ansi_attrib(vga_console_t *con, int a) {
 	};
 }
 
-void blink_cursor(unsigned x, unsigned y) {
+static void blink_cursor(unsigned x, unsigned y) {
 	unsigned pos = 80 * y + x;
 
 	out16((pos & 0xff00) | 0x0e, dev_reg);
@@ -224,67 +224,69 @@ void vga_putc(vga_console_t *con, char c) {
 	size_t i;
 	if (con->esc_state == 1) {
 		vga_esc_putc(con, c);
-		return;
-	}
-	switch(c) {
-	case '\n':
-	case '\f':
-		con->x = 0;
-		con->y++;
-		if (con->y >= con->height) {
-			vga_scroll(con, con->y - con->height + 1);
-			con->y = con->height - 1;
-		}
-		break;
-	case '\r':
-		con->x = 0;
-		break;
-	case '\t':
-		con->x = (con->x & ~7) + 8;
-		break;
-	case 27: /* ESC */
-		con->esc_state = 1;
-		return;
-	case 6: /* cursor */
-		con->y = con->y + 1;
-		con->x = con->x + 2;
-		if (con->y >= con->height) {
-			con->y = con->height - 1;
-		}
-		if (con->x >= con->width) {
-			con->x = con->width - 1;
-		}
-		break;
-	case 1: /* home */
-		con->x = 0;
-		con->y = 0;
-		break;
-	case 5: /* clear to end of line */
-		for (i = 0; i < con->width - con->x; ++i) {
-			vga_printchar(con, con->x, con->y * con->width + i, 0x20, con->attr);
-		}
-		break;
-	case 8: /* back space */
-		if (con->x)
-			--con->x;
-		break;
-	default:
-		if ((unsigned) c >= 32) {
-			if (con->x >= con->width) {
-				++con->y;
-				con->x = 0;
-			}
+	} else {
+		switch(c) {
+		case '\n':
+		case '\f':
+			con->x = 0;
+			con->y++;
 			if (con->y >= con->height) {
 				vga_scroll(con, con->y - con->height + 1);
 				con->y = con->height - 1;
 			}
-			if (con->x < con->width) {
-				vga_printchar(con, con->x, con->y, (c == '\265' ? '\346' : c), con->attr);
+			break;
+		case '\r':
+			con->x = 0;
+			break;
+		case '\t':
+			con->x = (con->x & ~7) + 8;
+			break;
+		case 27: /* ESC */
+			con->esc_state = 1;
+			return;
+		case 6: /* cursor */
+			con->y = con->y + 1;
+			con->x = con->x + 2;
+			if (con->y >= con->height) {
+				con->y = con->height - 1;
 			}
-			++con->x;
+			if (con->x >= con->width) {
+				con->x = con->width - 1;
+			}
+			break;
+		case 1: /* home */
+			con->x = 0;
+			con->y = 0;
+			break;
+		case 5: /* clear to end of line */
+			for (i = 0; i < con->width - con->x; ++i) {
+				vga_printchar(con, con->x, con->y * con->width + i, 0x20, con->attr);
+			}
+			break;
+		case 8: /* back space */
+			if (con->x)
+				--con->x;
+			break;
+		default:
+			if ((unsigned) c >= 32) {
+				if (con->x >= con->width) {
+					++con->y;
+					con->x = 0;
+				}
+				if (con->y >= con->height) {
+					vga_scroll(con, con->y - con->height + 1);
+					con->y = con->height - 1;
+				}
+				if (con->x < con->width) {
+					vga_printchar(con, con->x, con->y, (c == '\265' ? '\346' : c), con->attr);
+				}
+				++con->x;
+			}
+			break;
 		}
-		break;
 	}
+
+	blink_cursor(con->x, con->y);
 }
 
 #if 0
