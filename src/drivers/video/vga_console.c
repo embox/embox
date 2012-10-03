@@ -138,83 +138,85 @@ static void vga_esc_putc(vga_console_t *con, char c) {
 		con->esc_args[++con->num_esc_args] = 0;
 	} else if (isdigit(c) && con->num_esc_args < 5) {
 		con->esc_args[con->num_esc_args] = con->esc_args[con->num_esc_args] * 10  + (c - '0');
-	}
-	switch (c) {
-	case 'f': /* Move cursor + blink cursor to location v,h */
-		con->x = con->esc_args[1];
-		if (con->x)
-			--con->y;
-		con->y = con->esc_args[0];
-		if (con->y)
-			--con->x;
-		blink_cursor(con->x, con->y);
-		break;
-	case 'H': /* Move cursor to screen location v,h */
-		con->x = con->esc_args[1];
-		if (con->x) --con->x;
-		con->y = con->esc_args[0];
-		if (con->y) --con->y;
-		if (con->x >= con->width) con->x = con->width  - 1;
-		if (con->y >= con->height) con->y = con->height - 1;
-		break;
-	case 'm': /* color */
-		p = 0;
-		do {
-			ansi_attrib(con, con->esc_args[p++]);
-		} while (con->num_esc_args--);
-		con->esc_state = 0;
-		break;
-	case 'X': /* clear n characters */
-		for (i = con->x + (con->y * con->width);
-		    i < con->x + (con->y * con->width) + con->esc_args[0]; ++i) {
-			con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
-		}
-		break;
-	case 'K': /* Clear line from cursor right */
-		switch(con->esc_args[0]) {
-		default:
-		case 0:
+	} else {
+		switch (c) {
+		case 'f': /* Move cursor + blink cursor to location v,h */
+			con->x = con->esc_args[1];
+			if (con->x)
+				--con->y;
+			con->y = con->esc_args[0];
+			if (con->y)
+				--con->x;
+			blink_cursor(con->x, con->y);
+			break;
+		case 'H': /* Move cursor to screen location v,h */
+			con->x = con->esc_args[1];
+			if (con->x) --con->x;
+			con->y = con->esc_args[0];
+			if (con->y) --con->y;
+			if (con->x >= con->width) con->x = con->width  - 1;
+			if (con->y >= con->height) con->y = con->height - 1;
+			break;
+		case 'm': /* color */
+			p = 0;
+			do {
+				ansi_attrib(con, con->esc_args[p++]);
+			} while (con->num_esc_args--);
+			break;
+		case 'X': /* clear n characters */
 			for (i = con->x + (con->y * con->width);
-			    i < (con->y * con->width) + con->width; ++i) {
+			    i < con->x + (con->y * con->width) + con->esc_args[0]; ++i) {
 				con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
 			}
 			break;
-		case 1:
-			for (i = (con->y * con->width); i < (con->y * con->width) + con->x; ++i) {
-				con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
+		case 'K': /* Clear line from cursor right */
+			switch(con->esc_args[0]) {
+			default:
+			case 0:
+				for (i = con->x + (con->y * con->width);
+				    i < (con->y * con->width) + con->width; ++i) {
+					con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
+				}
+				break;
+			case 1:
+				for (i = (con->y * con->width); i < (con->y * con->width) + con->x; ++i) {
+					con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
+				}
+				break;
+			case 2:
+				for (i = (con->y * con->width); i < (con->y * con->width) + con->width; ++i) {
+					con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
+				}
+				break;
 			}
 			break;
-		case 2:
-			for (i = (con->y * con->width); i < (con->y * con->width) + con->width; ++i) {
-				con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
+		case 'J': /* Clear screen from cursor */
+			switch(con->esc_args[0]) {
+			default:
+			case 0:
+				for (i = (con->y * con->width);
+				    i < (con->y * con->width) + con->width * (con->height - con->y); ++i) {
+					con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
+				}
+				break;
+			case 1:
+				for (i = 0; i < con->width * con->y; ++i) {
+					con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
+				}
+				break;
+			case 2:
+				for (i = 0; i < con->width * con->height; ++i) {
+					con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
+				}
+				break;
 			}
+			break;
+		case 'D':
+			con->x -= con->esc_args[0];
 			break;
 		}
-		break;
-	case 'J': /* Clear screen from cursor */
-		switch(con->esc_args[0]) {
-		default:
-		case 0:
-			for (i = (con->y * con->width);
-			    i < (con->y * con->width) + con->width * (con->height - con->y); ++i) {
-				con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
-			}
-			break;
-		case 1:
-			for (i = 0; i < con->width * con->y; ++i) {
-				con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
-			}
-			break;
-		case 2:
-			for (i = 0; i < con->width * con->height; ++i) {
-				con->video[i] = (vchar_t) { .c = 0x20, .a = con->attr };
-			}
-			break;
-		}
-		break;
-	case 'D':
-		con->x -= 1;
-		break;
+
+		con->esc_state = 0;
 	}
 }
 
