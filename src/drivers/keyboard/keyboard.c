@@ -116,7 +116,7 @@ static const unsigned int keymap[][4] = {
 	{0xb5,0xb5},   /* 76 - Numeric keypad 5 */
 	{0xb6,0xb6,0x435b1b},   /* 77 - Numeric keypad 6, Right Arrow*/
 	{'+',  '+'},   /* 78 - Numeric keypad '+' */
-	{0xb1,0xb1,0x485b1b},   /* 79 - Numeric keypad 1, End*/
+	{0xb1,0xb1,0x465b1b},   /* 79 - Numeric keypad 1, End*/
 	{0xb2,0xb2,0x425b1b},   /* 80 - Numeric keypad 2, Down Arrow */
 	{0xb3,0xb3,0x7e365b1b},   /* 81 - Numeric keypad 3, Page Down*/
 	{0xb0,0xb0,0x7e325b1b},   /* 82 - Numeric keypad 0, Insert*/
