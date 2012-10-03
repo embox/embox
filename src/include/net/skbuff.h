@@ -29,7 +29,7 @@ struct tcphdr;
 struct udphdr;
 struct icmphdr;
 struct iphdr;
-struct arphdr;
+struct arpghdr;
 struct ethhdr;
 
 
@@ -86,7 +86,7 @@ typedef struct sk_buff {        /* Socket buffer */
 		 */
 	union {
 		struct iphdr *iph;
-		struct arphdr *arph;
+		struct arpghdr *arpgh;
 		unsigned char *raw;
 	} nh;
 
@@ -184,6 +184,11 @@ extern struct sk_buff *skb_duplicate(struct sk_buff *skb);
  * Allocate one instance of structure sk_buff_head.
  */
 extern struct sk_buff_head * skb_queue_alloc(void);
+
+/**
+ * Initialize sk_buff_head
+ */
+extern void skb_queue_init(struct sk_buff_head *queue);
 
 /**
  * Free sk_buff_head structure with his elements

@@ -154,6 +154,8 @@ static inline void copy_data_from_card(uint16_t src, uint8_t *dest,
 	}
 }
 
+#include <prom/prom_printf.h>
+
 static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	uint16_t count;
 	unsigned long base_addr;
@@ -162,6 +164,7 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 		return -EINVAL;
 	}
 
+	prom_printf("e1000: start_xmit 0x%x\n", (unsigned int) skb);
 	base_addr = dev->base_addr;
 
 	if (in8(base_addr + NE_CMD) & E8390_TRANS) { /* no matter, which page is active */
@@ -363,7 +366,7 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 	return ENOERR;
 }
 
-static int open(struct net_device *dev) {
+static int ne2k_open(struct net_device *dev) {
 	if (dev == NULL) {
 		return -EINVAL;
 	}
@@ -389,7 +392,7 @@ static int stop(struct net_device *dev) {
 
 static const struct net_device_ops _netdev_ops = {
 	.ndo_start_xmit = start_xmit,
-	.ndo_open = open,
+	.ndo_open = ne2k_open,
 	.ndo_stop = stop,
 	.ndo_get_stats = get_eth_stat,
 	.ndo_set_mac_address = set_mac_address

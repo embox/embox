@@ -13,6 +13,11 @@
 #include <net/skbuff.h>
 
 /**
+ * Prototypes
+ */
+struct sk_buff;
+
+/**
  * IEEE 802.3 Ethernet magic constants.
  */
 #define ETH_ALEN        6               /* Octets in one ethernet addr */
@@ -28,6 +33,7 @@
 #define ETH_P_LOOP      (unsigned short)0x0060   /* Ethernet Loopback packet  */
 #define ETH_P_IP        (unsigned short)0x0800   /* Internet Protocol packet  */
 #define ETH_P_ARP       (unsigned short)0x0806   /* Address Resolution packet */
+#define ETH_P_RARP      (unsigned short)0x8035   /* Revrse Address Resolution packet */
 #define ETH_P_ALL       (unsigned short)0x0003   /* Every packet (be careful!!!) */
 
 /**

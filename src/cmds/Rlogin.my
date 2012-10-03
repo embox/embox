@@ -1,28 +1,23 @@
 package embox.cmd
 
-@Cmd(name = "telnetd",
+@Cmd(name = "rlogin",
 	help = "Rlogin client",
 	man = '''
 		NAME
-			rlogin - rlogin client
+			rlogin - Rlogin client
 		SYNOPSIS
-			rlogin
+			rlogin [-l username] <server>
 		DESCRIPTION
-			Start rlogin client in the system
-		EXAMPLES
-			rlogin
+			Connect to remote rlogin server.
 		AUTHORS
 			Alexander Kalmuk
 	''')
+
 module rlogin {
 	source "rlogin.c"
 
-	option number max_conn_count=10
-
 	depends embox.lib.LibC
-	depends embox.kernel.thread.core
 	depends embox.net.socket
-	depends embox.cmd.sh.tish
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

@@ -33,23 +33,20 @@ static int eth_create_header(struct sk_buff *skb, struct net_device *dev,
 
 	assert(skb != NULL);
 	assert(dev != NULL);
-	assert(saddr != NULL);
 
 	eth = eth_hdr(skb);
 	eth->h_proto = htons(type);
 
+	saddr = ((saddr != NULL) ? saddr : &dev->dev_addr[0]);
+	daddr = ((daddr != NULL) ? daddr : &dev->broadcast[0]);
+
 	/*  Set the source hardware address. */
-	if (saddr == NULL) {
-		saddr = dev->dev_addr;
-	}
 	memcpy(eth->h_source, saddr, ETH_ALEN);
 
 	if (dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
 		/* Anyway, the loopback-device should never use this function... */
 		memset(eth->h_dest, 0, ETH_ALEN);
 	} else {
-		assert(daddr != NULL);
-
 		memcpy(eth->h_dest, daddr, ETH_ALEN);
 	}
 

@@ -78,7 +78,7 @@ extern int clock_settime(clockid_t clk_id, const struct timespec *tp);
 extern void gettimeofday(struct timespec *ts, struct timezone *tz);
 
 /* seconds from beginning of start system */
-extern time_t time(time_t *);
+extern time_t time(time_t *t);
 
 
 #endif /* POSIX_TIME_H_ */

@@ -30,9 +30,14 @@ struct sk_buff_head * skb_queue_alloc(void) {
 	/* in free queue we held structure sk_buff_head but this pointer has sk_buff * type
 	 * we must assignment it
 	 */
-	INIT_LIST_HEAD((struct list_head *)queue);
+	skb_queue_init(queue);
 
 	return queue;
+}
+
+void skb_queue_init(struct sk_buff_head *queue) {
+	queue->next = (struct sk_buff *)queue;
+	queue->prev = (struct sk_buff *)queue;
 }
 
 void skb_queue_free(struct sk_buff_head *queue) {

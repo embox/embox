@@ -2,179 +2,258 @@
  * @file
  * @brief Implementation of ARP Cache
  *
- * @date 12.08.2011
+ * @date 12.08.11
  * @author Ilia Vaprol
  */
 
-#include <embox/unit.h>
-#include <errno.h>
-#include <kernel/time/timer.h>
-
-#include <mem/misc/pool.h>
 #include <net/neighbour.h>
-#include <stddef.h>
+#include <errno.h>
+#include <kernel/softirq_lock.h>
+#include <mem/misc/pool.h>
 #include <string.h>
-#include <hal/ipl.h>
+#include <util/dlist.h>
+#include <time.h>
 
-#include <lib/list.h>
-
-EMBOX_UNIT_INIT(unit_init);
+#include <framework/mod/options.h>
+#define MODOPS_NEIGHBOUR_QUANTITY OPTION_GET(NUMBER, neighbour_quantity)
+#define MODOPS_NEIGHBOUR_EXPIRE OPTION_GET(NUMBER, neighbour_expire)
 
 struct neighbour_head {
-	struct list_head lnk; /* pointer to next and previous element of the cache */
-	uint32_t ctime;       /* time of life */
-	struct neighbour n;   /* cache entity */
+	struct dlist_head lnk;
+	time_t expire;
+	struct neighbour n;
 };
 
-union head_ptr {
+POOL_DEF(neighbour_pool, struct neighbour_head, MODOPS_NEIGHBOUR_QUANTITY); /* Pool of neighbour entities */
+static DLIST_DEFINE(neighbour_list); /* List of valid entity */
+
+#define NEIGHBOUR_CHECK_EXPIRE(neighbour_head, current_time)            \
+	if ((neighbour_head->expire < current_time)                         \
+			&& !(neighbour_head->n.flags & NEIGHBOUR_FLAG_PERMANENT)) { \
+		dlist_del(&neighbour_head->lnk);                                \
+		pool_free(&neighbour_pool, neighbour_head);                     \
+		continue;                                                       \
+	}
+
+static struct neighbour_head * neighbour_get(const unsigned char *haddr,
+		unsigned char hlen, const unsigned char *paddr, unsigned char plen,
+		const struct net_device *dev, time_t current_time) {
+	struct neighbour_head *nh, *tmp;
+
+	assert(((haddr != NULL) && (hlen != 0)) || ((haddr == NULL) && (hlen == 0)));
+	assert(((paddr != NULL) && (plen != 0)) || ((paddr == NULL) && (plen == 0)));
+	assert((haddr != NULL) || (paddr != NULL));
+
+	/* lookup entity with same hardware addr (if haddr not null),
+	 * same protocol addr (if paddr not null) and the same
+	 * device (if dev not null) */
+	dlist_foreach_entry(nh, tmp, &neighbour_list, lnk) {
+		NEIGHBOUR_CHECK_EXPIRE(nh, current_time);
+		if (((haddr == NULL) || ((nh->n.hlen == hlen)
+						&& (memcmp(nh->n.haddr, haddr, hlen) == 0)))
+				&& ((paddr == NULL) || ((nh->n.plen == plen)
+						&& (memcmp(nh->n.paddr, paddr, plen) == 0)))
+				&& ((dev == NULL) || (nh->n.dev == dev))) {
+			return nh;
+		}
+	}
+
+	return NULL; /* not found */
+}
+
+int neighbour_add(const unsigned char *haddr, unsigned char hlen,
+		const unsigned char *paddr, unsigned char plen,
+		const struct net_device *dev, unsigned char flags) {
 	struct neighbour_head *nh;
-	struct list_head *lh;
-	unsigned char *b;
-	void *v;
-};
-/* Declaration of neighbour cache */
-POOL_DEF(neighbour_pool, struct neighbour_head, OPTION_GET(NUMBER,arp_cache_size));
-static LIST_HEAD(used_neighbours_list); /* List of valid entity */
-//static LIST_HEAD(wait_neighbours_list); // TODO
-static struct sys_timer *neighbour_refresh_timer;
 
+	assert((haddr != NULL) && (hlen != 0));
+	assert((paddr != NULL) && (plen != 0));
+	assert(dev != NULL);
 
-/**
- * This function check expires of entity from neighbour cache
- */
-static void neighbour_refresh(struct sys_timer *timer, void *param) {
-	struct neighbour *entity;
-	struct list_head *tmp;
-	union head_ptr ptr;
-	ipl_t sp;
-
-	list_for_each_safe(ptr.lh, tmp, &used_neighbours_list) {
-		entity = &ptr.nh->n;
-		if (entity->flags == ATF_COM) {
-			ptr.nh->ctime += NEIGHBOUR_CHECK_INTERVAL;
-			if (ptr.nh->ctime < NEIGHBOUR_TIMEOUT) {
-				continue;
-			}
-			sp = ipl_save();
-
-			list_del(ptr.lh);
-			pool_free(&neighbour_pool, ptr.v);
-
-			ipl_restore(sp);
-		}
-	}
-}
-
-uint8_t * neighbour_lookup(struct in_device *if_handler, in_addr_t ip_addr) {
-	struct neighbour *entity;
-	union head_ptr ptr;
-
-	assert(if_handler != NULL);
-
-	list_for_each(ptr.lh, &used_neighbours_list) {
-		entity = &ptr.nh->n;
-		if ((entity->ip_addr == ip_addr)
-				&& (entity->if_handler == if_handler)) {
-			return entity->hw_addr;
-		}
+	/* check arguments */
+	if ((hlen > sizeof nh->n.haddr) || (plen > sizeof nh->n.paddr)) {
+		return -EINVAL;
 	}
 
-	return NULL;
-}
+	/* lock softirq context */
+	softirq_lock();
 
-int neighbour_add(struct in_device *if_handler, in_addr_t ip_addr,
-		uint8_t *hw_addr, uint8_t flags) {
-	struct neighbour *entity;
-	union head_ptr ptr;
-	ipl_t sp;
-
-	assert(if_handler != NULL);
-	assert(hw_addr != NULL);
-
-	list_for_each(ptr.lh, &used_neighbours_list) {
-		entity = &ptr.nh->n;
-		if ((entity->ip_addr == ip_addr)
-				&& (entity->if_handler == if_handler)) {
-			if (entity->flags == ATF_PERM) {
-				return -EEXIST;
-			}
-			break;
+	/* lookup existing entities */
+	nh = neighbour_get(haddr, hlen, NULL, 0, NULL, 0);
+	nh = ((nh != NULL) ? nh : neighbour_get(NULL, 0, paddr, plen, NULL, 0));
+	if (nh != NULL) {
+		/* free invalid entities */
+		if (nh->n.flags & NEIGHBOUR_FLAG_PERMANENT) {
+			softirq_unlock();
+			return -EEXIST;
 		}
+		dlist_del(&nh->lnk);
 	}
-
-	if (ptr.lh == &used_neighbours_list) { /* if not found then alloc new */
-		sp = ipl_save();
-		ptr.v = pool_alloc(&neighbour_pool);
-		ipl_restore(sp);
-		if (ptr.v == NULL) {
+	else {
+		/* allocate memory for new neighbour if required */
+		nh = pool_alloc(&neighbour_pool);
+		if (nh == NULL) {
+			softirq_unlock();
 			return -ENOMEM;
 		}
-		INIT_LIST_HEAD(ptr.lh);
-		entity = &ptr.nh->n;
+		dlist_head_init(&nh->lnk);
 	}
 
-	ptr.nh->ctime = 0;
-	memcpy(entity->hw_addr, hw_addr, ETH_ALEN);
-	entity->if_handler = if_handler;
-	entity->ip_addr = ip_addr;
-	entity->flags = flags;
+	/* initialize fields */
+	nh->expire = time(NULL) + MODOPS_NEIGHBOUR_EXPIRE;
+	nh->n.dev = dev;
+	memcpy(&nh->n.haddr[0], haddr, hlen);
+	nh->n.hlen = hlen;
+	memcpy(&nh->n.paddr[0], paddr, plen);
+	nh->n.plen = plen;
+	nh->n.flags = flags;
 
-	sp = ipl_save();
-	list_move_tail(ptr.lh, &used_neighbours_list);
-	ipl_restore(sp);
+	/* add to the tail */
+	dlist_add_prev(&nh->lnk, &neighbour_list);
+
+	/* unlock softirq context */
+	softirq_unlock();
 
 	return ENOERR;
 }
 
-int neighbour_delete(struct in_device *if_handler, in_addr_t ip_addr) {
-	struct list_head *tmp;
-	struct neighbour *entity;
-	union head_ptr ptr;
-	ipl_t sp;
+int neighbour_del(const unsigned char *haddr, unsigned char hlen,
+		const unsigned char *paddr, unsigned char plen,
+		const struct net_device *dev) {
+	struct neighbour_head *nh;
 
-	assert(if_handler != NULL);
+	assert(((haddr != NULL) && (hlen != 0)) || ((haddr == NULL) && (hlen == 0)));
+	assert(((paddr != NULL) && (plen != 0)) || ((paddr == NULL) && (plen == 0)));
+	assert((haddr != NULL) || (paddr != NULL));
 
-	list_for_each_safe(ptr.lh, tmp, &used_neighbours_list) {
-		entity = &ptr.nh->n;
-		if ((entity->ip_addr == ip_addr)
-				&& (entity->if_handler == if_handler)) {
-			sp = ipl_save();
-			list_del(ptr.lh);
-			pool_free(&neighbour_pool, ptr.v);
-			ipl_restore(sp);
-			return ENOERR;
+	/* lock softirq context */
+	softirq_lock();
+
+	/* lookup entity */
+	nh = neighbour_get(haddr, hlen, paddr, plen, dev, 0);
+	if (nh == NULL) {
+		softirq_unlock();
+		return -ENOENT;
+	}
+
+	/* delete from list */
+	dlist_del(&nh->lnk);
+	pool_free(&neighbour_pool, nh);
+
+	/* unlock softirq context */
+	softirq_unlock();
+
+	return ENOERR;
+}
+
+int neighbour_get_hardware_address(const unsigned char *paddr,
+		unsigned char plen, const struct net_device *dev, unsigned char hlen_max,
+		unsigned char *out_haddr, unsigned char *out_hlen) {
+	struct neighbour_head *nh;
+
+	assert((paddr != NULL) && (plen != 0));
+	assert((hlen_max != 0) && (out_haddr != NULL));
+
+	/* lock softirq context */
+	softirq_lock();
+
+	/* find an appropriate entry */
+	nh = neighbour_get(NULL, 0, paddr, plen, dev, time(NULL));
+	if (nh == NULL) {
+		softirq_unlock();
+		return -ENOENT;
+	}
+
+	/* check hardware address length */
+	if (nh->n.hlen > hlen_max) {
+		softirq_unlock();
+		return -ENOMEM;
+	}
+
+	/* save results */
+	memcpy(out_haddr, &nh->n.haddr[0], nh->n.hlen);
+	if (out_hlen != NULL) {
+		*out_hlen = nh->n.hlen;
+	}
+	else if (nh->n.hlen != hlen_max) {
+		/* no such entity with the same length of hardware address */
+		softirq_unlock();
+		return -ENOENT;
+	}
+
+	/* unlock softirq context */
+	softirq_unlock();
+
+	return ENOERR;
+}
+
+int neighbour_get_protocol_address(const unsigned char *haddr,
+		unsigned char hlen, const struct net_device *dev, unsigned char plen_max,
+		unsigned char *out_paddr, unsigned char *out_plen) {
+	struct neighbour_head *nh;
+
+	assert((haddr != NULL) && (hlen != 0));
+	assert((plen_max != 0) && (out_paddr != NULL));
+
+	/* lock softirq context */
+	softirq_lock();
+
+	/* find an appropriate entry */
+	nh = neighbour_get(haddr, hlen, NULL, 0, dev, time(NULL));
+	if (nh == NULL) {
+		softirq_unlock();
+		return -ENOENT;
+	}
+
+	/* check protocol address length */
+	if (nh->n.plen > plen_max) {
+		softirq_unlock();
+		return -ENOMEM;
+	}
+
+	/* save results */
+	memcpy(out_paddr, &nh->n.paddr[0], nh->n.plen);
+	if (out_plen != NULL) {
+		*out_plen = nh->n.plen;
+	}
+	else if (nh->n.plen != plen_max) {
+		/* no such entity with the same length of protocol address */
+		softirq_unlock();
+		return -ENOENT;
+	}
+
+	/* unlock softirq context */
+	softirq_unlock();
+
+	return ENOERR;
+}
+
+int neighbour_foreach(neighbour_foreach_handler_t func, void *args) {
+	int ret;
+	struct neighbour_head *nh, *tmp;
+	time_t now;
+
+	assert(func != NULL);
+
+	/* get current time */
+	time(&now);
+
+	/* lock softirq context */
+	softirq_lock();
+
+	/* do for each entity */
+	dlist_foreach_entry(nh, tmp, &neighbour_list, lnk) {
+		NEIGHBOUR_CHECK_EXPIRE(nh, now);
+		ret = (*func)(&nh->n, args);
+		if (ret != ENOERR) {
+			softirq_unlock();
+			return ret;
 		}
 	}
 
-	return ENOERR; /* not found */
-}
-
-struct neighbour * neighbour_get_first(void) {
-	union head_ptr ptr;
-
-	if (list_empty(&used_neighbours_list)) {
-		return NULL;
-	}
-
-	ptr.lh = used_neighbours_list.next;
-
-	return &ptr.nh->n;
-}
-
-int neighbour_get_next(struct neighbour **pentity) {
-	union head_ptr ptr;
-
-	assert(pentity != NULL);
-	assert(*pentity != NULL);
-
-	ptr.b = (unsigned char *)*pentity - offsetof(struct neighbour_head, n);
-	ptr.lh = ptr.lh->next; /* get next */
-	*pentity = (ptr.lh != &used_neighbours_list ? &ptr.nh->n : NULL); /* if end => NULL */
+	/* unlock softirq context */
+	softirq_unlock();
 
 	return ENOERR;
 }
 
-static int unit_init(void) {
-	return timer_set(&neighbour_refresh_timer, TIMER_PERIODIC,
-			NEIGHBOUR_CHECK_INTERVAL, neighbour_refresh, NULL);
-}
