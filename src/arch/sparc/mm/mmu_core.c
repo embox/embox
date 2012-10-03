@@ -39,9 +39,6 @@ void mmu_on(void) {
 
 	val = mmu_get_mmureg(LEON_CNR_CTRL);
 	val |= 0x1;
-
-	prom_printf("CTXP: 0x%08x\n", (unsigned int) mmu_get_mmureg(LEON_CNR_CTXP));
-
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
 
 	mmu_flush_cache_all();
@@ -49,6 +46,7 @@ void mmu_on(void) {
 
 void mmu_off(void) {
 	unsigned long val;
+
 	mmu_flush_cache_all();
 
 	val = mmu_get_mmureg(LEON_CNR_CTRL);
@@ -57,18 +55,18 @@ void mmu_off(void) {
 }
 
 mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
-	return context_table[ctx];
+	return (mmu_pgd_t *) ((((unsigned long) context_table[ctx]) & MMU_PTD_PMASK) << 4);
 }
 
 int mmu_valid_entry(mmu_pte_t pte) {
-        return (((unsigned int) mmu_is_pte) & MMU_PTE_ET) |
+        return (((unsigned int) pte) & MMU_PTE_ET) |
                             (((unsigned int) pte) & MMU_ET_PTD);
 }
 
 mmu_ctx_t mmu_create_context(void) {
 	mmu_ctx_t ctx = (mmu_ctx_t) (ctx_counter++);
 
-	context_table[ctx] = (mmu_pgd_t *) alloc_pte_table();
+	mmu_ctxd_set((mmu_ctx_t *) (context_table + ctx), alloc_pte_table());
 
 	return ctx;
 }
@@ -79,8 +77,7 @@ void switch_mm(mmu_ctx_t prev, mmu_ctx_t next) {
 }
 
 static int mmu_init(void) {
-	unsigned long val = ((unsigned long) context_table);
-	mmu_set_mmureg(LEON_CNR_CTXP, val >> 4);
+	mmu_set_ctable_ptr((unsigned long) context_table);
 
 	return 0;
 }

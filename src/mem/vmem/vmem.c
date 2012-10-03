@@ -44,7 +44,6 @@ void vmem_off(void) {
 }
 
 static inline void vmem_map_kernel(mmu_ctx_t ctx) {
-	/* one-on-one mapping for context 0 */
 	mmu_map_region(ctx, (paddr_t)&_text_vma, (vaddr_t)&_text_vma, (size_t)&_text_len, MMU_PAGE_WRITEABLE);
 	mmu_map_region(ctx, (paddr_t)&_rodata_vma, (vaddr_t)&_rodata_vma, (size_t)&_rodata_len, MMU_PAGE_WRITEABLE);
 	mmu_map_region(ctx, (paddr_t)&_bss_vma, (vaddr_t)&_bss_vma, (size_t)&_bss_len, MMU_PAGE_WRITEABLE);
@@ -52,6 +51,9 @@ static inline void vmem_map_kernel(mmu_ctx_t ctx) {
 	mmu_map_region(ctx, (paddr_t) _reserve_vma, (vaddr_t) _reserve_vma, (size_t) _reserve_len, MMU_PAGE_WRITEABLE);
 	mmu_map_region(ctx, (paddr_t)&_stack_vma, (vaddr_t)&_stack_vma, (size_t)&_stack_len, MMU_PAGE_WRITEABLE);
 	mmu_map_region(ctx, (paddr_t)&_heap_vma, (vaddr_t)&_heap_vma, (size_t)&_heap_len, MMU_PAGE_WRITEABLE);
+
+	// for sparc
+	mmu_map_region(ctx, (paddr_t) 0x80000000, (vaddr_t) 0x80000000, (size_t) 0x4000, MMU_PAGE_WRITEABLE);
 }
 
 static inline void vmem_create_space_after_kernel(mmu_ctx_t ctx) {
