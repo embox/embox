@@ -95,7 +95,7 @@ int shell_line_input(const char *const_line) {
 	return run_cmd(tok_pos, token_line);
 }
 
-void shell_run(void) {
+static void shell_run(void) {
 	const char *prompt = OPTION_STRING_GET(prompt);
 	char inp_buf[BUF_INP_SIZE];
 	struct hist h;
@@ -115,3 +115,6 @@ void shell_run(void) {
 		shell_line_input(inp_buf);
 	}
 }
+
+SHELL_DEF(shell_run,"tish");
+

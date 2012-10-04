@@ -120,6 +120,7 @@ static void ignore_telnet_options(int msg[2]) {
 }
 
 static void *shell_hnd(void* args) {
+	const struct shell *shell;
 	int *msg = (int*)args;
 
 	close(STDIN_FILENO);
@@ -128,7 +129,8 @@ static void *shell_hnd(void* args) {
 	dup2(msg[0], STDIN_FILENO);
 	dup2(msg[1], STDOUT_FILENO);
 
-	shell_run();
+	shell = shell_lookup(OPTION_STRING_GET(shell_name));
+	shell->exec();
 
 	return NULL;
 }

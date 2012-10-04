@@ -10,4 +10,5 @@ module start_script {
 	source "start_script.c"
 
 	depends embox.cmd.sh.shell_api
+	option string shell_name="diag_shell"
 }

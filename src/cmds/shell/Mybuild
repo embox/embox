@@ -15,4 +15,5 @@ module shell extends embox.cmd.sh.shell_api {
     depends embox.util.LibUtil
 	depends embox.driver.terminal
     depends embox.framework.LibFramework
+    depends embox.cmd.sh.shell
 }

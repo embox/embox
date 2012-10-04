@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <assert.h>
+#include <cmd/shell.h>
 
 #include <prom/prom_printf.h>
 
@@ -64,16 +66,22 @@ static int parse(const char *const_line) {
 	return run_cmd(tok_pos, token_line);
 }
 
-extern void shell_run(void);
 
 static int run_script(void) {
 	const char *command;
+	const struct shell *shell;
+
 	prom_printf("\nloading start script:\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		prom_printf("> %s \n", command);
 		parse(command);
 	}
-	shell_run();
+
+	shell = shell_lookup(OPTION_STRING_GET(shell_name));
+	assert(shell);
+
+	shell->exec();
+
 	return 0;
 }
 

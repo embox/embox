@@ -1,8 +1,12 @@
 package embox.cmd.sh
 
+module shell {
+	source "shell.c"
+}
+
 abstract module shell_api { }
 
-module tish extends shell_api {
+module tish {
     option number prompt_len = 80
     option string prompt = "embox> "
     option string welcome_msg = "Welcome to Embox and have a lot of fun!"
@@ -13,15 +17,5 @@ module tish extends shell_api {
     depends embox.lib.LibC
     depends third_party.lib.linenoise
     depends embox.framework.LibFramework
+    depends embox.cmd.sh.shell
 }
-/*
-module shell_start {
-    @IncludePath("$(CONF_DIR)")
-    source "shell_start.c"
-
-    depends shell_api
-    depends embox.lib.LibC
-    depends embox.util.LibUtil
-    depends embox.framework.LibFramework
-}
-*/

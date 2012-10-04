@@ -88,29 +88,11 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 		(*common)++;
 	}
 }
-#if 0
-static const char *script_commands[] = {
-	#include <start_script.inc>
-};
-
-static void shell_start_script(CONSOLE *console, CONSOLE_CALLBACK *callback) {
-	char buf[CMDLINE_MAX_LENGTH + 1];
-	const char *command;
-
-	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
-		strncpy(buf, command, sizeof(buf));
-		printf("> %s \n", buf);
-		exec_callback(callback, console, buf);
-	}
-}
-#endif
 
 static CONSOLE console[1];
 
-extern void run_start_script(void);
 
 static int shell_start(void) {
-
 	static CONSOLE_CALLBACK callback[1];
 
 	callback->exec = exec_callback;
@@ -119,20 +101,11 @@ static int shell_start(void) {
 		LOG_ERROR("Failed to create a console");
 		return -1;
 	}
-#if 0
-	if (ARRAY_SIZE(script_commands)) {
-		printf("\nStarting script...\n");
-		shell_start_script(console, callback);
-	}
-#endif
-	//run_start_script();
 
-	//printf("\n%s", OPTION_STRING_GET(welcome_msg));
-	//console_start(console, prompt);
 	return 0;
 }
-
-void shell_run(void) {
+#include <cmd/shell.h>
+static void shell_run(void) {
 	static const char* prompt = OPTION_STRING_GET(prompt);
 
 	printf("\n%s", OPTION_STRING_GET(welcome_msg));
@@ -143,3 +116,6 @@ static int shell_stop(void) {
 	console_stop(console);
 	return 0;
 }
+
+SHELL_DEF(shell_run,"diag_shell");
+
