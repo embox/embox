@@ -1,9 +1,15 @@
 package embox.cmd
 
-module shell extends embox.cmd.sh.shell_api {
+interface Shell {
+	feature commandLine
+}
+
+module shell {
     option number prompt_len = 80
     option string prompt = "embox> "
     option string welcome_msg = "Welcome to Embox and have a lot of fun!"
+
+    provides Shell.commandLine
 
     @IncludePath("$(SRC_DIR)/compat/posix/include")
     @IncludePath("$(CONF_DIR)")

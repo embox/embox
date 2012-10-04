@@ -25,6 +25,8 @@ struct shell {
 
 extern const struct shell *shell_lookup(const char *shell_name);
 
+extern const struct shell *shell_any(void);
+
 #define SHELL_DEF(_exec,sh_name) \
 	extern const struct shell __shell_registry[]; \
 	static void _exec(void);  \

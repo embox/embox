@@ -22,3 +22,17 @@ const struct shell *shell_lookup(const char *shell_name) {
 	return NULL;
 }
 
+const struct shell *shell_any(void) {
+	const struct shell *shell;
+
+	array_foreach_ptr(shell, __shell_registry, ARRAY_SPREAD_SIZE(__shell_registry)) {
+		if (shell) {
+			return shell;
+		}
+	}
+
+	return NULL;
+}
+
+
+

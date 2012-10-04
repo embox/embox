@@ -77,7 +77,7 @@ static int run_script(void) {
 		parse(command);
 	}
 
-	shell = shell_lookup(OPTION_STRING_GET(shell_name));
+	shell = shell_any();
 	assert(shell);
 
 	shell->exec();

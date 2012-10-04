@@ -9,6 +9,6 @@ module start_script {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "start_script.c"
 
-	depends embox.cmd.sh.shell_api
+	requires embox.cmd.Shell.commandLine
 	option string shell_name="diag_shell"
 }
