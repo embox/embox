@@ -156,20 +156,14 @@ define class-Mybuild
 				$(map-get moduleInstanceStore/$(mod)))))
 
 	$(method addIssue,
-		$(invoke $(get issueReceiver).addIssues,$(new InstantiateIssue,
-			$1,$2,$3,$4)))
+		$(invoke issueReceiver>addIssues,
+			$(new InstantiateIssue,$1,$2,$3,$4)))
 
 	$(method addIssueGlobal,
 		$(invoke addIssue,,$1,,$2))
 
 	$(method addIssueInclude,
-			$(invoke addIssue,
-				$(for includeMember <- $1,
-					$(get includeMember->eResource)),
-				$2,
-				$(for includeMember <- $1,
-					$(get includeMember->origin)),
-				$3))
+		$(invoke addIssue,$(get 1->eResource),$2,$(get 1->origin),$3))
 
 	$(method addIssueInstance,
 		$(invoke addIssueInclude,$(get 1->includeMember),$2,$3))
@@ -428,7 +422,7 @@ define class-Mybuild
 					$1,
 					$(if $(filter $(get 1->type),$(get mod->allSubTypes)),$1,
 						$(invoke addIssueInclude,
-							$(cfgInclude),
+							$(value cfgInclude),
 							error,
 							Module $(get mod->qualifiedName) extends module \
 								supertype already extended by incompatible \
@@ -529,8 +523,10 @@ endef
 # Takes a resource set of configfiles and creates build for each configuration.
 # Returns the argument.
 define mybuild_create_build
-	$(invoke $(new Mybuild).createBuild,
-		$(call mybuild_get_active_configuration,$1))
+	$(for __mb <- $(new Mybuild),
+		$(invoke __mb->createBuild,
+			$(call mybuild_get_active_configuration,$1))
+		$(call printIssues,$(__mb)))
 endef
 
 # 1. Config files resource set.
@@ -591,7 +587,7 @@ define printInstances
 endef
 
 define printIssues
-	$(for issueReceiver <- $(get-field 1->issueReceiver),
+	$(silent-for issueReceiver <- $(get 1->issueReceiver),
 		$(if $(invoke issueReceiver->getIssues),
 			$(invoke issueReceiver->printIssues)))
 endef
