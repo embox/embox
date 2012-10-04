@@ -72,6 +72,7 @@ POOL_DEF(cdfs_file_pool, struct cdfs_file_description, OPTION_GET(NUMBER,inode_q
 
 static int cdfs_open(cdfs_file_description_t *filp, char *name);
 static int create_dir_entry (node_t *node);
+static int get_full_path(cdfs_t *cdfs, int numrec, char *path, char *root);
 
 static int isonum_711(unsigned char *p) {
   return p[0];
@@ -519,8 +520,6 @@ int cdfs_mount(node_t *root_node)
 	fs->data = cdfs;
 	create_dir_entry (root_node);
 
-	cdfs_open((cdfs_file_description_t *) root_node->fd,
-			"/PROGRAM/ACRONIS/DE.ICO");
 	return 0;
 }
 
@@ -1040,6 +1039,7 @@ static size_t cdfsfs_fread(void *buf, size_t size, size_t count, void *file) {
 
 	//int cdfs_read(cdfs_file_description_t *filp, void *data, size_t size, off64_t pos);
 	rezult = cdfs_read(fd, (void *) buf, size * count, fd->pos);
+	fd->pos += rezult;
 
 	return rezult;
 }
@@ -1092,9 +1092,8 @@ static int cdfsfs_mount(void *par) {
 		dev_node->file_info = (void *) &cdfsfs_fop;
 	}
 
-	strcpy((char *) dev_fd->fs->mntto, params->dir);
-	*dev_fd->fs->mntfrom = 0;
-	strcpy(dev_fd->fs->mntfrom, params->dev);
+	strncpy(dev_fd->fs->mntto, params->dir, strlen(params->dir) + 1);
+	strncpy(dev_fd->fs->mntfrom, params->dev, strlen(params->dev) + 1);
 
 	if(NULL == (fd = pool_alloc(&cdfs_file_pool))) {
 		return -ENOMEM;
@@ -1109,37 +1108,78 @@ static int cdfsfs_mount(void *par) {
 	return cdfs_mount(dir_node);
 }
 
-static int create_dir_entry (node_t *node) {
-		int n;
-		iso_pathtable_record_t *pathrec;
-		cdfs_file_description_t *fd, *parents_fd;
-		cdfs_t *cdfs;
-		node_t *parent_node;
-		int namelen;
-		int reclen;
-		char path[MAX_LENGTH_PATH_NAME];
-		char name[MAX_LENGTH_PATH_NAME];
+static int create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath, int dir) {
+	buf_t *buf;
+	char *p;
+	iso_directory_record_t *rec;
+	int blk;
+	int left;
+	int reclen;
+	int namelen;
+	int flags;
+	cdfs_file_description_t *fd, *dir_fd;
+	node_t *node;
+	char name[MAX_LENGTH_PATH_NAME];
+	char full_name[MAX_LENGTH_PATH_NAME];
+	int n;
 
-		parent_node = node;
-		parents_fd = (cdfs_file_description_t *) parent_node->fd;
-		cdfs = parents_fd->fs->data;
+	dir_fd = (cdfs_file_description_t *) dir_node->fd;
 
-		memcpy(path, parents_fd->fs->mntto, strlen(parents_fd->fs->mntto));
+	/* The first two directory records are . (current) and .. (parent) */
+	blk = cdfs->path_table[dir]->extent;
+	buf = get_buffer(cdfs->devno, blk++);
+	if (!buf) {
+		return -EIO;
+	}
 
-		/* Setup pointers into path table buffer */
-		//for (n = 1; n < cdfs->path_table_records; n++) {
-		for (n = 1; n < 40; n++) {
-			pathrec = cdfs->path_table[n];
-			namelen = pathrec->length;
-			reclen = sizeof(iso_pathtable_record_t) + namelen + (namelen & 1);
+	/* Get length of directory from the first record */
+	p = buf->data;
+	rec = (iso_directory_record_t *) p;
+	left = isonum_733(rec->size);
+	n = 0;
 
-			memcpy(name, pathrec->name, namelen);
+	/* Find named entry in directory */
+	while (left > 0) {
+		/*
+		 * Read next block if all records in current block has been read
+		 * Directory records never cross block boundaries
+		 */
+		if (p >= buf->data + CDFS_BLOCKSIZE) {
+			if (p > buf->data + CDFS_BLOCKSIZE) {
+				return -EIO;
+			}
+			buf = get_buffer(cdfs->devno, blk++);
+			if (!buf) {
+				return -EIO;
+			}
+			p = buf->data;
+		}
+
+		/* Check for match */
+		rec = (iso_directory_record_t *) p;
+		reclen = isonum_711(rec->length);
+		namelen = isonum_711(rec->name_len);
+		flags = isonum_711(rec->flags);
+
+		if (reclen > 0) {
+			/* Skip to next record */
+			p += reclen;
+			left -= reclen;
+			n++;
+			if(n > 3) {
+				return 0;
+			}
+
+			strcpy(full_name, dirpath);
+			memcpy(name, rec->name, namelen);
 			name[namelen] = 0;
-			/* root dir name empty */
-			if(0 == name[0]) {
+			if((20 >= name[0]) || (flags & 2)) {
+				n--;
 				continue;
 			}
-			if(NULL == (node = vfs_add_path (name, parent_node))) {
+			strcat(full_name, "/");
+			strcat(full_name, name);
+			if(NULL == (node = vfs_add_path (full_name, NULL))) {
 				//return -ENOMEM;
 				continue;
 			}
@@ -1147,14 +1187,97 @@ static int create_dir_entry (node_t *node) {
 			if(NULL == (fd = pool_alloc(&cdfs_file_pool))) {
 				return -ENOMEM;
 			}
-			fd->fs = parents_fd->fs;
-			node->fs_type = &cdfsfs_drv;
-			node->dev_type = parent_node->dev_type;
-			node->dev_attr = parent_node->dev_attr;
-			node->fd = (void *)fd;
 
-			//pathrec->extent;
+			fd->fs = dir_fd->fs;
+			node->fs_type = &cdfsfs_drv;
+			node->dev_type = dir_node->dev_type;
+			node->dev_attr = dir_node->dev_attr;
+			node->fd = (void *)fd;
 		}
+		else {
+			/* Skip to next block */
+			left -= (buf->data + CDFS_BLOCKSIZE) - p;
+			p = buf->data + CDFS_BLOCKSIZE;
+		}
+	}
+	return 0;
+}
+
+static int create_dir_entry (node_t *parent) {
+		int n;
+		iso_pathtable_record_t *pathrec;
+		cdfs_file_description_t *fd, *parents_fd;
+		cdfs_t *cdfs;
+		node_t *parent_node;
+		node_t *node;
+		int namelen;
+		int reclen;
+		char path[MAX_LENGTH_PATH_NAME];
+		char name[MAX_LENGTH_PATH_NAME];
+
+		node = parent_node = parent;
+		fd = parents_fd = (cdfs_file_description_t *) parent_node->fd;
+		cdfs = parents_fd->fs->data;
+
+		strncpy(path, parents_fd->fs->mntto, MAX_LENGTH_PATH_NAME);
+
+		/* Setup pointers into path table buffer */
+		//for (n = 1; n < cdfs->path_table_records; n++) {
+		for (n = 1; n < 16; n++) {
+			pathrec = cdfs->path_table[n];
+			namelen = pathrec->length;
+			reclen = sizeof(iso_pathtable_record_t) + namelen + (namelen & 1);
+
+			memcpy(name, pathrec->name, namelen);
+			name[namelen] = 0;
+			/* root dir name empty */
+			if(20 >= name[0]) {
+				name[0] = 0;
+				get_full_path(cdfs, n, name, path);
+			}
+			else {
+
+				get_full_path(cdfs, n, name, path);
+
+				if(NULL == (node = vfs_add_path (name, NULL))) {
+					//return -ENOMEM;
+					continue;
+				}
+
+				if(NULL == (fd = pool_alloc(&cdfs_file_pool))) {
+					return -ENOMEM;
+				}
+				fd->fs = parents_fd->fs;
+				node->fs_type = &cdfsfs_drv;
+				node->dev_type = parent_node->dev_type;
+				node->dev_attr = parent_node->dev_attr;
+				node->fd = (void *)fd;
+			}
+
+			create_file_node (node, cdfs, name, n);
+		}
+
+	return 0;
+}
+
+static int get_full_path(cdfs_t *cdfs, int numrec, char *path, char *root) {
+	char full_path[MAX_LENGTH_PATH_NAME];
+	iso_pathtable_record_t *pathrec;
+
+	pathrec = cdfs->path_table[numrec];
+
+	while(1 != pathrec->parent) {
+		strcpy(full_path, path);
+		pathrec = cdfs->path_table[pathrec->parent];
+		memcpy(path, pathrec->name, pathrec->length);
+		path[pathrec->length] = 0;
+		strcat(path, "/");
+		strcat(path, full_path);
+	}
+	strcpy(full_path, root);
+	strcat(full_path, "/");
+	strcat(full_path, path);
+	strcpy(path, full_path);
 
 	return 0;
 }

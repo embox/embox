@@ -17,7 +17,7 @@
 
 #define BUF_INP_SIZE OPTION_GET(NUMBER,input_buffer)
 
-EMBOX_UNIT_INIT(run);
+EMBOX_UNIT_INIT(run_script);
 
 static const char *script_commands[] = {
 	#include <start_script.inc>
@@ -44,7 +44,7 @@ static int run_cmd(int argc, char *argv[]) {
 	return code;
 }
 
-int parse(const char *const_line) {
+static int parse(const char *const_line) {
 	char *token_line[(BUF_INP_SIZE + 1) / 2];
 	char cline[BUF_INP_SIZE];
 	char *line = cline;
@@ -64,12 +64,17 @@ int parse(const char *const_line) {
 	return run_cmd(tok_pos, token_line);
 }
 
-static int run(void) {
+extern void shell_run(void);
+
+static int run_script(void) {
 	const char *command;
-	prom_printf("\nloading start script\n");
+	prom_printf("\nloading start script:\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		prom_printf("> %s \n", command);
 		parse(command);
 	}
+	shell_run();
 	return 0;
 }
+
+

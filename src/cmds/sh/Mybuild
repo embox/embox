@@ -14,7 +14,7 @@ module tish extends shell_api {
     depends third_party.lib.linenoise
     depends embox.framework.LibFramework
 }
-
+/*
 module shell_start {
     @IncludePath("$(CONF_DIR)")
     source "shell_start.c"
@@ -24,3 +24,4 @@ module shell_start {
     depends embox.util.LibUtil
     depends embox.framework.LibFramework
 }
+*/

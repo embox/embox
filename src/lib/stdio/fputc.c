@@ -19,5 +19,8 @@ int fputc(int c, FILE *stream) {
 }
 
 int putchar(int c) {
+	if (c == '\n') {
+		fputc('\r', stdout);
+	}
 	return fputc(c, stdout);
 }

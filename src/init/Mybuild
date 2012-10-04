@@ -1,12 +1,13 @@
 
 package embox.init
 
-module init {
+module start_script {
 
     option number input_buffer = 80
 
-    @IncludePath("$(CONF_DIR)")
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "init.c"
-}
+	@IncludePath("$(CONF_DIR)")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "start_script.c"
 
+	depends embox.cmd.sh.shell_api
+}

@@ -164,7 +164,6 @@ static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 		return -EINVAL;
 	}
 
-	prom_printf("e1000: start_xmit 0x%x\n", (unsigned int) skb);
 	base_addr = dev->base_addr;
 
 	if (in8(base_addr + NE_CMD) & E8390_TRANS) { /* no matter, which page is active */
