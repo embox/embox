@@ -14,6 +14,7 @@
 struct task_signal_table;
 struct task_idx_table;
 struct thread;
+struct task_vmem_data;
 
 /**
  * @brief Task resources container
@@ -33,6 +34,8 @@ struct task {
 	struct task_idx_table *idx_table; /**< @brief Resources which task have */
 
 	struct task_signal_table *signal_table;
+
+	struct task_vmem_data *vmem_data;
 
 	int err; /**< @brief Last occurred error code */
 };

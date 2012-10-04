@@ -1,6 +1,6 @@
-package embox.arch.sparc.mm
+package embox.arch.sparc
 
-module mmu {
+module mm extends embox.arch.mm {
 	source "mmu_core.c"
 	source "mmu_fault.S"
 	source "mmu_map.c"

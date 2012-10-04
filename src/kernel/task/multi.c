@@ -14,7 +14,6 @@
 #include <kernel/panic.h>
 #include "common.h"
 
-
 #include <embox/unit.h> /* For options */
 
 typedef void *(*run_fn)(void *);

@@ -1,0 +1,13 @@
+package embox.mem
+
+module vmem {
+	source "vmem.c"
+
+	depends embox.arch.mm
+
+	depends embox.mem.vmem.virtallocator
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}

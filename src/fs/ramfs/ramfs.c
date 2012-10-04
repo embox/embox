@@ -70,13 +70,13 @@ static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file) {
 		return -ENOENT;
 	}
 
-	if (size * count >= (fd->size - desc->cursor)) {
-		size_to_read = fd->size - desc->cursor;
+	if (size * count >= (fd->size - fd->cur_pointer)) {
+		size_to_read = fd->size - fd->cur_pointer;
 	}
 
-	memcpy((void*) buf, (const void *) (fd->start_addr + desc->cursor),
+	memcpy((void*) buf, (const void *) (fd->start_addr + fd->cur_pointer),
 			size_to_read);
-	desc->cursor += size_to_read;
+	fd->cur_pointer += size_to_read;
 	return size_to_read / size; /* number of item not characters */
 }
 
@@ -103,11 +103,12 @@ static size_t ramfs_fwrite(const void *buf, size_t size, size_t count,
 }
 
 static int ramfs_fseek(void *file, long offset, int whence) {
+	struct file_desc *desc;
 	ramfs_file_description_t *fd;
-	node_t *nod;
 	int new_offset;
-	nod = (node_t *) file;
-	fd = (ramfs_file_description_t*) nod->fd;
+
+	desc = (struct file_desc *) file;
+	fd = (ramfs_file_description_t *)desc->node->fd;
 
 	if (fd == NULL) {
 		return -ENOENT;

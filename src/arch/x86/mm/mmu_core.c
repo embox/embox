@@ -11,6 +11,7 @@
 
 #include <hal/mm/mmu_core.h>
 #include <asm/hal/mm/mmu_core.h>
+#include <mem/vmem/virtalloc.h>
 #include <asm/flags.h>
 #include <string.h>
 //http://rus-linux.net/MyLDP/kernel/toyos/sozdaem-unix-like-os-06.html
@@ -72,49 +73,31 @@ static unsigned int get_cr2(void) {
 //    return _tr7;
 //}
 
-mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx) {
-	mmu_pgd_t * pagedir;
-	pagedir = (mmu_pgd_t *)get_cr3();
-	return &pagedir[ctx];
+static uint32_t ctx_table[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
+
+mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
+	return (mmu_pgd_t *)ctx_table[ctx];
 }
 
 void mmu_flush_tlb(void) {
 	set_cr3(get_cr3());
 }
-static uint32_t global_pdt[0x400] __attribute__((aligned(MMU_PAGE_SIZE)));
+
+static int ctx_counter = 0;
+
+mmu_ctx_t mmu_create_context(void) {
+	mmu_ctx_t ctx = (mmu_ctx_t) (ctx_counter++);
+	mmu_pmd_t *pmd = alloc_pmd_table();
+	ctx_table[ctx] = (uint32_t) pmd;
+	return ctx;
+}
 
 static int mmu_init(void) {
-	uint32_t *pdt;
-
-//	extern char _text_vma, _data_vma, _stack_vma, _bss_vma;
-//	extern size_t _text_len, _data_len, _stack_len, _bss_len;
-
-	pdt = (uint32_t *)global_pdt;
-
-	/* clear whole directory table */
-	memset(pdt, 0, 0x1000);
-	/* setup cr3 register (pointer to page directory table) */
-	set_cr3((uint32_t)pdt);
-
-	/* one-on-one mapping for context 0 */
-//	mmu_map_region(0, (paddr_t)&_text_vma, (vaddr_t)&_text_vma, (size_t)&_text_len, MMU_PAGE_WRITEABLE);
-//	mmu_map_region(0, (paddr_t)&_data_vma, (paddr_t) &_data_vma, (size_t)&_data_len, MMU_PAGE_WRITEABLE);
-//	mmu_map_region(0, (paddr_t)&_stack_vma, (paddr_t)&_stack_vma, (size_t)&_stack_len, MMU_PAGE_WRITEABLE);
-//	mmu_map_region(0, (paddr_t)&_bss_vma, (paddr_t)&_bss_vma, (size_t)&_bss_len, MMU_PAGE_WRITEABLE);
-
-
-	mmu_map_region(0, (paddr_t)0, (vaddr_t)0, (size_t)0x300000, MMU_PAGE_WRITEABLE);
-
 	return 0;
 }
 
-extern void setup_gp_flag(void);
 void mmu_on(void) {
-	//setup_gp_flag();
-	uint32_t cr0;
-    asm volatile("mov %%cr0, %0": "=r"(cr0));
-    cr0 |= X86_CR0_PG; /* Enable paging!*/
-    asm volatile("mov %0, %%cr0":: "r"(cr0));
+    set_cr0(get_cr0() | X86_CR0_PG);
 }
 
 void mmu_off(void) {
@@ -124,6 +107,10 @@ void mmu_off(void) {
 
 vaddr_t mmu_get_fault_address(void) {
 	return get_cr2();
+}
+
+void switch_mm(mmu_ctx_t prev, mmu_ctx_t next) {
+	set_cr3((uint32_t) mmu_get_root(next));
 }
 
 void mmu_flush_tlb_single(unsigned long addr) {
