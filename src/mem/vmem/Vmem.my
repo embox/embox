@@ -3,7 +3,7 @@ package embox.mem
 module vmem {
 	source "vmem.c"
 
-	depends embox.arch.mm
+	depends embox.arch.mmu
 
 	depends embox.mem.vmem.virtallocator
 

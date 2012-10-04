@@ -10,13 +10,32 @@
 
 #include <assert.h>
 #include <types.h>
-#include <stdio.h>
-#include <hal/mm/mmu_core.h>
+#include <prom/prom_printf.h>
+#include <hal/mmu.h>
+
+#if 0
 #include "../kernel/task/common.h"
 #include "../kernel/thread/types.h"
-#include <mem/vmem.h>
-#include <mem/vmem/virtalloc.h>
+#endif
 
+EMBOX_UNIT(vmem_init, vmem_fini);
+
+static int vmem_init(void) {
+	prom_printf("MMU_PTE_MASK = 0x%08x", MMU_PTE_MASK);
+	prom_printf("MMU_PMD_MASK = 0x%08x", MMU_PMD_MASK);
+	prom_printf("MMU_PGD_MASK = 0x%08x", MMU_PGD_MASK);
+
+	return 0;
+}
+
+static int vmem_fini(void) {
+
+
+	return 0;
+}
+
+
+#if 0
 /* Section pointers. */
 extern char _text_vma, _rodata_vma, _bss_vma, _data_vma, _stack_vma, _heap_vma;
 extern char _text_len, _rodata_len, _bss_len, _data_len, _stack_len, _heap_len;
@@ -143,3 +162,5 @@ static int task_switch_handler(struct thread *prev, struct thread *next) {
 
 TASK_RESOURCE_DESC(&vmem_resource);
 TASK_RESOURCE_NOTIFY(task_switch_handler);
+
+#endif
