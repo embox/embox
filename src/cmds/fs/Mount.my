@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.fs
 
 import embox.compat.posix.LibPosix
 
