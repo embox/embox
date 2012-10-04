@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.net
 
 @Cmd(name = "ntpdate",
 	help = "Set the date and time via NTP",

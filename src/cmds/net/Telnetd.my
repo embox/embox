@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.net
 
 @Cmd(name = "telnetd",
 	help = "Start telnetd server",
@@ -20,7 +20,7 @@ module telnetd {
 	depends embox.lib.LibC
 	depends embox.kernel.thread.core
 	depends embox.net.socket
-	depends embox.cmd.sh.tish
+	depends embox.cmd.sh.shell_api
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

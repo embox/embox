@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.net
 
 @Cmd(name = "ping",
 	help = "Send ICMP ECHO_REQUEST to network hosts",

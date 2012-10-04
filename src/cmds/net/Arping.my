@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.net
 
 @Cmd(name = "arping",
 	help = "Send ARP REQUEST to a neighbour host",
