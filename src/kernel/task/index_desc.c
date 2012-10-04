@@ -19,7 +19,7 @@ OBJALLOC_DEF(idx_pool, struct idx_desc, CONFIG_TASKS_RES_QUANTITY);
 OBJALLOC_DEF(idx_data_pool, struct idx_desc_data, CONFIG_TASKS_RES_QUANTITY);
 
 
-/*static*/ struct idx_desc *task_idx_desc_alloc(struct idx_desc_data *data) {
+struct idx_desc *task_idx_desc_alloc(struct idx_desc_data *data) {
 	struct idx_desc *idx = objalloc(&idx_pool);
 
 	idx->data = data;
@@ -30,7 +30,30 @@ OBJALLOC_DEF(idx_data_pool, struct idx_desc_data, CONFIG_TASKS_RES_QUANTITY);
 	return idx;
 }
 
-static int task_idx_data_free(struct idx_desc *idx) {
+int task_idx_desc_free(struct idx_desc *idx) {
+	int res;
+
+	if (1 == idx->data->link_count) {
+		if (0 != (res = task_idx_data_free(idx))) {
+			return res;
+		}
+	} else {
+		idx->data->link_count -= 1;
+	}
+
+	objfree(&idx_pool, idx);
+	return 0;
+}
+
+struct idx_desc_data *task_idx_data_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
+	struct idx_desc_data *idx_data = objalloc(&idx_data_pool);
+	idx_data->link_count = 0;
+	idx_data->res_ops = res_ops;
+	idx_data->fd_struct = fd_struct;
+	return idx_data;
+}
+
+int task_idx_data_free(struct idx_desc *idx) {
 	int res;
 
 	if (0 != (res = idx->data->res_ops->close(idx))) {
@@ -41,27 +64,6 @@ static int task_idx_data_free(struct idx_desc *idx) {
 	return 0;
 
 
-}
-
-static int task_idx_desc_free(struct idx_desc *idx) {
-	int res;
-
-	if (1 == idx->data->link_count) {
-		if (0 != (res = task_idx_data_free(idx))) {
-			return res;
-		}
-	}
-
-	objfree(&idx_pool, idx);
-	return 0;
-}
-
-/*static*/ struct idx_desc_data *task_idx_data_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
-	struct idx_desc_data *idx_data = objalloc(&idx_data_pool);
-	idx_data->link_count = 0;
-	idx_data->res_ops = res_ops;
-	idx_data->fd_struct = fd_struct;
-	return idx_data;
 }
 
 int task_idx_table_first_unbinded(struct task_idx_table *res) {

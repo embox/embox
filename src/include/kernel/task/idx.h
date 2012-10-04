@@ -191,12 +191,15 @@ static inline struct idx_desc *task_self_idx_get(int fd) {
  * @param fd idx descriptor number
  * @param desc idx descriptor pointer to associate with number
  */
-static inline void task_self_idx_set(int fd, struct idx_desc *desc) {
-	task_idx_table_set(task_self_idx_table(), fd, desc);
+static inline int task_self_idx_set(int fd, struct idx_desc *desc) {
+	return task_idx_table_set(task_self_idx_table(), fd, desc);
 }
 
 extern struct idx_desc *task_idx_desc_alloc(struct idx_desc_data *data);
+extern int task_idx_desc_free(struct idx_desc *idx);
 extern struct idx_desc_data *task_idx_data_alloc(const struct task_idx_ops *res_ops, void *fd_struct);
+extern int task_idx_data_free(struct idx_desc *idx);
+
 extern int task_self_idx_alloc(const struct task_idx_ops *ops, void *data);
 
 static inline int task_self_idx_table_unbind(int fd) {
