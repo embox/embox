@@ -116,10 +116,15 @@ int ioctl(int fd, int request, ...) {
 	ops = task_idx_desc_ops(desc);
 
 	assert(ops);
-	assert(ops->ioctl);
 
 	va_start(args, request);
-	ret = ops->ioctl(desc, request, args);
+
+	if (NULL == ops->ioctl) {
+		ret = -1;
+	} else {
+		ret = ops->ioctl(desc, request, args);
+	}
+
 	va_end(args);
 
 	return ret;
