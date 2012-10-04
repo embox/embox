@@ -41,7 +41,7 @@ int dup2(int flides, int flides2) {
 
 	old_idx = task_self_idx_get(flides);
 
-	task_self_idx_set(flides2, old_idx);
+	task_self_idx_set(flides2, task_idx_desc_alloc(old_idx->data));
 
 	return flides2;
 }

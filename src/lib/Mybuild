@@ -74,6 +74,9 @@ static module LibCMath {
 }
 
 static module LibCStdio {
+
+	option boolean stdio_lf_crlf_map = true
+
 	source "stdio/file_ops.c"
 	source "stdio/fgetc.c"
 	source "stdio/fputc.c"

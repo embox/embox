@@ -32,10 +32,10 @@ struct param {
 	void (*run)(void);
 };
 
-static int _canon_read(struct idx_desc_data *data, void *buf, size_t size);
-static int _write(struct idx_desc_data *data, const void *buf, size_t nbyte);
-static int _ioctl(struct idx_desc_data *data, int request, va_list args);
-static int _close (struct idx_desc_data *data);
+static int _canon_read(struct idx_desc *data, void *buf, size_t size);
+static int _write(struct idx_desc *data, const void *buf, size_t nbyte);
+static int _ioctl(struct idx_desc *data, int request, va_list args);
+static int _close (struct idx_desc *data);
 
 const struct task_idx_ops task_idx_ops_tty = {
 	.close = _close,
@@ -47,11 +47,11 @@ const struct task_idx_ops task_idx_ops_tty = {
 
 static struct tty_buf *current_tty;
 
-static inline struct tty_buf *data2tty_buf(struct idx_desc_data *data) {
-	return data->fd_struct;
+static inline struct tty_buf *data2tty_buf(struct idx_desc *data) {
+	return task_idx_desc_data(data);
 }
 
-static size_t _read(void *buf, size_t size, struct idx_desc_data *data) {
+static size_t _read(void *buf, size_t size, struct idx_desc *data) {
 	char *ch_buf = (char *) buf;
 
 	struct tty_buf *tty = data2tty_buf(data);
@@ -72,7 +72,7 @@ static size_t _read(void *buf, size_t size, struct idx_desc_data *data) {
 	return size;
 }
 
-static int _canon_read(struct idx_desc_data *data, void *buf, size_t size) {
+static int _canon_read(struct idx_desc *data, void *buf, size_t size) {
 	struct tty_buf *tty = data2tty_buf(data);
 	if (tty->canonical) {
 		int to_write;
@@ -89,7 +89,7 @@ static int _canon_read(struct idx_desc_data *data, void *buf, size_t size) {
 	return _read(buf, size, data);
 }
 
-static int _write(struct idx_desc_data *data, const void *buf, size_t size) {
+static int _write(struct idx_desc *data, const void *buf, size_t size) {
 	size_t cnt = 0;
 	char *b = (char*) buf;
 	struct tty_buf *tty = data2tty_buf(data);
@@ -110,23 +110,23 @@ static void tty_putc_buf(struct tty_buf *tty, char ch) {
 
 }
 
-static void *thread_handler(void* args) {
+static void *task_handler(void* args) {
 	struct param *p = (struct param *) args;
-	struct idx_desc *cidx = task_idx_desc_alloc(&task_idx_ops_tty, p->tty);
+	struct idx_desc_data *idx_data = task_idx_data_alloc(&task_idx_ops_tty, p->tty);
 
 	close(0);
 	close(1);
 	close(2);
 
-	task_self_idx_set(0, cidx);
-	task_self_idx_set(1, cidx);
-	task_self_idx_set(2, cidx);
+	task_self_idx_set(0, task_idx_desc_alloc(idx_data));
+	task_self_idx_set(1, task_idx_desc_alloc(idx_data));
+	task_self_idx_set(2, task_idx_desc_alloc(idx_data));
 
 	p->run();
 	return NULL;
 }
 
-static int _ioctl(struct idx_desc_data *data, int request, va_list args) {
+static int _ioctl(struct idx_desc *data, int request, va_list args) {
 	struct tty_buf *tty = data2tty_buf(data);
 	switch (request) {
 	case TTY_IOCTL_SET_RAW:
@@ -143,7 +143,7 @@ static int _ioctl(struct idx_desc_data *data, int request, va_list args) {
 	return 0;
 }
 
-static int _close (struct idx_desc_data *data) {
+static int _close (struct idx_desc *data) {
 	return 0;
 }
 
@@ -172,7 +172,7 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 
 		params[i].tty = &ttys[i];
 		params[i].run = run;
-		new_task(thread_handler, &params[i]);
+		new_task(task_handler, &params[i]);
 	}
 
 	current_tty = &ttys[0];

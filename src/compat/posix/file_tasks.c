@@ -64,7 +64,7 @@ ssize_t write(int fd, const void *buf, size_t nbyte) {
 	ops = task_idx_desc_ops(desc);
 	assert(ops);
 	assert(ops->write);
-	return ops->write(task_idx_desc_data(desc), buf, nbyte);
+	return ops->write(desc, buf, nbyte);
 }
 
 ssize_t read(int fd, void *buf, size_t nbyte) {
@@ -84,7 +84,7 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	ops = task_idx_desc_ops(desc);
 	assert(ops);
 	assert(ops->read);
-	return ops->read(task_idx_desc_data(desc), buf, nbyte);
+	return ops->read(desc, buf, nbyte);
 }
 
 int lseek(int fd, long int offset, int origin) {
@@ -99,7 +99,7 @@ int lseek(int fd, long int offset, int origin) {
 	ops = task_idx_desc_ops(desc);
 	assert(ops);
 	assert(ops->fseek);
-	return ops->fseek(task_idx_desc_data(desc), offset, origin);
+	return ops->fseek(desc, offset, origin);
 }
 
 int ioctl(int fd, int request, ...) {
@@ -119,7 +119,7 @@ int ioctl(int fd, int request, ...) {
 	assert(ops->ioctl);
 
 	va_start(args, request);
-	ret = ops->ioctl(task_idx_desc_data(desc), request, args);
+	ret = ops->ioctl(desc, request, args);
 	va_end(args);
 
 	return ret;
@@ -138,17 +138,17 @@ int fcntl(int fd, int cmd, ...) {
 	va_start(args, cmd);
 	switch(cmd) {
 	case F_GETFD:
-		res = desc->data.flags;
+		res = *task_idx_desc_flags_ptr(desc);
 		break;
 	case F_SETFD:
-		desc->data.flags = va_arg(args, int);
+		* task_idx_desc_flags_ptr(desc) = va_arg(args, int);
 		break;
 	default:
 		/*SET_ERRNO(EINVAL);*/
 		res = -1;
 		break;
 	}
-	/* ops->foctl(task_idx_desc_data(desc), cmd, args); */
+	/* ops->foctl(desc, cmd, args); */
 	va_end(args);
 
 	return res;

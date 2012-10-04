@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <framework/mod/options.h>
 
 int fputc(int c, FILE *stream) {
 	char ch = (char) c;
@@ -19,8 +20,10 @@ int fputc(int c, FILE *stream) {
 }
 
 int putchar(int c) {
+#if OPTION_GET(BOOLEAN,stdio_lf_crlf_map)
 	if (c == '\n') {
 		fputc('\r', stdout);
 	}
+#endif
 	return fputc(c, stdout);
 }

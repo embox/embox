@@ -16,10 +16,10 @@
 
 #define PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
 
-static int pipe_close(struct idx_desc_data *data);
-static int pipe_read(struct idx_desc_data *data, void *buf, size_t nbyte);
-static int pipe_write(struct idx_desc_data *data, const void *buf, size_t nbyte);
-static int pipe_ioctl(struct idx_desc_data *data, int request, va_list args);
+static int pipe_close(struct idx_desc *data);
+static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte);
+static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte);
+static int pipe_ioctl(struct idx_desc *data, int request, va_list args);
 
 static const struct task_idx_ops read_ops = {
 		.read = pipe_read,
@@ -73,8 +73,8 @@ int pipe(int pipefd[2]) {
 	return 0;
 }
 
-static int pipe_close(struct idx_desc_data *data) {
-	struct pipe *pipe= (struct pipe*) data->fd_struct;
+static int pipe_close(struct idx_desc *data) {
+	struct pipe *pipe= (struct pipe*) task_idx_desc_data(data);
 
 	if (!(--pipe->ends_count)) {
 		free(pipe->buff.buffer.storage);
@@ -84,9 +84,9 @@ static int pipe_close(struct idx_desc_data *data) {
 	return 0;
 }
 
-static int pipe_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
+static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	int len;
-	struct pipe *pipe = (struct pipe*)data->fd_struct;
+	struct pipe *pipe= (struct pipe*) task_idx_desc_data(data);
 
 	if (!nbyte || pipe->ends_count == 1) {
 		return 0;
@@ -107,9 +107,9 @@ static int pipe_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
 	return len;
 }
 
-static int pipe_write(struct idx_desc_data *data, const void *buf, size_t nbyte) {
+static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 	int len;
-	struct pipe *pipe = (struct pipe*)data->fd_struct;
+	struct pipe *pipe= (struct pipe*) task_idx_desc_data(data);
 
 	if (pipe->ends_count == 1) {
 		SET_ERRNO(EPIPE);
@@ -135,6 +135,6 @@ static int pipe_write(struct idx_desc_data *data, const void *buf, size_t nbyte)
 	return len;
 }
 
-static int pipe_ioctl(struct idx_desc_data *data, int request, va_list args) {
+static int pipe_ioctl(struct idx_desc *data, int request, va_list args) {
 	return 0;
 }
