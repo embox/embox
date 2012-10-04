@@ -21,9 +21,10 @@
 EMBOX_UNIT(vmem_init, vmem_fini);
 
 static int vmem_init(void) {
-	prom_printf("MMU_PTE_MASK = 0x%08x", MMU_PTE_MASK);
-	prom_printf("MMU_PMD_MASK = 0x%08x", MMU_PMD_MASK);
-	prom_printf("MMU_PGD_MASK = 0x%08x", MMU_PGD_MASK);
+	prom_printf("\n");
+	prom_printf("MMU_PTE_MASK = 0x%08x\n", (unsigned int) MMU_PTE_MASK);
+	prom_printf("MMU_PMD_MASK = 0x%08x\n", (unsigned int) MMU_PMD_MASK);
+	prom_printf("MMU_PGD_MASK = 0x%08x\n", (unsigned int) MMU_PGD_MASK);
 
 	return 0;
 }

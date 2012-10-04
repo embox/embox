@@ -1,9 +1,9 @@
 /**
  * @file
- * @brief Specifies MMU interface.
+ * @brief
  *
- * @date 10.03.10
- * @author Anton Bondarev
+ * @date 04.10.2012
+ * @author Anton Bulychev
  */
 
 #ifndef HAL_MMU_H_
@@ -14,13 +14,11 @@
 typedef __mmu_paddr_t mmu_paddr_t;
 typedef __mmu_vaddr_t mmu_vaddr_t;
 
-typedef __mmu_page_flags_t mmu_page_flags_t;
+typedef __mmu_ctx_t mmu_ctx_t;
 
 typedef __mmu_pgd_t mmu_pgd_t;
 typedef __mmu_pmd_t mmu_pmd_t;
 typedef __mmu_pte_t mmu_pte_t;
-
-typedef __mmu_ctx_t mmu_ctx_t;
 
 #define MMU_PTE_SHIFT     __MMU_PTE_SHIFT
 #define MMU_PMD_SHIFT     __MMU_PMD_SHIFT
@@ -34,11 +32,20 @@ typedef __mmu_ctx_t mmu_ctx_t;
 #define MMU_PMD_MASK      ((MMU_PMD_ENTRIES - 1) << MMU_PMD_SHIFT)
 #define MMU_PGD_MASK      ((MMU_PGD_ENTRIES - 1) << MMU_PGD_SHIFT)
 
+#define MMU_PAGE_SIZE     (1UL << MMU_PTE_SHIFT)
+#define MMU_PAGE_MASK     (MMU_PAGE_SIZE - 1)
+
 #if 0
 #define MMU_PGD_SIZE      (1UL << MMU_PGD_SHIFT)
 #define MMU_PMD_SIZE      (1UL << MMU_PMD_SHIFT)
 #define MMU_PTE_SIZE      (1UL << MMU_PTD_SHIFT)
 #endif
+
+extern mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd);
+extern mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx);
+mmu_pmd_t *mmu_pgd_follow(mmu_pgd_t *pgd);
+mmu_pte_t *mmu_pmd_follow(mmu_pmd_t *pmd);
+mmu_paddr_t mmu_pte_follow(mmu_pte_t *pte);
 
 
 #endif /* HAL_MMU_H_ */
