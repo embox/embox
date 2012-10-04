@@ -14,7 +14,7 @@ module gptimer extends embox.arch.clock {
 	depends embox.kernel.time.clock_source
 
 	depends embox.driver.ambapp_api /*if ampa pnp enable option not required */
-	option number gptimer_base=2147484416 /* if amba pnp disable */
+	option number gptimer_base=0x80000300 /* if amba pnp disable */
 	option number irq_num=8               /* if amba pnp disable */
 }
 

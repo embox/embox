@@ -9,7 +9,7 @@ abstract module serial {
 
 module apbuart extends serial {
 	option number baud_rate
-	option number apbuart_base=2147483904
+	option number apbuart_base=0x80000100
 	option number irq_num=2
 
 	source "apbuart.c"
