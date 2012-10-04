@@ -18,6 +18,8 @@
 #include <kernel/task.h>
 #include <fcntl.h>
 
+#define TELNET_SHELL_NAME "tish"
+
 EMBOX_CMD(exec);
 
 	/* Upper limit of concurent telnet connections.
@@ -129,8 +131,10 @@ static void *shell_hnd(void* args) {
 	dup2(msg[0], STDIN_FILENO);
 	dup2(msg[1], STDOUT_FILENO);
 
-	shell = shell_lookup(OPTION_STRING_GET(shell_name));
-	shell->exec();
+	shell = shell_lookup(TELNET_SHELL_NAME);
+	if (shell != NULL) {
+		shell->exec();
+	}
 
 	return NULL;
 }
