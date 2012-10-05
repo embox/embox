@@ -138,7 +138,7 @@ mmu_pte_t mmu_pte_format(mmu_paddr_t addr, unsigned int flags) {
 	return ((addr >> 4) & MMU_PTE_PMASK) | flags | MMU_ET_PTE;
 }
 
-void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
+void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr, mmu_page_flags_t flags) {
 	mmu_set_pte(pte, (unsigned int) mmu_pte_format(addr, (0x3) << 2));
 }
 

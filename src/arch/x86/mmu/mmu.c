@@ -11,7 +11,6 @@
 #include <types.h>
 
 #define MMU_PAGE_PRESENT    (1UL)
-#define MMU_PAGE_WRITABLE   (1UL << 1)
 
 static mmu_pgd_t *ctx_table[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_counter = 0;
@@ -127,7 +126,7 @@ int mmu_pte_present(mmu_pte_t *pte) {
 	return ((uint32_t) *pte & MMU_PAGE_PRESENT);
 }
 
-void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr) {
+void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr, mmu_page_flags_t flags) {
 	*pte = (mmu_pte_t) ((((uint32_t) addr) & (~MMU_PAGE_MASK))
 			| MMU_PAGE_WRITABLE | MMU_PAGE_PRESENT);
 }

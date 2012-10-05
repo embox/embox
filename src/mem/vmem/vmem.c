@@ -40,16 +40,17 @@ void vmem_off(void) {
 }
 
 static inline void vmem_map_kernel(mmu_ctx_t ctx) {
-	vmem_map_region(ctx, (mmu_paddr_t)&_text_vma, (mmu_vaddr_t)&_text_vma, (size_t)&_text_len);
-	vmem_map_region(ctx, (mmu_paddr_t)&_rodata_vma, (mmu_vaddr_t)&_rodata_vma, (size_t)&_rodata_len);
-	vmem_map_region(ctx, (mmu_paddr_t)&_bss_vma, (mmu_vaddr_t)&_bss_vma, (size_t)&_bss_len);
-	vmem_map_region(ctx, (mmu_paddr_t)&_data_vma, (mmu_vaddr_t)&_data_vma, (size_t)&_data_len);
-	vmem_map_region(ctx, (mmu_paddr_t) _reserve_vma, (mmu_vaddr_t) _reserve_vma, (size_t) _reserve_len);
-	vmem_map_region(ctx, (mmu_paddr_t)&_stack_vma, (mmu_vaddr_t)&_stack_vma, (size_t)&_stack_len);
-	vmem_map_region(ctx, (mmu_paddr_t)&_heap_vma, (mmu_vaddr_t)&_heap_vma, (size_t)&_heap_len);
+	//TODO: flags
+	vmem_map_region(ctx, (mmu_paddr_t)&_text_vma, (mmu_vaddr_t)&_text_vma, (size_t)&_text_len, 0);
+	vmem_map_region(ctx, (mmu_paddr_t)&_rodata_vma, (mmu_vaddr_t)&_rodata_vma, (size_t)&_rodata_len, 0);
+	vmem_map_region(ctx, (mmu_paddr_t)&_bss_vma, (mmu_vaddr_t)&_bss_vma, (size_t)&_bss_len, 0);
+	vmem_map_region(ctx, (mmu_paddr_t)&_data_vma, (mmu_vaddr_t)&_data_vma, (size_t)&_data_len, 0);
+	vmem_map_region(ctx, (mmu_paddr_t) _reserve_vma, (mmu_vaddr_t) _reserve_vma, (size_t) _reserve_len, 0);
+	vmem_map_region(ctx, (mmu_paddr_t)&_stack_vma, (mmu_vaddr_t)&_stack_vma, (size_t)&_stack_len, 0);
+	vmem_map_region(ctx, (mmu_paddr_t)&_heap_vma, (mmu_vaddr_t)&_heap_vma, (size_t)&_heap_len, 0);
 
 	// for sparc
-	vmem_map_region(ctx, (mmu_paddr_t) 0x80000000, (mmu_vaddr_t) 0x80000000, (size_t) 0x4000);
+	vmem_map_region(ctx, (mmu_paddr_t) 0x80000000, (mmu_vaddr_t) 0x80000000, (size_t) 0x4000, 0);
 }
 
 void vmem_create_virtual_space(mmu_ctx_t ctx) {

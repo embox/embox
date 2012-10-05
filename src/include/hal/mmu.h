@@ -20,6 +20,8 @@ typedef __mmu_pgd_t mmu_pgd_t;
 typedef __mmu_pmd_t mmu_pmd_t;
 typedef __mmu_pte_t mmu_pte_t;
 
+typedef __mmu_page_flags_t mmu_page_flags_t;
+
 #define MMU_PTE_SHIFT     __MMU_PTE_SHIFT
 #define MMU_PMD_SHIFT     __MMU_PMD_SHIFT
 #define MMU_PGD_SHIFT     __MMU_PGD_SHIFT
@@ -39,6 +41,10 @@ typedef __mmu_pte_t mmu_pte_t;
 #define MMU_PMD_SIZE      (1UL << MMU_PMD_SHIFT)
 #define MMU_PTE_SIZE      (1UL << MMU_PTD_SHIFT)
 
+#define MMU_PAGE_WRITABLE       __MMU_PAGE_WRITABLE
+#define MMU_PAGE_USER_MODE      __MMU_PAGE_USER_MODE
+#define MMU_PAGE_CACHABLE       __MMU_PAGE_CACHABLE
+
 extern void mmu_on(void);
 extern void mmu_off(void);
 
@@ -53,7 +59,7 @@ extern mmu_paddr_t mmu_pte_follow(mmu_pte_t *pte);
 
 extern void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd);
 extern void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte);
-extern void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr);
+extern void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr, mmu_page_flags_t flags);
 
 extern int mmu_pgd_present(mmu_pgd_t *pgd);
 extern int mmu_pmd_present(mmu_pmd_t *pmd);

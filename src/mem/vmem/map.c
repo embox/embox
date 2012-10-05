@@ -12,7 +12,7 @@
 #include <mem/vmem/virtalloc.h>
 
 // TODO: flags
-int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size) {
+int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, mmu_page_flags_t flags) {
 	mmu_pgd_t *pgd;
 	mmu_pmd_t *pmd;
 	mmu_pte_t *pte;
@@ -55,7 +55,7 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, 
 		pte = mmu_pmd_follow(pmd + pmd_idx);
 
 		// XXX: What if already presented???
-		mmu_pte_set(pte + pte_idx, phy_addr);
+		mmu_pte_set(pte + pte_idx, phy_addr, flags);
 
 		virt_addr += MMU_PAGE_SIZE;
 		phy_addr += MMU_PAGE_SIZE;
