@@ -38,7 +38,8 @@ static int vmem_init(void) {
 	prom_printf("MMU_PGD_MASK = 0x%08x\n", (unsigned int) MMU_PGD_MASK);
 
 	mmu_create_context((mmu_pgd_t *) virt_alloc_table());
-	if (vmem_map_region(0, (mmu_paddr_t) 0, (mmu_vaddr_t) 0, (size_t) 0x2500000)) return 1;
+	if (vmem_map_region(0, (mmu_paddr_t) 0x40000000, (mmu_vaddr_t) 0x40000000, (size_t) 0x100000)) return 1;
+	vmem_map_region(0, (mmu_paddr_t) 0x80000000, (mmu_vaddr_t) 0x80000000, (size_t) 0x4000);
 
 	vmem_on();
 
