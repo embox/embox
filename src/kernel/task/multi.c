@@ -8,6 +8,7 @@
 
 #include <errno.h>
 #include <kernel/task/task_table.h>
+#include <kernel/task/signal.h>
 #include <kernel/thread/api.h>
 #include <mem/misc/pool.h>
 #include <kernel/task.h>
@@ -70,6 +71,8 @@ int new_task(void *(*run)(void *), void *arg) {
 	/* init new task */
 
 	task_init_parent(self_task, task_self());
+
+	signal_init(self_task->signal_table);
 
 	thread_set_task(thd, self_task);
 

@@ -14,16 +14,20 @@
 
 extern void context_enter_frame(struct context *ctx, void (*pc)(void));
 
-void kill(int tid, int sig) {
+int kill(int tid, int sig) {
+	struct thread *th;
+	int res = -1;
 	struct task *task = task_table_get(tid);
-	struct task_signal_table *sig_table = task->signal_table;
-	struct thread *hnd_thread = member_cast_out(task->threads.next, struct thread, task_link);
 
-	sig_table->sig_mask |= 1 << sig;
+	task->signal_table->sig_mask |= 1 << sig;
 
-#if 0
-	sched_setrun(hnd_thread);
-#endif
+	list_for_each_entry(th, &task->threads, task_link) {
+		if ((res = sched_setrun(th)) != -1) {
+			break;
+		}
+	}
+
+	return res;
 }
 
 void signal(int sig, void (*hnd)(int)) {
@@ -76,6 +80,18 @@ static int notify_hnd(struct thread *prev, struct thread *next) {
 
 
 	return 0;
+}
+
+static void task_terminate(int sig) {
+	int res = 0;
+	task_exit(&res);
+}
+
+void signal_init(struct task_signal_table *table) {
+	int sig;
+	for (sig = 0; sig < TASK_SIGNAL_MAX_N; sig++) {
+		task_signal_table_set(table, sig, task_terminate);
+	}
 }
 
 TASK_RESOURCE_DESC(&signal_resource);

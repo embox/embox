@@ -370,6 +370,15 @@ out:
 	sched_unlock_noswitch();
 }
 
+int sched_setrun(struct thread *thread) {
+	if (thread_state_sleeping(thread->state)) {
+		do_wake_thread(thread, 0);
+	} else if (!thread_state_running(thread->state)) {
+		return -1;
+	}
+	return 0;
+}
+
 static int unit_init(void) {
 	return 0;
 }
