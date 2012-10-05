@@ -2,8 +2,8 @@
  * @file
  * @brief Virtual memory subsystem
  *
- * @date 29.07.11
- * @author Anton Kozlov
+ * @date 05.10.2012
+ * @author Anton Bulychev
  */
 
 #include <embox/unit.h>
@@ -12,6 +12,8 @@
 #include <types.h>
 #include <prom/prom_printf.h>
 #include <hal/mmu.h>
+#include <mem/vmem.h>
+#include <mem/vmem/virtalloc.h>
 
 #if 0
 #include "../kernel/task/common.h"
@@ -20,18 +22,30 @@
 
 EMBOX_UNIT(vmem_init, vmem_fini);
 
+static inline void vmem_on(void) {
+	switch_mm((mmu_ctx_t) 0, (mmu_ctx_t) 0);
+	mmu_on();
+}
+
+static inline void vmem_off(void) {
+	mmu_off();
+}
+
 static int vmem_init(void) {
 	prom_printf("\n");
 	prom_printf("MMU_PTE_MASK = 0x%08x\n", (unsigned int) MMU_PTE_MASK);
 	prom_printf("MMU_PMD_MASK = 0x%08x\n", (unsigned int) MMU_PMD_MASK);
 	prom_printf("MMU_PGD_MASK = 0x%08x\n", (unsigned int) MMU_PGD_MASK);
 
+	mmu_create_context((mmu_pgd_t *) virt_alloc_table());
+	if (vmem_map_region(0, (mmu_paddr_t) 0, (mmu_vaddr_t) 0, (size_t) 0x2500000)) return 1;
+
+	vmem_on();
+
 	return 0;
 }
 
 static int vmem_fini(void) {
-
-
 	return 0;
 }
 

@@ -1,8 +1,9 @@
 package embox.mem
 
 module vmem {
-	source "vmem.c"
+	source "vmem.c", "map.c"
 
 	depends embox.arch.mmu
+	depends embox.mem.vmem.virtallocator
 	depends embox.framework.LibFramework
 }
