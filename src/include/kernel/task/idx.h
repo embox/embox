@@ -9,7 +9,10 @@
 #ifndef TASK_IDX_H_
 #define TASK_IDX_H_
 
-#define CONFIG_TASKS_RES_QUANTITY 32
+#include <framework/mod/options.h>
+#include <module/embox/kernel/task/idx_table.h>
+
+#define TASKS_RES_QUANTITY OPTION_MODULE_GET(embox__kernel__task__idx_table,NUMBER,task_res_quantity)
 
 #include <assert.h>
 #include <stdarg.h>
@@ -108,7 +111,7 @@ static inline int task_idx_desc_link_count_add(struct idx_desc *desc, int d) {
 #include <util/idx_table.h>
 
 struct task_idx_table {
-	UTIL_IDX_TABLE_DEF_INLINE(struct idx_desc *, idx, CONFIG_TASKS_RES_QUANTITY);
+	UTIL_IDX_TABLE_DEF_INLINE(struct idx_desc *, idx, TASKS_RES_QUANTITY);
 };
 
 /**
@@ -168,7 +171,7 @@ static inline struct task_idx_table *task_idx_table(struct task *task);
  * @return If given fs is valid to use with tasks
  */
 static inline int task_valid_fd(int fd) {
-	return 0 <= fd && fd <= CONFIG_TASKS_RES_QUANTITY;
+	return 0 <= fd && fd <= TASKS_RES_QUANTITY;
 }
 
 /**

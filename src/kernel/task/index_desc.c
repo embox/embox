@@ -15,9 +15,8 @@
 
 #include <util/idx_table.h>
 
-OBJALLOC_DEF(idx_pool, struct idx_desc, CONFIG_TASKS_RES_QUANTITY);
-OBJALLOC_DEF(idx_data_pool, struct idx_desc_data, CONFIG_TASKS_RES_QUANTITY);
-
+OBJALLOC_DEF(idx_pool, struct idx_desc, TASKS_RES_QUANTITY);
+OBJALLOC_DEF(idx_data_pool, struct idx_desc_data, TASKS_RES_QUANTITY);
 
 struct idx_desc *task_idx_desc_alloc(struct idx_desc_data *data) {
 	struct idx_desc *idx = objalloc(&idx_pool);
@@ -92,10 +91,6 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
 	struct task_idx_table *self_res = task_self_idx_table();
 	struct idx_desc_data *data;
 
-	if (NULL == fd_struct) {
-	       return -1;
-	}
-
 	if ((new_fd = task_idx_table_first_unbinded(self_res)) < 0) {
 		return new_fd;
 	}
@@ -114,12 +109,12 @@ static void task_idx_table_init(struct task *task, void* _idx_table) {
 	util_idx_table_t *idx_table;
 	struct task_idx_table *task_idx_table;
 
-	util_num_alloc_init(num_alloc, CONFIG_TASKS_RES_QUANTITY);
+	util_num_alloc_init(num_alloc, TASKS_RES_QUANTITY);
 
 	idx_table = (util_idx_table_t *) ((void *) num_alloc +
-			UTIL_NUM_ALLOC_CALC(CONFIG_TASKS_RES_QUANTITY));
+			UTIL_NUM_ALLOC_CALC(TASKS_RES_QUANTITY));
 
-	util_idx_table_init(idx_table, CONFIG_TASKS_RES_QUANTITY, num_alloc);
+	util_idx_table_init(idx_table, TASKS_RES_QUANTITY, num_alloc);
 
 	task_idx_table = (struct task_idx_table *) idx_table;
 	task->idx_table = task_idx_table;
@@ -130,7 +125,7 @@ static void task_idx_table_inherit(struct task *task, struct task *parent) {
 	struct task_idx_table *idx_table = task_idx_table(task);
 	struct task_idx_table *parent_idx_table = task_idx_table(parent);
 
-	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
+	for (int i = 0; i < TASKS_RES_QUANTITY; i++) {
 		if (task_idx_table_is_binded(parent_idx_table, i)) {
 			struct idx_desc *par_idx = task_idx_table_get(parent_idx_table, i);
 			assert(0 == task_idx_table_set(idx_table, i, task_idx_desc_alloc(par_idx->data)),
@@ -143,7 +138,7 @@ static void task_idx_table_inherit(struct task *task, struct task *parent) {
 static void task_idx_table_deinit(struct task *task) {
 	struct task_idx_table *idx_table = task_idx_table(task);
 
-	for (int i = 0; i < CONFIG_TASKS_RES_QUANTITY; i++) {
+	for (int i = 0; i < TASKS_RES_QUANTITY; i++) {
 		task_idx_table_unbind(idx_table, i);
 	}
 
@@ -154,8 +149,8 @@ static const struct task_resource_desc idx_resource = {
 	.init = task_idx_table_init,
 	.inherit = task_idx_table_inherit,
 	.deinit = task_idx_table_deinit,
-	.resource_size = UTIL_IDX_TABLE_CALC(struct idx_desc *, CONFIG_TASKS_RES_QUANTITY) +
-		UTIL_NUM_ALLOC_CALC(CONFIG_TASKS_RES_QUANTITY)
+	.resource_size = UTIL_IDX_TABLE_CALC(struct idx_desc *, TASKS_RES_QUANTITY) +
+		UTIL_NUM_ALLOC_CALC(TASKS_RES_QUANTITY)
 };
 
 TASK_RESOURCE_DESC(&idx_resource);
