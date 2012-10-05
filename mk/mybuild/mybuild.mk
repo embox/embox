@@ -54,11 +54,16 @@ endef
 
 # XXX builtin $(sort ...)?
 define selectUnique
-	$(if $2,
-		$(if $(filter $(firstword $2),$1),
-			$(call $0,$1,$(nofirstword $2)),
-			$(call $0,$1 $(firstword $2),$(nofirstword $2))),
-		$1)
+	${eval __select_uniq_tmp :=}
+	$(silent-for mod <- $2,
+		$(if $(filter $(mod),$(__select_uniq_tmp)),,
+			${eval __select_uniq_tmp += $$(mod)}))
+	$(__select_uniq_tmp)
+#	$(if $2,
+#		$(if $(filter $(firstword $2),$1),
+#			$(call $0,$1,$(nofirstword $2)),
+#			$(call $0,$1 $(firstword $2),$(nofirstword $2))),
+#		$1)
 endef
 
 # Constructor args:
