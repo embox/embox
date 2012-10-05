@@ -58,6 +58,10 @@ extern int new_task(void *(*run)(void *), void *arg);
  */
 extern struct task *task_self(void);
 
+static inline int task_getid(void) {
+	return task_self()->tid;
+}
+
 /**
  * @brief Exit from current task
  *
