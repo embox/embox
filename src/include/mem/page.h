@@ -16,9 +16,17 @@
 #include <module/embox/mem/page_api.h>
 #define PAGE_SIZE() OPTION_MODULE_GET(embox__mem__page_api,NUMBER,page_size)
 
+struct page_allocator {
+	char *start;
+	size_t capasity;
+	size_t free;
+	size_t page_size;
+};
 
-extern void *page_alloc(size_t page_number);
+extern struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_size);
 
-extern void page_free(void *page, size_t page_number);
+extern void *page_alloc(struct page_allocator *allocator, size_t page_number);
+
+extern void page_free(struct page_allocator *allocator, void *page, size_t page_number);
 
 #endif /* MEM_PAGE_H_ */
