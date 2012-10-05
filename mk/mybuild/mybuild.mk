@@ -114,7 +114,7 @@ define class-Mybuild
 	$(property-field current_builders_list)
 
 	$(method listBuildModules,
-		$(sort $(for mod <- $(get-field moduleInstanceStore),
+		$(call selectUnique,,$(for mod <- $(get-field moduleInstanceStore),
 				$(map-get moduleInstanceStore/$(mod)))))
 
 	$(method annotationProcess,
