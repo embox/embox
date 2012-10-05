@@ -19,14 +19,24 @@ static module FS {
 @DefaultImpl(FileDiag)
 abstract module FileApi { }
 
-static module FileTasks extends FileApi {
+module FileTasks  {
+	depends FileTasksOpen
+	depends FileTasksBasic
+}
+
+static module FileTasksOpen {
+	source "file_tasks_open.c"
+	depends embox.fs.posix_compat
+	depends embox.kernel.task.errno
+}
+
+static module FileTasksBasic extends FileApi {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "file_tasks.c",
 		"isatty.c"
 
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idx_table
-	depends embox.fs.posix_compat
 	depends embox.kernel.task.errno
 	depends posix_env
 
@@ -44,6 +54,6 @@ module bootstrap_posix_env extends posix_env {
 	source "env/bs_posix_env.c"
 
 	depends embox.kernel.task.api
-	depends embox.driver.virtual.diag_device
+	depends embox.compat.posix.idx.dup
 }
 

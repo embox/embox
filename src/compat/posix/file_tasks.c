@@ -9,26 +9,8 @@
 
 #include <errno.h>
 #include <stdio.h>
-#include <fcntl.h>
+#include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <net/socket.h>
-#include <util/array.h>
-#include <fs/posix.h>
-#include <fs/core.h>
-
-int open(const char *path, int __oflag, ...) {
-	char mode[] = "-";
-
-	if ((O_RDWR == __oflag) || (O_WRONLY == __oflag)) {
-		mode[0] = 'w';
-	}
-	else {
-		mode[0] = 'r';
-	}
-
-	return task_self_idx_alloc(&task_idx_ops_file, \
-			kopen(path, (const char *)&mode[0]));
-}
 
 int close(int fd) {
 	const struct task_idx_ops *ops;
