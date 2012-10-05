@@ -10,7 +10,9 @@
 #include <asm/flags.h>
 #include <types.h>
 
-#define MMU_PAGE_PRESENT    (1UL)
+#define MMU_PAGE_PRESENT     (1UL)
+#define MMU_PMD_FLAG         (MMU_PAGE_WRITABLE | MMU_PAGE_USER_MODE)
+#define __flags(x)           (x ^ MMU_PAGE_CACHABLE)
 
 static mmu_pgd_t *ctx_table[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_counter = 0;
@@ -109,9 +111,8 @@ int mmu_pmd_present(mmu_pmd_t *pmd) {
 }
 
 void mmu_pmd_set(mmu_pmd_t *pmd, mmu_pmd_t *pte) {
-	// TODO: flags
 	*pmd = (mmu_pmd_t) ((((uint32_t) pte) & (~MMU_PAGE_MASK))
-			| MMU_PAGE_WRITABLE | MMU_PAGE_PRESENT);
+			| MMU_PMD_FLAG | MMU_PAGE_PRESENT);
 }
 
 mmu_pte_t *mmu_pmd_follow(mmu_pmd_t *pmd) {
@@ -128,7 +129,7 @@ int mmu_pte_present(mmu_pte_t *pte) {
 
 void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr, mmu_page_flags_t flags) {
 	*pte = (mmu_pte_t) ((((uint32_t) addr) & (~MMU_PAGE_MASK))
-			| MMU_PAGE_WRITABLE | MMU_PAGE_PRESENT);
+			| __flags(flags) | MMU_PAGE_PRESENT);
 }
 
 mmu_paddr_t mmu_pte_follow(mmu_pte_t *pte) {
