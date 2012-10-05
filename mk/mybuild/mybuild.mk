@@ -53,11 +53,12 @@ define getAnnotation
 
 endef
 
+# XXX builtin $(sort ...)?
 define selectUnique
 	$(if $2,
 		$(if $(filter $(firstword $2),$1),
-			$(call $0,$1,$(wordlist 2,$(words $2),$2)),
-			$(call $0,$1 $(firstword $2),$(wordlist 2,$(words $2),$2))),
+			$(call $0,$1,$(nofirstword $2)),
+			$(call $0,$1 $(firstword $2),$(nofirstword $2))),
 		$1)
 endef
 
@@ -98,34 +99,35 @@ define class-Mybuild
 				$(set-field+ current_builders_list,$f)
 				$(call $(f),$(invoke listBuildModules)))
 
-			$(if $(call check,$(invoke listBuildModules),
-				$(checkers_list)),)
-
 			$(set build->modules,
 				$(invoke listBuildModules))
+
+			$(if $(call check,$(get build->modules),
+				$(checkers_list)),)
 
 			$(build))
 	)
 
 # Private:
 
-	$(field current_builders_list)
+	$(property-field current_builders_list)
+
+	$(method listBuildModules,
+		$(sort $(for mod <- $(get-field moduleInstanceStore),
+				$(map-get moduleInstanceStore/$(mod)))))
 
 	$(method annotationProcess,
 		$(call mybuild_annotation_process,Build,$1,$(this)))
 
 	$(method includeModule,
-		$(for \
-			mod <- $1,
-			was <- was$(map-get moduleInstanceStore/$(mod)),
-			mod <- $(if $(filter was,$(was)),
-						$(invoke annotationProcess,$(mod)),
-						$(mod)),
-			inst <- $(invoke moduleInstance,$(mod)),
+		$(for mod <- $1,
+			$(with $(map-get moduleInstanceStore/$(mod)),
+				$(for inst <- $(invoke moduleInstance,
+						$(if $1,$(mod),$(invoke annotationProcess,$(mod)))),
 
-			$(if $(or $(filter was,$(was)),$(filter force,$(value 2))),
-				$(call check,$(inst),$(get-field current_builders_list)))
-			$(inst)))
+					$(if $1,,
+						$(call check,$(inst),$(get current_builders_list)))
+					$(inst)))))
 
 	$(method includeMandatoryModules,
 		$(silent-for \
@@ -149,11 +151,6 @@ define class-Mybuild
 			module <- $(invoke annotationProcess,$(get cfgInclude->module)),
 			inst <- $(invoke moduleInstance,$(module)),
 			$(set inst->includeMember,$(cfgInclude))))
-
-	$(method listBuildModules,
-		$(call selectUnique,,
-			$(for mod <- $(get-field moduleInstanceStore),
-				$(map-get moduleInstanceStore/$(mod)))))
 
 	$(method addIssue,
 		$(invoke issueReceiver>addIssues,
@@ -193,27 +190,21 @@ define class-Mybuild
 	#	1. List of ModuleInstance
 	#	2. Checkers, which ModuleInstances was passed.
 	$(method checkAbstractRealization,
-		$(for \
-			inst <- $1,
+		$(for inst <- $1,
 			instType <- $(get inst->type),
-			$(with \
-				$(if $(get instType->isAbstract),
-					$(if $(singleword $(get instType->subTypes)),
-							$(call check,
-								$(invoke moduleInstance,
-									$(get instType->subTypes)),
-								$2 $0,)
-							$(if $(get inst->type>isAbstract),
-								1,
-								),
-					 	1),
-				 ),
 
+			$(and $(get instType->isAbstract),
 
-				$(if $(strip $1),
-					$(invoke addIssueGlobal,error,
-							No abstract realization: \
-								$(get instType->qualifiedName))))))
+				$(if $(singleword $(get instType->subTypes)),
+					$(call check,
+						$(invoke moduleInstance,$(get instType->subTypes)),
+							$2 $0,)
+					# Read it again (with new instance type).
+					$(get inst->type>isAbstract),
+				 	1),
+
+				$(invoke addIssueGlobal,error,
+					No abstract realization: $(get instType->qualifiedName)))))
 
 	# Helper method, returns string representation of moduleInstance origin
 	#
@@ -402,7 +393,7 @@ define class-Mybuild
 	#
 	# Context:
 	#	IssueReceiver
-	#	cfgInclude. IncludeMember of processing ModuleInstance requiest.
+	#	cfgInclude. IncludeMember of processing ModuleInstance request.
 	#	mod. Module for which ModuleInstance is creating.
 	# Args:
 	#	None.
@@ -430,6 +421,24 @@ define class-Mybuild
 					),
 				$(new ModuleInstance,$(mod)))))
 
+	# Get ModuleInstance for Module
+	#
+	# Args:
+	#	1. Module
+	# Return:
+	#	ModuleInstance instance
+	# SideEffect:
+	#	Build realized features appends Module features
+	$(method moduleInstance,
+		$(for mod <- $1,
+			moduleInstance <- $(call Mybuild.moduleInstanceSuper),
+
+			$(if $(or $(not $(get moduleInstance->type)),
+					$(invoke moduleInstance->type>isSuperTypeOf,$(mod))),
+				$(invoke setInstanceToType,$(moduleInstance),$(mod)))
+
+			$(moduleInstance)))
+
 	$(method setInstanceToType,
 		$(set 1->type,$2)
 
@@ -443,27 +452,6 @@ define class-Mybuild
 				opt <- $(provide) $(get provide->allSubFeatures),
 				$(map-set+ activeFeatures/$(opt),
 					$1)))
-
-
-	# Get ModuleInstance for Module
-	#
-	# Args:
-	#	1. Module
-	# Return:
-	#	ModuleInstance instance
-	# SideEffect:
-	#	Build realized features appends Module features
-	$(method moduleInstance,
-		$(for \
-			mod <- $1,
-			moduleInstance<-$(call Mybuild.moduleInstanceSuper),
-
-			$(if $(or $(if $(get moduleInstance->type),,1),
-						$(invoke $(get moduleInstance->type).isSuperTypeOf,
-							$(mod))),
-				$(invoke setInstanceToType,$(moduleInstance),$(mod)))
-
-			$(moduleInstance)))
 
 	$(method chkCyclic,
 		$(if $(map-get includingInstances/$1),
