@@ -14,8 +14,7 @@ include_past_checkers := \
 
 builders_list := \
 	Mybuild.closeInstances \
-	Mybuild.specifyInstances \
-	Mybuild.optionBind
+	Mybuild.specifyInstances
 
 checkers_list := \
 	Mybuild.checkAbstractRealization \
@@ -99,11 +98,13 @@ define class-Mybuild
 				$(set-field+ current_builders_list,$f)
 				$(call $(f),$(invoke listBuildModules)))
 
+			$(if $(call check,$(invoke listBuildModules),
+				$(checkers_list)),)
+
 			$(set build->modules,
 				$(invoke listBuildModules))
 
-			$(if $(call check,$(get build->modules),
-				$(checkers_list)),)
+			$(invoke optionBind,$(get build->modules))
 
 			$(build))
 	)
