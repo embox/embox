@@ -23,10 +23,8 @@ int getopt(int argc, char **argv, const char *opts) {
 				(argv[optind][0] != '/' &&
 				argv[optind][0] != '-') ||
 				argv[optind][1] == '\0') {
-			optind++;
 			return -1;
 		} else if (!strcmp(argv[optind], "--")) {
-			optind++;
 			return -1;
 		}
 	}

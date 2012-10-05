@@ -91,8 +91,8 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	if (2 < (optind - opt_cnt)) {
-		sprintf(path, "%s", argv[optind - argc + opt_cnt]);
+	if (optind < argc) {
+		sprintf(path, "%s", argv[optind]);
 	} else {
 		sprintf(path, "/");
 	}
