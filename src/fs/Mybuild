@@ -19,6 +19,7 @@ module core {
 	option number file_name_length=32
 	option number path_length=256
 
+	depends embox.compat.posix.FS
 	depends file_desc, node, rootfs
 	depends embox.fs.driver.repo
 }
