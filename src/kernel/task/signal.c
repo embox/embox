@@ -22,7 +22,7 @@ int kill(int tid, int sig) {
 	task->signal_table->sig_mask |= 1 << sig;
 
 	list_for_each_entry(th, &task->threads, task_link) {
-		if ((res = sched_setrun(th)) != -1) {
+		if ((res = sched_tryrun(th)) != -1) {
 			break;
 		}
 	}
