@@ -378,6 +378,7 @@ int sched_tryrun(struct thread *thread) {
 		if (thread_state_sleeping(thread->state)) {
 			do_wake_thread(thread, 0);
 		} else if (!thread_state_running(thread->state)) {
+			sched_unlock();
 			return -1;
 		}
 	}
