@@ -47,10 +47,19 @@ static void task_global_sig_handler(void) {
 	sched_lock();
 }
 
+static void task_terminate(int sig) {
+	task_exit(NULL);
+}
+
 static void task_signal_table_init(struct task *task, void *_signal_table) {
+	int sig;
 	struct task_signal_table *sig_table = (struct task_signal_table *) _signal_table;
 
 	task->signal_table = sig_table;
+
+	for (sig = 0; sig < TASK_SIGNAL_MAX_N; sig++) {
+		task_signal_table_set(_signal_table, sig, task_terminate);
+	}
 }
 
 static void task_signal_table_inherit(struct task *task, struct task *parent_task) {
@@ -78,20 +87,7 @@ static int notify_hnd(struct thread *prev, struct thread *next) {
 		context_enter_frame(&next->context, task_global_sig_handler);
 	}
 
-
 	return 0;
-}
-
-static void task_terminate(int sig) {
-	int res = 0;
-	task_exit(&res);
-}
-
-void signal_init(struct task_signal_table *table) {
-	int sig;
-	for (sig = 0; sig < TASK_SIGNAL_MAX_N; sig++) {
-		task_signal_table_set(table, sig, task_terminate);
-	}
 }
 
 TASK_RESOURCE_DESC(&signal_resource);

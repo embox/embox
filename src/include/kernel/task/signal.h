@@ -25,5 +25,3 @@ static inline void task_signal_table_set(struct task_signal_table *table, int si
 static inline task_signal_hnd task_signal_table_get(struct task_signal_table *table, int sig) {
 	return table->hnd[sig];
 }
-
-extern void signal_init(struct task_signal_table *table);
