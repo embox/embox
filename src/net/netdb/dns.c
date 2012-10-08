@@ -513,7 +513,8 @@ error:
 static int dns_execute(struct dns_q *query, struct dns_result *out_result) {
 	int ret;
 	union dns_msg msg_in, msg_out;
-	size_t msg_in_sz, msg_out_sz;
+	size_t msg_in_sz = 0;
+	size_t msg_out_sz;
 
 	ret = dns_query_format(query, &msg_out, &msg_out_sz);
 	if (ret != 0) {

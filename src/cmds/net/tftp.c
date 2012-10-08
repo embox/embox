@@ -204,7 +204,7 @@ static int tftp_build_msg_cmd(struct tftp_msg *msg, size_t *msg_len, uint16_t ty
 
 static int tftp_build_msg_data(struct tftp_msg *msg, size_t *msg_len, FILE *fp, uint16_t block_num) {
 	int ret;
-	size_t bytes;
+	size_t bytes = 0;
 
 	msg->opcode = htons(DATA);
 	*msg_len = sizeof msg->opcode;
@@ -325,7 +325,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 	int ret, sock;
 	struct sockaddr remote_addr;
 	socklen_t remote_addr_len;
-	FILE *fp;
+	FILE *fp = NULL;
 	struct tftp_msg snd, rcv;
 	size_t snd_len, rcv_len;
 	uint16_t pkg_number;
@@ -405,7 +405,7 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
 	int ret, sock;
 	struct sockaddr remote_addr;
 	socklen_t remote_addr_len;
-	FILE *fp;
+	FILE *fp = NULL;
 	struct tftp_msg snd, rcv;
 	size_t snd_len, rcv_len, data_len;
 	uint16_t pkg_number;

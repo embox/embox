@@ -186,8 +186,8 @@ static int exec(int argc, char **argv) {
 	struct ping_info pinfo;
 	int iface_set, cnt_set, ttl_set, tout_set, psize_set, int_set, pat_set, ip_set;
 	int garbage, duplicate;
-	struct hostent *he;
-	char *hostname;
+	struct hostent *he = NULL;
+	char *hostname = "";
 	duplicate = garbage =	iface_set = cnt_set = ttl_set = tout_set = psize_set = int_set = pat_set = ip_set = 0;
 
 	in_dev = NULL;
