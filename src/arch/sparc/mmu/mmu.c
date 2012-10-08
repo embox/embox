@@ -27,6 +27,12 @@
 
 #define MMU_ET_PRESENT       0x3
 
+#define MMU_PAGE_WRITABLE    ((1UL << 0) << 2)
+#define MMU_PAGE_SOMEFLAG    ((1UL << 1) << 2)
+#define MMU_PAGE_SUPERVISOR  ((1UL << 2) << 2)
+
+#define MMU_PAGE_CACHEABLE   (1UL << 7)
+
 #define __nocache_pa(VADDR)  VADDR
 
 EMBOX_UNIT_INIT(mmu_init);
@@ -138,8 +144,8 @@ mmu_pte_t mmu_pte_format(mmu_paddr_t addr, unsigned int flags) {
 	return ((addr >> 4) & MMU_PTE_PMASK) | flags | MMU_ET_PTE;
 }
 
-void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr, mmu_page_flags_t flags) {
-	mmu_set_pte(pte, (unsigned int) mmu_pte_format(addr, (0x3) << 2));
+void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
+	mmu_set_pte(pte, (unsigned int) mmu_pte_format(addr, MMU_PAGE_SOMEFLAG));
 }
 
 mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
@@ -200,4 +206,32 @@ static int mmu_init(void) {
 	mmu_set_ctable_ptr((unsigned long) context_table);
 
 	return 0;
+}
+
+/*
+ * Page Table flags
+ */
+
+void mmu_pte_set_writable(mmu_pte_t *pte, int val) {
+	if (val) {
+		*pte = *pte | MMU_PAGE_WRITABLE;
+	} else {
+		*pte = *pte & (~MMU_PAGE_WRITABLE);
+	}
+}
+
+void mmu_pte_set_usermode(mmu_pte_t *pte, int val) {
+	if (val) {
+		*pte = *pte & (~MMU_PAGE_SUPERVISOR);
+	} else {
+		*pte = *pte | MMU_PAGE_SUPERVISOR;
+	}
+}
+
+void mmu_pte_set_cacheable(mmu_pte_t *pte, int val) {
+	if (val) {
+		*pte = *pte | MMU_PAGE_CACHEABLE;
+	} else {
+		*pte = *pte & (~MMU_PAGE_CACHEABLE);
+	}
 }

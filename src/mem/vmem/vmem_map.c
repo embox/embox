@@ -9,10 +9,16 @@
 #include <hal/mmu.h>
 #include <util/binalign.h>
 #include <errno.h>
+#include <mem/vmem.h>
 #include <mem/vmem/virtalloc.h>
 
-// TODO: flags
-int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, mmu_page_flags_t flags) {
+static inline void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags) {
+	mmu_pte_set_writable(pte, flags & VMEM_PAGE_WRITABLE);
+	mmu_pte_set_cacheable(pte, flags & VMEM_PAGE_CACHEABLE);
+	mmu_pte_set_usermode(pte, flags & VMEM_PAGE_USERMODE);
+}
+
+int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags) {
 	mmu_pgd_t *pgd;
 	mmu_pmd_t *pmd;
 	mmu_pte_t *pte;
@@ -55,7 +61,8 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, 
 		pte = mmu_pmd_value(pmd + pmd_idx);
 
 		// XXX: What if already presented???
-		mmu_pte_set(pte + pte_idx, phy_addr, flags);
+		mmu_pte_set(pte + pte_idx, phy_addr);
+		vmem_set_pte_flags(pte + pte_idx, flags);
 
 		virt_addr += MMU_PAGE_SIZE;
 		phy_addr += MMU_PAGE_SIZE;

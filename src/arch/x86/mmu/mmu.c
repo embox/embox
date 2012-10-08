@@ -10,9 +10,12 @@
 #include <asm/flags.h>
 #include <types.h>
 
-#define MMU_PAGE_PRESENT     (1UL)
-#define MMU_PMD_FLAG         (MMU_PAGE_WRITABLE | MMU_PAGE_USER_MODE)
-#define __flags(x)           (x ^ MMU_PAGE_CACHABLE)
+#define MMU_PAGE_WRITABLE       ((1UL << 0) << 1)
+#define MMU_PAGE_USERMODE       ((1UL << 1) << 2)
+#define MMU_PAGE_DISABLE_CACHE  (1UL << 4)
+
+#define MMU_PAGE_PRESENT      (1UL)
+#define MMU_PMD_FLAG          (MMU_PAGE_WRITABLE | MMU_PAGE_USERMODE)
 
 static mmu_pgd_t *ctx_table[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_counter = 0;
@@ -127,11 +130,39 @@ int mmu_pte_present(mmu_pte_t *pte) {
 	return ((uint32_t) *pte & MMU_PAGE_PRESENT);
 }
 
-void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr, mmu_page_flags_t flags) {
+void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr) {
 	*pte = (mmu_pte_t) ((((uint32_t) addr) & (~MMU_PAGE_MASK))
-			| __flags(flags) | MMU_PAGE_PRESENT);
+			| MMU_PAGE_PRESENT);
 }
 
 mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
 	return (mmu_paddr_t) ((*pte) & (~MMU_PAGE_MASK));
+}
+
+/*
+ * Page Table flags
+ */
+
+void mmu_pte_set_writable(mmu_pte_t *pte, int val) {
+	if (val) {
+		*pte = *pte | MMU_PAGE_WRITABLE;
+	} else {
+		*pte = *pte & (~MMU_PAGE_WRITABLE);
+	}
+}
+
+void mmu_pte_set_usermode(mmu_pte_t *pte, int val) {
+	if (val) {
+		*pte = *pte | MMU_PAGE_USERMODE;
+	} else {
+		*pte = *pte & (~MMU_PAGE_USERMODE);
+	}
+}
+
+void mmu_pte_set_cacheable(mmu_pte_t *pte, int val) {
+	if (val) {
+		*pte = *pte & (~MMU_PAGE_DISABLE_CACHE);
+	} else {
+		*pte = *pte | MMU_PAGE_DISABLE_CACHE;
+	}
 }
