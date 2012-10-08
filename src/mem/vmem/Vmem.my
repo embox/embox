@@ -1,7 +1,7 @@
 package embox.mem
 
 module vmem {
-	source "vmem.c", "map.c"
+	source "vmem.c", "vmem_map.c"
 
 	depends embox.arch.mmu
 	depends embox.mem.vmem.virtallocator

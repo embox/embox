@@ -53,9 +53,9 @@ extern void switch_mm(mmu_ctx_t prev, mmu_ctx_t next);
 extern mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd);
 extern mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx);
 
-extern mmu_pmd_t *mmu_pgd_follow(mmu_pgd_t *pgd);
-extern mmu_pte_t *mmu_pmd_follow(mmu_pmd_t *pmd);
-extern mmu_paddr_t mmu_pte_follow(mmu_pte_t *pte);
+extern mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd);
+extern mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd);
+extern mmu_paddr_t mmu_pte_value(mmu_pte_t *pte);
 
 extern void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd);
 extern void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte);

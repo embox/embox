@@ -126,11 +126,11 @@ void mmu_pmd_set(mmu_pmd_t *pmd, mmu_pte_t *pte) {
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) pte) >> 4)));
 }
 
-mmu_pmd_t *mmu_pgd_follow(mmu_pgd_t *pgd) {
+mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
 	return (mmu_pmd_t *) ((((unsigned long) *pgd) & MMU_PTD_PMASK) << 4);
 }
 
-mmu_pte_t *mmu_pmd_follow(mmu_pmd_t * pmd) {
+mmu_pte_t *mmu_pmd_value(mmu_pmd_t * pmd) {
 	return (mmu_pte_t *) ((((unsigned long) *pmd) & MMU_PTD_PMASK) << 4);
 }
 
@@ -142,7 +142,7 @@ void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr, mmu_page_flags_t flags) {
 	mmu_set_pte(pte, (unsigned int) mmu_pte_format(addr, (0x3) << 2));
 }
 
-mmu_paddr_t mmu_pte_follow(mmu_pte_t *pte) {
+mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
 	return ((unsigned int) *pte & MMU_PTE_PMASK) << 4;
 }
 

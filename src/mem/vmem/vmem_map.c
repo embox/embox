@@ -42,7 +42,7 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, 
 			mmu_pgd_set(pgd + pgd_idx, (mmu_pmd_t *) addr);
 		}
 
-		pmd = mmu_pgd_follow(pgd + pgd_idx);
+		pmd = mmu_pgd_value(pgd + pgd_idx);
 
 		if (!mmu_pmd_present(pmd + pmd_idx)) {
 			addr = virt_alloc_table();
@@ -52,7 +52,7 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, 
 			mmu_pmd_set(pmd + pmd_idx, (mmu_pmd_t *) addr);
 		}
 
-		pte = mmu_pmd_follow(pmd + pmd_idx);
+		pte = mmu_pmd_value(pmd + pmd_idx);
 
 		// XXX: What if already presented???
 		mmu_pte_set(pte + pte_idx, phy_addr, flags);

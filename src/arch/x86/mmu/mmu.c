@@ -98,7 +98,7 @@ void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
 	return ;
 }
 
-mmu_pmd_t *mmu_pgd_follow(mmu_pgd_t *pgd) {
+mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
 	return (mmu_pmd_t *) pgd;
 }
 
@@ -115,7 +115,7 @@ void mmu_pmd_set(mmu_pmd_t *pmd, mmu_pmd_t *pte) {
 			| MMU_PMD_FLAG | MMU_PAGE_PRESENT);
 }
 
-mmu_pte_t *mmu_pmd_follow(mmu_pmd_t *pmd) {
+mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
 	return (mmu_pte_t *) ((*pmd) & (~MMU_PAGE_MASK));
 }
 
@@ -132,6 +132,6 @@ void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr, mmu_page_flags_t flags) {
 			| __flags(flags) | MMU_PAGE_PRESENT);
 }
 
-mmu_paddr_t mmu_pte_follow(mmu_pte_t *pte) {
+mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
 	return (mmu_paddr_t) ((*pte) & (~MMU_PAGE_MASK));
 }
