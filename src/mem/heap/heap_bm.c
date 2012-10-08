@@ -275,6 +275,7 @@ void *calloc(size_t nmemb, size_t size) {
 	}
 	return tmp;
 }
+
 static struct page_allocator *allocator;
 
 static int heap_init(void) {

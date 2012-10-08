@@ -18,17 +18,23 @@ static char *managed_memory_start;
 static char *last_valid_address;
 
 
-#define MEM_POOL_SIZE  ((HEAP_SIZE() / 2) / PAGE_SIZE())
+#define MEM_POOL_SIZE  ((HEAP_SIZE()) / PAGE_SIZE())
 static void *mem_pool;
 
 struct mem_control_block {
-	char is_available;
+	int is_available;
 	size_t size;
 };
 
+static struct page_allocator * allocator;
+extern char *_heap_start;
+
 static void malloc_init(void) {
 	struct mem_control_block *init_mcb;
-	mem_pool = page_alloc(MEM_POOL_SIZE);
+
+	allocator = page_allocator_init((char *)&_heap_start, HEAP_SIZE(), PAGE_SIZE());
+
+	mem_pool = page_alloc(allocator, MEM_POOL_SIZE);
 
 	managed_memory_start = (void*) mem_pool;
 	last_valid_address   = managed_memory_start;
