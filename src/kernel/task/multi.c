@@ -117,7 +117,9 @@ static void task_init_parent(struct task *task, struct task *parent) {
 	list_add(&task->link, &parent->children);
 
 	task_resource_foreach(res_desc) {
-		res_desc->inherit(task, parent);
+		if (res_desc->inherit) {
+			res_desc->inherit(task, parent);
+		}
 	}
 
 }
@@ -144,7 +146,9 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	sched_unlock();
 
 	task_resource_foreach(res_desc) {
-		res_desc->deinit(this_task);
+		if (res_desc->deinit) {
+			res_desc->deinit(this_task);
+		}
 	}
 
 	task_table_del(this_task->tid);

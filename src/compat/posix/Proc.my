@@ -5,7 +5,8 @@ module All {
 
 	depends exec,
 		fork,
-		wait
+		wait,
+		signal
 
 }
 
@@ -28,5 +29,12 @@ static module wait {
 	source "wait.c"
 
 	depends embox.util.LibUtil
+}
+
+static module signal {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "signal.c"
+
+	depends embox.kernel.task.signal
 }
 

@@ -14,12 +14,18 @@
 
 extern void context_enter_frame(struct context *ctx, void (*pc)(void));
 
-int kill(int tid, int sig) {
-	struct thread *th;
-	int res = -1;
-	struct task *task = task_table_get(tid);
+static int task_some_thd_run(struct task *task);
+
+void task_signal_send(struct task *task, int sig) {
 
 	task->signal_table->sig_mask |= 1 << sig;
+
+	task_some_thd_run(task);
+}
+
+static int task_some_thd_run(struct task *task) {
+	struct thread *th;
+	int res = -1;
 
 	list_for_each_entry(th, &task->threads, task_link) {
 		if ((res = sched_tryrun(th)) != -1) {
@@ -28,13 +34,11 @@ int kill(int tid, int sig) {
 	}
 
 	return res;
+
 }
 
-void signal(int sig, task_signal_hnd_t hnd) {
-	struct task *task = task_self();
-	struct task_signal_table *sig_table = task->signal_table;
-
-	task_signal_table_set(sig_table, sig, hnd);
+static void task_terminate(int sig) {
+	task_exit(NULL);
 }
 
 static void task_global_sig_handler(void) {
@@ -46,10 +50,6 @@ static void task_global_sig_handler(void) {
 	task_signal_table_get(sig_table, sig_occured)(sig_occured);
 
 	sched_lock();
-}
-
-static void task_terminate(int sig) {
-	task_exit(NULL);
 }
 
 static void task_signal_table_init(struct task *task, void *_signal_table) {
@@ -64,18 +64,8 @@ static void task_signal_table_init(struct task *task, void *_signal_table) {
 	task->signal_table = sig_table;
 }
 
-static void task_signal_table_inherit(struct task *task, struct task *parent_task) {
-
-}
-
-static void task_signal_table_deinit(struct task *task) {
-
-}
-
 static const struct task_resource_desc signal_resource = {
 	.init = task_signal_table_init,
-	.inherit = task_signal_table_inherit,
-	.deinit = task_signal_table_deinit,
 	.resource_size = sizeof(struct task_signal_table),
 };
 
