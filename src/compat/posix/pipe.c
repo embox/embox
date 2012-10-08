@@ -46,12 +46,17 @@ int pipe(int pipefd[2]) {
 	struct pipe *pipe = malloc(sizeof(struct pipe));
 	struct async_ring_buff *pipe_buff = &pipe->buff;
 	void *storage = malloc(PIPE_BUFFER_SIZE);
+	struct event_set *set_nonfull, *set_nonempty;
 
 	async_ring_buff_init(pipe_buff, 1, PIPE_BUFFER_SIZE, storage);
 
 	pipe->ends_count = 2;
-	event_init(&pipe->nonfull, "pipe_is_nonfull");
-	event_init(&pipe->nonempty, "pipe_is_nonempty");
+
+	set_nonfull = event_set_create();
+	event_set_add(set_nonfull, &pipe->nonfull);
+
+	set_nonempty = event_set_create();
+	event_set_add(set_nonempty, &pipe->nonempty);
 
 	pipefd[1] = task_self_idx_alloc(&write_ops, pipe_buff);
 	if (pipefd[0] < 0) {
@@ -77,6 +82,8 @@ static int pipe_close(struct idx_desc *data) {
 	struct pipe *pipe= (struct pipe*) task_idx_desc_data(data);
 
 	if (!(--pipe->ends_count)) {
+		event_set_clear(pipe->nonfull.set);
+		event_set_clear(pipe->nonempty.set);
 		free(pipe->buff.buffer.storage);
 		free(pipe);
 	}
@@ -96,7 +103,7 @@ static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte) {
 		len = async_ring_buff_dequeue(&pipe->buff, (void*)buf, nbyte);
 	} else {
 		while (!(len = async_ring_buff_dequeue(&pipe->buff, (void*)buf, nbyte))) {
-			event_wait(&pipe->nonempty, SCHED_TIMEOUT_INFINITE);
+			event_wait(pipe->nonempty.set, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 
@@ -124,7 +131,7 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 		len = async_ring_buff_enqueue(&pipe->buff, (void*)buf, nbyte);
 	} else {
 		while (!(len = async_ring_buff_enqueue(&pipe->buff, (void*)buf, nbyte))) {
-			event_wait(&pipe->nonfull, SCHED_TIMEOUT_INFINITE);
+			event_wait(pipe->nonfull.set, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 

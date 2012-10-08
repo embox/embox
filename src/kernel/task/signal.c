@@ -9,6 +9,7 @@
 #include <math.h>
 #include <kernel/task/task_table.h>
 #include <kernel/task/signal.h>
+#include <hal/ipl.h>
 #include <kernel/thread/sched.h>
 #include "common.h"
 

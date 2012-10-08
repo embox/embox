@@ -11,17 +11,41 @@
 #define KERNEL_THREAD_EVENT_H_
 
 #include <kernel/thread/sched_strategy.h>
+#include <util/dlist.h>
 
 #define EVENT_TIMEOUT_INFINITE ((unsigned int)(-1))
 
-struct event {
+struct event_set {
 	struct sleepq sleepq;
-	const char *name;
+	struct dlist_head link;
+	struct event *happened_event;
 };
 
-extern void event_init(struct event *event, const char *name);
-extern int event_wait(struct event *event, unsigned long timeout);
-extern void event_notify(struct event *event);
+struct event {
+	const char *name;
+	struct dlist_head link;
+	struct event_set *set;
+};
+
+extern struct event_set *event_set_create(void);
+extern int event_wait(struct event_set *e_set, unsigned long timeout);
+extern void event_notify(struct event *e);
+
+/* Utils to operate with sets of events */
+
+extern void event_set_init(struct event_set *e_set);
+extern void event_set_clear(struct event_set *e_set);
+
+static inline void event_set_add(struct event_set *e_set, struct event *event) {
+	dlist_head_init(&event->link);
+	dlist_add_prev(&event->link, &e_set->link);
+	event->set = e_set;
+}
+
+static inline void event_set_del(struct event *event) {
+	dlist_del(&event->link);
+	event->set = NULL;
+}
 
 #if 0
 extern const char *event_name(struct event *event);

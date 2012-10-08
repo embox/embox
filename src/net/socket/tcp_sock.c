@@ -30,6 +30,7 @@ OBJALLOC_DEF(objalloc_tcp_socks, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK); /* Al
 /************************ Socket's functions ***************************/
 static int tcp_v4_init_sock(struct sock *sk) {
 	union sock_pointer sock;
+	struct event_set *e_set;
 
 	assert(sk != NULL);
 
@@ -44,7 +45,9 @@ static int tcp_v4_init_sock(struct sock *sk) {
 	sock.tcp_sk->last_activity = 0; // TODO 0 or not?
 	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT * USEC_PER_MSEC;
 	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
-	event_init(&sock.tcp_sk->new_conn, NULL);
+
+	e_set = event_set_create();
+	event_set_add(e_set, &sock.tcp_sk->new_conn);
 
 	return ENOERR;
 }
@@ -200,7 +203,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 	case TCP_LISTEN:
 		/* waiting anyone */
 		if (list_empty(&sock.tcp_sk->conn_wait)) { /* TODO sync this */
-			event_wait(&sock.tcp_sk->new_conn, EVENT_TIMEOUT_INFINITE);
+			event_wait(sock.tcp_sk->new_conn.set, EVENT_TIMEOUT_INFINITE);
 		}
 		assert(!list_empty(&sock.tcp_sk->conn_wait));
 		/* get first socket from */

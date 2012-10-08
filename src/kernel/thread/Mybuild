@@ -26,5 +26,6 @@ module event {
 	source "event.c"
 
 	depends sched
+	depends embox.mem.objalloc
 }
 

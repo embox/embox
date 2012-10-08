@@ -16,6 +16,7 @@
 
 #include <assert.h>
 #include <stdarg.h>
+#include <kernel/thread/event.h>
 
 enum task_idx_ops_type {
 	TASK_RES_OPS_REGULAR,
@@ -40,7 +41,11 @@ struct idx_desc_data {
 struct idx_desc {
 	struct idx_desc_data *data;
 	idx_flags_t flags;
-
+	struct event can_read;
+	bool read_ready;
+	struct event can_write;
+	bool write_ready;
+	//struct event exept;
 };
 
 /**
