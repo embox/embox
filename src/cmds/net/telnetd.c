@@ -18,8 +18,6 @@
 #include <kernel/task.h>
 #include <fcntl.h>
 
-#define TELNET_SHELL_NAME "tish"
-
 EMBOX_CMD(exec);
 
 	/* Upper limit of concurent telnet connections.
@@ -121,8 +119,9 @@ static void ignore_telnet_options(int msg[2]) {
 	}
 }
 
+extern int kill(int tid, int sig);
+
 static void *shell_hnd(void* args) {
-	const struct shell *shell;
 	int *msg = (int*)args;
 
 	close(STDIN_FILENO);
@@ -131,10 +130,7 @@ static void *shell_hnd(void* args) {
 	dup2(msg[0], STDIN_FILENO);
 	dup2(msg[1], STDOUT_FILENO);
 
-	shell = shell_lookup(TELNET_SHELL_NAME);
-	if (shell != NULL) {
-		shell->exec();
-	}
+	shell_lookup("tish")->exec();
 
 	return NULL;
 }
@@ -167,6 +163,7 @@ static void *telnet_thread_handler(void* args) {
 	int pipe_data_len = 0; /* len of rest of pipe data in local buffer pbuff */
 	int sock = *(int *)args;
 	int pipefd1[2], pipefd2[2], msg[2];
+	int tid;
 
 	fcntl(sock, F_SETFD, O_NONBLOCK);
 
@@ -186,7 +183,7 @@ static void *telnet_thread_handler(void* args) {
 
 	msg[0] = pipefd1[0];
 	msg[1] = pipefd2[1];
-	new_task(shell_hnd, &msg);
+	tid = new_task(shell_hnd, &msg);
 
 	/* Close unused ends of pipes. */
 	close(pipefd1[0]);
@@ -213,12 +210,19 @@ static void *telnet_thread_handler(void* args) {
 			if ((len = write(pipefd1[1], s, sock_data_len)) > 0) {
 				sock_data_len -= len;
 				s += len;
+			} else if (errno == EPIPE) {
+				break; /* this means that pipe was closed by shell */
 			}
 		} else {
 			s = sbuff;
 			sock_data_len = read(sock, s, 128);
+			if (errno == ECONNREFUSED) {
+				break;
+			}
 		}
 	}
+
+	kill(tid, 9);
 
 	close(pipefd1[1]);
 	close(pipefd2[0]);

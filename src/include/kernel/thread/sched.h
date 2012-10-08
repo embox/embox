@@ -161,7 +161,7 @@ extern int sched_change_scheduling_priority(struct thread *t,
 extern clock_t sched_get_running_time(struct thread *thread);
 
 /**
- * @brief Makes thread to run regardless of it's state
+ * @brief Makes thread to run regardless of it's state if thread is scheduling
  * @param thread Thread to operate with
  *
  * @return
@@ -171,7 +171,7 @@ extern clock_t sched_get_running_time(struct thread *thread);
  * @retval non-zero
  *   On operation fail.
  */
-extern int sched_setrun(struct thread *thread);
+extern int sched_tryrun(struct thread *thread);
 
 #endif /* KERNEL_THREAD_SCHED_H_ */
 

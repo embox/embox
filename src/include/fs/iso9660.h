@@ -252,9 +252,8 @@ typedef struct cdfs_file {
 
 
 typedef struct cdfs_fs_description {
-	char *name;
+	//char *name;
 	dev_t devnum;
-	//node_t *dev_node;
 	char mntfrom[MAX_LENGTH_PATH_NAME];
 	char mntto[MAX_LENGTH_PATH_NAME];
 	struct fsops *ops;
@@ -271,8 +270,8 @@ typedef struct cdfs_file_description {
 	gid_t group;
 	off64_t pos;
 	void *data;
-	char *path;
-	char chbuf;
+	//char *path;
+	//char chbuf;
 	cdfs_fs_description_t *fs;
 } cdfs_file_description_t;
 

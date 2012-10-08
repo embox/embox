@@ -36,12 +36,12 @@ $(for modName <- $2,
 		      ,$(\h)include <../$(header)>$(\n)),
 		     // no headers to include$(\n)))
 
-	$(for moduleInstance <- $1,
-		optionInstance <- $(get moduleInstance->options),
-		option <- $(get optionInstance->option),
-		optionId <- $(invoke option->getId),
-		optionValue <- $(get optionInstance->value),
-		$(\n)$(\h)define $(subst .,__,$(optionId)) $(invoke optionValue->toString)$(\n))
+	$(for optionInstance <- $(get 1->options),
+		optionId <- $(subst .,__,$(invoke optionInstance->option>getId)),
+		$(\n)
+		$(\h)ifndef $(optionId)$(\n)
+		$(\h)define $(optionId) $(invoke optionInstance->value>toString)$(\n)
+		$(\h)endif$(\n))
 
 	$(\n)$(\h)endif /* __MOD_HEADER__$(subst .,__,$(modName)) */$(\n)
 )

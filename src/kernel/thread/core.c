@@ -39,8 +39,8 @@
 #include <hal/arch.h>
 #include <hal/ipl.h>
 
-
-#define STACK_SZ      OPTION_GET(NUMBER,thread_stack_size)
+#define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
+#define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
 
 EMBOX_UNIT(unit_init, unit_fini);
 
@@ -402,14 +402,12 @@ static void thread_delete(struct thread *t) {
 	}
 }
 
-#define THREAD_POOL_SZ 0x10
-
 typedef struct thread_pool_entry {
 	struct thread thread;
 	char stack[STACK_SZ];
 } thread_pool_entry_t;
 
-POOL_DEF(thread_pool, thread_pool_entry_t, THREAD_POOL_SZ);
+POOL_DEF(thread_pool, thread_pool_entry_t, POOL_SZ);
 
 static struct thread *thread_alloc(void) {
 	thread_pool_entry_t *block;

@@ -27,11 +27,6 @@ struct file_struct_int {
 #define INIT_STDOUT INIT_STDIO(1)
 #define INIT_STDERR INIT_STDIO(1)
 
-static inline int __libc_open(const char *path, const char *mode, struct file_struct_int *file) {
-	file->fd = open(path, 0);
-	return file->fd;
-}
-
 static inline size_t __libc_write(const void *buf, size_t size, size_t count, struct file_struct_int *file) {
 	return write(file->fd, buf, size * count);
 }

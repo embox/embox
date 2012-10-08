@@ -63,6 +63,7 @@
 
 buf_t b_buffer;
 char sector_buff [10][CDFS_BLOCKSIZE];
+blkno_t lastblkno;
 
 /* cdfs filesystem description pool */
 POOL_DEF(cdfs_fs_pool, struct cdfs_fs_description, OPTION_GET(NUMBER,cdfs_descriptor_quantity));
@@ -90,13 +91,20 @@ static unsigned char num_buff;
 buf_t *get_buffer(dev_t devno, blkno_t blkno){
 	buf_t *buf;
 
-	num_buff++;
+	if(lastblkno == blkno) {
+		buf = &b_buffer;
+	}
+	else {
 
-	buf = &b_buffer;
-	buf->data = (char *) &sector_buff[num_buff%10][0];
-	buf->blkno = blkno;
+		num_buff++;
 
-	dev_read(devno, buf->data, CDFS_BLOCKSIZE, buf->blkno);
+		buf = &b_buffer;
+		buf->data = (char *) &sector_buff[num_buff%10][0];
+		buf->blkno = blkno;
+
+		dev_read(devno, buf->data, CDFS_BLOCKSIZE, buf->blkno);
+		lastblkno = blkno;
+	}
 
 	return buf;
 }
@@ -610,6 +618,7 @@ static int cdfs_close(cdfs_file_description_t *filp) {
 	if (cdfile) {
 		free(cdfile);
 	}
+	filp->pos = 0;
 	return 0;
 }
 
@@ -1024,7 +1033,8 @@ static int cdfsfs_fseek(void *file, long offset, int whence) {
 }
 
 static int cdfsfs_fclose(struct file_desc *desc) {
-	return 0;
+
+	return cdfs_close((cdfs_file_description_t *)desc->node->fd);
 }
 
 static size_t cdfsfs_fread(void *buf, size_t size, size_t count, void *file) {
@@ -1063,6 +1073,7 @@ DECLARE_FILE_SYSTEM_DRIVER(cdfsfs_drv);
 static int cdfsfs_init(void * par) {
 	//init_cdfs_fsinfo_pool();
 	//init_cdfs_fileinfo_pool();
+	lastblkno = -1;
 	return 0;
 }
 
@@ -1121,7 +1132,6 @@ static int create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath, int 
 	node_t *node;
 	char name[MAX_LENGTH_PATH_NAME];
 	char full_name[MAX_LENGTH_PATH_NAME];
-	int n;
 
 	dir_fd = (cdfs_file_description_t *) dir_node->fd;
 
@@ -1136,7 +1146,6 @@ static int create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath, int 
 	p = buf->data;
 	rec = (iso_directory_record_t *) p;
 	left = isonum_733(rec->size);
-	n = 0;
 
 	/* Find named entry in directory */
 	while (left > 0) {
@@ -1165,23 +1174,21 @@ static int create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath, int 
 			/* Skip to next record */
 			p += reclen;
 			left -= reclen;
-			n++;
-			if(n > 3) {
-				return 0;
+
+			/* if directory then not create node */
+			if(flags & 2) {
+				continue;
 			}
 
 			strcpy(full_name, dirpath);
+			strcat(full_name, "/");
+
 			memcpy(name, rec->name, namelen);
 			name[namelen] = 0;
-			if((20 >= name[0]) || (flags & 2)) {
-				n--;
-				continue;
-			}
-			strcat(full_name, "/");
+
 			strcat(full_name, name);
 			if(NULL == (node = vfs_add_path (full_name, NULL))) {
-				//return -ENOMEM;
-				continue;
+				return -ENOMEM;
 			}
 
 			if(NULL == (fd = pool_alloc(&cdfs_file_pool))) {
@@ -1222,8 +1229,7 @@ static int create_dir_entry (node_t *parent) {
 		strncpy(path, parents_fd->fs->mntto, MAX_LENGTH_PATH_NAME);
 
 		/* Setup pointers into path table buffer */
-		//for (n = 1; n < cdfs->path_table_records; n++) {
-		for (n = 1; n < 16; n++) {
+		for (n = 1; n < cdfs->path_table_records; n++) {
 			pathrec = cdfs->path_table[n];
 			namelen = pathrec->length;
 			reclen = sizeof(iso_pathtable_record_t) + namelen + (namelen & 1);
@@ -1240,8 +1246,7 @@ static int create_dir_entry (node_t *parent) {
 				get_full_path(cdfs, n, name, path);
 
 				if(NULL == (node = vfs_add_path (name, NULL))) {
-					//return -ENOMEM;
-					continue;
+					return -ENOMEM;
 				}
 
 				if(NULL == (fd = pool_alloc(&cdfs_file_pool))) {

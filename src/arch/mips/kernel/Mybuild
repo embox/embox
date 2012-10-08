@@ -4,6 +4,12 @@ module context extends embox.arch.context {
 	source "context.c", "context_switch.S", "context.h"
 }
 
+module locore extends embox.arch.locore {
+
+	depends entry,
+		exception,
+		interrupt
+}
 
 module boot extends embox.arch.boot {
 	source "boot.S"

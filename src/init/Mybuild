@@ -12,3 +12,15 @@ module start_script {
 	requires embox.cmd.Shell.commandLine
 	option string shell_name="diag_shell"
 }
+
+module make_term {
+
+    option boolean lf_crlf_map = true
+
+
+    @IncludePath("$(SRC_DIR)/compat/posix/include")
+    source "make_term.c"
+
+    depends embox.compat.posix.idx.dup
+    depends embox.compat.posix.posix_env
+}

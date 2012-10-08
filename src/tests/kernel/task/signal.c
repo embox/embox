@@ -16,7 +16,7 @@ EMBOX_TEST_SUITE("test for task API");
 
 static volatile char flag = 0;
 
-extern void kill(int tid, int sig);
+extern int kill(int tid, int sig);
 
 extern void signal(int sig, void (*hnd)(int));
 
