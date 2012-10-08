@@ -32,8 +32,8 @@ static uint32_t bitmask[((HEAP_SIZE()/PAGE_SIZE())/32) + 1];
 
 #define FREE_MEM_BASE       ((uint32_t)allocator->start)
 #define bitmask             (allocator->start + sizeof(struct page_allocator))
-#define MAIN_BITMASK_LENGTH (allocator->capasity / allocator->page_size) / 32
-#define REST_MASK_BIT       (allocator->capasity / allocator->page_size) % 32
+#define MAIN_BITMASK_LENGTH (allocator->capacity / allocator->page_size) / 32
+#define REST_MASK_BIT       (allocator->capacity / allocator->page_size) % 32
 
 static void *search_single_page(struct page_allocator *allocator) {
 	int word_offset;
@@ -82,7 +82,7 @@ static size_t search_first_free(struct page_allocator *allocator, size_t start_p
 		return -1;
 	}
 #endif
-	if((allocator->capasity / allocator->page_size) <= start_page) {
+	if((allocator->capacity / allocator->page_size) <= start_page) {
 		return -1;
 	}
 
@@ -92,6 +92,7 @@ static size_t search_first_free(struct page_allocator *allocator, size_t start_p
 
 		for (; bit_offset < 32; bit_offset++) {
 			if (0 == (word & (1 << bit_offset))) { /* page is free */
+				allocator->free -= allocator->page_size;
 				return ((word_offset * 32) + bit_offset);
 			}
 		}
@@ -106,6 +107,7 @@ static size_t search_first_free(struct page_allocator *allocator, size_t start_p
 		}
 		for (bit_offset = 0; bit_offset < 32; ++bit_offset) {
 			if (0 == (word & (1 << bit_offset))) { /* page is free */
+				allocator->free -= allocator->page_size;
 				return ((word_offset * 32) + bit_offset);
 			}
 		}
@@ -116,6 +118,7 @@ static size_t search_first_free(struct page_allocator *allocator, size_t start_p
 		//mask = 1;
 		for (bit_offset = 0; bit_offset < REST_MASK_BIT; ++bit_offset) {
 			if (0 == (word & (1 << bit_offset))) { /* page is free */
+				allocator->free -= allocator->page_size;
 				return ((word_offset * 32) + bit_offset);
 			}
 		}
@@ -255,6 +258,7 @@ static void *search_multi_page(struct page_allocator *allocator, size_t page_q) 
 	while(-1 != (page_n = search_first_free(allocator, page_n))) {
 		if(page_q == (found_page_q = check_n_free(allocator, page_n, page_q))) {
 			mark_n_busy(allocator, page_n, page_q);
+			allocator->free -= page_q * allocator->page_size;
 			return (void*) (FREE_MEM_BASE + PAGE_SIZE() * page_n);
 		}
 		page_n += found_page_q;
@@ -280,6 +284,7 @@ void page_free(struct page_allocator *allocator, void *page, size_t page_q) {
 	word_offset = page_n / 32;
 	bit_offset = page_n % 32;
 
+	allocator->free += page_q * allocator->page_size;
 
 	if(1 == page_q) {
 		bitmask[word_offset] &= ~(1 << bit_offset);
@@ -302,7 +307,7 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 
 	memset(allocator, 0, page_size);
 	allocator->start = start;
-	allocator->capasity = len;
+	allocator->capacity = len;
 	allocator->page_size = page_size;
 	allocator->free = len - page_size; /* one page for service information */
 	mark_n_free(allocator, 0, 1); /* mark first page as busy */

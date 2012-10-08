@@ -18,7 +18,7 @@
 
 struct page_allocator {
 	char *start;
-	size_t capasity;
+	size_t capacity;
 	size_t free;
 	size_t page_size;
 };
