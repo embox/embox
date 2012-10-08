@@ -33,7 +33,7 @@ abstract module boot {
 abstract module lds {
 }
 
-abstract module mm {
+abstract module mmu {
 }
 
 abstract module stackframe {

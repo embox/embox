@@ -1,0 +1,5 @@
+package embox.arch.sparc
+
+module mmu extends embox.arch.mmu {
+	source "mmu.c", "mmu.h"
+}
