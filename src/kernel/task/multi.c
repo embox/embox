@@ -72,8 +72,6 @@ int new_task(void *(*run)(void *), void *arg) {
 
 	task_init_parent(self_task, task_self());
 
-	signal_init(self_task->signal_table);
-
 	thread_set_task(thd, self_task);
 
 	thread_detach(thd);
@@ -126,7 +124,7 @@ static void task_init_parent(struct task *task, struct task *parent) {
 
 void __attribute__((noreturn)) task_exit(void *res) {
 	struct task *this_task = task_self();
-	struct thread *thread;
+	struct thread *thread, *next;
 	const struct task_resource_desc *res_desc;
 
 	list_del(&this_task->link);
@@ -138,6 +136,8 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		if (thread == thread_self()) {
 			continue;
 		}
+		/* make thread detached and terminate it, exactly this order to prevent
+		 * detach from deleting thread */
 		thread_terminate(thread);
 	}
 
@@ -149,11 +149,12 @@ void __attribute__((noreturn)) task_exit(void *res) {
 
 	task_table_del(this_task->tid);
 
-	list_for_each_entry(thread, &this_task->threads, task_link) {
+	list_for_each_entry_safe(thread, next, &this_task->threads, task_link) {
 		if (thread == thread_self()) {
 			continue;
 		}
-		/*thread_delete(thread);*/
+		list_del(&thread->task_link);
+		thread_detach(thread);
 	}
 
 	thread_exit(res);

@@ -30,7 +30,7 @@ int kill(int tid, int sig) {
 	return res;
 }
 
-void signal(int sig, void (*hnd)(int)) {
+void signal(int sig, task_signal_hnd_t hnd) {
 	struct task *task = task_self();
 	struct task_signal_table *sig_table = task->signal_table;
 
@@ -39,16 +39,27 @@ void signal(int sig, void (*hnd)(int)) {
 
 static void task_global_sig_handler(void) {
 	struct task_signal_table *sig_table = task_self()->signal_table;
+	int sig_occured = sig_table->last_sig;
 
 	sched_unlock();
 
-	task_signal_table_get(sig_table, sig_table->last_sig)(sig_table->last_sig);
+	task_signal_table_get(sig_table, sig_occured)(sig_occured);
 
 	sched_lock();
 }
 
+static void task_terminate(int sig) {
+	task_exit(NULL);
+}
+
 static void task_signal_table_init(struct task *task, void *_signal_table) {
+	int sig;
+
 	struct task_signal_table *sig_table = (struct task_signal_table *) _signal_table;
+
+	for (sig = 0; sig < TASK_SIGNAL_MAX_N; sig++) {
+		task_signal_table_set(sig_table, sig, task_terminate);
+	}
 
 	task->signal_table = sig_table;
 }
@@ -80,18 +91,6 @@ static int notify_hnd(struct thread *prev, struct thread *next) {
 
 
 	return 0;
-}
-
-static void task_terminate(int sig) {
-	int res = 0;
-	task_exit(&res);
-}
-
-void signal_init(struct task_signal_table *table) {
-	int sig;
-	for (sig = 0; sig < TASK_SIGNAL_MAX_N; sig++) {
-		task_signal_table_set(table, sig, task_terminate);
-	}
 }
 
 TASK_RESOURCE_DESC(&signal_resource);
