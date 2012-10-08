@@ -19,16 +19,6 @@
 
 
 //TODO page : have no synchronization
-#if 0
-extern char *_heap_start; //TODO page : calculate free memory dynamic
-#define FREE_MEM_BASE (uint32_t)&_heap_start
-/* _heap_start _heap_end */
-static uint32_t bitmask[((HEAP_SIZE()/PAGE_SIZE())/32) + 1];
-
-#define MAIN_BITMASK_LENGTH ((HEAP_SIZE()/PAGE_SIZE())/32)
-
-#define REST_MASK_BIT     ((HEAP_SIZE()/PAGE_SIZE()) % 32)
-#endif
 
 #define FREE_MEM_BASE       ((uint32_t)allocator->start)
 #define bitmask             (allocator->start + sizeof(struct page_allocator))
