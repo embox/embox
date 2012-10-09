@@ -19,12 +19,8 @@
 #include "../kernel/thread/types.h"
 
 /* Section pointers. */
-extern char _text_vma, _rodata_vma, _bss_vma, _data_vma, _stack_vma, _heap_vma;
-extern char _text_len, _rodata_len, _bss_len, _data_len, _stack_len, _heap_len;
-
-// TODO: do it normal
-#define _reserve_vma ((mmu_paddr_t) &_data_vma + (mmu_paddr_t) &_data_len)
-#define _reserve_len ((size_t) &_stack_vma - (size_t) &_data_vma - (size_t) &_data_len)
+extern char _text_vma, _rodata_vma, _bss_vma, _data_vma, _reserve_vma, _stack_vma, _heap_vma;
+extern char _text_len, _rodata_len, _bss_len, _data_len, _reserve_len, _stack_len, _heap_len;
 
 EMBOX_UNIT(vmem_init, vmem_fini);
 
@@ -45,7 +41,7 @@ static inline void vmem_map_kernel(mmu_ctx_t ctx) {
 	vmem_map_region(ctx, (mmu_paddr_t)&_rodata_vma, (mmu_vaddr_t)&_rodata_vma, (size_t)&_rodata_len, VMEM_PAGE_WRITABLE);
 	vmem_map_region(ctx, (mmu_paddr_t)&_bss_vma, (mmu_vaddr_t)&_bss_vma, (size_t)&_bss_len, VMEM_PAGE_WRITABLE);
 	vmem_map_region(ctx, (mmu_paddr_t)&_data_vma, (mmu_vaddr_t)&_data_vma, (size_t)&_data_len, VMEM_PAGE_WRITABLE);
-	vmem_map_region(ctx, (mmu_paddr_t) _reserve_vma, (mmu_vaddr_t) _reserve_vma, (size_t) _reserve_len, VMEM_PAGE_WRITABLE);
+	vmem_map_region(ctx, (mmu_paddr_t) &_reserve_vma, (mmu_vaddr_t) &_reserve_vma, (size_t) &_reserve_len, VMEM_PAGE_WRITABLE);
 	vmem_map_region(ctx, (mmu_paddr_t)&_stack_vma, (mmu_vaddr_t)&_stack_vma, (size_t)&_stack_len, VMEM_PAGE_WRITABLE);
 	vmem_map_region(ctx, (mmu_paddr_t)&_heap_vma, (mmu_vaddr_t)&_heap_vma, (size_t)&_heap_len, VMEM_PAGE_WRITABLE);
 
@@ -84,7 +80,7 @@ static inline void vmem_print_info(void) {
 	prom_printf(" rodata: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_rodata_vma, (unsigned int) &_rodata_len);
 	prom_printf("    bss: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_bss_vma, (unsigned int) &_bss_len);
 	prom_printf("   data: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_data_vma, (unsigned int) &_data_len);
-	prom_printf("reserve: start = 0x%08x, size = 0x%08x\n", (unsigned int) _reserve_vma, (unsigned int) _reserve_len);
+	prom_printf("reserve: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_reserve_vma, (unsigned int) &_reserve_len);
 	prom_printf("  stack: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_stack_vma, (unsigned int) &_stack_len);
 	prom_printf("   heap: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_heap_vma, (unsigned int) &_heap_len);
 }
