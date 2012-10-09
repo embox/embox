@@ -10,5 +10,5 @@ module heap_bm extends heap_api {
 }
 
 module heap_simple extends heap_api {
-	source "malloc.c"
+	source "heap_simple.c"
 }

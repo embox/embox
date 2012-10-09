@@ -18,17 +18,29 @@ static char *managed_memory_start;
 static char *last_valid_address;
 
 
-#define MEM_POOL_SIZE  ((HEAP_SIZE() / 2) / PAGE_SIZE())
+#define MEM_POOL_SIZE  ((HEAP_SIZE()) / PAGE_SIZE())
 static void *mem_pool;
 
 struct mem_control_block {
-	char is_available;
+	int is_available;
 	size_t size;
 };
 
-static void malloc_init(void) {
+static struct page_allocator * allocator;
+extern char *_heap_start;
+
+static int malloc_init(void) {
 	struct mem_control_block *init_mcb;
-	mem_pool = page_alloc(MEM_POOL_SIZE);
+
+	allocator = page_allocator_init((char *)&_heap_start, HEAP_SIZE(), PAGE_SIZE());
+	if(NULL == allocator) {
+		return -1;
+	}
+
+	mem_pool = page_alloc(allocator, MEM_POOL_SIZE);
+	if(NULL == mem_pool) {
+		return -1;
+	}
 
 	managed_memory_start = (void*) mem_pool;
 	last_valid_address   = managed_memory_start;
@@ -37,6 +49,8 @@ static void malloc_init(void) {
 	init_mcb = (struct mem_control_block *) managed_memory_start;
 	init_mcb->is_available = 1;
 	init_mcb->size = sizeof(mem_pool) - sizeof(struct mem_control_block);
+
+	return 0;
 }
 
 static void _mem_defrag(void) {
@@ -70,7 +84,8 @@ void *malloc(size_t size) {
 	struct mem_control_block *current_location_mcb;
 	char *memory_location = NULL;
 	if (!has_initialized) {
-		malloc_init();
+		if(-1 == malloc_init())
+			return NULL;
 	}
 	current_location = managed_memory_start;
 	size += sizeof(struct mem_control_block);

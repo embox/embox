@@ -15,6 +15,7 @@
 #include <mem/page.h>
 #include <mem/misc/pool.h>
 #include <embox/block_dev.h>
+#include <mem/phymem.h>
 
 /*
 static int ioctl(void *dev);
@@ -82,7 +83,7 @@ int ramdisk_create(void *mkfs_params) {
 	device(ram_disk->devnum)->dev_node = ramdisk_node;
 
 	if(NULL == (ram_disk->p_start_addr =
-			page_alloc(p_mkfs_params->blocks))) {
+			page_alloc(__phymem_allocator, p_mkfs_params->blocks))) {
 		return -ENOMEM;
 	}
 
