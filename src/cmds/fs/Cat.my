@@ -20,7 +20,10 @@ module cat {
 	source "cat.c"
 
 	depends embox.lib.LibC
-	depends embox.compat.posix.LibPosix
+
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.FileTasksBasic
+	depends embox.compat.posix.FileTasksOpen
 	depends embox.fs.core
 	depends embox.prom.printf
 	depends embox.framework.LibFramework

@@ -16,7 +16,8 @@ module touch {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "touch.c"
 
-	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.FS
+	depends embox.compat.posix.util.getopt
 	depends embox.fs.core
 	depends embox.framework.LibFramework
 }

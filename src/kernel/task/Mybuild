@@ -18,7 +18,6 @@ module multi extends api {
 
 	depends task_table
 	depends kernel_task
-	depends signal /* We really need multi without signals? */
 
 	depends embox.kernel.thread.core
 }
