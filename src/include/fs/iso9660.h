@@ -145,6 +145,7 @@ typedef struct iso_pathtable_record {
 
 #define CDFS_DEFAULT_CACHESIZE 128
 #define CDFS_BLOCKSIZE         2048
+#define CDFS_POOLDEPTH         10
 
 #define PS1                     '/'     /* Primary path separator */
 #define PS2                     '\\'    /* Alternate path separator */
@@ -274,12 +275,6 @@ typedef struct cdfs_file_description {
 	//char chbuf;
 	cdfs_fs_description_t *fs;
 } cdfs_file_description_t;
-
-
-typedef struct buf {
-	blkno_t blkno;
-	char *data;
-} buf_t;
 
 typedef struct direntry {
 	ino_t ino;

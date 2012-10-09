@@ -53,17 +53,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <embox/block_dev.h>
+#include <embox/buff.h>
 //#include <mem/kmalloc.h>
 #include <mem/misc/pool.h>
 #include <net/in.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
-
-
-
-buf_t b_buffer;
-char sector_buff [10][CDFS_BLOCKSIZE];
-blkno_t lastblkno;
 
 /* cdfs filesystem description pool */
 POOL_DEF(cdfs_fs_pool, struct cdfs_fs_description, OPTION_GET(NUMBER,cdfs_descriptor_quantity));
@@ -85,28 +80,6 @@ static int isonum_731(unsigned char *p) {
 
 static int isonum_733(unsigned char *p) {
   return isonum_731(p);
-}
-
-static unsigned char num_buff;
-buf_t *get_buffer(dev_t devno, blkno_t blkno){
-	buf_t *buf;
-
-	if(lastblkno == blkno) {
-		buf = &b_buffer;
-	}
-	else {
-
-		num_buff++;
-
-		buf = &b_buffer;
-		buf->data = (char *) &sector_buff[num_buff%10][0];
-		buf->blkno = blkno;
-
-		dev_read(devno, buf->data, CDFS_BLOCKSIZE, buf->blkno);
-		lastblkno = blkno;
-	}
-
-	return buf;
 }
 
 static int cdfs_fnmatch(cdfs_t *cdfs, char *fn1, int len1, char *fn2, int len2) {
@@ -433,12 +406,12 @@ int cdfs_mount(node_t *root_node)
 
 	devno = fs->devnum;
 
-	/* Check device
+	/* Check device */
 	dev_open(fs->mntfrom);
 	if (devno == NODEV) {
 		return -NODEV;
 	}
-	*/
+
 	if (device(devno)->driver->type != DEV_TYPE_BLOCK) {
 		return -ENOTBLK;
 	}
@@ -464,12 +437,10 @@ int cdfs_mount(node_t *root_node)
 		return cdfs->blks;
 	}
 
-	/* Allocate cache
-	cachebufs = get_num_option(opts, "cache", CDFS_DEFAULT_CACHESIZE);
-	cdfs->cache = init_buffer_pool(devno, CDFS_BLOCKSIZE, NULL, cdfs);
-	if (!cdfs->cache) {
+	/* Allocate cache */
+	if (NULL == init_buffer_pool(devno, CDFS_POOLDEPTH)) {
 		return -ENOMEM;
-	}*/
+	}
 
 	/* Read volume descriptors */
 	cdfs->vdblk = 0;
@@ -1073,7 +1044,7 @@ DECLARE_FILE_SYSTEM_DRIVER(cdfsfs_drv);
 static int cdfsfs_init(void * par) {
 	//init_cdfs_fsinfo_pool();
 	//init_cdfs_fileinfo_pool();
-	lastblkno = -1;
+
 	return 0;
 }
 
@@ -1271,6 +1242,7 @@ static int get_full_path(cdfs_t *cdfs, int numrec, char *path, char *root) {
 
 	pathrec = cdfs->path_table[numrec];
 
+	/* go up to the root folder */
 	while(1 != pathrec->parent) {
 		strcpy(full_path, path);
 		pathrec = cdfs->path_table[pathrec->parent];
