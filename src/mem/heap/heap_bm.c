@@ -287,7 +287,7 @@ static int heap_init(void) {
 		return -1;
 	}
 
-	pool = page_alloc(allocator, HEAP_SIZE() / PAGE_SIZE());
+	pool = page_alloc(allocator, HEAP_SIZE() / PAGE_SIZE() - 2);
 	if(NULL == pool) {
 		return -1;
 	}

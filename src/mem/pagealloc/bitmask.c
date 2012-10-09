@@ -89,7 +89,7 @@ static size_t search_first_free(struct page_allocator *allocator, size_t start_p
 		word_offset ++;
 	}
 
-	for (; word_offset < MAIN_BITMASK_LENGTH - 1; ++word_offset) {
+	for (; word_offset < MAIN_BITMASK_LENGTH; ++word_offset) {
 		word = bitmask[word_offset];
 		//mask = 1;
 		if (word == -1) {
@@ -136,7 +136,7 @@ static size_t check_n_free(struct page_allocator *allocator, size_t start_page, 
 		word_offset ++;
 	}
 
-	for (; word_offset < MAIN_BITMASK_LENGTH - 1; ++word_offset) {
+	for (; word_offset < MAIN_BITMASK_LENGTH; ++word_offset) {
 		word = bitmask[word_offset];
 
 		if (word == -1) {
@@ -184,7 +184,7 @@ static void mark_n_busy(struct page_allocator *allocator, size_t page_n, size_t 
 		word_offset ++;
 	}
 
-	for (; word_offset < MAIN_BITMASK_LENGTH - 1; ++word_offset) {
+	for (; word_offset < MAIN_BITMASK_LENGTH; ++word_offset) {
 		for (bit_offset = 0; bit_offset < 32; ++bit_offset) {
 			if(page_q--) {
 				bitmask[word_offset] |= 1 << bit_offset;
@@ -220,7 +220,7 @@ static void mark_n_free(struct page_allocator *allocator, size_t page_n, size_t 
 		word_offset ++;
 	}
 
-	for (; word_offset < MAIN_BITMASK_LENGTH - 1; ++word_offset) {
+	for (; word_offset < MAIN_BITMASK_LENGTH; ++word_offset) {
 		for (bit_offset = 0; bit_offset < 32; ++bit_offset) {
 			if(page_q--) {
 				bitmask[word_offset] &= ~(1 << bit_offset);
@@ -300,15 +300,15 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 	allocator->capacity = len;
 	allocator->page_size = page_size;
 	allocator->free = len - page_size; /* one page for service information */
-	mark_n_free(allocator, 0, 1); /* mark first page as busy */
+	mark_n_busy(allocator, 0, 1); /* mark first page as busy */
 	/* now we have allocator with bitmask for
 	 * n = (page_size - sizeof(struct page_allocator))  * 8 pages
 	 */
 	pages -= (page_size - sizeof(struct page_allocator))  * 8;
 	idx = 1;
 	while(pages > 0) {
-		memset(memset, 0, page_size);
-		mark_n_free(allocator, idx, 1);
+		memset(allocator->start + page_size * idx, 0, page_size);
+		mark_n_busy(allocator, idx, 1);
 
 		idx++;
 		allocator->free -= page_size;
