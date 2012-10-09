@@ -43,39 +43,66 @@ struct pipe {
 };
 
 int pipe(int pipefd[2]) {
-	struct pipe *pipe = malloc(sizeof(struct pipe));
-	struct async_ring_buff *pipe_buff = &pipe->buff;
-	void *storage = malloc(PIPE_BUFFER_SIZE);
+	struct pipe *pipe;
+	struct async_ring_buff *pipe_buff;
+	void *storage;
 	struct event_set *set_nonfull, *set_nonempty;
+	int res = 0;
+
+	if (!(storage = malloc(PIPE_BUFFER_SIZE))) {
+		res = ENOMEM; /* not sure */
+		goto out;
+	}
+
+	if (!(pipe = malloc(sizeof(struct pipe)))) {
+		free(storage);
+		res = ENOMEM; /* not sure */
+		goto out;
+	}
+
+	pipe_buff = &pipe->buff;
 
 	async_ring_buff_init(pipe_buff, 1, PIPE_BUFFER_SIZE, storage);
 
 	pipe->ends_count = 2;
 
-	set_nonfull = event_set_create();
-	event_set_add(set_nonfull, &pipe->nonfull);
-
-	set_nonempty = event_set_create();
-	event_set_add(set_nonempty, &pipe->nonempty);
-
 	pipefd[1] = task_self_idx_alloc(&write_ops, pipe_buff);
-	if (pipefd[0] < 0) {
-		free(storage);
-		free(pipe);
-		SET_ERRNO(EMFILE);
-		return -1;
+	if (pipefd[1] < 0) {
+		res = EMFILE;
+		goto buffree;
 	}
 
 	pipefd[0] = task_self_idx_alloc(&read_ops, pipe_buff);
-	if (pipefd[1] < 0) {
+	if (pipefd[0] < 0) {
 		task_self_idx_table_unbind(pipefd[0]);
-		free(storage);
-		free(pipe);
-		SET_ERRNO(EMFILE);
-		return -1;
+		res = EMFILE;
+		goto buffree;
 	}
 
+	if (!(set_nonfull = event_set_create())) {
+		res = ENOMEM;
+		goto buffree_and_unbind;
+	}
+	event_set_add(set_nonfull, &pipe->nonfull);
+
+	if (!(set_nonempty = event_set_create())) {
+		event_set_clear(set_nonfull);
+		res = ENOMEM;
+		goto buffree_and_unbind;
+	}
+	event_set_add(set_nonempty, &pipe->nonempty);
+
 	return 0;
+
+buffree_and_unbind:
+	free(storage);
+	free(pipe);
+buffree:
+	task_self_idx_table_unbind(pipefd[0]);
+	task_self_idx_table_unbind(pipefd[1]);
+out:
+	SET_ERRNO(res);
+	return -1;
 }
 
 static int pipe_close(struct idx_desc *data) {
