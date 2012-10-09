@@ -17,7 +17,7 @@
 #include <hal/reg.h>
 #include <kernel/irq.h>
 
-void irq_handler(pt_regs_t *regs) {
+fastcall void irq_handler(pt_regs_t *regs) {
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
 	critical_enter(CRITICAL_IRQ_HANDLER);

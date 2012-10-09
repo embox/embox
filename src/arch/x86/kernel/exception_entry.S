@@ -43,30 +43,14 @@ EXCEPTION(0x1d, t_excep29)   /* Reserved Exception */
 EXCEPTION(0x1e, t_excep30)   /* Reserved Exception */
 EXCEPTION(0x1f, t_excep31)   /* Reserved Exception */
 
-// TODO: if ss/esp is changed in the pt_regs structure by a debugger the change must be implemented
-// even if we return without privilege level change. This is not the case now
-
 excep_stub:
 	SAVE_ALL
 
-	SETUP_SEGMENTS
+	mov	    %esp, %eax
 
-	pushl %ss
-	mov	%esp, %eax
-	add	$(21 * 4 - 4 + 8), %eax
-	pushl	%eax
-
-	mov	    %esp, %ebp		/* Save current stack */
-	pushl   %ebp            /* first parameter struct pt_regs *regs */
-
-	.global exception_handler_call_pointer
+	.global exception_handler_return_pointer
 	call    exception_handler
-exception_handler_call_pointer:
-
-	movl    %ebp, %esp		/* Restore original stack */
-	add	$8, %esp
+exception_handler_return_pointer:
 
 	RESTORE_ALL
-	add     $8, %esp
-	iret
 
