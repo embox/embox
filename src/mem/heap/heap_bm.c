@@ -283,8 +283,14 @@ static int heap_init(void) {
 	struct free_block *block;
 
 	allocator = page_allocator_init((char *)&_heap_start, HEAP_SIZE(), PAGE_SIZE());
+	if(NULL == allocator) {
+		return -1;
+	}
 
 	pool = page_alloc(allocator, HEAP_SIZE() / PAGE_SIZE());
+	if(NULL == pool) {
+		return -1;
+	}
 
 	block = (struct free_block *) pool;
 	block->size = HEAP_SIZE() / 2 - sizeof(block->size);

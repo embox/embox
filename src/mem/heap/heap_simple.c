@@ -33,8 +33,14 @@ static void malloc_init(void) {
 	struct mem_control_block *init_mcb;
 
 	allocator = page_allocator_init((char *)&_heap_start, HEAP_SIZE(), PAGE_SIZE());
+	if(NULL == allocator) {
+		return -1;
+	}
 
 	mem_pool = page_alloc(allocator, MEM_POOL_SIZE);
+	if(NULL == pool) {
+		return -1;
+	}
 
 	managed_memory_start = (void*) mem_pool;
 	last_valid_address   = managed_memory_start;
