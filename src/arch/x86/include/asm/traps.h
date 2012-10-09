@@ -10,10 +10,10 @@
 
 #include <types.h>
 
+#ifndef __ASSEMBLER__
+
 // TODO: replace it
 #define fastcall        __attribute__((regparm(3)))
-
-#ifndef __ASSEMBLER__
 
 /*
  * There are 256 IDT entries (each entry is 8 bytes)
@@ -42,6 +42,7 @@
 #define X86_T_PAGE_FAULT            0x0E /* Page Fault */
 
 typedef struct pt_regs {
+	/* Pushed by SAVE_ALL. */
 	uint32_t gs;
 	uint32_t fs;
 	uint32_t es;
@@ -54,9 +55,11 @@ typedef struct pt_regs {
 	uint32_t ecx;
 	uint32_t eax;
 
-	/* Passed by processor. */
+	/* Pushed at the very beginning of entry. */
 	uint32_t trapno;
 	uint32_t err;
+
+	/* Pushed by processor. */
 	uint32_t eip;
 	uint32_t cs;
 	uint32_t eflags;
