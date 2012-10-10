@@ -50,6 +50,7 @@ buf_t *init_buffer_pool(dev_t devno, int blocks) {
 			pagecnt++;
 		}
 	}
+	buf->blkfactor = pagecnt;
 
 	if(NULL == (buf->pool = page_alloc(__phymem_allocator, blocks * pagecnt))) {
 		return NULL;
@@ -66,11 +67,12 @@ buf_t *get_buffer(dev_t devno, blkno_t blkno) {
 		return NULL;
 	}
 
+	/* set pointer to the buffer in pool */
 	if(buf->lastblkno != blkno) {
 		buf->buff_cntr++;
 		buf->buff_cntr %= buf->depth;
 
-		buf->data = buf->pool + buf->buff_cntr * buf->blksize;
+		buf->data = buf->pool + buf->buff_cntr * PAGE_SIZE() * buf->blkfactor;
 		buf->blkno = blkno;
 
 		dev_read(devno, buf->data, buf->blksize, buf->blkno);
@@ -80,3 +82,23 @@ buf_t *get_buffer(dev_t devno, blkno_t blkno) {
 	return buf;
 }
 
+int free_buffer_pool(dev_t devno) {
+	block_dev_t *dev;
+	buf_t *buf;
+
+	if(NULL == (dev = device(devno))) {
+		return -1;
+	}
+
+	if (NULL == dev->buff) {
+		return 0;
+	}
+	else {
+		buf = dev->buff;
+	}
+
+	page_free(__phymem_allocator, buf->pool, buf->depth * buf->blkfactor);
+	pool_free(&buff_pool, buf);
+
+	return  0;
+}

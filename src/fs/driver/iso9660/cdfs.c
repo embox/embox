@@ -411,19 +411,11 @@ int cdfs_mount(node_t *root_node)
 	if (devno == NODEV) {
 		return -NODEV;
 	}
-
 	if (device(devno)->driver->type != DEV_TYPE_BLOCK) {
 		return -ENOTBLK;
 	}
 
-	/* Revalidate device and check block size
-	if (get_option(opts, "revalidate", NULL, 0, NULL)) {
-		rc = dev_ioctl(devno, IOCTL_REVALIDATE, NULL, 0);
-		if (rc < 0) {
-			return rc;
-		}
-	}*/
-
+	/* Check block size */
 	if (dev_ioctl(devno, IOCTL_GETBLKSIZE, NULL, 0) != CDFS_BLOCKSIZE) {
 		return -ENXIO;
 	}
