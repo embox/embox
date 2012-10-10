@@ -44,3 +44,6 @@ module idx_table {
 	depends num_alloc
 }
 
+module indexator {
+	source "indexator.c"
+}
