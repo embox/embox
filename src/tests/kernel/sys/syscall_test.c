@@ -7,9 +7,15 @@
  */
 
 #include <embox/test.h>
+#include <module/embox/arch/syscall.h>
+#include <types.h>
 
 EMBOX_TEST_SUITE("basic syscall tests");
 
+static int errno;
+
+static _syscall3(int,write,int,fd,const char *,buf,int,count);
+
 TEST_CASE("syscall") {
-	__asm__ ("int $0x80");
+	write(1, "abc", 3);
 }

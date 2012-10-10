@@ -21,10 +21,10 @@ syscall_trap:
 syscall_stub:
 	SAVE_ALL
 
-	mov	    %esp, %eax
+	/* TODO: Check %eax for good number of syscall. */
 
 	.global syscall_handler_return_pointer
-	call    syscall_handler
+	call *SYSCALL_TABLE(,%eax,4)
 syscall_handler_return_pointer:
 
 	RESTORE_ALL

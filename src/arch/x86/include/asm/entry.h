@@ -12,36 +12,36 @@
 #ifdef __ASSEMBLER__
 
 #define SETUP_SEGMENTS \
-	movl    %ss, %eax; \
-	movl    %eax, %ds; \
-	movl    %eax, %es;
+	movl    %ss, %edx; \
+	movl    %edx, %ds; \
+	movl    %edx, %es;
 
 #define SAVE_ALL     \
-	pushl   %eax;    \
-	pushl   %ecx;    \
-	pushl   %edx;    \
-	pushl   %ebx;    \
-	pushl   %ebp;    \
-	pushl   %esi;    \
-	pushl   %edi;    \
 	pushl   %ds;     \
 	pushl   %es;     \
 	pushl   %fs;     \
 	pushl   %gs;     \
+	pushl   %eax;    \
+	pushl   %ebp;    \
+	pushl   %edi;    \
+	pushl   %esi;    \
+	pushl   %edx;    \
+	pushl   %ecx;    \
+	pushl   %ebx;    \
 	SETUP_SEGMENTS;
 
 #define RESTORE_ALL  \
+	pop   %ebx;      \
+	pop   %ecx;      \
+	pop   %edx;      \
+	pop   %esi;      \
+	pop   %edi;      \
+	pop   %ebp;      \
+	pop   %eax;      \
 	pop   %gs;       \
 	pop   %fs;       \
 	pop   %es;       \
 	pop   %ds;       \
-	pop   %edi;      \
-	pop   %esi;      \
-	pop   %ebp;      \
-	pop   %ebx;      \
-	pop   %edx;      \
-	pop   %ecx;      \
-	pop   %eax;      \
 	add   $8, %esp;  \
 	iret;
 
