@@ -9,11 +9,13 @@
 #ifndef X86_ENTRY_H_
 #define X86_ENTRY_H_
 
+#include <asm/gdt.h>
+
 #ifdef __ASSEMBLER__
 
-#define SETUP_SEGMENTS \
-	movl    %ss, %edx; \
-	movl    %edx, %ds; \
+#define SETUP_SEGMENTS            \
+	movl    $(__KERNEL_DS), %edx; \
+	movl    %edx, %ds;            \
 	movl    %edx, %es;
 
 #define SAVE_ALL     \
