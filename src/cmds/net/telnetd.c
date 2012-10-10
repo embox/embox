@@ -16,6 +16,7 @@
 #include <err.h>
 #include <errno.h>
 #include <kernel/task.h>
+#include <sys/select.h>
 #include <fcntl.h>
 
 EMBOX_CMD(exec);
@@ -164,14 +165,15 @@ static void *telnet_thread_handler(void* args) {
 	int sock = *(int *)args;
 	int pipefd1[2], pipefd2[2], msg[2];
 	int tid;
+	fd_set readfds, writefds;
 
 	fcntl(sock, F_SETFD, O_NONBLOCK);
 
 	pipe(pipefd1);
 	pipe(pipefd2);
 
-	fcntl(pipefd1[1], F_SETFD, O_NONBLOCK);
-	fcntl(pipefd2[0], F_SETFD, O_NONBLOCK);
+	//fcntl(pipefd1[1], F_SETFD, O_NONBLOCK);
+	//fcntl(pipefd2[0], F_SETFD, O_NONBLOCK);
 
 	/* Set our parameters */
 	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
@@ -186,34 +188,49 @@ static void *telnet_thread_handler(void* args) {
 	tid = new_task(shell_hnd, &msg);
 
 	/* Close unused ends of pipes. */
-	close(pipefd1[0]);
-	close(pipefd2[1]);
+	//close(pipefd1[0]);
+	//close(pipefd2[1]);
 
 	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
 	 * and than receive from it the result of command running, and send it back to
 	 * client. */
 	while(1) {
 		int len;
+		int fd_cnt;
 
+		FD_ZERO(&readfds);
+		FD_ZERO(&writefds);
+
+		FD_SET(sock, &readfds);
+		FD_SET(pipefd2[0], &readfds);
 		if (pipe_data_len > 0) {
+			FD_SET(sock, &writefds);
+		}
+		if (sock_data_len > 0) {
+			FD_SET(pipefd1[1], &writefds);
+		}
+
+		fd_cnt = select(10, &readfds, &writefds, NULL, 1000);
+
+		if ((pipe_data_len > 0) && FD_ISSET(sock, &writefds)) {
 			if ((len = write(sock, p, pipe_data_len)) > 0) {
 				pipe_data_len -= len;
 				p += len;
 			}
-		} else {
+		} else if (FD_ISSET(pipefd2[0], &readfds)){
 			p = pbuff;
 			pipe_data_len = read(pipefd2[0], tmpbuff, 64);
 			pipe_data_len = buf_copy(pbuff, tmpbuff, pipe_data_len);
 		}
 
-		if (sock_data_len > 0) {
+		if ((sock_data_len > 0) && FD_ISSET(pipefd1[1], &writefds)) {
 			if ((len = write(pipefd1[1], s, sock_data_len)) > 0) {
 				sock_data_len -= len;
 				s += len;
 			} else if (errno == EPIPE) {
 				break; /* this means that pipe was closed by shell */
 			}
-		} else {
+		} else if (FD_ISSET(sock, &readfds)){
 			s = sbuff;
 			sock_data_len = read(sock, s, 128);
 			if (errno == ECONNREFUSED) {

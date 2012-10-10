@@ -14,6 +14,8 @@
 #include <mem/misc/pool.h>
 #include <hal/ipl.h>
 #include <kernel/thread/event.h>
+#include <kernel/task.h>
+#include <kernel/task/idx.h>
 
 #include <framework/mod/options.h>
 
@@ -152,9 +154,13 @@ int sock_no_accept(struct socket *sock, struct socket *newsock, int flags) {
 }
 
 void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
+	struct idx_desc *desc = sk->sk_socket->desc;
 	assert(sk != NULL);
 	skb_queue_push(sk->sk_receive_queue, skb);
 	event_notify(&sk->sock_is_not_empty);
+	if (desc->data) {
+		task_idx_io_activate(&desc->data->read_state);
+	}
 }
 
 // TODO remove this

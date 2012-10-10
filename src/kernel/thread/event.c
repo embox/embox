@@ -36,7 +36,7 @@ void event_set_clear(struct event_set *e_set) {
 		event_set_del(e);
 	}
 
-	objfree(&event_set_pool, e_set);
+	//objfree(&event_set_pool, e_set);
 }
 
 int event_wait(struct event_set *e_set, unsigned long timeout) {
@@ -61,7 +61,6 @@ void event_notify(struct event *e) {
 			goto out;
 		}
 		sched_wake_all(&e_set->sleepq);
-		e_set->happened_event = e;
 	}
 out:
 	sched_unlock();

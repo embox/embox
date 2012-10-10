@@ -18,7 +18,6 @@
 struct event_set {
 	struct sleepq sleepq;
 	struct dlist_head link;
-	struct event *happened_event;
 };
 
 struct event {
