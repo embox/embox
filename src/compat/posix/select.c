@@ -34,22 +34,25 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, int t
 	struct idx_desc *desc;
 	struct event_set e_set;
 	fd_set tmp_r, tmp_w;
+	fd_set *p_r = &tmp_r, *p_w = &tmp_w;
 
 	/* Lock scheduler until we search active descriptor and build event set.*/
 	/* First try to find some active descriptor */
 	sched_lock();
 	{
-		fd_set_copy(&tmp_r, readfds);
-		fd_set_copy(&tmp_w, writefds);
+		readfds == NULL ? p_r = NULL : fd_set_copy(p_r, readfds);
+		writefds == NULL ? p_w = NULL : fd_set_copy(p_w, writefds);
 
-		fd_cnt = update_sets(&tmp_r, &tmp_w, exceptfds);
+		fd_cnt = update_sets(p_r, p_w, exceptfds);
 
 		if (fd_cnt < 0) {
 			res = fd_cnt;
 			goto error_locked;
 		} else if (fd_cnt > 0) {
-			fd_set_copy(readfds, &tmp_r);
-			fd_set_copy(writefds, &tmp_w);
+			if (readfds)
+				fd_set_copy(readfds, p_r);
+			if (writefds)
+				fd_set_copy(writefds, p_w);
 			goto out_locked;
 		}
 
