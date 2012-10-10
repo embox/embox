@@ -17,6 +17,7 @@
 #include <kernel/panic.h>
 
 #include <module/embox/arch/interrupt.h>
+#include <module/embox/arch/syscall.h>
 
 #define IDT_SIZE 256
 
@@ -111,6 +112,16 @@ static void idt_init_irq(void) {
 #define idt_init_irq() do { } while(0)
 #endif /* INTERRUPT_STUB */
 
+#ifndef SYSCALL_STUB
+
+static void idt_init_syscall(void) {
+	idt_set_gate(0x80, (unsigned) __FWD_DECL(syscall_trap), 0x08, 0x8E);
+}
+
+#else
+#define idt_init_syscall() do { } while(0)
+#endif
+
 void idt_init(void) {
 	static struct idt_pointer idt_ptr;
 
@@ -122,6 +133,7 @@ void idt_init(void) {
 
 	idt_init_except();
 	idt_init_irq();
+	idt_init_syscall();
 
 	/* Load IDT */
 	__asm__ __volatile__(

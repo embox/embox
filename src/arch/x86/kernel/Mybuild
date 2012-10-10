@@ -28,6 +28,11 @@ module interrupt extends embox.arch.interrupt {
 	depends locore
 }
 
+module syscall extends embox.arch.syscall {
+	source "syscall_entry.S", "syscall_handler.c"
+	depends locore
+}
+
 /*FIXME mybuild arch module what is it */
 module arch {
 	/* FIXME:

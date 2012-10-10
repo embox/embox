@@ -36,5 +36,10 @@ abstract module lds {
 abstract module mmu {
 }
 
+@Mandatory
+@DefaultImpl(embox.arch.generic.syscall_stub)
+abstract module syscall {
+}
+
 abstract module stackframe {
 }

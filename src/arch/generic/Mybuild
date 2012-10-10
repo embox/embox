@@ -4,3 +4,7 @@ module interrupt_stub extends embox.arch.interrupt {
 	source "interrupt_stub.h"
 }
 
+module syscall_stub extends embox.arch.syscall {
+	source "syscall_stub.h"
+}
+
