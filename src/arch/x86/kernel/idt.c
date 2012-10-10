@@ -14,6 +14,7 @@
 #include <asm/io.h>
 #include <asm/regs.h>
 #include <asm/traps.h>
+#include <asm/gdt.h>
 #include <kernel/panic.h>
 
 #include <module/embox/arch/interrupt.h>
@@ -81,7 +82,7 @@ void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr) {
 #define __FWD_DECL(sym) ({ extern void sym(void); &sym; })
 
 #define IDT_EXCEPT(nr) \
-	idt_set_gate(nr, (unsigned) __FWD_DECL(t_excep##nr), 0x08, 0x8E)
+	idt_set_gate(nr, (unsigned) __FWD_DECL(t_excep##nr), __KERNEL_CS, 0x8E)
 
 static void idt_init_except(void) {
 	IDT_EXCEPT(0);  IDT_EXCEPT(1);  IDT_EXCEPT(2);  IDT_EXCEPT(3);
@@ -97,7 +98,7 @@ static void idt_init_except(void) {
 #ifndef INTERRUPT_STUB
 
 #define IDT_IRQ(nr) \
-	idt_set_gate(nr + 32, (unsigned) __FWD_DECL(irq##nr), 0x08, 0x8E)
+	idt_set_gate(nr + 32, (unsigned) __FWD_DECL(irq##nr), __KERNEL_CS, 0x8E)
 
 static void idt_init_irq(void) {
 	/* Master PIC */
@@ -115,7 +116,7 @@ static void idt_init_irq(void) {
 #ifndef SYSCALL_STUB
 
 static void idt_init_syscall(void) {
-	idt_set_gate(0x80, (unsigned) __FWD_DECL(syscall_trap), 0x08, 0x8E);
+	idt_set_gate(0x80, (unsigned) __FWD_DECL(syscall_trap), __KERNEL_CS, 0x8E);
 }
 
 #else

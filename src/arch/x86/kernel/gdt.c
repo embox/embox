@@ -15,6 +15,9 @@
 #include <asm/gdt.h>
 #include <kernel/panic.h>
 
+gdt_gate_t gdt_entries[GDT_ENTRIES_NRS_TOTAL];
+gdt_pointer_t gdt_ptr;
+
 void gdt_set_gate(uint8_t nr, uint32_t base, uint32_t limit, uint8_t ac, uint8_t gran) {
 	gdt_entries[nr].base_low    = base & 0xffff;
 	gdt_entries[nr].base_med    = (base >> 16) & 0xff;

@@ -11,15 +11,15 @@
 
 #define GDT_ENTRIES_NRS_TOTAL 5
 
-#define GDT_ENTRY_KERNEL_CS             1
-#define GDT_ENTRY_KERNEL_DS             2
-#define GDT_ENTRY_USER_CS               3
-#define GDT_ENTRY_USER_DS               4
+#define GDT_ENTRY_KERNEL_CS    1
+#define GDT_ENTRY_KERNEL_DS    2
+#define GDT_ENTRY_USER_CS      3
+#define GDT_ENTRY_USER_DS      4
 
-#define __KERNEL_CS     (GDT_ENTRY_KERNEL_CS * 8)
-#define __KERNEL_DS     (GDT_ENTRY_KERNEL_DS * 8)
-#define __USER_DS       (GDT_ENTRY_USER_DS * 8 + 3)
-#define __USER_CS       (GDT_ENTRY_USER_CS * 8 + 3)
+#define __KERNEL_CS            (GDT_ENTRY_KERNEL_CS * 8)
+#define __KERNEL_DS            (GDT_ENTRY_KERNEL_DS * 8)
+#define __USER_CS              (GDT_ENTRY_USER_CS * 8 + 3)
+#define __USER_DS              (GDT_ENTRY_USER_DS * 8 + 3)
 
 #ifndef __ASSEMBLER__
 
@@ -36,9 +36,6 @@ typedef struct gdt_pointer {
 	uint16_t limit;
 	uint32_t base;
 } __attribute__((packed)) gdt_pointer_t;
-
-static gdt_gate_t gdt_entries[GDT_ENTRIES_NRS_TOTAL];
-static gdt_pointer_t gdt_ptr;
 
 extern void gdt_flush(uint32_t gdt);
 
