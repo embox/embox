@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Global Descriptor Table (GDT)
- * @details The IDT is used by the processor to determine
+ * @details The GDT is used by the processor to determine
  *          used to define the characteristics of the various
  *          memory areas used during program execution.
  *

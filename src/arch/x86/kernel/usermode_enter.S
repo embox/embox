@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief Implements switching to usermode.
  *
  * @date 11.10.2012
  * @author Anton Bulychev
@@ -11,11 +12,11 @@
  usermode_enter:
  	cli
 
- 	/* Save stack pointer */
+ 	/* Save stack pointer. */
  	mov %esp, %ebx
  	//
 
- 	/* Pushes info for callee. */
+ 	/* Push argument and return address for callee. */
  	mov 8(%ebx), %eax
  	push %eax
  	push $func_ret
