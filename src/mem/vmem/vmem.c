@@ -9,6 +9,7 @@
 #include <embox/unit.h>
 
 #include <assert.h>
+#include <errno.h>
 #include <types.h>
 #include <prom/prom_printf.h>
 #include <hal/mmu.h>
@@ -24,33 +25,59 @@ extern char _text_len, _rodata_len, _bss_len, _data_len, _reserve_len, _stack_le
 
 EMBOX_UNIT(vmem_init, vmem_fini);
 
-static inline void vmem_map_kernel(mmu_ctx_t ctx);
+static int initialized = 0;
+static inline int vmem_map_kernel(mmu_ctx_t ctx);
+static inline int vmem_create_context(struct task *task);
 
-void vmem_on(void) {
-	switch_mm((mmu_ctx_t) 0, task_self()->vmem_data->ctx);
+int vmem_on(void) {
+	int err = 0;
+	struct task *task = task_self();
+
+	initialized = 1;
+	/* Create context for init. */
+	if ((err = vmem_create_context(task))) {
+		return err;
+	}
+
+	// TODO: Change it.
+	switch_mm((mmu_ctx_t) 0, task->vmem_data->ctx);
 	mmu_on();
+
+	return ENOERR;
 }
 
 void vmem_off(void) {
 	mmu_off();
 }
 
-static inline void vmem_map_kernel(mmu_ctx_t ctx) {
-	//TODO: flags
-	vmem_map_region(ctx, (mmu_paddr_t)&_text_vma, (mmu_vaddr_t)&_text_vma, (size_t)&_text_len, VMEM_PAGE_WRITABLE);
-	vmem_map_region(ctx, (mmu_paddr_t)&_rodata_vma, (mmu_vaddr_t)&_rodata_vma, (size_t)&_rodata_len, VMEM_PAGE_WRITABLE);
-	vmem_map_region(ctx, (mmu_paddr_t)&_bss_vma, (mmu_vaddr_t)&_bss_vma, (size_t)&_bss_len, VMEM_PAGE_WRITABLE);
-	vmem_map_region(ctx, (mmu_paddr_t)&_data_vma, (mmu_vaddr_t)&_data_vma, (size_t)&_data_len, VMEM_PAGE_WRITABLE);
-	vmem_map_region(ctx, (mmu_paddr_t) &_reserve_vma, (mmu_vaddr_t) &_reserve_vma, (size_t) &_reserve_len, VMEM_PAGE_WRITABLE);
-	vmem_map_region(ctx, (mmu_paddr_t)&_stack_vma, (mmu_vaddr_t)&_stack_vma, (size_t)&_stack_len, VMEM_PAGE_WRITABLE);
-	vmem_map_region(ctx, (mmu_paddr_t)&_heap_vma, (mmu_vaddr_t)&_heap_vma, (size_t)&_heap_len, VMEM_PAGE_WRITABLE);
-
-	// for sparc
-	vmem_map_region(ctx, (mmu_paddr_t) 0x80000000, (mmu_vaddr_t) 0x80000000, (size_t) 0x4000, VMEM_PAGE_WRITABLE);
+static inline int vmem_map_on_itself(mmu_ctx_t ctx, void *addr, size_t size, vmem_page_flags_t flags) {
+	return vmem_map_region(ctx, (mmu_paddr_t) addr, (mmu_vaddr_t) addr, (size_t) size, flags);
 }
 
-void vmem_create_virtual_space(mmu_ctx_t ctx) {
-	vmem_map_kernel(ctx);
+static inline int vmem_map_kernel(mmu_ctx_t ctx) {
+	int err = 0;
+
+	/* Map sections. */
+	err |= vmem_map_on_itself(ctx, &_text_vma, (size_t) &_text_len, VMEM_PAGE_WRITABLE);
+	err |= vmem_map_on_itself(ctx, &_rodata_vma, (size_t) &_rodata_len, VMEM_PAGE_WRITABLE);
+	err |= vmem_map_on_itself(ctx, &_bss_vma, (size_t) &_bss_len, VMEM_PAGE_WRITABLE);
+	err |= vmem_map_on_itself(ctx, &_data_vma, (size_t) &_data_len, VMEM_PAGE_WRITABLE);
+	err |= vmem_map_on_itself(ctx, &_reserve_vma, (size_t) &_reserve_len, VMEM_PAGE_WRITABLE);
+	err |= vmem_map_on_itself(ctx, &_stack_vma, (size_t) &_stack_len, VMEM_PAGE_WRITABLE);
+	err |= vmem_map_on_itself(ctx, &_heap_vma, (size_t) &_heap_len, VMEM_PAGE_WRITABLE);
+
+	/* Map virtual table space. */
+	err |= vmem_map_on_itself(ctx, VIRTUAL_TABLES_START, VIRTUAL_TABLES_LEN, VMEM_PAGE_WRITABLE);
+
+	// for sparc
+	err |= vmem_map_on_itself(ctx, (void *) 0x80000000, (size_t) 0x1000, VMEM_PAGE_WRITABLE);
+
+	return err;
+}
+
+static inline int vmem_create_context(struct task *task) {
+	task->vmem_data->ctx = mmu_create_context((mmu_pgd_t *) virt_alloc_table());
+	return vmem_map_kernel(task->vmem_data->ctx);
 }
 
 /*
@@ -88,9 +115,7 @@ static inline void vmem_print_info(void) {
 
 static int vmem_init(void) {
 	//vmem_print_info();
-	vmem_on();
-
-	return 0;
+	return vmem_on();
 }
 
 static int vmem_fini(void) {
@@ -100,11 +125,16 @@ static int vmem_fini(void) {
 }
 
 static void task_vmem_init(struct task *task, void *_vmem_data) {
-	struct task_vmem_data *vmem_data = (struct task_vmem_data *) _vmem_data;
-	task->vmem_data = vmem_data;
+	task->vmem_data = (struct task_vmem_data *) _vmem_data;;
 
-	vmem_data->ctx = mmu_create_context((mmu_pgd_t *) virt_alloc_table());
-	vmem_create_virtual_space(vmem_data->ctx);
+	/*
+	 * XXX:
+	 * Init task initializes in vmem_on(), because this module can be not
+	 * loaded yet.
+	 */
+	if (initialized) {
+		vmem_create_context(task);
+	}
 }
 
 static void task_vmem_inherit(struct task *task, struct task *parent_task) {
