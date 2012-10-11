@@ -23,6 +23,8 @@
 
 #ifndef __ASSEMBLER__
 
+#include <types.h>
+
 typedef struct gdt_gate {
         uint16_t limit_low;
         uint16_t base_low;
