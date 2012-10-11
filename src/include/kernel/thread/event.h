@@ -26,14 +26,18 @@ struct event {
 	struct event_set *set;
 };
 
+/* Use it to allocate event_set in global pool and initialize. */
 extern struct event_set *event_set_create(void);
+void event_set_free(struct event_set *e_set);
+
+/* Use it to initialize event_set if it was already preallocated. */
+extern void event_set_init(struct event_set *e_set);
+extern void event_set_clear(struct event_set *e_set);
+
 extern int event_wait(struct event_set *e_set, unsigned long timeout);
 extern void event_notify(struct event *e);
 
 /* Utils to operate with sets of events */
-
-extern void event_set_init(struct event_set *e_set);
-extern void event_set_clear(struct event_set *e_set);
 
 static inline void event_set_add(struct event_set *e_set, struct event *event) {
 	dlist_head_init(&event->link);

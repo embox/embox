@@ -32,8 +32,6 @@ struct idx_io_op_state {
 	bool active;
 };
 
-#define CAPACITY_INFINITE (unsigned int)(-1)
-
 struct idx_desc_data {
 	const struct task_idx_ops *res_ops;
 	int link_count; /**< @brief Count of links in all tasks */
@@ -51,8 +49,6 @@ struct idx_desc {
 	struct idx_desc_data *data;
 	idx_flags_t flags;
 };
-
-extern void task_idx_set_data_size(struct idx_desc *idx, size_t init_size, size_t capacity);
 
 static inline void task_idx_io_activate(struct idx_io_op_state *op) {
 	op->active = 1;

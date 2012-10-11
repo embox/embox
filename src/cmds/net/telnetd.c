@@ -18,6 +18,7 @@
 #include <kernel/task.h>
 #include <sys/select.h>
 #include <fcntl.h>
+#include <math.h>
 
 EMBOX_CMD(exec);
 
@@ -165,6 +166,7 @@ static void *telnet_thread_handler(void* args) {
 	int sock = *(int *)args;
 	int pipefd1[2], pipefd2[2], msg[2];
 	int tid;
+	int nfds;
 	fd_set readfds, writefds;
 
 	fcntl(sock, F_SETFD, O_NONBLOCK);
@@ -187,9 +189,8 @@ static void *telnet_thread_handler(void* args) {
 	msg[1] = pipefd2[1];
 	tid = new_task(shell_hnd, &msg);
 
-	/* Close unused ends of pipes. */
-	//close(pipefd1[0]);
-	//close(pipefd2[1]);
+	nfds = max(sock, pipefd2[0]);
+	nfds = max(pipefd1[1], nfds) + 1;
 
 	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
 	 * and than receive from it the result of command running, and send it back to
@@ -210,7 +211,16 @@ static void *telnet_thread_handler(void* args) {
 			FD_SET(pipefd1[1], &writefds);
 		}
 
-		fd_cnt = select(10, &readfds, &writefds, NULL, 1000);
+		fd_cnt = select(nfds, &readfds, &writefds, NULL, 1000);
+
+		/* XXX telnet must receive signal on socket closing, but now
+		 * alternatively here is this check */
+		if (!fd_cnt) {
+			read(sock, s, 128);
+			if (errno == ECONNREFUSED) {
+				break;
+			}
+		}
 
 		if ((pipe_data_len > 0) && FD_ISSET(sock, &writefds)) {
 			if ((len = write(sock, p, pipe_data_len)) > 0) {
@@ -237,10 +247,12 @@ static void *telnet_thread_handler(void* args) {
 				break;
 			}
 		}
-	}
+	} /* while(1) */
 
 	kill(tid, 9);
 
+	close(pipefd1[0]);
+	close(pipefd2[1]);
 	close(pipefd1[1]);
 	close(pipefd2[0]);
 	close(sock);

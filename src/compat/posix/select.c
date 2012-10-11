@@ -20,13 +20,13 @@ static void fd_set_copy(fd_set *dst, fd_set *src);
 /*
  * @brief Save only descriptors with active op.
  * */
-static int find_active(fd_set *set, char op);
+static int find_active(int nfds, fd_set *set, char op);
 
 /* @brief Update sets with find_active() IF these sets contain at least one
  * active descriptor
  * @return count of active descriptors
  * @retval -EBAFD if some descriptor is invalid */
-static int update_sets(fd_set *readfds, fd_set *writefds, fd_set *exceptfd);
+static int update_sets(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd);
 
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, int t
 		/*struct timeval *timeout*/) {
@@ -43,7 +43,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, int t
 		readfds == NULL ? p_r = NULL : fd_set_copy(p_r, readfds);
 		writefds == NULL ? p_w = NULL : fd_set_copy(p_w, writefds);
 
-		fd_cnt = update_sets(p_r, p_w, exceptfds);
+		fd_cnt = update_sets(nfds, p_r, p_w, exceptfds);
 
 		if (fd_cnt < 0) {
 			res = fd_cnt;
@@ -60,13 +60,13 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, int t
 		 * to each descriptor in fd_set. */
 		event_set_init(&e_set);
 
-		for (int fd = 0; fd < MAX_FD_CNT; fd++) {
-			if (FD_ISSET(fd, readfds)) {
+		for (int fd = 0; fd < nfds; fd++) {
+			if (readfds && FD_ISSET(fd, readfds)) {
 				desc = task_self_idx_get(fd);
 				event_set_add(&e_set, &desc->data->read_state.activate);
 			}
 
-			if (FD_ISSET(fd, writefds)) {
+			if (writefds && FD_ISSET(fd, writefds)) {
 				desc = task_self_idx_get(fd);
 				event_set_add(&e_set, &desc->data->write_state.activate);
 			}
@@ -74,14 +74,13 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, int t
 	}
 	sched_unlock();
 
-	/* XXX */
 	event_wait(&e_set, t);
 
 	event_set_clear(&e_set);
 
 	sched_lock();
 	{
-		fd_cnt = update_sets(readfds, writefds, exceptfds);
+		fd_cnt = update_sets(nfds, readfds, writefds, exceptfds);
 	}
 out_locked:
 	sched_unlock();
@@ -100,12 +99,13 @@ static void fd_set_copy(fd_set *dst, fd_set *src) {
 	}
 }
 
-static int find_active(fd_set *set, char op) {
+/* Suppose that set != NULL */
+static int find_active(int nfds, fd_set *set, char op) {
 	int fd, fd_cnt = 0;
 	struct idx_desc *desc;
 	struct idx_io_op_state *state;
 
-	for (fd = 0; fd < MAX_FD_CNT; fd++) {
+	for (fd = 0; fd < nfds; fd++) {
 		if (FD_ISSET(fd, set)) {
 			if (!(desc = task_self_idx_get(fd))) {
 				return -EBADF;
@@ -130,12 +130,12 @@ static int find_active(fd_set *set, char op) {
 	return fd_cnt;
 }
 
-static int update_sets(fd_set *readfds, fd_set *writefds, fd_set *exceptfd) {
+static int update_sets(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd) {
 	int fd_cnt = 0, res;
 
 	/* Try to find active fd in readfds*/
 	if (readfds != NULL) {
-		res = find_active(readfds, 'r');
+		res = find_active(nfds, readfds, 'r');
 		if (res < 0) {
 			return -EBADF;
 		} else {
@@ -145,7 +145,7 @@ static int update_sets(fd_set *readfds, fd_set *writefds, fd_set *exceptfd) {
 
 	/* Try to find active fd in writefds*/
 	if (writefds != NULL) {
-		res = find_active(writefds, 'w');
+		res = find_active(nfds, writefds, 'w');
 		if (res < 0) {
 			return -EBADF;
 		} else {

@@ -14,6 +14,7 @@
 #include <kernel/thread/sched.h>
 #include <sys/select.h>
 #include <prom/prom_printf.h>
+#include <math.h>
 
 EMBOX_TEST_SUITE("select test");
 
@@ -22,14 +23,15 @@ static int pipefd1[2], pipefd2[2];
 static void *select_hnd(void *arg) {
 	int cnt;
 	fd_set readfds;
+	int nfds = max(pipefd1[0], pipefd2[0]) + 1;
 
 	FD_ZERO(&readfds);
 	FD_SET(pipefd1[0], &readfds);
 	FD_SET(pipefd2[0], &readfds);
 
-	cnt = select(0, &readfds, NULL, NULL, SCHED_TIMEOUT_INFINITE);
+	cnt = select(nfds, &readfds, NULL, NULL, SCHED_TIMEOUT_INFINITE);
 
-	assert(cnt == 1 && FD_ISSET(pipefd1[0], &readfds) && !FD_ISSET(pipefd2[0], &readfds));
+	test_assert(cnt == 1 && FD_ISSET(pipefd1[0], &readfds) && !FD_ISSET(pipefd2[0], &readfds));
 
 	return NULL;
 }

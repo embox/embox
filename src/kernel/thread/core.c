@@ -435,6 +435,6 @@ static void thread_free(struct thread *t) {
 
 	// TODO may be this is not the best way... -- Eldar
 	block = member_cast_out(t, thread_pool_entry_t, thread);
-	event_set_clear(t->msg_event.set);
+	event_set_free(t->msg_event.set);
 	pool_free(&thread_pool, block);
 }

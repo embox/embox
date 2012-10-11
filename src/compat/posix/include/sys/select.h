@@ -11,7 +11,7 @@
 
 #include <sys/types.h>
 
-#define _FDSETWORDS       0x1
+#define _FDSETWORDS       0x10
 #define _FDSETBITSPERWORD 0x20 /* 32 bits */
 
 #define _FD_BITMASK(b) 	   (1L << ((b) % _FDSETBITSPERWORD))
@@ -19,8 +19,6 @@
 
 /* The fd_set member is required to be an array of longs.  */
 typedef long int __fd_mask;
-
-#define MAX_FD_CNT 16
 
 typedef struct {
 	__fd_mask fds_bits[_FDSETWORDS];

@@ -187,8 +187,8 @@ void sk_common_release(struct sock *sk) {
 	skb_queue_free(sk->sk_receive_queue);
 	skb_queue_free(sk->sk_write_queue);
 
-	event_set_clear(sk->sock_is_not_empty.set);
-	event_set_clear(sk->sock_is_ready.set);
+	event_set_free(sk->sock_is_not_empty.set);
+	event_set_free(sk->sock_is_ready.set);
 
 	sk_free(sk);
 }

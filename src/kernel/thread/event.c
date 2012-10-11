@@ -22,21 +22,20 @@ void event_set_init(struct event_set *e_set) {
 
 struct event_set *event_set_create(void) {
 	struct event_set *e_set = objalloc(&event_set_pool);
-
-	sleepq_init(&e_set->sleepq);
-	dlist_init(&e_set->link);
-
+	event_set_init(e_set);
 	return e_set;
 }
 
 void event_set_clear(struct event_set *e_set) {
 	struct event *e, *nxt;
-
 	dlist_foreach_entry(e, nxt, &e_set->link, link) {
 		event_set_del(e);
 	}
+}
 
-	//objfree(&event_set_pool, e_set);
+void event_set_free(struct event_set *e_set) {
+	event_set_clear(e_set);
+	objfree(&event_set_pool, e_set);
 }
 
 int event_wait(struct event_set *e_set, unsigned long timeout) {

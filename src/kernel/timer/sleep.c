@@ -31,6 +31,8 @@ int usleep(useconds_t usec) {
 
 	res_sleep = event_wait(never_happen.set, usec);
 
+	event_set_clear(&e_set);
+
 	return res_sleep == -ETIMEDOUT ? 0 : res_sleep;
 }
 

@@ -79,5 +79,7 @@ static int run(int argc, char **argv) {
 		printf("finished thread id %d with result %d\n", i, *((int *)ret));
 	}
 
+	event_set_clear(&e_set);
+
 	return ENOERR;
 }
