@@ -59,6 +59,9 @@ static void _mem_defrag(void) {
 
 void free(void *ptr) {
 	struct mem_control_block *mcb;
+	if (ptr == NULL) {
+		return;
+	}
 	mcb = (void *)((char *) ptr - sizeof(struct mem_control_block));
 	mcb->is_available = 1;
 	 _mem_defrag();
