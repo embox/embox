@@ -10,8 +10,8 @@
 #include <asm/flags.h>
 #include <types.h>
 
-#define MMU_PAGE_WRITABLE       ((1UL << 0) << 1)
-#define MMU_PAGE_USERMODE       ((1UL << 1) << 2)
+#define MMU_PAGE_WRITABLE       (1UL << 1)
+#define MMU_PAGE_USERMODE       (1UL << 2)
 #define MMU_PAGE_DISABLE_CACHE  (1UL << 4)
 
 #define MMU_PAGE_PRESENT      (1UL)
