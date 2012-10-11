@@ -6,27 +6,35 @@
  */
 
 #include <util/indexator.h>
+#include <string.h>
 
-struct indexator *indexator_init(struct indexator *indexator, uint32_t *mask_array, size_t len_mask) {
+struct indexator *indexator_init(struct indexator *indexator, uint32_t start_idx, uint32_t *mask_array, size_t len_mask) {
 
 	indexator->masks = mask_array;
-	indexator->min_busy = -1;
+	indexator->min_busy = start_idx - 1;
 	indexator->max_busy = len_mask * sizeof(mask_array);
+	indexator->capacity = len_mask * sizeof(mask_array);
+	indexator->start = start_idx;
+
+	memset(mask_array, 0, len_mask * 32);
 
 	return NULL;
 }
 
 int index_locked(struct indexator * indexator, int idx) {
-	int word_offset = idx / 32;
-	int bit_offset = idx % 32;
+	int word_offset;
+	int bit_offset;
+
+	word_offset = (idx - indexator->start) / 32;
+	bit_offset = (idx - indexator->start) % 32;
 
 	return (indexator->masks[word_offset] & (1 << bit_offset)) ? 1 : 0;
 }
 
 int index_find(struct indexator * indexator, enum indexator_allocation_type allocation_type) {
+	int cur_idx;
 	int word_offset;
 	int bit_offset;
-	int cur_idx;
 
 	cur_idx = indexator->min_busy + 1;
 	word_offset = cur_idx / 32;
@@ -38,10 +46,11 @@ int index_find(struct indexator * indexator, enum indexator_allocation_type allo
 			bit_offset = 0;
 			continue;
 		}
-		while(bit_offset++ < 32) {
+		while(bit_offset < 32) {
 			if(0 == (indexator->masks[word_offset] & 1 << bit_offset)) {
-				return cur_idx;
+				return indexator->start + cur_idx;
 			}
+			bit_offset++;
 			cur_idx++;
 		}
 		bit_offset = 0;
@@ -51,15 +60,21 @@ int index_find(struct indexator * indexator, enum indexator_allocation_type allo
 }
 
 void index_lock(struct indexator * indexator, int idx) {
-	int word_offset = idx / 32;
-	int bit_offset = idx % 32;
+	int word_offset;
+	int bit_offset;
+
+	word_offset = (idx - indexator->start) / 32;
+	bit_offset = (idx - indexator->start) % 32;
 
 	indexator->masks[word_offset] |= (1 << bit_offset);
 }
 
 void index_unlock(struct indexator * indexator, int idx) {
-	int word_offset = idx / 32;
-	int bit_offset = idx % 32;
+	int word_offset;
+	int bit_offset;
+
+	word_offset = (idx - indexator->start) / 32;
+	bit_offset = (idx - indexator->start) % 32;
 
 	indexator->masks[word_offset] &= ~(1 << bit_offset);
 	if(idx < indexator->min_busy) {
