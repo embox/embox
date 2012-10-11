@@ -9,7 +9,7 @@ module priority_q {
 }
 
 module readline {
-    @IncludePath("$(THIRDPARTY_DIR)/include")
+	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "readline.c"
 
 	depends embox.lib.LibC
