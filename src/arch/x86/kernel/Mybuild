@@ -34,6 +34,10 @@ module syscall extends embox.arch.syscall {
 	depends locore
 }
 
+module usermode {
+	source "usermode_enter.S"
+}
+
 /*FIXME mybuild arch module what is it */
 module arch {
 	/* FIXME:
