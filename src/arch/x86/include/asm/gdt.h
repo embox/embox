@@ -9,7 +9,7 @@
 #ifndef ARCH_X86_GDT_H_
 #define ARCH_X86_GDT_H_
 
-#define GDT_ENTRIES_NRS_TOTAL 5
+#define GDT_ENTRIES            5
 
 #define GDT_ENTRY_KERNEL_CS    1
 #define GDT_ENTRY_KERNEL_DS    2
