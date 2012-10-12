@@ -8,3 +8,7 @@ module syscall_stub extends embox.arch.syscall {
 	source "syscall_stub.h"
 }
 
+module usermode extends embox.arch.usermode {
+	source "usermode.h"
+}
+

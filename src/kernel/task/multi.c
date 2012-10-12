@@ -6,6 +6,8 @@
  * @author Anton Kozlov
  */
 
+#include <embox/unit.h> /* For options */
+
 #include <errno.h>
 #include <kernel/task/task_table.h>
 #include <kernel/task/signal.h>
@@ -14,8 +16,7 @@
 #include <kernel/task.h>
 #include <kernel/panic.h>
 #include "common.h"
-
-#include <embox/unit.h> /* For options */
+#include <module/embox/arch/usermode.h>
 
 typedef void *(*run_fn)(void *);
 
@@ -36,7 +37,7 @@ static void *task_trampoline(void *arg);
 static void thread_set_task(struct thread *t, struct task *tsk);
 static void task_init_parent(struct task *task, struct task *parent);
 
-int new_task(void *(*run)(void *), void *arg) {
+int new_task(void *(*run)(void *), void *arg, int flags) {
 	struct task_creat_param *param = (struct task_creat_param *) pool_alloc(&creat_param);
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
@@ -62,6 +63,8 @@ int new_task(void *(*run)(void *), void *arg) {
 	/* alloc space for task & resources on top of created thread's stack */
 
 	self_task = task_init(thd->stack);
+
+	self_task->in_usermode = flags & TASK_FLAG_USERMODE;
 
 	thd->stack += task_sz;
 	thd->stack_sz -= task_sz;
@@ -172,8 +175,8 @@ static void *task_trampoline(void *arg) {
 
 	pool_free(&creat_param, param);
 
-	res = run(run_arg);
-
+	thread_self()->in_usermode = task_self()->in_usermode;
+	res = call_in_usermode_if(task_self()->is_usermode, run, run_arg);
 	task_exit(res);
 
 	/* NOTREACHED */

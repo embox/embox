@@ -19,6 +19,7 @@ long sys_exit(int error_code) {
 }
 
 size_t sys_write(int fd, const void *buf, size_t nbyte) {
+	ipl_enable();
 	return write(fd, buf, nbyte);
 }
 

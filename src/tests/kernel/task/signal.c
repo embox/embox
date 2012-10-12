@@ -35,7 +35,7 @@ static void *task_hnd(void *arg) {
 }
 
 TEST_CASE("create task and send signal") {
-	int tid = new_task(task_hnd, NULL);
+	int tid = new_task(task_hnd, NULL, 0);
 	usleep(100);
 	kill(tid, 9);
 	usleep(100);
@@ -61,5 +61,5 @@ static void *task_hnd_thread(void *arg) {
 }
 
 TEST_CASE("create a task with 2 threads, kill it") {
-	 new_task(task_hnd_thread, NULL);
+	 new_task(task_hnd_thread, NULL, 0);
 }

@@ -41,5 +41,10 @@ abstract module mmu {
 abstract module syscall {
 }
 
+@Mandatory
+@DefaultImpl(embox.arch.generic.usermode)
+abstract module usermode {
+}
+
 abstract module stackframe {
 }

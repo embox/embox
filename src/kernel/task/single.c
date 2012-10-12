@@ -10,7 +10,7 @@
 #include <kernel/task.h>
 #include "common.h"
 
-int new_task(void *(*run)(void *), void *arg) {
+int new_task(void *(*run)(void *), void *arg, int flags) {
 	return -EPERM;
 }
 

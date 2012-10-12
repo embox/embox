@@ -38,6 +38,8 @@
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
+#include <module/embox/arch/usermode.h>
+
 
 #define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
 #define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
@@ -62,18 +64,19 @@ static void thread_free(struct thread *t);
  * Wrapper for thread start routine.
  */
 static void __attribute__((noreturn)) thread_trampoline(void) {
-	struct thread *current;
+	struct thread *current = thread_self();
+	void *res;
 
 	assert(!critical_allows(CRITICAL_SCHED_LOCK));
-
-	current = thread_self();
 
 	sched_unlock_noswitch();
 	ipl_enable();
 
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
-	thread_exit(current->run(current->run_arg));
+	res = call_in_usermode_if(current->in_usermode,
+			current->run,current->run_arg);
+	thread_exit(res);
 }
 
 int thread_create(struct thread **p_thread, unsigned int flags,
@@ -164,6 +167,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->need_message = false;
 
 	t->running_time = 0;
+	t->in_usermode = flags & THREAD_FLAG_USERMODE;
 }
 
 static void thread_context_init(struct thread *t) {
