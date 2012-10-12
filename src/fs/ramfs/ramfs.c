@@ -34,7 +34,7 @@ static int ramfs_fseek(void *file, long offset, int whence);
 static int ramfs_ioctl(void *file, int request, va_list args);
 
 static file_operations_t ramfs_fop = { ramfs_fopen, ramfs_fclose, ramfs_fread,
-		ramfs_fwrite, ramfs_fseek, ramfs_ioctl };
+		ramfs_fwrite, ramfs_fseek, ramfs_ioctl, NULL };
 
 static void *ramfs_fopen(struct file_desc *desc, const char *mode) {
 	node_t *nod;

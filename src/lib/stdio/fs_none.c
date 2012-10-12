@@ -62,6 +62,10 @@ int fseek(FILE *file, long int offset, int origin) {
 	return 0;
 }
 
+int fstat(FILE *file, void *buff) {
+	return 0;
+}
+
 int fioctl(FILE *fp, int request, ...) {
 	return 0;
 }

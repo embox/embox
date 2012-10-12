@@ -949,10 +949,11 @@ static int cdfsfs_fclose(struct file_desc *desc);
 static size_t cdfsfs_fread(void *buf, size_t size, size_t count, void *file);
 static int cdfsfs_fseek(void *file, long offset, int whence);
 static int cdfsfs_ioctl(void *file, int request, va_list args);
+static int cdfsfs_fstat(void *file, void *buff);
 
 
 static file_operations_t cdfsfs_fop = { cdfsfs_fopen, cdfsfs_fclose, cdfsfs_fread,
-		NULL, cdfsfs_fseek, cdfsfs_ioctl };
+		NULL, cdfsfs_fseek, cdfsfs_ioctl, cdfsfs_fstat };
 
 
 
@@ -992,6 +993,17 @@ static int cdfsfs_fseek(void *file, long offset, int whence) {
 	fd = (cdfs_file_description_t *)desc->node->fd;
 
 	cdfs_lseek(fd, (off64_t) offset, whence);
+	return 0;
+}
+
+static int cdfsfs_fstat(void *file, void *buff) {
+	struct file_desc *desc;
+	cdfs_file_description_t *fd;
+
+	desc = (struct file_desc *) file;
+	fd = (cdfs_file_description_t *)desc->node->fd;
+
+	cdfs_fstat(fd, buff);
 	return 0;
 }
 

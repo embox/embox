@@ -43,6 +43,10 @@ static inline int __libc_lseek(struct file_struct_int *file, long int offset, in
 	return lseek(file->fd, offset, origin);
 }
 
+static inline int __libc_fstat(struct file_struct_int *file, void *buff) {
+	return stat(file->fd, buff);
+}
+
 static inline int __libc_ioctl(struct file_struct_int *file, int request, va_list args) {
 	return ioctl(file->fd, request, args);
 }

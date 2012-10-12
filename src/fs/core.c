@@ -134,6 +134,21 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 	return desc->ops->fseek(desc, offset, origin);
 }
 
+int kstat(struct file_desc *desc, void *buff) {
+	if (NULL == desc) {
+		errno = EBADF;
+		return -1;
+	}
+
+	if (NULL == desc->ops->fstat) {
+		errno = EBADF;
+		LOG_ERROR("fop->fstat is NULL handler\n");
+		return -1;
+	}
+
+	return desc->ops->fstat(desc, buff);
+}
+
 int kioctl(struct file_desc *fp, int request, ...) {
 	struct file_desc *desc = (struct file_desc *) fp;
 	va_list args;

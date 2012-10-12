@@ -44,7 +44,7 @@ static int fatfs_fseek(void *file, long offset, int whence);
 static int fatfs_ioctl(void *file, int request, va_list args);
 
 static file_operations_t fatfs_fop = { fatfs_fopen, fatfs_fclose, fatfs_fread,
-		fatfs_fwrite, fatfs_fseek, fatfs_ioctl };
+		fatfs_fwrite, fatfs_fseek, fatfs_ioctl, NULL };
 /*
  * file_operation
  */
