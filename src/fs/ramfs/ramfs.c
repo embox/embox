@@ -122,10 +122,11 @@ static int ramfs_fseek(void *file, long offset, int whence) {
 		new_offset = offset + fd->cur_pointer;
 		break;
 	case SEEK_END:
-		new_offset = fd->size - offset;
+		new_offset = fd->size + offset;
 		break;
 	default:
-		new_offset = offset + whence;
+		return -1;
+		//new_offset = offset + whence;
 	}
 
 	if (new_offset >= fd->size) {

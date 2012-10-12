@@ -93,7 +93,7 @@ static int fatfs_fseek(void *file, long offset, int whence) {
 		curr_offset += fd->fi.pointer;
 		break;
 	case SEEK_END:
-		curr_offset = fd->fi.filelen;
+		curr_offset = fd->fi.filelen + offset;
 		break;
 	default:
 		return -1;

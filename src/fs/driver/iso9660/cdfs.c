@@ -669,7 +669,7 @@ static off64_t cdfs_lseek(cdfs_file_description_t *filp, off64_t offset, int ori
 	}
 
 	filp->pos = offset;
-	return offset;
+	return 0;
 }
 
 static int cdfs_fstat(cdfs_file_description_t *filp, stat_t *buffer) {

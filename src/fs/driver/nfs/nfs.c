@@ -90,7 +90,7 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 		fd->fi.offset += offset;
 		break;
 	case SEEK_END:
-		fd->fi.offset = fd->attr.size;
+		fd->fi.offset = fd->attr.size + offset;
 		break;
 	default:
 		return -1;
