@@ -168,6 +168,7 @@ static void *telnet_thread_handler(void* args) {
 	int tid;
 	int nfds;
 	fd_set readfds, writefds;
+	struct timeval timeout;
 
 	fcntl(sock, F_SETFD, O_NONBLOCK);
 
@@ -192,6 +193,9 @@ static void *telnet_thread_handler(void* args) {
 	nfds = max(sock, pipefd2[0]);
 	nfds = max(pipefd1[1], nfds) + 1;
 
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+
 	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
 	 * and than receive from it the result of command running, and send it back to
 	 * client. */
@@ -211,7 +215,7 @@ static void *telnet_thread_handler(void* args) {
 			FD_SET(pipefd1[1], &writefds);
 		}
 
-		fd_cnt = select(nfds, &readfds, &writefds, NULL, 1000);
+		fd_cnt = select(nfds, &readfds, &writefds, NULL, &timeout);
 
 		/* XXX telnet must receive signal on socket closing, but now
 		 * alternatively here is this check */

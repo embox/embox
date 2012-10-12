@@ -16,24 +16,29 @@
 OBJALLOC_DEF(event_set_pool, struct event_set, EVENT_SETS_CNT);
 
 void event_set_init(struct event_set *e_set) {
+	assert(e_set);
 	sleepq_init(&e_set->sleepq);
 	dlist_init(&e_set->link);
 }
 
 struct event_set *event_set_create(void) {
 	struct event_set *e_set = objalloc(&event_set_pool);
-	event_set_init(e_set);
+	if (e_set) {
+		event_set_init(e_set);
+	}
 	return e_set;
 }
 
 void event_set_clear(struct event_set *e_set) {
 	struct event *e, *nxt;
+	assert(e_set);
 	dlist_foreach_entry(e, nxt, &e_set->link, link) {
 		event_set_del(e);
 	}
 }
 
 void event_set_free(struct event_set *e_set) {
+	assert(e_set);
 	event_set_clear(e_set);
 	objfree(&event_set_pool, e_set);
 }

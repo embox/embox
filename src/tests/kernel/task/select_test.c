@@ -29,9 +29,9 @@ static void *select_hnd(void *arg) {
 	FD_SET(pipefd1[0], &readfds);
 	FD_SET(pipefd2[0], &readfds);
 
-	cnt = select(nfds, &readfds, NULL, NULL, SCHED_TIMEOUT_INFINITE);
+	cnt = select(nfds, &readfds, NULL, NULL, NULL);
 
-	test_assert(cnt == 1 && FD_ISSET(pipefd1[0], &readfds) && !FD_ISSET(pipefd2[0], &readfds));
+	assert(cnt == 1 && FD_ISSET(pipefd1[0], &readfds) && !FD_ISSET(pipefd2[0], &readfds));
 
 	return NULL;
 }

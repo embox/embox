@@ -52,6 +52,6 @@ typedef struct {
 struct timeval;
 
 extern int select(int nfds, fd_set *readfds, fd_set *writefds,
-			fd_set *exceptfds, int t /*struct timeval *timeout*/);
+			fd_set *exceptfds, struct timeval *timeout);
 
 #endif /* SYS_SELECT_H_ */
