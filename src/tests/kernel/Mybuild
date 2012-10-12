@@ -27,3 +27,9 @@ module timer_test {
 	/*depends embox.framework.LibFramework*/
 	depends embox.kernel.time.timer
 }
+
+module usermode_test {
+	source "usermode.c"
+
+	depends embox.arch.usermode
+}

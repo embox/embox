@@ -14,9 +14,9 @@
 #ifdef __ASSEMBLER__
 
 #define SETUP_SEGMENTS            \
-	movl    $(__KERNEL_DS), %edx; \
-	movl    %edx, %ds;            \
-	movl    %edx, %es;
+	movw    $(__KERNEL_DS), %dx;  \
+	movw    %dx, %ds;             \
+	movw    %dx, %es;
 
 #define SAVE_ALL     \
 	pushl   %ds;     \
