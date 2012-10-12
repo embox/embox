@@ -14,53 +14,58 @@
 
 extern void context_enter_frame(struct context *ctx, void (*pc)(void));
 
-void kill(int tid, int sig) {
-	struct task *task = task_table_get(tid);
-	struct task_signal_table *sig_table = task->signal_table;
-	struct thread *hnd_thread = member_cast_out(task->threads.next, struct thread, task_link);
+static int task_some_thd_run(struct task *task);
 
-	sig_table->sig_mask |= 1 << sig;
+void task_signal_send(struct task *task, int sig) {
 
-#if 0
-	sched_setrun(hnd_thread);
-#endif
+	task->signal_table->sig_mask |= 1 << sig;
+
+	task_some_thd_run(task);
 }
 
-void signal(int sig, void (*hnd)(int)) {
-	struct task *task = task_self();
-	struct task_signal_table *sig_table = task->signal_table;
+static int task_some_thd_run(struct task *task) {
+	struct thread *th;
+	int res = -1;
 
-	task_signal_table_set(sig_table, sig, hnd);
+	list_for_each_entry(th, &task->threads, task_link) {
+		if ((res = sched_tryrun(th)) != -1) {
+			break;
+		}
+	}
+
+	return res;
+
+}
+
+static void task_terminate(int sig) {
+	task_exit(NULL);
 }
 
 static void task_global_sig_handler(void) {
 	struct task_signal_table *sig_table = task_self()->signal_table;
+	int sig_occured = sig_table->last_sig;
 
 	sched_unlock();
 
-	task_signal_table_get(sig_table, sig_table->last_sig)(sig_table->last_sig);
+	task_signal_table_get(sig_table, sig_occured)(sig_occured);
 
 	sched_lock();
 }
 
 static void task_signal_table_init(struct task *task, void *_signal_table) {
+	int sig;
+
 	struct task_signal_table *sig_table = (struct task_signal_table *) _signal_table;
+
+	for (sig = 0; sig < TASK_SIGNAL_MAX_N; sig++) {
+		task_signal_table_set(sig_table, sig, task_terminate);
+	}
 
 	task->signal_table = sig_table;
 }
 
-static void task_signal_table_inherit(struct task *task, struct task *parent_task) {
-
-}
-
-static void task_signal_table_deinit(struct task *task) {
-
-}
-
 static const struct task_resource_desc signal_resource = {
 	.init = task_signal_table_init,
-	.inherit = task_signal_table_inherit,
-	.deinit = task_signal_table_deinit,
 	.resource_size = sizeof(struct task_signal_table),
 };
 

@@ -1,0 +1,20 @@
+package embox.cmd.net
+
+@Cmd(name = "bootp",
+	help = "BOOTP client",
+	man = '''
+		NAME
+			bootp - BOOTP client. Set IP address specified by server.
+		SYNOPSIS
+			bootp <ifname>
+		DESCRIPTION
+			Used to to obtain an IP address from a configuration server.
+			Also support some part of DHCP to apply initial network
+			configuration from server automatically.
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module bootp {
+	source "bootp.c"
+	depends embox.net.bootp
+}

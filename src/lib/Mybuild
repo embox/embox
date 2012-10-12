@@ -74,6 +74,9 @@ static module LibCMath {
 }
 
 static module LibCStdio {
+
+	option boolean stdio_lf_crlf_map = true
+
 	source "stdio/file_ops.c"
 	source "stdio/fgetc.c"
 	source "stdio/fputc.c"
@@ -114,12 +117,20 @@ static module FileFS extends FileApi {
 	depends embox.fs.core
 }
 
-/* static module must have .c file, so this isn't a static */
 module FilePosix extends FileApi {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "stdio/file_posix.h"
+	source "stdio/file_posix.h",
+		"stdio/file_posix_open.h"
 
-	depends embox.compat.posix.FileApi
+	depends embox.compat.posix.FileTasks
+}
+
+module FilePosixNoOpen extends FileApi {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "stdio/file_posix.h",
+		"stdio/file_posix_noopen.h"
+
+	depends embox.compat.posix.FileTasksBasic
 }
 
 static module FileStdio extends FileApi{

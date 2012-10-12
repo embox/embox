@@ -19,7 +19,7 @@ struct neighbour {
 	unsigned char hlen;                /* Length of hw address */
 	unsigned char paddr[MAX_ADDR_LEN]; /* Protocol address */
 	unsigned char plen;                /* Length of protocol address */
-	const struct net_device *dev;       /* Network device */
+	const struct net_device *dev;      /* Network device */
 	unsigned char flags;               /* Additional information */
 };
 
@@ -30,11 +30,11 @@ struct neighbour {
 
 /**
  * This function add entry in neighbour (rewrite non-permanent entity)
- * @param haddr - hardware address
- * @param hlen  - length of haddr
- * @param paddr - protocol address
- * @param plen  - length of paddr
- * @param dev   - network device
+ * @param haddr - hardware address (not null)
+ * @param hlen  - length of haddr (not zero)
+ * @param paddr - protocol address (not null)
+ * @param plen  - length of paddr (not zero)
+ * @param dev   - network device (not null)
  * @param flags - flags for this entity
  * @return error code
  */
@@ -44,10 +44,12 @@ extern int neighbour_add(const unsigned char *haddr, unsigned char hlen,
 
 /**
  * This function delete entry from neighbour if can
- * @param haddr - hardware address
- * @param hlen  - length of haddr
- * @param paddr - protocol address
- * @param plen  - length of paddr
+ * @param haddr - hardware address (not null if hlen not zero and null
+ *                otherwise; can't be null if paddr null)
+ * @param hlen  - length of haddr (as haddr)
+ * @param paddr - protocol address (not null if plen not zero and null
+ *                otherwise; can't be null of haddr null)
+ * @param plen  - length of paddr (as haddr)
  * @param dev   - network device
  * @return error code
  */
@@ -57,12 +59,15 @@ extern int neighbour_del(const unsigned char *haddr, unsigned char hlen,
 
 /**
  * This function search entry by protocol address
- * @param paddr     - protocol address
- * @param plen      - length of paddr
+ * @param paddr     - protocol address (not null)
+ * @param plen      - length of paddr (not zero)
  * @param dev       - network device
- * @param hlen_max  - max size of hardware address
- * @param out_haddr - pointer to the location to write the hardware address
- * @param out_hlen  - pointer to the location to write length of the out_haddr
+ * @param hlen_max  - max size of hardware address (not zero)
+ * @param out_haddr - pointer to the location to write the hardware
+ *                    address (not null)
+ * @param out_hlen  - pointer to the location to write length of the
+ *                    out_haddr (if null and the real out_hlen not equal
+ *                    to hlen_max then error will returned)
  * @return error code
  */
 extern int neighbour_get_hardware_address(const unsigned char *paddr,
@@ -71,12 +76,15 @@ extern int neighbour_get_hardware_address(const unsigned char *paddr,
 
 /**
  * This function search entry by hardware address
- * @param haddr     - hardware address
- * @param hlen      - length of haddr
+ * @param haddr     - hardware address (not null)
+ * @param hlen      - length of haddr (not zero)
  * @param dev       - network device
- * @param plen_max  - max size of protocol address
- * @param out_paddr - pointer to the location to write the protocol address
- * @param out_plen  - pointer to the location to write length of the out_paddr
+ * @param plen_max  - max size of protocol address (not zero)
+ * @param out_paddr - pointer to the location to write the protocol
+ *                    address (not null)
+ * @param out_plen  - pointer to the location to write length of the
+ *                    out_paddr (if null and the real out_plen not equal
+ *                    to plen_max then error will returned)
  * @return error code
  */
 extern int neighbour_get_protocol_address(const unsigned char *haddr,
@@ -92,7 +100,7 @@ typedef int (*neighbour_foreach_handler_t)(const struct neighbour *n, void *args
  * This function processes each entry in the table with func handler.
  * If during the processing of the entity handler returns an error,
  * the process is interrupted.
- * @param func - handler for each entity
+ * @param func - handler for each entity (not null)
  * @param args - additional arguments for func
  * @return error code
  */

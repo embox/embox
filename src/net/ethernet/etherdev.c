@@ -87,7 +87,7 @@ static void etherdev_setup(struct net_device *dev) {
 	assert(dev != NULL);
 
 	dev->header_ops    = eth_get_header_ops();
-	dev->type          = ARPHRD_ETHER;
+	dev->type          = ARPG_HRD_ETHERNET;
 	dev->mtu           = ETH_FRAME_LEN;
 	dev->addr_len      = ETH_ALEN;
 	dev->flags         = IFF_BROADCAST | IFF_MULTICAST;

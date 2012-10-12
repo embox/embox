@@ -576,8 +576,14 @@ static uint32_t fat_get_vol_info(void *fd,
 	 * Calculate number of clusters in data area and infer FAT type from
 	 * this information.
 	 */
-	volinfo->numclusters =
-			(volinfo->numsecs - volinfo->dataarea) / volinfo->secperclus;
+	if(0 == volinfo->secperclus) {
+		volinfo->numclusters = 0;
+		return DFS_ERRMISC;
+	}
+	else {
+		volinfo->numclusters =
+				(volinfo->numsecs - volinfo->dataarea) / volinfo->secperclus;
+	}
 
 	/* try to set FAT type by filesystem ID */
 	if ((0 == strcmp ((const char *)lbr->ebpb.ebpb.system, "FAT12")) ||

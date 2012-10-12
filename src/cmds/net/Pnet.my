@@ -1,0 +1,99 @@
+package embox.cmd.net
+
+@Cmd(name = "pnet",
+	help = "Util for PNET configuration",
+	man = '''
+		NAME
+			pnet - Util for PNET configuration
+
+		SYNOPSIS
+			pnet -a --graph graph
+			pnet -a --node graph node1...nodeN
+			pnet -a --rule graph node
+			pnet -d graph node
+			pnet -p --graph graph root
+			pnet -p --node graph
+			pnet -p --rule graph node
+			pnet -n
+			pnet {-r|-s} graph
+			pnet -l graph node1 node2
+			pnet -t graph node rule [RULE_OPTIONS] <value>
+
+		DESCRIPTION
+			-a
+				Create new graph, new node in graph or new rule in node in graph. Specify
+				by GRAPH_OPTIONS what you want to create.
+
+			-d
+				Marks node that it is not in any graph and deletes it from graph repository (list
+				of nodes that were be added in graph).
+				NOTE: each node, that had link (rx_dfault) to deleted node still will be have
+				this link notwithstanding deleted node already is'nt in any graph. So, rebuild
+				your graph at once after completion of node delete.
+
+			-p
+				Display chain of nodes start with 'root'.
+				If --nodes option is specified then display graph repository.
+				If --rules option is specified then display all rules from matcher.
+
+			-n
+				Display all PNET nodes and protocols in system.
+
+			-r
+				Start graph
+
+			-s
+				Stop graph
+
+			-l
+				Link node2 to node1 in graph. Node2 must be contained in graph repository already.
+
+			-t
+				Set to rule some RULE_OPTIONS
+
+		OPTIONS
+			GRAPH_OPTIONS:
+			--graph
+				specify graph
+
+			--node
+				specify node(s)
+
+			--rule
+				specify rule(s)
+
+			RULE_OPTIONS:
+				--ip <value>
+					Set IP address to destination host.
+
+				--mac <value>
+					Set hardware address to destination host.
+
+				--node <value>
+					Set next node. It means that if received pack correspond to
+					rule, than next handler of pack will be node set by this option.
+
+				--rename <value>
+					Set rule identifier <value>. Thereafter you can refer to rule by this identifier.
+					Notes: All rules have identifier 0 by default.
+					If you get rule by it's identifier, this rule is the first rule in list of rules
+					in specified node.
+
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module pnet {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "pnet.c"
+
+	depends embox.lib.LibC
+	depends embox.pnet.core
+	depends embox.pnet.node.linux_dev
+	depends embox.mem.heap_api
+	depends embox.pnet.node.skbuff.matcher
+	depends embox.net.util
+	depends embox.compat.posix.LibPosix
+	depends embox.net.dev
+	depends embox.framework.LibFramework
+}

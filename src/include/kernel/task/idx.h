@@ -9,7 +9,10 @@
 #ifndef TASK_IDX_H_
 #define TASK_IDX_H_
 
-#define CONFIG_TASKS_RES_QUANTITY 32
+#include <framework/mod/options.h>
+#include <module/embox/kernel/task/idx_table.h>
+
+#define TASKS_RES_QUANTITY OPTION_MODULE_GET(embox__kernel__task__idx_table,NUMBER,task_res_quantity)
 
 #include <assert.h>
 #include <stdarg.h>
@@ -21,22 +24,12 @@ enum task_idx_ops_type {
 
 typedef unsigned int idx_flags_t;
 
+struct task_idx_ops;
+
 struct idx_desc_data {
+	const struct task_idx_ops *res_ops;
+	int link_count; /**< @brief Count of links in all tasks */
 	void *fd_struct;     /**< @brief Pointer for actual struct */
-	idx_flags_t flags;
-};
-
-
-/**
- * Specify operations with task's resources, which be called POSIX compat lib
- */
-struct task_idx_ops {
-	int	(*read) (struct idx_desc_data *data, void *buf, size_t nbyte);
-	int	(*write)(struct idx_desc_data *data, const void *buf, size_t nbyte);
-	int	(*close)(struct idx_desc_data *data);
-	int	(*ioctl)(struct idx_desc_data *data, int request, va_list args);
-	int	(*fseek)(struct idx_desc_data *data, long int offset, int origin);
-	const enum task_idx_ops_type type;
 };
 
 /**
@@ -45,10 +38,21 @@ struct task_idx_ops {
  * with resources by type
  */
 struct idx_desc {
-	const struct task_idx_ops *res_ops;
-	int link_count; /**< @brief Count of links in all tasks */
+	struct idx_desc_data *data;
+	idx_flags_t flags;
 
-	struct idx_desc_data data;
+};
+
+/**
+ * Specify operations with task's resources, which be called POSIX compat lib
+ */
+struct task_idx_ops {
+	int	(*read) (struct idx_desc *data, void *buf, size_t nbyte);
+	int	(*write)(struct idx_desc *data, const void *buf, size_t nbyte);
+	int	(*close)(struct idx_desc *data);
+	int	(*ioctl)(struct idx_desc *data, int request, va_list args);
+	int	(*fseek)(struct idx_desc *data, long int offset, int origin);
+	const enum task_idx_ops_type type;
 };
 
 /**
@@ -56,16 +60,21 @@ struct idx_desc {
  * @param desc idx descriptor to get
  * @return resource in idx
  */
-static inline struct idx_desc_data *task_idx_desc_data(struct idx_desc *desc) {
+static inline void *task_idx_desc_data(struct idx_desc *desc) {
 	assert(desc);
-	return &desc->data;
+	return desc->data->fd_struct;
+}
+
+static inline idx_flags_t *task_idx_desc_flags_ptr(struct idx_desc *desc) {
+	return &desc->flags;
 }
 
 static inline const struct task_idx_ops *task_idx_desc_ops(struct idx_desc *desc) {
 	assert(desc);
-	return desc->res_ops;
+	return desc->data->res_ops;
 }
 
+#if 0
 /**
  * @brief Allocate idx descriptor structure with type and data
  *
@@ -75,7 +84,8 @@ static inline const struct task_idx_ops *task_idx_desc_ops(struct idx_desc *desc
  * @return
  */
 extern struct idx_desc *task_idx_desc_alloc(const struct task_idx_ops *ops, void *data);
-
+#endif
+#if 0
 /**
  * @brief idx utillity: get reference count by idx
  * @param desc idx descriptor to get
@@ -83,7 +93,7 @@ extern struct idx_desc *task_idx_desc_alloc(const struct task_idx_ops *ops, void
  */
 static inline int task_idx_desc_link_count(struct idx_desc *desc) {
 	assert(desc);
-	return desc->link_count;
+	return desc->data->link_count;
 }
 
 /**
@@ -94,12 +104,14 @@ static inline int task_idx_desc_link_count(struct idx_desc *desc) {
  */
 static inline int task_idx_desc_link_count_add(struct idx_desc *desc, int d) {
 	assert(desc);
-	return (desc->link_count += d);
+	return (desc->data->link_count += d);
 }
+#endif
+
 #include <util/idx_table.h>
 
 struct task_idx_table {
-	UTIL_IDX_TABLE_DEF_INLINE(struct idx_desc *, idx, CONFIG_TASKS_RES_QUANTITY);
+	UTIL_IDX_TABLE_DEF_INLINE(struct idx_desc *, idx, TASKS_RES_QUANTITY);
 };
 
 /**
@@ -122,7 +134,7 @@ static inline struct idx_desc *task_idx_table_get(struct task_idx_table *res, in
  * @param idx number to set
  * @param desc idx descriptor to store in task resources
  */
-int task_idx_table_set(struct task_idx_table *res, int idx, struct idx_desc *desc);
+extern int task_idx_table_set(struct task_idx_table *res, int idx, struct idx_desc *desc);
 
 extern int task_idx_table_first_unbinded(struct task_idx_table *res);
 
@@ -159,7 +171,7 @@ static inline struct task_idx_table *task_idx_table(struct task *task);
  * @return If given fs is valid to use with tasks
  */
 static inline int task_valid_fd(int fd) {
-	return 0 <= fd && fd <= CONFIG_TASKS_RES_QUANTITY;
+	return 0 <= fd && fd <= TASKS_RES_QUANTITY;
 }
 
 /**
@@ -182,9 +194,14 @@ static inline struct idx_desc *task_self_idx_get(int fd) {
  * @param fd idx descriptor number
  * @param desc idx descriptor pointer to associate with number
  */
-static inline void task_self_idx_set(int fd, struct idx_desc *desc) {
-	task_idx_table_set(task_self_idx_table(), fd, desc);
+static inline int task_self_idx_set(int fd, struct idx_desc *desc) {
+	return task_idx_table_set(task_self_idx_table(), fd, desc);
 }
+
+extern struct idx_desc *task_idx_desc_alloc(struct idx_desc_data *data);
+extern int task_idx_desc_free(struct idx_desc *idx);
+extern struct idx_desc_data *task_idx_data_alloc(const struct task_idx_ops *res_ops, void *fd_struct);
+extern int task_idx_data_free(struct idx_desc *idx);
 
 extern int task_self_idx_alloc(const struct task_idx_ops *ops, void *data);
 

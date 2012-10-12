@@ -7,7 +7,6 @@ static module LibUtil {
 	source "tree_set.c"
 	source "tree.c"
 	source "priority_q.c"
-	source "binary_heap.c"
 	source "ring_buff.c"
 	source "sys_log.c"
 
@@ -44,3 +43,6 @@ module idx_table {
 	depends num_alloc
 }
 
+module indexator {
+	source "indexator.c"
+}

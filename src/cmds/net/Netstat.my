@@ -1,0 +1,20 @@
+package embox.cmd.net
+
+@Cmd(name = "netstat",
+	help = "Print network connections, interface statics",
+	man = '''
+		NAME
+			netstat - Print network connections
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module netstat {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "netstat.c"
+
+	depends embox.lib.LibC
+	depends embox.net.tcp
+	depends embox.net.udp
+	depends embox.framework.LibFramework
+}

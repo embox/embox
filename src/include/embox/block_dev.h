@@ -14,6 +14,7 @@
 #include <fs/vfs.h>
 #include <kernel/file.h>
 #include <util/array.h>
+#include <embox/buff.h>
 
 #define IOCTL_GETBLKSIZE        1
 #define IOCTL_GETDEVSIZE        2
@@ -43,6 +44,8 @@ typedef struct block_dev {
 	gid_t gid;
 	int mode;
 	size_t size;
+
+	buf_t *buff;
 
 	int reads;
 	int writes;

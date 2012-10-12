@@ -12,7 +12,13 @@
 
 #include <net/skbuff.h>
 #include <net/netdevice.h>
-#include <net/socket.h>
+
+/**
+ * Prototypes
+ */
+struct sk_buff;
+struct net_device;
+struct packet_type;
 
 /**
  * Handler of RARP packages
@@ -23,8 +29,10 @@ extern int rarp_rcv(struct sk_buff *skb, struct net_device *dev,
 /**
  * Create and send an arp packet.
  */
-extern int rarp_send(unsigned short oper, in_addr_t dest_ip, in_addr_t src_ip,
-		const unsigned char *dest_hw, const unsigned char *src_hw,
-		struct net_device *dev);
+extern int rarp_send(unsigned short oper, unsigned short paddr_space,
+		unsigned char haddr_len, unsigned char paddr_len,
+		const unsigned char *src_haddr, const unsigned char *src_paddr,
+		const unsigned char *dst_haddr, const unsigned char *dst_paddr,
+		const unsigned char *target_haddr, struct net_device *dev);
 
-#endif /* NET_ARP_H_ */
+#endif /* NET_RARP_H_ */

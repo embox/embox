@@ -234,7 +234,7 @@ int sched_sleep(struct sleepq *sq, unsigned long timeout) {
 }
 
 #if 0
-int sched_setrun(struct thread *t) {
+int sched_tryrun(struct thread *t) {
 	sched_lock();
 	{
 		if (thread_state_sleeping(t->state)) {
@@ -368,6 +368,26 @@ static void sched_switch(void) {
 
 out:
 	sched_unlock_noswitch();
+}
+
+int sched_tryrun(struct thread *thread) {
+	int res = 0;
+
+	assert(!in_harder_critical());
+
+	sched_lock();
+
+	{
+		if (thread_state_sleeping(thread->state)) {
+			do_wake_thread(thread, -EINTR);
+		} else if (!thread_state_running(thread->state)) {
+			res = -1;
+		}
+	}
+
+	sched_unlock();
+
+	return res;
 }
 
 static int unit_init(void) {

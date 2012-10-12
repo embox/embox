@@ -22,6 +22,7 @@
 #include <mem/page.h>
 #include <mem/heap.h>
 #include <framework/mod/member/ops.h>
+#include <mem/phymem.h>
 
 /**
  * slab descriptor
@@ -134,7 +135,7 @@ static int cache_member_init(struct mod_member *info) {
  * @param slab_ptr the pointer to slab which must be deleted
  */
 static void cache_slab_destroy(cache_t *cachep, slab_t *slabp) {
-	page_free(slabp, slabp->inuse);
+	page_free(__phymem_allocator, slabp, slabp->inuse);
 }
 
 /* init slab descriptor and slab objects */
@@ -161,7 +162,7 @@ static int cache_grow(cache_t *cachep) {
 	slab_t * slabp;
 	size_t slab_size = 1 << cachep->slab_order;
 
-	if (!(slabp = (slab_t*) page_alloc(slab_size)))
+	if (!(slabp = (slab_t*) page_alloc(__phymem_allocator, slab_size)))
 		return 0;
 
 	page = virt_to_page(slabp);

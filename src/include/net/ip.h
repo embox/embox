@@ -16,6 +16,11 @@
 #include <hal/arch.h>
 #include <net/checksum.h>
 
+/**
+ * Prototypes
+ */
+struct sk_buff;
+
 #define IP_ADDR_LEN      4
 #define IPv6_ADDR_LEN    16
 #define ICMP_PROTO_TYPE  (unsigned short)0x01

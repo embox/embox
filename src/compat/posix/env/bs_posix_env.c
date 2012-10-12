@@ -6,12 +6,48 @@
  * @date    09.06.2012
  */
 
-#include <embox/unit.h>
-
+#include <types.h>
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <prom/diag.h>
+#include <kernel/task.h>
+#include <kernel/task/idx.h>
+
+#include <embox/unit.h>
+
 EMBOX_UNIT_INIT(diag_env_init);
+
+static int diag_read(struct idx_desc *data, void *buf, size_t nbyte) {
+	char *cbuf = (char *) buf;
+
+	while (nbyte--) {
+		*cbuf++ = diag_getc();
+	}
+
+	return (int) cbuf - (int) buf;
+
+}
+
+static int diag_write(struct idx_desc *data, const void *buf, size_t nbyte) {
+	char *cbuf = (char *) buf;
+
+	while (nbyte--) {
+		diag_putc(*cbuf++);
+	}
+
+	return (int) cbuf - (int) buf;
+}
+
+static int diag_close(struct idx_desc *idx) {
+	return 0;
+}
+
+static const struct task_idx_ops diag_idx_ops = {
+	.read = diag_read,
+	.write = diag_write,
+	.close = diag_close
+};
 
 static int check_valid(int fd, int reference_fd) {
 	if (fd == reference_fd) {
@@ -30,9 +66,8 @@ static int check_valid(int fd, int reference_fd) {
 	return -1;
 }
 
-
 int diag_env_init(void) {
-	int fd = open("/dev/diag", O_RDWR);
+	int fd = task_self_idx_alloc(&diag_idx_ops, NULL);
 	int res = 0;
 
 	if ((res = check_valid(fd, 0)) != 0) {

@@ -8,6 +8,17 @@ module loopback {
 	depends embox.net.dev
 }
 
+module e1000 {
+	source "e1000.c"
+	depends embox.net.skbuff
+	depends embox.lib.LibC
+	depends embox.driver.pci
+	depends embox.net.eth
+	depends embox.kernel.irq
+	depends embox.net.dev
+	depends embox.net.entry_api
+}
+
 module ne2k_pci {
 	source "ne2k_pci.c"
 

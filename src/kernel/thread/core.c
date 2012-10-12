@@ -38,9 +38,11 @@
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
+#include <module/embox/arch/usermode.h>
 
 
-#define STACK_SZ      OPTION_GET(NUMBER,thread_stack_size)
+#define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
+#define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
 
 EMBOX_UNIT(unit_init, unit_fini);
 
@@ -62,18 +64,19 @@ static void thread_free(struct thread *t);
  * Wrapper for thread start routine.
  */
 static void __attribute__((noreturn)) thread_trampoline(void) {
-	struct thread *current;
+	struct thread *current = thread_self();
+	void *res;
 
 	assert(!critical_allows(CRITICAL_SCHED_LOCK));
-
-	current = thread_self();
 
 	sched_unlock_noswitch();
 	ipl_enable();
 
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
-	thread_exit(current->run(current->run_arg));
+	res = call_in_usermode_if(current->in_usermode,
+			current->run,current->run_arg);
+	thread_exit(res);
 }
 
 int thread_create(struct thread **p_thread, unsigned int flags,
@@ -164,6 +167,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->need_message = false;
 
 	t->running_time = 0;
+	t->in_usermode = flags & THREAD_FLAG_USERMODE;
 }
 
 static void thread_context_init(struct thread *t) {
@@ -402,14 +406,12 @@ static void thread_delete(struct thread *t) {
 	}
 }
 
-#define THREAD_POOL_SZ 0x10
-
 typedef struct thread_pool_entry {
 	struct thread thread;
 	char stack[STACK_SZ];
 } thread_pool_entry_t;
 
-POOL_DEF(thread_pool, thread_pool_entry_t, THREAD_POOL_SZ);
+POOL_DEF(thread_pool, thread_pool_entry_t, POOL_SZ);
 
 static struct thread *thread_alloc(void) {
 	thread_pool_entry_t *block;

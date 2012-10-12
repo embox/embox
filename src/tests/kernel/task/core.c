@@ -22,7 +22,7 @@ void *tsk_hnd2(void *data) {
 
 
 TEST_CASE("Create two tasks") {
-	new_task(tsk_hnd1, NULL);
-	new_task(tsk_hnd2, NULL);
+	new_task(tsk_hnd1, NULL, 0);
+	new_task(tsk_hnd2, NULL, 0);
 }
 

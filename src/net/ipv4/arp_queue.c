@@ -28,9 +28,9 @@ EMBOX_UNIT_INIT(arp_queue_init);
 /**
  * Declaration module constants
  */
-#define ARP_QUEUE_AMOUNT_PACKAGE  OPTION_GET(NUMBER, amount_package)
-#define ARP_QUEUE_HTABLE_WIDTH    OPTION_GET(NUMBER, htable_width)
-#define ARP_QUEUE_PACKAGE_TIMEOUT OPTION_GET(NUMBER, package_timeout)
+#define MODOPS_ARP_QUEUE_AMOUNT_PACKAGE  OPTION_GET(NUMBER, amount_package)
+#define MODOPS_ARP_QUEUE_HTABLE_WIDTH    OPTION_GET(NUMBER, htable_width)
+#define MODOPS_ARP_QUEUE_PACKAGE_TIMEOUT OPTION_GET(NUMBER, package_timeout)
 
 
 /**
@@ -53,7 +53,7 @@ struct arp_queue_item {
 static struct hashtable *arp_queue_table;
 
 /* Allocators */
-POOL_DEF(arp_queue_item_pool, struct arp_queue_item, ARP_QUEUE_AMOUNT_PACKAGE);
+POOL_DEF(arp_queue_item_pool, struct arp_queue_item, MODOPS_ARP_QUEUE_AMOUNT_PACKAGE);
 
 /* Get time in milliseconds */
 static uint32_t get_msec(void) {
@@ -66,19 +66,21 @@ void arp_queue_process(struct sk_buff *arp_skb) {
 	in_addr_t resolved_ip;
 	struct arp_queue_item *waiting_item;
 	struct event *sock_ready;
+	struct arpg_stuff arph_stuff;
 
 	assert(arp_skb != NULL);
 	assert(arp_skb->nh.raw != NULL);
 
 	now = get_msec();
-	resolved_ip = arp_skb->nh.arph->ar_sip;
+	arpg_make_stuff(arp_skb->nh.arpgh, &arph_stuff);
+	resolved_ip = *(in_addr_t *)arph_stuff.spa;
 
 	while ((waiting_item = hashtable_get(arp_queue_table, &resolved_ip)) != NULL) {
 		assert(waiting_item->skb != NULL);
 
 		/* calculate experience */
 		lifetime = now - waiting_item->was_posted;
-		if (lifetime >= ARP_QUEUE_PACKAGE_TIMEOUT) {
+		if (lifetime >= MODOPS_ARP_QUEUE_PACKAGE_TIMEOUT) {
 			goto free_skb_and_item; /* time is up! drop this package */
 		}
 
@@ -145,7 +147,7 @@ int arp_queue_add(struct sk_buff *skb) {
 
 	softirq_unlock();
 
-	ret = arp_send(ARPOP_REQUEST, ETH_P_ARP, skb->dev, daddr, skb->nh.iph->saddr, NULL,
+	ret = arp_send(ARP_OPER_REQUEST, ETH_P_ARP, skb->dev, daddr, skb->nh.iph->saddr, NULL,
 			skb->dev->dev_addr, NULL);
 	if (ret != 0) {
 		return ret;
@@ -167,7 +169,7 @@ static int cmp_key(void *key1, void *key2) {
 }
 
 static int arp_queue_init(void) {
-	arp_queue_table = hashtable_create(ARP_QUEUE_HTABLE_WIDTH, get_hash, cmp_key);
+	arp_queue_table = hashtable_create(MODOPS_ARP_QUEUE_HTABLE_WIDTH, get_hash, cmp_key);
 	if (arp_queue_table == NULL) {
 		return -ENOMEM;
 	}

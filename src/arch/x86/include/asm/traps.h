@@ -12,6 +12,9 @@
 
 #ifndef __ASSEMBLER__
 
+// TODO: replace it
+#define fastcall        __attribute__((regparm(3)))
+
 /*
  * There are 256 IDT entries (each entry is 8 bytes)
  * Vectors 0...31 : system traps and exceptions
@@ -39,20 +42,29 @@
 #define X86_T_PAGE_FAULT            0x0E /* Page Fault */
 
 typedef struct pt_regs {
-	/*
-	 *  stack pointer just before entering the handler if there was no priority
-	 *  change. Are invalid otherwise, use esp, ss instead
-	 */
-	uint32_t esp2, ss2;
-	uint32_t gs, fs, es, ds;
-	uint32_t edi, esi, ebp, cr2, ebx, edx, ecx, eax; /*pusha*/
-	uint32_t trapno, err;                            /*push by isr*/
-	uint32_t eip, cs, eflags;       /*Pushed by the processor automatically*/
-	/*
-	 * Pushed by the processor automatically in case of priority level change.
-	 *  Are invalid otherwise (use esp2, ss2 instead)
-	 */
-	uint32_t esp, ss;
+	/* Pushed by SAVE_ALL. */
+	uint32_t ebx;
+	uint32_t ecx;
+	uint32_t edx;
+	uint32_t esi;
+	uint32_t edi;
+	uint32_t ebp;
+	uint32_t eax;
+	uint32_t gs;
+	uint32_t fs;
+	uint32_t es;
+	uint32_t ds;
+
+	/* Pushed at the very beginning of entry. */
+	uint32_t trapno;
+	uint32_t err;
+
+	/* Pushed by processor. */
+	uint32_t eip;
+	uint32_t cs;
+	uint32_t eflags;
+	uint32_t esp;
+	uint32_t ss;
 } pt_regs_t;
 
 extern void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr);

@@ -1,51 +1,93 @@
 /**
  * @file
- * @brief Global definitions for the ARP (RFC 826) and RARP (RFC 903) protocols
+ * @brief Global definitions for the ARP protocol and its extensions
+ * @details RFC 826 (ARP), RFC 903 (RARP), RFC 2390 (InARP)
  *
  * @date 10.08.09
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  */
 
 #ifndef NET_IF_ARP_H
 #define NET_IF_ARP_H
 
 #include <types.h>
-#include <net/if_ether.h>
-#include <net/in.h>
+#include <stdlib.h>
 #include <net/skbuff.h>
 
-/* ARP protocol HARDWARE identifiers. */
-#define ARPHRD_ETHER 	1      /* Ethernet 10Mbps */
-#define ARPHRD_LOOPBACK 772    /* Loopback device */
-
-/* ARP protocol opcodes. */
-#define	ARPOP_REQUEST	1		/* ARP request   */
-#define	ARPOP_REPLY     2		/* ARP reply     */
-#define	ARPOP_RREQUEST	3		/* RARP request  */
-#define	ARPOP_RREPLY	4		/* RARP reply    */
-#define	ARPOP_InREQUEST	8		/* InARP request */
-#define	ARPOP_InREPLY	9		/* InARP reply   */
-#define	ARPOP_NAK       10		/* (ATM)ARP NAK  */
+/**
+ * Prototypes
+ */
+struct sk_buff;
 
 /**
- * This structure defines an ethernet arp header.
+ * Global protocol hardware address space identifiers
  */
-typedef struct arphdr {
-	__be16         ar_hrd;           /**< format of hardware address = 0x0001;//ethernet */
-	__be16         ar_pro;           /**< format of protocol address = 0x0800;//ip */
-	unsigned char  ar_hln;           /**< hardware addr len */
-	unsigned char  ar_pln;           /**< protocol addr len */
-	__be16         ar_op;            /**< ARP opcode (command)    */
-	unsigned char  ar_sha[ETH_ALEN]; /**< Sender hardware address */
-	in_addr_t      ar_sip;           /**< Sender protocol address */
-	unsigned char  ar_tha[ETH_ALEN]; /**< Target hardware address */
-	in_addr_t      ar_tip;           /**< Target protocol address */
-} __attribute__((packed)) arphdr_t;
+#define ARPG_HRD_ETHERNET 1   /* Ethernet 10Mbps */
+#define ARPG_HRD_LOOPBACK 772 /* Loopback device */
 
-#define ARP_HEADER_SIZE (sizeof(struct arphdr))
+/**
+ * Global protocol operation codes
+ */
+/* ARP operation codes */
+#define	ARP_OPER_REQUEST  1 /* ARP request */
+#define	ARP_OPER_REPLY    2 /* ARP reply */
+/* Reverse ARP operation codes */
+#define	RARP_OPER_REQUEST 3 /* RARP request */
+#define	RARP_OPER_REPLY   4 /* RARP reply */
 
-static inline arphdr_t *arp_hdr(const sk_buff_t *skb) {
-	return (arphdr_t *) skb->nh.raw;
+#if 0
+#define	ARPOP_InREQUEST   8  /* InARP request */
+#define	ARPOP_InREPLY     9  /* InARP reply */
+#define	ARPOP_NAK         10 /* (ATM)ARP NAK */
+#endif
+
+/**
+ * Generic protocol header
+ */
+typedef struct arpghdr {
+	__be16 ha_space;        /* Hardware address space */
+	__be16 pa_space;        /* Protocol address space */
+	unsigned char ha_len;   /* Length of hardware address */
+	unsigned char pa_len;   /* Length of protocol address */
+	__be16 oper;            /* Operation code */
+	unsigned char stuff[1]; /* Additional information with variable-length */
+} __attribute__((packed)) arpghdr_t;
+
+/**
+ * Additional information of variable length
+ */
+typedef struct arpg_stuff {
+	unsigned char *sha; /* Sender hardware address */
+	unsigned char *spa; /* Sender protocol address */
+	unsigned char *tha; /* Target hardware address */
+	unsigned char *tpa; /* Target protocol address */
+} arpg_stuff_t;
+
+/**
+ * Generic ARP macros for getting header size
+ */
+#define ARPG_MIN_HEADER_SIZE       ((size_t)&((struct arpghdr *)0)->stuff[0])
+#define ARPG_CALC_HDR_SZ(hln, pln) (ARPG_MIN_HEADER_SIZE + (hln + pln) * 2)
+#define ARPG_HEADER_SIZE(arpgh)    ARPG_CALC_HDR_SZ(arpgh->ha_len, arpgh->pa_len)
+
+/**
+ * Make arp_stuff structure (setup pointers to raw data)
+ */
+static inline struct arpg_stuff * arpg_make_stuff(struct arpghdr *arpgh,
+		struct arpg_stuff *out_stuff) {
+	out_stuff->sha = &arpgh->stuff[0];
+	out_stuff->spa = out_stuff->sha + arpgh->ha_len;
+	out_stuff->tha = out_stuff->spa + arpgh->pa_len;
+	out_stuff->tpa = out_stuff->tha + arpgh->ha_len;
+	return out_stuff;
 }
 
-#endif	/* NET_IF_ARP_H */
+/**
+ * Get ARP generic header
+ */
+static inline struct arpghdr * arpg_hdr(const struct sk_buff *skb) {
+	return skb->nh.arpgh;
+}
+
+#endif /* NET_IF_ARP_H */

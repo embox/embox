@@ -74,3 +74,10 @@ module priority_q_test {
 	depends embox.framework.LibFramework
 }
 
+module indexator_test {
+	source "indexator_test.c"
+
+	depends embox.util.indexator
+	depends embox.framework.LibFramework
+
+}

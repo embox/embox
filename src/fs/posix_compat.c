@@ -12,27 +12,27 @@
 
 #include <fs/core.h>
 
-static inline struct file_desc *from_data(struct idx_desc_data *data) {
-	return (struct file_desc *) data->fd_struct;
+static inline struct file_desc *from_data(struct idx_desc *data) {
+	return (struct file_desc *) task_idx_desc_data(data);
 }
 
-static int this_close(struct idx_desc_data *data) {
+static int this_close(struct idx_desc *data) {
 	return kclose(from_data(data));
 }
 
-static ssize_t this_read(struct idx_desc_data *data, void *buf, size_t nbyte) {
+static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	return kread(buf, 1, nbyte, from_data(data));
 }
 
-static ssize_t this_write(struct idx_desc_data *data, const void *buf, size_t nbyte) {
+static ssize_t this_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 	return kwrite(buf, 1, nbyte, from_data(data));
 }
 
-static int this_lseek(struct idx_desc_data *data, long int offset, int origin) {
+static int this_lseek(struct idx_desc *data, long int offset, int origin) {
 	return kseek(from_data(data), offset, origin);
 }
 
-static int this_ioctl(struct idx_desc_data *data, int request, va_list args) {
+static int this_ioctl(struct idx_desc *data, int request, va_list args) {
 	return kioctl(from_data(data), request, args);
 }
 

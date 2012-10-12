@@ -14,8 +14,7 @@ include_past_checkers := \
 
 builders_list := \
 	Mybuild.closeInstances \
-	Mybuild.specifyInstances \
-	Mybuild.optionBind
+	Mybuild.specifyInstances
 
 checkers_list := \
 	Mybuild.checkAbstractRealization \
@@ -53,12 +52,18 @@ define getAnnotation
 
 endef
 
+# XXX builtin $(sort ...)?
 define selectUnique
-	$(if $2,
-		$(if $(filter $(firstword $2),$1),
-			$(call $0,$1,$(wordlist 2,$(words $2),$2)),
-			$(call $0,$1 $(firstword $2),$(wordlist 2,$(words $2),$2))),
-		$1)
+	${eval __select_uniq_tmp :=}
+	$(silent-for mod <- $2,
+		$(if $(filter $(mod),$(__select_uniq_tmp)),,
+			${eval __select_uniq_tmp += $$(mod)}))
+	$(__select_uniq_tmp)
+#	$(if $2,
+#		$(if $(filter $(firstword $2),$1),
+#			$(call $0,$1,$(nofirstword $2)),
+#			$(call $0,$1 $(firstword $2),$(nofirstword $2))),
+#		$1)
 endef
 
 # Constructor args:
@@ -104,28 +109,31 @@ define class-Mybuild
 			$(set build->modules,
 				$(invoke listBuildModules))
 
+			$(invoke optionBind,$(get build->modules))
+
 			$(build))
 	)
 
 # Private:
 
-	$(field current_builders_list)
+	$(property-field current_builders_list)
+
+	$(method listBuildModules,
+		$(call selectUnique,,$(for mod <- $(get-field moduleInstanceStore),
+				$(map-get moduleInstanceStore/$(mod)))))
 
 	$(method annotationProcess,
 		$(call mybuild_annotation_process,Build,$1,$(this)))
 
 	$(method includeModule,
-		$(for \
-			mod <- $1,
-			was <- was$(map-get moduleInstanceStore/$(mod)),
-			mod <- $(if $(filter was,$(was)),
-						$(invoke annotationProcess,$(mod)),
-						$(mod)),
-			inst <- $(invoke moduleInstance,$(mod)),
+		$(for mod <- $1,
+			$(with $(map-get moduleInstanceStore/$(mod)),
+				$(for inst <- $(invoke moduleInstance,
+						$(if $1,$(mod),$(invoke annotationProcess,$(mod)))),
 
-			$(if $(or $(filter was,$(was)),$(filter force,$(value 2))),
-				$(call check,$(inst),$(get-field current_builders_list)))
-			$(inst)))
+					$(if $1,,
+						$(call check,$(inst),$(get current_builders_list)))
+					$(inst)))))
 
 	$(method includeMandatoryModules,
 		$(silent-for \
@@ -150,26 +158,15 @@ define class-Mybuild
 			inst <- $(invoke moduleInstance,$(module)),
 			$(set inst->includeMember,$(cfgInclude))))
 
-	$(method listBuildModules,
-		$(call selectUnique,,
-			$(for mod <- $(get-field moduleInstanceStore),
-				$(map-get moduleInstanceStore/$(mod)))))
-
 	$(method addIssue,
-		$(invoke $(get issueReceiver).addIssues,$(new InstantiateIssue,
-			$1,$2,$3,$4)))
+		$(invoke issueReceiver>addIssues,
+			$(new InstantiateIssue,$1,$2,$3,$4)))
 
 	$(method addIssueGlobal,
 		$(invoke addIssue,,$1,,$2))
 
 	$(method addIssueInclude,
-			$(invoke addIssue,
-				$(for includeMember <- $1,
-					$(get includeMember->eResource)),
-				$2,
-				$(for includeMember <- $1,
-					$(get includeMember->origin)),
-				$3))
+		$(invoke addIssue,$(get 1->eResource),$2,$(get 1->origin),$3))
 
 	$(method addIssueInstance,
 		$(invoke addIssueInclude,$(get 1->includeMember),$2,$3))
@@ -199,27 +196,21 @@ define class-Mybuild
 	#	1. List of ModuleInstance
 	#	2. Checkers, which ModuleInstances was passed.
 	$(method checkAbstractRealization,
-		$(for \
-			inst <- $1,
+		$(for inst <- $1,
 			instType <- $(get inst->type),
-			$(with \
-				$(if $(get instType->isAbstract),
-					$(if $(singleword $(get instType->subTypes)),
-							$(call check,
-								$(invoke moduleInstance,
-									$(get instType->subTypes)),
-								$2 $0,)
-							$(if $(get inst->type>isAbstract),
-								1,
-								),
-					 	1),
-				 ),
 
+			$(and $(get instType->isAbstract),
 
-				$(if $(strip $1),
-					$(invoke addIssueGlobal,error,
-							No abstract realization: \
-								$(get instType->qualifiedName))))))
+				$(if $(singleword $(get instType->subTypes)),
+					$(call check,
+						$(invoke moduleInstance,$(get instType->subTypes)),
+							$2 $0,)
+					# Read it again (with new instance type).
+					$(get inst->type>isAbstract),
+				 	1),
+
+				$(invoke addIssueGlobal,error,
+					No abstract realization: $(get instType->qualifiedName)))))
 
 	# Helper method, returns string representation of moduleInstance origin
 	#
@@ -408,7 +399,7 @@ define class-Mybuild
 	#
 	# Context:
 	#	IssueReceiver
-	#	cfgInclude. IncludeMember of processing ModuleInstance requiest.
+	#	cfgInclude. IncludeMember of processing ModuleInstance request.
 	#	mod. Module for which ModuleInstance is creating.
 	# Args:
 	#	None.
@@ -428,13 +419,31 @@ define class-Mybuild
 					$1,
 					$(if $(filter $(get 1->type),$(get mod->allSubTypes)),$1,
 						$(invoke addIssueInclude,
-							$(cfgInclude),
+							$(value cfgInclude),
 							error,
 							Module $(get mod->qualifiedName) extends module \
 								supertype already extended by incompatible \
 								$(invoke getInstDepsOrigin,$1)))
 					),
 				$(new ModuleInstance,$(mod)))))
+
+	# Get ModuleInstance for Module
+	#
+	# Args:
+	#	1. Module
+	# Return:
+	#	ModuleInstance instance
+	# SideEffect:
+	#	Build realized features appends Module features
+	$(method moduleInstance,
+		$(for mod <- $1,
+			moduleInstance <- $(call Mybuild.moduleInstanceSuper),
+
+			$(if $(or $(not $(get moduleInstance->type)),
+					$(invoke moduleInstance->type>isSuperTypeOf,$(mod))),
+				$(invoke setInstanceToType,$(moduleInstance),$(mod)))
+
+			$(moduleInstance)))
 
 	$(method setInstanceToType,
 		$(set 1->type,$2)
@@ -449,27 +458,6 @@ define class-Mybuild
 				opt <- $(provide) $(get provide->allSubFeatures),
 				$(map-set+ activeFeatures/$(opt),
 					$1)))
-
-
-	# Get ModuleInstance for Module
-	#
-	# Args:
-	#	1. Module
-	# Return:
-	#	ModuleInstance instance
-	# SideEffect:
-	#	Build realized features appends Module features
-	$(method moduleInstance,
-		$(for \
-			mod <- $1,
-			moduleInstance<-$(call Mybuild.moduleInstanceSuper),
-
-			$(if $(or $(if $(get moduleInstance->type),,1),
-						$(invoke $(get moduleInstance->type).isSuperTypeOf,
-							$(mod))),
-				$(invoke setInstanceToType,$(moduleInstance),$(mod)))
-
-			$(moduleInstance)))
 
 	$(method chkCyclic,
 		$(if $(map-get includingInstances/$1),
@@ -529,8 +517,10 @@ endef
 # Takes a resource set of configfiles and creates build for each configuration.
 # Returns the argument.
 define mybuild_create_build
-	$(invoke $(new Mybuild).createBuild,
-		$(call mybuild_get_active_configuration,$1))
+	$(for __mb <- $(new Mybuild),
+		$(invoke __mb->createBuild,
+			$(call mybuild_get_active_configuration,$1))
+		$(call printIssues,$(__mb)))
 endef
 
 # 1. Config files resource set.
@@ -591,7 +581,7 @@ define printInstances
 endef
 
 define printIssues
-	$(for issueReceiver <- $(get-field 1->issueReceiver),
+	$(silent-for issueReceiver <- $(get 1->issueReceiver),
 		$(if $(invoke issueReceiver->getIssues),
 			$(invoke issueReceiver->printIssues)))
 endef

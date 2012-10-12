@@ -36,12 +36,6 @@ extern void vga_console_init(vga_console_t *con, unsigned width, unsigned height
  */
 extern void vga_putc(vga_console_t *con, char c);
 
-
-/**
- * Move physical cursor at position. Not alter without need
- */
-extern void blink_cursor(unsigned x, unsigned y);
-
 extern vga_console_t *vga_console_diag(void);
 #if 0
 /**

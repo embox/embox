@@ -17,6 +17,14 @@
 
 #include <util/hashtable.h>
 
+/**
+ * Prototypes
+ */
+struct net_node;
+struct net_device;
+struct sk_buff;
+
+
 /* Backlog congestion levels */
 #define NET_RX_SUCCESS       0
 #define NET_RX_DROP          1
@@ -27,8 +35,6 @@
 
 /** Largest hardware address length */
 #define MAX_ADDR_LEN    32
-
-struct net_node;
 
 /**
  * Network device statistics structure.
@@ -79,7 +85,7 @@ enum netdev_state_t {
 typedef struct net_device_ops {
 	int (*ndo_open)(struct net_device *dev);
 	int (*ndo_stop)(struct net_device *dev);
-	int (*ndo_start_xmit)(sk_buff_t *pack, struct net_device *dev);
+	int (*ndo_start_xmit)(struct sk_buff *pack, struct net_device *dev);
 	int (*ndo_set_mac_address)(struct net_device *dev, void *addr);
 	net_device_stats_t* (*ndo_get_stats)(struct net_device *dev);
 } net_device_ops_t;
@@ -100,9 +106,8 @@ typedef struct header_ops {
 typedef struct packet_type {
 	__be16 type; /**< This is really htons(ether_type) */
 	struct net_device *dev; /**< NULL is wildcarded here	     */
-	int (*func)(sk_buff_t *, struct net_device *, struct packet_type *,
+	int (*func)(struct sk_buff *, struct net_device *, struct packet_type *,
 			struct net_device *);
-
 	void *af_packet_priv;
 	struct list_head list;
 	int (*init)(void); /**<Function's called during net subsystem loading
@@ -130,6 +135,8 @@ typedef struct net_device {
 	const net_device_ops_t *netdev_ops; /**< Management operations        */
 	const header_ops_t *header_ops; /**< Hardware header description  */
 	struct sk_buff_head dev_queue;
+	struct sk_buff_head tx_dev_queue;
+	struct sk_buff_head txing_queue;
 	int (*poll)(struct net_device *dev);
 	struct net_node *pnet_node;
 } net_device_t;

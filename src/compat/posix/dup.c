@@ -29,19 +29,26 @@ int dup(int flides) {
 }
 
 int dup2(int flides, int flides2) {
+	int res;
 	struct idx_desc *old_idx;
 
 	if (! task_valid_binded_fd(flides)) {
 	       return -1;
 	}
 
-	if (! task_valid_unbinded_fd(flides2)) {
+	if (! task_valid_fd(flides2)) {
 		return -1;
+	}
+
+	if (flides == flides2) {
+		return flides2;
 	}
 
 	old_idx = task_self_idx_get(flides);
 
-	task_self_idx_set(flides2, old_idx);
+	if (0 != (res = task_self_idx_set(flides2, task_idx_desc_alloc(old_idx->data)))) {
+		return res;
+	}
 
 	return flides2;
 }

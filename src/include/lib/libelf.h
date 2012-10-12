@@ -10,6 +10,16 @@
 #define LIB_ELF_H_
 
 #include <lib/elf_types.h>
+#include <hal/arch.h>
+
+#if defined(__LITTLE_ENDIAN)
+#define REV(rev) \
+	((rev) == ELFDATA2MSB)
+#elif defined(__BIG_ENDIAN)
+#define REV(rev) \
+	((rev) == ELFDATA2LSB)
+#endif
+
 
 /**
  * Function reverses order of bytes in received integer with size 4-bytes
@@ -21,7 +31,7 @@
  *                 - property talking about data type
  */
 #define L_REV(num, rev) \
-	(((rev) == ELFDATA2LSB) ?       \
+	(REV(rev) ?                     \
 	((((num) & 0x000000ff) << 24)   \
 	+ (((num) & 0x0000ff00) << 8)   \
 	+ (((num) & 0x00ff0000) >> 8)   \
@@ -38,7 +48,7 @@
  *                 - property talking about data type
  */
 #define S_REV(num, rev) \
-	(((rev) == ELFDATA2LSB) ?  \
+	(REV(rev) ?                \
 	((((num) & 0x00ff ) << 8)  \
 	+ (((num) & 0xff00) >> 8)) \
 	: (num))
@@ -52,7 +62,7 @@
  *
  * @return the number of items successfully read or error code.
  */
-extern int32_t elf_read_header(FILE *fd, Elf32_Ehdr *head);
+extern int32_t elf_read_header(FILE *fd, Elf32_Ehdr **head);
 
 /**
  * Read table of section's headers
@@ -64,7 +74,7 @@ extern int32_t elf_read_header(FILE *fd, Elf32_Ehdr *head);
  * @return the number of items successfully read or error code.
  */
 extern int32_t elf_read_sections_table(FILE *fd, Elf32_Ehdr *head,
-					Elf32_Shdr *sh_table);
+					Elf32_Shdr **sh_table);
 
 /**
  * Read table of program segment's headers
@@ -76,7 +86,7 @@ extern int32_t elf_read_sections_table(FILE *fd, Elf32_Ehdr *head,
  * @return the number of items successfully read or error code.
  */
 extern int32_t elf_read_segments_table(FILE *fd, Elf32_Ehdr *head,
-					Elf32_Phdr *st_table);
+					Elf32_Phdr **st_table);
 
 /**
  * Read string table from sections and put it into names,
@@ -93,7 +103,7 @@ extern int32_t elf_read_segments_table(FILE *fd, Elf32_Ehdr *head,
  * @retval -2 - section header's table is empty
  */
 extern int32_t elf_read_string_table(FILE *fd, Elf32_Ehdr *head,
-			Elf32_Shdr *section_header_table, int8_t *string_table);
+			Elf32_Shdr *section_header_table, int8_t **string_table);
 
 /**
  * Read symbol string table from sections and put it into names. Find
@@ -115,7 +125,7 @@ extern int32_t elf_read_string_table(FILE *fd, Elf32_Ehdr *head,
  */
 extern int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *head,
 		Elf32_Shdr *section_header_table, int8_t *string_table,
-		int8_t *symb_names, int32_t *ret_length);
+		int8_t **symb_names, int32_t *ret_length);
 
 /**
  * return name of string from names_array, starting from index index
@@ -129,7 +139,7 @@ extern int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *head,
  * @retval 0 - more then MAX_NAME_LENGTH name - error
  * @retval >0 - real length
  */
-extern int32_t read_name(int8_t * names_array, int32_t index, int8_t * name);
+extern int32_t read_name(int8_t *names_array, int32_t index, int8_t *name);
 
 /**
  * Find SHT_SYMTAB and write it to array, number of symbols - to count
@@ -144,9 +154,9 @@ extern int32_t read_name(int8_t * names_array, int32_t index, int8_t * name);
  * @retval -1 - not found in sections, "count" must be 0
  * @retval -2 - section header's table is empty
  */
-extern int32_t elf_read_symbol_table(FILE *fd, Elf32_Ehdr * header,
-		Elf32_Shdr * section_header_table,
-		 Elf32_Sym * symbol_table, int32_t * count);
+extern int32_t elf_read_symbol_table(FILE *fd, Elf32_Ehdr *header,
+		Elf32_Shdr *section_header_table,
+		 Elf32_Sym **symbol_table, int32_t *count);
 
 /**
  * find and read ALL rel structures from file and number of them puts to count
@@ -164,7 +174,7 @@ extern int32_t elf_read_symbol_table(FILE *fd, Elf32_Ehdr * header,
  */
 extern int32_t elf_read_rel_table(FILE *fd, Elf32_Ehdr *header,
 			Elf32_Shdr *section_header_table,
-			Elf32_Rel *rel_table, int32_t *count);
+			Elf32_Rel **rel_table, int32_t *count);
 
 /**
  * find and read ALL rela structures from file and number of them puts to count
@@ -189,6 +199,6 @@ extern int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *header,
  * @param file executed file
  * @return 0 if there was no error.
  */
-extern int elf_execve(unsigned long *file_addr, char * argv[]);
+extern int elf_execve(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH);
 
 #endif /* LIB_ELF_H_ */

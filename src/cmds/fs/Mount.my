@@ -1,0 +1,25 @@
+package embox.cmd.fs
+
+import embox.compat.posix.LibPosix
+
+@Cmd(name = "mount",
+	help = "Mount a filesystem",
+	man = '''
+		NAME
+			mount - mount device into directory
+		SYNOPSIS
+			mount [-h]  [ -t type ] dev dir
+		DESCRIPTION
+			Note that one does not really mount a device, one mounts
+			a filesystem (of the given type) found on the device.
+		AUTHORS
+			Nikolay Korotky
+	''')
+module mount {
+	source "mount.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.util.getopt
+	depends embox.fs.core
+	depends embox.framework.LibFramework
+}

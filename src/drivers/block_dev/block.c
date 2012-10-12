@@ -55,6 +55,8 @@ int dev_destroy (dev_t devno) {
 		return NODEV;
 	}
 	else {
+		free_buffer_pool(devno);
+
 		pool_free(&blockdev_pool, dev);
 		devtab[devno] = NULL;
 		num_devs--;

@@ -14,7 +14,6 @@ static module isatty {
 	source "isatty.c"
 
 	depends embox.kernel.task.api
-	depends embox.util.LibUtil
 }
 
 static module select {
@@ -22,7 +21,6 @@ static module select {
 	source "select.c"
 
 	depends embox.kernel.task.api
-	depends embox.util.LibUtil
 }
 
 static module dup {
@@ -30,7 +28,6 @@ static module dup {
 	source "dup.c"
 
 	depends embox.kernel.task.api
-	depends embox.util.LibUtil
 }
 
 static module pipe {

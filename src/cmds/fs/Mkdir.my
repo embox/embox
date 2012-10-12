@@ -1,0 +1,24 @@
+package embox.cmd.fs
+
+@Cmd(name = "mkdir",
+	help = "Make directories",
+	man = '''
+		NAME
+			mkdir - create a directory
+		SYNOPSIS
+			mkdir  directory_name
+		DESCRIPTION
+			mkdir is used to create a directory
+		AUTHORS
+			Nikolay Korotky
+	''')
+module mkdir {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "mkdir.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.util.getopt
+	depends embox.fs.core
+	depends embox.framework.LibFramework
+}

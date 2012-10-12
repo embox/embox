@@ -325,14 +325,14 @@ check_state:
 		if (skb == NULL) {
 			if (sock.sk->sk_state == TCP_CLOSEWAIT) {
 				msg->msg_iov->iov_len = 0;
-				return 0; /* no more data to receive */
+				return -ECONNREFUSED; /* no more data to receive */
 			}
 			if (tcp_get_usec() - started >= sock.tcp_sk->oper_timeout) {
 				return -ETIMEDOUT; /* error: timeout */
 			}
 
 			if (flags & O_NONBLOCK) {
-				return -ETIMEDOUT;
+				return -EAGAIN;
 			}
 			/* wait received packet or another state */
 			goto check_state;
@@ -360,7 +360,7 @@ check_state:
 	case TCP_CLOSING:
 	case TCP_LASTACK:
 	case TCP_TIMEWAIT:
-		return -1; /* error: connection closing */
+		return -ECONNREFUSED; /* error: connection closing */
 	}
 }
 

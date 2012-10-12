@@ -61,74 +61,6 @@ static struct neighbour_head * neighbour_get(const unsigned char *haddr,
 	return NULL; /* not found */
 }
 
-int neighbour_get_hardware_address(const unsigned char *paddr,
-		unsigned char plen, const struct net_device *dev, unsigned char hlen_max,
-		unsigned char *out_haddr, unsigned char *out_hlen) {
-	struct neighbour_head *nh;
-
-	assert((paddr != NULL) && (plen != 0));
-	assert((hlen_max != 0) && (out_haddr != NULL) && (out_hlen != NULL));
-
-	/* lock softirq context */
-	softirq_lock();
-
-	/* find an appropriate entry */
-	nh = neighbour_get(NULL, 0, paddr, plen, dev, time(NULL));
-	if (nh == NULL) {
-		softirq_unlock();
-		return -ENOENT;
-	}
-
-	/* check boundary */
-	if (nh->n.hlen > hlen_max) {
-		softirq_unlock();
-		return -EINVAL;
-	}
-
-	/* save results */
-	memcpy(out_haddr, &nh->n.haddr[0], nh->n.hlen);
-	*out_hlen = nh->n.hlen;
-
-	/* unlock softirq context */
-	softirq_unlock();
-
-	return ENOERR;
-}
-
-int neighbour_get_protocol_address(const unsigned char *haddr,
-		unsigned char hlen, const struct net_device *dev, unsigned char plen_max,
-		unsigned char *out_paddr, unsigned char *out_plen) {
-	struct neighbour_head *nh;
-
-	assert((haddr != NULL) && (hlen != 0));
-	assert((plen_max != 0) && (out_paddr != NULL) && (out_plen != NULL));
-
-	/* lock softirq context */
-	softirq_lock();
-
-	/* find an appropriate entry */
-	nh = neighbour_get(haddr, hlen, NULL, 0, dev, time(NULL));
-	if (nh == NULL) {
-		softirq_unlock();
-		return -ENOENT;
-	}
-
-	/* check boundary */
-	if (nh->n.plen > plen_max) {
-		softirq_unlock();
-		return -EINVAL;
-	}
-
-	/* save results */
-	memcpy(out_paddr, &nh->n.paddr[0], nh->n.plen);
-	*out_plen = nh->n.plen;
-
-	/* unlock softirq context */
-	softirq_unlock();
-
-	return ENOERR;
-}
-
 int neighbour_add(const unsigned char *haddr, unsigned char hlen,
 		const unsigned char *paddr, unsigned char plen,
 		const struct net_device *dev, unsigned char flags) {
@@ -207,6 +139,88 @@ int neighbour_del(const unsigned char *haddr, unsigned char hlen,
 	/* delete from list */
 	dlist_del(&nh->lnk);
 	pool_free(&neighbour_pool, nh);
+
+	/* unlock softirq context */
+	softirq_unlock();
+
+	return ENOERR;
+}
+
+int neighbour_get_hardware_address(const unsigned char *paddr,
+		unsigned char plen, const struct net_device *dev, unsigned char hlen_max,
+		unsigned char *out_haddr, unsigned char *out_hlen) {
+	struct neighbour_head *nh;
+
+	assert((paddr != NULL) && (plen != 0));
+	assert((hlen_max != 0) && (out_haddr != NULL));
+
+	/* lock softirq context */
+	softirq_lock();
+
+	/* find an appropriate entry */
+	nh = neighbour_get(NULL, 0, paddr, plen, dev, time(NULL));
+	if (nh == NULL) {
+		softirq_unlock();
+		return -ENOENT;
+	}
+
+	/* check hardware address length */
+	if (nh->n.hlen > hlen_max) {
+		softirq_unlock();
+		return -ENOMEM;
+	}
+
+	/* save results */
+	memcpy(out_haddr, &nh->n.haddr[0], nh->n.hlen);
+	if (out_hlen != NULL) {
+		*out_hlen = nh->n.hlen;
+	}
+	else if (nh->n.hlen != hlen_max) {
+		/* no such entity with the same length of hardware address */
+		softirq_unlock();
+		return -ENOENT;
+	}
+
+	/* unlock softirq context */
+	softirq_unlock();
+
+	return ENOERR;
+}
+
+int neighbour_get_protocol_address(const unsigned char *haddr,
+		unsigned char hlen, const struct net_device *dev, unsigned char plen_max,
+		unsigned char *out_paddr, unsigned char *out_plen) {
+	struct neighbour_head *nh;
+
+	assert((haddr != NULL) && (hlen != 0));
+	assert((plen_max != 0) && (out_paddr != NULL));
+
+	/* lock softirq context */
+	softirq_lock();
+
+	/* find an appropriate entry */
+	nh = neighbour_get(haddr, hlen, NULL, 0, dev, time(NULL));
+	if (nh == NULL) {
+		softirq_unlock();
+		return -ENOENT;
+	}
+
+	/* check protocol address length */
+	if (nh->n.plen > plen_max) {
+		softirq_unlock();
+		return -ENOMEM;
+	}
+
+	/* save results */
+	memcpy(out_paddr, &nh->n.paddr[0], nh->n.plen);
+	if (out_plen != NULL) {
+		*out_plen = nh->n.plen;
+	}
+	else if (nh->n.plen != plen_max) {
+		/* no such entity with the same length of protocol address */
+		softirq_unlock();
+		return -ENOENT;
+	}
 
 	/* unlock softirq context */
 	softirq_unlock();

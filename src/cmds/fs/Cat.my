@@ -1,0 +1,30 @@
+package embox.cmd.fs
+
+@Cmd(name = "cat",
+	help = "Concatenate files and print on the standard output",
+	man = '''
+		NAME
+			cat - concatenate files and print on the standard output
+		SYNOPSIS
+			cat [OPTION]... [FILE]...
+		DESCRIPTION
+			Concatenate FILE(s) to standard output.
+		OPTIONS
+			-n  number all output lines
+		AUTHORS
+			Nikolay Korotky
+	''')
+module cat {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "cat.c"
+
+	depends embox.lib.LibC
+
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.FileTasksBasic
+	depends embox.compat.posix.FileTasksOpen
+	depends embox.fs.core
+	depends embox.prom.printf
+	depends embox.framework.LibFramework
+}

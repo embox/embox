@@ -1,0 +1,28 @@
+package embox.cmd.net
+
+@Cmd(name = "nslookup",
+	help = "Name server lookup",
+	man = '''
+		NAME
+			nslookup - resolving domain name
+		SYNOPSIS
+			nslookup name
+		DESCRIPTION
+			nslookup is a network utility for querying the DNS to
+			to obtain consistency between domain name and IP address
+		OPTIONS
+			name       domain name
+		EXAMPLE
+			nslookup google.com
+		SEE ALSO
+			ping
+		AUTHORS
+			Ilia Vaprol
+	''')
+module nslookup {
+	source "nslookup.c"
+
+	depends embox.net.netdb
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}

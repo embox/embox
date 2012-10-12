@@ -20,7 +20,7 @@
 #include <embox/unit.h>
 
 
-EMBOX_UNIT_INIT(unit_init);
+EMBOX_UNIT_INIT(emaclite_init);
 
 #define PKTSIZE 0x800
 
@@ -142,7 +142,7 @@ static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
 /**
  * Send a packet on this device.
  */
-static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
+static int emaclite_start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	if ((NULL == skb) || (NULL == dev)) {
 		return -EINVAL;
 	}
@@ -227,7 +227,7 @@ static void pack_receiving(void *dev_id) {
 /**
  * IRQ handler
  */
-static irq_return_t irq_handler(unsigned int irq_num, void *dev_id) {
+static irq_return_t emaclite_irq_handler(unsigned int irq_num, void *dev_id) {
 	if (NULL != get_rx_buff()) {
 		pack_receiving(dev_id);
 	}
@@ -237,7 +237,7 @@ static irq_return_t irq_handler(unsigned int irq_num, void *dev_id) {
 const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
 		0xCE };
 
-static int open(net_device_t *dev) {
+static int emaclite_open(net_device_t *dev) {
 	if (NULL == dev) {
 		return -EINVAL;
 	}
@@ -273,7 +273,7 @@ static int open(net_device_t *dev) {
 	return ENOERR;
 }
 
-static int stop(net_device_t *dev) {
+static int emaclite_stop(net_device_t *dev) {
 	if (NULL == dev) {
 		return -EINVAL;
 	}
@@ -281,7 +281,7 @@ static int stop(net_device_t *dev) {
 	return ENOERR;
 }
 
-static int set_mac_address(struct net_device *dev, void *addr) {
+static int emaclite_set_mac_address(struct net_device *dev, void *addr) {
 	if (NULL == dev || NULL == addr) {
 		return -EINVAL;
 	}
@@ -301,19 +301,19 @@ static int set_mac_address(struct net_device *dev, void *addr) {
 /*
  * Get RX/TX stats
  */
-static net_device_stats_t *get_eth_stat(net_device_t *dev) {
+static net_device_stats_t *emaclite_get_eth_stat(net_device_t *dev) {
 	return &(dev->stats);
 }
 
 static const struct net_device_ops _netdev_ops = {
-	.ndo_start_xmit = start_xmit,
-	.ndo_open = open,
-	.ndo_stop = stop,
-	.ndo_get_stats = get_eth_stat,
-	.ndo_set_mac_address = set_mac_address
+	.ndo_start_xmit = emaclite_start_xmit,
+	.ndo_open = emaclite_open,
+	.ndo_stop = emaclite_stop,
+	.ndo_get_stats = emaclite_get_eth_stat,
+	.ndo_set_mac_address = emaclite_set_mac_address
 };
 
-static int unit_init(void) {
+static int emaclite_init(void) {
 	/*if some module lock irq number we break initializing*/
 	int res;
 	net_device_t *net_device;
@@ -327,7 +327,7 @@ static int unit_init(void) {
 	net_device->irq = CONFIG_XILINX_EMACLITE_IRQ_NUM;
 	net_device->base_addr = CONFIG_XILINX_EMACLITE_BASEADDR;
 
-	res = irq_attach(CONFIG_XILINX_EMACLITE_IRQ_NUM, irq_handler, 0,
+	res = irq_attach(CONFIG_XILINX_EMACLITE_IRQ_NUM, emaclite_irq_handler, 0,
 			net_device, "xilinx emaclite");
 	if (res != 0) {
 		return res;

@@ -47,7 +47,8 @@ static int arp_header(struct sk_buff *skb, struct net_device *dev,
 		const unsigned char *dest_hw, const unsigned char *src_hw,
 		const unsigned char *target_hw) {
 	int res;
-	struct arphdr *arph;
+	struct arpghdr *arph;
+	struct arpg_stuff arph_stuff;
 
 	assert((skb != NULL) && (dev != NULL));
 
@@ -70,25 +71,23 @@ static int arp_header(struct sk_buff *skb, struct net_device *dev,
 	/*
 	 * Fill out the arp protocol part.
 	 */
-	arph = skb->nh.arph;
+	arph = skb->nh.arpgh;
 	assert(arph != NULL);
-
-	arph->ar_hrd = htons(ARPHRD_ETHER);
-	arph->ar_pro = htons(ETH_P_IP);
-	arph->ar_hln = dev->addr_len;
-	arph->ar_pln = IP_ADDR_LEN;
-	arph->ar_op = htons(oper);
-	memcpy(arph->ar_sha, src_hw, ETH_ALEN);
-	arph->ar_sip = src_ip;
-	memcpy(arph->ar_tha, dest_hw, ETH_ALEN);
-	arph->ar_tip = dest_ip;
+	arph->ha_space = htons(ARPG_HRD_ETHERNET);
+	arph->pa_space = htons(ETH_P_IP);
+	arph->ha_len = dev->addr_len;
+	arph->pa_len = IP_ADDR_LEN;
+	arph->oper = htons(oper);
+	arpg_make_stuff(arph, &arph_stuff);
+	memcpy(&arph_stuff.sha[0], src_hw, ETH_ALEN);
+	memcpy(&arph_stuff.spa[0], &src_ip, IP_ADDR_LEN);
+	memcpy(&arph_stuff.tha[0], dest_hw, ETH_ALEN);
+	memcpy(&arph_stuff.tpa[0], &dest_ip, IP_ADDR_LEN);
 
 	return ENOERR;
 }
 
 static int arp_xmit(struct sk_buff *skb) {
-	assert(skb != NULL);
-
 	return dev_queue_xmit(skb);
 }
 
@@ -105,7 +104,7 @@ int arp_send(int type, int ptype, struct net_device *dev,
 		return -EINVAL;
 	}
 
-	skb = skb_alloc(ETH_HEADER_SIZE + ARP_HEADER_SIZE);
+	skb = skb_alloc(ETH_HEADER_SIZE + ARPG_CALC_HDR_SZ(ETH_ALEN, IP_ADDR_LEN));
 	if (skb == NULL) {
 		return -ENOMEM;
 	}
@@ -122,7 +121,6 @@ int arp_send(int type, int ptype, struct net_device *dev,
 
 int arp_resolve(struct sk_buff *skb) {
 	int ret;
-	unsigned char hw_addr_len;
 	in_addr_t daddr;
 
 	assert(skb != NULL);
@@ -156,11 +154,10 @@ int arp_resolve(struct sk_buff *skb) {
 	/* someone on the net */
 	ret = neighbour_get_hardware_address((const unsigned char *)&daddr,
 			sizeof daddr, skb->dev, sizeof skb->mac.ethh->h_dest,
-			skb->mac.ethh->h_dest, &hw_addr_len);
+			skb->mac.ethh->h_dest, NULL);
 	if (ret != ENOERR) {
 		return ret;
 	}
-	assert(hw_addr_len == sizeof skb->mac.ethh->h_dest); /* FIXME */
 
 	return ENOERR;
 }
@@ -169,17 +166,20 @@ int arp_resolve(struct sk_buff *skb) {
  * receive ARP response, update ARP table
  */
 static int received_resp(struct sk_buff *skb, struct net_device *dev) {
-	struct arphdr *arph;
+	struct arpghdr *arph;
+	struct arpg_stuff arph_stuff;
 
 	assert((skb != NULL) && (dev != NULL));
 
-	arph = skb->nh.arph;
+	arph = skb->nh.arpgh;
 	assert(arph != NULL);
+
+	arpg_make_stuff(arph, &arph_stuff);
 
 	/*TODO need add function for getting ip addr*/
 	/* add record into arp_tables */
-	return neighbour_add(&arph->ar_sha[0], arph->ar_hln,
-			(const unsigned char *)&arph->ar_sip, arph->ar_pln, dev, 0);
+	return neighbour_add(arph_stuff.sha, arph->ha_len, arph_stuff.spa,
+			arph->pa_len, dev, 0);
 }
 
 /**
@@ -187,17 +187,20 @@ static int received_resp(struct sk_buff *skb, struct net_device *dev) {
  */
 static int received_req(struct sk_buff *skb, struct net_device *dev) {
 	int res;
-	struct arphdr *arph;
-	unsigned char dest_hw[ETH_ALEN];
+	struct arpghdr *arph;
+	struct arpg_stuff arph_stuff;
+	unsigned char dest_hw[MAX_ADDR_LEN];
 
 	assert((skb != NULL) && (dev != NULL));
 
-	arph = skb->nh.arph;
+	arph = skb->nh.arpgh;
 	assert(arph != NULL);
 
-	memcpy(dest_hw, arph->ar_sha, sizeof dest_hw); /* save dest hardware address */
-	res = arp_header(skb, dev, ARPOP_REPLY, ETH_P_ARP, arph->ar_sip,
-			arph->ar_tip, &dest_hw[0], dev->dev_addr, NULL);
+	arpg_make_stuff(arph, &arph_stuff);
+
+	memcpy(dest_hw, arph_stuff.sha, arph->ha_len); /* save dest hardware address */
+	res = arp_header(skb, dev, ARP_OPER_REPLY, ETH_P_ARP, *(in_addr_t *)arph_stuff.spa,
+			*(in_addr_t *)arph_stuff.tpa, &dest_hw[0], &dev->dev_addr[0], NULL);
 	if (res < 0) {
 		skb_free(skb);
 		return res;
@@ -211,15 +214,20 @@ static int received_req(struct sk_buff *skb, struct net_device *dev) {
  */
 static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 	int res;
-	struct arphdr *arph;
+	struct arpghdr *arph;
+	struct arpg_stuff arph_stuff;
 	struct in_device *in_dev;
+	in_addr_t target_ip;
 
 	assert((skb != NULL) && (dev != NULL));
 
-	arph = skb->nh.arph;
+	arph = skb->nh.arpgh;
 	assert(arph != NULL);
 
-	if (ipv4_is_loopback(arph->ar_tip) || ipv4_is_multicast(arph->ar_tip)) {
+	arpg_make_stuff(arph, &arph_stuff);
+	target_ip = *(in_addr_t *)arph_stuff.tpa;
+
+	if (ipv4_is_loopback(target_ip) || ipv4_is_multicast(target_ip)) {
 		skb_free(skb);
 		return 0;
 	}
@@ -227,22 +235,22 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 	in_dev = in_dev_get(dev);
 	assert(in_dev != NULL);
 
-	if (arph->ar_tip != in_dev->ifa_address) {
-		if (arph->ar_tip == arph->ar_sip) { /* RFC 3927 - ARP Announcement */
-			neighbour_add(arph->ar_sha, arph->ar_hln,
-					(const unsigned char *)arph->ar_sip, arph->ar_pln, dev, 0);
+	if (target_ip != in_dev->ifa_address) {
+		if (target_ip == *(in_addr_t *)arph_stuff.spa) { /* RFC 3927 - ARP Announcement */
+			neighbour_add(arph_stuff.sha, arph->ha_len, arph_stuff.spa,
+					arph->pa_len, dev, 0);
 		}
 		skb_free(skb);
 		return -1;
 	}
 
-	switch (ntohs(arph->ar_op)) {
-	case ARPOP_REPLY:
+	switch (ntohs(arph->oper)) {
+	case ARP_OPER_REPLY:
 		res = received_resp(skb, dev);
 		arp_queue_process(skb);
 		skb_free(skb);
 		return res;
-	case ARPOP_REQUEST:
+	case ARP_OPER_REQUEST:
 		received_resp(skb, dev);
 		return received_req(skb, dev);
 	}
@@ -253,11 +261,11 @@ static int arp_process(struct sk_buff *skb, struct net_device *dev) {
 
 int arp_rcv(struct sk_buff *skb, struct net_device *dev,
 		struct packet_type *pt, struct net_device *orig_dev) {
-	struct arphdr *arph;
+	struct arpghdr *arph;
 
 	assert((skb != NULL) && (dev != NULL));
 
-	arph = skb->nh.arph;
+	arph = skb->nh.arpgh;
 	assert(arph != NULL);
 
 	switch (eth_packet_type(skb)) {
@@ -265,10 +273,10 @@ int arp_rcv(struct sk_buff *skb, struct net_device *dev,
 	case PACKET_BROADCAST:
 	case PACKET_MULTICAST:
 		if (!(dev->flags & IFF_NOARP)
-				&& (arph->ar_hrd == htons(ARPHRD_ETHER))
-				&& (arph->ar_pro == htons(ETH_P_IP))
-				&& (arph->ar_hln == dev->addr_len)
-				&& (arph->ar_pln == IP_ADDR_LEN)) {
+				&& (arph->ha_space == htons(ARPG_HRD_ETHERNET))
+				&& (arph->pa_space == htons(ETH_P_IP))
+				&& (arph->ha_len == dev->addr_len)
+				&& (arph->pa_len == IP_ADDR_LEN)) {
 			return (arp_process(skb, dev) < 0 ? NET_RX_DROP : NET_RX_SUCCESS);
 		}
 		break;

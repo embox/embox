@@ -49,8 +49,9 @@ struct net_device * netdev_alloc(const char *name,
 
 	(*setup)(dev);
 
-	dev->dev_queue.next = (struct sk_buff *)(&(dev->dev_queue));
-	dev->dev_queue.prev = (struct sk_buff *)(&(dev->dev_queue));
+	skb_queue_init(&dev->dev_queue);
+	skb_queue_init(&dev->tx_dev_queue);
+	skb_queue_init(&dev->txing_queue);
 	dev->poll = &netdev_process_backlog;
 
 	strncpy(dev->name, name, sizeof dev->name);
