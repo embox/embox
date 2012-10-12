@@ -9,9 +9,7 @@ module All {
 
 static module getopt {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "getopt.c",
-		"utsname.c",
-		"time.c"
+	source "getopt.c"
 
 	depends embox.util.LibUtil
 }

@@ -16,6 +16,6 @@ module uname {
 	source "uname.c"
 
 	depends embox.lib.LibC
-	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.util.utsname
 	depends embox.framework.LibFramework
 }
