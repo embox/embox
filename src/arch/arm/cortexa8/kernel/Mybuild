@@ -14,5 +14,4 @@ module interrupt extends embox.arch.interrupt {
 
 module arch {
 	source "arch.c"
-	depends embox.driver.watchdog.at91_wdtc
 }
