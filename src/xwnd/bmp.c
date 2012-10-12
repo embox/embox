@@ -11,17 +11,6 @@
 #include <stdlib.h>
 #include <vesa.h>
 
-#define XWND_BMP_MAGIC 0x00
-#define XWND_BMP_PX_OFFSET 0x0A
-#define XWND_BMP_WIDTH 0x12
-#define XWND_BMP_HEIGHT 0x16
-#define XWND_BMP_BPP 0x1C
-#define XWND_BMP_BUF_SIZE 0x40
-
-inline static unsigned int ui_min (unsigned a, unsigned b) {
-	return (a<=b)?a:b;
-}
-
 inline static unsigned int bmp_4_lup (unsigned int x) {
 	return (x / 4 + ((x % 4) ? 1 : 0)) * 4;
 }
@@ -30,13 +19,38 @@ inline static int not_alignment (unsigned i, unsigned wd) {
 	return (i % bmp_4_lup(wd)) < wd;
 }
 
-struct xwnd_bmp_image xwnd_load_bmp (const char * file) {
+static int xwnd_bmp_check_signature (FILE * f) {
+	char a, b;
+	fseek(f, XWND_BMP_MAGIC, SEEK_SET);
+	fread(&a, 0x01, 1, f);
+	fread(&b, 0x01, 1, f);
+	if ((a != 'B') || (b != 'M')) {
+		return 0;
+	}
+	return 1;
+}
+
+static unsigned int xwnd_bmp_get_array_offseet (FILE * f) {
+	unsigned int array_off;
+	fseek(f, XWND_BMP_PX_OFFSET, SEEK_SET);
+	fread(&array_off, 0x04, 1, f);
+	return array_off;
+}
+
+static void xwnd_bmp_load_header (FILE * f, struct xwnd_bmp_image * bmp) {
+	fseek(f, XWND_BMP_WIDTH, SEEK_SET);
+	fread(&(bmp->width), 0x04, 1, f);
+	fseek(f, XWND_BMP_HEIGHT, SEEK_SET);
+	fread(&(bmp->height), 0x04, 1, f);
+	fseek(f, XWND_BMP_BPP, SEEK_SET);
+	fread(&(bmp->bpp), 0x02, 1, f);
+}
+
+struct xwnd_bmp_image xwnd_bmp_load (const char * file) {
 /* FIXME: make it suitable for different graphic modes*/
 	FILE * f;
-	char buf[XWND_BMP_BUF_SIZE];
 	struct xwnd_bmp_image bmp;
-	char a, b;
-	unsigned int array_off, t_off, i, j;
+	unsigned int array_off, i, j;
 	bmp.bpp = 0;
 
 	bmp.err = XWND_BMP_OK;
@@ -45,28 +59,15 @@ struct xwnd_bmp_image xwnd_load_bmp (const char * file) {
 		bmp.err = XWND_BMP_FAIL_FILE;
 		return bmp;
 	}
-	fread(&a, 0x01, 1, f);
-	fread(&b, 0x01, 1, f);
-	if ((a != 'B') || (b != 'M')) {
+	if (!xwnd_bmp_check_signature(f)) {
 		bmp.err = XWND_BMP_FAIL_SIGN;
-		fclose(f);
 		return bmp;
 	}
-	else {
-		printf ("%c%c\n", a, b);
-	}
-	fread(buf, 0x08, 1, f);
-	fread(&array_off, 0x04, 1, f);
-	fread(buf, 0x04, 1, f);
-	fread(&(bmp.width), 0x04, 1, f);
-	fread(&(bmp.height), 0x04, 1, f);
-	fread(buf, 0x02, 1, f);
-	fread(&(bmp.bpp), 0x02, 1, f);
 
-	for (t_off = array_off - XWND_BMP_BPP - 2; t_off != 0; ) {
-		fread(buf, ui_min(XWND_BMP_BUF_SIZE, t_off), 1, f);
-		t_off -= ui_min(XWND_BMP_BUF_SIZE, t_off);
-	}
+	array_off = xwnd_bmp_get_array_offseet(f);
+	xwnd_bmp_load_header(f, &bmp);
+
+	fseek(f, array_off, SEEK_SET);
 
 	bmp.pxls = malloc (bmp.width * bmp.height);
 	if (!bmp.pxls) {
@@ -98,12 +99,12 @@ struct xwnd_bmp_image xwnd_load_bmp (const char * file) {
 	return bmp;
 }
 
-void xwnd_free_bmp (struct xwnd_bmp_image * img) {
+void xwnd_bmp_unload (struct xwnd_bmp_image * img) {
 	if (img->pxls)
 		free (img->pxls);
 }
 
-void xwnd_draw_bmp_image (struct xwnd_bmp_image * img) {
+void xwnd_bmp_draw (struct xwnd_bmp_image * img) {
 	int x, y;
 	for (x = 0; x < img->width; x++) {
 		for (y = 0; y < img->height; y++) {

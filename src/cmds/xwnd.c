@@ -35,7 +35,7 @@ static int exec (int argc, char ** argv) {
 	struct xwnd_bmp_image img;
 
 	if (argc > 1) {
-		img = xwnd_load_bmp(argv[1]);
+		img = xwnd_bmp_load(argv[1]);
 		if (img.err != XWND_BMP_OK) {
 			printf ("Failed to load bmp, error code %d\n", img.err);
 			return 1;
@@ -44,15 +44,15 @@ static int exec (int argc, char ** argv) {
 		if (argc == 2) {
 			vesa_init_mode(VESA_MODE_DEFAULT);
 			vesa_clear_screen();
-			xwnd_draw_bmp_image(&img);
-			xwnd_free_bmp(&img);
+			xwnd_bmp_draw(&img);
+			xwnd_bmp_unload(&img);
 			//vesa_quit_mode();
 			return 0;
 		}
 		if (argc > 2)
 		{
 			printf("w/h: %d/%d, bpp: %d, ERR: %d\n", img.width, img.height, img.bpp, img.err);
-			xwnd_free_bmp(&img);
+			xwnd_bmp_unload(&img);
 			return 0;
 		}
 	}
