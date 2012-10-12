@@ -115,6 +115,7 @@ static void ignore_telnet_options(int msg[2]) {
 			return;
 		}
 
+		/* We use here nonblock socket */
 		if (read(sock, &ch, 1) <= 0) {
 			return;
 		}
@@ -169,27 +170,32 @@ static void *telnet_thread_handler(void* args) {
 	int nfds;
 	fd_set readfds, writefds;
 	struct timeval timeout;
+	int flags;
 
-	fcntl(sock, F_SETFD, O_NONBLOCK);
+	/* Set socket to be nonblock. See ignore_telnet_options() */
+	flags = fcntl(sock, F_GETFD);
+	fcntl(sock, F_SETFD, flags | O_NONBLOCK);
 
-	pipe(pipefd1);
-	pipe(pipefd2);
+	if (pipe(pipefd1) < 0 || pipe(pipefd2) < 0) {
+		goto out;
+	}
 
-	//fcntl(pipefd1[1], F_SETFD, O_NONBLOCK);
-	//fcntl(pipefd2[0], F_SETFD, O_NONBLOCK);
-
-	/* Set our parameters */
+	/* Send our parameters */
 	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
 	telnet_cmd(sock, T_WILL, O_ECHO);
 
 	msg[0] = sock;
 	msg[1] = pipefd1[1];
+	/* handle options from client */
 	ignore_telnet_options(msg);
 
 	msg[0] = pipefd1[0];
 	msg[1] = pipefd2[1];
-	tid = new_task(shell_hnd, &msg, 0);
+	if ((tid = new_task(shell_hnd, &msg, 0)) < 0) {
+		goto out;
+	}
 
+	/* Preparations for select call */
 	nfds = max(sock, pipefd2[0]);
 	nfds = max(pipefd1[1], nfds) + 1;
 
@@ -222,7 +228,7 @@ static void *telnet_thread_handler(void* args) {
 		if (!fd_cnt) {
 			read(sock, s, 128);
 			if (errno == ECONNREFUSED) {
-				break;
+				goto kill_and_out;
 			}
 		}
 
@@ -242,19 +248,20 @@ static void *telnet_thread_handler(void* args) {
 				sock_data_len -= len;
 				s += len;
 			} else if (errno == EPIPE) {
-				break; /* this means that pipe was closed by shell */
+				goto kill_and_out; /* this means that pipe was closed by shell */
 			}
 		} else if (FD_ISSET(sock, &readfds)){
 			s = sbuff;
 			sock_data_len = read(sock, s, 128);
 			if (errno == ECONNREFUSED) {
-				break;
+				goto kill_and_out;
 			}
 		}
 	} /* while(1) */
 
+kill_and_out:
 	kill(tid, 9);
-
+out:
 	close(pipefd1[0]);
 	close(pipefd2[1]);
 	close(pipefd1[1]);
