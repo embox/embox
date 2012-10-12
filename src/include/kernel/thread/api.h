@@ -31,18 +31,18 @@ typedef __thread_id_t thread_id_t;
 typedef __thread_priority_t thread_priority_t;
 
 /** User-space thread. */
-#define THREAD_FLAG_USER      (0x1 << 0)
+#define THREAD_FLAG_USER             (0x1 << 0)
 /** Thread is created in detached state. */
-#define THREAD_FLAG_DETACHED  (0x1 << 1)
+#define THREAD_FLAG_DETACHED         (0x1 << 1)
 /** Thread is created suspended. */
-#define THREAD_FLAG_SUSPENDED (0x1 << 2)
+#define THREAD_FLAG_SUSPENDED        (0x1 << 2)
 
 #define THREAD_FLAG_PRIORITY_INHERIT (0x1 << 3)
 
 #define THREAD_FLAG_PRIORITY_LOWER   (0x1 << 4)
 #define THREAD_FLAG_PRIORITY_HIGHER  (0x1 << 5)
 
-#define THREAD_FLAG_IN_NEW_TASK (0x1 << 6)
+#define THREAD_FLAG_USERMODE         (0x1 << 6)
 
 /**
  * Iterates over the list of all threads existing in the system.

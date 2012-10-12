@@ -371,20 +371,23 @@ out:
 }
 
 int sched_tryrun(struct thread *thread) {
+	int res = 0;
+
 	assert(!in_harder_critical());
 
 	sched_lock();
+
 	{
 		if (thread_state_sleeping(thread->state)) {
-			do_wake_thread(thread, 0);
+			do_wake_thread(thread, -EINTR);
 		} else if (!thread_state_running(thread->state)) {
-			sched_unlock();
-			return -1;
+			res = -1;
 		}
 	}
+
 	sched_unlock();
 
-	return 0;
+	return res;
 }
 
 static int unit_init(void) {

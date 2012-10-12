@@ -1,11 +1,11 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 24.07.2012
  * @author Anton Bondarev
  */
+
 #include <asm/ptrace.h>
 #include <asm/mipsregs.h>
 #include <asm/entry.h>
@@ -29,10 +29,10 @@ second_exception_handler_t exception_handlers[MIPS_EXCEPTIONS_QUANTITY] = {mips_
 * configuration.
 */
 static void mips_setup_exc_table(void) {
-	int i;
+	size_t i;
 
 	/* set all exception handler */
-	for(i = 0; i < MIPS_EXCEPTIONS_QUANTITY; i ++) {
+	for (i = 0; i < MIPS_EXCEPTIONS_QUANTITY; i ++) {
 		exception_handlers[i] = mips_c_exception_handler;
 	}
 }

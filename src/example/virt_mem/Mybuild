@@ -3,7 +3,7 @@ package embox.example.vmem
 module mmuprobe {
 	source "mmu_probe.c"
 
-	depends embox.arch.mm
+	depends embox.mem.vmem
 	depends embox.lib.LibC
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework

@@ -3,3 +3,8 @@ package embox.mem
 module heap_lds {
 	source "heap.lds.S"
 }
+
+module phymem {
+	source "phymem.c"
+	depends heap_lds /* this for label end of busy memory */
+}

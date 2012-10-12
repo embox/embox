@@ -28,7 +28,7 @@ static int exec(int argc, char **argv) {
 		return -1;
 	}
 
-	new_task(execve_trampoline, (void *) elf_file);
+	new_task(execve_trampoline, (void *) elf_file, TASK_FLAG_USERMODE);
 
 	return 0;
 }

@@ -24,7 +24,7 @@ static void print_usage(void) {
 static int mount_dev(char *dev, char *fs_type, char *dir) {
 	mount_params_t param;
 	node_t *dev_node;
-	fs_drv_t * drv;
+	fs_drv_t * drv = NULL;
 
 	param.dev = dev;
 	param.dir = dir;

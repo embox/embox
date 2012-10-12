@@ -38,3 +38,7 @@ void context_set_entry(struct context *ctx, void (*pc)(void)) {
 //	frame->reg_window.ins[0] = arg;
 //	frame->reg_window.ins[1] = 0xdeadbeef;
 }
+
+void context_enter_frame(struct context *ctx, void (*pc)(void)) {
+	/*TODO:*/
+}

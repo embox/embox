@@ -10,6 +10,7 @@ module slab {
 	source "slab.c", "slab_impl.h"
 	provides iobjalloc.alloc
 	depends embox.mem.page_api, embox.mem.heap_lds
+	depends embox.mem.phymem
 }
 
 module pool {

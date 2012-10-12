@@ -19,12 +19,12 @@ package embox.cmd
 			Alexandr Batyukov
 	''')
 module lspnp {
-    @IncludePath("$(CONF_DIR)")
+	@IncludePath("$(CONF_DIR)")
 	source "lspnp.c"
 
 	depends embox.lib.LibC
 	depends embox.driver.amba_registry
 	depends embox.driver.ambapp_api
-	depends embox.compat.posix.LibPosix
-    depends embox.framework.LibFramework
+	depends embox.compat.posix.util.getopt
+	depends embox.framework.LibFramework
 }

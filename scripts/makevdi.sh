@@ -2,7 +2,7 @@
 # Gotta have a grub 0.97-like installed on your system
 #
 
-EMBOX_BIN_DIR="/home/user/Projects/Embox/build/base/bin"
+EMBOX_BIN_DIR="/home/user/Projects/embox/build/base/bin"
 EMBOX_BIN="embox"
 VDI_OUTPUT_DIR="/home/user"
 VDI_OUTPUT_IMG="embox.vdi"

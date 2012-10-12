@@ -19,8 +19,7 @@ module mount {
 	source "mount.c"
 
 	depends embox.lib.LibC
-	depends embox.fs.core
-	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.util.getopt
 	depends embox.fs.core
 	depends embox.framework.LibFramework
 }

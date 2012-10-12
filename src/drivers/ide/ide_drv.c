@@ -52,6 +52,7 @@
 #include <fs/fat.h>
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
+#include <mem/phymem.h>
 
 int ideprobe = 0;
 static hdc_t hdctab[HD_CONTROLLERS];
@@ -290,14 +291,6 @@ static int hd_identify(hd_t *hd) {
 	outb(hd->drvsel, hd->hdc->iobase + HDC_DRVHD);
 	outb(hd->iftype == HDIF_ATAPI ? HDCMD_PIDENTIFY : HDCMD_IDENTIFY,
 			hd->hdc->iobase + HDC_COMMAND);
-
-	/* Wait for data ready */
-	/*
-	if (wait_for_object(&hd->hdc->ready, HDTIMEOUT_CMD) < 0) {
-		return -ETIMEDOUT;
-	}
-	*/
-
 	/*
 	* Some controllers issues the interrupt before data is ready to be read
 	* Make sure data is ready by waiting for DRQ to be set
@@ -1339,16 +1332,8 @@ static int setup_hdc(hdc_t *hdc, int iobase, int irq,
 
 	if (hdc->bmregbase) {
 		/* Allocate one page for PRD list */
-		hdc->prds = (struct prd *) malloc(PAGESIZE);
-		/*    hdc->prds_phys = virt2phys(hdc->prds);*/
+		hdc->prds = (struct prd *) page_alloc(__phymem_allocator, 1);
 	}
-
-	/*
-	init_dpc(&hdc->xfer_dpc);
-
-	init_mutex(&hdc->lock, 0);
-	init_event(&hdc->ready, 0, 0);
-	*/
 
 	if (ideprobe) {
 		/* Assume no devices connected to controller */

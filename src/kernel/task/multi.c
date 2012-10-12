@@ -6,6 +6,8 @@
  * @author Anton Kozlov
  */
 
+#include <embox/unit.h> /* For options */
+
 #include <errno.h>
 #include <kernel/task/task_table.h>
 #include <kernel/thread/api.h>
@@ -13,8 +15,7 @@
 #include <kernel/task.h>
 #include <kernel/panic.h>
 #include "common.h"
-
-#include <embox/unit.h> /* For options */
+#include <module/embox/arch/usermode.h>
 
 typedef void *(*run_fn)(void *);
 
@@ -35,7 +36,7 @@ static void *task_trampoline(void *arg);
 static void thread_set_task(struct thread *t, struct task *tsk);
 static void task_init_parent(struct task *task, struct task *parent);
 
-int new_task(void *(*run)(void *), void *arg) {
+int new_task(void *(*run)(void *), void *arg, int flags) {
 	struct task_creat_param *param = (struct task_creat_param *) pool_alloc(&creat_param);
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
@@ -61,6 +62,8 @@ int new_task(void *(*run)(void *), void *arg) {
 	/* alloc space for task & resources on top of created thread's stack */
 
 	self_task = task_init(thd->stack);
+
+	self_task->in_usermode = flags & TASK_FLAG_USERMODE;
 
 	thd->stack += task_sz;
 	thd->stack_sz -= task_sz;
@@ -116,14 +119,16 @@ static void task_init_parent(struct task *task, struct task *parent) {
 	list_add(&task->link, &parent->children);
 
 	task_resource_foreach(res_desc) {
-		res_desc->inherit(task, parent);
+		if (res_desc->inherit) {
+			res_desc->inherit(task, parent);
+		}
 	}
 
 }
 
 void __attribute__((noreturn)) task_exit(void *res) {
 	struct task *this_task = task_self();
-	struct thread *thread;
+	struct thread *thread, *next;
 	const struct task_resource_desc *res_desc;
 
 	list_del(&this_task->link);
@@ -135,22 +140,27 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		if (thread == thread_self()) {
 			continue;
 		}
+		/* make thread detached and terminate it, exactly this order to prevent
+		 * detach from deleting thread */
 		thread_terminate(thread);
 	}
 
 	sched_unlock();
 
 	task_resource_foreach(res_desc) {
-		res_desc->deinit(this_task);
+		if (res_desc->deinit) {
+			res_desc->deinit(this_task);
+		}
 	}
 
 	task_table_del(this_task->tid);
 
-	list_for_each_entry(thread, &this_task->threads, task_link) {
+	list_for_each_entry_safe(thread, next, &this_task->threads, task_link) {
 		if (thread == thread_self()) {
 			continue;
 		}
-		/*thread_delete(thread);*/
+		list_del(&thread->task_link);
+		thread_detach(thread);
 	}
 
 	thread_exit(res);
@@ -164,8 +174,8 @@ static void *task_trampoline(void *arg) {
 
 	pool_free(&creat_param, param);
 
-	res = run(run_arg);
-
+	thread_self()->in_usermode = task_self()->in_usermode;
+	res = call_in_usermode_if(task_self()->in_usermode, run, run_arg);
 	task_exit(res);
 
 	/* NOTREACHED */

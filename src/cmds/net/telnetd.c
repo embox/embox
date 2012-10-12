@@ -188,7 +188,7 @@ static void *telnet_thread_handler(void* args) {
 
 	msg[0] = pipefd1[0];
 	msg[1] = pipefd2[1];
-	tid = new_task(shell_hnd, &msg);
+	tid = new_task(shell_hnd, &msg, 0);
 
 	nfds = max(sock, pipefd2[0]);
 	nfds = max(pipefd1[1], nfds) + 1;

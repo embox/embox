@@ -31,23 +31,10 @@ IRQ_ENTRY(15) /* secondary ATA channel */
 irq_stub:
 	SAVE_ALL
 
-	SETUP_SEGMENTS
+	mov     %esp, %eax
 
-	pushl %ss
-	mov	%esp, %eax
-	add	$(21 * 4 - 4 + 8), %eax
-	pushl	%eax
-
-	mov	    %esp, %ebp		/* Save current stack */
-	pushl   %ebp            /* first parameter struct pt_regs *regs */
-
-	.global irq_handler_call_pointer
+	.global irq_handler_return_pointer
 	call    irq_handler
-irq_handler_call_pointer:
-
-	movl    %ebp, %esp		/* Restore original stack */
-	add	$(8), %esp
+irq_handler_return_pointer:
 
 	RESTORE_ALL
-	add     $8, %esp
-	iret

@@ -9,6 +9,7 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 
@@ -114,7 +115,7 @@ int ioctl(int fd, int request, ...) {
 
 int fcntl(int fd, int cmd, ...) {
 	va_list args;
-	int res;
+	int res = 0;
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {

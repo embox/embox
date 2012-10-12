@@ -7,17 +7,17 @@ module shell {
 abstract module shell_api { }
 
 module tish {
-    option number prompt_len = 80
-    option string prompt = "embox> "
-    option string welcome_msg = "Welcome to Embox and have a lot of fun!"
+	option number prompt_len = 80
+	option string prompt = "embox> "
+	option string welcome_msg = "Welcome to Embox and have a lot of fun!"
 
-    provides embox.cmd.Shell.commandLine
+	provides embox.cmd.Shell.commandLine
 
-    @IncludePath("$(THIRDPARTY_DIR)/include")
-    source "tish.c"
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "tish.c"
 
-    depends embox.lib.LibC
-    depends third_party.lib.linenoise
-    depends embox.framework.LibFramework
-    depends embox.cmd.sh.shell
+	depends embox.lib.LibC
+	depends third_party.lib.linenoise
+	depends embox.framework.LibFramework
+	depends embox.cmd.sh.shell
 }

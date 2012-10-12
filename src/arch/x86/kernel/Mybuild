@@ -15,7 +15,7 @@ module locore extends embox.arch.locore {
 	 * 2.it depends from arch (called from exception_handler.c)
 	 */
     @IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "boot.S", "idt.c", "entry.S", "irq_handler.c"
+	source "boot.S", "idt.c", "exception_entry.S", "irq_handler.c"
 	source "gdt.c", "gdt_flush.S"
 	source "ipl.c", "exception_handler.c", "traps_core.c"
 
@@ -24,8 +24,18 @@ module locore extends embox.arch.locore {
 }
 
 module interrupt extends embox.arch.interrupt {
-	source "interrupt_entry.S", "ipl_impl.h"
+	source "irq_entry.S", "ipl_impl.h"
 	depends locore
+}
+
+module syscall extends embox.arch.syscall {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "syscall_entry.S", "syscall_table.c", "syscall.h"
+	depends locore
+}
+
+module usermode extends embox.arch.usermode {
+	source "usermode_enter.S", "usermode.h"
 }
 
 /*FIXME mybuild arch module what is it */

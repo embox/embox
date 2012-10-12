@@ -276,10 +276,21 @@ void *calloc(size_t nmemb, size_t size) {
 	return tmp;
 }
 
+static struct page_allocator *allocator;
+
 static int heap_init(void) {
+	extern char *_heap_start;
 	struct free_block *block;
 
-	pool = page_alloc((HEAP_SIZE() / 2) / PAGE_SIZE());
+	allocator = page_allocator_init((char *)&_heap_start, HEAP_SIZE(), PAGE_SIZE());
+	if(NULL == allocator) {
+		return -1;
+	}
+
+	pool = page_alloc(allocator, HEAP_SIZE() / PAGE_SIZE() - 2);
+	if(NULL == pool) {
+		return -1;
+	}
 
 	block = (struct free_block *) pool;
 	block->size = HEAP_SIZE() / 2 - sizeof(block->size);

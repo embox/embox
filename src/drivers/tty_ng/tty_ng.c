@@ -172,7 +172,7 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 
 		params[i].tty = &ttys[i];
 		params[i].run = run;
-		new_task(task_handler, &params[i]);
+		new_task(task_handler, &params[i], 0);
 	}
 
 	current_tty = &ttys[0];

@@ -8,13 +8,3 @@ module bitmask extends page_api {
 	source "bitmask.c"
 	depends heap_lds
 }
-
-module buddy extends page_api {
-	source "buddy.c"
-	depends heap_lds
-}
-
-module almostbuddy extends page_api {
-	source "almostbuddy.c"
-	depends heap_lds
-}
