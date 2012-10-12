@@ -8,8 +8,10 @@
 #ifndef VESA_H_
 #define VESA_H_
 
-int vesa_init_mode (void);
-/*void vesa_quit_mode (void);*/
+enum vesa_video_mode {VESA_MODE_DEFAULT, VESA_MODE_MAX};
+
+void vesa_init_mode (enum vesa_video_mode mode);
+void vesa_quit_mode (void);
 
 unsigned int vesa_get_width (void);
 unsigned int vesa_get_height (void);

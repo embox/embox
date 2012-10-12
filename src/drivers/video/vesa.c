@@ -63,6 +63,9 @@ VGA REGISTER DUMPS FOR VARIOUS TEXT MODES
 	80x25	(80x30)	80x50	(80x60)
 	(90x25)	90x30	(90x50)	90x60
 *****************************************************************************/
+
+static unsigned char old_mode[64];
+
 unsigned char g_40x25_text[] =
 {
 /* MISC */
@@ -1035,11 +1038,11 @@ static void vpokeb(unsigned off, unsigned val)
 }
 /*****************************************************************************
 *****************************************************************************/
-static unsigned vpeekb(unsigned off)
+/*static unsigned vpeekb(unsigned off)
 {
 	unsigned fb_seg = get_fb_seg();
 	return peekb(fb_seg, off);
-}
+}*/
 /*****************************************************************************
 write font to plane P4 (assuming planes are named P1, P2, P4, P8)
 *****************************************************************************/
@@ -1118,7 +1121,7 @@ static unsigned g_wd, g_ht;
 }*/
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel2(unsigned x, unsigned y, unsigned c)
+/*static void write_pixel2(unsigned x, unsigned y, unsigned c)
 {
 	unsigned wd_in_bytes, off, mask;
 
@@ -1129,10 +1132,10 @@ static void write_pixel2(unsigned x, unsigned y, unsigned c)
 	//mask = 0xC0 >> x;
 	mask = 0x03 << (sizeof(mask) - x);
 	vpokeb(off, (vpeekb(off) & ~mask) | (c & mask));
-}
+}*/
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel4p(unsigned x, unsigned y, unsigned c)
+/*static void write_pixel4p(unsigned x, unsigned y, unsigned c)
 {
 	unsigned wd_in_bytes, off, mask, p, pmask;
 
@@ -1150,7 +1153,7 @@ static void write_pixel4p(unsigned x, unsigned y, unsigned c)
 			vpokeb(off, vpeekb(off) & ~mask);
 		pmask <<= 1;
 	}
-}
+}*/
 /*****************************************************************************
 *****************************************************************************/
 static void write_pixel8(unsigned x, unsigned y, unsigned c)
@@ -1164,7 +1167,7 @@ static void write_pixel8(unsigned x, unsigned y, unsigned c)
 }
 /*****************************************************************************
 *****************************************************************************/
-static void write_pixel8x(unsigned x, unsigned y, unsigned c)
+/*static void write_pixel8x(unsigned x, unsigned y, unsigned c)
 {
 	unsigned wd_in_bytes;
 	unsigned off;
@@ -1173,7 +1176,7 @@ static void write_pixel8x(unsigned x, unsigned y, unsigned c)
 	off = wd_in_bytes * y + x / 4;
 	set_plane(x & 3);
 	vpokeb(off, c);
-}
+}*/
 
 void vesa_clear_screen (void) {
 	unsigned x, y;
@@ -1399,18 +1402,19 @@ unsigned int vesa_get_height (void) {
 	return g_ht;
 }
 
+static void vesa_save_old_regs (void) {
+	read_regs(old_mode);
+}
 
-/*****************************************************************************
-*****************************************************************************/
-int main(int arg_c, char *arg_v[])
-{
-	write_pixel2(1, 1, 1);
-	write_pixel4p(1, 1, 1);
-	write_pixel8x(1, 1, 1);
-	write_pixel8(1, 1, 1);
-	vesa_dump_state();
-	set_text_mode(arg_c > 1);
-	vesa_demo_graphics();
-	font512();
-	return 0;
+void vesa_init_mode (enum vesa_video_mode mode) {
+	vesa_save_old_regs();
+	write_regs(g_320x200x256);
+	g_wd = 320;
+	g_ht = 200;
+	g_write_pixel = write_pixel8;
+}
+
+void vesa_quit_mode (void) {
+	write_regs(old_mode);
+	g_write_pixel = NULL;
 }

@@ -56,6 +56,8 @@ struct xwnd_app_registry {
 void xwnd_app_registry_init (void);
 void xwnd_app_registry_remove (void);
 struct xwnd_window * xwnd_new_window (void);
+void xwnd_draw_horiz_line (unsigned x, unsigned y, unsigned l, unsigned c);
+void xwnd_draw_vert_line (unsigned x, unsigned y, unsigned l, unsigned c);
 void xwnd_draw_window (struct xwnd_window * wnd);
 int xwnd_set_event_handler (struct xwnd_window * wnd, enum xwnd_event_type ev_type, xwnd_event_handler ev_hndl);
 int xwnd_send_event (struct xwnd_window * wnd, struct xwnd_event ev);
