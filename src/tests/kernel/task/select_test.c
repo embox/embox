@@ -31,7 +31,7 @@ static void *select_hnd(void *arg) {
 
 	cnt = select(nfds, &readfds, NULL, NULL, NULL);
 
-	assert(cnt == 1 && FD_ISSET(pipefd1[0], &readfds) && !FD_ISSET(pipefd2[0], &readfds));
+	test_assert(cnt == 1 && FD_ISSET(pipefd1[0], &readfds) && !FD_ISSET(pipefd2[0], &readfds));
 
 	return NULL;
 }
