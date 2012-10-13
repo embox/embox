@@ -1,12 +1,18 @@
+/**
+ * @file
+ * @brief Here is the entry point for XWnd.
+ *
+ * @date Oct 1, 2012
+ * @author Alexandr Chernakov
+ */
+
+
 #include <embox/cmd.h>
 #include <stdio.h>
 #include <vesa.h>
 #include <xwnd/xwnd.h>
 #include <xwnd/bmp.h>
 #include <asm/io.h>
-
-#define	VGA_MISC_WRITE		0x3C2
-#define	VGA_MISC_READ		0x3CC
 
 void xwnd_draw_horiz_line (unsigned x, unsigned y, unsigned l, unsigned c) {
 	int i;

@@ -1,8 +1,9 @@
-/*
- * bmp.h
+/**
+ * @file
+ * @brief XWnd library for *.bmp files loading and output
  *
- *  Created on: Oct 3, 2012
- *      Author: user
+ * @date Oct 3, 2012
+ * @author Alexandr Chernakov
  */
 
 #ifndef BMP_H_

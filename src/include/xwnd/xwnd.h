@@ -1,8 +1,10 @@
-/*
- * xwnd.h
+/**
+ * @file
+ * @brief Main XWnd header. Contains basic structures for window management and events handling.
+ * Stubs, stubs, stubs.
  *
- *  Created on: Oct 1, 2012
- *      Author: user
+ * @date Oct 1, 2012
+ * @author Alexandr Chernakov
  */
 
 #ifndef XWND_H_
