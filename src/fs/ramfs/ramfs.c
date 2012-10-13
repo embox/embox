@@ -34,7 +34,7 @@ static int ramfs_fseek(void *file, long offset, int whence);
 static int ramfs_ioctl(void *file, int request, va_list args);
 
 static file_operations_t ramfs_fop = { ramfs_fopen, ramfs_fclose, ramfs_fread,
-		ramfs_fwrite, ramfs_fseek, ramfs_ioctl };
+		ramfs_fwrite, ramfs_fseek, ramfs_ioctl, NULL };
 
 static void *ramfs_fopen(struct file_desc *desc, const char *mode) {
 	node_t *nod;
@@ -122,10 +122,11 @@ static int ramfs_fseek(void *file, long offset, int whence) {
 		new_offset = offset + fd->cur_pointer;
 		break;
 	case SEEK_END:
-		new_offset = fd->size - offset;
+		new_offset = fd->size + offset;
 		break;
 	default:
-		new_offset = offset + whence;
+		return -1;
+		//new_offset = offset + whence;
 	}
 
 	if (new_offset >= fd->size) {

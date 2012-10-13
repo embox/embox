@@ -113,6 +113,26 @@ int ioctl(int fd, int request, ...) {
 	return ret;
 }
 
+int stat(int fd, void *buff) {
+	const struct task_idx_ops *ops;
+	struct idx_desc *desc = task_self_idx_get(fd);
+
+	if (!desc) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	ops = task_idx_desc_ops(desc);
+	assert(ops);
+	if(NULL != ops->fstat) {
+		return ops->fstat(desc, buff);
+	}
+	else {
+		return -1;
+	}
+}
+
+
 int fcntl(int fd, int cmd, ...) {
 	va_list args;
 	int res = 0;

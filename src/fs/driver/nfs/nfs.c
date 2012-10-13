@@ -45,7 +45,7 @@ static int nfsfs_fseek(void *file, long offset, int whence);
 static int nfsfs_ioctl(void *file, int request, va_list args);
 
 static file_operations_t nfsfs_fop = { nfsfs_fopen, nfsfs_fclose, nfsfs_fread,
-		nfsfs_fwrite, nfsfs_fseek, nfsfs_ioctl };
+		nfsfs_fwrite, nfsfs_fseek, nfsfs_ioctl, NULL };
 /*
  * file_operation
  */
@@ -90,7 +90,7 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 		fd->fi.offset += offset;
 		break;
 	case SEEK_END:
-		fd->fi.offset = fd->attr.size;
+		fd->fi.offset = fd->attr.size + offset;
 		break;
 	default:
 		return -1;

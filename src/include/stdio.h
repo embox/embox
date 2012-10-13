@@ -142,6 +142,11 @@ extern int fseek(FILE *stream, long int offset, int origin);
  */
 extern int fioctl(FILE *fp, int request, ...);
 
+/**
+ * Get statistic of file.
+ */
+extern int fstat(FILE *fp, void *buff);
+
 extern FILE *stdin;
 extern FILE *stdout;
 extern FILE *stderr;

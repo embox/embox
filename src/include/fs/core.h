@@ -20,3 +20,4 @@ extern int kseek(struct file_desc *desc, long int offset, int origin);
 
 extern int kioctl(struct file_desc *fp, int request, ...);
 
+extern int kstat(struct file_desc *fp, void *buff);

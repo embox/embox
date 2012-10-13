@@ -52,7 +52,8 @@ static int stdio_ioctl(void *file, int request, va_list args) {
 	       .fread = _read_fn, \
 	       .fwrite = _write_fn, \
 	       .fseek =  NULL, \
-	       .ioctl = stdio_ioctl \
+	       .ioctl = stdio_ioctl, \
+	       .fstat = NULL \
 	}; \
 	struct file_desc _nm ## _struct = { \
 		.ops = & _nm ## _fop, \

@@ -94,6 +94,10 @@ int fseek(FILE *file, long int offset, int origin) {
 	return __libc_lseek((struct file_struct_int *) file, offset, origin);
 }
 
+int fstat(FILE *file, void *buff) {
+	return __libc_fstat((struct file_struct_int *) file, buff);
+}
+
 int fioctl(FILE *fp, int request, ...) {
 	va_list args;
 	va_start(args, request);

@@ -31,7 +31,7 @@ static inline int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *E
 
 int elf_execve(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
 	int (*function_main)(int argc, char * argv[]);
-	int result, counter;
+	int counter;
 
 	counter = EH->e_phnum;
 	while (counter--) {
@@ -42,12 +42,8 @@ int elf_execve(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
 		EPH = (Elf32_Phdr *) ((unsigned char *) EPH + EH->e_phentsize);
 	}
 
-	printf("Data allocated.\n");
-	printf("Trying to start at 0x%08x\n", (uint32_t)EH->e_entry);
-
     function_main = (int (*)(int argc, char *argv[])) EH->e_entry;
-    result = function_main (0, NULL);
+    function_main (0, NULL);
 
-	printf("result : %d", result);
 	return 0;
 }

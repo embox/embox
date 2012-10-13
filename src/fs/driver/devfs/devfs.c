@@ -90,7 +90,8 @@ static file_operations_t devfs_fop = {
        .fread = devfs_read,
        .fwrite = devfs_write,
        .fseek =  NULL,
-       .ioctl = devfs_ioctl
+       .ioctl = devfs_ioctl,
+       .fstat = NULL
 };
 
 static const fs_drv_t devfs_drv = {

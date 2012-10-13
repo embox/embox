@@ -1,0 +1,30 @@
+package embox.cmd.fs
+
+@Cmd(name = "stat",
+	help = "Print file and filesystem statistic on the standard output",
+	man = '''
+		NAME
+			stat - concatenate files and print on the standard output
+		SYNOPSIS
+			stat [FILE]...
+		DESCRIPTION
+			Print FILE statistic to standard output.
+		OPTIONS
+			-none
+		AUTHORS
+			Andrey Gazukin
+	''')
+module stat {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "stat.c"
+
+	depends embox.lib.LibC
+
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.FileTasksBasic
+	depends embox.compat.posix.FileTasksOpen
+	depends embox.fs.core
+	depends embox.prom.printf
+	depends embox.framework.LibFramework
+}
