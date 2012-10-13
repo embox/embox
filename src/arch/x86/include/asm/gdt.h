@@ -15,11 +15,13 @@
 #define GDT_ENTRY_KERNEL_DS    2
 #define GDT_ENTRY_USER_CS      3
 #define GDT_ENTRY_USER_DS      4
+#define GDT_ENTRY_TSS          5
 
 #define __KERNEL_CS            (GDT_ENTRY_KERNEL_CS * 8)
 #define __KERNEL_DS            (GDT_ENTRY_KERNEL_DS * 8)
 #define __USER_CS              (GDT_ENTRY_USER_CS * 8 + 3)
 #define __USER_DS              (GDT_ENTRY_USER_DS * 8 + 3)
+#define __TSS                  (GDT_ENTRY_TSS * 8 + 3)
 
 #ifndef __ASSEMBLER__
 

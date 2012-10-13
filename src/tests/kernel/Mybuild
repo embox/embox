@@ -29,7 +29,7 @@ module timer_test {
 }
 
 module usermode_test {
-	source "usermode.c"
+	source "usermode_test.c"
 
 	depends embox.arch.usermode
 }

@@ -13,7 +13,12 @@
 EMBOX_TEST_SUITE("usermode");
 
 void *usermode_entry(void *arg) {
-	__asm__ ("mov $1, %eax; int $0x80"); // call sys_exit
+//	for (int i = 0;i < 1000; i++) {
+//		for (int j = 0; j < 100000; j++) {
+//			// wait irqs.
+//		}
+//	}
+	__asm__ ("mov $1, %eax; int $(0x80)"); // call sys_exit
 	return arg;
 }
 
