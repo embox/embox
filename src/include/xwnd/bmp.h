@@ -9,6 +9,8 @@
 #ifndef BMP_H_
 #define BMP_H_
 
+#include <stdint.h>
+
 #define XWND_BMP_MAGIC 0x00
 #define XWND_BMP_PX_OFFSET 0x0A
 #define XWND_BMP_WIDTH 0x12
@@ -24,6 +26,17 @@ struct xwnd_bmp_image {
 	unsigned int height;
 	unsigned int bpp;
 	char * pxls;
+};
+
+struct xwnd_bmp_pixel_components {
+	uint8_t r;
+	uint8_t g;
+	uint8_t b;
+};
+
+union xwnd_bmp_pixel {
+	struct xwnd_bmp_pixel_components comps;
+	uint8_t px_256;
 };
 
 extern struct xwnd_bmp_image * xwnd_bmp_load (const char * file);

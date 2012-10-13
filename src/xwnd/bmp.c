@@ -57,11 +57,38 @@ static void xwnd_bmp_load_abortion (struct xwnd_bmp_image * bmp, FILE * f, enum 
 	}
 }
 
+static void xwnd_bmp_rd_24_bitmap(FILE * f, struct xwnd_bmp_image * bmp) {
+	unsigned int i, j;
+	unsigned char x;
+	for(i = 0; i < bmp->width * bmp->height; i++) {
+		fread(&x, 0x01, 1, f);
+		fread(&x, 0x01, 1, f);
+		fread(&x, 0x01, 1, f);
+		if(not_alignment(i, bmp->width)) {
+			bmp->pxls[j] = x?15:0;
+			j++;
+		}
+	}
+
+}
+
+static void xwnd_bmp_rd_8_bitmap(FILE * f, struct xwnd_bmp_image * bmp) {
+	unsigned int i, j;
+	unsigned char x;
+	for(i = 0, j = 0; i <(bmp_4_lup(bmp->width)) * bmp->height; i++) {
+		fread(&x, 0x01, 1, f);
+		if(not_alignment(i, bmp->width)) {
+			bmp->pxls[j] = x % 0x10;
+			j++;
+		}
+	}
+}
+
 struct xwnd_bmp_image * xwnd_bmp_load(const char * file) {
 /* FIXME: make it suitable for different graphic modes*/
 	FILE * f = NULL;
 	struct xwnd_bmp_image * bmp = NULL;
-	unsigned int array_off, i, j;
+	unsigned int array_off;
 
 	bmp = malloc(sizeof(struct xwnd_bmp_image));
 	if(!bmp) {
@@ -94,32 +121,19 @@ struct xwnd_bmp_image * xwnd_bmp_load(const char * file) {
 		xwnd_bmp_load_abortion(bmp, f, XWND_BMP_FAIL_MEM);
 		return NULL;
 	}
-	/*ToDo: switch*/
-	if(bmp->bpp == 24) {
-		for(i = 0; i < bmp->width * bmp->height; i++) {
-			unsigned char x;
-			fread(&x, 0x01, 1, f);
-			fread(&x, 0x01, 1, f);
-			fread(&x, 0x01, 1, f);
-			if(not_alignment(i, bmp->width)) {
-				bmp->pxls[j] = x?15:0;
-				j++;
-			}
-		}
-	}
-	else if(bmp->bpp == 8) {
-		for(i = 0, j = 0; i <(bmp_4_lup(bmp->width)) * bmp->height; i++) {
-			unsigned char x;
-			fread(&x, 0x01, 1, f);
-			if(not_alignment(i, bmp->width)) {
-				bmp->pxls[j] = x % 0x10;
-				j++;
-			}
-		}
-	} else {
+	/*ToDo: Get rid of switch, add normal collor mapping*/
+	switch (bmp->bpp) {
+	case 24:
+		xwnd_bmp_rd_24_bitmap(f, bmp);
+		break;
+	case 8:
+		xwnd_bmp_rd_8_bitmap(f, bmp);
+		break;
+	default:
 		xwnd_bmp_load_abortion(bmp, f, XWND_BMP_FAIL_UNSUPPORTED);
 		return NULL;
 	}
+
 	fclose(f);
 	return bmp;
 }
