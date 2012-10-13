@@ -16,18 +16,19 @@
 #define XWND_BMP_BPP 0x1C
 #define XWND_BMP_BUF_SIZE 0x40
 
-enum xwnd_bmp_err {XWND_BMP_OK, XWND_BMP_FAIL, XWND_BMP_FAIL_FILE, XWND_BMP_FAIL_MEM, XWND_BMP_FAIL_SIGN};
+enum xwnd_bmp_err {XWND_BMP_OK, XWND_BMP_FAIL, XWND_BMP_FAIL_FILE, XWND_BMP_FAIL_MEM,
+	XWND_BMP_FAIL_SIGN,	XWND_BMP_FAIL_UNSUPPORTED};
 
 struct xwnd_bmp_image {
 	unsigned int width;
 	unsigned int height;
 	unsigned int bpp;
-	enum xwnd_bmp_err err;
 	char * pxls;
 };
 
-extern struct xwnd_bmp_image xwnd_bmp_load (const char * file);
+extern struct xwnd_bmp_image * xwnd_bmp_load (const char * file);
 extern void xwnd_bmp_unload (struct xwnd_bmp_image * img);
 extern void xwnd_bmp_draw (struct xwnd_bmp_image * img);
+extern enum xwnd_bmp_err xwnd_bmp_get_errno (void);
 
 #endif /* BMP_H_ */
