@@ -170,11 +170,9 @@ static void *telnet_thread_handler(void* args) {
 	int nfds;
 	fd_set readfds, writefds;
 	struct timeval timeout;
-	int flags;
 
 	/* Set socket to be nonblock. See ignore_telnet_options() */
-	flags = fcntl(sock, F_GETFD);
-	fcntl(sock, F_SETFD, flags | O_NONBLOCK);
+	fcntl(sock, F_SETFD, O_NONBLOCK);
 
 	if (pipe(pipefd1) < 0 || pipe(pipefd2) < 0) {
 		goto out;
@@ -188,6 +186,8 @@ static void *telnet_thread_handler(void* args) {
 	msg[1] = pipefd1[1];
 	/* handle options from client */
 	ignore_telnet_options(msg);
+
+	fcntl(sock, F_SETFD, 0);
 
 	msg[0] = pipefd1[0];
 	msg[1] = pipefd2[1];
@@ -226,7 +226,9 @@ static void *telnet_thread_handler(void* args) {
 		/* XXX telnet must receive signal on socket closing, but now
 		 * alternatively here is this check */
 		if (!fd_cnt) {
+			fcntl(sock, F_SETFD, O_NONBLOCK);
 			read(sock, s, 128);
+			fcntl(sock, F_SETFD, 0);
 			if (errno == ECONNREFUSED) {
 				goto kill_and_out;
 			}

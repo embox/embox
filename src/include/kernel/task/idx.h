@@ -67,6 +67,7 @@ struct task_idx_ops {
 	int	(*write)(struct idx_desc *data, const void *buf, size_t nbyte);
 	int	(*close)(struct idx_desc *data);
 	int	(*ioctl)(struct idx_desc *data, int request, va_list args);
+	int	(*fcntl)(struct idx_desc *data, int cmd, va_list args);
 	int	(*fseek)(struct idx_desc *data, long int offset, int origin);
 	const enum task_idx_ops_type type;
 };

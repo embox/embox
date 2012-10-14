@@ -22,6 +22,7 @@ static int pipe_close(struct idx_desc *desc);
 static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte);
 static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte);
 static int pipe_ioctl(struct idx_desc *data, int request, va_list args);
+static int pipe_fcntl(struct idx_desc *data, int cmd, va_list args);
 
 /* Functions to operate with state of pipe ends */
 static void pipe_ends_activate(struct dlist_head *ends);
@@ -43,6 +44,7 @@ static const struct task_idx_ops read_ops = {
 		.read = pipe_read,
 		.close = pipe_close,
 		.ioctl = pipe_ioctl,
+		.fcntl = pipe_fcntl,
 		.type = TASK_RES_OPS_REGULAR
 };
 
@@ -50,6 +52,7 @@ static const struct task_idx_ops write_ops = {
 		.write = pipe_write,
 		.close = pipe_close,
 		.ioctl = pipe_ioctl,
+		.fcntl = pipe_fcntl,
 		.type = TASK_RES_OPS_REGULAR
 };
 
@@ -173,14 +176,14 @@ static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte) {
 			event_wait(data->data->read_state.activate.set, SCHED_TIMEOUT_INFINITE);
 			len = async_ring_buff_dequeue(&pipe->buff, (void*)buf, nbyte);
 		}
+
+		if (async_ring_buff_get_cnt(&pipe->buff) == 0) {
+			pipe_ends_deactivate(&pipe->readers);
+		}
 	}
 
 	if (len > 0) {
 		pipe_ends_activate(&pipe->writers);
-	}
-
-	if (async_ring_buff_get_cnt(&pipe->buff) == 0) {
-		pipe_ends_deactivate(&pipe->readers);
 	}
 
 	return len;
@@ -206,20 +209,34 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 			event_wait(data->data->write_state.activate.set, SCHED_TIMEOUT_INFINITE);
 			len = async_ring_buff_enqueue(&pipe->buff, (void*)buf, nbyte);
 		}
+
+		if (async_ring_buff_get_space(&pipe->buff) == 0) {
+			pipe_ends_deactivate(&pipe->writers);
+		}
 	}
 
 	if (len > 0) {
 		pipe_ends_activate(&pipe->readers);
 	}
 
-	if (async_ring_buff_get_space(&pipe->buff) == 0) {
-		pipe_ends_deactivate(&pipe->writers);
-	}
-
 	return len;
 }
 
 static int pipe_ioctl(struct idx_desc *data, int request, va_list args) {
+	return 0;
+}
+
+static int pipe_fcntl(struct idx_desc *data, int cmd, va_list args) {
+	struct pipe *pipe = (struct pipe*) task_idx_desc_data(data);
+
+	switch (cmd) {
+	case O_NONBLOCK:
+		pipe_ends_activate(&pipe->writers);
+		pipe_ends_activate(&pipe->readers);
+	default:
+		break;
+	}
+
 	return 0;
 }
 

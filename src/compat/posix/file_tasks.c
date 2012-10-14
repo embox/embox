@@ -115,7 +115,8 @@ int ioctl(int fd, int request, ...) {
 
 int fcntl(int fd, int cmd, ...) {
 	va_list args;
-	int res = 0;
+	int res = 0, flag;
+	const struct task_idx_ops *ops;
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
@@ -123,20 +124,34 @@ int fcntl(int fd, int cmd, ...) {
 		return -1;
 	}
 
+	ops = task_idx_desc_ops(desc);
+
 	va_start(args, cmd);
+
 	switch(cmd) {
 	case F_GETFD:
 		res = *task_idx_desc_flags_ptr(desc);
 		break;
 	case F_SETFD:
-		* task_idx_desc_flags_ptr(desc) = va_arg(args, int);
+		flag = va_arg(args, int);
+		* task_idx_desc_flags_ptr(desc) = flag;
+		if (flag & O_NONBLOCK) {
+			task_idx_io_activate(&desc->data->read_state);
+			task_idx_io_activate(&desc->data->write_state);
+		}
 		break;
 	default:
 		/*SET_ERRNO(EINVAL);*/
 		res = -1;
 		break;
 	}
-	/* ops->foctl(desc, cmd, args); */
+
+	if (NULL == ops->fcntl) {
+		return -1;
+	}
+
+	ops->fcntl(desc, cmd, args);
+
 	va_end(args);
 
 	return res;
