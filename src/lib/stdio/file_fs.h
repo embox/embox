@@ -52,8 +52,13 @@ static inline int __libc_lseek(struct file_struct_int *file, long int offset, in
 	return kseek(file->desc, offset, origin);
 }
 
+static inline int __libc_fstat(struct file_struct_int *file, void *buff) {
+	return kstat(file->desc, buff);
+}
+
 static inline int __libc_ioctl(struct file_struct_int *file, int request, va_list args) {
 	return kioctl(file->desc, request, args);
 }
+
 
 #endif /* LIB_STDIO_FILE_FS_H_ */

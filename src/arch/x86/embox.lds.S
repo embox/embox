@@ -13,42 +13,37 @@ MEMORY {
 
 SECTIONS {
 	.text : {
-		. = ALIGN(0x1000);
-		ALIGNMENT();
+		ALIGNMENT(); . = ALIGN(0x1000);
 		*(.multiboot)
 		*(.text)
 		*(.text.*)
-		ALIGNMENT();
-		. = ALIGN(0x1000);
+		ALIGNMENT(); . = ALIGN(0x1000);
 	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)
 
 	.rodata : {
-		. = ALIGN(0x1000);
+		ALIGNMENT(); . = ALIGN(0x1000);
 		LDS_INPUT_RODATA
-		. = ALIGN(0x1000);
+		ALIGNMENT(); . = ALIGN(0x1000);
 	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)
 
-	.data ALIGN(0x1000) : {
-		ALIGNMENT();
+	.data : {
+		ALIGNMENT(); . = ALIGN(0x1000);
 		*(.data)
-		ALIGNMENT();
-		. = ALIGN(0x1000);
+		ALIGNMENT(); . = ALIGN(0x1000);
 	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
-	.bss ALIGN(0x1000) : {
-		. = ALIGN(0x1000);
-		ALIGNMENT();
+	.bss : {
+		ALIGNMENT(); . = ALIGN(0x1000);
 		*(.bss)
-		ALIGNMENT();
-		. = ALIGN(0x1000);
+		ALIGNMENT(); . = ALIGN(0x1000);
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 
 	.reserve (NOLOAD): {
-		. = ALIGN(0x1000);
+		ALIGNMENT(); . = ALIGN(0x1000);
 		LDS_INPUT_RESERVE
 	/* TODO memory region for reserve output section. */
 	} SECTION_REGION(bss)

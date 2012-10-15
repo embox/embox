@@ -18,8 +18,6 @@
 #include <errno.h>
 #include <lib/list.h>
 #include <sys/types.h>
-//#include <sys/stat.h>
-//#include <fs/rootfs.h>
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
@@ -164,10 +162,13 @@ int rmdir(const char *pathname) {
 	return drv->fsop->delete_file (pathname);
 }
 
-int fstat(const char *path, stat_t *buf) {
-	/*node_t *nod;
+int lstat(const char *path, stat_t *buf) {
+	node_t *node;
 	fs_drv_t *drv;
-	FILE *file;
-	struct file_desc *desc;*/
-	return 0;
+
+	node = vfs_find_node(path, NULL);
+	drv = node->fs_type;
+
+	return drv->file_op->fstat (node->fd, buf);
 }
+

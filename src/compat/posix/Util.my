@@ -8,26 +8,21 @@ module All {
 }
 
 static module getopt {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "getopt.c",
-		"utsname.c",
-		"time.c"
+	source "getopt.c"
 
-	depends embox.util.LibUtil
+	depends embox.lib.LibC
 }
 
 static module utsname {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "utsname.c"
 
-	depends embox.util.LibUtil
+	depends embox.lib.LibC
 }
 
 static module time {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "time.c"
 
 	depends embox.kernel.time.kernel_time
-	depends embox.util.LibUtil
 }
 

@@ -10,7 +10,7 @@
 #include <kernel/panic.h>
 #include <kernel/irq.h>
 
-void exception_handler(pt_regs_t *st) {
+fastcall void exception_handler(pt_regs_t *st) {
 	panic("EXCEPTION [0x%x]:\n"
 		"EAX=%08x ECX=%08x ECX=%08x EDX=%08x\n"
 		"GS=%08x FS=%08x ES=%08x DS=%08x\n"

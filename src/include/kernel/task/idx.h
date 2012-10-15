@@ -69,6 +69,7 @@ struct task_idx_ops {
 	int	(*ioctl)(struct idx_desc *data, int request, va_list args);
 	int	(*fcntl)(struct idx_desc *data, int cmd, va_list args);
 	int	(*fseek)(struct idx_desc *data, long int offset, int origin);
+	int	(*fstat)(struct idx_desc *data, void *buff);
 	const enum task_idx_ops_type type;
 };
 

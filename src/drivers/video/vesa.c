@@ -1,8 +1,9 @@
-/*
- * vesa.c
+/**
+ * @file
+ * @brief This file provides low-level video-mode routines for XWnd.
  *
- *  Created on: Sep 14, 2012
- *      Author: user
+ * @date Sep 14, 2012
+ * @author Alexandr Chernakov
  */
 
 #include <string.h> /* movedata(), memcpy() */

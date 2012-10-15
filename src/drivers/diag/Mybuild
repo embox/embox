@@ -51,3 +51,7 @@ module stm32_usart extends diag_api {
 module pic32mx_uart extends diag_api {
 	source "pic32mx_uart.c"
 }
+
+module ns16550 extends diag_api {
+	source "ns16550.c"
+}

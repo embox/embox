@@ -116,7 +116,7 @@ static void idt_init_irq(void) {
 #ifndef SYSCALL_STUB
 
 static void idt_init_syscall(void) {
-	idt_set_gate(0x80, (unsigned) __FWD_DECL(syscall_trap), __KERNEL_CS, 0x8E);
+	idt_set_gate(0x80, (unsigned) __FWD_DECL(syscall_trap), __KERNEL_CS, 0xEE);
 }
 
 #else

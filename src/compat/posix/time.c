@@ -18,17 +18,6 @@
 clock_t clock(void) {
 	return clock_sys_ticks();
 }
-#if 0
-int clock_getres(clockid_t clk_id, struct timespec *res) {
-	struct clock_source *cs;
-	cs =  clock_source_get_default();
-	if(NULL != res) {
-		//TODO fill res structure
-	}
-
-	return cs->resolution;
-}
-#endif
 
 static struct timespec *ns2timespec(ns_t ns, struct timespec *ts) {
 	ts->tv_sec = ns / NSEC_PER_SEC;
@@ -37,21 +26,10 @@ static struct timespec *ns2timespec(ns_t ns, struct timespec *ts) {
 }
 
 int clock_gettime(clockid_t clk_id, struct timespec *ts) {
-//	struct clock_source *cs;
-
-//	cs =  clock_source_get_default();
 
 	ns2timespec(ktime_get_ns(), ts);
 	return 0;
 }
-
-#if 0
-int clock_settime(clockid_t clk_id, const struct timespec *tp) {
-	struct clock_source *cs;
-	cs =  clock_source_get_default();
-	return 0;
-}
-#endif
 
 time_t time(time_t *t) {
 	time_t sec;
