@@ -1,7 +1,0 @@
-package embox.test.kernel.syscall
-
-module syscall_test {
-	source "syscall_test.c"
-
-	depends embox.arch.syscall
-}

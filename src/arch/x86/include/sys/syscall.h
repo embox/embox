@@ -283,7 +283,7 @@ do { \
 
 /* XXX - _foo needs to be __foo, while __NR_bar could be _NR_bar. */
 #define _syscall0(type,name) \
-type name(void) \
+type syscall_##name(void) \
 { \
 long __res; \
 __asm__ volatile ("int $0x80" \
@@ -293,7 +293,7 @@ __syscall_return(type,__res); \
 }
 
 #define _syscall1(type,name,type1,arg1) \
-type name(type1 arg1) \
+type syscall_##name(type1 arg1) \
 { \
 long __res; \
 __asm__ volatile ("int $0x80" \
@@ -303,7 +303,7 @@ __syscall_return(type,__res); \
 }
 
 #define _syscall2(type,name,type1,arg1,type2,arg2) \
-type name(type1 arg1,type2 arg2) \
+type syscall_##name(type1 arg1,type2 arg2) \
 { \
 long __res; \
 __asm__ volatile ("int $0x80" \
@@ -313,7 +313,7 @@ __syscall_return(type,__res); \
 }
 
 #define _syscall3(type,name,type1,arg1,type2,arg2,type3,arg3) \
-type name(type1 arg1,type2 arg2,type3 arg3) \
+type syscall_##name(type1 arg1,type2 arg2,type3 arg3) \
 { \
 long __res; \
 __asm__ volatile ("int $0x80" \
@@ -324,7 +324,7 @@ __syscall_return(type,__res); \
 }
 
 #define _syscall4(type,name,type1,arg1,type2,arg2,type3,arg3,type4,arg4) \
-type name (type1 arg1, type2 arg2, type3 arg3, type4 arg4) \
+type syscall_##name (type1 arg1, type2 arg2, type3 arg3, type4 arg4) \
 { \
 long __res; \
 __asm__ volatile ("int $0x80" \
@@ -336,7 +336,7 @@ __syscall_return(type,__res); \
 
 #define _syscall5(type,name,type1,arg1,type2,arg2,type3,arg3,type4,arg4, \
           type5,arg5) \
-type name (type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
+type syscall_##name (type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5) \
 { \
 long __res; \
 __asm__ volatile ("int $0x80" \
@@ -348,7 +348,7 @@ __syscall_return(type,__res); \
 
 #define _syscall6(type,name,type1,arg1,type2,arg2,type3,arg3,type4,arg4, \
           type5,arg5,type6,arg6) \
-type name (type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 arg6) \
+type syscall_##name (type1 arg1,type2 arg2,type3 arg3,type4 arg4,type5 arg5,type6 arg6) \
 { \
 long __res; \
 __asm__ volatile ("push %%ebp ; movl %%eax,%%ebp ; movl %1,%%eax ; int $0x80 ; pop %%ebp" \

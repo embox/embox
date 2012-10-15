@@ -10,6 +10,6 @@
 #define ARCH_USERMODE_H_
 
 /* We don't have usermode, so just calling function. */
-#define call_in_usermode_if(cond,func,arg) func(arg)
+#define usermode_call_and_switch_if(cond,func,arg) func(arg)
 
 #endif /* ARCH_USERMODE_H_ */

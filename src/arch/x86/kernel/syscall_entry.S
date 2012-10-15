@@ -27,4 +27,5 @@ syscall_stub:
 	call *SYSCALL_TABLE(,%eax,4)
 syscall_handler_return_pointer:
 
+	mov %eax, (PT_EAX*4)(%esp)  // save the return value
 	RESTORE_ALL
