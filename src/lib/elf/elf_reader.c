@@ -232,3 +232,20 @@ int32_t elf_read_symbol_string_table(FILE *fd, Elf32_Ehdr *hdr,
 
 	return -1;
 }
+
+int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *EPH, int8_t *dst) {
+	uint8_t rev = head->e_ident[EI_DATA];
+	size_t size;
+	long offset;
+
+	offset = L_REV(EPH->p_offset, rev);
+	size = L_REV(EPH->p_memsz, rev);
+
+	if (size) {
+		fseek(fd, offset, 0);
+		return (fread(dst, size, 1, fd)) ? 1 : -1;
+	} else {
+		/* Empty segment. */
+		return 0;
+	}
+}

@@ -193,12 +193,6 @@ extern int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *header,
 				Elf32_Shdr *section_header_table,
 				Elf32_Rela *rela_table, int32_t *count);
 
-/**
- * Execute elf file.
- *
- * @param file executed file
- * @return 0 if there was no error.
- */
-extern int elf_execve(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH);
+extern int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *EPH, int8_t *dst);
 
 #endif /* LIB_ELF_H_ */

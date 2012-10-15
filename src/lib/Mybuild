@@ -1,7 +1,6 @@
 package embox.lib
 
 static module ElfLib {
-	source "elf/elf_executer.c"
 	source "elf/elf_reader.c"
 }
 
