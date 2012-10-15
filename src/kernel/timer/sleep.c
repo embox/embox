@@ -29,7 +29,7 @@ int usleep(useconds_t usec) {
 	event_set_init(&e_set);
 	event_set_add(&e_set, &never_happen);
 
-	res_sleep = event_wait(never_happen.set, usec);
+	res_sleep = event_set_wait(never_happen.set, usec);
 
 	event_set_clear(&e_set);
 

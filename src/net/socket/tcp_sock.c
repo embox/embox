@@ -203,7 +203,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 	case TCP_LISTEN:
 		/* waiting anyone */
 		if (list_empty(&sock.tcp_sk->conn_wait)) { /* TODO sync this */
-			event_wait(sock.tcp_sk->new_conn.set, EVENT_TIMEOUT_INFINITE);
+			event_set_wait(sock.tcp_sk->new_conn.set, EVENT_TIMEOUT_INFINITE);
 		}
 		assert(!list_empty(&sock.tcp_sk->conn_wait));
 		/* get first socket from */

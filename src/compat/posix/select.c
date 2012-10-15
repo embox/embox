@@ -76,7 +76,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	}
 	sched_unlock();
 
-	event_wait(&e_set, ticks);
+	event_set_wait(&e_set, ticks);
 
 	event_set_clear(&e_set);
 

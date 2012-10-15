@@ -43,7 +43,7 @@ void event_set_free(struct event_set *e_set) {
 	objfree(&event_set_pool, e_set);
 }
 
-int event_wait(struct event_set *e_set, unsigned long timeout) {
+int event_set_wait(struct event_set *e_set, unsigned long timeout) {
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 	assert(e_set);
 

@@ -34,7 +34,7 @@ void event_set_free(struct event_set *e_set);
 extern void event_set_init(struct event_set *e_set);
 extern void event_set_clear(struct event_set *e_set);
 
-extern int event_wait(struct event_set *e_set, unsigned long timeout);
+extern int event_set_wait(struct event_set *e_set, unsigned long timeout);
 extern void event_notify(struct event *e);
 
 /* Utils to operate with sets of events */

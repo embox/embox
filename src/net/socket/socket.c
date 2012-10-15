@@ -213,7 +213,7 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
 	if (res == -EINPROGRESS) {
 		/* wait until resolving destonation ip */
-		res_sleep = event_wait(sock->sk->sock_is_ready.set, MAX_WAIT_TIME);
+		res_sleep = event_set_wait(sock->sk->sock_is_ready.set, MAX_WAIT_TIME);
 		if (res_sleep == ENOERR) {
 			/* was resolved */
 			res = 1;
@@ -297,7 +297,7 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 	res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
 	/* if !O_NONBLOCK on socket's file descriptor {*/
 	if (!res) {
-		event_wait(sock->sk->sock_is_not_empty.set, SCHED_TIMEOUT_INFINITE);
+		event_set_wait(sock->sk->sock_is_not_empty.set, SCHED_TIMEOUT_INFINITE);
 		res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
 	}
 	/* } */
