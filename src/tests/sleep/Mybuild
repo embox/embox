@@ -10,4 +10,5 @@ module sleep_test {
 	depends embox.framework.LibFramework
 	depends embox.kernel.time.timer
 	depends embox.kernel.time.kernel_time
+	depends embox.compat.posix.util.time
 }
