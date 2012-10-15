@@ -13,8 +13,6 @@
 #include <xwnd/xwnd.h>
 #include <xwnd/bmp.h>
 #include <asm/io.h>
-#include <drivers/keyboard.h>
-#include <kernel/time/timer.h>
 
 void xwnd_draw_horiz_line (unsigned x, unsigned y, unsigned l, unsigned c) {
 	int i;
@@ -54,15 +52,7 @@ static int exec (int argc, char ** argv) {
 			vesa_clear_screen();
 			xwnd_bmp_draw(img);
 			xwnd_bmp_unload(img);
-			while (1) {
-				if (!keyboard_has_symbol()) {
-					usleep(100);
-				}
-				else if ('q' == keyboard_getc()) {
-					break;
-				}
-			}
-			vesa_quit_mode();
+			//vesa_quit_mode();
 			return 0;
 		}
 		if (argc > 2)
