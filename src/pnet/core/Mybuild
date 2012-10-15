@@ -19,6 +19,11 @@ module prior_path {
 abstract module rx_worker_api { }
 
 module rx_thread extends rx_worker_api {
+	option number pnet_priority_count=4
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.event
+
 	source "rx_thread.c"
 	source "process.c"
 }
