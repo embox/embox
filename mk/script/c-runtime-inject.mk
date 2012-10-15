@@ -14,9 +14,9 @@ modules := \
 packages := \
 	$(sort generic $(basename $(basename $(modules))))
 
-my_cmd_help := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.help)
-my_cmd_man  := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.man)
-my_rl_value := $(call mybuild_resolve_or_die,mybuild.lang.Runlevel.value)
+my_cmd_help  := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.help)
+my_cmd_man   := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.man)
+my_rl_value  := $(call mybuild_resolve_or_die,mybuild.lang.Runlevel.value)
 
 # 1. Module instance.
 # 2. Option.
@@ -34,6 +34,12 @@ str_escape = \
 	"$(subst $(\n),\n,$(subst $(\t),\t,$(subst ",\",$(subst \,\\,$1))))"
 
 fqn2id = $(subst .,__,$1)
+
+# 1. Module
+# 2. depends/afterDepends
+get_deps = \
+	$(call get,$(call get,$(filter-out $(call get,$1,noRuntimeDepends), \
+		$(call get,$1,$2)),type),qualifiedName)
 
 #
 # The output.
@@ -66,9 +72,9 @@ $(info )
 
 $(info /* Dependencies. */)
 $(foreach m,$(modules),$(foreach n,$(basename $m), \
-	$(foreach d,$(call get,$(call get,$(call get,$m,depends),type),qualifiedName), \
+	$(foreach d,$(call get_deps,$m,depends), \
 		$(info MOD_DEP_DEF($(call fqn2id,$n), $(call fqn2id,$d));)) \
-	$(foreach d,$(call get,$(call get,$(call get,$m,afterDepends),type),qualifiedName), \
+	$(foreach d,$(call get_deps,$m,afterDepends), \
 		$(info MOD_AFTER_DEP_DEF($(call fqn2id,$n), $(call fqn2id,$d));)) \
 	$(foreach r,generic.runlevel$(or $(call annotation_value, \
 					$(call get,$m,includeMember),$(my_rl_value)),2), \

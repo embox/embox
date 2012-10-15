@@ -38,6 +38,8 @@ Build_ModuleInstance_options := \
 	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_options)
 Build_ModuleInstance_afterDepends := \
 	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_afterDepends)
+Build_ModuleInstance_noRuntimeDepends := \
+	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_noRuntimeDepends)
 Build_ModuleInstance_includeMember := \
 	$(call eMetaReferenceCreate,$(Build_ModuleInstance),Build_ModuleInstance_includeMember)
 Build_ModuleInstance_sources := \
@@ -66,6 +68,7 @@ define __build_init
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_container),container,$(Build_ModuleInstance),$(Build_ModuleInstance_contents),changeable)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_options),options,$(Build_OptionInstance),$(Build_OptionInstance_module),changeable many containment)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_afterDepends),afterDepends,$(Build_ModuleInstance),,changeable many)
+	$(call eMetaReferenceInit,$(Build_ModuleInstance_noRuntimeDepends),noRuntimeDepends,$(Build_ModuleInstance),,changeable many)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_includeMember),includeMember,$(ConfigFile_Include),,changeable linkable)
 	$(call eMetaReferenceInit,$(Build_ModuleInstance_sources),sources,$(MyFile_FileName),,derived many)
 
@@ -90,6 +93,7 @@ define __build_bind
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_container),container)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_options),options)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_afterDepends),afterDepends)
+	$(call eMetaFeatureBind,$(Build_ModuleInstance_noRuntimeDepends),noRuntimeDepends)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_includeMember),includeMember)
 	$(call eMetaFeatureBind,$(Build_ModuleInstance_sources),sources)
 
