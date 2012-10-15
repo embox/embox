@@ -26,6 +26,5 @@ static module time {
 	source "time.c"
 
 	depends embox.kernel.time.kernel_time
-	depends embox.util.LibUtil
 }
 
