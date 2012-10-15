@@ -1418,4 +1418,5 @@ void vesa_init_mode (enum vesa_video_mode mode) {
 void vesa_quit_mode (void) {
 	write_regs(old_mode);
 	g_write_pixel = NULL;
+	set_text_mode(0);
 }
