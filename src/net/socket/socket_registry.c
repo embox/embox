@@ -27,14 +27,13 @@ static socket_node_t *get_sock_node_by_src_address(struct socket *sock,
 static socket_node_t *get_sock_node_by_dst_address(struct socket *sock,
     struct sockaddr *addr);
 
-
 int sr_add_socket_to_registry(struct socket *sock){
 	socket_node_t *newnode;
 
 	/* allocate new node */
 	newnode = (socket_node_t *)pool_alloc(&socket_pool);
 	newnode->link.list_id = 0;  /* 0_o */
-	if(newnode == NULL)
+	if (newnode == NULL)
 		return -ENOMEM;
 
 	/* set source address data to NULL for now*/
@@ -59,7 +58,7 @@ int sr_remove_socket_from_registry(struct socket *sock){
 	socket_node_t *node;
 
 	node = get_sock_node_by_socket(sock);
-	if(node){
+	if (node) {
 		LOG_INFO("remove_socket_from_pool", "removing socket entity...");
 		dlist_del(&node->link);
 		pool_free(&socket_pool, node);
@@ -70,7 +69,7 @@ int sr_remove_socket_from_registry(struct socket *sock){
 
 bool sr_is_saddr_free(struct socket *sock, struct sockaddr *addr){
 
-	if(get_sock_node_by_src_address(sock, addr))
+	if (get_sock_node_by_src_address(sock, addr))
 		return false;
 	else
 		return true;
@@ -78,7 +77,7 @@ bool sr_is_saddr_free(struct socket *sock, struct sockaddr *addr){
 
 bool sr_is_daddr_free(struct socket *sock, struct sockaddr *addr){
 
-	if(get_sock_node_by_dst_address(sock, addr))
+	if (get_sock_node_by_dst_address(sock, addr))
 		return false;
 	else
 		return true;
@@ -87,9 +86,9 @@ bool sr_is_daddr_free(struct socket *sock, struct sockaddr *addr){
 bool sr_socket_exists(struct socket *sock){
 	socket_node_t *node, *tmp;
 
-	if(sock){  /* address validity */
+	if (sock) {  /* address validity */
 		dlist_foreach_entry(node, tmp, &socket_registry, link){
-			if(sock == node->sock)
+			if (sock == node->sock)
 				return true;
 		}
 	}
@@ -108,18 +107,18 @@ void sr_remove_saddr(struct socket *sock){
 	socket_node_t *node;
 
 	node = get_sock_node_by_socket(sock);
-	if(node){
+	if (node) {
 		LOG_INFO("unbind_socket", "found socket. trying to unbind...");
 		memset(&node->saddr, 0, sizeof(struct sockaddr));
 	}
 }
 
-static socket_node_t *get_sock_node_by_src_address(struct socket *sock, struct sockaddr *addr){
+static socket_node_t *get_sock_node_by_src_address(struct socket *sock, struct sockaddr *addr) {
 	socket_node_t *node, *tmp;
 
-	if(addr){  /* address validity */
-		dlist_foreach_entry(node, tmp, &socket_registry, link){
-			if(sock->ops->compare_addresses(addr, &node->saddr) &&
+	if (addr) {  /* address validity */
+		dlist_foreach_entry(node, tmp, &socket_registry, link) {
+			if (sock->ops->compare_addresses(addr, &node->saddr) &&
 				 (sock->type == node->sock->type))
 				return node;
 		}
@@ -127,24 +126,24 @@ static socket_node_t *get_sock_node_by_src_address(struct socket *sock, struct s
 	return NULL;
 }
 
-static socket_node_t *get_sock_node_by_dst_address(struct socket *sock, struct sockaddr *addr){
+static socket_node_t *get_sock_node_by_dst_address(struct socket *sock, struct sockaddr *addr) {
 	socket_node_t *node, *tmp;
 
-	if(addr){  /* address validity */
-		dlist_foreach_entry(node, tmp, &socket_registry, link){
-			if(sock->ops->compare_addresses(addr, &node->daddr))
+	if (addr) {  /* address validity */
+		dlist_foreach_entry(node, tmp, &socket_registry, link) {
+			if (sock->ops->compare_addresses(addr, &node->daddr))
 				return node;
 		}
 	}
 	return NULL;
 }
 
-static inline socket_node_t *get_sock_node_by_socket(struct socket *sock){
+static inline socket_node_t *get_sock_node_by_socket(struct socket *sock) {
 	return sock ? sock->socket_node : NULL;
 }
 
-int sr_get_all_sockets_count (void) {
-	int i = 0;
+size_t sr_get_all_sockets_count(void) {
+	size_t i = 0;
 	socket_node_t *node, *tmp;
 	dlist_foreach_entry(node, tmp, &socket_registry, link) {
 		i++;
@@ -152,29 +151,29 @@ int sr_get_all_sockets_count (void) {
 	return i;
 }
 
-struct sr_external_socket_array_node * sr_get_all_sockets_array (int * length) {
-	int count, i = 0;
+struct sr_external_socket_array_node *sr_get_all_sockets_array(size_t *length) {
+	size_t count, i = 0;
 	socket_node_t *node, *tmp;
-	struct sr_external_socket_array_node * array;
+	struct sr_external_socket_array_node *array;
 
 	count = sr_get_all_sockets_count();
 	*length = count;
-	array = malloc (sizeof(struct sr_external_socket_array_node) * (count + 1));
+	array = malloc(sizeof(struct sr_external_socket_array_node) * (count + 1));
 	if (!array)
 		return NULL;
 
 	dlist_foreach_entry(node, tmp, &socket_registry, link) {
 		if (i == count)
 			break;
-		memcpy (&(array[i].saddr), &(node->saddr), sizeof(struct sockaddr));
-		memcpy (&(array[i].daddr), &(node->daddr), sizeof(struct sockaddr));
+		memcpy(&(array[i].saddr), &(node->saddr), sizeof(struct sockaddr));
+		memcpy(&(array[i].daddr), &(node->daddr), sizeof(struct sockaddr));
 		array[i].socket_connection_state = node->socket_connection_state;
 		i++;
 	}
 	return array;
 }
 
-void sr_free_all_sockets_array (struct sr_external_socket_array_node * array) {
+void sr_free_all_sockets_array(struct sr_external_socket_array_node *array) {
 	if (array)
 		free(array);
 }

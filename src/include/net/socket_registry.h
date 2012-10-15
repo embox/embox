@@ -50,9 +50,9 @@ struct sr_external_socket_array_node{
 	struct sockaddr daddr;
 	enum socket_connection_state_t socket_connection_state;
 };
-extern struct sr_external_socket_array_node * sr_get_all_sockets_array (int * length);
-extern void sr_free_all_sockets_array (struct sr_external_socket_array_node * array);
-extern int sr_get_all_sockets_count (void);
+extern struct sr_external_socket_array_node *sr_get_all_sockets_array(size_t *length);
+extern void sr_free_all_sockets_array(struct sr_external_socket_array_node *array);
+extern size_t sr_get_all_sockets_count(void);
 
 /* socket information node connection info methods. could be excess */
 static inline void sk_set_connection_state(struct socket *sock, enum socket_connection_state_t state){
