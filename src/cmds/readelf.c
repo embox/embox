@@ -30,10 +30,6 @@ typedef struct header_item {
 	unsigned char desc[70];
 } header_item_t;
 
-/** Byte ret specifies the data encoding of the
- * processor-specific data in the object file. */
-static uint8_t rev;
-
 /* =========== Print ELF header ============= */
 
 static const header_item_t header_class_desc[] = {
@@ -190,53 +186,55 @@ static const header_item_t header_mach_desc[] = {
 	{ EM_MICROBLAZE_OLD, "Xilinx MicroBlaze"                         },
 };
 
-static void print_header(Elf32_Ehdr *head) {
+static void print_header(Elf32_Obj *obj) {
 	size_t i;
+	Elf32_Ehdr *header = obj->header;
+
 	printf("ELF Header:\n");
 	printf("  Magic:   ");
 	for (i = 0; i < EI_NIDENT; i++) {
-		printf("%02x ", (int)head->e_ident[i]);
+		printf("%02x ", (int)header->e_ident[i]);
 	}
 
 	printf("\n  Class:                             %s\n",
-		header_class_desc[head->e_ident[EI_CLASS]].desc);
+		header_class_desc[header->e_ident[EI_CLASS]].desc);
 	printf("  Data:                              %s\n",
-		header_data_desc[head->e_ident[EI_DATA]].desc);
+		header_data_desc[header->e_ident[EI_DATA]].desc);
 	printf("  Version:                           %d %s\n",
-		head->e_ident[EI_VERSION],
-		(head->e_ident[EI_VERSION] == EV_CURRENT ? "(current)"
-		: (head->e_ident[EI_VERSION] != EV_NONE	? "unknown" : "")));
+		header->e_ident[EI_VERSION],
+		(header->e_ident[EI_VERSION] == EV_CURRENT ? "(current)"
+		: (header->e_ident[EI_VERSION] != EV_NONE	? "unknown" : "")));
 	printf("  OS/ABI:                            %s\n",
-		header_osabi_desc[head->e_ident[EI_OSABI]].desc);
+		header_osabi_desc[header->e_ident[EI_OSABI]].desc);
 	printf("  ABI Version:                       %d\n",
-		head->e_ident[EI_ABIVERSION]);
+			header->e_ident[EI_ABIVERSION]);
 	printf("  Type:                              %s\n",
-		header_type_desc[S_REV(head->e_type, rev)].desc);
+		header_type_desc[header->e_type].desc);
 	//TODO: need for fix.
 	printf("  Machine:                           %s\n",
-		header_mach_desc[S_REV(head->e_machine, rev)].desc);
+		header_mach_desc[header->e_machine].desc);
 	printf("  Version:                           0x%x\n",
-		L_REV(head->e_version, rev));
+		header->e_version);
 	printf("  Entry point address:               0x%08x\n",
-		L_REV(head->e_entry, rev));
+		header->e_entry);
 	printf("  Start of program headers:          %u (bytes into file)\n",
-		L_REV(head->e_phoff, rev));
+		header->e_phoff);
 	printf("  Start of section headers:          %u (bytes into file)\n",
-		L_REV(head->e_shoff, rev));
+		header->e_shoff);
 	printf("  Flags:                             0x%u\n",
-		L_REV(head->e_flags, rev));
+		header->e_flags);
 	printf("  Size of this header:               %d (bytes)\n",
-		S_REV(head->e_ehsize, rev));
+		header->e_ehsize);
 	printf("  Size of program headers:           %d (bytes)\n",
-		S_REV(head->e_phentsize, rev));
+		header->e_phentsize);
 	printf("  Number of program headers:         %d\n",
-		S_REV(head->e_phnum, rev));
+		header->e_phnum);
 	printf("  Size of section headers:           %d (bytes)\n",
-		S_REV(head->e_shentsize, rev));
+		header->e_shentsize);
 	printf("  Number of section headers:         %d\n",
-		S_REV(head->e_shnum, rev));
+		header->e_shnum);
 	printf("  Section header string table index: %d\n",
-		S_REV(head->e_shstrndx, rev));
+		header->e_shstrndx);
 }
 
 /* ============= Print Sections =============== */
@@ -261,28 +259,29 @@ static const header_item_t section_types[] = {
 	: (string_table) == NULL ? "<no-name>"           \
 	: (const char*)((string_table) + (sec)->sh_name))
 
-static void print_sections(Elf32_Ehdr *head,
-			Elf32_Shdr *sections, int8_t *string_table) {
-	size_t i, x;
-	Elf32_Shdr *sec;
+static void print_section_headers(Elf32_Obj *obj) {
+	size_t x;
+	Elf32_Shdr *sh;
+	Elf32_Ehdr *header = obj->header;
+
 	printf("There are %d section headers, starting at offset 0x%x:\n",
-		head->e_shnum, head->e_shoff);
+		header->e_shnum, header->e_shoff);
 	printf("\nSection Headers:\n");
 	printf("  [Nr] Name\t\tType       Addr     Off    Size   ES Flg Lk Inf Al\n");
-	for (i = 0; i < S_REV(head->e_shnum, rev); i++) {
-		sec = &sections[i];
-		x = L_REV(sec->sh_type, rev);
+	for (int i = 0; i < header->e_shnum; i++) {
+		sh = obj->sh_table + i;
+		x = sh->sh_type;
 		printf("  [%2d] %-16s %-10s %08x %06x %06x %02x  %02x %2d  %2d %2d\n", i,
-			SECTION_NAME(&sections[i], string_table),
+			SECTION_NAME(sh, obj->string_table),
 			section_types[x].desc,
-			L_REV(sec->sh_addr,      rev),
-			L_REV(sec->sh_offset,    rev),
-			L_REV(sec->sh_size,      rev),
-			L_REV(sec->sh_entsize,   rev),
-			L_REV(sec->sh_flags,     rev),
-			L_REV(sec->sh_link,      rev),
-			L_REV(sec->sh_info,      rev),
-			L_REV(sec->sh_addralign, rev));
+			sh->sh_addr,
+			sh->sh_offset,
+			sh->sh_size,
+			sh->sh_entsize,
+			sh->sh_flags,
+			sh->sh_link,
+			sh->sh_info,
+			sh->sh_addralign);
 	}
 }
 
@@ -303,32 +302,34 @@ static const header_item_t segment_types[] = {
 	((x > PT_TLS) ? "<unknown>" : \
 	((const char*)segment_types[x].desc))
 
-static void print_segments(Elf32_Ehdr *head, Elf32_Phdr *segments) {
-	size_t i, x;
-	Elf32_Phdr *seg;
+static void print_program_headers(Elf32_Obj *obj) {
+	size_t x;
+	Elf32_Phdr *ph;
+	Elf32_Ehdr *header = obj->header;
+
 	printf("There are %d program headers, starting at offset %d\n",
-		S_REV(head->e_phnum, rev), head->e_phoff);
+		header->e_phnum, header->e_phoff);
 	printf("Program Headers:\n");
 	printf("  Type\tOffset  \tVirtAddr\tPhysAddr\tFileSiz\tMemSiz\tFlg\tAlign\n");
-	for (i = 0; i < S_REV(head->e_phnum, rev); i++) {
-		seg = &segments[i];
-		x = L_REV(seg->p_type, rev);
+	for (int i = 0; i < header->e_phnum; i++) {
+		ph = obj->ph_table + i;
+		x = ph->p_type;
 		printf("  %s\t0x%08x\t0x%08x\t0x%08x\t0x%05x\t0x%05x\t0x%x\t0x%x\n",
 			SEGMENT_NAME(segment_types[x].desc),
-			L_REV(seg->p_offset, rev),
-			L_REV(seg->p_vaddr,  rev),
-			L_REV(seg->p_paddr,  rev),
-			L_REV(seg->p_filesz, rev),
-			L_REV(seg->p_memsz,  rev),
-			L_REV(seg->p_flags,  rev),
-			L_REV(seg->p_align,  rev));
+			ph->p_offset,
+			ph->p_vaddr,
+			ph->p_paddr,
+			ph->p_filesz,
+			ph->p_memsz,
+			ph->p_flags,
+			ph->p_align);
 	}
 }
 
 /* ============== Print relocations =========== */
 
 static void print_relocations(Elf32_Rel *rel_array, int count) {
-	size_t i;
+	size_t i, rev = 0;
 //	printf("Relocation section '%s' at offset 0x%x contains %d entries:\n");
 	if (count == 0) {
 		printf("There are no relocations in this file.\n");
@@ -366,25 +367,29 @@ static const header_item_t symb_vis[] = {
 	{ STV_PROTECTED, "PROTECTED" },
 };
 
-static void print_symb(Elf32_Sym *symb, int8_t *string_table, int counter) {
-        size_t i, t, b, v;
-        Elf32_Sym *smb;
-        printf("Symbol table '%s' contains %d entries:\n",
-    		string_table + symb->st_name, counter);
-        printf("   Num:    Value  Size Type    Bind   Vis       Ndx Name\n");
-	for (i = 0; i < counter; i++) {
-		smb = &symb[i];
-		t = ELF32_ST_TYPE(smb->st_info);
-		b = ELF32_ST_BIND(smb->st_info);
-		v = ELF32_ST_VISIBILITY(smb->st_other);
+static void print_symbols(Elf32_Obj *obj, int counter) {
+	size_t t, b, v;
+    Elf32_Sym *sym;
+
+    printf("Symbol table '%s' contains %d entries:\n",
+    		obj->sym_names + obj->sym_table->st_name, counter);
+
+    printf("   Num:    Value  Size Type    Bind   Vis       Ndx Name\n");
+    for (int i = 0; i < counter; i++) {
+		sym = obj->sym_table + i;
+
+		t = ELF32_ST_TYPE(sym->st_info);
+		b = ELF32_ST_BIND(sym->st_info);
+		v = ELF32_ST_VISIBILITY(sym->st_other);
+
 		printf("    %2d: %-8x  %4d %-7s %-6s %-7s %5d %s\n", i,
-			L_REV(smb->st_value, rev),
-			L_REV(smb->st_size, rev),
+			sym->st_value,
+			sym->st_size,
 			symb_types[t].desc,
 			symb_binds[b].desc,
 			symb_vis[v].desc,
-			S_REV(symb[i].st_shndx, rev),
-			&(string_table[L_REV(smb->st_name, rev)]));
+			obj->sym_table[i].st_shndx,
+			obj->sym_names + sym->st_name);
 	}
 }
 
@@ -395,17 +400,13 @@ static int exec(int argc, char **argv) {
 	int show_segments = 0;
 	int show_reloc    = 0;
 	int show_symb     = 0;
-	Elf32_Ehdr *elf_header = NULL;
-	Elf32_Shdr *section_headers = NULL;
-	Elf32_Phdr *program_headers = NULL;
+	Elf32_Obj  elf;
 	Elf32_Rel  *rel = NULL;
-	Elf32_Sym  *dynamic_symbols = NULL;
-	int8_t     *string_table = NULL;
-	int8_t     *symb_names = NULL;
-
 	int opt, err, cnt = 0;
 	FILE *elf_file;
-	int rel_count, symb_count, symb_names_l;
+	int rel_count = 0, symb_count;
+
+	elf_initialize_object(&elf);
 
 	getopt_init();
 	do {
@@ -454,83 +455,72 @@ static int exec(int argc, char **argv) {
 		return -1;
 	}
 
-	if ((err = elf_read_header(elf_file, &elf_header)) < 0) {
+	if ((err = elf_read_header(elf_file, &elf)) < 0) {
 		return -1;
 	}
-	rev = elf_header->e_ident[EI_DATA];
 
 	if (show_sections || show_reloc || show_symb) {
-		if ((err = elf_read_sections_table(elf_file, elf_header,
-						    &section_headers)) < 0) {
+		if ((err = elf_read_section_header_table(elf_file, &elf)) < 0) {
 			printf("Cannot read sections table: %d\n", err);
 			show_sections = 0;
 			show_reloc = 0;
 			show_symb = 0;
 		}
 	}
+
 	if (show_sections || show_symb) {
-		if ((err = elf_read_string_table(elf_file, elf_header,
-		    section_headers, &string_table)) < 0) {
+		if ((err = elf_read_string_table(elf_file, &elf)) < 0) {
 			printf("Cannot read string table: %d\n", err);
 			show_sections = 0;
 		}
 	}
+
 	if (show_segments) {
-		if ((err = elf_read_segments_table(elf_file, elf_header,
-							&program_headers)) < 0) {
+		if ((err = elf_read_program_header_table(elf_file, &elf)) < 0) {
 			printf("Cannot read segments table: %d\n", err);
 			show_segments = 0;
 		}
 	}
-	if (show_reloc) {
-		if ((err = elf_read_rel_table(elf_file, elf_header,
-				section_headers, &rel, &rel_count)) < 0) {
-			printf("Cannot read rel table: %d\n", err);
-			show_reloc = 0;
-		}
-	}
+
+//	if (show_reloc) {
+//		if ((err = elf_read_rel_table(elf_file, elf_header,
+//				section_headers, &rel, &rel_count)) < 0) {
+//			printf("Cannot read rel table: %d\n", err);
+//			show_reloc = 0;
+//		}
+//	}
+
 	if (show_symb) {
-		if ((err = elf_read_symbol_table(elf_file, elf_header,
-		    section_headers, &dynamic_symbols, &symb_count)) < 0) {
+		if ((symb_count = elf_read_symbol_table(elf_file, &elf)) < 0) {
 			printf("Cannot read symbol table: %d\n", err);
 			show_symb = 0;
 		}
-		if ((err = elf_read_symbol_string_table(elf_file, elf_header,
-		    section_headers, string_table, &symb_names, &symb_names_l)) < 0) {
+		if ((err = elf_read_symbol_names(elf_file, &elf)) < 0) {
 			printf("Cannot read symbol names: %d\n", err);
-			symb_names_l = 0;
 		}
 	}
 
 	if (show_head) {
-		print_header(elf_header);
+		print_header(&elf);
 	}
 
 	if (show_sections) {
-		print_sections(elf_header, section_headers, string_table);
+		print_section_headers(&elf);
 	}
 
 	if (show_segments) {
-		print_segments(elf_header, program_headers);
+		print_program_headers(&elf);
 	}
 	if (show_reloc) {
 		print_relocations(rel, rel_count);
 	}
 	if (show_symb) {
-		print_symb(dynamic_symbols,
-			(symb_names_l != 0) ? symb_names : NULL, symb_count);
+		print_symbols(&elf, symb_count);
 	}
 
 	fclose(elf_file);
 
-	// XXX: replace it?
-	if (elf_header != NULL) free(elf_header);
-	if (section_headers != NULL) free(section_headers);
-	if (program_headers != NULL) free(program_headers);
-	if (rel != NULL) free(rel);
-	if (dynamic_symbols != NULL) free(dynamic_symbols);
-	if (string_table != NULL) free(string_table);
-	if (symb_names != NULL) free(symb_names);
+	elf_finilize_object(&elf);
 
 	return 0;
 }

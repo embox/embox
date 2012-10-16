@@ -570,14 +570,17 @@ typedef struct{
 	Elf32_Sword r_addend;
 } Elf32_Rela;
 
-#if 0
-/*Collection of information about elf*/
+/* Collection of information about elf. */
 typedef struct {
-	Elf32_Ehdr header;
-	Elf32_Shdr sectionHeaders[MAX_NUMBER_OF_SECTIONS];
-	Elf32_Phdr segmentHeaders[MAX_NUMBER_OF_SECTIONS];
-	char stringTable[MAX_STRING_TABLE_LENGTH];
-} ElfFile;
-#endif
+	int need_reverse;         /* Should we reverse bytes when reading */
+	Elf32_Ehdr *header;       /* Elf header */
+	Elf32_Shdr *sh_table;     /* Elf section table */
+	Elf32_Phdr *ph_table;     /* Elf program table */
+	int8_t     *string_table; /* Elf string table */
+	Elf32_Sym  *sym_table;    /* Elf symbol table */
+	int8_t     *sym_names;    /* Elf symbol names */
+} Elf32_Obj;
+
+
 
 #endif /* LIB_ELF_TYPES_H_ */
