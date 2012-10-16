@@ -31,3 +31,7 @@ module posix_compat {
 	depends embox.kernel.task.idx_table
 }
 
+module rootfs {
+	source "rootfs.c"
+	depends node, driver.repo
+}
