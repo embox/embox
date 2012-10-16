@@ -151,14 +151,17 @@ int fcntl(int fd, int cmd, ...) {
 	switch(cmd) {
 	case F_GETFD:
 		res = *task_idx_desc_flags_ptr(desc);
-		break;
+		return res;
 	case F_SETFD:
 		flag = va_arg(args, int);
-		* task_idx_desc_flags_ptr(desc) = flag;
+		*task_idx_desc_flags_ptr(desc) = flag;
 		if (flag & O_NONBLOCK) {
 			task_idx_io_activate(&desc->data->read_state);
 			task_idx_io_activate(&desc->data->write_state);
 		}
+		break;
+	case F_GETPIPE_SZ:
+	case F_SETPIPE_SZ:
 		break;
 	default:
 		/*SET_ERRNO(EINVAL);*/
@@ -170,7 +173,7 @@ int fcntl(int fd, int cmd, ...) {
 		return -1;
 	}
 
-	ops->fcntl(desc, cmd, args);
+	res = ops->fcntl(desc, cmd, args);
 
 	va_end(args);
 

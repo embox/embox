@@ -16,7 +16,11 @@
 #include "../kernel/task/common.h"
 #include <framework/mod/options.h>
 
-#define PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
+#define DEFAULT_PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
+#define MAX_PIPE_BUFFER_SIZE     OPTION_GET(NUMBER, max_pipe_buffer_size)
+
+struct pipe;
+struct pipe_end_state;
 
 static int pipe_close(struct idx_desc *desc);
 static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte);
@@ -29,17 +33,21 @@ static void pipe_ends_activate(struct dlist_head *ends);
 static void pipe_ends_deactivate(struct dlist_head *ends);
 static struct pipe_end_state *get_pipe_end_state_by_op(struct dlist_head *ends, struct idx_io_op_state *op);
 
+/* Set size of pipe's buffer. */
+static void pipe_set_buf_size(struct pipe *pipe, size_t size);
+
 struct pipe_end_state {
 	struct dlist_head link;
 	struct idx_io_op_state *state;
 };
 
 struct pipe {
-	struct async_ring_buff buff;
+	struct async_ring_buff *buff;
 	struct dlist_head readers;
 	struct dlist_head writers;
 	struct event read_wait;
 	struct event write_wait;
+	size_t buf_size;
 };
 
 static const struct task_idx_ops read_ops = {
@@ -66,7 +74,8 @@ int pipe(int pipefd[2]) {
 	struct pipe_end_state *r, *w;
 	int res = 0;
 
-	if (!(storage = malloc(PIPE_BUFFER_SIZE))
+	if (!(storage = malloc(DEFAULT_PIPE_BUFFER_SIZE))
+			|| !(pipe_buff = malloc(sizeof(struct async_ring_buff)))
 			|| !(pipe = malloc(sizeof(struct pipe)))
 			|| !(r = malloc(sizeof(struct pipe_end_state)))
 			|| !(w = malloc(sizeof(struct pipe_end_state)))) {
@@ -83,8 +92,9 @@ int pipe(int pipefd[2]) {
 	dlist_head_init(&w->link);
 	dlist_add_prev(&w->link, &pipe->writers);
 
-	pipe_buff = &pipe->buff;
-	async_ring_buff_init(pipe_buff, 1, PIPE_BUFFER_SIZE, storage);
+	pipe->buff = pipe_buff;
+	pipe->buf_size = DEFAULT_PIPE_BUFFER_SIZE;
+	async_ring_buff_init(pipe_buff, 1, DEFAULT_PIPE_BUFFER_SIZE, storage);
 
 	pipefd[1] = task_self_idx_alloc(&write_ops, pipe);
 	if (pipefd[1] < 0) {
@@ -116,6 +126,7 @@ buffree:
 	free(w);
 	free(storage);
 	free(pipe);
+	free(pipe_buff);
 	SET_ERRNO(res);
 	return -1;
 }
@@ -130,11 +141,12 @@ static int pipe_close(struct idx_desc *desc) {
 
 	if (st) {
 		dlist_del(&st->link);
-		return 0;
+		free(st);
 	}
 
 	if (dlist_empty(&pipe->readers) && dlist_empty(&pipe->writers)) {
-		free(pipe->buff.buffer.storage);
+		free(pipe->buff->buffer.storage);
+		free(pipe->buff);
 		free(pipe);
 		return 0;
 	}
@@ -150,15 +162,15 @@ static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte) {
 		return 0;
 	}
 
-	len = async_ring_buff_dequeue(&pipe->buff, (void*)buf, nbyte);
+	len = async_ring_buff_dequeue(pipe->buff, (void*)buf, nbyte);
 
 	if (!(data->flags & O_NONBLOCK)) {
 		while (!len) {
 			event_wait(&pipe->read_wait, SCHED_TIMEOUT_INFINITE);
-			len = async_ring_buff_dequeue(&pipe->buff, (void*)buf, nbyte);
+			len = async_ring_buff_dequeue(pipe->buff, (void*)buf, nbyte);
 		}
 
-		if (async_ring_buff_get_cnt(&pipe->buff) == 0) {
+		if (async_ring_buff_get_cnt(pipe->buff) == 0) {
 			pipe_ends_deactivate(&pipe->readers);
 		}
 	}
@@ -184,15 +196,15 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 		return nbyte;
 	}
 
-	len = async_ring_buff_enqueue(&pipe->buff, (void*)buf, nbyte);
+	len = async_ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
 
 	if (!(data->flags & O_NONBLOCK)) {
 		while (!len) {
 			event_wait(&pipe->write_wait, SCHED_TIMEOUT_INFINITE);
-			len = async_ring_buff_enqueue(&pipe->buff, (void*)buf, nbyte);
+			len = async_ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
 		}
 
-		if (async_ring_buff_get_space(&pipe->buff) == 0) {
+		if (async_ring_buff_get_space(pipe->buff) == 0) {
 			pipe_ends_deactivate(&pipe->writers);
 		}
 	}
@@ -211,16 +223,36 @@ static int pipe_ioctl(struct idx_desc *data, int request, va_list args) {
 
 static int pipe_fcntl(struct idx_desc *data, int cmd, va_list args) {
 	struct pipe *pipe = (struct pipe*) task_idx_desc_data(data);
+	size_t size;
 
 	switch (cmd) {
 	case O_NONBLOCK:
 		pipe_ends_activate(&pipe->writers);
 		pipe_ends_activate(&pipe->readers);
+	case F_GETPIPE_SZ:
+		return pipe->buf_size;
+	case F_SETPIPE_SZ:
+		size = va_arg(args, size_t);
+		pipe_set_buf_size(pipe, size);
 	default:
 		break;
 	}
 
 	return 0;
+}
+
+static void pipe_set_buf_size(struct pipe *pipe, size_t size) {
+	void *storage;
+
+	if (size > MAX_PIPE_BUFFER_SIZE )
+		return;
+
+	if (!(storage = malloc(size))) {
+		return;
+	}
+
+	free(pipe->buff->buffer.storage);
+	async_ring_buff_init(pipe->buff, 1, DEFAULT_PIPE_BUFFER_SIZE, storage);
 }
 
 static void pipe_ends_activate(struct dlist_head *ends) {
