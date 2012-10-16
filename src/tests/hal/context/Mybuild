@@ -1,0 +1,7 @@
+package embox.test.hal
+
+module context_switch_test {
+	source "context_switch_test.c"
+	depends embox.arch.context
+}
+
