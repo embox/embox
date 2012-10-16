@@ -151,7 +151,7 @@ static void task_idx_table_deinit(struct task *task) {
 
 void task_idx_io_activate(struct idx_io_op_state *op) {
 	op->active = 1;
-	if (op->activate || op->activate == (void *)0x00000001) {
+	if (op->activate) {
 		event_notify(op->activate);
 	}
 }
