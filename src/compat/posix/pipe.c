@@ -169,10 +169,10 @@ static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte) {
 			event_wait(&pipe->read_wait, SCHED_TIMEOUT_INFINITE);
 			len = async_ring_buff_dequeue(pipe->buff, (void*)buf, nbyte);
 		}
+	}
 
-		if (async_ring_buff_get_cnt(pipe->buff) == 0) {
-			pipe_ends_deactivate(&pipe->readers);
-		}
+	if (async_ring_buff_get_cnt(pipe->buff) == 0) {
+		pipe_ends_deactivate(&pipe->readers);
 	}
 
 	if (len > 0) {
@@ -203,10 +203,10 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 			event_wait(&pipe->write_wait, SCHED_TIMEOUT_INFINITE);
 			len = async_ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
 		}
+	}
 
-		if (async_ring_buff_get_space(pipe->buff) == 0) {
-			pipe_ends_deactivate(&pipe->writers);
-		}
+	if (async_ring_buff_get_space(pipe->buff) == 0) {
+		pipe_ends_deactivate(&pipe->writers);
 	}
 
 	if (len > 0) {

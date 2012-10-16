@@ -17,6 +17,7 @@
 #include <kernel/time/time.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <fcntl.h>
 
 static void fd_set_copy(fd_set *dst, fd_set *src);
 
@@ -117,7 +118,7 @@ static int find_active(int nfds, fd_set *set, char op) {
 					state = &desc->data->write_state;
 					break;
 				}
-				if (state->active) {
+				if ((desc->flags & O_NONBLOCK) || state->active) {
 					fd_cnt++;
 				} else {
 					FD_CLR(fd, set);
