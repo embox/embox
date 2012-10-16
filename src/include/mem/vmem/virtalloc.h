@@ -12,6 +12,10 @@
 extern void *VIRTUAL_TABLES_START;
 extern size_t VIRTUAL_TABLES_LEN;
 
+extern void *VIRTUAL_PAGES_INFO_START;
+extern size_t VIRTUAL_PAGES_INFO_LEN;
+
+
 extern void *virt_alloc_table(void);
 extern void *virt_alloc_page(void);
 

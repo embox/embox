@@ -26,9 +26,10 @@ static struct page_allocator *virt_page_allocator;
 void *VIRTUAL_TABLES_START;
 size_t VIRTUAL_TABLES_LEN;
 
-static int unit_init() {
-	void *addr;
+void *VIRTUAL_PAGES_INFO_START;
+size_t VIRTUAL_PAGES_INFO_LEN;
 
+static int unit_init() {
 	/* Initialize tables allocator. */
 	VIRTUAL_TABLES_LEN = VIRTUAL_TABLES_COUNT * MMU_PAGE_SIZE;
 	if (!(VIRTUAL_TABLES_START = page_alloc(
@@ -43,16 +44,18 @@ static int unit_init() {
 			MMU_PAGE_SIZE);
 
 	/* Initialize pages allocator. */
-	if (!(addr = page_alloc(
+	if (!(VIRTUAL_PAGES_INFO_START = page_alloc(
 			__phymem_allocator,
 			VIRTUAL_PAGES_COUNT * MMU_PAGE_SIZE / PAGE_SIZE()))) {
 
 		return -ENOMEM;
 	}
 	virt_page_allocator = page_allocator_init(
-			addr,
+			VIRTUAL_PAGES_INFO_START,
 			__phymem_allocator->free,
 			MMU_PAGE_SIZE);
+
+	VIRTUAL_PAGES_INFO_LEN = virt_page_allocator->capacity - virt_page_allocator->free;
 
 	return ENOERR;
 }
@@ -68,8 +71,6 @@ void *virt_alloc_table() {
 }
 
 void *virt_alloc_page() {
-	void *addr = page_alloc(virt_page_allocator, 1);
-	memset(addr, 0 , MMU_PAGE_SIZE);
-	return addr;
+	return page_alloc(virt_page_allocator, 1);
 }
 

@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <kernel/task.h>
 #include <mem/vmem.h>
+#include <module/embox/arch/usermode.h>
 
 EMBOX_CMD(exec);
 
@@ -48,7 +49,7 @@ static inline int elf_load_in_mem(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
 }
 
 static void *execve_trampoline(void *data) {
-	int (*function_main)(int argc, char * argv[]);
+	void *(*function_main)(void *arg);
 	FILE *elf_file = (FILE *) data;
 	Elf32_Ehdr *elf_header = NULL;
 	Elf32_Phdr *program_headers = NULL;
@@ -65,13 +66,12 @@ static void *execve_trampoline(void *data) {
 
 	fclose(elf_file);
 
-    function_main = (int (*)(int argc, char *argv[])) elf_header->e_entry;
-    function_main (0, NULL);
-
-
 	// XXX: replace it?
 	if (elf_header != NULL) free(elf_header);
 	if (program_headers != NULL) free(program_headers);
+
+    function_main = (void *(*)(void *arg)) elf_header->e_entry;
+    usermode_call_and_switch_if(1, function_main, NULL);
 
 	return NULL;
 }
