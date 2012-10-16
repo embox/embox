@@ -10,28 +10,29 @@
 #include <kernel/thread/sched.h>
 
 void event_init(struct event *e, const char *name) {
-        sleepq_init(&e->sleepq);
-        e->name = name;
+	sleepq_init(&e->sleepq);
+	e->name = name;
 }
 
 int event_wait(struct event *e, unsigned long timeout) {
-        assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-        if (critical_allows(CRITICAL_SCHED_LOCK)) {
-                return sched_sleep(&e->sleepq, timeout);
-        } else {
-                return sched_sleep_locked(&e->sleepq, timeout);
-        }
+	if (critical_allows(CRITICAL_SCHED_LOCK)) {
+		return sched_sleep(&e->sleepq, timeout);
+	} else {
+		return sched_sleep_locked(&e->sleepq, timeout);
+	}
 }
 
 void event_notify(struct event *e) {
-        sched_wake_all(&e->sleepq);
+	sched_wake_all(&e->sleepq);
 }
 
 #if 0
 
 static inline const char *event_name(struct event *e) {
-        return e->name;
+	return e->name;
 }
 
 #endif
+

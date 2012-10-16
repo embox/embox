@@ -15,8 +15,8 @@
 #define EVENT_TIMEOUT_INFINITE ((unsigned int)(-1))
 
 struct event {
-        struct sleepq sleepq;
-        const char *name;
+	struct sleepq sleepq;
+	const char *name;
 };
 
 extern void event_init(struct event *event, const char *name);
