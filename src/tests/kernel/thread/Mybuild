@@ -20,13 +20,6 @@ module state_test {
 	depends embox.framework.LibFramework
 }
 
-module suspend_resume_test {
-	source "suspend_resume_test.c"
-
-	depends embox.kernel.thread.core
-	depends embox.framework.LibFramework
-}
-
 module thread_test {
 	source "thread_test.c"
 

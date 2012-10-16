@@ -1,6 +1,6 @@
 package embox.test.kernel.task
 
-module core {
+module task {
 	source "task.c"
 	depends embox.kernel.task.api
 }

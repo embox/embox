@@ -1,19 +1,20 @@
 
-
+//TODO header and printf inside a test case
+//This test must check correct closing a task and free int resources (in, out description for example)
 #include <stdio.h>
 #include <embox/test.h>
 #include <kernel/task.h>
 
 EMBOX_TEST_SUITE("tasks");
 
-void *tsk_hnd1(void *data) {
+static void *tsk_hnd1(void *data) {
 	for (int cnt = 1 << 15; cnt > 0; cnt --) {
 		printf("a");
 	}
 	return NULL;
 }
 
-void *tsk_hnd2(void *data) {
+static void *tsk_hnd2(void *data) {
 	for (int cnt = 1 << 15; cnt > 0; cnt --) {
 		printf("b");
 	}
