@@ -47,7 +47,7 @@ static void *pnet_rx_thread_hnd(void *args) {
 
 	while (1) {
 		if (unit->buff.cnt == 0) {
-			event_wait(unit->event.set, EVENT_TIMEOUT_INFINITE);
+			event_wait(&unit->event, EVENT_TIMEOUT_INFINITE);
 			continue;
 		}
 		ring_buff_dequeue(&unit->buff, &pack, 1);
@@ -58,9 +58,8 @@ static void *pnet_rx_thread_hnd(void *args) {
 
 static int rx_thread_init(void) {
 	for (size_t i = 0; i < PNET_PRIORITY_COUNT; i++) {
-		struct event_set *e_set = event_set_create();
 
-		event_set_add(e_set, &pack_storage[i].event);
+		event_init(&pack_storage[i].event, "pack_arrived");
 
 		ring_buff_init(&pack_storage[i].buff, sizeof(net_packet_t), RX_THRD_BUF_SIZE,
 				(void *) pack_bufs[i]);

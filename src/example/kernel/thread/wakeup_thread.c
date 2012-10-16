@@ -33,7 +33,7 @@ static void *thread_handler(void *args) {
 			thread_self()->id);
 
 
-	event_wait(event->set, SCHED_TIMEOUT_INFINITE);/* sleeping here*/
+	event_wait(event, SCHED_TIMEOUT_INFINITE);/* sleeping here*/
 
 	/* print a thread structure address and a thread's ID */
 	for(i = 0; i < CONF_HANDLER_REPEAT_NUMBER; i ++) {
@@ -50,13 +50,10 @@ static void *thread_handler(void *args) {
 static int run(int argc, char **argv) {
 	struct thread *thr[CONF_THREADS_QUANTITY];
 	struct event e;
-	struct event_set e_set;
 	void *ret;
 	int i;
 
-	event_set_init(&e_set);
-	event_set_add(&e_set, &e);
-	//event_init(&e, "test_event");
+	event_init(&e, "test_event");
 
 	/* starting all threads */
 	for(i = 0; i < ARRAY_SIZE(thr); i ++) {
@@ -78,8 +75,6 @@ static int run(int argc, char **argv) {
 		thread_join(thr[i], &ret);
 		printf("finished thread id %d with result %d\n", i, *((int *)ret));
 	}
-
-	event_unlink_child(&e_set);
 
 	return ENOERR;
 }
