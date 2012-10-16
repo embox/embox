@@ -33,7 +33,7 @@ static void *thread_handler(void *args) {
 			thread_self()->id);
 
 
-	event_set_wait(event->set, SCHED_TIMEOUT_INFINITE);/* sleeping here*/
+	event_wait(event->set, SCHED_TIMEOUT_INFINITE);/* sleeping here*/
 
 	/* print a thread structure address and a thread's ID */
 	for(i = 0; i < CONF_HANDLER_REPEAT_NUMBER; i ++) {
@@ -79,7 +79,7 @@ static int run(int argc, char **argv) {
 		printf("finished thread id %d with result %d\n", i, *((int *)ret));
 	}
 
-	event_set_clear(&e_set);
+	event_unlink_child(&e_set);
 
 	return ENOERR;
 }

@@ -82,7 +82,6 @@ static void sk_prot_free(const struct proto *prot, struct sock *sk) {
 
 struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 	struct sock *sk;
-	struct event_set *set_nonempty, *set_ready;
 
 	assert(prot != NULL);
 
@@ -118,10 +117,8 @@ struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 	sk->sk_prot = prot;
 
 	/* FIXME in tcp.c tcp_default_sock is created without call socket() */
-	set_nonempty = event_set_create();
-	set_ready = event_set_create();
-	event_set_add(set_nonempty, &sk->sock_is_not_empty);
-	event_set_add(set_ready, &sk->sock_is_ready);
+	event_init(&sk->sock_is_not_empty, "sock_is_not_empty");
+	event_init(&sk->sock_is_ready, "sock_is_ready");
 
 	if (prot->hash != NULL) {
 		prot->hash(sk);
@@ -186,9 +183,6 @@ void sk_common_release(struct sock *sk) {
 
 	skb_queue_free(sk->sk_receive_queue);
 	skb_queue_free(sk->sk_write_queue);
-
-	event_set_free(sk->sock_is_not_empty.set);
-	event_set_free(sk->sock_is_ready.set);
 
 	sk_free(sk);
 }

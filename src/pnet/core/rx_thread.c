@@ -47,7 +47,7 @@ static void *pnet_rx_thread_hnd(void *args) {
 
 	while (1) {
 		if (unit->buff.cnt == 0) {
-			event_set_wait(unit->event.set, EVENT_TIMEOUT_INFINITE);
+			event_wait(unit->event.set, EVENT_TIMEOUT_INFINITE);
 			continue;
 		}
 		ring_buff_dequeue(&unit->buff, &pack, 1);

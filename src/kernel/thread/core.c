@@ -162,10 +162,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	startq_init_thread(&t->startq_data);
 
 	INIT_LIST_HEAD(&t->messages);
-	{
-		struct event_set *e_set = event_set_create();
-		event_set_add(e_set, &t->msg_event);
-	}
+	event_init(&t->msg_event, "msg_event");
 	sleepq_init(&t->exit_sleepq);
 	t->need_message = false;
 
@@ -439,6 +436,5 @@ static void thread_free(struct thread *t) {
 
 	// TODO may be this is not the best way... -- Eldar
 	block = member_cast_out(t, thread_pool_entry_t, thread);
-	event_set_free(t->msg_event.set);
 	pool_free(&thread_pool, block);
 }

@@ -38,6 +38,8 @@ struct pipe {
 	struct async_ring_buff buff;
 	struct dlist_head readers;
 	struct dlist_head writers;
+	struct event read_wait;
+	struct event write_wait;
 };
 
 static const struct task_idx_ops read_ops = {
@@ -60,7 +62,6 @@ int pipe(int pipefd[2]) {
 	struct pipe *pipe;
 	struct async_ring_buff *pipe_buff;
 	void *storage;
-	struct event_set *set_read, *set_write;
 	struct idx_desc *desc;
 	struct pipe_end_state *r, *w;
 	int res = 0;
@@ -99,29 +100,17 @@ int pipe(int pipefd[2]) {
 	}
 
 	/* Init reader */
-	if (!(set_read = event_set_create())) {
-		res = ENOMEM;
-		goto buffree_and_unbind;
-	}
+	event_init(&pipe->read_wait, "pipe_read_wait");
 	desc = task_self_idx_get(pipefd[0]);
-	event_set_add(set_read, &desc->data->read_state.activate);
 	r->state = &desc->data->read_state;
 
 	/* Init writer */
-	if (!(set_write = event_set_create())) {
-		event_set_free(set_read);
-		res = ENOMEM;
-		goto buffree_and_unbind;
-	}
+	event_init(&pipe->write_wait, "pipe_write_wait");
 	desc = task_self_idx_get(pipefd[1]);
-	event_set_add(set_write, &desc->data->write_state.activate);
 	w->state = &desc->data->write_state;
 
 	return 0;
 
-buffree_and_unbind:
-	task_self_idx_table_unbind(pipefd[0]);
-	task_self_idx_table_unbind(pipefd[1]);
 buffree:
 	free(r);
 	free(w);
@@ -135,20 +124,12 @@ static int pipe_close(struct idx_desc *desc) {
 	struct pipe *pipe = (struct pipe*) task_idx_desc_data(desc);
 	struct pipe_end_state *st = get_pipe_end_state_by_op(&pipe->readers, &desc->data->read_state);
 
-	if (st) {
-		dlist_del(&st->link);
-		if (dlist_empty(&pipe->readers)) {
-			event_set_free(desc->data->read_state.activate.set);
-		}
-		return 0;
+	if (!st) {
+		st = get_pipe_end_state_by_op(&pipe->writers, &desc->data->write_state);
 	}
 
-	st = get_pipe_end_state_by_op(&pipe->writers, &desc->data->write_state);
 	if (st) {
 		dlist_del(&st->link);
-		if (dlist_empty(&pipe->writers)) {
-			event_set_free(desc->data->write_state.activate.set);
-		}
 		return 0;
 	}
 
@@ -173,7 +154,7 @@ static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte) {
 
 	if (!(data->flags & O_NONBLOCK)) {
 		while (!len) {
-			event_set_wait(data->data->read_state.activate.set, SCHED_TIMEOUT_INFINITE);
+			event_wait(&pipe->read_wait, SCHED_TIMEOUT_INFINITE);
 			len = async_ring_buff_dequeue(&pipe->buff, (void*)buf, nbyte);
 		}
 
@@ -183,6 +164,7 @@ static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	}
 
 	if (len > 0) {
+		event_notify(&pipe->write_wait);
 		pipe_ends_activate(&pipe->writers);
 	}
 
@@ -206,7 +188,7 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 
 	if (!(data->flags & O_NONBLOCK)) {
 		while (!len) {
-			event_set_wait(data->data->write_state.activate.set, SCHED_TIMEOUT_INFINITE);
+			event_wait(&pipe->write_wait, SCHED_TIMEOUT_INFINITE);
 			len = async_ring_buff_enqueue(&pipe->buff, (void*)buf, nbyte);
 		}
 
@@ -216,6 +198,7 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 	}
 
 	if (len > 0) {
+		event_notify(&pipe->read_wait);
 		pipe_ends_activate(&pipe->readers);
 	}
 

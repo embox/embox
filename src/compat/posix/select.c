@@ -5,6 +5,7 @@
  *
  * @date 13.09.2011
  * @author Anton Bondarev
+ * @author Alexander Kalmuk
  */
 
 #include <sys/time.h>
@@ -19,21 +20,26 @@
 
 static void fd_set_copy(fd_set *dst, fd_set *src);
 
-/*
+/**
  * @brief Save only descriptors with active op.
  * */
 static int find_active(int nfds, fd_set *set, char op);
 
-/* @brief Update sets with find_active() IF these sets contain at least one
+/** @brief Update sets with find_active() IF these sets contain at least one
  * active descriptor
  * @return count of active descriptors
  * @retval -EBAFD if some descriptor is invalid */
 static int update_sets(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd);
 
+/**
+ * @brief Link each desc in fd_set to event.
+ */
+static void idx_desc_set_event(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, struct event *event);
+
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
 	int res, fd_cnt = 0;
-	struct idx_desc *desc;
-	struct event_set e_set;
+
+	struct event event;
 	fd_set tmp_r, tmp_w;
 	fd_set *p_r = &tmp_r, *p_w = &tmp_w;
 	clock_t ticks = (timeout == NULL ? EVENT_TIMEOUT_INFINITE : ns_to_clock(timeval_to_ns(timeout)));
@@ -60,25 +66,16 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 
 		/* If no active descriptors now, than build set of events corresponding
 		 * to each descriptor in fd_set. */
-		event_set_init(&e_set);
+		event_init(&event, "select_event");
 
-		for (int fd = 0; fd < nfds; fd++) {
-			if (readfds && FD_ISSET(fd, readfds)) {
-				desc = task_self_idx_get(fd);
-				event_set_add(&e_set, &desc->data->read_state.activate);
-			}
-
-			if (writefds && FD_ISSET(fd, writefds)) {
-				desc = task_self_idx_get(fd);
-				event_set_add(&e_set, &desc->data->write_state.activate);
-			}
-		}
+		idx_desc_set_event(nfds, readfds, writefds, exceptfds, &event);
 	}
 	sched_unlock();
 
-	event_set_wait(&e_set, ticks);
+	event_wait(&event, ticks);
 
-	event_set_clear(&e_set);
+	/* And clear all desc */
+	idx_desc_set_event(nfds, readfds, writefds, exceptfds, NULL);
 
 	sched_lock();
 	{
@@ -157,3 +154,21 @@ static int update_sets(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exce
 
 	return fd_cnt;
 }
+
+static void idx_desc_set_event(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, struct event *event) {
+	int fd;
+	struct idx_desc *desc;
+
+	for (fd = 0; fd < nfds; fd++) {
+		if (readfds && FD_ISSET(fd, readfds)) {
+			desc = task_self_idx_get(fd);
+			desc->data->read_state.activate = event;
+		}
+
+		if (writefds && FD_ISSET(fd, writefds)) {
+			desc = task_self_idx_get(fd);
+			desc->data->write_state.activate = event;
+		}
+	}
+}
+

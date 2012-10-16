@@ -28,7 +28,7 @@ typedef unsigned int idx_flags_t;
 struct task_idx_ops;
 
 struct idx_io_op_state {
-	struct event activate;
+	struct event *activate;
 	bool active;
 };
 
@@ -50,14 +50,8 @@ struct idx_desc {
 	idx_flags_t flags;
 };
 
-static inline void task_idx_io_activate(struct idx_io_op_state *op) {
-	op->active = 1;
-	event_notify(&op->activate);
-}
-
-static inline void task_idx_io_deactivate(struct idx_io_op_state *op) {
-	op->active = 0;
-}
+extern void task_idx_io_activate(struct idx_io_op_state *op);
+extern void task_idx_io_deactivate(struct idx_io_op_state *op);
 
 /**
  * Specify operations with task's resources, which be called POSIX compat lib

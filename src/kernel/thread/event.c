@@ -8,64 +8,30 @@
 
 #include <kernel/thread/event.h>
 #include <kernel/thread/sched.h>
-#include <types.h>
-#include <mem/objalloc.h>
 
-#define EVENT_SETS_CNT 64
-
-OBJALLOC_DEF(event_set_pool, struct event_set, EVENT_SETS_CNT);
-
-void event_set_init(struct event_set *e_set) {
-	assert(e_set);
-	sleepq_init(&e_set->sleepq);
-	dlist_init(&e_set->link);
+void event_init(struct event *e, const char *name) {
+        sleepq_init(&e->sleepq);
+        e->name = name;
 }
 
-struct event_set *event_set_create(void) {
-	struct event_set *e_set = objalloc(&event_set_pool);
-	if (e_set) {
-		event_set_init(e_set);
-	}
-	return e_set;
-}
+int event_wait(struct event *e, unsigned long timeout) {
+        assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-void event_set_clear(struct event_set *e_set) {
-	struct event *e, *nxt;
-	assert(e_set);
-	dlist_foreach_entry(e, nxt, &e_set->link, link) {
-		event_set_del(e);
-	}
-}
-
-void event_set_free(struct event_set *e_set) {
-	assert(e_set);
-	event_set_clear(e_set);
-	objfree(&event_set_pool, e_set);
-}
-
-int event_set_wait(struct event_set *e_set, unsigned long timeout) {
-	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
-	assert(e_set);
-
-	if (critical_allows(CRITICAL_SCHED_LOCK)) {
-		return sched_sleep(&e_set->sleepq, timeout);
-	} else {
-		return sched_sleep_locked(&e_set->sleepq, timeout);
-	}
+        if (critical_allows(CRITICAL_SCHED_LOCK)) {
+                return sched_sleep(&e->sleepq, timeout);
+        } else {
+                return sched_sleep_locked(&e->sleepq, timeout);
+        }
 }
 
 void event_notify(struct event *e) {
-	struct event_set *e_set = e->set;
-
-	assert(e);
-
-	sched_lock();
-	{
-		if (!e_set || sleepq_empty(&e_set->sleepq)) {
-			goto out;
-		}
-		sched_wake_all(&e_set->sleepq);
-	}
-out:
-	sched_unlock();
+        sched_wake_all(&e->sleepq);
 }
+
+#if 0
+
+static inline const char *event_name(struct event *e) {
+        return e->name;
+}
+
+#endif
