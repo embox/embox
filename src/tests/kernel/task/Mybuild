@@ -13,13 +13,6 @@ module signal {
 	depends embox.framework.LibFramework
 }
 
-module idx_desc_test {
-	source "idx_desc_test.c"
-
-	depends embox.kernel.task.api
-	depends embox.framework.LibFramework
-}
-
 module pipe_test {
 	source "pipe_test.c"
 

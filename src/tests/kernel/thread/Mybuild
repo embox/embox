@@ -1,9 +1,5 @@
 package embox.test.kernel.thread
 
-/* FIXME:
- * Unused files: priority_inheritance_test.c, sched_test.c
- */
-
 module event_test {
 	source "event_test.c"
 
