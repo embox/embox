@@ -1,4 +1,4 @@
-package embox.fs
+package embox.fs.driver
 
 module ramfs {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
