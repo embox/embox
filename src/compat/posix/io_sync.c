@@ -12,18 +12,18 @@
 #include <kernel/thread/event.h>
 
 void io_op_unblock(struct idx_io_op_state *op) {
-	ipl_t ipl = ipl_save();
-
-	op->can_perform_op = 1;
-	if (op->unblock) {
-		event_notify(op->unblock);
+	irq_lock();
+	{
+		op->can_perform_op = 1;
+		if (op->unblock) {
+			event_notify(op->unblock);
+		}
 	}
-
-	ipl_restore(ipl);
+	irq_unlock();
 }
 
 void io_op_set_event(struct idx_io_op_state *op, struct event *e) {
-	sched_lock();
+	irq_lock();
 	op->unblock = e;
-	sched_unlock();
+	irq_unlock();
 }

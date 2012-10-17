@@ -10,9 +10,9 @@
 #include <io_sync.h>
 
 void io_op_unblock(struct idx_io_op_state *op) {
-	ipl_t ipl = ipl_save();
+	irq_lock();
 	op->can_perform_op = 1;
-	ipl_restore(ipl);
+	irq_unlock();
 }
 
 void io_op_set_event(struct idx_io_op_state *op, struct event *e) {

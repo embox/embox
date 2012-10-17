@@ -293,16 +293,25 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
 	int res;
 	struct socket *sock = idx2sock(sockfd);
+	struct idx_io_op_state *read_op = &sock->desc->data->read_state;
+	struct event e;
+
+	event_init(&e, "recvfrom_event");
 
 	sched_lock();
-	res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
-	/* if !O_NONBLOCK on socket's file descriptor {*/
-	if (!res) {
-		event_wait(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
+	{
 		res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
+		/* if !O_NONBLOCK on socket's file descriptor {*/
+		if (!res) {
+			io_op_set_event(read_op, &e);
+			event_wait(&e, SCHED_TIMEOUT_INFINITE);
+			res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
+		}
+		/* } */
+		io_op_set_event(read_op, NULL);
 	}
-	/* } */
 	sched_unlock();
+
 	if (res < 0){
 		SET_ERRNO(-res);
 		return -1;

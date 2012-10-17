@@ -12,7 +12,7 @@
 
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <hal/ipl.h>
+#include <kernel/irq_lock.h>
 
 struct event;
 
@@ -20,9 +20,9 @@ extern void io_op_unblock(struct idx_io_op_state *op);
 extern void io_op_set_event(struct idx_io_op_state *op, struct event *e);
 
 static inline void io_op_block(struct idx_io_op_state *op) {
-	ipl_t ipl = ipl_save();
+	irq_lock();
 	op->can_perform_op = 0; /* it must be test_and_set */
-	ipl_restore(ipl);
+	irq_unlock();
 }
 
 static inline int io_op_is_block(struct idx_io_op_state *op) {
