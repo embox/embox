@@ -329,23 +329,27 @@ static int fatfs_delete(const char *fname) {
 
 	/* remove the root name to give a name to fat filesystem name*/
 	cut_mount_dir(path, (char *) fd->fs->root_name);
-	if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
-		if(fat_unlike_directory(fd, (uint8_t *) path, (uint8_t *) sector_buff)) {
-			return -1;
-		}
-	}
-	else {
-		/* delete file from fat fs*/
-		if(fat_unlike_file(fd, (uint8_t *) path, (uint8_t *) sector_buff)) {
-			return -1;
-		}
-	}
-	pool_free(&fat_file_pool, fd);
-
 	/* delete filesystem descriptor when delete root dir*/
 	if(0 == *path) {
 		pool_free(&fat_fs_pool, fd->fs);
 	}
+	else {
+		if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
+			if(fat_unlike_directory(fd, (uint8_t *) path,
+				(uint8_t *) sector_buff)) {
+				return -1;
+			}
+		}
+		else {
+			/* delete file from fat fs*/
+			if(fat_unlike_file(fd, (uint8_t *) path,
+				(uint8_t *) sector_buff)) {
+				return -1;
+			}
+		}
+	}
+	pool_free(&fat_file_pool, fd);
+
 	vfs_del_leaf(nod);
 	return 0;
 }
