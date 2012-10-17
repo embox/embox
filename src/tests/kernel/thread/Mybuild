@@ -22,3 +22,10 @@ module thread_test {
 	depends embox.kernel.thread.core
 	depends embox.framework.LibFramework
 }
+
+module thread_priority_test {
+	source "thread_priority_test.c"
+
+	depends embox.kernel.thread.core
+	depends embox.framework.LibFramework
+}
