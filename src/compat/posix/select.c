@@ -73,6 +73,8 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	}
 	sched_unlock();
 
+	/* shit may happen here: event may be notified before wait call */
+
 	event_wait(&event, ticks);
 
 	/* And clear all desc */
@@ -171,5 +173,20 @@ static void idx_desc_set_event(int nfds, fd_set *readfds, fd_set *writefds, fd_s
 			desc->data->write_state.activate = event;
 		}
 	}
+}
+
+void task_idx_io_activate(struct idx_io_op_state *op) {
+	/* sync? */
+	op->active = 1;
+	if (op->activate) {
+		event_notify(op->activate);
+	}
+	/* sync? */
+}
+
+void task_idx_io_deactivate(struct idx_io_op_state *op) {
+	/* sync? */
+	op->active = 0;
+	/* sync? */
 }
 

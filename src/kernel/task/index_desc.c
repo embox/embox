@@ -101,9 +101,10 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
 
 	data->read_state.activate = data->write_state.activate = NULL;
 
+#if 0
 	task_idx_io_activate(&data->write_state);
 	task_idx_io_deactivate(&data->read_state);
-
+#endif
 	return new_fd;
 }
 
@@ -147,17 +148,6 @@ static void task_idx_table_deinit(struct task *task) {
 	}
 
 	task->idx_table = NULL;
-}
-
-void task_idx_io_activate(struct idx_io_op_state *op) {
-	op->active = 1;
-	if (op->activate) {
-		event_notify(op->activate);
-	}
-}
-
-void task_idx_io_deactivate(struct idx_io_op_state *op) {
-	op->active = 0;
 }
 
 static const struct task_resource_desc idx_resource = {

@@ -14,9 +14,11 @@
 
 #define TASKS_RES_QUANTITY OPTION_MODULE_GET(embox__kernel__task__idx_table,NUMBER,task_res_quantity)
 
+#include <types.h>
 #include <assert.h>
 #include <stdarg.h>
-#include <kernel/thread/event.h>
+
+struct event;
 
 enum task_idx_ops_type {
 	TASK_RES_OPS_REGULAR,
