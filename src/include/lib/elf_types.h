@@ -77,6 +77,37 @@ typedef __libelf_u32_t    Elf32_Word;
 #define PT_LOPROC       0x70000000
 #define PT_HIPROC       0x7fffffff
 
+
+/*
+ * d_type
+ */
+#define DT_NULL                 0
+#define DT_NEEDED               1
+#define DT_PLTRELSZ             2
+#define DT_PLTGOT               3
+#define DT_HASH                 4
+#define DT_STRTAB               5
+#define DT_SYMTAB               6
+#define DT_RELA                 7
+#define DT_RELASZ               8
+#define DT_RELAENT              9
+#define DT_STRSZ                10
+#define DT_SYMENT               11
+#define DT_INIT                 12
+#define DT_FINI                 13
+#define DT_SONAME               14
+#define DT_RPATH                15
+#define DT_SYMBOLIC             16
+#define DT_REL                  17
+#define DT_RELSZ                18
+#define DT_RELENT               19
+#define DT_PLTREL               20
+#define DT_DEBUG                21
+#define DT_TEXTREL              22
+#define DT_JMPREL               23
+#define DT_LOPROC               0x70000000
+#define DT_HIPROC               0x7fffffff
+
 /**
  * ELF Header. Code style from specification.
  */
@@ -570,17 +601,32 @@ typedef struct{
 	Elf32_Sword r_addend;
 } Elf32_Rela;
 
+typedef struct {
+	Elf32_Sword d_tag;
+	union {
+		Elf32_Word d_val;
+		Elf32_Addr d_ptr;
+	} d_un;
+} Elf32_Dyn;
+
 /* Collection of information about elf. */
 typedef struct {
 	int need_reverse;         /* Should we reverse bytes when reading */
 	Elf32_Ehdr *header;       /* Elf header */
 	Elf32_Shdr *sh_table;     /* Elf section table */
 	Elf32_Phdr *ph_table;     /* Elf program table */
-	int8_t     *string_table; /* Elf string table */
+	char     *string_table; /* Elf string table */
 	Elf32_Sym  *sym_table;    /* Elf symbol table */
-	int8_t     *sym_names;    /* Elf symbol names */
-} Elf32_Obj;
+	char     *sym_names;    /* Elf symbol names */
 
+	/* Elf .dynamic section */
+	Elf32_Dyn  *dyn_section;
+	unsigned int dyn_count;
+
+	/* Elf relocation array */
+	Elf32_Rel  *rel_array;
+	unsigned int rel_count;
+} Elf32_Obj;
 
 
 #endif /* LIB_ELF_TYPES_H_ */

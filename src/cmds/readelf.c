@@ -264,14 +264,12 @@ static void print_section_headers(Elf32_Obj *obj) {
 	Elf32_Shdr *sh;
 	Elf32_Ehdr *header = obj->header;
 
-	printf("There are %d section headers, starting at offset 0x%x:\n",
-		header->e_shnum, header->e_shoff);
 	printf("\nSection Headers:\n");
-	printf("  [Nr] Name\t\tType       Addr     Off    Size   ES Flg Lk Inf Al\n");
+	printf("  [Nr] Name              Type       Addr     Off    Size   ES Flg Lk Inf Al\n");
 	for (int i = 0; i < header->e_shnum; i++) {
 		sh = obj->sh_table + i;
 		x = sh->sh_type;
-		printf("  [%2d] %-16s %-10s %08x %06x %06x %02x  %02x %2d  %2d %2d\n", i,
+		printf("  [%2d] %-17.17s %-10s %08x %06x %06x %02x  %02x %2d  %2d %2d\n", i,
 			SECTION_NAME(sh, obj->string_table),
 			section_types[x].desc,
 			sh->sh_addr,
@@ -307,14 +305,12 @@ static void print_program_headers(Elf32_Obj *obj) {
 	Elf32_Phdr *ph;
 	Elf32_Ehdr *header = obj->header;
 
-	printf("There are %d program headers, starting at offset %d\n",
-		header->e_phnum, header->e_phoff);
-	printf("Program Headers:\n");
-	printf("  Type\tOffset  \tVirtAddr\tPhysAddr\tFileSiz\tMemSiz\tFlg\tAlign\n");
+	printf("\nProgram Headers:\n");
+	printf("  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align\n");
 	for (int i = 0; i < header->e_phnum; i++) {
 		ph = obj->ph_table + i;
 		x = ph->p_type;
-		printf("  %s\t0x%08x\t0x%08x\t0x%08x\t0x%05x\t0x%05x\t0x%x\t0x%x\n",
+		printf("  %-14.14s 0x%06x 0x%08x 0x%08x 0x%05x 0x%05x  %02x 0x%x\n",
 			SEGMENT_NAME(segment_types[x].desc),
 			ph->p_offset,
 			ph->p_vaddr,
@@ -326,17 +322,80 @@ static void print_program_headers(Elf32_Obj *obj) {
 	}
 }
 
+#define between(x, a, b) (a <= x && x < b)
+
+static void print_section_to_segment_mapping(Elf32_Obj *obj) {
+	Elf32_Shdr *sh;
+	Elf32_Phdr *ph;
+
+	printf("\n Section to Segment mapping:\n");
+	printf("  Segment Sections...\n");
+
+	for (int i = 0; i < obj->header->e_phnum; i++) {
+		printf("   %02d    ", i);
+
+		ph = obj->ph_table + i;
+		for (int j = 0; j < obj->header->e_shnum; j++) {
+			sh = obj->sh_table + j;
+			if ((sh->sh_size)
+			&& (between(sh->sh_offset, ph->p_offset, ph->p_offset + ph->p_filesz)
+			|| between(sh->sh_offset + sh->sh_size - 1, ph->p_offset, ph->p_offset + ph->p_filesz))) {
+				printf(" %s", (const char *) obj->string_table + sh->sh_name);
+			}
+		}
+
+		printf("\n");
+	}
+}
+
+/* ======== Print dynamic section ======== */
+
+static const header_item_t dyn_types[] = {
+	{ PT_NULL,    "NULL"    },
+	{ PT_LOAD,    "LOAD"    },
+	{ PT_DYNAMIC, "DYNAMIC" },
+	{ PT_INTERP,  "INTERP"  },
+	{ PT_NOTE,    "NOTE"    },
+	{ PT_SHLIB,   "SHLIB"   },
+	{ PT_PHDR,    "PHDR"    },
+	{ PT_TLS,     "TLS"     },
+};
+
+
+static void print_dynamic_section(Elf32_Obj *obj) {
+	Elf32_Dyn *dyn;
+
+	printf("\nDynamic section at offset ... contains %d entries:\n", obj->dyn_count);
+
+	printf("  Tag        Type                         Name/Value\n");
+	for (int i = 0; i < obj->dyn_count; i++) {
+		dyn = obj->dyn_section + i;
+		printf(" 0x%08x %x\n",
+				(unsigned int) dyn->d_tag,
+				dyn->d_un.d_ptr);
+	}
+}
+
+
 /* ============== Print relocations =========== */
 
-static void print_relocations(Elf32_Rel *rel_array, int count) {
-	size_t i, rev = 0;
-//	printf("Relocation section '%s' at offset 0x%x contains %d entries:\n");
-	if (count == 0) {
+static void print_relocations(Elf32_Obj *obj) {
+	Elf32_Rel *rel_array = obj->rel_array;
+
+	if (!rel_array || !obj->rel_count) {
 		printf("There are no relocations in this file.\n");
-	}
-	for (i = 0; i < count; i++) {
-		printf("\nr_offset : %u", L_REV(rel_array[i].r_offset, rev));
-		printf("\nr_info : %u\n", L_REV(rel_array[i].r_info, rev));
+	} else {
+		//printf("Relocation section '%s' at offset 0x%x contains %d entries:\n");
+
+		printf("\nRelocations:\n");
+
+		printf(" Offset      Info    Sym. Name\n");
+		for (int i = 0; i < obj->rel_count; i++) {
+			printf("%08x  %08x   %s\n",
+					rel_array[i].r_offset,
+					rel_array[i].r_info,\
+					obj->sym_names + obj->sym_table[ELF32_R_SYM(rel_array[i].r_info)].st_name);
+		}
 	}
 }
 
@@ -400,11 +459,11 @@ static int exec(int argc, char **argv) {
 	int show_segments = 0;
 	int show_reloc    = 0;
 	int show_symb     = 0;
+	int show_dyn      = 0;
 	Elf32_Obj  elf;
-	Elf32_Rel  *rel = NULL;
 	int opt, err, cnt = 0;
 	FILE *elf_file;
-	int rel_count = 0, symb_count;
+	int symb_count;
 
 	elf_initialize_object(&elf);
 
@@ -428,6 +487,9 @@ static int exec(int argc, char **argv) {
 		case 's':
 			show_symb = 1;
 			break;
+		case 'd':
+			show_dyn = 1;
+			break;
 		case 'H':
 			print_usage();
 			return 0;
@@ -446,6 +508,7 @@ static int exec(int argc, char **argv) {
 		show_segments = 1;
 		show_reloc = 1;
 		show_symb = 1;
+		show_dyn = 1;
 	}
 
 	elf_file = fopen(argv[argc - 1], "r");
@@ -459,7 +522,7 @@ static int exec(int argc, char **argv) {
 		return -1;
 	}
 
-	if (show_sections || show_reloc || show_symb) {
+	if (show_sections || show_segments || show_reloc || show_symb || show_dyn) {
 		if ((err = elf_read_section_header_table(elf_file, &elf)) < 0) {
 			printf("Cannot read sections table: %d\n", err);
 			show_sections = 0;
@@ -468,7 +531,7 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	if (show_sections || show_symb) {
+	if (show_sections || show_segments || show_symb || show_dyn) {
 		if ((err = elf_read_string_table(elf_file, &elf)) < 0) {
 			printf("Cannot read string table: %d\n", err);
 			show_sections = 0;
@@ -482,13 +545,19 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-//	if (show_reloc) {
-//		if ((err = elf_read_rel_table(elf_file, elf_header,
-//				section_headers, &rel, &rel_count)) < 0) {
-//			printf("Cannot read rel table: %d\n", err);
-//			show_reloc = 0;
-//		}
-//	}
+	if (show_dyn) {
+		if ((err = elf_read_dynamic_section(elf_file, &elf)) < 0) {
+			printf("Cannot read segments table: %d\n", err);
+			show_dyn = 0;
+		}
+	}
+
+	if (show_reloc) {
+		if ((err = elf_read_rel_table(elf_file, &elf)) < 0) {
+			printf("Cannot read rel table: %d\n", err);
+			show_reloc = 0;
+		}
+	}
 
 	if (show_symb) {
 		if ((symb_count = elf_read_symbol_table(elf_file, &elf)) < 0) {
@@ -510,9 +579,15 @@ static int exec(int argc, char **argv) {
 
 	if (show_segments) {
 		print_program_headers(&elf);
+		print_section_to_segment_mapping(&elf);
 	}
+
+	if (show_dyn) {
+		print_dynamic_section(&elf);
+	}
+
 	if (show_reloc) {
-		print_relocations(rel, rel_count);
+		print_relocations(&elf);
 	}
 	if (show_symb) {
 		print_symbols(&elf, symb_count);

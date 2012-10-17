@@ -75,15 +75,10 @@ extern int elf_read_header(FILE *fd, Elf32_Obj *obj);
 extern int elf_read_section_header_table(FILE *fd, Elf32_Obj *obj);
 extern int elf_read_program_header_table(FILE *fd, Elf32_Obj *obj);
 extern int elf_read_string_table(FILE *fd, Elf32_Obj *obj);
-extern int32_t elf_read_symbol_table(FILE *fd, Elf32_Obj *obj);
-extern int32_t elf_read_symbol_names(FILE *fd, Elf32_Obj *obj);
-
-
-
-
-extern int32_t elf_read_rel_table(FILE *fd, Elf32_Ehdr *header,
-			Elf32_Shdr *section_header_table,
-			Elf32_Rel **rel_table, int32_t *count);
+extern int elf_read_symbol_table(FILE *fd, Elf32_Obj *obj);
+extern int elf_read_symbol_names(FILE *fd, Elf32_Obj *obj);
+extern int elf_read_dynamic_section(FILE *fd, Elf32_Obj *obj);
+extern int elf_read_rel_table(FILE *fd, Elf32_Obj *obj);
 
 
 extern int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *header,

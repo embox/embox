@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-void elf_reverse_ph(Elf32_Phdr *ph_table) {
+static inline void elf_reverse_ph(Elf32_Phdr *ph_table) {
 	REVERSE_L(ph_table->p_type);
 	REVERSE_L(ph_table->p_offset);
 	REVERSE_L(ph_table->p_vaddr);

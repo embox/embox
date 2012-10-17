@@ -14,36 +14,6 @@
 #include <stdlib.h>
 
 
-int32_t elf_read_rel_table(FILE *fd, Elf32_Ehdr *hdr,
-	                   Elf32_Shdr *section_hdr_table,
-	                   Elf32_Rel **rel_table, int32_t *count) {
-	size_t size, i;
-	long offset;
-	uint8_t rev = hdr->e_ident[EI_DATA];
-
-	if (L_REV(hdr->e_shoff, rev) == 0) {
-		return -2;
-	}
-
-	*count = 0;
-
-	for (i = 0; i < S_REV(hdr->e_shnum, rev) ; i++) {
-		if (L_REV(section_hdr_table[i].sh_type, rev) == SHT_REL) {
-			offset = L_REV(section_hdr_table[i].sh_offset, rev);
-			size = L_REV(section_hdr_table[i].sh_size, rev);
-			*rel_table = malloc(size); // TODO: fix it
-
-			fseek(fd, offset, 0);
-			if (!fread(*rel_table + *count, size, 1, fd)) return -1;
-
-			*count += L_REV(section_hdr_table[i].sh_size, rev)
-							/ sizeof(Elf32_Rel);
-		}
-	}
-
-	return *count;
-}
-
 #if 0
 int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *hdr,
 	                    Elf32_Shdr *section_hdr_table,
