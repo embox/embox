@@ -31,7 +31,7 @@ struct task_idx_ops;
 
 struct idx_io_op_state {
 	struct event *unblock;
-	bool op_is_nonblocking;
+	bool can_perform_op;
 };
 
 struct idx_desc_data {

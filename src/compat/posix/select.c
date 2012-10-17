@@ -120,7 +120,7 @@ static int find_active(int nfds, fd_set *set, char op) {
 					state = &desc->data->write_state;
 					break;
 				}
-				if ((desc->flags & O_NONBLOCK) || state->op_is_nonblocking) {
+				if ((desc->flags & O_NONBLOCK) || state->can_perform_op) {
 					fd_cnt++;
 				} else {
 					FD_CLR(fd, set);

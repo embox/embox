@@ -100,7 +100,7 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
 	}
 
 	data->read_state.unblock = data->write_state.unblock = NULL;
-	data->write_state.op_is_nonblocking = 1;
+	data->write_state.can_perform_op = 1;
 
 	return new_fd;
 }

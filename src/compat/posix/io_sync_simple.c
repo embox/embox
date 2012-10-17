@@ -11,7 +11,7 @@
 
 void io_op_unblock(struct idx_io_op_state *op) {
 	ipl_t ipl = ipl_save();
-	op->op_is_nonblocking = 1;
+	op->can_perform_op = 1;
 	ipl_restore(ipl);
 }
 

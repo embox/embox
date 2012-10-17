@@ -21,12 +21,12 @@ extern void io_op_set_event(struct idx_io_op_state *op, struct event *e);
 
 static inline void io_op_block(struct idx_io_op_state *op) {
 	ipl_t ipl = ipl_save();
-	op->op_is_nonblocking = 0; /* it must be test_and_set */
+	op->can_perform_op = 0; /* it must be test_and_set */
 	ipl_restore(ipl);
 }
 
 static inline int io_op_is_block(struct idx_io_op_state *op) {
-	return op->op_is_nonblocking;
+	return op->can_perform_op;
 }
 
 #endif /* IO_SYNC_H_ */
