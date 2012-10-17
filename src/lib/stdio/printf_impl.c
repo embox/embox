@@ -32,14 +32,14 @@
 #define PAD_ZERO 2
 
 static int prints(void (*printchar_handler)(char **str, int c),
-		char **out, const char *string, int width, int pad) {
+		char **out, const char *string, int width, int precision, int pad) {
 	/*TODO: optimizations needed to be enabled in gcc (-O2)
 	 * to make register qualifier work*/
-	/*register*/int pc = 0, padchar = ' ';
+	int pc = 0, padchar = ' ';
 
 	if (width > 0) {
-		/*register*/int len = 0;
-		/*register*/
+		int len = 0;
+
 		const char *ptr;
 		for (ptr = string; *ptr; ++ptr)
 			++len;
@@ -50,15 +50,24 @@ static int prints(void (*printchar_handler)(char **str, int c),
 		if (pad & PAD_ZERO)
 			padchar = '0';
 	}
+
 	if (!(pad & PAD_RIGHT)) {
 		for (; width > 0; --width) {
 			printchar_handler(out, padchar);
 			++pc;
 		}
 	}
-	for (; *string; ++string) {
-		printchar_handler(out, *string);
-		++pc;
+
+	if (precision) {
+		for (; precision && *string; ++string, --precision) {
+			printchar_handler(out, *string);
+			++pc;
+		}
+	} else {
+		for (; *string; ++string) {
+			printchar_handler(out, *string);
+			++pc;
+		}
 	}
 	for (; width > 0; --width) {
 		printchar_handler(out, padchar);
@@ -84,7 +93,7 @@ static int printi(void (*printchar_handler)(char **str, int c), char **out,
 	if (i == 0) {
 		print_buf[0] = '0';
 		print_buf[1] = '\0';
-		return prints(printchar_handler, out, print_buf, width, pad);
+		return prints(printchar_handler, out, print_buf, width, 0, pad);
 	}
 
 	if (sg && b == 10 && i < 0) {
@@ -113,7 +122,7 @@ static int printi(void (*printchar_handler)(char **str, int c), char **out,
 		}
 	}
 
-	return pc + prints(printchar_handler, out, s, width, pad);
+	return pc + prints(printchar_handler, out, s, width, 0, pad);
 }
 
 #define PRINTB_BUF_LEN 64
@@ -147,12 +156,12 @@ static int printb(void (*printchar_handler)(char **str, int c),
 		++s;
 		dc--;
 	}
-	return prints(printchar_handler, out, s, width + dc, 0);
+	return prints(printchar_handler, out, s, width + dc, 0, 0);
 }
 
 int __print(void (*printchar_handler)(char **str, int c),
 		char **out, const char *format, va_list args) {
-	/*register*/int width, pad;
+	/*register*/int width, precision, pad;
 	/*register*/
 	int pc = 0;
 	char scr[2];
@@ -160,7 +169,7 @@ int __print(void (*printchar_handler)(char **str, int c),
 	for (; *format != 0; ++format) {
 		if (*format == '%') {
 			++format;
-			width = pad = 0;
+			width = precision = pad = 0;
 			if (*format == '\0')
 				break;
 			if (*format == '%')
@@ -177,6 +186,13 @@ int __print(void (*printchar_handler)(char **str, int c),
 				width *= 10;
 				width += *format - '0';
 			}
+			if (*format == '.') {
+				++format;
+				for (; *format >= '0' && *format <= '9'; ++format) {
+					precision *= 10;
+					precision += *format - '0';
+				}
+			}
 			if (*format == 'l') {
 				//TODO:
 				++format;
@@ -184,7 +200,7 @@ int __print(void (*printchar_handler)(char **str, int c),
 			switch (*format) {
 			case 's': {
 				char *s = (char *) va_arg(args, int);
-				pc += prints(printchar_handler, out, s ? s : "(null)", width, pad);
+				pc += prints(printchar_handler, out, s ? s : "(null)", width, precision, pad);
 			}
 				continue;
 			case 'd':
@@ -211,7 +227,7 @@ int __print(void (*printchar_handler)(char **str, int c),
 				/* char are converted to int then pushed on the stack */
 				scr[0] = (char) va_arg(args, int);
 				scr[1] = '\0';
-				pc += prints(printchar_handler, out, scr, width, pad);
+				pc += prints(printchar_handler, out, scr, width, 0, pad);
 				continue;
 			case 'f':
 			case 'e':
