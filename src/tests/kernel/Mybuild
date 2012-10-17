@@ -28,6 +28,24 @@ module timer_test {
 	depends embox.kernel.time.timer
 }
 
+@TestFor(embox.kernel.timer.timer_api)
+module periodic_timer_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "periodic_timer_test.c"
+
+	depends embox.kernel.timer.timer_api
+	depends embox.kernel.time.timer
+}
+
+@TestFor(embox.kernel.timer.timer_api)
+module oneshot_timer_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "oneshot_timer_test.c"
+
+	depends embox.kernel.timer.timer_api
+	depends embox.kernel.time.timer
+}
+
 module usermode_test {
 	source "usermode_test.c"
 
