@@ -120,7 +120,7 @@ static int find_active(int nfds, fd_set *set, char op) {
 					state = &desc->data->write_state;
 					break;
 				}
-				if ((desc->flags & O_NONBLOCK) || state->active) {
+				if ((desc->flags & O_NONBLOCK) || state->op_is_nonblocking) {
 					fd_cnt++;
 				} else {
 					FD_CLR(fd, set);
@@ -165,28 +165,12 @@ static void idx_desc_set_event(int nfds, fd_set *readfds, fd_set *writefds, fd_s
 	for (fd = 0; fd < nfds; fd++) {
 		if (readfds && FD_ISSET(fd, readfds)) {
 			desc = task_self_idx_get(fd);
-			desc->data->read_state.activate = event;
+			desc->data->read_state.unblock = event;
 		}
 
 		if (writefds && FD_ISSET(fd, writefds)) {
 			desc = task_self_idx_get(fd);
-			desc->data->write_state.activate = event;
+			desc->data->write_state.unblock = event;
 		}
 	}
 }
-
-void task_idx_io_activate(struct idx_io_op_state *op) {
-	/* sync? */
-	op->active = 1;
-	if (op->activate) {
-		event_notify(op->activate);
-	}
-	/* sync? */
-}
-
-void task_idx_io_deactivate(struct idx_io_op_state *op) {
-	/* sync? */
-	op->active = 0;
-	/* sync? */
-}
-

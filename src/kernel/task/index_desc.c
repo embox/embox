@@ -99,12 +99,9 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
 		return -1;
 	}
 
-	data->read_state.activate = data->write_state.activate = NULL;
+	data->read_state.unblock = data->write_state.unblock = NULL;
+	data->write_state.op_is_nonblocking = 1;
 
-#if 0
-	task_idx_io_activate(&data->write_state);
-	task_idx_io_deactivate(&data->read_state);
-#endif
 	return new_fd;
 }
 

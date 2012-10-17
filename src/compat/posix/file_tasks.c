@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <io_sync.h>
 
 int close(int fd) {
 	const struct task_idx_ops *ops;
@@ -156,8 +157,8 @@ int fcntl(int fd, int cmd, ...) {
 		flag = va_arg(args, int);
 		*task_idx_desc_flags_ptr(desc) = flag;
 		if (flag & O_NONBLOCK) {
-			task_idx_io_activate(&desc->data->read_state);
-			task_idx_io_activate(&desc->data->write_state);
+			io_op_unblock(&desc->data->read_state);
+			io_op_unblock(&desc->data->write_state);
 		}
 		break;
 	case F_GETPIPE_SZ:

@@ -30,8 +30,8 @@ typedef unsigned int idx_flags_t;
 struct task_idx_ops;
 
 struct idx_io_op_state {
-	struct event *activate;
-	bool active;
+	struct event *unblock;
+	bool op_is_nonblocking;
 };
 
 struct idx_desc_data {
@@ -51,9 +51,6 @@ struct idx_desc {
 	struct idx_desc_data *data;
 	idx_flags_t flags;
 };
-
-extern void task_idx_io_activate(struct idx_io_op_state *op);
-extern void task_idx_io_deactivate(struct idx_io_op_state *op);
 
 /**
  * Specify operations with task's resources, which be called POSIX compat lib

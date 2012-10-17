@@ -21,6 +21,7 @@ static module select {
 	source "select.c"
 
 	depends embox.kernel.task.api
+	depends embox.compat.posix.io_sync
 }
 
 static module dup {
@@ -42,4 +43,5 @@ static module pipe {
 
 	depends embox.kernel.task.api
 	depends embox.util.LibUtil
+	depends embox.compat.posix.io_sync
 }

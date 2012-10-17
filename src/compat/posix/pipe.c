@@ -15,6 +15,7 @@
 #include <kernel/task/idx.h>
 #include "../kernel/task/common.h"
 #include <framework/mod/options.h>
+#include <io_sync.h>
 
 #define DEFAULT_PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
 #define MAX_PIPE_BUFFER_SIZE     OPTION_GET(NUMBER, max_pipe_buffer_size)
@@ -258,14 +259,14 @@ static void pipe_set_buf_size(struct pipe *pipe, size_t size) {
 static void pipe_ends_activate(struct dlist_head *ends) {
 	struct pipe_end_state *cur, *nxt;
 	dlist_foreach_entry(cur, nxt, ends, link) {
-		task_idx_io_activate(cur->state);
+		io_op_unblock(cur->state);
 	}
 }
 
 static void pipe_ends_deactivate(struct dlist_head *ends) {
 	struct pipe_end_state *cur, *nxt;
 	dlist_foreach_entry(cur, nxt, ends, link) {
-		task_idx_io_deactivate(cur->state);
+		io_op_block(cur->state);
 	}
 }
 

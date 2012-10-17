@@ -19,6 +19,8 @@
 
 #include <framework/mod/options.h>
 
+#include <io_sync.h>
+
 #define MODOPS_MIN_AMOUNT_SOCK OPTION_GET(NUMBER, min_amount_sock)
 
 #if 0
@@ -156,7 +158,7 @@ void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	skb_queue_push(sk->sk_receive_queue, skb);
 	event_notify(&sk->sock_is_not_empty);
 	if (desc->data) {
-		task_idx_io_activate(&desc->data->read_state);
+		io_op_unblock(&desc->data->read_state);
 	}
 }
 
