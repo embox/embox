@@ -21,7 +21,8 @@
 #define N_ALIGN(len) ((((len) + 1) & ~3) + 2)
 #define F_ALIGN(len) (((len) + 3) & ~3)
 
-static fs_drv_t *init_fs;
+//static fs_drv_t *init_fs;
+static struct node *unpack_dir_node;
 
 static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
 	char *s;
@@ -60,12 +61,13 @@ static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
 		param.mode = mode;
 		param.mtime = mtime;
 		param.start_addr = start_addr;
-		init_fs->fsop->create_file(&param);
+		//init_fs->fsop->create_file(&param);
+		unpack_dir_node->fs_type->fsop->create_file(&param);
 	}
 	return (cpio_newc_header_t*) F_ALIGN(start_addr + file_size);
 }
 
-int cpio_unpack(void) {
+int cpio_unpack(char *dir) {
 	extern char _ramfs_start, _ramfs_end;
 	cpio_newc_header_t *cpio_h, *cpio_next;
 	char buff_name[MAX_LENGTH_FILE_NAME];
@@ -74,9 +76,11 @@ int cpio_unpack(void) {
 		printk("No available initramfs\n");
 		return -1;
 	}
-	printk("cpio initramfs at 0x%08x\n", (unsigned int)&_ramfs_start);
+	printk("cpio initramfs at 0x%08x to the directory %s\n", (unsigned int)&_ramfs_start, dir);
 
-	init_fs = filesystem_find_drv("ramfs");
+	unpack_dir_node = vfs_find_node(dir, NULL);
+
+	//init_fs = filesystem_find_drv("ramfs");
 
 	cpio_h = (cpio_newc_header_t *)&_ramfs_start;
 	while (NULL != (cpio_next = parse_item(cpio_h, buff_name))) {

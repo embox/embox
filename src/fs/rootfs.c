@@ -8,11 +8,13 @@
 
 #include <string.h>
 #include <assert.h>
-#include <fs/ramfs.h>
+#include <errno.h>
+
 #include <fs/fs_drv.h>
 #include <fs/node.h>
-#include <util/array.h>
-#include <errno.h>
+
+#include <fs/mount.h>
+
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(unit_init);
@@ -27,8 +29,13 @@ node_t *rootfs_get_node(void) {
 
 static int rootfs_mount(void *par) {
 	fs_drv_t *fsdrv;
+	struct mount_params mp;
+
 	if (NULL != (fsdrv = filesystem_find_drv("ramfs"))) {
-		fsdrv->fsop->mount(NULL);
+
+		root_node->fs_type = fsdrv;
+		mp.dir = "/";
+		fsdrv->fsop->mount(&mp);
 	}
 	if (NULL != (fsdrv = filesystem_find_drv("devfs"))) {
 		fsdrv->fsop->mount(NULL);

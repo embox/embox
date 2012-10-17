@@ -20,7 +20,6 @@ extern int open(const char *path, int __oflag, ...);
 extern int close(int file);
 
 extern int create(const char *pathname, mode_t mode);
-extern int mkdir(const char *pathname, mode_t mode);
 
 extern int fcntl(int fd, int cmd, ...);
 

@@ -14,6 +14,7 @@
 #include <fs/ramfs.h>
 #include <fs/fs_drv.h>
 #include <fs/vfs.h>
+#include <fs/mount.h>
 #include <mem/misc/pool.h>
 #include <util/array.h>
 #include <embox/unit.h>
@@ -206,12 +207,15 @@ static int ramfs_delete(const char *fname) {
 }
 
 static int ramfs_init(void * par) {
-	//init_ramfs_info_pool();
-
 	return 0;
 }
 
 static int ramfs_mount(void * par) {
-	cpio_unpack();
+	struct mount_params *mp;
+
+	assert(par);
+	mp = par;
+
+	cpio_unpack(mp->dir);
 	return 0;
 }
