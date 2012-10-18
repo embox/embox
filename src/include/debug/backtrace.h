@@ -9,6 +9,6 @@
 #ifndef DEBUG_BACKTRACE_H_
 #define DEBUG_BACKTRACE_H_
 
-#include <module/embox/lib/debug/Abstractbacktrace.h>
+#include <module/embox/lib/debug/backtrace_api.h>
 
 #endif /* DEBUG_BACKTRACE_H_ */
