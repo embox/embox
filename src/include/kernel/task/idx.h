@@ -14,8 +14,11 @@
 
 #define TASKS_RES_QUANTITY OPTION_MODULE_GET(embox__kernel__task__idx_table,NUMBER,task_res_quantity)
 
+#include <types.h>
 #include <assert.h>
 #include <stdarg.h>
+
+struct event;
 
 enum task_idx_ops_type {
 	TASK_RES_OPS_REGULAR,
@@ -26,10 +29,17 @@ typedef unsigned int idx_flags_t;
 
 struct task_idx_ops;
 
+struct idx_io_op_state {
+	struct event *unblock;
+	bool can_perform_op;
+};
+
 struct idx_desc_data {
 	const struct task_idx_ops *res_ops;
 	int link_count; /**< @brief Count of links in all tasks */
 	void *fd_struct;     /**< @brief Pointer for actual struct */
+	struct idx_io_op_state read_state;
+	struct idx_io_op_state write_state;
 };
 
 /**
@@ -40,7 +50,6 @@ struct idx_desc_data {
 struct idx_desc {
 	struct idx_desc_data *data;
 	idx_flags_t flags;
-
 };
 
 /**
@@ -51,6 +60,7 @@ struct task_idx_ops {
 	int	(*write)(struct idx_desc *data, const void *buf, size_t nbyte);
 	int	(*close)(struct idx_desc *data);
 	int	(*ioctl)(struct idx_desc *data, int request, va_list args);
+	int	(*fcntl)(struct idx_desc *data, int cmd, va_list args);
 	int	(*fseek)(struct idx_desc *data, long int offset, int origin);
 	int	(*fstat)(struct idx_desc *data, void *buff);
 	const enum task_idx_ops_type type;

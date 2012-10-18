@@ -26,8 +26,12 @@ struct clock_source jiffies = {
 	.read = jiffies_cs_read
 };
 
-ms_t clock_sys_ms(void) {
-	return clock_source_clock_to_ms(&jiffies, clock_sys_ticks());
+clock_t ns_to_clock(__s64 ns) {
+	return clock_source_ns_to_clock(&jiffies, ns);
+}
+
+ns_t clock_sys_ns(void) {
+	return clock_source_clock_to_ns(&jiffies, clock_sys_ticks());
 }
 
 struct time_dev_conf jiffies_conf = {

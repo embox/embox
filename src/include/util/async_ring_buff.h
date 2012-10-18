@@ -22,7 +22,7 @@ extern size_t async_ring_buff_dequeue(struct async_ring_buff *buf, void *elem, s
 
 extern int async_ring_buff_init(struct async_ring_buff *buf, size_t elem_size, size_t count, void *storage);
 
-extern size_t async_ring_get_cnt(struct async_ring_buff *buf);
+extern size_t async_ring_buff_get_cnt(struct async_ring_buff *buf);
 
 extern size_t async_ring_buff_get_space(struct async_ring_buff *buf);
 

@@ -74,6 +74,7 @@ module af_unix {
 }
 
 module socket {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	source "kernel_socket.c"
 	/* depends from socket_repo.c */
 	/* depends from socket_allocator.c */
@@ -99,6 +100,7 @@ module socket {
 	depends embox.kernel.task.idx_table
 	depends embox.kernel.task.errno
 	depends embox.kernel.thread.event
+	depends embox.compat.posix.io_sync_api
 	/* depends from kernel_socket.c */
 
 	source "ip_port.c"

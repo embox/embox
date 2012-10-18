@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <io_sync.h>
 
 int close(int fd) {
 	const struct task_idx_ops *ops;
@@ -135,7 +136,8 @@ int stat(int fd, void *buff) {
 
 int fcntl(int fd, int cmd, ...) {
 	va_list args;
-	int res = 0;
+	int res = 0, flag;
+	const struct task_idx_ops *ops;
 	struct idx_desc *desc = task_self_idx_get(fd);
 
 	if (!desc) {
@@ -143,20 +145,37 @@ int fcntl(int fd, int cmd, ...) {
 		return -1;
 	}
 
+	ops = task_idx_desc_ops(desc);
+
 	va_start(args, cmd);
+
 	switch(cmd) {
 	case F_GETFD:
 		res = *task_idx_desc_flags_ptr(desc);
-		break;
+		return res;
 	case F_SETFD:
-		* task_idx_desc_flags_ptr(desc) = va_arg(args, int);
+		flag = va_arg(args, int);
+		*task_idx_desc_flags_ptr(desc) = flag;
+		if (flag & O_NONBLOCK) {
+			io_op_unblock(&desc->data->read_state);
+			io_op_unblock(&desc->data->write_state);
+		}
+		break;
+	case F_GETPIPE_SZ:
+	case F_SETPIPE_SZ:
 		break;
 	default:
 		/*SET_ERRNO(EINVAL);*/
 		res = -1;
 		break;
 	}
-	/* ops->foctl(desc, cmd, args); */
+
+	if (NULL == ops->fcntl) {
+		return -1;
+	}
+
+	res = ops->fcntl(desc, cmd, args);
+
 	va_end(args);
 
 	return res;

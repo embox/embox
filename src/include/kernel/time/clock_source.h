@@ -35,7 +35,8 @@ struct clock_source {
 	ns_t (*read)(struct clock_source *cs);
 };
 
-extern ms_t clock_source_clock_to_ms(struct clock_source *cs, clock_t sys_ticks);
+extern ns_t clock_source_clock_to_ns(struct clock_source *cs, clock_t sys_ticks);
+extern clock_t clock_source_ns_to_clock(struct clock_source *cs, ns_t ns);
 
 static inline ns_t cycles_to_ns(struct time_counter_device *counter, cycle_t cycles) {
 	return (cycles * (cycle_t)1000000000) / (cycle_t)counter->resolution;

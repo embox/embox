@@ -76,6 +76,7 @@ enum sock_type {
  * @param type socket type (%SOCK_STREAM, etc)
  * @param flags socket flags (%SOCK_ASYNC_NOSPACE, etc)
  * @param sk internal networking protocol agnostic socket representation
+ * @param desc idx descriptor of a socket. Note: in BSD sockets this field has type 'struct file'
  * @param socket_node node in global socket registry
  * @param ops protocol specific socket operations
  */
@@ -85,6 +86,7 @@ typedef struct socket {
 	unsigned long flags;
 
 	struct sock *sk;
+	struct idx_desc *desc;
 	struct socket_node *socket_node;
 	const struct proto_ops *ops;
 } socket_t;

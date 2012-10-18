@@ -16,7 +16,9 @@
 #include <err.h>
 #include <errno.h>
 #include <kernel/task.h>
+#include <sys/select.h>
 #include <fcntl.h>
+#include <math.h>
 
 EMBOX_CMD(exec);
 
@@ -113,6 +115,7 @@ static void ignore_telnet_options(int msg[2]) {
 			return;
 		}
 
+		/* We use here nonblock socket */
 		if (read(sock, &ch, 1) <= 0) {
 			return;
 		}
@@ -164,66 +167,105 @@ static void *telnet_thread_handler(void* args) {
 	int sock = *(int *)args;
 	int pipefd1[2], pipefd2[2], msg[2];
 	int tid;
+	int nfds;
+	fd_set readfds, writefds;
+	struct timeval timeout;
 
+	/* Set socket to be nonblock. See ignore_telnet_options() */
 	fcntl(sock, F_SETFD, O_NONBLOCK);
 
-	pipe(pipefd1);
-	pipe(pipefd2);
+	if (pipe(pipefd1) < 0 || pipe(pipefd2) < 0) {
+		goto out;
+	}
 
-	fcntl(pipefd1[1], F_SETFD, O_NONBLOCK);
-	fcntl(pipefd2[0], F_SETFD, O_NONBLOCK);
-
-	/* Set our parameters */
+	/* Send our parameters */
 	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
 	telnet_cmd(sock, T_WILL, O_ECHO);
 
 	msg[0] = sock;
 	msg[1] = pipefd1[1];
+	/* handle options from client */
 	ignore_telnet_options(msg);
+
+	fcntl(sock, F_SETFD, 0);
 
 	msg[0] = pipefd1[0];
 	msg[1] = pipefd2[1];
-	tid = new_task(shell_hnd, &msg, 0);
+	if ((tid = new_task(shell_hnd, &msg, 0)) < 0) {
+		goto out;
+	}
 
-	/* Close unused ends of pipes. */
-	close(pipefd1[0]);
-	close(pipefd2[1]);
+	/* Preparations for select call */
+	nfds = max(sock, pipefd2[0]);
+	nfds = max(pipefd1[1], nfds) + 1;
+
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
 
 	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
 	 * and than receive from it the result of command running, and send it back to
 	 * client. */
 	while(1) {
 		int len;
+		int fd_cnt;
 
+		FD_ZERO(&readfds);
+		FD_ZERO(&writefds);
+
+		FD_SET(sock, &readfds);
+		FD_SET(pipefd2[0], &readfds);
 		if (pipe_data_len > 0) {
+			FD_SET(sock, &writefds);
+		}
+		if (sock_data_len > 0) {
+			FD_SET(pipefd1[1], &writefds);
+		}
+
+		fd_cnt = select(nfds, &readfds, &writefds, NULL, &timeout);
+
+		/* XXX telnet must receive signal on socket closing, but now
+		 * alternatively here is this check */
+		if (!fd_cnt) {
+			fcntl(sock, F_SETFD, O_NONBLOCK);
+			read(sock, s, 128);
+			fcntl(sock, F_SETFD, 0);
+			if (errno == ECONNREFUSED) {
+				goto kill_and_out;
+			}
+		}
+
+		if ((pipe_data_len > 0) && FD_ISSET(sock, &writefds)) {
 			if ((len = write(sock, p, pipe_data_len)) > 0) {
 				pipe_data_len -= len;
 				p += len;
 			}
-		} else {
+		} else if (FD_ISSET(pipefd2[0], &readfds)){
 			p = pbuff;
 			pipe_data_len = read(pipefd2[0], tmpbuff, 64);
 			pipe_data_len = buf_copy(pbuff, tmpbuff, pipe_data_len);
 		}
 
-		if (sock_data_len > 0) {
+		if ((sock_data_len > 0) && FD_ISSET(pipefd1[1], &writefds)) {
 			if ((len = write(pipefd1[1], s, sock_data_len)) > 0) {
 				sock_data_len -= len;
 				s += len;
 			} else if (errno == EPIPE) {
-				break; /* this means that pipe was closed by shell */
+				goto kill_and_out; /* this means that pipe was closed by shell */
 			}
-		} else {
+		} else if (FD_ISSET(sock, &readfds)){
 			s = sbuff;
 			sock_data_len = read(sock, s, 128);
 			if (errno == ECONNREFUSED) {
-				break;
+				goto kill_and_out;
 			}
 		}
-	}
+	} /* while(1) */
 
+kill_and_out:
 	kill(tid, 9);
-
+out:
+	close(pipefd1[0]);
+	close(pipefd2[1]);
 	close(pipefd1[1]);
 	close(pipefd2[0]);
 	close(sock);
