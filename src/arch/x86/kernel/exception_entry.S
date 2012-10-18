@@ -48,6 +48,8 @@ EXCEPTION(0x1f, t_excep31)   /* Reserved Exception */
 excep_stub:
 	SAVE_ALL
 
+	mov	%esp, %ebp
+
 	mov     %esp, %eax     /* Used for fastcall of handler */
 	call    exception_handler
 
