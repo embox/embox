@@ -1,4 +1,5 @@
-/*
+/**
+ * @file
  * @brief System time correction with NTP
  *
  * @date 25.07.2012

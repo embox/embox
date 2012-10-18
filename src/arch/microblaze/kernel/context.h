@@ -1,3 +1,11 @@
+/**
+ * @file
+ * @brief
+ *
+ * @date 13.04.10
+ * @author Eldar Abusalimov
+ */
+
 #ifndef ARCH_MICROBLAZE_CONTEXT_H_
 #define ARCH_MICROBLAZE_CONTEXT_H_
 

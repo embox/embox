@@ -1,5 +1,11 @@
-#include <embox/test.h>
+/**
+ * @file
+ *
+ * @date 09.04.12
+ * @author Kramar Alina
+ */
 
+#include <embox/test.h>
 #include <profiler/tracing/trace.h>
 
 EMBOX_TEST_SUITE("Trace point counting test");

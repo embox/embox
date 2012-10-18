@@ -1,5 +1,7 @@
 /**
+ * @file
  * @brief Test for priority queue
+ *
  * @author Nikolay Malkovsky
  * @date 12.04.12
  */

@@ -1,6 +1,7 @@
-/*
+/**
+ * @file
  * @brief Entry point for time device. Read time in device specified units
- * to pass above.
+ *        to pass above.
  *
  * @date 13.06.2012
  * @author Alexander Kalmuk

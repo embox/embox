@@ -287,7 +287,7 @@ Cleaning targets:
 
 Documentation targets:
   dot            - Generate a picture with module dependency graph
-  doxygen        - Denerate documentation from doxygen comments
+  docsgen        - Denerate documentation from doxygen comments
 
 Module information:
   mod            - Various module information. See more in help-mod
@@ -324,4 +324,3 @@ $(help_targets) :
 # Default help section.
 help-% :
 	@echo No help section for '$*'
-

@@ -1,9 +1,11 @@
 /**
- * XXX docs. -- Eldar
- *  @brief Implements sched locks interface.
- *  @details This header in use also if mod 'sched' is not enable.
- *  @date 13.07.11
- *  @author Alexandr Kalmuk
+ * @file
+ * @brief Implements sched locks interface.
+ * @details This header in use also if mod 'sched' is not enable.
+ * @details XXX docs. -- Eldar
+ *
+ * @date 13.07.11
+ * @author Alexandr Kalmuk
  */
 
 #ifndef KERNEL_THREAD_SCHED_LOCK_H_

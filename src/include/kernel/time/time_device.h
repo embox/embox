@@ -1,4 +1,5 @@
-/*
+/**
+ * @file
  * @brief Abstraction layer for time device.
  *
  * @date 13.06.2012

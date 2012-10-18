@@ -1,6 +1,12 @@
+/**
+ * @file
+ * TODO header and printf inside a test case
+ * This test must check correct closing a task and free int resources (in, out description for example)
+ *
+ * @date 28.09.12
+ * @author Anton Kozlov
+ */
 
-//TODO header and printf inside a test case
-//This test must check correct closing a task and free int resources (in, out description for example)
 #include <stdio.h>
 #include <embox/test.h>
 #include <kernel/task.h>
@@ -21,9 +27,7 @@ static void *tsk_hnd2(void *data) {
 	return NULL;
 }
 
-
 TEST_CASE("Create two tasks") {
 	new_task(tsk_hnd1, NULL, 0);
 	new_task(tsk_hnd2, NULL, 0);
 }
-
