@@ -1,0 +1,17 @@
+
+EMBOX_BIN="./build/base/bin/embox.bin"
+UIMAGE=uImage
+
+LOAD_ADDR=0x80000000
+ENTRY_ADDR=0x80008040
+
+PAD_FILE_NAME=".pad.zero"
+PADDED_BIN=".embox-padded.bin"
+
+PAD_SIZE=32K
+
+dd if=/dev/zero of=$PAD_FILE_NAME bs=1 count=$PAD_SIZE
+
+cat $PAD_FILE_NAME $EMBOX_BIN > $PADDED_BIN
+
+mkimage -A arm -O linux -C none -T kernel -a $LOAD_ADDR -e $ENTRY_ADDR -d $PADDED_BIN $UIMAGE
