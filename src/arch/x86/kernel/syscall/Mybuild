@@ -1,0 +1,10 @@
+package embox.arch.x86.kernel
+
+module syscall extends embox.arch.syscall {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "syscall_entry.S", "syscall_table.c"
+	// we can split it
+	source "syscall_caller.h", "syscall_caller.c"
+
+	depends locore
+}

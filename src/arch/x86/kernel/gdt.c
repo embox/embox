@@ -61,7 +61,7 @@ static inline void tss_fill() {
 	memset(&tss_entry, 0, sizeof(tss_entry));
 
 	tss_entry.ss0  = __KERNEL_DS;  // Set the kernel stack segment.
-	tss_entry.esp0 = 0x25000;      // TODO: Set the kernel stack pointer.
+	tss_entry.esp0 = 0x2500000;      // TODO: Set the kernel stack pointer.
 
 	/*
 	 * Here we set the cs, ss, ds, es, fs and gs entries in the TSS. These

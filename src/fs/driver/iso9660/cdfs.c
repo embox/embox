@@ -693,6 +693,9 @@ static int cdfs_fstat(cdfs_file_description_t *filp, stat_t *buffer) {
 		buffer->st_dev = cdfs->devno;
 		buffer->st_atime = buffer->st_mtime = buffer->st_ctime = cdfile->date;
 		buffer->st_size = cdfile->size;
+		buffer->st_blksize = CDFS_BLOCKSIZE;
+		buffer->st_blocks = cdfile->extent;
+		buffer->st_dev = cdfs->devno;
 	}
 
 	return cdfile->size;
@@ -729,7 +732,10 @@ static int cdfs_stat(cdfs_fs_description_t *fs, char *name, stat_t *buffer) {
 		buffer->st_dev = cdfs->devno;
 		buffer->st_atime = buffer->st_mtime = buffer->st_ctime =
 				cdfs_isodate(rec->date);
-		buffer->st_size = size;
+		buffer->st_size = cdfs->volblks * CDFS_BLOCKSIZE;
+		buffer->st_blksize = CDFS_BLOCKSIZE;
+		buffer->st_blocks = cdfs->volblks;
+		buffer->st_dev = cdfs->devno;
 	};
 
 	return size;
@@ -975,6 +981,7 @@ static void *cdfsfs_fopen(struct file_desc *desc, const char *mode) {
 	else {
 		_mode = O_RDONLY;
 	}
+	fd->mode = _mode;
 
 	set_path (path, nod);
 	cut_mount_dir(path, (char *) fd->fs->mntto);
@@ -1023,7 +1030,7 @@ static size_t cdfsfs_fread(void *buf, size_t size, size_t count, void *file) {
 	fd = (cdfs_file_description_t *)desc->node->fd;
 
 	//int cdfs_read(cdfs_file_description_t *filp, void *data, size_t size, off64_t pos);
-	rezult = cdfs_read(fd, (void *) buf, size * count, fd->pos);
+	rezult = cdfs_read(fd, (void *) buf, size_to_read, fd->pos);
 	fd->pos += rezult;
 
 	return rezult;
@@ -1193,7 +1200,7 @@ static int create_dir_entry (node_t *parent) {
 		node_t *parent_node;
 		node_t *node;
 		int namelen;
-		int reclen;
+		//int reclen;
 		char path[MAX_LENGTH_PATH_NAME];
 		char name[MAX_LENGTH_PATH_NAME];
 
@@ -1207,7 +1214,7 @@ static int create_dir_entry (node_t *parent) {
 		for (n = 1; n < cdfs->path_table_records; n++) {
 			pathrec = cdfs->path_table[n];
 			namelen = pathrec->length;
-			reclen = sizeof(iso_pathtable_record_t) + namelen + (namelen & 1);
+			//reclen = sizeof(iso_pathtable_record_t) + namelen + (namelen & 1);
 
 			memcpy(name, pathrec->name, namelen);
 			name[namelen] = 0;

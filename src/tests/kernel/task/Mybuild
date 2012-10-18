@@ -1,6 +1,6 @@
 package embox.test.kernel.task
 
-module core {
+module task {
 	source "task.c"
 	depends embox.kernel.task.api
 }
@@ -10,13 +10,6 @@ module signal {
 
 	depends embox.kernel.task.api
 	depends embox.kernel.task.signal
-	depends embox.framework.LibFramework
-}
-
-module idx_desc_test {
-	source "idx_desc_test.c"
-
-	depends embox.kernel.task.api
 	depends embox.framework.LibFramework
 }
 

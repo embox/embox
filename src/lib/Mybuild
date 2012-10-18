@@ -1,7 +1,17 @@
 package embox.lib
 
 static module ElfLib {
-	source "elf/elf_executer.c"
+	source "elf/elf_object.c"
+	source "elf/elf_header.c"
+	source "elf/elf_sh_table.c"
+	source "elf/elf_ph_table.c"
+	source "elf/elf_string_table.c"
+	source "elf/elf_sym_table.c"
+	source "elf/elf_sym_names.c"
+	source "elf/elf_dyn_section.c"
+	source "elf/elf_rel_array.c"
+
+	// TODO: Delete it later
 	source "elf/elf_reader.c"
 }
 
@@ -133,8 +143,7 @@ module FilePosixNoOpen extends FileApi {
 	depends embox.compat.posix.FileTasksBasic
 }
 
-static module FileStdio extends FileApi{
-	source "stdio/fs_none.c"
-
-	depends embox.compat.posix.FileApi
+module FileStdio extends FileApi {
+	source "stdio/file_diag.h",
+		"stdio/file_posix_noopen.h"
 }

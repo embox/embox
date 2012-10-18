@@ -55,7 +55,7 @@ int ch_to_digit(char ch, int base) {
 
 static void unscanchar(char **str, int ch) {
 	/*	extern int ungetchar();*/
-	if ((int) str >= 2) {
+	if ((unsigned int) str >= 2) {
 #if 1
 		(*str) --;
 		**str = ch;
@@ -75,13 +75,13 @@ static void unscanchar(char **str, int ch) {
 static int scanchar(char **str) {
 	extern int getchar(void);
 	int ch;
-	if ((int)str >= 2) {
+	if ((unsigned int)str >= 2) {
 		ch = **str;
 		(*str)++;
 		return ch;
 
-	} if ((int)str == 1) {
-	    return getc(file);
+	} else if ((int)str == 1) {
+		return getc(file);
 	} else {
 		if ('\n' == (ch = getchar())) {
 			return EOF;

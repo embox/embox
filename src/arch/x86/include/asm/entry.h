@@ -47,6 +47,31 @@
 	add   $8, %esp;  \
 	iret;
 
+/*
+ *  The order in which registers are stored in the pt_regs structure
+ */
+
+#define PT_EBX     0
+#define PT_ECX     1
+#define PT_EDX     2
+#define PT_ESI     3
+#define PT_EDI     4
+#define PT_EBP     5
+#define PT_EAX     6
+#define PT_GS      7
+#define PT_FS      8
+#define PT_ES      9
+#define PT_DS      10
+
+#define PT_TRAPNO  11
+#define PT_ERR     12
+
+#define PT_EIP     13
+#define PT_CS      14
+#define PT_EFLAGS  15
+#define PT_ESP     16
+#define PT_SS      17
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* X86_ENTRY_H_ */

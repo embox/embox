@@ -11,7 +11,7 @@
 
 #ifndef __ASSEMBLER__
 
-static inline void *call_in_usermode_if(int cond, void *(*func)(void *), void *arg) {
+static inline void *usermode_call_and_switch_if(int cond, void *(*func)(void *), void *arg) {
 	extern void *usermode_enter(void *(*func)(void *), void *arg);
 
 	if (cond) {

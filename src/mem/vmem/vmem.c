@@ -66,8 +66,9 @@ static inline int vmem_map_kernel(mmu_ctx_t ctx) {
 	err |= vmem_map_on_itself(ctx, &_stack_vma, (size_t) &_stack_len, VMEM_PAGE_WRITABLE);
 	err |= vmem_map_on_itself(ctx, &_heap_vma, (size_t) &_heap_len, VMEM_PAGE_WRITABLE);
 
-	/* Map virtual table space. */
+	/* Map special info. */
 	err |= vmem_map_on_itself(ctx, VIRTUAL_TABLES_START, VIRTUAL_TABLES_LEN, VMEM_PAGE_WRITABLE);
+	err |= vmem_map_on_itself(ctx, VIRTUAL_PAGES_INFO_START, VIRTUAL_PAGES_INFO_LEN, VMEM_PAGE_WRITABLE);
 
 	// for sparc
 	err |= vmem_map_on_itself(ctx, (void *) 0x80000000, (size_t) 0x1000, VMEM_PAGE_WRITABLE);

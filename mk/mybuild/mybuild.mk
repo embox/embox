@@ -19,10 +19,10 @@ builders_list := \
 checkers_list := \
 	Mybuild.checkAbstractRealization \
 	Mybuild.checkFeatureRealization \
-	Mybuild.checkCyclicDependency \
 	Mybuild.optionCheckUnique \
 	Mybuild.optionCheckConstraints
 
+#	Mybuild.checkCyclicDependency
 
 # Args:
 # 	1. Cheking instances
@@ -90,6 +90,7 @@ define class-Mybuild
 			configuration <- $1,
 			build <-$(new Build),
 			issueReceiver <- $(new IssueReceiver),
+			__mybuild_noruntime <- $(call mybuild_resolve_or_die,mybuild.lang.NoRuntime),
 
 			$(set build->configuration,$(configuration))
 
@@ -459,18 +460,18 @@ define class-Mybuild
 				$(map-set+ activeFeatures/$(opt),
 					$1)))
 
-	$(method chkCyclic,
-		$(if $(map-get includingInstances/$1),
-			$(if $(invoke addIssueGlobal,error,
-				Cyclic dependency detected: \
-
-				$(get 1->qualifiedName) ->
-				$(with $1,$(map-get includingInstances/$1),
-					$(if $(filter $1,$2),,
-						$(\s)$(get 2->qualifiedName) ->
-						$(call $0,$1,$(map-get includingInstances/$2))))
-				$(\s)$(get 1->qualifiedName) -> ... ),),
-			Ok))
+#	$(method chkCyclic,
+#		$(if $(map-get includingInstances/$1),
+#			$(if $(invoke addIssueGlobal,error,
+#				Cyclic dependency detected: \
+#
+#				$(get 1->qualifiedName) ->
+#				$(with $1,$(map-get includingInstances/$1),
+#					$(if $(filter $1,$2),,
+#						$(\s)$(get 2->qualifiedName) ->
+#						$(call $0,$1,$(map-get includingInstances/$2))))
+#				$(\s)$(get 1->qualifiedName) -> ... ),),
+#			Ok))
 
 	# Get ModuleInstance closure of given  Module
 	#
@@ -483,34 +484,36 @@ define class-Mybuild
 			mod <- $(get thisInst->type),
 			depMember <- $(get mod->dependsMembers),
 			dep <- $(get depMember->modules),
-			was <- was$(map-get moduleInstanceStore/$(dep)),
 			$(map-set includingInstances/$(mod),$(dep))
 
-			$(if $(invoke chkCyclic,$(dep)),)
+#			$(if $(invoke chkCyclic,$(dep)),)
 
-			$(for depInst <- $(invoke includeModule,$(dep)),
-				$(set* thisInst->depends,$(depInst)))
+			$(set* thisInst->depends,$(invoke includeModule,$(dep)))
+			$(set* thisInst->noRuntimeDepends,
+				$(for m <- $(get $(invoke depMember->getAnnotationsOfType,
+								$(__mybuild_noruntime)).target>modules),
+					$(map-get moduleInstanceStore/$m)))
 
-			$(map-set includingInstances/$(mod),)))
+			$(map-unset includingInstances,$(mod))))
 
-	$(method checkCyclicDependency,
-		$(for inst <- $1,
-			$(with $(inst),
-				$(for \
-					inst <-$1,
-					depInst <- $(get inst->depends),
-					mod <- $(get inst->type),
-					depMod <- $(get depInst->type),
-					$(if $(map-get includingInstancesChecked/$(depMod)),,
-						$(map-set includingInstances/$(mod),$(depMod))
-
-						$(if $(invoke chkCyclic,$(depMod)),
-							$(call $0,$(depInst)))
-
-						$(map-set includingInstances/$(mod),)
-						$(map-set includingInstancesChecked/$(depMod),1)
-						))
-				)))
+#	$(method checkCyclicDependency,
+#		$(for inst <- $1,
+#			$(with $(inst),
+#				$(for \
+#					inst <-$1,
+#					depInst <- $(get inst->depends),
+#					mod <- $(get inst->type),
+#					depMod <- $(get depInst->type),
+#					$(if $(map-get includingInstancesChecked/$(depMod)),,
+#						$(map-set includingInstances/$(mod),$(depMod))
+#
+#						$(if $(invoke chkCyclic,$(depMod)),
+#							$(call $0,$(depInst)))
+#
+#						$(map-set includingInstances/$(mod),)
+#						$(map-set includingInstancesChecked/$(depMod),1)
+#						))
+#				)))
 
 endef
 

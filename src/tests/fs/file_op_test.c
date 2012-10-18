@@ -32,6 +32,9 @@ static fs_drv_t *fs_drv;
 #define FS_BLOCKS  124
 #define FS_DIR  "/test_fop"
 #define FS_FILE1  "/test_fop/1/2/3/1.txt"
+#define FS_DIR3  "/test_fop/1/2/3"
+#define FS_DIR2  "/test_fop/1/2"
+#define FS_DIR1  "/test_fop/1"
 
 #define FS_TESTDATA  "qwerty\n"
 TEST_CASE("Write file") {
@@ -129,7 +132,9 @@ static int setup_suite(void) {
 
 static int teardown_suite(void) {
 
-	if (remove(FS_FILE1) ||	remove(FS_FILE2)) {
+	if (remove(FS_FILE1) ||	remove(FS_FILE2) ||
+		remove(FS_DIR3)  ||	remove(FS_DIR2)  ||
+		remove(FS_DIR1)  ||	remove(FS_DIR)) {
 		return -1;
 	}
 	if (ramdisk_delete(FS_DEV)) {

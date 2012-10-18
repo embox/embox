@@ -51,11 +51,18 @@ TEST_CASE("Create file 2") {
 	test_assert_zero(create(FS_FILE2, 0));
 }
 
+#define FS_DIR3  "/test_fsop/1/2/3"
+#define FS_DIR2  "/test_fsop/1/2"
+#define FS_DIR1  "/test_fsop/1"
 TEST_CASE("Delete file") {
 	test_assert_zero(remove(FS_FILE1));
 	test_assert_zero(remove(FS_FILE2));
 	test_assert(0 > open(FS_FILE1, O_RDONLY));
 	test_assert(0 > open(FS_FILE2, O_RDONLY));
+	test_assert_zero(remove(FS_DIR3));
+	test_assert_zero(remove(FS_DIR2));
+	test_assert_zero(remove(FS_DIR1));
+	test_assert_zero(remove(FS_DIR));
 }
 
 static int setup_suite(void) {

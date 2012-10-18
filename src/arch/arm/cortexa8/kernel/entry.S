@@ -29,7 +29,7 @@ irq_handler:
 	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT /* going to SVC mode, still disabling interrupts */
 	stmfd sp!, {lr} /* stoirqring address of returning in interrupted program flow */
 
-	bl interrupt_handle
+	/* bl interrupt_handle */
 
 	ldmfd sp!, {lr}
 	/* now interrupted program is unaffected, interrupt serviced, correctly exiting handler */
