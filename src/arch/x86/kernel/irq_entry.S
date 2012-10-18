@@ -33,8 +33,6 @@ IRQ_ENTRY(15) /* secondary ATA channel */
 irq_stub:
 	SAVE_ALL
 
-	mov	%esp, %ebp
-
 	mov     %esp, %eax     /* Used for fastcall of handler */
 	call    irq_handler
 
