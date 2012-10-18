@@ -11,10 +11,13 @@
 #include <fcntl.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <prom/prom_printf.h>
 
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(make_term);
+
+#define TRANSLATE_BUF_LEN 16
 
 static inline struct idx_desc *data2idx_desc(struct idx_desc *data) {
 	return task_idx_desc_data(data);
@@ -25,20 +28,57 @@ static int term_read(struct idx_desc *idx, void *buf, size_t nbyte) {
 	return task_idx_desc_ops(raw_idx)->read(raw_idx, buf, nbyte);
 }
 
+static int term_flush(struct idx_desc *idx, char *tbuf, char **tbufpp) {
+	int res = task_idx_desc_ops(idx)->write(idx, (const void *) tbuf, (int) *tbufpp - (int) tbuf);
+
+	if (res <= 0) {
+		return res;
+	}
+
+	*tbufpp = tbuf;
+
+	return res;
+
+}
+
+static int term_putc(struct idx_desc *idx, char *tbuf, char **tbufpp, char c) {
+	int res = 0;
+
+	if ((int) *tbufpp - (int) tbuf == TRANSLATE_BUF_LEN) {
+		if ((res = term_flush(idx, tbuf, tbufpp)) <= 0) {
+			return res;
+		}
+	}
+
+	*(*tbufpp)++ = c;
+
+	return 0;
+}
+
 static int term_write(struct idx_desc *idx, const void *buf, size_t nbyte) {
 	struct idx_desc *raw_idx = data2idx_desc(idx);
-	char tbuf[nbyte * 2];
+
+	char tbuf[TRANSLATE_BUF_LEN];
 	char *tbufp = tbuf, *bufp = (char *) buf;
+
+	int was_r = 0;
+
+	prom_printf("term_write 0x%x %d\n", (unsigned int) buf, nbyte);
+
 	while (nbyte--) {
+
 		if (OPTION_GET(BOOLEAN,lf_crlf_map) &&
-				*bufp == '\n' && *(bufp-1) != '\r') {
-			*tbufp++ = '\r';
+				*bufp == '\n' && !was_r) {
+			term_putc(raw_idx, tbuf, &tbufp, '\r');
 		}
 
-		*tbufp++ = *bufp++;
+		was_r = *bufp == '\r' ? 1 : 0;
+
+		term_putc(raw_idx, tbuf, &tbufp, *bufp++);
 
 	}
-	return task_idx_desc_ops(raw_idx)->write(raw_idx, (const void *) tbuf, (int) tbufp - (int) tbuf);
+
+	return term_flush(raw_idx, tbuf, &tbufp);
 }
 
 static int term_close(struct idx_desc *idx) {
