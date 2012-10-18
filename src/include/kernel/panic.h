@@ -10,11 +10,13 @@
 #define KERNEL_PANIC_H_
 
 #include <kernel/printk.h>
+#include <debug/backtrace.h>
 #include <hal/arch.h>
 
 #define panic(...) \
 	do { \
 		printk(__VA_ARGS__); \
+		backtrace(); \
 		arch_shutdown(ARCH_SHUTDOWN_MODE_ABORT); \
 	} while (0)
 

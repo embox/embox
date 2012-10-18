@@ -6,12 +6,9 @@
  * @author Anton Bulychev
  */
 
-#ifndef BACKTRACE_H_
-#define BACKTRACE_H_
+#ifndef DEBUG_BACKTRACE_H_
+#define DEBUG_BACKTRACE_H_
 
-/**
- * Prints backtrace
- */
-extern void backtrace(void);
+#include <module/embox/lib/debug/Abstractbacktrace.h>
 
-#endif /* BACKTRACE_H_ */
+#endif /* DEBUG_BACKTRACE_H_ */
