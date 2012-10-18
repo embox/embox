@@ -68,10 +68,6 @@ data_abt_handler:
 fiq_handler:
     B fiq_handler
 
-irq_handler:
-    B irq_handler
-swi_handler:
-    B swi_handler
 .text
 /* initialize stacks in some modes */
 start:

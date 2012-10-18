@@ -1,9 +1,5 @@
 package embox.test.kernel.thread
 
-/* FIXME:
- * Unused files: priority_inheritance_test.c, sched_test.c
- */
-
 module event_test {
 	source "event_test.c"
 
@@ -20,15 +16,15 @@ module state_test {
 	depends embox.framework.LibFramework
 }
 
-module suspend_resume_test {
-	source "suspend_resume_test.c"
+module thread_test {
+	source "thread_test.c"
 
 	depends embox.kernel.thread.core
 	depends embox.framework.LibFramework
 }
 
-module thread_test {
-	source "thread_test.c"
+module thread_priority_test {
+	source "thread_priority_test.c"
 
 	depends embox.kernel.thread.core
 	depends embox.framework.LibFramework

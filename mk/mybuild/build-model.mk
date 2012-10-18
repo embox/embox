@@ -49,6 +49,7 @@ endef
 #   - reference 'container'
 #   - reference 'options'
 #   - reference 'afterDepends'
+#   - reference 'noRuntimeDepends'
 #   - reference 'includeMember'
 #   - reference 'sources'
 #
@@ -112,6 +113,12 @@ define class-ModuleInstance
 	# PROTECTED REGION END
 
 	# PROTECTED REGION ID(Build_ModuleInstance) ENABLED START
+
+	# XXX handwritten -- Eldar
+	# Property 'noRuntimeDepends... : ModuleInstance'.
+	$(eobject-reference Build_ModuleInstance_noRuntimeDepends,
+		noRuntimeDepends,ModuleInstance,,changeable many)
+
 	# PROTECTED REGION END
 endef
 

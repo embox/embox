@@ -9,5 +9,6 @@ module bmp {
 	depends embox.lib.LibC
 	depends embox.driver.video.vesadrv
 	depends embox.cmd.xwnd
+	depends embox.xwnd.draw_helpers
 
 }

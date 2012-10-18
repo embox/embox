@@ -16,10 +16,11 @@ module sched {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "sched.c", "startq.c"
 
-	depends embox.kernel.timer.timer_api // for timeslices support
-	depends embox.arch.context // context_switch
-	depends embox.kernel.critical
+	depends embox.kernel.timer.timer_api /* for timeslices support */
+	depends embox.arch.context /* context_switch */
 	depends embox.kernel.thread.sched_policy.api
+	depends embox.compat.posix.util.time
+	@NoRuntime depends embox.kernel.critical
 }
 
 module event {

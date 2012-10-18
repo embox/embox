@@ -6,11 +6,12 @@
  * @author Alexandr Chernakov
  */
 
-#include <xwnd/xwnd.h>
-#include <xwnd/bmp.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <vesa.h>
+#include <drivers/vesa.h>
+#include <xwnd/xwnd.h>
+#include <xwnd/draw_helpers.h>
+#include <xwnd/bmp.h>
 
 static enum xwnd_bmp_err xwnd_bmp_errno;
 

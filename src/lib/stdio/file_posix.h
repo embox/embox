@@ -44,7 +44,7 @@ static inline int __libc_lseek(struct file_struct_int *file, long int offset, in
 }
 
 static inline int __libc_fstat(struct file_struct_int *file, void *buff) {
-	return stat(file->fd, buff);
+	return -1;
 }
 
 static inline int __libc_ioctl(struct file_struct_int *file, int request, va_list args) {

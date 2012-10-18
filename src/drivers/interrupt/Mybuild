@@ -39,6 +39,10 @@ module mips_intc extends irqctrl_api {
 	source "mips_intc.c", "mips_intc.h"
 }
 
+module omap3_intc extends irqctrl_api {
+	source "omap3_intc.c", "omap3_intc.h"
+}
+
 module no_interrupts extends irqctrl_api {
 	source "no_interrupts.h"
 }

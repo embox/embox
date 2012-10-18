@@ -74,7 +74,7 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
-	res = call_in_usermode_if(current->in_usermode,
+	res = usermode_call_and_switch_if(current->in_usermode,
 			current->run,current->run_arg);
 	thread_exit(res);
 }

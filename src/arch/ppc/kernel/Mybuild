@@ -1,0 +1,13 @@
+package embox.arch.ppc.kernel
+
+module boot extends embox.arch.boot {
+	source "boot.S"
+}
+
+module locore extends embox.arch.locore {
+
+}
+
+module arch {
+	source "arch.c"
+}

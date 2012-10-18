@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief Print network statistic
+ *
  * @date 30.12.11
  * @author Alexander Kalmuk
  * @author Alexandr Chernakov
@@ -20,14 +21,17 @@
 
 EMBOX_CMD(exec);
 
-static const char * con_st_string[SOCK_CONN_STATE_MAX + 1] = {"UNCONNECTED", "CLOSED", "LISTENING", "BOUND",
-		"CONNECTING", "CONNECTED", "ESTABLISHED", "DISCONNECTING", "UNKNOWN_STATE"};
+static const char *con_st_string[SOCK_CONN_STATE_MAX + 1] = {
+	"UNCONNECTED", "CLOSED", "LISTENING", "BOUND",
+	"CONNECTING", "CONNECTED", "ESTABLISHED", "DISCONNECTING",
+	"UNKNOWN_STATE"
+};
 
-static unsigned short get_port (const struct sockaddr_in * sa) {
+static unsigned short get_port(const struct sockaddr_in *sa) {
 	return ntohs(sa->sin_port);
 }
 
-static const char * socket_state_string (enum socket_connection_state_t st) {
+static const char *socket_state_string(enum socket_connection_state_t st) {
 	if (st >= 0 && st < SOCK_CONN_STATE_MAX)
 		return con_st_string[st];
 	else
@@ -35,7 +39,7 @@ static const char * socket_state_string (enum socket_connection_state_t st) {
 }
 
 static void print_ip_addr(in_addr_t ip) {
-	int i;
+	size_t i;
 	unsigned int ip_addr[4];
 	for (i = 0; i < 4; i++) {
 		ip_addr[i] = (ip >> (8 * i)) & 0xFF;
@@ -47,28 +51,28 @@ static void print_ip_addr(in_addr_t ip) {
 	printf("%d ", ip_addr[0]);
 }
 
-static void print_inet_socket_info (const struct sr_external_socket_array_node * sinfo) {
-	struct sockaddr_in * ssa_in = (struct sockaddr_in *) &(sinfo->saddr);
-	struct sockaddr_in * dsa_in = (struct sockaddr_in *) &(sinfo->daddr);
-	printf ("State: %s ", socket_state_string(sinfo->socket_connection_state));
+static void print_inet_socket_info(const struct sr_external_socket_array_node *sinfo) {
+	struct sockaddr_in *ssa_in = (struct sockaddr_in *) &(sinfo->saddr);
+	struct sockaddr_in *dsa_in = (struct sockaddr_in *) &(sinfo->daddr);
+	printf("State: %s ", socket_state_string(sinfo->socket_connection_state));
 
-	printf ("Local IP: ");
-	print_ip_addr (ssa_in->sin_addr.s_addr);
-	printf ("Local port: %d ", get_port(ssa_in));
+	printf("Local IP: ");
+	print_ip_addr(ssa_in->sin_addr.s_addr);
+	printf("Local port: %d ", get_port(ssa_in));
 
-	printf ("Remote IP: ");
-	print_ip_addr (dsa_in->sin_addr.s_addr);
-	printf ("Remote port: %d\n", get_port(dsa_in));
+	printf("Remote IP: ");
+	print_ip_addr(dsa_in->sin_addr.s_addr);
+	printf("Remote port: %d\n", get_port(dsa_in));
 }
 
-static void print_generic_socket_info (const struct sr_external_socket_array_node * sinfo) {
-	printf ("State: %s ", socket_state_string(sinfo->socket_connection_state));
+static void print_generic_socket_info(const struct sr_external_socket_array_node *sinfo) {
+	printf("State: %s ", socket_state_string(sinfo->socket_connection_state));
 }
 
-static void print_socket_info (const struct sr_external_socket_array_node * sinfo) {
+static void print_socket_info(const struct sr_external_socket_array_node *sinfo) {
 	switch (sinfo->saddr.sa_family) {
 	case AF_INET:
-		print_inet_socket_info (sinfo);
+		print_inet_socket_info(sinfo);
 		break;
 	default:
 		print_generic_socket_info(sinfo);
@@ -76,29 +80,29 @@ static void print_socket_info (const struct sr_external_socket_array_node * sinf
 	}
 }
 
-int exec (int argc, char ** argv) {
-	int i, count;
+static int exec(int argc, char **argv) {
+	size_t i, count;
 	int ts;
-	struct sr_external_socket_array_node * sock_array;
+	struct sr_external_socket_array_node *sock_array;
 	struct sockaddr_in saddr;
 
 	#ifdef __NS_TEST_SOCKET_CREATE__
 	ts = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); /*Just creating a socket for testing to be sure that
 	                                                at least one socket exists*/
 	saddr.sin_family = AF_INET;
-	saddr.sin_port= htons(1234);
+	saddr.sin_port   = htons(1234);
 	saddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	bind (ts, (struct sockaddr *)&saddr, sizeof(struct sockaddr));
+	bind(ts, (struct sockaddr *) &saddr, sizeof(struct sockaddr));
 	#endif
 
-	if (!(sock_array = sr_get_all_sockets_array (&count))) {
+	if (!(sock_array = sr_get_all_sockets_array(&count))) {
 		#ifdef __NS_TEST_SOCKET_CREATE__
 		close(ts);
 		#endif
-		printf ("Can't get sockets array. It might be so caused by lack of memory.");
+		printf("Can't get sockets array. It might be so caused by lack of memory.");
 		return 1;
 	}
-	printf ("Array sockets count: %d\n", count);
+	printf("Array sockets count: %d\n", count);
 	for (i = 0; i < count; i++) {
 		print_socket_info(sock_array + i);
 	}
