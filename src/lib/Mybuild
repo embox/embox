@@ -143,8 +143,7 @@ module FilePosixNoOpen extends FileApi {
 	depends embox.compat.posix.FileTasksBasic
 }
 
-static module FileStdio extends FileApi{
-	source "stdio/fs_none.c"
-
-	depends embox.compat.posix.FileApi
+module FileStdio extends FileApi {
+	source "stdio/file_diag.h",
+		"stdio/file_posix_noopen.h"
 }
