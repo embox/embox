@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <drivers/ide.h>
 
 #include <fs/fs_drv.h>
 #include <fs/vfs.h>
@@ -38,6 +39,8 @@ static int devfs_mount(void *par) {
 	if (NULL == (nod = vfs_add_path("/dev", NULL))) {
 		return 0;/*folder already exist*/
 	}
+
+	get_ide_drive();
 
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__device_registry); i++) {
 		if (NULL != (devnod = vfs_add_path(__device_registry[i].name, nod))) {
