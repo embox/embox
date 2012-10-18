@@ -9,6 +9,6 @@
 #ifndef LIB_DEBUG_NOBACKTRACE_H_
 #define LIB_DEBUG_NOBACKTRACE_H_
 
-#define backtrace(x)  do { } while (0)
+#define backtrace()  do { } while (0)
 
 #endif /* LIB_DEBUG_NOBACKTRACE_H_ */
