@@ -12,6 +12,11 @@
 
 #ifndef __ASSEMBLER__
 
+extern char _traps_text_start, _traps_text_end;
+
+#define TRAPS_TEXT_START     ((unsigned int) &_traps_text_start)
+#define TRAPS_TEXT_END       ((unsigned int) &_traps_text_end)
+
 // TODO: replace it
 #define fastcall        __attribute__((regparm(3)))
 

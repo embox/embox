@@ -43,14 +43,13 @@ EXCEPTION(0x1d, t_excep29)   /* Reserved Exception */
 EXCEPTION(0x1e, t_excep30)   /* Reserved Exception */
 EXCEPTION(0x1f, t_excep31)   /* Reserved Exception */
 
+	.section .traps.text
+
 excep_stub:
 	SAVE_ALL
 
 	mov     %esp, %eax     /* Used for fastcall of handler */
-
-	.global exception_handler_return_pointer
 	call    exception_handler
-exception_handler_return_pointer:
 
 	RESTORE_ALL
 
