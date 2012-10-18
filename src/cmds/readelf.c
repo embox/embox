@@ -350,18 +350,6 @@ static void print_section_to_segment_mapping(Elf32_Obj *obj) {
 
 /* ======== Print dynamic section ======== */
 
-static const header_item_t dyn_types[] = {
-	{ PT_NULL,    "NULL"    },
-	{ PT_LOAD,    "LOAD"    },
-	{ PT_DYNAMIC, "DYNAMIC" },
-	{ PT_INTERP,  "INTERP"  },
-	{ PT_NOTE,    "NOTE"    },
-	{ PT_SHLIB,   "SHLIB"   },
-	{ PT_PHDR,    "PHDR"    },
-	{ PT_TLS,     "TLS"     },
-};
-
-
 static void print_dynamic_section(Elf32_Obj *obj) {
 	Elf32_Dyn *dyn;
 
@@ -399,7 +387,7 @@ static void print_relocations(Elf32_Obj *obj) {
 	}
 }
 
-/* ============== Print symbol table ========== */
+/* ============== Print symbol table ======== */
 
 static const header_item_t symb_types[] = {
 	{ STT_NOTYPE,   "NOTYPE"  },
