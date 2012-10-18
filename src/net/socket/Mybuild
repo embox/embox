@@ -93,7 +93,6 @@ module socket {
 	depends embox.util.LibUtil
 
 	source "socket_repo.c"
-	depends embox.lib.ElfLib
 
 	source "socket.c"
 	depends core /* for sock.c */
