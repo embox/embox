@@ -11,8 +11,6 @@
 #include <fcntl.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <prom/prom_printf.h>
-
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(make_term);
@@ -62,8 +60,6 @@ static int term_write(struct idx_desc *idx, const void *buf, size_t nbyte) {
 	char *tbufp = tbuf, *bufp = (char *) buf;
 
 	int was_r = 0;
-
-	prom_printf("term_write 0x%x %d\n", (unsigned int) buf, nbyte);
 
 	while (nbyte--) {
 
