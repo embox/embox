@@ -31,7 +31,7 @@ IRQ_ENTRY(15) /* secondary ATA channel */
 irq_stub:
 	SAVE_ALL
 
-	mov     %esp, %eax
+	mov     %esp, %eax     /* Used for fastcall of handler */
 
 	.global irq_handler_return_pointer
 	call    irq_handler

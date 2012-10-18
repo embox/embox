@@ -15,15 +15,15 @@ void stack_iter_current(stack_iter_t *f) {
 }
 
 int stack_iter_next(stack_iter_t *f) {
-	extern void irq_handler_call_pointer(void);
-	extern void exception_handler_call_pointer(void);
+	extern void irq_handler_return_pointer(void);
+	extern void exception_handler_return_pointer(void);
 
 	void **p = f->fp;
 	p = *p;
 
-	if (f->pc == irq_handler_call_pointer || f->pc == exception_handler_call_pointer) {
+	if (f->pc == irq_handler_return_pointer || f->pc == exception_handler_return_pointer) {
 		/* Through interruption */
-		pt_regs_t *r = (pt_regs_t *) p;
+		pt_regs_t *r = (pt_regs_t *) (f->fp + 8);
 		f->fp = (void *) r->ebp;
 		f->pc = (void *) r->eip;
 	} else {
