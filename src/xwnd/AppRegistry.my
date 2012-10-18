@@ -1,10 +1,11 @@
 package embox.xwnd
 
-module xwndapp {
+module app_registry {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	@IncludePath("$(SRC_DIR)/include/drivers")
-	source "xwndapp.c"
+	source "app_registry.c"
 
 	depends embox.lib.LibC
+
 }

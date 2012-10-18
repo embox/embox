@@ -8,6 +8,4 @@ module draw_helpers {
 
 	depends embox.lib.LibC
 	depends embox.driver.video.vesadrv
-	depends embox.cmd.xwnd
-
 }

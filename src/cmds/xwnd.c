@@ -15,23 +15,10 @@
 #include <embox/cmd.h>
 #include <xwnd/xwnd.h>
 #include <xwnd/bmp.h>
+#include <xwnd/app_registry.h>
 
 EMBOX_CMD(exec);
 
-struct xwnd_app_pipe {
-	int input;
-	int output;
-};
-
-struct xwnd_app_pipes_array {
-	int count;
-	int allocated;
-	struct xwnd_app_pipe * array;
-};
-
-struct xwnd_app_pipes_array * xwnd_pipes_init(void);
-const struct xwnd_app_pipe * xwnd_pipe_add(void);
-void xwnd_pipe_delete(void);
 
 int xwnd_init(void);
 int xwnd_start(void);
@@ -47,14 +34,6 @@ int xwnd_init() {
 }
 void xwnd_quit(){
 	vesa_quit_mode();
-}
-
-void * test_task(void * arg) {
-	int * pipefd = (int*)arg;
-	int x = 0;
-	read (pipefd[0], &x, sizeof(int));
-	printf("%d\n", x);
-	return NULL;
 }
 
 static int exec (int argc, char ** argv) {
@@ -86,23 +65,20 @@ static int exec (int argc, char ** argv) {
 		}
 		if (argc > 2)
 		{
-			int pipefd[2];
-			int tid;
-			int x = 10;
 
 			printf("w/h: %d/%d, bpp: %d, ERR: %d\n", img->width, img->height, img->bpp, xwnd_bmp_get_errno());
 			xwnd_bmp_unload(img);
-
-			pipe(pipefd);
-			write(pipefd[1], &x, sizeof(int));
-			tid = new_task(test_task, pipefd, 0);
-			tid = tid;
 			return 0;
 		}
 	}
 	else {
-		printf("Need more arguments\n");
-		return 1;
+		int err;
+		err = xwnd_app_reg_init();
+		if (err) {
+			printf ("AAAAA");
+			return 1;
+		}
+		return 0;
 	}
 	return 1;
 }

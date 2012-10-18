@@ -10,6 +10,7 @@
 #ifndef XWND_H_
 #define XWND_H_
 
+#include <xwnd/bmp.h>
 #include <xwnd/event.h>
 #include <xwnd/window.h>
 #include <xwnd/xwndapp.h>

@@ -13,7 +13,7 @@
 #include <kernel/task.h>
 #include <prom/prom_printf.h>
 
-EMBOX_TEST_SUITE("pipe test");
+EMBOX_TEST_SUITE("pipe_test");
 
 static int tid_read;
 static int tid_write;
