@@ -8,6 +8,8 @@
 #include <types.h>
 #include <hal/context.h>
 
+#include <string.h>
+
 void context_init(struct context *ctx, bool privileged) {
 }
 
@@ -20,12 +22,25 @@ void context_set_entry(struct context *ctx, void(*pc)(void)) {
 	ctx->eip = (uint32_t) pc;
 }
 
-void context_enter_frame(struct context *ctx, void (*pc)(void)) {
+void context_enter_frame(struct context *ctx, void *pc) {
 	void *stack = (uint32_t *) ctx->esp;
 
 	stack -= sizeof(uint32_t);
 	*(uint32_t *) stack = ctx->eip;
 
+	stack -= sizeof(uint32_t);
+	*(uint32_t *) stack = ctx->ebp;
+
+	ctx->ebp = (unsigned int) stack;
+
 	ctx->esp = ((uint32_t) stack);
 	context_set_entry(ctx, pc);
 }
+
+void context_push_stack(struct context *ctx, void *arg, size_t n) {
+	ctx->esp -= n;
+
+	memcpy((void *) ctx->esp, arg, n);
+
+}
+
