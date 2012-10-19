@@ -5,46 +5,27 @@ module system {
 	option number core_freq
 }
 
-abstract module cpu {
-}
+abstract module cpu { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.interrupt_stub)
 abstract module interrupt { }
 
-abstract module clock {
-}
-
-abstract module context {
-}
-
-abstract module libarch {
-}
-
-abstract module locore {
-}
-
-abstract module entry {
-}
-
-abstract module boot {
-}
-
-abstract module lds {
-}
-
-abstract module mmu {
-}
+abstract module clock { }
+abstract module context { }
+abstract module libarch { }
+abstract module locore { }
+abstract module entry { }
+abstract module boot { }
+abstract module lds { }
+abstract module mmu { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.syscall_stub)
-abstract module syscall {
-}
+abstract module syscall { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.usermode)
-abstract module usermode {
-}
+abstract module usermode { }
 
-abstract module stackframe {
-}
+abstract module stackframe { }

@@ -1,8 +1,7 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.video
 
-abstract module vga {
-}
+abstract module vga { }
 
 module vga_console extends vga {
 	source "vga_console.c"

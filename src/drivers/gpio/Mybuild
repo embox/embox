@@ -1,8 +1,6 @@
 package embox.driver.gpio
 
-abstract module pins {
-
-}
+abstract module pins { }
 
 abstract module api { }
 
