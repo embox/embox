@@ -11,6 +11,7 @@
  * Kernel start point
  */
 C_ENTRY(_start)
+#if 1
 	/*
 	 * Setup CPU registers.
 	 */
@@ -24,13 +25,15 @@ C_ENTRY(_start)
 	mttbl	r3
 	mttbu	r3
 	mttbl	r3
-
+#endif
 
 	lis	    r1, _stack_vma@ha
-	addi	r1, r1, _stack_vma@l
-	addi    r1, r1, _stack_len@ha
+	ori	r1, r1, _stack_vma@l
+	lis    r3, _stack_len@ha
+	ori    r3, r3, _stack_len@l
+	add r1,r1, r3
 
-	mtspr	SPR_SPRG0, 1		/* Keep kernel stack */
+	mtspr	SPR_SPRG0, r1		/* Keep kernel stack */
 
 	/*
 	 * Clear kernel BSS
@@ -39,10 +42,11 @@ C_ENTRY(_start)
 	addi	r3, r3, _bss_vma@l
 	lis	r4, _bss_len@ha
 	addi	r4, r4, _bss_len@l
-	li	0, 0
+	add r4, r3, r4
+	li	r0, 0
 1:
-	stwu	0, 4(3)
-	cmplw	0, 3, 4
+	stwu	r0, 4(r3)
+	cmplw	cr0, r3, r4
 	blt	1b
 
 	b	kernel_start
