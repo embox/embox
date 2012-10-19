@@ -12,6 +12,8 @@
 #include <kernel/critical.h>
 #include <hal/ipl.h>
 
+#error !
+
 /**
  * Locks hardware interrupt.
  *
