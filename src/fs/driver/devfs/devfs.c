@@ -40,7 +40,7 @@ static int devfs_mount(void *par) {
 		return 0;/*folder already exist*/
 	}
 
-	get_ide_drive();
+	/* get_ide_drive(); */
 
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__device_registry); i++) {
 		if (NULL != (devnod = vfs_add_path(__device_registry[i].name, nod))) {
