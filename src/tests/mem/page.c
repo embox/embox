@@ -40,9 +40,9 @@ TEST_CASE("Mixed single and multi page allocation") {
 	test_assert_not_null(page);
 	page_free(__phymem_allocator,page, 1);
 
-	page = page_alloc(__phymem_allocator,2);
+	page = page_alloc(__phymem_allocator,10);
 	test_assert_not_null(page);
-	page_free(__phymem_allocator,page, 2);
+	page_free(__phymem_allocator,page, 10);
 
 	page = page_alloc(__phymem_allocator,1);
 	test_assert_not_null(page);
