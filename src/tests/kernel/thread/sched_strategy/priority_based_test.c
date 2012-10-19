@@ -49,18 +49,27 @@ TEST_CASE("runq_switch should return true after preemption") {
 	test_assert_not_zero(runq_switch(&rq));
 }
 
-#if 0
 TEST_CASE("runq_switch should switch to the most priority thread") {
-	struct thread bg = { .priority = 127 }, fg = { .priority = 0 };
+	struct thread bg, fg;
+	setup_thread(&bg, THREAD_PRIORITY_LOW);
+	setup_thread(&fg, THREAD_PRIORITY_HIGH);
 
-	runq_start(&bg);
-	test_assert_equal(runq_switch(&rq, runq_current(&rq)), &bg);
+	test_assert_equal(runq_current(&rq), &current);
 
-	runq_start(&fg);
-	test_assert_equal(runq_current(&rq), &bg);
-	test_assert_equal(runq_switch(&rq, runq_current(&rq)), &fg);
+	test_assert_zero(runq_start(&rq, &bg));
+
+	test_assert_equal(runq_current(&rq), &current);
+
+	test_assert_not_zero(runq_start(&rq, &fg));
+	test_assert_not_zero(runq_switch(&rq));
+
+	test_assert_equal(runq_current(&rq), &fg);
+
+	test_assert_zero(runq_finish(&rq, &bg));
+	test_assert_not_zero(runq_finish(&rq, &fg));
 }
 
+#if 0
 TEST_CASE("Adding and subsequent removing a background thread shouldn't"
 		"change the behavior of sched_policy_switch") {
 	struct thread bg = { .priority = 127 }, fg = { .priority = 0 };
