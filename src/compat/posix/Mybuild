@@ -59,7 +59,9 @@ module bootstrap_posix_env extends posix_env {
 }
 
 @DefaultImpl(io_sync_simple)
-abstract module io_sync_api {}
+abstract module io_sync_api {
+	depends embox.kernel.irq_lock
+}
 
 module io_sync_simple extends io_sync_api {
 	source "io_sync_simple.c"
