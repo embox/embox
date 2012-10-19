@@ -54,13 +54,12 @@ int32_t read_name(int8_t *names_array, int32_t index, int8_t *name) {
 
 #endif
 
-int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *EPH, int8_t *dst) {
-	uint8_t rev = head->e_ident[EI_DATA];
+int32_t elf_read_segment(FILE *fd, Elf32_Phdr *program_header, int8_t *dst) {
 	size_t size;
 	long offset;
 
-	offset = L_REV(EPH->p_offset, rev);
-	size = L_REV(EPH->p_memsz, rev);
+	offset = program_header->p_offset;
+	size = program_header->p_memsz;
 
 	if (size) {
 		fseek(fd, offset, 0);

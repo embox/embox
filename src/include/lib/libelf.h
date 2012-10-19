@@ -85,7 +85,7 @@ extern int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *header,
 				Elf32_Shdr *section_header_table,
 				Elf32_Rela *rela_table, int32_t *count);
 
-extern int32_t elf_read_segment(FILE *fd, Elf32_Ehdr *head, Elf32_Phdr *EPH, int8_t *dst);
+extern int32_t elf_read_segment(FILE *fd, Elf32_Phdr *program_header, int8_t *dst);
 
 
 #endif /* LIB_ELF_H_ */
