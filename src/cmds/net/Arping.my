@@ -31,7 +31,7 @@ module arping {
 
 	depends embox.lib.LibC
 	depends embox.net.core
-	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.util.getopt
 	depends embox.net.util
 	depends embox.net.neighbour
 	depends embox.net.arp

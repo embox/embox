@@ -35,7 +35,7 @@ module arp {
 	depends embox.net.neighbour
 	depends embox.net.util
 	depends embox.lib.LibC
-	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.util.getopt
 	depends embox.net.core
 	depends embox.framework.LibFramework
 }
