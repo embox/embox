@@ -4,6 +4,7 @@
  *
  * @date 20.03.11
  * @author Alina Kramar
+ * @author Eldar Abusalimov
  */
 
 #include <embox/test.h>
@@ -31,7 +32,7 @@ TEST_CASE("initially runq_current should return a current thread") {
 
 TEST_CASE("runq_current should return a current when there is no more "
 		"thread") {
-	test_assert_zero(runq_switch(&rq));
+	test_assert_false(runq_switch(&rq));
 }
 
 TEST_CASE("current thread shouldn't be changed until runq_switch "
@@ -46,7 +47,7 @@ TEST_CASE("runq_switch should return true after preemption") {
 	struct thread thread;
 	setup_thread(&thread, THREAD_PRIORITY_MAX);
 	runq_start(&rq, &thread);
-	test_assert_not_zero(runq_switch(&rq));
+	test_assert_true(runq_switch(&rq));
 }
 
 TEST_CASE("runq_switch should switch to the most priority thread") {
@@ -56,18 +57,18 @@ TEST_CASE("runq_switch should switch to the most priority thread") {
 
 	test_assert_equal(runq_current(&rq), &current);
 
-	test_assert_zero(runq_start(&rq, &bg));
+	test_assert_false(runq_start(&rq, &bg));
 
 	test_assert_equal(runq_current(&rq), &current);
 
-	test_assert_not_zero(runq_start(&rq, &fg));
-	test_assert_not_zero(runq_switch(&rq));
+	test_assert_true(runq_start(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
 
 	test_assert_equal(runq_current(&rq), &fg);
 
-	test_assert_zero(runq_finish(&rq, &bg));
-	test_assert_not_zero(runq_finish(&rq, &fg));
-	test_assert_not_zero(runq_switch(&rq));
+	test_assert_false(runq_finish(&rq, &bg));
+	test_assert_true(runq_finish(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
 
 	test_assert_equal(runq_current(&rq), &current);
 }
@@ -78,16 +79,16 @@ TEST_CASE("Adding and subsequent removing a background thread shouldn't"
 	setup_thread(&bg, THREAD_PRIORITY_LOW);
 	setup_thread(&fg, THREAD_PRIORITY_HIGH);
 
-	test_assert_not_zero(runq_start(&rq, &fg));
-	test_assert_not_zero(runq_switch(&rq));
+	test_assert_true(runq_start(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
 
-	test_assert_zero(runq_start(&rq, &bg));
+	test_assert_false(runq_start(&rq, &bg));
 	test_assert_equal(runq_current(&rq), &fg);
-	test_assert_zero(runq_finish(&rq, &bg));
+	test_assert_false(runq_finish(&rq, &bg));
 	test_assert_equal(runq_current(&rq), &fg);
 
-	test_assert_not_zero(runq_finish(&rq, &fg));
-	test_assert_not_zero(runq_switch(&rq));
+	test_assert_true(runq_finish(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
 
 	test_assert_equal(runq_current(&rq), &current);
 }
@@ -99,13 +100,13 @@ TEST_CASE("runq_switch should switch back to the current after removing "
 
 	test_assert_equal(runq_current(&rq), &current);
 
-	test_assert_not_zero(runq_start(&rq, &fg));
-	test_assert_not_zero(runq_switch(&rq));
+	test_assert_true(runq_start(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
 
 	test_assert_equal(runq_current(&rq), &fg);
 
-	test_assert_not_zero(runq_finish(&rq, &fg));
-	test_assert_not_zero(runq_switch(&rq));
+	test_assert_true(runq_finish(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
 
 	test_assert_equal(runq_current(&rq), &current);
 }
@@ -117,13 +118,13 @@ TEST_CASE("adding and consequent removing of a foreground thread without "
 
 	test_assert_equal(runq_current(&rq), &current);
 
-	test_assert_not_zero(runq_start(&rq, &fg));
+	test_assert_true(runq_start(&rq, &fg));
 	test_assert_equal(runq_current(&rq), &current);
 
-	test_assert_zero(runq_finish(&rq, &fg));
+	test_assert_false(runq_finish(&rq, &fg));
 	test_assert_equal(runq_current(&rq), &current);
 
-	test_assert_zero(runq_switch(&rq));
+	test_assert_false(runq_switch(&rq));
 	test_assert_equal(runq_current(&rq), &current);
 }
 
@@ -135,79 +136,51 @@ TEST_CASE("removing a thread shouldn't affect the rest threads "
 
 	test_assert_equal(runq_current(&rq), &current);
 
-	test_assert_not_zero(runq_start(&rq, &even));
-	test_assert_not_zero(runq_start(&rq, &odd));
+	test_assert_true(runq_start(&rq, &even));
+	test_assert_true(runq_start(&rq, &odd));
 
 	test_assert_equal(runq_current(&rq), &current);
 
-	test_assert_not_zero(runq_switch(&rq));
+	test_assert_true(runq_switch(&rq));
 
-	test_assert_not_zero(runq_finish(&rq, &even));
-	test_assert_not_zero(runq_switch(&rq));
+	test_assert_true(runq_finish(&rq, &even));
+	test_assert_true(runq_switch(&rq));
 
 	test_assert_equal(runq_current(&rq), &odd);
 
-	test_assert_not_zero(runq_finish(&rq, &odd));
-	test_assert_not_zero(runq_switch(&rq));
+	test_assert_true(runq_finish(&rq, &odd));
+	test_assert_true(runq_switch(&rq));
 
 	test_assert_equal(runq_current(&rq), &current);
 
 }
 
-#if 0
-TEST_CASE("sched_policy_start should return true after adding thread with highest "
+TEST_CASE("runq_start should return true after adding thread with higher "
 		"priority") {
-	struct thread t = { .priority = 127 };
-	test_assert_true(runq_start(&t));
+	struct thread fg;
+	setup_thread(&fg, THREAD_PRIORITY_HIGH);
+
+	test_assert_equal(runq_current(&rq), &current);
+
+	test_assert_true(runq_start(&rq, &fg));
+	test_assert_false(runq_finish(&rq, &fg));
+	test_assert_false(runq_switch(&rq));
+
+	test_assert_equal(runq_current(&rq), &current);
 }
 
-TEST_CASE("sched_policy_start should return false then current thread has "
-		"a higher priority than added thread priority") {
-	struct thread first = { .priority = 127 }, second = { .priority = 0 };
-	test_assert_true(runq_start(&second));
-	runq_switch(&rq, runq_current(&rq));
-	test_assert_false(runq_start(&first));
-}
+TEST_CASE("runq_start should return false after adding thread with lower "
+		"priority") {
+	struct thread bg;
+	setup_thread(&bg, THREAD_PRIORITY_LOW);
 
-TEST_CASE("sched_policy_start should return true after adding thread with highest "
-		"priority before switch") {
-	struct thread first = { .priority = 127 }, second = { .priority = 0 };
-	test_assert_true(runq_start(&first));
-	test_assert_true(runq_start(&second));
-}
+	test_assert_equal(runq_current(&rq), &current);
 
-TEST_CASE("sched_policy_start should return false after adding thread with "
-		"THREAD_MIN_PRIORITY") {
-	struct thread t = { .priority = 255 };
-	test_assert_false(runq_start(&t));
-}
+	test_assert_false(runq_start(&rq, &bg));
+	test_assert_false(runq_finish(&rq, &bg));
 
-TEST_CASE("sched_policy_stop should return false after removing not current "
-		"thread") {
-	struct thread first = { .priority = 127 }, second = { .priority = 255 };
-	runq_start(&first);
-	runq_start(&second);
-	runq_switch(&rq, runq_current(&rq));
-	test_assert_false(sched_policy_stop(&second));
+	test_assert_equal(runq_current(&rq), &current);
 }
-
-TEST_CASE("sched_policy_stop should return true after removing current "
-		"thread") {
-	struct thread first = { .priority = 127 };
-	runq_start(&first);
-	runq_switch(&rq, runq_current(&rq));
-	test_assert_true(sched_policy_stop(&first));
-}
-
-TEST_CASE("sched_policy_stop should return true after removing current "
-		"thread") {
-	struct thread first = { .priority = 127 }, second = { .priority = 127 };
-	runq_start(&first);
-	runq_start(&second);
-	runq_switch(&rq, runq_current(&rq));
-	test_assert_true(sched_policy_stop(&first));
-}
-#endif
 
 static int setup(void) {
 	setup_thread(&current, THREAD_PRIORITY_NORMAL);
