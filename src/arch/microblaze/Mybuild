@@ -5,6 +5,6 @@ module lds extends embox.arch.lds {
 	//option number stack_size=65536
 }
 
-module cpu extends embox.arch.cpu {
+module interrupt extends embox.arch.interrupt {
 	source "include/asm/hal/ipl.h"
 }
