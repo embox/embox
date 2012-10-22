@@ -11,7 +11,7 @@
 
 #define IN_TRAPS_TEXT(pc)      \
 	(TRAPS_TEXT_START <= (pc)  \
-	&& (pc) <= TRAPS_TEXT_END) \
+	&& (pc) < TRAPS_TEXT_END) \
 
 void stack_iter_current(stack_iter_t *f) {
 	f->fp = __builtin_frame_address(1);
@@ -24,13 +24,6 @@ int stack_iter_next(stack_iter_t *f) {
 		pt_regs_t *r = (pt_regs_t *) (f->fp + 8);
 		f->fp = (void *) r->ebp;
 		f->pc = (void *) r->eip;
-
-		/* I don't know why, but in exception %eip set to NULL */
-		if (f->pc == NULL || f->fp == NULL) {
-			f->fp = NULL;
-			f->pc = NULL;
-			return 0;
-		}
 	} else {
 		void **p = f->fp; p = *p;
 
