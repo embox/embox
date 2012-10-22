@@ -7,5 +7,6 @@ module app_registry {
 	source "app_registry.c"
 
 	depends embox.lib.LibC
+	depends embox.xwnd.event
 	depends embox.xwnd.test_app
 }

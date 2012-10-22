@@ -10,6 +10,7 @@
 #include <kernel/task.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <xwnd/event.h>
 
 //FIXME: this have to be removed
 #include <xwnd/test_app.h>
@@ -42,6 +43,7 @@ struct xwnd_application * xwnd_app_create (void) {
 	xapp_reg.used++;
 
 	//Allocate client-side application structure
+	//FIXME: This allocation is freaking bad. Replace it with something better
 	t_xapp = malloc(sizeof(struct xwnd_application));
 	if (!t_xapp) {
 		xapp_reg.used--;
@@ -50,6 +52,9 @@ struct xwnd_application * xwnd_app_create (void) {
 	xapp_reg.nodes[xapp_id].xapp = t_xapp;
 	//Initialize them
 
+	//Init pipe semaphores
+	sem_init(&(t_xapp->msg_sem), 1);
+	sem_init(&(t_xapp->req_sem), 1);
 	//Connect pipes
 	pipe(req_pipe);
 	pipe(msg_pipe);
@@ -74,11 +79,24 @@ struct xwnd_application * xwnd_app_create (void) {
 
 	t_xapp->app_id = xapp_id;
 
+	//Send first messages
+	xwnd_app_send_sys_event(xapp_id, XWND_EV_CREAT);
+	xwnd_app_send_sys_event(xapp_id, XWND_EV_DRAW);
+
 	//Now ready to start an application
-	xapp_tid = new_task(test_app_main, NULL, 0);
+	xapp_tid = new_task(test_app_main, (void*)t_xapp, 0);
 	xapp_tid = xapp_tid;
 	return t_xapp;
 }
 
 void xwnd_app_remove(void) {
+}
+
+int xwnd_app_put_message(int app_id, void * data, size_t size) {
+	int msg_pipe = xapp_reg.nodes[app_id].pipe_out;
+	int err;
+	if ((err = write (msg_pipe, data, size)) != size) {
+		return -1;
+	}
+	return 0;
 }

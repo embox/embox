@@ -88,15 +88,16 @@ static int exec (int argc, char ** argv) {
 			printf("BBBBBB");
 			return 1;
 		}
+		sleep(3);
 
-		while (1) {
+		/*while (1) {
 			if (!keyboard_has_symbol()) {
 				usleep(100);
 			}
 			else if ('q' == keyboard_getc()) {
 				break;
 			}
-		}
+		}*/
 		xwnd_quit();
 
 		return 0;

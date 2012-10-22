@@ -22,6 +22,7 @@ typedef struct sem sem_t;
 extern void sem_init(sem_t *s, int val);
 extern void sem_enter(sem_t *s);
 extern void sem_leave(sem_t *s);
+extern int sem_tryenter(sem_t *s);
 
 #endif /* KERNEL_THREAD_SYNC_SEM_H_ */
 

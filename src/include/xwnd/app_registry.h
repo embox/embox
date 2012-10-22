@@ -9,6 +9,7 @@
 #define APP_REGISTRY_H_
 
 #include <xwnd/xwndapp.h>
+#include <kernel/thread/sync/sem.h>
 
 struct xwnd_app_registry_node {
 	int pipe_in;
@@ -26,5 +27,7 @@ struct xwnd_app_registry {
 int xwnd_app_reg_init (void);
 struct xwnd_application * xwnd_app_create (void);
 void xwnd_app_remove(void);
+int xwnd_app_put_message(int app_id, void * data, size_t size);
+int xwnd_app_set_msg_sem(void);
 
 #endif /* APP_REGISTRY_H_ */
