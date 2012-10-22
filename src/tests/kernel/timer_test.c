@@ -39,3 +39,51 @@ TEST_CASE("testing timer_set function") {
 
 	test_assert(tick_happened);
 }
+
+struct test2_data {
+	int tick_happened1;
+	int tick_happened2;
+	int error;
+};
+
+static void test_timer_handler1(sys_timer_t* timer, void *param) {
+	struct test2_data *data = (struct test2_data *) param;
+
+	if (data->tick_happened2 != 0) {
+		data->error = 1;
+	}
+
+	data->tick_happened1 = 1;
+
+}
+
+static void test_timer_handler2(sys_timer_t* timer, void *param) {
+	struct test2_data *data = (struct test2_data *) param;
+
+	data->tick_happened2 = 1;
+}
+
+TEST_CASE("Testing 2 timer_set, one must occur earlier.") {
+	unsigned long i;
+	sys_timer_t * timer, * timer2;
+
+	volatile struct test2_data data = {0, 0, 0};
+
+	if (timer_set(&timer, TIMER_ONESHOT, 50, test_timer_handler1, (void *) &data)) {
+		test_fail("failed to install timer");
+	}
+
+	if (timer_set(&timer2, TIMER_ONESHOT, 100, test_timer_handler2, (void *) &data)) {
+		test_fail("failed to install timer");
+	}
+
+	i = -1;
+
+	while (i-- && !data.tick_happened1 && !data.tick_happened2) {
+	}
+
+	timer_close(timer);
+	timer_close(timer2);
+
+	test_assert(0 == data.error);
+}
