@@ -32,6 +32,4 @@ typedef FS_FILE_ITERATOR (*FS_GETFILELISTITERATOR_FUNC) (void);
 
 //#include <file_op.h>
 
-extern node_t *root_fs_get_node(void);
-
 #endif /* FS_ROOTFS_H_ */

@@ -23,12 +23,6 @@ EMBOX_UNIT_INIT(unit_init);
 static node_t *root_node;
 static struct mount_params mp;
 
-
-node_t *rootfs_get_node(void) {
-	assert(NULL != root_node);
-	return root_node;
-}
-
 static int rootfs_mount(void *par) {
 	fs_drv_t *fsdrv;
 	struct mount_params *mp;
@@ -61,9 +55,10 @@ static int unit_init(void) {
 
 	mp.dev = OPTION_STRING_GET(src);
 	mp.dir = OPTION_STRING_GET(dst);
+	mp.ext = OPTION_STRING_GET(mntscript);
 
 	if(0 != *mp.dir) {
-		root_node = alloc_node(mp.dir);
+		root_node = get_root_node();
 		if (root_node == NULL) {
 			return -ENOMEM;
 		}

@@ -14,6 +14,7 @@ typedef struct mount_params {
 	char    *dev;
 	char    *dir;
 	node_t  *dev_node;
+	char    *ext;
 } mount_params_t;
 
 #endif /* MOUNT_H_ */

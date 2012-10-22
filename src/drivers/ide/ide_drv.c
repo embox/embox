@@ -1593,11 +1593,7 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 
 EMBOX_UNIT_INIT(unit_init);
 
-int unit_init (void) {
-	return 0;
-}
-
-int ide_init(int numhd) {
+static int ide_init(int numhd) {
 	int rc;
 	int masterif;
 	int slaveif;
@@ -1650,4 +1646,9 @@ int ide_init(int numhd) {
 slot_t *get_ide_drive(void) {
 	ide_init(4);
 	return &ide;
+}
+
+int unit_init (void) {
+	ide_init(4);
+	return 0;
 }

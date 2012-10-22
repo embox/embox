@@ -21,9 +21,11 @@ static void print_usage(void) {
 	printf("Usage: mount [-h] [-t fstype] dev dir\n");
 }
 
+#define NO_DEV_STR "\0\0"
 static int mount_dev(char *dev, char *fs_type, char *dir) {
 	mount_params_t param;
 	node_t *dev_node;
+	node_t virt_dev;
 	fs_drv_t * drv = NULL;
 
 	param.dev = dev;
@@ -33,6 +35,11 @@ static int mount_dev(char *dev, char *fs_type, char *dir) {
 		if(0 != strcmp((const char *) fs_type, "nfs")) {
 			printf("mount: no such device\n");
 			return -ENODEV;
+		}
+		else {
+			dev_node = &virt_dev;
+			param.dev = NO_DEV_STR;
+			param.ext = dev;
 		}
 	}
 	param.dev_node = dev_node;
