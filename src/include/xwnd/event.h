@@ -39,8 +39,8 @@ struct xwnd_event {
 
 extern int xwnd_app_send_event (int app_id, struct xwnd_event * event);
 extern int xwnd_app_send_quit_event (int app_id, int exit_status);
-int xwnd_app_send_kbd_event(int app_id, char key);
-int xwnd_app_send_sys_event(int app_id, enum xwnd_event_type event_type);
+extern int xwnd_app_send_kbd_event(int app_id, char key);
+extern int xwnd_app_send_sys_event(int app_id, enum xwnd_event_type event_type);
 
 
 #endif /* XWND_EVENT_H_ */

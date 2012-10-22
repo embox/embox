@@ -15,6 +15,8 @@
 #include <xwnd/window.h>
 #include <xwnd/xwndapp.h>
 
-struct xwnd_application * xwnd_start_application (void);
+typedef void (*xwnd_app_entry_point) (struct xwnd_application * arg);
+
+extern struct xwnd_application * xwnd_app_start (xwnd_app_entry_point);
 
 #endif /* XWND_H_ */

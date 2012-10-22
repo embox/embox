@@ -8,7 +8,7 @@
 #ifndef XWND_DRAW_HELPERS_H_
 #define XWND_DRAW_HELPERS_H_
 
-void xwnd_draw_horiz_line (unsigned x, unsigned y, unsigned l, unsigned c);
-void xwnd_draw_vert_line (unsigned x, unsigned y, unsigned l, unsigned c);
+extern void xwnd_draw_horiz_line (unsigned x, unsigned y, unsigned l, unsigned c);
+extern void xwnd_draw_vert_line (unsigned x, unsigned y, unsigned l, unsigned c);
 
 #endif /* XWND_DRAW_HELPERS_H_ */

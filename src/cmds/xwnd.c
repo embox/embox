@@ -90,14 +90,21 @@ static int exec (int argc, char ** argv) {
 		}
 		sleep(3);
 
-		/*while (1) {
+		while (1) {
 			if (!keyboard_has_symbol()) {
 				usleep(100);
 			}
-			else if ('q' == keyboard_getc()) {
-				break;
+			else {
+				char key = keyboard_getc();
+				if ('q' == key) {
+					xwnd_app_send_quit_event(app->app_id, 0);
+					sleep(1);
+					break;
+				} else {
+					xwnd_app_send_kbd_event(app->app_id, key);
+				}
 			}
-		}*/
+		}
 		xwnd_quit();
 
 		return 0;

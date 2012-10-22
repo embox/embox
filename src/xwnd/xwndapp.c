@@ -5,7 +5,7 @@
  *      Author: alexandr
  */
 
-#include <unistd.h> /*pipes()*/
+#include <unistd.h>
 #include <xwnd/xwndapp.h>
 #include <xwnd/app_registry.h>
 #include <xwnd/event.h>
@@ -25,21 +25,24 @@ int xwnd_app_set_event_handle (struct xwnd_application * app, enum xwnd_event_ty
 	return 0;
 }
 
-int xwnd_app_get_event (const struct xwnd_application * app, struct xwnd_event * event) {
+int xwnd_app_get_event (struct xwnd_application * app, struct xwnd_event * event) {
 	int err;
+	sem_enter(&(app->msg_sem));
 	err = read(app->pipe_in, event, sizeof(struct xwnd_event));
+	sem_leave(&(app->msg_sem));
 	if (err != sizeof(struct xwnd_event)) {
 		return 1;
 	}
 	return 0;
 }
 
-int xwnd_app_main_loop (const struct xwnd_application * app) {
+int xwnd_app_main_loop (struct xwnd_application * app) {
 	struct xwnd_event event;
 	int exit_status;
 	while (1) {
 		int err;
 		err = xwnd_app_get_event(app, &event);
+		usleep(50);
 		/*if (err) {
 			exit_status = -1;
 			break;

@@ -24,10 +24,10 @@ struct xwnd_app_registry {
 	struct xwnd_app_registry_node * nodes;
 };
 
-int xwnd_app_reg_init (void);
-struct xwnd_application * xwnd_app_create (void);
-void xwnd_app_remove(void);
-int xwnd_app_put_message(int app_id, void * data, size_t size);
-int xwnd_app_set_msg_sem(void);
+extern int xwnd_app_reg_init (void);
+extern struct xwnd_application * xwnd_app_create (void);
+extern void xwnd_app_remove(void);
+extern int xwnd_app_put_message(int app_id, void * data, size_t size);
+extern int xwnd_app_set_msg_sem(void);
 
 #endif /* APP_REGISTRY_H_ */

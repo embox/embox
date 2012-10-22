@@ -14,8 +14,8 @@ struct xwnd_widget_type {
 	void (*draw_wdg_fun)(struct xwnd_widget *);
 };
 
-int xwnd_register_widget_type (struct xwnd_widget_type * xwndwtype);
-void xwnd_unregister_widget_type (struct xwnd_widget_type * xwndwtype);
+extern int xwnd_register_widget_type (struct xwnd_widget_type * xwndwtype);
+extern void xwnd_unregister_widget_type (struct xwnd_widget_type * xwndwtype);
 
 struct xwnd_widget {
 	struct xwnd_widget_type * type;
@@ -37,8 +37,8 @@ struct xwnd_button {
 	char * text;
 };
 
-struct xwnd_window * xwnd_new_window (void);
-void xwnd_delete_window (struct xwnd_window * wnd);
-void xwnd_draw_window (struct xwnd_window * wnd);
+extern struct xwnd_window * xwnd_new_window (void);
+extern void xwnd_delete_window (struct xwnd_window * wnd);
+extern void xwnd_draw_window (struct xwnd_window * wnd);
 
 #endif /* XWND_WINDOW_H_ */

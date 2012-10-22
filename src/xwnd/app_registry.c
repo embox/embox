@@ -95,7 +95,11 @@ void xwnd_app_remove(void) {
 int xwnd_app_put_message(int app_id, void * data, size_t size) {
 	int msg_pipe = xapp_reg.nodes[app_id].pipe_out;
 	int err;
-	if ((err = write (msg_pipe, data, size)) != size) {
+	if (!sem_tryenter(&(xapp_reg.nodes[app_id].xapp->msg_sem))) {
+		err = write(msg_pipe, data, size);
+		sem_leave(&(xapp_reg.nodes[app_id].xapp->msg_sem));
+	}
+	if (err != size) {
 		return -1;
 	}
 	return 0;
