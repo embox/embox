@@ -44,9 +44,39 @@ EMBOX_UNIT_INIT(omap3_intc_init);
 #define OMAP35X_INTC_PENDING_FIQ(n) (OMAP35X_INTC_BASE + 0x0000009C + (n) * 0x20)
 #define OMAP35X_INTC_ILR(m)         (OMAP35X_INTC_BASE + 0x00000100 + (m) * 0x4)
 
-static int omap3_intc_init(void) {
-	int n, m;
+extern char trap_table_start, trap_table_end;
 
+uint32_t load_sctlr(void) { uint32_t reg; asm volatile ("mrc  p15, 0, %0, c1, c0, 0" : "=r" (reg)); return reg; }
+void store_sctlr(uint32_t reg) { asm volatile ("mcr  p15, 0, %0, c1, c0, 0" :: "r" (reg)); }
+
+uint32_t load_snvbar(void) { uint32_t reg; asm volatile ("mrc  p15, 0, %0, c12, c0, 0" : "=r" (reg)); return reg; }
+void store_snvbar(uint32_t reg) { asm volatile ("mcr  p15, 0, %0, c12, c0, 0" :: "r" (reg)); }
+
+ void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
+	size_t lenw = (size_t) ((len & (~3)) >> 2);
+	volatile uint32_t *srcw = (uint32_t*) ((uint32_t) (src) & (~3));
+
+	while (lenw--) {
+		*dest++ = *srcw++;
+	}
+	if (len & (~3)) {
+		*dest++ = *srcw++;
+	}
+}
+#include <prom/prom_printf.h>
+#include <string.h>
+static int omap3_intc_init(void) {
+	memcpy32((uint32_t *)0x4020f800, &trap_table_start, (size_t)&trap_table_end - (size_t)&trap_table_start);
+	__asm__ __volatile__ ("swi 15");
+#if 0
+	store_snvbar((uint32_t)&trap_table_start);
+	prom_printf("snvbar: 0x%x\n", load_snvbar());
+	memcpy32((uint32_t *)0x0000, &trap_table_start, (size_t)&trap_table_end - (size_t)&trap_table_start);
+	store_sctlr(load_sctlr() | 0 << 13);
+	__asm__ __volatile__ ("swi 15");
+#endif
+#if 0
+	int n, m;
 	REG_STORE(OMAP35X_INTC_SYSCONFIG, 0x1);
 	REG_STORE(OMAP35X_INTC_IDLE, 0x0);
 
@@ -58,7 +88,7 @@ static int omap3_intc_init(void) {
 		REG_STORE(OMAP35X_INTC_MIR(n), 0x0);
 		REG_STORE(OMAP35X_INTC_MIR_CLEAR(n), 0x1);
 	}
-
+#endif
 	return 0;
 }
 

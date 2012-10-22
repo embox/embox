@@ -28,13 +28,16 @@
 
 .extern irq_handler
 .global start
+.global trap_table_start
+.global trap_table_end
 .section .trap_table, "x"
+trap_table_start:
 /* trap table
  * this code specific for ARM7TDMI cores
  *
  * actually, this is general for all ARM cores
  */
-    ldr pc, reset_handler_addr
+;    ldr pc, reset_handler_addr
     ldr pc, undef_handler_addr
     ldr pc, swi_handler_addr
     ldr pc, prefetch_abt_handler_addr
@@ -43,8 +46,8 @@
     ldr pc, irq_handler_addr
     ldr pc, fiq_handler_addr
 
-reset_handler_addr:
-    .word reset_handler
+;reset_handler_addr:
+;    .word reset_handler
 undef_handler_addr:
     .word undef_handler
 swi_handler_addr:
@@ -57,6 +60,7 @@ irq_handler_addr:
     .word irq_handler
 fiq_handler_addr:
     .word fiq_handler
+trap_table_end:
 
 /* stubs */
 undef_handler:
