@@ -7,6 +7,7 @@
  * @author Ilia Vaprol
  */
 
+#include <string.h>
 #include <net/arp_queue.h>
 #include <util/hashtable.h>
 #include <kernel/thread/event.h>
@@ -22,6 +23,7 @@
 #include <assert.h>
 #include <kernel/softirq_lock.h>
 #include <net/route.h>
+
 
 EMBOX_UNIT_INIT(arp_queue_init);
 
@@ -63,7 +65,7 @@ static uint32_t get_msec(void) {
 void arp_queue_process(struct sk_buff *arp_skb) {
 	int res;
 	uint32_t now, lifetime;
-	in_addr_t resolved_ip;
+	in_addr_t *resolved_ip;
 	struct arp_queue_item *waiting_item;
 	struct event *sock_ready;
 	struct arpg_stuff arph_stuff;
@@ -73,9 +75,9 @@ void arp_queue_process(struct sk_buff *arp_skb) {
 
 	now = get_msec();
 	arpg_make_stuff(arp_skb->nh.arpgh, &arph_stuff);
-	resolved_ip = *(in_addr_t *)arph_stuff.spa;
+	resolved_ip = (in_addr_t *) arph_stuff.spa;
 
-	while ((waiting_item = hashtable_get(arp_queue_table, &resolved_ip)) != NULL) {
+	while ((waiting_item = hashtable_get(arp_queue_table, resolved_ip)) != NULL) {
 		assert(waiting_item->skb != NULL);
 
 		/* calculate experience */
@@ -111,7 +113,7 @@ void arp_queue_process(struct sk_buff *arp_skb) {
 free_skb_and_item:
 		skb_free(waiting_item->skb);
 free_item:
-		hashtable_del(arp_queue_table, &resolved_ip);
+		hashtable_del(arp_queue_table, resolved_ip);
 		pool_free(&arp_queue_item_pool, waiting_item);
 	}
 }
@@ -156,15 +158,30 @@ int arp_queue_add(struct sk_buff *skb) {
 	return 0;
 }
 
+/* referencing to unaligned word pointer cannot be made on some arch,
+ * ensuring it's aligned
+ */
+static in_addr_t addr_by_key(void *key) {
+	const unsigned int mask = sizeof(in_addr_t) - 1;
+	in_addr_t addr_buf = 0;
+
+	if (((int) key & mask) == 0) {
+		return * (in_addr_t *) key;
+	}
+
+	memcpy(&addr_buf, key, sizeof(in_addr_t));
+	return addr_buf;
+}
+
 static size_t get_hash(void *key) {
-	return (size_t)*(in_addr_t *)key;
+	return (size_t) addr_by_key(key);
 }
 
 static int cmp_key(void *key1, void *key2) {
 	in_addr_t ip1, ip2;
 
-	ip1 = *(in_addr_t *)key1;
-	ip2 = *(in_addr_t *)key2;
+	ip1 = addr_by_key(key1);
+	ip2 = addr_by_key(key2);
 	return (ip1 < ip2 ? -1 : ip1 > ip2);
 }
 
