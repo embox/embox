@@ -66,13 +66,16 @@ void store_snvbar(uint32_t reg) { asm volatile ("mcr  p15, 0, %0, c12, c0, 0" ::
 #include <prom/prom_printf.h>
 #include <string.h>
 static int omap3_intc_init(void) {
+#if 0
 	memcpy32((uint32_t *)0x4020f800, &trap_table_start, (size_t)&trap_table_end - (size_t)&trap_table_start);
 	__asm__ __volatile__ ("swi 15");
-#if 0
+#endif
+#if 1
 	store_snvbar((uint32_t)&trap_table_start);
-	prom_printf("snvbar: 0x%x\n", load_snvbar());
-	memcpy32((uint32_t *)0x0000, &trap_table_start, (size_t)&trap_table_end - (size_t)&trap_table_start);
-	store_sctlr(load_sctlr() | 0 << 13);
+	/*prom_printf("snvbar: 0x%x\n", load_snvbar());*/
+	/*memcpy32((uint32_t *)0xffff0000, &trap_table_start, (size_t)&trap_table_end - (size_t)&trap_table_start);*/
+	/*store_sctlr(load_sctlr() | 1 << 13);*/
+	__asm__ __volatile__ ("swi 15");
 	__asm__ __volatile__ ("swi 15");
 #endif
 #if 0

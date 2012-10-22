@@ -13,7 +13,6 @@
 .global	swi_handler
 .global	irq_handler
 .global irq_def_handler
-
 irq_def_handler:
 	b irq_def_handler
 
@@ -47,6 +46,6 @@ irq_handler:
 	b die
 
 swi_handler:
-	/*unimplemented */
+	bl swi_handler_c
 die:
 	b die
