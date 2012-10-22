@@ -6,10 +6,11 @@
  * @author Alexandr Chernakov
  */
 
-#ifndef BMP_H_
-#define BMP_H_
+#ifndef XWND_BMP_H_
+#define XWND_BMP_H_
 
 #include <stdint.h>
+#include <xwnd/draw_helpers.h>
 
 #define XWND_BMP_MAGIC 0x00
 #define XWND_BMP_PX_OFFSET 0x0A
@@ -44,4 +45,4 @@ extern void xwnd_bmp_unload (struct xwnd_bmp_image * img);
 extern void xwnd_bmp_draw (struct xwnd_bmp_image * img);
 extern enum xwnd_bmp_err xwnd_bmp_get_errno (void);
 
-#endif /* BMP_H_ */
+#endif /* XWND_BMP_H_ */

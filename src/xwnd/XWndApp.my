@@ -1,13 +1,10 @@
 package embox.xwnd
 
-module bmp {
+module xwndapp {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	@IncludePath("$(SRC_DIR)/include/drivers")
-	source "bmp.c"
+	source "xwndapp.c"
 
 	depends embox.lib.LibC
-	depends embox.driver.video.vesadrv
-	depends embox.xwnd.draw_helpers
-
 }

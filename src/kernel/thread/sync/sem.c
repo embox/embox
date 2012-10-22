@@ -44,6 +44,16 @@ static int tryenter_sched_lock(sem_t *s) {
 	return 0;
 }
 
+int sem_tryenter(sem_t *s) {
+	int err;
+	sched_lock();
+	{
+		err = tryenter_sched_lock(s);
+	}
+	sched_unlock();
+	return err;
+}
+
 void sem_leave(sem_t *s) {
 	assert(s);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));

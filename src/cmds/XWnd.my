@@ -16,4 +16,8 @@ module xwnd {
 
 	depends embox.lib.LibC
 	depends embox.driver.video.vesadrv
+	depends embox.xwnd.app_registry
+	depends embox.xwnd.bmp
+	depends embox.xwnd.draw_helpers
+	depends embox.xwnd.xwndapp
 }

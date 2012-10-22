@@ -7,35 +7,34 @@
  */
 
 
-#include <embox/cmd.h>
 #include <stdio.h>
-#include <vesa.h>
+#include <kernel/time/timer.h>
+#include <kernel/task.h>
+#include <drivers/vesa.h>
+#include <drivers/keyboard.h>
+#include <embox/cmd.h>
 #include <xwnd/xwnd.h>
 #include <xwnd/bmp.h>
-#include <asm/io.h>
-
-void xwnd_draw_horiz_line (unsigned x, unsigned y, unsigned l, unsigned c) {
-	int i;
-	for (i = 0; i <= l; i++) {
-		vesa_put_pixel(x + i, y, c);
-	}
-}
-
-void xwnd_draw_vert_line (unsigned x, unsigned y, unsigned l, unsigned c) {
-	int i;
-	for (i = 0; i <= l; i++) {
-		vesa_put_pixel(x, y + i, c);
-	}
-}
-
-void xwnd_draw_window (struct xwnd_window * wnd) {
-	xwnd_draw_vert_line  (wnd->x, wnd->y, wnd->ht, 2);
-	xwnd_draw_horiz_line (wnd->x, wnd->y, wnd->wd, 2);
-	xwnd_draw_vert_line  (wnd->x + wnd->wd, wnd->y, wnd->ht, 2);
-	xwnd_draw_horiz_line (wnd->x, wnd->y + wnd->ht, wnd->wd, 2);
-}
+#include <xwnd/app_registry.h>
 
 EMBOX_CMD(exec);
+
+
+int xwnd_init(void);
+int xwnd_start(void);
+int xwnd_widgets_init(void);
+void xwnd_quit(void);
+
+int xwnd_send_app_msg(void);
+
+int xwnd_init() {
+	vesa_init_mode(VESA_MODE_DEFAULT);
+	vesa_clear_screen();
+	return 0;
+}
+void xwnd_quit(){
+	vesa_quit_mode();
+}
 
 static int exec (int argc, char ** argv) {
 	struct xwnd_bmp_image * img;
@@ -48,23 +47,67 @@ static int exec (int argc, char ** argv) {
 		}
 
 		if (argc == 2) {
-			vesa_init_mode(VESA_MODE_DEFAULT);
-			vesa_clear_screen();
+			xwnd_init();
+
 			xwnd_bmp_draw(img);
 			xwnd_bmp_unload(img);
-			//vesa_quit_mode();
+			while (1) {
+				if (!keyboard_has_symbol()) {
+					usleep(100);
+				}
+				else if ('q' == keyboard_getc()) {
+					break;
+				}
+			}
+
+			xwnd_quit();
 			return 0;
 		}
 		if (argc > 2)
 		{
-			printf("w/h: %d/%d, bpp: %d, ERR: %d\n", img->width, img->height, img->bpp, xwnd_bmp_get_errno());
+
+			printf("w/h: %d/%d, bpp: %d, ERR: %d\n",
+				img->width, img->height, img->bpp, xwnd_bmp_get_errno());
 			xwnd_bmp_unload(img);
 			return 0;
 		}
 	}
 	else {
-		printf("Need more arguments\n");
-		return 1;
+		int err;
+		struct xwnd_application * app;
+
+		xwnd_init();
+
+		err = xwnd_app_reg_init();
+		if (err) {
+			printf ("AAAAA");
+			return 1;
+		}
+		app = xwnd_app_create();
+		if (!app) {
+			printf("BBBBBB");
+			return 1;
+		}
+		sleep(3);
+
+		while (1) {
+			if (!keyboard_has_symbol()) {
+				usleep(100);
+			}
+			else {
+				char key = keyboard_getc();
+				if ('q' == key) {
+					xwnd_app_send_quit_event(app->app_id, 0);
+					sleep(1);
+					break;
+				} else {
+					xwnd_app_send_kbd_event(app->app_id, key);
+				}
+			}
+		}
+		xwnd_quit();
+
+		return 0;
 	}
 	return 1;
 }
