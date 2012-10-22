@@ -26,13 +26,10 @@
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
-#include <kernel/time/timer.h>
 
 #include <stdio.h>
 
 static void sched_tick(sys_timer_t *timer, void *param);
-
-static sys_timer_t *tick_timer;
 
 static void change_thread_priority(struct prioq *pq, struct thread *t,
 		int new_priority);
@@ -58,10 +55,14 @@ void runq_init(struct runq *rq, struct thread *current, struct thread *idle) {
 
 	/* Initializing tick timer. */
 	/* TODO: Error if not set timer and timer close. */
-	if (timer_set(&tick_timer, TIMER_PERIODIC,
+	if (timer_set(&rq->tick_timer, TIMER_PERIODIC,
 			OPTION_GET(NUMBER, tick_interval), sched_tick, NULL)) {
 		printf("Scheduler initialization failed!\n");
 	}
+}
+
+void runq_fini(struct runq *rq) {
+	timer_close(rq->tick_timer);
 }
 
 static void sched_tick(sys_timer_t *timer, void *param) {

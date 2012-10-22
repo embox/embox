@@ -19,6 +19,7 @@ static struct thread current, idle;
 EMBOX_TEST_SUITE("priority_based scheduling algorithm tests");
 
 TEST_SETUP(setup);
+TEST_TEARDOWN(unsetup);
 
 static void setup_thread(struct thread *t, thread_priority_t prio) {
 	t->state = thread_state_init();
@@ -187,6 +188,12 @@ static int setup(void) {
 	setup_thread(&idle, THREAD_PRIORITY_MIN);
 
 	runq_init(&rq, &current, &idle);
+
+	return 0;
+}
+
+static int unsetup(void) {
+	runq_fini(&rq);
 
 	return 0;
 }

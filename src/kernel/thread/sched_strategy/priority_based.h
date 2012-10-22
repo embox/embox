@@ -12,6 +12,7 @@
 #include <lib/list.h>
 #include <util/slist.h>
 #include <util/prioq.h>
+#include <kernel/time/timer.h>
 
 #include <kernel/thread/startq.h>
 #include <kernel/thread/sched_priority.h>
@@ -25,6 +26,8 @@ struct sched_strategy_data {
 struct runq {
 	struct thread *current;
 	struct prioq pq;
+
+	sys_timer_t *tick_timer;
 };
 
 struct sleepq {
