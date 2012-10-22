@@ -39,6 +39,10 @@ typedef struct {
 		(s)->fds_bits[_FD_BITWORD(f)] |= _FD_BITMASK(f); \
 	} while(0)
 
+/* Tests to see if a file descriptor is part of the set */
+#define FD_ISSET(f, s) \
+	((s)->fds_bits[_FD_BITWORD(f)] & _FD_BITMASK(f))
+
 /**  Remove a given file descriptor from a set */
 #define FD_CLR(f, s) \
 	do {                                                        \

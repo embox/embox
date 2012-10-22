@@ -39,6 +39,7 @@ static module FileTasksBasic extends FileApi {
 	depends embox.kernel.task.idx_table
 	depends embox.kernel.task.errno
 	depends posix_env
+	depends io_sync_api
 
 }
 
@@ -57,3 +58,16 @@ module bootstrap_posix_env extends posix_env {
 	depends embox.compat.posix.idx.dup
 }
 
+@DefaultImpl(io_sync_simple)
+abstract module io_sync_api {
+	depends embox.kernel.irq_lock
+}
+
+module io_sync_simple extends io_sync_api {
+	source "io_sync_simple.c"
+}
+
+module io_sync extends io_sync_api {
+	source "io_sync.c"
+	depends embox.kernel.thread.event
+}

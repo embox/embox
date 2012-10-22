@@ -28,13 +28,12 @@ IRQ_ENTRY(13) /* math co-processor/integrated FPU/inter-processor interrupt(use 
 IRQ_ENTRY(14) /* primary ATA channel */
 IRQ_ENTRY(15) /* secondary ATA channel */
 
+	.section .traps.text
+
 irq_stub:
 	SAVE_ALL
 
-	mov     %esp, %eax
-
-	.global irq_handler_return_pointer
+	mov     %esp, %eax     /* Used for fastcall of handler */
 	call    irq_handler
-irq_handler_return_pointer:
 
 	RESTORE_ALL

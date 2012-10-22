@@ -44,7 +44,8 @@ static int tcp_v4_init_sock(struct sock *sk) {
 	sock.tcp_sk->last_activity = 0; // TODO 0 or not?
 	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT * USEC_PER_MSEC;
 	INIT_LIST_HEAD(&sock.tcp_sk->conn_wait);
-	event_init(&sock.tcp_sk->new_conn, NULL);
+
+	event_init(&sock.tcp_sk->new_conn, "new_conn");
 
 	return ENOERR;
 }

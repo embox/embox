@@ -1,7 +1,6 @@
 package embox.driver.diag
 
-abstract module diag_api {
-}
+abstract module diag_api { }
 
 module apbuart extends diag_api {
 	option number baud_rate

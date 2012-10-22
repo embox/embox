@@ -61,8 +61,6 @@ int task_idx_data_free(struct idx_desc *idx) {
 
 	objfree(&idx_data_pool, idx->data);
 	return 0;
-
-
 }
 
 int task_idx_table_first_unbinded(struct task_idx_table *res) {
@@ -101,6 +99,9 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
 		return -1;
 	}
 
+	data->read_state.unblock = data->write_state.unblock = NULL;
+	data->write_state.can_perform_op = 1;
+
 	return new_fd;
 }
 
@@ -128,7 +129,8 @@ static void task_idx_table_inherit(struct task *task, struct task *parent) {
 	for (int i = 0; i < TASKS_RES_QUANTITY; i++) {
 		if (task_idx_table_is_binded(parent_idx_table, i)) {
 			struct idx_desc *par_idx = task_idx_table_get(parent_idx_table, i);
-			assert(0 == task_idx_table_set(idx_table, i, task_idx_desc_alloc(par_idx->data)),
+			struct idx_desc *d = task_idx_desc_alloc(par_idx->data);
+			assert(0 == task_idx_table_set(idx_table, i, d),
 					"task_idx_table_init not properly inited idx table");
 
 		}

@@ -12,6 +12,7 @@
 
 #include <fs/fs_drv.h>
 #include <fs/node.h>
+#include <fs/vfs.h>
 
 #include <fs/mount.h>
 
@@ -20,34 +21,49 @@
 EMBOX_UNIT_INIT(unit_init);
 
 static node_t *root_node;
-
-
-node_t *rootfs_get_node(void) {
-	assert(NULL != root_node);
-	return root_node;
-}
+static struct mount_params mp;
 
 static int rootfs_mount(void *par) {
 	fs_drv_t *fsdrv;
-	struct mount_params mp;
+	struct mount_params *mp;
 
-	if (NULL != (fsdrv = filesystem_find_drv("ramfs"))) {
+	static const char* fs_type = OPTION_STRING_GET(fstype);
+	mp = (mount_params_t *) par;
 
-		root_node->fs_type = fsdrv;
-		mp.dir = "/";
-		fsdrv->fsop->mount(&mp);
-	}
 	if (NULL != (fsdrv = filesystem_find_drv("devfs"))) {
 		fsdrv->fsop->mount(NULL);
 	}
+	fsdrv = filesystem_find_drv(fs_type);
+
+	if(0 != *mp->dev) {
+		if (NULL == (mp->dev_node = vfs_find_node(mp->dev, NULL))) {
+			if(NULL != (mp->dev_node = vfs_add_path(mp->dev, NULL))) {
+				mp->dev_node->fs_type = fsdrv;
+			}
+		}
+	}
+
+	if (NULL != fsdrv) {
+		root_node->fs_type = fsdrv;
+		fsdrv->fsop->mount(mp);
+	}
+
 	return 0;
 }
 
 static int unit_init(void) {
-	root_node = alloc_node("/");
-	if (root_node == NULL) {
-		return -ENOMEM;
+
+	mp.dev = OPTION_STRING_GET(src);
+	mp.dir = OPTION_STRING_GET(dst);
+	mp.ext = OPTION_STRING_GET(mntscript);
+
+	if(0 != *mp.dir) {
+		root_node = get_root_node();
+		if (root_node == NULL) {
+			return -ENOMEM;
+		}
+
+		return rootfs_mount(&mp);
 	}
-	rootfs_mount(NULL);
-	return 0;
+	return -ENOENT;
 }

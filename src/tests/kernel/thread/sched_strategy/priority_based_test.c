@@ -4,157 +4,189 @@
  *
  * @date 20.03.11
  * @author Alina Kramar
+ * @author Eldar Abusalimov
  */
 
 #include <embox/test.h>
 
-#include <kernel/thread/sched_policy.h>
 #include <kernel/thread/api.h>
+#include <kernel/thread/sched_strategy.h>
+#include <kernel/thread/state.h>
 
-
+struct runq rq;
 static struct thread current, idle;
 
 EMBOX_TEST_SUITE("priority_based scheduling algorithm tests");
 
 TEST_SETUP(setup);
 
-TEST_CASE("initially sched_policy_current should return a current thread") {
-	test_assert_equal(sched_policy_current(), &current);
+static void setup_thread(struct thread *t, thread_priority_t prio) {
+	t->state = thread_state_init();
+	t->priority = prio;
+	sched_strategy_init(&t->sched);
 }
 
-TEST_CASE("sched_policy_switch should return a current when there is no more "
+TEST_CASE("initially runq_current should return a current thread") {
+	test_assert_equal(runq_current(&rq), &current);
+}
+
+TEST_CASE("runq_current should return a current when there is no more "
 		"thread") {
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &current);
+	test_assert_false(runq_switch(&rq));
 }
 
-TEST_CASE("current thread shouldn't be changed until sched_policy_switch "
+TEST_CASE("current thread shouldn't be changed until runq_switch "
 		"is called") {
-	struct thread thread = { .priority = 1 };
-	sched_policy_start(&thread);
-	test_assert_equal(sched_policy_current(), &current);
+	struct thread thread;
+	setup_thread(&thread, THREAD_PRIORITY_MAX);
+	runq_start(&rq, &thread);
+	test_assert_equal(runq_current(&rq), &current);
 }
 
-TEST_CASE("sched_policy_switch should return added thread after preemption") {
-	struct thread thread = { .priority = 1 };
-	sched_policy_start(&thread);
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &thread);
+TEST_CASE("runq_switch should return true after preemption") {
+	struct thread thread;
+	setup_thread(&thread, THREAD_PRIORITY_MAX);
+	runq_start(&rq, &thread);
+	test_assert_true(runq_switch(&rq));
 }
 
-TEST_CASE("sched_policy_switch should switch to the most priority thread") {
-	struct thread bg = { .priority = 127 }, fg = { .priority = 0 };
+TEST_CASE("runq_switch should switch to the most priority thread") {
+	struct thread bg, fg;
+	setup_thread(&bg, THREAD_PRIORITY_LOW);
+	setup_thread(&fg, THREAD_PRIORITY_HIGH);
 
-	sched_policy_start(&bg);
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &bg);
+	test_assert_equal(runq_current(&rq), &current);
 
-	sched_policy_start(&fg);
-	test_assert_equal(sched_policy_current(), &bg);
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &fg);
+	test_assert_false(runq_start(&rq, &bg));
+
+	test_assert_equal(runq_current(&rq), &current);
+
+	test_assert_true(runq_start(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
+
+	test_assert_equal(runq_current(&rq), &fg);
+
+	test_assert_false(runq_finish(&rq, &bg));
+	test_assert_true(runq_finish(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
+
+	test_assert_equal(runq_current(&rq), &current);
 }
 
 TEST_CASE("Adding and subsequent removing a background thread shouldn't"
-		"change the behavior of sched_policy_switch") {
-	struct thread bg = { .priority = 127 }, fg = { .priority = 0 };
-	sched_policy_start(&bg);
-	sched_policy_start(&fg);
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &fg);
-	sched_policy_stop(&bg);
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &fg);
+		"change the behavior of runq_switch") {
+	struct thread bg, fg;
+	setup_thread(&bg, THREAD_PRIORITY_LOW);
+	setup_thread(&fg, THREAD_PRIORITY_HIGH);
+
+	test_assert_true(runq_start(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
+
+	test_assert_false(runq_start(&rq, &bg));
+	test_assert_equal(runq_current(&rq), &fg);
+	test_assert_false(runq_finish(&rq, &bg));
+	test_assert_equal(runq_current(&rq), &fg);
+
+	test_assert_true(runq_finish(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
+
+	test_assert_equal(runq_current(&rq), &current);
 }
 
-TEST_CASE("sched_policy_switch should switch back to a background after removing "
-		"a foreground thread") {
-	struct thread bg = { .priority = 127 }, fg = { .priority = 0 };
-	sched_policy_start(&bg);
-	sched_policy_start(&fg);
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &fg);
-	sched_policy_stop(&fg);
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &bg);
+TEST_CASE("runq_switch should switch back to the current after removing "
+		"a thread with higher priority") {
+	struct thread fg;
+	setup_thread(&fg, THREAD_PRIORITY_HIGH);
+
+	test_assert_equal(runq_current(&rq), &current);
+
+	test_assert_true(runq_start(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
+
+	test_assert_equal(runq_current(&rq), &fg);
+
+	test_assert_true(runq_finish(&rq, &fg));
+	test_assert_true(runq_switch(&rq));
+
+	test_assert_equal(runq_current(&rq), &current);
 }
 
-TEST_CASE("sched_policy_switch should return background thread after serial adding "
-		"and removing a foreground thread") {
-	struct thread bg = { .priority = 127 }, fg = { .priority = 0 };
-	sched_policy_start(&bg);
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &bg);
-	sched_policy_start(&fg);
-	sched_policy_stop(&fg);
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &bg);
+TEST_CASE("adding and consequent removing of a foreground thread without "
+		"calling runq_switch shouldn't affect the result of runq_current") {
+	struct thread fg;
+	setup_thread(&fg, THREAD_PRIORITY_HIGH);
+
+	test_assert_equal(runq_current(&rq), &current);
+
+	test_assert_true(runq_start(&rq, &fg));
+	test_assert_equal(runq_current(&rq), &current);
+
+	test_assert_false(runq_finish(&rq, &fg));
+	test_assert_equal(runq_current(&rq), &current);
+
+	test_assert_false(runq_switch(&rq));
+	test_assert_equal(runq_current(&rq), &current);
 }
 
-TEST_CASE("removing a thread with _scheduler_remove shouldn't affect on rest "
-		"threads with the same priority") {
-	struct thread even = { .priority = 127 }, odd = { .priority = 127 };
-	sched_policy_start(&even);
-	sched_policy_start(&odd);
-	test_assert_equal(sched_policy_current(), &idle);
-	sched_policy_stop(&even);
-	test_assert_equal(sched_policy_switch(sched_policy_current()), &odd);
+TEST_CASE("removing a thread shouldn't affect the rest threads "
+		"with the same priority") {
+	struct thread even, odd;
+	setup_thread(&even, THREAD_PRIORITY_HIGH);
+	setup_thread(&odd, THREAD_PRIORITY_HIGH);
+
+	test_assert_equal(runq_current(&rq), &current);
+
+	test_assert_true(runq_start(&rq, &even));
+	test_assert_true(runq_start(&rq, &odd));
+
+	test_assert_equal(runq_current(&rq), &current);
+
+	test_assert_true(runq_switch(&rq));
+
+	test_assert_true(runq_finish(&rq, &even));
+	test_assert_true(runq_switch(&rq));
+
+	test_assert_equal(runq_current(&rq), &odd);
+
+	test_assert_true(runq_finish(&rq, &odd));
+	test_assert_true(runq_switch(&rq));
+
+	test_assert_equal(runq_current(&rq), &current);
+
 }
 
-TEST_CASE("sched_policy_start should return true after adding thread with highest "
+TEST_CASE("runq_start should return true after adding thread with higher "
 		"priority") {
-	struct thread t = { .priority = 127 };
-	test_assert_true(sched_policy_start(&t));
+	struct thread fg;
+	setup_thread(&fg, THREAD_PRIORITY_HIGH);
+
+	test_assert_equal(runq_current(&rq), &current);
+
+	test_assert_true(runq_start(&rq, &fg));
+	test_assert_false(runq_finish(&rq, &fg));
+	test_assert_false(runq_switch(&rq));
+
+	test_assert_equal(runq_current(&rq), &current);
 }
 
-TEST_CASE("sched_policy_start should return false then current thread has "
-		"a higher priority than added thread priority") {
-	struct thread first = { .priority = 127 }, second = { .priority = 0 };
-	test_assert_true(sched_policy_start(&second));
-	sched_policy_switch(sched_policy_current());
-	test_assert_false(sched_policy_start(&first));
-}
+TEST_CASE("runq_start should return false after adding thread with lower "
+		"priority") {
+	struct thread bg;
+	setup_thread(&bg, THREAD_PRIORITY_LOW);
 
-TEST_CASE("sched_policy_start should return true after adding thread with highest "
-		"priority before switch") {
-	struct thread first = { .priority = 127 }, second = { .priority = 0 };
-	test_assert_true(sched_policy_start(&first));
-	test_assert_true(sched_policy_start(&second));
-}
+	test_assert_equal(runq_current(&rq), &current);
 
-TEST_CASE("sched_policy_start should return false after adding thread with "
-		"THREAD_MIN_PRIORITY") {
-	struct thread t = { .priority = 255 };
-	test_assert_false(sched_policy_start(&t));
-}
+	test_assert_false(runq_start(&rq, &bg));
+	test_assert_false(runq_finish(&rq, &bg));
 
-TEST_CASE("sched_policy_stop should return false after removing not current "
-		"thread") {
-	struct thread first = { .priority = 127 }, second = { .priority = 255 };
-	sched_policy_start(&first);
-	sched_policy_start(&second);
-	sched_policy_switch(sched_policy_current());
-	test_assert_false(sched_policy_stop(&second));
-}
-
-TEST_CASE("sched_policy_stop should return true after removing current "
-		"thread") {
-	struct thread first = { .priority = 127 };
-	sched_policy_start(&first);
-	sched_policy_switch(sched_policy_current());
-	test_assert_true(sched_policy_stop(&first));
-}
-
-TEST_CASE("sched_policy_stop should return true after removing current "
-		"thread") {
-	struct thread first = { .priority = 127 }, second = { .priority = 127 };
-	sched_policy_start(&first);
-	sched_policy_start(&second);
-	sched_policy_switch(sched_policy_current());
-	test_assert_true(sched_policy_stop(&first));
+	test_assert_equal(runq_current(&rq), &current);
 }
 
 static int setup(void) {
-	INIT_LIST_HEAD(&idle.sched_list);
-	INIT_LIST_HEAD(&current.sched_list);
+	setup_thread(&current, THREAD_PRIORITY_NORMAL);
+	setup_thread(&idle, THREAD_PRIORITY_MIN);
 
-	current.priority = THREAD_PRIORITY_TOTAL / 2;
-	idle.priority = THREAD_PRIORITY_MIN;
-
-	current.state = THREAD_STATE_RUNNING;
-	idle.state = THREAD_STATE_RUNNING;
-
-	sched_policy_init(&current, &idle);
+	runq_init(&rq, &current, &idle);
 
 	return 0;
 }

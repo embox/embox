@@ -4,8 +4,7 @@ package embox.driver.serial
  * Unused files: skyeye_uart.c
  */
 
-abstract module serial {
-}
+abstract module serial { }
 
 module apbuart extends serial {
 	option number baud_rate

@@ -1,4 +1,5 @@
 /**
+ * @file
  * @brief Simple implementation of timer scheduler using single array
  *
  * @author Nikolay Malkovsky
@@ -60,4 +61,3 @@ void timer_strat_stop(struct sys_timer *ptimer) {
 }
 
 #endif /* SINGLE_ARRAY_IMPL */
-

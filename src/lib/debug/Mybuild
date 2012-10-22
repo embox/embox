@@ -4,8 +4,17 @@ static module Symbol {
 	source "symbol.c"
 }
 
-static module Backtrace {
-	source "backtrace.c"
+@Mandatory
+@DefaultImpl(Nobacktrace)
+abstract module backtrace_api {
+}
+
+module Backtrace extends backtrace_api {
+	source "backtrace.c", "backtrace.h"
 	depends embox.arch.stackframe
 	depends embox.lib.debug.Symbol
+}
+
+module Nobacktrace extends backtrace_api {
+	source "nobacktrace.h"
 }

@@ -1,3 +1,10 @@
+/**
+ * @file
+ *
+ * @date 01.12.10
+ * @author Nikolay Korotkiy
+ */
+
 #ifndef ARCH_X86_CONTEXT_H_
 #define ARCH_X86_CONTEXT_H_
 

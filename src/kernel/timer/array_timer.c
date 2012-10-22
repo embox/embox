@@ -1,4 +1,5 @@
 /**
+ * @file
  * @brief event/timer scheduling data structure
  *
  * @author Nikolay Malkovsky
@@ -89,5 +90,3 @@ void timer_strat_stop(struct sys_timer *ptimer) {
 }
 
 #endif /* DOUBLE_ARRAY_IMPL */
-
-

@@ -314,7 +314,7 @@ static int nfsfs_mount(void *par) {
 
 	strcpy(p_fs_fd->mnt_point, params->dir);
 
-	if(0 >  nfs_prepare(params->dev)) {
+	if(0 >  nfs_prepare(params->ext)) {
 		return -1;
 	}
 	if(0 >  nfs_client_init()) {

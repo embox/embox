@@ -1,4 +1,5 @@
-/*
+/**
+ * @file
  * @brief Kernel time
  *
  * @date 13.06.2012

@@ -1,10 +1,10 @@
 /**
+ * @file
  * @brief Exapmle for usage of priority queue
  *
  * @author Nikoaly Malkovsky
  * @date 12.04.12
  */
-
 
 #include <framework/example/self.h>
 #include <util/priority_q.h>

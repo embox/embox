@@ -12,9 +12,11 @@
 #include <kernel/thread/sched.h>
 #include "common.h"
 
-extern void context_enter_frame(struct context *ctx, void (*pc)(void));
+extern void context_enter_frame(struct context *ctx, void *pc);
+extern void context_push_stack(struct context *ctx, void *arg, size_t n);
 
 static int task_some_thd_run(struct task *task);
+
 
 void task_signal_send(struct task *task, int sig) {
 
@@ -41,13 +43,10 @@ static void task_terminate(int sig) {
 	task_exit(NULL);
 }
 
-static void task_global_sig_handler(void) {
-	struct task_signal_table *sig_table = task_self()->signal_table;
-	int sig_occured = sig_table->last_sig;
-
+static void task_sig_handler(int sig) {
 	sched_unlock();
 
-	task_signal_table_get(sig_table, sig_occured)(sig_occured);
+	task_signal_table_get(task_self()->signal_table, sig)(sig);
 
 	sched_lock();
 }
@@ -55,7 +54,8 @@ static void task_global_sig_handler(void) {
 static void task_signal_table_init(struct task *task, void *_signal_table) {
 	int sig;
 
-	struct task_signal_table *sig_table = (struct task_signal_table *) _signal_table;
+	struct task_signal_table *sig_table =
+		(struct task_signal_table *) _signal_table;
 
 	for (sig = 0; sig < TASK_SIGNAL_MAX_N; sig++) {
 		task_signal_table_set(sig_table, sig, task_terminate);
@@ -76,7 +76,9 @@ static int notify_hnd(struct thread *prev, struct thread *next) {
 	if (sig) {
 		sig_table->sig_mask &= ~(1 << sig);
 		sig_table->last_sig = sig;
-		context_enter_frame(&next->context, task_global_sig_handler);
+
+		context_push_stack(&next->context, &sig, sizeof(sig));
+		context_enter_frame(&next->context, task_sig_handler);
 	}
 
 

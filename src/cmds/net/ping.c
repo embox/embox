@@ -67,38 +67,48 @@ static void print_usage(void) {
 
 static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack, char *name) {
 	uint32_t start, delta;
-	union packet rx_pack;
+	union packet *rx_pack = malloc(sizeof(union packet));
 	struct sockaddr_in from;
 	char *dst_addr_str;
+	int res = 0;
 
+	if (rx_pack == NULL) {
+		LOG_ERROR("packet allocate fail");
+		return -1;
+
+	}
 	start = clock();
 	while ((delta = clock() - start) < timeout) {
 		/* we don't need to get pad data, only header */
-		if (!recvfrom(sock, rx_pack.packet_buff,
+		if (!recvfrom(sock, rx_pack->packet_buff,
 				IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE, 0,
 				(struct sockaddr *) &from, NULL)) {
 			continue;
 		}
-		if ((rx_pack.hdr.icmp_hdr.type != ICMP_ECHOREPLY) ||
-		    (ptx_pack->hdr.ip_hdr.daddr != rx_pack.hdr.ip_hdr.saddr) ||
-		    (ptx_pack->hdr.icmp_hdr.un.echo.id != rx_pack.hdr.icmp_hdr.un.echo.id) ||
-		    (ptx_pack->hdr.icmp_hdr.un.echo.sequence != rx_pack.hdr.icmp_hdr.un.echo.sequence)) {
+		if ((rx_pack->hdr.icmp_hdr.type != ICMP_ECHOREPLY) ||
+		    (ptx_pack->hdr.ip_hdr.daddr != rx_pack->hdr.ip_hdr.saddr) ||
+		    (ptx_pack->hdr.icmp_hdr.un.echo.id != rx_pack->hdr.icmp_hdr.un.echo.id) ||
+		    (ptx_pack->hdr.icmp_hdr.un.echo.sequence != rx_pack->hdr.icmp_hdr.un.echo.sequence)) {
 			continue;
 		}
-		dst_addr_str = inet_ntoa(*(struct in_addr *) &rx_pack.hdr.ip_hdr.saddr);
+		dst_addr_str = inet_ntoa(*(struct in_addr *) &rx_pack->hdr.ip_hdr.saddr);
 		printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d ",
-			(int) (ntohs(rx_pack.hdr.ip_hdr.tot_len) - IP_MIN_HEADER_SIZE - ICMP_HEADER_SIZE),
+			(int) (ntohs(rx_pack->hdr.ip_hdr.tot_len) - IP_MIN_HEADER_SIZE - ICMP_HEADER_SIZE),
 			name, dst_addr_str,
-			ntohs(rx_pack.hdr.icmp_hdr.un.echo.sequence),
-			rx_pack.hdr.ip_hdr.ttl);
+			ntohs(rx_pack->hdr.icmp_hdr.un.echo.sequence),
+			rx_pack->hdr.ip_hdr.ttl);
 		if (delta < 1) {
 			printf("time <1ms\n");
 		} else {
 			printf("time=%d ms\n", delta);
 		}
-		return 1;
+		res = 1;
+		break;
 	}
-	return 0;
+
+	free(rx_pack);
+
+	return res;
 }
 
 static int ping(struct ping_info *pinfo, char *name, char *official_name) {
@@ -106,25 +116,30 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	size_t i;
 	int cnt_resp, cnt_err, sk;
 	struct sockaddr_in to;
-	union packet tx_pack;
+	union packet *tx_pack = malloc(sizeof(union packet));
 
+	if (tx_pack == NULL) {
+		LOG_ERROR("packet allocate fail");
+		return -1;
+
+	}
 	cnt_resp = 0; cnt_err = 0;
 
 	/* fill out ip header */
-	tx_pack.hdr.ip_hdr.version = 4;
-	tx_pack.hdr.ip_hdr.ihl = IP_MIN_HEADER_SIZE >> 2;
-	tx_pack.hdr.ip_hdr.tos = 0;
-	tx_pack.hdr.ip_hdr.frag_off = 0;
-	tx_pack.hdr.ip_hdr.saddr = pinfo->from.s_addr;
-	tx_pack.hdr.ip_hdr.daddr = pinfo->dst.s_addr;
-	tx_pack.hdr.ip_hdr.tot_len = htons(IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
-	tx_pack.hdr.ip_hdr.ttl = pinfo->ttl;
-	tx_pack.hdr.ip_hdr.proto = IPPROTO_ICMP;
+	tx_pack->hdr.ip_hdr.version = 4;
+	tx_pack->hdr.ip_hdr.ihl = IP_MIN_HEADER_SIZE >> 2;
+	tx_pack->hdr.ip_hdr.tos = 0;
+	tx_pack->hdr.ip_hdr.frag_off = 0;
+	tx_pack->hdr.ip_hdr.saddr = pinfo->from.s_addr;
+	tx_pack->hdr.ip_hdr.daddr = pinfo->dst.s_addr;
+	tx_pack->hdr.ip_hdr.tot_len = htons(IP_MIN_HEADER_SIZE + ICMP_HEADER_SIZE + pinfo->padding_size);
+	tx_pack->hdr.ip_hdr.ttl = pinfo->ttl;
+	tx_pack->hdr.ip_hdr.proto = IPPROTO_ICMP;
 	/* fill out icmp header */
-	tx_pack.hdr.icmp_hdr.type = ICMP_ECHO;
-	tx_pack.hdr.icmp_hdr.code = 1;
-	tx_pack.hdr.icmp_hdr.un.echo.id = 11; /* TODO: get unique id */
-	tx_pack.hdr.icmp_hdr.un.echo.sequence = 0;
+	tx_pack->hdr.icmp_hdr.type = ICMP_ECHO;
+	tx_pack->hdr.icmp_hdr.code = 1;
+	tx_pack->hdr.icmp_hdr.un.echo.id = 11; /* TODO: get unique id */
+	tx_pack->hdr.icmp_hdr.un.echo.sequence = 0;
 
 	timeout = pinfo->timeout * 1000;
 
@@ -132,6 +147,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	sk = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (sk < 0) {
 		LOG_ERROR("socket failed. error=%d\n", sk);
+		free(tx_pack);
 		return -1;
 	}
 
@@ -142,18 +158,18 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	total = clock();
 	i = 0;
 	while (1) {
-		tx_pack.hdr.icmp_hdr.un.echo.sequence = htons(ntohs(tx_pack.hdr.icmp_hdr.un.echo.sequence) + 1);
-		tx_pack.hdr.icmp_hdr.checksum = 0;
+		tx_pack->hdr.icmp_hdr.un.echo.sequence = htons(ntohs(tx_pack->hdr.icmp_hdr.un.echo.sequence) + 1);
+		tx_pack->hdr.icmp_hdr.checksum = 0;
 		/* TODO checksum must be at network byte order */
 		/* XXX linux-0.2.img sends checksum in host byte order,
 		 * but it's wrong */
-		tx_pack.hdr.icmp_hdr.checksum = ptclbsum(tx_pack.packet_buff + IP_MIN_HEADER_SIZE,
+		tx_pack->hdr.icmp_hdr.checksum = ptclbsum(tx_pack->packet_buff + IP_MIN_HEADER_SIZE,
 						ICMP_HEADER_SIZE + pinfo->padding_size);
-		ip_send_check(&tx_pack.hdr.ip_hdr);
-		sendto(sk, tx_pack.packet_buff, ntohs(tx_pack.hdr.ip_hdr.tot_len), 0, (struct sockaddr *)&to, sizeof to);
+		ip_send_check(&tx_pack->hdr.ip_hdr);
+		sendto(sk, tx_pack->packet_buff, ntohs(tx_pack->hdr.ip_hdr.tot_len), 0, (struct sockaddr *)&to, sizeof to);
 
 		/* try to fetch response */
-		if (sent_result(sk, timeout, &tx_pack, official_name)) {
+		if (sent_result(sk, timeout, tx_pack, official_name)) {
 			cnt_resp++; /* if response was fetched proceed */
 		} else { /* else output diagnostics */
 			/* that is not right. fetch error message */
@@ -168,6 +184,9 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 		/* wait before sending next */
 		sleep(pinfo->interval);
 	}
+
+	free(tx_pack);
+
 	/* output statistics */
 	printf("--- %s ping statistics ---\n", inet_ntoa(pinfo->dst));
 	printf("%d packets transmitted, %d received, %d%% packet loss, time %dms\n",

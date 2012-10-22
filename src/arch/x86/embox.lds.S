@@ -15,6 +15,9 @@ SECTIONS {
 	.text : {
 		ALIGNMENT(); . = ALIGN(0x1000);
 		*(.multiboot)
+		_traps_text_start = .;
+		*(.traps.*)
+		_traps_text_end = .;
 		*(.text)
 		*(.text.*)
 		ALIGNMENT(); . = ALIGN(0x1000);

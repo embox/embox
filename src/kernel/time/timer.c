@@ -1,4 +1,5 @@
 /**
+ * @file
  * @brief Link layer between timers and clock sources.
  *
  * @date 09.07.2012

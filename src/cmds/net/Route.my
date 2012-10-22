@@ -25,7 +25,7 @@ module route {
 	source "route.c"
 
 	depends embox.lib.LibC
-	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.util.getopt
 	depends embox.net.util
 	depends embox.net.core
 	depends embox.net.route

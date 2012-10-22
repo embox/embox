@@ -1,3 +1,11 @@
+/**
+ * @file
+ * @brief TODO
+ *
+ * @date 13.04.10
+ * @author Eldar Abusalimov
+ */
+
 #ifndef ARCH_SPARC_CONTEXT_H_
 #define ARCH_SPARC_CONTEXT_H_
 

@@ -54,7 +54,7 @@ module ping {
 	depends embox.net.socket
 	depends embox.net.util
 	depends embox.kernel.timer.sleep_api
-	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.util.getopt
 	depends embox.net.core
 	depends embox.net.route
 	depends embox.framework.LibFramework

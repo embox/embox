@@ -7,7 +7,6 @@ module test_app {
 	source "test_app.c"
 
 	depends embox.lib.LibC
-	depends embox.driver.video.vesadrv
-	depends embox.cmd.xwnd
-
+	depends embox.xwnd.bmp
+	depends embox.xwnd.xwndapp
 }

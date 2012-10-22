@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <util/array.h>
 #include <mem/misc/pool.h>
+#include <mem/phymem.h>
 
 #include <fs/fs_drv.h>
 #include <fs/node.h>
@@ -2316,7 +2317,7 @@ static int fat_create_dir_entry(char *dir_name) {
 
 	parent_fd = (fat_file_description_t *) parent_node->fd;
 
-	if(NULL == (rcv_buf = malloc(SECTOR_SIZE))) {
+	if(NULL == (rcv_buf = page_alloc(__phymem_allocator, 1))) {
 		return -ENOMEM;
 	}
 	memset(rcv_buf, 0, sizeof(rcv_buf));
@@ -2324,7 +2325,7 @@ static int fat_create_dir_entry(char *dir_name) {
 
 	cut_mount_dir(dir_name, (char *)parent_fd->fs->root_name);
 	if (fat_open_dir(parent_fd, (uint8_t *) dir_name, &di)) {
-		free(rcv_buf);
+		page_free(__phymem_allocator, rcv_buf, 1);
 		return -ENODEV;
 	}
 
@@ -2362,6 +2363,6 @@ static int fat_create_dir_entry(char *dir_name) {
 			}
 		}
 	}
-	free(rcv_buf);
+	page_free(__phymem_allocator, rcv_buf, 1);
 	return 0;
 }

@@ -1,6 +1,3 @@
 package embox.driver
 
-
-abstract module Bluetooth {
-}
-
+abstract module Bluetooth { }

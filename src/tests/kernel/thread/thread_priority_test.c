@@ -28,5 +28,6 @@ TEST_CASE("Create 256 threads with different priority") {
 	for(i = 0; i < THREADS_QUANTITY; i++) {
 		test_assert_zero(thread_create(&threads[i], 0, thread_run, NULL));
 		test_assert_zero(thread_set_priority(threads[i], i));
+		test_assert_zero(thread_detach(threads[i]));
 	}
 }

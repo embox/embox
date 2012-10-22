@@ -1,4 +1,5 @@
 /**
+ * @file
  * @brief SNTPv4 client
  *
  * @date 13.07.2012

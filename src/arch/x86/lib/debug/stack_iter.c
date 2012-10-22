@@ -15,18 +15,16 @@ void stack_iter_current(stack_iter_t *f) {
 }
 
 int stack_iter_next(stack_iter_t *f) {
-	extern void irq_handler_call_pointer(void);
-	extern void exception_handler_call_pointer(void);
+	void **p;
 
-	void **p = f->fp;
-	p = *p;
-
-	if (f->pc == irq_handler_call_pointer || f->pc == exception_handler_call_pointer) {
+	if (TRAPS_TEXT_START <= (unsigned int) f->pc
+	&& (unsigned int) f->pc < TRAPS_TEXT_END) {
 		/* Through interruption */
-		pt_regs_t *r = (pt_regs_t *) p;
+		pt_regs_t *r = (pt_regs_t *) (f->fp + 8);
 		f->fp = (void *) r->ebp;
 		f->pc = (void *) r->eip;
 	} else {
+		p = f->fp; p = *p;
 		if (*p == NULL) {
 			f->fp = NULL;
 			f->pc = NULL;

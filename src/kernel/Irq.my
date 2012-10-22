@@ -2,8 +2,13 @@ package embox.kernel
 
 module irq {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "irq.c", "irq_lock.c"
+	source "irq.c"
+	depends irq_lock
 	depends embox.mem.objalloc, embox.driver.interrupt.irqctrl_api
 	depends embox.profiler.trace
+}
+
+module irq_lock {
+	source "irq_lock.c"
 	@NoRuntime depends critical
 }

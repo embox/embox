@@ -1331,6 +1331,9 @@ static int setup_hdc(hdc_t *hdc, int iobase, int irq,
 	hdc->dir = HD_XFER_IGNORE;
 
 	if (hdc->bmregbase) {
+		if(hdc->prds) {
+			page_free(__phymem_allocator, hdc->prds, 1);
+		}
 		/* Allocate one page for PRD list */
 		hdc->prds = (struct prd *) page_alloc(__phymem_allocator, 1);
 	}
@@ -1409,7 +1412,7 @@ static int ide_devnode_create(dev_t *dev_number) {
 
 	*dev_path = 0;
 	strcat(dev_path, "/dev/");
-	dev_name[0] = 's';
+	dev_name[0] = 'h';
 	dev_name[1] = 'd';
 	dev_name[2] = 'a' + *dev_number;
 	dev_name[3] = 0;
@@ -1418,9 +1421,6 @@ static int ide_devnode_create(dev_t *dev_number) {
 	if (NULL == (dev_node = vfs_add_path(dev_path, NULL))) {
 		if (NULL == (dev_node = vfs_find_node(dev_path, NULL))) {
 			return NODEV;
-		}
-		else {
-			return *dev_number;
 		}
 	}
 
@@ -1593,13 +1593,11 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 
 EMBOX_UNIT_INIT(unit_init);
 
-int unit_init(void) {
-	int numhd;
+static int ide_init(int numhd) {
 	int rc;
 	int masterif;
 	int slaveif;
 
-	numhd = 4;
 	if (numhd >= 1)  {
 		/*
 		rc = setup_hdc(&hdctab[0], HDC0_IOBASE, HDC0_IRQ,
@@ -1646,5 +1644,11 @@ int unit_init(void) {
 }
 
 slot_t *get_ide_drive(void) {
+	ide_init(4);
 	return &ide;
+}
+
+int unit_init (void) {
+	ide_init(4);
+	return 0;
 }

@@ -1,5 +1,5 @@
 /**
- * @brief
+ * @file
  *
  * @date 06.07.11
  * @author Alexandr Kalmuk

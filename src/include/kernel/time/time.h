@@ -1,4 +1,5 @@
 /**
+ * @file
  * @brief
  *
  * @date 17.07.2012
@@ -30,5 +31,7 @@ static inline ns_t timeval_to_ns(const struct timeval *tv) {
 
 extern struct timespec ns_to_timespec(const __s64 nsec);
 extern struct timeval ns_to_timeval(const __s64 nsec);
+
+extern clock_t ns_to_clock(__s64 ns);
 
 #endif /* KERNEL_TIME_TIME_H_ */

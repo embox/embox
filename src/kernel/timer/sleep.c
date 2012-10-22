@@ -25,7 +25,7 @@ int usleep(useconds_t usec) {
 		return 0;
 	}
 
-	event_init(&never_happen, NULL);
+	event_init(&never_happen, "never_happen");
 
 	res_sleep = event_wait(&never_happen, usec);
 

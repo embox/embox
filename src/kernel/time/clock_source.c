@@ -1,4 +1,5 @@
 /**
+ * @file
  * @brief
  *
  * @date 19.06.2012
@@ -18,8 +19,14 @@ ARRAY_SPREAD_DEF(const struct time_counter_device *, __counter_devices);
 POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER, clocks_quantity));
 DLIST_DEFINE(clock_source_list);
 
-ms_t clock_source_clock_to_ms(struct clock_source *cs, clock_t ticks) {
-	return (ticks * cs->event_device->resolution) / 1000;
+ns_t clock_source_clock_to_ns(struct clock_source *cs, clock_t ticks) {
+	assert(cs && cs->event_device);
+	return (ticks * NSEC_PER_SEC) / cs->event_device->resolution;
+}
+
+clock_t clock_source_ns_to_clock(struct clock_source *cs, ns_t ns) {
+	assert(cs && cs->event_device);
+	return (ns * cs->event_device->resolution) / NSEC_PER_SEC;
 }
 
 static struct clock_source_head *clock_source_find(struct clock_source *cs) {

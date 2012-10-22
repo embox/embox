@@ -28,7 +28,7 @@ TEST_CASE("Create thread waiting event and then finish") {
 	struct event sync_event;
 	struct thread *thread;
 
-	event_init(&sync_event, "test_event");
+	event_init(&sync_event, "sync_event");
 	test_assert_zero(
 				thread_create(&thread, 0, thread_run, &sync_event));
 	usleep(100);

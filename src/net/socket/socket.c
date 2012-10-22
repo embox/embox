@@ -21,9 +21,11 @@
 #include <kernel/task/idx.h>
 #include <net/arp_queue.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
+#include <io_sync.h>
 
 static ssize_t this_read(struct idx_desc *socket, void *buf, size_t nbyte);
 static ssize_t this_write(struct idx_desc *socket, const void *buf, size_t nbyte);
@@ -59,6 +61,9 @@ int socket(int domain, int type, int protocol) {
 		SET_ERRNO(EMFILE);
 		return -1;
 	}
+
+	sock->desc = task_self_idx_get(res);
+
 	return res;
 }
 
@@ -156,6 +161,9 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		SET_ERRNO(EMFILE);  /* also could be ENFILE */
 		return -1;
 	}
+
+	new_sock->desc = task_self_idx_get(res);
+
 	return res;
 }
 
@@ -328,7 +336,16 @@ int socket_close(int sockfd) {
 }
 
 static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
-	return recvfrom_sock(task_idx_desc_data(data), buf, nbyte, * task_idx_desc_flags_ptr(data), NULL, 0);
+	struct socket *sock = task_idx_desc_data(data);
+	int len;
+
+	len = recvfrom_sock(task_idx_desc_data(data), buf, nbyte, * task_idx_desc_flags_ptr(data), NULL, 0);
+
+	if (NULL == skb_queue_front(sock->sk->sk_receive_queue)) {
+		io_op_block(&data->data->read_state);
+	}
+
+	return len;
 }
 
 static ssize_t this_write(struct idx_desc *data, const void *buf, size_t nbyte) {

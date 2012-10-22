@@ -33,7 +33,7 @@ module tftp {
 
 	depends embox.lib.LibC
 	depends embox.net.socket
-	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.util.getopt
 	depends embox.fs.core
 	depends embox.framework.LibFramework
 }

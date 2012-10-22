@@ -10,7 +10,6 @@
 
 #include <errno.h>
 #include <kernel/task/task_table.h>
-#include <kernel/task/signal.h>
 #include <kernel/thread/api.h>
 #include <mem/misc/pool.h>
 #include <kernel/task.h>

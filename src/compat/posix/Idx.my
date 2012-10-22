@@ -21,6 +21,7 @@ static module select {
 	source "select.c"
 
 	depends embox.kernel.task.api
+	depends embox.compat.posix.io_sync
 }
 
 static module dup {
@@ -35,10 +36,12 @@ static module pipe {
 	source "pipe.c"
 
 	option number pipe_buffer_size=256
+	option number max_pipe_buffer_size=1024
 
 	depends embox.mem.heap_api
 	depends embox.util.LibSync
 
 	depends embox.kernel.task.api
 	depends embox.util.LibUtil
+	depends embox.compat.posix.io_sync
 }

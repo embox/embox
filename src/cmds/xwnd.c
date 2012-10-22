@@ -66,18 +66,39 @@ static int exec (int argc, char ** argv) {
 		if (argc > 2)
 		{
 
-			printf("w/h: %d/%d, bpp: %d, ERR: %d\n", img->width, img->height, img->bpp, xwnd_bmp_get_errno());
+			printf("w/h: %d/%d, bpp: %d, ERR: %d\n",
+				img->width, img->height, img->bpp, xwnd_bmp_get_errno());
 			xwnd_bmp_unload(img);
 			return 0;
 		}
 	}
 	else {
 		int err;
+		struct xwnd_application * app;
+
+		xwnd_init();
+
 		err = xwnd_app_reg_init();
 		if (err) {
 			printf ("AAAAA");
 			return 1;
 		}
+		app = xwnd_app_create();
+		if (!app) {
+			printf("BBBBBB");
+			return 1;
+		}
+
+		while (1) {
+			if (!keyboard_has_symbol()) {
+				usleep(100);
+			}
+			else if ('q' == keyboard_getc()) {
+				break;
+			}
+		}
+		xwnd_quit();
+
 		return 0;
 	}
 	return 1;

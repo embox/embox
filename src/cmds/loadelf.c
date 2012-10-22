@@ -35,14 +35,14 @@ static int exec(int argc, char **argv) {
 	return 0;
 }
 
-static inline int elf_load_in_mem(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
-	for (int i = 0; i < EH->e_phnum; i++) {
-		if (EPH->p_type == PT_LOAD) {
-			vmem_create_space(task_self()->vmem_data->ctx, EPH->p_paddr, L_REV(EPH->p_memsz, EH->e_ident[EI_DATA]), VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE);
-			elf_read_segment(fd, EH, EPH, (int8_t *)EPH->p_paddr);
+static inline int elf_load_in_mem(FILE *fd, Elf32_Obj *obj) {
+	Elf32_Phdr *ph;
+	for (int i = 0; i < obj->header->e_phnum; i++) {
+		ph = obj->ph_table + i;
+		if (ph->p_type == PT_LOAD) {
+			vmem_create_space(task_self()->vmem_data->ctx, ph->p_paddr, ph->p_memsz, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE);
+			elf_read_segment(fd, ph, (int8_t *)ph->p_paddr);
 		}
-
-		EPH = (Elf32_Phdr *) ((unsigned char *) EPH + EH->e_phentsize);
 	}
 
 	return 0;
@@ -51,26 +51,24 @@ static inline int elf_load_in_mem(FILE *fd, Elf32_Ehdr *EH, Elf32_Phdr *EPH) {
 static void *execve_trampoline(void *data) {
 	void *(*function_main)(void *arg);
 	FILE *elf_file = (FILE *) data;
-	Elf32_Ehdr *elf_header = NULL;
-	Elf32_Phdr *program_headers = NULL;
+	Elf32_Obj elf;
 
-	if (elf_read_header(elf_file, &elf_header) < 0) {
+	elf_initialize_object(&elf);
+
+	if (elf_read_header(elf_file, &elf) < 0) {
 		return NULL;
 	}
 
-	if (elf_read_segments_table(elf_file, elf_header, &program_headers) < 0) {
+	if (elf_read_program_header_table(elf_file, &elf) < 0) {
 		return NULL;
 	}
 
-	elf_load_in_mem(elf_file, elf_header, program_headers);
+	elf_load_in_mem(elf_file, &elf);
+    function_main = (void *(*)(void *arg)) elf.header->e_entry;
 
 	fclose(elf_file);
+	elf_finilize_object(&elf);
 
-	// XXX: replace it?
-	if (elf_header != NULL) free(elf_header);
-	if (program_headers != NULL) free(program_headers);
-
-    function_main = (void *(*)(void *arg)) elf_header->e_entry;
     usermode_call_and_switch_if(1, function_main, NULL);
 
 	return NULL;

@@ -20,7 +20,7 @@ module core {
 	option number path_length=256
 
 	depends embox.compat.posix.FS
-	depends file_desc, node, rootfs
+	depends file_desc, node
 	depends embox.fs.driver.repo
 }
 
@@ -33,5 +33,10 @@ module posix_compat {
 
 module rootfs {
 	source "rootfs.c"
+	option string fstype = "ramfs"
+	option string src = ""
+	option string dst = "/"
+	option string mntscript = ""
 	depends node, driver.repo
+	depends embox.mem.heap_bm
 }

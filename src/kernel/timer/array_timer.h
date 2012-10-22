@@ -1,4 +1,5 @@
 /**
+ * @file
  * @brief Header for array timer scheduling strategy
  *
  * @author Nikolay Malkovsky

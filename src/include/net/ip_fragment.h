@@ -1,4 +1,6 @@
 /**
+ * @file
+ *
  * @date 25.11.2011
  * @author Alexander Kalmuk
  */

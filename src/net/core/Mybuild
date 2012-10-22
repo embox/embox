@@ -41,6 +41,7 @@ module skbuff {
 }
 
 module core {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	source "inetdev.c"
 	option number net_callback_quantity=16
 	option number net_interfaces_quantity=4
@@ -56,6 +57,7 @@ module core {
 	depends embox.mem.slab
 	depends embox.lib.LibC
 	depends embox.kernel.thread.event
+	depends embox.compat.posix.io_sync_api /* TODO */
 }
 
 module neighbour {

@@ -7,8 +7,12 @@
 
 
 #include <xwnd/app_registry.h>
+#include <kernel/task.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+//FIXME: this have to be removed
+#include <xwnd/test_app.h>
 
 #define XAPP_REG_DEF_CNT 256
 
@@ -29,6 +33,7 @@ struct xwnd_application * xwnd_app_create (void) {
 	struct xwnd_window * t_wnd;
 	int req_pipe[2], msg_pipe[2];
 	int xapp_id = xapp_reg.used;
+	int xapp_tid;
 
 	//Get an entry in registry
 	if (xapp_id >= XAPP_REG_DEF_CNT - 1) {
@@ -42,14 +47,16 @@ struct xwnd_application * xwnd_app_create (void) {
 		xapp_reg.used--;
 		return NULL;
 	}
+	xapp_reg.nodes[xapp_id].xapp = t_xapp;
+	//Initialize them
 
 	//Connect pipes
 	pipe(req_pipe);
 	pipe(msg_pipe);
 	xapp_reg.nodes[xapp_id].pipe_in  = req_pipe[0];
 	xapp_reg.nodes[xapp_id].pipe_out = msg_pipe[1];
-	xapp_reg.nodes[xapp_id].xapp->pipe_in  = msg_pipe[0];
-	xapp_reg.nodes[xapp_id].xapp->pipe_out = req_pipe[1];
+	t_xapp->pipe_in  = msg_pipe[0];
+	t_xapp->pipe_out = req_pipe[1];
 
 	//Create window
 	t_wnd = malloc (sizeof(struct xwnd_window));
@@ -65,7 +72,11 @@ struct xwnd_application * xwnd_app_create (void) {
 	t_wnd->wdg.wdg_list = NULL;
 	t_wnd->wdg.next = NULL;
 
+	t_xapp->app_id = xapp_id;
+
 	//Now ready to start an application
+	xapp_tid = new_task(test_app_main, NULL, 0);
+	xapp_tid = xapp_tid;
 	return t_xapp;
 }
 

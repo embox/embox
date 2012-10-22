@@ -8,7 +8,7 @@
 
 #include <util/async_ring_buff.h>
 
-size_t async_ring_get_cnt(struct async_ring_buff *buf) {
+size_t async_ring_buff_get_cnt(struct async_ring_buff *buf) {
 	return ring_buff_get_cnt(&buf->buffer);
 }
 
