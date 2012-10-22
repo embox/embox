@@ -139,10 +139,16 @@ static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
 	}
 }
 
+static uint32_t *word_aligned_addr(void *addr) {
+	return ((uint32_t *) ((int) addr & ~0x3)) + ((int) addr & 0x3 ? 1 : 0);
+}
+
 /**
  * Send a packet on this device.
  */
 static int emaclite_start_xmit(struct sk_buff *skb, struct net_device *dev) {
+	uint32_t *aligned_data;
+
 	if ((NULL == skb) || (NULL == dev)) {
 		return -EINVAL;
 	}
@@ -153,7 +159,14 @@ static int emaclite_start_xmit(struct sk_buff *skb, struct net_device *dev) {
 			return -EBUSY; /*transmitter is busy*/
 		}
 	}
-	memcpy32((uint32_t*) TX_PACK, skb->mac.raw, skb->len);
+
+	aligned_data = word_aligned_addr(skb->mac.raw);
+
+	if ((int) aligned_data != (int) skb->mac.raw) {
+		memmove(aligned_data, skb->mac.raw, skb->len);
+	}
+
+	memcpy32((uint32_t*) TX_PACK, aligned_data, skb->len);
 	TX_LEN_REG = skb->len & XEL_TPLR_LENGTH_MASK;
 	TX_CTRL_REG |= XEL_TSR_XMIT_BUSY_MASK;
 
@@ -204,7 +217,11 @@ static void pack_receiving(void *dev_id) {
 		return;
 	}
 
-	memcpy32((uint32_t *) skb->mac.raw, RX_PACK, (size_t) len);
+	memcpy32(word_aligned_addr(skb->mac.raw), RX_PACK, (size_t) len);
+	if ((int) skb->mac.raw & 0x3) {
+		memmove(skb->mac.raw, word_aligned_addr(skb->mac.raw), len);
+	}
+
 	/* Acknowledge the frame */
 	current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
 	switch_rx_buff();
@@ -333,5 +350,5 @@ static int emaclite_init(void) {
 		return res;
 	}
 
-	return ENOERR;
+	return netdev_register(net_device);
 }
