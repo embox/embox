@@ -19,6 +19,7 @@ struct thread idle, current;
 EMBOX_TEST_SUITE("Scheduler strategy general test");
 
 TEST_SETUP(setup);
+TEST_TEARDOWN(teardown);
 
 static void make_switch(void);
 static void thread_initialize(struct thread* thread, __thread_priority_t priority);
@@ -159,10 +160,14 @@ static void thread_initialize(struct thread* thread, __thread_priority_t priorit
 	sched_strategy_init(&thread->sched);
 }
 
-
 static int setup(void) {
 	thread_initialize(&idle, THREAD_PRIORITY_MIN);
 	thread_initialize(&current, THREAD_PRIORITY_NORMAL);
 	runq_init(&runq, &current, &idle);
+	return 0;
+}
+
+static int teardown(void) {
+	runq_fini(&runq);
 	return 0;
 }
