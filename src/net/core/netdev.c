@@ -49,6 +49,9 @@ struct net_device * netdev_alloc(const char *name,
 
 	(*setup)(dev);
 
+	dev->rx_dev_link.next = NULL;
+	dev->rx_dev_link.prev = NULL;
+
 	skb_queue_init(&dev->dev_queue);
 	skb_queue_init(&dev->tx_dev_queue);
 	skb_queue_init(&dev->txing_queue);

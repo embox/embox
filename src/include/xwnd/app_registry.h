@@ -5,8 +5,8 @@
  *      Author: alexandr
  */
 
-#ifndef APP_REGISTRY_H_
-#define APP_REGISTRY_H_
+#ifndef XWND_APP_REGISTRY_H_
+#define XWND_APP_REGISTRY_H_
 
 #include <xwnd/xwndapp.h>
 #include <kernel/thread/sync/sem.h>
@@ -30,4 +30,4 @@ extern void xwnd_app_remove(void);
 extern int xwnd_app_put_message(int app_id, void * data, size_t size);
 extern int xwnd_app_set_msg_sem(void);
 
-#endif /* APP_REGISTRY_H_ */
+#endif /* XWND_APP_REGISTRY_H_ */

@@ -19,9 +19,10 @@ struct thread idle, current;
 EMBOX_TEST_SUITE("Scheduler strategy general test");
 
 TEST_SETUP(setup);
+TEST_TEARDOWN(teardown);
 
 static void make_switch(void);
-static void thread_initialize(struct thread* thread, __thread_priority_t priority, __thread_state_t state);
+static void thread_initialize(struct thread* thread, __thread_priority_t priority);
 
 TEST_CASE("Initialization") {
 	test_assert_true(thread_state_running(current.state));
@@ -29,9 +30,10 @@ TEST_CASE("Initialization") {
 	test_assert_true(runq_current(&runq) == &current);
 }
 
+/*
 TEST_CASE("Resume") {
 	struct thread new;
-	thread_initialize(&new, THREAD_PRIORITY_NORMAL, __THREAD_STATE_SUSPENDED);
+	thread_initialize(&new, THREAD_PRIORITY_NORMAL, __THREAD_STATE_SLEEPING);
 
 	runq_resume(&runq, &new);
 	test_assert_true(thread_state_running(new.state));
@@ -54,7 +56,7 @@ TEST_CASE("Suspend/resume running 2") {
 	test_assert_true(thread_state_running(current.state));
 	make_switch();
 }
-
+*/
 TEST_CASE("Sleep/wake running 1") {
 	struct sleepq sleepq;
 	sleepq_init(&sleepq);
@@ -77,7 +79,7 @@ TEST_CASE("Sleep/wake running 2") {
 	test_assert_true(thread_state_running(current.state));
 	make_switch();
 }
-
+/*
 TEST_CASE("Suspend/resume sleeping") {
 	struct sleepq sleepq;
 	sleepq_init(&sleepq);
@@ -123,7 +125,7 @@ TEST_CASE("Wake suspended thread") {
 	test_assert_true(thread_state_suspended(current.state));
 	make_switch();
 }
-
+*/
 TEST_CASE("Change priority of running") {
 	runq_change_priority(&runq, &current, THREAD_PRIORITY_MAX);
 	test_assert_true(current.priority == THREAD_PRIORITY_MAX);
@@ -152,16 +154,20 @@ static void make_switch(void) {
 	}
 }
 
-static void thread_initialize(struct thread* thread, __thread_priority_t priority, __thread_state_t state) {
-	sched_strategy_init(&thread->sched);
+static void thread_initialize(struct thread* thread, __thread_priority_t priority) {
+	thread->state = thread_state_init();
 	thread->priority = priority;
-	thread->state = state;
+	sched_strategy_init(&thread->sched);
 }
 
-
 static int setup(void) {
-	thread_initialize(&idle, THREAD_PRIORITY_MIN, __THREAD_STATE_SUSPENDED);
-	thread_initialize(&current, THREAD_PRIORITY_NORMAL, __THREAD_STATE_SUSPENDED);
+	thread_initialize(&idle, THREAD_PRIORITY_MIN);
+	thread_initialize(&current, THREAD_PRIORITY_NORMAL);
 	runq_init(&runq, &current, &idle);
+	return 0;
+}
+
+static int teardown(void) {
+	runq_fini(&runq);
 	return 0;
 }

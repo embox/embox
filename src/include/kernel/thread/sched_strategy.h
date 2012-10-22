@@ -45,6 +45,14 @@ extern void runq_init(struct runq *runq, struct thread *current,
 		struct thread *idle);
 
 /**
+ * Finilize queue of running threads.
+ *
+ * @param runq
+ *   Running queue.
+ */
+extern void runq_fini(struct runq *runq);
+
+/**
  * Initializes queue of sleeping threads.
  *
  * @param sleepq

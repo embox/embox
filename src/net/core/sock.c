@@ -9,6 +9,7 @@
  */
 
 #include <errno.h>
+#include <string.h>
 #include <net/skbuff.h>
 #include <net/sock.h>
 #include <mem/misc/pool.h>
@@ -59,6 +60,9 @@ static struct sock * sk_prot_alloc(struct proto *prot, gfp_t priority) {
 			sk = cache_alloc(prot->cachep);
 		}
 	}
+
+	memset(&sk->sk_lock, 0, sizeof(socket_lock_t));
+
 	ipl_restore(sp);
 
 	return sk;
@@ -191,11 +195,10 @@ void sk_common_release(struct sock *sk) {
 
 static int test_and_set(unsigned long *a) {
 	register int tmp;
-
-	sched_lock();
+	ipl_t ipl = ipl_save();
 	tmp = *a;
 	*a = 1;
-	sched_unlock();
+	ipl_restore(ipl);
 
 	return tmp;
 }

@@ -8,6 +8,7 @@
  * @author Anton Bondarev
  */
 
+#include <assert.h>
 #include <drivers/irqctrl.h>
 #include <asm/msr.h>
 #include <kernel/irq.h>
@@ -17,21 +18,37 @@
  * pending register
  */
 void interrupt_handler(void) {
-	unsigned int pending;
+	unsigned int pending = 0;
+	int cnt = 0;
 
-	while (0 != (pending = mb_intc_get_pending())) {
-		unsigned int irq_num;
+	if (critical_inside(CRITICAL_IRQ_LOCK)) {
+		cnt = 1;
+	}
 
-		for (irq_num = 0; irq_num < IRQCTRL_IRQS_TOTAL; irq_num++) {
-			if (pending & (1 << irq_num)) {
-				//TODO we must clear whole pending register
-				irqctrl_clear(irq_num);
+	cnt = cnt;
 
-				/*now we allow nested irq*/
-				msr_set_ie();
+	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
-				irq_dispatch(irq_num);
+	critical_enter(CRITICAL_IRQ_HANDLER);
+	{
+		while (0 != (pending = mb_intc_get_pending())) {
+			unsigned int irq_num;
+
+			for (irq_num = 0; irq_num < IRQCTRL_IRQS_TOTAL; irq_num++) {
+				if (pending & (1 << irq_num)) {
+					//TODO we must clear whole pending register
+					irqctrl_clear(irq_num);
+
+					/*now we allow nested irq*/
+					ipl_enable();
+
+					irq_dispatch(irq_num);
+
+					ipl_disable();
+				}
 			}
 		}
 	}
+	critical_leave(CRITICAL_IRQ_HANDLER);
+	critical_dispatch_pending();
 }
