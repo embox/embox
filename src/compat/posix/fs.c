@@ -44,8 +44,8 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 	} while (NULL == (node = vfs_find_node(param.path, NULL)));
 	/* check drv of parents */
 	drv = node->fs_type;
-	assert(drv != NULL);
-	if (NULL == drv->fsop->create_file) {
+
+	if ((NULL == drv) || (NULL == drv->fsop->create_file)) {
 		LOG_ERROR("fsop->create_file is NULL handler\n");
 		return NULL;
 	}
@@ -141,7 +141,6 @@ int remove(const char *pathname) {
 	}
 }
 
-/* TODO */
 int unlink(const char *pathname) {
 	node_t *node;
 	fs_drv_t *drv;

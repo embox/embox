@@ -62,6 +62,7 @@ static slot_t ide;
 static long tmr_cmd_start_time;
 
 static int create_partitions(hd_t *hd);
+static int ide_init(void *args);
 
 static void hd_fixstring(unsigned char *s, int len) {
 	unsigned char *p = s;
@@ -92,18 +93,20 @@ static void hd_fixstring(unsigned char *s, int len) {
 }
 
 static void hd_error(char *func, unsigned char error) {
-	/*
-	kprintf(KERN_ERR "%s: ", func);
-	if (error & HDCE_BBK)   kprintf("bad block  ");
-	if (error & HDCE_UNC)   kprintf("uncorrectable data  ");
-	if (error & HDCE_MC)    kprintf("media change  ");
-	if (error & HDCE_IDNF)  kprintf("id not found  ");
-	if (error & HDCE_MCR)   kprintf("media change requested  ");
-	if (error & HDCE_ABRT)  kprintf("abort  ");
-	if (error & HDCE_TK0NF) kprintf("track 0 not found  ");
-	if (error & HDCE_AMNF)  kprintf("address mark not found  ");
-	printf("\n");
-	*/
+
+#ifdef DEBUG
+	printk("%s: ", func);
+	if (error & HDCE_BBK)   printk("bad block  ");
+	if (error & HDCE_UNC)   printk("uncorrectable data  ");
+	if (error & HDCE_MC)    printk("media change  ");
+	if (error & HDCE_IDNF)  printk("id not found  ");
+	if (error & HDCE_MCR)   printk("media change requested  ");
+	if (error & HDCE_ABRT)  printk("abort  ");
+	if (error & HDCE_TK0NF) printk("track 0 not found  ");
+	if (error & HDCE_AMNF)  printk("address mark not found  ");
+	printk("\n");
+#endif /*def DEBUG*/
+
 	return;
 }
 
@@ -219,13 +222,6 @@ static void setup_dma(hdc_t *hdc, char *buffer, int count, int cmd) {
 	i = 0;
 	next = (char *) ((unsigned long) buffer & ~(PAGESIZE - 1)) + PAGESIZE;
 	while (1) {
-		/*
-		if (i == MAX_PRDS) {
-		     panic("hd dma transfer too large");
-		}
-		*/
-
-		/* hdc->prds[i].addr = virt2phys(buffer);*/
 		hdc->prds[i].addr = (unsigned long) buffer;
 		len = next - buffer;
 		if (count > len) {
@@ -273,7 +269,6 @@ static int stop_dma(hdc_t *hdc) {
 
 	/* Check for DMA errors */
 	if (dmastat & BM_SR_ERR) {
-		/*kprintf(KERN_ERR "hd: dma error %02X\n", dmastat); */
 		return -EIO;
 	}
 
@@ -284,7 +279,6 @@ static int hd_identify(hd_t *hd) {
 
 	/* Ignore interrupt for identify command */
 	hd->hdc->dir = HD_XFER_IGNORE;
-	/* reset_event(&hd->hdc->ready); */
 
 	/* Issue read drive parameters command */
 	outb(0, hd->hdc->iobase + HDC_FEATURE);
@@ -355,20 +349,12 @@ static int hd_cmd(hd_t *hd, unsigned int cmd,
 				  unsigned int feat, unsigned int nsects) {
 	/* Ignore interrupt for command */
 	hd->hdc->dir = HD_XFER_IGNORE;
-	/*  reset_event(&hd->hdc->ready);*/
 
 	/* Issue command */
 	outb(feat, hd->hdc->iobase + HDC_FEATURE);
 	outb(nsects, hd->hdc->iobase + HDC_SECTORCNT);
 	outb(hd->drvsel, hd->hdc->iobase + HDC_DRVHD);
 	outb(cmd, hd->hdc->iobase + HDC_COMMAND);
-
-	/* Wait for data ready */
-	/*
-	 if (wait_for_object(&hd->hdc->ready, HDTIMEOUT_CMD) < 0) {
-	 	 return -ETIMEDOUT;
-	 }
-	 */
 
 	/* Check status */
 	if (hd->hdc->result < 0) {
@@ -386,20 +372,12 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	int bufleft;
 	unsigned short bytes;
 
-	/*kprintf("atapi_read_packet(0x%x) %d bytes, buflen=%d\n", pkt[0], pktlen, bufsize); */
 	hdc = hd->hdc;
-	/*
-	if (wait_for_object(&hdc->lock, HDTIMEOUT_BUSY) < 0) {
-		return -EBUSY;
-	}
-	*/
-
 	bufp = (char *) buffer;
 	bufleft = bufsize;
 	hdc->dir = HD_XFER_IGNORE;
 	hdc->active = hd;
 	hdc->result = 0;
-	/* reset_event(&hdc->ready); */
 
 	/* Setup registers */
 	outb(0, hdc->iobase + HDC_FEATURE);
@@ -415,11 +393,9 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	/* Wait for drive ready to receive packet */
 	result = hd_wait(hdc, HDCS_DRDY, HDTIMEOUT_DRDY);
 	if (result != 0) {
-		/* kprintf(KERN_WARNING "atapi_packet_read: busy waiting for packet ready (0x%02x)\n", result); */
 
 		hdc->dir = HD_XFER_IDLE;
 		hdc->active = NULL;
-		/* release_mutex(&hdc->lock);*/
 
 		return -EIO;
 	}
@@ -432,43 +408,26 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	while (!hdc->result) {
 		/* Wait until data ready */
 		usleep(300);
-		/*kprintf("wait for data\n"); */
-		/*
-		if (wait_for_object(&hdc->ready, HDTIMEOUT_XFER) < 0) {
-			//kprintf(KERN_WARNING "hd_read: timeout waiting for interrupt\n");
-			hdc->result = -EIO;
-			break;
-		}
-		reset_event(&hdc->ready);
-		*/
+
 		/* Check for errors */
 		if (hdc->status & HDCS_ERR) {
-			/*unsigned char error;
-
-			error = inb(hdc->iobase + HDC_ERR);
-
-			kprintf(KERN_ERR "hd: atapi packet read error (status=0x%02x,error=0x%02x)\n", hdc->status, error); */
 			hdc->result = -EIO;
-
 			break;
 		}
 		/*
 		 * Exit the read data loop if the device indicates this is
 		 * the end of the command
 		 */
-		/* kprintf("stat 0x%02x\n", hdc->status); */
 		if ((hdc->status & (HDCS_BSY | HDCS_DRQ)) == 0) {
 			break;
 		}
 
 		/* Get the byte count */
 		bytes = (inb(hdc->iobase + HDC_TRACKMSB) << 8) | inb(hdc->iobase + HDC_TRACKLSB);
-		/*kprintf("%d bytes\n", bytes); */
 		if (bytes == 0) {
 			break;
 		}
 		if (bytes > bufleft) {
-			/*kprintf(KERN_ERR "%s: buffer overrun\n", device(hd->devno)->name); */
 			hdc->result = -ENOBUFS;
 			break;
 		}
@@ -484,7 +443,6 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	if(0 < hdc->result) {
 		result = hdc->result = 0;
 	}
-	/* release_mutex(&hdc->lock);*/
 	return result == 0 ? bufsize - bufleft : result;
 }
 
@@ -492,7 +450,6 @@ static int atapi_read_capacity(hd_t *hd) {
 	unsigned char pkt[12];
 	unsigned long buf[2];
 	unsigned long blks;
-	//unsigned long blksize;
 	int rc;
 
 	memset(pkt, 0, 12);
@@ -507,12 +464,6 @@ static int atapi_read_capacity(hd_t *hd) {
 	}
 
 	blks = ntohl(buf[0]);
-	/*blksize = ntohl(buf[1]);
-
-	if (blksize != CDSECTORSIZE) {
-		kprintf("%s: unexpected block size (%d)\n", device(hd->devno)->name, blksize);
-	}
-	*/
 	return blks;
 }
 
@@ -571,8 +522,6 @@ static int hd_read_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t blk
 	int result;
 	char *bufp;
 
-	/*kprintf("hdread: block %d\n", blkno); */
-
 	if (count == 0) {
 		return 0;
 	}
@@ -580,11 +529,6 @@ static int hd_read_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t blk
 	hd = (hd_t *) dev->privdata;
 	hdc = hd->hdc;
 	sectsleft = count / SECTOR_SIZE;
-	/*
-	if (wait_for_object(&hdc->lock, HDTIMEOUT_BUSY) < 0) {
-		return -EBUSY;
-	}
-	*/
 
 	while (sectsleft > 0) {
 		/* Select drive */
@@ -593,13 +537,11 @@ static int hd_read_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t blk
 		/* Wait for controller ready */
 		result = hd_wait(hdc, HDCS_DRDY, HDTIMEOUT_DRDY);
 		if (result != 0) {
-			/*kprintf(KERN_ERR "hd_read: no drdy (0x%02x)\n", result); */
 			hdc->result = -EIO;
 			break;
 		}
 
 		/* Calculate maximum number of sectors we can transfer */
-		/*kprintf("%d sects left\n", sectsleft); */
 		if (sectsleft > 256) {
 			nsects = 256;
 		}
@@ -608,27 +550,17 @@ static int hd_read_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t blk
 		}
 
 		/* Prepare transfer */
-		/*kprintf("read %d sects\n", nsects); */
 		hdc->bufp = bufp;
 		hdc->nsects = nsects;
 		hdc->result = 0;
 		hdc->dir = HD_XFER_READ;
 		hdc->active = hd;
-		/*    reset_event(&hdc->ready); */
 
 		hd_setup_transfer(hd, blkno, nsects);
 		outb(hd->multsect > 1 ? HDCMD_MULTREAD : HDCMD_READ,
 				hdc->iobase + HDC_COMMAND);
 
-	/* Wait until data read */
-	/*
-	if (wait_for_object(&hdc->ready, HDTIMEOUT_XFER) < 0) {
-		//kprintf(KERN_WARNING "hd_read: timeout waiting for interrupt\n");
-		hdc->result = -EIO;
-		break;
-	}
-	*/
-
+    	/* Wait until data read */
 		while(!hdc->result) {
 			usleep(300);
 		}
@@ -640,7 +572,6 @@ static int hd_read_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t blk
 		sectsleft -= nsects;
 		bufp += nsects * SECTOR_SIZE;
 	}
-	/*kprintf("finito\n"); */
 
 	/* Cleanup */
 	hdc->dir = HD_XFER_IDLE;
@@ -661,8 +592,6 @@ static int hd_write_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 	int result;
 	char *bufp;
 
-	/*kprintf("hdwrite: block %d\n", blkno); */
-
 	if (count == 0) {
 		return 0;
 	}
@@ -670,21 +599,15 @@ static int hd_write_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 	hd = (hd_t *) dev->privdata;
 	hdc = hd->hdc;
 	sectsleft = count / SECTOR_SIZE;
-	/*
-	if(wait_for_object(&hdc->lock, HDTIMEOUT_BUSY) < 0) {
-	return -EBUSY;
-	}
-	*/
+
 
 	while (sectsleft > 0) {
-		/*kprintf("%d sects left\n", sectsleft); */
 		/* Select drive */
 		hd_select_drive(hd);
 
 		/* Wait for controller ready */
 		result = hd_wait(hdc, HDCS_DRDY, HDTIMEOUT_DRDY);
 		if (result != 0) {
-			/*kprintf(KERN_ERR "hd_write: no drdy (0x%02x)\n", result); */
 			hdc->result = -EIO;
 			break;
 		}
@@ -695,7 +618,6 @@ static int hd_write_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 		else {
 			nsects = sectsleft;
 		}
-		/*kprintf("write %d sects\n", nsects); */
 
 		/* Prepare transfer */
 		hdc->bufp = bufp;
@@ -703,7 +625,6 @@ static int hd_write_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 		hdc->result = 0;
 		hdc->dir = HD_XFER_WRITE;
 		hdc->active = hd;
-		/* reset_event(&hdc->ready); */
 
 		hd_setup_transfer(hd, blkno, nsects);
 		outb(hd->multsect > 1 ? HDCMD_MULTWRITE : HDCMD_WRITE,
@@ -713,7 +634,6 @@ static int hd_write_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 		if (!(inb(hdc->iobase + HDC_ALT_STATUS) & HDCS_DRQ)) {
 			result = hd_wait(hdc, HDCS_DRQ, HDTIMEOUT_DRQ);
 			if (result != 0) {
-				/* kprintf("hd_write: no drq (0x%02x)\n", result);*/
 				hdc->result = -EIO;
 				break;
 			}
@@ -728,30 +648,19 @@ static int hd_write_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 			pio_write_buffer(hd, hdc->bufp, SECTOR_SIZE);
 			hdc->bufp += SECTOR_SIZE;
 		}
-		/*kprintf("wait\n"); */
 
 		/* Wait until data written */
-		/*
-		if (wait_for_object(&hdc->ready, HDTIMEOUT_XFER) < 0) {
-			//kprintf(KERN_ERR "hd_write: timeout waiting for interrupt\n");
-			hdc->result = -EIO;
-			break;
-		}
-		*/
 		while(!hdc->result) {
 			usleep(300);
 		}
 		if (hdc->result < 0) {
 			break;
 		}
-		/*kprintf("ready\n"); */
 
 		/* Advance to next */
 		sectsleft -= nsects;
 		bufp += nsects * SECTOR_SIZE;
 	}
-
-	/*kprintf("finito\n"); */
 
 	/* Cleanup */
 	hdc->dir = HD_XFER_IDLE;
@@ -778,11 +687,7 @@ static int hd_read_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 	hd = (hd_t *) dev->privdata;
 	hdc = hd->hdc;
 	sectsleft = count / SECTOR_SIZE;
-	/*
-	if (wait_for_object(&hdc->lock, HDTIMEOUT_BUSY) < 0) {
-		return -EBUSY;
-	}
-	*/
+
 
 	while (sectsleft > 0) {
 		/* Select drive */
@@ -791,7 +696,6 @@ static int hd_read_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 		/* Wait for controller ready */
 		result = hd_wait(hdc, HDCS_DRDY, HDTIMEOUT_DRDY);
 		if (result != 0) {
-			/*kprintf(KERN_ERR "hd_read: no drdy (0x%02x)\n", result); */
 			result = -EIO;
 			break;
 		}
@@ -812,7 +716,6 @@ static int hd_read_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 		result = 0;
 		hdc->dir = HD_XFER_DMA;
 		hdc->active = hd;
-		/* reset_event(&hdc->ready); */
 
 		hd_setup_transfer(hd, blkno, nsects);
 
@@ -822,16 +725,6 @@ static int hd_read_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 		/* Start read */
 		outb(HDCMD_READDMA, hdc->iobase + HDC_COMMAND);
 		start_dma(hdc);
-
-		/* Wait for interrupt */
-		/*
-		if (wait_for_object(&hdc->ready, HDTIMEOUT_XFER) < 0) {
-			//kprintf(KERN_WARNING "hd: timeout waiting for read to complete\n");
-			stop_dma(hdc);
-			result = -EIO;
-			break;
-		}
-		*/
 
 		/* Stop DMA channel and check DMA status */
 		result = stop_dma(hdc);
@@ -844,7 +737,6 @@ static int hd_read_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 			error = inb(hdc->iobase + HDC_ERR);
 			hd_error("hdread", error);
 
-			/*kprintf(KERN_ERR "hd: read error (0x%02x)\n", hdc->status); */
 			result = -EIO;
 			break;
 		}
@@ -878,13 +770,6 @@ static int hd_write_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t b
 	hd = (hd_t *) dev->privdata;
 	hdc = hd->hdc;
 	sectsleft = count / SECTOR_SIZE;
-	/*
-	if (wait_for_object(&hdc->lock, HDTIMEOUT_BUSY) < 0)
-	{
-		return -EBUSY;
-	}
-	*/
-	/*kprintf("hdwrite block %d size %d buffer %p\n", blkno, count, buffer); */
 
 	while (sectsleft > 0) {
 		/* Select drive */
@@ -893,7 +778,6 @@ static int hd_write_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t b
 		/* Wait for controller ready */
 		result = hd_wait(hdc, HDCS_DRDY, HDTIMEOUT_DRDY);
 		if (result != 0) {
-			/*kprintf(KERN_ERR "hd_write: no drdy (0x%02x)\n", result); */
 			result = -EIO;
 			break;
 		}
@@ -913,7 +797,6 @@ static int hd_write_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t b
 		result = 0;
 		hdc->dir = HD_XFER_DMA;
 		hdc->active = hd;
-		/* reset_event(&hdc->ready); */
 
 		hd_setup_transfer(hd, blkno, nsects);
 
@@ -923,16 +806,6 @@ static int hd_write_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t b
 		/* Start write */
 		outb(HDCMD_WRITEDMA, hdc->iobase + HDC_COMMAND);
 		start_dma(hdc);
-
-		/* Wait for interrupt */
-		/*
-		if (wait_for_object(&hdc->ready, HDTIMEOUT_XFER) < 0) {
-			//kprintf(KERN_WARNING "hd: timeout waiting for write to complete\n");
-			stop_dma(hdc);
-			result = -EIO;
-			break;
-		}
-		*/
 
 		/* Stop DMA channel and check DMA status */
 		result = stop_dma(hdc);
@@ -945,7 +818,6 @@ static int hd_write_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t b
 			error = inb(hdc->iobase + HDC_ERR);
 			hd_error("hdwrite", error);
 
-			/*kprintf(KERN_ERR "hd: write error (0x%02x)\n", hdc->status); */
 			result = -EIO;
 			break;
 		}
@@ -967,8 +839,6 @@ static int cd_read(block_dev_t *dev, char *buffer,
 	unsigned char pkt[12];
 	unsigned int blks;
 	hd_t *hd = (hd_t *) dev->privdata;
-
-	/* kprintf("cd_read: blk %d %d bytes\n", blkno, count); */
 
 	blks = count / CDSECTORSIZE;
 	if (blks > 0xFFFF) {
@@ -1028,7 +898,6 @@ void hd_dpc(void *arg) {
 	int nsects;
 	int n;
 
-	/* kprintf("[hddpc]"); */
 	switch (hdc->dir) {
 	case HD_XFER_READ:
 		/* Check status */
@@ -1038,10 +907,7 @@ void hd_dpc(void *arg) {
 
 			error = inb(hdc->iobase + HDC_ERR);
 			hd_error("hdread", error);
-
-			/* printf(KERN_ERR "hd: read error (0x%02x)\n", hdc->status); */
 			hdc->result = -EIO;
-			/* set_event(&hdc->ready);*/
 		}
 		else
 		{
@@ -1057,7 +923,6 @@ void hd_dpc(void *arg) {
 
 			/* Signal event if we have read all sectors */
 			hdc->nsects -= nsects;
-			/* if (hdc->nsects == 0) set_event(&hdc->ready);*/
 		}
 		break;
 
@@ -1070,9 +935,7 @@ void hd_dpc(void *arg) {
 			error = inb(hdc->iobase + HDC_ERR);
 			hd_error("hdwrite", error);
 
-			/* kprintf(KERN_ERR "hd: write error (0x%02x)\n", hdc->status); */
 			hdc->result = -EIO;
-			/* set_event(&hdc->ready);*/
 		}
 		else {
 			/* Transfer next sector(s) or signal end of transfer */
@@ -1093,9 +956,6 @@ void hd_dpc(void *arg) {
 					hdc->bufp += SECTOR_SIZE;
 				}
 			}
-			else {
-			/*  set_event(&hdc->ready);*/
-			}
 		}
 		break;
 
@@ -1103,21 +963,17 @@ void hd_dpc(void *arg) {
 		outb(inb(hdc->bmregbase + BM_STATUS_REG),
 				hdc->bmregbase + BM_STATUS_REG);
 		hdc->status = inb(hdc->iobase + HDC_STATUS);
-		/* set_event(&hdc->ready);*/
 		break;
 
 	case HD_XFER_IGNORE:
 		/* Read status to acknowledge interrupt */
 		hdc->status = inb(hdc->iobase + HDC_STATUS);
-		//hdc->result = 1;
-		/* set_event(&hdc->ready);*/
 		break;
 
 	case HD_XFER_IDLE:
 	default:
 		/* Read status to acknowledge interrupt */
 		hdc->status = inb(hdc->iobase + HDC_STATUS);
-		/* kprintf("unexpected intr from hdc\n"); */
 		break;
 	}
 
@@ -1170,6 +1026,7 @@ static int part_write(block_dev_t *dev, char *buffer,
 block_dev_driver_t harddisk_udma_driver = {
 	"idedisk_udma_drv",
 	DEV_TYPE_BLOCK,
+	ide_init,
 	hd_ioctl,
 	hd_read_udma,
 	hd_write_udma
@@ -1178,6 +1035,7 @@ block_dev_driver_t harddisk_udma_driver = {
 block_dev_driver_t harddisk_pio_driver = {
 	"idedisk_drv",
 	DEV_TYPE_BLOCK,
+	ide_init,
 	hd_ioctl,
 	hd_read_pio,
 	hd_write_pio
@@ -1186,6 +1044,7 @@ block_dev_driver_t harddisk_pio_driver = {
 block_dev_driver_t cdrom_pio_driver = {
 	"idecd_drv",
 	DEV_TYPE_BLOCK,
+	ide_init,
 	cd_ioctl,
 	cd_read,
 	cd_write
@@ -1194,32 +1053,35 @@ block_dev_driver_t cdrom_pio_driver = {
 block_dev_driver_t partition_driver = {
 	"partition_drv",
 	DEV_TYPE_BLOCK,
+	ide_init,
 	part_ioctl,
 	part_read,
 	part_write
 };
 
+block_dev_driver_t ide_init_driver = {
+	"ide_drv",
+	DEV_TYPE_BLOCK,
+	ide_init,
+	NULL,
+	NULL,
+	NULL
+};
+
+/* TODO Create Partition as drive */
 static int create_partitions(hd_t *hd) {
 	mbr_t mbrdata;
 	mbr_t *mbr = &mbrdata;
-	//lbr_t lbrdata;
-	//lbr_t *lbr = &lbrdata;
 	int rc;
-	/* dev_t devno; */
-	/* int i; */
-	/* char devname[MAX_LENGTH_FILE_NAME]; */
 
 	/* Read partition table */
 	rc = dev_read(hd->devno, (char *)mbr, SECTOR_SIZE, 0);
 	if (rc < 0) {
-		/* kprintf(KERN_ERR "%s: error %d reading partition table\n", device(hd->devno)->name, rc); */
 		return rc;
 	}
-	//lbr = (lbr_t *) mbr;
 
 	/* Create partition devices */
 	if ((mbr->sig_55 != 0x55) || (mbr->sig_aa != 0xAA)) {
-		/*kprintf(KERN_ERR "%s: illegal boot sector signature\n", device(hd->devno)->name); */
 		return -EIO;
 	}
 	/*
@@ -1236,7 +1098,6 @@ static int create_partitions(hd_t *hd) {
 			devno = dev_open(devname);
 			if (devno == NODEV) {
 				devno = dev_make(devname, &partition_driver, NULL, &hd->parts[i]);
-				//kprintf(KERN_INFO "%s: partition %d on %s, %dMB (type %02x)\n", devname, i, device(hd->devno)->name, mbr->parttab[i].numsect / ((1024 * 1024) / SECTORSIZE), mbr->parttab[i].systid);
 			}
 			else {
 				dev_close(devno);
@@ -1301,13 +1162,11 @@ static int get_interface_type(hdc_t *hdc, int drvsel) {
 
 	sc = inb(hdc->iobase + HDC_SECTORCNT);
 	sn = inb(hdc->iobase + HDC_SECTOR);
-	/* kprintf("%x: sc=0x%02x sn=0x%02x\n", hdc->iobase, sc, sn); */
 
 	if (sc == 0x01 && sn == 0x01) {
 		cl = inb(hdc->iobase + HDC_TRACKLSB);
 		ch = inb(hdc->iobase + HDC_TRACKMSB);
 		st = inb(hdc->iobase + HDC_STATUS);
-		/* kprintf("%x: cl=0x%02x ch=0x%02x st=0x%02x\n", hdc->iobase, cl, ch, st); */
 
 		if (cl == 0x14 && ch == 0xeb) {
 			return HDIF_ATAPI;
@@ -1456,7 +1315,6 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 		}
 		rc = hd_identify(hd);
 		if (rc < 0) {
-			/* kprintf("hd: device %s not responding, ignored.\n", devname);*/
 			ide.drive[numslot] = NULL;
 			return;
 		}
@@ -1496,7 +1354,6 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 	if (hd->multsect > 1) {
 		rc = hd_cmd(hd, HDCMD_SETMULT, 0, hd->multsect);
 		if (rc < 0) {
-			/* kprintf(KERN_WARNING "hd: unable to set multi sector mode\n"); */
 			hd->multsect = 1;
 		}
 	}
@@ -1510,11 +1367,6 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 		/* Set feature in IDE controller */
 		rc = hd_cmd(hd, HDCMD_SETFEATURES, HDFEAT_XFER_MODE,
 				HDXFER_MODE_UDMA | hd->udmamode);
-		/*
-		if (rc < 0) {
-			kprintf(KERN_WARNING "hd: unable to enable UDMA mode\n");
-		}
-		*/
 	}
 
 	/* Enable read ahead and write caching if supported */
@@ -1538,7 +1390,6 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 		hd->devno = dev_make("cd#", &cdrom_pio_driver, hd);
 	}
 	else {
-		/* kprintf(KERN_ERR "%s: unknown media type 0x%02x (iftype %d, config 0x%04x)\n", devname, hd->media, hd->iftype, hd->param.config); */
 		return;
 	}
 
@@ -1561,42 +1412,45 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 	else {
 		hd->blks = 0;
 	}
-	/*
-	kprintf(KERN_INFO "%s: %s", device(hd->devno)->name, hd->param.model);
+
+#ifdef DEBUG
+	printk("%s: %s", device(hd->devno)->name, hd->param.model);
 	if (hd->size > 0) {
-		kprintf(" (%d MB)", hd->size);
+		printk(" (%d MB)", hd->size);
 	}
 	if (hd->lba) {
-		kprintf(", LBA");
+		printk(", LBA");
 	}
 	if (hd->udmamode != -1) {
-		kprintf(", UDMA%d", udma_speed[hd->udmamode]);
+		printk(", UDMA%d", udma_speed[hd->udmamode]);
 	}
 	if (hd->param.csfo & 2) {
-		kprintf(", read ahead");
+		printk(", read ahead");
 	}
 	if (hd->param.csfo & 1) {
-		kprintf(", write cache");
+		printk(", write cache");
 	}
 	if (hd->udmamode == -1 && hd->multsect > 1) {
-		kprintf(", %d sects/intr", hd->multsect);
+		printk(", %d sects/intr", hd->multsect);
 	}
 	if (!hd->use32bits) {
-		kprintf(", word I/O");
+		printk(", word I/O");
 	}
 	if (hd->hdc->bmregbase) {
-		kprintf(", bmregbase=0x%x", hd->hdc->bmregbase);
+		printk(", bmregbase=0x%x", hd->hdc->bmregbase);
 	}
-	kprintf("\n");
-	*/
+	printk("\n");
+#endif /* DEBUG */
 }
 
 EMBOX_UNIT_INIT(unit_init);
 
-static int ide_init(int numhd) {
+static int ide_init(void *args) {
 	int rc;
 	int masterif;
 	int slaveif;
+	int numhd;
+	numhd = 4;
 
 	if (numhd >= 1)  {
 		/*
@@ -1604,10 +1458,7 @@ static int ide_init(int numhd) {
 						ide ? bmiba : 0, &masterif, &slaveif);
 		*/
 		rc = setup_hdc(&hdctab[0], HDC0_IOBASE, HDC0_IRQ, 0, &masterif, &slaveif);
-		if (rc < 0) {
-		/*kprintf(KERN_ERR "hd: error %d initializing primary IDE controller\n", rc); */
-		}
-		else {
+		if (rc >= 0) {
 			if (numhd >= 1 && masterif > HDIF_UNKNOWN) {
 				setup_hd(&hdtab[0], &hdctab[0], "hd0",
 						HD0_DRVSEL, BM_SR_DRV0, masterif, 0);
@@ -1626,10 +1477,7 @@ static int ide_init(int numhd) {
 		*/
 		rc = setup_hdc(&hdctab[1], HDC1_IOBASE,
 				HDC1_IRQ, 0, &masterif, &slaveif);
-		if (rc < 0) {
-			/* kprintf(KERN_ERR "hd: error %d initializing secondary IDE controller\n", rc); */
-		}
-		else {
+		if (rc >= 0) {
 			if (numhd >= 3 && masterif > HDIF_UNKNOWN) {
 				setup_hd(&hdtab[2], &hdctab[1], "hd2",
 						HD0_DRVSEL, BM_SR_DRV0, masterif, 2);
@@ -1644,11 +1492,13 @@ static int ide_init(int numhd) {
 }
 
 slot_t *get_ide_drive(void) {
-	ide_init(4);
+	ide_init(NULL);
 	return &ide;
 }
 
-int unit_init (void) {
-	ide_init(4);
+static int unit_init (void) {
 	return 0;
 }
+
+EMBOX_BLOCK_DEV("ide", &ide_init_driver);
+

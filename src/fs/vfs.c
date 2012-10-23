@@ -138,7 +138,7 @@ static node_t *vfs_add_new_path(node_t *parent,
 }
 
 extern node_t *vfs_find_child(const char *name, node_t *parrent);
-extern node_t *get_root_node (void);
+extern node_t *vfs_get_root (void);
 
 node_t *vfs_add_path(const char *path, node_t *parent) {
 	node_t *node = parent;
@@ -146,7 +146,7 @@ node_t *vfs_add_path(const char *path, node_t *parent) {
 	char *p_path = (char *) path;
 
 	if (NULL == parent) {
-		node = get_root_node();
+		node = vfs_get_root();
 	}
 	while (NULL != (p_path = get_next_node_name(p_path,	node_name,
 													sizeof(node_name)))) {
@@ -190,7 +190,7 @@ node_t *vfs_find_node(const char *path, node_t *parent) {
 	char *p_path = (char *) path;
 
 	if (NULL == parent) {
-		node = get_root_node();
+		node = vfs_get_root();
 	}
 	//FIXME if we return immediately we return root node
 	while (NULL != (p_path = get_next_node_name(p_path, node_name,
@@ -203,7 +203,7 @@ node_t *vfs_find_node(const char *path, node_t *parent) {
 	return node;
 }
 
-node_t *get_root_node(void) {
+node_t *vfs_get_root(void) {
 	if(NULL == root_node) {
 		root_node = alloc_node("/");
 	}
