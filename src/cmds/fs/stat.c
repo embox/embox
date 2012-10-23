@@ -78,4 +78,3 @@ static int exec(int argc, char **argv) {
 	close(fd);
 	return 0;
 }
-

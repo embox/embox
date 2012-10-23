@@ -46,4 +46,3 @@ void* stack_iter_get_fp(stack_iter_t *f) {
 void* stack_iter_get_retpc(stack_iter_t *f) {
 	return f->pc;
 }
-

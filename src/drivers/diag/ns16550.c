@@ -63,4 +63,3 @@ char diag_getc(void) {
 	return COM3_RBR;
 
 }
-

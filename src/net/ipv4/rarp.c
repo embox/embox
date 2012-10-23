@@ -249,4 +249,3 @@ static int rarp_init(void) {
 	/* ummm.. done */
 	return ENOERR;
 }
-

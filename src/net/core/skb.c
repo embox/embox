@@ -168,4 +168,3 @@ void skb_shifthead(struct sk_buff *skb, int headshift) {
 	assert((int)skb->len >= (-headshift));
 	skb->len += headshift;
 }
-

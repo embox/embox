@@ -41,4 +41,3 @@ void socket_free(struct socket *sock) {
 
 	ipl_restore(flags);
 }
-

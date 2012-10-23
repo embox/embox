@@ -84,5 +84,3 @@ static int run_script(void) {
 
 	return 0;
 }
-
-

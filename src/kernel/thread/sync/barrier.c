@@ -33,4 +33,3 @@ void barrier_wait(barrier_t *b) {
 	}
 	sched_unlock();
 }
-

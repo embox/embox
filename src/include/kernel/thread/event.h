@@ -29,4 +29,3 @@ extern void event_notify_one(struct event *event);
 #endif
 
 #endif /* KERNEL_THREAD_EVENT_H_ */
-

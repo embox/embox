@@ -111,4 +111,3 @@ static const struct proto packet_proto = {
 static int packet_init(void) {
 	return sock_register(&packet_family_ops);
 }
-

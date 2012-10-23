@@ -44,4 +44,3 @@ C_ENTRY(context_switch):
 	j $ra
 	/* and return. */
 	addi $sp, $sp, CTX_SIZE /* in delay slot */
-

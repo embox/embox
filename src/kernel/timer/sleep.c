@@ -35,4 +35,3 @@ int usleep(useconds_t usec) {
 int sleep(unsigned int seconds) {
 	return usleep(seconds * 1000);
 }
-

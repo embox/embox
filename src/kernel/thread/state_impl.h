@@ -84,4 +84,3 @@ static inline __thread_state_t thread_state_do_detach(__thread_state_t state) {
 }
 
 #endif /* KERNEL_THREAD_STATE_IMPL_H_ */
-

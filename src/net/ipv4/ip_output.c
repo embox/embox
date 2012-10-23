@@ -206,4 +206,3 @@ void ip_v4_icmp_err_notify(struct sock *sk, int type, int code) {
 	sk->sk_err = (type & (code<<8));
 	so_sk_set_so_error(sk, sk->sk_err);
 }
-

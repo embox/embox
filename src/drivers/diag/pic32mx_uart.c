@@ -247,4 +247,3 @@ char diag_getc(void) {
 int diag_has_symbol(void) {
 	return REG_LOAD(UxSTA) & STA_URXDA;
 }
-

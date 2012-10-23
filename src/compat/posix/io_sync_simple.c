@@ -18,4 +18,3 @@ void io_op_unblock(struct idx_io_op_state *op) {
 void io_op_set_event(struct idx_io_op_state *op, struct event *e) {
 	return; /* do nothing */
 }
-

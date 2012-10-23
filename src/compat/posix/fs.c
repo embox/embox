@@ -171,4 +171,3 @@ int lstat(const char *path, stat_t *buf) {
 
 	return drv->file_op->fstat (node->fd, buf);
 }
-

@@ -31,4 +31,3 @@ const struct symbol *symbol_lookup(void *addr) {
 
 	return &__symbol_table[l];
 }
-

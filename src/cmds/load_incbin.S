@@ -9,4 +9,3 @@
 
 .section .load_image
 .incbin OPTION_STRING_GET(image)
-

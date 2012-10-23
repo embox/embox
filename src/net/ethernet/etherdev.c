@@ -106,4 +106,3 @@ struct net_device * etherdev_alloc(void) {
 void etherdev_free(struct net_device *dev) {
 	netdev_free(dev);
 }
-

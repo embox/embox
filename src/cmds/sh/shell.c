@@ -33,6 +33,3 @@ const struct shell *shell_any(void) {
 
 	return NULL;
 }
-
-
-

@@ -228,4 +228,3 @@ extern int thread_set_priority(struct thread *thread,
 extern clock_t thread_get_running_time(struct thread *thread);
 
 #endif /* KERNEL_THREAD_API_H_ */
-

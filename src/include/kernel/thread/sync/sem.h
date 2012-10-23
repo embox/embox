@@ -25,4 +25,3 @@ extern void sem_leave(sem_t *s);
 extern int sem_tryenter(sem_t *s);
 
 #endif /* KERNEL_THREAD_SYNC_SEM_H_ */
-

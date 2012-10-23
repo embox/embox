@@ -147,4 +147,3 @@ uint8_t eth_packet_type(struct sk_buff *skb) {
 		}
 	}
 }
-

@@ -52,4 +52,3 @@ excep_stub:
 	call    exception_handler
 
 	RESTORE_ALL
-

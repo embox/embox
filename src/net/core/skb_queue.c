@@ -97,4 +97,3 @@ struct sk_buff * skb_queue_pop(struct sk_buff_head *queue) {
 
 	return skb;
 }
-

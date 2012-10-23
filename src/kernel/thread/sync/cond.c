@@ -42,4 +42,3 @@ void cond_broadcast(cond_t *c) {
 
 	sched_wake_all(&c->sq);
 }
-

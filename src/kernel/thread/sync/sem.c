@@ -65,4 +65,3 @@ void sem_leave(sem_t *s) {
 	}
 	sched_unlock();
 }
-

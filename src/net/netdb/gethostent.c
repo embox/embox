@@ -131,4 +131,3 @@ struct hostent * gethostent(void) {
 
 	return result;
 }
-
