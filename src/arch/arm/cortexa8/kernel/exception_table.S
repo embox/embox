@@ -28,8 +28,6 @@
 
 .extern irq_handler
 .global start
-.global trap_table_start
-.global trap_table_end
 .section .trap_table, "x"
 trap_table_start:
 /* trap table
@@ -37,7 +35,7 @@ trap_table_start:
  *
  * actually, this is general for all ARM cores
  */
-;    ldr pc, reset_handler_addr
+    ldr pc, reset_handler_addr
     ldr pc, undef_handler_addr
     ldr pc, swi_handler_addr
     ldr pc, prefetch_abt_handler_addr
@@ -46,8 +44,8 @@ trap_table_start:
     ldr pc, irq_handler_addr
     ldr pc, fiq_handler_addr
 
-;reset_handler_addr:
-;    .word reset_handler
+reset_handler_addr:
+    .word reset_handler
 undef_handler_addr:
     .word undef_handler
 swi_handler_addr:
@@ -60,7 +58,6 @@ irq_handler_addr:
     .word irq_handler
 fiq_handler_addr:
     .word fiq_handler
-trap_table_end:
 
 /* stubs */
 undef_handler:
@@ -101,5 +98,8 @@ reset_handler:
 
     msr CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
     mov sp, r0
+
+    ldr r0, =trap_table_start
+    mcr p15, 0, r0, c12, c0, 0
 
     b bootldr_start

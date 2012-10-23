@@ -4,8 +4,6 @@ package embox.arch.arm.cortexa8.kernel
 module locore extends embox.arch.locore {
 	source "entry.S"
 	source "exception_table.S"
-	source "swi_handler.c"
-
 
 	depends embox.arch.arm.kernel.head
 }

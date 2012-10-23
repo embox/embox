@@ -16,6 +16,7 @@
 
 #include <kernel/irq.h>
 #include <embox/unit.h>
+#include <prom/prom_printf.h>
 
 EMBOX_UNIT_INIT(omap3_intc_init);
 
@@ -44,42 +45,26 @@ EMBOX_UNIT_INIT(omap3_intc_init);
 #define OMAP35X_INTC_PENDING_FIQ(n) (OMAP35X_INTC_BASE + 0x0000009C + (n) * 0x20)
 #define OMAP35X_INTC_ILR(m)         (OMAP35X_INTC_BASE + 0x00000100 + (m) * 0x4)
 
-extern char trap_table_start, trap_table_end;
+void hardware_init_hook(void) {
+	prom_printf("hw hook\n");
+	REG_STORE(OMAP35X_INTC_SYSCONFIG, 0x10);
+	REG_STORE(OMAP35X_INTC_IDLE, 0x0);
 
-uint32_t load_sctlr(void) { uint32_t reg; asm volatile ("mrc  p15, 0, %0, c1, c0, 0" : "=r" (reg)); return reg; }
-void store_sctlr(uint32_t reg) { asm volatile ("mcr  p15, 0, %0, c1, c0, 0" :: "r" (reg)); }
+	REG_STORE(OMAP35X_INTC_MIR(0), ~0);
+	REG_STORE(OMAP35X_INTC_MIR(1), ~0);
+	REG_STORE(OMAP35X_INTC_MIR(2), ~0);
 
-uint32_t load_snvbar(void) { uint32_t reg; asm volatile ("mrc  p15, 0, %0, c12, c0, 0" : "=r" (reg)); return reg; }
-void store_snvbar(uint32_t reg) { asm volatile ("mcr  p15, 0, %0, c12, c0, 0" :: "r" (reg)); }
-
- void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
-	size_t lenw = (size_t) ((len & (~3)) >> 2);
-	volatile uint32_t *srcw = (uint32_t*) ((uint32_t) (src) & (~3));
-
-	while (lenw--) {
-		*dest++ = *srcw++;
+	for (int n = 0; n <= 95; ++n) {
+		REG_STORE(OMAP35X_INTC_ILR(n), 0x0);
 	}
-	if (len & (~3)) {
-		*dest++ = *srcw++;
-	}
+
 }
-#include <prom/prom_printf.h>
-#include <string.h>
+
+
 static int omap3_intc_init(void) {
 #if 0
-	memcpy32((uint32_t *)0x4020f800, &trap_table_start, (size_t)&trap_table_end - (size_t)&trap_table_start);
-	__asm__ __volatile__ ("swi 15");
-#endif
-#if 1
-	store_snvbar((uint32_t)&trap_table_start);
-	/*prom_printf("snvbar: 0x%x\n", load_snvbar());*/
-	/*memcpy32((uint32_t *)0xffff0000, &trap_table_start, (size_t)&trap_table_end - (size_t)&trap_table_start);*/
-	/*store_sctlr(load_sctlr() | 1 << 13);*/
-	__asm__ __volatile__ ("swi 15");
-	__asm__ __volatile__ ("swi 15");
-#endif
-#if 0
 	int n, m;
+
 	REG_STORE(OMAP35X_INTC_SYSCONFIG, 0x1);
 	REG_STORE(OMAP35X_INTC_IDLE, 0x0);
 
@@ -91,6 +76,7 @@ static int omap3_intc_init(void) {
 		REG_STORE(OMAP35X_INTC_MIR(n), 0x0);
 		REG_STORE(OMAP35X_INTC_MIR_CLEAR(n), 0x1);
 	}
+
 #endif
 	return 0;
 }
@@ -108,7 +94,15 @@ void irqctrl_force(unsigned int interrupt_nr) {
 }
 
 extern int printf(const char *,...);
+
 void interrupt_handle(void) {
-	printf("something happand\n");
+	prom_printf("irq 0x%x!\n", (unsigned int) REG_LOAD(OMAP35X_INTC_SIR_IRQ));
+	for (int i = 0; i <= 2; i ++) {
+	    prom_printf("pending %d: 0x%x\n", i, (unsigned int) REG_LOAD(OMAP35X_INTC_PENDING_IRQ(i)));
+	}
+}
+
+void swi_handle(void) {
+	prom_printf("swi!\n");
 }
 
