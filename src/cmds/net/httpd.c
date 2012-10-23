@@ -14,6 +14,8 @@
 #include <embox/cmd.h>
 #include <err.h>
 #include <errno.h>
+#include <net/inetdevice.h>
+#include <net/in.h>
 
 EMBOX_CMD(httpd);
 
@@ -375,6 +377,14 @@ process_again:
 	close(ci.sock); /* close connection */
 }
 
+static void welcome_message(void){
+	/* FIXME cheat to get local ip */
+	struct in_addr localAddr;
+	struct in_device *in_dev = inet_dev_find_by_name("eth0");
+	localAddr.s_addr = in_dev->ifa_address;
+	printf("Welcome to http://%s\n", inet_ntoa(localAddr));
+}
+
 static int httpd(int argc, char **argv) {
 	int res, host;
 	socklen_t addr_len;
@@ -402,6 +412,9 @@ static int httpd(int argc, char **argv) {
 		printf("Error.. listen() failed. errno=%d\n", errno);
 		return res;
 	}
+
+	welcome_message();
+
 	while (1) {
 		res = accept(host,(struct sockaddr *)&addr, &addr_len);
 		if (res < 0) {
