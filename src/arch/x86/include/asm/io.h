@@ -13,21 +13,25 @@
 #include <types.h>
 
 static inline void farpokeb( unsigned sel, void *off, char v ) {
-    __asm__ __volatile__ ( "push %%fs\n\t"
-         "mov  %0, %%fs\n\t"
-         "movb %2, %%fs:(%1)\n\t"
-         "pop %%fs"
-         : : "g"(sel), "r"(off), "r"(v) );
+	__asm__ __volatile__ (
+		"push %%fs\n\t"
+		"mov  %0, %%fs\n\t"
+		"movb %2, %%fs:(%1)\n\t"
+		"pop %%fs"
+		: : "g"(sel), "r"(off), "r"(v)
+	);
 }
 
 static inline unsigned farpeekl( unsigned sel, void * off ) {
-    unsigned ret;
-    __asm__ __volatile__ ( "push %%fs\n\t"
-         "mov  %1, %%fs\n\t"
-         "mov  %%fs:(%2), %0\n\t"
-         "pop  %%fs"
-         : "=r"(ret) : "g"(sel), "r"(off) );
-    return ret;
+	unsigned ret;
+	__asm__ __volatile__ (
+		"push %%fs\n\t"
+		"mov  %1, %%fs\n\t"
+		"mov  %%fs:(%2), %0\n\t"
+		"pop  %%fs"
+		: "=r"(ret) : "g"(sel), "r"(off)
+	);
+	return ret;
 }
 
 static inline uint8_t in8(unsigned long port) {

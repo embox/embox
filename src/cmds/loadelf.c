@@ -65,12 +65,12 @@ static void *execve_trampoline(void *data) {
 	}
 
 	elf_load_in_mem(elf_file, &elf);
-    elf_entry = (void *) elf.header->e_entry;
+	elf_entry = (void *) elf.header->e_entry;
 
 	fclose(elf_file);
 	elf_finilize_object(&elf);
 
-    //usermode_call_and_switch_if(1, function_main, NULL);
+	//usermode_call_and_switch_if(1, function_main, NULL);
 	elf_start(elf_entry);
 
 	return NULL;

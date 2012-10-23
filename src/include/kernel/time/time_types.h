@@ -1,4 +1,4 @@
-/*
+/**
  * @file
  *
  * @brief Time types

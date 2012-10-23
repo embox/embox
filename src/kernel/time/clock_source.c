@@ -36,7 +36,7 @@ static struct clock_source_head *clock_source_find(struct clock_source *cs) {
 
 	dlist_foreach(csh_lnk,tmp,&clock_source_list) {
 		csh = dlist_entry(csh_lnk, struct clock_source_head, lnk);
-		if(cs == csh->clock_source) {
+		if (cs == csh->clock_source) {
 			return csh;
 		}
 	}
@@ -67,7 +67,7 @@ int clock_source_unregister(struct clock_source *cs) {
 	if (!cs) {
 		return -EINVAL;
 	}
-	if(NULL == (csh = clock_source_find(cs))) {
+	if (NULL == (csh = clock_source_find(cs))) {
 		return -EBADF;
 	}
 
@@ -77,35 +77,34 @@ int clock_source_unregister(struct clock_source *cs) {
 extern clock_t clock_sys_ticks(void);
 
 ns_t clock_source_read(struct clock_source *cs) {
-		static cycle_t prev_cycles, cycles, cycles_all;
-		int old_jiffies, safe;
-		struct time_event_device *ed = cs->event_device;
-		struct time_counter_device *cd = cs->counter_device;
+	static cycle_t prev_cycles, cycles, cycles_all;
+	int old_jiffies, safe;
+	struct time_event_device *ed = cs->event_device;
+	struct time_counter_device *cd = cs->counter_device;
 
-		int cycles_per_jiff = cd->resolution /
-				ed->resolution;
-		safe = 0;
+	int cycles_per_jiff = cd->resolution / ed->resolution;
+	safe = 0;
 
-		do {
-			old_jiffies = clock_sys_ticks();
-			cycles = cd->read();
-			safe++;
-		} while(old_jiffies != clock_sys_ticks() && safe < 3);
+	do {
+		old_jiffies = clock_sys_ticks();
+		cycles = cd->read();
+		safe++;
+	} while (old_jiffies != clock_sys_ticks() && safe < 3);
 
-		if (ed->pending && ed->pending(ed->irq_nr)) {
-			old_jiffies++;
-		}
+	if (ed->pending && ed->pending(ed->irq_nr)) {
+		old_jiffies++;
+	}
 
-		cycles_all = cycles + old_jiffies * cycles_per_jiff;
+	cycles_all = cycles + old_jiffies * cycles_per_jiff;
 
-		/* TODO cheat. read() will miss for one jiff sometimes. */
-		if (cycles_all < prev_cycles) {
-			cycles_all += cycles_per_jiff;
-		}
+	/* TODO cheat. read() will miss for one jiff sometimes. */
+	if (cycles_all < prev_cycles) {
+		cycles_all += cycles_per_jiff;
+	}
 
-		prev_cycles = cycles_all;
+	prev_cycles = cycles_all;
 
-		return cycles_to_ns(cd, cycles_all);
+	return cycles_to_ns(cd, cycles_all);
 }
 
 ns_t clock_source_counter_read(struct clock_source *cs) {

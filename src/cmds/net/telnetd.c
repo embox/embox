@@ -1,6 +1,7 @@
 /**
  * @file
  * @brief Tiny telnetd server
+ *
  * @date 18.04.2012
  * @author Vladimir Sokolov
  */
@@ -45,11 +46,11 @@ static int clients[TELNETD_MAX_CONNECTIONS];
 #if 0
 	/* Out a bunch of different error messages to the output and to the socket */
 static void out_msgs(const char *msg, const char *msg2, const char *msg3,
-					int client_descr, struct sockaddr_in *client_socket) {
+			int client_descr, struct sockaddr_in *client_socket) {
 	const int m_len = strlen(msg) + 1;
 	MD(printf("%s", msg2));
-	if(m_len != sendto(client_descr, msg, m_len, 0,
-					   (struct sockaddr *)client_socket, sizeof(*client_socket))) {
+	if (m_len != sendto(client_descr, msg, m_len, 0,
+			(struct sockaddr *)client_socket, sizeof(*client_socket))) {
 		MD(printf("Can't write to the socket (%s)\n", msg3));
 	}
 }
@@ -89,7 +90,7 @@ static void ignore_telnet_options(int msg[2]) {
 			read(sock, &op_type, 1);
 
 			if (op_type == T_WILL || op_type == T_DO ||
-					op_type == T_WONT || op_type == T_DONT) {
+			    op_type == T_WONT || op_type == T_DONT) {
 				read(sock, &param, 1);
 			}
 
@@ -100,7 +101,7 @@ static void ignore_telnet_options(int msg[2]) {
 					telnet_cmd(sock, T_DONT, param);
 				}
 			} else if (op_type == T_DO) {
-				if ( (param == O_GO_AHEAD) || (param == O_ECHO) ) {
+				if ((param == O_GO_AHEAD) || (param == O_ECHO)) {
 					telnet_cmd(sock, T_WILL, param);
 				} else {
 					telnet_cmd(sock, T_WONT, param);
@@ -108,8 +109,7 @@ static void ignore_telnet_options(int msg[2]) {
 			} else {
 				/* Currently do nothing, probably it's an answer for our request */
 			}
-		}
-		else {
+		} else {
 			/* Get this symbol to shell, it belongs to usual traffic */
 			write(msg[1], &ch, 1);
 			return;
@@ -142,7 +142,7 @@ static void *shell_hnd(void* args) {
 static size_t buf_copy(unsigned char *dst, const unsigned char *src, size_t n) {
 	size_t len = 0;
 
-	for (int i = 0; i < n; i++) {
+	for (size_t i = 0; i < n; i++) {
 		if (*src != '\n') {
 			*dst++ = *src++;
 			len++;
@@ -156,7 +156,7 @@ static size_t buf_copy(unsigned char *dst, const unsigned char *src, size_t n) {
 	return len;
 }
 
-	/* Shell thread for telnet */
+/* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
 	/* Choose tmpbuff size a half of size of pbuff to make
 	 * replacement: \n\n...->\r\n\r\n... */
@@ -314,13 +314,12 @@ static int exec(int argc, char **argv) {
 		if (client_descr < 0) {
 			MD(printf("accept() failed. code=%d\n", client_descr));
 		} else {
-			uint i;
 			struct thread *thread;
 
 			MD(printf("Attempt to connect from address %s:%d",
-					inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)) );
+				inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)));
 
-			for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
+			for (size_t i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
 				if (clients[i] == -1) {
 					clients[i] = client_descr;
 
@@ -348,8 +347,7 @@ static int exec(int argc, char **argv) {
 		/* Free resources, don't touch threads, but close socket decriptor
 		 * So it'll influence to them
 		 */
-		uint i;
-		for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
+		for (size_t i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
 			if (clients[i] != -1) {
 				close(clients[i]);
 			}

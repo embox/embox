@@ -18,9 +18,7 @@ EMBOX_CMD(exec);
 extern struct __trace_point * const __trace_points_array[];
 
 static void print_usage(void) {
-	printf(
-			"%s\n",
-			"Usage: trace_point [-h] [-s] [-i <number>] [-d <number>] [-a <number>]");
+	printf("Usage: trace_point [-h] [-s] [-i <number>] [-d <number>] [-a <number>]\n");
 }
 
 static void print_trace_point_stat_with_location(int i) {
