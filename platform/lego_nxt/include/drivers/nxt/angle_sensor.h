@@ -1,5 +1,5 @@
 /**
- * @file angle_sensor.h
+ * @file
  * @brief NXT angle sensor interface
  *
  * @date 30.04.11

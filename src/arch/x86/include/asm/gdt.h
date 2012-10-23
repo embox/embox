@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief Define Interface to the CPU's global descriptor table
  *
  * @date 10.10.2012
  * @author Anton Bulychev

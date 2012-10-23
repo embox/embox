@@ -1,5 +1,5 @@
 /*
- * @file time_types.h
+ * @file
  *
  * @brief Time types
  * @author Alexander Kalmuk

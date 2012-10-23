@@ -1,5 +1,5 @@
 /**
- * @file angle.c
+ * @file
  * @brief NXT angle sensor driver
  *
  * @date 30.04.11

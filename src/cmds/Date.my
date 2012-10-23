@@ -8,7 +8,7 @@ package embox.cmd
 		SYNOPSIS
 			date [[[[[CC]YY]MM]DD]hh]mm[.ss]
 		DESCRIPTION
-			TODO
+			Display the current time or set the system date.
 		AUTHORS
 			Alexander Kalmuk
 	''')
