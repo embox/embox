@@ -23,21 +23,27 @@ static inline void elf_reverse_ph(Elf32_Phdr *ph_table) {
 
 int elf_read_program_header_table(FILE *fd, Elf32_Obj *obj) {
 	Elf32_Ehdr *header = obj->header;
+	size_t size;
 
-	if (header->e_phoff) {
-		obj->ph_table = malloc(header->e_phentsize * header->e_phnum);
+	if (!header->e_phoff) {
+		return -ENOENT;
+	}
 
-		fseek(fd, header->e_phoff, 0);
+	size = header->e_phentsize * header->e_phnum;
+	if (!(obj->ph_table = malloc(size))) {
+		return -ENOMEM;
+	}
 
-		if (fread(obj->ph_table, header->e_phentsize, header->e_phnum, fd)) {
-			if (obj->need_reverse) {
-				for (int i = 0; i < header->e_phnum; i++) {
-					elf_reverse_ph(obj->ph_table + i);
-				}
-			}
-			return 1;
+	fseek(fd, header->e_phoff, 0);
+	if (size != fread(obj->ph_table, 1, size, fd)) {
+		return -EBADF;
+	}
+
+	if (obj->need_reverse) {
+		for (int i = 0; i < header->e_phnum; i++) {
+			elf_reverse_ph(obj->ph_table + i);
 		}
 	}
 
-	return -1;
+	return ENOERR;
 }

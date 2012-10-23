@@ -5,6 +5,7 @@ static module ElfLib {
 	source "elf/elf_header.c"
 	source "elf/elf_sh_table.c"
 	source "elf/elf_ph_table.c"
+	source "elf/elf_section.c"
 	source "elf/elf_string_table.c"
 	source "elf/elf_sym_table.c"
 	source "elf/elf_sym_names.c"

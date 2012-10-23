@@ -18,38 +18,29 @@ static inline void elf_reverse_sym(Elf32_Sym *sym) {
 }
 
 int elf_read_symbol_table(FILE *fd, Elf32_Obj *obj) {
-	size_t offset, size, count;
 	Elf32_Ehdr *header = obj->header;
 	Elf32_Shdr *sh_table = obj->sh_table;
-
-	if (!header->e_shoff) {
-		return -1;
-	}
+	size_t count;
+	int res;
 
 	for (int i = 0; i < header->e_shnum; i++) {
 		if (sh_table[i].sh_type == SHT_SYMTAB) {
-			offset = sh_table[i].sh_offset;
-			size = sh_table[i].sh_size;
-			obj->sym_table = malloc(size);
-
-			fseek(fd, offset, 0);
-
-			if (fread(obj->sym_table, size, 1, fd)) {
-				count = sh_table[i].sh_size / sizeof(Elf32_Sym);
-
-				if (obj->need_reverse) {
-					for (int i = 0; i < count; i++) {
-						elf_reverse_sym(obj->sym_table + i);
-					}
-				}
-
-				return count;
+			if ((res = elf_read_section(fd, &sh_table[i],
+				(char **)&obj->sym_table)) < 0) {
+				return res;
 			}
 
-			/* failed reading */
-			return -1;
+			count = sh_table[i].sh_size / sizeof(Elf32_Sym);
+
+			if (obj->need_reverse) {
+				for (int i = 0; i < count; i++) {
+					elf_reverse_sym(obj->sym_table + i);
+				}
+			}
+
+			return count;
 		}
 	}
 
-	return -1;
+	return -ENOENT;
 }

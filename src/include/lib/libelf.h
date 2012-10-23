@@ -13,10 +13,10 @@
 #include <hal/arch.h>
 
 #if defined(__LITTLE_ENDIAN)
-#define NEED_REV(rev) \
+#define NEED_REVERSE(rev) \
 	((rev) == ELFDATA2MSB)
 #elif defined(__BIG_ENDIAN)
-#define REV(rev) \
+#define NEED_REVERSE(rev) \
 	((rev) == ELFDATA2LSB)
 #endif
 
@@ -34,6 +34,8 @@
 #define REVERSE_L(num) num = __REV_L(num)
 #define REVERSE_S(num) num = __REV_S(num)
 
+
+#if 0
 /**
  * Function reverses order of bytes in received integer with size 4-bytes
  * if reversed value is 2 - according
@@ -67,13 +69,17 @@
 	+ (((num) & 0xff00) >> 8)) \
 	: (num))
 
+#endif
+
 extern void elf_initialize_object(Elf32_Obj *obj);
 extern void elf_finilize_object(Elf32_Obj *obj);
-
 
 extern int elf_read_header(FILE *fd, Elf32_Obj *obj);
 extern int elf_read_section_header_table(FILE *fd, Elf32_Obj *obj);
 extern int elf_read_program_header_table(FILE *fd, Elf32_Obj *obj);
+
+extern int elf_read_section(FILE *fd, Elf32_Shdr *sh, char **dst);
+
 extern int elf_read_string_table(FILE *fd, Elf32_Obj *obj);
 extern int elf_read_symbol_table(FILE *fd, Elf32_Obj *obj);
 extern int elf_read_symbol_names(FILE *fd, Elf32_Obj *obj);

@@ -9,6 +9,7 @@
 #include <lib/libelf.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 static inline void elf_reverse_sh(Elf32_Shdr *sh) {
 	REVERSE_L(sh->sh_name);
@@ -25,20 +26,27 @@ static inline void elf_reverse_sh(Elf32_Shdr *sh) {
 
 int elf_read_section_header_table(FILE *fd, Elf32_Obj *obj) {
 	Elf32_Ehdr *header = obj->header;
+	size_t size;
 
-	if (header->e_shoff) {
-		obj->sh_table = malloc(header->e_shentsize * header->e_shnum);
+	if (!header->e_shoff) {
+		return -ENOENT;
+	}
 
-		fseek(fd, header->e_shoff, 0);
+	size = header->e_shentsize * header->e_shnum;
+	if (!(obj->sh_table = malloc(size))) {
+		return -ENOMEM;
+	}
 
-		if (fread(obj->sh_table, header->e_shentsize, header->e_shnum, fd)) {
-			if (obj->need_reverse) {
-				for (int i = 0; i < header->e_shnum; i++) {
-					elf_reverse_sh(obj->sh_table + i);
-				}
-			}
-			return 1;
+	fseek(fd, header->e_shoff, 0);
+	if (size != fread(obj->sh_table, 1, size, fd)) {
+		return -EBADF;
+	}
+
+	if (obj->need_reverse) {
+		for (int i = 0; i < header->e_shnum; i++) {
+			elf_reverse_sh(obj->sh_table + i);
 		}
 	}
-	return -1;
+
+	return ENOERR;
 }
