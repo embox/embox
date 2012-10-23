@@ -53,7 +53,7 @@ static int init(void) {
 
 	prom_printf("\nEmbox kernel start\n");
 
-	__asm__ __volatile__ ("swi 0xdead");
+	__asm__ __volatile__ ("swi 0xf");
 
 	if (0 != (ret = runlevel_set(target_level))) {
 		prom_printf("Failed to get into level %d, current level %d\n",
