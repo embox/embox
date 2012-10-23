@@ -99,6 +99,7 @@ reset_handler:
     msr CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
     mov sp, r0
 
+    /* setup interrupt vector */
     ldr r0, =trap_table_start
     mcr p15, 0, r0, c12, c0, 0
 
