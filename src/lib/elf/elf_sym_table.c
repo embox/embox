@@ -30,7 +30,7 @@ int elf_read_symbol_table(FILE *fd, Elf32_Obj *obj) {
 				return res;
 			}
 
-			count = sh_table[i].sh_size / sizeof(Elf32_Sym);
+			count = res / sizeof(Elf32_Sym);
 
 			if (obj->need_reverse) {
 				for (int i = 0; i < count; i++) {
