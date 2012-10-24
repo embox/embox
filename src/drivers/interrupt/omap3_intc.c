@@ -55,7 +55,7 @@ void hardware_init_hook(void) {
 
 	REG_STORE(OMAP35X_INTC_IDLE, 0x0);
 
-	for (int m = 0; m <= 95; ++m) {
+	for (int m = 0; m < __IRQCTRL_IRQS_TOTAL; ++m) {
 		REG_STORE(OMAP35X_INTC_ILR(m), 0x0);
 	}
 
