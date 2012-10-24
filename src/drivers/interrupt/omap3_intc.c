@@ -45,10 +45,14 @@ EMBOX_UNIT_INIT(omap3_intc_init);
 #define OMAP35X_INTC_PENDING_FIQ(n) (OMAP35X_INTC_BASE + 0x0000009C + (n) * 0x20) /* PENDINGFIQ 31:0b */
 #define OMAP35X_INTC_ILR(m)         (OMAP35X_INTC_BASE + 0x00000100 + (m) * 0x4) /* PRIORITY 7:2b, FIQNIRQ 0b */
 
+#define INTC_SYSCONFIG_RESET (1 << 1)
+#define INTC_CONTROL_NEWIRQARG (1 << 0)
+#define INTC_CONTROL_NEWFIQARG (1 << 1)
+#define INTC_SIR_IRQ_ACTIVE_MASK 0x7f
+
 void hardware_init_hook(void) {
-	prom_printf("hw hook\n");
-	REG_STORE(OMAP35X_INTC_SYSCONFIG, 0x0);
-#if 0
+	REG_STORE(OMAP35X_INTC_SYSCONFIG, INTC_SYSCONFIG_RESET);
+
 	REG_STORE(OMAP35X_INTC_IDLE, 0x0);
 
 	for (int m = 0; m <= 95; ++m) {
@@ -58,59 +62,49 @@ void hardware_init_hook(void) {
 	REG_STORE(OMAP35X_INTC_MIR_SET(0), ~0);
 	REG_STORE(OMAP35X_INTC_MIR_SET(1), ~0);
 	REG_STORE(OMAP35X_INTC_MIR_SET(2), ~0);
-#endif
-#if 0 /* software intrerrupt */
-	REG_STORE(OMAP35X_INTC_ISR_SET(0), ~0);
-	REG_STORE(OMAP35X_INTC_ISR_SET(1), ~0);
-	REG_STORE(OMAP35X_INTC_ISR_SET(2), ~0);
-#endif
+
+	REG_STORE(OMAP35X_INTC_ISR_SET(0), 0);
+	REG_STORE(OMAP35X_INTC_ISR_SET(1), 0);
+	REG_STORE(OMAP35X_INTC_ISR_SET(2), 0);
 }
 
 
 static int omap3_intc_init(void) {
-#if 0
-	int n, m;
-
-	REG_STORE(OMAP35X_INTC_SYSCONFIG, 0x1);
-	REG_STORE(OMAP35X_INTC_IDLE, 0x0);
-
-	for (m = 0; m <= 95; ++m) {
-		REG_STORE(OMAP35X_INTC_ILR(m), 0x0);
-	}
-
-	for (n = 0; n <= 2; ++n) {
-		REG_STORE(OMAP35X_INTC_MIR(n), 0x0);
-		REG_STORE(OMAP35X_INTC_MIR_CLEAR(n), 0x1);
-	}
-
-#endif
+	irqctrl_enable(50);
+	irqctrl_force(50);
 	return 0;
 }
 
+/* 32 bits per word;
+ * interrupt_nr: lower 5 bits -- offset in word,
+ * else -- register n
+ */
 void irqctrl_enable(unsigned int interrupt_nr) {
+	REG_STORE(OMAP35X_INTC_MIR_CLEAR(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
 }
 
 void irqctrl_disable(unsigned int interrupt_nr) {
+	REG_ORIN(OMAP35X_INTC_MIR_CLEAR(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
 }
 
 void irqctrl_clear(unsigned int interrupt_nr) {
+	REG_STORE(OMAP35X_INTC_ISR_CLEAR(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
 }
 
 void irqctrl_force(unsigned int interrupt_nr) {
+	REG_ORIN(OMAP35X_INTC_ISR_SET(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
 }
 
 void interrupt_handle(void) {
-	prom_printf("irq 0x%x!\n", (unsigned int) REG_LOAD(OMAP35X_INTC_SIR_IRQ));
-	for (int i = 0; i <= 2; i ++) {
-	    prom_printf("pending %d: 0x%x\n", i, (unsigned int) REG_LOAD(OMAP35X_INTC_PENDING_IRQ(i)));
-	}
-	REG_STORE(OMAP35X_INTC_CONTROL, 0x1); /* reset IRQ output and enable new IRQ generation */
+	unsigned int cur = REG_LOAD(OMAP35X_INTC_SIR_IRQ) & INTC_SIR_IRQ_ACTIVE_MASK;
+	prom_printf("irq 0x%x !\n", cur);
+
+	irqctrl_clear(cur);
+
+	REG_STORE(OMAP35X_INTC_CONTROL, INTC_CONTROL_NEWIRQARG); /* reset IRQ output and enable new IRQ generation */
 }
 
 void swi_handle(void) {
 	prom_printf("swi!\n");
-	for (int i = 0; i <= 2; i ++) {
-	    prom_printf("   active %d: 0x%x\n", i, (unsigned int) REG_LOAD(OMAP35X_INTC_ISR_SET(i)));
-	}
 }
 
