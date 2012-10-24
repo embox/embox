@@ -1,14 +1,14 @@
 package embox.init
 
 module start_script {
-	option number input_buffer = 80
-
 	@IncludePath("$(CONF_DIR)")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "start_script.c"
 
 	requires embox.cmd.Shell.commandLine
-	option string shell_name="diag_shell"
+	option string shell_name=""
+	option string tty_dev=""
+	option number input_buffer = 80
 }
 
 module make_term {
