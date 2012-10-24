@@ -70,8 +70,6 @@ void hardware_init_hook(void) {
 
 
 static int omap3_intc_init(void) {
-	irqctrl_enable(50);
-	irqctrl_force(50);
 	return 0;
 }
 
@@ -96,12 +94,26 @@ void irqctrl_force(unsigned int interrupt_nr) {
 }
 
 void interrupt_handle(void) {
-	unsigned int cur = REG_LOAD(OMAP35X_INTC_SIR_IRQ) & INTC_SIR_IRQ_ACTIVE_MASK;
-	prom_printf("irq 0x%x !\n", cur);
+	unsigned int irq = REG_LOAD(OMAP35X_INTC_SIR_IRQ) & INTC_SIR_IRQ_ACTIVE_MASK;
 
-	irqctrl_clear(cur);
+	assert(!critical_inside(CRITICAL_IRQ_LOCK));
+
+	irqctrl_clear(irq);
 
 	REG_STORE(OMAP35X_INTC_CONTROL, INTC_CONTROL_NEWIRQARG); /* reset IRQ output and enable new IRQ generation */
+
+	critical_enter(CRITICAL_IRQ_HANDLER);
+	{
+		ipl_enable();
+
+		irq_dispatch(irq);
+
+		ipl_disable();
+
+	}
+	critical_leave(CRITICAL_IRQ_HANDLER);
+	critical_dispatch_pending();
+
 }
 
 void swi_handle(void) {
