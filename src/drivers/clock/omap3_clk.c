@@ -42,8 +42,9 @@ EMBOX_UNIT_INIT(omap3_clk_init);
 
 #define CM_FCLKEN_WKUP  0x48004C00
 #define CM_ICLKEN_WKUP  0x48004C10
+#define CM_CLKSEL_WKUP  0x48004C40
 
-#define LOAD_VALUE 0xffffff00
+#define LOAD_VALUE 0xffffffe0
 
 #include <drivers/irqctrl.h>
 #include <prom/prom_printf.h>
@@ -56,12 +57,14 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 
 static int omap3_clk_config(struct time_dev_conf *conf) {
 
-	REG_STORE(CM_FCLKEN_WKUP, 1);
-	REG_STORE(CM_ICLKEN_WKUP, 1);
+	REG_ORIN(CM_FCLKEN_WKUP, 1);
+	REG_ORIN(CM_ICLKEN_WKUP, 1);
+	REG_ANDIN(CM_CLKSEL_WKUP, ~1);
 
 	REG_STORE(GPTIMER_CFG, 0x2);
 
-	while (0 == REG_LOAD(GPTIMER_TISTAT));
+	/*while (0 == REG_LOAD(GPTIMER_TISTAT));*/
+	/*prom_printf("TISTAT: 0x%x\n", (unsigned int) REG_LOAD(GPTIMER_TISTAT));*/
 
 	REG_STORE(GPTIMER_POS_INC, 232000);
 	REG_STORE(GPTIMER_NEG_INC, -768000);
