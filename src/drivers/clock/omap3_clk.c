@@ -30,6 +30,7 @@ EMBOX_UNIT_INIT(omap3_clk_init);
 #define GPTIMER_TCLR    (GPTIMER1_BASE + 0x24)
 #define GPTIMER_TWER    (GPTIMER1_BASE + 0x20)
 #define GPTIMER_TIER    (GPTIMER1_BASE + 0x1c)
+#define GPTIMER_TISR    (GPTIMER1_BASE + 0x18)
 #define GPTIMER_TISTAT  (GPTIMER1_BASE + 0x14)
 #define GPTIMER_CFG     (GPTIMER1_BASE + 0x10)
 
@@ -37,14 +38,19 @@ EMBOX_UNIT_INIT(omap3_clk_init);
 #define GPTIMER_TCLR_AUTORELOAD (1 << 1)
 
 #define GPTIMER_TIER_OVERFLOW   (1 << 1)
+#define GPTIMER_TISR_OVERFLOW   (1 << 1)
 
 #define CM_FCLKEN_WKUP  0x48004C00
 #define CM_ICLKEN_WKUP  0x48004C10
 
-extern int prom_printf(const char *, ...);
+#define LOAD_VALUE 0xffffff00
+
+#include <drivers/irqctrl.h>
+#include <prom/prom_printf.h>
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	prom_printf("\t\tclock_handler\n");
+	/*prom_printf("\t\tclock_handler\n");*/
 	clock_tick_handler(irq_nr, data);
+	REG_STORE(GPTIMER_TISR, GPTIMER_TISR_OVERFLOW);
 	return IRQ_HANDLED;
 }
 
@@ -57,18 +63,16 @@ static int omap3_clk_config(struct time_dev_conf *conf) {
 
 	while (0 == REG_LOAD(GPTIMER_TISTAT));
 
-#if 0
 	REG_STORE(GPTIMER_POS_INC, 232000);
 	REG_STORE(GPTIMER_NEG_INC, -768000);
-#endif
 
-	REG_STORE(GPTIMER_TCRR, 0xffffffe0);
-	REG_STORE(GPTIMER_TLDR, 0xffffffe0);
+	REG_STORE(GPTIMER_TCRR, LOAD_VALUE);
+	REG_STORE(GPTIMER_TLDR, LOAD_VALUE);
 
 	REG_STORE(GPTIMER_TCLR, GPTIMER_TCLR_START | GPTIMER_TCLR_AUTORELOAD);
 
 	REG_STORE(GPTIMER_TIER, GPTIMER_TIER_OVERFLOW);
-	/*REG_STORE(GPTIMER_TWER, GPTIMER_TIER_OVERFLOW);*/
+	REG_STORE(GPTIMER_TWER, GPTIMER_TIER_OVERFLOW);
 
 	return 0;
 }
@@ -80,7 +84,7 @@ static cycle_t omap3_clk_read(void) {
 static struct time_event_device omap3_clk_event = {
 	.config = omap3_clk_config,
 	.resolution = 1000,
-//	.irq_nr = SYSTICK_IRQ,
+	.irq_nr = GPTIMER1_IRQ,
 };
 
 
