@@ -14,4 +14,4 @@ typedef struct stack_iter {
 	void* pc;
 } stack_iter_t;
 
-#endif /* X86_ITER_H_ */
+#endif /* X86_STACK_ITER_H_ */

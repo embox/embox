@@ -6,7 +6,6 @@
  * @author Bulychev Anton
  */
 
-#include <stdio.h>
 #include "stack_iter.h"
 
 #define RETPC_OFFSET 8
