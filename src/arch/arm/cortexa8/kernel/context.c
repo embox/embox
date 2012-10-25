@@ -12,12 +12,7 @@
 #include <asm/modes.h>
 
 void context_init(struct context *ctx, bool privileged) {
-	ctx->cpsr = privileged ? ARM_MODE_SYS : ARM_MODE_USR;
-#if 0
-	for (int i = 0; i < 10; i ++) {
-		ctx->r[i] = i;
-	}
-#endif
+	ctx->cpsr = ARM_MODE_SYS;
 }
 
 void context_set_stack(struct context *ctx, void *sp) {
