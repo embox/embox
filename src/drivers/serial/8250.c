@@ -84,6 +84,9 @@ static int uart_remove_irq_handler(void) {
 #include <embox/device.h>
 #include <kernel/file.h>
 #include <drivers/tty.h>
+#include <kernel/thread/event.h>
+#include <kernel/thread/sched_lock.h>
+#include <kernel/thread/sched.h>
 
 static tty_device_t tty;
 
@@ -91,21 +94,26 @@ static void *dev_open(struct file_desc *desc, const char *mode);
 static int dev_close(struct file_desc *desc);
 static size_t dev_read(void *buf, size_t size, size_t count, void *file);
 static size_t dev_write(const void *buff, size_t size, size_t count, void *file);
+static int dev_ioctl(void *file, int request, va_list args);
 
 static file_operations_t file_op = {
 	.fread = dev_read,
 	.fopen = dev_open,
 	.fclose = dev_close,
-	.fwrite = dev_write
+	.fwrite = dev_write,
+	.ioctl = dev_ioctl
 };
 
 RING_BUFFER_DEF(dev_buff, int, 0x20);
+
+static struct event rx_happend;
 
 static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
 	int ch;
 	if(uart_has_symbol()) {
 		ch = uart_getc();
 		ring_buff_enqueue(&dev_buff, &ch, 1);
+		event_notify(&rx_happend);
 	}
 
 	return 0;
@@ -129,16 +137,29 @@ static int dev_close(struct file_desc *desc) {
 }
 
 static size_t dev_read(void *buff, size_t size, size_t count, void *file) {
+	size_t cnt = count;
 
-	while(!ring_buff_get_cnt(&dev_buff)) {
+	if(0 == ring_buff_get_cnt(&dev_buff)) {
+#if 0
+		while(!ring_buff_get_cnt(&dev_buff)) {
+		}
+#endif
+
+		sched_lock();
+			irq_lock();
+				event_init(&rx_happend, "event_rx_happend");
+			irq_unlock();
+
+			event_wait(&rx_happend, SCHED_TIMEOUT_INFINITE);
+		sched_unlock();
 	}
 
-	for(;0 < count;--count) {
+	for(;0 < cnt;--cnt) {
 		ring_buff_dequeue(&dev_buff, buff, 1);
 		buff = (void *)(((uint32_t)buff) + size);
 	}
 
-	return 0;
+	return count - cnt;
 }
 
 static size_t dev_write(const void *buff, size_t size, size_t count, void *file) {
@@ -148,6 +169,10 @@ static size_t dev_write(const void *buff, size_t size, size_t count, void *file)
 	while (cnt != count * size) {
 		uart_putc(b[cnt++]);
 	}
+	return 0;
+}
+
+static int dev_ioctl(void *file, int request, va_list args) {
 	return 0;
 }
 
