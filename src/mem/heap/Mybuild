@@ -7,8 +7,12 @@ abstract module heap_api {
 module heap_bm extends heap_api {
 	source "heap_bm.c"
 	depends page_api
+
+	depends heap_lds
 }
 
 module heap_simple extends heap_api {
 	source "heap_simple.c"
+
+	depends heap_lds
 }
