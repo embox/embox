@@ -63,5 +63,3 @@ static int stdio_ioctl(void *file, int request, va_list args) {
 INIT_STDIO_FILE_DESC(stdin_int, stdio_read, NULL);
 INIT_STDIO_FILE_DESC(stdout_int, NULL, stdio_write);
 INIT_STDIO_FILE_DESC(stderr_int, NULL, stdio_write);
-
-

@@ -17,21 +17,7 @@
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
 
-/*
-static int ioctl(void *dev);
-static int flush(void *dev);
-static size_t read_sectors(void *dev, char *buffer,
-		uint32_t sector, uint32_t count);
-static size_t write_sectors(void *dev, char *buffer,
-		uint32_t sector, uint32_t count);
-
-static block_dev_operations_t block_dev_op = {
-		.blk_read = read_sectors,
-		.blk_write = write_sectors,
-		.ioctl = ioctl,
-		.flush = flush
-};
-*/
+static int ram_init(void *arg);
 static int read_sectors(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno);
 static int write_sectors(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno);
 static int ram_ioctl(block_dev_t *dev, int cmd, void *args, size_t size);
@@ -39,6 +25,7 @@ static int ram_ioctl(block_dev_t *dev, int cmd, void *args, size_t size);
 block_dev_driver_t ramdisk_pio_driver = {
   "ramdisk_drv",
   DEV_TYPE_BLOCK,
+  ram_init,
   ram_ioctl,
   read_sectors,
   write_sectors
@@ -56,8 +43,6 @@ int ramdisk_create(void *mkfs_params) {
 	node_t *ramdisk_node;
 	mkfs_params_t *p_mkfs_params;
 	dev_ramdisk_t *ram_disk;
-	//block_dev_module_t *block_dev;
-	//dev_t devnum;
 
 	p_mkfs_params = (mkfs_params_t *)mkfs_params;
 
@@ -67,17 +52,13 @@ int ramdisk_create(void *mkfs_params) {
 
 	ram_disk = pool_alloc(&ramdisk_pool);
 	if(0 > (ram_disk->devnum =
-			dev_make("ramdisk", &ramdisk_pio_driver, ram_disk))) {
+			dev_make((char *)ramdisk_node->name,
+					&ramdisk_pio_driver, ram_disk))) {
 		dev_destroy (ram_disk->devnum);
 		return -EIO;
 	}
 
 	ram_disk->dev_node = ramdisk_node;
-
-	/*if(NULL == (block_dev = block_dev_find("ramdisk"))) {
-		return -ENODEV;
-	}
-	ramdisk_node->dev_type = (void *) block_dev->dev_ops;*/
 	ramdisk_node->dev_type = (void *)device(ram_disk->devnum)->driver;
 	ramdisk_node->dev_attr = (void *)&ram_disk->devnum;
 	device(ram_disk->devnum)->dev_node = ramdisk_node;
@@ -127,21 +108,19 @@ int ramdisk_delete(const char *name) {
 }
 
 static int unit_init(void) {
-	//init_ramdisk_info_pool();
 	return 0;
 }
 
-/*static size_t read_sectors(void *dev, char *buffer,
-		uint32_t sector, uint32_t count)*/
+static int ram_init(void *arg) {
+	return 0;
+}
+
 static int read_sectors(block_dev_t *dev,
 		char *buffer, size_t count, blkno_t blkno) {
 	dev_ramdisk_t *ram_disk;
 	char *read_addr;
-	//uint32_t size;
 
 	ram_disk = (dev_ramdisk_t *) dev->privdata;
-
-	//size = ram_disk->sector_size * count;
 	read_addr = ram_disk->p_start_addr + (blkno * ram_disk->sector_size);
 
 	memcpy(buffer, read_addr, count);
@@ -149,24 +128,18 @@ static int read_sectors(block_dev_t *dev,
 }
 
 
-/*static size_t write_sectors(void *dev, char *buffer,
-		uint32_t sector, uint32_t count) {*/
 static int write_sectors(block_dev_t *dev,
 		char *buffer, size_t count, blkno_t blkno) {
 	dev_ramdisk_t *ram_disk;
 	char *write_addr;
-	//uint32_t size;
 
 	ram_disk = (dev_ramdisk_t *) dev->privdata;
-
-	//size = ram_disk->sector_size * count;
 	write_addr = ram_disk->p_start_addr + (blkno * ram_disk->sector_size);
 
 	memcpy(write_addr, buffer, count);
 	return count;
 }
 
-/*static int ioctl(void *dev) {*/
 static int ram_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 
 	return 0;
@@ -174,9 +147,8 @@ static int ram_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 
 /*
 static int flush(void *dev) {
-
 	return 0;
 }
 */
 
-//EMBOX_BLOCK_DEV("ramdisk", &block_dev_op);
+EMBOX_BLOCK_DEV("ramdisk", &ramdisk_pio_driver);

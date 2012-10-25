@@ -18,7 +18,7 @@ Quickstart guide
 make PROJECT=<project> PROFILE=<profile> config
 (make menuconfig, make xconfig)
 make all
-(make docs, make dot)
+(make docsgen, make dot)
 
 To be continued...
 

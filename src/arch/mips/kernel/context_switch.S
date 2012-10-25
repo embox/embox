@@ -1,4 +1,4 @@
-/*
+/**
  * @file
  *
  * @date Aug 15, 2012
@@ -44,4 +44,3 @@ C_ENTRY(context_switch):
 	j $ra
 	/* and return. */
 	addi $sp, $sp, CTX_SIZE /* in delay slot */
-

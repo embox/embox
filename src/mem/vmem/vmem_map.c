@@ -119,4 +119,3 @@ int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vme
 
 	return ENOERR;
 }
-

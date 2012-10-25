@@ -10,4 +10,3 @@ struct _Unwind_Exception; /* TODO */
 void _Unwind_Resume(struct _Unwind_Exception *obj) {
 	/* TODO */
 }
-

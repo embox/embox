@@ -5,6 +5,7 @@
  * @date 05.07.11
  * @author Dmitry Zubarevich
  */
+
 #include <prom/prom_printf.h>
 #include <string.h>
 #include <framework/mod/ops.h>
@@ -28,13 +29,14 @@ static int net_sock_mod_enable(struct mod_member *mod) {
 	int ret = 0;
 
 	net_proto_family_t *net_proto_family = ((net_sock_t *) mod->data)->net_proto_family;
-	prom_printf("NET: initializing socket %s.%s: ", mod->mod->package->name, mod->mod->name);
+	prom_printf("NET: initializing socket %s.%s: ",
+		mod->mod->package->name, mod->mod->name);
 
-	if (net_proto_family != NULL) {
+	if (NULL != net_proto_family) {
 		ret = sock_register(net_proto_family);
 	}
 
-	if (ret == 0) {
+	if (0 == ret) {
 		prom_printf("done\n");
 	} else {
 		prom_printf("error: %s\n", strerror(-ret));
@@ -46,9 +48,9 @@ static int net_sock_mod_enable(struct mod_member *mod) {
 static int net_sock_mod_disable(struct mod_member *mod) {
 	int ret = 0;
 
-	 net_proto_family_t *net_proto_family = ((net_sock_t *) mod->data)->net_proto_family;
+	net_proto_family_t *net_proto_family = ((net_sock_t *) mod->data)->net_proto_family;
 
-	if (net_proto_family != NULL) {
+	if (NULL != net_proto_family) {
 		sock_unregister(net_proto_family->family);
 	}
 

@@ -16,8 +16,6 @@
 #include <mem/misc/pool.h>
 #include <util/array.h>
 
-/*ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);*/
-
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
 
 POOL_DEF(blockdev_pool, struct block_dev, MAX_DEV_QUANTITY);
@@ -25,7 +23,7 @@ POOL_DEF(blockdev_pool, struct block_dev, MAX_DEV_QUANTITY);
 unsigned int num_devs = 0;
 block_dev_t *devtab[64];
 
-/*
+
 block_dev_module_t *block_dev_find(char *name) {
 	block_dev_module_t *b_dev;
 	size_t i;
@@ -39,7 +37,6 @@ block_dev_module_t *block_dev_find(char *name) {
 
 	return NULL;
 }
-*/
 
 block_dev_t *device(dev_t devno) {
 	if (devno < 0 || devno >= num_devs) {

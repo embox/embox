@@ -3,7 +3,7 @@
  * @brief Print existing in system clock sources
  *
  * @date 26.11.2011
- * @author TODO Alina Kramar
+ * @author Alina Kramar
  */
 
 #include <embox/cmd.h>

@@ -73,4 +73,3 @@ void *virt_alloc_table() {
 void *virt_alloc_page() {
 	return page_alloc(virt_page_allocator, 1);
 }
-

@@ -32,4 +32,3 @@ extern thread_state_t thread_state_do_exit(thread_state_t state);
 extern thread_state_t thread_state_do_detach(thread_state_t state);
 
 #endif /* KERNEL_THREAD_STATE_H_ */
-

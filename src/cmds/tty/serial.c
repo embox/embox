@@ -39,7 +39,7 @@ static void serial_make_active(struct tty_buf *tty) {
 			ps = (ps + 1) % BUF_SIZE;
 		}
 	} else {
-		for (int i = 0; i < ps; i++) {
+		for (size_t i = 0; i < ps; i++) {
 			diag_putc(tty->out_buf[i]);
 		}
 	}

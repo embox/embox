@@ -51,4 +51,3 @@ NESTED(mips_first_exception_handler, 0, $sp)
 
 	.set  pop                  /* restore the previous status of flags */
 END(mips_first_exception_handler)
-

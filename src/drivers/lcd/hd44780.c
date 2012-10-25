@@ -158,4 +158,3 @@ static int lcd_test(void) {
 #endif
 	return 0;
 }
-

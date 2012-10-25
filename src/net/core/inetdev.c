@@ -321,4 +321,3 @@ struct in_device * inet_dev_get_next_used(struct in_device *in_dev) {
 
 	return (&indev_info->lnk == &indev_info_list) ? NULL : &indev_info->in_dev;
 }
-

@@ -59,4 +59,3 @@ static int setup(void) {
 	test_assert_zero(thread_set_priority(high, h));
 	return 0;
 }
-

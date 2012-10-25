@@ -63,4 +63,3 @@ static inline void ipl_restore(unsigned int ipl) {
 #endif /* __ASSEMBLER__ */
 
 #endif /* SPARC_IPL_IMPL_H_ */
-

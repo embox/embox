@@ -21,7 +21,7 @@
 uint8_t *fat_canonical_to_dir(uint8_t *dest, uint8_t *src) {
 
 	memset(dest, (int)' ', MSDOS_NAME);
-	dest[11] = 0;
+	dest[MSDOS_NAME] = 0;
 
 	for (int i = 0; i <= 11; i++) {
 		if (!*src) {
@@ -35,6 +35,10 @@ uint8_t *fat_canonical_to_dir(uint8_t *dest, uint8_t *src) {
 			src++;
 			continue;
 		}
+		if (*src >= 'a' && *dest <='z') {
+			*src = (*src - 'a') + 'A';
+		}
+
 		*(dest + i) = *src;
 		src++;
 	}
@@ -45,8 +49,7 @@ uint8_t *fat_canonical_to_dir(uint8_t *dest, uint8_t *src) {
 /*
  *	Convert a filename element from directory entry (11) to canonical (8.3)
  */
-uint8_t *fat_dir_to_canonical(uint8_t *dest,
-		uint8_t *src, uint8_t dir) {
+uint8_t *fat_dir_to_canonical(uint8_t *dest, uint8_t *src, uint8_t dir) {
         int i;
         uint8_t *dst;
 

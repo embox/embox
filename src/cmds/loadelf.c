@@ -49,7 +49,8 @@ static inline int elf_load_in_mem(FILE *fd, Elf32_Obj *obj) {
 }
 
 static void *execve_trampoline(void *data) {
-	void *(*function_main)(void *arg);
+	extern void elf_start(void *entry);
+	void *elf_entry;
 	FILE *elf_file = (FILE *) data;
 	Elf32_Obj elf;
 
@@ -64,13 +65,13 @@ static void *execve_trampoline(void *data) {
 	}
 
 	elf_load_in_mem(elf_file, &elf);
-    function_main = (void *(*)(void *arg)) elf.header->e_entry;
+	elf_entry = (void *) elf.header->e_entry;
 
 	fclose(elf_file);
 	elf_finilize_object(&elf);
 
-    usermode_call_and_switch_if(1, function_main, NULL);
+	//usermode_call_and_switch_if(1, function_main, NULL);
+	elf_start(elf_entry);
 
 	return NULL;
 }
-

@@ -36,4 +36,3 @@ TEST_CASE("Create thread waiting event and then finish") {
 
 	test_assert_zero(thread_join(thread, NULL));
 }
-

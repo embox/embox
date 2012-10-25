@@ -30,7 +30,8 @@ static int unit_mod_enable(struct mod_info *mod_info) {
 		return 0;
 	}
 
-	prom_printf("\tunit: initializing %s.%s: ", mod_info->mod->package->name, mod_info->mod->name);
+	prom_printf("\tunit: initializing %s.%s: ",
+		mod_info->mod->package->name, mod_info->mod->name);
 	if (0 == (ret = unit->init())) {
 		prom_printf("done\n");
 	} else {
@@ -48,7 +49,8 @@ static int unit_mod_disable(struct mod_info *mod_info) {
 		return 0;
 	}
 
-	prom_printf("unit: finalizing %s.%s: ", mod_info->mod->package->name, mod_info->mod->name);
+	prom_printf("unit: finalizing %s.%s: ",
+		mod_info->mod->package->name, mod_info->mod->name);
 	if (0 == (ret = unit->fini())) {
 		prom_printf("done\n");
 	} else {

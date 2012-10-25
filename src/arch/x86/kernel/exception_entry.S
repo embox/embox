@@ -18,16 +18,16 @@ EXCEPTION(0x04, t_excep4)    /* Into Detected Overflow Exception */
 EXCEPTION(0x05, t_excep5)    /* Out of Bounds Exception */
 EXCEPTION(0x06, t_excep6)    /* Invalid Opcode Exception */
 EXCEPTION(0x07, t_excep7)    /* No Coprocessor Exception */
-EXCEPTION(0x08, t_excep8)    /* Double Fault Exception */
+EXCEPTION_ERR(0x08, t_excep8)    /* Double Fault Exception */
 EXCEPTION(0x09, t_excep9)    /* Coprocessor Segment Overrun Exception */
-EXCEPTION(0x0a, t_excep10)   /* Bad TSS Exception */
-EXCEPTION(0x0b, t_excep11)   /* Segment Not Present Exception */
-EXCEPTION(0x0c, t_excep12)   /* Stack Fault Exception */
-EXCEPTION(0x0d, t_excep13)   /* General Protection Fault Exception */
-EXCEPTION(0x0e, t_excep14)   /* Page Fault Exception */
+EXCEPTION_ERR(0x0a, t_excep10)   /* Bad TSS Exception */
+EXCEPTION_ERR(0x0b, t_excep11)   /* Segment Not Present Exception */
+EXCEPTION_ERR(0x0c, t_excep12)   /* Stack Fault Exception */
+EXCEPTION_ERR(0x0d, t_excep13)   /* General Protection Fault Exception */
+EXCEPTION_ERR(0x0e, t_excep14)   /* Page Fault Exception */
 EXCEPTION(0x0f, t_excep15)   /* Unknown Interrupt Exception */
 EXCEPTION(0x10, t_excep16)   /* Coprocessor Fault Exception */
-EXCEPTION(0x11, t_excep17)   /* Alignment Check Exception */
+EXCEPTION_ERR(0x11, t_excep17)   /* Alignment Check Exception */
 EXCEPTION(0x12, t_excep18)   /* Machine Check Exception */
 EXCEPTION(0x13, t_excep19)   /* Reserved Exception */
 EXCEPTION(0x14, t_excep20)   /* Reserved Exception */
@@ -52,4 +52,3 @@ excep_stub:
 	call    exception_handler
 
 	RESTORE_ALL
-

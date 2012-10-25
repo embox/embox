@@ -204,4 +204,3 @@ struct rt_entry * rt_fib_get_best(in_addr_t dst, net_device_t *out_dev) {
 
 	return best_rte;
 }
-

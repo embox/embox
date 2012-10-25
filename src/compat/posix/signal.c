@@ -31,4 +31,3 @@ int kill (int tid, int sig) {
 
 	return 0;
 }
-

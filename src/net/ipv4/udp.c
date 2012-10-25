@@ -145,4 +145,3 @@ void udp_err(sk_buff_t *skb, uint32_t info) {
 void * get_udp_sockets(void) {
 	return (void *)udp_table;
 }
-

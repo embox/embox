@@ -6,7 +6,6 @@
  * @author Bulychev Anton
  */
 
-#include <stdio.h>
 #include "stack_iter.h"
 
 #define RETPC_OFFSET 8
@@ -34,4 +33,3 @@ void* stack_iter_get_fp(stack_iter_t *f) {
 void* stack_iter_get_retpc(stack_iter_t *f) {
 	return (*f)->reg_window.ret_pc + RETPC_OFFSET;
 }
-

@@ -25,19 +25,19 @@ static uint32_t cur;
 EMBOX_UNIT_INIT(timer_strat_init);
 
 static int timer_strat_init(void) {
-	uint32_t i;
+	size_t i;
 
-	for(i = 0; i < length; ++i) {
+	for (i = 0; i < length; ++i) {
 		timeline[i].next = &(timeline[i]);
 		timeline[i].prev = &(timeline[i]);
 	}
 
-    cur = 0;
-    return 0;
+	cur = 0;
+	return 0;
 }
 
 void timer_strat_start(struct sys_timer *ptimer) {
-	if(ptimer->load > length) {
+	if (ptimer->load > length) {
 		return;
 	}
 	list_add(&ptimer->lnk, &timeline[mod(ptimer->load + cur, length)]);
@@ -47,7 +47,7 @@ void timer_strat_sched() {
 	struct sys_timer *ptimer;
 	cur = mod(cur + 1, length);
 
-	while(!list_empty(&timeline[cur])) {
+	while (!list_empty(&timeline[cur])) {
 		ptimer = list_entry(timeline[cur].next, struct sys_timer, lnk);
 
 		ptimer->handle(ptimer, ptimer->param);

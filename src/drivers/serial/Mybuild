@@ -30,7 +30,7 @@ module serial_port extends serial {
 	option number baud_rate
 
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "serial_port.c"
+	source "8250.c"
 
 	depends embox.kernel.irq
 	depends embox.util.LibUtil

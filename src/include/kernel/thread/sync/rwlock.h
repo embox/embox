@@ -27,4 +27,3 @@ extern void rwlock_write_down(rwlock_t *r);
 
 
 #endif /* KERNEL_THREAD_SYNC_RWLOCK_H_ */
-

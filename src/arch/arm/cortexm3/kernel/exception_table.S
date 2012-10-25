@@ -35,4 +35,3 @@ undef_handler:
 
 hard_fault:
     b hard_fault
-

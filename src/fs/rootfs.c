@@ -4,6 +4,7 @@
  *
  * @date 29.06.09
  * @author Anton Bondarev
+ * @author Andrey Gazukin
  */
 
 #include <string.h>
@@ -30,22 +31,23 @@ static int rootfs_mount(void *par) {
 	static const char* fs_type = OPTION_STRING_GET(fstype);
 	mp = (mount_params_t *) par;
 
+	/* mount dev filesystem */
 	if (NULL != (fsdrv = filesystem_find_drv("devfs"))) {
 		fsdrv->fsop->mount(NULL);
 	}
-	fsdrv = filesystem_find_drv(fs_type);
-
+	/* looking for a device that will be mounted */
 	if(0 != *mp->dev) {
 		if (NULL == (mp->dev_node = vfs_find_node(mp->dev, NULL))) {
-			if(NULL != (mp->dev_node = vfs_add_path(mp->dev, NULL))) {
-				mp->dev_node->fs_type = fsdrv;
-			}
+			return -ENODEV;
 		}
 	}
+	/* looking for a driver of root filesystem */
+	fsdrv = filesystem_find_drv(fs_type);
 
+	/* mount root filesystem */
 	if (NULL != fsdrv) {
 		root_node->fs_type = fsdrv;
-		fsdrv->fsop->mount(mp);
+		return fsdrv->fsop->mount(mp);
 	}
 
 	return 0;
@@ -58,7 +60,7 @@ static int unit_init(void) {
 	mp.ext = OPTION_STRING_GET(mntscript);
 
 	if(0 != *mp.dir) {
-		root_node = get_root_node();
+		root_node = vfs_get_root();
 		if (root_node == NULL) {
 			return -ENOMEM;
 		}

@@ -172,8 +172,6 @@ static fsop_desc_t fatfs_fsop = { fatfs_init, fatfs_format, fatfs_mount,
 static fs_drv_t fatfs_drv = { "vfat", &fatfs_fop, &fatfs_fsop };
 
 static int fatfs_init(void * par) {
-	//init_fat_fsinfo_pool();
-	//init_fat_fileinfo_pool();
 	return 0;
 }
 
@@ -1492,9 +1490,8 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 	}
 
 	while (!fat_get_next(fd, &di, &de)) {
-		/*TODO need convert name to high register */
-
-		if (!memcmp(de.name, filename, MSDOS_NAME)) {
+		fat_canonical_to_dir((uint8_t *) tmppath, de.name);
+		if (!memcmp(tmppath, filename, MSDOS_NAME)) {
 			/* You can't use this function call to open a directory. */
 			if (de.attr & ATTR_DIRECTORY){
 				//return DFS_NOTFOUND;

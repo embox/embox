@@ -172,4 +172,3 @@ static int netdev_init(void) {
 	}
 	return ENOERR;
 }
-

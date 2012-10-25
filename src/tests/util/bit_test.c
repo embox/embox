@@ -67,4 +67,3 @@ TEST_CASE("test for bit_foreach") {
 		test_assert_equal(check, pat);
 	}
 }
-

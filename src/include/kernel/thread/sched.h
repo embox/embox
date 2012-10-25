@@ -174,4 +174,3 @@ extern clock_t sched_get_running_time(struct thread *thread);
 extern int sched_tryrun(struct thread *thread);
 
 #endif /* KERNEL_THREAD_SCHED_H_ */
-

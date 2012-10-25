@@ -30,9 +30,9 @@ static int print_arp_entity(const struct neighbour *n,
 		macaddr_print(mac, &n->haddr[0]);
 		addr.s_addr = *(in_addr_t *)&n->paddr[0];
 		printf("%15s %6s %17s %5s %5s\n", inet_ntoa(addr),
-				(n->dev->type == ARPG_HRD_ETHERNET) ? "ether" : "",
-				mac, (!(n->flags & NEIGHBOUR_FLAG_PERMANENT) ? "C" : "P"),
-				n->dev->name);
+			(n->dev->type == ARPG_HRD_ETHERNET) ? "ether" : "",
+			mac, (!(n->flags & NEIGHBOUR_FLAG_PERMANENT) ? "C" : "P"),
+			n->dev->name);
 	}
 	return 0;
 }
@@ -83,8 +83,8 @@ static int exec(int argc, char **argv) {
 			}
 			//TODO checked interface and use default
 			return neighbour_add(&hwaddr[0], sizeof hwaddr,
-					(const unsigned char *)&addr, sizeof addr, ifdev->dev,
-					NEIGHBOUR_FLAG_PERMANENT);
+				(const unsigned char *)&addr, sizeof addr, ifdev->dev,
+				NEIGHBOUR_FLAG_PERMANENT);
 		case 'a':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);

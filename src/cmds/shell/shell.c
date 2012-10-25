@@ -118,4 +118,3 @@ static int shell_stop(void) {
 }
 
 SHELL_DEF(shell_run,"diag_shell");
-

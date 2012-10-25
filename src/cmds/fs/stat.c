@@ -27,11 +27,11 @@ static void print_statistic(void *stat) {
 	filestat = (stat_t *) stat;
 
 	printf("Size: %d    Blocks: %d    IO Block: %d  \n",
-				filestat->st_size, filestat->st_blocks, filestat->st_blksize);
+		filestat->st_size, filestat->st_blocks, filestat->st_blksize);
 	printf("Dev: %d    Inode: %d    Links: %d  \n",
-				filestat->st_dev, filestat->st_ino, filestat->st_nlink);
+		filestat->st_dev, filestat->st_ino, filestat->st_nlink);
 	printf("Access: %d    Uid: %d    Gid: %d  \n",
-				filestat->st_mode, filestat->st_uid, filestat->st_gid);
+		filestat->st_mode, filestat->st_uid, filestat->st_gid);
 	printf("Access: %d  \n", filestat->st_atime);
 	printf("Modify: %d  \n", filestat->st_mtime);
 	printf("Change: %d  \n", filestat->st_ctime);
@@ -41,7 +41,7 @@ static int exec(int argc, char **argv) {
 	int opt;
 	int fd;
 
-	if(argc < 2) {
+	if (argc < 2) {
 		printf("Please enter correct file name\n");
 		return 0;
 	}
@@ -78,4 +78,3 @@ static int exec(int argc, char **argv) {
 	close(fd);
 	return 0;
 }
-
