@@ -55,7 +55,6 @@ TEST_CASE("thread_join should retrieve the result of thread execution") {
 	test_assert_equal(ret, (void *) ~42UL);
 }
 
-
 TEST_CASE("thread_launch should return 0 if the thread was created with "
 		"THREAD_FLAG_SUSPENDED flag") {
 	struct thread *foo;

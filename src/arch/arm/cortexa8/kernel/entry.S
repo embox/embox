@@ -26,10 +26,10 @@ irq_handler:
 	mrs		LR, SPSR
 	stmfd	sp!, {r0-r12, lr}
 
-	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT /* going to SVC mode, still disabling interrupts */
+	msr CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT /* going to SVC mode, still disabling interrupts */
 	stmfd sp!, {lr} /* stoirqring address of returning in interrupted program flow */
 
-	/* bl interrupt_handle */
+	bl interrupt_handle
 
 	ldmfd sp!, {lr}
 	/* now interrupted program is unaffected, interrupt serviced, correctly exiting handler */
@@ -47,6 +47,27 @@ irq_handler:
 	b die
 
 swi_handler:
-	/*unimplemented */
+
+	/* storing LP */
+	stmfd	sp!, {lr}
+	/*storing SPSR and valuable regs*/
+	mrs		LR, SPSR
+	stmfd	sp!, {r0-r12, lr}
+
+	stmfd sp!, {lr} /* stoirqring address of returning in interrupted program flow */
+
+	bl swi_handle
+
+	ldmfd sp!, {lr}
+	/* now interrupted program is unaffected, interrupt serviced, correctly exiting handler */
+
+	/*interrupts are disabled, so restoring goes OK */
+	ldmfd	sp!, {r0-r12, lr}
+	msr		SPSR, LR
+	/*regs & SPSR on theirs places, as before handler */
+	/*returning from interrupt handler, CPSR <- SPSR */
+	ldmfd       sp!, {pc}^
+	/*continue from place, where interrupt raised */
+
 die:
 	b die

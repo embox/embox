@@ -29,6 +29,7 @@
 .extern irq_handler
 .global start
 .section .trap_table, "x"
+trap_table_start:
 /* trap table
  * this code specific for ARM7TDMI cores
  *
@@ -97,5 +98,9 @@ reset_handler:
 
     msr CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
     mov sp, r0
+
+    /* setup interrupt vector */
+    ldr r0, =trap_table_start
+    mcr p15, 0, r0, c12, c0, 0
 
     b bootldr_start

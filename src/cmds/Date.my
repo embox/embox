@@ -16,6 +16,7 @@ module date {
 	source "date.c"
 
 	depends embox.lib.LibC
+	depends embox.compat.posix.util.getopt
 	depends embox.kernel.time.clock_source
 	depends embox.kernel.time.timekeeper
 }
