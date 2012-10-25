@@ -66,13 +66,17 @@ static int parse(const char *const_line) {
 	return run_cmd(tok_pos, token_line);
 }
 
-static void setup_tty(void) {
+static void setup_tty(const char *dev_name) {
 	int fd;
 	char full_name[0x20];
 
+	if(strlen(dev_name) <= 1) {
+		return;
+	}
+
 	strncpy(full_name, "/dev/", sizeof(full_name));
 
-	strcat(full_name, OPTION_STRING_GET(tty_dev));
+	strcat(full_name, dev_name);
 
 
 	if(-1 == (fd = open(full_name, O_RDWR))) {
@@ -91,7 +95,7 @@ static int run_script(void) {
 	const char *command;
 	const struct shell *shell;
 	prom_printf("\nStarting shell [%s] at device [%s]\n", OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
-	setup_tty();
+	setup_tty(OPTION_STRING_GET(tty_dev));
 
 	prom_printf("loading start script:\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
