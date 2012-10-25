@@ -70,7 +70,7 @@ static void setup_tty(const char *dev_name) {
 	int fd;
 	char full_name[0x20];
 
-	if(strlen(dev_name) <= 1) {
+	if(strlen(dev_name) == 0) {
 		return;
 	}
 
