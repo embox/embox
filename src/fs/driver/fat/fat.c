@@ -1490,9 +1490,8 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 	}
 
 	while (!fat_get_next(fd, &di, &de)) {
-		/*TODO need convert name to high register */
-
-		if (!memcmp(de.name, filename, MSDOS_NAME)) {
+		fat_canonical_to_dir((uint8_t *) tmppath, de.name);
+		if (!memcmp(tmppath, filename, MSDOS_NAME)) {
 			/* You can't use this function call to open a directory. */
 			if (de.attr & ATTR_DIRECTORY){
 				//return DFS_NOTFOUND;
