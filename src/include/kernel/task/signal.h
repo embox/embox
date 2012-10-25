@@ -1,47 +1,43 @@
 /**
  * @file
- * @brief
+ * @brief Definitions of signal table, types and some constants
  *
- * @author  Anton Kozlov
- * @date    20.06.2012
+ * @author  Alexander Kalmuk
+ * @date    22.10.2012
  */
+
+#ifndef SRC_INCLUDE_KERNEL_TASK_SIGNAL_COMMON_H_
+#define SRC_INCLUDE_KERNEL_TASK_SIGNAL_COMMON_H_
 
 #include <types.h>
 #include <kernel/task.h>
+#include <util/dlist.h>
 
-#ifndef SRC_INCLUDE_KERNEL_TASK_SIGNAL_H_
-#define SRC_INCLUDE_KERNEL_TASK_SIGNAL_H_
+union sigval;
 
+typedef void(*global_sig_hnd_t)(void);
+/* Handler for standard signal */
 typedef void (*task_signal_hnd_t)(int sig);
+/* Handler for realtime signal */
+typedef void (*task_rtsignal_hnd_t)(int sig, union sigval value);
 
 #define TASK_SIGNAL_MAX_N 16
+
+#define TASK_SIGRTMIN     17
+#define TASK_SIGRTMAX     20
+#define TASK_RTSIG_CNT  (TASK_SIGRTMAX - TASK_SIGRTMIN + 1)
+#define TASK_RTSIG_CNT_PER_TYPE 3
 
 struct task_signal_table {
 	uint32_t sig_mask;
 	char last_sig;
 	task_signal_hnd_t hnd[TASK_SIGNAL_MAX_N];
+	task_rtsignal_hnd_t rt_hnd[TASK_RTSIG_CNT];
+	struct dlist_head rtsig_data[TASK_RTSIG_CNT];
 };
 
-static inline void task_signal_table_set(struct task_signal_table *table, int sig, task_signal_hnd_t hnd) {
-	table->hnd[sig] = hnd;
-}
+#define SIGNAL_HANDLE_ENTRY(func) \
+		extern global_sig_hnd_t __signal_handlers_array[]; \
+		ARRAY_SPREAD_ADD(__signal_handlers_array, func)
 
-static inline task_signal_hnd_t task_signal_table_get(struct task_signal_table *table, int sig) {
-	return table->hnd[sig];
-}
-
-static inline task_signal_hnd_t task_self_signal_get(int sig) {
-	struct task_signal_table *sig_table = task_self()->signal_table;
-
-	return task_signal_table_get(sig_table, sig);
-}
-
-static inline void task_self_signal_set(int sig, task_signal_hnd_t hnd) {
-	struct task_signal_table *sig_table = task_self()->signal_table;
-
-	task_signal_table_set(sig_table, sig, hnd);
-}
-
-extern void task_signal_send(struct task *task, int sig);
-
-#endif /* SRC_INCLUDE_KERNEL_TASK_SIGNAL_H_ */
+#endif /* SRC_INCLUDE_KERNEL_TASK_SIGNAL_COMMON_H_ */

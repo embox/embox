@@ -10,11 +10,19 @@
 #ifndef SIGNAL_H_
 #define SIGNAL_H_
 
+#include <sys/types.h>
 #include <kernel/task/signal.h>
+
+union sigval {
+	int sival_int;
+	void *sival_ptr;
+};
 
 extern int kill(int tid, int sig);
 
 extern void (*signal(int sig, void (*func)(int)))(int);
+
+extern int sigqueue(int tid, int sig, const union sigval value);
 
 /* Signals.  */
 #define	SIGHUP		1	/* Hangup (POSIX).  */
@@ -52,5 +60,8 @@ extern void (*signal(int sig, void (*func)(int)))(int);
 #define	SIGPWR		30	/* Power failure restart (System V).  */
 #define SIGSYS		31	/* Bad system call.  */
 #define SIGUNUSED	31
+
+#define SIGRTMIN    TASK_SIGRTMIN
+#define SIGRTMAX    TASK_SIGRTMAX
 
 #endif /* SIGNAL_H_ */

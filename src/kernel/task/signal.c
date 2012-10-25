@@ -3,29 +3,26 @@
  * @brief
  *
  * @author  Anton Kozlov
- * @date    20.06.2012
+ * @author  Alexander Kalmuk
+ * 			- split signals into standard signals and real-time signals
+ * @date    22.10.2012
  */
 
 #include <math.h>
 #include <kernel/task/task_table.h>
 #include <kernel/task/signal.h>
+#include <kernel/task/std_signal.h>
 #include <kernel/thread/sched.h>
 #include "common.h"
+#include <util/array.h>
+
+ARRAY_SPREAD_DEF(global_sig_hnd_t, __signal_handlers_array);
 
 extern void context_enter_frame(struct context *ctx, void *pc);
 extern void context_push_stack(struct context *ctx, void *arg, size_t n);
+extern void *context_pop_stack(struct context *ctx, size_t n);
 
-static int task_some_thd_run(struct task *task);
-
-
-void task_signal_send(struct task *task, int sig) {
-
-	task->signal_table->sig_mask |= 1 << sig;
-
-	task_some_thd_run(task);
-}
-
-static int task_some_thd_run(struct task *task) {
+int task_some_thd_run(struct task *task) {
 	struct thread *th;
 	int res = -1;
 
@@ -36,19 +33,10 @@ static int task_some_thd_run(struct task *task) {
 	}
 
 	return res;
-
 }
 
 static void task_terminate(int sig) {
 	task_exit(NULL);
-}
-
-static void task_sig_handler(int sig) {
-	sched_unlock();
-
-	task_signal_table_get(task_self()->signal_table, sig)(sig);
-
-	sched_lock();
 }
 
 static void task_signal_table_init(struct task *task, void *_signal_table) {
@@ -61,6 +49,11 @@ static void task_signal_table_init(struct task *task, void *_signal_table) {
 		task_signal_table_set(sig_table, sig, task_terminate);
 	}
 
+	for (sig = 0; sig < TASK_RTSIG_CNT; sig++) {
+		sig_table->rt_hnd[sig] = NULL;
+		dlist_init(&sig_table->rtsig_data[sig]);
+	}
+
 	task->signal_table = sig_table;
 }
 
@@ -69,19 +62,24 @@ static const struct task_resource_desc signal_resource = {
 	.resource_size = sizeof(struct task_signal_table),
 };
 
-static int notify_hnd(struct thread *prev, struct thread *next) {
-	struct task_signal_table *sig_table= next->task->signal_table;
-	int sig = (sig_table->sig_mask ? blog2(sig_table->sig_mask) : 0);
+void task_signal_hnd(void) {
+	global_sig_hnd_t hnd;
 
-	if (sig) {
-		sig_table->sig_mask &= ~(1 << sig);
-		sig_table->last_sig = sig;
-
-		context_push_stack(&next->context, &sig, sizeof(sig));
-		context_enter_frame(&next->context, task_sig_handler);
+	sched_unlock();
+	{
+		array_foreach(hnd, __signal_handlers_array, ARRAY_SPREAD_SIZE(__signal_handlers_array)) {
+			if (hnd) {
+				hnd();
+			}
+		}
 	}
+	sched_lock();
+}
 
-
+static int notify_hnd(struct thread *prev, struct thread *next) {
+	/* XXX */
+	context_pop_stack(&next->context, sizeof(next->context.eip));
+	context_enter_frame(&next->context, task_signal_hnd);
 	return 0;
 }
 

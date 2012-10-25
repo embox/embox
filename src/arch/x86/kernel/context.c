@@ -43,3 +43,8 @@ void context_push_stack(struct context *ctx, void *arg, size_t n) {
 	memcpy((void *) ctx->esp, arg, n);
 
 }
+
+void *context_pop_stack(struct context *ctx, size_t n) {
+	ctx->esp += n;
+	return (void *)ctx->esp;
+}

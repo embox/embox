@@ -9,7 +9,7 @@ module signal {
 	source "signal.c"
 
 	depends embox.kernel.task.api
-	depends embox.kernel.task.signal
+	depends embox.kernel.task.std_signal
 	depends embox.framework.LibFramework
 }
 
