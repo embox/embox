@@ -25,6 +25,7 @@ static void sig_handler(int sig, union sigval value) {
 }
 
 static void *task_hnd(void *data) {
+	handled_sig_cnt=0;
 	task_self_rtsignal_set(MY_SIGRT, sig_handler);
 	while(1);
 	return NULL;
