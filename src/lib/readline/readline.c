@@ -8,6 +8,7 @@
 
 #include <lib/readline.h>
 #include <drivers/tty.h>
+#include <stdio.h>
 
 static char nil_string[] = "";
 
