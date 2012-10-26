@@ -15,6 +15,7 @@
 EMBOX_TEST_SUITE("test for task API");
 
 static volatile char flag = 0;
+static volatile char flag2 = 0;
 
 extern int kill(int tid, int sig);
 
@@ -40,6 +41,41 @@ TEST_CASE("create task and send signal") {
 	kill(tid, 9);
 	usleep(100);
 	test_assert(flag != 0);
+
+}
+
+static void sig_hnd2(int sig) {
+	if (sig == 9) {
+		task_exit(NULL);
+	} else {
+		flag2 ++;
+	}
+}
+
+static void *task_hnd2(void *arg) {
+
+	signal(9, sig_hnd2);
+	signal(1, sig_hnd2);
+
+	while(1);
+
+	return NULL;
+}
+
+TEST_CASE("create task and send him signal 3 times") {
+	int tid = new_task(task_hnd2, NULL, 0);
+	flag2 = 0;
+
+	usleep(100);
+	kill(tid, 1);
+
+	usleep(100);
+	kill(tid, 1);
+
+	usleep(100);
+	kill(tid, 9);
+
+	test_assert(flag2 == 2);
 
 }
 
