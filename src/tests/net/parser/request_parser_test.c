@@ -33,3 +33,14 @@ TEST_CASE("Parse HTTP methods") {
 	parse_http(test_put, &parsed_request);
 	test_assert_str_not_equal(parsed_request.method, "PUT");
 }
+
+TEST_CASE("Parse first string") {
+	char * test_get = "HEAD 10.10.111.1 HTTP/1.1";
+	char * test_get2 = "GET wsdf-365.ru HTTP/1.1";
+	char * test_get3 = "GET wsdf-365.ru HTTP/1.0";
+
+	test_assert_true(check_firstline(test_get));
+	test_assert_true(check_firstline(test_get2));
+	test_assert_false(check_firstline(test_get3));
+
+}
