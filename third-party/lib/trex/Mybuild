@@ -1,0 +1,6 @@
+package third_party.lib
+
+module trex {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "trex.c"
+}

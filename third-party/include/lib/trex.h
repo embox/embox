@@ -56,12 +56,12 @@ typedef struct {
 	int len;
 } TRexMatch;
 
-TREX_API TRex *trex_compile(const TRexChar *pattern,const TRexChar **error);
-TREX_API void trex_free(TRex *exp);
-TREX_API TRexBool trex_match(TRex* exp,const TRexChar* text);
-TREX_API TRexBool trex_search(TRex* exp,const TRexChar* text, const TRexChar** out_begin, const TRexChar** out_end);
-TREX_API TRexBool trex_searchrange(TRex* exp,const TRexChar* text_begin,const TRexChar* text_end,const TRexChar** out_begin, const TRexChar** out_end);
-TREX_API int trex_getsubexpcount(TRex* exp);
-TREX_API TRexBool trex_getsubexp(TRex* exp, int n, TRexMatch *subexp);
+extern TRex *trex_compile(const TRexChar *pattern,const TRexChar **error);
+extern void trex_free(TRex *exp);
+extern TRexBool trex_match(TRex* exp,const TRexChar* text);
+extern TRexBool trex_search(TRex* exp,const TRexChar* text, const TRexChar** out_begin, const TRexChar** out_end);
+extern TRexBool trex_searchrange(TRex* exp,const TRexChar* text_begin,const TRexChar* text_end,const TRexChar** out_begin, const TRexChar** out_end);
+extern int trex_getsubexpcount(TRex* exp);
+extern TRexBool trex_getsubexp(TRex* exp, int n, TRexMatch *subexp);
 
 #endif

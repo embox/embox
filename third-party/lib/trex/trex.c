@@ -28,7 +28,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <setjmp.h>
-#include "trex.h"
+#include <lib/trex.h>
+#include <types.h>
 
 #ifdef _UINCODE
 #define scisprint iswprint
@@ -114,7 +115,7 @@ static int trex_newnode(TRex *exp, TRexNodeType type)
 	if(type == OP_EXPR)
 		n.right = exp->_nsubexpr++;
 	if(exp->_nallocated < (exp->_nsize + 1)) {
-		int oldsize = exp->_nallocated;
+		//int oldsize = exp->_nallocated;
 		exp->_nallocated *= 2;
 		exp->_nodes = (TRexNode *)realloc(exp->_nodes, exp->_nallocated * sizeof(TRexNode));
 	}
@@ -294,7 +295,6 @@ static int trex_element(TRex *exp)
 	}
 
 	{
-		int op;
 		TRexBool isgreedy = TRex_False;
 		unsigned short p0 = 0, p1 = 0;
 		switch(*exp->_p){
@@ -327,8 +327,9 @@ static int trex_element(TRex *exp)
 
 		}
 		if(isgreedy) {
+			//int op;
 			int nnode = trex_newnode(exp,OP_GREEDY);
-			op = OP_GREEDY;
+			//op = OP_GREEDY;
 			exp->_nodes[nnode].left = ret;
 			exp->_nodes[nnode].right = ((p0)<<16)|p1;
 			ret = nnode;
@@ -514,7 +515,7 @@ static const TRexChar *trex_matchnode(TRex* exp,TRexNode *node,const TRexChar *s
 			return cur;
 	}
 	case OP_WB:
-		if(str == exp->_bol && !isspace(*str)
+		if((str == exp->_bol && !isspace(*str))
 		 || (str == exp->_eol && !isspace(*(str-1)))
 		 || (!isspace(*str) && isspace(*(str+1)))
 		 || (isspace(*str) && !isspace(*(str+1))) ) {
@@ -528,25 +529,25 @@ static const TRexChar *trex_matchnode(TRex* exp,TRexNode *node,const TRexChar *s
 		if(str == exp->_eol) return str;
 		return NULL;
 	case OP_DOT:{
-		*str++;
+		str++;
 				}
 		return str;
 	case OP_NCLASS:
 	case OP_CLASS:
 		if(trex_matchclass(exp,&exp->_nodes[node->left],*str)?(type == OP_CLASS?TRex_True:TRex_False):(type == OP_NCLASS?TRex_True:TRex_False)) {
-			*str++;
+			str++;
 			return str;
 		}
 		return NULL;
 	case OP_CCLASS:
 		if(trex_matchcclass(node->left,*str)) {
-			*str++;
+			str++;
 			return str;
 		}
 		return NULL;
 	default: /* char */
 		if(*str != node->type) return NULL;
-		*str++;
+		str++;
 		return str;
 	}
 	return NULL;
@@ -636,7 +637,7 @@ TRexBool trex_searchrange(TRex* exp,const TRexChar* text_begin,const TRexChar* t
 				break;
 			node = exp->_nodes[node].next;
 		}
-		*text_begin++;
+		text_begin++;
 	} while(cur == NULL && text_begin != text_end);
 
 	if(cur == NULL)
