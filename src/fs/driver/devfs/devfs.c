@@ -46,6 +46,9 @@ static int devfs_mount(void *par) {
 
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__device_registry); i++) {
 		if (NULL != (devnod = vfs_add_path(__device_registry[i].name, nod))) {
+			if(NULL != __device_registry[i].init) {
+				__device_registry[i].init();
+			}
 			devnod->file_info = (void*) __device_registry[i].fops;
 			devnod->fs_type = (fs_drv_t *) &devfs_drv;
 		}
