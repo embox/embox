@@ -42,13 +42,14 @@ int xwnd_app_main_loop (struct xwnd_application * app) {
 	while (1) {
 		int err;
 		err = xwnd_app_get_event(app, &event);
-		usleep(50);
+		/*usleep(50);*/
 		/*if (err) {
 			exit_status = -1;
 			break;
 		}*/
 		if (err == 0 && event.type == XWND_EV_QUIT) {
 			exit_status = event.info.quit.exit_status;
+			xwnd_app_dispatch_event(app, &event);
 			break;
 		}
 		xwnd_app_dispatch_event(app, &event);

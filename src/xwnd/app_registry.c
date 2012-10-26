@@ -76,6 +76,7 @@ struct xwnd_application * xwnd_app_create (void) {
 	t_wnd->wdg.ht = 60;
 	t_wnd->wdg.wdg_list = NULL;
 	t_wnd->wdg.next = NULL;
+	t_xapp->wnd = t_wnd;
 
 	t_xapp->app_id = xapp_id;
 

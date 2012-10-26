@@ -88,7 +88,7 @@ static int exec (int argc, char ** argv) {
 			printf("BBBBBB");
 			return 1;
 		}
-		sleep(3);
+		/*sleep(3);*/
 
 		while (1) {
 			if (!keyboard_has_symbol()) {
