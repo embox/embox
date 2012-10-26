@@ -29,3 +29,10 @@ module select_test {
 	depends embox.compat.posix.idx.select
 	depends embox.framework.LibFramework
 }
+
+module rtsignal_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "rt_signal.c"
+
+	depends embox.compat.posix.proc.signal
+}

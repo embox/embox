@@ -39,16 +39,18 @@ void task_rtsignal_handle(void) {
 	struct task_signal_table *sig_table = task_self()->signal_table;
 	struct rtsig_data *cur, *nxt;
 	int sig;
+	task_rtsignal_hnd_t hnd;
 
-	for (sig = 0; sig < TASK_RTSIG_CNT; sig++) {
+	for (sig = TASK_SIGRTMIN; sig <= TASK_SIGRTMAX; sig++) {
 		if (task_rtsignal_table_get(task_self()->signal_table, sig)) {
-			dlist_foreach_entry(cur, nxt, &sig_table->rtsig_data[sig], sig_link) {
-				task_rtsignal_table_get(task_self()->signal_table, sig)(sig, cur->data);
+			dlist_foreach_entry(cur, nxt, &sig_table->rtsig_data[sig - TASK_SIGRTMIN], sig_link) {
+				hnd = task_rtsignal_table_get(task_self()->signal_table, sig);
+				hnd(sig, cur->data);
 				dlist_del(&cur->sig_link);
 				objfree(&rtsig_data_pool, cur);
 			}
 
-			assert(dlist_empty(&sig_table->rtsig_data[sig]));
+			assert(dlist_empty(&sig_table->rtsig_data[sig - TASK_SIGRTMIN]));
 		}
 	}
 }
