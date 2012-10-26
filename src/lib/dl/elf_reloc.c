@@ -7,6 +7,7 @@
  */
 
 #include <lib/libelf.h>
+#include <lib/dl.h>
 #include <string.h>
 #include <errno.h>
 #include <types.h>
@@ -25,19 +26,31 @@
 #define R_386_GOTOFF    9
 #define R_386_GOTPC     10
 
+int _global_outside = 3;
+
 static inline int elf_relocate_section_rel(FILE *fd, Elf32_Obj *obj,
-		Elf32_Addr *offsets, Elf32_Shdr *relsh) {
+		Elf32_Shdr *relsh) {
 
 	Elf32_Rel  *rel;
 	Elf32_Sym  *sym;
 	Elf32_Addr sym_addr;
 	Elf32_Addr *where;
+	Elf32_Shdr *sh_table = obj->sh_table;
 	int rel_count = elf_read_rel_section(fd, obj, relsh, &rel);
 
 	for (int i = 0 ; i < rel_count; i++) {
+		where = (Elf32_Addr *)
+				(sh_table[relsh->sh_info].sh_addr + rel[i].r_offset);
 		sym = &obj->sym_table[ELF32_R_SYM(rel[i].r_info)];
-		sym_addr = offsets[sym->st_shndx] + sym->st_value;
-		where = (Elf32_Addr *) (offsets[relsh->sh_info] + rel[i].r_offset);
+		if (sym->st_shndx != SHN_UNDEF) {
+			sym_addr = sym->st_value;
+			if (obj->header->e_type == ET_REL) {
+				sym_addr += sh_table[sym->st_shndx].sh_addr;
+			}
+		} else {
+			// Should be find_symbol.
+			sym_addr = (Elf32_Addr) &_global_outside;
+		}
 
 		switch (ELF32_R_TYPE(rel[i].r_info)) {
 		case R_386_NONE:
@@ -57,12 +70,12 @@ static inline int elf_relocate_section_rel(FILE *fd, Elf32_Obj *obj,
 }
 
 static inline int elf_relocate_section_rela(FILE *fd, Elf32_Obj *obj,
-	uint32_t *offsets, Elf32_Shdr *relash) {
+		Elf32_Shdr *relash) {
 	/* Have not implemented yet */
 	return -ENOSYS;
 }
 
-int elf_relocate(FILE *fd, Elf32_Obj *obj, uint32_t *offsets) {
+int elf_relocate(FILE *fd, Elf32_Obj *obj) {
 	Elf32_Shdr *sh;
 	int err;
 
@@ -71,13 +84,12 @@ int elf_relocate(FILE *fd, Elf32_Obj *obj, uint32_t *offsets) {
 
 		switch (sh->sh_type) {
 		case SHT_REL:
-			if ((err = elf_relocate_section_rel(fd, obj, offsets, sh)) < 0) {
+			if ((err = elf_relocate_section_rel(fd, obj, sh)) < 0) {
 				return err;
 			}
-			return ENOERR;
 			break;
 		case SHT_RELA:
-			if ((err = elf_relocate_section_rela(fd, obj, offsets, sh)) < 0) {
+			if ((err = elf_relocate_section_rela(fd, obj, sh)) < 0) {
 				return err;
 			}
 			break;

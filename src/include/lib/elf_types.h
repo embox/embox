@@ -519,6 +519,14 @@ typedef struct {
 #define SHT_SHLIB       10     /* Reserved, unspecified semantics */
 #define SHT_DYNSYM      11     /* Dynamic linking symbol table */
 
+#define SHN_UNDEF       0
+#define SHN_LORESERVE   0xff00
+#define SHN_LOPROC      0xff00
+#define SHN_HIPROC      0xff1f
+#define SHN_ABS         0xfff1
+#define SHN_COMMON      0xfff2
+#define SHN_HIRESERVE   0xffff
+
 /* Values for symb header, st_type field.  */
 
 #define STB_LOCAL       0      /* Symbol not visible outside obj */
