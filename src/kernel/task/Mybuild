@@ -53,8 +53,7 @@ module single extends api {
 
 module idx_table extends task_environment {
 
-	option number task_res_quantity = 32
-
+	option number task_res_quantity = 64
 	source "index_desc.c"
 	depends embox.util.idx_table
 	depends api
