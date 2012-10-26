@@ -38,6 +38,9 @@ int elf_read_symbol_table(FILE *fd, Elf32_Obj *obj) {
 				}
 			}
 
+			/* Save where names store */
+			obj->sym_names_shidx = sh_table[i].sh_link;
+
 			return count;
 		}
 	}

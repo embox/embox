@@ -611,21 +611,35 @@ typedef struct {
 
 /* Collection of information about elf. */
 typedef struct {
-	int need_reverse;         /* Should we reverse bytes when reading */
-	Elf32_Ehdr *header;       /* Elf header */
-	Elf32_Shdr *sh_table;     /* Elf section table */
-	Elf32_Phdr *ph_table;     /* Elf program table */
+	/* Should we reverse bytes when reading */
+	int          need_reverse;
 
-	char     *string_table;   /* Elf string table */
-	Elf32_Sym  *sym_table;    /* Elf symbol table */
-	char     *sym_names;      /* Elf symbol names */
+	/* Header of the file */
+	Elf32_Ehdr   *header;
+
+	/* Section table */
+	Elf32_Shdr   *sh_table;
+
+	/* Program table */
+	Elf32_Phdr   *ph_table;
+
+	/* String table. Contains section names */
+	char         *string_table;
+
+	/* Symbol table */
+	Elf32_Sym    *sym_table;
+	/* Section header index of the associated string table for symbol table */
+	int          sym_names_shidx;
+
+	/* Symbol names */
+	char         *sym_names;
 
 	/* Elf .dynamic section */
-	Elf32_Dyn  *dyn_section;
+	Elf32_Dyn    *dyn_section;
 	unsigned int dyn_count;
 
 	/* Elf relocation array */
-	Elf32_Rel  *rel_array;
+	Elf32_Rel    *rel_array;
 	unsigned int rel_count;
 } Elf32_Obj;
 

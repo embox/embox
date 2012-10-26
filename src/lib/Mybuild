@@ -1,6 +1,6 @@
 package embox.lib
 
-static module ElfLib {
+static module LibElf {
 	source "elf/elf_object.c"
 	source "elf/elf_header.c"
 	source "elf/elf_sh_table.c"
@@ -10,10 +10,15 @@ static module ElfLib {
 	source "elf/elf_sym_table.c"
 	source "elf/elf_sym_names.c"
 	source "elf/elf_dyn_section.c"
+	source "elf/elf_rel.c"
 	source "elf/elf_rel_array.c"
 
 	// TODO: Delete it later
 	source "elf/elf_reader.c"
+}
+
+static module LibDl {
+	source "dl/elf_reloc.c"
 }
 
 static module LibCDiagnostic {
