@@ -53,8 +53,8 @@ struct xwnd_application * xwnd_app_create (void) {
 	//Initialize them
 
 	//Init pipe semaphores
-	sem_init(&(t_xapp->msg_sem), 1);
-	sem_init(&(t_xapp->req_sem), 1);
+	sem_init(&(t_xapp->msg_sem), 2);
+	sem_init(&(t_xapp->req_sem), 2);
 	//Connect pipes
 	pipe(req_pipe);
 	pipe(msg_pipe);
