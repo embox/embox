@@ -9,6 +9,7 @@
 #ifndef KERNEL_FILE_H_
 #define KERNEL_FILE_H_
 
+#include <types.h>
 #include <stdarg.h>
 
 struct file_desc;

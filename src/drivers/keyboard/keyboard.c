@@ -205,6 +205,7 @@ char keyboard_getc(void) {
 
 		if (outp == 0xff) {
 			shift_state = 1;
+			outp = 0;
 		}
 	}
 }
