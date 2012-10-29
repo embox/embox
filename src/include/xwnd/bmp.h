@@ -43,6 +43,7 @@ union xwnd_bmp_pixel {
 extern struct xwnd_bmp_image * xwnd_bmp_load (const char * file);
 extern void xwnd_bmp_unload (struct xwnd_bmp_image * img);
 extern void xwnd_bmp_draw (struct xwnd_bmp_image * img);
+extern void xwnd_bmp_output(const struct xwnd_window * wnd, struct xwnd_bmp_image * img);
 extern enum xwnd_bmp_err xwnd_bmp_get_errno (void);
 
 #endif /* XWND_BMP_H_ */

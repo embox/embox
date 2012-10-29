@@ -74,7 +74,7 @@ static int exec (int argc, char ** argv) {
 	}
 	else {
 		int err;
-		struct xwnd_application * app;
+		struct xwnd_application * app, *app2;
 
 		xwnd_init();
 
@@ -86,6 +86,11 @@ static int exec (int argc, char ** argv) {
 		app = xwnd_app_create();
 		if (!app) {
 			printf("BBBBBB");
+			return 1;
+		}
+		app2 = xwnd_app_create();
+		if (!app2) {
+			printf("asdasd");
 			return 1;
 		}
 		/*sleep(3);*/

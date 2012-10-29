@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <xwnd/event.h>
+#include <xwnd/window.h>
 
 //FIXME: this have to be removed
 #include <xwnd/test_app.h>
@@ -35,6 +36,7 @@ struct xwnd_application * xwnd_app_create (void) {
 	int req_pipe[2], msg_pipe[2];
 	int xapp_id = xapp_reg.used;
 	int xapp_tid;
+	struct xwnd_rect rect;
 
 	//Get an entry in registry
 	if (xapp_id >= XAPP_REG_DEF_CNT - 1) {
@@ -44,6 +46,7 @@ struct xwnd_application * xwnd_app_create (void) {
 
 	//Allocate client-side application structure
 	//FIXME: This allocation is freaking bad. Replace it with something better
+
 	t_xapp = malloc(sizeof(struct xwnd_application));
 	if (!t_xapp) {
 		xapp_reg.used--;
@@ -64,18 +67,15 @@ struct xwnd_application * xwnd_app_create (void) {
 	t_xapp->pipe_out = req_pipe[1];
 
 	//Create window
-	t_wnd = malloc (sizeof(struct xwnd_window));
+	rect.x = 30 * (xapp_id + 1);
+	rect.y = 20 * (xapp_id + 1);
+	rect.wd = 60 * (xapp_id + 1);
+	rect.ht = 60 * (xapp_id + 1);
+	t_wnd = xwnd_window_create(&rect); //malloc (sizeof(struct xwnd_window));
 	if (!t_wnd) {
 		free(t_xapp);
 		return NULL;
 	}
-	t_wnd->caption = NULL;
-	t_wnd->wdg.x = 10;
-	t_wnd->wdg.y = 10;
-	t_wnd->wdg.wd = 100;
-	t_wnd->wdg.ht = 60;
-	t_wnd->wdg.wdg_list = NULL;
-	t_wnd->wdg.next = NULL;
 	t_xapp->wnd = t_wnd;
 
 	t_xapp->app_id = xapp_id;

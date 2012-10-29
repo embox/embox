@@ -1,13 +1,13 @@
 package embox.xwnd
 
-module app_registry {
+module window {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	@IncludePath("$(SRC_DIR)/include/drivers")
-	source "app_registry.c"
+	source "window.c"
 
 	depends embox.lib.LibC
-	depends embox.xwnd.event
-	depends embox.xwnd.window
-	depends embox.xwnd.test_app
+	depends embox.driver.video.vesadrv
+	depends embox.xwnd.draw_helpers
+
 }

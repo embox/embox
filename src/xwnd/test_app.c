@@ -17,7 +17,7 @@ static void on_creat (struct xwnd_event * ev) {
 }
 
 static void on_draw (struct xwnd_event * ev) {
-	xwnd_bmp_draw(img);
+	xwnd_bmp_output(xapp->wnd, img);
 }
 
 static void on_quit (struct xwnd_event * ev) {
