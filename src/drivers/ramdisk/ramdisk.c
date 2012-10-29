@@ -59,9 +59,9 @@ int ramdisk_create(void *mkfs_params) {
 	}
 
 	ram_disk->dev_node = ramdisk_node;
-	ramdisk_node->dev_type = (void *)device(ram_disk->devnum)->driver;
+	ramdisk_node->dev_type = (void *)block_dev(ram_disk->devnum)->driver;
 	ramdisk_node->dev_attr = (void *)&ram_disk->devnum;
-	device(ram_disk->devnum)->dev_node = ramdisk_node;
+	block_dev(ram_disk->devnum)->dev_node = ramdisk_node;
 
 	if(NULL == (ram_disk->p_start_addr =
 			page_alloc(__phymem_allocator, p_mkfs_params->blocks))) {
@@ -70,7 +70,7 @@ int ramdisk_create(void *mkfs_params) {
 
 	strcpy ((void *)&ram_disk->path, (const void *)p_mkfs_params->path);
 	ram_disk->size = p_mkfs_params->blocks * PAGE_SIZE();
-	device(ram_disk->devnum)->size = ram_disk->size;
+	block_dev(ram_disk->devnum)->size = ram_disk->size;
 	ram_disk->blocks = p_mkfs_params->blocks;
 	ram_disk->sector_size = 512;
 
@@ -88,7 +88,7 @@ dev_ramdisk_t *ramdisk_get_param(char *name) {
 		return NULL;
 	}
 	devnum = *((dev_t *)ramdisk_node->dev_attr);
-	return (dev_ramdisk_t *) device(devnum)->privdata;
+	return (dev_ramdisk_t *) block_dev(devnum)->privdata;
 }
 
 int ramdisk_delete(const char *name) {
@@ -100,7 +100,7 @@ int ramdisk_delete(const char *name) {
 		return -1;
 	}
 	devnum = *((dev_t *)ramdisk_node->dev_attr);
-	if(NULL != (ram_disk = (dev_ramdisk_t *) device(devnum)->privdata)) {
+	if(NULL != (ram_disk = (dev_ramdisk_t *) block_dev(devnum)->privdata)) {
 		pool_free(&ramdisk_pool, ram_disk);
 		vfs_del_leaf(ramdisk_node);
 	}

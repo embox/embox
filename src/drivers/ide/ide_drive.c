@@ -709,9 +709,9 @@ static int ide_devnode_create(dev_t *dev_number) {
 		}
 	}
 
-	dev_node->dev_type = (void *) device(*dev_number)->driver;
+	dev_node->dev_type = (void *) block_dev(*dev_number)->driver;
 	dev_node->dev_attr = (void *) dev_number;
-	device(*dev_number)->dev_node = dev_node;
+	block_dev(*dev_number)->dev_node = dev_node;
 
 	return *dev_number;
 }
@@ -829,7 +829,7 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 		(double) hd->param.heads *
 		(double) hd->param.unfbytes *
 		(double) (hd->param.sectors + 1);
-		device(hd->devno)->size = (size_t) size;
+		block_dev(hd->devno)->size = (size_t) size;
 	}
 
 	if (hd->media == IDE_DISK) {

@@ -115,7 +115,7 @@ static int setup_suite(void) {
 	}
 	/* set created ramdisc attribute from dev_node */
 	devnum = *((dev_t *)mount_param.dev_node->dev_attr);
-	memcpy(&ramdisk, device(devnum)->privdata, sizeof(ramdisk));
+	memcpy(&ramdisk, block_dev(devnum)->privdata, sizeof(ramdisk));
 
 	/* format filesystem */
 	if(0 != fs_drv->fsop->format((void *)&ramdisk.path)) {

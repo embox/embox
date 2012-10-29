@@ -408,7 +408,7 @@ int cdfs_mount(node_t *root_node)
 	if (devno == NODEV) {
 		return -NODEV;
 	}
-	if (device(devno)->driver->type != DEV_TYPE_BLOCK) {
+	if (block_dev(devno)->driver->type != DEV_TYPE_BLOCK) {
 		return -ENOTBLK;
 	}
 

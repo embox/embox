@@ -38,7 +38,7 @@ block_dev_module_t *block_dev_find(char *name) {
 	return NULL;
 }
 
-block_dev_t *device(dev_t devno) {
+block_dev_t *block_dev(dev_t devno) {
 	if (devno < 0 || devno >= num_devs) {
 		return NULL;
 	}
@@ -48,7 +48,7 @@ block_dev_t *device(dev_t devno) {
 int dev_destroy (dev_t devno) {
 	block_dev_t *dev;
 
-	if(NULL ==(dev = device(devno))) {
+	if(NULL ==(dev = block_dev(devno))) {
 		return NODEV;
 	}
 	else {
@@ -125,7 +125,7 @@ dev_t devno(char *name) {
 	dev_t devno;
 
 	for (devno = 0; devno < num_devs; devno++) {
-		if (strcmp(device(devno)->name, name) == 0) {
+		if (strcmp(block_dev(devno)->name, name) == 0) {
 			return devno;
 		}
 	}
@@ -144,10 +144,10 @@ int dev_close(dev_t devno) {
 	if(devno < 0 || devno >= num_devs) {
 		return -ENODEV;
 	}
-	if(device(devno)->refcnt == 0) {
+	if(block_dev(devno)->refcnt == 0) {
 		return -EPERM;
 	}
-	device(devno)->refcnt--;
+	block_dev(devno)->refcnt--;
 	return 0;
 }
 
@@ -158,7 +158,7 @@ int dev_read(dev_t devno, char *buffer, size_t count, blkno_t blkno) {
 	if (devno < 0 || devno >= num_devs) {
 		return -ENODEV;
 	}
-	dev = device(devno);
+	dev = block_dev(devno);
 	if (!dev->driver->read) {
 		return -ENOSYS;
 	}
@@ -174,7 +174,7 @@ int dev_write(dev_t devno, char *buffer, size_t count, blkno_t blkno) {
 	if (devno < 0 || devno >= num_devs) {
 		return -ENODEV;
 	}
-	dev = device(devno);
+	dev = block_dev(devno);
 	if (!dev->driver->write) {
 		return -ENOSYS;
 	}
@@ -190,7 +190,7 @@ int dev_ioctl(dev_t devno, int cmd, void *args, size_t size) {
 	if (devno < 0 || devno >= num_devs) {
 		return -ENODEV;
 	}
-	dev = device(devno);
+	dev = block_dev(devno);
 	if (!dev->driver->ioctl) {
 		return -ENOSYS;
 	}

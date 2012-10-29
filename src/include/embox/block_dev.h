@@ -76,7 +76,7 @@ extern block_dev_module_t *block_dev_find(char *name);
 extern int dev_read(dev_t devno, char *buffer, size_t count, blkno_t blkno);
 extern int dev_write(dev_t devno, char *buffer, size_t count, blkno_t blkno);
 extern int dev_ioctl(dev_t devno, int cmd, void *args, size_t size);
-extern block_dev_t *device(dev_t devno);
+extern block_dev_t *block_dev(dev_t devno);
 extern int dev_destroy (dev_t devno);
 extern dev_t dev_make(char *name, block_dev_driver_t *driver, void *privdata);
 extern dev_t devno(char *name);

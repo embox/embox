@@ -35,7 +35,7 @@ static void print_drive (slot_t *ide) {
 		}
 		else {
 			drive = (hd_t *) ide->drive[i];
-			printf(" %s;", device(drive->devno)->dev_node->name);
+			printf(" %s;", block_dev(drive->devno)->dev_node->name);
 			printf(" %s", drive->param.serial);
 			printf(" %s", drive->param.model);
 			printf(" %5dM", drive->size);

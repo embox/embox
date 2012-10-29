@@ -24,7 +24,7 @@ buf_t *init_buffer_pool(dev_t devno, int blocks) {
 	block_dev_t *dev;
 	buf_t *buf;
 
-	if(NULL == (dev = device(devno))) {
+	if(NULL == (dev = block_dev(devno))) {
 		return NULL;
 	}
 
@@ -63,7 +63,7 @@ buf_t *init_buffer_pool(dev_t devno, int blocks) {
 buf_t *get_buffer(dev_t devno, blkno_t blkno) {
 	buf_t *buf;
 
-	if(NULL == (buf = (device(devno)->buff))) {
+	if(NULL == (buf = (block_dev(devno)->buff))) {
 		return NULL;
 	}
 
@@ -86,7 +86,7 @@ int free_buffer_pool(dev_t devno) {
 	block_dev_t *dev;
 	buf_t *buf;
 
-	if(NULL == (dev = device(devno))) {
+	if(NULL == (dev = block_dev(devno))) {
 		return -1;
 	}
 
