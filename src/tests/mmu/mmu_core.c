@@ -10,6 +10,7 @@
 #include <framework/test/assert.h>
 
 #include <mem/vmem.h>
+#include <hal/test/traps_core.h>
 
 EMBOX_TEST_SUITE("Complex MMU core support test suite");
 
@@ -57,12 +58,13 @@ static inline int simple_dfault_handler(uint32_t trap_nr, void *data) {
 	return 0;
 }
 
+
 TEST_CASE("Writing in read-only memory should generate exception."
 		  " Vaule must left untouched.") {
 	uint32_t addr = UNIQ_VAL_1;
 	uint32_t vaddr = VADDR(BIGADDR, &addr, PAGE_SIZE);
 
-	//testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_SECUR_FAULT, simple_dfault_handler);
+	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_SECUR_FAULT, simple_dfault_handler);
 
 	vmem_map_region((mmu_ctx_t)0, (mmu_paddr_t)(&addr) & ~(PAGE_SIZE - 1), BIGADDR, PAGE_SIZE,
 				VMEM_PAGE_CACHEABLE | VMEM_PAGE_EXECUTABLE);

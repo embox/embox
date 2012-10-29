@@ -1,0 +1,5 @@
+package embox.arch.x86.test
+
+module testtrap {
+	source "testtraps_core.c"
+}
