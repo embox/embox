@@ -98,8 +98,10 @@ static module LibCStdio {
 	source "stdio/printk.c"
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
+	source "stdio/perror.c"
 	depends FileApi
 	depends LibCMath
+	depends LibCString
 }
 
 static module LibC {
