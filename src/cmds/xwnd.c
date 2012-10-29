@@ -80,12 +80,10 @@ static int exec (int argc, char ** argv) {
 
 		err = xwnd_app_reg_init();
 		if (err) {
-			printf ("AAAAA");
 			return 1;
 		}
 		app_id = xwnd_app_create(test_app_main);
 		if (app_id < 0) {
-			printf("BBBBBB");
 			return 1;
 		}
 		/*sleep(3);*/
