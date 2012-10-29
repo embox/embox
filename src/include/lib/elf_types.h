@@ -641,6 +641,7 @@ typedef struct {
 
 	/* Symbol names */
 	char         *sym_names;
+	unsigned int sym_count;
 
 	/* Elf .dynamic section */
 	Elf32_Dyn    *dyn_section;

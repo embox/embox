@@ -20,7 +20,6 @@ static inline void elf_reverse_sym(Elf32_Sym *sym) {
 int elf_read_symbol_table(FILE *fd, Elf32_Obj *obj) {
 	Elf32_Ehdr *header = obj->header;
 	Elf32_Shdr *sh_table = obj->sh_table;
-	size_t count;
 	int res;
 
 	for (int i = 0; i < header->e_shnum; i++) {
@@ -30,10 +29,10 @@ int elf_read_symbol_table(FILE *fd, Elf32_Obj *obj) {
 				return res;
 			}
 
-			count = res / sizeof(Elf32_Sym);
+			obj->sym_count = res / sizeof(Elf32_Sym);
 
 			if (obj->need_reverse) {
-				for (int i = 0; i < count; i++) {
+				for (int i = 0; i < obj->sym_count; i++) {
 					elf_reverse_sym(obj->sym_table + i);
 				}
 			}
@@ -41,7 +40,7 @@ int elf_read_symbol_table(FILE *fd, Elf32_Obj *obj) {
 			/* Save where names store */
 			obj->sym_names_shidx = sh_table[i].sh_link;
 
-			return count;
+			return obj->sym_count;
 		}
 	}
 

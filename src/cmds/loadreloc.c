@@ -10,8 +10,10 @@
 #include <getopt.h>
 #include <ctype.h>
 #include <stdio.h>
+
 #include <lib/libelf.h>
 #include <lib/dl.h>
+
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
