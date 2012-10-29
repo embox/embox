@@ -2,7 +2,7 @@ package embox.driver
 
 module ide {
 	option number dev_quantity = 4
-	source "ide_drive.c"
+	source "ide_drv.c"
 	source "cdrom.c"
 	source "harddisk_pio.c"
 	source "harddisk_dma.c"
