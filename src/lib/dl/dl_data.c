@@ -2,59 +2,56 @@
  * @file
  * @brief
  *
- * @date 26.10.2012
+ * @date 29.10.2012
  * @author Anton Bulychev
  */
 
-#include <string.h>
-#include <errno.h>
 #include <types.h>
+#include <errno.h>
+#include <stdlib.h>
 
-#include <lib/dl.h>
+#include <lib/libdl.h>
 
-int dl_load_data(dl_data *data, const char *filename) {
-	FILE *fd = fopen(filename, "r");
-	if (fd == NULL) {
-		return -EINVAL;
-	}
+void dl_initialize_data(dl_data *data) {
+	data->globsym_count = 0;
 
-	return dl_init_data(data, fd);
+	data->element_list  = NULL;
+	data->globsym_table = NULL;
 }
 
-int dl_init_data(dl_data *data, FILE *fd) {
+int dl_add_file(dl_data *data, const char *filename) {
+	dl_element *element;
 	int err;
 
-	if (fd == NULL) {
-		return -EINVAL;
+	if (!(element = malloc(sizeof(dl_element)))) {
+		return -ENOMEM;
 	}
 
-	data->next = NULL;
-	data->fd = fd;
-
-	elf_initialize_object(data->obj);
-
-	if ((err = elf_read_header(fd, data->obj)) < 0) {
+	if ((err = dl_load_element(element, filename)) < 0) {
 		return err;
 	}
 
-	// FIXME: Other depends on type of elf
-
-	if ((err = elf_read_section_header_table(fd, data->obj)) < 0) {
-		return err;
-	}
-
-	if ((err = elf_read_symbol_table(fd, data->obj)) < 0) {
-		return err;
-	}
-
-	if ((err = elf_read_symbol_names(fd, data->obj)) < 0) {
-		return err;
-	}
+	element->next = data->element_list;
+	data->element_list = element;
 
 	return ENOERR;
 }
 
 void dl_finilize_data(dl_data *data) {
-	fclose(data->fd);
-	elf_finilize_obj(data->obj);
+	dl_element *element, *next;
+
+	if (data->globsym_table) free(data->globsym_table);
+	if (data->element_list) {
+		element = data->element_list;
+		while (element) {
+			next = element->next;
+			dl_finilize_element(element);
+			free(element);
+			element = next;
+		}
+	}
+
+	data->globsym_count = 0;
+	data->element_list  = NULL;
+	data->globsym_table = NULL;
 }

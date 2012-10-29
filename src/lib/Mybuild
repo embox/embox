@@ -9,6 +9,7 @@ static module LibElf {
 	source "elf/elf_string_table.c"
 	source "elf/elf_sym_table.c"
 	source "elf/elf_sym_names.c"
+	source "elf/elf_sym.c"
 	source "elf/elf_dyn_section.c"
 	source "elf/elf_rel.c"
 	source "elf/elf_rel_array.c"
@@ -18,6 +19,9 @@ static module LibElf {
 }
 
 static module LibDl {
+	source "dl/dl_data.c"
+	source "dl/dl_element.c"
+
 	source "dl/elf_reloc.c"
 	source "dl/elf_global_sym.c"
 	source "dl/elf_obj_link.c"

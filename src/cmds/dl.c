@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 #include <lib/libelf.h>
-#include <lib/dl.h>
+#include <lib/libdl.h>
 
 #include <string.h>
 #include <errno.h>

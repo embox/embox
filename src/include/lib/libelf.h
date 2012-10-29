@@ -85,6 +85,8 @@ extern int elf_read_symbol_table(FILE *fd, Elf32_Obj *obj);
 extern int elf_read_symbol_names(FILE *fd, Elf32_Obj *obj);
 extern int elf_read_dynamic_section(FILE *fd, Elf32_Obj *obj);
 
+extern Elf32_Addr elf_get_symbol_addr(Elf32_Obj *obj, Elf32_Sym *sym);
+
 extern int elf_read_rel_section(FILE *fd, Elf32_Obj *obj, Elf32_Shdr *sh,
 		Elf32_Rel **rel);
 extern void elf_remove_rel_section(Elf32_Rel *rel);

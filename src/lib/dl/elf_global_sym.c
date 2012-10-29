@@ -2,7 +2,7 @@
  * @file
  * @brief
  *
- * @date 26.10.2012
+ * @date 29.10.2012
  * @author Anton Bulychev
  */
 
@@ -13,15 +13,16 @@
 #include <stdlib.h>
 
 #include <lib/libelf.h>
-#include <lib/dl.h>
+#include <lib/libdl.h>
 
-int elf_fetch_global_symbols(Elf32_Data *data, Elf32_Globsym **globsym_table) {
+int dl_fetch_global_symbols(dl_data *data) {
+	dl_element *element = data->element_list;
 	Elf32_Obj *obj;
 	Elf32_Sym *sym;
 	int count = 0, p = 0;
 
-	for (int i = 0; i < 2; i++) {
-		obj = &data[i].obj;
+	while (element) {
+		obj = element->obj;
 		for (int j = 0; j < obj->sym_count; j++) {
 			sym = &obj->sym_table[j];
 
@@ -30,41 +31,54 @@ int elf_fetch_global_symbols(Elf32_Data *data, Elf32_Globsym **globsym_table) {
 				count++;
 			}
 		}
+
+		element = element->next;
 	}
 
-	*globsym_table = malloc(sizeof(Elf32_Globsym) * count);
+	data->globsym_count = count;
+	if (!(data->globsym_table = malloc(sizeof(dl_globsym) * count))) {
+		return -ENOMEM;
+	}
 
-	for (int i = 0; i < 2; i++) {
-		obj = &data[i].obj;
+
+	element = data->element_list;
+	while (element) {
+		obj = element->obj;
 		for (int j = 0; j < obj->sym_count; j++) {
 			sym = &obj->sym_table[j];
 
 			if ((ELF32_ST_BIND(sym->st_info) == STB_GLOBAL)
 				&& (sym->st_shndx != SHN_UNDEF)) {
-				*globsym_table[p++] = (Elf32_Globsym) {
+				data->globsym_table[p++] = (dl_globsym) {
 						.obj = obj,
 						.sym = sym,
 				};
 			}
 		}
+
+		element = element->next;
 	}
 
 	return count;
 }
 
-Elf32_Globsym *elf_find_global_symbol(const char *name) {
-	for (int i = 0; i < kernel.sym_count; i++) {
-		sym = &kernel.sym_table[i];
+dl_globsym *dl_find_global_symbol(dl_data *data, const char *name) {
+	Elf32_Obj *obj;
+	Elf32_Sym *sym;
+
+	for (int i = 0; i < data->globsym_count; i++) {
+		obj = data->globsym_table[i].obj;
+		sym = data->globsym_table[i].sym;
 		// FIXME:
 		if ((ELF32_ST_BIND(sym->st_info) == STB_GLOBAL)
-			&& (0 == strcmp(name, kernel.sym_names + sym->st_name))) {
-			// FIXME: if relocatable object - another address
-			return sym->st_value;
+			&& (0 == strcmp(name, obj->sym_names + sym->st_name))) {
+			return &data->globsym_table[i];
 		}
 	}
+
+	return NULL;
 }
 
-void finilize_global_symbols(Elf32_Globsym *globsym_table) {
-	free(globsym_table);
+Elf32_Addr dl_get_global_symbol_addr(dl_globsym *globsym) {
+	return elf_get_symbol_addr(globsym->obj, globsym->sym);
 }
-

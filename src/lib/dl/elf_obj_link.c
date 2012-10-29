@@ -2,28 +2,28 @@
  * @file
  * @brief
  *
- * @date 26.10.2012
+ * @date 29.10.2012
  * @author Anton Bulychev
  */
 
-#include <string.h>
 #include <errno.h>
 #include <types.h>
-
+#include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <lib/libelf.h>
-#include <lib/dl.h>
+#include <lib/libdl.h>
 
-Elf32_Data data[2];
+static dl_data data;
 
-static inline int elf_load_in_mem(Elf32_Data *data) {
+static inline int elf_load_in_mem(dl_element *element) {
 	Elf32_Shdr *sh;
 	Elf32_Addr addr;
 	size_t size = 0;
 
-	FILE *fd = data->fd;
-	Elf32_Obj *obj = &data->obj;
+	FILE *fd = element->fd;
+	Elf32_Obj *obj = element->obj;
 
 	for (int i = 0; i < obj->header->e_shnum; i++) {
 		size += obj->sh_table[i].sh_size;
@@ -54,6 +54,7 @@ static inline int elf_load_in_mem(Elf32_Data *data) {
 	return ENOERR;
 }
 
+#if 0
 static int inline load_reloc_elf(const char *name, const int num) {
 	Elf32_Obj *elf;
 	FILE *elf_file = fopen(name, "r");
@@ -88,44 +89,57 @@ static int inline load_reloc_elf(const char *name, const int num) {
 	return ENOERR;
 }
 
+#endif
+
 void finilize_reloc_elf(const int num) {
-	fclose(data[num].fd);
-	elf_finilize_object(&data[num].obj);
+//	fclose(data[num].fd);
+//	elf_finilize_object(&data[num].obj);
 }
 
 void finilize(void) {
-	finilize_reloc_elf(0);
-	finilize_reloc_elf(1);
+//	finilize_reloc_elf(0);
+//	finilize_reloc_elf(1);
 }
 
 int load(void) {
+	dl_element *element;
 	int err;
-	Elf32_Globsym *globsym_table;
 
-	load_reloc_elf("reloc1.o", 0);
-	load_reloc_elf("reloc2.o", 1);
+	dl_add_file(&data, "reloc1.o");
+	dl_add_file(&data, "reloc2.o");
 
-	if ((err = elf_load_in_mem(&data[0])) < 0) {
+	if ((err = dl_fetch_global_symbols(&data)) < 0) {
 		return err;
 	}
 
-	if ((err = elf_load_in_mem(&data[1])) < 0) {
-		return err;
-	}
+	element = data.element_list;
+	while (element) {
+		if (element->obj->header->e_type == ET_REL) {
+			elf_load_in_mem(element);
+			elf_relocate(element->fd, element->obj, &data);
+		} else {
+			return -ENOSYS;
+		}
 
-	if ((err = elf_fetch_global_symbols(data, &globsym_table))) {
-		return err;
+		element = element->next;
 	}
 
 	return ENOERR;
 }
 
 int __link_elf(void) {
+	int (*f_init)(void);
+	dl_globsym *globsym;
 	int err;
 
 	if ((err = load()) < 0) {
 		return err;
 	}
+
+	globsym = dl_find_global_symbol(&data, "init");
+	f_init = (int (*)(void)) dl_get_global_symbol_addr(globsym);
+
+	assert(f_init() == 3);
 
 	finilize();
 

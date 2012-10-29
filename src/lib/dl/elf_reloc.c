@@ -2,7 +2,7 @@
  * @file
  * @brief
  *
- * @date 26.10.2012
+ * @date 29.10.2012
  * @author Anton Bulychev
  */
 
@@ -11,7 +11,7 @@
 #include <types.h>
 
 #include <lib/libelf.h>
-#include <lib/dl.h>
+#include <lib/libdl.h>
 
 
 /* TODO: Replace it in arch!!! */
@@ -31,13 +31,14 @@
 int _global_outside = 3;
 
 static inline int elf_relocate_section_rel(FILE *fd, Elf32_Obj *obj,
-		Elf32_Shdr *relsh) {
+		Elf32_Shdr *relsh, dl_data *data) {
 
 	Elf32_Rel  *rel;
 	Elf32_Sym  *sym;
 	Elf32_Addr sym_addr;
 	Elf32_Addr *where;
 	Elf32_Shdr *sh_table = obj->sh_table;
+	dl_globsym *globsym;
 	int rel_count = elf_read_rel_section(fd, obj, relsh, &rel);
 
 	for (int i = 0 ; i < rel_count; i++) {
@@ -45,15 +46,13 @@ static inline int elf_relocate_section_rel(FILE *fd, Elf32_Obj *obj,
 				(sh_table[relsh->sh_info].sh_addr + rel[i].r_offset);
 		sym = &obj->sym_table[ELF32_R_SYM(rel[i].r_info)];
 		if (sym->st_shndx != SHN_UNDEF) {
-			sym_addr = sym->st_value;
-			if (obj->header->e_type == ET_REL) {
-				sym_addr += sh_table[sym->st_shndx].sh_addr;
-			}
+			sym_addr = elf_get_symbol_addr(obj, sym);
 		} else {
-//			if (!(sym_addr = find_symbol_addr(obj->sym_names + sym->st_name))) {
-//				return -ENOSYS;
-//			}
-			return -ENOSYS;
+			globsym = dl_find_global_symbol(data, obj->sym_names + sym->st_name);
+			if (globsym == NULL) {
+				return -ENOENT;
+			}
+			sym_addr = elf_get_symbol_addr(globsym->obj, globsym->sym);
 		}
 
 		switch (ELF32_R_TYPE(rel[i].r_info)) {
@@ -74,12 +73,12 @@ static inline int elf_relocate_section_rel(FILE *fd, Elf32_Obj *obj,
 }
 
 static inline int elf_relocate_section_rela(FILE *fd, Elf32_Obj *obj,
-		Elf32_Shdr *relash) {
+		Elf32_Shdr *relash, dl_data *data) {
 	/* Have not implemented yet */
 	return -ENOSYS;
 }
 
-int elf_relocate(FILE *fd, Elf32_Obj *obj) {
+int elf_relocate(FILE *fd, Elf32_Obj *obj, dl_data *data) {
 	Elf32_Shdr *sh;
 	int err;
 
@@ -88,12 +87,12 @@ int elf_relocate(FILE *fd, Elf32_Obj *obj) {
 
 		switch (sh->sh_type) {
 		case SHT_REL:
-			if ((err = elf_relocate_section_rel(fd, obj, sh)) < 0) {
+			if ((err = elf_relocate_section_rel(fd, obj, sh, data)) < 0) {
 				return err;
 			}
 			break;
 		case SHT_RELA:
-			if ((err = elf_relocate_section_rela(fd, obj, sh)) < 0) {
+			if ((err = elf_relocate_section_rela(fd, obj, sh, data)) < 0) {
 				return err;
 			}
 			break;
