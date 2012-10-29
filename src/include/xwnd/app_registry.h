@@ -25,7 +25,7 @@ struct xwnd_app_registry {
 };
 
 extern int xwnd_app_reg_init (void);
-extern struct xwnd_application * xwnd_app_create (void);
+extern struct xwnd_application * xwnd_app_create (void* (*entry_point) (void*));
 extern void xwnd_app_remove(void);
 extern int xwnd_app_put_message(int app_id, void * data, size_t size);
 extern int xwnd_app_set_msg_sem(void);

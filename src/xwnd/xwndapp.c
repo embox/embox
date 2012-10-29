@@ -57,8 +57,8 @@ int xwnd_app_main_loop (struct xwnd_application * app) {
 	return exit_status;
 }
 
-struct xwnd_application * xwnd_app_init (void) {
-	return xwnd_app_create();
+int xwnd_app_init (void) {
+	return 0;
 }
 
 int xwnd_app_quit (const struct xwnd_application * app, int exit_status) {

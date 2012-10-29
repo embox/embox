@@ -13,9 +13,6 @@
 #include <xwnd/event.h>
 #include <xwnd/window.h>
 
-//FIXME: this have to be removed
-#include <xwnd/test_app.h>
-
 #define XAPP_REG_DEF_CNT 256
 
 static struct xwnd_app_registry xapp_reg;
@@ -30,7 +27,7 @@ int xwnd_app_reg_init (void) {
 	return 0;
 }
 
-struct xwnd_application * xwnd_app_create (void) {
+struct xwnd_application * xwnd_app_create (void* (*entry_point) (void*)) {
 	struct xwnd_application * t_xapp;
 	struct xwnd_window * t_wnd;
 	int req_pipe[2], msg_pipe[2];
@@ -85,7 +82,7 @@ struct xwnd_application * xwnd_app_create (void) {
 	xwnd_app_send_sys_event(xapp_id, XWND_EV_DRAW);
 
 	//Now ready to start an application
-	xapp_tid = new_task(test_app_main, (void*)t_xapp, 0);
+	xapp_tid = new_task(entry_point, (void*)t_xapp, 0);
 	xapp_tid = xapp_tid;
 	return t_xapp;
 }

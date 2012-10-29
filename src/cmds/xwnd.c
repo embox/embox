@@ -16,6 +16,7 @@
 #include <xwnd/xwnd.h>
 #include <xwnd/bmp.h>
 #include <xwnd/app_registry.h>
+#include <xwnd/test_app.h>
 
 EMBOX_CMD(exec);
 
@@ -74,7 +75,7 @@ static int exec (int argc, char ** argv) {
 	}
 	else {
 		int err;
-		struct xwnd_application * app, *app2;
+		struct xwnd_application * app;
 
 		xwnd_init();
 
@@ -83,14 +84,9 @@ static int exec (int argc, char ** argv) {
 			printf ("AAAAA");
 			return 1;
 		}
-		app = xwnd_app_create();
+		app = xwnd_app_create(test_app_main);
 		if (!app) {
 			printf("BBBBBB");
-			return 1;
-		}
-		app2 = xwnd_app_create();
-		if (!app2) {
-			printf("asdasd");
 			return 1;
 		}
 		/*sleep(3);*/
