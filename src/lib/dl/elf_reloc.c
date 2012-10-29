@@ -12,7 +12,6 @@
 
 #include <lib/libelf.h>
 #include <lib/dl.h>
-#include <kernel/module.h>
 
 
 /* TODO: Replace it in arch!!! */
@@ -51,9 +50,10 @@ static inline int elf_relocate_section_rel(FILE *fd, Elf32_Obj *obj,
 				sym_addr += sh_table[sym->st_shndx].sh_addr;
 			}
 		} else {
-			if (!(sym_addr = find_symbol_addr(obj->sym_names + sym->st_name))) {
-				return -ENOSYS;
-			}
+//			if (!(sym_addr = find_symbol_addr(obj->sym_names + sym->st_name))) {
+//				return -ENOSYS;
+//			}
+			return -ENOSYS;
 		}
 
 		switch (ELF32_R_TYPE(rel[i].r_info)) {

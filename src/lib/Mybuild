@@ -19,6 +19,8 @@ static module LibElf {
 
 static module LibDl {
 	source "dl/elf_reloc.c"
+	source "dl/elf_global_sym.c"
+	source "dl/elf_obj_link.c"
 }
 
 static module LibCDiagnostic {

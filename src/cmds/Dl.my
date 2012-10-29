@@ -1,0 +1,25 @@
+package embox.cmd
+
+@Cmd(name = "dl",
+	help = "Loads ELF binaries",
+	man = '''
+		NAME
+			dl - Loads ELF binaries
+		SYNOPSIS
+			dl
+		DESCRIPTION
+			Loads ELF binaries
+		AUTHORS
+			Anton Bulychev
+	''')
+module dl {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "dl.c"
+
+	depends embox.lib.LibC
+	depends embox.fs.core
+	depends embox.lib.LibDl
+	depends embox.lib.LibElf
+	depends embox.framework.LibFramework
+}
