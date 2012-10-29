@@ -40,15 +40,20 @@ int parse_http(char * request, struct http_request * parsed_request) {
 
 int check_firstline (char * request){
 
-	char* command_pattern = "(GET|HEAD)";
-	char* domain_pattern = "(([a-z0-9]([a-z0-9-]*[a-z0-9])*\\.)+[a-z]{2,})";
-	char* ip4_pattern = "((\\d{1,3}\\.){3}\\d{1,3})";
-	char* proto_pattern = "(HTTP/1\\.1)";
+	char *command_pattern = "(GET|HEAD)";
+	char *domain_pattern = "(([\\w]([-\\w]*[\\w])*\\.)+[\\a]{2,})";
+	char *ip4_pattern = "((\\d{1,3}\\.){3}\\d{1,3})";
+	char *port_pattern = "(:\\d+)";
+	char *path_pattern = "(/[-\\w_.~+]*)*";
+	char *query_string = "(\\?[-\\w%%_.,~+=&;]*)";
+	char *fragment_pattern = "(#[-\\w_]*)";
+	char *proto_pattern = "(HTTP/1\\.1)";
 	const TRexChar *error = NULL;
 	TRex *trex;
 	char pattern[256];
 
-	sprintf(pattern, "^%s\\s(%s|%s)\\s%s", command_pattern, domain_pattern, ip4_pattern, proto_pattern);
+	sprintf(pattern, "^%s\\s((%s|%s)%s?)?%s%s?%s?\\s%s$", command_pattern, domain_pattern,
+			ip4_pattern, port_pattern, path_pattern, query_string, fragment_pattern, proto_pattern);
 	trex = trex_compile(_TREXC(pattern), &error);
 		if (trex) {
 			const TRexChar *begin, *end;
