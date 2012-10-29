@@ -558,4 +558,3 @@ int dns_result_free(struct dns_result *result) {
 	free(result->ar);
 	return 0;
 }
-

@@ -109,4 +109,3 @@ int ungetc(int ch, FILE *file) {
 	file->has_ungetc = 1;
 	return ch;
 }
-

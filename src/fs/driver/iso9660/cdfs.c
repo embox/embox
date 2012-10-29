@@ -39,14 +39,12 @@
  * SUCH DAMAGE.
  */
 
-#include <fs/iso9660.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <unistd.h>
 #include <types.h>
-/*#include <fs/fs_drv.h> */
 #include <fs/node.h>
 #include <fs/vfs.h>
+#include <fs/iso9660.h>
 #include <fs/mount.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -54,7 +52,6 @@
 #include <stdlib.h>
 #include <embox/block_dev.h>
 #include <embox/buff.h>
-//#include <mem/kmalloc.h>
 #include <mem/misc/pool.h>
 #include <net/in.h>
 #include <kernel/time/ktime.h>

@@ -51,30 +51,31 @@ static match_rule_t rule_get_by_id(net_node_t node, char *id);
 /* macros to get graph, node or rule by it name */
 
 #define get_graph(graph, name, error) \
-		if (NULL == (graph = get_graph_by_name(name))) { \
-			printf("%s: no such graph \n", name);		 \
-			return -error;								 \
-		}
+	if (NULL == (graph = get_graph_by_name(name))) { \
+		printf("%s: no such graph \n", name);    \
+		return -error;                           \
+	}
 
 #define get_node_from_graph(graph, node, node_name, error) \
-		if (NULL == (node = get_node_from_graph_by_name(graph, node_name))) {   \
-			printf("%s: no such node in graph '%s'\n", node_name, graph->name); \
-			return -error;														\
-		}
+	if (NULL == (node = get_node_from_graph_by_name(graph, node_name))) { \
+		printf("%s: no such node in graph '%s'\n",                    \
+			node_name, graph->name);                              \
+		return -error;					              \
+	}
 
 #define get_node_from_repo(node, name, error) \
-		if (NULL == (node = pnet_get_module(name))) { \
-			if (NULL == (node = pnet_get_dev_by_name(name))) { \
-				printf("%s: no such node \n", name);	 \
-				return -error;						 \
-			}										 \
-		}
+	if (NULL == (node = pnet_get_module(name))) {              \
+		if (NULL == (node = pnet_get_dev_by_name(name))) { \
+			printf("%s: no such node \n", name);       \
+			return -error;                             \
+		}                                                  \
+	}
 
 #define get_rule_from_node(node, rule, rule_name, error) \
-		if (NULL == (rule = rule_get_by_id(node, rule_name))) { \
-			printf("%s: no such rule \n", rule_name);				 \
-			return -error;										 \
-		}
+	if (NULL == (rule = rule_get_by_id(node, rule_name))) { \
+		printf("%s: no such rule \n", rule_name);       \
+		return -error;                                  \
+	}
 
 struct rule {
 	char *option;
@@ -82,10 +83,10 @@ struct rule {
 };
 
 static struct rule rule_setters[RULE_OPTION_QUANTITY] = {
-		{.option = "--mac",      .setter = rule_set_mac},
-		{.option = "--ip",       .setter = rule_set_ip},
-		{.option = "--node",     .setter = rule_set_next_node},
-		{.option = "--priority", .setter = rule_set_priority},
+	{.option = "--mac",      .setter = rule_set_mac},
+	{.option = "--ip",       .setter = rule_set_ip},
+	{.option = "--node",     .setter = rule_set_next_node},
+	{.option = "--priority", .setter = rule_set_priority},
 };
 
 static void print_usage(void) {
@@ -171,7 +172,7 @@ static int print_graph(char **argv) {
 		printf("%s (%s)\n", root->name, "no protocol node");
 	}
 	while (NULL != node) {
-		if(node->proto) {
+		if (node->proto) {
 			printf("%s (type: %s)\n", node->name, node->proto->name);
 		} else {
 			printf("%s (%s)\n", node->name, "no protocol");
@@ -234,7 +235,7 @@ static int add_node(char **argv) {
 		return res;
 	}
 
-	if(*argv[5]) {
+	if (*argv[5]) {
 		name  = malloc(strlen(argv[5]));
 		strcpy(name, argv[5]);
 		node->name = name;
@@ -414,7 +415,6 @@ static int exec(int argc, char **argv) {
 	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "hgnt:d:p:r:s:a:l:"))) {
-
 		switch(opt) {
 		case 'h':
 			print_usage();

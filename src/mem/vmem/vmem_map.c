@@ -112,6 +112,7 @@ int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vme
 				return -ENOMEM;
 			}
 			mmu_pte_set(pte + pte_idx, (mmu_paddr_t) addr);
+			vmem_set_pte_flags(pte + pte_idx, flags);
 		}
 
 		virt_addr += MMU_PAGE_SIZE;
@@ -120,3 +121,38 @@ int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vme
 	return ENOERR;
 }
 
+int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t flags) {
+	size_t pgd_idx, pmd_idx, pte_idx;
+	mmu_pgd_t *pgd;
+	mmu_pmd_t *pmd;
+	mmu_pte_t *pte;
+
+	// Actually, this is unnecessary
+	virt_addr = virt_addr & (~MMU_PAGE_MASK);
+
+	pgd = mmu_get_root(ctx);
+
+	pgd_idx = ((uint32_t) virt_addr & MMU_PGD_MASK) >> MMU_PGD_SHIFT;
+	pmd_idx = ((uint32_t) virt_addr & MMU_PMD_MASK) >> MMU_PMD_SHIFT;
+	pte_idx = ((uint32_t) virt_addr & MMU_PTE_MASK) >> MMU_PTE_SHIFT;
+
+	if (!mmu_pgd_present(pgd + pgd_idx)) {
+		return -ENOENT;
+	}
+
+	pmd = mmu_pgd_value(pgd + pgd_idx);
+
+	if (!mmu_pmd_present(pmd + pmd_idx)) {
+		return -ENOENT;
+	}
+
+	pte = mmu_pmd_value(pmd + pmd_idx);
+
+	if (!mmu_pte_present(pte + pte_idx)) {
+		return -ENOENT;
+	}
+
+	vmem_set_pte_flags(pte + pte_idx, flags);
+
+	return ENOERR;
+}

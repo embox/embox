@@ -31,4 +31,3 @@ int open(const char *path, int __oflag, ...) {
 
 	return task_self_idx_alloc(&task_idx_ops_file, kfile);
 }
-

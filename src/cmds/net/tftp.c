@@ -102,7 +102,8 @@ static int close_socket(int sock) {
 	return 0;
 }
 
-static int make_remote_addr(char *hostname, struct sockaddr *out_raddr, socklen_t *out_raddr_len) {
+static int make_remote_addr(char *hostname,
+		struct sockaddr *out_raddr, socklen_t *out_raddr_len) {
 	int ret;
 	struct sockaddr_in *raddr_in;
 
@@ -121,15 +122,15 @@ static int make_remote_addr(char *hostname, struct sockaddr *out_raddr, socklen_
 	return 0;
 }
 
-static char * get_file_mode_r(char binary_on) {
+static char *get_file_mode_r(char binary_on) {
 	return binary_on ? "rb" : "r";
 }
 
-/*static*/ char * get_file_mode_w(char binary_on) {
+static char *get_file_mode_w(char binary_on) {
 	return binary_on ? "wb" : "w";
 }
 
-static char * get_transfer_mode(char binary_on) {
+static char *get_transfer_mode(char binary_on) {
 	return binary_on ? "octet" : "netascii";
 }
 
@@ -182,7 +183,8 @@ static int write_file(FILE *fp, char *data, size_t data_sz) {
 	return 0;
 }
 
-static int tftp_build_msg_cmd(struct tftp_msg *msg, size_t *msg_len, uint16_t type, char *filename, char *mode) {
+static int tftp_build_msg_cmd(struct tftp_msg *msg, size_t *msg_len,
+		uint16_t type, char *filename, char *mode) {
 	char *ptr;
 	size_t sz;
 
@@ -202,7 +204,8 @@ static int tftp_build_msg_cmd(struct tftp_msg *msg, size_t *msg_len, uint16_t ty
 	return 0;
 }
 
-static int tftp_build_msg_data(struct tftp_msg *msg, size_t *msg_len, FILE *fp, uint16_t block_num) {
+static int tftp_build_msg_data(struct tftp_msg *msg, size_t *msg_len,
+		FILE *fp, uint16_t block_num) {
 	int ret;
 	size_t bytes = 0;
 
@@ -241,8 +244,6 @@ static int msg_with_correct_len(struct tftp_msg *msg, size_t msg_len) {
 	left_sz -= field_sz;
 
 	switch (ntohs(msg->opcode)) {
-	default: /* unknown operation */
-		return 0;
 	case RRQ:
 	case WRQ:
 		tmp = &msg->op.cmd.name_and_mode[0];
@@ -280,6 +281,8 @@ static int msg_with_correct_len(struct tftp_msg *msg, size_t msg_len) {
 			if (left_sz-- == 0) return 0;
 		while (*tmp++ != '\0');
 		break;
+	default: /* unknown operation */
+		return 0;
 	}
 
 	return !left_sz;
@@ -314,7 +317,6 @@ static int tftp_msg_recv(struct tftp_msg *msg, size_t *msg_len, int sock,
 		}
 
 	} while (--times && ret <= 0);
-
 
 	*msg_len = (size_t)ret;
 
@@ -357,8 +359,6 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 
 		/* handling of the reply msg */
 		switch (ntohs(rcv.opcode)) {
-		default:
-			goto send_msg;
 		case ACK:
 			if (ntohs(rcv.op.ack.block_num) != pkg_number) {
 				goto send_msg; /* invalid acknowledgement, send again */
@@ -368,6 +368,8 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 			fprintf(stderr, "%s: error: code=%d, msg='%s`\n",
 					hostname, (int)ntohs(rcv.op.err.error_code), &rcv.op.err.error_msg[0]);
 			goto error;
+		default:
+			goto send_msg;
 		}
 
 		/* whether we have more data to transfer? */
@@ -437,8 +439,6 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
 
 		/* handling of the reply msg */
 		switch (ntohs(rcv.opcode)) {
-		default:
-			goto send_msg;
 		case DATA:
 			if (ntohs(rcv.op.ack.block_num) != pkg_number + 1) {
 				goto send_msg; /* invalid data package, send again */
@@ -450,8 +450,10 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
 			break;
 		case ERROR:
 			fprintf(stderr, "%s: error: code=%d, msg='%s`\n",
-					hostname, (int)ntohs(rcv.op.err.error_code), &rcv.op.err.error_msg[0]);
+				hostname, (int)ntohs(rcv.op.err.error_code), &rcv.op.err.error_msg[0]);
 			goto error;
+		default:
+			goto send_msg;
 		}
 
 		/* send ack */
@@ -467,10 +469,17 @@ send_msg:
 	} while ((pkg_number == 0) || (rcv_len == sizeof rcv));
 
 	ret = close_file(fp);
-	if (ret != 0) { fp = NULL; goto error; }
+	if (ret != 0) {
+		fp = NULL;
+		goto error;
+	}
 
 	ret = close_socket(sock);
-	if (ret != 0) { sock = -1; fp = NULL; goto error; }
+	if (ret != 0) {
+		sock = -1;
+		fp = NULL;
+		goto error;
+	}
 
 	fprintf(stdout, "File '%s` was transferred\n", filename);
 
@@ -554,4 +563,3 @@ static int exec(int argc, char **argv) {
 
 	return 0;
 }
-

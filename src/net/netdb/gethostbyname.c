@@ -127,4 +127,3 @@ struct hostent * gethostbyname(const char *hostname) {
 	/* 3. Finally, try to get answer from nameserver */
 	return get_hostent_from_net(hostname);
 }
-

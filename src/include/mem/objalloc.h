@@ -1,6 +1,5 @@
 /**
- * @file mem/objalloc.h
- *
+ * @file
  * @brief Memory allocation API.
  *
  * @details TODO

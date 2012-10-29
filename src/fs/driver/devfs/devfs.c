@@ -13,8 +13,10 @@
 #include <fs/vfs.h>
 #include <util/array.h>
 #include <embox/device.h>
+#include <embox/block_dev.h>
 
 ARRAY_SPREAD_DEF(const device_module_t, __device_registry);
+ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);
 
 static const fs_drv_t devfs_drv;
 
@@ -36,16 +38,25 @@ static int devfs_mount(void *par) {
 	node_t *nod, *devnod;
 	size_t i;
 
-	if (NULL == (nod = vfs_add_path("/dev", NULL))) {
-		return 0;/*folder already exist*/
+	if (NULL == (nod = vfs_find_node("/dev", NULL))) {
+		if (NULL == (nod = vfs_add_path("/dev", NULL))) {
+			return 0;
+		}
 	}
-
-	/* get_ide_drive(); */
 
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__device_registry); i++) {
 		if (NULL != (devnod = vfs_add_path(__device_registry[i].name, nod))) {
+			if(NULL != __device_registry[i].init) {
+				__device_registry[i].init();
+			}
 			devnod->file_info = (void*) __device_registry[i].fops;
 			devnod->fs_type = (fs_drv_t *) &devfs_drv;
+		}
+	}
+
+	for (i = 0; i < ARRAY_SPREAD_SIZE(__block_dev_registry); i++) {
+		if (NULL != __block_dev_registry[i].dev_drv->create) {
+			__block_dev_registry[i].dev_drv->create(NULL);
 		}
 	}
 

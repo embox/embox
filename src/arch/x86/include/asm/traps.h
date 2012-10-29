@@ -62,12 +62,16 @@ typedef struct pt_regs {
 
 	/* Pushed at the very beginning of entry. */
 	uint32_t trapno;
+
+	/* In some cases pushed by processor, in some - by us. */
 	uint32_t err;
 
 	/* Pushed by processor. */
 	uint32_t eip;
 	uint32_t cs;
 	uint32_t eflags;
+
+	/* Pushed by processor, if switching of rings occurs. */
 	uint32_t esp;
 	uint32_t ss;
 } pt_regs_t;
@@ -78,18 +82,26 @@ extern void gdt_init(void);
 
 #else
 
+/* Use for exception which doesn't push error code. */
 #define EXCEPTION(n, name)  \
-	.globl name        ;\
+	.globl name            ;\
 name:                      ;\
-	pushl	$(0)       ;\
-	pushl	$(n)       ;\
+	pushl	$(0)           ;\
+	pushl	$(n)           ;\
+	jmp	excep_stub
+
+/* Use for exception which pushes error code. */
+#define EXCEPTION_ERR(n, name)  \
+	.globl name                ;\
+name:                          ;\
+	pushl	$(n)               ;\
 	jmp	excep_stub
 
 #define IRQ_ENTRY(n)      \
-	.globl irq##n    ;\
+	.globl irq##n        ;\
 irq##n:                  ;\
-	pushl   $(0)     ;\
-	pushl   $(32 + n);\
+	pushl   $(0)         ;\
+	pushl   $(32 + n)    ;\
 	jmp     irq_stub
 
 #endif /* __ASSEMBLER__ */

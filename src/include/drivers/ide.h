@@ -34,7 +34,6 @@
 /*
  * Controller registers
  */
-
 #define HDC_DATA                0x0000
 #define HDC_ERR                 0x0001
 #define HDC_FEATURE             0x0001
@@ -52,7 +51,6 @@
 /*
  * Drive commands
  */
-
 #define HDCMD_NULL              0x00
 #define HDCMD_IDENTIFY          0xEC
 #define HDCMD_RESET             0x10
@@ -72,7 +70,6 @@
 /*
  * Controller status
  */
-
 #define HDCS_ERR                0x01   /* Error */
 #define HDCS_IDX                0x02   /* Index */
 #define HDCS_CORR               0x04   /* Corrected data */
@@ -85,7 +82,6 @@
 /*
  * Device control
  */
-
 #define HDDC_HD15               0x00  /* Use 4 bits for head (not used, was 0x08) */
 #define HDDC_SRST               0x04  /* Soft reset */
 #define HDDC_NIEN               0x02  /* Disable interrupts */
@@ -93,7 +89,6 @@
 /*
  * Feature commands
  */
-
 #define HDFEAT_ENABLE_WCACHE    0x02  /* Enable write caching */
 #define HDFEAT_XFER_MODE        0x03  /* Set transfer mode */
 #define HDFEAT_DISABLE_RLA      0x55  /* Disable read-lookahead */
@@ -103,7 +98,6 @@
 /*
  * Transfer modes
  */
-
 #define HDXFER_MODE_PIO         0x00
 #define HDXFER_MODE_WDMA        0x20
 #define HDXFER_MODE_UDMA        0x40
@@ -111,7 +105,6 @@
 /*
  * Controller error conditions
  */
-
 #define HDCE_AMNF               0x01   /* Address mark not found */
 #define HDCE_TK0NF              0x02   /* Track 0 not found */
 #define HDCE_ABRT               0x04   /* Abort */
@@ -124,7 +117,6 @@
 /*
  * Timeouts (in ms)
  */
-
 #define HDTIMEOUT_DRDY          5
 #define HDTIMEOUT_DRQ           5
 #define HDTIMEOUT_CMD           1
@@ -134,7 +126,6 @@
 /*
  * Drive interface types
  */
-
 #define HDIF_NONE               0
 #define HDIF_PRESENT            1
 #define HDIF_UNKNOWN            2
@@ -144,7 +135,6 @@
 /*
  * IDE media types
  */
-
 #define IDE_FLOPPY              0x00
 #define IDE_TAPE                0x01
 #define IDE_CDROM               0x05
@@ -155,7 +145,6 @@
 /*
  * ATAPI commands
  */
-
 #define ATAPI_CMD_REQUESTSENSE  0x03
 #define ATAPI_CMD_READCAPICITY  0x25
 #define ATAPI_CMD_READ10        0x28
@@ -163,7 +152,6 @@
 /*
  * Transfer type
  */
-
 #define HD_XFER_IDLE            0
 #define HD_XFER_READ            1
 #define HD_XFER_WRITE           2
@@ -173,7 +161,6 @@
 /*
  * Bus master registers
  */
-
 #define BM_COMMAND_REG          0      /* Offset to command reg */
 #define BM_STATUS_REG           2      /* Offset to status reg */
 #define BM_PRD_ADDR             4      /* Offset to PRD addr reg */
@@ -181,7 +168,6 @@
 /*
  * Bus master command register flags
  */
-
 #define BM_CR_STOP              0x00   /* Stop transfer */
 #define BM_CR_START             0x01   /* Start transfer */
 #define BM_CR_READ              0x00   /* Read from memory */
@@ -190,7 +176,6 @@
 /*
  * Bus master status register flags
  */
-
 #define BM_SR_ACT               0x01   /* Active */
 #define BM_SR_ERR               0x02   /* Error */
 #define BM_SR_INT               0x04   /* INTRQ signal asserted */
@@ -201,7 +186,6 @@
 /*
  * Parameters returned by read drive parameters command
  */
-
 struct hdparam  {
 	unsigned short config;               /* General configuration bits */
 	unsigned short cylinders;            /* Cylinders */
@@ -295,11 +279,6 @@ struct prd {
 };
 
 typedef struct hdc  {
-	/* mutex lock;*/                          /* Controller mutex */
-	/* struct event ready; */                 /* Controller interrupt event */
-	/* struct interrupt intr;  */             /* Interrupt object */
-	/* struct dpc xfer_dpc;   */              /* DPC for data transfer */
-
 	int status;                          /* Controller status */
 
 	int iobase;                          /* I/O port registers base address */

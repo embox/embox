@@ -10,7 +10,16 @@
 #include <kernel/panic.h>
 #include <kernel/irq.h>
 
+#include <asm/hal/env/traps_core.h>
+
+__trap_handler __exception_table[0x20];
+
 fastcall void exception_handler(pt_regs_t *st) {
+	if(NULL != __exception_table[st->trapno]) {
+		__exception_table[st->trapno](st->trapno, NULL);
+		return;
+	}
+
 	panic("EXCEPTION [0x%x]:\n"
 		"EAX=%08x ECX=%08x ECX=%08x EDX=%08x\n"
 		"GS=%08x FS=%08x ES=%08x DS=%08x\n"

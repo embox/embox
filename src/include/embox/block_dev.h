@@ -57,6 +57,7 @@ typedef struct block_dev_driver {
 	char *name;
 	int type;
 
+	int (*create)(void *args);
 	int (*ioctl)(block_dev_t *dev, int cmd, void *args, size_t size);
 	int (*read)(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno);
 	int (*write)(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno);
@@ -64,8 +65,13 @@ typedef struct block_dev_driver {
 
 extern block_dev_t *devtab[64];
 
-/* extern const block_dev_module_t __block_dev_registry[]; */
-/* extern block_dev_module_t *block_dev_find(char *name); */
+typedef struct block_dev_module {
+	const char * name;
+	block_dev_driver_t *dev_drv;
+} block_dev_module_t;
+
+extern const block_dev_module_t __block_dev_registry[];
+extern block_dev_module_t *block_dev_find(char *name);
 
 extern int dev_read(dev_t devno, char *buffer, size_t count, blkno_t blkno);
 extern int dev_write(dev_t devno, char *buffer, size_t count, blkno_t blkno);
@@ -77,9 +83,7 @@ extern dev_t devno(char *name);
 extern dev_t dev_open(char *name);
 extern int dev_close(dev_t devno);
 
-/*
-#define EMBOX_BLOCK_DEV(name, block_dev_operations) \
-	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_operations})
-*/
+#define EMBOX_BLOCK_DEV(name, block_dev_driver) \
+	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver})
 
 #endif /* BLOCK_DEV_H_ */

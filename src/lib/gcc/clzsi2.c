@@ -17,4 +17,3 @@ int32_t __clzsi2(int32_t a) {
 
 	return i;
 }
-

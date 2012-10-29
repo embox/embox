@@ -134,4 +134,3 @@ static void priority_uninherit(struct thread *t) {
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 	sched_change_scheduling_priority(t, t->initial_priority);
 }
-

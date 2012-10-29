@@ -33,7 +33,7 @@ static void print_usage(void) {
 
 static int exec(int argc, char **argv) {
 	int opt, ret;
-	int cnt = 4, cnt_resp = 0, i;
+	size_t cnt = 4, cnt_resp = 0;
 	in_device_t *in_dev = inet_dev_find_by_name("eth0");
 	unsigned char hln = ETH_ALEN, pln = IP_ADDR_LEN;
 	unsigned char sha[MAX_ADDR_LEN], tha[MAX_ADDR_LEN];
@@ -65,7 +65,7 @@ static int exec(int argc, char **argv) {
 		default:
 			return 0;
 		}
-	};
+	}
 
 	if (argc == 1) {
 		print_usage();
@@ -91,7 +91,7 @@ static int exec(int argc, char **argv) {
 
 	printf("RARPING %s from %s(%s) %s\n", &tha_str[0], &sha_str[0],
 		&spa_str[0], in_dev->dev->name);
-	for (i = 1; i <= cnt; i++) {
+	for (size_t i = 1; i <= cnt; i++) {
 		neighbour_del(&tha[0], hln, NULL, 0, in_dev->dev);
 		rarp_send(RARP_OPER_REQUEST, ETH_P_IP, hln, pln, &sha[0], NULL,
 			&tha[0], NULL, NULL, in_dev->dev);
@@ -109,4 +109,3 @@ static int exec(int argc, char **argv) {
 
 	return 0;
 }
-

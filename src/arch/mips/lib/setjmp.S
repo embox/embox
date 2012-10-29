@@ -56,5 +56,3 @@ LEAF(longjmp)
 	move $v0, $a1            /* return value of second argument */
 	j    $ra
 END(longjmp)
-
-

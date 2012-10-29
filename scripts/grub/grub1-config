@@ -1,0 +1,4 @@
+
+title  Embox
+root   (hd0,0)
+kernel /boot/embox

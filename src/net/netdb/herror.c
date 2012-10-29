@@ -24,4 +24,3 @@ const char * hstrerror(int err) {
 void herror(const char *msg) {
 	fprintf(stderr, "%s: %s\n", msg, hstrerror(h_errno));
 }
-

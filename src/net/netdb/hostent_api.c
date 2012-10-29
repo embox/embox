@@ -109,4 +109,3 @@ int hostent_add_addr(struct hostent *he, const void *addr) {
 
 	return 0;
 }
-

@@ -7,8 +7,8 @@
  */
 
 #include <lib/libelf.h>
-#include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 static inline void elf_reverse_header(Elf32_Ehdr *header) {
 	REVERSE_S(header->e_type);
@@ -27,21 +27,28 @@ static inline void elf_reverse_header(Elf32_Ehdr *header) {
 }
 
 int elf_read_header(FILE *fd, Elf32_Obj *obj) {
-	obj->header = malloc(sizeof(Elf32_Ehdr));
-	if (!fread(obj->header, sizeof(Elf32_Ehdr), 1, fd)) return -1;
+	size_t size = sizeof(Elf32_Ehdr);
+
+	if (!(obj->header = malloc(size))) {
+		return -ENOMEM;
+	}
+
+	if (size != fread(obj->header, size, 1, fd)) {
+		return -EBADF;
+	}
 
 	if ((obj->header)->e_ident[EI_MAG0] != ELFMAG0 ||
 			(obj->header)->e_ident[EI_MAG1] != ELFMAG1 ||
 			(obj->header)->e_ident[EI_MAG2] != ELFMAG2 ||
 			(obj->header)->e_ident[EI_MAG3] != ELFMAG3) {
-                return -1;
+                return -EBADF;
 	}
 
-	obj->need_reverse = NEED_REV(obj->header->e_ident[EI_DATA]);
+	obj->need_reverse = NEED_REVERSE(obj->header->e_ident[EI_DATA]);
 
 	if (obj->need_reverse) {
 		elf_reverse_header(obj->header);
 	}
 
-	return 1;
+	return ENOERR;
 }

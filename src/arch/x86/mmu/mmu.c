@@ -20,43 +20,37 @@
 static mmu_pgd_t *ctx_table[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_counter = 0;
 
-
-static inline void set_cr3(unsigned int pagedir)
-{
-   asm ("mov %0, %%cr3": :"r" (pagedir));
+static inline void set_cr3(unsigned int pagedir) {
+	asm ("mov %0, %%cr3": :"r" (pagedir));
 }
 
-static inline unsigned int get_cr3(void)
-{
-   unsigned int _cr3;
+static inline unsigned int get_cr3(void) {
+	unsigned int _cr3;
 
-   asm ("mov %%cr3, %0":"=r" (_cr3));
-   return _cr3;
+	asm ("mov %%cr3, %0":"=r" (_cr3));
+	return _cr3;
 }
 
-static inline void set_cr0(unsigned int val)
-{
-   asm ("mov %0, %%cr0" : :"r" (val));
+static inline void set_cr0(unsigned int val) {
+	asm ("mov %0, %%cr0" : :"r" (val));
 }
 
+static inline unsigned int get_cr0(void) {
+	unsigned int _cr0;
 
-static inline unsigned int get_cr0(void)
-{
-   unsigned int _cr0;
-
-   asm ("mov %%cr0, %0":"=r" (_cr0));
-   return _cr0;
+	asm ("mov %%cr0, %0":"=r" (_cr0));
+	return _cr0;
 }
 
 static inline unsigned int get_cr2(void) {
-    unsigned int _cr2;
+	unsigned int _cr2;
 
-    asm ("mov %%cr2, %0":"=r" (_cr2):);
-    return _cr2;
+	asm ("mov %%cr2, %0":"=r" (_cr2):);
+	return _cr2;
 }
 
 void mmu_flush_tlb_single(unsigned long addr) {
-   asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
+	asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
 }
 
 void mmu_flush_tlb(void) {
@@ -64,11 +58,11 @@ void mmu_flush_tlb(void) {
 }
 
 void mmu_on(void) {
-    set_cr0(get_cr0() | X86_CR0_PG);
+	set_cr0(get_cr0() | X86_CR0_PG | X86_CR0_WP);
 }
 
 void mmu_off(void) {
-	set_cr0(get_cr0() & ~X86_CR0_PG);
+	set_cr0(get_cr0() & ~X86_CR0_PG & ~X86_CR0_WP);
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {

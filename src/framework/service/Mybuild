@@ -5,6 +5,6 @@ module service {
 	 * Unused module
 	 */
 	/*FIXME mybuild make flags options */
-    @DefineMacro("__FRAMEWORK__")
+	@DefineMacro("__FRAMEWORK__")
 	source "callback.c"
 }

@@ -77,4 +77,3 @@ static int unit_init(void) {
 
 	return netdev_register(loopback_dev);
 }
-

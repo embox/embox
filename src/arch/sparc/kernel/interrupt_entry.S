@@ -67,4 +67,3 @@ interrupt_entry:
 	 nop; nop; nop;
 
 	RESTORE_ALL
-

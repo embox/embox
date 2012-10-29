@@ -14,7 +14,7 @@ module locore extends embox.arch.locore {
 	 * 1.it use multiboot.c (called from boot.S)
 	 * 2.it depends from arch (called from exception_handler.c)
 	 */
-    @IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "boot.S", "idt.c", "exception_entry.S", "irq_handler.c"
 	source "gdt.c", "gdt_flush.S"
 	source "ipl.c", "exception_handler.c", "traps_core.c"

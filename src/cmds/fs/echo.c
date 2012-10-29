@@ -1,5 +1,5 @@
 /**
- * @file echo.c
+ * @file
  * @brief
  *
  * @date 25.04.2012

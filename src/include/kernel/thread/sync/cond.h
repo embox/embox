@@ -25,4 +25,3 @@ extern void cond_signal(cond_t *c);
 extern void cond_broadcast(cond_t *c);
 
 #endif /* KERNEL_THREAD_SYNC_COND_H_ */
-

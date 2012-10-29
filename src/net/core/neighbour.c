@@ -256,4 +256,3 @@ int neighbour_foreach(neighbour_foreach_handler_t func, void *args) {
 
 	return ENOERR;
 }
-

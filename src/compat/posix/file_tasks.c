@@ -103,6 +103,13 @@ int ioctl(int fd, int request, ...) {
 
 	va_start(args, request);
 
+	/* POSIX says, that this way to make read/write nonblocking is old
+	 * and recommend use fcntl(fd, O_NONBLOCK, ...)
+	 * */
+	if (request == FIONBIO && va_arg(args, int) != 0) {
+		fcntl(fd, F_SETFD, fcntl(fd, F_GETFD) | O_NONBLOCK);
+	}
+
 	if (NULL == ops->ioctl) {
 		ret = -1;
 	} else {

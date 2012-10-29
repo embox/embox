@@ -289,4 +289,3 @@ int arp_rcv(struct sk_buff *skb, struct net_device *dev,
 static int arp_init(void) {
 	return ENOERR;
 }
-

@@ -56,4 +56,3 @@ int trace_block_diff(struct __trace_block *tb) {
 int trace_point_get_value(struct __trace_point *tp) {
 	return tp->count;
 }
-

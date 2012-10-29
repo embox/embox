@@ -108,6 +108,16 @@ static int udp_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	return 0;
 }
 
+static int udp_setsockopt(struct sock *sk, int level, int optname,
+			char *optval, int optlen) {
+	return ENOERR;
+}
+
+static int udp_getsockopt(struct sock *sk, int level, int optname,
+			char *optval, int *optlen) {
+	return ENOERR;
+}
+
 #if 0
 int udp_disconnect(struct sock *sk, int flags) {
         return 0;
@@ -122,5 +132,7 @@ const struct proto udp_prot = {
 	.backlog_rcv = udp_queue_rcv_skb,
 	.hash        = udp_hash,
 	.unhash      = udp_unhash,
+	.setsockopt  = udp_setsockopt,
+	.getsockopt  = udp_getsockopt,
 	.obj_size    = sizeof(struct udp_sock),
 };

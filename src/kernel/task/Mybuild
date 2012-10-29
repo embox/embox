@@ -2,7 +2,7 @@ package embox.kernel.task
 
 @DefaultImpl(single)
 abstract module api {
-	option number max_resource_size = 256
+	option number max_resource_size = 1024
 }
 
 module task_environment { }
@@ -27,7 +27,20 @@ module task_table {
 	depends embox.util.idx_table
 }
 
-module signal {
+module std_signal {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "std_signal.c"
+	depends signal_common
+}
+
+module rt_signal {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "rt_signal.c"
+	depends signal_common
+	depends embox.mem.objalloc
+}
+
+module signal_common {
 	source "signal.c"
 }
 
@@ -40,8 +53,7 @@ module single extends api {
 
 module idx_table extends task_environment {
 
-	option number task_res_quantity = 32
-
+	option number task_res_quantity = 64
 	source "index_desc.c"
 	depends embox.util.idx_table
 	depends api

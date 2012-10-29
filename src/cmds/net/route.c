@@ -42,7 +42,7 @@ static void print_usage(void) {
 	printf("Usage: route [-nmgdh] [add|del]\n");
 }
 
-static int exec(int argc, char *argv[]) {
+static int exec(int argc, char **argv) {
 	int opt;
 	in_device_t *ifdev;
 	struct rt_entry *rt;
@@ -97,7 +97,8 @@ static int exec(int argc, char *argv[]) {
 		 * 	reject route if there is a route with the same length of the mask
 		 * 	We don't allow the similar routes in the kernel
 		 */
-		return rt_add_route(ifdev->dev, net.s_addr, mask.s_addr, gw.s_addr, ((gw.s_addr == INADDR_ANY) ? RTF_UP : RTF_UP | RTF_GATEWAY));
+		return rt_add_route(ifdev->dev, net.s_addr, mask.s_addr, gw.s_addr,
+			((gw.s_addr == INADDR_ANY) ? RTF_UP : RTF_UP | RTF_GATEWAY));
 	} else if (!strcmp(argv[argc - 1], "del")) {
 		return rt_del_route(ifdev->dev, net.s_addr, mask.s_addr, gw.s_addr);
 	} else {
@@ -127,7 +128,6 @@ static int exec(int argc, char *argv[]) {
 			str = inet_ntoa(mask);
 			l = strlen(str);
 			memcpy(&buff[OFFSET_NMASK], str, (l < LEN_NMASK ? l : LEN_NMASK) * sizeof(char));
-
 
 			l = OFFSET_FLAGS;
 			if (rt->rt_flags & RTF_UP) {

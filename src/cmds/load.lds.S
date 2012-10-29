@@ -8,4 +8,3 @@ SECTIONS {
 		ALIGNMENT(); _load_image_end = .;
 	} SECTION_REGION(rodata)
 }
-

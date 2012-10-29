@@ -9,7 +9,8 @@ module signal {
 	source "signal.c"
 
 	depends embox.kernel.task.api
-	depends embox.kernel.task.signal
+	depends embox.kernel.task.std_signal
+	depends embox.compat.posix.proc.signal
 	depends embox.framework.LibFramework
 }
 
@@ -28,4 +29,12 @@ module select_test {
 	depends embox.compat.posix.FileApi
 	depends embox.compat.posix.idx.select
 	depends embox.framework.LibFramework
+}
+
+module rtsignal_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "rt_signal.c"
+
+	depends embox.kernel.task.rt_signal
+	depends embox.compat.posix.proc.signal
 }

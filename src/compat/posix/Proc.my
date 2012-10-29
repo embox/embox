@@ -35,6 +35,7 @@ static module signal {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "signal.c"
 
-	depends embox.kernel.task.signal
+	depends embox.kernel.task.std_signal
+	depends embox.kernel.task.rt_signal
 }
 

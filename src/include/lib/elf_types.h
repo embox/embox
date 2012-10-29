@@ -615,9 +615,10 @@ typedef struct {
 	Elf32_Ehdr *header;       /* Elf header */
 	Elf32_Shdr *sh_table;     /* Elf section table */
 	Elf32_Phdr *ph_table;     /* Elf program table */
-	char     *string_table; /* Elf string table */
+
+	char     *string_table;   /* Elf string table */
 	Elf32_Sym  *sym_table;    /* Elf symbol table */
-	char     *sym_names;    /* Elf symbol names */
+	char     *sym_names;      /* Elf symbol names */
 
 	/* Elf .dynamic section */
 	Elf32_Dyn  *dyn_section;

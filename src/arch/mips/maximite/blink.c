@@ -16,6 +16,3 @@ void __blink(void) {
 	REG_STORE(PORTB, 0xffff);
 
 }
-
-
-

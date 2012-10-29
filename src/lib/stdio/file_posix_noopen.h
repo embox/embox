@@ -14,4 +14,3 @@ static inline int __libc_open(const char *path, const char *mode, struct file_st
 }
 
 #endif /* SRC_LIB_STDIO_FILE_POSIX_NOOPEN_H_ */
-

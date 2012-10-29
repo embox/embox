@@ -57,4 +57,3 @@ void netdev_rx_processing(void) {
 		netdev_rx_dequeued(dev);
 	}
 }
-

@@ -98,4 +98,3 @@ static void do_down(rwlock_t *r) {
 	}
 	sched_unlock();
 }
-

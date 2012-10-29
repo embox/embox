@@ -257,31 +257,31 @@ static int exec(int argc, char **argv) {
 //		inet_dev_set_interface(iname, ipaddr.s_addr, mask.s_addr, macaddr);
 //		in_dev = inet_dev_find_by_name(iname);
 //	}
-	if (no_arp == 1) {	  /* set flag IFF_NOARP. Default 0 means ARP enabled.*/
+	if (no_arp == 1) { /* set flag IFF_NOARP. Default 0 means ARP enabled.*/
 		etherdev_flag_up(in_dev->dev, IFF_NOARP);
 	} else {
 		etherdev_flag_down(in_dev->dev, IFF_NOARP);
 	}
 
-	if (promisc == 1) {	 /* set flag IFF_PROMISC. Default 0.*/
+	if (promisc == 1) { /* set flag IFF_PROMISC. Default 0.*/
 		etherdev_flag_up(in_dev->dev, IFF_PROMISC);
 	} else {
 		etherdev_flag_down(in_dev->dev, IFF_PROMISC);
 	}
 
-	if (allmulti == 1) {	/* set flag IFF_ALLMULTI. Default 0. */
+	if (allmulti == 1) { /* set flag IFF_ALLMULTI. Default 0. */
 		etherdev_flag_up(in_dev->dev, IFF_ALLMULTI);
 	} else {
 		etherdev_flag_down(in_dev->dev, IFF_ALLMULTI);
 	}
 
-	if (multicast == 1) {   /* set flag IFF_MULTICAST. Default 0.*/
+	if (multicast == 1) { /* set flag IFF_MULTICAST. Default 0.*/
 		etherdev_flag_up(in_dev->dev, IFF_MULTICAST);
 	} else {
 		etherdev_flag_down(in_dev->dev, IFF_MULTICAST);
 	}
 
-	if (mtu != 0) {		 /* new MTU value set */
+	if (mtu != 0) {	/* new MTU value set */
 		etherdev_change_mtu(in_dev->dev, mtu);
 	}
 
@@ -289,11 +289,11 @@ static int exec(int argc, char **argv) {
 		etherdev_set_irq(in_dev->dev, irq_num);
 	}
 
-	if (base_addr != 0) {   /* set new base addr */
+	if (base_addr != 0) { /* set new base addr */
 		etherdev_set_baseaddr(in_dev->dev, base_addr);
 	}
 
-	if (tx_queue_len != 0) {	/* set new max packet length */
+	if (tx_queue_len != 0) { /* set new max packet length */
 		etherdev_set_txqueuelen(in_dev->dev, tx_queue_len);
 	}
 
@@ -303,23 +303,23 @@ static int exec(int argc, char **argv) {
 			print_usage();
 			return -1;
 		}
-		if (!down) {	/* set broadcast addr */
+		if (!down) { /* set broadcast addr */
 			etherdev_set_broadcast_addr(in_dev->dev, broadcastaddr);
 			etherdev_flag_up(in_dev->dev, IFF_BROADCAST);
 		}
 	}
 
-	if (p2p == 1) {							   /* set flag IFF_POINTOPOINT */
+	if (p2p == 1) { /* set flag IFF_POINTOPOINT */
 		etherdev_flag_up(in_dev->dev, IFF_POINTOPOINT);
 	} else {
 		etherdev_flag_down(in_dev->dev, IFF_POINTOPOINT);
 	}
 
-	if (down) {	/* down net iface */
+	if (down) { /* down net iface */
 		ifdev_down(iname);
 		return 0;
 	}
-	if (ipaddr.s_addr != 0) {	/* set new IP address to iface */
+	if (ipaddr.s_addr != 0) { /* set new IP address to iface */
 		if (NULL == in_dev) {
 			LOG_ERROR("Enter interface name\n");
 			print_usage();
@@ -329,7 +329,7 @@ static int exec(int argc, char **argv) {
 			inet_dev_set_ipaddr(in_dev, ipaddr.s_addr);
 		}
 	}
-	if (mask.s_addr != 0) {	/* set new mask to iface */
+	if (mask.s_addr != 0) { /* set new mask to iface */
 		if (NULL == in_dev) {
 			LOG_ERROR("Enter interface name\n");
 			print_usage();
@@ -339,7 +339,7 @@ static int exec(int argc, char **argv) {
 			inet_dev_set_mask(in_dev, mask.s_addr);
 		}
 	}
-	if (macaddr[0] != 0) {	/* set new MAC address to iface */
+	if (macaddr[0] != 0) { /* set new MAC address to iface */
 		if (NULL == in_dev) {
 			LOG_ERROR("Enter interface name\n");
 			print_usage();

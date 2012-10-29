@@ -34,4 +34,3 @@ static inline void ipl_restore(__ipl_t ipl) {
 #endif /* __ASSEMBLER__ */
 
 #endif /* ARM7_IPL_IMPL_H_ */
-

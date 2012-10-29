@@ -35,4 +35,3 @@ static inline const char *event_name(struct event *e) {
 }
 
 #endif
-

@@ -10,4 +10,3 @@
 void abort(void) {
 	panic("Aborted");
 }
-

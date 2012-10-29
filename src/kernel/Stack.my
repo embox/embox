@@ -4,4 +4,5 @@ module stack {
 	source "stack.lds.S"
 
 	option number stack_size=65536
+	option number alignment=0x1000
 }
