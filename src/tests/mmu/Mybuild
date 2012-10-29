@@ -5,6 +5,6 @@ module mmu_core {
 
 	depends embox.framework.LibFramework
 	depends embox.mem.vmem
-	depends embox.arch.mmu
+	depends embox.arch.x86.mmu
 	depends embox.arch.x86.test.testtrap
 }
