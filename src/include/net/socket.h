@@ -231,6 +231,9 @@ extern ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 extern ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 		struct sockaddr *daddr, socklen_t *daddrlen);
 
+extern ssize_t recv(int sockfd, void *buf, size_t len, int flags);
+extern ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+
 /**
  * close a socket descriptor
  * @param sockfd socket description

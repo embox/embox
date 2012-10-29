@@ -311,6 +311,40 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 	return res;
 }
 
+ssize_t recv(int sockfd, void *buf, size_t len, int flags) {
+	int res;
+
+	res = recvfrom(sockfd, buf, len, flags, NULL, NULL);
+
+	if (res < 0) {
+		SET_ERRNO(-res);
+		return -1;
+	}
+
+	return res;
+}
+
+ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
+	int res;
+	struct socket *sock;
+
+	sock = idx2sock(sockfd);
+
+	if(sock->state != SS_CONNECTED) {
+		SET_ERRNO(ENOTCONN);
+		return -1;
+	}
+
+	res = sendto_sock(sock, buf, len, flags, NULL, 0);
+
+	if (res < 0) {
+		SET_ERRNO(-res);
+		return -1;
+	}
+
+	return res;
+}
+
 int socket_close(int sockfd) {
 	int res;
 	struct socket *sock;
