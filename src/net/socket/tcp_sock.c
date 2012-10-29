@@ -453,14 +453,24 @@ static void tcp_v4_sock_free(struct sock *sk) {
 	objfree(&objalloc_tcp_socks, sk);
 }
 
+static int tcp_v4_setsockopt(struct sock *sk, int level, int optname,
+			char *optval, int optlen) {
+	return ENOERR;
+}
+
+static int tcp_v4_getsockopt(struct sock *sk, int level, int optname,
+			char *optval, int *optlen) {
+	return ENOERR;
+}
+
 const struct proto tcp_prot = {
 		.name       = "TCP",
 		.init       = tcp_v4_init_sock,
 		.connect    = tcp_v4_connect,
 		.listen     = tcp_v4_listen,
 		.accept     = tcp_v4_accept,
-//		.setsockopt = tcp_v4_setsockopt,
-//		.getsockopt = tcp_v4_getsockopt,
+		.setsockopt = tcp_v4_setsockopt,
+		.getsockopt = tcp_v4_getsockopt,
 		.sendmsg    = tcp_v4_sendmsg,
 		.recvmsg    = tcp_v4_recvmsg,
 		.close      = tcp_v4_close,
