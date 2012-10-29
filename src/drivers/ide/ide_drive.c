@@ -54,10 +54,14 @@
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
 
-int ideprobe = 0;
+int ideprobe = 1;
 static hdc_t hdctab[HD_CONTROLLERS];
 static hd_t  hdtab[HD_DRIVES];
 static slot_t ide;
+
+extern block_dev_driver_t cdrom_pio_driver;
+extern block_dev_driver_t harddisk_pio_driver;
+extern block_dev_driver_t harddisk_udma_driver;
 
 static long tmr_cmd_start_time;
 
@@ -137,7 +141,7 @@ static int tmr_chk_timeout(long timeout) {
 }
 
 
-static int hd_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout) {
+int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout) {
 	unsigned char status, error;
 
 	tmr_set_timeout();
@@ -163,11 +167,11 @@ static int hd_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout) {
 	return -ETIMEDOUT;
 }
 
-static void hd_select_drive(hd_t *hd) {
+void ide_select_drive(hd_t *hd) {
 	outb(hd->drvsel, hd->hdc->iobase + HDC_DRVHD);
 }
 
-static void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects) {
+void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects) {
 	unsigned int track;
 	unsigned int head;
 	unsigned int sector;
@@ -192,7 +196,7 @@ static void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects) {
 		 hd->hdc->iobase + HDC_DRVHD);
 }
 
-static void pio_read_buffer(hd_t *hd, char *buffer, int size) {
+void pio_read_buffer(hd_t *hd, char *buffer, int size) {
 	hdc_t *hdc = hd->hdc;
 
 	if (hd->use32bits) {
@@ -203,7 +207,7 @@ static void pio_read_buffer(hd_t *hd, char *buffer, int size) {
 	}
 }
 
-static void pio_write_buffer(hd_t *hd, char *buffer, int size) {
+void pio_write_buffer(hd_t *hd, char *buffer, int size) {
 	hdc_t *hdc = hd->hdc;
 
 	if (hd->use32bits) {
@@ -214,66 +218,6 @@ static void pio_write_buffer(hd_t *hd, char *buffer, int size) {
 	}
 }
 
-static void setup_dma(hdc_t *hdc, char *buffer, int count, int cmd) {
-	int i;
-	int len;
-	char *next;
-
-	i = 0;
-	next = (char *) ((unsigned long) buffer & ~(PAGESIZE - 1)) + PAGESIZE;
-	while (1) {
-		hdc->prds[i].addr = (unsigned long) buffer;
-		len = next - buffer;
-		if (count > len) {
-			hdc->prds[i].len = len;
-			count -= len;
-			buffer = next;
-			next += PAGESIZE;
-			i++;
-		}
-		else {
-			hdc->prds[i].len = count | 0x80000000;
-			break;
-		}
-	}
-
-	/* Setup PRD table */
-	outl(hdc->prds_phys, hdc->bmregbase + BM_PRD_ADDR);
-
-	/* Specify read/write */
-	outb(cmd | BM_CR_STOP, hdc->bmregbase + BM_COMMAND_REG);
-
-	/* Clear INTR & ERROR flags */
-	outb(inb(hdc->bmregbase + BM_STATUS_REG) | BM_SR_INT | BM_SR_ERR,
-		 hdc->bmregbase + BM_STATUS_REG);
-}
-
-static void start_dma(hdc_t *hdc) {
-	/* Start DMA operation */
-	outb(inb(hdc->bmregbase + BM_COMMAND_REG) | BM_CR_START,
-		 hdc->bmregbase + BM_COMMAND_REG);
-}
-
-static int stop_dma(hdc_t *hdc) {
-	int dmastat;
-
-	/* Stop DMA channel and check DMA status */
-	outb(inb(hdc->bmregbase + BM_COMMAND_REG) & ~BM_CR_START,
-	   hdc->bmregbase + BM_COMMAND_REG);
-
-	/* Get DMA status */
-	dmastat = inb(hdc->bmregbase + BM_STATUS_REG);
-
-	/* Clear INTR && ERROR flags */
-	outb(dmastat | BM_SR_INT | BM_SR_ERR, hdc->bmregbase + BM_STATUS_REG);
-
-	/* Check for DMA errors */
-	if (dmastat & BM_SR_ERR) {
-		return -EIO;
-	}
-
-	return 0;
-}
 
 static int hd_identify(hd_t *hd) {
 
@@ -289,7 +233,7 @@ static int hd_identify(hd_t *hd) {
 	* Some controllers issues the interrupt before data is ready to be read
 	* Make sure data is ready by waiting for DRQ to be set
 	*/
-	if (hd_wait(hd->hdc, HDCS_DRQ, HDTIMEOUT_DRQ) < 0) {
+	if (ide_wait(hd->hdc, HDCS_DRQ, HDTIMEOUT_DRQ) < 0) {
 		return -EIO;
 	}
 
@@ -364,127 +308,7 @@ static int hd_cmd(hd_t *hd, unsigned int cmd,
 	return 0;
 }
 
-static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
-		                     int pktlen, char *buffer, size_t bufsize) {
-	hdc_t *hdc;
-	int result;
-	char *bufp;
-	int bufleft;
-	unsigned short bytes;
-
-	hdc = hd->hdc;
-	bufp = (char *) buffer;
-	bufleft = bufsize;
-	hdc->dir = HD_XFER_IGNORE;
-	hdc->active = hd;
-	hdc->result = 0;
-
-	/* Setup registers */
-	outb(0, hdc->iobase + HDC_FEATURE);
-	outb(0, hdc->iobase + HDC_SECTORCNT);
-	outb(0, hdc->iobase + HDC_SECTOR);
-	outb((unsigned char) (bufsize & 0xFF), hdc->iobase + HDC_TRACKLSB);
-	outb((unsigned char) (bufsize >> 8), hdc->iobase + HDC_TRACKMSB);
-	outb((unsigned char) hd->drvsel, hdc->iobase + HDC_DRVHD);
-
-	/* Send packet command */
-	outb(HDCMD_PACKET, hdc->iobase + HDC_COMMAND);
-
-	/* Wait for drive ready to receive packet */
-	result = hd_wait(hdc, HDCS_DRDY, HDTIMEOUT_DRDY);
-	if (result != 0) {
-
-		hdc->dir = HD_XFER_IDLE;
-		hdc->active = NULL;
-
-		return -EIO;
-	}
-
-	/* Command packet transfer */
-	hdc->result = 0;
-	pio_write_buffer(hd, (char *) pkt, pktlen);
-
-	/* Data transfer */
-	while (!hdc->result) {
-		/* Wait until data ready */
-		usleep(300);
-
-		/* Check for errors */
-		if (hdc->status & HDCS_ERR) {
-			hdc->result = -EIO;
-			break;
-		}
-		/*
-		 * Exit the read data loop if the device indicates this is
-		 * the end of the command
-		 */
-		if ((hdc->status & (HDCS_BSY | HDCS_DRQ)) == 0) {
-			break;
-		}
-
-		/* Get the byte count */
-		bytes = (inb(hdc->iobase + HDC_TRACKMSB) << 8) | inb(hdc->iobase + HDC_TRACKLSB);
-		if (bytes == 0) {
-			break;
-		}
-		if (bytes > bufleft) {
-			hdc->result = -ENOBUFS;
-			break;
-		}
-		/* Read the bytes */
-		pio_read_buffer(hd, bufp, bytes);
-		bufp += bytes;
-		bufleft -= bytes;
-	}
-
-	/* Cleanup */
-	hdc->dir = HD_XFER_IDLE;
-	hdc->active = NULL;
-	if(0 < hdc->result) {
-		result = hdc->result = 0;
-	}
-	return result == 0 ? bufsize - bufleft : result;
-}
-
-static int atapi_read_capacity(hd_t *hd) {
-	unsigned char pkt[12];
-	unsigned long buf[2];
-	unsigned long blks;
-	int rc;
-
-	memset(pkt, 0, 12);
-	pkt[0] = ATAPI_CMD_READCAPICITY;
-
-	rc = atapi_packet_read(hd, pkt, 12, (char *)buf, sizeof buf);
-	if (rc < 0) {
-		return rc;
-	}
-	if (rc != sizeof buf) {
-		return -ENOBUFS;
-	}
-
-	blks = ntohl(buf[0]);
-	return blks;
-}
-
-static int atapi_request_sense(hd_t *hd) {
-	unsigned char pkt[12];
-	unsigned char buf[18];
-	int rc;
-
-	memset(pkt, 0, 12);
-	pkt[0] = ATAPI_CMD_REQUESTSENSE;
-	pkt[4] = sizeof buf;
-
-	rc = atapi_packet_read(hd, pkt, 12, (char *)buf, sizeof buf);
-	if (rc < 0) {
-		return rc;
-	}
-
-	return 0;
-}
-
-static int hd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
+int hd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 	block_dev_geometry_t *geom;
 	hd_t *hd = (hd_t *) dev->privdata;
 
@@ -514,384 +338,6 @@ static int hd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-static int hd_read_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno) {
-	hd_t *hd;
-	hdc_t *hdc;
-	int sectsleft;
-	int nsects;
-	int result;
-	char *bufp;
-
-	if (count == 0) {
-		return 0;
-	}
-	bufp = (char *) buffer;
-	hd = (hd_t *) dev->privdata;
-	hdc = hd->hdc;
-	sectsleft = count / SECTOR_SIZE;
-
-	while (sectsleft > 0) {
-		/* Select drive */
-		hd_select_drive(hd);
-
-		/* Wait for controller ready */
-		result = hd_wait(hdc, HDCS_DRDY, HDTIMEOUT_DRDY);
-		if (result != 0) {
-			hdc->result = -EIO;
-			break;
-		}
-
-		/* Calculate maximum number of sectors we can transfer */
-		if (sectsleft > 256) {
-			nsects = 256;
-		}
-		else {
-			nsects = sectsleft;
-		}
-
-		/* Prepare transfer */
-		hdc->bufp = bufp;
-		hdc->nsects = nsects;
-		hdc->result = 0;
-		hdc->dir = HD_XFER_READ;
-		hdc->active = hd;
-
-		hd_setup_transfer(hd, blkno, nsects);
-		outb(hd->multsect > 1 ? HDCMD_MULTREAD : HDCMD_READ,
-				hdc->iobase + HDC_COMMAND);
-
-    	/* Wait until data read */
-		while(!hdc->result) {
-			usleep(300);
-		}
-		if (hdc->result < 0) {
-			break;
-		}
-
-		/* Advance to next */
-		sectsleft -= nsects;
-		bufp += nsects * SECTOR_SIZE;
-	}
-
-	/* Cleanup */
-	hdc->dir = HD_XFER_IDLE;
-	hdc->active = NULL;
-	if(0 < hdc->result) {
-		result = hdc->result = 0;
-	}
-
-	return result == 0 ? count : result;
-}
-
-static int hd_write_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno) {
-	hd_t *hd;
-	hdc_t *hdc;
-	int sectsleft;
-	int nsects;
-	int n;
-	int result;
-	char *bufp;
-
-	if (count == 0) {
-		return 0;
-	}
-	bufp = (char *) buffer;
-	hd = (hd_t *) dev->privdata;
-	hdc = hd->hdc;
-	sectsleft = count / SECTOR_SIZE;
-
-
-	while (sectsleft > 0) {
-		/* Select drive */
-		hd_select_drive(hd);
-
-		/* Wait for controller ready */
-		result = hd_wait(hdc, HDCS_DRDY, HDTIMEOUT_DRDY);
-		if (result != 0) {
-			hdc->result = -EIO;
-			break;
-		}
-		/* Calculate maximum number of sectors we can transfer */
-		if (sectsleft > 256) {
-			nsects = 256;
-		}
-		else {
-			nsects = sectsleft;
-		}
-
-		/* Prepare transfer */
-		hdc->bufp = bufp;
-		hdc->nsects = nsects;
-		hdc->result = 0;
-		hdc->dir = HD_XFER_WRITE;
-		hdc->active = hd;
-
-		hd_setup_transfer(hd, blkno, nsects);
-		outb(hd->multsect > 1 ? HDCMD_MULTWRITE : HDCMD_WRITE,
-				hdc->iobase + HDC_COMMAND);
-
-		/* Wait for data ready */
-		if (!(inb(hdc->iobase + HDC_ALT_STATUS) & HDCS_DRQ)) {
-			result = hd_wait(hdc, HDCS_DRQ, HDTIMEOUT_DRQ);
-			if (result != 0) {
-				hdc->result = -EIO;
-				break;
-			}
-		}
-
-		/* Write first sector(s) */
-		n = hd->multsect;
-		if (n > nsects) {
-			n = nsects;
-		}
-		while (n-- > 0) {
-			pio_write_buffer(hd, hdc->bufp, SECTOR_SIZE);
-			hdc->bufp += SECTOR_SIZE;
-		}
-
-		/* Wait until data written */
-		while(!hdc->result) {
-			usleep(300);
-		}
-		if (hdc->result < 0) {
-			break;
-		}
-
-		/* Advance to next */
-		sectsleft -= nsects;
-		bufp += nsects * SECTOR_SIZE;
-	}
-
-	/* Cleanup */
-	hdc->dir = HD_XFER_IDLE;
-	hdc->active = NULL;
-	result = hdc->result;
-
-	return result == 0 ? count : result;
-}
-
-static int hd_read_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno) {
-	hd_t *hd;
-	hdc_t *hdc;
-	int sectsleft;
-	int nsects;
-	int result;
-	char *bufp;
-	unsigned char error;
-
-	if (count == 0) {
-		return 0;
-	}
-	bufp = (char *) buffer;
-
-	hd = (hd_t *) dev->privdata;
-	hdc = hd->hdc;
-	sectsleft = count / SECTOR_SIZE;
-
-
-	while (sectsleft > 0) {
-		/* Select drive */
-		hd_select_drive(hd);
-
-		/* Wait for controller ready */
-		result = hd_wait(hdc, HDCS_DRDY, HDTIMEOUT_DRDY);
-		if (result != 0) {
-			result = -EIO;
-			break;
-		}
-
-		/* Calculate maximum number of sectors we can transfer */
-		if (sectsleft > 256) {
-			nsects = 256;
-		}
-		else {
-			nsects = sectsleft;
-		}
-
-		if (nsects > MAX_DMA_XFER_SIZE / SECTOR_SIZE) {
-			nsects = MAX_DMA_XFER_SIZE / SECTOR_SIZE;
-		}
-
-		/* Prepare transfer */
-		result = 0;
-		hdc->dir = HD_XFER_DMA;
-		hdc->active = hd;
-
-		hd_setup_transfer(hd, blkno, nsects);
-
-		/* Setup DMA */
-		setup_dma(hdc, bufp, nsects * SECTOR_SIZE, BM_CR_WRITE);
-
-		/* Start read */
-		outb(HDCMD_READDMA, hdc->iobase + HDC_COMMAND);
-		start_dma(hdc);
-
-		/* Stop DMA channel and check DMA status */
-		result = stop_dma(hdc);
-		if (result < 0) {
-			break;
-		}
-
-		/* Check controller status */
-		if (hdc->status & HDCS_ERR) {
-			error = inb(hdc->iobase + HDC_ERR);
-			hd_error("hdread", error);
-
-			result = -EIO;
-			break;
-		}
-
-		/* Advance to next */
-		sectsleft -= nsects;
-		bufp += nsects * SECTOR_SIZE;
-	}
-
-	/* Cleanup */
-	hdc->dir = HD_XFER_IDLE;
-	hdc->active = NULL;
-
-	return result == 0 ? count : result;
-}
-
-static int hd_write_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno) {
-	hd_t *hd;
-	hdc_t *hdc;
-	int sectsleft;
-	int nsects;
-	int result;
-	char *bufp;
-	unsigned char error;
-
-	if (count == 0) {
-		return 0;
-	}
-	bufp = (char *) buffer;
-
-	hd = (hd_t *) dev->privdata;
-	hdc = hd->hdc;
-	sectsleft = count / SECTOR_SIZE;
-
-	while (sectsleft > 0) {
-		/* Select drive */
-		hd_select_drive(hd);
-
-		/* Wait for controller ready */
-		result = hd_wait(hdc, HDCS_DRDY, HDTIMEOUT_DRDY);
-		if (result != 0) {
-			result = -EIO;
-			break;
-		}
-
-		/* Calculate maximum number of sectors we can transfer */
-		if (sectsleft > 256) {
-			nsects = 256;
-		}
-		else {
-			nsects = sectsleft;
-		}
-		if (nsects > MAX_DMA_XFER_SIZE / SECTOR_SIZE) {
-			nsects = MAX_DMA_XFER_SIZE / SECTOR_SIZE;
-		}
-
-		/* Prepare transfer */
-		result = 0;
-		hdc->dir = HD_XFER_DMA;
-		hdc->active = hd;
-
-		hd_setup_transfer(hd, blkno, nsects);
-
-		/* Setup DMA */
-		setup_dma(hdc, bufp, nsects * SECTOR_SIZE, BM_CR_READ);
-
-		/* Start write */
-		outb(HDCMD_WRITEDMA, hdc->iobase + HDC_COMMAND);
-		start_dma(hdc);
-
-		/* Stop DMA channel and check DMA status */
-		result = stop_dma(hdc);
-		if (result < 0) {
-			break;
-		}
-
-		/* Check controller status */
-		if (hdc->status & HDCS_ERR) {
-			error = inb(hdc->iobase + HDC_ERR);
-			hd_error("hdwrite", error);
-
-			result = -EIO;
-			break;
-		}
-
-		/* Advance to next */
-		sectsleft -= nsects;
-		bufp += nsects * SECTOR_SIZE;
-	}
-
-	/* Cleanup */
-	hdc->dir = HD_XFER_IDLE;
-	hdc->active = NULL;
-
-	return result == 0 ? count : result;
-}
-
-static int cd_read(block_dev_t *dev, char *buffer,
-					size_t count, blkno_t blkno) {
-	unsigned char pkt[12];
-	unsigned int blks;
-	hd_t *hd = (hd_t *) dev->privdata;
-
-	blks = count / CDSECTORSIZE;
-	if (blks > 0xFFFF) {
-		return -EINVAL;
-	}
-
-	memset(pkt, 0, 12);
-	pkt[0] = ATAPI_CMD_READ10;
-	pkt[2] = blkno >> 24;
-	pkt[3] = (blkno >> 16) & 0xFF;
-	pkt[4] = (blkno >> 8) & 0xFF;
-	pkt[5] = blkno & 0xFF;
-	pkt[7] = (blks >> 8) & 0xFF;
-	pkt[8] = blks & 0xFF;
-
-	return atapi_packet_read(hd, pkt, 12, buffer, count);
-}
-
-static int cd_write(block_dev_t *dev, char *buffer,
-					size_t count, blkno_t blkno) {
-	return -ENODEV;
-}
-
-static int cd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
-	hd_t *hd = (hd_t *) dev->privdata;
-	int rc;
-
-	switch (cmd) {
-	case IOCTL_GETDEVSIZE:
-		if (hd->blks <= 0) {
-			hd->blks = atapi_read_capacity(hd);
-		}
-		return hd->blks;
-
-	case IOCTL_GETBLKSIZE:
-		return CDSECTORSIZE;
-
-	case IOCTL_REVALIDATE:
-		rc = atapi_request_sense(hd);
-		if (rc < 0) {
-			return rc;
-		}
-
-		rc = hd->blks = atapi_read_capacity(hd);
-		if (rc < 0) {
-			return rc;
-		}
-
-		return 0;
-	}
-
-	return -ENOSYS;
-}
 
 void hd_dpc(void *arg) {
 	hdc_t *hdc = (hdc_t *) arg;
@@ -1023,34 +469,9 @@ static int part_write(block_dev_t *dev, char *buffer,
   return dev_write(part->dev, buffer, count, blkno + part->start);
 }
 
-block_dev_driver_t harddisk_udma_driver = {
-	"idedisk_udma_drv",
-	DEV_TYPE_BLOCK,
-	ide_init,
-	hd_ioctl,
-	hd_read_udma,
-	hd_write_udma
-};
 
-block_dev_driver_t harddisk_pio_driver = {
-	"idedisk_drv",
-	DEV_TYPE_BLOCK,
-	ide_init,
-	hd_ioctl,
-	hd_read_pio,
-	hd_write_pio
-};
 
-block_dev_driver_t cdrom_pio_driver = {
-	"idecd_drv",
-	DEV_TYPE_BLOCK,
-	ide_init,
-	cd_ioctl,
-	cd_read,
-	cd_write
-};
-
-block_dev_driver_t partition_driver = {
+static block_dev_driver_t partition_driver = {
 	"partition_drv",
 	DEV_TYPE_BLOCK,
 	ide_init,
@@ -1059,7 +480,8 @@ block_dev_driver_t partition_driver = {
 	part_write
 };
 
-block_dev_driver_t ide_init_driver = {
+
+static block_dev_driver_t ide_init_driver = {
 	"ide_drv",
 	DEV_TYPE_BLOCK,
 	ide_init,
@@ -1079,6 +501,8 @@ static int create_partitions(hd_t *hd) {
 	if (rc < 0) {
 		return rc;
 	}
+
+	mbr->sig_55 = 0;
 
 	/* Create partition devices */
 	if ((mbr->sig_55 != 0x55) || (mbr->sig_aa != 0xAA)) {
@@ -1105,6 +529,8 @@ static int create_partitions(hd_t *hd) {
 		}
 	}
 	*/
+	dev_make("hda0", &partition_driver, NULL);
+
 	return 0;
 }
 
@@ -1443,8 +869,6 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 #endif /* DEBUG */
 }
 
-EMBOX_UNIT_INIT(unit_init);
-
 static int ide_init(void *args) {
 	int rc;
 	int masterif;
@@ -1491,13 +915,8 @@ static int ide_init(void *args) {
 	return 0;
 }
 
-slot_t *get_ide_drive(void) {
-	ide_init(NULL);
+slot_t *ide_get_drive(void) {
 	return &ide;
-}
-
-static int unit_init (void) {
-	return 0;
 }
 
 EMBOX_BLOCK_DEV("ide", &ide_init_driver);

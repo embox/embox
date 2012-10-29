@@ -2,7 +2,7 @@
 
 /sbin/ip tuntap add mode tap tap0
 `which ethtool` -K tap0 rx off tx off gro off
-/sbin/ifconfig tap0 10.0.2.10 dstaddr 10.0.2.0 netmask 255.255.255.0 down
+/sbin/ifconfig tap0 10.0.2.16 dstaddr 10.0.2.0 netmask 255.255.255.0 down
 /sbin/ifconfig tap0 hw ether aa:bb:cc:dd:ee:ff up
 
 echo "Enable IP Forwarding"

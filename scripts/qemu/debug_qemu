@@ -1,8 +1,8 @@
 #!/bin/bash
 
-QEMU=~/qemu-1.0.1/i386-softmmu/qemu-system-i386
+QEMU=qemu-system-i386
 
-IMAGE=../../build/base/bin/embox
+IMAGE=/home/user/workspace/embox/build/base/bin/embox
 
 TAP_DEV=$(tunctl -b)
 echo $TAP_DEV > tap_dev
@@ -13,7 +13,9 @@ echo $TAP_DEV
 #	-net nic,model=ne2k_pci,macaddr=AA:BB:CC:DD:EE:02 \
 #	-net tap,name=$TAP_DEV,script=start_script,downscript=stop_script -nographic $@
 sudo $QEMU -s -kernel $IMAGE \
+    -no-kvm\
 	-net nic,model=ne2k_pci,macaddr=AA:BB:CC:DD:EE:02 \
-	-net tap,ifname=tap0,script=start_script_my,downscript=stop_script_my -drive file=/home/user/hdc.img,media=disk -s -S -nographic $@
+	-net tap,ifname=tap0,script=start_script_my,downscript=stop_script_my -drive file=/home/user/hda.img,media=disk -drive file=/home/user/hdb.img,media=disk -drive file=/home/user/cd.iso,media=cdrom -s -S -nographic $@
 #	-net tap,ifname=tap0,script=start_script_my,downscript=stop_script_my -s -S -nographic $@
 	#$TAP_DEV
+#-drive file=/dev/dvd1,media=cdrom

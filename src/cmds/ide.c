@@ -62,6 +62,6 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	print_drive(get_ide_drive());
+	print_drive(ide_get_drive());
 	return 0;
 }

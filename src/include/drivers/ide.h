@@ -331,6 +331,13 @@ typedef struct _slot {
 	hd_t *drive[8];
 } slot_t;
 
-extern slot_t *get_ide_drive(void);
+extern slot_t *ide_get_drive(void);
+extern int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout);
+extern void ide_select_drive(hd_t *hd);
+
+extern void pio_write_buffer(hd_t *hd, char *buffer, int size);
+extern void pio_read_buffer(hd_t *hd, char *buffer, int size);
+extern void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects);
+
 
 #endif /* IDE_H_ */
