@@ -43,9 +43,11 @@ int xwnd_app_create (void* (*entry_point) (void*)) {
 	/*Init pipe semaphores*/
 	sem_init(&xapp_reg.nodes[xapp_id].msg_sem, 2);
 	sem_init(&xapp_reg.nodes[xapp_id].req_sem, 2);
-	/*Connect pipes*/
-	pipe(req_pipe);
-	pipe(msg_pipe);
+	/*FIXME: Connect pipes*/
+	if (pipe(req_pipe))
+		return -1;
+	if (pipe(msg_pipe))
+		return -1;
 	xapp_reg.nodes[xapp_id].pipe_in  = req_pipe[0];
 	xapp_reg.nodes[xapp_id].pipe_out = msg_pipe[1];
 	/*Fill up the strcture to transfer to xwnd_app_init();*/
