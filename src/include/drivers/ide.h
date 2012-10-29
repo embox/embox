@@ -339,5 +339,9 @@ extern void pio_write_buffer(hd_t *hd, char *buffer, int size);
 extern void pio_read_buffer(hd_t *hd, char *buffer, int size);
 extern void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects);
 
+extern void *cdrom_pio_driver(void);
+extern void *harddisk_pio_driver(void);
+extern void *harddisk_udma_driver(void);
+
 
 #endif /* IDE_H_ */

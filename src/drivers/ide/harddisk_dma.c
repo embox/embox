@@ -240,7 +240,7 @@ static int hd_write_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t b
 	return result == 0 ? count : result;
 }
 
-block_dev_driver_t harddisk_udma_driver = {
+static block_dev_driver_t _harddisk_udma_driver = {
 	"idedisk_udma_drv",
 	DEV_TYPE_BLOCK,
 	NULL,
@@ -249,4 +249,6 @@ block_dev_driver_t harddisk_udma_driver = {
 	hd_write_udma
 };
 
-
+void *harddisk_udma_driver(void) {
+	return &_harddisk_udma_driver;
+}

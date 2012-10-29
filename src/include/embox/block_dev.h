@@ -71,17 +71,17 @@ typedef struct block_dev_module {
 } block_dev_module_t;
 
 extern const block_dev_module_t __block_dev_registry[];
-extern block_dev_module_t *block_dev_find(char *name);
+extern block_dev_module_t *blockdev_find(char *name);
 
-extern int dev_read(dev_t devno, char *buffer, size_t count, blkno_t blkno);
-extern int dev_write(dev_t devno, char *buffer, size_t count, blkno_t blkno);
-extern int dev_ioctl(dev_t devno, int cmd, void *args, size_t size);
+extern int blockdev_read(dev_t devno, char *buffer, size_t count, blkno_t blkno);
+extern int blockdev_write(dev_t devno, char *buffer, size_t count, blkno_t blkno);
+extern int blockdev_ioctl(dev_t devno, int cmd, void *args, size_t size);
 extern block_dev_t *block_dev(dev_t devno);
-extern int dev_destroy (dev_t devno);
-extern dev_t dev_make(char *name, block_dev_driver_t *driver, void *privdata);
+extern int blockdev_destroy (dev_t devno);
+extern dev_t blockdev_make(char *name, block_dev_driver_t *driver, void *privdata);
 extern dev_t devno(char *name);
-extern dev_t dev_open(char *name);
-extern int dev_close(dev_t devno);
+extern dev_t blockdev_open(char *name);
+extern int blockdev_close(dev_t devno);
 
 #define EMBOX_BLOCK_DEV(name, block_dev_driver) \
 	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver})

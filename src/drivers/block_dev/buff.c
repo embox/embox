@@ -39,7 +39,7 @@ buf_t *init_buffer_pool(dev_t devno, int blocks) {
 	buf->buff_cntr = -1;
 
 	if(0 >= (buf->blksize =
-			dev_ioctl(devno, IOCTL_GETBLKSIZE, NULL, 0))) {
+			blockdev_ioctl(devno, IOCTL_GETBLKSIZE, NULL, 0))) {
 		return NULL;
 	}
 
@@ -75,7 +75,7 @@ buf_t *get_buffer(dev_t devno, blkno_t blkno) {
 		buf->data = buf->pool + buf->buff_cntr * PAGE_SIZE() * buf->blkfactor;
 		buf->blkno = blkno;
 
-		dev_read(devno, buf->data, buf->blksize, buf->blkno);
+		blockdev_read(devno, buf->data, buf->blksize, buf->blkno);
 		buf->lastblkno = blkno;
 	}
 

@@ -54,14 +54,9 @@
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
 
-int ideprobe = 1;
 static hdc_t hdctab[HD_CONTROLLERS];
 static hd_t  hdtab[HD_DRIVES];
 static slot_t ide;
-
-extern block_dev_driver_t cdrom_pio_driver;
-extern block_dev_driver_t harddisk_pio_driver;
-extern block_dev_driver_t harddisk_udma_driver;
 
 static long tmr_cmd_start_time;
 
@@ -445,7 +440,7 @@ static int part_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 		return part->len;
 
 	case IOCTL_GETBLKSIZE:
-		return dev_ioctl(part->dev, IOCTL_GETBLKSIZE, NULL, 0);
+		return blockdev_ioctl(part->dev, IOCTL_GETBLKSIZE, NULL, 0);
 	}
 
 	return -ENOSYS;
@@ -457,7 +452,7 @@ static int part_read(block_dev_t *dev, char *buffer,
 	if (blkno + count / SECTOR_SIZE > part->len) {
 		return -EFAULT;
 	}
-	return dev_read(part->dev, buffer, count, blkno + part->start);
+	return blockdev_read(part->dev, buffer, count, blkno + part->start);
 }
 
 static int part_write(block_dev_t *dev, char *buffer,
@@ -466,7 +461,7 @@ static int part_write(block_dev_t *dev, char *buffer,
   if (blkno + count / SECTOR_SIZE > part->len) {
 	  return -EFAULT;
   }
-  return dev_write(part->dev, buffer, count, blkno + part->start);
+  return blockdev_write(part->dev, buffer, count, blkno + part->start);
 }
 
 
@@ -497,7 +492,7 @@ static int create_partitions(hd_t *hd) {
 	int rc;
 
 	/* Read partition table */
-	rc = dev_read(hd->devno, (char *)mbr, SECTOR_SIZE, 0);
+	rc = blockdev_read(hd->devno, (char *)mbr, SECTOR_SIZE, 0);
 	if (rc < 0) {
 		return rc;
 	}
@@ -529,7 +524,7 @@ static int create_partitions(hd_t *hd) {
 		}
 	}
 	*/
-	dev_make("hda0", &partition_driver, NULL);
+	blockdev_make("hda0", &partition_driver, NULL);
 
 	return 0;
 }
@@ -623,58 +618,48 @@ static int setup_hdc(hdc_t *hdc, int iobase, int irq,
 		hdc->prds = (struct prd *) page_alloc(__phymem_allocator, 1);
 	}
 
-	if (ideprobe) {
-		/* Assume no devices connected to controller */
-		*masterif = HDIF_NONE;
-		*slaveif = HDIF_NONE;
+	/* Assume no devices connected to controller */
+	*masterif = HDIF_NONE;
+	*slaveif = HDIF_NONE;
 
-		/* Setup device control register */
-		outb(HDDC_HD15 | HDDC_NIEN, hdc->iobase + HDC_CONTROL);
+	/* Setup device control register */
+	outb(HDDC_HD15 | HDDC_NIEN, hdc->iobase + HDC_CONTROL);
 
-		/* Probe for master and slave device on controller */
-		if (probe_device(hdc, HD0_DRVSEL) >= 0) {
-			*masterif = HDIF_PRESENT;
-		}
-		if (probe_device(hdc, HD1_DRVSEL) >= 0) {
-			*slaveif = HDIF_PRESENT;
-		}
+	/* Probe for master and slave device on controller */
+	if (probe_device(hdc, HD0_DRVSEL) >= 0) {
+		*masterif = HDIF_PRESENT;
+	}
+	if (probe_device(hdc, HD1_DRVSEL) >= 0) {
+		*slaveif = HDIF_PRESENT;
+	}
 
-		/* Reset controller */
-		outb(HDDC_HD15 | HDDC_SRST | HDDC_NIEN, hdc->iobase + HDC_CONTROL);
-		idedelay();
-		outb(HDDC_HD15 | HDDC_NIEN, hdc->iobase + HDC_CONTROL);
-		idedelay();
+	/* Reset controller */
+	outb(HDDC_HD15 | HDDC_SRST | HDDC_NIEN, hdc->iobase + HDC_CONTROL);
+	idedelay();
+	outb(HDDC_HD15 | HDDC_NIEN, hdc->iobase + HDC_CONTROL);
+	idedelay();
 
-		/* Wait for reset to finish on all present devices */
-		if (*masterif != HDIF_NONE) {
-			int rc = wait_reset_done(hdc, HD0_DRVSEL);
-			if (rc < 0) {
-				*masterif = HDIF_NONE;
-			}
-		}
-
-		if (*slaveif != HDIF_NONE) {
-			int rc = wait_reset_done(hdc, HD1_DRVSEL);
-			if (rc < 0) {
-				*slaveif = HDIF_NONE;
-			}
-		}
-
-		/* Determine interface types */
-		if (*masterif != HDIF_NONE) {
-			*masterif = get_interface_type(hdc, HD0_DRVSEL);
-		}
-		if (*slaveif != HDIF_NONE) {
-			*slaveif = get_interface_type(hdc, HD1_DRVSEL);
+	/* Wait for reset to finish on all present devices */
+	if (*masterif != HDIF_NONE) {
+		int rc = wait_reset_done(hdc, HD0_DRVSEL);
+		if (rc < 0) {
+			*masterif = HDIF_NONE;
 		}
 	}
-	else {
-		/*
-		 * No IDE probing, assume both devices connected to force selection
-		 * by BIOS settings
-		 */
-		*masterif = HDIF_ATA;
-		*slaveif = HDIF_ATA;
+
+	if (*slaveif != HDIF_NONE) {
+		int rc = wait_reset_done(hdc, HD1_DRVSEL);
+		if (rc < 0) {
+			*slaveif = HDIF_NONE;
+		}
+	}
+
+	/* Determine interface types */
+	if (*masterif != HDIF_NONE) {
+		*masterif = get_interface_type(hdc, HD0_DRVSEL);
+	}
+	if (*slaveif != HDIF_NONE) {
+		*slaveif = get_interface_type(hdc, HD1_DRVSEL);
 	}
 
 	/* Enable interrupts */
@@ -806,14 +791,14 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 	/* Make new device */
 	if (hd->media == IDE_DISK) {
 		if (hd->udmamode != -1) {
-			hd->devno = dev_make(devname, &harddisk_udma_driver, hd);
+			hd->devno = blockdev_make(devname, harddisk_udma_driver(), hd);
 		}
 		else {
-			hd->devno = dev_make(devname, &harddisk_pio_driver, hd);
+			hd->devno = blockdev_make(devname, harddisk_pio_driver(), hd);
 		}
 	}
 	else if (hd->media == IDE_CDROM) {
-		hd->devno = dev_make("cd#", &cdrom_pio_driver, hd);
+		hd->devno = blockdev_make("cd#", cdrom_pio_driver(), hd);
 	}
 	else {
 		return;
@@ -821,7 +806,7 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 
 	if(0 <= hd->devno) {
 		if(0 > ide_devnode_create(&hd->devno)) {
-			dev_destroy (hd->devno);
+			blockdev_destroy (hd->devno);
 			return;
 		}
 		size =

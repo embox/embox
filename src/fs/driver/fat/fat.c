@@ -2112,7 +2112,7 @@ int fat_read_sector(void *fdsc, uint8_t *buffer,
 */
 	fd = (fat_file_description_t *) fdsc;
 	devnum = fd->fs->devnum;
-	if(0 > dev_read(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if(0 > blockdev_read(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
 	}
 	else {
@@ -2138,7 +2138,7 @@ int fat_write_sector(void *fdsc, uint8_t *buffer,
 */
 	fd = (fat_file_description_t *) fdsc;
 	devnum = fd->fs->devnum;
-	if(0 > dev_write(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if(0 > blockdev_write(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
 	}
 	else {

@@ -404,7 +404,7 @@ int cdfs_mount(node_t *root_node)
 	devno = fs->devnum;
 
 	/* Check device */
-	dev_open(fs->mntfrom);
+	blockdev_open(fs->mntfrom);
 	if (devno == NODEV) {
 		return -NODEV;
 	}
@@ -413,7 +413,7 @@ int cdfs_mount(node_t *root_node)
 	}
 
 	/* Check block size */
-	if (dev_ioctl(devno, IOCTL_GETBLKSIZE, NULL, 0) != CDFS_BLOCKSIZE) {
+	if (blockdev_ioctl(devno, IOCTL_GETBLKSIZE, NULL, 0) != CDFS_BLOCKSIZE) {
 		return -ENXIO;
 	}
 
@@ -421,7 +421,7 @@ int cdfs_mount(node_t *root_node)
 	cdfs = (cdfs_t *) malloc(sizeof(cdfs_t));
 	memset(cdfs, 0, sizeof(cdfs_t));
 	cdfs->devno = devno;
-	cdfs->blks = dev_ioctl(devno, IOCTL_GETDEVSIZE, NULL, 0);
+	cdfs->blks = blockdev_ioctl(devno, IOCTL_GETDEVSIZE, NULL, 0);
 	if (cdfs->blks < 0) {
 		return cdfs->blks;
 	}
@@ -446,7 +446,7 @@ int cdfs_mount(node_t *root_node)
 
 		if (memcmp(vd->id, "CD001", 5) != 0) {
 			/*free_buffer_pool(cdfs->cache); */
-			dev_close(cdfs->devno);
+			blockdev_close(cdfs->devno);
 			free(cdfs);
 			return -EIO;
 		}
@@ -495,11 +495,8 @@ int cdfs_mount(node_t *root_node)
 int cdfs_umount(cdfs_fs_description_t *fs) {
 	cdfs_t *cdfs = (cdfs_t *) fs->data;
 
-	/* Free cache */
-	/*if (cdfs->cache) free_buffer_pool(cdfs->cache); */
-
 	/* Close device */
-	dev_close(cdfs->devno);
+	blockdev_close(cdfs->devno);
 
 	/* Deallocate file system */
 	if (cdfs->path_table_buffer) {
@@ -623,7 +620,7 @@ static int cdfs_read(cdfs_file_description_t *filp, void *data, size_t size, off
 			if (start != 0 || count != CDFS_BLOCKSIZE) {
 				return read;
 			}
-			if (dev_read(cdfs->devno, p, count, blk) != (int) count) {
+			if (blockdev_read(cdfs->devno, p, count, blk) != (int) count) {
 				return read;
 			}
 		}
@@ -1109,6 +1106,7 @@ static int create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath, int 
 	int flags;
 	cdfs_file_description_t *fd, *dir_fd;
 	node_t *node;
+	wchar_t *wname;
 	char name[MAX_LENGTH_PATH_NAME];
 	char full_name[MAX_LENGTH_PATH_NAME];
 
@@ -1162,7 +1160,29 @@ static int create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath, int 
 			strcpy(full_name, dirpath);
 			strcat(full_name, "/");
 
-			memcpy(name, rec->name, namelen);
+			if (cdfs->joliet) {
+				namelen /= 2;
+				wname = (wchar_t *) rec->name;
+				if (namelen > 1 && ntohs(wname[namelen - 2]) == ';') {
+					namelen -= 2;
+				}
+				if (namelen > 0 && ntohs(wname[namelen - 1]) == '.') {
+					namelen -= 1;
+				}
+
+				for (int n = 0; n < namelen; n++) {
+					name[n] = (char) ntohs(wname[n]);
+				}
+			}
+			else {
+				if (namelen > 1 && rec->name[namelen - 2] == ';') {
+					namelen -= 2;
+				}
+				if (namelen > 0 && rec->name[namelen - 1] == '.') {
+					namelen -= 1;
+				}
+				memcpy(name, rec->name, namelen);
+			}
 			name[namelen] = 0;
 
 			strcat(full_name, name);

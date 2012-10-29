@@ -52,9 +52,9 @@ int ramdisk_create(void *mkfs_params) {
 
 	ram_disk = pool_alloc(&ramdisk_pool);
 	if(0 > (ram_disk->devnum =
-			dev_make((char *)ramdisk_node->name,
+			blockdev_make((char *)ramdisk_node->name,
 					&ramdisk_pio_driver, ram_disk))) {
-		dev_destroy (ram_disk->devnum);
+		blockdev_destroy (ram_disk->devnum);
 		return -EIO;
 	}
 
@@ -104,7 +104,7 @@ int ramdisk_delete(const char *name) {
 		pool_free(&ramdisk_pool, ram_disk);
 		vfs_del_leaf(ramdisk_node);
 	}
-	return dev_destroy (devnum);
+	return blockdev_destroy (devnum);
 }
 
 static int unit_init(void) {

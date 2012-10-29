@@ -187,20 +187,16 @@ static int cd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 		if (rc < 0) {
 			return rc;
 		}
-
 		rc = hd->blks = atapi_read_capacity(hd);
 		if (rc < 0) {
 			return rc;
 		}
-
 		return 0;
 	}
-
 	return -ENOSYS;
 }
 
-
-block_dev_driver_t cdrom_pio_driver = {
+static block_dev_driver_t _cdrom_pio_driver = {
 	"idecd_drv",
 	DEV_TYPE_BLOCK,
 	NULL,
@@ -208,3 +204,7 @@ block_dev_driver_t cdrom_pio_driver = {
 	cd_read,
 	cd_write
 };
+
+void *cdrom_pio_driver(void) {
+	return &_cdrom_pio_driver;
+}

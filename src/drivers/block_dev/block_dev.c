@@ -20,7 +20,7 @@
 
 POOL_DEF(blockdev_pool, struct block_dev, MAX_DEV_QUANTITY);
 
-unsigned int num_devs = 0;
+static unsigned int num_devs = 0;
 block_dev_t *devtab[64];
 
 
@@ -45,7 +45,18 @@ block_dev_t *block_dev(dev_t devno) {
 	return devtab[devno];
 }
 
-int dev_destroy (dev_t devno) {
+dev_t devno(char *name) {
+	dev_t devno;
+
+	for (devno = 0; devno < num_devs; devno++) {
+		if (strcmp(block_dev(devno)->name, name) == 0) {
+			return devno;
+		}
+	}
+	return NODEV;
+}
+
+int blockdev_destroy (dev_t devno) {
 	block_dev_t *dev;
 
 	if(NULL ==(dev = block_dev(devno))) {
@@ -61,7 +72,7 @@ int dev_destroy (dev_t devno) {
 	}
 }
 
-dev_t dev_make(char *name, block_dev_driver_t *driver, void *privdata) {
+dev_t blockdev_make(char *name, block_dev_driver_t *driver, void *privdata) {
 	block_dev_t *dev;
 	dev_t devno;
 	char *p;
@@ -121,18 +132,7 @@ dev_t dev_make(char *name, block_dev_driver_t *driver, void *privdata) {
 	return devno;
 }
 
-dev_t devno(char *name) {
-	dev_t devno;
-
-	for (devno = 0; devno < num_devs; devno++) {
-		if (strcmp(block_dev(devno)->name, name) == 0) {
-			return devno;
-		}
-	}
-	return NODEV;
-}
-
-dev_t dev_open(char *name) {
+dev_t blockdev_open(char *name) {
 	dev_t d = devno(name);
 	if (d != NODEV) {
 	  devtab[d]->refcnt++;
@@ -140,7 +140,7 @@ dev_t dev_open(char *name) {
 	return d;
 }
 
-int dev_close(dev_t devno) {
+int blockdev_close(dev_t devno) {
 	if(devno < 0 || devno >= num_devs) {
 		return -ENODEV;
 	}
@@ -152,7 +152,7 @@ int dev_close(dev_t devno) {
 }
 
 
-int dev_read(dev_t devno, char *buffer, size_t count, blkno_t blkno) {
+int blockdev_read(dev_t devno, char *buffer, size_t count, blkno_t blkno) {
 	block_dev_t *dev;
 
 	if (devno < 0 || devno >= num_devs) {
@@ -168,7 +168,7 @@ int dev_read(dev_t devno, char *buffer, size_t count, blkno_t blkno) {
 	return dev->driver->read(dev, buffer, count, blkno);
 }
 
-int dev_write(dev_t devno, char *buffer, size_t count, blkno_t blkno) {
+int blockdev_write(dev_t devno, char *buffer, size_t count, blkno_t blkno) {
 	block_dev_t *dev;
 
 	if (devno < 0 || devno >= num_devs) {
@@ -184,7 +184,7 @@ int dev_write(dev_t devno, char *buffer, size_t count, blkno_t blkno) {
 	return dev->driver->write(dev, buffer, count, blkno);
 }
 
-int dev_ioctl(dev_t devno, int cmd, void *args, size_t size) {
+int blockdev_ioctl(dev_t devno, int cmd, void *args, size_t size) {
 	block_dev_t *dev;
 
 	if (devno < 0 || devno >= num_devs) {
