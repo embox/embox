@@ -12,9 +12,12 @@
 #include <hal/mmu.h>
 #include <types.h>
 
-#define VMEM_PAGE_WRITABLE  (1 << 0)
-#define VMEM_PAGE_CACHEABLE (1 << 1)
-#define VMEM_PAGE_USERMODE  (1 << 2)
+#define VMEM_PAGE_WRITABLE    (1 << 0)
+#define VMEM_PAGE_CACHEABLE   (1 << 1)
+#define VMEM_PAGE_USERMODE    (1 << 2)
+
+/* Not implemented yet */
+#define VMEM_PAGE_EXECUTABLE  (0)
 
 typedef uint32_t vmem_page_flags_t;
 
