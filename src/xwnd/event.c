@@ -1,8 +1,9 @@
-/*
- * event.c
+/**
+ * @file
+ * @brief XWnd event-related routines implementation
  *
- *  Created on: 18.10.2012
- *      Author: alexandr
+ * @date Oct 18, 2012
+ * @author Alexandr Chernakov
  */
 
 #include <stdlib.h>

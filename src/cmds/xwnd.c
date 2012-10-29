@@ -16,6 +16,7 @@
 #include <xwnd/xwnd.h>
 #include <xwnd/bmp.h>
 #include <xwnd/app_registry.h>
+#include <xwnd/test_app.h>
 
 EMBOX_CMD(exec);
 
@@ -73,22 +74,19 @@ static int exec (int argc, char ** argv) {
 		}
 	}
 	else {
-		int err;
-		struct xwnd_application * app;
+		int err, app_id;
 
 		xwnd_init();
 
 		err = xwnd_app_reg_init();
 		if (err) {
-			printf ("AAAAA");
 			return 1;
 		}
-		app = xwnd_app_create();
-		if (!app) {
-			printf("BBBBBB");
+		app_id = xwnd_app_create(test_app_main);
+		if (app_id < 0) {
 			return 1;
 		}
-		sleep(3);
+		/*sleep(3);*/
 
 		while (1) {
 			if (!keyboard_has_symbol()) {
@@ -97,11 +95,11 @@ static int exec (int argc, char ** argv) {
 			else {
 				char key = keyboard_getc();
 				if ('q' == key) {
-					xwnd_app_send_quit_event(app->app_id, 0);
+					xwnd_app_send_quit_event(app_id, 0);
 					sleep(1);
 					break;
 				} else {
-					xwnd_app_send_kbd_event(app->app_id, key);
+					xwnd_app_send_kbd_event(app_id, key);
 				}
 			}
 		}
