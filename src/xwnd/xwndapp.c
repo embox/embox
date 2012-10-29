@@ -6,6 +6,7 @@
  */
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <xwnd/xwndapp.h>
 #include <xwnd/app_registry.h>
 #include <xwnd/event.h>
@@ -27,9 +28,9 @@ int xwnd_app_set_event_handle (struct xwnd_application * app, enum xwnd_event_ty
 
 int xwnd_app_get_event (struct xwnd_application * app, struct xwnd_event * event) {
 	int err;
-	sem_enter(&(app->msg_sem));
+	sem_enter(app->msg_sem);
 	err = read(app->pipe_in, event, sizeof(struct xwnd_event));
-	sem_leave(&(app->msg_sem));
+	sem_leave(app->msg_sem);
 	if (err != sizeof(struct xwnd_event)) {
 		return 1;
 	}
@@ -57,10 +58,47 @@ int xwnd_app_main_loop (struct xwnd_application * app) {
 	return exit_status;
 }
 
-int xwnd_app_init (void) {
+
+int xwnd_app_reg_set_xapp_struct_ptr (void) {
 	return 0;
 }
 
-int xwnd_app_quit (const struct xwnd_application * app, int exit_status) {
-	return 0;
+struct xwnd_application * xwnd_app_init (void * args) {
+	struct xwnd_application * t_xapp;
+	struct xwnd_window * t_wnd;
+	struct xwnd_rect rect;
+	struct xwnd_app_init_wrapper * t_wrap = (struct xwnd_app_init_wrapper *)args;
+	int xapp_id = t_wrap->xapp_id;
+
+	t_xapp = malloc(sizeof(struct xwnd_application));
+	if (!t_xapp) {
+		return NULL;
+	}
+
+	//Create window
+	rect.x = 30 * (xapp_id + 1);
+	rect.y = 20 * (xapp_id + 1);
+	rect.wd = 60 * (xapp_id + 1);
+	rect.ht = 60 * (xapp_id + 1);
+	t_wnd = xwnd_window_create(&rect); //malloc (sizeof(struct xwnd_window));
+	if (!t_wnd) {
+		free(t_xapp);
+		return NULL;
+	}
+	t_xapp->wnd = t_wnd;
+	t_xapp->app_id = xapp_id;
+	t_xapp->req_sem = t_wrap->req_sem;
+	t_xapp->msg_sem = t_wrap->msg_sem;
+	t_xapp->pipe_out = t_wrap->req_pipe;
+	t_xapp->pipe_in = t_wrap->msg_pipe;
+
+
+
+
+	return t_xapp;
+}
+
+int xwnd_app_quit (struct xwnd_application * app, int exit_status) {
+	free(app);
+	return exit_status;
 }

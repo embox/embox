@@ -30,11 +30,12 @@ static void on_key (struct xwnd_event * ev) {
 }
 
 void * test_app_main (void * args) {
-	xapp = (struct xwnd_application *) args;
+	xapp = xwnd_app_init (args);
 	xwnd_app_set_event_handle(xapp, XWND_EV_CREAT, on_creat);
 	xwnd_app_set_event_handle(xapp, XWND_EV_DRAW, on_draw);
 	xwnd_app_set_event_handle(xapp, XWND_EV_QUIT, on_quit);
 	xwnd_app_set_event_handle(xapp, XWND_EV_KBD, on_key);
 	xwnd_app_main_loop(xapp);
+	xwnd_app_quit(xapp, 0);
 	return NULL;
 }

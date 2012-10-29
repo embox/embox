@@ -1,3 +1,9 @@
+/*
+ * app_registry.c
+ *
+ *  Created on: 29.10.2012
+ *      Author: alexandr
+ */
 #include <xwnd/window.h>
 #include <stdlib.h>
 

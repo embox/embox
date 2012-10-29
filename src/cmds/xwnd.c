@@ -74,8 +74,7 @@ static int exec (int argc, char ** argv) {
 		}
 	}
 	else {
-		int err;
-		struct xwnd_application * app;
+		int err, app_id;
 
 		xwnd_init();
 
@@ -84,8 +83,8 @@ static int exec (int argc, char ** argv) {
 			printf ("AAAAA");
 			return 1;
 		}
-		app = xwnd_app_create(test_app_main);
-		if (!app) {
+		app_id = xwnd_app_create(test_app_main);
+		if (app_id < 0) {
 			printf("BBBBBB");
 			return 1;
 		}
@@ -98,11 +97,11 @@ static int exec (int argc, char ** argv) {
 			else {
 				char key = keyboard_getc();
 				if ('q' == key) {
-					xwnd_app_send_quit_event(app->app_id, 0);
+					xwnd_app_send_quit_event(app_id, 0);
 					sleep(1);
 					break;
 				} else {
-					xwnd_app_send_kbd_event(app->app_id, key);
+					xwnd_app_send_kbd_event(app_id, key);
 				}
 			}
 		}

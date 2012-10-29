@@ -15,6 +15,7 @@
 
 #define XAPP_REG_DEF_CNT 256
 
+
 static struct xwnd_app_registry xapp_reg;
 
 int xwnd_app_reg_init (void) {
@@ -27,64 +28,40 @@ int xwnd_app_reg_init (void) {
 	return 0;
 }
 
-struct xwnd_application * xwnd_app_create (void* (*entry_point) (void*)) {
-	struct xwnd_application * t_xapp;
-	struct xwnd_window * t_wnd;
+int xwnd_app_create (void* (*entry_point) (void*)) {
 	int req_pipe[2], msg_pipe[2];
 	int xapp_id = xapp_reg.used;
 	int xapp_tid;
-	struct xwnd_rect rect;
 
-	//Get an entry in registry
+	/*FIXME: Get an entry in registry*/
 	if (xapp_id >= XAPP_REG_DEF_CNT - 1) {
-		return NULL;
+		return -1;
 	}
 	xapp_reg.used++;
 
-	//Allocate client-side application structure
-	//FIXME: This allocation is freaking bad. Replace it with something better
-
-	t_xapp = malloc(sizeof(struct xwnd_application));
-	if (!t_xapp) {
-		xapp_reg.used--;
-		return NULL;
-	}
-	xapp_reg.nodes[xapp_id].xapp = t_xapp;
-	//Initialize them
-
-	//Init pipe semaphores
-	sem_init(&(t_xapp->msg_sem), 2);
-	sem_init(&(t_xapp->req_sem), 2);
-	//Connect pipes
+	/*Init pipe semaphores*/
+	sem_init(&xapp_reg.nodes[xapp_id].msg_sem, 2);
+	sem_init(&xapp_reg.nodes[xapp_id].req_sem, 2);
+	/*Connect pipes*/
 	pipe(req_pipe);
 	pipe(msg_pipe);
 	xapp_reg.nodes[xapp_id].pipe_in  = req_pipe[0];
 	xapp_reg.nodes[xapp_id].pipe_out = msg_pipe[1];
-	t_xapp->pipe_in  = msg_pipe[0];
-	t_xapp->pipe_out = req_pipe[1];
+	/*Fill up the strcture to transfer to xwnd_app_init();*/
+	xapp_reg.nodes[xapp_id].init_wrap.msg_pipe = msg_pipe[0];
+	xapp_reg.nodes[xapp_id].init_wrap.req_pipe = req_pipe[1];
+	xapp_reg.nodes[xapp_id].init_wrap.xapp_id = xapp_id;
+	xapp_reg.nodes[xapp_id].init_wrap.msg_sem = &xapp_reg.nodes[xapp_id].msg_sem;
+	xapp_reg.nodes[xapp_id].init_wrap.req_sem = &xapp_reg.nodes[xapp_id].req_sem;
 
-	//Create window
-	rect.x = 30 * (xapp_id + 1);
-	rect.y = 20 * (xapp_id + 1);
-	rect.wd = 60 * (xapp_id + 1);
-	rect.ht = 60 * (xapp_id + 1);
-	t_wnd = xwnd_window_create(&rect); //malloc (sizeof(struct xwnd_window));
-	if (!t_wnd) {
-		free(t_xapp);
-		return NULL;
-	}
-	t_xapp->wnd = t_wnd;
-
-	t_xapp->app_id = xapp_id;
-
-	//Send first messages
+	/*Send first messages*/
 	xwnd_app_send_sys_event(xapp_id, XWND_EV_CREAT);
 	xwnd_app_send_sys_event(xapp_id, XWND_EV_DRAW);
 
-	//Now ready to start an application
-	xapp_tid = new_task(entry_point, (void*)t_xapp, 0);
+	/*Now ready to start an application*/
+	xapp_tid = new_task(entry_point, (void*)(&(xapp_reg.nodes[xapp_id].init_wrap)), 0);
 	xapp_tid = xapp_tid;
-	return t_xapp;
+	return xapp_id;
 }
 
 void xwnd_app_remove(void) {
@@ -93,9 +70,9 @@ void xwnd_app_remove(void) {
 int xwnd_app_put_message(int app_id, void * data, size_t size) {
 	int msg_pipe = xapp_reg.nodes[app_id].pipe_out;
 	int err;
-	if (!sem_tryenter(&(xapp_reg.nodes[app_id].xapp->msg_sem))) {
+	if (!sem_tryenter(&(xapp_reg.nodes[app_id].msg_sem))) {
 		err = write(msg_pipe, data, size);
-		sem_leave(&(xapp_reg.nodes[app_id].xapp->msg_sem));
+		sem_leave(&(xapp_reg.nodes[app_id].msg_sem));
 	}
 	if (err != size) {
 		return -1;
