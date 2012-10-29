@@ -1,8 +1,9 @@
-/*
- * app_registry.h
+/**
+ * @file
+ * @brief XWnd application registry API
  *
- *  Created on: 18.10.2012
- *      Author: alexandr
+ * @date Oct 18, 2012
+ * @author Alexandr Chernakov
  */
 
 #ifndef XWND_APP_REGISTRY_H_

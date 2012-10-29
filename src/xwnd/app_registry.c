@@ -1,8 +1,9 @@
-/*
- * app_registry.c
+/**
+ * @file
+ * @brief XWnd application registry implementation
  *
- *  Created on: 18.10.2012
- *      Author: alexandr
+ * @date Oct 18, 2012
+ * @author Alexandr Chernakov
  */
 
 

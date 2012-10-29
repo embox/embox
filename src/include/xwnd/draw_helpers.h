@@ -5,6 +5,13 @@
  *      Author: alexandr
  */
 
+/**
+ * @file
+ * @brief XWnd library for *.bmp files loading and output
+ *
+ * @date Oct 3, 2012
+ * @author Alexandr Chernakov
+ */
 #ifndef XWND_DRAW_HELPERS_H_
 #define XWND_DRAW_HELPERS_H_
 

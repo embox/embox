@@ -1,8 +1,9 @@
-/*
- * xwndlib.h
+/**
+ * @file
+ * @brief XWnd client-side API
  *
- *  Created on: 15.10.2012
- *      Author: alexandr
+ * @date Oct 15, 2012
+ * @author Alexandr Chernakov
  */
 
 #ifndef XWND_XWNDAPP_H_

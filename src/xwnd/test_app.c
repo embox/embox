@@ -1,8 +1,9 @@
-/*
- * test_app.c
+/**
+ * @file
+ * @brief XWnd testing application conforming to desired standards
  *
- *  Created on: 18.10.2012
- *      Author: alexandr
+ * @date Oct 18, 2012
+ * @author Alexandr Chernakov
  */
 
 #include <xwnd/xwnd.h>

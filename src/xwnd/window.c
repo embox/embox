@@ -1,9 +1,11 @@
-/*
- * app_registry.c
+/**
+ * @file
+ * @brief XWnd basic widgets implementation
  *
- *  Created on: 29.10.2012
- *      Author: alexandr
+ * @date Oct 29, 2012
+ * @author Alexandr Chernakov
  */
+
 #include <xwnd/window.h>
 #include <stdlib.h>
 

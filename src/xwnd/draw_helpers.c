@@ -1,3 +1,11 @@
+/**
+ * @file
+ * @brief XWnd drawing utilities
+ *
+ * @date Oct 10, 2012
+ * @author Alexandr Chernakov
+ */
+
 #include <xwnd/draw_helpers.h>
 #include <drivers/vesa.h>
 #include <xwnd/xwnd.h>

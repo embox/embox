@@ -1,8 +1,9 @@
-/*
- * xwndapp.c
+/**
+ * @file
+ * @brief XWnd client-side library implementation
  *
- *  Created on: 18.10.2012
- *      Author: alexandr
+ * @date Oct 18, 2012
+ * @author Alexandr Chernakov
  */
 
 #include <unistd.h>

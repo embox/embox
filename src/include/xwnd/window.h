@@ -1,8 +1,9 @@
-/*
- * window.h
+/**
+ * @file
+ * @brief XWnd basic widgets
  *
- *  Created on: 15.10.2012
- *      Author: alexandr
+ * @date Oct 15, 2012
+ * @author Alexandr Chernakov
  */
 
 #ifndef XWND_WINDOW_H_
