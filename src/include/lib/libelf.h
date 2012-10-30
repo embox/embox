@@ -66,7 +66,7 @@ extern int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *header,
 extern int32_t elf_read_segment(Elf32_Phdr *program_header, int8_t *dst);
 
 
-extern void elf_objlist_init(Elf32_Objlist *list);
+extern int elf_objlist_init(Elf32_Objlist **list);
 extern int elf_objlist_add(Elf32_Objlist *list, Elf32_Obj *obj);
 
 

@@ -11,8 +11,14 @@
 
 #include <lib/libelf.h>
 
-void elf_objlist_init(Elf32_Objlist *list) {
-	list->first = NULL;
+int elf_objlist_init(Elf32_Objlist **list) {
+	if (!(*list = malloc(sizeof(Elf32_Objlist)))) {
+		return -ENOMEM;
+	}
+
+	(*list)->first = NULL;
+
+	return ENOERR;
 }
 
 int elf_objlist_add(Elf32_Objlist *list, Elf32_Obj *obj) {
@@ -38,11 +44,14 @@ void elf_objlist_free_item(Elf32_Objlist_item *item) {
 
 void elf_objlist_free(Elf32_Objlist *list) {
 	Elf32_Objlist_item *next, *item = list->first;
+
 	while (item) {
 		next = item->next;
 		elf_objlist_free_item(item);
 		item = next;
 	}
+
+	free(list);
 }
 
 

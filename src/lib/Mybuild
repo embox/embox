@@ -29,6 +29,7 @@ static module LibDl {
 
 static module LibElfloader {
 	source "elfloader/elfloader.c"
+	source "elfloader/elfloader_object.c"
 
 	depends LibElf, LibDl
 }

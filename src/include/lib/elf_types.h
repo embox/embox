@@ -152,6 +152,8 @@ typedef struct {
 	/* Elf relocation array */
 	Elf32_Rel    *rel_array;
 	unsigned int rel_count;
+
+	Elf32_Addr   load_offset; /* For shared libraries */
 } Elf32_Obj;
 
 typedef struct elf_objlist_item {
