@@ -125,6 +125,7 @@ enum sock_flags {
 /** Protocol specific functions */
 typedef struct proto {
 	void (*close)(sock_t *sk, long timeout);
+	int (*shutdown)(struct sock *sk, int flags);
 	int (*connect)(sock_t *sk, sockaddr_t *addr, int addr_len);
 //	int (*disconnect)(sock_t *sk, int flags);
 	int (*listen)(sock_t *sk, int backlog);

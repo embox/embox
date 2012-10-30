@@ -350,6 +350,21 @@ static int inet_setsockopt(struct socket *sock, int level, int optname,
 	return res;
 }
 
+int inet_shutdown(struct socket *sock, int how) {
+	struct sock *sk;
+	int res = ENOERR;
+
+	assert(sock->sk != NULL);
+	sk = sock->sk;
+	assert(sk->sk_prot);
+
+	if (sk->sk_prot->shutdown) {
+		res = sk->sk_prot->shutdown(sk, how);
+	}
+
+	return res;
+}
+
 /**
  * predicate to compare two internet address structures
  **/
@@ -390,6 +405,7 @@ const struct proto_ops inet_stream_ops = {
 		.sendmsg           = inet_sendmsg,
 		.recvmsg           = inet_recvmsg,
 		.compare_addresses = inet_address_compare,
+		.shutdown          = inet_shutdown
 };
 
 /*
