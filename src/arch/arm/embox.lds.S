@@ -46,3 +46,6 @@ SECTIONS {
 	SECTION_SYMBOLS(reserve)
 
 }
+
+_mem_begin = LDS_REGION_BASE_sdram;
+_mem_length = LDS_REGION_SIZE_sdram;
