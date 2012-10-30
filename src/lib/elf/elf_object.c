@@ -12,6 +12,8 @@
 #include <lib/libelf.h>
 
 int elf_object_init(Elf32_Obj **obj, FILE *fd) {
+	int err;
+
 	if (!(*obj = malloc(sizeof(Elf32_Obj)))) {
 		return -ENOMEM;
 	}
@@ -25,6 +27,7 @@ int elf_object_init(Elf32_Obj **obj, FILE *fd) {
 
 
 		.header         = NULL,
+		.sections       = NULL,
 		.sh_table       = NULL,
 		.ph_table       = NULL,
 		.string_table   = NULL,
@@ -35,21 +38,20 @@ int elf_object_init(Elf32_Obj **obj, FILE *fd) {
 	};
 
 	if (fd != NULL) {
-		return elf_read_header(*obj);
+		/* Read elf header and allocate array for sections */
+
+		if ((err = elf_read_header(*obj)) < 0) {
+			return err;
+		}
+
+		return elf_init_sections(*obj);
 	}
 
 	return ENOERR;
 }
 
 void elf_object_free(Elf32_Obj *obj) {
-	if (obj->header       != NULL) free(obj->header);
-	if (obj->sh_table     != NULL) free(obj->sh_table);
-	if (obj->ph_table     != NULL) free(obj->ph_table);
-	if (obj->string_table != NULL) free(obj->string_table);
-	if (obj->sym_table    != NULL) free(obj->sym_table);
-	if (obj->sym_names    != NULL) free(obj->sym_names);
-	if (obj->dyn_section  != NULL) free(obj->dyn_section);
-	if (obj->rel_array    != NULL) free(obj->rel_array);
-
+	if (obj->sections != NULL) elf_free_sections(obj);
+	if (obj->header   != NULL) free(obj->header);
 	free(obj);
 }

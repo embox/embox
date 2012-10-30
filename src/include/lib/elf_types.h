@@ -127,6 +127,8 @@ typedef struct {
 	/* Header of the file */
 	Elf32_Ehdr   *header;
 
+	char         **sections;
+
 	/* Section table */
 	Elf32_Shdr   *sh_table;
 

@@ -31,7 +31,7 @@
 int _global_outside = 3;
 
 static inline int elf_relocate_section_rel(dl_data *data, Elf32_Obj *obj,
-		Elf32_Shdr *relsh) {
+		unsigned int sh_idx) {
 
 	Elf32_Rel  *rel;
 	Elf32_Sym  *sym;
@@ -39,16 +39,29 @@ static inline int elf_relocate_section_rel(dl_data *data, Elf32_Obj *obj,
 	Elf32_Addr *where;
 	Elf32_Shdr *sh_table = obj->sh_table;
 	dl_globsym *globsym;
-	int rel_count = elf_read_rel_section(obj, relsh, &rel);
+	Elf32_Shdr *relsh = &obj->sh_table[sh_idx];
+
+	Elf32_Sym *sym_table;
+	char      *sym_names;
+
+	int err;
+
+	int rel_count = elf_read_rel_section(obj, sh_idx, &rel);
+
+	if ((err = elf_read_symbols(obj, relsh->sh_link,
+			&sym_table, &sym_names)) < 0) {
+		return err;
+	}
 
 	for (int i = 0 ; i < rel_count; i++) {
 		where = (Elf32_Addr *)
 				(sh_table[relsh->sh_info].sh_addr + rel[i].r_offset);
-		sym = &obj->sym_table[ELF32_R_SYM(rel[i].r_info)];
+
+		sym = &sym_table[ELF32_R_SYM(rel[i].r_info)];
 		if (sym->st_shndx != SHN_UNDEF) {
 			sym_addr = elf_get_symbol_addr(obj, sym);
 		} else {
-			globsym = dl_find_global_symbol(data, obj->sym_names + sym->st_name);
+			globsym = dl_find_global_symbol(data, sym_names + sym->st_name);
 			if (globsym == NULL) {
 				return -ENOENT;
 			}
@@ -77,7 +90,7 @@ static inline int elf_relocate_section_rel(dl_data *data, Elf32_Obj *obj,
 }
 
 static inline int elf_relocate_section_rela(dl_data *data, Elf32_Obj *obj,
-		Elf32_Shdr *relash) {
+		unsigned int sh_idx) {
 	/* Have not implemented yet */
 	return -ENOSYS;
 }
@@ -91,12 +104,12 @@ int dl_proceed_relocations(dl_data *data, Elf32_Obj *obj) {
 
 		switch (sh->sh_type) {
 		case SHT_REL:
-			if ((err = elf_relocate_section_rel(data, obj, sh)) < 0) {
+			if ((err = elf_relocate_section_rel(data, obj, i)) < 0) {
 				return err;
 			}
 			break;
 		case SHT_RELA:
-			if ((err = elf_relocate_section_rela(data, obj, sh)) < 0) {
+			if ((err = elf_relocate_section_rela(data, obj, i)) < 0) {
 				return err;
 			}
 			break;

@@ -36,23 +36,36 @@
 #define REVERSE_L(num) num = __REV_L(num)
 #define REVERSE_S(num) num = __REV_S(num)
 
+// OBJECT
 extern int elf_object_init(Elf32_Obj **obj, FILE *fd);
 extern void elf_object_fini(Elf32_Obj *obj);
 
+// READ HEADERS
 extern int elf_read_header(Elf32_Obj *obj);
 extern int elf_read_section_header_table(Elf32_Obj *obj);
 extern int elf_read_program_header_table(Elf32_Obj *obj);
 
-extern int elf_read_section(Elf32_Obj *obj, Elf32_Shdr *sh, char **dst);
+// SECTION METHODS
+extern int elf_init_sections(Elf32_Obj *obj);
+extern void elf_free_sections(Elf32_Obj *obj);
+extern void elf_free_section(Elf32_Obj *obj, char *section_ptr);
+extern int elf_read_section(Elf32_Obj *obj, unsigned int sh_idx, char **dst);
 
-extern int elf_read_string_table(Elf32_Obj *obj);
+// SYMBOLS
+extern int elf_read_symbols(Elf32_Obj *obj, unsigned int sh_idx,
+		Elf32_Sym **sym_table, char **sym_names);
+
+
 extern int elf_read_symbol_table(Elf32_Obj *obj);
 extern int elf_read_symbol_names(Elf32_Obj *obj);
+
+
+extern int elf_read_string_table(Elf32_Obj *obj);
 extern int elf_read_dynamic_section(Elf32_Obj *obj);
 
 extern Elf32_Addr elf_get_symbol_addr(Elf32_Obj *obj, Elf32_Sym *sym);
 
-extern int elf_read_rel_section(Elf32_Obj *obj, Elf32_Shdr *sh,
+extern int elf_read_rel_section(Elf32_Obj *obj, unsigned int sh_idx,
 		Elf32_Rel **rel);
 extern void elf_remove_rel_section(Elf32_Rel *rel);
 
