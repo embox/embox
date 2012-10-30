@@ -1,8 +1,9 @@
-/*
- * event.h
+/**
+ * @file
+ * @brief XWnd event API; Have to be moved to somewhere outside XWnd
  *
- *  Created on: 15.10.2012
- *      Author: alexandr
+ * @date Oct 15, 2012
+ * @author Alexandr Chernakov
  */
 
 #ifndef XWND_EVENT_H_

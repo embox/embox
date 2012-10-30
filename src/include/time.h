@@ -29,7 +29,7 @@ struct tm {
 	int    tm_hour;  /*Hour [0,23].   */
 	int    tm_mday;  /*Day of month [1,31]. */
 	int    tm_mon;   /*Month of year [0,11]. */
-	int    tm_year;  /*Years since 1900.  */
+	int    tm_year;  /*Years since 1900 */
 	int    tm_wday;  /*Day of week [0,6] (Sunday =0). */
 	int    tm_yday;  /*Day of year [0,365]. */
 	int    tm_isdst; /*Daylight Savings flag. */
@@ -59,6 +59,11 @@ struct timezone {
 extern char *ctime(const time_t *timep);
 
 extern char *ctime_r(const time_t *t, char *buff);
+
+extern struct tm *gmtime(const time_t *timep);
+extern struct tm *gmtime_r(const time_t *timep, struct tm *result);
+
+extern time_t mktime(struct tm *tm);
 
 #define CLOCKS_PER_SEC     1000 //TODO CLOCKS_PER_SEC should receive from clock_getres()
 

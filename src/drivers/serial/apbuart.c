@@ -13,9 +13,13 @@
 #include <hal/reg.h>
 #include <hal/system.h>
 #include <kernel/irq.h>
-#include <kernel/printk.h>
+
+#include <drivers/uart_device.h>
+
 
 #include <embox/unit.h>
+
+#include <kernel/printk.h>
 
 #define BAUD_RATE \
 	OPTION_GET(NUMBER, baud_rate)
@@ -82,7 +86,7 @@ static int dev_regs_init(void);
 static unsigned int irq_num;
 
 
-static int uart_init(void) {
+static int uart_setup(struct uart_device *dev, struct uart_params *params){
 	int err;
 
 	if (NULL != dev_regs) {
@@ -96,22 +100,34 @@ static int uart_init(void) {
 
 	REG_STORE(&dev_regs->ctrl, UART_DISABLE_ALL);
 	REG_STORE(&dev_regs->scaler, UART_SCALER_VAL);
-	REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE);
+	REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE | UART_CTRL_RI);
+//	REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE );
+	dev->base_addr = (uint32_t)dev_regs;
+	dev->irq_num = irq_num;
 
 	return 0;
 }
 
-static void uart_putc(char ch) {
+static int uart_putc(struct uart_device *dev, int ch) {
 	while (!(UART_STAT_TE & REG_LOAD(&dev_regs->status))) {
 	}
 	REG_STORE(&dev_regs->data, (uint32_t) ch);
+
+	return 0;
 }
 
-static char uart_getc(void) {
+static int uart_has_symbol(struct uart_device *dev) {
+	return UART_STAT_DR & REG_LOAD(&dev_regs->status);
+}
+
+static int uart_getc(struct uart_device *dev) {
+#if 0
 	while (!(UART_STAT_DR & REG_LOAD(&dev_regs->status))) {
 	}
-	return ((char) REG_LOAD(&dev_regs->data));
+#endif
+	return REG_LOAD(&dev_regs->data);
 }
+
 
 #ifdef DRIVER_AMBAPP
 static int dev_regs_init() {
@@ -136,57 +152,33 @@ static int dev_regs_init() {
 # error "Either DRIVER_AMBAPP or apbuart_base option must be defined"
 #endif /* DRIVER_AMBAPP */
 
-
-/* ADD_CHAR_DEVICE(TTY1,uart_getc,uart_getc); */
-
-static void *apb_open(struct file_desc *desc, const char *mode);
-static int apb_close(struct file_desc *desc);
-static size_t apb_read(void *buf, size_t size, size_t count, void *file);
-static size_t apb_write(const void *buff, size_t size, size_t count, void *file);
-
-static file_operations_t file_op = {
-		.fread = apb_read,
-		.fopen = apb_open,
-		.fclose = apb_close,
-		.fwrite = apb_write
+static struct uart_params uart0_params = {
+		.baud_rate = OPTION_GET(NUMBER, baud_rate),
+		.parity = 0,
+		.n_stop = 1,
+		.n_bits = 8
 };
 
-/*
- * file_operation
- */
-static void *apb_open(struct file_desc *desc, const char *mode) {
-	if(NULL == dev_regs) {
-		uart_init();
-	}
-	desc->ops = &file_op;
-	return (void *) desc;
-}
+static struct uart_ops uart_ops = {
+		.get = uart_getc,
+		.put = uart_putc,
+		.hasrx = uart_has_symbol,
+		.setup = uart_setup
+};
 
-static int apb_close(struct file_desc *desc) {
+static struct uart_device uart0 = {
+		.dev_name = "uart0",
+		.irq_num = -1,
+		.base_addr = -1,
+		.params = &uart0_params,
+		.operations = &uart_ops,
+};
+
+#include <embox/device.h>
+
+static int uart_init(void) {
+	uart_dev_register(&uart0);
 	return 0;
 }
 
-static size_t apb_read(void *buf, size_t size, size_t count, void *file) {
-	char *ch_buf = (char *) buf;
-
-	int i = count * size;
-
-	while (i --) {
-		*(ch_buf++) = uart_getc();
-	}
-
-	return 0;
-}
-
-static size_t apb_write(const void *buff, size_t size, size_t count, void *file) {
-	size_t cnt = 0;
-	char *b = (char*) buff;
-
-	while (cnt != count * size) {
-		uart_putc(b[cnt++]);
-	}
-	return 0;
-}
-
-
-EMBOX_DEVICE("uart", &file_op);
+EMBOX_DEVICE("uart", &uart_dev_file_op, uart_init);

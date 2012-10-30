@@ -20,7 +20,6 @@ ARRAY_SPREAD_DEF(global_sig_hnd_t, __signal_handlers_array);
 
 extern void context_enter_frame(struct context *ctx, void *pc);
 extern void context_push_stack(struct context *ctx, void *arg, size_t n);
-extern void *context_pop_stack(struct context *ctx, size_t n);
 
 int task_some_thd_run(struct task *task) {
 	struct thread *th;
@@ -77,8 +76,6 @@ void task_signal_hnd(void) {
 }
 
 static int notify_hnd(struct thread *prev, struct thread *next) {
-	/* XXX */
-	context_pop_stack(&next->context, sizeof(next->context.eip));
 	context_enter_frame(&next->context, task_signal_hnd);
 	return 0;
 }

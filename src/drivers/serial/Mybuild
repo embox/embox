@@ -15,9 +15,7 @@ module apbuart extends serial {
 
 	depends embox.lib.LibC
 	depends embox.driver.ambapp_api
-	depends embox.kernel.irq
-	depends embox.fs.driver.devfs
-
+	depends embox.driver.virtual.uart
 }
 
 module at91_uart extends serial {
@@ -32,8 +30,8 @@ module serial_port extends serial {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "8250.c"
 
-	depends embox.kernel.irq
 	depends embox.util.LibUtil
+	depends embox.driver.virtual.uart
 }
 
 module xuartlite extends serial {

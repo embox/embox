@@ -326,6 +326,12 @@ static int inet_setsockopt(struct socket *sock, int level, int optname,
 		char __user *optval, int optlen) {
 	net_device_t *dev;
 	struct socket_opt_state *ops;
+	struct sock *sk;
+	int res = ENOERR;
+
+	assert(sock != NULL);
+	assert(sock->sk != NULL);
+	assert(sock->sk->sk_prot != NULL);
 
 	if (optname == SO_BINDTODEVICE) {
 		dev = netdev_get_by_name(optval);
@@ -335,7 +341,28 @@ static int inet_setsockopt(struct socket *sock, int level, int optname,
 		ops->so_bindtodev = dev;
 	}
 
-	return ENOERR;
+	sk = sock->sk;
+
+	sock_lock(sk);
+	res = sk->sk_prot->setsockopt(sk, level, optname, optval, optlen);
+	sock_unlock(sk);
+
+	return res;
+}
+
+int inet_shutdown(struct socket *sock, int how) {
+	struct sock *sk;
+	int res = ENOERR;
+
+	assert(sock->sk != NULL);
+	sk = sock->sk;
+	assert(sk->sk_prot);
+
+	if (sk->sk_prot->shutdown) {
+		res = sk->sk_prot->shutdown(sk, how);
+	}
+
+	return res;
 }
 
 /**
@@ -378,6 +405,7 @@ const struct proto_ops inet_stream_ops = {
 		.sendmsg           = inet_sendmsg,
 		.recvmsg           = inet_recvmsg,
 		.compare_addresses = inet_address_compare,
+		.shutdown          = inet_shutdown
 };
 
 /*

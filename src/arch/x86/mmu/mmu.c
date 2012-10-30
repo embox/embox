@@ -58,11 +58,11 @@ void mmu_flush_tlb(void) {
 }
 
 void mmu_on(void) {
-	set_cr0(get_cr0() | X86_CR0_PG);
+	set_cr0(get_cr0() | X86_CR0_PG | X86_CR0_WP);
 }
 
 void mmu_off(void) {
-	set_cr0(get_cr0() & ~X86_CR0_PG);
+	set_cr0(get_cr0() & ~X86_CR0_PG & ~X86_CR0_WP);
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {

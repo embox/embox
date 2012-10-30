@@ -112,10 +112,10 @@ void interrupt_handle(void) {
 		ipl_disable();
 
 	}
+	irqctrl_enable(irq);
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
 
-	irqctrl_enable(irq);
 
 }
 

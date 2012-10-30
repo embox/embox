@@ -24,6 +24,8 @@ typedef struct {
 	__fd_mask fds_bits[_FDSETWORDS];
 } fd_set;
 
+#define FD_SETSIZE (_FDSETWORDS * sizeof(__fd_mask) * 8)
+
 /** Clear a set */
 #define FD_ZERO(s) \
 	do {                                          \
