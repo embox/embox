@@ -19,7 +19,6 @@ module dl {
 
 	depends embox.lib.LibC
 	depends embox.fs.core
-	depends embox.lib.LibDl
-	depends embox.lib.LibElf
+	depends embox.lib.LibElfloader
 	depends embox.framework.LibFramework
 }

@@ -11,8 +11,8 @@
 #include <ctype.h>
 #include <stdio.h>
 
+#include <lib/elfloader.h>
 #include <lib/libelf.h>
-#include <lib/libdl.h>
 
 #include <string.h>
 #include <errno.h>
@@ -21,8 +21,25 @@
 
 EMBOX_CMD(exec);
 
-extern int __link_elf(void);
-
 static int exec(int argc, char **argv) {
-	return __link_elf();
+	Elf32_Objlist list;
+	FILE *file1 = fopen("reloc1.o", "r");
+	FILE *file2 = fopen("reloc2.o", "r");
+	Elf32_Obj *obj1;
+	Elf32_Obj *obj2;
+
+	elf_objlist_init(&list);
+
+	elf_object_init(&obj1, file1);
+	elf_object_init(&obj2, file2);
+
+	elf_read_header(obj1);
+	elf_read_header(obj2);
+
+	elf_objlist_add(&list, obj1);
+	elf_objlist_add(&list, obj2);
+
+	return elfloader_load(&list);
+
+	//elf_objlist_free(&list);
 }

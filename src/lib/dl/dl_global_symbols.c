@@ -15,14 +15,18 @@
 #include <lib/libelf.h>
 #include <lib/libdl.h>
 
-int dl_fetch_global_symbols(dl_data *data) {
-	dl_element *element = data->element_list;
+int dl_fetch_global_symbols(Elf32_Objlist *list, dl_data *data) {
+	Elf32_Objlist_item *item = list->first;
 	Elf32_Obj *obj;
 	Elf32_Sym *sym;
 	int count = 0, p = 0;
 
-	while (element) {
-		obj = element->obj;
+	while (item) {
+		obj = item->obj;
+
+		elf_read_symbol_table(obj);
+		elf_read_symbol_names(obj);
+
 		for (int j = 0; j < obj->sym_count; j++) {
 			sym = &obj->sym_table[j];
 
@@ -32,7 +36,7 @@ int dl_fetch_global_symbols(dl_data *data) {
 			}
 		}
 
-		element = element->next;
+		item = item->next;
 	}
 
 	data->globsym_count = count;
@@ -41,9 +45,9 @@ int dl_fetch_global_symbols(dl_data *data) {
 	}
 
 
-	element = data->element_list;
-	while (element) {
-		obj = element->obj;
+	item = list->first;
+	while (item) {
+		obj = item->obj;
 		for (int j = 0; j < obj->sym_count; j++) {
 			sym = &obj->sym_table[j];
 
@@ -56,7 +60,7 @@ int dl_fetch_global_symbols(dl_data *data) {
 			}
 		}
 
-		element = element->next;
+		item = item->next;
 	}
 
 	return count;
@@ -69,6 +73,7 @@ dl_globsym *dl_find_global_symbol(dl_data *data, const char *name) {
 	for (int i = 0; i < data->globsym_count; i++) {
 		obj = data->globsym_table[i].obj;
 		sym = data->globsym_table[i].sym;
+
 		// FIXME:
 		if ((ELF32_ST_BIND(sym->st_info) == STB_GLOBAL)
 			&& (0 == strcmp(name, obj->sym_names + sym->st_name))) {

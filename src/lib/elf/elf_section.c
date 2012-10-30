@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-int elf_read_section(FILE *fd, Elf32_Shdr *sh, char **dst) {
+int elf_read_section(Elf32_Obj *obj, Elf32_Shdr *sh, char **dst) {
 	if (!sh) {
 		return -EINVAL;
 	}
@@ -19,9 +19,9 @@ int elf_read_section(FILE *fd, Elf32_Shdr *sh, char **dst) {
 		return -ENOMEM;
 	}
 
-	fseek(fd, sh->sh_offset, 0);
+	fseek(obj->fd, sh->sh_offset, 0);
 
-	if (sh->sh_size != fread(*dst, sh->sh_size, 1, fd)) {
+	if (sh->sh_size != fread(*dst, sh->sh_size, 1, obj->fd)) {
 		return -EBADF;
 	}
 

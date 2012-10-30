@@ -17,14 +17,14 @@ static inline void elf_reverse_sym(Elf32_Sym *sym) {
 	REVERSE_S(sym->st_shndx);
 }
 
-int elf_read_symbol_table(FILE *fd, Elf32_Obj *obj) {
+int elf_read_symbol_table(Elf32_Obj *obj) {
 	Elf32_Ehdr *header = obj->header;
 	Elf32_Shdr *sh_table = obj->sh_table;
 	int res;
 
 	for (int i = 0; i < header->e_shnum; i++) {
 		if (sh_table[i].sh_type == SHT_SYMTAB) {
-			if ((res = elf_read_section(fd, &sh_table[i],
+			if ((res = elf_read_section(obj, &sh_table[i],
 				(char **)&obj->sym_table)) < 0) {
 				return res;
 			}

@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-int elf_read_symbol_names(FILE *fd, Elf32_Obj *obj) {
+int elf_read_symbol_names(Elf32_Obj *obj) {
 	Elf32_Shdr *sh;
 
 	if (!obj->sym_names_shidx) {
@@ -18,5 +18,5 @@ int elf_read_symbol_names(FILE *fd, Elf32_Obj *obj) {
 	}
 
 	sh = &obj->sh_table[obj->sym_names_shidx];
-	return elf_read_section(fd, sh, (char **)&obj->sym_names);
+	return elf_read_section(obj, sh, (char **)&obj->sym_names);
 }

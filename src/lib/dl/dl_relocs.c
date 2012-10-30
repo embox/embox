@@ -30,8 +30,8 @@
 
 int _global_outside = 3;
 
-static inline int elf_relocate_section_rel(FILE *fd, Elf32_Obj *obj,
-		Elf32_Shdr *relsh, dl_data *data) {
+static inline int elf_relocate_section_rel(dl_data *data, Elf32_Obj *obj,
+		Elf32_Shdr *relsh) {
 
 	Elf32_Rel  *rel;
 	Elf32_Sym  *sym;
@@ -39,7 +39,7 @@ static inline int elf_relocate_section_rel(FILE *fd, Elf32_Obj *obj,
 	Elf32_Addr *where;
 	Elf32_Shdr *sh_table = obj->sh_table;
 	dl_globsym *globsym;
-	int rel_count = elf_read_rel_section(fd, obj, relsh, &rel);
+	int rel_count = elf_read_rel_section(obj, relsh, &rel);
 
 	for (int i = 0 ; i < rel_count; i++) {
 		where = (Elf32_Addr *)
@@ -55,6 +55,7 @@ static inline int elf_relocate_section_rel(FILE *fd, Elf32_Obj *obj,
 			sym_addr = elf_get_symbol_addr(globsym->obj, globsym->sym);
 		}
 
+		// Should be apply_relocate in arch
 		switch (ELF32_R_TYPE(rel[i].r_info)) {
 		case R_386_NONE:
 			break;
@@ -72,13 +73,13 @@ static inline int elf_relocate_section_rel(FILE *fd, Elf32_Obj *obj,
 	return ENOERR;
 }
 
-static inline int elf_relocate_section_rela(FILE *fd, Elf32_Obj *obj,
-		Elf32_Shdr *relash, dl_data *data) {
+static inline int elf_relocate_section_rela(dl_data *data, Elf32_Obj *obj,
+		Elf32_Shdr *relash) {
 	/* Have not implemented yet */
 	return -ENOSYS;
 }
 
-int elf_relocate(FILE *fd, Elf32_Obj *obj, dl_data *data) {
+int dl_proceed_relocations(dl_data *data, Elf32_Obj *obj) {
 	Elf32_Shdr *sh;
 	int err;
 
@@ -87,12 +88,12 @@ int elf_relocate(FILE *fd, Elf32_Obj *obj, dl_data *data) {
 
 		switch (sh->sh_type) {
 		case SHT_REL:
-			if ((err = elf_relocate_section_rel(fd, obj, sh, data)) < 0) {
+			if ((err = elf_relocate_section_rel(data, obj, sh)) < 0) {
 				return err;
 			}
 			break;
 		case SHT_RELA:
-			if ((err = elf_relocate_section_rela(fd, obj, sh, data)) < 0) {
+			if ((err = elf_relocate_section_rela(data, obj, sh)) < 0) {
 				return err;
 			}
 			break;
@@ -101,3 +102,18 @@ int elf_relocate(FILE *fd, Elf32_Obj *obj, dl_data *data) {
 
 	return ENOERR;
 }
+
+int dl_proceed_all_relocations(Elf32_Objlist *list, dl_data *data) {
+	Elf32_Objlist_item *item = list->first;
+	int err;
+
+	while(item) {
+		if ((err = dl_proceed_relocations(data, item->obj)) < 0) {
+			return err;
+		}
+		item = item->next;
+	}
+
+	return ENOERR;
+}
+

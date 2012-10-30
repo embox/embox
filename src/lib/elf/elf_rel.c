@@ -15,14 +15,12 @@ static void inline elf_reverse_rel(Elf32_Rel *rel) {
 	REVERSE_L(rel->r_info);
 }
 
-int elf_read_rel_section(FILE *fd, Elf32_Obj *obj, Elf32_Shdr *sh, Elf32_Rel **rel) {
+int elf_read_rel_section(Elf32_Obj *obj, Elf32_Shdr *sh, Elf32_Rel **rel) {
 	size_t size = sh->sh_size;
 	int count = 0;
-	*rel = malloc(size);
 
-	fseek(fd, sh->sh_offset, 0);
-	if (!fread((void *) *rel, size, 1, fd)) {
-		return -EBADF;
+	if ((size = elf_read_section(obj, sh, (char **) rel)) < 0) {
+		return size;
 	}
 
 	count = size / sizeof(Elf32_Rel);
