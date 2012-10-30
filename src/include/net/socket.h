@@ -266,9 +266,18 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 int setsockopt(int sockfd, int level, int optname, void *optval,
                socklen_t optlen);
 
+/* specified by libc */
+#define SHUT_RD   0 /* all receptions will be disallowed */
+#define SHUT_WR   1 /* all transmissions will be disallowed */
+#define SHUT_RDWR 2 /* all receptions and transmissions will be disallowed */
 
-/* TODO implement */
-extern int socket_shutdown(int socket, int how);
+/**
+ * shut down part of a full-duplex connection
+ * @param sockfd socket descriptor
+ * @param how is one of SHUT_RD, SHUT_WR or SHUT_RDWR
+ * @return 0 on success. -1 on failure with errno indicating error.
+ */
+extern int shutdown(int sockfd, int how);
 
 extern int check_icmp_err(int sockfd);
 

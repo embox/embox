@@ -462,6 +462,12 @@ int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,
 	return sock->ops->recvmsg(iocb, sock, m, total_len, flags);
 }
 
-int kernel_socket_shutdown(struct socket *sock) {
-	return ENOERR;
+int kernel_socket_shutdown(struct socket *sock, int how) {
+	int res = ENOERR;
+
+	if (sock->ops->shutdown) {
+		res = sock->ops->shutdown(sock, how);
+	}
+
+	return res;
 }

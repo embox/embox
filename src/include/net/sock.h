@@ -38,6 +38,7 @@ struct sock_common {
  * Network layer representation of sockets.
  * @param __sk_common shared layout with inet_timewait_sock
  * @param sk_protocol which protocol this socket belongs in this network family
+ * @param sk_shutdown mask of SHUT_RD and SHUT_RW
  * @param sk_type socket type
  * @param sk_rcvbuf size of receive buffer in bytes
  * @param sk_lock synchronizer
@@ -65,6 +66,7 @@ typedef struct sock {
 #define sk_prot    __sk_common.skc_prot
 #define sk_state   __sk_common.skc_state
 	unsigned char sk_protocol;
+	unsigned char sk_shutdown;
 	unsigned short sk_type;
 	int sk_rcvbuf;
 	socket_lock_t sk_lock;
