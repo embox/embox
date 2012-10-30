@@ -37,7 +37,6 @@ static inline int elf_relocate_section_rel(dl_data *data, Elf32_Obj *obj,
 	Elf32_Sym  *sym;
 	Elf32_Addr sym_addr;
 	Elf32_Addr *where;
-	Elf32_Shdr *sh_table = obj->sh_table;
 	dl_globsym *globsym;
 	Elf32_Shdr *relsh = &obj->sh_table[sh_idx];
 
@@ -54,10 +53,9 @@ static inline int elf_relocate_section_rel(dl_data *data, Elf32_Obj *obj,
 	}
 
 	for (int i = 0 ; i < rel_count; i++) {
-		where = (Elf32_Addr *)
-				(sh_table[relsh->sh_info].sh_addr + rel[i].r_offset);
-
+		where = (Elf32_Addr *) elf_get_rel_addr(obj, relsh, &rel[i]);
 		sym = &sym_table[ELF32_R_SYM(rel[i].r_info)];
+
 		if (sym->st_shndx != SHN_UNDEF) {
 			sym_addr = elf_get_symbol_addr(obj, sym);
 		} else {
@@ -79,6 +77,9 @@ static inline int elf_relocate_section_rel(dl_data *data, Elf32_Obj *obj,
 			*where += sym_addr - (Elf32_Addr)where;
 			break;
 		case R_386_GLOB_DAT:
+			*where = sym_addr;
+			break;
+		case R_386_JMP_SLOT:
 			*where = sym_addr;
 			break;
 		default:

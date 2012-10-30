@@ -32,3 +32,16 @@ int elf_read_rel_section(Elf32_Obj *obj, unsigned int sh_idx, Elf32_Rel **rel) {
 
 	return count;
 }
+
+Elf32_Addr elf_get_rel_addr(Elf32_Obj *obj, Elf32_Shdr *sh, Elf32_Rel *rel) {
+	switch (obj->header->e_type) {
+	case(ET_REL):
+		return obj->sh_table[sh->sh_info].sh_addr + rel->r_offset;
+	case(ET_DYN):
+		return obj->load_offset + rel->r_offset;
+	case(ET_EXEC):
+		return rel->r_offset;
+	default:
+		return 0;
+	}
+}

@@ -64,6 +64,7 @@ extern int elf_read_string_table(Elf32_Obj *obj);
 extern int elf_read_dynamic_section(Elf32_Obj *obj);
 
 extern Elf32_Addr elf_get_symbol_addr(Elf32_Obj *obj, Elf32_Sym *sym);
+extern Elf32_Addr elf_get_rel_addr(Elf32_Obj *obj, Elf32_Shdr *sh, Elf32_Rel *rel);
 
 extern int elf_read_rel_section(Elf32_Obj *obj, unsigned int sh_idx,
 		Elf32_Rel **rel);

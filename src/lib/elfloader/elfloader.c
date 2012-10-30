@@ -45,7 +45,7 @@ int elfloader_load(Elf32_Objlist *list) {
 
 	globsym = dl_find_global_symbol(data, "test");
 	f_init = (int (*)(void)) dl_get_global_symbol_addr(globsym);
-	assert(f_init() == 6);
+	assert(f_init() == 10);
 
 	dl_free_data(data);
 
