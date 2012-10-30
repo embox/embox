@@ -47,18 +47,19 @@ int elf_read_section(Elf32_Obj *obj, unsigned int sh_idx, char **dst) {
 	Elf32_Shdr *sh	= &obj->sh_table[sh_idx];
 
 	if (!(obj->sections[sh_idx])) {
-		if (!(*dst = malloc(sh->sh_size))) {
+		if (!(obj->sections[sh_idx] = malloc(sh->sh_size))) {
 			return -ENOMEM;
 		}
 
 		fseek(obj->fd, sh->sh_offset, 0);
 
-		if (sh->sh_size != fread(*dst, sh->sh_size, 1, obj->fd)) {
+		if (sh->sh_size != fread(obj->sections[sh_idx],
+				sh->sh_size, 1, obj->fd)) {
 			return -EBADF;
 		}
-
-		obj->sections[sh_idx] = *dst;
 	}
+
+	*dst = obj->sections[sh_idx];
 
 	return sh->sh_size;
 }

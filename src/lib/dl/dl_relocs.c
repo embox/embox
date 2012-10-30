@@ -76,7 +76,7 @@ static inline int elf_relocate_section_rel(dl_data *data, Elf32_Obj *obj,
 			*where += sym_addr;
 			break;
 		case R_386_PC32:
-			*where = sym_addr - (Elf32_Addr)where;
+			*where += sym_addr - (Elf32_Addr)where;
 			break;
 		case R_386_GLOB_DAT:
 			*where = sym_addr;
