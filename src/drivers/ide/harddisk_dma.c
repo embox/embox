@@ -243,7 +243,6 @@ static int hd_write_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t b
 static block_dev_driver_t _harddisk_udma_driver = {
 	"idedisk_udma_drv",
 	DEV_TYPE_BLOCK,
-	NULL,
 	hd_ioctl,
 	hd_read_udma,
 	hd_write_udma

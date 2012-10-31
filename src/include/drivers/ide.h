@@ -342,6 +342,7 @@ extern void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects);
 extern void *cdrom_pio_driver(void);
 extern void *harddisk_pio_driver(void);
 extern void *harddisk_udma_driver(void);
+extern void *partition_driver(void);
 
 
 #endif /* IDE_H_ */

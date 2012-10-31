@@ -430,56 +430,9 @@ static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
 	return IRQ_HANDLED;
 }
 
-
-
-static int part_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
-	struct partition *part = (struct partition *) dev->privdata;
-
-	switch (cmd) {
-	case IOCTL_GETDEVSIZE:
-		return part->len;
-
-	case IOCTL_GETBLKSIZE:
-		return blockdev_ioctl(part->dev, IOCTL_GETBLKSIZE, NULL, 0);
-	}
-
-	return -ENOSYS;
-}
-
-static int part_read(block_dev_t *dev, char *buffer,
-						size_t count, blkno_t blkno) {
-	struct partition *part = (struct partition *) dev->privdata;
-	if (blkno + count / SECTOR_SIZE > part->len) {
-		return -EFAULT;
-	}
-	return blockdev_read(part->dev, buffer, count, blkno + part->start);
-}
-
-static int part_write(block_dev_t *dev, char *buffer,
-						size_t count, blkno_t blkno) {
-  struct partition *part = (struct partition *) dev->privdata;
-  if (blkno + count / SECTOR_SIZE > part->len) {
-	  return -EFAULT;
-  }
-  return blockdev_write(part->dev, buffer, count, blkno + part->start);
-}
-
-
-
-static block_dev_driver_t partition_driver = {
-	"partition_drv",
-	DEV_TYPE_BLOCK,
-	ide_init,
-	part_ioctl,
-	part_read,
-	part_write
-};
-
-
 static block_dev_driver_t ide_init_driver = {
 	"ide_drv",
 	DEV_TYPE_BLOCK,
-	ide_init,
 	NULL,
 	NULL,
 	NULL
@@ -492,7 +445,7 @@ static int create_partitions(hd_t *hd) {
 	int rc;
 
 	/* Read partition table */
-	rc = blockdev_read(hd->devno, (char *)mbr, SECTOR_SIZE, 0);
+	rc = block_dev_read(hd->devno, (char *)mbr, SECTOR_SIZE, 0);
 	if (rc < 0) {
 		return rc;
 	}
@@ -524,7 +477,7 @@ static int create_partitions(hd_t *hd) {
 		}
 	}
 	*/
-	blockdev_make("hda0", &partition_driver, NULL);
+	block_dev_make("hda0", partition_driver(), NULL);
 
 	return 0;
 }
@@ -791,14 +744,14 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 	/* Make new device */
 	if (hd->media == IDE_DISK) {
 		if (hd->udmamode != -1) {
-			hd->devno = blockdev_make(devname, harddisk_udma_driver(), hd);
+			hd->devno = block_dev_make(devname, harddisk_udma_driver(), hd);
 		}
 		else {
-			hd->devno = blockdev_make(devname, harddisk_pio_driver(), hd);
+			hd->devno = block_dev_make(devname, harddisk_pio_driver(), hd);
 		}
 	}
 	else if (hd->media == IDE_CDROM) {
-		hd->devno = blockdev_make("cd#", cdrom_pio_driver(), hd);
+		hd->devno = block_dev_make("cd#", cdrom_pio_driver(), hd);
 	}
 	else {
 		return;
@@ -806,7 +759,7 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 
 	if(0 <= hd->devno) {
 		if(0 > ide_devnode_create(&hd->devno)) {
-			blockdev_destroy (hd->devno);
+			block_dev_destroy (hd->devno);
 			return;
 		}
 		size =
@@ -904,5 +857,5 @@ slot_t *ide_get_drive(void) {
 	return &ide;
 }
 
-EMBOX_BLOCK_DEV("ide", &ide_init_driver);
+EMBOX_BLOCK_DEV("ide", &ide_init_driver, ide_init);
 

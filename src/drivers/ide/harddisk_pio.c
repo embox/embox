@@ -182,7 +182,6 @@ static int hd_write_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 static block_dev_driver_t _harddisk_pio_driver = {
 	"idedisk_drv",
 	DEV_TYPE_BLOCK,
-	NULL,
 	hd_ioctl,
 	hd_read_pio,
 	hd_write_pio

@@ -25,7 +25,6 @@ static int ram_ioctl(block_dev_t *dev, int cmd, void *args, size_t size);
 block_dev_driver_t ramdisk_pio_driver = {
   "ramdisk_drv",
   DEV_TYPE_BLOCK,
-  ram_init,
   ram_ioctl,
   read_sectors,
   write_sectors
@@ -52,9 +51,9 @@ int ramdisk_create(void *mkfs_params) {
 
 	ram_disk = pool_alloc(&ramdisk_pool);
 	if(0 > (ram_disk->devnum =
-			blockdev_make((char *)ramdisk_node->name,
+			block_dev_make((char *)ramdisk_node->name,
 					&ramdisk_pio_driver, ram_disk))) {
-		blockdev_destroy (ram_disk->devnum);
+		block_dev_destroy (ram_disk->devnum);
 		return -EIO;
 	}
 
@@ -104,7 +103,7 @@ int ramdisk_delete(const char *name) {
 		pool_free(&ramdisk_pool, ram_disk);
 		vfs_del_leaf(ramdisk_node);
 	}
-	return blockdev_destroy (devnum);
+	return block_dev_destroy (devnum);
 }
 
 static int unit_init(void) {
@@ -151,4 +150,4 @@ static int flush(void *dev) {
 }
 */
 
-EMBOX_BLOCK_DEV("ramdisk", &ramdisk_pio_driver);
+EMBOX_BLOCK_DEV("ramdisk", &ramdisk_pio_driver, ram_init);

@@ -2,7 +2,6 @@ package embox.driver
 
 module block {
 	source "block_dev.c"
-	source "buff.c"
 	option number dev_quantity = 4
 
 	depends embox.util.LibUtil

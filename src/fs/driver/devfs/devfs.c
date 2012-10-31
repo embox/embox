@@ -55,8 +55,8 @@ static int devfs_mount(void *par) {
 	}
 
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__block_dev_registry); i++) {
-		if (NULL != __block_dev_registry[i].dev_drv->create) {
-			__block_dev_registry[i].dev_drv->create(NULL);
+		if (NULL != __block_dev_registry[i].init) {
+			__block_dev_registry[i].init(NULL);
 		}
 	}
 

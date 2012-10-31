@@ -199,7 +199,6 @@ static int cd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 static block_dev_driver_t _cdrom_pio_driver = {
 	"idecd_drv",
 	DEV_TYPE_BLOCK,
-	NULL,
 	cd_ioctl,
 	cd_read,
 	cd_write
