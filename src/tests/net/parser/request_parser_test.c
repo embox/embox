@@ -8,7 +8,6 @@
  */
 
 #include <embox/test.h>
-#include <sys/socket.h>
 #include <net/util/request_parser.h>
 #include <lib/url_parser.h>
 #include <stdlib.h>
