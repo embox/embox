@@ -17,6 +17,8 @@ EMBOX_TEST_SUITE("network/parser/request_parser test");
 TEST_CASE("Parse first string") {
 	char *test_get = "GET http://wsdf-365.ru/first_folder/second/index.html#frag01 HTTP/1.1";
 	char *test_get2 = "HEAD /first_folder/second/index.php?p1+p2&p3=54; HTTP/1.1\nHost: 10.10.111.1:80";
+	char *test_get3 = "head /first_folder/second/index.php?p1+p2&p3=54; HTTP/1.1\nHost: 10.10.111.1:80";
+	char *test_get4 = "HEAD  HTTP/1.1\nHost: 10.10.111.1:80";
 	http_request *parsed_request;
 
 	parsed_request = parse_http(test_get);
@@ -34,5 +36,13 @@ TEST_CASE("Parse first string") {
 	test_assert_str_equal(parsed_request->parsed_url->path, "first_folder/second/index.php");
 	test_assert_str_equal(parsed_request->parsed_url->query, "p1+p2&p3=54;");
 	test_assert_str_equal(parsed_request->parsed_url->port, "80");
+	free_http_request(parsed_request);
+
+	parsed_request = parse_http(test_get3);
+	test_assert_null(parsed_request);
+	free_http_request(parsed_request);
+
+	parsed_request = parse_http(test_get4);
+	test_assert_null(parsed_request);
 	free_http_request(parsed_request);
 }

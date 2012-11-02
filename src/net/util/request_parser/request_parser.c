@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 char * try_parse_method(http_request *parsed_request, char *subrequenst);
 char * try_parse_url(http_request *parsed_request, char *subrequenst);
@@ -77,12 +78,22 @@ char *try_parse_method(http_request *parsed_request, char *subrequenst) {
 
 	if (lexeme_end != NULL) {
 		lexeme_length = lexeme_end - subrequenst;
-		parsed_request->method = malloc(lexeme_length+1);
+
+		if (lexeme_length <= 0) {
+			return NULL;
+		}
+
+		parsed_request->method = malloc(lexeme_length + 1);
 		if (NULL == parsed_request->method) {
 			return NULL;
 		}
 		(void) strncpy(parsed_request->method, subrequenst, lexeme_length);
 		parsed_request->method[lexeme_length] = '\0';
+		for (int i = 0; i < lexeme_length; i++) {
+			if (!isupper(parsed_request->method[i])) {
+				return NULL;
+			}
+		}
 		lexeme_end++;
 		return lexeme_end;
 	}
@@ -96,7 +107,12 @@ char *try_parse_url(http_request *parsed_request, char *subrequenst) {
 	if (lexeme_end != NULL) {
 		char * url;
 		lexeme_length = lexeme_end - subrequenst;
-		url = malloc(lexeme_length+1);
+
+		if (lexeme_length <= 0) {
+			return NULL;
+		}
+
+		url = malloc(lexeme_length + 1);
 		if (NULL == url) {
 			return NULL;
 		}
@@ -121,13 +137,26 @@ char *try_parse_proto(http_request *parsed_request, char *subrequenst) {
 			strchr(subrequenst, '\n') != NULL ?
 					strchr(subrequenst, '\n') : strchr(subrequenst, '\0');
 	lexeme_length = lexeme_end - subrequenst;
-	parsed_request->proto = malloc(lexeme_length+1);
+
+	if (lexeme_length <= 0) {
+		return NULL;
+	}
+
+	parsed_request->proto = malloc(lexeme_length + 1);
 
 	if (NULL == parsed_request->proto) {
 		return NULL;
 	}
 	(void) strncpy(parsed_request->proto, subrequenst, lexeme_length);
 	parsed_request->proto[lexeme_length] = '\0';
+	for (int i = 0; i < lexeme_length; i++) {
+		if ((!isupper(parsed_request->proto[i]))
+				&& (!isdigit(parsed_request->proto[i]))
+				&& (parsed_request->proto[i] != '.')
+				&& (parsed_request->proto[i] != '/')) {
+			return NULL;
+		}
+	}
 	lexeme_end++;
 	return lexeme_end;
 }
@@ -146,7 +175,11 @@ char *try_parse_host(http_request *parsed_request, char *subrequenst) {
 	lexeme_end = strchr(subrequenst, ' ');
 	lexeme_length = lexeme_end - subrequenst;
 
-	host_identifyer = malloc(lexeme_length+1);
+	if (lexeme_length <= 0) {
+		return NULL;
+	}
+
+	host_identifyer = malloc(lexeme_length + 1);
 
 	(void) strncpy(host_identifyer, subrequenst, lexeme_length);
 	host_identifyer[lexeme_length] = '\0';
@@ -168,7 +201,7 @@ char *try_parse_host(http_request *parsed_request, char *subrequenst) {
 	if (lexeme_end != NULL) {
 		char * url;
 		lexeme_length = lexeme_end - subrequenst;
-		url = malloc(lexeme_length+1);
+		url = malloc(lexeme_length + 1);
 		if (NULL == url) {
 			return NULL;
 		}
@@ -180,13 +213,13 @@ char *try_parse_host(http_request *parsed_request, char *subrequenst) {
 			return NULL;
 		}
 		lexeme_length = strlen(parsed_host->host);
-		parsed_request->parsed_url->host = malloc(lexeme_length+1);
+		parsed_request->parsed_url->host = malloc(lexeme_length + 1);
 		strncpy(parsed_request->parsed_url->host, parsed_host->host,
 				lexeme_length);
 		parsed_request->parsed_url->host[lexeme_length] = '\0';
 		if (parsed_host->port != NULL) {
 			lexeme_length = strlen(parsed_host->port);
-			parsed_request->parsed_url->port = malloc(lexeme_length+1);
+			parsed_request->parsed_url->port = malloc(lexeme_length + 1);
 			strncpy(parsed_request->parsed_url->port, parsed_host->port,
 					lexeme_length);
 			parsed_request->parsed_url->port[lexeme_length] = '\0';
