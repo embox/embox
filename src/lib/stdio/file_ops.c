@@ -11,6 +11,8 @@
 
 #include <framework/mod/options.h>
 
+#include <fs/core.h>
+
 
 #ifdef __FILE_QUANTITY
   #define FILE_QUANTITY __FILE_QUANTITY
@@ -20,26 +22,9 @@
 
 POOL_DEF(file_pool, FILE, FILE_QUANTITY);
 
-FILE stdin_struct = {
-	.file_int = INIT_STDIN
-};
-FILE stdout_struct = {
-	.file_int = INIT_STDOUT
-};
-
-FILE stderr_struct = {
-	.file_int = INIT_STDERR
-};
-
-FILE *stdin = &stdin_struct;
-FILE *stdout = &stdout_struct;
-FILE *stderr = &stderr_struct;
-
 FILE *fopen(const char *path, const char *mode) {
 	FILE *file = pool_alloc(&file_pool);
-	if (__libc_open(path, mode, (struct file_struct_int *) file) < 0) {
-		return NULL;
-	}
+	file->file_int = kopen(path, mode);
 	return file;
 
 }
@@ -59,7 +44,7 @@ int ferror(FILE *file) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	return __libc_write(buf, size, count, (struct file_struct_int *) file);
+	return kwrite(buf, size, count, file->file_int);
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
@@ -80,28 +65,27 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		addon = 1;
 	}
 
-	return (addon + __libc_read(buf, size, count, (struct file_struct_int *) file));
+	return (addon + kread(buf, size, count, file->file_int));
 }
 
-
 int fclose(FILE *file) {
-	int res = __libc_close((struct file_struct_int *) file);
+	int res = kclose(file->file_int);
 	pool_free(&file_pool, file);
 	return res;
 }
 
 int fseek(FILE *file, long int offset, int origin) {
-	return __libc_lseek((struct file_struct_int *) file, offset, origin);
+	return kseek(file->file_int, offset, origin);
 }
 
 int fstat(FILE *file, void *buff) {
-	return __libc_fstat((struct file_struct_int *) file, buff);
+	return kstat(file->file_int, buff);
 }
 
 int fioctl(FILE *fp, int request, ...) {
 	va_list args;
 	va_start(args, request);
-	return __libc_ioctl((struct file_struct_int *) fp, request, args);
+	return kioctl(fp->file_int, request, args);
 }
 
 int ungetc(int ch, FILE *file) {

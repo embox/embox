@@ -87,6 +87,7 @@ static module LibCMath {
 static module LibCStdio {
 
 	option boolean stdio_lf_crlf_map = true
+	option number file_quantity = 100
 
 	source "stdio/file_ops.c"
 	source "stdio/fgetc.c"
@@ -99,7 +100,8 @@ static module LibCStdio {
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
 	source "stdio/perror.c"
-	depends FileApi
+	//depends FileApi
+	source "stdio/file_fs.c"
 	depends LibCMath
 	depends LibCString
 }
@@ -118,35 +120,4 @@ static module LibC {
 	source "readline/readline.c"
 
 //	source "stacktrace.c"
-}
-
-@DefaultImpl(FilePosix)
-abstract module FileApi { }
-
-static module FileFS extends FileApi {
-	source "stdio/file_fs.h"
-	source "stdio/file_fs.c"
-
-	depends embox.fs.core
-}
-
-module FilePosix extends FileApi {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "stdio/file_posix.h",
-		"stdio/file_posix_open.h"
-
-	depends embox.compat.posix.FileTasks
-}
-
-module FilePosixNoOpen extends FileApi {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "stdio/file_posix.h",
-		"stdio/file_posix_noopen.h"
-
-	depends embox.compat.posix.FileTasksBasic
-}
-
-module FileStdio extends FileApi {
-	source "stdio/file_diag.h",
-		"stdio/file_posix_noopen.h"
 }

@@ -11,9 +11,9 @@
 
 #include <fcntl.h>
 
-static inline int __libc_open(const char *path, const char *mode, struct file_struct_int *file) {
-	file->fd = open(path, 0);
-	return file->fd;
+static inline int __libc_open(const char *path, const char *mode) {
+	int fd = open(path, 0);
+	return fd;
 }
 
 #endif /* SRC_LIB_STDIO_FILE_POSIX_OPEN_H_ */

@@ -20,7 +20,7 @@
 #define EOF (-1)
 
 typedef struct file_struct {
-	struct file_struct_int file_int;
+	struct file_desc *file_int;
 	char has_ungetc;
 	int ungetc;
 } FILE;

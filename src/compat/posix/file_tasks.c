@@ -13,6 +13,7 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <io_sync.h>
+#include <sys/ioctl.h>
 
 int close(int fd) {
 	const struct task_idx_ops *ops;

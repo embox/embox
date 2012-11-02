@@ -14,6 +14,8 @@
 #include <string.h>
 #include <assert.h>
 #include <cmd/shell.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include <prom/prom_printf.h>
 
