@@ -12,7 +12,6 @@ module lua_core {
 
 	depends embox.mem.heap_api
 	depends embox.lib.LibC
-	depends embox.lib.FileFS
 	depends lua_lib
 }
 

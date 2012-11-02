@@ -101,7 +101,7 @@ static module LibCStdio {
 	source "stdio/scanf.c"
 	source "stdio/perror.c"
 	//depends FileApi
-	source "stdio/file_fs.c"
+	source "stdio/file_stdio.c"
 	depends LibCMath
 	depends LibCString
 }
