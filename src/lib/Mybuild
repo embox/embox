@@ -25,12 +25,14 @@ static module LibDl {
 	source "dl/dl_global_symbols.c"
 	source "dl/dl_relocs.c"
 
+	source "dl/arch.c"
+
 	depends LibElf
 }
 
 static module LibElfloader {
 	source "elfloader/elfloader.c"
-	source "elfloader/elfloader_object.c"
+	source "elfloader/elfloader_placement.c"
 
 	depends LibElf, LibDl
 }

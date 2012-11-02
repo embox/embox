@@ -16,11 +16,11 @@
 static int elf_load_in_mem(Elf32_Obj *obj) {
 	switch(obj->header->e_type) {
 	case (ET_REL):
-		return elfloader_load_relocatable(obj);
+		return elfloader_place_relocatable(obj);
 	case (ET_DYN):
-		return elfloader_load_shared(obj);
+		return elfloader_place_shared(obj);
 	case (ET_EXEC):
-		return elfloader_load_executable(obj);
+		return elfloader_place_executable(obj);
 	default:
 		return -ENOSYS;
 	}
@@ -43,9 +43,9 @@ int elfloader_load(Elf32_Objlist *list) {
 
 	dl_proceed(list, &data);
 
-	globsym = dl_find_global_symbol(data, "test");
+	globsym = dl_find_global_symbol(data, "_start");
 	f_init = (int (*)(void)) dl_get_global_symbol_addr(globsym);
-	assert(f_init() == 10);
+	assert(f_init() == 14);
 
 	dl_free_data(data);
 

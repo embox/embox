@@ -84,6 +84,29 @@ dl_globsym *dl_find_global_symbol(dl_data *data, const char *name) {
 	return NULL;
 }
 
+dl_globsym *dl_find_global_symbol_outside(dl_data *data, Elf32_Obj *me, const char *name) {
+	Elf32_Obj *obj;
+	Elf32_Sym *sym;
+
+	for (int i = 0; i < data->globsym_count; i++) {
+		obj = data->globsym_table[i].obj;
+		sym = data->globsym_table[i].sym;
+
+		if (obj == me) {
+			continue;
+		}
+
+		// FIXME:
+		if ((ELF32_ST_BIND(sym->st_info) == STB_GLOBAL)
+			&& (0 == strcmp(name, obj->sym_names + sym->st_name))) {
+			return &data->globsym_table[i];
+		}
+	}
+
+	return NULL;
+}
+
+
 Elf32_Addr dl_get_global_symbol_addr(dl_globsym *globsym) {
 	return elf_get_symbol_addr(globsym->obj, globsym->sym);
 }

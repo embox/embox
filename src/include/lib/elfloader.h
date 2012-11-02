@@ -18,8 +18,8 @@ typedef struct {
 
 extern int elfloader_load(Elf32_Objlist *objlist);
 
-extern int elfloader_load_relocatable(Elf32_Obj *obj);
-extern int elfloader_load_shared(Elf32_Obj *obj);
-extern int elfloader_load_executable(Elf32_Obj *obj);
+extern int elfloader_place_relocatable(Elf32_Obj *obj);
+extern int elfloader_place_shared(Elf32_Obj *obj);
+extern int elfloader_place_executable(Elf32_Obj *obj);
 
 #endif /* LIB_ELFLOADER_H_ */

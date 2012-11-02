@@ -23,20 +23,17 @@ EMBOX_CMD(exec);
 
 static int exec(int argc, char **argv) {
 	Elf32_Objlist *list;
-	FILE *file1 = fopen("reloc1.o", "r");
-	FILE *file2 = fopen("reloc2.o", "r");
-	FILE *file3 = fopen("libtest.so", "r");
-	Elf32_Obj *obj1, *obj2, *obj3;
+	FILE *file1 = fopen("test", "r");
+	FILE *file2 = fopen("libtest.so", "r");
+	Elf32_Obj *obj1, *obj2;
 
 	elf_objlist_init(&list);
 
 	elf_object_init(&obj1, file1);
 	elf_object_init(&obj2, file2);
-	elf_object_init(&obj3, file3);
 
-	elf_objlist_add(list, obj1);
 	elf_objlist_add(list, obj2);
-	elf_objlist_add(list, obj3);
+	elf_objlist_add(list, obj1);
 
 	return elfloader_load(list);
 
