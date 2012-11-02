@@ -5,6 +5,7 @@
  * @date 04.10.11
  * @author Alexander Kalmuk
  */
+
 #include <util/array.h>
 #include <embox/unit.h>
 #include <ctype.h>
@@ -16,6 +17,9 @@
 #include <cmd/shell.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+#include <kernel/task.h>
+#include <kernel/task/idx.h>
 
 #include <prom/prom_printf.h>
 
@@ -70,6 +74,7 @@ static int parse(const char *const_line) {
 
 static void setup_tty(const char *dev_name) {
 	int fd;
+	struct file_desc *std;
 	char full_name[0x20];
 
 	if(strlen(dev_name) == 0) {
@@ -84,6 +89,11 @@ static void setup_tty(const char *dev_name) {
 	if(-1 == (fd = open(full_name, O_RDWR))) {
 		return;
 	}
+
+	std = (struct file_desc *) task_idx_desc_data(task_self_idx_get(fd));
+
+	stdin->file_int = stdout->file_int = stderr->file_int = std;
+
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);
 	close(STDERR_FILENO);
