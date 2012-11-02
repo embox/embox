@@ -229,7 +229,7 @@ void *memalign(size_t boundary, size_t size) {
 
 void *malloc(size_t size) {
 	return memalign(0, size);
-}
+ }
 
 void free(void *ptr) {
 	struct free_block *block;

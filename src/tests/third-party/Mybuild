@@ -1,0 +1,7 @@
+package embox.test.third_party
+
+module trex_test {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "trex_test.c"
+	depends third_party.lib.trex
+}

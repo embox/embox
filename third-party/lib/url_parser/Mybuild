@@ -1,0 +1,6 @@
+package third_party.lib
+
+module url_parser {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "url_parser.c"
+}
