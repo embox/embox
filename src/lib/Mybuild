@@ -86,6 +86,7 @@ static module LibCMath {
 	source "math/div.c"
 	source "math/ldiv.c"
 	source "math/blog2.c"
+	source "math/sqrt.c"
 	source "soft-fp/df3.c"
 	source "soft-fp/sf3.c"
 	source "soft-fp/softfloat.c"
