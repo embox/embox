@@ -24,7 +24,7 @@ static inline void elf_reverse_sh(Elf32_Shdr *sh) {
 	REVERSE_L(sh->sh_entsize);
 }
 
-int elf_read_section_header_table(FILE *fd, Elf32_Obj *obj) {
+int elf_read_section_header_table(Elf32_Obj *obj) {
 	Elf32_Ehdr *header = obj->header;
 	size_t size;
 
@@ -37,8 +37,8 @@ int elf_read_section_header_table(FILE *fd, Elf32_Obj *obj) {
 		return -ENOMEM;
 	}
 
-	fseek(fd, header->e_shoff, 0);
-	if (size != fread(obj->sh_table, 1, size, fd)) {
+	fseek(obj->fd, header->e_shoff, 0);
+	if (size != fread(obj->sh_table, 1, size, obj->fd)) {
 		return -EBADF;
 	}
 

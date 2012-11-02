@@ -1,24 +1,24 @@
 package embox.cmd
 
-@Cmd(name = "loadelf",
+@Cmd(name = "dl",
 	help = "Loads ELF binaries",
 	man = '''
 		NAME
-			loadelf - Loads ELF binaries
+			dl - Loads ELF binaries
 		SYNOPSIS
-			loadelf <filename>
+			dl
 		DESCRIPTION
 			Loads ELF binaries
 		AUTHORS
 			Anton Bulychev
 	''')
-module loadelf {
+module dl {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "loadelf.c"
+	source "dl.c"
 
 	depends embox.lib.LibC
 	depends embox.fs.core
-	depends embox.lib.LibElf
+	depends embox.lib.LibElfloader
 	depends embox.framework.LibFramework
 }

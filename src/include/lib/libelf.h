@@ -9,8 +9,10 @@
 #ifndef LIB_ELF_H_
 #define LIB_ELF_H_
 
-#include <lib/elf_types.h>
 #include <hal/arch.h>
+
+#include <lib/elf_consts.h>
+#include <lib/elf_types.h>
 
 #if defined(__LITTLE_ENDIAN)
 #define NEED_REVERSE(rev) \
@@ -34,64 +36,52 @@
 #define REVERSE_L(num) num = __REV_L(num)
 #define REVERSE_S(num) num = __REV_S(num)
 
+// OBJECT
+extern int elf_object_init(Elf32_Obj **obj, FILE *fd);
+extern void elf_object_fini(Elf32_Obj *obj);
 
-#if 0
-/**
- * Function reverses order of bytes in received integer with size 4-bytes
- * if reversed value is 2 - according
- * specification and big-low type of bytes order in numbers
- *
- * @param num - integer to reverse
- * @param reversed - integer from specification
- *                 - property talking about data type
- */
+// READ HEADERS
+extern int elf_read_header(Elf32_Obj *obj);
+extern int elf_read_section_header_table(Elf32_Obj *obj);
+extern int elf_read_program_header_table(Elf32_Obj *obj);
 
-#define L_REV(num, rev) \
-	(NEED_REV(rev) ?                     \
-	((((num) & 0x000000ff) << 24)   \
-	+ (((num) & 0x0000ff00) << 8)   \
-	+ (((num) & 0x00ff0000) >> 8)   \
-	+ (((num) & 0xff000000) >> 24)) \
-	: (num))
+// SECTION METHODS
+extern int elf_init_sections(Elf32_Obj *obj);
+extern void elf_free_sections(Elf32_Obj *obj);
+extern void elf_free_section(Elf32_Obj *obj, char *section_ptr);
+extern int elf_read_section(Elf32_Obj *obj, unsigned int sh_idx, char **dst);
 
-/**
- * Function reverses order of bytes in received integer with size 2-bytes
- * if reversed value is 2 - according
- * specification and big-low type of bytes order in numbers
- *
- * @param num - integer to reverse
- * @param reversed - integer from specification
- *                 - property talking about data type
- */
-#define S_REV(num, rev) \
-	(NEED_REV(rev) ?                \
-	((((num) & 0x00ff ) << 8)  \
-	+ (((num) & 0xff00) >> 8)) \
-	: (num))
+// SYMBOLS
+extern int elf_read_symbols(Elf32_Obj *obj, unsigned int sh_idx,
+		Elf32_Sym **sym_table, char **sym_names);
 
-#endif
 
-extern void elf_initialize_object(Elf32_Obj *obj);
-extern void elf_finilize_object(Elf32_Obj *obj);
+extern int elf_read_symbol_table(Elf32_Obj *obj);
+extern int elf_read_symbol_names(Elf32_Obj *obj);
 
-extern int elf_read_header(FILE *fd, Elf32_Obj *obj);
-extern int elf_read_section_header_table(FILE *fd, Elf32_Obj *obj);
-extern int elf_read_program_header_table(FILE *fd, Elf32_Obj *obj);
 
-extern int elf_read_section(FILE *fd, Elf32_Shdr *sh, char **dst);
+extern int elf_read_string_table(Elf32_Obj *obj);
+extern int elf_read_dynamic_section(Elf32_Obj *obj);
 
-extern int elf_read_string_table(FILE *fd, Elf32_Obj *obj);
-extern int elf_read_symbol_table(FILE *fd, Elf32_Obj *obj);
-extern int elf_read_symbol_names(FILE *fd, Elf32_Obj *obj);
-extern int elf_read_dynamic_section(FILE *fd, Elf32_Obj *obj);
-extern int elf_read_rel_table(FILE *fd, Elf32_Obj *obj);
+extern Elf32_Addr elf_get_symbol_addr(Elf32_Obj *obj, Elf32_Sym *sym);
+extern Elf32_Addr elf_get_rel_addr(Elf32_Obj *obj, Elf32_Shdr *sh, Elf32_Rel *rel);
+
+extern int elf_read_rel_section(Elf32_Obj *obj, unsigned int sh_idx,
+		Elf32_Rel **rel);
+extern void elf_remove_rel_section(Elf32_Rel *rel);
+
+extern int elf_read_rel_table(Elf32_Obj *obj);
 
 
 extern int32_t elf_read_rela_table(FILE *fd, Elf32_Ehdr *header,
 				Elf32_Shdr *section_header_table,
 				Elf32_Rela *rela_table, int32_t *count);
 
-extern int32_t elf_read_segment(FILE *fd, Elf32_Phdr *program_header, int8_t *dst);
+extern int32_t elf_read_segment(Elf32_Phdr *program_header, int8_t *dst);
+
+
+extern int elf_objlist_init(Elf32_Objlist **list);
+extern int elf_objlist_add(Elf32_Objlist *list, Elf32_Obj *obj);
 
 
 #endif /* LIB_ELF_H_ */
