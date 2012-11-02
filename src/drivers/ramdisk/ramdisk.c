@@ -39,28 +39,18 @@ POOL_DEF(ramdisk_pool, struct dev_ramdisk_head, OPTION_GET(NUMBER,ramdisk_quanti
 EMBOX_UNIT_INIT(unit_init);
 
 int ramdisk_create(void *mkfs_params) {
-	node_t *ramdisk_node;
 	mkfs_params_t *p_mkfs_params;
 	dev_ramdisk_t *ram_disk;
 
 	p_mkfs_params = (mkfs_params_t *)mkfs_params;
 
-	if (NULL == (ramdisk_node = vfs_add_path(p_mkfs_params->path, NULL))) {
-		return -EBUSY;
-	}
-
 	ram_disk = pool_alloc(&ramdisk_pool);
-	if(0 > (ram_disk->devnum =
-			block_dev_make((char *)ramdisk_node->name,
-					&ramdisk_pio_driver, ram_disk))) {
-		block_dev_destroy (ram_disk->devnum);
+	if(0 > block_dev_make(p_mkfs_params->path,
+					&ramdisk_pio_driver, ram_disk, &ram_disk->devnum)) {
 		return -EIO;
 	}
 
-	ram_disk->dev_node = ramdisk_node;
-	ramdisk_node->dev_type = (void *)block_dev(ram_disk->devnum)->driver;
-	ramdisk_node->dev_attr = (void *)&ram_disk->devnum;
-	block_dev(ram_disk->devnum)->dev_node = ramdisk_node;
+	ram_disk->dev_node = block_dev(ram_disk->devnum)->dev_node;
 
 	if(NULL == (ram_disk->p_start_addr =
 			page_alloc(__phymem_allocator, p_mkfs_params->blocks))) {

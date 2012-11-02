@@ -60,7 +60,7 @@ static slot_t ide;
 
 static long tmr_cmd_start_time;
 
-static int create_partitions(hd_t *hd);
+extern int create_partitions(hd_t *hd);
 static int ide_init(void *args);
 
 static void hd_fixstring(unsigned char *s, int len) {
@@ -438,49 +438,7 @@ static block_dev_driver_t ide_init_driver = {
 	NULL
 };
 
-/* TODO Create Partition as drive */
-static int create_partitions(hd_t *hd) {
-	mbr_t mbrdata;
-	mbr_t *mbr = &mbrdata;
-	int rc;
 
-	/* Read partition table */
-	rc = block_dev_read(hd->devno, (char *)mbr, SECTOR_SIZE, 0);
-	if (rc < 0) {
-		return rc;
-	}
-
-	mbr->sig_55 = 0;
-
-	/* Create partition devices */
-	if ((mbr->sig_55 != 0x55) || (mbr->sig_aa != 0xAA)) {
-		return -EIO;
-	}
-	/*
-	for (i = 0; i < HD_PARTITIONS; i++) {
-		hd->parts[i].dev = hd->devno;
-		hd->parts[i].bootid = mbr->ptable[i].active;
-		hd->parts[i].systid = mbr->ptable[i].type;
-		hd->parts[i].start = mbr->ptable[i].relsect;
-		hd->parts[i].len = mbr->ptable[i].numsect;
-
-		if (mbr->parttab[i].systid != 0) {
-			sprintf(devname, "%s%c", ((block_dev_module_t *)
-			&(__block_dev_registry[hd->devno]))->name, 'a' + i);
-			devno = dev_open(devname);
-			if (devno == NODEV) {
-				devno = dev_make(devname, &partition_driver, NULL, &hd->parts[i]);
-			}
-			else {
-				dev_close(devno);
-			}
-		}
-	}
-	*/
-	block_dev_make("hda0", partition_driver(), NULL);
-
-	return 0;
-}
 
 static int probe_device(hdc_t *hdc, int drvsel) {
 	unsigned char sc, sn;
@@ -627,39 +585,13 @@ static int setup_hdc(hdc_t *hdc, int iobase, int irq,
 	return 0;
 }
 
-static int ide_devnode_create(dev_t *dev_number) {
-	node_t *dev_node;
-
-	char dev_path[MAX_LENGTH_PATH_NAME];
-	char dev_name[MAX_LENGTH_FILE_NAME];
-
-	*dev_path = 0;
-	strcat(dev_path, "/dev/");
-	dev_name[0] = 'h';
-	dev_name[1] = 'd';
-	dev_name[2] = 'a' + *dev_number;
-	dev_name[3] = 0;
-	strcat(dev_path, dev_name);
-
-	if (NULL == (dev_node = vfs_add_path(dev_path, NULL))) {
-		if (NULL == (dev_node = vfs_find_node(dev_path, NULL))) {
-			return NODEV;
-		}
-	}
-
-	dev_node->dev_type = (void *) block_dev(*dev_number)->driver;
-	dev_node->dev_attr = (void *) dev_number;
-	block_dev(*dev_number)->dev_node = dev_node;
-
-	return *dev_number;
-}
-
 static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 						int drvsel, int udmasel, int iftype, int numslot) {
 	/* static int udma_speed[] = {16, 25, 33, 44, 66, 100}; */
 
 	int rc;
 	double size;
+	char   path[MAX_LENGTH_PATH_NAME];
 
 	/* Initialize drive block */
 	memset(hd, 0, sizeof(hd_t));
@@ -742,32 +674,32 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 	}
 
 	/* Make new device */
+	*path = 0;
+	strcat(path, "/dev/");
 	if (hd->media == IDE_DISK) {
 		if (hd->udmamode != -1) {
-			hd->devno = block_dev_make(devname, harddisk_udma_driver(), hd);
+			block_dev_make(strcat(path, devname),
+					harddisk_udma_driver(), hd, &hd->devno);
 		}
 		else {
-			hd->devno = block_dev_make(devname, harddisk_pio_driver(), hd);
+			block_dev_make(strcat(path, devname),
+					harddisk_pio_driver(), hd, &hd->devno);
 		}
 	}
 	else if (hd->media == IDE_CDROM) {
-		hd->devno = block_dev_make("cd#", cdrom_pio_driver(), hd);
+		block_dev_make(strcat(path, "cd#"), cdrom_pio_driver(), hd, &hd->devno);
 	}
 	else {
 		return;
 	}
 
 	if(0 <= hd->devno) {
-		if(0 > ide_devnode_create(&hd->devno)) {
-			block_dev_destroy (hd->devno);
-			return;
-		}
-		size =
-		(double) hd->param.cylinders *
-		(double) hd->param.heads *
-		(double) hd->param.unfbytes *
-		(double) (hd->param.sectors + 1);
+		size = (double) hd->param.cylinders * (double) hd->param.heads *
+		       (double) hd->param.unfbytes * (double) (hd->param.sectors + 1);
 		block_dev(hd->devno)->size = (size_t) size;
+	}
+	else {
+		return;
 	}
 
 	if (hd->media == IDE_DISK) {
@@ -822,11 +754,11 @@ static int ide_init(void *args) {
 		rc = setup_hdc(&hdctab[0], HDC0_IOBASE, HDC0_IRQ, 0, &masterif, &slaveif);
 		if (rc >= 0) {
 			if (numhd >= 1 && masterif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[0], &hdctab[0], "hd0",
+				setup_hd(&hdtab[0], &hdctab[0], "hda",
 						HD0_DRVSEL, BM_SR_DRV0, masterif, 0);
 			}
 			if (numhd >= 2 && slaveif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[1], &hdctab[0], "hd1",
+				setup_hd(&hdtab[1], &hdctab[0], "hdb",
 						HD1_DRVSEL, BM_SR_DRV1, slaveif, 1);
 			}
 		}
@@ -841,11 +773,11 @@ static int ide_init(void *args) {
 				HDC1_IRQ, 0, &masterif, &slaveif);
 		if (rc >= 0) {
 			if (numhd >= 3 && masterif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[2], &hdctab[1], "hd2",
+				setup_hd(&hdtab[2], &hdctab[1], "hdc",
 						HD0_DRVSEL, BM_SR_DRV0, masterif, 2);
 			}
 			if (numhd >= 4 && slaveif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[3], &hdctab[1], "hd3",
+				setup_hd(&hdtab[3], &hdctab[1], "hdd",
 						HD1_DRVSEL, BM_SR_DRV1, slaveif, 3);
 			}
 		}

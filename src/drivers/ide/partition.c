@@ -20,6 +20,50 @@
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
 
+/* TODO Create Partition as drive */
+int create_partitions(hd_t *hd) {
+	mbr_t mbrdata;
+	mbr_t *mbr = &mbrdata;
+	int rc;
+
+	/* Read partition table */
+	rc = block_dev_read(hd->devno, (char *)mbr, SECTOR_SIZE, 0);
+	if (rc < 0) {
+		return rc;
+	}
+
+	mbr->sig_55 = 0;
+
+	/* Create partition devices */
+	if ((mbr->sig_55 != 0x55) || (mbr->sig_aa != 0xAA)) {
+		return -EIO;
+	}
+	/*
+	for (i = 0; i < HD_PARTITIONS; i++) {
+		hd->parts[i].dev = hd->devno;
+		hd->parts[i].bootid = mbr->ptable[i].active;
+		hd->parts[i].systid = mbr->ptable[i].type;
+		hd->parts[i].start = mbr->ptable[i].relsect;
+		hd->parts[i].len = mbr->ptable[i].numsect;
+
+		if (mbr->parttab[i].systid != 0) {
+			sprintf(devname, "%s%c", ((block_dev_module_t *)
+			&(__block_dev_registry[hd->devno]))->name, 'a' + i);
+			devno = dev_open(devname);
+			if (devno == NODEV) {
+				devno = dev_make(devname, &partition_driver, NULL, &hd->parts[i]);
+			}
+			else {
+				dev_close(devno);
+			}
+		}
+	}
+	*/
+	block_dev_make("hda0", partition_driver(), NULL, &hd->devno);
+
+	return 0;
+}
+
 static int part_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 	struct partition *part = (struct partition *) dev->privdata;
 

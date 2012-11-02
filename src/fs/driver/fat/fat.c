@@ -2097,19 +2097,7 @@ int fat_read_sector(void *fdsc, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
 	fat_file_description_t *fd;
 	dev_t devnum;
-/*	block_dev_operations_t *block_dev_op;
 
-	fd = (fat_file_description_t *) fdsc;
-
-	block_dev_op = (block_dev_operations_t *)
-			fd->fs->devnum->dev_node->dev_type;
-	if(NULL != block_dev_op) {
-		block_dev_op->blk_read(fd->fs->devnum->dev_node->dev_attr,
-				(char *) buffer, sector, count);
-		return DFS_OK;
-	}
-	return DFS_ERRMISC;
-*/
 	fd = (fat_file_description_t *) fdsc;
 	devnum = fd->fs->devnum;
 	if(0 > block_dev_read(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
@@ -2124,18 +2112,7 @@ int fat_write_sector(void *fdsc, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
 	fat_file_description_t *fd;
 	dev_t devnum;
-/*	block_dev_operations_t *block_dev_op;
 
-	fd = (fat_file_description_t *) fdsc;
-
-	block_dev_op = (block_dev_operations_t *)
-			fd->fs->devnum->dev_node->dev_type;
-	if(NULL != block_dev_op) {
-		block_dev_op->blk_write(fd->fs->devnum->dev_node->dev_attr,
-				(char *) buffer, sector, count);
-		return DFS_OK;
-	}
-*/
 	fd = (fat_file_description_t *) fdsc;
 	devnum = fd->fs->devnum;
 	if(0 > block_dev_write(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
