@@ -43,6 +43,10 @@ module omap3_intc extends irqctrl_api {
 	source "omap3_intc.c", "omap3_intc.h"
 }
 
+module ppc_intc extends irqctrl_api {
+	source "ppc_intc.c", "ppc_intc.h"
+}
+
 module no_interrupts extends irqctrl_api {
 	source "no_interrupts.h"
 }
