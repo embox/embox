@@ -57,11 +57,9 @@
 static hdc_t hdctab[HD_CONTROLLERS];
 static hd_t  hdtab[HD_DRIVES];
 static slot_t ide;
-
 static long tmr_cmd_start_time;
 
 extern int create_partitions(hd_t *hd);
-static int ide_init(void *args);
 
 static void hd_fixstring(unsigned char *s, int len) {
 	unsigned char *p = s;
@@ -361,8 +359,6 @@ void hd_dpc(void *arg) {
 				pio_read_buffer(hdc->active, hdc->bufp, SECTOR_SIZE);
 				hdc->bufp += SECTOR_SIZE;
 			}
-
-			/* Signal event if we have read all sectors */
 			hdc->nsects -= nsects;
 		}
 		break;
@@ -429,16 +425,6 @@ static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
 
 	return IRQ_HANDLED;
 }
-
-static block_dev_driver_t ide_init_driver = {
-	"ide_drv",
-	DEV_TYPE_BLOCK,
-	NULL,
-	NULL,
-	NULL
-};
-
-
 
 static int probe_device(hdc_t *hdc, int drvsel) {
 	unsigned char sc, sn;
@@ -788,6 +774,14 @@ static int ide_init(void *args) {
 slot_t *ide_get_drive(void) {
 	return &ide;
 }
+
+static block_dev_driver_t ide_init_driver = {
+	"ide_drv",
+	DEV_TYPE_BLOCK,
+	NULL,
+	NULL,
+	NULL
+};
 
 EMBOX_BLOCK_DEV("ide", &ide_init_driver, ide_init);
 

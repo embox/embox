@@ -273,6 +273,7 @@ static int fatfs_create(void *par) {
 			if(NULL == (node = vfs_add_path (param->path, NULL))) {
 				return -ENOMEM;
 			}
+			node->properties = DIRECTORY_NODE_TYPE;
 		}
 
 		if(NULL == (fd = pool_alloc(&fat_file_pool))) {

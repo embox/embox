@@ -83,16 +83,15 @@ typedef struct block_dev_cache {
 
 extern block_dev_t *devtab[64];
 
-extern block_dev_module_t *block_dev_find(char *name);
+//extern block_dev_module_t *block_dev_find(char *name);
 
 extern dev_t block_dev_make(char *name, block_dev_driver_t *driver,
 		void *privdata, dev_t *devno);
-extern dev_t block_devno(char *name);
 extern block_dev_t *block_dev(dev_t devno);
 extern dev_t block_dev_open(char *name);
 extern block_dev_cache_t *block_dev_cache_init(dev_t devno, int blocks);
 extern block_dev_cache_t *block_dev_cached_read(dev_t devno, blkno_t blkno);
-extern int block_dev_cache_free(dev_t devno);
+//extern int block_dev_cache_free(dev_t devno);
 extern int block_dev_read(dev_t devno, char *buffer, size_t count, blkno_t blkno);
 extern int block_dev_write(dev_t devno, char *buffer, size_t count, blkno_t blkno);
 extern int block_dev_ioctl(dev_t devno, int cmd, void *args, size_t size);

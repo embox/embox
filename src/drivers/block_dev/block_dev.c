@@ -26,8 +26,8 @@ POOL_DEF(cache_pool, struct block_dev_cache, MAX_DEV_QUANTITY);
 static unsigned int num_devs = 0;
 block_dev_t *devtab[64];
 
-
-block_dev_module_t *block_dev_find(char *name) {
+/*
+static block_dev_module_t *block_dev_find(char *name) {
 	block_dev_module_t *b_dev;
 	size_t i;
 
@@ -40,6 +40,7 @@ block_dev_module_t *block_dev_find(char *name) {
 
 	return NULL;
 }
+*/
 
 block_dev_t *block_dev(dev_t devno) {
 	if (devno < 0 || devno >= num_devs) {
@@ -48,7 +49,7 @@ block_dev_t *block_dev(dev_t devno) {
 	return devtab[devno];
 }
 
-dev_t block_devno(char *name) {
+static dev_t block_devno(char *name) {
 	dev_t devno;
 
 	for (devno = 0; devno < num_devs; devno++) {
@@ -57,22 +58,6 @@ dev_t block_devno(char *name) {
 		}
 	}
 	return NODEV;
-}
-
-int block_dev_destroy (dev_t devno) {
-	block_dev_t *dev;
-
-	if(NULL ==(dev = block_dev(devno))) {
-		return NODEV;
-	}
-	else {
-		block_dev_cache_free(devno);
-
-		pool_free(&blockdev_pool, dev);
-		devtab[devno] = NULL;
-		num_devs--;
-		return 0;
-	}
 }
 
 static dev_t block_dev_node_create(dev_t *dev_number, char *dev_path) {
@@ -276,7 +261,7 @@ block_dev_cache_t *block_dev_cached_read(dev_t devno, blkno_t blkno) {
 	return cache;
 }
 
-int block_dev_cache_free(dev_t devno) {
+static int block_dev_cache_free(dev_t devno) {
 	block_dev_t *dev;
 	block_dev_cache_t *cache;
 
@@ -297,3 +282,18 @@ int block_dev_cache_free(dev_t devno) {
 	return  0;
 }
 
+int block_dev_destroy (dev_t devno) {
+	block_dev_t *dev;
+
+	if(NULL ==(dev = block_dev(devno))) {
+		return NODEV;
+	}
+	else {
+		block_dev_cache_free(devno);
+
+		pool_free(&blockdev_pool, dev);
+		devtab[devno] = NULL;
+		num_devs--;
+		return 0;
+	}
+}

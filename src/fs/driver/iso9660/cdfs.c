@@ -1198,6 +1198,7 @@ static int create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath, int 
 			node->dev_type = dir_node->dev_type;
 			node->dev_attr = dir_node->dev_attr;
 			node->fd = (void *)fd;
+			node->properties = FILE_NODE_TYPE;
 		}
 		else {
 			/* Skip to next block */
@@ -1255,6 +1256,7 @@ static int create_dir_entry (node_t *parent) {
 				node->dev_type = parent_node->dev_type;
 				node->dev_attr = parent_node->dev_attr;
 				node->fd = (void *)fd;
+				node->properties = DIRECTORY_NODE_TYPE;
 			}
 
 			create_file_node (node, cdfs, name, n);
