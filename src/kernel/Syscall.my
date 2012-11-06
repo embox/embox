@@ -1,0 +1,7 @@
+package embox.kernel
+
+module syscall {
+	source "syscall.c"
+
+	depends embox.arch.syscall
+}

@@ -49,7 +49,7 @@ module oneshot_timer_test {
 module syscall_test {
 	source "syscall_test.c"
 
-	depends embox.arch.syscall
+	depends embox.arch.syscall_caller
 }
 
 

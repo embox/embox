@@ -8,11 +8,11 @@
 
 #include <embox/test.h>
 
-#include <module/embox/arch/syscall.h>
+#include <kernel/syscall_caller.h>
 
-EMBOX_TEST_SUITE("usermode");
+EMBOX_TEST_SUITE("syscall test");
 
-TEST_CASE("syscall") {
+TEST_CASE("calling sys_write") {
 	const char *s = "sys_write";
 	test_assert_true(syscall_write(1, s, strlen(s)) == strlen(s));
 }
