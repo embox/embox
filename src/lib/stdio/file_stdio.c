@@ -63,18 +63,3 @@ static int stdio_ioctl(void *file, int request, va_list args) {
 INIT_STDIO_FILE_DESC(stdin_int, stdio_read, NULL);
 INIT_STDIO_FILE_DESC(stdout_int, NULL, stdio_write);
 INIT_STDIO_FILE_DESC(stderr_int, NULL, stdio_write);
-
-FILE stdin_struct = {
-	.file_int = &stdin_int_struct
-};
-FILE stdout_struct = {
-	.file_int = &stdout_int_struct
-};
-
-FILE stderr_struct = {
-	.file_int = &stderr_int_struct
-};
-
-FILE *stdin = &stdin_struct;
-FILE *stdout = &stdout_struct;
-FILE *stderr = &stderr_struct;

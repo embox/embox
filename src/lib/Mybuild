@@ -100,10 +100,10 @@ static module LibCStdio {
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
 	source "stdio/perror.c"
-	//depends FileApi
-	source "stdio/file_stdio.c"
+	//source "stdio/file_stdio.c"
 	depends LibCMath
 	depends LibCString
+	depends embox.kernel.task.idx_table
 }
 
 static module LibC {

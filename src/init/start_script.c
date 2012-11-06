@@ -74,7 +74,6 @@ static int parse(const char *const_line) {
 
 static void setup_tty(const char *dev_name) {
 	int fd;
-	struct file_desc *std;
 	char full_name[0x20];
 
 	if(strlen(dev_name) == 0) {
@@ -85,14 +84,9 @@ static void setup_tty(const char *dev_name) {
 
 	strcat(full_name, dev_name);
 
-
 	if(-1 == (fd = open(full_name, O_RDWR))) {
 		return;
 	}
-
-	std = (struct file_desc *) task_idx_desc_data(task_self_idx_get(fd));
-
-	stdin->file_int = stdout->file_int = stderr->file_int = std;
 
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);

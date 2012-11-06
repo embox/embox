@@ -24,17 +24,8 @@ module FileTasks  {
 	depends FileTasksBasic
 }
 
-@DefaultImpl(FileOpen)
-abstract module FileOpenApi {
-
-}
-
-module FileOpen extends FileOpenApi {
-	source "no_open.c"
-}
-
-module FileTasksOpen extends FileOpenApi {
-	source "file_tasks_open.c"
+module FileTasksOpen {
+	source "open.c"
 	depends embox.fs.posix_compat
 	depends embox.kernel.task.errno
 }

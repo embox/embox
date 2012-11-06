@@ -5,13 +5,17 @@
  * @author Anton Bondarev
  */
 
-#include <stdio.h>
 #include <errno.h>
 #include <mem/misc/pool.h>
 
 #include <framework/mod/options.h>
 
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+
 #include <fs/core.h>
+#include <stdio.h>
 
 
 #ifdef __FILE_QUANTITY
@@ -22,9 +26,32 @@
 
 POOL_DEF(file_pool, FILE, FILE_QUANTITY);
 
+FILE stdin_struct = {
+	.fd = 0
+};
+FILE stdout_struct = {
+	.fd = 1
+};
+
+FILE stderr_struct = {
+	.fd = 1
+};
+
+FILE *stdin = &stdin_struct;
+FILE *stdout = &stdout_struct;
+FILE *stderr = &stderr_struct;
+
 FILE *fopen(const char *path, const char *mode) {
-	FILE *file = pool_alloc(&file_pool);
-	file->file_int = kopen(path, mode);
+	int fd;
+	FILE *file = NULL;
+
+	fd = open(path, 0);
+
+	if (fd > 0) {
+		file = pool_alloc(&file_pool);
+		file->fd = fd;
+	}
+
 	return file;
 
 }
@@ -44,7 +71,7 @@ int ferror(FILE *file) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	return kwrite(buf, size, count, file->file_int);
+	return write(file->fd, buf, size * count);
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
@@ -65,27 +92,27 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		addon = 1;
 	}
 
-	return (addon + kread(buf, size, count, file->file_int));
+	return (addon + read(file->fd,  buf, size * count));
 }
 
 int fclose(FILE *file) {
-	int res = kclose(file->file_int);
+	int res = close(file->fd);
 	pool_free(&file_pool, file);
 	return res;
 }
 
 int fseek(FILE *file, long int offset, int origin) {
-	return kseek(file->file_int, offset, origin);
+	return lseek(file->fd, offset, origin);
 }
 
 int fstat(FILE *file, void *buff) {
-	return kstat(file->file_int, buff);
+	return stat(file->fd, buff);
 }
 
 int fioctl(FILE *fp, int request, ...) {
 	va_list args;
 	va_start(args, request);
-	return kioctl(fp->file_int, request, args);
+	return ioctl(fp->fd, request, args);
 }
 
 int ungetc(int ch, FILE *file) {
