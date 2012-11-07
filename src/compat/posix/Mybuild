@@ -5,7 +5,7 @@ module LibPosix {
 	depends embox.compat.posix.util.All
 	depends embox.compat.posix.proc.All
 	depends embox.compat.posix.idx.All
-	depends FileApi
+	depends File
 	depends FS
 }
 
@@ -16,21 +16,16 @@ static module FS {
 	depends embox.kernel.task.errno
 }
 
-@DefaultImpl(FileDiag)
-abstract module FileApi { }
+/* -----------------------Idx and File---------------------------- */
 
-module FileTasks  {
-	depends FileTasksOpen
-	depends FileTasksBasic
+@DefaultImpl(IdxDiag)
+abstract module IdxApi { }
+
+static module IdxDiag extends IdxApi {
+	source "file_diag.c"
 }
 
-module FileTasksOpen {
-	source "open.c"
-	depends embox.fs.posix_compat
-	depends embox.kernel.task.errno
-}
-
-static module FileTasksBasic extends FileApi {
+static module IdxFullSupport extends IdxApi {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "file_tasks.c",
 		"isatty.c"
@@ -40,12 +35,28 @@ static module FileTasksBasic extends FileApi {
 	depends embox.kernel.task.errno
 	depends posix_env
 	depends io_sync_api
-
 }
 
-static module FileDiag extends FileApi {
-	source "file_diag.c"
+module File {
+	depends IdxApi
+	depends FileSpecificOperations
 }
+
+@DefaultImpl(FileNoOpen)
+abstract module FileSpecificOperations { }
+
+static module FileTasksOpen extends FileSpecificOperations {
+	source "open.c"
+	depends embox.fs.posix_compat
+	depends embox.kernel.task.errno
+}
+
+static module FileNoOpen extends FileSpecificOperations {
+	source "no_open.c"
+}
+
+/* ------------------------------------------------------------------*/
+
 
 @DefaultImpl(bootstrap_posix_env)
 abstract module posix_env { }

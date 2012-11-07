@@ -23,7 +23,6 @@
 #include <fs/file_desc.h>
 #include <util/array.h>
 
-
 node_t *create_filechain(const char *path, uint8_t node_type){
 	int count_dir;
 	file_create_param_t param;

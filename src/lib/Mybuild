@@ -87,7 +87,7 @@ static module LibCMath {
 static module LibCStdio {
 
 	option boolean stdio_lf_crlf_map = true
-	option number file_quantity = 100
+	option number file_quantity = 16
 
 	source "stdio/file_ops.c"
 	source "stdio/fgetc.c"
@@ -103,7 +103,7 @@ static module LibCStdio {
 	//source "stdio/file_stdio.c"
 	depends LibCMath
 	depends LibCString
-	depends embox.kernel.task.idx_table
+	depends embox.compat.posix.File
 }
 
 static module LibC {

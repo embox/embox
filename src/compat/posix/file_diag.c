@@ -13,10 +13,6 @@
 #include <prom/diag.h>
 #include <util/array.h>
 
-int open(const char *path, int __oflag, ...) {
-	return -1;
-}
-
 int close(int fd) {
 	return -1;
 }
@@ -67,4 +63,8 @@ int fcntl(int fd, int cmd, ...) {
 
 int fsync(int fd) {
 	return 0;
+}
+
+int stat(int fd, void *buff) {
+	return -1;
 }
