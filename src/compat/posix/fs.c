@@ -89,7 +89,6 @@ int create(const char *pathname, mode_t mode) {
 
 	/* set permission */
 
-
 	if (NULL == (nod = create_filechain(pathname, FILE_NODE_TYPE))) {
 		errno = EINVAL;
 		return -1;
