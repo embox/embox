@@ -22,4 +22,5 @@ module make_term {
 
 	depends embox.compat.posix.idx.dup
 	depends embox.compat.posix.posix_env
+	depends embox.kernel.task.idx_table
 }
