@@ -4,9 +4,9 @@ package embox.cmd
 	help = "Loads ELF binaries",
 	man = '''
 		NAME
-			readelf - Loads ELF binaries
+			loadelf - Loads ELF binaries
 		SYNOPSIS
-			readelf <filename>
+			loadelf <filename>
 		DESCRIPTION
 			Loads ELF binaries
 		AUTHORS
@@ -19,6 +19,6 @@ module loadelf {
 
 	depends embox.lib.LibC
 	depends embox.fs.core
-	depends embox.lib.ElfLib
+	depends embox.lib.LibElf
 	depends embox.framework.LibFramework
 }

@@ -184,6 +184,8 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	iov.iov_len = len;
 	m.msg_iov = &iov;
 
+	assert(sock->sk);
+
 	inet = inet_sk(sock->sk);
 	if ( (sock->type == SOCK_STREAM) || (sock->type ==  SOCK_SEQPACKET) ) {
 		/* Quotation: "If sendto() is used on a connection-mode (SOCK_STREAM, SOCK_SEQPACKET)
@@ -204,6 +206,11 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 			inet->daddr = dest_addr->sin_addr.s_addr;
 			inet->dport = dest_addr->sin_port;
 		}
+	}
+
+	if (sock->sk->sk_shutdown & (SHUT_WR + 1)) {
+		SET_ERRNO(EPIPE);
+		return -1;
 	}
 
 	/* socket is ready for usage and has no data transmitting errors yet */
@@ -343,6 +350,33 @@ ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
 	}
 
 	return res;
+}
+
+int shutdown(int sockfd, int how) {
+	int res;
+	struct socket *sock;
+
+	if (sockfd < 0) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	sock = idx2sock(sockfd);
+	if (sock == NULL) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	sock->sk->sk_shutdown |= (how + 1);
+
+	res = kernel_socket_shutdown(sock, how);
+
+	if(res < 0){
+		SET_ERRNO(-res);
+		return -1;
+	}
+
+	return ENOERR;
 }
 
 int socket_close(int sockfd) {

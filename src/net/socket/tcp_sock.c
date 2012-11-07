@@ -415,6 +415,16 @@ static void tcp_v4_close(struct sock *sk, long timeout) {
 	tcp_obj_unlock(sock, TCP_SYNC_STATE);
 }
 
+/* TODO */
+int tcp_v4_shutdown(struct sock *sk, int how) {
+	if (!(how & (SHUT_WR + 1))) {
+		return ENOERR;
+	}
+
+	/*tcp_send_fin()*/
+	return ENOERR;
+}
+
 static void tcp_v4_hash(struct sock *sk) {
 	size_t i;
 
@@ -478,5 +488,6 @@ const struct proto tcp_prot = {
 		.unhash     = tcp_v4_unhash,
 		.sock_alloc = tcp_v4_sock_alloc,
 		.sock_free  = tcp_v4_sock_free,
+		.shutdown   = tcp_v4_shutdown,
 		.obj_size   = sizeof(struct tcp_sock),
 };

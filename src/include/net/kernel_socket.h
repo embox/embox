@@ -159,7 +159,7 @@ extern int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,
 extern int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,
 				struct msghdr *msg, size_t size, int flags);
 
-extern int kernel_socket_shutdown(struct socket *sock);
+extern int kernel_socket_shutdown(struct socket *sock, int how);
 extern int kernel_socket_close(struct socket *sock);
 
 extern struct socket * socket_alloc(void);
