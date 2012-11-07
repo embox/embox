@@ -1,0 +1,10 @@
+package embox.sevice
+
+static module SrvLib {
+	source "srv_lib.c"
+}
+
+module Hello {
+	source "hello.c"
+	depends SrvLib
+}
