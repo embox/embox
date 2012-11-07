@@ -6,77 +6,25 @@
  * @author Ilia Vaprol
  */
 
-#include <types.h>
+#include <asm/psr.h>
+#include <asm/regs.h>
 
 #include <drivers/irqctrl.h>
 
 #include <embox/unit.h>
-#include <prom/prom_printf.h>
 
 EMBOX_UNIT_INIT(ppc_intc_init);
 
-/**
- * Machine State Register (MSR)
- * 13b - Power management enable (POW)
- * 15b - Exception little-endian mode (ILE)
- * 16b - External interrupt enable (EE)
- * 17b - Privilege level (PR)
- * 18b - Floating-point available (FP)
- * 19b - Machine check enable (ME)
- * 20b - Floating-point exception mode 0 (FE0)
- * 21b - Single-step trace enable (SE)
- * 22b - Branch trace enable (BE)
- * 23b - Floating-point exception mode 1 (FE1)
- * 25b - Exception preﬁx (IP)
- * 26b - Instruction address translation (IR)
- * 27b - Data address translation (DR)
- * 30b - Recoverable exception (RI)
- * 31b - Little-endian mode enable (LE)
- */
-static inline int32_t load_msr(void) { uint32_t reg; asm volatile ("mfmsr %0" : "=r" (reg)); return reg; }
-static inline void store_msr(uint32_t reg) { asm volatile ("mtmsr %0" :: "r" (reg)); }
-
-/**
- * Processor Version Register (PVR)
- * 0-15b  - Version
- * 16-31b - Revision
- */
-static inline uint32_t load_pvr(void) { uint32_t reg; asm volatile ("mfpvr %0" : "=r" (reg)); return reg; }
-
-/**
- * Execution and Contex Synchronizing Instruments
- */
-static inline void sync(void) { asm volatile ("sync"); }
-static inline void isync(void) { asm volatile ("isync"); }
-
-extern void* memset(void *, int, size_t);
 static int ppc_intc_init(void) {
-	/* setup exception handling to big-endian mode */
-	store_msr(load_msr() & ~(1 << 15));
-
-	/* setup big-endian mode */
-	store_msr(load_msr() & ~(1 << 31));
-	sync();
-
-	/* turn on external interrupt */
-	store_msr(load_msr() | (1 << 16));
-
-	/* allow user- and supervisor-level instructions */
-	store_msr(load_msr() & ~(1 << 17));
-	isync();
-
-	/* setup exception prefix to 0x000n_nnnn */
-	store_msr(load_msr() & ~(1 << 25));
-
-//	memset((void*)(0x00000001), 0, 0x2FFF); /* try kill */
-
 	return 0;
 }
 
 void irqctrl_enable(unsigned int interrupt_nr) {
+	__set_msr(__get_msr() | MSR_EE);
 }
 
 void irqctrl_disable(unsigned int interrupt_nr) {
+	__set_msr(__get_msr() & ~MSR_EE);
 }
 
 void irqctrl_clear(unsigned int interrupt_nr) {
