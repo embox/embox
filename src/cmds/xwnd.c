@@ -82,7 +82,8 @@ static int exec (int argc, char ** argv) {
 		if (err) {
 			return 1;
 		}
-		app_id = xwnd_app_create(test_app_main);
+		//app_id = xwnd_app_create(test_app_main);
+		app_id = xwnd_app_create(xwnd_term_main);
 		if (app_id < 0) {
 			return 1;
 		}
@@ -100,6 +101,7 @@ static int exec (int argc, char ** argv) {
 					break;
 				} else {
 					xwnd_app_send_kbd_event(app_id, key);
+					xwnd_app_send_sys_event(app_id, XWND_EV_DRAW);
 				}
 			}
 		}

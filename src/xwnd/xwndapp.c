@@ -77,10 +77,10 @@ struct xwnd_application * xwnd_app_init (void * args) {
 	}
 
 	//Create window
-	rect.x = 30 * (xapp_id + 1);
-	rect.y = 20 * (xapp_id + 1);
-	rect.wd = 60 * (xapp_id + 1);
-	rect.ht = 60 * (xapp_id + 1);
+	rect.x = 30;
+	rect.y = 20;
+	rect.wd = 200;
+	rect.ht = 150;
 	t_wnd = xwnd_window_create(&rect); //malloc (sizeof(struct xwnd_window));
 	if (!t_wnd) {
 		free(t_xapp);

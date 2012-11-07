@@ -11,6 +11,7 @@
 #define XWND_H_
 
 #include <xwnd/bmp.h>
+#include <xwnd/fonts.h>
 #include <xwnd/event.h>
 #include <xwnd/window.h>
 #include <xwnd/xwndapp.h>
