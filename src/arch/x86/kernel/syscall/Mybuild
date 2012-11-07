@@ -2,14 +2,15 @@ package embox.arch.x86.kernel
 
 module syscall extends embox.arch.syscall {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "syscall_entry.S", "syscall_table.c"
+	source "syscall_entry.S"
 
 	depends locore
+	depends embox.kernel.syscall.syscall_table
 }
 
 module syscall_caller extends embox.arch.syscall_caller {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "syscall_caller.h", "syscall_caller.c"
+	source "syscall_caller.h"
 
 	depends embox.kernel.syscall
 }
