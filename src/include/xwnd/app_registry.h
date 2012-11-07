@@ -10,24 +10,18 @@
 #define XWND_APP_REGISTRY_H_
 
 #include <xwnd/xwndapp.h>
+#include <xwnd/event.h>
 #include <kernel/thread/sync/sem.h>
 
 struct xwnd_app_init_wrapper {
 	int xapp_id;
-	int req_pipe;
-	int msg_pipe;
-	sem_t * msg_sem;
-	sem_t * req_sem;
+	struct xwnd_event_slave ev;
 };
 
 struct xwnd_app_registry_node {
-	int pipe_in;
-	int pipe_out;
 	int tid;
-	sem_t msg_sem;
-	sem_t req_sem;
+	struct xwnd_event_master ev;
 	struct xwnd_app_init_wrapper init_wrap;
-	//struct xwnd_application * xapp;
 };
 
 struct xwnd_app_registry {

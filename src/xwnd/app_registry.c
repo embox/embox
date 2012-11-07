@@ -30,7 +30,6 @@ int xwnd_app_reg_init (void) {
 }
 
 int xwnd_app_create (void* (*entry_point) (void*)) {
-	int req_pipe[2], msg_pipe[2];
 	int xapp_id = xapp_reg.used;
 	int xapp_tid;
 
@@ -40,22 +39,8 @@ int xwnd_app_create (void* (*entry_point) (void*)) {
 	}
 	xapp_reg.used++;
 
-	/*Init pipe semaphores*/
-	sem_init(&xapp_reg.nodes[xapp_id].msg_sem, 2);
-	sem_init(&xapp_reg.nodes[xapp_id].req_sem, 2);
-	/*FIXME: Connect pipes*/
-	if (pipe(req_pipe))
-		return -1;
-	if (pipe(msg_pipe))
-		return -1;
-	xapp_reg.nodes[xapp_id].pipe_in  = req_pipe[0];
-	xapp_reg.nodes[xapp_id].pipe_out = msg_pipe[1];
-	/*Fill up the strcture to transfer to xwnd_app_init();*/
-	xapp_reg.nodes[xapp_id].init_wrap.msg_pipe = msg_pipe[0];
-	xapp_reg.nodes[xapp_id].init_wrap.req_pipe = req_pipe[1];
-	xapp_reg.nodes[xapp_id].init_wrap.xapp_id = xapp_id;
-	xapp_reg.nodes[xapp_id].init_wrap.msg_sem = &xapp_reg.nodes[xapp_id].msg_sem;
-	xapp_reg.nodes[xapp_id].init_wrap.req_sem = &xapp_reg.nodes[xapp_id].req_sem;
+	/*Initialize event queue connection*/
+	xwnd_event_create_pair(&(xapp_reg.nodes[xapp_id].ev), &(xapp_reg.nodes[xapp_id].init_wrap.ev));
 
 	/*Send first messages*/
 	xwnd_app_send_sys_event(xapp_id, XWND_EV_CREAT);
@@ -71,11 +56,11 @@ void xwnd_app_remove(void) {
 }
 
 int xwnd_app_put_message(int app_id, void * data, size_t size) {
-	int msg_pipe = xapp_reg.nodes[app_id].pipe_out;
+	int msg_pipe = xapp_reg.nodes[app_id].ev.msg_pipe;
 	int err;
-	if (!sem_tryenter(&(xapp_reg.nodes[app_id].msg_sem))) {
+	if (!sem_tryenter(&(xapp_reg.nodes[app_id].ev.msg_sem))) {
 		err = write(msg_pipe, data, size);
-		sem_leave(&(xapp_reg.nodes[app_id].msg_sem));
+		sem_leave(&(xapp_reg.nodes[app_id].ev.msg_sem));
 	}
 	if (err != size) {
 		return -1;
