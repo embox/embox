@@ -29,9 +29,9 @@ int xwnd_app_set_event_handle (struct xwnd_application * app, enum xwnd_event_ty
 
 int xwnd_app_get_event (struct xwnd_application * app, struct xwnd_event * event) {
 	int err;
-	sem_enter(app->msg_sem);
-	err = read(app->pipe_in, event, sizeof(struct xwnd_event));
-	sem_leave(app->msg_sem);
+	sem_enter(app->ev.msg_sem);
+	err = read(app->ev.msg_pipe, event, sizeof(struct xwnd_event));
+	sem_leave(app->ev.msg_sem);
 	if (err != sizeof(struct xwnd_event)) {
 		return 1;
 	}
@@ -77,10 +77,10 @@ struct xwnd_application * xwnd_app_init (void * args) {
 	}
 
 	//Create window
-	rect.x = 30 * (xapp_id + 1);
-	rect.y = 20 * (xapp_id + 1);
-	rect.wd = 60 * (xapp_id + 1);
-	rect.ht = 60 * (xapp_id + 1);
+	rect.x = 30;
+	rect.y = 20;
+	rect.wd = 200;
+	rect.ht = 150;
 	t_wnd = xwnd_window_create(&rect); //malloc (sizeof(struct xwnd_window));
 	if (!t_wnd) {
 		free(t_xapp);
@@ -88,13 +88,7 @@ struct xwnd_application * xwnd_app_init (void * args) {
 	}
 	t_xapp->wnd = t_wnd;
 	t_xapp->app_id = xapp_id;
-	t_xapp->req_sem = t_wrap->req_sem;
-	t_xapp->msg_sem = t_wrap->msg_sem;
-	t_xapp->pipe_out = t_wrap->req_pipe;
-	t_xapp->pipe_in = t_wrap->msg_pipe;
-
-
-
+	t_xapp->ev = t_wrap->ev;
 
 	return t_xapp;
 }
