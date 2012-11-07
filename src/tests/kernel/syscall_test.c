@@ -18,14 +18,27 @@ SYSCALL2(2,int,syscall_2,int,arg1,int,arg2);
 SYSCALL3(3,int,syscall_3,int,arg1,int,arg2,int,arg3);
 SYSCALL4(4,int,syscall_4,int,arg1,int,arg2,int,arg3,int,arg4);
 SYSCALL5(5,int,syscall_5,int,arg1,int,arg2,int,arg3,int,arg4,int,arg5);
-SYSCALL6(6,int,syscall_6,int,arg1,int,arg2,int,arg3,int,arg4,int,arg5,int,arg6);
 
-TEST_CASE("calling syscalls with different number of arguments") {
-	test_assert(syscall_0() == 1);
-	test_assert(syscall_1(1) == 1);
-	test_assert(syscall_2(0,1) == 1);
-	test_assert(syscall_3(0,0,1) == 1);
-	test_assert(syscall_4(0,0,0,1) == 1);
-	test_assert(syscall_5(0,0,0,0,1) == 1);
-	test_assert(syscall_6(0,0,0,0,0,1) == 1);
+TEST_CASE("calling syscall without arguments") {
+	test_assert_equal(syscall_0(), 0);
+}
+
+TEST_CASE("calling syscall with one argument") {
+	test_assert_equal(syscall_1(1), 1);
+}
+
+TEST_CASE("calling syscall with two arguments") {
+	test_assert_equal(syscall_2(0,2), 2);
+}
+
+TEST_CASE("calling syscall with three arguments") {
+	test_assert_equal(syscall_3(0,0,3), 3);
+}
+
+TEST_CASE("calling syscall with four arguments") {
+	test_assert_equal(syscall_4(0,0,0,4), 4);
+}
+
+TEST_CASE("calling syscall with five arguments") {
+	test_assert_equal(syscall_5(0,0,0,0,5), 5);
 }

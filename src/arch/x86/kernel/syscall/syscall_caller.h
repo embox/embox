@@ -86,6 +86,8 @@ __asm__ volatile ("int $0x80"                                                  \
 return __res;                                                                  \
 }
 
+/* Not used */
+
 #define __SYSCALL6(NR,type,name,type1,arg1,type2,arg2,type3,arg3,type4,arg4,   \
           type5,arg5,type6,arg6)                                               \
 static inline type name(type1 arg1,type2 arg2,type3 arg3,type4 arg4,           \

@@ -11,7 +11,7 @@
 #define SYSCALL_NRS_TOTAL 7
 
 static int sys_0(void) {
-	return 1;
+	return 0;
 }
 
 static int sys_1(int arg1) {
@@ -38,7 +38,7 @@ static int sys_6(int arg1, int arg2, int arg3, int arg4, int arg5, int arg6) {
 	return arg6;
 }
 
-void *SYSCALL_TABLE[SYSCALL_NRS_TOTAL] = {
+void *const SYSCALL_TABLE[SYSCALL_NRS_TOTAL] = {
 	sys_0,
 	sys_1,
 	sys_2,
