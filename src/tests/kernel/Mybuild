@@ -46,6 +46,7 @@ module oneshot_timer_test {
 	depends embox.kernel.time.timer
 }
 
+//@TestFor(embox.kernel.syscall)
 module syscall_test {
 	source "syscall_test.c"
 
