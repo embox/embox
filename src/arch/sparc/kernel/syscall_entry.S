@@ -1,8 +1,8 @@
 /**
  * @file
  *
- * @date 25.03.10
- * @author Alexander Batyukov
+ * @date 07.11.2012
+ * @author Anton Bulychev
  */
 
 #include <asm/entry.h>
