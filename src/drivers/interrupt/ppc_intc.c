@@ -20,11 +20,9 @@ static int ppc_intc_init(void) {
 }
 
 void irqctrl_enable(unsigned int interrupt_nr) {
-	__set_msr(__get_msr() | MSR_EE);
 }
 
 void irqctrl_disable(unsigned int interrupt_nr) {
-	__set_msr(__get_msr() & ~MSR_EE);
 }
 
 void irqctrl_clear(unsigned int interrupt_nr) {
