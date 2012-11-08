@@ -5,6 +5,7 @@ module boot extends embox.arch.boot {
 }
 
 module locore extends embox.arch.locore {
+	source "exception_table.S"
 }
 
 module interrupt extends embox.arch.interrupt {

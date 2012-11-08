@@ -13,6 +13,9 @@ MEMORY {
 
 SECTIONS {
 	.text : {
+		. = 0;      /* trap_table starts from 0 */
+		*(.trap_table.text)
+		. = 0x3000; /* trap_table has a fixed size */
 		ALIGNMENT();
 		*(.text)
 		*(.text.*)

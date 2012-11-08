@@ -5,8 +5,9 @@
  * @author Anton Bondarev
  * @author Ilia Vaprol
  */
-#include <asm/regs.h>
+
 #include <asm/linkage.h>
+#include <asm/regs.h>
 
 /**
  * Kernel start point
@@ -65,4 +66,7 @@ C_ENTRY(_start)
 	cmplw   cr0, r3, r4
 	blt     1b
 
+	/**
+	 * Call C code
+	 */
 	b       kernel_start
