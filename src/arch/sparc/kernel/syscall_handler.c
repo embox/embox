@@ -7,7 +7,7 @@
 
 #include <asm/ptrace.h>
 
-extern void *SYSCALL_TABLE[];
+#include <kernel/syscall_table.h>
 
 void syscall_handler(struct pt_regs *regs) {
 	uint32_t result;
