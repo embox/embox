@@ -27,4 +27,6 @@ module servd {
 	depends embox.framework.LibFramework
 	depends embox.net.lib.parser
 	depends third_party.lib.url_parser
+	depends embox.sevice.Index_service
+	depends embox.sevice.About_service
 }

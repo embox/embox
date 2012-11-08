@@ -19,6 +19,7 @@
 #include <net/in.h>
 #include <net/util/request_parser.h>
 #include <lib/url_parser.h>
+#include <embox/web_service.h>
 
 EMBOX_CMD(servd);
 
@@ -95,41 +96,26 @@ static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
 				] = "application/unknown" };
 
 static const char *service_params[2][2] = { { DEFAULT_PAGE, "hello" }, {
-		DEFAULT_PAGE, "world" }, };
+		"about.html", "world" }, };
 
-struct event event;
-int params[2];
-
-static void *hello_thread_handler(void* args) {
-	int * params;
-	params = (int *) args;
-	while (1) {
-		if (params[0] == -1 || params[1] == -1) {
-			event_wait(&event, EVENT_TIMEOUT_INFINITE);
-			continue;
-		}
-		if (strcmp(service_params[params[0]][params[1]], "hello") == 0) {
-			printf("\n\n[hello]\n\n");
-		} else if (strcmp(service_params[params[0]][params[1]], "world") == 0) {
-			printf("\n\n[world]\n\n");
-		} else {
-			printf("\n\n[error]\n\n");
-		}
-		params[0] = -1;
-		params[1] = -1;
+static void start_services(void) {
+	for (int i = 0; i < sizeof(service_params) / sizeof(service_params[0]);
+			i++) {
+		web_service_start(service_params[i][0]);
 	}
-	return NULL;
 }
 
-int create_hello_thread(void) {
-	struct thread *thread;
-	event_init(&event, "HELLO");
-	params[0] = -1;
-	params[1] = -1;
-	return thread_create(&thread, 0, hello_thread_handler, params);
+static int is_service_started(char *name) {
+	for (int i = 0; i < sizeof(service_params) / sizeof(service_params[0]);
+			i++) {
+		if (strcmp(service_params[i][0], name) == 0) {
+			return 1;
+		}
+	}
+	return 0;
 }
 
-//TODO now it'll parse and fill strust
+//TODO now it'll parse and fill struct
 static int get_next_line(struct client_info *info) {
 	int res;
 	size_t len;
@@ -181,23 +167,9 @@ static int http_hnd_title(struct client_info *info) {
 			strcpy(info->file, info->parsed->parsed_url->path);
 		}
 
-		//todo process params
-		if (info->parsed->parsed_url->query != NULL) {
-			int isExecuted = 0;
-			for (int i = 0; i < 2; i++) {
-				if (strcmp(info->file, service_params[i][0]) == 0
-						&& strcmp(info->parsed->parsed_url->query,
-								service_params[i][1]) == 0) {
-					params[0] = i;
-					params[1] = 1;
-					event_notify(&event);
-					isExecuted = 1;
-					break;
-				}
-			}
-			if (!isExecuted) {
-				return HTTP_STAT_414;
-			}
+		if (is_service_started(info->file)) {
+			web_service_send_message(info->file,
+					info->parsed->parsed_url->query);
 		}
 
 	} else if (strcmp(info->parsed->method, "POST") == 0) {
@@ -233,7 +205,10 @@ static int http_hnd_title(struct client_info *info) {
  else if (strcmp(ops, "Accept-Encoding") == 0) { }
  else if (strcmp(ops, "Accept-Language") == 0) { }
  else if (strcmp(ops, "Accept-Charset") == 0) { }
- else if (strcmp(ops, "Cache-Control") == 0) { }
+ else if (strcmp(ops, "Cache-Control") == 0) { }static void *world(void *args) {
+ printf("\n\n[error]\n\n");
+ return NULL;
+ }
  else if (strcmp(ops, "Referer") == 0) { }
  else {
  printf("httpd warning: unknown options: ops='%s' param='%s'\n", ops, param);
@@ -267,6 +242,7 @@ static int process_request(struct client_info *info) {
 }
 
 static int http_req_get(struct client_info *info) {
+
 	char *ext;
 
 	info->fp = fopen(info->file, "r");
@@ -418,11 +394,7 @@ static int servd(int argc, char **argv) {
 
 	welcome_message();
 
-	res = create_hello_thread();
-	if (res < 0) {
-		printf("Error.. service failed. errno=%d\n", errno);
-		return res;
-	}
+	start_services();
 
 	while (1) {
 		res = accept(host, (struct sockaddr *) &addr, &addr_len);

@@ -16,7 +16,18 @@ POOL_DEF(instance_pool, struct web_service_instance, 0x10);
 
 static DLIST_DEFINE(run_instances);
 
+static void *service_thread_handler(void* args) {
+	struct web_service_instance *inst;
 
+	inst = 	(struct web_service_instance *)args;
+
+	while (1) {
+		event_wait(inst->e, EVENT_TIMEOUT_INFINITE);
+		inst->desc->run(inst);
+	}
+
+	return NULL;
+}
 
 static void *web_service_trampoline(void *param) {
 	struct web_service_instance * inst;
@@ -27,7 +38,7 @@ static void *web_service_trampoline(void *param) {
 	event_init(inst->e, "web_srv_event");
 
 
-	inst->desc->run(inst);
+	service_thread_handler(inst);
 
 	return NULL;
 }
@@ -69,7 +80,7 @@ int web_service_start(const char *srv_name) {
 	if(0 != thread_create(&inst->thr, THREAD_FLAG_DETACHED, web_service_trampoline, inst)) {
 		return -1;
 	}
-	dlist_add_next(dlist_init(&inst->lst), &run_instances);
+	dlist_add_next(dlist_head_init(&inst->lst), &run_instances);
 	return 0;
 }
 

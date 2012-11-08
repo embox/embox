@@ -8,3 +8,13 @@ module Hello {
 	source "hello.c"
 	depends SrvLib
 }
+
+module Index_service {
+	source "index_service.c"
+	depends SrvLib
+}
+
+module About_service {
+	source "about_service.c"
+	depends SrvLib
+}
