@@ -10,4 +10,5 @@ module ide {
 
 	depends embox.util.LibUtil
 	depends embox.driver.block
+	depends embox.util.indexator
 }

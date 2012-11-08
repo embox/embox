@@ -14,6 +14,7 @@
 #include <fs/vfs.h>
 #include <kernel/file.h>
 #include <util/array.h>
+#include <util/indexator.h>
 
 #define IOCTL_GETBLKSIZE        1
 #define IOCTL_GETDEVSIZE        2
@@ -34,27 +35,18 @@ typedef struct block_dev_geometry {
 } block_dev_geometry_t;
 
 typedef struct block_dev {
+	dev_t id;
 	node_t *dev_node;
 	char name[16];
 	struct block_dev_driver *driver;
 	void *privdata;
-	int refcnt;
-	uid_t uid;
-	gid_t gid;
-	int mode;
 	size_t size;
 
 	struct block_dev_cache *cache;
-
-	int reads;
-	int writes;
-	int input;
-	int output;
 } block_dev_t;
 
 typedef struct block_dev_driver {
 	char *name;
-	int type;
 
 	int (*ioctl)(block_dev_t *dev, int cmd, void *args, size_t size);
 	int (*read)(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno);
@@ -81,22 +73,19 @@ typedef struct block_dev_cache {
 	int buff_cntr;
 } block_dev_cache_t;
 
-extern block_dev_t *devtab[64];
-
 //extern block_dev_module_t *block_dev_find(char *name);
 
-extern dev_t block_dev_make(char *name, block_dev_driver_t *driver,
-		void *privdata, dev_t *devno);
-extern block_dev_t *block_dev(dev_t devno);
+extern dev_t *block_dev_make(char *name, void *driver,
+		void *privdata, dev_t *name_idx);
+extern block_dev_t *block_dev(void *dev_id);
 extern dev_t block_dev_open(char *name);
-extern block_dev_cache_t *block_dev_cache_init(dev_t devno, int blocks);
-extern block_dev_cache_t *block_dev_cached_read(dev_t devno, blkno_t blkno);
-//extern int block_dev_cache_free(dev_t devno);
-extern int block_dev_read(dev_t devno, char *buffer, size_t count, blkno_t blkno);
-extern int block_dev_write(dev_t devno, char *buffer, size_t count, blkno_t blkno);
-extern int block_dev_ioctl(dev_t devno, int cmd, void *args, size_t size);
-extern int block_dev_close(dev_t devno);
-extern int block_dev_destroy (dev_t devno);
+extern block_dev_cache_t *block_dev_cache_init(void *dev_id, int blocks);
+extern block_dev_cache_t *block_dev_cached_read(void *dev_id, blkno_t blkno);
+extern int block_dev_read(void *dev_id, char *buffer, size_t count, blkno_t blkno);
+extern int block_dev_write(void *dev_id, char *buffer, size_t count, blkno_t blkno);
+extern int block_dev_ioctl(void *dev_id, int cmd, void *args, size_t size);
+extern int block_dev_close(void *dev_id);
+extern int block_dev_destroy (void *dev_id);
 
 #define EMBOX_BLOCK_DEV(name, block_dev_driver, init_func) \
 		ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver, init_func})

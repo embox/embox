@@ -7,4 +7,5 @@ module ramdisk {
 	depends embox.mem.page_api
 	depends embox.driver.block
 	depends embox.mem.phymem
+	depends embox.util.indexator
 }

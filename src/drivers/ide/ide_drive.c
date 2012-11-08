@@ -664,25 +664,26 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 	strcat(path, "/dev/");
 	if (hd->media == IDE_DISK) {
 		if (hd->udmamode != -1) {
-			block_dev_make(strcat(path, devname),
-					harddisk_udma_driver(), hd, &hd->devno);
+			hd->dev_id = block_dev_make(strcat(path, devname),
+					harddisk_udma_driver(), hd, NULL);
 		}
 		else {
-			block_dev_make(strcat(path, devname),
-					harddisk_pio_driver(), hd, &hd->devno);
+			hd->dev_id = block_dev_make(strcat(path, devname),
+					harddisk_pio_driver(), hd, NULL);
 		}
 	}
 	else if (hd->media == IDE_CDROM) {
-		block_dev_make(strcat(path, "cd#"), cdrom_pio_driver(), hd, &hd->devno);
+		hd->dev_id = block_dev_make(strcat(path, "cd#"),
+				cdrom_pio_driver(), hd, NULL);
 	}
 	else {
 		return;
 	}
 
-	if(0 <= hd->devno) {
+	if(NULL != hd->dev_id) {
 		size = (double) hd->param.cylinders * (double) hd->param.heads *
 		       (double) hd->param.unfbytes * (double) (hd->param.sectors + 1);
-		block_dev(hd->devno)->size = (size_t) size;
+		block_dev(hd->dev_id)->size = (size_t) size;
 	}
 	else {
 		return;
@@ -740,11 +741,11 @@ static int ide_init(void *args) {
 		rc = setup_hdc(&hdctab[0], HDC0_IOBASE, HDC0_IRQ, 0, &masterif, &slaveif);
 		if (rc >= 0) {
 			if (numhd >= 1 && masterif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[0], &hdctab[0], "hda",
+				setup_hd(&hdtab[0], &hdctab[0], "hd*",
 						HD0_DRVSEL, BM_SR_DRV0, masterif, 0);
 			}
 			if (numhd >= 2 && slaveif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[1], &hdctab[0], "hdb",
+				setup_hd(&hdtab[1], &hdctab[0], "hd*",
 						HD1_DRVSEL, BM_SR_DRV1, slaveif, 1);
 			}
 		}
@@ -759,11 +760,11 @@ static int ide_init(void *args) {
 				HDC1_IRQ, 0, &masterif, &slaveif);
 		if (rc >= 0) {
 			if (numhd >= 3 && masterif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[2], &hdctab[1], "hdc",
+				setup_hd(&hdtab[2], &hdctab[1], "hd*",
 						HD0_DRVSEL, BM_SR_DRV0, masterif, 2);
 			}
 			if (numhd >= 4 && slaveif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[3], &hdctab[1], "hdd",
+				setup_hd(&hdtab[3], &hdctab[1], "hd*",
 						HD1_DRVSEL, BM_SR_DRV1, slaveif, 3);
 			}
 		}
@@ -777,7 +778,6 @@ slot_t *ide_get_drive(void) {
 
 static block_dev_driver_t ide_init_driver = {
 	"ide_drv",
-	DEV_TYPE_BLOCK,
 	NULL,
 	NULL,
 	NULL

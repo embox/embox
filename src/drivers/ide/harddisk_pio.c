@@ -19,6 +19,7 @@
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
+#include <util/indexator.h>
 
 extern int hd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size);
 
@@ -181,7 +182,6 @@ static int hd_write_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 
 static block_dev_driver_t _harddisk_pio_driver = {
 	"idedisk_drv",
-	DEV_TYPE_BLOCK,
 	hd_ioctl,
 	hd_read_pio,
 	hd_write_pio

@@ -188,7 +188,7 @@ static int fatfs_format(void *path) {
 			(NULL == (fd = pool_alloc(&fat_file_pool)))) {
 		return -ENOMEM;
 	}
-	fs_des->devnum = *((dev_t *)nod->dev_attr);
+	fs_des->dev_id = nod->dev_id;
 	strcpy((char *) fs_des->root_name, "\0");
 
 	fd->fs = fs_des;
@@ -224,7 +224,7 @@ static int fatfs_mount(void *par) {
 			return -ENOMEM;
 		}
 		dev_node->fd = dev_fd;
-		dev_fd->fs->devnum = *((dev_t *)dev_node->dev_attr);
+		dev_fd->fs->dev_id = dev_node->dev_id;
 		dev_node->file_info = (void *) &fatfs_fop;
 	}
 
@@ -235,9 +235,7 @@ static int fatfs_mount(void *par) {
 	}
 
 	fd->fs = dev_fd->fs;
-	//fd->fs->devnum = dev_node->dev_attr;
 	dir_node->fs_type = &fatfs_drv;
-	dir_node->dev_type = dev_node->dev_type;
 	dir_node->fd = (void *) fd;
 
 	return fat_mount_files(dir_node);
@@ -281,8 +279,7 @@ static int fatfs_create(void *par) {
 		}
 		fd->fs = parents_fd->fs;
 		node->fs_type = &fatfs_drv;
-		node->dev_type = parents_node->dev_type;
-		node->dev_attr = parents_node->dev_attr;
+		node->dev_id = parents_node->dev_id;
 		node->fd = (void *)fd;
 
 		/*
@@ -398,7 +395,7 @@ int fatfs_partition(void *fdes) {
 	lbr.sig_aa = 0xAA;
 	memcpy(lbr.ebpb.ebpb.system + 8, bootcode, 130);
 
-	num_sect = block_dev(fd->fs->devnum)->size / bytepersec;
+	num_sect = block_dev(fd->fs->dev_id)->size / bytepersec;
 	if (0xFFFF > num_sect)	{
 		lbr.bpb.sectors_s_l = (uint8_t)(0x00000FF & num_sect);
 		lbr.bpb.sectors_s_h = (uint8_t)(0x00000FF & (num_sect >> 8));
@@ -2097,11 +2094,9 @@ uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
 int fat_read_sector(void *fdsc, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
 	fat_file_description_t *fd;
-	dev_t devnum;
 
 	fd = (fat_file_description_t *) fdsc;
-	devnum = fd->fs->devnum;
-	if(0 > block_dev_read(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if(0 > block_dev_read(fd->fs->dev_id, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
 	}
 	else {
@@ -2112,11 +2107,9 @@ int fat_read_sector(void *fdsc, uint8_t *buffer,
 int fat_write_sector(void *fdsc, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
 	fat_file_description_t *fd;
-	dev_t devnum;
 
 	fd = (fat_file_description_t *) fdsc;
-	devnum = fd->fs->devnum;
-	if(0 > block_dev_write(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if(0 > block_dev_write(fd->fs->dev_id, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
 	}
 	else {
@@ -2256,8 +2249,7 @@ static int fat_mount_files (void *dir_node) {
 			}
 			fd->fs = root_fd->fs;
 			node->fs_type = &fatfs_drv;
-			node->dev_type = root_node->dev_type;
-			node->dev_attr = root_node->dev_attr;
+			node->dev_id = root_node->dev_id;
 			node->fd = (void *)fd;
 
 			if ((ATTR_DIRECTORY & de.attr) == ATTR_DIRECTORY) {
@@ -2322,8 +2314,7 @@ static int fat_create_dir_entry(char *dir_name) {
 			}
 			fd->fs = parent_fd->fs;
 			node->fs_type = &fatfs_drv;
-			node->dev_type = parent_node->dev_type;
-			node->dev_attr = parent_node->dev_attr;
+			node->dev_id = parent_node->dev_id;
 			node->fd = (void *)fd;
 
 			if ((ATTR_DIRECTORY & de.attr) == ATTR_DIRECTORY) {

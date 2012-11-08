@@ -19,6 +19,7 @@
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
+#include <util/indexator.h>
 
 /* TODO Create Partition as drive */
 int create_partitions(hd_t *hd) {
@@ -27,7 +28,7 @@ int create_partitions(hd_t *hd) {
 	int rc;
 
 	/* Read partition table */
-	rc = block_dev_read(hd->devno, (char *)mbr, SECTOR_SIZE, 0);
+	rc = block_dev_read(hd->dev_id, (char *)mbr, SECTOR_SIZE, 0);
 	if (rc < 0) {
 		return rc;
 	}
@@ -59,7 +60,7 @@ int create_partitions(hd_t *hd) {
 		}
 	}
 	*/
-	block_dev_make("hda0", partition_driver(), NULL, &hd->devno);
+	hd->dev_id = block_dev_make("hda0", partition_driver(), NULL, NULL);
 
 	return 0;
 }
@@ -72,7 +73,7 @@ static int part_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 		return part->len;
 
 	case IOCTL_GETBLKSIZE:
-		return block_dev_ioctl(part->dev, IOCTL_GETBLKSIZE, NULL, 0);
+		return block_dev_ioctl(dev, IOCTL_GETBLKSIZE, NULL, 0);
 	}
 
 	return -ENOSYS;
@@ -84,7 +85,7 @@ static int part_read(block_dev_t *dev, char *buffer,
 	if (blkno + count / SECTOR_SIZE > part->len) {
 		return -EFAULT;
 	}
-	return block_dev_read(part->dev, buffer, count, blkno + part->start);
+	return block_dev_read(dev, buffer, count, blkno + part->start);
 }
 
 static int part_write(block_dev_t *dev, char *buffer,
@@ -93,12 +94,11 @@ static int part_write(block_dev_t *dev, char *buffer,
   if (blkno + count / SECTOR_SIZE > part->len) {
 	  return -EFAULT;
   }
-  return block_dev_write(part->dev, buffer, count, blkno + part->start);
+  return block_dev_write(dev, buffer, count, blkno + part->start);
 }
 
 static block_dev_driver_t _partition_driver = {
 	"partition_drv",
-	DEV_TYPE_BLOCK,
 	part_ioctl,
 	part_read,
 	part_write

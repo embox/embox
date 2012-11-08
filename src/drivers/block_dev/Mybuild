@@ -2,7 +2,8 @@ package embox.driver
 
 module block {
 	source "block_dev.c"
-	option number dev_quantity = 4
+	option number dev_quantity = 16
 
 	depends embox.util.LibUtil
+	depends embox.util.indexator
 }

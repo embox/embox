@@ -143,7 +143,7 @@ static int cdfs_read_path_table(cdfs_t *cdfs, iso_volume_descriptor_t *vd) {
 	/* Read L path table into buffer */
 	ptpos = 0;
 	while (ptpos < ptlen) {
-		cache = block_dev_cached_read(cdfs->devno, ptblk++);
+		cache = block_dev_cached_read(cdfs->dev, ptblk++);
 		if (!cache) {
 			return -EIO;
 		}
@@ -275,7 +275,7 @@ static int cdfs_find_in_dir(cdfs_t *cdfs, int dir, char *name, int len, block_de
 
 	/* The first two directory records are . (current) and .. (parent) */
 	blk = cdfs->path_table[dir]->extent;
-	cache = block_dev_cached_read(cdfs->devno, blk++);
+	cache = block_dev_cached_read(cdfs->dev, blk++);
 	if (!cache) {
 		return -EIO;
 	}
@@ -295,7 +295,7 @@ static int cdfs_find_in_dir(cdfs_t *cdfs, int dir, char *name, int len, block_de
 			if (p > cache->data + CDFS_BLOCKSIZE) {
 				return -EIO;
 			}
-			cache = block_dev_cached_read(cdfs->devno, blk++);
+			cache = block_dev_cached_read(cdfs->dev, blk++);
 			if (!cache) {
 				return -EIO;
 			}
@@ -337,7 +337,7 @@ static int cdfs_find_file(cdfs_t *cdfs, char *name, int len,
 
 	/* If root get directory record from volume descriptor */
 	if (len == 0) {
-		*cache = block_dev_cached_read(cdfs->devno, cdfs->vdblk);
+		*cache = block_dev_cached_read(cdfs->dev, cdfs->vdblk);
 		if (!*cache) {
 			return -EIO;
 		}
@@ -389,7 +389,6 @@ static time_t cdfs_isodate(unsigned char *date)
 int cdfs_mount(node_t *root_node)
 {
 	cdfs_t *cdfs;
-	dev_t devno;
 	int rc;
 	int blk;
 	block_dev_cache_t *cache;
@@ -400,33 +399,28 @@ int cdfs_mount(node_t *root_node)
 
 	fs = ((cdfs_file_description_t *) root_node->fd)->fs;
 
-	devno = fs->devnum;
-
 	/* Check device */
-	block_dev_open(fs->mntfrom);
-	if (devno == NODEV) {
+	//block_dev_open(fs->mntfrom);
+	if (NULL == fs->dev) {
 		return -NODEV;
-	}
-	if (block_dev(devno)->driver->type != DEV_TYPE_BLOCK) {
-		return -ENOTBLK;
 	}
 
 	/* Check block size */
-	if (block_dev_ioctl(devno, IOCTL_GETBLKSIZE, NULL, 0) != CDFS_BLOCKSIZE) {
+	if (block_dev_ioctl(fs->dev, IOCTL_GETBLKSIZE, NULL, 0) != CDFS_BLOCKSIZE) {
 		return -ENXIO;
 	}
 
 	/* Allocate file system */
 	cdfs = (cdfs_t *) malloc(sizeof(cdfs_t));
 	memset(cdfs, 0, sizeof(cdfs_t));
-	cdfs->devno = devno;
-	cdfs->blks = block_dev_ioctl(devno, IOCTL_GETDEVSIZE, NULL, 0);
+	cdfs->dev = fs->dev;
+	cdfs->blks = block_dev_ioctl(fs->dev, IOCTL_GETDEVSIZE, NULL, 0);
 	if (cdfs->blks < 0) {
 		return cdfs->blks;
 	}
 
 	/* Allocate cache */
-	if (NULL == block_dev_cache_init(devno, CDFS_POOLDEPTH)) {
+	if (NULL == block_dev_cache_init(fs->dev, CDFS_POOLDEPTH)) {
 		return -ENOMEM;
 	}
 
@@ -434,7 +428,7 @@ int cdfs_mount(node_t *root_node)
 	cdfs->vdblk = 0;
 	blk = 16;
 	while (1) {
-		cache  = block_dev_cached_read(devno, blk);
+		cache  = block_dev_cached_read(fs->dev, blk);
 		if (!cache) {
 			return -EIO;
 		}
@@ -445,7 +439,7 @@ int cdfs_mount(node_t *root_node)
 
 		if (memcmp(vd->id, "CD001", 5) != 0) {
 			/*free_buffer_pool(cdfs->cache); */
-			block_dev_close(cdfs->devno);
+			//block_dev_close(cdfs->dev);
 			free(cdfs);
 			return -EIO;
 		}
@@ -470,7 +464,7 @@ int cdfs_mount(node_t *root_node)
 	}
 
 	/* Initialize filesystem from selected volume descriptor and read path table */
-	cache  = block_dev_cached_read(cdfs->devno, cdfs->vdblk);
+	cache  = block_dev_cached_read(fs->dev, cdfs->vdblk);
 	if (!cache) {
 		return -EIO;
 	}
@@ -495,7 +489,7 @@ int cdfs_umount(cdfs_fs_description_t *fs) {
 	cdfs_t *cdfs = (cdfs_t *) fs->data;
 
 	/* Close device */
-	block_dev_close(cdfs->devno);
+	//block_dev_close(fs->dev);
 
 	/* Deallocate file system */
 	if (cdfs->path_table_buffer) {
@@ -619,12 +613,12 @@ static int cdfs_read(cdfs_file_description_t *filp, void *data, size_t size, off
 			if (start != 0 || count != CDFS_BLOCKSIZE) {
 				return read;
 			}
-			if (block_dev_read(cdfs->devno, p, count, blk) != (int) count) {
+			if (block_dev_read(cdfs->dev, p, count, blk) != (int) count) {
 				return read;
 			}
 		}
 		else {
-			cache = block_dev_cached_read(cdfs->devno, blk);
+			cache = block_dev_cached_read(cdfs->dev, blk);
 			if (!cache) {
 				return -EIO;
 			}
@@ -683,12 +677,11 @@ static int cdfs_fstat(cdfs_file_description_t *filp, stat_t *buffer) {
 
 		buffer->st_ino = cdfile->extent;
 		buffer->st_nlink = 1;
-		buffer->st_dev = cdfs->devno;
+		buffer->st_dev = (int) cdfs->dev;
 		buffer->st_atime = buffer->st_mtime = buffer->st_ctime = cdfile->date;
 		buffer->st_size = cdfile->size;
 		buffer->st_blksize = CDFS_BLOCKSIZE;
 		buffer->st_blocks = cdfile->extent;
-		buffer->st_dev = cdfs->devno;
 	}
 
 	return cdfile->size;
@@ -722,13 +715,12 @@ static int cdfs_stat(cdfs_fs_description_t *fs, char *name, stat_t *buffer) {
 
 		buffer->st_ino = isonum_733(rec->extent);
 		buffer->st_nlink = 1;
-		buffer->st_dev = cdfs->devno;
+		buffer->st_dev = (int) cdfs->dev;
 		buffer->st_atime = buffer->st_mtime = buffer->st_ctime =
 				cdfs_isodate(rec->date);
 		buffer->st_size = cdfs->volblks * CDFS_BLOCKSIZE;
 		buffer->st_blksize = CDFS_BLOCKSIZE;
 		buffer->st_blocks = cdfs->volblks;
-		buffer->st_dev = cdfs->devno;
 	};
 
 	return size;
@@ -795,7 +787,7 @@ static int cdfs_readdir(cdfs_file_description_t *filp, direntry_t *dirp, int cou
 	}
 
 	/* Get directory block */
-	cache = block_dev_cached_read(cdfs->devno, cdfile->extent +
+	cache = block_dev_cached_read(cdfs->dev, cdfile->extent +
 			(int) filp->pos / CDFS_BLOCKSIZE);
 	if (!cache) {
 		return -EIO;
@@ -1074,7 +1066,7 @@ static int cdfsfs_mount(void *par) {
 			return -ENOMEM;
 		}
 		dev_node->fd = dev_fd;
-		dev_fd->fs->devnum = *((dev_t *)dev_node->dev_attr);
+		dev_fd->fs->dev = dev_node->dev_id;
 		dev_node->file_info = (void *) &cdfsfs_fop;
 	}
 
@@ -1086,9 +1078,7 @@ static int cdfsfs_mount(void *par) {
 	}
 
 	fd->fs = dev_fd->fs;
-	//fd->p_fs_dsc->devnum = dev_node->dev_attr;
 	dir_node->fs_type = &cdfsfs_drv;
-	dir_node->dev_type = dev_node->dev_type;
 	dir_node->fd = (void *) fd;
 
 	return cdfs_mount(dir_node);
@@ -1113,7 +1103,7 @@ static int create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath, int 
 
 	/* The first two directory records are . (current) and .. (parent) */
 	blk = cdfs->path_table[dir]->extent;
-	cache = block_dev_cached_read(cdfs->devno, blk++);
+	cache = block_dev_cached_read(cdfs->dev, blk++);
 	if (!cache) {
 		return -EIO;
 	}
@@ -1133,7 +1123,7 @@ static int create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath, int 
 			if (p > cache->data + CDFS_BLOCKSIZE) {
 				return -EIO;
 			}
-			cache = block_dev_cached_read(cdfs->devno, blk++);
+			cache = block_dev_cached_read(cdfs->dev, blk++);
 			if (!cache) {
 				return -EIO;
 			}
@@ -1195,8 +1185,7 @@ static int create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath, int 
 
 			fd->fs = dir_fd->fs;
 			node->fs_type = &cdfsfs_drv;
-			node->dev_type = dir_node->dev_type;
-			node->dev_attr = dir_node->dev_attr;
+			node->dev_id = dir_node->dev_id;
 			node->fd = (void *)fd;
 			node->properties = FILE_NODE_TYPE;
 		}
@@ -1253,8 +1242,7 @@ static int create_dir_entry (node_t *parent) {
 				}
 				fd->fs = parents_fd->fs;
 				node->fs_type = &cdfsfs_drv;
-				node->dev_type = parent_node->dev_type;
-				node->dev_attr = parent_node->dev_attr;
+				node->dev_id = parent_node->dev_id;
 				node->fd = (void *)fd;
 				node->properties = DIRECTORY_NODE_TYPE;
 			}

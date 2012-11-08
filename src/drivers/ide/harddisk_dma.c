@@ -19,6 +19,7 @@
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
+#include <util/indexator.h>
 
 extern int hd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size);
 
@@ -242,7 +243,6 @@ static int hd_write_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t b
 
 static block_dev_driver_t _harddisk_udma_driver = {
 	"idedisk_udma_drv",
-	DEV_TYPE_BLOCK,
 	hd_ioctl,
 	hd_read_udma,
 	hd_write_udma

@@ -16,15 +16,16 @@
 #include <mem/phymem.h>
 #include <mem/misc/pool.h>
 #include <util/array.h>
+#include <util/indexator.h>
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
 
 POOL_DEF(blockdev_pool, struct block_dev, MAX_DEV_QUANTITY);
-
 POOL_DEF(cache_pool, struct block_dev_cache, MAX_DEV_QUANTITY);
+INDEX_DEF(block_dev_idx,0,MAX_DEV_QUANTITY);
 
 static unsigned int num_devs = 0;
-block_dev_t *devtab[64];
+static block_dev_t *devtab[64];
 
 /*
 static block_dev_module_t *block_dev_find(char *name) {
@@ -42,72 +43,51 @@ static block_dev_module_t *block_dev_find(char *name) {
 }
 */
 
-block_dev_t *block_dev(dev_t devno) {
-	if (devno < 0 || devno >= num_devs) {
+block_dev_t *block_dev(void *dev_id) {
+	dev_t devno;
+
+	if (NULL == dev_id) {
 		return NULL;
 	}
+	devno = *((dev_t *) dev_id);
 	return devtab[devno];
 }
 
+/*
 static dev_t block_devno(char *name) {
 	dev_t devno;
 
 	for (devno = 0; devno < num_devs; devno++) {
-		if (strcmp(block_dev(devno)->name, name) == 0) {
+		if (strcmp(block_dev(&devno)->name, name) == 0) {
 			return devno;
 		}
 	}
 	return NODEV;
 }
+*/
 
-static dev_t block_dev_node_create(dev_t *dev_number, char *dev_path) {
-	node_t *dev_node;
 
-	strcat(dev_path, block_dev(*dev_number)->name);
-
-	if (NULL == (dev_node = vfs_add_path(dev_path, NULL))) {
-		if (NULL == (dev_node = vfs_find_node(dev_path, NULL))) {
-			return NODEV;
-		}
-	}
-
-	dev_node->dev_type = (void *) block_dev(*dev_number)->driver;
-	dev_node->dev_attr = (void *) dev_number;
-	block_dev(*dev_number)->dev_node = dev_node;
-
-	return *dev_number;
-}
-
-dev_t block_dev_make(char *path, block_dev_driver_t *driver,
-					void *privdata, dev_t *devno) {
-	block_dev_t *dev;
+static void create_name (char *name, dev_t *idx) {
 	char *p;
 	unsigned int n, m;
 	int exists;
+	p = name;
 
-	if (num_devs >= MAX_DEV_QUANTITY) {
-	  return NODEV;
-	}
-
-	dev = (block_dev_t *) pool_alloc(&blockdev_pool);
-	if (!dev) {
-		return NODEV;
-	}
-	memset(dev, 0, sizeof(block_dev_t));
-
-	nip_tail(path, dev->name);
-
-	p = dev->name;
 	while (p[0] && p[1]) {
-		p++;
-	}
+			p++;
+		}
+
 	if (*p == '#') {
+		if(NULL != idx){
+			sprintf(p, "%d", *idx);
+			return;
+		}
 		n = 0;
 		while (1) {
 			sprintf(p, "%d", n);
 			exists = 0;
 			for (m = 0; m < num_devs; m++)  {
-				if (strcmp(devtab[m]->name, dev->name) == 0) {
+				if (strcmp(devtab[m]->name, name) == 0) {
 					exists = 1;
 					break;
 				}
@@ -119,19 +99,79 @@ dev_t block_dev_make(char *path, block_dev_driver_t *driver,
 			n++;
 		}
 	}
+	else if(*p == '*') {
+		if(NULL != idx){
+			sprintf(p, "%c", 'a' + *idx);
+			return;
+		}
+		n = 0;
+		while (1) {
+			sprintf(p, "%c", 'a' + n);
+			exists = 0;
+			for (m = 0; m < num_devs; m++)  {
+				if (strcmp(devtab[m]->name, name) == 0) {
+					exists = 1;
+					break;
+				}
+			}
+
+			if (!exists) {
+				break;
+			}
+			n++;
+		}
+	}
+}
+
+static int block_dev_node_create(dev_t *dev_id, char *dev_path) {
+	node_t *dev_node;
+
+	strcat(dev_path, block_dev(dev_id)->name);
+
+	if (NULL == (dev_node = vfs_add_path(dev_path, NULL))) {
+		if (NULL == (dev_node = vfs_find_node(dev_path, NULL))) {
+			return NODEV;
+		}
+	}
+
+	dev_node->dev_id = (void *) dev_id;
+	block_dev(dev_id)->dev_node = dev_node;
+
+	return 0;
+}
+
+dev_t *block_dev_make(char *path, void *driver, void *privdata, dev_t *name_idx) {
+	block_dev_t *dev;
+
+	if (num_devs >= MAX_DEV_QUANTITY) {
+	  return NULL;
+	}
+
+	dev = (block_dev_t *) pool_alloc(&blockdev_pool);
+	if (!dev) {
+		return NULL;
+	}
+	memset(dev, 0, sizeof(block_dev_t));
+
+	dev->id = (dev_t) index_alloc(&block_dev_idx, INDEX_ALLOC_MIN);
+	devtab[dev->id] = dev;
+
+	nip_tail(path, dev->name);
+	create_name (dev->name, name_idx);
 
 	dev->driver = driver;
 	dev->privdata = privdata;
-	dev->refcnt = 0;
-	dev->mode = 0600;
 
-	*devno = num_devs++;
-	devtab[*devno] = dev;
-
-	return block_dev_node_create(devno, path);
+	if(0 > block_dev_node_create(&dev->id, path)) {
+		pool_free(&blockdev_pool, dev);
+		index_free(&block_dev_idx, dev->id);
+		return NULL;
+	}
+	num_devs++;
+	return &dev->id;
 }
 
-
+/*
 dev_t block_dev_open(char *name) {
 	dev_t d = block_devno(name);
 	if (d != NODEV) {
@@ -139,6 +179,7 @@ dev_t block_dev_open(char *name) {
 	}
 	return d;
 }
+
 
 int block_dev_close(dev_t devno) {
 	if(devno < 0 || devno >= num_devs) {
@@ -150,47 +191,45 @@ int block_dev_close(dev_t devno) {
 	block_dev(devno)->refcnt--;
 	return 0;
 }
+*/
 
-
-int block_dev_read(dev_t devno, char *buffer, size_t count, blkno_t blkno) {
+int block_dev_read(void *p_dev, char *buffer, size_t count, blkno_t blkno) {
 	block_dev_t *dev;
 
-	if (devno < 0 || devno >= num_devs) {
+	if (NULL == p_dev) {
 		return -ENODEV;
 	}
-	dev = block_dev(devno);
+	dev = block_dev(p_dev);
 	if (!dev->driver->read) {
 		return -ENOSYS;
 	}
-	dev->reads++;
-	dev->input += count;
+
 
 	return dev->driver->read(dev, buffer, count, blkno);
 }
 
-int block_dev_write(dev_t devno, char *buffer, size_t count, blkno_t blkno) {
+int block_dev_write(void *dev_id, char *buffer, size_t count, blkno_t blkno) {
 	block_dev_t *dev;
 
-	if (devno < 0 || devno >= num_devs) {
+	if (NULL == dev_id) {
 		return -ENODEV;
 	}
-	dev = block_dev(devno);
+	dev = block_dev(dev_id);
 	if (!dev->driver->write) {
 		return -ENOSYS;
 	}
-	dev->writes++;
-	dev->output += count;
 
 	return dev->driver->write(dev, buffer, count, blkno);
 }
 
-int block_dev_ioctl(dev_t devno, int cmd, void *args, size_t size) {
+int block_dev_ioctl(void *dev_id, int cmd, void *args, size_t size) {
 	block_dev_t *dev;
 
-	if (devno < 0 || devno >= num_devs) {
+	if (NULL == dev_id) {
 		return -ENODEV;
 	}
-	dev = block_dev(devno);
+	dev = block_dev(dev_id);
+
 	if (!dev->driver->ioctl) {
 		return -ENOSYS;
 	}
@@ -198,14 +237,15 @@ int block_dev_ioctl(dev_t devno, int cmd, void *args, size_t size) {
 	return dev->driver->ioctl(dev, cmd, args, size);
 }
 
-block_dev_cache_t *block_dev_cache_init(dev_t devno, int blocks) {
+block_dev_cache_t *block_dev_cache_init(void *dev_id, int blocks) {
 	int pagecnt;
-	block_dev_t *dev;
 	block_dev_cache_t *cache;
+	block_dev_t *dev;
 
-	if(NULL == (dev = block_dev(devno))) {
-		return NULL;
-	}
+		if (NULL == dev_id) {
+			return NULL;
+		}
+		dev = block_dev(dev_id);
 
 	if (NULL == dev->cache) {
 		cache = (block_dev_cache_t *) pool_alloc(&cache_pool);
@@ -218,7 +258,7 @@ block_dev_cache_t *block_dev_cache_init(dev_t devno, int blocks) {
 	cache->buff_cntr = -1;
 
 	if(0 >= (cache->blksize =
-			block_dev_ioctl(devno, IOCTL_GETBLKSIZE, NULL, 0))) {
+			block_dev_ioctl(dev, IOCTL_GETBLKSIZE, NULL, 0))) {
 		return NULL;
 	}
 
@@ -239,10 +279,16 @@ block_dev_cache_t *block_dev_cache_init(dev_t devno, int blocks) {
 	return  cache;
 }
 
-block_dev_cache_t *block_dev_cached_read(dev_t devno, blkno_t blkno) {
+block_dev_cache_t *block_dev_cached_read(void *dev_id, blkno_t blkno) {
 	block_dev_cache_t *cache;
+	block_dev_t *dev;
 
-	if(NULL == (cache = (block_dev(devno)->cache))) {
+	if (NULL == dev_id) {
+		return NULL;
+	}
+	dev = block_dev(dev_id);
+
+	if(NULL == (cache = dev->cache)) {
 		return NULL;
 	}
 
@@ -254,20 +300,21 @@ block_dev_cache_t *block_dev_cached_read(dev_t devno, blkno_t blkno) {
 		cache->data = cache->pool + cache->buff_cntr * PAGE_SIZE() * cache->blkfactor;
 		cache->blkno = blkno;
 
-		block_dev_read(devno, cache->data, cache->blksize, cache->blkno);
+		block_dev_read(dev, cache->data, cache->blksize, cache->blkno);
 		cache->lastblkno = blkno;
 	}
 
 	return cache;
 }
 
-static int block_dev_cache_free(dev_t devno) {
+static int block_dev_cache_free(void *dev_id) {
 	block_dev_t *dev;
 	block_dev_cache_t *cache;
 
-	if(NULL == (dev = block_dev(devno))) {
+	if (NULL == dev_id) {
 		return -1;
 	}
+	dev = block_dev(dev_id);
 
 	if (NULL == dev->cache) {
 		return 0;
@@ -282,17 +329,17 @@ static int block_dev_cache_free(dev_t devno) {
 	return  0;
 }
 
-int block_dev_destroy (dev_t devno) {
+int block_dev_destroy (void *dev_id) {
 	block_dev_t *dev;
 
-	if(NULL ==(dev = block_dev(devno))) {
+	if(NULL ==(dev = block_dev(dev_id))) {
 		return NODEV;
 	}
 	else {
-		block_dev_cache_free(devno);
+		block_dev_cache_free(dev);
+		//index_free(dev->indexator, (int) dev->idx);
 
 		pool_free(&blockdev_pool, dev);
-		devtab[devno] = NULL;
 		num_devs--;
 		return 0;
 	}

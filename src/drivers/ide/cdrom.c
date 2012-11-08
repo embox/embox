@@ -19,6 +19,7 @@
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
+#include <util/indexator.h>
 
 static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 		                     int pktlen, char *buffer, size_t bufsize) {
@@ -198,7 +199,6 @@ static int cd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 
 static block_dev_driver_t _cdrom_pio_driver = {
 	"idecd_drv",
-	DEV_TYPE_BLOCK,
 	cd_ioctl,
 	cd_read,
 	cd_write

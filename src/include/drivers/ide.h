@@ -296,7 +296,7 @@ typedef struct hdc  {
 } hdc_t;
 
 struct partition {
-	dev_t dev;
+	void *dev;
 	unsigned int start;
 	unsigned int len;
 	unsigned short bootid;
@@ -314,7 +314,7 @@ typedef struct hd {
 	int media;                            /* Device media type (hd, cdrom, ...) */
 	int multsect;                         /* Sectors per interrupt */
 	int udmamode;                         /* UltraDMA mode */
-	dev_t devno;                          /* Device number */
+	void *dev_id;                         /* Device */
 
 	/*
 	 * Geometry
