@@ -95,8 +95,6 @@ int shell_line_input(const char *const_line) {
 	return run_cmd(tok_pos, token_line);
 }
 
-#include <prom/prom_printf.h>
-static inline int32_t load_dec(void) { uint32_t reg; asm volatile ("mfdec %0" : "=r" (reg)); return reg; }
 static void shell_run(void) {
 	const char *prompt = OPTION_STRING_GET(prompt);
 	char inp_buf[BUF_INP_SIZE];
@@ -107,7 +105,6 @@ static void shell_run(void) {
 	printf("\n%s\n\n", OPTION_STRING_GET(welcome_msg));
 
 	while (1) {
-		prom_printf("%u\n", load_dec());
 		if (linenoise(prompt, inp_buf, BUF_INP_SIZE, &h,
 			(compl_callback_t) cmd_compl) < 0) {
 			return;
