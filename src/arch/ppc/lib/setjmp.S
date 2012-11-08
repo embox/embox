@@ -19,7 +19,7 @@ C_ENTRY(setjmp)
 
 C_ENTRY(longjmp)
 	lmw  r9, 8(r3)  /* load r9..r31 registers from first argument[struct __jmp_buf] */
-    mtcr r12        /* copy condition register from r12 */
+	mtcr r12        /* copy condition register from r12 */
 	mtlr r11        /* copy link register from r11 */
 	mr   r2, r10    /* copy table of contents pointer from r10 */
 	mr   r1, r9     /* copy stack pointer from r9 */
