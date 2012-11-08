@@ -16,13 +16,18 @@ EMBOX_UNIT_INIT(mips_syscall_init);
 
 void mips_c_syscall_handler(pt_regs_t *regs) {
 	uint32_t result;
+
+	/* v0 contains syscall number */
 	uint32_t (*sys_func)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) =
-			 SYSCALL_TABLE[regs->reg[0]];
+			 SYSCALL_TABLE[regs->reg[1]];
 
-	result = sys_func(regs->reg[0], regs->reg[1], regs->reg[2],
-			    regs->reg[3], regs->reg[4]);
+	/* a0, a1, a2, a3, s0 contain arguments */
+	result = sys_func(regs->reg[3], regs->reg[4], regs->reg[5],
+			    regs->reg[6], regs->reg[15]);
 
-	regs->reg[0] = result;
+	/* v0 set equal to result */
+	regs->reg[1] = result;
+
 	regs->pc += 4;
 }
 

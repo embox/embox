@@ -8,7 +8,7 @@
 
 #include <kernel/syscall.h>
 
-#define SYSCALL_NRS_TOTAL 7
+#define SYSCALL_NRS_TOTAL 6
 
 static int sys_0(void) {
 	return 0;
@@ -34,10 +34,6 @@ static int sys_5(int arg1, int arg2, int arg3, int arg4, int arg5) {
 	return arg5;
 }
 
-static int sys_6(int arg1, int arg2, int arg3, int arg4, int arg5, int arg6) {
-	return arg6;
-}
-
 void *const SYSCALL_TABLE[SYSCALL_NRS_TOTAL] = {
 	sys_0,
 	sys_1,
@@ -45,5 +41,4 @@ void *const SYSCALL_TABLE[SYSCALL_NRS_TOTAL] = {
 	sys_3,
 	sys_4,
 	sys_5,
-	sys_6
 };
