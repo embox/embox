@@ -9,7 +9,6 @@ module locore extends embox.arch.locore {
 
 module interrupt extends embox.arch.interrupt {
 	source "ipl_impl.h"
-	depends locore
 }
 
 module arch {
