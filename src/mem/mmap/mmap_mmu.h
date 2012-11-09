@@ -10,6 +10,8 @@
 #define MEM_MMAP_MMU_H_
 
 #include <types.h>
+
+#include <mem/vmem.h>
 #include <util/dlist.h>
 
 struct marea {
