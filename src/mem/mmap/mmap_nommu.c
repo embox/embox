@@ -6,15 +6,14 @@
  * @author Anton Bulychev
  */
 
-#include "mmap_nommu.h"
+#include <embox/unit.h>
 
 #include <errno.h>
 #include <stdlib.h>
 
 #include <mem/page.h>
 #include <mem/phymem.h>
-
-#include <embox/unit.h>
+#include <mem/mmap.h>
 
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
@@ -30,6 +29,19 @@ static uint32_t mem_page_count;
 void mmap_init(struct mmap *mmap) {
 	dlist_init(&mmap->marea_list);
 	mmap->stack_marea = NULL;
+}
+
+void mmap_free(struct mmap *mmap) {
+	struct dlist_head *item, *next;
+	struct marea *marea;
+
+	dlist_foreach(item, next, &mmap->marea_list) {
+		marea = dlist_entry(item, struct marea, mmap_link);
+		dlist_del(&marea->mmap_link);
+		dlist_del(&marea->glob_link);
+
+		free(marea);
+	}
 }
 
 struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {

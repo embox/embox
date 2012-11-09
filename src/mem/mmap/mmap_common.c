@@ -21,7 +21,7 @@ static void task_mmap_inherit(struct task *task, struct task *parent_task) {
 }
 
 static void task_mmap_deinit(struct task *task) {
-
+	mmap_free(task->mmap);
 }
 
 static const struct task_resource_desc mmap_resource = {
