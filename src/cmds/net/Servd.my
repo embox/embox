@@ -29,4 +29,5 @@ module servd {
 	depends third_party.lib.url_parser
 	depends embox.sevice.Index_service
 	depends embox.sevice.About_service
+	depends embox.sevice.Test_service
 }

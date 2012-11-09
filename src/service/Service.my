@@ -18,3 +18,11 @@ module About_service {
 	source "about_service.c"
 	depends SrvLib
 }
+
+module Test_service {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "test_service.c"
+
+	depends embox.net.lib.parser
+	depends SrvLib
+}

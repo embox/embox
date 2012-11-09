@@ -77,6 +77,8 @@ struct client_info {
 	char *next_data; /* pointer to next piece of data in buffer */
 	size_t next_len; /* length of the next chunk */
 	http_request * parsed; /* parsed request */
+	struct event unlock_sock_event;
+	int lock_status;
 };
 
 /* Status code */
@@ -95,8 +97,15 @@ static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
 				] = "image/vnd.microsoft.icon", [HTTP_CONTENT_TYPE_UNKNOWN
 				] = "application/unknown" };
 
-static const char *service_params[2][2] = { { DEFAULT_PAGE, "hello" }, {
-		"about.html", "world" }, };
+struct params {
+	struct client_info* info;
+	char *text;
+};
+
+struct params test_params;
+
+static const char *service_params[3][2] = { { DEFAULT_PAGE, "hello" }, {
+		"about.html", "world" }, { "test.html", "world" }, };
 
 static void start_services(void) {
 	for (int i = 0; i < sizeof(service_params) / sizeof(service_params[0]);
@@ -111,6 +120,14 @@ static int is_service_started(char *name) {
 		if (strcmp(service_params[i][0], name) == 0) {
 			return 1;
 		}
+	}
+	return 0;
+}
+
+static int is_lock_needed(char *name) {
+
+	if (strcmp(service_params[2][0], name) == 0) {
+		return 1;
 	}
 	return 0;
 }
@@ -168,8 +185,13 @@ static int http_hnd_title(struct client_info *info) {
 		}
 
 		if (is_service_started(info->file)) {
-			web_service_send_message(info->file,
-					info->parsed->parsed_url->query);
+			test_params.info = info;
+			test_params.text = info->parsed->parsed_url->query;
+			if (is_lock_needed(info->file)) {
+				event_init(&info->unlock_sock_event, "socket_lock");
+				info->lock_status = 1;
+			}
+			web_service_send_message(info->file, &test_params);
 		}
 
 	} else if (strcmp(info->parsed->method, "POST") == 0) {
@@ -245,9 +267,11 @@ static int http_req_get(struct client_info *info) {
 
 	char *ext;
 
-	info->fp = fopen(info->file, "r");
-	if (info->fp == NULL) { /* file doesn't exist */
-		return HTTP_STAT_404;
+	if (info->fp == NULL) {
+		info->fp = fopen(info->file, "r");
+		if (info->fp == NULL) { /* file doesn't exist */
+			return HTTP_STAT_404;
+		}
 	}
 
 	ext = strchr(info->file, '.');
@@ -297,6 +321,9 @@ static void client_process(int sock, struct sockaddr_in addr,
 	assert((hnd == process_request) || (res != HTTP_RET_OK));
 	switch (res) {
 	default:
+		if (ci.lock_status) {
+			event_wait(&ci.unlock_sock_event, EVENT_TIMEOUT_INFINITE);
+		}
 		printf("%s:%d -- upload %s ", inet_ntoa(addr.sin_addr),
 				ntohs(addr.sin_port), ci.file);
 		/* Make header: */
