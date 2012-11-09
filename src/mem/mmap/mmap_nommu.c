@@ -56,6 +56,9 @@ struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, 
 	marea->end   = end;
 	marea->flags = flags;
 
+	dlist_head_init(&marea->glob_link);
+	dlist_head_init(&marea->mmap_link);
+
 	dlist_add_prev(&marea->glob_link, &glob_list);
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 

@@ -5,7 +5,7 @@ static module LibElf {
 	source "elf/elf_object.c"
 	source "elf/elf_header.c"
 	source "elf/elf_sh_table.c"
-	// source "elf/elf_ph_table.c"
+	source "elf/elf_ph_table.c"
 	source "elf/elf_sections.c"
 	// source "elf/elf_string_table.c"
 	source "elf/elf_symbols.c"

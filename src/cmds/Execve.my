@@ -1,24 +1,24 @@
 package embox.cmd
 
-@Cmd(name = "loadelf",
-	help = "Loads ELF binaries",
+@Cmd(name = "execve",
+	help = "Execute program",
 	man = '''
 		NAME
-			loadelf - Loads ELF binaries
+			execve - execute program
 		SYNOPSIS
-			loadelf <filename>
+			execve <filename>
 		DESCRIPTION
-			Loads ELF binaries
+			execve() executes the program pointed to by filename.
 		AUTHORS
 			Anton Bulychev
 	''')
-module loadelf {
+module execve {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "loadelf.c"
+	source "execve.c"
 
 	depends embox.lib.LibC
 	depends embox.fs.core
-	depends embox.lib.LibElf
+	depends embox.lib.LibElfloader
 	depends embox.framework.LibFramework
 }
