@@ -1,0 +1,11 @@
+package embox.mem
+
+abstract module mmap_api { }
+
+module mmap_nommu extends mmap_api {
+	source "mmap_nommu.h", "mmap_nommu.c"
+}
+
+module mmap_mmu extends mmap_api {
+	source "mmap_mmu.h", "mmap_mmu.c"
+}
