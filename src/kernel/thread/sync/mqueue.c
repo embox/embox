@@ -20,10 +20,6 @@ static inline int mqueue_busyspace(struct mqueue *q) {
 	return res;
 }
 
-static inline int mqueue_freespace(struct mqueue *q) {
-	return MQUEUE_SIZE - mqueue_busyspace(q);
-}
-
 static inline void mqueue_writec(struct mqueue *q, char c) {
 	q->ring_buffer[q->tail] = c;
 	q->tail = (q->tail + 1) % MQUEUE_SIZE;
