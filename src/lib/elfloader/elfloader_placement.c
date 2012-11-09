@@ -20,20 +20,22 @@ int elfloader_place_relocatable(Elf32_Obj *obj) {
 	Elf32_Shdr *sh;
 	Elf32_Addr addr;
 	size_t size = 0;
+	struct marea *marea;
 	int err;
 
 	if ((err = elf_read_section_header_table(obj)) < 0) {
 		return err;
 	}
-	// TODO: Replace it somewhere
 
 	for (int i = 0; i < obj->header->e_shnum; i++) {
 		size += obj->sh_table[i].sh_size;
 	}
 
-	if (!(addr = (Elf32_Addr) malloc(size))) {
+	if (!(marea = mmap_alloc_marea(task_self()->mmap, size, 0))) {
 		return -ENOMEM;
 	}
+
+	addr = marea_get_start(marea);
 
 	// TODO: Replace it somewhere
 	for (int i = 0; i < obj->header->e_shnum; i++) {
@@ -42,9 +44,6 @@ int elfloader_place_relocatable(Elf32_Obj *obj) {
 		sh->sh_addr = addr;
 
 		fseek(obj->fd, sh->sh_offset, 0);
-		if (!sh->sh_size) {
-			continue;
-		}
 
 		if (sh->sh_size != fread((void *) sh->sh_addr, sh->sh_size, 1, obj->fd)) {
 			return -EBADF;
@@ -56,10 +55,14 @@ int elfloader_place_relocatable(Elf32_Obj *obj) {
 	return ENOERR;
 }
 
+/*
+ * TODO: Rewrite it using program header table.
+ */
 int elfloader_place_shared(Elf32_Obj *obj) {
 	Elf32_Shdr *sh;
 	Elf32_Addr addr;
 	size_t size = 0;
+	struct marea *marea;
 	int err;
 
 	if ((err = elf_read_section_header_table(obj)) < 0) {
@@ -70,23 +73,25 @@ int elfloader_place_shared(Elf32_Obj *obj) {
 		size += obj->sh_table[i].sh_size;
 	}
 
-	if (!(addr = (Elf32_Addr) malloc(size))) {
+	if (!(marea = mmap_alloc_marea(task_self()->mmap, size, 0))) {
 		return -ENOMEM;
 	}
 
+	addr = marea_get_start(marea);
+
 	obj->load_offset = addr;
 
-	// TODO: Replace it somewhere
 	for (int i = 0; i < obj->header->e_shnum; i++) {
 		sh = &obj->sh_table[i];
 
 		sh->sh_addr += obj->load_offset;
 
-		fseek(obj->fd, sh->sh_offset, 0);
 		if (!sh->sh_size) {
 			continue;
 		}
 
+		// TODO: Replace it somewhere
+		fseek(obj->fd, sh->sh_offset, 0);
 		if (sh->sh_size != fread((void *) sh->sh_addr, sh->sh_size, 1, obj->fd)) {
 			return -EBADF;
 		}

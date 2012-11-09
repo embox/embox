@@ -55,6 +55,10 @@ int dl_proceed_obj_relocations(dl_data *data, Elf32_Obj *obj) {
 	Elf32_Shdr *sh;
 	int err;
 
+	if ((err = elf_read_section_header_table(obj)) < 0) {
+		return err;
+	}
+
 	for (int i = 0; i < obj->header->e_shnum; i++) {
 		sh = &obj->sh_table[i];
 
