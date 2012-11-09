@@ -738,7 +738,8 @@ static int ide_init(void *args) {
 		rc = setup_hdc(&hdctab[0], HDC0_IOBASE, HDC0_IRQ,
 						ide ? bmiba : 0, &masterif, &slaveif);
 		*/
-		rc = setup_hdc(&hdctab[0], HDC0_IOBASE, HDC0_IRQ, 0, &masterif, &slaveif);
+		rc = setup_hdc(&hdctab[0], HDC0_IOBASE,
+				HDC0_IRQ, 0, &masterif, &slaveif);
 		if (rc >= 0) {
 			if (numhd >= 1 && masterif > HDIF_UNKNOWN) {
 				setup_hd(&hdtab[0], &hdctab[0], "hd*",
