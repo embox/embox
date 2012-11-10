@@ -51,7 +51,7 @@ static inline unsigned int __get_spr(unsigned int reg) {
 
 static inline void __set_spr(unsigned int reg, unsigned int val) {
 	__asm__ __volatile__ (
-		"mtspr %1, %0"
+		"mtspr %0, %1"
 		: /* no output */
 		: "r" (reg), "r"(val)
 		: "memory"

@@ -63,7 +63,7 @@ uint32_t __get_dec(void) {
 }
 void __set_dec(uint32_t val) {
     asm volatile (
-            "mtspr %0, 22"
+            "mtspr 22, %0"
             :
             : "r"(val)
             : "memory"
@@ -71,7 +71,7 @@ void __set_dec(uint32_t val) {
 }
 static int ppc_clk_init(void) {
 	prom_printf("%u\n", __get_dec());
-	__set_spr(SPR_DEC, (uint32_t)-1);
+	__set_dec((uint32_t)-1);
 	prom_printf("%u\n", __get_dec());
 //	clock_source_register(&ppc_clk_clock_source);
 //	return irq_attach(30/*GPTIMER1_IRQ*/, clock_handler, 0, NULL, "ppc_clk");
