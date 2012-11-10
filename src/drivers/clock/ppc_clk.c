@@ -51,13 +51,28 @@ static struct time_counter_device ppc_clk_counter = {
 //	.read = clock_source_read,
 };
 
-static inline int32_t load_dec(void) { uint32_t reg; asm volatile ("mfdec %0" : "=r" (reg)); return reg; }
-static inline void store_dec(uint32_t reg) { asm volatile ("mtdec %0" :: "r" (reg)); }
-
+uint32_t __get_dec(void) {
+    uint32_t retval;
+    asm volatile (
+            "mfspr %0, 22"
+            : "=r"(retval)
+            :
+            : "memory"
+            );
+    return retval;
+}
+void __set_dec(uint32_t val) {
+    asm volatile (
+            "mtspr %0, 22"
+            :
+            : "r"(val)
+            : "memory"
+            );
+}
 static int ppc_clk_init(void) {
-	prom_printf("%u\n", load_dec());
-	store_dec((uint32_t)-1);
-	prom_printf("%u\n", load_dec());
+	prom_printf("%u\n", __get_dec());
+	__set_spr(SPR_DEC, (uint32_t)-1);
+	prom_printf("%u\n", __get_dec());
 //	clock_source_register(&ppc_clk_clock_source);
 //	return irq_attach(30/*GPTIMER1_IRQ*/, clock_handler, 0, NULL, "ppc_clk");
 	return 0;

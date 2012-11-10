@@ -34,6 +34,30 @@ static inline void __set_msr(unsigned int val) {
 	);
 }
 
+
+/**
+ * SPR register
+ */
+static inline unsigned int __get_spr(unsigned int reg) {
+	unsigned int retval;
+	__asm__ __volatile__ (
+		"mfspr %0, %1"
+		: "=r" (retval)
+		: "r" (reg)
+		: "memory"
+	);
+	return retval;
+}
+
+static inline void __set_spr(unsigned int reg, unsigned int val) {
+	__asm__ __volatile__ (
+		"mtspr %1, %0"
+		: /* no output */
+		: "r" (reg), "r"(val)
+		: "memory"
+	);
+}
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* PPC_PSR_H_ */

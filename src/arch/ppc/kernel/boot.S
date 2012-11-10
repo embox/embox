@@ -50,7 +50,7 @@ C_ENTRY(_start)
 	lis     r2, _stack_len@h
 	ori     r2, r2, _stack_len@l
 	add     r1, r1, r2
-	mtsprg0 r1
+	mtspr   SPR_SPRG0, r1
 
 	/**
 	 * Clear kernel BSS
