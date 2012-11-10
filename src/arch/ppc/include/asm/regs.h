@@ -12,6 +12,7 @@
 /**
  * Machine State Register (MSR) definations
  */
+#if 0
 #define	MSR_LE  0x00000001	/* little-endian mode enable */
 #define	MSR_RI  0x00000002	/* recoverable exception */
 #define	MSR_DR  0x00000010	/* data address translation */
@@ -27,6 +28,20 @@
 #define	MSR_EE  0x00008000	/* external interrupt enable */
 #define	MSR_ILE 0x00010000	/* exception little-endian mode (1:LE) */
 #define	MSR_POW 0x00040000	/* power management enable */
+#else
+#define MSR_WE  0x00002000 /* wait state enable */
+#define MSR_CE  0x00004000 /* critical interrupt enable */
+#define MSR_EE  0x00010000 /* external interrupt enable */
+#define MSR_PR  0x00020000 /* problem state */
+#define MSR_FP  0x00040000 /* floating-point available */
+#define MSR_ME  0x00080000 /* machine check enable */
+#define MSR_FE0 0x00100000 /* floating-point exception mode 0 */
+#define MSR_DWE 0x00200000 /* debug wait enable */
+#define MSR_DE  0x00400000 /* debug interrupt enable */
+#define MSR_FE1 0x00800000 /* floating-point exception mode 1 */
+#define MSR_IS  0x04000000 /* instruction address space */
+#define MSR_DS  0x08000000 /* data address space */
+#endif
 
 /**
  * Timer Control Register (TCR) definations
@@ -72,6 +87,7 @@
     /* Fixed Interval Timer Interrupt Status */
 #define TSR_FIS      0x00000020 /* FITI has occured */
 
+#if 0
 /**
  * Special Purpose Register (SPR) declarations
  */
@@ -168,5 +184,6 @@
 #define SPR_CCR0    0x3B3 /* core configuration register 0 (S:RW) */
 #define SPR_ICDBDR  0x3D3 /* instruction cache debug data register (S:RO) */
 #define SPR_DBDR    0x3F3 /* debug data register (S:RW) */
+#endif
 
 #endif /* PPC_REGS_H_ */

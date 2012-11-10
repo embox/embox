@@ -11,52 +11,54 @@
 
 #ifndef __ASSEMBLER__
 
-/**
- * MSR register
- */
-static inline unsigned int __get_msr(void) {
-	unsigned int retval;
-	__asm__ __volatile__ (
-		"mfmsr %0"
-		: "=r" (retval)
-		: /* no input */
-		: "memory"
-	);
-	return retval;
-}
+#define PPC_REG_GET(reg)                               \
+    static inline unsigned int __get_##reg(void) {     \
+        unsigned int retval;                           \
+        __asm__ __volatile__ (                         \
+            "mf"#reg" %0"                             \
+            : "=r" (retval)                            \
+            : /* no input */                           \
+            : "memory"                                 \
+        );                                             \
+        return retval;                                 \
+    }                                                  \
 
-static inline void __set_msr(unsigned int val) {
-	__asm__ __volatile__ (
-		"mtmsr %0"
-		: /* no output */
-		: "r" (val)
-		: "memory"
-	);
-}
-
+#define PPC_REG_SET(reg)                               \
+    static inline void __set_##reg(unsigned int val) { \
+        __asm__ __volatile__ (                         \
+            "mt"#reg" %0"                             \
+            : /* no output */                          \
+            : "r" (val)                                \
+            : "memory"                                 \
+        );                                             \
+    }                                                  \
 
 /**
- * SPR register
+ * Machine State Register (MSR)
  */
-static inline unsigned int __get_spr(unsigned int reg) {
-	unsigned int retval;
-	__asm__ __volatile__ (
-		"mfspr %0, %1"
-		: "=r" (retval)
-		: "r" (reg)
-		: "memory"
-	);
-	return retval;
-}
+PPC_REG_GET(msr)
+PPC_REG_SET(msr)
 
-static inline void __set_spr(unsigned int reg, unsigned int val) {
-	__asm__ __volatile__ (
-		"mtspr %0, %1"
-		: /* no output */
-		: "r" (reg), "r"(val)
-		: "memory"
-	);
-}
+/**
+ * Decrementer Register (DEC)
+ */
+PPC_REG_GET(dec)
+PPC_REG_SET(dec)
+
+/**
+ * Timer Control Register (TCR)
+ */
+PPC_REG_GET(tcr)
+PPC_REG_SET(tcr)
+
+/**
+ * Timer Status Register (TSR)
+ */
+PPC_REG_GET(tsr)
+PPC_REG_SET(tsr)
+
+#undef PPC_REG_GET
+#undef PPC_REG_SET
 
 #endif /* __ASSEMBLER__ */
 
