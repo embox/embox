@@ -20,6 +20,7 @@
 #include <xwnd/app_registry.h>
 #include <xwnd/test_app.h>
 #include <xwnd/unit_test.h>
+#include <xwnd/event.h>
 
 EMBOX_CMD(exec);
 
@@ -37,8 +38,8 @@ int xwnd_init() {
 	xwnd_unit_test_run_all_sheduled_tests ();
 	xwnd_unit_test_quit();
 
-	/*vesa_init_mode(VESA_MODE_DEFAULT);
-	vesa_clear_screen();*/
+	vesa_init_mode(VESA_MODE_DEFAULT);
+	vesa_clear_screen();
 	return 0;
 }
 

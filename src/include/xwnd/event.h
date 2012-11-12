@@ -70,6 +70,9 @@ extern void xwnd_event_quit_supervisor(struct xwnd_event_supervisor * sup);
 extern int xwnd_event_get_supervised_pair(struct xwnd_event_supervisor * sup, struct xwnd_event_slave * slave);
 extern void xwnd_app_send_event_free_supervised_pair(struct xwnd_event_supervisor * sup, int id);
 
+extern int xwnd_event_move_focus(struct xwnd_event_supervisor * sup);
+extern int xwnd_event_get_focus(struct xwnd_event_supervisor * sup);
+
 extern int xwnd_app_send_event (int app_id, struct xwnd_event * event);
 extern int xwnd_app_send_quit_event (int app_id, int exit_status);
 extern int xwnd_app_send_kbd_event(int app_id, char key);

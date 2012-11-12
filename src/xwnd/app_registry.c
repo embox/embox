@@ -24,6 +24,11 @@ int xwnd_app_reg_init (void) {
 	if (!xapp_reg.nodes) {
 		return -1;
 	}
+	xapp_reg.event_sup = xwnd_event_init_supervisor(XAPP_REG_DEF_CNT);
+	if (!xapp_reg.event_sup) {
+		free(xapp_reg.nodes);
+		return -1;
+	}
 	xapp_reg.allocated = XAPP_REG_DEF_CNT;
 	xapp_reg.used = 0;
 	return 0;

@@ -29,6 +29,7 @@ struct xwnd_app_registry {
 	int allocated;
 	int used;
 	struct xwnd_app_registry_node * nodes;
+	struct xwnd_event_supervisor * event_sup;
 };
 
 extern int xwnd_app_reg_init (void);

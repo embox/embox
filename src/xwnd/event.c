@@ -81,6 +81,7 @@ struct xwnd_event_supervisor * xwnd_event_init_supervisor(int reserve) {
 	sup->allocated = reserve;
 	return sup;
 }
+
 void xwnd_event_quit_supervisor(struct xwnd_event_supervisor * sup) {
 	if (sup) {
 		if (sup->masters)
@@ -88,17 +89,33 @@ void xwnd_event_quit_supervisor(struct xwnd_event_supervisor * sup) {
 		free(sup);
 	}
 }
+
+int xwnd_event_move_focus (struct xwnd_event_supervisor * sup) {
+	int i;
+	for (i = ((sup->focus + 1)%sup->allocated); sup->masters[i].active; i = ((i+1)%sup->allocated)) {
+		sup->focus = i;
+		return i;
+	}
+	return -1;
+}
+
+int xwnd_event_get_focus (struct xwnd_event_supervisor * sup) {
+	return sup->focus;
+}
+
 /** @return Retruns xwnd_event_master struct ID, or -1 on error*/
 int xwnd_event_get_supervised_pair(struct xwnd_event_supervisor * sup, struct xwnd_event_slave * slave) {
 	int i;
 	for (i = 0; i < sup->allocated; i++) {
 		if (sup->masters[i].active == 0) {
 			xwnd_event_create_pair(&(sup->masters[i]), slave);
+			sup->focus = i;
 			return i;
 		}
 	}
 	return -1;
 }
+
 void xwnd_app_send_event_free_supervised_pair(struct xwnd_event_supervisor * sup, int id) {
 	/*ololo*/
 }
