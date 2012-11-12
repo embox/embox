@@ -52,7 +52,7 @@ static int xwnd_app_reg_init(void) {
 	return 0;
 }
 
-static int xwnd_app_create (void* (*entry_point) (void*)) {
+static int xwnd_app_create (void* (*entry_point) (void*), const char * arg) {
 	int xapp_id = xapp_reg.used;
 	int xapp_tid;
 
@@ -69,6 +69,7 @@ static int xwnd_app_create (void* (*entry_point) (void*)) {
 	/*Send first messages*/
 	xwnd_app_send_sys_event(xapp_id, XWND_EV_CREAT);
 	xwnd_app_send_sys_event(xapp_id, XWND_EV_DRAW);
+	xapp_reg.nodes[xapp_id].init_wrap.arg = arg;
 
 	/*Now ready to start an application*/
 	xapp_tid = new_task(entry_point, (void*)(&(xapp_reg.nodes[xapp_id].init_wrap)), 0);
@@ -101,7 +102,7 @@ const struct xwnd_app_desc *xwnd_app_desc_lookup(const char *app_name) {
 }
 
 
-int xwnd_app_start(const char *app_name) {
+int xwnd_app_start(const char *app_name, const char *arg) {
 	const struct xwnd_app_desc *app_desc;
 
 	app_desc = xwnd_app_desc_lookup(app_name);
@@ -109,7 +110,7 @@ int xwnd_app_start(const char *app_name) {
 		return -1;
 	}
 
-	xwnd_app_create(app_desc->run);
+	xwnd_app_create(app_desc->run, arg);
 	return 0;
 }
 

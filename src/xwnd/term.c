@@ -22,10 +22,10 @@ static void on_creat (struct xwnd_event * ev) {
 	length = 0;
 	line = 0;
 
-	xapp->wnd->wdg.rect.x = 101;
+	/*xapp->wnd->wdg.rect.x = 101;
 	xapp->wnd->wdg.rect.y = 1;
 	xapp->wnd->wdg.rect.wd = 100;
-	xapp->wnd->wdg.rect.ht = 100;
+	xapp->wnd->wdg.rect.ht = 100;*/
 }
 
 static void on_draw (struct xwnd_event * ev) {

@@ -64,6 +64,37 @@ int xwnd_app_reg_set_xapp_struct_ptr (void) {
 	return 0;
 }
 
+static void xwnd_app_place_window (int quad, struct xwnd_rect * rect) {
+	switch (quad) {
+		case 0:
+			rect->x = 0;
+			rect->y = 0;
+			rect->wd = 100;
+			rect->ht = 100;
+			break;
+		case 1:
+			rect->x = 100;
+			rect->y = 0;
+			rect->wd = 100;
+			rect->ht = 100;
+			break;
+		case 2:
+			rect->x = 0;
+			rect->y = 100;
+			rect->wd = 100;
+			rect->ht = 100;
+			break;
+		case 3:
+			rect->x = 100;
+			rect->y = 100;
+			rect->wd = 100;
+			rect->ht = 100;
+			break;
+		default:
+			break;
+	}
+}
+
 struct xwnd_application * xwnd_app_init (void * args) {
 	struct xwnd_application * t_xapp;
 	struct xwnd_window * t_wnd;
@@ -77,10 +108,14 @@ struct xwnd_application * xwnd_app_init (void * args) {
 	}
 
 	//Create window
-	rect.x = 30;
-	rect.y = 20;
-	rect.wd = 200;
-	rect.ht = 150;
+	if (!t_wrap->arg) {
+		rect.x = 30;
+		rect.y = 20;
+		rect.wd = 200;
+		rect.ht = 150;
+	} else {
+		xwnd_app_place_window(((*(t_wrap->arg)) - '0') % 4, &rect);
+	}
 	t_wnd = xwnd_window_create(&rect); //malloc (sizeof(struct xwnd_window));
 	if (!t_wnd) {
 		free(t_xapp);

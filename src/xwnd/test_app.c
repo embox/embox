@@ -16,10 +16,10 @@ static struct xwnd_application * xapp;
 
 static void on_creat (struct xwnd_event * ev) {
 	img = xwnd_bmp_load("test2.bmp");
-	xapp->wnd->wdg.rect.x = 1;
+	/*xapp->wnd->wdg.rect.x = 1;
 	xapp->wnd->wdg.rect.y = 1;
 	xapp->wnd->wdg.rect.wd = 100;
-	xapp->wnd->wdg.rect.ht = 100;
+	xapp->wnd->wdg.rect.ht = 100;*/
 }
 
 static void on_draw (struct xwnd_event * ev) {

@@ -48,37 +48,53 @@ void xwnd_quit(){
 }
 
 static int exec (int argc, char ** argv) {
-//	struct xwnd_app_registry * xapp_reg;
-
-	xwnd_init();
-
-//	//xapp_reg = xwnd_app_reg_init();
-//	if (!xapp_reg) {
-//		return 1;
-//	}
-//	xwnd_app_create(xwnd_term_main);
-//	xwnd_app_create(test_app_main);
-
-	while (1) {
-		if (!keyboard_has_symbol()) {
-			usleep(100);
+	int err, i;
+	struct xwnd_app_registry * xapp_reg;
+	if (argc < 2) {
+		for (i = 0; i < ARRAY_SPREAD_SIZE(__xwnd_app_repository); i++) {
+			printf("%s\n", __xwnd_app_repository[i].app_name);
 		}
-		else {
-			char key = keyboard_getc();
-			if ('q' == key) {
-				//xwnd_app_send_quit_event(app_id, 0);
-				xwnd_event_broadcast_quit_event(xwnd_app_reg()->event_sup, 0);
-				sleep(1);
-				break;
-			} else if ('a' == key) {
-				xwnd_event_move_focus(xwnd_app_reg()->event_sup);
-			} else {
-				xwnd_event_send_kbd_event(xwnd_app_reg()->event_sup, key);
-				xwnd_event_send_sys_event(xwnd_app_reg()->event_sup, XWND_EV_DRAW);
+		return 0;
+	} else {
+		xwnd_init();
+
+		xapp_reg = xwnd_app_reg();
+		if (!xapp_reg) {
+			return 1;
+		}
+	//	xwnd_app_create(xwnd_term_main);
+	//	xwnd_app_create(test_app_main);
+		if (argc < 3) {
+			err = xwnd_app_start((const char *)argv[1], NULL);
+		} else {
+			err = xwnd_app_start((const char *)argv[1], argv[2]);
+		}
+		if (err) {
+			xwnd_quit();
+			return 1;
+		}
+
+		while (1) {
+			if (!keyboard_has_symbol()) {
+				usleep(100);
+			}
+			else {
+				char key = keyboard_getc();
+				if ('q' == key) {
+					//xwnd_app_send_quit_event(app_id, 0);
+					xwnd_event_broadcast_quit_event(xwnd_app_reg()->event_sup, 0);
+					sleep(1);
+					break;
+				} else if ('a' == key) {
+					xwnd_event_move_focus(xwnd_app_reg()->event_sup);
+				} else {
+					xwnd_event_send_kbd_event(xwnd_app_reg()->event_sup, key);
+					xwnd_event_send_sys_event(xwnd_app_reg()->event_sup, XWND_EV_DRAW);
+				}
 			}
 		}
+		xwnd_quit();
 	}
-	xwnd_quit();
 
 	return 0;
 }

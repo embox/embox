@@ -17,6 +17,7 @@
 struct xwnd_app_init_wrapper {
 	int xapp_id;
 	struct xwnd_event_slave ev;
+	const char * arg;
 };
 
 struct xwnd_app_registry_node {
@@ -37,6 +38,7 @@ struct xwnd_app_registry {
 //extern struct xwnd_app_registry * xwnd_app_reg_init (void);
 //extern int xwnd_app_create (void* (*entry_point) (void*));
 //extern void xwnd_app_remove(void);
+extern int xwnd_app_start(const char *app_name, const char * arg);
 
 struct xwnd_app_registry *xwnd_app_reg(void);
 extern int xwnd_app_put_message_by_app_id(int app_id, void * data, size_t size);
