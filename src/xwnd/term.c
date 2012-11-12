@@ -17,6 +17,24 @@ static char text_buf[1024];
 static int length;
 static int line;
 
+
+static void execute (void) {
+	int i;
+	char command[1024], argument[20];
+	for (i = 0; text_buf[i] != '\0' && text_buf[i] != ' '; i++) {
+		command[i] = text_buf[i];
+	}
+	command[i] = '\0';
+	argument[0] = argument[0];
+	if (!text_buf[i]) {
+		xwnd_app_start(command, NULL);
+	} else if (text_buf[i+1] <= '3' && text_buf[i+1] >= '0') {
+		argument[0] = text_buf[i+1];
+		argument[1] = '\0';
+		xwnd_app_start(command, argument);
+	}
+}
+
 static void on_creat (struct xwnd_event * ev) {
 	text_buf[0] = '\0';
 	length = 0;
@@ -41,6 +59,7 @@ static void on_key (struct xwnd_event * ev) {
 	char key;
 	key = ev->info.kbd.key;
 	if (key == '\r') {
+		execute();
 		text_buf[length = 0] = '\0';
 		line++;
 	} else if (key == 8) {
