@@ -18,6 +18,9 @@ abstract module locore { }
 abstract module entry { }
 abstract module boot { }
 abstract module lds { }
+
+@Mandatory
+@DefaultImpl(embox.arch.generic.nommu)
 abstract module mmu { }
 
 @Mandatory
