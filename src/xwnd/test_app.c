@@ -15,12 +15,14 @@ static struct xwnd_application * xapp;
 
 static void on_creat (struct xwnd_event * ev) {
 	img = xwnd_bmp_load("test2.bmp");
+	xapp->wnd->wdg.rect.x = 1;
+	xapp->wnd->wdg.rect.y = 1;
+	xapp->wnd->wdg.rect.wd = 100;
+	xapp->wnd->wdg.rect.ht = 100;
 }
 
 static void on_draw (struct xwnd_event * ev) {
-	//xwnd_bmp_output(xapp->wnd, img);
-	//xwnd_print_char(xapp->wnd, 1, 1, 'A');
-	xwnd_print_text(xapp->wnd, 1, 1, "@#%$!");
+	xwnd_bmp_output(xapp->wnd, img);
 }
 
 static void on_quit (struct xwnd_event * ev) {

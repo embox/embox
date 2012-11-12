@@ -48,18 +48,16 @@ void xwnd_quit(){
 }
 
 static int exec (int argc, char ** argv) {
-	int err, app_id;
+	struct xwnd_app_registry * xapp_reg;
 
 	xwnd_init();
 
-	err = xwnd_app_reg_init();
-	if (err) {
+	xapp_reg = xwnd_app_reg_init();
+	if (!xapp_reg) {
 		return 1;
 	}
-	app_id = xwnd_app_create(xwnd_term_main);
-	if (app_id < 0) {
-		return 1;
-	}
+	xwnd_app_create(xwnd_term_main);
+	xwnd_app_create(test_app_main);
 
 	while (1) {
 		if (!keyboard_has_symbol()) {
@@ -68,12 +66,15 @@ static int exec (int argc, char ** argv) {
 		else {
 			char key = keyboard_getc();
 			if ('q' == key) {
-				xwnd_app_send_quit_event(app_id, 0);
+				//xwnd_app_send_quit_event(app_id, 0);
+				xwnd_event_broadcast_quit_event(xapp_reg->event_sup, 0);
 				sleep(1);
 				break;
+			} else if ('a' == key) {
+				xwnd_event_move_focus(xapp_reg->event_sup);
 			} else {
-				xwnd_app_send_kbd_event(app_id, key);
-				xwnd_app_send_sys_event(app_id, XWND_EV_DRAW);
+				xwnd_event_send_kbd_event(xapp_reg->event_sup, key);
+				xwnd_event_send_sys_event(xapp_reg->event_sup, XWND_EV_DRAW);
 			}
 		}
 	}

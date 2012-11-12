@@ -13,7 +13,11 @@
 #include <kernel/thread/sync/sem.h>
 
 int xwnd_app_send_event (int app_id, struct xwnd_event * event) {
-	return xwnd_app_put_message (app_id, event, sizeof(struct xwnd_event));
+	return xwnd_app_put_message_by_app_id (app_id, event, sizeof(struct xwnd_event));
+}
+
+int xwnd_event_send_event(int ev_id, struct xwnd_event * event) {
+	return xwnd_app_put_message_by_event_id (ev_id, event, sizeof(struct xwnd_event));
 }
 
 int xwnd_app_send_quit_event (int app_id, int exit_status) {
@@ -92,11 +96,9 @@ void xwnd_event_quit_supervisor(struct xwnd_event_supervisor * sup) {
 
 int xwnd_event_move_focus (struct xwnd_event_supervisor * sup) {
 	int i;
-	for (i = ((sup->focus + 1)%sup->allocated); sup->masters[i].active; i = ((i+1)%sup->allocated)) {
-		sup->focus = i;
-		return i;
-	}
-	return -1;
+	for (i = ((sup->focus + 1)%sup->allocated); !sup->masters[i].active; i = ((i+1)%sup->allocated));
+	sup->focus = i;
+	return i;
 }
 
 int xwnd_event_get_focus (struct xwnd_event_supervisor * sup) {
@@ -116,6 +118,47 @@ int xwnd_event_get_supervised_pair(struct xwnd_event_supervisor * sup, struct xw
 	return -1;
 }
 
-void xwnd_app_send_event_free_supervised_pair(struct xwnd_event_supervisor * sup, int id) {
+void xwnd_event_free_supervised_pair(struct xwnd_event_supervisor * sup, int id) {
 	/*ololo*/
 }
+
+int xwnd_event_direct_event (struct xwnd_event_supervisor * sup, struct xwnd_event * event) {
+	return xwnd_event_send_event(sup->focus, event);
+}
+
+int xwnd_event_broadcast_event (struct xwnd_event_supervisor * sup, struct xwnd_event * event) {
+	int err, i;
+	for (i = 0; i < sup->allocated; i++) {
+		if (sup->masters[i].active) {
+			err = xwnd_event_send_event(i, event);
+		}
+	}
+	return err;
+}
+
+int xwnd_event_broadcast_quit_event (struct xwnd_event_supervisor * sup, int exit_status) {
+	struct xwnd_event ev;
+	ev.type = XWND_EV_QUIT;
+	ev.info.quit.exit_status = exit_status;
+	return xwnd_event_broadcast_event(sup, &ev);
+}
+
+int xwnd_event_send_kbd_event(struct xwnd_event_supervisor * sup, char key) {
+	struct xwnd_event ev;
+	ev.type = XWND_EV_KBD;
+	ev.info.kbd.key = key;
+	return xwnd_event_direct_event(sup, &ev);
+}
+
+int xwnd_event_send_sys_event(struct xwnd_event_supervisor * sup, enum xwnd_event_type event_type) {
+	struct xwnd_event ev;
+	ev.type = event_type;
+	return xwnd_event_direct_event(sup, &ev);
+}
+
+int xwnd_event_broadcast_sys_event(struct xwnd_event_supervisor * sup, enum xwnd_event_type event_type) {
+	struct xwnd_event ev;
+	ev.type = event_type;
+	return xwnd_event_broadcast_event(sup, &ev);
+}
+
