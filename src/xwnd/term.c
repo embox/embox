@@ -7,8 +7,10 @@
  */
 
 #include <xwnd/xwnd.h>
-#include <xwnd/test_app.h>
+#include <xwnd/xwndapp.h>
 #include <drivers/vesa.h>
+#include <xwnd/app_registry.h>
+
 
 static struct xwnd_application * xapp;
 static char text_buf[1024];
@@ -49,7 +51,7 @@ static void on_key (struct xwnd_event * ev) {
 	}
 }
 
-void * xwnd_term_main(void * args) {
+static void * xwnd_term_main(void * args) {
 	xapp = xwnd_app_init (args);
 	xwnd_app_set_event_handle(xapp, XWND_EV_CREAT, on_creat);
 	xwnd_app_set_event_handle(xapp, XWND_EV_DRAW, on_draw);
@@ -59,3 +61,5 @@ void * xwnd_term_main(void * args) {
 	xwnd_app_quit(xapp, 0);
 	return NULL;
 }
+
+EMBOX_XWND_APP("xterm", xwnd_term_main);

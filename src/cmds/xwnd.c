@@ -48,16 +48,16 @@ void xwnd_quit(){
 }
 
 static int exec (int argc, char ** argv) {
-	struct xwnd_app_registry * xapp_reg;
+//	struct xwnd_app_registry * xapp_reg;
 
 	xwnd_init();
 
-	xapp_reg = xwnd_app_reg_init();
-	if (!xapp_reg) {
-		return 1;
-	}
-	xwnd_app_create(xwnd_term_main);
-	xwnd_app_create(test_app_main);
+//	//xapp_reg = xwnd_app_reg_init();
+//	if (!xapp_reg) {
+//		return 1;
+//	}
+//	xwnd_app_create(xwnd_term_main);
+//	xwnd_app_create(test_app_main);
 
 	while (1) {
 		if (!keyboard_has_symbol()) {
@@ -67,14 +67,14 @@ static int exec (int argc, char ** argv) {
 			char key = keyboard_getc();
 			if ('q' == key) {
 				//xwnd_app_send_quit_event(app_id, 0);
-				xwnd_event_broadcast_quit_event(xapp_reg->event_sup, 0);
+				xwnd_event_broadcast_quit_event(xwnd_app_reg()->event_sup, 0);
 				sleep(1);
 				break;
 			} else if ('a' == key) {
-				xwnd_event_move_focus(xapp_reg->event_sup);
+				xwnd_event_move_focus(xwnd_app_reg()->event_sup);
 			} else {
-				xwnd_event_send_kbd_event(xapp_reg->event_sup, key);
-				xwnd_event_send_sys_event(xapp_reg->event_sup, XWND_EV_DRAW);
+				xwnd_event_send_kbd_event(xwnd_app_reg()->event_sup, key);
+				xwnd_event_send_sys_event(xwnd_app_reg()->event_sup, XWND_EV_DRAW);
 			}
 		}
 	}

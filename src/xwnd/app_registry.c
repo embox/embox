@@ -1,40 +1,58 @@
 /**
  * @file
- * @brief XWnd application registry implementation
+ * @brief XWnd application repository implementation
  *
  * @date Oct 18, 2012
  * @author Alexandr Chernakov
  */
 
 
-#include <xwnd/app_registry.h>
+#include <embox/unit.h>
 #include <kernel/task.h>
+#include <util/array.h>
+#include <mem/misc/pool.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <string.h>
+
+#include <xwnd/app_registry.h>
 #include <xwnd/event.h>
 #include <xwnd/window.h>
 
-#define XAPP_REG_DEF_CNT 256
 
+ARRAY_SPREAD_DEF(const struct xwnd_app_desc, __xwnd_app_repository);
+
+POOL_DEF(instance_pool, struct xwnd_app_instance, 0x10);
+
+static DLIST_DEFINE(run_instances);
+
+EMBOX_UNIT_INIT(xwnd_app_reg_init);
+
+#define XAPP_REG_DEF_CNT 256
 
 static struct xwnd_app_registry xapp_reg;
 
-struct xwnd_app_registry * xwnd_app_reg_init (void) {
+
+struct xwnd_app_registry * xwnd_app_reg(void) {
+	return &xapp_reg;
+}
+
+static int xwnd_app_reg_init(void) {
 	xapp_reg.nodes = malloc (XAPP_REG_DEF_CNT * sizeof(struct xwnd_app_registry_node));
 	if (!xapp_reg.nodes) {
-		return NULL;
+		return -1;
 	}
 	xapp_reg.event_sup = xwnd_event_init_supervisor(XAPP_REG_DEF_CNT);
 	if (!xapp_reg.event_sup) {
 		free(xapp_reg.nodes);
-		return NULL;
+		return -1;
 	}
 	xapp_reg.allocated = XAPP_REG_DEF_CNT;
 	xapp_reg.used = 0;
-	return &xapp_reg;
+
+	return 0;
 }
 
-int xwnd_app_create (void* (*entry_point) (void*)) {
+static int xwnd_app_create (void* (*entry_point) (void*)) {
 	int xapp_id = xapp_reg.used;
 	int xapp_tid;
 
@@ -58,32 +76,43 @@ int xwnd_app_create (void* (*entry_point) (void*)) {
 	return xapp_id;
 }
 
+
+
+struct xwnd_app_instance *xwnd_app_lookup(const char *app_name) {
+	struct xwnd_app_instance *inst, *tmp;
+
+	dlist_foreach_entry(inst, tmp, &run_instances, lst) {
+		if(0 == strcmp(app_name, inst->desc->app_name)) {
+			return inst;
+		}
+	}
+	return NULL;
+}
+
+const struct xwnd_app_desc *xwnd_app_desc_lookup(const char *app_name) {
+	int i;
+
+	for (i = 0; i < ARRAY_SPREAD_SIZE(__xwnd_app_repository); i++) {
+		if(0 == strcmp(app_name, __xwnd_app_repository[i].app_name)) {
+			return &__xwnd_app_repository[i];
+		}
+	}
+	return NULL;
+}
+
+
+int xwnd_app_start(const char *app_name) {
+	const struct xwnd_app_desc *app_desc;
+
+	app_desc = xwnd_app_desc_lookup(app_name);
+	if(NULL == app_desc) {
+		return -1;
+	}
+
+	xwnd_app_create(app_desc->run);
+	return 0;
+}
+
 void xwnd_app_remove(void) {
-}
-
-int xwnd_app_put_message_by_app_id (int app_id, void * data, size_t size) {
-	int msg_pipe = xapp_reg.event_sup->masters[xapp_reg.nodes[app_id].ev_master].msg_pipe; /*Yes, I do love anal sex*/
-	int err;
-	if (!sem_tryenter(&(xapp_reg.event_sup->masters[xapp_reg.nodes[app_id].ev_master].msg_sem))) {
-		err = write(msg_pipe, data, size);
-		sem_leave(&(xapp_reg.event_sup->masters[xapp_reg.nodes[app_id].ev_master].msg_sem));
-	}
-	if (err != size) {
-		return -1;
-	}
-	return 0;
-}
-
-int xwnd_app_put_message_by_event_id (int ev_id, void * data, size_t size) {
-	int msg_pipe = xapp_reg.event_sup->masters[ev_id].msg_pipe;
-	int err;
-	if (!sem_tryenter(&(xapp_reg.event_sup->masters[ev_id].msg_sem))) {
-		err = write(msg_pipe, data, size);
-		sem_leave(&(xapp_reg.event_sup->masters[ev_id].msg_sem));
-	}
-	if (err != size) {
-		return -1;
-	}
-	return 0;
 }
 
