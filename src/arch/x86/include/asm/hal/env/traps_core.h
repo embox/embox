@@ -11,12 +11,15 @@
 #define X86_TRAPS_CORE_H_
 
 #include <types.h>
+#include <asm/traps.h>
 
 #define MAX_HWTRAP_NUMBER    0x14
 #define MAX_SOFTTRAP_NUMBER  0x10
 #define MAX_INTERRUPT_NUMBER 0x10
 
 #define DIVZERO_FAULT        0x0
+#define MMU_DATA_SECUR_FAULT X86_T_PAGE_FAULT //X86_T_GENERAL_PROTECTION
+#define MMU_DATA_MISS_FAULT  X86_T_PAGE_FAULT
 
 /** Defines handler for traps_dispatcher in microblaze archecture */
 typedef int (*__trap_handler)(uint32_t nr, void *data);

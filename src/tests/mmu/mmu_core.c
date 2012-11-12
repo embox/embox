@@ -9,12 +9,7 @@
 #include <embox/test.h>
 #include <framework/test/assert.h>
 
-#include <hal/mm/mmu_core.h>
-#include <hal/mm/mmu_page.h>
-
-#include <hal/env/traps_core.h>
-
-#include <hal/test/mmu_core.h>
+#include <mem/vmem.h>
 #include <hal/test/traps_core.h>
 
 EMBOX_TEST_SUITE("Complex MMU core support test suite");
@@ -24,7 +19,9 @@ TEST_SETUP(mmu_case_setup);
 TEST_TEARDOWN(mmu_case_teardown);
 
 /*mapping to address, assuming there is no mem at here */
-#define BIGADDR 0xf0000000
+#define BIGADDR1 0xf0000000
+#define BIGADDR2 0xf0001000
+
 /* Unique values that seems to pretty to accidentally happen in mem,
  * used to read-n-check */
 #define UNIQ_VAL_1 0x12345678
@@ -38,21 +35,13 @@ TEST_TEARDOWN(mmu_case_teardown);
 
 #define VADDR(region, phyaddr, map_size) (region + ((uint32_t)(phyaddr) & (map_size - 1)))
 
-TEST_CASE("MMU enabling should go alright. "
-		"Program flow must not halts.") {
-	mmu_on();
-	test_assert_zero(0);
-}
-
+#if 0
 TEST_CASE("Read/write operations must execute in MMU-mode.") {
 	uint32_t addr = 0;
 	uint32_t vaddr = VADDR(BIGADDR, &addr, PAGE_SIZE);
 
-	mmu_map_region((mmu_ctx_t)0, (paddr_t) &addr & ~(PAGE_SIZE - 1),
-			BIGADDR, PAGE_SIZE,
-			MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE);
-
-	mmu_on();
+	vmem_map_region((mmu_ctx_t)0, (mmu_paddr_t) &addr & ~(PAGE_SIZE - 1),
+			BIGADDR, PAGE_SIZE, VMEM_PAGE_CACHEABLE | VMEM_PAGE_WRITABLE);
 
 	test_assert_equal((*((volatile uint32_t *) vaddr)), addr);
 			//"Mapping and mapped value is not equals");
@@ -62,13 +51,16 @@ TEST_CASE("Read/write operations must execute in MMU-mode.") {
 	test_assert_equal(*((volatile uint32_t *) vaddr), UNIQ_VAL_1);
 }
 
+
 static int simple_dfault_happend = 0;
 
 /* MMU data access exception handler */
-static int simple_dfault_handler(uint32_t trap_nr, void *data) {
+static inline int simple_dfault_handler(uint32_t trap_nr, void *data) {
 	simple_dfault_happend = 1;
 	return 0;
 }
+
+
 
 TEST_CASE("Writing in read-only memory should generate exception."
 		  " Vaule must left untouched.") {
@@ -77,9 +69,8 @@ TEST_CASE("Writing in read-only memory should generate exception."
 
 	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_SECUR_FAULT, simple_dfault_handler);
 
-	mmu_map_region((mmu_ctx_t)0, (paddr_t)(&addr) & ~(PAGE_SIZE - 1), BIGADDR, PAGE_SIZE,
-				MMU_PAGE_CACHEABLE | MMU_PAGE_EXECUTEABLE);
-	mmu_on();
+	vmem_map_region((mmu_ctx_t)0, (mmu_paddr_t)(&addr) & ~(PAGE_SIZE - 1), BIGADDR, PAGE_SIZE,
+				VMEM_PAGE_CACHEABLE | VMEM_PAGE_EXECUTABLE);
 
 	/* Data access exception */
 	*((volatile uint32_t *) vaddr) = UNIQ_VAL_2;
@@ -88,9 +79,12 @@ TEST_CASE("Writing in read-only memory should generate exception."
 	test_assert(simple_dfault_happend);
 }
 
+#endif
+
+
 /* MMU data access exception handler */
-static int dfault_handler(uint32_t trap_nr, void *data) {
-	mmu_page_set_flags((mmu_ctx_t) 0x0, BIGADDR, MMU_PAGE_WRITEABLE);
+static inline int dfault_handler(uint32_t trap_nr, void *data) {
+	vmem_page_set_flags((mmu_ctx_t) 0x0, BIGADDR1, VMEM_PAGE_WRITABLE);
 	/* repeat instruction */
 	return 1;
 }
@@ -98,31 +92,35 @@ static int dfault_handler(uint32_t trap_nr, void *data) {
 TEST_CASE("Writing to read-only memory should cause exception."
 		 " Exception handler should allow write.") {
 	uint32_t addr = UNIQ_VAL_1;
-	uint32_t vaddr = VADDR(BIGADDR, &addr, PAGE_SIZE);
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_SECUR_FAULT, dfault_handler);
-
-	mmu_map_region((mmu_ctx_t)0, (paddr_t)&addr & ~(PAGE_SIZE - 1), BIGADDR, PAGE_SIZE,
-			MMU_PAGE_CACHEABLE);
+	uint32_t vaddr = VADDR(BIGADDR1, &addr, PAGE_SIZE);
 
 	mmu_on();
 
+	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_SECUR_FAULT, dfault_handler);
+
+	vmem_map_region((mmu_ctx_t)0, (mmu_paddr_t)&addr & ~(PAGE_SIZE - 1), BIGADDR1, PAGE_SIZE,
+			VMEM_PAGE_CACHEABLE);
+
 	*((volatile uint32_t *) vaddr) = UNIQ_VAL_1;
 	test_assert_equal(addr, UNIQ_VAL_1);
+
+	mmu_off();
 }
+
 
 static uint8_t __attribute__ ((aligned (PAGE_SIZE))) page[PAGE_SIZE];
 static int flag = 0;
 
-static int pagefault_handler(uint32_t nr, void *data) {
-	int err_addr = mmu_get_fault_address() & ~(PAGE_SIZE - 1);
-	mmu_off();
+static inline int pagefault_handler(uint32_t nr, void *data) {
+	int _cr2, err_addr;
+	asm ("mov %%cr2, %0":"=r" (_cr2):);
+	err_addr = _cr2 & ~(PAGE_SIZE - 1);
 
-	mmu_map_region((mmu_ctx_t) 0, (paddr_t) ((unsigned long) &page),
-			(vaddr_t) err_addr, PAGE_SIZE, MMU_PAGE_CACHEABLE |
-			MMU_PAGE_WRITEABLE);
+	vmem_map_region((mmu_ctx_t) 0, (mmu_paddr_t) ((unsigned long) &page),
+			(mmu_vaddr_t) err_addr, PAGE_SIZE, VMEM_PAGE_CACHEABLE |
+			VMEM_PAGE_WRITABLE);
 
 	flag = 1;
-	mmu_on();
 	return 1; // execute exception-cause instruction once more
 }
 
@@ -132,31 +130,17 @@ TEST_CASE("Pagefault should be considered right.") {
 
 	mmu_on();
 
-	*((uint32_t *) BIGADDR) = UNIQ_VAL_1;
+	*((uint32_t *) BIGADDR2) = UNIQ_VAL_1;
 
-	test_assert_equal(*((unsigned long *) BIGADDR), UNIQ_VAL_1);
+	test_assert_equal(*((unsigned long *) BIGADDR2), UNIQ_VAL_1);
+
+	mmu_off();
 }
 
-static mmu_env_t prev_mmu_env;
-static traps_env_t old_env;
-
 static int mmu_case_setup(void) {
-	extern char _text_start;
-
-	mmu_save_env(&prev_mmu_env);
-	mmu_set_env(testmmu_env());
-
-	traps_save_env(&old_env);
-	traps_set_env(testtraps_env());
-	mmu_map_region((mmu_ctx_t)0, (uint32_t) &_text_start,
-		(uint32_t) &_text_start, REGION_SIZE,
-		MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE);
-
 	return 0;
 }
 
 static int mmu_case_teardown(void) {
-	traps_restore_env(&old_env);
-	mmu_restore_env(&prev_mmu_env);
 	return 0;
 }

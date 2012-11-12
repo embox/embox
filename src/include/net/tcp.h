@@ -132,6 +132,9 @@ enum {
 #define TCP_SYNC_STATE        2    /* Synchronization flag for socket sk_state */
 #define TCP_SYNC_CONN_QUEUE   4    /* Synchronization flag for socket conn_wait */
 
+/* Options specific for tcp socket */
+#define TCP_NODELAY 0
+
 /* Status of TCP connection */
 enum {
 	TCP_ST_NOTEXIST, /* Connection does not exist */

@@ -70,8 +70,12 @@ static inline int vmem_map_kernel(mmu_ctx_t ctx) {
 	err |= vmem_map_on_itself(ctx, VIRTUAL_TABLES_START, VIRTUAL_TABLES_LEN, VMEM_PAGE_WRITABLE);
 	err |= vmem_map_on_itself(ctx, VIRTUAL_PAGES_INFO_START, VIRTUAL_PAGES_INFO_LEN, VMEM_PAGE_WRITABLE);
 
+	// XXX below
 	// for sparc
 	err |= vmem_map_on_itself(ctx, (void *) 0x80000000, (size_t) 0x1000, VMEM_PAGE_WRITABLE);
+
+	// mapping x86 video buffer
+	err |= vmem_map_on_itself(ctx, (void *) 0xB8000, (size_t) 0x1000, VMEM_PAGE_WRITABLE);
 
 	return err;
 }

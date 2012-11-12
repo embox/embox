@@ -18,4 +18,5 @@ module fixedtime extends api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "fixedtime_sched.c", "fixedtime_sched.h"
 
+	option number msec_priority_multiplier = 1
 }

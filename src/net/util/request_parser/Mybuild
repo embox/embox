@@ -4,5 +4,5 @@ module parser {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "request_parser.c"
 
-	depends third_party.lib.trex
+	depends third_party.lib.url_parser
 }

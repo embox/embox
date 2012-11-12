@@ -63,6 +63,7 @@ int ungetchar(int ch);
  * Write formatted output to stdout from the format string FORMAT.
  */
 extern int printf(const char *format, ...);
+extern void perror(const char *s);
 
 #define fprintf(stream, ...) printf(__VA_ARGS__)
 

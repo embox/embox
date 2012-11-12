@@ -24,6 +24,8 @@ abstract module mmu { }
 @DefaultImpl(embox.arch.generic.syscall_stub)
 abstract module syscall { }
 
+abstract module syscall_caller { }
+
 @Mandatory
 @DefaultImpl(embox.arch.generic.usermode)
 abstract module usermode { }

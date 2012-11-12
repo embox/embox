@@ -8,5 +8,6 @@ module app_registry {
 
 	depends embox.lib.LibC
 	depends embox.xwnd.event
+	depends embox.xwnd.window
 	depends embox.xwnd.test_app
 }

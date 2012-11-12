@@ -46,9 +46,9 @@ module oneshot_timer_test {
 	depends embox.kernel.time.timer
 }
 
-module usermode_test {
-	source "usermode_test.c"
+//@TestFor(embox.kernel.syscall)
+module syscall_test {
+	source "syscall_test.c"
 
-	depends embox.arch.usermode
-	depends embox.arch.syscall
+	depends embox.arch.syscall_caller
 }

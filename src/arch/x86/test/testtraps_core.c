@@ -11,7 +11,13 @@
 
 static traps_env_t test_env[1];
 
+extern __trap_handler __exception_table[0x20];
+
 void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
+	if(TRAP_TYPE_HARDTRAP == type) {
+		test_env[0].hw_traps[number] = handler;
+		__exception_table[number] = handler;
+	}
 
 }
 

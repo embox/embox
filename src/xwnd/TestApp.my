@@ -9,4 +9,5 @@ module test_app {
 	depends embox.lib.LibC
 	depends embox.xwnd.bmp
 	depends embox.xwnd.xwndapp
+	depends embox.xwnd.fonts
 }

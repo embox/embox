@@ -126,6 +126,8 @@ struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 	event_init(&sk->sock_is_not_empty, "sock_is_not_empty");
 	event_init(&sk->sock_is_ready, "sock_is_ready");
 
+	sk->sk_shutdown = 0;
+
 	if (prot->hash != NULL) {
 		prot->hash(sk);
 	}
@@ -158,8 +160,15 @@ int sock_no_accept(struct socket *sock, struct socket *newsock, int flags) {
 
 void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 	struct idx_desc *desc = sk->sk_socket->desc;
+
 	assert(sk != NULL);
+
+	if (sk->sk_shutdown & (SHUT_RD + 1)) {
+		return;
+	}
+
 	skb_queue_push(sk->sk_receive_queue, skb);
+
 	event_notify(&sk->sock_is_not_empty);
 	if (desc->data) {
 		io_op_unblock(&desc->data->read_state);

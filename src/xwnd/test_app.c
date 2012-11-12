@@ -1,8 +1,9 @@
-/*
- * test_app.c
+/**
+ * @file
+ * @brief XWnd testing application conforming to desired standards
  *
- *  Created on: 18.10.2012
- *      Author: alexandr
+ * @date Oct 18, 2012
+ * @author Alexandr Chernakov
  */
 
 #include <xwnd/xwnd.h>
@@ -17,7 +18,9 @@ static void on_creat (struct xwnd_event * ev) {
 }
 
 static void on_draw (struct xwnd_event * ev) {
-	xwnd_bmp_draw(img);
+	//xwnd_bmp_output(xapp->wnd, img);
+	//xwnd_print_char(xapp->wnd, 1, 1, 'A');
+	xwnd_print_text(xapp->wnd, 1, 1, "@#%$!");
 }
 
 static void on_quit (struct xwnd_event * ev) {
@@ -30,11 +33,12 @@ static void on_key (struct xwnd_event * ev) {
 }
 
 void * test_app_main (void * args) {
-	xapp = (struct xwnd_application *) args;
+	xapp = xwnd_app_init (args);
 	xwnd_app_set_event_handle(xapp, XWND_EV_CREAT, on_creat);
 	xwnd_app_set_event_handle(xapp, XWND_EV_DRAW, on_draw);
 	xwnd_app_set_event_handle(xapp, XWND_EV_QUIT, on_quit);
 	xwnd_app_set_event_handle(xapp, XWND_EV_KBD, on_key);
 	xwnd_app_main_loop(xapp);
+	xwnd_app_quit(xapp, 0);
 	return NULL;
 }

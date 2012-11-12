@@ -155,11 +155,22 @@ void xwnd_bmp_draw(struct xwnd_bmp_image * img) {
 		}
 	}
 
+#if 0
 	xwnd_draw_vert_line(0, 0, img->height, 2);
 	xwnd_draw_horiz_line(0, 0, img->width, 2);
 	xwnd_draw_vert_line(img->width, 0, img->height, 2);
 	xwnd_draw_horiz_line(0, img->height, img->width, 2);
+#endif
 
+}
+
+void xwnd_bmp_output(const struct xwnd_window * wnd, struct xwnd_bmp_image * img) {
+	int x, y;
+	for(x = 0; x < img->width; x++) {
+		for(y = 0; y < img->height; y++) {
+			xwnd_draw_pixel(wnd, x, img->height - y - 1, img->pxls[y*img->width+x]);
+		}
+	}
 }
 
 enum xwnd_bmp_err xwnd_bmp_get_errno (void) {
