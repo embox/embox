@@ -15,7 +15,7 @@
     static inline unsigned int __get_##reg(void) {     \
         unsigned int retval;                           \
         __asm__ __volatile__ (                         \
-            "mf"#reg" %0"                             \
+            "mf"#reg" %0"                              \
             : "=r" (retval)                            \
             : /* no input */                           \
             : "memory"                                 \
@@ -26,10 +26,10 @@
 #define PPC_REG_SET(reg)                               \
     static inline void __set_##reg(unsigned int val) { \
         __asm__ __volatile__ (                         \
-            "mt"#reg" %0"                             \
+            "mt"#reg" %0"                              \
             : /* no output */                          \
             : "r" (val)                                \
-            : "memory"                                 \
+            : /* unspecified register FIXME */         \
         );                                             \
     }                                                  \
 
