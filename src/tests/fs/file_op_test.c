@@ -107,7 +107,8 @@ static int setup_suite(void) {
 		return -1;
 	}
 	/* set created ramdisc attribute from dev_node */
-	ramdisk = (dev_ramdisk_t *) block_dev(mount_param.dev_node->dev_id)->privdata;
+	ramdisk = (dev_ramdisk_t *)
+			block_dev(mount_param.dev_node->dev_id)->privdata;
 
 	/* format filesystem */
 	if(0 != fs_drv->fsop->format((void *)&ramdisk->path)) {
