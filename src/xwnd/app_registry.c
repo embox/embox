@@ -19,14 +19,19 @@
 
 static struct xwnd_app_registry xapp_reg;
 
-int xwnd_app_reg_init (void) {
+struct xwnd_app_registry * xwnd_app_reg_init (void) {
 	xapp_reg.nodes = malloc (XAPP_REG_DEF_CNT * sizeof(struct xwnd_app_registry_node));
 	if (!xapp_reg.nodes) {
-		return -1;
+		return NULL;
+	}
+	xapp_reg.event_sup = xwnd_event_init_supervisor(XAPP_REG_DEF_CNT);
+	if (!xapp_reg.event_sup) {
+		free(xapp_reg.nodes);
+		return NULL;
 	}
 	xapp_reg.allocated = XAPP_REG_DEF_CNT;
 	xapp_reg.used = 0;
-	return 0;
+	return &xapp_reg;
 }
 
 int xwnd_app_create (void* (*entry_point) (void*)) {
@@ -40,7 +45,8 @@ int xwnd_app_create (void* (*entry_point) (void*)) {
 	xapp_reg.used++;
 
 	/*Initialize event queue connection*/
-	xwnd_event_create_pair(&(xapp_reg.nodes[xapp_id].ev), &(xapp_reg.nodes[xapp_id].init_wrap.ev));
+	//xwnd_event_create_pair(&(xapp_reg.nodes[xapp_id].ev), &(xapp_reg.nodes[xapp_id].init_wrap.ev));
+	xapp_reg.nodes[xapp_id].ev_master = xwnd_event_get_supervised_pair (xapp_reg.event_sup, &(xapp_reg.nodes[xapp_id].init_wrap.ev));
 
 	/*Send first messages*/
 	xwnd_app_send_sys_event(xapp_id, XWND_EV_CREAT);
@@ -55,15 +61,29 @@ int xwnd_app_create (void* (*entry_point) (void*)) {
 void xwnd_app_remove(void) {
 }
 
-int xwnd_app_put_message(int app_id, void * data, size_t size) {
-	int msg_pipe = xapp_reg.nodes[app_id].ev.msg_pipe;
+int xwnd_app_put_message_by_app_id (int app_id, void * data, size_t size) {
+	int msg_pipe = xapp_reg.event_sup->masters[xapp_reg.nodes[app_id].ev_master].msg_pipe; /*Yes, I do love anal sex*/
 	int err;
-	if (!sem_tryenter(&(xapp_reg.nodes[app_id].ev.msg_sem))) {
+	if (!sem_tryenter(&(xapp_reg.event_sup->masters[xapp_reg.nodes[app_id].ev_master].msg_sem))) {
 		err = write(msg_pipe, data, size);
-		sem_leave(&(xapp_reg.nodes[app_id].ev.msg_sem));
+		sem_leave(&(xapp_reg.event_sup->masters[xapp_reg.nodes[app_id].ev_master].msg_sem));
 	}
 	if (err != size) {
 		return -1;
 	}
 	return 0;
 }
+
+int xwnd_app_put_message_by_event_id (int ev_id, void * data, size_t size) {
+	int msg_pipe = xapp_reg.event_sup->masters[ev_id].msg_pipe;
+	int err;
+	if (!sem_tryenter(&(xapp_reg.event_sup->masters[ev_id].msg_sem))) {
+		err = write(msg_pipe, data, size);
+		sem_leave(&(xapp_reg.event_sup->masters[ev_id].msg_sem));
+	}
+	if (err != size) {
+		return -1;
+	}
+	return 0;
+}
+
