@@ -8,3 +8,10 @@ static module libarch extends embox.arch.libarch {
 static module LibDl {
 	source "dl/dl_relocate.c"
 }
+
+static module LibM {
+	source "math/sin.S"
+	source "math/cos.S"
+	source "math/sqrt.S"
+	source "math/log10.S"
+}

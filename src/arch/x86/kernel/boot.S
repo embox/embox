@@ -85,3 +85,21 @@ multiboot_entry:
 
 loop:	hlt             /* if we return from kernel_start it's error */
 	jmp	loop
+
+
+
+/*
+ * Reset cpu
+ * Use triple fault
+ */
+C_ENTRY(cpu_reset):
+	cli
+	movl	$null_idt, %eax		/* Reset by triple fault */
+	lidt	(%eax)
+	int	$3
+	hlt
+
+	.align 4
+null_idt:
+	.word	0
+	.long	0

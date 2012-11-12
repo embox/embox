@@ -1,0 +1,13 @@
+package embox.cmd
+
+@Cmd(name = "Shutdown",
+	help = "reset the system",
+	man = '''
+		NAME
+			shutdown - reset the system
+		AUTHORS
+			Anton Bondarev
+	''')
+module shutdown {
+	source "shutdown.c"
+}

@@ -21,6 +21,7 @@ struct xwnd_app_init_wrapper {
 struct xwnd_app_registry_node {
 	int tid;
 	struct xwnd_event_master ev;
+	int is_empty;
 	struct xwnd_app_init_wrapper init_wrap;
 };
 

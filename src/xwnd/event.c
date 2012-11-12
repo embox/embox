@@ -55,5 +55,50 @@ int xwnd_event_create_pair(struct xwnd_event_master * master, struct xwnd_event_
 	master->req_pipe = req_pipe[0];
 	slave->msg_pipe = msg_pipe[0];
 	slave->req_pipe = req_pipe[1];
+	master->active = 1;
 	return 0;
+}
+
+void xwnd_event_remove_pair(struct xwnd_event_master * master, struct xwnd_event_slave * slave) {
+	master->active = 0;
+}
+
+struct xwnd_event_supervisor * xwnd_event_init_supervisor(int reserve) {
+	int i;
+	struct xwnd_event_supervisor * sup = NULL;
+	sup = malloc (sizeof(struct xwnd_event_supervisor));
+	if (!sup) {
+		return NULL;
+	}
+	sup->masters = malloc (reserve * sizeof(struct xwnd_event_master));
+	if (!sup->masters) {
+		free(sup);
+		return NULL;
+	}
+	for (i = 0; i < reserve; i++) {
+		sup->masters[i].active = 0;
+	}
+	sup->allocated = reserve;
+	return sup;
+}
+void xwnd_event_quit_supervisor(struct xwnd_event_supervisor * sup) {
+	if (sup) {
+		if (sup->masters)
+			free(sup->masters);
+		free(sup);
+	}
+}
+/** @return Retruns xwnd_event_master struct ID, or -1 on error*/
+int xwnd_event_get_supervised_pair(struct xwnd_event_supervisor * sup, struct xwnd_event_slave * slave) {
+	int i;
+	for (i = 0; i < sup->allocated; i++) {
+		if (sup->masters[i].active == 0) {
+			xwnd_event_create_pair(&(sup->masters[i]), slave);
+			return i;
+		}
+	}
+	return -1;
+}
+void xwnd_app_send_event_free_supervised_pair(struct xwnd_event_supervisor * sup, int id) {
+	/*ololo*/
 }
