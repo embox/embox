@@ -17,22 +17,18 @@ C_ENTRY(_start)
 	 * Setup Machine State Register
 	 */
 	mfmsr   r3                 /* load MSR */
-#if 0
 	lis     r4, MSR_ILE@h      /* setup exception handling to big-endian mode */
 	ori     r4, r4, MSR_ILE@l
 	andc    r3, r3, r4
 	lis     r4, MSR_LE@h       /* setup big-endian mode */
 	ori     r4, r4, MSR_LE@l
 	andc    r3, r3, r4
-#endif
 	lis     r4, MSR_PR@h       /* allow user- and supervisor-level instructions */
 	ori     r4, r4, MSR_PR@l
 	andc    r3, r3, r4
-#if 0
 	lis     r4, MSR_IP@h       /* setup exception prefix to 0x000n_nnnn */
 	ori     r4, r4, MSR_IP@l
 	andc    r3, r3, r4
-#endif
 	mtmsr   r3                 /* set a new MSR */
 	isync                      /* synchromizing */
 

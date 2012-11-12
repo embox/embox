@@ -1,5 +1,5 @@
 /**
- * @file
+ * @file PowerPC 440 definations
  *
  * @date 17.10.12
  * @author Anton Bondarev
@@ -12,63 +12,49 @@
 /**
  * Machine State Register (MSR) definations
  */
-#if 0
-#define	MSR_LE  0x00000001	/* little-endian mode enable */
-#define	MSR_RI  0x00000002	/* recoverable exception */
-#define	MSR_DR  0x00000010	/* data address translation */
-#define	MSR_IR  0x00000020	/* instruction address translation */
-#define	MSR_IP  0x00000040	/* exception prefix */
-#define	MSR_FE1 0x00000100	/* floating-point exception mode 1 */
-#define	MSR_BE  0x00000200	/* branch trace enable */
-#define	MSR_SE  0x00000400	/* single-step trace enable */
-#define	MSR_FE0 0x00000800	/* floating-point exception mode 0 */
-#define	MSR_ME  0x00001000	/* machine check enable */
-#define	MSR_FP  0x00002000	/* floating-point available */
-#define	MSR_PR  0x00004000	/* privilege level (1:USR) */
-#define	MSR_EE  0x00008000	/* external interrupt enable */
-#define	MSR_ILE 0x00010000	/* exception little-endian mode (1:LE) */
-#define	MSR_POW 0x00040000	/* power management enable */
-#else
-#define MSR_WE  0x00002000 /* wait state enable */
-#define MSR_CE  0x00004000 /* critical interrupt enable */
-#define MSR_EE  0x00010000 /* external interrupt enable */
-#define MSR_PR  0x00020000 /* problem state */
-#define MSR_FP  0x00040000 /* floating-point available */
-#define MSR_ME  0x00080000 /* machine check enable */
-#define MSR_FE0 0x00100000 /* floating-point exception mode 0 */
-#define MSR_DWE 0x00200000 /* debug wait enable */
-#define MSR_DE  0x00400000 /* debug interrupt enable */
-#define MSR_FE1 0x00800000 /* floating-point exception mode 1 */
-#define MSR_IS  0x04000000 /* instruction address space */
-#define MSR_DS  0x08000000 /* data address space */
-#endif
+#define MSR_WE  0x00040000 /* wait state enable */
+#define MSR_CE  0x00020000 /* critical interrupt enable */
+#define	MSR_ILE 0x00010000 /* exception little-endian mode (1:LE) */
+#define MSR_EE  0x00008000 /* external interrupt enable */
+#define	MSR_PR  0x00004000 /* privilege level (1:USR) */
+#define MSR_FP  0x00002000 /* floating-point available */
+#define MSR_ME  0x00001000 /* machine check enable */
+#define MSR_FE0 0x00000800 /* floating-point exception mode 0 */
+#define MSR_DWE 0x00000400 /* debug wait enable */
+#define MSR_DE  0x00000200 /* debug interrupt enable */
+#define MSR_FE1 0x00000100 /* floating-point exception mode 1 */
+#define	MSR_IP  0x00000040 /* exception prefix */
+#define MSR_IS  0x00000020 /* instruction address space */
+#define MSR_DS  0x00000010 /* data address space */
+#define	MSR_RI  0x00000002 /* recoverable exception */
+#define	MSR_LE  0x00000001 /* little-endian mode enable */
 
 /**
  * Timer Control Register (TCR) definations
  */
     /* Watchdog Timer Period */
 #define TCR_WP_21    0x00000000 /* WTP: 2^21 time base clocks */
-#define TCR_WP_25    0x00000001 /* WTP: 2^25 time base clocks */
-#define TCR_WP_29    0x00000002 /* WTP: 2^29 time base clocks */
-#define TCR_WP_33    0x00000003 /* WTP: 2^33 time base clocks */
+#define TCR_WP_25    0x40000000 /* WTP: 2^25 time base clocks */
+#define TCR_WP_29    0x80000000 /* WTP: 2^29 time base clocks */
+#define TCR_WP_33    0xC0000000 /* WTP: 2^33 time base clocks */
     /* Watchdog Timer Reset Control */
 #define TCR_WRC_NO   0x00000000 /* WTRC: no watchdog timer reset will occur */
-#define TCR_WRC_CORE 0x00000004 /* WTRC: core reset */
-#define TCR_WRC_CHIP 0x00000008 /* WTRC: chip reset */
-#define TCR_WRC_SYS  0x0000000C /* WTRC: system reset */
+#define TCR_WRC_CORE 0x10000000 /* WTRC: core reset */
+#define TCR_WRC_CHIP 0x20000000 /* WTRC: chip reset */
+#define TCR_WRC_SYS  0x30000000 /* WTRC: system reset */
     /* Watchdog Timer Interrupt */
-#define TCR_WIE      0x00000010 /* WTI enable */
+#define TCR_WIE      0x08000000 /* WTI enable */
     /* Decrementer Interrupt */
-#define TCR_DIE      0x00000020 /* DI enable */
+#define TCR_DIE      0x04000000 /* DI enable */
     /* Fixed Interval Timer Period */
 #define TCR_FP_13    0x00000000 /* FITP: 2^13 time base clocks */
-#define TCR_FP_17    0x00000040 /* FITP: 2^17 time base clocks */
-#define TCR_FP_21    0x00000080 /* FITP: 2^21 time base clocks */
-#define TCR_FP_25    0x000000C0 /* FITP: 2^25 time base clocks */
+#define TCR_FP_17    0x01000000 /* FITP: 2^17 time base clocks */
+#define TCR_FP_21    0x02000000 /* FITP: 2^21 time base clocks */
+#define TCR_FP_25    0x03000000 /* FITP: 2^25 time base clocks */
     /* Fixed Interval Timer Interrupt */
-#define TCR_FIE      0x00000100 /* FITI enable */
+#define TCR_FIE      0x00800000 /* FITI enable */
     /* Auto-Reload */
-#define TCR_ARE      0x00000200 /* AR enable */
+#define TCR_ARE      0x00400000 /* AR enable */
 
 /**
  * Timer Status Register (TSR) definations
