@@ -123,3 +123,11 @@ module bootp {
 	source "bootp.c"
 	depends udp
 }
+
+module snmp {
+	option number max_obj_count=64
+	source "snmp.c", "mib.c"
+
+	depends embox.mem.objalloc
+	depends embox.util.LibUtil
+}
