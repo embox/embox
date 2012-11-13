@@ -116,7 +116,7 @@ int mkfs_do_operation(void *_mkfs_params) {
 	mkfs_params = (mkfs_params_t *) _mkfs_params;
 
 	if(mkfs_params->operation_flag & MKFS_CREATE_RAMDISK) {
-		if(0 < (rezult = ramdisk_create((void *)mkfs_params))) {
+		if(0 > (rezult = ramdisk_create((void *)mkfs_params))) {
 			return rezult;
 		}
 	}
@@ -133,6 +133,7 @@ int mkfs_do_operation(void *_mkfs_params) {
 			ramdisk->fs_type = mkfs_params->fs_type;
 		}
 
+		/* find filesystem driver by name */
 		if(NULL == (fs_drv =
 				filesystem_find_drv((const char *) &mkfs_params->fs_name))) {
 			return -EINVAL;
@@ -142,15 +143,6 @@ int mkfs_do_operation(void *_mkfs_params) {
 		if (0 != (rezult = fs_drv->fsop->format((void *) &mkfs_params->path))) {
 			return rezult;
 		}
-
-		/*
-		 * strcpy(filename, ramdisk->name);
-		 * strcat (filename, "/1/2/3/4/4.txt");
-		 * rezult = open((const char *) filename, O_WRONLY);
-		 * strcpy(filename, "file was rewrite \n");
-		 * write(rezult, (const void *) filename, strlen (filename));
-		 *
-		 */
 	}
 	return 0;
 }

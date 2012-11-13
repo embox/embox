@@ -36,6 +36,12 @@ struct file_desc *kopen(const char *path, const char *mode) {
 			return NULL;
 		}
 	}
+
+	if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
+		errno = EISDIR;
+		return NULL;
+	}
+
 	/* check permissions */
 
 	/* allocate new descriptor */

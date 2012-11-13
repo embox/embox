@@ -22,7 +22,7 @@ TEST_SETUP_SUITE(setup_suite);
 TEST_TEARDOWN_SUITE(teardown_suite);
 
 static mkfs_params_t mkfs_params;
-static dev_ramdisk_t ramdisk;
+static dev_ramdisk_t *ramdisk;
 static mount_params_t mount_param;
 static fs_drv_t *fs_drv;
 
@@ -84,7 +84,6 @@ TEST_CASE("Read file") {
 
 
 static int setup_suite(void) {
-	dev_t devnum;
 
 	mkfs_params.blocks = FS_BLOCKS;
 	mkfs_params.fs_type = FS_TYPE;
@@ -94,12 +93,6 @@ static int setup_suite(void) {
 	if (0 != ramdisk_create((void *)&mkfs_params)) {
 		return -1;
 	}
-
-	/* set filesystem attribute to ramdisk */
-	strcpy((void *)ramdisk.path, (const void *)mkfs_params.path);
-	strcpy((void *)ramdisk.fs_name,
-				(const void *)mkfs_params.fs_name);
-	ramdisk.fs_type = mkfs_params.fs_type;
 
 	if(NULL == (fs_drv =
 			filesystem_find_drv((const char *) &mkfs_params.fs_name))) {
@@ -114,11 +107,11 @@ static int setup_suite(void) {
 		return -1;
 	}
 	/* set created ramdisc attribute from dev_node */
-	devnum = *((dev_t *)mount_param.dev_node->dev_attr);
-	memcpy(&ramdisk, device(devnum)->privdata, sizeof(ramdisk));
+	ramdisk = (dev_ramdisk_t *)
+			block_dev(mount_param.dev_node->dev_id)->privdata;
 
 	/* format filesystem */
-	if(0 != fs_drv->fsop->format((void *)&ramdisk.path)) {
+	if(0 != fs_drv->fsop->format((void *)&ramdisk->path)) {
 		return -1;
 	}
 

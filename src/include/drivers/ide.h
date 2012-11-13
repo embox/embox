@@ -296,7 +296,7 @@ typedef struct hdc  {
 } hdc_t;
 
 struct partition {
-	dev_t dev;
+	void *dev;
 	unsigned int start;
 	unsigned int len;
 	unsigned short bootid;
@@ -314,7 +314,7 @@ typedef struct hd {
 	int media;                            /* Device media type (hd, cdrom, ...) */
 	int multsect;                         /* Sectors per interrupt */
 	int udmamode;                         /* UltraDMA mode */
-	dev_t devno;                          /* Device number */
+	void *dev_id;                         /* Device */
 
 	/*
 	 * Geometry
@@ -331,6 +331,18 @@ typedef struct _slot {
 	hd_t *drive[8];
 } slot_t;
 
-extern slot_t *get_ide_drive(void);
+extern slot_t *ide_get_drive(void);
+extern int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout);
+extern void ide_select_drive(hd_t *hd);
+
+extern void pio_write_buffer(hd_t *hd, char *buffer, int size);
+extern void pio_read_buffer(hd_t *hd, char *buffer, int size);
+extern void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects);
+
+extern void *cdrom_pio_driver(void);
+extern void *harddisk_pio_driver(void);
+extern void *harddisk_udma_driver(void);
+extern void *partition_driver(void);
+
 
 #endif /* IDE_H_ */

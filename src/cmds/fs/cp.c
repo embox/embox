@@ -52,12 +52,12 @@ static int exec(int argc, char **argv) {
 
 	if (-1 == (src_file = open(src_path, O_RDONLY)))  {
 		printf("can't open file %s\n",src_path);
-		return -1;
+		return -errno;
 	}
 
 	if (-1 == (dst_file = open(dst_path, O_WRONLY))) {
 		printf("can't open file %s\n",dst_path);
-		return -1;
+		return -errno;
 	}
 
 	lseek(dst_file, 0, SEEK_SET);

@@ -34,325 +34,6 @@ POOL_DEF(fat_fs_pool, struct fat_fs_description, OPTION_GET(NUMBER,fat_descripto
 /* fat file description pool */
 POOL_DEF(fat_file_pool, struct _fat_file_description, OPTION_GET(NUMBER,inode_quantity));
 
-/* File operations */
-
-static void *fatfs_fopen(struct file_desc *desc,  const char *mode);
-static int fatfs_fclose(struct file_desc *desc);
-static size_t fatfs_fread(void *buf, size_t size, size_t count, void *file);
-static size_t fatfs_fwrite(const void *buf, size_t size, size_t count,
-		void *file);
-static int fatfs_fseek(void *file, long offset, int whence);
-static int fatfs_ioctl(void *file, int request, va_list args);
-
-static file_operations_t fatfs_fop = { fatfs_fopen, fatfs_fclose, fatfs_fread,
-		fatfs_fwrite, fatfs_fseek, fatfs_ioctl, NULL };
-/*
- * file_operation
- */
-static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
-	node_t *nod;
-	uint8_t _mode;
-	uint8_t path [MAX_LENGTH_PATH_NAME];
-	fat_file_description_t *fd;
-
-	nod = desc->node;
-	fd = (fat_file_description_t *)nod->fd;
-
-	if ('r' == *mode) {
-		_mode = O_RDONLY;
-	}
-	else if ('w' == *mode) {
-		_mode = O_WRONLY;
-	}
-	else {
-		_mode = O_RDONLY;
-	}
-
-	set_path ((char *) path, nod);
-	cut_mount_dir((char *) path, (char *) fd->fs->root_name);
-
-	if(DFS_OK == fat_open_file(fd, (uint8_t *)path, _mode, sector_buff)) {
-		return desc;
-	}
-	return NULL;
-}
-
-static int fatfs_fseek(void *file, long offset, int whence) {
-	struct file_desc *desc;
-	fat_file_description_t *fd;
-	uint32_t curr_offset;
-
-	curr_offset = offset;
-
-	desc = (struct file_desc *) file;
-	fd = (fat_file_description_t *)desc->node->fd;
-
-	switch (whence) {
-	case SEEK_SET:
-		break;
-	case SEEK_CUR:
-		curr_offset += fd->fi.pointer;
-		break;
-	case SEEK_END:
-		curr_offset = fd->fi.filelen + offset;
-		break;
-	default:
-		return -1;
-	}
-
-	fat_fseek(fd, curr_offset, sector_buff);
-	return 0;
-}
-
-static int fatfs_fclose(struct file_desc *desc) {
-	return 0;
-}
-
-static size_t fatfs_fread(void *buf, size_t size, size_t count, void *file) {
-	size_t size_to_read;
-	struct file_desc *desc;
-	size_t rezult;
-	fat_file_description_t *fd;
-
-	size_to_read = size * count;
-	desc = (struct file_desc *) file;
-	fd = (fat_file_description_t *)desc->node->fd;
-
-	rezult = fat_read_file(fd, sector_buff, buf, &bytecount, size_to_read);
-	if (DFS_OK == rezult) {
-		return bytecount;
-	}
-	return rezult;
-}
-
-static size_t fatfs_fwrite(const void *buf, size_t size,
-	size_t count, void *file) {
-	size_t size_to_write;
-	struct file_desc *desc;
-	size_t rezult;
-	fat_file_description_t *fd;
-
-	size_to_write = size * count;
-	desc = (struct file_desc *) file;
-
-	fd = (fat_file_description_t *)desc->node->fd;
-
-	rezult = fat_write_file(fd, sector_buff, (uint8_t *)buf,
-			&bytecount, size_to_write);
-	if (DFS_OK == rezult) {
-		return bytecount;
-	}
-	return rezult;
-}
-
-static int fatfs_ioctl(void *file, int request, va_list args) {
-	return 0;
-}
-
-
-static int fat_mount_files (void *dir_node);
-static int fatfs_create_file(void *par);
-static int fat_create_dir_entry (char *dir_name);
-static int fatfs_partition (void *fdes);
-static int fatfs_root_create(void *fdesc);
-static int fat_unlike_file(void *fd, uint8_t *path, uint8_t *scratch);
-static int fat_unlike_directory(void *fd, uint8_t *path, uint8_t *scratch);
-
-/* File system operations */
-
-static int fatfs_init(void * par);
-static int fatfs_format(void * dev);
-static int fatfs_mount(void * par);
-static int fatfs_create(void *par);
-static int fatfs_delete(const char *fname);
-
-static fsop_desc_t fatfs_fsop = { fatfs_init, fatfs_format, fatfs_mount,
-		fatfs_create, fatfs_delete };
-
-static fs_drv_t fatfs_drv = { "vfat", &fatfs_fop, &fatfs_fsop };
-
-static int fatfs_init(void * par) {
-	return 0;
-}
-
-static int fatfs_format(void *path) {
-	node_t *nod;
-	fat_fs_description_t *fs_des;
-	fat_file_description_t *fd;
-
-	if (NULL == (nod = vfs_find_node((char *) path, NULL))) {
-		return -ENODEV;/*device not found*/
-	}
-
-	if((NULL == (fs_des = pool_alloc(&fat_fs_pool))) ||
-			(NULL == (fd = pool_alloc(&fat_file_pool)))) {
-		return -ENOMEM;
-	}
-	fs_des->devnum = *((dev_t *)nod->dev_attr);
-	strcpy((char *) fs_des->root_name, "\0");
-
-	fd->fs = fs_des;
-	nod->fs_type = &fatfs_drv;
-	nod->file_info = (void *) &fatfs_fop;
-	nod->fd = (void *)fd;
-
-	fatfs_partition(fd);
-	fatfs_root_create(fd);
-
-	return 0;
-}
-
-static int fatfs_mount(void *par) {
-	mount_params_t *params;
-	node_t *dir_node, *dev_node;
-	fat_file_description_t *fd, *dev_fd;
-
-	params = (mount_params_t *) par;
-	dev_node = params->dev_node;
-	if (NULL == (dir_node = vfs_find_node(params->dir, NULL))) {
-		/*FIXME: usually mount doesn't create a directory*/
-		if (NULL == (dir_node = vfs_add_path (params->dir, NULL))) {
-			return -ENODEV;/*device not found*/
-		}
-		dir_node->properties = DIRECTORY_NODE_TYPE;
-	}
-
-	/* If dev_node created, but not attached to the filesystem driver */
-	if (NULL == (dev_fd = (fat_file_description_t *) dev_node->fd)) {
-		if((NULL == (dev_fd = pool_alloc(&fat_file_pool))) ||
-				(NULL == (dev_fd->fs = pool_alloc(&fat_fs_pool)))) {
-			return -ENOMEM;
-		}
-		dev_node->fd = dev_fd;
-		dev_fd->fs->devnum = *((dev_t *)dev_node->dev_attr);
-		dev_node->file_info = (void *) &fatfs_fop;
-	}
-
-	strcpy((char *) dev_fd->fs->root_name, params->dir);
-
-	if(NULL == (fd = pool_alloc(&fat_file_pool))) {
-		return -ENOMEM;
-	}
-
-	fd->fs = dev_fd->fs;
-	//fd->fs->devnum = dev_node->dev_attr;
-	dir_node->fs_type = &fatfs_drv;
-	dir_node->dev_type = dev_node->dev_type;
-	dir_node->fd = (void *) fd;
-
-	return fat_mount_files(dir_node);
-}
-
-static int fatfs_create(void *par) {
-	file_create_param_t *param;
-	fat_file_description_t *fd, *parents_fd;
-	node_t *node, *parents_node;
-	int node_quantity;
-
-	param = (file_create_param_t *) par;
-
-	node = (node_t *)param->node;
-	parents_node = (node_t *)param->parents_node;
-	parents_fd = (fat_file_description_t *) parents_node->fd;
-
-	if (DIRECTORY_NODE_TYPE == (node->properties & DIRECTORY_NODE_TYPE)) {
-		node_quantity = 3; /* need create . and .. directory */
-	}
-	else {
-		node_quantity = 1;
-	}
-
-	for (int count = 0; count < node_quantity; count ++) {
-		if(0 < count) {
-			if(1 == count) {
-				strcat(param->path, "/.");
-			}
-			else if(2 == count) {
-				strcat(param->path, ".");
-			}
-			if(NULL == (node = vfs_add_path (param->path, NULL))) {
-				return -ENOMEM;
-			}
-		}
-
-		if(NULL == (fd = pool_alloc(&fat_file_pool))) {
-			return -ENOMEM;
-		}
-		fd->fs = parents_fd->fs;
-		node->fs_type = &fatfs_drv;
-		node->dev_type = parents_node->dev_type;
-		node->dev_attr = parents_node->dev_attr;
-		node->fd = (void *)fd;
-
-		/*
-		 * fatfs_create_file called only once for the newly created directory.
-		 * Creation of dir . and .. occurs into the function fatfs_create_file.
-		 */
-		if(0 >= count) {
-			fatfs_create_file(par);
-		}
-	}
-	/* cut /.. from end of PATH, if need */
-	if (1 < node_quantity) {
-		param->path[strlen(param->path) - 3] = '\0';
-	}
-
-	return 0;
-}
-
-static int fatfs_delete(const char *fname) {
-	fat_file_description_t *fd;
-	node_t *nod, *pointnod;
-	char path [MAX_LENGTH_PATH_NAME];
-
-	if(NULL == (nod = vfs_find_node(fname, NULL))) {
-		return -1;
-	}
-	fd = (fat_file_description_t *)nod->fd;
-
-	set_path (path, nod);
-
-	/* need delete "." and ".." node for directory */
-	if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
-
-		strcat(path, "/.");
-		pointnod = vfs_find_node(path, NULL);
-		vfs_del_leaf(pointnod);
-
-		strcat(path, ".");
-		pointnod = vfs_find_node(path, NULL);
-		vfs_del_leaf(pointnod);
-
-		path[strlen(path) - 3] = '\0';
-	}
-
-	/* remove the root name to give a name to fat filesystem name*/
-	cut_mount_dir(path, (char *) fd->fs->root_name);
-	/* delete filesystem descriptor when delete root dir*/
-	if(0 == *path) {
-		pool_free(&fat_fs_pool, fd->fs);
-	}
-	else {
-		if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
-			if(fat_unlike_directory(fd, (uint8_t *) path,
-				(uint8_t *) sector_buff)) {
-				return -1;
-			}
-		}
-		else {
-			/* delete file from fat fs*/
-			if(fat_unlike_file(fd, (uint8_t *) path,
-				(uint8_t *) sector_buff)) {
-				return -1;
-			}
-		}
-	}
-	pool_free(&fat_file_pool, fd);
-
-	vfs_del_leaf(nod);
-	return 0;
-}
-
 #define LABEL "EMBOX_DISK\0"
 #define SYSTEM "FAT12"
 
@@ -371,7 +52,18 @@ char bootcode[130] =
 	  0x74, 0x6f, 0x20, 0x74, 0x72, 0x79, 0x20, 0x61, 0x67, 0x61,
 	  0x69, 0x6e, 0x20, 0x2e, 0x2e, 0x2e, 0x20, 0x0d, 0x0a, 0x00 };
 
-int fatfs_partition(void *fdes) {
+
+static fs_drv_t fatfs_drv;
+static int fat_write_sector(void *fdsc, uint8_t *buffer,
+		uint32_t sector, uint32_t count);
+static int fat_read_sector(void *fdsc, uint8_t *buffer,
+		uint32_t sector, uint32_t count);
+static uint32_t fat_get_next(void *fd,
+		p_dir_info_t dirinfo, p_dir_ent_t dirent);
+static int fat_create_dir_entry(char *dir_name);
+
+
+static int fatfs_partition(void *fdes) {
 	lbr_t lbr;
 	size_t num_sect;
 	uint16_t bytepersec, secperfat, rootentries;
@@ -397,7 +89,7 @@ int fatfs_partition(void *fdes) {
 	lbr.sig_aa = 0xAA;
 	memcpy(lbr.ebpb.ebpb.system + 8, bootcode, 130);
 
-	num_sect = device(fd->fs->devnum)->size / bytepersec;
+	num_sect = block_dev(fd->fs->dev_id)->size / bytepersec;
 	if (0xFFFF > num_sect)	{
 		lbr.bpb.sectors_s_l = (uint8_t)(0x00000FF & num_sect);
 		lbr.bpb.sectors_s_h = (uint8_t)(0x00000FF & (num_sect >> 8));
@@ -430,10 +122,6 @@ int fatfs_partition(void *fdes) {
 	return fat_write_sector(fd, sector_buff, 0, 1);
 }
 
-
-const fs_drv_t *fatfs_get_fs(void) {
-    return &fatfs_drv;
-}
 
 /**
  *	Get starting sector# of specified partition on drive #unit
@@ -615,7 +303,6 @@ static uint32_t fat_get_vol_info(void *fd,
 	return DFS_OK;
 }
 
-DECLARE_FILE_SYSTEM_DRIVER(fatfs_drv);
 /*
  *	Fetch FAT entry for specified cluster number You must provide a scratch
  *	buffer for one sector (SECTOR_SIZE) and a populated vol_info_t
@@ -625,7 +312,7 @@ DECLARE_FILE_SYSTEM_DRIVER(fatfs_drv);
  *	sector number last read into the scratch buffer for performance
  *	enhancement reasons.
  */
-uint32_t fat_get_fat_(void *fd, uint8_t *p_scratch,
+static uint32_t fat_get_fat_(void *fd, uint8_t *p_scratch,
 		uint32_t *p_scratchcache, uint32_t cluster) {
 	uint32_t offset, sector, result;
 	p_vol_info_t volinfo;
@@ -741,7 +428,7 @@ uint32_t fat_get_fat_(void *fd, uint8_t *p_scratch,
  * also conserve power and flash write life.
  */
 
-uint32_t fat_set_fat_(void *fd, uint8_t *p_scratch,
+static uint32_t fat_set_fat_(void *fd, uint8_t *p_scratch,
 		uint32_t *p_scratchcache, uint32_t cluster, uint32_t new_contents) {
 	uint32_t offset, sector, result;
 	p_vol_info_t volinfo;
@@ -927,7 +614,7 @@ uint32_t fat_set_fat_(void *fd, uint8_t *p_scratch,
  * 	otherwise the contents of the desired FAT entry.
  * 	Returns FAT32 bad_sector (0x0ffffff7) if there is no free cluster available
  */
-uint32_t fat_get_free_fat_(void *fd, uint8_t *p_scratch) {
+static uint32_t fat_get_free_fat_(void *fd, uint8_t *p_scratch) {
 	uint32_t i, result = 0xffffffff, p_scratchcache = 0;
 	p_vol_info_t volinfo;
 	fat_file_description_t *fdsc;
@@ -958,7 +645,7 @@ uint32_t fat_get_free_fat_(void *fd, uint8_t *p_scratch) {
  * considered to be the root directory.
  * Returns 0 OK, nonzero for any error.
  */
-uint32_t fat_open_dir(void *fd,
+static uint32_t fat_open_dir(void *fd,
 		uint8_t *dirname, p_dir_info_t dirinfo) {
 	p_vol_info_t volinfo;
 	fat_file_description_t *fdsc;
@@ -1095,7 +782,7 @@ uint32_t fat_open_dir(void *fd,
  * returns DFS_EOF if there are no more entries, DFS_OK if this entry is valid,
  * or DFS_ERRMISC for a media error
  */
-uint32_t fat_get_next(void *fd,
+static uint32_t fat_get_next(void *fd,
 		p_dir_info_t dirinfo, p_dir_ent_t dirent) {
 	uint32_t tempint;	/* required by fat_get_fat_ */
 	p_vol_info_t volinfo;
@@ -1210,7 +897,7 @@ uint32_t fat_get_next(void *fd,
  * de is updated with the same return information you would expect
  * from fat_get_next
  */
-uint32_t fat_get_free_dir_ent(void *fd, uint8_t *path,
+static uint32_t fat_get_free_dir_ent(void *fd, uint8_t *path,
 		p_dir_info_t di, p_dir_ent_t de) {
 	uint32_t tempclus,i;
 	p_vol_info_t volinfo;
@@ -1290,7 +977,7 @@ uint32_t fat_get_free_dir_ent(void *fd, uint8_t *path,
 
 #define MSDOS_DOT     ".          "
 #define MSDOS_DOTDOT  "..         "
-void fatfs_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
+static void fatfs_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
 	p_dir_ent_t de;
 
 	de = (dir_ent_t *) sector_buff;
@@ -1320,7 +1007,7 @@ void fatfs_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
  * Returns various DFS_* error states. If the result is DFS_OK, file
  * was created and can be used.
  */
-int fatfs_create_file(void *par) {
+static int fatfs_create_file(void *par) {
 	char tmppath[MAX_LENGTH_PATH_NAME];
 	uint8_t filename[12];
 	dir_info_t di;
@@ -1449,7 +1136,7 @@ int fatfs_create_file(void *par) {
  * Returns various DFS_* error states. If the result is DFS_OK, fileinfo
  * can be used to access the file from this point on.
  */
-uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
+static uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 		uint8_t *p_scratch) {
 	char tmppath[MAX_LENGTH_PATH_NAME];
 	uint8_t filename[12];
@@ -1542,7 +1229,7 @@ uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
  * 	Note that returning DFS_EOF is not an error condition. This function
  * 	updates the	successcount field with the number of bytes actually read.
  */
-uint32_t fat_read_file(void *fdsc, uint8_t *p_scratch,
+static uint32_t fat_read_file(void *fdsc, uint8_t *p_scratch,
 		uint8_t *buffer, uint32_t *successcount, uint32_t len) {
 	uint32_t remain;
 	uint32_t result;
@@ -1678,7 +1365,7 @@ uint32_t fat_read_file(void *fdsc, uint8_t *p_scratch,
  * to see where the pointer wound up.
  * Requires a SECTOR_SIZE scratch buffer
  */
-void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch) {
+static void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch) {
 	uint32_t tempint, clastersize;
 	p_file_info_t fileinfo;
 	fat_file_description_t *fd;
@@ -1750,7 +1437,7 @@ void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch) {
  * Delete a file
  * p_scratch must point to a sector-sized buffer
  */
-int fat_unlike_file(void *fdsc, uint8_t *path,
+static int fat_unlike_file(void *fdsc, uint8_t *path,
 		uint8_t *p_scratch) {
 	uint32_t cache;
 	uint32_t tempclus;
@@ -1796,7 +1483,7 @@ int fat_unlike_file(void *fdsc, uint8_t *path,
  * Delete a file
  * p_scratch must point to a sector-sized buffer
  */
-int fat_unlike_directory(void *fdsc, uint8_t *path,
+static int fat_unlike_directory(void *fdsc, uint8_t *path,
 		uint8_t *p_scratch) {
 	uint32_t cache;
 	uint32_t tempclus;
@@ -1845,7 +1532,7 @@ int fat_unlike_directory(void *fdsc, uint8_t *path,
  * This function updates the successcount field with the number
  * of bytes actually written.
  */
-uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
+static uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
 		uint8_t *buffer, uint32_t *successcount, uint32_t len) {
 	uint32_t remain;
 	uint32_t result = DFS_OK;
@@ -2093,26 +1780,13 @@ uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
 	return result;
 }
 
-int fat_read_sector(void *fdsc, uint8_t *buffer,
+static int fat_read_sector(void *fdsc, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
 	fat_file_description_t *fd;
-	dev_t devnum;
-/*	block_dev_operations_t *block_dev_op;
 
 	fd = (fat_file_description_t *) fdsc;
 
-	block_dev_op = (block_dev_operations_t *)
-			fd->fs->devnum->dev_node->dev_type;
-	if(NULL != block_dev_op) {
-		block_dev_op->blk_read(fd->fs->devnum->dev_node->dev_attr,
-				(char *) buffer, sector, count);
-		return DFS_OK;
-	}
-	return DFS_ERRMISC;
-*/
-	fd = (fat_file_description_t *) fdsc;
-	devnum = fd->fs->devnum;
-	if(0 > dev_read(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if(0 > block_dev_read(fd->fs->dev_id, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
 	}
 	else {
@@ -2120,25 +1794,13 @@ int fat_read_sector(void *fdsc, uint8_t *buffer,
 	}
 }
 
-int fat_write_sector(void *fdsc, uint8_t *buffer,
+static int fat_write_sector(void *fdsc, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
 	fat_file_description_t *fd;
-	dev_t devnum;
-/*	block_dev_operations_t *block_dev_op;
 
 	fd = (fat_file_description_t *) fdsc;
 
-	block_dev_op = (block_dev_operations_t *)
-			fd->fs->devnum->dev_node->dev_type;
-	if(NULL != block_dev_op) {
-		block_dev_op->blk_write(fd->fs->devnum->dev_node->dev_attr,
-				(char *) buffer, sector, count);
-		return DFS_OK;
-	}
-*/
-	fd = (fat_file_description_t *) fdsc;
-	devnum = fd->fs->devnum;
-	if(0 > dev_write(devnum, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if(0 > block_dev_write(fd->fs->dev_id, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
 	}
 	else {
@@ -2146,7 +1808,7 @@ int fat_write_sector(void *fdsc, uint8_t *buffer,
 	}
 }
 
-int fatfs_root_create(void *fdes) {
+static int fatfs_root_create(void *fdes) {
 	uint32_t cluster;
 	p_vol_info_t volinfo;
 	p_file_info_t fileinfo;
@@ -2278,8 +1940,7 @@ static int fat_mount_files (void *dir_node) {
 			}
 			fd->fs = root_fd->fs;
 			node->fs_type = &fatfs_drv;
-			node->dev_type = root_node->dev_type;
-			node->dev_attr = root_node->dev_attr;
+			node->dev_id = root_node->dev_id;
 			node->fd = (void *)fd;
 
 			if ((ATTR_DIRECTORY & de.attr) == ATTR_DIRECTORY) {
@@ -2344,8 +2005,7 @@ static int fat_create_dir_entry(char *dir_name) {
 			}
 			fd->fs = parent_fd->fs;
 			node->fs_type = &fatfs_drv;
-			node->dev_type = parent_node->dev_type;
-			node->dev_attr = parent_node->dev_attr;
+			node->dev_id = parent_node->dev_id;
 			node->fd = (void *)fd;
 
 			if ((ATTR_DIRECTORY & de.attr) == ATTR_DIRECTORY) {
@@ -2363,3 +2023,327 @@ static int fat_create_dir_entry(char *dir_name) {
 	page_free(__phymem_allocator, rcv_buf, 1);
 	return 0;
 }
+
+/* File operations */
+
+static void *fatfs_fopen(struct file_desc *desc,  const char *mode);
+static int fatfs_fclose(struct file_desc *desc);
+static size_t fatfs_fread(void *buf, size_t size, size_t count, void *file);
+static size_t fatfs_fwrite(const void *buf, size_t size, size_t count,
+		void *file);
+static int fatfs_fseek(void *file, long offset, int whence);
+static int fatfs_ioctl(void *file, int request, va_list args);
+
+static file_operations_t fatfs_fop = { fatfs_fopen, fatfs_fclose, fatfs_fread,
+		fatfs_fwrite, fatfs_fseek, fatfs_ioctl, NULL };
+/*
+ * file_operation
+ */
+static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
+	node_t *nod;
+	uint8_t _mode;
+	uint8_t path [MAX_LENGTH_PATH_NAME];
+	fat_file_description_t *fd;
+
+	nod = desc->node;
+	fd = (fat_file_description_t *)nod->fd;
+
+	if ('r' == *mode) {
+		_mode = O_RDONLY;
+	}
+	else if ('w' == *mode) {
+		_mode = O_WRONLY;
+	}
+	else {
+		_mode = O_RDONLY;
+	}
+
+	set_path ((char *) path, nod);
+	cut_mount_dir((char *) path, (char *) fd->fs->root_name);
+
+	if(DFS_OK == fat_open_file(fd, (uint8_t *)path, _mode, sector_buff)) {
+		return desc;
+	}
+	return NULL;
+}
+
+static int fatfs_fseek(void *file, long offset, int whence) {
+	struct file_desc *desc;
+	fat_file_description_t *fd;
+	uint32_t curr_offset;
+
+	curr_offset = offset;
+
+	desc = (struct file_desc *) file;
+	fd = (fat_file_description_t *)desc->node->fd;
+
+	switch (whence) {
+	case SEEK_SET:
+		break;
+	case SEEK_CUR:
+		curr_offset += fd->fi.pointer;
+		break;
+	case SEEK_END:
+		curr_offset = fd->fi.filelen + offset;
+		break;
+	default:
+		return -1;
+	}
+
+	fat_fseek(fd, curr_offset, sector_buff);
+	return 0;
+}
+
+static int fatfs_fclose(struct file_desc *desc) {
+	return 0;
+}
+
+static size_t fatfs_fread(void *buf, size_t size, size_t count, void *file) {
+	size_t size_to_read;
+	struct file_desc *desc;
+	size_t rezult;
+	fat_file_description_t *fd;
+
+	size_to_read = size * count;
+	desc = (struct file_desc *) file;
+	fd = (fat_file_description_t *)desc->node->fd;
+
+	rezult = fat_read_file(fd, sector_buff, buf, &bytecount, size_to_read);
+	if (DFS_OK == rezult) {
+		return bytecount;
+	}
+	return rezult;
+}
+
+static size_t fatfs_fwrite(const void *buf, size_t size,
+	size_t count, void *file) {
+	size_t size_to_write;
+	struct file_desc *desc;
+	size_t rezult;
+	fat_file_description_t *fd;
+
+	size_to_write = size * count;
+	desc = (struct file_desc *) file;
+
+	fd = (fat_file_description_t *)desc->node->fd;
+
+	rezult = fat_write_file(fd, sector_buff, (uint8_t *)buf,
+			&bytecount, size_to_write);
+	if (DFS_OK == rezult) {
+		return bytecount;
+	}
+	return rezult;
+}
+
+static int fatfs_ioctl(void *file, int request, va_list args) {
+	return 0;
+}
+
+
+static int fat_mount_files (void *dir_node);
+static int fatfs_create_file(void *par);
+static int fat_create_dir_entry (char *dir_name);
+static int fatfs_partition (void *fdes);
+static int fatfs_root_create(void *fdesc);
+static int fat_unlike_file(void *fd, uint8_t *path, uint8_t *scratch);
+static int fat_unlike_directory(void *fd, uint8_t *path, uint8_t *scratch);
+
+/* File system operations */
+
+static int fatfs_init(void * par);
+static int fatfs_format(void * dev);
+static int fatfs_mount(void * par);
+static int fatfs_create(void *par);
+static int fatfs_delete(const char *fname);
+
+static fsop_desc_t fatfs_fsop = { fatfs_init, fatfs_format, fatfs_mount,
+		fatfs_create, fatfs_delete };
+
+static fs_drv_t fatfs_drv = { "vfat", &fatfs_fop, &fatfs_fsop };
+
+static int fatfs_init(void * par) {
+	return 0;
+}
+
+static int fatfs_format(void *path) {
+	node_t *nod;
+	fat_fs_description_t *fs_des;
+	fat_file_description_t *fd;
+
+	if (NULL == (nod = vfs_find_node((char *) path, NULL))) {
+		return -ENODEV;/*device not found*/
+	}
+
+	if((NULL == (fs_des = pool_alloc(&fat_fs_pool))) ||
+			(NULL == (fd = pool_alloc(&fat_file_pool)))) {
+		return -ENOMEM;
+	}
+	fs_des->dev_id = nod->dev_id;
+	strcpy((char *) fs_des->root_name, "\0");
+
+	fd->fs = fs_des;
+	nod->fs_type = &fatfs_drv;
+	nod->file_info = (void *) &fatfs_fop;
+	nod->fd = (void *)fd;
+
+	fatfs_partition(fd);
+	fatfs_root_create(fd);
+
+	return 0;
+}
+
+static int fatfs_mount(void *par) {
+	mount_params_t *params;
+	node_t *dir_node, *dev_node;
+	fat_file_description_t *fd, *dev_fd;
+
+	params = (mount_params_t *) par;
+	dev_node = params->dev_node;
+	if (NULL == (dir_node = vfs_find_node(params->dir, NULL))) {
+		/*FIXME: usually mount doesn't create a directory*/
+		if (NULL == (dir_node = vfs_add_path (params->dir, NULL))) {
+			return -ENODEV;/*device not found*/
+		}
+		dir_node->properties = DIRECTORY_NODE_TYPE;
+	}
+
+	/* If dev_node created, but not attached to the filesystem driver */
+	if (NULL == (dev_fd = (fat_file_description_t *) dev_node->fd)) {
+		if((NULL == (dev_fd = pool_alloc(&fat_file_pool))) ||
+				(NULL == (dev_fd->fs = pool_alloc(&fat_fs_pool)))) {
+			return -ENOMEM;
+		}
+		dev_node->fd = dev_fd;
+		dev_fd->fs->dev_id = dev_node->dev_id;
+		dev_node->file_info = (void *) &fatfs_fop;
+	}
+
+	strcpy((char *) dev_fd->fs->root_name, params->dir);
+
+	if(NULL == (fd = pool_alloc(&fat_file_pool))) {
+		return -ENOMEM;
+	}
+
+	fd->fs = dev_fd->fs;
+	//fd->fs->devnum = dev_node->dev_id;
+	dir_node->fs_type = &fatfs_drv;
+	dir_node->fd = (void *) fd;
+
+	return fat_mount_files(dir_node);
+}
+
+static int fatfs_create(void *par) {
+	file_create_param_t *param;
+	fat_file_description_t *fd, *parents_fd;
+	node_t *node, *parents_node;
+	int node_quantity;
+
+	param = (file_create_param_t *) par;
+
+	node = (node_t *)param->node;
+	parents_node = (node_t *)param->parents_node;
+	parents_fd = (fat_file_description_t *) parents_node->fd;
+
+	if (DIRECTORY_NODE_TYPE == (node->properties & DIRECTORY_NODE_TYPE)) {
+		node_quantity = 3; /* need create . and .. directory */
+	}
+	else {
+		node_quantity = 1;
+	}
+
+	for (int count = 0; count < node_quantity; count ++) {
+		if(0 < count) {
+			if(1 == count) {
+				strcat(param->path, "/.");
+			}
+			else if(2 == count) {
+				strcat(param->path, ".");
+			}
+			if(NULL == (node = vfs_add_path (param->path, NULL))) {
+				return -ENOMEM;
+			}
+		}
+
+		if(NULL == (fd = pool_alloc(&fat_file_pool))) {
+			return -ENOMEM;
+		}
+		fd->fs = parents_fd->fs;
+		node->fs_type = &fatfs_drv;
+		node->dev_id = parents_node->dev_id;
+		node->fd = (void *)fd;
+
+		/*
+		 * fatfs_create_file called only once for the newly created directory.
+		 * Creation of dir . and .. occurs into the function fatfs_create_file.
+		 */
+		if(0 >= count) {
+			fatfs_create_file(par);
+		}
+	}
+	/* cut /.. from end of PATH, if need */
+	if (1 < node_quantity) {
+		param->path[strlen(param->path) - 3] = '\0';
+	}
+
+	return 0;
+}
+
+static int fatfs_delete(const char *fname) {
+	fat_file_description_t *fd;
+	node_t *nod, *pointnod;
+	char path [MAX_LENGTH_PATH_NAME];
+
+	if(NULL == (nod = vfs_find_node(fname, NULL))) {
+		return -1;
+	}
+	fd = (fat_file_description_t *)nod->fd;
+
+	set_path (path, nod);
+
+	/* need delete "." and ".." node for directory */
+	if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
+
+		strcat(path, "/.");
+		pointnod = vfs_find_node(path, NULL);
+		vfs_del_leaf(pointnod);
+
+		strcat(path, ".");
+		pointnod = vfs_find_node(path, NULL);
+		vfs_del_leaf(pointnod);
+
+		path[strlen(path) - 3] = '\0';
+	}
+
+	/* remove the root name to give a name to fat filesystem name*/
+	cut_mount_dir(path, (char *) fd->fs->root_name);
+	/* delete filesystem descriptor when delete root dir*/
+	if(0 == *path) {
+		pool_free(&fat_fs_pool, fd->fs);
+	}
+	else {
+		if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
+			if(fat_unlike_directory(fd, (uint8_t *) path,
+				(uint8_t *) sector_buff)) {
+				return -1;
+			}
+		}
+		else {
+			/* delete file from fat fs*/
+			if(fat_unlike_file(fd, (uint8_t *) path,
+				(uint8_t *) sector_buff)) {
+				return -1;
+			}
+		}
+	}
+	pool_free(&fat_file_pool, fd);
+
+	vfs_del_leaf(nod);
+	return 0;
+}
+
+const fs_drv_t *fatfs_get_fs(void) {
+    return &fatfs_drv;
+}
+
+DECLARE_FILE_SYSTEM_DRIVER(fatfs_drv);
+

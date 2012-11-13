@@ -17,7 +17,7 @@
 EMBOX_TEST_SUITE("fs/filesystem test");
 
 static mkfs_params_t mkfs_params;
-static dev_ramdisk_t ramdisk;
+static dev_ramdisk_t *ramdisk;
 static mount_params_t mount_param;
 static fs_drv_t *fs_drv;
 
@@ -31,8 +31,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define FS_BLOCKS  124
 
 TEST_CASE("Create fat filesystem") {
-
-	test_assert_zero(fs_drv->fsop->format((void *)&ramdisk.path));
+	test_assert_zero(fs_drv->fsop->format((void *)&ramdisk->path));
 }
 
 #define FS_DIR  "/test_fsop"
@@ -66,7 +65,6 @@ TEST_CASE("Delete file") {
 }
 
 static int setup_suite(void) {
-	dev_t devnum;
 
 	mkfs_params.blocks = FS_BLOCKS;
 	mkfs_params.fs_type = FS_TYPE;
@@ -74,33 +72,25 @@ static int setup_suite(void) {
 	strcpy((void *)&mkfs_params.fs_name, FS_NAME);
 	strcpy((void *)&mkfs_params.path, FS_DEV);
 
-	test_assert_zero(ramdisk_create((void *)&mkfs_params));
-
-	/* set filesystem attribute to ramdisk */
-	strcpy((void *)ramdisk.path, (const void *)mkfs_params.path);
-	strcpy((void *)ramdisk.fs_name, (const void *)mkfs_params.fs_name);
-
-	ramdisk.fs_type = mkfs_params.fs_type;
+	ramdisk_create((void *)&mkfs_params);
 
 	fs_drv = filesystem_find_drv((const char *) &mkfs_params.fs_name);
-	test_assert_not_null(fs_drv);
 
 	mount_param.dev = FS_DEV;
 	mount_param.dir = FS_DIR;
-
 	mount_param.dev_node = vfs_find_node(mount_param.dev, NULL);
-	test_assert_not_null(mount_param.dev_node);
 
 	/* set created ramdisc attribute from dev_node */
-	devnum = *((dev_t *)mount_param.dev_node->dev_attr);
-	memcpy(&ramdisk, device(devnum)->privdata, sizeof(ramdisk));
+	ramdisk = (dev_ramdisk_t *)block_dev(mount_param.dev_node->dev_id)->privdata;
 
 	return 0;
 }
 
 static int teardown_suite(void) {
 
-	test_assert_zero(ramdisk_delete(FS_DEV));
+	if(ramdisk_delete(FS_DEV)) {
+		return -1;
+	}
 
 	return 0;
 }
