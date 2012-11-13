@@ -42,9 +42,9 @@ typedef __mmu_pte_t mmu_pte_t;
 extern void mmu_on(void);
 extern void mmu_off(void);
 
-extern void switch_mm(mmu_ctx_t prev, mmu_ctx_t next);
-
 extern mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd);
+extern void mmu_set_context(mmu_ctx_t ctx);
+
 extern mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx);
 
 extern mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd);

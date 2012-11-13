@@ -11,5 +11,6 @@ module mmap_nommu extends mmap_api {
 module mmap_mmu extends mmap_api {
 	source "mmap_mmu.h", "mmap_mmu.c"
 
+	depends embox.arch.mmu
 	depends embox.mem.vmem
 }

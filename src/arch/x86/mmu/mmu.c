@@ -69,12 +69,12 @@ mmu_vaddr_t mmu_get_fault_address(void) {
 	return get_cr2();
 }
 
-void switch_mm(mmu_ctx_t prev, mmu_ctx_t next) {
-	set_cr3((uint32_t) mmu_get_root(next));
+void mmu_set_context(mmu_ctx_t ctx) {
+	set_cr3((uint32_t) mmu_get_root(ctx));
 }
 
 mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
-	mmu_ctx_t ctx = (mmu_ctx_t) (ctx_counter++);
+	mmu_ctx_t ctx = (mmu_ctx_t) (++ctx_counter);
 	ctx_table[ctx] = pgd;
 	return ctx;
 }
