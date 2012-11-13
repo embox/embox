@@ -57,10 +57,12 @@ int elfloader_load(Elf32_Objlist *list) {
 		item = item->next;
 	}
 
-	dl_proceed(list, &data);
+	if ((err = dl_proceed(list, &data)) < 0) {
+		return err;
+	}
 
 	f_entry = (int (*)(void)) elfloader_find_entrypoint(list);
-	assert(f_entry() == 10);
+	assert(f_entry() == 9);
 
 	dl_free_data(data);
 

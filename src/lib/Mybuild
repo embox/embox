@@ -33,6 +33,7 @@ static module LibElfloader {
 	source "elfloader/elfloader.c"
 	source "elfloader/elfloader_placement.c"
 
+	depends embox.mem.mmap_api
 	depends LibElf, LibDl
 }
 
