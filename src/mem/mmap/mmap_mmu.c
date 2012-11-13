@@ -117,7 +117,7 @@ uint32_t mmap_create_stack(struct mmap *mmap) {
 }
 
 static int init() {
-	mem_start = 0x20000000;
+	mem_start = 0x02000000;
 	mem_end   = 0xFFFFF000;
 
 	return 0;
