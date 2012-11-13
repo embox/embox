@@ -186,7 +186,7 @@ static int ramfs_create(void *params) {
 	nod->fs_type = &ramfs_drv;
 	nod->file_info = (void *) &ramfs_fop;
 	nod->fd = (void *) fd;
-	nod->dev_attr = nod->dev_type = NULL;
+	nod->dev_id = NULL;
 
 	fd->start_addr = par->start_addr;
 	fd->size = par->size;

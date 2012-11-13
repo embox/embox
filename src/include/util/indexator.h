@@ -25,11 +25,11 @@ struct indexator {
 };
 
 #define INDEX_DEF(name, start_idx, size) \
-	static uint32_t name##_array[size/32]; \
+	static uint32_t name##_array[size/32 + 1]; \
 	static struct indexator name = {       \
 			.min_busy = -1,                \
 			.max_busy = size / 32 + 1,     \
-			.capacity = (size / 32) * 32,  \
+			.capacity = (size / 32 + 1) * 32,  \
 			.start = start_idx,            \
 			.masks = name##_array          \
 	}

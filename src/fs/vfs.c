@@ -130,6 +130,7 @@ static node_t *vfs_add_new_path(node_t *parent,
 	vfs_add_leaf(child, parent);
 	while (NULL != (p_path = get_next_node_name(p_path, child_name,
 											MAX_LENGTH_FILE_NAME))) {
+		parent->properties = DIRECTORY_NODE_TYPE;
 		parent = child;
 		child = alloc_node(child_name);
 		vfs_add_leaf(child, parent);
@@ -206,6 +207,7 @@ node_t *vfs_find_node(const char *path, node_t *parent) {
 node_t *vfs_get_root(void) {
 	if(NULL == root_node) {
 		root_node = alloc_node("/");
+		root_node->properties = DIRECTORY_NODE_TYPE;
 	}
 	return root_node;
 }

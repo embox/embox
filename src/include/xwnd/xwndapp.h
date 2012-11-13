@@ -29,4 +29,6 @@ extern int xwnd_app_main_loop (struct xwnd_application * app);
 extern struct xwnd_application * xwnd_app_init (void * args);
 extern int xwnd_app_quit (struct xwnd_application * app, int exit_status);
 
+
+
 #endif /* XWND_XWNDAPP_H_ */

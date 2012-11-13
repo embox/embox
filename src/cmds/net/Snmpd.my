@@ -1,0 +1,16 @@
+package embox.cmd.net
+
+@Cmd(name = "snmpd",
+	help = "SNMP agent",
+	man = '''
+		SYNOPSIS
+			snmpd
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module snmpd {
+	source "snmpd.c"
+
+	depends embox.net.snmp
+	depends embox.kernel.thread.core
+}
