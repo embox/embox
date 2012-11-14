@@ -36,7 +36,7 @@ void arch_reset_kbd(void) {
 extern void cpu_reset(void);
 extern void acpi_power_off(void);
 void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
-	cpu_reset();
+//	cpu_reset();
 
 //	acpi_power_off();
 
