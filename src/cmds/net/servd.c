@@ -365,7 +365,7 @@ static void client_process(int sock, struct sockaddr_in addr,
 				}
 				curr = ci.buff;
 				printf(".");
-			} while (bytes_need == sizeof ci.buff);
+			} while (bytes_neclient_processed == sizeof ci.buff);
 		}
 		printf(" done\n");
 		break;
@@ -391,7 +391,7 @@ static void welcome_message(void) {
 	printf("Welcome to http://%s\n", inet_ntoa(localAddr));
 }
 
-static int servd(int argc, char **argv) {
+void *start_server(void* args) {
 	int res, host;
 	socklen_t addr_len;
 	struct sockaddr_in addr;
@@ -404,19 +404,19 @@ static int servd(int argc, char **argv) {
 	host = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (host < 0) {
 		printf("Error.. can't create socket. errno=%d\n", errno);
-		return host;
+		return (void*) host;
 	}
 
 	res = bind(host, (struct sockaddr *) &addr, sizeof(addr));
 	if (res < 0) {
 		printf("Error.. bind() failed. errno=%d\n", errno);
-		return res;
+		return (void*) res;
 	}
 
 	res = listen(host, 1);
 	if (res < 0) {
 		printf("Error.. listen() failed. errno=%d\n", errno);
-		return res;
+		return (void*) res;
 	}
 
 	welcome_message();
@@ -429,12 +429,27 @@ static int servd(int argc, char **argv) {
 			/* error code in client, now */
 			printf("Error.. accept() failed. errno=%d\n", errno);
 			close(host);
-			return res;
+			return (void*) res;
 		}
 		client_process(res, addr, addr_len);
 	}
 
 	close(host);
+	return (void*) 0;
+}
+
+#include <kernel/task.h>
+
+static int servd(int argc, char **argv) {
+
+	//struct thread * thr;
+
+	/*if (0 != thread_create(&thr, THREAD_FLAG_DETACHED, start_server, NULL)) {
+		return -1;
+	}*/
+
+	new_task(start_server, NULL, 0);
 
 	return 0;
+
 }
