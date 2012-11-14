@@ -5,7 +5,7 @@ static module LibElf {
 	source "elf/elf_object.c"
 	source "elf/elf_header.c"
 	source "elf/elf_sh_table.c"
-	// source "elf/elf_ph_table.c"
+	source "elf/elf_ph_table.c"
 	source "elf/elf_sections.c"
 	// source "elf/elf_string_table.c"
 	source "elf/elf_symbols.c"
@@ -15,9 +15,7 @@ static module LibElf {
 	// source "elf/elf_dyn_section.c"
 	source "elf/elf_rel.c"
 	// source "elf/elf_rel_array.c"
-
-	// TODO: Delete it later
-	// source "elf/elf_reader.c"
+	source "elf/elf_base_address.c"
 }
 
 static module LibDl {
@@ -33,6 +31,7 @@ static module LibElfloader {
 	source "elfloader/elfloader.c"
 	source "elfloader/elfloader_placement.c"
 
+	depends embox.mem.mmap_api
 	depends LibElf, LibDl
 }
 
@@ -137,8 +136,6 @@ static module LibC {
 /* not here */
 	source "shell/tokenizer.c"
 	source "readline/readline.c"
-
-//	source "stacktrace.c"
 }
 
 @DefaultImpl(FilePosix)

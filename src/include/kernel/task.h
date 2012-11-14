@@ -17,6 +17,7 @@ struct task_signal_table;
 struct task_idx_table;
 struct thread;
 struct task_vmem_data;
+struct mmap;
 
 /**
  * @brief Task resources container
@@ -38,6 +39,8 @@ struct task {
 	struct task_signal_table *signal_table;
 
 	struct task_vmem_data *vmem_data;
+
+	struct mmap *mmap;
 
 	int in_usermode;   /**< Equals 1 if task is usermode. */
 

@@ -1,5 +1,6 @@
 package embox.arch.x86
 
 module mmu extends embox.arch.mmu {
+	source "mmu_enable.c"
 	source "mmu.c", "mmu.h"
 }

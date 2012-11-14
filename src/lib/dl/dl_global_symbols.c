@@ -24,6 +24,7 @@ int dl_fetch_global_symbols(Elf32_Objlist *list, dl_data *data) {
 	while (item) {
 		obj = item->obj;
 
+		elf_read_section_header_table(obj);
 		elf_read_symbol_table(obj);
 		elf_read_symbol_names(obj);
 

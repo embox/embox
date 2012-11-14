@@ -43,9 +43,11 @@ int dl_relocate_rel(dl_data *data, Elf32_Obj *obj, Elf32_Shdr *relsh,
 		}
 		break;
 
+	case R_386_RELATIVE:
+		break;
+
 	case R_386_GOT32:
 	case R_386_PLT32:
-	case R_386_RELATIVE:
 	case R_386_GOTOFF:
 	case R_386_GOTPC:
 		return -ENOSYS;
@@ -70,6 +72,9 @@ int dl_relocate_rel(dl_data *data, Elf32_Obj *obj, Elf32_Shdr *relsh,
 		break;
 	case R_386_COPY:
 		memcpy((void *)where, (void *) addr, sym->st_size);
+		break;
+	case R_386_RELATIVE:
+		*where += obj->load_offset; // TODO:
 		break;
 	}
 
