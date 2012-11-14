@@ -6,16 +6,13 @@
  * @author Anton Bulychev
  */
 
-#include <hal/mmu.h>
-#include <asm/flags.h>
 #include <types.h>
 
-#define MMU_PAGE_WRITABLE       (1UL << 1)
-#define MMU_PAGE_USERMODE       (1UL << 2)
-#define MMU_PAGE_DISABLE_CACHE  (1UL << 4)
+#include <asm/flags.h>
 
-#define MMU_PAGE_PRESENT      (1UL)
-#define MMU_PMD_FLAG          (MMU_PAGE_WRITABLE | MMU_PAGE_USERMODE)
+#include <hal/mmu.h>
+
+#define MMU_PMD_FLAG  (MMU_PAGE_WRITABLE | MMU_PAGE_USERMODE)
 
 static mmu_pgd_t *ctx_table[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_counter = 0;
