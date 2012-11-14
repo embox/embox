@@ -7,6 +7,9 @@ abstract module mmap_api {
 
 module mmap_nommu extends mmap_api {
 	source "mmap_nommu.h", "mmap_nommu.c"
+
+	depends embox.mem.page_api
+	depends embox.mem.phymem
 }
 
 module mmap_mmu extends mmap_api {
