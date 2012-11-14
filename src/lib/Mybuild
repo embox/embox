@@ -15,9 +15,6 @@ static module LibElf {
 	// source "elf/elf_dyn_section.c"
 	source "elf/elf_rel.c"
 	// source "elf/elf_rel_array.c"
-
-	// TODO: Delete it later
-	// source "elf/elf_reader.c"
 }
 
 static module LibDl {
@@ -138,8 +135,6 @@ static module LibC {
 /* not here */
 	source "shell/tokenizer.c"
 	source "readline/readline.c"
-
-//	source "stacktrace.c"
 }
 
 @DefaultImpl(FilePosix)
