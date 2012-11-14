@@ -22,9 +22,7 @@ TEST_SETUP_SUITE(setup_suite);
 TEST_TEARDOWN_SUITE(teardown_suite);
 
 static mkfs_params_t mkfs_params;
-static dev_ramdisk_t *ramdisk;
 static mount_params_t mount_param;
-static fs_drv_t *fs_drv;
 
 #define FS_NAME  "vfat"
 #define FS_DEV  "/dev/ramdisk"
@@ -84,6 +82,8 @@ TEST_CASE("Read file") {
 
 
 static int setup_suite(void) {
+	fs_drv_t *fs_drv;
+	dev_ramdisk_t *ramdisk;
 
 	mkfs_params.blocks = FS_BLOCKS;
 	mkfs_params.fs_type = FS_TYPE;
@@ -107,8 +107,8 @@ static int setup_suite(void) {
 		return -1;
 	}
 	/* set created ramdisc attribute from dev_node */
-	ramdisk = (dev_ramdisk_t *)
-			block_dev(mount_param.dev_node->dev_id)->privdata;
+	ramdisk =
+		(dev_ramdisk_t *)block_dev(mount_param.dev_node->dev_id)->privdata;
 
 	/* format filesystem */
 	if(0 != fs_drv->fsop->format((void *)&ramdisk->path)) {

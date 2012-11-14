@@ -68,7 +68,7 @@ int ramdisk_create(void *mkfs_params) {
 	ram_disk->size = p_mkfs_params->blocks * PAGE_SIZE();
 	block_dev(ram_disk->dev_id)->size = ram_disk->size;
 	ram_disk->blocks = p_mkfs_params->blocks;
-	ram_disk->sector_size = 512;
+	ram_disk->sector_size = PAGE_SIZE();
 
 	strcpy ((void *)&ram_disk->fs_name,
 			(const void *)p_mkfs_params->fs_name);

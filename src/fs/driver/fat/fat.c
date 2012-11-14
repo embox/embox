@@ -2225,7 +2225,6 @@ static int fatfs_mount(void *par) {
 	}
 
 	fd->fs = dev_fd->fs;
-	//fd->fs->devnum = dev_node->dev_id;
 	dir_node->fs_type = &fatfs_drv;
 	dir_node->fd = (void *) fd;
 

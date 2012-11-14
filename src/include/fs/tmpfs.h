@@ -21,9 +21,6 @@
 #define DFS_ERRMISC		0xffffffff	/* generic error */
 
 
-#define SECTOR_SIZE		512		/* sector size in bytes */
-
-
 /* DOS attribute bits  */
 #define ATTR_READ_ONLY	0x01
 #define ATTR_HIDDEN		0x02
@@ -39,24 +36,24 @@ ATTR_VOLUME_ID)
  */
 typedef struct vol_info {
 	uint8_t label[12];			/* volume label ASCIIZ */
-	uint8_t secperclus;			/* sectors per cluster */
-	uint32_t numsecs;			/* number of sectors in volume */
-	uint32_t secperfat;			/* sectors per FAT */
-	uint32_t numclusters;		/* number of clusters on drive */
+	uint32_t numblocks;			/* number of block in volume */
+	uint32_t block_size;		/* size of block */
+	uint32_t block_per_file;	/* max number of blocks filesize*/
 } vol_info_t;
 
 typedef struct tmpfs_fileinfo {
 	uint8_t mode;				/* mode in which this file was opened */
-	uint32_t firstcluster;		/* first cluster of file */
+	int     index;		        /* number of file */
+	uint32_t start_block;		/* current cluster */
 
 	uint32_t filelen;			/* byte length of file */
-	uint32_t cluster;			/* current cluster */
+	uint32_t block;			/* current cluster */
 	uint32_t pointer;			/* current (BYTE) pointer */
 } tmpfs_fileinfo_t;
 
 
 typedef struct tmpfs_fs_description {
-	dev_t devnum;
+	void *dev_id;
 	uint8_t root_name[MAX_LENGTH_FILE_NAME];
 	vol_info_t vi;
 } tmpfs_fs_description_t;

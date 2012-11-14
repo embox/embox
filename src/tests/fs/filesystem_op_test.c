@@ -81,7 +81,8 @@ static int setup_suite(void) {
 	mount_param.dev_node = vfs_find_node(mount_param.dev, NULL);
 
 	/* set created ramdisc attribute from dev_node */
-	ramdisk = (dev_ramdisk_t *)block_dev(mount_param.dev_node->dev_id)->privdata;
+	ramdisk =
+		(dev_ramdisk_t *)block_dev(mount_param.dev_node->dev_id)->privdata;
 
 	return 0;
 }
