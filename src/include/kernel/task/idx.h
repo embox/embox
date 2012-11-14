@@ -125,6 +125,7 @@ struct task_idx_table {
 	UTIL_IDX_TABLE_DEF_INLINE(struct idx_desc *, idx, TASKS_RES_QUANTITY);
 };
 
+
 /**
  * @brief Get idx descriptor from task resources by idx number
  *
@@ -158,6 +159,7 @@ extern int task_idx_table_first_unbinded(struct task_idx_table *res);
  * @return
  */
 static inline int task_idx_table_is_binded(struct task_idx_table *res, int idx) {
+	assert(res);
 	return task_idx_table_get(res, idx) != NULL;
 }
 
@@ -195,6 +197,8 @@ static inline struct task_idx_table *task_self_idx_table(void) {
 }
 
 static inline struct idx_desc *task_self_idx_get(int fd) {
+	struct task_idx_table *res = task_self_idx_table();
+	assert(res);
 	assert(task_valid_fd(fd));
 	return task_idx_table_get(task_self_idx_table(), fd);
 }

@@ -37,17 +37,18 @@ static void thread_set_task(struct thread *t, struct task *tsk);
 static void task_init_parent(struct task *task, struct task *parent);
 
 int new_task(void *(*run)(void *), void *arg, int flags) {
-	struct task_creat_param *param = (struct task_creat_param *) pool_alloc(&creat_param);
+	struct task_creat_param *param;
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
 	int res = 0;
 	const int task_sz = task_resource_sum_size() + sizeof(struct task);
 
+	param = (struct task_creat_param *) pool_alloc(&creat_param);
 	if (!param) {
 		return -EAGAIN;
 	}
 
-	if (! task_table_has_space()) {
+	if (!task_table_has_space()) {
 		pool_free(&creat_param, param);
 		return -ENOMEM;
 	}
@@ -81,7 +82,6 @@ int new_task(void *(*run)(void *), void *arg, int flags) {
 	thread_launch(thd);
 
 	return task_table_add(self_task);
-
 }
 
 struct task *task_self(void) {
