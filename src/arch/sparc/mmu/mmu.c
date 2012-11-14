@@ -35,8 +35,6 @@
 
 #define __nocache_pa(VADDR)  VADDR
 
-EMBOX_UNIT_INIT(mmu_init);
-
 static mmu_pgd_t *context_table[0x100]  __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_counter = 0;
 
@@ -74,8 +72,8 @@ static inline unsigned long mmu_get_ctable_ptr(void) {
 	return (retval & MMU_CTX_PMASK) << 4;
 }
 
-#define mmu_set_context(context) mmu_set_mmureg(LEON_CNR_CTX, context)
-#define mmu_get_context() mmu_get_mmureg(LEON_CNR_CTX)
+#define __mmu_set_context(context) mmu_set_mmureg(LEON_CNR_CTX, context)
+#define __mmu_get_context() mmu_get_mmureg(LEON_CNR_CTX)
 
 static inline void mmu_flush_cache_all(void) {
 	__asm__ __volatile__(
@@ -190,22 +188,41 @@ mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
 }
 
 mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
-	mmu_ctx_t ctx = (mmu_ctx_t) (ctx_counter++);
-
+	mmu_ctx_t ctx = (mmu_ctx_t) (++ctx_counter);
 	mmu_ctxd_set((mmu_ctx_t *) (context_table + ctx), pgd);
-
 	return ctx;
 }
 
-void switch_mm(mmu_ctx_t prev, mmu_ctx_t next) {
-	mmu_set_context(next);
+void mmu_set_context(mmu_ctx_t ctx) {
+	mmu_set_mmureg(LEON_CNR_CTX, ctx);
 	mmu_flush_tlb_all();
 }
 
-static int mmu_init(void) {
+static uint32_t boot_pgd[0x100] __attribute__((aligned(0x1000)));
+
+#define PAGE_16MB    0x1000000UL
+
+void mmu_enable(void) {
+	unsigned long val;
+
 	mmu_set_ctable_ptr((unsigned long) context_table);
 
-	return 0;
+	mmu_ctxd_set((mmu_ctx_t *) (context_table + 0), boot_pgd);
+
+	for (int i=0; i<0x100; i++) {
+		mmu_pte_set((mmu_pte_t *) &boot_pgd[i], i * PAGE_16MB);
+		mmu_pte_set_writable((mmu_pte_t *) &boot_pgd[i], 1);
+		mmu_pte_set_usermode((mmu_pte_t *) &boot_pgd[i], 0);
+		mmu_pte_set_cacheable((mmu_pte_t *) &boot_pgd[i], 0);
+	}
+
+	mmu_set_mmureg(LEON_CNR_CTX, 0);
+
+	val = mmu_get_mmureg(LEON_CNR_CTRL);
+	val |= 0x1;
+	mmu_set_mmureg(LEON_CNR_CTRL, val);
+
+	mmu_flush_cache_all();
 }
 
 /*
