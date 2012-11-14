@@ -23,7 +23,7 @@
 
 EMBOX_CMD(servd);
 
-#define BUFF_SZ       (1460 * 4)
+#define BUFF_SZ       (1460 * 2)
 #define FILENAME_SZ   30
 #define DEFAULT_PAGE  "index.html"
 
@@ -108,8 +108,9 @@ static const char *service_params[3][2] = { { DEFAULT_PAGE, "hello" }, {
 		"about.html", "world" }, { "test.html", "world" }, };
 
 static void start_services(void) {
-	for (int i = 0; i < sizeof(service_params) / sizeof(service_params[0]);
-			i++) {
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(service_params);	i++) {
 		web_service_start(service_params[i][0]);
 	}
 }
@@ -394,7 +395,7 @@ static void welcome_message(void) {
 	printf("Welcome to http://%s\n", inet_ntoa(localAddr));
 }
 
-void *start_server(void* args) {
+static void *start_server(void* args) {
 	int res, host;
 	socklen_t addr_len;
 	struct sockaddr_in addr;
@@ -441,14 +442,21 @@ void *start_server(void* args) {
 	return (void*) 0;
 }
 
+#include <kernel/task.h>
+
+static int web_server_started;
+
 static int servd(int argc, char **argv) {
+	if (0 == web_server_started) {
+		new_task(start_server, NULL, 0);
+		//start_server(NULL);
+	}
 
-	struct thread * thr;
-
+#if 0
 	if (0 != thread_create(&thr, THREAD_FLAG_DETACHED, start_server, NULL)) {
 		return -1;
 	}
+#endif
 
 	return 0;
-
 }
