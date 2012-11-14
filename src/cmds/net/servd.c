@@ -308,7 +308,6 @@ static void client_process(int sock, struct sockaddr_in addr,
 	int res;
 	size_t bytes, bytes_need;
 	struct client_info ci;
-	int (*hnd)(struct client_info *);
 	char *curr;
 
 	memset(&ci, 0, sizeof ci);
@@ -316,9 +315,18 @@ static void client_process(int sock, struct sockaddr_in addr,
 	/* fill struct client_info */
 	ci.sock = sock;
 
-	hnd = process_request; /* request heandler for first */
-	process_again: res = hnd(&ci);
-	assert((hnd == process_request) || (res != HTTP_RET_OK));
+
+	/* request heandler for first */
+	res = process_request(&ci);
+	switch (res) {
+	case HTTP_RET_OK:
+		res = process_response(&ci);
+		break;
+	case HTTP_RET_ABORT:
+		/*close and exit*/
+		break;
+	}
+
 	switch (res) {
 	default:
 		if (ci.lock_status) {
@@ -369,11 +377,6 @@ static void client_process(int sock, struct sockaddr_in addr,
 		}
 		printf(" done\n");
 		break;
-	case HTTP_RET_OK:
-		hnd = process_response;
-		goto process_again;
-	case HTTP_RET_ABORT:
-		break;
 	}
 
 	if (ci.fp != NULL) {
@@ -391,7 +394,7 @@ static void welcome_message(void) {
 	printf("Welcome to http://%s\n", inet_ntoa(localAddr));
 }
 
-static int servd(int argc, char **argv) {
+void *start_server(void* args) {
 	int res, host;
 	socklen_t addr_len;
 	struct sockaddr_in addr;
@@ -404,19 +407,19 @@ static int servd(int argc, char **argv) {
 	host = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (host < 0) {
 		printf("Error.. can't create socket. errno=%d\n", errno);
-		return host;
+		return (void*) host;
 	}
 
 	res = bind(host, (struct sockaddr *) &addr, sizeof(addr));
 	if (res < 0) {
 		printf("Error.. bind() failed. errno=%d\n", errno);
-		return res;
+		return (void*) res;
 	}
 
 	res = listen(host, 1);
 	if (res < 0) {
 		printf("Error.. listen() failed. errno=%d\n", errno);
-		return res;
+		return (void*) res;
 	}
 
 	welcome_message();
@@ -429,12 +432,23 @@ static int servd(int argc, char **argv) {
 			/* error code in client, now */
 			printf("Error.. accept() failed. errno=%d\n", errno);
 			close(host);
-			return res;
+			return (void*) res;
 		}
 		client_process(res, addr, addr_len);
 	}
 
 	close(host);
+	return (void*) 0;
+}
+
+static int servd(int argc, char **argv) {
+
+	struct thread * thr;
+
+	if (0 != thread_create(&thr, THREAD_FLAG_DETACHED, start_server, NULL)) {
+		return -1;
+	}
 
 	return 0;
+
 }

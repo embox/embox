@@ -5,34 +5,30 @@
  * @date Oct 29, 2012
  * @author Alexandr Chernakov
  */
-
+#include <types.h>
 #include <xwnd/window.h>
-#include <stdlib.h>
 
-struct xwnd_window * xwnd_window_create (const struct xwnd_rect * rect) {
-	struct xwnd_window * tmp;
-	tmp = malloc(sizeof(struct xwnd_window));
-	if (!tmp) {
-		return NULL;
-	}
-	tmp->wdg.type = NULL;
-	tmp->wdg.wdg_list = NULL;
-	tmp->wdg.next = NULL;
+struct xwnd_window *xwnd_window_init(struct xwnd_window * wnd, const struct xwnd_rect * rect) {
+	wnd->wdg.type = NULL;
+	wnd->wdg.wdg_list = NULL;
+	wnd->wdg.next = NULL;
 	if (rect) {
-		tmp->wdg.rect.x = rect->x;
-		tmp->wdg.rect.y = rect->y;
-		tmp->wdg.rect.wd = rect->wd;
-		tmp->wdg.rect.ht = rect->ht;
+		wnd->wdg.rect.x = rect->x;
+		wnd->wdg.rect.y = rect->y;
+		wnd->wdg.rect.wd = rect->wd;
+		wnd->wdg.rect.ht = rect->ht;
 	} else {
-		tmp->wdg.rect.x = 10;
-		tmp->wdg.rect.y = 10;
-		tmp->wdg.rect.wd = 100;
-		tmp->wdg.rect.ht = 100;
+		wnd->wdg.rect.x = 10;
+		wnd->wdg.rect.y = 10;
+		wnd->wdg.rect.wd = 100;
+		wnd->wdg.rect.ht = 100;
 	}
-	return tmp;
+	return wnd;
 }
 
+#if 0
 void xwnd_window_delete (struct xwnd_window * wnd) {
 	if (wnd)
 		free (wnd);
 }
+#endif
