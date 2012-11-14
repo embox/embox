@@ -37,47 +37,55 @@ C_ENTRY(_start)
 	 */
 	lis      r3, except0_hnd@h  /* setup IVPR */
 	mtivpr   r3
-	li       r3, except0_hnd@l  /* setup ivor0 */
+	li       r3, except0_hnd@l  /* setup IVOR0 */
 	mtivor0  r3
-	li       r3, except1_hnd@l  /* setup ivor1 */
+	li       r3, except1_hnd@l  /* setup IVOR1 */
 	mtivor1  r3
-	li       r3, except2_hnd@l  /* setup ivor2 */
+	li       r3, except2_hnd@l  /* setup IVOR2 */
 	mtivor2  r3
-	li       r3, except3_hnd@l  /* setup ivor3 */
+	li       r3, except3_hnd@l  /* setup IVOR3 */
 	mtivor3  r3
-	li       r3, except4_hnd@l  /* setup ivor4 */
+	li       r3, except4_hnd@l  /* setup IVOR4 */
 	mtivor4  r3
-	li       r3, except5_hnd@l  /* setup ivor5 */
+	li       r3, except5_hnd@l  /* setup IVOR5 */
 	mtivor5  r3
-	li       r3, except6_hnd@l  /* setup ivor6 */
+	li       r3, except6_hnd@l  /* setup IVOR6 */
 	mtivor6  r3
-	li       r3, except7_hnd@l  /* setup ivor7 */
+	li       r3, except7_hnd@l  /* setup IVOR7 */
 	mtivor7  r3
-	li       r3, except8_hnd@l  /* setup ivor8 */
+	li       r3, except8_hnd@l  /* setup IVOR8 */
 	mtivor8  r3
-	li       r3, except9_hnd@l  /* setup ivor9 */
+	li       r3, except9_hnd@l  /* setup IVOR9 */
 	mtivor9  r3
-	li       r3, except10_hnd@l  /* setup ivor10 */
+	li       r3, except10_hnd@l  /* setup IVOR10 */
 	mtivor10 r3
-	li       r3, except11_hnd@l  /* setup ivor11 */
+	li       r3, except11_hnd@l  /* setup IVOR11 */
 	mtivor11 r3
-	li       r3, except12_hnd@l  /* setup ivor12 */
+	li       r3, except12_hnd@l  /* setup IVOR12 */
 	mtivor12 r3
-	li       r3, except13_hnd@l  /* setup ivor13 */
+	li       r3, except13_hnd@l  /* setup IVOR13 */
 	mtivor13 r3
-	li       r3, except14_hnd@l  /* setup ivor14 */
+	li       r3, except14_hnd@l  /* setup IVOR14 */
 	mtivor14 r3
-	li       r3, except15_hnd@l  /* setup ivor15 */
+	li       r3, except15_hnd@l  /* setup IVOR15 */
 	mtivor15 r3
+
+	/**
+	 * Clear additional registers
+	 */
+	li       r3, 0
+	mttsr    r3                  /* clear TSR */
+	mtmcsr   r3                  /* clear MCSR */
+#if 0
+	mttbl    r3                  /* clear TBL/TBU */
+	mttbu    r3
+	mttbl    r3
+#endif
+
 
 #if 0
 	li	r3, 0			/* Init interrupt nest count */
 	mtsprg2 3
-
-	li	r3, 0			/* Reset timebase */
-	mttbl	r3
-	mttbu	r3
-	mttbl	r3
 #endif
 
 	/**
@@ -88,7 +96,9 @@ C_ENTRY(_start)
 	lis      r2, _stack_len@h
 	ori      r2, r2, _stack_len@l
 	add      r1, r1, r2
+#if 0
 	mtsprg0  r1
+#endif
 
 	/**
 	 * Clear kernel BSS

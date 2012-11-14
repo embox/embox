@@ -8,8 +8,10 @@
 
 #include <asm/psr.h>
 #include <asm/regs.h>
-
+#include <assert.h>
 #include <drivers/irqctrl.h>
+#include <kernel/critical.h>
+#include <kernel/irq.h>
 
 #include <embox/unit.h>
 
@@ -31,6 +33,30 @@ void irqctrl_clear(unsigned int interrupt_nr) {
 void irqctrl_force(unsigned int interrupt_nr) {
 }
 
+#include <prom/prom_printf.h>
 void interrupt_handle(void) {
+	unsigned int irq;
+
+	irq = 10; /* LOL */
+	prom_printf("occured!\n");
+
+	assert(!critical_inside(CRITICAL_IRQ_LOCK));
+
+	irqctrl_disable(irq);
+
+	irqctrl_clear(irq);
+
+	critical_enter(CRITICAL_IRQ_HANDLER);
+	{
+		ipl_enable();
+
+		irq_dispatch(irq);
+
+		ipl_disable();
+
+	}
+	irqctrl_enable(irq);
+	critical_leave(CRITICAL_IRQ_HANDLER);
+	critical_dispatch_pending();
 }
 

@@ -13,14 +13,15 @@
 #include <hal/system.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
-#include <prom/prom_printf.h>
 
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(ppc_clk_init);
 
-/*static*/ irq_return_t clock_handler(unsigned int irq_nr, void *data) {
+#include <prom/prom_printf.h>
+static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	prom_printf("tick!\n");
+	/*clock_tick_handler(irq_nr, data);*/
 	return IRQ_HANDLED;
 }
 
@@ -34,8 +35,8 @@ static cycle_t ppc_clk_read(void) {
 
 static struct time_event_device ppc_clk_event = {
 	.config = ppc_clk_config,
-//	.resolution = 1000,
-//	.irq_nr = GPTIMER1_IRQ,
+	.resolution = 100000000,
+	.irq_nr = 10/*GPTIMER1_IRQ*/,
 };
 
 
@@ -44,23 +45,18 @@ static struct time_counter_device ppc_clk_counter = {
 //	.resolution = SYS_CLOCK / CLOCK_DIVIDER,
 };
 
-/*static*/ struct clock_source ppc_clk_clock_source = {
+static struct clock_source ppc_clk_clock_source = {
 	.name = "ppc_clk",
 	.event_device = &ppc_clk_event,
 	.counter_device = &ppc_clk_counter,
-//	.read = clock_source_read,
+	.read = clock_source_read,
 };
 
 static int ppc_clk_init(void) {
-    __set_tcr(TCR_FP_13 | TCR_FIE);
-#if 0
-	/* turn off Decrementer */
-	__set_tcr(__get_tcr() & ~TCR_DIE & ~ TCR_ARE);
-	__set_dec(0);
-	__set_tsr(__get_tsr() & ~TSR_DIS);
-#endif
-//	clock_source_register(&ppc_clk_clock_source);
-//	return irq_attach(30/*GPTIMER1_IRQ*/, clock_handler, 0, NULL, "ppc_clk");
-	return 0;
+	__set_dec((uint32_t)1000000);
+	__set_decar((uint32_t)1000000);
+    __set_tcr(TCR_DIE | TCR_ARE);
+	clock_source_register(&ppc_clk_clock_source);
+	return irq_attach(10/*GPTIMER1_IRQ*/, clock_handler, 0, NULL, "ppc_clk");
 }
 

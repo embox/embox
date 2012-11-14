@@ -46,6 +46,11 @@ PPC_REG_GET(dec)
 PPC_REG_SET(dec)
 
 /**
+ * Decrementer Auto-Reload Register (DECAR)
+ */
+PPC_REG_SET(decar)
+
+/**
  * Timer Control Register (TCR)
  */
 PPC_REG_GET(tcr)

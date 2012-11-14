@@ -46,6 +46,7 @@ static int module_init(void) {
 	assert(cs);
 
 	jiffies.event_device = cs->event_device;
+	assert(jiffies.event_device);
 
 	/* set periodic mode */
 	cs->event_device->config(&jiffies_conf);
