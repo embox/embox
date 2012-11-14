@@ -56,6 +56,9 @@ struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, 
 	struct dlist_head *item, *next;
 	struct marea *marea;
 
+	start = MAREA_ALIGN_DOWN(start);
+	end   = MAREA_ALIGN_UP(end);
+
 	if (!(INSIDE(start, mem_start, mem_end) && INSIDE(end, mem_start, mem_end))) {
 		return NULL;
 	}
@@ -88,6 +91,8 @@ struct marea *mmap_alloc_marea(struct mmap *mmap, size_t size, uint32_t flags) {
 	struct dlist_head *item = &mmap->marea_list;
 	uint32_t s_ptr = mem_start;
 	struct marea *marea;
+
+	size = MAREA_ALIGN_UP(size);
 
 	do {
 		if ((marea = mmap_place_marea(mmap, s_ptr, s_ptr + size, flags))) {

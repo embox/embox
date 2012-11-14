@@ -70,7 +70,9 @@ int elfloader_place_shared(Elf32_Obj *obj) {
 	}
 
 	for (int i = 0; i < obj->header->e_shnum; i++) {
-		size += obj->sh_table[i].sh_size;
+		if (size < obj->sh_table[i].sh_addr + obj->sh_table[i].sh_size) {
+			size = obj->sh_table[i].sh_addr + obj->sh_table[i].sh_size;
+		}
 	}
 
 	if (!(marea = mmap_alloc_marea(task_self()->mmap, size, 0))) {

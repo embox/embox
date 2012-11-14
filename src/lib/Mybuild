@@ -15,6 +15,7 @@ static module LibElf {
 	// source "elf/elf_dyn_section.c"
 	source "elf/elf_rel.c"
 	// source "elf/elf_rel_array.c"
+	source "elf/elf_base_address.c"
 }
 
 static module LibDl {
