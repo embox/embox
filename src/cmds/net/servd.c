@@ -308,7 +308,6 @@ static void client_process(int sock, struct sockaddr_in addr,
 	int res;
 	size_t bytes, bytes_need;
 	struct client_info ci;
-	int (*hnd)(struct client_info *);
 	char *curr;
 
 	memset(&ci, 0, sizeof ci);
@@ -316,9 +315,18 @@ static void client_process(int sock, struct sockaddr_in addr,
 	/* fill struct client_info */
 	ci.sock = sock;
 
-	hnd = process_request; /* request heandler for first */
-	process_again: res = hnd(&ci);
-	assert((hnd == process_request) || (res != HTTP_RET_OK));
+
+	/* request heandler for first */
+	res = process_request(&ci);
+	switch (res) {
+	case HTTP_RET_OK:
+		res = process_response(&ci);
+		break;
+	case HTTP_RET_ABORT:
+		/*close and exit*/
+		break;
+	}
+
 	switch (res) {
 	default:
 		if (ci.lock_status) {
@@ -365,14 +373,9 @@ static void client_process(int sock, struct sockaddr_in addr,
 				}
 				curr = ci.buff;
 				printf(".");
-			} while (bytes_neclient_processed == sizeof ci.buff);
+			} while (bytes_need == sizeof ci.buff);
 		}
 		printf(" done\n");
-		break;
-	case HTTP_RET_OK:
-		hnd = process_response;
-		goto process_again;
-	case HTTP_RET_ABORT:
 		break;
 	}
 
@@ -438,17 +441,13 @@ void *start_server(void* args) {
 	return (void*) 0;
 }
 
-#include <kernel/task.h>
-
 static int servd(int argc, char **argv) {
 
-	//struct thread * thr;
+	struct thread * thr;
 
-	/*if (0 != thread_create(&thr, THREAD_FLAG_DETACHED, start_server, NULL)) {
+	if (0 != thread_create(&thr, THREAD_FLAG_DETACHED, start_server, NULL)) {
 		return -1;
-	}*/
-
-	new_task(start_server, NULL, 0);
+	}
 
 	return 0;
 
