@@ -46,8 +46,8 @@ static int exec(int argc, char **argv) {
 		return -1;
 	}
 
-	src_path = argv[argc - 2];
-	dst_path = argv[argc - 1];
+	src_path = argv[argc - 1];
+	dst_path = argv[argc - 2];
 
 
 	if (-1 == (src_file = open(src_path, O_RDONLY)))  {
