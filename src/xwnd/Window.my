@@ -1,13 +1,18 @@
 package embox.xwnd
 
+module window_allocator {
+	source "xwnd_window_alloc.c"
+}
+
 module window {
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	@IncludePath("$(SRC_DIR)/include/drivers")
 	source "window.c"
 
-	depends embox.lib.LibC
 	depends embox.driver.video.vesadrv
 	depends embox.xwnd.draw_helpers
-
+	depends window_allocator
 }
+
+

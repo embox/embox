@@ -11,6 +11,7 @@
 #include <xwnd/xwndapp.h>
 #include <xwnd/app_registry.h>
 #include <xwnd/event.h>
+#include <xwnd/window.h>
 
 static int xwnd_app_dispatch_event (const struct xwnd_application * app, struct xwnd_event * event) {
 	if (app->callbacks[event->type]) {
@@ -116,11 +117,14 @@ struct xwnd_application * xwnd_app_init (void * args) {
 	} else {
 		xwnd_app_place_window(((*(t_wrap->arg)) - '0') % 4, &rect);
 	}
-	t_wnd = xwnd_window_create(&rect); //malloc (sizeof(struct xwnd_window));
+
+	t_wnd = xwnd_window_alloc();
 	if (!t_wnd) {
 		free(t_xapp);
 		return NULL;
 	}
+	xwnd_window_init(t_wnd, &rect);
+
 	t_xapp->wnd = t_wnd;
 	t_xapp->app_id = xapp_id;
 	t_xapp->ev = t_wrap->ev;
