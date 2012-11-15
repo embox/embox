@@ -10,7 +10,7 @@
 #include <string.h>
 #include <net/util/request_parser.h>
 
-#define BUFF_SZ       (1460 * 4)
+#define BUFF_SZ       (1460 * 2)
 #define FILENAME_SZ   30
 
 enum http_method {
@@ -62,7 +62,7 @@ static void *process_params(void* args) {
 	if (file == NULL) { /* file doesn't exist */
 		return NULL;
 	}
-	params->info->fp = fopen("test_temp.html", "w");
+	params->info->fp = fopen("/tmp/test_temp.html", "w");
 	if (params->info->fp == NULL) { /* file doesn't exist */
 		fclose(file);
 		return NULL;
@@ -94,14 +94,17 @@ static void *process_params(void* args) {
 				param_flag = 1;
 			}
 		} else {
-			fwrite(buff, sizeof(buff[0]), n, params->info->fp);
+			fwrite(buff, sizeof(char), n, params->info->fp);
 		}
 	}
 
 	fclose(file);
+	fclose(params->info->fp);
+
 
 	params->info->lock_status = 0;
 	event_notify(&params->info->unlock_sock_event);
+	params->info->fp = fopen("/tmp/test_temp.html", "r");
 
 	return NULL;
 
