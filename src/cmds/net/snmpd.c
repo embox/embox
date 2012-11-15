@@ -12,11 +12,15 @@
 #include <net/ip.h>
 #include <net/socket.h>
 #include <embox/cmd.h>
+#include <string.h>
 #include <kernel/thread/api.h>
 #include <getopt.h>
 
 #define SNMP_ADDR INADDR_ANY
 #define SNMP_AGENT_PORT 161
+
+#define MAX_SNMP_LEN 256
+#define MAX_PDU_LEN 128
 
 EMBOX_CMD(exec);
 
@@ -24,13 +28,38 @@ static void print_usage(void) {
 	printf("Usage: snmpd\n");
 }
 
+static void build_response(struct snmp_desc *snmp) {
+	struct varbind *var, *nxt;
+	mib_obj_t obj;
+
+	snmp->pdu_type = PDU_GET_RESPONSE;
+
+	dlist_foreach_entry(var, nxt, &snmp->varbind_list, link) {
+		if ((obj = mib_obj_getbyoid(var->oid, var->oid_len))) {
+			var->data = obj->data;
+		} else {
+			dlist_del(&var->link);
+		}
+	}
+}
+
 static void *snmp_agent(void *arg) {
-//	int sock = *(int *)arg;
-//	char buf[128];
-//
-//	while (1) {
-//		recv(sock, buf, 128, 0);
-//	}
+	int sock = *(int *)arg;
+	struct snmp_desc snmp;
+	struct sockaddr_in addr;
+	char snmpbuf[MAX_SNMP_LEN];
+	char varbuf[MAX_PDU_LEN]; /* for received variables */
+	socklen_t sklen = 14;
+
+	while (1) {
+		if (recvfrom(sock, snmpbuf, MAX_SNMP_LEN, 0, (struct sockaddr *)&addr, &sklen) > 0) {
+			size_t len;
+			snmp_parse(&snmp, snmpbuf, varbuf, MAX_PDU_LEN);
+			build_response(&snmp);
+			len = snmp_build(&snmp, snmpbuf);
+			sendto(sock, snmpbuf, len, 0, (struct sockaddr *)&addr, sklen);
+		}
+	}
 
 	return NULL;
 }

@@ -125,9 +125,7 @@ module bootp {
 }
 
 module snmp {
-	option number max_obj_count=64
-	source "snmp.c", "mib.c"
+	source "snmp.c"
 
-	depends embox.mem.objalloc
-	depends embox.util.LibUtil
+	depends embox.net.mib.snmp_mib
 }
