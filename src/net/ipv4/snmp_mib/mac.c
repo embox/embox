@@ -10,18 +10,12 @@
 #include <embox/unit.h>
 #include <net/inetdevice.h>
 
-static void mib_mac(void);
-
 static struct obj_data mac;
-
-static const struct mib_obj_register __mac = {
-		.oid = {0x2b, 6, 1, 2, 1, 2, 2, 1, 6, 2}, /* oid */
-		.init = mib_mac,						/* function for registering oid */
-};
 
 static void mib_mac(void) {
 	in_device_t *in_dev = NULL;
-	mib_obj_t obj = mib_obj_addbyoid(__mac.oid, 10);
+	char oid[] = {0x2b, 6, 1, 2, 1, 2, 2, 1, 6, 2};
+	mib_obj_t obj = mib_obj_addbyoid(oid, 10);
 
 	in_dev = inet_dev_find_by_name("eth0");
 	if (in_dev) {
@@ -33,4 +27,4 @@ static void mib_mac(void) {
 	}
 }
 
-MIB_OBJECT_REGISTER(&__mac);
+MIB_OBJECT_REGISTER(mib_mac);

@@ -41,13 +41,9 @@ typedef struct mib_obj {
 	obj_data_t data;
 } *mib_obj_t;
 
-/* structure for registration mibs */
-struct mib_obj_register {
-	void (*init)(void);
-	char oid[];
-};
+typedef void (*mib_register_func)(void);
 
-extern const struct mib_obj_register * __mib_register[];
+extern const const mib_register_func __mib_register[];
 
 /* Functions for manipulating with MIB */
 extern mib_obj_t mib_obj_alloc(void);
@@ -59,7 +55,7 @@ extern mib_obj_t mib_obj_addbyoid(const char *oid, unsigned char len);
 extern mib_obj_t mib_obj_getbyoid(const char *oid, unsigned char len);
 /*extern mib_obj_t mib_obj_getbyname(const char *name);*/
 
-#define MIB_OBJECT_REGISTER(mib_obj_init) \
-    	ARRAY_SPREAD_ADD(__mib_register, mib_obj_init)
+#define MIB_OBJECT_REGISTER(init) \
+    	ARRAY_SPREAD_ADD(__mib_register, init)
 
 #endif /* NET_MIB_H_ */

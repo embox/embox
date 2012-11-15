@@ -17,7 +17,7 @@
 
 EMBOX_CMD(mib_init);
 
-ARRAY_SPREAD_DEF(const struct mib_obj_register *, __mib_register);
+ARRAY_SPREAD_DEF(const mib_register_func, __mib_register);
 OBJALLOC_DEF(mib_obj_pool, struct mib_obj, OPTION_GET(NUMBER, max_obj_count));
 
 struct mib_obj mib_root;
@@ -102,13 +102,13 @@ static mib_obj_t getchild_by_id(mib_obj_t obj, unsigned char id) {
 }
 
 static int mib_init(int argc, char **argv) {
-	const struct mib_obj_register *reg;
+	mib_register_func init;
 
 	dlist_init(&mib_root.children);
 	mib_root.name = "root";
 
-	array_foreach(reg, __mib_register, ARRAY_SPREAD_SIZE(__mib_register)) {
-		reg->init();
+	array_foreach(init, __mib_register, ARRAY_SPREAD_SIZE(__mib_register)) {
+		init();
 	}
 
 	return 0;
