@@ -10,9 +10,17 @@
 #define SRC_LIB_STDIO_FILE_POSIX_OPEN_H_
 
 #include <fcntl.h>
+#include <string.h>
 
-static inline int __libc_open(const char *path, const char *mode, struct file_struct_int *file) {
-	file->fd = open(path, 0);
+static inline int __libc_open(const char *path, const char *mode,
+		struct file_struct_int *file) {
+	if ('r' == *mode) {
+		file->fd = open(path, 0);
+	} else if ('w' == *mode) {
+		file->fd = open(path, 1);
+	} else {
+		file->fd = open(path, 0);
+	}
 	return file->fd;
 }
 
