@@ -33,12 +33,10 @@ void irqctrl_clear(unsigned int interrupt_nr) {
 void irqctrl_force(unsigned int interrupt_nr) {
 }
 
-#include <prom/prom_printf.h>
 void interrupt_handle(void) {
 	unsigned int irq;
 
 	irq = 10; /* LOL */
-	prom_printf("occured!\n");
 
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 

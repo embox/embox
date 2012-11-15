@@ -20,8 +20,7 @@ EMBOX_UNIT_INIT(ppc_clk_init);
 
 #include <prom/prom_printf.h>
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	prom_printf("tick!\n");
-	/*clock_tick_handler(irq_nr, data);*/
+	clock_tick_handler(irq_nr, data);
 	return IRQ_HANDLED;
 }
 

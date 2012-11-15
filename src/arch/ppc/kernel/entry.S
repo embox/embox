@@ -23,7 +23,7 @@ decr_hnd:
 	andc     r3, r3, r4
 	mttsr    r3
 
-	b interrupt_handle /* handle interrupt */
+	bl interrupt_handle /* handle interrupt */
 
 	RESTORE_ALL        /* restore all registers */
 	rfi                /* return from interrupt */
