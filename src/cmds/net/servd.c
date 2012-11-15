@@ -268,6 +268,11 @@ static int http_req_get(struct client_info *info) {
 
 	char *ext;
 
+	if (info->lock_status) {
+		event_wait(&info->unlock_sock_event, EVENT_TIMEOUT_INFINITE);
+		info->lock_status = 0;
+	}
+
 	if (info->fp == NULL) {
 		info->fp = fopen(info->file, "r");
 		if (info->fp == NULL) { /* file doesn't exist */
@@ -304,18 +309,72 @@ static int process_response(struct client_info *info) {
 	}
 }
 
+static int set_title(char *buff, int status_code) {
+	return sprintf(buff, "HTTP/1.0 %s\r\n", http_stat_str[status_code]);
+}
+
+static int set_ops(char *buff, struct client_info *ci) {
+	int res;
+	res = sprintf(buff, "Content-Type: %s\r\n",
+			http_content_type_str[ci->c_type]);
+	res += sprintf(buff + res, "Connection: %s\r\n", "close");
+	res += sprintf(buff + res, "\r\n");
+	return res;
+}
+
+static void send_data(struct client_info *ci, int res) {
+	char *curr;
+	size_t bytes, bytes_need;
+
+	/* Make header: */
+	curr = ci->buff;
+	/* 1. set title */
+	assert((0 <= res) && (res < HTTP_STAT_MAX));
+	curr += set_title(curr, res);
+	/* 2. set ops */
+	curr += set_ops(curr, ci);
+	/* 3. set data and send respone */
+	if (ci->fp == NULL) {
+		/* send error */
+		curr += sprintf(curr, "<html>"
+				"<head><title>%s</title></head>"
+				"<body><center><h1>Oops...</h1></center></body>"
+				"</html>", http_stat_str[res]);
+		bytes_need = curr - ci->buff;
+		assert(bytes_need <= sizeof ci->buff); /* TODO remove this and make normal checks */
+		bytes = sendto(ci->sock, ci->buff, bytes_need, 0, NULL, 0);
+		if (bytes != bytes_need) {
+			printf("http error: send() error\n");
+		}
+	} else {
+		/* send file */
+		do {
+			bytes_need = sizeof ci->buff - (curr - ci->buff);
+			bytes = fread(curr, 1, bytes_need, ci->fp);
+			if (bytes < 0) {
+				break;
+			}
+			bytes_need = sizeof ci->buff - bytes_need + bytes;
+			bytes = sendto(ci->sock, ci->buff, bytes_need, 0, NULL, 0);
+			if (bytes != bytes_need) {
+				printf("http error: send() error\n");
+				break;
+			}
+			curr = ci->buff;
+			printf(".");
+		} while (bytes_need == sizeof ci->buff);
+	}
+}
+
 static void client_process(int sock, struct sockaddr_in addr,
 		socklen_t addr_len) {
 	int res;
-	size_t bytes, bytes_need;
 	struct client_info ci;
-	char *curr;
 
 	memset(&ci, 0, sizeof ci);
 
 	/* fill struct client_info */
 	ci.sock = sock;
-
 
 	/* request heandler for first */
 	res = process_request(&ci);
@@ -328,57 +387,10 @@ static void client_process(int sock, struct sockaddr_in addr,
 		break;
 	}
 
-	switch (res) {
-	default:
-		if (ci.lock_status) {
-			event_wait(&ci.unlock_sock_event, EVENT_TIMEOUT_INFINITE);
-		}
-		printf("%s:%d -- upload %s ", inet_ntoa(addr.sin_addr),
-				ntohs(addr.sin_port), ci.file);
-		/* Make header: */
-		curr = ci.buff;
-		/* 1. set title */
-		assert((0 <= res) && (res < HTTP_STAT_MAX));
-		curr += sprintf(curr, "HTTP/1.0 %s\r\n", http_stat_str[res]);
-		/* 2. set ops */
-		curr += sprintf(curr, "Content-Type: %s\r\n",
-				http_content_type_str[ci.c_type]);
-		curr += sprintf(curr, "Connection: %s\r\n", "close");
-		curr += sprintf(curr, "\r\n");
-		/* 3. set data and send respone */
-		if (ci.fp == NULL) {
-			/* send error */
-			curr += sprintf(curr, "<html>"
-					"<head><title>%s</title></head>"
-					"<body><center><h1>Oops...</h1></center></body>"
-					"</html>", http_stat_str[res]);
-			bytes_need = curr - ci.buff;
-			assert(bytes_need <= sizeof ci.buff); /* TODO remove this and make normal checks */
-			bytes = sendto(ci.sock, ci.buff, bytes_need, 0, NULL, 0);
-			if (bytes != bytes_need) {
-				printf("http error: send() error\n");
-			}
-		} else {
-			/* send file */
-			do {
-				bytes_need = sizeof ci.buff - (curr - ci.buff);
-				bytes = fread(curr, 1, bytes_need, ci.fp);
-				if (bytes < 0) {
-					break;
-				}
-				bytes_need = sizeof ci.buff - bytes_need + bytes;
-				bytes = sendto(ci.sock, ci.buff, bytes_need, 0, NULL, 0);
-				if (bytes != bytes_need) {
-					printf("http error: send() error\n");
-					break;
-				}
-				curr = ci.buff;
-				printf(".");
-			} while (bytes_need == sizeof ci.buff);
-		}
-		printf(" done\n");
-		break;
-	}
+	printf("%s:%d -- upload %s ", inet_ntoa(addr.sin_addr),
+			ntohs(addr.sin_port), ci.file);
+	send_data(&ci, res);
+	printf(" done\n");
 
 	if (ci.fp != NULL) {
 		fclose(ci.fp); /* close file (it's open or null) */
