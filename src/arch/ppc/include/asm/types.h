@@ -1,12 +1,13 @@
 /**
  * @file
  *
- * @date Oct 17, 2012
- * @author: Anton Bondarev
+ * @date 17.10.12
+ * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
-#ifndef MIPS_TYPES_H_
-#define MIPS_TYPES_H_
+#ifndef PPC_TYPES_H_
+#define PPC_TYPES_H_
 
 #include <asm-generic/types32.h>
 
-#endif /* MIPS_TYPES_H_ */
+#endif /* PPC_TYPES_H_ */

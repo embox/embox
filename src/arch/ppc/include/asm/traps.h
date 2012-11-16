@@ -8,6 +8,7 @@
 #ifndef PPC_TRAPS_H_
 #define PPC_TRAPS_H_
 
+#if 0
 /**
  * Exceptions
  */
@@ -27,5 +28,7 @@
 #define PPC_E_SYS_CALL   (PPC_E_BASE + 0x00000C00) /* System call */
 #define PPC_E_TRACE      (PPC_E_BASE + 0x00000D00) /* Trace */
 #define PPC_E_FP_ASSIST  (PPC_E_BASE + 0x00000E00) /* Floating-point asist */
+
+#endif
 
 #endif /* PPC_TRAPSS_H_ */

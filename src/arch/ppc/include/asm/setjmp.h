@@ -19,7 +19,7 @@ typedef struct {
 	unsigned int s[19]; /* static registers */
 } __jmp_buf[1];
 
-#else
+#else /* __ASSEMBLER__ */
 
 #define SETJMP_SP  0x00
 #define SETJMP_TC  0x04
@@ -45,6 +45,6 @@ typedef struct {
 #define SETJMP_S17 0x54
 #define SETJMP_S18 0x58
 
-#endif /* __ASSEMBLER__ */
+#endif /* !__ASSEMBLER__ */
 
 #endif /* PPC_SETJMP_H_ */

@@ -70,13 +70,13 @@ C_ENTRY(_start)
 	li       r3, except15_hnd@l  /* setup IVOR15 */
 	mtivor15 r3
 
+#if 0
 	/**
 	 * Clear additional registers
 	 */
 	li       r3, 0
 	mttsr    r3                  /* clear TSR */
 	mtmcsr   r3                  /* clear MCSR */
-#if 0
 	mttbl    r3                  /* clear TBL/TBU */
 	mttbu    r3
 	mttbl    r3

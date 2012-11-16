@@ -33,6 +33,7 @@
         );                                             \
     }                                                  \
 
+
 /**
  * Machine State Register (MSR)
  */
@@ -62,9 +63,10 @@ PPC_REG_SET(tcr)
 PPC_REG_GET(tsr)
 PPC_REG_SET(tsr)
 
+
 #undef PPC_REG_GET
 #undef PPC_REG_SET
 
-#endif /* __ASSEMBLER__ */
+#endif /* !__ASSEMBLER__ */
 
 #endif /* PPC_PSR_H_ */

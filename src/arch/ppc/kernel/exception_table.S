@@ -32,6 +32,7 @@
 	.align 4               ;\
 	.globl except##n##_hnd ;\
 	except##n##_hnd:       ;\
+		li 0, n;/*deubg*/\
         nop;nop;nop;nop    ; /* FIXME else FIT percived as DEC interrupts */\
 		b hnd
 
