@@ -26,4 +26,3 @@ C_ENTRY(context_switch)
 	isync
 
 	blr
-
