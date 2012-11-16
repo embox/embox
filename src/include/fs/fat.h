@@ -297,8 +297,8 @@ uint8_t *fat_canonical_to_dir(uint8_t *dest, uint8_t *src);
 
 uint8_t *fat_dir_to_canonical(uint8_t *dest, uint8_t *src, uint8_t dir);
 
-void set_filetime(dir_ent_t *de);
+void fat_set_filetime(dir_ent_t *de);
 
-void get_filename(char *tmppath, char *filename);
+void fat_get_filename(char *tmppath, char *filename);
 
 #endif /* FAT_H_ */

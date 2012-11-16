@@ -81,7 +81,7 @@ uint8_t *fat_dir_to_canonical(uint8_t *dest, uint8_t *src, uint8_t dir) {
         return dst;
 }
 
-void get_filename(char *tmppath, char *filename) {
+void fat_get_filename(char *tmppath, char *filename) {
 	char *p;
 
 	p = tmppath;
@@ -107,7 +107,7 @@ void get_filename(char *tmppath, char *filename) {
 	}
 }
 
-void set_filetime(dir_ent_t *de) {
+void fat_set_filetime(dir_ent_t *de) {
 	/* TODO set normal time */
 		de->crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
 		de->crttime_h = 0x08;

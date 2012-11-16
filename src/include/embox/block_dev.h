@@ -75,7 +75,7 @@ typedef struct block_dev_cache {
 
 //extern block_dev_module_t *block_dev_find(char *name);
 
-extern dev_t *block_dev_make(char *name, void *driver,
+extern dev_t *block_dev_create(char *name, void *driver,
 		void *privdata, dev_t *name_idx);
 extern block_dev_t *block_dev(void *dev_id);
 extern dev_t block_dev_open(char *name);

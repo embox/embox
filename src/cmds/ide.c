@@ -45,7 +45,6 @@ static void print_drive (slot_t *ide) {
 
 }
 
-
 static int exec(int argc, char **argv) {
 	int opt;
 

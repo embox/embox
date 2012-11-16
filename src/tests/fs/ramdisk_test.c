@@ -12,6 +12,7 @@
 #include <drivers/ramdisk.h>
 #include <embox/test.h>
 #include <fs/vfs.h>
+#include <mem/page.h>
 
 static int setup_suite(void);
 
@@ -19,7 +20,7 @@ EMBOX_TEST_SUITE("fs/ramdisk test");
 
 TEST_SETUP(setup_suite);
 
-static mkfs_params_t mkfs_params;
+static ramdisk_create_params_t new_ramdisk;
 
 #define FS_NAME  "vfat"
 #define FS_DEV  "/dev/ramdisk"
@@ -27,7 +28,7 @@ static mkfs_params_t mkfs_params;
 #define FS_BLOCKS  124
 
 TEST_CASE("Create ramdisk") {
-	test_assert_zero(ramdisk_create((void *)&mkfs_params));
+	test_assert_zero(ramdisk_create((void *)&new_ramdisk));
 }
 
 TEST_CASE("Delete ramdisk") {
@@ -35,9 +36,9 @@ TEST_CASE("Delete ramdisk") {
 }
 
 static int setup_suite(void) {
-	mkfs_params.blocks = FS_BLOCKS;
-	mkfs_params.fs_type = FS_TYPE;
-	strcpy((void *)&mkfs_params.fs_name, FS_NAME);
-	strcpy((void *)&mkfs_params.path, FS_DEV);
+	new_ramdisk.size = FS_BLOCKS * PAGE_SIZE();
+	new_ramdisk.fs_type = FS_TYPE;
+	new_ramdisk.fs_name = FS_NAME;
+	new_ramdisk.path = FS_DEV;
 	return 0;
 }

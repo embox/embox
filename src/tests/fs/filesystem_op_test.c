@@ -13,13 +13,14 @@
 #include <embox/block_dev.h>
 #include <embox/test.h>
 #include <fs/vfs.h>
+#include <mem/page.h>
 
 EMBOX_TEST_SUITE("fs/filesystem test");
 
-static mkfs_params_t mkfs_params;
-static dev_ramdisk_t *ramdisk;
+static ramdisk_create_params_t new_ramdisk;
 static mount_params_t mount_param;
 static fs_drv_t *fs_drv;
+static ramdisk_t *ramdisk;
 
 TEST_SETUP_SUITE(setup_suite);
 
@@ -66,15 +67,15 @@ TEST_CASE("Delete file") {
 
 static int setup_suite(void) {
 
-	mkfs_params.blocks = FS_BLOCKS;
-	mkfs_params.fs_type = FS_TYPE;
+	new_ramdisk.size = FS_BLOCKS * PAGE_SIZE();
+	new_ramdisk.fs_type = FS_TYPE;
 
-	strcpy((void *)&mkfs_params.fs_name, FS_NAME);
-	strcpy((void *)&mkfs_params.path, FS_DEV);
+	new_ramdisk.fs_name = FS_NAME;
+	new_ramdisk.path = FS_DEV;
 
-	ramdisk_create((void *)&mkfs_params);
+	ramdisk_create((void *)&new_ramdisk);
 
-	fs_drv = filesystem_find_drv((const char *) &mkfs_params.fs_name);
+	fs_drv = filesystem_find_drv((const char *) new_ramdisk.fs_name);
 
 	mount_param.dev = FS_DEV;
 	mount_param.dir = FS_DIR;
@@ -82,7 +83,7 @@ static int setup_suite(void) {
 
 	/* set created ramdisc attribute from dev_node */
 	ramdisk =
-		(dev_ramdisk_t *)block_dev(mount_param.dev_node->dev_id)->privdata;
+		(ramdisk_t *)block_dev(mount_param.dev_node->dev_id)->privdata;
 
 	return 0;
 }

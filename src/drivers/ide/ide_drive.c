@@ -664,16 +664,16 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 	strcat(path, "/dev/");
 	if (hd->media == IDE_DISK) {
 		if (hd->udmamode != -1) {
-			hd->dev_id = block_dev_make(strcat(path, devname),
+			hd->dev_id = block_dev_create(strcat(path, devname),
 					harddisk_udma_driver(), hd, NULL);
 		}
 		else {
-			hd->dev_id = block_dev_make(strcat(path, devname),
+			hd->dev_id = block_dev_create(strcat(path, devname),
 					harddisk_pio_driver(), hd, NULL);
 		}
 	}
 	else if (hd->media == IDE_CDROM) {
-		hd->dev_id = block_dev_make(strcat(path, "cd#"),
+		hd->dev_id = block_dev_create(strcat(path, "cd#"),
 				cdrom_pio_driver(), hd, NULL);
 	}
 	else {

@@ -14,7 +14,7 @@
 
 static node_t *root_node;
 
-int set_path (char *path, node_t *nod) {
+int vfs_set_path (char *path, node_t *nod) {
 
 	node_t *parent, *node;
 	char buff[MAX_LENGTH_PATH_NAME];
@@ -46,7 +46,7 @@ int set_path (char *path, node_t *nod) {
  * Save first node name in path into buff variable.
  * Return the remaining part of path.
  */
-static char *get_next_node_name(const char *path, char *buff, int buff_len) {
+static char *vfs_get_next_node_name(const char *path, char *buff, int buff_len) {
 	char *p = (char *) path;
 	char *b = buff;
 	while ('/' == *p) {
@@ -66,7 +66,7 @@ static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 	return NULL;
 }
 
-void cut_mount_dir(char *path, char *mount_dir) {
+void vfs_cut_mount_dir(char *path, char *mount_dir) {
 	char *p;
 
 	p = path;
@@ -77,7 +77,7 @@ void cut_mount_dir(char *path, char *mount_dir) {
 	strcpy((char *) path, (const char *) p);
 }
 
-int nip_tail(char *head, char *tail) {
+int vfs_nip_tail(char *head, char *tail) {
 	char *p_tail;
 	char *p;
 
@@ -98,7 +98,7 @@ int nip_tail(char *head, char *tail) {
 	return 0;
 }
 
-int increase_tail(char *head, char *tail) {
+int vfs_increase_tail(char *head, char *tail) {
 	char *p_tail;
 
 		p_tail = head + strlen(head);
@@ -128,7 +128,7 @@ static node_t *vfs_add_new_path(node_t *parent,
 	node_t *child;
 	child = alloc_node(child_name);
 	vfs_add_leaf(child, parent);
-	while (NULL != (p_path = get_next_node_name(p_path, child_name,
+	while (NULL != (p_path = vfs_get_next_node_name(p_path, child_name,
 											MAX_LENGTH_FILE_NAME))) {
 		parent->properties = DIRECTORY_NODE_TYPE;
 		parent = child;
@@ -149,7 +149,7 @@ node_t *vfs_add_path(const char *path, node_t *parent) {
 	if (NULL == parent) {
 		node = vfs_get_root();
 	}
-	while (NULL != (p_path = get_next_node_name(p_path,	node_name,
+	while (NULL != (p_path = vfs_get_next_node_name(p_path,	node_name,
 													sizeof(node_name)))) {
 		parent = node;
 		if (NULL == (node = vfs_find_child(node_name, node))) {
@@ -194,7 +194,7 @@ node_t *vfs_find_node(const char *path, node_t *parent) {
 		node = vfs_get_root();
 	}
 	//FIXME if we return immediately we return root node
-	while (NULL != (p_path = get_next_node_name(p_path, node_name,
+	while (NULL != (p_path = vfs_get_next_node_name(p_path, node_name,
 													sizeof(node_name)))) {
 		if (NULL == (node = vfs_find_child(node_name, node))) {
 			return NULL;

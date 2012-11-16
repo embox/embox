@@ -16,13 +16,11 @@
 #include <fs/mount.h>
 #include <util/array.h>
 #include <embox/unit.h>
-#include <embox/device.h>
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 #include <fs/mount.h>
 #include <drivers/ramdisk.h>
-#include <cmd/mkfs.h>
 
 /* tmpfs filesystem description pool */
 POOL_DEF(tmpfs_fs_pool, struct tmpfs_fs_description, OPTION_GET(NUMBER,tmpfs_descriptor_quantity));
@@ -34,30 +32,62 @@ INDEX_DEF(tmpfs_file_idx,0,OPTION_GET(NUMBER,tmpfs_inode_quantity));
 
 /* define sizes in 4096 blocks */
 #define MAX_FILE_SIZE OPTION_GET(NUMBER,tmpfs_file_size)
-#define MAX_FILESYSTEM_SIZE OPTION_GET(NUMBER,tmpfs_filesystem_size)
+#define FILESYSTEM_SIZE OPTION_GET(NUMBER,tmpfs_filesystem_size)
 
 #define TMPFS_NAME "tmpfs"
 #define TMPFS_DEV  "/dev/ram0"
 #define TMPFS_DIR  "/tmp"
-
-static fs_drv_t tmpfs_drv;
-static file_operations_t tmpfs_fop;
-
-static char sector_buff[PAGE_SIZE()];
-static mkfs_params_t tmpfs_mkfs_params;
+static ramdisk_create_params_t new_ramdisk;
 static mount_params_t mount_param;
+
+static char sector_buff[PAGE_SIZE()];/* TODO */
+
+static int tmpfs_init(void * par);
+static int tmpfs_format(void *path);
+static int tmpfs_mount(void *par);
+static int tmpfs_create(void *params);
+static int tmpfs_delete(const char *fname);
+
+static fsop_desc_t tmpfs_fsop = {
+		tmpfs_init,
+		tmpfs_format,
+		tmpfs_mount,
+		tmpfs_create,
+		tmpfs_delete
+};
+
+static void *tmpfs_fopen(struct file_desc *desc, const char *mode);
+static int tmpfs_fclose(struct file_desc *desc);
+static size_t tmpfs_fread(void *buf, size_t size, size_t count, void *file);
+static size_t tmpfs_fwrite(const void *buf, size_t size,
+	size_t count, void *file);
+static int tmpfs_fseek(void *file, long offset, int whence);
+static int tmpfs_ioctl(void *file, int request, va_list args);
+static int tmpfs_fstat(void *file, void *buff);
+
+static file_operations_t tmpfs_fop = {
+		tmpfs_fopen,
+		tmpfs_fclose,
+		tmpfs_fread,
+		tmpfs_fwrite,
+		tmpfs_fseek,
+		tmpfs_ioctl,
+		tmpfs_fstat
+};
+
+static fs_drv_t tmpfs_drv = {
+	.name = TMPFS_NAME,
+	.file_op = &tmpfs_fop,
+	.fsop = &tmpfs_fsop
+};
 
 
 static int tmpfs_format(void *path);
 static int tmpfs_mount(void *par);
 
-const fs_drv_t *tmpfs_get_fs(void) {
-    return &tmpfs_drv;
-}
 
 static int tmpfs_init(void * par) {
-	dev_ramdisk_t *ramdisk;
-	mkfs_params_t *mkfs_params;
+	ramdisk_create_params_t *new_ramdisk;
 
 	if(NULL == par) {
 		/* don't need init fs driver*/
@@ -65,31 +95,28 @@ static int tmpfs_init(void * par) {
 		return 0;
 	}
 	else {
-		mkfs_params = (mkfs_params_t *) par;
+		new_ramdisk = (ramdisk_create_params_t *) par;
 	}
 
-	mkfs_params->blocks = MAX_FILESYSTEM_SIZE;
-	mkfs_params->fs_type = 0;
-	strcpy((void *)&mkfs_params->fs_name, TMPFS_NAME);
-	strcpy((void *)&mkfs_params->path, TMPFS_DEV);
+	new_ramdisk->size = FILESYSTEM_SIZE * PAGE_SIZE();
+	new_ramdisk->fs_type = 0;
+	new_ramdisk->fs_name = TMPFS_NAME;
+	new_ramdisk->path = TMPFS_DEV;
 
-	if (0 != ramdisk_create((void *)mkfs_params)) {
+	if (0 != ramdisk_create((void *)new_ramdisk)) {
 		return -1;
 	}
 
 	mount_param.dev = TMPFS_DEV;
 	mount_param.dir = TMPFS_DIR;
 
-	if(NULL ==	(mount_param.dev_node =
+	if(NULL == (mount_param.dev_node =
 			vfs_find_node(mount_param.dev, NULL))) {
 		return -1;
 	}
-	/* set created ramdisc attribute from dev_node */
-	ramdisk =
-		(dev_ramdisk_t *)block_dev(mount_param.dev_node->dev_id)->privdata;
 
 	/* format filesystem */
-	if(0 != tmpfs_format((void *)&ramdisk->path)) {
+	if(0 != tmpfs_format((void *)TMPFS_DEV)) {
 		return -1;
 	}
 
@@ -102,9 +129,9 @@ static int tmpfs_init(void * par) {
 
 static int tmp_ramdisk_fs_init(void) {
 
-	return tmpfs_init(&tmpfs_mkfs_params);
+	return tmpfs_init(&new_ramdisk);
 }
-EMBOX_UNIT_INIT(tmp_ramdisk_fs_init);
+EMBOX_UNIT_INIT(tmp_ramdisk_fs_init); /*TODO*/
 
 static int tmpfs_format(void *path) {
 	node_t *nod;
@@ -117,6 +144,10 @@ static int tmpfs_format(void *path) {
 
 	if((NULL == (fs_des = pool_alloc(&tmpfs_fs_pool))) ||
 			(NULL == (fd = pool_alloc(&tmpfs_file_pool)))) {
+		/* nary memory to enemy */
+		if(NULL != fs_des){
+			pool_free(&tmpfs_fs_pool, fs_des);
+		}
 		return -ENOMEM;
 	}
 	fs_des->dev_id = nod->dev_id;
@@ -135,41 +166,44 @@ static int tmpfs_format(void *path) {
 
 static int tmpfs_mount(void *par) {
 	mount_params_t *params;
-		node_t *dir_node, *dev_node;
-		tmpfs_file_description_t *fd, *dev_fd;
+	node_t *dir_node, *dev_node;
+	tmpfs_file_description_t *fd, *dev_fd;
 
-		params = (mount_params_t *) par;
-		dev_node = params->dev_node;
-		if (NULL == (dir_node = vfs_find_node(params->dir, NULL))) {
-			/*FIXME: usually mount doesn't create a directory*/
-			if (NULL == (dir_node = vfs_add_path (params->dir, NULL))) {
-				return -ENODEV;/*device not found*/
-			}
-			dir_node->properties = DIRECTORY_NODE_TYPE;
+	params = (mount_params_t *) par;
+	dev_node = params->dev_node;
+	if (NULL == (dir_node = vfs_find_node(params->dir, NULL))) {
+		/*FIXME: usually mount doesn't create a directory*/
+		if (NULL == (dir_node = vfs_add_path (params->dir, NULL))) {
+			return -ENODEV;/*device not found*/
 		}
+		dir_node->properties = DIRECTORY_NODE_TYPE;
+	}
 
-		/* If dev_node created, but not attached to the filesystem driver */
-		if (NULL == (dev_fd = (tmpfs_file_description_t *) dev_node->fd)) {
-			if((NULL == (dev_fd = pool_alloc(&tmpfs_file_pool))) ||
-					(NULL == (dev_fd->fs = pool_alloc(&tmpfs_fs_pool)))) {
-				return -ENOMEM;
+	/* If dev_node created, but not attached to the filesystem driver */
+	if (NULL == (dev_fd = (tmpfs_file_description_t *) dev_node->fd)) {
+		if((NULL == (dev_fd = pool_alloc(&tmpfs_file_pool))) ||
+				(NULL == (dev_fd->fs = pool_alloc(&tmpfs_fs_pool)))) {
+			if(NULL != dev_fd){
+				pool_free(&tmpfs_file_pool, dev_fd);
 			}
-			dev_node->fd = dev_fd;
-			dev_fd->fs->dev_id = dev_node->dev_id;
-			dev_node->file_info = (void *) &tmpfs_fop;
-		}
-
-		strcpy((char *) dev_fd->fs->root_name, params->dir);
-
-		if(NULL == (fd = pool_alloc(&tmpfs_file_pool))) {
 			return -ENOMEM;
 		}
+		dev_node->fd = dev_fd;
+		dev_fd->fs->dev_id = dev_node->dev_id;
+		dev_node->file_info = (void *) &tmpfs_fop;
+	}
 
-		fd->fs = dev_fd->fs;
-		dir_node->fs_type = &tmpfs_drv;
-		dir_node->fd = (void *) fd;
+	strcpy((char *) dev_fd->fs->root_name, params->dir);
 
-		return 0;//tmpfs_mount_files(dir_node);
+	if(NULL == (fd = pool_alloc(&tmpfs_file_pool))) {
+		return -ENOMEM;
+	}
+
+	fd->fs = dev_fd->fs;
+	dir_node->fs_type = &tmpfs_drv;
+	dir_node->fd = (void *) fd;
+
+	return 0;
 }
 static tmpfs_file_description_t *tmpfs_create_file(void *fs) {
 	tmpfs_file_description_t *fd;
@@ -219,7 +253,7 @@ static int tmpfs_create(void *params) {
 
 		node->fs_type = &tmpfs_drv;
 		node->dev_id = parents_node->dev_id;
-		/* don't need create node for directory */
+		/* don't need create fd for directory - take root node fd */
 		node->fd = parents_node->fd;
 
 		if((0 >= count) & (DIRECTORY_NODE_TYPE !=
@@ -239,6 +273,45 @@ static int tmpfs_create(void *params) {
 }
 
 static int tmpfs_delete(const char *fname) {
+	tmpfs_file_description_t *fd;
+	node_t *nod, *pointnod;
+	char path [MAX_LENGTH_PATH_NAME];
+
+	if(NULL == (nod = vfs_find_node(fname, NULL))) {
+		return -1;
+	}
+	fd = (tmpfs_file_description_t *)nod->fd;
+
+	vfs_set_path (path, nod);
+
+	/* need delete "." and ".." node for directory */
+	if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
+
+		strcat(path, "/.");
+		pointnod = vfs_find_node(path, NULL);
+		vfs_del_leaf(pointnod);
+
+		strcat(path, ".");
+		pointnod = vfs_find_node(path, NULL);
+		vfs_del_leaf(pointnod);
+
+		path[strlen(path) - 3] = '\0';
+	}
+
+	if (DIRECTORY_NODE_TYPE != (nod->properties & DIRECTORY_NODE_TYPE)) {
+		index_free(&tmpfs_file_idx, fd->index);
+		pool_free(&tmpfs_file_pool, fd);
+	}
+
+	/* root node - have fd, but haven't index*/
+	if(0 == strcmp((const char *) path, (const char *) fd->fs->root_name)){
+
+		pool_free(&tmpfs_fs_pool, fd->fs);
+		pool_free(&tmpfs_file_pool, fd);
+	}
+
+	vfs_del_leaf(nod);
+
 	return 0;
 }
 
@@ -489,17 +562,30 @@ static int tmpfs_ioctl(void *file, int request, va_list args) {
 	return 0;
 }
 
-static fsop_desc_t tmpfs_fsop = { tmpfs_init, tmpfs_format, tmpfs_mount,
-		tmpfs_create, tmpfs_delete};
+static int tmpfs_fstat(void *file, void *buff) {
+	struct file_desc *desc;
+	tmpfs_file_description_t *fd;
+	stat_t *buffer;
 
-static file_operations_t tmpfs_fop = { tmpfs_fopen, tmpfs_fclose, tmpfs_fread,
-		tmpfs_fwrite, tmpfs_fseek, tmpfs_ioctl, NULL };
+	desc = (struct file_desc *) file;
+	fd = (tmpfs_file_description_t *)desc->node->fd;
+	buffer = (stat_t *) buff;
 
-static fs_drv_t tmpfs_drv = {
-	.name = TMPFS_NAME,
-	.file_op = &tmpfs_fop,
-	.fsop = &tmpfs_fsop
-};
+	if (buffer) {
+			memset(buffer, 0, sizeof(stat_t));
+
+			buffer->st_mode = fd->mode;
+			buffer->st_ino = fd->index;
+			buffer->st_nlink = 1;
+			buffer->st_dev = *(int *) fd->fs->dev_id;
+			buffer->st_atime = buffer->st_mtime = buffer->st_ctime = 0;
+			buffer->st_size = fd->filelen;
+			buffer->st_blksize = fd->fs->block_size;
+			buffer->st_blocks = fd->fs->numblocks;
+		}
+
+	return fd->filelen;
+}
 
 DECLARE_FILE_SYSTEM_DRIVER(tmpfs_drv);
 

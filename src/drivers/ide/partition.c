@@ -60,7 +60,7 @@ int create_partitions(hd_t *hd) {
 		}
 	}
 	*/
-	hd->dev_id = block_dev_make("hda0", partition_driver(), NULL, NULL);
+	hd->dev_id = block_dev_create("hda0", partition_driver(), NULL, NULL);
 
 	return 0;
 }
