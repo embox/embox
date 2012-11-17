@@ -93,9 +93,8 @@ C_ENTRY(_start)
 	 */
 	lis      r1, _stack_vma@h
 	ori      r1, r1, _stack_vma@l
-	lis      r2, _stack_len@h
-	ori      r2, r2, _stack_len@l
-	add      r1, r1, r2
+	addis    r1, r1, _stack_len@ha
+	addi     r1, r1, _stack_len@l
 #if 0
 	mtsprg0  r1
 #endif
