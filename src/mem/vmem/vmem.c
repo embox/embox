@@ -26,6 +26,8 @@ extern char _text_len, _rodata_len, _bss_len, _data_len, _reserve_len, _stack_le
 static inline int vmem_map_kernel(mmu_ctx_t ctx);
 
 static inline int vmem_map_on_itself(mmu_ctx_t ctx, void *addr, size_t size, vmem_page_flags_t flags) {
+	/* Considering that address was aligned, but size may be not */
+	size = (size + MMU_PAGE_MASK) & (~MMU_PAGE_MASK);
 	return vmem_map_region(ctx, (mmu_paddr_t) addr, (mmu_vaddr_t) addr, (size_t) size, flags);
 }
 
