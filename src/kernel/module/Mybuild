@@ -1,5 +1,0 @@
-package embox.kernel
-
-module modules {
-	source "symbols.lds.S", "module.c"
-}
