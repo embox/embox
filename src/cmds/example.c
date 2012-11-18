@@ -40,6 +40,7 @@ static int exec(int argc, char **argv) {
 	const struct example *example;
 
 	number = -1;
+	example = NULL;
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "n:h"))) {
 		switch (opt) {
