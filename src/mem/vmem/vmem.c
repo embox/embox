@@ -14,7 +14,7 @@
 #include <prom/prom_printf.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>
-#include <mem/vmem/virtalloc.h>
+#include <mem/vmem/vmem_alloc.h>
 
 #include "../kernel/task/common.h"
 #include "../kernel/thread/types.h"
@@ -58,7 +58,11 @@ static inline int vmem_map_kernel(mmu_ctx_t ctx) {
 }
 
 int vmem_create_context(mmu_ctx_t *ctx) {
-	*ctx = mmu_create_context((mmu_pgd_t *) virt_alloc_table());
+	mmu_pgd_t *pgd = vmem_alloc_pgd_table();
+	if (!pgd) {
+		return -ENOMEM;
+	}
+	*ctx = mmu_create_context(pgd);
 	return vmem_map_kernel(*ctx);
 }
 

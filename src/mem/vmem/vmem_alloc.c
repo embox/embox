@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <string.h>
 #include <hal/mmu.h>
-#include <mem/vmem/virtalloc.h>
+#include <mem/vmem/vmem_alloc.h>
 #include <mem/phymem.h>
 #include <mem/page.h>
 
@@ -64,12 +64,24 @@ static int unit_fini() {
 	return 0;
 }
 
-void *virt_alloc_table() {
+static inline void *vmem_alloc_table(void) {
 	void *addr = page_alloc(virt_table_allocator, 1);
 	memset(addr, 0 , MMU_PAGE_SIZE);
 	return addr;
 }
 
-void *virt_alloc_page() {
+mmu_pgd_t *vmem_alloc_pgd_table(void) {
+	return (mmu_pgd_t *) vmem_alloc_table();
+}
+
+mmu_pmd_t *vmem_alloc_pmd_table(void) {
+	return (mmu_pmd_t *) vmem_alloc_table();
+}
+
+mmu_pte_t *vmem_alloc_pte_table(void) {
+	return (mmu_pte_t *) vmem_alloc_table();
+}
+
+void *vmem_alloc_page() {
 	return page_alloc(virt_page_allocator, 1);
 }

@@ -12,7 +12,7 @@
 #include <hal/mmu.h>
 #include <util/binalign.h>
 #include <mem/vmem.h>
-#include <mem/vmem/virtalloc.h>
+#include <mem/vmem/vmem_alloc.h>
 
 static inline void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags) {
 	mmu_pte_set_writable(pte, flags & VMEM_PAGE_WRITABLE);
@@ -26,7 +26,6 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, 
 	mmu_pte_t *pte;
 	mmu_paddr_t p_end = phy_addr + reg_size;
 	size_t pgd_idx, pmd_idx, pte_idx;
-	void *addr;
 
 	/* Considering that all boundaries are already aligned */
 	assert(!(virt_addr & MMU_PAGE_MASK));
@@ -40,27 +39,28 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, 
 	pte_idx = ((uint32_t) virt_addr & MMU_PTE_MASK) >> MMU_PTE_SHIFT;
 
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
+
 		if (!mmu_pgd_present(pgd + pgd_idx)) {
-			addr = virt_alloc_table();
-			if (!addr) {
+			pmd = vmem_alloc_pmd_table();
+			if (!pmd) {
 				return -ENOMEM;
 			}
-			mmu_pgd_set(pgd + pgd_idx, (mmu_pmd_t *) addr);
+			mmu_pgd_set(pgd + pgd_idx, pmd);
+		} else {
+			pmd = mmu_pgd_value(pgd + pgd_idx);
 		}
-
-		pmd = mmu_pgd_value(pgd + pgd_idx);
 
 		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
 
 			if (!mmu_pmd_present(pmd + pmd_idx)) {
-				addr = virt_alloc_table();
-				if (!addr) {
+				pte = vmem_alloc_pte_table();
+				if (!pte) {
 					return -ENOMEM;
 				}
-				mmu_pmd_set(pmd + pmd_idx, (mmu_pmd_t *) addr);
+				mmu_pmd_set(pmd + pmd_idx, pte);
+			} else {
+				pte = mmu_pmd_value(pmd + pmd_idx);
 			}
-
-			pte = mmu_pmd_value(pmd + pmd_idx);
 
 			for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
 				/* Considering that address has not mapped yet */
@@ -76,8 +76,10 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, 
 					return ENOERR;
 				}
 			}
+
 			pte_idx = 0;
 		}
+
 		pmd_idx = 0;
 	}
 
@@ -103,33 +105,34 @@ int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vme
 	pte_idx = ((uint32_t) virt_addr & MMU_PTE_MASK) >> MMU_PTE_SHIFT;
 
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
+
 		if (!mmu_pgd_present(pgd + pgd_idx)) {
-			addr = virt_alloc_table();
+			pmd = vmem_alloc_pmd_table();
 			if (!addr) {
 				return -ENOMEM;
 			}
-			mmu_pgd_set(pgd + pgd_idx, (mmu_pmd_t *) addr);
+			mmu_pgd_set(pgd + pgd_idx, pmd);
+		} else {
+			pmd = mmu_pgd_value(pgd + pgd_idx);
 		}
-
-		pmd = mmu_pgd_value(pgd + pgd_idx);
 
 		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
 
 			if (!mmu_pmd_present(pmd + pmd_idx)) {
-				addr = virt_alloc_table();
-				if (!addr) {
+				pte = vmem_alloc_pte_table();
+				if (!pte) {
 					return -ENOMEM;
 				}
-				mmu_pmd_set(pmd + pmd_idx, (mmu_pmd_t *) addr);
+				mmu_pmd_set(pmd + pmd_idx, pte);
+			} else {
+				pte = mmu_pmd_value(pmd + pmd_idx);
 			}
-
-			pte = mmu_pmd_value(pmd + pmd_idx);
 
 			for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
 				/* Considering that space has not allocated yet */
 				assert(!mmu_pte_present(pte + pte_idx));
 
-				addr = virt_alloc_page();
+				addr = vmem_alloc_page();
 				if (!addr) {
 					return -ENOMEM;
 				}
@@ -143,8 +146,10 @@ int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vme
 					return ENOERR;
 				}
 			}
+
 			pte_idx = 0;
 		}
+
 		pmd_idx = 0;
 	}
 
