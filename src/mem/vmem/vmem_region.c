@@ -41,8 +41,7 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, 
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
 
 		if (!mmu_pgd_present(pgd + pgd_idx)) {
-			pmd = vmem_alloc_pmd_table();
-			if (!pmd) {
+			if (!(pmd = vmem_alloc_pmd_table())) {
 				return -ENOMEM;
 			}
 			mmu_pgd_set(pgd + pgd_idx, pmd);
@@ -53,8 +52,7 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, 
 		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
 
 			if (!mmu_pmd_present(pmd + pmd_idx)) {
-				pte = vmem_alloc_pte_table();
-				if (!pte) {
+				if (!(pte = vmem_alloc_pte_table())) {
 					return -ENOMEM;
 				}
 				mmu_pmd_set(pmd + pmd_idx, pte);
@@ -107,8 +105,7 @@ int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vme
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
 
 		if (!mmu_pgd_present(pgd + pgd_idx)) {
-			pmd = vmem_alloc_pmd_table();
-			if (!addr) {
+			if (!(pmd = vmem_alloc_pmd_table())) {
 				return -ENOMEM;
 			}
 			mmu_pgd_set(pgd + pgd_idx, pmd);
@@ -119,8 +116,7 @@ int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vme
 		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
 
 			if (!mmu_pmd_present(pmd + pmd_idx)) {
-				pte = vmem_alloc_pte_table();
-				if (!pte) {
+				if (!(pte = vmem_alloc_pte_table())) {
 					return -ENOMEM;
 				}
 				mmu_pmd_set(pmd + pmd_idx, pte);
@@ -132,8 +128,7 @@ int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vme
 				/* Considering that space has not allocated yet */
 				assert(!mmu_pte_present(pte + pte_idx));
 
-				addr = vmem_alloc_page();
-				if (!addr) {
+				if (!(addr = vmem_alloc_page())) {
 					return -ENOMEM;
 				}
 
