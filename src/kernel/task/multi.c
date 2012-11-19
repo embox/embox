@@ -15,7 +15,6 @@
 #include <kernel/task.h>
 #include <kernel/panic.h>
 #include "common.h"
-#include <module/embox/arch/usermode.h>
 
 typedef void *(*run_fn)(void *);
 
@@ -175,7 +174,7 @@ static void *task_trampoline(void *arg) {
 	pool_free(&creat_param, param);
 
 	thread_self()->in_usermode = task_self()->in_usermode;
-	res = usermode_call_and_switch_if(task_self()->in_usermode, run, run_arg);
+	res = run(run_arg);
 	task_exit(res);
 
 	/* NOTREACHED */

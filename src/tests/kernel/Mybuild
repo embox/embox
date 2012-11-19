@@ -52,3 +52,7 @@ module syscall_test {
 
 	depends embox.arch.syscall_caller
 }
+
+module usermode_test {
+	source "usermode_test.c"
+}

@@ -28,17 +28,17 @@ TEST_CASE("calling syscall with one argument") {
 }
 
 TEST_CASE("calling syscall with two arguments") {
-	test_assert_equal(syscall_2(0,2), 2);
+	test_assert_equal(syscall_2(1,2), 2);
 }
 
 TEST_CASE("calling syscall with three arguments") {
-	test_assert_equal(syscall_3(0,0,3), 3);
+	test_assert_equal(syscall_3(1,2,3), 3);
 }
 
 TEST_CASE("calling syscall with four arguments") {
-	test_assert_equal(syscall_4(0,0,0,4), 4);
+	test_assert_equal(syscall_4(1,2,3,4), 4);
 }
 
 TEST_CASE("calling syscall with five arguments") {
-	test_assert_equal(syscall_5(0,0,0,0,5), 5);
+	test_assert_equal(syscall_5(1,2,3,4,5), 5);
 }
