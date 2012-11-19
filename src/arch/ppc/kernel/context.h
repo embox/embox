@@ -45,7 +45,8 @@ struct context {
 #define CTX_CR    0x50
 #define CTX_SP    0x54
 #define CTX_TC    0x58
-#define CTXSZ     (23 * 4)
+
+#define CTX_SIZE  0x5C
 
 #endif /* !__ASSEMBLER__ */
 

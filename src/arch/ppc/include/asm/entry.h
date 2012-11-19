@@ -35,31 +35,31 @@
  * +---------------+
  */
 
-.macro SAVE_ALL
-	subi   r1, r1, 0x98  /* allocate space to save all registers */
-	stw    r0, 0x00(r1)  /* save r0 */
-	stmw   r2, 0x04(r1)  /* save r2..r31 */
-	mflr   r26           /* save lr, cr, xer, ctr, srr0, srr1 */
-	mfcr   r27
-	mfxer  r28
-	mfctr  r29
-	mfsrr0 r30
-	mfsrr1 r31
-	stmw   r26, 0x80(r1)
-.endm
+	.macro SAVE_ALL
+		subi   r1, r1, 0x98  /* allocate space to save all registers */
+		stw    r0, 0x00(r1)  /* save r0 */
+		stmw   r2, 0x04(r1)  /* save r2..r31 */
+		mflr   r26           /* save lr, cr, xer, ctr, srr0, srr1 */
+		mfcr   r27
+		mfxer  r28
+		mfctr  r29
+		mfsrr0 r30
+		mfsrr1 r31
+		stmw   r26, 0x80(r1)
+	.endm
 
-.macro RESTORE_ALL
-	lmw    r26, 0x80(r1) /* restore lr, cr, xer, ctr, srr0, srr1 */
-	mtlr   r26
-	mtcr   r27
-	mtxer  r28
-	mtctr  r29
-	mtsrr0 r30
-	mtsrr1 r31
-	lmw    r2, 0x04(r1)  /* restore r2..r31 */
-	lwz    r0, 0x00(r1)  /* restore r0 */
-	addi    r1, r1, 0x98 /* get back stack */
-.endm
+	.macro RESTORE_ALL
+		lmw    r26, 0x80(r1) /* restore lr, cr, xer, ctr, srr0, srr1 */
+		mtlr   r26
+		mtcr   r27
+		mtxer  r28
+		mtctr  r29
+		mtsrr0 r30
+		mtsrr1 r31
+		lmw    r2, 0x04(r1)  /* restore r2..r31 */
+		lwz    r0, 0x00(r1)  /* restore r0 */
+		addi   r1, r1, 0x98 /* get back stack */
+	.endm
 
 #endif /* __ASSEMBLER__ */
 

@@ -116,4 +116,5 @@ C_ENTRY(_start)
 	/**
 	 * Call C code
 	 */
+	subi     r1, r1, 8                /* allocate space for sp and ra */
 	b        kernel_start
