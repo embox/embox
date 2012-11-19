@@ -1,7 +1,7 @@
 package embox.mem
 
 module vmem {
-	source "vmem.c", "vmem_region.c", "vmem_alloc.c"
+	source "vmem.c", "vmem_alloc.c", "vmem_mapper.c", "vmem_unmapper.c"
 
 	depends embox.arch.mmu
 	depends embox.mem.page_api

@@ -54,14 +54,6 @@ void mmu_flush_tlb(void) {
 	set_cr3(get_cr3());
 }
 
-void mmu_on(void) {
-	set_cr0(get_cr0() | X86_CR0_PG | X86_CR0_WP);
-}
-
-void mmu_off(void) {
-	set_cr0(get_cr0() & ~X86_CR0_PG & ~X86_CR0_WP);
-}
-
 mmu_vaddr_t mmu_get_fault_address(void) {
 	return get_cr2();
 }
@@ -80,28 +72,24 @@ mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
 	return ctx_table[ctx];
 }
 
-/*
- * Page Global Directory
- */
+/* Present functions */
 
 int mmu_pgd_present(mmu_pgd_t *pgd) {
 	return 1;
 }
 
-void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
-	return ;
-}
-
-mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
-	return (mmu_pmd_t *) pgd;
-}
-
-/*
- * Page Middle Directory
- */
-
 int mmu_pmd_present(mmu_pmd_t *pmd) {
 	return ((uint32_t) *pmd & MMU_PAGE_PRESENT);
+}
+
+int mmu_pte_present(mmu_pte_t *pte) {
+	return ((uint32_t) *pte & MMU_PAGE_PRESENT);
+}
+
+/* Set functions */
+
+void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
+	return ;
 }
 
 void mmu_pmd_set(mmu_pmd_t *pmd, mmu_pmd_t *pte) {
@@ -109,30 +97,40 @@ void mmu_pmd_set(mmu_pmd_t *pmd, mmu_pmd_t *pte) {
 			| MMU_PMD_FLAG | MMU_PAGE_PRESENT);
 }
 
-mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
-	return (mmu_pte_t *) ((*pmd) & (~MMU_PAGE_MASK));
-}
-
-/*
- * Page Table
- */
-
-int mmu_pte_present(mmu_pte_t *pte) {
-	return ((uint32_t) *pte & MMU_PAGE_PRESENT);
-}
-
 void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr) {
 	*pte = (mmu_pte_t) ((((uint32_t) addr) & (~MMU_PAGE_MASK))
 			| MMU_PAGE_PRESENT);
+}
+
+/* Value functions */
+
+mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
+	return (mmu_pmd_t *) pgd;
+}
+
+mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
+	return (mmu_pte_t *) ((*pmd) & (~MMU_PAGE_MASK));
 }
 
 mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
 	return (mmu_paddr_t) ((*pte) & (~MMU_PAGE_MASK));
 }
 
-/*
- * Page Table flags
- */
+/* Unset functions */
+
+void mmu_pgd_unset(mmu_pgd_t *pgd) {
+	return ;
+}
+
+void mmu_pmd_unset(mmu_pmd_t *pmd) {
+	*pmd = 0;
+}
+
+void mmu_pte_unset(mmu_pgd_t *pte) {
+	*pte = 0;
+}
+
+/* Page Table flags */
 
 void mmu_pte_set_writable(mmu_pte_t *pte, int val) {
 	if (val) {

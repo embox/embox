@@ -137,41 +137,61 @@ mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
 	return (mmu_pgd_t *) mmu_get_ptd_ptr(context_table[ctx]);
 }
 
+/* Set functions */
+
 void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
 	mmu_set_ptd_entry(pgd, pmd, MMU_ET_PTD);
-}
-
-mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
-	return (mmu_pmd_t *) mmu_get_ptd_ptr(*pgd);
-}
-
-int mmu_pgd_present(mmu_pgd_t *pgd) {
-	return ((unsigned int) *pgd) & MMU_ET_PRESENT;
 }
 
 void mmu_pmd_set(mmu_pmd_t *pmd, mmu_pte_t *pte) {
 	mmu_set_ptd_entry(pmd, pte, MMU_ET_PTD);
 }
 
-mmu_pte_t *mmu_pmd_value(mmu_pmd_t * pmd) {
-	return (mmu_pte_t *) mmu_get_ptd_ptr(*pmd);
-}
-
-int mmu_pmd_present(mmu_pmd_t *pmd) {
-	return ((unsigned int) *pmd) & MMU_ET_PRESENT;
-}
-
 void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
 	mmu_set_pte_entry(pte, addr, MMU_PAGE_SOMEFLAG | MMU_ET_PTE);
+}
+
+/* Value functions */
+
+mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
+	return (mmu_pmd_t *) mmu_get_ptd_ptr(*pgd);
+}
+
+mmu_pte_t *mmu_pmd_value(mmu_pmd_t * pmd) {
+	return (mmu_pte_t *) mmu_get_ptd_ptr(*pmd);
 }
 
 mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
 	return (mmu_paddr_t) mmu_get_pte_ptr(*pte);
 }
 
+/* Present functions */
+
+int mmu_pgd_present(mmu_pgd_t *pgd) {
+	return ((unsigned int) *pgd) & MMU_ET_PRESENT;
+}
+
+int mmu_pmd_present(mmu_pmd_t *pmd) {
+	return ((unsigned int) *pmd) & MMU_ET_PRESENT;
+}
+
 int mmu_pte_present(mmu_pte_t *pte) {
 	return ((unsigned int) *pte) & MMU_ET_PRESENT;
 }
+
+/* Unset functions */
+void mmu_pgd_unset(mmu_pgd_t *pgd) {
+	mmu_set_ptd_entry(pgd, 0, 0);
+}
+
+void mmu_pmd_unset(mmu_pmd_t *pmd) {
+	mmu_set_ptd_entry(pmd, 0, 0);
+}
+
+void mmu_pte_unset(mmu_pte_t *pte) {
+	mmu_set_pte_entry(pte, 0, 0);
+}
+
 
 static uint32_t boot_pgd[0x100] __attribute__((aligned(0x1000)));
 

@@ -40,6 +40,6 @@ void mmu_enable(void) {
     	:
     	:"r" ((uint32_t) boot_page_dir),
     	 "r" (X86_CR4_PSE),
-    	 "r" (X86_CR0_PG)
+    	 "r" (X86_CR0_PG | X86_CR0_WP)
     );
 }
