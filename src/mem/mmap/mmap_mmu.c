@@ -48,6 +48,8 @@ void mmap_free(struct mmap *mmap) {
 		marea = dlist_entry(item, struct marea, mmap_link);
 		dlist_del(&marea->mmap_link);
 
+		vmem_unmap_region(mmap->ctx, marea->start, marea->end - marea->start, 1);
+
 		free(marea);
 	}
 }
