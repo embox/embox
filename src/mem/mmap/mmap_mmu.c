@@ -32,7 +32,6 @@ void mmap_init(struct mmap *mmap) {
 	mmap->stack_marea = NULL;
 
 	assert(!vmem_create_context(&mmap->ctx));
-	vmem_unmap_region(mmap->ctx, 0, (size_t)0xFFFFF000, 0);
 
 	if (!initialized) {
 		/* It's kernel task. Set virtual context for him. */
