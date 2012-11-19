@@ -84,7 +84,6 @@ TEST_CASE("Read file") {
 
 static int setup_suite(void) {
 	fs_drv_t *fs_drv;
-	ramdisk_t *ramdisk;
 
 	new_ramdisk.size = FS_BLOCKS * PAGE_SIZE();
 	new_ramdisk.fs_type = FS_TYPE;
@@ -96,7 +95,7 @@ static int setup_suite(void) {
 	}
 
 	if(NULL == (fs_drv =
-			filesystem_find_drv((const char *) new_ramdisk.fs_name))) {
+			filesystem_find_drv(FS_NAME))) {
 		return -1;
 	}
 
@@ -107,12 +106,9 @@ static int setup_suite(void) {
 			vfs_find_node(mount_param.dev, NULL))) {
 		return -1;
 	}
-	/* set created ramdisc attribute from dev_node */
-	ramdisk =
-		(ramdisk_t *)block_dev(mount_param.dev_node->dev_id)->privdata;
 
 	/* format filesystem */
-	if(0 != fs_drv->fsop->format((void *)&ramdisk->path)) {
+	if(0 != fs_drv->fsop->format((void *)FS_DEV)) {
 		return -1;
 	}
 

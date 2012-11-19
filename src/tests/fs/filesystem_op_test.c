@@ -17,10 +17,8 @@
 
 EMBOX_TEST_SUITE("fs/filesystem test");
 
-static ramdisk_create_params_t new_ramdisk;
 static mount_params_t mount_param;
 static fs_drv_t *fs_drv;
-static ramdisk_t *ramdisk;
 
 TEST_SETUP_SUITE(setup_suite);
 
@@ -32,7 +30,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define FS_BLOCKS  124
 
 TEST_CASE("Create fat filesystem") {
-	test_assert_zero(fs_drv->fsop->format((void *)&ramdisk->path));
+	test_assert_zero(fs_drv->fsop->format((void *)FS_DEV));
 }
 
 #define FS_DIR  "/test_fsop"
@@ -66,6 +64,7 @@ TEST_CASE("Delete file") {
 }
 
 static int setup_suite(void) {
+	static ramdisk_create_params_t new_ramdisk;
 
 	new_ramdisk.size = FS_BLOCKS * PAGE_SIZE();
 	new_ramdisk.fs_type = FS_TYPE;
@@ -80,10 +79,6 @@ static int setup_suite(void) {
 	mount_param.dev = FS_DEV;
 	mount_param.dir = FS_DIR;
 	mount_param.dev_node = vfs_find_node(mount_param.dev, NULL);
-
-	/* set created ramdisc attribute from dev_node */
-	ramdisk =
-		(ramdisk_t *)block_dev(mount_param.dev_node->dev_id)->privdata;
 
 	return 0;
 }
