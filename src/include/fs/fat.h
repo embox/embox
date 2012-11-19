@@ -13,10 +13,8 @@
 #include <drivers/ramdisk.h>
 #include <embox/block_dev.h>
 
-
-#define MSDOS_NAME               11
-
-#define ROOT_DIR "/"
+#define MSDOS_NAME      11
+#define ROOT_DIR        "/"
 #define DIR_SEPARATOR	'/'	/* character separating directory components*/
 
 /* 32-bit error codes */
@@ -28,9 +26,6 @@
 #define DFS_ALLOCNEW	5			/* must allocate new directory cluster */
 #define DFS_ERRMISC		0xffffffff	/* generic error */
 
-/* File access modes */
-//#define DFS_READ		1			/* read-only */
-//#define DFS_WRITE		2			/* write-only */
 
 /* Miscellaneous constants */
 #define SECTOR_SIZE		512		/* sector size in bytes */
@@ -293,12 +288,7 @@ typedef struct _fat_file_description {
 } fat_file_description_t;
 
 
-uint8_t *fat_canonical_to_dir(uint8_t *dest, uint8_t *src);
-
-uint8_t *fat_dir_to_canonical(uint8_t *dest, uint8_t *src, uint8_t dir);
-
 void fat_set_filetime(dir_ent_t *de);
-
 void fat_get_filename(char *tmppath, char *filename);
 
 #endif /* FAT_H_ */

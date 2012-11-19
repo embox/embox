@@ -282,7 +282,7 @@ static int tmpfs_delete(const char *fname) {
 	}
 	fd = (tmpfs_file_description_t *)nod->fd;
 
-	vfs_set_path (path, nod);
+	vfs_get_path_by_node(nod, path);
 
 	/* need delete "." and ".." node for directory */
 	if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
@@ -356,16 +356,22 @@ static void *tmpfs_fopen(struct file_desc *desc, const char *mode) {
 	nod = desc->node;
 	fd = (tmpfs_file_description_t *)nod->fd;
 
+	fd->pointer = 0;
 	if ('r' == *mode) {
 		fd->mode = O_RDONLY;
 	}
 	else if ('w' == *mode) {
 		fd->mode = O_WRONLY;
+		fd->filelen = 0;
+	}
+	else if('a' == *mode) {
+		fd->mode = O_WRONLY | O_APPEND;
+		fd->pointer = fd->filelen;
 	}
 	else {
 		fd->mode = O_RDONLY;
 	}
-	fd->pointer = 0;
+
 
 	return desc;
 }

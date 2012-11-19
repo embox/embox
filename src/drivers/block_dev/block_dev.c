@@ -169,7 +169,7 @@ dev_t *block_dev_create(char *path, void *driver, void *privdata, dev_t *name_id
 	devtab[dev->id] = dev;
 
 	*name = 0;
-	vfs_nip_tail(path, name);
+	path_nip_tail(path, name);
 	block_dev_select_name(name, name_idx);
 	strcpy (dev->name, name);
 

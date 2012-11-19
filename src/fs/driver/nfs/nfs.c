@@ -535,7 +535,7 @@ static int nfsfs_create(void *par) {
 	}
 	node->fd = (void *) fd;
 	strcpy(path, param->path);
-	vfs_nip_tail(path, tail);
+	path_nip_tail(path, tail);
 
 	return nfs_create_dir_entry (path);
 }

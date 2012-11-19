@@ -14,7 +14,31 @@
 
 static node_t *root_node;
 
-int vfs_set_path (char *path, node_t *nod) {
+/**
+ * Save first node name in path into buff variable.
+ * Return the remaining part of path.
+ */
+static char *vfs_get_next_node_name(const char *path, char *buff, int buff_len) {
+	char *p = (char *) path;
+	char *b = buff;
+	while ('/' == *p) {
+		p++;
+	}
+	while (('/' != *p) && ('\0' != *p) && (buff_len --> 1)) {
+		*b++ = *p++;
+	}
+	*b = '\0';
+	if (b != buff) {
+		while ('/' == *p) {
+			p++;
+		}
+		return p;
+	}
+
+	return NULL;
+}
+
+int vfs_get_path_by_node (node_t *nod, char *path) {
 
 	node_t *parent, *node;
 	char buff[MAX_LENGTH_PATH_NAME];
@@ -41,82 +65,6 @@ int vfs_set_path (char *path, node_t *nod) {
 	}
 	return 0;
 }
-
-/**
- * Save first node name in path into buff variable.
- * Return the remaining part of path.
- */
-static char *vfs_get_next_node_name(const char *path, char *buff, int buff_len) {
-	char *p = (char *) path;
-	char *b = buff;
-	while ('/' == *p) {
-		p++;
-	}
-	while (('/' != *p) && ('\0' != *p) && (buff_len --> 1)) {
-		*b++ = *p++;
-	}
-	*b = '\0';
-	if (b != buff) {
-		while ('/' == *p) {
-			p++;
-		}
-		return p;
-	}
-
-	return NULL;
-}
-
-void vfs_cut_mount_dir(char *path, char *mount_dir) {
-	char *p;
-
-	p = path;
-	while (*mount_dir && (*mount_dir == *p)) {
-		mount_dir++;
-		p++;
-	}
-	strcpy((char *) path, (const char *) p);
-}
-
-int vfs_nip_tail(char *head, char *tail) {
-	char *p_tail;
-	char *p;
-
-	p = p_tail = head + strlen(head);
-	strcat(head, tail);
-
-	do {
-		p_tail--;
-		if (head > p_tail) {
-			*p = '\0';
-			return -1;
-		}
-	} while ('/' != *p_tail);
-
-	strcpy (tail, p_tail);
-	*p_tail = '\0';
-
-	return 0;
-}
-
-int vfs_increase_tail(char *head, char *tail) {
-	char *p_tail;
-
-		p_tail = head + strlen(head);
-		strcat(head, tail);
-
-		do {
-			if('\0' == *p_tail) {
-				break;
-			}
-			p_tail++;
-		} while ('/' != *p_tail);
-
-		strcpy (tail, p_tail);
-		*p_tail = '\0';
-
-		return 0;
-}
-
 
 int vfs_add_leaf(node_t *child, node_t *parent) {
 	tree_add_link(&(parent->tree_link), &(child->tree_link));

@@ -722,7 +722,7 @@ static uint32_t fat_open_dir(void *fd,
 		 *  the need for recursion.
 		 */
 		while (*ptr) {
-			fat_canonical_to_dir(tmpfn, ptr);
+			path_canonical_to_dir((char *) tmpfn, (char *) ptr);
 
 			de.name[0] = 0;
 
@@ -1035,7 +1035,8 @@ static int fatfs_create_file(void *par) {
 	strncpy((char *) tmppath,
 			(char *) param->path, MAX_LENGTH_PATH_NAME);
 
-	vfs_cut_mount_dir(tmppath, (char *) fd->fs->root_name);
+	/* set relative path in this file system */
+	path_cut_mount_dir(tmppath, (char *) fd->fs->root_name);
 
 	fat_get_filename(tmppath, (char *) filename);
 
@@ -1177,7 +1178,7 @@ static uint32_t fat_open_file(void *fdsc, uint8_t *path, uint8_t mode,
 	}
 
 	while (!fat_get_next(fd, &di, &de)) {
-		fat_canonical_to_dir((uint8_t *) tmppath, de.name);
+		path_canonical_to_dir(tmppath, (char *) de.name);
 		if (!memcmp(tmppath, filename, MSDOS_NAME)) {
 			/* You can't use this function call to open a directory. */
 			if (de.attr & ATTR_DIRECTORY){
@@ -1925,7 +1926,8 @@ static int fat_mount_files (void *dir_node) {
 	while(DFS_EOF != (cluster = fat_get_next(root_fd, &di, &de))) {
 		/* after fat_get_next de.name[0]=0, if it is not a valid name */
 		if(0 != de.name[0]) {
-			fat_dir_to_canonical(name, de.name, de.attr & ATTR_DIRECTORY);
+			path_dir_to_canonical((char *) name, (char *) de.name,
+								  de.attr & ATTR_DIRECTORY);
 			/* Create node and file descriptor*/
 			memset(full_path, 0, sizeof(full_path));
 			strcpy(full_path, (const char *) root_fd->fs->root_name);
@@ -1982,7 +1984,8 @@ static int fat_create_dir_entry(char *dir_name) {
 	memset(rcv_buf, 0, sizeof(rcv_buf));
 	di.p_scratch = rcv_buf;
 
-	vfs_cut_mount_dir(dir_name, (char *)parent_fd->fs->root_name);
+	/* set relative path in this file system */
+	path_cut_mount_dir(dir_name, (char *)parent_fd->fs->root_name);
 	if (fat_open_dir(parent_fd, (uint8_t *) dir_name, &di)) {
 		page_free(__phymem_allocator, rcv_buf, 1);
 		return -ENODEV;
@@ -1990,7 +1993,8 @@ static int fat_create_dir_entry(char *dir_name) {
 
 	while(DFS_EOF != (cluster = fat_get_next(parent_fd, &di, &de))) {
 		if(0 != de.name[0]) {
-			fat_dir_to_canonical(name, de.name, de.attr & ATTR_DIRECTORY);
+			path_dir_to_canonical((char *) name, (char *) de.name,
+								  de.attr & ATTR_DIRECTORY);
 			/* Create node and file descriptor*/
 			memset(full_path, 0, sizeof(full_path));
 			strcpy(full_path, (const char *) parent_fd->fs->root_name);
@@ -2060,8 +2064,9 @@ static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
 		_mode = O_RDONLY;
 	}
 
-	vfs_set_path ((char *) path, nod);
-	vfs_cut_mount_dir((char *) path, (char *) fd->fs->root_name);
+	vfs_get_path_by_node (nod, (char *) path);
+	/* set relative path in this file system */
+	path_cut_mount_dir((char *) path, (char *) fd->fs->root_name);
 
 	if(DFS_OK == fat_open_file(fd, (uint8_t *)path, _mode, sector_buff)) {
 		return desc;
@@ -2306,7 +2311,7 @@ static int fatfs_delete(const char *fname) {
 	}
 	fd = (fat_file_description_t *)nod->fd;
 
-	vfs_set_path (path, nod);
+	vfs_get_path_by_node(nod, path);
 
 	/* need delete "." and ".." node for directory */
 	if (DIRECTORY_NODE_TYPE == (nod->properties & DIRECTORY_NODE_TYPE)) {
@@ -2322,9 +2327,12 @@ static int fatfs_delete(const char *fname) {
 		path[strlen(path) - 3] = '\0';
 	}
 
-	/* remove the root name to give a name to fat filesystem name*/
-	vfs_cut_mount_dir(path, (char *) fd->fs->root_name);
-	/* delete filesystem descriptor when delete root dir*/
+	/*
+	 * remove the root name to give a name to fat file system name
+	 * and set relative path in this file system
+	 */
+	path_cut_mount_dir(path, (char *) fd->fs->root_name);
+	/* delete file system descriptor when delete root dir */
 	if(0 == *path) {
 		pool_free(&fat_fs_pool, fd->fs);
 	}

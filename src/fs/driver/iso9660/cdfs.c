@@ -968,8 +968,9 @@ static void *cdfsfs_fopen(struct file_desc *desc, const char *mode) {
 	}
 	fd->mode = _mode;
 
-	vfs_set_path (path, nod);
-	vfs_cut_mount_dir(path, (char *) fd->fs->mntto);
+	vfs_get_path_by_node(nod, path);
+	/* set relative path in this file system */
+	path_cut_mount_dir(path, (char *) fd->fs->mntto);
 
 	if(0 == cdfs_open(fd, path)) {
 		return desc;

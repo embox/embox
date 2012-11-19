@@ -37,7 +37,7 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 
 	/* find last node in the path */
 	do {
-		if (vfs_nip_tail(param.path, tail)) {
+		if (path_nip_tail(param.path, tail)) {
 			return NULL;
 		}
 		count_dir ++;
@@ -52,7 +52,7 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 
 	/* add one directory and assign the parameters of the parent */
 	do {
-		vfs_increase_tail(param.path, tail);
+		path_increase_tail(param.path, tail);
 
 		if (NULL == (new_node = vfs_add_path(param.path, NULL))) {
 			return NULL;
