@@ -17,7 +17,7 @@ module snmp_mib {
 
 	depends embox.mem.objalloc
 	depends embox.util.LibUtil
-	depends embox.init.start_script
+	@NoRuntime depends embox.init.start_script
 }
 
 // Represents all mibs
