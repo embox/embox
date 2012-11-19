@@ -15,9 +15,11 @@
 static inline int __libc_open(const char *path, const char *mode,
 		struct file_struct_int *file) {
 	if ('r' == *mode) {
-		file->fd = open(path, 0);
+		file->fd = open(path, O_RDONLY);
 	} else if ('w' == *mode) {
-		file->fd = open(path, 1);
+		file->fd = open(path, O_WRONLY);
+	} else if ('a' == *mode) {
+			file->fd = open(path, O_APPEND);
 	} else {
 		file->fd = open(path, 0);
 	}

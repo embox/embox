@@ -23,7 +23,7 @@ struct file_desc *kopen(const char *path, const char *mode) {
 	struct file_desc *desc;
 
 	if (NULL == (nod = vfs_find_node(path, NULL))) {
-		if (strchr(mode, 'w') == NULL) {
+		if ((strchr(mode, 'w')  == NULL) && (strchr(mode, 'a')  == NULL)) {
 			errno = ENOENT;
 			return NULL;
 		}
