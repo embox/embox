@@ -29,6 +29,52 @@ size_t VIRTUAL_TABLES_LEN;
 void *VIRTUAL_PAGES_INFO_START;
 size_t VIRTUAL_PAGES_INFO_LEN;
 
+/*
+ * ------------------ Alloc ------------------
+ */
+
+static inline void *vmem_alloc_table(void) {
+	void *addr = page_alloc(virt_table_allocator, 1);
+	memset(addr, 0 , MMU_PAGE_SIZE);
+	return addr;
+}
+
+mmu_pgd_t *vmem_alloc_pgd_table(void) {
+	return (mmu_pgd_t *) vmem_alloc_table();
+}
+
+mmu_pmd_t *vmem_alloc_pmd_table(void) {
+	return (mmu_pmd_t *) vmem_alloc_table();
+}
+
+mmu_pte_t *vmem_alloc_pte_table(void) {
+	return (mmu_pte_t *) vmem_alloc_table();
+}
+
+void *vmem_alloc_page() {
+	return page_alloc(virt_page_allocator, 1);
+}
+
+/*
+ * ------------------ Free ------------------
+ */
+
+void vmem_free_pgd_table(mmu_pgd_t *pgd) {
+	page_free(virt_table_allocator, pgd, 1);
+}
+
+void vmem_free_pmd_table(mmu_pmd_t *pmd) {
+	page_free(virt_table_allocator, pmd, 1);
+}
+
+void vmem_free_pte_table(mmu_pte_t *pte) {
+	page_free(virt_table_allocator, pte, 1);
+}
+
+void vmem_free_page(void *addr) {
+	page_free(virt_page_allocator, addr, 1);
+}
+
 static int unit_init() {
 	/* Initialize tables allocator. */
 	VIRTUAL_TABLES_LEN = VIRTUAL_TABLES_COUNT * MMU_PAGE_SIZE;
@@ -64,24 +110,3 @@ static int unit_fini() {
 	return 0;
 }
 
-static inline void *vmem_alloc_table(void) {
-	void *addr = page_alloc(virt_table_allocator, 1);
-	memset(addr, 0 , MMU_PAGE_SIZE);
-	return addr;
-}
-
-mmu_pgd_t *vmem_alloc_pgd_table(void) {
-	return (mmu_pgd_t *) vmem_alloc_table();
-}
-
-mmu_pmd_t *vmem_alloc_pmd_table(void) {
-	return (mmu_pmd_t *) vmem_alloc_table();
-}
-
-mmu_pte_t *vmem_alloc_pte_table(void) {
-	return (mmu_pte_t *) vmem_alloc_table();
-}
-
-void *vmem_alloc_page() {
-	return page_alloc(virt_page_allocator, 1);
-}
