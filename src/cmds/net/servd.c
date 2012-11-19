@@ -76,7 +76,7 @@ struct client_info {
 	char *data; /* pointer to current chunk */
 	char *next_data; /* pointer to next piece of data in buffer */
 	size_t next_len; /* length of the next chunk */
-	http_request * parsed; /* parsed request */
+	http_request * parsed_request; /* parsed request */
 	struct event unlock_sock_event;
 	int lock_status;
 };
@@ -110,7 +110,7 @@ static const char *service_params[3][2] = { { DEFAULT_PAGE, "hello" }, {
 static void start_services(void) {
 	int i;
 
-	for (i = 0; i < ARRAY_SIZE(service_params);	i++) {
+	for (i = 0; i < ARRAY_SIZE(service_params); i++) {
 		web_service_start(service_params[i][0]);
 	}
 }
@@ -133,11 +133,13 @@ static int is_lock_needed(char *name) {
 	return 0;
 }
 
-//TODO now it'll parse and fill struct
-static int get_next_line(struct client_info *info) {
+//TODO it's work if buffer contains full starting line and headers
+static int receive_and_parse_request(struct client_info *info) {
 	int res;
 	size_t len;
 	char *chunk;
+	char *prev;
+	char *cur;
 
 	len = info->next_len;
 	chunk = info->next_data;
@@ -156,38 +158,53 @@ static int get_next_line(struct client_info *info) {
 		return 0;
 	}
 
-	info->parsed = parse_http(info->buff);
+	/*parse starting line and headers*/
+	prev = info->buff;
+	cur = strchr(info->buff, '\n');
+	while (cur - prev > 2) {
+		cur++;
+		prev = cur;
+		cur = strchr(prev, '\n');
+		if (cur == NULL) {
+
+		}
+	}
+	cur[0] = '\0';
+
+	info->parsed_request = parse_http(info->buff);
+
+	//todo receive message body and set in some file
 
 	return 1;
 }
 
-static int http_hnd_title(struct client_info *info) {
-//	printf("http_req_hdr: %s\n", info->data);
+static int http_hnd_starting_line(struct client_info *info) {
 //todo other check
-	if (info->parsed == NULL) {
+	if (info->parsed_request == NULL) {
 		return HTTP_RET_ABORT; /* bad request */
 	}
 
-	if (strcmp(info->parsed->method, "GET") == 0) {
+	if (strcmp(info->parsed_request->method, "GET") == 0) {
 		info->method = HTTP_METHOD_GET;
 
-		if (info->parsed->proto == NULL) {
+		if (info->parsed_request->proto == NULL) {
 			return HTTP_RET_ABORT; /* bad request */
 		}
 
-		if (strlen(info->parsed->parsed_url->path) > sizeof info->file) {
+		if (strlen(info->parsed_request->parsed_url->path)
+				> sizeof info->file) {
 			return HTTP_STAT_414;
 		}
 
-		if (strcmp(info->parsed->parsed_url->path, "") == 0) {
+		if (strcmp(info->parsed_request->parsed_url->path, "") == 0) {
 			strcpy(info->file, DEFAULT_PAGE);
 		} else {
-			strcpy(info->file, info->parsed->parsed_url->path);
+			strcpy(info->file, info->parsed_request->parsed_url->path);
 		}
 
 		if (is_service_started(info->file)) {
 			test_params.info = info;
-			test_params.text = info->parsed->parsed_url->query;
+			test_params.text = info->parsed_request->parsed_url->query;
 			if (is_lock_needed(info->file)) {
 				event_init(&info->unlock_sock_event, "socket_lock");
 				info->lock_status = 1;
@@ -195,7 +212,7 @@ static int http_hnd_title(struct client_info *info) {
 			web_service_send_message(info->file, &test_params);
 		}
 
-	} else if (strcmp(info->parsed->method, "POST") == 0) {
+	} else if (strcmp(info->parsed_request->method, "POST") == 0) {
 		info->method = HTTP_METHOD_POST;
 	} else {
 		info->method = HTTP_METHOD_UNKNOWN;
@@ -204,64 +221,33 @@ static int http_hnd_title(struct client_info *info) {
 
 	return HTTP_RET_HNDOPS;
 }
-/*static int http_hnd_ops(struct client_info *info) {
- char *ops, *param;
 
- //	printf("http_req_ops: %s\n", info->data);
+static int http_hnd_headers(struct client_info *info) {
+	//todo process headers
 
- ops = info->data;
- if (strcmp(ops, "") == 0) {
- return HTTP_RET_ENDHDR;
- }
-
- param = strchr(ops, ':');
- if (param == NULL) {
- return HTTP_STAT_400;
- }
-
- *param = '\0', param = param + 2;
-
- if (strcmp(ops, "Host") == 0) { }
- else if (strcmp(ops, "Connection") == 0) { }
- else if (strcmp(ops, "User-Agent") == 0) { }
- else if (strcmp(ops, "Accept") == 0) { }
- else if (strcmp(ops, "Accept-Encoding") == 0) { }
- else if (strcmp(ops, "Accept-Language") == 0) { }
- else if (strcmp(ops, "Accept-Charset") == 0) { }
- else if (strcmp(ops, "Cache-Control") == 0) { }static void *world(void *args) {
- printf("\n\n[error]\n\n");
- return NULL;
- }
- else if (strcmp(ops, "Referer") == 0) { }
- else {
- printf("httpd warning: unknown options: ops='%s' param='%s'\n", ops, param);
- }
-
- return HTTP_RET_OK;
- }*/
+	return HTTP_RET_OK;
+}
 
 static int process_request(struct client_info *info) {
 	int res;
-	int (*http_header_hnd)(struct client_info *);
 
-	http_header_hnd = http_hnd_title; /* set first handler of data */
-	while (get_next_line(info)) {
-		res = http_header_hnd(info);
-		switch (res) {
-		default:
+	while (receive_and_parse_request(info)) {
+		res = http_hnd_starting_line(info);
+
+		if (res != HTTP_RET_HNDOPS) {
 			return res;
-		case HTTP_RET_OK: /* all ok, continue */
-			break;
-		case HTTP_RET_HNDOPS: /* set option's handler */
-			/*http_header_hnd = http_hnd_ops;
-			 break;*/
-			return HTTP_RET_OK;
-		case HTTP_RET_ENDHDR: /* end header section */
-			return HTTP_RET_OK;
+		}
+
+		res = http_hnd_headers(info);
+
+		if (res != HTTP_RET_OK) {
+			return res;
+		} else {
+			return res;
 		}
 	}
 
-	return (http_header_hnd == http_hnd_title ? HTTP_RET_ABORT : HTTP_STAT_413);
+	return HTTP_RET_ABORT;
 }
 
 static int http_req_get(struct client_info *info) {
@@ -309,7 +295,7 @@ static int process_response(struct client_info *info) {
 	}
 }
 
-static int set_title(char *buff, int status_code) {
+static int set_starting_line(char *buff, int status_code) {
 	return sprintf(buff, "HTTP/1.0 %s\r\n", http_stat_str[status_code]);
 }
 
@@ -330,10 +316,10 @@ static void send_data(struct client_info *ci, int res) {
 	curr = ci->buff;
 	/* 1. set title */
 	assert((0 <= res) && (res < HTTP_STAT_MAX));
-	curr += set_title(curr, res);
+	curr += set_starting_line(curr, res);
 	/* 2. set ops */
 	curr += set_ops(curr, ci);
-	/* 3. set data and send respone */
+	/* 3. set mesaage bode and send respone */
 	if (ci->fp == NULL) {
 		/* send error */
 		curr += sprintf(curr, "<html>"
