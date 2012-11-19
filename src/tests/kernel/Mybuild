@@ -55,4 +55,6 @@ module syscall_test {
 
 module usermode_test {
 	source "usermode_test.c"
+
+	depends embox.arch.syscall_caller
 }
