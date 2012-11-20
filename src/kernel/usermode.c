@@ -42,7 +42,7 @@ static void usermode_trampoline(struct ue_data *data) {
 int create_usermode_thread(struct thread **p_thread, unsigned int flags,
 		void *ip, void *sp) {
 	struct ue_data *data;
-	int err;
+	int res;
 
 	sched_lock();
 	{
@@ -54,10 +54,10 @@ int create_usermode_thread(struct thread **p_thread, unsigned int flags,
 		data->ip = ip;
 		data->sp = sp;
 
-		if ((err = thread_create(p_thread, flags, TRAMPOLINE, data))) {
+		if ((res = thread_create(p_thread, flags, TRAMPOLINE, data))) {
 			pool_free(&ue_data_pool, data);
 			sched_unlock();
-			return err;
+			return res;
 		}
 	}
 	sched_unlock();
@@ -67,7 +67,7 @@ int create_usermode_thread(struct thread **p_thread, unsigned int flags,
 
 int create_usermode_task(void *ip, void *sp) {
 	struct ue_data *data;
-	int err;
+	int res;
 
 	sched_lock();
 	{
@@ -79,14 +79,14 @@ int create_usermode_task(void *ip, void *sp) {
 		data->ip = ip;
 		data->sp = sp;
 
-		if ((err = new_task(TRAMPOLINE, data)) < 0) {
+		if ((res = new_task(TRAMPOLINE, data)) < 0) {
 			pool_free(&ue_data_pool, data);
 			sched_unlock();
-			return err;
+			return res;
 		}
 	}
 	sched_unlock();
 
-	return err;
+	return res;
 }
 

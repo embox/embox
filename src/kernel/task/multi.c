@@ -42,43 +42,56 @@ int new_task(void *(*run)(void *), void *arg) {
 	int res = 0;
 	const int task_sz = task_resource_sum_size() + sizeof(struct task);
 
-	param = (struct task_creat_param *) pool_alloc(&creat_param);
-	if (!param) {
-		return -EAGAIN;
+	sched_lock();
+	{
+		param = (struct task_creat_param *) pool_alloc(&creat_param);
+		if (!param) {
+			sched_unlock();
+			return -EAGAIN;
+		}
+
+		if (!task_table_has_space()) {
+			pool_free(&creat_param, param);
+			sched_unlock();
+			return -ENOMEM;
+		}
+
+		param->run = run;
+		param->arg = arg;
+
+		/*
+		 * XXX: May be it's unnecessary to create it suspended
+		 * because we in sched_lock.
+		 */
+		if (0 != (res = thread_create(&thd, THREAD_FLAG_SUSPENDED, task_trampoline, param))) {
+			sched_unlock();
+			return res;
+		}
+
+		/* alloc space for task & resources on top of created thread's stack */
+
+		self_task = task_init(thd->stack);
+
+		thd->stack += task_sz;
+		thd->stack_sz -= task_sz;
+
+		context_set_stack(&thd->context, thd->stack + thd->stack_sz);
+
+		/* init new task */
+
+		task_init_parent(self_task, task_self());
+
+		thread_set_task(thd, self_task);
+
+		thread_detach(thd);
+
+		thread_launch(thd);
+
+		res = task_table_add(self_task);
 	}
+	sched_unlock();
 
-	if (!task_table_has_space()) {
-		pool_free(&creat_param, param);
-		return -ENOMEM;
-	}
-
-	param->run = run;
-	param->arg = arg;
-
-	if (0 != (res = thread_create(&thd, THREAD_FLAG_SUSPENDED, task_trampoline, param))) {
-		return res;
-	}
-
-	/* alloc space for task & resources on top of created thread's stack */
-
-	self_task = task_init(thd->stack);
-
-	thd->stack += task_sz;
-	thd->stack_sz -= task_sz;
-
-	context_set_stack(&thd->context, thd->stack + thd->stack_sz);
-
-	/* init new task */
-
-	task_init_parent(self_task, task_self());
-
-	thread_set_task(thd, self_task);
-
-	thread_detach(thd);
-
-	thread_launch(thd);
-
-	return task_table_add(self_task);
+	return res;
 }
 
 struct task *task_self(void) {
@@ -169,7 +182,11 @@ static void *task_trampoline(void *arg) {
 	run_fn run = param->run;
 	void *res = NULL;
 
-	pool_free(&creat_param, param);
+	sched_lock();
+	{
+		pool_free(&creat_param, param);
+	}
+	sched_unlock();
 
 	res = run(run_arg);
 	task_exit(res);
