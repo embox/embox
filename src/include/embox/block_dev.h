@@ -37,7 +37,7 @@ typedef struct block_dev_geometry {
 typedef struct block_dev {
 	dev_t id;
 	node_t *dev_node;
-	char name[16];
+	char name[MAX_LENGTH_FILE_NAME];
 	struct block_dev_driver *driver;
 	void *privdata;
 	size_t size;

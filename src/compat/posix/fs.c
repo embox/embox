@@ -33,7 +33,7 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 
 	count_dir = 0;
 	tail[0] = '\0';
-	strcpy (param.path, path);
+	strncpy (param.path, path, MAX_LENGTH_PATH_NAME);
 
 	/* find last node in the path */
 	do {

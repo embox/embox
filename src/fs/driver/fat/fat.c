@@ -1930,7 +1930,8 @@ static int fat_mount_files (void *dir_node) {
 								  de.attr & ATTR_DIRECTORY);
 			/* Create node and file descriptor*/
 			memset(full_path, 0, sizeof(full_path));
-			strcpy(full_path, (const char *) root_fd->fs->root_name);
+			strncpy(full_path, (const char *) root_fd->fs->root_name,
+					MAX_LENGTH_PATH_NAME);
 			strcat(full_path, "/");
 			strcat (full_path, (const char *) name);
 
@@ -1997,7 +1998,8 @@ static int fat_create_dir_entry(char *dir_name) {
 								  de.attr & ATTR_DIRECTORY);
 			/* Create node and file descriptor*/
 			memset(full_path, 0, sizeof(full_path));
-			strcpy(full_path, (const char *) parent_fd->fs->root_name);
+			strncpy(full_path, (const char *) parent_fd->fs->root_name,
+				   MAX_LENGTH_PATH_NAME);
 			strcat(full_path, dir_name);
 			strcat(full_path, "/");
 			strncat (full_path, (const char *) name, MSDOS_NAME);
@@ -2231,7 +2233,7 @@ static int fatfs_mount(void *par) {
 		dev_node->file_info = (void *) &fatfs_fop;
 	}
 
-	strcpy((char *) dev_fd->fs->root_name, params->dir);
+	strncpy((char *) dev_fd->fs->root_name, params->dir, MAX_LENGTH_PATH_NAME);
 
 	if(NULL == (fd = pool_alloc(&fat_file_pool))) {
 		return -ENOMEM;

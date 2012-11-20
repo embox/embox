@@ -21,6 +21,9 @@
 #include <mem/phymem.h>
 #include <util/indexator.h>
 
+#define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
+INDEX_DEF(idecd_idx,0,MAX_DEV_QUANTITY);
+
 static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 		                     int pktlen, char *buffer, size_t bufsize) {
 	hdc_t *hdc;
@@ -197,13 +200,55 @@ static int cd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-static block_dev_driver_t _cdrom_pio_driver = {
+static block_dev_driver_t idecd_pio_driver = {
 	"idecd_drv",
 	cd_ioctl,
 	cd_read,
 	cd_write
 };
 
-void *cdrom_pio_driver(void) {
-	return &_cdrom_pio_driver;
+static int idecd_init (void *args) {
+	slot_t *ide;
+	hd_t *drive;
+	dev_t name_idx;
+	double size;
+	char   path[MAX_LENGTH_PATH_NAME];
+
+	ide = ide_get_drive();
+
+	for(int i = 0; i < 4; i++) {
+		if(NULL == ide->drive[i]) {
+			continue;
+		}
+		else {
+			drive = (hd_t *) ide->drive[i];
+			/* Make new device */
+			if (drive->media == IDE_CDROM) {
+				*path = 0;
+				strcat(path, "/dev/");
+				name_idx = (dev_t) index_alloc(&idecd_idx, INDEX_ALLOC_MIN);
+				drive->dev_id = block_dev_create(strcat(path, "cd#"),
+						&idecd_pio_driver, drive, &name_idx);
+
+				if(NULL != drive->dev_id) {
+					size = (double) drive->param.cylinders *
+						   (double) drive->param.heads *
+						   (double) drive->param.unfbytes *
+						   (double) (drive->param.sectors + 1);
+					block_dev(drive->dev_id)->size = (size_t) size;
+				}
+				else {
+					return -1;
+				}
+
+				drive->blks = 0;
+			}
+			else {
+				continue;
+			}
+		}
+	}
+	return 0;
 }
+
+EMBOX_BLOCK_DEV("idecd", &idecd_pio_driver, idecd_init);

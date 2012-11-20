@@ -193,7 +193,7 @@ static int tmpfs_mount(void *par) {
 		dev_node->file_info = (void *) &tmpfs_fop;
 	}
 
-	strcpy((char *) dev_fd->fs->root_name, params->dir);
+	strncpy((char *) dev_fd->fs->root_name, params->dir, MAX_LENGTH_PATH_NAME);
 
 	if(NULL == (fd = pool_alloc(&tmpfs_file_pool))) {
 		return -ENOMEM;

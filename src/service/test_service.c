@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <net/util/request_parser.h>
+#include <lib/expat.h>
 
 #define BUFF_SZ       (1460 * 2)
 #define FILENAME_SZ   30
@@ -47,13 +48,64 @@ struct params {
 	char *text;
 };
 
+static void XMLCALL
+startElement(void *userData, const char *name, const char **atts) {
+	struct params *data = (struct params *) userData;
+	FILE *file = data->info->fp;
+	int i = 0;
+
+	if (strcmp(name, "c:out") == 0) {
+		//param -> text
+		fwrite(data->text, sizeof(char), strlen(data->text), file);
+	} else {
+		//open tag
+		fwrite("<", sizeof(char), 1, file);
+		fwrite(name, sizeof(char), strlen(name), file);
+
+		//add atts
+		while (atts[i] != NULL) {
+			fwrite(" ", sizeof(char), 1, file);
+			fwrite(atts[i], sizeof(char), strlen(atts[i]), file);
+			fwrite("=\"", sizeof(char), 2, file);
+			i++;
+			fwrite(atts[i], sizeof(char), strlen(atts[i]), file);
+			fwrite("\"", sizeof(char), 1, file);
+			i++;
+		}
+
+		fwrite(">", sizeof(char), 1, file);
+	}
+}
+
+static void XMLCALL
+endElement(void *userData, const char *name) {
+	struct params *data = (struct params *) userData;
+	FILE *file = data->info->fp;
+
+	if (strcmp(name, "c:out") != 0) {
+		//close tag
+		fwrite("</", sizeof(char), 2, file);
+		fwrite(name, sizeof(char), strlen(name), file);
+		fwrite(">", sizeof(char), 1, file);
+	}
+}
+
+static void XMLCALL
+character(void *userData, const XML_Char *s, int len) {
+	struct params *data = (struct params *) userData;
+	FILE *file = data->info->fp;
+
+	//text between tags
+	fwrite(s, sizeof(char), len, file);
+}
+
 static void *process_params(void* args) {
 	struct web_service_instance *inst;
 	struct params *params;
-	char buff[512];
+	char buf[512];
 	FILE *file;
-	int n;
-	int param_flag = 0;
+	int done;
+	XML_Parser parser;
 
 	inst = (struct web_service_instance *) args;
 	params = (struct params *) inst->params;
@@ -68,39 +120,28 @@ static void *process_params(void* args) {
 		return NULL;
 	}
 
-	while ((n = fread(buff, sizeof(char), sizeof buff, file)) > 0) {
-		char *param;
+	parser = XML_ParserCreate(NULL);
+	XML_SetHTMLUse(parser);
+	XML_SetUserData(parser, params);
+	XML_SetElementHandler(parser, startElement, endElement);
+	XML_SetCharacterDataHandler(parser, character);
 
-		if (param_flag) {
-			if ((param = strchr(buff, '}')) != NULL) {
-				param++;
-				fwrite(param, sizeof(char), strlen(param), params->info->fp);
-				param_flag = 0;
-			} else {
-				continue;
-			}
+	do {
+		int len = (int) fread(buf, 1, sizeof(buf), file);
+		done = len < sizeof(buf);
+		if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
+			fclose(file);
+			fclose(params->info->fp);
+			params->info->fp = NULL;
+			params->info->lock_status = 0;
+			event_notify(&params->info->unlock_sock_event);
+			return NULL;
 		}
+	} while (!done);
 
-		if ((param = strchr(buff, '$')) != NULL) {
-			fwrite(buff, sizeof(char), param - buff, params->info->fp);
-			if (params->text != NULL) {
-				fwrite(params->text, sizeof(char), strlen(params->text),
-						params->info->fp);
-			}
-			if ((param = strchr(param, '}')) != NULL) {
-				param++;
-				fwrite(param, sizeof(char), strlen(param), params->info->fp);
-			} else {
-				param_flag = 1;
-			}
-		} else {
-			fwrite(buff, sizeof(char), n, params->info->fp);
-		}
-	}
-
+	XML_ParserFree(parser);
 	fclose(file);
 	fclose(params->info->fp);
-
 
 	params->info->lock_status = 0;
 	event_notify(&params->info->unlock_sock_event);

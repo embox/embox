@@ -45,98 +45,47 @@ char Buff[BUFFSIZE];
 int Depth;
 
 static void XMLCALL
-startElement(void *userData, const char *name, const char **atts)
-{
-  int i;
-  int *depthPtr = (int *)userData;
-  for (i = 0; i < *depthPtr; i++)
-    putchar('\t');
-  puts(name);
-  *depthPtr += 1;
-}
-
-static void XMLCALL
-endElement(void *userData, const char *name)
-{
-  int *depthPtr = (int *)userData;
-  *depthPtr -= 1;
-}
-
-void start_elements(void)
-{
-  char buf[BUFFSIZE];
-  FILE *file;
-  XML_Parser parser = XML_ParserCreate(NULL);
-  int done;
-  int depth = 0;
-  file = fopen("about.html", "r");
-  XML_SetUserData(parser, &depth);
-  XML_SetElementHandler(parser, startElement, endElement);
-  do {
-    int len = (int)fread(buf, 1, sizeof(buf), file);
-    done = len < sizeof(buf);
-    if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
-      fprintf(stderr,
-              "%s at line %" XML_FMT_INT_MOD "u\n",
-              XML_ErrorString(XML_GetErrorCode(parser)),
-              XML_GetCurrentLineNumber(parser));
-      return;
-    }
-  } while (!done);
-  XML_ParserFree(parser);
-  fclose(file);
-}
-
-static void XMLCALL
-start(void *data, const char *el, const char **attr) {
+startElement(void *userData, const char *name, const char **atts) {
 	int i;
-
-	for (i = 0; i < Depth; i++)
-		printf("  ");
-
-	printf("%s", el);
-
-	for (i = 0; attr[i]; i += 2) {
-		printf(" %s='%s'", attr[i], attr[i + 1]);
-	}
-
-	printf("\n");
-	Depth++;
+	int *depthPtr = (int *) userData;
+	for (i = 0; i < *depthPtr; i++)
+		putchar('\t');
+	puts(name);
+	*depthPtr += 1;
 }
 
 static void XMLCALL
-end(void *data, const char *el) {
-	Depth--;
+endElement(void *userData, const char *name) {
+	int *depthPtr = (int *) userData;
+	*depthPtr -= 1;
 }
 
-void start_outline(void){
-	XML_Parser p = XML_ParserCreate(NULL);
-		FILE *file;
-		if (!p) {
-			fprintf(stderr, "Couldn't allocate memory for parser\n");
+static void XMLCALL
+character(void *userData, const XML_Char *s, int len) {
+	return;
+}
+
+void start_elements(void) {
+	char buf[BUFFSIZE];
+	FILE *file;
+	XML_Parser parser = XML_ParserCreate(NULL);
+	int done;
+	int depth = 0;
+	file = fopen("expat.html", "r");
+	XML_SetUserData(parser, &depth);
+	XML_SetElementHandler(parser, startElement, endElement);
+	XML_SetCharacterDataHandler(parser, character);
+	do {
+		int len = (int) fread(buf, 1, sizeof(buf), file);
+		done = len < sizeof(buf);
+		if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
+			fprintf(stderr,
+					"%s at line %" XML_FMT_INT_MOD "u\n", XML_ErrorString(XML_GetErrorCode(parser)), XML_GetCurrentLineNumber(parser));
+			return;
 		}
-
-		XML_SetElementHandler(p, start, end);
-
-		file = fopen("src/about.html", "r");
-		for (;;) {
-			int done;
-			int len;
-
-			len = (int) fread(Buff, 1, BUFFSIZE, file);
-			if (ferror(file)) {
-				fprintf(stderr, "Read error\n");
-			}
-			done = feof(file);
-
-			if (XML_Parse(p, Buff, len, done) == XML_STATUS_ERROR) {
-				fprintf(stderr, "Parse error at line %" XML_FMT_INT_MOD "u:\n%s\n",
-						XML_GetCurrentLineNumber(p),
-						XML_ErrorString(XML_GetErrorCode(p)));
-
-			}
-		}
-		fclose(file);
+	} while (!done);
+	XML_ParserFree(parser);
+	fclose(file);
 }
 
 #include <framework/example/self.h>
@@ -144,7 +93,6 @@ void start_outline(void){
 EMBOX_EXAMPLE(run);
 
 static int run(int argc, char *argv[]) {
-	//start_outline();
 	start_elements();
 	return 0;
 }

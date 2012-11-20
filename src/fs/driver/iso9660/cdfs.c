@@ -1150,7 +1150,7 @@ static int cdfs_create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath,
 				continue;
 			}
 
-			strcpy(full_name, dirpath);
+			strncpy(full_name, dirpath, MAX_LENGTH_PATH_NAME);
 			strcat(full_name, "/");
 
 			if (cdfs->joliet) {
@@ -1267,17 +1267,17 @@ static int cdfs_get_full_path(cdfs_t *cdfs, int numrec, char *path, char *root) 
 
 	/* go up to the root folder */
 	while(1 != pathrec->parent) {
-		strcpy(full_path, path);
+		strncpy(full_path, path, MAX_LENGTH_PATH_NAME);
 		pathrec = cdfs->path_table[pathrec->parent];
 		memcpy(path, pathrec->name, pathrec->length);
 		path[pathrec->length] = 0;
 		strcat(path, "/");
 		strcat(path, full_path);
 	}
-	strcpy(full_path, root);
+	strncpy(full_path, root, MAX_LENGTH_PATH_NAME);
 	strcat(full_path, "/");
 	strcat(full_path, path);
-	strcpy(path, full_path);
+	strncpy(path, full_path, MAX_LENGTH_PATH_NAME);
 
 	return 0;
 }

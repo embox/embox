@@ -21,8 +21,10 @@ module About_service {
 
 module Test_service {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
+	@IncludePath("$(THIRDPARTY_DIR)/lib/expat")
 	source "test_service.c"
 
 	depends embox.net.lib.parser
 	depends SrvLib
+	depends embox.third_party.expat.expat_lib
 }

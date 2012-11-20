@@ -313,7 +313,7 @@ static int nfsfs_mount(void *par) {
 	dir_node->dev_id = params->dev_node->dev_id;
 	params->dev_node = dir_node;
 
-	strcpy(p_fs_fd->mnt_point, params->dir);
+	strncpy(p_fs_fd->mnt_point, params->dir, MAX_LENGTH_PATH_NAME);
 
 	if(0 >  nfs_prepare(params->ext)) {
 		return -1;
@@ -446,7 +446,7 @@ static int nfs_create_dir_entry(char *parent) {
 
 			memset(full_path, 0, sizeof(full_path));
 
-			strcpy(full_path, parent);
+			strncpy(full_path, parent, MAX_LENGTH_PATH_NAME);
 			strcat(full_path, "/");
 			strcat(full_path, (const char *) predesc->file_name.name.data);
 
@@ -490,8 +490,8 @@ static int nfsfs_create(void *par) {
 	rpc_string_t name;
 	create_reply_t reply;
 	__u32 procnum;
-	char path[MAX_LENGTH_FILE_NAME];
-	char tail[MAX_LENGTH_FILE_NAME];
+	char path[MAX_LENGTH_PATH_NAME];
+	char tail[MAX_LENGTH_PATH_NAME];
 
 	param = (file_create_param_t *) par;
 
@@ -517,7 +517,7 @@ static int nfsfs_create(void *par) {
 	req.new.dir_fh = &par_fd->fh.name_fh;
 	/* set new file name */
 	memset((void *) &name, 0, sizeof(name));
-	strcpy(name.data, node->name);
+	strncpy(name.data, node->name, MAX_LENGTH_FILE_NAME);
 	name.len = strlen(node->name);
 	req.new.fname = &name;
 	/* set attribute of new file */
@@ -534,7 +534,7 @@ static int nfsfs_create(void *par) {
 		return -1;
 	}
 	node->fd = (void *) fd;
-	strcpy(path, param->path);
+	strncpy(path, param->path, MAX_LENGTH_PATH_NAME);
 	path_nip_tail(path, tail);
 
 	return nfs_create_dir_entry (path);
