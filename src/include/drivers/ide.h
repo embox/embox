@@ -328,8 +328,10 @@ typedef struct hd {
 } hd_t;
 
 typedef struct _slot {
-	hd_t *drive[8];
+	hd_t *drive[HD_DRIVES];
 } slot_t;
+
+extern struct indexator *idedisk_idx;
 
 extern slot_t *ide_get_drive(void);
 extern int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout);
@@ -339,10 +341,6 @@ extern void pio_write_buffer(hd_t *hd, char *buffer, int size);
 extern void pio_read_buffer(hd_t *hd, char *buffer, int size);
 extern void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects);
 
-extern void *cdrom_pio_driver(void);
-extern void *harddisk_pio_driver(void);
-extern void *harddisk_udma_driver(void);
-extern void *partition_driver(void);
-
+extern int create_partitions(hd_t *hd);
 
 #endif /* IDE_H_ */

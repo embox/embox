@@ -180,13 +180,55 @@ static int hd_write_pio(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 }
 
 
-static block_dev_driver_t _harddisk_pio_driver = {
+static block_dev_driver_t idedisk_pio_driver = {
 	"idedisk_drv",
 	hd_ioctl,
 	hd_read_pio,
 	hd_write_pio
 };
 
-void *harddisk_pio_driver(void) {
-	return &_harddisk_pio_driver;
+static int idedisk_init (void *args) {
+	slot_t *ide;
+	hd_t *drive;
+	dev_t name_idx;
+	double size;
+	char   path[MAX_LENGTH_PATH_NAME];
+
+	ide = ide_get_drive();
+
+	for(int i = 0; i < 4; i++) {
+		if(NULL == ide->drive[i]) {
+			continue;
+		}
+		else {
+			drive = (hd_t *) ide->drive[i];
+			/* Make new device */
+			if ((drive->media == IDE_DISK) && (drive->udmamode == -1)) {
+				*path = 0;
+				strcat(path, "/dev/");
+				name_idx = (dev_t) index_alloc(idedisk_idx, INDEX_ALLOC_MIN);
+				drive->dev_id = block_dev_create(strcat(path, "hd*"),
+						&idedisk_pio_driver, drive, &name_idx);
+
+				if(NULL != drive->dev_id) {
+					size = (double) drive->param.cylinders *
+						   (double) drive->param.heads *
+						   (double) drive->param.unfbytes *
+						   (double) (drive->param.sectors + 1);
+					block_dev(drive->dev_id)->size = (size_t) size;
+				}
+				else {
+					return -1;
+				}
+
+				create_partitions(drive);
+			}
+			else {
+				continue;
+			}
+		}
+	}
+	return 0;
 }
+
+EMBOX_BLOCK_DEV("idedisk", &idedisk_pio_driver, idedisk_init);

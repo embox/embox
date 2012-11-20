@@ -70,64 +70,48 @@ static dev_t block_devno(char *name) {
 }
 */
 
+#define WHOLE_NAME     0
+#define DIGITAL_IDX    1
+#define CHARACTER_IDX  2
+static char check_type_name (char *p) {
+	if (*p == '#') {
+		return DIGITAL_IDX;
+	}
+	else if(*p == '*') {
+		return CHARACTER_IDX;
+	}
+	/* specifies the full name of the device */
+	else {
+		return WHOLE_NAME;
+	}
+}
 
 static void block_dev_select_name(char *name, dev_t *idx) {
 	char *p;
-	unsigned int n, m;
-	int exists;
-	char digital;
 
 	p = name;
 	if (*p) {
 	    p += strlen(p+1);
 	}
-
-	if (*p == '#') {
-		digital = 1;
-	}
-	else if(*p == '*') {
-		digital = 0;
-	}
-	/* specifies the full name of the device */
 	else {
 		return;
 	}
 
 	if(NULL != idx){
-	/* name index is set from name poll */
-		if (digital) {
+		switch (check_type_name (p)) {
+		case WHOLE_NAME:
+			break;
+
+		case DIGITAL_IDX:
 			sprintf(p, "%d", *idx);
-		}
-		/* character */
-		else {
+			break;
+
+		case CHARACTER_IDX:
 			sprintf(p, "%c", 'a' + *idx);
-		}
-		return;
-	}
-	/* select first free name */
-	n = 0;
-	while (1) {
-		if (digital) {
-			sprintf(p, "%d", n);
-		}
-		/* character */
-		else {
-			sprintf(p, "%c", 'a' + n);
-		}
-		exists = 0;
-		for (m = 0; m < MAX_DEV_QUANTITY; m++)  {
-			if(NULL != devtab[m]) {
-				if (strcmp(devtab[m]->name, name) == 0) {
-					exists = 1;
-					break;
-				}
-			}
-		}
-		if (0 == exists) {
 			break;
 		}
-		n++;
 	}
+	return;
 }
 
 static int block_dev_create_node(dev_t *dev_id, char *dev_path) {
@@ -171,7 +155,7 @@ dev_t *block_dev_create(char *path, void *driver, void *privdata, dev_t *name_id
 	*name = 0;
 	path_nip_tail(path, name);
 	block_dev_select_name(name, name_idx);
-	strcpy (dev->name, name);
+	strncpy (dev->name, name, MAX_LENGTH_FILE_NAME);
 
 	dev->driver = driver;
 	dev->privdata = privdata;

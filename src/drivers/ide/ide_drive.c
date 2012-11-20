@@ -59,7 +59,9 @@ static hd_t  hdtab[HD_DRIVES];
 static slot_t ide;
 static long tmr_cmd_start_time;
 
-extern int create_partitions(hd_t *hd);
+/* general indexator for all ide disk */
+INDEX_DEF(harddisk_idx,0,HD_DRIVES);
+struct indexator *idedisk_idx;
 
 static void hd_fixstring(unsigned char *s, int len) {
 	unsigned char *p = s;
@@ -497,7 +499,7 @@ static int get_interface_type(hdc_t *hdc, int drvsel) {
 	return HDIF_UNKNOWN;
 }
 
-static int setup_hdc(hdc_t *hdc, int iobase, int irq,
+static int setup_controller(hdc_t *hdc, int iobase, int irq,
 					int bmregbase, int *masterif, int *slaveif) {
 	int res;
 
@@ -571,13 +573,11 @@ static int setup_hdc(hdc_t *hdc, int iobase, int irq,
 	return 0;
 }
 
-static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
-						int drvsel, int udmasel, int iftype, int numslot) {
+static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
+					 int udmasel, int iftype, int numslot) {
 	/* static int udma_speed[] = {16, 25, 33, 44, 66, 100}; */
 
 	int rc;
-	double size;
-	char   path[MAX_LENGTH_PATH_NAME];
 
 	/* Initialize drive block */
 	memset(hd, 0, sizeof(hd_t));
@@ -659,114 +659,52 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, char *devname,
 		hd_cmd(hd, HDCMD_SETFEATURES, HDFEAT_ENABLE_WCACHE, 0);
 	}
 
-	/* Make new device */
-	*path = 0;
-	strcat(path, "/dev/");
-	if (hd->media == IDE_DISK) {
-		if (hd->udmamode != -1) {
-			hd->dev_id = block_dev_create(strcat(path, devname),
-					harddisk_udma_driver(), hd, NULL);
-		}
-		else {
-			hd->dev_id = block_dev_create(strcat(path, devname),
-					harddisk_pio_driver(), hd, NULL);
-		}
-	}
-	else if (hd->media == IDE_CDROM) {
-		hd->dev_id = block_dev_create(strcat(path, "cd#"),
-				cdrom_pio_driver(), hd, NULL);
-	}
-	else {
-		return;
-	}
 
-	if(NULL != hd->dev_id) {
-		size = (double) hd->param.cylinders * (double) hd->param.heads *
-		       (double) hd->param.unfbytes * (double) (hd->param.sectors + 1);
-		block_dev(hd->dev_id)->size = (size_t) size;
-	}
-	else {
-		return;
-	}
-
-	if (hd->media == IDE_DISK) {
-		create_partitions(hd);
-	}
-	else {
-		hd->blks = 0;
-	}
-
-#ifdef DEBUG
-	printk("%s: %s", device(hd->devno)->name, hd->param.model);
-	if (hd->size > 0) {
-		printk(" (%d MB)", hd->size);
-	}
-	if (hd->lba) {
-		printk(", LBA");
-	}
-	if (hd->udmamode != -1) {
-		printk(", UDMA%d", udma_speed[hd->udmamode]);
-	}
-	if (hd->param.csfo & 2) {
-		printk(", read ahead");
-	}
-	if (hd->param.csfo & 1) {
-		printk(", write cache");
-	}
-	if (hd->udmamode == -1 && hd->multsect > 1) {
-		printk(", %d sects/intr", hd->multsect);
-	}
-	if (!hd->use32bits) {
-		printk(", word I/O");
-	}
-	if (hd->hdc->bmregbase) {
-		printk(", bmregbase=0x%x", hd->hdc->bmregbase);
-	}
-	printk("\n");
-#endif /* DEBUG */
 }
 
-static int ide_init(void *args) {
+static int ide_init(void) {
 	int rc;
 	int masterif;
 	int slaveif;
 	int numhd;
 	numhd = 4;
 
+	idedisk_idx = &harddisk_idx;
+
 	if (numhd >= 1)  {
 		/*
-		rc = setup_hdc(&hdctab[0], HDC0_IOBASE, HDC0_IRQ,
+		rc = setup_controller(&hdctab[0], HDC0_IOBASE, HDC0_IRQ,
 						ide ? bmiba : 0, &masterif, &slaveif);
 		*/
-		rc = setup_hdc(&hdctab[0], HDC0_IOBASE,
+		rc = setup_controller(&hdctab[0], HDC0_IOBASE,
 				HDC0_IRQ, 0, &masterif, &slaveif);
 		if (rc >= 0) {
 			if (numhd >= 1 && masterif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[0], &hdctab[0], "hd*",
-						HD0_DRVSEL, BM_SR_DRV0, masterif, 0);
+				setup_hd(&hdtab[0], &hdctab[0], HD0_DRVSEL,
+						BM_SR_DRV0, masterif, 0);
 			}
 			if (numhd >= 2 && slaveif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[1], &hdctab[0], "hd*",
-						HD1_DRVSEL, BM_SR_DRV1, slaveif, 1);
+				setup_hd(&hdtab[1], &hdctab[0], HD1_DRVSEL,
+						BM_SR_DRV1, slaveif, 1);
 			}
 		}
 	}
 
 	if (numhd >= 3) {
 		/*
-		rc = setup_hdc(&hdctab[1], HDC1_IOBASE,
+		rc = setup_controller(&hdctab[1], HDC1_IOBASE,
 						HDC1_IRQ, ide ? bmiba + 8 : 0, &masterif, &slaveif);
 		*/
-		rc = setup_hdc(&hdctab[1], HDC1_IOBASE,
+		rc = setup_controller(&hdctab[1], HDC1_IOBASE,
 				HDC1_IRQ, 0, &masterif, &slaveif);
 		if (rc >= 0) {
 			if (numhd >= 3 && masterif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[2], &hdctab[1], "hd*",
-						HD0_DRVSEL, BM_SR_DRV0, masterif, 2);
+				setup_hd(&hdtab[2], &hdctab[1], HD0_DRVSEL,
+						BM_SR_DRV0, masterif, 2);
 			}
 			if (numhd >= 4 && slaveif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[3], &hdctab[1], "hd*",
-						HD1_DRVSEL, BM_SR_DRV1, slaveif, 3);
+				setup_hd(&hdtab[3], &hdctab[1], HD1_DRVSEL,
+						BM_SR_DRV1, slaveif, 3);
 			}
 		}
 	}
@@ -777,12 +715,4 @@ slot_t *ide_get_drive(void) {
 	return &ide;
 }
 
-static block_dev_driver_t ide_init_driver = {
-	"ide_drv",
-	NULL,
-	NULL,
-	NULL
-};
-
-EMBOX_BLOCK_DEV("ide", &ide_init_driver, ide_init);
-
+EMBOX_UNIT_INIT(ide_init);

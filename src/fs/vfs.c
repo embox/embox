@@ -45,17 +45,18 @@ int vfs_get_path_by_node (node_t *nod, char *path) {
 
 	*path = *buff= 0;
 	node = nod;
-	strcpy((char *) buff, (const char *) &node->name);
+	strncpy((char *) buff, (const char *) &node->name, MAX_LENGTH_FILE_NAME);
 
 	while(NULL !=
 			(parent = vfs_find_parent((const char *) &node->name, node))) {
-		strcpy((char *) path, (const char *) &parent->name);
+		strncpy((char *) path,
+				(const char *) &parent->name, MAX_LENGTH_FILE_NAME);
 		if('/' != *path) {
 			strcat((char *) path, (const char *) "/");
 		}
 		strcat((char *) path, (const char *) buff);
 		node = parent;
-		strcpy((char *) buff, (const char *) path);
+		strncpy((char *) buff, (const char *) path, MAX_LENGTH_PATH_NAME);
 	}
 
 	strncpy((char *) buff, (char *) path, MAX_LENGTH_PATH_NAME);

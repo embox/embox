@@ -74,13 +74,14 @@ int ramdisk_create(void *params) {
 		return -ENOMEM;
 	}
 
-	strcpy ((void *)&ram_disk->path, (const void *)new_ramdisk->path);
+	strncpy ((void *)&ram_disk->path,
+			 (const void *)new_ramdisk->path, MAX_LENGTH_PATH_NAME);
 	ram_disk->size = ram_disk->blocks * RAMDISK_BLOCK_SIZE;
 	block_dev(ram_disk->dev_id)->size = ram_disk->size;
 	ram_disk->block_size = PAGE_SIZE();
 
-	strcpy ((void *)ram_disk->fs_name,
-				(const void *)new_ramdisk->fs_name);
+	strncpy ((void *)ram_disk->fs_name,
+			 (const void *)new_ramdisk->fs_name, MAX_LENGTH_FILE_NAME);
 	ram_disk->fs_type = new_ramdisk->fs_type;
 
 	return 0;

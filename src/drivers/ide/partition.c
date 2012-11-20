@@ -21,6 +21,44 @@
 #include <mem/phymem.h>
 #include <util/indexator.h>
 
+static int part_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
+	struct partition *part = (struct partition *) dev->privdata;
+
+	switch (cmd) {
+	case IOCTL_GETDEVSIZE:
+		return part->len;
+
+	case IOCTL_GETBLKSIZE:
+		return block_dev_ioctl(dev, IOCTL_GETBLKSIZE, NULL, 0);
+	}
+
+	return -ENOSYS;
+}
+
+static int part_read(block_dev_t *dev, char *buffer,
+						size_t count, blkno_t blkno) {
+	struct partition *part = (struct partition *) dev->privdata;
+	if (blkno + count / SECTOR_SIZE > part->len) {
+		return -EFAULT;
+	}
+	return block_dev_read(dev, buffer, count, blkno + part->start);
+}
+
+static int part_write(block_dev_t *dev, char *buffer,
+						size_t count, blkno_t blkno) {
+  struct partition *part = (struct partition *) dev->privdata;
+  if (blkno + count / SECTOR_SIZE > part->len) {
+	  return -EFAULT;
+  }
+  return block_dev_write(dev, buffer, count, blkno + part->start);
+}
+
+static block_dev_driver_t partition_driver = {
+	"partition_drv",
+	part_ioctl,
+	part_read,
+	part_write
+};
 /* TODO Create Partition as drive */
 int create_partitions(hd_t *hd) {
 	mbr_t mbrdata;
@@ -60,50 +98,7 @@ int create_partitions(hd_t *hd) {
 		}
 	}
 	*/
-	hd->dev_id = block_dev_create("hda0", partition_driver(), NULL, NULL);
+	hd->dev_id = block_dev_create("hda0", &partition_driver, NULL, NULL);
 
 	return 0;
-}
-
-static int part_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
-	struct partition *part = (struct partition *) dev->privdata;
-
-	switch (cmd) {
-	case IOCTL_GETDEVSIZE:
-		return part->len;
-
-	case IOCTL_GETBLKSIZE:
-		return block_dev_ioctl(dev, IOCTL_GETBLKSIZE, NULL, 0);
-	}
-
-	return -ENOSYS;
-}
-
-static int part_read(block_dev_t *dev, char *buffer,
-						size_t count, blkno_t blkno) {
-	struct partition *part = (struct partition *) dev->privdata;
-	if (blkno + count / SECTOR_SIZE > part->len) {
-		return -EFAULT;
-	}
-	return block_dev_read(dev, buffer, count, blkno + part->start);
-}
-
-static int part_write(block_dev_t *dev, char *buffer,
-						size_t count, blkno_t blkno) {
-  struct partition *part = (struct partition *) dev->privdata;
-  if (blkno + count / SECTOR_SIZE > part->len) {
-	  return -EFAULT;
-  }
-  return block_dev_write(dev, buffer, count, blkno + part->start);
-}
-
-static block_dev_driver_t _partition_driver = {
-	"partition_drv",
-	part_ioctl,
-	part_read,
-	part_write
-};
-
-void *partition_driver(void) {
-	return &_partition_driver;
 }
