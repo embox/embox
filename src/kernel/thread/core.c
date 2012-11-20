@@ -38,8 +38,6 @@
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
-#include <module/embox/arch/usermode.h>
-
 
 #define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
 #define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
