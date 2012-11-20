@@ -121,6 +121,7 @@ static void *process_params(void* args) {
 	}
 
 	parser = XML_ParserCreate(NULL);
+	XML_SetHTMLUse(parser);
 	XML_SetUserData(parser, params);
 	XML_SetElementHandler(parser, startElement, endElement);
 	XML_SetCharacterDataHandler(parser, character);
@@ -131,6 +132,9 @@ static void *process_params(void* args) {
 		if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
 			fclose(file);
 			fclose(params->info->fp);
+			params->info->fp = NULL;
+			params->info->lock_status = 0;
+			event_notify(&params->info->unlock_sock_event);
 			return NULL;
 		}
 	} while (!done);
