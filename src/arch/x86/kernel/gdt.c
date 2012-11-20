@@ -52,8 +52,6 @@ void gdt_init(void) {
 }
 
 static inline void tss_fill() {
-	extern char __stack;
-
 	// Firstly, let's compute the base and limit of our entry into the GDT.
 	uint32_t base = (uint32_t) &tss_entry;
 	uint32_t limit = base + sizeof(tss_entry);
@@ -64,8 +62,8 @@ static inline void tss_fill() {
 	// Ensure the descriptor is initially zero.
 	memset(&tss_entry, 0, sizeof(tss_entry));
 
-	tss_entry.ss0  = __KERNEL_DS;         // Set the kernel stack segment.
-	tss_entry.esp0 = (uint32_t) &__stack; // Set the kernel stack pointer.
+	tss_entry.ss0  = __KERNEL_DS;  // Set the kernel stack segment.
+	tss_entry.esp0 = 0;            // Set the kernel stack pointer.
 
 	/*
 	 * Here we set the cs, ss, ds, es, fs and gs entries in the TSS. These
