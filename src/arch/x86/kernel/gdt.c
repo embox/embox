@@ -16,6 +16,8 @@
 #include <kernel/panic.h>
 #include <string.h>
 
+#include <module/embox/arch/usermode.h>
+
 gdt_gate_t gdt[GDT_ENTRIES];
 gdt_pointer_t gdt_ptr;
 tss_entry_t tss_entry;
@@ -50,6 +52,8 @@ void gdt_init(void) {
 }
 
 static inline void tss_fill() {
+	extern char __stack;
+
 	// Firstly, let's compute the base and limit of our entry into the GDT.
 	uint32_t base = (uint32_t) &tss_entry;
 	uint32_t limit = base + sizeof(tss_entry);
@@ -60,8 +64,8 @@ static inline void tss_fill() {
 	// Ensure the descriptor is initially zero.
 	memset(&tss_entry, 0, sizeof(tss_entry));
 
-	tss_entry.ss0  = __KERNEL_DS;  // Set the kernel stack segment.
-	tss_entry.esp0 = 0x10000;    // TODO: Set the kernel stack pointer.
+	tss_entry.ss0  = __KERNEL_DS;         // Set the kernel stack segment.
+	tss_entry.esp0 = (uint32_t) &__stack; // Set the kernel stack pointer.
 
 	/*
 	 * Here we set the cs, ss, ds, es, fs and gs entries in the TSS. These
@@ -74,3 +78,21 @@ static inline void tss_fill() {
 	tss_entry.cs = __KERNEL_CS | 0x3;
 	tss_entry.ss = tss_entry.ds = tss_entry.es = tss_entry.fs = tss_entry.gs = __KERNEL_DS | 0x3;
 }
+
+#ifndef NOUSERMODE
+
+#include <kernel/thread/api.h>
+
+void tss_set_kernel_stack(void) {
+	struct thread *thread = thread_self();
+
+	/*
+	 * NOTE: stack and stack_sz of bootstrap thread equals 0, and we
+	 *       consider that it isn't executed in usermode.
+	 */
+	tss_entry.esp0 = (uint32_t) thread->stack + thread->stack_sz;
+}
+
+#endif /* NOUSERMODE */
+
+

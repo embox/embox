@@ -11,3 +11,7 @@ module syscall_stub extends embox.arch.syscall {
 module nommu extends embox.arch.mmu {
 	source "nommu.h"
 }
+
+module nousermode extends embox.arch.usermode {
+	source "nousermode.h"
+}

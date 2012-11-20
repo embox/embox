@@ -29,6 +29,8 @@ abstract module syscall { }
 
 abstract module syscall_caller { }
 
+@Mandatory
+@DefaultImpl(embox.arch.generic.nousermode)
 abstract module usermode { }
 
 abstract module stackframe { }

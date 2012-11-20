@@ -345,6 +345,7 @@ static int unit_init(void) {
 	list_add_tail(&bootstrap.thread_link, &__thread_list);
 
 	thread_init(&bootstrap, 0, NULL, NULL, kernel_task);
+
 	// TODO priority for bootstrap thread -- Eldar
 	bootstrap.priority = THREAD_PRIORITY_NORMAL;
 
