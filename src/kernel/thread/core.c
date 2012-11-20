@@ -164,7 +164,6 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->need_message = false;
 
 	t->running_time = 0;
-	t->in_usermode = flags & THREAD_FLAG_USERMODE;
 }
 
 static void thread_context_init(struct thread *t) {

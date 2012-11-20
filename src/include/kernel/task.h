@@ -11,8 +11,6 @@
 
 #include <lib/list.h>
 
-#define TASK_FLAG_USERMODE (0x1 << 0)
-
 struct task_signal_table;
 struct task_idx_table;
 struct thread;
@@ -41,8 +39,6 @@ struct task {
 	struct task_vmem_data *vmem_data;
 
 	struct mmap *mmap;
-
-	int in_usermode;   /**< Equals 1 if task is usermode. */
 
 	int err; /**< @brief Last occurred error code */
 };

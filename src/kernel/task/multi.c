@@ -171,7 +171,6 @@ static void *task_trampoline(void *arg) {
 
 	pool_free(&creat_param, param);
 
-	thread_self()->in_usermode = task_self()->in_usermode;
 	res = run(run_arg);
 	task_exit(res);
 
