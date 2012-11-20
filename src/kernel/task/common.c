@@ -69,7 +69,6 @@ static int tasks_init(void) {
 	}
 
 	task_init(kernel_task);
-	task_kernel_task()->in_usermode = 0;
 
 	return 0;
 }

@@ -11,8 +11,6 @@
 
 #include <lib/list.h>
 
-#define TASK_FLAG_USERMODE (0x1 << 0)
-
 struct task_signal_table;
 struct task_idx_table;
 struct thread;
@@ -42,8 +40,6 @@ struct task {
 
 	struct mmap *mmap;
 
-	int in_usermode;   /**< Equals 1 if task is usermode. */
-
 	int err; /**< @brief Last occurred error code */
 };
 
@@ -56,7 +52,7 @@ static inline struct task_idx_table *task_idx_table(struct task *task) {
 	return task->idx_table;
 }
 
-extern int new_task(void *(*run)(void *), void *arg, int flags);
+extern int new_task(void *(*run)(void *), void *arg);
 
 /**
  * @brief Get self task (task which current execution thread associated with)
