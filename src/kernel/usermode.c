@@ -24,6 +24,7 @@ static void usermode_trampoline(struct ue_data *data) {
 
 	sched_lock();
 	{
+		/* Saving data on the stack and free from pool */
 		s_data = (struct ue_data) {
 			.ip = data->ip,
 			.sp = data->sp,
@@ -37,7 +38,7 @@ static void usermode_trampoline(struct ue_data *data) {
 
 #define TRAMPOLINE ((void * (*)(void *)) usermode_trampoline)
 
-int create_usermode_thread(struct thread **t, unsigned int flags,
+int create_usermode_thread(struct thread **p_thread, unsigned int flags,
 		void *ip, void *sp) {
 	struct ue_data *data;
 	int err;
@@ -52,7 +53,7 @@ int create_usermode_thread(struct thread **t, unsigned int flags,
 		data->ip = ip;
 		data->sp = sp;
 
-		if ((err = thread_create(t, flags, TRAMPOLINE, data))) {
+		if ((err = thread_create(p_thread, flags, TRAMPOLINE, data))) {
 			pool_free(&ue_data_pool, data);
 			sched_unlock();
 			return err;
