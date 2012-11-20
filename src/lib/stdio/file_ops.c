@@ -17,12 +17,7 @@
 #include <fs/core.h>
 #include <stdio.h>
 
-
-#ifdef __FILE_QUANTITY
-  #define FILE_QUANTITY __FILE_QUANTITY
-#else
-  #define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)
-#endif
+#define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)
 
 POOL_DEF(file_pool, FILE, FILE_QUANTITY);
 

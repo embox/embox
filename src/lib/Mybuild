@@ -103,7 +103,7 @@ static module LibCStdio {
 	//source "stdio/file_stdio.c"
 	depends LibCMath
 	depends LibCString
-	depends embox.compat.posix.File
+	depends embox.compat.posix.file
 }
 
 static module LibC {

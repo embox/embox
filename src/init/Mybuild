@@ -5,7 +5,7 @@ module start_script {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "start_script.c"
 
-	depends embox.compat.posix.File
+	depends embox.compat.posix.file
 
 	requires embox.cmd.Shell.commandLine
 
