@@ -8,7 +8,12 @@
 
 #include <asm/gdt.h>
 
-	.global usermode_entry
+	.global usermode_entry, usermode_set_stack
+
+usermode_set_stack:
+	mov 4(%esp), %esp
+	ret
+
  usermode_entry:
  	cli
 

@@ -17,12 +17,49 @@ struct ue_data {
 	void *sp; // stack pointer
 };
 
+/* Architecture-dependent functions */
 
+/*
+ * Enter to usermode.
+ *
+ * @param data
+ *   Usermode parameters (ip, sp).
+ */
 extern void usermode_entry(struct ue_data *data);
+
+/*
+ * Only switches to new stack.
+ *
+ * @param sp
+ *   New stack pointer.
+ */
+extern void usermode_set_stack(void *sp);
+
+/* Architecture-independent functions */
+
+/*
+ * Creates new usermode thread.
+ *
+ * @param ip
+ *   First instruction pointer of the thread.
+ * @param sp
+ *   New stack pointer.
+ *
+ * Other information see in: include/kernel/thread/api.h
+ */
 extern int create_usermode_thread(struct thread **p_thread, unsigned int flags,
 		void *ip, void *sp);
+
+/*
+ * Creates new usermode task.
+ *
+ * @param ip
+ *   First instruction pointer of the task.
+ * @param sp
+ *   New stack pointer.
+ *
+ * Other information see in: include/kernel/task.h
+ */
 extern int create_usermode_task(void *ip, void *sp);
-
-
 
 #endif /* KERNEL_THREAD_USERMODE_H_ */
