@@ -72,7 +72,7 @@ static int xwnd_app_create (void* (*entry_point) (void*), const char * arg) {
 	xapp_reg.nodes[xapp_id].init_wrap.arg = arg;
 
 	/*Now ready to start an application*/
-	xapp_tid = new_task(entry_point, (void*)(&(xapp_reg.nodes[xapp_id].init_wrap)), 0);
+	xapp_tid = new_task(entry_point, (void*)(&(xapp_reg.nodes[xapp_id].init_wrap)));
 	xapp_tid = xapp_tid;
 	return xapp_id;
 }

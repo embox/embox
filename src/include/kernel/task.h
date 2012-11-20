@@ -56,7 +56,7 @@ static inline struct task_idx_table *task_idx_table(struct task *task) {
 	return task->idx_table;
 }
 
-extern int new_task(void *(*run)(void *), void *arg, int flags);
+extern int new_task(void *(*run)(void *), void *arg);
 
 /**
  * @brief Get self task (task which current execution thread associated with)

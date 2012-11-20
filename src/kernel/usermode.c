@@ -15,6 +15,7 @@
 #include <kernel/thread/sched_lock.h>
 #include <kernel/task.h>
 
+/* Simultaneous number of task creation */
 #define UE_DATA_POOL_SIZE 5
 
 POOL_DEF(ue_data_pool, struct ue_data, UE_DATA_POOL_SIZE);
@@ -78,7 +79,7 @@ int create_usermode_task(void *ip, void *sp) {
 		data->ip = ip;
 		data->sp = sp;
 
-		if ((err = new_task(TRAMPOLINE, data, 0)) < 0) {
+		if ((err = new_task(TRAMPOLINE, data)) < 0) {
 			pool_free(&ue_data_pool, data);
 			sched_unlock();
 			return err;

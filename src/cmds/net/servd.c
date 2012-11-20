@@ -446,7 +446,7 @@ static int web_server_started;
 
 static int servd(int argc, char **argv) {
 	if (0 == web_server_started) {
-		new_task(start_server, NULL, 0);
+		new_task(start_server, NULL);
 		//start_server(NULL);
 	}
 

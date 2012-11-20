@@ -35,7 +35,7 @@ static void *task_trampoline(void *arg);
 static void thread_set_task(struct thread *t, struct task *tsk);
 static void task_init_parent(struct task *task, struct task *parent);
 
-int new_task(void *(*run)(void *), void *arg, int flags) {
+int new_task(void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
@@ -62,8 +62,6 @@ int new_task(void *(*run)(void *), void *arg, int flags) {
 	/* alloc space for task & resources on top of created thread's stack */
 
 	self_task = task_init(thd->stack);
-
-	self_task->in_usermode = flags & TASK_FLAG_USERMODE;
 
 	thd->stack += task_sz;
 	thd->stack_sz -= task_sz;

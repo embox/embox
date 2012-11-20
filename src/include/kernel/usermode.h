@@ -9,8 +9,6 @@
 #ifndef KERNEL_THREAD_USERMODE_H_
 #define KERNEL_THREAD_USERMODE_H_
 
-#include <types.h>
-
 #include <kernel/thread/api.h>
 
 /* Usermode entry data */
