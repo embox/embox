@@ -9,10 +9,10 @@
 #include <hal/context.h>
 
 #include <asm/entry.h>
-#include <asm/ptrace.h>
+//#include <asm/ptrace.h>
 C_ENTRY(context_switch)
-	nop
-	PTRACE_DEBUG
+//	nop
+//	PTRACE_DEBUG
 
 	isync
 	stmw   r13, CTX_GPR13(r3)
@@ -30,6 +30,6 @@ C_ENTRY(context_switch)
 	lmw    r13, CTX_GPR13(r4)
 	isync
 
-	PTRACE_DEBUG
+//	PTRACE_DEBUG
 
 	blr

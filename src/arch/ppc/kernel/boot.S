@@ -83,7 +83,7 @@ C_ENTRY(_start)
 #endif
 
 
-#if 0
+#if 1
 	li	r3, 0			/* Init interrupt nest count */
 	mtsprg2 3
 #endif

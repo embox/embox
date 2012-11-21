@@ -58,7 +58,7 @@
 		mtsrr1 r31
 		lmw    r2, 0x04(r1)  /* restore r2..r31 */
 		lwz    r0, 0x00(r1)  /* restore r0 */
-		addi   r1, r1, 0x98 /* get back stack */
+		addi   r1, r1, 0x98  /* get back stack */
 	.endm
 
 #endif /* __ASSEMBLER__ */

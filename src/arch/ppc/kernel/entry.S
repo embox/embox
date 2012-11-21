@@ -8,6 +8,7 @@
 
 #include <asm/entry.h>
 #include <asm/regs.h>
+//#include <asm/ptrace.h>
 
 .globl ext_intr_hnd
 ext_intr_hnd:
@@ -18,7 +19,14 @@ ext_intr_hnd:
 
 .globl decr_hnd
 decr_hnd:
+//PTRACE_DEBUG
 	SAVE_ALL            /* save all registers */
+
+#if 1
+	mfsprg2 18
+	addi 18,18,1
+	mtsprg2 18
+#endif
 
 	mftsr    r3         /* clear TSR[DIS] */
 	lis      r4, TSR_DIS@h
@@ -26,7 +34,22 @@ decr_hnd:
 	andc     r3, r3, r4
 	mttsr    r3
 
-	bl interrupt_handle /* handle interrupt */
+	subi     r1, r1, 8  /* handle interrupt */
+	bl       interrupt_handle
+	addi     r1, r1, 8
+
+#if 1
+	mfsprg2 18
+	subi 18,18,1
+	mtsprg2 18
+#endif
+
+#if 1 /* reset decrementer */
+	lis 18,   100000@h
+	ori 18,18,100000@l
+	mtdec 18
+#endif
 
 	RESTORE_ALL         /* restore all registers */
+//PTRACE_DEBUG
 	rfi                 /* return from interrupt */

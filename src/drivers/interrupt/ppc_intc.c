@@ -33,8 +33,16 @@ void irqctrl_clear(unsigned int interrupt_nr) {
 void irqctrl_force(unsigned int interrupt_nr) {
 }
 
+#include <prom/prom_printf.h>
 void interrupt_handle(void) {
 	unsigned int irq;
+	unsigned int sprg2;
+
+#if 1 /* interrupt nest count test (same as to !critical_inside) */
+	__asm__ __volatile__ ("mfsprg2 %0" : "=r"(sprg2));
+	if(sprg2!=1)prom_printf("sprg2 %u\n", sprg2);
+	assert(sprg2==1);
+#endif
 
 	irq = 10; /* LOL */
 
@@ -46,12 +54,11 @@ void interrupt_handle(void) {
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
-		ipl_enable();
+//		ipl_enable();
 
 		irq_dispatch(irq);
 
-		ipl_disable();
-
+//		ipl_disable();
 	}
 	irqctrl_enable(irq);
 	critical_leave(CRITICAL_IRQ_HANDLER);
