@@ -26,6 +26,7 @@
 EMBOX_CMD(servd);
 
 #define DEFAULT_PAGE  "index.html"
+#define MAX_SERVICES_COUNT  10
 
 /* Status code */
 static const char *http_stat_str[HTTP_STAT_MAX] = { [HTTP_STAT_200] = "200 OK",
@@ -45,7 +46,7 @@ static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
 
 struct params test_params;
 
-static const char *services[10] = { DEFAULT_PAGE, "about.html", "test.html", };
+static const char *services[MAX_SERVICES_COUNT] = { DEFAULT_PAGE, "about.html", "test.html", };
 
 static void start_services(void) {
 	int i;
