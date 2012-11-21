@@ -17,8 +17,11 @@
 
 int close(int fd) {
 	const struct task_idx_ops *ops;
-	struct idx_desc *desc = task_self_idx_get(fd);
+	struct idx_desc *desc;
 
+	assert(task_self_idx_table());
+
+	desc = task_self_idx_get(fd);
 	if (!desc) {
 		SET_ERRNO(EBADF);
 		return -1;
@@ -34,8 +37,11 @@ int close(int fd) {
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
 	const struct task_idx_ops *ops;
-	struct idx_desc *desc = task_self_idx_get(fd);
+	struct idx_desc *desc;
 
+	assert(task_self_idx_table());
+
+	desc = task_self_idx_get(fd);
 	if (!desc) {
 		SET_ERRNO(EBADF);
 		return -1;
@@ -54,8 +60,11 @@ ssize_t write(int fd, const void *buf, size_t nbyte) {
 
 ssize_t read(int fd, void *buf, size_t nbyte) {
 	const struct task_idx_ops *ops;
-	struct idx_desc *desc = task_self_idx_get(fd);
+	struct idx_desc *desc;
 
+	assert(task_self_idx_table());
+
+	desc = task_self_idx_get(fd);
 	if (!desc) {
 		SET_ERRNO(EBADF);
 		return -1;
@@ -74,8 +83,11 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 
 int lseek(int fd, long int offset, int origin) {
 	const struct task_idx_ops *ops;
-	struct idx_desc *desc = task_self_idx_get(fd);
+	struct idx_desc *desc;
 
+	assert(task_self_idx_table());
+
+	desc = task_self_idx_get(fd);
 	if (!desc) {
 		SET_ERRNO(EBADF);
 		return -1;
@@ -91,8 +103,11 @@ int ioctl(int fd, int request, ...) {
 	va_list args;
 	const struct task_idx_ops *ops;
 	int ret = -ENOTSUP;
-	struct idx_desc *desc = task_self_idx_get(fd);
+	struct idx_desc *desc;
 
+	assert(task_self_idx_table());
+
+	desc = task_self_idx_get(fd);
 	if (!desc) {
 		SET_ERRNO(EBADF);
 		return -1;
@@ -124,8 +139,11 @@ int ioctl(int fd, int request, ...) {
 
 int stat(int fd, void *buff) {
 	const struct task_idx_ops *ops;
-	struct idx_desc *desc = task_self_idx_get(fd);
+	struct idx_desc *desc;
 
+	assert(task_self_idx_table());
+
+	desc = task_self_idx_get(fd);
 	if (!desc) {
 		SET_ERRNO(EBADF);
 		return -1;
@@ -146,8 +164,11 @@ int fcntl(int fd, int cmd, ...) {
 	va_list args;
 	int res = 0, flag;
 	const struct task_idx_ops *ops;
-	struct idx_desc *desc = task_self_idx_get(fd);
+	struct idx_desc *desc;
 
+	assert(task_self_idx_table());
+
+	desc = task_self_idx_get(fd);
 	if (!desc) {
 		SET_ERRNO(EBADF);
 		return -1;

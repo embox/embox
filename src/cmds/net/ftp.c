@@ -14,7 +14,7 @@
 #include <ctype.h>
 #include <net/socket.h>
 #include <net/ip.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 #include <embox/cmd.h>
 
 EMBOX_CMD(exec);

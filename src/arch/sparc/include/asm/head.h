@@ -11,6 +11,7 @@
 
 #include <asm/regs.h>
 #include <module/embox/arch/interrupt.h>
+#include <module/embox/arch/syscall.h>
 
 #ifdef __ASSEMBLER__
 
@@ -86,8 +87,12 @@
 /** Software trap. Treat as BAD_TRAP */
 #define SOFT_TRAP BAD_TRAP
 
-/* TODO */
-#define EMBOX_SYSTEM_CALL SOFT_TRAP
+#ifndef SYSCALL_STUB
+#define EMBOX_SYSTEM_CALL TRAP_ENTRY(syscall_entry)
+#else
+#define EMBOX_SYSTEM_CALL BAD_TRAP
+#endif
+
 
 #define TEST_SOFT_TRAP TRAP_ENTRY(test_trap_entry)
 #define TEST_HARD_TRAP TEST_SOFT_TRAP

@@ -23,7 +23,8 @@ static void print_usage(void) {
 }
 
 static int exec(int argc, char **argv) {
-	int opt, file;
+	int opt;
+	FILE *fd;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
@@ -37,8 +38,8 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 3) {
-		if(-1 == (file = open((const char *) argv[argc - 1], O_WRONLY))) {
-			return file;
+		if(NULL == (fd = fopen((const char *) argv[argc - 1], "a"))) {
+			return -errno;
 		}
 
 		if(0 != strcmp((const char *) argv[argc - 2], ">>")) {
@@ -46,10 +47,10 @@ static int exec(int argc, char **argv) {
 			return 0;
 		}
 
-		lseek(file, 0, SEEK_END);
-		write(file, (const void *) argv[1], strlen((const char *) argv[1]));
-		write(file, (const void *) "\n", 1);
-		close(file);
+		fseek(fd, 0, SEEK_END);
+		fwrite((const void *) argv[1], strlen((const char *) argv[1]), 1, fd);
+		fwrite((const void *) "\n", 1, 1, fd);
+		fclose(fd);
 		return 0;
 	}
 	else if (argc == 2) {

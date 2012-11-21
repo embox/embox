@@ -12,6 +12,14 @@
 
 #define C_ENTRY(name) .globl name; .align 2; name
 
+#else
+
+/* Force passing arguments on stack */
+#define asmlinkage      __attribute__((regparm(0)))
+
+/* Force passing arguments on registers */
+#define fastcall        __attribute__((regparm(3)))
+
 #endif
 
 #endif /* LINKAGE_H_ */

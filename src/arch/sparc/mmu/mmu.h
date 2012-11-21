@@ -9,6 +9,8 @@
 #ifndef SPARC_MMU_H_
 #define SPARC_MMU_H_
 
+#ifndef __ASSEMBLER__
+
 #include <types.h>
 
 #define __MMU_PGD_SHIFT         24
@@ -23,5 +25,7 @@ typedef uint32_t __mmu_ctx_t;
 typedef uint32_t __mmu_pgd_t;
 typedef uint32_t __mmu_pmd_t;
 typedef uint32_t __mmu_pte_t;
+
+#endif
 
 #endif /* SPARC_MMU_H_ */

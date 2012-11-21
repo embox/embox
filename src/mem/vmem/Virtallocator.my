@@ -1,8 +1,0 @@
-package embox.mem.vmem
-
-module virtallocator {
-	source "virtalloc.c"
-
-	depends embox.mem.page_api
-	depends embox.mem.phymem
-}

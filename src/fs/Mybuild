@@ -14,7 +14,7 @@ module file_desc {
 }
 
 module core {
-	source "vfs.c", "core.c"
+	source "vfs.c", "core.c", "path_subr.c"
 
 	option number file_name_length=32
 	option number path_length=256

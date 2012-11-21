@@ -1,0 +1,8 @@
+package embox.kernel
+
+module usermode {
+	source "usermode.c"
+
+	depends embox.arch.usermode
+	depends embox.kernel.thread.core
+}

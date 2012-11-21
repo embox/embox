@@ -21,28 +21,6 @@
 
 /* IPv4 AF_INET sockets:*/
 
-/**
- * Convert Internet number in IN to ASCII representation.
- * The return value is a pointer to an internal array containing the string.
- */
-char *inet_ntoa(struct in_addr in);
-
-/**
- * Convert Internet host address from numbers-and-dots notation in CP
- * into binary data in network byte order.
- */
-in_addr_t inet_addr(const char *cp);
-
-/**
- * Convert Internet host address from numbers-and-dots notation in CP
- * into binary data and store the result in the structure INP.
- */
-int inet_aton(const char *cp, struct in_addr *addr);
-
-#define htons(n)            __bswap_16(n)
-#define ntohs(n)            __bswap_16(n) // same as htons()
-#define htonl(n)            __bswap_32(n)
-#define ntohl(n)            __bswap_32(n) // same as htonl()
 
 /* Address to accept any incoming messages. */
 #define INADDR_ANY          ((unsigned long int) 0x00000000)

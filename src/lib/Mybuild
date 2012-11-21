@@ -1,19 +1,38 @@
 package embox.lib
 
-static module ElfLib {
+static module LibElf {
+	source "elf/elf_object_list.c"
 	source "elf/elf_object.c"
 	source "elf/elf_header.c"
 	source "elf/elf_sh_table.c"
 	source "elf/elf_ph_table.c"
-	source "elf/elf_section.c"
-	source "elf/elf_string_table.c"
+	source "elf/elf_sections.c"
+	// source "elf/elf_string_table.c"
+	source "elf/elf_symbols.c"
 	source "elf/elf_sym_table.c"
 	source "elf/elf_sym_names.c"
-	source "elf/elf_dyn_section.c"
-	source "elf/elf_rel_array.c"
+	source "elf/elf_sym.c"
+	// source "elf/elf_dyn_section.c"
+	source "elf/elf_rel.c"
+	// source "elf/elf_rel_array.c"
+	source "elf/elf_base_address.c"
+}
 
-	// TODO: Delete it later
-	source "elf/elf_reader.c"
+static module LibDl {
+	source "dl/dl.c"
+	source "dl/dl_global_symbols.c"
+	source "dl/dl_relocs.c"
+
+	depends LibElf
+	depends embox.arch.x86.LibDl
+}
+
+static module LibElfloader {
+	source "elfloader/elfloader.c"
+	source "elfloader/elfloader_placement.c"
+
+	depends embox.mem.mmap_api
+	depends LibElf, LibDl
 }
 
 static module LibCDiagnostic {
@@ -66,6 +85,7 @@ static module LibCMath {
 	source "math/div.c"
 	source "math/ldiv.c"
 	source "math/blog2.c"
+	source "math/sqrt.c"
 	source "soft-fp/df3.c"
 	source "soft-fp/sf3.c"
 	source "soft-fp/softfloat.c"
@@ -118,6 +138,4 @@ static module LibC {
 /* not here */
 	source "shell/tokenizer.c"
 	source "readline/readline.c"
-
-//	source "stacktrace.c"
 }

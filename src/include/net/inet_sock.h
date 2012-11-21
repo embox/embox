@@ -10,7 +10,7 @@
 #define INET_SOCK_H_
 
 #include <net/sock.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 
 /**
  * @struct ip_options

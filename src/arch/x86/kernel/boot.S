@@ -8,6 +8,7 @@
 
 #include <asm/multiboot.h>
 #include <asm/linkage.h>
+#include <module/embox/arch/mmu.h>
 
 	.section .multiboot
 
@@ -46,31 +47,40 @@ multiboot_entry:
 	/* interrrupts disable */
 	cli
 	cld
+
+#ifndef NOMMU
+	/* Enable mmu */
+	call    mmu_enable
+#endif /* ! NOMMU */
+
 	/* Initialize the stack pointer. */
-	movl	$_stack_vma, %esp /* load base address for system stack */
-	addl    $_stack_len, %esp /* setup correct system stack pointer */
+	movl	$_stack_vma, %esp  /* load base address for system stack */
+	addl    $_stack_len, %esp  /* setup correct system stack pointer */
 
 	/* Reset EFLAGS. */
 	pushl	$0
 	popf
 
-/* we must clean bss section */
-	movl   $_bss_len, 0x8(%esp) /* push bss len as 3 parameter on the stack */
-	movl   $0x0, 0x4(%esp)      /* push zero as 2 parameter on the stack */
-	movl   $_bss_vma, 0x0(%esp) /* push bss start as 1 parameter on the stack */
-	call   memset               /* clear bss section */
+	/* Clean up bss section */
+	pushl   $_bss_len          /* push bss len as 3 parameter on the stack */
+	pushl   $0x0               /* push zero as 2 parameter on the stack */
+	pushl   $_bss_vma          /* push bss start as 1 parameter on the stack */
+	call    memset             /* clear bss section */
+	addl    $0xc, %esp
 
-/* check whether load data section */
-	mov   $_data_vma, %eax
-	cmp   $_data_lma, %eax
-	je    1f        /* if data_vma=data_lma section have correct place */
-	/* copy data section to a correct place*/
-	movl   $_data_len, 0x8(%esp) /* push data len as 3 parameter on the stack */
-	movl   $_data_lma, 0x4(%esp) /* push data lma as 2 parameter on the stack */
-	movl   $_data_vma, 0x0(%esp) /* push data vma as 1 parameter on the stack */
-	call   memcpy                /* copy data section */
+	/* Check whether load data section */
+	mov     $_data_vma, %eax
+	cmp     $_data_lma, %eax
+	je      1f        /* if data_vma = data_lma section have correct place */
+
+	/* Copy data section to a correct place*/
+	pushl   $_data_len         /* push data len as 3 parameter on the stack */
+	pushl   $_data_lma         /* push data lma as 2 parameter on the stack */
+	pushl   $_data_vma         /* push data vma as 1 parameter on the stack */
+	call    memcpy              /* copy data section */
+	addl    $0xc, %esp
+
 1:
-
 
 #ifdef CONFIG_MULTIBOOT_CHECK
 	/* Push the pointer to the Multiboot information structure. */
@@ -83,5 +93,22 @@ multiboot_entry:
 
 	call	kernel_start /* call C code */
 
-loop:	hlt             /* if we return from kernel_start it's error */
+loop:
+	hlt             /* if we return from kernel_start it's error */
 	jmp	loop
+
+/*
+ * Reset cpu
+ * Use triple fault
+ */
+C_ENTRY(cpu_reset):
+	cli
+	movl	$null_idt, %eax		/* Reset by triple fault */
+	lidt	(%eax)
+	int	$3
+	hlt
+
+	.align 4
+null_idt:
+	.word	0
+	.long	0

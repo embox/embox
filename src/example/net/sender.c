@@ -14,7 +14,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
+#include <arpa/inet.h>
 
 char msg1[] = "Hello Embox!\n";
 char msg2[] = "Bye bye!\n";

@@ -71,7 +71,6 @@ struct thread {
 	struct list_head  task_link;     /**< Link in list holding task threads. */
 
 	clock_t           running_time;  /**< Running time of thread in clocks. */
-	int               in_usermode;   /**< Equals 1 if thread is usermode. */
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

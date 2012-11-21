@@ -7,7 +7,7 @@
  * @author Anton Kozlov
  */
 
-#include <net/in.h>
+#include <arpa/inet.h>
 #include <pnet/prior_path.h>
 #include <kernel/thread/api.h>
 #include <net/skbuff.h>

@@ -8,7 +8,7 @@
 #include <embox/cmd.h>
 #include <net/dns.h>
 #include <stdio.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 
 EMBOX_CMD(exec);
 

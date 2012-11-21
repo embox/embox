@@ -47,8 +47,18 @@ struct xwnd_button {
 	char * text;
 };
 
-extern struct xwnd_window * xwnd_window_create (const struct xwnd_rect * rect);
-extern void xwnd_window_delete (struct xwnd_window * wnd);
+
+extern struct xwnd_window *xwnd_window_alloc(void);
+
+extern void xwnd_window_free(struct xwnd_window *wnd);
+
+extern struct xwnd_window *xwnd_window_init(struct xwnd_window *wnd, const struct xwnd_rect *rect);
+
+//extern struct xwnd_window * xwnd_window_create (const struct xwnd_rect * rect);
+
+//extern void xwnd_window_delete (struct xwnd_window * wnd);
+
 extern void xwnd_draw_window (struct xwnd_window * wnd);
+
 
 #endif /* XWND_WINDOW_H_ */

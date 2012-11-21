@@ -9,6 +9,7 @@
 
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <assert.h>
 
 #include <fs/core.h>
 
@@ -25,6 +26,7 @@ static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
 }
 
 static ssize_t this_write(struct idx_desc *data, const void *buf, size_t nbyte) {
+	assert(data);
 	return kwrite(buf, 1, nbyte, from_data(data));
 }
 

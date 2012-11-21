@@ -6,6 +6,7 @@
  */
 
 #include <errno.h>
+#include <string.h>
 #include <mem/misc/pool.h>
 
 #include <framework/mod/options.h>
@@ -22,14 +23,14 @@
 POOL_DEF(file_pool, FILE, FILE_QUANTITY);
 
 FILE stdin_struct = {
-	.fd = 0
+	.fd = STDIN_FILENO,
 };
 FILE stdout_struct = {
-	.fd = 1
+	.fd = STDOUT_FILENO,
 };
 
 FILE stderr_struct = {
-	.fd = 1
+	.fd = STDERR_FILENO,
 };
 
 FILE *stdin = &stdin_struct;
@@ -39,10 +40,21 @@ FILE *stderr = &stderr_struct;
 FILE *fopen(const char *path, const char *mode) {
 	int fd;
 	FILE *file = NULL;
+	int flags = 0;
 
-	fd = open(path, 0);
+	if (strchr(mode, 'r')) {
+		flags |= O_RDONLY;
+	}
 
-	if (fd > 0) {
+	if (strchr(mode, 'w')) {
+		flags |= O_WRONLY;
+	}
+
+	if (strchr(mode, 'a')) {
+		flags |= O_APPEND;
+	}
+
+	if ((fd = open(path, flags)) > 0) {
 		file = pool_alloc(&file_pool);
 		file->fd = fd;
 	}

@@ -6,32 +6,32 @@
  * @author Anton Bulychev
  */
 
-#ifndef KERNEL_THREAD_SCHED_STRATEGY_TRIVIAL_H_
-#define KERNEL_THREAD_SCHED_STRATEGY_TRIVIAL_H_
+#ifndef KERNEL_THREAD_SCHED_STRATEGY_FIXEDTIME_H_
+#define KERNEL_THREAD_SCHED_STRATEGY_FIXEDTIME_H_
 
-#include <lib/list.h>
+#include <util/dlist.h>
 
+#include <kernel/time/timer.h>
+#include <kernel/thread/startq.h>
 #include <kernel/thread/sched_priority.h>
-#include <kernel/time/clock_source.h>
-#include <time.h>
 
 struct thread;
 
 struct sched_strategy_data {
-	struct list_head l_link; /* List data */
+	struct dlist_head l_link;
 };
 
 struct runq {
-	struct thread *current;  /* Current thread */
-	struct list_head rq;     /* Ready queue */
+	struct thread *current;
+	struct dlist_head rq;
 
-	useconds_t timeleft;     /* Time left for thread */
-	useconds_t last_upd;    /* Last updating of timeleft */
+	sys_timer_t *tick_timer;
 };
 
 struct sleepq {
-	struct list_head rq;     /* Resume queue */
-	struct list_head sq;     /* Suspend queue */
+	struct dlist_head sq;
+
+	struct startq_data startq_data;
 };
 
-#endif /* KERNEL_THREAD_SCHED_STRATEGY_TRIVIAL_H_ */
+#endif /* KERNEL_THREAD_SCHED_STRATEGY_FIXEDTIME_H_ */

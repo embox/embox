@@ -11,6 +11,7 @@
 #include <xwnd/xwndapp.h>
 #include <xwnd/app_registry.h>
 #include <xwnd/event.h>
+#include <xwnd/window.h>
 
 static int xwnd_app_dispatch_event (const struct xwnd_application * app, struct xwnd_event * event) {
 	if (app->callbacks[event->type]) {
@@ -29,9 +30,9 @@ int xwnd_app_set_event_handle (struct xwnd_application * app, enum xwnd_event_ty
 
 int xwnd_app_get_event (struct xwnd_application * app, struct xwnd_event * event) {
 	int err;
-	sem_enter(app->msg_sem);
-	err = read(app->pipe_in, event, sizeof(struct xwnd_event));
-	sem_leave(app->msg_sem);
+	sem_enter(app->ev.msg_sem);
+	err = read(app->ev.msg_pipe, event, sizeof(struct xwnd_event));
+	sem_leave(app->ev.msg_sem);
 	if (err != sizeof(struct xwnd_event)) {
 		return 1;
 	}
@@ -64,6 +65,37 @@ int xwnd_app_reg_set_xapp_struct_ptr (void) {
 	return 0;
 }
 
+static void xwnd_app_place_window (int quad, struct xwnd_rect * rect) {
+	switch (quad) {
+		case 0:
+			rect->x = 0;
+			rect->y = 0;
+			rect->wd = 100;
+			rect->ht = 100;
+			break;
+		case 1:
+			rect->x = 100;
+			rect->y = 0;
+			rect->wd = 100;
+			rect->ht = 100;
+			break;
+		case 2:
+			rect->x = 0;
+			rect->y = 100;
+			rect->wd = 100;
+			rect->ht = 100;
+			break;
+		case 3:
+			rect->x = 100;
+			rect->y = 100;
+			rect->wd = 100;
+			rect->ht = 100;
+			break;
+		default:
+			break;
+	}
+}
+
 struct xwnd_application * xwnd_app_init (void * args) {
 	struct xwnd_application * t_xapp;
 	struct xwnd_window * t_wnd;
@@ -77,24 +109,25 @@ struct xwnd_application * xwnd_app_init (void * args) {
 	}
 
 	//Create window
-	rect.x = 30 * (xapp_id + 1);
-	rect.y = 20 * (xapp_id + 1);
-	rect.wd = 60 * (xapp_id + 1);
-	rect.ht = 60 * (xapp_id + 1);
-	t_wnd = xwnd_window_create(&rect); //malloc (sizeof(struct xwnd_window));
+	if (!t_wrap->arg) {
+		rect.x = 30;
+		rect.y = 20;
+		rect.wd = 200;
+		rect.ht = 150;
+	} else {
+		xwnd_app_place_window(((*(t_wrap->arg)) - '0') % 4, &rect);
+	}
+
+	t_wnd = xwnd_window_alloc();
 	if (!t_wnd) {
 		free(t_xapp);
 		return NULL;
 	}
+	xwnd_window_init(t_wnd, &rect);
+
 	t_xapp->wnd = t_wnd;
 	t_xapp->app_id = xapp_id;
-	t_xapp->req_sem = t_wrap->req_sem;
-	t_xapp->msg_sem = t_wrap->msg_sem;
-	t_xapp->pipe_out = t_wrap->req_pipe;
-	t_xapp->pipe_in = t_wrap->msg_pipe;
-
-
-
+	t_xapp->ev = t_wrap->ev;
 
 	return t_xapp;
 }
