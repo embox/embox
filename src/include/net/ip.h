@@ -10,7 +10,7 @@
 #ifndef NET_IP_H_
 #define NET_IP_H_
 
-#include <net/in.h>
+#include <arpa/inet.h>
 #include <net/skbuff.h>
 #include <net/inet_sock.h>
 #include <hal/arch.h>

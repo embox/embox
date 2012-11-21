@@ -15,7 +15,7 @@
 #include <string.h>
 #include <net/skbuff.h>
 #include <pnet/core.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 #include <pnet/netfilter/match.h>
 
 #define ETH_P_IP_REV	0x8

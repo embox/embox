@@ -6,7 +6,7 @@
  */
 
 #include <netdb.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 #include <stdlib.h>
 #include <string.h>
 #include <net/dns.h>

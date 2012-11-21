@@ -16,7 +16,7 @@
 #include <err.h>
 #include <errno.h>
 #include <net/inetdevice.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 #include <net/util/request_parser.h>
 #include <lib/url_parser.h>
 #include <embox/web_service.h>

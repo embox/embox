@@ -9,7 +9,7 @@
 
 #include <embox/test.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 
 EMBOX_TEST_SUITE("network/socket/packet test");

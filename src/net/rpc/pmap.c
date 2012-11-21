@@ -10,7 +10,7 @@
 #include <net/rpc/clnt.h>
 #include <net/rpc/rpc.h>
 #include <types.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 #include <string.h>
 #include <assert.h>
 
