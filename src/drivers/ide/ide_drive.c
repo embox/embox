@@ -48,7 +48,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-#include <net/in.h>
+
 #include <fs/fat.h>
 #include <drivers/ide.h>
 #include <embox/block_dev.h>

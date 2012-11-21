@@ -8,7 +8,7 @@
 
 #include <stdlib.h>
 #include <net/socket.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <framework/example/self.h>

@@ -11,7 +11,7 @@
 #define PNET_PRIOR_PATH_H_
 
 #include <net/netdevice.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 #include <pnet/types.h>
 
 struct pnet_path {

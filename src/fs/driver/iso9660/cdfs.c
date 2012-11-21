@@ -52,7 +52,7 @@
 #include <stdlib.h>
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
 

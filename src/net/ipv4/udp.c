@@ -15,7 +15,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <net/inet_sock.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 #include <net/netdevice.h>
 
 EMBOX_NET_PROTO(IPPROTO_UDP, udp_rcv, udp_err);
