@@ -21,8 +21,6 @@ module reset {
 
 module entry extends embox.arch.entry {
 	source "entry.S"
-	//source "exception.c"
-	//source "interrupt.c"
 }
 
 module exception {
@@ -33,6 +31,17 @@ module interrupt {
 	source "interrupt.c"
 	depends exception
 	depends embox.kernel.irq
+}
+
+module syscall extends embox.arch.syscall {
+	source "syscall.c"
+	depends exception
+}
+
+module syscall_caller extends embox.arch.syscall_caller {
+	source "syscall_caller.h"
+
+	depends embox.kernel.syscall
 }
 
 module arch {

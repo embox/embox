@@ -8,6 +8,7 @@
 #include <hal/arch.h>
 #include <asm/traps.h>
 #include <hal/ipl.h>
+#include <asm/io.h>
 
 void arch_init(void) {
 	gdt_init();
@@ -17,8 +18,11 @@ void arch_init(void) {
 void arch_idle(void) {
 	__asm__ __volatile__("hlt");
 }
-#if 0
-void arch_reset(void) {
+
+#if 1
+//http://mjg59.dreamwidth.org/3561.html
+//http://stackoverflow.com/questions/3145569/how-to-power-down-the-computer-from-a-freestanding-environment
+void arch_reset_kbd(void) {
 	while (in8(0x64) & 0x2);
 	out8(0x60, 0x64);
 	while (in8(0x64) & 0x2);
@@ -27,6 +31,27 @@ void arch_reset(void) {
 	out8(0xfe, 0x64);
 }
 #endif
+
+
+extern void cpu_reset(void);
+extern void acpi_power_off(void);
 void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
+//	cpu_reset();
+
+//	acpi_power_off();
+
+	//outw(0xB004, 0x0 | 0x2000);
+	//asm("cli;hlt");
+
 	while (1) {}
 }
+
+
+
+#if 0
+	cli
+	movl	$null_idt, %eax		/* Reset by triple fault */
+	lidt	(%eax)
+	int	$3
+	hlt
+#endif

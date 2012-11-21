@@ -14,39 +14,11 @@
 
 static node_t *root_node;
 
-int set_path (char *path, node_t *nod) {
-
-	node_t *parent, *node;
-	char buff[MAX_LENGTH_PATH_NAME];
-
-	*path = *buff= 0;
-	node = nod;
-	strcpy((char *) buff, (const char *) &node->name);
-
-	while(NULL !=
-			(parent = vfs_find_parent((const char *) &node->name, node))) {
-		strcpy((char *) path, (const char *) &parent->name);
-		if('/' != *path) {
-			strcat((char *) path, (const char *) "/");
-		}
-		strcat((char *) path, (const char *) buff);
-		node = parent;
-		strcpy((char *) buff, (const char *) path);
-	}
-
-	strncpy((char *) buff, (char *) path, MAX_LENGTH_PATH_NAME);
-	buff[MAX_LENGTH_PATH_NAME - 1] = 0;
-	if (strcmp((char *) path,(char *) buff)) {
-		return -1;
-	}
-	return 0;
-}
-
 /**
  * Save first node name in path into buff variable.
  * Return the remaining part of path.
  */
-static char *get_next_node_name(const char *path, char *buff, int buff_len) {
+static char *vfs_get_next_node_name(const char *path, char *buff, int buff_len) {
 	char *p = (char *) path;
 	char *b = buff;
 	while ('/' == *p) {
@@ -66,57 +38,34 @@ static char *get_next_node_name(const char *path, char *buff, int buff_len) {
 	return NULL;
 }
 
-void cut_mount_dir(char *path, char *mount_dir) {
-	char *p;
+int vfs_get_path_by_node (node_t *nod, char *path) {
 
-	p = path;
-	while (*mount_dir && (*mount_dir == *p)) {
-		mount_dir++;
-		p++;
-	}
-	strcpy((char *) path, (const char *) p);
-}
+	node_t *parent, *node;
+	char buff[MAX_LENGTH_PATH_NAME];
 
-int nip_tail(char *head, char *tail) {
-	char *p_tail;
-	char *p;
+	*path = *buff= 0;
+	node = nod;
+	strncpy((char *) buff, (const char *) &node->name, MAX_LENGTH_FILE_NAME);
 
-	p = p_tail = head + strlen(head);
-	strcat(head, tail);
-
-	do {
-		p_tail--;
-		if (head > p_tail) {
-			*p = '\0';
-			return -1;
+	while(NULL !=
+			(parent = vfs_find_parent((const char *) &node->name, node))) {
+		strncpy((char *) path,
+				(const char *) &parent->name, MAX_LENGTH_FILE_NAME);
+		if('/' != *path) {
+			strcat((char *) path, (const char *) "/");
 		}
-	} while ('/' != *p_tail);
+		strcat((char *) path, (const char *) buff);
+		node = parent;
+		strncpy((char *) buff, (const char *) path, MAX_LENGTH_PATH_NAME);
+	}
 
-	strcpy (tail, p_tail);
-	*p_tail = '\0';
-
+	strncpy((char *) buff, (char *) path, MAX_LENGTH_PATH_NAME);
+	buff[MAX_LENGTH_PATH_NAME - 1] = 0;
+	if (strcmp((char *) path,(char *) buff)) {
+		return -1;
+	}
 	return 0;
 }
-
-int increase_tail(char *head, char *tail) {
-	char *p_tail;
-
-		p_tail = head + strlen(head);
-		strcat(head, tail);
-
-		do {
-			if('\0' == *p_tail) {
-				break;
-			}
-			p_tail++;
-		} while ('/' != *p_tail);
-
-		strcpy (tail, p_tail);
-		*p_tail = '\0';
-
-		return 0;
-}
-
 
 int vfs_add_leaf(node_t *child, node_t *parent) {
 	tree_add_link(&(parent->tree_link), &(child->tree_link));
@@ -128,8 +77,9 @@ static node_t *vfs_add_new_path(node_t *parent,
 	node_t *child;
 	child = alloc_node(child_name);
 	vfs_add_leaf(child, parent);
-	while (NULL != (p_path = get_next_node_name(p_path, child_name,
+	while (NULL != (p_path = vfs_get_next_node_name(p_path, child_name,
 											MAX_LENGTH_FILE_NAME))) {
+		parent->properties = DIRECTORY_NODE_TYPE;
 		parent = child;
 		child = alloc_node(child_name);
 		vfs_add_leaf(child, parent);
@@ -148,7 +98,7 @@ node_t *vfs_add_path(const char *path, node_t *parent) {
 	if (NULL == parent) {
 		node = vfs_get_root();
 	}
-	while (NULL != (p_path = get_next_node_name(p_path,	node_name,
+	while (NULL != (p_path = vfs_get_next_node_name(p_path,	node_name,
 													sizeof(node_name)))) {
 		parent = node;
 		if (NULL == (node = vfs_find_child(node_name, node))) {
@@ -193,7 +143,7 @@ node_t *vfs_find_node(const char *path, node_t *parent) {
 		node = vfs_get_root();
 	}
 	//FIXME if we return immediately we return root node
-	while (NULL != (p_path = get_next_node_name(p_path, node_name,
+	while (NULL != (p_path = vfs_get_next_node_name(p_path, node_name,
 													sizeof(node_name)))) {
 		if (NULL == (node = vfs_find_child(node_name, node))) {
 			return NULL;
@@ -206,6 +156,7 @@ node_t *vfs_find_node(const char *path, node_t *parent) {
 node_t *vfs_get_root(void) {
 	if(NULL == root_node) {
 		root_node = alloc_node("/");
+		root_node->properties = DIRECTORY_NODE_TYPE;
 	}
 	return root_node;
 }

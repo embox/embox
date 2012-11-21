@@ -6,35 +6,52 @@
  * @author Anton Bulychev
  */
 
-#include <lib/libelf.h>
+#include <errno.h>
 #include <stdlib.h>
 
-void elf_initialize_object(Elf32_Obj *obj) {
-	obj->need_reverse = 0;
-	obj->dyn_count    = 0;
-	obj->rel_count    = 0;
+#include <lib/libelf.h>
 
-	obj->header       = NULL;
-	obj->sh_table     = NULL;
-	obj->ph_table     = NULL;
-	obj->string_table = NULL;
-	obj->sym_table    = NULL;
-	obj->sym_names    = NULL;
-	obj->dyn_section  = NULL;
-	obj->rel_array    = NULL;
+int elf_object_init(Elf32_Obj **obj, FILE *fd) {
+	int err;
+
+	if (!(*obj = malloc(sizeof(Elf32_Obj)))) {
+		return -ENOMEM;
+	}
+
+	**obj = (Elf32_Obj) {
+		.fd             = fd,
+
+		.need_reverse   = 0,
+		.dyn_count      = 0,
+		.rel_count      = 0,
+
+
+		.header         = NULL,
+		.sections       = NULL,
+		.sh_table       = NULL,
+		.ph_table       = NULL,
+		.string_table   = NULL,
+		.sym_table      = NULL,
+		.sym_names      = NULL,
+		.dyn_section    = NULL,
+		.rel_array      = NULL,
+	};
+
+	if (fd != NULL) {
+		/* Read elf header and allocate array for sections */
+
+		if ((err = elf_read_header(*obj)) < 0) {
+			return err;
+		}
+
+		return elf_init_sections(*obj);
+	}
+
+	return ENOERR;
 }
 
-void elf_finilize_object(Elf32_Obj *obj) {
-	obj->need_reverse = 0;
-	obj->dyn_count = 0;
-	obj->rel_count = 0;
-
-	if (obj->header       != NULL) free(obj->header);
-	if (obj->sh_table     != NULL) free(obj->sh_table);
-	if (obj->ph_table     != NULL) free(obj->ph_table);
-	if (obj->string_table != NULL) free(obj->string_table);
-	if (obj->sym_table    != NULL) free(obj->sym_table);
-	if (obj->sym_names    != NULL) free(obj->sym_names);
-	if (obj->dyn_section  != NULL) free(obj->dyn_section);
-	if (obj->rel_array    != NULL) free(obj->rel_array);
+void elf_object_free(Elf32_Obj *obj) {
+	if (obj->sections != NULL) elf_free_sections(obj);
+	if (obj->header   != NULL) free(obj->header);
+	free(obj);
 }

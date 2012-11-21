@@ -67,4 +67,13 @@
 #define X86_CR4_VMXE	0x00002000 /* enable VMX virtualization */
 #define X86_CR4_OSXSAVE 0x00040000 /* enable xsave and xrestore */
 
+/*
+ * PTE/PMD flags
+ */
+#define MMU_PAGE_PRESENT        (1UL)
+#define MMU_PAGE_WRITABLE       (1UL << 1)
+#define MMU_PAGE_USERMODE       (1UL << 2)
+#define MMU_PAGE_DISABLE_CACHE  (1UL << 4)
+#define MMU_PAGE_4MB            (1UL << 7)
+
 #endif /* X86_FLAGS_H */

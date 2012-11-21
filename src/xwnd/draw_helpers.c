@@ -20,14 +20,14 @@ void xwnd_draw_pixel (const struct xwnd_window * wnd, unsigned x, unsigned y, un
 	}
 }
 
-void xwnd_draw_horiz_line (unsigned x, unsigned y, unsigned l, unsigned c) {
+static void xwnd_draw_horiz_line (unsigned x, unsigned y, unsigned l, unsigned c) {
 	int i;
 	for (i = 0; i <= l; i++) {
 		vesa_put_pixel(x + i, y, c);
 	}
 }
 
-void xwnd_draw_vert_line (unsigned x, unsigned y, unsigned l, unsigned c) {
+static void xwnd_draw_vert_line (unsigned x, unsigned y, unsigned l, unsigned c) {
 	int i;
 	for (i = 0; i <= l; i++) {
 		vesa_put_pixel(x, y + i, c);

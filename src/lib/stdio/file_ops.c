@@ -22,14 +22,14 @@
 POOL_DEF(file_pool, FILE, FILE_QUANTITY);
 
 FILE stdin_struct = {
-	.fd = 0
+	.fd = STDIN_FILENO,
 };
 FILE stdout_struct = {
-	.fd = 1
+	.fd = STDOUT_FILENO,
 };
 
 FILE stderr_struct = {
-	.fd = 1
+	.fd = STDERR_FILENO,
 };
 
 FILE *stdin = &stdin_struct;
@@ -39,10 +39,21 @@ FILE *stderr = &stderr_struct;
 FILE *fopen(const char *path, const char *mode) {
 	int fd;
 	FILE *file = NULL;
+	int flags = 0;
 
-	fd = open(path, 0);
+	if ('r' == *mode) {
+		flags |= O_RDONLY;
+	}
 
-	if (fd > 0) {
+	if ('w' == *mode) {
+		flags |= O_WRONLY;
+	}
+
+	if ('a' == *mode) {
+			flags = O_APPEND;
+	}
+
+	if ((fd = open(path, flags)) > 0) {
 		file = pool_alloc(&file_pool);
 		file->fd = fd;
 	}

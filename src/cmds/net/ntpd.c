@@ -52,7 +52,7 @@ static int exec(int argc, char **argv) {
 
 	if (argc == 2) {
 		printf("*Starting NTP daemon\n");
-		new_task(ntpd_run, NULL, 0);
+		new_task(ntpd_run, NULL);
 	}
 
 	return 0;

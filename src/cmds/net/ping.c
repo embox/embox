@@ -27,7 +27,7 @@
 #include <err.h>
 #include <errno.h>
 #include <net/route.h>
-#include <net/netdb.h>
+#include <netdb.h>
 
 EMBOX_CMD(exec);
 

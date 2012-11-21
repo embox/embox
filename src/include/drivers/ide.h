@@ -296,12 +296,20 @@ typedef struct hdc  {
 } hdc_t;
 
 struct partition {
-	dev_t dev;
+	void *dev;
 	unsigned int start;
 	unsigned int len;
 	unsigned short bootid;
 	unsigned short systid;
 };
+
+typedef struct dev_geometry {
+	int cyls;
+	int heads;
+	int spt;
+	int sectorsize;
+	int sectors;
+} dev_geometry_t;
 
 typedef struct hd {
 	hdc_t *hdc;                      /* Controller */
@@ -314,7 +322,7 @@ typedef struct hd {
 	int media;                            /* Device media type (hd, cdrom, ...) */
 	int multsect;                         /* Sectors per interrupt */
 	int udmamode;                         /* UltraDMA mode */
-	dev_t devno;                          /* Device number */
+	void *dev_id;                         /* Device */
 
 	/*
 	 * Geometry
@@ -327,10 +335,20 @@ typedef struct hd {
 	unsigned int sectors;                 /* Sectors per track */
 } hd_t;
 
-typedef struct _slot {
-	hd_t *drive[8];
-} slot_t;
+typedef struct ide_tab {
+	hd_t *drive[HD_DRIVES];
+} ide_tab_t;
 
-extern slot_t *get_ide_drive(void);
+extern struct indexator *idedisk_idx;
+
+extern struct ide_tab *ide_get_drive(void);
+extern int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout);
+extern void ide_select_drive(hd_t *hd);
+
+extern void pio_write_buffer(hd_t *hd, char *buffer, int size);
+extern void pio_read_buffer(hd_t *hd, char *buffer, int size);
+extern void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects);
+
+extern int create_partitions(hd_t *hd);
 
 #endif /* IDE_H_ */

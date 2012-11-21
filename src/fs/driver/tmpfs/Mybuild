@@ -1,0 +1,14 @@
+package embox.fs.driver
+
+module tmpfs {
+	source "tmpfs.c"
+	option number tmpfs_inode_quantity=64
+	option number tmpfs_descriptor_quantity=4
+	option number tmpfs_file_size=32
+	option number tmpfs_filesystem_size=448
+
+	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.driver.block
+	depends embox.mem.page_api
+	depends embox.mem.pool
+}
