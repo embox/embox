@@ -151,7 +151,7 @@ int kstat(struct file_desc *desc, void *buff) {
 		return -1;
 	}
 
-	return desc->ops->fstat(desc, buff);
+	return desc->ops->fstat(desc->node->fd, buff); //FIXME Not much pretty -Anton Kozlov
 }
 
 int kioctl(struct file_desc *fp, int request, ...) {

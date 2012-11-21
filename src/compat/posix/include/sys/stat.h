@@ -33,11 +33,12 @@ typedef struct stat {
  */
 extern int    chmod(const char *, mode_t);
 extern int    fchmod(int, mode_t);
+extern int    stat(const char *, struct stat *);
 extern int    lstat(const char *, struct stat *);
+extern int    fstat(int fd, struct stat *);
 extern int    mkfifo(const char *, mode_t);
 extern int    mknod(const char *, mode_t, dev_t);
-extern int mkdir (const char *, mode_t );
-//extern int    stat(const char *, struct stat *);
+extern int    mkdir (const char *, mode_t );
 extern mode_t umask(mode_t);
 
 #endif /* SYS_STAT_H_ */

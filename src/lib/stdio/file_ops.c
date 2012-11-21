@@ -112,10 +112,6 @@ int fseek(FILE *file, long int offset, int origin) {
 	return lseek(file->fd, offset, origin);
 }
 
-int fstat(FILE *file, void *buff) {
-	return stat(file->fd, buff);
-}
-
 int fioctl(FILE *fp, int request, ...) {
 	va_list args;
 	va_start(args, request);

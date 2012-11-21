@@ -8,6 +8,7 @@
  */
 
 #include <errno.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <kernel/task.h>
@@ -137,7 +138,7 @@ int ioctl(int fd, int request, ...) {
 	return ret;
 }
 
-int stat(int fd, void *buff) {
+int fstat(int fd, struct stat *buff) {
 	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
 

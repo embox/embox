@@ -81,6 +81,20 @@ TEST_CASE("Read file") {
 	test_assert_zero(close(file));
 }
 
+TEST_CASE("stat and fstat should return same stats") {
+	struct stat st, fst;
+	int fd;
+
+	stat(FS_FILE2, &st);
+
+	test_assert((fd = open(FS_FILE2, O_RDONLY)) >= 0);
+
+	fstat(fd, &fst);
+
+	test_assert(0 == memcmp(&st, &fst, sizeof(struct stat)));
+
+	close(fd);
+}
 
 static int setup_suite(void) {
 	fs_drv_t *fs_drv;

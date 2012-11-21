@@ -120,7 +120,6 @@ static module LibCStdio {
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
 	source "stdio/perror.c"
-	//source "stdio/file_stdio.c"
 	depends LibCMath
 	depends LibCString
 	depends embox.compat.posix.file

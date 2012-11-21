@@ -159,6 +159,10 @@ int rmdir(const char *pathname) {
 	return drv->fsop->delete_file (pathname);
 }
 
+int stat(const char *path, stat_t *buf) {
+	return lstat(path, buf);
+}
+
 int lstat(const char *path, stat_t *buf) {
 	node_t *node;
 	fs_drv_t *drv;

@@ -12,6 +12,7 @@
 #define UNISTD_H_
 
 #include <sys/types.h>
+#include <sys/stat.h>
 
 /* Standard file descriptors. */
 #define STDIN_FILENO    0   /* Standard input. */
@@ -42,8 +43,6 @@ extern ssize_t write(int fd, const void *buf, size_t nbyte);
 extern ssize_t read(int fd, void *buf, size_t nbyte);
 
 extern int lseek(int fd, long int offset, int origin);
-
-extern int stat(int fd, void *buff);
 
 extern int fsync(int);
 
