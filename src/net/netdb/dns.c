@@ -6,7 +6,7 @@
  * @author Ilia Vaprol
  */
 
-#include <net/netdb.h>
+#include <netdb.h>
 #include <net/dns.h>
 #include <net/in.h>
 #include <net/ip.h>
