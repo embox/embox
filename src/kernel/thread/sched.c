@@ -324,7 +324,7 @@ clock_t sched_get_running_time(struct thread *thread) {
 /**
  * Called by critical dispatching code with IRQs disabled.
  */
-//#include <prom/prom_printf.h>
+#include <prom/prom_printf.h>
 static void sched_switch(void) {
 	struct thread *prev, *next;
 	clock_t new_clock;
@@ -364,7 +364,7 @@ static void sched_switch(void) {
 		ipl_disable();
 
 		task_notify_switch(prev, next);
-//		prom_printf("\nCONTEXT_SWITCH prev[%p] next[%p]\n", &prev->context, &next->context);
+		prom_printf("\nCONTEXT_SWITCH prev[%p] next[%p]\n", &prev->context, &next->context);
 		context_switch(&prev->context, &next->context);
 	}
 

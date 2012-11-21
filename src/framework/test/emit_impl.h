@@ -33,12 +33,15 @@ struct test_emit_buffer {
 		.buff_sz = (size),                       \
 	}
 
+#include <prom/prom_printf.h>
 static inline struct test_emit_buffer *test_emit_buffer_reset(
 		struct test_emit_buffer *b) {
 	assert(b);
 
 	b->ptr = b->buff;
 	*b->ptr = '\0';
+    prom_printf("\nTEST_EMIT_BUFFER_RESET test_emit_buff[%p]{ptr[%p]}\n",
+            b, &b->ptr);
 
 	return b;
 }
@@ -50,6 +53,8 @@ static inline struct test_emit_buffer *test_emit_buffer_init(
 
 	b->buff = buff;
 	b->buff_sz = buff_sz;
+    prom_printf("\nTEST_EMIT_BUFFER_INIT test_emit_buff[%p] with buff[%p] and buff_sz[%lu]\n",
+            b, buff, (unsigned long)buff_sz);
 
 	return test_emit_buffer_reset(b);
 }
