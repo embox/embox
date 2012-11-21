@@ -56,7 +56,7 @@
 
 static hdc_t hdctab[HD_CONTROLLERS];
 static hd_t  hdtab[HD_DRIVES];
-static slot_t ide;
+static struct ide_tab ide;
 static long tmr_cmd_start_time;
 
 /* general indexator for all ide disk */
@@ -304,7 +304,7 @@ static int hd_cmd(hd_t *hd, unsigned int cmd,
 }
 
 int hd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
-	block_dev_geometry_t *geom;
+	struct dev_geometry *geom;
 	hd_t *hd = (hd_t *) dev->privdata;
 
 	switch (cmd) {
@@ -315,10 +315,10 @@ int hd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 		return SECTOR_SIZE;
 
 	case IOCTL_GETGEOMETRY:
-		if (!args || size != sizeof(block_dev_geometry_t)) {
+		if (!args || size != sizeof(struct dev_geometry)) {
 			return -EINVAL;
 		}
-		geom = (block_dev_geometry_t *) args;
+		geom = (struct dev_geometry *) args;
 		geom->cyls = hd->cyls;
 		geom->heads = hd->heads;
 		geom->spt = hd->sectors;
@@ -711,7 +711,7 @@ static int ide_init(void) {
 	return 0;
 }
 
-slot_t *ide_get_drive(void) {
+struct ide_tab *ide_get_drive(void) {
 	return &ide;
 }
 

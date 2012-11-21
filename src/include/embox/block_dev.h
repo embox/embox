@@ -26,14 +26,6 @@
 #define DEV_TYPE_BLOCK          2
 #define DEV_TYPE_PACKET         3
 
-typedef struct block_dev_geometry {
-	int cyls;
-	int heads;
-	int spt;
-	int sectorsize;
-	int sectors;
-} block_dev_geometry_t;
-
 typedef struct block_dev {
 	dev_t id;
 	node_t *dev_node;

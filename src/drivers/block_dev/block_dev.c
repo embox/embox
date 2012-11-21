@@ -24,7 +24,6 @@ POOL_DEF(blockdev_pool, struct block_dev, MAX_DEV_QUANTITY);
 POOL_DEF(cache_pool, struct block_dev_cache, MAX_DEV_QUANTITY);
 INDEX_DEF(block_dev_idx,0,MAX_DEV_QUANTITY);
 
-static unsigned int num_devs = 0;
 static struct block_dev *devtab[MAX_DEV_QUANTITY];
 
 static int block_dev_cache_free(void *dev_id);
@@ -56,19 +55,6 @@ block_dev_t *block_dev(void *dev_id) {
 
 	return dev;
 }
-
-/*
-static dev_t block_devno(char *name) {
-	dev_t devno;
-
-	for (devno = 0; devno < num_devs; devno++) {
-		if (strcmp(block_dev(&devno)->name, name) == 0) {
-			return devno;
-		}
-	}
-	return NODEV;
-}
-*/
 
 #define WHOLE_NAME     0
 #define DIGITAL_IDX    1
@@ -134,10 +120,6 @@ dev_t *block_dev_create(char *path, void *driver, void *privdata, dev_t *name_id
 	block_dev_t *dev;
 	char name[MAX_LENGTH_FILE_NAME];
 
-	if (num_devs >= MAX_DEV_QUANTITY) {
-	  return NULL;
-	}
-
 	dev = (block_dev_t *) pool_alloc(&blockdev_pool);
 	if (NULL == dev) {
 		return NULL;
@@ -165,31 +147,8 @@ dev_t *block_dev_create(char *path, void *driver, void *privdata, dev_t *name_id
 		index_free(&block_dev_idx, dev->id);
 		return NULL;
 	}
-	num_devs++;
 	return &dev->id;
 }
-
-/*
-dev_t block_dev_open(char *name) {
-	dev_t d = block_devno(name);
-	if (d != NODEV) {
-	  devtab[d]->refcnt++;
-	}
-	return d;
-}
-
-
-int block_dev_close(dev_t devno) {
-	if(devno < 0 || devno >= num_devs) {
-		return -ENODEV;
-	}
-	if(block_dev(devno)->refcnt == 0) {
-		return -EPERM;
-	}
-	block_dev(devno)->refcnt--;
-	return 0;
-}
-*/
 
 int block_dev_read(void *dev_id, char *buffer, size_t count, blkno_t blkno) {
 	block_dev_t *dev;
@@ -335,6 +294,5 @@ int block_dev_destroy (void *dev_id) {
 	index_free(&block_dev_idx, dev->id);
 
 	pool_free(&blockdev_pool, dev);
-	num_devs--;
 	return 0;
 }

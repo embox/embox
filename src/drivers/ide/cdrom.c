@@ -208,7 +208,7 @@ static block_dev_driver_t idecd_pio_driver = {
 };
 
 static int idecd_init (void *args) {
-	slot_t *ide;
+	struct ide_tab *ide;
 	hd_t *drive;
 	dev_t name_idx;
 	double size;
@@ -216,7 +216,7 @@ static int idecd_init (void *args) {
 
 	ide = ide_get_drive();
 
-	for(int i = 0; i < 4; i++) {
+	for(int i = 0; i < HD_DRIVES; i++) {
 		if(NULL == ide->drive[i]) {
 			continue;
 		}

@@ -2041,9 +2041,10 @@ static size_t fatfs_fwrite(const void *buf, size_t size, size_t count,
 		void *file);
 static int fatfs_fseek(void *file, long offset, int whence);
 static int fatfs_ioctl(void *file, int request, va_list args);
+static int fatfs_fstat(void *file, void *buff);
 
 static file_operations_t fatfs_fop = { fatfs_fopen, fatfs_fclose, fatfs_fread,
-		fatfs_fwrite, fatfs_fseek, fatfs_ioctl, NULL };
+		fatfs_fwrite, fatfs_fseek, fatfs_ioctl, fatfs_fstat };
 /*
  * file_operation
  */
@@ -2148,6 +2149,30 @@ static int fatfs_ioctl(void *file, int request, va_list args) {
 	return 0;
 }
 
+static int fatfs_fstat(void *file, void *buff) {
+	struct file_desc *desc;
+	fat_file_description_t *fd;
+	stat_t *buffer;
+
+	desc = (struct file_desc *) file;
+	fd = (fat_file_description_t *)desc->node->fd;
+	buffer = (stat_t *) buff;
+
+	if (buffer) {
+			memset(buffer, 0, sizeof(stat_t));
+
+			buffer->st_mode = fd->fi.mode;
+			buffer->st_ino = fd->fi.firstcluster;
+			buffer->st_nlink = 1;
+			buffer->st_dev = *(int *) fd->fs->dev_id;
+			buffer->st_atime = buffer->st_mtime = buffer->st_ctime = 0;
+			buffer->st_size = fd->fi.filelen;
+			buffer->st_blksize = SECTOR_SIZE;
+			buffer->st_blocks = fd->fs->vi.numclusters;
+		}
+
+	return fd->fi.filelen;
+}
 
 static int fat_mount_files (void *dir_node);
 static int fatfs_create_file(void *par);

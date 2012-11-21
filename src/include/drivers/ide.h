@@ -303,6 +303,14 @@ struct partition {
 	unsigned short systid;
 };
 
+typedef struct dev_geometry {
+	int cyls;
+	int heads;
+	int spt;
+	int sectorsize;
+	int sectors;
+} dev_geometry_t;
+
 typedef struct hd {
 	hdc_t *hdc;                      /* Controller */
 	struct hdparam param;                 /* Drive parameter block */
@@ -327,13 +335,13 @@ typedef struct hd {
 	unsigned int sectors;                 /* Sectors per track */
 } hd_t;
 
-typedef struct _slot {
+typedef struct ide_tab {
 	hd_t *drive[HD_DRIVES];
-} slot_t;
+} ide_tab_t;
 
 extern struct indexator *idedisk_idx;
 
-extern slot_t *ide_get_drive(void);
+extern struct ide_tab *ide_get_drive(void);
 extern int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout);
 extern void ide_select_drive(hd_t *hd);
 

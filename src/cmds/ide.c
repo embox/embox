@@ -18,7 +18,7 @@ static void print_usage(void) {
 	printf("Usage: ide \n");
 }
 
-static void print_drive (slot_t *ide) {
+static void print_drive (struct ide_tab *ide) {
 	hd_t *drive;
 
 	for(int i  = 0; i < 4; i++) {
