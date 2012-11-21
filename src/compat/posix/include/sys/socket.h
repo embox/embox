@@ -14,6 +14,7 @@
 #include <net/socket.h>
 #include <net/net.h>
 #include <arpa/inet.h>
+#include <net/ip.h> /* IPPROTO_IP and so on */
 
 
 
