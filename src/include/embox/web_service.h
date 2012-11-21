@@ -11,6 +11,7 @@
 #include <kernel/thread/event.h>
 #include <util/array.h>
 #include <util/dlist.h>
+#include <cmd/servd.h>
 
 
 struct web_service_desc {
@@ -22,7 +23,7 @@ struct web_service_desc {
 struct web_service_instance {
 	struct thread *thr;
 	struct event *e;
-	void * params;
+	struct params * params;
 	const struct web_service_desc *desc;
 	struct dlist_head lst;
 };

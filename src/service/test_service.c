@@ -6,47 +6,8 @@
  */
 
 #include <embox/web_service.h>
-#include <stdio.h>
 #include <string.h>
-#include <net/util/request_parser.h>
 #include <lib/expat.h>
-
-#define BUFF_SZ       (1460 * 2)
-#define FILENAME_SZ   30
-
-enum http_method {
-	HTTP_METHOD_UNKNOWN = 0, HTTP_METHOD_GET, HTTP_METHOD_POST
-};
-
-enum http_content_type {
-	HTTP_CONTENT_TYPE_HTML = 0,
-	HTTP_CONTENT_TYPE_JPEG,
-	HTTP_CONTENT_TYPE_PNG,
-	HTTP_CONTENT_TYPE_GIF,
-	HTTP_CONTENT_TYPE_ICO,
-	HTTP_CONTENT_TYPE_UNKNOWN,
-	HTTP_CONTENT_TYPE_MAX
-};
-
-struct client_info {
-	int sock; /* socket for client connection*/
-	enum http_method method; /* method in request */
-	char file[FILENAME_SZ]; /* file to transmit */
-	FILE *fp; /* descriptor of `file` */
-	enum http_content_type c_type; /* type of contents which will be send */
-	char buff[BUFF_SZ]; /* client's buffer (may contains more than one piece of data) */
-	char *data; /* pointer to current chunk */
-	char *next_data; /* pointer to next piece of data in buffer */
-	size_t next_len; /* length of the next chunk */
-	http_request * parsed; /* parsed request */
-	struct event unlock_sock_event;
-	int lock_status;
-};
-
-struct params {
-	struct client_info* info;
-	char *text;
-};
 
 static void XMLCALL
 startElement(void *userData, const char *name, const char **atts) {
@@ -56,7 +17,7 @@ startElement(void *userData, const char *name, const char **atts) {
 
 	if (strcmp(name, "c:out") == 0) {
 		//param -> text
-		fwrite(data->text, sizeof(char), strlen(data->text), file);
+		fwrite(data->query, sizeof(char), strlen(data->query), file);
 	} else {
 		//open tag
 		fwrite("<", sizeof(char), 1, file);
@@ -143,8 +104,6 @@ static void *process_params(void* args) {
 	fclose(file);
 	fclose(params->info->fp);
 
-	params->info->lock_status = 0;
-	event_notify(&params->info->unlock_sock_event);
 	params->info->fp = fopen("/tmp/test_temp.html", "r");
 
 	return NULL;

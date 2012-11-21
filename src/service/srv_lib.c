@@ -24,6 +24,7 @@ static void *service_thread_handler(void* args) {
 	while (1) {
 		event_wait(inst->e, EVENT_TIMEOUT_INFINITE);
 		inst->desc->run(inst);
+		event_notify(&inst->params->info->unlock_sock_event);
 	}
 
 	return NULL;

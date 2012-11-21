@@ -18,68 +18,14 @@
 #include <net/inetdevice.h>
 #include <arpa/inet.h>
 #include <net/util/request_parser.h>
+#include <net/in.h>
 #include <lib/url_parser.h>
 #include <embox/web_service.h>
+#include <cmd/servd.h>
 
 EMBOX_CMD(servd);
 
-#define BUFF_SZ       (1460 * 2)
-#define FILENAME_SZ   30
 #define DEFAULT_PAGE  "index.html"
-
-/* HTTP Methods */
-enum http_method {
-	HTTP_METHOD_UNKNOWN = 0, HTTP_METHOD_GET, HTTP_METHOD_POST
-};
-
-/* Type of content */
-enum http_content_type {
-	HTTP_CONTENT_TYPE_HTML = 0,
-	HTTP_CONTENT_TYPE_JPEG,
-	HTTP_CONTENT_TYPE_PNG,
-	HTTP_CONTENT_TYPE_GIF,
-	HTTP_CONTENT_TYPE_ICO,
-	HTTP_CONTENT_TYPE_UNKNOWN,
-	HTTP_CONTENT_TYPE_MAX
-};
-
-/* Returns code */
-enum http_ret {
-	/* HTTP status code */
-	/* 1xx Informational */
-	/* 2xx Success */
-	HTTP_STAT_200 = 0,
-	/* 3xx Redirection */
-	/* 4xx Client Error */
-	HTTP_STAT_400,
-	HTTP_STAT_404,
-	HTTP_STAT_405,
-	HTTP_STAT_408,
-	HTTP_STAT_413,
-	HTTP_STAT_414,
-	/* 5xx Server Error */
-	HTTP_STAT_MAX, /* for implementation */
-	/* Other code */
-	HTTP_RET_OK = -100, /* ok */
-	HTTP_RET_ABORT, /* close connection */
-	HTTP_RET_ENDHDR, /* end header section */
-	HTTP_RET_HNDOPS /* set options handler */
-};
-
-struct client_info {
-	int sock; /* socket for client connection*/
-	enum http_method method; /* method in request */
-	char file[FILENAME_SZ]; /* file to transmit */
-	FILE *fp; /* descriptor of `file` */
-	enum http_content_type c_type; /* type of contents which will be send */
-	char buff[BUFF_SZ]; /* client's buffer (may contains more than one piece of data) */
-	char *data; /* pointer to current chunk */
-	char *next_data; /* pointer to next piece of data in buffer */
-	size_t next_len; /* length of the next chunk */
-	http_request * parsed_request; /* parsed request */
-	struct event unlock_sock_event;
-	int lock_status;
-};
 
 /* Status code */
 static const char *http_stat_str[HTTP_STAT_MAX] = { [HTTP_STAT_200] = "200 OK",
@@ -97,41 +43,35 @@ static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
 				] = "image/vnd.microsoft.icon", [HTTP_CONTENT_TYPE_UNKNOWN
 				] = "application/unknown" };
 
-struct params {
-	struct client_info* info;
-	char *text;
-};
-
 struct params test_params;
 
-static const char *service_params[3][2] = { { DEFAULT_PAGE, "hello" }, {
-		"about.html", "world" }, { "test.html", "world" }, };
+static const char *services[10] = { DEFAULT_PAGE, "about.html", "test.html", };
 
 static void start_services(void) {
 	int i;
 
-	for (i = 0; i < ARRAY_SIZE(service_params); i++) {
-		web_service_start(service_params[i][0]);
+	for (i = 0; i < ARRAY_SIZE(services); i++) {
+		web_service_start(services[i]);
 	}
 }
 
 static int is_service_started(char *name) {
-	for (int i = 0; i < sizeof(service_params) / sizeof(service_params[0]);
+	for (int i = 0; i < sizeof(services) / sizeof(services[0]);
 			i++) {
-		if (strcmp(service_params[i][0], name) == 0) {
+		if (strcmp(services[i], name) == 0) {
 			return 1;
 		}
 	}
 	return 0;
 }
-
+/*
 static int is_lock_needed(char *name) {
 
-	if (strcmp(service_params[2][0], name) == 0) {
+	if (strcmp(service_params[2], name) == 0) {
 		return 1;
 	}
 	return 0;
-}
+}*/
 
 //TODO it's work if buffer contains full starting line and headers
 static int receive_and_parse_request(struct client_info *info) {
@@ -204,11 +144,9 @@ static int http_hnd_starting_line(struct client_info *info) {
 
 		if (is_service_started(info->file)) {
 			test_params.info = info;
-			test_params.text = info->parsed_request->parsed_url->query;
-			if (is_lock_needed(info->file)) {
-				event_init(&info->unlock_sock_event, "socket_lock");
-				info->lock_status = 1;
-			}
+			test_params.query = info->parsed_request->parsed_url->query;
+			event_init(&info->unlock_sock_event, "socket_lock");
+			info->lock_status = 1;
 			web_service_send_message(info->file, &test_params);
 		}
 

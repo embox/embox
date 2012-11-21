@@ -7,19 +7,11 @@
 
 #include <embox/web_service.h>
 #include <stdio.h>
-
-struct web_service_params {
-	char par[80];
-};
+#include <net/util/request_parser.h>
 
 static void *index_thread_handler(void* args) {
-	/*struct web_service_instance *inst;
-
-	inst = (struct web_service_instance *) args;*/
-
 	printf("\n\n[world]\n\n");
 	return NULL;
-
 }
 
 EMBOX_WEB_SERVICE("about.html", index_thread_handler);
