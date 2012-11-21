@@ -15,7 +15,7 @@
 #include <stdlib.h>
 
 #include <net/util.h>
-#include <arpa/inet.h>
+#include <net/in.h>
 
 #include <pnet/netfilter/match_lin.h>
 #include <pnet/core.h>

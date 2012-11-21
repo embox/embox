@@ -18,19 +18,14 @@ abstract module locore { }
 abstract module entry { }
 abstract module boot { }
 abstract module lds { }
-
-@Mandatory
-@DefaultImpl(embox.arch.generic.nommu)
 abstract module mmu { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.syscall_stub)
 abstract module syscall { }
 
-abstract module syscall_caller { }
-
 @Mandatory
-@DefaultImpl(embox.arch.generic.nousermode)
+@DefaultImpl(embox.arch.generic.usermode)
 abstract module usermode { }
 
 abstract module stackframe { }

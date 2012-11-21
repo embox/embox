@@ -8,8 +8,7 @@
 #include <util/indexator.h>
 #include <string.h>
 
-struct indexator *indexator_init(struct indexator *indexator,
-		uint32_t start_idx, uint32_t *mask_array, size_t len_mask) {
+struct indexator *indexator_init(struct indexator *indexator, uint32_t start_idx, uint32_t *mask_array, size_t len_mask) {
 
 	indexator->masks = mask_array;
 	indexator->min_busy = start_idx - 1;

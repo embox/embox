@@ -7,7 +7,7 @@
  */
 
 #include <net/protocol.h>
-#include <arpa/inet.h>
+#include <net/in.h>
 #include <errno.h>
 #include <assert.h>
 

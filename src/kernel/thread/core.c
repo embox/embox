@@ -38,6 +38,8 @@
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
+#include <module/embox/arch/usermode.h>
+
 
 #define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
 #define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
@@ -72,7 +74,8 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
-	res = current->run(current->run_arg);
+	res = usermode_call_and_switch_if(current->in_usermode,
+			current->run,current->run_arg);
 	thread_exit(res);
 }
 
@@ -164,6 +167,7 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->need_message = false;
 
 	t->running_time = 0;
+	t->in_usermode = flags & THREAD_FLAG_USERMODE;
 }
 
 static void thread_context_init(struct thread *t) {
@@ -344,7 +348,6 @@ static int unit_init(void) {
 	list_add_tail(&bootstrap.thread_link, &__thread_list);
 
 	thread_init(&bootstrap, 0, NULL, NULL, kernel_task);
-
 	// TODO priority for bootstrap thread -- Eldar
 	bootstrap.priority = THREAD_PRIORITY_NORMAL;
 

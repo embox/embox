@@ -45,7 +45,7 @@ TEST_CASE("select on pipe ends") {
 
 	/* Create new task and sleep for 5 seconds to catch on sleeping in select
 	 * in created task */
-	new_task(select_hnd, &readfds);
+	new_task(select_hnd, &readfds, 0);
 
 	/* Used to switch to select_hnd */
 	sleep(0);

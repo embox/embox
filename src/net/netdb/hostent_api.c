@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
-#include <netdb.h>
+#include <net/netdb.h>
 #include "hostent_api.h"
 
 #include <framework/mod/options.h>

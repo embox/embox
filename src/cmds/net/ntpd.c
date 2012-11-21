@@ -14,7 +14,7 @@
 
 #include <kernel/task.h>
 #include <net/ntp.h>
-#include <arpa/inet.h>
+#include <net/in.h>
 
 EMBOX_CMD(exec);
 
@@ -52,7 +52,7 @@ static int exec(int argc, char **argv) {
 
 	if (argc == 2) {
 		printf("*Starting NTP daemon\n");
-		new_task(ntpd_run, NULL);
+		new_task(ntpd_run, NULL, 0);
 	}
 
 	return 0;

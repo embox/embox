@@ -123,9 +123,3 @@ module bootp {
 	source "bootp.c"
 	depends udp
 }
-
-module snmp {
-	source "snmp.c"
-
-	depends embox.net.mib.snmp_mib
-}

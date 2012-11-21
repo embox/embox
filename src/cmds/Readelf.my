@@ -25,6 +25,6 @@ module readelf {
 
 	depends embox.lib.LibC
 	depends embox.fs.core
-	depends embox.lib.LibElf
+	depends embox.lib.ElfLib
 	depends embox.framework.LibFramework
 }

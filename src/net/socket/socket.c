@@ -9,7 +9,7 @@
  */
 
 #include <errno.h>
-#include <arpa/inet.h>
+#include <net/in.h>
 #include <net/inet_sock.h>
 #include <net/kernel_socket.h>
 #include <net/net.h>

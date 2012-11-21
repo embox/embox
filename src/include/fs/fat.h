@@ -13,8 +13,10 @@
 #include <drivers/ramdisk.h>
 #include <embox/block_dev.h>
 
-#define MSDOS_NAME      11
-#define ROOT_DIR        "/"
+
+#define MSDOS_NAME               11
+
+#define ROOT_DIR "/"
 #define DIR_SEPARATOR	'/'	/* character separating directory components*/
 
 /* 32-bit error codes */
@@ -26,6 +28,9 @@
 #define DFS_ALLOCNEW	5			/* must allocate new directory cluster */
 #define DFS_ERRMISC		0xffffffff	/* generic error */
 
+/* File access modes */
+//#define DFS_READ		1			/* read-only */
+//#define DFS_WRITE		2			/* write-only */
 
 /* Miscellaneous constants */
 #define SECTOR_SIZE		512		/* sector size in bytes */
@@ -277,8 +282,9 @@ typedef struct fileinfo {
 
 
 typedef struct fat_fs_description {
-	void *dev_id;
-	uint8_t root_name[MAX_LENGTH_PATH_NAME];
+	//dev_image_t *p_device;
+	dev_t devnum;
+	uint8_t root_name[MAX_LENGTH_FILE_NAME];
 	vol_info_t vi;
 } fat_fs_description_t;
 
@@ -288,7 +294,87 @@ typedef struct _fat_file_description {
 } fat_file_description_t;
 
 
-void fat_set_filetime(dir_ent_t *de);
-void fat_get_filename(char *tmppath, char *filename);
+/*
+ * Open a directory for enumeration by DFS_GetNextDirEnt
+ * You must supply a populated VOLINFO (see DFS_GetVolInfo)
+ * The empty string or a string containing only the directory separator are
+ * considered to be the root directory.
+ * Returns 0 OK, nonzero for any error.
+ */
+
+uint32_t fat_open_dir(void *fd, uint8_t *dirname, p_dir_info_t dirinfo);
+
+/*
+ * Get next entry in opened directory structure. Copies fields into the dirent
+ * structure, updates dirinfo. Note that it is the _caller's_ responsibility to
+ * handle the '.' and '..' entries.
+ * A deleted file will be returned as a NULL entry (first char of filename=0)
+ * by this code. Filenames beginning with 0x05 will be translated to 0xE5
+ * automatically. Long file name entries will be returned as NULL.
+ * returns DFS_EOF if there are no more entries, DFS_OK if this entry is valid,
+ * or DFS_ERRMISC for a media error
+ */
+uint32_t fat_get_next(void *fd, p_dir_info_t dirinfo, p_dir_ent_t dirent);
+
+/*
+ * Open a file for reading or writing. You supply populated VOLINFO,
+ * a path to the file, mode (DFS_READ or DFS_WRITE) and an empty fileinfo
+ * structure. You also need to provide a pointer to a sector-sized scratch
+ * buffer. Returns various DFS_* error states. If the result is DFS_OK,
+ * fileinfo can be used	to access the file from this point on.
+ */
+uint32_t fat_open_file(void *fd, uint8_t *path, uint8_t mode,
+		uint8_t *scratch);
+
+/*
+ * Seek file pointer to a given position
+ */
+void fat_fseek(void *fdsc, uint32_t offset, uint8_t *p_scratch);
+
+/*
+ *	Read an open file
+ *	Note that returning DFS_EOF is not an error condition. This function updates the
+ *	successcount field with the number of bytes actually read.
+ */
+uint32_t fat_read_file(void *fd, uint8_t *scratch,
+		uint8_t *buffer, uint32_t *successcount, uint32_t len);
+
+/*
+ *	Write an open file
+ *	This function updates the successcount field with the number of
+ *	bytes actually written.
+ */
+uint32_t fat_write_file(void *fd, uint8_t *scratch,
+		uint8_t *buffer, uint32_t *successcount, uint32_t len);
+
+/*
+ *	Read a sectors to the buffer
+ */
+int fat_read_sector(void *fd, uint8_t *buffer,
+		uint32_t sector, uint32_t count);
+/*
+ *	Write a sectors from the buffer
+ */
+int fat_write_sector(void *fd, uint8_t *buffer,
+		uint32_t sector, uint32_t count);
+
+uint8_t *fat_dir_to_canonical(uint8_t *dest, uint8_t *src, uint8_t dir);
+
+uint8_t *fat_canonical_to_dir(uint8_t *dest, uint8_t *src);
+/*
+ *  Parse filename off the end of the supplied path
+ */
+void get_filename(char *tmppath, char *filename);
+
+/*
+ *  Set time for created file
+ */
+void set_filetime(dir_ent_t *de);
+
+/*
+ *  Set full path name from root to this node
+ */
+int fatfs_set_path (uint8_t *path, node_t *nod);
+
 
 #endif /* FAT_H_ */

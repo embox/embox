@@ -1,0 +1,12 @@
+package embox.xwnd
+
+module test_app {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/include/drivers")
+	source "test_app.c"
+
+	depends embox.lib.LibC
+	depends embox.xwnd.bmp
+	depends embox.xwnd.xwndapp
+}

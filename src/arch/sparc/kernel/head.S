@@ -11,8 +11,6 @@
 #include <asm/wim.h>
 #include <asm/stack.h>
 
-#include <module/embox/arch/mmu.h>
-
 	.section ".trap_table.text", #alloc, #execinstr
 	.align 0x1000
 
@@ -122,11 +120,6 @@ boot_start:
 	 nop
 	call %g1
 1:	 nop
-
-#ifndef NOMMU
-	call mmu_enable
-	 nop
-#endif
 
 	call kernel_start
 	 nop

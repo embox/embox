@@ -8,12 +8,3 @@ module critical_example {
 	depends embox.kernel.softirq
 	depends embox.framework.LibFramework
 }
-
-module syscall_example {
-	source "syscall_example.c"
-
-	depends embox.lib.LibC
-	depends embox.kernel.syscall
-	depends embox.arch.syscall_caller
-	depends embox.framework.LibFramework
-}

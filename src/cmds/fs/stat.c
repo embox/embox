@@ -12,7 +12,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <errno.h>
 
 EMBOX_CMD(exec);
 
@@ -69,7 +68,7 @@ static int exec(int argc, char **argv) {
 	}
 	if (0 > (fd = open(argv[argc - 1], O_RDONLY))) {
 		printf("Can't open file %s\n", argv[argc - 1]);
-		return -errno;
+		return -1;
 	}
 
 	if (0 <= stat(fd, &filestat)) {

@@ -20,6 +20,4 @@ module xwnd {
 	depends embox.xwnd.bmp
 	depends embox.xwnd.draw_helpers
 	depends embox.xwnd.xwndapp
-	depends embox.xwnd.term
-	depends embox.xwnd.unit_test
 }

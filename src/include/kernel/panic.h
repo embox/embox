@@ -9,14 +9,12 @@
 #ifndef KERNEL_PANIC_H_
 #define KERNEL_PANIC_H_
 
-#include <hal/arch.h>
-#include <hal/ipl.h>
 #include <kernel/printk.h>
 #include <debug/backtrace.h>
+#include <hal/arch.h>
 
 #define panic(...) \
 	do { \
-		ipl_disable(); \
 		printk(__VA_ARGS__); \
 		backtrace(); \
 		arch_shutdown(ARCH_SHUTDOWN_MODE_ABORT); \

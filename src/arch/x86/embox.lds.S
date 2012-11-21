@@ -48,15 +48,9 @@ SECTIONS {
 	.reserve (NOLOAD): {
 		ALIGNMENT(); . = ALIGN(0x1000);
 		LDS_INPUT_RESERVE
-		ALIGNMENT(); . = ALIGN(0x1000);
 	/* TODO memory region for reserve output section. */
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(reserve)
-
-	/* Sections to be discarded */
-	/DISCARD/ : {
-		*(.eh_frame)
-	}
 }
 
 _mem_begin = LDS_REGION_BASE_sdram;

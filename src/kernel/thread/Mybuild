@@ -30,3 +30,4 @@ module event {
 	depends sched
 	depends embox.mem.objalloc
 }
+

@@ -6,7 +6,7 @@
  */
 
 #include <lib/bits/byteswap.h>
-#include <arpa/inet.h>
+#include <net/in.h>
 #include <net/util.h>
 #include <stdio.h>
 #include <string.h>

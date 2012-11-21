@@ -17,26 +17,8 @@ void arch_init(void) {
 void arch_idle(void) {
 }
 
-unsigned int arch_excep_disable(void) {
-	unsigned int ret;
-	unsigned int tmp;
-	__asm__ __volatile__ (
-		"rd %%psr, %0\n\t"
-		"andn %0, %2, %1\n\t"
-		"wr %1, 0, %%psr\n\t"
-		" nop; nop; nop\n"
-		: "=&r" (ret), "=r" (tmp)
-		: "i" (PSR_ET)
-		: "memory"
-	);
-	return ret;
-}
-
 void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
-
 	ipl_disable();
-	arch_excep_disable();
-	asm ("ta 0");
-
+	// TODO DUMP regs and memory -- Eldar
 	while (1) {}
 }

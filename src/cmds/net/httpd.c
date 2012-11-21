@@ -15,7 +15,7 @@
 #include <err.h>
 #include <errno.h>
 #include <net/inetdevice.h>
-#include <arpa/inet.h>
+#include <net/in.h>
 
 EMBOX_CMD(httpd);
 

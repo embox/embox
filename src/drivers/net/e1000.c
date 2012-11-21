@@ -14,6 +14,7 @@
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
 #include <net/if_ether.h>
+#include <net/in.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <stdio.h>
@@ -21,7 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <arpa/inet.h>
+#include <net/in.h>
 #include <hal/reg.h>
 #include <drivers/e1000.h>
 

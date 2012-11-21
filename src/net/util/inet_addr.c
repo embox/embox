@@ -5,7 +5,7 @@
  * @author Nikolay Korotky
  */
 
-#include <arpa/inet.h>
+#include <net/in.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -2,29 +2,23 @@
  * @file
  * @brief
  *
- * @date 20.11.2012
+ * @date 10.10.2012
  * @author Anton Bulychev
  */
 
 #include <embox/test.h>
 
-#include <kernel/usermode.h>
-#include <kernel/syscall_caller.h>
+#include <module/embox/arch/usermode.h>
+#include <module/embox/arch/syscall.h>
 
-EMBOX_TEST_SUITE("usermode test");
+EMBOX_TEST_SUITE("usermode");
 
-SYSCALL1(7,int,syscall_thread_exit,int,exitcode);
-
-void usermode_function(void) {
-	for (int i = 0; i < 100000; i++) {
-
-	}
-
-	syscall_thread_exit(0);
+void *usermode_entry(void *arg) {
+	const char *s = "syscall inside usermode";
+	test_assert_true(syscall_write(1, s, strlen(s)) == strlen(s));
+	return arg;
 }
 
 TEST_CASE("usermode") {
-	struct thread *t;
-	create_usermode_thread(&t, 0, usermode_function, (void *)0x200000UL);
-	thread_join(t, NULL);
+	usermode_call_and_switch_if(1, usermode_entry, NULL);
 }

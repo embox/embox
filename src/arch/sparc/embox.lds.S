@@ -14,40 +14,33 @@ MEMORY {
 SECTIONS {
 
 	.text : {
-		. = ALIGN(0x1000);
 		*(.trap_table.text)
 		*(.text)
 		*(.text.*)
-		. = ALIGN(0x1000);
 	} SECTION_REGION(text)
 	SECTION_SYMBOLS(text)
 
 	.rodata : {
-		. = ALIGN(0x1000);
 		LDS_INPUT_RODATA
-		. = ALIGN(0x1000);
 	} SECTION_REGION(rodata)
 	SECTION_SYMBOLS(rodata)
 
 	.data : {
-		. = ALIGN(0x1000);
+		ALIGNMENT();
 		*(.data)
-		. = ALIGN(0x1000);
 	} SECTION_REGION(data)
 	SECTION_SYMBOLS(data)
 
 	.bss : {
-		ALIGNMENT(); . = ALIGN(0x1000);
+		ALIGNMENT();
 		*(.bss)
-		ALIGNMENT(); . = ALIGN(0x1000);
+		ALIGNMENT();
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(bss)
 
 	.reserve (NOLOAD): {
-		. = ALIGN(0x1000);
 		LDS_INPUT_RESERVE
 	/* TODO memory region for reserve output section. */
-		. = ALIGN(0x1000);
 	} SECTION_REGION(bss)
 	SECTION_SYMBOLS(reserve)
 }

@@ -6,8 +6,6 @@
  * @author Eldar Abusalimov
  */
 
-#include <module/embox/arch/usermode.h>
-
 	.text
 	.global context_switch
 context_switch:
@@ -33,9 +31,5 @@ context_switch:
 	popf                           /* Restore flags */
 	movl 0x00(%ecx), %eax          /* Get eip */
 	push %eax                      /* Restore it as return address */
-
-#ifndef NOUSERMODE
-	call tss_set_kernel_stack
-#endif /* NOUSERMODE */
 
 	ret

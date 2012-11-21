@@ -5,7 +5,7 @@
  * @author Ilia Vaprol
  */
 
-#include <netdb.h>
+#include <net/netdb.h>
 #include <stdio.h>
 
 int h_errno;

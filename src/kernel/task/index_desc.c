@@ -68,11 +68,10 @@ int task_idx_table_first_unbinded(struct task_idx_table *res) {
 }
 
 int task_idx_table_set(struct task_idx_table *res, int idx, struct idx_desc *desc) {
-	struct idx_desc *old_idx;
+	struct idx_desc *old_idx = task_idx_table_get(res, idx);
 	int ret;
 
 	assert(res);
-	old_idx = task_idx_table_get(res, idx);
 
 	if (old_idx) {
 		if (0 != (ret = task_idx_desc_free(old_idx))) {
@@ -120,6 +119,7 @@ static void task_idx_table_init(struct task *task, void* _idx_table) {
 
 	task_idx_table = (struct task_idx_table *) idx_table;
 	task->idx_table = task_idx_table;
+
 }
 
 static void task_idx_table_inherit(struct task *task, struct task *parent) {

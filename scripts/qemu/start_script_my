@@ -4,5 +4,5 @@ TAP_DEV=$(cat tap_dev)
 
 #/sbin/ip tuntap add mode tap tap0
 #/usr/sbin/ethtool -K tap0 rx off tx off gro off
-/sbin/ifconfig tap0 10.0.2.1 up
+/sbin/ifconfig tap0 192.168.0.1 up
 #$TAP_DEV

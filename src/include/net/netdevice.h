@@ -12,7 +12,7 @@
 #include <net/if_ether.h>
 #include <util/array.h>
 #include <net/if.h>
-#include <arpa/inet.h>
+#include <net/in.h>
 #include <lib/list.h>
 
 #include <util/hashtable.h>

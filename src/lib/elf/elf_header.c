@@ -26,18 +26,14 @@ static inline void elf_reverse_header(Elf32_Ehdr *header) {
 	REVERSE_S(header->e_shstrndx);
 }
 
-int elf_read_header(Elf32_Obj *obj) {
+int elf_read_header(FILE *fd, Elf32_Obj *obj) {
 	size_t size = sizeof(Elf32_Ehdr);
-
-	if (obj->header) {
-		return ENOERR; /* Already */
-	}
 
 	if (!(obj->header = malloc(size))) {
 		return -ENOMEM;
 	}
 
-	if (size != fread(obj->header, size, 1, obj->fd)) {
+	if (size != fread(obj->header, size, 1, fd)) {
 		return -EBADF;
 	}
 

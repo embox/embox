@@ -29,7 +29,7 @@ module interrupt extends embox.arch.interrupt {
 }
 
 module usermode extends embox.arch.usermode {
-	source "usermode_entry.S"
+	source "usermode_enter.S", "usermode.h"
 }
 
 /*FIXME mybuild arch module what is it */

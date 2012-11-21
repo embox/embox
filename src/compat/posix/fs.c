@@ -32,11 +32,11 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 
 	count_dir = 0;
 	tail[0] = '\0';
-	strncpy (param.path, path, MAX_LENGTH_PATH_NAME);
+	strcpy (param.path, path);
 
 	/* find last node in the path */
 	do {
-		if (path_nip_tail(param.path, tail)) {
+		if (nip_tail (param.path, tail)) {
 			return NULL;
 		}
 		count_dir ++;
@@ -51,9 +51,9 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 
 	/* add one directory and assign the parameters of the parent */
 	do {
-		path_increase_tail(param.path, tail);
+		increase_tail (param.path, tail);
 
-		if (NULL == (new_node = vfs_add_path(param.path, NULL))) {
+		if (NULL == (new_node = vfs_add_path (param.path, NULL))) {
 			return NULL;
 		}
 
@@ -87,6 +87,7 @@ int create(const char *pathname, mode_t mode) {
 	}
 
 	/* set permission */
+
 
 	if (NULL == (nod = create_filechain(pathname, FILE_NODE_TYPE))) {
 		errno = EINVAL;

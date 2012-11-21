@@ -2,13 +2,8 @@ package embox.driver
 
 module ide {
 	option number dev_quantity = 4
-	source "ide_drive.c"
-	source "cdrom.c"
-	source "harddisk_pio.c"
-	source "harddisk_dma.c"
-	source "partition.c"
+	source "ide_drv.c"
 
 	depends embox.util.LibUtil
 	depends embox.driver.block
-	depends embox.util.indexator
 }

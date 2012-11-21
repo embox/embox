@@ -13,7 +13,7 @@
 #include <stddef.h>
 #include <linux/aio.h>
 #include <net/protocol.h>
-#include <arpa/inet.h>
+#include <net/in.h>
 #include <net/sock.h>
 #include <net/socket.h>
 #include <net/socket_registry.h>

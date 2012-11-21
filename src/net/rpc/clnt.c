@@ -11,7 +11,7 @@
 #include <string.h>
 #include <assert.h>
 #include <sys/time.h>
-#include <arpa/inet.h>
+#include <net/in.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>

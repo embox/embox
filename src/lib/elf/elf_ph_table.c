@@ -21,7 +21,7 @@ static inline void elf_reverse_ph(Elf32_Phdr *ph_table) {
 	REVERSE_L(ph_table->p_align);
 }
 
-int elf_read_program_header_table(Elf32_Obj *obj) {
+int elf_read_program_header_table(FILE *fd, Elf32_Obj *obj) {
 	Elf32_Ehdr *header = obj->header;
 	size_t size;
 
@@ -34,8 +34,8 @@ int elf_read_program_header_table(Elf32_Obj *obj) {
 		return -ENOMEM;
 	}
 
-	fseek(obj->fd, header->e_phoff, 0);
-	if (size != fread(obj->ph_table, 1, size, obj->fd)) {
+	fseek(fd, header->e_phoff, 0);
+	if (size != fread(obj->ph_table, 1, size, fd)) {
 		return -EBADF;
 	}
 

@@ -28,15 +28,6 @@ extern long double powl(long double x, long double y);
 
 __END_DECLS
 
-#define CEILING_POS(X) ((X-(int)(X)) > 0 ? (int)(X+1) : (int)(X))
-#define CEILING_NEG(X) ((X-(int)(X)) < 0 ? (int)(X-1) : (int)(X))
-#define CEILING(X) ( ((X) > 0) ? CEILING_POS(X) : CEILING_NEG(X) )
-
-static inline double ceil(double x) {
-	return CEILING(x);
-}
-
-
 /* FIXME max, min and clamp not a part of C Standard Library */
 /**
  * Returns the greater of two values.

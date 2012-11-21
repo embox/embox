@@ -12,7 +12,7 @@
 
 #include <string.h>
 #include <net/ip.h>
-#include <arpa/inet.h>
+#include <net/in.h>
 #include <net/socket.h>
 #include <framework/example/self.h>
 #include <prom/prom_printf.h>

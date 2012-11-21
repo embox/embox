@@ -8,6 +8,3 @@ module lds extends embox.arch.lds {
 module interrupt extends embox.arch.interrupt {
 	source "include/asm/hal/ipl.h"
 }
-
-module cpu extends embox.arch.cpu {
-}

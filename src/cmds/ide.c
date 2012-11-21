@@ -18,7 +18,7 @@ static void print_usage(void) {
 	printf("Usage: ide \n");
 }
 
-static void print_drive (struct ide_tab *ide) {
+static void print_drive (slot_t *ide) {
 	hd_t *drive;
 
 	for(int i  = 0; i < 4; i++) {
@@ -35,7 +35,7 @@ static void print_drive (struct ide_tab *ide) {
 		}
 		else {
 			drive = (hd_t *) ide->drive[i];
-			printf(" %s;", block_dev(drive->dev_id)->dev_node->name);
+			printf(" %s;", device(drive->devno)->dev_node->name);
 			printf(" %s", drive->param.serial);
 			printf(" %s", drive->param.model);
 			printf(" %5dM", drive->size);
@@ -44,6 +44,7 @@ static void print_drive (struct ide_tab *ide) {
 	printf("\n");
 
 }
+
 
 static int exec(int argc, char **argv) {
 	int opt;
@@ -61,6 +62,6 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	print_drive(ide_get_drive());
+	print_drive(get_ide_drive());
 	return 0;
 }

@@ -42,11 +42,6 @@ static void print_long_list(char *path, node_t *node, int recursive) {
 
 static void print_folder(char *path, node_t *node, int recursive) {
 	node_t *item;
-
-	if(DIRECTORY_NODE_TYPE != (node->properties & DIRECTORY_NODE_TYPE)) {
-		printf("%s\n",  path);
-		return;
-	}
 	tree_foreach_children(item, (&node->tree_link), tree_link) {
 		if (recursive) {
 			if (0 == strcmp(path, "/")) {

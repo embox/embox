@@ -43,7 +43,6 @@ static int devfs_mount(void *par) {
 			return 0;
 		}
 	}
-	nod->properties = DIRECTORY_NODE_TYPE;
 
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__device_registry); i++) {
 		if (NULL != (devnod = vfs_add_path(__device_registry[i].name, nod))) {
@@ -56,8 +55,8 @@ static int devfs_mount(void *par) {
 	}
 
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__block_dev_registry); i++) {
-		if (NULL != __block_dev_registry[i].init) {
-			__block_dev_registry[i].init(NULL);
+		if (NULL != __block_dev_registry[i].dev_drv->create) {
+			__block_dev_registry[i].dev_drv->create(NULL);
 		}
 	}
 

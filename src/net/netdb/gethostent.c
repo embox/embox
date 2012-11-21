@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#include <netdb.h>
-#include <arpa/inet.h>
+#include <net/netdb.h>
+#include <net/in.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <err.h>
