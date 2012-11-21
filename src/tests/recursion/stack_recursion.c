@@ -19,6 +19,8 @@ static int fib(int k) {
 }
 
 TEST_CASE("Recursively calculating Fibonacci number") {
+    extern struct test_emit_buffer *__test_emit_buffer_current(void);
+    assert(__test_emit_buffer_current()->ptr);
 	test_assert_equal(fib(0), 0);
 	test_assert_equal(fib(1), 1);
 	test_assert_equal(fib(2), 1);
