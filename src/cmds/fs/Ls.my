@@ -26,7 +26,7 @@ module ls {
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.util.getopt
-	depends embox.compat.posix.FS
+	depends embox.compat.posix.fs
 	depends embox.fs.core
 	depends embox.util.LibUtil
 	depends embox.framework.LibFramework

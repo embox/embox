@@ -21,6 +21,7 @@
 #include <mem/phymem.h>
 #include <fs/mount.h>
 #include <drivers/ramdisk.h>
+#include <fcntl.h>
 
 /* tmpfs filesystem description pool */
 POOL_DEF(tmpfs_fs_pool, struct tmpfs_fs_description, OPTION_GET(NUMBER,tmpfs_descriptor_quantity));

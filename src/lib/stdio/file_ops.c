@@ -5,30 +5,32 @@
  * @author Anton Bondarev
  */
 
-#include <stdio.h>
 #include <errno.h>
+#include <string.h>
 #include <mem/misc/pool.h>
 
 #include <framework/mod/options.h>
 
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 
-#ifdef __FILE_QUANTITY
-  #define FILE_QUANTITY __FILE_QUANTITY
-#else
-  #define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)
-#endif
+#include <fs/core.h>
+#include <stdio.h>
+
+#define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)
 
 POOL_DEF(file_pool, FILE, FILE_QUANTITY);
 
 FILE stdin_struct = {
-	.file_int = INIT_STDIN
+	.fd = STDIN_FILENO,
 };
 FILE stdout_struct = {
-	.file_int = INIT_STDOUT
+	.fd = STDOUT_FILENO,
 };
 
 FILE stderr_struct = {
-	.file_int = INIT_STDERR
+	.fd = STDERR_FILENO,
 };
 
 FILE *stdin = &stdin_struct;
@@ -36,10 +38,27 @@ FILE *stdout = &stdout_struct;
 FILE *stderr = &stderr_struct;
 
 FILE *fopen(const char *path, const char *mode) {
-	FILE *file = pool_alloc(&file_pool);
-	if (__libc_open(path, mode, (struct file_struct_int *) file) < 0) {
-		return NULL;
+	int fd;
+	FILE *file = NULL;
+	int flags = 0;
+
+	if (strchr(mode, 'r')) {
+		flags |= O_RDONLY;
 	}
+
+	if (strchr(mode, 'w')) {
+		flags |= O_WRONLY;
+	}
+
+	if (strchr(mode, 'a')) {
+		flags |= O_APPEND;
+	}
+
+	if ((fd = open(path, flags)) > 0) {
+		file = pool_alloc(&file_pool);
+		file->fd = fd;
+	}
+
 	return file;
 
 }
@@ -59,7 +78,7 @@ int ferror(FILE *file) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	return __libc_write(buf, size, count, (struct file_struct_int *) file);
+	return write(file->fd, buf, size * count);
 }
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
@@ -80,28 +99,27 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		addon = 1;
 	}
 
-	return (addon + __libc_read(buf, size, count, (struct file_struct_int *) file));
+	return (addon + read(file->fd,  buf, size * count));
 }
 
-
 int fclose(FILE *file) {
-	int res = __libc_close((struct file_struct_int *) file);
+	int res = close(file->fd);
 	pool_free(&file_pool, file);
 	return res;
 }
 
 int fseek(FILE *file, long int offset, int origin) {
-	return __libc_lseek((struct file_struct_int *) file, offset, origin);
+	return lseek(file->fd, offset, origin);
 }
 
 int fstat(FILE *file, void *buff) {
-	return __libc_fstat((struct file_struct_int *) file, buff);
+	return stat(file->fd, buff);
 }
 
 int fioctl(FILE *fp, int request, ...) {
 	va_list args;
 	va_start(args, request);
-	return __libc_ioctl((struct file_struct_int *) fp, request, args);
+	return ioctl(fp->fd, request, args);
 }
 
 int ungetc(int ch, FILE *file) {

@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <drivers/vesa.h>
 #include <xwnd/xwnd.h>

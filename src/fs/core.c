@@ -78,7 +78,6 @@ size_t kwrite(const void *buf, size_t size, size_t count, struct file_desc *file
 		return -1;
 	}
 
-
 	if (NULL == file->ops->fwrite) {
 		errno = EBADF;
 		LOG_ERROR("fop->fwrite is NULL handler\n");

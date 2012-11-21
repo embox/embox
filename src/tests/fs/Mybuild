@@ -10,7 +10,7 @@ module ramdisk_test {
 	depends embox.mem.page_api
 	depends embox.mem.pool
 	depends embox.mem.phymem
-	depends embox.compat.posix.FS
+	depends embox.compat.posix.fs
 	depends embox.framework.LibFramework
 }
 

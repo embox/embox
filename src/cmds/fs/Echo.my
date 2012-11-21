@@ -15,7 +15,6 @@ module echo {
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.util.getopt
-	depends embox.compat.posix.FileTasksBasic
-	depends embox.compat.posix.FileTasksOpen
+	depends embox.compat.posix.file
 	depends embox.framework.LibFramework
 }

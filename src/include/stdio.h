@@ -15,12 +15,10 @@
 #include <types.h>
 #include <kernel/printk.h>
 
-#include <module/embox/lib/FileApi.h>
-
 #define EOF (-1)
 
 typedef struct file_struct {
-	struct file_struct_int file_int;
+	int fd;
 	char has_ungetc;
 	int ungetc;
 } FILE;
