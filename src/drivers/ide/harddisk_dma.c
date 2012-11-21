@@ -7,9 +7,6 @@
  */
 
 #include <asm/io.h>
-#include <embox/unit.h>
-#include <kernel/irq.h>
-#include <kernel/time/clock_source.h>
 #include <types.h>
 #include <errno.h>
 #include <string.h>
@@ -250,7 +247,6 @@ static block_dev_driver_t idedisk_udma_driver = {
 static int idedisk_udma_init (void *args) {
 	struct ide_tab *ide;
 	hd_t *drive;
-	dev_t name_idx;
 	double size;
 	char   path[MAX_LENGTH_PATH_NAME];
 
@@ -265,11 +261,12 @@ static int idedisk_udma_init (void *args) {
 			/* Make new device */
 			if ((drive->media == IDE_DISK) && (drive->udmamode != -1)) {
 				*path = 0;
-				strcat(path, "/dev/");
-				name_idx = (dev_t) index_alloc(idedisk_idx, INDEX_ALLOC_MIN);
-				drive->dev_id = block_dev_create(strcat(path, "hd*"),
-						&idedisk_udma_driver, drive, &name_idx);
-
+				strcat(path, "/dev/hd*");
+				if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
+					return -1;
+				}
+				drive->dev_id = block_dev_create(path,
+						&idedisk_udma_driver, drive);
 				if(NULL != drive->dev_id) {
 					size = (double) drive->param.cylinders *
 						   (double) drive->param.heads *

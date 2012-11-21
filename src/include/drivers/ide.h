@@ -312,18 +312,18 @@ typedef struct dev_geometry {
 } dev_geometry_t;
 
 typedef struct hd {
-	hdc_t *hdc;                      /* Controller */
-	struct hdparam param;                 /* Drive parameter block */
-	int drvsel;                           /* Drive select on controller */
-	int use32bits;                        /* Use 32 bit transfers */
-	int sectbufs;                         /* Number of sector buffers */
-	int lba;                              /* LBA mode */
-	int iftype;                           /* IDE interface type (ATA/ATAPI) */
-	int media;                            /* Device media type (hd, cdrom, ...) */
-	int multsect;                         /* Sectors per interrupt */
-	int udmamode;                         /* UltraDMA mode */
-	void *dev_id;                         /* Device */
-
+	int   idx;
+	void *dev_id;                /* Device */
+	hdc_t *hdc;                  /* Controller */
+	struct hdparam param;        /* Drive parameter block */
+	int drvsel;                  /* Drive select on controller */
+	int use32bits;               /* Use 32 bit transfers */
+	int sectbufs;                /* Number of sector buffers */
+	int lba;                     /* LBA mode */
+	int iftype;                  /* IDE interface type (ATA/ATAPI) */
+	int media;                   /* Device media type (hd, cdrom, ...) */
+	int multsect;                /* Sectors per interrupt */
+	int udmamode;                /* UltraDMA mode */
 	/*
 	 * Geometry
 	 */

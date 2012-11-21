@@ -43,46 +43,49 @@ EMBOX_UNIT_INIT(unit_init);
 
 int ramdisk_create(void *params) {
 	ramdisk_create_params_t *new_ramdisk;
-	ramdisk_t *ram_disk;
+	ramdisk_t *ramdisk;
 
 	if(NULL == (new_ramdisk = (ramdisk_create_params_t *)params)) {
 		return -ENOENT;
 	}
 
-	if(NULL == (ram_disk = pool_alloc(&ramdisk_pool))) {
+	if(NULL == (ramdisk = pool_alloc(&ramdisk_pool))) {
 		return -ENOMEM;
 	}
-	ram_disk->idx = (dev_t) index_alloc(&ramdisk_idx, INDEX_ALLOC_MIN);
-	if(0 > (ram_disk->dev_id = block_dev_create(new_ramdisk->path, &ramdisk_pio_driver,
-			ram_disk, &ram_disk->idx))) {
-		index_free(&ramdisk_idx, ram_disk->idx);
-		pool_free(&ramdisk_pool, ram_disk);
+	if(0 > (ramdisk->idx = block_dev_named(new_ramdisk->path, &ramdisk_idx))) {
+		return -ENOENT;
+	}
+
+	if(0 > (ramdisk->dev_id = block_dev_create(new_ramdisk->path,
+			&ramdisk_pio_driver, ramdisk))) {
+		index_free(&ramdisk_idx, ramdisk->idx);
+		pool_free(&ramdisk_pool, ramdisk);
 		return -EIO;
 	}
 
-	ram_disk->dev_node = block_dev(ram_disk->dev_id)->dev_node;
+	ramdisk->dev_node = block_dev(ramdisk->dev_id)->dev_node;
 
-	ram_disk->blocks = new_ramdisk->size / RAMDISK_BLOCK_SIZE;
+	ramdisk->blocks = new_ramdisk->size / RAMDISK_BLOCK_SIZE;
 	if(new_ramdisk->size % RAMDISK_BLOCK_SIZE) {
-		ram_disk->blocks++;
+		ramdisk->blocks++;
 	}
-	if(NULL == (ram_disk->p_start_addr =
-			page_alloc(__phymem_allocator, ram_disk->blocks))) {
-		block_dev_destroy(ram_disk->dev_id);
-		index_free(&ramdisk_idx, ram_disk->idx);
-		pool_free(&ramdisk_pool, ram_disk);
+	if(NULL == (ramdisk->p_start_addr =
+			page_alloc(__phymem_allocator, ramdisk->blocks))) {
+		block_dev_destroy(ramdisk->dev_id);
+		index_free(&ramdisk_idx, ramdisk->idx);
+		pool_free(&ramdisk_pool, ramdisk);
 		return -ENOMEM;
 	}
 
-	strncpy ((void *)&ram_disk->path,
+	strncpy ((void *)&ramdisk->path,
 			 (const void *)new_ramdisk->path, MAX_LENGTH_PATH_NAME);
-	ram_disk->size = ram_disk->blocks * RAMDISK_BLOCK_SIZE;
-	block_dev(ram_disk->dev_id)->size = ram_disk->size;
-	ram_disk->block_size = PAGE_SIZE();
+	ramdisk->size = ramdisk->blocks * RAMDISK_BLOCK_SIZE;
+	block_dev(ramdisk->dev_id)->size = ramdisk->size;
+	ramdisk->block_size = PAGE_SIZE();
 
-	strncpy ((void *)ram_disk->fs_name,
+	strncpy ((void *)ramdisk->fs_name,
 			 (const void *)new_ramdisk->fs_name, MAX_LENGTH_FILE_NAME);
-	ram_disk->fs_type = new_ramdisk->fs_type;
+	ramdisk->fs_type = new_ramdisk->fs_type;
 
 	return 0;
 }
@@ -98,14 +101,14 @@ ramdisk_t *ramdisk_get_param(char *path) {
 
 int ramdisk_delete(const char *name) {
 	node_t *ramdisk_node;
-	ramdisk_t *ram_disk;
+	ramdisk_t *ramdisk;
 
 	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
 		return -1;
 	}
-	if(NULL != (ram_disk = (ramdisk_t *) block_dev(ramdisk_node->dev_id)->privdata)) {
-		index_free(&ramdisk_idx, ram_disk->idx);
-		pool_free(&ramdisk_pool, ram_disk);
+	if(NULL != (ramdisk = (ramdisk_t *) block_dev(ramdisk_node->dev_id)->privdata)) {
+		index_free(&ramdisk_idx, ramdisk->idx);
+		pool_free(&ramdisk_pool, ramdisk);
 		block_dev_destroy (ramdisk_node->dev_id);
 		vfs_del_leaf(ramdisk_node);
 	}
@@ -122,11 +125,11 @@ static int ram_init(void *arg) {
 
 static int read_sectors(block_dev_t *dev,
 		char *buffer, size_t count, blkno_t blkno) {
-	ramdisk_t *ram_disk;
+	ramdisk_t *ramdisk;
 	char *read_addr;
 
-	ram_disk = (ramdisk_t *) dev->privdata;
-	read_addr = ram_disk->p_start_addr + (blkno * ram_disk->block_size);
+	ramdisk = (ramdisk_t *) dev->privdata;
+	read_addr = ramdisk->p_start_addr + (blkno * ramdisk->block_size);
 
 	memcpy(buffer, read_addr, count);
 	return count;
@@ -135,11 +138,11 @@ static int read_sectors(block_dev_t *dev,
 
 static int write_sectors(block_dev_t *dev,
 		char *buffer, size_t count, blkno_t blkno) {
-	ramdisk_t *ram_disk;
+	ramdisk_t *ramdisk;
 	char *write_addr;
 
-	ram_disk = (ramdisk_t *) dev->privdata;
-	write_addr = ram_disk->p_start_addr + (blkno * ram_disk->block_size);
+	ramdisk = (ramdisk_t *) dev->privdata;
+	write_addr = ramdisk->p_start_addr + (blkno * ramdisk->block_size);
 
 	memcpy(write_addr, buffer, count);
 	return count;

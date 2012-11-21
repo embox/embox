@@ -5,7 +5,7 @@ module tmpfs {
 	option number tmpfs_inode_quantity=64
 	option number tmpfs_descriptor_quantity=4
 	option number tmpfs_file_size=32
-	option number tmpfs_filesystem_size=448
+	option number tmpfs_filesystem_size=4000
 
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.driver.block

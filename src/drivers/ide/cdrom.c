@@ -7,9 +7,6 @@
  */
 
 #include <asm/io.h>
-#include <embox/unit.h>
-#include <kernel/irq.h>
-#include <kernel/time/clock_source.h>
 #include <types.h>
 #include <errno.h>
 #include <string.h>
@@ -210,42 +207,39 @@ static block_dev_driver_t idecd_pio_driver = {
 static int idecd_init (void *args) {
 	struct ide_tab *ide;
 	hd_t *drive;
-	dev_t name_idx;
 	double size;
+	int i;
 	char   path[MAX_LENGTH_PATH_NAME];
 
 	ide = ide_get_drive();
 
-	for(int i = 0; i < HD_DRIVES; i++) {
+	for(i = 0; i < HD_DRIVES; i++) {
 		if(NULL == ide->drive[i]) {
 			continue;
 		}
-		else {
-			drive = (hd_t *) ide->drive[i];
-			/* Make new device */
-			if (drive->media == IDE_CDROM) {
-				*path = 0;
-				strcat(path, "/dev/");
-				name_idx = (dev_t) index_alloc(&idecd_idx, INDEX_ALLOC_MIN);
-				drive->dev_id = block_dev_create(strcat(path, "cd#"),
-						&idecd_pio_driver, drive, &name_idx);
 
-				if(NULL != drive->dev_id) {
-					size = (double) drive->param.cylinders *
-						   (double) drive->param.heads *
-						   (double) drive->param.unfbytes *
-						   (double) (drive->param.sectors + 1);
-					block_dev(drive->dev_id)->size = (size_t) size;
-				}
-				else {
-					return -1;
-				}
+		drive = (hd_t *) ide->drive[i];
+		/* Make new device */
+		if (drive->media == IDE_CDROM) {
+			*path = 0;
+			strcat(path, "/dev/cd#");
+			if (0 > (drive->idx = block_dev_named(path, &idecd_idx))) {
+				return -1;
+			}
+			drive->dev_id = block_dev_create(path, &idecd_pio_driver, drive);
 
-				drive->blks = 0;
+			if(NULL != drive->dev_id) {
+				size = (double) drive->param.cylinders *
+					   (double) drive->param.heads *
+					   (double) drive->param.unfbytes *
+					   (double) (drive->param.sectors + 1);
+				block_dev(drive->dev_id)->size = (size_t) size;
 			}
 			else {
-				continue;
+				return -1;
 			}
+
+			drive->blks = 0;
 		}
 	}
 	return 0;

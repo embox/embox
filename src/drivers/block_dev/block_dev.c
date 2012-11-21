@@ -56,69 +56,9 @@ block_dev_t *block_dev(void *dev_id) {
 	return dev;
 }
 
-#define WHOLE_NAME     0
-#define DIGITAL_IDX    1
-#define CHARACTER_IDX  2
-static char check_type_name (char *p) {
-	if (*p == '#') {
-		return DIGITAL_IDX;
-	}
-	else if(*p == '*') {
-		return CHARACTER_IDX;
-	}
-	/* specifies the full name of the device */
-	else {
-		return WHOLE_NAME;
-	}
-}
-
-static void block_dev_select_name(char *name, dev_t *idx) {
-	char *p;
-
-	p = name;
-	if (*p) {
-	    p += strlen(p+1);
-	}
-	else {
-		return;
-	}
-
-	if(NULL != idx){
-		switch (check_type_name (p)) {
-		case WHOLE_NAME:
-			break;
-
-		case DIGITAL_IDX:
-			sprintf(p, "%d", *idx);
-			break;
-
-		case CHARACTER_IDX:
-			sprintf(p, "%c", 'a' + *idx);
-			break;
-		}
-	}
-	return;
-}
-
-static int block_dev_create_node(dev_t *dev_id, char *dev_path) {
-	node_t *dev_node;
-
-	strcat(dev_path, block_dev(dev_id)->name);
-
-	if ((NULL == (dev_node = vfs_add_path(dev_path, NULL))) ||
-	    (NULL == (dev_node = vfs_find_node(dev_path, NULL)))) {
-		return NODEV;
-	}
-
-	dev_node->dev_id = (void *) dev_id;
-	block_dev(dev_id)->dev_node = dev_node;
-
-	return 0;
-}
-
-dev_t *block_dev_create(char *path, void *driver, void *privdata, dev_t *name_idx) {
+dev_t *block_dev_create(char *path, void *driver, void *privdata) {
 	block_dev_t *dev;
-	char name[MAX_LENGTH_FILE_NAME];
+	node_t *node;
 
 	dev = (block_dev_t *) pool_alloc(&blockdev_pool);
 	if (NULL == dev) {
@@ -134,19 +74,19 @@ dev_t *block_dev_create(char *path, void *driver, void *privdata, dev_t *name_id
 
 	devtab[dev->id] = dev;
 
-	*name = 0;
-	path_nip_tail(path, name);
-	block_dev_select_name(name, name_idx);
-	strncpy (dev->name, name, MAX_LENGTH_FILE_NAME);
-
 	dev->driver = driver;
 	dev->privdata = privdata;
 
-	if(-1 == block_dev_create_node(&dev->id, path)) {
+	if(NULL == (node = vfs_add_path(path, NULL))) {
 		pool_free(&blockdev_pool, dev);
 		index_free(&block_dev_idx, dev->id);
 		return NULL;
 	}
+
+	node->dev_id = &dev->id;
+	strncpy (dev->name, node->name, MAX_LENGTH_FILE_NAME);
+	dev->dev_node = node;
+
 	return &dev->id;
 }
 

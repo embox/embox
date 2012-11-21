@@ -7,9 +7,6 @@
  */
 
 #include <asm/io.h>
-#include <embox/unit.h>
-#include <kernel/irq.h>
-#include <kernel/time/clock_source.h>
 #include <types.h>
 #include <errno.h>
 #include <string.h>
@@ -98,7 +95,7 @@ int create_partitions(hd_t *hd) {
 		}
 	}
 	*/
-	hd->dev_id = block_dev_create("hda0", &partition_driver, NULL, NULL);
+	hd->dev_id = block_dev_create("/dev/hda0", &partition_driver, NULL);
 
 	return 0;
 }

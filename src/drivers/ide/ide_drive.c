@@ -334,7 +334,7 @@ int hd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 }
 
 
-void hd_dpc(void *arg) {
+static void hd_dpc(void *arg) {
 	hdc_t *hdc = (hdc_t *) arg;
 	int nsects;
 	int n;
