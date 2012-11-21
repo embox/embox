@@ -5,6 +5,7 @@
  * @author Anton Kozlov
  */
 
+#include <stdio.h>
 #include <string.h>
 #include <prom/diag.h>
 #include <drivers/tty_ng.h>
