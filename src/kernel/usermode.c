@@ -39,7 +39,7 @@ static void usermode_trampoline(struct ue_data *data) {
 
 #define TRAMPOLINE ((void * (*)(void *)) usermode_trampoline)
 
-int create_usermode_thread(struct thread **p_thread, unsigned int flags,
+int user_thread_create(struct thread **p_thread, unsigned int flags,
 		void *ip, void *sp) {
 	struct ue_data *data;
 	int res;
@@ -65,7 +65,7 @@ int create_usermode_thread(struct thread **p_thread, unsigned int flags,
 	return ENOERR;
 }
 
-int create_usermode_task(void *ip, void *sp) {
+int user_task_create(void *ip, void *sp) {
 	struct ue_data *data;
 	int res;
 

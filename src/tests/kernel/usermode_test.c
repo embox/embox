@@ -14,17 +14,22 @@
 EMBOX_TEST_SUITE("usermode test");
 
 SYSCALL1(7,int,syscall_thread_exit,int,exitcode);
+SYSCALL0(8,int,syscall_fork);
 
 void usermode_function(void) {
 	for (int i = 0; i < 100000; i++) {
 
 	}
 
-	syscall_thread_exit(0);
+	if (!syscall_fork()) {
+		syscall_thread_exit(0);
+	} else {
+		syscall_thread_exit(0);
+	}
 }
 
 TEST_CASE("usermode") {
 	struct thread *t;
-	create_usermode_thread(&t, 0, usermode_function, (void *)0x200000UL);
+	user_thread_create(&t, 0, usermode_function, (void *)0x200000UL);
 	thread_join(t, NULL);
 }

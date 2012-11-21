@@ -6,7 +6,9 @@
  * @date 21.09.2011
  * @author Anton Bondarev
  */
+
 #include <asm/traps.h>
+#include <asm/linkage.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
 

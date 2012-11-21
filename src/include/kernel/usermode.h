@@ -47,7 +47,7 @@ extern void usermode_set_stack(void *sp);
  *
  * Other information see in: include/kernel/thread/api.h
  */
-extern int create_usermode_thread(struct thread **p_thread, unsigned int flags,
+extern int user_thread_create(struct thread **p_thread, unsigned int flags,
 		void *ip, void *sp);
 
 /*
@@ -60,6 +60,6 @@ extern int create_usermode_thread(struct thread **p_thread, unsigned int flags,
  *
  * Other information see in: include/kernel/task.h
  */
-extern int create_usermode_task(void *ip, void *sp);
+extern int user_task_create(void *ip, void *sp);
 
 #endif /* KERNEL_THREAD_USERMODE_H_ */

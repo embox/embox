@@ -31,13 +31,20 @@ usermode_set_stack:
 	/* Build info for iret. */
 	pushl $(__USER_DS)
 	pushl 4(%ebx)
+
+	// Work with EFLAGS
 	pushf
 	popl %eax
-	or $0x200, %eax
+	or $0x200, %eax        /* Enable IF flag */
+	and $0xffffcfff, %eax  /* Set IOPL equals 0 */
 	pushl %eax
+
 	pushl $(__USER_CS)
 	pushl (%ebx)
 	//
+
+	/* Used for fork: set result equals 0 */
+	mov $0, %eax
 
 	/* Now we are going into function. */
 	iret

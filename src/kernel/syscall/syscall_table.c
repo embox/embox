@@ -8,7 +8,7 @@
 
 #include <kernel/syscall.h>
 
-#define SYSCALL_NRS_TOTAL 8
+#define SYSCALL_NRS_TOTAL 9
 
 int sys_0(void) {
 	return 0;
@@ -48,6 +48,8 @@ int sys_thread_exit(void *r) {
 	return 0;
 }
 
+extern int sys_fork(void);
+
 void *const SYSCALL_TABLE[SYSCALL_NRS_TOTAL] = {
 	sys_0,
 	sys_1,
@@ -57,4 +59,5 @@ void *const SYSCALL_TABLE[SYSCALL_NRS_TOTAL] = {
 	sys_5,
 	sys_thread_running_time,
 	sys_thread_exit,
+	sys_fork,
 };
