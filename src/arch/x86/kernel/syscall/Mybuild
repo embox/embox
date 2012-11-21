@@ -4,7 +4,7 @@ module syscall extends embox.arch.syscall {
 	source "syscall_entry.S"
 
 	// TODO: Replace
-	source "fork.c"
+	source "fork.c", "fork_leave.S"
 
 	depends locore
 	depends embox.kernel.syscall.syscall_table

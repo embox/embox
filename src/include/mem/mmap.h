@@ -23,6 +23,8 @@ extern void mmap_free(struct mmap *mmap);
 extern struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, uint32_t flags);
 extern struct marea *mmap_alloc_marea(struct mmap *mmap, size_t size, uint32_t flags);
 
+extern uint32_t mmap_create_stack(struct mmap *mmap);
+
 /*
  * XXX: May be separate it in mmu and nommu code ?
  */

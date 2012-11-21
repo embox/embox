@@ -14,7 +14,7 @@ usermode_set_stack:
 	mov 4(%esp), %esp
 	ret
 
- usermode_entry:
+usermode_entry:
  	cli
 
 	/* Get pointer to tu_data */

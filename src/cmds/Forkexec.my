@@ -1,0 +1,24 @@
+package embox.cmd
+
+@Cmd(name = "forkexec",
+	help = "Execute program",
+	man = '''
+		NAME
+			execve - execute program
+		SYNOPSIS
+			execve <filename>
+		DESCRIPTION
+			execve() executes the program pointed to by filename.
+		AUTHORS
+			Anton Bulychev
+	''')
+module forkexec {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "forkexec.c"
+
+	depends embox.lib.LibC
+	depends embox.fs.core
+	depends embox.lib.LibElfloader
+	depends embox.framework.LibFramework
+}

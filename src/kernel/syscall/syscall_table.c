@@ -6,9 +6,9 @@
  * @author Anton Bulychev
  */
 
-#include <kernel/syscall.h>
+//#include <kernel/syscall.h>
 
-#define SYSCALL_NRS_TOTAL 9
+#define SYSCALL_NRS_TOTAL 10
 
 int sys_0(void) {
 	return 0;
@@ -36,6 +36,7 @@ int sys_5(int arg1, int arg2, int arg3, int arg4, int arg5) {
 
 #include <hal/ipl.h>
 #include <kernel/thread/api.h>
+#include <kernel/task.h>
 
 clock_t sys_thread_running_time(void) {
 	ipl_enable();
@@ -45,6 +46,12 @@ clock_t sys_thread_running_time(void) {
 int sys_thread_exit(void *r) {
 	ipl_enable();
 	thread_exit(r);
+	return 0;
+}
+
+int sys_exit(void *r) {
+	ipl_enable();
+	task_exit(r);
 	return 0;
 }
 
@@ -60,4 +67,5 @@ void *const SYSCALL_TABLE[SYSCALL_NRS_TOTAL] = {
 	sys_thread_running_time,
 	sys_thread_exit,
 	sys_fork,
+	sys_exit,
 };
