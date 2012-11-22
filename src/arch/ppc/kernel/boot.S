@@ -1,52 +1,112 @@
 /**
  * @file
  *
- * @date Oct 17, 2012
- * @author: Anton Bondarev
+ * @date 17.10.12
+ * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
- #include <asm/cpu.h>
-#include <asm/linkage.h>
 
-/*
+#include <asm/linkage.h>
+#include <asm/regs.h>
+
+	.section .text
+
+/**
  * Kernel start point
  */
-C_ENTRY(_start)
-#if 1
-	/*
-	 * Setup CPU registers.
+ENTRY _start
+	/**
+	 * Setup Machine State Register
 	 */
-	li	r3, MSR_IP		/* Establish default MSR value */
-	mtmsr	r3
+	mfmsr    r3                 /* load MSR */
+	lis      r4, MSR_ILE@h      /* setup exception handling to big-endian mode */
+	ori      r4, r4, MSR_ILE@l
+	andc     r3, r3, r4
+	lis      r4, MSR_LE@h       /* setup big-endian mode */
+	ori      r4, r4, MSR_LE@l
+	andc     r3, r3, r4
+	lis      r4, MSR_PR@h       /* allow user- and supervisor-level instructions */
+	ori      r4, r4, MSR_PR@l
+	andc     r3, r3, r4
+	lis      r4, MSR_IP@h       /* setup exception prefix to 0x000n_nnnn */
+	ori      r4, r4, MSR_IP@l
+	andc     r3, r3, r4
+	mtmsr    r3                 /* set a new MSR */
+	isync                       /* synchromizing */
 
-	li	r3, 0			/* Init interrupt nest count */
-	mtspr	SPR_SPRG2, 3
+	/**
+	 * Setup Interrupt Vector Prefix/Offset Registers
+	 */
+	lis      r3, except0_hnd@h  /* setup IVPR */
+	mtivpr   r3
+	li       r3, except0_hnd@l  /* setup IVOR0 */
+	mtivor0  r3
+	li       r3, except1_hnd@l  /* setup IVOR1 */
+	mtivor1  r3
+	li       r3, except2_hnd@l  /* setup IVOR2 */
+	mtivor2  r3
+	li       r3, except3_hnd@l  /* setup IVOR3 */
+	mtivor3  r3
+	li       r3, except4_hnd@l  /* setup IVOR4 */
+	mtivor4  r3
+	li       r3, except5_hnd@l  /* setup IVOR5 */
+	mtivor5  r3
+	li       r3, except6_hnd@l  /* setup IVOR6 */
+	mtivor6  r3
+	li       r3, except7_hnd@l  /* setup IVOR7 */
+	mtivor7  r3
+	li       r3, except8_hnd@l  /* setup IVOR8 */
+	mtivor8  r3
+	li       r3, except9_hnd@l  /* setup IVOR9 */
+	mtivor9  r3
+	li       r3, except10_hnd@l  /* setup IVOR10 */
+	mtivor10 r3
+	li       r3, except11_hnd@l  /* setup IVOR11 */
+	mtivor11 r3
+	li       r3, except12_hnd@l  /* setup IVOR12 */
+	mtivor12 r3
+	li       r3, except13_hnd@l  /* setup IVOR13 */
+	mtivor13 r3
+	li       r3, except14_hnd@l  /* setup IVOR14 */
+	mtivor14 r3
+	li       r3, except15_hnd@l  /* setup IVOR15 */
+	mtivor15 r3
 
-	li	r3, 0			/* Reset timebase */
-	mttbl	r3
-	mttbu	r3
-	mttbl	r3
-#endif
+	/**
+	 * Clear additional registers
+	 */
+	li       r3, 0
+	mttsr    r3                  /* clear TSR */
+	mtmcsr   r3                  /* clear MCSR */
+	mttbl    r3                  /* clear TBU/TBL */
+	mttbu    r3
+	mttbl    r3
 
-	lis	    r1, _stack_vma@ha
-	ori	r1, r1, _stack_vma@l
-	lis    r3, _stack_len@ha
-	ori    r3, r3, _stack_len@l
-	add r1,r1, r3
+	/**
+	 * Keep kernel stack
+	 */
+	lis      r1, _stack_vma@h
+	ori      r1, r1, _stack_vma@l
+	addis    r1, r1, _stack_len@ha
+	addi     r1, r1, _stack_len@l
 
-	mtspr	SPR_SPRG0, r1		/* Keep kernel stack */
-
-	/*
+	/**
 	 * Clear kernel BSS
 	 */
-	lis	r3, _bss_vma@ha
-	addi	r3, r3, _bss_vma@l
-	lis	r4, _bss_len@ha
-	addi	r4, r4, _bss_len@l
-	add r4, r3, r4
-	li	r0, 0
+	lis      r3, _bss_vma@h
+	ori      r3, r3, _bss_vma@l
+	lis      r4, _bss_len@h
+	ori      r4, r4, _bss_len@l
+	add      r4, r3, r4
+	li       r0, 0
 1:
-	stwu	r0, 4(r3)
-	cmplw	cr0, r3, r4
-	blt	1b
+	stwu     r0, 4(r3)
+	cmplw    cr0, r3, r4
+	blt      1b
 
-	b	kernel_start
+	/**
+	 * Call C code
+	 */
+	subi     r1, r1, 8           /* allocate space for sp and ra */
+	b        kernel_start
+

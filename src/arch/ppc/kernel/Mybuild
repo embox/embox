@@ -4,8 +4,16 @@ module boot extends embox.arch.boot {
 	source "boot.S"
 }
 
-module locore extends embox.arch.locore {
+module context extends embox.arch.context {
+	source "context.c", "context_switch.S", "context.h"
+}
 
+module locore extends embox.arch.locore {
+	source "exception_table.S", "entry.S", "trap_handle.c"
+}
+
+module interrupt extends embox.arch.interrupt {
+	source "ipl_impl.h"
 }
 
 module arch {
