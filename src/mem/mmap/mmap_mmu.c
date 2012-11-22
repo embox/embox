@@ -31,7 +31,7 @@ void mmap_init(struct mmap *mmap) {
 	dlist_init(&mmap->marea_list);
 	mmap->stack_marea = NULL;
 
-	assert(!vmem_create_context(&mmap->ctx));
+	assert(!vmem_init_context(&mmap->ctx));
 
 	if (!initialized) {
 		/* It's kernel task. Set virtual context for him. */
@@ -52,6 +52,8 @@ void mmap_free(struct mmap *mmap) {
 
 		free(marea);
 	}
+
+	vmem_free_context(mmap->ctx);
 }
 
 struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
@@ -84,7 +86,7 @@ struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, 
 	dlist_head_init(&marea->mmap_link);
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 
-	vmem_create_space(mmap->ctx, start, end-start, VMEM_PAGE_WRITABLE);
+	vmem_create_space(mmap->ctx, start, end-start, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE);
 
 	return marea;
 }
@@ -123,8 +125,20 @@ uint32_t mmap_create_stack(struct mmap *mmap) {
 	return mmap->stack_marea->end;
 }
 
+int mmap_inherit(struct mmap *mmap, struct mmap *p_mmap) {
+	struct dlist_head *item, *next;
+	struct marea *marea;
+
+	dlist_foreach(item, next, &p_mmap->marea_list) {
+		marea = dlist_entry(item, struct marea, mmap_link);
+
+		vmem_copy_region(mmap->ctx, p_mmap->ctx, marea->start, marea->end - marea->start);
+	}
+	return 0;
+}
+
 static int init() {
-	mem_start = 0x02000000;
+	mem_start = 0x04000000;
 	mem_end   = 0xFFFFF000;
 
 	return 0;

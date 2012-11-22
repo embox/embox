@@ -11,10 +11,11 @@
 #include <assert.h>
 #include <errno.h>
 #include <types.h>
-#include <prom/prom_printf.h>
+
 #include <hal/mmu.h>
 #include <mem/vmem.h>
 #include <mem/vmem/vmem_alloc.h>
+#include <kernel/thread/sched_lock.h>
 
 #include "../kernel/task/common.h"
 #include "../kernel/thread/types.h"
@@ -57,13 +58,29 @@ static inline int vmem_map_kernel(mmu_ctx_t ctx) {
 	return err;
 }
 
-int vmem_create_context(mmu_ctx_t *ctx) {
+int vmem_init_context(mmu_ctx_t *ctx) {
 	mmu_pgd_t *pgd = vmem_alloc_pgd_table();
 	if (!pgd) {
 		return -ENOMEM;
 	}
 	*ctx = mmu_create_context(pgd);
 	return vmem_map_kernel(*ctx);
+}
+
+void vmem_free_context(mmu_ctx_t ctx) {
+	/*
+	 * To unmap this context we should switch to kernel task virtual context.
+	 * Actually, we can save this context for the later created tasks.
+	 */
+
+	sched_lock();
+	{
+		//XXX: Bad code
+		mmu_set_context(1);
+
+		vmem_unmap_region(ctx, 0, 0x80000000UL, 0);
+	}
+	sched_unlock();
 }
 
 /*

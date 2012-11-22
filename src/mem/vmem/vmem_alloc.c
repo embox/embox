@@ -17,7 +17,7 @@
 
 EMBOX_UNIT(unit_init, unit_fini);
 
-#define VIRTUAL_TABLES_COUNT (1000UL)
+#define VIRTUAL_TABLES_COUNT (3000UL)
 #define VIRTUAL_PAGES_COUNT  (100UL)
 
 static struct page_allocator *virt_table_allocator;
@@ -35,7 +35,9 @@ size_t VIRTUAL_PAGES_INFO_LEN;
 
 static inline void *vmem_alloc_table(void) {
 	void *addr = page_alloc(virt_table_allocator, 1);
-	memset(addr, 0 , MMU_PAGE_SIZE);
+	if (addr) {
+		memset(addr, 0 , MMU_PAGE_SIZE);
+	}
 	return addr;
 }
 

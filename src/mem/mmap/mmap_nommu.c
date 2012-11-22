@@ -114,6 +114,10 @@ uint32_t mmap_create_stack(struct mmap *mmap) {
 	return mmap->stack_marea->end;
 }
 
+int mmap_inherit(struct mmap *mmap, struct mmap *p_mmap) {
+	return 0;
+}
+
 static int init() {
 	mem_page_count = (__phymem_allocator->free / PAGE_SIZE()) - 20;
 

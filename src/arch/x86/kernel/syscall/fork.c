@@ -62,7 +62,5 @@ asmlinkage int sys_fork(struct pt_regs regs) {
 	}
 	sched_unlock();
 
-	task_exit(NULL);
-
 	return res;
 }
