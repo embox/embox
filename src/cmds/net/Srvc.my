@@ -1,0 +1,18 @@
+package embox.cmd.net
+
+@Cmd(name = "srvc",
+	 help = "service operations",
+	 man = '''
+		NAME
+			srvc - service operations
+		SYNOPSIS
+			srvc run|stop <service_name>
+		OPTIONS
+			run run service
+			stop stop service
+		AUTHOR
+			Vita Loginova
+	''')
+module srvc {
+	source "srvc.c"
+}

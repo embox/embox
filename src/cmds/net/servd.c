@@ -46,34 +46,6 @@ static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
 
 struct params test_params;
 
-static const char *services[MAX_SERVICES_COUNT] = { DEFAULT_PAGE, "about.html", "test.html", };
-
-static void start_services(void) {
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(services); i++) {
-		web_service_start(services[i]);
-	}
-}
-
-static int is_service_started(char *name) {
-	for (int i = 0; i < sizeof(services) / sizeof(services[0]);
-			i++) {
-		if (strcmp(services[i], name) == 0) {
-			return 1;
-		}
-	}
-	return 0;
-}
-/*
-static int is_lock_needed(char *name) {
-
-	if (strcmp(service_params[2], name) == 0) {
-		return 1;
-	}
-	return 0;
-}*/
-
 //TODO it's work if buffer contains full starting line and headers
 static int receive_and_parse_request(struct client_info *info) {
 	int res;
@@ -143,13 +115,13 @@ static int http_hnd_starting_line(struct client_info *info) {
 			strcpy(info->file, info->parsed_request->parsed_url->path);
 		}
 
-		if (is_service_started(info->file)) {
 			test_params.info = info;
 			test_params.query = info->parsed_request->parsed_url->query;
 			event_init(&info->unlock_sock_event, "socket_lock");
 			info->lock_status = 1;
-			web_service_send_message(info->file, &test_params);
-		}
+			if (0 > web_service_send_message(info->file, &test_params)){
+				info->lock_status = 0;
+			}
 
 	} else if (strcmp(info->parsed_request->method, "POST") == 0) {
 		info->method = HTTP_METHOD_POST;
@@ -361,8 +333,6 @@ static void *start_server(void* args) {
 	}
 
 	welcome_message();
-
-	start_services();
 
 	while (1) {
 		res = accept(host, (struct sockaddr *) &addr, &addr_len);
