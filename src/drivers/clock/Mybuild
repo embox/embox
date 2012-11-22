@@ -52,7 +52,7 @@ module ppc_clk extends embox.arch.clock {
 	source "ppc_clk.c"
 
 	depends embox.kernel.irq
-//	depends embox.kernel.time.clock_source
+	depends embox.kernel.time.clock_source
 }
 
 // TODO Can be used with pit. That means tsc not implements embox.arch.clock
