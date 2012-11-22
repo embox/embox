@@ -52,3 +52,4 @@ void interrupt_handle(unsigned int irq) {
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
 }
+

@@ -58,3 +58,4 @@ static int ppc_clk_init(void) {
 	clock_source_register(&ppc_clk_clock_source);
 	return irq_attach(10/*GPTIMER1_IRQ*/, clock_handler, 0, NULL, "ppc_clk");
 }
+
