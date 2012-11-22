@@ -15,6 +15,7 @@
 
 /* gettimeofday is posix function, but settimeofday is not. */
 extern void settimeofday(struct timespec *ts, struct timezone *tz);
+extern void getnsofday(struct timespec *t, struct timezone *tz);
 
 extern struct timespec timespec_add(struct timespec t1,
 		struct timespec t2);

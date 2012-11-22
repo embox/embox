@@ -33,7 +33,14 @@ void settimeofday(struct timespec *newtime, struct timezone *tz) {
 	itimer_init(&itimer, abstime.cs, 0);
 }
 
-void gettimeofday(struct timespec *t, struct timezone *tz) {
+void gettimeofday(struct timeval *t, struct timezone *tz) {
+	ns_t cur = itimer.cs->read(itimer.cs);
+
+	t->tv_sec = abstime.time.tv_sec + cur / USEC_PER_SEC;
+	t->tv_usec = abstime.time.tv_nsec / 1000 + cur % USEC_PER_SEC;
+}
+
+void getnsofday(struct timespec *t, struct timezone *tz) {
 	ns_t cur = itimer.cs->read(itimer.cs);
 
 	t->tv_sec = abstime.time.tv_sec + cur / NSEC_PER_SEC;
