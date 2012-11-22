@@ -7,7 +7,7 @@
  */
 
 #include <types.h>
-#include <kernel/file.h>
+#include <fs/file_operation.h>
 #include <fs/node.h>
 #include <embox/device.h>
 

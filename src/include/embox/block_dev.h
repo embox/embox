@@ -12,7 +12,7 @@
 
 #include <fs/file_desc.h>
 #include <fs/vfs.h>
-#include <kernel/file.h>
+#include <fs/file_operation.h>
 #include <util/array.h>
 #include <util/indexator.h>
 

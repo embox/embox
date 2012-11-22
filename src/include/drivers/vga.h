@@ -9,7 +9,7 @@
 #ifndef VIDEO_VGA_H_
 #define VIDEO_VGA_H_
 
-#include <kernel/file.h>
+//#include <kernel/file.h>
 
 typedef struct vchar {
 	char c;

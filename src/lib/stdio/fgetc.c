@@ -8,7 +8,7 @@
  */
 
 #include <stdio.h>
-#include <kernel/file.h>
+#include <fs/file_operation.h>
 #include <ctype.h>
 
 int fgetc(FILE *file) {
