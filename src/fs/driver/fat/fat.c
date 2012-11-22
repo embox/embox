@@ -1548,7 +1548,7 @@ static uint32_t fat_write_file(void *fdsc, uint8_t *p_scratch,
 	fileinfo = &fd->fi;
 
 	/* Don't allow writes to a file that's open as readonly */
-	if (!(fileinfo->mode & O_WRONLY)) {
+	if (!(fileinfo->mode & O_WRONLY) && !(fileinfo->mode & O_APPEND)) {
 		return DFS_ERRMISC;
 	}
 
@@ -2061,8 +2061,11 @@ static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
 		_mode = O_RDONLY;
 	}
 	else if ('w' == *mode) {
-		_mode = O_WRONLY;
-	}
+			_mode = O_WRONLY;
+		}
+	else if ('a' == *mode) {
+			_mode = O_APPEND;
+		}
 	else {
 		_mode = O_RDONLY;
 	}
@@ -2072,6 +2075,9 @@ static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
 	path_cut_mount_dir((char *) path, (char *) fd->fs->root_name);
 
 	if(DFS_OK == fat_open_file(fd, (uint8_t *)path, _mode, sector_buff)) {
+		if(_mode & O_WRONLY) {
+			fd->fi.filelen = 0;
+		}
 		return desc;
 	}
 	return NULL;

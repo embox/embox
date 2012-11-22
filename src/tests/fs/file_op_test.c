@@ -51,7 +51,7 @@ TEST_CASE("Copy file") {
 	char buf[PAGE_SIZE()];
 	int bytesread;
 
-	test_assert(0 <=  (src_file = open(FS_FILE1, O_WRONLY)));
+	test_assert(0 <=  (src_file = open(FS_FILE1, O_RDONLY)));
 	test_assert(0 <=  (dst_file = open(FS_FILE2, O_WRONLY)));
 	test_assert_zero(lseek(dst_file, 0, SEEK_SET));
 
