@@ -32,8 +32,8 @@ typedef struct block_dev {
 	char name[MAX_LENGTH_FILE_NAME];
 	struct block_dev_driver *driver;
 	void *privdata;
-	size_t size;
 
+	size_t size;
 	struct block_dev_cache *cache;
 } block_dev_t;
 
@@ -65,7 +65,7 @@ typedef struct block_dev_cache {
 	int buff_cntr;
 } block_dev_cache_t;
 
-extern dev_t *block_dev_create(char *name, void *driver, void *privdata);
+extern struct block_dev *block_dev_create(char *name, void *driver, void *privdata);
 extern block_dev_t *block_dev(void *dev_id);
 extern dev_t block_dev_open(char *name);
 extern block_dev_cache_t *block_dev_cache_init(void *dev_id, int blocks);

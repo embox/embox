@@ -134,6 +134,8 @@ static int tmp_ramdisk_fs_init(void) {
 }
 EMBOX_UNIT_INIT(tmp_ramdisk_fs_init); /*TODO*/
 
+
+
 static int tmpfs_format(void *path) {
 	node_t *nod;
 	tmpfs_fs_description_t *fs_des;
@@ -141,6 +143,10 @@ static int tmpfs_format(void *path) {
 
 	if (NULL == (nod = vfs_find_node((char *) path, NULL))) {
 		return -ENODEV;/*device not found*/
+	}
+
+	if(!node_is_block_dev()) {
+		return -ENODEV;
 	}
 
 	if((NULL == (fs_des = pool_alloc(&tmpfs_fs_pool))) ||
@@ -151,15 +157,18 @@ static int tmpfs_format(void *path) {
 		}
 		return -ENOMEM;
 	}
-	fs_des->dev_id = nod->dev_id;
+
+	//fs_des->dev_id = nod->dev_id;
 	strcpy((char *) fs_des->root_name, "\0");
 	fs_des->block_per_file = MAX_FILE_SIZE;
 	fs_des->block_size = PAGE_SIZE();
-	fs_des->numblocks = block_dev(nod->dev_id)->size / PAGE_SIZE();
+
+
+	fs_des->numblocks = block_dev(nod->file_info)->size / PAGE_SIZE();
 
 	fd->fs = fs_des;
 	nod->fs_type = &tmpfs_drv;
-	nod->file_info = (void *) &tmpfs_fop;
+	//nod->file_info = (void *) &tmpfs_fop;
 	nod->fd = (void *)fd;
 
 	return 0;
@@ -190,8 +199,8 @@ static int tmpfs_mount(void *par) {
 			return -ENOMEM;
 		}
 		dev_node->fd = dev_fd;
-		dev_fd->fs->dev_id = dev_node->dev_id;
-		dev_node->file_info = (void *) &tmpfs_fop;
+		//dev_fd->fs->dev_id = dev_node->dev_id;
+		//dev_node->file_info = (void *) &tmpfs_fop;
 	}
 
 	strncpy((char *) dev_fd->fs->root_name, params->dir, MAX_LENGTH_PATH_NAME);
@@ -253,7 +262,7 @@ static int tmpfs_create(void *params) {
 		}
 
 		node->fs_type = &tmpfs_drv;
-		node->dev_id = parents_node->dev_id;
+		//node->dev_id = parents_node->dev_id;
 		/* don't need create fd for directory - take root node fd */
 		node->fd = parents_node->fd;
 

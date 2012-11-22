@@ -45,6 +45,7 @@ static block_dev_module_t *block_dev_find(char *name) {
 */
 
 block_dev_t *block_dev(void *dev_id) {
+#if 0
 	dev_t devno;
 	block_dev_t *dev;
 
@@ -54,9 +55,11 @@ block_dev_t *block_dev(void *dev_id) {
 	assert(dev != NULL);
 
 	return dev;
+#endif
+	return (block_dev_t *)dev_id;
 }
 
-dev_t *block_dev_create(char *path, void *driver, void *privdata) {
+struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	block_dev_t *dev;
 	node_t *node;
 
@@ -83,11 +86,11 @@ dev_t *block_dev_create(char *path, void *driver, void *privdata) {
 		return NULL;
 	}
 
-	node->dev_id = &dev->id;
+	node->file_info = dev;
 	strncpy (dev->name, node->name, MAX_LENGTH_FILE_NAME);
 	dev->dev_node = node;
 
-	return &dev->id;
+	return dev;
 }
 
 int block_dev_read(void *dev_id, char *buffer, size_t count, blkno_t blkno) {

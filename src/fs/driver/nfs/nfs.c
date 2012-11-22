@@ -310,7 +310,7 @@ static int nfsfs_mount(void *par) {
 
 	dir_node->fs_type = &nfsfs_drv;
 	dir_node->fd = (void *) fd;
-	dir_node->dev_id = params->dev_node->dev_id;
+	//dir_node->dev_id = params->dev_node->dev_id;
 	params->dev_node = dir_node;
 
 	strncpy(p_fs_fd->mnt_point, params->dir, MAX_LENGTH_PATH_NAME);
@@ -376,7 +376,7 @@ static node_t  *nfs_create_file (char *full_name, readdir_desc_t *predesc) {
 	fd->p_fs_dsc = p_fs_fd;
 	node->fs_type = &nfsfs_drv;
 	node->file_info = (void *) &nfsfs_fop;
-	node->dev_id = NULL;
+	//node->dev_id = NULL;
 	node->fd = (void *)fd;
 	return node;
 }

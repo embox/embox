@@ -22,7 +22,8 @@ typedef struct ramdisk_create_params {
 typedef struct ramdisk {
 	int             idx;
 	node_t         *dev_node;
-	dev_t          *dev_id;
+//	dev_t          *dev_id;
+	struct block_dev *bdev;
 	size_t          size;
 	char           *p_start_addr;
 	size_t          blocks;

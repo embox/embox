@@ -39,7 +39,7 @@ block_dev_driver_t ramdisk_pio_driver = {
   write_sectors
 };
 
-EMBOX_UNIT_INIT(unit_init);
+//EMBOX_UNIT_INIT(unit_init);
 
 int ramdisk_create(void *params) {
 	ramdisk_create_params_t *new_ramdisk;
@@ -56,14 +56,14 @@ int ramdisk_create(void *params) {
 		return -ENOENT;
 	}
 
-	if(0 > (ramdisk->dev_id = block_dev_create(new_ramdisk->path,
+	if(NULL == (ramdisk->bdev = block_dev_create(new_ramdisk->path,
 			&ramdisk_pio_driver, ramdisk))) {
 		index_free(&ramdisk_idx, ramdisk->idx);
 		pool_free(&ramdisk_pool, ramdisk);
 		return -EIO;
 	}
 
-	ramdisk->dev_node = block_dev(ramdisk->dev_id)->dev_node;
+	ramdisk->dev_node = block_dev(ramdisk->bdev)->dev_node;
 
 	ramdisk->blocks = new_ramdisk->size / RAMDISK_BLOCK_SIZE;
 	if(new_ramdisk->size % RAMDISK_BLOCK_SIZE) {
@@ -71,7 +71,7 @@ int ramdisk_create(void *params) {
 	}
 	if(NULL == (ramdisk->p_start_addr =
 			page_alloc(__phymem_allocator, ramdisk->blocks))) {
-		block_dev_destroy(ramdisk->dev_id);
+		block_dev_destroy(ramdisk->bdev);
 		index_free(&ramdisk_idx, ramdisk->idx);
 		pool_free(&ramdisk_pool, ramdisk);
 		return -ENOMEM;
@@ -80,7 +80,7 @@ int ramdisk_create(void *params) {
 	strncpy ((void *)&ramdisk->path,
 			 (const void *)new_ramdisk->path, MAX_LENGTH_PATH_NAME);
 	ramdisk->size = ramdisk->blocks * RAMDISK_BLOCK_SIZE;
-	block_dev(ramdisk->dev_id)->size = ramdisk->size;
+	block_dev(ramdisk->bdev)->size = ramdisk->size;
 	ramdisk->block_size = PAGE_SIZE();
 
 	strncpy ((void *)ramdisk->fs_name,
@@ -96,7 +96,7 @@ ramdisk_t *ramdisk_get_param(char *path) {
 	if (NULL == (ramdisk_node = vfs_find_node(path, NULL))) {
 		return NULL;
 	}
-	return (ramdisk_t *) block_dev(ramdisk_node->dev_id)->privdata;
+	return (ramdisk_t *) block_dev(ramdisk_node->file_info)->privdata;
 }
 
 int ramdisk_delete(const char *name) {
@@ -106,18 +106,18 @@ int ramdisk_delete(const char *name) {
 	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
 		return -1;
 	}
-	if(NULL != (ramdisk = (ramdisk_t *) block_dev(ramdisk_node->dev_id)->privdata)) {
+	if(NULL != (ramdisk = (ramdisk_t *) block_dev(ramdisk_node->file_info)->privdata)) {
 		index_free(&ramdisk_idx, ramdisk->idx);
 		pool_free(&ramdisk_pool, ramdisk);
-		block_dev_destroy (ramdisk_node->dev_id);
+		block_dev_destroy (ramdisk_node->file_info);
 		vfs_del_leaf(ramdisk_node);
 	}
 	return 0;
 }
 
-static int unit_init(void) {
-	return 0;
-}
+//static int unit_init(void) {
+//	return 0;
+//}
 
 static int ram_init(void *arg) {
 	return 0;
