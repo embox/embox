@@ -155,6 +155,7 @@ int mmap_inherit(struct mmap *mmap, struct mmap *p_mmap) {
 		}
 
 		if ((res = vmem_copy_region(mmap->ctx, p_mmap->ctx, marea->start, marea->end - marea->start))) {
+			free(marea);
 			return res;
 		}
 
