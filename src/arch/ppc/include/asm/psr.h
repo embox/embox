@@ -63,6 +63,14 @@ PPC_REG_SET(tcr)
 PPC_REG_GET(tsr)
 PPC_REG_SET(tsr)
 
+/**
+ * Time Base Lower/Upper Registers (TBL/TBU)
+ */
+PPC_REG_GET(tbl)
+PPC_REG_SET(tbl)
+PPC_REG_GET(tbu)
+PPC_REG_SET(tbu)
+
 
 #undef PPC_REG_GET
 #undef PPC_REG_SET
