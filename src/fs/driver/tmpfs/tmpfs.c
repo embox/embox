@@ -158,7 +158,7 @@ static int tmpfs_format(void *path) {
 		return -ENOMEM;
 	}
 
-	//fs_des->dev_id = nod->dev_id;
+	fs_des->dev_id = nod->file_info;
 	strcpy((char *) fs_des->root_name, "\0");
 	fs_des->block_per_file = MAX_FILE_SIZE;
 	fs_des->block_size = PAGE_SIZE();
@@ -199,8 +199,7 @@ static int tmpfs_mount(void *par) {
 			return -ENOMEM;
 		}
 		dev_node->fd = dev_fd;
-		//dev_fd->fs->dev_id = dev_node->dev_id;
-		//dev_node->file_info = (void *) &tmpfs_fop;
+		dev_fd->fs->dev_id = dev_node->file_info;
 	}
 
 	strncpy((char *) dev_fd->fs->root_name, params->dir, MAX_LENGTH_PATH_NAME);
@@ -262,7 +261,7 @@ static int tmpfs_create(void *params) {
 		}
 
 		node->fs_type = &tmpfs_drv;
-		//node->dev_id = parents_node->dev_id;
+		node->file_info = parents_node->file_info;
 		/* don't need create fd for directory - take root node fd */
 		node->fd = parents_node->fd;
 

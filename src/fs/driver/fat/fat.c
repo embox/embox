@@ -1944,7 +1944,7 @@ static int fat_mount_files (void *dir_node) {
 			}
 			fd->fs = root_fd->fs;
 			node->fs_type = &fatfs_drv;
-			//node->dev_id = root_node->dev_id;
+			node->file_info = root_node->file_info;
 			node->fd = (void *)fd;
 
 			if ((ATTR_DIRECTORY & de.attr) == ATTR_DIRECTORY) {
@@ -2013,7 +2013,7 @@ static int fat_create_dir_entry(char *dir_name) {
 			}
 			fd->fs = parent_fd->fs;
 			node->fs_type = &fatfs_drv;
-			//node->dev_id = parent_node->dev_id;
+			node->file_info = parent_node->file_info;
 			node->fd = (void *)fd;
 
 			if ((ATTR_DIRECTORY & de.attr) == ATTR_DIRECTORY) {
@@ -2215,12 +2215,11 @@ static int fatfs_format(void *path) {
 		}
 		return -ENOMEM;
 	}
-	//fs_des->dev_id = nod->dev_id;
+	fs_des->dev_id = nod->file_info;
 	strcpy((char *) fs_des->root_name, "\0");
 
 	fd->fs = fs_des;
 	nod->fs_type = &fatfs_drv;
-	nod->file_info = (void *) &fatfs_fop;
 	nod->fd = (void *)fd;
 
 	fatfs_partition(fd);
@@ -2254,8 +2253,7 @@ static int fatfs_mount(void *par) {
 			return -ENOMEM;
 		}
 		dev_node->fd = dev_fd;
-		//dev_fd->fs->dev_id = dev_node->dev_id;
-		dev_node->file_info = (void *) &fatfs_fop;
+		dev_fd->fs->dev_id = dev_node->file_info;
 	}
 
 	strncpy((char *) dev_fd->fs->root_name, params->dir, MAX_LENGTH_PATH_NAME);
@@ -2309,7 +2307,7 @@ static int fatfs_create(void *par) {
 		}
 		fd->fs = parents_fd->fs;
 		node->fs_type = &fatfs_drv;
-		//node->dev_id = parents_node->dev_id;
+		node->file_info = parents_node->file_info;
 		node->fd = (void *)fd;
 
 		/*

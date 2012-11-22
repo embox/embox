@@ -375,7 +375,7 @@ static node_t  *nfs_create_file (char *full_name, readdir_desc_t *predesc) {
 
 	fd->p_fs_dsc = p_fs_fd;
 	node->fs_type = &nfsfs_drv;
-	node->file_info = (void *) &nfsfs_fop;
+	//node->file_info = (void *) &nfsfs_fop;
 	//node->dev_id = NULL;
 	node->fd = (void *)fd;
 	return node;

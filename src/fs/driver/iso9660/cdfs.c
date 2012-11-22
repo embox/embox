@@ -1071,8 +1071,8 @@ static int cdfsfs_mount(void *par) {
 			return -ENOMEM;
 		}
 		dev_node->fd = dev_fd;
-		//dev_fd->fs->dev_id = dev_node->dev_id;
-		dev_node->file_info = (void *) &cdfsfs_fop;
+		dev_fd->fs->dev_id = dev_node->file_info;
+		//dev_node->file_info = (void *) &cdfsfs_fop;
 	}
 
 	strncpy(dev_fd->fs->mntto, params->dir, strlen(params->dir) + 1);
@@ -1191,7 +1191,7 @@ static int cdfs_create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath,
 
 			fd->fs = dir_fd->fs;
 			node->fs_type = &cdfsfs_drv;
-			//node->dev_id = dir_node->dev_id;
+			node->file_info = dir_node->file_info;
 			node->fd = (void *)fd;
 			node->properties = FILE_NODE_TYPE;
 		}
@@ -1249,7 +1249,7 @@ static int cdfs_create_dir_entry (node_t *parent) {
 				}
 				fd->fs = parents_fd->fs;
 				node->fs_type = &cdfsfs_drv;
-				//node->dev_id = parent_node->dev_id;
+				node->file_info = parent_node->file_info;
 				node->fd = (void *)fd;
 				node->properties = DIRECTORY_NODE_TYPE;
 			}
