@@ -78,6 +78,9 @@ ENTRY _start
 	li       r3, 0
 	mttsr    r3                  /* clear TSR */
 	mtmcsr   r3                  /* clear MCSR */
+	mttbl    r3                  /* clear TBU/TBL */
+	mttbu    r3
+	mttbl    r3
 
 	/**
 	 * Keep kernel stack
