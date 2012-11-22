@@ -9,10 +9,12 @@
 #include <asm/linkage.h>
 #include <asm/regs.h>
 
+	.section .text
+
 /**
  * Kernel start point
  */
-C_ENTRY(_start)
+ENTRY _start
 	/**
 	 * Setup Machine State Register
 	 */
@@ -70,17 +72,12 @@ C_ENTRY(_start)
 	li       r3, except15_hnd@l  /* setup IVOR15 */
 	mtivor15 r3
 
-#if 0
 	/**
 	 * Clear additional registers
 	 */
 	li       r3, 0
 	mttsr    r3                  /* clear TSR */
 	mtmcsr   r3                  /* clear MCSR */
-	mttbl    r3                  /* clear TBL/TBU */
-	mttbu    r3
-	mttbl    r3
-#endif
 
 	/**
 	 * Keep kernel stack
@@ -89,9 +86,6 @@ C_ENTRY(_start)
 	ori      r1, r1, _stack_vma@l
 	addis    r1, r1, _stack_len@ha
 	addi     r1, r1, _stack_len@l
-#if 0
-	mtsprg0  r1
-#endif
 
 	/**
 	 * Clear kernel BSS
@@ -110,5 +104,6 @@ C_ENTRY(_start)
 	/**
 	 * Call C code
 	 */
-	subi     r1, r1, 8                /* allocate space for sp and ra */
+	subi     r1, r1, 8           /* allocate space for sp and ra */
 	b        kernel_start
+

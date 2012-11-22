@@ -5,7 +5,10 @@
  * @author Ilia Vaprol
  */
 
-.section .trap_table.text
+#include <asm/linkage.h>
+#include <asm/traps.h>
+
+	.section .trap_table.text
 
 /**
  * IVORn    Interrupt type
@@ -28,55 +31,44 @@
  * IVOR15 - Debug
  */
 
-#define EXCEPT_HND(n, hnd)  \
-	.align 4               ;\
-        nop;nop;nop;nop    ; /* FIXME else FIT percived as DEC interrupts */\
-	.globl except##n##_hnd ;\
-	except##n##_hnd:       ;\
-		b hnd
+	.macro EXCEPTION_ENTRY n
+		.align 4              /* XXX maybe it should be 5 */
+		ENTRY except\n\()_hnd /* define entry for except%d_hnd */
+	.endm
+
+	.macro TRAP_ENTRY n
+		EXCEPTION_ENTRY \n    /* define general entry point for traps */
+			SAVE_ALL          /* save all registers */
+			li r0, \n         /* save trap's type into r0 */
+			b trap_stub       /* call default trap handler */
+	.endm
+
+	.macro IRQ_ENTRY n
+		EXCEPTION_ENTRY \n    /* define general entry point for interrupts */
+			SAVE_ALL          /* save all register */
+			li r0, \n         /* load interrupt type into r0 */
+			b irq_stub        /* call default interrupt handler */
+	.endm
 
 /**
  * Align trap table because all excepts handler must have the same HI bytes
  */
 .align 8
 
-EXCEPT_HND(0, except_stub)  /* Critical Input interrupt handler */
-EXCEPT_HND(1, except_stub)  /* Machine Check interrupt handler */
-EXCEPT_HND(2, except_stub)  /* Data Storage interrupt handler */
-EXCEPT_HND(3, except_stub)  /* Instruction Storage interrupt handler */
-EXCEPT_HND(4, ext_intr_hnd) /* External Input interrupt handler */
-EXCEPT_HND(5, except_stub)  /* Alignment interrupt handler */
-EXCEPT_HND(6, except_stub)  /* Program interrupt handler */
-EXCEPT_HND(7, except_stub)  /* Floating Point Unavailable interrupt handler */
-EXCEPT_HND(8, except_stub)  /* System call interrupt handler */
-EXCEPT_HND(9, except_stub)  /* Auxiliary Processor interrupt handler */
-EXCEPT_HND(10, decr_hnd)    /* Decrementer interrupt handler */
-EXCEPT_HND(11, except_stub) /* Fixed Interval Timer interrupt handler */
-EXCEPT_HND(12, except_stub) /* Watchdog Timer interrupt handler */
-EXCEPT_HND(13, except_stub) /* Data TLB Error interrupt handler */
-EXCEPT_HND(14, except_stub) /* Instruction TLB Error interrupt handler */
-EXCEPT_HND(15, except_stub) /* Debug interrupt handler */
+TRAP_ENTRY 0  /* Critical Input interrupt handler */
+IRQ_ENTRY  1  /* Machine Check interrupt handler */
+TRAP_ENTRY 2  /* Data Storage interrupt handler */
+TRAP_ENTRY 3  /* Instruction Storage interrupt handler */
+IRQ_ENTRY  4  /* External Input interrupt handler */
+TRAP_ENTRY 5  /* Alignment interrupt handler */
+TRAP_ENTRY 6  /* Program interrupt handler */
+TRAP_ENTRY 7  /* Floating Point Unavailable interrupt handler */
+TRAP_ENTRY 8  /* System call interrupt handler */
+TRAP_ENTRY 9  /* Auxiliary Processor interrupt handler */
+IRQ_ENTRY  10 /* Decrementer interrupt handler */
+TRAP_ENTRY 11 /* Fixed Interval Timer interrupt handler */
+TRAP_ENTRY 12 /* Watchdog Timer interrupt handler */
+TRAP_ENTRY 13 /* Data TLB Error interrupt handler */
+TRAP_ENTRY 14 /* Instruction TLB Error interrupt handler */
+TRAP_ENTRY 15 /* Debug interrupt handler */
 
-/* stubs */
-#if 0
-sys_rst_hnd:
-m_chk_hnd:
-dsi_hnd:
-isi_hnd:
-ext_intr_hnd:
-align_hnd:
-prog_hnd:
-fp_unavail_hnd:
-sys_call_hnd:
-ap_unavail_hnd:
-decr_hnd:
-fi_tmr_hnd:
-w_tmr_hnd:
-dtlb_err_hnd:
-itlb_err_hnd:
-dbg_hnd:
-#endif
-
-except_stub:
-die:
-	b die

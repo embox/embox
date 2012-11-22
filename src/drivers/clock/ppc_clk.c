@@ -19,6 +19,7 @@
 EMBOX_UNIT_INIT(ppc_clk_init);
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
+	__set_tsr(__get_tsr() & ~TSR_DIS);
 	clock_tick_handler(irq_nr, data);
 	return IRQ_HANDLED;
 }
@@ -51,10 +52,9 @@ static struct clock_source ppc_clk_clock_source = {
 };
 
 static int ppc_clk_init(void) {
-	__set_dec((uint32_t)1);
-	__set_decar((uint32_t)1);
-    __set_tcr(TCR_DIE/* | TCR_ARE*/);
+	__set_dec(1000000);
+	__set_decar(1000000);
+    __set_tcr(TCR_DIE | TCR_ARE);
 	clock_source_register(&ppc_clk_clock_source);
 	return irq_attach(10/*GPTIMER1_IRQ*/, clock_handler, 0, NULL, "ppc_clk");
 }
-

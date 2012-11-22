@@ -33,12 +33,7 @@ void irqctrl_clear(unsigned int interrupt_nr) {
 void irqctrl_force(unsigned int interrupt_nr) {
 }
 
-#include <prom/prom_printf.h>
-void interrupt_handle(void) {
-	unsigned int irq;
-
-	irq = 10; /* LOL */
-
+void interrupt_handle(unsigned int irq) {
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
 	irqctrl_disable(irq);
@@ -57,4 +52,3 @@ void interrupt_handle(void) {
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
 }
-

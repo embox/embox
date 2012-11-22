@@ -8,12 +8,9 @@
 #include <asm/linkage.h>
 #include <hal/context.h>
 
-#include <asm/entry.h>
-//#include <asm/ptrace.h>
-C_ENTRY(context_switch)
-//	nop
-//	PTRACE_DEBUG
+	.section .text
 
+ENTRY context_switch
 	isync
 	stmw   r13, CTX_GPR13(r3)
 	mflr   r28
@@ -30,6 +27,5 @@ C_ENTRY(context_switch)
 	lmw    r13, CTX_GPR13(r4)
 	isync
 
-//	PTRACE_DEBUG
-
 	blr
+

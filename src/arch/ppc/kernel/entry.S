@@ -6,35 +6,27 @@
  * @author Ilia Vaprol
  */
 
-#include <asm/entry.h>
-#include <asm/regs.h>
+#include <asm/linkage.h>
+#include <asm/traps.h>
 
-.globl ext_intr_hnd
-ext_intr_hnd:
-	SAVE_ALL
-	bl interrupt_handle
-	RESTORE_ALL
-	rfi
+	.section .text
 
-.globl decr_hnd
-decr_hnd:
-	SAVE_ALL            /* save all registers */
+ENTRY trap_stub
+	stw  r0, PT_REGS_TRAPNO(r1) /* save type of the trap into pt_regs */
+	mr   r3, r1                 /* set pointer to pt_regs as first argument */
+	subi r1, r1, 8              /* correct stack pointer */
+	bl   trap_handle            /* trap handling */
+	addi r1, r1, 8              /* restore stack pointer */
+	b die                       /* and jump to die */
 
-	mftsr    r3         /* clear TSR[DIS] */
-	lis      r4, TSR_DIS@h
-	ori      r4, r4, TSR_DIS@l
-	andc     r3, r3, r4
-	mttsr    r3
+ENTRY irq_stub
+	subi r1, r1, 8              /* correct stack before call C code */
+	mr   r3, r0                 /* set interrupt type as first argument */
+	bl   interrupt_handle       /* handling interrupt */
+	addi r1, r1, 8              /* restore stack pointer */
+	RESTORE_ALL                 /* restore all registers */
+	rfi                         /* return from interrupt */
 
-	subi     r1, r1, 8  /* handle interrupt */
-	bl       interrupt_handle
-	addi     r1, r1, 8
+die:                            /* infinite loop */
+	b die
 
-#if 1 /* reset decrementer */
-	lis 18,   10000000@h
-	ori 18,18,10000000@l
-	mtdec 18
-#endif
-
-	RESTORE_ALL         /* restore all registers */
-	rfi                 /* return from interrupt */

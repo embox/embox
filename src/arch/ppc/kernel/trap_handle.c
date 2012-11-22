@@ -5,12 +5,11 @@
  * @author Ilia Vaprol
  */
 
-#include <asm/ptrace.h>
+#include <asm/traps.h>
 #include <prom/prom_printf.h>
 
-
-void ptrace_info(struct pt_regs *regs) {
-	prom_printf("\nPTRACE_INFO: regs[%p]\n", regs);
+void trap_handle(struct pt_regs *regs) {
+	prom_printf("\nTRAP[0x%02X]:\n", regs->trapno);
 	prom_printf(" r0  %08X; r1  %08X; r2  %08X; r3  %08X;\n",
 			regs->gpr[0], regs->gpr[1], regs->gpr[2], regs->gpr[3]);
 	prom_printf(" r4  %08X; r5  %08X; r6  %08X; r7  %08X;\n",
@@ -31,3 +30,4 @@ void ptrace_info(struct pt_regs *regs) {
 			regs->lr, regs->cr, regs->xer, regs->ctr);
 	prom_printf(" srr0 %08X    srr1 %08X\n", regs->srr0, regs->srr1);
 }
+

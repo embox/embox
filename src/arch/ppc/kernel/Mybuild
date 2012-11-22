@@ -9,8 +9,7 @@ module context extends embox.arch.context {
 }
 
 module locore extends embox.arch.locore {
-	source "exception_table.S", "entry.S"
-	source "ptrace.c"
+	source "exception_table.S", "entry.S", "trap_handle.c"
 }
 
 module interrupt extends embox.arch.interrupt {
