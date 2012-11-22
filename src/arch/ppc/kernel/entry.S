@@ -45,8 +45,8 @@ decr_hnd:
 #endif
 
 #if 1 /* reset decrementer */
-	lis 18,   100000@h
-	ori 18,18,100000@l
+	lis 18,   10000000@h
+	ori 18,18,10000000@l
 	mtdec 18
 #endif
 

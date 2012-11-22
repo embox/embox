@@ -13,12 +13,12 @@ C_ENTRY(setjmp)
 	mr   r10, r2   /* copy table of contents pointer to r10 */
 	mflr r11       /* copy link register to r11 *
 	mfcr r12       /* copy condition register to r12 */
-	stmw r9, 8(r3) /* save r9..r31 registers to first argument[struct __jmp_buf] */
+	stmw r9, 0(r3) /* save r9..r31 registers to first argument[struct __jmp_buf] */
 	li   r3, 0     /* indicate success */
 	blr            /* return */
 
 C_ENTRY(longjmp)
-	lmw  r9, 8(r3)  /* load r9..r31 registers from first argument[struct __jmp_buf] */
+	lmw  r9, 0(r3)  /* load r9..r31 registers from first argument[struct __jmp_buf] */
 	mtcr r12        /* copy condition register from r12 */
 	mtlr r11        /* copy link register from r11 */
 	mr   r2, r10    /* copy table of contents pointer from r10 */

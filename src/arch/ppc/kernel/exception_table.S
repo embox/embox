@@ -33,7 +33,6 @@
         nop;nop;nop;nop    ; /* FIXME else FIT percived as DEC interrupts */\
 	.globl except##n##_hnd ;\
 	except##n##_hnd:       ;\
-	b except_stub;\
 		b hnd
 
 /**
