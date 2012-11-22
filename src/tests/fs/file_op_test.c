@@ -7,6 +7,9 @@
  */
 
 #include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+
 #include <cmd/mkfs.h>
 #include <fs/mount.h>
 #include <drivers/ramdisk.h>

@@ -6,15 +6,18 @@
  * @author Anton Bondarev
  */
 
-#include <embox/cmd.h>
+
 #include <getopt.h>
 #include <string.h>
 #include <time.h>
-//#include <kernel/file.h>
+#include <stdio.h>
+
 #include <fs/vfs.h>
 #include <fs/ramfs.h>
 #include <sys/stat.h>
 #include <util/tree.h>
+
+#include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 

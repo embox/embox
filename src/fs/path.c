@@ -7,7 +7,8 @@
  */
 #include <stdio.h>
 #include <string.h>
-//#include <fs/vfs.h>
+
+#include <fs/path.h>
 
 /*
  * remove the top directory name from path
@@ -69,7 +70,8 @@ int path_increase_tail(char *head, char *tail) {
 		return 0;
 }
 
-#define MAX_MSDOS_NAME          11
+
+#include <fs/fat.h>
 /*
  *	Convert a filename element from canonical (8.3) to directory entry (11)
  *	form src must point to the first non-separator character.
@@ -77,8 +79,8 @@ int path_increase_tail(char *head, char *tail) {
  */
 char *path_canonical_to_dir(char *dest, char *src) {
 
-	memset(dest, (int)' ', MAX_MSDOS_NAME);
-	dest[MAX_MSDOS_NAME] = 0;
+	memset(dest, (int)' ', MSDOS_NAME);
+	dest[MSDOS_NAME] = 0;
 
 	for (int i = 0; i <= 11; i++) {
 		if (!*src) {
@@ -111,7 +113,7 @@ char *path_dir_to_canonical(char *dest, char *src, char dir) {
         char *dst;
 
         dst = dest;
-        memset(dest, 0, MAX_MSDOS_NAME + 2);
+        memset(dest, 0, MSDOS_NAME + 2);
         for (i = 0; i < 8; i++) {
 			if (*src != ' ') {
 				*dest = *src;

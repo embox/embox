@@ -10,7 +10,7 @@
 #include <kernel/task/idx.h>
 #include <util/array.h>
 #include <fs/posix.h>
-#include <fs/core.h>
+#include <fs/kfile.h>
 
 int open(const char *path, int __oflag, ...) {
 	char mode[] = "-";

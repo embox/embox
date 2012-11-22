@@ -11,6 +11,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
+
 #include <util/array.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
@@ -19,6 +21,7 @@
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/fat.h>
+#include <fs/path.h>
 #include <fs/mount.h>
 
 #include <embox/block_dev.h>

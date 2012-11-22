@@ -5,12 +5,13 @@
  * @date 26.10.2012
  * @author Andrey Gazukin
  */
-
-#include <asm/io.h>
 #include <types.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#include <asm/io.h>
 
 #include <fs/fat.h>
 #include <drivers/ide.h>

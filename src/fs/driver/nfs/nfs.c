@@ -11,13 +11,20 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
+
 #include <fs/mount.h>
 #include <fs/vfs.h>
 #include <fs/nfs.h>
 #include <fs/xdr_nfs.h>
+#include <fs/path.h>
+#include <fs/node.h>
+#include <fs/file_desc.h>
+
 #include <mem/misc/pool.h>
 #include <net/rpc/clnt.h>
 #include <net/rpc/xdr.h>
+
 
 static int nfs_create_dir_entry(char *parent);
 

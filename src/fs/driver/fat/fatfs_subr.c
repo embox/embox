@@ -12,6 +12,7 @@
 #include <fs/fat.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
+#include <fs/path.h>
 
 
 void fat_get_filename(char *tmppath, char *filename) {

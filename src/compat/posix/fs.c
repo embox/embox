@@ -16,12 +16,12 @@
 #include <stdlib.h>
 #include <err.h>
 #include <errno.h>
-#include <lib/list.h>
 #include <sys/types.h>
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
 #include <util/array.h>
+#include <fs/path.h>
 
 node_t *create_filechain(const char *path, uint8_t node_type){
 	int count_dir;

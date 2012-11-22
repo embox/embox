@@ -11,11 +11,13 @@
 #include <errno.h>
 #include <err.h>
 #include <fcntl.h>
-#include <lib/list.h>
+//#include <lib/list.h>
+
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
+#include <fs/kfile.h>
 
 struct file_desc *kopen(const char *path, const char *mode) {
 	node_t *nod;

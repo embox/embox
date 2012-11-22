@@ -15,7 +15,7 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 
-#include <fs/core.h>
+#include <fs/kfile.h>
 #include <stdio.h>
 
 #define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)

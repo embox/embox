@@ -56,6 +56,7 @@
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
 #include <fcntl.h>
+#include <fs/path.h>
 
 /* cdfs filesystem description pool */
 POOL_DEF(cdfs_fs_pool, struct cdfs_fs_description, OPTION_GET(NUMBER,cdfs_descriptor_quantity));

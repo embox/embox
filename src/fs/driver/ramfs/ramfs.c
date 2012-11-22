@@ -11,10 +11,14 @@
 
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
+
 #include <fs/ramfs.h>
 #include <fs/fs_drv.h>
 #include <fs/vfs.h>
 #include <fs/mount.h>
+#include <fs/file_desc.h>
+
 #include <mem/misc/pool.h>
 #include <util/array.h>
 #include <embox/unit.h>

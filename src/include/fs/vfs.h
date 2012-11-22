@@ -24,10 +24,4 @@ extern node_t *vfs_find_child(const char *name, node_t *parrent);
 extern node_t *vfs_find_parent(const char *name, node_t *parrent);
 extern node_t *vfs_find_node(const char *path, node_t *parrent);
 
-extern void path_cut_mount_dir(char *path, char *mount_dir) ;
-extern int path_nip_tail(char *head, char *tail);
-extern int path_increase_tail(char *head, char *tail);
-extern char *path_dir_to_canonical(char *dest, char *src, char dir);
-extern char *path_canonical_to_dir(char *dest, char *src);
-
 #endif /* FS_VFS_H_ */

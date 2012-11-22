@@ -6,6 +6,9 @@
  * @date    24.09.2012
  */
 
+#ifndef FS_KFILE_H_
+#define FS_KFILE_H_
+
 struct file_desc;
 
 extern struct file_desc *kopen(const char *path, const char *mode);
@@ -21,3 +24,5 @@ extern int kseek(struct file_desc *desc, long int offset, int origin);
 extern int kioctl(struct file_desc *fp, int request, ...);
 
 extern int kstat(struct file_desc *fp, void *buff);
+
+#endif /* FS_KFILE_H_ */
