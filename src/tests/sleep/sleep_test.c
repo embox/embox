@@ -18,8 +18,6 @@ EMBOX_TEST_SUITE("sleep suite");
 #define TIME_TO_SLEEP  20
 #define NUM_THREADS     8
 
-extern struct test_emit_buffer *__test_emit_buffer_current(void);
-
 /**
  *  sleep( any_time )
  *  assert that real time for sleep different with any_time is less than EPSILON_BORDER
@@ -28,7 +26,6 @@ extern struct test_emit_buffer *__test_emit_buffer_current(void);
 TEST_CASE("one sleep") {
 	clock_t cur_time, epsilon;
 
-    assert(__test_emit_buffer_current()->ptr);
 	cur_time = clock();
 	usleep(TIME_TO_SLEEP);
 	epsilon = abs((int) (clock() - cur_time) - (int) TIME_TO_SLEEP);
@@ -49,7 +46,6 @@ static void * handler1(void* args) {
 TEST_CASE("simple multi-threaded check") {
 	struct thread *t1, *t2, *t3;
 
-    assert(__test_emit_buffer_current()->ptr);
 	/* Start threads */
 	test_assert_zero(thread_create(&t1, 0, handler1, (void *) 1));
 	test_assert_not_null(t1);
@@ -80,7 +76,6 @@ TEST_CASE("sleep sort") {
 	uint32_t i;
 	struct thread *t[NUM_THREADS];
 
-    assert(__test_emit_buffer_current()->ptr);
 	for (i = 0; i < NUM_THREADS; i++) {
 		test_assert_zero(
 				thread_create(&t[i], 0, handler2, (void *) i));
