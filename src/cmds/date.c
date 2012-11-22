@@ -82,7 +82,7 @@ static void sec_to_date(uint32_t sec) {
 static void show_date(void) {
 	struct timespec ts;
 
-	gettimeofday(&ts, NULL);
+	getnsofday(&ts, NULL);
 	sec_to_date(ts.tv_sec);
 
 	printf("%d.%d.%d%d %d:%d:%d\n", date.DD, date.MM, date.CC, date.YY,

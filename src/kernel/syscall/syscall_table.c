@@ -49,8 +49,11 @@ int sys_thread_exit(void *r) {
 	return 0;
 }
 
+#include <stdio.h>
+
 int sys_exit(void *r) {
 	ipl_enable();
+	printf("Exit task %d with exitcode: %d\n", task_self()->tid, (int) r);
 	task_exit(r);
 	return 0;
 }

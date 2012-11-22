@@ -75,7 +75,7 @@ int ntp_client_xmit(int sock, struct sockaddr_in *dst) {
 	x.status = client_config.status;
 	x.poll = client_config.poll;
 
-	gettimeofday(&ts, NULL);
+	getnsofday(&ts, NULL);
 	x.xmt_ts = timespec_to_ntp(ts);
 
 	ntp_ntoh(&x);
@@ -104,7 +104,7 @@ static int ntp_server_reply(struct ntphdr *r, struct timespec rec, struct sockad
 	x.ref_ts = server_config.ref_ts;
 	x.org_ts = r->xmt_ts;
 	x.rec_ts = timespec_to_ntp(rec);
-	gettimeofday(&ts, NULL);
+	getnsofday(&ts, NULL);
 	x.xmt_ts = timespec_to_ntp(ts);
 
 	ntp_ntoh(&x);
@@ -120,7 +120,7 @@ int ntp_receive(struct sock *sk, struct sk_buff *skb) {
 	udphdr_t *udph = udp_hdr(skb);
 	struct inet_sock *inet = inet_sk(sk);
 
-	gettimeofday(&ts, NULL);
+	getnsofday(&ts, NULL);
 
 	/* check for NTP packet */
 	if (ntohs(inet->sport) != NTP_SERVER_PORT &&
@@ -195,7 +195,7 @@ free_and_drop:
 struct timespec ntp_delay(struct ntphdr *ntp) {
 	struct timespec client_r, server_x, server_r, client_x, res;
 
-	gettimeofday(&client_r, NULL);
+	getnsofday(&client_r, NULL);
 	client_x = ntp_to_timespec(ntp->org_ts);
 	server_x = ntp_to_timespec(ntp->xmt_ts);
 	server_r = ntp_to_timespec(ntp->rec_ts);
@@ -211,7 +211,7 @@ struct timespec ntp_delay(struct ntphdr *ntp) {
 struct timespec ntp_offset(struct ntphdr *ntp) {
 	struct timespec client_r, server_x, server_r, client_x, res;
 
-	gettimeofday(&client_r, NULL);
+	getnsofday(&client_r, NULL);
 	client_x = ntp_to_timespec(ntp->org_ts);
 	server_x = ntp_to_timespec(ntp->xmt_ts);
 	server_r = ntp_to_timespec(ntp->rec_ts);
