@@ -27,6 +27,26 @@ static uint32_t mem_end;
 
 static int initialized = 0;
 
+static inline struct marea *build_marea(uint32_t start, uint32_t end, uint32_t flags) {
+	struct marea *marea;
+
+	if (!(marea = malloc(sizeof(struct marea)))) {
+		return NULL;
+	}
+
+	marea->start = start;
+	marea->end   = end;
+	marea->flags = flags;
+
+	dlist_head_init(&marea->mmap_link);
+
+	return marea;
+}
+
+static inline void add_marea_to_mmap(struct mmap *mmap, struct marea *marea) {
+	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
+}
+
 void mmap_init(struct mmap *mmap) {
 	dlist_init(&mmap->marea_list);
 	mmap->stack_marea = NULL;
@@ -75,18 +95,16 @@ struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, 
 		}
 	}
 
-	if (!(marea = malloc(sizeof(struct marea)))) {
+	if (!(marea = build_marea(start, end, flags))) {
 		return NULL;
 	}
 
-	marea->start = start;
-	marea->end   = end;
-	marea->flags = flags;
+	if (vmem_create_space(mmap->ctx, start, end-start, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE)) {
+		free(marea);
+		return NULL;
+	}
 
-	dlist_head_init(&marea->mmap_link);
-	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
-
-	vmem_create_space(mmap->ctx, start, end-start, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE);
+	add_marea_to_mmap(mmap, marea);
 
 	return marea;
 }
@@ -127,12 +145,19 @@ uint32_t mmap_create_stack(struct mmap *mmap) {
 
 int mmap_inherit(struct mmap *mmap, struct mmap *p_mmap) {
 	struct dlist_head *item, *next;
-	struct marea *marea;
+	struct marea *marea, *new_marea;
+	int res;
 
 	dlist_foreach(item, next, &p_mmap->marea_list) {
 		marea = dlist_entry(item, struct marea, mmap_link);
+		if (!(new_marea = build_marea(marea->start, marea->end, marea->flags))) {
+			return -ENOMEM;
+		}
 
-		vmem_copy_region(mmap->ctx, p_mmap->ctx, marea->start, marea->end - marea->start);
+		if ((res = vmem_copy_region(mmap->ctx, p_mmap->ctx, marea->start, marea->end - marea->start))) {
+			return res;
+		}
+
 	}
 	return 0;
 }
