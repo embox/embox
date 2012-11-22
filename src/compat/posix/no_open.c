@@ -10,4 +10,3 @@
 int open(const char *path, int __oflag, ...) {
 	return -1;
 }
-

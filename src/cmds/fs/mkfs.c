@@ -30,8 +30,8 @@
 
 EMBOX_CMD(exec);
 
-static mkfs_params_t mkfs_params;
-static dev_ramdisk_t *ramdisk;
+static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
+		unsigned int fs_type, unsigned int operation_flag);
 
 static void print_usage(void) {
 	printf("Usage: mkfs [ -t type ] file [ blocks ]\n");
@@ -51,28 +51,33 @@ static int check_invalid(int min_argc, int argc, char **argv) {
 static int exec(int argc, char **argv) {
 	int opt;
 	int min_argc;
+	unsigned int operation_flag;
+	size_t       blocks;
+	char         *path;
+	const char   *fs_name;
+	unsigned int fs_type;
 
 	min_argc = MIN_ARGS_OF_MKFS;
-	mkfs_params.blocks = DEFAULT_BLOCK_QTTY;
-	mkfs_params.operation_flag = 0;
 
-	strcpy((void *)&mkfs_params.fs_name, (const void *)DEFAULT_FS_NAME);
+	operation_flag = 0;
+	fs_name = DEFAULT_FS_NAME;
+	fs_type = DEFAULT_FS_TYPE;
+	blocks = DEFAULT_BLOCK_QTTY;
 
-	mkfs_params.fs_type = DEFAULT_FS_TYPE;
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "ht:q:"))) {
 		switch (opt) {
 		case 't':
 			min_argc = 4;
-			strcpy ((void *)&(mkfs_params.fs_name), (const void *)optarg);
+			fs_name = optarg;
 			if(check_invalid(min_argc, argc, argv)){
 				return -EINVAL;
 			}
-			mkfs_params.operation_flag |= MKFS_FORMAT_DEV;
+			operation_flag |= MKFS_FORMAT_DEV;
 			break;
 		case 'q':
 			min_argc += 1;
-			mkfs_params.operation_flag |= MKFS_CREATE_RAMDISK;
+			operation_flag |= MKFS_CREATE_RAMDISK;
 			if(check_invalid(min_argc, argc, argv)){
 				return -EINVAL;
 			}
@@ -92,65 +97,50 @@ static int exec(int argc, char **argv) {
 
 	if (argc > 1) {
 		if (argc > min_argc) {/** last arg should be block quantity*/
-			if(0 >= sscanf(argv[argc - 1], "%d", &mkfs_params.blocks)){
+			if(0 >= sscanf(argv[argc - 1], "%d", &blocks)){
 				print_usage();
 				return -EINVAL;
 			}
-			strcpy ((void *)&(mkfs_params.path), (const void *)argv[argc - 2]);
+			path = argv[argc - 2];
 		}
 		else {/** last arg should be diskname*/
-			strcpy ((void *)&(mkfs_params.path), (const void *)argv[argc - 1]);
+			path = argv[argc - 1];
 		}
 
-		return mkfs_do_operation(&mkfs_params);
+		return mkfs_do_operation(blocks, path,
+				                 fs_name, fs_type, operation_flag);
 	}
 	return 0;
 }
 
-int mkfs_do_operation(void *_mkfs_params) {
-	mkfs_params_t *mkfs_params;
-	fs_drv_t *fs_drv;
+static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
+						unsigned int fs_type, unsigned int operation_flag) {
+	ramdisk_create_params_t new_ramdisk;
+	struct fs_drv *fs_drv;
 	int rezult;
 
+	if(operation_flag & MKFS_CREATE_RAMDISK) {
+		new_ramdisk.size = blocks * PAGE_SIZE();
+		new_ramdisk.path = path;
+		new_ramdisk.fs_name = fs_name;
+		new_ramdisk.fs_type = fs_type;
 
-	mkfs_params = (mkfs_params_t *) _mkfs_params;
-
-	if(mkfs_params->operation_flag & MKFS_CREATE_RAMDISK) {
-		if(0 < (rezult = ramdisk_create((void *)mkfs_params))) {
+		if(0 > (rezult = ramdisk_create((void *) &new_ramdisk))) {
 			return rezult;
 		}
 	}
 
-	if(mkfs_params->operation_flag & MKFS_FORMAT_DEV) {
-		if(MKFS_CREATE_RAMDISK) {
-			/* set filesystem attribute to ramdisk */
-			if(NULL == (ramdisk = ramdisk_get_param(mkfs_params->path))) {
-				return -ENODEV;
-			}
-			strcpy ((void *)ramdisk->path, (const void *)mkfs_params->path);
-			strcpy ((void *)ramdisk->fs_name,
-						(const void *)mkfs_params->fs_name);
-			ramdisk->fs_type = mkfs_params->fs_type;
-		}
-
+	if(operation_flag & MKFS_FORMAT_DEV) {
+		/* find filesystem driver by name */
 		if(NULL == (fs_drv =
-				filesystem_find_drv((const char *) &mkfs_params->fs_name))) {
+				filesystem_find_drv((const char *) fs_name))) {
 			return -EINVAL;
 		}
 
 		/* format filesystem */
-		if (0 != (rezult = fs_drv->fsop->format((void *) &mkfs_params->path))) {
+		if (0 != (rezult = fs_drv->fsop->format((void *) path))) {
 			return rezult;
 		}
-
-		/*
-		 * strcpy(filename, ramdisk->name);
-		 * strcat (filename, "/1/2/3/4/4.txt");
-		 * rezult = open((const char *) filename, O_WRONLY);
-		 * strcpy(filename, "file was rewrite \n");
-		 * write(rezult, (const void *) filename, strlen (filename));
-		 *
-		 */
 	}
 	return 0;
 }

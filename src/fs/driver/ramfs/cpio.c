@@ -7,6 +7,7 @@
  */
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <fs/ramfs.h>
 #include <fs/vfs.h>

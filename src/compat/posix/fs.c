@@ -10,19 +10,18 @@
 #include <fs/fs_drv.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <kernel/file.h>
+#include <fs/file_operation.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <err.h>
 #include <errno.h>
-#include <lib/list.h>
 #include <sys/types.h>
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
 #include <util/array.h>
-
+#include <fs/path.h>
 
 node_t *create_filechain(const char *path, uint8_t node_type){
 	int count_dir;
@@ -33,11 +32,11 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 
 	count_dir = 0;
 	tail[0] = '\0';
-	strcpy (param.path, path);
+	strncpy (param.path, path, MAX_LENGTH_PATH_NAME);
 
 	/* find last node in the path */
 	do {
-		if (nip_tail (param.path, tail)) {
+		if (path_nip_tail(param.path, tail)) {
 			return NULL;
 		}
 		count_dir ++;
@@ -52,9 +51,9 @@ node_t *create_filechain(const char *path, uint8_t node_type){
 
 	/* add one directory and assign the parameters of the parent */
 	do {
-		increase_tail (param.path, tail);
+		path_increase_tail(param.path, tail);
 
-		if (NULL == (new_node = vfs_add_path (param.path, NULL))) {
+		if (NULL == (new_node = vfs_add_path(param.path, NULL))) {
 			return NULL;
 		}
 
@@ -88,7 +87,6 @@ int create(const char *pathname, mode_t mode) {
 	}
 
 	/* set permission */
-
 
 	if (NULL == (nod = create_filechain(pathname, FILE_NODE_TYPE))) {
 		errno = EINVAL;
@@ -159,6 +157,10 @@ int rmdir(const char *pathname) {
 	drv = node->fs_type;
 
 	return drv->fsop->delete_file (pathname);
+}
+
+int stat(const char *path, stat_t *buf) {
+	return lstat(path, buf);
 }
 
 int lstat(const char *path, stat_t *buf) {

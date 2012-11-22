@@ -7,6 +7,9 @@
  */
 
 #include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+
 #include <cmd/mkfs.h>
 #include <fs/mount.h>
 #include <drivers/ramdisk.h>
@@ -14,6 +17,7 @@
 #include <embox/test.h>
 #include <embox/block_dev.h>
 #include <fs/vfs.h>
+#include <mem/page.h>
 
 EMBOX_TEST_SUITE("fs/file test");
 
@@ -21,10 +25,8 @@ TEST_SETUP_SUITE(setup_suite);
 
 TEST_TEARDOWN_SUITE(teardown_suite);
 
-static mkfs_params_t mkfs_params;
-static dev_ramdisk_t ramdisk;
+static ramdisk_create_params_t new_ramdisk;
 static mount_params_t mount_param;
-static fs_drv_t *fs_drv;
 
 #define FS_NAME  "vfat"
 #define FS_DEV  "/dev/ramdisk"
@@ -52,7 +54,7 @@ TEST_CASE("Copy file") {
 	char buf[PAGE_SIZE()];
 	int bytesread;
 
-	test_assert(0 <=  (src_file = open(FS_FILE1, O_WRONLY)));
+	test_assert(0 <=  (src_file = open(FS_FILE1, O_RDONLY)));
 	test_assert(0 <=  (dst_file = open(FS_FILE2, O_WRONLY)));
 	test_assert_zero(lseek(dst_file, 0, SEEK_SET));
 
@@ -82,27 +84,35 @@ TEST_CASE("Read file") {
 	test_assert_zero(close(file));
 }
 
+TEST_CASE("stat and fstat should return same stats") {
+	struct stat st, fst;
+	int fd;
+
+	stat(FS_FILE2, &st);
+
+	test_assert((fd = open(FS_FILE2, O_RDONLY)) >= 0);
+
+	fstat(fd, &fst);
+
+	test_assert(0 == memcmp(&st, &fst, sizeof(struct stat)));
+
+	close(fd);
+}
 
 static int setup_suite(void) {
-	dev_t devnum;
+	fs_drv_t *fs_drv;
 
-	mkfs_params.blocks = FS_BLOCKS;
-	mkfs_params.fs_type = FS_TYPE;
-	strcpy((void *)&mkfs_params.fs_name, FS_NAME);
-	strcpy((void *)&mkfs_params.path, FS_DEV);
+	new_ramdisk.size = FS_BLOCKS * PAGE_SIZE();
+	new_ramdisk.fs_type = FS_TYPE;
+	new_ramdisk.fs_name = FS_NAME;
+	new_ramdisk.path = FS_DEV;
 
-	if (0 != ramdisk_create((void *)&mkfs_params)) {
+	if (0 != ramdisk_create((void *)&new_ramdisk)) {
 		return -1;
 	}
 
-	/* set filesystem attribute to ramdisk */
-	strcpy((void *)ramdisk.path, (const void *)mkfs_params.path);
-	strcpy((void *)ramdisk.fs_name,
-				(const void *)mkfs_params.fs_name);
-	ramdisk.fs_type = mkfs_params.fs_type;
-
 	if(NULL == (fs_drv =
-			filesystem_find_drv((const char *) &mkfs_params.fs_name))) {
+			filesystem_find_drv(FS_NAME))) {
 		return -1;
 	}
 
@@ -113,12 +123,9 @@ static int setup_suite(void) {
 			vfs_find_node(mount_param.dev, NULL))) {
 		return -1;
 	}
-	/* set created ramdisc attribute from dev_node */
-	devnum = *((dev_t *)mount_param.dev_node->dev_attr);
-	memcpy(&ramdisk, device(devnum)->privdata, sizeof(ramdisk));
 
 	/* format filesystem */
-	if(0 != fs_drv->fsop->format((void *)&ramdisk.path)) {
+	if(0 != fs_drv->fsop->format((void *)FS_DEV)) {
 		return -1;
 	}
 

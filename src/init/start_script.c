@@ -5,6 +5,7 @@
  * @date 04.10.11
  * @author Alexander Kalmuk
  */
+
 #include <util/array.h>
 #include <embox/unit.h>
 #include <ctype.h>
@@ -14,6 +15,11 @@
 #include <string.h>
 #include <assert.h>
 #include <cmd/shell.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include <kernel/task.h>
+#include <kernel/task/idx.h>
 
 #include <prom/prom_printf.h>
 
@@ -78,10 +84,10 @@ static void setup_tty(const char *dev_name) {
 
 	strcat(full_name, dev_name);
 
-
 	if(-1 == (fd = open(full_name, O_RDWR))) {
 		return;
 	}
+
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);
 	close(STDERR_FILENO);

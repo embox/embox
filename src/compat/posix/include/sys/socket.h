@@ -13,7 +13,8 @@
 //TODO socket header in POSIX style must name <sys/socket.h>
 #include <net/socket.h>
 #include <net/net.h>
-#include <net/in.h>
+#include <arpa/inet.h>
+#include <net/ip.h> /* IPPROTO_IP and so on */
 
 
 

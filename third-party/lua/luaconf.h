@@ -8,13 +8,8 @@
 #ifndef lconfig_h
 #define lconfig_h
 
-//#include "limits.h"
-//TODO:
-#define INT_MIN     (-INT_MAX - 1)
-#define INT_MAX     2147483647
-#define UCHAR_MAX   255
-#define SHRT_MAX    0x7FFF
-#define BUFSIZ      512
+#include "limits.h"
+
 
 #include <stddef.h>
 

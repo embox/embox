@@ -1,0 +1,27 @@
+package embox.net.mib
+
+module mac {
+	source "mac.c"
+
+	depends embox.net.core
+	depends snmp_mib
+}
+
+@Cmd(name = "snmp_mib",
+	help = "",
+	man = '''
+	''')
+module snmp_mib {
+	option number max_obj_count=64
+	source "snmp_mib.c"
+
+	depends embox.mem.objalloc
+	depends embox.util.LibUtil
+	@NoRuntime depends embox.init.start_script
+}
+
+// Represents all mibs
+module all_mibs {
+	depends snmp_mib
+	depends mac
+}

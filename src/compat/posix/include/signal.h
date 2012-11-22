@@ -13,11 +13,6 @@
 #include <sys/types.h>
 #include <kernel/task/signal.h>
 
-union sigval {
-	int sival_int;
-	void *sival_ptr;
-};
-
 extern int kill(int tid, int sig);
 
 extern void (*signal(int sig, void (*func)(int)))(int);

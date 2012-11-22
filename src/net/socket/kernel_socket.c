@@ -84,6 +84,8 @@ int kernel_socket_create(int family, int type, int protocol, struct socket **pso
 		}
 	}
 
+	sock->sk->sk_encap_rcv = NULL;
+
 	/* compare addresses method should be set, else we can't go on */
 	if (sock->ops->compare_addresses == NULL){
 		LOG_ERROR("kernel_socket_create", "packet family has no compare_addresses() method");

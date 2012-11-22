@@ -11,10 +11,14 @@
 
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
+
 #include <fs/ramfs.h>
 #include <fs/fs_drv.h>
 #include <fs/vfs.h>
 #include <fs/mount.h>
+#include <fs/file_desc.h>
+
 #include <mem/misc/pool.h>
 #include <util/array.h>
 #include <embox/unit.h>
@@ -186,7 +190,6 @@ static int ramfs_create(void *params) {
 	nod->fs_type = &ramfs_drv;
 	nod->file_info = (void *) &ramfs_fop;
 	nod->fd = (void *) fd;
-	nod->dev_attr = nod->dev_type = NULL;
 
 	fd->start_addr = par->start_addr;
 	fd->size = par->size;

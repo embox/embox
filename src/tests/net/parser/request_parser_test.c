@@ -16,8 +16,8 @@ EMBOX_TEST_SUITE("network/parser/request_parser test");
 
 TEST_CASE("Parse first string") {
 	char *test_get = "GET http://wsdf-365.ru/first_folder/second/index.html#frag01 HTTP/1.1";
-	char *test_get2 = "HEAD /first_folder/second/index.php?p1+p2&p3=54; HTTP/1.1\nHost: 10.10.111.1:80";
-	char *test_get3 = "head /first_folder/second/index.php?p1+p2&p3=54; HTTP/1.1\nHost: 10.10.111.1:80";
+	char *test_get2 = "HEAD /first_folder/second/index.php?p1+p2&p3=54; HTTP/1.1\r\nHost: 10.10.111.1:80";
+	char *test_get3 = "head /first_folder/second/index.php?p1+p2&p3=54; HTTP/1.1\r\nHost: 10.10.111.1:80";
 	char *test_get4 = "HEAD  HTTP/1.1\nHost: 10.10.111.1:80";
 	http_request *parsed_request;
 

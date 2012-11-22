@@ -8,6 +8,7 @@
 #include <embox/cmd.h>
 #include <fcntl.h>
 #include <getopt.h>
+#include <stdio.h>
 #include <fs/vfs.h>
 
 EMBOX_CMD(exec);

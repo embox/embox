@@ -10,7 +10,7 @@
 
 #include <fs/file_desc.h>
 #include <fs/node.h>
-#include <kernel/file.h>
+#include <fs/file_operation.h>
 
 #include <drivers/uart_device.h>
 

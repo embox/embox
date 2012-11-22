@@ -7,7 +7,7 @@
  */
 
 #include <types.h>
-#include <kernel/file.h>
+#include <fs/file_operation.h>
 #include <prom/diag.h>
 #include <embox/device.h>
 #include <errno.h>

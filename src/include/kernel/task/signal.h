@@ -13,7 +13,10 @@
 #include <kernel/task.h>
 #include <util/dlist.h>
 
-union sigval;
+union sigval {
+	int sival_int;
+	void *sival_ptr;
+};
 
 typedef void(*global_sig_hnd_t)(void);
 /* Handler for standard signal */

@@ -8,12 +8,12 @@
 #ifndef FS_DRV_H_
 #define FS_DRV_H_
 
-#include <lib/list.h>
-#include <types.h>
-#include <stdio.h>
-#include <kernel/file.h>
-#include <unistd.h>
-#include <fs/file_desc.h>
+
+//#include <types.h>
+//#include <stdio.h>
+#include <fs/file_operation.h>
+//#include <unistd.h>
+//#include <fs/file_desc.h>
 
 
 typedef int (*FS_INIT_FUNC)(void *par);

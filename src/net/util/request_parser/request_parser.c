@@ -134,8 +134,8 @@ char *try_parse_proto(http_request *parsed_request, char *subrequenst) {
 	char * lexeme_end;
 
 	lexeme_end =
-			strchr(subrequenst, '\n') != NULL ?
-					strchr(subrequenst, '\n') : strchr(subrequenst, '\0');
+			strchr(subrequenst, '\r') != NULL ?
+					strchr(subrequenst, '\r') : strchr(subrequenst, '\0');
 	lexeme_length = lexeme_end - subrequenst;
 
 	if (lexeme_length <= 0) {
@@ -172,6 +172,13 @@ char *try_parse_host(http_request *parsed_request, char *subrequenst) {
 		return subrequenst;
 	}
 
+	if (subrequenst[0] == '\n'){
+		subrequenst++;
+	}
+	else{
+		return NULL;
+	}
+
 	lexeme_end = strchr(subrequenst, ' ');
 	lexeme_length = lexeme_end - subrequenst;
 
@@ -196,8 +203,8 @@ char *try_parse_host(http_request *parsed_request, char *subrequenst) {
 	free(host_identifyer);
 	subrequenst = ++lexeme_end;
 	lexeme_end =
-			strchr(subrequenst, '\n') != NULL ?
-					strchr(subrequenst, '\n') : strchr(subrequenst, '\0');
+			strchr(subrequenst, '\r') != NULL ?
+					strchr(subrequenst, '\r') : strchr(subrequenst, '\0');
 	if (lexeme_end != NULL) {
 		char * url;
 		lexeme_length = lexeme_end - subrequenst;

@@ -12,7 +12,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <types.h>
-#include <kernel/file.h>
+#include <fs/file_operation.h>
 
 FILE *file;
 

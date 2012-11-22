@@ -5,7 +5,7 @@ static module LibElf {
 	source "elf/elf_object.c"
 	source "elf/elf_header.c"
 	source "elf/elf_sh_table.c"
-	// source "elf/elf_ph_table.c"
+	source "elf/elf_ph_table.c"
 	source "elf/elf_sections.c"
 	// source "elf/elf_string_table.c"
 	source "elf/elf_symbols.c"
@@ -15,9 +15,7 @@ static module LibElf {
 	// source "elf/elf_dyn_section.c"
 	source "elf/elf_rel.c"
 	// source "elf/elf_rel_array.c"
-
-	// TODO: Delete it later
-	// source "elf/elf_reader.c"
+	source "elf/elf_base_address.c"
 }
 
 static module LibDl {
@@ -33,6 +31,7 @@ static module LibElfloader {
 	source "elfloader/elfloader.c"
 	source "elfloader/elfloader_placement.c"
 
+	depends embox.mem.mmap_api
 	depends LibElf, LibDl
 }
 
@@ -108,6 +107,7 @@ static module LibCMath {
 static module LibCStdio {
 
 	option boolean stdio_lf_crlf_map = true
+	option number file_quantity = 16
 
 	source "stdio/file_ops.c"
 	source "stdio/fgetc.c"
@@ -120,9 +120,9 @@ static module LibCStdio {
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
 	source "stdio/perror.c"
-	depends FileApi
 	depends LibCMath
 	depends LibCString
+	depends embox.compat.posix.file
 }
 
 static module LibC {
@@ -137,37 +137,4 @@ static module LibC {
 /* not here */
 	source "shell/tokenizer.c"
 	source "readline/readline.c"
-
-//	source "stacktrace.c"
-}
-
-@DefaultImpl(FilePosix)
-abstract module FileApi { }
-
-static module FileFS extends FileApi {
-	source "stdio/file_fs.h"
-	source "stdio/file_fs.c"
-
-	depends embox.fs.core
-}
-
-module FilePosix extends FileApi {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "stdio/file_posix.h",
-		"stdio/file_posix_open.h"
-
-	depends embox.compat.posix.FileTasks
-}
-
-module FilePosixNoOpen extends FileApi {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "stdio/file_posix.h",
-		"stdio/file_posix_noopen.h"
-
-	depends embox.compat.posix.FileTasksBasic
-}
-
-module FileStdio extends FileApi {
-	source "stdio/file_diag.h",
-		"stdio/file_posix_noopen.h"
 }

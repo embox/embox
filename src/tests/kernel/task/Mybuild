@@ -18,7 +18,7 @@ module signal {
 module pipe_test {
 	source "pipe_test.c"
 
-	depends embox.compat.posix.FileApi
+	depends embox.compat.posix.file
 	depends embox.compat.posix.idx.pipe
 	depends embox.framework.LibFramework
 }
@@ -26,7 +26,16 @@ module pipe_test {
 module select_test {
 	source "select_test.c"
 
-	depends embox.compat.posix.FileApi
+	depends embox.compat.posix.file
+	depends embox.compat.posix.idx.select
+	depends embox.framework.LibFramework
+}
+
+module idx_inheritance_test {
+	source "idx_inheritance_test.c"
+
+	depends embox.fs.rootfs
+	depends embox.compat.posix.file
 	depends embox.compat.posix.idx.select
 	depends embox.framework.LibFramework
 }

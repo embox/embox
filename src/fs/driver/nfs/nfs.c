@@ -11,21 +11,27 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <unistd.h>
+
 #include <fs/mount.h>
 #include <fs/vfs.h>
 #include <fs/nfs.h>
 #include <fs/xdr_nfs.h>
+#include <fs/path.h>
+#include <fs/node.h>
+#include <fs/file_desc.h>
+
 #include <mem/misc/pool.h>
 #include <net/rpc/clnt.h>
 #include <net/rpc/xdr.h>
 
-static int create_dir_entry(char *parent);
 
-static int nfs_mount_proc(void);
-static int nfs_call_proc(nfs_fs_description_t *p_fs_fd,
-		__u32 procnum, char *req, char *reply);
+static int nfs_create_dir_entry(char *parent);
+
+static int nfs_mount(void);
 static int nfs_lookup(node_t *node, nfs_file_description_t *fd);
-
+static int nfs_call_proc_nfs(nfs_fs_description_t *p_fs_fd,
+		__u32 procnum, char *req, char *reply);
 nfs_fs_description_t *p_fs_fd;
 
 /* nfs filesystem description pool */
@@ -131,7 +137,7 @@ static size_t nfsfs_fread(void *buf, size_t size, size_t count, void *file) {
 		reply.data = (char *) buf + datalen;
 
 		/* send read command */
-		if (0 > nfs_call_proc(p_fs_fd, NFSPROC3_READ,
+		if (0 > nfs_call_proc_nfs(p_fs_fd, NFSPROC3_READ,
 				(char *) &req, (char *) &reply)) {
 			return 0;
 		}
@@ -169,7 +175,7 @@ static size_t nfsfs_fwrite(const void *buf, size_t size,
 	reply.attr = &fd->attr;
 
 	/* send read command */
-	if (0 > nfs_call_proc(p_fs_fd, NFSPROC3_WRITE,
+	if (0 > nfs_call_proc_nfs(p_fs_fd, NFSPROC3_WRITE,
 			(char *) &req, (char *) &reply)) {
 		return 0;
 	}
@@ -302,17 +308,19 @@ static int nfsfs_mount(void *par) {
 
 	if ((NULL == (p_fs_fd = pool_alloc(&nfs_fs_pool))) ||
 			(NULL == (fd = pool_alloc(&nfs_file_pool)))) {
+		if(NULL != p_fs_fd) {
+			pool_free(&nfs_fs_pool, p_fs_fd);
+		}
 		return -ENOMEM;
 	}
 	fd->p_fs_dsc = p_fs_fd;
 
 	dir_node->fs_type = &nfsfs_drv;
 	dir_node->fd = (void *) fd;
-	dir_node->dev_attr = params->dev_node->dev_attr;
-	dir_node->dev_type = params->dev_node->dev_type;
+	//dir_node->dev_id = params->dev_node->dev_id;
 	params->dev_node = dir_node;
 
-	strcpy(p_fs_fd->mnt_point, params->dir);
+	strncpy(p_fs_fd->mnt_point, params->dir, MAX_LENGTH_PATH_NAME);
 
 	if(0 >  nfs_prepare(params->ext)) {
 		return -1;
@@ -321,7 +329,7 @@ static int nfsfs_mount(void *par) {
 		return -1;
 	}
 
-	if(0 >  nfs_mount_proc()) {
+	if(0 >  nfs_mount()) {
 		nfs_clnt_destroy(p_fs_fd);
 		//nfs_fsinfo_free(p_fs_fd);
 		pool_free(&nfs_fs_pool, p_fs_fd);
@@ -331,7 +339,7 @@ static int nfsfs_mount(void *par) {
 	/* copy filesystem filehandle to root directory filehandle */
 	memcpy(&fd->fh, &fd->p_fs_dsc->fh, sizeof(fd->fh));
 
-	if(0 >  create_dir_entry(p_fs_fd->mnt_point)) {
+	if(0 >  nfs_create_dir_entry(p_fs_fd->mnt_point)) {
 		nfs_clnt_destroy(p_fs_fd);
 		//nfs_fsinfo_free(p_fs_fd);
 		pool_free(&nfs_fs_pool, p_fs_fd);
@@ -340,7 +348,7 @@ static int nfsfs_mount(void *par) {
 	return 0;
 }
 
-static node_t  *create_nfs_file (char *full_name, readdir_desc_t *predesc) {
+static node_t  *nfs_create_file (char *full_name, readdir_desc_t *predesc) {
 	node_t  *node;
 	nfs_file_description_t *fd;
 
@@ -374,13 +382,13 @@ static node_t  *create_nfs_file (char *full_name, readdir_desc_t *predesc) {
 
 	fd->p_fs_dsc = p_fs_fd;
 	node->fs_type = &nfsfs_drv;
-	node->file_info = (void *) &nfsfs_fop;
-	node->dev_type = node->dev_attr = NULL;
+	//node->file_info = (void *) &nfsfs_fop;
+	//node->dev_id = NULL;
 	node->fd = (void *)fd;
 	return node;
 }
 
-static int create_dir_entry(char *parent) {
+static int nfs_create_dir_entry(char *parent) {
 	node_t *parent_node, *node;
 	__u32 vf;
 	char *point;
@@ -408,7 +416,7 @@ static int create_dir_entry(char *parent) {
 
 		memset(rcv_buf, 0, sizeof(rcv_buf));
 
-		if(0 >  nfs_call_proc(p_fs_fd, NFSPROC3_READDIRPLUS,
+		if(0 >  nfs_call_proc_nfs(p_fs_fd, NFSPROC3_READDIRPLUS,
 			(char *)fh, rcv_buf)) {
 			free(rcv_buf);
 			return -1;
@@ -445,11 +453,11 @@ static int create_dir_entry(char *parent) {
 
 			memset(full_path, 0, sizeof(full_path));
 
-			strcpy(full_path, parent);
+			strncpy(full_path, parent, MAX_LENGTH_PATH_NAME);
 			strcat(full_path, "/");
 			strcat(full_path, (const char *) predesc->file_name.name.data);
 
-			if (NULL == (node = create_nfs_file (full_path, predesc))) {
+			if (NULL == (node = nfs_create_file(full_path, predesc))) {
 				free(rcv_buf);
 				return -1;
 			}
@@ -459,7 +467,7 @@ static int create_dir_entry(char *parent) {
 				node->properties = DIRECTORY_NODE_TYPE;
 				if((0 != strcmp(fd->name_dsc.name.data, "."))
 					&& (0 != strcmp(fd->name_dsc.name.data, ".."))) {
-					create_dir_entry(full_path);
+					nfs_create_dir_entry(full_path);
 				}
 			}
 			else {
@@ -489,8 +497,8 @@ static int nfsfs_create(void *par) {
 	rpc_string_t name;
 	create_reply_t reply;
 	__u32 procnum;
-	char path[MAX_LENGTH_FILE_NAME];
-	char tail[MAX_LENGTH_FILE_NAME];
+	char path[MAX_LENGTH_PATH_NAME];
+	char tail[MAX_LENGTH_PATH_NAME];
 
 	param = (file_create_param_t *) par;
 
@@ -516,7 +524,7 @@ static int nfsfs_create(void *par) {
 	req.new.dir_fh = &par_fd->fh.name_fh;
 	/* set new file name */
 	memset((void *) &name, 0, sizeof(name));
-	strcpy(name.data, node->name);
+	strncpy(name.data, node->name, MAX_LENGTH_FILE_NAME);
 	name.len = strlen(node->name);
 	req.new.fname = &name;
 	/* set attribute of new file */
@@ -525,7 +533,7 @@ static int nfsfs_create(void *par) {
 	req.uid = req.gid = 0;
 
 	/* send nfs CREATE command   */
-	if (0 > nfs_call_proc(p_fs_fd, procnum, (char *) &req, (char *) &reply)) {
+	if (0 > nfs_call_proc_nfs(p_fs_fd, procnum, (char *) &req, (char *) &reply)) {
 		return -1;
 	}
 
@@ -533,10 +541,10 @@ static int nfsfs_create(void *par) {
 		return -1;
 	}
 	node->fd = (void *) fd;
-	strcpy(path, param->path);
-	nip_tail(path, tail);
+	strncpy(path, param->path, MAX_LENGTH_PATH_NAME);
+	path_nip_tail(path, tail);
 
-	return create_dir_entry (path);
+	return nfs_create_dir_entry (path);
 }
 
 static int nfsfs_delete(const char *fname) {
@@ -571,7 +579,7 @@ static int nfsfs_delete(const char *fname) {
 	reply.dir_attr = &dir_fd->attr;
 
 	/* send delete command */
-	if (0 > nfs_call_proc(p_fs_fd, procnum, (char *) &req, (char *) &reply)) {
+	if (0 > nfs_call_proc_nfs(p_fs_fd, procnum, (char *) &req, (char *) &reply)) {
 		return -1;
 	}
 
@@ -582,7 +590,7 @@ static int nfsfs_delete(const char *fname) {
 
 DECLARE_FILE_SYSTEM_DRIVER(nfsfs_drv);
 
-static int mnt_call_proc(nfs_fs_description_t *p_fs_fd,
+static int nfs_call_proc_mnt(nfs_fs_description_t *p_fs_fd,
 		__u32 procnum, char *req, char *reply) {
 	struct timeval timeout = { 25, 0 };
 
@@ -635,7 +643,7 @@ static int mnt_call_proc(nfs_fs_description_t *p_fs_fd,
 	return 0;
 }
 
-static int nfs_call_proc(nfs_fs_description_t *p_fs_fd,
+static int nfs_call_proc_nfs(nfs_fs_description_t *p_fs_fd,
 		__u32 procnum, char *req, char *reply) {
 	struct timeval timeout = { 25, 0 };
 
@@ -762,18 +770,18 @@ static int nfs_lookup(node_t *node, nfs_file_description_t *fd) {
 	reply.fh = &fd->fh.name_fh;
 
 	/* send read command */
-	return nfs_call_proc(p_fs_fd, NFSPROC3_LOOKUP,
+	return nfs_call_proc_nfs(p_fs_fd, NFSPROC3_LOOKUP,
 			(char *) &req, (char *) &reply);
 }
 
-static int nfs_mount_proc(void) {
+static int nfs_mount(void) {
 	char *point;
 	nfs_filehandle_t *p_fh;
 	mount_service_t mnt_svc;
 
 	/* get server mount directory name*/
 	memset((void *)&p_fs_fd->export, 0, sizeof(p_fs_fd->export));
-	if (0 > mnt_call_proc(p_fs_fd, MOUNTPROC3_EXPORT,
+	if (0 > nfs_call_proc_mnt(p_fs_fd, MOUNTPROC3_EXPORT,
 		0, (char *)&p_fs_fd->export)){
 		return -1;
 	}
@@ -781,7 +789,7 @@ static int nfs_mount_proc(void) {
 		return -1;
 	}
 	/* send NULL procedure*/
-	if (0 > mnt_call_proc(p_fs_fd, MOUNTPROC3_NULL, 0, 0)) {
+	if (0 > nfs_call_proc_mnt(p_fs_fd, MOUNTPROC3_NULL, 0, 0)) {
 		return -1;
 	}
 
@@ -790,7 +798,7 @@ static int nfs_mount_proc(void) {
 	p_fh = &p_fs_fd->fh;
 	memset(&mnt_svc, 0, sizeof(mnt_svc));
 
-	if (0 > mnt_call_proc(p_fs_fd, MOUNTPROC3_MNT,
+	if (0 > nfs_call_proc_mnt(p_fs_fd, MOUNTPROC3_MNT,
 			(char *)&point, (char *)&mnt_svc)) {
 		return -1;
 	}
@@ -800,9 +808,9 @@ static int nfs_mount_proc(void) {
 	memcpy(p_fh, &mnt_svc.fh, sizeof(mnt_svc.fh));
 
 	/* read info about filesystem */
-	if ((0 >  nfs_call_proc(p_fs_fd, NFSPROC3_NULL, 0, 0)) ||
-	(0 >  nfs_call_proc(p_fs_fd, NFSPROC3_FSSTAT, (char *)&p_fs_fd->fh, 0)) ||
-	(0 >  nfs_call_proc(p_fs_fd, NFSPROC3_FSINFO, (char *)&p_fs_fd->fh, 0))) {
+	if ((0 >  nfs_call_proc_nfs(p_fs_fd, NFSPROC3_NULL, 0, 0)) ||
+	(0 >  nfs_call_proc_nfs(p_fs_fd, NFSPROC3_FSSTAT, (char *)&p_fs_fd->fh, 0)) ||
+	(0 >  nfs_call_proc_nfs(p_fs_fd, NFSPROC3_FSINFO, (char *)&p_fs_fd->fh, 0))) {
 		return -1;
 	}
 	return 0;

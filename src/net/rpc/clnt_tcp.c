@@ -20,7 +20,7 @@
 #include <net/net.h>
 #include <net/ip.h>
 #include <string.h>
-#include <net/in.h>
+#include <arpa/inet.h>
 
 #define TCP_MSG_MAX_SZ 1024
 

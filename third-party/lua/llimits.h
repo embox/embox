@@ -8,12 +8,9 @@
 #define llimits_h
 
 
-//#include <limits.h>
-//TODO:
-#define INT_MIN     (-INT_MAX - 1)
-#define INT_MAX     2147483647
-#define UCHAR_MAX   255
-#define SHRT_MAX    0x7FFF
+#include <limits.h>
+
+
 #define BUFSIZ      512
 
 #include <stddef.h>

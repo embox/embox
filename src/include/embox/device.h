@@ -9,7 +9,7 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 
-#include <kernel/file.h>
+#include <fs/file_operation.h>
 #include <fs/file_desc.h>
 
 #include <util/array.h>

@@ -9,7 +9,6 @@
 #ifndef FS_FILE_DESC_H_
 #define FS_FILE_DESC_H_
 
-#include <lib/list.h>
 
 struct node;
 

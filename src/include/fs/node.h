@@ -21,10 +21,9 @@
 
 typedef struct node {
 	const char            name[MAX_LENGTH_FILE_NAME];
-	int                   properties;
-	void                 *file_info; /* WTF? maybe introduce Node Attribute Structure(NAS)? (sikmir) */
-	void                 *dev_type;    /* device driver operation */
-	void                 *dev_attr;    /* information about device, where is the file */
+	int                   properties;  /* FILE, DIRECTORY, DEVICE, LINK ... */
+	void                 *file_info;   /* WTF? maybe introduce Node Attribute Structure(NAS)? (sikmir) */
+	//void                 *dev_id;         /* information about device, where is the file */
 	struct fs_drv        *fs_type;     /* filesystem driver operation */
 	void                 *fd;          /* file description */
 	struct tree_link      tree_link;
@@ -38,5 +37,10 @@ typedef struct file_create_param {
 
 extern node_t *alloc_node(const char *name);
 extern void free_node(node_t *node);
+
+
+static inline int node_is_block_dev(void) {
+	return 1;
+}
 
 #endif /* FS_NODE_H_ */

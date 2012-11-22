@@ -19,8 +19,8 @@ TEST_SETUP(mmu_case_setup);
 TEST_TEARDOWN(mmu_case_teardown);
 
 /*mapping to address, assuming there is no mem at here */
-#define BIGADDR1 0xf0000000
-#define BIGADDR2 0xf0001000
+#define BIGADDR1 0xf0010000
+#define BIGADDR2 0xf0011000
 
 /* Unique values that seems to pretty to accidentally happen in mem,
  * used to read-n-check */

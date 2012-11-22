@@ -6,15 +6,18 @@
  * @author Anton Bondarev
  */
 
-#include <embox/cmd.h>
+
 #include <getopt.h>
 #include <string.h>
 #include <time.h>
-#include <kernel/file.h>
+#include <stdio.h>
+
 #include <fs/vfs.h>
 #include <fs/ramfs.h>
 #include <sys/stat.h>
 #include <util/tree.h>
+
+#include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 
@@ -42,6 +45,11 @@ static void print_long_list(char *path, node_t *node, int recursive) {
 
 static void print_folder(char *path, node_t *node, int recursive) {
 	node_t *item;
+
+	if(DIRECTORY_NODE_TYPE != (node->properties & DIRECTORY_NODE_TYPE)) {
+		printf("%s\n",  path);
+		return;
+	}
 	tree_foreach_children(item, (&node->tree_link), tree_link) {
 		if (recursive) {
 			if (0 == strcmp(path, "/")) {
