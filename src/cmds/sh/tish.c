@@ -95,8 +95,6 @@ int shell_line_input(const char *const_line) {
 	return run_cmd(tok_pos, token_line);
 }
 
-#include <asm/psr.h>
-#include <prom/prom_printf.h>
 static void shell_run(void) {
 	const char *prompt = OPTION_STRING_GET(prompt);
 	char inp_buf[BUF_INP_SIZE];
@@ -107,7 +105,6 @@ static void shell_run(void) {
 	printf("\n%s\n\n", OPTION_STRING_GET(welcome_msg));
 
 	while (1) {
-		prom_printf("msr 0x%X; tcr 0x%X; tsr 0x%X; dec %u\n", __get_msr(), __get_tcr(), __get_tsr(), __get_dec());
 		if (linenoise(prompt, inp_buf, BUF_INP_SIZE, &h,
 			(compl_callback_t) cmd_compl) < 0) {
 			return;
