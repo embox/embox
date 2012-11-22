@@ -11,7 +11,7 @@
 #include <kernel/task/idx.h>
 #include <assert.h>
 
-#include <fs/core.h>
+#include <fs/kfile.h>
 
 static inline struct file_desc *from_data(struct idx_desc *data) {
 	return (struct file_desc *) task_idx_desc_data(data);
