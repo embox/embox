@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_SCHED_STRATEGY_PRIORITY_BASED_H_
 #define KERNEL_THREAD_SCHED_STRATEGY_PRIORITY_BASED_H_
 
-#include <lib/list.h>
+
 #include <util/slist.h>
 #include <util/prioq.h>
 #include <kernel/time/timer.h>

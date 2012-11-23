@@ -9,7 +9,6 @@
 #ifndef KERNEL_THREAD_API_IMPL_H_
 #define KERNEL_THREAD_API_IMPL_H_
 
-#include <lib/list.h>
 #include <kernel/thread/sched.h>
 
 #include "types.h"
