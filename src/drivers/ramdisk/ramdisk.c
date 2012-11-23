@@ -96,7 +96,7 @@ ramdisk_t *ramdisk_get_param(char *path) {
 	if (NULL == (ramdisk_node = vfs_find_node(path, NULL))) {
 		return NULL;
 	}
-	return (ramdisk_t *) block_dev(ramdisk_node->file_info)->privdata;
+	return (ramdisk_t *) block_dev(ramdisk_node->node_info)->privdata;
 }
 
 int ramdisk_delete(const char *name) {
@@ -106,10 +106,10 @@ int ramdisk_delete(const char *name) {
 	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
 		return -1;
 	}
-	if(NULL != (ramdisk = (ramdisk_t *) block_dev(ramdisk_node->file_info)->privdata)) {
+	if(NULL != (ramdisk = (ramdisk_t *) block_dev(ramdisk_node->node_info)->privdata)) {
 		index_free(&ramdisk_idx, ramdisk->idx);
 		pool_free(&ramdisk_pool, ramdisk);
-		block_dev_destroy (ramdisk_node->file_info);
+		block_dev_destroy (ramdisk_node->node_info);
 		vfs_del_leaf(ramdisk_node);
 	}
 	return 0;

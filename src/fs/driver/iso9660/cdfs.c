@@ -399,7 +399,7 @@ int cdfs_mount(node_t *root_node)
 	unsigned char *esc;
 	cdfs_fs_description_t *fs;
 
-	fs = ((cdfs_file_description_t *) root_node->fd)->fs;
+	fs = ((cdfs_file_description_t *) root_node->fi)->fs;
 
 	/* Check device */
 	//block_dev_open(fs->mntfrom);
@@ -954,10 +954,10 @@ static void *cdfsfs_fopen(struct file_desc *desc, const char *mode) {
 	node_t *nod;
 	uint8_t _mode;
 	char path [MAX_LENGTH_PATH_NAME];
-	cdfs_file_description_t *fd;
+	cdfs_file_description_t *fi;
 
 	nod = desc->node;
-	fd = (cdfs_file_description_t *)nod->fd;
+	fi = (cdfs_file_description_t *)nod->fi;
 
 	if ('r' == *mode) {
 		_mode = O_RDONLY;
@@ -968,13 +968,13 @@ static void *cdfsfs_fopen(struct file_desc *desc, const char *mode) {
 	else {
 		_mode = O_RDONLY;
 	}
-	fd->mode = _mode;
+	fi->mode = _mode;
 
 	vfs_get_path_by_node(nod, path);
 	/* set relative path in this file system */
-	path_cut_mount_dir(path, (char *) fd->fs->mntto);
+	path_cut_mount_dir(path, (char *) fi->fs->mntto);
 
-	if(0 == cdfs_open(fd, path)) {
+	if(0 == cdfs_open(fi, path)) {
 		return desc;
 	}
 	return NULL;
@@ -982,44 +982,44 @@ static void *cdfsfs_fopen(struct file_desc *desc, const char *mode) {
 
 static int cdfsfs_fseek(void *file, long offset, int whence) {
 	struct file_desc *desc;
-	cdfs_file_description_t *fd;
+	cdfs_file_description_t *fi;
 
 	desc = (struct file_desc *) file;
-	fd = (cdfs_file_description_t *)desc->node->fd;
+	fi = (cdfs_file_description_t *)desc->node->fi;
 
-	cdfs_lseek(fd, (off64_t) offset, whence);
+	cdfs_lseek(fi, (off64_t) offset, whence);
 	return 0;
 }
 
 static int cdfsfs_fstat(void *file, void *buff) {
 	struct file_desc *desc;
-	cdfs_file_description_t *fd;
+	cdfs_file_description_t *fi;
 
 	desc = (struct file_desc *) file;
-	fd = (cdfs_file_description_t *)desc->node->fd;
+	fi = (cdfs_file_description_t *)desc->node->fi;
 
-	cdfs_fstat(fd, buff);
+	cdfs_fstat(fi, buff);
 	return 0;
 }
 
 static int cdfsfs_fclose(struct file_desc *desc) {
 
-	return cdfs_close((cdfs_file_description_t *)desc->node->fd);
+	return cdfs_close((cdfs_file_description_t *)desc->node->fi);
 }
 
 static size_t cdfsfs_fread(void *cache, size_t size, size_t count, void *file) {
 	size_t size_to_read;
 	struct file_desc *desc;
 	int rezult;
-	cdfs_file_description_t *fd;
+	cdfs_file_description_t *fi;
 
 	size_to_read = size * count;
 	desc = (struct file_desc *) file;
-	fd = (cdfs_file_description_t *)desc->node->fd;
+	fi = (cdfs_file_description_t *)desc->node->fi;
 
 	//int cdfs_read(cdfs_file_description_t *filp, void *data, size_t size, off64_t pos);
-	rezult = cdfs_read(fd, (void *) cache, size_to_read, fd->pos);
-	fd->pos += rezult;
+	rezult = cdfs_read(fi, (void *) cache, size_to_read, fi->pos);
+	fi->pos += rezult;
 
 	return rezult;
 }
@@ -1050,7 +1050,7 @@ static int cdfsfs_init(void * par) {
 static int cdfsfs_mount(void *par) {
 	mount_params_t *params;
 	node_t *dir_node, *dev_node;
-	cdfs_file_description_t *fd, *dev_fd;
+	cdfs_file_description_t *fi, *dev_fi;
 
 	params = (mount_params_t *) par;
 	dev_node = params->dev_node;
@@ -1063,29 +1063,29 @@ static int cdfsfs_mount(void *par) {
 	}
 
 	/* If dev_node created, but not attached to the filesystem driver */
-	if (NULL == (dev_fd = (cdfs_file_description_t *) dev_node->fd)) {
-		if((NULL == (dev_fd = pool_alloc(&cdfs_file_pool))) ||
-				(NULL == (dev_fd->fs = pool_alloc(&cdfs_fs_pool)))) {
-			if(NULL != dev_fd) {
-				pool_free(&cdfs_file_pool, dev_fd);
+	if (NULL == (dev_fi = (cdfs_file_description_t *) dev_node->fi)) {
+		if((NULL == (dev_fi = pool_alloc(&cdfs_file_pool))) ||
+				(NULL == (dev_fi->fs = pool_alloc(&cdfs_fs_pool)))) {
+			if(NULL != dev_fi) {
+				pool_free(&cdfs_file_pool, dev_fi);
 			}
 			return -ENOMEM;
 		}
-		dev_node->fd = dev_fd;
-		dev_fd->fs->dev_id = dev_node->file_info;
-		//dev_node->file_info = (void *) &cdfsfs_fop;
+		dev_node->fi = dev_fi;
+		dev_fi->fs->dev_id = dev_node->node_info;
+		//dev_node->node_info = (void *) &cdfsfs_fop;
 	}
 
-	strncpy(dev_fd->fs->mntto, params->dir, strlen(params->dir) + 1);
-	strncpy(dev_fd->fs->mntfrom, params->dev, strlen(params->dev) + 1);
+	strncpy(dev_fi->fs->mntto, params->dir, strlen(params->dir) + 1);
+	strncpy(dev_fi->fs->mntfrom, params->dev, strlen(params->dev) + 1);
 
-	if(NULL == (fd = pool_alloc(&cdfs_file_pool))) {
+	if(NULL == (fi = pool_alloc(&cdfs_file_pool))) {
 		return -ENOMEM;
 	}
 
-	fd->fs = dev_fd->fs;
+	fi->fs = dev_fi->fs;
 	dir_node->fs_type = &cdfsfs_drv;
-	dir_node->fd = (void *) fd;
+	dir_node->fi = (void *) fi;
 
 	return cdfs_mount(dir_node);
 }
@@ -1099,13 +1099,13 @@ static int cdfs_create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath,
 	int reclen;
 	int namelen;
 	int flags;
-	cdfs_file_description_t *fd, *dir_fd;
+	cdfs_file_description_t *fi, *dir_fi;
 	node_t *node;
 	wchar_t *wname;
 	char name[MAX_LENGTH_PATH_NAME];
 	char full_name[MAX_LENGTH_PATH_NAME];
 
-	dir_fd = (cdfs_file_description_t *) dir_node->fd;
+	dir_fi = (cdfs_file_description_t *) dir_node->fi;
 
 	/* The first two directory records are . (current) and .. (parent) */
 	blk = cdfs->path_table[dir]->extent;
@@ -1185,15 +1185,15 @@ static int cdfs_create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath,
 				return -ENOMEM;
 			}
 
-			if(NULL == (fd = pool_alloc(&cdfs_file_pool))) {
+			if(NULL == (fi = pool_alloc(&cdfs_file_pool))) {
 				vfs_del_leaf(node);
 				return -ENOMEM;
 			}
 
-			fd->fs = dir_fd->fs;
+			fi->fs = dir_fi->fs;
 			node->fs_type = &cdfsfs_drv;
-			node->file_info = dir_node->file_info;
-			node->fd = (void *)fd;
+			node->node_info = dir_node->node_info;
+			node->fi = (void *)fi;
 			node->properties = FILE_NODE_TYPE;
 		}
 		else {
@@ -1208,7 +1208,7 @@ static int cdfs_create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath,
 static int cdfs_create_dir_entry (node_t *parent) {
 		int n;
 		iso_pathtable_record_t *pathrec;
-		cdfs_file_description_t *fd, *parents_fd;
+		cdfs_file_description_t *fi, *parent_fi;
 		cdfs_t *cdfs;
 		node_t *parent_node;
 		node_t *node;
@@ -1218,10 +1218,10 @@ static int cdfs_create_dir_entry (node_t *parent) {
 		char name[MAX_LENGTH_PATH_NAME];
 
 		node = parent_node = parent;
-		fd = parents_fd = (cdfs_file_description_t *) parent_node->fd;
-		cdfs = parents_fd->fs->data;
+		fi = parent_fi = (cdfs_file_description_t *) parent_node->fi;
+		cdfs = parent_fi->fs->data;
 
-		strncpy(path, parents_fd->fs->mntto, MAX_LENGTH_PATH_NAME);
+		strncpy(path, parent_fi->fs->mntto, MAX_LENGTH_PATH_NAME);
 
 		/* Setup pointers into path table buffer */
 		for (n = 1; n < cdfs->path_table_records; n++) {
@@ -1244,14 +1244,14 @@ static int cdfs_create_dir_entry (node_t *parent) {
 					return -ENOMEM;
 				}
 
-				if(NULL == (fd = pool_alloc(&cdfs_file_pool))) {
+				if(NULL == (fi = pool_alloc(&cdfs_file_pool))) {
 					vfs_del_leaf(node);
 					return -ENOMEM;
 				}
-				fd->fs = parents_fd->fs;
+				fi->fs = parent_fi->fs;
 				node->fs_type = &cdfsfs_drv;
-				node->file_info = parent_node->file_info;
-				node->fd = (void *)fd;
+				node->node_info = parent_node->node_info;
+				node->fi = (void *)fi;
 				node->properties = DIRECTORY_NODE_TYPE;
 			}
 

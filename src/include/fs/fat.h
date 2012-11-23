@@ -260,10 +260,13 @@ typedef struct dirinfo {
 	uint8_t flags;				/* internal DOSFS flags */
 } dir_info_t, *p_dir_info_t;
 
-/*
- *	File handle structure (Internal to DOSFS)
- */
-typedef struct fileinfo {
+typedef struct fat_fs_description {
+	void *dev_id;
+	uint8_t root_name[MAX_LENGTH_PATH_NAME];
+	vol_info_t vi;
+} fat_fs_description_t;
+
+typedef struct _fat_file_info {
 	p_vol_info_t volinfo;		/* vol_info_t used to open this file */
 	uint32_t dirsector;			/* physical sector containing dir entry of this file */
 	uint8_t diroffset;			/* # of this entry within the dir sector */
@@ -273,19 +276,8 @@ typedef struct fileinfo {
 
 	uint32_t cluster;			/* current cluster */
 	uint32_t pointer;			/* current (BYTE) pointer */
-} file_info_t, *p_file_info_t;
-
-
-typedef struct fat_fs_description {
-	void *dev_id;
-	uint8_t root_name[MAX_LENGTH_PATH_NAME];
-	vol_info_t vi;
-} fat_fs_description_t;
-
-typedef struct _fat_file_description {
-	file_info_t fi;
 	fat_fs_description_t *fs;
-} fat_file_description_t;
+} fat_file_info_t;
 
 
 void fat_set_filetime(dir_ent_t *de);

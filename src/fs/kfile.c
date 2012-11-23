@@ -58,8 +58,8 @@ struct file_desc *kopen(const char *path, const char *mode) {
 	drv = nod->fs_type;
 	assert(drv != NULL);
 
-	if (NULL != nod->file_info) {
-		desc->ops = (struct file_operations *)nod->file_info;
+	if (NULL != nod->node_info) {
+		desc->ops = (struct file_operations *)nod->node_info;
 	} else {
 		desc->ops = (struct file_operations *)drv->file_op;
 	}
@@ -153,7 +153,7 @@ int kstat(struct file_desc *desc, void *buff) {
 		return -1;
 	}
 
-	return desc->ops->fstat(desc->node->fd, buff); //FIXME Not much pretty -Anton Kozlov
+	return desc->ops->fstat(desc->node->fi, buff); //FIXME Not much pretty -Anton Kozlov
 }
 
 int kioctl(struct file_desc *fp, int request, ...) {

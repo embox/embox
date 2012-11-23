@@ -50,7 +50,7 @@ static int devfs_mount(void *par) {
 			if(NULL != __device_registry[i].init) {
 				__device_registry[i].init();
 			}
-			devnod->file_info = (void*) __device_registry[i].fops;
+			devnod->node_info = (void*) __device_registry[i].fops;
 			devnod->fs_type = (fs_drv_t *) &devfs_drv;
 		}
 	}

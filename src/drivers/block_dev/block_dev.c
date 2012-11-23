@@ -86,7 +86,7 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 		return NULL;
 	}
 
-	node->file_info = dev;
+	node->node_info = dev;
 	strncpy (dev->name, node->name, MAX_LENGTH_FILE_NAME);
 	dev->dev_node = node;
 

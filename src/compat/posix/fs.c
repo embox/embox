@@ -170,5 +170,5 @@ int lstat(const char *path, stat_t *buf) {
 	node = vfs_find_node(path, NULL);
 	drv = node->fs_type;
 
-	return drv->file_op->fstat (node->fd, buf);
+	return drv->file_op->fstat (node->fi, buf);
 }
