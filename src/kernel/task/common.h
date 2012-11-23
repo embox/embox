@@ -24,9 +24,11 @@ extern const struct task_resource_desc *task_resource_desc_array[];
 
 extern const task_notifing_resource_hnd task_notifing_resource[];
 
+extern size_t task_kernel_size(void);
+
 extern size_t task_resource_sum_size(void);
 
-extern struct task *task_init(void *task_n_res_space);
+extern struct task *task_init(void *task_n_res_space, size_t size);
 
 #define TASK_RESOURCE_DESC(...) \
 	ARRAY_SPREAD_ADD(task_resource_desc_array, __VA_ARGS__)

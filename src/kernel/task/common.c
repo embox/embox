@@ -14,8 +14,6 @@
 #include <lib/list.h>
 #include "common.h"
 
-EMBOX_UNIT_INIT(tasks_init);
-
 #include <module/embox/kernel/task/api.h>
 
 #define MAX_RES_SUM_SIZE OPTION_MODULE_GET(embox__kernel__task__api, NUMBER, max_resource_size)
@@ -31,10 +29,25 @@ size_t task_resource_sum_size(void) {
 	return resource_sum_size;
 }
 
-struct task *task_init(void *task_n_res_space) {
+size_t task_kernel_size(void) {
+	return sizeof(struct task) + MAX_RES_SUM_SIZE;
+}
+
+struct task *task_init(void *task_n_res_space, size_t size) {
 	struct task *task = (struct task *) task_n_res_space;
 	void *res_ptr = task_n_res_space + sizeof(struct task);
 	const struct task_resource_desc *res_desc;
+
+	if (resource_sum_size == 0) {
+		task_resource_foreach(res_desc) {
+			resource_sum_size += res_desc->resource_size;
+		}
+
+	}
+
+	if (size <= resource_sum_size) {
+		return NULL;
+	}
 
 	memset(task_n_res_space, 0, sizeof(struct task) + resource_sum_size);
 
@@ -55,20 +68,4 @@ struct task *task_init(void *task_n_res_space) {
 
 struct task *task_kernel_task(void) {
 	return (struct task *) kernel_task;
-}
-
-static int tasks_init(void) {
-	const struct task_resource_desc *res_desc;
-
-	task_resource_foreach(res_desc) {
-		resource_sum_size += res_desc->resource_size;
-	}
-
-	if (MAX_RES_SUM_SIZE < resource_sum_size) {
-		return -ENOMEM;
-	}
-
-	task_init(kernel_task);
-
-	return 0;
 }
