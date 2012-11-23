@@ -1,0 +1,9 @@
+package embox.fs.driver
+
+module initfs {
+	source "cpio.c", "initfs_drv.c", "initfs_cpio.S"
+	source "initfs_lds.lds.S"
+	depends embox.fs.core
+	depends embox.mem.pool
+	option number fdesc_quantity=32
+}
