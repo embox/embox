@@ -19,7 +19,9 @@
 
 EMBOX_UNIT_INIT(ppc_clk_init);
 
-#define PPCCLK_IRQ 10
+#define PPCCLK_IRQ  10
+#define PPCCLK_FREQ 12500000 /* proc_freq / 8 */
+#define PPCCLK_DECR 1000
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	__set_tsr(__get_tsr() & ~TSR_DIS);
@@ -44,13 +46,13 @@ static cycle_t ppc_clk_read(void) {
 
 static struct time_event_device ppc_clk_event = {
 	.config = ppc_clk_config,
-	.resolution = 1000000,
+	.resolution = PPCCLK_FREQ / PPCCLK_DECR,
 	.irq_nr = PPCCLK_IRQ,
 };
 
 static struct time_counter_device ppc_clk_counter = {
 	.read = ppc_clk_read,
-	.resolution = 1000000000,
+	.resolution = PPCCLK_FREQ,
 };
 
 static struct clock_source ppc_clk_clock_source = {
@@ -61,8 +63,8 @@ static struct clock_source ppc_clk_clock_source = {
 };
 
 static int ppc_clk_init(void) {
-	__set_dec(1000);
-	__set_decar(1000);
+	__set_dec(PPCCLK_DECR);
+	__set_decar(PPCCLK_DECR);
     __set_tcr(TCR_DIE | TCR_ARE);
 	clock_source_register(&ppc_clk_clock_source);
 	return irq_attach(PPCCLK_IRQ, clock_handler, 0, NULL, "ppc_clk");
