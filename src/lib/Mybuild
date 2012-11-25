@@ -127,6 +127,7 @@ static module LibCStdio {
 
 static module LibC {
 	source "time/ctime.c"
+	source "time/strftime.c"
 
 	depends LibCDiagnostic
 	depends LibCMisc
