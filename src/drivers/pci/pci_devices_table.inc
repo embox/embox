@@ -16,6 +16,8 @@
 { PCI_VENDOR_ID_RDC,      PCI_DEV_ID_RDC_R6060,              "USB 1.1 Controller"},
 { PCI_VENDOR_ID_RDC,      PCI_DEV_ID_RDC_R6061,              "USB 2.0 Controller"},
 /* Intel */
+{ PCI_VENDOR_ID_INTEL,    PCI_DEV_ID_INTEL_82540EM,          "82540EM Gigabit Ethernet Controller"},
+{ PCI_VENDOR_ID_INTEL,    PCI_DEV_ID_INTEL_82567V3,          "82567V-3 Gigabit Network Connection"},
 { PCI_VENDOR_ID_INTEL,    PCI_DEV_ID_INTEL_82441,            "Intel 82441 CPU to PCI bridge"},
 { PCI_VENDOR_ID_INTEL,    PCI_DEV_ID_INTEL_82801BAM_PCI,     "82801 Mobile PCI Bridge"},
 { PCI_VENDOR_ID_INTEL,    PCI_DEV_ID_INTEL_82801HBM_LPC,     "82801HEM (ICH8M) LPC Interface Controller"},
