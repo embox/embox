@@ -81,7 +81,7 @@ int srvcrun(char * service) {
 		return 0;
 	}
 
-	printf("service %s doesn't exists or starting error\n", service);
+	printf("service %s doesn't exists, is started yet or starting error\n", service);
 	return -1;
 }
 

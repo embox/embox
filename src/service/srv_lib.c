@@ -74,6 +74,9 @@ int web_service_start(const char *srv_name) {
 	struct web_service_instance *inst;
 	const struct web_service_desc *srv_desc;
 
+	if (NULL != web_service_lookup(srv_name)) {
+			return -1;
+	}
 	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
 		return -1;
 	}
@@ -82,8 +85,7 @@ int web_service_start(const char *srv_name) {
 	}
 	inst->desc = srv_desc;
 
-	if (0
-			!= thread_create(&inst->thr, THREAD_FLAG_DETACHED,
+	if (0 != thread_create(&inst->thr, THREAD_FLAG_DETACHED,
 					web_service_trampoline, inst)) {
 		return -1;
 	}
