@@ -14,6 +14,7 @@
 
 extern void xwnd_draw_pixel (const struct xwnd_window *wnd, unsigned x, unsigned y, unsigned c);
 
-extern void xwnd_draw_window (struct xwnd_window *wnd);
+extern void xwnd_draw_window (const struct xwnd_window *wnd);
+extern void xwnd_clear_window (const struct xwnd_window *wnd);
 
 #endif /* XWND_DRAW_HELPERS_H_ */

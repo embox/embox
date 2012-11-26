@@ -33,9 +33,18 @@ static void xwnd_draw_vert_line (unsigned x, unsigned y, unsigned l, unsigned c)
 	}
 }
 
-void xwnd_draw_window (struct xwnd_window * wnd) {
+void xwnd_draw_window (const struct xwnd_window * wnd) {
 	xwnd_draw_vert_line  (wnd->x, wnd->y, wnd->ht, 2);
 	xwnd_draw_horiz_line (wnd->x, wnd->y, wnd->wd, 2);
 	xwnd_draw_vert_line  (wnd->x + wnd->wd, wnd->y, wnd->ht, 2);
 	xwnd_draw_horiz_line (wnd->x, wnd->y + wnd->ht, wnd->wd, 2);
+}
+
+void xwnd_clear_window (const struct xwnd_window * wnd) {
+	int x, y;
+	for (y = wnd->y + 1; y < wnd->y + wnd->ht - 1; y++) {
+		for (x = wnd->x + 1; x < wnd->x + wnd->wd - 1; x++) {
+			vesa_put_pixel(x, y, 0);
+		}
+	}
 }

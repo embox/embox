@@ -31,6 +31,7 @@ int xwnd_init(void) {
 }
 
 void xwnd_quit(void){
+	vesa_clear_screen();
 	vesa_quit_mode();
 }
 

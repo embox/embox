@@ -9,8 +9,9 @@
 #include <lib/xwnd/application.h>
 #include <lib/xwnd/draw_helpers.h>
 #include <lib/xwnd/fonts.h>
-#include <xwnd/xappreg.h>
-#include <drivers/vesa.h>
+
+#include <xwnd/xappreg.h> /*Not usual include for XWndApplication, but it's
+				nessesarry for terminal to launch other applications*/
 
 static char text_buf[1024];
 static int length;
@@ -47,13 +48,13 @@ static void on_creat (struct xwnd_application * xapp, struct x_event * ev) {
 }
 
 static void on_draw (struct xwnd_application * xapp, struct x_event * ev) {
-	xwnd_draw_pixel(&(xapp->window), 1, 1, 2);
+	xwnd_clear_window(&xapp->window);
+	xwnd_draw_window(&xapp->window);
 	xwnd_print_text(&xapp->window, 1, 1 + line * 8, text_buf);
-	vesa_put_pixel(1, 1, 2);
 }
 
 static void on_quit (struct xwnd_application * xapp, struct x_event * ev) {
-	vesa_clear_screen();
+	xwnd_clear_window(&xapp->window);
 }
 
 static void on_key (struct xwnd_application * xapp, struct x_event * ev) {
@@ -73,7 +74,6 @@ static void on_key (struct xwnd_application * xapp, struct x_event * ev) {
 
 static void * xwnd_term_main(void * args) {
 	struct xwnd_application xapp;
-
 	xwnd_application_init (&xapp);
 
 	xwnd_application_set_event_handler(&xapp, XEV_CREAT, on_creat);

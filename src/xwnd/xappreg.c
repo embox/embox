@@ -64,6 +64,7 @@ int xwnd_app_registry_get_subscription (struct xwnd_application * xapp) {
 	xwnd_app_nodes[xapp->xapp_id].thread_id = xapp->thread_id;
 	xwnd_focused_app = xapp->xapp_id;
 	xwnd_app_registry_send_sys_event(XEV_CREAT);
+	xwnd_app_registry_send_sys_event(XEV_DRAW);
 	return 1;
 }
 
