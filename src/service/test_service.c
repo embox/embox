@@ -9,8 +9,7 @@
 #include <string.h>
 #include <lib/expat.h>
 
-static void XMLCALL
-startElement(void *userData, const char *name, const char **atts) {
+static void start_element(void *userData, const char *name, const char **atts) {
 	struct params *data = (struct params *) userData;
 	FILE *file = data->info->fp;
 	int i = 0;
@@ -38,8 +37,7 @@ startElement(void *userData, const char *name, const char **atts) {
 	}
 }
 
-static void XMLCALL
-endElement(void *userData, const char *name) {
+static void end_element(void *userData, const char *name) {
 	struct params *data = (struct params *) userData;
 	FILE *file = data->info->fp;
 
@@ -51,8 +49,7 @@ endElement(void *userData, const char *name) {
 	}
 }
 
-static void XMLCALL
-character(void *userData, const XML_Char *s, int len) {
+static void character(void *userData, const XML_Char *s, int len) {
 	struct params *data = (struct params *) userData;
 	FILE *file = data->info->fp;
 
@@ -84,7 +81,7 @@ static void *process_params(void* args) {
 	parser = XML_ParserCreate(NULL);
 	XML_SetHTMLUse(parser);
 	XML_SetUserData(parser, params);
-	XML_SetElementHandler(parser, startElement, endElement);
+	XML_SetElementHandler(parser, start_element, end_element);
 	XML_SetCharacterDataHandler(parser, character);
 
 	do {
@@ -107,7 +104,6 @@ static void *process_params(void* args) {
 	params->info->fp = fopen("/tmp/test_temp.html", "r");
 
 	return NULL;
-
 }
 
 EMBOX_WEB_SERVICE("test.html", process_params);
