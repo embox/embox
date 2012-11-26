@@ -296,7 +296,7 @@ typedef struct hdc  {
 } hdc_t;
 
 struct partition {
-	void *dev;
+	void *bdev;
 	unsigned int start;
 	unsigned int len;
 	unsigned short bootid;
@@ -313,7 +313,7 @@ typedef struct dev_geometry {
 
 typedef struct hd {
 	int   idx;
-	void *dev_id;                /* Device */
+	void *bdev;                /* Device */
 	hdc_t *hdc;                  /* Controller */
 	struct hdparam param;        /* Drive parameter block */
 	int drvsel;                  /* Drive select on controller */

@@ -59,7 +59,7 @@ static fsop_desc_t tmpfs_fsop = {
 		tmpfs_delete
 };
 
-static void *tmpfs_fopen(struct file_desc *desc, const char *mode);
+static void *tmpfs_fopen(struct file_desc *desc, int flag);
 static int tmpfs_fclose(struct file_desc *desc);
 static size_t tmpfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t tmpfs_fwrite(const void *buf, size_t size,
@@ -160,7 +160,7 @@ static int tmpfs_format(void *path) {
 		return -ENOMEM;
 	}
 
-	fs->dev_id = nod->node_info;
+	fs->bdev = nod->node_info;
 	strcpy((char *) fs->root_name, "\0");
 	fs->block_per_file = MAX_FILE_SIZE;
 	fs->block_size = PAGE_SIZE();
@@ -201,7 +201,7 @@ static int tmpfs_mount(void *par) {
 			return -ENOMEM;
 		}
 		dev_node->fi = dev_fi;
-		dev_fi->fs->dev_id = dev_node->node_info;
+		dev_fi->fs->bdev = dev_node->node_info;
 	}
 
 	strncpy((char *) dev_fi->fs->root_name, params->dir, MAX_LENGTH_PATH_NAME);
@@ -359,7 +359,7 @@ static int tmpfs_fseek(void *file, long offset, int whence) {
 	return 0;
 }
 
-static void *tmpfs_fopen(struct file_desc *desc, const char *mode) {
+static void *tmpfs_fopen(struct file_desc *desc, int flag) {
 	node_t *nod;
 	//char path [MAX_LENGTH_PATH_NAME];
 	tmpfs_file_info_t *fi;
@@ -368,21 +368,13 @@ static void *tmpfs_fopen(struct file_desc *desc, const char *mode) {
 	fi = (tmpfs_file_info_t *)nod->fi;
 
 	fi->pointer = 0;
-	if ('r' == *mode) {
-		fi->mode = O_RDONLY;
-	}
-	else if ('w' == *mode) {
-		fi->mode = O_WRONLY;
+	fi->mode = flag;
+	if (O_WRONLY == fi->mode) {
 		fi->filelen = 0;
 	}
-	else if('a' == *mode) {
-		fi->mode = O_WRONLY | O_APPEND;
+	else if(O_APPEND == fi->mode) {
 		fi->pointer = fi->filelen;
 	}
-	else {
-		fi->mode = O_RDONLY;
-	}
-
 
 	return desc;
 }
@@ -397,7 +389,7 @@ static int tmpfs_read_sector(void *finfo, char *buffer,
 
 	fi = (tmpfs_file_info_t *) finfo;
 
-	if(0 > block_dev_read(fi->fs->dev_id, (char *) buffer,
+	if(0 > block_dev_read(fi->fs->bdev, (char *) buffer,
 			count * fi->fs->block_size, sector)) {
 		return -1;
 	}
@@ -412,7 +404,7 @@ static int tmpfs_write_sector(void *finfo, char *buffer,
 
 	fi = (tmpfs_file_info_t *) finfo;
 
-	if(0 > block_dev_write(fi->fs->dev_id, (char *) buffer,
+	if(0 > block_dev_write(fi->fs->bdev, (char *) buffer,
 			count * fi->fs->block_size, sector)) {
 		return -1;
 	}
@@ -513,7 +505,7 @@ static size_t tmpfs_fwrite(const void *buf, size_t size,
 	bytecount = 0;
 
 	/* Don't allow writes to a file that's open as readonly */
-	if (!(fi->mode & O_WRONLY)) {
+	if (!(fi->mode & O_WRONLY) && !(fi->mode & O_APPEND)) {
 		return 0;
 	}
 
@@ -594,7 +586,7 @@ static int tmpfs_fstat(void *file, void *buff) {
 			buffer->st_mode = fi->mode;
 			buffer->st_ino = fi->index;
 			buffer->st_nlink = 1;
-			buffer->st_dev = *(int *) fi->fs->dev_id;
+			buffer->st_dev = *(int *) fi->fs->bdev;
 			buffer->st_atime = buffer->st_mtime = buffer->st_ctime = 0;
 			buffer->st_size = fi->filelen;
 			buffer->st_blksize = fi->fs->block_size;

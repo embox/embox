@@ -20,7 +20,7 @@
 ATTR_VOLUME_ID)
 
 typedef struct tmpfs_filesystem {
-	void *dev_id;
+	void *bdev;
 	uint8_t root_name[MAX_LENGTH_PATH_NAME];
 	uint32_t numblocks;			/* number of block in volume */
 	uint32_t block_size;		/* size of block */
@@ -29,7 +29,7 @@ typedef struct tmpfs_filesystem {
 
 typedef struct tmpfs_file_info {
 	int     index;		        /* number of file in FS*/
-	uint8_t mode;				/* mode in which this file was opened */
+	int     mode;				/* mode in which this file was opened */
 	uint32_t filelen;			/* byte length of file */
 	uint32_t pointer;			/* current (BYTE) pointer */
 	tmpfs_filesystem_t *fs;

@@ -11,7 +11,7 @@
 
 struct file_desc;
 
-extern struct file_desc *kopen(const char *path, const char *mode);
+extern struct file_desc *kopen(const char *path, int flag);
 
 extern size_t kwrite(const void *buf, size_t size, size_t count, struct file_desc *file);
 

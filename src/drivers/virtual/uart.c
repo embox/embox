@@ -26,7 +26,7 @@ static struct uart_device *uart_dev_lookup(char *name) {
 	return uart_dev;
 }
 
-static void *dev_uart_open(struct file_desc *desc, const char *mode);
+static void *dev_uart_open(struct file_desc *desc, int flag);
 static int dev_uart_close(struct file_desc *desc);
 static size_t dev_uart_read(void *buf, size_t size, size_t count, void *file);
 static size_t dev_uart_write(const void *buff, size_t size, size_t count, void *file);
@@ -62,7 +62,7 @@ static irq_return_t irq_handler(unsigned int irq_nr, void *data) {
 /*
  * file_operations
  */
-static void *dev_uart_open(struct file_desc *desc, const char *mode) {
+static void *dev_uart_open(struct file_desc *desc, int flag) {
 	struct uart_device *uart_dev;
 	uart_dev = uart_dev_lookup((char *)desc->node->name);
 

@@ -18,36 +18,36 @@
 #include <mem/phymem.h>
 #include <util/indexator.h>
 
-static int part_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
-	struct partition *part = (struct partition *) dev->privdata;
+static int part_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
+	struct partition *part = (struct partition *) bdev->privdata;
 
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:
 		return part->len;
 
 	case IOCTL_GETBLKSIZE:
-		return block_dev_ioctl(dev, IOCTL_GETBLKSIZE, NULL, 0);
+		return block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
 	}
 
 	return -ENOSYS;
 }
 
-static int part_read(block_dev_t *dev, char *buffer,
+static int part_read(block_dev_t *bdev, char *buffer,
 						size_t count, blkno_t blkno) {
-	struct partition *part = (struct partition *) dev->privdata;
+	struct partition *part = (struct partition *) bdev->privdata;
 	if (blkno + count / SECTOR_SIZE > part->len) {
 		return -EFAULT;
 	}
-	return block_dev_read(dev, buffer, count, blkno + part->start);
+	return block_dev_read(bdev, buffer, count, blkno + part->start);
 }
 
-static int part_write(block_dev_t *dev, char *buffer,
+static int part_write(block_dev_t *bdev, char *buffer,
 						size_t count, blkno_t blkno) {
-  struct partition *part = (struct partition *) dev->privdata;
+  struct partition *part = (struct partition *) bdev->privdata;
   if (blkno + count / SECTOR_SIZE > part->len) {
 	  return -EFAULT;
   }
-  return block_dev_write(dev, buffer, count, blkno + part->start);
+  return block_dev_write(bdev, buffer, count, blkno + part->start);
 }
 
 static block_dev_driver_t partition_driver = {
@@ -63,7 +63,7 @@ int create_partitions(hd_t *hd) {
 	int rc;
 
 	/* Read partition table */
-	rc = block_dev_read(hd->dev_id, (char *)mbr, SECTOR_SIZE, 0);
+	rc = block_dev_read(hd->bdev, (char *)mbr, SECTOR_SIZE, 0);
 	if (rc < 0) {
 		return rc;
 	}
@@ -76,7 +76,7 @@ int create_partitions(hd_t *hd) {
 	}
 	/*
 	for (i = 0; i < HD_PARTITIONS; i++) {
-		hd->parts[i].dev = hd->devno;
+		hd->parts[i].bdev = hd->devno;
 		hd->parts[i].bootid = mbr->ptable[i].active;
 		hd->parts[i].systid = mbr->ptable[i].type;
 		hd->parts[i].start = mbr->ptable[i].relsect;
@@ -95,7 +95,7 @@ int create_partitions(hd_t *hd) {
 		}
 	}
 	*/
-	hd->dev_id = block_dev_create("/dev/hda0", &partition_driver, NULL);
+	hd->bdev = block_dev_create("/dev/hda0", &partition_driver, NULL);
 
 	return 0;
 }

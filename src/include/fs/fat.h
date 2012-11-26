@@ -261,7 +261,7 @@ typedef struct dirinfo {
 } dir_info_t, *p_dir_info_t;
 
 typedef struct fat_fs_description {
-	void *dev_id;
+	void *bdev;
 	uint8_t root_name[MAX_LENGTH_PATH_NAME];
 	vol_info_t vi;
 } fat_fs_description_t;
@@ -270,7 +270,7 @@ typedef struct _fat_file_info {
 	p_vol_info_t volinfo;		/* vol_info_t used to open this file */
 	uint32_t dirsector;			/* physical sector containing dir entry of this file */
 	uint8_t diroffset;			/* # of this entry within the dir sector */
-	uint8_t mode;				/* mode in which this file was opened */
+	int mode;				    /* mode in which this file was opened */
 	uint32_t firstcluster;		/* first cluster of file */
 	uint32_t filelen;			/* byte length of file */
 

@@ -42,7 +42,7 @@ POOL_DEF (nfs_file_pool, struct nfs_file_info, OPTION_GET(NUMBER,inode_quantity)
 
 /* File operations */
 
-static void *nfsfs_fopen(struct file_desc *desc,  const char *mode);
+static void *nfsfs_fopen(struct file_desc *desc,  int flag);
 static int nfsfs_fclose(struct file_desc *desc);
 static size_t nfsfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t nfsfs_fwrite(const void *buf, size_t size, size_t count,
@@ -55,7 +55,7 @@ static file_operations_t nfsfs_fop = { nfsfs_fopen, nfsfs_fclose, nfsfs_fread,
 /*
  * file_operation
  */
-static void *nfsfs_fopen(struct file_desc *desc, const char *mode) {
+static void *nfsfs_fopen(struct file_desc *desc, int flag) {
 
 	node_t *nod;
 	nfs_file_info_t *fi;
@@ -63,7 +63,7 @@ static void *nfsfs_fopen(struct file_desc *desc, const char *mode) {
 	nod = desc->node;
 	fi = (nfs_file_info_t *)nod->fi;
 
-	if ('r' == *mode) {
+	/*if ('r' == *mode) {
 		fi->mode = O_RDONLY;
 	}
 	else if ('w' == *mode) {
@@ -71,7 +71,8 @@ static void *nfsfs_fopen(struct file_desc *desc, const char *mode) {
 	}
 	else {
 		fi->mode = O_RDONLY;
-	}
+	}*/
+	fi->mode = flag;
 	fi->offset = 0;
 
 	if(0 == nfs_lookup(nod, fi)) {
@@ -317,7 +318,7 @@ static int nfsfs_mount(void *par) {
 
 	dir_node->fs_type = &nfsfs_drv;
 	dir_node->fi = (void *) fi;
-	//dir_node->dev_id = params->dev_node->dev_id;
+	//dir_node->dev = params->dev_node->dev;
 	params->dev_node = dir_node;
 
 	strncpy(fs->mnt_point, params->dir, MAX_LENGTH_PATH_NAME);

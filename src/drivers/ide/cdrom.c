@@ -144,11 +144,11 @@ static int atapi_request_sense(hd_t *hd) {
 	return 0;
 }
 
-static int cd_read(block_dev_t *dev, char *buffer,
+static int cd_read(block_dev_t *bdev, char *buffer,
 					size_t count, blkno_t blkno) {
 	unsigned char pkt[12];
 	unsigned int blks;
-	hd_t *hd = (hd_t *) dev->privdata;
+	hd_t *hd = (hd_t *) bdev->privdata;
 
 	blks = count / CDSECTORSIZE;
 	if (blks > 0xFFFF) {
@@ -167,13 +167,13 @@ static int cd_read(block_dev_t *dev, char *buffer,
 	return atapi_packet_read(hd, pkt, 12, buffer, count);
 }
 
-static int cd_write(block_dev_t *dev, char *buffer,
+static int cd_write(block_dev_t *bdev, char *buffer,
 					size_t count, blkno_t blkno) {
 	return -ENODEV;
 }
 
-static int cd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
-	hd_t *hd = (hd_t *) dev->privdata;
+static int cd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
+	hd_t *hd = (hd_t *) bdev->privdata;
 	int rc;
 
 	switch (cmd) {
@@ -229,14 +229,14 @@ static int idecd_init (void *args) {
 			if (0 > (drive->idx = block_dev_named(path, &idecd_idx))) {
 				return -1;
 			}
-			drive->dev_id = block_dev_create(path, &idecd_pio_driver, drive);
+			drive->bdev = block_dev_create(path, &idecd_pio_driver, drive);
 
-			if(NULL != drive->dev_id) {
+			if(NULL != drive->bdev) {
 				size = (double) drive->param.cylinders *
 					   (double) drive->param.heads *
 					   (double) drive->param.unfbytes *
 					   (double) (drive->param.sectors + 1);
-				block_dev(drive->dev_id)->size = (size_t) size;
+				block_dev(drive->bdev)->size = (size_t) size;
 			}
 			else {
 				return -1;

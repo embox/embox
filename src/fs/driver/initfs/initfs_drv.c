@@ -30,7 +30,7 @@ POOL_DEF (fdesc_pool, struct _ramfs_file_info,
 
 /* File operations */
 
-static void *ramfs_fopen(struct file_desc *desc, const char *mode);
+static void *ramfs_fopen(struct file_desc *desc, int flag);
 static int ramfs_fclose(struct file_desc *desc);
 static size_t ramfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t ramfs_fwrite(const void *buf, size_t size, size_t count,
@@ -41,7 +41,7 @@ static int ramfs_ioctl(void *file, int request, va_list args);
 static file_operations_t ramfs_fop = { ramfs_fopen, ramfs_fclose, ramfs_fread,
 		ramfs_fwrite, ramfs_fseek, ramfs_ioctl, NULL };
 
-static void *ramfs_fopen(struct file_desc *desc, const char *mode) {
+static void *ramfs_fopen(struct file_desc *desc, int flag) {
 	node_t *nod;
 	ramfs_file_info_t *fi;
 

@@ -316,7 +316,7 @@ typedef struct nfs_file_info {
 	file_name_t name_dsc;
 	file_attribute_rep_t attr;
 	nfs_filehandle_t fh;
-	uint8_t mode;				/* mode in which this file was opened */
+	int mode;				/* mode in which this file was opened */
 	__u64 offset;			/* current (BYTE) pointer */
 	nfs_filesystem_t *fs;
 } nfs_file_info_t;

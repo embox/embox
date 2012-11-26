@@ -19,13 +19,13 @@
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
 
-struct file_desc *kopen(const char *path, const char *mode) {
+struct file_desc *kopen(const char *path, int flag) {
 	node_t *nod;
 	fs_drv_t *drv;
 	struct file_desc *desc;
 
 	if (NULL == (nod = vfs_find_node(path, NULL))) {
-		if ((strchr(mode, 'w')  == NULL) && (strchr(mode, 'a')  == NULL)) {
+		if ((O_WRONLY != flag) && (O_APPEND != flag)) {
 			errno = ENOENT;
 			return NULL;
 		}
@@ -52,7 +52,9 @@ struct file_desc *kopen(const char *path, const char *mode) {
 		return NULL;
 	}
 
+	/*TODO set cursor by flag */
 	desc->cursor = 0;
+
 	desc->node = nod;
 
 	drv = nod->fs_type;
@@ -65,11 +67,11 @@ struct file_desc *kopen(const char *path, const char *mode) {
 	}
 
 	if (NULL == desc->ops->fopen) {
-			errno = EBADF;
-			LOG_ERROR("fop->fopen is NULL handler\n");
-			return NULL;
-		}
-	return desc->ops->fopen(desc, mode);
+		errno = EBADF;
+		LOG_ERROR("fop->fopen is NULL handler\n");
+		return NULL;
+	}
+	return desc->ops->fopen(desc, flag);
 
 }
 

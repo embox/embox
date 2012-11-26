@@ -92,7 +92,7 @@ static int fatfs_partition(void *fies) {
 	lbr.sig_aa = 0xAA;
 	memcpy(lbr.ebpb.ebpb.system + 8, bootcode, 130);
 
-	num_sect = block_dev(fi->fs->dev_id)->size / bytepersec;
+	num_sect = block_dev(fi->fs->bdev)->size / bytepersec;
 	if (0xFFFF > num_sect)	{
 		lbr.bpb.sectors_s_l = (uint8_t)(0x00000FF & num_sect);
 		lbr.bpb.sectors_s_h = (uint8_t)(0x00000FF & (num_sect >> 8));
@@ -1138,7 +1138,7 @@ static int fatfs_create_file(void *par) {
  * Returns various DFS_* error states. If the result is DFS_OK, fileinfo
  * can be used to access the file from this point on.
  */
-static uint32_t fat_open_file(void *fisc, uint8_t *path, uint8_t mode,
+static uint32_t fat_open_file(void *fisc, uint8_t *path, int mode,
 		uint8_t *p_scratch) {
 	char tmppath[MAX_LENGTH_PATH_NAME];
 	uint8_t filename[12];
@@ -1774,7 +1774,7 @@ static int fat_read_sector(void *fisc, uint8_t *buffer,
 
 	fi = (fat_file_info_t *) fisc;
 
-	if(0 > block_dev_read(fi->fs->dev_id, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if(0 > block_dev_read(fi->fs->bdev, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
 	}
 	else {
@@ -1788,7 +1788,7 @@ static int fat_write_sector(void *fisc, uint8_t *buffer,
 
 	fi = (fat_file_info_t *) fisc;
 
-	if(0 > block_dev_write(fi->fs->dev_id, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if(0 > block_dev_write(fi->fs->bdev, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
 	}
 	else {
@@ -2025,7 +2025,7 @@ static int fat_create_dir_entry(char *dir_name) {
 
 /* File operations */
 
-static void *fatfs_fopen(struct file_desc *desc,  const char *mode);
+static void *fatfs_fopen(struct file_desc *desc,  int flag);
 static int fatfs_fclose(struct file_desc *desc);
 static size_t fatfs_fread(void *buf, size_t size, size_t count, void *file);
 static size_t fatfs_fwrite(const void *buf, size_t size, size_t count,
@@ -2039,16 +2039,16 @@ static file_operations_t fatfs_fop = { fatfs_fopen, fatfs_fclose, fatfs_fread,
 /*
  * file_operation
  */
-static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
+static void *fatfs_fopen(struct file_desc *desc,  int flag) {
 	node_t *nod;
-	uint8_t _mode;
+	int _mode;
 	uint8_t path [MAX_LENGTH_PATH_NAME];
 	fat_file_info_t *fi;
 
 	nod = desc->node;
 	fi = (fat_file_info_t *)nod->fi;
 
-	if ('r' == *mode) {
+	/*if ('r' == *mode) {
 		_mode = O_RDONLY;
 	}
 	else if ('w' == *mode) {
@@ -2060,6 +2060,8 @@ static void *fatfs_fopen(struct file_desc *desc, const char *mode) {
 	else {
 		_mode = O_RDONLY;
 	}
+	*/
+	_mode = flag;
 
 	vfs_get_path_by_node (nod, (char *) path);
 	/* set relative path in this file system */
@@ -2161,7 +2163,7 @@ static int fatfs_fstat(void *file, void *buff) {
 			buffer->st_mode = fi->mode;
 			buffer->st_ino = fi->firstcluster;
 			buffer->st_nlink = 1;
-			buffer->st_dev = *(int *) fi->fs->dev_id;
+			buffer->st_dev = *(int *) fi->fs->bdev;
 			buffer->st_atime = buffer->st_mtime = buffer->st_ctime = 0;
 			buffer->st_size = fi->filelen;
 			buffer->st_blksize = SECTOR_SIZE;
@@ -2182,7 +2184,7 @@ static int fat_unlike_directory(void *fi, uint8_t *path, uint8_t *scratch);
 /* File system operations */
 
 static int fatfs_init(void * par);
-static int fatfs_format(void * dev);
+static int fatfs_format(void * bdev);
 static int fatfs_mount(void * par);
 static int fatfs_create(void *par);
 static int fatfs_delete(const char *fname);
@@ -2216,7 +2218,7 @@ static int fatfs_format(void *path) {
 	memset(fi, 0, sizeof(fat_file_info_t));
 	memset(fs_des, 0, sizeof(struct fat_fs_description));
 
-	fs_des->dev_id = nod->node_info;
+	fs_des->bdev = nod->node_info;
 	strcpy((char *) fs_des->root_name, "\0");
 
 	fi->fs = fs_des;
@@ -2257,7 +2259,7 @@ static int fatfs_mount(void *par) {
 		memset(dev_fi->fs, 0, sizeof(fat_fs_description_t));
 
 		dev_node->fi = dev_fi;
-		dev_fi->fs->dev_id = dev_node->node_info;
+		dev_fi->fs->bdev = dev_node->node_info;
 	}
 
 	strncpy((char *) dev_fi->fs->root_name, params->dir, MAX_LENGTH_PATH_NAME);

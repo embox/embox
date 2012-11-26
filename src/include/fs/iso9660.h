@@ -199,7 +199,7 @@ typedef unsigned short wchar_t;
 typedef __int64 off64_t;
 
 typedef struct cdfs {
-	void *dev_id;
+	void *bdev;
 	int blks;
 	int volblks;
 	int vdblk;
@@ -253,7 +253,7 @@ typedef struct cdfs_file {
 
 
 typedef struct cdfs_fs_description {
-	void *dev_id;
+	void *bdev;
 	char mntfrom[MAX_LENGTH_PATH_NAME];
 	char mntto[MAX_LENGTH_PATH_NAME];
 	struct fsops *ops;

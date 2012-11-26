@@ -13,8 +13,9 @@
 #include <stdarg.h>
 
 struct file_desc;
+struct node;
 
-typedef void  *(*FILEOP_OPEN)(struct file_desc *desc,  const char *mode);
+typedef void  *(*FILEOP_OPEN)(struct file_desc *desc,  int flag);
 typedef int    (*FILEOP_CLOSE)(struct file_desc *desc);
 typedef size_t (*FILEOP_READ)(void *buf, size_t size, size_t count, void *file);
 typedef size_t (*FILEOP_WRITE)(const void *buf, size_t size, size_t count, void *file);
