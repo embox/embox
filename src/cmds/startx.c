@@ -70,7 +70,6 @@ static int exec (int argc, char ** argv) {
 					break;
 				} else if ('a' == key) {
 					xwnd_app_registry_move_focus();
-					//vesa_put_pixel(1, 1, 2);
 				} else {
 					xwnd_app_registry_send_kbd_event(key);
 					xwnd_app_registry_send_sys_event(XEV_DRAW);

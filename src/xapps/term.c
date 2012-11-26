@@ -7,10 +7,10 @@
  */
 
 #include <lib/xwnd/application.h>
+#include <lib/xwnd/draw_helpers.h>
+#include <lib/xwnd/fonts.h>
 #include <xwnd/xappreg.h>
-#include <xwnd/fonts.h>
 #include <drivers/vesa.h>
-#include <xwnd/draw_helpers.h>
 
 static char text_buf[1024];
 static int length;
@@ -48,7 +48,6 @@ static void on_creat (struct xwnd_application * xapp, struct x_event * ev) {
 
 static void on_draw (struct xwnd_application * xapp, struct x_event * ev) {
 	xwnd_draw_pixel(&(xapp->window), 1, 1, 2);
-	vesa_put_pixel(1, 1, 2);
 	xwnd_print_text(&xapp->window, 1, 1 + line * 8, text_buf);
 	vesa_put_pixel(1, 1, 2);
 }

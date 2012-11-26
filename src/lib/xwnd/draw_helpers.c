@@ -6,9 +6,8 @@
  * @author Alexandr Chernakov
  */
 
-#include <xwnd/draw_helpers.h>
+#include <lib/xwnd/draw_helpers.h>
 #include <drivers/vesa.h>
-#include <xwnd/xwnd.h>
 
 
 void xwnd_draw_pixel (const struct xwnd_window * wnd, unsigned x, unsigned y, unsigned c) {
