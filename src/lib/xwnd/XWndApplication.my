@@ -1,10 +1,12 @@
 package embox.xwnd
 
-module event {
+module application{
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	@IncludePath("$(SRC_DIR)/include/drivers")
-	source "event.c"
+	source "xwndapplication.c"
 
+	depends embox.x_event
+	depends embox.xwnd.xappreg
 	depends embox.lib.LibC
 }

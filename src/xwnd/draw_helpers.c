@@ -12,11 +12,11 @@
 
 
 void xwnd_draw_pixel (const struct xwnd_window * wnd, unsigned x, unsigned y, unsigned c) {
-	if (x < wnd->wdg.rect.wd && y < wnd->wdg.rect.ht &&
-			wnd->wdg.rect.x + x >= 0 && wnd->wdg.rect.x + x < vesa_get_width() &&
-			wnd->wdg.rect.y + y >= 0 && wnd->wdg.rect.y + y < vesa_get_height())
+	if (x < wnd->wd && y < wnd->ht &&
+			wnd->x + x >= 0 && wnd->x + x < vesa_get_width() &&
+			wnd->y + y >= 0 && wnd->y + y < vesa_get_height())
 	{
-		vesa_put_pixel(wnd->wdg.rect.x + x, wnd->wdg.rect.y + y, c);
+		vesa_put_pixel(wnd->x + x, wnd->y + y, c);
 	}
 }
 
@@ -35,8 +35,8 @@ static void xwnd_draw_vert_line (unsigned x, unsigned y, unsigned l, unsigned c)
 }
 
 void xwnd_draw_window (struct xwnd_window * wnd) {
-	xwnd_draw_vert_line  (wnd->wdg.rect.x, wnd->wdg.rect.y, wnd->wdg.rect.ht, 2);
-	xwnd_draw_horiz_line (wnd->wdg.rect.x, wnd->wdg.rect.y, wnd->wdg.rect.wd, 2);
-	xwnd_draw_vert_line  (wnd->wdg.rect.x + wnd->wdg.rect.wd, wnd->wdg.rect.y, wnd->wdg.rect.ht, 2);
-	xwnd_draw_horiz_line (wnd->wdg.rect.x, wnd->wdg.rect.y + wnd->wdg.rect.ht, wnd->wdg.rect.wd, 2);
+	xwnd_draw_vert_line  (wnd->x, wnd->y, wnd->ht, 2);
+	xwnd_draw_horiz_line (wnd->x, wnd->y, wnd->wd, 2);
+	xwnd_draw_vert_line  (wnd->x + wnd->wd, wnd->y, wnd->ht, 2);
+	xwnd_draw_horiz_line (wnd->x, wnd->y + wnd->ht, wnd->wd, 2);
 }

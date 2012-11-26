@@ -10,8 +10,7 @@
 #if 0
 #include <xwnd/window.h>
 #endif
-
-struct xwnd_window;
+#include <lib/xwnd/window.h>
 
 extern void xwnd_draw_pixel (const struct xwnd_window *wnd, unsigned x, unsigned y, unsigned c);
 

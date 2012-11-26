@@ -1,25 +1,24 @@
+
 package embox.cmd
 
-@Cmd(name = "xwnd",
+@Cmd(name = "startx",
 	help = "XWindow-like thing for Embox",
 	man = '''
 		NAME
-			xwnd - window system for Embox
+			startx - window system for Embox
 		AUTHORS
 			Alexandr Chernakov
 	''')
-module xwnd {
+module startx{
 	@IncludePath("$(SRC_DIR)/compat/linux/include")
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	@IncludePath("$(SRC_DIR)/include/drivers")
-	source "xwnd.c"
+	source "startx.c"
 
 	depends embox.lib.LibC
 	depends embox.driver.video.vesadrv
-	depends embox.xwnd.app_registry
-	depends embox.xwnd.bmp
+	depends embox.xwnd.xappreg
 	depends embox.xwnd.draw_helpers
-	depends embox.xwnd.xwndapp
-	depends embox.xwnd.term
-	depends embox.xwnd.unit_test
+	depends embox.xwnd.application
+	depends embox.xwnd.xterm
 }
