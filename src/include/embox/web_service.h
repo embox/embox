@@ -49,5 +49,7 @@ extern int web_service_start(const char *srv_name);
 
 extern int web_service_send_message(const char *srv_name, void *par);
 
+extern int web_service_stop(const char *srv_name);
+
 
 #endif /* WEB_SERVICE_H_ */

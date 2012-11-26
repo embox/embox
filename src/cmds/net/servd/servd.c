@@ -86,7 +86,7 @@ int srvcrun(char * service) {
 }
 
 int srvcstop(char * service) {
-	if (0 <= web_service_send_message(service, NULL)) {
+	if (0 <= web_service_stop(service)) {
 		printf("service %s stopped\n", service);
 		return 0;
 	}

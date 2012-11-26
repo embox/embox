@@ -24,6 +24,7 @@ static void *service_thread_handler(void* args) {
 	while (1) {
 		event_wait(inst->e, EVENT_TIMEOUT_INFINITE);
 		if (inst->params == NULL) {
+			inst->params = (void *)1;
 			return NULL;
 		}
 		inst->desc->run(inst);
@@ -87,6 +88,22 @@ int web_service_start(const char *srv_name) {
 		return -1;
 	}
 	dlist_add_next(dlist_head_init(&inst->lst), &run_instances);
+	return 0;
+}
+
+int web_service_stop(const char *srv_name) {
+	struct web_service_instance *srv_inst;
+
+	if (NULL == (srv_inst = web_service_lookup(srv_name))) {
+		return -1;
+	}
+
+	web_service_send_message(srv_name, NULL);
+
+	while ((int)srv_inst->params != 1){};
+
+	dlist_del(&srv_inst->lst);
+	pool_free(&instance_pool, srv_inst);
 	return 0;
 }
 
