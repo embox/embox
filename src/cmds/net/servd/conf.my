@@ -1,0 +1,6 @@
+package embox.cmd.net.wserver
+
+module conf {
+	@InitFS
+	source "servd.conf"
+}

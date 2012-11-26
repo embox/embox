@@ -1,0 +1,37 @@
+package embox.cmd.net
+
+@Cmd(name = "servd",
+	help = "Start HTTP server",
+	man = '''
+		NAME
+			servd - HTTP server that supports services
+		SYNOPSIS
+			servd [-c file.config] [-s service] [-r service]
+		DESCRIPTION
+			Start HTTP server
+		OPTIONS
+			-c file.config
+				starts services that file.config contains (after service name must be next line character)
+			-s service
+				stops one service
+			-r service
+				starts one service
+		EXAMPLES
+			servd -c servd.conf
+			After that try connect to it from web browser and call some service
+		AUTHORS
+			Ilia Vaprol
+			Vita Loginova
+	''')
+module servd {
+	depends embox.sevice.SrvLib
+
+	depends embox.sevice.Test_service
+	depends embox.sevice.Index_service
+
+	depends embox.cmd.net.web_server
+	depends embox.cmd.net.wserver.conf
+
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "servd.c"
+}

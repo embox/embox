@@ -1,9 +1,10 @@
-/**
- * @file
- * @brief Simple HTTP server
- * @date 16.04.12
- * @author Ilia Vaprol, Vita Loginova
+/*
+ * web_server.c
+ *
+ *  Created on: Nov 23, 2012
+ *      Author: vita
  */
+
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -12,18 +13,16 @@
 #include <stdlib.h>
 #include <net/ip.h>
 #include <net/socket.h>
+#include <net/util/request_parser.h>
+#include <net/in.h>
 #include <embox/cmd.h>
 #include <err.h>
 #include <errno.h>
 #include <net/inetdevice.h>
 #include <arpa/inet.h>
-#include <net/util/request_parser.h>
-#include <net/in.h>
-#include <lib/url_parser.h>
 #include <embox/web_service.h>
 #include <cmd/servd.h>
-
-EMBOX_CMD(servd);
+#include <lib/url_parser.h>
 
 #define DEFAULT_PAGE  "index.html"
 #define MAX_SERVICES_COUNT  10
@@ -115,13 +114,13 @@ static int http_hnd_starting_line(struct client_info *info) {
 			strcpy(info->file, info->parsed_request->parsed_url->path);
 		}
 
-			test_params.info = info;
-			test_params.query = info->parsed_request->parsed_url->query;
-			event_init(&info->unlock_sock_event, "socket_lock");
-			info->lock_status = 1;
-			if (0 > web_service_send_message(info->file, &test_params)){
-				info->lock_status = 0;
-			}
+		test_params.info = info;
+		test_params.query = info->parsed_request->parsed_url->query;
+		event_init(&info->unlock_sock_event, "socket_lock");
+		info->lock_status = 1;
+		if (0 > web_service_send_message(info->file, &test_params)) {
+			info->lock_status = 0;
+		}
 
 	} else if (strcmp(info->parsed_request->method, "POST") == 0) {
 		info->method = HTTP_METHOD_POST;
@@ -263,7 +262,14 @@ static void send_data(struct client_info *ci, int res) {
 	}
 }
 
-static void client_process(int sock, struct sockaddr_in addr,
+void close_connection(struct client_info *ci) {
+	if (ci->fp != NULL) {
+		fclose(ci->fp); /* close file (it's open or null) */
+	}
+	close(ci->sock); /* close connection */
+}
+
+void client_process(int sock, struct sockaddr_in addr,
 		socklen_t addr_len) {
 	int res;
 	struct client_info ci;
@@ -280,8 +286,8 @@ static void client_process(int sock, struct sockaddr_in addr,
 		res = process_response(&ci);
 		break;
 	case HTTP_RET_ABORT:
-		/*close and exit*/
-		break;
+		close_connection(&ci);
+		return;
 	}
 
 	printf("%s:%d -- upload %s ", inet_ntoa(addr.sin_addr),
@@ -289,81 +295,5 @@ static void client_process(int sock, struct sockaddr_in addr,
 	send_data(&ci, res);
 	printf(" done\n");
 
-	if (ci.fp != NULL) {
-		fclose(ci.fp); /* close file (it's open or null) */
-	}
-
-	close(ci.sock); /* close connection */
-}
-
-static void welcome_message(void) {
-	/* FIXME cheat to get local ip */
-	struct in_addr localAddr;
-	struct in_device *in_dev = inet_dev_find_by_name("eth0");
-	localAddr.s_addr = in_dev->ifa_address;
-	printf("Welcome to http://%s\n", inet_ntoa(localAddr));
-}
-
-static void *start_server(void* args) {
-	int res, host;
-	socklen_t addr_len;
-	struct sockaddr_in addr;
-
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons(80);
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	/* Create listen socket */
-	host = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (host < 0) {
-		printf("Error.. can't create socket. errno=%d\n", errno);
-		return (void*) host;
-	}
-
-	res = bind(host, (struct sockaddr *) &addr, sizeof(addr));
-	if (res < 0) {
-		printf("Error.. bind() failed. errno=%d\n", errno);
-		return (void*) res;
-	}
-
-	res = listen(host, 1);
-	if (res < 0) {
-		printf("Error.. listen() failed. errno=%d\n", errno);
-		return (void*) res;
-	}
-
-	welcome_message();
-
-	while (1) {
-		res = accept(host, (struct sockaddr *) &addr, &addr_len);
-		if (res < 0) {
-			/* error code in client, now */
-			printf("Error.. accept() failed. errno=%d\n", errno);
-			close(host);
-			return (void*) res;
-		}
-		client_process(res, addr, addr_len);
-	}
-
-	close(host);
-	return (void*) 0;
-}
-
-#include <kernel/task.h>
-
-static int web_server_started;
-
-static int servd(int argc, char **argv) {
-	if (0 == web_server_started) {
-		new_task(start_server, NULL);
-		//start_server(NULL);
-	}
-
-#if 0
-	if (0 != thread_create(&thr, THREAD_FLAG_DETACHED, start_server, NULL)) {
-		return -1;
-	}
-#endif
-
-	return 0;
+	close_connection(&ci);
 }

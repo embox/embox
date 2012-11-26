@@ -1,0 +1,13 @@
+package embox.cmd.net
+
+module web_server {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "servd.c"
+
+	depends third_party.lib.url_parser
+	depends embox.net.lib.parser
+	depends embox.sevice.SrvLib
+
+	depends embox.net.socket
+	depends embox.fs.core
+}
