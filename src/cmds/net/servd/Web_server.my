@@ -2,7 +2,7 @@ package embox.cmd.net
 
 module web_server {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
-	source "servd.c"
+	source "web_server.c"
 
 	depends third_party.lib.url_parser
 	depends embox.net.lib.parser

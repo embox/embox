@@ -73,7 +73,7 @@ static void *start_server(void* args) {
 	return (void*) 0;
 }
 
-static int web_server_started;
+static int web_server_started = -1;
 
 int srvcrun(char * service) {
 	if (0 <= web_service_start(service)) {
@@ -102,7 +102,7 @@ static int servd(int argc, char **argv) {
 	char buff[512];
 	FILE *file;
 
-	if (0 >= web_server_started) {
+	if (0 > web_server_started) {
 		web_server_started = new_task(start_server, NULL);
 	}
 
