@@ -32,6 +32,11 @@ int dl_relocate_rel(dl_data *data, Elf32_Obj *obj, Elf32_Shdr *relsh,
 	case R_386_GLOB_DAT:
 	case R_386_JMP_SLOT:
 		globsym = dl_find_global_symbol(data, sym_names + sym->st_name);
+		if (!globsym) {
+			//TODO: fix it
+			addr = 0;
+			break;
+		}
 		addr = dl_get_global_symbol_addr(globsym);
 		break;
 
@@ -74,7 +79,7 @@ int dl_relocate_rel(dl_data *data, Elf32_Obj *obj, Elf32_Shdr *relsh,
 		memcpy((void *)where, (void *) addr, sym->st_size);
 		break;
 	case R_386_RELATIVE:
-		*where += obj->load_offset; // TODO:
+		*where += obj->base_addr; // TODO:
 		break;
 	}
 

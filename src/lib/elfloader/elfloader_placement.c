@@ -58,6 +58,7 @@ int elfloader_place_relocatable(Elf32_Obj *obj) {
 /*
  * TODO: Rewrite it using program header table.
  */
+/*
 int elfloader_place_shared(Elf32_Obj *obj) {
 	Elf32_Shdr *sh;
 	Elf32_Addr addr;
@@ -95,12 +96,61 @@ int elfloader_place_shared(Elf32_Obj *obj) {
 		// TODO: Replace it somewhere
 		fseek(obj->fd, sh->sh_offset, 0);
 		if (sh->sh_size != fread((void *) sh->sh_addr, sh->sh_size, 1, obj->fd)) {
-			return -EBADF;
+
+			//return -EBADF;
 		}
 	}
 
 	return ENOERR;
 }
+*/
+
+int elfloader_place_shared(Elf32_Obj *obj) {
+	struct marea *marea;
+	Elf32_Phdr *ph;
+	Elf32_Addr top = 0, bottom;
+	int err;
+
+	if ((err = elf_read_program_header_table(obj)) < 0) {
+		return err;
+	}
+
+	for (int i = 0; i < obj->header->e_phnum; i++) {
+		ph = &obj->ph_table[i];
+
+		if (!ph->p_memsz || ph->p_type != PT_LOAD) {
+			continue;
+		}
+
+		if (top < ph->p_vaddr + ph->p_memsz) {
+			top = ph->p_vaddr + ph->p_memsz;
+		}
+	}
+
+	if (!(marea = mmap_alloc_marea(task_self()->mmap, top, 0))) {
+		return -ENOMEM;
+	}
+
+	bottom = marea_get_start(marea);
+
+	for (int i = 0; i < obj->header->e_phnum; i++) {
+		ph = &obj->ph_table[i];
+
+		if (!ph->p_memsz || ph->p_type != PT_LOAD) {
+			continue;
+		}
+
+		fseek(obj->fd, ph->p_offset, 0);
+		if (ph->p_filesz != fread((void *) bottom + ph->p_vaddr, ph->p_filesz, 1, obj->fd)) {
+			return -EBADF;
+		}
+	}
+
+	obj->base_addr = bottom;
+	return ENOERR;
+}
+
+
 
 int elfloader_place_executable(Elf32_Obj *obj) {
 	Elf32_Phdr *ph;

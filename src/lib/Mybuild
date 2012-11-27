@@ -1,5 +1,6 @@
 package embox.lib
 
+/*
 static module LibElf {
 	source "elf/elf_object_list.c"
 	source "elf/elf_object.c"
@@ -16,6 +17,12 @@ static module LibElf {
 	source "elf/elf_rel.c"
 	// source "elf/elf_rel_array.c"
 	source "elf/elf_base_address.c"
+}*/
+
+static module LibElf {
+	source "new_elf/elf_header.c"
+	source "new_elf/elf_ph_table.c"
+	source "new_elf/elf_segment.c"
 }
 
 static module LibDl {
@@ -33,6 +40,13 @@ static module LibElfloader {
 
 	depends embox.mem.mmap_api
 	depends LibElf, LibDl
+}
+
+static module LibExec {
+	source "exec/exec.c"
+
+	depends embox.mem.mmap_api
+	depends LibElf
 }
 
 static module LibCDiagnostic {

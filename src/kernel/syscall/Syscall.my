@@ -1,8 +1,8 @@
 package embox.kernel
 
 module syscall {
-	//source "syscall.c"
+	source "syscall.c"
 
-	depends embox.arch.syscall
+	//depends embox.arch.syscall
 	depends embox.kernel.syscall.syscall_table
 }

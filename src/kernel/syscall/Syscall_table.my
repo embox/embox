@@ -1,5 +1,6 @@
 package embox.kernel.syscall
 
 module syscall_table {
-	source "syscall_table.c"
+	source "linux_table.c"
+	source "syscall.c"
 }

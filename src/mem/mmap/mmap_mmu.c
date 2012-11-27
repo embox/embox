@@ -138,7 +138,7 @@ struct marea *mmap_alloc_marea(struct mmap *mmap, size_t size, uint32_t flags) {
 }
 
 uint32_t mmap_create_stack(struct mmap *mmap) {
-	mmap->stack_marea = mmap_alloc_marea(mmap, 1024, 0);
+	mmap->stack_marea = mmap_alloc_marea(mmap, 4096, 0);
 
 	if (!mmap->stack_marea) {
 		return 0;
