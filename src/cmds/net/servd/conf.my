@@ -1,4 +1,4 @@
-package embox.cmd.net.wserver
+package embox.cmd.net.web_server
 
 module conf {
 	@InitFS

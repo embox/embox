@@ -6,7 +6,7 @@ package embox.cmd.net
 		NAME
 			servd - HTTP server that supports services
 		SYNOPSIS
-			servd [-c file.config] [-s service] [-r service]
+			servd [-c file.config] [-s service] [-r service] [-S]
 		DESCRIPTION
 			Start HTTP server
 		OPTIONS
@@ -16,6 +16,8 @@ package embox.cmd.net
 				stops one service
 			-r service
 				starts one service
+			-S
+				stops the server
 		EXAMPLES
 			servd -c servd.conf
 			After that try connect to it from web browser and call some service
@@ -30,7 +32,7 @@ module servd {
 	depends embox.sevice.Index_service
 
 	depends embox.cmd.net.web_server
-	depends embox.cmd.net.wserver.conf
+	depends embox.cmd.net.web_server.conf
 
 	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "servd.c"

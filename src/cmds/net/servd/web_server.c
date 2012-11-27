@@ -1,27 +1,13 @@
-/*
- * web_server.c
- *
- *  Created on: Nov 23, 2012
- *      Author: vita
+/**
+ * @file
+ * @brief Simple HTTP server
+ * @date 23.11.12
+ * @author Vita Loginova
  */
 
-
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <string.h>
-#include <stdlib.h>
 #include <net/ip.h>
-#include <net/socket.h>
-#include <net/util/request_parser.h>
-#include <net/in.h>
-#include <embox/cmd.h>
-#include <err.h>
-#include <errno.h>
-#include <net/inetdevice.h>
-#include <arpa/inet.h>
 #include <embox/web_service.h>
-#include <cmd/servd.h>
 #include <lib/url_parser.h>
 
 #define DEFAULT_PAGE  "index.html"

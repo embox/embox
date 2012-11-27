@@ -23,6 +23,10 @@ EMBOX_CMD(servd);
 int web_server_started = 0;
 int web_server_task;
 
+static void print_usage(void) {
+	printf("Usage: servd [-c file.config] [-s service] [-r service] [-S]\n");
+}
+
 static void welcome_message(void) {
 	/* FIXME cheat to get local ip */
 	struct in_addr localAddr;
@@ -80,17 +84,18 @@ static void *start_server(void* args) {
 	return (void*) 0;
 }
 
-int srvcrun(char * service) {
+int run_service(char * service) {
 	if (0 <= web_service_start(service)) {
 		printf("service %s started\n", service);
 		return 0;
 	}
 
-	printf("service %s doesn't exists, is started yet or starting error\n", service);
+	printf("service %s doesn't exists, is started yet or starting error\n",
+			service);
 	return -1;
 }
 
-int srvcstop(char * service) {
+int stop_service(char * service) {
 	if (0 <= web_service_stop(service)) {
 		printf("service %s stopped\n", service);
 		return 0;
@@ -112,37 +117,36 @@ int stop_server(void) {
 
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(80);
-	addr.sin_addr.s_addr = htonl((in_addr_t) 0x0A000210);
+	addr.sin_addr.s_addr = htonl((in_addr_t) 0x0A000210); /*10.0.2.16*/
 
-	res = connect(sock, (struct sockaddr *)&addr, sizeof(addr));
-	if (res < 0){
+	res = connect(sock, (struct sockaddr *) &addr, sizeof(addr));
+	if (res < 0) {
 		return -1;
 	}
 
 	close(sock);
-
 	return 0;
 }
 
 static int servd(int argc, char **argv) {
-	int i_opt;
 	char opt;
 	char *cur, *prev;
 	char buff[512];
 	FILE *file;
 
 	if (!web_server_started) {
-		web_server_started = (web_server_task = new_task(start_server, NULL)) >= 0 ? 1 : 0;
+		web_server_started =
+				(web_server_task = new_task(start_server, NULL)) >= 0 ? 1 : 0;
 	}
 
 	if (web_server_started) {
 		getopt_init();
-		for (i_opt = 0; i_opt < argc - 1; i_opt++) {
-			opt = getopt(argc, argv, "c:r:s:S");
+		while (-1 != (opt = getopt(argc, argv, "c:r:s:Sh"))) {
 			switch (opt) {
-			case 'c':
+			case 'c': /*configure - opens configure file and runs services*/
 				file = fopen(optarg, "r");
-				if (file == NULL){
+				if (file == NULL) {
+					printf("File doesn't exists\n");
 					break;
 				}
 				fread(buff, 1, sizeof buff, file);
@@ -153,31 +157,38 @@ static int servd(int argc, char **argv) {
 						break;
 					}
 					cur[0] = '\0';
-					srvcrun(prev);
+					run_service(prev);
 					prev = ++cur;
 				}
 				fclose(file);
 				break;
-			case 'r':
-				srvcrun(optarg);
+			case 'r': /*run - runs service*/
+				run_service(optarg);
 				break;
-			case 's':
-				srvcstop(optarg);
+			case 's': /*stop - stops service*/
+				stop_service(optarg);
 				break;
-			case 'S':
+			case 'S': /*Stop - stops server*/
 				web_server_started = 0;
-				if (0 <= stop_server()){
-				printf("Server is stopped\n");
-				}
-				else{
+				if (0 <= stop_server()) {
+					printf("Server is stopped\n");
+				} else {
 					web_server_started = 1;
 					printf("Can't stop server\n");
 				}
 				break;
+			case 'h':
+				print_usage();
+				break;
+			default:
+				printf("Unknown option '%c' or unspecified value, see manual\n",
+						optopt);
+				print_usage();
+				break;
 			}
 		}
 	} else {
-		printf("Server isn't started\n");
+		printf("Server isn't started, try again\n");
 	}
 
 #if 0
@@ -188,5 +199,4 @@ static int servd(int argc, char **argv) {
 
 	return 0;
 }
-
 
