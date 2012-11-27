@@ -171,6 +171,7 @@ static int servd(int argc, char **argv) {
 			case 'S': /*Stop - stops server*/
 				web_server_started = 0;
 				if (0 <= stop_server()) {
+					web_service_stop_all();
 					printf("Server is stopped\n");
 				} else {
 					web_server_started = 1;

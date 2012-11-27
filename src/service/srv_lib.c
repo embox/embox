@@ -2,7 +2,7 @@
  * @file
  *
  * @date Nov 7, 2012
- * @author: Anton Bondarev
+ * @author: Anton Bondarev, Vita Loginova
  */
 
 #include <embox/web_service.h>
@@ -24,7 +24,7 @@ static void *service_thread_handler(void* args) {
 	while (1) {
 		event_wait(inst->e, EVENT_TIMEOUT_INFINITE);
 		if (inst->params == NULL) {
-			inst->params = (void *)1;
+			inst->params = (void *) 1;
 			return NULL;
 		}
 		inst->desc->run(inst);
@@ -75,7 +75,7 @@ int web_service_start(const char *srv_name) {
 	const struct web_service_desc *srv_desc;
 
 	if (NULL != web_service_lookup(srv_name)) {
-			return -1;
+		return -1;
 	}
 	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
 		return -1;
@@ -85,11 +85,30 @@ int web_service_start(const char *srv_name) {
 	}
 	inst->desc = srv_desc;
 
-	if (0 != thread_create(&inst->thr, THREAD_FLAG_DETACHED,
+	if (0
+			!= thread_create(&inst->thr, THREAD_FLAG_DETACHED,
 					web_service_trampoline, inst)) {
 		return -1;
 	}
 	dlist_add_next(dlist_head_init(&inst->lst), &run_instances);
+	return 0;
+}
+
+int send_message(struct web_service_instance *srv_inst, void *par) {
+	srv_inst->params = par;
+	event_notify(srv_inst->e);
+
+	return 0;
+}
+
+int stop(struct web_service_instance *srv_inst) {
+	send_message(srv_inst, NULL);
+
+	while ((int) srv_inst->params != 1) {
+	};
+
+	dlist_del(&srv_inst->lst);
+	pool_free(&instance_pool, srv_inst);
 	return 0;
 }
 
@@ -100,13 +119,7 @@ int web_service_stop(const char *srv_name) {
 		return -1;
 	}
 
-	web_service_send_message(srv_name, NULL);
-
-	while ((int)srv_inst->params != 1){};
-
-	dlist_del(&srv_inst->lst);
-	pool_free(&instance_pool, srv_inst);
-	return 0;
+	return stop(srv_inst);
 }
 
 int web_service_send_message(const char *srv_name, void *par) {
@@ -115,8 +128,13 @@ int web_service_send_message(const char *srv_name, void *par) {
 	if (NULL == (srv_inst = web_service_lookup(srv_name))) {
 		return -1;
 	}
-	srv_inst->params = par;
-	event_notify(srv_inst->e);
+	return send_message(srv_inst, par);
+}
 
-	return 0;
+void web_service_stop_all() {
+	struct web_service_instance *inst, *tmp;
+
+	dlist_foreach_entry(inst, tmp, &run_instances, lst){
+		stop(inst);
+	}
 }
