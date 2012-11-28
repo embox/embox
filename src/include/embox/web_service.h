@@ -19,7 +19,6 @@ struct web_service_desc {
 	void *(*run)(void *);
 };
 
-
 struct web_service_instance {
 	struct thread *thr;
 	struct event *e;
@@ -27,17 +26,6 @@ struct web_service_instance {
 	const struct web_service_desc *desc;
 	struct dlist_head lst;
 };
-
-
-//struct web_service {
-//	struct event *e;
-//	void *params;
-//};
-//
-//struct web_service_item {
-//	const char *srv_name;
-//	struct web_service srv;
-//};
 
 extern const struct web_service_desc __web_services_repository[];
 
@@ -49,5 +37,8 @@ extern int web_service_start(const char *srv_name);
 
 extern int web_service_send_message(const char *srv_name, void *par);
 
+extern int web_service_stop(const char *srv_name);
+
+extern void web_service_stop_all(void);
 
 #endif /* WEB_SERVICE_H_ */

@@ -1,29 +1,17 @@
-/*
- * hello_service.c
+/**
+ * @file hello world service
  *
- *  Created on: Nov 8, 2012
- *      Author: vita
+ * @date Nov 7, 2012
+ * @author: Vita Loginova
  */
-
 
 #include <embox/web_service.h>
 #include <stdio.h>
 
-
-struct web_service_params {
-	char par[80];
-};
-
-
-static void *index_thread_handler(void* args) {
-	/*struct web_service_instance *inst;
-
-	inst = (struct web_service_instance *) args;*/
-
+static void *process_params(void* args) {
 	printf("\n\n[Hello]\n\n");
-
 	return NULL;
 }
 
-EMBOX_WEB_SERVICE("index.html", index_thread_handler);
+EMBOX_WEB_SERVICE("index.html", process_params);
 

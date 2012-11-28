@@ -9,6 +9,9 @@
 #include <errno.h>
 #include <kernel/task.h>
 #include "common.h"
+#include <embox/unit.h>
+
+EMBOX_UNIT_INIT(tasks_init);
 
 int new_task(void *(*run)(void *), void *arg) {
 	return -EPERM;
@@ -26,5 +29,12 @@ void __attribute__((noreturn)) task_exit(void *res) {
 }
 
 int task_notify_switch(struct thread *prev, struct thread *next) {
+	return 0;
+}
+
+static int tasks_init(void) {
+
+	task_init(task_kernel_task(), task_kernel_size());
+
 	return 0;
 }

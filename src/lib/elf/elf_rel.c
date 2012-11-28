@@ -38,7 +38,7 @@ Elf32_Addr elf_get_rel_addr(Elf32_Obj *obj, Elf32_Shdr *sh, Elf32_Rel *rel) {
 	case(ET_REL):
 		return obj->sh_table[sh->sh_info].sh_addr + rel->r_offset;
 	case(ET_DYN):
-		return obj->load_offset + rel->r_offset;
+		return obj->base_addr + rel->r_offset;
 	case(ET_EXEC):
 		return rel->r_offset;
 	default:

@@ -4,7 +4,6 @@
  *
  * @date 01.10.2012
  * @author Anton Kozlov
- *
  */
 
 #include <asm/io.h>
@@ -27,12 +26,8 @@
 
 #include <mem/misc/pool.h>
 
-#define PCI_VENDOR_INTEL 0x8086
-#define PCI_DEV_ID_INTEL_E1000 0x100e
-
-PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_E1000);
-
-PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, 0x1501);
+PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82540EM);
+PCI_DRIVER("e1000", e1000_init, PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82567V3);
 
 /** Number of receive descriptors per card. */
 #define E1000_RXDESC_NR 16
@@ -54,7 +49,6 @@ struct e1000_rx_desc {
 	uint8_t  status;
 	uint8_t  error;
 	uint16_t reserved;
-
 };
 
 struct e1000_tx_desc {
@@ -66,7 +60,6 @@ struct e1000_tx_desc {
 	uint8_t status; /* + reserved, not used */
 	uint8_t checksum_start;
 	uint16_t special;
-
 };
 
 static struct e1000_rx_desc rx_descs[E1000_RXDESC_NR] __attribute__((aligned(16)));
@@ -178,7 +171,6 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 }
 
 static int e1000_open(struct net_device *dev) {
-
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_RST);
 
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_SLU | E1000_REG_CTRL_ASDE);
@@ -192,16 +184,14 @@ static int e1000_open(struct net_device *dev) {
 	REG_ANDIN(e1000_reg(dev, E1000_REG_CTRL), ~E1000_REG_CTRL_VME);
 
 	/* Clear Multicast Table Array (MTA). */
-	for (int i = 0; i < 128; i++)
-	{
+	for (int i = 0; i < 128; i++) {
 		volatile uint32_t *r = i + e1000_reg(dev, E1000_REG_MTA);
 		REG_STORE(r, 0);
 	}
 
 #if 0 /*cleaned up on init */
 	/* Initialize statistics registers. */
-	for (int i = 0; i < 64; i++)
-	{
+	for (int i = 0; i < 64; i++) {
 		volatile uint32_t *r = i + e1000_reg(dev, E1000_REG_CRCERRS);
 		prom_printf("0x%x\n", (unsigned int) r);
 		REG_LOAD(r);
@@ -209,11 +199,11 @@ static int e1000_open(struct net_device *dev) {
 #endif
 	REG_ORIN(e1000_reg(dev, E1000_REG_RCTL),  E1000_REG_RCTL_MPE);
 
-	for (int i = 0; i < E1000_RXDESC_NR; i ++) {
+	for (size_t i = 0; i < E1000_RXDESC_NR; i ++) {
 		rx_descs[i].buffer_address = (uint32_t) rx_buf[i];
 	}
 
-	for (int i = 0; i < E1000_RXDESC_NR; i ++) {
+	for (size_t i = 0; i < E1000_RXDESC_NR; i ++) {
 		tx_descs[i].buffer_address = (uint32_t) rx_buf[i];
 	}
 
@@ -250,7 +240,6 @@ static net_device_stats_t *get_eth_stat(struct net_device *dev) {
 }
 
 static int set_mac_address(struct net_device *dev, void *addr) {
-
 	REG_ANDIN(e1000_reg(dev, E1000_REG_RAH), ~E1000_REG_RAH_AV);
 
 	REG_STORE(e1000_reg(dev, E1000_REG_RAL), *(uint32_t *) addr);

@@ -170,7 +170,7 @@ $(@build_include_mk) : image_rulemk = \
 		$(patsubst %,$(value build_image_rulemk_mk_pat),image)
 $(@build_include_mk) : source_rulemk = \
 		$(patsubst %,$(value source_rulemk_mk_pat), \
-			$(call source_base,$(@source_rulemk)))
+			$(call source_file,$(@source_rulemk)))
 $(@build_include_mk) : module_ar_rulemk = \
 		$(patsubst %,$(value module_ar_rulemk_mk_pat), \
 			$(call module_path,$(@module_ar_rulemk)))
@@ -379,8 +379,8 @@ $(@source_rulemk) : flags = $(call trim, \
 
 source_rulemk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
-$(@source_rulemk) : @file   = $(base:%=$(source_rulemk_mk_pat))
-$(@source_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$$(source_base))
+$(@source_rulemk) : @file   = $(file:%=$(source_rulemk_mk_pat))
+$(@source_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$$(source_file))
 
 source_cc_rulemk_o_pat  = $(OBJ_DIR)/%.o
 source_cpp_rulemk_o_pat = $(OBJ_DIR)/%# foo.lds.S -> foo.lds
@@ -390,7 +390,8 @@ $(@source_rulemk)  : o_file = $(patsubst %,$(value source_$(kind)_rulemk_o_pat),
 $(@source_cpp_rulemk) $(@source_cc_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
-		$(call gen_make_var,source_base,$(base)); \
+		$(call gen_make_var,source_file,$(file)); \
+		$(call gen_make_var,source_base,$$(basename $$(source_file))); \
 		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
 		$(call gen_make_tsvar,$(o_file),extra_prereqs,$(prereqs)); \
 		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)); \
@@ -402,7 +403,7 @@ $(@source_cpp_rulemk) : kind := cpp
 
 $(@source_initfs_cp_rulemk) : o_file  = $$(ROOTFS_DIR)/$(notdir $(file))
 $(@source_initfs_cp_rulemk) : src_file = $(file)
-$(@source_initfs_cp_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$(base))
+$(@source_initfs_cp_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$(file))
 $(@source_initfs_cp_rulemk) : kind := initfs_cp
 
 $(@source_initfs_cp_rulemk) :

@@ -77,18 +77,18 @@ static int prints(void (*printchar_handler)(char **str, int c),
 	return pc;
 }
 
-/* the following should be enough for 32 bit int */
-#define PRINT_BUF_LEN 12
+/* the following should be enough for 64 bit int */
+#define PRINTI_BUF_LEN 65
 
 static int printi(void (*printchar_handler)(char **str, int c), char **out,
-		int i, int b, int sg, int width, int pad, int letbase) {
-	char print_buf[PRINT_BUF_LEN];
+		long long i, int b, int sg, int width, int pad, int letbase) {
+	char print_buf[PRINTI_BUF_LEN];
 	/*register*/
 	char *s;
 	/*register*/
-	int t, neg = 0, pc = 0;
+	int neg = 0, pc = 0;
 	/*register*/
-	unsigned int u = i;
+	long long unsigned t, u = i;
 
 	if (i == 0) {
 		print_buf[0] = '0';
@@ -101,7 +101,7 @@ static int printi(void (*printchar_handler)(char **str, int c), char **out,
 		u = -i;
 	}
 
-	s = print_buf + PRINT_BUF_LEN - 1;
+	s = print_buf + sizeof print_buf - 1;
 	*s = '\0';
 
 	while (u) {
@@ -139,7 +139,7 @@ static int printb(void (*printchar_handler)(char **str, int c),
 	/*register*/
 	int dc = 0;
 
-	s = print_buf + PRINTB_BUF_LEN - 1;
+	s = print_buf + sizeof print_buf - 1;
 	*s = '\0';
 
 	for (k = 0; k < width;) {
@@ -159,16 +159,21 @@ static int printb(void (*printchar_handler)(char **str, int c),
 	return prints(printchar_handler, out, s, width + dc, 0, 0);
 }
 
+#define OPS_L  0x01
+#define OPS_LL 0x02
+
 int __print(void (*printchar_handler)(char **str, int c),
 		char **out, const char *format, va_list args) {
 	/*register*/int width, precision, pad;
 	/*register*/
-	int pc = 0;
+	int pc = 0, ops;
 	char scr[2];
+	long long tmp_i;
 
 	for (; *format != 0; ++format) {
 		if (*format == '%') {
 			++format;
+			ops = 0;
 			width = precision = pad = 0;
 			if (*format == '\0')
 				break;
@@ -194,8 +199,11 @@ int __print(void (*printchar_handler)(char **str, int c),
 				}
 			}
 			if (*format == 'l') {
-				//TODO:
-				++format;
+				ops |= OPS_L;
+				if (*++format == 'l') {
+					ops |= OPS_LL;
+					++format;
+				}
 			}
 			switch (*format) {
 			case 's': {
@@ -204,18 +212,26 @@ int __print(void (*printchar_handler)(char **str, int c),
 			}
 				continue;
 			case 'd':
-				pc += printi(printchar_handler, out, va_arg(args, int), 10, 1, width, pad, 'a');
+				tmp_i = ops & OPS_LL ? va_arg(args, long long)
+					: ops & OPS_L ? va_arg(args, long) : va_arg(args, int);
+				pc += printi(printchar_handler, out, tmp_i, 10, 1, width, pad, 'a');
 				continue;
 			case 'p':
 				/*TODO: printf haven't realized pointer variable operations*/
 			case 'x':
-				pc += printi(printchar_handler, out, va_arg(args, int), 16, 0, width, pad, 'a');
+				tmp_i = ops & OPS_LL ? va_arg(args, long long unsigned)
+					: ops & OPS_L ? va_arg(args, long unsigned) : va_arg(args, unsigned);
+				pc += printi(printchar_handler, out, tmp_i, 16, 0, width, pad, 'a');
 				continue;
 			case 'X':
-				pc += printi(printchar_handler, out, va_arg(args, int), 16, 0, width, pad, 'A');
+				tmp_i = ops & OPS_LL ? va_arg(args, long long unsigned)
+					: ops & OPS_L ? va_arg(args, long unsigned) : va_arg(args, unsigned);
+				pc += printi(printchar_handler, out, tmp_i, 16, 0, width, pad, 'A');
 				continue;
 			case 'u':
-				pc += printi(printchar_handler, out, va_arg(args, int), 10, 0, width, pad, 'a');
+				tmp_i = ops & OPS_LL ? va_arg(args, long long unsigned)
+					: ops & OPS_L ? va_arg(args, long unsigned) : va_arg(args, unsigned);
+				pc += printi(printchar_handler, out, tmp_i, 10, 0, width, pad, 'a');
 				continue;
 			case 'b':
 				pc += printb(printchar_handler, out, va_arg(args, int), width, 0);

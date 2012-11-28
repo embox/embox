@@ -16,6 +16,8 @@
 #include <kernel/panic.h>
 #include "common.h"
 
+EMBOX_UNIT_INIT(tasks_init);
+
 typedef void *(*run_fn)(void *);
 
 /* used for passing params from caller to thread creator*/
@@ -70,7 +72,13 @@ int new_task(void *(*run)(void *), void *arg) {
 
 		/* alloc space for task & resources on top of created thread's stack */
 
-		self_task = task_init(thd->stack);
+		if ((self_task = task_init(thd->stack, thd->stack_sz)) == NULL) {
+			thread_terminate(thd);
+			thread_detach(thd);
+			pool_free(&creat_param, param);
+			sched_unlock();
+			return -EPERM;
+		}
 
 		thd->stack += task_sz;
 		thd->stack_sz -= task_sz;
@@ -196,4 +204,14 @@ static void *task_trampoline(void *arg) {
 	panic("Returning from task_trampoline()");
 
 	return res;
+}
+
+static int tasks_init(void) {
+	struct task *kernel_task = task_kernel_task();
+
+	task_init(kernel_task, task_kernel_size());
+
+	task_table_add(kernel_task);
+
+	return 0;
 }

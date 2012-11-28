@@ -17,8 +17,8 @@
 
 EMBOX_UNIT(unit_init, unit_fini);
 
-#define VIRTUAL_TABLES_COUNT (3000UL)
-#define VIRTUAL_PAGES_COUNT  (100UL)
+#define VIRTUAL_TABLES_COUNT (5000UL)
+#define VIRTUAL_PAGES_COUNT  (5000UL)
 
 static struct page_allocator *virt_table_allocator;
 static struct page_allocator *virt_page_allocator;

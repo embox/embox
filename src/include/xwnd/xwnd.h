@@ -10,11 +10,7 @@
 #ifndef XWND_H_
 #define XWND_H_
 
-#include <xwnd/bmp.h>
-#include <xwnd/fonts.h>
-#include <xwnd/event.h>
-#include <xwnd/window.h>
-#include <xwnd/xwndapp.h>
+#include <lib/xwnd/application.h>
 
 typedef void (*xwnd_app_entry_point) (struct xwnd_application * arg);
 

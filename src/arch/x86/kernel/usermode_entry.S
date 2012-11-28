@@ -43,8 +43,6 @@ usermode_entry:
 	pushl (%ebx)
 	//
 
-	/* Used for fork: set result equals 0 */
-	mov $0, %eax
 
 	/* Now we are going into function. */
 	iret

@@ -61,6 +61,11 @@ void mmap_init(struct mmap *mmap) {
 }
 
 void mmap_free(struct mmap *mmap) {
+	mmap_clear(mmap);
+	vmem_free_context(mmap->ctx);
+}
+
+void mmap_clear(struct mmap *mmap) {
 	struct dlist_head *item, *next;
 	struct marea *marea;
 
@@ -72,9 +77,8 @@ void mmap_free(struct mmap *mmap) {
 
 		free(marea);
 	}
-
-	vmem_free_context(mmap->ctx);
 }
+
 
 struct marea *mmap_place_marea(struct mmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
 	struct dlist_head *item, *next;
@@ -134,7 +138,7 @@ struct marea *mmap_alloc_marea(struct mmap *mmap, size_t size, uint32_t flags) {
 }
 
 uint32_t mmap_create_stack(struct mmap *mmap) {
-	mmap->stack_marea = mmap_alloc_marea(mmap, 1024, 0);
+	mmap->stack_marea = mmap_alloc_marea(mmap, 4096, 0);
 
 	if (!mmap->stack_marea) {
 		return 0;

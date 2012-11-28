@@ -32,6 +32,10 @@ void mmap_init(struct mmap *mmap) {
 }
 
 void mmap_free(struct mmap *mmap) {
+	mmap_clear(mmap);
+}
+
+void mmap_clear(struct mmap *mmap) {
 	struct dlist_head *item, *next;
 	struct marea *marea;
 

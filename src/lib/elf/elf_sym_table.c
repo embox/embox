@@ -23,7 +23,8 @@ int elf_read_symbol_table(Elf32_Obj *obj) {
 	int res;
 
 	for (int i = 0; i < header->e_shnum; i++) {
-		if (sh_table[i].sh_type == SHT_SYMTAB) {
+		if ((sh_table[i].sh_type == SHT_SYMTAB)
+			|| (sh_table[i].sh_type == SHT_DYNSYM)) {
 			if ((res = elf_read_section(obj, i,
 				(char **)&obj->sym_table)) < 0) {
 				return res;

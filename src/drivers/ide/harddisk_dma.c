@@ -18,7 +18,7 @@
 #include <mem/phymem.h>
 #include <util/indexator.h>
 
-extern int hd_ioctl(block_dev_t *dev, int cmd, void *args, size_t size);
+extern int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size);
 
 static void setup_dma(hdc_t *hdc, char *buffer, int count, int cmd) {
 	int i;
@@ -81,7 +81,7 @@ static int stop_dma(hdc_t *hdc) {
 	return 0;
 }
 
-static int hd_read_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno) {
+static int hd_read_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno) {
 	hd_t *hd;
 	hdc_t *hdc;
 	int sectsleft;
@@ -94,7 +94,7 @@ static int hd_read_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 	}
 	bufp = (char *) buffer;
 
-	hd = (hd_t *) dev->privdata;
+	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
 	sectsleft = count / SECTOR_SIZE;
 
@@ -160,7 +160,7 @@ static int hd_read_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t bl
 	return result == 0 ? count : result;
 }
 
-static int hd_write_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno) {
+static int hd_write_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno) {
 	hd_t *hd;
 	hdc_t *hdc;
 	int sectsleft;
@@ -173,7 +173,7 @@ static int hd_write_udma(block_dev_t *dev, char *buffer, size_t count, blkno_t b
 	}
 	bufp = (char *) buffer;
 
-	hd = (hd_t *) dev->privdata;
+	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
 	sectsleft = count / SECTOR_SIZE;
 
@@ -265,14 +265,14 @@ static int idedisk_udma_init (void *args) {
 				if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
 					return -1;
 				}
-				drive->dev_id = block_dev_create(path,
+				drive->bdev = block_dev_create(path,
 						&idedisk_udma_driver, drive);
-				if(NULL != drive->dev_id) {
+				if(NULL != drive->bdev) {
 					size = (double) drive->param.cylinders *
 						   (double) drive->param.heads *
 						   (double) drive->param.unfbytes *
 						   (double) (drive->param.sectors + 1);
-					block_dev(drive->dev_id)->size = (size_t) size;
+					block_dev(drive->bdev)->size = (size_t) size;
 				}
 				else {
 					return -1;

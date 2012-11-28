@@ -40,7 +40,9 @@
 #define PCI_DEV_ID_ATHEROS_AR9283         0x002a
 
 /* Intel device id's */
+#define PCI_DEV_ID_INTEL_82540EM          0x100e
 #define PCI_DEV_ID_INTEL_82441            0x1237
+#define PCI_DEV_ID_INTEL_82567V3          0x1501
 #define PCI_DEV_ID_INTEL_82801BAM_PCI     0x2448
 #define PCI_DEV_ID_INTEL_82801HBM_LPC     0x2815
 #define PCI_DEV_ID_INTEL_82801HBM_SATA    0x2828

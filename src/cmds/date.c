@@ -139,7 +139,7 @@ static int exec(int argc, char **argv) {
 			print_usage();
 			break;
 		case 's': /* set date*/
-			set_date(argv[3]);
+			set_date(argv[2]);
 			break;
 		default:
 			break;

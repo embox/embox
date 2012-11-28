@@ -19,13 +19,13 @@
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
 
-struct file_desc *kopen(const char *path, const char *mode) {
+struct file_desc *kopen(const char *path, int flag) {
 	node_t *nod;
 	fs_drv_t *drv;
 	struct file_desc *desc;
 
 	if (NULL == (nod = vfs_find_node(path, NULL))) {
-		if ((strchr(mode, 'w')  == NULL) && (strchr(mode, 'a')  == NULL)) {
+		if ((O_WRONLY != flag) && (O_APPEND != flag)) {
 			errno = ENOENT;
 			return NULL;
 		}
@@ -52,24 +52,26 @@ struct file_desc *kopen(const char *path, const char *mode) {
 		return NULL;
 	}
 
+	/*TODO set cursor by flag */
 	desc->cursor = 0;
+
 	desc->node = nod;
 
 	drv = nod->fs_type;
 	assert(drv != NULL);
 
-	if (NULL != nod->file_info) {
-		desc->ops = (struct file_operations *)nod->file_info;
+	if (NULL != nod->node_info) {
+		desc->ops = (struct file_operations *)nod->node_info;
 	} else {
 		desc->ops = (struct file_operations *)drv->file_op;
 	}
 
 	if (NULL == desc->ops->fopen) {
-			errno = EBADF;
-			LOG_ERROR("fop->fopen is NULL handler\n");
-			return NULL;
-		}
-	return desc->ops->fopen(desc, mode);
+		errno = EBADF;
+		LOG_ERROR("fop->fopen is NULL handler\n");
+		return NULL;
+	}
+	return desc->ops->fopen(desc, flag);
 
 }
 
@@ -153,7 +155,7 @@ int kstat(struct file_desc *desc, void *buff) {
 		return -1;
 	}
 
-	return desc->ops->fstat(desc->node->fd, buff); //FIXME Not much pretty -Anton Kozlov
+	return desc->ops->fstat(desc->node->fi, buff); //FIXME Not much pretty -Anton Kozlov
 }
 
 int kioctl(struct file_desc *fp, int request, ...) {

@@ -36,6 +36,7 @@
 #define REVERSE_L(num) num = __REV_L(num)
 #define REVERSE_S(num) num = __REV_S(num)
 
+/*
 // OBJECT
 extern int elf_object_init(Elf32_Obj **obj, FILE *fd);
 extern void elf_object_fini(Elf32_Obj *obj);
@@ -83,5 +84,10 @@ extern int32_t elf_read_segment(Elf32_Phdr *program_header, int8_t *dst);
 extern int elf_objlist_init(Elf32_Objlist **list);
 extern int elf_objlist_add(Elf32_Objlist *list, Elf32_Obj *obj);
 
+*/
+
+extern int elf_read_header(int fd, Elf32_Ehdr *header);
+extern int elf_read_ph_table(int fd, Elf32_Ehdr *header, Elf32_Phdr *ph_table);
+extern int elf_read_segment(int fd, Elf32_Phdr *ph, void *addr);
 
 #endif /* LIB_ELF_H_ */

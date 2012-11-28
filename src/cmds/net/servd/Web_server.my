@@ -1,0 +1,6 @@
+package embox.cmd.net
+
+module web_server {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "web_server.c"
+}

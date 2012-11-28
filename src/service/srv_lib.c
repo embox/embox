@@ -2,7 +2,7 @@
  * @file
  *
  * @date Nov 7, 2012
- * @author: Anton Bondarev
+ * @author: Anton Bondarev, Vita Loginova
  */
 
 #include <embox/web_service.h>
@@ -24,6 +24,7 @@ static void *service_thread_handler(void* args) {
 	while (1) {
 		event_wait(inst->e, EVENT_TIMEOUT_INFINITE);
 		if (inst->params == NULL) {
+			inst->params = (void *) 1;
 			return NULL;
 		}
 		inst->desc->run(inst);
@@ -73,6 +74,9 @@ int web_service_start(const char *srv_name) {
 	struct web_service_instance *inst;
 	const struct web_service_desc *srv_desc;
 
+	if (NULL != web_service_lookup(srv_name)) {
+		return -1;
+	}
 	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
 		return -1;
 	}
@@ -90,14 +94,47 @@ int web_service_start(const char *srv_name) {
 	return 0;
 }
 
+int send_message(struct web_service_instance *srv_inst, void *par) {
+	srv_inst->params = par;
+	event_notify(srv_inst->e);
+
+	return 0;
+}
+
+int stop(struct web_service_instance *srv_inst) {
+	send_message(srv_inst, NULL);
+
+	while ((int) srv_inst->params != 1) {
+	};
+
+	dlist_del(&srv_inst->lst);
+	pool_free(&instance_pool, srv_inst);
+	return 0;
+}
+
+int web_service_stop(const char *srv_name) {
+	struct web_service_instance *srv_inst;
+
+	if (NULL == (srv_inst = web_service_lookup(srv_name))) {
+		return -1;
+	}
+
+	return stop(srv_inst);
+}
+
 int web_service_send_message(const char *srv_name, void *par) {
 	struct web_service_instance *srv_inst;
 
 	if (NULL == (srv_inst = web_service_lookup(srv_name))) {
 		return -1;
 	}
-	srv_inst->params = par;
-	event_notify(srv_inst->e);
+	return send_message(srv_inst, par);
+}
 
-	return 0;
+void web_service_stop_all() {
+	struct web_service_instance *inst, *tmp;
+
+	dlist_foreach_entry(inst, tmp, &run_instances, lst){
+		stop(inst);
+	}
 }

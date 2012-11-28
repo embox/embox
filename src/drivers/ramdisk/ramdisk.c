@@ -28,9 +28,9 @@ POOL_DEF(ramdisk_pool,struct dev_ramdisk_head,MAX_DEV_QUANTITY);
 INDEX_DEF(ramdisk_idx,0,MAX_DEV_QUANTITY);
 
 static int ram_init(void *arg);
-static int read_sectors(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno);
-static int write_sectors(block_dev_t *dev, char *buffer, size_t count, blkno_t blkno);
-static int ram_ioctl(block_dev_t *dev, int cmd, void *args, size_t size);
+static int read_sectors(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno);
+static int write_sectors(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno);
+static int ram_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size);
 
 block_dev_driver_t ramdisk_pio_driver = {
   "ramdisk_drv",
@@ -96,7 +96,7 @@ ramdisk_t *ramdisk_get_param(char *path) {
 	if (NULL == (ramdisk_node = vfs_find_node(path, NULL))) {
 		return NULL;
 	}
-	return (ramdisk_t *) block_dev(ramdisk_node->file_info)->privdata;
+	return (ramdisk_t *) block_dev(ramdisk_node->node_info)->privdata;
 }
 
 int ramdisk_delete(const char *name) {
@@ -106,10 +106,10 @@ int ramdisk_delete(const char *name) {
 	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
 		return -1;
 	}
-	if(NULL != (ramdisk = (ramdisk_t *) block_dev(ramdisk_node->file_info)->privdata)) {
+	if(NULL != (ramdisk = (ramdisk_t *) block_dev(ramdisk_node->node_info)->privdata)) {
 		index_free(&ramdisk_idx, ramdisk->idx);
 		pool_free(&ramdisk_pool, ramdisk);
-		block_dev_destroy (ramdisk_node->file_info);
+		block_dev_destroy (ramdisk_node->node_info);
 		vfs_del_leaf(ramdisk_node);
 	}
 	return 0;
@@ -123,12 +123,12 @@ static int ram_init(void *arg) {
 	return 0;
 }
 
-static int read_sectors(block_dev_t *dev,
+static int read_sectors(block_dev_t *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	ramdisk_t *ramdisk;
 	char *read_addr;
 
-	ramdisk = (ramdisk_t *) dev->privdata;
+	ramdisk = (ramdisk_t *) bdev->privdata;
 	read_addr = ramdisk->p_start_addr + (blkno * ramdisk->block_size);
 
 	memcpy(buffer, read_addr, count);
@@ -136,20 +136,20 @@ static int read_sectors(block_dev_t *dev,
 }
 
 
-static int write_sectors(block_dev_t *dev,
+static int write_sectors(block_dev_t *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	ramdisk_t *ramdisk;
 	char *write_addr;
 
-	ramdisk = (ramdisk_t *) dev->privdata;
+	ramdisk = (ramdisk_t *) bdev->privdata;
 	write_addr = ramdisk->p_start_addr + (blkno * ramdisk->block_size);
 
 	memcpy(write_addr, buffer, count);
 	return count;
 }
 
-static int ram_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
-	ramdisk_t *ramd = (ramdisk_t *) dev->privdata;
+static int ram_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
+	ramdisk_t *ramd = (ramdisk_t *) bdev->privdata;
 
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:
@@ -162,7 +162,7 @@ static int ram_ioctl(block_dev_t *dev, int cmd, void *args, size_t size) {
 }
 
 /*
-static int flush(void *dev) {
+static int flush(void *bdev) {
 	return 0;
 }
 */

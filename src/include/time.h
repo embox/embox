@@ -85,5 +85,7 @@ extern int gettimeofday(struct timeval *ts, struct timezone *tz);
 /* seconds from beginning of start system */
 extern time_t time(time_t *t);
 
+/** Format date and time */
+extern size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm);
 
 #endif /* POSIX_TIME_H_ */

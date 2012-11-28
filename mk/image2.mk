@@ -111,7 +111,7 @@ $(ROOTFS_IMAGE) :
 -include $(ROOTFS_IMAGE).d
 
 #XXX
-$(OBJ_DIR)/src/fs/driver/ramfs/ramfs_cpio.o : $(ROOTFS_IMAGE)
+$(OBJ_DIR)/src/fs/driver/initfs/initfs_cpio.o : $(ROOTFS_IMAGE)
 
 ar_prerequisites    = $(common_prereqs) $(ar_objs)
 $(OBJ_DIR)/%.a : | $$(@D)/.

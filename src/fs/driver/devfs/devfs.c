@@ -50,7 +50,7 @@ static int devfs_mount(void *par) {
 			if(NULL != __device_registry[i].init) {
 				__device_registry[i].init();
 			}
-			devnod->file_info = (void*) __device_registry[i].fops;
+			devnod->node_info = (void*) __device_registry[i].fops;
 			devnod->fs_type = (fs_drv_t *) &devfs_drv;
 		}
 	}
@@ -75,8 +75,8 @@ static int devfs_delete(const char *fname) {
 /*
  * file_operation
  */
-static void *devfs_open(struct file_desc *desc, const char *mode) {
-	return desc->ops->fopen(desc, mode);
+static void *devfs_open(struct file_desc *desc, int flag) {
+	return desc->ops->fopen(desc, flag);
 }
 
 static int devfs_close(struct file_desc *desc) {

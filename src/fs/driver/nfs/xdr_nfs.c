@@ -339,7 +339,6 @@ int xdr_nfs_get_name(struct xdr *xs, char *point) {
 	return (xdr_opaque(xs, (char *)&file->file_id, sizeof(file->file_id))
 			&& xdr_nfs_namestring(xs, &file->name)
 			&& xdr_opaque(xs, (char *)&file->cookie, sizeof(file->cookie))
-			//&& (int)(0 != (p_fs_fd->fh.cookie = file->cookie)));
 			&& (int)(0 != file->cookie));
 }
 

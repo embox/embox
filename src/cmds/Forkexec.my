@@ -19,6 +19,6 @@ module forkexec {
 
 	depends embox.lib.LibC
 	depends embox.fs.core
-	depends embox.lib.LibElfloader
+	depends embox.lib.LibExec
 	depends embox.framework.LibFramework
 }

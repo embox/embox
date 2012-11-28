@@ -8,67 +8,31 @@
 
 //#include <kernel/syscall.h>
 
-#define SYSCALL_NRS_TOTAL 10
+#include <types.h>
 
-int sys_0(void) {
-	return 0;
-}
+#define SYSCALL_NRS_TOTAL 200
 
-int sys_1(int arg1) {
-	return arg1;
-}
-
-int sys_2(int arg1, int arg2) {
-	return arg2;
-}
-
-int sys_3(int arg1, int arg2, int arg3) {
-	return arg3;
-}
-
-int sys_4(int arg1, int arg2, int arg3, int arg4) {
-	return arg4;
-}
-
-int sys_5(int arg1, int arg2, int arg3, int arg4, int arg5) {
-	return arg5;
-}
-
-#include <hal/ipl.h>
-#include <kernel/thread/api.h>
-#include <kernel/task.h>
-
-clock_t sys_thread_running_time(void) {
-	ipl_enable();
-	return thread_get_running_time(thread_self());
-}
-
-int sys_thread_exit(void *r) {
-	ipl_enable();
-	thread_exit(r);
-	return 0;
-}
-
-#include <stdio.h>
-
-int sys_exit(void *r) {
-	ipl_enable();
-	printf("Exit task %d with exitcode: %d\n", task_self()->tid, (int) r);
-	task_exit(r);
-	return 0;
-}
-
-extern int sys_fork(void);
+extern void *sys_mmap2(void *start, size_t length, int prot, int flags, int fd, uint32_t pgoffset);
 
 void *const SYSCALL_TABLE[SYSCALL_NRS_TOTAL] = {
-	sys_0,
-	sys_1,
-	sys_2,
-	sys_3,
-	sys_4,
-	sys_5,
-	sys_thread_running_time,
-	sys_thread_exit,
-	sys_fork,
-	sys_exit,
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 0 - 9
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 10 - 19
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 20 - 29
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 30 - 39
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 40 - 49
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 50
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 60
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 70
+ 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 80
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 90
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 100
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 110
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 120
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 130
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 140
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 150
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 160
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 170
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 180
+	NULL, NULL, sys_mmap2, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 190
 };
