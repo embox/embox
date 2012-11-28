@@ -12,8 +12,9 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <types.h>
 
-#include <fcntl.h>
 #include <kernel/task.h>
 
 EMBOX_CMD(exec);
@@ -26,14 +27,16 @@ static int exec(int argc, char **argv) {
 	return new_task(new_task_entry, filename);
 }
 
-extern int elf_exec(char *filename);
-
 static void *new_task_entry(void *filename) {
 	char s_filename[255];
+	char *argv[2] = {s_filename, NULL};
+	char *envp[1] = {NULL};
+
+	/* Copying and free filename */
 	strcpy(s_filename, filename);
 	free(filename);
 
-	elf_exec(s_filename);
+	execve(s_filename, argv, envp);
 
 	return NULL;
 }

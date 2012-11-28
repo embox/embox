@@ -40,7 +40,7 @@ typedef struct {
 	uint32_t phdr;
 	uint32_t phnum;
 	uint32_t phent;
-	char *filename;
+	const char *filename;
 } exec_t;
 
 
@@ -56,23 +56,36 @@ static inline uint32_t stack_push_int(uint32_t *stack, uint32_t val) {
 	return *stack;
 }
 
-static void stack_push_aux(uint32_t *stack, uint32_t type, uint32_t val) {
+static inline void stack_push_aux(uint32_t *stack, uint32_t type, uint32_t val) {
 	stack_push_int(stack, val);
 	stack_push_int(stack, type);
 }
 
-static void fill_stack(uint32_t *stack, exec_t *exec) {
-	uint32_t p;
+static void fill_stack(uint32_t *stack, exec_t *exec, char *const argv[], char *const envp[]) {
+	int argc = 0, envc = 0;
+	uint32_t sp;
 
-	// end marker
+	/* Counting parameters */
+	while (argv[argc]) argc++;
+	while (envp[envc]) envc++;
+
+	// End marker. Is it necessary?
+	sp = stack_push_int(stack, 0);
+
+	/* Pushing envp strings */
+	for (int i = envc - 1; i >= 0; i--) {
+		stack_push_str(stack, envp[i]);
+	}
+
+	/* Pushing argv strings */
+	for (int i = argc - 1; i >= 0; i--) {
+		stack_push_str(stack, argv[i]);
+	}
+
+	// Padding. Is it necessary?
 	stack_push_int(stack, 0);
 
-	// argv[0]
-	p = stack_push_str(stack, exec->filename);
-
-	// padding
-	stack_push_int(stack, 0);
-
+	/* Pushing auxiliary data */
 	stack_push_aux(stack, AT_NULL, 0);
 	stack_push_aux(stack, AT_PAGESZ, 0x1000);
 
@@ -92,15 +105,22 @@ static void fill_stack(uint32_t *stack, exec_t *exec) {
 	stack_push_aux(stack, AT_GID, 1000);
 	stack_push_aux(stack, AT_EGID, 1000);
 
-	// envp[]
+	/* Pushing envp */
 	stack_push_int(stack, 0);
+	for (int i = envc - 1; i >= 0; i--) {
+		sp -= strlen(envp[i]) + 1;
+		stack_push_int(stack, sp);
+	}
 
-	// argv[]
+	/* Pushing argv */
 	stack_push_int(stack, 0);
-	stack_push_int(stack, p);
+	for (int i = argc - 1; i >= 0; i--) {
+		sp -= strlen(argv[i]) + 1;
+		stack_push_int(stack, sp);
+	}
 
-	// argc
-	stack_push_int(stack, 1);
+	/* Pushing argc */
+	stack_push_int(stack, argc);
 }
 
 static int load_interp(char *filename, exec_t *exec) {
@@ -168,7 +188,7 @@ static int load_interp(char *filename, exec_t *exec) {
 	return ENOERR;
 }
 
-static int load_exec(char *filename, exec_t *exec) {
+static int load_exec(const char *filename, exec_t *exec) {
 	Elf32_Ehdr header;
 	size_t size;
 	Elf32_Phdr *ph_table;
@@ -250,7 +270,7 @@ static int load_exec(char *filename, exec_t *exec) {
 	return ENOERR;
 }
 
-int elf_exec(char *filename) {
+int execve(const char *filename, char *const argv[], char *const envp[]) {
 	struct ue_data ue_data;
 	uint32_t entry;
 	uint32_t stack;
@@ -265,7 +285,7 @@ int elf_exec(char *filename) {
 
 	stack = mmap_create_stack(task_self()->mmap);
 
-	fill_stack(&stack, &exec);
+	fill_stack(&stack, &exec, argv, envp);
 
 	entry = exec.interp_entry ? exec.interp_entry : exec.entry;
 
