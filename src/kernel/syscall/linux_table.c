@@ -12,18 +12,16 @@
 
 #define SYSCALL_NRS_TOTAL 200
 
+extern int sys_fork(void);
 extern long sys_exit(int errcode);
 extern size_t sys_write(int fd, const void *buf, size_t nbyte);
 extern void *sys_mmap2(void *start, size_t length, int prot, int flags, int fd, uint32_t pgoffset);
 extern int sys_open(const char *path, int flags, mode_t mode);
 extern int sys_close(int fd);
-
-int sys_newstat(void) {
-	return -ENOTSUP;
-}
+extern int sys_newfstat(int fd, void *buf);
 
 void *const SYSCALL_TABLE[SYSCALL_NRS_TOTAL] = {
-	NULL, sys_exit, NULL, NULL, sys_write, sys_open, sys_close, NULL, NULL, NULL,    // 0 - 9
+	NULL, sys_exit, sys_fork, NULL, sys_write, sys_open, sys_close, NULL, NULL, NULL,    // 0 - 9
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 10 - 19
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 20 - 29
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 30 - 39
@@ -33,7 +31,7 @@ void *const SYSCALL_TABLE[SYSCALL_NRS_TOTAL] = {
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 70
  	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 80
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 90
-	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, sys_newstat, NULL,    // 100
+	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, sys_newfstat, NULL,    // 100
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 110
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 120
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,    // 130

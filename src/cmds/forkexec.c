@@ -21,7 +21,7 @@ EMBOX_CMD(exec);
 static void *new_task_entry(void *file);
 
 static int exec(int argc, char **argv) {
-	char filename[255];
+	char *filename = malloc(strlen(argv[argc-1]));
 	strcpy(filename, argv[argc - 1]);
 	return new_task(new_task_entry, filename);
 }
@@ -29,6 +29,11 @@ static int exec(int argc, char **argv) {
 extern int elf_exec(char *filename);
 
 static void *new_task_entry(void *filename) {
-	elf_exec(filename);
+	char s_filename[255];
+	strcpy(s_filename, filename);
+	free(filename);
+
+	elf_exec(s_filename);
+
 	return NULL;
 }

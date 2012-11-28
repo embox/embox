@@ -175,6 +175,8 @@ static int load_exec(char *filename, exec_t *exec) {
 	Elf32_Phdr *ph;
 	struct marea *marea;
 	int err;
+	char interp[255];
+	int has_interp = 0;
 
 	int fd = open(filename, O_RDONLY);
 
@@ -205,7 +207,13 @@ static int load_exec(char *filename, exec_t *exec) {
 		}
 
 		if (ph->p_type == PT_INTERP) {
+			if ((err = elf_read_interp(fd, ph, interp))) {
+				free(ph_table);
+				return err;
+			}
+			has_interp = 1;
 
+			continue;
 		}
 
 		if (ph->p_type != PT_LOAD) {
@@ -228,7 +236,11 @@ static int load_exec(char *filename, exec_t *exec) {
 	free(ph_table);
 	close(fd);
 
-	load_interp("ld.so", exec);
+	if (has_interp) {
+		if ((err = load_interp(interp, exec))) {
+			return err;
+		}
+	}
 
 	exec->filename = filename;
 	exec->entry = header.e_entry;
@@ -244,6 +256,8 @@ int elf_exec(char *filename) {
 	uint32_t stack;
 	int err;
 	exec_t exec;
+
+	memset(&exec, 0, sizeof(exec_t));
 
 	if ((err = load_exec(filename, &exec))) {
 		return err;
