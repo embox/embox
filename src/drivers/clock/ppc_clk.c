@@ -17,9 +17,17 @@
 
 EMBOX_UNIT_INIT(ppc_clk_init);
 
+/** Test for different frequancy (300K ticks -- i.e. 5min)
+ * 300MHz is 00:04:10.356 (300K)
+ * 333MHz is 00:04:37.672 (300K)
+ * 350MHz is 00:05:22.747 (300K)
+ * 366MHz is 00:05:39.987 (300K)
+ * 375MHz is 00:06:27.322 (343K)
+ * We will use 333MHz as default settings
+ */
 #define PPCCLK_IRQ  10
 #define PPCCLK_FREQ SYS_CLOCK
-#define PPCCLK_DECR 400
+#define PPCCLK_DECR (PPCCLK_FREQ / 1000) /* precision for ms */
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	__set_tsr(__get_tsr() & ~TSR_DIS);
