@@ -8,8 +8,6 @@
 #ifndef LIMITS_H_
 #define LIMITS_H_
 
-
-
 /* Number of bits in a `char'.	*/
 #define CHAR_BIT	8
 
@@ -33,5 +31,19 @@
 
 /* Maximum value an `unsigned int' can hold.  (Minimum is 0.)  */
 #define UINT_MAX	4294967295U
+
+/* Minimum and maximum values a `signed long int' can hold.  */
+#define LONG_MIN	(-LONG_MAX - 1)
+#define LONG_MAX	2147483647L
+
+/* Maximum value an `unsigned long int' can hold.  (Minimum is 0.)  */
+#define ULONG_MAX	4294967295UL
+
+/* Minimum and maximum values a `signed long long int' can hold.  */
+#define LLONG_MIN	(-LLONG_MAX - 1)
+#define LLONG_MAX	9223372036854775807LL
+
+/* Maximum value an `unsigned long long int' can hold.  (Minimum is 0.)  */
+#define ULLONG_MAX	18446744073709551615ULL
 
 #endif /* LIMITS_H_ */
