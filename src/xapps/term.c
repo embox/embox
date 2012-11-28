@@ -40,11 +40,7 @@ static void on_creat (struct xwnd_application * xapp, struct x_event * ev) {
 	text_buf[0] = '\0';
 	length = 0;
 	line = 0;
-
-	xapp->window.x = 1;
-	xapp->window.y = 1;
-	xapp->window.ht = 100;
-	xapp->window.wd = 100;
+	xwnd_application_place_window(xapp, 0);
 }
 
 static void on_draw (struct xwnd_application * xapp, struct x_event * ev) {
@@ -74,7 +70,7 @@ static void on_key (struct xwnd_application * xapp, struct x_event * ev) {
 
 static void * xwnd_term_main(void * args) {
 	struct xwnd_application xapp;
-	xwnd_application_init (&xapp);
+	xwnd_application_init (&xapp, args);
 
 	xwnd_application_set_event_handler(&xapp, XEV_CREAT, on_creat);
 	xwnd_application_set_event_handler(&xapp, XEV_DRAW, on_draw);

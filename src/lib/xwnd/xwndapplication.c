@@ -71,42 +71,42 @@ int xwnd_application_set_event_handler (struct xwnd_application * app, enum x_ev
 void xwnd_application_drop_event_to_default_handler (struct xwnd_application * app, struct x_event * event) {
 }
 
-int xwnd_application_init (struct xwnd_application * app) {
+int xwnd_application_init (struct xwnd_application * app, void * args) {
 	app->xapp_id = xwnd_app_registry_allocate();
 	return xwnd_app_registry_get_subscription(app);
 }
 
-/*static void xwnd_app_place_window (int quad, struct xwnd_window * rect) {
+void xwnd_application_place_window (struct xwnd_application * app, int quad) {
 	switch (quad) {
 		case 0:
-			rect->x = 0;
-			rect->y = 0;
-			rect->wd = 100;
-			rect->ht = 100;
+			app->window.x = 0;
+			app->window.y = 0;
+			app->window.wd = 160;
+			app->window.ht = 100;
 			break;
 		case 1:
-			rect->x = 100;
-			rect->y = 0;
-			rect->wd = 100;
-			rect->ht = 100;
+			app->window.x = 160;
+			app->window.y = 0;
+			app->window.wd = 160;
+			app->window.ht = 100;
 			break;
 		case 2:
-			rect->x = 0;
-			rect->y = 100;
-			rect->wd = 100;
-			rect->ht = 100;
+			app->window.x = 0;
+			app->window.y = 100;
+			app->window.wd = 160;
+			app->window.ht = 100;
 			break;
 		case 3:
-			rect->x = 100;
-			rect->y = 100;
-			rect->wd = 100;
-			rect->ht = 100;
+			app->window.x = 160;
+			app->window.y = 100;
+			app->window.wd = 160;
+			app->window.ht = 100;
 			break;
 		default:
 			break;
 	}
 }
-*/
+
 int xwnd_application_main_loop (struct xwnd_application * app) {
 	struct x_event event;
 	int exit_status;

@@ -4,6 +4,8 @@
 #include <util/array.h>
 #include <kernel/task.h>
 #include <string.h>
+#include <stdio.h>
+#include <lib/xwnd/application.h>
 
 static struct xwnd_app_registry_node xwnd_app_nodes[MAX_XWND_APPS];
 static int xwnd_focused_app;
@@ -24,8 +26,8 @@ void xwnd_app_registry_fini (void) {
 
 const struct xwnd_app_desc *xwnd_app_desc_lookup(const char *app_name) {
 	int i;
-
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__xwnd_app_repository); i++) {
+		printf("Searching for %s, %s\n", app_name, __xwnd_app_repository[i].app_name);
 		if(0 == strcmp(app_name, __xwnd_app_repository[i].app_name)) {
 			return &__xwnd_app_repository[i];
 		}
