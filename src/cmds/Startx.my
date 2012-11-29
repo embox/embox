@@ -21,4 +21,5 @@ module startx{
 	depends embox.xwnd.draw_helpers
 	depends embox.xwnd.application
 	depends embox.xwnd.xterm
+	depends embox.xwnd.xfigure
 }
