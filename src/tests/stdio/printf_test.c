@@ -53,14 +53,25 @@ TEST_CASE("Test of specifier with type integer") {
 #define BUFF2_SZ 32
 
 TEST_CASE("Test of specifier with type string") {
-	char buff2[BUFF2_SZ];//, *null;
+	char buff2[BUFF2_SZ], *null;
 
-//	null = NULL;
+	null = NULL;
 
 	HOPE_EQUAL("c", &buff2[0], "%c", 'c');
-
+;
 	HOPE_EQUAL("hello!", &buff2[0], "%s!", "hello");
-//	HOPE_EQUAL("(null)", &buff2[0], "%s", null); /* FIXME sprintf couldn't print NULL (printf could)*/
+#if 0 /* LOL */
+	/* THIS IS SEGMENTATION FAULT: GCC Compiler will replace
+	 * call of sprintf(<buff>, "%s", <str>) to call of strcpy(<buff>, <str>)..
+	 * this is so meanly */
+	HOPE_EQUAL("(null)", &buff2[0], "%s", null);
+#else
+	{
+	int (*spf)(char *out, const char *format, ...) = sprintf;
+	spf(&buff2[0], "%s", null);
+	test_assert_str_equal("(null)", &buff2[0]);
+	}
+#endif
 }
 
 #define BUFF3_SZ 32

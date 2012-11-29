@@ -32,11 +32,11 @@
 #include <types.h>
 #include <unistd.h>
 
-int __print(void (*printchar_handler)(char **str, int c),
+extern int __print(void (*printchar_handler)(char **str, int c),
 		char **out, const char *format, va_list args);
 
 static void printchar(char **str, int c) {
-	assert(str);
+	assert(str != NULL);
 
 	**str = c;
 	++(*str);
