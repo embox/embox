@@ -26,10 +26,10 @@ package embox.cmd.net
 			Vita Loginova
 	''')
 module servd {
-	depends embox.sevice.SrvLib
+	depends embox.service.SrvLib
 
-	depends embox.sevice.Test_service
-	depends embox.sevice.Index_service
+	depends embox.service.Test_service
+	depends embox.service.Index_service
 
 	depends embox.cmd.net.web_server
 	depends embox.cmd.net.web_server.conf
