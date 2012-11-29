@@ -58,7 +58,6 @@ static int print_s(void (*printchar_handler)(char **str, int c), char **out,
 	return pc;
 }
 
-extern int prom_printf(char*,...);
 static int print_i(void (*printchar_handler)(char **str, int c), char **out,
 		unsigned long long int u, int neg, int width, int min_len,
 		unsigned int ops, int base, int letbase) {

@@ -105,4 +105,3 @@ TEST_CASE("Test print % symbol") {
 
 	HOPE_EQUAL("% %", &buff6[0], "%% %c", '%');
 }
-
