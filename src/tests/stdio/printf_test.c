@@ -60,18 +60,7 @@ TEST_CASE("Test of specifier with type string") {
 	HOPE_EQUAL("c", &buff2[0], "%c", 'c');
 ;
 	HOPE_EQUAL("hello!", &buff2[0], "%s!", "hello");
-#if 0 /* LOL */
-	/* THIS IS SEGMENTATION FAULT: GCC Compiler will replace
-	 * call of sprintf(<buff>, "%s", <str>) to call of strcpy(<buff>, <str>)..
-	 * this is so meanly */
-	HOPE_EQUAL("(null)", &buff2[0], "%s", null);
-#else
-	{
-	int (*spf)(char *out, const char *format, ...) = sprintf;
-	spf(&buff2[0], "%s", null);
-	test_assert_str_equal("(null)", &buff2[0]);
-	}
-#endif
+	HOPE_EQUAL("(null) - is NULL", &buff2[0], "%s - is NULL", null);
 }
 
 #define BUFF3_SZ 32
