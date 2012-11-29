@@ -9,109 +9,23 @@
 #include <lib/xwnd/application.h>
 #include <lib/xwnd/draw_helpers.h>
 #include <lib/xwnd/fonts.h>
-#include <math.h>
-#include <stdlib.h>
-
-void xwnd_draw_horiz_line(struct xwnd_application * xapp, unsigned x,
-		unsigned y, unsigned l, unsigned c) {
-	int i;
-	for (i = 0; i <= l; i++) {
-		xwnd_draw_pixel(&xapp->window, x + i, y, c);
-	}
-}
-
-void xwnd_draw_vert_line(struct xwnd_application * xapp, unsigned x, unsigned y,
-		unsigned l, unsigned c) {
-	int i;
-	for (i = 0; i <= l; i++) {
-		xwnd_draw_pixel(&xapp->window, x, y + i, c);
-	}
-}
-
-void xwnd_draw_line(struct xwnd_application * xapp, unsigned x1, unsigned y1,
-		unsigned x2, unsigned y2, unsigned c) {
-	int i;
-	double a, b;
-
-	if (x1 == x2) {
-		double t1, t2;
-		t1 = min(y1, y2);
-		t2 = max(y1, y2);
-		xwnd_draw_vert_line(xapp, x1, t1, t2 - t1, c);
-		return;
-	}
-
-	if (y1 == y2) {
-		double t1, t2;
-		t1 = min(x1, x2);
-		t2 = max(x1, x2);
-		xwnd_draw_horiz_line(xapp, t1, y1, t2 - t1, c);
-		return;
-	}
-
-	a = ((double) y2 - y1) / ((double) x2 - x1);
-	b = (y1 - a * x1);
-	if (abs((double) x2 - x1) > abs((double) y2 - y1)) {
-		double t1, t2;
-		t1 = min(x1, x2);
-		t2 = max(x1, x2);
-		for (i = t1; i <= t2; i++) {
-			xwnd_draw_pixel(&xapp->window, i, a * i + b, c);
-		}
-	} else {
-		double t1, t2;
-		t1 = min(y1, y2);
-		t2 = max(y1, y2);
-		for (i = t1; i <= t2; i++) {
-			xwnd_draw_pixel(&xapp->window, (i - b) / a, i, c);
-		}
-	}
-}
-
-void xwnd_draw_rectangle(struct xwnd_application * xapp, unsigned x1,
-		unsigned y1, unsigned x2, unsigned y2, unsigned c) {
-	if ((x1 > x2) || (y1 > y2)) {
-		return;
-	}
-	xwnd_draw_horiz_line(xapp, xapp->window.x + x1, xapp->window.y + y1,
-			x2 - x1, c);
-	xwnd_draw_horiz_line(xapp, xapp->window.x + x1, xapp->window.y + y2,
-			x2 - x1, c);
-	xwnd_draw_vert_line(xapp, xapp->window.x + x1, xapp->window.y + y1, y2 - y1,
-			c);
-	xwnd_draw_vert_line(xapp, xapp->window.x + x2, xapp->window.y + y1, y2 - y1,
-			c);
-}
-
-void xwnd_draw_polygon(struct xwnd_application * xapp, unsigned *points,
-		int count, unsigned c) {
-	int i;
-	if (count % 2 != 0) {
-		return;
-	}
-	for (i = 0; i < count - 2; i += 2) {
-		xwnd_draw_line(xapp, points[i], points[i + 1], points[i + 2],
-				points[i + 3], c);
-	}
-	xwnd_draw_line(xapp, points[i], points[i + 1], points[0], points[1], c);
-}
 
 void draw_rectangles(struct xwnd_application * xapp) {
-	xwnd_draw_rectangle(xapp, 10, 10, 50, 50, 52);
-	xwnd_draw_rectangle(xapp, 35, 20, 65, 40, 35);
-	xwnd_draw_rectangle(xapp, 1, 30, 60, 90, 15);
-	xwnd_draw_rectangle(xapp, 50, 45, 150, 69, 52);
-	xwnd_draw_rectangle(xapp, 76, 32, 97, 40, 54);
-	xwnd_draw_rectangle(xapp, 160, 40, 190, 70, 15);
+	xwnd_draw_rectangle(&xapp->window, 10, 10, 50, 50, 52);
+	xwnd_draw_rectangle(&xapp->window, 35, 20, 65, 40, 35);
+	xwnd_draw_rectangle(&xapp->window, 1, 30, 60, 90, 15);
+	xwnd_draw_rectangle(&xapp->window, 50, 45, 150, 69, 52);
+	xwnd_draw_rectangle(&xapp->window, 76, 32, 97, 40, 54);
+	xwnd_draw_rectangle(&xapp->window, 160, 40, 190, 70, 15);
 }
 
 void draw_lines(struct xwnd_application * xapp) {
-	xwnd_draw_line(xapp, 155, 10, 175, 50, 52);
-	xwnd_draw_line(xapp, 140, 12, 176, 97, 35);
-	xwnd_draw_line(xapp, 100, 40, 170, 80, 15);
-	xwnd_draw_line(xapp, 10, 250, 76, 32, 52);
-	xwnd_draw_line(xapp, 38, 90, 65, 56, 35);
-	xwnd_draw_line(xapp, 130, 43, 10, 190, 15);
+	xwnd_draw_line(&xapp->window, 155, 10, 175, 50, 52);
+	xwnd_draw_line(&xapp->window, 140, 12, 176, 97, 35);
+	xwnd_draw_line(&xapp->window, 100, 40, 170, 80, 15);
+	xwnd_draw_line(&xapp->window, 10, 250, 76, 32, 52);
+	xwnd_draw_line(&xapp->window, 38, 90, 65, 56, 35);
+	xwnd_draw_line(&xapp->window, 130, 43, 10, 190, 15);
 }
 
 void draw_polygons(struct xwnd_application * xapp) {
@@ -119,9 +33,9 @@ void draw_polygons(struct xwnd_application * xapp) {
 	unsigned points2[] = { 10, 10, 50, 40, 80, 40, 120, 10 };
 	unsigned points3[] = { 44, 50, 78, 90, 22, 60, 90, 44, 20, 36 };
 
-	xwnd_draw_polygon(xapp, points1, 6, 35);
-	xwnd_draw_polygon(xapp, points2, 8, 15);
-	xwnd_draw_polygon(xapp, points3, 10, 52);
+	xwnd_draw_polygon(&xapp->window, points1, 6, 35);
+	xwnd_draw_polygon(&xapp->window, points2, 8, 15);
+	xwnd_draw_polygon(&xapp->window, points3, 10, 52);
 }
 
 void clear(struct xwnd_application * xapp) {

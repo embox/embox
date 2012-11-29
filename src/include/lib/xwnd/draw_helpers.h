@@ -12,9 +12,20 @@
 #endif
 #include <lib/xwnd/window.h>
 
-extern void xwnd_draw_pixel (const struct xwnd_window *wnd, unsigned x, unsigned y, unsigned c);
+extern void xwnd_draw_pixel(const struct xwnd_window *wnd, unsigned x,
+		unsigned y, unsigned c);
+extern void xwnd_draw_horizontal_line(const struct xwnd_window * wnd,
+		unsigned x, unsigned y, unsigned l, unsigned c);
+extern void xwnd_draw_vertical_line(const struct xwnd_window * wnd, unsigned x,
+		unsigned y, unsigned l, unsigned c);
+extern void xwnd_draw_line(const struct xwnd_window * wnd, unsigned x1,
+		unsigned y1, unsigned x2, unsigned y2, unsigned c);
+extern void xwnd_draw_rectangle(const struct xwnd_window * wnd, unsigned x1,
+		unsigned y1, unsigned x2, unsigned y2, unsigned c);
+extern void xwnd_draw_polygon(const struct xwnd_window * wnd, unsigned *points,
+		int count, unsigned c);
 
-extern void xwnd_draw_window (const struct xwnd_window *wnd);
-extern void xwnd_clear_window (const struct xwnd_window *wnd);
+extern void xwnd_draw_window(const struct xwnd_window *wnd);
+extern void xwnd_clear_window(const struct xwnd_window *wnd);
 
 #endif /* XWND_DRAW_HELPERS_H_ */
