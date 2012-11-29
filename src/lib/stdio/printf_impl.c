@@ -60,13 +60,14 @@ static int print_s(void (*printchar_handler)(char **str, int c), char **out,
 
 
 static int print_i(void (*printchar_handler)(char **str, int c), char **out,
-		unsigned long long int u, int neg, int width, int pad_count,
+		unsigned long long int u, int neg, int width, int min_len,
 		unsigned int ops, int base, int letbase) {
-	char buff[PRINT_I_BUFF_SZ], *s;
+	char buff[PRINT_I_BUFF_SZ], *s, *end;
 	unsigned long long int t;
+    int pad_count;
 
-	s = &buff[0] + sizeof buff / sizeof buff[0] - 1;
-	*s = 0;
+	s = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
+	*end = 0;
 	if (neg) u = -u;
 
 	while (u) {
@@ -76,6 +77,11 @@ static int print_i(void (*printchar_handler)(char **str, int c), char **out,
 		u /= base;
 	}
 
+    if (min_len) {
+        pad_count = end - s - neg || ops & (OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE) ? 1 : ops & OPS_FLAG_WITH_PREFIX ? 1 + base == 16 : 0;
+        while (pad_count--) *--s = '0';
+    }
+
 	if (neg) *--s = '-';
 	else if (ops & (OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE))
 		*--s = ops & OPS_FLAG_WITH_SIGN ? '+' : ' ';
@@ -84,7 +90,6 @@ static int print_i(void (*printchar_handler)(char **str, int c), char **out,
 		*--s = '0';
 	}
 
-	/* FIXME fixes pendings */
 	return print_s(printchar_handler, out, s, width, 0, ops);
 }
 
@@ -130,6 +135,7 @@ single_print:
 			case '0': ops |= OPS_FLAG_ZERO_PAD; break;
 			}
 		}
+		ops = ops & OPS_FLAG_LEFT_ALIGN ? ops & ~OPS_FLAG_ZERO_PAD : ops;
 		ops = ops & OPS_FLAG_WITH_SIGN ? ops & ~OPS_FLAG_EXTRA_SPACE : ops;
 after_flags:
 
