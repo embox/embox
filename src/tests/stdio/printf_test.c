@@ -31,21 +31,21 @@ TEST_CASE("Test of print long numbers") {
 
 	/* signed int */
 	TEST_VAL_TO_STR(&buff[0], d, 32760);
-	TEST_VAL_TO_STR(&buff[0], d, -32760);
+	TEST_VAL_TO_STR(&buff[0], d, -32761);
 
 	/* unsigned int */
 	TEST_VAL_TO_STR(&buff[0], u, 65530);
 
 	/* long signed int */
 	TEST_VAL_TO_STR(&buff[0], ld, 2147483640);
-	TEST_VAL_TO_STR(&buff[0], ld, -2147483640);
+	TEST_VAL_TO_STR(&buff[0], ld, -2147483641);
 
 	/* long unsigned int */
 	TEST_VAL_TO_STR(&buff[0], lu, 4294967290);
 
 	/* long long signed int */
 	TEST_VAL_TO_STR(&buff[0], lld, 9223372036854775800);
-	TEST_VAL_TO_STR(&buff[0], lld, -9223372036854775800);
+	TEST_VAL_TO_STR(&buff[0], lld, -9223372036854775801);
 
 	/* long long unsigned int */
 	TEST_VAL_TO_STR(&buff[0], llu, 18446744073709551610);
