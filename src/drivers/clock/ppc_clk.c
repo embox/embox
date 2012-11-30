@@ -6,14 +6,15 @@
  * @author Ilia Vaprol
  */
 
-#include <types.h>
+#include <asm/psr.h>
+#include <asm/regs.h>
+#include <embox/unit.h>
 #include <hal/clock.h>
 #include <hal/system.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
-#include <asm/psr.h>
+#include <types.h>
 
-#include <embox/unit.h>
 
 EMBOX_UNIT_INIT(ppc_clk_init);
 
@@ -75,4 +76,3 @@ static int ppc_clk_init(void) {
 	clock_source_register(&ppc_clk_clock_source);
 	return irq_attach(PPCCLK_IRQ, clock_handler, 0, NULL, "ppc_clk");
 }
-

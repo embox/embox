@@ -8,7 +8,7 @@
 #include <asm/traps.h>
 #include <prom/prom_printf.h>
 
-void trap_handle(struct pt_regs *regs) {
+void trap_handler(struct pt_regs *regs) {
     unsigned int *r;
     r = &regs->gpr[0];
     prom_printf(
@@ -31,4 +31,3 @@ void trap_handle(struct pt_regs *regs) {
             regs->lr, regs->cr, regs->xer, regs->ctr,
             regs->srr0, regs->srr1);
 }
-

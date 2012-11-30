@@ -10,10 +10,9 @@
 
 #ifndef __ASSEMBLER__
 
-#include <types.h>
-
 #include <asm/psr.h>
 #include <asm/regs.h>
+#include <types.h>
 
 typedef uint32_t __ipl_t;
 

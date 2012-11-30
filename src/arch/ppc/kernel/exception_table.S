@@ -7,6 +7,7 @@
 
 #include <asm/linkage.h>
 #include <asm/traps.h>
+#include <module/embox/arch/interrupt.h>
 
 	.section .trap_table.text
 
@@ -44,10 +45,14 @@
 	.endm
 
 	.macro IRQ_ENTRY n
+#ifndef INTERRUPT_STUB
 		EXCEPTION_ENTRY \n    /* define general entry point for interrupts */
 			SAVE_ALL          /* save all register */
 			li r0, \n         /* load interrupt type into r0 */
 			b irq_stub        /* call default interrupt handler */
+#else /* INTERRUPT_STUB */
+		TRAP_ENTRY \n         /* handle irq as trap */
+#endif /* !INTERRUPT_STUB */
 	.endm
 
 /**
@@ -71,4 +76,3 @@ TRAP_ENTRY 12 /* Watchdog Timer interrupt handler */
 TRAP_ENTRY 13 /* Data TLB Error interrupt handler */
 TRAP_ENTRY 14 /* Instruction TLB Error interrupt handler */
 TRAP_ENTRY 15 /* Debug interrupt handler */
-

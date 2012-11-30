@@ -28,4 +28,3 @@ ENTRY context_switch
 	isync
 
 	blr
-
