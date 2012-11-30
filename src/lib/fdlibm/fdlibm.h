@@ -109,7 +109,8 @@ extern double log __P((double));
 extern double log10 __P((double));
 extern double modf __P((double, double *));
 
-extern double __pow(double, double);
+extern double pow __P((double));
+extern double powl __P((double));
 extern double sqrt __P((double));
 
 extern double ceil __P((double));
