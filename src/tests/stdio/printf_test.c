@@ -105,3 +105,15 @@ TEST_CASE("Test print % symbol") {
 
 	HOPE_EQUAL("% %", &buff6[0], "%% %c", '%');
 }
+
+#define BUFF7_SZ 32
+
+TEST_CASE("Test of %n specifier") {
+	char buff7[BUFF7_SZ], *answer;
+	int size;
+
+	answer = " 1'm not stupid   ";
+
+	HOPE_EQUAL(answer, &buff7[0], "% 1.1d'%-*cnot %-9.6s%n", 1, 2, 'm', "stupid!!", &size);
+	test_assert_equal(strlen(answer), size);
+}
