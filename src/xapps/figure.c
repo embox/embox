@@ -7,8 +7,15 @@
  */
 
 #include <lib/xwnd/application.h>
+#include <lib/xwnd/resources.h>
 #include <lib/xwnd/draw_helpers.h>
 #include <lib/xwnd/fonts.h>
+
+struct xfigure_res {
+	void (*last_functon)(struct xwnd_application *);
+};
+
+XAPP_REGISTER_RES_TYPE(struct xfigure_res);
 
 void draw_rectangles(struct xwnd_application * xapp) {
 	xwnd_draw_rectangle(&xapp->window, 10, 10, 50, 50, 52);
@@ -53,15 +60,19 @@ void print_help(struct xwnd_application * xapp) {
 }
 
 static void on_creat(struct xwnd_application * xapp, struct x_event * ev) {
+	struct xfigure_res * resources = XAPP_RESOURCES(xapp);
 	xapp->window.x = 1;
 	xapp->window.y = 1;
 	xapp->window.ht = 150;
 	xapp->window.wd = 200;
-	print_help(xapp);
+	resources->last_functon = print_help;
 }
 
 static void on_draw(struct xwnd_application * xapp, struct x_event * ev) {
+	struct xfigure_res * resources = XAPP_RESOURCES(xapp);
+	xwnd_clear_window(&xapp->window);
 	xwnd_draw_window(&xapp->window);
+	resources->last_functon(xapp);
 }
 
 static void on_quit(struct xwnd_application * xapp, struct x_event * ev) {
@@ -70,34 +81,36 @@ static void on_quit(struct xwnd_application * xapp, struct x_event * ev) {
 
 static void on_key(struct xwnd_application * xapp, struct x_event * ev) {
 	char key;
+	struct xfigure_res * resources;
+
+	resources = XAPP_RESOURCES(xapp);
 	key = ev->info.kbd.key;
 	switch (key) {
 	case 'r':
-		clear(xapp);
-		draw_rectangles(xapp);
+		resources->last_functon = draw_rectangles;
 		break;
 	case 'l':
-		clear(xapp);
-		draw_lines(xapp);
+		resources->last_functon = draw_lines;
 		break;
 	case 'p': {
-		clear(xapp);
-		draw_polygons(xapp);
+		resources->last_functon = draw_polygons;
 		break;
 	}
 	case 'h':
-		clear(xapp);
-		print_help(xapp);
+		resources->last_functon = print_help;
 		break;
 	case 'c':
-		clear(xapp);
+		resources->last_functon = clear;
 		break;
 	}
 }
 
 static void * xwnd_figure_main(void * args) {
 	struct xwnd_application xapp;
+	struct xfigure_res res;
+
 	xwnd_application_init(&xapp, NULL);
+	XAPP_INIT_RESOURCES (&xapp, res);
 
 	xwnd_application_set_event_handler(&xapp, XEV_CREAT, on_creat);
 	xwnd_application_set_event_handler(&xapp, XEV_DRAW, on_draw);
