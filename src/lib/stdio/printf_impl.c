@@ -59,14 +59,15 @@ static int print_s(void (*printchar_handler)(char **str, int c), char **out,
 }
 
 static int print_i(void (*printchar_handler)(char **str, int c), char **out,
-		unsigned long long int u, int neg, int width, int min_len,
+		unsigned long long int u, int is_signed, int width, int min_len,
 		unsigned int ops, int base, int letbase) {
 	char buff[PRINT_I_BUFF_SZ], *s, *end;
 	unsigned long long int t;
-    int len, pad_count;
+	int neg, len, extra_len, pad_count;
 
 	s = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
+	neg = is_signed && ((long long int)u < 0);
 	if (neg) u = -u;
 
 	do {
@@ -77,21 +78,21 @@ static int print_i(void (*printchar_handler)(char **str, int c), char **out,
 	} while (u);
 
 	len = end - s;
-	pad_count = (len < min_len ? min_len - len : (ops & OPS_FLAG_ZERO_PAD ? width - len : 0));
-	width = ops & OPS_FLAG_ZERO_PAD ? 0 : width;
-	if (pad_count) pad_count -= (neg || (ops & (OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE))
-			? 1 : ops & OPS_FLAG_WITH_PREFIX ? 1 + (base == 16) : 0);
-    while (pad_count--) *--s = '0';
+	extra_len = neg || (is_signed && (ops & (OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE))) ? 1
+			: ((base != 10) && (ops & OPS_FLAG_WITH_PREFIX) ? 1 + (base == 16) : 0);
+	pad_count = (len < min_len ? min_len :
+			((ops & OPS_FLAG_ZERO_PAD) && !(ops & OPS_FLAG_LEFT_ALIGN) ? width : 0)) - len - extra_len;
+	while (pad_count-- > 0) *--s = '0';
 
 	if (neg) *--s = '-';
-	else if (ops & (OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE))
+	else if (is_signed && (ops & (OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE)))
 		*--s = ops & OPS_FLAG_WITH_SIGN ? '+' : ' ';
-	else if (ops & OPS_FLAG_WITH_PREFIX) {
+	else if ((base != 10) && (ops & OPS_FLAG_WITH_PREFIX)) {
 		if (base == 16) *--s = letbase + 'x' - 'a';
 		*--s = '0';
 	}
 
-	return print_s(printchar_handler, out, s, width, 0, ops);
+	return print_s(printchar_handler, out, s, ops & OPS_FLAG_ZERO_PAD ? 0 : width, 0, ops);
 }
 
 int __print(void (*printchar_handler)(char **str, int c), char **out,
@@ -102,7 +103,6 @@ int __print(void (*printchar_handler)(char **str, int c), char **out,
 		void *vp;
 		char cm[2];
 		char *cp;
-		long long int lli;
 		unsigned long long int ulli;
 		long double ld;
 	} tmp;
@@ -135,8 +135,6 @@ single_print:
 			case '0': ops |= OPS_FLAG_ZERO_PAD; break;
 			}
 		}
-		ops = ops & OPS_FLAG_LEFT_ALIGN ? ops & ~OPS_FLAG_ZERO_PAD : ops;
-		ops = ops & OPS_FLAG_WITH_SIGN ? ops & ~OPS_FLAG_EXTRA_SPACE : ops;
 after_flags:
 
 		/* get width */
@@ -162,8 +160,7 @@ after_flags:
 		case '%': goto single_print;
 		case 'd':
 		case 'i':
-			ops &= ~(OPS_FLAG_WITH_PREFIX | (precision ? OPS_FLAG_ZERO_PAD : 0));
-			tmp.lli = ops & OPS_LEN_MIN ? (signed char)va_arg(args, int)
+			tmp.ulli = ops & OPS_LEN_MIN ? (signed char)va_arg(args, int)
 					: ops & OPS_LEN_SHORT ? (short int)va_arg(args, int)
 					: ops & OPS_LEN_LONG ? va_arg(args, long int)
 					: ops & OPS_LEN_LONGLONG ? va_arg(args, long long int)
@@ -171,16 +168,13 @@ after_flags:
 					: ops & OPS_LEN_SIZE ? va_arg(args, ssize_t)
 					: ops & OPS_LEN_PTRDIFF ? va_arg(args, ptrdiff_t)
 					: va_arg(args, int);
-			pc += print_i(printchar_handler, out, tmp.lli, tmp.lli < 0,
-					width, precision, ops, 10, 0);
+			pc += print_i(printchar_handler, out, tmp.ulli, 1, width, precision,
+					ops, 10, 0);
 			break;
 		case 'u':
 		case 'o':
 		case 'x':
 		case 'X':
-			ops &= ~(OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE
-					| (precision ? OPS_FLAG_ZERO_PAD : 0)
-					| (*format == 'u' ? OPS_FLAG_WITH_PREFIX : 0));
 			tmp.ulli = ops & OPS_LEN_MIN ? (unsigned char)va_arg(args, unsigned int)
 					: ops & OPS_LEN_SHORT ? (unsigned short int)va_arg(args, unsigned int)
 					: ops & OPS_LEN_LONG ? va_arg(args, unsigned long int)
@@ -206,22 +200,17 @@ after_flags:
 			break;
 		case 'c':
 			/* TODO handle (ops & OPS_LEN_LONG) for wint_t */
-			ops &= ~(OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE
-					| OPS_FLAG_WITH_PREFIX | OPS_FLAG_ZERO_PAD);
 			tmp.cm[0] = (char)va_arg(args, int);
 			tmp.cm[1] = '\0';
 			pc += print_s(printchar_handler, out, &tmp.cm[0], width, precision, ops);
 			break;
 		case 's':
 			/* TODO handle (ops & OPS_LEN_LONG) for wchar_t* */
-			ops &= ~(OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE
-					| OPS_FLAG_WITH_PREFIX | OPS_FLAG_ZERO_PAD);
 			tmp.cp = va_arg(args, char *);
 			pc += print_s(printchar_handler, out, tmp.cp ? tmp.cp : "(null)",
 					width, precision, ops);
 			break;
 		case 'p':
-			ops &= ~(OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE);
 			tmp.vp = va_arg(args, void *);
 			pc += print_i(printchar_handler, out, (size_t)tmp.vp, 0, width,
 					sizeof tmp.vp * 2 + 2,
