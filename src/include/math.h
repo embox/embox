@@ -26,6 +26,8 @@ extern double pow(double x, double y);
 extern float powf(float x, float y);
 extern long double powl(long double x, long double y);
 
+extern double sqrt(double x);
+
 
 __END_DECLS
 

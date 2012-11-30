@@ -19,6 +19,16 @@ static module LibElf {
 	source "elf/elf_base_address.c"
 }*/
 
+static module Fdlibm {
+	source "fdlibm/w_pow.c"
+	source "fdlibm/e_pow.c"
+	source "fdlibm/k_standard.c"
+	source "fdlibm/s_lib_version.c"
+	source "fdlibm/s_matherr.c"
+	source "fdlibm/s_rint.c"
+	source "fdlibm/s_scalbn.c"
+}
+
 static module LibElf {
 	source "new_elf/elf_header.c"
 	source "new_elf/elf_ph_table.c"
@@ -101,6 +111,7 @@ static module LibCMath {
 	source "math/ldiv.c"
 	source "math/blog2.c"
 	source "math/sqrt.c"
+
 	source "soft-fp/df3.c"
 	source "soft-fp/sf3.c"
 	source "soft-fp/softfloat.c"
