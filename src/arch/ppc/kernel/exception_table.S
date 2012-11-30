@@ -9,7 +9,7 @@
 #include <asm/traps.h>
 #include <module/embox/arch/interrupt.h>
 
-	.section .trap_table.text
+    .section .trap_table.text
 
 /**
  * IVORn    Interrupt type
@@ -32,28 +32,28 @@
  * IVOR15 - Debug
  */
 
-	.macro EXCEPTION_ENTRY n
-		.align 4              /* XXX maybe it should be 5 */
-		ENTRY except\n\()_hnd /* define entry for except%d_hnd */
-	.endm
+    .macro EXCEPTION_ENTRY n
+        .align 4              /* XXX maybe it should be 5 */
+        ENTRY except\n\()_hnd /* define entry for except%d_hnd */
+    .endm
 
-	.macro TRAP_ENTRY n
-		EXCEPTION_ENTRY \n    /* define general entry point for traps */
-			SAVE_ALL          /* save all registers */
-			li r0, \n         /* save trap's type into r0 */
-			b trap_stub       /* call default trap handler */
-	.endm
+    .macro TRAP_ENTRY n
+        EXCEPTION_ENTRY \n    /* define general entry point for traps */
+            SAVE_ALL          /* save all registers */
+            li r0, \n         /* save trap's type into r0 */
+            b trap_stub       /* call default trap handler */
+    .endm
 
-	.macro IRQ_ENTRY n
+    .macro IRQ_ENTRY n
 #ifndef INTERRUPT_STUB
-		EXCEPTION_ENTRY \n    /* define general entry point for interrupts */
-			SAVE_ALL          /* save all register */
-			li r0, \n         /* load interrupt type into r0 */
-			b irq_stub        /* call default interrupt handler */
+        EXCEPTION_ENTRY \n    /* define general entry point for interrupts */
+            SAVE_ALL          /* save all register */
+            li r0, \n         /* load interrupt type into r0 */
+            b irq_stub        /* call default interrupt handler */
 #else /* INTERRUPT_STUB */
-		TRAP_ENTRY \n         /* handle irq as trap */
+        TRAP_ENTRY \n         /* handle irq as trap */
 #endif /* !INTERRUPT_STUB */
-	.endm
+    .endm
 
 /**
  * Align trap table because all excepts handler must have the same HI bytes
