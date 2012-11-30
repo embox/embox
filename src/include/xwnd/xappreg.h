@@ -2,7 +2,7 @@
 #define XAPPREG_H_
 
 #include <lib/x_event.h>
-#include <lib/xwnd/application.h>
+//#include <lib/xwnd/application.h>
 #include <util/array.h>
 
 #define MAX_XWND_APPS 256
@@ -20,6 +20,8 @@ struct xwnd_app_registry_node {
 
 //extern int xwnd_app_registry_init (void); //
 //extern void xwnd_app_registry_fini (void);  //
+
+struct xwnd_application;
 
 extern int xwnd_app_registry_allocate (void);//
 extern void xwnd_app_registry_free (int xapp_id);//

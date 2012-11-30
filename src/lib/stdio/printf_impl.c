@@ -4,260 +4,230 @@
  *
  * @date 19.11.10
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
-#include <stdio.h>
+#include <ctype.h>
+#include <math.h>
 #include <stdarg.h>
-#include <types.h>
-/*
- Copyright 2001, 2002 Georges Menie (www.menie.org)
- stdarg version contributed by Christian Ettinger
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
- This program is free software; you can redistribute it and/or modify
- it under the terms of the GNU Lesser General Public License as published by
- the Free Software Foundation; either version 2 of the License, or
- (at your option) any later version.
-
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Lesser General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public License
- along with this program; if not, write to the Free Software
- Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+/**
+ * Format specifiers
  */
+#define OPS_FLAG_LEFT_ALIGN  0x0001 /* left alignment */
+#define OPS_FLAG_WITH_SIGN   0x0002 /* print sign */
+#define OPS_FLAG_EXTRA_SPACE 0x0004 /* add extra space before digit */
+#define OPS_FLAG_WITH_PREFIX 0x0008 /* print a prefix for non-decimal systems */
+#define OPS_FLAG_ZERO_PAD    0x0010 /* padding with zeroes */
+#define OPS_LEN_MIN          0x0020 /* s_char (d, i); u_char (u, o, x, X); s_char* (n) */
+#define OPS_LEN_SHORT        0x0040 /* short (d, i); u_short (u, o, x, X); short* (n) */
+#define OPS_LEN_LONG         0x0080 /* long (d, i); u_long (u, o, x, X); wint_t (c); wchar_t(s); long* (n) */
+#define OPS_LEN_LONGLONG     0x0100 /* llong (d, i); u_llong (u, o, x, X); llong* (n) */
+#define OPS_LEN_MAX          0x0200 /* intmax_t (d, i); uintmax_t (u, o, x, X); intmax_t* (n) */
+#define OPS_LEN_SIZE         0x0400 /* size_t (d, i, u, o, x, X); size_t* (n) */
+#define OPS_LEN_PTRDIFF      0x0800 /* ptrdiff_t (d, i, u, o, x, X); ptrdiff_t* (n) */
+#define OPS_LEN_LONGFP       0x1000 /* long double (f, F, e, E, g, G, a, A) */
 
-#define PAD_RIGHT 1
-#define PAD_ZERO 2
+/* Space for string representation of a 64 bit integer */
+#define PRINT_I_BUFF_SZ 65
 
-static int prints(void (*printchar_handler)(char **str, int c),
-		char **out, const char *string, int width, int precision, int pad) {
-	/*TODO: optimizations needed to be enabled in gcc (-O2)
-	 * to make register qualifier work*/
-	int pc = 0, padchar = ' ';
+static int print_s(void (*printchar_handler)(char **str, int c), char **out,
+		const char *s, int width, int max_len, unsigned int ops) {
+	int pc, len, pad_count;
 
-	if (width > 0) {
-		int len = 0;
+	pc = 0;
+	len = strlen(s);
+	max_len = max_len ? max_len : len;
+	len = min(max_len, len);
+	pad_count = width > len ? width - len : 0;
 
-		const char *ptr;
-		for (ptr = string; *ptr; ++ptr)
-			++len;
-		if (len >= width)
-			width = 0;
-		else
-			width -= len;
-		if (pad & PAD_ZERO)
-			padchar = '0';
+	if (!(ops & OPS_FLAG_LEFT_ALIGN)) {
+		pc += pad_count;
+		for (; pad_count; --pad_count) printchar_handler(out, ' ');
 	}
 
-	if (!(pad & PAD_RIGHT)) {
-		for (; width > 0; --width) {
-			printchar_handler(out, padchar);
-			++pc;
-		}
-	}
+	pc += len;
+	while (len--) printchar_handler(out, *s++);
 
-	if (precision) {
-		for (; precision && *string; ++string, --precision) {
-			printchar_handler(out, *string);
-			++pc;
-		}
-	} else {
-		for (; *string; ++string) {
-			printchar_handler(out, *string);
-			++pc;
-		}
-	}
-	for (; width > 0; --width) {
-		printchar_handler(out, padchar);
-		++pc;
-	}
+	pc += pad_count;
+	while (pad_count--) printchar_handler(out, ' ');
 
 	return pc;
 }
 
-/* the following should be enough for 64 bit int */
-#define PRINTI_BUF_LEN 65
+static int print_i(void (*printchar_handler)(char **str, int c), char **out,
+		unsigned long long int u, int is_signed, int width, int min_len,
+		unsigned int ops, int base, int letbase) {
+	char buff[PRINT_I_BUFF_SZ], *s, *end;
+	unsigned long long int t;
+	int neg, len, extra_len, pad_count;
 
-static int printi(void (*printchar_handler)(char **str, int c), char **out,
-		long long i, int b, int sg, int width, int pad, int letbase) {
-	char print_buf[PRINTI_BUF_LEN];
-	/*register*/
-	char *s;
-	/*register*/
-	int neg = 0, pc = 0;
-	/*register*/
-	long long unsigned t, u = i;
+	s = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
+	*end = '\0';
+	neg = is_signed && ((long long int)u < 0);
+	if (neg) u = -u;
 
-	if (i == 0) {
-		print_buf[0] = '0';
-		print_buf[1] = '\0';
-		return prints(printchar_handler, out, print_buf, width, 0, pad);
-	}
-
-	if (sg && b == 10 && i < 0) {
-		neg = 1;
-		u = -i;
-	}
-
-	s = print_buf + sizeof print_buf - 1;
-	*s = '\0';
-
-	while (u) {
-		t = u % b;
-		if (t >= 10)
-			t += letbase - '0' - 10;
+	do {
+		t = u % base;
+		if (t >= 10) t += letbase - 10 - '0';
 		*--s = t + '0';
-		u /= b;
+		u /= base;
+	} while (u);
+
+	len = end - s;
+	extra_len = neg || (is_signed && (ops & (OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE))) ? 1
+			: ((base != 10) && (ops & OPS_FLAG_WITH_PREFIX) ? 1 + (base == 16) : 0);
+	pad_count = (len < min_len ? min_len :
+			((ops & OPS_FLAG_ZERO_PAD) && !(ops & OPS_FLAG_LEFT_ALIGN) ? width : 0)) - len - extra_len;
+	while (pad_count-- > 0) *--s = '0';
+
+	if (neg) *--s = '-';
+	else if (is_signed && (ops & (OPS_FLAG_WITH_SIGN | OPS_FLAG_EXTRA_SPACE)))
+		*--s = ops & OPS_FLAG_WITH_SIGN ? '+' : ' ';
+	else if ((base != 10) && (ops & OPS_FLAG_WITH_PREFIX)) {
+		if (base == 16) *--s = letbase + 'x' - 'a';
+		*--s = '0';
 	}
 
-	if (neg) {
-		if (width && (pad & PAD_ZERO)) {
-			printchar_handler(out, '-');
+	return print_s(printchar_handler, out, s, ops & OPS_FLAG_ZERO_PAD ? 0 : width, 0, ops);
+}
+
+int __print(void (*printchar_handler)(char **str, int c), char **out,
+		const char *format, va_list args) {
+	int pc, width, precision;
+	unsigned int ops;
+	union {
+		void *vp;
+		char cm[2];
+		char *cp;
+		unsigned long long int ulli;
+		long double ld;
+	} tmp;
+
+	pc = 0;
+
+	for (; *format; ++format) {
+		/**
+		 * %[flags][width][.precision][length]specifier
+		 */
+
+		/* check first symbol */
+		if (*format != '%') {
+single_print:
+			printchar_handler(out, *format);
 			++pc;
-			--width;
-		} else {
-			*--s = '-';
+			continue;
 		}
-	}
 
-	return pc + prints(printchar_handler, out, s, width, 0, pad);
-}
+		ops = 0;
 
-#define PRINTB_BUF_LEN 64
-
-static int printb(void (*printchar_handler)(char **str, int c),
-		char **out, int i, int width, int dot) {
-	char print_buf[PRINTB_BUF_LEN];
-	/*register*/
-	char *s;
-	/*register*/
-	unsigned int u = i;
-	/*register*/
-	int k;
-	/*register*/
-	int dc = 0;
-
-	s = print_buf + sizeof print_buf - 1;
-	*s = '\0';
-
-	for (k = 0; k < width;) {
-		*--s = ((u & 1) ? '1' : '0');
-		u >>= 1;
-		k++;
-
-		if (dot && !(k & 0x03)) {
-			*--s = ' ';
-			dc++;
-		}
-	}
-	if (*s == ' ') {
-		++s;
-		dc--;
-	}
-	return prints(printchar_handler, out, s, width + dc, 0, 0);
-}
-
-#define OPS_L  0x01
-#define OPS_LL 0x02
-
-int __print(void (*printchar_handler)(char **str, int c),
-		char **out, const char *format, va_list args) {
-	/*register*/int width, precision, pad;
-	/*register*/
-	int pc = 0, ops;
-	char scr[2];
-	long long tmp_i;
-
-	for (; *format != 0; ++format) {
-		if (*format == '%') {
-			++format;
-			ops = 0;
-			width = precision = pad = 0;
-			if (*format == '\0')
-				break;
-			if (*format == '%')
-				goto out_print;
-			if (*format == '-') {
-				++format;
-				pad = PAD_RIGHT;
-			}
-			while (*format == '0') {
-				++format;
-				pad |= PAD_ZERO;
-			}
-			for (; *format >= '0' && *format <= '9'; ++format) {
-				width *= 10;
-				width += *format - '0';
-			}
-			if (*format == '.') {
-				++format;
-				for (; *format >= '0' && *format <= '9'; ++format) {
-					precision *= 10;
-					precision += *format - '0';
-				}
-			}
-			if (*format == 'l') {
-				ops |= OPS_L;
-				if (*++format == 'l') {
-					ops |= OPS_LL;
-					++format;
-				}
-			}
+		/* get flags */
+		while (*++format) {
 			switch (*format) {
-			case 's': {
-				char *s = (char *) va_arg(args, int);
-				pc += prints(printchar_handler, out, s ? s : "(null)", width, precision, pad);
+			default: goto after_flags;
+			case '-': ops |= OPS_FLAG_LEFT_ALIGN; break;
+			case '+': ops |= OPS_FLAG_WITH_SIGN; break;
+			case ' ': ops |= OPS_FLAG_EXTRA_SPACE; break;
+			case '#': ops |= OPS_FLAG_WITH_PREFIX; break;
+			case '0': ops |= OPS_FLAG_ZERO_PAD; break;
 			}
-				continue;
-			case 'd':
-				tmp_i = ops & OPS_LL ? va_arg(args, long long)
-					: ops & OPS_L ? va_arg(args, long) : va_arg(args, int);
-				pc += printi(printchar_handler, out, tmp_i, 10, 1, width, pad, 'a');
-				continue;
-			case 'p':
-				/*TODO: printf haven't realized pointer variable operations*/
-			case 'x':
-				tmp_i = ops & OPS_LL ? va_arg(args, long long unsigned)
-					: ops & OPS_L ? va_arg(args, long unsigned) : va_arg(args, unsigned);
-				pc += printi(printchar_handler, out, tmp_i, 16, 0, width, pad, 'a');
-				continue;
-			case 'X':
-				tmp_i = ops & OPS_LL ? va_arg(args, long long unsigned)
-					: ops & OPS_L ? va_arg(args, long unsigned) : va_arg(args, unsigned);
-				pc += printi(printchar_handler, out, tmp_i, 16, 0, width, pad, 'A');
-				continue;
-			case 'u':
-				tmp_i = ops & OPS_LL ? va_arg(args, long long unsigned)
-					: ops & OPS_L ? va_arg(args, long unsigned) : va_arg(args, unsigned);
-				pc += printi(printchar_handler, out, tmp_i, 10, 0, width, pad, 'a');
-				continue;
-			case 'b':
-				pc += printb(printchar_handler, out, va_arg(args, int), width, 0);
-				continue;
-			case 'B':
-				pc += printb(printchar_handler, out, va_arg(args, int), width, 1);
-				continue;
-			case 'c':
-				/* char are converted to int then pushed on the stack */
-				scr[0] = (char) va_arg(args, int);
-				scr[1] = '\0';
-				pc += prints(printchar_handler, out, scr, width, 0, pad);
-				continue;
-			case 'f':
-			case 'e':
-			case 'g':
-				/*TODO: printf haven't realized float variable operations*/
-				continue;
-			}
-		} else {
-			out_print: printchar_handler(out, *format);
-			++pc;
+		}
+after_flags:
+
+		/* get width */
+		if (*format == '*') { width = va_arg(args, int); ++format; }
+		else { width = atoi(format); while (isdigit(*format)) ++format; }
+
+		/* get precision */
+		if ((*format == '.') && (*++format == '*')) { precision = va_arg(args, int); ++format; }
+		else { precision = atoi(format); while (isdigit(*format)) ++format; }
+
+		/* get length */
+		switch (*format) {
+		case 'h': ops |= *++format != 'h' ? OPS_LEN_MIN : (++format, OPS_LEN_SHORT); break;
+		case 'l': ops |= *++format != 'l' ? OPS_LEN_LONG : (++format, OPS_LEN_LONGLONG); break;
+		case 'j': ops |= OPS_LEN_MAX; ++format; break;
+		case 'z': ops |= OPS_LEN_SIZE; ++format; break;
+		case 't': ops |= OPS_LEN_PTRDIFF; ++format; break;
+		case 'L': ops |= OPS_LEN_LONGFP; ++format; break;
+		}
+
+		/* handle specifier */
+		switch (*format) {
+		case '%': goto single_print;
+		case 'd':
+		case 'i':
+			tmp.ulli = ops & OPS_LEN_MIN ? (signed char)va_arg(args, int)
+					: ops & OPS_LEN_SHORT ? (short int)va_arg(args, int)
+					: ops & OPS_LEN_LONG ? va_arg(args, long int)
+					: ops & OPS_LEN_LONGLONG ? va_arg(args, long long int)
+					: ops & OPS_LEN_MAX ? va_arg(args, intmax_t)
+					: ops & OPS_LEN_SIZE ? va_arg(args, ssize_t)
+					: ops & OPS_LEN_PTRDIFF ? va_arg(args, ptrdiff_t)
+					: va_arg(args, int);
+			pc += print_i(printchar_handler, out, tmp.ulli, 1, width, precision,
+					ops, 10, 0);
+			break;
+		case 'u':
+		case 'o':
+		case 'x':
+		case 'X':
+			tmp.ulli = ops & OPS_LEN_MIN ? (unsigned char)va_arg(args, unsigned int)
+					: ops & OPS_LEN_SHORT ? (unsigned short int)va_arg(args, unsigned int)
+					: ops & OPS_LEN_LONG ? va_arg(args, unsigned long int)
+					: ops & OPS_LEN_LONGLONG ? va_arg(args, unsigned long long int)
+					: ops & OPS_LEN_MAX ? va_arg(args, uintmax_t)
+					: ops & OPS_LEN_SIZE ? va_arg(args, size_t)
+					: ops & OPS_LEN_PTRDIFF ? va_arg(args, ptrdiff_t)
+					: va_arg(args, unsigned int);
+			pc += print_i(printchar_handler, out, tmp.ulli, 0, width, precision,
+					ops, *format == 'o' ? 8 : (*format == 'u' ? 10 : 16),
+					(*format == 'o') || (*format == 'u') ? 0 : *format - ('x' - 'a'));
+			break;
+		case 'f':
+		case 'F':
+		case 'e':
+		case 'E':
+		case 'g':
+		case 'G':
+		case 'a':
+		case 'A':
+			/* TODO printf haven't realized float variable operations; clean stack only */
+			tmp.ld = ops & OPS_LEN_LONGFP ? va_arg(args, long double) : va_arg(args, double);
+			break;
+		case 'c':
+			/* TODO handle (ops & OPS_LEN_LONG) for wint_t */
+			tmp.cm[0] = (char)va_arg(args, int);
+			tmp.cm[1] = '\0';
+			pc += print_s(printchar_handler, out, &tmp.cm[0], width, precision, ops);
+			break;
+		case 's':
+			/* TODO handle (ops & OPS_LEN_LONG) for wchar_t* */
+			tmp.cp = va_arg(args, char *);
+			pc += print_s(printchar_handler, out, tmp.cp ? tmp.cp : "(null)",
+					width, precision, ops);
+			break;
+		case 'p':
+			tmp.vp = va_arg(args, void *);
+			pc += print_i(printchar_handler, out, (size_t)tmp.vp, 0, width,
+					sizeof tmp.vp * 2 + 2,
+					ops | (OPS_FLAG_WITH_PREFIX | OPS_FLAG_ZERO_PAD), 16, 'a');
+			break;
+		case 'n':
+			if (ops & OPS_LEN_MIN) *va_arg(args, signed char *) = (signed char)pc;
+			else if (ops & OPS_LEN_SHORT) *va_arg(args, short int *) = (short int)pc;
+			else if (ops & OPS_LEN_LONG) *va_arg(args, long int *) = (long int)pc;
+			else if (ops & OPS_LEN_LONGLONG) *va_arg(args, long long int *) = (long long int)pc;
+			else if (ops & OPS_LEN_MAX) *va_arg(args, intmax_t *) = (intmax_t)pc;
+			else if (ops & OPS_LEN_SIZE) *va_arg(args, size_t *) = (size_t)pc;
+			else if (ops & OPS_LEN_PTRDIFF) *va_arg(args, ptrdiff_t *) = (ptrdiff_t)pc;
+			else *va_arg(args, int *) = pc;
+			break;
 		}
 	}
-	if (out) {
-		**out = '\0';
-	}
+	if (out) **out = '\0';
 	return pc;
 }

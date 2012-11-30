@@ -10,7 +10,7 @@
 #define XWND_BMP_H_
 
 #include <stdint.h>
-#include <xwnd/draw_helpers.h>
+#include <lib/xwnd/draw_helpers.h>
 
 #define XWND_BMP_MAGIC 0x00
 #define XWND_BMP_PX_OFFSET 0x0A

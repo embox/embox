@@ -1,4 +1,4 @@
-package embox.sevice
+package embox.service
 
 module SrvLib {
 	source "srv_lib.c"

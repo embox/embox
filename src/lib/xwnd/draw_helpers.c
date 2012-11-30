@@ -8,39 +8,121 @@
 
 #include <lib/xwnd/draw_helpers.h>
 #include <drivers/vesa.h>
+#include <math.h>
+#include <stdlib.h>
 
-
-void xwnd_draw_pixel (const struct xwnd_window * wnd, unsigned x, unsigned y, unsigned c) {
-	if (x < wnd->wd && y < wnd->ht &&
-			wnd->x + x >= 0 && wnd->x + x < vesa_get_width() &&
-			wnd->y + y >= 0 && wnd->y + y < vesa_get_height())
-	{
-		vesa_put_pixel(wnd->x + x, wnd->y + y, c);
+void xwnd_draw_pixel(const struct xwnd_window * wnd, unsigned x, unsigned y,
+		unsigned c) {
+	if (x < wnd->wd - 2 && y < wnd->ht - 2 && wnd->x + x + 1 < vesa_get_width()
+			&& wnd->x + x + 1 > 0 && wnd->y + y + 1 < vesa_get_height()
+			&& wnd->y + y + 1 > 0) {
+		vesa_put_pixel(wnd->x + x + 1, wnd->y + y + 1, c);
 	}
 }
 
-static void xwnd_draw_horiz_line (unsigned x, unsigned y, unsigned l, unsigned c) {
+static void xwnd_draw_horiz_line(unsigned x, unsigned y, unsigned l, unsigned c) {
 	int i;
-	for (i = 0; i <= l; i++) {
+	for (i = 0; i < l; i++) {
 		vesa_put_pixel(x + i, y, c);
 	}
 }
 
-static void xwnd_draw_vert_line (unsigned x, unsigned y, unsigned l, unsigned c) {
+static void xwnd_draw_vert_line(unsigned x, unsigned y, unsigned l, unsigned c) {
 	int i;
-	for (i = 0; i <= l; i++) {
+	for (i = 0; i < l; i++) {
 		vesa_put_pixel(x, y + i, c);
 	}
 }
 
-void xwnd_draw_window (const struct xwnd_window * wnd) {
-	xwnd_draw_vert_line  (wnd->x, wnd->y, wnd->ht, 2);
-	xwnd_draw_horiz_line (wnd->x, wnd->y, wnd->wd, 2);
-	xwnd_draw_vert_line  (wnd->x + wnd->wd, wnd->y, wnd->ht, 2);
-	xwnd_draw_horiz_line (wnd->x, wnd->y + wnd->ht, wnd->wd, 2);
+//FIXME: horizontal/vertical line for windows, maybe it's necessary to rename it
+void xwnd_draw_horizontal_line(const struct xwnd_window * wnd, unsigned x,
+		unsigned y, unsigned l, unsigned c) {
+	int i;
+	for (i = 0; i <= l; i++) {
+		xwnd_draw_pixel(wnd, x + i, y, c);
+	}
 }
 
-void xwnd_clear_window (const struct xwnd_window * wnd) {
+void xwnd_draw_vertical_line(const struct xwnd_window * wnd, unsigned x, unsigned y,
+		unsigned l, unsigned c) {
+	int i;
+	for (i = 0; i <= l; i++) {
+		xwnd_draw_pixel(wnd, x, y + i, c);
+	}
+}
+
+void xwnd_draw_line(const struct xwnd_window * wnd, unsigned x1, unsigned y1,
+		unsigned x2, unsigned y2, unsigned c) {
+	int i;
+	double a, b;
+
+	if (x1 == x2) {
+		double t1, t2;
+		t1 = min(y1, y2);
+		t2 = max(y1, y2);
+		xwnd_draw_vertical_line(wnd, x1, t1, t2 - t1, c);
+		return;
+	}
+
+	if (y1 == y2) {
+		double t1, t2;
+		t1 = min(x1, x2);
+		t2 = max(x1, x2);
+		xwnd_draw_horizontal_line(wnd, t1, y1, t2 - t1, c);
+		return;
+	}
+
+	a = ((double) y2 - y1) / ((double) x2 - x1);
+	b = (y1 - a * x1);
+	if (abs((double) x2 - x1) > abs((double) y2 - y1)) {
+		double t1, t2;
+		t1 = min(x1, x2);
+		t2 = max(x1, x2);
+		for (i = t1; i <= t2; i++) {
+			xwnd_draw_pixel(wnd, i, a * i + b, c);
+		}
+	} else {
+		double t1, t2;
+		t1 = min(y1, y2);
+		t2 = max(y1, y2);
+		for (i = t1; i <= t2; i++) {
+			xwnd_draw_pixel(wnd, (i - b) / a, i, c);
+		}
+	}
+}
+
+void xwnd_draw_rectangle(const struct xwnd_window * wnd, unsigned x1,
+		unsigned y1, unsigned x2, unsigned y2, unsigned c) {
+	if ((x1 > x2) || (y1 > y2)) {
+		return;
+	}
+	xwnd_draw_horizontal_line(wnd, x1, y1, x2 - x1, c);
+	xwnd_draw_horizontal_line(wnd, x1, y2, x2 - x1, c);
+	xwnd_draw_vertical_line(wnd, x1, y1, y2 - y1, c);
+	xwnd_draw_vertical_line(wnd, x2, y1, y2 - y1, c);
+}
+
+void xwnd_draw_polygon(const struct xwnd_window * wnd, unsigned *points,
+		int count, unsigned c) {
+	int i;
+	if (count % 2 != 0) {
+		return;
+	}
+	for (i = 0; i < count - 2; i += 2) {
+		xwnd_draw_line(wnd, points[i], points[i + 1], points[i + 2],
+				points[i + 3], c);
+	}
+	xwnd_draw_line(wnd, points[i], points[i + 1], points[0], points[1], c);
+}
+
+void xwnd_draw_window(const struct xwnd_window * wnd) {
+	xwnd_draw_vert_line(wnd->x, wnd->y, wnd->ht, 2);
+	xwnd_draw_horiz_line(wnd->x, wnd->y, wnd->wd, 2);
+	xwnd_draw_vert_line(wnd->x + wnd->wd - 1, wnd->y, wnd->ht, 2);
+	xwnd_draw_horiz_line(wnd->x, wnd->y + wnd->ht - 1, wnd->wd, 2);
+}
+
+void xwnd_clear_window(const struct xwnd_window * wnd) {
 	int x, y;
 	for (y = wnd->y + 1; y < wnd->y + wnd->ht - 1; y++) {
 		for (x = wnd->x + 1; x < wnd->x + wnd->wd - 1; x++) {

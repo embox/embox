@@ -60,6 +60,7 @@ static void character(void *userData, const XML_Char *s, int len) {
 static void *process_params(void* args) {
 	struct web_service_instance *inst;
 	struct params *params;
+	char temp_file[] = "/tmp/test_temp.html";
 	char buf[512];
 	FILE *file;
 	int done;
@@ -101,7 +102,10 @@ static void *process_params(void* args) {
 	fclose(file);
 	fclose(params->info->fp);
 
-	params->info->fp = fopen("/tmp/test_temp.html", "r");
+	//params->info->fp = fopen("/tmp/test_temp.html", "r");
+	params->info->fp =  NULL;
+	strcpy(params->info->file, temp_file);
+	params->info->file[strlen(temp_file)] = '\0';
 
 	return NULL;
 }

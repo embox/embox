@@ -55,4 +55,7 @@ typedef __u_fast uint_fast16_t;
 typedef __u_fast uint_fast32_t;
 typedef __u_fast uint_fast64_t;
 
+typedef int64_t intmax_t;
+typedef uint64_t uintmax_t;
+
 #endif /* STDINT_H_ */

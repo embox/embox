@@ -11,8 +11,8 @@
 #include <stdlib.h>
 #include <drivers/vesa.h>
 #include <xwnd/xwnd.h>
-#include <xwnd/draw_helpers.h>
-#include <xwnd/bmp.h>
+#include <lib/xwnd/draw_helpers.h>
+#include <lib/xwnd/bmp.h>
 
 static enum xwnd_bmp_err xwnd_bmp_errno;
 

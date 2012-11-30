@@ -20,6 +20,7 @@ struct web_service_desc {
 };
 
 struct web_service_instance {
+	int thread_started;
 	struct thread *thr;
 	struct event *e;
 	struct params * params;

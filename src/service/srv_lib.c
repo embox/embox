@@ -22,6 +22,7 @@ static void *service_thread_handler(void* args) {
 	inst = (struct web_service_instance *) args;
 
 	while (1) {
+		inst->thread_started = 1;
 		event_wait(inst->e, EVENT_TIMEOUT_INFINITE);
 		if (inst->params == NULL) {
 			inst->params = (void *) 1;
@@ -85,8 +86,7 @@ int web_service_start(const char *srv_name) {
 	}
 	inst->desc = srv_desc;
 
-	if (0
-			!= thread_create(&inst->thr, THREAD_FLAG_DETACHED,
+	if (0 != thread_create(&inst->thr, THREAD_FLAG_DETACHED,
 					web_service_trampoline, inst)) {
 		return -1;
 	}
@@ -95,6 +95,7 @@ int web_service_start(const char *srv_name) {
 }
 
 int send_message(struct web_service_instance *srv_inst, void *par) {
+	while (!srv_inst->thread_started);
 	srv_inst->params = par;
 	event_notify(srv_inst->e);
 
@@ -104,9 +105,7 @@ int send_message(struct web_service_instance *srv_inst, void *par) {
 int stop(struct web_service_instance *srv_inst) {
 	send_message(srv_inst, NULL);
 
-	while ((int) srv_inst->params != 1) {
-	};
-
+	while ((int) srv_inst->params != 1);
 	dlist_del(&srv_inst->lst);
 	pool_free(&instance_pool, srv_inst);
 	return 0;
@@ -118,7 +117,6 @@ int web_service_stop(const char *srv_name) {
 	if (NULL == (srv_inst = web_service_lookup(srv_name))) {
 		return -1;
 	}
-
 	return stop(srv_inst);
 }
 

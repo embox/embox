@@ -10,43 +10,110 @@
 #include <string.h>
 #include <embox/test.h>
 
-#define BUFF_SZ 65
-
-#define __val_d(x)   x
-#define __val_u(x)   x##U
-#define __val_ld(x)  x##L
-#define __val_lu(x)  x##UL
-#define __val_lld(x) x##LL
-#define __val_llu(x) x##ULL
-#define __str(x)     #x
-
-#define TEST_VAL_TO_STR(buff, prefix, val)          \
-	sprintf(buff, "%"#prefix, __val_##prefix(val)); \
-	test_assert_str_equal(buff, __str(val))
-
 EMBOX_TEST_SUITE("stdio/printf test");
 
-TEST_CASE("Test of print long numbers") {
-	char buff[BUFF_SZ];
+#define HOPE_EQUAL(str, buff, format, ...) \
+	sprintf(buff, format, __VA_ARGS__);    \
+	test_assert_str_equal(buff, str)
 
-	/* signed int */
-	TEST_VAL_TO_STR(&buff[0], d, 32760);
-	TEST_VAL_TO_STR(&buff[0], d, -32760);
+#define BUFF1_SZ 32
 
-	/* unsigned int */
-	TEST_VAL_TO_STR(&buff[0], u, 65530);
+TEST_CASE("Test of specifier with type integer") {
+	char buff1[BUFF1_SZ];
 
-	/* long signed int */
-	TEST_VAL_TO_STR(&buff[0], ld, 2147483640);
-	TEST_VAL_TO_STR(&buff[0], ld, -2147483640);
+	/* test zero */
+	HOPE_EQUAL("0", &buff1[0], "%d", 0);
 
-	/* long unsigned int */
-	TEST_VAL_TO_STR(&buff[0], lu, 4294967290);
+	/* signed/unsigned char */
+	HOPE_EQUAL("120", &buff1[0], "%hd", 120);
+	HOPE_EQUAL("-121", &buff1[0], "%hd", -121);
+	HOPE_EQUAL("250", &buff1[0], "%hu", 250);
 
-	/* long long signed int */
-	TEST_VAL_TO_STR(&buff[0], lld, 9223372036854775800);
-	TEST_VAL_TO_STR(&buff[0], lld, -9223372036854775800);
+	/* signed/unsigned short int */
+	HOPE_EQUAL("32760", &buff1[0], "%hhd", 32760);
+	HOPE_EQUAL("-32761", &buff1[0], "%hhd", -32761);
+	HOPE_EQUAL("65530", &buff1[0], "%hhu", 65530);
 
-	/* long long unsigned int */
-	TEST_VAL_TO_STR(&buff[0], llu, 18446744073709551610);
+	/* signed/unsigned int */
+	HOPE_EQUAL("2147483640", &buff1[0], "%d", 2147483640);
+	HOPE_EQUAL("-2147483641", &buff1[0], "%d", -2147483641);
+	HOPE_EQUAL("4294967290", &buff1[0], "%u", 4294967290U);
+
+	/* signed/unsigned long int */
+	HOPE_EQUAL("2147483640", &buff1[0], "%ld", 2147483640L);
+	HOPE_EQUAL("-2147483641", &buff1[0], "%ld", -2147483641L);
+	HOPE_EQUAL("4294967290", &buff1[0], "%lu", 4294967290UL);
+
+	/* signed/unsigned long long int */
+	HOPE_EQUAL("9223372036854775800", &buff1[0], "%lld", 9223372036854775800LL);
+	HOPE_EQUAL("-9223372036854775800", &buff1[0], "%lld", -9223372036854775800LL);
+	HOPE_EQUAL("18446744073709551610", &buff1[0], "%llu", 18446744073709551610ULL);
+}
+
+#define BUFF2_SZ 32
+
+TEST_CASE("Test of specifier with type string") {
+	char buff2[BUFF2_SZ], *null;
+
+	null = NULL;
+
+	HOPE_EQUAL("c", &buff2[0], "%c", 'c');
+;
+	HOPE_EQUAL("hello!", &buff2[0], "%s!", "hello");
+	HOPE_EQUAL("(null) - is NULL", &buff2[0], "%s - is NULL", null);
+}
+
+#define BUFF3_SZ 32
+
+TEST_CASE("Test of specifier with type pointer") {
+	char buff3[BUFF3_SZ], *answer;
+	void *ptr;
+
+	ptr = (void *)0x89ab;
+	answer = sizeof ptr == 4 ? "0x000089ab" : "0x00000000000089ab"; /* :) */
+
+	HOPE_EQUAL(answer, &buff3[0], "%p", ptr);
+}
+
+#define BUFF4_SZ 32
+
+TEST_CASE("Test print with width, precision and alignement") {
+	char buff4[BUFF4_SZ];
+
+	HOPE_EQUAL("  0123", &buff4[0], "%6.4i", 123);
+	HOPE_EQUAL("0123  ", &buff4[0], "%-6.4d", 123);
+	HOPE_EQUAL("0000123", &buff4[0], "%07d", 123);
+	HOPE_EQUAL("000123", &buff4[0], "%.6d", 123);
+	HOPE_EQUAL(" 1f  01F", &buff4[0], "%*x %4.3X", 3, 0x1f, 0x1f);
+	HOPE_EQUAL("0x10 0x01 016", &buff4[0], "%#x %#04x %#o", 0x10, 1, 016);
+	HOPE_EQUAL(" abc", &buff4[0], "%4.*s", 3, "abcdef");
+}
+
+#define BUFF5_SZ 32
+
+TEST_CASE("Test print with sign specifiers") {
+	char buff5[BUFF5_SZ];
+
+	HOPE_EQUAL("+23 -23", &buff5[0], "%+d %+d", 23, -23);
+	HOPE_EQUAL(" 23 -23", &buff5[0], "% d % d", 23, -23);
+}
+
+#define BUFF6_SZ 32
+
+TEST_CASE("Test print % symbol") {
+	char buff6[BUFF6_SZ];
+
+	HOPE_EQUAL("% %", &buff6[0], "%% %c", '%');
+}
+
+#define BUFF7_SZ 32
+
+TEST_CASE("Test of %n specifier") {
+	char buff7[BUFF7_SZ], *answer;
+	int size;
+
+	answer = " 1'm not stupid   ";
+
+	HOPE_EQUAL(answer, &buff7[0], "% 1.1d'%-*cnot %-9.6s%n", 1, 2, 'm', "stupid!!", &size);
+	test_assert_equal(strlen(answer), size);
 }

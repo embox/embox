@@ -18,6 +18,7 @@
 #include <embox/cmd.h>
 
 #include <xwnd/xappreg.h>
+#include <lib/xwnd/application.h>
 
 static int exec(int argc, char ** argv);
 
@@ -37,8 +38,8 @@ void xwnd_quit(void){
 
 static int exec (int argc, char ** argv) {
 	int err, i;
-	struct xwnd_application_args args;
-	args = args;
+	//struct xwnd_application_args args;
+	//args = args;
 
 	if (argc < 2) {
 		for (i = 0; i < ARRAY_SPREAD_SIZE(__xwnd_app_repository); i++) {

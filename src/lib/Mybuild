@@ -23,6 +23,7 @@ static module LibElf {
 	source "new_elf/elf_header.c"
 	source "new_elf/elf_ph_table.c"
 	source "new_elf/elf_segment.c"
+	source "new_elf/elf_interp.c"
 }
 
 static module LibDl {
