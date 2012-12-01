@@ -30,35 +30,46 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-extern int __print(void (*printchar_handler)(char **str, int c),
-		char **out, const char *format, va_list args);
+struct printchar_handler_data;
+extern int __print(void (*printchar_handler)(struct printchar_handler_data *d, int c),
+		struct printchar_handler_data *printchar_data,
+		const char *format, va_list args);
 
-static void printchar(char **str, int c) {
-	assert((str != NULL) && (*str != NULL));
+struct printchar_handler_data {
+	char *str;
+};
 
-	**str = c;
-	++(*str);
+static void str_printchar(struct printchar_handler_data *d, int c) {
+	assert(d != NULL);
+	assert(d->str != NULL);
+
+	*d->str++ = c;
 }
 
-int vsprintf(char *out, const char *format, va_list args) {
+int vsprintf(char *str, const char *format, va_list args) {
 	int ret;
+	struct printchar_handler_data data;
 
-	assert(out != NULL);
+	assert(str != NULL);
+	assert(format != NULL);
 
-	ret = __print(printchar, &out, format, args);
-	*out = '\0';
+	data.str = str;
+	ret = __print(str_printchar, &data, format, args);
+	assert(data.str != NULL);
+	*data.str = '\0';
 
 	return ret;
 }
 
-int sprintf(char *out, const char *format, ...) {
+int sprintf(char *str, const char *format, ...) {
 	int ret;
 	va_list args;
 
-	assert(out != NULL);
+	assert(str != NULL);
+	assert(format != NULL);
 
 	va_start(args, format);
-	ret = vsprintf(out, format, args);
+	ret = vsprintf(str, format, args);
 	va_end(args);
 
 	return ret;

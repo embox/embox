@@ -30,19 +30,19 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-extern int __print(void (*printchar_handler)(char **str, int c),
-		char **out, const char *format, va_list args);
+struct printchar_handler_data;
+extern int __print(void (*printchar_handler)(struct printchar_handler_data *d, int c),
+		struct printchar_handler_data *printchar_data,
+		const char *format, va_list args);
 
-static void display_printchar(char **str, int c) {
-	assert(str == NULL);
-
+static void stdout_printchar(struct printchar_handler_data *d, int c) {
 	putchar(c);
 }
 
 int vprintf(const char *format, va_list args) {
 	assert(format != NULL);
 
-	return __print(display_printchar, 0, format, args);
+	return __print(stdout_printchar, NULL, format, args);
 }
 
 int printf(const char *format, ...) {

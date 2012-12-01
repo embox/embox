@@ -136,17 +136,18 @@ static module LibCStdio {
 	option boolean stdio_lf_crlf_map = true
 	option number file_quantity = 16
 
-	source "stdio/file_ops.c"
 	source "stdio/fgetc.c"
+	source "stdio/file_ops.c"
 	source "stdio/fputc.c"
 	source "stdio/gets.c"
-	source "stdio/sprintf.c"
+	source "stdio/perror.c"
 	source "stdio/printf.c"
 	source "stdio/printf_impl.c"
+	source "stdio/fprintf.c"
+	source "stdio/sprintf.c"
 	source "stdio/printk.c"
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
-	source "stdio/perror.c"
 	depends LibCMath
 	depends LibCString
 	depends embox.compat.posix.file
