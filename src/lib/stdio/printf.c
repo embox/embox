@@ -26,11 +26,9 @@
  #define putchar(c) outbyte(c)
  */
 
-#include <stdio.h>
 #include <assert.h>
 #include <stdarg.h>
-#include <types.h>
-#include <unistd.h>
+#include <stdio.h>
 
 extern int __print(void (*printchar_handler)(char **str, int c),
 		char **out, const char *format, va_list args);
@@ -42,12 +40,16 @@ static void display_printchar(char **str, int c) {
 }
 
 int vprintf(const char *format, va_list args) {
+	assert(format != NULL);
+
 	return __print(display_printchar, 0, format, args);
 }
 
 int printf(const char *format, ...) {
 	int ret;
 	va_list args;
+
+	assert(format != NULL);
 
 	va_start(args, format);
 	ret = vprintf(format, args);

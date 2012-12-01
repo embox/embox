@@ -7,6 +7,7 @@
  * @author Ilia Vaprol
  */
 
+#include <assert.h>
 #include <ctype.h>
 #include <math.h>
 #include <stdarg.h>
@@ -38,6 +39,8 @@ static int print_s(void (*printchar_handler)(char **str, int c), char **out,
 		const char *s, int width, int max_len, unsigned int ops) {
 	int pc, len, pad_count;
 
+	assert((printchar_handler != NULL) && (s != NULL));
+
 	pc = 0;
 	len = strlen(s);
 	max_len = max_len ? max_len : len;
@@ -64,6 +67,8 @@ static int print_i(void (*printchar_handler)(char **str, int c), char **out,
 	char buff[PRINT_I_BUFF_SZ], *s, *end;
 	unsigned long long int t;
 	int neg, len, extra_len, pad_count;
+
+	assert(printchar_handler != NULL);
 
 	s = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
@@ -101,11 +106,13 @@ int __print(void (*printchar_handler)(char **str, int c), char **out,
 	unsigned int ops;
 	union {
 		void *vp;
-		char cm[2];
+		char ca[2];
 		char *cp;
 		unsigned long long int ulli;
 		long double ld;
 	} tmp;
+
+	assert((printchar_handler != NULL) && (format != NULL));
 
 	pc = 0;
 
@@ -200,9 +207,9 @@ after_flags:
 			break;
 		case 'c':
 			/* TODO handle (ops & OPS_LEN_LONG) for wint_t */
-			tmp.cm[0] = (char)va_arg(args, int);
-			tmp.cm[1] = '\0';
-			pc += print_s(printchar_handler, out, &tmp.cm[0], width, precision, ops);
+			tmp.ca[0] = (char)va_arg(args, int);
+			tmp.ca[1] = '\0';
+			pc += print_s(printchar_handler, out, &tmp.ca[0], width, precision, ops);
 			break;
 		case 's':
 			/* TODO handle (ops & OPS_LEN_LONG) for wchar_t* */
@@ -228,6 +235,6 @@ after_flags:
 			break;
 		}
 	}
-	if (out) **out = '\0';
+
 	return pc;
 }

@@ -26,29 +26,36 @@
  #define putchar(c) outbyte(c)
  */
 
-#include <stdio.h>
 #include <assert.h>
 #include <stdarg.h>
-#include <types.h>
-#include <unistd.h>
+#include <stdio.h>
 
 extern int __print(void (*printchar_handler)(char **str, int c),
 		char **out, const char *format, va_list args);
 
 static void printchar(char **str, int c) {
-	assert(str != NULL);
+	assert((str != NULL) && (*str != NULL));
 
 	**str = c;
 	++(*str);
 }
 
 int vsprintf(char *out, const char *format, va_list args) {
-	return __print(printchar, &out, format, args);
+	int ret;
+
+	assert(out != NULL);
+
+	ret = __print(printchar, &out, format, args);
+	*out = '\0';
+
+	return ret;
 }
 
 int sprintf(char *out, const char *format, ...) {
 	int ret;
 	va_list args;
+
+	assert(out != NULL);
 
 	va_start(args, format);
 	ret = vsprintf(out, format, args);
