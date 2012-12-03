@@ -29,6 +29,9 @@ extern int fcntl(int fd, int cmd, ...);
 #define F_GETPIPE_SZ       2
 #define F_SETPIPE_SZ       3
 
+#define F_GETFL     F_GETFD
+#define F_SETFL     F_SETFD
+
 /* fcntl flags */
 #define O_RDONLY           0x0000  /* Open for reading only */
 #define O_WRONLY           0x0001  /* Open for writing only */

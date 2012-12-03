@@ -25,7 +25,7 @@ typedef struct termios {
 	cc_t c_cc[NCCS];  /* control characters */
 } termios_t;
 
-extern int tcgetattr(int fd, struct termios *termios_p);
-extern int tcsetattr(int fd, int optional_actions, struct termios *termios_p);
+//extern int tcgetattr(int fd, struct termios *termios_p);
+//extern int tcsetattr(int fd, int optional_actions, struct termios *termios_p);
 
 #endif /* TERMIOS_H_ */

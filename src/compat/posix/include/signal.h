@@ -17,7 +17,15 @@ extern int kill(int tid, int sig);
 
 extern void (*signal(int sig, void (*func)(int)))(int);
 
+extern void SIG_DFL(int sig);
+
+#define SIG_ERR 0
+
 extern int sigqueue(int tid, int sig, const union sigval value);
+
+static inline int raise(int sig) {
+	return 0;
+}
 
 /* Signals.  */
 #define	SIGHUP		1	/* Hangup (POSIX).  */

@@ -31,7 +31,9 @@ typedef struct stat {
 /**
  * Get file status (size, mode, mtime and so on)
  */
-extern int    chmod(const char *, mode_t);
+static inline int chmod(const char *path, mode_t mode) {
+	return -1;
+}
 extern int    fchmod(int, mode_t);
 extern int    stat(const char *, struct stat *);
 extern int    lstat(const char *, struct stat *);
@@ -39,6 +41,8 @@ extern int    fstat(int fd, struct stat *);
 extern int    mkfifo(const char *, mode_t);
 extern int    mknod(const char *, mode_t, dev_t);
 extern int    mkdir (const char *, mode_t );
-extern mode_t umask(mode_t);
+static inline mode_t umask(mode_t mode) {
+	return 0;
+}
 
 #endif /* SYS_STAT_H_ */

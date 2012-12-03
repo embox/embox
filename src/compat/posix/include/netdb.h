@@ -41,6 +41,13 @@ struct hostent {
 	char **h_addr_list; /* list of addresses */
 };
 
+struct servent {
+	char *s_name;
+	char **s_aliases;
+	int s_port;
+	char *s_proto;
+};
+
 /**
  * Network host database functions
  */

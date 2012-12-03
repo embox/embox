@@ -49,10 +49,7 @@
 
 #include <stdlib.h>
 #include <ctype.h>
-
-#define ULONG_MAX ((unsigned long)(~0x0L)) /* 0xFFFFFFFF */
-#define LONG_MAX  ((long)(ULONG_MAX >> 1)) /* 0x7FFFFFFF */
-#define LONG_MIN  ((long)(~LONG_MAX))      /* 0x80000000 */
+#include <limits.h>
 
 long strtol(const char *nptr, char **endptr, int base) {
 	const char *s = nptr;
