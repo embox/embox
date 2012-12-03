@@ -310,8 +310,11 @@ void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
 		//Start the responding service instance thread
 		if (is_service_started(ci.file)) {
 			struct service_data* srv_data = malloc(sizeof(struct service_data));
+			//srv_data->request = ci.parsed_request;
+			srv_data->sock = ci.sock;
+			srv_data->query = ci.parsed_request->parsed_url->query;
 			if (web_service_start_service(ci.file, srv_data) <= 0) {
-				printf("start service error");
+				//printf("start service error");
 			}
 			return;
 		} else {

@@ -155,9 +155,8 @@ int web_service_start_service(const char *srv_name,
 	}
 	inst->desc = srv_desc;
 
-	if (0 != new_task(inst->desc->run, (void *) srv_data)) {
-		return -1;
-	}
+	new_task(inst->desc->run, (void *) srv_data);
+
 	dlist_add_next(dlist_head_init(&inst->lst), &run_instances);
 	return 0;
 }
