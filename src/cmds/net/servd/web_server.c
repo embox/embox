@@ -13,23 +13,41 @@
 #define DEFAULT_PAGE  "index.html"
 #define MAX_SERVICES_COUNT  10
 
-/* Status code */
-static const char *http_stat_str[HTTP_STAT_MAX] = { [HTTP_STAT_200] = "200 OK",
-		[HTTP_STAT_400] = "400 Bad Request", [HTTP_STAT_404] = "404 Not Found",
-		[HTTP_STAT_405] = "405 Method Not Allowed", [HTTP_STAT_408
-				] = "408 Request Timeout", /* TODO */
-		[HTTP_STAT_413] = "413 Request Entity Too Large", [HTTP_STAT_414
-				] = "414 Request-URI Too Long", };
-
-/* Content type */
-static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
-		[HTTP_CONTENT_TYPE_HTML] = "text/html", [HTTP_CONTENT_TYPE_JPEG
-				] = "image/jpeg", [HTTP_CONTENT_TYPE_PNG] = "image/png",
-		[HTTP_CONTENT_TYPE_GIF] = "image/gif", [HTTP_CONTENT_TYPE_ICO
-				] = "image/vnd.microsoft.icon", [HTTP_CONTENT_TYPE_UNKNOWN
-				] = "application/unknown" };
-
 struct params test_params;
+
+int get_content_type(char *file_name) {
+	char* ext;
+	ext = strchr(file_name, '.');
+	if (ext == NULL) {
+		return HTTP_CONTENT_TYPE_UNKNOWN;
+	}
+	if ((strcmp(ext, ".htm") == 0) || (strcmp(ext, ".html") == 0)) {
+		return HTTP_CONTENT_TYPE_HTML;
+	}
+	if ((strcmp(ext, ".jpg") == 0) || (strcmp(ext, ".jpeg") == 0)) {
+		return HTTP_CONTENT_TYPE_JPEG;
+	}
+	if (strcmp(ext, ".png") == 0) {
+		return HTTP_CONTENT_TYPE_PNG;
+	}
+	if (strcmp(ext, ".gif") == 0) {
+		return HTTP_CONTENT_TYPE_GIF;
+	}
+	if (strcmp(ext, ".ico") == 0) {
+		return HTTP_CONTENT_TYPE_ICO;
+	}
+	return HTTP_CONTENT_TYPE_UNKNOWN;
+}
+
+int get_method(char *method) {
+	if (strcmp(method, "GET") == 0) {
+		return HTTP_METHOD_GET;
+	}
+	if (strcmp(method, "POST") == 0) {
+		return HTTP_METHOD_POST;
+	}
+	return HTTP_METHOD_UNKNOWN; /* method unknown or unsupported */
+}
 
 //TODO it's work if buffer contains full starting line and headers
 static int receive_and_parse_request(struct client_info *info) {
@@ -204,14 +222,13 @@ static int set_ops(char *buff, struct client_info *ci) {
 	return res;
 }
 
-static void send_data(struct client_info *ci, int stat) {
+static void send_data(struct client_info *ci) {
 	char *curr;
 	size_t bytes, bytes_need;
 
 	/* Make header: */
 	curr = ci->buff;
 	/* 1. set title */
-	assert((0 <= stat) && (stat < HTTP_STAT_MAX));
 	curr += set_starting_line(curr, stat);
 	/* 2. set ops */
 	curr += set_ops(curr, ci);
@@ -256,8 +273,7 @@ void close_connection(struct client_info *ci) {
 	close(ci->sock); /* close connection */
 }
 
-void client_process(int sock, struct sockaddr_in addr,
-		socklen_t addr_len) {
+void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
 	int res;
 	struct client_info ci;
 
@@ -279,7 +295,9 @@ void client_process(int sock, struct sockaddr_in addr,
 
 	printf("%s:%d -- upload %s ", inet_ntoa(addr.sin_addr),
 			ntohs(addr.sin_port), ci.file);
-	send_data(&ci, res);
+
+	assert((0 <= res) && (res < HTTP_STAT_MAX));
+	send_data(&ci);
 	printf(" done\n");
 
 	close_connection(&ci);
