@@ -1,4 +1,3 @@
-/*FIXME mybuild libarch is bad packet */
 package embox.arch.microblaze
 
 static module libarch extends embox.arch.libarch {
