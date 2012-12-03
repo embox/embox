@@ -138,8 +138,6 @@ int dev_queue_xmit(struct sk_buff *skb) {
 		skb_free(skb);
 	}
 
-	printf("SENDED bytes %d, proto: %d\n", skb->len, skb->protocol);
-
 	return ENOERR;
 }
 
