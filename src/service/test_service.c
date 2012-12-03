@@ -93,7 +93,7 @@ static void *process_params(void* args) {
 			fclose(params->info->fp);
 			params->info->fp = NULL;
 			params->info->lock_status = 0;
-			event_notify(&params->info->unlock_sock_event);
+
 			return NULL;
 		}
 	} while (!done);

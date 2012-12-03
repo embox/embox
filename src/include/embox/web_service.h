@@ -12,10 +12,11 @@
 #include <util/array.h>
 #include <util/dlist.h>
 #include <cmd/servd.h>
-
+#include <lib/service/service.h>
 
 struct web_service_desc {
 	const char *srv_name;
+	//int is_started;
 	void *(*run)(void *);
 };
 
@@ -33,13 +34,17 @@ extern const struct web_service_desc __web_services_repository[];
 #define EMBOX_WEB_SERVICE(name, thr_handler) \
 	ARRAY_SPREAD_ADD(__web_services_repository, {name,thr_handler})
 
-
-extern int web_service_start(const char *srv_name);
+extern int web_service_add(const char *srv_name);
 
 extern int web_service_send_message(const char *srv_name, void *par);
 
 extern int web_service_stop(const char *srv_name);
 
-extern void web_service_stop_all(void);
+extern void web_service_remove_all(void);
+
+extern int is_service_started(const char *srv_name);
+
+extern int web_service_start_service(const char *srv_name,
+		struct service_data * srv_data);
 
 #endif /* WEB_SERVICE_H_ */

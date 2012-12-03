@@ -64,7 +64,6 @@ struct client_info {
 	char *next_data; /* pointer to next piece of data in buffer */
 	size_t next_len; /* length of the next chunk */
 	http_request * parsed_request; /* parsed request */
-	struct event unlock_sock_event;
 	int lock_status;
 };
 
@@ -73,21 +72,6 @@ struct params {
 	char *query; /*query string*/
 };
 
-/* Status code */
-static const char *http_stat_str[HTTP_STAT_MAX] = { [HTTP_STAT_200] = "200 OK",
-		[HTTP_STAT_400] = "400 Bad Request", [HTTP_STAT_404] = "404 Not Found",
-		[HTTP_STAT_405] = "405 Method Not Allowed", [HTTP_STAT_408
-				] = "408 Request Timeout", /* TODO */
-		[HTTP_STAT_413] = "413 Request Entity Too Large", [HTTP_STAT_414
-				] = "414 Request-URI Too Long", };
-
-/* Content type */
-static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
-		[HTTP_CONTENT_TYPE_HTML] = "text/html", [HTTP_CONTENT_TYPE_JPEG
-				] = "image/jpeg", [HTTP_CONTENT_TYPE_PNG] = "image/png",
-		[HTTP_CONTENT_TYPE_GIF] = "image/gif", [HTTP_CONTENT_TYPE_ICO
-				] = "image/vnd.microsoft.icon", [HTTP_CONTENT_TYPE_UNKNOWN
-				] = "application/unknown" };
 
 extern int get_content_type(char *file_name);
 

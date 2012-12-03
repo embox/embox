@@ -1,0 +1,5 @@
+package lib.service
+
+module service{
+	source "service.c"
+}

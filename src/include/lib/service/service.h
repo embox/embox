@@ -9,6 +9,7 @@
 #define SERVICE_H_
 
 #include <net/util/request_parser.h>
+#include <stdio.h>
 
 struct service_data {
 	char *query;
@@ -22,7 +23,7 @@ struct service_file {
 	char *name;
 };
 
-extern struct void service_get_service_data(struct service_data * data, void * arg);
+extern void service_get_service_data(struct service_data * data, void * arg);
 
 extern int service_file_open_write(struct service_file *srv_file);
 
@@ -34,7 +35,7 @@ extern int service_send_error(struct service_data *srv_data,
 extern void service_close_connection(struct service_data *srv_data,
 		struct service_file *srv_file);
 
-extern int service_file_close(struct service_file *srv_file);
+extern void service_file_close(struct service_file *srv_file);
 
 extern int service_send_reply(struct service_data *srv_data, struct service_file *srv_file);
 

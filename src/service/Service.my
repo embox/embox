@@ -17,3 +17,9 @@ module Test_service {
 	depends SrvLib
 	depends embox.third_party.expat.expat_lib
 }
+
+module New_service {
+	source "new_service.c"
+	depends SrvLib
+	depends lib.service.service
+}

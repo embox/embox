@@ -85,7 +85,7 @@ static void *start_server(void* args) {
 }
 
 int run_service(char * service) {
-	if (0 <= web_service_start(service)) {
+	if (0 <= web_service_add(service)) {
 		printf("service %s started\n", service);
 		return 0;
 	}
@@ -171,7 +171,7 @@ static int servd(int argc, char **argv) {
 			case 'S': /*Stop - stops server*/
 				web_server_started = 0;
 				if (0 <= stop_server()) {
-					web_service_stop_all();
+					web_service_remove_all();
 					printf("Server is stopped\n");
 				} else {
 					web_server_started = 1;

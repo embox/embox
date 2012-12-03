@@ -29,7 +29,7 @@ module servd {
 	depends embox.service.SrvLib
 
 	depends embox.service.Test_service
-	depends embox.service.Index_service
+	depends embox.service.New_service
 
 	depends embox.cmd.net.web_server
 	depends embox.cmd.net.web_server.conf

@@ -9,6 +9,7 @@
 #include <kernel/thread/api.h>
 #include <mem/misc/pool.h>
 #include <string.h>
+#include <kernel/task.h>
 
 ARRAY_SPREAD_DEF(const struct web_service_desc, __web_services_repository);
 
@@ -29,14 +30,14 @@ static void *service_thread_handler(void* args) {
 			return NULL;
 		}
 		inst->desc->run(inst);
-		event_notify(&inst->params->info->unlock_sock_event);
+
 
 	}
 
 	return NULL;
 }
 
-static void *web_service_trampoline(void *param) {
+void *web_service_trampoline(void *param) {
 	struct web_service_instance * inst;
 	struct event event;
 
@@ -71,7 +72,7 @@ const struct web_service_desc *web_service_desc_lookup(const char *srv_name) {
 	return NULL;
 }
 
-int web_service_start(const char *srv_name) {
+int web_service_add(const char *srv_name) {
 	struct web_service_instance *inst;
 	const struct web_service_desc *srv_desc;
 
@@ -86,26 +87,28 @@ int web_service_start(const char *srv_name) {
 	}
 	inst->desc = srv_desc;
 
-	if (0 != thread_create(&inst->thr, THREAD_FLAG_DETACHED,
-					web_service_trampoline, inst)) {
-		return -1;
-	}
+	/*if (0 != thread_create(&inst->thr, THREAD_FLAG_DETACHED,
+	 web_service_trampoline, inst)) {
+	 return -1;
+	 }*/
 	dlist_add_next(dlist_head_init(&inst->lst), &run_instances);
 	return 0;
 }
 
 int send_message(struct web_service_instance *srv_inst, void *par) {
-	while (!srv_inst->thread_started);
+	while (!srv_inst->thread_started)
+		;
 	srv_inst->params = par;
 	event_notify(srv_inst->e);
 
 	return 0;
 }
 
-int stop(struct web_service_instance *srv_inst) {
+int web_service_remove(struct web_service_instance *srv_inst) {
 	send_message(srv_inst, NULL);
 
-	while ((int) srv_inst->params != 1);
+	while ((int) srv_inst->params != 1)
+		;
 	dlist_del(&srv_inst->lst);
 	pool_free(&instance_pool, srv_inst);
 	return 0;
@@ -117,7 +120,7 @@ int web_service_stop(const char *srv_name) {
 	if (NULL == (srv_inst = web_service_lookup(srv_name))) {
 		return -1;
 	}
-	return stop(srv_inst);
+	return web_service_remove(srv_inst);
 }
 
 int web_service_send_message(const char *srv_name, void *par) {
@@ -129,10 +132,40 @@ int web_service_send_message(const char *srv_name, void *par) {
 	return send_message(srv_inst, par);
 }
 
-void web_service_stop_all() {
+void web_service_remove_all() {
 	struct web_service_instance *inst, *tmp;
 
-	dlist_foreach_entry(inst, tmp, &run_instances, lst){
-		stop(inst);
+	dlist_foreach_entry(inst, tmp, &run_instances, lst)
+	{
+		web_service_remove(inst);
 	}
+}
+
+int web_service_start_service(const char *srv_name,
+		struct service_data * srv_data) {
+	struct web_service_instance *inst;
+	const struct web_service_desc *srv_desc;
+
+	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
+		return -1;
+	}
+
+	if (NULL == (inst = pool_alloc(&instance_pool))) {
+		return -1;
+	}
+	inst->desc = srv_desc;
+
+	if (0 != new_task(inst->desc->run, (void *) srv_data)) {
+		return -1;
+	}
+	dlist_add_next(dlist_head_init(&inst->lst), &run_instances);
+	return 0;
+}
+
+int is_service_started(const char *srv_name) {
+	const struct web_service_desc *srv_desc;
+	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
+		return 0;
+	}
+	return 1;
 }
