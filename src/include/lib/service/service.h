@@ -22,7 +22,7 @@ struct service_file {
 	char *name;
 };
 
-extern struct service_data *service_get_service_data(void* arg);
+extern struct void service_get_service_data(struct service_data * data, void * arg);
 
 extern int service_file_open_write(struct service_file *srv_file);
 
