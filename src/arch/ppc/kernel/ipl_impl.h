@@ -24,11 +24,11 @@ static inline __ipl_t ipl_save(void) {
 	__ipl_t ipl;
 	ipl = __get_msr();
 	__set_msr(ipl & ~MSR_EE);
-	return ipl;
+	return ipl & MSR_EE;
 }
 
 static inline void ipl_restore(__ipl_t ipl) {
-	__set_msr(ipl);
+	__set_msr(__get_msr() | (ipl ? MSR_EE : 0));
 }
 
 #endif /* __ASSEMBLER__ */
