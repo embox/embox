@@ -204,15 +204,15 @@ static int set_ops(char *buff, struct client_info *ci) {
 	return res;
 }
 
-static void send_data(struct client_info *ci, int res) {
+static void send_data(struct client_info *ci, int stat) {
 	char *curr;
 	size_t bytes, bytes_need;
 
 	/* Make header: */
 	curr = ci->buff;
 	/* 1. set title */
-	assert((0 <= res) && (res < HTTP_STAT_MAX));
-	curr += set_starting_line(curr, res);
+	assert((0 <= stat) && (stat < HTTP_STAT_MAX));
+	curr += set_starting_line(curr, stat);
 	/* 2. set ops */
 	curr += set_ops(curr, ci);
 	/* 3. set mesaage bode and send respone */
@@ -221,7 +221,7 @@ static void send_data(struct client_info *ci, int res) {
 		curr += sprintf(curr, "<html>"
 				"<head><title>%s</title></head>"
 				"<body><center><h1>Oops...</h1></center></body>"
-				"</html>", http_stat_str[res]);
+				"</html>", http_stat_str[stat]);
 		bytes_need = curr - ci->buff;
 		assert(bytes_need <= sizeof ci->buff); /* TODO remove this and make normal checks */
 		bytes = sendto(ci->sock, ci->buff, bytes_need, 0, NULL, 0);
@@ -235,6 +235,7 @@ static void send_data(struct client_info *ci, int res) {
 			bytes = fread(curr, 1, bytes_need, ci->fp);
 			if (bytes < 0) {
 				break;
+
 			}
 			bytes_need = sizeof ci->buff - bytes_need + bytes;
 			bytes = sendto(ci->sock, ci->buff, bytes_need, 0, NULL, 0);
