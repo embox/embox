@@ -79,6 +79,13 @@ extern void __attribute__((noreturn)) task_exit(void *res);
  */
 extern struct task *task_kernel_task(void);
 
+/**
+ * @brief Initializes kernel task. Called in thread core init.
+ *
+ * @return Error code
+ */
+extern int task_kernel_task_init(void);
+
 struct thread;
 extern int task_notify_switch(struct thread *prev, struct thread *next);
 

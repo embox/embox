@@ -33,6 +33,10 @@ size_t task_kernel_size(void) {
 	return sizeof(struct task) + MAX_RES_SUM_SIZE;
 }
 
+struct task *task_kernel_task(void) {
+	return (struct task *) kernel_task;
+}
+
 struct task *task_init(void *task_n_res_space, size_t size) {
 	struct task *task = (struct task *) task_n_res_space;
 	void *res_ptr = task_n_res_space + sizeof(struct task);
@@ -64,8 +68,4 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 
 	return task;
 
-}
-
-struct task *task_kernel_task(void) {
-	return (struct task *) kernel_task;
 }

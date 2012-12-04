@@ -337,8 +337,11 @@ static void *idle_run(void *arg) {
 static int unit_init(void) {
 	static struct thread bootstrap;
 	struct thread *idle;
-	struct task *kernel_task = task_kernel_task();
+	struct task *kernel_task;
 	id_counter = 0;
+
+	task_kernel_task_init();
+	kernel_task = task_kernel_task();
 
 	bootstrap.id = id_counter++;
 	list_add_tail(&bootstrap.thread_link, &__thread_list);
