@@ -2,5 +2,7 @@ package embox.test.gcc
 
 module division_test {
 	source "division_test.c"
+
+	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }

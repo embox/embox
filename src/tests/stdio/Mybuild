@@ -2,6 +2,7 @@ package embox.test.stdio
 
 module printf_test {
 	source "printf_test.c"
+
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }
