@@ -10,6 +10,7 @@
 #include <mem/misc/pool.h>
 #include <string.h>
 #include <kernel/task.h>
+#include <fcntl.h>
 
 ARRAY_SPREAD_DEF(const struct web_service_desc, __web_services_repository);
 
@@ -156,6 +157,9 @@ int web_service_start_service(const char *srv_name,
 	inst->desc = srv_desc;
 
 	new_task(inst->desc->run, (void *) srv_data);
+	/* When we closing http connection after content sending
+	 * this means socket must be opened only in one task.  */
+	close(srv_data->sock);
 
 	dlist_add_next(dlist_head_init(&inst->lst), &run_instances);
 	return 0;
