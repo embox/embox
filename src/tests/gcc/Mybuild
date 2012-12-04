@@ -1,0 +1,6 @@
+package embox.test.gcc
+
+module division_test {
+	source "division_test.c"
+	depends embox.framework.LibFramework
+}
