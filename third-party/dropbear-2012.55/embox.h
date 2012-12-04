@@ -55,16 +55,16 @@
 #define SIG_IGN 0 /*third-party/dropbear-2012.55/sshpty.c:274:*/
 #define LOG_ERR 0 /*third-party/dropbear-2012.55/sshpty.c:285:*/
 #define TIOCSWINSZ 0 /*third-party/dropbear-2012.55/sshpty.c:352:*/
-#define S_IRUSR 0 /*third-party/dropbear-2012.55/sshpty.c:367:*/
-#define S_IWUSR 0 /*third-party/dropbear-2012.55/sshpty.c:367:*/
-#define S_IWGRP 0 /*third-party/dropbear-2012.55/sshpty.c:367:*/
-#define S_IWOTH 0 /*third-party/dropbear-2012.55/sshpty.c:370:*/
+//#define S_IRUSR 0 /*third-party/dropbear-2012.55/sshpty.c:367:*/
+//#define S_IWUSR 0 /*third-party/dropbear-2012.55/sshpty.c:367:*/
+//#define S_IWGRP 0 /*third-party/dropbear-2012.55/sshpty.c:367:*/
+//#define S_IWOTH 0 /*third-party/dropbear-2012.55/sshpty.c:370:*/
 #define LOG_ERR 0 /*third-party/dropbear-2012.55/sshpty.c:387:*/
-#define S_IRWXU 0 /*third-party/dropbear-2012.55/sshpty.c:399:*/
-#define S_IRWXG 0 /*third-party/dropbear-2012.55/sshpty.c:399:*/
-#define S_IRWXO 0 /*third-party/dropbear-2012.55/sshpty.c:399:*/
-#define S_IRGRP 0 /*third-party/dropbear-2012.55/sshpty.c:402:*/
-#define S_IROTH 0 /*third-party/dropbear-2012.55/sshpty.c:402:*/
+//#define S_IRWXU 0 /*third-party/dropbear-2012.55/sshpty.c:399:*/
+//#define S_IRWXG 0 /*third-party/dropbear-2012.55/sshpty.c:399:*/
+//#define S_IRWXO 0 /*third-party/dropbear-2012.55/sshpty.c:399:*/
+//#define S_IRGRP 0 /*third-party/dropbear-2012.55/sshpty.c:402:*/
+//#define S_IROTH 0 /*third-party/dropbear-2012.55/sshpty.c:402:*/
 //---------------------------------------------------
 
 struct winsize /* third-party/dropbear-2012.55/sshpty.c:346: */
