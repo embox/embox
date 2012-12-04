@@ -4,12 +4,6 @@ module SrvLib {
 	source "srv_lib.c"
 }
 
-module Index_service {
-	//source "index_service.c"
-
-	depends SrvLib
-}
-
 module Test_service {
 	@IncludePath("$(THIRDPARTY_DIR)/lib/expat")
 	source "test_service.c"
