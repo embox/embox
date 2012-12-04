@@ -35,6 +35,6 @@ static inline void ipl_restore(__ipl_t ipl) {
 	ipl ? msr_set_ie() : msr_clr_ie();
 }
 
-#endif /* __ASSEMBLER__ */
+#endif /* !__ASSEMBLER__ */
 
 #endif /* MICROBLAZE_IPL_IMPL_H_ */
