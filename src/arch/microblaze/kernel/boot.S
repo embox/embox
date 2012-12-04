@@ -9,26 +9,24 @@
 #include <asm/linkage.h>
 #include <asm/regs.h>
 
-	.section    ".text"
-	.align  4
- 	.weak hardware_init_hook
- 	.weak software_init_hook
+	.section .text
 
-
-C_ENTRY(boot_start):
+/**
+ * Kernel start point
+ */
+C_ENTRY(_start):
 	mts	rmsr, reg_zero	/* disable cache, interrupts, exceptions */
 
 	/*set stack pointer*/
 	addi  reg_sp, reg_zero, __stack
 
 	brlid r15, setup_trap_table
-	 nop
+	nop
 
 	/* enable instruction and data cache */
 	mfs	r12, rmsr
 	ori	r12, r12, 0xa0
 	mts	rmsr, r12
-
 
 	/* clear BSS segments */
 clear_bss:
@@ -56,36 +54,10 @@ clear_bss:
 	 nop
 1:
 
-	/*interupts enabled*/
-	mfs	r12, rmsr
-	ori	r12, r12, 0x2
-	mts	rmsr, r12
-
 	/*clear register*/
 	REGS_INIT();
 	/*set stack pointer again*/
 	addi  reg_sp, reg_zero, __stack
 
-	/*call hardware_init_hook if it set */
-	addik reg_tmp1, reg_zero, hardware_init_hook
-	beqi reg_tmp1, 1f
-	brlid r15, hardware_init_hook
-	nop
-1:
-
-	/*call software_init_hook if it set */
-	addik reg_tmp1, reg_zero, software_init_hook
-	beqi reg_tmp1, 2f
-	brai software_init_hook
-	nop
-2:
 	brlid r15, kernel_start
 	nop
-
-
-	/*unreacheble loop*/
-	//TODO may be it must be exeption or reset?
-3:	bri	3b
-
-	.section    ".text"
-	.align  4

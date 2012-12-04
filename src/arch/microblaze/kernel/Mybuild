@@ -9,12 +9,12 @@ module context extends embox.arch.context {
 }
 
 module locore extends embox.arch.locore {
-	source "entry.S", "ivt.S", "traps_core.c"
+	source "entry.S", "exception_table.S", "traps_core.c"
 	source "mb_trap_dispatcher.c"
 }
 
 module interrupt extends embox.arch.interrupt {
-	source "interrupt_handler.c", "ipl_impl.h"
+	source "irq_entry.S", "irq_handler.c", "ipl_impl.h"
 	depends locore
 }
 
