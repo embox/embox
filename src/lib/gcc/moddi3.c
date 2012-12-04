@@ -1,16 +1,24 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 16.05.2012
+ * @date 16.05.12
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
+
 #include <types.h>
 
-extern int64_t __divdi3(int64_t num, int64_t den);
+extern uint64_t __umoddi3(uint64_t num, uint64_t den);
+
 int64_t __moddi3(int64_t num, int64_t den) {
-	int res;
-	res = __divdi3(num,den);
-	return num - res * den;
+	int64_t rem;
+	int neg;
+
+	num = num < 0 ? (neg = 1, -num) : (neg = 0, num);
+	den = den < 0 ? (neg ^= 1, -den) : den;
+
+	rem = __umoddi3(num, den);
+
+	return neg ? -rem : rem;
 }
