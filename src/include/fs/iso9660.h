@@ -252,8 +252,7 @@ typedef struct cdfs_file {
 #define FSOP_READDIR    0x10000000
 
 
-typedef struct cdfs_fs_description {
-	void *bdev;
+typedef struct cdfs_fs_info {
 	char mntfrom[MAX_LENGTH_PATH_NAME];
 	char mntto[MAX_LENGTH_PATH_NAME];
 	struct fsops *ops;
@@ -261,37 +260,27 @@ typedef struct cdfs_fs_description {
 	uid_t uid;
 	gid_t gid;
 	void *data;
-} cdfs_fs_description_t;
+} cdfs_fs_info_t;
 
-typedef struct cdfs_file_description {
+typedef struct cdfs_file_info {
 	int flags;
 	int mode;
 	uid_t owner;
 	gid_t group;
 	off64_t pos;
 	void *data;
-	cdfs_fs_description_t *fs;
-} cdfs_file_description_t;
+} cdfs_file_info_t;
 
+/*
 typedef struct direntry {
 	ino_t ino;
 	unsigned int reclen;
 	unsigned int namelen;
 	char name[MAX_LENGTH_PATH_NAME];
 } direntry_t;
+*/
 
-typedef struct statfs  {
-	unsigned int bsize;        /* Fundamental file system block size */
-	unsigned int iosize;       /* Optimal transfer block size */
-	unsigned int blocks;       /* Total data blocks in file system */
-	unsigned int bfree;        /* Free blocks in fs */
-	unsigned int files;        /* Total file nodes in file system */
-	unsigned int ffree;        /* Free file nodes in fs */
-	unsigned int cachesize;    /* Cache buffers */
-	char fstype[MAX_LENGTH_FILE_NAME];   /* File system type name */
-	char mntto[MAX_LENGTH_PATH_NAME];       /* Directory on which mounted */
-	char mntfrom[MAX_LENGTH_PATH_NAME];     /* Mounted file system */
-} statfs_t;
+/*
 
 struct fsops {
 	unsigned long reentrant;
@@ -305,30 +294,30 @@ struct fsops {
 
 	int (*statfs)(cdfs_fs_description_t *fs, statfs_t *buf);
 
-	int (*open)(cdfs_file_description_t *filp, char *name);
-	int (*close)(cdfs_file_description_t *filp);
-	int (*destroy)(cdfs_file_description_t *filp);
-	int (*fsync)(cdfs_file_description_t *filp);
+	int (*open)(struct cdfs_file_info *filp, char *name);
+	int (*close)(struct cdfs_file_info *filp);
+	int (*destroy)(struct cdfs_file_info *filp);
+	int (*fsync)(struct cdfs_file_info *filp);
 
-	int (*read)(cdfs_file_description_t *filp, void *data, size_t size, off64_t pos);
-	int (*write)(cdfs_file_description_t *filp, void *data, size_t size, off64_t pos);
-	int (*ioctl)(cdfs_file_description_t *filp, int cmd, void *data, size_t size);
+	int (*read)(struct cdfs_file_info *filp, void *data, size_t size, off64_t pos);
+	int (*write)(struct cdfs_file_info *filp, void *data, size_t size, off64_t pos);
+	int (*ioctl)(struct cdfs_file_info *filp, int cmd, void *data, size_t size);
 
-	off64_t (*tell)(cdfs_file_description_t *filp);
-	off64_t (*lseek)(cdfs_file_description_t *filp, off64_t offset, int origin);
-	int (*ftruncate)(cdfs_file_description_t *filp, off64_t size);
+	off64_t (*tell)(struct cdfs_file_info *filp);
+	off64_t (*lseek)(struct cdfs_file_info *filp, off64_t offset, int origin);
+	int (*ftruncate)(struct cdfs_file_info *filp, off64_t size);*/
 
-	/*int (*futime)(cdfs_file_description_t *filp, struct utimbuf *times); */
+	/*int (*futime)(struct cdfs_file_info *filp, struct utimbuf *times); */
 	/*int (*utime)(cdfs_fs_description_t *fs, char *name, struct utimbuf *times); */
 
-	int (*fstat)(cdfs_file_description_t *filp, stat_t *buffer);
+	/*int (*fstat)(struct cdfs_file_info *filp, stat_t *buffer);
 	int (*stat)(cdfs_fs_description_t *fs, char *name, stat_t *buffer);
 
 	int (*access)(cdfs_fs_description_t *fs, char *name, int mode);
 
-	int (*fchmod)(cdfs_file_description_t *filp, int mode);
+	int (*fchmod)(struct cdfs_file_info *filp, int mode);
 	int (*chmod)(cdfs_fs_description_t *fs, char *name, int mode);
-	int (*fchown)(cdfs_file_description_t *filp, int owner, int group);
+	int (*fchown)(struct cdfs_file_info *filp, int owner, int group);
 	int (*chown)(cdfs_fs_description_t *fs, char *name, int owner, int group);
 
 	int (*mkdir)(cdfs_fs_description_t *fs, char *name, int mode);
@@ -338,22 +327,8 @@ struct fsops {
 	int (*link)(cdfs_fs_description_t *fs, char *oldname, char *newname);
 	int (*unlink)(cdfs_fs_description_t *fs, char *name);
 
-	int (*opendir)(cdfs_file_description_t *filp, char *name);
-	int (*readdir)(cdfs_file_description_t *filp, direntry_t *dirp, int count);
-};
-/*
-struct tm {
-	int tm_sec;                   // Seconds after the minute [0, 59]
-	int tm_min;                   // Minutes after the hour [0, 59]
-	int tm_hour;                  // Hours since midnight [0, 23]
-	int tm_mday;                  // Day of the month [1, 31]
-	int tm_mon;                   // Months since January [0, 11]
-	int tm_year;                  // Years since 1900
-	int tm_wday;                  // Days since Sunday [0, 6]
-	int tm_yday;                  // Days since January 1 [0, 365]
-	int tm_isdst;                 // Daylight Saving Time flag
-	int tm_gmtoff;                // Seconds east of UTC
-	char *tm_zone;                // Timezone abbreviation
+	int (*opendir)(struct cdfs_file_info *filp, char *name);
+	int (*readdir)(struct cdfs_file_info *filp, direntry_t *dirp, int count);
 };
 */
 

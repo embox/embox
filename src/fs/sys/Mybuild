@@ -1,0 +1,5 @@
+package embox.fs.sys
+
+module fsop {
+	source "fsop.c"
+}

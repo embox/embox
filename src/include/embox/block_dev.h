@@ -10,11 +10,9 @@
 #ifndef BLOCK_DEV_H_
 #define BLOCK_DEV_H_
 
-#include <fs/file_desc.h>
-#include <fs/vfs.h>
-#include <fs/file_operation.h>
 #include <util/array.h>
 #include <util/indexator.h>
+#include <fs/node.h>
 
 #define IOCTL_GETBLKSIZE        1
 #define IOCTL_GETDEVSIZE        2
@@ -26,9 +24,10 @@
 #define DEV_TYPE_BLOCK          2
 #define DEV_TYPE_PACKET         3
 
+
 typedef struct block_dev {
 	dev_t id;
-	node_t *dev_node;
+	struct node *dev_node;
 	char name[MAX_LENGTH_FILE_NAME];
 	struct block_dev_driver *driver;
 	void *privdata;
@@ -52,7 +51,6 @@ typedef struct block_dev_module {
 	const block_dev_module_init_ft init;
 } block_dev_module_t;
 
-extern const block_dev_module_t __block_dev_registry[];
 
 typedef struct block_dev_cache {
 	blkno_t blkno;
@@ -77,7 +75,11 @@ extern int block_dev_close(void *bdev);
 extern int block_dev_destroy(void *bdev);
 extern int block_dev_named(char *name, struct indexator *indexator);
 
+extern const block_dev_module_t __block_dev_registry[];
 #define EMBOX_BLOCK_DEV(name, block_dev_driver, init_func) \
 		ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver, init_func})
+
+
+extern int block_devs_init(void);
 
 #endif /* BLOCK_DEV_H_ */

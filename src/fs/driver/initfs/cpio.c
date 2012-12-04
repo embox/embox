@@ -8,9 +8,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <sys/stat.h>
 
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
+#include <fs/fs_drv.h>
 #include <cpio.h>
 
 
@@ -22,15 +24,13 @@
 #define N_ALIGN(len) ((((len) + 1) & ~3) + 2)
 #define F_ALIGN(len) (((len) + 3) & ~3)
 
-//static fs_drv_t *init_fs;
-static struct node *unpack_dir_node;
 
-static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
+static cpio_newc_header_t *cpio_parse_item(cpio_newc_header_t *cpio_h, char *name, ramfs_create_param_t *param) {
 	char *s;
 	size_t i;
 	unsigned long parsed[12], file_size, start_addr, mode, mtime;
-	ramfs_create_param_t param;
 	char buf[9];
+
 	buf[8] = '\0';
 	if (memcmp(cpio_h->c_magic, MAGIC_OLD_BINARY, 6)==0) {
 		printk("Use -H newc option for create cpio arch\n");
@@ -57,13 +57,12 @@ static cpio_newc_header_t *parse_item(cpio_newc_header_t *cpio_h, char *name) {
 		return NULL;
 	} else {
 		//TODO: set start_addr, file_size, mode.
-		strncpy(param.name, name, parsed[11]);
-		param.size = file_size;
-		param.mode = mode;
-		param.mtime = mtime;
-		param.start_addr = start_addr;
-		//init_fs->fsop->create_file(&param);
-		unpack_dir_node->fs_type->fsop->create_file(&param);
+		strncpy(param->name, name, parsed[11]);
+		param->size = file_size;
+		param->mode = mode;
+		param->mtime = mtime;
+		param->start_addr = start_addr;
+
 	}
 	return (cpio_newc_header_t*) F_ALIGN(start_addr + file_size);
 }
@@ -72,20 +71,37 @@ int cpio_unpack(char *dir) {
 	extern char _ramfs_start, _ramfs_end;
 	cpio_newc_header_t *cpio_h, *cpio_next;
 	char buff_name[MAX_LENGTH_FILE_NAME];
+	struct nas *nas;
+	struct node *node;
+	struct node *unpack_dir_node;
+	ramfs_create_param_t param;
 
 	if (&_ramfs_end == &_ramfs_start) {
-		printk("No available initramfs\n");
 		return -1;
 	}
 	printk("cpio initramfs at 0x%08x to the directory %s\n", (unsigned int)&_ramfs_start, dir);
 
 	unpack_dir_node = vfs_find_node(dir, NULL);
 
-	//init_fs = filesystem_find_drv("ramfs");
+	nas = unpack_dir_node->nas;
+	nas->fs = alloc_filesystem("ramfs");
 
+	param.root_node = unpack_dir_node;
 	cpio_h = (cpio_newc_header_t *)&_ramfs_start;
-	while (NULL != (cpio_next = parse_item(cpio_h, buff_name))) {
+	while (NULL != (cpio_next = cpio_parse_item(cpio_h, buff_name, &param))) {
 		cpio_h = cpio_next;
+		if(param.size == 0) {
+			/* this is a directory */
+			printk("cpio initramfs not support directory now\n");
+		} else {
+			/* this is a regular file */
+			if (NULL == (node = vfs_add_path(param.name, unpack_dir_node))) {
+				return 0;/*file already exist*/
+			}
+			node->type = NODE_TYPE_FILE | S_IREAD; /* read only file */
+			((struct nas *)(node->nas))->fi =(void *) &param;
+			nas->fs->drv->fsop->create_node(unpack_dir_node, node);
+		}
 	}
 
 	return 0;

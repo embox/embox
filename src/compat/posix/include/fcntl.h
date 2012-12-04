@@ -19,7 +19,10 @@ extern int open(const char *path, int __oflag, ...);
 
 extern int close(int file);
 
-extern int create(const char *pathname, mode_t mode);
+/*
+ * shall be equivalent to: open(path, O_WRONLY|O_CREAT|O_TRUNC, mode)
+ */
+extern int creat(const char *pathname, mode_t mode);
 
 extern int fcntl(int fd, int cmd, ...);
 

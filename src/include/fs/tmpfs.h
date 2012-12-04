@@ -19,20 +19,18 @@
 #define ATTR_LONG_NAME	(ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | \
 ATTR_VOLUME_ID)
 
-typedef struct tmpfs_filesystem {
-	void *bdev;
-	uint8_t root_name[MAX_LENGTH_PATH_NAME];
+typedef struct tmpfs_fs_info {
+	char mntfrom[MAX_LENGTH_PATH_NAME];
+	char mntto[MAX_LENGTH_PATH_NAME];
 	uint32_t numblocks;			/* number of block in volume */
 	uint32_t block_size;		/* size of block */
 	uint32_t block_per_file;	/* max number of blocks filesize*/
-} tmpfs_filesystem_t;
+} tmpfs_fs_info_t;
 
 typedef struct tmpfs_file_info {
 	int     index;		        /* number of file in FS*/
 	int     mode;				/* mode in which this file was opened */
-	uint32_t filelen;			/* byte length of file */
 	uint32_t pointer;			/* current (BYTE) pointer */
-	tmpfs_filesystem_t *fs;
 } tmpfs_file_info_t;
 
 

@@ -5,13 +5,20 @@ module node {
 	option number fnode_quantity=64
 }
 
+module filesystem {
+	source "file_system.c"
+	option number fs_quantity=16
+
+	depends embox.fs.driver.repo
+}
+
 module file_desc {
 	source "file_desc.c"
 	option number fdesc_quantity=32
 }
 
 module core {
-	source "vfs.c", "kfile.c", "path.c"
+	source "vfs.c", "path.c"
 
 	option number file_name_length=32
 	option number path_length=256
@@ -19,6 +26,9 @@ module core {
 	depends embox.compat.posix.fs
 	depends file_desc, node
 	depends embox.fs.driver.repo
+
+	depends embox.fs.SysLibFsFull
+	depends filesystem
 }
 
 module posix_compat {
@@ -33,7 +43,7 @@ module rootfs {
 	option string fstype = "ramfs"
 	option string src = ""
 	option string dst = "/"
-	option string mntscript = ""
 	depends node, driver.repo
 	depends embox.mem.heap_bm
+	depends embox.fs.sys.fsop
 }

@@ -37,13 +37,13 @@ struct uart_device {
 	const char *dev_name;
 	int irq_num;
 	uint32_t base_addr;
-	struct file_operations *fops;
+	struct kfile_operations *fops;
 	struct uart_params *params;
 	struct uart_ops *operations;
 };
 
 extern int uart_dev_register(struct uart_device *dev);
 
-extern struct file_operations uart_dev_file_op;
+extern struct kfile_operations uart_dev_file_op;
 
 #endif /* UART_DEVICE_H_ */

@@ -7,3 +7,7 @@ module terminal {
 
 	depends embox.lib.LibC
 }
+
+module char_dev {
+	source "char_dev.c"
+}

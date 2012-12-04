@@ -212,7 +212,7 @@ static void *open_factory(const char *fname, const char *_mode) {
 	for (int i=0;i<CONFIG_NR_CONS;i++) {
 		sprintf(node_name,"%d",i);
 
-		node_line 	= vfs_find_child(node_name,node_factory);
+		node_line 	= vfs_get_child(node_name,node_factory);
 		if (node_line == NULL) {
 			node_line 				= vfs_add_path(node_name,node_factory);
 			node_line->file_info 	= (void*) &file_op;
@@ -268,7 +268,7 @@ static void *open(const char *fname, const char *_mode) {
 	if (line < 0)
 		return NULL;
 
-	node_line 	= vfs_find_child(p_path,node_factory);
+	node_line 	= vfs_get_child(p_path,node_factory);
 	if (node_line == NULL)
 		return NULL;
 

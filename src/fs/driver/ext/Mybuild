@@ -1,0 +1,14 @@
+package embox.fs.driver
+
+module ext {
+	source "ext.c"
+	option number ext_inode_quantity=64
+	option number ext_descriptor_quantity=4
+	option number ext_file_size=32
+	option number ext_filesystem_size=4000
+
+	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.driver.block
+	depends embox.mem.page_api
+	depends embox.mem.pool
+}

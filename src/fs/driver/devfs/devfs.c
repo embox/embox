@@ -6,112 +6,45 @@
  * @author Nikolay Korotky
  */
 
-#include <stdio.h>
-#include <drivers/ide.h>
-
 #include <fs/fs_drv.h>
 #include <fs/vfs.h>
-#include <util/array.h>
+
 #include <embox/device.h>
 #include <embox/block_dev.h>
 
-ARRAY_SPREAD_DEF(const device_module_t, __device_registry);
-ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);
-
-static const fs_drv_t devfs_drv;
-
-static file_operations_t devfs_fop;
-
-const fs_drv_t *devfs_get_fs(void) {
-    return &devfs_drv;
-}
-
 static int devfs_init(void * par) {
+
 	return 0;
 }
 
-static int devfs_format(void *par) {
-	return 0;
-}
+static int devfs_mount(void *dev, void *dir) {
+	struct node *nod;
 
-static int devfs_mount(void *par) {
-	node_t *nod, *devnod;
-	size_t i;
-
-	if (NULL == (nod = vfs_find_node("/dev", NULL))) {
-		if (NULL == (nod = vfs_add_path("/dev", NULL))) {
-			return 0;
-		}
-	}
-	nod->properties = DIRECTORY_NODE_TYPE;
-
-	for (i = 0; i < ARRAY_SPREAD_SIZE(__device_registry); i++) {
-		if (NULL != (devnod = vfs_add_path(__device_registry[i].name, nod))) {
-			if(NULL != __device_registry[i].init) {
-				__device_registry[i].init();
-			}
-			devnod->node_info = (void*) __device_registry[i].fops;
-			devnod->fs_type = (fs_drv_t *) &devfs_drv;
-		}
+	if (NULL != (nod = vfs_find_node(dev, NULL))) {
+		/* we already initialized devfs */
+		return 0;
 	}
 
-	for (i = 0; i < ARRAY_SPREAD_SIZE(__block_dev_registry); i++) {
-		if (NULL != __block_dev_registry[i].init) {
-			__block_dev_registry[i].init(NULL);
-		}
+	if (NULL == (nod = vfs_add_path(dev, NULL))) {
+		return -1;
 	}
+	nod->type = NODE_TYPE_DIRECTORY;
+	nod->nas = NULL; /* this is virtual folder to add folder or file we just add node */
+
+
+	char_devs_init();
+
+	block_devs_init();
 
 	return 0;
 }
 
-static int devfs_create(void *params) {
-	return 0;
-}
-
-static int devfs_delete(const char *fname) {
-	return 0;
-}
-
-/*
- * file_operation
- */
-static void *devfs_open(struct file_desc *desc, int flag) {
-	return desc->ops->fopen(desc, flag);
-}
-
-static int devfs_close(struct file_desc *desc) {
-	return 0;
-}
-
-static size_t devfs_read(void *buf, size_t size, size_t count, void *file) {
-	return 0;
-}
-
-static size_t devfs_write(const void *buf, size_t size, size_t count,
-		void *file) {
-	return 0;
-}
-
-static int devfs_ioctl(void *file, int request, va_list args) {
-	return 0;
-}
-
-static fsop_desc_t devfs_fsop = { devfs_init, devfs_format, devfs_mount,
-		devfs_create, devfs_delete};
-
-static file_operations_t devfs_fop = {
-       .fopen = devfs_open,
-       .fclose = devfs_close,
-       .fread = devfs_read,
-       .fwrite = devfs_write,
-       .fseek =  NULL,
-       .ioctl = devfs_ioctl,
-       .fstat = NULL
-};
+static fsop_desc_t devfs_fsop = { devfs_init, NULL, devfs_mount,
+		NULL, NULL};
 
 static const fs_drv_t devfs_drv = {
 	.name = "devfs",
-	.file_op = &devfs_fop,
+	.file_op = NULL,
 	.fsop = &devfs_fsop
 };
 
