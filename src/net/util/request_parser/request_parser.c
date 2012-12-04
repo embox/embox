@@ -18,6 +18,48 @@ char * try_parse_url(http_request *parsed_request, char *subrequenst);
 char * try_parse_proto(http_request *parsed_request, char *subrequenst);
 char * try_parse_host(http_request *parsed_request, char *subrequenst);
 
+void request_parser_full_strcpy(char *to, char *from) {
+	strcpy(to, from);
+	to[strlen(from)] = 0;
+}
+
+void request_parser_cpy(http_request *to, http_request *from) {
+	to->method = malloc(strlen(from->method) + 1);
+	request_parser_full_strcpy(to->method, from->method);
+
+	to->parsed_url->fragment = malloc(strlen(from->parsed_url->fragment) + 1);
+	request_parser_full_strcpy(to->parsed_url->fragment,
+			from->parsed_url->fragment);
+
+	to->parsed_url->host = malloc(strlen(from->parsed_url->host) + 1);
+	request_parser_full_strcpy(to->parsed_url->host, from->parsed_url->host);
+
+	to->parsed_url->password = malloc(strlen(from->parsed_url->password) + 1);
+	request_parser_full_strcpy(to->parsed_url->password,
+			from->parsed_url->password);
+
+	to->parsed_url->path = malloc(strlen(from->parsed_url->path) + 1);
+	request_parser_full_strcpy(to->parsed_url->path, from->parsed_url->path);
+
+	to->parsed_url->port = malloc(strlen(from->parsed_url->port) + 1);
+	request_parser_full_strcpy(to->parsed_url->port, from->parsed_url->port);
+
+	to->parsed_url->query = malloc(strlen(from->parsed_url->query) + 1);
+	request_parser_full_strcpy(to->parsed_url->query, from->parsed_url->query);
+
+	to->parsed_url->scheme = malloc(strlen(from->parsed_url->scheme) + 1);
+	request_parser_full_strcpy(to->parsed_url->scheme,
+			from->parsed_url->scheme);
+
+	to->parsed_url->username = malloc(strlen(from->parsed_url->username) + 1);
+	request_parser_full_strcpy(to->parsed_url->username,
+			from->parsed_url->username);
+
+	to->proto = malloc(strlen(from->proto) + 1);
+	request_parser_full_strcpy(to->proto, from->proto);
+
+}
+
 http_request *parse_http(char * request) {
 	http_request *parsed_request;
 	char * subrequenst;
@@ -172,10 +214,9 @@ char *try_parse_host(http_request *parsed_request, char *subrequenst) {
 		return subrequenst;
 	}
 
-	if (subrequenst[0] == '\n'){
+	if (subrequenst[0] == '\n') {
 		subrequenst++;
-	}
-	else{
+	} else {
 		return NULL;
 	}
 

@@ -34,4 +34,6 @@ extern http_request * parse_http(char * request);
  */
 extern void free_http_request(http_request *request);
 
+extern void request_parser_cpy(http_request *to, http_request *from);
+
 #endif /* REQUEST_PARSER_H_ */
