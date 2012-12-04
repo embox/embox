@@ -67,7 +67,6 @@ static void *process_params(void* args) {
 	XML_Parser parser;
 
 	inst = (struct web_service_instance *) args;
-	params = (struct params *) inst->params;
 
 	file = fopen(params->info->file, "r");
 	if (file == NULL) { /* file doesn't exist */

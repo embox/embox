@@ -115,7 +115,7 @@ int service_send_reply(struct service_data *srv_data,
 	/* 2. set ops */
 	curr += service_set_ops(curr, content_type);
 	/* 3. set mesaage bode and send respone */
-	//assert(srv_file->fd != NULL);
+	assert(srv_file->fd != NULL);
 	/* send file */
 	do {
 		bytes_need = sizeof buff - (curr - buff);
@@ -125,13 +125,12 @@ int service_send_reply(struct service_data *srv_data,
 
 		}
 		bytes_need = sizeof buff - bytes_need + bytes;
-		bytes = sendto(srv_data->sock, buff, bytes_need, 0, NULL, 0);
+		bytes = send(srv_data->sock, buff, bytes_need, 0);
 		if (bytes != bytes_need) {
 			printf("http error: send() error\n");
 			break;
 		}
 		curr = buff;
-		printf(".");
 	} while (bytes_need == sizeof buff);
 	return 1;
 }
@@ -158,17 +157,13 @@ int service_send_error(struct service_data *srv_data,
 			"</html>", http_stat_str[srv_data->http_status]);
 	bytes_need = curr - buff;
 	assert(bytes_need <= sizeof buff); /* TODO remove this and make normal checks */
-	bytes = sendto(srv_data->sock, buff, bytes_need, 0, NULL, 0);
+	bytes = send(srv_data->sock, buff, bytes_need, 0);
 	if (bytes != bytes_need) {
 		printf("http error: send() error\n");
 	}
 	return 1;
 }
 
-void service_close_connection(struct service_data *srv_data,
-		struct service_file *srv_file) {
-	if (srv_file->fd != NULL) {
-		fclose(srv_file->fd); /* close file (it's open or null) */
-	}
+void service_close_connection(struct service_data *srv_data) {
 	close(srv_data->sock); /* close connection */
 }

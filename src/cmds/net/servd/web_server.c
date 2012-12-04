@@ -139,12 +139,6 @@ static int http_hnd_starting_line(struct client_info *info) {
 
 		test_params.info = info;
 		test_params.query = info->parsed_request->parsed_url->query;
-
-		info->lock_status = 1;
-		if (0 > web_service_send_message(info->file, &test_params)) {
-			info->lock_status = 0;
-		}
-
 	} else if (strcmp(info->parsed_request->method, "POST") == 0) {
 		info->method = HTTP_METHOD_POST;
 	} else {
@@ -261,6 +255,7 @@ static void send_data(struct client_info *ci, int stat) {
 		bytes_need = curr - ci->buff;
 		assert(bytes_need <= sizeof ci->buff); /* TODO remove this and make normal checks */
 		bytes = sendto(ci->sock, ci->buff, bytes_need, 0, NULL, 0);
+
 		if (bytes != bytes_need) {
 			printf("http error: send() error\n");
 		}
@@ -280,7 +275,6 @@ static void send_data(struct client_info *ci, int stat) {
 				break;
 			}
 			curr = ci->buff;
-			printf(".");
 		} while (bytes_need == sizeof ci->buff);
 	}
 }
@@ -310,11 +304,14 @@ void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
 		//Start the responding service instance thread
 		if (is_service_started(ci.file)) {
 			struct service_data* srv_data = malloc(sizeof(struct service_data));
-			//srv_data->request = ci.parsed_request;
+			struct http_request request;
+			*(&request) = *(ci.parsed_request);
+			//ToDo move it to web_service_start_service
 			srv_data->sock = ci.sock;
-			srv_data->query = ci.parsed_request->parsed_url->query;
-			if (web_service_start_service(ci.file, srv_data) <= 0) {
-				//printf("start service error");
+			srv_data->request = request;
+			srv_data->query = request.parsed_url->query;
+			if (web_service_start_service(ci.file, srv_data) < 0) {
+				printf("client_process: start service error");
 			}
 			return;
 		} else {

@@ -5,14 +5,14 @@ module SrvLib {
 }
 
 module Index_service {
-	source "index_service.c"
+	//source "index_service.c"
 
 	depends SrvLib
 }
 
 module Test_service {
 	@IncludePath("$(THIRDPARTY_DIR)/lib/expat")
-	source "test_service.c"
+	//source "test_service.c"
 
 	depends SrvLib
 	depends embox.third_party.expat.expat_lib

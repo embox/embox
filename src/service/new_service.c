@@ -126,7 +126,7 @@ void * entry_point (void * arg) {
 
 	service_file_switch_to_read_mode(&srv_file);
 	service_send_reply(&srv_data, &srv_file);
-	fclose(input);
+	service_close_connection(&srv_data);
 	return NULL;
 }
 
