@@ -4,16 +4,23 @@ module SrvLib {
 	source "srv_lib.c"
 }
 
-module Test_service {
+module TestService {
 	@IncludePath("$(THIRDPARTY_DIR)/lib/expat")
 	source "test_service.c"
+
+	@InitFS
+	source "test.html"
 
 	depends SrvLib
 	depends embox.third_party.expat.expat_lib
 }
 
-module New_service {
+module NewService {
 	source "new_service.c"
+
+	@InitFS
+	source "img_service.in"
+
 	depends SrvLib
 	depends lib.service.service
 }

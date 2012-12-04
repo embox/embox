@@ -83,6 +83,9 @@ static void *process_params(void* args) {
 	XML_SetCharacterDataHandler(parser, character);
 
 	input = fopen(in_file, "r");
+	if(NULL == input) {
+		return NULL;
+	}
 	do {
 		int len = (int) fread(buf, 1, sizeof(buf), input);
 		done = len < sizeof(buf);
