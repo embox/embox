@@ -1,8 +1,11 @@
+#include <string.h>
+#include <stdio.h>
+
 #include <lib/service/service.h>
 #include <embox/web_service.h>
 
-#include <string.h>
-#include <stdio.h>
+
+#define TEMPLATE_FILE "img_service.in"
 
 #define VAR_COUNT 10
 #define VAR_LEN 20
@@ -14,7 +17,7 @@ struct variable {
 	char value[VAR_LEN];
 };
 
-static const char * get_variable_by_name (const struct variable * vars, const char * name) {
+static const char *get_variable_by_name(const struct variable *vars, const char *name) {
 	int i;
 	for (i = 0; i < VAR_COUNT; i++) {
 		if (!strcmp(vars[i].name, name))
@@ -23,7 +26,7 @@ static const char * get_variable_by_name (const struct variable * vars, const ch
 	return NULL;
 }
 
-static void get_variables_from_query (const char * query, struct variable * vars) {
+static void get_variables_from_query(const char * query, struct variable * vars) {
 	int i, qptr, len;
 	char * dump;
 	printf("Query :: %s\n", query);
@@ -74,11 +77,17 @@ static void print_vars (struct variable * vars) {
 	}
 }
 
-static void preprocess_file (FILE * in, FILE * out, struct variable * vars) {
+static void preprocess_file(FILE *out, struct variable *vars) {
 	char t;
 	int escaped = 0, len = 0;
 	char var[VAR_LEN];
 	const char * val;
+	FILE *in;
+
+	if( 0 == (in = fopen(TEMPLATE_FILE, "r"))) {
+		return;
+	}
+
 	for (t = fgetc(in); t != EOF; t = fgetc(in)) {
 		if (t == PP_SENTINEL) {
 			if (escaped) {
@@ -109,24 +118,24 @@ static void preprocess_file (FILE * in, FILE * out, struct variable * vars) {
 	}
 }
 
-void * entry_point (void * arg) {
+static void *entry_point(void *arg) {
 	struct service_data srv_data;
 	struct service_file srv_file;
 	struct variable vars[VAR_COUNT];
-	FILE *input;
-	const char in_file[] = "img_service.in";
 
 	service_get_service_data(&srv_data, arg);
 	service_file_open_write(&srv_file);
+
 	get_variables_from_query(srv_data.query, vars);
 	print_vars(vars);
 
-	input = fopen(in_file, "r");
-	preprocess_file(input, srv_file.fd, vars);
+	preprocess_file(srv_file.fd, vars);
 
 	service_file_switch_to_read_mode(&srv_file);
 	service_send_reply(&srv_data, &srv_file);
+
 	service_close_connection(&srv_data);
+
 	return NULL;
 }
 
