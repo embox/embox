@@ -22,10 +22,10 @@ typedef struct http_request http_request;
  * Check and parse http request line
  *
  * @param request - http request string
- * @retval new http_request on success match
- * @retval NULL on fail
+ * @param http_request blunk struct http_request
+ * @retval -1 on fail 0 on success
  */
-extern http_request * parse_http(char * request);
+extern int parse_http(char * request, http_request *parsed_request);
 
 /**
  * free http_request memory

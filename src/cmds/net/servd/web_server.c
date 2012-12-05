@@ -17,7 +17,6 @@
 
 struct params test_params;
 
-
 /* Status code */
 const char *http_stat_str[HTTP_STAT_MAX] = { [HTTP_STAT_200] = "200 OK",
 		[HTTP_STAT_400] = "400 Bad Request", [HTTP_STAT_404] = "404 Not Found",
@@ -33,6 +32,10 @@ const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
 		[HTTP_CONTENT_TYPE_GIF] = "image/gif", [HTTP_CONTENT_TYPE_ICO
 				] = "image/vnd.microsoft.icon", [HTTP_CONTENT_TYPE_UNKNOWN
 				] = "application/unknown" };
+
+void free_client_info(struct client_info * info){
+	free_http_request(&info->parsed_request);
+}
 
 int get_content_type(char *file_name) {
 	char* ext;
@@ -105,41 +108,41 @@ static int receive_and_parse_request(struct client_info *info) {
 		}
 	}
 	cur[0] = '\0';
-
-	info->parsed_request = parse_http(info->buff);
-
 	//todo receive message body and set in some file
+
+	if (0 > parse_http(info->buff, &info->parsed_request)) {
+		return 0;
+	}
 
 	return 1;
 }
 
 static int http_hnd_starting_line(struct client_info *info) {
 //todo other check
-	if (info->parsed_request == NULL) {
+	if (&info->parsed_request == NULL) {
 		return HTTP_RET_ABORT; /* bad request */
 	}
 
-	if (strcmp(info->parsed_request->method, "GET") == 0) {
+	if (strcmp(info->parsed_request.method, "GET") == 0) {
 		info->method = HTTP_METHOD_GET;
 
-		if (info->parsed_request->proto == NULL) {
+		if (info->parsed_request.proto == NULL) {
 			return HTTP_RET_ABORT; /* bad request */
 		}
 
-		if (strlen(info->parsed_request->parsed_url->path)
-				> sizeof info->file) {
+		if (strlen(info->parsed_request.parsed_url->path) > sizeof info->file) {
 			return HTTP_STAT_414;
 		}
 
-		if (strcmp(info->parsed_request->parsed_url->path, "") == 0) {
+		if (strcmp(info->parsed_request.parsed_url->path, "") == 0) {
 			strcpy(info->file, DEFAULT_PAGE);
 		} else {
-			strcpy(info->file, info->parsed_request->parsed_url->path);
+			strcpy(info->file, info->parsed_request.parsed_url->path);
 		}
 
 		test_params.info = info;
-		test_params.query = info->parsed_request->parsed_url->query;
-	} else if (strcmp(info->parsed_request->method, "POST") == 0) {
+		test_params.query = info->parsed_request.parsed_url->query;
+	} else if (strcmp(info->parsed_request.method, "POST") == 0) {
 		info->method = HTTP_METHOD_POST;
 	} else {
 		info->method = HTTP_METHOD_UNKNOWN;
@@ -284,6 +287,7 @@ void close_connection(struct client_info *ci) {
 		fclose(ci->fp); /* close file (it's open or null) */
 	}
 	close(ci->sock); /* close connection */
+	free_client_info(ci);
 }
 
 void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
@@ -307,7 +311,7 @@ void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
 			//ToDo move it to web_service_start_service
 			srv_data->sock = ci.sock;
 
-			request_parser_cpy(&srv_data->request , ci.parsed_request);
+			request_parser_cpy(&srv_data->request, &ci.parsed_request);
 			srv_data->query = srv_data->request.parsed_url->query;
 			if (web_service_start_service(ci.file, srv_data) < 0) {
 				printf("client_process: start service error");
