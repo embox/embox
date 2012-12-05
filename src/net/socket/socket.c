@@ -26,6 +26,7 @@
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
 #include <io_sync.h>
+#include <net/socket_registry.h>
 
 static ssize_t this_read(struct idx_desc *socket, void *buf, size_t nbyte);
 static ssize_t this_write(struct idx_desc *socket, const void *buf, size_t nbyte);
@@ -337,7 +338,7 @@ ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
 
 	sock = idx2sock(sockfd);
 
-	if(sock->state != SS_CONNECTED) {
+	if(!sk_is_connected(sock)) {
 		SET_ERRNO(ENOTCONN);
 		return -1;
 	}

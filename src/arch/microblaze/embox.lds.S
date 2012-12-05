@@ -14,10 +14,7 @@ MEMORY {
 SECTIONS {
 	.text : {
 		ALIGNMENT();
-		_ivt_start = .;
-		*(.trap_table)
-		_ivt_end = .;
-		. = ALIGN(0x100);
+		*(.trap_table.text)
 		*(.text)
 		*(.text.*)
 		ALIGNMENT();

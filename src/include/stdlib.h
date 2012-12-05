@@ -107,6 +107,10 @@ extern float strtof(const char *nptr, char **endptr);
 extern long double strtold(const char *nptr, char **endptr);
 extern void abort(void);
 
+#define EXIT_FAILURE 0
+#define EXIT_SUCCESS 1
+extern void exit(int status);
+
 /**
  * Returns the absolute value of an argument. If the argument is not negative,
  * the argument is returned. If the argument is negative, the negation of the

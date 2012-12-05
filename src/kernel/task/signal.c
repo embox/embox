@@ -38,6 +38,10 @@ static void task_terminate(int sig) {
 	task_exit(NULL);
 }
 
+void SIG_DFL(int sig) {
+	task_terminate(sig);
+}
+
 static void task_signal_table_init(struct task *task, void *_signal_table) {
 	int sig;
 

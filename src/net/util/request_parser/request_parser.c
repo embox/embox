@@ -18,12 +18,60 @@ char * try_parse_url(http_request *parsed_request, char *subrequenst);
 char * try_parse_proto(http_request *parsed_request, char *subrequenst);
 char * try_parse_host(http_request *parsed_request, char *subrequenst);
 
-http_request *parse_http(char * request) {
-	http_request *parsed_request;
+void request_parser_full_strcpy(char *to, char *from) {
+	if (from == NULL){
+		to[0] = 0;
+		return;
+	}
+	strcpy(to, from);
+	to[strlen(from)] = 0;
+}
+
+void request_parser_cpy(http_request *to, http_request *from) {
+	to->method = malloc(strlen(from->method) + 1);
+	request_parser_full_strcpy(to->method, from->method);
+
+	to->parsed_url = malloc(sizeof(struct parsed_url));
+
+	to->parsed_url->fragment = malloc(strlen(from->parsed_url->fragment) + 1);
+	request_parser_full_strcpy(to->parsed_url->fragment,
+			from->parsed_url->fragment);
+
+	to->parsed_url->host = malloc(strlen(from->parsed_url->host) + 1);
+	request_parser_full_strcpy(to->parsed_url->host, from->parsed_url->host);
+
+	to->parsed_url->password = malloc(strlen(from->parsed_url->password) + 1);
+	request_parser_full_strcpy(to->parsed_url->password,
+			from->parsed_url->password);
+
+	to->parsed_url->path = malloc(strlen(from->parsed_url->path) + 1);
+	request_parser_full_strcpy(to->parsed_url->path, from->parsed_url->path);
+
+	to->parsed_url->port = malloc(strlen(from->parsed_url->port) + 1);
+	request_parser_full_strcpy(to->parsed_url->port, from->parsed_url->port);
+
+	to->parsed_url->query = malloc(strlen(from->parsed_url->query) + 1);
+	request_parser_full_strcpy(to->parsed_url->query, from->parsed_url->query);
+
+	to->parsed_url->scheme = malloc(strlen(from->parsed_url->scheme) + 1);
+	request_parser_full_strcpy(to->parsed_url->scheme,
+			from->parsed_url->scheme);
+
+	to->parsed_url->username = malloc(strlen(from->parsed_url->username) + 1);
+	request_parser_full_strcpy(to->parsed_url->username,
+			from->parsed_url->username);
+
+	to->proto = malloc(strlen(from->proto) + 1);
+	request_parser_full_strcpy(to->proto, from->proto);
+}
+
+int parse_http(char * request, http_request *parsed_request) {
 	char * subrequenst;
 
-	parsed_request = malloc(sizeof(http_request));
 	parsed_request->method = NULL;
+	if (parsed_request->parsed_url != NULL){
+		parsed_url_free(parsed_request->parsed_url);
+	}
 	parsed_request->parsed_url = NULL;
 	parsed_request->proto = NULL;
 
@@ -32,28 +80,28 @@ http_request *parse_http(char * request) {
 	subrequenst = try_parse_method(parsed_request, subrequenst);
 	if (subrequenst == NULL) {
 		free_http_request(parsed_request);
-		return NULL;
+		return -1;
 	}
 
 	subrequenst = try_parse_url(parsed_request, subrequenst);
 	if (subrequenst == NULL) {
 		free_http_request(parsed_request);
-		return NULL;
+		return -1;
 	}
 
 	subrequenst = try_parse_proto(parsed_request, subrequenst);
 	if (subrequenst == NULL) {
 		free_http_request(parsed_request);
-		return NULL;
+		return -1;
 	}
 
 	subrequenst = try_parse_host(parsed_request, subrequenst);
 	if (subrequenst == NULL) {
 		free_http_request(parsed_request);
-		return NULL;
+		return -1;
 	}
 
-	return parsed_request;
+	return 0;
 }
 
 void free_http_request(http_request *request) {
@@ -67,7 +115,6 @@ void free_http_request(http_request *request) {
 		if (NULL != request->parsed_url) {
 			parsed_url_free(request->parsed_url);
 		}
-		free(request);
 	}
 }
 
@@ -85,8 +132,8 @@ char *try_parse_method(http_request *parsed_request, char *subrequenst) {
 
 		parsed_request->method = malloc(lexeme_length + 1);
 		if (NULL == parsed_request->method) {
-			return NULL;
-		}
+					return NULL;
+				}
 		(void) strncpy(parsed_request->method, subrequenst, lexeme_length);
 		parsed_request->method[lexeme_length] = '\0';
 		for (int i = 0; i < lexeme_length; i++) {
@@ -172,10 +219,9 @@ char *try_parse_host(http_request *parsed_request, char *subrequenst) {
 		return subrequenst;
 	}
 
-	if (subrequenst[0] == '\n'){
+	if (subrequenst[0] == '\n') {
 		subrequenst++;
-	}
-	else{
+	} else {
 		return NULL;
 	}
 

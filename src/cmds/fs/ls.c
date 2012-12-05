@@ -46,7 +46,7 @@ static void print_long_list(char *path, node_t *node, int recursive) {
 static void print_folder(char *path, node_t *node, int recursive) {
 	node_t *item;
 
-	if(DIRECTORY_NODE_TYPE != (node->properties & DIRECTORY_NODE_TYPE)) {
+	if(!node_is_directory(node)) {
 		printf("%s\n",  path);
 		return;
 	}

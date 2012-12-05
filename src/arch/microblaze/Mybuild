@@ -2,11 +2,6 @@ package embox.arch.microblaze
 
 module lds extends embox.arch.lds {
 	source "embox.lds.S"
-	//option number stack_size=65536
-}
-
-module interrupt extends embox.arch.interrupt {
-	source "include/asm/hal/ipl.h"
 }
 
 module cpu extends embox.arch.cpu {

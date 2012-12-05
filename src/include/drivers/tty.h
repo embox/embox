@@ -73,7 +73,7 @@ typedef struct tty_device {
 	#endif
 
 	uint32_t console_cur;
-	file_operations_t *file_op;
+	kfile_operations_t *file_op;
 } tty_device_t;
 
 extern tty_device_t *cur_tty;

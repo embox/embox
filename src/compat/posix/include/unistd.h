@@ -55,7 +55,9 @@ extern int unlink(const char *pathname);
 
 extern int rmdir(const char *pathname);
 
-extern pid_t getpid(void);
+static inline pid_t getpid(void) {
+	return -1;
+}
 
 extern int isatty(int fd);
 

@@ -14,13 +14,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
+
 #include <fs/ramfs.h>
+#include <fs/vfs.h>
+#include <fs/fs_drv.h>
 #include <drivers/ramdisk.h>
-#include <fs/fat.h>
-#include <embox/cmd.h>
+
+
 #include <mem/page.h>
 #include <cmd/mkfs.h>
 
+#include <embox/cmd.h>
 
 #define MIN_ARGS_OF_MKFS 3 /* <mkfs -q /dev/ram0> must create ramdisk*/
 #define DEFAULT_BLOCK_QTTY  0x20
@@ -115,17 +119,12 @@ static int exec(int argc, char **argv) {
 
 static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 						unsigned int fs_type, unsigned int operation_flag) {
-	ramdisk_create_params_t new_ramdisk;
 	struct fs_drv *fs_drv;
 	int rezult;
+	struct node *node;
 
 	if(operation_flag & MKFS_CREATE_RAMDISK) {
-		new_ramdisk.size = blocks * PAGE_SIZE();
-		new_ramdisk.path = path;
-		new_ramdisk.fs_name = fs_name;
-		new_ramdisk.fs_type = fs_type;
-
-		if(0 > (rezult = ramdisk_create((void *) &new_ramdisk))) {
+		if(0 > (rezult = ramdisk_create(path, blocks * PAGE_SIZE()))) {
 			return rezult;
 		}
 	}
@@ -133,12 +132,16 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 	if(operation_flag & MKFS_FORMAT_DEV) {
 		/* find filesystem driver by name */
 		if(NULL == (fs_drv =
-				filesystem_find_drv((const char *) fs_name))) {
+				fs_driver_find_drv((const char *) fs_name))) {
 			return -EINVAL;
 		}
 
+		if(NULL == (node = vfs_find_node((char *) path, NULL))) {
+			return -ENODEV;
+		}
+
 		/* format filesystem */
-		if (0 != (rezult = fs_drv->fsop->format((void *) path))) {
+		if (0 != (rezult = fs_drv->fsop->format((void *) node))) {
 			return rezult;
 		}
 	}

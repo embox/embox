@@ -9,36 +9,35 @@
 #define FS_DRV_H_
 
 
-//#include <types.h>
-//#include <stdio.h>
 #include <fs/file_operation.h>
-//#include <unistd.h>
-//#include <fs/file_desc.h>
+#include <util/array.h>
+
+typedef int (*fsop_init_ft)(void *par);
+typedef int (*fsop_format_ft)(void *par);
+typedef int (*fsop_mount_ft)(void *dev_node, void *dir_node);
+typedef int (*fsop_create_ft)(struct node *parent_node, struct node *new_node);
+typedef int (*fsop_delete_ft)(struct node *node);
 
 
-typedef int (*FS_INIT_FUNC)(void *par);
-typedef int (*FS_FORMAT_FUNC)(void *par);
-typedef int (*FS_MOUNT_FUNC)(void *par);
-typedef int (*FS_CREATE_FUNC)(void *par);
-typedef int (*FS_DELETE_FUNC)(const char *file_name);
 
 typedef struct fsop_desc {
-        FS_INIT_FUNC init;
-        FS_FORMAT_FUNC format;
-        FS_MOUNT_FUNC mount;
-        FS_CREATE_FUNC create_file;
-        FS_DELETE_FUNC delete_file;
+	fsop_init_ft init;
+	fsop_format_ft format;
+	fsop_mount_ft mount;
+	fsop_create_ft create_node;
+	fsop_delete_ft delete_node;
 } fsop_desc_t;
 
+struct kfile_operations;
 /**
  * Structure of file system driver.
  * We can mount some file system with name of FS which has been registered in
  * our system.
  */
 typedef struct fs_drv {
-	const char                   *name;
-	const struct file_operations *file_op;
-	const fsop_desc_t            *fsop;
+	const char                    *name;
+	const struct kfile_operations *file_op;
+	const fsop_desc_t             *fsop;
 } fs_drv_t;
 
 
@@ -58,18 +57,18 @@ extern fs_drv_t *alloc_fs_drivers(void);
  */
 extern void free_fs_drivers(fs_drv_t *);
 
-extern fs_drv_t *filesystem_find_drv(const char *name);
+extern fs_drv_t *fs_driver_find_drv(const char *name);
 
 /**
- * register a new filesystem
+ * register a new filesystem driver
  * @param fs the file system structure
  */
-extern int filesystem_register_drv(fs_drv_t *);
+extern int fs_driver_register_drv(fs_drv_t *);
 
 /**
- * unregister a file system
+ * unregister a file system driver
  * @param fs filesystem to unregister
  */
-extern int filesystem_unregister_drv(fs_drv_t *);
+extern int fs_driver_unregister_drv(fs_drv_t *);
 
 #endif /* FS_DRV_H_ */

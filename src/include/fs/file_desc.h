@@ -10,12 +10,15 @@
 #define FS_FILE_DESC_H_
 
 
+#include <types.h>
+
 struct node;
 
 struct file_desc {
 	struct node *node;
-	struct file_operations *ops;
+	struct kfile_operations *ops;
 	size_t cursor;
+	void *file_info; /* customize in each file system */
 };
 
 extern struct file_desc *file_desc_alloc(void);

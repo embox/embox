@@ -9,7 +9,7 @@
 #ifndef FS_NODE_H_
 #define FS_NODE_H_
 
-#include <fs/fs_drv.h>
+#include <fs/file_system.h>
 #include <util/tree.h>
 
 #include <module/embox/fs/core.h>
@@ -19,28 +19,52 @@
 #define MAX_LENGTH_FILE_NAME  OPTION_MODULE_GET(embox__fs__core,NUMBER,file_name_length)
 #define MAX_LENGTH_PATH_NAME  OPTION_MODULE_GET(embox__fs__core,NUMBER,path_length)
 
+
+
+#define NODE_TYPE_FILE       0x01
+#define NODE_TYPE_DIRECTORY  0x10
+#define NODE_TYPE_SPECIAL    0x20
+
 typedef struct node {
 	const char            name[MAX_LENGTH_FILE_NAME];
-	int                   properties;  /* FILE, DIRECTORY, DEVICE, LINK ... */
-	void                 *node_info;   /* WTF? maybe introduce Node Attribute Structure(NAS)? (sikmir) */
-	struct fs_drv        *fs_type;     /* filesystem driver operation */
-	void                 *fi;          /* file information */
-	void                 *nas;
+	int                   type;  /* FILE, DIRECTORY, DEVICE, LINK ... */
+	int                   mode;
 	struct tree_link      tree_link;
+	void                 *nas;
 } node_t;
 
-typedef struct file_create_param {
-	void  *node;
-	void  *parents_node;
-	char   path[MAX_LENGTH_PATH_NAME];
-} file_create_param_t;
+struct node_info {
+	size_t        size;
+	unsigned int  mtime;
+};
 
-extern node_t *alloc_node(const char *name);
-extern void free_node(node_t *node);
+struct node_fi {
+	struct node_info ni;
+	void  *privdata;
+};
+
+typedef struct nas {
+	struct node          *node;
+	struct filesystem    *fs;
+	struct node_fi       *fi;
+} nas_t;
 
 
-static inline int node_is_block_dev(void) {
+
+extern node_t *node_alloc(const char *name);
+extern void node_free(node_t *node);
+
+
+static inline int node_is_block_dev(struct node *node) {
 	return 1;
+}
+
+static inline int node_is_directory(struct node *node) {
+	return node->type & NODE_TYPE_DIRECTORY;
+}
+
+static inline int node_is_file(struct node *node) {
+	return node->type & NODE_TYPE_FILE;
 }
 
 #endif /* FS_NODE_H_ */

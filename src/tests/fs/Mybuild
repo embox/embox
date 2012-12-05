@@ -20,6 +20,7 @@ module filesystem_test {
 	depends embox.driver.ramdisk
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.fs.driver.devfs
+	depends embox.fs.sys.fsop
 	depends embox.mem.page_api
 	depends embox.mem.pool
 	depends embox.mem.phymem
@@ -33,9 +34,18 @@ module file_test {
 	depends embox.driver.ramdisk
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.fs.driver.devfs
+	depends embox.fs.sys.fsop
 	depends embox.mem.page_api
 	depends embox.mem.pool
 	depends embox.mem.phymem
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
+}
+
+module InitFsTest {
+	source "initfs_test.c"
+	@InitFS
+	source "initfs_test_file.txt"
+
+	depends embox.fs.rootfs
 }

@@ -29,21 +29,15 @@ static module file_ops {
 
 module file {
 	depends file_ops
-	depends open_api
+	depends open
 }
 
-@DefaultImpl(open)
-abstract module open_api{ }
 
-static module open extends open_api {
+static module open {
 	source "open.c"
 
 	depends embox.fs.posix_compat
 	depends embox.kernel.task.errno
-}
-
-static module no_open extends open {
-	source "no_open.c"
 }
 
 module posix_env {

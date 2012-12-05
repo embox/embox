@@ -45,28 +45,21 @@ static block_dev_module_t *block_dev_find(char *name) {
 */
 
 block_dev_t *block_dev(void *dev) {
-#if 0
-	dev_t devno;
-	block_dev_t *dev;
 
-	assert(dev_id != NULL);
-	devno = *((dev_t *) dev_id);
-	dev = devtab[devno];
-	assert(dev != NULL);
-
-	return dev;
-#endif
 	return (block_dev_t *)dev;
 }
 
 struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	block_dev_t *bdev;
 	node_t *node;
+	struct nas *nas;
+	struct node_fi *node_fi;
 
 	bdev = (block_dev_t *) pool_alloc(&blockdev_pool);
 	if (NULL == bdev) {
 		return NULL;
 	}
+
 	memset(bdev, 0, sizeof(block_dev_t));
 
 	bdev->id = (dev_t) index_alloc(&block_dev_idx, INDEX_ALLOC_MIN);
@@ -85,10 +78,14 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 		index_free(&block_dev_idx, bdev->id);
 		return NULL;
 	}
-
-	node->node_info = bdev;
 	strncpy (bdev->name, node->name, MAX_LENGTH_FILE_NAME);
 	bdev->dev_node = node;
+
+	nas = node->nas;
+	node_fi = nas->fi;
+	node_fi->privdata = bdev;
+	node_fi->ni.size = 0;/*TODO*/
+	node_fi->ni.mtime = 0;/*TODO*/
 
 	return bdev;
 }
@@ -236,4 +233,19 @@ int block_dev_destroy (void *dev) {
 
 	pool_free(&blockdev_pool, bdev);
 	return 0;
+}
+
+
+ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);
+
+
+int block_devs_init(void) {
+	int i;
+
+	for (i = 0; i < ARRAY_SPREAD_SIZE(__block_dev_registry); i++) {
+		if (NULL != __block_dev_registry[i].init) {
+			__block_dev_registry[i].init(NULL);
+		}
+	}
+	return i;
 }

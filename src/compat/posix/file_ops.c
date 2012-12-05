@@ -11,10 +11,12 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
+
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <io_sync.h>
-#include <sys/ioctl.h>
+
 
 int close(int fd) {
 	const struct task_idx_ops *ops;
@@ -159,7 +161,6 @@ int fstat(int fd, struct stat *buff) {
 		return -1;
 	}
 }
-
 
 int fcntl(int fd, int cmd, ...) {
 	va_list args;

@@ -9,6 +9,8 @@
 #include <string.h>
 
 #include <fs/path.h>
+#include <assert.h>
+
 
 /*
  * remove the top directory name from path
@@ -70,6 +72,37 @@ int path_increase_tail(char *head, char *tail) {
 		return 0;
 }
 
+/*
+ * Save first node name in path into node_name parameter.
+ * Return the remaining part of path.
+ */
+char *path_get_next_name(const char *path, char *node_name, int buff_len) {
+	char *p = (char *) path;
+	char *nm = node_name;
+
+	*nm = '\0'; /* empty node_name */
+
+	/* we must pass '/' symbol */
+	if('/' == *p) {
+		p++;
+	}
+
+	/* we copy chars while not appear end of string or we don't find next item
+	 * or don't fill the buffer*/
+	while (('/' != *p) && ('\0' != *p) && (buff_len-- > 0)) {
+		*nm++ = *p++;
+	}
+
+	/* we must setup terminate symbol to the end of node_name */
+	*nm = '\0';
+
+	/* if we found some symbols it's a correct node_name  */
+	if (nm != node_name) {
+		return p;
+	}
+
+	return NULL;
+}
 
 #include <fs/fat.h>
 /*
@@ -116,27 +149,28 @@ char *path_dir_to_canonical(char *dest, char *src, char dir) {
         memset(dest, 0, MSDOS_NAME + 2);
         for (i = 0; i < 8; i++) {
 			if (*src != ' ') {
-				*dest = *src;
-				if ((0 == dir) && (*dest >= 'A' && *dest <='Z')) {
-					*dest = (*dest - 'A') + 'a';
+				*dst = *src;
+				if ((0 == dir) && (*dst >= 'A' && *dst <='Z')) {
+					*dst = (*dst - 'A') + 'a';
 				}
-				dest++;
+				dst++;
 			}
 			src++;
         }
         if ((*src != ' ') && (0 == dir)) {
-        	*dest++ = '.';
+        	*dst++ = '.';
         }
         for (i = 0; i < 3; i++) {
 			if (*src != ' ') {
-				*dest = *src;
-				if ((0 == dir) && (*dest >= 'A' && *dest <='Z')) {
-					*dest = (*dest - 'A') + 'a';
+				*dst = *src;
+				if ((0 == dir) && (*dst >= 'A' && *dst <='Z')) {
+					*dst = (*dst - 'A') + 'a';
 				}
-				dest++;
+				dst++;
 			}
 			src++;
         }
-        return dst;
+        return dest;
 }
+
 

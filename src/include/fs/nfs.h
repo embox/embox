@@ -302,7 +302,7 @@ typedef struct write_reply {
 	__u64 cookie_vrf;
 } write_reply_t;
 
-typedef struct nfs_filesystem {
+typedef struct nfs_fs_info {
 	char srv_name[MAX_LENGTH_PATH_NAME];
 	char srv_dir[MAX_LENGTH_PATH_NAME];
 	export_dir_t export;
@@ -310,7 +310,7 @@ typedef struct nfs_filesystem {
 	char mnt_point[MAX_LENGTH_PATH_NAME];
 	struct client *mnt;
 	struct client *nfs;
-} nfs_filesystem_t;
+} nfs_fs_info_t;
 
 typedef struct nfs_file_info {
 	file_name_t name_dsc;
@@ -318,7 +318,6 @@ typedef struct nfs_file_info {
 	nfs_filehandle_t fh;
 	int mode;				/* mode in which this file was opened */
 	__u64 offset;			/* current (BYTE) pointer */
-	nfs_filesystem_t *fs;
 } nfs_file_info_t;
 
 int mount_nfs_filesystem(void *par);

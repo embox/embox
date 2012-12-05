@@ -9,104 +9,100 @@
 #include <string.h>
 #include <lib/expat.h>
 
+struct test_service_data {
+	struct service_data * srv_data;
+	struct service_file * srv_file;
+};
+
 static void start_element(void *userData, const char *name, const char **atts) {
-	struct params *data = (struct params *) userData;
-	FILE *file = data->info->fp;
+	struct test_service_data * data = (struct test_service_data *) userData;
 	int i = 0;
 
 	if (strcmp(name, "c:out") == 0) {
 		//param -> text
-		fwrite(data->query, sizeof(char), strlen(data->query), file);
+		fwrite(data->srv_data->query, sizeof(char),
+				strlen(data->srv_data->query), data->srv_file->fd);
 	} else {
 		//open tag
-		fwrite("<", sizeof(char), 1, file);
-		fwrite(name, sizeof(char), strlen(name), file);
+		fwrite("<", sizeof(char), 1, data->srv_file->fd);
+		fwrite(name, sizeof(char), strlen(name), data->srv_file->fd);
 
 		//add atts
 		while (atts[i] != NULL) {
-			fwrite(" ", sizeof(char), 1, file);
-			fwrite(atts[i], sizeof(char), strlen(atts[i]), file);
-			fwrite("=\"", sizeof(char), 2, file);
+			fwrite(" ", sizeof(char), 1, data->srv_file->fd);
+			fwrite(atts[i], sizeof(char), strlen(atts[i]), data->srv_file->fd);
+			fwrite("=\"", sizeof(char), 2, data->srv_file->fd);
 			i++;
-			fwrite(atts[i], sizeof(char), strlen(atts[i]), file);
-			fwrite("\"", sizeof(char), 1, file);
+			fwrite(atts[i], sizeof(char), strlen(atts[i]), data->srv_file->fd);
+			fwrite("\"", sizeof(char), 1, data->srv_file->fd);
 			i++;
 		}
 
-		fwrite(">", sizeof(char), 1, file);
+		fwrite(">", sizeof(char), 1, data->srv_file->fd);
 	}
 }
 
 static void end_element(void *userData, const char *name) {
-	struct params *data = (struct params *) userData;
-	FILE *file = data->info->fp;
+	struct test_service_data * data = (struct test_service_data *) userData;
 
 	if (strcmp(name, "c:out") != 0) {
 		//close tag
-		fwrite("</", sizeof(char), 2, file);
-		fwrite(name, sizeof(char), strlen(name), file);
-		fwrite(">", sizeof(char), 1, file);
+		fwrite("</", sizeof(char), 2, data->srv_file->fd);
+		fwrite(name, sizeof(char), strlen(name), data->srv_file->fd);
+		fwrite(">", sizeof(char), 1, data->srv_file->fd);
 	}
 }
 
 static void character(void *userData, const XML_Char *s, int len) {
-	struct params *data = (struct params *) userData;
-	FILE *file = data->info->fp;
+	struct test_service_data * data = (struct test_service_data *) userData;
 
 	//text between tags
-	fwrite(s, sizeof(char), len, file);
+	fwrite(s, sizeof(char), len, data->srv_file->fd);
 }
 
 static void *process_params(void* args) {
-	struct web_service_instance *inst;
-	struct params *params;
-	char temp_file[] = "/tmp/test_temp.html";
+	struct test_service_data data;
+	struct service_data srv_data;
+	struct service_file srv_file;
 	char buf[512];
-	FILE *file;
 	int done;
 	XML_Parser parser;
+	FILE *input;
+	const char in_file[] = "test.html";
 
-	inst = (struct web_service_instance *) args;
-	params = (struct params *) inst->params;
+	data.srv_data = &srv_data;
+	data.srv_file = &srv_file;
 
-	file = fopen(params->info->file, "r");
-	if (file == NULL) { /* file doesn't exist */
-		return NULL;
-	}
-	params->info->fp = fopen("/tmp/test_temp.html", "w");
-	if (params->info->fp == NULL) { /* file doesn't exist */
-		fclose(file);
-		return NULL;
-	}
+	service_get_service_data(&srv_data, args);
+	service_file_open_write(&srv_file);
 
 	parser = XML_ParserCreate(NULL);
 	XML_SetHTMLUse(parser);
-	XML_SetUserData(parser, params);
+	XML_SetUserData(parser, &data);
 	XML_SetElementHandler(parser, start_element, end_element);
 	XML_SetCharacterDataHandler(parser, character);
 
+	input = fopen(in_file, "r");
+	if(NULL == input) {
+		return NULL;
+	}
 	do {
-		int len = (int) fread(buf, 1, sizeof(buf), file);
+		int len = (int) fread(buf, 1, sizeof(buf), input);
 		done = len < sizeof(buf);
 		if (XML_Parse(parser, buf, len, done) == XML_STATUS_ERROR) {
-			fclose(file);
-			fclose(params->info->fp);
-			params->info->fp = NULL;
-			params->info->lock_status = 0;
-
-			return NULL;
+			XML_ParserFree(parser);
+			service_send_error(&srv_data, &srv_file);
+			service_close_connection(&srv_data);
+			service_file_close(&srv_file);
+			break;
 		}
 	} while (!done);
 
 	XML_ParserFree(parser);
-	fclose(file);
-	fclose(params->info->fp);
-
-	//params->info->fp = fopen("/tmp/test_temp.html", "r");
-	params->info->fp =  NULL;
-	strcpy(params->info->file, temp_file);
-	params->info->file[strlen(temp_file)] = '\0';
-
+	service_file_switch_to_read_mode(&srv_file);
+	service_send_reply(&srv_data, &srv_file);
+	service_close_connection(&srv_data);
+	service_file_close(&srv_file);
 	return NULL;
 }
 

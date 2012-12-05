@@ -17,7 +17,7 @@
 #include <util/array.h>
 #include <fs/fs_drv.h>
 
-EMBOX_UNIT_INIT(unit_init);
+EMBOX_UNIT_INIT(fs_driver_init);
 
 typedef struct fs_driver_head {
 	struct dlist_head link;
@@ -31,7 +31,7 @@ ARRAY_SPREAD_DEF(const fs_drv_t *, __fs_drivers_registry);
 static DLIST_DEFINE(file_systems);
 
 
-static fs_driver_head_t *filesystem_alloc(fs_drv_t *drv) {
+static fs_driver_head_t *fs_driver_alloc(fs_drv_t *drv) {
 	fs_driver_head_t *head;
 
 	head = pool_alloc(&fs_driver_pool);
@@ -42,7 +42,7 @@ static fs_driver_head_t *filesystem_alloc(fs_drv_t *drv) {
 	return head;
 }
 
-static void filesystem_free(fs_drv_t *drv) {
+static void fs_driver_free(fs_drv_t *drv) {
 	fs_driver_head_t *head = (fs_driver_head_t *)drv;
 
 	dlist_del((struct dlist_head *)head);
@@ -50,23 +50,25 @@ static void filesystem_free(fs_drv_t *drv) {
 	return;
 }
 
-static int unit_init(void) {
+static int fs_driver_init(void) {
 	fs_driver_head_t *head;
 	size_t i;
 
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__fs_drivers_registry); i++) {
-		if (NULL == (head = filesystem_alloc(
+		if (NULL == (head = fs_driver_alloc(
 				(fs_drv_t *) __fs_drivers_registry[i]))) {
 			return -EINVAL;
 		}
 
-		__fs_drivers_registry[i]->fsop->init(NULL);
+		if(NULL != __fs_drivers_registry[i]->fsop->init) {
+			__fs_drivers_registry[i]->fsop->init(NULL);
+		}
 	}
 
 	return ENOERR;
 }
 
-fs_drv_t *filesystem_find_drv(const char *name) {
+fs_drv_t *fs_driver_find_drv(const char *name) {
 	struct fs_driver_head *tmp;
 	struct fs_driver_head *fs_drv;
 
@@ -78,7 +80,7 @@ fs_drv_t *filesystem_find_drv(const char *name) {
 	return NULL;
 }
 
-int filesystem_register_drv(fs_drv_t *fs) {
+int ffs_driver_register_drv(fs_drv_t *fs) {
 	int res = 0;
 	fs_drv_t *p;
 
@@ -86,7 +88,7 @@ int filesystem_register_drv(fs_drv_t *fs) {
 		return EINVAL;
 	}
 
-	p = filesystem_find_drv(fs->name);
+	p = fs_driver_find_drv(fs->name);
 	if (NULL != p) {
 		return -EBUSY;
 	}
@@ -94,11 +96,11 @@ int filesystem_register_drv(fs_drv_t *fs) {
 	return res;
 }
 
-int filesystem_unregister_drv(fs_drv_t *fs) {
+int fs_driver_unregister_drv(fs_drv_t *fs) {
 	if (NULL == fs) {
 		return -EINVAL;
 	}
-	filesystem_free(fs);
+	fs_driver_free(fs);
 
 	return ENOERR;
 }

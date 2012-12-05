@@ -30,6 +30,8 @@
 #include <kernel/time/time_types.h>
 #include <kernel/time/ktime.h>
 
+#include <io_sync.h>
+
 EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
 
 /** TODO
@@ -490,6 +492,12 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		list_add_tail(&newsock.tcp_sk->conn_wait, &sock.tcp_sk->conn_wait);
 		event_notify(&sock.tcp_sk->new_conn);
+		{
+			struct idx_desc *desc = sock.sk->sk_socket->desc;
+			assert(desc != NULL);
+			io_op_unblock(&desc->data->read_state);
+			io_op_unblock(&desc->data->write_state);
+		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 		return TCP_RET_OK;
 	}

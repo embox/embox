@@ -64,7 +64,8 @@ static inline enum socket_connection_state_t sk_get_connection_state(struct sock
 }
 
 static inline int sk_is_connected(struct socket *sock){
-	return (sock->socket_node->socket_connection_state == CONNECTED);
+	return (sock->socket_node->socket_connection_state == CONNECTED
+			|| sock->socket_node->socket_connection_state == ESTABLISHED);
 }
 
 static inline int sk_is_bound(struct socket *sock){

@@ -17,7 +17,7 @@
  * and must receive interrupt number our self and then clear pending bit in
  * pending register
  */
-void interrupt_handler(void) {
+void irq_handler(void) {
 	unsigned int pending = 0;
 	int cnt = 0;
 

@@ -1,0 +1,5 @@
+package embox.fs.driver
+
+module PseudoFs {
+	source "pseudofs_drv.c"
+}

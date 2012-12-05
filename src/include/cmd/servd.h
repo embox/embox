@@ -63,7 +63,7 @@ struct client_info {
 	char *data; /* pointer to current chunk */
 	char *next_data; /* pointer to next piece of data in buffer */
 	size_t next_len; /* length of the next chunk */
-	http_request * parsed_request; /* parsed request */
+	http_request parsed_request; /* parsed request */
 	int lock_status;
 };
 

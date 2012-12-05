@@ -159,7 +159,10 @@ extern int feof(FILE *stream);
 
 extern int ferror(FILE *stream);
 
-extern int fileno(FILE *stream);
+static inline int fileno(FILE *stream) {
+	/* assert */
+	return stream->fd;
+}
 
 __END_DECLS
 

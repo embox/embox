@@ -21,11 +21,8 @@ struct web_service_desc {
 };
 
 struct web_service_instance {
-	int thread_started;
-	struct thread *thr;
-	struct event *e;
-	struct params * params;
 	const struct web_service_desc *desc;
+	struct service_data *srv_data;
 	struct dlist_head lst;
 };
 
@@ -35,8 +32,6 @@ extern const struct web_service_desc __web_services_repository[];
 	ARRAY_SPREAD_ADD(__web_services_repository, {name,thr_handler})
 
 extern int web_service_add(const char *srv_name);
-
-extern int web_service_send_message(const char *srv_name, void *par);
 
 extern int web_service_stop(const char *srv_name);
 

@@ -7,65 +7,44 @@
  * @author Andrey Gazukin
  */
 
-#include <string.h>
-#include <assert.h>
 #include <errno.h>
+#include <fs/sys/fsop.h>/* now mount declaration in this header */
 
 #include <fs/fs_drv.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
-
-#include <fs/mount.h>
 
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
 static node_t *root_node;
-static struct mount_params mp;
 
-static int rootfs_mount(void *par) {
+static int rootfs_mount(char *dev, char *dir, char *fs_type) {
 	fs_drv_t *fsdrv;
-	struct mount_params *mp;
-
-	static const char* fs_type = OPTION_STRING_GET(fstype);
-	mp = (mount_params_t *) par;
 
 	/* mount dev filesystem */
-	if (NULL != (fsdrv = filesystem_find_drv("devfs"))) {
-		fsdrv->fsop->mount(NULL);
-	}
-	/* looking for a device that will be mounted */
-	if(0 != *mp->dev) {
-		if (NULL == (mp->dev_node = vfs_find_node(mp->dev, NULL))) {
-			return -ENODEV;
-		}
-	}
-	/* looking for a driver of root filesystem */
-	fsdrv = filesystem_find_drv(fs_type);
-
-	/* mount root filesystem */
-	if (NULL != fsdrv) {
-		root_node->fs_type = fsdrv;
-		return fsdrv->fsop->mount(mp);
+	if (NULL != (fsdrv = fs_driver_find_drv("devfs"))) {
+		fsdrv->fsop->mount("/dev", NULL);
 	}
 
-	return 0;
+	return mount(dev, dir, fs_type);
 }
 
 static int unit_init(void) {
+	char *dev, *dir, *fs_type;
 
-	mp.dev = OPTION_STRING_GET(src);
-	mp.dir = OPTION_STRING_GET(dst);
-	mp.ext = OPTION_STRING_GET(mntscript);
+	dev = OPTION_STRING_GET(src);
+	dir = OPTION_STRING_GET(dst);
+	fs_type = OPTION_STRING_GET(fstype);
 
-	if(0 != *mp.dir) {
+	if(0 != *dir) {
 		root_node = vfs_get_root();
 		if (root_node == NULL) {
 			return -ENOMEM;
 		}
 
-		return rootfs_mount(&mp);
+		return rootfs_mount(dev, dir, fs_type);
 	}
 	return -ENOENT;
 }

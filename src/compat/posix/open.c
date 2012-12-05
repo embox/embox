@@ -10,10 +10,10 @@
 #include <kernel/task/idx.h>
 #include <util/array.h>
 #include <fs/posix.h>
+
 #include <fs/kfile.h>
 
 int open(const char *path, int __oflag, ...) {
-
 	struct file_desc *kfile;
 
 	kfile = kopen(path, __oflag);
