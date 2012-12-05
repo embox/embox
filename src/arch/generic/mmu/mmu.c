@@ -64,6 +64,7 @@ int mmu_pte_present(mmu_pte_t *pte) {
 }
 
 /* Unset functions */
+
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
 	mmu_set_val(pgd, 0);
 }
@@ -76,29 +77,27 @@ void mmu_pte_unset(mmu_pte_t *pte) {
 	mmu_set_val(pte, 0);
 }
 
-/*
- * Page Table flags
- */
+/* Page Table flags */
 void mmu_pte_set_writable(mmu_pte_t *pte, int val) {
 	if (val) {
-		*pte = *pte | MMU_PAGE_WRITABLE;
+		mmu_set_val(pte, *pte | MMU_PAGE_WRITABLE);
 	} else {
-		*pte = *pte & (~MMU_PAGE_WRITABLE);
+		mmu_set_val(pte, *pte & (~MMU_PAGE_WRITABLE));
 	}
 }
 
 void mmu_pte_set_usermode(mmu_pte_t *pte, int val) {
 	if (val) {
-		*pte = *pte & (~MMU_PAGE_SUPERVISOR);
+		mmu_set_val(pte, *pte & (~MMU_PAGE_SUPERVISOR));
 	} else {
-		*pte = *pte | MMU_PAGE_SUPERVISOR;
+		mmu_set_val(pte, *pte | MMU_PAGE_SUPERVISOR);
 	}
 }
 
 void mmu_pte_set_cacheable(mmu_pte_t *pte, int val) {
 	if (val) {
-		*pte = *pte | MMU_PAGE_CACHEABLE;
+		mmu_set_val(pte, *pte | MMU_PAGE_CACHEABLE);
 	} else {
-		*pte = *pte & (~MMU_PAGE_CACHEABLE);
+		mmu_set_val(pte, *pte & (~MMU_PAGE_CACHEABLE));
 	}
 }

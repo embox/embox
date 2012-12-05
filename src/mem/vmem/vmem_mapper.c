@@ -93,6 +93,37 @@ static inline void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags) {
 	mmu_pte_set_usermode(pte, flags & VMEM_PAGE_USERMODE);
 }
 
+mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr) {
+	size_t pgd_idx, pmd_idx, pte_idx;
+	mmu_pgd_t *pgd;
+	mmu_pmd_t *pmd;
+	mmu_pte_t *pte;
+
+	pgd = mmu_get_root(ctx);
+
+	pgd_idx = ((uint32_t) virt_addr & MMU_PGD_MASK) >> MMU_PGD_SHIFT;
+	pmd_idx = ((uint32_t) virt_addr & MMU_PMD_MASK) >> MMU_PMD_SHIFT;
+	pte_idx = ((uint32_t) virt_addr & MMU_PTE_MASK) >> MMU_PTE_SHIFT;
+
+	if (!mmu_pgd_present(pgd + pgd_idx)) {
+		return 0;
+	}
+
+	pmd = mmu_pgd_value(pgd + pgd_idx);
+
+	if (!mmu_pmd_present(pmd + pmd_idx)) {
+		return 0;
+	}
+
+	pte = mmu_pmd_value(pmd + pmd_idx);
+
+	if (!mmu_pte_present(pte + pte_idx)) {
+		return 0;
+	}
+
+	return mmu_pte_value(pte + pte_idx) + (virt_addr & MMU_PAGE_MASK);
+}
+
 static inline int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags) {
 	mmu_pgd_t *pgd;
 	mmu_pmd_t *pmd;

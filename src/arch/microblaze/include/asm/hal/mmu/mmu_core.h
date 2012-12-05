@@ -11,8 +11,7 @@
 
 #include <types.h>
 #include <asm/bitops.h>
-#include <hal/mm/mmu_types.h>
-
+//#include <hal/mm/mmu_types.h>
 
 #define RTLBLO_I_BIT           REVERSE_BIT(29)
 #define RTLBLO_EX_BIT          REVERSE_BIT(22)
@@ -21,9 +20,9 @@
 #define RTLBHI_SIZE_BIT        REVERSE_BIT(24)
 #define RTLBHI_V_BIT           REVERSE_BIT(25)
 
-#define __MMU_PAGE_CACHEABLE    (1 << RTLBLO_I_BIT)
-#define __MMU_PAGE_WRITEABLE    (1 << RTLBLO_WR_BIT)
-#define __MMU_PAGE_EXECUTEABLE  (1 << RTLBLO_EX_BIT)
+#define PAGE_CACHEABLE         (1UL << RTLBLO_I_BIT)
+#define PAGE_WRITEABLE         (1UL << RTLBLO_WR_BIT)
+#define PAGE_EXECUTEABLE       (1UL << RTLBLO_EX_BIT)
 
 #define RTLBHI_SIZE_1K    0x0
 #define RTLBHI_SIZE_4K    0x1
@@ -43,5 +42,14 @@
 #define RTLBHI_SET(var, virt_addr, size) \
 	var = (virt_addr | (size << RTLBHI_SIZE_BIT) | \
 			(1 << RTLBHI_V_BIT))
+
+/* quantity of utlb records */
+#define UTLB_QUANTITY_RECORDS    0x40
+
+/** Microblaze specific MMU table record */
+typedef struct mmu_utlb_record {
+	uint32_t tlbhi;  /**< register rtlbhi */
+	uint32_t tlblo;  /**< register rtlblo */
+} mmu_utlb_record_t;
 
 #endif /* MICROBLAZE_MMU_CORE_H_ */
