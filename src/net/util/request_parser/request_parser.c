@@ -19,6 +19,10 @@ char * try_parse_proto(http_request *parsed_request, char *subrequenst);
 char * try_parse_host(http_request *parsed_request, char *subrequenst);
 
 void request_parser_full_strcpy(char *to, char *from) {
+	if (from == NULL){
+		to[0] = 0;
+		return;
+	}
 	strcpy(to, from);
 	to[strlen(from)] = 0;
 }
@@ -26,6 +30,8 @@ void request_parser_full_strcpy(char *to, char *from) {
 void request_parser_cpy(http_request *to, http_request *from) {
 	to->method = malloc(strlen(from->method) + 1);
 	request_parser_full_strcpy(to->method, from->method);
+
+	to->parsed_url = malloc(sizeof(struct parsed_url));
 
 	to->parsed_url->fragment = malloc(strlen(from->parsed_url->fragment) + 1);
 	request_parser_full_strcpy(to->parsed_url->fragment,
@@ -57,7 +63,6 @@ void request_parser_cpy(http_request *to, http_request *from) {
 
 	to->proto = malloc(strlen(from->proto) + 1);
 	request_parser_full_strcpy(to->proto, from->proto);
-
 }
 
 http_request *parse_http(char * request) {

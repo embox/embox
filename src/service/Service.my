@@ -2,6 +2,8 @@ package embox.service
 
 module SrvLib {
 	source "srv_lib.c"
+
+	depends lib.service.service
 }
 
 module TestService {
@@ -22,5 +24,4 @@ module NewService {
 	source "img_service.in"
 
 	depends SrvLib
-	depends lib.service.service
 }

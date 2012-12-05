@@ -167,3 +167,15 @@ int service_send_error(struct service_data *srv_data,
 void service_close_connection(struct service_data *srv_data) {
 	close(srv_data->sock); /* close connection */
 }
+
+void service_free_service_data(struct service_data * data){
+	if (NULL != data) {
+			if (NULL != data->query) {
+				free(data->query);
+			}
+			if (NULL != &data->request) {
+				free_http_request(&data->request);
+			}
+			free(data);
+		}
+}

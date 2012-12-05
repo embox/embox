@@ -65,6 +65,7 @@ int web_service_add(const char *srv_name) {
 
 int web_service_remove(struct web_service_instance *srv_inst) {
 	dlist_del(&srv_inst->lst);
+	service_free_service_data(srv_inst->srv_data);
 	pool_free(&instance_pool, srv_inst);
 	return 0;
 }

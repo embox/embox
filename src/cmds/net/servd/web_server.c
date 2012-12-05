@@ -306,7 +306,8 @@ void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
 			struct service_data* srv_data = malloc(sizeof(struct service_data));
 			//ToDo move it to web_service_start_service
 			srv_data->sock = ci.sock;
-			request_parser_cpy(&srv_data->request, ci.parsed_request);
+
+			request_parser_cpy(&srv_data->request , ci.parsed_request);
 			srv_data->query = srv_data->request.parsed_url->query;
 			if (web_service_start_service(ci.file, srv_data) < 0) {
 				printf("client_process: start service error");

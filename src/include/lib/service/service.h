@@ -38,4 +38,6 @@ extern void service_file_close(struct service_file *srv_file);
 
 extern int service_send_reply(struct service_data *srv_data, struct service_file *srv_file);
 
+extern void service_free_service_data(struct service_data * data);
+
 #endif /* SERVICE_H_ */
