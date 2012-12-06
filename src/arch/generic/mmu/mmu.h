@@ -9,8 +9,6 @@
 #ifndef ARCH_GENERIC_MMU_H_
 #define ARCH_GENERIC_MMU_H_
 
-#ifndef __ASSEMBLER__
-
 #include <types.h>
 
 #define __MMU_PGD_SHIFT         24
@@ -67,8 +65,5 @@ extern int ctx_counter;
 
 #define mmu_get_pte_ptr(entry) \
 	((((unsigned long)(entry)) & MMU_PTE_PMASK) << 4)
-
-
-#endif /* __ASSEMBLER__ */
 
 #endif /* ARCH_GENERIC_MMU_H */

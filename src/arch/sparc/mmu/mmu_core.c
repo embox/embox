@@ -65,18 +65,13 @@ static inline void mmu_flush_tlb_all(void) {
 	);
 }
 
-/*
- * 1. Sets up context table pointer.
- * 2. Sets up context number.
- * 3. Turns on MMU.
- */
 static inline void mmu_on(void) {
 	unsigned long val;
 
+	/* Set up context table pointer */
 	mmu_set_ctable_ptr((unsigned long) context_table);
 
-	mmu_set_context(0);
-
+	/* Turn on MMU */
 	val = mmu_get_mmureg(LEON_CNR_CTRL);
 	val |= 0x1;
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
@@ -102,6 +97,7 @@ void mmu_set_context(mmu_ctx_t ctx) {
 	//mmu_flush_tlb_all();
 }
 
+/*
 static uint32_t boot_pgd[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
 
 #define PAGE_16MB    0x1000000UL
@@ -118,3 +114,4 @@ void mmu_enable(void) {
 
 	mmu_on();
 }
+*/

@@ -163,7 +163,4 @@ void mmu_set_context(mmu_ctx_t ctx) {
 		: "r" (ctx)
 		: "memory"
 	);
-
-	// TODO: Replace it
-	mmu_on();
 }

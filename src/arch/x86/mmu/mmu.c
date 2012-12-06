@@ -59,6 +59,7 @@ static inline unsigned int get_cr2(void) {
 	return _cr2;
 }
 
+/*
 #define PAGE_4MB         0x400000UL
 #define DEFAULT_FLAGS    (MMU_PAGE_PRESENT | MMU_PAGE_WRITABLE \
 						 | MMU_PAGE_DISABLE_CACHE | MMU_PAGE_4MB)
@@ -72,7 +73,11 @@ void mmu_enable(void) {
 
 	set_cr3((uint32_t) boot_page_dir); // Set boot page dir
 	set_cr4(get_cr4() | X86_CR4_PSE);  // Set 4MB paging
-	set_cr0(get_cr0() | X86_CR0_PG);    // Enable MMU
+	set_cr0(get_cr0() | X86_CR0_PG);   // Enable MMU
+}*/
+
+void mmu_on(void) {
+	set_cr0(get_cr0() | X86_CR0_PG);
 }
 
 void mmu_flush_tlb_single(unsigned long addr) {

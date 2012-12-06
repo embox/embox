@@ -8,7 +8,6 @@
 
 #include <asm/multiboot.h>
 #include <asm/linkage.h>
-#include <module/embox/arch/mmu.h>
 
 	.section .multiboot
 
@@ -47,11 +46,6 @@ multiboot_entry:
 	/* interrrupts disable */
 	cli
 	cld
-
-#ifndef NOMMU
-	/* Enable mmu */
-	call    mmu_enable
-#endif /* ! NOMMU */
 
 	/* Initialize the stack pointer. */
 	movl	$_stack_vma, %esp  /* load base address for system stack */
