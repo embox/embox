@@ -22,16 +22,16 @@
 
 #include <kernel/printk.h>
 
-static inline int mmu_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
+static inline int mmu_map_region(mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
 		size_t reg_size, uint32_t flags);
 
 void mmu_off(void);
 
-/* buffer for utlb records */
-//static mmu_utlb_record_t utlb[UTLB_QUANTITY_RECORDS];
-
-/* cur index in utlb */
+/* Current index in utlb */
 static uint32_t cur_utlb_idx = 0;
+
+/* Current virtual context */
+static mmu_ctx_t cur_ctx;
 
 static inline mmu_vaddr_t mmu_get_fault_address(void) {
 	uint32_t ret;
@@ -42,15 +42,15 @@ static inline mmu_vaddr_t mmu_get_fault_address(void) {
 	return (mmu_vaddr_t) ret;
 }
 
-static int on_page_fault(int number) {
+static int tlb_miss(int number) {
 	mmu_vaddr_t vaddr = mmu_get_fault_address();
-	mmu_paddr_t paddr = vmem_translate(1, vaddr);
+	mmu_paddr_t paddr = vmem_translate(cur_ctx, vaddr);
 
 	if (paddr) {
 		vaddr -= vaddr & MMU_PAGE_MASK;
 		paddr -= paddr & MMU_PAGE_MASK;
 
-		mmu_map_region(1, paddr, vaddr, MMU_PAGE_SIZE, PAGE_WRITEABLE | PAGE_EXECUTEABLE);
+		mmu_map_region(paddr, vaddr, MMU_PAGE_SIZE, PAGE_WRITEABLE | PAGE_EXECUTEABLE);
 	} else {
 		printk("Page fault: 0x%08x\n", vaddr);
 	}
@@ -59,9 +59,10 @@ static int on_page_fault(int number) {
 }
 
 void mmu_on(void) {
-	hwtrap_handler[17] = (__trap_handler) on_page_fault;
-	hwtrap_handler[18] = (__trap_handler) on_page_fault;
-	hwtrap_handler[19] = (__trap_handler) on_page_fault;
+	/* Set tlb miss handler */
+	hwtrap_handler[17] = (__trap_handler) tlb_miss;
+	hwtrap_handler[18] = (__trap_handler) tlb_miss;
+	hwtrap_handler[19] = (__trap_handler) tlb_miss;
 
 	cache_disable();
 
@@ -129,7 +130,7 @@ static inline uint32_t reg_size_convert(size_t reg_size) {
 	}
 }
 
-static inline int mmu_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
+static inline int mmu_map_region(mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
 		size_t reg_size, uint32_t flags) {
 	uint32_t tlblo, tlbhi; /* mmu registers */
 	uint32_t size_field;
@@ -138,22 +139,12 @@ static inline int mmu_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_
 	if (-1 == size_field) {
 		return -1;
 	}
+
 	RTLBHI_SET(tlbhi, virt_addr, size_field);
-
-	/* setup tlbhi register firelds */
-	/*(var, phy_addr, cacheable, ex, wr)*/
-
 	RTLBLO_SET(tlblo, phy_addr,
 			((flags & PAGE_CACHEABLE) ? 1 : 0) ,
 			((flags & PAGE_EXECUTEABLE) ? 1 : 0),
 			((flags & PAGE_WRITEABLE) ? 1 : 0));
-
-#if 0
-	printk("\n\nin mmu_map_region: ctx = 0x%x, phy_addr = 0x%x, virt_addr = 0x%x,"
-			" reg_size = 0x%x, flags = 0x%x\n",
-			ctx, phy_addr, virt_addr, reg_size, flags);
-	printk("\ttlblo = 0x%X tlbhi=0x%X\n", tlblo, tlbhi);
-#endif
 
 	set_utlb_record((cur_utlb_idx++) % UTLB_QUANTITY_RECORDS, tlblo, tlbhi);
 
@@ -165,6 +156,14 @@ void mmu_set_val(void *addr, unsigned long val) {
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
+	cur_ctx = ctx;
+	__asm__ __volatile__ (
+		"mts rpid, %0"
+		:
+		: "r" (ctx)
+		: "memory"
+	);
+
+	// TODO: Replace it
 	mmu_on();
-	// TODO: Set PID
 }
