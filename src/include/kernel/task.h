@@ -14,7 +14,6 @@
 struct task_signal_table;
 struct task_idx_table;
 struct thread;
-struct task_vmem_data;
 struct mmap;
 
 /**
@@ -35,8 +34,6 @@ struct task {
 	struct task_idx_table *idx_table; /**< @brief Resources which task have */
 
 	struct task_signal_table *signal_table;
-
-	struct task_vmem_data *vmem_data;
 
 	struct mmap *mmap;
 
@@ -78,6 +75,13 @@ extern void __attribute__((noreturn)) task_exit(void *res);
  * @return Pointer to kernel task
  */
 extern struct task *task_kernel_task(void);
+
+/**
+ * @brief Initializes kernel task. Called in thread core init.
+ *
+ * @return Error code
+ */
+extern int task_kernel_task_init(void);
 
 struct thread;
 extern int task_notify_switch(struct thread *prev, struct thread *next);

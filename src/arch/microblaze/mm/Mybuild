@@ -1,5 +1,0 @@
-package embox.arch.microblaze.mm
-
-module mmu {
-	source "mmu_core.c"
-}

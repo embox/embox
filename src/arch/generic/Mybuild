@@ -12,6 +12,10 @@ module nommu extends embox.arch.mmu {
 	source "nommu.h"
 }
 
+module mmu extends embox.arch.mmu {
+	source "mmu/mmu.c", "mmu/mmu.h"
+}
+
 module nousermode extends embox.arch.usermode {
 	source "nousermode.h"
 }

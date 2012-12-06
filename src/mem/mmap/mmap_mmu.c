@@ -54,8 +54,12 @@ void mmap_init(struct mmap *mmap) {
 	assert(!vmem_init_context(&mmap->ctx));
 
 	if (!initialized) {
-		/* It's kernel task. Set virtual context for him. */
+		/* It's kernel task. Set virtual context for it. */
 		vmem_set_context(mmap->ctx);
+
+		/* Now we can turn on MMU */
+		vmem_on();
+
 		initialized = 1;
 	}
 }

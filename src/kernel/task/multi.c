@@ -6,17 +6,14 @@
  * @author Anton Kozlov
  */
 
-#include <embox/unit.h> /* For options */
-
 #include <errno.h>
+
 #include <kernel/task/task_table.h>
 #include <kernel/thread/api.h>
 #include <mem/misc/pool.h>
 #include <kernel/task.h>
 #include <kernel/panic.h>
 #include "common.h"
-
-EMBOX_UNIT_INIT(tasks_init);
 
 typedef void *(*run_fn)(void *);
 
@@ -206,11 +203,10 @@ static void *task_trampoline(void *arg) {
 	return res;
 }
 
-static int tasks_init(void) {
+int task_kernel_task_init(void) {
 	struct task *kernel_task = task_kernel_task();
 
 	task_init(kernel_task, task_kernel_size());
-
 	task_table_add(kernel_task);
 
 	return 0;

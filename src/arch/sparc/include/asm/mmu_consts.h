@@ -15,20 +15,5 @@
 #define LEON_CNR_F           0x00000300 /** Fault Status Register */
 #define LEON_CNR_FADDR       0x00000400 /** Fault Address Register */
 
-#define MMU_CTX_PMASK        0xfffffff0
-#define MMU_PTD_PMASK        0xfffffff0
-#define MMU_PTE_PMASK        0xffffff00
-
-#define MMU_ET_PTD           0x1
-#define MMU_ET_PTE           0x2
-
-#define MMU_ET_PRESENT       0x3
-
-#define MMU_PAGE_WRITABLE    ((1UL << 0) << 2)
-#define MMU_PAGE_SOMEFLAG    ((1UL << 1) << 2)
-#define MMU_PAGE_SUPERVISOR  ((1UL << 2) << 2)
-
-#define MMU_PAGE_CACHEABLE   (1UL << 7)
-
-#endif
+#endif /* SPARC_MMU_CORE_H */
 
