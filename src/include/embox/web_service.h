@@ -13,10 +13,13 @@
 #include <util/dlist.h>
 #include <cmd/servd.h>
 #include <lib/service/service.h>
+#include <stdlib.h>
+
+#define WEB_SERVISE_MAX_COUNT 128
 
 struct web_service_desc {
 	const char *srv_name;
-	//int is_started;
+	int *is_started;
 	void *(*run)(void *);
 };
 
@@ -28,8 +31,8 @@ struct web_service_instance {
 
 extern const struct web_service_desc __web_services_repository[];
 
-#define EMBOX_WEB_SERVICE(name, thr_handler) \
-	ARRAY_SPREAD_ADD(__web_services_repository, {name,thr_handler})
+#define EMBOX_WEB_SERVICE(name, is_started, thr_handler)			 \
+	ARRAY_SPREAD_ADD(__web_services_repository, {name, is_started, thr_handler})
 
 extern int web_service_add(const char *srv_name);
 

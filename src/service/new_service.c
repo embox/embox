@@ -139,4 +139,6 @@ static void *entry_point(void *arg) {
 	return NULL;
 }
 
-EMBOX_WEB_SERVICE("new.html", entry_point);
+int new_service_is_started;
+
+EMBOX_WEB_SERVICE("new.html", &new_service_is_started, entry_point);

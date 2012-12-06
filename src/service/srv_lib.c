@@ -41,7 +41,6 @@ const struct web_service_desc *web_service_desc_lookup(const char *srv_name) {
 }
 
 int web_service_add(const char *srv_name) {
-	struct web_service_instance *inst;
 	const struct web_service_desc *srv_desc;
 
 	if (NULL != web_service_lookup(srv_name)) {
@@ -50,16 +49,8 @@ int web_service_add(const char *srv_name) {
 	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
 		return -1;
 	}
-	if (NULL == (inst = pool_alloc(&instance_pool))) {
-		return -1;
-	}
-	inst->desc = srv_desc;
+	*srv_desc->is_started = 1;
 
-	/*if (0 != thread_create(&inst->thr, THREAD_FLAG_DETACHED,
-	 web_service_trampoline, inst)) {
-	 return -1;
-	 }*/
-	dlist_add_next(dlist_head_init(&inst->lst), &run_instances);
 	return 0;
 }
 
@@ -91,6 +82,9 @@ int web_service_start_service(const char *srv_name,
 	if (NULL == (inst = pool_alloc(&instance_pool))) {
 		return -1;
 	}
+	if (!*srv_desc->is_started){
+		return -1;
+	}
 	inst->desc = srv_desc;
 	inst->srv_data = srv_data;
 
@@ -106,6 +100,9 @@ int web_service_start_service(const char *srv_name,
 int is_service_started(const char *srv_name) {
 	const struct web_service_desc *srv_desc;
 	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
+		return 0;
+	}
+	if (!*srv_desc->is_started){
 		return 0;
 	}
 	return 1;

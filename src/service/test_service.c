@@ -106,4 +106,6 @@ static void *process_params(void* args) {
 	return NULL;
 }
 
-EMBOX_WEB_SERVICE("test.html", process_params);
+int test_service_is_started;
+
+EMBOX_WEB_SERVICE("test.html", &test_service_is_started, process_params);

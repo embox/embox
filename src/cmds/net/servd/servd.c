@@ -130,9 +130,9 @@ int stop_server(void) {
 
 static int servd(int argc, char **argv) {
 	char opt;
-	//char *cur, *prev;
-	//char buff[512];
-	//FILE *file;
+	char *cur, *prev;
+	char buff[512];
+	FILE *file;
 
 	if (!web_server_started) {
 		web_server_started =
@@ -143,8 +143,7 @@ static int servd(int argc, char **argv) {
 		getopt_init();
 		while (-1 != (opt = getopt(argc, argv, "c:r:s:Sh"))) {
 			switch (opt) {
-			//todo implement this
-			/*case 'c': configure - opens configure file and runs services
+			case 'c': //configure - opens configure file and runs services
 				file = fopen(optarg, "r");
 				if (file == NULL) {
 					printf("File doesn't exists\n");
@@ -158,17 +157,17 @@ static int servd(int argc, char **argv) {
 						break;
 					}
 					cur[0] = '\0';
-					//run_service(prev);
+					run_service(prev);
 					prev = ++cur;
 				}
 				fclose(file);
 				break;
-			case 'r': run - runs service
+			case 'r': //run - runs service
 				run_service(optarg);
 				break;
-			case 's': stop - stops service
-				stop_service(optarg);
-				break;*/
+			//case 's': stop - stops service
+			//	stop_service(optarg);
+			//	break;
 			case 'S': /*Stop - stops server*/
 				web_server_started = 0;
 				if (0 <= stop_server()) {
