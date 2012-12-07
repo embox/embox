@@ -6,6 +6,7 @@ module start_script {
 	source "start_script.c"
 
 	depends embox.compat.posix.file
+	depends embox.compat.posix.idx.dup
 
 	requires embox.cmd.Shell.commandLine
 
