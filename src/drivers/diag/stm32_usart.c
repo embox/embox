@@ -7,7 +7,6 @@
  */
 
 #include <types.h>
-#include <unistd.h>
 
 #include <drivers/gpio.h>
 #include <hal/reg.h>

@@ -17,11 +17,21 @@ module file_desc {
 	option number fdesc_quantity=32
 }
 
-module core {
+@DefaultImpl(NoFileSystem)
+abstract module fs_api {
+
+}
+
+module NoFileSystem extends fs_api{
+	depends fs_name_opt
+
+	depends SysLibFsNone
+	depends SysLibFileSystemNone
+}
+
+module core extends fs_api {
 	source "vfs.c", "path.c"
 
-	option number file_name_length=32
-	option number path_length=256
 
 	depends embox.compat.posix.fs
 	depends file_desc, node
@@ -31,10 +41,15 @@ module core {
 	depends filesystem
 }
 
+module fs_name_opt {
+	option number file_name_length=32
+	option number path_length=256
+}
+
 module posix_compat {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "posix_compat.c"
-	depends core
+	depends fs_api
 	depends embox.kernel.task.idx_table
 }
 

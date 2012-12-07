@@ -6,6 +6,7 @@
  */
 
 #include <types.h>
+#include <sys/stat.h>
 #include <fs/kfsop.h>
 
 int kcreat(struct node *node, const char *pathname, mode_t mode) {

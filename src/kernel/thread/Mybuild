@@ -1,6 +1,15 @@
 package embox.kernel.thread
 
-module core {
+@DefaultImpl(NoThreads)
+abstract module thread_mode {
+
+}
+
+module NoThreads extends thread_mode {
+
+}
+
+module core extends thread_mode {
 	option number thread_stack_size=8192
 	option number thread_pool_size=16
 
@@ -13,13 +22,13 @@ module core {
 }
 
 module sched {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "sched.c", "startq.c"
 
 	depends embox.kernel.timer.timer_api /* for timeslices support */
 	depends embox.arch.context /* context_switch */
 	depends embox.kernel.thread.sched_policy.api
-	depends embox.compat.posix.util.time
+
+	@NoRuntime depends embox.compat.posix.util.time
 	@NoRuntime depends embox.kernel.critical
 }
 

@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 
+#include <types.h>
 
 struct file_desc *kopen(const char *path, int flag) {
 	return NULL;
@@ -27,7 +28,7 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 	return -1;
 }
 
-int kstat(struct file_desc *desc, void *buff) {
+int kfstat(struct file_desc *desc, void *buff) {
 	return -1;
 }
 

@@ -12,13 +12,13 @@
 #include <fs/file_system.h>
 #include <util/tree.h>
 
-#include <module/embox/fs/core.h>
+#include <module/embox/fs/fs_name_opt.h>
 #include <framework/mod/options.h>
 
 
-#define MAX_LENGTH_FILE_NAME  OPTION_MODULE_GET(embox__fs__core,NUMBER,file_name_length)
-#define MAX_LENGTH_PATH_NAME  OPTION_MODULE_GET(embox__fs__core,NUMBER,path_length)
 
+#define MAX_LENGTH_FILE_NAME  OPTION_MODULE_GET(embox__fs__fs_name_opt,NUMBER,file_name_length)
+#define MAX_LENGTH_PATH_NAME  OPTION_MODULE_GET(embox__fs__fs_name_opt,NUMBER,path_length)
 
 
 #define NODE_TYPE_FILE       0x01
