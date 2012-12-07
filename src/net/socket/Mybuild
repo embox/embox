@@ -100,7 +100,7 @@ module socket {
 	depends embox.kernel.task.idx_table
 	depends embox.kernel.task.errno
 	depends embox.kernel.thread.event
-	depends embox.compat.posix.io_sync_api
+	depends embox.kernel.task.io_sync_api
 	/* depends from kernel_socket.c */
 
 	source "ip_port.c"
