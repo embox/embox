@@ -15,7 +15,7 @@
 
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <io_sync.h>
+#include <kernel/task/io_sync.h>
 
 
 int close(int fd) {

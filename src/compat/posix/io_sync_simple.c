@@ -7,7 +7,7 @@
  * @author Alexander Kalmuk
  */
 
-#include <io_sync.h>
+#include <kernel/task/io_sync.h>
 
 void io_op_unblock(struct idx_io_op_state *op) {
 	irq_lock();

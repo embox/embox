@@ -7,7 +7,7 @@
  * @author Alexander Kalmuk
  */
 
-#include <io_sync.h>
+#include <kernel/task/io_sync.h>
 #include <kernel/thread/sched_lock.h>
 #include <kernel/thread/event.h>
 #include <kernel/irq_lock.h>

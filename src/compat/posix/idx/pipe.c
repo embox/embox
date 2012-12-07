@@ -15,7 +15,7 @@
 #include <kernel/task/idx.h>
 #include "../kernel/task/common.h"
 #include <framework/mod/options.h>
-#include <io_sync.h>
+#include <kernel/task/io_sync.h>
 
 #define DEFAULT_PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
 #define MAX_PIPE_BUFFER_SIZE     OPTION_GET(NUMBER, max_pipe_buffer_size)
