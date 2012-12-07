@@ -32,6 +32,7 @@ module NoFileSystem extends fs_api{
 module core extends fs_api {
 	source "vfs.c", "path.c"
 
+	depends fs_name_opt
 
 	depends embox.compat.posix.fs
 	depends file_desc, node
