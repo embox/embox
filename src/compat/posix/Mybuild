@@ -23,7 +23,7 @@ static module file_ops {
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idx_table
 	depends embox.kernel.task.errno
-	depends posix_env
+	depends embox.init.diag_index_desc
 	depends io_sync_api
 }
 

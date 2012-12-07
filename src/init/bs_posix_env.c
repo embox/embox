@@ -66,7 +66,7 @@ static int check_valid(int fd, int reference_fd) {
 	return -1;
 }
 
-int diag_env_init(void) {
+static int diag_env_init(void) {
 	int fd = task_self_idx_alloc(&diag_idx_ops, NULL);
 	int res = 0;
 
