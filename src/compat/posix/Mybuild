@@ -40,13 +40,6 @@ static module open {
 	depends embox.kernel.task.errno
 }
 
-module posix_env {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "env/bs_posix_env.c"
-
-	depends embox.kernel.task.api
-	depends embox.compat.posix.idx.dup
-}
 
 @DefaultImpl(io_sync_simple)
 abstract module io_sync_api {

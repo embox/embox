@@ -5,22 +5,30 @@ abstract module api {
 	option number max_resource_size = 1024
 }
 
+module single extends api {
+	source "single.c"
+	depends kernel_task
+}
+
+
+module multi extends api {
+	source "multi.c"
+	depends kernel_task
+
+	option number tasks_quantity = 20
+
+	depends task_table
+
+	@NoRuntime depends embox.kernel.thread.core
+}
+
 module task_environment { }
 
 module kernel_task {
 	source "common.c"
 }
 
-module multi extends api {
-	option number tasks_quantity = 20
 
-	source "multi.c"
-
-	depends task_table
-	depends kernel_task
-
-	depends embox.kernel.thread.core
-}
 
 module task_table {
 	source "task_table.c"
@@ -44,12 +52,6 @@ module signal_common {
 	source "signal.c"
 }
 
-module single extends api {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "single.c"
-
-	depends kernel_task
-}
 
 module idx_table extends task_environment {
 
