@@ -8,5 +8,22 @@
 #ifndef GRP_H_
 #define GRP_H_
 
+#include <sys/types.h>
+
+struct group {
+	char   *gr_name; /* The name of the group. */
+	gid_t   gr_gid; /* Numerical group ID. */
+	char  **gr_mem; /* Pointer to a null-terminated array of character pointers to member names.*/
+};
+
+extern struct group *getgrgid(gid_t);
+extern struct group *getgrnam(const char *);
+
+extern int getgrgid_r(gid_t, struct group *, char *, size_t, struct group **);
+extern int getgrnam_r(const char *, struct group *, char *, size_t , struct group **);
+
+extern struct group  *getgrent(void);
+extern void           endgrent(void);
+extern void           setgrent(void);
 
 #endif /* GRP_H_ */
