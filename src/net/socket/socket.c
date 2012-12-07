@@ -25,7 +25,7 @@
 
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
-#include <io_sync.h>
+#include <kernel/task/io_sync.h>
 #include <net/socket_registry.h>
 
 static ssize_t this_read(struct idx_desc *socket, void *buf, size_t nbyte);
