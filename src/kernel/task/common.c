@@ -7,14 +7,18 @@
  * @author Anton Bondarev
  */
 
+#include <embox/unit.h>
+
 #include <errno.h>
 #include <string.h>
-#include <embox/unit.h>
+
 #include <kernel/task.h>
 #include <lib/list.h>
 #include "common.h"
 
 #include <module/embox/kernel/task/api.h>
+
+EMBOX_UNIT_INIT(kernel_task_init);
 
 #define MAX_RES_SUM_SIZE OPTION_MODULE_GET(embox__kernel__task__api, NUMBER, max_resource_size)
 
@@ -68,4 +72,12 @@ struct task *task_init(void *task_n_res_space, size_t size) {
 
 	return task;
 
+}
+
+static int kernel_task_init(void) {
+	if (!task_init(task_kernel_task(), task_kernel_size())) {
+		return -ENOMEM;
+	}
+
+	return 0;
 }
