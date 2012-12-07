@@ -133,7 +133,9 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->run = run;
 	t->run_arg = arg;
 
+#if 0 // Deprecated :
 	t->suspend_count = 1;
+#endif
 
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
 		t->priority = thread_self()->priority;
@@ -158,10 +160,13 @@ static void thread_init(struct thread *t, unsigned int flags,
 	sched_strategy_init(&t->sched);
 	startq_init_thread(&t->startq_data);
 
+#if 0 // Deprecated :
 	INIT_LIST_HEAD(&t->messages);
 	event_init(&t->msg_event, "msg_event");
-	sleepq_init(&t->exit_sleepq);
 	t->need_message = false;
+#endif
+
+	sleepq_init(&t->exit_sleepq);
 
 	t->running_time = 0;
 }
