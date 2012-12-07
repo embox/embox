@@ -1,0 +1,11 @@
+
+package embox.arch.msp430.kernel
+
+module arch {
+	source "arch.c"
+}
+
+module boot {
+	source "boot.S"
+}
+
