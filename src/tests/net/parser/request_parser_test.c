@@ -21,6 +21,8 @@ TEST_CASE("Parse first string") {
 	char *test_get4 = "HEAD  HTTP/1.1\nHost: 10.10.111.1:80";
 	http_request parsed_request;
 
+	memset(&parsed_request, 0, sizeof parsed_request);
+
 	parse_http(test_get, &parsed_request);
 	test_assert_str_equal(parsed_request.method, "GET");
 	test_assert_str_equal(parsed_request.proto, "HTTP/1.1");
