@@ -30,6 +30,9 @@ static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
 				] = "image/vnd.microsoft.icon", [HTTP_CONTENT_TYPE_UNKNOWN
 				] = "application/unknown" };
 
+static const char *connection_types[] = {
+		[HTPP_CONNECTION_CLOSE] = "close", [HTPP_CONNECTION_KEEP_ALIVE] = "keep-alive"};
+
 
 static char rand_letter (void) {
 	return 'a' + (rand() % 26);
@@ -88,15 +91,16 @@ void service_file_close(struct service_file *srv_file) {
 		fclose(srv_file->fd);
 }
 
-int service_set_starting_line(char *buff, int status_code) {
+static int service_set_starting_line(char *buff, int status_code) {
 	return sprintf(buff, "HTTP/1.0 %s\r\n", http_stat_str[status_code]);
 }
 
-int service_set_ops(char *buff, int content_type) {
+static int service_set_ops(char *buff, size_t len, int conn_type, int content_type) {
 	int res;
 	res = sprintf(buff, "Content-Type: %s\r\n",
 			http_content_type_str[content_type]);
-	res += sprintf(buff + res, "Connection: %s\r\n", "close");
+	res += sprintf(buff + res, "Content-Length: %d\r\n", len);
+	res += sprintf(buff + res, "Connection: %s\r\n", connection_types[conn_type]);
 	res += sprintf(buff + res, "\r\n");
 	return res;
 }
@@ -112,26 +116,28 @@ int service_send_reply(struct service_data *srv_data,
 	curr = buff;
 	/* 1. set title */
 	curr += service_set_starting_line(curr, srv_data->http_status);
-	/* 2. set ops */
-	curr += service_set_ops(curr, content_type);
-	/* 3. set mesaage bode and send respone */
+	/* 2. set options and message bode and send respone */
 	assert(srv_file->fd != NULL);
 	/* send file */
 	do {
-		bytes_need = sizeof buff - (curr - buff);
-		bytes = fread(curr, 1, bytes_need, srv_file->fd);
+		bytes = fread(buff + HTTP_MAX_HEADER_SZ, 1, HTTP_DATAUNIT_SZ, srv_file->fd);
 		if (bytes < 0) {
 			break;
 
 		}
-		bytes_need = sizeof buff - bytes_need + bytes;
+		/* FIXME option must be downfall here from more high level */
+		curr += service_set_ops(curr, bytes, HTPP_CONNECTION_CLOSE, content_type);
+		memcpy(curr, buff + HTTP_MAX_HEADER_SZ, bytes);
+		curr += bytes;
+
+		bytes_need = curr - buff;
 		bytes = send(srv_data->sock, buff, bytes_need, 0);
 		if (bytes != bytes_need) {
 			printf("http error: send() error\n");
 			break;
 		}
 		curr = buff;
-	} while (bytes_need == sizeof buff);
+	} while (bytes == HTTP_DATAUNIT_SZ);
 	return 1;
 }
 
@@ -146,15 +152,18 @@ int service_send_error(struct service_data *srv_data,
 
 	/* Make header: */
 	curr = buff;
-	/* 1. set title */
-	curr += service_set_starting_line(curr, srv_data->http_status);
-	/* 2. set ops */
-	curr += service_set_ops(curr, content_type);
-	/* 3. send error */
-	curr += sprintf(curr, "<html>"
+	bytes = sprintf(curr + HTTP_MAX_HEADER_SZ, "<html>"
 			"<head><title>%s</title></head>"
 			"<body><center><h1>Oops...</h1></center></body>"
 			"</html>", http_stat_str[srv_data->http_status]);
+	/* 1. set title */
+	curr += service_set_starting_line(curr, srv_data->http_status);
+	/* 2. set ops */
+	curr += service_set_ops(curr, bytes, HTPP_CONNECTION_CLOSE, content_type);
+	/* 3. send error */
+	memcpy(curr, curr + HTTP_MAX_HEADER_SZ, bytes);
+	curr += bytes;
+
 	bytes_need = curr - buff;
 	assert(bytes_need <= sizeof buff); /* TODO remove this and make normal checks */
 	bytes = send(srv_data->sock, buff, bytes_need, 0);
