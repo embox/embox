@@ -10,6 +10,7 @@
 #include <string.h>
 #include <cmd/servd.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 
 #define SERVICE_FILE_RAND_STR_LEN 10
 #define SERVICE_FILE_PREFIX "/tmp/service-"
@@ -111,33 +112,34 @@ int service_send_reply(struct service_data *srv_data,
 	int content_type;
 	char buff[BUFF_SZ];
 	size_t bytes, bytes_need;
+	struct stat stat;
 	content_type = get_content_type(srv_file->name);
 	/* Make header: */
 	curr = buff;
 	/* 1. set title */
 	curr += service_set_starting_line(curr, srv_data->http_status);
-	/* 2. set options and message bode and send respone */
+	/* 2. set options */
+	fstat(srv_file->fd->fd, &stat);
+	curr += service_set_ops(curr, stat.st_size, HTPP_CONNECTION_CLOSE, content_type);
+	/* 3. set message bode and send response */
 	assert(srv_file->fd != NULL);
 	/* send file */
 	do {
-		bytes = fread(buff + HTTP_MAX_HEADER_SZ, 1, HTTP_DATAUNIT_SZ, srv_file->fd);
+		bytes_need = sizeof buff - (curr - buff);
+		bytes = fread(curr, 1, bytes_need, srv_file->fd);
 		if (bytes < 0) {
 			break;
 
 		}
-		/* FIXME option must be downfall here from more high level */
-		curr += service_set_ops(curr, bytes, HTPP_CONNECTION_CLOSE, content_type);
-		memcpy(curr, buff + HTTP_MAX_HEADER_SZ, bytes);
-		curr += bytes;
 
-		bytes_need = curr - buff;
+		bytes_need = bytes + curr - buff;
 		bytes = send(srv_data->sock, buff, bytes_need, 0);
 		if (bytes != bytes_need) {
 			printf("http error: send() error\n");
 			break;
 		}
 		curr = buff;
-	} while (bytes == HTTP_DATAUNIT_SZ);
+	} while (bytes == bytes_need);
 	return 1;
 }
 
@@ -148,21 +150,25 @@ int service_send_error(struct service_data *srv_data,
 	int content_type;
 	char buff[BUFF_SZ];
 	size_t bytes, bytes_need;
+	const char *error_msg = "<html>"
+			"<head><title></title></head>"
+			"<body><center><h1>Oops...</h1></center></body>"
+			"</html>";
 	content_type = get_content_type(srv_file->name);
 
 	/* Make header: */
 	curr = buff;
-	bytes = sprintf(curr + HTTP_MAX_HEADER_SZ, "<html>"
-			"<head><title>%s</title></head>"
-			"<body><center><h1>Oops...</h1></center></body>"
-			"</html>", http_stat_str[srv_data->http_status]);
+	/* 512 > sizeof error message */
 	/* 1. set title */
 	curr += service_set_starting_line(curr, srv_data->http_status);
 	/* 2. set ops */
-	curr += service_set_ops(curr, bytes, HTPP_CONNECTION_CLOSE, content_type);
+	curr += service_set_ops(curr, strlen(error_msg) + strlen(http_stat_str[srv_data->http_status]),
+			HTPP_CONNECTION_CLOSE, content_type);
 	/* 3. send error */
-	memcpy(curr, curr + HTTP_MAX_HEADER_SZ, bytes);
-	curr += bytes;
+	curr += sprintf(curr, "<html>"
+				"<head><title>%s</title></head>"
+				"<body><center><h1>Oops...</h1></center></body>"
+				"</html>", http_stat_str[srv_data->http_status]);
 
 	bytes_need = curr - buff;
 	assert(bytes_need <= sizeof buff); /* TODO remove this and make normal checks */

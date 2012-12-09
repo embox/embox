@@ -13,9 +13,6 @@
 
 #define BUFF_SZ       (1460 * 2) /* http packet size*/
 #define FILENAME_SZ   30
-#define HTTP_MAX_HEADER_SZ 1460 /* http header size*/
-/* size of each data unit in http transmission */
-#define HTTP_DATAUNIT_SZ (BUFF_SZ - HTTP_MAX_HEADER_SZ)
 
 /* HTTP Methods */
 enum http_method {
