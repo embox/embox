@@ -91,7 +91,7 @@ static cycle_t mb_cycle_read(void) {
 
 static int mb_clock_init(void) {
 	clock_source_register(&mb_cs);
-	if (0 != irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, NULL, "mbtimer")) {
+	if (0 != irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, &mb_cs, "mbtimer")) {
 		panic("mbtimer irq_attach failed");
 	}
 	return 0;

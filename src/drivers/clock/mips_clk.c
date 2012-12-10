@@ -53,7 +53,7 @@ static struct clock_source mips_clock_source = {
 static int mips_clock_init(void) {
 	clock_source_register(&mips_clock_source);
 
-	if (ENOERR != irq_attach(MIPS_IRQN_TIMER, clock_handler, 0, NULL,
+	if (ENOERR != irq_attach(MIPS_IRQN_TIMER, clock_handler, 0, &mips_clock_source,
 			"mips_clk")) {
 		// TODO error handling? -- Eldar
 	}

@@ -128,7 +128,7 @@ static int gptimer_init(void) {
 
 	clock_source_register(&gptimer_cs);
 
-	if (0 != irq_attach(irq_nr, clock_handler, 0, NULL, "gptimer")) {
+	if (0 != irq_attach(irq_nr, clock_handler, 0, &gptimer_cs, "gptimer")) {
 		panic("gptimer irq_attach failed");
 	}
 	return 0;

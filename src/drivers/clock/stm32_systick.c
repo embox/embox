@@ -46,7 +46,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 
 static int this_init(void) {
 	clock_source_register(&this_clock_source);
-	return irq_attach(SYSTICK_IRQ, clock_handler, 0, NULL, "stm32 systick timer");
+	return irq_attach(SYSTICK_IRQ, clock_handler, 0, &this_clock_source, "stm32 systick timer");
 }
 
 static int this_config(struct time_dev_conf * conf) {

@@ -9,7 +9,6 @@
 #include <types.h>
 #include <errno.h>
 #include <util/array.h>
-#include <asm/regs.h>
 
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
@@ -19,6 +18,13 @@
 static int tsc_init(void);
 
 static unsigned int cpu_hz = 1000000000L;
+
+/* Read Time Stamp Counter Register */
+static inline unsigned long long rdtsc(void) {
+	unsigned hi, lo;
+	__asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
+	return ((unsigned long long) lo) | (((unsigned long long) hi) << 32);
+}
 
 static struct time_counter_device tsc = {
 	.read = rdtsc

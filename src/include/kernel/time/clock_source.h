@@ -31,6 +31,7 @@ struct clock_source {
 	const char *name;
 	struct time_event_device *event_device;
 	struct time_counter_device *counter_device;
+	volatile uint32_t jiffies;
 	uint32_t flags; /**< periodical or not */
 	ns_t (*read)(struct clock_source *cs);
 };

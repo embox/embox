@@ -74,5 +74,5 @@ static struct clock_source ppc_clk_clock_source = {
 
 static int ppc_clk_init(void) {
 	clock_source_register(&ppc_clk_clock_source);
-	return irq_attach(PPCCLK_IRQ, clock_handler, 0, NULL, "ppc_clk");
+	return irq_attach(PPCCLK_IRQ, clock_handler, 0, &ppc_clk_clock_source, "ppc_clk");
 }

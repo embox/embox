@@ -33,7 +33,7 @@ static irq_return_t clock_handler(unsigned int irq_num, void *dev_id) {
 static int at91_pitc_init(void) {
 	clock_source_register(&at91_pitc_clock_source);
 	REG_STORE(AT91C_PMC_PCER, AT91C_ID_SYS);
-	return irq_attach(AT91C_ID_SYS, clock_handler, 0, NULL, "at91 PIT");
+	return irq_attach(AT91C_ID_SYS, clock_handler, 0, &at91_pitc_clock_source, "at91 PIT");
 }
 
 static int at91_pitc_config(struct time_dev_conf * conf);

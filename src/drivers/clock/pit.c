@@ -128,7 +128,7 @@ static int pit_clock_init(void) {
 	pit_clock_setup(NULL);
 	clock_source_register(&pit_clock_source);
 
-	if (ENOERR != irq_attach(IRQ0, clock_handler, 0, NULL, "PIT")) {
+	if (ENOERR != irq_attach(IRQ0, clock_handler, 0, &pit_clock_source, "PIT")) {
 		panic("pit timer irq_attach failed");
 	}
 

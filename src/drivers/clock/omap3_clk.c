@@ -105,6 +105,6 @@ static struct clock_source omap3_clk_clock_source = {
 
 static int omap3_clk_init(void) {
 	clock_source_register(&omap3_clk_clock_source);
-	return irq_attach(GPTIMER1_IRQ, clock_handler, 0, NULL, "omap3_clk");
+	return irq_attach(GPTIMER1_IRQ, clock_handler, 0, &omap3_clk_clock_source, "omap3_clk");
 }
 

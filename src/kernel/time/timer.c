@@ -20,6 +20,11 @@ extern cycle_t volatile sys_ticks;
  * Handling of the clock tick.
  */
 void clock_tick_handler(int irq_num, void *dev_id) {
+	struct clock_source *cs = (struct clock_source *) dev_id;
+
+	assert(cs);
+	cs->jiffies++;
+
 	if (jiffies.event_device && irq_num == jiffies.event_device->irq_nr) {
 		sys_ticks++;
 		softirq_raise(SOFTIRQ_NR_TIMER);

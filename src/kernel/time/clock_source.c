@@ -86,7 +86,7 @@ ns_t clock_source_read(struct clock_source *cs) {
 	safe = 0;
 
 	do {
-		old_jiffies = clock_sys_ticks();
+		old_jiffies = cs->jiffies;
 		cycles = cd->read();
 		safe++;
 	} while (old_jiffies != clock_sys_ticks() && safe < 3);
