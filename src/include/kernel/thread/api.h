@@ -180,19 +180,19 @@ extern void __attribute__((noreturn)) thread_exit(void *ret);
 extern void thread_yield(void);
 
 /**
- * Either suspends the @a thread. If the @a thread is already suspended,
- * increments the count of calls #thread_suspend() for this @a thread.
+ * Kills thread. This method don't release anything (e.g mutexes
+ * and attached threads). So use wisely.
  *
  * @param thread
  *   Suspends the thread.
  *
  * @return
- *   Result of suspending.
+ *   Result of killing.
  *
  * @retval 0
  *   If successful.
  */
-extern int thread_terminate(struct thread *thread);
+extern int thread_kill(struct thread *thread);
 
 /**
  * Decrement the count of suspending. If it is zero, resumes a @a thread.

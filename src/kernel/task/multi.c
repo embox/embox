@@ -63,10 +63,9 @@ int new_task(void *(*run)(void *), void *arg) {
 		param->arg = arg;
 
 		/*
-		 * XXX: May be it's unnecessary to create it suspended
-		 * because we in sched_lock.
+		 * Thread does not run until we go through sched_unlock()
 		 */
-		if (0 != (res = thread_create(&thd, THREAD_FLAG_SUSPENDED, task_trampoline, param))) {
+		if (0 != (res = thread_create(&thd, 0, task_trampoline, param))) {
 			sched_unlock();
 			return res;
 		}
@@ -74,7 +73,7 @@ int new_task(void *(*run)(void *), void *arg) {
 		/* alloc space for task & resources on top of created thread's stack */
 
 		if ((self_task = task_init(thd->stack, thd->stack_sz)) == NULL) {
-			thread_terminate(thd);
+			thread_kill(thd);
 			thread_detach(thd);
 			pool_free(&creat_param, param);
 			sched_unlock();
@@ -93,8 +92,6 @@ int new_task(void *(*run)(void *), void *arg) {
 		thread_set_task(thd, self_task);
 
 		thread_detach(thd);
-
-		thread_launch(thd);
 
 		res = task_table_add(self_task);
 	}
@@ -150,37 +147,28 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	struct thread *thread, *next;
 	const struct task_resource_desc *res_desc;
 
-	list_del(&this_task->link);
-
 	sched_lock();
+	{
+		list_del(&this_task->link);
 
-	/* suspend everything except us */
-	list_for_each_entry(thread, &this_task->threads, task_link) {
-		if (thread == thread_self()) {
-			continue;
+		/* Kill all threads except us */
+		list_for_each_entry_safe(thread, next, &this_task->threads, task_link) {
+			if (thread == thread_self()) {
+				continue;
+			}
+
+			thread_kill(thread);
 		}
-		/* make thread detached and terminate it, exactly this order to prevent
-		 * detach from deleting thread */
-		thread_terminate(thread);
-	}
 
+		task_resource_foreach(res_desc) {
+			if (res_desc->deinit) {
+				res_desc->deinit(this_task);
+			}
+		}
+
+		task_table_del(this_task->tid);
+	}
 	sched_unlock();
-
-	task_resource_foreach(res_desc) {
-		if (res_desc->deinit) {
-			res_desc->deinit(this_task);
-		}
-	}
-
-	task_table_del(this_task->tid);
-
-	list_for_each_entry_safe(thread, next, &this_task->threads, task_link) {
-		if (thread == thread_self()) {
-			continue;
-		}
-		list_del(&thread->task_link);
-		thread_detach(thread);
-	}
 
 	thread_exit(res);
 }

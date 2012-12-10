@@ -188,7 +188,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 
 	sched_lock();
 	{
-		thread_terminate(current);
+		sched_finish(current);
 
 		if (thread_state_dead(current->state)) {
 			/* Thread is detached. Should be deleted by itself. */
@@ -274,17 +274,20 @@ int thread_launch(struct thread *t) {
 	return 0;
 }
 
-int thread_terminate(struct thread *t) {
+int thread_kill(struct thread *t) {
 	assert(t);
 
 	sched_lock();
 	{
-		if (thread_state_exited(t->state)) {
-			sched_unlock();
-			return -ESRCH;
+		if (!thread_state_exited(t->state)) {
+			sched_finish(t);
 		}
 
-		sched_finish(t);
+		if (!thread_state_detached(t->state)) {
+			t->state = thread_state_do_detach(t->state);
+		}
+
+		thread_delete(t);
 	}
 	sched_unlock();
 
@@ -399,7 +402,8 @@ static void thread_delete(struct thread *t) {
 		zombie = NULL;
 	}
 
-	list_del_init(&t->thread_link);
+	list_del(&t->task_link);
+	list_del(&t->thread_link);
 
 	if (t == current) {
 		zombie = t;
