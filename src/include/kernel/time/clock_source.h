@@ -31,7 +31,7 @@ struct clock_source {
 	const char *name;
 	struct time_event_device *event_device;
 	struct time_counter_device *counter_device;
-	volatile uint32_t jiffies;
+	volatile uint32_t jiffies; /* count of jiffies since clock source started */
 	uint32_t flags; /**< periodical or not */
 	ns_t (*read)(struct clock_source *cs);
 };
@@ -39,12 +39,21 @@ struct clock_source {
 extern ns_t clock_source_clock_to_ns(struct clock_source *cs, clock_t sys_ticks);
 extern clock_t clock_source_ns_to_clock(struct clock_source *cs, ns_t ns);
 
-static inline ns_t cycles_to_ns(struct time_counter_device *counter, cycle_t cycles) {
-	return (cycles * (cycle_t)1000000000) / (cycle_t)counter->resolution;
+static inline ns_t cycles_to_ns(uint32_t resolution, cycle_t cycles) {
+	return (cycles * (cycle_t)1000000000) / (uint64_t)resolution;
 }
 
 extern struct clock_source *clock_source_get_best(enum clock_source_property property);
 
+/**
+ * Read cycles from clock source since moment when it started. This function may be used exactly
+ * for three types of clock sources:
+ * 1. Clock source, that generates IRQ on each overflow of internal counter (e.g. PIT).
+ * 2. Clock source, that generates IRQ with fixed time interval without counter (e.g. ACPI_PM, RTC).
+ * 3. Clock source, that did'nt generate IRQ. It is simple counter (e.g. RDTSC).
+ * @param cs - clock source read from
+ * @return count of nanoseconds from moment when clock source started
+ */
 extern ns_t clock_source_read(struct clock_source *cs);
 extern ns_t clock_source_counter_read(struct clock_source *cs);
 

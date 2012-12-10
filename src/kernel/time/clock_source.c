@@ -17,7 +17,12 @@ ARRAY_SPREAD_DEF(const struct time_event_device *, __event_devices);
 ARRAY_SPREAD_DEF(const struct time_counter_device *, __counter_devices);
 
 POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER, clocks_quantity));
+
 DLIST_DEFINE(clock_source_list);
+
+static ns_t cs_full_read(struct clock_source *cs);
+static ns_t cs_event_read(struct clock_source *cs);
+static ns_t cs_counter_read(struct clock_source *cs);
 
 ns_t clock_source_clock_to_ns(struct clock_source *cs, clock_t ticks) {
 	assert(cs && cs->event_device);
@@ -74,9 +79,26 @@ int clock_source_unregister(struct clock_source *cs) {
 	return ENOERR;
 }
 
-extern clock_t clock_sys_ticks(void);
-
 ns_t clock_source_read(struct clock_source *cs) {
+	assert(cs);
+
+	/* See comment to clock_source_read in clock_source.h */
+	if (cs->event_device && cs->counter_device) {
+		return cs_full_read(cs);
+	} else if (cs->event_device) {
+		return cs_event_read(cs);
+	} else if (cs->counter_device) {
+		return cs_counter_read(cs);
+	}
+
+	/* All clock sources must have at least one device (event device or counter ddevice).
+	 * So if we are here, it is error */
+	assert(0);
+
+	return 0;
+}
+
+static ns_t cs_full_read(struct clock_source *cs) {
 	static cycle_t prev_cycles, cycles, cycles_all;
 	int old_jiffies, safe;
 	struct time_event_device *ed = cs->event_device;
@@ -89,7 +111,7 @@ ns_t clock_source_read(struct clock_source *cs) {
 		old_jiffies = cs->jiffies;
 		cycles = cd->read();
 		safe++;
-	} while (old_jiffies != clock_sys_ticks() && safe < 3);
+	} while (old_jiffies != cs->jiffies && safe < 3);
 
 	if (ed->pending && ed->pending(ed->irq_nr)) {
 		old_jiffies++;
@@ -104,11 +126,15 @@ ns_t clock_source_read(struct clock_source *cs) {
 
 	prev_cycles = cycles_all;
 
-	return cycles_to_ns(cd, cycles_all);
+	return cycles_to_ns(cd->resolution, cycles_all);
 }
 
-ns_t clock_source_counter_read(struct clock_source *cs) {
-	return cycles_to_ns(cs->counter_device, cs->counter_device->read());
+static ns_t cs_event_read(struct clock_source *cs) {
+	return cycles_to_ns(cs->event_device->resolution, (cycle_t)cs->jiffies);
+}
+
+static ns_t cs_counter_read(struct clock_source *cs) {
+	return cycles_to_ns(cs->counter_device->resolution, cs->counter_device->read());
 }
 
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {
