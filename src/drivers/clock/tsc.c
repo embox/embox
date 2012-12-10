@@ -34,7 +34,7 @@ static struct clock_source tsc_clock_source = {
 	.name = "TSC",
 	.event_device = NULL,
 	.counter_device = &tsc,
-	.read = clock_source_counter_read /* attach default read function */
+	.read = clock_source_read /* attach default read function */
 };
 
 static int tsc_init(void) {

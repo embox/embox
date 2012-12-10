@@ -1,7 +1,8 @@
 /**
  * @file
  *
- * @brief Time subsystem based on timer's jiffies.
+ * @brief Jiffies implementaion.
+ * @details jiffies are generating by mostly precision clock source with event device.
  *
  * @date 10.04.2012
  * @author Anton Bondarev
@@ -11,43 +12,30 @@
 
 EMBOX_UNIT_INIT(module_init);
 
-cycle_t volatile sys_ticks = 0; /* ticks after start system. */
+const struct clock_source *cs_jiffies;
 
 clock_t clock_sys_ticks(void) {
-	return (clock_t)sys_ticks;
+	return (clock_t)cs_jiffies->jiffies;
 }
 
-static ns_t jiffies_cs_read(struct clock_source *cs) {
-	return clock_sys_ticks();
+clock_t ns2jiffies(ns_t ns) {
+	return clock_source_ns_to_clock(( struct clock_source *)cs_jiffies, ns);
 }
-
-struct clock_source jiffies = {
-	.flags = 1,
-	.read = jiffies_cs_read
-};
-
-clock_t ns_to_clock(__s64 ns) {
-	return clock_source_ns_to_clock(&jiffies, ns);
-}
-
-ns_t clock_sys_ns(void) {
-	return clock_source_clock_to_ns(&jiffies, clock_sys_ticks());
-}
-
-struct time_dev_conf jiffies_conf = {
-	HW_TIMER_PERIOD
-};
 
 static int module_init(void) {
 	const struct clock_source *cs;
+	struct time_dev_conf jiffies_conf = {
+		HW_TIMER_PERIOD
+	};
 
 	/* find clock_event_device with maximal resolution  */
 	cs = clock_source_get_best(CS_WITH_IRQ);
 	assert(cs);
 
-	jiffies.event_device = cs->event_device;
+	cs_jiffies = cs;
 
 	/* set periodic mode */
+	assert(cs->event_device->config);
 	cs->event_device->config(&jiffies_conf);
 
 	return 0;

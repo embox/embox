@@ -1,7 +1,8 @@
 /**
  * @file
  *
- * @brief
+ * @brief Kernel time implementation.
+ * @details Kernel time base on mostly precise clock source. It
  *
  * @date 18.05.2012
  * @author Anton Bondarev
@@ -33,7 +34,6 @@ struct timespec *ktime_get_timespec(struct timespec *ts) {
 	*ts = ns_to_timespec(ns);
 	return ts;
 }
-extern struct clock_source jiffies;
 
 static int module_init(void) {
 	struct clock_source *cs;
@@ -41,9 +41,6 @@ static int module_init(void) {
 	/* find clock_event_device with maximal resolution  */
 	cs = clock_source_get_best(CS_ANY);
 	assert(cs);
-	if(NULL == cs->read) {
-		cs = &jiffies;
-	}
 
 	itimer_init(&sys_timecounter, cs, 0);
 

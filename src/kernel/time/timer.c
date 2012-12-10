@@ -13,8 +13,7 @@
 
 EMBOX_UNIT_INIT(init);
 
-extern struct clock_source jiffies;
-extern cycle_t volatile sys_ticks;
+extern struct clock_source *cs_jiffies;
 
 /**
  * Handling of the clock tick.
@@ -25,8 +24,7 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 	assert(cs);
 	cs->jiffies++;
 
-	if (jiffies.event_device && irq_num == jiffies.event_device->irq_nr) {
-		sys_ticks++;
+	if (cs_jiffies->event_device && irq_num == cs_jiffies->event_device->irq_nr) {
 		softirq_raise(SOFTIRQ_NR_TIMER);
 	}
 }

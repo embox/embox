@@ -43,7 +43,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	struct event event;
 	fd_set tmp_r, tmp_w;
 	fd_set *p_r = &tmp_r, *p_w = &tmp_w;
-	clock_t ticks = (timeout == NULL ? EVENT_TIMEOUT_INFINITE : ns_to_clock(timeval_to_ns(timeout)));
+	clock_t ticks = (timeout == NULL ? EVENT_TIMEOUT_INFINITE : ns2jiffies(timeval_to_ns(timeout)));
 
 	/* Lock scheduler until we search active descriptor and build event set.*/
 	/* First try to find some active descriptor */

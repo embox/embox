@@ -13,7 +13,7 @@ module kernel_time {
 	source "ktime.c"
 	depends embox.kernel.timer.itimer
 	depends embox.arch.clock
-	depends time
+	depends timeval
 }
 
 module jiffies {
@@ -28,9 +28,9 @@ module timer {
 	depends embox.kernel.softirq
 }
 
-module time {
+module timeval {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "time.c"
+	source "timeval.c"
 }
 
 module timekeeper {
