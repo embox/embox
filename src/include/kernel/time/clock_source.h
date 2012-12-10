@@ -36,8 +36,15 @@ struct clock_source {
 	ns_t (*read)(struct clock_source *cs);
 };
 
-extern ns_t clock_source_clock_to_ns(struct clock_source *cs, clock_t sys_ticks);
-extern clock_t clock_source_ns_to_clock(struct clock_source *cs, ns_t ns);
+static inline ns_t clock_source_clock_to_ns(struct clock_source *cs, clock_t ticks) {
+	assert(cs && cs->event_device);
+	return (ticks * NSEC_PER_SEC) / cs->event_device->resolution;
+}
+
+static inline clock_t clock_source_ns_to_clock(struct clock_source *cs, ns_t ns) {
+	assert(cs && cs->event_device);
+	return (ns * cs->event_device->resolution) / NSEC_PER_SEC;
+}
 
 static inline ns_t cycles_to_ns(uint32_t resolution, cycle_t cycles) {
 	return (cycles * (cycle_t)1000000000) / (uint64_t)resolution;

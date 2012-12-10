@@ -22,6 +22,14 @@ clock_t ns2jiffies(ns_t ns) {
 	return clock_source_ns_to_clock(( struct clock_source *)cs_jiffies, ns);
 }
 
+clock_t ms2jiffies(uint32_t ms) {
+	return ns2jiffies((ns_t)ms * 1000000);
+}
+
+uint32_t jiffies2ms(clock_t jiff) {
+	return clock_source_clock_to_ns(( struct clock_source *)cs_jiffies, jiff) / 1000000;
+}
+
 static int module_init(void) {
 	const struct clock_source *cs;
 	struct time_dev_conf jiffies_conf = {

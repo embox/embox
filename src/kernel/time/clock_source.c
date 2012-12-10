@@ -24,16 +24,6 @@ static ns_t cs_full_read(struct clock_source *cs);
 static ns_t cs_event_read(struct clock_source *cs);
 static ns_t cs_counter_read(struct clock_source *cs);
 
-ns_t clock_source_clock_to_ns(struct clock_source *cs, clock_t ticks) {
-	assert(cs && cs->event_device);
-	return (ticks * NSEC_PER_SEC) / cs->event_device->resolution;
-}
-
-clock_t clock_source_ns_to_clock(struct clock_source *cs, ns_t ns) {
-	assert(cs && cs->event_device);
-	return (ns * cs->event_device->resolution) / NSEC_PER_SEC;
-}
-
 static struct clock_source_head *clock_source_find(struct clock_source *cs) {
 	struct clock_source_head *csh;
 

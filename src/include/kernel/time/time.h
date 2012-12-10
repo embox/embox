@@ -34,5 +34,7 @@ extern struct timespec ns_to_timespec(const __s64 nsec);
 extern struct timeval ns_to_timeval(const __s64 nsec);
 
 extern clock_t ns2jiffies(ns_t ns);
+extern clock_t ms2jiffies(uint32_t ms);
+extern uint32_t jiffies2ms(clock_t jiff);
 
 #endif /* KERNEL_TIME_TIME_H_ */
