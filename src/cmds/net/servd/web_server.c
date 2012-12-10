@@ -23,7 +23,7 @@ const char *http_stat_str[HTTP_STAT_MAX] = { [HTTP_STAT_200] = "200 OK",
 		[HTTP_STAT_405] = "405 Method Not Allowed", [HTTP_STAT_408
 				] = "408 Request Timeout", /* TODO */
 		[HTTP_STAT_413] = "413 Request Entity Too Large", [HTTP_STAT_414
-				] = "414 Request-URI Too Long", };
+				] = "414 Request-URI Too Long", [HTTP_STAT_500] = "500 Internal Server Error"};
 
 /* Content type */
 const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
@@ -33,7 +33,7 @@ const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
 				] = "image/vnd.microsoft.icon", [HTTP_CONTENT_TYPE_UNKNOWN
 				] = "application/unknown" };
 
-void free_client_info(struct client_info * info){
+void free_client_info(struct client_info * info) {
 	free_http_request(&info->parsed_request);
 }
 
@@ -90,9 +90,10 @@ static int receive_and_parse_request(struct client_info *info) {
 	/* 1. move next_chunk to head of buffer */
 	chunk = memmove(info->buff, chunk, len);
 	/* 2. get new piece if data */
-	res = recvfrom(info->sock, chunk + len, sizeof info->buff - len, 0, NULL,
-			NULL);
-	if (res <= 0) {
+
+	res = recv(info->sock, chunk + len, sizeof info->buff - len, 0);
+
+	if(res < 0){
 		return 0;
 	}
 
@@ -290,7 +291,7 @@ void close_connection(struct client_info *ci) {
 	free_client_info(ci);
 }
 
-void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
+void client_process(int sock) {
 	int res;
 	struct client_info ci;
 
@@ -298,7 +299,7 @@ void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
 
 	/* fill struct client_info */
 	ci.sock = sock;
-	/* request heandler for first */
+	/* request handler for first */
 	res = process_request(&ci);
 	// Get rid of static pages and services that is not started
 	// Others have to be dispatched to responding service instance
@@ -306,6 +307,7 @@ void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
 	switch (res) {
 	case HTTP_RET_OK:
 		//Start the responding service instance thread
+
 		if (is_service_started(ci.file)) {
 			struct service_data* srv_data = malloc(sizeof(struct service_data));
 			//ToDo move it to web_service_start_service
@@ -313,6 +315,7 @@ void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
 
 			request_parser_cpy(&srv_data->request, &ci.parsed_request);
 			srv_data->query = srv_data->request.parsed_url->query;
+
 			if (web_service_start_service(ci.file, srv_data) < 0) {
 				printf("client_process: start service error");
 			}
@@ -326,8 +329,7 @@ void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
 		return;
 	}
 
-	printf("%s:%d -- upload %s ", inet_ntoa(addr.sin_addr),
-			ntohs(addr.sin_port), ci.file);
+	printf("-- upload %s ", ci.file);
 
 	assert((0 <= res) && (res < HTTP_STAT_MAX));
 	send_data(&ci, res);
@@ -335,3 +337,4 @@ void client_process(int sock, struct sockaddr_in addr, socklen_t addr_len) {
 
 	close_connection(&ci);
 }
+

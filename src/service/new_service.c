@@ -130,6 +130,7 @@ static void *entry_point(void *arg) {
 	print_vars(vars);
 
 	preprocess_file(srv_file.fd, vars);
+	srv_data.http_status = HTTP_STAT_200;
 
 	service_file_switch_to_read_mode(&srv_file);
 	service_send_reply(&srv_data, &srv_file);

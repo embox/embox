@@ -40,4 +40,6 @@ extern int service_send_reply(struct service_data *srv_data, struct service_file
 
 extern void service_free_service_data(struct service_data * data);
 
+extern void service_free_resourses(struct service_data *srv_data, struct service_file *srv_file);
+
 #endif /* SERVICE_H_ */

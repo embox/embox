@@ -77,7 +77,7 @@ static void *start_server(void* args) {
 			web_server_started = 0;
 			return (void*) res;
 		}
-		client_process(res, addr, addr_len);
+		client_process(res);
 	}
 
 	res = close(host);
@@ -95,15 +95,15 @@ int run_service(char * service) {
 	return -1;
 }
 
-int stop_service(char * service) {
-	//if (0 <= web_service_stop(service)) {
+/*int stop_service(char * service) {
+	if (0 <= web_service_stop(service)) {
 		printf("service %s stopped\n", service);
 		return 0;
-	//}
+	}
 
 	printf("service %s isn't started\n", service);
 	return -1;
-}
+}*/
 
 int stop_server(void) {
 	int sock, res;
@@ -143,7 +143,7 @@ static int servd(int argc, char **argv) {
 		getopt_init();
 		while (-1 != (opt = getopt(argc, argv, "c:r:s:Sh"))) {
 			switch (opt) {
-			case 'c': //configure - opens configure file and runs services
+			case 'c': /*configure - opens configure file and runs services*/
 				file = fopen(optarg, "r");
 				if (file == NULL) {
 					printf("File doesn't exists\n");
@@ -162,12 +162,12 @@ static int servd(int argc, char **argv) {
 				}
 				fclose(file);
 				break;
-			case 'r': //run - runs service
+			case 'r': /*run - runs service*/
 				run_service(optarg);
 				break;
-			//case 's': stop - stops service
-			//	stop_service(optarg);
-			//	break;
+			/*case 's': stop - stops service
+				stop_service(optarg);*/
+				break;
 			case 'S': /*Stop - stops server*/
 				web_server_started = 0;
 				if (0 <= stop_server()) {

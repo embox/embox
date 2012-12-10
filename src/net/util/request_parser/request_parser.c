@@ -17,9 +17,10 @@ char * try_parse_method(http_request *parsed_request, char *subrequenst);
 char * try_parse_url(http_request *parsed_request, char *subrequenst);
 char * try_parse_proto(http_request *parsed_request, char *subrequenst);
 char * try_parse_host(http_request *parsed_request, char *subrequenst);
+char * try_parse_connection(http_request *parsed_request, char *subrequenst);
 
 void request_parser_full_strcpy(char *to, char *from) {
-	if (from == NULL){
+	if (from == NULL) {
 		to[0] = 0;
 		return;
 	}
@@ -63,13 +64,16 @@ void request_parser_cpy(http_request *to, http_request *from) {
 
 	to->proto = malloc(strlen(from->proto) + 1);
 	request_parser_full_strcpy(to->proto, from->proto);
+
+	to->connection = malloc(strlen(from->connection) + 1);
+	request_parser_full_strcpy(to->connection, from->connection);
 }
 
 int parse_http(char * request, http_request *parsed_request) {
 	char * subrequenst;
 
 	parsed_request->method = NULL;
-	if (parsed_request->parsed_url != NULL){
+	if (parsed_request->parsed_url != NULL) {
 		parsed_url_free(parsed_request->parsed_url);
 	}
 	parsed_request->parsed_url = NULL;
@@ -96,6 +100,12 @@ int parse_http(char * request, http_request *parsed_request) {
 	}
 
 	subrequenst = try_parse_host(parsed_request, subrequenst);
+	if (subrequenst == NULL) {
+		free_http_request(parsed_request);
+		return -1;
+	}
+
+	subrequenst = try_parse_connection(parsed_request, subrequenst);
 	if (subrequenst == NULL) {
 		free_http_request(parsed_request);
 		return -1;
@@ -132,8 +142,8 @@ char *try_parse_method(http_request *parsed_request, char *subrequenst) {
 
 		parsed_request->method = malloc(lexeme_length + 1);
 		if (NULL == parsed_request->method) {
-					return NULL;
-				}
+			return NULL;
+		}
 		(void) strncpy(parsed_request->method, subrequenst, lexeme_length);
 		parsed_request->method[lexeme_length] = '\0';
 		for (int i = 0; i < lexeme_length; i++) {
@@ -279,6 +289,56 @@ char *try_parse_host(http_request *parsed_request, char *subrequenst) {
 		}
 		lexeme_end++;
 		parsed_url_free(parsed_host);
+		return lexeme_end;
+	}
+	return NULL;
+}
+
+char *try_parse_connection(http_request *parsed_request, char *subrequenst) {
+	int lexeme_length;
+	char * lexeme_end;
+	char * host_identifyer;
+	char *expected_host_identifyer = "Connection:";
+
+	if (strlen(subrequenst) == 0) {
+		return subrequenst;
+	}
+
+	if (subrequenst[0] == '\n') {
+		subrequenst++;
+	} else {
+		return NULL;
+	}
+
+	lexeme_end = strchr(subrequenst, ' ');
+	lexeme_length = lexeme_end - subrequenst;
+
+	if (lexeme_length <= 0) {
+		return NULL;
+	}
+
+	host_identifyer = malloc(lexeme_length + 1);
+
+	(void) strncpy(host_identifyer, subrequenst, lexeme_length);
+	host_identifyer[lexeme_length] = '\0';
+
+	if ((strlen(expected_host_identifyer) != lexeme_length)
+			|| (strncmp(host_identifyer, expected_host_identifyer,
+					lexeme_length) != 0)) {
+		free(host_identifyer);
+		return subrequenst;
+	}
+	free(host_identifyer);
+	subrequenst = ++lexeme_end;
+	lexeme_end =
+			strchr(subrequenst, '\r') != NULL ?
+					strchr(subrequenst, '\r') : strchr(subrequenst, '\0');
+	if (lexeme_end != NULL) {
+		lexeme_length = lexeme_end - subrequenst;
+		parsed_request->connection = malloc(lexeme_length + 1);
+		strncpy(parsed_request->connection, subrequenst, lexeme_length);
+		parsed_request->connection[lexeme_length] = 0;
+		lexeme_end++;
 		return lexeme_end;
 	}
 	return NULL;

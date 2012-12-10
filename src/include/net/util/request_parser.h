@@ -14,6 +14,7 @@ struct http_request {
 	char *method;
 	struct parsed_url *parsed_url;
 	char *proto;
+	char *connection;
 };
 
 typedef struct http_request http_request;

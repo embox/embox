@@ -8,7 +8,8 @@
 #ifndef WEB_SERVER_H_
 #define WEB_SERVER_H_
 
-extern void client_process(int sock, struct sockaddr_in addr,
-		socklen_t addr_len);
+#include <embox/web_service.h>
+
+extern void client_process(int sock);
 
 #endif /* WEB_SERVER_H_ */

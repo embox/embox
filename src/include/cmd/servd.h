@@ -31,8 +31,8 @@ enum http_content_type {
 };
 
 enum conn_type {
-	HTPP_CONNECTION_CLOSE = 0,
-	HTPP_CONNECTION_KEEP_ALIVE
+	HTTP_CONNECTION_CLOSE = 0,
+	HTTP_CONNECTION_KEEP_ALIVE
 };
 
 /* Returns code */
@@ -50,6 +50,7 @@ enum http_ret {
 	HTTP_STAT_413,
 	HTTP_STAT_414,
 	/* 5xx Server Error */
+	HTTP_STAT_500,
 	HTTP_STAT_MAX, /* for implementation */
 	/* Other code */
 	HTTP_RET_OK = -100, /* ok */
