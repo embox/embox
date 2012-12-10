@@ -27,8 +27,9 @@
 
 typedef struct block_dev {
 	dev_t id;
-	struct node *dev_node;
 	char name[MAX_LENGTH_FILE_NAME];
+	struct node *dev_node;
+
 	struct block_dev_driver *driver;
 	void *privdata;
 

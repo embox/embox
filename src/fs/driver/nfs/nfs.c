@@ -512,6 +512,7 @@ static int nfsfs_create(struct node *parent_node, struct node *node) {
 
 	nas = node->nas;
 	parent_nas = parent_node->nas;
+	nas->fs = parent_nas->fs;
 
 	parent_fi = (nfs_file_info_t *) parent_nas->fi->privdata;
 
