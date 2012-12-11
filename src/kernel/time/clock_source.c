@@ -8,6 +8,7 @@
 
 #include <util/array.h>
 #include <kernel/time/clock_source.h>
+#include <kernel/time/time.h>
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
 #include <errno.h>

@@ -9,6 +9,7 @@
  */
 #include <embox/unit.h>
 #include <kernel/time/clock_source.h>
+#include <kernel/time/time.h>
 
 EMBOX_UNIT_INIT(module_init);
 
@@ -19,15 +20,16 @@ clock_t clock_sys_ticks(void) {
 }
 
 clock_t ns2jiffies(ns_t ns) {
-	return clock_source_ns_to_clock(( struct clock_source *)cs_jiffies, ns);
+	assert(cs_jiffies->event_device);
+	return ns_to_clock(cs_jiffies->event_device->resolution, ns);
 }
 
-clock_t ms2jiffies(uint32_t ms) {
+clock_t ms2jiffies(time64_t ms) {
 	return ns2jiffies((ns_t)ms * 1000000);
 }
 
-uint32_t jiffies2ms(clock_t jiff) {
-	return clock_source_clock_to_ns(( struct clock_source *)cs_jiffies, jiff) / 1000000;
+time64_t jiffies2ms(clock_t jiff) {
+	return clock_to_ns(cs_jiffies->event_device->resolution, jiff) / 1000000;
 }
 
 static int module_init(void) {

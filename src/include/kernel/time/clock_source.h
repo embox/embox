@@ -12,8 +12,8 @@
 #include <types.h>
 #include <util/dlist.h>
 #include <kernel/time/time_device.h>
-#include <kernel/time/time_types.h>
 #include <kernel/time/ktime.h>
+#include <kernel/time/time.h>
 
 #include <util/array.h>
 
@@ -31,24 +31,10 @@ struct clock_source {
 	const char *name;
 	struct time_event_device *event_device;
 	struct time_counter_device *counter_device;
-	volatile uint32_t jiffies; /* count of jiffies since clock source started */
+	volatile clock_t jiffies; /* count of jiffies since clock source started */
 	uint32_t flags; /**< periodical or not */
 	ns_t (*read)(struct clock_source *cs);
 };
-
-static inline ns_t clock_source_clock_to_ns(struct clock_source *cs, clock_t ticks) {
-	assert(cs && cs->event_device);
-	return (ticks * NSEC_PER_SEC) / cs->event_device->resolution;
-}
-
-static inline clock_t clock_source_ns_to_clock(struct clock_source *cs, ns_t ns) {
-	assert(cs && cs->event_device);
-	return (ns * cs->event_device->resolution) / NSEC_PER_SEC;
-}
-
-static inline ns_t cycles_to_ns(uint32_t resolution, cycle_t cycles) {
-	return (cycles * (cycle_t)1000000000) / (uint64_t)resolution;
-}
 
 extern struct clock_source *clock_source_get_best(enum clock_source_property property);
 

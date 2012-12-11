@@ -10,8 +10,8 @@
 #define KERNEL_TIME_TIME_DEVICE_H_
 
 #include <stdint.h>
-#include <kernel/time/time_types.h>
 #include <drivers/irqctrl.h>
+#include <kernel/time/time.h>
 
 struct time_dev_conf {
 	enum {

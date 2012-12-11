@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief Utils for conversion beetween time types
  *
  * @date 17.07.2012
  * @author Alexander Kalmuk
@@ -11,11 +11,34 @@
 
 #include <time.h>
 #include <stdint.h>
-#include <kernel/time/time_types.h>
+
+#define MSEC_PER_SEC    1000L
+#define USEC_PER_MSEC   1000L
+#define NSEC_PER_USEC   1000L
+#define USEC_PER_SEC    1000000L
+#define NSEC_PER_SEC    1000000000L
+
+/**
+ * Storage for hardware internal cycles
+ */
+typedef uint64_t cycle_t;
+/**
+ * There are to ways to store time in kernel:
+ * 1. Throw timeval and timespec.
+ * 2. Throw int64_t.
+ * This two approaches are equal, but int64_t is faster for arithmetic operations. So, we use second.
+ * We use signed integer to simplify subtraction.
+ * This types can store about 584 years in nanoseconds.
+ */
+typedef int64_t time64_t;
+typedef time64_t ns_t;
 
 /* gettimeofday is posix function, but settimeofday is not. */
 extern void settimeofday(struct timespec *ts, struct timezone *tz);
 extern void getnsofday(struct timespec *t, struct timezone *tz);
+
+extern struct timespec ns_to_timespec(const __s64 nsec);
+extern struct timeval ns_to_timeval(const __s64 nsec);
 
 extern struct timespec timespec_add(struct timespec t1,
 		struct timespec t2);
@@ -30,11 +53,24 @@ static inline ns_t timeval_to_ns(const struct timeval *tv) {
 	return ((__s64) tv->tv_sec * NSEC_PER_SEC) + tv->tv_usec * NSEC_PER_USEC;
 }
 
-extern struct timespec ns_to_timespec(const __s64 nsec);
-extern struct timeval ns_to_timeval(const __s64 nsec);
+static inline ns_t clock_to_ns(uint32_t resolution, clock_t ticks) {
+	return (ticks * NSEC_PER_SEC) / resolution;
+}
+
+static inline clock_t ns_to_clock(uint32_t resolution, ns_t ns) {
+	return (ns * resolution) / NSEC_PER_SEC;
+}
+
+static inline ns_t cycles_to_ns(uint32_t resolution, cycle_t cycles) {
+	return (cycles * (cycle_t)1000000000) / (uint64_t)resolution;
+}
+
+static inline cycle_t ns_to_cycles(uint32_t resolution, ns_t ns) {
+	return (ns * resolution) / (uint64_t)1000000000;
+}
 
 extern clock_t ns2jiffies(ns_t ns);
-extern clock_t ms2jiffies(uint32_t ms);
-extern uint32_t jiffies2ms(clock_t jiff);
+extern clock_t ms2jiffies(time64_t ms);
+extern time64_t jiffies2ms(clock_t jiff);
 
 #endif /* KERNEL_TIME_TIME_H_ */

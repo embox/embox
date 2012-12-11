@@ -17,7 +17,7 @@
 #include <mem/misc/pool.h>
 #include <net/arp.h>
 #include <net/ip.h>
-#include <kernel/time/time_types.h>
+#include <kernel/time/time.h>
 #include <kernel/time/ktime.h>
 #include <framework/mod/options.h>
 #include <assert.h>
