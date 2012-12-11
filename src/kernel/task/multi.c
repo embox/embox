@@ -65,7 +65,8 @@ int new_task(void *(*run)(void *), void *arg) {
 		/*
 		 * Thread does not run until we go through sched_unlock()
 		 */
-		if (0 != (res = thread_create(&thd, 0, task_trampoline, param))) {
+		if (0 != (res = thread_create(&thd, THREAD_FLAG_PRIORITY_INHERIT,
+				task_trampoline, param))) {
 			sched_unlock();
 			return res;
 		}
@@ -192,7 +193,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		 * If we are not main thread we can kill it here,
 		 * so stop scheduling our task and it as zombie.
 		 */
-		if (thread != task->main_thread) {
+		if (thread_self() != task->main_thread) {
 			thread_terminate(task->main_thread);
 			thread_terminate(thread_self());
 

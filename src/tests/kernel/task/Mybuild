@@ -1,5 +1,10 @@
 package embox.test.kernel.task
 
+module multitask_test {
+	source "multitask_test.c"
+	depends embox.kernel.task.multi
+}
+
 module task {
 	source "task.c"
 	depends embox.kernel.task.api
