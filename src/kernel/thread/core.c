@@ -133,10 +133,6 @@ static void thread_init(struct thread *t, unsigned int flags,
 	t->run = run;
 	t->run_arg = arg;
 
-#if 0 // Deprecated :
-	t->suspend_count = 1;
-#endif
-
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
 		t->priority = thread_self()->priority;
 	} else {
@@ -159,12 +155,6 @@ static void thread_init(struct thread *t, unsigned int flags,
 
 	sched_strategy_init(&t->sched);
 	startq_init_thread(&t->startq_data);
-
-#if 0 // Deprecated :
-	INIT_LIST_HEAD(&t->messages);
-	event_init(&t->msg_event, "msg_event");
-	t->need_message = false;
-#endif
 
 	sleepq_init(&t->exit_sleepq);
 
@@ -274,7 +264,7 @@ int thread_launch(struct thread *t) {
 	return 0;
 }
 
-int thread_kill(struct thread *t) {
+int thread_terminate(struct thread *t) {
 	assert(t);
 
 	sched_lock();
@@ -287,6 +277,21 @@ int thread_kill(struct thread *t) {
 			t->state = thread_state_do_detach(t->state);
 		}
 
+		/* Init used for safety removing in thread_delete() */
+		list_del_init(&t->thread_link);
+	}
+	sched_unlock();
+
+	return 0;
+}
+
+
+int thread_kill(struct thread *t) {
+	assert(t);
+
+	sched_lock();
+	{
+		thread_terminate(t);
 		thread_delete(t);
 	}
 	sched_unlock();
@@ -355,6 +360,8 @@ static int unit_init(void) {
 
 	// TODO priority for bootstrap thread -- Eldar
 	bootstrap.priority = THREAD_PRIORITY_NORMAL;
+
+	kernel_task->main_thread = &bootstrap;
 
 	if (!(idle = thread_new())) {
 		return -ENOMEM;

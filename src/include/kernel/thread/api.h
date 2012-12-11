@@ -180,11 +180,20 @@ extern void __attribute__((noreturn)) thread_exit(void *ret);
 extern void thread_yield(void);
 
 /**
- * Kills thread. This method don't release anything (e.g mutexes
- * and attached threads). So use wisely.
+ * Stops scheduling of thread and delete it from list of threads.
+ * USE ONLY WHEN EXITING TASK.
  *
- * @param thread
- *   Suspends the thread.
+ * @return
+ *   Result of terminating.
+ *
+ * @retval 0
+ *   If successful.
+ */
+extern int thread_terminate(struct thread *thread);
+
+/**
+ * Kills thread - stops scheduling and frees it.
+ * USE ONLY WHEN EXITING TASK.
  *
  * @return
  *   Result of killing.

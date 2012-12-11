@@ -80,6 +80,8 @@ int new_task(void *(*run)(void *), void *arg) {
 			return -EPERM;
 		}
 
+		self_task->main_thread = thd;
+
 		thd->stack += task_sz;
 		thd->stack_sz -= task_sz;
 
@@ -142,34 +144,64 @@ static void task_init_parent(struct task *task, struct task *parent) {
 
 }
 
+inline static void task_delete_zombie(struct task *task) {
+	struct thread *thread, *next;
+
+	list_for_each_entry_safe(thread, next, &task->threads, task_link) {
+		thread_kill(thread);
+	}
+}
+
 void __attribute__((noreturn)) task_exit(void *res) {
-	struct task *this_task = task_self();
+	static struct task *zombie;
+	struct task *task = task_self();
 	struct thread *thread, *next;
 	const struct task_resource_desc *res_desc;
 
+	if (zombie != NULL) {
+		task_delete_zombie(zombie);
+		zombie = NULL;
+	}
+
 	sched_lock();
 	{
-		list_del(&this_task->link);
+		/* Deinitialize all resources */
+		task_resource_foreach(res_desc) {
+			if (res_desc->deinit) {
+				res_desc->deinit(task);
+			}
+		}
 
-		/* Kill all threads except us */
-		list_for_each_entry_safe(thread, next, &this_task->threads, task_link) {
-			if (thread == thread_self()) {
+		/* Remove us from list of tasks */
+		list_del(&task->link);
+
+		/* Release our task id */
+		task_table_del(task->tid);
+
+
+		/* Kill all threads except us and main thread */
+		list_for_each_entry_safe(thread, next, &task->threads, task_link) {
+			if ((thread == thread_self()) || (thread == task->main_thread)) {
 				continue;
 			}
 
 			thread_kill(thread);
 		}
 
-		task_resource_foreach(res_desc) {
-			if (res_desc->deinit) {
-				res_desc->deinit(this_task);
-			}
-		}
+		/*
+		 * If we are not main thread we can kill it here,
+		 * so stop scheduling our task and it as zombie.
+		 */
+		if (thread != task->main_thread) {
+			thread_terminate(task->main_thread);
+			thread_terminate(thread_self());
 
-		task_table_del(this_task->tid);
+			zombie = task;
+		}
 	}
 	sched_unlock();
 
+	/* If we are here - we are main thread. Simple exit. */
 	thread_exit(res);
 }
 

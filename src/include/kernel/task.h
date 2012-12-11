@@ -37,6 +37,8 @@ struct task {
 
 	struct mmap *mmap;
 
+	struct thread *main_thread;
+
 	int err; /**< @brief Last occurred error code */
 };
 
@@ -76,7 +78,6 @@ extern void __attribute__((noreturn)) task_exit(void *res);
  */
 extern struct task *task_kernel_task(void);
 
-struct thread;
 extern int task_notify_switch(struct thread *prev, struct thread *next);
 
 #endif /* TASK_H_ */
