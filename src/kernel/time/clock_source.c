@@ -13,6 +13,7 @@
 #include <util/dlist.h>
 #include <errno.h>
 #include <embox/unit.h>
+#include <math.h>
 
 ARRAY_SPREAD_DEF(const struct time_event_device *, __event_devices);
 ARRAY_SPREAD_DEF(const struct time_counter_device *, __counter_devices);
@@ -143,9 +144,10 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 
 		if (cs->event_device) {
 			resolution = cs->event_device->resolution;
-		} else if (pr == CS_ANY && cs->counter_device &&
-				cs->counter_device->resolution > resolution) {
-			resolution = cs->counter_device->resolution;
+		}
+
+		if (pr == CS_ANY && cs->counter_device) {
+			resolution = max(resolution, cs->counter_device->resolution);
 		}
 
 		if (resolution > best_resolution) {
