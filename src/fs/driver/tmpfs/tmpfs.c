@@ -61,6 +61,7 @@ static int tmpfs_init(void * par) {
 	  (NULL == (dir_node = vfs_add_path(TMPFS_DIR, NULL)))) {
 		return -1;
 	}
+	dir_node->type = NODE_TYPE_DIRECTORY;
 
 	/* format filesystem */
 	if(0 != tmpfs_format((void *)dev_node)) {
