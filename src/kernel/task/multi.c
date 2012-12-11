@@ -148,9 +148,18 @@ static void task_init_parent(struct task *task, struct task *parent) {
 inline static void task_delete_zombie(struct task *task) {
 	struct thread *thread, *next;
 
+	/*
+	 * task_exit() was called not in main thread. Kill that thread,
+	 * than kill main thread
+	 */
+
 	list_for_each_entry_safe(thread, next, &task->threads, task_link) {
-		thread_kill(thread);
+		if (thread != task->main_thread) {
+			thread_kill(thread);
+		}
 	}
+
+	thread_kill(task->main_thread);
 }
 
 void __attribute__((noreturn)) task_exit(void *res) {
