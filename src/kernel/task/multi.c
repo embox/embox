@@ -169,25 +169,21 @@ void __attribute__((noreturn)) task_exit(void *res) {
 		/* Release our task id */
 		task_table_del(task->tid);
 
-
-		/* Kill all threads except us and main thread */
+		/*
+		 * Terminate all threads except main thread. If we terminate current
+		 * thread then until we in sched_lock() we continue processing
+		 * and our thread structure is not freed.
+		 */
 		list_for_each_entry_safe(thread, next, &task->threads, task_link) {
-			if ((thread == thread_self()) || (thread == task->main_thread)) {
+			if (thread == task->main_thread) {
 				continue;
 			}
 
 			thread_terminate(thread);
 		}
 
-		/*
-		 * Until we in sched_lock() we continue processing
-		 * and our thread structure isn't freed.
-		 */
-		thread_terminate(thread_self());
-
-		if (thread_self() != task->main_thread) {
-			thread_terminate(task->main_thread);
-		}
+		/* At the end terminate main thread */
+		thread_terminate(task->main_thread);
 	}
 	sched_unlock();
 
