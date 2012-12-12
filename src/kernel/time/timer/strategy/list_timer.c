@@ -9,12 +9,14 @@
 #include <lib/list.h>
 #include <kernel/time/timer.h>
 #include <profiler/tracing/trace.h>
+#include <util/dlist.h>
 
-static LIST_HEAD(sys_timers_list);
+static DLIST_DEFINE(sys_timers_list);
 
 void timer_strat_start(struct sys_timer *tmr) {
 	timer_set_started(tmr);
-	list_add_tail(&tmr->lnk, &sys_timers_list);
+	dlist_head_init(&tmr->lnk);
+	dlist_add_prev(&tmr->lnk, &sys_timers_list);
 }
 /**
  * For each timer in the timers array do the following: if the timer is enable
@@ -22,10 +24,11 @@ void timer_strat_start(struct sys_timer *tmr) {
  * to the counter and the function is executed.
  */
 void timer_strat_sched(void) {
-	struct list_head *tmp, *tmp2;
+	struct dlist_head *tmp, *tmp2;
 	sys_timer_t *tmr;
 
-	list_for_each_safe(tmp, tmp2, &sys_timers_list) {
+
+	dlist_foreach(tmp, tmp2, &sys_timers_list) {
 		tmr = (sys_timer_t*) tmp;
 		if (0 == tmr->cnt--) {
 			trace_point("timer tick");
@@ -41,5 +44,5 @@ void timer_strat_sched(void) {
 
 void timer_strat_stop(struct sys_timer *tmr) {
 	timer_set_stopped(tmr);
-	list_del(&tmr->lnk);
+	dlist_del(&tmr->lnk);
 }

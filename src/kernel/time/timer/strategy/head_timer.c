@@ -12,22 +12,23 @@
 #include <kernel/time/timer.h>
 
 
-static LIST_HEAD(sys_timers_list); /* list head to timers */
+static DLIST_DEFINE(sys_timers_list); /* list head to timers */
 
 void timer_strat_start(struct sys_timer *tmr) {
 	struct sys_timer *it_tmr, *tmp;
 
+	dlist_head_init(&tmr->lnk);
 	timer_set_started(tmr);
 
 	tmr->cnt = tmr->load;
 
 	/* find first element that its time bigger than inserting @new_time */
-	list_for_each_entry_safe(it_tmr, tmp, &sys_timers_list,lnk) {
+	dlist_foreach_entry(it_tmr, tmp, &sys_timers_list,lnk) {
 		if (it_tmr->cnt >= tmr->cnt) {
 			/* decrease value of next timer after inserting */
 			it_tmr->cnt -= tmr->cnt;
 
-			list_add_tail(&tmr->lnk, &it_tmr->lnk);
+			dlist_add_prev(&tmr->lnk, &it_tmr->lnk);
 
 			return;
 		}
@@ -36,7 +37,7 @@ void timer_strat_start(struct sys_timer *tmr) {
 	}
 
 	/* add the latest timer to end of list */
-	list_add_tail(&tmr->lnk, &sys_timers_list);
+	dlist_add_prev(&tmr->lnk, &sys_timers_list);
 }
 
 void timer_strat_stop(struct sys_timer *ptimer) {
@@ -49,11 +50,11 @@ void timer_strat_stop(struct sys_timer *ptimer) {
 		next_tmr->cnt += ptimer->cnt;
 	}
 
-	list_del(&ptimer->lnk);
+	dlist_del(&ptimer->lnk);
 }
 
 static inline bool timers_need_schedule(void) {
-	if(list_empty(&sys_timers_list)) {
+	if(dlist_empty(&sys_timers_list)) {
 		return false;
 	}
 
@@ -68,7 +69,7 @@ static inline void timers_schedule(void) {
 	struct sys_timer *timer,*tmp;
 	uint32_t nxt_cnt = 0; /* we schedule first timer */
 
-	list_for_each_entry_safe(timer, tmp, &sys_timers_list, lnk) {
+	dlist_foreach_entry(timer, tmp, &sys_timers_list, lnk) {
 		nxt_cnt = tmp->cnt;
 		timer->handle(timer, timer->param);
 

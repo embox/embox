@@ -88,7 +88,7 @@ void sound_start_play(uint32_t freq, useconds_t ms,
 	REG_STORE(AT91C_SSC_PTCR, AT91C_PDC_TXTEN);
 
 	if (ms != 0) {
-		usleep(ms);
+		ksleep(ms);
 		sound_stop_play();
 	}
 }
