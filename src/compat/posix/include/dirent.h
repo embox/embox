@@ -16,7 +16,7 @@ struct dirent {
 };
 
 typedef struct DIR {
-	struct dirent;
+	struct dirent current;
 } DIR;
 
 

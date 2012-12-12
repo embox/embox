@@ -75,12 +75,6 @@ struct winsize /* third-party/dropbear-2012.55/sshpty.c:346: */
   unsigned short ws_ypixel;	/* vertical size, pixels */
 };
 
-struct group { /* third-party/dropbear-2012.55/sshpty.c:366: error: */
-	char *gr_name;
-	char *gr_passwd;
-	gid_t gr_gid;
-	char **gr_mem;
-};
 //--------------------------------------------------
 #define LOG_NOTICE 0 /*third-party/dropbear-2012.55/svr-authpasswd.c:97:*/
 //---------------------------------------------------
@@ -157,9 +151,7 @@ static inline int tcsetattr(int fd, int optional_actions,
 static inline int chown(const char *path, uid_t owner, gid_t group) {
 	return -1;
 }
-static inline struct group *getgrnam(const char *name) {
-	return NULL;
-}
+
 extern char *crypt(const char *key, const char *salt);
 
 static inline struct tm *localtime(const time_t *timep) {
