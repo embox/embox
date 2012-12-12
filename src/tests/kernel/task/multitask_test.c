@@ -114,3 +114,58 @@ TEST_CASE("Create task with 2 threads and terminate "
 	new_task(tsk5_thr1_hnd, NULL);
 	// TODO: waitpid
 }
+
+static void *tsk6_thr2_hnd(void *data) {
+	test_assert_equal(task_self(), data);
+
+	return NULL;
+}
+
+static void *tsk6_thr1_hnd(void *data) {
+	struct thread *t;
+
+	test_assert_not_equal(task_self()->tid, KERNEL_TID);
+	test_assert_equal(data, NULL);
+	test_assert_zero(
+				thread_create(&t, 0, tsk6_thr2_hnd, task_self()));
+	test_assert_equal(task_self(), t->task);
+	thread_join(t, NULL);
+
+	thread_exit(NULL);
+
+	return NULL;
+}
+
+TEST_CASE("Create task with 2 threads and terminate "
+		"task in main thread by exiting threads") {
+	new_task(tsk6_thr1_hnd, NULL);
+	// TODO: waitpid
+}
+
+
+static void *tsk7_thr2_hnd(void *data) {
+	test_assert_equal(task_self(), data);
+
+	return NULL;
+}
+
+static void *tsk7_thr1_hnd(void *data) {
+	struct thread *t;
+
+	test_assert_not_equal(task_self()->tid, KERNEL_TID);
+	test_assert_equal(data, NULL);
+	test_assert_zero(
+				thread_create(&t, 0, tsk7_thr2_hnd, task_self()));
+	test_assert_equal(task_self(), t->task);
+
+	thread_exit(NULL);
+
+	return NULL;
+}
+
+TEST_CASE("Create task with 2 threads and terminate "
+		"task by exiting threads") {
+	new_task(tsk7_thr1_hnd, NULL);
+	// TODO: waitpid
+}
+

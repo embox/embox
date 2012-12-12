@@ -15,6 +15,8 @@
 #include <mem/misc/pool.h>
 #include <kernel/task.h>
 #include <kernel/panic.h>
+#include <kernel/critical.h>
+
 #include "common.h"
 
 EMBOX_UNIT_INIT(unit_init);
@@ -28,7 +30,7 @@ struct task_creat_param {
 };
 
 /* Maximum simultaneous creating task number */
-#define SIMULTANEOUS_TASK_CREAT 5
+#define SIMULTANEOUS_TASK_CREAT 10
 
 /* struct's livecycle is short: created in new_task,
  * freed at first in new task's thread */
@@ -168,6 +170,8 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	struct thread *thread, *next;
 	const struct task_resource_desc *res_desc;
 
+	assert(critical_allows(CRITICAL_SCHED_LOCK));
+
 	if (zombie != NULL) {
 		task_delete_zombie(zombie);
 		zombie = NULL;
@@ -207,12 +211,19 @@ void __attribute__((noreturn)) task_exit(void *res) {
 			thread_terminate(thread_self());
 
 			zombie = task;
+		} else {
+			/*
+			 * We are main thread. Simple kill us. We can not use thread_exit()
+			 * because it can call task_exit() again in some cases.
+			 */
+
+			thread_kill(thread_self());
 		}
 	}
 	sched_unlock();
 
-	/* If we are here - we are main thread. Simple exit. */
-	thread_exit(res);
+	/* NOTREACHED */
+	panic("Returning from task_exit()");
 }
 
 static void *task_trampoline(void *arg) {

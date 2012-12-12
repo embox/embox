@@ -173,20 +173,44 @@ static void thread_context_init(struct thread *t) {
 
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
+	struct thread *thread;
+	int count = 0;
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
 
 	sched_lock();
 	{
-		sched_finish(current);
+		/* Counting number of threads in task. XXX: not the best way */
+		list_for_each_entry(thread, &current->task->threads, task_link) {
+			count++;
+		}
 
-		if (thread_state_dead(current->state)) {
-			/* Thread is detached. Should be deleted by itself. */
-			thread_delete(current);
+		if (count == 1) {
+			/* We are last thread. Unlock scheduler and exit task. */
+			sched_unlock();
+			task_exit(ret);
 		} else {
-			/* Thread is attached. Joining thread delete it.    */
-			current->run_ret = ret;
-			sched_wake_one(&current->exit_sleepq);
+			/* There some other threads. Check if we are main thread */
+
+			if (current == current->task->main_thread) {
+				/*
+				 * We are main. We can free us only when exiting task.
+				 * So terminate us, and delete from list, but persist structure.
+				 */
+				thread_terminate(current);
+			} else {
+				/* We are not main thread. We can safely finish us. */
+				sched_finish(current);
+
+				if (thread_state_dead(current->state)) {
+					/* Thread is detached. Should be deleted by itself. */
+					thread_delete(current);
+				} else {
+					/* Thread is attached. Joining thread delete it.    */
+					current->run_ret = ret;
+					sched_wake_one(&current->exit_sleepq);
+				}
+			}
 		}
 	}
 	sched_unlock();
@@ -277,7 +301,8 @@ int thread_terminate(struct thread *t) {
 			t->state = thread_state_do_detach(t->state);
 		}
 
-		/* Init used for safety removing in thread_delete() */
+		/* Init used for safety removing it again */
+		list_del_init(&t->task_link);
 		list_del_init(&t->thread_link);
 	}
 	sched_unlock();
