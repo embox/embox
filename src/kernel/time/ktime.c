@@ -17,6 +17,7 @@
 EMBOX_UNIT_INIT(module_init);
 
 static struct itimer sys_timecounter;
+struct clock_source *kernel_clock_source;
 
 ns_t ktime_get_ns(void) {
 	return itimer_read(&sys_timecounter);
@@ -39,10 +40,10 @@ static int module_init(void) {
 	struct clock_source *cs;
 
 	/* find clock_event_device with maximal resolution  */
-	cs = clock_source_get_best(CS_ANY);
+	kernel_clock_source = clock_source_get_best(CS_ANY);
 	assert(cs);
 
-	itimer_init(&sys_timecounter, cs, 0);
+	itimer_init(&sys_timecounter, kernel_clock_source, 0);
 
 	return 0;
 }

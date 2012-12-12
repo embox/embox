@@ -45,6 +45,14 @@ struct timespec timespec_sub(struct timespec t1,
 	return ts;
 }
 
+struct timespec timespec_add_ns(struct timespec t, ns_t ns) {
+	struct timespec res;
+
+	set_normalized_timespec(&res, t.tv_sec + ns / NSEC_PER_SEC, t.tv_nsec + ns % NSEC_PER_SEC);
+
+	return res;
+}
+
 struct timespec ns_to_timespec(const __s64 nsec) {
 	struct timespec ts;
 

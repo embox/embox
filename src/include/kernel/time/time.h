@@ -44,6 +44,7 @@ extern struct timespec timespec_add(struct timespec t1,
 		struct timespec t2);
 extern struct timespec timespec_sub(struct timespec t1,
 		struct timespec t2);
+extern struct timespec timespec_add_ns(struct timespec t, ns_t ns);
 
 static inline ns_t timespec_to_ns(const struct timespec *ts) {
 	return ((__s64) ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec;

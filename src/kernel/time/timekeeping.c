@@ -14,13 +14,12 @@
 
 EMBOX_UNIT_INIT(time_init);
 
-struct __time {
+static struct {
 	struct clock_source *cs;
 	int precision; /*< e.g. NTP precision */
 	struct timespec time;
-};
+} abstime;
 
-static struct __time abstime;
 static struct itimer itimer;
 
 static void time_set_clock_source(struct clock_source *cs) {
@@ -33,28 +32,25 @@ void settimeofday(struct timespec *newtime, struct timezone *tz) {
 	itimer_init(&itimer, abstime.cs, 0);
 }
 
-int gettimeofday(struct timeval *t, struct timezone *tz) {
-	ns_t cur = itimer.cs->read(itimer.cs);
-
-	t->tv_sec = abstime.time.tv_sec + cur / USEC_PER_SEC;
-	t->tv_usec = abstime.time.tv_nsec / 1000 + cur % USEC_PER_SEC;
-
-	return 0;
-}
-
 void getnsofday(struct timespec *t, struct timezone *tz) {
+	struct timespec ts = {
+			.tv_sec = abstime.time.tv_sec,
+			.tv_nsec = abstime.time.tv_nsec
+	};
 	ns_t cur = itimer.cs->read(itimer.cs);
 
-	t->tv_sec = abstime.time.tv_sec + cur / NSEC_PER_SEC;
-	t->tv_nsec = abstime.time.tv_nsec + cur % NSEC_PER_SEC;
+	ts = timespec_add_ns(ts, cur);
+
+	t->tv_sec = ts.tv_sec;
+	t->tv_nsec = ts.tv_nsec;
 }
 
 static int time_init(void) {
 	struct clock_source *cs;
+	extern struct clock_source *kernel_clock_source;
 
 	/* find clock_event_device with maximal resolution  */
-	cs = clock_source_get_best(CS_ANY);
-	assert(cs);
+	cs = kernel_clock_source;
 
 	time_set_clock_source(cs);
 	itimer_init(&itimer, cs, 0);

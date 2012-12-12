@@ -32,3 +32,9 @@ static module sleep {
 
 	depends embox.kernel.timer.sleep_api
 }
+
+static module gettimeofday {
+	source "gettimeofday.c"
+
+	depends embox.kernel.time.timekeeper
+}
