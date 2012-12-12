@@ -24,7 +24,7 @@ module core extends thread_mode {
 module sched {
 	source "sched.c", "startq.c"
 
-	depends embox.kernel.timer.timer_api /* for timeslices support */
+	depends embox.kernel.timer.strategy.api /* for timeslices support */
 	depends embox.arch.context /* context_switch */
 	depends embox.kernel.thread.sched_policy.api
 

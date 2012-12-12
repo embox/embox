@@ -11,7 +11,7 @@ module blinking_led_timer {
 	@IncludePath("$(PLATFORM_DIR)/olimex/include")
 	source "blinking_led_timer.c"
 	depends embox.driver.gpio.at91_pins
-	depends embox.kernel.timer.timer_api
+	depends embox.kernel.timer.sys_timer
 }
 
 

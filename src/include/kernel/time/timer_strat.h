@@ -10,7 +10,7 @@
 #ifndef TIMER_STRAT_H_
 #define TIMER_STRAT_H_
 struct sys_timer;
-#include <module/embox/kernel/timer/timer_api.h>
+#include <module/embox/kernel/timer/strategy/api.h>
 
 /********
  * timer_strat

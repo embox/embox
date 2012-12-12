@@ -18,31 +18,31 @@ module softirq_test {
 	/*depends embox.framework.LibFramework*/
 }
 
-@TestFor(embox.kernel.timer.timer_api)
+@TestFor(embox.kernel.timer.strategy.api)
 module timer_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "timer_test.c"
 
-	depends embox.kernel.timer.timer_api
+	depends embox.kernel.timer.strategy.api
 	/*depends embox.framework.LibFramework*/
 	depends embox.kernel.time.timer
 }
 
-@TestFor(embox.kernel.timer.timer_api)
+@TestFor(embox.kernel.timer.strategy.api)
 module periodic_timer_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "periodic_timer_test.c"
 
-	depends embox.kernel.timer.timer_api
+	depends embox.kernel.timer.strategy.api
 	depends embox.kernel.time.timer
 }
 
-@TestFor(embox.kernel.timer.timer_api)
+@TestFor(embox.kernel.timer.strategy.api)
 module oneshot_timer_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "oneshot_timer_test.c"
 
-	depends embox.kernel.timer.timer_api
+	depends embox.kernel.timer.strategy.api
 	depends embox.kernel.time.timer
 }
 

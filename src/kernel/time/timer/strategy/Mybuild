@@ -1,0 +1,13 @@
+package embox.kernel.timer.strategy
+
+@DefaultImpl(head_timer)
+abstract module api { }
+
+module list_timer extends api {
+	source "list_timer.c","list_timer.h"
+	depends embox.kernel.softirq
+}
+
+module head_timer extends api {
+	source "head_timer.c", "head_timer.h"
+}
