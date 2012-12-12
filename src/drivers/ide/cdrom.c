@@ -20,6 +20,7 @@
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
 #include <util/indexator.h>
+#include <time.h>
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
 INDEX_DEF(idecd_idx,0,MAX_DEV_QUANTITY);
@@ -67,7 +68,7 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	/* Data transfer */
 	while (!hdc->result) {
 		/* Wait until data ready */
-		usleep(300);
+		ksleep(300);
 
 		/* Check for errors */
 		if (hdc->status & HDCS_ERR) {

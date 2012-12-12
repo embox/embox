@@ -4,7 +4,8 @@ package embox.compat.posix.util
 module All {
 	depends getopt,
 		utsname,
-		time
+		time,
+		sleep
 }
 
 static module getopt {
@@ -26,3 +27,8 @@ static module time {
 	depends embox.kernel.time.kernel_time
 }
 
+static module sleep {
+	source "sleep.c"
+
+	depends embox.kernel.timer.sleep_api
+}

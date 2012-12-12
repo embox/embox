@@ -31,7 +31,7 @@ TEST_CASE("Create thread waiting event and then finish") {
 	event_init(&sync_event, "sync_event");
 	test_assert_zero(
 				thread_create(&thread, 0, thread_run, &sync_event));
-	usleep(100);
+	ksleep(100);
 	event_notify(&sync_event);
 
 	test_assert_zero(thread_join(thread, NULL));

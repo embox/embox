@@ -15,8 +15,7 @@
 #include <kernel/thread/sched.h>
 #include <kernel/thread/event.h>
 
-/* system library function */
-int usleep(useconds_t usec) {
+int ksleep(useconds_t usec) {
 	int res_sleep;
 	struct event never_happen;
 
@@ -32,6 +31,3 @@ int usleep(useconds_t usec) {
 	return res_sleep == -ETIMEDOUT ? 0 : res_sleep;
 }
 
-int sleep(unsigned int seconds) {
-	return usleep(seconds * 1000);
-}

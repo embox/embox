@@ -132,7 +132,7 @@ static int diag_waiting_key(int sec) {
 	for (int i = 0; i < sec*2; i++) {
 
 		printf(".");
-		usleep(1000);
+		ksleep(1000);
 
 		// wait a sec and proof
 		if (timer_elapsed) {

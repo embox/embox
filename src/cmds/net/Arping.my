@@ -35,6 +35,6 @@ module arping {
 	depends embox.net.util
 	depends embox.net.neighbour
 	depends embox.net.arp
-	depends embox.kernel.timer.sleep_api
+	depends embox.compat.posix.util.sleep
 	depends embox.framework.LibFramework
 }

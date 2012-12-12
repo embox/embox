@@ -14,13 +14,13 @@ module sys_timer {
 
 module sleep extends sleep_api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "sleep.c"
+	source "ksleep.c"
 	depends sys_timer, embox.kernel.thread.core, embox.kernel.thread.event
 }
 
 module sleep_nosched extends sleep_api {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "sleep_nosched.c"
+	source "ksleep_nosched.c"
 	depends sys_timer
 }
 

@@ -27,7 +27,7 @@ TEST_CASE("one sleep") {
 	clock_t cur_time, epsilon;
 
 	cur_time = clock();
-	usleep(TIME_TO_SLEEP);
+	ksleep(TIME_TO_SLEEP);
 	epsilon = abs((int) (clock() - cur_time) - (int) TIME_TO_SLEEP);
 	test_assert_true(epsilon < EPSILON_BORDER);
 }
@@ -38,7 +38,7 @@ TEST_CASE("one sleep") {
  */
 
 static void * handler1(void* args) {
-	usleep(TIME_TO_SLEEP * (uint32_t) args);
+	ksleep(TIME_TO_SLEEP * (uint32_t) args);
 	test_emit('0' + (uint32_t) args);
 	return NULL;
 }
@@ -67,7 +67,7 @@ TEST_CASE("simple multi-threaded check") {
  * after execute buffer2 must be "87654321"
  */
 static void * handler2(void* args) {
-	usleep(TIME_TO_SLEEP * (NUM_THREADS - (uint32_t) args) + 1);
+	ksleep(TIME_TO_SLEEP * (NUM_THREADS - (uint32_t) args) + 1);
 	test_emit('1' + (uint32_t) args);
 	return NULL;
 }
@@ -90,7 +90,7 @@ TEST_CASE("sleep sort") {
 
 TEST_CASE("sleep 0 seconds") {
 	test_emit('1');
-	usleep(0);
+	ksleep(0);
 	test_emit('2');
 	test_assert_emitted("12");
 }

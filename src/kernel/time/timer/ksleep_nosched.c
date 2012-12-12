@@ -16,8 +16,7 @@ static void wake_up(sys_timer_t *timer, void *param) {
 	*(int *)param = 0;
 }
 
-/*system library function */
-int usleep(useconds_t usec) {
+int ksleep(useconds_t usec) {
 	volatile int wait_flag; // for sleep func
 	sys_timer_t timer;
 
@@ -35,8 +34,4 @@ int usleep(useconds_t usec) {
 	}
 	timer_close(&timer);
 	return 0;
-}
-
-int sleep(unsigned int seconds) {
-	return usleep(seconds * 1000);
 }

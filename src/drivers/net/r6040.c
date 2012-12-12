@@ -313,7 +313,7 @@ int r6040_wait_linkup(void) {
 			return 1;
 		}
 		/* Wait 10mS more */
-		usleep(10);
+		ksleep(10);
 	}
 	return 0;
 }

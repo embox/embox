@@ -22,4 +22,5 @@ module startx{
 	depends embox.xwnd.application
 	depends embox.xwnd.xterm
 	depends embox.xwnd.xfigure
+	depends embox.compat.posix.util.sleep
 }

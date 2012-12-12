@@ -18,6 +18,7 @@
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
 #include <util/indexator.h>
+#include <time.h>
 
 extern int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size);
 
@@ -69,7 +70,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 
     	/* Wait until data read */
 		while(!hdc->result) {
-			usleep(300);
+			ksleep(300);
 		}
 		if (hdc->result < 0) {
 			break;
@@ -158,7 +159,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 
 		/* Wait until data written */
 		while(!hdc->result) {
-			usleep(300);
+			ksleep(300);
 		}
 		if (hdc->result < 0) {
 			break;
