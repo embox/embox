@@ -25,7 +25,7 @@ static int int_comp(const void *fst, const void *snd) {
  * So, we can be sure that elements weren't lost.
  */
 static void check(int *a, int cnt) {
-	bool was[cnt];
+	bool was[16];
 	for (int i = 0; i < cnt-1; i++) {
 		test_assert(a[i] <= a[i+1]);
 	}

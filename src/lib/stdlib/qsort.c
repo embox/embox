@@ -10,19 +10,22 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <alloca.h>
 
 /**
  * Swap two elements of specified size.
  */
 static inline void swap(void *fst, void *snd, size_t size) {
-	char temp[size];
-	memcpy((void *)temp, snd, size);
+	void *temp = alloca(size);
+
+	memcpy(temp, snd, size);
 	memcpy(snd, fst, size);
-	memcpy(fst, (void *)temp, size);
+	memcpy(fst, temp, size);
 }
 
 void qsort(void *base, size_t nmemb, size_t size,
 		int(*compar)(const void *, const void *)) {
+
 	if (nmemb < 4) {
 		if (nmemb == 2) {
 			if (compar(base + size, base) < 0) {
@@ -42,14 +45,16 @@ void qsort(void *base, size_t nmemb, size_t size,
 		return;
 	} else {
 		void *pos = (rand() % nmemb) * size + base;
-		char key[size];
+		void *key = alloca(size);
 		void *i = base, *j = base + (size * (nmemb - 1));
-	    memcpy((void *)key, pos, size);
+
+	    memcpy(key, pos, size);
+
 		while (i <= j) {
-			while (compar(i, (void *)key) < 0) {
+			while (compar(i, key) < 0) {
 				i += size;
 			}
-			while (compar((void *)key, j) < 0) {
+			while (compar(key, j) < 0) {
 				j -= size;
 			}
 			if (i <= j) {
@@ -64,5 +69,6 @@ void qsort(void *base, size_t nmemb, size_t size,
 		if (i < base + (nmemb - 1) * size) {
 			qsort(i, nmemb - (i - base) / size, size, compar);
 		}
+
 	}
 }
