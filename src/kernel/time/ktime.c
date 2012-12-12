@@ -37,11 +37,9 @@ struct timespec *ktime_get_timespec(struct timespec *ts) {
 }
 
 static int module_init(void) {
-	struct clock_source *cs;
-
 	/* find clock_event_device with maximal resolution  */
 	kernel_clock_source = clock_source_get_best(CS_ANY);
-	assert(cs);
+	assert(kernel_clock_source);
 
 	itimer_init(&sys_timecounter, kernel_clock_source, 0);
 
