@@ -46,14 +46,10 @@ void getnsofday(struct timespec *t, struct timezone *tz) {
 }
 
 static int time_init(void) {
-	struct clock_source *cs;
 	extern struct clock_source *kernel_clock_source;
 
-	/* find clock_event_device with maximal resolution  */
-	cs = kernel_clock_source;
-
-	time_set_clock_source(cs);
-	itimer_init(&itimer, cs, 0);
+	time_set_clock_source(kernel_clock_source);
+	itimer_init(&itimer, kernel_clock_source, 0);
 
 	return 0;
 }
