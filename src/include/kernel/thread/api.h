@@ -180,7 +180,7 @@ extern void __attribute__((noreturn)) thread_exit(void *ret);
 extern void thread_yield(void);
 
 /**
- * Stops scheduling of thread and delete it from list of threads.
+ * Force terminate the thread.
  * USE ONLY WHEN EXITING TASK.
  *
  * @return
@@ -190,18 +190,6 @@ extern void thread_yield(void);
  *   If successful.
  */
 extern int thread_terminate(struct thread *thread);
-
-/**
- * Kills thread - stops scheduling and frees it.
- * USE ONLY WHEN EXITING TASK.
- *
- * @return
- *   Result of killing.
- *
- * @retval 0
- *   If successful.
- */
-extern int thread_kill(struct thread *thread);
 
 /**
  * Decrement the count of suspending. If it is zero, resumes a @a thread.

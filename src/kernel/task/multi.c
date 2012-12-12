@@ -76,7 +76,7 @@ int new_task(void *(*run)(void *), void *arg) {
 		/* alloc space for task & resources on top of created thread's stack */
 
 		if ((self_task = task_init(thd->stack, thd->stack_sz)) == NULL) {
-			thread_kill(thd);
+			thread_terminate(thd);
 			thread_detach(thd);
 			pool_free(&creat_param, param);
 			sched_unlock();
@@ -147,35 +147,12 @@ static void task_init_parent(struct task *task, struct task *parent) {
 
 }
 
-inline static void task_delete_zombie(struct task *task) {
-	struct thread *thread, *next;
-
-	/*
-	 * task_exit() was called not in main thread. Kill that thread,
-	 * than kill main thread
-	 */
-
-	list_for_each_entry_safe(thread, next, &task->threads, task_link) {
-		if (thread != task->main_thread) {
-			thread_kill(thread);
-		}
-	}
-
-	thread_kill(task->main_thread);
-}
-
 void __attribute__((noreturn)) task_exit(void *res) {
-	static struct task *zombie;
 	struct task *task = task_self();
 	struct thread *thread, *next;
 	const struct task_resource_desc *res_desc;
 
 	assert(critical_allows(CRITICAL_SCHED_LOCK));
-
-	if (zombie != NULL) {
-		task_delete_zombie(zombie);
-		zombie = NULL;
-	}
 
 	sched_lock();
 	{
@@ -199,25 +176,17 @@ void __attribute__((noreturn)) task_exit(void *res) {
 				continue;
 			}
 
-			thread_kill(thread);
+			thread_terminate(thread);
 		}
 
 		/*
-		 * If we are not main thread we can kill it here,
-		 * so stop scheduling our task and it as zombie.
+		 * Until we in sched_lock() we continue processing
+		 * and our thread structure isn't freed.
 		 */
+		thread_terminate(thread_self());
+
 		if (thread_self() != task->main_thread) {
 			thread_terminate(task->main_thread);
-			thread_terminate(thread_self());
-
-			zombie = task;
-		} else {
-			/*
-			 * We are main thread. Simple kill us. We can not use thread_exit()
-			 * because it can call task_exit() again in some cases.
-			 */
-
-			thread_kill(thread_self());
 		}
 	}
 	sched_unlock();

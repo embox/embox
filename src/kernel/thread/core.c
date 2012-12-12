@@ -173,6 +173,7 @@ static void thread_context_init(struct thread *t) {
 
 void __attribute__((noreturn)) thread_exit(void *ret) {
 	struct thread *current = thread_self();
+	struct task *task = task_self();
 	struct thread *thread;
 	int count = 0;
 
@@ -181,27 +182,22 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	sched_lock();
 	{
 		/* Counting number of threads in task. XXX: not the best way */
-		list_for_each_entry(thread, &current->task->threads, task_link) {
+		list_for_each_entry(thread, &task->threads, task_link) {
 			count++;
 		}
 
-		if (count == 1) {
+		if ((count == 1) ||
+			(count == 2 && thread_state_dead(task->main_thread->state))) {
+
 			/* We are last thread. Unlock scheduler and exit task. */
 			sched_unlock();
 			task_exit(ret);
 		} else {
-			/* There some other threads. Check if we are main thread */
+			/* Finish scheduling of the thread */
+			sched_finish(current);
 
-			if (current == current->task->main_thread) {
-				/*
-				 * We are main. We can free us only when exiting task.
-				 * So terminate us, and delete from list, but persist structure.
-				 */
-				thread_terminate(current);
-			} else {
-				/* We are not main thread. We can safely finish us. */
-				sched_finish(current);
-
+			/* We can free only not main threads */
+			if (current != task->main_thread) {
 				if (thread_state_dead(current->state)) {
 					/* Thread is detached. Should be deleted by itself. */
 					thread_delete(current);
@@ -301,22 +297,6 @@ int thread_terminate(struct thread *t) {
 			t->state = thread_state_do_detach(t->state);
 		}
 
-		/* Init used for safety removing it again */
-		list_del_init(&t->task_link);
-		list_del_init(&t->thread_link);
-	}
-	sched_unlock();
-
-	return 0;
-}
-
-
-int thread_kill(struct thread *t) {
-	assert(t);
-
-	sched_lock();
-	{
-		thread_terminate(t);
 		thread_delete(t);
 	}
 	sched_unlock();
@@ -427,9 +407,9 @@ static void thread_delete(struct thread *t) {
 
 	assert(t);
 	assert(thread_state_dead(t->state));
+	assert(t != zombie);
 
-	if (zombie != NULL) {
-		assert(zombie != current);
+	if (zombie != NULL && zombie != current) {
 		thread_free(zombie);
 		zombie = NULL;
 	}
