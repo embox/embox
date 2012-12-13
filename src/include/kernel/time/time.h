@@ -54,20 +54,21 @@ static inline ns_t timeval_to_ns(const struct timeval *tv) {
 	return ((__s64) tv->tv_sec * NSEC_PER_SEC) + tv->tv_usec * NSEC_PER_USEC;
 }
 
+/* Round up */
 static inline ns_t clock_to_ns(uint32_t resolution, clock_t ticks) {
-	return (ticks * NSEC_PER_SEC) / resolution;
+	return (ticks * NSEC_PER_SEC + resolution - 1) / resolution;
 }
 
 static inline clock_t ns_to_clock(uint32_t resolution, ns_t ns) {
-	return (ns * resolution) / NSEC_PER_SEC;
+	return (ns * resolution + NSEC_PER_SEC - 1) / NSEC_PER_SEC;
 }
 
 static inline ns_t cycles_to_ns(uint32_t resolution, cycle_t cycles) {
-	return (cycles * (cycle_t)1000000000) / (uint64_t)resolution;
+	return (cycles * (cycle_t)NSEC_PER_SEC + resolution - 1) / (uint64_t)resolution;
 }
 
 static inline cycle_t ns_to_cycles(uint32_t resolution, ns_t ns) {
-	return (ns * resolution) / (uint64_t)1000000000;
+	return (ns * resolution + NSEC_PER_SEC - 1) / (uint64_t)NSEC_PER_SEC;
 }
 
 extern clock_t ns2jiffies(ns_t ns);

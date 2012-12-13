@@ -8,7 +8,6 @@
  * @author Fedor Burdun
  */
 
-#include <lib/list.h>
 #include <kernel/time/timer.h>
 
 

@@ -22,10 +22,6 @@ static struct {
 
 static struct itimer itimer;
 
-static void time_set_clock_source(struct clock_source *cs) {
-	abstime.cs = cs;
-}
-
 void settimeofday(struct timespec *newtime, struct timezone *tz) {
 	abstime.time.tv_sec = newtime->tv_sec;
 	abstime.time.tv_nsec = newtime->tv_nsec;
@@ -48,7 +44,7 @@ void getnsofday(struct timespec *t, struct timezone *tz) {
 static int time_init(void) {
 	extern struct clock_source *kernel_clock_source;
 
-	time_set_clock_source(kernel_clock_source);
+	abstime.cs = kernel_clock_source;
 	itimer_init(&itimer, kernel_clock_source, 0);
 
 	return 0;

@@ -6,7 +6,7 @@
  * @author Andrey Baboshin
  * @author Ilia Vaprol
  */
-#include <lib/list.h>
+
 #include <kernel/time/timer.h>
 #include <profiler/tracing/trace.h>
 #include <util/dlist.h>
