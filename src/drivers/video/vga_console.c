@@ -289,12 +289,3 @@ void vga_putc(vga_console_t *con, char c) {
 	blink_cursor(con->x, con->y);
 }
 
-#if 0
-//TODO: workaround
-extern int keyboard_getc(void);
-
-int vga_getc(void) {
-	blink_cursor(con.x, con.y);
-	return keyboard_getc();
-}
-#endif
