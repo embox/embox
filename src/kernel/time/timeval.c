@@ -72,7 +72,7 @@ struct timeval ns_to_timeval(const __s64 nsec) {
 	struct timespec ts = ns_to_timespec(nsec);
 
 	tv.tv_sec = ts.tv_sec;
-	tv.tv_usec = (suseconds_t) ts.tv_nsec / NSEC_PER_USEC;
+	tv.tv_usec = ts.tv_nsec / NSEC_PER_USEC;
 
 	return tv;
 }

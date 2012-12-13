@@ -109,7 +109,7 @@ static ns_t cs_full_read(struct clock_source *cs) {
 		old_jiffies++;
 	}
 
-	cycles_all = cycles + old_jiffies * cycles_per_jiff;
+	cycles_all = cycles + (time64_t)old_jiffies * cycles_per_jiff;
 
 	/* TODO cheat. read() will miss for one jiff sometimes. */
 	if (cycles_all < prev_cycles) {

@@ -25,7 +25,7 @@ clock_t ns2jiffies(ns_t ns) {
 }
 
 clock_t ms2jiffies(time64_t ms) {
-	return ns2jiffies((ns_t)ms * 1000000);
+	return ns2jiffies(ms * 1000000);
 }
 
 time64_t jiffies2ms(clock_t jiff) {
