@@ -10,7 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
-
+#include <time.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>

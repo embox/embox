@@ -32,5 +32,5 @@ module diag_index_desc {
 	depends embox.kernel.thread.thread_mode
 
 	//depends embox.kernel.task.api
-	//depends embox.compat.posix.idx.dup
+	depends embox.compat.posix.idx.dup
 }

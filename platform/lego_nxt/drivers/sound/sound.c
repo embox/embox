@@ -8,7 +8,7 @@
 
 #include <types.h>
 #include <unistd.h>
-
+#include <time.h>
 #include <kernel/irq.h>
 #include <drivers/sound.h>
 #include <drivers/at91sam7s256.h>
