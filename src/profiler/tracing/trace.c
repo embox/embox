@@ -23,7 +23,9 @@ ARRAY_SPREAD_DEF_TERMINATED(typeof(struct __trace_block *),
 		__trace_blocks_array, NULL);
 
 void __tracepoint_handle(struct __trace_point *tp) {
-	tp->count++;
+	if (tp->active) {
+		tp->count++;
+	}
 }
 
 void trace_block_enter(struct __trace_block *tb) {

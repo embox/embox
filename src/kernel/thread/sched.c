@@ -320,7 +320,7 @@ clock_t sched_get_running_time(struct thread *thread) {
 
 	return thread->running_time;
 }
-
+#include <stdio.h>
 /**
  * Called by critical dispatching code with IRQs disabled.
  */

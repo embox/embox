@@ -32,6 +32,7 @@ static void print_trace_point_stat_with_location(int i) {
 		if (number++ == i) {
 			printf("%2d %25s %7d %5s\n", i, tp->location.func, tp->count,
 					tp->active ? "yes" : "no");
+			break;
 		}
 	}
 
@@ -61,11 +62,10 @@ bool change_point_activity(int index, bool activity) {
 
 	array_nullterm_foreach(tp, __trace_points_array)
 	{
-		if (number == index) {
+		if (number++ == index) {
 			tp->active = activity;
 			return true;
 		}
-		number++;
 	}
 
 	return false;

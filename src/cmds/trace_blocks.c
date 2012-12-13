@@ -30,8 +30,9 @@ static void print_trace_block_stat(void) {
 	array_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (tb->active) {
-			printf("%2d %7d %10d\n", number++, tb->begin->count, tb->time);
+			printf("%2d %7d %10d\n", number, tb->begin->count, tb->time);
 		}
+		number++;
 	}
 
 	return;
@@ -46,7 +47,8 @@ static void print_trace_block_stat_personal(int i) {
 	array_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (number++ == i) {
-			printf("%2d %7d %10d %5s\n", number++, tb->begin->count, tb->time, tb->active ? "yes" : "no");
+			printf("%2d %7d %10d %5s\n", i, tb->begin->count, tb->time, tb->active ? "yes" : "no");
+			break;
 		}
 	}
 
@@ -59,11 +61,10 @@ bool change_block_activity(int index, bool activity) {
 
 	array_nullterm_foreach(tb, __trace_blocks_array)
 	{
-		if (number == index) {
+		if (number++ == index) {
 			tb->active = activity;
 			return true;
 		}
-		number++;
 	}
 
 	return false;

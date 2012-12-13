@@ -9,4 +9,5 @@ module no_tracing extends trace {
 
 module tracing extends trace {
 	source "trace.c", "trace_impl.h"
+	depends embox.kernel.timer.itimer
 }
