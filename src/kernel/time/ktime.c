@@ -19,18 +19,18 @@ EMBOX_UNIT_INIT(module_init);
 static struct itimer sys_timecounter;
 struct clock_source *kernel_clock_source;
 
-ns_t ktime_get_ns(void) {
+time64_t ktime_get_ns(void) {
 	return itimer_read(&sys_timecounter);
 }
 
 struct timeval *ktime_get_timeval(struct timeval *tv) {
-	ns_t ns = ktime_get_ns();
+	time64_t ns = ktime_get_ns();
 	*tv = ns_to_timeval(ns);
 	return tv;
 }
 
 struct timespec *ktime_get_timespec(struct timespec *ts) {
-	ns_t ns = ktime_get_ns();
+	time64_t ns = ktime_get_ns();
 
 	*ts = ns_to_timespec(ns);
 	return ts;

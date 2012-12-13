@@ -33,7 +33,7 @@ struct clock_source {
 	struct time_counter_device *counter_device;
 	volatile clock_t jiffies; /* count of jiffies since clock source started */
 	uint32_t flags; /**< periodical or not */
-	ns_t (*read)(struct clock_source *cs);
+	time64_t (*read)(struct clock_source *cs);
 };
 
 extern struct clock_source *clock_source_get_best(enum clock_source_property property);
@@ -47,8 +47,8 @@ extern struct clock_source *clock_source_get_best(enum clock_source_property pro
  * @param cs - clock source read from
  * @return count of nanoseconds from moment when clock source started
  */
-extern ns_t clock_source_read(struct clock_source *cs);
-extern ns_t clock_source_counter_read(struct clock_source *cs);
+extern time64_t clock_source_read(struct clock_source *cs);
+extern time64_t clock_source_counter_read(struct clock_source *cs);
 
 extern int clock_source_register(struct clock_source *cs);
 extern int clock_source_unregister(struct clock_source *cs);

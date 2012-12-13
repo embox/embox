@@ -19,7 +19,7 @@ clock_t clock(void) {
 	return clock_sys_ticks();
 }
 
-static struct timespec *ns2timespec(ns_t ns, struct timespec *ts) {
+static struct timespec *ns2timespec(time64_t ns, struct timespec *ts) {
 	ts->tv_sec = ns / NSEC_PER_SEC;
 	ts->tv_nsec = ns % NSEC_PER_SEC;
 	return ts;

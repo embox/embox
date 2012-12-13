@@ -22,9 +22,9 @@ POOL_DEF(clock_source_pool, struct clock_source_head, OPTION_GET(NUMBER, clocks_
 
 DLIST_DEFINE(clock_source_list);
 
-static ns_t cs_full_read(struct clock_source *cs);
-static ns_t cs_event_read(struct clock_source *cs);
-static ns_t cs_counter_read(struct clock_source *cs);
+static time64_t cs_full_read(struct clock_source *cs);
+static time64_t cs_event_read(struct clock_source *cs);
+static time64_t cs_counter_read(struct clock_source *cs);
 
 static struct clock_source_head *clock_source_find(struct clock_source *cs) {
 	struct clock_source_head *csh;
@@ -71,7 +71,7 @@ int clock_source_unregister(struct clock_source *cs) {
 	return ENOERR;
 }
 
-ns_t clock_source_read(struct clock_source *cs) {
+time64_t clock_source_read(struct clock_source *cs) {
 	assert(cs);
 
 	/* See comment to clock_source_read in clock_source.h */
@@ -90,7 +90,7 @@ ns_t clock_source_read(struct clock_source *cs) {
 	return 0;
 }
 
-static ns_t cs_full_read(struct clock_source *cs) {
+static time64_t cs_full_read(struct clock_source *cs) {
 	static cycle_t prev_cycles, cycles, cycles_all;
 	int old_jiffies, safe;
 	struct time_event_device *ed = cs->event_device;
@@ -121,11 +121,11 @@ static ns_t cs_full_read(struct clock_source *cs) {
 	return cycles_to_ns(cd->resolution, cycles_all);
 }
 
-static ns_t cs_event_read(struct clock_source *cs) {
+static time64_t cs_event_read(struct clock_source *cs) {
 	return cycles_to_ns(cs->event_device->resolution, (cycle_t)cs->jiffies);
 }
 
-static ns_t cs_counter_read(struct clock_source *cs) {
+static time64_t cs_counter_read(struct clock_source *cs) {
 	return cycles_to_ns(cs->counter_device->resolution, cs->counter_device->read());
 }
 

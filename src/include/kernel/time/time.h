@@ -31,7 +31,6 @@ typedef uint64_t cycle_t;
  * This types can store about 584 years in nanoseconds.
  */
 typedef int64_t time64_t;
-typedef time64_t ns_t;
 
 /* gettimeofday is posix function, but settimeofday is not. */
 extern void settimeofday(struct timespec *ts, struct timezone *tz);
@@ -44,34 +43,34 @@ extern struct timespec timespec_add(struct timespec t1,
 		struct timespec t2);
 extern struct timespec timespec_sub(struct timespec t1,
 		struct timespec t2);
-extern struct timespec timespec_add_ns(struct timespec t, ns_t ns);
+extern struct timespec timespec_add_ns(struct timespec t, time64_t ns);
 
-static inline ns_t timespec_to_ns(const struct timespec *ts) {
+static inline time64_t timespec_to_ns(const struct timespec *ts) {
 	return ((__s64) ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec;
 }
 
-static inline ns_t timeval_to_ns(const struct timeval *tv) {
+static inline time64_t timeval_to_ns(const struct timeval *tv) {
 	return ((__s64) tv->tv_sec * NSEC_PER_SEC) + tv->tv_usec * NSEC_PER_USEC;
 }
 
 /* Round up */
-static inline ns_t clock_to_ns(uint32_t resolution, clock_t ticks) {
+static inline time64_t clock_to_ns(uint32_t resolution, clock_t ticks) {
 	return ((time64_t)ticks * NSEC_PER_SEC + resolution - 1) / resolution;
 }
 
-static inline clock_t ns_to_clock(uint32_t resolution, ns_t ns) {
+static inline clock_t ns_to_clock(uint32_t resolution, time64_t ns) {
 	return (ns * resolution + NSEC_PER_SEC - 1) / NSEC_PER_SEC;
 }
 
-static inline ns_t cycles_to_ns(uint32_t resolution, cycle_t cycles) {
+static inline time64_t cycles_to_ns(uint32_t resolution, cycle_t cycles) {
 	return (cycles * NSEC_PER_SEC + resolution - 1) / resolution;
 }
 
-static inline cycle_t ns_to_cycles(uint32_t resolution, ns_t ns) {
+static inline cycle_t ns_to_cycles(uint32_t resolution, time64_t ns) {
 	return (ns * resolution + NSEC_PER_SEC - 1) / NSEC_PER_SEC;
 }
 
-extern clock_t ns2jiffies(ns_t ns);
+extern clock_t ns2jiffies(time64_t ns);
 extern clock_t ms2jiffies(time64_t ms);
 extern time64_t jiffies2ms(clock_t jiff);
 

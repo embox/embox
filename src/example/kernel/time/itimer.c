@@ -20,7 +20,7 @@ static struct clock_source *cs;
 
 static int measured_loop(int cycles_loop) {
 	volatile int i;
-	ns_t time_after;
+	time64_t time_after;
 	struct itimer it;
 
 	itimer_init(&it, cs, 0);

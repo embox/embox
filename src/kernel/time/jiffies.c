@@ -19,7 +19,7 @@ clock_t clock_sys_ticks(void) {
 	return (clock_t)cs_jiffies->jiffies;
 }
 
-clock_t ns2jiffies(ns_t ns) {
+clock_t ns2jiffies(time64_t ns) {
 	assert(cs_jiffies->event_device);
 	return ns_to_clock(cs_jiffies->event_device->resolution, ns);
 }
