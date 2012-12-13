@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <types.h>
+#include <time.h>
 #include <embox/unit.h>
 #include <net/etherdevice.h>
 #include <net/skbuff.h>

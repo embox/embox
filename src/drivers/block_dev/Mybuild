@@ -6,4 +6,5 @@ module block {
 
 	depends embox.util.LibUtil
 	depends embox.util.indexator
+	depends embox.mem.phymem
 }
