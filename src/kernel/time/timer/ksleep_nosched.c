@@ -8,7 +8,7 @@
  */
 
 #include <types.h>
-#include <time.h>
+#include <kernel/time/ktime.h>
 #include <kernel/time/timer.h>
 #include <hal/arch.h>
 

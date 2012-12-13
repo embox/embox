@@ -39,6 +39,7 @@
 #include <fs/node.h>
 #include <kernel/file.h>
 #include <err.h>
+#include <kernel/time/ktime.h>
 
 /**
  * include TTY specific headers

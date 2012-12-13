@@ -12,6 +12,7 @@
 #include <kernel/thread/sched.h>
 #include <kernel/thread/api.h>
 #include <kernel/thread/event.h>
+#include <kernel/time/ktime.h>
 
 #include <embox/test.h>
 

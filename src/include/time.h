@@ -88,6 +88,4 @@ extern time_t time(time_t *t);
 /** Format date and time */
 extern size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm);
 
-extern int ksleep(useconds_t usec);
-
 #endif /* POSIX_TIME_H_ */

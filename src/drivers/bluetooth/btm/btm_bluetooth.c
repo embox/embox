@@ -9,7 +9,7 @@
 #include <types.h>
 #include <embox/unit.h>
 #include <hal/reg.h>
-#include <time.h>
+#include <kernel/time/ktime.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
 #include <drivers/bluetooth.h>

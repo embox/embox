@@ -18,7 +18,7 @@
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
 #include <util/indexator.h>
-#include <time.h>
+#include <kernel/time/ktime.h>
 
 extern int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size);
 

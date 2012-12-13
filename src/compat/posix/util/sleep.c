@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <types.h>
 #include <unistd.h>
-#include <time.h>
+#include <kernel/time/ktime.h>
 
 int usleep(useconds_t usec) {
 	int res;

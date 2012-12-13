@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 #include <kernel/thread/api.h>
-#include <time.h>
+#include <kernel/time/ktime.h>
 
 EMBOX_TEST_SUITE("test for different priority threads");
 

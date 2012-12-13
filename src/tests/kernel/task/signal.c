@@ -12,6 +12,8 @@
 #include <embox/test.h>
 #include <kernel/task.h>
 #include <kernel/thread/api.h>
+#include <kernel/time/ktime.h>
+
 EMBOX_TEST_SUITE("test for task API");
 
 static volatile char flag = 0;

@@ -9,7 +9,7 @@
 #include <embox/test.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <time.h>
+#include <kernel/time/ktime.h>
 #include <kernel/thread/api.h>
 
 EMBOX_TEST_SUITE("sleep suite");
