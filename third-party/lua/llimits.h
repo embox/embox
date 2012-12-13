@@ -9,10 +9,6 @@
 
 
 #include <limits.h>
-
-
-#define BUFSIZ      512
-
 #include <stddef.h>
 
 
