@@ -88,16 +88,14 @@ struct tm *gmtime(const time_t *timep) {
 }
 
 time_t mktime(struct tm *tm) {
-	struct tm tmp;
-	time_t time;
+	time_t time = 0;
+	int year = tm->tm_year, month = tm->tm_mon;
 
-	tmp = *tm;
-
-	while (--tmp.tm_year >= EPOCH_START) {
-		time += year_length(tmp.tm_year + YEAR_1900);
+	while (--year >= EPOCH_START - YEAR_1900) {
+		time += year_length(year + YEAR_1900);
 	}
-	while (--tmp.tm_mon > 0) {
-		time += days_of_month(tmp.tm_year, tmp.tm_mon + 1);
+	while (--month >= 0) {
+		time += days_of_month(month, month + 1);
 	}
 	time += DAY_LENGHT * (tm->tm_mday - 1);
 	time += HOUR_LENGHT * tm->tm_hour;
