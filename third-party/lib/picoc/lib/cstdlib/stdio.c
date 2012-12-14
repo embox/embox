@@ -396,25 +396,25 @@ void StdioRemove(struct ParseState *Parser, struct Value *ReturnValue, struct Va
     ReturnValue->Val->Integer = remove(Param[0]->Val->Pointer);
 }
 
-void StdioRename(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+/*void StdioRename(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
     ReturnValue->Val->Integer = rename(Param[0]->Val->Pointer, Param[1]->Val->Pointer);
-}
+}*/
 
-void StdioRewind(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+/*void StdioRewind(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
     rewind(Param[0]->Val->Pointer);
-}
+}*/
 
-void StdioTmpfile(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+/*void StdioTmpfile(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
     ReturnValue->Val->Pointer = tmpfile();
-}
+}*/
 
-void StdioClearerr(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+/*void StdioClearerr(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
     clearerr((FILE *)Param[0]->Val->Pointer);
-}
+}*/
 
 void StdioFeof(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
@@ -435,20 +435,20 @@ void StdioFileno(struct ParseState *Parser, struct Value *ReturnValue, struct Va
 #endif
 }
 
-void StdioFflush(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+/*void StdioFflush(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fflush(Param[0]->Val->Pointer);
-}
+}*/
 
-void StdioFgetpos(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+/*void StdioFgetpos(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fgetpos(Param[0]->Val->Pointer, Param[1]->Val->Pointer);
-}
+}*/
 
-void StdioFsetpos(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+/*void StdioFsetpos(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
     ReturnValue->Val->Integer = fsetpos(Param[0]->Val->Pointer, Param[1]->Val->Pointer);
-}
+}*/
 
 void StdioFputc(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
@@ -460,10 +460,10 @@ void StdioFputs(struct ParseState *Parser, struct Value *ReturnValue, struct Val
     ReturnValue->Val->Integer = fputs(Param[0]->Val->Pointer, Param[1]->Val->Pointer);
 }
 
-void StdioFtell(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+/*void StdioFtell(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
     ReturnValue->Val->Integer = ftell(Param[0]->Val->Pointer);
-}
+}*/
 
 void StdioFseek(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
@@ -485,15 +485,15 @@ void StdioPutchar(struct ParseState *Parser, struct Value *ReturnValue, struct V
     ReturnValue->Val->Integer = putchar(Param[0]->Val->Integer);
 }
 
-void StdioSetbuf(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+/*void StdioSetbuf(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
     setbuf(Param[0]->Val->Pointer, Param[1]->Val->Pointer);
-}
+}*/
 
-void StdioSetvbuf(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
+/*void StdioSetvbuf(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
     setvbuf(Param[0]->Val->Pointer, Param[1]->Val->Pointer, Param[2]->Val->Integer, Param[3]->Val->Integer);
-}
+}*/
 
 void StdioUngetc(struct ParseState *Parser, struct Value *ReturnValue, struct Value **Param, int NumArgs)
 {
@@ -639,24 +639,24 @@ struct LibraryFunction StdioFunctions[] =
     { StdioFputc,   "int fputc(int, FILE *);" },
     { StdioFputs,   "int fputs(char *, FILE *);" },
     { StdioRemove,  "int remove(char *);" },
-    { StdioRename,  "int rename(char *, char *);" },
-    { StdioRewind,  "void rewind(FILE *);" },
-    { StdioTmpfile, "FILE *tmpfile();" },
-    { StdioClearerr,"void clearerr(FILE *);" },
+//    { StdioRename,  "int rename(char *, char *);" },
+//    { StdioRewind,  "void rewind(FILE *);" },
+//    { StdioTmpfile, "FILE *tmpfile();" },
+//    { StdioClearerr,"void clearerr(FILE *);" },
     { StdioFeof,    "int feof(FILE *);" },
     { StdioFerror,  "int ferror(FILE *);" },
     { StdioFileno,  "int fileno(FILE *);" },
-    { StdioFflush,  "int fflush(FILE *);" },
-    { StdioFgetpos, "int fgetpos(FILE *, int *);" },
-    { StdioFsetpos, "int fsetpos(FILE *, int *);" },
-    { StdioFtell,   "int ftell(FILE *);" },
+//    { StdioFflush,  "int fflush(FILE *);" },
+//    { StdioFgetpos, "int fgetpos(FILE *, int *);" },
+//    { StdioFsetpos, "int fsetpos(FILE *, int *);" },
+//    { StdioFtell,   "int ftell(FILE *);" },
     { StdioFseek,   "int fseek(FILE *, int, int);" },
     { StdioPerror,  "void perror(char *);" },
     { StdioPutc,    "int putc(char *, FILE *);" },
     { StdioPutchar, "int putchar(int);" },
     { StdioPutchar, "int fputchar(int);" },
-    { StdioSetbuf,  "void setbuf(FILE *, char *);" },
-    { StdioSetvbuf, "void setvbuf(FILE *, char *, int, int);" },
+//    { StdioSetbuf,  "void setbuf(FILE *, char *);" },
+//    { StdioSetvbuf, "void setvbuf(FILE *, char *, int, int);" },
     { StdioUngetc,  "int ungetc(int, FILE *);" },
     { StdioPuts,    "int puts(char *);" },
     { StdioGets,    "char *gets(char *);" },

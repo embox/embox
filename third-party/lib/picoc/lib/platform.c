@@ -1,92 +1,96 @@
+/* picoc's interface to the underlying platform. most platform-specific code
+ * is in platform/platform_XX.c and platform/library_XX.c */
+
 #include "picoc.h"
 #include "interpreter.h"
-#include <string.h>
 
-/* the value passed to exit() */
-int PicocExitValue = 0;
 
 /* initialise everything */
-void PicocInitialise(int StackSize)
+void PicocInitialise(Picoc *pc, int StackSize)
 {
-    BasicIOInit();
-    HeapInit(StackSize);
-    TableInit();
-    VariableInit();
-    LexInit();
-    TypeInit();
+    memset(pc, '\0', sizeof(*pc));
+    PlatformInit(pc);
+    BasicIOInit(pc);
+    HeapInit(pc, StackSize);
+    TableInit(pc);
+    VariableInit(pc);
+    LexInit(pc);
+    TypeInit(pc);
 #ifndef NO_HASH_INCLUDE
-    IncludeInit();
+    IncludeInit(pc);
 #endif
-    LibraryInit();
+    LibraryInit(pc);
 #ifdef BUILTIN_MINI_STDLIB
-    LibraryAdd(&GlobalTable, "c library", &CLibrary[0]);
-    CLibraryInit();
+    LibraryAdd(pc, &GlobalTable, "c library", &CLibrary[0]);
+    CLibraryInit(pc);
 #endif
-    PlatformLibraryInit();
+    PlatformLibraryInit(pc);
+    DebugInit(pc);
 }
 
 /* free memory */
-void PicocCleanup()
+void PicocCleanup(Picoc *pc)
 {
-    PlatformCleanup();
+    DebugCleanup(pc);
 #ifndef NO_HASH_INCLUDE
-    IncludeCleanup();
+    IncludeCleanup(pc);
 #endif
-    ParseCleanup();
-    LexCleanup();
-    VariableCleanup();
-    TypeCleanup();
-    TableStrFree();
-    HeapCleanup();
+    ParseCleanup(pc);
+    LexCleanup(pc);
+    VariableCleanup(pc);
+    TypeCleanup(pc);
+    TableStrFree(pc);
+    HeapCleanup(pc);
+    PlatformCleanup(pc);
 }
 
 /* platform-dependent code for running programs */
-#ifdef UNIX_HOST
+#if defined(UNIX_HOST) || defined(WIN32)
 
 #define CALL_MAIN_NO_ARGS_RETURN_VOID "main();"
 #define CALL_MAIN_WITH_ARGS_RETURN_VOID "main(__argc,__argv);"
 #define CALL_MAIN_NO_ARGS_RETURN_INT "__exit_value = main();"
 #define CALL_MAIN_WITH_ARGS_RETURN_INT "__exit_value = main(__argc,__argv);"
 
-void PicocCallMain(int argc, char **argv)
+void PicocCallMain(Picoc *pc, int argc, char **argv)
 {
     /* check if the program wants arguments */
     struct Value *FuncValue = NULL;
 
-    if (!VariableDefined(TableStrRegister("main")))
-        ProgramFail(NULL, "main() is not defined");
+    if (!VariableDefined(pc, TableStrRegister(pc, "main")))
+        ProgramFailNoParser(pc, "main() is not defined");
 
-    VariableGet(NULL, TableStrRegister("main"), &FuncValue);
+    VariableGet(pc, NULL, TableStrRegister(pc, "main"), &FuncValue);
     if (FuncValue->Typ->Base != TypeFunction)
-        ProgramFail(NULL, "main is not a function - can't call it");
+        ProgramFailNoParser(pc, "main is not a function - can't call it");
 
     if (FuncValue->Val->FuncDef.NumParams != 0)
     {
         /* define the arguments */
-        VariableDefinePlatformVar(NULL, "__argc", &IntType, (union AnyValue *)&argc, FALSE);
-        VariableDefinePlatformVar(NULL, "__argv", CharPtrPtrType, (union AnyValue *)&argv, FALSE);
+        VariableDefinePlatformVar(pc, NULL, "__argc", &pc->IntType, (union AnyValue *)&argc, FALSE);
+        VariableDefinePlatformVar(pc, NULL, "__argv", pc->CharPtrPtrType, (union AnyValue *)&argv, FALSE);
     }
 
-    if (FuncValue->Val->FuncDef.ReturnType == &VoidType)
+    if (FuncValue->Val->FuncDef.ReturnType == &pc->VoidType)
     {
         if (FuncValue->Val->FuncDef.NumParams == 0)
-            PicocParse("startup", CALL_MAIN_NO_ARGS_RETURN_VOID, strlen(CALL_MAIN_NO_ARGS_RETURN_VOID), TRUE, TRUE, FALSE);
+            PicocParse(pc, "startup", CALL_MAIN_NO_ARGS_RETURN_VOID, strlen(CALL_MAIN_NO_ARGS_RETURN_VOID), TRUE, TRUE, FALSE, TRUE);
         else
-            PicocParse("startup", CALL_MAIN_WITH_ARGS_RETURN_VOID, strlen(CALL_MAIN_WITH_ARGS_RETURN_VOID), TRUE, TRUE, FALSE);
+            PicocParse(pc, "startup", CALL_MAIN_WITH_ARGS_RETURN_VOID, strlen(CALL_MAIN_WITH_ARGS_RETURN_VOID), TRUE, TRUE, FALSE, TRUE);
     }
     else
     {
-        VariableDefinePlatformVar(NULL, "__exit_value", &IntType, (union AnyValue *)&PicocExitValue, TRUE);
+        VariableDefinePlatformVar(pc, NULL, "__exit_value", &pc->IntType, (union AnyValue *)&pc->PicocExitValue, TRUE);
 
         if (FuncValue->Val->FuncDef.NumParams == 0)
-            PicocParse("startup", CALL_MAIN_NO_ARGS_RETURN_INT, strlen(CALL_MAIN_NO_ARGS_RETURN_INT), TRUE, TRUE, FALSE);
+            PicocParse(pc, "startup", CALL_MAIN_NO_ARGS_RETURN_INT, strlen(CALL_MAIN_NO_ARGS_RETURN_INT), TRUE, TRUE, FALSE, TRUE);
         else
-            PicocParse("startup", CALL_MAIN_WITH_ARGS_RETURN_INT, strlen(CALL_MAIN_WITH_ARGS_RETURN_INT), TRUE, TRUE, FALSE);
+            PicocParse(pc, "startup", CALL_MAIN_WITH_ARGS_RETURN_INT, strlen(CALL_MAIN_WITH_ARGS_RETURN_INT), TRUE, TRUE, FALSE, TRUE);
     }
 }
 #endif
 
-void PrintSourceTextErrorLine(const char *FileName, const char *SourceText, int Line, int CharacterPos)
+void PrintSourceTextErrorLine(IOFILE *Stream, const char *FileName, const char *SourceText, int Line, int CharacterPos)
 {
     int LineCount;
     const char *LinePos;
@@ -104,33 +108,26 @@ void PrintSourceTextErrorLine(const char *FileName, const char *SourceText, int 
 
         /* display the line */
         for (CPos = LinePos; *CPos != '\n' && *CPos != '\0'; CPos++)
-            PrintCh(*CPos, CStdOut);
-        PrintCh('\n', CStdOut);
+            PrintCh(*CPos, Stream);
+        PrintCh('\n', Stream);
 
         /* display the error position */
         for (CPos = LinePos, CCount = 0; *CPos != '\n' && *CPos != '\0' && (CCount < CharacterPos || *CPos == ' '); CPos++, CCount++)
         {
             if (*CPos == '\t')
-                PrintCh('\t', CStdOut);
+                PrintCh('\t', Stream);
             else
-                PrintCh(' ', CStdOut);
+                PrintCh(' ', Stream);
         }
     }
     else
     {
         /* assume we're in interactive mode - try to make the arrow match up with the input text */
-        for (CCount = 0; CCount < CharacterPos + strlen(INTERACTIVE_PROMPT_STATEMENT); CCount++)
-            PrintCh(' ', CStdOut);
+        for (CCount = 0; CCount < CharacterPos + (int)strlen(INTERACTIVE_PROMPT_STATEMENT); CCount++)
+            PrintCh(' ', Stream);
     }
-    PlatformPrintf("^\n%s:%d: ", FileName, Line, CharacterPos);
+    PlatformPrintf(Stream, "^\n%s:%d: ", FileName, Line, CharacterPos);
 
-}
-
-/* display the source line and line number to identify an error */
-void PlatformErrorPrefix(struct ParseState *Parser)
-{
-    if (Parser != NULL)
-        PrintSourceTextErrorLine(Parser->FileName, Parser->SourceText, Parser->Line, Parser->CharacterPos);
 }
 
 /* exit with a message */
@@ -138,55 +135,69 @@ void ProgramFail(struct ParseState *Parser, const char *Message, ...)
 {
     va_list Args;
 
-    PlatformErrorPrefix(Parser);
+    PrintSourceTextErrorLine(Parser->pc->CStdOut, Parser->FileName, Parser->SourceText, Parser->Line, Parser->CharacterPos);
     va_start(Args, Message);
-    PlatformVPrintf(Message, Args);
+    PlatformVPrintf(Parser->pc->CStdOut, Message, Args);
     va_end(Args);
-    PlatformPrintf("\n");
-    PlatformExit(1);
+    PlatformPrintf(Parser->pc->CStdOut, "\n");
+    PlatformExit(Parser->pc, 1);
+}
+
+/* exit with a message, when we're not parsing a program */
+void ProgramFailNoParser(Picoc *pc, const char *Message, ...)
+{
+    va_list Args;
+
+    va_start(Args, Message);
+    PlatformVPrintf(pc->CStdOut, Message, Args);
+    va_end(Args);
+    PlatformPrintf(pc->CStdOut, "\n");
+    PlatformExit(pc, 1);
 }
 
 /* like ProgramFail() but gives descriptive error messages for assignment */
 void AssignFail(struct ParseState *Parser, const char *Format, struct ValueType *Type1, struct ValueType *Type2, int Num1, int Num2, const char *FuncName, int ParamNo)
 {
-    PlatformErrorPrefix(Parser);
-    PlatformPrintf("can't %s ", (FuncName == NULL) ? "assign" : "set");
+    IOFILE *Stream = Parser->pc->CStdOut;
+
+    PrintSourceTextErrorLine(Parser->pc->CStdOut, Parser->FileName, Parser->SourceText, Parser->Line, Parser->CharacterPos);
+    PlatformPrintf(Stream, "can't %s ", (FuncName == NULL) ? "assign" : "set");
 
     if (Type1 != NULL)
-        PlatformPrintf(Format, Type1, Type2);
+        PlatformPrintf(Stream, Format, Type1, Type2);
     else
-        PlatformPrintf(Format, Num1, Num2);
+        PlatformPrintf(Stream, Format, Num1, Num2);
 
     if (FuncName != NULL)
-        PlatformPrintf(" in argument %d of call to %s()", ParamNo, FuncName);
+        PlatformPrintf(Stream, " in argument %d of call to %s()", ParamNo, FuncName);
 
-    ProgramFail(NULL, "");
+    ProgramFail(Parser, NULL, "");
 }
 
 /* exit lexing with a message */
-void LexFail(struct LexState *Lexer, const char *Message, ...)
+void LexFail(Picoc *pc, struct LexState *Lexer, const char *Message, ...)
 {
     va_list Args;
 
-    PrintSourceTextErrorLine(Lexer->FileName, Lexer->SourceText, Lexer->Line, Lexer->CharacterPos);
+    PrintSourceTextErrorLine(pc->CStdOut, Lexer->FileName, Lexer->SourceText, Lexer->Line, Lexer->CharacterPos);
     va_start(Args, Message);
-    PlatformVPrintf(Message, Args);
+    PlatformVPrintf(pc->CStdOut, Message, Args);
     va_end(Args);
-    PlatformPrintf("\n");
-    PlatformExit(1);
+    PlatformPrintf(pc->CStdOut, "\n");
+    PlatformExit(pc, 1);
 }
 
 /* printf for compiler error reporting */
-void PlatformPrintf(const char *Format, ...)
+void PlatformPrintf(IOFILE *Stream, const char *Format, ...)
 {
     va_list Args;
 
     va_start(Args, Format);
-    PlatformVPrintf(Format, Args);
+    PlatformVPrintf(Stream, Format, Args);
     va_end(Args);
 }
 
-void PlatformVPrintf(const char *Format, va_list Args)
+void PlatformVPrintf(IOFILE *Stream, const char *Format, va_list Args)
 {
     const char *FPos;
 
@@ -197,25 +208,25 @@ void PlatformVPrintf(const char *Format, va_list Args)
             FPos++;
             switch (*FPos)
             {
-            case 's': PrintStr(va_arg(Args, char *), CStdOut); break;
-            case 'd': PrintSimpleInt(va_arg(Args, int), CStdOut); break;
-            case 'c': PrintCh(va_arg(Args, int), CStdOut); break;
-            case 't': PrintType(va_arg(Args, struct ValueType *), CStdOut); break;
+            case 's': PrintStr(va_arg(Args, char *), Stream); break;
+            case 'd': PrintSimpleInt(va_arg(Args, int), Stream); break;
+            case 'c': PrintCh(va_arg(Args, int), Stream); break;
+            case 't': PrintType(va_arg(Args, struct ValueType *), Stream); break;
 #ifndef NO_FP
-            case 'f': PrintFP(va_arg(Args, double), CStdOut); break;
+            case 'f': PrintFP(va_arg(Args, double), Stream); break;
 #endif
-            case '%': PrintCh('%', CStdOut); break;
+            case '%': PrintCh('%', Stream); break;
             case '\0': FPos--; break;
             }
         }
         else
-            PrintCh(*FPos, CStdOut);
+            PrintCh(*FPos, Stream);
     }
 }
 
 /* make a new temporary name. takes a static buffer of char [7] as a parameter. should be initialised to "XX0000"
  * where XX can be any characters */
-char *PlatformMakeTempName(char *TempNameBuffer)
+char *PlatformMakeTempName(Picoc *pc, char *TempNameBuffer)
 {
     int CPos = 5;
 
@@ -224,7 +235,7 @@ char *PlatformMakeTempName(char *TempNameBuffer)
         if (TempNameBuffer[CPos] < '9')
         {
             TempNameBuffer[CPos]++;
-            return TableStrRegister(TempNameBuffer);
+            return TableStrRegister(pc, TempNameBuffer);
         }
         else
         {
@@ -233,5 +244,5 @@ char *PlatformMakeTempName(char *TempNameBuffer)
         }
     }
 
-    return TableStrRegister(TempNameBuffer);
+    return TableStrRegister(pc, TempNameBuffer);
 }

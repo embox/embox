@@ -1,11 +1,11 @@
 package embox.third_party
 
 module picoc {
-	@IncludePath("$(THIRDPARTY_DIR)/include") @DefineMacro("BUILTIN_MINI_STDLIB")
+	@IncludePath("$(THIRDPARTY_DIR)/include") /*@DefineMacro("BUILTIN_MINI_STDLIB")*/
 	@DefineMacro("UNIX_HOST")
-	source "clibrary.c", "expression.c", "heap.c", "include.c", "lex.c",
+	source "clibrary.c", "debug.c", "expression.c", "heap.c", "include.c", "lex.c",
 	"parse.c", "picoc.c", "platform.c", "table.c", "type.c", "variable.c",
-	"platform/platform_unix.c", "platform/library_unix.c"
+	"platform/platform_unix.c", "platform/library_unix.c", "cstdlib/stdio.c"
 
 	//@InitFS
 	//source "stdio.source"

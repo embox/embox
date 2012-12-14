@@ -1,33 +1,34 @@
+/* picoc mini standard C library - provides an optional tiny C standard library
+ * if BUILTIN_MINI_STDLIB is defined */
+
 #include "picoc.h"
 #include "interpreter.h"
 
-/* the picoc version string */
-static const char *VersionString = NULL;
 
 /* endian-ness checking */
 static const int __ENDIAN_CHECK__ = 1;
-
-static int BigEndian = 0;
-static int LittleEndian = 0;
+static int BigEndian;
+static int LittleEndian;
 
 
 /* global initialisation for libraries */
-void LibraryInit()
+void LibraryInit(Picoc *pc)
 {
+
     /* define the version number macro */
-    VersionString = TableStrRegister(PICOC_VERSION);
-    VariableDefinePlatformVar(NULL, "PICOC_VERSION", CharPtrType, (union AnyValue *)&VersionString, FALSE);
+    pc->VersionString = TableStrRegister(pc, PICOC_VERSION);
+    VariableDefinePlatformVar(pc, NULL, "PICOC_VERSION", pc->CharPtrType, (union AnyValue *)&pc->VersionString, FALSE);
 
     /* define endian-ness macros */
     BigEndian = ((*(char*)&__ENDIAN_CHECK__) == 0);
     LittleEndian = ((*(char*)&__ENDIAN_CHECK__) == 1);
 
-    VariableDefinePlatformVar(NULL, "BIG_ENDIAN", &IntType, (union AnyValue *)&BigEndian, FALSE);
-    VariableDefinePlatformVar(NULL, "LITTLE_ENDIAN", &IntType, (union AnyValue *)&LittleEndian, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "BIG_ENDIAN", &pc->IntType, (union AnyValue *)&BigEndian, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "LITTLE_ENDIAN", &pc->IntType, (union AnyValue *)&LittleEndian, FALSE);
 }
 
 /* add a library */
-void LibraryAdd(struct Table *GlobalTable, const char *LibraryName, struct LibraryFunction *FuncList)
+void LibraryAdd(Picoc *pc, struct Table *GlobalTable, const char *LibraryName, struct LibraryFunction *FuncList)
 {
     struct ParseState Parser;
     int Count;
@@ -35,17 +36,17 @@ void LibraryAdd(struct Table *GlobalTable, const char *LibraryName, struct Libra
     struct ValueType *ReturnType;
     struct Value *NewValue;
     void *Tokens;
-    const char *IntrinsicName = TableStrRegister("c library");
+    char *IntrinsicName = TableStrRegister(pc, "c library");
 
     /* read all the library definitions */
     for (Count = 0; FuncList[Count].Prototype != NULL; Count++)
     {
-        Tokens = LexAnalyse(IntrinsicName, FuncList[Count].Prototype, strlen((char *)FuncList[Count].Prototype), NULL);
-        LexInitParser(&Parser, FuncList[Count].Prototype, Tokens, IntrinsicName, TRUE);
+        Tokens = LexAnalyse(pc, IntrinsicName, FuncList[Count].Prototype, strlen((char *)FuncList[Count].Prototype), NULL);
+        LexInitParser(&Parser, pc, FuncList[Count].Prototype, Tokens, IntrinsicName, TRUE, FALSE);
         TypeParse(&Parser, &ReturnType, &Identifier, NULL);
         NewValue = ParseFunctionDefinition(&Parser, ReturnType, Identifier);
         NewValue->Val->FuncDef.Intrinsic = FuncList[Count].Func;
-        HeapFreeMem(Tokens);
+        HeapFreeMem(pc, Tokens);
     }
 }
 
@@ -69,7 +70,7 @@ void PrintType(struct ValueType *Typ, IOFILE *Stream)
         case TypeMacro:         PrintStr("macro", Stream); break;
         case TypePointer:       if (Typ->FromType) PrintType(Typ->FromType, Stream); PrintCh('*', Stream); break;
         case TypeArray:         PrintType(Typ->FromType, Stream); PrintCh('[', Stream); if (Typ->ArraySize != 0) PrintSimpleInt(Typ->ArraySize, Stream); PrintCh(']', Stream); break;
-        case TypeStruct:        PrintStr("struct ", Stream); PrintStr(Typ->Identifier, Stream); break;
+        case TypeStruct:        PrintStr("struct ", Stream); PrintStr( Typ->Identifier, Stream); break;
         case TypeUnion:         PrintStr("union ", Stream); PrintStr(Typ->Identifier, Stream); break;
         case TypeEnum:          PrintStr("enum ", Stream); PrintStr(Typ->Identifier, Stream); break;
         case TypeGotoLabel:     PrintStr("goto label ", Stream); break;
@@ -87,25 +88,22 @@ void PrintType(struct ValueType *Typ, IOFILE *Stream)
  * A more complete standard library for larger computers is in the library_XXX.c files.
  */
 
-IOFILE *CStdOut;
-IOFILE CStdOutBase;
-
 static int TRUEValue = 1;
 static int ZeroValue = 0;
 
-void BasicIOInit()
+void BasicIOInit(Picoc *pc)
 {
-    CStdOutBase.Putch = &PlatformPutc;
-    CStdOut = &CStdOutBase;
+    pc->CStdOutBase.Putch = &PlatformPutc;
+    pc->CStdOut = &CStdOutBase;
 }
 
 /* initialise the C library */
-void CLibraryInit()
+void CLibraryInit(Picoc *pc)
 {
     /* define some constants */
-    VariableDefinePlatformVar(NULL, "NULL", &IntType, (union AnyValue *)&ZeroValue, FALSE);
-    VariableDefinePlatformVar(NULL, "TRUE", &IntType, (union AnyValue *)&TRUEValue, FALSE);
-    VariableDefinePlatformVar(NULL, "FALSE", &IntType, (union AnyValue *)&ZeroValue, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "NULL", &IntType, (union AnyValue *)&ZeroValue, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "TRUE", &IntType, (union AnyValue *)&TRUEValue, FALSE);
+    VariableDefinePlatformVar(pc, NULL, "FALSE", &IntType, (union AnyValue *)&ZeroValue, FALSE);
 }
 
 /* stream for writing into strings */
@@ -129,7 +127,7 @@ void PrintStr(const char *Str, struct OutputStream *Stream)
 }
 
 /* print a single character a given number of times */
-void PrintRepeatedChar(char ShowChar, int Length, struct OutputStream *Stream)
+void PrintRepeatedChar(Picoc *pc, char ShowChar, int Length, struct OutputStream *Stream)
 {
     while (Length-- > 0)
         PrintCh(ShowChar, Stream);

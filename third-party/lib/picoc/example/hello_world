@@ -4,10 +4,14 @@
  *  Created on: Dec 13, 2012
  *      Author: vita
  */
-
+#include <stdio.h>
 
 int main()
 {
+	FILE * f;
+	f = fopen("TEST.TXT", "w");
+	fprintf(f, "TEST");
 	printf("\n\nHello world!\n\n");
+	fclose(f);
 	return 0;
 }
