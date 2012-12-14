@@ -15,7 +15,7 @@
 #include <hal/clock.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
-#include <kernel/time/time.h>
+#include <time.h>
 
 EMBOX_CMD(exec);
 
@@ -23,70 +23,23 @@ static void print_usage(void) {
 	printf("Usage: date CCYYMMDDhhmm.ss\n");
 }
 
-#define SEC_PER_MINUTE  60
-#define SEC_PER_HOUR    3600
-#define SEC_PER_DAY     86400
-#define SEC_PER_YEAR    31536000 /* 86400 * 365 */
-#define SEC_PER_CENTURY 3155760000
+/* RFC 868 */
+#define SECONDS_1900_1970 2208988800L
 
-static uint32_t sec_per_month[12] = { 2678400, 2419200, 2678400, 2592000,
-		2678400, 2592000, 2678400, 2678400, 2592000, 2678400, 2592000, 2678400 };
-
-struct date {
-	int CC; /*< century */
-	int YY; /*< year */
-	int MM; /*< month */
-	int DD; /*< day */
-	int hh; /*< hour */
-	int mm; /*< minute */
-	int ss; /*< second */
-};
-
-static struct date date;
-
-static void sec_to_date(uint32_t sec) {
-	int leap_year_count, i;
-
-	date.CC = 20;
-	date.YY = sec / SEC_PER_YEAR; /* years since 1900 */
-	leap_year_count = date.YY / 4;
-	date.YY -= 100;
-	sec = sec % SEC_PER_YEAR - leap_year_count * SEC_PER_DAY;
-
-	/* Add to February one day if current year is a leap year */
-	if (date.YY % 4 == 0) {
-		sec += SEC_PER_DAY;
-		sec_per_month[1] += SEC_PER_DAY;
-	}
-
-	for (i = 0; i < 12 && sec > sec_per_month[i]; i++) {
-		sec -= sec_per_month[i];
-	}
-	sec_per_month[1] -= SEC_PER_DAY;
-
-	/* Numeration of days starts with 1 */
-	date.MM = i + 1;
-
-	date.DD = sec / SEC_PER_DAY + 1;
-	sec %= SEC_PER_DAY;
-
-	date.hh = sec / SEC_PER_HOUR;
-	sec %= SEC_PER_HOUR;
-
-	date.mm = sec / SEC_PER_MINUTE;
-	sec %= SEC_PER_MINUTE;
-
-	date.ss = sec;
-}
+static struct tm date;
 
 static void show_date(void) {
 	struct timespec ts;
+	char buf[256];
+	time_t time;
+
+	memset(buf, 0, 256);
 
 	getnsofday(&ts, NULL);
-	sec_to_date(ts.tv_sec);
+	time = (time_t)((uint32_t)ts.tv_sec - SECONDS_1900_1970);
+	ctime_r(&time, buf);
 
-	printf("%d.%d.%d%d %d:%d:%d\n", date.DD, date.MM, date.CC, date.YY,
-			date.hh, date.mm, date.ss);
+	printf("%s\n", buf);
 }
 
 static void set_date(char *new_date) {
@@ -96,33 +49,30 @@ static void set_date(char *new_date) {
 
 	/* process seconds */
 	end -= 2;
-	sscanf(end, "%d", &date.ss);
+	sscanf(end, "%d", &date.tm_sec);
 	end--;
 	*end = '\0';
 
 	/* process everything else */
 	end -= 2;
-	sscanf(end, "%d", &date.mm);
+	sscanf(end, "%d", &date.tm_min);
 	*end = '\0';
 
 	end -= 2;
-	sscanf(end, "%d", &date.hh);
+	sscanf(end, "%d", &date.tm_hour);
 	*end = '\0';
 
 	end -= 2;
-	sscanf(end, "%d", &date.DD);
+	sscanf(end, "%d", &date.tm_mday);
 	*end = '\0';
 
 	end -= 2;
-	sscanf(end, "%d", &date.MM);
+	sscanf(end, "%d", &date.tm_mon);
 	*end = '\0';
 
 	end -= 2;
-	sscanf(end, "%d", &date.YY);
-	*end = '\0';
-
-	end -= 2;
-	sscanf(end, "%d", &date.CC);
+	sscanf(end, "%d", &date.tm_year);
+	date.tm_year -= 1900;
 	*end = '\0';
 }
 
