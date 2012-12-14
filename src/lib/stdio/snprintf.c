@@ -54,7 +54,7 @@ int snprintf(char *str, size_t size, const char *format, ...) {
 	assert(format != NULL);
 
 	va_start(args, format);
-	ret = vsprintf(str, format, args);
+	ret = vsnprintf(str, size, format, args);
 	va_end(args);
 
 	return ret;

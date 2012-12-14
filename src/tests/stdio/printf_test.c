@@ -117,3 +117,28 @@ TEST_CASE("Test of %n specifier") {
 	HOPE_EQUAL(answer, &buff7[0], "% 1.1d'%-*cnot %-9.6s%n", 1, 2, 'm', "stupid!!", &size);
 	test_assert_equal(strlen(answer), size);
 }
+
+#define BUFF8_SZ 32
+
+TEST_CASE("Test of snprintf with zero size") {
+	char buff8[BUFF8_SZ], random_char;
+
+	random_char = 17;
+
+	buff8[0] = random_char;
+	test_assert_equal(3, snprintf(&buff8[0], 0, "012"));
+	test_assert_equal(buff8[0], random_char);
+}
+
+#define BUFF9_SZ 32
+
+TEST_CASE("Test of snprintf with small size") {
+	char buff9[BUFF9_SZ], *answer;
+	int size;
+
+	answer = "01234";
+
+	test_assert_equal(10, snprintf(&buff9[0], 6, "0123456789%n", &size));
+	test_assert_equal(size, 10);
+	test_assert_str_equal(answer, &buff9[0]);
+}
