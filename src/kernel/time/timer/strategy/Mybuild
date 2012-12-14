@@ -5,7 +5,6 @@ abstract module api { }
 
 module list_timer extends api {
 	source "list_timer.c","list_timer.h"
-	depends embox.kernel.softirq
 }
 
 module head_timer extends api {

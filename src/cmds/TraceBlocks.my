@@ -17,8 +17,7 @@ package embox.cmd
 module trace_blocks {
 	source "trace_blocks.c"
 
-	depends embox.lib.LibC
+	depends embox.lib.LibCStdio
 	depends embox.profiler.tracing
-	depends embox.util.LibUtil
 	depends embox.framework.LibFramework
 }

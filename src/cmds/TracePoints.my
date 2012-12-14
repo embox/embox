@@ -17,8 +17,7 @@ package embox.cmd
 module trace_points {
 	source "trace_points.c"
 
-	depends embox.lib.LibC
+	depends embox.lib.LibCStdio
 	depends embox.profiler.tracing
-	depends embox.util.LibUtil
 	depends embox.framework.LibFramework
 }
