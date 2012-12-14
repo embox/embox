@@ -134,6 +134,7 @@ static module LibCStdio {
 	source "stdio/printf_impl.c"
 	source "stdio/fprintf.c"
 	source "stdio/sprintf.c"
+	source "stdio/snprintf.c"
 	source "stdio/printk.c"
 	source "stdio/puts.c"
 	source "stdio/scanf.c"

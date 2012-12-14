@@ -88,6 +88,13 @@ extern int sprintf(char *s, const char *format, ...);
 extern int vsprintf(char *s, const char *format, va_list args);
 
 /**
+ * Write formatted output to string with specific size, according to the format string FORMAT.
+ */
+extern int snprintf(char *s, size_t n, const char *format, ...);
+
+extern int vsnprintf(char *s, size_t n, const char *format, va_list args);
+
+/**
  * Read formatted input from stdin according to the format string FORMAT.
  */
 extern int scanf(const char *format, ...);
