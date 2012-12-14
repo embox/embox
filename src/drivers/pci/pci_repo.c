@@ -8,9 +8,9 @@
 
 #include <types.h>
 #include <util/array.h>
-#include <drivers/pci_id.h>
-#include <drivers/pci_repo.h>
-#include <drivers/pci.h>
+#include <drivers/pci/pci_id.h>
+#include <drivers/pci/pci_repo.h>
+#include <drivers/pci/pci.h>
 
 typedef struct pci_vendor {
 	uint16_t    ven_id;

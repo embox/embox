@@ -7,7 +7,7 @@
  */
 
 #include <types.h>
-#include <drivers/pci.h>
+#include <drivers/pci/pci.h>
 
 //TODO separate common and architecture pci's part
 #include <asm/io.h>

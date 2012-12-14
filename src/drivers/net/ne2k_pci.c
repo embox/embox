@@ -19,11 +19,11 @@
 #include <asm/io.h>
 #include <embox/unit.h>
 #include <errno.h>
-#include <drivers/pci.h>
+#include <drivers/pci/pci.h>
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
 #include <net/if_ether.h>
-#include <drivers/ne2k_pci.h>
+#include <drivers/ethernet/ne2k_pci.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <stdint.h>

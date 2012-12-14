@@ -12,9 +12,9 @@
 #include <getopt.h>
 #include <stdio.h>
 
-#include <drivers/pci.h>
-#include <drivers/pci_repo.h>
-#include <drivers/pci_utils.h>
+#include <drivers/pci/pci.h>
+#include <drivers/pci/pci_repo.h>
+#include <drivers/pci/pci_utils.h>
 
 EMBOX_CMD(exec);
 

@@ -9,7 +9,7 @@
 #include <asm/io.h>
 #include <embox/unit.h>
 #include <errno.h>
-#include <drivers/pci.h>
+#include <drivers/pci/pci.h>
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
 #include <net/if_ether.h>
@@ -22,7 +22,7 @@
 
 #include <arpa/inet.h>
 #include <hal/reg.h>
-#include <drivers/e1000.h>
+#include <drivers/ethernet/e1000.h>
 
 #include <mem/misc/pool.h>
 

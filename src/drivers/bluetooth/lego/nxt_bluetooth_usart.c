@@ -13,8 +13,8 @@
 #include <kernel/time/ktime.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
-#include <drivers/bluetooth.h>
-#include <drivers/blue_core4.h>
+#include <drivers/bluetooth/bluetooth.h>
+#include <drivers/bluetooth/blue_core4.h>
 #include <kernel/time/timer.h>
 
 #include <embox/unit.h>

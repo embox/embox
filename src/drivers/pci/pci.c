@@ -16,7 +16,7 @@
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
 
-#include <drivers/pci.h>
+#include <drivers/pci/pci.h>
 
 EMBOX_UNIT_INIT(pci_init);
 

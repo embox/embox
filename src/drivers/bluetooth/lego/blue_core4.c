@@ -12,8 +12,8 @@
 #include <kernel/softirq.h>
 #include <embox/unit.h>
 
-#include <drivers/blue_core4.h>
-#include <drivers/bluetooth.h>
+#include <drivers/bluetooth/blue_core4.h>
+#include <drivers/bluetooth/bluetooth.h>
 
 #include <pnet/core.h>
 #include <pnet/node.h>

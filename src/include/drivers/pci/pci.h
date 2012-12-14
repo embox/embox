@@ -10,11 +10,11 @@
 #define PCI_H_
 
 #include <types.h>
-#include <drivers/pci_id.h>
+#include <drivers/pci/pci_id.h>
 #include <util/slist.h>
 #include <util/array.h>
-#include <drivers/pci_utils.h>
-#include <drivers/pci_driver.h>
+#include <drivers/pci/pci_utils.h>
+#include <drivers/pci/pci_driver.h>
 
 
 /**

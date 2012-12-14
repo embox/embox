@@ -5,7 +5,7 @@
  * @author Anton Bondarev
  */
 
-#include <drivers/pci.h>
+#include <drivers/pci/pci.h>
 #include <framework/mod/api.h>
 
 ARRAY_SPREAD_DEF(const struct pci_driver *, __pci_driver_registry);

@@ -9,7 +9,7 @@
 #include <string.h>
 
 #include <drivers/nxt/direct_comm.h>
-#include <drivers/bluetooth.h>
+#include <drivers/bluetooth/bluetooth.h>
 
 #include <pnet/core.h>
 #include <pnet/repo.h>

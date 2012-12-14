@@ -14,7 +14,7 @@
 #include <drivers/nxt/motor.h>
 #include <drivers/nxt/sensor.h>
 #include <drivers/nxt/direct_comm.h>
-#include <drivers/bluetooth.h>
+#include <drivers/bluetooth/bluetooth.h>
 
 #include <pnet/core.h>
 #include <pnet/node.h>

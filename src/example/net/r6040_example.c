@@ -9,7 +9,8 @@
 #include <getopt.h>
 #include <string.h>
 #include <stdio.h>
-#include <drivers/r6040.h>
+
+#include <drivers/ethernet/r6040.h>
 
 EMBOX_EXAMPLE(exec);
 

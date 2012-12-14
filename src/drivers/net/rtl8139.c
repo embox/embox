@@ -10,7 +10,7 @@
 #include <asm/io.h>
 #include <embox/unit.h>
 #include <errno.h>
-#include <drivers/pci.h>
+#include <drivers/pci/pci.h>
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
 #include <net/if_ether.h>
@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <drivers/rtl8139.h>
+#include <drivers/ethernet/rtl8139.h>
 
 PCI_DRIVER("rtl8139", rtl8139_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8139);
 

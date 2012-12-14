@@ -12,7 +12,7 @@
 #include <types.h>
 
 #include <util/callback.h>
-#include <drivers/bluetooth.h>
+#include <drivers/bluetooth/bluetooth.h>
 
 typedef int (*btm_bt_rx_handle_t)(int cnt, void *data);
 
