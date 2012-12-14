@@ -280,7 +280,8 @@ int execve(const char *filename, char *const argv[], char *const envp[]) {
 	memset(&exec, 0, sizeof(exec_t));
 
 	if ((err = load_exec(filename, &exec))) {
-		return err;
+		SET_ERRNO(-err);
+		return -1;
 	}
 
 	stack = mmap_create_stack(task_self()->mmap);
@@ -294,5 +295,6 @@ int execve(const char *filename, char *const argv[], char *const envp[]) {
 
 	usermode_entry(&ue_data);
 
-	return -EINTR;
+	SET_ERRNO(EINTR);
+	return -1;
 }

@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <errno.h>
 
 //TODO set errno on every return -1
 
@@ -18,10 +19,12 @@ int dup(int flides) {
 	int new_fd;
 
 	if (!task_valid_binded_fd(flides)) {
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
 	if ((new_fd = task_self_idx_first_unbinded()) < 0) {
+		SET_ERRNO(EMFILE);
 		return -1;
 	}
 

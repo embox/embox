@@ -5,6 +5,7 @@
  * @author Alexander Kalmuk
  */
 
+#include <errno.h>
 #include <time.h>
 #include <kernel/time/time.h>
 
@@ -13,6 +14,7 @@ int gettimeofday(struct timeval *t, struct timezone *tz) {
 	struct timespec ts;
 
 	if (t == NULL) {
+		SET_ERRNO(EINVAL);
 		return -1;
 	}
 
