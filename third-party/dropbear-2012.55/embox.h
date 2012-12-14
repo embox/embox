@@ -117,9 +117,8 @@ struct sigaction {
 };
 //-------------------------------------------------------
 
-static inline int snprintf(char *str, size_t size, const char *format, ...) {
-	return -1;
-}
+extern int snprintf(char *str, size_t size, const char *format, ...);
+
 extern char *strdup(const char *s);
 static inline pid_t setsid(void) {
 	return -1;
@@ -189,9 +188,7 @@ static inline int initgroups(const char *user, gid_t group) {
 static inline int putenv(char *string) {
 	return -1;
 }
-static inline int vsnprintf(char *str, unsigned int size, const char *format, va_list ap) {
-	return 0;
-}
+extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 
 //------------------------------------------------------------
 
