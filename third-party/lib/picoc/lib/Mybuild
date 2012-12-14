@@ -7,6 +7,6 @@ module picoc {
 	"parse.c", "picoc.c", "platform.c", "table.c", "type.c", "variable.c",
 	"platform/platform_unix.c", "platform/library_unix.c"
 
-	@InitFS
-	source "stdio.source"
+	//@InitFS
+	//source "stdio.source"
 }
