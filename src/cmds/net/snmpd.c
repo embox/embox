@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief SNMP agent
+ * @brief SNMP agent over SNMPv1
  *
  * @date 12.11.2012
  * @author Alexander Kalmuk
@@ -24,6 +24,9 @@
 
 EMBOX_CMD(exec);
 
+/* There is only one SNMP agent in system. So, we can make common socket */
+static int sock;
+
 static void print_usage(void) {
 	printf("Usage: snmpd\n");
 }
@@ -44,7 +47,6 @@ static void build_response(struct snmp_desc *snmp) {
 }
 
 static void *snmp_agent(void *arg) {
-	int sock = *(int *)arg;
 	struct snmp_desc snmp;
 	struct sockaddr_in addr;
 	char snmpbuf[MAX_SNMP_LEN];
@@ -65,7 +67,7 @@ static void *snmp_agent(void *arg) {
 }
 
 static int exec(int argc, char **argv) {
-	int opt, sock;
+	int opt;
 	struct sockaddr_in our;
 	struct thread *thread;
 
@@ -97,7 +99,9 @@ static int exec(int argc, char **argv) {
 		return -1;
 	}
 
-	thread_create(&thread, 0, snmp_agent, &sock);
+	thread_create(&thread, 0, snmp_agent, NULL);
+
+	printf("*SNMP agent started*\n");
 
 	return 0;
 }

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief SNMP
+ * @brief SNMPv1
  *
  * @date 8.11.2012
  * @author Alexander Kalmuk
