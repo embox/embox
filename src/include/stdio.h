@@ -84,7 +84,6 @@ extern int vfprintf(FILE *f, const char *format, va_list args);
 /**
  * Write formatted output to string, according to the format string FORMAT.
  */
-#define snprintf(ptr, len, fmt, val) sprintf(ptr, fmt, val)
 extern int sprintf(char *s, const char *format, ...);
 
 extern int vsprintf(char *s, const char *format, va_list args);
