@@ -20,8 +20,11 @@
 
 #include "fdlibm.h"
 
+extern long double __ieee754_powl(long double, long double);
+extern int signbit(double);
+
 #ifdef __STDC__
-	long double powl(long double x, long double y)/* wrapper powl */
+	long double __powl(long double x, long double y)/* wrapper powl */
 #else
 	long double powl(x,y)			/* wrapper powl */
 	long double x,y;
@@ -32,8 +35,8 @@
 #else
 	long double z;
 	z=__ieee754_powl(x,y);
-	if(_LIB_VERSION == _IEEE_|| __isnanl(y)) return z;
-	if(__isnanl(x)) {
+	if(_LIB_VERSION == _IEEE_|| isnanl(y)) return z;
+	if(isnanl(x)) {
 	    if(y==0.0)
 	        return __kernel_standard(x,y,242); /* pow(NaN,0.0) */
 	    else
@@ -42,7 +45,7 @@
 	if(x==0.0) {
 	    if(y==0.0)
 	        return __kernel_standard(x,y,220); /* pow(0.0,0.0) */
-	    if(__finitel(y)&&y<0.0) {
+	    if(finitel(y)&&y<0.0) {
 	      if (signbit (x) && signbit (z))
 	        return __kernel_standard(x,y,223); /* pow(-0.0,negative) */
 	      else
@@ -50,15 +53,15 @@
 	    }
 	    return z;
 	}
-	if(!__finitel(z)) {
-	    if(__finitel(x)&&__finitel(y)) {
-	        if(__isnanl(z))
+	if(!finitel(z)) {
+	    if(finitel(x)&&finitel(y)) {
+	        if(isnanl(z))
 	            return __kernel_standard(x,y,224); /* pow neg**non-int */
 	        else
 	            return __kernel_standard(x,y,221); /* pow overflow */
 	    }
 	}
-	if(z==0.0&&__finitel(x)&&__finitel(y))
+	if(z==0.0&&finitel(x)&&finitel(y))
 	    return __kernel_standard(x,y,222); /* pow underflow */
 	return z;
 #endif

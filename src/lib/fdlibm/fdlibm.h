@@ -106,11 +106,13 @@ extern double exp __P((double));
 extern double frexp __P((double, int *));
 extern double ldexp __P((double, int));
 extern double log __P((double));
-extern double log10 __P((double));
+//extern double log10 __P((double));
 extern double modf __P((double, double *));
 
-extern double pow __P((double));
-extern double powl __P((double));
+/*extern double pow __P((double, double));
+extern long double powl __P((long double, long double));
+extern float powf __P((float, float));*/
+
 extern double sqrt __P((double));
 
 extern double ceil __P((double));
@@ -123,7 +125,11 @@ extern double erfc __P((double));
 extern double gamma __P((double));
 extern double hypot __P((double, double));
 extern int isnan __P((double));
+extern int isnanl __P((long double));
+extern int isnanf __P((float));
 extern int finite __P((double));
+extern int finitel __P((long double));
+extern int finitef __P((float));
 extern double j0 __P((double));
 extern double j1 __P((double));
 extern double jn __P((int, double));
@@ -187,6 +193,7 @@ extern double __ieee754_exp __P((double));
 extern double __ieee754_cosh __P((double));
 extern double __ieee754_fmod __P((double,double));
 extern double __ieee754_pow __P((double,double));
+extern float __ieee754_powf __P((float,float));
 extern double __ieee754_lgamma_r __P((double,int *));
 extern double __ieee754_gamma_r __P((double,int *));
 extern double __ieee754_lgamma __P((double));

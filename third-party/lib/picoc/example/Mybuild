@@ -1,0 +1,10 @@
+package embox.third_party
+
+module picoc_example{
+	@IncludePath("$(THIRDPARTY_DIR)/lib/picoc")
+
+	source "picoc_test.c"
+	@InitFS
+	source "hello_world"
+	depends embox.third_party.picoc
+}

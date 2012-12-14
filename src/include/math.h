@@ -26,6 +26,10 @@ extern double pow(double x, double y);
 extern float powf(float x, float y);
 extern long double powl(long double x, long double y);
 
+extern double log10(double x);
+extern float log10f(float x);
+extern long double log10l(long double x);
+
 extern double sqrt(double x);
 
 

@@ -1,0 +1,13 @@
+/*
+ * hello_world.c
+ *
+ *  Created on: Dec 13, 2012
+ *      Author: vita
+ */
+
+
+int main()
+{
+	printf("\n\nHello world!\n\n");
+	return 0;
+}

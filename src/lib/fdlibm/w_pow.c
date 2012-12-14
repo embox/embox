@@ -17,7 +17,9 @@
 
 #include "fdlibm.h"
 
-	double pow(double x, double y)	/* wrapper pow */
+//extern double ____ieee754_pow(double, double);
+
+double __pow(double x, double y)	/* wrapper pow */
 {
 #ifdef _IEEE_LIBM
 	return  __ieee754_pow(x,y);
