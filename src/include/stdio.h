@@ -18,6 +18,10 @@
 #define EOF (-1)
 
 #define _IOFBF        0x20
+#define _IOLBF        0x20
+#define _IONBF        0x20
+#define	BUFSIZ        0x40
+#define L_tmpnam      0x20
 #define FILENAME_MAX  0x20
 
 typedef struct file_struct {
