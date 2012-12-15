@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 31.10.2011
@@ -9,19 +8,16 @@
 
 #include <types.h>
 #include <embox/cmd.h>
-
 #include <net/socket.h>
 #include <pnet/repo.h>
 #include <pnet/types.h>
 #include <pnet/graph.h>
-
 #include <pnet/node/direct_comm.h>
+#include <drivers/bluetooth/blue_core4.h>
 
-#include <drivers/blue_core4.h>
 EMBOX_CMD(bt_main);
 
 static struct net_node *add_mod(const char *str_id, struct pnet_graph *graph, struct net_node *prev) {
-
 	struct net_node *node = pnet_get_module(str_id);
 	if (node == NULL) {
 		return NULL;
@@ -60,5 +56,4 @@ static int bt_main(int argc, char **argv) {
 	assert(dc_exec);
 
 	return pnet_graph_start(graph);
-
 }

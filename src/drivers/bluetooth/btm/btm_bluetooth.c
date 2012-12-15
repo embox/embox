@@ -12,8 +12,8 @@
 #include <kernel/time/ktime.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
-#include <drivers/bluetooth.h>
-#include <drivers/btm112.h>
+#include <drivers/bluetooth/bluetooth.h>
+#include <drivers/bluetooth/btm112.h>
 #include <kernel/time/timer.h>
 #include <string.h>
 #include <unistd.h>

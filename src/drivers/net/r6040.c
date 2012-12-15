@@ -16,7 +16,7 @@
 #include <net/etherdevice.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
-#include <drivers/r6040.h>
+#include <drivers/ethernet/r6040.h>
 #include <kernel/irq.h>
 
 EMBOX_UNIT_INIT(r6040_init);
