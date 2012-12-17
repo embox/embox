@@ -44,8 +44,8 @@ static void * ximg_main(void * args) {
 	struct xwnd_application xapp;
 	struct ximg_res res;
 
-	xwnd_application_init (&xapp, args);
-	XAPP_INIT_RESOURCES (&xapp, res);
+	xwnd_application_init(&xapp, args);
+	XAPP_INIT_RESOURCES(&xapp, res);
 
 	xwnd_application_set_event_handler(&xapp, XEV_CREAT, on_creat);
 	xwnd_application_set_event_handler(&xapp, XEV_DRAW, on_draw);

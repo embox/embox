@@ -8,18 +8,20 @@
 
 #include <lib/xwnd/draw_helpers.h>
 #include <drivers/vesa.h>
+#include <drivers/video/display.h>
 #include <math.h>
 #include <stdlib.h>
 
 void xwnd_draw_pixel(const struct xwnd_window * wnd, unsigned x, unsigned y,
 		unsigned c) {
-	if (x < wnd->wd - 2 && y < wnd->ht - 2 && wnd->x + x + 1 < vesa_get_width()
-			&& wnd->x + x + 1 > 0 && wnd->y + y + 1 < vesa_get_height()
-			&& wnd->y + y + 1 > 0) {
-		vesa_put_pixel(wnd->x + x + 1, wnd->y + y + 1, c);
+	if ((x <= wnd->wd - 2) && (y <= wnd->ht - 2) &&
+			(wnd->x + x + 1 < wnd->display->width) &&
+			(wnd->x + x + 1 > 0) && (wnd->y + y + 1 < wnd->display->height)	&&
+			(wnd->y + y + 1 > 0)) {
+		display_set_pixel(wnd->display, wnd->x + x + 1, wnd->y + y + 1, c);
 	}
 }
-
+#if 0
 static void xwnd_draw_horiz_line(unsigned x, unsigned y, unsigned l, unsigned c) {
 	int i;
 	for (i = 0; i < l; i++) {
@@ -33,6 +35,7 @@ static void xwnd_draw_vert_line(unsigned x, unsigned y, unsigned l, unsigned c) 
 		vesa_put_pixel(x, y + i, c);
 	}
 }
+#endif
 
 //FIXME: horizontal/vertical line for windows, maybe it's necessary to rename it
 void xwnd_draw_horizontal_line(const struct xwnd_window * wnd, unsigned x,
@@ -116,17 +119,18 @@ void xwnd_draw_polygon(const struct xwnd_window * wnd, unsigned *points,
 }
 
 void xwnd_draw_window(const struct xwnd_window * wnd) {
-	xwnd_draw_vert_line(wnd->x, wnd->y, wnd->ht, 2);
-	xwnd_draw_horiz_line(wnd->x, wnd->y, wnd->wd, 2);
-	xwnd_draw_vert_line(wnd->x + wnd->wd - 1, wnd->y, wnd->ht, 2);
-	xwnd_draw_horiz_line(wnd->x, wnd->y + wnd->ht - 1, wnd->wd, 2);
+//	xwnd_draw_vert_line(wnd->x, wnd->y, wnd->ht, 2);
+//	xwnd_draw_horiz_line(wnd->x, wnd->y, wnd->wd, 2);
+//	xwnd_draw_vert_line(wnd->x + wnd->wd - 1, wnd->y, wnd->ht, 2);
+//	xwnd_draw_horiz_line(wnd->x, wnd->y + wnd->ht - 1, wnd->wd, 2);
+	xwnd_draw_rectangle(wnd, wnd->x, wnd->y, wnd->x + wnd->wd - 2, wnd->y + wnd->ht -2, 2);
 }
 
 void xwnd_clear_window(const struct xwnd_window * wnd) {
 	int x, y;
 	for (y = wnd->y + 1; y < wnd->y + wnd->ht - 1; y++) {
 		for (x = wnd->x + 1; x < wnd->x + wnd->wd - 1; x++) {
-			vesa_put_pixel(x, y, 0);
+			display_set_pixel(wnd->display, x, y, 0);
 		}
 	}
 }

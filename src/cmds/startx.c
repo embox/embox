@@ -20,26 +20,33 @@
 #include <xwnd/xappreg.h>
 #include <lib/xwnd/application.h>
 
+#include <drivers/video/display.h>
+
 static int exec(int argc, char ** argv);
 
 EMBOX_CMD(exec);
 
+static struct display display;
+
+struct display *display_get(void) {
+	return &display;
+}
 
 int xwnd_init(void) {
-	vesa_init_mode(VESA_MODE_DEFAULT);
-	vesa_clear_screen();
+	vesa_init_mode(&display, 0x13);
+	display_clear_screen(&display);
 	return 0;
 }
 
+
 void xwnd_quit(void){
-	vesa_clear_screen();
-	vesa_quit_mode();
+	display_clear_screen(&display);
+
+	vesa_init_mode(&display, 0x3);
 }
 
 static int exec (int argc, char ** argv) {
 	int err, i;
-	//struct xwnd_application_args args;
-	//args = args;
 
 	if (argc < 2) {
 		for (i = 0; i < ARRAY_SPREAD_SIZE(__xwnd_app_repository); i++) {

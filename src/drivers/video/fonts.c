@@ -601,6 +601,32 @@ assume: chain-4 addressing already off */
 	outportb(VGA_GC_INDEX, 6);
 	outportb(VGA_GC_DATA, gc6);
 }
+#if 0
+
+/*****************************************************************************
+*****************************************************************************/
+unsigned char reverse_bits(unsigned char arg)
+{
+	unsigned char ret_val = 0;
+
+	if(arg & 0x01)
+		ret_val |= 0x80;
+	if(arg & 0x02)
+		ret_val |= 0x40;
+	if(arg & 0x04)
+		ret_val |= 0x20;
+	if(arg & 0x08)
+		ret_val |= 0x10;
+	if(arg & 0x10)
+		ret_val |= 0x08;
+	if(arg & 0x20)
+		ret_val |= 0x04;
+	if(arg & 0x40)
+		ret_val |= 0x02;
+	if(arg & 0x80)
+		ret_val |= 0x01;
+	return ret_val;
+}
 
 /*****************************************************************************
 512-CHARACTER FONT
@@ -683,6 +709,7 @@ so attribute bit b3 is no longer used for 'intense' */
 		vpokeb((80 * 16 + 40 + i) * 2 + 1, 0x0F);
 	}
 }
+#endif
 
 void setup_font(unsigned font_height) {
 	if(font_height == 8) {

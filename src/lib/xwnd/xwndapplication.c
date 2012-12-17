@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <kernel/task.h>
 #include <xwnd/xappreg.h>
+#include <drivers/video/display.h>
 
 static int xwnd_application_dispatch_event (struct xwnd_application * app, struct x_event * event) {
 	if (app->callbacks[event->type]) {
@@ -10,7 +11,7 @@ static int xwnd_application_dispatch_event (struct xwnd_application * app, struc
 	}
 	return 0;
 }
-
+#if 0
 struct xwnd_application * xwnd_application_struct_allocate (void) {
 	return malloc(sizeof(struct xwnd_application));
 }
@@ -20,8 +21,8 @@ void xwnd_application_struct_free (struct xwnd_application * app) {
 		free (app);
 }
 
-int xwnd_application_struct_init (struct xwnd_application * app, void * args_ptr) {
-	struct xwnd_application_args * args = (struct xwnd_application_args *) args_ptr;
+int xwnd_application_struct_init(struct xwnd_application * app, void * args_ptr) {
+	struct xwnd_application_args *args = (struct xwnd_application_args *) args_ptr;
 	struct task * tmp_task;
 
 	if (!args) {
@@ -34,11 +35,14 @@ int xwnd_application_struct_init (struct xwnd_application * app, void * args_ptr
 	app->argc = args->argc;
 	app->argv = args->argv;
 
+	app->window.display = NULL;
+
 	return 1;
 }
 
 void xwnd_application_struct_fini (struct xwnd_application * app) {
 }
+#endif
 
 int xwnd_application_subscribe (struct xwnd_application * app) {
 	app->xapp_id = xwnd_app_registry_allocate();
@@ -71,36 +75,39 @@ int xwnd_application_set_event_handler (struct xwnd_application * app, enum x_ev
 void xwnd_application_drop_event_to_default_handler (struct xwnd_application * app, struct x_event * event) {
 }
 
-int xwnd_application_init (struct xwnd_application * app, void * args) {
+extern struct display *display_get(void);
+
+int xwnd_application_init(struct xwnd_application * app, void * args) {
 	app->xapp_id = xwnd_app_registry_allocate();
+	app->window.display = display_get();
 	return xwnd_app_registry_get_subscription(app);
 }
 
-void xwnd_application_place_window (struct xwnd_application * app, int quad) {
+void xwnd_application_place_window(struct xwnd_application * app, int quad) {
 	switch (quad) {
 		case 0:
 			app->window.x = 0;
 			app->window.y = 0;
-			app->window.wd = 160;
-			app->window.ht = 100;
+			app->window.wd = app->window.display->width / 2;
+			app->window.ht = app->window.display->height / 2;
 			break;
 		case 1:
-			app->window.x = 160;
+			app->window.x = app->window.display->width / 2;
 			app->window.y = 0;
-			app->window.wd = 160;
-			app->window.ht = 100;
+			app->window.wd = app->window.display->width / 2;
+			app->window.ht = app->window.display->height / 2;
 			break;
 		case 2:
 			app->window.x = 0;
-			app->window.y = 100;
-			app->window.wd = 160;
-			app->window.ht = 100;
+			app->window.y = app->window.display->height / 2;
+			app->window.wd = app->window.display->width / 2;
+			app->window.ht = app->window.display->height /2;
 			break;
 		case 3:
-			app->window.x = 160;
-			app->window.y = 100;
-			app->window.wd = 160;
-			app->window.ht = 100;
+			app->window.x = app->window.display->width / 2;
+			app->window.y = app->window.display->height / 2;
+			app->window.wd = app->window.display->width / 2;
+			app->window.ht = app->window.display->height / 2;
 			break;
 		default:
 			break;
