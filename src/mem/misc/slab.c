@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include <lib/list.h>
+#include <util/dlist.h>
 #include <util/binalign.h>
 //#include <kernel/printk.h>
 
@@ -98,22 +99,10 @@ cache_t cache_chain = {
 				- binalign_bound(sizeof(slab_t), 4))
 				/ binalign_bound(sizeof(cache_t), 4),
 	.obj_size = binalign_bound(sizeof(cache_t), sizeof(struct list_head)),
-	.slabs_full = {
-		&cache_chain.slabs_full,
-		&cache_chain.slabs_full
-	},
-	.slabs_free = {
-		&cache_chain.slabs_free,
-		&cache_chain.slabs_free
-	},
-	.slabs_partial = {
-		&cache_chain.slabs_partial,
-		&cache_chain.slabs_partial
-	},
-	.next = {
-		&cache_chain.next,
-		&cache_chain.next
-	},
+	.slabs_full = LIST_HEAD_INIT(cache_chain.slabs_full),
+	.slabs_free = LIST_HEAD_INIT(cache_chain.slabs_free),
+	.slabs_partial = LIST_HEAD_INIT(cache_chain.slabs_partial),
+	.next = LIST_HEAD_INIT(cache_chain.next),
 	.growing = false,
 	.slab_order = CACHE_CHAIN_SIZE
 };
@@ -245,12 +234,9 @@ int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 	}
 
 	cachep->growing = false;
-	cachep->slabs_full.next = &(cachep->slabs_full);
-	cachep->slabs_full.prev = &(cachep->slabs_full);
-	cachep->slabs_partial.next = &(cachep->slabs_partial);
-	cachep->slabs_partial.prev = &(cachep->slabs_partial);
-	cachep->slabs_free.next = &(cachep->slabs_free);
-	cachep->slabs_free.prev = &(cachep->slabs_free);
+	INIT_LIST_HEAD(&cachep->slabs_full);
+	INIT_LIST_HEAD(&cachep->slabs_partial);
+	INIT_LIST_HEAD(&cachep->slabs_free);
 	list_add(&cachep->next, &(cache_chain.next));
 
 #ifdef SLAB_ALLOCATOR_DEBUG
@@ -285,42 +271,22 @@ cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 	return cachep;
 }
 
+static void destroy_slabs(cache_t *cachep, struct list_head *slabs) {
+	slab_t * slabp, *safe;
+	if (list_empty(slabs))
+		return;
+	/* remove this slab from the list */
+	list_for_each_entry_safe(slabp, safe, slabs, list) {
+		list_del(&slabp->list);
+		cache_slab_destroy(cachep, slabp);
+	}
+}
+
 int cache_destroy(cache_t *cachep) {
-	struct list_head *ptr;
-	slab_t * slabp;
+	destroy_slabs(cachep, &cachep->slabs_free);
+	destroy_slabs(cachep, &cachep->slabs_full);
+	destroy_slabs(cachep, &cachep->slabs_partial);
 
-	while (1) {
-		ptr = cachep->slabs_free.prev;
-		/*if list is empty*/
-		if (ptr == &cachep->slabs_free)
-			break;
-		/* remove this slab from the list */
-		slabp = list_entry(ptr, slab_t, list);
-		list_del(&slabp->list);
-		cache_slab_destroy(cachep, slabp);
-	}
-
-	while (1) {
-		ptr = cachep->slabs_full.prev;
-		/*if list is empty*/
-		if (ptr == &cachep->slabs_full)
-			break;
-		/* remove this slab from the list */
-		slabp = list_entry(ptr, slab_t, list);
-		list_del(&slabp->list);
-		cache_slab_destroy(cachep, slabp);
-	}
-
-	while (1) {
-		ptr = cachep->slabs_partial.prev;
-		/*if list is empty*/
-		if (ptr == &cachep->slabs_partial)
-			break;
-		/* remove this slab from the list */
-		slabp = list_entry(ptr, slab_t, list);
-		list_del(&slabp->list);
-		cache_slab_destroy(cachep, slabp);
-	}
 	list_del(&cachep->next);
 	cache_free(&cache_chain, cachep);
 
@@ -335,9 +301,11 @@ void *cache_alloc(cache_t *cachep) {
 
 	/* getting slab */
 	if (list_empty(&cachep->slabs_partial)) {
-		if (list_empty(&cachep->slabs_free))
-			if (!cache_grow(cachep))
+		if (list_empty(&cachep->slabs_free)) {
+			if (!cache_grow(cachep)) {
 				return NULL;
+			}
+		}
 		slabp = list_entry(cachep->slabs_free.next, slab_t, list);
 	} else {
 		slabp = list_entry(cachep->slabs_partial.next, slab_t, list);
@@ -410,40 +378,3 @@ int cache_shrink(cache_t *cachep) {
 
 	return ret;
 }
-#if 0
-mem info
-void sget_blocks_info(struct list_head* list, struct list_head *slabp) {
-	char *slab_begin;
-	char *cur_objp;
-	unsigned int num;
-	struct list_head* cur_elem;
-	slab_t * slab;
-	block_info_t* tmp_info;
-	page_info_t *page;
-	cache_t *cachep;
-
-	page = virt_to_page((void*) slabp);
-	slab_begin = (char*) slabp + binalign_bound(sizeof(slab_t), 4);
-	slab = list_entry(slabp, slab_t, list);
-	cachep = GET_PAGE_CACHE(page);
-
-	for (num = 0; num < cachep->num; num++) {
-		cur_objp = slab_begin + num * cachep->obj_size;
-		tmp_info = (block_info_t*) malloc(sizeof(block_info_t));
-		tmp_info->size = cachep->obj_size;
-		tmp_info->free = false;
-		list_for_each(cur_elem, &slab->obj_ptr) {
-			if ((char*) cur_elem == cur_objp) {
-				tmp_info->free = true;
-				break;
-			}
-		}
-		list_add((struct list_head*) tmp_info, list);
-	}
-}
-
-void make_caches_list(struct list_head* list) {
-	list->next = &cache_chain.next;
-	list->prev = cache_chain.next.prev;
-}
-#endif

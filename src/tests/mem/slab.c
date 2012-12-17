@@ -16,8 +16,6 @@ static size_t list_length(struct list_head *head);
 /* Used to fill slab with one object */
 #define MAX_SIZE (PAGE_SIZE() - 64)
 
-/* Use to fill onepaged slab */
-
 EMBOX_TEST_SUITE("slab allocator test");
 
 TEST_CASE("Allocation in one slab without cache growing.") {
