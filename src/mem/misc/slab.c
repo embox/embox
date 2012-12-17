@@ -396,7 +396,7 @@ int cache_shrink(cache_t *cachep) {
 	struct list_head *p;
 	int ret = 0;
 
-	while (!cachep->growing) {
+	while (/*!cachep->growing*/ 1) {
 		p = cachep->slabs_free.prev;
 		/*if list is empty*/
 		if (p == &cachep->slabs_free)
