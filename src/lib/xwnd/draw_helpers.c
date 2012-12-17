@@ -43,8 +43,8 @@ void xwnd_draw_horizontal_line(const struct xwnd_window * wnd, unsigned x,
 	}
 }
 
-void xwnd_draw_vertical_line(const struct xwnd_window * wnd, unsigned x, unsigned y,
-		unsigned l, unsigned c) {
+void xwnd_draw_vertical_line(const struct xwnd_window * wnd, unsigned x,
+		unsigned y, unsigned l, unsigned c) {
 	int i;
 	for (i = 0; i <= l; i++) {
 		xwnd_draw_pixel(wnd, x, y + i, c);
@@ -53,9 +53,6 @@ void xwnd_draw_vertical_line(const struct xwnd_window * wnd, unsigned x, unsigne
 
 void xwnd_draw_line(const struct xwnd_window * wnd, unsigned x1, unsigned y1,
 		unsigned x2, unsigned y2, unsigned c) {
-	int i;
-	double a, b;
-
 	if (x1 == x2) {
 		double t1, t2;
 		t1 = min(y1, y2);
@@ -72,21 +69,24 @@ void xwnd_draw_line(const struct xwnd_window * wnd, unsigned x1, unsigned y1,
 		return;
 	}
 
-	a = ((double) y2 - y1) / ((double) x2 - x1);
-	b = (y1 - a * x1);
-	if (abs((double) x2 - x1) > abs((double) y2 - y1)) {
-		double t1, t2;
-		t1 = min(x1, x2);
-		t2 = max(x1, x2);
-		for (i = t1; i <= t2; i++) {
-			xwnd_draw_pixel(wnd, i, a * i + b, c);
-		}
-	} else {
-		double t1, t2;
-		t1 = min(y1, y2);
-		t2 = max(y1, y2);
-		for (i = t1; i <= t2; i++) {
-			xwnd_draw_pixel(wnd, (i - b) / a, i, c);
+	{
+		const int deltaX = abs(x2 - x1);
+		const int deltaY = abs(y2 - y1);
+		const int signX = x1 < x2 ? 1 : -1;
+		const int signY = y1 < y2 ? 1 : -1;
+		int error = deltaX - deltaY;
+		xwnd_draw_pixel(wnd, x2, y2, c);
+		while (x1 != x2 || y1 != y2) {
+			const int error2 = error * 2;
+			xwnd_draw_pixel(wnd, x1, y1, c);
+			if (error2 > -deltaY) {
+				error -= deltaY;
+				x1 += signX;
+			}
+			if (error2 < deltaX) {
+				error += deltaX;
+				y1 += signY;
+			}
 		}
 	}
 }
