@@ -118,6 +118,55 @@ void xwnd_draw_polygon(const struct xwnd_window * wnd, unsigned *points,
 	xwnd_draw_line(wnd, points[i], points[i + 1], points[0], points[1], c);
 }
 
+void xwnd_draw_ellipse(const struct xwnd_window * wnd, unsigned x, unsigned y,
+		unsigned a, unsigned b, unsigned color) {
+	int col, row;
+	long a_square, b_square, two_a_square, two_b_square, four_a_square,
+			four_b_square, d;
+	double a_d, b_d;
+
+	x += a;
+	y += b;
+	a_d = a / 2;
+	b_d = b / 2;
+	b_square = b_d * b_d;
+	a_square = a_d * a_d;
+	row = b_d;
+	col = 0;
+	two_a_square = a_square << 1;
+	four_a_square = a_square << 2;
+	four_b_square = b_square << 2;
+	two_b_square = b_square << 1;
+	d = two_a_square * ((row - 1) * (row)) + a_square
+			+ two_b_square * (1 - a_square);
+	while (a_square * (row) > b_square * (col)) {
+		xwnd_draw_pixel(wnd, col + x, row + y, color);
+		xwnd_draw_pixel(wnd, col + x, y - row, color);
+		xwnd_draw_pixel(wnd, x - col, row + y, color);
+		xwnd_draw_pixel(wnd, x - col, y - row, color);
+		if (d >= 0) {
+			row--;
+			d -= four_a_square * (row);
+		}
+		d += two_b_square * (3 + (col << 1));
+		col++;
+	}
+	d = two_b_square * (col + 1) * col + two_a_square * (row * (row - 2) + 1)
+			+ (1 - two_a_square) * b_square;
+	while ((row) + 1) {
+		xwnd_draw_pixel(wnd, col + x, row + y, color);
+		xwnd_draw_pixel(wnd, col + x, y - row, color);
+		xwnd_draw_pixel(wnd, x - col, row + y, color);
+		xwnd_draw_pixel(wnd, x - col, y - row, color);
+		if (d <= 0) {
+			col++;
+			d += four_b_square * col;
+		}
+		row--;
+		d += two_a_square * (3 - (row << 1));
+	}
+}
+
 void xwnd_draw_window(const struct xwnd_window * wnd) {
 //	xwnd_draw_vert_line(wnd->x, wnd->y, wnd->ht, 2);
 //	xwnd_draw_horiz_line(wnd->x, wnd->y, wnd->wd, 2);

@@ -45,6 +45,12 @@ void draw_polygons(struct xwnd_application * xapp) {
 	xwnd_draw_polygon(&xapp->window, points3, 10, 52);
 }
 
+void draw_ellipses(struct xwnd_application * xapp) {
+	xwnd_draw_ellipse(&xapp->window, 10, 10, 5, 5, 52);
+	xwnd_draw_ellipse(&xapp->window, 0, 0, 10, 20, 52);
+	xwnd_draw_ellipse(&xapp->window, 43, 23, 31, 53, 52);
+}
+
 void clear(struct xwnd_application * xapp) {
 	xwnd_clear_window(&xapp->window);
 }
@@ -92,10 +98,12 @@ static void on_key(struct xwnd_application * xapp, struct x_event * ev) {
 	case 'l':
 		resources->last_functon = draw_lines;
 		break;
-	case 'p': {
+	case 'p':
 		resources->last_functon = draw_polygons;
 		break;
-	}
+	case 'e':
+		resources->last_functon = draw_ellipses;
+		break;
 	case 'h':
 		resources->last_functon = print_help;
 		break;
@@ -110,7 +118,7 @@ static void * xwnd_figure_main(void * args) {
 	struct xfigure_res res;
 
 	xwnd_application_init(&xapp, NULL);
-	XAPP_INIT_RESOURCES (&xapp, res);
+	XAPP_INIT_RESOURCES(&xapp, res);
 
 	xwnd_application_set_event_handler(&xapp, XEV_CREAT, on_creat);
 	xwnd_application_set_event_handler(&xapp, XEV_DRAW, on_draw);
