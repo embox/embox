@@ -64,6 +64,9 @@ FILE *fopen(const char *path, const char *mode) {
 }
 
 FILE *freopen(const char *path, const char *mode, FILE *file) {
+	if(NULL == file) {
+		return file;
+	}
 	return NULL;
 }
 
@@ -78,6 +81,9 @@ int ferror(FILE *file) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
+	if(NULL == file) {
+		return -1;
+	}
 	return write(file->fd, buf, size * count);
 }
 
@@ -103,22 +109,39 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 }
 
 int fclose(FILE *file) {
-	int res = close(file->fd);
-	pool_free(&file_pool, file);
+	int res;
+
+	if(NULL == file){
+		return -1;
+	}
+	res = close(file->fd);
+
+	if(res >= 0) {
+		pool_free(&file_pool, file);
+	}
 	return res;
 }
 
 int fseek(FILE *file, long int offset, int origin) {
+	if(NULL == file) {
+		return -1;
+	}
 	return lseek(file->fd, offset, origin);
 }
 
-int fioctl(FILE *fp, int request, ...) {
+int fioctl(FILE *file, int request, ...) {
 	va_list args;
+	if(NULL == file) {
+		return -1;
+	}
 	va_start(args, request);
-	return ioctl(fp->fd, request, args);
+	return ioctl(file->fd, request, args);
 }
 
 int ungetc(int ch, FILE *file) {
+	if(NULL == file) {
+		return -1;
+	}
 	file->ungetc = (char) ch;
 	file->has_ungetc = 1;
 	return ch;
