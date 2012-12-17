@@ -9,7 +9,11 @@
 int main()
 {
 	FILE * f;
-	f = fopen("TEST.TXT", "w");
+	f = fopen("/tmp/TEST.TXT", "w");
+	if (f == NULL) {
+		printf("File creation failed\n");
+		return 1;
+	}
 	fprintf(f, "TEST");
 	printf("\n\nHello world!\n\n");
 	fclose(f);

@@ -39,10 +39,11 @@ static char rand_letter (void) {
 	return 'a' + (rand() % 26);
 }
 
-int service_file_open_write(struct service_file *srv_file) {
+
+int service_file_random_open_write(struct service_file *srv_file, const char * prefix, const char * postfix) {
 	int i;
-	int postfix_len = strlen(SERVICE_FILE_POSTFIX);
-	int prefix_len = strlen(SERVICE_FILE_PREFIX);
+	int postfix_len = strlen(postfix);
+	int prefix_len = strlen(prefix);
 	int f_name_len = prefix_len + SERVICE_FILE_RAND_STR_LEN + postfix_len + 1;
 
 	srv_file->name = malloc(f_name_len);
@@ -50,13 +51,13 @@ int service_file_open_write(struct service_file *srv_file) {
 		return -1;
 	}
 	srv_file->name[0] = '\0';
-	strcat(srv_file->name, SERVICE_FILE_PREFIX);
-	for (i = strlen(SERVICE_FILE_PREFIX);
+	strcat(srv_file->name, prefix);
+	for (i = strlen(prefix);
 			i < SERVICE_FILE_RAND_STR_LEN + prefix_len; i++) {
 		srv_file->name[i] = rand_letter();
 	}
 	srv_file->name[i] = '\0';
-	strcat(srv_file->name, SERVICE_FILE_POSTFIX);
+	strcat(srv_file->name, postfix);
 	srv_file->fd = fopen(srv_file->name, "w");
 	if (!srv_file->fd) {
 		service_file_close(srv_file);
@@ -64,6 +65,10 @@ int service_file_open_write(struct service_file *srv_file) {
 	}
 
 	return 0;
+}
+
+int service_file_open_write(struct service_file *srv_file) {
+	return service_file_random_open_write(srv_file, SERVICE_FILE_POSTFIX, SERVICE_FILE_PREFIX);
 }
 
 void service_get_service_data(struct service_data * data, void * arg) {

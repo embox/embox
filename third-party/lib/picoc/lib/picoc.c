@@ -30,6 +30,8 @@ int picoc_main(int argc, char **argv)
     }
 
     PicocInitialise(&pc, StackSize);
+	/*MARK_003*/
+	pc.ServiceOutputFile = fopen("/tmp/picoc.out", "w");
 
     if (strcmp(argv[ParamCount], "-s") == 0 || strcmp(argv[ParamCount], "-m") == 0)
     {

@@ -693,6 +693,8 @@ void StdioSetupFunc(Picoc *pc)
     /* make a "struct __va_listStruct" which is the same size as our struct StdVararg */
     TypeCreateOpaqueStruct(pc, NULL, TableStrRegister(pc, "__va_listStruct"), sizeof(FILE));
 
+	/*MARK_001*/
+	VariableDefinePlatformVar(pc, NULL, "SERVICE_OUTPUT", FilePtrType, (union AnyValue *)&pc->ServiceOutputFile, FALSE);
     /* define EOF equal to the system EOF */
     VariableDefinePlatformVar(pc, NULL, "EOF", &pc->IntType, (union AnyValue *)&EOFValue, FALSE);
     VariableDefinePlatformVar(pc, NULL, "SEEK_SET", &pc->IntType, (union AnyValue *)&SEEK_SETValue, FALSE);

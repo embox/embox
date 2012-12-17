@@ -355,6 +355,9 @@ struct IncludeLibrary
 /* the entire state of the picoc system */
 struct Picoc_Struct
 {
+	/* service data*/
+	FILE * ServiceOutputFile;
+
     /* parser global data */
     struct Table GlobalTable;
     struct CleanupTokenNode *CleanupTokenList;
