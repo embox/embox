@@ -92,7 +92,7 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	uint addon = 0;
 
 	if (NULL == file) {
-		/*errno = EBADF;*/
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 
@@ -112,6 +112,7 @@ int fclose(FILE *file) {
 	int res;
 
 	if(NULL == file){
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 	res = close(file->fd);
@@ -123,15 +124,27 @@ int fclose(FILE *file) {
 }
 
 int fseek(FILE *file, long int offset, int origin) {
+	if (origin != SEEK_SET && origin != SEEK_CUR
+			&& origin != SEEK_END) {
+		SET_ERRNO(EINVAL);
+		return -1;
+	}
+
 	if(NULL == file) {
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 	return lseek(file->fd, offset, origin);
 }
 
+void rewind(FILE *file) {
+	fseek(file, 0L, SEEK_SET);
+}
+
 int fioctl(FILE *file, int request, ...) {
 	va_list args;
 	if(NULL == file) {
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 	va_start(args, request);
@@ -140,6 +153,7 @@ int fioctl(FILE *file, int request, ...) {
 
 int ungetc(int ch, FILE *file) {
 	if(NULL == file) {
+		SET_ERRNO(EBADF);
 		return -1;
 	}
 	file->ungetc = (char) ch;

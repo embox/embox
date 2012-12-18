@@ -158,6 +158,11 @@ extern int remove(const char *pathname);
 extern int fseek(FILE *stream, long int offset, int origin);
 
 /**
+ * Sets the file position indicator for the stream pointed to by stream to the beginning of the file.
+ */
+extern void rewind(FILE *stream);
+
+/**
  * Manipulate the underlying device parameters of special files.
  */
 extern int fioctl(FILE *fp, int request, ...);
