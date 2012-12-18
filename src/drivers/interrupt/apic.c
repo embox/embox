@@ -11,35 +11,13 @@
 #include <types.h>
 #include <asm/msr.h>
 
-#define IA32_APIC_BASE_MSR 0x1B
-#define IA32_APIC_BASE_MSR_ENABLE 0x800
-#define APIC_SPURIOUS_INTERRUPT_VECTOR      0x0F
+#include "apic.h"
+
 #define APIC_INTERRUPT_COMMAND_REGISTER     0x30
 
-void cpuSetAPICBase(uint32_t apic)
-{
-   uint32_t edx = 0;
-   uint32_t eax = (apic & 0xfffff000) | IA32_APIC_BASE_MSR_ENABLE;
+EMBOX_UNIT_INIT(unit_init);
 
-   x86_write_msr(IA32_APIC_BASE_MSR, eax, edx);
-}
-
-uint32_t cpuGetAPICBase(void)
-{
-   uint32_t eax, edx;
-   x86_read_msr(IA32_APIC_BASE_MSR, &eax, &edx);
-
-   return (eax & 0xfffff000);
-}
-
-uint32_t readAPICRegister(uint32_t reg) {
-    return *((volatile uint32_t *) (cpuGetAPICBase() + reg * 16));
-}
-
-void writeAPICRegister(uint32_t reg, uint32_t value) {
-    *((volatile uint32_t *) (cpuGetAPICBase() + reg * 16)) = value;
-}
-
+#if 0
 void sendSIPI(uint32_t apicId, uint32_t addr) {
     uint32_t high = 0;
     uint32_t low  = 0;
@@ -58,8 +36,8 @@ void sendSIPI(uint32_t apicId, uint32_t addr) {
     high = apicId << 24;// Processor to send SIPI to
     //icr.Destination = apicId;               // Processor to send SIPI to
 
-    writeAPICRegister(APIC_INTERRUPT_COMMAND_REGISTER + 1, high);
-    writeAPICRegister(APIC_INTERRUPT_COMMAND_REGISTER, low);
+    lapic_write(APIC_INTERRUPT_COMMAND_REGISTER + 1, high);
+    lapic_write(APIC_INTERRUPT_COMMAND_REGISTER, low);
 }
 
 void newKernel(void) {
@@ -67,22 +45,28 @@ void newKernel(void) {
 }
 
 #include <string.h>
+#endif
 
-void cpuEnableAPIC(void)
-{
-    /* Hardware enable the Local APIC if it wasn't enabled */
-    cpuSetAPICBase(cpuGetAPICBase());
+static inline void lapic_enable_in_msr(void) {
+	uint32_t msr_hi, msr_lo;
 
-    /* Set the Spourious Interrupt Vector Register bit 8 to start receiving interrupts */
-    writeAPICRegister(APIC_SPURIOUS_INTERRUPT_VECTOR, readAPICRegister(APIC_SPURIOUS_INTERRUPT_VECTOR) | 0x100);
-
-    memcpy((void *) 0x2000, (char *)newKernel, 512);
-    sendSIPI(1, (uint32_t) 0x2000);
+	x86_msr_read(IA32_APIC_BASE, &msr_hi, &msr_lo);
+	msr_lo |= (1 << IA32_APIC_BASE_ENABLE_BIT);
+	x86_msr_write(IA32_APIC_BASE, msr_hi, msr_lo);
 }
 
+void lapic_enable(void)
+{
+	lapic_enable_in_msr();
 
+    /* Set the Spourious Interrupt Vector Register bit 8 to start receiving interrupts */
+    lapic_write(APIC_SPURIOUS_INTERRUPT_VECTOR, lapic_read(APIC_SPURIOUS_INTERRUPT_VECTOR) | 0x100);
 
-EMBOX_UNIT_INIT(unit_init);
+#if 0
+    memcpy((void *) 0x2000, (char *)newKernel, 512);
+    sendSIPI(1, (uint32_t) 0x2000);
+#endif
+}
 
 static int unit_init(void) {
 	static int inited = 0;
@@ -91,7 +75,7 @@ static int unit_init(void) {
 	}
 	inited = 1;
 
-	cpuEnableAPIC();
+	lapic_enable();
 
 	return 0;
 }
