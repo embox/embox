@@ -94,6 +94,8 @@ static module LibCString {
 
 static module LibCMath {
 	source "math/floor.c"
+	source "math/copysign.c"
+	source "math/signbit.c"
 	source "math/pow.c"
 	source "math/log10.c"
 	source "math/div.c"

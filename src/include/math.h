@@ -26,6 +26,14 @@ extern double pow(double x, double y);
 extern float powf(float x, float y);
 extern long double powl(long double x, long double y);
 
+extern double copysign(double val, double signval);
+extern float copysignf(float val, float signval);
+extern long double copysignl(long double val, long double signval);
+
+extern int signbit(double val);
+extern int signbitf(float val);
+extern int signbitl(long double val);
+
 extern double log10(double x);
 extern float log10f(float x);
 extern long double log10l(long double x);
