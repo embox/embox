@@ -100,7 +100,7 @@ cache_t cache_chain = {
 	.num  = (PAGE_SIZE() * CACHE_CHAIN_SIZE
 				- binalign_bound(sizeof(slab_t), 4))
 				/ binalign_bound(sizeof(cache_t), 4),
-	.obj_size = binalign_bound(sizeof(cache_t), sizeof(struct list_head)),
+	.obj_size = binalign_bound(sizeof(cache_t), sizeof(struct slist_link)),
 	.slabs_full = DLIST_INIT(cache_chain.slabs_full),
 	.slabs_free = DLIST_INIT(cache_chain.slabs_free),
 	.slabs_partial = DLIST_INIT(cache_chain.slabs_partial),
@@ -202,10 +202,9 @@ static void cache_estimate(unsigned int gfporder, size_t size,
 int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 	size_t left_over;
 
-	//cachep = cache_alloc(&cache_chain);
 	assert(cachep != NULL);
 
-	cachep->obj_size = binalign_bound(obj_size, sizeof(struct list_head));
+	cachep->obj_size = binalign_bound(obj_size, sizeof(struct slist_link));
 	cachep->slab_order = 0;
 
 	do {
@@ -282,6 +281,8 @@ static void destroy_slabs(cache_t *cachep, struct dlist_head *slabs) {
 }
 
 int cache_destroy(cache_t *cachep) {
+	assert(cachep);
+
 	destroy_slabs(cachep, &cachep->slabs_free);
 	destroy_slabs(cachep, &cachep->slabs_full);
 	destroy_slabs(cachep, &cachep->slabs_partial);
@@ -333,6 +334,8 @@ void cache_free(cache_t *cachep, void* objp) {
 	slab_t * slabp;
 	page_info_t* page;
 
+	assert(cachep);
+
 	if (objp == NULL)
 		return;
 
@@ -359,6 +362,8 @@ void cache_free(cache_t *cachep, void* objp) {
 int cache_shrink(cache_t *cachep) {
 	slab_t * slabp, *safe;
 	int ret = 0;
+
+	assert(cachep);
 
 	dlist_foreach_entry(slabp, safe, &cachep->slabs_free, cache_link) {
 		dlist_del(&slabp->cache_link);
