@@ -33,7 +33,10 @@ struct display *display_get(void) {
 }
 
 int xwnd_init(void) {
-	vesa_init_mode(&display, 0x13);
+	if(NULL == vesa_init_mode(&display, 0x13)) {
+		return -1;
+	}
+
 	display_clear_screen(&display);
 	return 0;
 }

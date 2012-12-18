@@ -23,7 +23,7 @@ struct display {
 	display_set_pixel_ft set_pixel;
 };
 
-struct display;
+
 extern void display_clear_screen(struct display *display);
 extern void display_set_pixel(struct display *display, unsigned x, unsigned y, unsigned c);
 

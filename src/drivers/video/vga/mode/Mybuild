@@ -1,0 +1,5 @@
+package embox.driver.video.vga.mode
+
+module repo {
+	source "repo.c"
+}

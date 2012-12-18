@@ -13,14 +13,16 @@
 #include <asm/io.h> /* inp(), outp() */
 
 
+//svga http://www.monstersoft.com/tutorial1/VESA_intro.html
+//http://files.osdev.org/mirrors/geezer/osd/graphics/
+
+//http://devotes.narod.ru/Books/3/ch05_10d.htm
+
+//http://src-code.net/registry-videokontrollera/
+
 #define inportb(P)	      in8(P)
 #define outportb(P,V)	   out8(V, P)
 
-/* CauseWay DOS extender only */
-#define peekb(S,O)	      *(unsigned char *)(16uL * (S) + (O))
-#define pokeb(S,O,V)	    *(unsigned char *)(16uL * (S) + (O)) = (V)
-#define pokew(S,O,V)	    *(unsigned short *)(16uL * (S) + (O)) = (V)
-#define _vmemwr(DS,DO,S,N)      memcpy((char *)((DS) * 16 + (DO)), S, N)
 
 
 

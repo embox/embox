@@ -1,0 +1,5 @@
+package embox.driver.video.vga.mode
+
+module vga320x200x256 {
+	source "vga320x200x256.c"
+}
