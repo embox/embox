@@ -1,11 +1,11 @@
 /**
  * @file
- * @brief Dynamic slab allocator
+ * @brief SLAB allocator
  *
  * @date 14.12.10
- * @author Dmitry Zubarvich
+ * @author Dmitry Zubarevich
  * @author Kirill Tyushev
- * @author Alexandr Kalmuk
+ * @author Alexander Kalmuk
  */
 
 #include <assert.h>
@@ -16,6 +16,7 @@
 
 #include <lib/list.h>
 #include <util/dlist.h>
+#include <util/slist.h>
 #include <util/binalign.h>
 //#include <kernel/printk.h>
 
@@ -30,16 +31,17 @@
  */
 typedef struct slab {
 	/* pointer to other slabs in cache */
-	struct list_head list;
+	struct dlist_head cache_link;
 	/* list of free objects*/
-	struct list_head obj_ptr;
+	struct slist free_blocks;
 	/* num of objects allocated in the slab */
 	unsigned int inuse;
 } slab_t;
 
 /* some information about page  */
 typedef struct page_info {
-	struct list_head list;
+	cache_t *cache;
+	slab_t *slab;
 } page_info_t;
 
 #if 0
@@ -55,10 +57,10 @@ extern char _heap_end;
 static page_info_t pages[HEAP_SIZE() / PAGE_SIZE()];
 
 /* macros to finding the cache and slab which an obj belongs to */
-#define SET_PAGE_CACHE(pg, x)  ((pg)->list.next = (struct list_head *)(x))
-#define GET_PAGE_CACHE(pg)    ((cache_t *)(pg)->list.next)
-#define SET_PAGE_SLAB(pg, x)   ((pg)->list.prev = (struct list_head *)(x))
-#define GET_PAGE_SLAB(pg)     ((slab_t *)(pg)->list.prev)
+#define SET_PAGE_CACHE(pg, x)  ((pg)->cache = (x))
+#define GET_PAGE_CACHE(pg)    ((pg)->cache)
+#define SET_PAGE_SLAB(pg, x)   ((pg)->slab = (x))
+#define GET_PAGE_SLAB(pg)     ((pg)->slab)
 
 /** max slab size in 2^n form */
 #define MAX_SLAB_ORDER 3
@@ -76,7 +78,7 @@ void print_slab_info(cache_t *cachep, slab_t *slabp) {
 	int free_elems_count = 0;
 	struct list_head *elem;
 
-	list_for_each(elem, &slabp->obj_ptr) {
+	list_for_each(elem, &slabp->free_blocks) {
 		free_elems_count++;
 	}
 	printf("slabp->inuse: %d\n", slabp->inuse);
@@ -99,10 +101,10 @@ cache_t cache_chain = {
 				- binalign_bound(sizeof(slab_t), 4))
 				/ binalign_bound(sizeof(cache_t), 4),
 	.obj_size = binalign_bound(sizeof(cache_t), sizeof(struct list_head)),
-	.slabs_full = LIST_HEAD_INIT(cache_chain.slabs_full),
-	.slabs_free = LIST_HEAD_INIT(cache_chain.slabs_free),
-	.slabs_partial = LIST_HEAD_INIT(cache_chain.slabs_partial),
-	.next = LIST_HEAD_INIT(cache_chain.next),
+	.slabs_full = DLIST_INIT(cache_chain.slabs_full),
+	.slabs_free = DLIST_INIT(cache_chain.slabs_free),
+	.slabs_partial = DLIST_INIT(cache_chain.slabs_partial),
+	.next = DLIST_INIT(cache_chain.next),
 	.growing = false,
 	.slab_order = CACHE_CHAIN_SIZE
 };
@@ -129,18 +131,16 @@ static void cache_slab_destroy(cache_t *cachep, slab_t *slabp) {
 
 /* init slab descriptor and slab objects */
 static void cache_slab_init(cache_t *cachep, slab_t *slabp) {
-	char* ptr_begin = (char*) slabp + binalign_bound(sizeof(slab_t), 4);
-	struct list_head* elem;
+	char *elem = (char*) slabp + binalign_bound(sizeof(slab_t), 4);
 
 	slabp->inuse = 0;
-	slabp->list.next = &slabp->list;
-	slabp->list.prev = &slabp->list;
-	slabp->obj_ptr.next = &slabp->obj_ptr;
-	slabp->obj_ptr.prev = &slabp->obj_ptr;
+	dlist_head_init(&slabp->cache_link);
+	slist_init(&slabp->free_blocks);
 
 	for (int i = 0; i < cachep->num; i++) {
-		elem = (struct list_head*) (ptr_begin + i * cachep->obj_size);
-		list_add(elem, &slabp->obj_ptr);
+		slist_add_first_link(slist_link_init((struct slist_link *)elem),
+				&slabp->free_blocks);
+		elem += cachep->obj_size;
 	}
 }
 
@@ -166,7 +166,7 @@ static int cache_grow(cache_t *cachep) {
 	cache_slab_init(cachep, slabp);
 
 	cachep->growing = true;
-	list_add(&slabp->list, &cachep->slabs_free);
+	dlist_add_prev(&slabp->cache_link, &cachep->slabs_free);
 
 	return 1;
 }
@@ -234,10 +234,11 @@ int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 	}
 
 	cachep->growing = false;
-	INIT_LIST_HEAD(&cachep->slabs_full);
-	INIT_LIST_HEAD(&cachep->slabs_partial);
-	INIT_LIST_HEAD(&cachep->slabs_free);
-	list_add(&cachep->next, &(cache_chain.next));
+	dlist_init(&cachep->slabs_full);
+	dlist_init(&cachep->slabs_partial);
+	dlist_init(&cachep->slabs_free);
+	dlist_head_init(&cachep->next);
+	dlist_add_prev(&cachep->next, &(cache_chain.next));
 
 #ifdef SLAB_ALLOCATOR_DEBUG
 	printf("\n\nCreating cache with name \"%s\"\n", cachep->name);
@@ -271,13 +272,14 @@ cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 	return cachep;
 }
 
-static void destroy_slabs(cache_t *cachep, struct list_head *slabs) {
-	slab_t * slabp, *safe;
-	if (list_empty(slabs))
+static void destroy_slabs(cache_t *cachep, struct dlist_head *slabs) {
+	slab_t *slabp, *safe;
+
+	if (dlist_empty(slabs))
 		return;
 	/* remove this slab from the list */
-	list_for_each_entry_safe(slabp, safe, slabs, list) {
-		list_del(&slabp->list);
+	dlist_foreach_entry(slabp, safe, slabs, cache_link) {
+		dlist_del(&slabp->cache_link);
 		cache_slab_destroy(cachep, slabp);
 	}
 }
@@ -287,7 +289,7 @@ int cache_destroy(cache_t *cachep) {
 	destroy_slabs(cachep, &cachep->slabs_full);
 	destroy_slabs(cachep, &cachep->slabs_partial);
 
-	list_del(&cachep->next);
+	dlist_del(&cachep->next);
 	cache_free(&cache_chain, cachep);
 
 	return 0;
@@ -300,27 +302,26 @@ void *cache_alloc(cache_t *cachep) {
 	assert(cachep);
 
 	/* getting slab */
-	if (list_empty(&cachep->slabs_partial)) {
-		if (list_empty(&cachep->slabs_free)) {
+	if (dlist_empty(&cachep->slabs_partial)) {
+		if (dlist_empty(&cachep->slabs_free)) {
 			if (!cache_grow(cachep)) {
 				return NULL;
 			}
 		}
-		slabp = list_entry(cachep->slabs_free.next, slab_t, list);
+		slabp = dlist_entry(cachep->slabs_free.next, slab_t, cache_link);
 	} else {
-		slabp = list_entry(cachep->slabs_partial.next, slab_t, list);
+		slabp = dlist_entry(cachep->slabs_partial.next, slab_t, cache_link);
 	}
 
-	objp = slabp->obj_ptr.next;
-	list_del(slabp->obj_ptr.next);
+	objp = (void *)slist_remove_first_link(&slabp->free_blocks);
 
 	slabp->inuse++;
 	if (slabp->inuse == cachep->num) {
-		list_del(&slabp->list);
-		list_add(&slabp->list, &cachep->slabs_full);
+		dlist_del(&slabp->cache_link);
+		dlist_add_prev(&slabp->cache_link, &cachep->slabs_full);
 	} else if (slabp->inuse == 1) {
-		list_del(&slabp->list);
-		list_add(&slabp->list, &cachep->slabs_partial);
+		dlist_del(&slabp->cache_link);
+		dlist_add_prev(&slabp->cache_link, &cachep->slabs_partial);
 	}
 
 	cachep->growing = false;
@@ -342,15 +343,16 @@ void cache_free(cache_t *cachep, void* objp) {
 
 	page = virt_to_page(objp);
 	slabp = GET_PAGE_SLAB(page);
-	list_add((struct list_head*) objp, &slabp->obj_ptr);
+	slist_add_first_link(slist_link_init((struct slist_link *)objp),
+			&slabp->free_blocks);
 	slabp->inuse--;
 
 	if (slabp->inuse == 0) {
-		list_del(&slabp->list);
-		list_add(&slabp->list, &cachep->slabs_free);
+		dlist_del(&slabp->cache_link);
+		dlist_add_next(&slabp->cache_link, &cachep->slabs_free);
 	} else if (slabp->inuse + 1 == cachep->num) {
-		list_del(&slabp->list);
-		list_add(&slabp->list, &cachep->slabs_partial);
+		dlist_del(&slabp->cache_link);
+		dlist_add_next(&slabp->cache_link, &cachep->slabs_partial);
 	}
 
 #ifdef SLAB_ALLOCATOR_DEBUG
@@ -361,7 +363,7 @@ void cache_free(cache_t *cachep, void* objp) {
 
 int cache_shrink(cache_t *cachep) {
 	slab_t * slabp;
-	struct list_head *p;
+	struct dlist_head *p;
 	int ret = 0;
 
 	while (/*!cachep->growing*/ 1) {
@@ -370,8 +372,8 @@ int cache_shrink(cache_t *cachep) {
 		if (p == &cachep->slabs_free)
 			break;
 		/* remove this slab from the list */
-		slabp = list_entry(cachep->slabs_free.prev, slab_t, list);
-		list_del(&slabp->list);
+		slabp = dlist_entry(cachep->slabs_free.prev, slab_t, cache_link);
+		dlist_del(&slabp->cache_link);
 		cache_slab_destroy(cachep, slabp);
 		ret++;
 	}

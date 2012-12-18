@@ -9,9 +9,10 @@
 
 #include <embox/test.h>
 #include <mem/misc/slab.h>
+#include <util/dlist.h>
 #include <mem/page.h>
 
-static size_t list_length(struct list_head *head);
+static size_t list_length(struct dlist_head *head);
 
 /* Used to fill slab with one object */
 #define MAX_SIZE (PAGE_SIZE() - 64)
@@ -29,20 +30,20 @@ TEST_CASE("Allocation in one slab without cache growing.") {
 	test_assert_not_null(cache);
 	test_assert_equal(cache->num, 1);
 	test_assert_equal(cache->slab_order, 0);
-	test_assert(list_empty(&cache->slabs_free));
-	test_assert(list_empty(&cache->slabs_partial));
-	test_assert(list_empty(&cache->slabs_full));
+	test_assert(dlist_empty(&cache->slabs_free));
+	test_assert(dlist_empty(&cache->slabs_partial));
+	test_assert(dlist_empty(&cache->slabs_full));
 
 	/* Allocate object. */
 	obj = cache_alloc(cache);
 	test_assert_not_null(obj);
-	test_assert(list_empty(&cache->slabs_free));
+	test_assert(dlist_empty(&cache->slabs_free));
 	test_assert_equal(list_length(&cache->slabs_full), 1);
 
 	/* Free object. */
 	cache_free(cache, obj);
 	test_assert_equal(list_length(&cache->slabs_free), 1);
-	test_assert(list_empty(&cache->slabs_full));
+	test_assert(dlist_empty(&cache->slabs_full));
 
 	cache_destroy(cache);
 }
@@ -104,7 +105,7 @@ TEST_CASE("Cache shrinking.") {
 	cache_free(cache, obj[1]);
 	test_assert_equal(list_length(&cache->slabs_free), 2);
 	cache_shrink(cache);
-	test_assert(list_empty(&cache->slabs_free));
+	test_assert(dlist_empty(&cache->slabs_free));
 }
 
 TEST_CASE("Slab size.") {
@@ -119,11 +120,11 @@ TEST_CASE("Slab size.") {
 	cache_destroy(cache);
 }
 
-static size_t list_length(struct list_head *head) {
-	struct list_head *pos;
+static size_t list_length(struct dlist_head *head) {
+	struct dlist_head *pos, *nxt;
 	size_t cnt = 0;
 
-	list_for_each(pos, head) {
+	dlist_foreach(pos, nxt, head) {
 		cnt++;
 	}
 

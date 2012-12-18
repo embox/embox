@@ -11,7 +11,7 @@
 
 #include <types.h>
 
-#include <lib/list.h>
+#include <util/dlist.h>
 #include <framework/mod/member/self.h>
 
 /** Length of name of any cache */
@@ -20,15 +20,15 @@
 /** cache descriptor */
 struct cache {
 	/** pointer to other caches */
-	struct list_head next;
+	struct dlist_head next;
 	/** name of cache*/
 	char name[__CACHE_NAMELEN ];
 	/** list of busy slabs */
-	struct list_head slabs_full;
+	struct dlist_head slabs_full;
 	/** list of partial busy slabs */
-	struct list_head slabs_partial;
+	struct dlist_head slabs_partial;
 	/** list of free slabs */
-	struct list_head slabs_free;
+	struct dlist_head slabs_free;
 	/** size of object in cache */
 	size_t obj_size;
 	/** the number of objects stored on each slab */
