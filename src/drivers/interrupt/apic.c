@@ -9,34 +9,25 @@
 #include <embox/unit.h>
 
 #include <types.h>
+#include <asm/msr.h>
 
 #define IA32_APIC_BASE_MSR 0x1B
 #define IA32_APIC_BASE_MSR_ENABLE 0x800
 #define APIC_SPURIOUS_INTERRUPT_VECTOR      0x0F
 #define APIC_INTERRUPT_COMMAND_REGISTER     0x30
 
-void cpuGetMSR(uint32_t msr, uint32_t *lo, uint32_t *hi)
-{
-   asm volatile("rdmsr":"=a"(*lo),"=d"(*hi):"c"(msr));
-}
-
-void cpuSetMSR(uint32_t msr, uint32_t lo, uint32_t hi)
-{
-   asm volatile("wrmsr"::"a"(lo),"d"(hi),"c"(msr));
-}
-
 void cpuSetAPICBase(uint32_t apic)
 {
    uint32_t edx = 0;
    uint32_t eax = (apic & 0xfffff000) | IA32_APIC_BASE_MSR_ENABLE;
 
-   cpuSetMSR(IA32_APIC_BASE_MSR, eax, edx);
+   x86_write_msr(IA32_APIC_BASE_MSR, eax, edx);
 }
 
 uint32_t cpuGetAPICBase(void)
 {
    uint32_t eax, edx;
-   cpuGetMSR(IA32_APIC_BASE_MSR, &eax, &edx);
+   x86_read_msr(IA32_APIC_BASE_MSR, &eax, &edx);
 
    return (eax & 0xfffff000);
 }
@@ -101,24 +92,6 @@ static int unit_init(void) {
 	inited = 1;
 
 	cpuEnableAPIC();
-
-	/* Initialize the master */
-//	out8(PIC1_ICW1, PIC1_COMMAND);
-//	out8(PIC1_BASE, PIC1_DATA);
-//	out8(PIC1_ICW3, PIC1_DATA);
-//	out8(PIC1_ICW4, PIC1_DATA);
-
-//	/* Initialize the slave */
-//	out8(PIC2_ICW1, PIC2_COMMAND);
-//	out8(PIC2_BASE, PIC2_DATA);
-//	out8(PIC2_ICW3, PIC2_DATA);
-//	out8(PIC2_ICW4, PIC2_DATA);
-
-//	out8(NON_SPEC_EOI, PIC1_COMMAND);
-//	out8(NON_SPEC_EOI, PIC2_COMMAND);
-
-//	out8(PICM_MASK, PIC1_DATA);
-//	out8(PICS_MASK, PIC2_DATA);
 
 	return 0;
 }
