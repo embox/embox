@@ -105,7 +105,6 @@ cache_t cache_chain = {
 	.slabs_free = DLIST_INIT(cache_chain.slabs_free),
 	.slabs_partial = DLIST_INIT(cache_chain.slabs_partial),
 	.next = DLIST_INIT(cache_chain.next),
-	.growing = false,
 	.slab_order = CACHE_CHAIN_SIZE
 };
 
@@ -165,7 +164,6 @@ static int cache_grow(cache_t *cachep) {
 
 	cache_slab_init(cachep, slabp);
 
-	cachep->growing = true;
 	dlist_add_prev(&slabp->cache_link, &cachep->slabs_free);
 
 	return 1;
@@ -233,7 +231,6 @@ int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 		return -ENOMEM;
 	}
 
-	cachep->growing = false;
 	dlist_init(&cachep->slabs_full);
 	dlist_init(&cachep->slabs_partial);
 	dlist_init(&cachep->slabs_free);
@@ -324,8 +321,6 @@ void *cache_alloc(cache_t *cachep) {
 		dlist_add_prev(&slabp->cache_link, &cachep->slabs_partial);
 	}
 
-	cachep->growing = false;
-
 #ifdef SLAB_ALLOCATOR_DEBUG
 	printf("\n\nSlab info after allocating object:");
 	print_slab_info(cachep, slabp);
@@ -362,17 +357,10 @@ void cache_free(cache_t *cachep, void* objp) {
 }
 
 int cache_shrink(cache_t *cachep) {
-	slab_t * slabp;
-	struct dlist_head *p;
+	slab_t * slabp, *safe;
 	int ret = 0;
 
-	while (/*!cachep->growing*/ 1) {
-		p = cachep->slabs_free.prev;
-		/*if list is empty*/
-		if (p == &cachep->slabs_free)
-			break;
-		/* remove this slab from the list */
-		slabp = dlist_entry(cachep->slabs_free.prev, slab_t, cache_link);
+	dlist_foreach_entry(slabp, safe, &cachep->slabs_free, cache_link) {
 		dlist_del(&slabp->cache_link);
 		cache_slab_destroy(cachep, slabp);
 		ret++;
