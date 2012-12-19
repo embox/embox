@@ -9,7 +9,7 @@
 #include <string.h> /* movedata(), memcpy() */
 #include <stdio.h> /* printf() */
 #include <drivers/video/vga.h>
-#include <drivers/vesa.h>
+#include <drivers/video/vesa.h>
 #include <asm/io.h> /* inp(), outp() */
 
 
@@ -22,13 +22,6 @@
 
 #define inportb(P)	      in8(P)
 #define outportb(P,V)	   out8(V, P)
-
-
-
-
-//extern void setup_font(unsigned font_height);
-
-//static unsigned char old_mode[64];
 
 
 
@@ -97,13 +90,6 @@ unsigned vpeekb(unsigned off)
 	return peekb(fb_seg, off);
 }
 
-/*****************************************************************************
-*****************************************************************************/
-//static void (*g_write_pixel)(unsigned x, unsigned y, unsigned c);
-//static unsigned g_wd, g_ht;
-
-
-
 
 #if 0
 
@@ -167,49 +153,5 @@ void vesa_dump_state(void)
 
 	read_regs(state);
 	dump_regs(state);
-}
-#endif
-
-
-
-
-
-
-
-
-#if 0
-/*****************************************************************************
-DEMO GRAPHICS MODES
-*****************************************************************************/
-void vesa_demo_graphics(void)
-{
-	printf("Screen-clear in 16-color mode will be VERY SLOW\n"
-		"don't Press a key to continue\n");
-/* 4-color */
-/*  write_regs(g_320x200x4);
-	g_wd = 320;
-	g_ht = 200;
-	g_write_pixel = write_pixel2;
-	draw_x();*/
-/* 16-color */
-      write_regs(g_640x480x16);
-	g_wd = 640;
-	g_ht = 480;
-	g_write_pixel = write_pixel4p;
-	draw_x();
-/* 256-color */
-	write_regs(g_320x200x256);
-	g_wd = 320;
-	g_ht = 200;
-	g_write_pixel = write_pixel8;
-	draw_x();
-/* 256-color Mode-X */
-/*      write_regs(g_320x200x256_modex);
-	g_wd = 320;
-	g_ht = 200;
-	g_write_pixel = write_pixel8x;
-	draw_x();*/
-/* go back to 80x25 text mode */
-	/*set_text_mode(0);*/
 }
 #endif

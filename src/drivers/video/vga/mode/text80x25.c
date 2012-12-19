@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 #include <drivers/video/vga.h>
+#include <drivers/video/vesa_mode.h>
 
 
 static const unsigned char g_80x25_text[] = {

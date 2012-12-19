@@ -7,7 +7,7 @@
  */
 
 #include <lib/xwnd/draw_helpers.h>
-#include <drivers/vesa.h>
+//#include <drivers/vesa.h>
 #include <drivers/video/display.h>
 #include <math.h>
 #include <stdlib.h>
@@ -21,21 +21,6 @@ void xwnd_draw_pixel(const struct xwnd_window * wnd, unsigned x, unsigned y,
 		display_set_pixel(wnd->display, wnd->x + x + 1, wnd->y + y + 1, c);
 	}
 }
-#if 0
-static void xwnd_draw_horiz_line(unsigned x, unsigned y, unsigned l, unsigned c) {
-	int i;
-	for (i = 0; i < l; i++) {
-		vesa_put_pixel(x + i, y, c);
-	}
-}
-
-static void xwnd_draw_vert_line(unsigned x, unsigned y, unsigned l, unsigned c) {
-	int i;
-	for (i = 0; i < l; i++) {
-		vesa_put_pixel(x, y + i, c);
-	}
-}
-#endif
 
 //FIXME: horizontal/vertical line for windows, maybe it's necessary to rename it
 void xwnd_draw_horizontal_line(const struct xwnd_window * wnd, unsigned x,

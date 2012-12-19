@@ -5,6 +5,7 @@ abstract module vesa { }
 module vesadrv extends vesa {
 	source "vesa.c"
 	source "fonts.c"
-	source "vga_ctrl.c"
 	source "display.c"
+
+	@NoRuntime depends embox.driver.video.vga.vga_ctrl
 }

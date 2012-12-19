@@ -27,7 +27,7 @@ enum vesa_video_mode {
 };
 
 struct dislay;
-extern struct display *vesa_init_mode(struct display *display, enum vesa_video_mode mode);
+extern struct display *vga_setup_mode(struct display *display, enum vesa_video_mode mode);
 //extern void vesa_quit_mode(void);
 
 //extern unsigned int vesa_get_width(void);

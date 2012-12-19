@@ -6,7 +6,7 @@
  * @author Nikolay Korotky
  */
 
-#include <drivers/vga.h>
+#include <drivers/vga_console.h>
 #include <asm/io.h>
 #include <ctype.h>
 

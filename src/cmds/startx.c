@@ -33,7 +33,7 @@ struct display *display_get(void) {
 }
 
 int xwnd_init(void) {
-	if(NULL == vesa_init_mode(&display, 0x13)) {
+	if(NULL == vga_setup_mode(&display, 0x13)) {
 		return -1;
 	}
 
@@ -45,7 +45,7 @@ int xwnd_init(void) {
 void xwnd_quit(void){
 	display_clear_screen(&display);
 
-	vesa_init_mode(&display, 0x3);
+	vga_setup_mode(&display, 0x3);
 }
 
 static int exec (int argc, char ** argv) {

@@ -7,6 +7,7 @@
 
 #include <drivers/video/vga.h>
 #include <drivers/video/display.h>
+#include <drivers/video/vesa_mode.h>
 
 /* mode 13h */
 static unsigned char g_320x200x256[] =

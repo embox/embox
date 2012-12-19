@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <drivers/vesa.h>
+//#include <drivers/vesa.h>
 #include <xwnd/xwnd.h>
 #include <lib/xwnd/draw_helpers.h>
 #include <lib/xwnd/bmp.h>

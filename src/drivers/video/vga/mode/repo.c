@@ -5,7 +5,7 @@
  * @author: Anton Bondarev
  */
 #include <drivers/video/vga.h>
-#include <drivers/vesa.h>
+#include <drivers/video/vesa_mode.h>
 #include <util/array.h>
 
 ARRAY_SPREAD_DEF(const struct vga_mode_description *, __vga_mode_descriptions);
@@ -18,5 +18,6 @@ const struct vga_mode_description *vga_mode_description_lookup(enum vesa_video_m
 			return desc;
 		}
 	}
+
 	return NULL;
 }
