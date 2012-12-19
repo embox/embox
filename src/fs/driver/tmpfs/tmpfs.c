@@ -53,6 +53,8 @@ static int tmpfs_init(void * par) {
 		return 0;
 	}
 
+	/*TODO */
+
 	if (0 != ramdisk_create(TMPFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE())) {
 		return -1;
 	}
