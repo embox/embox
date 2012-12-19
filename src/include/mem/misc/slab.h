@@ -80,4 +80,18 @@ extern void cache_free(cache_t *cachep, void* objp);
  */
 extern int cache_shrink(cache_t *cachep);
 
+/**
+ * Enable/disable cache growing. That means if growing is on, than
+ * cache will allocate slabs when no memory. And allocation will be return NULL
+ * if no memory and cache is not growing.
+ * By default growing is on.
+ * */
+static inline void cache_growing_on(cache_t *cache) {
+	cache->growing = true;
+}
+
+static inline void cache_growing_off(cache_t *cache) {
+	cache->growing = false;
+}
+
 #endif /* MEM_MISC_SLAB_H_ */

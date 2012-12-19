@@ -94,7 +94,8 @@ cache_t cache_chain = {
 	.slabs_free = DLIST_INIT(cache_chain.slabs_free),
 	.slabs_partial = DLIST_INIT(cache_chain.slabs_partial),
 	.next = DLIST_INIT(cache_chain.next),
-	.slab_order = CACHE_CHAIN_SIZE
+	.slab_order = CACHE_CHAIN_SIZE,
+	.growing = true
 };
 
 /** Initialize cache according to storage data in info structure */
@@ -221,6 +222,7 @@ int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 		return -ENOMEM;
 	}
 
+	cachep->growing = true;
 	dlist_init(&cachep->slabs_full);
 	dlist_init(&cachep->slabs_partial);
 	dlist_init(&cachep->slabs_free);
@@ -303,7 +305,7 @@ void *cache_alloc(cache_t *cachep) {
 	/* getting slab */
 	if (dlist_empty(&cachep->slabs_partial)) {
 		if (dlist_empty(&cachep->slabs_free)) {
-			if (!cache_grow(cachep)) {
+			if (cachep->growing == false || !cache_grow(cachep)) {
 				return NULL;
 			}
 		}

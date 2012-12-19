@@ -46,6 +46,8 @@ struct cache {
 	unsigned int num;
 	/** The base 2 logarithm (2^n) number of pages to allocate for each slab */
 	unsigned int slab_order;
+	/** Indicates weather cache can growing or not. All caches are growing by default */
+	bool growing;
 };
 
 #define __CACHE_DEF(cache_nm, object_t, objects_nr) \
