@@ -17,6 +17,17 @@
 /** Length of name of any cache */
 #define __CACHE_NAMELEN 16
 
+/** max slab size in 2^n form */
+#define MAX_SLAB_ORDER 3
+/** max object size in 2^n form */
+#define MAX_OBJ_ORDER 3
+/** number for defining acceptable internal fragmentation */
+#define MAX_INT_FRAGM_ORDER 8
+/** size of kmalloc_cache in pages */
+#define CACHE_CHAIN_SIZE 1
+/** use to search a fit cache for object */
+#define MAX_OBJECT_ALIGN 0
+
 /** cache descriptor */
 struct cache {
 	/** pointer to other caches */
@@ -39,7 +50,7 @@ struct cache {
 
 #define __CACHE_DEF(cache_nm, object_t, objects_nr) \
 	static struct cache cache_nm =  {                      \
-		/* .obj_nr = (objects_nr), TODO */             \
+		.num = (objects_nr),              \
 		.obj_size = sizeof(object_t),                  \
 	};                                                     \
 	extern const struct mod_member_ops __cache_member_ops; \

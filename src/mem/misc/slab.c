@@ -62,17 +62,6 @@ static page_info_t pages[HEAP_SIZE() / PAGE_SIZE()];
 #define SET_PAGE_SLAB(pg, x)   ((pg)->slab = (x))
 #define GET_PAGE_SLAB(pg)     ((pg)->slab)
 
-/** max slab size in 2^n form */
-#define MAX_SLAB_ORDER 3
-/** max object size in 2^n form */
-#define MAX_OBJ_ORDER 3
-/** number for defining acceptable internal fragmentation */
-#define MAX_INT_FRAGM_ORDER 8
-/** size of kmalloc_cache in pages */
-#define CACHE_CHAIN_SIZE 1
-/** use to search a fit cache for object */
-#define MAX_OBJECT_ALIGN 0
-
 #ifdef SLAB_ALLOCATOR_DEBUG
 void print_slab_info(cache_t *cachep, slab_t *slabp) {
 	int free_elems_count = 0;
@@ -117,7 +106,7 @@ const struct mod_member_ops __cache_member_ops = {
 
 static int cache_member_init(struct mod_member *info) {
 	cache_t *cache = (cache_t *) info->data;
-	return cache_init(cache, cache->obj_size, 0/* TODO unused now */);
+	return cache_init(cache, cache->obj_size, cache->num);
 }
 
 /**
@@ -219,6 +208,8 @@ int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 			continue;
 		}
 
+		/* We want that wastage was lower than
+		 * (1 / MAX_INT_FRAGM_ORDER) * 100% */
 		if (left_over * MAX_INT_FRAGM_ORDER <= PAGE_SIZE()
 				<< cachep->slab_order)
 			break; /* Acceptable internal fragmentation. */
@@ -235,6 +226,16 @@ int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 	dlist_init(&cachep->slabs_free);
 	dlist_head_init(&cachep->next);
 	dlist_add_prev(&cachep->next, &(cache_chain.next));
+
+	/* Reserve memory for minimum count of objects (obj_num) */
+	while (obj_num >= cachep->num) {
+		cache_grow(cachep);
+		obj_num -= cachep->num;
+	}
+
+	if (obj_num != 0) {
+		cache_grow(cachep);
+	}
 
 #ifdef SLAB_ALLOCATOR_DEBUG
 	printf("\n\nCreating cache with name \"%s\"\n", cachep->name);

@@ -69,7 +69,6 @@ TEST_CASE("Allocation in multiple slabs with cache growing.") {
 	cache = cache_create("cache1", MAX_SIZE / 2, 0);
 
 	/* Fill cache */
-	test_assert_equal(cache->num, 2);
 	test_assert_not_null(cache_alloc(cache));
 	test_assert_not_null(cache_alloc(cache));
 	test_assert_equal(list_length(&cache->slabs_full), 1);
@@ -113,10 +112,21 @@ TEST_CASE("Slab size.") {
 	 * effective when low level allocator uses buddy strategy. So, test if slab size is appropriate. */
 
 	cache_t *cache;
+	size_t num, slab_size;
+	/* Object with "bad" size */
+	size_t obj_size = MAX_SIZE - (MAX_SIZE / MAX_INT_FRAGM_ORDER);
 
-	/* For object of size 1.3 pages is fit 4 pages, no 1 or 2 (because 1.3 * 3 = 3.9) */
-	cache = cache_create("cache1", MAX_SIZE + (MAX_SIZE / 3), 1);
-	test_assert_equal(cache->slab_order, 2);
+	/* Create object with wastage greater than (1 / MAX_INT_FRAGM_ORDER) * 100% */
+	cache = cache_create("cache1", obj_size , 1);
+	num = cache->num;
+	while (num-- > 0) {
+		cache_alloc(cache);
+	}
+	slab_size = PAGE_SIZE() << cache->slab_order;
+	/* Test if full slab have wastage lower than (1 / MAX_INT_FRAGM_ORDER) * 100% or slab has
+	 * maximum size */
+	test_assert(((obj_size * cache->num) / slab_size) <= (1 / MAX_INT_FRAGM_ORDER) ||
+			(MAX_SLAB_ORDER == cache->slab_order));
 	cache_destroy(cache);
 }
 
