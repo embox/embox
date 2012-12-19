@@ -12,28 +12,16 @@
 #include <util/array.h>
 
 
-#define inportb(P)	      in8(P)
-#define outportb(P,V)	   out8(V, P)
+//#define inportb(P)	      in8(P)
+//#define outportb(P,V)	   out8(V, P)
+//
 
-/* CauseWay DOS extender only */
-#define peekb(S,O)	      *(unsigned char *)(16uL * (S) + (O))
-#define pokeb(S,O,V)	    *(unsigned char *)(16uL * (S) + (O)) = (V)
-#define pokew(S,O,V)	    *(unsigned short *)(16uL * (S) + (O)) = (V)
-#define _vmemwr(DS,DO,S,N)      memcpy((char *)((DS) * 16 + (DO)), S, N)
-
-
-extern void vmemwr(unsigned dst_off, unsigned char *src, unsigned count);
-
-extern void vpokeb(unsigned off, unsigned val);
-
-extern unsigned vpeekb(unsigned off);
-
-extern void set_plane(unsigned p);
 
 
 
 //http://wiki.osdev.org/VGA_Hardware
 //http://www.monstersoft.com/tutorial1/VESA_intro.html
+//http://www.faqs.org/faqs/pc-hardware-faq/supervga-programming/
 
 /*****************************************************************************
 *****************************************************************************/
@@ -41,38 +29,32 @@ void vga_read_regs(unsigned char *regs) {
 	unsigned i;
 
 /* read MISCELLANEOUS reg */
-	*regs = inportb(VGA_MISC_READ);
+	*regs = vga_misc_read();
 	regs++;
 
 /* read SEQUENCER regs */
 	for(i = 0; i < VGA_NUM_SEQ_REGS; i++) {
-		outportb(VGA_SEQ_INDEX, i);
-		*regs = inportb(VGA_SEQ_DATA);
+		*regs = vga_seq_read(i);
 		regs++;
 	}
 
 /* read CRTC regs */
 	for(i = 0; i < VGA_NUM_CRTC_REGS; i++) {
-		outportb(VGA_CRTC_INDEX, i);
-		*regs = inportb(VGA_CRTC_DATA);
+		*regs = vga_crtc_read(i);
 		regs++;
 	}
 /* read GRAPHICS CONTROLLER regs */
 	for(i = 0; i < VGA_NUM_GC_REGS; i++) {
-		outportb(VGA_GC_INDEX, i);
-		*regs = inportb(VGA_GC_DATA);
+		*regs = vga_gc_read(i);
 		regs++;
 	}
 /* read ATTRIBUTE CONTROLLER regs */
 	for(i = 0; i < VGA_NUM_AC_REGS; i++) {
-		(void)inportb(VGA_INSTAT_READ);
-		outportb(VGA_AC_INDEX, i);
-		*regs = inportb(VGA_AC_READ);
+		*regs = vga_ac_read(i);
 		regs++;
 	}
 /* lock 16-color palette and unblank display */
-	inportb(VGA_INSTAT_READ);
-	outportb(VGA_AC_INDEX, 0x20);
+	vga_display_enable(1); /* we must do it because we use AC register end clear enable bit */
 }
 
 
@@ -82,44 +64,40 @@ void vga_write_regs(unsigned char *regs) {
 	unsigned i;
 
 /* write MISCELLANEOUS reg */
-	outportb(VGA_MISC_WRITE, *regs);
+	vga_misc_write(*regs);
 	regs++;
 /* write SEQUENCER regs */
 	for(i = 0; i < VGA_NUM_SEQ_REGS; i++) {
-		outportb(VGA_SEQ_INDEX, i);
-		outportb(VGA_SEQ_DATA, *regs);
+		vga_seq_write(*regs, i);
 		regs++;
 	}
 /* unlock CRTC registers */
-	outportb(VGA_CRTC_INDEX, 0x03);
-	outportb(VGA_CRTC_DATA, inportb(VGA_CRTC_DATA) | 0x80);
-	outportb(VGA_CRTC_INDEX, 0x11);
-	outportb(VGA_CRTC_DATA, inportb(VGA_CRTC_DATA) & ~0x80);
+//	outportb(VGA_CRTC_INDEX, 0x03);
+//	outportb(VGA_CRTC_DATA, inportb(VGA_CRTC_DATA) | 0x80);
+	vga_crtc_write(vga_crtc_read(VGA_CRTC_H_BLANK_END) | 0x80, VGA_CRTC_H_BLANK_END);
+//	outportb(VGA_CRTC_INDEX, 0x11);
+//	outportb(VGA_CRTC_DATA, inportb(VGA_CRTC_DATA) & ~0x80);
+	vga_crtc_write(vga_crtc_read(VGA_CRTC_V_SYNC_END) | 0x80, VGA_CRTC_V_SYNC_END);
 /* make sure they remain unlocked */
 	regs[0x03] |= 0x80;
 	regs[0x11] &= ~0x80;
 /* write CRTC regs */
 	for(i = 0; i < VGA_NUM_CRTC_REGS; i++) {
-		outportb(VGA_CRTC_INDEX, i);
-		outportb(VGA_CRTC_DATA, *regs);
+		vga_crtc_write(*regs, i);
 		regs++;
 	}
 /* write GRAPHICS CONTROLLER regs */
 	for(i = 0; i < VGA_NUM_GC_REGS; i++) {
-		outportb(VGA_GC_INDEX, i);
-		outportb(VGA_GC_DATA, *regs);
+		vga_gc_write(*regs, i);
 		regs++;
 	}
 /* write ATTRIBUTE CONTROLLER regs */
 	for(i = 0; i < VGA_NUM_AC_REGS; i++) {
-		inportb(VGA_INSTAT_READ);
-		outportb(VGA_AC_INDEX, i);
-		outportb(VGA_AC_WRITE, *regs);
+		vga_ac_write(*regs, i);
 		regs++;
 	}
 /* lock 16-color palette and unblank display */
-	inportb(VGA_INSTAT_READ);
-	outportb(VGA_AC_INDEX, 0x20);
+	vga_display_enable(1);
 }
 
 

@@ -15,15 +15,8 @@
 
 //svga http://www.monstersoft.com/tutorial1/VESA_intro.html
 //http://files.osdev.org/mirrors/geezer/osd/graphics/
-
 //http://devotes.narod.ru/Books/3/ch05_10d.htm
-
 //http://src-code.net/registry-videokontrollera/
-
-#define inportb(P)	      in8(P)
-#define outportb(P,V)	   out8(V, P)
-
-
 
 
 /*****************************************************************************
@@ -35,23 +28,20 @@ void set_plane(unsigned p)
 	p &= 3;
 	pmask = 1 << p;
 /* set read plane */
-	outportb(VGA_GC_INDEX, 4);
-	outportb(VGA_GC_DATA, p);
+	vga_gc_write(p, VGA_GC_READ_MAP_SEL);
 /* set write plane */
-	outportb(VGA_SEQ_INDEX, 2);
-	outportb(VGA_SEQ_DATA, pmask);
+	vga_seq_write(pmask, VGA_SEQ_PLANE_MASK);
 }
 
 /*****************************************************************************
 VGA framebuffer is at A000:0000, B000:0000, or B800:0000
-depending on bits in GC 6
+depending on bits in GC registers index 6
 *****************************************************************************/
 static unsigned get_fb_seg(void)
 {
 	unsigned seg;
 
-	outportb(VGA_GC_INDEX, 6);
-	seg = inportb(VGA_GC_DATA);
+	seg = vga_gc_read(VGA_GC_MISCELLANEOUS);
 	seg >>= 2;
 	seg &= 3;
 	switch(seg)
