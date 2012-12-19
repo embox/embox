@@ -8,6 +8,6 @@
 #ifndef REVISION_H_
 #define REVISION_H_
 
-#define EMBOX_REVISION "0.3.2"
+#define EMBOX_REVISION "0.3.3"
 
 #endif /* REVISION_H_ */
