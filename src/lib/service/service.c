@@ -50,8 +50,7 @@ int service_file_random_open_write(struct service_file *srv_file, const char * p
 	if (!srv_file->name) {
 		return -1;
 	}
-	srv_file->name[0] = '\0';
-	strcat(srv_file->name, prefix);
+	strcpy(srv_file->name, prefix);
 	for (i = strlen(prefix);
 			i < SERVICE_FILE_RAND_STR_LEN + prefix_len; i++) {
 		srv_file->name[i] = rand_letter();
@@ -68,7 +67,7 @@ int service_file_random_open_write(struct service_file *srv_file, const char * p
 }
 
 int service_file_open_write(struct service_file *srv_file) {
-	return service_file_random_open_write(srv_file, SERVICE_FILE_POSTFIX, SERVICE_FILE_PREFIX);
+	return service_file_random_open_write(srv_file, SERVICE_FILE_PREFIX, SERVICE_FILE_POSTFIX);
 }
 
 void service_get_service_data(struct service_data * data, void * arg) {
@@ -142,10 +141,10 @@ int service_send_reply(struct service_data *srv_data,
 	/* 1. set title */
 	curr += service_set_starting_line(curr, srv_data->http_status);
 	/* 2. set options */
+	assert(srv_file->fd != NULL);
 	fstat(srv_file->fd->fd, &stat);
 	curr += service_set_ops(curr, stat.st_size, srv_data->request.connection, content_type);
 	/* 3. set message bode and send response */
-	assert(srv_file->fd != NULL);
 	/* send file */
 	do {
 		bytes_need = sizeof buff - (curr - buff);
