@@ -107,19 +107,14 @@
  * rights to redistribute these changes.
  */
 
-struct open_file {
-	//const struct fs_ops	*f_ops;	/* pointer to file system operations */
-	//void		*f_fsdata;	/* file system specific data */
-	long		f_offset;	/* current file offset (F_RAW) */
-};
-
-static int read_inode(struct nas *nas, uint32_t);
-static int block_map(struct nas *nas, int32_t, int32_t *);
-static int buf_read_file(struct nas *nas, char **, size_t *);
-static int search_directory(struct nas *nas, const char *, int, uint32_t *);
-static int read_sblock(struct nas *nas);
-static int read_gdblock(struct nas *nas);
-
+static int ext2_read_inode(struct nas *nas, uint32_t);
+static int ext2_block_map(struct nas *nas, int32_t, int32_t *);
+static int ext2_buf_read_file(struct nas *nas, char **, size_t *);
+static int ext2_search_directory(struct nas *nas, const char *, int, uint32_t *);
+static int ext2_read_sblock(struct nas *nas);
+static int ext2_read_gdblock(struct nas *nas);
+static int ext2_ls(struct nas *nas, /*const char *pattern,
+					void (*funcp)(char* arg),*/ char* path);
 
 /* ext filesystem description pool */
 POOL_DEF(ext2_fs_pool, struct ext2_fs_info, OPTION_GET(NUMBER,ext_descriptor_quantity));
@@ -129,21 +124,23 @@ POOL_DEF(ext2_file_pool, struct ext2_file_info, OPTION_GET(NUMBER,ext_inode_quan
 
 #define EXT_NAME "ext2"
 
-//static char sector_buff[PAGE_SIZE()];/* TODO */
-
-static int    ext2_open(struct node *node, struct file_desc *file_desc, int flags);
-static int    ext2_close(struct file_desc *desc);
-static size_t ext2_read(struct file_desc *desc, void *buf, size_t size);
-static size_t ext2_write(struct file_desc *desc, void *buf, size_t size);
-static int    ext2_ioctl(struct file_desc *desc, int request, va_list args);
+static int    ext2fs_open(struct node *node, struct file_desc *file_desc, int flags);
+static int    ext2fs_close(struct file_desc *desc);
+static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
+static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size);
+static int    ext2fs_ioctl(struct file_desc *desc, int request, va_list args);
 
 static struct kfile_operations ext2_fop = {
-		ext2_open,
-		ext2_close,
-		ext2_read,
-		ext2_write,
-		ext2_ioctl
+		ext2fs_open,
+		ext2fs_close,
+		ext2fs_read,
+		ext2fs_write,
+		ext2fs_ioctl
 };
+
+/*
+ * help function
+ */
 
 static int ext2_read_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector) {
@@ -166,112 +163,148 @@ static int ext2_write_sector(struct nas *nas, char *buffer,
 */
 
 /*
- * file_operation
+ * Calculate indirect block levels.
+ *
+ * We note that the number of indirect blocks is always
+ * a power of 2.  This lets us use shifts and masks instead
+ * of divide and remainder and avoinds pulling in the
+ * 64bit division routine into the boot code.
  */
-static int ext2_open(struct node *node, struct file_desc *desc, int flags) {
-	char path[MAX_LENGTH_PATH_NAME];
-	const char *cp, *ncp;
-	int c;
+static int ext2_culc_shift (struct ext2_file_info *fi,
+							struct ext2_fs_info *fsi) {
+	int32_t mult;
+	int ln2;
+
+	mult = NINDIR(fsi);
+	if (0 == mult) {
+		return -1;
+	}
+
+	for (ln2 = 0; mult != 1; ln2++) {
+		mult >>= 1;
+	}
+
+	fi->f_nishift = ln2;
+
+	return 0;
+}
+
+/* find and read symlink file */
+static int ext2_read_symlink (struct nas *nas,
+					uint32_t parent_inumber, const char **cp) {
+	/* XXX should handle LARGEFILE */
+	int len, link_len;
+	int rc;
 	uint32_t inumber;
+	char namebuf[MAXPATHLEN + 1];
+	int nlinks;
+	int32_t	disk_block;
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
-	int rc;
-	uint32_t parent_inumber;
-	int nlinks = 0;
-	char namebuf[MAXPATHLEN + 1];
-	char *buf;
-	struct nas *nas;
 
-	nas = node->nas;
-	nas = desc->node->nas;
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
-	vfs_get_path_by_node(node, path);
+	nlinks = 0;
+	link_len = fi->f_di.e2di_size;
+	len = strlen(*cp);
 
-	/* allocate file system specific data structure /
-
-
-	fi = malloc(sizeof(struct ext2_file_info));
-	memset(fi, 0, sizeof(struct ext2_file_info));
-
-	// allocate space and read super block /
-	fsi = malloc(sizeof(*fsi));
-	memset(fsi, 0, sizeof(*fsi));
-	fi->f_fs = fsi;
-
-	rc = read_sblock(nas);
-	if (rc) {
-		goto out;
+	if ((link_len + len > MAXPATHLEN) ||
+		(++nlinks > MAXSYMLINKS)) {
+		return ENOENT;
 	}
-	*/
+
+	memmove(&namebuf[link_len], cp, len + 1);
+
+	if (link_len < EXT2_MAXSYMLINKLEN) {
+		memcpy(namebuf, fi->f_di.e2di_blocks, link_len);
+	}
+	else {
+		/* Read file for symbolic link */
+		if (0 != (rc = ext2_block_map(nas, (int32_t)0, &disk_block))) {
+			return rc;
+		}
+		if (SBSIZE != ext2_read_sector(nas, fi->f_buf, 1,
+						fsbtodb(fsi, disk_block))) {
+			return EIO;
+		}
+		memcpy(namebuf, fi->f_buf, link_len);
+	}
+	/*
+	 * If relative pathname, restart at parent directory.
+	 * If absolute pathname, restart at root.
+	 */
+	*cp = namebuf;
+	if (*namebuf != '/') {
+		inumber = parent_inumber;
+	}
+	else {
+		inumber = (uint32_t)EXT2_ROOTINO;
+	}
+	rc = ext2_read_inode(nas, inumber);
+
+	return rc;
+}
+
+/*
+ * file_operation
+ */
+static int ext2fs_open(struct node *node, struct file_desc *desc, int flags) {
+	char path[MAX_LENGTH_PATH_NAME];
+	const char *cp, *ncp;
+	uint32_t inumber, parent_inumber;
+
+	int rc;
+	struct nas *nas;
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
+
+	nas = node->nas;
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
+
+	/* prepare full path into this filesystem */
+	vfs_get_path_by_node(node, path);
+	path_cut_mount_dir(path, fsi->mntto);
+
+	/* allocate file system specific data structure */
 
 	/* alloc a block sized buffer used for all transfers */
 	fi->f_buf = malloc(fsi->e2fs_bsize);
 
 	/* read group descriptor blocks */
 	fsi->e2fs_gd = malloc(sizeof(struct ext2_gd) * fsi->e2fs_ncg);
-	rc = read_gdblock(nas);
-	if (rc) {
+	if(0 != (rc = ext2_read_gdblock(nas))) {
 		goto out;
 	}
 
-	/*
-	 * Calculate indirect block levels.
-	 */
-	{
-		int32_t mult;
-		int ln2;
-
-		/*
-		 * We note that the number of indirect blocks is always
-		 * a power of 2.  This lets us use shifts and masks instead
-		 * of divide and remainder and avoinds pulling in the
-		 * 64bit division routine into the boot code.
-		 */
-		mult = NINDIR(fsi);
-		if(0 == mult) {
-			goto out;
-		}
-
-		for (ln2 = 0; mult != 1; ln2++) {
-			mult >>= 1;
-		}
-
-		fi->f_nishift = ln2;
+	if(0 != ext2_culc_shift(fi, fsi)) {
+		goto out;
 	}
 
 	inumber = EXT2_ROOTINO;
-	if ((rc = read_inode(nas, inumber)) != 0)
+	if ((rc = ext2_read_inode(nas, inumber)) != 0) {
 		goto out;
+	}
 
 	cp = path;
-	path_cut_mount_dir(path, fsi->mntto);
-
 	while (*cp) {
-		/*
-		 * Remove extra separators
-		 */
+		/* Remove extra separators */
 		while (*cp == '/') {
 			cp++;
 		}
-
 		if (*cp == '\0') {
 			break;
 		}
 
-		/*
-		 * Check that current node is a directory.
-		 */
+		/* Check that current node is a directory */
 		if ((fi->f_di.e2di_mode & EXT2_IFMT) != EXT2_IFDIR) {
 			rc = ENOTDIR;
 			goto out;
 		}
 
-		/*
-		 * Get next component of path name.
-		 */
+		/* Get next component of path name */
 		ncp = cp;
-		while ((c = *cp) != '\0' && c != '/') {
+		while ((*cp != '\0') && (*cp != '/')) {
 			cp++;
 		}
 
@@ -281,124 +314,64 @@ static int ext2_open(struct node *node, struct file_desc *desc, int flags) {
 		 * symbolic link.
 		 */
 		parent_inumber = inumber;
-		rc = search_directory(nas, ncp, cp - ncp, &inumber);
+		rc = ext2_search_directory(nas, ncp, cp - ncp, &inumber);
 		if (rc) {
 			goto out;
 		}
 
-		/*
-		 * Open next component.
-		 */
-		if ((rc = read_inode(nas, inumber)) != 0) {
+		/* Open next component */
+		if (0 != (rc = ext2_read_inode(nas, inumber))) {
 			goto out;
 		}
 
-		/*
-		 * Check for symbolic link.
-		 */
+		/* Check for symbolic link */
 		if ((fi->f_di.e2di_mode & EXT2_IFMT) == EXT2_IFLNK) {
-			/* XXX should handle LARGEFILE */
-			int link_len = fi->f_di.e2di_size;
-			int len;
-
-			len = strlen(cp);
-
-			if (link_len + len > MAXPATHLEN ||
-				++nlinks > MAXSYMLINKS) {
-				rc = ENOENT;
+			if(ext2_read_symlink (nas, parent_inumber, &cp)) {
 				goto out;
 			}
-
-			memmove(&namebuf[link_len], cp, len + 1);
-
-			if (link_len < EXT2_MAXSYMLINKLEN) {
-				memcpy(namebuf, fi->f_di.e2di_blocks, link_len);
-			}
-			else {
-				/*
-				 * Read file for symbolic link
-				 */
-				//size_t buf_size;
-				int32_t	disk_block;
-
-				buf = fi->f_buf;
-				rc = block_map(nas, (int32_t)0, &disk_block);
-				if (rc)
-					goto out;
-
-				if(SBSIZE != ext2_read_sector(nas, buf, 1,
-								fsbtodb(fsi, disk_block))) {
-					goto out;
-				}
-
-				memcpy(namebuf, buf, link_len);
-			}
-
-			/*
-			 * If relative pathname, restart at parent directory.
-			 * If absolute pathname, restart at root.
-			 */
-			cp = namebuf;
-			if (*cp != '/')
-				inumber = parent_inumber;
-			else
-				inumber = (uint32_t)EXT2_ROOTINO;
-
-			if ((rc = read_inode(nas, inumber)) != 0)
-				goto out;
 		}
 	}
-
-#if 0
-	/*
-	 * Found terminal component.
-	 */
-	rc = 0;
-	/* look up component in the current (root) directory */
-	rc = search_directory(nas, path, strlen(path), &inumber);
-	if (rc) {
-		goto out;
-	}
-
-	/* open it */
-	rc = read_inode(nas, inumber);
-#endif
 
 	fi->f_seekp = 0;		/* reset seek pointer */
 
 out:
-	if (rc)
-		ext2_close(desc);
+	if (rc) {
+		ext2fs_close(desc);
+	}
 
 	return rc;
 }
 
-static int ext2_close(struct file_desc *desc) {
+static int ext2fs_close(struct file_desc *desc) {
 	struct nas *nas;
 	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
 
-	nas = desc->node->nas;
-	fi = nas->fi->privdata;
-
-	if (fi == NULL) {
+	if(NULL == desc) {
 		return 0;
 	}
+	nas = desc->node->nas;
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
 
-	if (fi->f_fs->e2fs_gd) {
-		free(fi->f_fs->e2fs_gd);
+	if (NULL != fsi) {
+		if (fsi->e2fs_gd) {
+			free(fsi->e2fs_gd);
+		}
+		pool_free(&ext2_fs_pool, fsi);
 	}
 
-	if (fi->f_buf) {
-		free(fi->f_buf);
+	if (NULL != fi) {
+		if (NULL != fi->f_buf) {
+			free(fi->f_buf);
+		}
+		pool_free(&ext2_file_pool, fi);
 	}
-
-	free(fi->f_fs);
-	free(fi);
 
 	return 0;
 }
 
-static size_t ext2_read(struct file_desc *desc, void *buff, size_t size) {
+static size_t ext2fs_read(struct file_desc *desc, void *buff, size_t size) {
 	size_t csize;
 	char *buf;
 	size_t buf_size;
@@ -416,8 +389,7 @@ static size_t ext2_read(struct file_desc *desc, void *buff, size_t size) {
 			break;
 		}
 
-		rc = buf_read_file(nas, &buf, &buf_size);
-		if (rc) {
+		if (0 != (rc = ext2_buf_read_file(nas, &buf, &buf_size))) {
 			return 0;
 		}
 
@@ -437,7 +409,7 @@ static size_t ext2_read(struct file_desc *desc, void *buff, size_t size) {
 }
 
 
-static size_t ext2_write(struct file_desc *desc, void *buf, size_t size) {
+static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size) {
 	/*struct nas *nas;
 	struct ext2_file_info *f;
 
@@ -447,25 +419,25 @@ static size_t ext2_write(struct file_desc *desc, void *buf, size_t size) {
 	return EROFS;
 }
 
-static int ext2_ioctl(struct file_desc *desc, int request, va_list args) {
+static int ext2fs_ioctl(struct file_desc *desc, int request, va_list args) {
 	return 0;
 }
 
-static int ext2_init(void * par);
-static int ext2_format(void *path);
-static int ext2_mount(void *dev, void *dir);
-static int ext2_create(struct node *parent_node, struct node *node);
-static int ext2_delete(struct node *node);
+static int ext2fs_init(void * par);
+static int ext2fs_format(void *path);
+static int ext2fs_mount(void *dev, void *dir);
+static int ext2fs_create(struct node *parent_node, struct node *node);
+static int ext2fs_delete(struct node *node);
 
 static fsop_desc_t ext2_fsop = {
-		ext2_init,
-		ext2_format,
-		ext2_mount,
-		ext2_create,
-		ext2_delete
+		ext2fs_init,
+		ext2fs_format,
+		ext2fs_mount,
+		ext2fs_create,
+		ext2fs_delete
 };
 
-static int ext2_init(void * par) {
+static int ext2fs_init(void * par) {
 
 	return 0;
 };
@@ -488,50 +460,21 @@ static ext2_file_info_t *ext2_create_file(struct nas *nas) {
 	return fi;
 }
 
-static int ext2_create(struct node *parent_node, struct node *node) {
+static int ext2fs_create(struct node *parent_node, struct node *node) {
 	struct nas *nas, *parents_nas;
-	int node_quantity;
-	char path[MAX_LENGTH_PATH_NAME];
 
 	parents_nas = parent_node->nas;
-
-	if (node_is_directory(node)) {
-		node_quantity = 3; /* need create . and .. directory */
-	}
-	else {
-		node_quantity = 1;
-	}
-	vfs_get_path_by_node(node, path);
-
-	for (int count = 0; count < node_quantity; count ++) {
-		if(0 < count) {
-			if(1 == count) {
-				strcat(path, "/.");
-			}
-			else if(2 == count) {
-				strcat(path, ".");
-			}
-			if(NULL == (node = vfs_add_path (path, NULL))) {
-				return -ENOMEM;
-			}
-		}
-
-		nas = node->nas;
-		nas->fs = parents_nas->fs;
-		/* don't need create fi for directory - take root node fi */
-		nas->fi->privdata = parents_nas->fi->privdata;
-
-		if((0 >= count) & (!node_is_directory(node))) {
-			if(NULL == (nas->fi->privdata = ext2_create_file(nas))) {
-				return -ENOMEM;
-			}
-		}
+	nas = node->nas;
+	nas->fs = parents_nas->fs;
+	/* don't need create fi for directory - take root node fi */
+	if(NULL == (nas->fi->privdata = ext2_create_file(nas))) {
+		return -ENOMEM;
 	}
 
 	return 0;
 }
 
-static int ext2_delete(struct node *node) {
+static int ext2fs_delete(struct node *node) {
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 	node_t *pointnod;
@@ -573,7 +516,7 @@ static int ext2_delete(struct node *node) {
 	return 0;
 }
 
-static int ext2_format(void *dev) {
+static int ext2fs_format(void *dev) {
 	/*node_t *dev_node;
 	struct nas *dev_nas;
 	struct node_fi *dev_fi;
@@ -592,7 +535,7 @@ static int ext2_format(void *dev) {
 	return 0;
 }
 
-static int ext2_mount(void *dev, void *dir) {
+static int ext2fs_mount(void *dev, void *dir) {
 	struct node *dir_node, *dev_node;
 	struct nas *dir_nas, *dev_nas;
 	struct ext2_file_info *fi;
@@ -622,11 +565,7 @@ static int ext2_mount(void *dev, void *dir) {
 	dir_nas->fs->fsi = fsi;
 	vfs_get_path_by_node(dir_node, fsi->mntto);
 	vfs_get_path_by_node(dev_node, fsi->mntfrom);
-	/*fsi->block_per_file = MAX_FILE_SIZE;
-	fsi->block_size = PAGE_SIZE();
-	fsi->numblocks = block_dev(dev_fi->privdata)->size / PAGE_SIZE();*/
 
-	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&ext2_file_pool))) {
 		return -ENOMEM;
 	}
@@ -637,9 +576,12 @@ static int ext2_mount(void *dev, void *dir) {
 
 	/* presetting that we think */
 	fsi->e2fs_bsize = SBSIZE;
-	if(0 != read_sblock(dir_nas)) {
+	if(0 != ext2_read_sblock(dir_nas)) {
 		return -1;
 	}
+
+	ext2fs_open(dir_nas->node, NULL, 0);
+	ext2_ls(dir_nas, "/1/11");
 
 	return 0;
 }
@@ -647,7 +589,7 @@ static int ext2_mount(void *dev, void *dir) {
 /*
  * Read a new inode into a file structure.
  */
-static int read_inode(struct nas *nas, uint32_t inumber) {
+static int ext2_read_inode(struct nas *nas, uint32_t inumber) {
 	char *buf;
 	size_t rsize;
 	int64_t inode_sector;
@@ -660,27 +602,20 @@ static int read_inode(struct nas *nas, uint32_t inumber) {
 
 	inode_sector = fsbtodb(fsi, ino_to_fsba(fsi, inumber));
 
-	/*
-	 * Read inode and save it.
-	 */
+	/* Read inode and save it */
 	buf = fi->f_buf;
-	//twiddle();
-	/*rc = DEV_STRATEGY(f->f_dev)(f->f_devdata, F_READ,
-	    inode_sector, fsi->e2fs_bsize, buf, &rsize);
-	if (rc)
-		return rc;*/
 	rsize = ext2_read_sector(nas, buf, 1, inode_sector);
 	if (rsize != fsi->e2fs_bsize) {
 		return EIO;
 	}
 
+	/* set pointer to inode struct in read buffer */
 	dip = (struct ext2fs_dinode *)(buf +
 	    EXT2_DINODE_SIZE(fsi) * ino_to_fsbo(fsi, inumber));
+	/* load inode struct to file info */
 	e2fs_iload(dip, &fi->f_di);
 
-	/*
-	 * Clear out the old buffers
-	 */
+	/* Clear out the old buffers */
 	fi->f_ind_cache_block = ~0;
 	fi->f_buf_blkno = -1;
 	return 0;
@@ -690,7 +625,7 @@ static int read_inode(struct nas *nas, uint32_t inumber) {
  * Given an offset in a file, find the disk block number that
  * contains that block.
  */
-static int block_map(struct nas *nas,  int32_t file_block,
+static int ext2_block_map(struct nas *nas,  int32_t file_block,
 		             int32_t *disk_block_p) {
 	uint level;
 	int32_t ind_cache;
@@ -702,7 +637,6 @@ static int block_map(struct nas *nas,  int32_t file_block,
 
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
-
 	buf = (void *)fi->f_buf;
 
 	/*
@@ -773,8 +707,8 @@ static int block_map(struct nas *nas,  int32_t file_block,
 		 * of a filesystem block.
 		 * However we don't do this very often anyway...
 		 */
-		rsize = ext2_read_sector(nas, (char *)buf, 1,
-							fsbtodb(fi->f_fs, ind_block_num));
+		rsize =
+			ext2_read_sector(nas, (char *)buf, 1, fsbtodb(fsi, ind_block_num));
 
 		if (rsize != fsi->e2fs_bsize)
 			return EIO;
@@ -797,7 +731,7 @@ static int block_map(struct nas *nas,  int32_t file_block,
  * Read a portion of a file into an internal buffer.
  * Return the location in the buffer and the amount in the buffer.
  */
-static int buf_read_file(struct nas *nas,
+static int ext2_buf_read_file(struct nas *nas,
 								char **buf_p, size_t *size_p) {
 	long off;
 	int32_t file_block;
@@ -815,9 +749,9 @@ static int buf_read_file(struct nas *nas,
 	block_size = fsi->e2fs_bsize;	/* no fragment */
 
 	if (file_block != fi->f_buf_blkno) {
-		rc = block_map(nas, file_block, &disk_block);
-		if (rc)
+		if (0 != (rc = ext2_block_map(nas, file_block, &disk_block))) {
 			return rc;
+		}
 
 		if (disk_block == 0) {
 			memset(fi->f_buf, 0, block_size);
@@ -825,7 +759,7 @@ static int buf_read_file(struct nas *nas,
 		} else {
 			if(SBSIZE != ext2_read_sector(nas, fi->f_buf, 1,
 									fsbtodb(fsi, disk_block))) {
-				return -1;
+				return EIO;
 			}
 		}
 
@@ -840,12 +774,11 @@ static int buf_read_file(struct nas *nas,
 	*buf_p = fi->f_buf + off;
 	*size_p = block_size - off;
 
-	/*
-	 * But truncate buffer at end of file.
-	 */
+	/* But truncate buffer at end of file */
 	/* XXX should handle LARGEFILE */
-	if (*size_p > fi->f_di.e2di_size - fi->f_seekp)
+	if (*size_p > fi->f_di.e2di_size - fi->f_seekp) {
 		*size_p = fi->f_di.e2di_size - fi->f_seekp;
+	}
 
 	return 0;
 }
@@ -854,7 +787,7 @@ static int buf_read_file(struct nas *nas,
  * Search a directory for a name and return its
  * inode number.
  */
-static int search_directory(struct nas *nas, const char *name, int length,
+static int ext2_search_directory(struct nas *nas, const char *name, int length,
 						     uint32_t *inumber_p) {
 	struct ext2fs_direct *dp;
 	struct ext2fs_direct *edp;
@@ -868,18 +801,20 @@ static int search_directory(struct nas *nas, const char *name, int length,
 	fi->f_seekp = 0;
 	/* XXX should handle LARGEFILE */
 	while (fi->f_seekp < (long)fi->f_di.e2di_size) {
-		rc = buf_read_file(nas, &buf, &buf_size);
-		if (rc)
+		if (0 != (rc = ext2_buf_read_file(nas, &buf, &buf_size))) {
 			return rc;
+		}
 
 		dp = (struct ext2fs_direct *)buf;
 		edp = (struct ext2fs_direct *)(buf + buf_size);
 		for (; dp < edp;
 		    dp = (struct ext2fs_direct *)((char *)dp + fs2h16(dp->e2d_reclen))) {
-			if (fs2h16(dp->e2d_reclen) <= 0)
+			if (fs2h16(dp->e2d_reclen) <= 0) {
 				break;
-			if (fs2h32(dp->e2d_ino) == (uint32_t)0)
+			}
+			if (fs2h32(dp->e2d_ino) == (uint32_t)0) {
 				continue;
+			}
 			namlen = dp->e2d_namlen;
 			if (namlen == length &&
 			    !memcmp(name, dp->e2d_name, length)) {
@@ -893,7 +828,7 @@ static int search_directory(struct nas *nas, const char *name, int length,
 	return ENOENT;
 }
 
-int read_sblock(struct nas *nas) {
+static int ext2_read_sblock(struct nas *nas) {
 	static uint8_t sbbuf[SBSIZE];
 	struct ext2_fs_info *fsi;
 	struct ext2fs *ext2fs;
@@ -935,7 +870,7 @@ int read_sblock(struct nas *nas) {
 	return 0;
 }
 
-int read_gdblock(struct nas *nas) {
+static int ext2_read_gdblock(struct nas *nas) {
 	size_t rsize;
 	uint gdpb;
 	int i;
@@ -966,7 +901,7 @@ int read_gdblock(struct nas *nas) {
 
 
 /*
-static long ext2fs_seek( long offset, int where) {
+static long ext2_seek( long offset, int where) {
 	struct ext2_file_info *fi = (struct ext2_file_info *)f->f_fsdata;
 
 	switch (where) {
@@ -987,7 +922,7 @@ static long ext2fs_seek( long offset, int where) {
 }
 
 
-static int ext2fs_stat( struct stat *sb) {
+static int ext2_stat( struct stat *sb) {
 	struct ext2_file_info *fi = (struct ext2_file_info *)f->f_fsdata;
 
 	// only important stuff /
@@ -1000,9 +935,9 @@ static int ext2fs_stat( struct stat *sb) {
 	return 0;
 }
 */
-/* ???
+/* ??? */
 
-static const char    *const typestr[] = {
+static const char *const typestr[] = {
 	"unknown",
 	"REG",
 	"DIR",
@@ -1022,81 +957,106 @@ struct entry_t {
 };
 
 #define NELEM(x) (sizeof (x) / sizeof(*x))
-
-static int fn_match(const char *fname, const char *pattern) {
+/*
+static int ext2_fn_match(const char *fname, const char *pattern) {
 	char fc, pc;
 
 	do {
 		fc = *fname++;
 		pc = *pattern++;
-		if (!fc && !pc)
+		if (!fc && !pc) {
 			return 1;
-		if (pc == '?' && fc)
+		}
+		if (pc == '?' && fc) {
 			pc = fc;
+		}
 	} while (fc == pc);
 
-	if (pc != '*')
+	if (pc != '*') {
 		return 0;
+	}
 	//
 	 * Too hard (and unnecessary really) too check for "*?name" etc....
 	 * "**" will look for a '*' and "*?" a '?'
 	 //
 	pc = *pattern++;
-	if (!pc)
+	if (!pc) {
 		return 1;
-	while ((fname = strchr(fname, pc)))
-		if (fn_match(++fname, pattern))
+	}
+	while ((fname = strchr(fname, pc))) {
+		if (ext2_fn_match(++fname, pattern)) {
 			return 1;
+		}
+	}
 	return 0;
 }
+*/
 
-static void ext2fs_ls( const char *pattern,
-		void (*funcp)(char* arg), char* path) {
-	struct ext2_file_info *fi = (struct ext2_file_info *)f->f_fsdata;
-	size_t block_size = fi->f_fs->e2fs_bsize;
+static int ext2_ls(struct nas *nas, char* path) {
 	char *buf;
+	const char *t;
 	size_t buf_size;
+	int rc;
 	entry_t	*names = 0, *n, **np;
+	entry_t *p_names;
+	struct ext2fs_direct  *dp, *edp;
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
+	char *point, *full_path;
+	node_t *node;
+
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
+	full_path = malloc(MAX_LENGTH_PATH_NAME);
 
 	fi->f_seekp = 0;
 	while (fi->f_seekp < (long)fi->f_di.e2di_size) {
-		struct ext2fs_direct  *dp, *edp;
-		int rc = buf_read_file(f, &buf, &buf_size);
-		if (rc)
+		if (0 != (rc = ext2_buf_read_file(nas, &buf, &buf_size))) {
 			goto out;
-		if (buf_size != block_size || buf_size == 0)
+		}
+		if (buf_size != fsi->e2fs_bsize || buf_size == 0) {
 			goto out;
+		}
 
 		dp = (struct ext2fs_direct *)buf;
 		edp = (struct ext2fs_direct *)(buf + buf_size);
 
 		for (; dp < edp;
 		     dp = (void *)((char *)dp + fs2h16(dp->e2d_reclen))) {
-			const char *t;
-
-			if (fs2h16(dp->e2d_reclen) <= 0)
+			if (fs2h16(dp->e2d_reclen) <= 0) {
 				goto out;
-
-			if (fs2h32(dp->e2d_ino) == 0)
+			}
+			if (fs2h32(dp->e2d_ino) == 0) {
 				continue;
+			}
+			/* set null determine name */
+			point = (char *) &dp->e2d_name;
+			*(point + fs2h16(dp->e2d_namlen)) = 0;
 
 			if (dp->e2d_type >= NELEM(typestr) ||
 			    !(t = typestr[dp->e2d_type])) {
-				//
-				 * This does not handle "old"
-				 * filesystems properly. On little
-				 * endian machines, we get a bogus
-				 * type name if the namlen matches a
-				 * valid type identifier. We could
-				 * check if we read namlen "0" and
-				 * handle this case specially, if
-				 * there were a pressing need...
-				 //
+				/*
+				 * This does not handle "old" filesystems properly. On little
+				 * endian machines, we get a bogus type name if the namlen
+				 * matches a valid type identifier. We could check if we read
+				 *  namlen "0" and handle this case specially, if there were
+				 *  a pressing need...
+				 */
 				printf("bad dir entry\n");
 				goto out;
 			}
-			if (pattern && !fn_match(dp->e2d_name, pattern))
+			/*if (pattern && !ext2_fn_match(dp->e2d_name, pattern)) {
 				continue;
+			}*/
+
+			vfs_get_path_by_node(nas->node, full_path);
+			strcat(full_path, "/");
+			if(NULL == (node = vfs_add_path(strcat(full_path, point), NULL))) {
+				goto out;
+			}
+			ext2fs_create(nas->node, node);
+			node->type = NODE_TYPE_DIRECTORY;
+
 			n = malloc(sizeof *n + strlen(dp->e2d_name));
 			if (!n) {
 				printf("%d: %s (%s)\n",
@@ -1107,8 +1067,9 @@ static void ext2fs_ls( const char *pattern,
 			n->e_type = dp->e2d_type;
 			strcpy(n->e_name, dp->e2d_name);
 			for (np = &names; *np; np = &(*np)->e_next) {
-				if (strcmp(n->e_name, (*np)->e_name) < 0)
+				if (strcmp(n->e_name, (*np)->e_name) < 0) {
 					break;
+				}
 			}
 			n->e_next = *np;
 			*np = n;
@@ -1117,7 +1078,7 @@ static void ext2fs_ls( const char *pattern,
 	}
 
 	if (names) {
-		entry_t *p_names = names;
+		p_names = names;
 		do {
 			n = p_names;
 			printf("%d: %s (%s)\n",
@@ -1135,9 +1096,10 @@ out:
 			free(n);
 		} while (names);
 	}
-	return;
+	free(full_path);
+	return 0;
 }
-*/
+
 
 /*
  * byte swap functions for big endian machines
@@ -1224,9 +1186,8 @@ void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new)
 }
 #endif
 
-void
-dump_sblock(struct ext2_fs_info *fsi)
-{
+#if 0
+void ext2_dump_sblock(struct ext2_fs_info *fsi) {
 
 	printf("fsi->e2fs.e2fs_bcount = %u\n", fsi->e2fs.e2fs_bcount);
 	printf("fsi->e2fs.e2fs_first_dblock = %u\n", fsi->e2fs.e2fs_first_dblock);
@@ -1258,6 +1219,7 @@ dump_sblock(struct ext2_fs_info *fsi)
 	printf("fsi->e2fs_ipb = %u\n", fsi->e2fs_ipb);
 	printf("fsi->e2fs_itpg = %u\n", fsi->e2fs_itpg);
 }
+#endif
 
 DECLARE_FILE_SYSTEM_DRIVER(ext2_drv);
 

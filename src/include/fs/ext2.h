@@ -333,25 +333,6 @@ struct	ext2fs_direct {
 	char e2d_name[EXT2FS_MAXNAMLEN];/* name with length<=EXT2FS_MAXNAMLEN */
 };
 
-/* in-memory data for ext2fs */
-typedef struct ext2_fs_info {
-		char mntfrom[MAX_LENGTH_PATH_NAME];
-		char mntto[MAX_LENGTH_PATH_NAME];
-		struct ext2fs e2fs;
-		int8_t	e2fs_ronly;	/* mounted read-only flag */
-		int8_t	e2fs_fmod;	/* super block modified flag */
-		int32_t	e2fs_bsize;	/* block size */
-		int32_t e2fs_bshift;	/* ``lblkno'' calc of logical blkno */
-		int32_t e2fs_bmask;	/* ``blkoff'' calc of blk offsets */
-		int64_t e2fs_qbmask;	/* ~fs_bmask - for use with quad size */
-		int32_t	e2fs_fsbtodb;	/* fsbtodb and dbtofsb shift constant */
-		int32_t	e2fs_ncg;	/* number of cylinder groups */
-		int32_t	e2fs_ngdb;	/* number of group descriptor block */
-		int32_t	e2fs_ipb;	/* number of inodes per block */
-		int32_t	e2fs_itpg;	/* number of inode table per group */
-		struct	ext2_gd *e2fs_gd; /* group descripors */
-} ext2_fs_info_t;
-
 /*
  * To avoid having a lot of filesystem-block sized buffers lurking (which
  * could be 32k) we only keep a few entries of the indirect block map.
@@ -390,12 +371,28 @@ struct ext2fs_dinode {
 	uint32_t	e2di_linux_reserved3; /* 124 */
 };
 
+/* in-memory data for ext2fs */
+typedef struct ext2_fs_info {
+		char mntfrom[MAX_LENGTH_PATH_NAME];
+		char mntto[MAX_LENGTH_PATH_NAME];
+		struct ext2fs e2fs;
+		int32_t	e2fs_bsize;	/* block size */
+		int32_t e2fs_bshift;	/* ``lblkno'' calc of logical blkno */
+		int32_t e2fs_bmask;	/* ``blkoff'' calc of blk offsets */
+		int64_t e2fs_qbmask;	/* ~fs_bmask - for use with quad size */
+		int32_t	e2fs_fsbtodb;	/* fsbtodb and dbtofsb shift constant */
+		int32_t	e2fs_ncg;	/* number of cylinder groups */
+		int32_t	e2fs_ngdb;	/* number of group descriptor block */
+		int32_t	e2fs_ipb;	/* number of inodes per block */
+		int32_t	e2fs_itpg;	/* number of inode table per group */
+		struct	ext2_gd *e2fs_gd; /* group descripors */
+} ext2_fs_info_t;
+
 /*
  * In-core open file.
  */
 typedef struct ext2_file_info {
-	long		f_seekp;	/* seek pointer */
-	struct ext2_fs_info	*f_fs;		/* pointer to super-block */
+	//struct ext2_fs_info	*f_fs;		/* pointer to super-block */
 	struct ext2fs_dinode	f_di;		/* copy of on-disk inode */
 	uint		f_nishift;	/* for blocks in indirect block */
 	int32_t		f_ind_cache_block;
@@ -404,6 +401,7 @@ typedef struct ext2_file_info {
 	char		*f_buf;		/* buffer for data block */
 	size_t		f_buf_size;	/* size of data block */
 	int64_t		f_buf_blkno;	/* block number of data block */
+	long		f_seekp;	/* local seek pointer */
 } ext2_file_info_t;
 
 #endif /* EXT_H_ */
