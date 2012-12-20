@@ -50,9 +50,9 @@ void newKernel(void) {
 static inline void lapic_enable_in_msr(void) {
 	uint32_t msr_hi, msr_lo;
 
-	x86_msr_read(IA32_APIC_BASE, &msr_hi, &msr_lo);
+	ia32_msr_read(IA32_APIC_BASE, &msr_hi, &msr_lo);
 	msr_lo |= (1 << IA32_APIC_BASE_ENABLE_BIT);
-	x86_msr_write(IA32_APIC_BASE, msr_hi, msr_lo);
+	ia32_msr_write(IA32_APIC_BASE, msr_hi, msr_lo);
 }
 
 void lapic_enable(void)
@@ -60,7 +60,7 @@ void lapic_enable(void)
 	lapic_enable_in_msr();
 
     /* Set the Spourious Interrupt Vector Register bit 8 to start receiving interrupts */
-    lapic_write(APIC_SPURIOUS_INTERRUPT_VECTOR, lapic_read(APIC_SPURIOUS_INTERRUPT_VECTOR) | 0x100);
+	//lapic_write(APIC_SPURIOUS_INTERRUPT_VECTOR, lapic_read(APIC_SPURIOUS_INTERRUPT_VECTOR) | 0x100);
 
 #if 0
     memcpy((void *) 0x2000, (char *)newKernel, 512);
@@ -69,38 +69,7 @@ void lapic_enable(void)
 }
 
 static int unit_init(void) {
-	static int inited = 0;
-	if (1 == inited) {
-		return 0;
-	}
-	inited = 1;
-
 	lapic_enable();
 
 	return 0;
-}
-
-void apic_init(void) {
-	unit_init();
-}
-
-void irqctrl_enable(unsigned int irq) {
-
-}
-
-void irqctrl_disable(unsigned int irq) {
-
-}
-
-void irqctrl_force(unsigned int irq) {
-
-}
-
-int i8259_irq_pending(unsigned int irq) {
-	return 0;
-}
-
-/* Sends an EOI (end of interrupt) signal to the PICs. */
-void i8259_send_eoi(unsigned int irq) {
-
 }
