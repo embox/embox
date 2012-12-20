@@ -8,6 +8,8 @@
 #ifndef IRQCTRL_APIC_IMPL_H_
 #define IRQCTRL_APIC_IMPL_H_
 
+#include <types.h>
+
 #define __IRQCTRL_IRQS_TOTAL 16
 
 #define LOCAL_APIC_DEF_ADDR	 0xfee00000 /* default local apic address */

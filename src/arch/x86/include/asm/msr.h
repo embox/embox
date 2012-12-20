@@ -9,10 +9,9 @@
 #ifndef X86_MSR_H_
 #define X86_MSR_H_
 
-#define IA32_APIC_BASE 0x1B
+#define IA32_APIC_BASE            0x1B
 
-#define IA32_APIC_BASE_ENABLE_BIT 12
-
+#define IA32_APIC_BASE_ENABLE_BIT 11
 
 static inline void x86_msr_read(uint32_t msr, uint32_t *lo, uint32_t *hi)
 {
