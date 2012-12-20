@@ -13,12 +13,29 @@
 
 #include "apic.h"
 
-#define APIC_INTERRUPT_COMMAND_REGISTER     0x30
-
 EMBOX_UNIT_INIT(unit_init);
 
+#define lapic_write_icr1(val)	lapic_write(LAPIC_ICR1, val)
+#define lapic_write_icr2(val)	lapic_write(LAPIC_ICR2, val)
+
+uint32_t apicid(void) {
+	return lapic_read(LAPIC_ID) >> 24;
+}
+
+void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline) {
+	uint32_t val;
+
+	val = lapic_read(LAPIC_ICR2) & 0xFFFFFF;
+	val |= apic_id << 24;
+	lapic_write(LAPIC_ICR2, val);
+
+	/* send SIPI */
+	val = lapic_read(LAPIC_ICR1) & 0xFFF32000;
+	val |= (1 << 14) | (6 << 8);
+	val |= ((trampoline >> 12) & 0xFF);
+	lapic_write(LAPIC_ICR1, val);
+
 #if 0
-void sendSIPI(uint32_t apicId, uint32_t addr) {
     uint32_t high = 0;
     uint32_t low  = 0;
 
@@ -36,16 +53,20 @@ void sendSIPI(uint32_t apicId, uint32_t addr) {
     high = apicId << 24;// Processor to send SIPI to
     //icr.Destination = apicId;               // Processor to send SIPI to
 
-    lapic_write(APIC_INTERRUPT_COMMAND_REGISTER + 1, high);
-    lapic_write(APIC_INTERRUPT_COMMAND_REGISTER, low);
+    lapic_write_icr2(high);
+    lapic_write_icr1(low);
+#endif
 }
 
-void newKernel(void) {
-	asm ("hlt");
+#include <stdio.h>
+
+void cpu_trampoline(void) {
+	while (1) {
+		__asm__ __volatile__("hlt");
+	}
 }
 
 #include <string.h>
-#endif
 
 static inline void lapic_enable_in_msr(void) {
 	uint32_t msr_hi, msr_lo;
@@ -57,15 +78,19 @@ static inline void lapic_enable_in_msr(void) {
 
 void lapic_enable(void)
 {
+	uint32_t val;
+
 	lapic_enable_in_msr();
 
     /* Set the Spourious Interrupt Vector Register bit 8 to start receiving interrupts */
-	//lapic_write(APIC_SPURIOUS_INTERRUPT_VECTOR, lapic_read(APIC_SPURIOUS_INTERRUPT_VECTOR) | 0x100);
+	val = lapic_read(LAPIC_SIVR);
+	val |= 0x100 | 0xff;
+	val &= ~(1 << 9);
+	lapic_write(LAPIC_SIVR, val);
 
-#if 0
-    memcpy((void *) 0x2000, (char *)newKernel, 512);
-    sendSIPI(1, (uint32_t) 0x2000);
-#endif
+    memcpy((void *) 0x2000, (char *) cpu_trampoline, 512);
+
+    lapic_send_startup_ipi(apicid() + 1, (uint32_t) 0x2000);
 }
 
 static int unit_init(void) {
