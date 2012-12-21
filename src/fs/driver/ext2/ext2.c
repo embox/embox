@@ -374,14 +374,14 @@ static int ext2fs_close(struct file_desc *desc) {
 		if (fsi->e2fs_gd) {
 			free(fsi->e2fs_gd);
 		}
-		pool_free(&ext2_fs_pool, fsi);
+		//pool_free(&ext2_fs_pool, fsi);
 	}
 
 	if (NULL != fi) {
 		if (NULL != fi->f_buf) {
 			free(fi->f_buf);
 		}
-		pool_free(&ext2_file_pool, fi);
+		//pool_free(&ext2_file_pool, fi);
 	}
 
 	return 0;
