@@ -36,9 +36,13 @@ void gdt_set_gate(uint8_t nr, uint32_t base, uint32_t limit, uint8_t ac, uint8_t
 	gdt[nr].access      = ac;
 }
 
+void gdt_set_gdtr(gdt_pointer_t *gdtr, gdt_gate_t *gdt) {
+	gdtr->limit = sizeof(gdt_gate_t) * GDT_ENTRIES - 1;
+	gdtr->base = (uint32_t) gdt;
+}
+
 void gdt_init(void) {
-	gdt_ptr.limit = sizeof(gdt_gate_t) * GDT_ENTRIES - 1;
-	gdt_ptr.base = (uint32_t)gdt;
+	gdt_set_gdtr(&gdt_ptr, gdt);
 
 	gdt_set_gate(0, 0, 0, 0, 0); /* NULL Descriptor */
 	gdt_set_gate(GDT_ENTRY_KERNEL_CS, 0, 0xFFFFFFFF, 0x9A, 0xCF);
@@ -47,7 +51,7 @@ void gdt_init(void) {
 	gdt_set_gate(GDT_ENTRY_USER_DS, 0, 0xFFFFFFFF, 0xF2, 0xCF);
 	tss_fill();  /* XXX: This need only for usermode. */
 
-	gdt_flush((uint32_t)&gdt_ptr);
+	gdt_flush(&gdt_ptr);
 	tss_flush(); /* XXX: This need only for usermode. */
 }
 

@@ -32,6 +32,10 @@ module usermode extends embox.arch.usermode {
 	source "usermode_entry.S"
 }
 
+module ap_trampoline {
+	source "ap_trampoline.S"
+}
+
 /*FIXME mybuild arch module what is it */
 module arch {
 	/* FIXME:

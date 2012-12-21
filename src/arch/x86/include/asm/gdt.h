@@ -71,7 +71,11 @@ typedef struct tss_entry_struct {
 	uint16_t iomap_base;
 } __attribute__((packed)) tss_entry_t;
 
-extern void gdt_flush(uint32_t gdt);
+extern gdt_gate_t gdt[GDT_ENTRIES];
+
+extern void gdt_set_gdtr(gdt_pointer_t *gdtr, gdt_gate_t *gdt);
+
+extern void gdt_flush(gdt_pointer_t *gdt);
 extern void tss_flush(void);
 
 #endif /* __ASSEMBLER__ */

@@ -8,8 +8,12 @@
 
 #include <embox/unit.h>
 
+#include <string.h>
+#include <unistd.h>
 #include <types.h>
+
 #include <asm/msr.h>
+#include <asm/ap.h>
 
 #include "apic.h"
 
@@ -18,55 +22,46 @@ EMBOX_UNIT_INIT(unit_init);
 #define lapic_write_icr1(val)	lapic_write(LAPIC_ICR1, val)
 #define lapic_write_icr2(val)	lapic_write(LAPIC_ICR2, val)
 
-uint32_t apicid(void) {
+static inline uint32_t lapic_id(void) {
 	return lapic_read(LAPIC_ID) >> 24;
+}
+
+static inline uint32_t lapic_errstatus(void)
+{
+	lapic_write(LAPIC_ESR, 0);
+	return lapic_read(LAPIC_ESR);
 }
 
 void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline) {
 	uint32_t val;
 
-	val = lapic_read(LAPIC_ICR2) & 0xFFFFFF;
+	val = 0;
 	val |= apic_id << 24;
-	lapic_write(LAPIC_ICR2, val);
+	lapic_write_icr2(val);
 
-	/* send SIPI */
-	val = lapic_read(LAPIC_ICR1) & 0xFFF32000;
+	val = 0;
 	val |= (1 << 14) | (6 << 8);
 	val |= ((trampoline >> 12) & 0xFF);
-	lapic_write(LAPIC_ICR1, val);
-
-#if 0
-    uint32_t high = 0;
-    uint32_t low  = 0;
-
-    low = (addr >> 12) & 0xFF;
-    low |= 6 << 8;                          // Start up IPI
-    //icr.DestinationMode = 0;                // Physical
-    //icr.DeliveryStatus = 0;                 // Idle
-    //icr.Reserved1 = 0;
-    low |= 1 << 14;                            // Assert
-    //icr.TriggerMode = 0;                    // Edge
-    //icr.Reserved2 = 0;
-    //icr.DestinationShorthand = 0;           // No shorthand
-    //icr.Reserved3 = 0;
-    //icr.Reserved4 = 0;
-    high = apicId << 24;// Processor to send SIPI to
-    //icr.Destination = apicId;               // Processor to send SIPI to
-
-    lapic_write_icr2(high);
-    lapic_write_icr1(low);
-#endif
+	lapic_write_icr1(val);
 }
 
-#include <stdio.h>
+void lapic_send_init_ipi(uint32_t apic_id) {
+	uint32_t val;
 
-void cpu_trampoline(void) {
+	val = 0;
+	val |= apic_id << 24;
+	lapic_write_icr2(val);
+
+	val = 0;
+	val |= (1 << 14) | (5 << 8);
+	lapic_write_icr1(val);
+}
+
+void startup_ap(void) {
 	while (1) {
-		__asm__ __volatile__("hlt");
+		__asm__ __volatile__ ("hlt");
 	}
 }
-
-#include <string.h>
 
 static inline void lapic_enable_in_msr(void) {
 	uint32_t msr_hi, msr_lo;
@@ -76,21 +71,59 @@ static inline void lapic_enable_in_msr(void) {
 	ia32_msr_write(IA32_APIC_BASE, msr_hi, msr_lo);
 }
 
+#define TRAMPOLINE_ADDR 0x20000UL
+
+static inline void init_trampoline(void) {
+	/* Initialize gdt */
+	memcpy(__ap_gdt, gdt, sizeof(gdt));
+	gdt_set_gdtr(&__ap_gdtr, __ap_gdt);
+
+	memcpy((void *) TRAMPOLINE_ADDR, &__ap_trampoline,
+			(uint32_t) &__ap_trampoline_end - (uint32_t) &__ap_trampoline);
+}
+
+static inline void cpu_start(int cpu_id) {
+	lapic_send_init_ipi(cpu_id);
+
+	for (int i = 0; i < 20000; i++) {
+		__asm__ __volatile__ ("nop");
+	}
+
+	lapic_send_init_ipi(cpu_id);
+
+	for (int i = 0; i < 20000; i++) {
+		__asm__ __volatile__ ("nop");
+	}
+
+	lapic_send_startup_ipi(cpu_id, TRAMPOLINE_ADDR);
+}
+
 void lapic_enable(void)
 {
 	uint32_t val;
 
 	lapic_enable_in_msr();
 
-    /* Set the Spourious Interrupt Vector Register bit 8 to start receiving interrupts */
+	/* Clear error state register */
+	lapic_errstatus();
+
+    /* Set the spurious interrupt vector register */
 	val = lapic_read(LAPIC_SIVR);
-	val |= 0x100 | 0xff;
-	val &= ~(1 << 9);
+	val |= 0x100;
 	lapic_write(LAPIC_SIVR, val);
 
-    memcpy((void *) 0x2000, (char *) cpu_trampoline, 512);
+	/* Initialize trampoline for the APs */
+	init_trampoline();
 
-    lapic_send_startup_ipi(apicid() + 1, (uint32_t) 0x2000);
+    for (int i = 0; i <= 1; i++) {
+    	if (i == lapic_id()) {
+    		continue;
+    	}
+
+    	cpu_start(i);
+    }
+
+    usleep(5000);
 }
 
 static int unit_init(void) {
