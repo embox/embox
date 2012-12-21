@@ -12,12 +12,6 @@
 #include <util/array.h>
 
 
-//#define inportb(P)	      in8(P)
-//#define outportb(P,V)	   out8(V, P)
-//
-
-
-
 
 //http://wiki.osdev.org/VGA_Hardware
 //http://www.monstersoft.com/tutorial1/VESA_intro.html
@@ -34,13 +28,13 @@ void vga_read_regs(unsigned char *regs) {
 
 /* read SEQUENCER regs */
 	for(i = 0; i < VGA_NUM_SEQ_REGS; i++) {
-		*regs = vga_seq_read(i);
+		*regs = vga_rseq(0, i);
 		regs++;
 	}
 
 /* read CRTC regs */
 	for(i = 0; i < VGA_NUM_CRTC_REGS; i++) {
-		*regs = vga_crtc_read(i);
+		*regs = vga_rcrt(0,i);
 		regs++;
 	}
 /* read GRAPHICS CONTROLLER regs */
@@ -68,22 +62,18 @@ void vga_write_regs(unsigned char *regs) {
 	regs++;
 /* write SEQUENCER regs */
 	for(i = 0; i < VGA_NUM_SEQ_REGS; i++) {
-		vga_seq_write(*regs, i);
+		vga_wseq(0, i, *regs);
 		regs++;
 	}
 /* unlock CRTC registers */
-//	outportb(VGA_CRTC_INDEX, 0x03);
-//	outportb(VGA_CRTC_DATA, inportb(VGA_CRTC_DATA) | 0x80);
-	vga_crtc_write(vga_crtc_read(VGA_CRTC_H_BLANK_END) | 0x80, VGA_CRTC_H_BLANK_END);
-//	outportb(VGA_CRTC_INDEX, 0x11);
-//	outportb(VGA_CRTC_DATA, inportb(VGA_CRTC_DATA) & ~0x80);
-	vga_crtc_write(vga_crtc_read(VGA_CRTC_V_SYNC_END) | 0x80, VGA_CRTC_V_SYNC_END);
+	vga_wcrt(NULL, VGA_CRTC_H_BLANK_END, vga_rcrt(NULL, VGA_CRTC_H_BLANK_END) | 0x80);
+	vga_wcrt(NULL, VGA_CRTC_V_SYNC_END, vga_rcrt(NULL, VGA_CRTC_V_SYNC_END) & ~0x80);
 /* make sure they remain unlocked */
 	regs[0x03] |= 0x80;
 	regs[0x11] &= ~0x80;
 /* write CRTC regs */
 	for(i = 0; i < VGA_NUM_CRTC_REGS; i++) {
-		vga_crtc_write(*regs, i);
+		vga_wcrt(0, i,*regs);
 		regs++;
 	}
 /* write GRAPHICS CONTROLLER regs */

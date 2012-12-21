@@ -48,12 +48,25 @@
 #define VGA_INSTAT_READ     0x3DA
 
 
+#define VGA_CRTC_H_TOTAL       0x0
+#define VGA_CRTC_H_DISP_END    0x1
+#define VGA_CRTC_H_BLANK_START 0x2
+#define VGA_CRTC_H_BLANK_END   0x3
+#define VGA_CRTC_H_SYNC_START  0x4
+#define VGA_CRTC_H_SYNC_END    0x5
+#define VGA_CRTC_V_TOTAL       0x6
+#define VGA_CRTC_OVERFLOW      0x7
 
-#define VGA_CRTC_H_BLANK_END 0x3
-#define VGA_CRTC_V_SYNC_END  0x11
+#define VGA_CRTC_V_SYNC_START  0x10
+#define VGA_CRTC_V_SYNC_END    0x11
+#define VGA_CRTC_V_DISP_END    0x12
+#define VGA_CRTC_V_BLANK_START 0x15
+#define VGA_CRTC_V_BLANK_END   0x16
+#define VGA_CRTC_MODE_CONTROL  0x17
+#define VGA_CRTC_LINE_COMPARE  0x18
 
-#define VGA_GC_READ_MAP_SEL  0x4
-#define VGA_GC_MISCELLANEOUS 0x6
+#define VGA_GC_READ_MAP_SEL   0x4
+#define VGA_GC_MISCELLANEOUS  0x6
 
 
 #define VGA_SEQ_PLANE_MASK   0x2
@@ -95,25 +108,26 @@ static inline unsigned char vga_misc_read(void) {
 	return in8(VGA_MISC_READ);
 }
 
-static inline void vga_crtc_write(unsigned char value, unsigned char index) {
+static inline void vga_wcrt(uint32_t *regbase, unsigned char value, unsigned char index) {
 	out8(index, VGA_CRTC_INDEX);
 	out8(value, VGA_CRTC_DATA);
 }
 
-static inline unsigned char vga_crtc_read(unsigned index) {
+static inline unsigned char vga_rcrt(uint32_t *regbase, unsigned index) {
 	out8(index, VGA_CRTC_INDEX);
 	return in8(VGA_CRTC_DATA);
 }
 
-static inline void vga_seq_write(unsigned char value, unsigned char index) {
+static inline void vga_wseq(uint32_t *regbase, unsigned char value, unsigned char index) {
 	out8(index, VGA_SEQ_INDEX);
 	out8(value, VGA_SEQ_DATA);
 }
 
-static inline unsigned char vga_seq_read(unsigned char index) {
+static inline unsigned char vga_rseq(uint32_t *regbase, unsigned char index) {
 	out8(index, VGA_SEQ_INDEX);
 	return in8(VGA_SEQ_DATA);
 }
+
 
 static inline void vga_gc_write(unsigned char value, unsigned char index) {
 	out8(index, VGA_GC_INDEX);

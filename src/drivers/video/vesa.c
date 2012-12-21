@@ -30,7 +30,7 @@ void set_plane(unsigned p)
 /* set read plane */
 	vga_gc_write(p, VGA_GC_READ_MAP_SEL);
 /* set write plane */
-	vga_seq_write(pmask, VGA_SEQ_PLANE_MASK);
+	vga_wseq(0, VGA_SEQ_PLANE_MASK, pmask);
 }
 
 /*****************************************************************************
