@@ -11,8 +11,8 @@
 
 	.section .text
 	.code16
-	.align 0x1000
 
+	.align 0x1000
 C_ENTRY(__ap_trampoline):
 	cli
 
@@ -20,7 +20,7 @@ C_ENTRY(__ap_trampoline):
 	mov	%cs, %ax
 	mov	%ax, %ds
 
-	/* load gdt and idt prepared by bsp */
+	/* load gdt prepared by bsp */
 	lgdtl __ap_gdtr - __ap_trampoline
 
 	/* switch to protected mode */
