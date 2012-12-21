@@ -245,6 +245,22 @@ static int ext2_read_symlink (struct nas *nas,
 	return rc;
 }
 
+/* set node type by file system file type */
+static void ext2_set_node_type (int *type, uint8_t e2d_type) {
+
+	switch (e2d_type) {
+	case 1:
+		*type = NODE_TYPE_FILE;
+		break;
+	case 2:
+		*type = NODE_TYPE_DIRECTORY;
+		break;
+	default:
+		*type = NODE_TYPE_SPECIAL;
+		break;
+	}
+};
+
 /*
  * file_operation
  */
@@ -297,7 +313,7 @@ static int ext2fs_open(struct node *node, struct file_desc *desc, int flags) {
 		}
 
 		/* Check that current node is a directory */
-		if ((fi->f_di.e2di_mode & EXT2_IFMT) != EXT2_IFDIR) {
+		if ((fi->f_di.e2di_mode & S_IFMT) != S_IFDIR) {
 			rc = ENOTDIR;
 			goto out;
 		}
@@ -325,7 +341,7 @@ static int ext2fs_open(struct node *node, struct file_desc *desc, int flags) {
 		}
 
 		/* Check for symbolic link */
-		if ((fi->f_di.e2di_mode & EXT2_IFMT) == EXT2_IFLNK) {
+		if ((fi->f_di.e2di_mode & S_IFMT) == S_IFLNK) {
 			if(ext2_read_symlink (nas, parent_inumber, &cp)) {
 				goto out;
 			}
@@ -957,6 +973,8 @@ struct entry_t {
 };
 
 #define NELEM(x) (sizeof (x) / sizeof(*x))
+
+
 /*
 static int ext2_fn_match(const char *fname, const char *pattern) {
 	char fc, pc;
@@ -1051,11 +1069,19 @@ static int ext2_ls(struct nas *nas, char* path) {
 
 			vfs_get_path_by_node(nas->node, full_path);
 			strcat(full_path, "/");
-			if(NULL == (node = vfs_add_path(strcat(full_path, point), NULL))) {
+			strcat(full_path, point);
+			if(NULL == (node = vfs_add_path(full_path, NULL))) {
 				goto out;
 			}
 			ext2fs_create(nas->node, node);
-			node->type = NODE_TYPE_DIRECTORY;
+			ext2_set_node_type (&node->type, dp->e2d_type);
+
+			if(node_is_directory(node) &&
+			  (0 != strcmp(point, "."))	&& (0 != strcmp(point, ".."))) {
+				ext2fs_open(node, NULL, 0);
+				path_cut_mount_dir(full_path, fsi->mntto);
+				ext2_ls(node->nas, full_path);
+			}
 
 			n = malloc(sizeof *n + strlen(dp->e2d_name));
 			if (!n) {

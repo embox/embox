@@ -238,20 +238,9 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 #define	EXT2_JOURNALINO		((unsigned long)8)
 #define	EXT2_FIRSTINO		((unsigned long)11)
 
-/* File types. */
-#define	EXT2_IFMT		0170000		/* Mask of file type. */
-#define	EXT2_IFIFO		0010000		/* Named pipe (fifo). */
-#define	EXT2_IFCHR		0020000		/* Character device. */
-#define	EXT2_IFDIR		0040000		/* Directory file. */
-#define	EXT2_IFBLK		0060000		/* Block device. */
-#define	EXT2_IFREG		0100000		/* Regular file. */
-#define	EXT2_IFLNK		0120000		/* Symbolic link. */
-#define	EXT2_IFSOCK		0140000		/* UNIX domain socket. */
-
 #define	MAXPATHLEN      	1024
 #define	MAXSYMLINKS			32
 #define	EXT2FS_MAXNAMLEN	255
-
 
 /* Size of on-disk inode. */
 #define EXT2_REV0_DINODE_SIZE	sizeof(struct ext2fs_dinode)
