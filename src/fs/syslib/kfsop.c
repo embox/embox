@@ -357,3 +357,30 @@ int kmount(char *dev, char *dir, char *fs_type) {
 
 	return drv->fsop->mount(dev_node, dir_node);
 }
+
+int krename(const char *src_name, const char *dst_name) {
+	node_t *nod;
+
+	if (MAX_LENGTH_FILE_NAME < strlen(src_name)) {
+		return -ENAMETOOLONG;
+	}
+
+	if (MAX_LENGTH_FILE_NAME < strlen(dst_name)) {
+		return -ENAMETOOLONG;
+	}
+
+	/* Check if file with such name already exists */
+	nod = vfs_find_node(dst_name, NULL);
+	if (NULL != nod) {
+		return -EINVAL;
+	}
+
+	nod = vfs_find_node(src_name, NULL);
+	if (NULL == nod) {
+		return -EINVAL;
+	}
+
+	strcpy((char *)nod->name, dst_name);
+
+	return 0;
+}

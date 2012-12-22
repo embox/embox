@@ -1,0 +1,31 @@
+package embox.cmd.fs
+
+@Cmd(name = "mv",
+	help = "Move or rename file",
+	man = '''
+		NAME
+			mv - move or rename file
+		SYNOPSIS
+			mv [OPTIONS] <source path> <destination path>
+		DESCRIPTION
+			Move or rename source file into destination
+		OPTIONS
+			Options not implemented at the moment
+			-r - recursive
+			-f - do not prompt before overwrite
+			-h - print help
+		AUTHORS
+			Ivan Tretyakov
+	''')
+module mv {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "mv.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.fs
+	depends embox.fs.core
+	depends embox.util.LibUtil
+	depends embox.framework.LibFramework
+}

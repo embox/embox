@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <fs/vfs.h>
 #include <fs/fs_drv.h>
@@ -26,17 +27,21 @@ TEST_SETUP_SUITE(setup_suite);
 TEST_TEARDOWN_SUITE(teardown_suite);
 
 
-#define FS_NAME  "vfat"
-#define FS_DEV  "/dev/ramdisk"
-#define FS_TYPE  12
-#define FS_BLOCKS  124
-#define FS_DIR  "/test_fop"
-#define FS_FILE1  "/test_fop/1/2/3/1.txt"
-#define FS_FILE2  "/test_fop/1/2/3/2.txt"
-#define FS_DIR3  "/test_fop/1/2/3"
-#define FS_DIR2  "/test_fop/1/2"
-#define FS_DIR1  "/test_fop/1"
-#define FS_TESTDATA  "qwerty\n"
+#define FS_NAME			"vfat"
+#define FS_DEV			"/dev/ramdisk"
+#define FS_TYPE			12
+#define FS_BLOCKS		124
+#define FS_DIR			"/test_fop"
+#define FS_FILE1		"/test_fop/1/2/3/1.txt"
+#define FS_FILE1_NAME	"1.txt"
+#define FS_FILE2		"/test_fop/1/2/3/2.txt"
+#define FS_FILE3		"/test_fop/1/2/3/renamed_file"
+#define FS_FILE3_NAME	"renamed_file"
+#define FS_DIR3			"/test_fop/1/2/3"
+#define FS_DIR2			"/test_fop/1/2"
+#define FS_DIR1			"/test_fop/1"
+#define FS_TESTDATA		"qwerty\n"
+#define FS_TOOLONGNAME	"toolongnametoolongnametoolongname"
 
 TEST_CASE("Write file") {
 	int file;
@@ -98,6 +103,15 @@ TEST_CASE("stat and fstat should return same stats") {
 	close(fd);
 }
 */
+
+TEST_CASE("Rename file") {
+	test_assert(-EINVAL == rename("no_such_file", FS_FILE3_NAME));
+	test_assert(-EINVAL == rename(FS_FILE1, FS_FILE2));
+	test_assert(-ENAMETOOLONG == rename(FS_TOOLONGNAME, "no_matter"));
+	test_assert(-ENAMETOOLONG == rename("no_matter", FS_TOOLONGNAME));
+	test_assert_zero(rename(FS_FILE1, FS_FILE3_NAME));
+	test_assert_zero(rename(FS_FILE3, FS_FILE1_NAME));
+}
 
 static int setup_suite(void) {
 
