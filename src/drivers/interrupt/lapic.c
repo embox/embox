@@ -15,7 +15,7 @@
 #include <asm/msr.h>
 #include <asm/ap.h>
 
-#include "apic.h"
+#include "lapic.h"
 
 EMBOX_UNIT_INIT(unit_init);
 

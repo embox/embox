@@ -17,8 +17,8 @@ module i8259 extends irqctrl_api {
 	source "i8259.c", "i8259.h"
 }
 
-module apic {
-	source "apic.c", "apic.h"
+module lapic {
+	source "lapic.c", "lapic.h"
 }
 
 module irqmp extends irqctrl_api {

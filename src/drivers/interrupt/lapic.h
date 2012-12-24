@@ -12,8 +12,7 @@
 
 #define __IRQCTRL_IRQS_TOTAL 16
 
-#define LOCAL_APIC_DEF_ADDR	 0xfee00000 /* default local apic address */
-#define IO_APIC_DEF_ADDR     0xfec00000 /* default i/o apic address */
+#define LOCAL_APIC_DEF_ADDR	 0xFEE00000 /* Default local apic address */
 
 #define LAPIC_ID	(LOCAL_APIC_DEF_ADDR + 0x020)
 #define LAPIC_SIVR  (LOCAL_APIC_DEF_ADDR + 0x0F0)
