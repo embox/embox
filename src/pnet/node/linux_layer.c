@@ -9,7 +9,7 @@
 
 #include <arpa/inet.h>
 #include <pnet/prior_path.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 

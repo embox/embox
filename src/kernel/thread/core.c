@@ -29,7 +29,7 @@
 #include <math.h>
 #include <util/member.h>
 #include <kernel/critical.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/task.h>
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_strategy.h>

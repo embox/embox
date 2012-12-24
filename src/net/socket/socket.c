@@ -23,7 +23,7 @@
 #include <string.h>
 #include <fcntl.h>
 
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/thread/event.h>
 #include <kernel/task/io_sync.h>
 #include <net/socket_registry.h>

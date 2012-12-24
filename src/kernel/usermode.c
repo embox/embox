@@ -11,7 +11,7 @@
 
 #include <mem/misc/pool.h>
 #include <kernel/usermode.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/thread/sched_lock.h>
 #include <kernel/task.h>
 

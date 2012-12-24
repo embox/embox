@@ -18,7 +18,7 @@
 #include <lib/list.h>
 #include <hal/ipl.h>
 #include <kernel/thread/state.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sched.h>
 #include <math.h>

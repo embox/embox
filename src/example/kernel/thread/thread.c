@@ -21,7 +21,7 @@
 #include <stdio.h>
 #include <util/array.h>
 
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 
 #include <framework/example/self.h>
 

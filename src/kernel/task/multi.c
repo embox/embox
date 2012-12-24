@@ -11,7 +11,7 @@
 #include <errno.h>
 
 #include <kernel/task/task_table.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <mem/misc/pool.h>
 #include <kernel/task.h>
 #include <kernel/panic.h>

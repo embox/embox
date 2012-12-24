@@ -10,7 +10,7 @@
 #include <embox/test.h>
 #include <unistd.h>
 
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/time/ktime.h>
 
 EMBOX_TEST_SUITE("test for different priority threads");

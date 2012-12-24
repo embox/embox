@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_USERMODE_H_
 #define KERNEL_THREAD_USERMODE_H_
 
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 
 /* Usermode entry data */
 struct ue_data {
@@ -45,7 +45,7 @@ extern void usermode_set_stack(void *sp);
  * @param sp
  *   New stack pointer.
  *
- * Other information see in: include/kernel/thread/api.h
+ * Other information see in: include/kernel/thread.h
  */
 extern int user_thread_create(struct thread **p_thread, unsigned int flags,
 		void *ip, void *sp);

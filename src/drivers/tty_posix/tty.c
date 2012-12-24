@@ -65,7 +65,7 @@
 #include <kernel/panic.h>
 #include <kernel/irq.h>
 #include <kernel/time/timer.h>
-#include <kernel/thread/api.h>
+#include <kkernel/thread.h>
 #include <kernel/thread/sync/message.h>
 #include <hal/reg.h>
 #include <fs/node.h>
