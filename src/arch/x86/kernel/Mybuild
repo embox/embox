@@ -32,10 +32,6 @@ module usermode extends embox.arch.usermode {
 	source "usermode_entry.S"
 }
 
-module ap_trampoline {
-	source "ap_trampoline.S"
-}
-
 /*FIXME mybuild arch module what is it */
 module arch {
 	/* FIXME:
@@ -45,4 +41,11 @@ module arch {
 
 	depends locore
 	depends embox.arch.x86.cpu
+}
+
+module smp {
+	source "smp.c"
+	source "ap_trampoline.S"
+
+	depends embox.driver.interrupt.lapic
 }

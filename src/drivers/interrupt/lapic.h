@@ -28,5 +28,18 @@ static inline void lapic_write(uint32_t reg, uint32_t value) {
 	*((volatile uint32_t *) reg) = value;
 }
 
+static inline uint32_t lapic_id(void) {
+	return lapic_read(LAPIC_ID) >> 24;
+}
+
+static inline uint32_t lapic_errstatus(void)
+{
+	lapic_write(LAPIC_ESR, 0);
+	return lapic_read(LAPIC_ESR);
+}
+
+extern void lapic_send_init_ipi(uint32_t apic_id);
+extern void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline);
+
 #endif /* IRQCTRL_APIC_IMPL_H_ */
 
