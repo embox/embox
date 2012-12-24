@@ -13,7 +13,7 @@
 #include <fcntl.h>
 #include <kernel/time/timer.h>
 #include <kernel/task.h>
-#include <drivers/vesa.h>
+#include <drivers/video/vesa.h>
 #include <drivers/keyboard.h>
 #include <embox/cmd.h>
 
