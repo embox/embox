@@ -1,0 +1,27 @@
+package third_party.phoneme
+
+@Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/phoneme MAKEFLAGS= ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)'")
+module core {
+    /*
+	@InitFS
+	source "HelloWorld.class"
+	*/
+
+	/*
+	@IncludePath("$(THIRDPARTY_DIR)/phoneme/...")
+	@Rule(prerequisites="$(THIRDPARTY_DIR)/phoneme/...")
+	source "phoneme.c"
+	*/
+
+	depends embox.lib.LibC
+	depends embox.lib.LibCXX
+}
+
+module cldc_standalone {
+
+	@IncludePath("$(ROOT_DIR)/build/phoneme/build/cldc/javacall_i386_gcc/dist/include")
+	@IncludePath("$(ROOT_DIR)/build/phoneme/build/pcsl/javacall_i386/inc")
+	source "cldc_standalone.c"
+
+	depends third_party.phoneme.core
+}

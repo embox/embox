@@ -61,16 +61,6 @@ int get_content_type(char *file_name) {
 	return HTTP_CONTENT_TYPE_UNKNOWN;
 }
 
-int get_method(char *method) {
-	if (strcmp(method, "GET") == 0) {
-		return HTTP_METHOD_GET;
-	}
-	if (strcmp(method, "POST") == 0) {
-		return HTTP_METHOD_POST;
-	}
-	return HTTP_METHOD_UNKNOWN; /* method unknown or unsupported */
-}
-
 //TODO it's work if buffer contains full starting line and headers
 static int receive_and_parse_request(struct client_info *info) {
 	int res;

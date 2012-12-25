@@ -1,0 +1,13 @@
+Index: cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp
+===================================================================
+--- cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp	(revision 20547)
++++ cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp	(working copy)
+@@ -129,7 +129,7 @@
+       emit("\t.MODEL flat, C\n\n");
+     }
+   } else {
+-    emit("\t.arch i486\n");
++    emit("\t.arch i686\n");
+   }
+   start_code_segment();
+ }
