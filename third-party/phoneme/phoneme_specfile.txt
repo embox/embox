@@ -2,3 +2,4 @@ https://svn.java.net/svn/phoneme~svn/components/tools/trunk tools
 https://svn.java.net/svn/phoneme~svn/components/cldc/trunk cldc
 https://svn.java.net/svn/phoneme~svn/components/pcsl/trunk pcsl
 https://svn.java.net/svn/phoneme~svn/components/javacall/trunk javacall
+https://svn.java.net/svn/phoneme~svn/components/midp/trunk midp

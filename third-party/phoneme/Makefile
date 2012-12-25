@@ -71,3 +71,17 @@ cldc: pcsl javacall checkout
 		JDK_DIR=$(JDK_DIR) \
 	)
 
+MIDP_DIR            := $(PHONEME_DIR)/midp
+MIDP_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/midp
+midp: cldc pcsl javacall checkout
+	$(AT)$(MAKE) -C $(MIDP_DIR)/build/javacall \
+		TOOLS_DIR=$(TOOLS_DIR) \
+		JDK_DIR=$(JDK_DIR) \
+		USE_DEBUG=$(USE_DEBUG) \
+		USE_VERBOSE_MAKE=true \
+		LD_END_GROUP=" -Xlinker --end-group " \
+		JAVACALL_OUTPUT_DIR=$(JAVACALL_OUTPUT_DIR) \
+		PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
+		MIDP_OUTPUT_DIR=$(MIDP_OUTPUT_DIR) \
+		CLDC_DIST_DIR=$(CLDC_OUTPUT_DIR)/javacall_i386_gcc/dist \
+		JAVACALL_PLATFORM=linux_i386_gcc
