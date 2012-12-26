@@ -33,22 +33,9 @@ endif
 
 # Expand user defined flags and append them after default ones.
 
-# Preprocessor flags
-cppflags := $(CPPFLAGS)
-override CPPFLAGS  = -D__EMBOX__
-override CPPFLAGS += -D"__impl_x(path)=<../path>"
-override CPPFLAGS += -imacros $(AUTOCONF_DIR)/config.h
-override CPPFLAGS += -I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
-override CPPFLAGS += -I$(SRCGEN_DIR)/include -I$(SRCGEN_DIR)/src/include
-__srcgen_includes := $(addprefix $(SRCGEN_DIR)/src/,include arch/$(ARCH)/include)
+__srcgen_includes_fn = $(addprefix -I$1$(SRCGEN_DIR)/src/,include arch/$(ARCH)/include)
+__srcgen_includes := $(call __srcgen_includes_fn,)
 $(and $(shell $(MKDIR) $(__srcgen_includes)),)
-override CPPFLAGS += $(__srcgen_includes:%=-I%)
-# XXX reduntand flags, agrrrr -- Eldar
-override CPPFLAGS += $(if $(value PLATFORM),-I$(PLATFORM_DIR)/$(PLATFORM)/include)
-override CPPFLAGS += -I$(SRC_DIR)/compat/linux/include -I$(SRC_DIR)/compat/posix/include
-override CPPFLAGS += -nostdinc
-override CPPFLAGS += -MMD -MP# -MT $@ -MF $(@:.o=.d)
-override CPPFLAGS += $(cppflags)
 
 cppflags_fn = \
 	-D__EMBOX__ \
@@ -56,15 +43,17 @@ cppflags_fn = \
 	-imacros $(AUTOCONF_DIR)/config.h\
 	-I$1$(SRC_DIR)/include -I$1$(SRC_DIR)/arch/$(ARCH)/include\
 	-I$1$(SRCGEN_DIR)/include -I$1$(SRCGEN_DIR)/src/include\
-	$(addprefix $1$(SRCGEN_DIR)/src/,include arch/$(ARCH)/include)\
-	$(__srcgen_includes:%=-I%)\
+	$(call __srcgen_includes_fn,$1) \
 	$(if $(value PLATFORM),-I$1$(PLATFORM_DIR)/$(PLATFORM)/include)\
 	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include\
 	-nostdinc\
-	-MMD -MP# -MT $@ -MF $(@:.o=.d)\
-	$(cppflags)
+	-MMD -MP# -MT $@ -MF $(@:.o=.d)
 
-EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(PWD))
+# Preprocessor flags
+cppflags := $(CPPFLAGS)
+override CPPFLAGS  = $(call cppflags_fn,) $(cppflags)
+EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(PWD)/)
+$(error $(EMBOX_EXPORT_CPPFLAGS))
 
 # Assembler flags
 asflags := $(CFLAGS)
