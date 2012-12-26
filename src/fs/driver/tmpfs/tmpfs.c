@@ -482,9 +482,7 @@ static int tmpfs_delete(struct node *node) {
 		vfs_del_leaf(pointnod);
 
 		path[strlen(path) - 3] = '\0';
-	}
 
-	if (node_is_directory(node)) {
 		index_free(&tmpfs_file_idx, fi->index);
 		pool_free(&tmpfs_file_pool, fi);
 	}
@@ -492,7 +490,6 @@ static int tmpfs_delete(struct node *node) {
 	/* root node - have fi, but haven't index*/
 	if(0 == strcmp((const char *) path, (const char *) fsi->mntto)){
 		pool_free(&tmpfs_fs_pool, fsi);
-		pool_free(&tmpfs_file_pool, fi);
 	}
 
 	vfs_del_leaf(node);

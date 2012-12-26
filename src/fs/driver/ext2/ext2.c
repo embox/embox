@@ -169,7 +169,7 @@ static int ext2_write_sector(struct nas *nas, char *buffer,
  * of divide and remainder and avoinds pulling in the
  * 64bit division routine into the boot code.
  */
-static int ext2_culc_shift (struct ext2_file_info *fi,
+static int ext2_shift_culc (struct ext2_file_info *fi,
 							struct ext2_fs_info *fsi) {
 	int32_t mult;
 	int ln2;
@@ -309,7 +309,7 @@ static int ext2_open(struct nas *nas) {
 		return rc;
 	}
 
-	if(0 != ext2_culc_shift(fi, fsi)) {
+	if(0 != ext2_shift_culc(fi, fsi)) {
 		return rc;
 	}
 
@@ -528,16 +528,13 @@ static int ext2fs_delete(struct node *node) {
 		vfs_del_leaf(pointnod);
 
 		path[strlen(path) - 3] = '\0';
-	}
 
-	if (node_is_directory(node)) {
 		pool_free(&ext2_file_pool, fi);
 	}
 
 	/* root node - have fi, but haven't index*/
 	if(0 == strcmp((const char *) path, (const char *) fsi->mntto)){
 		pool_free(&ext2_fs_pool, fsi);
-		pool_free(&ext2_file_pool, fi);
 	}
 
 	vfs_del_leaf(node);
