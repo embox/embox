@@ -11,6 +11,7 @@
 
 __BEGIN_DECLS
 
+#include <../lib/fdlibm/fdlibm.h>
 /**
  * First 1 in val
  * @param val Value
@@ -47,9 +48,9 @@ __END_DECLS
 #define CEILING_NEG(X) ((X-(int)(X)) < 0 ? (int)(X-1) : (int)(X))
 #define CEILING(X) ( ((X) > 0) ? CEILING_POS(X) : CEILING_NEG(X) )
 
-static inline double ceil(double x) {
-	return CEILING(x);
-}
+//static inline double ceil(double x) {
+//	return CEILING(x);
+//}
 
 
 /* FIXME max, min and clamp not a part of C Standard Library */
