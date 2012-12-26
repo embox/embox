@@ -105,6 +105,7 @@ AMAL_OUTPUT_DIR := $(PHONEME_BUILD_DIR)/amalgamated
 AMAL_OBJ_DIR    := $(AMAL_OUTPUT_DIR)/obj
 AMAL_LIB_DIR    := $(AMAL_OUTPUT_DIR)/lib
 AMAL_GEN_DIR    := $(AMAL_OUTPUT_DIR)/gen
+AMAL_FLAG_DIR   := $(AMAL_OUTPUT_DIR)/_created
 
 CLDC_DIST_DIR=$(CLDC_OUTPUT_DIR)/javacall_i386_gcc/dist
 
@@ -136,23 +137,27 @@ else
 endif
 endif
 
-AMAL_SOURCES    += cldc_standalone.c
 AMAL_SOURCES    += $(ROM_IMAGE)
 AMAL_SOURCES    += $(NATIVES_TABLE)
+AMAL_SOURCES    += cldc_standalone.c
 
 AMAL_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%,$(patsubst %.cpp,%.o,$(patsubst %.c,%.o,$(foreach src,$(AMAL_SOURCES),$(notdir $(src))))))
 VPATH           += .
+# Directory has to exist if using VPATH :(
+$(shell mkdir -p $(AMAL_GEN_DIR))
 VPATH           += $(AMAL_GEN_DIR)
 
-AMAL_LOCAL_LIB  := $(AMAL_LIB_DIR)/local.a
+AMAL_LOCAL_LIB  := $(AMAL_LIB_DIR)/local_cldc.a
 AMAL_CLDC_LIB   := $(AMAL_LIB_DIR)/phoneme_cldc.a
+
+AMAL_INCLUDE_DIRS += $(CLDC_DIST_DIR)/include
+AMAL_INCLUDE_DIRS += $(PCSL_OUTPUT_DIR)/javacall_i386/inc
+AMAL_INCLUDE_DIRS += $(JAVACALL_OUTPUT_DIR)/inc
 
 AMAL_CPPFLAGS   += $(EMBOX_CPPFLAGS)
 AMAL_CPPFLAGS   += -D__int64="long long"
 AMAL_CPPFLAGS   += -DROMIZING
-AMAL_CPPFLAGS   += -I$(CLDC_DIST_DIR)/include
-AMAL_CPPFLAGS   += -I$(PCSL_OUTPUT_DIR)/javacall_i386/inc
-AMAL_CPPFLAGS   += -I$(JAVACALL_OUTPUT_DIR)/inc
+AMAL_CPPFLAGS   += $(patsubst %,-I%,$(AMAL_INCLUDE_DIRS))
 
 AMAL_CFLAGS     += $(EMBOX_CFLAGS)
 AMAL_CFLAGS     := $(filter-out -Wstrict-prototypes,$(AMAL_CFLAGS))
@@ -169,40 +174,43 @@ PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_file.a
 
 .PHONY: create_output_dirs
 
-$(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR):
+$(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR) $(AMAL_FLAG_DIR):
 	$(AT)mkdir -p $@
 
-create_output_dirs: $(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR)
+$(AMAL_FLAG_DIR): $(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR)
 
 $(ROM_GENERATOR) $(CLDC_ZIP) $(ROM_CONFIG_FILE): cldc
 
 $(ROM_IMAGE): $(ROM_GENERATOR) $(CLDC_ZIP) $(ROM_CONFIG_FILE)
-	$(AT)mkdir -p $(dir $@) && cd $(dir $@) && \
+	$(AT)cd $(dir $@) && \
 		$(ROM_GENERATOR) -cp $(CLDC_ZIP) $(ROM_GEN_ARG) -romize
 
 $(NATIVES_TABLE): $(CLDC_ZIP) $(JCC_CMD)
-	$(AT)mkdir -p $(dir $@) && cd $(dir $@) && \
+	$(AT)cd $(dir $@) && \
 		java -jar $(JCC_CMD) -writer CLDC_HI_Natives -o $@ $(CLDC_ZIP)
 
-$(AMAL_OBJ_DIR)/%.o: %.cpp cldc
-	$(AT)cd ../../ && gcc $(AMAL_CPPFLAGS) $(AMAL_CXXFLAGS) -o $@ -c $<
+$(AMAL_OBJECTS): $(AMAL_INCLUDE_DIRS) $(AMAL_FLAG_DIR)
 
-$(AMAL_OBJ_DIR)/%.o: %.c cldc
-	$(AT)cd ../../ && gcc $(AMAL_CPPFLAGS) $(AMAL_CFLAGS) -o $@ -c $(abspath $<)
+$(AMAL_INCLUDE_DIRS): javacall pcsl cldc
 
-$(AMAL_OBJECTS): create_output_dirs
+$(PHONEME_CLDC_LIBS): pcsl cldc
 
 $(AMAL_LOCAL_LIB): $(AMAL_OBJECTS)
 	$(AT)ar -r $@ $^
 
 $(AMAL_CLDC_LIB): $(AMAL_LOCAL_LIB) $(PHONEME_CLDC_LIBS)
-	-$(AT)rm $@
 	$(AT)ar -r $@
 	$(AT)$(patsubst %,mergelib $@ % &&,$^) true
 
+$(AMAL_OBJ_DIR)/%.o: %.cpp
+	$(AT)cd ../../ && gcc $(AMAL_CPPFLAGS) $(AMAL_CXXFLAGS) -o $@ -c $<
+
+$(AMAL_OBJ_DIR)/%.o: %.c
+	$(AT)cd ../../ && gcc $(AMAL_CPPFLAGS) $(AMAL_CFLAGS) -o $@ -c $(abspath $<)
+
 amalgamated: $(AMAL_CLDC_LIB)
 
-
+.NOTPARALLEL:
 
 MIDP_DIR            := $(PHONEME_DIR)/midp
 MIDP_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/midp
