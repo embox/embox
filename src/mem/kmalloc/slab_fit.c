@@ -40,7 +40,7 @@ static page_info_t pages[HEAP_SIZE / PAGE_SIZE()];
 #define GET_PAGE_CACHE(pg)    ((pg)->cache)
 
 /* return information about page which an object belongs to */
-static page_info_t* virt_to_page(void *objp) {
+static page_info_t* ptr_to_page(void *objp) {
 	unsigned int index = ((unsigned int) objp - (unsigned int) HEAP_START_PTR)
 			/ PAGE_SIZE();
 	return &(pages[index]);
@@ -95,7 +95,7 @@ void *kmalloc(size_t size) {
 }
 
 void kfree(void *obj) {
-	page_info_t *page = virt_to_page(obj);
+	page_info_t *page = ptr_to_page(obj);
 	cache_t *cachep = GET_PAGE_CACHE(page);
 	cache_free(cachep, obj);
 	cache_shrink(cachep);

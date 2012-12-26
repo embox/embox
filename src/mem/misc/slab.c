@@ -78,7 +78,7 @@ void print_slab_info(cache_t *cachep, slab_t *slabp) {
 #endif
 
 /* return information about page which an object belongs to */
-static page_info_t* virt_to_page(void *objp) {
+static page_info_t* ptr_to_page(void *objp) {
 	unsigned int index = ((unsigned int) objp - (unsigned int) HEAP_START_PTR)
 			/ PAGE_SIZE();
 	return &(pages[index]);
@@ -144,7 +144,7 @@ static int cache_grow(cache_t *cachep) {
 	if (!(slabp = (slab_t*) page_alloc(__phymem_allocator, slab_size)))
 		return 0;
 
-	page = virt_to_page(slabp);
+	page = ptr_to_page(slabp);
 	pages_count = slab_size;
 
 	do {
@@ -343,7 +343,7 @@ void cache_free(cache_t *cachep, void* objp) {
 	if (objp == NULL)
 		return;
 
-	page = virt_to_page(objp);
+	page = ptr_to_page(objp);
 	slabp = GET_PAGE_SLAB(page);
 	slist_add_first_link(slist_link_init((struct slist_link *)objp),
 			&slabp->free_blocks);
