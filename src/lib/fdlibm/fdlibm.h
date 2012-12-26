@@ -12,22 +12,20 @@
 /* Sometimes it's necessary to define __LITTLE_ENDIAN explicitly
    but these catch some common cases. */
 
-#if defined(i386) || defined(i486) || \
-	defined(intel) || defined(x86) || defined(i86pc) || \
-	defined(__alpha) || defined(__osf__)
-#define __LITTLE_ENDIAN
-#endif
+#include <hal/arch.h>
 
 #ifdef __LITTLE_ENDIAN
 #define __HI(x) *(1+(int*)&x)
 #define __LO(x) *(int*)&x
 #define __HIp(x) *(1+(int*)x)
 #define __LOp(x) *(int*)x
-#else
+#elif defined(__BIG_ENDIAN)
 #define __HI(x) *(int*)&x
 #define __LO(x) *(1+(int*)&x)
 #define __HIp(x) *(int*)x
 #define __LOp(x) *(1+(int*)x)
+#else
+#error "setup endianness please"
 #endif
 
 #ifdef __STDC__
