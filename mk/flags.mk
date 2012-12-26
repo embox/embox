@@ -33,7 +33,7 @@ endif
 
 # Expand user defined flags and append them after default ones.
 
-__srcgen_includes_fn = $(addprefix -I$1$(SRCGEN_DIR)/src/,include arch/$(ARCH)/include)
+__srcgen_includes_fn = $(addprefix $1$(SRCGEN_DIR)/src/,include arch/$(ARCH)/include)
 __srcgen_includes := $(call __srcgen_includes_fn,)
 $(and $(shell $(MKDIR) $(__srcgen_includes)),)
 
@@ -43,7 +43,7 @@ cppflags_fn = \
 	-imacros $(AUTOCONF_DIR)/config.h\
 	-I$1$(SRC_DIR)/include -I$1$(SRC_DIR)/arch/$(ARCH)/include\
 	-I$1$(SRCGEN_DIR)/include -I$1$(SRCGEN_DIR)/src/include\
-	$(call __srcgen_includes_fn,$1) \
+	$(call __srcgen_includes_fn,-I$1) \
 	$(if $(value PLATFORM),-I$1$(PLATFORM_DIR)/$(PLATFORM)/include)\
 	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include\
 	-nostdinc\
@@ -53,7 +53,6 @@ cppflags_fn = \
 cppflags := $(CPPFLAGS)
 override CPPFLAGS  = $(call cppflags_fn,) $(cppflags)
 EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(PWD)/)
-$(error $(EMBOX_EXPORT_CPPFLAGS))
 
 # Assembler flags
 asflags := $(CFLAGS)
