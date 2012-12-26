@@ -50,6 +50,22 @@ override CPPFLAGS += -nostdinc
 override CPPFLAGS += -MMD -MP# -MT $@ -MF $(@:.o=.d)
 override CPPFLAGS += $(cppflags)
 
+cppflags_fn = \
+	-D__EMBOX__ \
+	-D"__impl_x(path)=<../path>"\
+	-imacros $(AUTOCONF_DIR)/config.h\
+	-I$1$(SRC_DIR)/include -I$1$(SRC_DIR)/arch/$(ARCH)/include\
+	-I$1$(SRCGEN_DIR)/include -I$1$(SRCGEN_DIR)/src/include\
+	$(addprefix $1$(SRCGEN_DIR)/src/,include arch/$(ARCH)/include)\
+	$(__srcgen_includes:%=-I%)\
+	$(if $(value PLATFORM),-I$1$(PLATFORM_DIR)/$(PLATFORM)/include)\
+	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include\
+	-nostdinc\
+	-MMD -MP# -MT $@ -MF $(@:.o=.d)\
+	$(cppflags)
+
+EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(PWD))
+
 # Assembler flags
 asflags := $(CFLAGS)
 override ASFLAGS  = -pipe
