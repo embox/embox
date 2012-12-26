@@ -26,6 +26,8 @@
 
 EMBOX_UNIT_INIT(heap_init);
 
+#define HEAP_SIZE OPTION_MODULE_GET(embox__mem__heap_api,NUMBER,heap_size)
+
 struct free_block_link {
 	struct free_block_link *prev;
 	struct free_block_link *next;
@@ -276,31 +278,24 @@ void *calloc(size_t nmemb, size_t size) {
 	return tmp;
 }
 
-static struct page_allocator *allocator;
-
 static int heap_init(void) {
-	extern char *_heap_start;
+	extern struct page_allocator *__heap_pgallocator;
 	struct free_block *block;
 
-	allocator = page_allocator_init((char *)&_heap_start, HEAP_SIZE(), PAGE_SIZE());
-	if(NULL == allocator) {
-		return -1;
-	}
-
-	pool = page_alloc(allocator, HEAP_SIZE() / PAGE_SIZE() - 2);
+	pool = page_alloc(__heap_pgallocator, HEAP_SIZE / PAGE_SIZE() - 2);
 	if(NULL == pool) {
 		return -1;
 	}
 
 	block = (struct free_block *) pool;
-	block->size = HEAP_SIZE() / 2 - sizeof(block->size);
+	block->size = HEAP_SIZE / 2 - sizeof(block->size);
 	set_end_size(block);
 
 	mark_prev(block);
 	block_link(block);
 
 	/* last work we mark as persistence busy */
-	block = (void *) ((char *) pool + HEAP_SIZE() - sizeof(block->size));
+	block = (void *) ((char *) pool + HEAP_SIZE - sizeof(block->size));
 	mark_block(block);
 
 	return 0;

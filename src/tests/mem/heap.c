@@ -11,6 +11,8 @@
 #include <mem/page.h>
 #include <mem/heap.h>
 
+#define HEAP_SIZE OPTION_MODULE_GET(embox__mem__heap_api,NUMBER,heap_size)
+
 EMBOX_TEST_SUITE("heap allocation test");
 
 struct small_struct {
@@ -37,7 +39,7 @@ TEST_CASE("Allocates big object") {
 	free(obj);
 }
 
-#define MAX_MALLOC_SIZE (HEAP_SIZE() /2 - 8) //XXX based on current impl
+#define MAX_MALLOC_SIZE (HEAP_SIZE/2 - 8) //XXX based on current impl
 #define BIG_MALLOC_SIZE (1024 * 1024)
 
 #if BIG_MALLOC_SIZE + 100 <= MAX_MALLOC_SIZE

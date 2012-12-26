@@ -14,28 +14,30 @@
 #include <mem/kmalloc.h>
 #include <mem/page.h>
 #include <mem/heap.h>
+#include <embox/unit.h>
+#include <util/dlist.h>
 
-extern char _heap_start;
-extern char _heap_end;
+EMBOX_UNIT_INIT(heap_init);
 
+#define HEAP_SIZE OPTION_MODULE_GET(embox__mem__kmalloc,NUMBER,heap_size)
+
+/* some information about page  */
 typedef struct page_info {
-	struct list_head list;
+	cache_t *cache;
 } page_info_t;
 
-# define HEAP_START_PTR 	(&_heap_start)
-# define HEAP_END_PTR		(&_heap_end)
+static char *HEAP_START_PTR;
+static char *HEAP_END_PTR;
 
 /* how much difference may be between size of you object and
  * size of object in cache(cachep->obj_size) */
 #define MAX_OBJECT_ALIGN 0
 
-static page_info_t pages[HEAP_SIZE() / PAGE_SIZE()];
+static page_info_t pages[HEAP_SIZE / PAGE_SIZE()];
 
 /* macros to finding the cache and slab which an obj belongs to */
-#define SET_PAGE_CACHE(pg, x)  ((pg)->list.next = (struct list_head *)(x))
-#define GET_PAGE_CACHE(pg)    ((cache_t *)(pg)->list.next)
-#define SET_PAGE_SLAB(pg, x)   ((pg)->list.prev = (struct list_head *)(x))
-#define GET_PAGE_SLAB(pg)     ((slab_t *)(pg)->list.prev)
+#define SET_PAGE_CACHE(pg, x)  ((pg)->cache = (x))
+#define GET_PAGE_CACHE(pg)    ((pg)->cache)
 
 /* return information about page which an object belongs to */
 static page_info_t* virt_to_page(void *objp) {
@@ -56,7 +58,7 @@ extern cache_t cache_chain;
  * @return pointer to this cache
  */
 static cache_t *find_fit_cache(size_t obj_size) {
-	struct list_head *tmp;
+	struct dlist_head *tmp;
 	cache_t *cachep;
 	/* pointer to main cache */
 	cache_t *cache_chainp;
@@ -64,7 +66,7 @@ static cache_t *find_fit_cache(size_t obj_size) {
 	cache_chainp = &cache_chain;
 	tmp = &cache_chainp->next;
 	do {
-		cachep = list_entry(tmp, cache_t, next);
+		cachep = dlist_entry(tmp, cache_t, next);
 		if (obj_size <= cachep->obj_size + MAX_OBJECT_ALIGN) {
 			return cachep;
 		}
@@ -97,4 +99,17 @@ void kfree(void *obj) {
 	cache_t *cachep = GET_PAGE_CACHE(page);
 	cache_free(cachep, obj);
 	cache_shrink(cachep);
+}
+
+static int heap_init(void) {
+	extern struct page_allocator *__heap_pgallocator;
+	int page_cnt = (HEAP_SIZE / PAGE_SIZE() - 2);
+
+	HEAP_START_PTR = page_alloc(__heap_pgallocator, page_cnt);
+	if(NULL == HEAP_START_PTR) {
+		return -1;
+	}
+	HEAP_END_PTR = HEAP_START_PTR + page_cnt * PAGE_SIZE();
+
+	return 0;
 }
