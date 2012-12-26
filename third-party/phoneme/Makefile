@@ -141,7 +141,8 @@ AMAL_SOURCES    += $(ROM_IMAGE)
 AMAL_SOURCES    += $(NATIVES_TABLE)
 
 AMAL_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%,$(patsubst %.cpp,%.o,$(patsubst %.c,%.o,$(foreach src,$(AMAL_SOURCES),$(notdir $(src))))))
-VPATH           += . $(AMAL_GEN_DIR)
+VPATH           += .
+VPATH           += $(AMAL_GEN_DIR)
 
 AMAL_LOCAL_LIB  := $(AMAL_LIB_DIR)/local.a
 AMAL_CLDC_LIB   := $(AMAL_LIB_DIR)/phoneme_cldc.a
