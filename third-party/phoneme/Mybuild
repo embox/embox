@@ -19,9 +19,11 @@ module core {
 
 module cldc_standalone {
 
+	/*
 	@IncludePath("$(ROOT_DIR)/build/phoneme/build/cldc/javacall_i386_gcc/dist/include")
 	@IncludePath("$(ROOT_DIR)/build/phoneme/build/pcsl/javacall_i386/inc")
 	source "cldc_standalone.c"
+	*/
 
 	depends third_party.phoneme.core
 }

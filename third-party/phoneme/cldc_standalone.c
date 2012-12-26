@@ -6,10 +6,10 @@
  * @author Felix Sulima
  */
 
-typedef long long __int64;
 #include <pcsl_memory.h>
 #include <jvm.h>
 #include <jvmspi.h>
+#include <javacall_file.h>
 
 #include <stdio.h>
 

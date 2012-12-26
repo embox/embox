@@ -23,12 +23,13 @@ EMBOX_IMPORTED_CXXFLAGS += -D"__BEGIN_DECLS=extern \"C\" {"
 EMBOX_IMPORTED_CFLAGS   += $(filter -D"__END_DECLS=%,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -D"__END_DECLS=%,$(EMBOX_CXXFLAGS))
 
-#EMBOX_IMPORTED_CFLAGS += -save-temps
-#EMBOX_IMPORTED_CFLAGS += -fpermissive
+EMBOX_IMPORTED_CFLAGS   += -fno-stack-protector
+EMBOX_IMPORTED_CXXFLAGS += -fno-stack-protector
 EMBOX_IMPORTED_CXXFLAGS += -fpermissive
 EMBOX_IMPORTED_CXXFLAGS += -Dbool=embox_bool
 EMBOX_IMPORTED_CXXFLAGS += -DNULL=0
 EMBOX_IMPORTED_CXXFLAGS += -Dtypeof=__typeof__
+EMBOX_IMPORTED_CXXFLAGS += -Dexit=embox_phoneme_exit
 EMBOX_DERIVED_CFLAGS   += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS += $(EMBOX_IMPORTED_CXXFLAGS)
 
@@ -48,11 +49,11 @@ PCSL_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/pcsl
 CLDC_DIR            := $(PHONEME_DIR)/cldc
 CLDC_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/cldc
 
-.PHONY: checkout javacall pcsl cldc
+.PHONY: checkout javacall pcsl cldc midp amalgamated
 
 AT:=
 
-all: cldc
+all: amalgamated
 
 checkout: $(TOOLS_DIR) $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR)
 
@@ -85,8 +86,7 @@ pcsl: javacall checkout
 
 cldc: pcsl javacall checkout
 	$(AT) \
-	(export LINK_FLAGS="$(JAVACALL_OUTPUT_DIR)/lib/libjavacall$(DEBUG_SUFFIX).a" \
-			CPP_DEF_FLAGS=-fno-stack-protector && \
+	(export LINK_FLAGS="$(JAVACALL_OUTPUT_DIR)/lib/libjavacall$(DEBUG_SUFFIX).a" && \
 	$(MAKE) -C $(CLDC_DIR)/build/javacall_i386_gcc \
 		ENABLE_COMPILATION_WARNINGS=true \
 		ENABLE_MAP_FILE=false \
@@ -99,6 +99,109 @@ cldc: pcsl javacall checkout
 		JVMBuildSpace=$(CLDC_OUTPUT_DIR) \
 		JDK_DIR=$(JDK_DIR) \
 	)
+
+
+AMAL_OUTPUT_DIR := $(PHONEME_BUILD_DIR)/amalgamated
+AMAL_OBJ_DIR    := $(AMAL_OUTPUT_DIR)/obj
+AMAL_LIB_DIR    := $(AMAL_OUTPUT_DIR)/lib
+AMAL_GEN_DIR    := $(AMAL_OUTPUT_DIR)/gen
+
+CLDC_DIST_DIR=$(CLDC_OUTPUT_DIR)/javacall_i386_gcc/dist
+
+ROM_GENERATOR   = $(CLDC_DIST_DIR)/bin/romgen
+JCC_CMD         = $(CLDC_DIST_DIR)/bin/NativesTableGen.jar
+CLDC_ZIP        = $(CLDC_DIST_DIR)/lib/cldc_classes.zip
+ROM_CONFIG_FILE = $(CLDC_DIST_DIR)/lib/cldc_rom.cfg
+ROM_IMAGE       = $(AMAL_GEN_DIR)/ROMImage.cpp
+NATIVES_TABLE   = $(AMAL_GEN_DIR)/NativesTable.cpp
+
+ROM_GEN_FLAGS       += +GenerateGNUCode
+
+ROM_GEN_ARG         += $(ROM_GEN_FLAGS) =HeapCapacity16M
+ROM_GEN_ARG         += -romconfig $(ROM_CONFIG_FILE)
+ROM_GEN_ARG         += -romincludepath $(CLDC_DIR)/src/vm
+ROM_GEN_ARG         += +RewriteROMConstantPool
+ROM_GEN_ARG         += +EnableAllROMOptimizations
+ifeq ($(ENABLE_JAVA_DEBUGGER), true)
+ifeq ($(ENABLE_SYSTEM_CLASSES_DEBUG), true)
+  ROM_GEN_ARG       += +MakeROMDebuggable
+  JAVAC_DEBUG       =
+else
+  # For debugging application classes -CompactROMMethodTables
+  # is the only optimization which is incompatible with the Java debugger.
+  # For debugging Monet bundle the +MakeROMDebuggable is reduced
+  # to -CompactROMMethodTables (all the other optimizations are
+  # disabled for binary image generator)
+  ROM_GEN_ARG       += -CompactROMMethodTables
+endif
+endif
+
+AMAL_SOURCES    += cldc_standalone.c
+AMAL_SOURCES    += $(ROM_IMAGE)
+AMAL_SOURCES    += $(NATIVES_TABLE)
+
+AMAL_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%,$(patsubst %.cpp,%.o,$(patsubst %.c,%.o,$(foreach src,$(AMAL_SOURCES),$(notdir $(src))))))
+VPATH           += . $(AMAL_GEN_DIR)
+
+AMAL_LOCAL_LIB  := $(AMAL_LIB_DIR)/local.a
+AMAL_CLDC_LIB   := $(AMAL_LIB_DIR)/phoneme_cldc.a
+
+AMAL_CPPFLAGS   += $(EMBOX_CPPFLAGS)
+AMAL_CPPFLAGS   += -D__int64="long long"
+AMAL_CPPFLAGS   += -DROMIZING
+AMAL_CPPFLAGS   += -I$(CLDC_DIST_DIR)/include
+AMAL_CPPFLAGS   += -I$(PCSL_OUTPUT_DIR)/javacall_i386/inc
+AMAL_CPPFLAGS   += -I$(JAVACALL_OUTPUT_DIR)/inc
+
+AMAL_CFLAGS     += $(EMBOX_CFLAGS)
+AMAL_CFLAGS     := $(filter-out -Wstrict-prototypes,$(AMAL_CFLAGS))
+AMAL_CFLAGS     := $(filter-out -Wundef,$(AMAL_CFLAGS))
+
+AMAL_CXXFLAGS   = $(filter-out -Werror,$(EMBOX_CXXFLAGS))
+
+PHONEME_CLDC_LIBS += $(CLDC_DIST_DIR)/lib/libcldc_vm$(DEBUG_SUFFIX).a
+PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_memory.a
+PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_print.a
+PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_network.a
+PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_string.a
+PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_file.a
+
+.PHONY: create_output_dirs
+
+$(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR):
+	$(AT)mkdir -p $@
+
+create_output_dirs: $(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR)
+
+$(ROM_GENERATOR) $(CLDC_ZIP) $(ROM_CONFIG_FILE): cldc
+
+$(ROM_IMAGE): $(ROM_GENERATOR) $(CLDC_ZIP) $(ROM_CONFIG_FILE)
+	$(AT)mkdir -p $(dir $@) && cd $(dir $@) && \
+		$(ROM_GENERATOR) -cp $(CLDC_ZIP) $(ROM_GEN_ARG) -romize
+
+$(NATIVES_TABLE): $(CLDC_ZIP) $(JCC_CMD)
+	$(AT)mkdir -p $(dir $@) && cd $(dir $@) && \
+		java -jar $(JCC_CMD) -writer CLDC_HI_Natives -o $@ $(CLDC_ZIP)
+
+$(AMAL_OBJ_DIR)/%.o: %.cpp cldc
+	$(AT)cd ../../ && gcc $(AMAL_CPPFLAGS) $(AMAL_CXXFLAGS) -o $@ -c $<
+
+$(AMAL_OBJ_DIR)/%.o: %.c cldc
+	$(AT)cd ../../ && gcc $(AMAL_CPPFLAGS) $(AMAL_CFLAGS) -o $@ -c $(abspath $<)
+
+$(AMAL_OBJECTS): create_output_dirs
+
+$(AMAL_LOCAL_LIB): $(AMAL_OBJECTS)
+	$(AT)ar -r $@ $^
+
+$(AMAL_CLDC_LIB): $(AMAL_LOCAL_LIB) $(PHONEME_CLDC_LIBS)
+	-$(AT)rm $@
+	$(AT)ar -r $@
+	$(AT)$(patsubst %,mergelib $@ % &&,$^) true
+
+amalgamated: $(AMAL_CLDC_LIB)
+
+
 
 MIDP_DIR            := $(PHONEME_DIR)/midp
 MIDP_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/midp
