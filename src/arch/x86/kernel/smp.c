@@ -15,11 +15,11 @@
 #include <asm/msr.h>
 #include <asm/ap.h>
 
+#include <kernel/cpu.h>
+
 #include <module/embox/driver/interrupt/lapic.h>
 
 EMBOX_UNIT_INIT(unit_init);
-
-#define NCPU 1
 
 #define TRAMPOLINE_ADDR 0x20000UL
 
@@ -61,7 +61,7 @@ static int unit_init(void)
 	init_trampoline();
 
 	/* Start all CPUs */
-    for (int i = 0; i <= NCPU; i++) {
+    for (int i = 0; i <= NCPU - 1; i++) {
     	if (i == lapic_id()) {
     		continue;
     	}

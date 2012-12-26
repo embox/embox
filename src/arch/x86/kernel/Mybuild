@@ -43,9 +43,16 @@ module arch {
 	depends embox.arch.x86.cpu
 }
 
+module cpu {
+	source "cpu.c"
+
+	depends embox.driver.interrupt.lapic
+}
+
 module smp {
 	source "smp.c"
 	source "ap_trampoline.S"
 
 	depends embox.driver.interrupt.lapic
+	depends cpu
 }
