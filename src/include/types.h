@@ -44,7 +44,11 @@ typedef unsigned short int 	u16_t;
 typedef unsigned long int 	u32_t;
 
 #ifndef NULL
-#define NULL ((void *) 0x0)
+#ifndef __cplusplus
+#define NULL ((void *)0)
+#else /* __cplusplus */
+#define NULL 0
+#endif /* ! __cplusplus */
 #endif
 
 #endif /* __ASSEMBLER__ */

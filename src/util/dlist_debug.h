@@ -40,12 +40,12 @@ struct dlist_head {
 #define __DLIST_INIT(head) { &(head), &(head), &(head) }
 
 /* Only for internal using */
-static inline void __dlist_add(struct dlist_head *new, struct dlist_head *next,
+static inline void __dlist_add(struct dlist_head *new_head, struct dlist_head *next,
 		struct dlist_head *prev) {
-	new->prev = prev;
-	new->next = next;
-	next->prev = new;
-	prev->next = new;
+	new_head->prev = prev;
+	new_head->next = next;
+	next->prev = new_head;
+	prev->next = new_head;
 }
 
 /* Checks whether item or list head is owned some of double lists or not.
@@ -60,7 +60,7 @@ static inline int __is_linked(struct dlist_head *head) {
  * in any list
  */
 static inline struct dlist_head *dlist_head_init(struct dlist_head *head) {
-	head->list_id = NULL; /* mark it's not in a list */
+	head->list_id = (struct dlist_head *)NULL; /* mark it's not in a list */
 
 	return head;
 }
@@ -88,50 +88,50 @@ static inline struct dlist_head *dlist_init(struct dlist_head *list_head) {
  * Then if state is correct it marks the new item head as owned this list.
  * And at the and it add the new element into the list after list head element.
  */
-static inline void dlist_add_next(struct dlist_head *new,
+static inline void dlist_add_next(struct dlist_head *new_head,
 		struct dlist_head *list) {
 	/* we can't add not initialized element.
-	 * use #dlist_head_init before using new element*/
-	assert(!__is_linked(new)); /* re-add element */
+	 * use #dlist_head_init before using new_head element*/
+	assert(!__is_linked(new_head)); /* re-add element */
 	/* we can't use list head without initialization.
 	* Use macro #DLIST_INIT for static or #dlist_init for dynamic
 	* initialization */
 	assert(__is_linked(list)); /* add to not initialized list */
 
-	new->list_id = list->list_id; /* mark item head as added to this list */
+	new_head->list_id = list->list_id; /* mark item head as added to this list */
 
 	/* Real adding the element
-	 * new sequence will be following
-	 * list head <-> new item <-> next item of list head
+	 * new_head sequence will be following
+	 * list head <-> new_head item <-> next item of list head
 	 */
-	__dlist_add(new, list->next, list);
+	__dlist_add(new_head, list->next, list);
 }
 
 /**
  * Implementation of the #dlist_add_next function
  * First of all it examine correct state of the item head and the list head.
  * List head must be in a list but item head not.
- * Then if state is correct it marks the new item head as owned this list.
- * And at the and it add the new element into the list as previous element for
+ * Then if state is correct it marks the new_head item head as owned this list.
+ * And at the and it add the new_head element into the list as previous element for
  * the list head.
  */
-static inline void dlist_add_prev(struct dlist_head *new,
+static inline void dlist_add_prev(struct dlist_head *new_head,
 		struct dlist_head *list) {
 	/* we can't add not initialized element.
 	 * use #dlist_head_init before using new element*/
-	assert(!__is_linked(new)); /* re-add element */
+	assert(!__is_linked(new_head)); /* re-add element */
 	/* we can't use list head without initialization.
 	 * Use macro #DLIST_INIT for static or #dlist_init for dynamic
 	 * initialization */
 	assert(__is_linked(list)); /* add to not initialized list */
 
-	new->list_id = list->list_id; /* mark item head as added to this list */
+	new_head->list_id = list->list_id; /* mark item head as added to this list */
 
 	/* Real adding the element
 	 * new sequence will be following
-	 * list head <-> new item <-> previous item of list head
+	 * list head <-> new_head item <-> previous item of list head
 	 */
-	__dlist_add(new, list, list->prev);
+	__dlist_add(new_head, list, list->prev);
 }
 
 /**
@@ -150,7 +150,7 @@ static inline void dlist_del(struct dlist_head *head) {
 	head->prev->next = head->next;
 	head->next->prev = head->prev;
 
-	head->list_id = NULL; /* dlist_head_init */
+	head->list_id = (struct dlist_head *)NULL; /* dlist_head_init */
 }
 
 #endif /* DLIST_DEBUG_H_ */

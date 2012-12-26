@@ -113,7 +113,8 @@ extern float powf __P((float, float));*/
 
 extern double sqrt __P((double));
 
-extern double ceil __P((double));
+// Commenting-out since already provided in math.h
+//extern double ceil __P((double));
 extern double fabs __P((double));
 extern double floor __P((double));
 extern double fmod __P((double, double));
