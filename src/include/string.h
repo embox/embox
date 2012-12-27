@@ -339,6 +339,16 @@ extern size_t strcspn(const char *s, const char *reject);
  * @retval NULL no such character is found
  */
 extern char *strpbrk(const char *s, const char *accept);
+/**
+ * Returns a pointer to a new string which is a duplicate of the string s.
+ * Memory for the new string is obtained with malloc, and can be freed with free.
+ *
+ * @param s
+ *  C-style null-terminated string.
+ * @return
+ *   Pointer to a new string which is a duplicate of the string s
+ */
+extern char *strdup(const char *s);
 
 __END_DECLS
 

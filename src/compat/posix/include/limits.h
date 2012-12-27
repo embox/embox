@@ -46,6 +46,4 @@
 /* Maximum value an `unsigned long long int' can hold.  (Minimum is 0.)  */
 #define ULLONG_MAX	18446744073709551615ULL
 
-#define BUFSIZ          512
-
 #endif /* LIMITS_H_ */

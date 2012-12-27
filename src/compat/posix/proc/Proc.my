@@ -6,7 +6,8 @@ module All {
 	depends exec,
 		fork,
 		wait,
-		signal
+		signal,
+		exit
 
 }
 
@@ -37,5 +38,12 @@ static module signal {
 
 	depends embox.kernel.task.std_signal
 	depends embox.kernel.task.rt_signal
+}
+
+static module exit {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "exit.c"
+
+	depends embox.util.LibUtil
 }
 
