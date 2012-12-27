@@ -65,5 +65,6 @@ extern int dup(int flides);
 extern int dup2(int flides, int flides2);
 
 extern int pipe(int pipefd[2]/*, int flags: O_NONBLOCK */);
+extern void _exit(int status);
 
 #endif /* UNISTD_H_ */

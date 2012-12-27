@@ -6,9 +6,6 @@
  * @author Alexander Kalmuk
  */
 
-
-#define LOG_ERR 0 /*third-party/dropbear-2012.55/sshpty.c:213:*/
-#define SIG_IGN 0 /*third-party/dropbear-2012.55/sshpty.c:274:*/
 #define TIOCSWINSZ 0 /*third-party/dropbear-2012.55/sshpty.c:352:*/
 
 struct winsize /* third-party/dropbear-2012.55/sshpty.c:346: */
@@ -18,10 +15,6 @@ struct winsize /* third-party/dropbear-2012.55/sshpty.c:346: */
   unsigned short ws_xpixel;	/* horizontal size, pixels */
   unsigned short ws_ypixel;	/* vertical size, pixels */
 };
-
-//--------------------------------------------------
-#define LOG_NOTICE 0 /*third-party/dropbear-2012.55/svr-authpasswd.c:97:*/
-//---------------------------------------------------
 
 #define WNOHANG 0 /*third-party/dropbear-2012.55/svr-chansession.c:91:*/
 #define SA_NOCLDSTOP 0 /*third-party/dropbear-2012.55/svr-chansession.c:139:*/
@@ -51,12 +44,9 @@ struct sigaction {
 };
 //-------------------------------------------------------
 
-extern int snprintf(char *str, size_t size, const char *format, ...);
-
 static inline pid_t setsid(void) {
 	return -1;
 }
-extern void _exit(int status);
 
 static inline int chdir(const char *path) {
 	return -1;
@@ -120,7 +110,6 @@ static inline int initgroups(const char *user, gid_t group) {
 static inline int putenv(char *string) {
 	return -1;
 }
-extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 
 #include <asm/termbits.h>
 
