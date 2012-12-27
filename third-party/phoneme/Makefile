@@ -148,6 +148,7 @@ endif
 AMAL_SOURCES    += $(ROM_IMAGE)
 AMAL_SOURCES    += $(NATIVES_TABLE)
 AMAL_SOURCES    += cldc_standalone.c
+AMAL_SOURCES    += javacall_file.c
 
 AMAL_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%,$(patsubst %.cpp,%.o,$(patsubst %.c,%.o,$(foreach src,$(AMAL_SOURCES),$(notdir $(src))))))
 VPATH           += .
