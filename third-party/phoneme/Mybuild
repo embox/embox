@@ -18,7 +18,6 @@ module core {
 }
 
 module cldc_standalone {
-
 	/*
 	@IncludePath("$(ROOT_DIR)/build/phoneme/build/cldc/javacall_i386_gcc/dist/include")
 	@IncludePath("$(ROOT_DIR)/build/phoneme/build/pcsl/javacall_i386/inc")
@@ -26,4 +25,9 @@ module cldc_standalone {
 	*/
 
 	depends third_party.phoneme.core
+}
+
+module javacall {
+	depends third_party.phoneme.core
+	depends embox.compat.posix.file
 }
