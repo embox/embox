@@ -9,7 +9,8 @@
 
 #ifndef EXT_H_
 #define EXT_H_
-
+#include <mem/page.h>
+#include <fs/ext2_super.h>
 /*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -392,5 +393,179 @@ typedef struct ext2_file_info {
 	int64_t		f_buf_blkno;	/* block number of data block */
 	long		f_seekp;	/* local seek pointer */
 } ext2_file_info_t;
+
+
+#define NO_BLOCK		((uint32_t) 0)
+#define ROOT_INODE         2   /* inode number for root directory */
+#define BOOT_BLOCK       0 /* block number of boot block */
+#define START_BLOCK      2 /* first block of FS (not counting SB) */
+#define BLOCK_ADDRESS_BYTES	4     /* bytes per address */
+
+#define EXT2_NDIR_BLOCKS        12
+#define EXT2_IND_BLOCK          EXT2_NDIR_BLOCKS
+#define EXT2_DIND_BLOCK         (EXT2_IND_BLOCK + 1)
+#define EXT2_TIND_BLOCK         (EXT2_DIND_BLOCK + 1)
+#define EXT2_N_BLOCKS           (EXT2_TIND_BLOCK + 1)
+
+#define WMAP_FREE           (1 << 0)
+
+#define IN_CLEAN              0    /* inode disk and memory copies identical */
+#define IN_DIRTY              1    /* inode disk and memory copies differ */
+#define ATIME            002    /* set if atime field needs updating */
+#define CTIME            004    /* set if ctime field needs updating */
+#define MTIME            010    /* set if mtime field needs updating */
+
+/* Miscellaneous constants */
+#define SU_UID          0     /* super_user's uid_t */
+#define NORMAL          0     /* forces get_block to do disk read */
+#define NO_READ         1     /* prevents get_block from doing disk read */
+#define PREFETCH        2     /* tells get_block not to read or mark dev */
+
+#define INODE_BLOCK        0                             /* inode block */
+#define DIRECTORY_BLOCK    1                             /* directory block */
+#define INDIRECT_BLOCK     2                             /* pointer block */
+#define MAP_BLOCK          3                             /* bit map */
+#define FULL_DATA_BLOCK    5                             /* data, fully used */
+#define PARTIAL_DATA_BLOCK 6                             /* data, partly used*/
+
+#define EXT2_PREALLOC_BLOCKS		8
+#define NR_INODES        512
+#define CHAR_BIT 8
+
+#define usizeof(t) ((unsigned) sizeof(t))
+
+#define FS_BITMAP_CHUNKS(b) ((b)/usizeof (uint32_t))/* # map chunks/blk   */
+#define FS_BITCHUNK_BITS		(usizeof(uint32_t) * CHAR_BIT)
+#define FS_BITS_PER_BLOCK(b)	(FS_BITMAP_CHUNKS(b) * FS_BITCHUNK_BITS)
+
+#define DIRTY 1
+
+struct inode {
+    u16_t  i_mode;         /* File mode */
+    u16_t  i_uid;          /* Low 16 bits of Owner Uid */
+    u32_t  i_size;         /* Size in bytes */
+    u32_t  i_atime;        /* Access time */
+    u32_t  i_ctime;        /* Creation time */
+    u32_t  i_mtime;        /* Modification time */
+    u32_t  i_dtime;        /* Deletion Time */
+    u16_t  i_gid;          /* Low 16 bits of Group Id */
+    u16_t  i_links_count;  /* Links count */
+    u32_t  i_blocks;       /* 512-byte blocks count */
+    u32_t  i_flags;        /* File flags */
+    union {
+        struct {
+                u32_t  l_i_reserved1;
+        } linux1;
+        struct {
+                u32_t  h_i_translator;
+        } hurd1;
+        struct {
+                u32_t  m_i_reserved1;
+        } masix1;
+    } osd1;                         /* OS dependent 1 */
+    u32_t  i_block[EXT2_N_BLOCKS];  /* Pointers to blocks */
+    u32_t  i_generation;            /* File version (for NFS) */
+    u32_t  i_file_acl;              /* File ACL */
+    u32_t  i_dir_acl;               /* Directory ACL */
+    u32_t  i_faddr;                 /* Fragment address */
+    /*union {
+        struct {
+            u8_t    l_i_frag;       // Fragment number /
+            u8_t    l_i_fsize;      // Fragment size /
+            u16_t   i_pad1;
+            u16_t  l_i_uid_high;   // these 2 fields    /
+            u16_t  l_i_gid_high;   // were reserved2[0] /
+            u32_t   l_i_reserved2;
+        } linux2;
+        struct {
+            u8_t    h_i_frag;       // Fragment number /
+            u8_t    h_i_fsize;      // Fragment size /
+            u16_t  h_i_mode_high;
+            u16_t  h_i_uid_high;
+            u16_t  h_i_gid_high;
+            u32_t  h_i_author;
+        } hurd2;
+        struct {
+            u8_t    m_i_frag;       // Fragment number /
+            u8_t    m_i_fsize;      // Fragment size /
+            u16_t   m_pad1;
+            u32_t   m_i_reserved2[2];
+        } masix2;
+    } osd2;                         // OS dependent 2 /
+*/
+    /* The following items are not present on the disk. */
+    dev_t i_dev;                /* which device is the inode on */
+    ino_t i_num;                /* inode number on its (minor) device */
+    int i_count;                /* # times inode used; 0 means slot is free */
+    struct super_block *i_sp;   /* pointer to super block for inode's device */
+    char i_dirt;                /* CLEAN or DIRTY */
+    uint32_t i_bsearch;          /* where to start search for new blocks,
+                                 * also this is last allocated block.
+				 */
+    long i_last_pos_bl_alloc;  /* last write position for which we allocated
+                                 * a new block (should be block i_bsearch).
+				 * used to check for sequential operation.
+				 */
+    long i_last_dpos;          /* where to start dentry search */
+    int i_last_dentry_size;	/* size of last found dentry */
+
+    char i_mountpoint;          /* true if mounted on */
+
+    char i_seek;                /* set on LSEEK, cleared on READ/WRITE */
+    char i_update;              /* the ATIME, CTIME, and MTIME bits are here */
+
+    uint32_t i_prealloc_blocks[EXT2_PREALLOC_BLOCKS];	/* preallocated blocks */
+    int i_prealloc_count;	/* number of preallocated blocks */
+    int i_prealloc_index;	/* index into i_prealloc_blocks */
+    int i_preallocation;	/* use preallocation for this inode, normally
+				 * it's reset only when non-sequential write
+				 * happens.
+				 */
+
+};// inode[100];
+
+struct buf {
+  /* Data portion of the buffer. */
+  void *data;
+
+  /* Header portion of the buffer - internal to libminixfs. */
+  struct buf *lmfs_next;       /* used to link all free bufs in a chain */
+  struct buf *lmfs_prev;       /* used to link all free bufs the other way */
+  struct buf *lmfs_hash;       /* used to link bufs on hash chains */
+  uint32_t lmfs_blocknr;        /* block number of its (minor) device */
+  dev_t lmfs_dev;              /* major | minor device where block resides */
+  char lmfs_dirt;              /* BP_CLEAN or BP_DIRTY */
+  char lmfs_count;             /* number of users of this buffer */
+  unsigned int lmfs_bytes;     /* Number of bytes allocated in bp */
+};
+
+union fsdata_u {
+    char b__data[PAGE_SIZE()];             /* ordinary user data */
+/* indirect block */
+    uint32_t b__ind[PAGE_SIZE()/sizeof(uint32_t)];
+/* bit map block */
+    uint32_t b__bitmap[FS_BITMAP_CHUNKS(PAGE_SIZE())];
+};
+
+/* A block is free if b_dev == NO_DEV. */
+
+/* These defs make it possible to use to bp->b_data instead of bp->b.b__data */
+#define b_data(bp)   ((union fsdata_u *) bp->data)->b__data
+#define b_ind(bp) ((union fsdata_u *) bp->data)->b__ind
+#define b_bitmap(bp) ((union fsdata_u *) bp->data)->b__bitmap
+
+/* balloc.c */
+void discard_preallocated_blocks(struct nas *nas, struct inode *rip);
+uint32_t alloc_block(struct nas *nas, struct inode *rip, uint32_t goal);
+void free_block(struct nas *nas, struct super_block *sp, uint32_t bit);
+
+int ext2_read_sector(struct nas *nas, char *buffer,
+		uint32_t count, uint32_t sector);
+int ext2_write_sector(struct nas *nas, char *buffer,
+		uint32_t count, uint32_t sector);
+
+/* ialloc.c
+struct inode *alloc_inode(struct inode *parent, mode_t bits);
+void free_inode(struct inode *rip);*/
 
 #endif /* EXT_H_ */
