@@ -28,12 +28,23 @@
 
 EMBOX_EXAMPLE(run);
 
-class Hello {
+class Base {
+private:
+	virtual void testPureVirtual(void) = 0;
+};
+
+class Hello : private Base {
+private:
+	void testPureVirtual(void);
 public:
 	Hello() { std::printf(">> [obj %p] Hello() without any arguments\n", this); }
 	explicit Hello(const char* str) { std::printf(">> [obj %p] Hello() with one argument: '%s`\n", this, str); }
 	~Hello() { std::printf(">> [obj %p] ~Hello()\n", this); }
 };
+
+void Hello::testPureVirtual(void) {
+	assert(true);
+}
 
 static int run(int argc, char **argv) {
 	// stack
