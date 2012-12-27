@@ -9,7 +9,6 @@
 #include <pcsl_memory.h>
 #include <jvm.h>
 #include <jvmspi.h>
-#include <javacall_file.h>
 
 #include <stdio.h>
 

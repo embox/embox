@@ -3,9 +3,11 @@ ifeq ($(ROOT_DIR),)
 $(error ROOT_DIR is not set.)
 endif
 
+CLDC_TARGET_ID=product
 ifneq ($(findstring -g,$(EMBOX_CFLAGS)),)
 USE_DEBUG=true
 DEBUG_SUFFIX=_g
+CLDC_TARGET_ID=debug
 endif
 
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
@@ -66,8 +68,10 @@ $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR):
 	$(AT)patch -p0 -d $(PHONEME_DIR) -N --input=$(abspath $(PATCH_TXT))
 
 javacall: checkout
+	export CFLAGS='$(EMBOX_DERIVED_CFLAGS)' && \
 	$(AT)$(MAKE) -C $(JAVACALL_DIR)/configuration/stubs/linux \
 		USE_DEBUG=$(USE_DEBUG) \
+		AT= \
 		JAVACALL_OUTPUT_DIR=$(JAVACALL_OUTPUT_DIR) \
 		JAVACALL_DIR=$(JAVACALL_DIR) \
 		TOOLS_DIR=$(TOOLS_DIR) \
@@ -115,6 +119,10 @@ CLDC_ZIP        = $(CLDC_DIST_DIR)/lib/cldc_classes.zip
 ROM_CONFIG_FILE = $(CLDC_DIST_DIR)/lib/cldc_rom.cfg
 ROM_IMAGE       = $(AMAL_GEN_DIR)/ROMImage.cpp
 NATIVES_TABLE   = $(AMAL_GEN_DIR)/NativesTable.cpp
+
+JVMSPI_OBJ      = $(CLDC_OUTPUT_DIR)/javacall_i386_gcc/target/$(CLDC_TARGET_ID)/jvmspi.o
+JAVAUTIL_OBJS   = $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/javautil_unicode.o
+AMAL_EXT_OBJS   = $(JVMSPI_OBJ) $(JAVAUTIL_OBJS)
 
 ROM_GEN_FLAGS       += +GenerateGNUCode
 
@@ -193,9 +201,11 @@ $(AMAL_OBJECTS): $(AMAL_INCLUDE_DIRS) $(AMAL_FLAG_DIR)
 
 $(AMAL_INCLUDE_DIRS): javacall pcsl cldc
 
+$(AMAL_EXT_OBJS): javacall pcsl cldc
+
 $(PHONEME_CLDC_LIBS): pcsl cldc
 
-$(AMAL_LOCAL_LIB): $(AMAL_OBJECTS)
+$(AMAL_LOCAL_LIB): $(AMAL_EXT_OBJS) $(AMAL_OBJECTS)
 	$(AT)ar -r $@ $^
 
 $(AMAL_CLDC_LIB): $(AMAL_LOCAL_LIB) $(PHONEME_CLDC_LIBS)
