@@ -30,10 +30,12 @@ EMBOX_IMPORTED_CXXFLAGS += -fno-stack-protector
 EMBOX_IMPORTED_CXXFLAGS += -fpermissive
 EMBOX_IMPORTED_CXXFLAGS += -Dbool=embox_bool
 EMBOX_IMPORTED_CXXFLAGS += -DNULL=0
+EMBOX_IMPORTED_CXXFLAGS += -DNDEBUG
 EMBOX_IMPORTED_CXXFLAGS += -Dtypeof=__typeof__
 EMBOX_IMPORTED_CXXFLAGS += -Dexit=embox_phoneme_exit
 EMBOX_DERIVED_CFLAGS   += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS += $(EMBOX_IMPORTED_CXXFLAGS)
+
 
 PHONEME_DIR := $(ROOT_DIR)/build/phoneme
 PHONEME_BUILD_DIR := $(PHONEME_DIR)/build
@@ -149,6 +151,7 @@ AMAL_SOURCES    += $(ROM_IMAGE)
 AMAL_SOURCES    += $(NATIVES_TABLE)
 AMAL_SOURCES    += cldc_standalone.c
 AMAL_SOURCES    += javacall_file.c
+AMAL_SOURCES    += javacall_memory.c
 
 AMAL_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%,$(patsubst %.cpp,%.o,$(patsubst %.c,%.o,$(foreach src,$(AMAL_SOURCES),$(notdir $(src))))))
 VPATH           += .
@@ -166,7 +169,10 @@ AMAL_INCLUDE_DIRS += $(JAVACALL_OUTPUT_DIR)/inc
 AMAL_CPPFLAGS   += $(EMBOX_CPPFLAGS)
 AMAL_CPPFLAGS   += -D__int64="long long"
 AMAL_CPPFLAGS   += -DROMIZING
+AMAL_CPPFLAGS   += -DNDEBUG
+AMAL_CPPFLAGS   += -I$(ROOT_DIR)/src/compat/posix/include
 AMAL_CPPFLAGS   += $(patsubst %,-I%,$(AMAL_INCLUDE_DIRS))
+
 
 AMAL_CFLAGS     += $(EMBOX_CFLAGS)
 AMAL_CFLAGS     := $(filter-out -Wstrict-prototypes,$(AMAL_CFLAGS))

@@ -7,7 +7,9 @@
  */
 
 #include <javacall_file.h>
+#include <javacall_dir.h>
 #include <javautil_unicode.h>
+#include <javacall_memory.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -29,12 +31,14 @@ javacall_result javacall_file_open(javacall_const_utf16_string fileName,
 	if ((utf8Name = malloc(utf8NameLen)) == NULL) {
 		return JAVACALL_FAIL;
 	}
+
 	if (0 > (res = javautil_unicode_utf16_to_utf8(fileName, fileNameLen,
 			utf8Name, utf8NameLen, &utf8NameLen))) {
 		return res;
 	}
 
-	handle = (void*)open((const char *)fileName, flags);
+	handle = (void*)open((const char *)utf8Name, flags);
+	free(utf8Name);
 
 	return emboxErrno2javaErrno(errno);
 }
