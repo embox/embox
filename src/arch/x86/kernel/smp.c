@@ -24,8 +24,18 @@ EMBOX_UNIT_INIT(unit_init);
 #define TRAMPOLINE_ADDR 0x20000UL
 
 void startup_ap(void) {
+	extern int lapic_enable(void);
+	extern void lapic_timer_init(uint32_t quantum);
+	extern void idt_load(void);
+
+	idt_load();
+
+	lapic_enable();
+	lapic_timer_init(1);
+	__asm__ __volatile__ ("sti");
+
 	while (1) {
-		__asm__ __volatile__ ("hlt");
+		;
 	}
 }
 

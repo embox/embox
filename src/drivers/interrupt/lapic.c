@@ -17,7 +17,7 @@
 
 #include "lapic.h"
 
-EMBOX_UNIT_INIT(lapic_enable);
+EMBOX_UNIT_INIT(unit_init);
 
 #define lapic_write_icr1(val)	lapic_write(LAPIC_ICR1, val)
 #define lapic_write_icr2(val)	lapic_write(LAPIC_ICR2, val)
@@ -55,7 +55,7 @@ static inline void lapic_enable_in_msr(void) {
 	ia32_msr_write(IA32_APIC_BASE, msr_hi, msr_lo);
 }
 
-static int lapic_enable(void) {
+int lapic_enable(void) {
 	uint32_t val;
 
 	lapic_enable_in_msr();
@@ -63,10 +63,18 @@ static int lapic_enable(void) {
 	/* Clear error state register */
 	lapic_errstatus();
 
+#if 1
+	lapic_write(LAPIC_LVT_PCR, 4<<8);
+#endif
+
     /* Set the spurious interrupt vector register */
 	val = lapic_read(LAPIC_SIVR);
 	val |= 0x100;
 	lapic_write(LAPIC_SIVR, val);
 
 	return 0;
+}
+
+static int unit_init(void) {
+	return lapic_enable();
 }

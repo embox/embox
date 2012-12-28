@@ -5,20 +5,22 @@
  * @author Anton Bulychev
  */
 
-#ifndef IRQCTRL_APIC_IMPL_H_
-#define IRQCTRL_APIC_IMPL_H_
+#ifndef IRQCTRL_LAPIC_IMPL_H_
+#define IRQCTRL_LAPIC_IMPL_H_
 
 #include <types.h>
 
-#define __IRQCTRL_IRQS_TOTAL 16
-
 #define LOCAL_APIC_DEF_ADDR	 0xFEE00000 /* Default local apic address */
 
-#define LAPIC_ID	(LOCAL_APIC_DEF_ADDR + 0x020)
-#define LAPIC_SIVR  (LOCAL_APIC_DEF_ADDR + 0x0F0)
-#define LAPIC_ESR	(LOCAL_APIC_DEF_ADDR + 0x280)
-#define LAPIC_ICR1	(LOCAL_APIC_DEF_ADDR + 0x300)
-#define LAPIC_ICR2	(LOCAL_APIC_DEF_ADDR + 0x310)
+#define LAPIC_ID        (LOCAL_APIC_DEF_ADDR + 0x020)
+#define LAPIC_SIVR      (LOCAL_APIC_DEF_ADDR + 0x0F0)
+#define LAPIC_ESR       (LOCAL_APIC_DEF_ADDR + 0x280)
+#define LAPIC_ICR1      (LOCAL_APIC_DEF_ADDR + 0x300)
+#define LAPIC_ICR2      (LOCAL_APIC_DEF_ADDR + 0x310)
+#define LAPIC_LVT_TR    (LOCAL_APIC_DEF_ADDR + 0x320)
+#define LAPIC_LVT_PCR   (LOCAL_APIC_DEF_ADDR + 0x340)
+#define LAPIC_TIMER_ICR	(LOCAL_APIC_DEF_ADDR + 0x380)
+#define LAPIC_TIMER_DCR	(LOCAL_APIC_DEF_ADDR + 0x3E0)
 
 static inline uint32_t lapic_read(uint32_t reg) {
 	return *((volatile uint32_t *) reg);
@@ -41,5 +43,5 @@ static inline uint32_t lapic_errstatus(void)
 extern void lapic_send_init_ipi(uint32_t apic_id);
 extern void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline);
 
-#endif /* IRQCTRL_APIC_IMPL_H_ */
+#endif /* IRQCTRL_LAPIC_IMPL_H_ */
 
