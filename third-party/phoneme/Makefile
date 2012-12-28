@@ -29,8 +29,6 @@ EMBOX_IMPORTED_CFLAGS   += -fno-stack-protector
 EMBOX_IMPORTED_CXXFLAGS += -fno-stack-protector
 EMBOX_IMPORTED_CXXFLAGS += -fpermissive
 EMBOX_IMPORTED_CXXFLAGS += -Dbool=embox_bool
-EMBOX_IMPORTED_CXXFLAGS += -DNULL=0
-EMBOX_IMPORTED_CXXFLAGS += -DNDEBUG
 EMBOX_IMPORTED_CXXFLAGS += -Dtypeof=__typeof__
 EMBOX_IMPORTED_CXXFLAGS += -Dexit=embox_phoneme_exit
 EMBOX_DERIVED_CFLAGS   += $(EMBOX_IMPORTED_CFLAGS)
@@ -169,7 +167,6 @@ AMAL_INCLUDE_DIRS += $(JAVACALL_OUTPUT_DIR)/inc
 AMAL_CPPFLAGS   += $(EMBOX_CPPFLAGS)
 AMAL_CPPFLAGS   += -D__int64="long long"
 AMAL_CPPFLAGS   += -DROMIZING
-AMAL_CPPFLAGS   += -DNDEBUG
 AMAL_CPPFLAGS   += -I$(ROOT_DIR)/src/compat/posix/include
 AMAL_CPPFLAGS   += $(patsubst %,-I%,$(AMAL_INCLUDE_DIRS))
 
@@ -187,7 +184,7 @@ PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_network.a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_string.a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_file.a
 
-.PHONY: create_output_dirs
+PHONEME_CLDC_PREVERIFY = $(CLDC_DIST_DIR)/bin/preverify
 
 $(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR) $(AMAL_FLAG_DIR):
 	$(AT)mkdir -p $@
@@ -216,8 +213,11 @@ $(AMAL_LOCAL_LIB): $(AMAL_EXT_OBJS) $(AMAL_OBJECTS)
 	$(AT)ar -r $@ $^
 
 $(AMAL_CLDC_LIB): $(AMAL_LOCAL_LIB) $(PHONEME_CLDC_LIBS)
+	-$(AT)rm $@
 	$(AT)ar -r $@
 	$(AT)$(patsubst %,mergelib $@ % &&,$^) true
+
+$(PHONEME_CLDC_PREVERIFY): cldc
 
 $(AMAL_OBJ_DIR)/%.o: %.cpp
 	$(AT)cd ../../ && gcc $(AMAL_CPPFLAGS) $(AMAL_CXXFLAGS) -o $@ -c $<
