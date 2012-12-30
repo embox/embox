@@ -65,32 +65,18 @@ static int run(int argc, char **argv) {
 	// stack
 	{
 		std::puts("Derived without any arguments -- on stack");
+		Derived derived();
+	}
+
+
+	// Null argument
+	{
+		std::puts("Derived with NULL argument -- on stack");
 		Derived derived(NULL);
 	}
 
-	// operator new(size_t, void*)
-	{
-		std::puts("Derived without any arguments -- via operator new(sz, ptr)");
-		char storage[sizeof(Derived)];
-		Derived *derived_ptr = new(&storage[0]) Derived(NULL);
-		derived_ptr->~Derived();
-	}
 
-	// operator new(size_t)
-	{
-		std::puts("Derived without any arguments -- via operator new(sz)");
-		Derived *derived_ptr = new Derived(NULL);
-		delete derived_ptr;
-	}
-
-	// operator new(size_t, const nothrow_t&)
-	{
-		std::puts("Derived without any arguments -- via operator new(sz, nothrow)");
-		Derived *derived_ptr = new(std::nothrow) Derived(NULL);
-		delete derived_ptr;
-	}
-
-	// Calling pure virtual
+	// Calling pure virtual function
 	{
 		std::puts("Calling pure virtual function");
 		Derived derived(callPureVirtual);

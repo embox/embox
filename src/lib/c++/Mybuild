@@ -8,7 +8,7 @@ module LibCXX {
 	/* Private C++ files */
 	source "unwind.c"
 	source "eh_routines.cpp"
-        source "inheritance_routines.cpp"
+        source "purevirt_routines.cpp"
 
 	/*linker sections */
 	source "cxx.lds.S"
