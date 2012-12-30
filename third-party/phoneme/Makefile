@@ -151,7 +151,7 @@ AMAL_SOURCES    += cldc_standalone.c
 AMAL_SOURCES    += javacall_file.c
 AMAL_SOURCES    += javacall_memory.c
 
-AMAL_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%,$(patsubst %.cpp,%.o,$(patsubst %.c,%.o,$(foreach src,$(AMAL_SOURCES),$(notdir $(src))))))
+AMAL_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%.o, $(basename $(filter %.c %.cpp,$(notdir $(AMAL_SOURCES)))))
 VPATH           += .
 # Directory has to exist if using VPATH :(
 $(shell mkdir -p $(AMAL_GEN_DIR))
@@ -210,12 +210,12 @@ $(AMAL_EXT_OBJS): javacall pcsl cldc
 $(PHONEME_CLDC_LIBS): pcsl cldc
 
 $(AMAL_LOCAL_LIB): $(AMAL_EXT_OBJS) $(AMAL_OBJECTS)
-	$(AT)ar -r $@ $^
+	$(AT)ar -r $@ $?
 
 $(AMAL_CLDC_LIB): $(AMAL_LOCAL_LIB) $(PHONEME_CLDC_LIBS)
-	-$(AT)rm $@
-	$(AT)ar -r $@
-	$(AT)$(patsubst %,mergelib $@ % &&,$^) true
+	-$(AT)$(patsubst %,ar -x % &&,$?) true
+	$(AT)ar -r $@ *.o
+	$(AT)rm *.o
 
 $(PHONEME_CLDC_PREVERIFY): cldc
 
