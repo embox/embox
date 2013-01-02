@@ -28,7 +28,7 @@ void set_plane(unsigned p)
 	p &= 3;
 	pmask = 1 << p;
 /* set read plane */
-	vga_gc_write(p, VGA_GC_READ_MAP_SEL);
+	vga_wgfx(0, VGA_GFX_PLANE_READ, p);
 /* set write plane */
 	vga_wseq(0, VGA_SEQ_PLANE_MASK, pmask);
 }
@@ -41,7 +41,7 @@ static unsigned get_fb_seg(void)
 {
 	unsigned seg;
 
-	seg = vga_gc_read(VGA_GC_MISCELLANEOUS);
+	seg = vga_rgfx(0, VGA_GFX_MISC);
 	seg >>= 2;
 	seg &= 3;
 	switch(seg)

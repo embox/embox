@@ -39,12 +39,12 @@ void vga_read_regs(unsigned char *regs) {
 	}
 /* read GRAPHICS CONTROLLER regs */
 	for(i = 0; i < VGA_NUM_GC_REGS; i++) {
-		*regs = vga_gc_read(i);
+		*regs = vga_rgfx(0, i);
 		regs++;
 	}
 /* read ATTRIBUTE CONTROLLER regs */
 	for(i = 0; i < VGA_NUM_AC_REGS; i++) {
-		*regs = vga_ac_read(i);
+		*regs = vga_rattr(0, i);
 		regs++;
 	}
 /* lock 16-color palette and unblank display */
@@ -78,12 +78,12 @@ void vga_write_regs(unsigned char *regs) {
 	}
 /* write GRAPHICS CONTROLLER regs */
 	for(i = 0; i < VGA_NUM_GC_REGS; i++) {
-		vga_gc_write(*regs, i);
+		vga_wgfx(0, i, *regs);
 		regs++;
 	}
 /* write ATTRIBUTE CONTROLLER regs */
 	for(i = 0; i < VGA_NUM_AC_REGS; i++) {
-		vga_ac_write(*regs, i);
+		vga_wattr(0, i, *regs);
 		regs++;
 	}
 /* lock 16-color palette and unblank display */
