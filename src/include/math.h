@@ -9,6 +9,8 @@
 #ifndef MATH_H_
 #define MATH_H_
 
+#include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
 #include <../lib/fdlibm/fdlibm.h>

@@ -67,8 +67,8 @@ override CXXFLAGS += -Wall -Werror
 override CXXFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 override CXXFLAGS += -Wformat -Wformat-nonliteral
 override CXXFLAGS += -I$(SRC_DIR)/include/c++
-override CXXFLAGS += -D"__BEGIN_DECLS=extern \"C\" {"
-override CXXFLAGS += -D"__END_DECLS=}"
+#override CXXFLAGS += -D"__BEGIN_DECLS=extern \"C\" {"
+#override CXXFLAGS += -D"__END_DECLS=}"
 #	C++ has build-in type bool
 override CXXFLAGS += -DSTDBOOL_H_
 override CXXFLAGS += $(cxxflags)

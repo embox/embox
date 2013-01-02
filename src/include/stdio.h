@@ -33,6 +33,8 @@ typedef struct file_struct {
 
 struct stat;
 
+#include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
 #define putc(c, f) fputc((c), (f))

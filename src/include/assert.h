@@ -33,6 +33,8 @@
 #ifdef __CDT_PARSER__
 # undef assert
 
+#include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
 /* Actually assert is a macro, but it is hidden from Eclipse CDT macro
