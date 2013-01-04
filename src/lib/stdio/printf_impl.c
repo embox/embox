@@ -31,6 +31,7 @@
 #define OPS_LEN_SIZE         0x0400 /* size_t (d, i, u, o, x, X); size_t* (n) */
 #define OPS_LEN_PTRDIFF      0x0800 /* ptrdiff_t (d, i, u, o, x, X); ptrdiff_t* (n) */
 #define OPS_LEN_LONGFP       0x1000 /* long double (f, F, e, E, g, G, a, A) */
+#define OPS_SPEC_HIGH        0x2000 /* specifier is tall */
 
 /* Space for string representation of a 64 bit integer */
 #define PRINT_I_BUFF_SZ 65
@@ -68,10 +69,10 @@ static int print_s(void (*printchar_handler)(struct printchar_handler_data *d, i
 static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data,
 		unsigned long long int u, int is_signed, int width, int min_len,
-		unsigned int ops, int base, int letbase) {
+		unsigned int ops, int base) {
 	char buff[PRINT_I_BUFF_SZ], *str, *end;
 	unsigned long long int t;
-	int neg, len, extra_len, pad_count;
+	int neg, len, extra_len, pad_count, letbase;
 
 	assert(printchar_handler != NULL);
 
@@ -79,6 +80,7 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 	*end = '\0';
 	neg = is_signed && ((long long int)u < 0);
 	if (neg) u = -u;
+    letbase = ops & OPS_SPEC_HIGH ? 'A' : 'a';
 
 	do {
 		t = u % base;
@@ -171,6 +173,7 @@ after_flags:
 		}
 
 		/* handle specifier */
+        ops |= isupper(*format) ? OPS_SPEC_HIGH : 0;
 		switch (*format) {
 		case '%': goto single_print;
 		case 'd':
@@ -184,7 +187,7 @@ after_flags:
 					: ops & OPS_LEN_PTRDIFF ? va_arg(args, ptrdiff_t)
 					: va_arg(args, int);
 			pc += print_i(printchar_handler, printchar_data, tmp.ulli, 1,
-					width, precision, ops, 10, 0);
+					width, precision, ops, 10);
 			break;
 		case 'u':
 		case 'o':
@@ -200,8 +203,7 @@ after_flags:
 					: va_arg(args, unsigned int);
 			pc += print_i(printchar_handler, printchar_data, tmp.ulli, 0,
 					width, precision, ops,
-					*format == 'o' ? 8 : (*format == 'u' ? 10 : 16),
-					(*format == 'o') || (*format == 'u') ? 0 : *format - ('x' - 'a'));
+					*format == 'o' ? 8 : (*format == 'u' ? 10 : 16));
 			break;
 		case 'f':
 		case 'F':
@@ -231,7 +233,7 @@ after_flags:
 			tmp.vp = va_arg(args, void *);
 			pc += print_i(printchar_handler, printchar_data, (size_t)tmp.vp,
 					0, width, sizeof tmp.vp * 2 + 2,
-					ops | (OPS_FLAG_WITH_PREFIX | OPS_FLAG_ZERO_PAD), 16, 'a');
+					ops | (OPS_FLAG_WITH_PREFIX | OPS_FLAG_ZERO_PAD), 16);
 			break;
 		case 'n':
 			if (ops & OPS_LEN_MIN) *va_arg(args, signed char *) = (signed char)pc;
