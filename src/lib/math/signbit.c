@@ -19,7 +19,7 @@ int signbitf(float x) {
 }
 
 int signbitl(long double x) {
-    /* FIXME it's work only if size of double and long double are the same */
-    assert(sizeof x == sizeof(double));
-    return signbit((double)x);
+	/* FIXME it's work only if size of double and long double are the same */
+	/*assert(sizeof x == sizeof(double));*/
+	return signbit((double)x);
 }
