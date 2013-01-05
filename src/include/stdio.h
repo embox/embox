@@ -20,7 +20,7 @@
 #define _IOFBF        0x20
 #define _IOLBF        0x20
 #define _IONBF        0x20
-#define	BUFSIZ        0x40
+#define	BUFSIZ        0x100
 #define L_tmpnam      0x20
 #define FILENAME_MAX  0x20
 
