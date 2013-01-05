@@ -9,13 +9,19 @@
 #include <math.h>
 
 double floor(double x) {
-	return 0.0;
+	double int_part;
+
+    return modf(x, &int_part) < 0.0 ? int_part - 1.0 : int_part;
 }
 
 float floorf(float x) {
-	return 0.0;
+	float int_part;
+
+    return modff(x, &int_part) < 0.0 ? int_part - 1.0 : int_part;
 }
 
 long double floorl(long double x) {
-	return 0.0;
+	long double int_part;
+
+    return modfl(x, &int_part) < 0.0 ? int_part - 1.0 : int_part;
 }

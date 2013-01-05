@@ -9,22 +9,19 @@
 #include <math.h>
 
 double fmod(double x, double y) {
-	double quot;
+	double unused;
 
-	quot = x / y;
-	return x - (signbit(quot) ? ceil(quot) : floor(quot)) * y;
+	return modf(x / y, &unused);
 }
 
 float fmodf(float x, float y) {
-	float quot;
+	float unused;
 
-	quot = x / y;
-	return x - (signbitf(quot) ? ceilf(quot) : floorf(quot)) * y;
+	return modff(x / y, &unused);
 }
 
 long double fmodl(long double x, long double y) {
-	long double quot;
+	long double unused;
 
-	quot = x / y;
-	return x - (signbitl(quot) ? ceill(quot) : floorl(quot)) * y;
+	return modfl(x / y, &unused);
 }
