@@ -6,21 +6,23 @@
  * @author Ilia Vaprol
  */
 
+#include <lib/math/ieee754.h>
 #include <math.h>
 
-/**
- * TODO it works with mistake when x is -0.0:
- *  right answer is 1, but we return 0
- */
-
 int signbit(double x) {
-    return x < 0;
+    union ieee754_double ieee_x;
+    ieee_x.val = x;
+    return ieee_x.ieee.negative;
 }
 
 int signbitf(float x) {
-    return x < 0;
+    union ieee754_single ieee_x;
+    ieee_x.val = x;
+    return ieee_x.ieee.negative;
 }
 
 int signbitl(long double x) {
-    return x < 0;
+    union ieee754_double ieee_x;
+    ieee_x.val = x; /* FIXME only if size of long double is 64bit */
+    return ieee_x.ieee.negative;
 }
