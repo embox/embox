@@ -99,8 +99,11 @@ static module LibCStrdup {
 
 static module LibCMath {
 	source "math/floor.c"
+	source "math/ceil.c"
 	source "math/copysign.c"
 	source "math/signbit.c"
+	source "math/fmod.c"
+	source "math/modf.c"
 	source "math/pow.c"
 	source "math/log10.c"
 	source "math/div.c"

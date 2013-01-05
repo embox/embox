@@ -41,7 +41,7 @@ struct printchar_handler_data;
 static int print_s(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data,
 		const char *str, int width, int max_len, unsigned int ops) {
-	int pc, len, pad_count;
+	int pc, len, space_count;
 
 	assert(printchar_handler != NULL);
 	assert(str != NULL);
@@ -50,18 +50,18 @@ static int print_s(void (*printchar_handler)(struct printchar_handler_data *d, i
 	len = strlen(str);
 	max_len = max_len ? max_len : len;
 	len = min(max_len, len);
-	pad_count = width > len ? width - len : 0;
+	space_count = width > len ? width - len : 0;
 
 	if (!(ops & OPS_FLAG_LEFT_ALIGN)) {
-		pc += pad_count;
-		for (; pad_count; --pad_count) printchar_handler(printchar_data, ' ');
+		pc += space_count;
+		for (; space_count; --space_count) printchar_handler(printchar_data, ' ');
 	}
 
 	pc += len;
 	while (len--) printchar_handler(printchar_data, *str++);
 
-	pc += pad_count;
-	while (pad_count--) printchar_handler(printchar_data, ' ');
+	pc += space_count;
+	while (space_count--) printchar_handler(printchar_data, ' ');
 
 	return pc;
 }
@@ -79,15 +79,15 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 	str = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
 	prefix = is_signed && ((long long int)u < 0) ? u = -u, "-"
-        : is_signed && (ops & OPS_FLAG_WITH_SIGN) ? "+"
-        : is_signed && (ops & OPS_FLAG_EXTRA_SPACE) ? " "
-        : (base == 8) && (ops & OPS_FLAG_WITH_PREFIX) ? "0"
-        : (base == 16) && (ops & OPS_FLAG_WITH_PREFIX)
-            ? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
-        : "";
-    pc = 0;
-    prefix_len = strlen(prefix);
-    letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
+		: is_signed && (ops & OPS_FLAG_WITH_SIGN) ? "+"
+		: is_signed && (ops & OPS_FLAG_EXTRA_SPACE) ? " "
+		: (base == 8) && (ops & OPS_FLAG_WITH_PREFIX) ? "0"
+		: (base == 16) && (ops & OPS_FLAG_WITH_PREFIX)
+			? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
+		: "";
+	pc = 0;
+	prefix_len = strlen(prefix);
+	letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
 
 	do {
 		t = u % base;
@@ -99,26 +99,38 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 	len = end - str;
 	zero_count = (len < min_len ? min_len :
 			((ops & OPS_FLAG_ZERO_PAD) && !(ops & OPS_FLAG_LEFT_ALIGN) ? width : 0)) - len - prefix_len;
-    zero_count = max(zero_count, 0);
-    space_count = width - len - prefix_len - zero_count;
-    space_count = max(space_count, 0);
+	zero_count = max(zero_count, 0);
+	space_count = width - len - prefix_len - zero_count;
+	space_count = max(space_count, 0);
 
 	if (!(ops & OPS_FLAG_LEFT_ALIGN)) {
 		pc += space_count;
-        for (; space_count; --space_count) printchar_handler(printchar_data, ' ');
+		for (; space_count; --space_count) printchar_handler(printchar_data, ' ');
 	}
 
-    pc += prefix_len;
-    while (prefix_len--) printchar_handler(printchar_data, *prefix++);
+	pc += prefix_len;
+	while (prefix_len--) printchar_handler(printchar_data, *prefix++);
 
-    pc += zero_count;
-    while (zero_count--) printchar_handler(printchar_data, '0');
+	pc += zero_count;
+	while (zero_count--) printchar_handler(printchar_data, '0');
 
 	pc += len;
 	while (len--) printchar_handler(printchar_data, *str++);
 
 	pc += space_count;
 	while (space_count--) printchar_handler(printchar_data, ' ');
+
+	return pc;
+}
+
+static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
+		struct printchar_handler_data *printchar_data,
+		long double r, int width, int precision, unsigned int ops, int base) {
+	int pc;
+
+	assert(printchar_handler != NULL);
+
+	pc = 0;
 
 	return pc;
 }
@@ -188,7 +200,7 @@ after_flags:
 		}
 
 		/* handle specifier */
-        ops |= isupper(*format) ? OPS_SPEC_UPPER_CASE : 0;
+		ops |= isupper(*format) ? OPS_SPEC_UPPER_CASE : 0;
 		switch (*format) {
 		case '%': goto single_print;
 		case 'd':
@@ -228,8 +240,11 @@ after_flags:
 		case 'G':
 		case 'a':
 		case 'A':
-			/* TODO printf haven't realized float variable operations; clean stack only */
-			tmp.ld = ops & OPS_LEN_LONGFP ? va_arg(args, long double) : va_arg(args, double);
+			tmp.ld = ops & OPS_LEN_LONGFP ? va_arg(args, long double)
+					: va_arg(args, double);
+			pc += print_f(printchar_handler, printchar_data, tmp.ld, width,
+					precision, ops,
+					(*format == 'a') && (*format == 'A') ? 16 : 10);
 			break;
 		case 'c':
 			/* TODO handle (ops & OPS_LEN_LONG) for wint_t */

@@ -9,13 +9,13 @@
 #include <math.h>
 
 double floor(double x) {
-	return 0;
+	return 0.0;
 }
 
 float floorf(float x) {
-	return 0;
+	return 0.0;
 }
 
 long double floorl(long double x) {
-	return 0;
+	return 0.0;
 }
