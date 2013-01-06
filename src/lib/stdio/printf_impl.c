@@ -42,8 +42,8 @@
 /**
  * Options for print_f
  */
-#define PRINT_F_BUFF_SZ   65 /* size of buffer for long double -- FIXME this may not be enough */
-#define PRINT_F_PRECISION 6 /* default precision for real numbers */
+#define PRINT_F_BUFF_SZ      65 /* size of buffer for long double -- FIXME this may not be enough */
+#define PRINT_F_PREC_DEFAULT 6 /* default precision for real numbers */
 
 struct printchar_handler_data;
 
@@ -87,12 +87,12 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 	str = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
 	prefix = is_signed && ((long long int)u < 0) ? u = -u, "-"
-		    : is_signed && (ops & OPS_FLAG_WITH_SIGN) ? "+"
-		    : is_signed && (ops & OPS_FLAG_EXTRA_SPACE) ? " "
-		    : (base == 8) && (ops & OPS_FLAG_WITH_SPEC) ? "0"
-		    : (base == 16) && (ops & OPS_FLAG_WITH_SPEC)
-			    ? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
-		    : "";
+			: is_signed && (ops & OPS_FLAG_WITH_SIGN) ? "+"
+			: is_signed && (ops & OPS_FLAG_EXTRA_SPACE) ? " "
+			: (base == 8) && (ops & OPS_FLAG_WITH_SPEC) ? "0"
+			: (base == 16) && (ops & OPS_FLAG_WITH_SPEC)
+				? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
+			: "";
 	pc = 0;
 	prefix_len = strlen(prefix);
 	letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
@@ -106,7 +106,7 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	len = end - str;
 	zero_count = (len < min_len ? min_len : (ops & OPS_FLAG_ZERO_PAD)
-            && !(ops & OPS_FLAG_LEFT_ALIGN) ? width : 0) - len - prefix_len;
+			&& !(ops & OPS_FLAG_LEFT_ALIGN) ? width : 0) - len - prefix_len;
 	zero_count = max(zero_count, 0);
 	space_count = width - len - prefix_len - zero_count;
 	space_count = max(space_count, 0);
@@ -143,38 +143,38 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	str = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
 	prefix = signbit(r) ? r = -r, base == 16
-                ? ops & OPS_SPEC_UPPER_CASE ? "-0X" : "-0x"
-                : "-"
-		    : ops & OPS_FLAG_WITH_SIGN ? base == 16
-                ? ops & OPS_SPEC_UPPER_CASE ? "+0X" : "+0x"
-                : "+"
-		    : ops & OPS_FLAG_EXTRA_SPACE ? base == 16
-                ? ops & OPS_SPEC_UPPER_CASE ? " 0X" : " 0x"
-                : " "
-		    : base == 16 ? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
-		    : "";
+				? ops & OPS_SPEC_UPPER_CASE ? "-0X" : "-0x"
+				: "-"
+			: ops & OPS_FLAG_WITH_SIGN ? base == 16
+				? ops & OPS_SPEC_UPPER_CASE ? "+0X" : "+0x"
+				: "+"
+			: ops & OPS_FLAG_EXTRA_SPACE ? base == 16
+				? ops & OPS_SPEC_UPPER_CASE ? " 0X" : " 0x"
+				: " "
+			: base == 16 ? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
+			: "";
 	pc = 0;
 	prefix_len = strlen(prefix);
 	letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
-    precision = ops & OPS_PREC_IS_GIVEN ? precision : PRINT_F_PRECISION;
+	precision = ops & OPS_PREC_IS_GIVEN ? precision : PRINT_F_PREC_DEFAULT;
 
-    fp = modfl(r, &ip);
+	fp = modfl(r, &ip);
 
-    str = end -= precision;
-    while (precision--) {
-        fp *= base;
-        ch = (int)fp;
+	str = end -= precision;
+	while (precision--) {
+		fp *= base;
+		ch = (int)fp;
 		if (ch >= 10) ch += letbase - 10 - '0';
 		*end++ = ch + '0';
-        fp -= ch;
-    }
+		fp -= ch;
+	}
 
-    if ((str != end) || (ops & OPS_FLAG_WITH_SPEC)) {
-        *--str = '.';
-    }
+	if ((str != end) || (ops & OPS_FLAG_WITH_SPEC)) {
+		*--str = '.';
+	}
 
 	do {
-        ch = (int)(fmodl(ip, (long double)base) * base);
+		ch = (int)(fmodl(ip, (long double)base) * base);
 		if (ch >= 10) ch += letbase - 10 - '0';
 		*--str = ch + '0';
 		modfl(ip / base, &ip);
@@ -185,24 +185,24 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	if (!(ops & (OPS_FLAG_ZERO_PAD | OPS_FLAG_LEFT_ALIGN))) {
 		pc += pad_count;
-    	while (pad_count--) printchar_handler(printchar_data, ' ');
+		while (pad_count--) printchar_handler(printchar_data, ' ');
 	}
 
 	pc += prefix_len;
 	while (prefix_len--) printchar_handler(printchar_data, *prefix++);
 
-    if (ops & OPS_FLAG_ZERO_PAD) {
-    	pc += pad_count;
-    	while (pad_count--) printchar_handler(printchar_data, '0');
-    }
+	if (ops & OPS_FLAG_ZERO_PAD) {
+		pc += pad_count;
+		while (pad_count--) printchar_handler(printchar_data, '0');
+	}
 
 	pc += len;
 	while (len--) printchar_handler(printchar_data, *str++);
 
-    if (ops & OPS_FLAG_LEFT_ALIGN) {
-    	pc += pad_count;
-    	while (pad_count--) printchar_handler(printchar_data, ' ');
-    }
+	if (ops & OPS_FLAG_LEFT_ALIGN) {
+		pc += pad_count;
+		while (pad_count--) printchar_handler(printchar_data, ' ');
+	}
 
 	return pc;
 }
@@ -258,7 +258,7 @@ after_flags:
 		else { width = atoi(format); while (isdigit(*format)) ++format; }
 
 		/* get precision */
-        ops |= *format == '.' ? OPS_PREC_IS_GIVEN : 0;
+		ops |= *format == '.' ? OPS_PREC_IS_GIVEN : 0;
 		if ((*format == '.') && (*++format == '*')) { precision = va_arg(args, int); ++format; }
 		else { precision = atoi(format); while (isdigit(*format)) ++format; }
 
