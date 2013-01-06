@@ -29,6 +29,10 @@ int __eqsf2(float a, float b) {
 	return float32_eq(float_to_float32(a), float_to_float32(b));
 }
 
+int __nesf2(float a, float b) {
+	return !float32_eq(float_to_float32(a), float_to_float32(b));
+}
+
 float __floatsisf(int i) {
         return float32_to_float(int32_to_float32(i));
 }

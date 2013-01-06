@@ -29,6 +29,10 @@ int __eqdf2(double a, double b) {
         return float64_eq(double_to_float64(a), double_to_float64(b));
 }
 
+int __nedf2(double a, double b) {
+        return !float64_eq(double_to_float64(a), double_to_float64(b));
+}
+
 double __floatsidf(int i) {
         return float64_to_double(int32_to_float64(i));
 }

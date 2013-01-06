@@ -126,7 +126,6 @@ static module LibCMath {
 	source "gcc/umoddi3.c"
 	source "gcc/umodsi3.c"
 	source "gcc/muldi3.c"
-    source "gcc/nedf2.c"
 
 	depends Fdlibm
 }
