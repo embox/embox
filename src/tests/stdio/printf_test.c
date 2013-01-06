@@ -142,3 +142,7 @@ TEST_CASE("Test of snprintf with small size") {
 	test_assert_equal(size, 10);
 	test_assert_str_equal(answer, &buff9[0]);
 }
+
+TEST_CASE("Test for float-pointing") {
+    printf("%f\n", 1.13);
+}
