@@ -98,6 +98,8 @@ static module LibCStrdup {
 }
 
 static module LibCMath {
+	source "math/fabs.c"
+	source "math/round.c"
 	source "math/floor.c"
 	source "math/ceil.c"
 	source "math/copysign.c"

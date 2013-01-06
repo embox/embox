@@ -21,9 +21,17 @@ __BEGIN_DECLS
  */
 extern int blog2(int val);
 
+extern double fabs(double x);
+extern float fabsf(float x);
+extern long double fabsl(long double x);
+
 extern double floor(double x);
 extern float floorf(float x);
 extern long double floorl(long double x);
+
+extern double round(double x);
+extern float roundf(float x);
+extern long double roundl(long double x);
 
 extern double ceil(double x);
 extern float ceilf(float x);
