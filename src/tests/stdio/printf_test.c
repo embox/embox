@@ -13,7 +13,7 @@
 EMBOX_TEST_SUITE("stdio/printf test");
 
 #define HOPE_EQUAL(str, buff, format, ...) \
-	sprintf(buff, format, __VA_ARGS__);	\
+	sprintf(buff, format, __VA_ARGS__);	   \
 	test_assert_str_equal(buff, str)
 
 #define BUFF1_SZ 32
