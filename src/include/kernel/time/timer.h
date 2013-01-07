@@ -112,5 +112,7 @@ extern int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t tic
  */
 extern int timer_close(struct sys_timer *ptimer);
 
+extern void timer_suspend(struct sys_timer *tmr);
+extern void timer_resume(struct sys_timer *tmr);
 
 #endif /* KERNEL_TIMER_H_ */

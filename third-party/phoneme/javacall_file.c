@@ -15,8 +15,8 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stdlib.h>
+#include "embox_java_compat.h"
 
-static javacall_result emboxErrno2javaErrno(int embox_errno);
 /* Same as javautil_unicode_utf16_to_utf8, but allocates memory for
  * pUtf8 */
 static javacall_result utf16_to_utf8(const javacall_utf16* pUtf16,
@@ -169,18 +169,4 @@ static javacall_result utf16_to_utf8(const javacall_utf16* pUtf16,
 	}
 
 	return res;
-}
-
-/* TODO */
-static javacall_result emboxErrno2javaErrno(int embox_errno) {
-	switch (errno) {
-	case ENOERR:
-		return JAVACALL_OK;
-	case EBADF:
-		return JAVACALL_BAD_FILE_NAME;
-	case ENOMEM:
-		return JAVACALL_OUT_OF_MEMORY;
-	}
-
-	return JAVACALL_OK;
 }

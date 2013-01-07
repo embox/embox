@@ -150,6 +150,8 @@ AMAL_SOURCES    += $(NATIVES_TABLE)
 AMAL_SOURCES    += cldc_standalone.c
 AMAL_SOURCES    += javacall_file.c
 AMAL_SOURCES    += javacall_memory.c
+AMAL_SOURCES    += javacall_time.c
+AMAL_SOURCES    += embox_java_compat.c
 
 AMAL_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%.o, $(basename $(filter %.c %.cpp,$(notdir $(AMAL_SOURCES)))))
 VPATH           += .
