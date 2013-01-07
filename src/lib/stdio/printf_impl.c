@@ -131,13 +131,12 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 	return pc;
 }
 
-#include <stdio.h>
 static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data,
 		long double r, int width, int precision, unsigned int ops, int base) {
 	char buff[PRINT_F_BUFF_SZ], *str, *end, *prefix;
 	long double fp, ip;
-	int pc, ch, len, prefix_len, pad_count, letbase, i;
+	int pc, ch, len, prefix_len, pad_count, letbase;
 
 	assert(printchar_handler != NULL);
 
@@ -161,20 +160,19 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	fp = modfl(r, &ip);
 
-    for (i = 0; i < precision; ++i) fp *= base;
-    fp = roundl(fp);
-	for (i = 0; i < precision; ++i) {
-		ch = (int)(fmodl(fp, (long double)base) * base);
+	str = end -= precision;
+	while (precision--) {
+		fp *= base;
+		ch = (int)fp;
 		if (ch >= 10) ch += letbase - 10 - '0';
-		*--str = ch + '0';
-		modfl(ip / base, &ip);
+		*end++ = ch + '0';
+		fp -= ch;
 	}
 
-	if (precision || (ops & OPS_FLAG_WITH_SPEC)) {
+	if ((str != end) || (ops & OPS_FLAG_WITH_SPEC)) {
 		*--str = '.';
 	}
 
-    if (!precision) ip = roundl(ip);
 	do {
 		ch = (int)(fmodl(ip, (long double)base) * base);
 		if (ch >= 10) ch += letbase - 10 - '0';
