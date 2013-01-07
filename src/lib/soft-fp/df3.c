@@ -64,3 +64,8 @@ int __ltdf2(double a, double b) {
 int __gtdf2(double a, double b) {
         return !float64_le(double_to_float64(a), double_to_float64(b));
 }
+
+int __unorddf2(double a, double b) {
+        return !float64_eq(double_to_float64(a), double_to_float64(a))
+                || !float64_eq(double_to_float64(b), double_to_float64(b));
+}

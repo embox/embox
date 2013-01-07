@@ -34,7 +34,7 @@ int __nesf2(float a, float b) {
 }
 
 float __floatsisf(int i) {
-        return float32_to_float(int32_to_float32(i));
+    return float32_to_float(int32_to_float32(i));
 }
 
 float __truncdfsf2(double a) {
@@ -67,4 +67,13 @@ int __ltsf2(float a, float b) {
 
 int __gtsf2(float a, float b) {
         return !float32_le(float_to_float32(a), float_to_float32(b));
+}
+
+int __unordsf2(float a, float b) {
+        return !float32_eq(float_to_float32(a), float_to_float32(a))
+                || !float32_eq(float_to_float32(b), float_to_float32(b));
+}
+
+double __extendsfdf2(float a) {
+        return float64_to_double(float32_to_float64(float_to_float32(a)));
 }
