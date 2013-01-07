@@ -33,7 +33,6 @@ static const char *script_commands[] = {
 
 static int run_cmd(int argc, char *argv[]) {
 	const struct cmd *cmd;
-
 	int code;
 
 	if (argc == 0) {
@@ -46,8 +45,8 @@ static int run_cmd(int argc, char *argv[]) {
 	}
 
 	if (0 != (code = cmd_exec(cmd, argc, argv))) {
-		prom_printf("%s: Command returned with code %d: %s\n", cmd_name(cmd), code,
-				strerror(-code));
+		prom_printf("%s: Command returned with code %d: %s\n",
+			cmd_name(cmd), code, strerror(-code));
 	}
 	return code;
 }
@@ -58,6 +57,7 @@ static int parse(const char *const_line) {
 	char *line = cline;
 	int tok_pos = 0;
 	int last_was_blank = 1;
+
 	strncpy(cline, const_line, BUF_INP_SIZE);
 	while (*line != '\0') {
 		if (last_was_blank && !isspace(*line)) {
@@ -74,17 +74,16 @@ static int parse(const char *const_line) {
 
 static void setup_tty(const char *dev_name) {
 	int fd;
-	char full_name[0x20];
+	char full_name[MAX_LENGTH_PATH_NAME];
 
-	if(strlen(dev_name) == 0) {
+	if (strlen(dev_name) == 0) {
 		return;
 	}
 
 	strncpy(full_name, "/dev/", sizeof(full_name));
-
 	strcat(full_name, dev_name);
 
-	if(-1 == (fd = open(full_name, O_RDWR))) {
+	if (-1 == (fd = open(full_name, O_RDWR))) {
 		return;
 	}
 
@@ -100,7 +99,8 @@ static void setup_tty(const char *dev_name) {
 static int run_script(void) {
 	const char *command;
 	const struct shell *shell;
-	prom_printf("\nStarting shell [%s] at device [%s]\n", OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
+	prom_printf("\nStarting shell [%s] at device [%s]\n",
+		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
 	setup_tty(OPTION_STRING_GET(tty_dev));
 
 	prom_printf("loading start script:\n");
@@ -110,7 +110,7 @@ static int run_script(void) {
 	}
 
 	shell = shell_lookup(OPTION_STRING_GET(shell_name));
-	if(NULL == shell) {
+	if (NULL == shell) {
 		shell = shell_any();
 		assert(shell);
 	}
