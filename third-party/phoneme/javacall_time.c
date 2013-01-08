@@ -9,6 +9,7 @@
 #include <javacall_time.h>
 #include <kernel/time/timer.h>
 #include <time.h>
+#include <hal/clock.h>
 #include <unistd.h>
 #include <errno.h>
 #include "embox_java_compat.h"
@@ -67,4 +68,12 @@ void javacall_time_suspend_ticks(javacall_handle handle) {
 
 void javacall_time_resume_ticks(javacall_handle handle){
 	timer_resume((sys_timer_t *)handle);
+}
+
+javacall_int64 /*OPTIONAL*/ javacall_time_get_monotonic_clock_counter(void) {
+	return clock();
+}
+
+javacall_int64 /*OPTIONAL*/ javacall_time_get_monotonic_clock_frequency(void) {
+	return clock_freq();
 }
