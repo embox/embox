@@ -17,13 +17,6 @@
 #include <stdlib.h>
 #include "embox_java_compat.h"
 
-/* Same as javautil_unicode_utf16_to_utf8, but allocates memory for
- * pUtf8 */
-static javacall_result utf16_to_utf8(const javacall_utf16* pUtf16,
-                                               javacall_int32 utf16Len,
-                                               unsigned char** pUtf8,
-                                               javacall_int32 *utf8Len);
-
 javacall_result javacall_file_open(javacall_const_utf16_string fileName,
                                   int fileNameLen,
                                   int flags,
@@ -146,27 +139,4 @@ javacall_result javacall_file_rename(const javacall_utf16 * unicodeOldFilename, 
 
 javacall_result javacall_file_truncate(javacall_handle handle, javacall_int64 size) {
     return JAVACALL_FAIL;
-}
-
-static javacall_result utf16_to_utf8(const javacall_utf16* pUtf16,
-                                               javacall_int32 utf16Len,
-                                               unsigned char** pUtf8,
-                                               javacall_int32 *utf8Len) {
-	int res;
-
-	if (0 > (res = javautil_unicode_utf16_utf8length(pUtf16, utf8Len))) {
-		return res;
-	}
-
-	if ((*pUtf8 = malloc(*utf8Len)) == NULL) {
-		return JAVACALL_FAIL;
-	}
-
-	if (0 > (res = javautil_unicode_utf16_to_utf8(pUtf16, utf16Len,
-			*pUtf8, *utf8Len, utf8Len))) {
-		free(*pUtf8);
-		return res;
-	}
-
-	return res;
 }
