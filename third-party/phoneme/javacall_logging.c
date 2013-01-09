@@ -15,7 +15,7 @@
 void javacall_print_chars(const char* s, int length) {
 	char *new_str = malloc(length + 1);
 
-	strcpy(new_str, s);
+	memcpy(new_str, s, length);
 	printf("%s", new_str);
 	free(new_str);
 }
