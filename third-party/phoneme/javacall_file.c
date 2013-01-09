@@ -28,7 +28,7 @@ javacall_result javacall_file_open(javacall_const_utf16_string fileName,
 	if (0 > (res = utf16_to_utf8(fileName, fileNameLen, &utf8Name, &utf8NameLen))) {
 		return JAVACALL_FAIL;
 	}
-	handle = (void *)fopen((const char *)utf8Name, "rw");/* FIXME */
+	*handle = (void *)fopen((const char *)utf8Name, "r");/* FIXME */
 	free(utf8Name);
 
 	return emboxErrno2javaErrno(errno);
