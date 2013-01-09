@@ -16,7 +16,6 @@
 #include <fs/fs_drv.h>
 #include <fs/vfs.h>
 #include <fs/ext2.h>
-#include <fs/ext2_super.h>
 #include <fs/path.h>
 #include <util/array.h>
 #include <embox/unit.h>
@@ -148,7 +147,7 @@ int ext2_read_sector(struct nas *nas, char *buffer,
 	fsi = nas->fs->fsi;
 
 	return block_dev_read(nas->fs->bdev, (char *) buffer,
-			count * fsi->e2fs_bsize, sector);
+			count * fsi->s_block_size, sector);
 }
 
 
@@ -158,7 +157,7 @@ int ext2_write_sector(struct nas *nas, char *buffer,
 	fsi = nas->fs->fsi;
 
 	return block_dev_write(nas->fs->bdev, (char *) buffer,
-			count * fsi->e2fs_bsize, sector);
+			count * fsi->s_block_size, sector);
 }
 
 static void lmfs_markdirty(struct buf *bp) {
@@ -221,7 +220,7 @@ static int ext2_read_symlink (struct nas *nas,
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 	nlinks = 0;
-	link_len = fi->f_di.e2di_size;
+	link_len = fi->f_di.i_size;
 	len = strlen(*cp);
 
 	if ((link_len + len > MAXPATHLEN) ||
@@ -232,7 +231,7 @@ static int ext2_read_symlink (struct nas *nas,
 	memmove(&namebuf[link_len], cp, len + 1);
 
 	if (link_len < EXT2_MAXSYMLINKLEN) {
-		memcpy(namebuf, fi->f_di.e2di_blocks, link_len);
+		memcpy(namebuf, fi->f_di.i_block, link_len);
 	}
 	else {
 		/* Read file for symbolic link */
@@ -318,10 +317,10 @@ static int ext2_open(struct nas *nas) {
 	/* allocate file system specific data structure */
 
 	/* alloc a block sized buffer used for all transfers */
-	fi->f_buf = malloc(fsi->e2fs_bsize);
+	fi->f_buf = malloc(fsi->s_block_size);
 
 	/* read group descriptor blocks */
-	fsi->e2fs_gd = malloc(sizeof(struct ext2_gd) * fsi->e2fs_ncg);
+	fsi->e2fs_gd = malloc(sizeof(struct ext2_gd) * fsi->s_ncg);
 	if(0 != (rc = ext2_read_gdblock(nas))) {
 		return rc;
 	}
@@ -346,7 +345,7 @@ static int ext2_open(struct nas *nas) {
 		}
 
 		/* Check that current node is a directory */
-		if ((fi->f_di.e2di_mode & S_IFMT) != S_IFDIR) {
+		if ((fi->f_di.i_mode & S_IFMT) != S_IFDIR) {
 			rc = ENOTDIR;
 			return rc;
 		}
@@ -371,7 +370,7 @@ static int ext2_open(struct nas *nas) {
 		}
 
 		/* Check for symbolic link */
-		if ((fi->f_di.e2di_mode & S_IFMT) == S_IFLNK) {
+		if ((fi->f_di.i_mode & S_IFMT) == S_IFLNK) {
 			if(0 != (rc = ext2_read_symlink (nas, parent_inumber, &cp))) {
 				return rc;
 			}
@@ -429,7 +428,7 @@ static size_t ext2fs_read(struct file_desc *desc, void *buff, size_t size) {
 
 	while (size != 0) {
 		/* XXX should handle LARGEFILE */
-		if (fi->f_seekp >= (long)fi->f_di.e2di_size) {
+		if (fi->f_seekp >= (long)fi->f_di.i_size) {
 			break;
 		}
 
@@ -604,7 +603,7 @@ static int ext2fs_mount(void *dev, void *dir) {
 	dir_nas->fi->privdata = (void *) fi;
 
 	/* presetting that we think */
-	fsi->e2fs_bsize = SBSIZE;
+	fsi->s_block_size = SBSIZE;
 	if(0 != ext2_read_sblock(dir_nas)) {
 		return -1;
 	}
@@ -633,7 +632,7 @@ static int ext2_read_inode(struct nas *nas, uint32_t inumber) {
 	/* Read inode and save it */
 	buf = fi->f_buf;
 	rsize = ext2_read_sector(nas, buf, 1, inode_sector);
-	if (rsize != fsi->e2fs_bsize) {
+	if (rsize != fsi->s_block_size) {
 		return EIO;
 	}
 
@@ -696,7 +695,7 @@ static int ext2_block_map(struct nas *nas,  int32_t file_block,
 
 	if (file_block < NDADDR) {
 		/* Direct block. */
-		*disk_block_p = fs2h32(fi->f_di.e2di_blocks[file_block]);
+		*disk_block_p = fs2h32(fi->f_di.i_block[file_block]);
 		return 0;
 	}
 
@@ -721,7 +720,7 @@ static int ext2_block_map(struct nas *nas,  int32_t file_block,
 	}
 
 	ind_block_num =
-	    fs2h32(fi->f_di.e2di_blocks[NDADDR + (level / fi->f_nishift - 1)]);
+	    fs2h32(fi->f_di.i_block[NDADDR + (level / fi->f_nishift - 1)]);
 
 	for (;;) {
 		level -= fi->f_nishift;
@@ -739,7 +738,7 @@ static int ext2_block_map(struct nas *nas,  int32_t file_block,
 		rsize =
 			ext2_read_sector(nas, (char *)buf, 1, fsbtodb(fsi, ind_block_num));
 
-		if (rsize != fsi->e2fs_bsize)
+		if (rsize != fsi->s_block_size)
 			return EIO;
 		ind_block_num = fs2h32(buf[file_block >> level]);
 		if (level == 0)
@@ -775,7 +774,7 @@ static int ext2_buf_read_file(struct nas *nas,
 
 	off = blkoff(fsi, fi->f_seekp);
 	file_block = lblkno(fsi, fi->f_seekp);
-	block_size = fsi->e2fs_bsize;	/* no fragment */
+	block_size = fsi->s_block_size;	/* no fragment */
 
 	if (file_block != fi->f_buf_blkno) {
 		if (0 != (rc = ext2_block_map(nas, file_block, &disk_block))) {
@@ -805,8 +804,8 @@ static int ext2_buf_read_file(struct nas *nas,
 
 	/* But truncate buffer at end of file */
 	/* XXX should handle LARGEFILE */
-	if (*size_p > fi->f_di.e2di_size - fi->f_seekp) {
-		*size_p = fi->f_di.e2di_size - fi->f_seekp;
+	if (*size_p > fi->f_di.i_size - fi->f_seekp) {
+		*size_p = fi->f_di.i_size - fi->f_seekp;
 	}
 
 	return 0;
@@ -829,7 +828,7 @@ static int ext2_search_directory(struct nas *nas, const char *name, int length,
 	fi = nas->fi->privdata;
 	fi->f_seekp = 0;
 	/* XXX should handle LARGEFILE */
-	while (fi->f_seekp < (long)fi->f_di.e2di_size) {
+	while (fi->f_seekp < (long)fi->f_di.i_size) {
 		if (0 != (rc = ext2_buf_read_file(nas, &buf, &buf_size))) {
 			return rc;
 		}
@@ -870,31 +869,31 @@ static int ext2_read_sblock(struct nas *nas) {
 	}
 
 	e2fs_sbload((void *)sbbuf, ext2fs);
-	if (ext2fs->e2fs_magic != E2FS_MAGIC)
+	if (ext2fs->s_magic != E2FS_MAGIC)
 		return EINVAL;
-	if (ext2fs->e2fs_rev > E2FS_REV1 ||
-	    (ext2fs->e2fs_rev == E2FS_REV1 &&
-	     (ext2fs->e2fs_first_ino != EXT2_FIRSTINO ||
-	     (ext2fs->e2fs_inode_size != 128 && ext2fs->e2fs_inode_size != 256) ||
-	      ext2fs->e2fs_features_incompat & ~EXT2F_INCOMPAT_SUPP))) {
+	if (ext2fs->s_rev_level > E2FS_REV1 ||
+	    (ext2fs->s_rev_level == E2FS_REV1 &&
+	     (ext2fs->s_first_ino != EXT2_FIRSTINO ||
+	     (ext2fs->s_inode_size != 128 && ext2fs->s_inode_size != 256) ||
+	      ext2fs->s_feature_incompat & ~EXT2F_INCOMPAT_SUPP))) {
 		return ENODEV;
 	}
 
 	e2fs_sbload((void *)sbbuf, &fsi->e2fs);
 	/* compute in-memory ext2_fs_info values */
-	fsi->e2fs_ncg =
-	    howmany(fsi->e2fs.e2fs_bcount - fsi->e2fs.e2fs_first_dblock,
-	    fsi->e2fs.e2fs_bpg);
+	fsi->s_ncg =
+	    howmany(fsi->e2fs.s_blocks_count - fsi->e2fs.s_first_data_block,
+	    fsi->e2fs.s_blocks_per_group);
 	/* XXX assume hw bsize = 512 */
-	fsi->e2fs_fsbtodb = fsi->e2fs.e2fs_log_bsize + 1;
-	fsi->e2fs_bsize = MINBSIZE << fsi->e2fs.e2fs_log_bsize;
-	fsi->e2fs_bshift = LOG_MINBSIZE + fsi->e2fs.e2fs_log_bsize;
-	fsi->e2fs_qbmask = fsi->e2fs_bsize - 1;
-	fsi->e2fs_bmask = ~fsi->e2fs_qbmask;
-	fsi->e2fs_ngdb =
-	    howmany(fsi->e2fs_ncg, fsi->e2fs_bsize / sizeof(struct ext2_gd));
-	fsi->e2fs_ipb = fsi->e2fs_bsize / ext2fs->e2fs_inode_size;
-	fsi->e2fs_itpg = fsi->e2fs.e2fs_ipg / fsi->e2fs_ipb;
+	fsi->s_fsbtodb = fsi->e2fs.s_log_block_size + 1;
+	fsi->s_block_size = MINBSIZE << fsi->e2fs.s_log_block_size;
+	fsi->s_bshift = LOG_MINBSIZE + fsi->e2fs.s_log_block_size;
+	fsi->s_qbmask = fsi->s_block_size - 1;
+	fsi->s_bmask = ~fsi->s_qbmask;
+	fsi->s_gdb_count =
+	    howmany(fsi->s_ncg, fsi->s_block_size / sizeof(struct ext2_gd));
+	fsi->s_inodes_per_block = fsi->s_block_size / ext2fs->s_inode_size;
+	fsi->s_itb_per_group = fsi->e2fs.s_inodes_per_group / fsi->s_inodes_per_block;
 
 	return 0;
 }
@@ -909,20 +908,20 @@ static int ext2_read_gdblock(struct nas *nas) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	gdpb = fsi->e2fs_bsize / sizeof(struct ext2_gd);
+	gdpb = fsi->s_block_size / sizeof(struct ext2_gd);
 
-	for (i = 0; i < fsi->e2fs_ngdb; i++) {
+	for (i = 0; i < fsi->s_gdb_count; i++) {
 		rsize = ext2_read_sector(nas, fi->f_buf, 1,
-				fsbtodb(fsi, fsi->e2fs.e2fs_first_dblock + 1 + i));
-		if (rsize != fsi->e2fs_bsize) {
+				fsbtodb(fsi, fsi->e2fs.s_first_data_block + 1 + i));
+		if (rsize != fsi->s_block_size) {
 			return EIO;
 		}
 
 		e2fs_cgload((struct ext2_gd *)fi->f_buf,
 		    &fsi->e2fs_gd[i * gdpb],
-		    (i == (fsi->e2fs_ngdb - 1)) ?
-		    (fsi->e2fs_ncg - gdpb * i) * sizeof(struct ext2_gd):
-		    fsi->e2fs_bsize);
+		    (i == (fsi->s_gdb_count - 1)) ?
+		    (fsi->s_ncg - gdpb * i) * sizeof(struct ext2_gd):
+		    fsi->s_block_size);
 	}
 
 	return 0;
@@ -987,11 +986,11 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 	}
 
 	fi->f_seekp = 0;
-	while (fi->f_seekp < (long)fi->f_di.e2di_size) {
+	while (fi->f_seekp < (long)fi->f_di.i_size) {
 		if (0 != (rc = ext2_buf_read_file(dir_nas, &buf, &buf_size))) {
 			goto out;
 		}
-		if (buf_size != fsi->e2fs_bsize || buf_size == 0) {
+		if (buf_size != fsi->s_block_size || buf_size == 0) {
 			goto out;
 		}
 
@@ -1037,359 +1036,366 @@ out:
 	return 0;
 }
 
-
 static void wr_indir(struct buf *bp, int index, uint32_t block);
-static int empty_indir(struct buf *, struct super_block *);
+static int empty_indir(struct buf *, struct ext2_fs_info *);
 static void zero_block(struct buf *bp);
 
+int write_map(struct nas *nas, long position, uint32_t new_block, int op) {
+	/* Write a new block into an inode.
+	*
+	* If op includes WMAP_FREE, free the block corresponding to that position
+	* in the inode ('new_block' is ignored then). Also free the indirect block
+	* if that was the last entry in the indirect block.
+	* Also free the double/triple indirect block if that was the last entry in
+	* the double/triple indirect block.
+	* It's the only function which should take care about fi->i_blocks counter.
+	*/
+	int index1, index2, index3; /* indexes in single..triple indirect blocks */
+	long excess, block_pos;
+	char new_ind = 0, new_dbl = 0, new_triple = 0;
+	int single = 0, triple = 0;
+	uint32_t old_block = NO_BLOCK, b1 = NO_BLOCK, b2 = NO_BLOCK, b3 = NO_BLOCK;
+	struct buf *bp = NULL,
+			 *bp_dindir = NULL,
+			 *bp_tindir = NULL;
+	static char first_time = 1;
+	static long addr_in_block;
+	static long addr_in_block2;
+	static long doub_ind_s;
+	static long triple_ind_s;
+	static long out_range_s;
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
 
-/*===========================================================================*
- *				write_map				     *
- *===========================================================================*/
-int write_map(struct nas *nas, struct inode *rip, long position, uint32_t new_block, int op) {
-/* Write a new block into an inode.
- *
- * If op includes WMAP_FREE, free the block corresponding to that position
- * in the inode ('new_block' is ignored then). Also free the indirect block
- * if that was the last entry in the indirect block.
- * Also free the double/triple indirect block if that was the last entry in
- * the double/triple indirect block.
- * It's the only function which should take care about rip->i_blocks counter.
- */
-  int index1, index2, index3; /* indexes in single..triple indirect blocks */
-  long excess, block_pos;
-  char new_ind = 0, new_dbl = 0, new_triple = 0;
-  int single = 0, triple = 0;
-  uint32_t old_block = NO_BLOCK, b1 = NO_BLOCK, b2 = NO_BLOCK, b3 = NO_BLOCK;
-  struct buf *bp = NULL,
-             *bp_dindir = NULL,
-             *bp_tindir = NULL;
-  static char first_time = 1;
-  static long addr_in_block;
-  static long addr_in_block2;
-  static long doub_ind_s;
-  static long triple_ind_s;
-  static long out_range_s;
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
 
-  if (first_time) {
-	addr_in_block = rip->i_sp->s_block_size / BLOCK_ADDRESS_BYTES;
-	addr_in_block2 = addr_in_block * addr_in_block;
-	doub_ind_s = EXT2_NDIR_BLOCKS + addr_in_block;
-	triple_ind_s = doub_ind_s + addr_in_block2;
-	out_range_s = triple_ind_s + addr_in_block2 * addr_in_block;
-	first_time = 0;
-  }
-
-  block_pos = position / rip->i_sp->s_block_size; /* relative blk # in file */
-  rip->i_dirt = IN_DIRTY;		/* inode will be changed */
-
-  /* Is 'position' to be found in the inode itself? */
-  if (block_pos < EXT2_NDIR_BLOCKS) {
-	if (rip->i_block[block_pos] != NO_BLOCK && (op & WMAP_FREE)) {
-		free_block(nas, rip->i_sp, rip->i_block[block_pos]);
-		rip->i_block[block_pos] = NO_BLOCK;
-		rip->i_blocks -= rip->i_sp->s_sectors_in_block;
-	} else {
-		rip->i_block[block_pos] = new_block;
-		rip->i_blocks += rip->i_sp->s_sectors_in_block;
+	if (first_time) {
+		addr_in_block = fsi->s_block_size / BLOCK_ADDRESS_BYTES;
+		addr_in_block2 = addr_in_block * addr_in_block;
+		doub_ind_s = EXT2_NDIR_BLOCKS + addr_in_block;
+		triple_ind_s = doub_ind_s + addr_in_block2;
+		out_range_s = triple_ind_s + addr_in_block2 * addr_in_block;
+		first_time = 0;
 	}
-	return 0;
-  }
 
-  /* It is not in the inode, so it must be single, double or triple indirect */
-  if (block_pos < doub_ind_s) {
-      b1 = rip->i_block[EXT2_NDIR_BLOCKS]; /* addr of single indirect block */
-      index1 = block_pos - EXT2_NDIR_BLOCKS;
-      single = 1;
-  } else if (block_pos >= out_range_s) { /* TODO: do we need it? */
-	return(EFBIG);
-  } else {
-	/* double or triple indirect block. At first if it's triple,
-	 * find double indirect block.
-	 */
-	excess = block_pos - doub_ind_s;
-	b2 = rip->i_block[EXT2_DIND_BLOCK];
-	if (block_pos >= triple_ind_s) {
-		b3 = rip->i_block[EXT2_TIND_BLOCK];
-		if (b3 == NO_BLOCK && !(op & WMAP_FREE)) {
-		/* Create triple indirect block. */
-			if ( (b3 = alloc_block(nas, rip, rip->i_bsearch) ) == NO_BLOCK) {
-				//ext2_debug("failed to allocate tblock near %d\n", rip->i_block[0]);
-				return ENOSPC;
-			}
-			rip->i_block[EXT2_TIND_BLOCK] = b3;
-			rip->i_blocks += rip->i_sp->s_sectors_in_block;
-			new_triple = 1;
-		}
-		/* 'b3' is block number for triple indirect block, either old
-		 * or newly created.
-		 * If there wasn't one and WMAP_FREE is set, 'b3' is NO_BLOCK.
-		 */
-		if (b3 == NO_BLOCK && (op & WMAP_FREE)) {
-		/* WMAP_FREE and no triple indirect block - then no
-		 * double and single indirect blocks either.
-		 */
-			b1 = b2 = NO_BLOCK;
+	block_pos = position / fsi->s_block_size; /* relative blk # in file */
+	fi->i_dirt = IN_DIRTY;		/* inode will be changed */
+
+	/* Is 'position' to be found in the inode itself? */
+	if (block_pos < EXT2_NDIR_BLOCKS) {
+		if (fi->f_di.i_block[block_pos] != NO_BLOCK && (op & WMAP_FREE)) {
+			free_block(nas, fsi, fi->f_di.i_block[block_pos]);
+			fi->f_di.i_block[block_pos] = NO_BLOCK;
+			fi->f_di.i_blocks -= fsi->s_sectors_in_block;
 		} else {
-			//bp_tindir = get_block(rip->i_dev, b3, (new_triple ? NO_READ : NORMAL));
-			ext2_read_sector(nas, (char *) bp_tindir->data, 1, b3);
-			if (new_triple) {
-				zero_block(bp_tindir);
+			fi->f_di.i_block[block_pos] = new_block;
+			fi->f_di.i_blocks += fsi->s_sectors_in_block;
+		}
+		return 0;
+	}
+
+	/* It is not in the inode, so it must be single, double or triple indirect */
+	if (block_pos < doub_ind_s) {
+		b1 = fi->f_di.i_block[EXT2_NDIR_BLOCKS]; /* addr of single indirect block */
+		index1 = block_pos - EXT2_NDIR_BLOCKS;
+		single = 1;
+	}
+	else if (block_pos >= out_range_s) { /* TODO: do we need it? */
+		return(EFBIG);
+	}
+	else {
+		/* double or triple indirect block. At first if it's triple,
+		 * find double indirect block.
+		 */
+		excess = block_pos - doub_ind_s;
+		b2 = fi->f_di.i_block[EXT2_DIND_BLOCK];
+		if (block_pos >= triple_ind_s) {
+			b3 = fi->f_di.i_block[EXT2_TIND_BLOCK];
+			if (b3 == NO_BLOCK && !(op & WMAP_FREE)) {
+			/* Create triple indirect block. */
+				if ( (b3 = alloc_block(nas, fi->i_bsearch) ) == NO_BLOCK) {
+					//ext2_debug("failed to allocate tblock near %d\n", fi->i_block[0]);
+					return ENOSPC;
+				}
+				fi->f_di.i_block[EXT2_TIND_BLOCK] = b3;
+				fi->f_di.i_blocks += fsi->s_sectors_in_block;
+				new_triple = 1;
+			}
+			/* 'b3' is block number for triple indirect block, either old
+			 * or newly created.
+			 * If there wasn't one and WMAP_FREE is set, 'b3' is NO_BLOCK.
+			 */
+			if (b3 == NO_BLOCK && (op & WMAP_FREE)) {
+				/* WMAP_FREE and no triple indirect block - then no
+				* double and single indirect blocks either.
+				*/
+				b1 = b2 = NO_BLOCK;
+			}
+			else {
+				//bp_tindir = get_block(fi->i_dev, b3, (new_triple ? NO_READ : NORMAL));
+				ext2_read_sector(nas, (char *) bp_tindir->data, 1, b3);
+				if (new_triple) {
+					zero_block(bp_tindir);
+					lmfs_markdirty(bp_tindir);
+				}
+				excess = block_pos - triple_ind_s;
+				index3 = excess / addr_in_block2;
+				b2 = rd_indir(bp_tindir, index3);
+				excess = excess % addr_in_block2;
+			}
+			triple = 1;
+		}
+
+		if (b2 == NO_BLOCK && !(op & WMAP_FREE)) {
+			/* Create the double indirect block. */
+			if ( (b2 = alloc_block(nas, fi->i_bsearch) ) == NO_BLOCK) {
+				/* Release triple ind blk. */
+				//put_block(bp_tindir, INDIRECT_BLOCK);
+				return(ENOSPC);
+			}
+			if (triple) {
+				wr_indir(bp_tindir, index3, b2);  /* update triple indir */
 				lmfs_markdirty(bp_tindir);
+			} else {
+				fi->f_di.i_block[EXT2_DIND_BLOCK] = b2;
 			}
-			excess = block_pos - triple_ind_s;
-			index3 = excess / addr_in_block2;
-			b2 = rd_indir(bp_tindir, index3);
-			excess = excess % addr_in_block2;
+			fi->f_di.i_blocks += fsi->s_sectors_in_block;
+			new_dbl = 1; /* set flag for later */
 		}
-		triple = 1;
-	}
 
-	if (b2 == NO_BLOCK && !(op & WMAP_FREE)) {
-	/* Create the double indirect block. */
-		if ( (b2 = alloc_block(nas, rip, rip->i_bsearch) ) == NO_BLOCK) {
-			/* Release triple ind blk. */
-			//put_block(bp_tindir, INDIRECT_BLOCK);
-			return(ENOSPC);
+		/* 'b2' is block number for double indirect block, either old
+		 * or newly created.
+		 * If there wasn't one and WMAP_FREE is set, 'b2' is NO_BLOCK.
+		 */
+		if (b2 == NO_BLOCK && (op & WMAP_FREE)) {
+		/* WMAP_FREE and no double indirect block - then no
+		 * single indirect block either.
+		 */
+			b1 = NO_BLOCK;
 		}
-		if (triple) {
-			wr_indir(bp_tindir, index3, b2);  /* update triple indir */
-			lmfs_markdirty(bp_tindir);
-		} else {
-			rip->i_block[EXT2_DIND_BLOCK] = b2;
+		else {
+			//bp_dindir = get_block(fi->i_dev, b2, (new_dbl ? NO_READ : NORMAL));
+			ext2_read_sector(nas, (char *) bp_dindir->data, 1, b2);
+			if (new_dbl) {
+				zero_block(bp_dindir);
+				lmfs_markdirty(bp_dindir);
+			}
+			index2 = excess / addr_in_block;
+			b1 = rd_indir(bp_dindir, index2);
+			index1 = excess % addr_in_block;
 		}
-		rip->i_blocks += rip->i_sp->s_sectors_in_block;
-		new_dbl = 1; /* set flag for later */
+		single = 0;
 	}
-
-	/* 'b2' is block number for double indirect block, either old
-	 * or newly created.
-	 * If there wasn't one and WMAP_FREE is set, 'b2' is NO_BLOCK.
-	 */
-	if (b2 == NO_BLOCK && (op & WMAP_FREE)) {
-	/* WMAP_FREE and no double indirect block - then no
-	 * single indirect block either.
-	 */
-		b1 = NO_BLOCK;
-	} else {
-		//bp_dindir = get_block(rip->i_dev, b2, (new_dbl ? NO_READ : NORMAL));
-		ext2_read_sector(nas, (char *) bp_dindir->data, 1, b2);
-		if (new_dbl) {
-			zero_block(bp_dindir);
-			lmfs_markdirty(bp_dindir);
-		}
-		index2 = excess / addr_in_block;
-		b1 = rd_indir(bp_dindir, index2);
-		index1 = excess % addr_in_block;
-	}
-	single = 0;
-  }
 
   /* b1 is now single indirect block or NO_BLOCK; 'index' is index.
    * We have to create the indirect block if it's NO_BLOCK. Unless
    * we're freing (WMAP_FREE).
    */
-  if (b1 == NO_BLOCK && !(op & WMAP_FREE)) {
-	if ( (b1 = alloc_block(nas, rip, rip->i_bsearch) ) == NO_BLOCK) {
-		/* Release dbl and triple indirect blks. */
-		//put_block(bp_dindir, INDIRECT_BLOCK);
-		//put_block(bp_tindir, INDIRECT_BLOCK);
-		//ext2_debug("failed to allocate dblock near %d\n", rip->i_block[0]);
-		return(ENOSPC);
-	}
-	if (single) {
-		rip->i_block[EXT2_NDIR_BLOCKS] = b1; /* update inode single indirect */
-	} else {
-		wr_indir(bp_dindir, index2, b1);  /* update dbl indir */
-		lmfs_markdirty(bp_dindir);
-	}
-	rip->i_blocks += rip->i_sp->s_sectors_in_block;
-	new_ind = 1;
-  }
-
-  /* b1 is indirect block's number (unless it's NO_BLOCK when we're
-   * freeing).
-   */
-  if (b1 != NO_BLOCK) {
-	//bp = get_block(rip->i_dev, b1, (new_ind ? NO_READ : NORMAL) );
-	ext2_read_sector(nas, (char *) bp->data, 1, b1);
-	if (new_ind)
-		zero_block(bp);
-	if (op & WMAP_FREE) {
-		if ((old_block = rd_indir(bp, index1)) != NO_BLOCK) {
-			free_block(nas, rip->i_sp, old_block);
-			rip->i_blocks -= rip->i_sp->s_sectors_in_block;
-			wr_indir(bp, index1, NO_BLOCK);
+	if (b1 == NO_BLOCK && !(op & WMAP_FREE)) {
+		if ( (b1 = alloc_block(nas, fi->i_bsearch) ) == NO_BLOCK) {
+			/* Release dbl and triple indirect blks. */
+			//put_block(bp_dindir, INDIRECT_BLOCK);
+			//put_block(bp_tindir, INDIRECT_BLOCK);
+			//ext2_debug("failed to allocate dblock near %d\n", fi->i_block[0]);
+			return(ENOSPC);
 		}
+		if (single) {
+			fi->f_di.i_block[EXT2_NDIR_BLOCKS] = b1; /* update inode single indirect */
+		}
+		else {
+			wr_indir(bp_dindir, index2, b1);  /* update dbl indir */
+			lmfs_markdirty(bp_dindir);
+		}
+		fi->f_di.i_blocks += fsi->s_sectors_in_block;
+		new_ind = 1;
+	}
 
-		/* Last reference in the indirect block gone? Then
-		 * free the indirect block.
-		 */
-		if (empty_indir(bp, rip->i_sp)) {
-			free_block(nas, rip->i_sp, b1);
-			rip->i_blocks -= rip->i_sp->s_sectors_in_block;
-			b1 = NO_BLOCK;
-			/* Update the reference to the indirect block to
-			 * NO_BLOCK - in the double indirect block if there
-			 * is one, otherwise in the inode directly.
+	/* b1 is indirect block's number (unless it's NO_BLOCK when we're
+	* freeing).
+	*/
+	if (b1 != NO_BLOCK) {
+		//bp = get_block(fi->i_dev, b1, (new_ind ? NO_READ : NORMAL) );
+		ext2_read_sector(nas, (char *) bp->data, 1, b1);
+		if (new_ind) {
+			zero_block(bp);
+		}
+		if (op & WMAP_FREE) {
+			if ((old_block = rd_indir(bp, index1)) != NO_BLOCK) {
+				free_block(nas, fsi, old_block);
+				fi->f_di.i_blocks -= fsi->s_sectors_in_block;
+				wr_indir(bp, index1, NO_BLOCK);
+			}
+
+			/* Last reference in the indirect block gone? Then
+			 * free the indirect block.
 			 */
-			if (single) {
-				rip->i_block[EXT2_NDIR_BLOCKS] = b1;
-			} else {
-				wr_indir(bp_dindir, index2, b1);
-				lmfs_markdirty(bp_dindir);
+			if (empty_indir(bp, fsi)) {
+				free_block(nas, fsi, b1);
+				fi->f_di.i_blocks -= fsi->s_sectors_in_block;
+				b1 = NO_BLOCK;
+				/* Update the reference to the indirect block to
+				 * NO_BLOCK - in the double indirect block if there
+				 * is one, otherwise in the inode directly.
+				 */
+				if (single) {
+					fi->f_di.i_block[EXT2_NDIR_BLOCKS] = b1;
+				} else {
+					wr_indir(bp_dindir, index2, b1);
+					lmfs_markdirty(bp_dindir);
+				}
 			}
 		}
-	} else {
-		wr_indir(bp, index1, new_block);
-		rip->i_blocks += rip->i_sp->s_sectors_in_block;
+		else {
+			wr_indir(bp, index1, new_block);
+			fi->f_di.i_blocks += fsi->s_sectors_in_block;
+		}
+		/* b1 equals NO_BLOCK only when we are freeing up the indirect block. */
+		if(b1 == NO_BLOCK) {
+			lmfs_markclean(bp);
+		}
+		else {
+			lmfs_markdirty(bp);
+		}
+		//put_block(bp, INDIRECT_BLOCK);
 	}
-	/* b1 equals NO_BLOCK only when we are freeing up the indirect block. */
-	if(b1 == NO_BLOCK) {
-		lmfs_markclean(bp);
-	}
-	else {
-		lmfs_markdirty(bp);
-	}
-	//put_block(bp, INDIRECT_BLOCK);
-  }
 
-  /* If the single indirect block isn't there (or was just freed),
-   * see if we have to keep the double indirect block, if any.
-   * If we don't have to keep it, don't bother writing it out.
-   */
-  if (b1 == NO_BLOCK && !single && b2 != NO_BLOCK &&
-     empty_indir(bp_dindir, rip->i_sp)) {
-	lmfs_markclean(bp_dindir);
-	free_block(nas, rip->i_sp, b2);
-	rip->i_blocks -= rip->i_sp->s_sectors_in_block;
-	b2 = NO_BLOCK;
-	if (triple) {
-		wr_indir(bp_tindir, index3, b2);  /* update triple indir */
-		lmfs_markdirty(bp_tindir);
-	} else {
-		rip->i_block[EXT2_DIND_BLOCK] = b2;
+	/* If the single indirect block isn't there (or was just freed),
+	* see if we have to keep the double indirect block, if any.
+	* If we don't have to keep it, don't bother writing it out.
+	*/
+	if (b1 == NO_BLOCK && !single && b2 != NO_BLOCK &&
+	 empty_indir(bp_dindir, fsi)) {
+		lmfs_markclean(bp_dindir);
+		free_block(nas, fsi, b2);
+		fi->f_di.i_blocks -= fsi->s_sectors_in_block;
+		b2 = NO_BLOCK;
+		if (triple) {
+			wr_indir(bp_tindir, index3, b2);  /* update triple indir */
+			lmfs_markdirty(bp_tindir);
+		}
+		else {
+			fi->f_di.i_block[EXT2_DIND_BLOCK] = b2;
+		}
 	}
-  }
-  /* If the double indirect block isn't there (or was just freed),
-   * see if we have to keep the triple indirect block, if any.
-   * If we don't have to keep it, don't bother writing it out.
-   */
-  if (b2 == NO_BLOCK && triple && b3 != NO_BLOCK &&
-     empty_indir(bp_tindir, rip->i_sp)) {
-	lmfs_markclean(bp_tindir);
-	free_block(nas, rip->i_sp, b3);
-	rip->i_blocks -= rip->i_sp->s_sectors_in_block;
-	rip->i_block[EXT2_TIND_BLOCK] = NO_BLOCK;
-  }
+	/* If the double indirect block isn't there (or was just freed),
+	* see if we have to keep the triple indirect block, if any.
+	* If we don't have to keep it, don't bother writing it out.
+	*/
+	if (b2 == NO_BLOCK && triple && b3 != NO_BLOCK &&
+	 empty_indir(bp_tindir, fsi)) {
+		lmfs_markclean(bp_tindir);
+		free_block(nas, fsi, b3);
+		fi->f_di.i_blocks -= fsi->s_sectors_in_block;
+		fi->f_di.i_block[EXT2_TIND_BLOCK] = NO_BLOCK;
+	}
 
-  //put_block(bp_dindir, INDIRECT_BLOCK);	/* release double indirect blk */
-  //put_block(bp_tindir, INDIRECT_BLOCK);	/* release triple indirect blk */
+	//put_block(bp_dindir, INDIRECT_BLOCK);	/* release double indirect blk */
+	//put_block(bp_tindir, INDIRECT_BLOCK);	/* release triple indirect blk */
 
-  return 0;
+	return 0;
 }
 
-
-/*===========================================================================*
- *				wr_indir				     *
- *===========================================================================*/
 static void wr_indir(struct buf *bp, int index, uint32_t block) {
-/* Given a pointer to an indirect block, write one entry. */
+	/* Given a pointer to an indirect block, write one entry. */
 
-  /* write a block into an indirect block */
-  b_ind(bp)[index] = block; //conv4(le_CPU, block);
+	/* write a block into an indirect block */
+	b_ind(bp)[index] = block; //conv4(le_CPU, block);
 }
 
+static int empty_indir(struct buf *bp, struct ext2_fs_info *sb) {
+	/* Return nonzero if the indirect block pointed to by bp contains
+	* only NO_BLOCK entries.
+	*/
+	long addr_in_block;
+	int i;
 
-/*===========================================================================*
- *				empty_indir				     *
- *===========================================================================*/
-static int empty_indir(struct buf *bp, struct super_block *sb) {
-/* Return nonzero if the indirect block pointed to by bp contains
- * only NO_BLOCK entries.
- */
-  long addr_in_block = sb->s_block_size/4; /* 4 bytes per addr */
-  int i;
-  for(i = 0; i < addr_in_block; i++)
-	if(b_ind(bp)[i] != NO_BLOCK)
-		return(0);
-  return(1);
+	addr_in_block = sb->s_block_size / 4; /* 4 bytes per addr */
+	for(i = 0; i < addr_in_block; i++) {
+		if(b_ind(bp)[i] != NO_BLOCK) {
+			return 0;
+		}
+	}
+	return 1;
 }
 
-/*===========================================================================*
- *				read_map				     *
- *===========================================================================*/
-uint32_t read_map(struct nas *nas, struct inode *rip, uint32_t position) {  /* position in file whose blk wanted */
-/* Given an inode and a position within the corresponding file, locate the
- * block number in which that position is to be found and return it.
- */
-
+uint32_t read_map(struct nas *nas, uint32_t position) {  /* position in file whose blk wanted */
+	/* Given an inode and a position within the corresponding file, locate the
+	 * block number in which that position is to be found and return it.
+	 */
 	struct buf buff;
 	struct buf *bp;
 	int index;
-  uint32_t b;
-  unsigned long excess, block_pos;
-  static char first_time = 1;
-  static long addr_in_block;
-  static long addr_in_block2;
-  static long doub_ind_s;
-  static long triple_ind_s;
-  static long out_range_s;
+	uint32_t b;
+	unsigned long excess, block_pos;
+	static char first_time = 1;
+	static long addr_in_block;
+	static long addr_in_block2;
+	static long doub_ind_s;
+	static long triple_ind_s;
+	static long out_range_s;
 
-  struct ext2_file_info *fi;
-  //struct ext2_fs_info *fsi;
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
 
-  fi = nas->fi->privdata;
-  //fsi = nas->fs->fsi;
-  bp = &buff;
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
+	bp = &buff;
 
-  if (first_time) {
-	addr_in_block = rip->i_sp->s_block_size / BLOCK_ADDRESS_BYTES;
-	addr_in_block2 = addr_in_block * addr_in_block;
-	doub_ind_s = EXT2_NDIR_BLOCKS + addr_in_block;
-	triple_ind_s = doub_ind_s + addr_in_block2;
-	out_range_s = triple_ind_s + addr_in_block2 * addr_in_block;
-	first_time = 0;
-  }
-
-  block_pos = position / rip->i_sp->s_block_size; /* relative blk # in file */
-
-  /* Is 'position' to be found in the inode itself? */
-  if (block_pos < EXT2_NDIR_BLOCKS)
-	return(rip->i_block[block_pos]);
-
-  /* It is not in the inode, so it must be single, double or triple indirect */
-  if (block_pos < doub_ind_s) {
-	b = rip->i_block[EXT2_NDIR_BLOCKS]; /* address of single indirect block */
-	index = block_pos - EXT2_NDIR_BLOCKS;
-  } else if (block_pos >= out_range_s) { /* TODO: do we need it? */
-	return(NO_BLOCK);
-  } else {
-	/* double or triple indirect block. At first if it's triple,
-	 * find double indirect block.
-	 */
-	excess = block_pos - doub_ind_s;
-	b = rip->i_block[EXT2_DIND_BLOCK];
-	if (block_pos >= triple_ind_s) {
-		b = rip->i_block[EXT2_TIND_BLOCK];
-		if (b == NO_BLOCK) return(NO_BLOCK);
-		ext2_read_sector(nas, (char *) fi->f_buf, 1, b);
-		excess = block_pos - triple_ind_s;
-		index = excess / addr_in_block2;
-		b = rd_indir(bp, index);	/* num of double ind block */
-		//put_block(bp, INDIRECT_BLOCK);	/* release triple ind block */
-		excess = excess % addr_in_block2;
+	if (first_time) {
+		addr_in_block = fsi->s_block_size / BLOCK_ADDRESS_BYTES;
+		addr_in_block2 = addr_in_block * addr_in_block;
+		doub_ind_s = EXT2_NDIR_BLOCKS + addr_in_block;
+		triple_ind_s = doub_ind_s + addr_in_block2;
+		out_range_s = triple_ind_s + addr_in_block2 * addr_in_block;
+		first_time = 0;
 	}
-	if (b == NO_BLOCK) return(NO_BLOCK);
-	//bp = get_block(rip->i_dev, b, NORMAL);	/* get double indirect block */
-	ext2_read_sector(nas, (char *) fi->f_buf, 1, b);
-	index = excess / addr_in_block;
-	b = rd_indir(bp, index);	/* num of single ind block */
-	//put_block(bp, INDIRECT_BLOCK);	/* release double ind block */
-	index = excess % addr_in_block;	/* index into single ind blk */
+
+  block_pos = position / fsi->s_block_size; /* relative blk # in file */
+
+	/* Is 'position' to be found in the inode itself? */
+	if (block_pos < EXT2_NDIR_BLOCKS) {
+		return(fi->f_di.i_block[block_pos]);
+	}
+
+	/* It is not in the inode, so it must be single, double or triple indirect */
+	if (block_pos < doub_ind_s) {
+		b = fi->f_di.i_block[EXT2_NDIR_BLOCKS]; /* address of single indirect block */
+		index = block_pos - EXT2_NDIR_BLOCKS;
+	}
+	else if (block_pos >= out_range_s) { /* TODO: do we need it? */
+		return(NO_BLOCK);
+	}
+	else {
+		/* double or triple indirect block. At first if it's triple,
+		 * find double indirect block.
+		 */
+		excess = block_pos - doub_ind_s;
+		b = fi->f_di.i_block[EXT2_DIND_BLOCK];
+		if (block_pos >= triple_ind_s) {
+			b = fi->f_di.i_block[EXT2_TIND_BLOCK];
+			if (b == NO_BLOCK) return(NO_BLOCK);
+			ext2_read_sector(nas, (char *) fi->f_buf, 1, b);
+			excess = block_pos - triple_ind_s;
+			index = excess / addr_in_block2;
+			b = rd_indir(bp, index);	/* num of double ind block */
+			//put_block(bp, INDIRECT_BLOCK);	/* release triple ind block */
+			excess = excess % addr_in_block2;
+		}
+		if (b == NO_BLOCK) {
+			return(NO_BLOCK);
+		}
+		//bp = get_block(fi->i_dev, b, NORMAL);	/* get double indirect block */
+		ext2_read_sector(nas, (char *) fi->f_buf, 1, b);
+		index = excess / addr_in_block;
+		b = rd_indir(bp, index);	/* num of single ind block */
+		//put_block(bp, INDIRECT_BLOCK);	/* release double ind block */
+		index = excess % addr_in_block;	/* index into single ind blk */
   }
-  if (b == NO_BLOCK) return(NO_BLOCK);
-  //bp = get_block(rip->i_dev, b, NORMAL);
+  if (b == NO_BLOCK) {
+	  return(NO_BLOCK);
+  }
+  //bp = get_block(fi->i_dev, b, NORMAL);
   ext2_read_sector(nas, (char *) fi->f_buf, 1, b);
   b = rd_indir(bp, index);
   //put_block(bp, INDIRECT_BLOCK);	/* release single ind block */
@@ -1397,72 +1403,75 @@ uint32_t read_map(struct nas *nas, struct inode *rip, uint32_t position) {  /* p
   return(b);
 }
 
-/*===========================================================================*
- *				new_block				     *
- *===========================================================================//
-struct buf *new_block(struct inode *rip, long position) {
-// Acquire a new block and return a pointer to it. //
-  struct buf *bp;
-  int r;
-  uint32_t b;
-  struct nas *nas;
 
-  // Is another block available? //
-  if ((b = read_map(rip, position)) == NO_BLOCK) {
-	// Check if this position follows last allocated
-	 * block.
-	 //
-	uint32_t goal = NO_BLOCK;
-	if (rip->i_last_pos_bl_alloc != 0) {
-		long position_diff = position - rip->i_last_pos_bl_alloc;
-		if (rip->i_bsearch == 0) {
-			// Should never happen, but not critical //
-			//ext2_debug("warning, i_bsearch is 0, while i_last_pos_bl_alloc is not!");
+struct buf *new_block(struct nas *nas, long position) {
+	// Acquire a new block and return a pointer to it.
+	struct buf *bp;
+	int r;
+	uint32_t b;
+	uint32_t goal;
+	long position_diff;
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
+
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
+
+	// Is another block available? //
+	if ((b = read_map(nas, position)) == NO_BLOCK) {
+		/* Check if this position follows last allocated
+		 * block.
+		 */
+		goal = NO_BLOCK;
+		if (fi->i_last_pos_bl_alloc != 0) {
+			position_diff = position - fi->i_last_pos_bl_alloc;
+			if (fi->i_bsearch == 0) {
+				// Should never happen, but not critical //
+				//ext2_debug("warning, i_bsearch is 0, while i_last_pos_bl_alloc is not!");
+			}
+			if (position_diff <= fsi->s_block_size) {
+				goal = fi->i_bsearch + 1;
+			} else {
+				/* Non-sequential write operation,
+				 * disable preallocation
+				 * for this inode.
+				 */
+				fi->i_preallocation = 0;
+				discard_preallocated_blocks(nas);
+			}
 		}
-		if (position_diff <= rip->i_sp->s_block_size) {
-			goal = rip->i_bsearch + 1;
-		} else {
-			// Non-sequential write operation,
-			 * disable preallocation
-			 * for this inode.
-		 //
-			rip->i_preallocation = 0;
-			discard_preallocated_blocks(rip);
+
+		if ( (b = alloc_block(nas, goal) ) == NO_BLOCK) {
+			errno = ENOSPC;
+			return(NULL);
+		}
+		if ( (r = write_map(nas, position, b, 0)) != 0) {
+			free_block(nas, fsi, b);
+			errno = r;
+			//ext2_debug("write_map failed\n");
+			return(NULL);
+		}
+		fi->i_last_pos_bl_alloc = position;
+		if (0 == position) {
+			/* fi->i_last_pos_bl_alloc points to the block position,
+			 * and zero indicates first usage, thus just increment.
+			 */
+			fi->i_last_pos_bl_alloc++;
 		}
 	}
 
-	if ( (b = alloc_block(rip, goal) ) == NO_BLOCK) {
-		errno = ENOSPC;
-		return(NULL);
-	}
-	if ( (r = write_map(rip, position, b, 0)) != 0) {
-		free_block(nas, rip->i_sp, b);
-		errno = r;
-		//ext2_debug("write_map failed\n");
-		return(NULL);
-	}
-	rip->i_last_pos_bl_alloc = position;
-	if (position == 0) {
-		// rip->i_last_pos_bl_alloc points to the block position,
-		 * and zero indicates first usage, thus just increment.
-		 //
-		rip->i_last_pos_bl_alloc++;
-	}
-  }
-
-  //bp = get_block(rip->i_dev, b, NO_READ);
-  ext2_read_sector(nas, (char *) bp->data, 1, b);
-  zero_block(bp);
-  return(bp);
+	//bp = get_block(fi->i_dev, b, NO_READ);
+	ext2_read_sector(nas, fi->f_buf, 1, b);
+	/*TODO *///zero_block(bp);
+	bp = NULL;
+	return bp;
 }
-*/
-/*===========================================================================*
- *				zero_block				     *
- *===========================================================================*/
+
+
 static void zero_block(struct buf *bp) {
-/* Zero a block. */
-  memset(b_data(bp), 0, (size_t) lmfs_bytes(bp));
-  lmfs_markdirty(bp);
+	/* Zero a block. */
+	memset(b_data(bp), 0, (size_t) lmfs_bytes(bp));
+	lmfs_markdirty(bp);
 }
 
 DECLARE_FILE_SYSTEM_DRIVER(ext2_drv);
