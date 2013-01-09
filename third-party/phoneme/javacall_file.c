@@ -140,3 +140,8 @@ javacall_result javacall_file_rename(const javacall_utf16 * unicodeOldFilename, 
 javacall_result javacall_file_truncate(javacall_handle handle, javacall_int64 size) {
     return JAVACALL_FAIL;
 }
+
+javacall_utf16 javacall_get_file_separator(void) {
+    return '\\';
+}
+
