@@ -189,12 +189,10 @@ PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_network.a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_string.a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_file.a
 
-PHONEME_CLDC_PREVERIFY = $(CLDC_DIST_DIR)/bin/preverify
-
 $(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR) $(AMAL_FLAG_DIR):
 	$(AT)mkdir -p $@
 
-$(AMAL_FLAG_DIR): $(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR)
+$(AMAL_FLAG_DIR): | $(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR)
 
 $(ROM_GENERATOR) $(CLDC_ZIP) $(ROM_CONFIG_FILE): cldc
 
@@ -215,22 +213,34 @@ $(AMAL_EXT_OBJS): javacall pcsl cldc
 $(PHONEME_CLDC_LIBS): pcsl cldc
 
 $(AMAL_LOCAL_LIB): $(AMAL_EXT_OBJS) $(AMAL_OBJECTS)
-	$(AT)ar -r $@ $?
+	$(AT)ar -rcs $@ $^
 
 $(AMAL_CLDC_LIB): $(AMAL_LOCAL_LIB) $(PHONEME_CLDC_LIBS)
-	-$(AT)$(patsubst %,ar -x % &&,$?) true
-	$(AT)ar -r $@ *.o
+	-$(AT)rm *.o
+	$(AT)$(patsubst %,ar -x % &&,$?) true
+	$(AT)ar -rcs $@ *.o
 	$(AT)rm *.o
-
-$(PHONEME_CLDC_PREVERIFY): cldc
+	$(AT)ranlib $@
 
 $(AMAL_OBJ_DIR)/%.o: %.cpp
-	$(AT)cd ../../ && gcc $(AMAL_CPPFLAGS) $(AMAL_CXXFLAGS) -o $@ -c $<
+	$(AT)cd ../../ && g++ $(AMAL_CPPFLAGS) $(AMAL_CXXFLAGS) -o $@ -c $<
 
 $(AMAL_OBJ_DIR)/%.o: %.c
 	$(AT)cd ../../ && gcc $(AMAL_CPPFLAGS) $(AMAL_CFLAGS) -o $@ -c $(abspath $<)
 
-amalgamated: $(AMAL_CLDC_LIB)
+PHONEME_CLDC_PREVERIFY = $(CLDC_DIST_DIR)/bin/preverify
+HELLOWORLD_DIR = $(AMAL_OUTPUT_DIR)/bin/hello
+HELLOWORLD_APP = $(HELLOWORLD_DIR)/dist/hello.jar
+
+$(PHONEME_CLDC_PREVERIFY): cldc
+
+$(HELLOWORLD_APP): $(PHONEME_CLDC_PREVERIFY) $(CLDC_ZIP) $(shell find hello -type f)
+	$(AT)cd hello && ant \
+		-Dpreverify.exec=$(PHONEME_CLDC_PREVERIFY) \
+		-Dclasses.zip=$(CLDC_ZIP) \
+		-Dappbuild.dir=$(HELLOWORLD_DIR)
+
+amalgamated: $(AMAL_CLDC_LIB) $(HELLOWORLD_APP)
 
 .NOTPARALLEL:
 
