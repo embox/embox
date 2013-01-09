@@ -239,6 +239,11 @@ void free(void *ptr) {
 		return;
 	}
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
+
+	if(block_is_busy(block)) {
+		return; /* if we try to free block more than once */
+	}
+
 	block = concatenate_prev(block);
 	block = concatenate_next(block);
 
