@@ -13,7 +13,7 @@
 #include <posix_errno.h>
 
 #define ENOERR           0     /* No error */
-#define EPERM            1     /* Not permitted */
+#define EPERM            1001  /* Not permitted */ /* FIXME: see issue 519 */
 #define ENOENT           2     /* No such entity */
 #define ESRCH            3     /* No such process */
 #define EINTR            4     /* Operation interrupted */

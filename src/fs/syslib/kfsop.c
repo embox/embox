@@ -222,7 +222,7 @@ int kremove(const char *pathname) {
 	nas = node->nas;
 	drv = nas->fs->drv;
 	if (NULL == drv->fsop->delete_node) {
-		errno = EINVAL;
+		errno = EPERM;
 		return -1;
 	}
 
@@ -248,6 +248,7 @@ int kunlink(const char *pathname) {
 	nas = node->nas;
 	drv = nas->fs->drv;
 	if(NULL == drv->fsop->delete_node) {
+		errno = EPERM;
 		return -1;
 	}
 
