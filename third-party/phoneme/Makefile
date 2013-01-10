@@ -13,17 +13,10 @@ endif
 EMBOX_IMPORTED_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -nostdinc,$(EMBOX_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -D__EMBOX__,$(EMBOX_CPPFLAGS))
-EMBOX_IMPORTED_CPPFLAGS += $(filter -D"__impl_x%,$(EMBOX_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(subst ",',$(filter -D"__impl_x%,$(EMBOX_CPPFLAGS)))
 
 EMBOX_IMPORTED_CFLAGS   += $(EMBOX_IMPORTED_CPPFLAGS)
 EMBOX_IMPORTED_CXXFLAGS += $(EMBOX_IMPORTED_CPPFLAGS)
-
-EMBOX_IMPORTED_CFLAGS   += $(filter -D"__BEGIN_DECLS=%,$(EMBOX_CFLAGS))
-# Can't right now figure out how to extract this one from EMBOX_CXXFLAGS :(
-#EMBOX_IMPORTED_CXXFLAGS += $(filter -D"__BEGIN_DECLS=%,$(EMBOX_CXXFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += -D"__BEGIN_DECLS=extern \"C\" {"
-EMBOX_IMPORTED_CFLAGS   += $(filter -D"__END_DECLS=%,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CXXFLAGS += $(filter -D"__END_DECLS=%,$(EMBOX_CXXFLAGS))
 
 EMBOX_IMPORTED_CFLAGS   += -fno-stack-protector
 EMBOX_IMPORTED_CXXFLAGS += -fno-stack-protector
@@ -51,7 +44,7 @@ PCSL_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/pcsl
 CLDC_DIR            := $(PHONEME_DIR)/cldc
 CLDC_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/cldc
 
-.PHONY: checkout javacall pcsl cldc midp amalgamated
+.PHONY: checkout javacall pcsl cldc midp amalgamated amalgamated_cldc amalgamated_midp
 
 AT:=
 
@@ -68,7 +61,7 @@ $(JAVACALL_DIR) $(PCSL_DIR) $(CLDC_DIR):
 	$(AT)patch -p0 -d $(PHONEME_DIR) -N --input=$(abspath $(PATCH_TXT))
 
 javacall: checkout
-	export CFLAGS='$(EMBOX_DERIVED_CFLAGS)' && \
+	export CFLAGS="$(EMBOX_DERIVED_CFLAGS)" && \
 	$(AT)$(MAKE) -C $(JAVACALL_DIR)/configuration/stubs/linux \
 		USE_DEBUG=$(USE_DEBUG) \
 		AT= \
@@ -79,7 +72,7 @@ javacall: checkout
 
 pcsl: javacall checkout
 	$(AT)
-	(export CFLAGS='$(EMBOX_DERIVED_CFLAGS)' && \
+	(export CFLAGS="$(EMBOX_DERIVED_CFLAGS)" && \
 	$(MAKE) -C $(PCSL_DIR) \
 		USE_DEBUG=$(USE_DEBUG) \
 		USE_VERBOSE_MAKE=" true" \
@@ -95,7 +88,7 @@ cldc: pcsl javacall checkout
 		ENABLE_COMPILATION_WARNINGS=true \
 		ENABLE_MAP_FILE=false \
 		VERBOSE_BUILD=true \
-		CXXFLAGS_EXTERNAL_TARGET='$(EMBOX_DERIVED_CXXFLAGS)' \
+		CXXFLAGS_EXTERNAL_TARGET="$(EMBOX_DERIVED_CXXFLAGS)" \
 		JAVACALL_LIB_DIR=$(JAVACALL_OUTPUT_DIR)/lib \
 		JAVACALL_OUTPUT_DIR=$(JAVACALL_OUTPUT_DIR) \
 		PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
@@ -240,14 +233,17 @@ $(HELLOWORLD_APP): $(PHONEME_CLDC_PREVERIFY) $(CLDC_ZIP) $(shell find hello -typ
 		-Dclasses.zip=$(CLDC_ZIP) \
 		-Dappbuild.dir=$(HELLOWORLD_DIR)
 
-amalgamated: $(AMAL_CLDC_LIB) $(HELLOWORLD_APP)
+amalgamated_cldc: $(AMAL_CLDC_LIB) $(HELLOWORLD_APP)
+
+amalgamated: amalgamated_cldc
 
 .NOTPARALLEL:
 
 MIDP_DIR            := $(PHONEME_DIR)/midp
 MIDP_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/midp
 midp: cldc pcsl javacall checkout
-	$(AT)$(MAKE) -C $(MIDP_DIR)/build/javacall \
+	$(AT)export EXTRA_CFLAGS="$(EMBOX_DERIVED_CFLAGS)" && \
+	$(MAKE) -C $(MIDP_DIR)/build/javacall \
 		TOOLS_DIR=$(TOOLS_DIR) \
 		JDK_DIR=$(JDK_DIR) \
 		USE_DEBUG=$(USE_DEBUG) \
@@ -256,5 +252,7 @@ midp: cldc pcsl javacall checkout
 		JAVACALL_OUTPUT_DIR=$(JAVACALL_OUTPUT_DIR) \
 		PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
 		MIDP_OUTPUT_DIR=$(MIDP_OUTPUT_DIR) \
-		CLDC_DIST_DIR=$(CLDC_OUTPUT_DIR)/javacall_i386_gcc/dist \
+		CLDC_DIST_DIR=$(CLDC_DIST_DIR) \
 		JAVACALL_PLATFORM=linux_i386_gcc
+
+amalgamated_midp: midp
