@@ -9,6 +9,7 @@
 #include <javacall_time.h>
 #include <pcsl_memory.h>
 #include <pcsl_print.h>
+#include <kernel/task.h>
 #include <jvm.h>
 #include <jvmspi.h>
 #include <sni.h>
@@ -18,9 +19,35 @@
 
 #include "cldc_standalone.h"
 
-/* In the most part implementation is copied from Main_javacall.cpp */
-int phoneme_cldc(int argc, char **argv) {
+static void *phoneme_run(void *data);
+
+struct __jvm_params {
+	int argc;
+	char **argv;
 	int code;
+};
+
+int phoneme_cldc(int argc, char **argv) {
+	struct __jvm_params params = {
+			.argc = argc,
+			.argv = argv,
+			.code = -1
+	};
+
+	new_task(phoneme_run, &params);
+	while(!list_empty(&task_self()->children)) { } /* XXX make it throw signals */
+
+	return params.code;
+}
+
+/* In the most part implementation is copied from Main_javacall.cpp */
+static void *phoneme_run(void *data) {
+	int argc;
+	char **argv;
+	struct __jvm_params *params = (struct __jvm_params *)data;
+
+	argc = params->argc;
+	argv = params->argv;
 
 	pcsl_mem_initialize(NULL, -1);
 	JVM_Initialize();
@@ -33,7 +60,7 @@ int phoneme_cldc(int argc, char **argv) {
 	    if (n < 0) {
 	    	printf("Unknown argument: %s\n", argv[0]);
 	    	JVMSPI_DisplayUsage(NULL);
-	    	code = -1;
+	    	params->code = -1;
 	    	goto end;
 	    } else if (n == 0) {
 	    	break;
@@ -45,7 +72,7 @@ int phoneme_cldc(int argc, char **argv) {
 	  if (JVM_GetConfig(JVM_CONFIG_SLAVE_MODE) == KNI_FALSE) {
 	    // Run the VM in regular mode -- JVM_Start won't return until
 	    // the VM completes execution.
-	    code = JVM_Start(NULL, NULL, argc, argv);
+	    params->code = JVM_Start(NULL, NULL, argc, argv);
 	  } else {
 	    // Run the VM in slave mode -- we keep calling JVM_TimeSlice(),
 	    // which executes bytecodes for a small amount and returns. This
@@ -67,13 +94,13 @@ int phoneme_cldc(int argc, char **argv) {
 	      }
 	    }
 
-	    code = JVM_CleanUp();
+	    params->code = JVM_CleanUp();
 	  }
 
 end:
     pcsl_mem_finalize();
 
-    return code;
+    return NULL;
 }
 
 void JVMSPI_PrintRaw(const char* s, int length) {
@@ -82,6 +109,8 @@ void JVMSPI_PrintRaw(const char* s, int length) {
 }
 
 void JVMSPI_Exit(int code) {
+	pcsl_mem_finalize();
+	task_exit(NULL);
 	/* Terminate the current process */
 	// ToDo: terminate task
 	return;
