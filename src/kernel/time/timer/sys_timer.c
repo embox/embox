@@ -61,25 +61,3 @@ int timer_close(struct sys_timer *tmr) {
 
 	return ENOERR;
 }
-
-void timer_suspend(struct sys_timer *tmr) {
-	timer_strat_stop(tmr);
-}
-
-static void resume_hnd(struct sys_timer *tmr, void *data) {
-	sys_timer_t *timer;
-
-	timer = (sys_timer_t *)data;
-	timer->handle(timer, timer->param);
-	if (timer_is_periodic(timer)) {
-		timer->cnt = timer->load;
-		timer_strat_start(timer);
-	}
-}
-
-void timer_resume(struct sys_timer *tmr) {
-	sys_timer_t *timer;
-	/* @timer used to ticks remained ticks in oneshot mode, and than restart
-	 * @tmr if it was periodic */
-	timer_set(&timer, TIMER_ONESHOT, jiffies2ms(tmr->cnt), resume_hnd, tmr);
-}

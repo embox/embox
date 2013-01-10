@@ -63,11 +63,11 @@ javacall_result javacall_time_finalize_timer(javacall_handle handle) {
 }
 
 void javacall_time_suspend_ticks(javacall_handle handle) {
-	timer_suspend((sys_timer_t *)handle);
+	//timer_suspend((sys_timer_t *)handle);
 }
 
 void javacall_time_resume_ticks(javacall_handle handle){
-	timer_resume((sys_timer_t *)handle);
+	//timer_resume((sys_timer_t *)handle);
 }
 
 javacall_int64 /*OPTIONAL*/ javacall_time_get_monotonic_clock_counter(void) {
