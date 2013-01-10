@@ -17,7 +17,7 @@
 #define SECONDS_1900_1970 2208988800L
 
 void javacall_time_sleep(javacall_uint64 ms){
-	usleep((useconds_t) ms);
+	usleep((useconds_t) ms * 1000);
 }
 
 javacall_result javacall_time_initialize_timer(
@@ -35,7 +35,7 @@ javacall_result javacall_time_initialize_timer(
 		return emboxErrno2javaErrno(res);
 	}
 
-	handle = (void *)timer;
+	*handle = (void *)timer;
 
     return JAVACALL_OK;
 }
@@ -45,7 +45,7 @@ javacall_int64 javacall_time_get_milliseconds_since_1970(void) {
 
 	gettimeofday(&tv, NULL);
 
-    return ((uint32_t) (tv.tv_sec - SECONDS_1900_1970));
+    return (((javacall_int64) (tv.tv_sec - SECONDS_1900_1970))*1000 + tv.tv_usec/1000);
 }
 
 javacall_result javacall_time_finalize_timer(javacall_handle handle) {

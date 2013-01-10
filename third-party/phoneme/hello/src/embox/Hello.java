@@ -13,6 +13,7 @@ public class Hello {
 			});
 			thread.start();
 			try {
+				Thread.sleep(1000);
 				thread.join();
 			} catch (InterruptedException ie) {
 				ie.printStackTrace();

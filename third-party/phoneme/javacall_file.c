@@ -31,11 +31,11 @@ javacall_result javacall_file_open(javacall_const_utf16_string fileName,
 	*handle = (void *)fopen((const char *)utf8Name, "r");/* FIXME */
 	free(utf8Name);
 
-	return emboxErrno2javaErrno(errno);
+	return *handle ? JAVACALL_OK : emboxErrno2javaErrno(errno);
 }
 
 javacall_result javacall_file_close(javacall_handle handle) {
-    return emboxErrno2javaErrno(fclose((FILE *)handle));
+    return fclose((FILE *)handle) ? emboxErrno2javaErrno(errno) : JAVACALL_OK;
 }
 
 long javacall_file_read(javacall_handle handle,
@@ -78,22 +78,21 @@ javacall_int64 javacall_file_sizeofopenfile(javacall_handle handle) {
 
 javacall_result javacall_file_exist(const javacall_utf16 * fileName, int fileNameLen) {
 	int res;
-	FILE *file;
+	struct stat file_stat;
 	javacall_int32 utf8NameLen;
 	unsigned char *utf8Name;
 
 	if (0 > (res = utf16_to_utf8(fileName, fileNameLen, &utf8Name, &utf8NameLen))) {
 		return JAVACALL_FAIL;
 	}
-	file = (void *)fopen((const char *)utf8Name, "r");
+	res = stat(utf8Name,&file_stat)
 	free(utf8Name);
 
-	if (file) {
-		res = JAVACALL_OK;
+	if (!res) {
+		res = S_ISREG(file_stat.st_mode) ? JAVACALL_OK | JAVACALL_FAIL;
 	} else {
-		res = JAVACALL_FAIL;
+		res = emboxErrno2javaErrno(errno);
 	}
-	fclose(file);
 
 	return res;
 }
@@ -142,6 +141,6 @@ javacall_result javacall_file_truncate(javacall_handle handle, javacall_int64 si
 }
 
 javacall_utf16 javacall_get_file_separator(void) {
-    return '\\';
+    return '/';
 }
 

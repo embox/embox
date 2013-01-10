@@ -22,7 +22,6 @@
 int phoneme_cldc(int argc, char **argv) {
 	int code;
 
-	// ToDo: check return value
 	pcsl_mem_initialize(NULL, -1);
 	JVM_Initialize();
 

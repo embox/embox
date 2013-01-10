@@ -22,7 +22,7 @@ javacall_result emboxErrno2javaErrno(int embox_errno) {
 		return JAVACALL_OUT_OF_MEMORY;
 	}
 
-	return JAVACALL_OK;
+	return JAVACALL_FAIL;
 }
 
 javacall_result utf16_to_utf8(const javacall_utf16* pUtf16,

@@ -97,7 +97,7 @@ TEST_CASE("Call stat for a file") {
 	test_assert_zero(remove_test_file());
 }
 
-TEST_CASE("Call fstat from a file") {
+TEST_CASE("Call fstat for a file") {
 	struct stat stat_buff;
 	int fd;
 
@@ -123,7 +123,7 @@ TEST_CASE("Read from removed open file") {
 	test_assert_zero(strncmp(test_buff, test_file_contents, SIZE_OF_FILE));
 	test_assert_zero(close(fd));
 
-	if (0 != stat(test_file_filename, &stat_buff)) {
+	if (0 == stat(test_file_filename, &stat_buff)) {
 		test_assert(!S_ISREG(stat_buff.st_mode));
 	}
 }
