@@ -240,7 +240,7 @@ void free(void *ptr) {
 	}
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
 
-	if(block_is_busy(block)) {
+	if(!block_is_busy(block)) {
 		return; /* if we try to free block more than once */
 	}
 
