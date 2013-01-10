@@ -164,6 +164,36 @@ static struct free_block * cut(struct free_block *block, size_t size) {
 	return block;
 }
 
+static void *block_aligning(struct free_block *block, size_t boundary) {
+	struct free_block *aligned_block;
+	void *ret_addr;
+	size_t size;
+
+	ret_addr =
+			(void *) ((size_t) (block) + sizeof(struct free_block) + boundary);
+	ret_addr = (void *) ((size_t) (ret_addr) & ~(boundary - 1));
+
+	aligned_block =
+			(struct free_block *) ((size_t) ret_addr - sizeof(ret_addr));
+
+	size = get_clear_size(block->size) - ((size_t) aligned_block - (size_t) block);
+
+	aligned_block->size = block->size; /* copy flags*/
+	block_set_size(aligned_block, size);
+	mark_block(aligned_block);
+	clear_prev(aligned_block);
+
+	ret_addr = (void *) ((uint32_t *) aligned_block + 1);
+
+	block_set_size(block, (size_t) aligned_block - (size_t) block);
+	block_link(block);
+	clear_block(block);
+	set_end_size(block);
+	clear_next(block);
+
+	return ret_addr;
+}
+
 void *memalign(size_t boundary, size_t size) {
 	struct free_block *block;
 	struct free_block_link *link;
@@ -178,8 +208,8 @@ void *memalign(size_t boundary, size_t size) {
 	}
 
 	if (0 != boundary) {
-		boundary = max(boundary, sizeof(struct free_block) << 1);
-		size = (size + 1 + (boundary - 1)) & ~(boundary - 1);
+		// boundary = max(boundary, sizeof(struct free_block) << 1);
+		size = (size + 1 + (sizeof(struct free_block) << 1) +(boundary - 1)) & ~(boundary - 1);
 	} else {
 		size = (size + (3)) & ~(3); /* align by word*/
 	}
@@ -204,24 +234,7 @@ void *memalign(size_t boundary, size_t size) {
 
 		ret_addr = (void *) ((uint32_t *) block + 1);
 		if (0 != ((size_t) ret_addr & ~(boundary - 1))) {
-			struct free_block *aligned_block;
-
-			aligned_block = (struct free_block *) (((size_t)((size_t)(block)
-					+ boundary) & ~(boundary - 1)) - 4);
-
-			aligned_block->size = block->size;
-			block_set_size(aligned_block,
-					get_clear_size(block->size) - ((size_t) aligned_block - (size_t) block));
-			mark_block(aligned_block);
-			clear_prev(aligned_block);
-
-			ret_addr = (void *) ((uint32_t *) aligned_block + 1);
-
-			block_set_size(block, (size_t) aligned_block - (size_t) block);
-			block_link(block);
-			clear_block(block);
-			set_end_size(block);
-			clear_next(block);
+			ret_addr = block_aligning(block, boundary);
 		}
 
 		return ret_addr;
