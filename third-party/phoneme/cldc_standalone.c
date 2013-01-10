@@ -42,44 +42,39 @@ int phoneme_cldc(int argc, char **argv) {
 
 /* In the most part implementation is copied from Main_javacall.cpp */
 static void *phoneme_run(void *data) {
-	int argc;
-	char **argv;
-	struct __jvm_params *params = (struct __jvm_params *)data;
-
-	argc = params->argc;
-	argv = params->argv;
+	struct __jvm_params *p = (struct __jvm_params *)data;
 
 	pcsl_mem_initialize(NULL, -1);
 	JVM_Initialize();
 
-	argc --;
-	argv ++;
+	p->argc --;
+	p->argv ++;
 
 	while (true) {
-	    int n = JVM_ParseOneArg(argc, argv);
+	    int n = JVM_ParseOneArg(p->argc, p->argv);
 	    if (n < 0) {
-	    	printf("Unknown argument: %s\n", argv[0]);
+	    	printf("Unknown argument: %s\n", p->argv[0]);
 	    	JVMSPI_DisplayUsage(NULL);
-	    	params->code = -1;
+	    	p->code = -1;
 	    	goto end;
 	    } else if (n == 0) {
 	    	break;
 	    }
-	    argc -= n;
-	    argv += n;
+	    p->argc -= n;
+	    p->argv += n;
 	}
 
 	  if (JVM_GetConfig(JVM_CONFIG_SLAVE_MODE) == KNI_FALSE) {
 	    // Run the VM in regular mode -- JVM_Start won't return until
 	    // the VM completes execution.
-	    params->code = JVM_Start(NULL, NULL, argc, argv);
+		p->code = JVM_Start(NULL, NULL, p->argc, p->argv);
 	  } else {
 	    // Run the VM in slave mode -- we keep calling JVM_TimeSlice(),
 	    // which executes bytecodes for a small amount and returns. This
 	    // mode is necessary for platforms that need to keep the main
 	    // control loop outside of of the VM.
 
-	    JVM_Start(NULL, NULL, argc, argv);
+	    JVM_Start(NULL, NULL, p->argc, p->argv);
 
 	    for (;;) {
 	      jlong timeout = JVM_TimeSlice();
@@ -94,7 +89,7 @@ static void *phoneme_run(void *data) {
 	      }
 	    }
 
-	    params->code = JVM_CleanUp();
+	    p->code = JVM_CleanUp();
 	  }
 
 end:
