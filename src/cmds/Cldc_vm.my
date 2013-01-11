@@ -14,6 +14,6 @@ module cldc_vm {
 	@IncludePath("$(THIRDPARTY_DIR)/phoneme")
 	source "cldc_vm.c"
 
-	depends third_party.phoneme.cldc_standalone
+	depends third_party.phoneme.cldc
 	depends embox.framework.LibFramework
 }

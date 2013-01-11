@@ -8,10 +8,10 @@
 
 #include <embox/cmd.h>
 
-#include <cldc.h>
+#include <midp.h>
 
 EMBOX_CMD(exec);
 
 static int exec(int argc, char **argv) {
-	return phoneme_cldc(argc, argv);
+	return phoneme_midp(argc, argv);
 }

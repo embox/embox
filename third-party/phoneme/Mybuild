@@ -6,14 +6,8 @@ module core {
 	depends embox.lib.LibCXX
 }
 
-module cldc_standalone {
-	/*
-	@IncludePath("$(ROOT_DIR)/build/phoneme/build/cldc/javacall_i386_gcc/dist/include")
-	@IncludePath("$(ROOT_DIR)/build/phoneme/build/pcsl/javacall_i386/inc")
-	@Rule(prerequisites="$(THIRDPARTY_DIR)/phoneme/...")
-	source "cldc_standalone.c"
-	*/
-
+@DefaultImpl(third_party.phoneme.cldc_standalone)
+abstract module cldc {
 	/*
 	@InitFS
 	@Generated(script="cat $(ROOT_DIR)/build/phoneme/build/amalgamated/bin/hello/dist/hello.jar")
@@ -23,6 +17,21 @@ module cldc_standalone {
 	@InitFS
 	source "hello/hello.jar"
 
+	depends third_party.phoneme.core // this is to build hello.jar
+}
+
+module cldc_standalone extends cldc {
+	/*
+	@IncludePath("$(ROOT_DIR)/build/phoneme/build/cldc/javacall_i386_gcc/dist/include")
+	@IncludePath("$(ROOT_DIR)/build/phoneme/build/pcsl/javacall_i386/inc")
+	@Rule(prerequisites="$(THIRDPARTY_DIR)/phoneme/...")
+	source "cldc_standalone.c"
+	*/
+
+    depends third_party.phoneme.core
+}
+
+module midp extends cldc {
 	depends third_party.phoneme.core
 }
 

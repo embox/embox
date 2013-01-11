@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "cldc_standalone.h"
+#include "cldc.h"
 
 static void *phoneme_run(void *data);
 

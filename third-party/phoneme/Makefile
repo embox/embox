@@ -212,7 +212,8 @@ PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_network.a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_string.a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_file.a
 
-PHONEME_MIDP_LIBS += $(MIDP_OUTPUT_DIR)/bin/i386/libjvm$(DEBUG_SUFFIX).a
+PHONEME_MIDP_LIBS += $(PHONEME_CLDC_LIBS)
+PHONEME_MIDP_LIBS += $(MIDP_OUTPUT_DIR)/bin/i386/libmidp$(DEBUG_SUFFIX).a
 
 $(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR) $(AMAL_FLAG_DIR):
 	$(AT)mkdir -p $@
