@@ -139,8 +139,8 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 		struct printchar_handler_data *printchar_data,
 		double r, int width, int precision, unsigned int ops, int base) {
 	char buff[PRINT_F_BUFF_SZ], *str, *end, *prefix;
-	double fp, ip;
-	int pc, ch, len, prefix_len, pad_count, letbase;
+	double fp, ip, t;
+	int pc, i, ch, len, prefix_len, pad_count, letbase;
 
 	assert(printchar_handler != NULL);
 	assert(width >= 0);
@@ -159,13 +159,23 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 				: " "
 			: base == 16 ? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
 			: "";
-	pc = 0;
+	i = pc = 0;
 	prefix_len = strlen(prefix);
 	letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
 	precision = ops & OPS_PREC_IS_GIVEN ? precision : PRINT_F_PREC_DEFAULT;
 
-	fp = modf(r, &ip);
-	ip = precision <= 1 ? round(r) : ip;
+	t = fp = modf(r, &ip);
+	while ((t != 0.0) && (i++ < precision)) {
+		fp *= base;
+		t = fmod(fp, 1.0);
+	}
+	fp = round(fp);
+	t = pow((double)base, (double)i);
+	if (fp == t) {
+		fp = 0.0;
+		ip += 1.0;
+	}
+	fp /= t;
 
 	str = end -= precision;
 	while (precision--) {
