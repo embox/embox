@@ -26,16 +26,12 @@ float __divsf3(float a, float b) {
 	return PROCESS_OP(div);
 }
 
-int __eqsf2(float a, float b) {
-	return float32_eq(float_to_float32(a), float_to_float32(b));
+float __negsf2(float a) {
+	return __subsf3(0.0F, a);
 }
 
-int __nesf2(float a, float b) {
-	return !float32_eq(float_to_float32(a), float_to_float32(b));
-}
-
-float __floatsisf(int i) {
-	return float32_to_float(int32_to_float32(i));
+double __extendsfdf2(float a) {
+	return float64_to_double(float32_to_float64(float_to_float32(a)));
 }
 
 float __truncdfsf2(double a) {
@@ -46,28 +42,8 @@ int __fixsfsi(float a) {
 	return float32_to_int32(float_to_float32(a));
 }
 
-float __negsf2(float a) {
-	return __subsf3(0.0, a);
-}
-
-float __sqrtsf2(float a) {
-	return float32_to_float(float32_sqrt(float_to_float32(a)));
-}
-
-int __lesf2(float a, float b) {
-	return float32_le(float_to_float32(a), float_to_float32(b));
-}
-
-int __gesf2(float a, float b) {
-	return !float32_lt(float_to_float32(a), float_to_float32(b));
-}
-
-int __ltsf2(float a, float b) {
-	return float32_lt(float_to_float32(a), float_to_float32(b));
-}
-
-int __gtsf2(float a, float b) {
-	return !float32_le(float_to_float32(a), float_to_float32(b));
+float __floatsisf(int i) {
+	return float32_to_float(int32_to_float32(i));
 }
 
 int __unordsf2(float a, float b) {
@@ -75,6 +51,30 @@ int __unordsf2(float a, float b) {
 			|| !float32_eq(float_to_float32(b), float_to_float32(b));
 }
 
-double __extendsfdf2(float a) {
-	return float64_to_double(float32_to_float64(float_to_float32(a)));
+int __eqsf2(float a, float b) {
+	return !float32_eq(float_to_float32(a), float_to_float32(b));
+}
+
+int __nesf2(float a, float b) {
+	return !float32_eq(float_to_float32(a), float_to_float32(b));
+}
+
+int __gesf2(float a, float b) {
+	return -float32_lt(float_to_float32(a), float_to_float32(b));
+}
+
+int __ltsf2(float a, float b) {
+	return -float32_lt(float_to_float32(a), float_to_float32(b));
+}
+
+int __lesf2(float a, float b) {
+	return !float32_le(float_to_float32(a), float_to_float32(b));
+}
+
+int __gtsf2(float a, float b) {
+	return !float32_le(float_to_float32(a), float_to_float32(b));
+}
+
+float __sqrtsf2(float a) {
+	return float32_to_float(float32_sqrt(float_to_float32(a)));
 }

@@ -21,8 +21,8 @@ float roundf(float x) {
 	float int_part, frac_part;
 
 	frac_part = modff(x, &int_part);
-	return frac_part <= -0.5 ? int_part - 1.0
-			: frac_part >= 0.5 ? int_part + 1.0
+	return frac_part <= -0.5F ? int_part - 1.0F
+			: frac_part >= 0.5F ? int_part + 1.0F
 			: int_part;
 }
 
@@ -30,7 +30,7 @@ long double roundl(long double x) {
 	long double int_part, frac_part;
 
 	frac_part = modfl(x, &int_part);
-	return frac_part <= -0.5 ? int_part - 1.0
-			: frac_part >= 0.5 ? int_part + 1.0
+	return frac_part <= -0.5L ? int_part - 1.0L
+			: frac_part >= 0.5L ? int_part + 1.0L
 			: int_part;
 }

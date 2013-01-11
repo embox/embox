@@ -11,6 +11,7 @@
 #define SOFTFLOAT_H_
 
 #include <types.h>
+#include <hal/arch.h>
 
 /**
  * Each of the following `typedef's defines the most convenient type that holds
@@ -46,7 +47,11 @@ typedef __s32 sbits32;
  */
 typedef unsigned int float32;
 typedef struct {
+#if defined(__BIG_ENDIAN)
 	unsigned int high, low;
+#elif defined(__LITTLE_ENDIAN)
+	unsigned int low, high;
+#endif
 } float64;
 
 /**

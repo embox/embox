@@ -48,7 +48,7 @@ float modff(float x, float *iptr) {
 	exponent = val.ieee.exponent - IEEE754_SINGLE_BIAS;
 
 	if (exponent < 0) {
-		*iptr = 0.0;
+		*iptr = 0.0F;
 		return x;
 	}
 

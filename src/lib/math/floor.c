@@ -17,11 +17,11 @@ double floor(double x) {
 float floorf(float x) {
 	float int_part;
 
-	return modff(x, &int_part) < 0.0 ? int_part - 1.0 : int_part;
+	return modff(x, &int_part) < 0.0F ? int_part - 1.0F : int_part;
 }
 
 long double floorl(long double x) {
 	long double int_part;
 
-	return modfl(x, &int_part) < 0.0 ? int_part - 1.0 : int_part;
+	return modfl(x, &int_part) < 0.0L ? int_part - 1.0L : int_part;
 }
