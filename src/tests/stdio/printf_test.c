@@ -145,8 +145,9 @@ TEST_CASE("Test of snprintf with small size") {
 
 TEST_CASE("Test for float-pointing") {
 	printf("\n");
+	printf("%.2f\n", 1.997);
 	printf("%.1f\n", 1.983183456);
 	printf("%14.2f\n", 1.983183456);
 	printf("%014.4f\n", 1.983183456);
-	printf("%-14.1f\n", 1.983183456);
+	printf("%-14.f\n", 1.983183456);
 }

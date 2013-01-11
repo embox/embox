@@ -135,11 +135,12 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 	return pc;
 }
 
+#include <stdio.h>
 static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data,
 		double r, int width, int precision, unsigned int ops, int base) {
 	char buff[PRINT_F_BUFF_SZ], *str, *end, *prefix;
-	double fp, ip, t;
+	double fp, ip /*,t, t1*/;
 	int pc, i, ch, len, prefix_len, pad_count, letbase;
 
 	assert(printchar_handler != NULL);
@@ -164,29 +165,29 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
 	precision = ops & OPS_PREC_IS_GIVEN ? precision : PRINT_F_PREC_DEFAULT;
 
-	t = fp = modf(r, &ip);
-	while ((t != 0.0) && (i++ < precision)) {
-		fp *= base;
-		t = fmod(fp, 1.0);
-	}
-	fp = round(fp);
-	t = pow((double)base, (double)i);
-	if (fp == t) {
-		fp = 0.0;
-		ip += 1.0;
-	}
-	fp /= t;
+    if (precision) {
+	    fp = modf(r, &ip);
+        while ((i++ < precision) && (fmod(fp, 1.0) != 0.0)) fp *= base;
+//        t1 = modf(fp, &t);
+//        printf("fp befre %d.%d\n", (int)t, (int)(t1*1000));
+        fp = round(fp);
+        --i;
+//        printf("fp %d ip %d i %d pow %d\n", (int)fp, (int)ip, i, (int)pow((double)base, (double)i));
+        if (fp == pow((double)base, (double)i)) {
+            fp = 0.0;
+            ip += 1.0;
+        }
+    }
+    else ip = round(r);
 
-	str = end -= precision;
-	while (precision--) {
-		fp *= base;
-		ch = (int)fp;
+	for (; i; --i) {
+		ch = (int)(fmod(fp, (double)base) * base);
 		if (ch >= 10) ch += letbase - 10 - '0';
-		*end++ = ch + '0';
-		fp -= ch;
+		*--str = ch + '0';
+		modf(fp / base, &fp);
 	}
 
-	if ((str != end) || (ops & OPS_FLAG_WITH_SPEC)) {
+	if (precision || (ops & OPS_FLAG_WITH_SPEC)) {
 		*--str = '.';
 	}
 
