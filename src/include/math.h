@@ -62,6 +62,7 @@ extern float log10f(float x);
 extern long double log10l(long double x);
 
 extern double sqrt(double x);
+extern float sqrtf(float x);
 
 
 __END_DECLS
