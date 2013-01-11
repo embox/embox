@@ -32,26 +32,6 @@ Index: cldc/build/share/jvm.make
  
  PRINT_CONFIG = print_config
  
-Index: cldc/src/vm/share/utilities/GlobalDefinitions.hpp
-===================================================================
---- cldc/src/vm/share/utilities/GlobalDefinitions.hpp	(revision 20547)
-+++ cldc/src/vm/share/utilities/GlobalDefinitions.hpp	(working copy)
-@@ -727,6 +727,7 @@
- // a jboolean (e.g., when you call OopDesc::bool_field_put(), always use the
- // CAST_TO_JBOOLEAN.
- 
-+#ifndef __EMBOX__
- #define bool    jint
- 
- #define true    v_true
-@@ -734,6 +735,7 @@
- 
- const bool true        = 1;
- const bool false       = 0;
-+#endif //__EMBOX__
- 
- const jboolean g_true  = 1;
- const jboolean g_false = 0;
 Index: cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp
 ===================================================================
 --- cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp	(revision 20547)
@@ -65,58 +45,3 @@ Index: cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp
    }
    start_code_segment();
  }
-Index: midp/src/lowlevelui/image_decode/reference/native/imgdcd_intern_image_decode.h
-===================================================================
---- midp/src/lowlevelui/image_decode/reference/native/imgdcd_intern_image_decode.h	(revision 20547)
-+++ midp/src/lowlevelui/image_decode/reference/native/imgdcd_intern_image_decode.h	(working copy)
-@@ -44,9 +44,9 @@
- #define FALSE (0)
- #endif
- 
--#ifndef bool
-+//#ifndef bool
- typedef int bool;
--#endif
-+//#endif
- 
- typedef struct _ids {
-     void   *ptr;                  /* pointer to device specific image struct */
-Index: midp/src/core/jarutil/reference/native/jar.c
-===================================================================
---- midp/src/core/jarutil/reference/native/jar.c	(revision 20547)
-+++ midp/src/core/jarutil/reference/native/jar.c	(working copy)
-@@ -26,6 +26,7 @@
- 
- #include <stdio.h>
- #include <string.h>
-+#include <unistd.h>
- 
- #include <jar.h>
- 
-Index: midp/src/core/jarutil/reference/native/midpJar.c
-===================================================================
---- midp/src/core/jarutil/reference/native/midpJar.c	(revision 20547)
-+++ midp/src/core/jarutil/reference/native/midpJar.c	(working copy)
-@@ -26,6 +26,7 @@
- 
- #include <stdio.h>
- #include <string.h>
-+#include <unistd.h>
- 
- #include <jar.h>
- #include <midpMalloc.h>
-Index: midp/src/i18n/i18n_port/default/native/defaultLocale.c
-===================================================================
---- midp/src/i18n/i18n_port/default/native/defaultLocale.c	(revision 20547)
-+++ midp/src/i18n/i18n_port/default/native/defaultLocale.c	(working copy)
-@@ -24,7 +24,8 @@
-  * information or have any questions.
-  */
- 
--#include <locale.h>
-+//#include <locale.h>
-+#include <stddef.h>
- 
- void
- getLocaleInfo(char **locale, char **encoding)
- 
