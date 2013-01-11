@@ -24,6 +24,14 @@
 #define L_tmpnam      0x20
 #define FILENAME_MAX  0x20
 
+
+
+/* Values for the WHENCE argument to lseek. */
+#define SEEK_SET        0   /* Seek from beginning of file. */
+#define SEEK_CUR        1   /* Seek from current position. */
+#define SEEK_END        2   /* Seek from end of file. */
+
+
 typedef struct file_struct {
 	int fd;
 	char has_ungetc;
