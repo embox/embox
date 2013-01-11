@@ -54,6 +54,8 @@ static int print_s(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	assert(printchar_handler != NULL);
 	assert(str != NULL);
+	assert(width >= 0);
+	assert(max_len >= 0);
 
 	pc = 0;
 	len = strlen(str);
@@ -83,6 +85,8 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 	int pc, ch, len, prefix_len, zero_count, space_count, letbase;
 
 	assert(printchar_handler != NULL);
+	assert(width >= 0);
+	assert(min_len >= 0);
 
 	str = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
@@ -133,12 +137,14 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data,
-		long double r, int width, int precision, unsigned int ops, int base) {
+		double r, int width, int precision, unsigned int ops, int base) {
 	char buff[PRINT_F_BUFF_SZ], *str, *end, *prefix;
-	long double fp, ip;
+	double fp, ip;
 	int pc, ch, len, prefix_len, pad_count, letbase;
 
 	assert(printchar_handler != NULL);
+	assert(width >= 0);
+	assert(precision >= 0);
 
 	str = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
@@ -158,7 +164,8 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
 	precision = ops & OPS_PREC_IS_GIVEN ? precision : PRINT_F_PREC_DEFAULT;
 
-	fp = modfl(r, &ip);
+	fp = modf(r, &ip);
+	ip = precision <= 1 ? round(r) : ip;
 
 	str = end -= precision;
 	while (precision--) {
@@ -174,10 +181,10 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	}
 
 	do {
-		ch = (int)(fmodl(ip, (long double)base) * base);
+		ch = (int)(fmod(ip, (double)base) * base);
 		if (ch >= 10) ch += letbase - 10 - '0';
 		*--str = ch + '0';
-		modfl(ip / base, &ip);
+		modf(ip / base, &ip);
 	} while (ip != 0.0);
 
 	len = end - str;
@@ -256,11 +263,13 @@ after_flags:
 		/* get width */
 		if (*format == '*') { width = va_arg(args, int); ++format; }
 		else { width = atoi(format); while (isdigit(*format)) ++format; }
+		width = max(width, 0);
 
 		/* get precision */
 		ops |= *format == '.' ? OPS_PREC_IS_GIVEN : 0;
 		if ((*format == '.') && (*++format == '*')) { precision = va_arg(args, int); ++format; }
 		else { precision = atoi(format); while (isdigit(*format)) ++format; }
+		precision = precision >= 0 ? precision : (ops &= ~OPS_PREC_IS_GIVEN, 0);
 
 		/* get length */
 		switch (*format) {
@@ -313,9 +322,11 @@ after_flags:
 		case 'G':
 		case 'a':
 		case 'A':
+			/* TODO handle (ops & OPS_LEN_LONGFP) for long double */
+			if (ops & OPS_LEN_LONGFP) goto single_print; /* TODO long double support */
 			tmp.ld = ops & OPS_LEN_LONGFP ? va_arg(args, long double)
 					: va_arg(args, double);
-			pc += print_f(printchar_handler, printchar_data, tmp.ld, width,
+			pc += print_f(printchar_handler, printchar_data, (double)tmp.ld, width,
 					precision, ops,
 					(*format == 'a') && (*format == 'A') ? 16 : 10);
 			break;
