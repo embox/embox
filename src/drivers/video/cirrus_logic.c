@@ -22,20 +22,10 @@
 #include <drivers/video/vesa.h>
 #include <drivers/video/vesa_mode.h>
 #include <drivers/video/cirrus_logic.h>
+#include <drivers/video/display.h>
 
 #define FB_VMODE_DOUBLE 0x1
 
-struct screen_info {
-	int xres;
-	int yres;
-	int right_margin;
-	int hsync_len;
-	int left_margin;
-	int lower_margin;
-	int vsync_len;
-	int upper_margin;
-	int vmode;
-};
 
 struct cirrus_chip_info {
 	unsigned int *regbase;
@@ -43,6 +33,9 @@ struct cirrus_chip_info {
 	int doubleVCLK;
 	int multiplexing;
 };
+
+static struct cirrus_chip_info cirrus_chip_info;
+
 static void mdelay(int delay) {
 
 }
@@ -114,6 +107,8 @@ void chipset_init(struct cirrus_chip_info *cinfo) {
 
 	/* Underline Row scanline: - */
 	vga_wcrt(cinfo->regbase, VGA_CRTC_UNDERLINE, 0x00);
+
+
 	/* ### add 0x40 for text modes with > 30 MHz pixclock */
 	/* ext. display controls: ext.adr. wrap */
 	vga_wcrt(cinfo->regbase, CL_CRT1B, 0x02);
@@ -190,7 +185,7 @@ void chipset_init(struct cirrus_chip_info *cinfo) {
 
 
 
-void setup_resolution(struct cirrus_chip_info *cinfo) {
+static void setup_resolution(struct cirrus_chip_info *cinfo) {
 	int vdispend, vsyncstart, vsyncend, vtotal;
 	int hdispend, hsyncstart, hsyncend, htotal;
 	int tmp;
@@ -296,7 +291,7 @@ void setup_resolution(struct cirrus_chip_info *cinfo) {
 }
 
 
-int setup_bpp16(struct cirrus_chip_info *cinfo) {
+static int cirrus_setup_bpp16(struct cirrus_chip_info *cinfo) {
 	unsigned int *regbase = cinfo->regbase;
 
 	/* Extended Sequencer Mode: 256c col. mode */
@@ -312,7 +307,7 @@ int setup_bpp16(struct cirrus_chip_info *cinfo) {
 /******************************************************
  * 24 bpp
  */
-int setup_bpp24(struct cirrus_chip_info *cinfo) {
+static int cirrus_setup_bpp24(struct cirrus_chip_info *cinfo) {
 	unsigned int *regbase = cinfo->regbase;
 
 	/* Extended Sequencer Mode: 256c col. mode */
@@ -328,7 +323,13 @@ int setup_bpp24(struct cirrus_chip_info *cinfo) {
 }
 
 
-static int setup_bits_per_pixel(int bpp) {
+static int cirrus_setup_bits_per_pixel(struct cirrus_chip_info *cinfo) {
+	switch(cinfo->screen_info->bits_per_pixel) {
+	case 24:
+		return cirrus_setup_bpp24(cinfo);
+	case 16:
+		return cirrus_setup_bpp16(cinfo);
+	}
 	return 0;
 }
 
@@ -336,11 +337,19 @@ static int cirrus_init(struct pci_slot_dev *pci_dev) {
 	return 0;
 }
 
-static void cirrus_vga_setup(struct vga_mode_description *vga_mode) {
-	setup_bits_per_pixel(24);
+void cirrus_setup(struct screen_info *screen_info) {
+	cirrus_chip_info.doubleVCLK = 0;
+	cirrus_chip_info.multiplexing = 0;
+	cirrus_chip_info.screen_info = screen_info;
+
+
+	setup_resolution(&cirrus_chip_info);
+
+	cirrus_setup_bits_per_pixel(&cirrus_chip_info);
 }
 
-VGA_MODE_DEFINE(0x114, NULL, NULL, NULL, cirrus_vga_setup, 800, 600);
+
+//VGA_MODE_DEFINE(0x114, NULL, NULL, NULL, cirrus_vga_setup, 800, 600);
 //VGA_MODE_DEFINE(0x115, NULL, NULL, NULL, cirrus_vga_setup, 800, 600);
 
 
