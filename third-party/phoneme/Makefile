@@ -24,6 +24,7 @@ EMBOX_IMPORTED_CXXFLAGS += -fpermissive
 EMBOX_IMPORTED_CXXFLAGS += -Dbool=embox_bool
 EMBOX_IMPORTED_CXXFLAGS += -Dtypeof=__typeof__
 EMBOX_IMPORTED_CXXFLAGS += -Dexit=embox_phoneme_exit
+#EMBOX_IMPORTED_CFLAGS   += -Dembox_bool=int
 EMBOX_DERIVED_CFLAGS   += $(EMBOX_IMPORTED_CFLAGS)
 EMBOX_DERIVED_CXXFLAGS += $(EMBOX_IMPORTED_CXXFLAGS)
 
@@ -235,7 +236,7 @@ $(HELLOWORLD_APP): $(PHONEME_CLDC_PREVERIFY) $(CLDC_ZIP) $(shell find hello -typ
 
 amalgamated_cldc: $(AMAL_CLDC_LIB) $(HELLOWORLD_APP)
 
-amalgamated: amalgamated_cldc
+amalgamated: amalgamated_cldc amalgamated_midp
 
 .NOTPARALLEL:
 
@@ -248,6 +249,8 @@ midp: cldc pcsl javacall checkout
 		JDK_DIR=$(JDK_DIR) \
 		USE_DEBUG=$(USE_DEBUG) \
 		USE_VERBOSE_MAKE=true \
+		CREATE_MIDP_SHARED_LIB=false \
+		LD=true \
 		LD_END_GROUP=" -Xlinker --end-group " \
 		JAVACALL_OUTPUT_DIR=$(JAVACALL_OUTPUT_DIR) \
 		PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
