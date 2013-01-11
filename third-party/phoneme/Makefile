@@ -158,12 +158,12 @@ else
 endif
 endif
 
-AMAL_COMMON_SOURCES    += javacall_file.c
-AMAL_COMMON_SOURCES    += javacall_memory.c
-AMAL_COMMON_SOURCES    += javacall_time.c
-AMAL_COMMON_SOURCES    += javacall_dir.c
-AMAL_COMMON_SOURCES    += javacall_os.c
-AMAL_COMMON_SOURCES    += javacall_logging.c
+AMAL_COMMON_SOURCES    += javacall_cldc_file.c
+AMAL_COMMON_SOURCES    += javacall_cldc_memory.c
+AMAL_COMMON_SOURCES    += javacall_cldc_time.c
+AMAL_COMMON_SOURCES    += javacall_cldc_dir.c
+AMAL_COMMON_SOURCES    += javacall_cldc_os.c
+AMAL_COMMON_SOURCES    += javacall_cldc_logging.c
 AMAL_COMMON_SOURCES    += embox_java_compat.c
 
 AMAL_CLDC_SOURCES    += $(AMAL_COMMON_SOURCES)
