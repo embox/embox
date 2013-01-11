@@ -43,6 +43,9 @@ PCSL_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/pcsl
 CLDC_DIR            := $(PHONEME_DIR)/cldc
 CLDC_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/cldc
 
+MIDP_DIR            := $(PHONEME_DIR)/midp
+MIDP_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/midp
+
 .PHONY: checkout javacall pcsl cldc midp amalgamated amalgamated_cldc amalgamated_midp
 
 AT:=
@@ -96,6 +99,21 @@ cldc: pcsl javacall checkout
 		JDK_DIR=$(JDK_DIR) \
 	)
 
+midp: cldc pcsl javacall checkout
+	$(AT)export EXTRA_CFLAGS="$(EMBOX_DERIVED_CFLAGS)" && \
+	$(MAKE) -C $(MIDP_DIR)/build/javacall \
+		TOOLS_DIR=$(TOOLS_DIR) \
+		JDK_DIR=$(JDK_DIR) \
+		USE_DEBUG=$(USE_DEBUG) \
+		USE_VERBOSE_MAKE=true \
+		CREATE_MIDP_SHARED_LIB=false \
+		LD=true \
+		LD_END_GROUP=" -Xlinker --end-group " \
+		JAVACALL_OUTPUT_DIR=$(JAVACALL_OUTPUT_DIR) \
+		PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
+		MIDP_OUTPUT_DIR=$(MIDP_OUTPUT_DIR) \
+		CLDC_DIST_DIR=$(CLDC_DIST_DIR) \
+		JAVACALL_PLATFORM=linux_i386_gcc
 
 AMAL_OUTPUT_DIR := $(PHONEME_BUILD_DIR)/amalgamated
 AMAL_OBJ_DIR    := $(AMAL_OUTPUT_DIR)/obj
@@ -112,9 +130,12 @@ ROM_CONFIG_FILE = $(CLDC_DIST_DIR)/lib/cldc_rom.cfg
 ROM_IMAGE       = $(AMAL_GEN_DIR)/ROMImage.cpp
 NATIVES_TABLE   = $(AMAL_GEN_DIR)/NativesTable.cpp
 
-JVMSPI_OBJ      = $(CLDC_OUTPUT_DIR)/javacall_i386_gcc/target/$(CLDC_TARGET_ID)/jvmspi.o
-JAVAUTIL_OBJS   = $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/javautil_unicode.o
-AMAL_EXT_OBJS   = $(JVMSPI_OBJ) $(JAVAUTIL_OBJS)
+JVMSPI_OBJ           = $(CLDC_OUTPUT_DIR)/javacall_i386_gcc/target/$(CLDC_TARGET_ID)/jvmspi.o
+JAVAUTIL_CLDC_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/javautil_unicode.o
+AMAL_CLDC_EXT_OBJS   += $(JVMSPI_OBJ) $(JAVAUTIL_CLDC_OBJS)
+
+JAVAUTIL_MIDP_OBJS   += $(JAVAUTIL_CLDC_OBJS)
+AMAL_MIDP_EXT_OBJS   += $(JAVAUTIL_MIDP_OBJS)
 
 ROM_GEN_FLAGS       += +GenerateGNUCode
 
@@ -137,25 +158,36 @@ else
 endif
 endif
 
-AMAL_SOURCES    += $(ROM_IMAGE)
-AMAL_SOURCES    += $(NATIVES_TABLE)
-AMAL_SOURCES    += cldc_standalone.c
-AMAL_SOURCES    += javacall_file.c
-AMAL_SOURCES    += javacall_memory.c
-AMAL_SOURCES    += javacall_time.c
-AMAL_SOURCES    += javacall_dir.c
-AMAL_SOURCES    += javacall_os.c
-AMAL_SOURCES    += javacall_logging.c
-AMAL_SOURCES    += embox_java_compat.c
+AMAL_COMMON_SOURCES    += javacall_file.c
+AMAL_COMMON_SOURCES    += javacall_memory.c
+AMAL_COMMON_SOURCES    += javacall_time.c
+AMAL_COMMON_SOURCES    += javacall_dir.c
+AMAL_COMMON_SOURCES    += javacall_os.c
+AMAL_COMMON_SOURCES    += javacall_logging.c
+AMAL_COMMON_SOURCES    += embox_java_compat.c
 
-AMAL_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%.o, $(basename $(filter %.c %.cpp,$(notdir $(AMAL_SOURCES)))))
+AMAL_CLDC_SOURCES    += $(ROM_IMAGE)
+AMAL_CLDC_SOURCES    += $(NATIVES_TABLE)
+AMAL_CLDC_SOURCES    += cldc_standalone.c
+AMAL_CLDC_SOURCES    += $(AMAL_COMMON_SOURCES)
+
+AMAL_MIDP_SOURCES    += $(AMAL_COMMON_SOURCES)
+#AMAL_MIDP_SOURCES    += #ToDo#
+
+AMAL_CLDC_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%.o, $(basename $(filter %.c %.cpp,$(notdir $(AMAL_CLDC_SOURCES)))))
+
+AMAL_MIDP_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%.o, $(basename $(filter %.c %.cpp,$(notdir $(AMAL_MIDP_SOURCES)))))
+
 VPATH           += .
 # Directory has to exist if using VPATH :(
 $(shell mkdir -p $(AMAL_GEN_DIR))
 VPATH           += $(AMAL_GEN_DIR)
 
-AMAL_LOCAL_LIB  := $(AMAL_LIB_DIR)/local_cldc.a
+AMAL_CLDC_LOCAL_LIB  := $(AMAL_LIB_DIR)/local_cldc.a
 AMAL_CLDC_LIB   := $(AMAL_LIB_DIR)/phoneme_cldc.a
+
+AMAL_MIDP_LOCAL_LIB  := $(AMAL_LIB_DIR)/local_midp.a
+AMAL_MIDP_LIB   := $(AMAL_LIB_DIR)/phoneme_midp.a
 
 AMAL_INCLUDE_DIRS += $(CLDC_DIST_DIR)/include
 AMAL_INCLUDE_DIRS += $(PCSL_OUTPUT_DIR)/javacall_i386/inc
@@ -167,12 +199,11 @@ AMAL_CPPFLAGS   += -DROMIZING
 AMAL_CPPFLAGS   += -I$(ROOT_DIR)/src/compat/posix/include
 AMAL_CPPFLAGS   += $(patsubst %,-I%,$(AMAL_INCLUDE_DIRS))
 
-
 AMAL_CFLAGS     += $(EMBOX_CFLAGS)
 AMAL_CFLAGS     := $(filter-out -Wstrict-prototypes,$(AMAL_CFLAGS))
 AMAL_CFLAGS     := $(filter-out -Wundef,$(AMAL_CFLAGS))
 
-AMAL_CXXFLAGS   = $(filter-out -Werror,$(EMBOX_CXXFLAGS))
+AMAL_CXXFLAGS   += $(filter-out -Werror,$(EMBOX_CXXFLAGS))
 
 PHONEME_CLDC_LIBS += $(CLDC_DIST_DIR)/lib/libcldc_vm$(DEBUG_SUFFIX).a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_memory.a
@@ -180,6 +211,8 @@ PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_print.a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_network.a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_string.a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_file.a
+
+PHONEME_MIDP_LIBS += $(MIDP_OUTPUT_DIR)/bin/i386/libjvm$(DEBUG_SUFFIX).a
 
 $(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR) $(AMAL_FLAG_DIR):
 	$(AT)mkdir -p $@
@@ -196,18 +229,30 @@ $(NATIVES_TABLE): $(CLDC_ZIP) $(JCC_CMD)
 	$(AT)cd $(dir $@) && \
 		java -jar $(JCC_CMD) -writer CLDC_HI_Natives -o $@ $(CLDC_ZIP)
 
-$(AMAL_OBJECTS): $(AMAL_INCLUDE_DIRS) $(AMAL_FLAG_DIR)
+$(AMAL_CLDC_OBJECTS): $(AMAL_INCLUDE_DIRS) $(AMAL_FLAG_DIR)
 
 $(AMAL_INCLUDE_DIRS): javacall pcsl cldc
 
-$(AMAL_EXT_OBJS): javacall pcsl cldc
+$(AMAL_CLDC_EXT_OBJS) $(AMAL_MIDP_EXT_OBJS): javacall pcsl cldc
 
 $(PHONEME_CLDC_LIBS): pcsl cldc
 
-$(AMAL_LOCAL_LIB): $(AMAL_EXT_OBJS) $(AMAL_OBJECTS)
+$(PHONEME_MIDP_LIBS): midp
+
+$(AMAL_CLDC_LOCAL_LIB): $(AMAL_CLDC_EXT_OBJS) $(AMAL_CLDC_OBJECTS)
 	$(AT)ar -rcs $@ $^
 
-$(AMAL_CLDC_LIB): $(AMAL_LOCAL_LIB) $(PHONEME_CLDC_LIBS)
+$(AMAL_CLDC_LIB): $(AMAL_CLDC_LOCAL_LIB) $(PHONEME_CLDC_LIBS)
+	-$(AT)rm *.o
+	$(AT)$(patsubst %,ar -x % &&,$?) true
+	$(AT)ar -rcs $@ *.o
+	$(AT)rm *.o
+	$(AT)ranlib $@
+
+$(AMAL_MIDP_LOCAL_LIB): $(AMAL_MIDP_EXT_OBJS) $(AMAL_MIDP_OBJECTS)
+	$(AT)ar -rcs $@ $^
+
+$(AMAL_MIDP_LIB): $(AMAL_MIDP_LOCAL_LIB) $(PHONEME_MIDP_LIBS)
 	-$(AT)rm *.o
 	$(AT)$(patsubst %,ar -x % &&,$?) true
 	$(AT)ar -rcs $@ *.o
@@ -234,26 +279,8 @@ $(HELLOWORLD_APP): $(PHONEME_CLDC_PREVERIFY) $(CLDC_ZIP) $(shell find hello -typ
 
 amalgamated_cldc: $(AMAL_CLDC_LIB) $(HELLOWORLD_APP)
 
+amalgamated_midp: $(AMAL_MIDP_LIB)
+
 amalgamated: amalgamated_cldc amalgamated_midp
 
 .NOTPARALLEL:
-
-MIDP_DIR            := $(PHONEME_DIR)/midp
-MIDP_OUTPUT_DIR     := $(PHONEME_BUILD_DIR)/midp
-midp: cldc pcsl javacall checkout
-	$(AT)export EXTRA_CFLAGS="$(EMBOX_DERIVED_CFLAGS)" && \
-	$(MAKE) -C $(MIDP_DIR)/build/javacall \
-		TOOLS_DIR=$(TOOLS_DIR) \
-		JDK_DIR=$(JDK_DIR) \
-		USE_DEBUG=$(USE_DEBUG) \
-		USE_VERBOSE_MAKE=true \
-		CREATE_MIDP_SHARED_LIB=false \
-		LD=true \
-		LD_END_GROUP=" -Xlinker --end-group " \
-		JAVACALL_OUTPUT_DIR=$(JAVACALL_OUTPUT_DIR) \
-		PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
-		MIDP_OUTPUT_DIR=$(MIDP_OUTPUT_DIR) \
-		CLDC_DIST_DIR=$(CLDC_DIST_DIR) \
-		JAVACALL_PLATFORM=linux_i386_gcc
-
-amalgamated_midp: midp
