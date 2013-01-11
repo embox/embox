@@ -166,13 +166,13 @@ AMAL_COMMON_SOURCES    += javacall_os.c
 AMAL_COMMON_SOURCES    += javacall_logging.c
 AMAL_COMMON_SOURCES    += embox_java_compat.c
 
+AMAL_CLDC_SOURCES    += $(AMAL_COMMON_SOURCES)
 AMAL_CLDC_SOURCES    += $(ROM_IMAGE)
 AMAL_CLDC_SOURCES    += $(NATIVES_TABLE)
 AMAL_CLDC_SOURCES    += cldc_standalone.c
-AMAL_CLDC_SOURCES    += $(AMAL_COMMON_SOURCES)
 
 AMAL_MIDP_SOURCES    += $(AMAL_COMMON_SOURCES)
-#AMAL_MIDP_SOURCES    += #ToDo#
+AMAL_MIDP_SOURCES    += midp.c
 
 AMAL_CLDC_OBJECTS    += $(patsubst %,$(AMAL_OBJ_DIR)/%.o, $(basename $(filter %.c %.cpp,$(notdir $(AMAL_CLDC_SOURCES)))))
 
@@ -212,8 +212,8 @@ PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_network.a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_string.a
 PHONEME_CLDC_LIBS += $(PCSL_OUTPUT_DIR)/javacall_i386/lib/libpcsl_file.a
 
-PHONEME_MIDP_LIBS += $(PHONEME_CLDC_LIBS)
-PHONEME_MIDP_LIBS += $(MIDP_OUTPUT_DIR)/bin/i386/libmidp$(DEBUG_SUFFIX).a
+#PHONEME_MIDP_LIBS += $(PHONEME_CLDC_LIBS) #these are already in libjvm.a
+PHONEME_MIDP_LIBS += $(MIDP_OUTPUT_DIR)/bin/i386/libjvm$(DEBUG_SUFFIX).a
 
 $(AMAL_OBJ_DIR) $(AMAL_LIB_DIR) $(AMAL_GEN_DIR) $(AMAL_FLAG_DIR):
 	$(AT)mkdir -p $@
@@ -238,7 +238,7 @@ $(AMAL_CLDC_EXT_OBJS) $(AMAL_MIDP_EXT_OBJS): javacall pcsl cldc
 
 $(PHONEME_CLDC_LIBS): pcsl cldc
 
-$(PHONEME_MIDP_LIBS): midp
+$(PHONEME_MIDP_LIBS): pcsl cldc midp
 
 $(AMAL_CLDC_LOCAL_LIB): $(AMAL_CLDC_EXT_OBJS) $(AMAL_CLDC_OBJECTS)
 	$(AT)ar -rcs $@ $^

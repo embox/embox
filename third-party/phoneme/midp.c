@@ -16,6 +16,7 @@
 static void *phoneme_run(void *data) {
 	//ToDo:
 	printf("NOT IMPLEMENTED\n");
+	return NULL;
 }
 
 struct __jvm_params {
