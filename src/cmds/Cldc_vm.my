@@ -1,18 +1,18 @@
 package embox.cmd
 
-@Cmd(name = "java",
+@Cmd(name = "cldc_vm",
 	help = "CLDC java virtual machine",
 	man = '''
 		NAME
-			java - CLDC java virtual machine
+			cldc_vm - CLDC java virtual machine
 		SYNOPSIS
-			java [arguments]
+			cldc_vm [arguments]
 		AUTHORS
 			Felix Sulima
 	''')
-module java {
+module cldc_vm {
 	@IncludePath("$(THIRDPARTY_DIR)/phoneme")
-	source "java.c"
+	source "cldc_vm.c"
 
 	depends third_party.phoneme.cldc_standalone
 	depends embox.framework.LibFramework
