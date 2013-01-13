@@ -13,18 +13,20 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <embox/unit.h>
 
 #include <lib/list.h>
 #include <util/dlist.h>
 #include <util/slist.h>
 #include <util/binalign.h>
-//#include <kernel/printk.h>
 
 #include <mem/misc/slab.h>
 #include <mem/page.h>
 #include <mem/heap.h>
 #include <framework/mod/member/ops.h>
 #include <mem/phymem.h>
+
+EMBOX_UNIT_INIT(heap_init);
 
 /**
  * slab descriptor
@@ -48,13 +50,12 @@ typedef struct page_info {
 # define SLAB_ALLOCATOR_DEBUG
 #endif
 
-extern char _heap_start;
-extern char _heap_end;
+#define HEAP_SIZE OPTION_MODULE_GET(embox__mem__slab,NUMBER,heap_size)
 
-#define HEAP_START_PTR         (&_heap_start)
-#define HEAP_END_PTR           (&_heap_end)
+static char *HEAP_START_PTR;
+static char *HEAP_END_PTR;
 
-static page_info_t pages[HEAP_SIZE() / PAGE_SIZE()];
+static page_info_t pages[HEAP_SIZE / PAGE_SIZE()];
 
 /* macros to finding the cache and slab which an obj belongs to */
 #define SET_PAGE_CACHE(pg, x)  ((pg)->cache = (x))
@@ -77,7 +78,7 @@ void print_slab_info(cache_t *cachep, slab_t *slabp) {
 #endif
 
 /* return information about page which an object belongs to */
-static page_info_t* virt_to_page(void *objp) {
+static page_info_t* ptr_to_page(void *objp) {
 	unsigned int index = ((unsigned int) objp - (unsigned int) HEAP_START_PTR)
 			/ PAGE_SIZE();
 	return &(pages[index]);
@@ -143,7 +144,7 @@ static int cache_grow(cache_t *cachep) {
 	if (!(slabp = (slab_t*) page_alloc(__phymem_allocator, slab_size)))
 		return 0;
 
-	page = virt_to_page(slabp);
+	page = ptr_to_page(slabp);
 	pages_count = slab_size;
 
 	do {
@@ -342,7 +343,7 @@ void cache_free(cache_t *cachep, void* objp) {
 	if (objp == NULL)
 		return;
 
-	page = virt_to_page(objp);
+	page = ptr_to_page(objp);
 	slabp = GET_PAGE_SLAB(page);
 	slist_add_first_link(slist_link_init((struct slist_link *)objp),
 			&slabp->free_blocks);
@@ -375,4 +376,17 @@ int cache_shrink(cache_t *cachep) {
 	}
 
 	return ret;
+}
+
+static int heap_init(void) {
+	extern struct page_allocator *__heap_pgallocator;
+	int page_cnt = (HEAP_SIZE / PAGE_SIZE() - 2);
+
+	HEAP_START_PTR = page_alloc(__heap_pgallocator, page_cnt);
+	if(NULL == HEAP_START_PTR) {
+		return -1;
+	}
+	HEAP_END_PTR = HEAP_START_PTR + page_cnt * PAGE_SIZE();
+
+	return 0;
 }

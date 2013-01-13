@@ -49,10 +49,12 @@ static int exec(int argc, char **argv) {
 	 * In future it would be able to copy many source paths into the same
 	 * destination path */
 	if (2 == (argc - optind)) {
-		return rename(argv[argc - 2], argv[argc - 1]);
+		if (-1 == rename(argv[argc - 2], argv[argc - 1])) {
+			return errno;
+		}
+	} else {
+		print_usage();
 	}
-
-	print_usage();
 
 	return ENOERR;
 }

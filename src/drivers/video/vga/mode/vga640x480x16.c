@@ -6,7 +6,13 @@
  */
 
 #include <drivers/video/vga.h>
+#include <drivers/video/display.h>
+#include <drivers/video/vesa_mode.h>
 
+
+extern void vpokeb(unsigned off, unsigned val);
+extern unsigned vpeekb(unsigned off);
+extern void set_plane(unsigned p);
 
 /* mode 12h */
 static unsigned char g_640x480x16[] =
@@ -29,7 +35,7 @@ static unsigned char g_640x480x16[] =
 	0x01, 0x00, 0x0F, 0x00, 0x00
 };
 
-static void write_pixel4p(struct display *display, unsigned x, unsigned y, unsigned c) {
+static void write_pixel4p(struct display *display, int x, int y, int c) {
 	unsigned wd_in_bytes, off, mask, p, pmask;
 
 	wd_in_bytes = display->width / 8;
@@ -48,5 +54,4 @@ static void write_pixel4p(struct display *display, unsigned x, unsigned y, unsig
 	}
 }
 
-VGA_MODE_DEFINE(0x12, g_640x480x16, write_pixel4p, NULL, 640, 480);
-
+VGA_MODE_DEFINE(0x12, g_640x480x16, write_pixel4p, NULL, NULL, 640, 480);

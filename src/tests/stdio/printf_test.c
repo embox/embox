@@ -13,7 +13,7 @@
 EMBOX_TEST_SUITE("stdio/printf test");
 
 #define HOPE_EQUAL(str, buff, format, ...) \
-	sprintf(buff, format, __VA_ARGS__);    \
+	sprintf(buff, format, __VA_ARGS__);	   \
 	test_assert_str_equal(buff, str)
 
 #define BUFF1_SZ 32
@@ -141,4 +141,13 @@ TEST_CASE("Test of snprintf with small size") {
 	test_assert_equal(10, snprintf(&buff9[0], 6, "0123456789%n", &size));
 	test_assert_equal(size, 10);
 	test_assert_str_equal(answer, &buff9[0]);
+}
+
+TEST_CASE("Test for float-pointing") {
+	printf("\n");
+	printf("%.2f\n", 1.997);
+	printf("%.1f\n", 1.983183456);
+	printf("%14.2f\n", 1.983183456);
+	printf("%014.4f\n", 1.983183456);
+	printf("%-14.f\n", 1.983183456);
 }

@@ -9,8 +9,11 @@
 #ifndef MATH_H_
 #define MATH_H_
 
+#include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
+#include <../lib/fdlibm/fdlibm.h>
 /**
  * First 1 in val
  * @param val Value
@@ -18,39 +21,51 @@ __BEGIN_DECLS
  */
 extern int blog2(int val);
 
+extern double fabs(double x);
+extern float fabsf(float x);
+extern long double fabsl(long double x);
+
 extern double floor(double x);
 extern float floorf(float x);
 extern long double floorl(long double x);
 
+extern double round(double x);
+extern float roundf(float x);
+extern long double roundl(long double x);
+
+extern double ceil(double x);
+extern float ceilf(float x);
+extern long double ceill(long double x);
+
+extern double copysign(double x, double y);
+extern float copysignf(float x, float y);
+extern long double copysignl(long double x, long double y);
+
+extern int signbit(double x);
+extern int signbitf(float x);
+extern int signbitl(long double x);
+
+extern double fmod(double x, double y);
+extern float fmodf(float x, float y);
+extern long double fmodl(long double x, long double y);
+
+extern double modf(double x, double *ipart);
+extern float modff(float x, float *ipart);
+extern long double modfl(long double x, long double *ipart);
+
 extern double pow(double x, double y);
 extern float powf(float x, float y);
 extern long double powl(long double x, long double y);
-
-extern double copysign(double val, double signval);
-extern float copysignf(float val, float signval);
-extern long double copysignl(long double val, long double signval);
-
-extern int signbit(double val);
-extern int signbitf(float val);
-extern int signbitl(long double val);
 
 extern double log10(double x);
 extern float log10f(float x);
 extern long double log10l(long double x);
 
 extern double sqrt(double x);
+extern float sqrtf(float x);
 
 
 __END_DECLS
-
-#define CEILING_POS(X) ((X-(int)(X)) > 0 ? (int)(X+1) : (int)(X))
-#define CEILING_NEG(X) ((X-(int)(X)) < 0 ? (int)(X-1) : (int)(X))
-#define CEILING(X) ( ((X) > 0) ? CEILING_POS(X) : CEILING_NEG(X) )
-
-static inline double ceil(double x) {
-	return CEILING(x);
-}
-
 
 /* FIXME max, min and clamp not a part of C Standard Library */
 /**

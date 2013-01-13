@@ -32,6 +32,10 @@ time64_t jiffies2ms(clock_t jiff) {
 	return clock_to_ns(cs_jiffies->event_device->resolution, jiff) / 1000000;
 }
 
+uint32_t clock_freq(void) {
+	return cs_jiffies->event_device->resolution;
+}
+
 static int module_init(void) {
 	const struct clock_source *cs;
 	struct time_dev_conf jiffies_conf = {

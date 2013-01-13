@@ -7,7 +7,7 @@
  * @author Anton Bulychev
  */
 
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 

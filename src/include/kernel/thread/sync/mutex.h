@@ -10,7 +10,7 @@
 #define KERNEL_THREAD_SYNC_MUTEX_H_
 
 #include <lib/list.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 
 /**
  * Defines Mutex structure.

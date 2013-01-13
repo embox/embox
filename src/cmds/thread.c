@@ -15,7 +15,7 @@
 #include <assert.h>
 #include <string.h>
 #include <time.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/thread/state.h>
 
 EMBOX_CMD(exec);

@@ -27,6 +27,8 @@ typedef struct div {
    int rem;
 } div_t;
 
+#include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
 /**

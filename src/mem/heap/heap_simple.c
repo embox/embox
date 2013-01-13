@@ -17,8 +17,9 @@ static int has_initialized = 0;
 static char *managed_memory_start;
 static char *last_valid_address;
 
+#define HEAP_SIZE OPTION_MODULE_GET(embox__mem__heap_api,NUMBER,heap_size)
 
-#define MEM_POOL_SIZE  ((HEAP_SIZE()) / PAGE_SIZE())
+#define MEM_POOL_SIZE  (HEAP_SIZE / PAGE_SIZE())
 static void *mem_pool;
 
 struct mem_control_block {
@@ -26,18 +27,11 @@ struct mem_control_block {
 	size_t size;
 };
 
-static struct page_allocator * allocator;
-extern char *_heap_start;
-
 static int malloc_init(void) {
+	extern struct page_allocator *__heap_pgallocator;
 	struct mem_control_block *init_mcb;
 
-	allocator = page_allocator_init((char *)&_heap_start, HEAP_SIZE(), PAGE_SIZE());
-	if(NULL == allocator) {
-		return -1;
-	}
-
-	mem_pool = page_alloc(allocator, MEM_POOL_SIZE);
+	mem_pool = page_alloc(__heap_pgallocator, MEM_POOL_SIZE);
 	if(NULL == mem_pool) {
 		return -1;
 	}

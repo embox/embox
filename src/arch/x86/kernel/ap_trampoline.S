@@ -34,10 +34,6 @@ C_ENTRY(__ap_trampoline):
 
 C_LABEL(__ap_gdtr):
 	.space 8
-C_LABEL(__ap_idtr):
-	.space 8
 C_LABEL(__ap_gdt):
-	.space 128
-C_LABEL(__ap_idt):
-	.space 128
+	.space 128 /* TODO: Fix size */
 C_LABEL(__ap_trampoline_end):

@@ -8,7 +8,6 @@
 #ifndef DISPLAY_H_
 #define DISPLAY_H_
 
-//#include <types.h>
 
 struct display;
 
@@ -21,6 +20,21 @@ struct display {
 	int height;
 	unsigned char *vga_regs;
 	display_set_pixel_ft set_pixel;
+};
+
+
+
+struct screen_info {
+	int xres;
+	int yres;
+	int right_margin;
+	int hsync_len;
+	int left_margin;
+	int lower_margin;
+	int vsync_len;
+	int upper_margin;
+	int vmode;
+	int bits_per_pixel;
 };
 
 

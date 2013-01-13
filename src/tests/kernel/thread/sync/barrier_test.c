@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 #include <kernel/thread/sync/barrier.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 
 static struct thread *low, *high;
 static barrier_t b;

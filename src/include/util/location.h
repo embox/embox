@@ -20,6 +20,7 @@ struct location_func {
 	const char *func;
 };
 
+#ifndef __cplusplus
 #define LOCATION_INIT { \
 		.file = __FILE__, \
 		.line = __LINE__, \
@@ -29,5 +30,16 @@ struct location_func {
 		.at = LOCATION_INIT, \
 		.func = __func__,       \
 	}
+#else
+#define LOCATION_INIT { \
+		__FILE__,       \
+		__LINE__        \
+	}
+
+#define LOCATION_FUNC_INIT { \
+		LOCATION_INIT,       \
+		__func__             \
+	}
+#endif
 
 #endif /* UTIL_LOCATION_H_ */

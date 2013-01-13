@@ -13,3 +13,10 @@ module exceptions {
 	depends embox.lib.LibCXX
 	depends embox.framework.LibFramework
 }
+
+module inheritance {
+	source "inheritance.cpp"
+
+	depends embox.lib.LibCXX
+	depends embox.framework.LibFramework
+}

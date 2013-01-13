@@ -11,7 +11,7 @@
 #include <util/ring_buff.h>
 #include <stdio.h>
 
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/thread/state.h>
 #include <kernel/thread/event.h>
 

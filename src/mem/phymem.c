@@ -19,7 +19,7 @@ extern char _heap_end;
 
 static int phymem_init(void) {
 	size_t free_start = binalign_bound((size_t)&_heap_end, PAGE_SIZE());
-	size_t free_len = (size_t)&_mem_length - (size_t)&_mem_begin -  free_start;
+	size_t free_len = (size_t)&_mem_length - (free_start - (size_t)&_mem_begin);
 
 	__phymem_allocator = page_allocator_init((char *)free_start, free_len, PAGE_SIZE());
 

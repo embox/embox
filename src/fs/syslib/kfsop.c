@@ -19,6 +19,8 @@
 #include <fs/fs_drv.h>
 #include <fs/kfsop.h>
 
+#include <mem/page.h>
+
 #if 0
 static node_t *create_filechain(const char *name, uint8_t node_type) {
 	int newnode_cnt;
@@ -222,7 +224,7 @@ int kremove(const char *pathname) {
 	nas = node->nas;
 	drv = nas->fs->drv;
 	if (NULL == drv->fsop->delete_node) {
-		errno = EINVAL;
+		errno = EPERM;
 		return -1;
 	}
 
@@ -248,6 +250,7 @@ int kunlink(const char *pathname) {
 	nas = node->nas;
 	drv = nas->fs->drv;
 	if(NULL == drv->fsop->delete_node) {
+		errno = EPERM;
 		return -1;
 	}
 
@@ -358,29 +361,129 @@ int kmount(char *dev, char *dir, char *fs_type) {
 	return drv->fsop->mount(dev_node, dir_node);
 }
 
-int krename(const char *src_name, const char *dst_name) {
-	node_t *nod;
+int krename(const char *oldpath, const char *newpath) {
+	int rc, oldfd, newfd, newpathlen, diritemlen;
+	char *name, *newpathbuf = NULL;
+	char *newpatharg, *oldpatharg;
+	node_t *oldnode, *newnode, *diritem;
+	char buf[PAGE_SIZE()];
 
-	if (MAX_LENGTH_FILE_NAME < strlen(src_name)) {
-		return -ENAMETOOLONG;
+	if (MAX_LENGTH_PATH_NAME < strlen(oldpath) ||
+			MAX_LENGTH_PATH_NAME < strlen(newpath)) {
+		SET_ERRNO(ENAMETOOLONG);
+		return -1;
 	}
 
-	if (MAX_LENGTH_FILE_NAME < strlen(dst_name)) {
-		return -ENAMETOOLONG;
+	/* Check if source file exists */
+	oldnode = vfs_find_node(oldpath, NULL);
+	if (NULL == oldnode) {
+		SET_ERRNO(EINVAL);
+		return -1;
 	}
 
-	/* Check if file with such name already exists */
-	nod = vfs_find_node(dst_name, NULL);
-	if (NULL != nod) {
-		return -EINVAL;
+	/* Check if destination file already exists or if directory were
+	 * provided as destination path */
+	newnode = vfs_find_node(newpath, NULL);
+	if (NULL != newnode) {
+		if (NODE_TYPE_DIRECTORY == newnode->type) {
+			/* Directory was passed as destination */
+			name = strrchr(oldpath, '/');
+			newpathlen = strlen(newpath) + strlen(name);
+			if (newpathlen > MAX_LENGTH_PATH_NAME) {
+				SET_ERRNO(ENAMETOOLONG);
+				return -1;
+			}
+			newpathbuf = calloc(newpathlen + 1, sizeof(char));
+			strcat(newpathbuf, newpath);
+			strcat(newpathbuf, name);
+			newpath = newpathbuf;
+		} else {
+			SET_ERRNO(EINVAL);
+			return -1;
+		}
 	}
 
-	nod = vfs_find_node(src_name, NULL);
-	if (NULL == nod) {
-		return -EINVAL;
+	/**
+	 * TODO:
+	 * Here we should check if we move within one filesystem and don't copy
+	 * data in such case. Instead of that just make new hardlink
+	 * and remove old one.
+	 */
+
+	/* If oldpath is directory, copy it recursively */
+	if (NODE_TYPE_DIRECTORY == oldnode->type) {
+		rc = mkdir(newpath, oldnode->mode);
+		if (-1 == rc) {
+			return -1;
+		}
+
+		tree_foreach_children(diritem, (&oldnode->tree_link), tree_link) {
+			if (0 != strcmp(".", diritem->name) &&
+					0 != strcmp("..", diritem->name)) {
+				diritemlen = strlen(diritem->name);
+				oldpatharg = calloc(strlen(oldpath) + diritemlen + 3, sizeof(char));
+				newpatharg = calloc(strlen(newpath) + diritemlen + 3, sizeof(char));
+
+				strcat(oldpatharg, oldpath);
+				if (oldpatharg[strlen(oldpatharg)] != '/') {
+					strcat(oldpatharg, "/");
+				}
+				strcat(oldpatharg, diritem->name);
+				strcat(newpatharg, newpath);
+				if (newpatharg[strlen(newpatharg)] != '/') {
+					strcat(newpatharg, "/");
+				}
+				strcat(newpatharg, diritem->name);
+
+				if (-1 == krename(oldpatharg, newpatharg)) {
+					return -1;
+				}
+
+				free(newpatharg);
+				free(oldpatharg);
+			}
+		}
+
+		return ENOERR;
 	}
 
-	strcpy((char *)nod->name, dst_name);
+	/* Open files */
+	oldfd = open(oldpath, O_RDONLY);
+	if (-1 == oldfd) {
+		return -1;
+	}
+	newfd = open(newpath, O_WRONLY);
+	if (-1 == newfd) {
+		return -1;
+	}
 
-	return 0;
+	/* Copy bytes */
+	while ((rc = read(oldfd, buf, PAGE_SIZE())) > 0) {
+		if (write(newfd, buf, rc) <= 0) {
+			SET_ERRNO(EIO);
+			return -1;
+		}
+	}
+
+	/* Close files and free memory*/
+	rc = close(oldfd);
+	if (0 != rc) {
+		return -1;
+	}
+	rc = close(newfd);
+	if (0 != rc) {
+		return -1;
+	}
+
+	if (NULL != newpathbuf) {
+		free(newpathbuf);
+	}
+
+	/* Delete file in old path */
+	rc = remove(oldpath);
+	if (0 != rc) {
+		return -1;
+	}
+
+	return ENOERR;
 }

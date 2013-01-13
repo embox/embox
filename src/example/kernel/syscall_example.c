@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <framework/example/self.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/syscall_caller.h>
 #include <kernel/printk.h>
 

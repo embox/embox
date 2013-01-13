@@ -1,6 +1,8 @@
 package embox.mem
 
-abstract module kmalloc { }
+abstract module kmalloc {
+	option number heap_size = 524288
+}
 
 
 module slab_fit extends kmalloc {

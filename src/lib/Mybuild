@@ -92,10 +92,20 @@ static module LibCString {
 	source "string/strupr.c"
 }
 
+static module LibCStrdup {
+	source "string/strdup.c"
+	depends embox.mem.heap_api
+}
+
 static module LibCMath {
+	source "math/fabs.c"
+	source "math/round.c"
 	source "math/floor.c"
+	source "math/ceil.c"
 	source "math/copysign.c"
 	source "math/signbit.c"
+	source "math/fmod.c"
+	source "math/modf.c"
 	source "math/pow.c"
 	source "math/log10.c"
 	source "math/div.c"
@@ -153,6 +163,7 @@ static module LibC {
 	depends LibCMisc
 	depends LibCStdlib
 	depends LibCString
+	depends LibCStrdup
 	depends LibCMath
 	depends	LibCStdio
 /* not here */

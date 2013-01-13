@@ -20,9 +20,17 @@
 #define _IOFBF        0x20
 #define _IOLBF        0x20
 #define _IONBF        0x20
-#define	BUFSIZ        0x40
+#define	BUFSIZ        0x100
 #define L_tmpnam      0x20
 #define FILENAME_MAX  0x20
+
+
+
+/* Values for the WHENCE argument to lseek. */
+#define SEEK_SET        0   /* Seek from beginning of file. */
+#define SEEK_CUR        1   /* Seek from current position. */
+#define SEEK_END        2   /* Seek from end of file. */
+
 
 typedef struct file_struct {
 	int fd;
@@ -32,6 +40,8 @@ typedef struct file_struct {
 
 
 struct stat;
+
+#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 
@@ -161,6 +171,11 @@ extern int fseek(FILE *stream, long int offset, int origin);
  * Sets the file position indicator for the stream pointed to by stream to the beginning of the file.
  */
 extern void rewind(FILE *stream);
+
+/**
+ * Change the name or location of a file.
+ */
+extern int rename(const char *oldpath, const char *newpath);
 
 /**
  * Manipulate the underlying device parameters of special files.

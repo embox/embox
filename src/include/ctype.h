@@ -23,6 +23,7 @@ extern const unsigned char _ctype[];
 
 #define __ismask(x) (_ctype[(int)(unsigned char)(x)])
 
+#include <sys/cdefs.h>
 __BEGIN_DECLS
 
 /* Checks for an alphanumeric character. */

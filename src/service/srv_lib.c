@@ -6,7 +6,7 @@
  */
 
 #include <embox/web_service.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <mem/misc/pool.h>
 #include <string.h>
 #include <kernel/task.h>

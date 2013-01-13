@@ -1,0 +1,62 @@
+<project name="hello" default="dist" basedir=".">
+	<description>
+        CLDC HelloWorld build file
+    </description>
+
+	<fail message="Prerequisites are missing">
+		<condition>
+			<not>
+				<and>
+					<available file="${preverify.exec}" />
+					<available file="${classes.zip}" />
+					<isset property="appbuild.dir" />
+				</and>
+			</not>
+		</condition>
+	</fail>
+
+	<!-- set global properties for this build -->
+	<property name="src" location="src" />
+	<property name="build" location="${appbuild.dir}/build" />
+	<property name="dist" location="${appbuild.dir}/dist" />
+	<property name="preverify" location="${appbuild.dir}/preverify" />
+
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp />
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build}" />
+	</target>
+
+	<target name="compile" depends="init" description="compile the source ">
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac
+			source="1.4"
+			target="1.4"
+			srcdir="${src}"
+			destdir="${build}"
+			bootclasspath="${classes.zip}"
+		/>
+	</target>
+
+	<target name="preverify" depends="compile" description="preverify the classes">
+		<delete dir="${preverify}" failonerror="false"/>
+		<mkdir dir="${preverify}"/>
+		<exec executable="${preverify.exec}">
+			<arg line="-classpath ${classes.zip}"/>
+			<arg line="-d ${preverify}"/>
+			<arg line="-nofinalize"/>
+			<arg line="-nonative"/>
+			<arg line="${build}"/>
+		</exec>
+	</target>
+
+	<target name="dist" depends="preverify" description="generate the distribution">
+		<!-- Create the distribution directory -->
+		<mkdir dir="${dist}" />
+
+		<!-- Put everything in ${build} into the .jar file -->
+		<jar jarfile="${dist}/hello.jar" basedir="${preverify}" />
+	</target>
+
+</project>

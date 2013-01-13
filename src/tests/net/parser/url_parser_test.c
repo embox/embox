@@ -1,9 +1,8 @@
 /**
  * @file
- *
  * @brief
  *
- * @date Oct 31, 2012
+ * @date 31.10.12
  * @author Vita Loginova
  */
 

@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <embox/test.h>
 #include <kernel/task.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/time/ktime.h>
 
 EMBOX_TEST_SUITE("test for task API");

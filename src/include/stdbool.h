@@ -10,8 +10,10 @@
 #ifndef STDBOOL_H_
 #define STDBOOL_H_
 
-#if 0
-typedef _Bool bool;
+#if 1
+//typedef _Bool bool;
+#define bool _Bool
+
 #else
 /**
  * The is no reason to follow strict ABI in kernel code and to define boolean
@@ -23,6 +25,9 @@ typedef _Bool bool;
  */
 typedef int bool;
 #endif
+
+
+#define __bool_true_false_are_defined 1
 
 #define false 0
 #define true  1

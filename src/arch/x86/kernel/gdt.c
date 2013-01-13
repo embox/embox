@@ -83,7 +83,7 @@ static inline void tss_fill() {
 
 #ifndef NOUSERMODE
 
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 
 void tss_set_kernel_stack(void) {
 	struct thread *thread = thread_self();

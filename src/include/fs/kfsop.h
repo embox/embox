@@ -29,6 +29,6 @@ extern int kformat(const char *pathname, const char *fs_type);
 
 extern int kmount(char *dev,  char *dir, char *fs_type);
 
-extern int krename(const char *src_path, const char *dst_path);
+extern int krename(const char *oldpath, const char *newpath);
 
 #endif /* FS_KFSOP_H_ */

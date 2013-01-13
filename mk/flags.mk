@@ -33,22 +33,26 @@ endif
 
 # Expand user defined flags and append them after default ones.
 
+__srcgen_includes_fn = $(addprefix $1$(SRCGEN_DIR)/src/,include arch/$(ARCH)/include)
+__srcgen_includes := $(call __srcgen_includes_fn,)
+$(and $(shell $(MKDIR) $(__srcgen_includes)),)
+
+cppflags_fn = \
+	-D__EMBOX__ \
+	-D"__impl_x(path)=<../path>"\
+	-imacros $(AUTOCONF_DIR)/config.h\
+	-I$1$(SRC_DIR)/include -I$1$(SRC_DIR)/arch/$(ARCH)/include\
+	-I$1$(SRCGEN_DIR)/include -I$1$(SRCGEN_DIR)/src/include\
+	$(call __srcgen_includes_fn,-I$1) \
+	$(if $(value PLATFORM),-I$1$(PLATFORM_DIR)/$(PLATFORM)/include)\
+	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include\
+	-nostdinc\
+	-MMD -MP# -MT $@ -MF $(@:.o=.d)
+
 # Preprocessor flags
 cppflags := $(CPPFLAGS)
-override CPPFLAGS  = -D__EMBOX__
-override CPPFLAGS += -D"__impl_x(path)=<../path>"
-override CPPFLAGS += -imacros $(AUTOCONF_DIR)/config.h
-override CPPFLAGS += -I$(SRC_DIR)/include -I$(SRC_DIR)/arch/$(ARCH)/include
-override CPPFLAGS += -I$(SRCGEN_DIR)/include -I$(SRCGEN_DIR)/src/include
-__srcgen_includes := $(addprefix $(SRCGEN_DIR)/src/,include arch/$(ARCH)/include)
-$(and $(shell $(MKDIR) $(__srcgen_includes)),)
-override CPPFLAGS += $(__srcgen_includes:%=-I%)
-# XXX reduntand flags, agrrrr -- Eldar
-override CPPFLAGS += $(if $(value PLATFORM),-I$(PLATFORM_DIR)/$(PLATFORM)/include)
-override CPPFLAGS += -I$(SRC_DIR)/compat/linux/include -I$(SRC_DIR)/compat/posix/include
-override CPPFLAGS += -nostdinc
-override CPPFLAGS += -MMD -MP# -MT $@ -MF $(@:.o=.d)
-override CPPFLAGS += $(cppflags)
+override CPPFLAGS  = $(call cppflags_fn,) $(cppflags)
+EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(PWD)/)
 
 # Assembler flags
 asflags := $(CFLAGS)
@@ -63,8 +67,8 @@ override CXXFLAGS += -Wall -Werror
 override CXXFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 override CXXFLAGS += -Wformat -Wformat-nonliteral
 override CXXFLAGS += -I$(SRC_DIR)/include/c++
-override CXXFLAGS += -D"__BEGIN_DECLS=extern \"C\" {"
-override CXXFLAGS += -D"__END_DECLS=}"
+#override CXXFLAGS += -D"__BEGIN_DECLS=extern \"C\" {"
+#override CXXFLAGS += -D"__END_DECLS=}"
 #	C++ has build-in type bool
 override CXXFLAGS += -DSTDBOOL_H_
 override CXXFLAGS += $(cxxflags)
