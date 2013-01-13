@@ -56,6 +56,7 @@ static void *start_server(void* args) {
 	if (res < 0) {
 		printf("Error.. bind() failed. errno=%d\n", errno);
 		web_server_started = -1;
+		close(host);
 		return (void*) res;
 	}
 
@@ -63,6 +64,7 @@ static void *start_server(void* args) {
 	if (res < 0) {
 		printf("Error.. listen() failed. errno=%d\n", errno);
 		web_server_started = -1;
+		close(host);
 		return (void*) res;
 	}
 
@@ -80,7 +82,7 @@ static void *start_server(void* args) {
 		client_process(res);
 	}
 
-	res = close(host);
+	close(host);
 	return (void*) 0;
 }
 
@@ -117,10 +119,11 @@ int stop_server(void) {
 
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(80);
-	addr.sin_addr.s_addr = htonl((in_addr_t) 0x0A000210); /*10.0.2.16*/
+	addr.sin_addr.s_addr = htonl(inet_addr("10.0.2.16"));
 
 	res = connect(sock, (struct sockaddr *) &addr, sizeof(addr));
 	if (res < 0) {
+		close(sock);
 		return -1;
 	}
 

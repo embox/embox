@@ -300,14 +300,23 @@ void client_process(int sock) {
 
 		if (is_service_started(ci.file)) {
 			struct service_data* srv_data = malloc(sizeof(struct service_data));
+			if (srv_data == NULL) {
+				printf("client_process: malloc failed\n");
+				return;
+			}
+
 			//ToDo move it to web_service_start_service
 			srv_data->sock = ci.sock;
 
-			request_parser_cpy(&srv_data->request, &ci.parsed_request);
+			if (request_parser_copy(&srv_data->request, &ci.parsed_request) < 0) {
+				printf("client_process: request_parser_copy failed\n");
+				return;
+			}
+
 			srv_data->query = srv_data->request.parsed_url->query;
 
 			if (web_service_start_service(ci.file, srv_data) < 0) {
-				printf("client_process: start service error");
+				printf("client_process: start service error\n");
 			}
 			return;
 		} else {

@@ -109,9 +109,14 @@ void service_file_close(struct service_file *srv_file) {
 
 void service_free_service_data(struct service_data *data) {
 	if (data != NULL) {
+#if 0
+		/**
+		 * XXX Don't free data->query
+		 * It's link to data->request.parsed_url->query */
 		if (data->query != NULL) {
 			free(data->query);
 		}
+#endif
 		free_http_request(&data->request);
 		free(data);
 	}

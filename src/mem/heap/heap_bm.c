@@ -246,6 +246,8 @@ void *malloc(size_t size) {
 	return memalign(0, size);
  }
 
+#include <stdio.h>
+/*#include <assert.h>*/
 void free(void *ptr) {
 	struct free_block *block;
 	if (ptr == NULL) {
@@ -253,7 +255,9 @@ void free(void *ptr) {
 	}
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
 
-	if(!block_is_busy(block)) {
+	if (!block_is_busy(block)) {
+		printf("DOUBLE FREE!!\n");
+		/*assert(0)*/;
 		return; /* if we try to free block more than once */
 	}
 

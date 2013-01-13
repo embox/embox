@@ -5,4 +5,5 @@ module parser {
 	source "request_parser.c"
 
 	depends third_party.lib.url_parser
+	depends embox.lib.LibC
 }
