@@ -105,8 +105,15 @@
 #define EXT2F_ROCOMPAT_LARGEFILE	0x0002
 #define EXT2F_ROCOMPAT_BTREE_DIR	0x0004
 
-#define EXT2F_INCOMPAT_COMP			0x0001
-#define EXT2F_INCOMPAT_FTYPE		0x0002
+//#define EXT2F_INCOMPAT_COMP			0x0001
+//#define EXT2F_INCOMPAT_FTYPE		0x0002
+
+#define EXT2F_INCOMPAT_COMPRESSION       0x0001
+#define EXT2F_INCOMPAT_FILETYPE          0x0002
+#define EXT2F_INCOMPAT_RECOVER           0x0004
+#define EXT2F_INCOMPAT_JOURNAL_DEV       0x0008
+#define EXT2F_INCOMPAT_META_BG           0x0010
+#define EXT2F_INCOMPAT_ANY               0xffffffff
 
 /*
  * Features supported in this implementation
@@ -124,8 +131,14 @@
 #define EXT2F_COMPAT_SUPP		0x0000
 #define EXT2F_ROCOMPAT_SUPP		(EXT2F_ROCOMPAT_SPARSESUPER \
 					 | EXT2F_ROCOMPAT_LARGEFILE)
-#define EXT2F_INCOMPAT_SUPP		EXT2F_INCOMPAT_FTYPE
+#define EXT2F_INCOMPAT_SUPP		EXT2F_INCOMPAT_FILETYPE
 
+#define HAS_COMPAT_FEATURE(sp, mask)                        \
+        ( (sp)->s_feature_compat & (mask) )
+#define HAS_RO_COMPAT_FEATURE(sp, mask)                     \
+	( (sp)->s_feature_ro_compat & (mask) )
+#define HAS_INCOMPAT_FEATURE(sp, mask)                      \
+	( (sp)->s_feature_incompat & (mask) )
 /*
  * If the EXT2F_ROCOMPAT_SPARSESUPER flag is set, the cylinder group has a
  * copy of the super and cylinder group descriptors blocks only if it's
@@ -175,19 +188,19 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
  *	 inode number to cylinder group number.
  *	 inode number to file system block address.
  */
-#define	ino_to_cg(fs, x)	(((x) - 1) / (fs)->e2fs.s_inodes_per_group)
+#define	ino_to_cg(fs, x)	(((x) - 1) / (fs)->e2sb.s_inodes_per_group)
 #define	ino_to_fsba(fs, x)						\
 	((fs)->e2fs_gd[ino_to_cg((fs), (x))].inode_table +		\
-	(((x) - 1) % (fs)->e2fs.s_inodes_per_group) / (fs)->s_inodes_per_block)
+	(((x) - 1) % (fs)->e2sb.s_inodes_per_group) / (fs)->s_inodes_per_block)
 #define	ino_to_fsbo(fs, x)	(((x) - 1) % (fs)->s_inodes_per_block)
 
 /*
  * Give cylinder group number for a file system block.
  * Give cylinder group block number for a file system block.
  */
-#define	dtog(fs, d) (((d) - (fs)->e2fs.e2fs_first_dblock) / (fs)->e2fs.e2fs_fpg)
+#define	dtog(fs, d) (((d) - (fs)->e2sb.e2fs_first_dblock) / (fs)->e2sb.e2fs_fpg)
 #define	dtogd(fs, d) \
-	(((d) - (fs)->e2fs.e2fs_first_dblock) % (fs)->e2fs.e2fs_fpg)
+	(((d) - (fs)->e2sb.e2fs_first_dblock) % (fs)->e2sb.e2fs_fpg)
 
 /*
  * The following macros optimize certain frequently calculated
@@ -209,7 +222,7 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
  * percentage to hold in reserve.
  */
 #define freespace(fs) \
-   ((fs)->e2fs.e2fs_fbcount - (fs)->e2fs.e2fs_rbcount)
+   ((fs)->e2sb.e2fs_fbcount - (fs)->e2sb.e2fs_rbcount)
 
 /*
  * Number of indirects in a file system block.
@@ -244,8 +257,8 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 
 /* Size of on-disk inode. */
 #define EXT2_REV0_DINODE_SIZE	sizeof(struct ext2fs_dinode)
-#define EXT2_DINODE_SIZE(fs)	((fs)->e2fs.s_rev_level > E2FS_REV0 ?	\
-				    (fs)->e2fs.s_inode_size :	\
+#define EXT2_DINODE_SIZE(fs)	((fs)->e2sb.s_rev_level > E2FS_REV0 ?	\
+				    (fs)->e2sb.s_inode_size :	\
 				    EXT2_REV0_DINODE_SIZE)
 
 #	define e2fs_iload(old, new)	\
@@ -292,6 +305,39 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 #define NR_INODES        512
 #define CHAR_BIT 8
 
+/* Ext2 directory file types (not the same as FFS. Sigh.) */
+#define EXT2_FT_UNKNOWN         0
+#define EXT2_FT_REG_FILE        1
+#define EXT2_FT_DIR             2
+#define EXT2_FT_CHRDEV          3
+#define EXT2_FT_BLKDEV          4
+#define EXT2_FT_FIFO            5
+#define EXT2_FT_SOCK            6
+#define EXT2_FT_SYMLINK         7
+
+#define LOOK_UP            0 /* tells search_dir to lookup string */
+#define ENTER              1 /* tells search_dir to make dir entry */
+#define DELETE             2 /* tells search_dir to delete entry */
+#define IS_EMPTY           3 /* tells search_dir to ret. OK or ENOTEMPTY */
+
+#define DIR_ENTRY_ALIGN         4
+/* ino + rec_len + name_len + file_type, doesn't include name and padding */
+#define MIN_DIR_ENTRY_SIZE	8
+
+#define DIR_ENTRY_CONTENTS_SIZE(d) (MIN_DIR_ENTRY_SIZE + (d)->e2d_namlen)
+/* size with padding */
+#define DIR_ENTRY_ACTUAL_SIZE(d) (DIR_ENTRY_CONTENTS_SIZE(d) + \
+        ((DIR_ENTRY_CONTENTS_SIZE(d) & 0x03) == 0 ? 0 : \
+			DIR_ENTRY_ALIGN - (DIR_ENTRY_CONTENTS_SIZE(d) & 0x03) ))
+
+/* How many bytes can be taken from the end of dentry */
+#define DIR_ENTRY_SHRINK(d)    ((d)->e2d_reclen \
+					- DIR_ENTRY_ACTUAL_SIZE(d))
+
+/* Dentry can have padding, which can be used to enlarge namelen */
+#define DIR_ENTRY_MAX_NAME_LEN(d)	((d)->e2d_reclen \
+						- MIN_DIR_ENTRY_SIZE)
+
 #define usizeof(t) ((unsigned) sizeof(t))
 
 #define FS_BITMAP_CHUNKS(b) ((b)/usizeof (uint32_t))/* # map chunks/blk   */
@@ -300,10 +346,21 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 
 #define DIRTY 1
 
+#define EXT2_GOOD_OLD_INODE_SIZE	128
+#define EXT2_GOOD_OLD_FIRST_INO		11
+#define EXT2_GOOD_OLD_REV		0
+
+#define EXT2_INODE_SIZE(s)	(((s)->s_rev_level == EXT2_GOOD_OLD_REV) ? \
+				EXT2_GOOD_OLD_INODE_SIZE : \
+							(s)->s_inode_size)
+#define EXT2_FIRST_INO(s)	(((s)->s_rev_level == EXT2_GOOD_OLD_REV) ? \
+				EXT2_GOOD_OLD_FIRST_INO : \
+							(s)->s_first_ino)
+
 /*
  * Super block for an ext2fs file system.
  */
- struct ext2fs {
+ struct ext2sb {
 	uint32_t  s_inodes_count;         /* Inodes count */
 	uint32_t  s_blocks_count;         /* Blocks count */
 	uint32_t  s_r_blocks_count;       /* Reserved blocks count */
@@ -396,6 +453,15 @@ struct	ext2fs_direct {
 	char e2d_name[EXT2FS_MAXNAMLEN];/* name with length<=EXT2FS_MAXNAMLEN */
 };
 
+/* Current position in block */
+#define CUR_DISC_DIR_POS(cur_desc, base)  ((char*)cur_desc - (char*)base)
+/* Return pointer to the next dentry */
+#define NEXT_DISC_DIR_DESC(cur_desc)	((struct ext2fs_direct*)\
+					((char*)cur_desc + cur_desc->e2d_reclen))
+/* Return next dentry's position in block */
+#define NEXT_DISC_DIR_POS(cur_desc, base) (cur_desc->e2d_reclen +\
+					   CUR_DISC_DIR_POS(cur_desc, base))
+
 /*
  * To avoid having a lot of filesystem-block sized buffers lurking (which
  * could be 32k) we only keep a few entries of the indirect block map.
@@ -464,42 +530,41 @@ struct ext2fs_dinode {
 
 /* in-memory data for ext2fs */
 typedef struct ext2_fs_info {
-		char mntfrom[MAX_LENGTH_PATH_NAME];
-		char mntto[MAX_LENGTH_PATH_NAME];
-		struct ext2fs e2fs;
+	char mntfrom[MAX_LENGTH_PATH_NAME];
+	char mntto[MAX_LENGTH_PATH_NAME];
+	struct ext2sb e2sb;
 
-		int32_t s_bshift;	/* ``lblkno'' calc of logical blkno */
-		int32_t s_bmask;	/* ``blkoff'' calc of blk offsets */
-		int64_t s_qbmask;	/* ~fs_bmask - for use with quad size */
-		int32_t	s_fsbtodb;	/* fsbtodb and dbtofsb shift constant */
-		int32_t	s_ncg;	/* number of cylinder groups */
+	int32_t s_bshift;	/* ``lblkno'' calc of logical blkno */
+	int32_t s_bmask;	/* ``blkoff'' calc of blk offsets */
+	int64_t s_qbmask;	/* ~fs_bmask - for use with quad size */
+	int32_t	s_fsbtodb;	/* fsbtodb and dbtofsb shift constant */
+	int32_t	s_ncg;	/* number of cylinder groups */
 
-		/* The following items are only used when the super_block is in memory. */
-		struct	ext2_gd *e2fs_gd; /* group descripors */
-		uint32_t   s_block_size;       /* block size in bytes. */
-		uint32_t   s_inodes_per_block;     /* Number of inodes per block */
-		uint32_t   s_itb_per_group;        /* Number of inode table blocks per group */
-		uint32_t   s_gdb_count;            /* Number of group descriptor blocks */
-		uint32_t   s_desc_per_block;       /* Number of group descriptors per block */
-		uint32_t   s_groups_count;         /* Number of groups in the fs */
-		u8_t    s_blocksize_bits;       /* Used to calculate offsets
-										 * (e.g. inode block),
-										 * always s_log_block_size+10.
-										 */
+	/* The following items are only used when the super_block is in memory. */
+	struct	ext2_gd *e2fs_gd; /* group descripors */
+	uint32_t   s_block_size;       /* block size in bytes. */
+	uint32_t   s_inodes_per_block;     /* Number of inodes per block */
+	uint32_t   s_itb_per_group;        /* Number of inode table blocks per group */
+	uint32_t   s_gdb_count;            /* Number of group descriptor blocks */
+	uint32_t   s_desc_per_block;       /* Number of group descriptors per block */
+	uint32_t   s_groups_count;         /* Number of groups in the fs */
+	u8_t    s_blocksize_bits;       /* Used to calculate offsets
+									 * (e.g. inode block),
+									 * always s_log_block_size+10.
+									 */
 
-		u16_t   s_sectors_in_block; /* s_block_size / 512 */
-		uint32_t   s_max_size;         /* maximum file size on this device */
-		uint32_t s_bsearch;	/* all data blocks  below this block are in use*/
-		int     s_igsearch; /* all groups below this one have no free inodes */
-		char    s_is_root;
-		uint32_t   s_dirs_counter;
+	u16_t   s_sectors_in_block; /* s_block_size / 512 */
+	uint32_t   s_max_size;         /* maximum file size on this device */
+	uint32_t s_bsearch;	/* all data blocks  below this block are in use*/
+	int     s_igsearch; /* all groups below this one have no free inodes */
+	char    s_is_root;
+	uint32_t   s_dirs_counter;
 } ext2_fs_info_t;
 
 /*
  * In-core open file.
  */
 typedef struct ext2_file_info {
-	//struct ext2_fs_info	*f_fs;		/* pointer to super-block */
 	struct ext2fs_dinode	f_di;		/* copy of on-disk inode */
 	uint		f_nishift;	/* for blocks in indirect block */
 	int32_t		f_ind_cache_block;
@@ -512,7 +577,7 @@ typedef struct ext2_file_info {
 
 	/* The following items are not present on the disk. */
 	ino_t i_num;                /* inode number on its (minor) device */
-	int i_count;                /* # times inode used; 0 means slot is free */
+	//int i_count;                /* # times inode used; 0 means slot is free */
 	char i_dirt;                /* CLEAN or DIRTY */
 	uint32_t i_bsearch;         /* where to start search for new blocks,
 								 * also this is last allocated block.
@@ -524,10 +589,6 @@ typedef struct ext2_file_info {
 								 */
 	long i_last_dpos;           /* where to start dentry search */
 	int i_last_dentry_size;	    /* size of last found dentry */
-
-	char i_mountpoint;          /* true if mounted on */
-
-	char i_update;              /* the ATIME, CTIME, and MTIME bits are here */
 
 	uint32_t i_prealloc_blocks[EXT2_PREALLOC_BLOCKS];	/* preallocated blocks */
 	int i_prealloc_count;	/* number of preallocated blocks */
@@ -576,6 +637,11 @@ int ext2_read_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector);
 int ext2_write_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector);
+struct ext2_gd* get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi);
+
+uint32_t setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word);
+int unsetbit(uint32_t *bitmap, uint32_t bit);
+extern int group_descriptors_dirty;
 
 /* ialloc.c
 struct inode *alloc_inode(struct inode *parent, mode_t bits);
