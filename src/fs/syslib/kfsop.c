@@ -274,18 +274,12 @@ int krmdir(const char *pathname) {
 
 int klstat(const char *path, struct stat *buf) {
 	node_t *node;
-	struct nas *nas;
-	struct node_info *ni;
 
 	if(NULL == (node = vfs_find_node(path, NULL))) {
 		return -1;
 	}
 
-	nas = node->nas;
-	ni = &nas->fi->ni;
-
-
-	buf->st_size = ni->size;
+	kfile_fill_stat(node, buf);
 
 	return 0;
 }

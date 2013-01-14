@@ -196,21 +196,36 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 
 }
 
-int kfstat(struct file_desc *desc, struct stat *stat_buff) {
+int kfile_fill_stat(struct node *node, struct stat *stat_buff) {
 	struct nas *nas;
 	struct node_info *ni;
 
+	memset(stat_buff, 0 , sizeof(struct stat));
+
+	nas = node->nas;
+	ni = &nas->fi->ni;
+
+	stat_buff->st_size = ni->size;
+
+	if(node_is_directory(node)) {
+		stat_buff->st_mode = S_IFDIR;
+		return 0;
+	}
+	if(node_is_file(node)){
+		stat_buff->st_mode = S_IFREG;
+	}
+
+	return 0;
+}
+
+int kfstat(struct file_desc *desc, struct stat *stat_buff) {
 	if (NULL == desc || stat_buff == NULL) {
 		errno = EBADF;
 		return -1;
 	}
 
-	stat_buff->st_mode = desc->node->type;
+	kfile_fill_stat(desc->node, stat_buff);
 
-	nas = desc->node->nas;
-	ni = &nas->fi->ni;
-
-	stat_buff->st_size = ni->size;
 
 	return ENOERR;
 }
