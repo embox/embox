@@ -356,9 +356,8 @@ static int ext2_open(struct nas *nas) {
 			cp++;
 		}
 		/*
-		 * Look up component in current directory.
-		 * Save directory inumber in case we find a
-		 * symbolic link.
+		 * Look up component in current directory. Save directory inumber
+		 * in case we find a symbolic link.
 		 */
 		parent_inumber = inumber;
 		if (0 != (rc = ext2_search_directory(nas, ncp, cp - ncp, &inumber))) {
@@ -452,19 +451,49 @@ static size_t ext2fs_read(struct file_desc *desc, void *buff, size_t size) {
 }
 
 
-static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size) {
-	/*struct nas *nas;
-	struct ext2_file_info *f;
+static size_t ext2fs_write(struct file_desc *desc, void *buff, size_t size) {
+	size_t csize;
+		char *buf;
+		size_t buf_size;
+		int rc = 0;
+		char *addr = buff;
+		struct nas *nas;
+		struct ext2_file_info *fi;
 
-	nas = desc->node->nas;
-	f = nas->fi->privdata;
-	 not impl */
-	return EROFS;
+		nas = desc->node->nas;
+		fi = nas->fi->privdata;
+
+		while (size != 0) {
+			/* XXX should handle LARGEFILE */
+			if (fi->f_seekp >= (long)fi->f_di.i_size) {
+				break;
+			}
+
+			if (0 != (rc = ext2_buf_read_file(nas, &buf, &buf_size))) {
+				return 0;
+			}
+
+			csize = size;
+			if (csize > buf_size) {
+				csize = buf_size;
+			}
+
+			memcpy(addr, buf, csize);
+
+			fi->f_seekp += csize;
+			addr += csize;
+			size -= csize;
+		}
+
+		return ((char *) buff - addr);
 }
 
 static int ext2fs_ioctl(struct file_desc *desc, int request, va_list args) {
 	return 0;
 }
+
+static int ext2_create(struct nas *nas, struct nas * parents_nas);
+static int ext2_mkdir(struct nas *nas, struct nas * parents_nas);
 
 static int ext2fs_init(void * par);
 static int ext2fs_format(void *path);
@@ -505,17 +534,51 @@ static ext2_file_info_t *ext2_create_file(struct nas *nas, void *fs) {
 }
 
 static int ext2fs_create(struct node *parent_node, struct node *node) {
+
+	struct ext2_file_info *fi;
 	struct nas *nas, *parents_nas;
+	int node_quantity;
+	char path [MAX_LENGTH_PATH_NAME];
 
-	parents_nas = parent_node->nas;
 	nas = node->nas;
+	parents_nas = parent_node->nas;
 
-	if(NULL == (nas->fi->privdata = ext2_create_file(nas, parents_nas->fs))) {
-		return -ENOMEM;
+	if (node_is_directory(node)) {
+		node_quantity = 3; /* need create . and .. directory */
+		vfs_get_path_by_node(node, path);
+	}
+	else {
+		node_quantity = 1;
 	}
 
-	/* TODO write file into ext2 partition */
+	for (int count = 0; count < node_quantity; count ++) {
+		if(0 < count) {
+			if(1 == count) {
+				strcat(path, "/.");
+			}
+			else if(2 == count) {
+				strcat(path, ".");
+			}
+			if(NULL == (node = vfs_add_path (path, NULL))) {
+				return -ENOMEM;
+			}
+		}
 
+		if(NULL == (fi = nas->fi->privdata =
+				ext2_create_file(nas, parents_nas->fs))) {
+			vfs_del_leaf(node);
+			return -ENOMEM;
+		}
+
+		memset(fi, 0, sizeof(struct ext2_file_info));
+
+		if (node_is_directory(node)) {
+			return ext2_mkdir(nas, parents_nas);
+		}
+		else {
+			return ext2_create(nas, parents_nas);
+		}
+	}
 	return 0;
 }
 
@@ -859,41 +922,48 @@ static int ext2_search_directory(struct nas *nas, const char *name, int length,
 static int ext2_read_sblock(struct nas *nas) {
 	static uint8_t sbbuf[SBSIZE];
 	struct ext2_fs_info *fsi;
-	struct ext2fs *ext2fs;
+	struct ext2sb *ext2sb;
 
 	fsi = nas->fs->fsi;
-	ext2fs = &fsi->e2fs;
+	ext2sb = &fsi->e2sb;
 
 	if(SBSIZE != ext2_read_sector(nas, (char *)sbbuf, 1, SBOFF / SECTOR_SIZE)) {
 		return EIO;
 	}
 
-	e2fs_sbload((void *)sbbuf, ext2fs);
-	if (ext2fs->s_magic != E2FS_MAGIC)
+	e2fs_sbload((void *)sbbuf, ext2sb);
+	if (ext2sb->s_magic != E2FS_MAGIC)
 		return EINVAL;
-	if (ext2fs->s_rev_level > E2FS_REV1 ||
-	    (ext2fs->s_rev_level == E2FS_REV1 &&
-	     (ext2fs->s_first_ino != EXT2_FIRSTINO ||
-	     (ext2fs->s_inode_size != 128 && ext2fs->s_inode_size != 256) ||
-	      ext2fs->s_feature_incompat & ~EXT2F_INCOMPAT_SUPP))) {
+	if (ext2sb->s_rev_level > E2FS_REV1 ||
+	    (ext2sb->s_rev_level == E2FS_REV1 &&
+	     (ext2sb->s_first_ino != EXT2_FIRSTINO ||
+	     (ext2sb->s_inode_size != 128 && ext2sb->s_inode_size != 256) ||
+	      ext2sb->s_feature_incompat & ~EXT2F_INCOMPAT_SUPP))) {
 		return ENODEV;
 	}
 
-	e2fs_sbload((void *)sbbuf, &fsi->e2fs);
+	//e2fs_sbload((void *)sbbuf, &fsi->e2sb);
 	/* compute in-memory ext2_fs_info values */
 	fsi->s_ncg =
-	    howmany(fsi->e2fs.s_blocks_count - fsi->e2fs.s_first_data_block,
-	    fsi->e2fs.s_blocks_per_group);
+	    howmany(fsi->e2sb.s_blocks_count - fsi->e2sb.s_first_data_block,
+	    fsi->e2sb.s_blocks_per_group);
 	/* XXX assume hw bsize = 512 */
-	fsi->s_fsbtodb = fsi->e2fs.s_log_block_size + 1;
-	fsi->s_block_size = MINBSIZE << fsi->e2fs.s_log_block_size;
-	fsi->s_bshift = LOG_MINBSIZE + fsi->e2fs.s_log_block_size;
+	fsi->s_fsbtodb = fsi->e2sb.s_log_block_size + 1;
+	fsi->s_block_size = MINBSIZE << fsi->e2sb.s_log_block_size;
+	fsi->s_bshift = LOG_MINBSIZE + fsi->e2sb.s_log_block_size;
 	fsi->s_qbmask = fsi->s_block_size - 1;
 	fsi->s_bmask = ~fsi->s_qbmask;
 	fsi->s_gdb_count =
 	    howmany(fsi->s_ncg, fsi->s_block_size / sizeof(struct ext2_gd));
-	fsi->s_inodes_per_block = fsi->s_block_size / ext2fs->s_inode_size;
-	fsi->s_itb_per_group = fsi->e2fs.s_inodes_per_group / fsi->s_inodes_per_block;
+	fsi->s_inodes_per_block = fsi->s_block_size / ext2sb->s_inode_size;
+	fsi->s_itb_per_group = fsi->e2sb.s_inodes_per_group / fsi->s_inodes_per_block;
+
+	fsi->s_groups_count = ((fsi->e2sb.s_blocks_count - fsi->e2sb.s_first_data_block - 1)
+					/ fsi->e2sb.s_blocks_per_group) + 1;
+	fsi->s_bsearch = fsi->e2sb.s_first_data_block + 1 + fsi->s_gdb_count + 2
+				+ fsi->s_itb_per_group;
+
+	fsi->s_igsearch = 0;
 
 	return 0;
 }
@@ -912,7 +982,7 @@ static int ext2_read_gdblock(struct nas *nas) {
 
 	for (i = 0; i < fsi->s_gdb_count; i++) {
 		rsize = ext2_read_sector(nas, fi->f_buf, 1,
-				fsbtodb(fsi, fsi->e2fs.s_first_data_block + 1 + i));
+				fsbtodb(fsi, fsi->e2sb.s_first_data_block + 1 + i));
 		if (rsize != fsi->s_block_size) {
 			return EIO;
 		}
@@ -1198,7 +1268,7 @@ int write_map(struct nas *nas, long position, uint32_t new_block, int op) {
 			//put_block(bp_dindir, INDIRECT_BLOCK);
 			//put_block(bp_tindir, INDIRECT_BLOCK);
 			//ext2_debug("failed to allocate dblock near %d\n", fi->i_block[0]);
-			return(ENOSPC);
+			return ENOSPC;
 		}
 		if (single) {
 			fi->f_di.i_block[EXT2_NDIR_BLOCKS] = b1; /* update inode single indirect */
@@ -1351,7 +1421,7 @@ uint32_t read_map(struct nas *nas, uint32_t position) {  /* position in file who
 		first_time = 0;
 	}
 
-  block_pos = position / fsi->s_block_size; /* relative blk # in file */
+	block_pos = position / fsi->s_block_size; /* relative blk # in file */
 
 	/* Is 'position' to be found in the inode itself? */
 	if (block_pos < EXT2_NDIR_BLOCKS) {
@@ -1461,7 +1531,7 @@ struct buf *new_block(struct nas *nas, long position) {
 	}
 
 	//bp = get_block(fi->i_dev, b, NO_READ);
-	ext2_read_sector(nas, fi->f_buf, 1, b);
+	ext2_read_sector(nas, fi->f_buf, 1, fsbtodb(fsi,b));
 	/*TODO *///zero_block(bp);
 	bp = NULL;
 	return bp;
@@ -1472,6 +1542,873 @@ static void zero_block(struct buf *bp) {
 	/* Zero a block. */
 	memset(b_data(bp), 0, (size_t) lmfs_bytes(bp));
 	lmfs_markdirty(bp);
+}
+
+static struct ext2_file_info *new_node(struct nas *nas, struct nas * parents_nas);
+
+static int ext2_create(struct nas *nas, struct nas * parents_nas) {
+	struct ext2_file_info *fi;//, *dir_fi;
+	struct ext2_fs_info *fsi;
+	char dirpath[MAX_LENGTH_PATH_NAME];
+	//int len;
+	//dir_fi = parents_nas->fi->privdata;
+	fi = nas->fi->privdata;
+
+	fsi = parents_nas->fs->fsi;
+	vfs_get_path_by_node(parents_nas->node, dirpath);
+	path_cut_mount_dir(dirpath, fsi->mntto);
+
+	ext2_open(parents_nas);
+
+	/* Copy the last component (i.e., file name) */
+	//len = fs_m_in.REQ_PATH_LEN; /* including trailing '\0' */
+	//if (len > NAME_MAX + 1 || len > EXT2_NAME_MAX + 1)
+	//return(ENAMETOOLONG);
+	/*
+	err_code = sys_safecopyfrom(VFS_PROC_NR, (cp_grant_id_t) fs_m_in.REQ_GRANT,
+				  (vir_bytes) 0, (vir_bytes) lastc, (size_t) len);
+	if (err_code != OK) return err_code;
+	NUL(lastc, len, sizeof(lastc));
+	*/
+	/* Get last directory inode (i.e., directory that will hold the new inode)
+	if ((dir_fi = get_inode(fs_dev, (ino_t) fs_m_in.REQ_INODE_NR)) == NULL)
+	  return(ENOENT);
+	*/
+
+	/* alloc a block sized buffer used for all transfers */
+	fi->f_buf = malloc(fsi->s_block_size);
+
+
+	/* Create a new inode by calling new_node(). */
+	//omode = 0;
+	fi = new_node(nas, parents_nas);
+	//r = err_code;
+
+	/* If an error occurred, release inode. */
+	if (fi != NULL) {
+		//put_inode(dir_fi);
+		//put_inode(fi);
+		ext2_close(parents_nas);
+		free(fi->f_buf);
+		return 0;
+	}
+
+	/* Reply message
+	fs_m_out.RES_INODE_NR = fi->i_num;
+	fs_m_out.RES_MODE = fi->i_mode;
+	fs_m_out.RES_FILE_SIZE_LO = fi->i_size;
+	*/
+
+	/* This values are needed for the execution
+	fs_m_out.RES_UID = fi->i_uid;
+	fs_m_out.RES_GID = fi->i_gid;
+	*/
+
+	/* Drop parent dir
+	put_inode(dir_fi);
+	*/
+	free(fi->f_buf);
+	return -1;
+}
+
+int fs_mknod(struct nas *nas, struct nas * parents_nas) {
+  struct ext2_file_info *ip;//, *dir_fi;
+  //char lastc[1000 + 1];
+  //int len;
+
+  /* Copy the last component and set up caller's user and group id
+  len = fs_m_in.REQ_PATH_LEN; // including trailing '\0'
+  if (len > NAME_MAX + 1 || len > EXT2_NAME_MAX + 1)
+	return(ENAMETOOLONG);
+
+  err_code = sys_safecopyfrom(VFS_PROC_NR, (cp_grant_id_t) fs_m_in.REQ_GRANT,
+                             (vir_bytes) 0, (vir_bytes) lastc, (size_t) len);
+  if (err_code != OK) return err_code;
+  NUL(lastc, len, sizeof(lastc));
+  */
+
+  /* Get last directory inode
+  if((dir_fi = get_inode(fs_dev, (ino_t) fs_m_in.REQ_INODE_NR)) == NULL)
+	  return(ENOENT);
+  */
+  /* Try to create the new node */
+  ip = new_node(nas, parents_nas);
+
+  //put_inode(ip);
+  //put_inode(dir_fi);
+  if(NULL == ip) {
+	  return -1;
+  }
+  return 0; //(err_code);
+}
+
+static int ext2_mkdir(struct nas *nas, struct nas *parents_nas) {
+  int r1, r2;			/* status codes */
+  ino_t dot, dotdot;		/* inode numbers for . and .. */
+  struct ext2_file_info *fi, *dir_fi;
+  //struct ext2_fs_info *fsi;
+  //char lastc[1000 + 1];         /* last component */
+  //int len;
+  dir_fi = parents_nas->fi->privdata;
+  fi = nas->fi->privdata;
+
+  //fsi = parents_nas->fs->fsi;
+
+  /* Copy the last component and set up caller's user and group id //
+  len = fs_m_in.REQ_PATH_LEN; // including trailing '\0' //
+  if (len > NAME_MAX + 1 || len > EXT2_NAME_MAX + 1)
+	return(ENAMETOOLONG);
+  err_code = sys_safecopyfrom(VFS_PROC_NR, (cp_grant_id_t) fs_m_in.REQ_GRANT,
+			      (vir_bytes) 0, (vir_bytes) lastc, (phys_bytes) len);
+  if(err_code != OK) return(err_code);
+  NUL(lastc, len, sizeof(lastc));
+*/
+
+  /* Get last directory inode
+  if((dir_fi = get_inode(fs_dev, (ino_t) fs_m_in.REQ_INODE_NR)) == NULL)
+      return(ENOENT);
+      */
+
+  /* Next make the inode. If that fails, return error code. */
+  dir_fi = NULL;
+  fi = new_node(nas, parents_nas);
+
+  if(fi == NULL) {
+	  //put_inode(fi);		/* can't make dir: it already exists */
+	  //put_inode(dir_fi);
+	  return -1;
+  }
+
+  /* Get the inode numbers for . and .. to enter in the directory. */
+  dotdot = dir_fi->i_num;	/* parent's inode number */
+  dot = fi->i_num;		/* inode number of the new dir itself */
+
+  /* Now make dir entries for . and .. unless the disk is completely full. */
+  /* Use dot1 and dot2, so the mode of the directory isn't important. */
+  //fi->i_mode = (mode_t) fs_m_in.REQ_MODE;	/* set mode */
+  /* enter . in the new dir*/
+  //r1 = search_dir(fi, dot1, &dot, ENTER, IGN_PERM, I_DIRECTORY);
+  /* enter .. in the new dir */
+  //r2 = search_dir(fi, dot2, &dotdot, ENTER, IGN_PERM, I_DIRECTORY);
+
+  /* If both . and .. were successfully entered, increment the link counts. */
+  r1 = r2 = 0;
+  if (r1 == 0 && r2 == 0) {
+	  /* Normal case.  It was possible to enter . and .. in the new dir. */
+	  dir_fi->i_dirt = IN_DIRTY;	/* mark parent's inode as dirty */
+  } else {
+	  /* It was not possible to enter . or .. probably disk was full -
+	   * links counts haven't been touched.
+	  if (search_dir(dir_fi, lastc, NULL, DELETE, IGN_PERM, 0) != OK)
+		  panic("Dir disappeared ", fi->i_num);
+	  */	/* undo the increment done in new_node() */
+	  if(dot == dotdot) {
+		  ;
+	  }
+  }
+  if(NULL == fi) {
+	  return -1;
+  }
+  fi->i_dirt = IN_DIRTY;		/* either way, i_links_count has changed */
+
+  //put_inode(dir_fi);		/* return the inode of the parent dir */
+  //put_inode(fi);		/* return the inode of the newly made dir */
+  return 0;		/* new_node() always sets 'err_code' */
+}
+/*
+int fs_slink() {
+  phys_bytes len;
+  struct ext2_file_info *sip;            inode containing symbolic link
+  struct ext2_file_info *dir_fi;          directory containing link
+  register int r;               error code
+  char string[NAME_MAX];        last component of the new dir's path name
+  char* link_target_buf = NULL;        either sip->i_block or bp->b_data
+  struct buf *bp = NULL;     disk buffer for link
+
+  caller_uid = (uid_t) fs_m_in.REQ_UID;
+  caller_gid = (gid_t) fs_m_in.REQ_GID;
+
+   Copy the link name's last component
+  len = fs_m_in.REQ_PATH_LEN;
+  if (len > NAME_MAX || len > EXT2_NAME_MAX)
+	return(ENAMETOOLONG);
+
+  r = sys_safecopyfrom(VFS_PROC_NR, (cp_grant_id_t) fs_m_in.REQ_GRANT,
+		       (vir_bytes) 0, (vir_bytes) string, (size_t) len);
+  if (r != OK) return(r);
+ NUL(string, len, sizeof(string));
+
+  Temporarily open the dir.
+  if( (dir_fi = get_inode(fs_dev, (ino_t) fs_m_in.REQ_INODE_NR)) == NULL)
+	  return(EINVAL);
+
+   Create the inode for the symlink.
+  sip = new_node(dir_fi, string, (mode_t) (I_SYMBOLIC_LINK | RWX_MODES),
+		   (block_t) 0);
+
+   If we can then create fast symlink (store it in inode),
+   * Otherwise allocate a disk block for the contents of the symlink and
+   * copy contents of symlink (the name pointed to) into first disk block.
+  if( (r = err_code) == OK) {
+	if ( (fs_m_in.REQ_MEM_SIZE + 1) > sip->i_sp->s_block_size) {
+		r = ENAMETOOLONG;
+	} else if ((fs_m_in.REQ_MEM_SIZE + 1) <= MAX_FAST_SYMLINK_LENGTH) {
+		r = sys_safecopyfrom(VFS_PROC_NR,
+				     (cp_grant_id_t) fs_m_in.REQ_GRANT3,
+				     (vir_bytes) 0, (vir_bytes) sip->i_block,
+                                     (vir_bytes) fs_m_in.REQ_MEM_SIZE);
+		sip->i_dirt = IN_DIRTY;
+		link_target_buf = (char*) sip->i_block;
+        } else {
+		if ((bp = new_block(sip, (off_t) 0)) != NULL) {
+			sys_safecopyfrom(VFS_PROC_NR,
+					 (cp_grant_id_t) fs_m_in.REQ_GRANT3,
+					 (vir_bytes) 0, (vir_bytes) b_data(bp),
+					 (vir_bytes) fs_m_in.REQ_MEM_SIZE);
+			lmfs_markdirty(bp);
+		link_target_buf = b_data(bp);
+		} else {
+		r = err_code;
+		}
+	}
+	if (r == OK) {
+		assert(link_target_buf);
+		link_target_buf[fs_m_in.REQ_MEM_SIZE] = '\0';
+		sip->i_size = (off_t) strlen(link_target_buf);
+		if (sip->i_size != fs_m_in.REQ_MEM_SIZE) {
+			   This can happen if the user provides a buffer
+			   * with a \0 in it. This can cause a lot of trouble
+			   * when the symlink is used later. We could just use
+			   * the strlen() value, but we want to let the user
+			   * know he did something wrong. ENAMETOOLONG doesn't
+			   * exactly describe the error, but there is no
+			   * ENAMETOOWRONG.
+
+			  r = ENAMETOOLONG;
+		  }
+	}
+
+	put_block(bp, DIRECTORY_BLOCK);  put_block() accepts NULL.
+
+	if(r != OK) {
+		sip->i_links_count = NO_LINK;
+		if (search_dir(dir_fi, string, NULL, DELETE, IGN_PERM, 0) != OK)
+			panic("Symbolic link vanished");
+	}
+  }
+
+   put_inode() accepts NULL as a noop, so the below are safe.
+  put_inode(sip);
+  put_inode(dir_fi);
+
+  return(r);
+}*/
+
+static void wipe_inode(register struct ext2_file_info *fi) {
+	/* Erase some fields in the ext2_file_info. This function is called from alloc_inode()
+	* when a new ext2_file_info is to be allocated, and from truncate(), when an existing
+	* ext2_file_info is to be truncated.
+	*/
+	register int i;
+
+	fi->f_di.i_size = 0;
+	fi->f_di.i_blocks = 0;
+	fi->f_di.i_flags = 0;
+	fi->f_di.i_faddr = 0;
+
+	for (i = 0; i < EXT2_N_BLOCKS; i++) {
+		fi->f_di.i_block[i] = NO_BLOCK;
+	}
+
+	fi->i_dirt = IN_DIRTY;
+}
+
+/*
+ * Find first group which has free inode slot.
+ */
+static int find_group_any(struct ext2_fs_info *fsi) {
+	int group, ngroups;
+	struct ext2_gd *gd;
+
+	group = fsi->s_igsearch;
+	ngroups = fsi->s_groups_count;
+
+	for (; group < ngroups; group++) {
+		gd = get_group_desc(group, fsi);
+		if (gd == NULL) {
+			return -1;
+		}
+		if (gd->free_inodes_count) {
+			fsi->s_igsearch = group;
+			return group;
+		}
+	}
+	return -1;
+}
+
+static void free_inode_bit(struct nas *nas, uint32_t bit_returned, int is_dir) {
+	/* Return an inode by turning off its bitmap bit. */
+	int group;		/* group number of bit_returned */
+	int bit;		/* bit_returned number within its group */
+	struct buf *bp, buff;
+	struct ext2_gd *gd;
+	struct ext2_fs_info *fsi;
+	struct ext2_file_info *fi;
+
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
+	bp = &buff;
+	bp->data = fi->f_buf;/* At first search group, to which bit_returned belongs to
+	* and figure out in what word bit is stored.
+	*/
+	if (bit_returned > fsi->e2sb.s_inodes_count ||
+		bit_returned < EXT2_FIRST_INO(&fsi->e2sb)) {
+		return;
+	}
+
+	group = (bit_returned - 1) / fsi->e2sb.s_inodes_per_group;
+	bit = (bit_returned - 1) % fsi->e2sb.s_inodes_per_group; /* index in bitmap */
+
+	if(NULL == (gd = get_group_desc(group, fsi))) {
+		return;
+	}
+
+	ext2_read_sector(nas, fi->f_buf, 1, gd->inode_bitmap);
+	//bp = get_block(sp->s_dev, gd->inode_bitmap, NORMAL);
+
+	if (unsetbit(b_bitmap(bp), bit)) {
+		return;
+	}
+
+	lmfs_markdirty(bp);
+	//put_block(bp, MAP_BLOCK);
+
+	gd->free_inodes_count++;
+	fsi->e2sb.s_free_inodes_count++;
+
+	if (is_dir) {
+		gd->used_dirs_count--;
+	}
+
+	group_descriptors_dirty = 1;
+
+	if (group < fsi->s_igsearch) {
+		fsi->s_igsearch = group;
+	}
+}
+
+static uint32_t alloc_inode_bit(struct nas *nas, int is_dir) {	/* inode will be a directory if it is TRUE */
+	int group;
+	ino_t inumber = 0;
+	uint32_t bit;
+	struct buf *bp;
+	struct buf buf;
+	struct ext2_gd *gd;
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
+
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
+
+	bp = &buf;
+	bp->data = fi->f_buf;
+
+	group = find_group_any(fsi);
+
+	/* Check if we have a group where to allocate an ext2_file_info */
+	if (group == -1) {
+		return 0;	/* no bit could be allocated */
+	}
+
+	gd = get_group_desc(group, fsi);
+
+	/* find_group_* should always return either a group with
+	* a free ext2_file_info slot or -1, which we checked earlier.
+	*/
+	ext2_read_sector(nas, fi->f_buf, 1, fsbtodb(fsi, gd->inode_bitmap));
+	bp->data = fi->f_buf;
+	bit = setbit(b_bitmap(bp), fsi->e2sb.s_inodes_per_group, 0);
+
+	inumber = group * fsi->e2sb.s_inodes_per_group + bit + 1;
+
+	/* Extra checks before real allocation.
+	* Only major bug can cause problems. Since setbit changed
+	* bp->b_bitmap there is no way to recover from this bug.
+	* Should never happen.
+	*/
+	if (inumber > fsi->e2sb.s_inodes_count) {
+		return 0;
+	}
+
+	if (inumber < EXT2_FIRST_INO(&fsi->e2sb)) {
+		return 0;
+	}
+
+	lmfs_markdirty(bp);
+	//put_block(bp, MAP_BLOCK);
+
+	gd->free_inodes_count--;
+	fsi->e2sb.s_free_inodes_count--;
+	if (is_dir) {
+		gd->used_dirs_count++;
+	}
+
+	group_descriptors_dirty = 1;
+
+	return inumber;
+}
+
+void free_inode(struct nas *nas) {  /* ext2_file_info to free */
+	/* Return an ext2_file_info to the pool of unallocated inodes. */
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
+	uint32_t b;
+	//u16_t mode;
+
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
+
+	b = fi->i_num;
+	//mode = fi->f_di.i_mode;
+
+	/* Locate the appropriate super_block. */
+	ext2_read_sblock(nas);
+
+	if (b <= 0 || b > fsi->e2sb.s_inodes_count) {
+		return;
+	}
+	free_inode_bit(nas, b, node_is_directory(nas->node));
+}
+
+struct ext2_file_info *alloc_inode(struct nas *nas, struct nas *parents_nas) {
+/* Allocate a free ext2_file_info on parent's dev, and return a pointer to it. */
+
+	struct ext2_file_info *fi; //, *dir_fi;
+	//struct ext2_fs_info *fsi;
+	//int inumb;
+	uint32_t b;
+	fi = nas->fi->privdata;
+	//fsi = nas->fs->fsi;
+	/*bp = &buff;
+	bp->data = fi->f_buf;*/
+
+	//sp = get_super(parent->i_dev);    /* get pointer to super_block */
+	ext2_read_sblock(nas);
+
+	/* Acquire an inode from the bit map. */
+	b = alloc_inode_bit(nas, node_is_directory(nas->node));
+	if (0 == b) {
+		return NULL;
+	}
+
+	//inumb = (int) b;        /* be careful not to pass unshort as param */
+
+	/* Try to acquire a slot in the inode table. */
+	//if ((rip = get_inode(NO_DEV, inumb)) == NULL) {
+		/* No inode table slots available.  Free the inode just allocated. */
+		//free_inode_bit(nas, b, node_is_directory(nas->node));
+	//}
+	//else {
+		/* An ext2_file_info slot is available. Put the ext2_file_info just allocated into it. */
+		/*fi->f_di.i_mode = bits;          set up RWX bits */
+		/*fi->f_di.i_links_count = NO_LINK;  initial no links */
+
+		/* Fields not cleared already are cleared in wipe_inode(). They have
+		 * been put there because truncate() needs to clear the same fields if
+		 * the file happens to be open while being truncated. It saves space
+		 * not to repeat the code twice.
+		 */
+		wipe_inode(fi);
+	//}
+
+	return fi;
+}
+
+
+
+/* it's implemented very close to the linux' find_group_dir()
+static int find_group_dir(struct ext2sb *sp)
+{
+  int avefreei = sp->s_free_inodes_count / sp->s_groups_count;
+  struct ext2_gd *gd, *best_gd = NULL;
+  int group, best_group = -1;
+
+  for (group = 0; group < sp->s_groups_count; ++group) {
+	gd = get_group_desc(group);
+	if (gd == NULL)
+		panic("can't get group_desc to alloc ext2_file_info");
+	if (gd->free_inodes_count == 0)
+		continue;
+	if (gd->free_inodes_count < avefreei)
+	continue;
+	if (!best_gd ||
+	     gd->free_blocks_count > best_gd->free_blocks_count) {
+		best_gd = gd;
+		best_group = group;
+	}
+  }
+
+  return best_group; *//* group or -1 */
+//}
+
+
+void rw_inode(struct nas *nas, int rw_flag/* READING or WRITING */) {
+	/* An entry in the inode table is to be copied to or from the disk. */
+
+	struct buf *bp, buff;
+	struct ext2_gd *gd;
+	struct ext2fs_dinode *dip;
+	unsigned int block_group_number;
+	uint32_t b, offset;
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
+
+
+
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
+	bp = &buff;
+	bp->data = fi->f_buf;
+
+	/* Get the block where the inode resides. */
+	//sp = get_super(rip->i_dev);     /* get pointer to super block */
+	ext2_read_sblock(nas);
+
+	block_group_number = (fi->i_num - 1) / fsi->e2sb.s_inodes_per_group;
+
+	if (NULL == (gd = get_group_desc(block_group_number, fsi))) {
+		return;
+	}
+
+	offset = ((fi->i_num - 1) % fsi->e2sb.s_inodes_per_group) * EXT2_INODE_SIZE(&fsi->e2sb);
+	/* offset requires shifting, since each block contains several inodes,
+	* e.g. inode 2 is stored in bklock 0.
+	*/
+	b = (uint32_t) gd->inode_table + (offset >> fsi->s_blocksize_bits);
+	//bp = get_block(rip->i_dev, b, NORMAL);
+	ext2_read_sector(nas, (char *) bp->data, 1, b);
+
+	offset &= (fsi->s_block_size - 1);
+	dip = (struct ext2fs_dinode*) (b_data(bp) + offset);
+
+	/* Do the read or write. */
+	if (rw_flag) {
+		lmfs_markdirty(bp);
+	}
+
+	memcpy(dip, &fi->f_di, sizeof(struct ext2fs_dinode));
+
+	//put_block(bp, INODE_BLOCK);
+	fi->i_dirt = IN_CLEAN;
+}
+
+int search_dir(struct nas *nas, char *string, ino_t *numb, int flag, int  ftype)
+	/*fi;  ptr to inode for dir to search */
+	/* string[NAME_MAX + 1];	  component to search for */
+	/*ino_t *numb;			  pointer to inode number */
+	/*int flag;			  LOOK_UP, ENTER, DELETE or IS_EMPTY */
+	/*int ftype;			  used when ENTER and
+				  * INCOMPAT_FILETYPE */
+	{
+	/* This function searches the directory whose inode is pointed to by 'ldip':
+	* if (flag == ENTER)  enter 'string' in the directory with inode # '*numb';
+	* if (flag == DELETE) delete 'string' from the directory;
+	* if (flag == LOOK_UP) search for 'string' and return inode # in 'numb';
+	* if (flag == IS_EMPTY) return OK if only . and .. in dir else ENOTEMPTY;
+	*
+	*    if 'string' is dot1 or dot2, no access permissions are checked.
+	*/
+	struct ext2fs_direct  *dp = NULL;
+	struct ext2fs_direct  *prev_dp = NULL;
+	struct buf *bp = NULL;
+	int i, r, e_hit, t, match;
+	//mode_t bits;
+	uint32_t pos;
+	unsigned new_slots;
+	uint32_t b;
+	int extended = 0;
+	int required_space = 0;
+	int string_len = 0;
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
+
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
+	/* If 'fi' is not a pointer to a dir inode, error. */
+	if(!node_is_directory(nas->node)) {
+		return ENOTDIR;
+	}
+//	if ( (fi->f_di.i_mode & I_TYPE) != I_DIRECTORY)  {
+//	return(ENOTDIR);
+//	}
+
+	r = 0;
+
+//	if (flag != 0) {
+//		bits = (flag == LOOK_UP ? X_BIT : W_BIT | X_BIT);
+//
+//		if (string == dot1 || string == dot2) {
+//			if (flag != LOOK_UP) {
+//				r = read_only(fi);
+//			}
+//			 /* only a writable device is required. */
+//		}
+//		else if(check_permissions) {
+//			r = forbidden(fi, bits); /* check access permissions */
+//		}
+//	}
+//	if (r != 0) return(r);
+
+	new_slots = 0;
+	e_hit = 0;
+	match = 0;    	/* set when a string match occurs */
+	pos = 0;
+
+	if (flag == ENTER) {
+		string_len = strlen(string);
+		required_space = MIN_DIR_ENTRY_SIZE + string_len;
+		required_space += (required_space & 0x03) == 0 ? 0 :
+					 (DIR_ENTRY_ALIGN - (required_space & 0x03) );
+
+		if (fi->i_last_dpos < fi->f_di.i_size &&
+			fi->i_last_dentry_size <= required_space) {
+			pos = fi->i_last_dpos;
+		}
+	}
+
+	for (; pos < fi->f_di.i_size; pos += fsi->s_block_size) {
+		b = read_map(nas, pos);	/* get block number */
+
+		/* Since directories don't have holes, 'b' cannot be NO_BLOCK. */
+		//bp = get_block(fi->i_dev, b, NORMAL);	/* get a dir block */
+		ext2_read_sector(nas, fi->f_buf, 1, b);
+		prev_dp = NULL; /* New block - new first dentry, so no prev. */
+
+		if (bp == NO_BLOCK) {
+			return -1;//panic("get_block returned NO_BLOCK");
+		}
+
+		assert(bp != NULL);
+
+		/* Search a directory block.
+		 * Note, we set prev_dp at the end of the loop.
+		 */
+		for (dp = (struct ext2fs_direct*) &b_data(bp);
+			 CUR_DISC_DIR_POS(dp, &b_data(bp)) < fsi->s_block_size;
+			 dp = NEXT_DISC_DIR_DESC(dp) ) {
+			/* Match occurs if string found. */
+			if (flag != ENTER && dp->e2d_ino != 0) {
+				if (flag == IS_EMPTY) {
+					/* If this test succeeds, dir is not empty. */
+					if (strncmp(dp->e2d_name, ".", dp->e2d_namlen) != 0 &&
+						strncmp(dp->e2d_name, "..", dp->e2d_namlen) != 0) {
+						match = 1;
+					}
+				} else {
+					if (strncmp(dp->e2d_name, string, dp->e2d_namlen) == 0) {
+						match = 1;
+					}
+				}
+			}
+
+			if (match) {
+				/* LOOK_UP or DELETE found what it wanted. */
+				r = 0;
+				if (flag == IS_EMPTY) {
+					r = ENOTEMPTY;
+				}
+				else if (flag == DELETE) {
+					if (dp->e2d_namlen >= sizeof(ino_t)) {
+						/* Save d_ino for recovery. */
+						t = dp->e2d_namlen - sizeof(ino_t);
+						*((ino_t *) &dp->e2d_name[t]) = dp->e2d_ino;
+					}
+					dp->e2d_ino = 0;	/* erase entry */
+					lmfs_markdirty(bp);
+
+					/* If we don't support HTree (directory index),
+					 * which is fully compatible ext2 feature,
+					 * we should reset EXT2_INDEX_FL, when modify
+				 * linked directory structure.
+					 *
+					 * @TODO: actually we could just reset it for
+					 * each directory, but I added if() to not
+					 * forget about it later, when add HTree
+					 * support.
+					 */
+//					if (!HAS_COMPAT_FEATURE(&fsi->e2sb,
+//								COMPAT_DIR_INDEX))
+//						fi->i_flags &= ~EXT2_INDEX_FL;
+					if (pos < fi->i_last_dpos) {
+						fi->i_last_dpos = pos;
+						fi->i_last_dentry_size = dp->e2d_reclen;
+					}
+					fi->i_dirt = IN_DIRTY;
+					/* Now we have cleared dentry, if it's not
+					 * the first one, merge it with previous one.
+					 * Since we assume, that existing dentry must be
+					 * correct, there is no way to spann a data block.
+					 */
+					if (prev_dp) {
+						u16_t temp = prev_dp->e2d_reclen;
+						temp += dp->e2d_reclen;
+						prev_dp->e2d_reclen = temp;
+					}
+				}
+				else {
+					/* 'flag' is LOOK_UP */
+					*numb = (ino_t) dp->e2d_ino;
+				}
+				//put_block(bp, DIRECTORY_BLOCK);
+				return(r);
+			}
+
+			/* Check for free slot for the benefit of ENTER. */
+		if (flag == ENTER && dp->e2d_ino == 0) {
+				/* we found a free slot, check if it has enough space */
+				if (required_space <= dp->e2d_reclen) {
+					e_hit = 1;	/* we found a free slot */
+					break;
+				}
+			}
+			/* Can we shrink dentry? */
+			if (flag == ENTER && required_space <= DIR_ENTRY_SHRINK(dp)) {
+				/* Shrink directory and create empty slot, now
+				 * dp->d_rec_len = DIR_ENTRY_ACTUAL_SIZE + DIR_ENTRY_SHRINK.
+				 */
+				int new_slot_size = dp->e2d_reclen;
+				int actual_size = DIR_ENTRY_ACTUAL_SIZE(dp);
+				new_slot_size -= actual_size;
+				dp->e2d_reclen = actual_size;
+				dp = NEXT_DISC_DIR_DESC(dp);
+				dp->e2d_reclen = new_slot_size;
+				/* if we fail before writing real ino */
+				dp->e2d_ino = 0;
+				lmfs_markdirty(bp);
+				e_hit = 1;	/* we found a free slot */
+				break;
+			}
+
+			prev_dp = dp;
+		}
+
+		/* The whole block has been searched or ENTER has a free slot. */
+		if (e_hit) break;	/* e_hit set if ENTER can be performed now */
+		//put_block(bp, DIRECTORY_BLOCK); /* otherwise, continue searching dir */
+	}
+
+	/* The whole directory has now been searched. */
+	if (flag != ENTER) {
+		return(flag == IS_EMPTY ? 0 : ENOENT);
+	}
+
+	/* When ENTER next time, start searching for free slot from
+	* i_last_dpos. It gives solid performance improvement.
+	*/
+	fi->i_last_dpos = pos;
+	fi->i_last_dentry_size = required_space;
+
+	/* This call is for ENTER.  If no free slot has been found so far, try to
+	* extend directory.
+	*/
+	if (e_hit == 0) { /* directory is full and no room left in last block */
+		new_slots++;		/* increase directory size by 1 entry */
+		if ( (bp = new_block(nas, fi->f_di.i_size)) == NULL) {
+			return -1;
+		}
+		dp = (struct ext2fs_direct*) &b_data(bp);
+		dp->e2d_reclen = fsi->s_block_size;
+		dp->e2d_namlen = DIR_ENTRY_MAX_NAME_LEN(dp); /* for failure */
+		extended = 1;
+	}
+
+	/* 'bp' now points to a directory block with space. 'dp' points to slot. */
+	dp->e2d_namlen = string_len;
+	for (i = 0; i < MAX_LENGTH_PATH_NAME && i < dp->e2d_namlen && string[i]; i++) {
+		dp->e2d_name[i] = string[i];
+	}
+	dp->e2d_ino = (int)  *numb;
+	if (HAS_INCOMPAT_FEATURE(&fsi->e2sb, EXT2F_INCOMPAT_FILETYPE)) {
+		/* Convert ftype (from inode.i_mode) to dp->d_file_type */
+		if (ftype == S_IFREG){
+			dp->e2d_type = EXT2_FT_REG_FILE;
+		}
+		else if (ftype == S_IFDIR) {
+			dp->e2d_type = EXT2_FT_DIR;
+		}
+		else if (ftype == S_IFLNK) {
+			dp->e2d_type = EXT2_FT_SYMLINK;
+		}
+		else if (ftype == S_IFBLK) {
+			dp->e2d_type = EXT2_FT_BLKDEV;
+		}
+		else if (ftype == S_IFCHR) {
+			dp->e2d_type = EXT2_FT_CHRDEV;
+		}
+		else if (ftype == S_IFIFO) {
+			dp->e2d_type = EXT2_FT_FIFO;
+		}
+		else {
+			dp->e2d_type = EXT2_FT_UNKNOWN;
+		}
+	}
+	lmfs_markdirty(bp);
+	//put_block(bp, DIRECTORY_BLOCK);
+	fi->i_dirt = IN_DIRTY;
+
+	if (new_slots == 1) {
+		fi->f_di.i_size += (uint32_t) dp->e2d_reclen;
+		/* Send the change to disk if the directory is extended. */
+		if (extended) {
+			rw_inode(nas, 1);
+		}
+	}
+	return 0;
+}
+
+static struct ext2_file_info *new_node(struct nas *nas, struct nas * parents_nas) {
+	/* New_node() is called by fs_open(), fs_mknod(), and fs_mkdir().
+	* In all cases it allocates a new inode, makes a directory entry for it in
+	* the dir_fi directory with string name, and initializes it.
+	* It returns a pointer to the ext2_file_info if it can do this;
+	* otherwise it returns NULL.  It always sets 'err_code'
+	* to an appropriate value (OK or an error code).
+	*/
+	struct ext2_file_info *fi;
+	//struct ext2_file_info *dir_fi;
+	//register int r;
+
+	/* Get final component of the path. */
+	/*TODO*///fi = advance(dir_fi, string, IGN_PERM);
+
+	if (node_is_directory(nas->node)) {
+		/* New entry is a directory, alas we can't give it a ".." */
+		//put_inode(fi);
+		//err_code = EMLINK;
+		return NULL;
+	}
+
+	/* Last path component does not exist.  Make new directory entry. */
+	if (NULL == (fi = alloc_inode(nas, parents_nas))) {
+		/* Can't creat new inode: out of inodes. */
+		return NULL;
+	}
+
+	/* Force inode to the disk before making directory entry to make
+	* the system more robust in the face of a crash: an inode with
+	* no directory entry is much better than the opposite.
+	*/
+	rw_inode(nas, 1);		/* force inode to disk now */
+
+	/* New inode acquired.  Try to make directory entry. */
+	if (0 != search_dir(parents_nas, NULL/*string*/, &fi->i_num, ENTER,
+		fi->f_di.i_mode & S_IFMT)) {
+		fi->i_dirt = IN_DIRTY;	 /*dirty inodes are written out*/
+		//put_inode(fi);	 /*this call frees the inode*/
+		return NULL;
+	}
+	/* The caller has to return the directory ext2_file_info (*dir_fi).  */
+	return fi;
 }
 
 DECLARE_FILE_SYSTEM_DRIVER(ext2_drv);

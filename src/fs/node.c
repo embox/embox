@@ -4,21 +4,26 @@
  *
  * @date 06.10.10
  * @author Nikolay Korotky
+ * @author Eldar Abusalimov
  */
 
 
 #include <string.h>
 #include <embox/unit.h>
-#include <util/array.h>
 
 #include <fs/node.h>
 
 #include <mem/misc/pool.h>
 
 #define MAX_NODE_QUANTITY OPTION_GET(NUMBER,fnode_quantity)
-POOL_DEF(node_pool, struct node, MAX_NODE_QUANTITY);
-POOL_DEF(nas_pool, struct nas, MAX_NODE_QUANTITY);
-POOL_DEF(nodefinfo_pool, struct node_fi, MAX_NODE_QUANTITY);
+
+struct node_tuple {
+	struct node node;
+	struct nas nas;
+	struct node_fi fi;
+};
+
+POOL_DEF(node_pool, struct node_tuple, MAX_NODE_QUANTITY);
 
 EMBOX_UNIT_INIT(node_init);
 
@@ -27,47 +32,30 @@ static int node_init(void) {
 }
 
 node_t *node_alloc(const char *name) {
-	node_t *node;
+	struct node_tuple *nt;
+
+	struct node *node;
 	struct nas *nas;
 
-	node = pool_alloc(&node_pool);
-	if(NULL == node) {
+	nt = pool_alloc(&node_pool);
+	if(!nt) {
 		return NULL;
 	}
 
-	nas = pool_alloc(&nas_pool);
-	if(NULL == nas) {
-		node_free(node);
-		return NULL;
-	}
-
-	nas->fi = pool_alloc(&nodefinfo_pool);
-	if(NULL == nas) {
-		node_free(node);
-		return NULL;
-	}
+	node = &nt->node;
+	nas = &nt->nas;
 
 	node->nas = nas;
 	nas->node = node;
 
-	strcpy((char*) node->name, name);
+	nas->fi = &nt->fi;
+
 	tree_link_init(&node->tree_link);
+	strcpy((char *) node->name, name);
+
 	return node;
 }
 
 void node_free(node_t *node) {
-	struct nas *nas;
-	if (NULL == node) {
-		return;
-	}
-	nas = node->nas;
-	if (NULL == nas->fi) {
-		pool_free(&nodefinfo_pool, nas->fi);
-	}
-
-	if (NULL == nas) {
-		pool_free(&nas_pool, nas);
-	}
-
-	pool_free(&node_pool, node);
+	pool_free(&node_pool, member_cast_out(node, struct node_tuple, node));
 }

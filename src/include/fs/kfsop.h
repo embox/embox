@@ -31,4 +31,6 @@ extern int kmount(char *dev,  char *dir, char *fs_type);
 
 extern int krename(const char *oldpath, const char *newpath);
 
+extern int kfile_fill_stat(struct node *node, struct stat *stat_buff);
+
 #endif /* FS_KFSOP_H_ */

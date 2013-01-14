@@ -42,7 +42,7 @@ int group_descriptors_dirty;
 static uint32_t alloc_block_bit(struct nas *nas, uint32_t origin);
 
 /* help function */
-static struct ext2_gd* get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi) {
+struct ext2_gd* get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi) {
 	if (bnum >= fsi->s_groups_count) {
 		return NULL;
 	}
@@ -217,19 +217,19 @@ uint32_t alloc_block(struct nas *nas, uint32_t block)
 	* next time return NO_BLOCK
 	*/
 	/*if (!opt.use_reserved_blocks &&
-		fsi->e2fs.s_free_blocks_count <= fsi->e2fs.s_r_blocks_count) {
+		fsi->e2sb.s_free_blocks_count <= fsi->e2sb.s_r_blocks_count) {
 		discard_preallocated_blocks(nas, NULL);
 	}
 	else */
-	if (fsi->e2fs.s_free_blocks_count <= EXT2_PREALLOC_BLOCKS) {
+	if (fsi->e2sb.s_free_blocks_count <= EXT2_PREALLOC_BLOCKS) {
 		discard_preallocated_blocks(nas);
 	}
 
 	/*if (!opt.use_reserved_blocks &&
-		fsi->e2fs.s_free_blocks_count <= fsi->e2fs.s_r_blocks_count) {
+		fsi->e2sb.s_free_blocks_count <= fsi->e2sb.s_r_blocks_count) {
 		return(NO_BLOCK);
 	} else */
-	if (fsi->e2fs.s_free_blocks_count == 0) {
+	if (fsi->e2sb.s_free_blocks_count == 0) {
 		return(NO_BLOCK);
 	}
 
@@ -259,8 +259,8 @@ uint32_t alloc_block(struct nas *nas, uint32_t block)
 		}
 	}
 	else {
-		group = (fi->i_num - 1) / fsi->e2fs.s_inodes_per_group;
-		goal = fsi->e2fs.s_blocks_per_group*group + fsi->e2fs.s_first_data_block;
+		group = (fi->i_num - 1) / fsi->e2sb.s_inodes_per_group;
+		goal = fsi->e2sb.s_blocks_per_group * group + fsi->e2sb.s_first_data_block;
 	}
 
 	if (fi->i_preallocation && fi->i_prealloc_count) {
@@ -296,8 +296,8 @@ static uint32_t alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allo
 	block = NO_BLOCK;
 	bit = -1;
 
-	if (goal >= fsi->e2fs.s_blocks_count ||
-		(goal < fsi->e2fs.s_first_data_block && goal != 0)) {
+	if (goal >= fsi->e2sb.s_blocks_count ||
+		(goal < fsi->e2sb.s_first_data_block && goal != 0)) {
 		goal = fsi->s_bsearch;
 	}
 
@@ -308,14 +308,14 @@ static uint32_t alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allo
 	}
 
 	/* Figure out where to start the bit search. */
-	word = ((goal - fsi->e2fs.s_first_data_block) %
-			fsi->e2fs.s_blocks_per_group) / FS_BITCHUNK_BITS;
+	word = ((goal - fsi->e2sb.s_first_data_block) %
+			fsi->e2sb.s_blocks_per_group) / FS_BITCHUNK_BITS;
 
 	/* Try to allocate block at any group starting from the goal's group.
 	* First time goal's group is checked from the word=goal, after all
 	* groups checked, it's checked again from word=0, that's why "i <=".
 	*/
-	group = (goal - fsi->e2fs.s_first_data_block) / fsi->e2fs.s_blocks_per_group;
+	group = (goal - fsi->e2sb.s_first_data_block) / fsi->e2sb.s_blocks_per_group;
 	for (i = 0; i <= fsi->s_groups_count; i++, group++) {
 
 		bp = &buff;
@@ -343,10 +343,10 @@ static uint32_t alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allo
 				blocks! It had to be done by another code.");*/
 			}
 			/* we preallocate bytes only */
-			bit = setbyte(b_bitmap(bp), fsi->e2fs.s_blocks_per_group);
+			bit = setbyte(b_bitmap(bp), fsi->e2sb.s_blocks_per_group);
 			if (bit != -1) {
-				block = bit + fsi->e2fs.s_first_data_block +
-				group * fsi->e2fs.s_blocks_per_group;
+				block = bit + fsi->e2sb.s_first_data_block +
+				group * fsi->e2sb.s_blocks_per_group;
 				check_block_number(block, fsi, gd);
 
 				/* We preallocate a byte starting from block.
@@ -364,13 +364,13 @@ static uint32_t alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allo
 				//put_block(bp, MAP_BLOCK);
 
 				gd->free_blocks_count -= EXT2_PREALLOC_BLOCKS;
-				fsi->e2fs.s_free_blocks_count -= EXT2_PREALLOC_BLOCKS;
+				fsi->e2sb.s_free_blocks_count -= EXT2_PREALLOC_BLOCKS;
 				group_descriptors_dirty = DIRTY;
 				return block;
 			}
 		}
 
-		bit = setbit(b_bitmap(bp), fsi->e2fs.s_blocks_per_group, word);
+		bit = setbit(b_bitmap(bp), fsi->e2sb.s_blocks_per_group, word);
 		if (bit == -1) {
 			if (word == 0) {
 					/*panic("ext2: allocator failed to allocate a bit in bitmap
@@ -382,14 +382,14 @@ static uint32_t alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allo
 			}
 		}
 
-		block = fsi->e2fs.s_first_data_block + group * fsi->e2fs.s_blocks_per_group + bit;
+		block = fsi->e2sb.s_first_data_block + group * fsi->e2sb.s_blocks_per_group + bit;
 		check_block_number(block, fsi, gd);
 
 		bp->lmfs_dirt = DIRTY; /* Now it's safe to mark it as dirty */
 		//put_block(bp, MAP_BLOCK);
 
 		gd->free_blocks_count--;
-		fsi->e2fs.s_free_blocks_count--;
+		fsi->e2sb.s_free_blocks_count--;
 		group_descriptors_dirty = DIRTY;
 
 		if (update_bsearch && block != -1 && block != NO_BLOCK) {
@@ -413,8 +413,8 @@ void free_block(struct nas *nas, struct ext2_fs_info *fsi, uint32_t bit_returned
 
 	bp = &buff;
 
-	if (bit_returned >= fsi->e2fs.s_blocks_count ||
-		bit_returned < fsi->e2fs.s_first_data_block) {
+	if (bit_returned >= fsi->e2sb.s_blocks_count ||
+		bit_returned < fsi->e2sb.s_first_data_block) {
 		/*panic("trying to free block %d beyond blocks scope.",
 		bit_returned);*/
 	}
@@ -422,8 +422,8 @@ void free_block(struct nas *nas, struct ext2_fs_info *fsi, uint32_t bit_returned
 	/* At first search group, to which bit_returned belongs to
 	* and figure out in what word bit is stored.
 	*/
-	group = (bit_returned - fsi->e2fs.s_first_data_block) / fsi->e2fs.s_blocks_per_group;
-	//bit = (bit_returned - fsi->e2fs.s_first_data_block) % fsi->e2fs.s_blocks_per_group;
+	group = (bit_returned - fsi->e2sb.s_first_data_block) / fsi->e2sb.s_blocks_per_group;
+	//bit = (bit_returned - fsi->e2sb.s_first_data_block) % fsi->e2sb.s_blocks_per_group;
 
 	gd = get_group_desc(group, fsi);
 
@@ -445,7 +445,7 @@ void free_block(struct nas *nas, struct ext2_fs_info *fsi, uint32_t bit_returned
 	//put_block(bp, MAP_BLOCK);
 
 	gd->free_blocks_count++;
-	fsi->e2fs.s_free_blocks_count++;
+	fsi->e2sb.s_free_blocks_count++;
 
 	group_descriptors_dirty = DIRTY;
 
@@ -471,7 +471,7 @@ static void check_block_number(uint32_t block, struct ext2_fs_info *fsi,
 		*/
 	}
 
-	if (block >= fsi->e2fs.s_blocks_count) {
+	if (block >= fsi->e2sb.s_blocks_count) {
 		/*panic("ext2: allocator returned blocknum greater, than
 		total number of blocks.\n");*/
 	}

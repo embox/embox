@@ -276,18 +276,12 @@ int krmdir(const char *pathname) {
 
 int klstat(const char *path, struct stat *buf) {
 	node_t *node;
-	struct nas *nas;
-	struct node_info *ni;
 
 	if(NULL == (node = vfs_find_node(path, NULL))) {
 		return -1;
 	}
 
-	nas = node->nas;
-	ni = &nas->fi->ni;
-
-
-	buf->st_size = ni->size;
+	kfile_fill_stat(node, buf);
 
 	return 0;
 }
@@ -368,6 +362,8 @@ int krename(const char *oldpath, const char *newpath) {
 	node_t *oldnode, *newnode, *diritem;
 	char buf[PAGE_SIZE()];
 
+	struct tree_link *link, *end_link;
+
 	if (MAX_LENGTH_PATH_NAME < strlen(oldpath) ||
 			MAX_LENGTH_PATH_NAME < strlen(newpath)) {
 		SET_ERRNO(ENAMETOOLONG);
@@ -417,12 +413,21 @@ int krename(const char *oldpath, const char *newpath) {
 			return -1;
 		}
 
-		tree_foreach_children(diritem, (&oldnode->tree_link), tree_link) {
+		/*tree_foreach_children(diritem, (&oldnode->tree_link), tree_link) {*/
+		link = tree_children_begin(&oldnode->tree_link);
+		end_link = tree_children_end(&oldnode->tree_link);
+		while (link != end_link) {
+
+			diritem = tree_element(link, typeof(*diritem), tree_link);
+			link = tree_children_next(link);
+
 			if (0 != strcmp(".", diritem->name) &&
 					0 != strcmp("..", diritem->name)) {
 				diritemlen = strlen(diritem->name);
-				oldpatharg = calloc(strlen(oldpath) + diritemlen + 3, sizeof(char));
-				newpatharg = calloc(strlen(newpath) + diritemlen + 3, sizeof(char));
+				oldpatharg =
+						calloc(strlen(oldpath) + diritemlen + 2, sizeof(char));
+				newpatharg =
+						calloc(strlen(newpath) + diritemlen + 2, sizeof(char));
 
 				strcat(oldpatharg, oldpath);
 				if (oldpatharg[strlen(oldpatharg)] != '/') {
@@ -435,6 +440,7 @@ int krename(const char *oldpath, const char *newpath) {
 				}
 				strcat(newpatharg, diritem->name);
 
+				printf("%s -> %s\n", oldpatharg, newpatharg);
 				if (-1 == krename(oldpatharg, newpatharg)) {
 					return -1;
 				}
@@ -443,36 +449,34 @@ int krename(const char *oldpath, const char *newpath) {
 				free(oldpatharg);
 			}
 		}
-
-		return ENOERR;
-	}
-
-	/* Open files */
-	oldfd = open(oldpath, O_RDONLY);
-	if (-1 == oldfd) {
-		return -1;
-	}
-	newfd = open(newpath, O_WRONLY);
-	if (-1 == newfd) {
-		return -1;
-	}
-
-	/* Copy bytes */
-	while ((rc = read(oldfd, buf, PAGE_SIZE())) > 0) {
-		if (write(newfd, buf, rc) <= 0) {
-			SET_ERRNO(EIO);
+	/* Or copy file */
+	} else {
+		oldfd = open(oldpath, O_RDONLY);
+		if (-1 == oldfd) {
 			return -1;
 		}
-	}
+		newfd = open(newpath, O_WRONLY);
+		if (-1 == newfd) {
+			return -1;
+		}
 
-	/* Close files and free memory*/
-	rc = close(oldfd);
-	if (0 != rc) {
-		return -1;
-	}
-	rc = close(newfd);
-	if (0 != rc) {
-		return -1;
+		/* Copy bytes */
+		while ((rc = read(oldfd, buf, PAGE_SIZE())) > 0) {
+			if (write(newfd, buf, rc) <= 0) {
+				SET_ERRNO(EIO);
+				return -1;
+			}
+		}
+
+		/* Close files and free memory*/
+		rc = close(oldfd);
+		if (0 != rc) {
+			return -1;
+		}
+		rc = close(newfd);
+		if (0 != rc) {
+			return -1;
+		}
 	}
 
 	if (NULL != newpathbuf) {

@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <javacall_defs.h>
 
+extern int java_pipe_read, java_pipe_write;
+
 extern javacall_result emboxErrno2javaErrno(int embox_errno);
 extern javacall_result utf16_to_utf8(const javacall_utf16* pUtf16,
                                                javacall_int32 utf16Len,

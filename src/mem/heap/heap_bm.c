@@ -40,6 +40,7 @@ struct free_block {
 };
 
 static void *pool;
+static void *pool_end;
 static struct free_block_link free_blocks = { &free_blocks, &free_blocks };
 
 #define get_clear_size(size) ((size) & ~3)
@@ -250,9 +251,15 @@ void *malloc(size_t size) {
 /*#include <assert.h>*/
 void free(void *ptr) {
 	struct free_block *block;
+
 	if (ptr == NULL) {
 		return;
 	}
+
+	if(ptr < pool || ptr > pool_end) {
+		return;
+	}
+
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
 
 	if (!block_is_busy(block)) {
@@ -271,6 +278,7 @@ void free(void *ptr) {
 
 		set_end_size(block);
 	}
+	clear_block((struct free_block *)ptr);
 }
 
 void *realloc(void *ptr, size_t size) {
@@ -310,15 +318,17 @@ static int heap_init(void) {
 	}
 
 	block = (struct free_block *) pool;
-	block->size = HEAP_SIZE / 2 - sizeof(block->size);
+	block->size = HEAP_SIZE - (PAGE_SIZE() * 2) - sizeof(block->size);
 	set_end_size(block);
 
 	mark_prev(block);
 	block_link(block);
 
 	/* last work we mark as persistence busy */
-	block = (void *) ((char *) pool + HEAP_SIZE - sizeof(block->size));
+	block = (void *) ((char *) pool + block->size);
 	mark_block(block);
+
+	pool_end = block;
 
 	return 0;
 }
