@@ -89,8 +89,7 @@ javacall_result javacall_file_exist(const javacall_utf16 * fileName, int fileNam
 	free(utf8Name);
 
 	if (!res) {
-		/* FIXME res = (S_ISREG(file_stat.st_mode) ? JAVACALL_OK : JAVACALL_FAIL); */
-		res = JAVACALL_OK;
+		res = S_ISREG(file_stat.st_mode) ? JAVACALL_OK : JAVACALL_FAIL;
 	} else {
 		res = emboxErrno2javaErrno(errno);
 	}
