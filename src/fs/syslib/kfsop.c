@@ -19,62 +19,6 @@
 #include <fs/fs_drv.h>
 #include <fs/kfsop.h>
 
-#if 0
-static node_t *create_filechain(const char *name, uint8_t node_type) {
-	int newnode_cnt;
-	fs_drv_t *drv;
-	struct node *node, *new_node;
-	struct nas *nas;
-	char path[MAX_LENGTH_PATH_NAME];
-	char tail[MAX_LENGTH_PATH_NAME];
-
-	strncpy(path, name, MAX_LENGTH_PATH_NAME);
-	newnode_cnt = 0;
-	tail[0] = '\0';
-
-
-	/* find last node in the path */
-	do {
-		if (path_nip_tail(path, tail)) {
-			return NULL;
-		}
-		newnode_cnt ++;
-	} while (NULL == (node = vfs_find_node(path, NULL)));
-
-	/* check drv of parents */
-	nas = node->nas;
-	drv = nas->fs->drv;
-	if ((NULL == drv) || (NULL == drv->fsop->create_node)) {
-		return NULL;
-	}
-
-	/* add one directory and assign the parameters of the parent */
-	do {
-		path_increase_tail(path, tail);
-
-		if (NULL == (new_node = vfs_add_path(path, NULL))) {
-			return NULL;
-		}
-
-		new_node->type = NODE_TYPE_DIRECTORY;
-		if ((LAST_IN_PATH == newnode_cnt) && (NODE_TYPE_FILE == node_type)) {
-			new_node->type = NODE_TYPE_FILE;
-		}
-
-		if(0 > drv->fsop->create_node(node, new_node)) {
-			vfs_del_leaf(new_node);
-			return NULL;
-		}
-
-		node = new_node;
-		newnode_cnt--;
-
-	} while (0 < newnode_cnt);
-
-	return node;
-}
-#endif
-
 static int create_new_node(struct node * parent, char *node_name, uint8_t node_type) {
 	struct node *new_node;
 	struct nas *nas;
@@ -148,12 +92,6 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 
 
 	/* set permission */
-#if 0
-	if (NULL == (nod = create_filechain(pathname, NODE_TYPE_FILE))) {
-		errno = EINVAL;
-		return -1;
-	}
-#endif
 
 	return 0;
 }
@@ -198,13 +136,6 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 
 		node = vfs_get_child(node_name, node);
 	} while (NULL != node);
-
-#if 0
-	if (NULL == (nod = create_filechain(pathname, NODE_TYPE_DIRECTORY))) {
-		errno = EINVAL;
-		return -1;
-	}
-#endif
 
 	return 0;
 }
