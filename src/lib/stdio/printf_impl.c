@@ -135,7 +135,6 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 	return pc;
 }
 
-#include <stdio.h>
 static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data,
 		double r, int width, int precision, unsigned int ops, int base) {
@@ -168,7 +167,7 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	fp = modf(r, &ip);
     for (; (i < precision) && (fmod(fp, 1.0) != 0.0); ++i) fp *= base;
 	fp = round(fp);
-	ip = precision ? fp != pow((double)base, (double)i) ? ip : ip + 1.0 : round(r);
+	ip = precision ? (fp != pow((double)base, (double)i) ? ip : ip + 1.0) : round(r);
 	fp = fp != pow((double)base, (double)i) ? fp : 0.0;
 
 	for (; i; --i) {
