@@ -47,11 +47,23 @@ static module LibExec {
 	depends embox.mem.mmap_api
 	depends LibElf
 }
+//@DefaultImpl(LibCDiagnosticAssert)
+//abstract module LibCDiagnostic {
+//
+//}
 
 static module LibCDiagnostic {
 	source "assert.c"
+	source "assert_impl.h"
 	depends LibCStdio
 }
+
+static module LibCDiagnosticAssert extends LibCDiagnosticAssert {
+	source "assert.c"
+	source "assert_impl.h"
+	depends LibCStdio
+}
+
 
 static module LibCMisc {
 	source "crypt/crc32.c"

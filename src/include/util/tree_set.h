@@ -42,8 +42,6 @@ struct tree_set {
 	struct tree_set_link *root;
 };
 
-/*#include __impl_x(util/tree_set_impl.c)*/
-
 /**
  * Compare two elements of tree_set.
  *

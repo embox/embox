@@ -29,7 +29,7 @@ struct prioq_link {
 typedef int (*prioq_comparator_t)(struct prioq_link *first,
 		struct prioq_link *second);
 
-#include __impl_x(util/prioq_impl.h)
+#include <module/embox/util/Prioq.h>
 
 /**
  * Example comparator which defines an order based on elements addresses.

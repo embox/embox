@@ -17,11 +17,7 @@
 #ifndef DLIST_H_
 #define DLIST_H_
 
-#if defined CONFIG_LIST_NDEBUG || 0
-# include __impl_x(util/dlist_ndebug.h)
-#else
-# include __impl_x(util/dlist_debug.h)
-#endif
+#include <module/embox/util/DList.h>
 
 /**
  * A service list data structure. It's used both for elements and for list head.
