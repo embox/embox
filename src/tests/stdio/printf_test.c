@@ -149,5 +149,7 @@ TEST_CASE("Test for float-pointing") {
 	printf("%.1f\n", 1.983183456);
 	printf("%14.2f\n", 1.983183456);
 	printf("%014.4f\n", 1.983183456);
-	printf("%-14.f\n", 1.983183456);
+	printf("%#-14.f\n", 1.983183456);
+	printf("%f\n", 1.983183456);
+	printf("%.0f \n", 17.0);
 }

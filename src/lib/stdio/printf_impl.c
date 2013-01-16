@@ -140,7 +140,7 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 		struct printchar_handler_data *printchar_data,
 		double r, int width, int precision, unsigned int ops, int base) {
 	char buff[PRINT_F_BUFF_SZ], *str, *end, *prefix;
-	double fp, ip /*,t, t1*/;
+	double fp, ip;
 	int pc, i, ch, len, prefix_len, pad_count, letbase;
 
 	assert(printchar_handler != NULL);
@@ -165,20 +165,11 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
 	precision = ops & OPS_PREC_IS_GIVEN ? precision : PRINT_F_PREC_DEFAULT;
 
-    if (precision) {
-	    fp = modf(r, &ip);
-        while ((i++ < precision) && (fmod(fp, 1.0) != 0.0)) fp *= base;
-//        t1 = modf(fp, &t);
-//        printf("fp befre %d.%d\n", (int)t, (int)(t1*1000));
-        fp = round(fp);
-        --i;
-//        printf("fp %d ip %d i %d pow %d\n", (int)fp, (int)ip, i, (int)pow((double)base, (double)i));
-        if (fp == pow((double)base, (double)i)) {
-            fp = 0.0;
-            ip += 1.0;
-        }
-    }
-    else ip = round(r);
+	fp = modf(r, &ip);
+    for (; (i < precision) && (fmod(fp, 1.0) != 0.0); ++i) fp *= base;
+	fp = round(fp);
+	ip = precision ? fp != pow((double)base, (double)i) ? ip : ip + 1.0 : round(r);
+	fp = fp != pow((double)base, (double)i) ? fp : 0.0;
 
 	for (; i; --i) {
 		ch = (int)(fmod(fp, (double)base) * base);
