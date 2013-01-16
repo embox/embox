@@ -11,7 +11,6 @@
 #ifndef KERNEL_THREAD_SCHED_H_
 #define KERNEL_THREAD_SCHED_H_
 
-#include <errno.h>
 #include <kernel/thread/sched_lock.h>
 #include <kernel/thread/sched_priority.h>
 
@@ -21,6 +20,7 @@
 
 struct thread;
 struct event;
+struct sleepq;
 
 /**
  * Initializes scheduler.

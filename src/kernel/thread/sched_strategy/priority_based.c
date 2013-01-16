@@ -27,6 +27,8 @@
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 
+#include <kernel/time/timer.h>
+
 #include <stdio.h>
 
 static void sched_tick(sys_timer_t *timer, void *param);

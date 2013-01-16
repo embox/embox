@@ -156,7 +156,8 @@
 
 #ifndef __ASSEMBLER__
 
-#include __impl_x(kernel/critical_impl.h)
+
+#include <module/embox/kernel/critical.h> //TODO critical_impl.h is redundantly
 
 typedef __critical_t critical_t;
 
