@@ -37,19 +37,17 @@
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 
-int group_descriptors_dirty;
-
-static uint32_t alloc_block_bit(struct nas *nas, uint32_t origin);
+static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t origin);
 
 /* help function */
-struct ext2_gd* get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi) {
+struct ext2_gd *ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi) {
 	if (bnum >= fsi->s_groups_count) {
 		return NULL;
 	}
 	return &fsi->e2fs_gd[bnum];
 }
 
-uint32_t setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word)
+uint32_t ext2_setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word)
 {
 	/* Find free bit in bitmap and set. Return number of the bit,
 	* if failed return -1.
@@ -68,8 +66,9 @@ uint32_t setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word)
 	/* Iterate over the words in block. */
 	for (wptr = &bitmap[word]; wptr < wlim; wptr++) {
 		/* Does this word contain a free bit? */
-		if (*wptr == (uint32_t) ~0)
+		if (*wptr == (uint32_t) ~0) {
 			continue;
+		}
 
 		/* Find and allocate the free bit. */
 		k = (int) *wptr;
@@ -94,7 +93,7 @@ uint32_t setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word)
 }
 
 
-uint32_t setbyte(uint32_t *bitmap, uint32_t max_bits)
+uint32_t ext2_setbyte(uint32_t *bitmap, uint32_t max_bits)
 {
 	/* Find free byte in bitmap and set it. Return number of the starting bit,
 	* if failed return -1.
@@ -133,7 +132,7 @@ uint32_t setbyte(uint32_t *bitmap, uint32_t max_bits)
 }
 
 
-int unsetbit(uint32_t *bitmap, uint32_t bit)
+int ext2_unsetbit(uint32_t *bitmap, uint32_t bit)
 {
 	/* Unset specified bit. If requested bit is already free return -1,
 	* otherwise return 0.
@@ -155,7 +154,7 @@ int unsetbit(uint32_t *bitmap, uint32_t bit)
 	return 0;
 }
 
-void discard_preallocated_blocks(struct nas *nas)
+void ext2_discard_preallocated_blocks(struct nas *nas)
 {
 	/* When called for fi, discard (free) blocks preallocated for fi,
 	* otherwise discard all preallocated blocks.
@@ -168,17 +167,17 @@ void discard_preallocated_blocks(struct nas *nas)
 	*/
 	int i;
 	struct ext2_file_info *fi;
-	struct ext2_fs_info *fsi;
+	//struct ext2_fs_info *fsi;
 
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
+	//fsi = nas->fs->fsi;
 
 	if (fi) {
-		fi->i_prealloc_count = fi->i_prealloc_index = 0;
+		fi->f_prealloc_count = fi->f_prealloc_index = 0;
 		for (i = 0; i < EXT2_PREALLOC_BLOCKS; i++) {
-			if (fi->i_prealloc_blocks[i] != NO_BLOCK) {
-				free_block(nas, fsi, fi->i_prealloc_blocks[i]);
-				fi->i_prealloc_blocks[i] = NO_BLOCK;
+			if (fi->f_prealloc_blocks[i] != NO_BLOCK) {
+				ext2_free_block(nas, fi->f_prealloc_blocks[i]);
+				fi->f_prealloc_blocks[i] = NO_BLOCK;
 			}
 		}
 		return;
@@ -187,18 +186,18 @@ void discard_preallocated_blocks(struct nas *nas)
 	/* Discard all allocated blocks.
 	* Probably there are just few blocks on the disc, so forbid preallocation.
 	for(fi = &inode[0]; fi < &inode[NR_INODES]; fi++) {
-		fi->i_prealloc_count = fi->i_prealloc_index = 0;
-		fi->i_preallocation = 0; // forbid preallocation /
+		fi->f_prealloc_count = fi->f_prealloc_index = 0;
+		fi->f_preallocation = 0; // forbid preallocation /
 		for (i = 0; i < EXT2_PREALLOC_BLOCKS; i++) {
-			if (fi->i_prealloc_blocks[i] != NO_BLOCK) {
-				free_block(nas, fi->i_sp, fi->i_prealloc_blocks[i]);
-				fi->i_prealloc_blocks[i] = NO_BLOCK;
+			if (fi->f_prealloc_blocks[i] != NO_BLOCK) {
+				free_block(nas, fi->i_sp, fi->f_prealloc_blocks[i]);
+				fi->f_prealloc_blocks[i] = NO_BLOCK;
 			}
 		}
 	}*/
 }
 
-uint32_t alloc_block(struct nas *nas, uint32_t block)
+uint32_t ext2_alloc_block(struct nas *nas, uint32_t block)
 {
 	/* Allocate a block for inode. If block is provided, then use it as a goal:
 	* try to allocate this block or his neghbors.
@@ -222,7 +221,7 @@ uint32_t alloc_block(struct nas *nas, uint32_t block)
 	}
 	else */
 	if (fsi->e2sb.s_free_blocks_count <= EXT2_PREALLOC_BLOCKS) {
-		discard_preallocated_blocks(nas);
+		ext2_discard_preallocated_blocks(nas);
 	}
 
 	/*if (!opt.use_reserved_blocks &&
@@ -235,56 +234,55 @@ uint32_t alloc_block(struct nas *nas, uint32_t block)
 
 	if (block != NO_BLOCK) {
 		goal = block;
-		if (fi->i_preallocation && fi->i_prealloc_count > 0) {
+		if (fi->f_preallocation && fi->f_prealloc_count > 0) {
 			/* check if goal is preallocated */
-			b = fi->i_prealloc_blocks[fi->i_prealloc_index];
+			b = fi->f_prealloc_blocks[fi->f_prealloc_index];
 			if (block == b || (block + 1) == b) {
 				/* use preallocated block */
-				fi->i_prealloc_blocks[fi->i_prealloc_index] = NO_BLOCK;
-				fi->i_prealloc_count--;
-				fi->i_prealloc_index++;
-				if (fi->i_prealloc_index >= EXT2_PREALLOC_BLOCKS) {
-					fi->i_prealloc_index = 0;
+				fi->f_prealloc_blocks[fi->f_prealloc_index] = NO_BLOCK;
+				fi->f_prealloc_count--;
+				fi->f_prealloc_index++;
+				if (fi->f_prealloc_index >= EXT2_PREALLOC_BLOCKS) {
+					fi->f_prealloc_index = 0;
 				}
-				fi->i_bsearch = b;
+				fi->f_bsearch = b;
 				return b;
 			}
 			else {
 				/* probably non-sequential write operation,
 				 * disable preallocation for this inode.
 				 */
-				fi->i_preallocation = 0;
-				discard_preallocated_blocks(nas);
+				fi->f_preallocation = 0;
+				ext2_discard_preallocated_blocks(nas);
 			}
 		}
 	}
 	else {
-		group = (fi->i_num - 1) / fsi->e2sb.s_inodes_per_group;
+		group = (fi->f_num - 1) / fsi->e2sb.s_inodes_per_group;
 		goal = fsi->e2sb.s_blocks_per_group * group + fsi->e2sb.s_first_data_block;
 	}
 
-	if (fi->i_preallocation && fi->i_prealloc_count) {
+	if (fi->f_preallocation && fi->f_prealloc_count) {
 		//ext2_debug("There're preallocated blocks, but they'reneither used or freed!");
 	}
-	b = alloc_block_bit(nas, goal);
+	b = ext2_alloc_block_bit(nas, goal);
 	if (b != NO_BLOCK) {
-		fi->i_bsearch = b;
+		fi->f_bsearch = b;
 	}
 	return b;
 }
 
 
-static void check_block_number(uint32_t block, struct ext2_fs_info *fsi,
+static void ext2_check_block_number(uint32_t block, struct ext2_fs_info *fsi,
 	struct ext2_gd *gd);
 
-static uint32_t alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allocate near this block */
+static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allocate near this block */
 	uint32_t block;	/* allocated block */
 	int word;			/* word in block bitmap */
 	uint32_t bit;
 	int group;
 	char update_bsearch = 0;
 	int i;
-	struct buf buff,*bp;
 	struct ext2_gd *gd;
 
 	struct ext2_file_info *fi;
@@ -318,59 +316,56 @@ static uint32_t alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allo
 	group = (goal - fsi->e2sb.s_first_data_block) / fsi->e2sb.s_blocks_per_group;
 	for (i = 0; i <= fsi->s_groups_count; i++, group++) {
 
-		bp = &buff;
 		if (group >= fsi->s_groups_count) {
 			group = 0;
 		}
 
-		gd = get_group_desc(group, fsi);
+		gd = ext2_get_group_desc(group, fsi);
 
 		if (gd->free_blocks_count == 0) {
 			word = 0;
 			continue;
 		}
 
-		//bp = get_block(fsi->s_dev, gd->block_bitmap, NORMAL);
-		ext2_read_sector(nas, (char *) bp->data, 1, gd->block_bitmap);
+		ext2_read_sector(nas, fi->f_buf, 1, gd->block_bitmap);
 
-		if (fi->i_preallocation &&
+		if (fi->f_preallocation &&
 		gd->free_blocks_count >= (EXT2_PREALLOC_BLOCKS * 4) ) {
 			/* Try to preallocate blocks */
-			if (fi->i_prealloc_count != 0) {
+			if (fi->f_prealloc_count != 0) {
 				/* kind of glitch... */
-				discard_preallocated_blocks(nas);
+				ext2_discard_preallocated_blocks(nas);
 				/*ext2_debug("warning, discarding previously preallocated
 				blocks! It had to be done by another code.");*/
 			}
 			/* we preallocate bytes only */
-			bit = setbyte(b_bitmap(bp), fsi->e2sb.s_blocks_per_group);
+			bit = ext2_setbyte(b_bitmap(fi->f_buf), fsi->e2sb.s_blocks_per_group);
 			if (bit != -1) {
 				block = bit + fsi->e2sb.s_first_data_block +
 				group * fsi->e2sb.s_blocks_per_group;
-				check_block_number(block, fsi, gd);
+				ext2_check_block_number(block, fsi, gd);
 
 				/* We preallocate a byte starting from block.
 				* First preallocated block will be returned as
 				* normally allocated block.
 				*/
 				for (i = 1; i < EXT2_PREALLOC_BLOCKS; i++) {
-					check_block_number(block + i, fsi, gd);
-					fi->i_prealloc_blocks[i-1] = block + i;
+					ext2_check_block_number(block + i, fsi, gd);
+					fi->f_prealloc_blocks[i-1] = block + i;
 				}
-				fi->i_prealloc_index = 0;
-				fi->i_prealloc_count = EXT2_PREALLOC_BLOCKS - 1;
+				fi->f_prealloc_index = 0;
+				fi->f_prealloc_count = EXT2_PREALLOC_BLOCKS - 1;
 
-				bp->lmfs_dirt = DIRTY; /* by setbyte */
+				//bp->lmfs_dirt = DIRTY; /* by setbyte */
 				//put_block(bp, MAP_BLOCK);
 
 				gd->free_blocks_count -= EXT2_PREALLOC_BLOCKS;
 				fsi->e2sb.s_free_blocks_count -= EXT2_PREALLOC_BLOCKS;
-				group_descriptors_dirty = DIRTY;
 				return block;
 			}
 		}
 
-		bit = setbit(b_bitmap(bp), fsi->e2sb.s_blocks_per_group, word);
+		bit = ext2_setbit(b_bitmap(fi->f_buf), fsi->e2sb.s_blocks_per_group, word);
 		if (bit == -1) {
 			if (word == 0) {
 					/*panic("ext2: allocator failed to allocate a bit in bitmap
@@ -383,14 +378,12 @@ static uint32_t alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allo
 		}
 
 		block = fsi->e2sb.s_first_data_block + group * fsi->e2sb.s_blocks_per_group + bit;
-		check_block_number(block, fsi, gd);
+		ext2_check_block_number(block, fsi, gd);
 
-		bp->lmfs_dirt = DIRTY; /* Now it's safe to mark it as dirty */
-		//put_block(bp, MAP_BLOCK);
+		ext2_write_sector(nas, fi->f_buf, 1, gd->block_bitmap);
 
 		gd->free_blocks_count--;
 		fsi->e2sb.s_free_blocks_count--;
-		group_descriptors_dirty = DIRTY;
 
 		if (update_bsearch && block != -1 && block != NO_BLOCK) {
 			/* We searched from the beginning, update bsearch. */
@@ -403,15 +396,16 @@ static uint32_t alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allo
 	return block;
 }
 
-void free_block(struct nas *nas, struct ext2_fs_info *fsi, uint32_t bit_returned)
-{
+void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
 	/* Return a block by turning off its bitmap bit. */
 	int group;		/* group number of bit_returned */
 	//int bit;		/* bit_returned number within its group */
-	struct buf buff, *bp;
 	struct ext2_gd *gd;
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
 
-	bp = &buff;
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
 
 	if (bit_returned >= fsi->e2sb.s_blocks_count ||
 		bit_returned < fsi->e2sb.s_first_data_block) {
@@ -425,7 +419,7 @@ void free_block(struct nas *nas, struct ext2_fs_info *fsi, uint32_t bit_returned
 	group = (bit_returned - fsi->e2sb.s_first_data_block) / fsi->e2sb.s_blocks_per_group;
 	//bit = (bit_returned - fsi->e2sb.s_first_data_block) % fsi->e2sb.s_blocks_per_group;
 
-	gd = get_group_desc(group, fsi);
+	gd = ext2_get_group_desc(group, fsi);
 
 	/* We might be buggy (No way! :P), so check if we deallocate
 	* data block, but not control (system) block.
@@ -439,15 +433,13 @@ void free_block(struct nas *nas, struct ext2_fs_info *fsi, uint32_t bit_returned
 		system/control block, hardly poke author.");*/
 	}
 
-	ext2_read_sector(nas, (char *) bp->data, 1, gd->block_bitmap);
+	ext2_read_sector(nas, (char *) fi->f_buf, 1, gd->block_bitmap);
 
-	bp->lmfs_dirt = DIRTY;
+	//bp->lmfs_dirt = DIRTY;
 	//put_block(bp, MAP_BLOCK);
 
 	gd->free_blocks_count++;
 	fsi->e2sb.s_free_blocks_count++;
-
-	group_descriptors_dirty = DIRTY;
 
 	if (bit_returned < fsi->s_bsearch) {
 		fsi->s_bsearch = bit_returned;
@@ -455,7 +447,7 @@ void free_block(struct nas *nas, struct ext2_fs_info *fsi, uint32_t bit_returned
 }
 
 
-static void check_block_number(uint32_t block, struct ext2_fs_info *fsi,
+static void ext2_check_block_number(uint32_t block, struct ext2_fs_info *fsi,
 				struct ext2_gd *gd)
 {
 	/* Check if we allocated a data block, but not control (system) block.

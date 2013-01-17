@@ -54,16 +54,13 @@
 #define ISO_VD_PARTITION    3
 #define ISO_VD_END          255
 
-#define CDFS_DEFAULT_CACHESIZE 128
 #define CDFS_BLOCKSIZE         2048
 #define CDFS_POOLDEPTH         10
 
 #define PS1                     '/'     /* Primary path separator */
 #define PS2                     '\\'    /* Alternate path separator */
 
-#define F_MODIFIED              0x100000  /* File has been modified since it was opened */
 #define F_DIR                   0x200000  /* File is a directory */
-#define F_CLOSED                0x400000  /* File is closed */
 
 #define __int64 long long
 typedef __int64 off64_t;
@@ -167,9 +164,6 @@ typedef struct cdfs_fs_info {
 	char mntfrom[MAX_LENGTH_PATH_NAME];
 	char mntto[MAX_LENGTH_PATH_NAME];
 	struct fsops *ops;
-	mode_t mode;
-	uid_t uid;
-	gid_t gid;
 	void *data;
 } cdfs_fs_info_t;
 

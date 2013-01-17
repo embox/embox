@@ -575,44 +575,26 @@ typedef struct ext2_file_info {
 	int64_t		f_buf_blkno;	/* block number of data block */
 	long		f_seekp;	/* local seek pointer */
 
-	/* The following items are not present on the disk. */
-	ino_t i_num;                /* inode number on its (minor) device */
-	//int i_count;                /* # times inode used; 0 means slot is free */
-	char i_dirt;                /* CLEAN or DIRTY */
-	uint32_t i_bsearch;         /* where to start search for new blocks,
+	ino_t f_num;                /* inode number on its (minor) device */
+	uint32_t f_bsearch;         /* where to start search for new blocks,
 								 * also this is last allocated block.
 								 */
-	long i_last_pos_bl_alloc;
+	long f_last_pos_bl_alloc;
 								/* last write position for which we allocated
 								 * a new block (should be block i_bsearch).
 								 * used to check for sequential operation.
 								 */
-	long i_last_dpos;           /* where to start dentry search */
-	int i_last_dentry_size;	    /* size of last found dentry */
+	long f_last_dpos;           /* where to start dentry search */
+	int f_last_dentry_size;	    /* size of last found dentry */
 
-	uint32_t i_prealloc_blocks[EXT2_PREALLOC_BLOCKS];	/* preallocated blocks */
-	int i_prealloc_count;	/* number of preallocated blocks */
-	int i_prealloc_index;	/* index into i_prealloc_blocks */
-	int i_preallocation;	/* use preallocation for this inode, normally
+	uint32_t f_prealloc_blocks[EXT2_PREALLOC_BLOCKS];	/* preallocated blocks */
+	int f_prealloc_count;	/* number of preallocated blocks */
+	int f_prealloc_index;	/* index into i_prealloc_blocks */
+	int f_preallocation;	/* use preallocation for this inode, normally
 							 * it's reset only when non-sequential write
 							 * happens.
 							 */
 } ext2_file_info_t;
-
-struct buf {
-  /* Data portion of the buffer. */
-  void *data;
-
-  /* Header portion of the buffer - internal to libminixfs. */
-  //struct buf *lmfs_next;       /* used to link all free bufs in a chain */
-  //struct buf *lmfs_prev;       /* used to link all free bufs the other way */
-  //struct buf *lmfs_hash;       /* used to link bufs on hash chains */
-  uint32_t lmfs_blocknr;        /* block number of its (minor) device */
-  //dev_t lmfs_dev;              /* major | minor device where block resides */
-  char lmfs_dirt;              /* BP_CLEAN or BP_DIRTY */
-  char lmfs_count;             /* number of users of this buffer */
-  unsigned int lmfs_bytes;     /* Number of bytes allocated in bp */
-};
 
 union fsdata_u {
     char b__data[PAGE_SIZE()];             /* ordinary user data */
@@ -622,29 +604,22 @@ union fsdata_u {
     uint32_t b__bitmap[FS_BITMAP_CHUNKS(PAGE_SIZE())];
 };
 
-
-/* These defs make it possible to use to bp->b_data instead of bp->b.b__data */
-#define b_data(bp)   ((union fsdata_u *) bp->data)->b__data
-#define b_ind(bp) ((union fsdata_u *) bp->data)->b__ind
-#define b_bitmap(bp) ((union fsdata_u *) bp->data)->b__bitmap
+#define b_data(data)   ((union fsdata_u *) data)->b__data
+#define b_ind(data) ((union fsdata_u *) data)->b__ind
+#define b_bitmap(data) ((union fsdata_u *) data)->b__bitmap
 
 /* balloc.c */
-void discard_preallocated_blocks(struct nas *nas);
-uint32_t alloc_block(struct nas *nas, uint32_t goal);
-void free_block(struct nas *nas, struct ext2_fs_info *sp, uint32_t bit);
+void ext2_discard_preallocated_blocks(struct nas *nas);
+uint32_t ext2_alloc_block(struct nas *nas, uint32_t goal);
+void ext2_free_block(struct nas *nas, uint32_t bit);
 
 int ext2_read_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector);
 int ext2_write_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector);
-struct ext2_gd* get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi);
+struct ext2_gd* ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi);
 
-uint32_t setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word);
-int unsetbit(uint32_t *bitmap, uint32_t bit);
-extern int group_descriptors_dirty;
-
-/* ialloc.c
-struct inode *alloc_inode(struct inode *parent, mode_t bits);
-void free_inode(struct inode *rip);*/
+uint32_t ext2_setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word);
+int ext2_unsetbit(uint32_t *bitmap, uint32_t bit);
 
 #endif /* EXT_H_ */
