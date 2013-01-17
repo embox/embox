@@ -71,7 +71,7 @@ javacall_int64 javacall_file_sizeofopenfile(javacall_handle handle) {
 	struct stat file_stat;
 	FILE *file = (FILE*)handle;
 
-	fstat(file->fd, &file_stat);
+	fstat(fileno(file), &file_stat);
 
 	return file_stat.st_size;
 }

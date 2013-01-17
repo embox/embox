@@ -3,6 +3,13 @@ ifeq ($(ROOT_DIR),)
 $(error ROOT_DIR is not set.)
 endif
 
+# URL of the home project
+# http://java.net/projects/phoneme
+
+# ToDo:
+#export ENABLE_ISOLATES=true
+#export USE_MULTIPLE_ISOLATES=true
+
 CLDC_TARGET_ID=product
 ifneq ($(findstring -g,$(EMBOX_CFLAGS)),)
 USE_DEBUG=true
