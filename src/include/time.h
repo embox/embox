@@ -13,7 +13,6 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <stddef.h>    /* NULL definition */
-#include <signal.h>
 
 
 /* Parameters used to convert the time specific values */
