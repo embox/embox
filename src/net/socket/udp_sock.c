@@ -6,17 +6,21 @@
  * @author Anton Bondarev
  */
 
-#include <stdlib.h>
+//#include <stdlib.h>
+#include <types.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/uio.h>
+
 #include <net/socket.h>
 #include <net/net.h>
 #include <net/ip.h>
 #include <net/udp.h>
-#include <types.h>
-#include <errno.h>
+
 #include <net/route.h>
 #include <net/inetdevice.h>
 #include <embox/net/sock.h>
-#include <string.h>
+
 
 
 EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, udp_prot, inet_dgram_ops, 0, true);

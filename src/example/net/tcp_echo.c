@@ -6,9 +6,11 @@
  * @author Ilia Vaprol
  */
 
-#include <prom/prom_printf.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
+
+#include <prom/prom_printf.h>
 #include <net/ip.h>
 #include <net/socket.h>
 #include <framework/example/self.h>

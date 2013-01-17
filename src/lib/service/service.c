@@ -6,12 +6,15 @@
  * @author Vita Loginova
  */
 
-#include <lib/service/service.h>
-#include <stdlib.h>
 #include <string.h>
-#include <cmd/servd.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+
+#include <cmd/servd.h>
+
+#include <lib/service/service.h>
 
 #define SERVICE_FILE_RAND_STR_LEN 10
 #define SERVICE_FILE_PREFIX "/tmp/service-"

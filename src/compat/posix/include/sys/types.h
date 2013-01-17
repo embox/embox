@@ -36,7 +36,7 @@ typedef unsigned long useconds_t;
 typedef long suseconds_t;
 
 typedef unsigned long spinlock_t;
-typedef __s32 socklen_t;
+
 typedef __u32 gfp_t;
 
 typedef struct {

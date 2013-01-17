@@ -6,11 +6,15 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
+#include <fcntl.h>
+
 #include <net/ip.h>
+
 #include <embox/web_service.h>
 #include <lib/url_parser.h>
 #include <lib/service/service.h>
-#include <stdlib.h>
+
 
 #define DEFAULT_PAGE  "index.html"
 #define MAX_SERVICES_COUNT  10

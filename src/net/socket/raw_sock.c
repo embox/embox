@@ -6,6 +6,13 @@
  * @author Anton Bondarev
  */
 
+#include <errno.h>
+#include <string.h>
+#include <assert.h>
+#include <sys/uio.h>
+
+#include <err.h>
+
 #include <net/protocol.h>
 #include <net/sock.h>
 #include <net/icmp.h>
@@ -13,11 +20,8 @@
 #include <net/udp.h>
 #include <net/raw.h>
 #include <net/inet_common.h>
-#include <string.h>
+
 #include <embox/net/sock.h>
-#include <errno.h>
-#include <err.h>
-#include <assert.h>
 
 #include <framework/mod/options.h>
 

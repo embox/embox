@@ -11,6 +11,8 @@
 #include <getopt.h>
 #include <arpa/inet.h>
 #include <net/ip.h>
+#include <fcntl.h>
+
 #include <net/socket.h>
 #include <net/inetdevice.h>
 #include <cmd/web_server.h>
