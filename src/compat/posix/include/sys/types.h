@@ -63,6 +63,7 @@ typedef unsigned int blkno_t;
 
 typedef unsigned int mode_t;
 
+typedef int off_t;  /*  Used for file sizes. */
 
 #endif /* __ASSEMBLER__ */
 
