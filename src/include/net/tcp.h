@@ -93,7 +93,7 @@ typedef struct tcp_sock {
 	/* inet_sock has to be the first member */
 	struct inet_sock inet;      /* Inet socket (parent) */
 	__u32 this_unack;           /* Last unacknowledged sequence number */
-	struct tcp_seq_state this;  /* Some informations about this socket */
+	struct tcp_seq_state self;  /* Some informations about this socket */
 	struct tcp_seq_state rem;   /* Informations about remote socket */
 	__u8 lock;                  /* Tool for synchronization */
 	struct list_head conn_wait; /* Queue of incoming connection */

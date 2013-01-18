@@ -15,9 +15,12 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#include <javacall_lifecycle.h>
+
 static void *phoneme_run(void *data) {
 	//ToDo:
 	printf("NOT IMPLEMENTED\n");
+	JavaTask();
 	return NULL;
 }
 

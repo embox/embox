@@ -39,6 +39,9 @@
 **
 ****************************************************************************/
 
+#ifndef __QEMBOX__
+#define __QEMBOX__
+
 #if defined(__linux__)
 #undef __linux__
 #endif
@@ -47,17 +50,39 @@
 #undef __linux
 #endif
 
+#if defined(__STDC__)
+#undef __STDC__
+#endif
+
+// May be bad idea: causes to include byteswap.h everywhere
+//#define __GLIBC__
+
 #define __MAKEDEPEND__
 
-#define QT_NO_SOCKET_H
+//#define _POSIX_THREAD_SAFE_FUNCTIONS
+
+#define QT_NO_FSFILEENGINE
+// TEMPORARYFILE requires FSFILEENGINE
+#define QT_NO_TEMPORARYFILE
+
+#define QT_NO_INOTIFY
+
+#define QT_NO_FILESYSTEMWATCHER
+
+#define QT_NO_PROCESS
+
+#define QT_NO_CRASHHANDLER
+
+#define QT_NO_LOCALSOCKET
+
+#define QT_NO_LOCALSERVER
+
+#define QT_NO_NETWORKINTERFACE
+
+
 
 #define FD_CLOEXEC	1
 #define F_DUPFD		printf(">>> FD_DUPFD\n"),0
-
-#define fflush(x) printf(">>> fflush(%d)\n",(int)x)
-#define getenv(x) printf(">>> getenv(%s)\n",x),NULL
-//#define putenv(x) printf(">>> putenv(%s)\n",x),-1
-#define putenv(x) -1
 
 #include <stdio.h>
 #define execvp(f,a) printf(">>> execvp(%s,...)\n",f),-1
@@ -65,6 +90,29 @@
 #define sysconf(x) printf(">>> sysconf(%s)\n",#x),-1
 
 #include <time.h>
+
+#include <fcntl.h>
+
+#include <dirent.h>
+
+#include <sys/select.h>
+
+#include <pwd.h>
+
+#include <grp.h>
+
+#include <sys/ioctl.h>
+
+
+
+#define fflush(x) printf(">>> fflush(%d)\n",(int)x)
+//#define getenv(x) printf(">>> getenv(%s)\n",x),0
+inline char *getenv(const char *name) { printf(">>> getenv(%s)\n",name); return 0; }
+//#define putenv(x) printf(">>> putenv(%s)\n",x),-1
+#define putenv(x) -1
+
+
+
 
 typedef int pthread_t;
 
@@ -144,6 +192,256 @@ extern int pthread_attr_destroy(pthread_attr_t *);
 extern int pthread_cancel(pthread_t);
 
 extern int pthread_cond_broadcast(pthread_cond_t *);
+
+
+
+
+struct tm * localtime ( const time_t * timer );
+
+void tzset(void);
+extern char *tzname[2];
+
+// this function has to be added to string.h
+//int strcoll(const char *s1, const char *s2);
+
+
+off_t lseek(int fd, off_t offset, int whence);
+
+long ftello(FILE *stream);
+int fseeko(FILE *stream, off_t offset, int whence);
+
+#define O_LARGEFILE 0
+
+
+
+#define F_RDLCK 0
+#define F_WRLCK 0
+#define F_SETLKW 0
+
+struct flock {
+  short  l_type;
+  short  l_whence;
+  off_t  l_start;
+  off_t  l_len;
+  pid_t  l_pid;
+};
+
+ssize_t readlink(const char *path, char *buf, size_t bufsiz);
+
+int getpwuid_r(uid_t uid, struct passwd *pwd,
+	       char *buf, size_t buflen, struct passwd **result);
+
+int access(const char *pathname, int mode);
+#define R_OK 0
+#define W_OK 0
+#define X_OK 0
+int rename(const char *oldpath, const char *newpath);
+int symlink(const char *oldpath, const char *newpath);
+
+int chdir(const char *path);
+
+char *get_current_dir_name(void);
+
+
+
+// Either this or define __GLIBC__
+#define PATH_MAX 256
+char *getcwd(char *buf, size_t size);
+
+
+// The definition is not precise, please revise
+typedef struct {
+	int si_signo;
+	int si_code;
+        //union sigval si_value;
+	int si_errno;
+	pid_t si_pid;
+	uid_t si_uid;
+	void *si_addr;
+	int si_status;
+	int si_band;
+} siginfo_t;
+
+typedef int sigset_t;
+
+struct sigaction {
+    void (*sa_handler)(int);
+    void (*sa_sigaction)(int, siginfo_t *, void *);
+    sigset_t sa_mask;
+    int sa_flags;
+    void (*sa_restorer)(void);
+};
+
+#define SA_RESETHAND 0
+int sigaddset(sigset_t *set, int signum);
+int sigismember(const sigset_t *set, int signum);
+
+int nanosleep(const struct timespec *req, struct timespec *rem);
+
+/*
+#define SA_NOCLDSTOP 0
+
+int sigaction(int signum, const struct sigaction *act,
+	      struct sigaction *oldact);
+*/
+
+#define RAND_MAX 32767
+
+
+char *setlocale(int category, const char *locale);
+#define LC_ALL 0
+#define LC_CTYPE 0
+
+
+#define RTLD_LAZY 0
+#define RTLD_GLOBAL 0
+#define RTLD_LOCAL 0
+
+
+
+
+/* Structure describing CPU time used by a process and its children.  */
+struct tms
+{
+  clock_t tms_utime;          /* User CPU time.  */
+  clock_t tms_stime;          /* System CPU time.  */
+
+  clock_t tms_cutime;         /* User CPU time of dead children.  */
+  clock_t tms_cstime;         /* System CPU time of dead children.  */
+};
+
+
+/* Store the CPU time used by this process and all its
+   dead children (and their dead children) in BUFFER.
+   Return the elapsed real time, or (clock_t) -1 for errors.
+   All times are in CLK_TCKths of a second.  */
+extern clock_t times (struct tms *__buffer);
+
+typedef int sig_atomic_t;
+
+// Bad thing to do
+#define NSIG 0
+
+int sigemptyset(sigset_t *set);
+
+int sigaction(int signum, const struct sigaction *act,
+	      struct sigaction *oldact);
+
+
+
+
+
+#include <net/socket.h>
+#include <net/ip.h>
+#include <arpa/inet.h>
+
+
+struct hostent *gethostbyaddr(const void *addr,
+			      socklen_t len, int type);
+
+int gethostname(char *name, size_t len);
+
+
+typedef __u32 u_int32_t;
+typedef __u16 u_int16_t;
+
+#ifndef __res_state_defined
+# define __res_state_defined
+
+typedef enum { res_goahead, res_nextns, res_modified, res_done, res_error }
+	res_sendhookact;
+
+typedef res_sendhookact (*res_send_qhook) (struct sockaddr_in * const *__ns,
+					   const u_char **__query,
+					   int *__querylen,
+					   u_char *__ans,
+					   int __anssiz,
+					   int *__resplen);
+
+typedef res_sendhookact (*res_send_rhook) (const struct sockaddr_in *__ns,
+					   const u_char *__query,
+					   int __querylen,
+					   u_char *__ans,
+					   int __anssiz,
+					   int *__resplen);
+
+/*
+ * Global defines and variables for resolver stub.
+ */
+# define MAXNS			3	/* max # name servers we'll track */
+# define MAXDFLSRCH		3	/* # default domain levels to try */
+# define MAXDNSRCH		6	/* max # domains in search path */
+# define LOCALDOMAINPARTS	2	/* min levels in name that is "local" */
+
+# define RES_TIMEOUT		5	/* min. seconds between retries */
+# define MAXRESOLVSORT		10	/* number of net to sort on */
+# define RES_MAXNDOTS		15	/* should reflect bit field size */
+# define RES_MAXRETRANS		30	/* only for resolv.conf/RES_OPTIONS */
+# define RES_MAXRETRY		5	/* only for resolv.conf/RES_OPTIONS */
+# define RES_DFLRETRY		2	/* Default #/tries. */
+# define RES_MAXTIME		65535	/* Infinity, in milliseconds. */
+
+struct __res_state {
+	int	retrans;		/* retransmition time interval */
+	int	retry;			/* number of times to retransmit */
+	u_long	options;		/* option flags - see below. */
+	int	nscount;		/* number of name servers */
+	struct sockaddr_in
+		nsaddr_list[MAXNS];	/* address of name server */
+# define nsaddr	nsaddr_list[0]		/* for backward compatibility */
+	u_short	id;			/* current message id */
+	/* 2 byte hole here.  */
+	char	*dnsrch[MAXDNSRCH+1];	/* components of domain to search */
+	char	defdname[256];		/* default domain (deprecated) */
+	u_long	pfcode;			/* RES_PRF_ flags - see below. */
+	unsigned ndots:4;		/* threshold for initial abs. query */
+	unsigned nsort:4;		/* number of elements in sort_list[] */
+	unsigned ipv6_unavail:1;	/* connecting to IPv6 server failed */
+	unsigned unused:23;
+	struct {
+		struct in_addr	addr;
+		u_int32_t	mask;
+	} sort_list[MAXRESOLVSORT];
+	/* 4 byte hole here on 64-bit architectures.  */
+	res_send_qhook qhook;		/* query hook */
+	res_send_rhook rhook;		/* response hook */
+	int	res_h_errno;		/* last one set for this context */
+	int	_vcsock;		/* PRIVATE: for res_send VC i/o */
+	u_int	_flags;			/* PRIVATE: see below */
+	/* 4 byte hole here on 64-bit architectures.  */
+	union {
+		char	pad[52];	/* On an i386 this means 512b total. */
+		struct {
+			u_int16_t		nscount;
+			u_int16_t		nsmap[MAXNS];
+			int			nssocks[MAXNS];
+			u_int16_t		nscount6;
+			u_int16_t		nsinit;
+			struct sockaddr_in6	*nsaddrs[MAXNS];
+#ifdef _LIBC
+			unsigned long long int	initstamp
+			  __attribute__((packed));
+#else
+			unsigned int		_initstamp[2];
+#endif
+		} _ext;
+	} _u;
+};
+
+#endif
+
+
+
+#define IP_MULTICAST_TTL 0
+#define IPV6_MULTICAST_LOOP 0
+#define IP_MULTICAST_LOOP 0
+#define FIONREAD 0
+
+
+
+
+
+#endif // __QEMBOX__
 
 #include "qglobal.h"
 

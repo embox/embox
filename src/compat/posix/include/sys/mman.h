@@ -75,8 +75,8 @@ extern int    munlock(const void *, size_t);
 extern int    munlockall(void);
 extern int    munmap(void *, size_t);
 extern int    posix_madvise(void *, size_t, int);
-extern int    posix_mem_offset(const void *restrict, size_t, off_t *restrict,
-           size_t *restrict, int *restrict);
+extern int    posix_mem_offset(const void *, size_t, off_t *,
+           size_t *, int *);
 extern int    posix_typed_mem_get_info(int, struct posix_typed_mem_info *);
 extern int    posix_typed_mem_open(const char *, int, int);
 extern int    shm_open(const char *, int, mode_t);

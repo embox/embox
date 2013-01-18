@@ -351,6 +351,9 @@ extern char *strpbrk(const char *s, const char *accept);
  */
 extern char *strdup(const char *s);
 
+/* FIXME */
+extern int strcoll(const char *s1, const char *s2);
+
 __END_DECLS
 
 #endif /* STRING_H_ */
