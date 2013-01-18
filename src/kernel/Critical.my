@@ -2,5 +2,4 @@ package embox.kernel
 
 module critical {
 	source "critical.c"
-	source "critical_impl.h"
 }

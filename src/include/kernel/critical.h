@@ -156,10 +156,7 @@
 
 #ifndef __ASSEMBLER__
 
-
-#include <module/embox/kernel/critical.h> //TODO critical_impl.h is redundantly
-
-typedef __critical_t critical_t;
+typedef long critical_t;
 
 struct critical_dispatcher {
 	struct critical_dispatcher *next;
@@ -174,12 +171,28 @@ struct critical_dispatcher {
 				| __CRITICAL_HARDER(critical_mask)), \
 	}
 
+/** Optimization barrier. TODO move somewhere */
+#define __barrier() \
+	__asm__ __volatile__("" : : : "memory")
+
+extern critical_t __critical_count;
+
+static inline void __critical_count_add(critical_t count) {
+	__critical_count += count;
+	__barrier();
+}
+
+static inline void __critical_count_sub(critical_t count) {
+	__barrier();
+	__critical_count -= count;
+}
+
 static inline int critical_allows(critical_t level) {
-	return !(__critical_count_get() & (level | __CRITICAL_HARDER(level)));
+	return !(__critical_count & (level | __CRITICAL_HARDER(level)));
 }
 
 static inline int critical_inside(critical_t level) {
-	return __critical_count_get() & level;
+	return __critical_count & level;
 }
 
 static inline void critical_enter(critical_t level) {
