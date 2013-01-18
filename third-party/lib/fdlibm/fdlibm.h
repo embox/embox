@@ -88,6 +88,7 @@ struct exception {
 /*
  * ANSI/POSIX
  */
+/* defines in <math.h>
 extern double acos __P((double));
 extern double asin __P((double));
 extern double atan __P((double));
@@ -104,12 +105,13 @@ extern double exp __P((double));
 extern double frexp __P((double, int *));
 extern double ldexp __P((double, int));
 extern double log __P((double));
-//extern double log10 __P((double));
+extern double log10 __P((double));
 extern double modf __P((double, double *));
 
-/*extern double pow __P((double, double));
+extern double pow __P((double, double));
 extern long double powl __P((long double, long double));
-extern float powf __P((float, float));*/
+extern float powf __P((float, float));
+*/
 
 extern double sqrt __P((double));
 
