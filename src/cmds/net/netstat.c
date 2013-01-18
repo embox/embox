@@ -16,6 +16,7 @@
 #include <net/socket_registry.h>
 #include <net/socket.h>
 #include <net/ip.h>
+#include <fcntl.h>
 
 #define __NS_TEST_SOCKET_CREATE__ /*Undefine it, if testing socket is not nessessary*/
 

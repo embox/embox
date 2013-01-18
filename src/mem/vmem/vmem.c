@@ -18,7 +18,7 @@
 #include <kernel/thread/sched_lock.h>
 
 #include "../kernel/task/common.h"
-#include "../kernel/thread/types.h"
+#include <types.h>
 
 /* Section pointers. */
 extern char _text_vma, _rodata_vma, _bss_vma, _data_vma, _reserve_vma, _stack_vma, _heap_vma;
