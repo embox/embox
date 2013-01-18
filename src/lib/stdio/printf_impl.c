@@ -9,11 +9,15 @@
 
 #include <assert.h>
 #include <ctype.h>
-#include <math.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+
+#include <util/math.h> /* max & min macros */
+
+
 
 /**
  * Format specifiers

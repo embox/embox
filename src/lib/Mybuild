@@ -2,21 +2,6 @@ package embox.lib
 
 
 
-static module Fdlibm {
-	source "fdlibm/w_pow.c"
-	source "fdlibm/w_powl.c"
-	source "fdlibm/w_powf.c"
-	source "fdlibm/e_pow.c"
-	source "fdlibm/e_powl.c"
-	source "fdlibm/e_powf.c"
-	source "fdlibm/k_standard.c"
-	source "fdlibm/s_lib_version.c"
-	source "fdlibm/s_matherr.c"
-	source "fdlibm/s_rint.c"
-	source "fdlibm/s_scalbn.c"
-	source "fdlibm/s_scalbn.c"
-}
-
 static module LibElf {
 	source "new_elf/elf_header.c"
 	source "new_elf/elf_ph_table.c"
@@ -141,7 +126,7 @@ static module LibCMath {
 	source "gcc/umodsi3.c"
 	source "gcc/muldi3.c"
 
-	depends Fdlibm
+	depends third_party.lib.Fdlibm
 }
 
 static module LibCStdio {

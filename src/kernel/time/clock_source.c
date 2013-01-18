@@ -6,14 +6,18 @@
  * @author Alexander Kalmuk
  */
 
+#include <errno.h>
+
 #include <util/array.h>
+#include <util/dlist.h>
+#include <util/math.h>
+
+#include <mem/misc/pool.h>
+
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
-#include <mem/misc/pool.h>
-#include <util/dlist.h>
-#include <errno.h>
+
 #include <embox/unit.h>
-#include <math.h>
 
 ARRAY_SPREAD_DEF(const struct time_event_device *, __event_devices);
 ARRAY_SPREAD_DEF(const struct time_counter_device *, __counter_devices);

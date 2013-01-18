@@ -8,7 +8,8 @@
  */
 
 #include <errno.h>
-#include <math.h>
+
+#include <util/math.h>
 
 #include <net/ip.h>
 #include <net/udp.h>

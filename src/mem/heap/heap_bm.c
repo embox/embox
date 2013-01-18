@@ -7,13 +7,16 @@
  */
 
 #include <types.h>
-#include <mem/page.h>
+#include <stdlib.h>
 #include <string.h>
-#include <math.h>
+
+#include <mem/page.h>
+
+#include <util/math.h>
 #include <embox/unit.h>
 #include <mem/heap.h>
 
-#include <stdlib.h>
+
 
 #define DEBUG 0
 #if DEBUG

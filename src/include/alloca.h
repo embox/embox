@@ -8,7 +8,7 @@
 #ifndef ALLOCA_H_
 #define ALLOCA_H_
 
-#include <stdlib.h>
+#include <stddef.h> /* size_t in standard library */
 
 extern void * alloca(size_t size);
 
