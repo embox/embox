@@ -305,7 +305,7 @@ int thread_terminate(struct thread *t) {
 }
 
 void thread_yield(void) {
-	sched_yield();
+	sched_post_switch();
 }
 
 int thread_set_priority(struct thread *t, thread_priority_t new) {

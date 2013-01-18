@@ -68,7 +68,7 @@ void runq_fini(struct runq *rq) {
 }
 
 static void sched_tick(sys_timer_t *timer, void *param) {
-	sched_request_switch();
+	sched_post_switch();
 }
 
 int runq_start(struct runq *rq, struct thread *t) {

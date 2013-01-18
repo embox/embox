@@ -55,7 +55,7 @@ static void post_switch_if(int condition);
 
 static void sched_switch(void);
 
-void sched_request_switch(void);
+void sched_post_switch(void);
 
 CRITICAL_DISPATCHER_DEF(sched_critical, sched_switch, CRITICAL_SCHED_LOCK);
 
@@ -251,12 +251,27 @@ int sched_tryrun(struct thread *t) {
 }
 #endif
 
-void sched_yield(void) {
+void sched_post_switch(void) {
 	sched_lock();
 	{
 		post_switch_if(1);
 	}
 	sched_unlock();
+}
+
+clock_t sched_get_running_time(struct thread *thread) {
+	if (thread == sched_current()) {
+		/* Recalculate time of the current thread. */
+		sched_lock();
+		{
+			clock_t	new_clock = clock();
+			thread->running_time += new_clock - prev_clock;
+			prev_clock = new_clock;
+		}
+		sched_unlock();
+	}
+
+	return thread->running_time;
 }
 
 int sched_change_scheduling_priority(struct thread *t,
@@ -300,25 +315,6 @@ static void post_switch_if(int condition) {
 		switch_posted = 1;
 		critical_request_dispatch(&sched_critical);
 	}
-}
-
-void sched_request_switch(void) {
-	post_switch_if(1);
-}
-
-clock_t sched_get_running_time(struct thread *thread) {
-	if (thread == sched_current()) {
-		/* Recalculate time of the current thread. */
-		sched_lock();
-		{
-			clock_t	new_clock = clock();
-			thread->running_time += new_clock - prev_clock;
-			prev_clock = new_clock;
-		}
-		sched_unlock();
-	}
-
-	return thread->running_time;
 }
 
 /**

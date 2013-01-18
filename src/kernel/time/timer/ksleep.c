@@ -20,7 +20,7 @@ int ksleep(useconds_t usec) {
 	struct event never_happen;
 
 	if (usec == 0) {
-		sched_yield();
+		sched_post_switch();
 		return 0;
 	}
 
