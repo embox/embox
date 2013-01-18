@@ -361,29 +361,29 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
  * Super block for an ext2fs file system.
  */
  struct ext2sb {
-	uint32_t  s_inodes_count;         /* Inodes count */
-	uint32_t  s_blocks_count;         /* Blocks count */
-	uint32_t  s_r_blocks_count;       /* Reserved blocks count */
-	uint32_t  s_free_blocks_count;    /* Free blocks count */
-	uint32_t  s_free_inodes_count;    /* Free inodes count */
-	uint32_t  s_first_data_block;     /* First Data Block */
-	uint32_t  s_log_block_size;       /* Block size */
-	uint32_t  s_log_frag_size;        /* Fragment size */
-	uint32_t  s_blocks_per_group;     /* # Blocks per group */
-	uint32_t  s_frags_per_group;      /* # Fragments per group */
-	uint32_t  s_inodes_per_group;     /* # Inodes per group */
-	uint32_t  s_mtime;                /* Mount time */
-	uint32_t  s_wtime;                /* Write time */
+	uint32_t  s_inodes_count;      /* Inodes count */
+	uint32_t  s_blocks_count;      /* Blocks count */
+	uint32_t  s_r_blocks_count;    /* Reserved blocks count */
+	uint32_t  s_free_blocks_count; /* Free blocks count */
+	uint32_t  s_free_inodes_count; /* Free inodes count */
+	uint32_t  s_first_data_block;  /* First Data Block */
+	uint32_t  s_log_block_size;    /* Block size */
+	uint32_t  s_log_frag_size;     /* Fragment size */
+	uint32_t  s_blocks_per_group;  /* # Blocks per group */
+	uint32_t  s_frags_per_group;   /* # Fragments per group */
+	uint32_t  s_inodes_per_group;  /* # Inodes per group */
+	uint32_t  s_mtime;             /* Mount time */
+	uint32_t  s_wtime;             /* Write time */
 	u16_t  s_mnt_count;            /* Mount count */
 	u16_t  s_max_mnt_count;        /* Maximal mount count */
 	u16_t  s_magic;                /* Magic signature */
 	u16_t  s_state;                /* File system state */
 	u16_t  s_errors;               /* Behaviour when detecting errors */
 	u16_t  s_minor_rev_level;      /* minor revision level */
-	uint32_t  s_lastcheck;            /* time of last check */
-	uint32_t  s_checkinterval;        /* max. time between checks */
-	uint32_t  s_creator_os;           /* OS */
-	uint32_t  s_rev_level;            /* Revision level */
+	uint32_t  s_lastcheck;         /* time of last check */
+	uint32_t  s_checkinterval;     /* max. time between checks */
+	uint32_t  s_creator_os;        /* OS */
+	uint32_t  s_rev_level;         /* Revision level */
 	u16_t  s_def_resuid;           /* Default uid for reserved blocks */
 	u16_t  s_def_resgid;           /* Default gid for reserved blocks */
 	/*
@@ -399,12 +399,12 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 	 * feature set, it must abort and not try to meddle with
 	 * things it doesn't understand...
 	 */
-	uint32_t  s_first_ino;            /* First non-reserved inode */
+	uint32_t  s_first_ino;         /* First non-reserved inode */
 	u16_t  s_inode_size;           /* size of inode structure */
 	u16_t  s_block_group_nr;       /* block group # of this superblock */
-	uint32_t  s_feature_compat;       /* compatible feature set */
-	uint32_t  s_feature_incompat;     /* incompatible feature set */
-	uint32_t  s_feature_ro_compat;    /* readonly-compatible feature set */
+	uint32_t  s_feature_compat;    /* compatible feature set */
+	uint32_t  s_feature_incompat;  /* incompatible feature set */
+	uint32_t  s_feature_ro_compat; /* readonly-compatible feature set */
 	u8_t   s_uuid[16];             /* 128-bit uuid for volume */
 	char   s_volume_name[16];      /* volume name */
 	char   s_last_mounted[64];     /* directory where last mounted */
@@ -420,23 +420,23 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 	 * Journaling support valid if EXT3_FEATURE_COMPAT_HAS_JOURNAL set.
 	 */
 	u8_t    s_journal_uuid[16];     /* uuid of journal superblock */
-	uint32_t   s_journal_inum;         /* inode number of journal file */
-	uint32_t   s_journal_dev;          /* device number of journal file */
-	uint32_t   s_last_orphan;          /* start of list of inodes to delete */
-	uint32_t   s_hash_seed[4];         /* HTREE hash seed */
+	uint32_t   s_journal_inum;      /* inode number of journal file */
+	uint32_t   s_journal_dev;       /* device number of journal file */
+	uint32_t   s_last_orphan;       /* start of list of inodes to delete */
+	uint32_t   s_hash_seed[4];      /* HTREE hash seed */
 	u8_t    s_def_hash_version;     /* Default hash version to use */
 	u8_t    s_reserved_char_pad;
 	u16_t   s_reserved_word_pad;
 	uint32_t   s_default_mount_opts;
-	uint32_t   s_first_meta_bg;        /* First metablock block group */
-	uint32_t   s_reserved[190];        /* Padding to the end of the block */
+	uint32_t   s_first_meta_bg;     /* First metablock block group */
+	uint32_t   s_reserved[190];     /* Padding to the end of the block */
 };
 
 /* ext2 file system block group descriptor */
 struct ext2_gd {
-	uint32_t  block_bitmap;        /* Blocks bitmap block */
-    uint32_t  inode_bitmap;        /* Inodes bitmap block */
-    uint32_t  inode_table;         /* Inodes table block */
+	uint32_t  block_bitmap;     /* Blocks bitmap block */
+    uint32_t  inode_bitmap;     /* Inodes bitmap block */
+    uint32_t  inode_table;      /* Inodes table block */
     u16_t  free_blocks_count;   /* Free blocks count */
     u16_t  free_inodes_count;   /* Free inodes count */
     u16_t  used_dirs_count;     /* Directories count */
@@ -542,12 +542,13 @@ typedef struct ext2_fs_info {
 
 	/* The following items are only used when the super_block is in memory. */
 	struct	ext2_gd *e2fs_gd; /* group descripors */
-	uint32_t   s_block_size;       /* block size in bytes. */
+	uint32_t   s_block_size;           /* block size in bytes. */
 	uint32_t   s_inodes_per_block;     /* Number of inodes per block */
 	uint32_t   s_itb_per_group;        /* Number of inode table blocks per group */
 	uint32_t   s_gdb_count;            /* Number of group descriptor blocks */
 	uint32_t   s_desc_per_block;       /* Number of group descriptors per block */
 	uint32_t   s_groups_count;         /* Number of groups in the fs */
+	size_t     s_page_count;		   /* Number of pages of embox sor file r/w buffer*/
 	u8_t    s_blocksize_bits;       /* Used to calculate offsets
 									 * (e.g. inode block),
 									 * always s_log_block_size+10.
@@ -573,7 +574,7 @@ typedef struct ext2_file_info {
 	char		*f_buf;		/* buffer for data block */
 	size_t		f_buf_size;	/* size of data block */
 	int64_t		f_buf_blkno;	/* block number of data block */
-	long		f_seekp;	/* local seek pointer */
+	long		f_pointer;	/* local seek pointer */
 
 	ino_t f_num;                /* inode number on its (minor) device */
 	uint32_t f_bsearch;         /* where to start search for new blocks,
@@ -586,14 +587,6 @@ typedef struct ext2_file_info {
 								 */
 	long f_last_dpos;           /* where to start dentry search */
 	int f_last_dentry_size;	    /* size of last found dentry */
-
-	uint32_t f_prealloc_blocks[EXT2_PREALLOC_BLOCKS];	/* preallocated blocks */
-	int f_prealloc_count;	/* number of preallocated blocks */
-	int f_prealloc_index;	/* index into i_prealloc_blocks */
-	int f_preallocation;	/* use preallocation for this inode, normally
-							 * it's reset only when non-sequential write
-							 * happens.
-							 */
 } ext2_file_info_t;
 
 union fsdata_u {
@@ -609,7 +602,7 @@ union fsdata_u {
 #define b_bitmap(data) ((union fsdata_u *) data)->b__bitmap
 
 /* balloc.c */
-void ext2_discard_preallocated_blocks(struct nas *nas);
+//void ext2_discard_preallocated_blocks(struct nas *nas);
 uint32_t ext2_alloc_block(struct nas *nas, uint32_t goal);
 void ext2_free_block(struct nas *nas, uint32_t bit);
 
