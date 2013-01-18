@@ -42,42 +42,33 @@
 #ifndef __QEMBOX__
 #define __QEMBOX__
 
-#if defined(__linux__)
-#undef __linux__
-#endif
-
-#if defined(__linux)
-#undef __linux
-#endif
-
-#if defined(__STDC__)
-#undef __STDC__
-#endif
-
 // May be bad idea: causes to include byteswap.h everywhere
 //#define __GLIBC__
-
-#define __MAKEDEPEND__
 
 //#define _POSIX_THREAD_SAFE_FUNCTIONS
 
 #define QT_NO_FSFILEENGINE
+
 // TEMPORARYFILE requires FSFILEENGINE
-#define QT_NO_TEMPORARYFILE
+// Moved to command line
+//#define QT_NO_TEMPORARYFILE
+
+// Moved to command line
+//#define QT_NO_FILESYSTEMWATCHER
+
+// Moved to command line
+//#define QT_NO_PROCESS
+
+// Moved to command line
+//#define QT_NO_NETWORKINTERFACE
 
 #define QT_NO_INOTIFY
-
-#define QT_NO_FILESYSTEMWATCHER
-
-#define QT_NO_PROCESS
 
 #define QT_NO_CRASHHANDLER
 
 #define QT_NO_LOCALSOCKET
 
 #define QT_NO_LOCALSERVER
-
-#define QT_NO_NETWORKINTERFACE
 
 
 
@@ -103,12 +94,10 @@
 
 #include <sys/ioctl.h>
 
+#include <unistd.h>
 
 
-#define fflush(x) printf(">>> fflush(%d)\n",(int)x)
-//#define getenv(x) printf(">>> getenv(%s)\n",x),0
-inline char *getenv(const char *name) { printf(">>> getenv(%s)\n",name); return 0; }
-//#define putenv(x) printf(">>> putenv(%s)\n",x),-1
+
 #define putenv(x) -1
 
 
@@ -201,11 +190,7 @@ struct tm * localtime ( const time_t * timer );
 void tzset(void);
 extern char *tzname[2];
 
-// this function has to be added to string.h
-//int strcoll(const char *s1, const char *s2);
 
-
-off_t lseek(int fd, off_t offset, int whence);
 
 long ftello(FILE *stream);
 int fseeko(FILE *stream, off_t offset, int whence);
@@ -217,6 +202,8 @@ int fseeko(FILE *stream, off_t offset, int whence);
 #define F_RDLCK 0
 #define F_WRLCK 0
 #define F_SETLKW 0
+#define F_UNLCK 0
+#define F_SETLK 0
 
 struct flock {
   short  l_type;
@@ -235,6 +222,7 @@ int access(const char *pathname, int mode);
 #define R_OK 0
 #define W_OK 0
 #define X_OK 0
+#define F_OK 0
 int rename(const char *oldpath, const char *newpath);
 int symlink(const char *oldpath, const char *newpath);
 
@@ -249,43 +237,6 @@ char *get_current_dir_name(void);
 char *getcwd(char *buf, size_t size);
 
 
-// The definition is not precise, please revise
-typedef struct {
-	int si_signo;
-	int si_code;
-        //union sigval si_value;
-	int si_errno;
-	pid_t si_pid;
-	uid_t si_uid;
-	void *si_addr;
-	int si_status;
-	int si_band;
-} siginfo_t;
-
-typedef int sigset_t;
-
-struct sigaction {
-    void (*sa_handler)(int);
-    void (*sa_sigaction)(int, siginfo_t *, void *);
-    sigset_t sa_mask;
-    int sa_flags;
-    void (*sa_restorer)(void);
-};
-
-#define SA_RESETHAND 0
-int sigaddset(sigset_t *set, int signum);
-int sigismember(const sigset_t *set, int signum);
-
-int nanosleep(const struct timespec *req, struct timespec *rem);
-
-/*
-#define SA_NOCLDSTOP 0
-
-int sigaction(int signum, const struct sigaction *act,
-	      struct sigaction *oldact);
-*/
-
-#define RAND_MAX 32767
 
 
 char *setlocale(int category, const char *locale);
@@ -322,17 +273,13 @@ typedef int sig_atomic_t;
 // Bad thing to do
 #define NSIG 0
 
-int sigemptyset(sigset_t *set);
-
-int sigaction(int signum, const struct sigaction *act,
-	      struct sigaction *oldact);
 
 
 
 
 
 #include <net/socket.h>
-#include <net/ip.h>
+//#include <netinet/ip.h>
 #include <arpa/inet.h>
 
 
@@ -438,6 +385,8 @@ struct __res_state {
 #define FIONREAD 0
 
 
+
+uid_t getuid(void);
 
 
 

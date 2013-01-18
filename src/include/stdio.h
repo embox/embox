@@ -115,7 +115,7 @@ extern int fscanf(FILE *stream, const char *format, ...);
 /**
  * Read formatted input from S, according to the format string FORMAT.
  */
-extern int sscanf(char *out, const char *format, ...);
+extern int sscanf(const char *out, const char *format, ...);
 
 /**
  * Open the file whose name is the string pointed to by path
