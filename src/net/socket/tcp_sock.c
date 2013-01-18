@@ -41,8 +41,8 @@ static int tcp_v4_init_sock(struct sock *sk) {
 
 	tcp_set_st(sock, TCP_CLOSED);
 	sock.tcp_sk->this_unack = 100; // TODO remove constant
-	sock.tcp_sk->seq_queue = sock.tcp_sk->this.seq = sock.tcp_sk->this_unack;
-	sock.tcp_sk->this.wind = TCP_WINDOW_DEFAULT;
+	sock.tcp_sk->seq_queue = sock.tcp_sk->self.seq = sock.tcp_sk->this_unack;
+	sock.tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
 	sock.tcp_sk->lock = 0;
 	sock.tcp_sk->last_activity = 0; // TODO 0 or not?
 	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT * USEC_PER_MSEC;

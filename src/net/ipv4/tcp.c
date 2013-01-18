@@ -303,11 +303,11 @@ static void rebuild_tcp_header(__be32 ip_src, __be32 ip_dest,
 static int tcp_xmit(union sock_pointer sock, struct sk_buff *skb) {
 	int res;
 	skb->sk = sock.sk; // check it
-	sock.tcp_sk->this.seq = sock.tcp_sk->this_unack + tcp_seq_len(skb);
+	sock.tcp_sk->self.seq = sock.tcp_sk->this_unack + tcp_seq_len(skb);
 	rebuild_tcp_header(sock.inet_sk->saddr, sock.inet_sk->daddr,
 			sock.inet_sk->sport, sock.inet_sk->dport,
 			sock.tcp_sk->this_unack, sock.tcp_sk->rem.seq,
-			sock.tcp_sk->this.wind, skb);
+			sock.tcp_sk->self.wind, skb);
 	packet_print(sock, skb, "<=", sock.inet_sk->daddr, sock.inet_sk->dport);
 	res = ip_send_packet(sock.inet_sk, skb);
 	if (res < 0) {
@@ -722,7 +722,7 @@ static int process_rst(union sock_pointer sock, struct tcphdr *tcph,
 	switch (sock.sk->sk_state) {
 	default:
 		if ((sock.sk->sk_state == TCP_SYN_SENT) &&
-		    (sock.tcp_sk->this.seq != ntohl(tcph->ack_seq))) { // TODO take this.seq from array
+		    (sock.tcp_sk->self.seq != ntohl(tcph->ack_seq))) { // TODO take this.seq from array
 			break; /* invalid reset */
 		}
 		tcp_set_st(sock, TCP_CLOSED);
@@ -750,7 +750,7 @@ static int process_ack(union sock_pointer sock, struct tcphdr *tcph,
 	}
 
 	ack = ntohl(tcph->ack_seq);
-	this_seq = sock.tcp_sk->this.seq;
+	this_seq = sock.tcp_sk->self.seq;
 	this_unack = sock.tcp_sk->this_unack;
 	if ((this_unack < ack) && (ack <= this_seq)) {
 		tcp_obj_lock(sock, TCP_SYNC_WRITE_QUEUE);
@@ -821,7 +821,7 @@ static int pre_process(union sock_pointer sock, struct sk_buff **pskb,
 		seq = ntohl(tcph->seq);
 		seq_last = seq + tcp_seq_len(*pskb) - 1;
 		rem_seq = sock.tcp_sk->rem.seq;
-		rem_last = rem_seq + sock.tcp_sk->this.wind;
+		rem_last = rem_seq + sock.tcp_sk->self.wind;
 		if ((rem_seq <= seq) && (seq < rem_last)) {
 			if (rem_seq != seq) {
 				/* TODO There is correct packet (with correct sequence
