@@ -9,15 +9,12 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-
-#include <util/math.h> /* max & min macros */
-
-
+#include <util/math.h>
 
 /**
  * Format specifiers
@@ -177,13 +174,13 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	precision = ops & OPS_PREC_IS_GIVEN ? precision : PRINT_F_PREC_DEFAULT;
 
 	fp = modf(r, &ip);
-    for (; (i < precision) && (fmod(fp, 1.0) != 0.0); ++i) fp *= base;
+	for (; (i < precision) && (fmod(fp, 1.0) != 0.0); ++i) fp *= base;
 	fp = round(fp);
 	ip = precision ? (fp != pow((double)base, (double)i) ? ip : ip + 1.0) : round(r);
 	fp = fp != pow((double)base, (double)i) ? fp : 0.0;
 
 	for (; i; --i) {
-		ch = (int)(fmod(fp, (double)base) * base);
+		ch = (int)(round(fmod(fp, (double)base) * base));
 		if (ch >= 10) ch += letbase - 10 - '0';
 		*--str = ch + '0';
 		modf(fp / base, &fp);
@@ -194,7 +191,7 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	}
 
 	do {
-		ch = (int)(fmod(ip, (double)base) * base);
+		ch = (int)(round(fmod(ip, (double)base) * base));
 		if (ch >= 10) ch += letbase - 10 - '0';
 		*--str = ch + '0';
 		modf(ip / base, &ip);
