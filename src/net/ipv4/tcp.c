@@ -804,8 +804,8 @@ static int pre_process(union sock_pointer sock, struct sk_buff **pskb,
 	tcph->check = 0;
 	if (check != tcp_checksum(sock.inet_sk->daddr, sock.inet_sk->saddr,
 			IPPROTO_TCP, tcph, TCP_V4_HEADER_SIZE(tcph) + tcp_data_len(*pskb))) {
-		LOG_ERROR("invalid ckecksum %x sk 0x%p skb 0x%p\n", (int)check,
-						sock.tcp_sk, *pskb);
+		LOG_WARN("invalid ckecksum %x sk 0x%p skb 0x%p\n", (int)check,
+				sock.tcp_sk, *pskb);
 //		return TCP_RET_DROP;
 	}
 

@@ -86,9 +86,11 @@ int web_service_start_service(const char *srv_name,
 	}
 
 	new_task(srv_desc->run, (void *) srv_data);
+#if 1
 	/* When we closing http connection after content sending
 	 * this means socket must be opened only in one task.  */
 	close(srv_data->sock);
+#endif
 
 	return 0;
 }

@@ -20,8 +20,8 @@
 
 EMBOX_CMD(servd);
 
-int web_server_started = 0;
-int web_server_task;
+static int web_server_started = 0;
+static int web_server_task;
 
 static void print_usage(void) {
 	printf("Usage: servd [-c file.config] [-s service] [-r service] [-S]\n");
@@ -56,6 +56,7 @@ static void *start_server(void* args) {
 	if (res < 0) {
 		printf("Error.. bind() failed. errno=%d\n", errno);
 		web_server_started = -1;
+		close(host);
 		return (void*) res;
 	}
 
@@ -63,13 +64,16 @@ static void *start_server(void* args) {
 	if (res < 0) {
 		printf("Error.. listen() failed. errno=%d\n", errno);
 		web_server_started = -1;
+		close(host);
 		return (void*) res;
 	}
 
 	welcome_message();
 
 	while (web_server_started) {
+		printf("\n======START===\n");
 		res = accept(host, (struct sockaddr *) &addr, &addr_len);
+		printf("\n======ACCEPT %d\n", res);
 		if (res < 0) {
 			/* error code in client, now */
 			printf("Error.. accept() failed. errno=%d\n", errno);
@@ -77,7 +81,9 @@ static void *start_server(void* args) {
 			web_server_started = 0;
 			return (void*) res;
 		}
+		printf("\n======PREPARE %d\n", res);
 		client_process(res);
+		printf("\n======DONE %d\n", res);
 	}
 
 	res = close(host);
@@ -121,6 +127,7 @@ int stop_server(void) {
 
 	res = connect(sock, (struct sockaddr *) &addr, sizeof(addr));
 	if (res < 0) {
+		close(sock);
 		return -1;
 	}
 

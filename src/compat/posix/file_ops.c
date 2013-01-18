@@ -17,10 +17,12 @@
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
 
-
+#include <stdio.h>
 int close(int fd) {
 	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
+
+	printf("\nclose() for %d\n", fd);
 
 	assert(task_self_idx_table());
 
