@@ -97,7 +97,7 @@ static int exec(int argc, char **argv) {
 
 	if (!(sock_array = sr_get_all_sockets_array(&count))) {
 		#ifdef __NS_TEST_SOCKET_CREATE__
-		close(ts);
+		socket_close(ts);
 		#endif
 		printf("Can't get sockets array. It might be so caused by lack of memory.");
 		return 1;
@@ -110,7 +110,7 @@ static int exec(int argc, char **argv) {
 	sr_free_all_sockets_array(sock_array);
 
 	#ifdef __NS_TEST_SOCKET_CREATE__
-	close(ts);
+	socket_close(ts);
 	#endif
 
 	return 0;
