@@ -9,6 +9,7 @@
 #define ARPA_INET_H_
 
 #include <types.h>
+#include <lib/bits/byteswap.h>
 
 #define htons(n)            __bswap_16(n)
 #define ntohs(n)            __bswap_16(n) /* same as htons() */

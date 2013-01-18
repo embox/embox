@@ -20,6 +20,8 @@
 #include <net/route.h>
 #include <net/inetdevice.h>
 
+#include <kernel/time/time.h>
+
 #include <mem/objalloc.h>
 #include <embox/net/sock.h>
 

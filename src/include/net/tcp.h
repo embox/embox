@@ -10,16 +10,15 @@
 #ifndef NET_TCP_H_
 #define NET_TCP_H_
 
-#include <hal/arch.h>
-#include <net/inet_sock.h>
-#include <time.h>
+#include <hal/arch.h> /* endianess */
 #include <types.h>
-#include <sys/types.h>
-#include <net/if_ether.h>
-#include <kernel/thread/event.h>
+#include <netinet/tcp.h>
+
+#include <net/inet_sock.h>
 
 #include <framework/mod/options.h>
 #include <module/embox/net/tcp_sock.h>
+
 
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_MODULE_GET(embox__net__tcp_sock, NUMBER, amount_tcp_sock)
 
@@ -132,8 +131,7 @@ enum {
 #define TCP_SYNC_STATE        2    /* Synchronization flag for socket sk_state */
 #define TCP_SYNC_CONN_QUEUE   4    /* Synchronization flag for socket conn_wait */
 
-/* Options specific for tcp socket */
-#define TCP_NODELAY 0
+
 
 /* Status of TCP connection */
 enum {
