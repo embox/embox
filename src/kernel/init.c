@@ -38,9 +38,9 @@ void kernel_start(void) {
 static void kernel_init(void) {
 	arch_init();
 
-	diag_init();
-
 	ipl_init();
+
+	diag_init();
 }
 
 /**

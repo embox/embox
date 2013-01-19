@@ -14,6 +14,8 @@
 
 #define  I8042_CMD_READ_MODE   0x20
 #define  I8042_CMD_WRITE_MODE  0x60
+#define  I8042_CMD_PORT_DIS    0xAD
+#define  I8042_CMD_PORT_EN     0xAE
 
 #define  I8042_MODE_XLATE      0x40
 #define  I8042_MODE_DISABLE    0x10
@@ -32,9 +34,13 @@
 #define  KEY_F1                0xc0
 
 #define  CMD_PORT              0x64
+#define  STATUS_PORT           0x64
 #define  DATA_PORT             0x60
 
 #define  IRQ1 1
+
+#define keyboard_wait_read()  while (0 == (inb(STATUS_PORT) & 0x01))
+#define keyboard_wait_write() while (0 != (inb(STATUS_PORT) & 0x02))
 
 static const unsigned int keymap[][4] = {
 	{0       },    /* 0 */
@@ -124,32 +130,23 @@ static const unsigned int keymap[][4] = {
 };
 
 static int keyboard_havechar(void) {
-	unsigned char c = inb(0x64);
+	unsigned char c = inb(STATUS_PORT);
 	return (c == 0xFF) ? 0 : c & 1;
 }
 
-static int keyboard_wait_read(void) {
-	while (0 == (inb(0x64) & 0x01))
-		;
-
-	return 0;
-}
-
-static int keyboard_wait_write(void) {
-	while (0 != (inb(0x64) & 0x02))
-		;
-
-	return 0;
+static void keyboard_send_cmd(uint8_t cmd) {
+	keyboard_wait_write();
+	outb(cmd, CMD_PORT);
 }
 
 static unsigned char keyboard_get_mode(void) {
-	outb(I8042_CMD_READ_MODE, CMD_PORT);
+	keyboard_send_cmd(I8042_CMD_READ_MODE);
 	keyboard_wait_read();
 	return inb(DATA_PORT);
 }
 
 static void keyboard_set_mode(unsigned char mode) {
-	outb(I8042_CMD_WRITE_MODE, CMD_PORT);
+	keyboard_send_cmd(I8042_CMD_WRITE_MODE);
 	keyboard_wait_write();
 	outb(mode, DATA_PORT);
 }
@@ -210,13 +207,15 @@ char keyboard_getc(void) {
 	}
 }
 
-
 #if 0
+
+#include <kernel/printk.h>
+
 static irq_return_t kbd_handler(unsigned int irq_nr, void *data) {
 	uint8_t scancode;
 	scancode = in8(DATA_PORT);
 	//TODO:
-	TRACE("keycode 0x%X\n", scancode);
+	printk("keycode 0x%X\n", scancode);
 	return IRQ_HANDLED;
 }
 #endif
@@ -228,6 +227,9 @@ void keyboard_init(void) {
 	if (inb(0x64) == 0xFF) {
 		return;
 	}
+
+	keyboard_send_cmd(I8042_CMD_PORT_DIS);
+
 	/* Empty keyboard buffer */
 	while (keyboard_havechar()) keyboard_getc();
 
@@ -243,4 +245,6 @@ void keyboard_init(void) {
 	printk("Keyboard init OK! \n");
 
 	//irq_attach(IRQ1, kbd_handler, 0, NULL, "kbd");
+
+	keyboard_send_cmd(I8042_CMD_PORT_EN);
 }
