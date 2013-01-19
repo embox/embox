@@ -39,8 +39,8 @@
 
 #define  IRQ1 1
 
-#define keyboard_wait_read()  while (0 == (inb(STATUS_PORT) & 0x01))
-#define keyboard_wait_write() while (0 != (inb(STATUS_PORT) & 0x02))
+#define keyboard_wait_read()  do {} while (0 == (inb(STATUS_PORT) & 0x01))
+#define keyboard_wait_write() do {} while (0 != (inb(STATUS_PORT) & 0x02))
 
 static const unsigned int keymap[][4] = {
 	{0       },    /* 0 */
