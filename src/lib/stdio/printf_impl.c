@@ -181,8 +181,9 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	}
 	for (; (sign_count < precision) && (fmod(fp, 1.0) != 0.0); ++sign_count) fp *= base;
 	fp = round(fp);
-	ip = precision ? (fp != pow((double)base, (double)sign_count) ? ip : ip + 1.0) : round(r);
+	ip = precision ? (fp != pow((double)base, (double)sign_count) ? ip : ip + 1.0) : round(ip + fp);
 	fp = fp != pow((double)base, (double)sign_count) ? fp : 0.0;
+	if ((ops & OPS_SPEC_WITH_EXP) && (ip >= base)) fp = modf((ip + fp) / base, &ip), ep += 1.0;
 
 	if (ops & OPS_SPEC_WITH_EXP) {
 		do {
