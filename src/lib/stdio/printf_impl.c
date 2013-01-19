@@ -91,7 +91,7 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 		struct printchar_handler_data *printchar_data, unsigned long long int u,
 		int width, int min_len, unsigned int ops, int base) {
 	char buff[PRINT_I_BUFF_SZ], *str, *end, *prefix;
-	int pc, ch, len, prefix_len, zero_count, space_count, letbase;
+	int pc, ch, len, prefix_len, zero_count, space_count, letter_base;
 
 	assert(printchar_handler != NULL);
 	assert(width >= 0);
@@ -99,7 +99,7 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	str = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
-	prefix = (ops & OPS_SPEC_IS_SIGNED) && ((long long int)u < 0) ? u = -u, "-"
+	prefix = (ops & OPS_SPEC_IS_SIGNED) && ((long long int)u < 0) ? (u = -u, "-")
 			: (ops & OPS_SPEC_IS_SIGNED) && (ops & OPS_FLAG_WITH_SIGN) ? "+"
 			: (ops & OPS_SPEC_IS_SIGNED) && (ops & OPS_FLAG_EXTRA_SPACE) ? " "
 			: (base == 8) && (ops & OPS_FLAG_WITH_SPEC) ? "0"
@@ -108,11 +108,11 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 			: "";
 	pc = 0;
 	prefix_len = strlen(prefix);
-	letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
+	letter_base = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
 
 	do {
 		ch = u % base;
-		if (ch >= 10) ch += letbase - 10 - '0';
+		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
 		u /= base;
 	} while (u);
@@ -147,15 +147,15 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data, double r, int width,
 		int precision, unsigned int ops, int base) {
-	char buff[PRINT_F_BUFF_SZ], *str, *end, *prefix/*, *postfix*/;
-	double ip, fp/*, ep*/;
-	int pc, i, ch, len, prefix_len/*, postfix_len*/, pad_count, letbase;
+	char buff[PRINT_F_BUFF_SZ], *str, *end, *prefix, *postfix;
+	double ip, fp, ep;
+	int pc, i, ch, len, prefix_len, postfix_len, pad_count, sign_count, zero_left, letter_base;
 
 	assert(printchar_handler != NULL);
 	assert(width >= 0);
 	assert(precision >= 0);
 
-	str = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
+	postfix = end = str = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
 	prefix = signbit(r) ? (r = -r, base == 16)
 				? ops & OPS_SPEC_UPPER_CASE ? "-0X" : "-0x"
@@ -168,20 +168,39 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 				: " "
 			: base == 16 ? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
 			: "";
-	i = pc = 0;
+	sign_count = i = pc = 0;
 	prefix_len = strlen(prefix);
-	letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
+	letter_base = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
 	precision = ops & OPS_PREC_IS_GIVEN ? precision : PRINT_F_PREC_DEFAULT;
 
 	fp = modf(r, &ip);
-	for (; (i < precision) && (fmod(fp, 1.0) != 0.0); ++i) fp *= base;
+	if (ops & OPS_SPEC_WITH_EXP) {
+		ep = 0.0;
+		while (ip >= base) fp = modf((ip + fp) / base, &ip), ep += 1.0;
+		if (fp != 0.0) while (ip == 0.0) fp = modf((ip + fp) * base, &ip), ep -= 1.0;
+	}
+	for (; (sign_count < precision) && (fmod(fp, 1.0) != 0.0); ++sign_count) fp *= base;
 	fp = round(fp);
-	ip = precision ? (fp != pow((double)base, (double)i) ? ip : ip + 1.0) : round(r);
-	fp = fp != pow((double)base, (double)i) ? fp : 0.0;
+	ip = precision ? (fp != pow((double)base, (double)sign_count) ? ip : ip + 1.0) : round(r);
+	fp = fp != pow((double)base, (double)sign_count) ? fp : 0.0;
 
-	for (; i; --i) {
+	if (ops & OPS_SPEC_WITH_EXP) {
+		do {
+			ch = (int)(round(fmod(fabs(ep), (double)base) * base));
+			if (ch >= 10) ch += letter_base - 10 - '0';
+			*--postfix = ch + '0';
+			modf(ep / base, &ep);
+		} while (ep != 0.0);
+		if (strlen(postfix) == 1) *--postfix = '0';
+		*--postfix = signbit(ep) ? '-' : '+';
+		*--postfix = ops & OPS_SPEC_UPPER_CASE ? 'E' : 'e';
+		str = end = postfix - 1;
+		*end = '\0';
+	}
+
+	for (; i < sign_count; ++i) {
 		ch = (int)(round(fmod(fp, (double)base) * base));
-		if (ch >= 10) ch += letbase - 10 - '0';
+		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
 		modf(fp / base, &fp);
 	}
@@ -192,13 +211,15 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	do {
 		ch = (int)(round(fmod(ip, (double)base) * base));
-		if (ch >= 10) ch += letbase - 10 - '0';
+		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
 		modf(ip / base, &ip);
 	} while (ip != 0.0);
 
 	len = end - str;
-	pad_count = prefix_len + len < width ? width - prefix_len - len : 0;
+	postfix_len = strlen(postfix);
+	zero_left = precision - sign_count;
+	pad_count = max(width - prefix_len - len - zero_left - postfix_len, 0);
 
 	if (!(ops & (OPS_FLAG_ZERO_PAD | OPS_FLAG_LEFT_ALIGN))) {
 		pc += pad_count;
@@ -215,6 +236,12 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	pc += len;
 	while (len--) printchar_handler(printchar_data, *str++);
+
+	pc += zero_left;
+	while (zero_left--) printchar_handler(printchar_data, '0');
+
+	pc += postfix_len;
+	while (postfix_len--) printchar_handler(printchar_data, *postfix++);
 
 	if (ops & OPS_FLAG_LEFT_ALIGN) {
 		pc += pad_count;

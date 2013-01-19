@@ -120,4 +120,12 @@ TEST_CASE("Test of specifier with type float") {
 	TEST_STR_FMT("2.   ", "%#-5.f", 1.983183456);
 	TEST_STR_FMT("1.983184", "%f", 1.983183556);
 	TEST_STR_FMT("17 ", "%.0f ", 17.4);
+	TEST_STR_FMT("17. ", "%#.0f ", 17.4);
+	TEST_STR_FMT("17.400000", "%f", 17.4);
+	TEST_STR_FMT("0.000000e+00", "%e", 0.0);
+	TEST_STR_FMT("0.e+00", "%#.e", 0.0);
+	TEST_STR_FMT("1.0000e+00", "%.4e", 1.0);
+	TEST_STR_FMT("3.020000e+01", "%e", 30.2);
+	TEST_STR_FMT("1.234560e+02", "%e", 123.456);
+	TEST_STR_FMT("+8.2346E-03", "%+9.4E", 0.00823456);
 }
