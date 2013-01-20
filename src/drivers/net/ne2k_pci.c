@@ -261,6 +261,7 @@ static void ne2k_receive(struct net_device *dev) {
 			if (skb) {
 				stat->rx_packets++;
 				stat->rx_bytes += skb->len;
+				printf("ne2k_receive() call netif_rx with skb %p\n", skb);
 				netif_rx(skb);
 			} else {
 				stat->rx_dropped++;
@@ -279,11 +280,13 @@ static void ne2k_receive(struct net_device *dev) {
 	out8(ENISR_RX | ENISR_RX_ERR, base_addr + EN0_ISR);
 }
 
+#include <stdio.h>
 static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 	uint8_t isr, status;
 	net_device_stats_t *stat;
 	unsigned long base_addr;
 
+	printf("ne2k_handler() init %x %p\n", irq_num, dev_id);
 	stat = get_eth_stat((struct net_device *)dev_id);
 	base_addr = ((struct net_device *)dev_id)->base_addr;
 
@@ -339,11 +342,13 @@ static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 		out8(E8390_NODMA | E8390_PAGE0 | E8390_START, base_addr + E8390_CMD);
 	}
 
+	printf("ne2k_handler() fini %x %p\n", irq_num, dev_id);
 	return IRQ_HANDLED;
 }
 
 static net_device_stats_t * get_eth_stat(struct net_device *dev) {
-	return &(dev->stats);
+	assert(dev != NULL);
+	return &dev->stats;
 }
 
 static int set_mac_address(struct net_device *dev, void *addr) {

@@ -11,8 +11,11 @@
 #include <net/skbuff.h>
 #include <assert.h>
 
+#include <stdio.h>
 int netif_rx(void *data) {
 	struct sk_buff *skb;
+
+	printf("netif_rx(): data %p\n", data);
 
 	skb = (struct sk_buff *)data;
 	assert(skb != NULL);

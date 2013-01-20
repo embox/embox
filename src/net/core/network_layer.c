@@ -77,13 +77,20 @@ static void print_packet (sk_buff_t *skb) {
 int dev_queue_send(struct sk_buff *skb) {
 	int res;
 
+	printf("dev_queue_send() init skb %p\n", skb);
+
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
+	assert(skb->dev->header_ops != NULL);
+	assert(skb->dev->header_ops->rebuild != NULL);
 
+	printf("dev_queue_send() rebuild skb %p\n", skb);
 	res = skb->dev->header_ops->rebuild(skb);
 	if (res < 0) {
 		/* send arp request and add packet in list of deferred packets */
+		printf("dev_queue_send() save skb %p to arp_queue\n", skb);
 		res = arp_queue_add(skb);
+		printf("dev_queue_send() arp_queue_add return %d for %p\n", res, skb);
 		if (res < 0) {
 			skb_free(skb);
 			return res;
@@ -101,6 +108,7 @@ int dev_queue_send(struct sk_buff *skb) {
 #endif
 	}
 
+	printf("dev_queue_send() send skb %p\n", skb);
 	return dev_queue_xmit(skb);
 }
 
@@ -110,6 +118,8 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	const struct net_device_ops *ops;
 	net_device_stats_t *stats;
 
+	printf("dev_queue_xmit() init skb %p\n", skb);
+
 	assert(skb != NULL);
 
 	dev = skb->dev;
@@ -118,12 +128,15 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	ops = dev->netdev_ops;
 	assert(ops != NULL);
 
+	assert(ops->ndo_get_stats != NULL);
 	stats = ops->ndo_get_stats(dev);
 	assert(stats != NULL);
 
 	if (dev->flags & IFF_UP) {
-
+		printf("dev_queue_xmit() xmit skb %p\n", skb);
+		assert(ops->ndo_start_xmit != NULL);
 		res = ops->ndo_start_xmit(skb, dev);
+		printf("dev_queue_xmit() xmit return %d for skb %p\n", res, skb);
 		if (res < 0) {
 			skb_free(skb);
 			stats->tx_err++;
@@ -138,14 +151,19 @@ int dev_queue_xmit(struct sk_buff *skb) {
 		skb_free(skb);
 	}
 
+	printf("dev_queue_xmit() fini skb %p\n", skb);
+
 	return ENOERR;
 }
 
+#include <stdio.h>
 int netif_receive_skb(sk_buff_t *skb) {
 	struct packet_type *q;
 	const struct net_pack *pack;
 
 	assert(skb != NULL);
+
+	printf("netif_receive_skb() receive skb %p\n", skb);
 
 	net_pack_foreach(pack) {
 		assert(pack != NULL);
@@ -154,6 +172,7 @@ int netif_receive_skb(sk_buff_t *skb) {
 		assert(q != NULL);
 
 		if (q->type == skb->protocol) {
+			assert(q->func != NULL);
 			return q->func(skb, skb->dev, q, NULL);
 		}
 	}

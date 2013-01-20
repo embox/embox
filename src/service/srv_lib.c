@@ -74,22 +74,29 @@ void web_service_remove_all() {
 
 }
 
+//#include <stdio.h>
 int web_service_start_service(const char *srv_name,
 		struct service_data * srv_data) {
 	const struct web_service_desc *srv_desc;
 
+//	printf("web_service_start_service() lookup srv %s data %p\n", srv_name, srv_data);
 	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
 		return -1;
 	}
+//	printf("web_service_start_service() started? srv %s data %p\n", srv_name, srv_data);
 	if (!*srv_desc->is_started){
 		return -1;
 	}
 
+//	printf("web_service_start_service() make new task for srv %s data %p\n", srv_name, srv_data);
 	new_task(srv_desc->run, (void *) srv_data);
+//	printf("web_service_start_service() new task created for srv %s data %p\n", srv_name, srv_data);
 #if 1
 	/* When we closing http connection after content sending
 	 * this means socket must be opened only in one task.  */
+//	printf("web_service_start_service() close sock %d of srv %s data %p\n", srv_data->sock, srv_name, srv_data);
 	close(srv_data->sock);
+//	printf("web_service_start_service() sock %d closed of srv %s data %p\n", srv_data->sock, srv_name, srv_data);
 #endif
 
 	return 0;

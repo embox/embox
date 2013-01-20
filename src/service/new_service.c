@@ -123,19 +123,25 @@ static void *entry_point(void *arg) {
 	struct service_file srv_file;
 	struct variable vars[VAR_COUNT];
 
+//	printf("entry_point() init arg %p\n", arg);
 	service_get_service_data(&srv_data, arg);
 	service_file_open_write(&srv_file);
+//	printf("entry_point() arg %p => srv_data %p srv_file %p\n", arg, &srv_data, &srv_file);
 
 	get_variables_from_query(srv_data.query, vars);
 	print_vars(vars);
 
+//	printf("entry_point() process file for arg %p\n", arg);
 	preprocess_file(srv_file.fd, vars);
+//	printf("entry_point() file processed for arg %p\n", arg);
 	srv_data.http_status = HTTP_STAT_200;
 
 	service_file_switch_to_read_mode(&srv_file);
 	service_send_reply(&srv_data, &srv_file);
 
+//	printf("entry_point() close connection arg %p srv_data %p\n", arg, &srv_data);
 	service_close_connection(&srv_data);
+//	printf("entry_point() connection closed arg %p srv_data %p\n", arg, &srv_data);
 
 	return NULL;
 }

@@ -79,13 +79,12 @@ static const tcp_handler_t tcp_st_handler[];
 
 void debug_print(__u8 code, const char *msg, ...) {
 	va_list args;
-	return;				/* YOUR output is too annoying for others */
 
 	va_start(args, msg);
 	switch (code) {
 //default:
 //	case 0:  /* default */
-//	case 1:  /* in/out package print */
+	case 1:  /* in/out package print */
 	case 2:  /* socket state */
 	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
@@ -93,9 +92,9 @@ void debug_print(__u8 code, const char *msg, ...) {
 	case 6:	 /* sock_alloc/sock_free */
 //	case 7:  /* tcp_default_timer action */
 //	case 8:  /* state's handler */
-//	case 9:  /* sending package */
+	case 9:  /* sending package */
 //	case 10: /* pre_process */
-//	case 11: /* tcp_handle */
+	case 11: /* tcp_handle */
 		softirq_lock();
 		prom_vprintf(msg, args);
 		softirq_unlock();
@@ -304,12 +303,15 @@ static int tcp_xmit(union sock_pointer sock, struct sk_buff *skb) {
 	int res;
 	skb->sk = sock.sk; // check it
 	sock.tcp_sk->this.seq = sock.tcp_sk->this_unack + tcp_seq_len(skb);
+	debug_print(9, "tcp_xmit: rebuild skb header 0x%p\n", skb);
 	rebuild_tcp_header(sock.inet_sk->saddr, sock.inet_sk->daddr,
 			sock.inet_sk->sport, sock.inet_sk->dport,
 			sock.tcp_sk->this_unack, sock.tcp_sk->rem.seq,
 			sock.tcp_sk->this.wind, skb);
 	packet_print(sock, skb, "<=", sock.inet_sk->daddr, sock.inet_sk->dport);
+	debug_print(9, "tcp_xmit: send by ip_send_packet 0x%p\n", skb);
 	res = ip_send_packet(sock.inet_sk, skb);
+	debug_print(9, "tcp_xmit: ip_send_packet return %d for skb 0x%p\n", res, skb);
 	if (res < 0) {
 		LOG_ERROR("ip_send_packet returned %d\n", res);
 	}
@@ -382,6 +384,7 @@ static void send_ack_from_sock(union sock_pointer sock, struct sk_buff *skb_ackn
 
 		tcp_sock_xmit(sock, TCP_XMIT_IGNORE_DELAY);
 	}
+	debug_print(9, "send_ack_from_sock: done 0x%p\n", skb_ackn);
 }
 
 /**
@@ -475,7 +478,9 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 
 	if (tcph->syn) {
 		/* Allocate new socket for this connection */
+		printf("tcp_st_listen() create inet_sock for hostsk %p\n", sock.sk);
 		newsock.sk = inet_create_sock(0, (struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
+		printf("tcp_st_listen() inet_sock for hostsk %p was created\n", sock.sk);
 		if (newsock.sk == NULL) {
 			LOG_ERROR("no memory\n");
 			return -ENOMEM;
@@ -492,12 +497,17 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		list_add_tail(&newsock.tcp_sk->conn_wait, &sock.tcp_sk->conn_wait);
 		event_notify(&sock.tcp_sk->new_conn);
+		printf("tcp_st_listen() block#1 hostsk %p\n", sock.sk);
 		{
 			struct idx_desc *desc = sock.sk->sk_socket->desc;
+	assert(sock.sk != NULL);
+	assert(sock.sk->sk_socket != NULL);
 			assert(desc != NULL);
+			assert(desc->data != NULL);
 			io_op_unblock(&desc->data->read_state);
 			io_op_unblock(&desc->data->write_state);
 		}
+		printf("tcp_st_listen() end block#1 hostsk %p\n", sock.sk);
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 		return TCP_RET_OK;
 	}

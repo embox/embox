@@ -28,6 +28,8 @@ void critical_dispatch_pending(void) {
 		dispatch_queue = d->next;
 		d->mask = ~mask;
 
+		assert(d->dispatch);
+		assert(d->dispatch!=(void*)8);
 		d->dispatch();
 	}
 

@@ -15,6 +15,7 @@
 #include <stddef.h>
 #include <types.h>
 #include <string.h>
+#include <stdio.h>
 
 #include <net/sock.h>
 #include <util/sys_log.h>
@@ -265,38 +266,48 @@ int kernel_socket_accept(struct socket *sock, struct socket **accepted,
 	   protocol */
 
 	/* accept method is not set */
+	printf("kernel_socket_accept() init (host %p hostskk %p)\n", sock, sock->sk);
 	if (!sock->ops->accept) {
+		printf("kernel_socket_accept() error (host %p)\n", sock);
 		return -EOPNOTSUPP;
 	}
 
 	/* find out if socket sock is registered in the system */
 	if (!sr_socket_exists(sock)) {
+		printf("kernel_socket_accept() error (host %p)\n", sock);
 		return -ENOTSOCK;
 	}
 
 	/* is the socket accepting connections */
 	if (!sk_is_listening(sock)) {  /* we should connect to a listening socket */
+		printf("kernel_socket_accept() error (host %p)\n", sock);
 		LOG_ERROR("kernel_socket_accept",
 				"socket accepting a connection should be in listening state");
 		return -EINVAL;
 	}
 
 	/* try to accept */
+	printf("kernel_socket_accept() accept (hostsk %p)\n", sock->sk);
 	res = sock->ops->accept(sock->sk, &newsk, addr, addrlen);
 	if (res < 0) { /* If something went wrong */
 		/* debug_printf("Error while accepting a connection", */
 		/* 						 "kernel_sockets", "kernel_socket_accept"); */
+		printf("kernel_socket_accept() error (host %p)\n", sock);
 		LOG_ERROR("kernel_socket_accept", "error while accepting a connection");
 		return res;
 	}
 
+	printf("kernel_socket_accept() create new (hostsk %p, clientsk %p)\n", sock->sk, newsk);
 	/* create socket with the same type, protocol and family as 'sock' */
 	res = kernel_socket_create(sock->sk->__sk_common.skc_family, sock->sk->sk_type,
 			sock->sk->sk_protocol, accepted, newsk, (struct proto_ops *)sock->ops);
 	if (res < 0) {
+		printf("kernel_socket_accept() fail (host %p)\n", sock);
 		sk_common_release(newsk);
+		printf("kernel_socket_accept() error (host %p)\n", sock);
 		return res;
 	}
+	printf("kernel_socket_accept() fini (host %p, client %p)\n", sock, *accepted);
 	/* set state */
 	sk_set_connection_state(*accepted, ESTABLISHED);
 	return res;

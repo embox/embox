@@ -90,21 +90,27 @@ int service_file_switch_to_read_mode(struct service_file *srv_file) {
 }
 
 void service_file_close(struct service_file *srv_file) {
+//	printf("service_file_close() srv_file %p\n", srv_file);
 	if (srv_file->name)
 		free(srv_file->name);
 	if (srv_file->fd)
 		fclose(srv_file->fd);
+//	printf("service_file_close() srv_file %p closed\n", srv_file);
 }
 
 void service_free_service_data(struct service_data * data) {
 	if (NULL != data) {
+//		printf("service_service_data() free query %p of data %p\n",data->query, data);
 		if (NULL != data->query) {
 			free(data->query);
 		}
+//		printf("service_service_data() free http %p of data %p\n", &data->request, data);
 		if (NULL != &data->request) {
 			free_http_request(&data->request);
 		}
+//		printf("service_service_data() data %p\n", data);
 		free(data);
+//		printf("service_service_data() all data %p freed\n", data);
 	}
 }
 
@@ -202,5 +208,7 @@ int service_send_error(struct service_data *srv_data,
 }
 
 void service_close_connection(struct service_data *srv_data) {
+//	printf("service_close_connection() for srv_data %p with sock %d\n", srv_data, srv_data->sock);
 	close(srv_data->sock); /* close connection */
+//	printf("service_close_connection() closed srv_data %p with sock %d\n", srv_data, srv_data->sock);
 }

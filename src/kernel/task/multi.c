@@ -191,6 +191,7 @@ void __attribute__((noreturn)) task_exit(void *res) {
 	panic("Returning from task_exit()");
 }
 
+#include <stdio.h>
 static void *task_trampoline(void *arg) {
 	struct task_creat_param *param = (struct task_creat_param *) arg;
 	void *run_arg = param->arg;
@@ -203,7 +204,9 @@ static void *task_trampoline(void *arg) {
 	}
 	sched_unlock();
 
+	printf("task_trampoline() run %p with %p\n", run, run_arg);
 	res = run(run_arg);
+	printf("task_trampoline() done for run %p with %p\n", run, run_arg);
 	task_exit(res);
 
 	/* NOTREACHED */
