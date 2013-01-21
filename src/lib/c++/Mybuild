@@ -17,3 +17,7 @@ module LibCXX {
 	depends embox.lib.LibC
 }
 
+abstract module CXXApp {
+	/* The implementation of this module is supposed to
+		implement the "int main(int argc, char** argv)" */
+}
