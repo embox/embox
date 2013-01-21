@@ -28,12 +28,25 @@
 
 
 
+#include <sys/types.h> // for size_t
+#define MAP_SHARED    0x00
+#define MAP_PRIVATE   0x01
+#define PROT_READ     0x10
+#define PROT_WRITE    0x20
+#define MAP_FAILED    (-1)
+extern int    munmap(void *, size_t);
+extern void  *mmap(void *, size_t, int, int, int, off_t);
+
+
+
 // Stuff below moved here because of testlib
 
 // because of printf
 #include <stdio.h>
-inline char *getenv(const char *name) { printf(">>> getenv(%s)\n",name); return 0; }
-inline int fflush(FILE *x) { printf(">>> fflush(%d)\n",(int)x); return EOF; }
+static inline char *getenv(const char *name)
+  { printf(">>> getenv(%s)\n",name); return 0; }
+static inline int fflush(FILE *x)
+  { printf(">>> fflush(%d)\n",(int)x); return EOF; }
 
 // this function has to be added to string.h
 int strcoll(const char *s1, const char *s2);

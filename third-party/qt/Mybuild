@@ -1,0 +1,5 @@
+package third_party.qt
+
+module example extends embox.lib.CXXApp {
+	depends embox.lib.LibCXX
+}
