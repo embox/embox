@@ -77,6 +77,18 @@ module hashtable {
 	depends embox.mem.objalloc
 }
 
+module queue {
+	option number queue_quantity=5
+	option number queue_element_quantity=40
+
+	source "queue.c"
+
+	depends List
+	depends embox.lib.LibC
+	depends embox.mem.objalloc
+}
+
+
 module indexator {
 	source "indexator.c"
 }
