@@ -24,7 +24,7 @@ module list_test {
 module queue_test {
 	source "queue_test.c"
 
-	depends embox.util.queue
+	depends embox.util.Queue
 	depends embox.framework.LibFramework
 }
 
