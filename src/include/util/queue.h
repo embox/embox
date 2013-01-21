@@ -2,7 +2,7 @@
  * @file
  * @brief 'queue' interface
  *
- * @date 20.02.12
+ * @date 20.01.13
  * @author Ilia Vaprol
  */
 
@@ -10,80 +10,155 @@
 #define UTIL_QUEUE_H_
 
 #include <stdlib.h>
+#include <util/member.h>
+
+#include __impl_x(util/queue_impl.h)
+
+/* Types used for the list itself and for elements linkage. */
 
 /**
- * Forwarding queue structure declaration. You do not allow to use
- * field of this structure outside of queue implementation library
+ * A head of the list.
+ *
+ * @see queue_init()
+ * @see QUEUE_INIT()
+ * @see QUEUE_DEF()
+ *   A handy macro for defining variables of such type.
  */
 struct queue;
 
 /**
- * Create empty queue.
+ * A link which has to be embedded into each element of the queue.
  *
- * @return pointer to created queue or NULL
+ * Usage:
+ * @code
+ *  struct my_element {
+ *  	...
+ *  	struct queue_link my_link;
+ *  	...
+ *  };
+ * @endcode
+ *
+ * @see queue_link_init()
+ * @see queue_LINK_INIT()
  */
-extern struct queue * queue_create(void);
+struct queue_link;
+
+/* Cast between link member and the element. */
+
+/**
+ * Gets a pointer to an element corresponding to a given link.
+ *
+ * @param link_ptr
+ *   The pointer to the member being casted. Must not be null.
+ * @param element_t
+ *   The type of the element.
+ * @param m_link
+ *   The name of the link member within the element.
+ * @return
+ *   A element_t * pointer.
+ */
+#define queue_element(link_ptr, element_t, m_link) \
+	member_cast_out(link_ptr, element_t, m_link)
+
+/* Static initializers. */
+
+/**
+ * @param queue
+ *   Pointer to the list to initialize.
+ */
+#define QUEUE_INIT(queue) \
+	  __QUEUE_INIT(queue)
+
+/**
+ * @param link
+ *   Pointer to the link.
+ */
+#define QUEUE_LINK_INIT(link) \
+	  __QUEUE_LINK_INIT(link)
+
+/**
+ * @param list_nm
+ *   Variable name to use.
+ */
+#define QUEUE_DEF(queue_nm) \
+	struct queue queue_nm = QUEUE_INIT(&queue_nm)
+
+/* Initialization functions. */
+
+/**
+ * @param queue
+ *   Pointer to the queue being initialized.
+ * @return
+ *   The argument.
+ */
+extern struct queue * queue_init(struct queue *queue);
+
+/**
+ * @param link
+ *   Pointer to the link.
+ * @return
+ *   The argument.
+ */
+extern struct queue_link * queue_link_init(struct queue_link *link);
 
 /**
  * Checks whether there are any items in the queue or not.
  *
- * @param q existing queue with items (or without)
- *
- * @return 1 if queue is empty and zero if not
+ * @param queue
+ *   Pointer to the queue.
+ * @return
+ *   Empty or not.
  */
-extern int queue_empty(struct queue *q);
+extern int queue_is_empty(struct queue *queue);
 
 /**
  * Get a number of items in queue.
  *
- * @param q existing queue with items (or without)
- *
- * @return number of items in queue
+ * @param queue
+ *   Pointer to the queue.
+ * @return
+ *   The size of queue.
  */
-extern size_t queue_size(struct queue *q);
+extern size_t queue_size(struct queue *queue);
 
-/**
- * Get a first element in queue
- *
- * @param q existing queue with items
- *
- * @return first element in current queue
- */
-void * queue_front(struct queue *q);
+/* Getting a first element from its queue. */
 
-/**
- * Get a last element in queue
- *
- * @param q existing queue with items
- *
- * @return last element in current queue
- */
-void * queue_back(struct queue *q);
+#define queue_front(linkage_t, queue) \
+	member_to_object_or_null(queue_front_link(queue), linkage_t)
 
-/**
- * Insert element into the tail of queue
- *
- * @param q existing queue with items (or without)
- * @param val element for insertion to current queue
- *
- * @return error code
- * @retval ENOERR if ok
- * @retval -ENOMEM if there is no memory
- */
-int queue_push(struct queue *q, void *val);
+#define queue_front_element(queue, element_type, link_member) \
+	member_cast_out_or_null(queue_front_link(queue), element_type, link_member)
 
-/**
- * Delete element from the head of queue
- *
- * @param q existing queue with items
- */
-void queue_pop(struct queue *q);
+extern struct queue_link * queue_front_link(struct queue *queue);
 
-/**
- * Delete all elements and release the memory of a queue
- *
- * @param q existing queue with items (or without)
- */
-void queue_destroy(struct queue *q);
+/* Getting a last element from its queue. */
+
+#define queue_back(linkage_t, queue) \
+	member_to_object_or_null(queue_back_link(queue), linkage_t)
+
+#define queue_back_element(queue, element_type, link_member) \
+	member_cast_out_or_null(queue_back_link(queue), element_type, link_member)
+
+extern struct queue_link * queue_back_link(struct queue *queue);
+
+/* Adding an element at the queue ends. */
+
+#define queue_push(linkage_t, element, queue) \
+	queue_push_link(member_of_object(element, linkage_t), queue)
+
+#define queue_push_element(element, queue, link_member) \
+	queue_push_link(member_cast_in(element, link_member), queue)
+
+extern void queue_push_link(struct queue_link *new_link, struct queue *queue);
+
+/* Removing an element from the begin of queue. */
+
+#define queue_pop(linkage_t, queue) \
+	member_to_object_or_null(queue_pop_link(queue), linkage_t)
+
+#define queue_pop_element(queue, element_type, link_member) \
+	member_cast_out_or_null(queue_pop_link(queue), element_type, link_member)
+
+extern struct queue_link * queue_pop_link(struct queue *queue);
 
 #endif /* UTIL_QUEUE_H_ */
