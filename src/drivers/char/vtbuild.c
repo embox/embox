@@ -12,7 +12,7 @@
 
 #include <drivers/vtbuild.h>
 
-#include <math.h>
+#include <util/math.h>
 
 /* Enough to hold decimal numbers up to 99999. */
 #define PARAM_PRINT_BUFF_SIZE 5

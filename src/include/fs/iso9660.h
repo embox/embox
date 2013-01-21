@@ -48,14 +48,25 @@
 #include <types.h>
 #include <fs/vfs.h>
 
-#define ISODCL(from, to) (to - from + 1)
-
-
 #define ISO_VD_BOOT         0
 #define ISO_VD_PRIMARY      1
 #define ISO_VD_SUPPLEMENTAL 2
 #define ISO_VD_PARTITION    3
 #define ISO_VD_END          255
+
+#define CDFS_BLOCKSIZE         2048
+#define CDFS_POOLDEPTH         10
+
+#define PS1                     '/'     /* Primary path separator */
+#define PS2                     '\\'    /* Alternate path separator */
+
+#define F_DIR                   0x200000  /* File is a directory */
+
+#define __int64 long long
+typedef __int64 off64_t;
+typedef unsigned short wchar_t;
+
+#define ISODCL(from, to) (to - from + 1)
 
 #pragma pack(push, 1)
 
@@ -137,66 +148,6 @@ typedef struct iso_pathtable_record {
 } iso_pathtable_record_t;
 
 #pragma pack(pop)
-/*
- * This option is necessary to deal with align by type
- * sizeof(iso_pathtable_record_t) returned 12
- */
-#define PATHTABLE_SIZE  8
-
-#define CDFS_DEFAULT_CACHESIZE 128
-#define CDFS_BLOCKSIZE         2048
-#define CDFS_POOLDEPTH         10
-
-#define PS1                     '/'     /* Primary path separator */
-#define PS2                     '\\'    /* Alternate path separator */
-
-
-#define S_IFMT         0170000   /* File type mask */
-#define S_IFPKT        0160000   /* Packet device */
-#define S_IFSOCK       0140000   /* Socket */
-#define S_IFLNK        0120000   /* Symbolic link */
-#define S_IFREG        0100000   /* Regular file */
-#define S_IFBLK        0060000   /* Block device */
-#define S_IFDIR        0040000   /* Directory */
-#define S_IFCHR        0020000   /* Character device */
-#define S_IFIFO        0010000   /* Pipe */
-
-#define S_IREAD        0000400   /* Read permission, owner */
-#define S_IWRITE       0000200   /* Write permission, owner */
-#define S_IEXEC        0000100   /* Execute/search permission, owner */
-
-#define S_ISLNK(m)      (((m) & S_IFMT) == S_IFLNK)
-#define S_ISREG(m)      (((m) & S_IFMT) == S_IFREG)
-#define S_ISDIR(m)      (((m) & S_IFMT) == S_IFDIR)
-#define S_ISCHR(m)      (((m) & S_IFMT) == S_IFCHR)
-#define S_ISBLK(m)      (((m) & S_IFMT) == S_IFBLK)
-#define S_ISFIFO(m)     (((m) & S_IFMT) == S_IFIFO)
-#define S_ISSOCK(m)     (((m) & S_IFMT) == S_IFSOCK)
-#define S_ISPKT(m)      (((m) & S_IFMT) == S_IFPKT)
-
-#define S_IRWXU 00700
-#define S_IRUSR 00400
-#define S_IWUSR 00200
-#define S_IXUSR 00100
-
-#define S_IRWXG 00070
-#define S_IRGRP 00040
-#define S_IWGRP 00020
-#define S_IXGRP 00010
-
-#define S_IRWXO 00007
-#define S_IROTH 00004
-#define S_IWOTH 00002
-#define S_IXOTH 00001
-
-#define F_MODIFIED     0x100000  /* File has been modified since it was opened */
-#define F_DIR          0x200000  /* File is a directory */
-#define F_CLOSED       0x400000  /* File is closed */
-
-typedef unsigned short wchar_t;
-
-#define __int64 long long
-typedef __int64 off64_t;
 
 typedef struct cdfs {
 	void *bdev;
@@ -209,127 +160,19 @@ typedef struct cdfs {
 	int path_table_records;
 } cdfs_t;
 
-typedef struct cdfs_file {
-	int extent;
-	int size;
-	time_t date;
-} cdfs_file_t;
-
-#define VFS_LOCK_TIMEOUT        60000     /* Timeout for file system locks */
-
-#define F_MODIFIED              0x100000  /* File has been modified since it was opened */
-#define F_DIR                   0x200000  /* File is a directory */
-#define F_CLOSED                0x400000  /* File is closed */
-
-#define FSOP_MKFS       0x00000001
-#define FSOP_MOUNT      0x00000002
-#define FSOP_UMOUNT     0x00000004
-#define FSOP_STATFS     0x00000008
-#define FSOP_OPEN       0x00000010
-#define FSOP_CLOSE      0x00000020
-#define FSOP_FSYNC      0x00000040
-#define FSOP_READ       0x00000080
-#define FSOP_WRITE      0x00000100
-#define FSOP_IOCTL      0x00000200
-#define FSOP_TELL       0x00000400
-#define FSOP_LSEEK      0x00000800
-#define FSOP_FTRUNCATE  0x00001000
-#define FSOP_FUTIME     0x00002000
-#define FSOP_UTIME      0x00004000
-#define FSOP_FSTAT      0x00008000
-#define FSOP_STAT       0x00010000
-#define FSOP_ACCESS     0x00020000
-#define FSOP_FCHMOD     0x00040000
-#define FSOP_CHMOD      0x00080000
-#define FSOP_FCHOWN     0x00100000
-#define FSOP_CHOWN      0x00200000
-#define FSOP_MKDIR      0x00400000
-#define FSOP_RMDIR      0x00800000
-#define FSOP_RENAME     0x01000000
-#define FSOP_LINK       0x02000000
-#define FSOP_UNLINK     0x04000000
-#define FSOP_OPENDIR    0x08000000
-#define FSOP_READDIR    0x10000000
-
-
 typedef struct cdfs_fs_info {
 	char mntfrom[MAX_LENGTH_PATH_NAME];
 	char mntto[MAX_LENGTH_PATH_NAME];
 	struct fsops *ops;
-	mode_t mode;
-	uid_t uid;
-	gid_t gid;
 	void *data;
 } cdfs_fs_info_t;
 
 typedef struct cdfs_file_info {
 	int flags;
-	int mode;
-	uid_t owner;
-	gid_t group;
 	off64_t pos;
-	void *data;
+	int extent;
+	int size;
+	time_t date;
 } cdfs_file_info_t;
-
-/*
-typedef struct direntry {
-	ino_t ino;
-	unsigned int reclen;
-	unsigned int namelen;
-	char name[MAX_LENGTH_PATH_NAME];
-} direntry_t;
-*/
-
-/*
-
-struct fsops {
-	unsigned long reentrant;
-
-	int (*lockfs)(cdfs_fs_description_t *fs);
-	void (*unlockfs)(cdfs_fs_description_t *fs);
-
-	int (*mkfs)(char *devname, char *opts);
-	int (*mount)(node_t *root_node);
-	int (*umount)(cdfs_fs_description_t *fs);
-
-	int (*statfs)(cdfs_fs_description_t *fs, statfs_t *buf);
-
-	int (*open)(struct cdfs_file_info *filp, char *name);
-	int (*close)(struct cdfs_file_info *filp);
-	int (*destroy)(struct cdfs_file_info *filp);
-	int (*fsync)(struct cdfs_file_info *filp);
-
-	int (*read)(struct cdfs_file_info *filp, void *data, size_t size, off64_t pos);
-	int (*write)(struct cdfs_file_info *filp, void *data, size_t size, off64_t pos);
-	int (*ioctl)(struct cdfs_file_info *filp, int cmd, void *data, size_t size);
-
-	off64_t (*tell)(struct cdfs_file_info *filp);
-	off64_t (*lseek)(struct cdfs_file_info *filp, off64_t offset, int origin);
-	int (*ftruncate)(struct cdfs_file_info *filp, off64_t size);*/
-
-	/*int (*futime)(struct cdfs_file_info *filp, struct utimbuf *times); */
-	/*int (*utime)(cdfs_fs_description_t *fs, char *name, struct utimbuf *times); */
-
-	/*int (*fstat)(struct cdfs_file_info *filp, stat_t *buffer);
-	int (*stat)(cdfs_fs_description_t *fs, char *name, stat_t *buffer);
-
-	int (*access)(cdfs_fs_description_t *fs, char *name, int mode);
-
-	int (*fchmod)(struct cdfs_file_info *filp, int mode);
-	int (*chmod)(cdfs_fs_description_t *fs, char *name, int mode);
-	int (*fchown)(struct cdfs_file_info *filp, int owner, int group);
-	int (*chown)(cdfs_fs_description_t *fs, char *name, int owner, int group);
-
-	int (*mkdir)(cdfs_fs_description_t *fs, char *name, int mode);
-	int (*rmdir)(cdfs_fs_description_t *fs, char *name);
-
-	int (*rename)(cdfs_fs_description_t *fs, char *oldname, char *newname);
-	int (*link)(cdfs_fs_description_t *fs, char *oldname, char *newname);
-	int (*unlink)(cdfs_fs_description_t *fs, char *name);
-
-	int (*opendir)(struct cdfs_file_info *filp, char *name);
-	int (*readdir)(struct cdfs_file_info *filp, direntry_t *dirp, int count);
-};
-*/
 
 #endif /* ISO9660_H_ */

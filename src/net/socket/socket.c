@@ -7,21 +7,23 @@
  * @author Nikolay Korotky
  * @author Ilia Vaprol
  */
-
+#include <string.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <stddef.h>
+#include <types.h>
+#include <sys/uio.h>
+
 #include <net/inet_sock.h>
 #include <net/kernel_socket.h>
 #include <net/net.h>
 #include <net/socket.h>
-#include <stddef.h>
-#include <types.h>
 #include <util/array.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <net/arp_queue.h>
-#include <string.h>
-#include <fcntl.h>
+
 
 #include <kernel/thread.h>
 #include <kernel/thread/event.h>

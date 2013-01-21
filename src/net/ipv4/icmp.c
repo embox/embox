@@ -14,7 +14,8 @@
 
 #include <errno.h>
 #include <assert.h>
-#include <math.h>
+
+#include <util/math.h>
 
 #include <net/inetdevice.h>
 #include <net/icmp.h>

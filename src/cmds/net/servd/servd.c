@@ -6,10 +6,13 @@
  */
 
 #include <string.h>
+#include <errno.h>
 #include <stdio.h>
 #include <getopt.h>
 #include <arpa/inet.h>
 #include <net/ip.h>
+#include <fcntl.h>
+
 #include <net/socket.h>
 #include <net/inetdevice.h>
 #include <cmd/web_server.h>
@@ -17,6 +20,7 @@
 #include <embox/web_service.h>
 #include <embox/cmd.h>
 #include <kernel/task.h>
+
 
 EMBOX_CMD(servd);
 

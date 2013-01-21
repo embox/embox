@@ -71,7 +71,7 @@ javacall_int64 javacall_file_sizeofopenfile(javacall_handle handle) {
 	struct stat file_stat;
 	FILE *file = (FILE*)handle;
 
-	fstat(file->fd, &file_stat);
+	fstat(fileno(file), &file_stat);
 
 	return file_stat.st_size;
 }
@@ -89,8 +89,7 @@ javacall_result javacall_file_exist(const javacall_utf16 * fileName, int fileNam
 	free(utf8Name);
 
 	if (!res) {
-		/* FIXME res = (S_ISREG(file_stat.st_mode) ? JAVACALL_OK : JAVACALL_FAIL); */
-		res = JAVACALL_OK;
+		res = S_ISREG(file_stat.st_mode) ? JAVACALL_OK : JAVACALL_FAIL;
 	} else {
 		res = emboxErrno2javaErrno(errno);
 	}

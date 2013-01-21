@@ -10,6 +10,7 @@
 #define HAL_CLOCK_H_
 
 #include <sys/types.h>
+#include <types.h> /* for uint32_t */
 
 /**
  * Alias used to disable a clock when calling #clock_setup().

@@ -3,6 +3,13 @@ ifeq ($(ROOT_DIR),)
 $(error ROOT_DIR is not set.)
 endif
 
+# URL of the home project
+# http://java.net/projects/phoneme
+
+# ToDo:
+#export ENABLE_ISOLATES=true
+#export USE_MULTIPLE_ISOLATES=true
+
 CLDC_TARGET_ID=product
 ifneq ($(findstring -g,$(EMBOX_CFLAGS)),)
 USE_DEBUG=true
@@ -143,7 +150,13 @@ AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/permissions.o
 AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/annunciator.o
 AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/font.o
 AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/lifecycle.o
-#AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/javacall_properties.o
+AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/javacall_properties.o
+AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/javacall_config_db.o
+AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/javacall_db.o
+AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/javautil_string.o
+AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/javautil_stdio.o
+AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/javautil_printf.o
+AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/string.o
 AMAL_MIDP_EXT_OBJS   += $(JAVACALL_OUTPUT_DIR)/obj$(DEBUG_SUFFIX)/serial.o
 AMAL_MIDP_EXT_OBJS   += $(JAVAUTIL_MIDP_OBJS)
 

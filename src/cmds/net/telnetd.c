@@ -6,20 +6,26 @@
  * @author Vladimir Sokolov
  */
 
+#include <sys/select.h>
+#include <fcntl.h>
+#include <errno.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdio.h>
+
 #include <net/ip.h>
 #include <net/socket.h>
 #include <net/inetdevice.h>
+
 #include <util/ring_buff.h>
+#include <util/math.h>
+
+//#include <err.h>
+
+#include <kernel/task.h>
+
 #include <embox/cmd.h>
 #include <cmd/shell.h>
-#include <err.h>
-#include <errno.h>
-#include <kernel/task.h>
-#include <sys/select.h>
-#include <fcntl.h>
-#include <math.h>
 
 EMBOX_CMD(exec);
 

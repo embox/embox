@@ -20,14 +20,15 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 
 #include <embox/unit.h>
 
-#include <string.h>
-
 #include <mem/misc/pool.h>
-#include <math.h>
+
+#include <util/math.h>
 #include <util/member.h>
+
 #include <kernel/critical.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
@@ -35,6 +36,7 @@
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 #include <kernel/panic.h>
+
 #include <hal/context.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
@@ -305,7 +307,7 @@ int thread_terminate(struct thread *t) {
 }
 
 void thread_yield(void) {
-	sched_yield();
+	sched_post_switch();
 }
 
 int thread_set_priority(struct thread *t, thread_priority_t new) {

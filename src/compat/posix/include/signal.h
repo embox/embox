@@ -12,7 +12,8 @@
 
 #include <sys/types.h>
 #include <kernel/task/signal.h>
-#include __impl_x(kernel/task/sighnd_impl.h)
+
+#include <module/embox/kernel/task/std_signal.h>
 
 extern int kill(int tid, int sig);
 

@@ -6,16 +6,21 @@
  * @author Felix Sulima
  */
 
+#include <javacall_events.h>
 #include <kernel/task.h>
 
 #include "midp.h"
 #include "cldc.h"
 
 #include <stdio.h>
+#include <unistd.h>
+
+#include <javacall_lifecycle.h>
 
 static void *phoneme_run(void *data) {
 	//ToDo:
 	printf("NOT IMPLEMENTED\n");
+	JavaTask();
 	return NULL;
 }
 
@@ -26,11 +31,18 @@ struct __jvm_params {
 };
 
 int phoneme_midp(int argc, char **argv) {
+	extern int java_pipe[2];
 	struct __jvm_params params = {
 			.argc = argc,
 			.argv = argv,
 			.code = -1
 	};
+
+	if (-1 == pipe(java_pipe)) {
+		return -1;
+	}
+
+	javacall_events_init();
 
 	new_task(phoneme_run, &params);
 	while(!list_empty(&task_self()->children)) { } /* XXX make it throw signals */

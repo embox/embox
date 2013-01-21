@@ -7,8 +7,10 @@
  */
 
 #include "cmdline.h"
-#include <math.h>
+
 #include <string.h>
+
+#include <util/math.h>
 #include <util/array.h>
 
 CMDLINE * cmdline_init(CMDLINE *this) {

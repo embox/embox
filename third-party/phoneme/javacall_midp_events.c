@@ -12,7 +12,13 @@
 #include <unistd.h>
 #include <kernel/thread/sync/mutex.h>
 
-int java_pipe_read = 0, java_pipe_write = 0;
+/**
+ * Note:
+ * We made send/recv operations throw pipe between kernel task and java task.
+ * That means any another tasks could not send/recv events.
+ * */
+
+int java_pipe[2];
 
 static struct mutex java_global_mutex;
 
@@ -21,8 +27,8 @@ javacall_result javacall_event_send(unsigned char* binaryBuffer,
 	mutex_lock(&java_global_mutex);
 	{
 		/* blocking writing */
-		write(java_pipe_write, binaryBuffer, binaryBufferLen);
-		write(java_pipe_write, &binaryBufferLen, 4);
+		write(java_pipe[1], &binaryBufferLen, 4);
+		write(java_pipe[1], binaryBuffer, binaryBufferLen);
 	}
 	mutex_unlock(&java_global_mutex);
 	return JAVACALL_OK;
@@ -39,32 +45,46 @@ javacall_result javacall_event_receive(
 	javacall_result res = JAVACALL_OK;
 	int fd_cnt = 0;
 
-	mutex_lock(&java_global_mutex);
-	{
-		FD_ZERO(&readfds);
-		FD_SET(java_pipe_read, &readfds);
+	FD_ZERO(&readfds);
+	FD_SET(java_pipe[0], &readfds);
 
-		timeout.tv_sec = timeToWaitInMillisec / 1000;
-		timeout.tv_usec = (timeToWaitInMillisec % 1000) * 1000;
+	timeout.tv_sec = timeToWaitInMillisec / 1000;
+	timeout.tv_usec = (timeToWaitInMillisec % 1000) * 1000;
 
-		fd_cnt = select(java_pipe_read + 1, &readfds, NULL, NULL, &timeout);
+	fd_cnt = select(java_pipe[0] + 1, &readfds, NULL, NULL, &timeout);
 
-		if (fd_cnt != 1) {
-			res = JAVACALL_FAIL;
-			goto out;
-		}
-
-		read(java_pipe_read, &actual_size, 4);
-		if (actual_size > binaryBufferMaxLen) {
-			res = JAVACALL_OUT_OF_MEMORY;
-			actual_size = binaryBufferMaxLen;
-		}
-		*outEventLen = read(java_pipe_read, binaryBuffer, actual_size);
+	if (fd_cnt != 1) {
+		res = JAVACALL_FAIL;
+		goto out;
 	}
 
+	read(java_pipe[0], &actual_size, 4);
+	if (actual_size > binaryBufferMaxLen) {
+		res = JAVACALL_OUT_OF_MEMORY;
+		actual_size = binaryBufferMaxLen;
+	}
+	*outEventLen = read(java_pipe[0], binaryBuffer, actual_size);
+
 out:
-	mutex_unlock(&java_global_mutex);
 	return res;
+}
+
+javacall_result javacall_create_event_queue_lock(void) {
+	return JAVACALL_OK;
+}
+
+javacall_result javacall_wait_and_lock_event_queue(void) {
+	mutex_lock(&java_global_mutex);
+	return JAVACALL_OK;
+}
+
+javacall_result javacall_unlock_event_queue(void) {
+	mutex_unlock(&java_global_mutex);
+	return JAVACALL_OK;
+}
+
+javacall_result javacall_destroy_event_queue_lock(void) {
+	return JAVACALL_OK;
 }
 
 javacall_result javacall_events_init(void) {

@@ -7,16 +7,22 @@
  * @author Ilia Vaprol
  * @author Vladimir Sokolov
  */
+#include <errno.h>
+#include <assert.h>
+
 
 #include <net/route.h>
 #include <net/socket_registry.h>
-#include <errno.h>
+#include <net/in.h>
+
 #include <util/member.h>
 #include <mem/misc/pool.h>
-#include <assert.h>
-#include <net/inetdevice.h>
 
 #include <lib/list.h>
+
+#include <net/inetdevice.h>
+#include <net/in.h>
+
 
 #include <framework/mod/options.h>
 

@@ -14,25 +14,34 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <util/math.h>
 
 /**
  * Format specifiers
  */
-#define OPS_FLAG_LEFT_ALIGN  0x0001 /* left alignment */
-#define OPS_FLAG_WITH_SIGN   0x0002 /* print sign */
-#define OPS_FLAG_EXTRA_SPACE 0x0004 /* add extra space before digit */
-#define OPS_FLAG_WITH_SPEC   0x0008 /* print a prefix for non-decimal systems */
-#define OPS_FLAG_ZERO_PAD    0x0010 /* padding with zeroes */
-#define OPS_PREC_IS_GIVEN    0x0020 /* precision is specified */
-#define OPS_LEN_MIN          0x0040 /* s_char (d, i); u_char (u, o, x, X); s_char* (n) */
-#define OPS_LEN_SHORT        0x0080 /* short (d, i); u_short (u, o, x, X); short* (n) */
-#define OPS_LEN_LONG         0x0100 /* long (d, i); u_long (u, o, x, X); wint_t (c); wchar_t(s); long* (n) */
-#define OPS_LEN_LONGLONG     0x0200 /* llong (d, i); u_llong (u, o, x, X); llong* (n) */
-#define OPS_LEN_MAX          0x0400 /* intmax_t (d, i); uintmax_t (u, o, x, X); intmax_t* (n) */
-#define OPS_LEN_SIZE         0x0800 /* size_t (d, i, u, o, x, X); size_t* (n) */
-#define OPS_LEN_PTRDIFF      0x1000 /* ptrdiff_t (d, i, u, o, x, X); ptrdiff_t* (n) */
-#define OPS_LEN_LONGFP       0x2000 /* long double (f, F, e, E, g, G, a, A) */
-#define OPS_SPEC_UPPER_CASE  0x4000 /* specifier is tall */
+#define OPS_FLAG_LEFT_ALIGN   0x00000001 /* left alignment */
+#define OPS_FLAG_WITH_SIGN    0x00000002 /* print sign */
+#define OPS_FLAG_EXTRA_SPACE  0x00000004 /* add extra space before digit */
+#define OPS_FLAG_WITH_SPEC    0x00000008 /* print a prefix for non-decimal systems */
+#define OPS_FLAG_ZERO_PAD     0x00000010 /* padding with zeroes */
+#define OPS_PREC_IS_GIVEN     0x00000020 /* precision is specified */
+#define OPS_LEN_MIN           0x00000040 /* s_char (d, i); u_char (u, o, x, X); s_char* (n) */
+#define OPS_LEN_SHORT         0x00000080 /* short (d, i); u_short (u, o, x, X); short* (n) */
+#define OPS_LEN_LONG          0x00000100 /* long (d, i); u_long (u, o, x, X); wint_t (c); wchar_t(s); long* (n) */
+#define OPS_LEN_LONGLONG      0x00000200 /* llong (d, i); u_llong (u, o, x, X); llong* (n) */
+#define OPS_LEN_MAX           0x00000400 /* intmax_t (d, i); uintmax_t (u, o, x, X); intmax_t* (n) */
+#define OPS_LEN_SIZE          0x00000800 /* size_t (d, i, u, o, x, X); size_t* (n) */
+#define OPS_LEN_PTRDIFF       0x00001000 /* ptrdiff_t (d, i, u, o, x, X); ptrdiff_t* (n) */
+#define OPS_LEN_LONGFP        0x00002000 /* long double (f, F, e, E, g, G, a, A) */
+#define OPS_SPEC_UPPER_CASE   0x00004000 /* specifier is tall */
+#define OPS_SPEC_IS_SIGNED    0x00008000 /* specifier is signed */
+#define OPS_SPEC_WITH_EXP     0x00010000 /* use scientific notation */
+//#define OPS_SPEC_IS_SHORTENED 0x00010000 /* specifier has shortened form */
+
+/**
+ * Options for print_s
+ */
+#define PRINT_S_NULL_STR "(null)" /* default value of NULL */
 
 /**
  * Options for print_i
@@ -42,8 +51,9 @@
 /**
  * Options for print_f
  */
-#define PRINT_F_BUFF_SZ      65 /* size of buffer for long double -- FIXME this may not be enough */
-#define PRINT_F_PREC_DEFAULT 6 /* default precision for real numbers */
+#define PRINT_F_BUFF_SZ        65 /* size of buffer for long double -- FIXME this may not be enough */
+//#define PRINT_F_PREC_SHORTENED 4 /* shortened precision for real numbers */
+#define PRINT_F_PREC_DEFAULT   6 /* default precision for real numbers */
 
 struct printchar_handler_data;
 
@@ -78,11 +88,10 @@ static int print_s(void (*printchar_handler)(struct printchar_handler_data *d, i
 }
 
 static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, int c),
-		struct printchar_handler_data *printchar_data,
-		unsigned long long int u, int is_signed, int width, int min_len,
-		unsigned int ops, int base) {
+		struct printchar_handler_data *printchar_data, unsigned long long int u,
+		int width, int min_len, unsigned int ops, int base) {
 	char buff[PRINT_I_BUFF_SZ], *str, *end, *prefix;
-	int pc, ch, len, prefix_len, zero_count, space_count, letbase;
+	int pc, ch, len, prefix_len, zero_count, space_count, letter_base;
 
 	assert(printchar_handler != NULL);
 	assert(width >= 0);
@@ -90,20 +99,20 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	str = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
-	prefix = is_signed && ((long long int)u < 0) ? u = -u, "-"
-			: is_signed && (ops & OPS_FLAG_WITH_SIGN) ? "+"
-			: is_signed && (ops & OPS_FLAG_EXTRA_SPACE) ? " "
+	prefix = (ops & OPS_SPEC_IS_SIGNED) && ((long long int)u < 0) ? (u = -u, "-")
+			: (ops & OPS_SPEC_IS_SIGNED) && (ops & OPS_FLAG_WITH_SIGN) ? "+"
+			: (ops & OPS_SPEC_IS_SIGNED) && (ops & OPS_FLAG_EXTRA_SPACE) ? " "
 			: (base == 8) && (ops & OPS_FLAG_WITH_SPEC) ? "0"
 			: (base == 16) && (ops & OPS_FLAG_WITH_SPEC)
 				? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
 			: "";
 	pc = 0;
 	prefix_len = strlen(prefix);
-	letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
+	letter_base = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
 
 	do {
 		ch = u % base;
-		if (ch >= 10) ch += letbase - 10 - '0';
+		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
 		u /= base;
 	} while (u);
@@ -135,21 +144,20 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 	return pc;
 }
 
-#include <stdio.h>
 static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
-		struct printchar_handler_data *printchar_data,
-		double r, int width, int precision, unsigned int ops, int base) {
-	char buff[PRINT_F_BUFF_SZ], *str, *end, *prefix;
-	double fp, ip /*,t, t1*/;
-	int pc, i, ch, len, prefix_len, pad_count, letbase;
+		struct printchar_handler_data *printchar_data, double r, int width,
+		int precision, unsigned int ops, int base) {
+	char buff[PRINT_F_BUFF_SZ], *str, *end, *prefix, *postfix;
+	double ip, fp, ep;
+	int pc, i, ch, len, prefix_len, postfix_len, pad_count, sign_count, zero_left, letter_base;
 
 	assert(printchar_handler != NULL);
 	assert(width >= 0);
 	assert(precision >= 0);
 
-	str = end = &buff[0] + sizeof buff / sizeof buff[0] - 1;
+	postfix = end = str = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
-	prefix = signbit(r) ? r = -r, base == 16
+	prefix = signbit(r) ? (r = -r, base == 16)
 				? ops & OPS_SPEC_UPPER_CASE ? "-0X" : "-0x"
 				: "-"
 			: ops & OPS_FLAG_WITH_SIGN ? base == 16
@@ -160,29 +168,40 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 				: " "
 			: base == 16 ? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
 			: "";
-	i = pc = 0;
+	sign_count = i = pc = 0;
 	prefix_len = strlen(prefix);
-	letbase = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
+	letter_base = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
 	precision = ops & OPS_PREC_IS_GIVEN ? precision : PRINT_F_PREC_DEFAULT;
 
-    if (precision) {
-	    fp = modf(r, &ip);
-        while ((i++ < precision) && (fmod(fp, 1.0) != 0.0)) fp *= base;
-//        t1 = modf(fp, &t);
-//        printf("fp befre %d.%d\n", (int)t, (int)(t1*1000));
-        fp = round(fp);
-        --i;
-//        printf("fp %d ip %d i %d pow %d\n", (int)fp, (int)ip, i, (int)pow((double)base, (double)i));
-        if (fp == pow((double)base, (double)i)) {
-            fp = 0.0;
-            ip += 1.0;
-        }
-    }
-    else ip = round(r);
+	fp = modf(r, &ip);
+	if (ops & OPS_SPEC_WITH_EXP) {
+		ep = 0.0;
+		while (ip >= base) fp = modf((ip + fp) / base, &ip), ep += 1.0;
+		if (fp != 0.0) while (ip == 0.0) fp = modf((ip + fp) * base, &ip), ep -= 1.0;
+	}
+	for (; (sign_count < precision) && (fmod(fp, 1.0) != 0.0); ++sign_count) fp *= base;
+	fp = round(fp);
+	ip = precision ? (fp != pow((double)base, (double)sign_count) ? ip : ip + 1.0) : round(ip + fp);
+	fp = fp != pow((double)base, (double)sign_count) ? fp : 0.0;
+	if ((ops & OPS_SPEC_WITH_EXP) && (ip >= base)) fp = modf((ip + fp) / base, &ip), ep += 1.0;
 
-	for (; i; --i) {
-		ch = (int)(fmod(fp, (double)base) * base);
-		if (ch >= 10) ch += letbase - 10 - '0';
+	if (ops & OPS_SPEC_WITH_EXP) {
+		do {
+			ch = (int)(round(fmod(fabs(ep), (double)base) * base));
+			if (ch >= 10) ch += letter_base - 10 - '0';
+			*--postfix = ch + '0';
+			modf(ep / base, &ep);
+		} while (ep != 0.0);
+		if (strlen(postfix) == 1) *--postfix = '0';
+		*--postfix = signbit(ep) ? '-' : '+';
+		*--postfix = ops & OPS_SPEC_UPPER_CASE ? 'E' : 'e';
+		str = end = postfix - 1;
+		*end = '\0';
+	}
+
+	for (; i < sign_count; ++i) {
+		ch = (int)(round(fmod(fp, (double)base) * base));
+		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
 		modf(fp / base, &fp);
 	}
@@ -192,14 +211,16 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	}
 
 	do {
-		ch = (int)(fmod(ip, (double)base) * base);
-		if (ch >= 10) ch += letbase - 10 - '0';
+		ch = (int)(round(fmod(ip, (double)base) * base));
+		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
 		modf(ip / base, &ip);
 	} while (ip != 0.0);
 
 	len = end - str;
-	pad_count = prefix_len + len < width ? width - prefix_len - len : 0;
+	postfix_len = strlen(postfix);
+	zero_left = precision - sign_count;
+	pad_count = max(width - prefix_len - len - zero_left - postfix_len, 0);
 
 	if (!(ops & (OPS_FLAG_ZERO_PAD | OPS_FLAG_LEFT_ALIGN))) {
 		pc += pad_count;
@@ -216,6 +237,12 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	pc += len;
 	while (len--) printchar_handler(printchar_data, *str++);
+
+	pc += zero_left;
+	while (zero_left--) printchar_handler(printchar_data, '0');
+
+	pc += postfix_len;
+	while (postfix_len--) printchar_handler(printchar_data, *postfix++);
 
 	if (ops & OPS_FLAG_LEFT_ALIGN) {
 		pc += pad_count;
@@ -306,8 +333,8 @@ after_flags:
 					: ops & OPS_LEN_SIZE ? va_arg(args, ssize_t)
 					: ops & OPS_LEN_PTRDIFF ? va_arg(args, ptrdiff_t)
 					: va_arg(args, int);
-			pc += print_i(printchar_handler, printchar_data, tmp.ulli, 1,
-					width, precision, ops, 10);
+			pc += print_i(printchar_handler, printchar_data, tmp.ulli, width,
+					precision, ops | OPS_SPEC_IS_SIGNED, 10);
 			break;
 		case 'u':
 		case 'o':
@@ -321,25 +348,25 @@ after_flags:
 					: ops & OPS_LEN_SIZE ? va_arg(args, size_t)
 					: ops & OPS_LEN_PTRDIFF ? va_arg(args, ptrdiff_t)
 					: va_arg(args, unsigned int);
-			pc += print_i(printchar_handler, printchar_data, tmp.ulli, 0,
-					width, precision, ops,
-					*format == 'o' ? 8 : (*format == 'u' ? 10 : 16));
+			pc += print_i(printchar_handler, printchar_data, tmp.ulli, width,
+					precision, ops,
+					*format == 'u' ? 10 : (*format == 'o' ? 8 : 16));
 			break;
 		case 'f':
 		case 'F':
 		case 'e':
 		case 'E':
-		case 'g':
-		case 'G':
-		case 'a':
-		case 'A':
+//		case 'g':
+//		case 'G':
+//		case 'a': // TODO
+//		case 'A':
 			/* TODO handle (ops & OPS_LEN_LONGFP) for long double */
 			if (ops & OPS_LEN_LONGFP) goto single_print; /* TODO long double support */
 			tmp.ld = ops & OPS_LEN_LONGFP ? va_arg(args, long double)
 					: va_arg(args, double);
-			pc += print_f(printchar_handler, printchar_data, (double)tmp.ld, width,
-					precision, ops,
-					(*format == 'a') && (*format == 'A') ? 16 : 10);
+			pc += print_f(printchar_handler, printchar_data, (double)tmp.ld,
+					width, precision,
+					ops | (tolower(*format) == 'e' ? OPS_SPEC_WITH_EXP : 0), 10);
 			break;
 		case 'c':
 			/* TODO handle (ops & OPS_LEN_LONG) for wint_t */
@@ -352,12 +379,12 @@ after_flags:
 			/* TODO handle (ops & OPS_LEN_LONG) for wchar_t* */
 			tmp.cp = va_arg(args, char *);
 			pc += print_s(printchar_handler, printchar_data,
-					tmp.cp ? tmp.cp : "(null)", width, precision, ops);
+					tmp.cp ? tmp.cp : PRINT_S_NULL_STR, width, precision, ops);
 			break;
 		case 'p':
 			tmp.vp = va_arg(args, void *);
 			pc += print_i(printchar_handler, printchar_data, (size_t)tmp.vp,
-					0, width, sizeof tmp.vp * 2 + 2,
+					width, sizeof tmp.vp * 2 + 2,
 					ops | (OPS_FLAG_WITH_SPEC | OPS_FLAG_ZERO_PAD), 16);
 			break;
 		case 'n':

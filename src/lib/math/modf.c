@@ -21,7 +21,7 @@ double modf(double x, double *iptr) {
 	exponent = val.ieee.exponent - IEEE754_DOUBLE_BIAS;
 
 	if (exponent < 0) {
-		*iptr = 0.0;
+		*iptr = copysign(0.0, x);
 		return x;
 	}
 
@@ -48,7 +48,7 @@ float modff(float x, float *iptr) {
 	exponent = val.ieee.exponent - IEEE754_SINGLE_BIAS;
 
 	if (exponent < 0) {
-		*iptr = 0.0F;
+		*iptr = copysignf(0.0F, x);
 		return x;
 	}
 

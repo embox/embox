@@ -307,12 +307,12 @@ int fscanf(FILE *stream, const char *format, ...) {
 
 	return rv;
 }
-int sscanf(char *out, const char *format, ...) {
+int sscanf(const char *out, const char *format, ...) {
 	va_list args;
 	int rv;
 
 	va_start(args, format);
-	rv = scan(&out, format, args);
+	rv = scan((/*FIXME*/char**)&out, format, args);
 	va_end (args);
 
 	return rv;

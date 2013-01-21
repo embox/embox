@@ -8,6 +8,7 @@
 
 #include <javacall_time.h>
 #include <kernel/time/timer.h>
+#include <kernel/time/time.h>
 #include <time.h>
 #include <hal/clock.h>
 #include <unistd.h>
@@ -46,6 +47,10 @@ javacall_int64 javacall_time_get_milliseconds_since_1970(void) {
 	gettimeofday(&tv, NULL);
 
     return (((javacall_int64) (tv.tv_sec - SECONDS_1900_1970))*1000 + tv.tv_usec/1000);
+}
+
+javacall_time_milliseconds /*OPTIONAL*/ javacall_time_get_clock_milliseconds(void){
+	return (javacall_time_milliseconds) jiffies2ms(clock());
 }
 
 javacall_result javacall_time_finalize_timer(javacall_handle handle) {

@@ -19,64 +19,6 @@
 #include <fs/fs_drv.h>
 #include <fs/kfsop.h>
 
-#include <mem/page.h>
-
-#if 0
-static node_t *create_filechain(const char *name, uint8_t node_type) {
-	int newnode_cnt;
-	fs_drv_t *drv;
-	struct node *node, *new_node;
-	struct nas *nas;
-	char path[MAX_LENGTH_PATH_NAME];
-	char tail[MAX_LENGTH_PATH_NAME];
-
-	strncpy(path, name, MAX_LENGTH_PATH_NAME);
-	newnode_cnt = 0;
-	tail[0] = '\0';
-
-
-	/* find last node in the path */
-	do {
-		if (path_nip_tail(path, tail)) {
-			return NULL;
-		}
-		newnode_cnt ++;
-	} while (NULL == (node = vfs_find_node(path, NULL)));
-
-	/* check drv of parents */
-	nas = node->nas;
-	drv = nas->fs->drv;
-	if ((NULL == drv) || (NULL == drv->fsop->create_node)) {
-		return NULL;
-	}
-
-	/* add one directory and assign the parameters of the parent */
-	do {
-		path_increase_tail(path, tail);
-
-		if (NULL == (new_node = vfs_add_path(path, NULL))) {
-			return NULL;
-		}
-
-		new_node->type = NODE_TYPE_DIRECTORY;
-		if ((LAST_IN_PATH == newnode_cnt) && (NODE_TYPE_FILE == node_type)) {
-			new_node->type = NODE_TYPE_FILE;
-		}
-
-		if(0 > drv->fsop->create_node(node, new_node)) {
-			vfs_del_leaf(new_node);
-			return NULL;
-		}
-
-		node = new_node;
-		newnode_cnt--;
-
-	} while (0 < newnode_cnt);
-
-	return node;
-}
-#endif
-
 static int create_new_node(struct node * parent, char *node_name, uint8_t node_type) {
 	struct node *new_node;
 	struct nas *nas;
@@ -150,12 +92,6 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 
 
 	/* set permission */
-#if 0
-	if (NULL == (nod = create_filechain(pathname, NODE_TYPE_FILE))) {
-		errno = EINVAL;
-		return -1;
-	}
-#endif
 
 	return 0;
 }
@@ -200,13 +136,6 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 
 		node = vfs_get_child(node_name, node);
 	} while (NULL != node);
-
-#if 0
-	if (NULL == (nod = create_filechain(pathname, NODE_TYPE_DIRECTORY))) {
-		errno = EINVAL;
-		return -1;
-	}
-#endif
 
 	return 0;
 }
@@ -355,14 +284,45 @@ int kmount(char *dev, char *dir, char *fs_type) {
 	return drv->fsop->mount(dev_node, dir_node);
 }
 
+int copy_file(const char *oldpath, const char *newpath) {
+	int oldfd, newfd, rc;
+	char buf[BUFSIZ];
+
+	oldfd = open(oldpath, O_RDONLY);
+	if (-1 == oldfd) {
+		return -1;
+	}
+	newfd = open(newpath, O_WRONLY);
+	if (-1 == newfd) {
+		return -1;
+	}
+
+	/* Copy bytes */
+	while ((rc = read(oldfd, buf, sizeof(buf))) > 0) {
+		if (write(newfd, buf, rc) <= 0) {
+			SET_ERRNO(EIO);
+			return -1;
+		}
+	}
+
+	/* Close files and free memory*/
+	rc = close(oldfd);
+	if (0 != rc) {
+		return -1;
+	}
+	rc = close(newfd);
+	if (0 != rc) {
+		return -1;
+	}
+
+	return ENOERR;
+}
+
 int krename(const char *oldpath, const char *newpath) {
-	int rc, oldfd, newfd, newpathlen, diritemlen;
+	int rc, newpathlen, diritemlen;
 	char *name, *newpathbuf = NULL;
 	char *newpatharg, *oldpatharg;
 	node_t *oldnode, *newnode, *diritem;
-	char buf[PAGE_SIZE()];
-
-	struct tree_link *link, *end_link;
 
 	if (MAX_LENGTH_PATH_NAME < strlen(oldpath) ||
 			MAX_LENGTH_PATH_NAME < strlen(newpath)) {
@@ -381,7 +341,7 @@ int krename(const char *oldpath, const char *newpath) {
 	 * provided as destination path */
 	newnode = vfs_find_node(newpath, NULL);
 	if (NULL != newnode) {
-		if (NODE_TYPE_DIRECTORY == newnode->type) {
+		if (node_is_directory(newnode)) {
 			/* Directory was passed as destination */
 			name = strrchr(oldpath, '/');
 			newpathlen = strlen(newpath) + strlen(name);
@@ -390,6 +350,10 @@ int krename(const char *oldpath, const char *newpath) {
 				return -1;
 			}
 			newpathbuf = calloc(newpathlen + 1, sizeof(char));
+			if (NULL == newpathbuf) {
+				SET_ERRNO(ENOMEM);
+				return -1;
+			}
 			strcat(newpathbuf, newpath);
 			strcat(newpathbuf, name);
 			newpath = newpathbuf;
@@ -407,20 +371,13 @@ int krename(const char *oldpath, const char *newpath) {
 	 */
 
 	/* If oldpath is directory, copy it recursively */
-	if (NODE_TYPE_DIRECTORY == oldnode->type) {
+	if (node_is_directory(oldnode)) {
 		rc = mkdir(newpath, oldnode->mode);
 		if (-1 == rc) {
 			return -1;
 		}
 
-		/*tree_foreach_children(diritem, (&oldnode->tree_link), tree_link) {*/
-		link = tree_children_begin(&oldnode->tree_link);
-		end_link = tree_children_end(&oldnode->tree_link);
-		while (link != end_link) {
-
-			diritem = tree_element(link, typeof(*diritem), tree_link);
-			link = tree_children_next(link);
-
+		tree_foreach_children(diritem, (&oldnode->tree_link), tree_link) {
 			if (0 != strcmp(".", diritem->name) &&
 					0 != strcmp("..", diritem->name)) {
 				diritemlen = strlen(diritem->name);
@@ -428,6 +385,10 @@ int krename(const char *oldpath, const char *newpath) {
 						calloc(strlen(oldpath) + diritemlen + 2, sizeof(char));
 				newpatharg =
 						calloc(strlen(newpath) + diritemlen + 2, sizeof(char));
+				if (NULL == oldpatharg || NULL == newpatharg) {
+					SET_ERRNO(ENOMEM);
+					return -1;
+				}
 
 				strcat(oldpatharg, oldpath);
 				if (oldpatharg[strlen(oldpatharg)] != '/') {
@@ -451,30 +412,8 @@ int krename(const char *oldpath, const char *newpath) {
 		}
 	/* Or copy file */
 	} else {
-		oldfd = open(oldpath, O_RDONLY);
-		if (-1 == oldfd) {
-			return -1;
-		}
-		newfd = open(newpath, O_WRONLY);
-		if (-1 == newfd) {
-			return -1;
-		}
-
-		/* Copy bytes */
-		while ((rc = read(oldfd, buf, PAGE_SIZE())) > 0) {
-			if (write(newfd, buf, rc) <= 0) {
-				SET_ERRNO(EIO);
-				return -1;
-			}
-		}
-
-		/* Close files and free memory*/
-		rc = close(oldfd);
-		if (0 != rc) {
-			return -1;
-		}
-		rc = close(newfd);
-		if (0 != rc) {
+		rc = copy_file(oldpath, newpath);
+		if (-1 == rc) {
 			return -1;
 		}
 	}

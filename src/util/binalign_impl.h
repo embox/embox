@@ -8,6 +8,7 @@
 
 #ifndef UTIL_BINALIGN_IMPL_H_
 #define UTIL_BINALIGN_IMPL_H_
+//TODO obsolete file
 
 #define __binalign_mask(x, mask)       (((x) + (mask)) & ~(mask))
 

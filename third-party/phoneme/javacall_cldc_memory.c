@@ -24,3 +24,11 @@ void* javacall_memory_heap_allocate(long size, /*OUT*/ long* outSize) {
 void javacall_memory_heap_deallocate(void* heap) {
 	free(heap);
 }
+
+void* /*OPTIONAL*/ javacall_malloc(unsigned int size){
+	return malloc(size) ;
+}
+
+void  /*OPTIONAL*/ javacall_free(void* ptr) {
+	free(ptr);
+}

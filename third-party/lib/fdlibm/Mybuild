@@ -1,0 +1,16 @@
+package third_party.lib
+
+static module Fdlibm {
+	source "w_pow.c"
+	source "w_powl.c"
+	source "w_powf.c"
+	source "e_pow.c"
+	source "e_powl.c"
+	source "e_powf.c"
+	source "k_standard.c"
+	source "s_lib_version.c"
+	source "s_matherr.c"
+	source "s_rint.c"
+	source "s_scalbn.c"
+	source "s_scalbn.c"
+}
