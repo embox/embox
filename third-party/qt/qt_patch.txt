@@ -1,0 +1,29 @@
+diff -ur qt-everywhere-opensource-src-4.8.4/src/gui/image/qmnghandler.cpp qt-embox/src/gui/image/qmnghandler.cpp
+--- qt-everywhere-opensource-src-4.8.4/src/gui/image/qmnghandler.cpp	2012-11-23 14:09:53.000000000 +0400
++++ qt-embox/src/gui/image/qmnghandler.cpp	2013-01-18 17:26:02.551811916 +0400
+@@ -98,7 +98,7 @@
+         (iChunkname>>8)&0xff,
+         (iChunkname>>0)&0xff,
+         iExtra1,iExtra2);
+-    return TRUE;
++    return MNG_TRUE;
+ }
+ 
+ static mng_ptr myalloc(mng_size_t iSize)
+diff -ur qt-everywhere-opensource-src-4.8.4/src/plugins/imageformats/ico/qicohandler.cpp qt-embox/src/plugins/imageformats/ico/qicohandler.cpp
+--- qt-everywhere-opensource-src-4.8.4/src/plugins/imageformats/ico/qicohandler.cpp	2012-11-23 14:09:55.000000000 +0400
++++ qt-embox/src/plugins/imageformats/ico/qicohandler.cpp	2013-01-18 18:15:22.040301090 +0400
+@@ -364,11 +364,11 @@
+     if (iod) {
+         if (iod->seek(startpos + imageOffset)) {
+             if (readBMPInfoHeader(iod, header)) {
+-                return TRUE;
++                return true;
+             }
+         }
+     }
+-    return FALSE;
++    return false;
+ }
+ 
+ void ICOReader::findColorInfo(QImage & image)
