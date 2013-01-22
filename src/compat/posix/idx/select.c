@@ -112,14 +112,8 @@ static int find_active(int nfds, fd_set *set, char op) {
 			if (!(desc = task_self_idx_get(fd))) {
 				return -EBADF;
 			} else {
-				switch (op) {
-				case 'r':
-					state = &desc->data->read_state;
-					break;
-				case 'w':
-					state = &desc->data->write_state;
-					break;
-				}
+				state = op == 'r' ? &desc->data->read_state
+						: &desc->data->write_state;
 				if ((desc->flags & O_NONBLOCK) || state->can_perform_op) {
 					fd_cnt++;
 				} else {

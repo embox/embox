@@ -77,6 +77,7 @@ int pipe(int pipefd[2]) {
 	struct pipe_end_state *r, *w;
 	int res = 0;
 
+	pipe = NULL; pipe_buff = NULL; r = w = NULL;
 	if (!(storage = malloc(DEFAULT_PIPE_BUFFER_SIZE))
 			|| !(pipe_buff = malloc(sizeof(struct async_ring_buff)))
 			|| !(pipe = malloc(sizeof(struct pipe)))
