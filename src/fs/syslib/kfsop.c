@@ -284,6 +284,12 @@ int kmount(char *dev, char *dir, char *fs_type) {
 	return drv->fsop->mount(dev_node, dir_node);
 }
 
+/**
+ * Simple util function to copy file in oldpath to newpath
+ * @param Should be regular file to copy
+ * @param Name of new copy
+ * @return ENOERR if file successfully copied -1 and set errno in other way
+ */
 int copy_file(const char *oldpath, const char *newpath) {
 	int oldfd, newfd, rc;
 	char buf[BUFSIZ];
@@ -318,11 +324,20 @@ int copy_file(const char *oldpath, const char *newpath) {
 	return ENOERR;
 }
 
+/**
+ * Rename oldpath to newpath
+ * @param Path to file or directory to rename
+ * @param Destination path, could not be existent file
+ * @return ENOERR if file successfully copied -1 and set errno in other way
+ */
 int krename(const char *oldpath, const char *newpath) {
 	int rc, newpathlen, diritemlen;
 	char *name, *newpathbuf = NULL;
 	char *newpatharg, *oldpatharg;
 	node_t *oldnode, *newnode, *diritem;
+	/* We use custom tree traversal while I can't
+	 * get success with tree_foreach_children */
+	struct tree_link *link, *end_link;
 
 	if (MAX_LENGTH_PATH_NAME < strlen(oldpath) ||
 			MAX_LENGTH_PATH_NAME < strlen(newpath)) {
@@ -343,18 +358,21 @@ int krename(const char *oldpath, const char *newpath) {
 	if (NULL != newnode) {
 		if (node_is_directory(newnode)) {
 			/* Directory was passed as destination */
-			name = strrchr(oldpath, '/');
+			name = strrchr(oldpath, '/') + 1;
 			newpathlen = strlen(newpath) + strlen(name);
 			if (newpathlen > MAX_LENGTH_PATH_NAME) {
 				SET_ERRNO(ENAMETOOLONG);
 				return -1;
 			}
-			newpathbuf = calloc(newpathlen + 1, sizeof(char));
+			newpathbuf = calloc(newpathlen + 2, sizeof(char));
 			if (NULL == newpathbuf) {
 				SET_ERRNO(ENOMEM);
 				return -1;
 			}
 			strcat(newpathbuf, newpath);
+			if (newpathbuf[strlen(newpathbuf) - 1] != '/') {
+				strcat(newpathbuf, "/");
+			}
 			strcat(newpathbuf, name);
 			newpath = newpathbuf;
 		} else {
@@ -377,7 +395,18 @@ int krename(const char *oldpath, const char *newpath) {
 			return -1;
 		}
 
-		tree_foreach_children(diritem, (&oldnode->tree_link), tree_link) {
+		/**
+		 * Following line should be here:
+		 *  tree_foreach_children(diritem, (&oldnode->tree_link), tree_link) {
+		 * But it's not working with it.
+		 */
+		link = tree_children_begin(&oldnode->tree_link);
+		end_link = tree_children_end(&oldnode->tree_link);
+
+		while (link != end_link) {
+			diritem = tree_element(link, typeof(*diritem), tree_link);
+			link = tree_children_next(link);
+
 			if (0 != strcmp(".", diritem->name) &&
 					0 != strcmp("..", diritem->name)) {
 				diritemlen = strlen(diritem->name);
@@ -391,17 +420,17 @@ int krename(const char *oldpath, const char *newpath) {
 				}
 
 				strcat(oldpatharg, oldpath);
-				if (oldpatharg[strlen(oldpatharg)] != '/') {
+				if (oldpatharg[strlen(oldpatharg) - 1] != '/') {
 					strcat(oldpatharg, "/");
 				}
 				strcat(oldpatharg, diritem->name);
 				strcat(newpatharg, newpath);
-				if (newpatharg[strlen(newpatharg)] != '/') {
+				if (newpatharg[strlen(newpatharg) - 1] != '/') {
 					strcat(newpatharg, "/");
 				}
 				strcat(newpatharg, diritem->name);
 
-				printf("%s -> %s\n", oldpatharg, newpatharg);
+				/* Call itself recursively */
 				if (-1 == krename(oldpatharg, newpatharg)) {
 					return -1;
 				}

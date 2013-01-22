@@ -33,15 +33,21 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define FS_BLOCKS		124
 #define FS_DIR			"/test_fop"
 #define FS_FILE1		"/test_fop/1/2/3/1.txt"
-#define FS_FILE1_NAME	"1.txt"
 #define FS_FILE2		"/test_fop/1/2/3/2.txt"
-#define FS_FILE3		"/test_fop/1/2/3/renamed_file"
-#define FS_FILE3_NAME	"renamed_file"
 #define FS_DIR3			"/test_fop/1/2/3"
 #define FS_DIR2			"/test_fop/1/2"
 #define FS_DIR1			"/test_fop/1"
+#define FS_DTR			"/test_fop/dtr"
+#define FS_MV_SUB		"/test_fop/dtr/sub"
+#define FS_MV_SUB_F1	"/test_fop/dtr/sub/file1"
+#define FS_MV_F1		"/test_fop/dtr/file1"
+#define FS_MV_F2		"/test_fop/dtr/sub/file2"
+#define FS_MV_F2_NAME	"file2"
+#define FS_MV_F3		"/test_fop/dtr/sub/file3"
+#define FS_MV_F3_NAME	"file3"
+#define FS_MV_RENAMED	"/test_fop/renamed"
 #define FS_TESTDATA		"qwerty\n"
-#define FS_TOOLONGNAME	"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+#define FS_MV_LONGNAME	"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
 						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
 						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
 						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
@@ -110,21 +116,46 @@ TEST_CASE("stat and fstat should return same stats") {
 */
 
 TEST_CASE("Rename file") {
-	test_assert(-1 == rename("no_such_file", FS_FILE3_NAME));
+	/* Prepare to directories and files for tests */
+	test_assert_zero(creat(FS_MV_F1, 0));
+	test_assert_zero(creat(FS_MV_F2, 0));
+
+	/* Check error code for non-existent file */
+	test_assert(-1 == rename("no_such_file", FS_MV_F3));
 	test_assert(EINVAL == errno);
-	test_assert(-1 == rename(FS_FILE1, FS_FILE2));
+
+	/* Check error code if destination file exists */
+	test_assert(-1 == rename(FS_MV_F1, FS_MV_F2));
 	test_assert(EINVAL == errno);
-	test_assert(-1 == rename(FS_TOOLONGNAME, "no_matter"));
+
+	/* Check error code with too long source file name */
+	test_assert(-1 == rename(FS_MV_LONGNAME, "no_matter"));
 	test_assert(ENAMETOOLONG == errno);
-	test_assert(-1 == rename("no_matter", FS_TOOLONGNAME));
+
+	/* Check error code with too long destination file name */
+	test_assert(-1 == rename("no_matter", FS_MV_LONGNAME));
 	test_assert(ENAMETOOLONG == errno);
+
+	/* Test with relative paths */
 #ifdef ENABLE_RELATIVE_PATH
-	test_assert_zero(rename(FS_FILE1, FS_FILE3_NAME));
-	test_assert_zero(rename(FS_FILE3, FS_FILE1_NAME));
+	test_assert_zero(rename(FS_MV_F2, FS_MV_F3_NAME));
+	test_assert_zero(rename(FS_MV_F3, FS_MV_F2_NAME));
 #endif
-	test_assert_zero(rename(FS_FILE1, FS_FILE3));
-	test_assert_zero(rename(FS_FILE3, FS_FILE1));
-	/* TODO: add test with recursive renaming */
+
+	/* Renaming one file and renaming it back */
+	test_assert_zero(rename(FS_MV_F2, FS_MV_F3));
+	test_assert_zero(rename(FS_MV_F3, FS_MV_F2));
+
+	/* Add test with recursive renaming */
+	test_assert_zero(rename(FS_DTR, FS_MV_RENAMED));
+	test_assert_zero(rename(FS_MV_RENAMED, FS_DTR));
+
+	/* Add tests with directory as destination */
+	test_assert_zero(rename(FS_MV_F1, FS_MV_SUB));
+	test_assert_zero(rename(FS_MV_SUB_F1, FS_DTR));
+
+	/* Test cleanup */
+	test_assert_zero(remove(FS_DTR));
 }
 
 

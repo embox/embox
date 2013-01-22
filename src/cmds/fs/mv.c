@@ -15,6 +15,9 @@
 #include <embox/cmd.h>
 
 #define CMD	"mv"
+enum {
+	MV_RECURSIVE
+};
 
 EMBOX_CMD(exec);
 
@@ -28,6 +31,14 @@ static void print_usage(void) {
 
 static int exec(int argc, char **argv) {
 	int opt;
+	unsigned char flags = 0;
+
+	/**
+	 * TODO:
+	 * - Implement MV_RECURSIVE
+	 * - Implement several source paths
+	 * - Add tests for previous two tasks
+	 */
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "rfh"))) {
@@ -36,8 +47,7 @@ static int exec(int argc, char **argv) {
 			print_usage();
 			return ENOERR;
 		case 'r':
-			break;
-		case 'f':
+			flags &= MV_RECURSIVE;
 			break;
 		default:
 			printf(CMD": invalid option -- '%c'\n", optopt);
