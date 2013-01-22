@@ -21,13 +21,6 @@ module list_test {
 	depends embox.framework.LibFramework
 }
 
-module queue_test {
-	source "queue_test.c"
-
-	depends embox.util.Queue
-	depends embox.framework.LibFramework
-}
-
 module slist_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "slist_test.c"

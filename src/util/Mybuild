@@ -46,12 +46,6 @@ module DListNDebug extends DList {
 	source "dlist_ndebug.h"
 }
 
-module Queue {
-	source "queue_impl.h"
-
-	depends List
-}
-
 static module LibUtil {
 	source "slist_debug.c"
 	source "list_debug.c"
