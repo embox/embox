@@ -250,8 +250,7 @@ void *malloc(size_t size) {
 	return memalign(0, size);
  }
 
-#include <stdio.h>
-/*#include <assert.h>*/
+#include <prom/prom_printf.h>
 void free(void *ptr) {
 	struct free_block *block;
 
@@ -259,17 +258,20 @@ void free(void *ptr) {
 		return;
 	}
 
-	if(ptr < pool || ptr > pool_end) {
+	if (ptr < pool || ptr >= pool_end) {
+		prom_printf("***** free(): incorrect address space\n");
 		return;
 	}
+	/* assert((ptr < pool) || (ptr >= pool_end)); */;
 
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
 
 	if (!block_is_busy(block)) {
-		printf("DOUBLE FREE!!\n");
-		/*assert(0)*/;
+		prom_printf("***** free(): the block not busy\n");
 		return; /* if we try to free block more than once */
 	}
+
+	/* assert(block_is_busy(block) */;
 
 	block = concatenate_prev(block);
 	block = concatenate_next(block);
