@@ -114,36 +114,6 @@ static inline struct list_link *list_remove_last_link(struct list *list) {
 	return ret;
 }
 
-static inline struct list_link *list_front_link(struct list *list) {
-	return list_first_link(list);
-}
-
-static inline struct list_link *list_back_link(struct list *list) {
-	return list_last_link(list);
-}
-
-static inline void list_enqueue_link(struct list_link *new_link,
-		struct list *list) {
-	list_add_last_link(new_link, list);
-}
-
-static inline struct list_link *list_dequeue_link(struct list *list) {
-	return list_remove_first_link(list);
-}
-
-static inline struct list_link *list_top_link(struct list *list) {
-	return list_last_link(list);
-}
-
-static inline void list_push_link(struct list_link *new_link,
-		struct list *list) {
-	list_add_last_link(new_link, list);
-}
-
-static inline struct list_link *list_pop_link(struct list *list) {
-	return list_remove_last_link(list);
-}
-
 static inline void __list_bulk_move_from(struct list *from_list,
 		struct list_link *prev, struct list_link *next) {
 	if (!list_is_empty(from_list)) {

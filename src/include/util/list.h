@@ -206,63 +206,36 @@ extern struct list_link *list_remove_last_link(struct list *list);
 
 /* Implementing a queue data structure on list. */
 
-#define list_front(linkage_t, list) \
-	member_to_object_or_null(list_front_link(list), linkage_t)
+#define list_front           list_first
+#define list_front_element   list_first_element
+#define list_front_link      list_first_link
 
-#define list_front_element(list, element_type, link_member) \
-	member_cast_out_or_null(list_front_link(list), element_type, link_member)
+#define list_back            list_last
+#define list_back_element    list_last_element
+#define list_back_link       list_last_link
 
-extern struct list_link *list_front_link(struct list *list);
+#define list_enqueue         list_add_last
+#define list_enqueue_element list_add_last_element
+#define list_enqueue_link    list_add_last_link
 
-#define list_back(linkage_t, list) \
-	member_to_object_or_null(list_back_link(list), linkage_t)
-
-#define list_back_element(list, element_type, link_member) \
-	member_cast_out_or_null(list_back_link(list), element_type, link_member)
-
-extern struct list_link *list_back_link(struct list *list);
-
-#define list_enqueue(linkage_t, element, list) \
-	list_enqueue_link(member_of_object(element, linkage_t), list)
-
-#define list_enqueue_element(element, list, link_member) \
-	list_enqueue_link(member_cast_in(element, link_member), list)
-
-extern void list_enqueue_link(struct list_link *new_link, struct list *list);
-
-#define list_dequeue(linkage_t, list) \
-	member_to_object_or_null(list_dequeue_link(list), linkage_t)
-
-#define list_dequeue_element(list, element_type, link_member) \
-	member_cast_out_or_null(list_dequeue_link(list), element_type, link_member)
-
-extern struct list_link *list_dequeue_link(struct list *list);
+#define list_dequeue         list_remove_first
+#define list_dequeue_element list_remove_first_element
+#define list_dequeue_link    list_remove_first_link
 
 /* Implementing a stack data structure on list. */
 
-#define list_top(linkage_t, list) \
-	member_to_object_or_null(list_top_link(list), linkage_t)
+#define list_top          list_last
+#define list_top_element  list_last_element
+#define list_top_link     list_last_link
 
-#define list_top_element(list, element_type, link_member) \
-	member_cast_out_or_null(list_top_link(list), element_type, link_member)
+#define list_push         list_add_last
+#define list_push_element list_add_last_element
+#define list_push_link    list_add_last_link
 
-extern struct list_link *list_top_link(struct list *list);
+#define list_pop          list_remove_last
+#define list_pop_element  list_remove_last_element
+#define list_pop_link     list_remove_last_link
 
-#define list_push(linkage_t, element, list) \
-	list_push_link(member_of_object(element, linkage_t), list)
-
-#define list_push_element(element, list, link_member) \
-	list_push_link(member_cast_in(element, link_member), list)
-
-extern void list_push_link(struct list_link *new_link, struct list *list);
-
-#define list_pop(linkage_t, list) \
-	member_to_object_or_null(list_pop_link(list), linkage_t)
-
-#define list_pop_element(list, element_type, link_member) \
-	member_cast_out_or_null(list_pop_link(list), element_type, link_member)
-
-extern struct list_link *list_pop_link(struct list *list);
 
 extern void list_bulk_add_first(struct list *from_list, struct list *to_list);
 
