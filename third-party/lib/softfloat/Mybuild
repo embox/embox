@@ -1,0 +1,8 @@
+package third_party.lib
+
+module softfloat {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "softfloat-macros.c",
+		   "softfloat-spec.c",
+		   "softfloat.c"
+}

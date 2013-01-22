@@ -6,7 +6,7 @@
  * @author Nikolay Korotky
  */
 
-#include "softfloat.h"
+#include <lib/softfloat.h>
 
 /**
  * Underflow tininess-detection mode, statically initialized to default value.
