@@ -11,6 +11,7 @@
 #include <drivers/keyboard.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
+#include <embox/input_dev.h>
 
 #define  I8042_CMD_READ_MODE   0x20
 #define  I8042_CMD_WRITE_MODE  0x60
@@ -129,6 +130,10 @@ static const unsigned int keymap[][4] = {
 	{0xae,0xae,0x7e335b1b},   /* 83 - Numeric keypad '.', Delete */
 };
 
+static struct input_dev kbd_dev = {
+		.name = "keyboard"
+};
+
 static int keyboard_havechar(void) {
 	unsigned char c = inb(STATUS_PORT);
 	return (c == 0xFF) ? 0 : c & 1;
@@ -164,7 +169,12 @@ char keyboard_getc(void) {
 	while (1) {
 		if (outp) {
 			unsigned char ch = outp & 0xff;
+			struct input_event e = {
+					.type = KEY_PRESSED,
+					.value = ch
+			};
 			outp >>=8;
+			input_dev_inject_event(&kbd_dev, e);
 			return ch;
 		}
 
@@ -245,6 +255,7 @@ void keyboard_init(void) {
 	printk("Keyboard init OK! \n");
 
 	//irq_attach(IRQ1, kbd_handler, 0, NULL, "kbd");
+	input_dev_register(&kbd_dev);
 
 	keyboard_send_cmd(I8042_CMD_PORT_EN);
 }
