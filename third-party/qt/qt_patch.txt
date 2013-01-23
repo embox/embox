@@ -27,3 +27,19 @@ diff -ur qt-everywhere-opensource-src-4.8.4/src/plugins/imageformats/ico/qicohan
  }
  
  void ICOReader::findColorInfo(QImage & image)
+diff -ur qt-everywhere-opensource-src-4.8.4/src/plugins/platforms/platforms.pro source/src/plugins/platforms/platforms.pro
+--- qt-everywhere-opensource-src-4.8.4/src/plugins/platforms/platforms.pro	2012-11-23 14:09:55.000000000 +0400
++++ source/src/plugins/platforms/platforms.pro	2013-01-24 02:42:09.354345750 +0400
+@@ -9,3 +9,12 @@
+ qnx {
+     SUBDIRS += blackberry
+ }
++
++linux-* {
++    SUBDIRS += qvfb vnc
++}
++
++embox-* {
++    SUBDIRS += vnc
++}
++
