@@ -133,7 +133,7 @@ $(QT_SRC_DIR)/$(QMAKE_CONF): $(QT_SRC_DIR)/$(QMAKE_CONF_M4) $(ENVIRONMENT)
 configure: merge_trees $(QT_SRC_DIR)/$(QMAKE_CONF) $(ENVIRONMENT) | $(QT_BUILD_DIR)
 	$(AT)cd $(QT_BUILD_DIR) && \
 		if (diff $(ENVIRONMENT) $(CONFIGURED) >/dev/null); then \
-			echo Nothing to do - no reconfiguration required.; \
+			echo Nothing to do - no reconfiguration is required.; \
 		else \
 			([ ! -e $(CONFIGURED) ] || (echo Removing old config ... && make confclean && rm $(CONFIGURED))) && \
 			echo Configuring... && \
@@ -154,6 +154,41 @@ build_and_install: configure
 		fi
 
 all: build_and_install
+
+
+
+
+
+#TARGET_APPS += examples/declarative/animation/basics/color-animation
+#TARGET_APPS += demos/textedit
+TARGET_APPS += demos/spreadsheet
+TARGET_APPS += examples/animation/moveblocks
+TARGET_APPS += examples/widgets/charactermap
+
+TARGET_QMAKE=$(QT_INSTALL_DIR)/bin/qmake
+
+QT_APPS_DIR = $(QT_DIR)/apps
+
+# ToDo: build apps sequentially
+
+define BUILD_APP_template
+$(QT_APPS_DIR)/$(notdir $(1)):
+	$(AT)mkdir -p $$@
+$(QT_APPS_DIR)/$(notdir $(1))/Makefile: $(TARGET_QMAKE) | $(QT_APPS_DIR)/$(notdir $(1))
+	$(AT)cd $$(dir $$@) && $(TARGET_QMAKE) $(QT_SRC_DIR)/$(1)/$(notdir $(1)).pro
+.PHONY: $(QT_APPS_DIR)/$(notdir $(1))/$(notdir $(1))
+$(QT_APPS_DIR)/$(notdir $(1))/$(notdir $(1)): $(QT_APPS_DIR)/$(notdir $(1))/Makefile
+	$(AT)cd $$(dir $$@) && make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)'
+target_apps: $(QT_APPS_DIR)/$(notdir $(1))/$(notdir $(1))
+endef
+
+$(foreach app,$(TARGET_APPS),$(eval $(call BUILD_APP_template,$(app))))
+
+$(TARGET_QMAKE): build_and_install
+
+.PHONY: target_apps
+
+all: target_apps
 
 
 
@@ -202,7 +237,7 @@ $(LINUX_ENVIRONMENT): | $(QT_LINUX_BUILD_DIR)
 linux_configure: merge_trees $(LINUX_ENVIRONMENT) | $(QT_LINUX_BUILD_DIR)
 	$(AT)cd $(QT_LINUX_BUILD_DIR) && \
 		if (diff $(LINUX_ENVIRONMENT) $(LINUX_CONFIGURED) >/dev/null); then \
-			echo Nothing to do - no reconfiguration required.; \
+			echo Nothing to do - no reconfiguration is required.; \
 		else \
 			([ ! -e $(LINUX_CONFIGURED) ] || (echo Removing old config ... && make confclean && rm $(LINUX_CONFIGURED))) && \
 			echo Configuring... && \
