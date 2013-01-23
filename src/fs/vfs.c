@@ -52,13 +52,17 @@ int vfs_add_leaf(node_t *child, node_t *parent) {
 static node_t *vfs_add_new_path(node_t *parent,
 		char *p_path, char *child_name) {
 	node_t *child;
-	child = node_alloc(child_name);
+	if(NULL == (child = node_alloc(child_name))) {
+		return NULL;
+	}
 	vfs_add_leaf(child, parent);
 	while (NULL != (p_path = path_get_next_name(p_path, child_name,
 											MAX_LENGTH_FILE_NAME))) {
 		parent->type = NODE_TYPE_DIRECTORY;
 		parent = child;
-		child = node_alloc(child_name);
+		if(NULL == (child = node_alloc(child_name))) {
+			return NULL;
+		}
 		vfs_add_leaf(child, parent);
 	}
 	return child;
@@ -84,7 +88,12 @@ node_t *vfs_add_path(const char *path, node_t *parent) {
 }
 
 int vfs_del_leaf(node_t *node) {
-	return tree_unlink_link(&(node->tree_link));
+	int rc;
+	rc = tree_unlink_link(&(node->tree_link));
+	if(NULL != node) {
+		node_free(node);
+	}
+	return rc;
 }
 
 static int compare_children_names(struct tree_link* link, void *name) {
@@ -130,6 +139,7 @@ node_t *vfs_find_node(const char *path, node_t *parent) {
 node_t *vfs_get_root(void) {
 	if(NULL == root_node) {
 		root_node = node_alloc("/");
+		assert(NULL != root_node);
 		root_node->type = NODE_TYPE_DIRECTORY;
 		//TODO set pseudofs driver
 	}
