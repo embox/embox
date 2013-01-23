@@ -169,8 +169,6 @@ TARGET_QMAKE=$(QT_INSTALL_DIR)/bin/qmake
 
 QT_APPS_DIR = $(QT_DIR)/apps
 
-# ToDo: build apps sequentially
-
 define BUILD_APP_template
 $(QT_APPS_DIR)/$(notdir $(1)):
 	$(AT)mkdir -p $$@
@@ -183,6 +181,16 @@ target_apps: $(QT_APPS_DIR)/$(notdir $(1))/$(notdir $(1))
 endef
 
 $(foreach app,$(TARGET_APPS),$(eval $(call BUILD_APP_template,$(app))))
+
+TARGET_APPS_SEQUENCE = $(join $(addsuffix :,$(filter-out $(lastword $(TARGET_APPS)),$(TARGET_APPS))),$(filter-out $(firstword $(TARGET_APPS)),$(TARGET_APPS)))
+
+define TARGET_APPS_DEP_template
+$(QT_APPS_DIR)/$(notdir $(2))/$(notdir $(2)): $(QT_APPS_DIR)/$(notdir $(1))/$(notdir $(1))
+endef
+
+TARGET_PAIR_DEP_template = $(call TARGET_APPS_DEP_template,$(firstword $(subst :, ,$(1))),$(lastword $(subst :, ,$(1))))
+
+$(foreach pair,$(TARGET_APPS_SEQUENCE),$(eval $(call TARGET_PAIR_DEP_template,$(pair))))
 
 $(TARGET_QMAKE): build_and_install
 
