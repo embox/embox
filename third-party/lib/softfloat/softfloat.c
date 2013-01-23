@@ -2248,4 +2248,3 @@ flag float64_lt_quiet( float64 a, float64 b )
         : lt64( a.high, a.low, b.high, b.low );
 
 }
-
