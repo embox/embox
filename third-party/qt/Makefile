@@ -146,7 +146,7 @@ configure: merge_trees $(QT_SRC_DIR)/$(QMAKE_CONF) $(ENVIRONMENT) | $(QT_BUILD_D
 build_and_install: configure
 	$(AT)cd $(QT_BUILD_DIR) && \
 		if make -q; then \
-			echo Nothing to do - no rebuild required.; \
+			echo Nothing to do - no rebuild is required.; \
 		else \
 			echo Building... && \
 			make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' && \
@@ -154,5 +154,77 @@ build_and_install: configure
 		fi
 
 all: build_and_install
+
+
+
+
+
+QT_LINUX_BUILD_DIR   := $(QT_DIR)/build_linux
+QT_LINUX_INSTALL_DIR := $(QT_DIR)/install_linux
+
+QT_LINUX_CONF_FLAGS += -prefix $(QT_LINUX_INSTALL_DIR)
+QT_LINUX_CONF_FLAGS += -embedded x86 -little-endian
+QT_LINUX_CONF_FLAGS += -xplatform qws/linux-x86-g++
+# -static
+QT_LINUX_CONF_FLAGS += -opensource -confirm-license
+QT_LINUX_CONF_FLAGS += -fast
+# -no-pch
+QT_LINUX_CONF_FLAGS += -no-largefile -no-qt3support
+QT_LINUX_CONF_FLAGS += -no-kbd-tty -no-mouse-pc -no-mouse-linuxtp -no-gfx-linuxfb
+# -no-gfx-multiscreen
+QT_LINUX_CONF_FLAGS += -no-feature-TEMPORARYFILE -no-feature-PROCESS -no-feature-FILESYSTEMWATCHER
+QT_LINUX_CONF_FLAGS += -no-feature-SHAREDMEMORY -no-feature-NETWORKINTERFACE -no-feature-HOSTINFO
+QT_LINUX_CONF_FLAGS += -no-feature-QWS_INPUTMETHODS -no-sql-sqlite -D QT_NO_BEARERMANAGEMENT
+# examples ?and demos? are not fully compilable
+QT_LINUX_CONF_FLAGS += -nomake examples -nomake demos
+# translations cause 'make -q' to fail
+QT_LINUX_CONF_FLAGS += -nomake translations
+QT_LINUX_CONF_FLAGS += -no-exceptions
+QT_LINUX_CONF_FLAGS += -debug
+QT_LINUX_CONF_FLAGS += -qt-gfx-vnc -qt-gfx-qvfb -qt-kbd-qvfb -qt-mouse-qvfb
+QT_LINUX_CONF_FLAGS += -no-webkit -no-javascript-jit -no-script -no-declarative
+# tools are not fully compilable
+QT_LINUX_CONF_FLAGS += -nomake tools
+# ? add this to embox config ?
+QT_LINUX_CONF_FLAGS += -depths 8,16,18,32
+
+LINUX_ENVIRONMENT = $(QT_LINUX_BUILD_DIR)/.environment
+LINUX_CONFIGURED = $(QT_LINUX_BUILD_DIR)/.configured
+
+$(QT_LINUX_BUILD_DIR):
+	$(AT)mkdir -p $@
+
+.PHONY: $(LINUX_ENVIRONMENT)
+$(LINUX_ENVIRONMENT): | $(QT_LINUX_BUILD_DIR)
+	-$(AT)rm $@
+	echo "QT_LINUX_CONF_FLAGS='$(QT_LINUX_CONF_FLAGS)'" >>$@
+
+linux_configure: merge_trees $(LINUX_ENVIRONMENT) | $(QT_LINUX_BUILD_DIR)
+	$(AT)cd $(QT_LINUX_BUILD_DIR) && \
+		if (diff $(LINUX_ENVIRONMENT) $(LINUX_CONFIGURED) >/dev/null); then \
+			echo Nothing to do - no reconfiguration required.; \
+		else \
+			([ ! -e $(LINUX_CONFIGURED) ] || (echo Removing old config ... && make confclean && rm $(LINUX_CONFIGURED))) && \
+			echo Configuring... && \
+			MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' \
+				$(QT_SRC_DIR)/configure $(QT_LINUX_CONF_FLAGS) && \
+			echo Persisting configuration... && \
+			mv -f $(LINUX_ENVIRONMENT) $(LINUX_CONFIGURED); \
+		fi
+
+linux_build_and_install: linux_configure
+	$(AT)cd $(QT_LINUX_BUILD_DIR) && \
+		if make -q; then \
+			echo Nothing to do - no rebuild is required.; \
+		else \
+			echo Building... && \
+			make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' && \
+			make install; \
+		fi
+
+all: linux_build_and_install
+
+
+
 
 .NOTPARALLEL:
