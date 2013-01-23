@@ -7,9 +7,6 @@ QT_URL= http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-4
 QT_BUNDLE = $(notdir $(QT_URL))
 QT_MD5 = 89c5ecba180cae74c66260ac732dc5cb  $(QT_BUNDLE)
 
-
-# configure -embedded x86 -xplatform qws/embox-generic-g++ -no-exceptions -debug -static -little-endian -no-pch -no-largefile -no-qt3support -fast -opensource -confirm-license -no-kbd-tty -no-mouse-pc -no-mouse-linuxtp -no-gfx-linuxfb -no-gfx-multiscreen -qt-gfx-vnc -no-feature-TEMPORARYFILE -no-feature-PROCESS -no-feature-FILESYSTEMWATCHER -no-feature-SHAREDMEMORY -no-feature-NETWORKINTERFACE -no-feature-HOSTINFO -no-feature-QWS_INPUTMETHODS -no-sql-sqlite -D QT_NO_BEARERMANAGEMENT
-# # these might be useful if do not want to build examples: "-nomake examples -nomake demos"
 QT_CONF_FLAGS += -prefix $(QT_INSTALL_DIR)
 QT_CONF_FLAGS += -embedded x86 -little-endian
 QT_CONF_FLAGS += -xplatform qws/embox-generic-g++ -static
@@ -20,12 +17,16 @@ QT_CONF_FLAGS += -no-kbd-tty -no-mouse-pc -no-mouse-linuxtp -no-gfx-linuxfb -no-
 QT_CONF_FLAGS += -no-feature-TEMPORARYFILE -no-feature-PROCESS -no-feature-FILESYSTEMWATCHER
 QT_CONF_FLAGS += -no-feature-SHAREDMEMORY -no-feature-NETWORKINTERFACE -no-feature-HOSTINFO
 QT_CONF_FLAGS += -no-feature-QWS_INPUTMETHODS -no-sql-sqlite -D QT_NO_BEARERMANAGEMENT
+# examples ?and demos? are not fully compilable
 QT_CONF_FLAGS += -nomake examples -nomake demos
+# translations cause 'make -q' to fail
+QT_CONF_FLAGS += -nomake translations
 QT_CONF_FLAGS += -no-exceptions
 QT_CONF_FLAGS += -debug
 QT_CONF_FLAGS += -qt-gfx-vnc
 
-# use 'make -q' to query for recursive changes
+# configure -embedded x86 -xplatform qws/embox-generic-g++ -no-exceptions -debug -static -little-endian -no-pch -no-largefile -no-qt3support -fast -opensource -confirm-license -no-kbd-tty -no-mouse-pc -no-mouse-linuxtp -no-gfx-linuxfb -no-gfx-multiscreen -qt-gfx-vnc -no-feature-TEMPORARYFILE -no-feature-PROCESS -no-feature-FILESYSTEMWATCHER -no-feature-SHAREDMEMORY -no-feature-NETWORKINTERFACE -no-feature-HOSTINFO -no-feature-QWS_INPUTMETHODS -no-sql-sqlite -D QT_NO_BEARERMANAGEMENT
+# # these might be useful if do not want to build examples: "-nomake examples -nomake demos"
 
 # # either this or do not build examples at all
 # make sub-translations-make_default-ordered
@@ -84,9 +85,10 @@ endif
 PATCH_TXT = qt_patch.txt
 
 EXTRACTED  = $(QT_SRC_DIR)/.extracted
+ENVIRONMENT = $(QT_BUILD_DIR)/.environment
 CONFIGURED = $(QT_BUILD_DIR)/.configured
 
-.PHONY: all install build configure merge_trees
+.PHONY: all build_and_install configure merge_trees
 
 AT:=
 
@@ -113,28 +115,44 @@ merge_trees: $(EXTRACTED)
 
 $(QT_SRC_DIR)/$(QMAKE_CONF_M4): merge_trees
 
-# need to force the check whether this file was changed
-$(QT_SRC_DIR)/$(QMAKE_CONF): $(QT_SRC_DIR)/$(QMAKE_CONF_M4)
+.PHONY: $(ENVIRONMENT)
+$(ENVIRONMENT): | $(QT_BUILD_DIR)
+	-$(AT)rm $@
+	echo "EMBOX_DERIVED_CFLAGS='$(EMBOX_DERIVED_CFLAGS)'"     >>$@
+	echo "EMBOX_DERIVED_CXXFLAGS='$(EMBOX_DERIVED_CXXFLAGS)'" >>$@
+	echo "QT_CONF_FLAGS='$(QT_CONF_FLAGS)'"                   >>$@
+
+# may be need to force the check whether this file was changed
+$(QT_SRC_DIR)/$(QMAKE_CONF): $(QT_SRC_DIR)/$(QMAKE_CONF_M4) $(ENVIRONMENT)
 	$(AT) \
-		EMBOX_DERIVED_CFLAGS='$(EMBOX_DERIVED_CFLAGS)' \
-		EMBOX_DERIVED_CXXFLAGS='$(EMBOX_DERIVED_CXXFLAGS)' \
+		$(shell cat $(ENVIRONMENT)) \
 		m4 --prefix-builtins $< >$@.tmp
 	$(AT)mv -f $@.tmp $@
 
-configure: merge_trees $(QT_SRC_DIR)/$(QMAKE_CONF) | $(QT_BUILD_DIR)
-	$(AT)[ ! -e $(CONFIGURED) ] || \
-		(cd $(QT_BUILD_DIR) && make confclean && rm $(CONFIGURED))
+# intentionally not taking into account possible changes in $(QMAKE_CONF)
+configure: merge_trees $(QT_SRC_DIR)/$(QMAKE_CONF) $(ENVIRONMENT) | $(QT_BUILD_DIR)
 	$(AT)cd $(QT_BUILD_DIR) && \
-		MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' \
-		$(QT_SRC_DIR)/configure $(QT_CONF_FLAGS)
-	$(AT)touch $(CONFIGURED)
+		if (diff $(ENVIRONMENT) $(CONFIGURED) >/dev/null); then \
+			echo Nothing to do - no reconfiguration required.; \
+		else \
+			([ ! -e $(CONFIGURED) ] || (echo Removing old config ... && make confclean && rm $(CONFIGURED))) && \
+			echo Configuring... && \
+			MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' \
+				$(QT_SRC_DIR)/configure $(QT_CONF_FLAGS) && \
+			echo Persisting configuration... && \
+			mv -f $(ENVIRONMENT) $(CONFIGURED); \
+		fi
 
-build: configure
+build_and_install: configure
 	$(AT)cd $(QT_BUILD_DIR) && \
-		make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)'
+		if make -q; then \
+			echo Nothing to do - no rebuild required.; \
+		else \
+			echo Building... && \
+			make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' && \
+			make install; \
+		fi
 
-install: build
-
-all: install
+all: build_and_install
 
 .NOTPARALLEL:
