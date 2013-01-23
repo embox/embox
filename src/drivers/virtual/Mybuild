@@ -37,5 +37,6 @@ module input_devfs {
 	depends input_common
 	depends embox.mem.objalloc
 	depends embox.mem.heap_api
+	depends embox.fs.rootfs
 	@NoRuntime depends embox.fs.driver.devfs
 }

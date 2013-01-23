@@ -53,7 +53,7 @@ static struct input_dev *input_devfs_lookup(char *name) {
 
 static int input_devfs_store_event(struct input_handler *hnd, struct input_event e) {
 	assert(hnd);
-	ring_buff_enqueue(hnd->storage, &e, EVENT_SIZE);
+	ring_buff_enqueue(hnd->storage, &e, 1);
 	return 0;
 }
 
@@ -83,7 +83,7 @@ static int input_devfs_open(struct node *node, struct file_desc *desc, int flags
 	if (NULL == buf->storage) {
 		goto free_all;
 	}
-	ring_buff_init(buf, EVENT_SIZE, BUF_SIZE, buf->storage);
+	ring_buff_init(buf, EVENT_SIZE, BUF_SIZE / EVENT_SIZE, buf->storage);
 
 	hnd->store_event = input_devfs_store_event;
 	/* store desc as id to search handler in read/close functions */
@@ -137,7 +137,7 @@ static size_t input_devfs_read(struct file_desc *desc, void *buff, size_t size) 
 		return -1;
 	}
 
-	return ring_buff_dequeue((struct ring_buff *)hnd->storage, buff, size);
+	return ring_buff_dequeue((struct ring_buff *)hnd->storage, buff, size / EVENT_SIZE);
 }
 
 /* from uart.c */
@@ -168,18 +168,20 @@ static int input_devfs_register(struct input_dev *dev) {
 static int init(void) {
 	struct node *node;
 	struct input_dev *dev, *nxt;
-	int res = 0;
 
 	if (NULL == (node = vfs_find_node("/dev", NULL))) {
 		return -1;
 	}
+
 	if (NULL == vfs_add_path("input", node)) {
 		return -1;
 	}
 
 	dlist_foreach_entry(dev, nxt, &__input_devices, input_dev_link) {
-		res += input_devfs_register(dev);
+		if (input_devfs_register(dev) < 0) {
+			return -1;
+		}
 	}
 
-	return res;
+	return 0;
 }
