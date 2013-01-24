@@ -1,6 +1,10 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.video
 
+module bochs {
+	source "bochs.c"
+}
+
 abstract module vga { }
 
 module vga_console extends vga {
