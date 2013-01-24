@@ -79,6 +79,8 @@ int dev_queue_send(struct sk_buff *skb) {
 
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
+	assert(skb->dev->header_ops != NULL);
+	assert(skb->dev->header_ops->rebuild != NULL);
 
 	res = skb->dev->header_ops->rebuild(skb);
 	if (res < 0) {
@@ -118,11 +120,12 @@ int dev_queue_xmit(struct sk_buff *skb) {
 	ops = dev->netdev_ops;
 	assert(ops != NULL);
 
+	assert(ops->ndo_get_stats != NULL);
 	stats = ops->ndo_get_stats(dev);
 	assert(stats != NULL);
 
 	if (dev->flags & IFF_UP) {
-
+		assert(ops->ndo_start_xmit != NULL);
 		res = ops->ndo_start_xmit(skb, dev);
 		if (res < 0) {
 			skb_free(skb);
@@ -154,6 +157,7 @@ int netif_receive_skb(sk_buff_t *skb) {
 		assert(q != NULL);
 
 		if (q->type == skb->protocol) {
+			assert(q->func != NULL);
 			return q->func(skb, skb->dev, q, NULL);
 		}
 	}

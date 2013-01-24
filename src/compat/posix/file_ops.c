@@ -17,11 +17,9 @@
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
 
-
 int close(int fd) {
 	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
-
 	assert(task_self_idx_table());
 
 	desc = task_self_idx_get(fd);

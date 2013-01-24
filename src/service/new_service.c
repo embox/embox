@@ -3,9 +3,10 @@
 
 #include <lib/service/service.h>
 #include <embox/web_service.h>
+#include <framework/mod/options.h>
 
 
-#define TEMPLATE_FILE "img_service.in"
+#define TEMPLATE_FILE OPTION_STRING_GET(template_file)
 
 #define VAR_COUNT 10
 #define VAR_LEN 20
@@ -118,13 +119,17 @@ static void preprocess_file(FILE *out, struct variable *vars) {
 	}
 }
 
-static void *entry_point(void *arg) {
+static void * entry_point(void *arg) {
 	struct service_data srv_data;
 	struct service_file srv_file;
 	struct variable vars[VAR_COUNT];
 
 	service_get_service_data(&srv_data, arg);
-	service_file_open_write(&srv_file);
+
+	if (service_file_open_write(&srv_file) < 0) {
+		service_free_service_data(&srv_data);
+		return NULL;
+	}
 
 	get_variables_from_query(srv_data.query, vars);
 	print_vars(vars);
@@ -132,10 +137,14 @@ static void *entry_point(void *arg) {
 	preprocess_file(srv_file.fd, vars);
 	srv_data.http_status = HTTP_STAT_200;
 
-	service_file_switch_to_read_mode(&srv_file);
+	if (service_file_switch_to_read_mode(&srv_file) < 0) {
+		service_free_service_data(&srv_data);
+		return NULL;
+	}
+
 	service_send_reply(&srv_data, &srv_file);
 
-	service_close_connection(&srv_data);
+	service_free_resourses(&srv_data, &srv_file);
 
 	return NULL;
 }

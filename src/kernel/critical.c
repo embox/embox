@@ -28,6 +28,7 @@ void critical_dispatch_pending(void) {
 		dispatch_queue = d->next;
 		d->mask = ~mask;
 
+		assert(d->dispatch != NULL);
 		d->dispatch();
 	}
 

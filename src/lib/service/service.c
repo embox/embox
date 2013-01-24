@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <net/socket.h>
 
 #include <cmd/servd.h>
 
@@ -83,7 +84,7 @@ int service_file_open_write(struct service_file *srv_file) {
 }
 
 void service_get_service_data(struct service_data *data, void *arg) {
-	memcpy(data, arg, sizeof *data);
+	memcpy(data, arg, sizeof(struct service_data));
 }
 
 int service_file_switch_to_read_mode(struct service_file *srv_file) {
@@ -110,17 +111,10 @@ void service_file_close(struct service_file *srv_file) {
 	}
 }
 
-void service_free_service_data(struct service_data *data) {
-	if (data != NULL) {
-#if 0
-		/**
-		 * XXX Don't free data->query
-		 * It's link to data->request.parsed_url->query */
-		if (data->query != NULL) {
-			free(data->query);
-		}
-#endif
+void service_free_service_data(struct service_data * data) {
+	if (NULL != data) {
 		free_http_request(&data->request);
+		socket_close(data->sock);
 		free(data);
 	}
 }
@@ -163,7 +157,7 @@ int service_send_reply(struct service_data *srv_data,
 	curr += service_set_starting_line(curr, srv_data->http_status);
 	/* 2. set options */
 	assert(srv_file->fd != NULL);
-	fstat(srv_file->fd->fd, &stat);
+	fstat(srv_file->fd->fd, &stat); /* TODO bad bad bad!! */
 	curr += service_set_ops(curr, stat.st_size, srv_data->request.connection,
 			content_type);
 	/* 3. set message bode and send response */
@@ -172,18 +166,19 @@ int service_send_reply(struct service_data *srv_data,
 		bytes_need = sizeof buff - (curr - buff);
 		bytes = fread(curr, 1, bytes_need, srv_file->fd);
 		if (bytes < 0) {
-			break;
+			printf("http error: fread() error\n");
+			return -1;
 		}
 
 		bytes_need = bytes + curr - buff;
 		bytes = send(srv_data->sock, buff, bytes_need, 0);
 		if (bytes != bytes_need) {
 			printf("http error: send() error\n");
-			break;
+			return -1;
 		}
 		curr = buff;
 	} while (bytes == sizeof buff);
-	return 1;
+	return 0;
 }
 
 //ToDo: create denying service
@@ -220,8 +215,4 @@ int service_send_error(struct service_data *srv_data,
 		printf("http error: send() error\n");
 	}
 	return 1;
-}
-
-void service_close_connection(struct service_data *srv_data) {
-	close(srv_data->sock); /* close connection */
 }

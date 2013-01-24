@@ -343,7 +343,8 @@ static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 }
 
 static net_device_stats_t * get_eth_stat(struct net_device *dev) {
-	return &(dev->stats);
+	assert(dev != NULL);
+	return &dev->stats;
 }
 
 static int set_mac_address(struct net_device *dev, void *addr) {

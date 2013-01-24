@@ -77,7 +77,10 @@ static void *process_params(void* args) {
 	data.srv_file = &srv_file;
 
 	service_get_service_data(&srv_data, args);
-	service_file_open_write(&srv_file);
+	if (service_file_open_write(&srv_file) < 0) {
+		service_free_service_data(&srv_data);
+		return NULL;
+	}
 
 	parser = XML_ParserCreate(NULL);
 	XML_SetHTMLUse(parser);
@@ -96,18 +99,22 @@ static void *process_params(void* args) {
 			XML_ParserFree(parser);
 			srv_data.http_status = HTTP_STAT_500;
 			service_send_error(&srv_data, &srv_file);
-			break;
+			service_free_resourses(&srv_data, &srv_file);
+			return NULL;
 		}
 	} while (!done);
 
-	if (done) {
-		XML_ParserFree(parser);
-		srv_data.http_status = HTTP_STAT_200;
-		service_file_switch_to_read_mode(&srv_file);
-		service_send_reply(&srv_data, &srv_file);
+	srv_data.http_status = HTTP_STAT_200;
+	XML_ParserFree(parser);
+
+	if (service_file_switch_to_read_mode(&srv_file) < 0) {
+		service_free_service_data(&srv_data);
+		return NULL;
 	}
 
-	service_close_connection(&srv_data);
+	service_send_reply(&srv_data, &srv_file);
+
+	service_free_resourses(&srv_data, &srv_file);
 
 	return NULL;
 }
