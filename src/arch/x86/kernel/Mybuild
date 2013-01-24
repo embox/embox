@@ -1,9 +1,5 @@
 package embox.arch.x86.kernel
 
-/* FIXME:
- * Unused files: multiboot.c
- */
-
 module context extends embox.arch.context {
 	source "context.c", "context_switch.S", "context.h"
 }
@@ -15,12 +11,13 @@ module locore extends embox.arch.locore {
 	 * 2.it depends from arch (called from exception_handler.c)
 	 */
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "boot.S", "idt.c", "exception_entry.S", "irq_handler.c"
+	source "idt.c", "exception_entry.S", "irq_handler.c"
 	source "gdt.c", "gdt_flush.S"
 	source "ipl.c", "exception_handler.c", "traps_core.c"
 
 	depends embox.lib.LibC
 	depends embox.kernel.critical
+	depends embox.arch.x86.boot.multiboot
 }
 
 module interrupt extends embox.arch.interrupt {
