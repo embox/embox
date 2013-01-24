@@ -33,11 +33,38 @@ struct display *display_get(void) {
 }
 
 int xwnd_init(void) {
+#if 0
 	if(NULL == vga_setup_mode(&display, 0x13)) {
 		return -1;
 	}
 
 	display_clear_screen(&display);
+#else
+	/* TEST for setpixel */
+	extern struct display * get_bochs_display(void);
+	size_t i, j;
+	struct display *displ;
+
+	displ = get_bochs_display();
+	displ->setup(displ, 1280, 1024, 16);
+
+	for (i = 0; i < displ->width / 2; ++i) {
+		for (j = 0; j < displ->height / 2; ++j) {
+			displ->set_pixel(displ, i, j, 0xF000);
+		}
+		for (; j < displ->height; ++j) {
+			displ->set_pixel(displ, i, j, 0x0F00);
+		}
+	}
+	for (; i < displ->width; ++i) {
+		for (j = 0; j < displ->height / 2; ++j) {
+			displ->set_pixel(displ, j, i, 0xF0F0);
+		}
+		for (; j < displ->height; ++j) {
+			displ->set_pixel(displ, i, j, 0x000F);
+		}
+	}
+#endif
 	return 0;
 }
 
