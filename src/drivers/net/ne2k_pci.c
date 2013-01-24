@@ -154,8 +154,6 @@ static inline void copy_data_from_card(uint16_t src, uint8_t *dest,
 	}
 }
 
-#include <prom/prom_printf.h>
-
 static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	uint16_t count;
 	unsigned long base_addr;
@@ -261,7 +259,6 @@ static void ne2k_receive(struct net_device *dev) {
 			if (skb) {
 				stat->rx_packets++;
 				stat->rx_bytes += skb->len;
-				printf("ne2k_receive() call netif_rx with skb %p\n", skb);
 				netif_rx(skb);
 			} else {
 				stat->rx_dropped++;
@@ -286,7 +283,6 @@ static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 	net_device_stats_t *stat;
 	unsigned long base_addr;
 
-	printf("ne2k_handler() init %x %p\n", irq_num, dev_id);
 	stat = get_eth_stat((struct net_device *)dev_id);
 	base_addr = ((struct net_device *)dev_id)->base_addr;
 
@@ -342,7 +338,6 @@ static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 		out8(E8390_NODMA | E8390_PAGE0 | E8390_START, base_addr + E8390_CMD);
 	}
 
-	printf("ne2k_handler() fini %x %p\n", irq_num, dev_id);
 	return IRQ_HANDLED;
 }
 

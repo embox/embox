@@ -22,9 +22,7 @@ int close(int fd) {
     int i;
 	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
-
-//	printf("\nclose() for %d\n", fd);
-
+printf("close %d\n", fd);
 	assert(task_self_idx_table());
 
 	desc = task_self_idx_get(fd);
@@ -40,7 +38,6 @@ int close(int fd) {
 
 	i = task_self_idx_table_unbind(fd);
 
-    printf("\nend close() for %d\n", fd);
     return i;
 }
 

@@ -200,15 +200,12 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		return -EBADF;
 	case TCP_LISTEN:
 		/* waiting anyone */
-		printf("tcp_v4_accept() wait for hostsk %p\n", sock.sk);
 		if (list_empty(&sock.tcp_sk->conn_wait)) { /* TODO sync this */
 			event_wait(&sock.tcp_sk->new_conn, EVENT_TIMEOUT_INFINITE);
 		}
-		printf("tcp_v4_accept() client was accepted hostsk %p\n", sock.sk);
 		assert(!list_empty(&sock.tcp_sk->conn_wait));
 		/* get first socket from */
 		newsock.tcp_sk = list_entry(sock.tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
-		printf("tcp_v4_accept() create newsock %p hostsk %p\n", newsock.sk, sock.sk);
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		list_del_init(&newsock.tcp_sk->conn_wait);
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
@@ -229,7 +226,6 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 			}
 		}
 		*newsk = newsock.sk;
-		printf("tcp_v4_accept() exit newsock %p hostsk %p\n", newsock.sk, sock.sk);
 		return (tcp_st_status(newsock) == TCP_ST_SYNC ? ENOERR : -ECONNRESET);
 	}
 }

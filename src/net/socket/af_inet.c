@@ -305,28 +305,19 @@ int inet_listen(struct socket *sock, int backlog) {
 	return res;
 }
 
-#include <stdio.h>
 static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, int *addr_len) {
 	int res;
 
 	assert(sk != NULL);
 	assert(sk->sk_prot != NULL);
 
-	printf("inet_accept() init (hostsk %p)\n", sk);
 	if (sk->sk_prot->accept == NULL) {
 		return -EOPNOTSUPP;
 	}
 
-	printf("inet_accept() accept (hostsk %p)\n", sk);
 	sock_lock(sk);
 	res = sk->sk_prot->accept(sk, newsk, addr, addr_len);
 	sock_unlock(sk);
-	if (res < 0) {
-		printf("inet_accept() error (hostsk %p)\n", sk);
-	}
-	else {
-		printf("inet_accept() accept (hostsk %p, clientsk %p)\n", sk, newsk);
-	}
 
 	return res;
 }

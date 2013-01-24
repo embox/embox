@@ -269,7 +269,7 @@ static void free_client_info(struct client_info *info) {
 	if (info->fp != NULL) {
 		fclose(info->fp); /* close file (it's open or null) */
 	}
-	close(info->sock); /* close connection */
+	socket_close(info->sock); /* close connection */
 	free_http_request(&info->parsed_request);
 }
 
@@ -283,9 +283,7 @@ void client_process(int sock) {
 	/* fill struct client_info */
 	ci.sock = sock;
 	/* request handler for first */
-//	printf("client_process() process request of %d\n", sock);
 	res = process_request(&ci);
-//	printf("client_process() request of %d processed\n", sock);
 	// Get rid of static pages and services that is not started
 	// Others have to be dispatched to responding service instance
 	// according to serv_desc table
@@ -293,7 +291,6 @@ void client_process(int sock) {
 	case HTTP_RET_OK:
 		//Start the responding service instance thread
 
-//		printf("client_process() http_ret_ok for sock%d\n", sock);
 		if (is_service_started(ci.file)) {
 			struct service_data *srv_data;
 			srv_data = malloc(sizeof(struct service_data));
@@ -301,41 +298,32 @@ void client_process(int sock) {
 				free_client_info(&ci);
 				return;
 			}
-//			printf("client_process() alloc srv_data %p for sock%d\n", srv_data, sock);
 //
 			//ToDo move it to web_service_start_service. now ci not needed to free
 			srv_data->sock = ci.sock;
 			memcpy(&srv_data->request, &ci.parsed_request, sizeof srv_data->request);
 			srv_data->query = srv_data->request.parsed_url->query;
 
-//			printf("client_process() start service %d\n", sock);
 			if (web_service_start_service(ci.file, srv_data) < 0) {
 				printf("client_process: start service error");
 				service_free_service_data(srv_data);
 			}
-//			printf("client_process() service %d started\n", sock);
 			return;
 		} else {
 			res = process_response(&ci);
 			break;
 		}
 	case HTTP_RET_ABORT:
-//		printf("client_process() http_ret_abort; close connection of %d\n", sock);
 		free_client_info(&ci);
-//		printf("client_process() http_ret_abort; %d closed\n", sock);
 		return;
 	}
 
 	printf("-- upload %s ", ci.file);
 
 	assert((0 <= res) && (res < HTTP_STAT_MAX));
-//	printf("client_process() send data to %d\n", sock);
 	send_data(&ci, res);
-//	printf("client_process() data to %d was sended\n", sock);
 	printf(" done\n");
 
-//	printf("client_process() close connection %d\n", sock);
 	free_client_info(&ci);
-//	printf("client_process() connection %d closed\n", sock);
 }
 

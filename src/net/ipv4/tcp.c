@@ -89,12 +89,12 @@ void debug_print(__u8 code, const char *msg, ...) {
 	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
-	case 6:	 /* sock_alloc/sock_free */
+//	case 6:	 /* sock_alloc/sock_free */
 //	case 7:  /* tcp_default_timer action */
 //	case 8:  /* state's handler */
-	case 9:  /* sending package */
+//	case 9:  /* sending package */
 //	case 10: /* pre_process */
-	case 11: /* tcp_handle */
+//	case 11: /* tcp_handle */
 		softirq_lock();
 		prom_vprintf(msg, args);
 		softirq_unlock();
@@ -478,9 +478,7 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 
 	if (tcph->syn) {
 		/* Allocate new socket for this connection */
-		printf("tcp_st_listen() create inet_sock for hostsk %p\n", sock.sk);
 		newsock.sk = inet_create_sock(0, (struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
-		printf("tcp_st_listen() inet_sock for hostsk %p was created\n", sock.sk);
 		if (newsock.sk == NULL) {
 			LOG_ERROR("no memory\n");
 			return -ENOMEM;
@@ -497,7 +495,6 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
 		list_add_tail(&newsock.tcp_sk->conn_wait, &sock.tcp_sk->conn_wait);
 		event_notify(&sock.tcp_sk->new_conn);
-		printf("tcp_st_listen() block#1 hostsk %p\n", sock.sk);
 		{
 			struct idx_desc *desc = sock.sk->sk_socket->desc;
 	assert(sock.sk != NULL);
@@ -507,7 +504,6 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 			io_op_unblock(&desc->data->read_state);
 			io_op_unblock(&desc->data->write_state);
 		}
-		printf("tcp_st_listen() end block#1 hostsk %p\n", sock.sk);
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 		return TCP_RET_OK;
 	}

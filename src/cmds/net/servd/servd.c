@@ -71,7 +71,6 @@ static void * start_server(void *unused) {
 	addr.sin_port = htons(80);
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	printf("start_server() init\n");
 	/* Create listen socket */
 	host = ret = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (ret < 0) {
@@ -98,25 +97,18 @@ static void * start_server(void *unused) {
 
 	welcome_message();
 
-	printf("start_server() loop start\n");
 	while (web_server_started) {
-		printf("start_server() wait clients\n");
 		client = ret = accept(host, (struct sockaddr *) &addr, &addr_len);
-		printf("start_server() accept client on %d\n", client);
 		if (ret < 0) {
 			printf("Error.. accept() failed. errno=%d\n", errno);
 			web_server_started = 0;
 			close(host);
 			return (void *)ret;
 		}
-		printf("start_server() handling client on %d\n", client);
 		client_process(client);
-		printf("start_server() client %d handled\n", client);
 	}
-	printf("start_server() loop end\n");
 
 	close(host);
-	printf("start_server() fini\n");
 	return (void *)0;
 }
 

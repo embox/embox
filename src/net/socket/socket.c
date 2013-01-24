@@ -44,7 +44,6 @@ static struct socket *idx2sock(int fd) {
 	return (struct socket *) task_idx_desc_data(task_self_idx_get(fd));
 }
 
-#include <stdio.h>
 int socket(int domain, int type, int protocol) {
 	int res;
 	struct socket *sock;
@@ -65,7 +64,6 @@ int socket(int domain, int type, int protocol) {
 	}
 
 	sock->desc = task_self_idx_get(res);
-//	printf("socket() create sock %d\n", res);
 
 	return res;
 }
@@ -142,43 +140,31 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	struct socket *sock, *new_sock;
 	int res;
 
-	printf("accept() init (host %d)\n", sockfd);
 	if (sockfd < 0) {
 		SET_ERRNO(EBADF);
-		printf("accept() error (host %d)\n", sockfd);
 		return -1;
 	}
 
-	printf("accept() idx2sock (host %d)\n", sockfd);
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
 		SET_ERRNO(EBADF);
-		printf("accept() error (host %d)\n", sockfd);
 		return -1;
 	}
 
-	printf("accept() kernel_socket_accept (host %d)\n", sockfd);
 	res = kernel_socket_accept(sock, &new_sock, addr, addrlen);
 	if (res < 0) {
 		SET_ERRNO(-res);
-		printf("accept() error (host %d)\n", sockfd);
 		return -1;
 	}
 
-	printf("accept() task_self_idx_alloc (host %d)\n", sockfd);
 	res = task_self_idx_alloc(&task_idx_ops_socket, new_sock);
 	if (res < 0) {
-		printf("accept() faild (host %d)\n", sockfd);
 		kernel_socket_release(new_sock);
 		SET_ERRNO(EMFILE);  /* also could be ENFILE */
-		printf("accept() error (host %d)\n", sockfd);
 		return -1;
 	}
 
-	printf("accept() task_self_idx_get (host %d, client %d)\n", sockfd, res);
 	new_sock->desc = task_self_idx_get(res);
-
-	printf("accept() fini (host %d, client %d)\n", sockfd, res);
 
 	return res;
 }
@@ -409,8 +395,6 @@ int socket_close(int sockfd) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
-
-//	printf("socket_close() close sock %d\n", sockfd);
 
 	res = kernel_socket_release(sock);
 	if(res < 0){

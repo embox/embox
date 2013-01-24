@@ -13,7 +13,6 @@
 
 #include <fs/kfile.h>
 
-#include <stdio.h>
 int open(const char *path, int __oflag, ...) {
 	int fd;
 	struct file_desc *kfile;
@@ -25,6 +24,5 @@ int open(const char *path, int __oflag, ...) {
 	}
 
 	fd = task_self_idx_alloc(&task_idx_ops_file, kfile);
-//	printf("open() create fd %d\n", fd);
 	return fd;
 }
