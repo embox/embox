@@ -15,30 +15,35 @@
 #define DEFAULT_PAGE  "index.html"
 #define MAX_SERVICES_COUNT  10
 
-struct params test_params;
+#if 0
+static struct params test_params;
+#endif
 
 /* Status code */
-const char *http_stat_str[HTTP_STAT_MAX] = { [HTTP_STAT_200] = "200 OK",
-		[HTTP_STAT_400] = "400 Bad Request", [HTTP_STAT_404] = "404 Not Found",
-		[HTTP_STAT_405] = "405 Method Not Allowed", [HTTP_STAT_408
-				] = "408 Request Timeout", /* TODO */
-		[HTTP_STAT_413] = "413 Request Entity Too Large", [HTTP_STAT_414
-				] = "414 Request-URI Too Long", [HTTP_STAT_500] = "500 Internal Server Error"};
+static const char *http_stat_str[HTTP_STAT_MAX] = {
+		[HTTP_STAT_200] = "200 OK",
+		[HTTP_STAT_400] = "400 Bad Request",
+		[HTTP_STAT_404] = "404 Not Found",
+		[HTTP_STAT_405] = "405 Method Not Allowed",
+		[HTTP_STAT_408] = "408 Request Timeout", /* TODO */
+		[HTTP_STAT_413] = "413 Request Entity Too Large",
+		[HTTP_STAT_414] = "414 Request-URI Too Long",
+		[HTTP_STAT_500] = "500 Internal Server Error"
+};
 
 /* Content type */
-const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
-		[HTTP_CONTENT_TYPE_HTML] = "text/html", [HTTP_CONTENT_TYPE_JPEG
-				] = "image/jpeg", [HTTP_CONTENT_TYPE_PNG] = "image/png",
-		[HTTP_CONTENT_TYPE_GIF] = "image/gif", [HTTP_CONTENT_TYPE_ICO
-				] = "image/vnd.microsoft.icon", [HTTP_CONTENT_TYPE_UNKNOWN
-				] = "application/unknown" };
+static const char *http_content_type_str[HTTP_CONTENT_TYPE_MAX] = {
+		[HTTP_CONTENT_TYPE_HTML]    = "text/html",
+		[HTTP_CONTENT_TYPE_JPEG]    = "image/jpeg",
+		[HTTP_CONTENT_TYPE_PNG]     = "image/png",
+		[HTTP_CONTENT_TYPE_GIF]     = "image/gif",
+		[HTTP_CONTENT_TYPE_ICO]     = "image/vnd.microsoft.icon",
+		[HTTP_CONTENT_TYPE_UNKNOWN] = "application/unknown"
+};
 
-void free_client_info(struct client_info * info) {
-	free_http_request(&info->parsed_request);
-}
+int get_content_type(const char *file_name) {
+	char *ext;
 
-int get_content_type(char *file_name) {
-	char* ext;
 	ext = strchr(file_name, '.');
 	if (ext == NULL) {
 		return HTTP_CONTENT_TYPE_UNKNOWN;
@@ -61,7 +66,7 @@ int get_content_type(char *file_name) {
 	return HTTP_CONTENT_TYPE_UNKNOWN;
 }
 
-int get_method(char *method) {
+static int get_method(const char *method) {
 	if (strcmp(method, "GET") == 0) {
 		return HTTP_METHOD_GET;
 	}
@@ -73,11 +78,9 @@ int get_method(char *method) {
 
 //TODO it's work if buffer contains full starting line and headers
 static int receive_and_parse_request(struct client_info *info) {
-	int res;
+	int ret;
+	char *chunk, *prev, *cur;
 	size_t len;
-	char *chunk;
-	char *prev;
-	char *cur;
 
 	len = info->next_len;
 	chunk = info->next_data;
@@ -89,29 +92,27 @@ static int receive_and_parse_request(struct client_info *info) {
 	/* need to recive more data (end-line not found): */
 	/* 1. move next_chunk to head of buffer */
 	chunk = memmove(info->buff, chunk, len);
+
 	/* 2. get new piece if data */
-
-	res = recv(info->sock, chunk + len, sizeof info->buff - len, 0);
-
-	if(res < 0){
+	ret = recv(info->sock, chunk + len, sizeof info->buff - len, 0);
+	if (ret <= 0){
 		return 0;
 	}
 
 	/*parse starting line and headers*/
 	prev = info->buff;
 	cur = strchr(info->buff, '\n');
+	assert(cur != NULL);
 	while (cur - prev > 2) {
 		cur++;
 		prev = cur;
 		cur = strchr(prev, '\n');
-		if (cur == NULL) {
-
-		}
+		assert(cur != NULL);
 	}
 	cur[0] = '\0';
 	//todo receive message body and set in some file
 
-	if (0 > parse_http(info->buff, &info->parsed_request)) {
+	if (parse_http(info->buff, &info->parsed_request) < 0) {
 		return 0;
 	}
 
@@ -124,9 +125,8 @@ static int http_hnd_starting_line(struct client_info *info) {
 		return HTTP_RET_ABORT; /* bad request */
 	}
 
-	if (strcmp(info->parsed_request.method, "GET") == 0) {
-		info->method = HTTP_METHOD_GET;
-
+	info->method = get_method(info->parsed_request.method);
+	if (info->method == HTTP_METHOD_GET) {
 		if (info->parsed_request.proto == NULL) {
 			return HTTP_RET_ABORT; /* bad request */
 		}
@@ -140,53 +140,50 @@ static int http_hnd_starting_line(struct client_info *info) {
 		} else {
 			strcpy(info->file, info->parsed_request.parsed_url->path);
 		}
-
+#if 0
 		test_params.info = info;
 		test_params.query = info->parsed_request.parsed_url->query;
-	} else if (strcmp(info->parsed_request.method, "POST") == 0) {
-		info->method = HTTP_METHOD_POST;
+#endif
+	} else if (info->method == HTTP_METHOD_POST) {
 	} else {
-		info->method = HTTP_METHOD_UNKNOWN;
 		return HTTP_STAT_405; /* method unknown or unsupported */
 	}
 
 	return HTTP_RET_HNDOPS;
 }
 
+#if 0
 static int http_hnd_headers(struct client_info *info) {
 	//todo process headers
 
 	return HTTP_RET_OK;
 }
+#endif
 
 static int process_request(struct client_info *info) {
-	int res;
+	int ret;
 
-	while (receive_and_parse_request(info)) {
-		res = http_hnd_starting_line(info);
-
-		if (res != HTTP_RET_HNDOPS) {
-			return res;
+	if (receive_and_parse_request(info)) {
+		ret = http_hnd_starting_line(info);
+		if (ret != HTTP_RET_HNDOPS) {
+			return ret;
 		}
-
-		res = http_hnd_headers(info);
-
-		if (res != HTTP_RET_OK) {
-			return res;
+		return HTTP_RET_OK;
+#if 0
+		ret = http_hnd_headers(info);
+		if (ret != HTTP_RET_OK) {
+			return ret;
 		} else {
-			return res;
+			return ret;
 		}
+#endif
 	}
 
 	return HTTP_RET_ABORT;
 }
 
 static int http_req_get(struct client_info *info) {
-
-	char *ext;
-
 	if (info->lock_status) {
-
 		info->lock_status = 0;
 	}
 
@@ -197,22 +194,7 @@ static int http_req_get(struct client_info *info) {
 		}
 	}
 
-	ext = strchr(info->file, '.');
-	if (ext == NULL) {
-		info->c_type = HTTP_CONTENT_TYPE_UNKNOWN;
-	} else if ((strcmp(ext, ".htm") == 0) || (strcmp(ext, ".html") == 0)) {
-		info->c_type = HTTP_CONTENT_TYPE_HTML;
-	} else if ((strcmp(ext, ".jpg") == 0) || (strcmp(ext, ".jpeg") == 0)) {
-		info->c_type = HTTP_CONTENT_TYPE_JPEG;
-	} else if (strcmp(ext, ".png") == 0) {
-		info->c_type = HTTP_CONTENT_TYPE_PNG;
-	} else if (strcmp(ext, ".gif") == 0) {
-		info->c_type = HTTP_CONTENT_TYPE_GIF;
-	} else if (strcmp(ext, ".ico") == 0) {
-		info->c_type = HTTP_CONTENT_TYPE_ICO;
-	} else {
-		info->c_type = HTTP_CONTENT_TYPE_UNKNOWN;
-	}
+	info->c_type = get_content_type(info->file);
 
 	return HTTP_STAT_200;
 }
@@ -283,13 +265,14 @@ static void send_data(struct client_info *ci, int stat) {
 	}
 }
 
-void close_connection(struct client_info *ci) {
-	if (ci->fp != NULL) {
-		fclose(ci->fp); /* close file (it's open or null) */
+static void free_client_info(struct client_info *info) {
+	if (info->fp != NULL) {
+		fclose(info->fp); /* close file (it's open or null) */
 	}
-	close(ci->sock); /* close connection */
-	free_client_info(ci);
+	close(info->sock); /* close connection */
+	free_http_request(&info->parsed_request);
 }
+
 
 void client_process(int sock) {
 	int res;
@@ -312,18 +295,23 @@ void client_process(int sock) {
 
 //		printf("client_process() http_ret_ok for sock%d\n", sock);
 		if (is_service_started(ci.file)) {
-			struct service_data* srv_data = malloc(sizeof(struct service_data));
+			struct service_data *srv_data;
+			srv_data = malloc(sizeof(struct service_data));
+			if (srv_data == NULL) {
+				free_client_info(&ci);
+				return;
+			}
 //			printf("client_process() alloc srv_data %p for sock%d\n", srv_data, sock);
-			assert(srv_data != NULL);
-			//ToDo move it to web_service_start_service
+//
+			//ToDo move it to web_service_start_service. now ci not needed to free
 			srv_data->sock = ci.sock;
-
-			request_parser_cpy(&srv_data->request, &ci.parsed_request);
+			memcpy(&srv_data->request, &ci.parsed_request, sizeof srv_data->request);
 			srv_data->query = srv_data->request.parsed_url->query;
 
 //			printf("client_process() start service %d\n", sock);
 			if (web_service_start_service(ci.file, srv_data) < 0) {
 				printf("client_process: start service error");
+				service_free_service_data(srv_data);
 			}
 //			printf("client_process() service %d started\n", sock);
 			return;
@@ -333,7 +321,7 @@ void client_process(int sock) {
 		}
 	case HTTP_RET_ABORT:
 //		printf("client_process() http_ret_abort; close connection of %d\n", sock);
-		close_connection(&ci);
+		free_client_info(&ci);
 //		printf("client_process() http_ret_abort; %d closed\n", sock);
 		return;
 	}
@@ -347,7 +335,7 @@ void client_process(int sock) {
 	printf(" done\n");
 
 //	printf("client_process() close connection %d\n", sock);
-	close_connection(&ci);
+	free_client_info(&ci);
 //	printf("client_process() connection %d closed\n", sock);
 }
 

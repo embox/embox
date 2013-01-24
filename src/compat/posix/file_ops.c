@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 int close(int fd) {
+    int i;
 	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
 
@@ -37,7 +38,10 @@ int close(int fd) {
 	assert(ops);
 	assert(ops->close);
 
-	return task_self_idx_table_unbind(fd);
+	i = task_self_idx_table_unbind(fd);
+
+    printf("\nend close() for %d\n", fd);
+    return i;
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {

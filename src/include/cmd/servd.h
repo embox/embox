@@ -79,6 +79,6 @@ struct params {
 };
 
 
-extern int get_content_type(char *file_name);
+extern int get_content_type(const char *file_name);
 
 #endif /* SERVD_H_ */

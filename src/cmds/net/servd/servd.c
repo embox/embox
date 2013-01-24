@@ -47,6 +47,7 @@ static int run_service(const char *service) {
 }
 
 static int stop_service(const char *service) {
+#if 0
 	int ret;
 
 	ret = web_service_stop(service);
@@ -56,6 +57,7 @@ static int stop_service(const char *service) {
 	}
 
 	printf("service %s stopped\n", service);
+#endif
 	return 0;
 }
 

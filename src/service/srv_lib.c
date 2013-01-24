@@ -80,18 +80,21 @@ int web_service_start_service(const char *srv_name,
 	const struct web_service_desc *srv_desc;
 
 //	printf("web_service_start_service() lookup srv %s data %p\n", srv_name, srv_data);
-	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
+	srv_desc = web_service_desc_lookup(srv_name);
+	if (srv_desc == NULL) {
 		return -1;
 	}
 //	printf("web_service_start_service() started? srv %s data %p\n", srv_name, srv_data);
-	if (!*srv_desc->is_started){
+	if (!*srv_desc->is_started) {
 		return -1;
 	}
 
 //	printf("web_service_start_service() make new task for srv %s data %p\n", srv_name, srv_data);
-	new_task(srv_desc->run, (void *) srv_data);
+	if (new_task(srv_desc->run, (void *)srv_data) < 0) {
+		return -1;
+	}
 //	printf("web_service_start_service() new task created for srv %s data %p\n", srv_name, srv_data);
-#if 1
+#if 0
 	/* When we closing http connection after content sending
 	 * this means socket must be opened only in one task.  */
 //	printf("web_service_start_service() close sock %d of srv %s data %p\n", srv_data->sock, srv_name, srv_data);
@@ -104,7 +107,8 @@ int web_service_start_service(const char *srv_name,
 
 int is_service_started(const char *srv_name) {
 	const struct web_service_desc *srv_desc;
-	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
+	srv_desc = web_service_desc_lookup(srv_name);
+	if (srv_desc == NULL) {
 		return 0;
 	}
 	if (!*srv_desc->is_started){
