@@ -20,9 +20,15 @@ QMAKE_LIBS_THREAD  =
 QMAKE_LIBS_DYNLOAD =
 # Just want to use these when linking executables
 QMAKE_LFLAGS      += -Wl,--relocatable -nostdlib
+
 # Don't know how to make it the right way
-QMAKE_LIBS        += -L$$[QT_INSTALL_PLUGINS]/platforms
-QTPLUGIN          += qvncgraphicssystem
+#app {
+#contains(TEMPLATE, .*(app)) {
+!isEmpty(QMAKE_APP_FLAG) {
+	QMAKE_LIBS        += -L$$[QT_INSTALL_PLUGINS]/platforms
+	QTPLUGIN          += qvncgraphicssystem
+# QMAKE_LFLAGS_APP        +=
+}
 
 
 load(qt_config)
