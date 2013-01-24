@@ -14,8 +14,11 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <embox/input_dev.h>
 
 #include <javacall_lifecycle.h>
+
 
 static void *phoneme_run(void *data) {
 	//ToDo:
@@ -30,22 +33,39 @@ struct __jvm_params {
 	int code;
 };
 
+/* Notify java task about system events. */
+static void notify_loop(void) {
+	int fd;
+	struct input_event buf[16];
+
+	if (0 > (fd = open("/dev/input/keyboard", 0))) {
+		return;
+	}
+
+	while(!list_empty(&task_self()->children)) { /* XXX make it throw signals */
+		size_t len, i, event_size = sizeof(struct input_event);
+		if ((len = read(fd, buf, event_size * 16)) > 0) {
+			/* Send all events we read to java task. */
+			for (i = 0; i < len / event_size; i++) {
+				/*javacall_event_send(buf[i], event_size);*/
+			}
+		}
+	}
+}
+
 int phoneme_midp(int argc, char **argv) {
-	extern int java_pipe[2];
 	struct __jvm_params params = {
 			.argc = argc,
 			.argv = argv,
 			.code = -1
 	};
 
-	if (-1 == pipe(java_pipe)) {
+	if (JAVACALL_OK != javacall_events_init()) {
 		return -1;
 	}
 
-	javacall_events_init();
-
 	new_task(phoneme_run, &params);
-	while(!list_empty(&task_self()->children)) { } /* XXX make it throw signals */
+	notify_loop();
 
 	return params.code;
 }
@@ -58,7 +78,7 @@ int phoneme_cldc(int argc, char **argv) {
 	};
 
 	new_task(phoneme_run, &params);
-	while(!list_empty(&task_self()->children)) { } /* XXX make it throw signals */
+	while(!list_empty(&task_self()->children)) { } /* XXX make it throw waitpid() */
 
 	return params.code;
 }
