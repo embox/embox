@@ -3,6 +3,7 @@ package embox.driver.video
 
 module bochs {
 	source "bochs.c"
+	depends embox.driver.pci
 }
 
 abstract module vga { }

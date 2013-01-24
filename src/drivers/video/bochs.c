@@ -6,10 +6,10 @@
  */
 
 #include <asm/io.h>
-#include <embox/unit.h>
+#include <drivers/pci/pci.h>
 #include <types.h>
 
-EMBOX_UNIT_INIT(bochs_init);
+PCI_DRIVER("bochs", bochs_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 
 #define VBE_DISPI_IOPORT_INDEX      0x01CE
 #define VBE_DISPI_IOPORT_DATA       0x01CF
@@ -46,10 +46,10 @@ static void vbe_set(uint16_t xres, uint16_t yres, uint16_t bpp) {
 }
 
 #include <string.h>
-static int bochs_init(void) {
-	uint16_t *disp = (void *)0xFD000000;
+static int bochs_init(struct pci_slot_dev *pci_dev) {
+	uint16_t *disp = (uint16_t *)(pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
 	vbe_set(1280,1024,16);
-    // Painting top half of the screen with white
-    memset(disp,0x8f,1280*1024);
+	// Painting top half of the screen with white
+	memset(disp,0x8f,1280*1024);
 	return 0;
 }
