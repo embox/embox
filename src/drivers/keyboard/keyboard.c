@@ -241,7 +241,7 @@ void keyboard_init(void) {
 	keyboard_send_cmd(I8042_CMD_PORT_DIS);
 
 	/* Empty keyboard buffer */
-	while (keyboard_havechar()) keyboard_getc();
+	while (keyboard_havechar()) inb(DATA_PORT);
 
 	/* Read the current mode */
 	mode = keyboard_get_mode();
