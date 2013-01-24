@@ -9,13 +9,15 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <util/async_ring_buff.h>
 #include <util/dlist.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include "../kernel/task/common.h"
+#include "../kernel/task/common.h" //TODO this is very bad way to include headers
 #include <framework/mod/options.h>
 #include <kernel/task/io_sync.h>
+#include <kernel/thread/event.h>
 
 #define DEFAULT_PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
 #define MAX_PIPE_BUFFER_SIZE     OPTION_GET(NUMBER, max_pipe_buffer_size)
@@ -75,6 +77,7 @@ int pipe(int pipefd[2]) {
 	struct pipe_end_state *r, *w;
 	int res = 0;
 
+	pipe = NULL; pipe_buff = NULL; r = w = NULL;
 	if (!(storage = malloc(DEFAULT_PIPE_BUFFER_SIZE))
 			|| !(pipe_buff = malloc(sizeof(struct async_ring_buff)))
 			|| !(pipe = malloc(sizeof(struct pipe)))

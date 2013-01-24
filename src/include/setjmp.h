@@ -12,6 +12,8 @@
 
 #include <asm/setjmp.h>
 
+#include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
 /**

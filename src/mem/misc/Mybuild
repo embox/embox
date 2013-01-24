@@ -7,10 +7,12 @@ interface iobjalloc {
 
 module slab {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	option number heap_size = 524288
 	source "slab.c", "slab_impl.h"
 	provides iobjalloc.alloc
 	depends embox.mem.page_api, embox.mem.heap_lds
 	depends embox.mem.phymem
+	depends embox.mem.static_heap
 }
 
 module pool {

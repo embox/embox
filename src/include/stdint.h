@@ -58,4 +58,8 @@ typedef __u_fast uint_fast64_t;
 typedef int64_t intmax_t;
 typedef uint64_t uintmax_t;
 
+/* ToDo: WARNING 32bit now */
+typedef int intptr_t;
+typedef unsigned int uintptr_t;
+
 #endif /* STDINT_H_ */

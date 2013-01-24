@@ -1,0 +1,13 @@
+package third_party.tinypy
+
+module tinypy_core {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(SRC_DIR)/include/util")
+	source "tp.c"
+
+	@InitFS
+	source "fib.py", "py2bc.py"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+}

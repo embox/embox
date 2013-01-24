@@ -12,27 +12,8 @@
 #include <types.h>
 #include <lib/bits/byteswap.h>
 #include <net/socket.h>
+#include <netinet/in.h>
 
-/**
- * Define info about id of IP protocols
- * @param id - identifer of protocol
- * @return string info
- */
-
-/* IPv4 AF_INET sockets:*/
-
-
-/* Address to accept any incoming messages. */
-#define INADDR_ANY          ((unsigned long int) 0x00000000)
-
-/* Address to send to all hosts. */
-#define INADDR_BROADCAST    ((unsigned long int) 0xffffffff)
-
-/* Address indicating an error return. */
-#define INADDR_NONE         ((unsigned long int) 0xffffffff)
-
-/* Address to loopback in software to local host.  */
-#define INADDR_LOOPBACK     ((unsigned long int) 0x7f000001)   /* 127.0.0.1   */
 
 static inline bool ipv4_is_loopback(in_addr_t addr) {
 	/* Loopback address is 127.*.*.* */

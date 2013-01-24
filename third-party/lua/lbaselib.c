@@ -41,11 +41,20 @@ static int luaB_print (lua_State *L) {
     if (s == NULL)
       return luaL_error(L, LUA_QL("tostring") " must return a string to "
                            LUA_QL("print"));
+#if 0 /* for embox */
+    if (i>1) fputs("\t", stdout);
+    fputs(s, stdout);
+#else
     if (i>1) printf("\t");
     printf("%s", s);
+#endif
     lua_pop(L, 1);  /* pop result */
   }
+#if 0
+  fputs("\n", stdout);
+#else
   printf("\n");
+#endif
   return 0;
 }
 
@@ -631,7 +640,7 @@ static void base_open (lua_State *L) {
   luaL_register(L, "_G", base_funcs);
   lua_pushliteral(L, LUA_VERSION);
   lua_setglobal(L, "_VERSION");  /* set global _VERSION */
-  /* `ipairs' and `pairs' need auxliliary functions as upvalues */
+  /* `ipairs' and `pairs' need auxiliary functions as upvalues */
   auxopen(L, "ipairs", luaB_ipairs, ipairsaux);
   auxopen(L, "pairs", luaB_pairs, luaB_next);
   /* `newproxy' needs a weaktable as upvalue */

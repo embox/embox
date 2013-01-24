@@ -12,6 +12,8 @@
 
 #define C_ENTRY(name) .globl name; .align 2; name
 
+#define C_LABEL(name) .globl name; name
+
 #else
 
 /* Force passing arguments on stack */

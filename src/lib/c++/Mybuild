@@ -8,6 +8,7 @@ module LibCXX {
 	/* Private C++ files */
 	source "unwind.c"
 	source "eh_routines.cpp"
+        source "purevirt_routines.cpp"
 
 	/*linker sections */
 	source "cxx.lds.S"
@@ -16,3 +17,7 @@ module LibCXX {
 	depends embox.lib.LibC
 }
 
+abstract module CXXApp {
+	/* The implementation of this module is supposed to
+		implement the "int main(int argc, char** argv)" */
+}

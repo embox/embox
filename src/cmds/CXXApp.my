@@ -1,0 +1,19 @@
+package embox.cmd
+
+@Cmd(name = "cxxapp",
+	help = "Run built-in C++ application",
+	man = '''
+		NAME
+			cxxapp - Run built-in C++ application
+		SYNOPSIS
+			cxxapp [application_arguments]
+		AUTHORS
+			Felix Sulima
+	''')
+module cxxapp {
+	@IncludePath("$(SRC_DIR)/lib/c++")
+	source "cxxapp.cpp"
+
+	depends embox.lib.CXXApp
+	depends embox.framework.LibFramework
+}

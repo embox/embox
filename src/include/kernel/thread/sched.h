@@ -11,16 +11,16 @@
 #ifndef KERNEL_THREAD_SCHED_H_
 #define KERNEL_THREAD_SCHED_H_
 
-#include <errno.h>
 #include <kernel/thread/sched_lock.h>
 #include <kernel/thread/sched_priority.h>
 
-#include __impl_x(kernel/thread/types.h)
+#include <kernel/thread/types.h>
 
 #define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
 
 struct thread;
 struct event;
+struct sleepq;
 
 /**
  * Initializes scheduler.
@@ -46,11 +46,6 @@ extern int sched_init(struct thread *current, struct thread *idle);
  *   The currently executing thread.
  */
 extern struct thread *sched_current(void);
-
-/**
- * Requests switching of the current thread.
- */
-extern void sched_request_switch(void);
 
 /**
  * Makes active thread and adds thread to the queue of ready to executing
@@ -123,11 +118,6 @@ extern void sched_wake_one(struct sleepq *sleepq);
 extern void sched_wake_all(struct sleepq *sleepq);
 
 /**
- * Moves the current thread to the end of the queue for its priority.
- */
-extern void sched_yield(void);
-
-/**
  * Changes priority of the thread.
  *
  * @param thread
@@ -159,6 +149,11 @@ extern int sched_change_scheduling_priority(struct thread *t,
  *   Running time in clocks.
  */
 extern clock_t sched_get_running_time(struct thread *thread);
+
+/**
+ * Requests switching of the current thread.
+ */
+extern void sched_post_switch(void);
 
 /**
  * @brief Makes thread to run regardless of it's state if thread is scheduling

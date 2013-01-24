@@ -2,21 +2,6 @@ package embox.lib
 
 
 
-static module Fdlibm {
-	source "fdlibm/w_pow.c"
-	source "fdlibm/w_powl.c"
-	source "fdlibm/w_powf.c"
-	source "fdlibm/e_pow.c"
-	source "fdlibm/e_powl.c"
-	source "fdlibm/e_powf.c"
-	source "fdlibm/k_standard.c"
-	source "fdlibm/s_lib_version.c"
-	source "fdlibm/s_matherr.c"
-	source "fdlibm/s_rint.c"
-	source "fdlibm/s_scalbn.c"
-	source "fdlibm/s_scalbn.c"
-}
-
 static module LibElf {
 	source "new_elf/elf_header.c"
 	source "new_elf/elf_ph_table.c"
@@ -47,11 +32,23 @@ static module LibExec {
 	depends embox.mem.mmap_api
 	depends LibElf
 }
+//@DefaultImpl(LibCDiagnosticAssert)
+//abstract module LibCDiagnostic {
+//
+//}
 
 static module LibCDiagnostic {
 	source "assert.c"
+	source "assert_impl.h"
 	depends LibCStdio
 }
+
+static module LibCDiagnosticAssert extends LibCDiagnosticAssert {
+	source "assert.c"
+	source "assert_impl.h"
+	depends LibCStdio
+}
+
 
 static module LibCMisc {
 	source "crypt/crc32.c"
@@ -92,21 +89,32 @@ static module LibCString {
 	source "string/strupr.c"
 }
 
+static module LibCStrdup {
+	source "string/strdup.c"
+	depends embox.mem.heap_api
+}
+
 static module LibCMath {
+	source "math/fabs.c"
+	source "math/round.c"
 	source "math/floor.c"
+	source "math/ceil.c"
 	source "math/copysign.c"
 	source "math/signbit.c"
+	source "math/fmod.c"
+	source "math/modf.c"
 	source "math/pow.c"
 	source "math/log10.c"
 	source "math/div.c"
 	source "math/ldiv.c"
 	source "math/blog2.c"
 	source "math/sqrt.c"
-	source "soft-fp/df3.c"
-	source "soft-fp/sf3.c"
-	source "soft-fp/softfloat.c"
-	source "soft-fp/softfloat-macros.c"
-	source "soft-fp/softfloat-spec.c"
+	depends third_party.lib.Fdlibm
+
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "soft-fp/df3.c", "soft-fp/sf3.c"
+	depends third_party.lib.softfloat
+
 	source "gcc/clzsi2.c"
 	source "gcc/lshrdi3.c"
 	source "gcc/divdi3.c"
@@ -118,8 +126,6 @@ static module LibCMath {
 	source "gcc/umoddi3.c"
 	source "gcc/umodsi3.c"
 	source "gcc/muldi3.c"
-
-	depends Fdlibm
 }
 
 static module LibCStdio {
@@ -153,6 +159,7 @@ static module LibC {
 	depends LibCMisc
 	depends LibCStdlib
 	depends LibCString
+	depends LibCStrdup
 	depends LibCMath
 	depends	LibCStdio
 /* not here */

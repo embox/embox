@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/thread/event.h>
 
 #include <framework/example/self.h>

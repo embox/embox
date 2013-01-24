@@ -1,0 +1,26 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+
+	"build_systems":
+	[
+		{
+			"name": "Make (project-specific)",
+			"file_regex": "^(..[^:]*):([0-9]+):?([0-9]+)?:? (.*)$",
+
+			"cmd": ["make"],
+			"working_dir": "${project_path}",
+
+			"variants":
+			[
+				{ "name": "clean", "cmd": ["make", "clean"] },
+				{ "name": "distclean", "cmd": ["make", "distclean"] }
+			]
+
+		}
+	]
+}

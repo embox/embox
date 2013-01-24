@@ -28,9 +28,9 @@ void set_plane(unsigned p)
 	p &= 3;
 	pmask = 1 << p;
 /* set read plane */
-	vga_gc_write(p, VGA_GC_READ_MAP_SEL);
+	vga_wgfx(0, VGA_GFX_PLANE_READ, p);
 /* set write plane */
-	vga_seq_write(pmask, VGA_SEQ_PLANE_MASK);
+	vga_wseq(0, VGA_SEQ_PLANE_MASK, pmask);
 }
 
 /*****************************************************************************
@@ -41,7 +41,7 @@ static unsigned get_fb_seg(void)
 {
 	unsigned seg;
 
-	seg = vga_gc_read(VGA_GC_MISCELLANEOUS);
+	seg = vga_rgfx(0, VGA_GFX_MISC);
 	seg >>= 2;
 	seg &= 3;
 	switch(seg)
@@ -80,68 +80,3 @@ unsigned vpeekb(unsigned off)
 	return peekb(fb_seg, off);
 }
 
-
-#if 0
-
-static void dump(unsigned char *regs, unsigned count)
-{
-	unsigned i;
-
-	i = 0;
-	printf("\t");
-	for(; count != 0; count--)
-	{
-		printf("0x%02X,", *regs);
-		i++;
-		if(i >= 8)
-		{
-			i = 0;
-			printf("\n\t");
-		}
-		else
-			printf(" ");
-		regs++;
-	}
-	printf("\n");
-}
-/*****************************************************************************
-*****************************************************************************/
-static void dump_regs(unsigned char *regs)
-{
-	printf("unsigned char g_mode[] =\n");
-	printf("{\n");
-/* dump MISCELLANEOUS reg */
-	printf("/* MISC */\n");
-	printf("\t0x%02X,\n", *regs);
-	regs++;
-/* dump SEQUENCER regs */
-	printf("/* SEQ */\n");
-	dump(regs, VGA_NUM_SEQ_REGS);
-	regs += VGA_NUM_SEQ_REGS;
-/* dump CRTC regs */
-	printf("/* CRTC */\n");
-	dump(regs, VGA_NUM_CRTC_REGS);
-	regs += VGA_NUM_CRTC_REGS;
-/* dump GRAPHICS CONTROLLER regs */
-	printf("/* GC */\n");
-	dump(regs, VGA_NUM_GC_REGS);
-	regs += VGA_NUM_GC_REGS;
-/* dump ATTRIBUTE CONTROLLER regs */
-	printf("/* AC */\n");
-	dump(regs, VGA_NUM_AC_REGS);
-	regs += VGA_NUM_AC_REGS;
-	printf("};\n");
-}
-
-/*****************************************************************************
-READ AND DUMP VGA REGISTER VALUES FOR CURRENT VIDEO MODE
-This is where g_40x25_text[], g_80x50_text[], etc. came from :)
-*****************************************************************************/
-void vesa_dump_state(void)
-{
-	unsigned char state[VGA_NUM_REGS];
-
-	read_regs(state);
-	dump_regs(state);
-}
-#endif

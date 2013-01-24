@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 #include <kernel/thread/sync/mqueue.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 
 #define MESSAGE_COUNT 3
 

@@ -6,21 +6,18 @@
  * @author Ilia Vaprol
  */
 
-#include <math.h>
-
-/**
- * TODO it works with mistake when x is -0.0:
- *  right answer is 1, but we return 0
- */
+#include <lib/math/ieee754.h>
 
 int signbit(double x) {
-    return x < 0;
+	return ((union ieee754_double *)&x)->ieee.negative;
 }
 
 int signbitf(float x) {
-    return x < 0;
+	return ((union ieee754_single *)&x)->ieee.negative;
 }
 
 int signbitl(long double x) {
-    return x < 0;
+	/* FIXME it's work only if size of double and long double are the same */
+	/*assert(sizeof x == sizeof(double));*/
+	return signbit((double)x);
 }

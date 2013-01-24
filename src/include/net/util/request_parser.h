@@ -1,14 +1,15 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 25.10.2012
+ * @date 25.10.12
  * @author Vita Loginova
  */
 
-#ifndef REQUEST_PARSER_H_
-#define REQUEST_PARSER_H_
+#ifndef NET_UTIL_REQUEST_PARSER_H_
+#define NET_UTIL_REQUEST_PARSER_H_
+
+struct parsed_url; /* from $(THIRDPARTY_DIR)/include/lib/url_parser.h */
 
 struct http_request {
 	char *method;
@@ -26,7 +27,7 @@ typedef struct http_request http_request;
  * @param http_request blunk struct http_request
  * @retval -1 on fail 0 on success
  */
-extern int parse_http(char * request, http_request *parsed_request);
+extern int parse_http(const char *request, http_request *parsed_request);
 
 /**
  * free http_request memory
@@ -35,6 +36,6 @@ extern int parse_http(char * request, http_request *parsed_request);
  */
 extern void free_http_request(http_request *request);
 
-extern void request_parser_cpy(http_request *to, http_request *from);
+extern int request_parser_copy(http_request *to, const http_request *from);
 
-#endif /* REQUEST_PARSER_H_ */
+#endif /* NET_UTIL_REQUEST_PARSER_H_ */

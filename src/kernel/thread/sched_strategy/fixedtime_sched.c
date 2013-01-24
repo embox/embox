@@ -8,7 +8,7 @@
 
 #include <framework/mod/options.h>
 
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 
@@ -21,7 +21,7 @@ inline void sched_strategy_init(struct sched_strategy_data *data) {
 }
 
 static void sched_tick(sys_timer_t *timer, void *param) {
-	sched_request_switch();
+	sched_post_switch();
 }
 
 static inline uint32_t thread_timeslice(struct thread *thread) {

@@ -286,6 +286,10 @@ static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size) {
 		}
 		else {
 			cnt = end_pointer - fi->pointer;
+			/* over the block ? */
+			if((current + cnt) > fsi->block_size) {
+				cnt -= (current + cnt) % fsi->block_size;
+			}
 		}
 
 		/* one 4096-bytes block read operation */
@@ -304,7 +308,7 @@ static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size) {
 		bytecount += cnt;
 		/* shift the pointer */
 		fi->pointer += cnt;
-		if(end_pointer >= fi->pointer) {
+		if(end_pointer <= fi->pointer) {
 			break;
 		}
 	}
@@ -483,8 +487,7 @@ static int tmpfs_delete(struct node *node) {
 
 		path[strlen(path) - 3] = '\0';
 	}
-
-	if (node_is_directory(node)) {
+	else {
 		index_free(&tmpfs_file_idx, fi->index);
 		pool_free(&tmpfs_file_pool, fi);
 	}
@@ -492,7 +495,6 @@ static int tmpfs_delete(struct node *node) {
 	/* root node - have fi, but haven't index*/
 	if(0 == strcmp((const char *) path, (const char *) fsi->mntto)){
 		pool_free(&tmpfs_fs_pool, fsi);
-		pool_free(&tmpfs_file_pool, fi);
 	}
 
 	vfs_del_leaf(node);

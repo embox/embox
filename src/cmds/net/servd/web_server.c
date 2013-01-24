@@ -6,11 +6,14 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
+#include <fcntl.h>
+
 #include <net/ip.h>
+
 #include <embox/web_service.h>
 #include <lib/url_parser.h>
 #include <lib/service/service.h>
-#include <stdlib.h>
 #include <framework/mod/options.h>
 
 #define DEFAULT_PAGE        OPTION_STRING_GET(default_page)
@@ -282,7 +285,7 @@ void client_process(int sock) {
 			srv_data->query = srv_data->request.parsed_url->query;
 
 			if (web_service_start_service(ci.file, srv_data) < 0) {
-				printf("client_process: start service error");
+				printf("client_process: start service error\n");
 				service_free_service_data(srv_data);
 			}
 			return;

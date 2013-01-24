@@ -63,8 +63,12 @@ TEST_CASE("Call fstat from a file") {
 }
 
 TEST_CASE("Try to remove file from initfs") {
-	test_assert_equal(-EPERM, unlink(TEST_FILE_NAME));
-	test_assert_equal(-EPERM, remove(TEST_FILE_NAME));
+	errno = ENOERR;
+	test_assert_equal(-1, unlink(TEST_FILE_NAME));
+	test_assert_equal(EPERM, errno);
+	errno = ENOERR;
+	test_assert_equal(-1, remove(TEST_FILE_NAME));
+	test_assert_equal(EPERM, errno);
 }
 
 TEST_CASE("Call fcntl") {

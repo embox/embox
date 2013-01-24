@@ -13,13 +13,15 @@
 #include <sys/types.h>
 #include <kernel/task/signal.h>
 
+#include <module/embox/kernel/task/std_signal.h>
+
 extern int kill(int tid, int sig);
 
 extern void (*signal(int sig, void (*func)(int)))(int);
 
-extern void SIG_DFL(int sig);
-
-#define SIG_ERR 0
+#define SIG_DFL __sighnd_default
+#define SIG_IGN __sighnd_ignore
+#define SIG_ERR __sighnd_ignore
 
 extern int sigqueue(int tid, int sig, const union sigval value);
 

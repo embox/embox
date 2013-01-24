@@ -8,14 +8,18 @@
  */
 #include <assert.h>
 #include <string.h>
-#include <util/array.h>
 #include <errno.h>
+
+#include <util/array.h>
 #include <util/member.h>
 #include <mem/misc/pool.h>
+
 #include <net/inetdevice.h>
+#include <net/in.h>
 #include <framework/mod/options.h>
 
 #include <lib/list.h>
+
 #include <err.h>
 
 struct callback_info {

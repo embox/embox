@@ -17,6 +17,8 @@
 #include <embox/web_service.h>
 #include <embox/cmd.h>
 #include <kernel/task.h>
+#include <errno.h>
+#include <fcntl.h>
 
 EMBOX_CMD(servd);
 

@@ -1,0 +1,8 @@
+package embox.test.math
+
+module math_test {
+	source "math_test.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}

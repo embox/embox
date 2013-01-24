@@ -31,11 +31,8 @@ static void __list_insert_chain(struct __list_link *first,
 static void __list_insert_link(struct __list_link *link,
 		struct __list_link *prev, struct __list_link *next);
 
-#ifdef CONFIG_LIST_NDEBUG
-# include "list_ndebug.h"
-#else
-# include "list_debug.h"
-#endif
+#include <module/embox/util/List.h>
+
 
 /* Most of macros are defined through a corresponding _link method.
  * Implementation may also provide __list_check() macro which have to return

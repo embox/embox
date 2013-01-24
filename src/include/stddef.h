@@ -22,7 +22,11 @@
 #endif
 
 #ifndef NULL
-#define NULL ((void *) 0x0)
+#ifndef __cplusplus
+#define NULL ((void *)0)
+#else /* __cplusplus */
+#define NULL 0
+#endif /* ! __cplusplus */
 #endif
 
 #ifndef __size_t_defined

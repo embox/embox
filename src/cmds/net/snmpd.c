@@ -13,7 +13,7 @@
 #include <net/socket.h>
 #include <embox/cmd.h>
 #include <string.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 #include <getopt.h>
 
 #define SNMP_ADDR INADDR_ANY

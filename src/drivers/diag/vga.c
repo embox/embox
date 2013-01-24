@@ -8,7 +8,7 @@
 
 #include <prom/diag.h>
 #include <drivers/keyboard.h>
-#include <drivers/vga.h>
+#include <drivers/vga_console.h>
 
 void diag_init(void) {
 	vga_console_init(vga_console_diag(), 80, 25);

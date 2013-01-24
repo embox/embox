@@ -10,6 +10,7 @@
 
 #include <err.h>
 #include <string.h>
+#include <errno.h>
 #include <net/ip.h>
 #include <net/icmp.h>
 #include <net/udp.h>

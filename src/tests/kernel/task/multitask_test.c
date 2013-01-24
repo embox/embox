@@ -8,7 +8,7 @@
 #include <embox/test.h>
 
 #include <kernel/task.h>
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 
 #define KERNEL_TID      0
 #define SOMEPOINTER     ((void *) 0x10000)

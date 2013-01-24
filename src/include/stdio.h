@@ -20,9 +20,17 @@
 #define _IOFBF        0x20
 #define _IOLBF        0x20
 #define _IONBF        0x20
-#define	BUFSIZ        0x40
+#define	BUFSIZ        0x100
 #define L_tmpnam      0x20
 #define FILENAME_MAX  0x20
+
+
+
+/* Values for the WHENCE argument to lseek. */
+#define SEEK_SET        0   /* Seek from beginning of file. */
+#define SEEK_CUR        1   /* Seek from current position. */
+#define SEEK_END        2   /* Seek from end of file. */
+
 
 typedef struct file_struct {
 	int fd;
@@ -32,6 +40,8 @@ typedef struct file_struct {
 
 
 struct stat;
+
+#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 
@@ -105,7 +115,7 @@ extern int fscanf(FILE *stream, const char *format, ...);
 /**
  * Read formatted input from S, according to the format string FORMAT.
  */
-extern int sscanf(char *out, const char *format, ...);
+extern int sscanf(const char *out, const char *format, ...);
 
 /**
  * Open the file whose name is the string pointed to by path

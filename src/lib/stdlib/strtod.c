@@ -15,3 +15,8 @@ double strtod(const char *nptr, char **endptr) {
 	//TODO:
 	return 0;
 }
+
+double atof(const char *nptr) {
+	//TODO:
+	return 0;
+}

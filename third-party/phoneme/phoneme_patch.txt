@@ -1,0 +1,47 @@
+Index: build/javacall_i386_gcc/javacall_i386_gcc.cfg
+===================================================================
+--- cldc/build/javacall_i386_gcc/javacall_i386_gcc.cfg	(revision 20547)
++++ cldc/build/javacall_i386_gcc/javacall_i386_gcc.cfg	(working copy)
+@@ -75,6 +75,7 @@
+     JAVACALL_INCLUDE_DIR=$(JAVACALL_OUTPUT_DIR)/inc
+ 
+     CPP_DEF_FLAGS += -I$(JAVACALL_INCLUDE_DIR) -DLINUX
++    CPP_DEF_FLAGS += $(CXXFLAGS_EXTERNAL_TARGET)
+ 
+     JC_STUBS_OBJ = $(JAVACALL_LIB_DIR)/cldc_javanotify_stubs.o
+ endif
+Index: cldc/build/share/jvm.make
+===================================================================
+--- cldc/build/share/jvm.make	(revision 20547)
++++ cldc/build/share/jvm.make	(working copy)
+@@ -2294,6 +2294,9 @@
+ 	$(A)echo generated `pwd`/$@
+ 
+ $(JVM_EXE): $(CLDC_ZIP) $(EXE_OBJS) $(JVM_LIB) $(JVMX_LIB) $(JVMTEST_LIB)
++ifeq ($(skip_link_image), true)
++	$(A)touch $@
++else
+ 	$(A)echo "linking $@ ... "
+ 	$(A)$(LINK) -o $@ $(EXE_OBJS) $(JVMX_LIB) $(JVMTEST_LIB) $(JVM_LIB) \
+ 	     $(PCSL_LIBS) $(LINK_FLAGS) $(JC_STUBS_OBJ)
+@@ -2306,6 +2309,7 @@
+ 	     -Xlinker -M 2> $(JVM_MAP);                           \
+         fi
+ 	$(A)echo generated `pwd`/$@
++endif
+ 
+ PRINT_CONFIG = print_config
+ 
+Index: cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp
+===================================================================
+--- cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp	(revision 20547)
++++ cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp	(working copy)
+@@ -129,7 +129,7 @@
+       emit("\t.MODEL flat, C\n\n");
+     }
+   } else {
+-    emit("\t.arch i486\n");
++    emit("\t.arch i686\n");
+   }
+   start_code_segment();
+ }

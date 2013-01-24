@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <embox/test.h>
 
-#include <kernel/thread/api.h>
+#include <kernel/thread.h>
 
 EMBOX_TEST_SUITE("test for thread API");
 
