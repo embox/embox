@@ -96,6 +96,12 @@ extern double exp(double);
 extern double frexp(double, int *);
 extern double ldexp(double, int);
 
+extern int isnan(double);
+extern int isnanl(long double);
+extern int isnanf(float);
+extern int finite(double);
+extern int finitel(long double);
+extern int finitef(float);
 
 __END_DECLS
 
