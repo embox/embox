@@ -20,7 +20,9 @@ QMAKE_LIBS_THREAD  =
 QMAKE_LIBS_DYNLOAD =
 # Just want to use these when linking executables
 QMAKE_LFLAGS      += -Wl,--relocatable -nostdlib
-# ? Doesn't appear to work :(
-#QMAKE_LIBS         =
+# Don't know how to make it the right way
+QMAKE_LIBS        += -L$$[QT_INSTALL_PLUGINS]/platforms
+QTPLUGIN          += qvncgraphicssystem
+
 
 load(qt_config)
