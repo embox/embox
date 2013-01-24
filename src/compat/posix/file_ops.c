@@ -17,12 +17,9 @@
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
 
-#include <stdio.h>
 int close(int fd) {
-    int i;
 	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
-printf("close %d\n", fd);
 	assert(task_self_idx_table());
 
 	desc = task_self_idx_get(fd);
@@ -36,9 +33,7 @@ printf("close %d\n", fd);
 	assert(ops);
 	assert(ops->close);
 
-	i = task_self_idx_table_unbind(fd);
-
-    return i;
+	return task_self_idx_table_unbind(fd);
 }
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {

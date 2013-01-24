@@ -154,6 +154,8 @@ static inline void copy_data_from_card(uint16_t src, uint8_t *dest,
 	}
 }
 
+#include <prom/prom_printf.h>
+
 static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	uint16_t count;
 	unsigned long base_addr;
@@ -277,7 +279,6 @@ static void ne2k_receive(struct net_device *dev) {
 	out8(ENISR_RX | ENISR_RX_ERR, base_addr + EN0_ISR);
 }
 
-#include <stdio.h>
 static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 	uint8_t isr, status;
 	net_device_stats_t *stat;

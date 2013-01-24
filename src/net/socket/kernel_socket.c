@@ -15,7 +15,6 @@
 #include <stddef.h>
 #include <types.h>
 #include <string.h>
-#include <stdio.h>
 
 #include <net/sock.h>
 #include <util/sys_log.h>

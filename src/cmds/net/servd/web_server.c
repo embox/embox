@@ -11,13 +11,10 @@
 #include <lib/url_parser.h>
 #include <lib/service/service.h>
 #include <stdlib.h>
+#include <framework/mod/options.h>
 
-#define DEFAULT_PAGE  "index.html"
-#define MAX_SERVICES_COUNT  10
-
-#if 0
-static struct params test_params;
-#endif
+#define DEFAULT_PAGE        OPTION_STRING_GET(default_page)
+#define MAX_SERVICES_COUNT  OPTION_GET(number, max_services_amount)
 
 /* Status code */
 static const char *http_stat_str[HTTP_STAT_MAX] = {
@@ -140,10 +137,6 @@ static int http_hnd_starting_line(struct client_info *info) {
 		} else {
 			strcpy(info->file, info->parsed_request.parsed_url->path);
 		}
-#if 0
-		test_params.info = info;
-		test_params.query = info->parsed_request.parsed_url->query;
-#endif
 	} else if (info->method == HTTP_METHOD_POST) {
 	} else {
 		return HTTP_STAT_405; /* method unknown or unsupported */
@@ -151,14 +144,6 @@ static int http_hnd_starting_line(struct client_info *info) {
 
 	return HTTP_RET_HNDOPS;
 }
-
-#if 0
-static int http_hnd_headers(struct client_info *info) {
-	//todo process headers
-
-	return HTTP_RET_OK;
-}
-#endif
 
 static int process_request(struct client_info *info) {
 	int ret;
@@ -169,14 +154,6 @@ static int process_request(struct client_info *info) {
 			return ret;
 		}
 		return HTTP_RET_OK;
-#if 0
-		ret = http_hnd_headers(info);
-		if (ret != HTTP_RET_OK) {
-			return ret;
-		} else {
-			return ret;
-		}
-#endif
 	}
 
 	return HTTP_RET_ABORT;
@@ -326,4 +303,3 @@ void client_process(int sock) {
 
 	free_client_info(&ci);
 }
-

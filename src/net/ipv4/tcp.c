@@ -79,17 +79,18 @@ static const tcp_handler_t tcp_st_handler[];
 
 void debug_print(__u8 code, const char *msg, ...) {
 	va_list args;
+	return;				/* YOUR output is too annoying for others */
 
 	va_start(args, msg);
 	switch (code) {
 //default:
 //	case 0:  /* default */
-	case 1:  /* in/out package print */
+//	case 1:  /* in/out package print */
 	case 2:  /* socket state */
 	case 3:  /* global functions */
 //	case 4:  /* hash/unhash */
 //	case 5:  /* lock/unlock */
-//	case 6:	 /* sock_alloc/sock_free */
+	case 6:	 /* sock_alloc/sock_free */
 //	case 7:  /* tcp_default_timer action */
 //	case 8:  /* state's handler */
 //	case 9:  /* sending package */
@@ -303,15 +304,12 @@ static int tcp_xmit(union sock_pointer sock, struct sk_buff *skb) {
 	int res;
 	skb->sk = sock.sk; // check it
 	sock.tcp_sk->this.seq = sock.tcp_sk->this_unack + tcp_seq_len(skb);
-	debug_print(9, "tcp_xmit: rebuild skb header 0x%p\n", skb);
 	rebuild_tcp_header(sock.inet_sk->saddr, sock.inet_sk->daddr,
 			sock.inet_sk->sport, sock.inet_sk->dport,
 			sock.tcp_sk->this_unack, sock.tcp_sk->rem.seq,
 			sock.tcp_sk->this.wind, skb);
 	packet_print(sock, skb, "<=", sock.inet_sk->daddr, sock.inet_sk->dport);
-	debug_print(9, "tcp_xmit: send by ip_send_packet 0x%p\n", skb);
 	res = ip_send_packet(sock.inet_sk, skb);
-	debug_print(9, "tcp_xmit: ip_send_packet return %d for skb 0x%p\n", res, skb);
 	if (res < 0) {
 		LOG_ERROR("ip_send_packet returned %d\n", res);
 	}
@@ -384,7 +382,6 @@ static void send_ack_from_sock(union sock_pointer sock, struct sk_buff *skb_ackn
 
 		tcp_sock_xmit(sock, TCP_XMIT_IGNORE_DELAY);
 	}
-	debug_print(9, "send_ack_from_sock: done 0x%p\n", skb_ackn);
 }
 
 /**
@@ -497,10 +494,7 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		event_notify(&sock.tcp_sk->new_conn);
 		{
 			struct idx_desc *desc = sock.sk->sk_socket->desc;
-	assert(sock.sk != NULL);
-	assert(sock.sk->sk_socket != NULL);
 			assert(desc != NULL);
-			assert(desc->data != NULL);
 			io_op_unblock(&desc->data->read_state);
 			io_op_unblock(&desc->data->write_state);
 		}
@@ -810,8 +804,8 @@ static int pre_process(union sock_pointer sock, struct sk_buff **pskb,
 	tcph->check = 0;
 	if (check != tcp_checksum(sock.inet_sk->daddr, sock.inet_sk->saddr,
 			IPPROTO_TCP, tcph, TCP_V4_HEADER_SIZE(tcph) + tcp_data_len(*pskb))) {
-		LOG_WARN("invalid ckecksum %x sk 0x%p skb 0x%p\n", (int)check,
-				sock.tcp_sk, *pskb);
+		LOG_ERROR("invalid ckecksum %x sk 0x%p skb 0x%p\n", (int)check,
+						sock.tcp_sk, *pskb);
 //		return TCP_RET_DROP;
 	}
 

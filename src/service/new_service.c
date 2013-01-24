@@ -3,9 +3,10 @@
 
 #include <lib/service/service.h>
 #include <embox/web_service.h>
+#include <framework/mod/options.h>
 
 
-#define TEMPLATE_FILE "img_service.in"
+#define TEMPLATE_FILE OPTION_STRING_GET(template_file)
 
 #define VAR_COUNT 10
 #define VAR_LEN 20
@@ -142,10 +143,8 @@ static void * entry_point(void *arg) {
 	}
 
 	service_send_reply(&srv_data, &srv_file);
-	printf("reply sended!!!\n");
 
 	service_free_resourses(&srv_data, &srv_file);
-	printf("resource freed!!!\n");
 
 	return NULL;
 }

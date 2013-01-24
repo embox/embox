@@ -14,7 +14,6 @@
 #include <fs/kfile.h>
 
 int open(const char *path, int __oflag, ...) {
-	int fd;
 	struct file_desc *kfile;
 
 	kfile = kopen(path, __oflag);
@@ -23,6 +22,5 @@ int open(const char *path, int __oflag, ...) {
 		return -1;
 	}
 
-	fd = task_self_idx_alloc(&task_idx_ops_file, kfile);
-	return fd;
+	return task_self_idx_alloc(&task_idx_ops_file, kfile);
 }

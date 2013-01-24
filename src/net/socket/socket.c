@@ -144,7 +144,6 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
-
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
 		SET_ERRNO(EBADF);

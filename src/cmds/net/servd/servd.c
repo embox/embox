@@ -39,7 +39,7 @@ static int run_service(const char *service) {
 	ret = web_service_add(service);
 	if (ret < 0) {
 		printf("start the service %s ended in failure\n", service);
-		return ret;;
+		return ret;
 	}
 
 	printf("service %s started\n", service);
