@@ -83,10 +83,6 @@ int service_file_open_write(struct service_file *srv_file) {
 			SERVICE_FILE_POSTFIX);
 }
 
-void service_get_service_data(struct service_data *data, void *arg) {
-	memcpy(data, arg, sizeof(struct service_data));
-}
-
 int service_file_switch_to_read_mode(struct service_file *srv_file) {
 	if (srv_file->fd != NULL) {
 		fclose(srv_file->fd);

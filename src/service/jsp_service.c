@@ -119,31 +119,31 @@ static void preprocess_file(FILE *out, struct variable *vars) {
 }
 
 static void *entry_point(void *arg) {
-	struct service_data srv_data;
+	struct service_data *srv_data;
 	struct service_file srv_file;
 	struct variable vars[VAR_COUNT];
 
-	service_get_service_data(&srv_data, arg);
+	srv_data = (struct service_data *)arg;
 
 	if (service_file_open_write(&srv_file) < 0) {
-		service_free_service_data(&srv_data);
+		service_free_service_data(srv_data);
 		return NULL;
 	}
 
-	get_variables_from_query(srv_data.query, vars);
+	get_variables_from_query(srv_data->query, vars);
 	print_vars(vars);
 
 	preprocess_file(srv_file.fd, vars);
-	srv_data.http_status = HTTP_STAT_200;
+	srv_data->http_status = HTTP_STAT_200;
 
 	if (service_file_switch_to_read_mode(&srv_file) < 0) {
-		service_free_service_data(&srv_data);
+		service_free_service_data(srv_data);
 		return NULL;
 	}
 
-	service_send_reply(&srv_data, &srv_file);
+	service_send_reply(srv_data, &srv_file);
 
-	service_free_resourses(&srv_data, &srv_file);
+	service_free_resourses(srv_data, &srv_file);
 
 	return NULL;
 }
