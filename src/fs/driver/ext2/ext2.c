@@ -1044,7 +1044,6 @@ static int ext2_read_sblock(struct nas *nas) {
 	fsi->s_bsearch = fsi->e2sb.s_first_data_block + 1 + fsi->s_gdb_count + 2
 			+ fsi->s_itb_per_group;
 
-	fsi->s_igsearch = 0;
 	fsi->s_blocksize_bits = fsi->e2sb.s_log_block_size + 10;
 
 	fsi->s_desc_per_block = fsi->s_block_size / sizeof(struct ext2_gd);
@@ -1772,7 +1771,7 @@ static int ext2_find_group_any(struct ext2_fs_info *fsi) {
 	int group, ngroups;
 	struct ext2_gd *gd;
 
-	group = fsi->s_igsearch;
+	group = 0;
 	ngroups = fsi->s_groups_count;
 
 	for (; group < ngroups; group++) {
@@ -1781,7 +1780,6 @@ static int ext2_find_group_any(struct ext2_fs_info *fsi) {
 			return -1;
 		}
 		if (gd->free_inodes_count) {
-			fsi->s_igsearch = group;
 			return group;
 		}
 	}
@@ -1829,10 +1827,6 @@ static void ext2_free_inode_bit(struct nas *nas, uint32_t bit_returned,
 
 	if (is_dir) {
 		gd->used_dirs_count--;
-	}
-
-	if (group < fsi->s_igsearch) {
-		fsi->s_igsearch = group;
 	}
 
 	ext2_write_sblock(nas);
@@ -2091,7 +2085,9 @@ static int ext2_dir_operation(struct nas *nas, char *string, ino_t *numb,
 				dp = NEXT_DISC_DIR_DESC(dp) ) {
 
 			if (prev_dp == dp) {
-				break;
+				/* no dp in directory entry */
+				dp->e2d_reclen = fsi->s_block_size;
+				//break;
 			}
 			/* Match occurs if string found. */
 			if (flag != ENTER && dp->e2d_ino != 0) {
@@ -2255,6 +2251,7 @@ static struct ext2_file_info *ext2_new_node(struct nas *nas,
 		ftype = S_IFREG;
 	}
 	fi->f_di.i_mode |= ftype;
+	fi->f_di.i_links_count++;
 
 	memcpy(&fdi, &fi->f_di, sizeof(struct ext2fs_dinode));
 	ext2_rw_inode(nas, &fdi, 1);/* force inode to disk now */

@@ -282,8 +282,6 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 
 #define WMAP_FREE           (1 << 0)
 
-#define EXT2_PREALLOC_BLOCKS		8
-#define NR_INODES        512
 #define CHAR_BIT 8
 
 /* Ext2 directory file types (not the same as FFS. Sigh.) */
@@ -455,6 +453,18 @@ struct	ext2fs_direct {
 #define IND_CACHE_SZ		(1 << LN2_IND_CACHE_SZ)
 #define IND_CACHE_MASK		(IND_CACHE_SZ - 1)
 
+union fsdata_u {
+    char b__data[PAGE_SIZE()];             /* ordinary user data */
+/* indirect block */
+    uint32_t b__ind[PAGE_SIZE()/sizeof(uint32_t)];
+/* bit map block */
+    uint32_t b__bitmap[FS_BITMAP_CHUNKS(PAGE_SIZE())];
+};
+
+#define b_data(data)   ((union fsdata_u *) data)->b__data
+#define b_ind(data) ((union fsdata_u *) data)->b__ind
+#define b_bitmap(data) ((union fsdata_u *) data)->b__bitmap
+
 struct ext2fs_dinode {
 	uint16_t	i_mode;	/*   0: IFMT, permissions; see below. */
 	uint16_t	i_uid;	/*   2: Owner UID */
@@ -514,33 +524,25 @@ typedef struct ext2_fs_info {
 	char mntfrom[MAX_LENGTH_PATH_NAME];
 	char mntto[MAX_LENGTH_PATH_NAME];
 	struct ext2sb e2sb;
-
+	struct	ext2_gd *e2fs_gd; /* group descripors */
+	/* The following items are only used when the super_block is in memory. */
 	int32_t s_bshift;	/* ``lblkno'' calc of logical blkno */
 	int32_t s_bmask;	/* ``blkoff'' calc of blk offsets */
 	int64_t s_qbmask;	/* ~fs_bmask - for use with quad size */
 	int32_t	s_fsbtodb;	/* fsbtodb and dbtofsb shift constant */
 	int32_t	s_ncg;	/* number of cylinder groups */
-
-	/* The following items are only used when the super_block is in memory. */
-	struct	ext2_gd *e2fs_gd; /* group descripors */
 	uint32_t   s_block_size;           /* block size in bytes. */
 	uint32_t   s_inodes_per_block;     /* Number of inodes per block */
 	uint32_t   s_itb_per_group;        /* Number of inode table blocks per group */
 	uint32_t   s_gdb_count;            /* Number of group descriptor blocks */
 	uint32_t   s_desc_per_block;       /* Number of group descriptors per block */
 	uint32_t   s_groups_count;         /* Number of groups in the fs */
-	size_t     s_page_count;		   /* Number of pages of embox sor file r/w buffer*/
-	u8_t    s_blocksize_bits;       /* Used to calculate offsets
-									 * (e.g. inode block),
-									 * always s_log_block_size+10.
-									 */
-
-	u16_t   s_sectors_in_block; /* s_block_size / 512 */
-	uint32_t   s_max_size;         /* maximum file size on this device */
-	uint32_t s_bsearch;	/* all data blocks  below this block are in use*/
-	int     s_igsearch; /* all groups below this one have no free inodes */
-	char    s_is_root;
-	uint32_t   s_dirs_counter;
+	size_t     s_page_count;		   /* Number of pages of embox for file r/w buffer*/
+	u16_t      s_sectors_in_block;     /* s_block_size / 512 */
+	uint32_t   s_bsearch;	           /* all data blocks  below this block are in use*/
+	u8_t       s_blocksize_bits;       /* Used to calculate offsets (e.g. inode block),
+								        * always s_log_block_size + 10.
+									    */
 } ext2_fs_info_t;
 
 /*
@@ -554,7 +556,7 @@ typedef struct ext2_file_info {
 
 	char		*f_buf;		/* buffer for data block */
 	size_t		f_buf_size;	/* size of data block */
-	int64_t		f_buf_blkno;	/* block number of data block */
+	int64_t		f_buf_blkno;/* block number of data block */
 	long		f_pointer;	/* local seek pointer */
 
 	ino_t f_num;                /* inode number on its (minor) device */
@@ -566,21 +568,7 @@ typedef struct ext2_file_info {
 								 * a new block (should be block i_bsearch).
 								 * used to check for sequential operation.
 								 */
-	//long f_last_dpos;           /* where to start dentry search */
-	//int f_last_dentry_size;	    /* size of last found dentry */
 } ext2_file_info_t;
-
-union fsdata_u {
-    char b__data[PAGE_SIZE()];             /* ordinary user data */
-/* indirect block */
-    uint32_t b__ind[PAGE_SIZE()/sizeof(uint32_t)];
-/* bit map block */
-    uint32_t b__bitmap[FS_BITMAP_CHUNKS(PAGE_SIZE())];
-};
-
-#define b_data(data)   ((union fsdata_u *) data)->b__data
-#define b_ind(data) ((union fsdata_u *) data)->b__ind
-#define b_bitmap(data) ((union fsdata_u *) data)->b__bitmap
 
 /* balloc.c */
 //void ext2_discard_preallocated_blocks(struct nas *nas);
