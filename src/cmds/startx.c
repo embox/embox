@@ -46,7 +46,7 @@ int xwnd_init(void) {
 	struct display *displ;
 
 	displ = get_bochs_display();
-	displ->setup(displ, 1280, 1024, 16);
+	displ->setup(displ, 1280, 1024, DISPLAY_MODE_DEPTH16);
 
 	for (i = 0; i < displ->width / 2; ++i) {
 		for (j = 0; j < displ->height / 2; ++j) {
@@ -58,7 +58,7 @@ int xwnd_init(void) {
 	}
 	for (; i < displ->width; ++i) {
 		for (j = 0; j < displ->height / 2; ++j) {
-			displ->set_pixel(displ, j, i, 0xF0F0);
+			displ->set_pixel(displ, i, j, 0xF0F0);
 		}
 		for (; j < displ->height; ++j) {
 			displ->set_pixel(displ, i, j, 0x000F);

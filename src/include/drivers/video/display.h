@@ -18,12 +18,16 @@ typedef void (*display_set_pixel_ft)(uint16_t pos_x, uint16_t pos_y, uint16_t co
 typedef void (*display_setup_ft)(struct display *display);
 #endif
 
+#define DISPLAY_MODE_DEPTH8  0x00
+#define DISPLAY_MODE_DEPTH16 0x01
+#define DISPLAY_MODE_DEPTH32 0x02
+
 struct display {
 	uint16_t width;
 	uint16_t height;
-	uint8_t mode;
+	uint32_t mode;
 	uint8_t *vga_regs;
-	void (*setup)(struct display *displ, uint16_t width, uint16_t height, uint8_t depth);
+	void (*setup)(struct display *displ, uint16_t width, uint16_t height, uint32_t mode);
 	uint32_t (*get_pixel)(struct display *displ, uint16_t x, uint16_t y);
 	void (*set_pixel)(struct display *displ, uint16_t x, uint16_t y, uint32_t color);
 };

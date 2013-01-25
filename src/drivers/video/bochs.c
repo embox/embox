@@ -52,14 +52,16 @@ static void bochs_set_resolution(uint16_t xres, uint16_t yres, uint16_t bpp) {
 }
 
 static void bochs_setup(struct display *displ, uint16_t width,
-		uint16_t height, uint8_t depth) {
+		uint16_t height, uint32_t mode) {
 	assert(displ != NULL);
 
 	displ->width = width;
 	displ->height = height;
-	displ->mode = depth;
+	displ->mode = mode;
 
-	bochs_set_resolution(displ->width, displ->height, displ->mode);
+	bochs_set_resolution(displ->width, displ->height,
+			displ->mode & DISPLAY_MODE_DEPTH16 ? 16
+				: displ->mode & DISPLAY_MODE_DEPTH32 ? 32 : 8); /* depth is 8 by default */
 }
 
 static void bochs_set_pixel(struct display *displ, uint16_t x, uint16_t y,
@@ -68,10 +70,17 @@ static void bochs_set_pixel(struct display *displ, uint16_t x, uint16_t y,
 
 	assert(displ != NULL);
 	assert(displ->vga_regs != NULL);
-	assert(displ->mode == 16); /* TODO for now */
 
-	pixel_offset = (x * displ->width + y) * (displ->mode / 8);
-	*(uint16_t *)(displ->vga_regs + pixel_offset) = color;
+	pixel_offset = x + y * displ->width;
+	if (displ->mode & DISPLAY_MODE_DEPTH16) {
+		*((uint16_t *)displ->vga_regs + pixel_offset) = color;
+	}
+	else if (displ->mode & DISPLAY_MODE_DEPTH32) {
+		*((uint32_t *)displ->vga_regs + pixel_offset) = color;
+	}
+	else {
+		*((uint8_t *)displ->vga_regs + pixel_offset) = color;
+	}
 }
 
 static uint32_t bochs_get_pixel(struct display *displ, uint16_t x, uint16_t y) {
@@ -80,8 +89,12 @@ static uint32_t bochs_get_pixel(struct display *displ, uint16_t x, uint16_t y) {
 	assert(displ != NULL);
 	assert(displ->vga_regs != NULL);
 
-	pixel_offset = (x * displ->width + y) * (displ->mode / 8);
-	return *(uint16_t *)(displ->vga_regs + pixel_offset);
+	pixel_offset = x + y * displ->width;
+	return displ->mode & DISPLAY_MODE_DEPTH16
+			? *((uint16_t *)displ->vga_regs + pixel_offset)
+			: displ->mode & DISPLAY_MODE_DEPTH32
+				? *((uint32_t *)displ->vga_regs + pixel_offset)
+				: *((uint8_t *)displ->vga_regs + pixel_offset);
 }
 
 struct display * get_bochs_display(void) {
