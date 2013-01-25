@@ -102,16 +102,25 @@ $(QT_BUILD_DIR):
 	$(AT)(echo '$(QT_MD5)' | md5sum -c)
 	$(AT)touch $@
 
-$(EXTRACTED): .downloaded
+# When necessity to re-patch is detected manual resolution is required.
+# We cannot automatically detect if there were or not changes in extracted sources
+# and do not want to accidentally remove some possible desired changes.
+# Therefore it is left to the discretion of the user.
+# HINT: Typically it is good to perform build directory cleanup: 'make clean'
+$(EXTRACTED): $(PATCH_TXT) .downloaded
+	$(AT) [ ! -e $@ ] || (echo Re-patching needed. Please resolve manually. && false)
 	-$(AT)rm -rf $(QT_SRC_DIR)
 	$(AT)mkdir -p $(QT_SRC_DIR)
 	$(AT)cd $(QT_SRC_DIR) && tar -xzf $(abspath $(QT_BUNDLE))
 	$(AT)cd $(QT_SRC_DIR) && mv `ls`/* ./
 	$(AT)patch -p1 -d $(QT_SRC_DIR) -N --input=$(abspath $(PATCH_TXT))
-	$(AT)touch $@
+	$(AT)cp $(PATCH_TXT) $@
 
+# using -f since 'svn update' causes unlink and 'cp -u' complaints
+# http://svn.haxx.se/users/archive-2007-10/0797.shtml
+# but typically overwriting is what we want for our part of tree contents
 merge_trees: $(EXTRACTED)
-	$(AT)cd tree && cp -l -u --parents -t $(QT_SRC_DIR)/ `find . -not -path '*/.*' -and -type f`
+	$(AT)cd tree && cp -l -u -f --parents -t $(QT_SRC_DIR)/ `find . -not -path '*/.*' -and -type f`
 
 $(QT_SRC_DIR)/$(QMAKE_CONF_M4): merge_trees
 
@@ -211,7 +220,7 @@ QT_LINUX_CONF_FLAGS += -prefix $(QT_LINUX_INSTALL_DIR)
 QT_LINUX_CONF_FLAGS += -embedded-lite qvfb -little-endian
 QT_LINUX_CONF_FLAGS += -xplatform qws/linux-x86-g++
 # Static build has problems with linking with qpa platform by default
-# -static
+#QT_LINUX_CONF_FLAGS += -static
 QT_LINUX_CONF_FLAGS += -opensource -confirm-license
 QT_LINUX_CONF_FLAGS += -fast
 # -no-pch
