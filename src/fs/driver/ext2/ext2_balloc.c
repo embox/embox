@@ -189,11 +189,11 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 		ext2_read_sector(nas, fi->f_buf, 1, gd->block_bitmap);
 
 		bit = ext2_setbit(b_bitmap(fi->f_buf), fsi->e2sb.s_blocks_per_group, word);
-		if (bit == -1) {
-			if (word == 0) {
-					/*panic("ext2: allocator failed to allocate a bit in bitmap
-					with free bits.");*/
-				}
+		if (-1 == bit) {
+			if (0 == word) {
+				/* allocator failed to allocate a bit in bitmap	with free bits.*/
+				return 0;
+			}
 			else {
 				word = 0;
 				continue;

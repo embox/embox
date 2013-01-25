@@ -282,25 +282,6 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 
 #define WMAP_FREE           (1 << 0)
 
-#define IN_CLEAN              0    /* inode disk and memory copies identical */
-#define IN_DIRTY              1    /* inode disk and memory copies differ */
-#define ATIME            002    /* set if atime field needs updating */
-#define CTIME            004    /* set if ctime field needs updating */
-#define MTIME            010    /* set if mtime field needs updating */
-
-/* Miscellaneous constants */
-#define SU_UID          0     /* super_user's uid_t */
-#define NORMAL          0     /* forces get_block to do disk read */
-#define NO_READ         1     /* prevents get_block from doing disk read */
-#define PREFETCH        2     /* tells get_block not to read or mark dev */
-
-#define INODE_BLOCK        0                             /* inode block */
-#define DIRECTORY_BLOCK    1                             /* directory block */
-#define INDIRECT_BLOCK     2                             /* pointer block */
-#define MAP_BLOCK          3                             /* bit map */
-#define FULL_DATA_BLOCK    5                             /* data, fully used */
-#define PARTIAL_DATA_BLOCK 6                             /* data, partly used*/
-
 #define EXT2_PREALLOC_BLOCKS		8
 #define NR_INODES        512
 #define CHAR_BIT 8
@@ -585,8 +566,8 @@ typedef struct ext2_file_info {
 								 * a new block (should be block i_bsearch).
 								 * used to check for sequential operation.
 								 */
-	long f_last_dpos;           /* where to start dentry search */
-	int f_last_dentry_size;	    /* size of last found dentry */
+	//long f_last_dpos;           /* where to start dentry search */
+	//int f_last_dentry_size;	    /* size of last found dentry */
 } ext2_file_info_t;
 
 union fsdata_u {
