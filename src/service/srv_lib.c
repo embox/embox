@@ -82,13 +82,15 @@ int web_service_start_service(const char *srv_name,
 	if (srv_desc == NULL) {
 		return -1;
 	}
-	if (!*srv_desc->is_started) { /* XXX WTF?? */
+	if (!*srv_desc->is_started) {
 		return -1;
 	}
 
 	if (new_task(srv_desc->run, (void *)srv_data) < 0) {
 		return -1;
 	}
+
+	close(srv_data->sock);
 
 	return 0;
 }

@@ -110,7 +110,7 @@ void service_file_close(struct service_file *srv_file) {
 void service_free_service_data(struct service_data * data) {
 	if (NULL != data) {
 		free_http_request(&data->request);
-		socket_close(data->sock);
+		close(data->sock);
 		free(data);
 	}
 }

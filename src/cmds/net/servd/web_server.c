@@ -249,7 +249,7 @@ static void free_client_info(struct client_info *info) {
 	if (info->fp != NULL) {
 		fclose(info->fp); /* close file (it's open or null) */
 	}
-	socket_close(info->sock); /* close connection */
+	close(info->sock); /* close connection */
 	free_http_request(&info->parsed_request);
 }
 
