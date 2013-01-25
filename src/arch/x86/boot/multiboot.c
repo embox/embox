@@ -51,13 +51,13 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 
 	/* Are mods_* valid?  */
 	if (CHECK_FLAG(mbi->flags, 3)) {
-		module_t *mod;
+		multiboot_module_t *mod;
 		int i;
 
 		prom_printf("mods_count = %d, mods_addr = 0x%x\n",
 			(int) mbi->mods_count, (int) mbi->mods_addr);
-		for (i = 0, mod = (module_t *) mbi->mods_addr;
-			i < mbi->mods_count; i++, mod += sizeof(module_t)) {
+		for (i = 0, mod = (multiboot_module_t *) mbi->mods_addr;
+			i < mbi->mods_count; i++, mod += sizeof(multiboot_module_t)) {
 			prom_printf(" mod_start = 0x%x, mod_end = 0x%x, string = %s\n",
 				(unsigned) mod->mod_start,
 				(unsigned) mod->mod_end, (char *) mod->string);

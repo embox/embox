@@ -33,12 +33,8 @@ void arch_reset_kbd(void) {
 #endif
 
 
-extern void cpu_reset(void);
-extern void acpi_power_off(void);
-void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
-//	cpu_reset();
 
-//	acpi_power_off();
+void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
 
 	//outw(0xB004, 0x0 | 0x2000);
 	//asm("cli;hlt");
@@ -46,12 +42,3 @@ void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
 	while (1) {}
 }
 
-
-
-#if 0
-	cli
-	movl	$null_idt, %eax		/* Reset by triple fault */
-	lidt	(%eax)
-	int	$3
-	hlt
-#endif

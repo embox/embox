@@ -6,43 +6,17 @@
  * @author Nikolay Korotky
  */
 
-#include <asm/multiboot.h>
+
 #include <asm/linkage.h>
 
-	.section .multiboot
-
-/* system entry point */
-C_ENTRY(_start):
-	jmp	multiboot_entry
-
-	/* Align 32 bits boundary.  */
-	.align	4
-
-	/* Multiboot header.  */
-multiboot_header:
-	/* magic */
-	.long	MULTIBOOT_HEADER_MAGIC
-	/* flags */
-	.long	MULTIBOOT_HEADER_FLAGS
-	/* checksum */
-	.long	-(MULTIBOOT_HEADER_MAGIC + MULTIBOOT_HEADER_FLAGS)
-#ifndef __ELF__
-	/* header_addr */
-	.long	multiboot_header
-	/* load_addr */
-	.long	_start
-	/* load_end_addr */
-	.long	_edata
-	/* bss_end_addr */
-	.long	_end
-	/* entry_addr */
-	.long	multiboot_entry
-#endif /* ! __ELF__ */
-
-/* real entry code */
 	.section .text
 	.align	4
-multiboot_entry:
+
+	/* system entry point */
+C_ENTRY(_start):
+//	jmp	multiboot_entry
+
+//multiboot_entry:
 	/* interrrupts disable */
 	cli
 	cld
@@ -54,6 +28,14 @@ multiboot_entry:
 	/* Reset EFLAGS. */
 	pushl	$0
 	popf
+
+	/* if we use multiboot header we must save registers which was set by loader
+	eax = magic value and ebx = address of Multiboot information structure */
+	/* Push the pointer to the Multiboot information structure. */
+	pushl	%ebx
+	/* Push the magic value. */
+	pushl	%eax
+
 
 	/* Clean up bss section */
 	pushl   $_bss_len          /* push bss len as 3 parameter on the stack */
@@ -73,14 +55,10 @@ multiboot_entry:
 	pushl   $_data_vma         /* push data vma as 1 parameter on the stack */
 	call    memcpy              /* copy data section */
 	addl    $0xc, %esp
-
 1:
 
 #ifdef CONFIG_MULTIBOOT_CHECK
-	/* Push the pointer to the Multiboot information structure. */
-	pushl	%ebx
-	/* Push the magic value. */
-	pushl	%eax
+/* we already save eax and ebx on the stack */
 	call	multiboot_check
 	addl    $8, %esp
 #endif
@@ -91,18 +69,3 @@ loop:
 	hlt             /* if we return from kernel_start it's error */
 	jmp	loop
 
-/*
- * Reset cpu
- * Use triple fault
- */
-C_ENTRY(cpu_reset):
-	cli
-	movl	$null_idt, %eax		/* Reset by triple fault */
-	lidt	(%eax)
-	int	$3
-	hlt
-
-	.align 4
-null_idt:
-	.word	0
-	.long	0

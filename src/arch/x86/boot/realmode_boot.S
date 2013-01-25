@@ -1,5 +1,7 @@
 #include <asm/linkage.h>
 
+//http://dc0d32.blogspot.ru/2010/06/real-mode-in-c-with-gcc-writing.html
+
 	.section .real_boot
 	.code16
 /* system entry point */

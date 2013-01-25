@@ -9,48 +9,54 @@
 #ifndef X86_MULTIBOOT_H_
 #define X86_MULTIBOOT_H_
 
+#include <types.h>
+
 /* The magic number for the Multiboot header. */
-#define MULTIBOOT_HEADER_MAGIC		0x1BADB002
+#define MULTIBOOT_HEADER_MAGIC      0x1BADB002
+
+/* The magic number passed by a Multiboot-compliant boot loader. It's placed into EBX register by loader */
+#define MULTIBOOT_BOOTLOADER_MAGIC  0x2BADB002
 
 /* The flags for the Multiboot header. */
-#ifdef __ELF__
-# define MULTIBOOT_HEADER_FLAGS		0x00000003
-#else
-# define MULTIBOOT_HEADER_FLAGS		0x00010003
-#endif
+#define MULTIBOOT_MUSTKNOW          0x0000ffff
+/* Align all boot modules on page (4KB) boundaries. */
+#define MULTIBOOT_PAGE_ALIGN        0x00000001
+/* Must be provided memory information in multiboot_info structure */
+#define MULTIBOOT_MEMORY_INFO       0x00000002
+/* Must be provided information about the video mode table */
+#define MULTIBOOT_VIDEO_INFO        0x00000004
+/* If bit 16 in the ‘flags’ word is set, then the fields at offsets 12-28 in the Multiboot header are valid.
+ * his information does not need to be provided if the kernel image is in elf format,
+ * but it must be provided if the images is in a.out format or in some other format
+ */
+#define MULTIBOOT_AOUT_KLUDGE       0x00010000
 
-/* C symbol format. HAVE_ASM_USCORE is defined by configure. */
-#ifdef HAVE_ASM_USCORE
-# define EXT_C(sym)			_ ## sym
-#else
-# define EXT_C(sym)			sym
-#endif
+
+#define MULTIBOOT_HEADER_FLAGS     MULTIBOOT_MEMORY_INFO | MULTIBOOT_PAGE_ALIGN
 
 #ifndef __ASSEMBLER__
 
 /* The Multiboot header. */
 typedef struct multiboot_header {
 	/* Must be MULTIBOOT_MAGIC */
-	unsigned long magic;
+	uint32_t magic;
 	/* Feature flags */
-	unsigned long flags;
-	unsigned long checksum;
+	uint32_t flags;
+	uint32_t checksum;
 	/* These are only valid if MULTIBOOT_AOUT_KLUDGE is set. */
-	unsigned long header_addr;
-	unsigned long load_addr;
-	unsigned long load_end_addr;
-	unsigned long bss_end_addr;
-	unsigned long entry_addr;
+	uint32_t header_addr;
+	uint32_t load_addr;
+	uint32_t load_end_addr;
+	uint32_t bss_end_addr;
+	uint32_t entry_addr;
+	/* These are only valid if MULTIBOOT_VIDEO_INFO is set */
+	uint32_t mode_type; /* 32 */
+	uint32_t width; /* 36 */
+	uint32_t height; /* 40 */
+	uint32_t depth;  /* 44 */
 } multiboot_header_t;
 
-#define MULTIBOOT_MUSTKNOW           0x0000ffff
-/* Align all boot modules on page (4KB) boundaries. */
-#define MULTIBOOT_PAGE_ALIGN         0x00000001
-/* Must be provided memory information in multiboot_info structure */
-#define MULTIBOOT_MEMORY_INFO        0x00000002
-#define MULTIBOOT_AOUT_KLUDGE        0x00010000
-/* The magic number passed by a Multiboot-compliant boot loader. */
-#define MULTIBOOT_BOOTLOADER_MAGIC   0x2BADB002
+
 
 /* The symbol table for a.out. */
 typedef struct aout_symbol_table {
@@ -103,16 +109,16 @@ typedef struct multiboot_info {
 #define MULTIBOOT_MEM_MAP       0x00000040
 
 /* The module structure. */
-typedef struct module {
+typedef struct multiboot_module {
 	unsigned long mod_start;
 	unsigned long mod_end;
 	unsigned long string;
 	unsigned long reserved;
-} module_t;
+} multiboot_module_t;
 
 /* The memory map. Be careful that the offset 0 is base_addr_low
    but no size. */
-typedef struct memory_map {
+typedef struct multiboot_memory_map {
 	unsigned long size;
 	unsigned long base_addr_low;
 	unsigned long base_addr_high;
@@ -122,4 +128,5 @@ typedef struct memory_map {
 } memory_map_t;
 
 #endif /* __ASSEMBLER__ */
+
 #endif /* X86_MULTIBOOT_H_ */

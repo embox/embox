@@ -35,6 +35,7 @@ module arch {
 	 * 1.it not depends from embox.arch.x86.cpu
 	 */
 	source "arch.c"
+	source "cpu_triple_reset.S"
 
 	depends locore
 	depends embox.arch.x86.cpu

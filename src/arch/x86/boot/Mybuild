@@ -1,9 +1,11 @@
 package embox.arch.x86.boot
 
 module real_boot {
-	source "real_boot.S"
+	source "realmode_boot.S"
 }
 
 module multiboot {
 	source "boot.S"
+	source "multiboot_header.S"
+	source "multiboot.c"
 }
