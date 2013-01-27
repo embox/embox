@@ -14,12 +14,13 @@
 
 EMBOX_TEST_SUITE("stdio/printf test");
 
-#define TEST_STR_FMT(str, fmt, ...)                \
+#define TEST_STR_FMT(answer, format, ...)          \
 	do {                                           \
-		size_t buff_sz = strlen(str) + 2;          \
+		size_t buff_sz = strlen(answer) + 2;       \
 		char *buff = (char *)alloca(buff_sz);      \
+		const char *fmt = format;                  \
 		snprintf(buff, buff_sz, fmt, __VA_ARGS__); \
-		test_assert_str_equal(buff, str);          \
+		test_assert_str_equal(answer, buff);       \
 	} while(0)
 
 
@@ -112,6 +113,13 @@ TEST_CASE("Test of snprintf with zero size") {
 	test_assert_equal(random_char, backup_char);
 }
 
+TEST_CASE("Test of printing with mistake in format") {
+	TEST_STR_FMT("%r+3.1u 10", "%r+3.1u %d", 10);
+	TEST_STR_FMT(" 3 %r+.1u", " %d %r+.1u", 3);
+	TEST_STR_FMT("%< u\n", "%< u\n","");
+	TEST_STR_FMT("%a", "%30.3%a","");
+}
+
 TEST_CASE("Test of specifier with type float") {
 	TEST_STR_FMT("2.00", "%.2f", 1.997);
 	TEST_STR_FMT("2.0", "%.1f", 1.983183456);
@@ -130,4 +138,70 @@ TEST_CASE("Test of specifier with type float") {
 	TEST_STR_FMT("1.000000e+100", "%e", 10e+99);
 	TEST_STR_FMT("1.234560e+02", "%e", 123.456);
 	TEST_STR_FMT("+008.2346E-03", "%+013.4E", 0.00823456);
+#if 0
+	printf("\n");
+	printf("%g\n", 0.0);
+	printf("%.0g\n", 0.0);
+	printf("%.1g\n", 0.0);
+	printf("%.2g\n", 0.0);
+	printf("%g\n", 0.123);
+	printf("%.0g\n", 0.123);
+	printf("%.1g\n", 0.123);
+	printf("%.2g\n", 0.123);
+	printf("%g\n", 0.00000123456789);
+	printf("%g\n", 0.0000123456789);
+	printf("%g\n", 0.000123456789);
+	printf("%g\n", 0.00123456789);
+	printf("%g\n", 0.0123456789);
+	printf("%g\n", 0.123456789);
+	printf("%g\n", 1.23456789);
+	printf("%g\n", 12.3456789);
+	printf("%g\n", 123.456789);
+	printf("%g\n", 1234.56789);
+	printf("%g\n", 12345.6789);
+	printf("%g\n", 123456.789);
+	printf("%g\n", 1234567.89);
+	printf("%g\n", 12345678.9);
+	printf("%g\n", 123456789.0);
+	printf("%g\n", 0.1);
+	printf("%g\n", 0.12);
+	printf("%g\n", 0.123);
+	printf("%g\n", 0.1234);
+	printf("%g\n", 0.12345);
+	printf("%g\n", 0.123456);
+	printf("%g\n", 0.1234567);
+#endif
+#if 0
+	printf("\n");
+	printf("%a\n", 0.0);
+	printf("%.0a\n", 0.0);
+	printf("%.1a\n", 0.0);
+	printf("%.2a\n", 0.0);
+	printf("%a\n", 0.123);
+	printf("%.0a\n", 0.123);
+	printf("%.1a\n", 0.123);
+	printf("%.2a\n", 0.123);
+	printf("%a\n", 0.00000123456789);
+	printf("%a\n", 0.0000123456789);
+	printf("%a\n", 0.000123456789);
+	printf("%a\n", 0.00123456789);
+	printf("%a\n", 0.0123456789);
+	printf("%a\n", 0.123456789);
+	printf("%a\n", 1.23456789);
+	printf("%a\n", 12.3456789);
+	printf("%a\n", 123.456789);
+	printf("%a\n", 1234.56789);
+	printf("%a\n", 12345.6789);
+	printf("%a\n", 123456.789);
+	printf("%a\n", 1234567.89);
+	printf("%a\n", 12345678.9);
+	printf("%a\n", 123456789.0);
+	printf("%a\n", 0.1);
+	printf("%a\n", 0.12);
+	printf("%a\n", 0.123);
+	printf("%a\n", 0.1234);
+	printf("%a\n", 0.12345);
+	printf("%a\n", 0.123456);
+	printf("%a\n", 0.1234567);
+#endif
 }

@@ -17,15 +17,6 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
- putchar is the only external dependency for this file,
- if you have a working putchar, leave it commented out.
- If not, uncomment the define below and
- replace outbyte(c) by your own function call.
-
- #define putchar(c) outbyte(c)
- */
-
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
