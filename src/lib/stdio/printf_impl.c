@@ -54,8 +54,6 @@
 //#define PRINT_F_PREC_SHORTENED 4 /* shortened precision for real numbers */
 #define PRINT_F_PREC_DEFAULT   6 /* default precision for real numbers */
 
-struct printchar_handler_data;
-
 static int print_s(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data,
 		const char *str, int width, int max_len, unsigned int ops) {
