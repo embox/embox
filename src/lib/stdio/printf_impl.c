@@ -16,6 +16,8 @@
 #include <string.h>
 #include <util/math.h>
 
+#include "printf_impl.h"
+
 /**
  * Format specifiers
  */

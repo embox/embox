@@ -139,7 +139,7 @@ static module LibCStdio {
 	source "stdio/gets.c"
 	source "stdio/perror.c"
 	source "stdio/printf.c"
-	source "stdio/printf_impl.c"
+	source "stdio/printf_impl.c", "stdio/printf_impl.h"
 	source "stdio/fprintf.c"
 	source "stdio/sprintf.c"
 	source "stdio/snprintf.c"
