@@ -6,7 +6,7 @@
 #!isEmpty(QMAKE_APP_FLAG) {
 #isEmpty(QMAKE_LIB_FLAG) {
 #!contains(TEMPLATE, .*(lib)) {
-app {
+contains(TEMPLATE, .*(app)) {
 	# # These dependencies are transitive through EmboxAutoPluginImporter
 	#QMAKE_LIBS        += -L$$[QT_INSTALL_PLUGINS]/platforms
 	#QTPLUGIN          += qvncgraphicssystem

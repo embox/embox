@@ -179,8 +179,13 @@ define BUILD_COMPONENT_template
 $(QT_COMPONENTS_DIR_$(2))/$(notdir $(1)):
 	$(AT)mkdir -p $$@
 .PHONY: $(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/$(notdir $(1))
-$(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/Makefile: $$(TARGET_QMAKE_$(2)$(3)) | $(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))
-	$(AT)cd $$(dir $$@) && $$(TARGET_QMAKE_$(2)$(3)) $(1)/$(notdir $(1)).pro
+ifeq ($(3),install)
+$(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/Makefile: $(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/.qmake.cache
+$(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/.qmake.cache: $(QT_BUILD_DIR_$(2))/.qmake.cache
+	$(AT)cp $$< $$@
+endif
+$(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/Makefile: $$(TARGET_QMAKE_$(2)) | $(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))
+	$(AT)cd $$(dir $$@) && $$(TARGET_QMAKE_$(2)) $(1)/$(notdir $(1)).pro
 $(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/$(notdir $(1)): $(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/Makefile
 ifneq ($(3),install)
 	$(AT)cd $$(dir $$@) && make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)'
@@ -230,8 +235,8 @@ endef
 
 # plugins strictly before importing library both with ':install'
 # everything else before applications
-#TARGET_COMPONENTS_EMBOX += src/plugins/platforms/minimal:install
-#TARGET_COMPONENTS_EMBOX += src/plugins/platforms/vnc:install
+TARGET_COMPONENTS_EMBOX += src/plugins/platforms/minimal:install
+TARGET_COMPONENTS_EMBOX += src/plugins/platforms/vnc:install
 TARGET_COMPONENTS_EMBOX += libs/EmboxAutoPluginImporter:install
 TARGET_COMPONENTS_EMBOX += $(TARGET_APPS)
 
