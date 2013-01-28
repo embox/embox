@@ -233,6 +233,7 @@ $$(eval werwer $$(call TARGET_COMPONENTS_SEQUENCE_PLATFORM,$(1)))
 endef
 
 
+
 # plugins strictly before importing library both with ':install'
 # everything else before applications
 TARGET_COMPONENTS_EMBOX += src/plugins/platforms/minimal:install
@@ -241,14 +242,12 @@ TARGET_COMPONENTS_EMBOX += libs/EmboxAutoPluginImporter:install
 TARGET_COMPONENTS_EMBOX += $(TARGET_APPS)
 
 TARGET_QMAKE_EMBOX       =$(QT_INSTALL_DIR_EMBOX)/bin/qmake
-TARGET_QMAKE_EMBOXinstall=$(QT_BUILD_DIR_EMBOX)/bin/qmake
 
 QT_COMPONENTS_DIR_EMBOX = $(QT_DIR)/apps_embox
 
 $(eval $(call TARGET_COMPONENTS_COMPOSITE,EMBOX))
 
 $(TARGET_QMAKE_EMBOX): build_and_install
-$(TARGET_QMAKE_EMBOXinstall): build_and_install
 
 .PHONY: target_apps_EMBOX
 
@@ -324,6 +323,25 @@ linux_build_and_install: linux_configure
 
 all: linux_build_and_install
 
+
+
+# everything else before applications
+TARGET_COMPONENTS_LINUX += src/plugins/platforms/minimal:install
+TARGET_COMPONENTS_LINUX += src/plugins/platforms/vnc:install
+TARGET_COMPONENTS_LINUX += src/plugins/platforms/qvfb:install
+TARGET_COMPONENTS_LINUX += $(TARGET_APPS)
+
+TARGET_QMAKE_LINUX = $(QT_INSTALL_DIR_LINUX)/bin/qmake
+
+QT_COMPONENTS_DIR_LINUX = $(QT_DIR)/apps_linux
+
+$(eval $(call TARGET_COMPONENTS_COMPOSITE,LINUX))
+
+$(TARGET_QMAKE_LINUX): linux_build_and_install
+
+.PHONY: target_apps_LINUX
+
+all: target_apps_LINUX
 
 
 
