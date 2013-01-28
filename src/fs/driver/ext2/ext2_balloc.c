@@ -39,7 +39,7 @@
 
 /* help function */
 
-static void ext2_check_block_number(uint32_t block, struct ext2_fs_info *fsi,
+static int ext2_check_block_number(uint32_t block, struct ext2_fs_info *fsi,
 				struct ext2_gd *gd)
 {
 	/* Check if we allocated a data block, but not control (system) block.
@@ -49,16 +49,19 @@ static void ext2_check_block_number(uint32_t block, struct ext2_fs_info *fsi,
 	if (block == gd->inode_bitmap || block == gd->block_bitmap ||
 		(block >= gd->inode_table
 		&& block < (gd->inode_table + fsi->s_itb_per_group))) {
-	/* panic("ext2: block allocator tryed to return
-	 * system/control block, poke author.\n");
-	 */
+		/* panic("ext2: block allocator tryed to return
+		 * system/control block, poke author.\n");
+		 */
+		return 1;
 	}
 
 	if (block >= fsi->e2sb.s_blocks_count) {
 		/* panic("ext2: allocator returned blocknum greater, than
 		 * total number of blocks.\n");
 		 */
+		return 1;
 	}
+	return 0;
 }
 
 uint32_t ext2_setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word)
@@ -178,9 +181,7 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 		if (group >= fsi->s_groups_count) {
 			group = 0;
 		}
-
 		gd = ext2_get_group_desc(group, fsi);
-
 		if (gd->free_blocks_count == 0) {
 			word = 0;
 			continue;
@@ -201,7 +202,9 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 		}
 
 		block = fsi->e2sb.s_first_data_block + group * fsi->e2sb.s_blocks_per_group + bit;
-		ext2_check_block_number(block, fsi, gd);
+		if(ext2_check_block_number(block, fsi, gd)) {
+			return 0;
+		}
 
 		ext2_write_sector(nas, fi->f_buf, 1, gd->block_bitmap);
 

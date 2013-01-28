@@ -108,7 +108,7 @@
  */
 
 static int ext2_read_inode(struct nas *nas, uint32_t);
-static int ext2_block_map(struct nas *nas, int32_t, int32_t *);
+static int ext2_block_map(struct nas *nas, int32_t, uint32_t *);
 static int ext2_buf_read_file(struct nas *nas, char **, size_t *);
 static size_t ext2_write_file(struct nas *nas, char *buf_p, size_t size);
 static int ext2_new_block(struct nas *nas, long position);
@@ -239,7 +239,7 @@ static int ext2_read_symlink(struct nas *nas, uint32_t parent_inumber,
 	uint32_t inumber;
 	char namebuf[MAXPATHLEN + 1];
 	int nlinks;
-	int32_t disk_block;
+	uint32_t disk_block;
 	struct ext2_file_info *fi;
 	//struct ext2_fs_info *fsi;
 
@@ -690,7 +690,7 @@ static int ext2_read_inode(struct nas *nas, uint32_t inumber) {
  * contains that block.
  */
 static int ext2_block_map(struct nas *nas, int32_t file_block,
-		int32_t *disk_block_p) {
+		uint32_t *disk_block_p) {
 	uint level;
 	int32_t ind_cache;
 	int32_t ind_block_num;
@@ -799,7 +799,7 @@ static int ext2_block_map(struct nas *nas, int32_t file_block,
 static int ext2_buf_read_file(struct nas *nas, char **buf_p, size_t *size_p) {
 	long off;
 	int32_t file_block;
-	int32_t disk_block;
+	uint32_t disk_block;
 	size_t block_size;
 	int rc;
 	struct ext2_file_info *fi;
@@ -851,7 +851,7 @@ static int ext2_buf_read_file(struct nas *nas, char **buf_p, size_t *size_p) {
 static size_t ext2_write_file(struct nas *nas, char *buf, size_t size) {
 	long inblock_off;
 	int32_t file_block;
-	int32_t disk_block;
+	uint32_t disk_block;
 	char *buff;
 	int rc;
 	size_t block_size, len, cnt;
@@ -1193,10 +1193,8 @@ int ext2_write_map(struct nas *nas, long position, uint32_t new_block, int op) {
 	uint32_t old_block, b1, b2, b3;
 	char *bp, *bp_dindir, *bp_tindir;
 	static char first_time = 1;
-	static long addr_in_block;
-	static long addr_in_block2;
-	static long doub_ind_s;
-	static long triple_ind_s;
+	static long addr_in_block, addr_in_block2;
+	static long doub_ind_s, triple_ind_s;
 	static long out_range_s;
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
@@ -1423,8 +1421,6 @@ int ext2_write_map(struct nas *nas, long position, uint32_t new_block, int op) {
 }
 
 static void ext2_wr_indir(char *buf, int index, uint32_t block) {
-	/* Given a pointer to an indirect block, write one entry. */
-
 	/* write a block into an indirect block */
 	b_ind(buf) [index] = block;
 }
@@ -1445,82 +1441,6 @@ static int ext2_empty_indir(char *buf, struct ext2_fs_info *sb) {
 	return 1;
 }
 
-uint32_t ext2_read_map(struct nas *nas, uint32_t position) { /* position in file whose blk wanted */
-	/* Given an inode and a position within the corresponding file, locate the
-	 * block number in which that position is to be found and return it.
-	 */
-	int index;
-	uint32_t b;
-	unsigned long excess, block_pos;
-	static char first_time = 1;
-	static long addr_in_block;
-	static long addr_in_block2;
-	static long doub_ind_s;
-	static long triple_ind_s;
-	static long out_range_s;
-
-	struct ext2_file_info *fi;
-	struct ext2_fs_info *fsi;
-
-	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
-
-	if (first_time) {
-		addr_in_block = fsi->s_block_size / BLOCK_ADDRESS_BYTES;
-		addr_in_block2 = addr_in_block * addr_in_block;
-		doub_ind_s = EXT2_NDIR_BLOCKS + addr_in_block;
-		triple_ind_s = doub_ind_s + addr_in_block2;
-		out_range_s = triple_ind_s + addr_in_block2 * addr_in_block;
-		first_time = 0;
-	}
-
-	if (out_range_s <= (block_pos = position / fsi->s_block_size)) { /* relative blk # in file */
-		return NO_BLOCK ;
-	}
-
-	/* Is 'position' to be found in the inode itself? */
-	if (block_pos < EXT2_NDIR_BLOCKS) {
-		return (fi->f_di.i_block[block_pos]);
-	}
-
-	/* It is not in the inode, so it must be single, double or triple indirect */
-	if (block_pos < doub_ind_s) {
-		b = fi->f_di.i_block[EXT2_NDIR_BLOCKS]; /* address of single indirect block */
-		index = block_pos - EXT2_NDIR_BLOCKS;
-	}
-	else {
-		/* double or triple indirect block. At first if it's triple,
-		 * find double indirect block.
-		 */
-		excess = block_pos - doub_ind_s;
-		b = fi->f_di.i_block[EXT2_DIND_BLOCK];
-		if (block_pos >= triple_ind_s) {
-			b = fi->f_di.i_block[EXT2_TIND_BLOCK];
-			if ((b == NO_BLOCK ) || (1 != ext2_read_sector(nas, fi->f_buf, 1, b))) {
-				return NO_BLOCK;
-			}
-			excess = block_pos - triple_ind_s;
-			index = excess / addr_in_block2;
-			b = ext2_rd_indir(fi->f_buf, index); /* num of double ind block */
-			//put_block(bp, INDIRECT_BLOCK);	/* release triple ind block */
-			excess = excess % addr_in_block2;
-		}
-		if ((b == NO_BLOCK ) || (1 != ext2_read_sector(nas, fi->f_buf, 1, b))) {
-			return NO_BLOCK;
-		}
-		index = excess / addr_in_block;
-		b = ext2_rd_indir(fi->f_buf, index); /* num of single ind block */
-		//put_block(bp, INDIRECT_BLOCK);	/* release double ind block */
-		index = excess % addr_in_block; /* index into single ind blk */
-	}
-	if ((b == NO_BLOCK ) || (1 != ext2_read_sector(nas, fi->f_buf, 1, b))) {
-		return NO_BLOCK ;
-	}
-	b = ext2_rd_indir(fi->f_buf, index);
-
-	return b;
-}
-
 static int ext2_new_block(struct nas *nas, long position) {
 	/* Acquire a new block and return a pointer to it.*/
 	int r;
@@ -1533,17 +1453,18 @@ static int ext2_new_block(struct nas *nas, long position) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
+	if(0 != ext2_block_map(nas, lblkno(fsi, position), &b)) {
+		return -1;
+	}
 	/* Is another block available? */
-	if ((b = ext2_read_map(nas, position)) == NO_BLOCK ) {
-		/* Check if this position follows last allocated
-		 * block.
-		 */
+	if (NO_BLOCK == b) {
+		/* Check if this position follows last allocated block. */
 		goal = NO_BLOCK;
 		if (fi->f_last_pos_bl_alloc != 0) {
 			position_diff = position - fi->f_last_pos_bl_alloc;
-			if (fi->f_bsearch == 0) {
+			if (0 == fi->f_bsearch) {
 				/* Should never happen, but not critical */
-				//ext2_debug("warning, i_bsearch is 0, while f_last_pos_bl_alloc is not!");
+				return -1;
 			}
 			if (position_diff <= fsi->s_block_size) {
 				goal = fi->f_bsearch + 1;
@@ -1554,6 +1475,7 @@ static int ext2_new_block(struct nas *nas, long position) {
 			errno = ENOSPC;
 			return -1;
 		}
+		/* clear new sector */
 		memset(fi->f_buf, 0, fsi->s_block_size);
 		ext2_write_sector(nas, fi->f_buf, 1, b);
 
@@ -1615,17 +1537,14 @@ static int ext2_mkdir(struct nas *nas, struct nas *parents_nas) {
 	if (0 != ext2_open(parents_nas)) {
 		return -1;
 	}
-
 	/* Create a new directory inode. */
 	if (NULL == (fi = ext2_new_node(nas, parents_nas))) {
 		ext2_close(parents_nas);
 		return -1;
 	}
-
 	/* Get the inode numbers for . and .. to enter in the directory. */
 	dotdot = dir_fi->f_num; /* parent's inode number */
 	dot = fi->f_num; /* inode number of the new dir itself */
-
 	/* Now make dir entries for . and .. unless the disk is completely full. */
 	/* Use dot1 and dot2, so the mode of the directory isn't important. */
 	/* enter . in the new dir*/
@@ -1651,95 +1570,6 @@ static int ext2_mkdir(struct nas *nas, struct nas *parents_nas) {
 	}
 	return 0;
 }
-
-/*
- int ext2_fs_slink() {
- phys_bytes len;
- struct ext2_file_info *sip;            inode containing symbolic link
- struct ext2_file_info *dir_fi;          directory containing link
- int r;               error code
- char string[NAME_MAX];        last component of the new dir's path name
- char* link_target_buf = NULL;        either sip->i_block or bp->b_data
- struct buf *bp = NULL;     disk buffer for link
-
- caller_uid = (uid_t) fs_m_in.REQ_UID;
- caller_gid = (gid_t) fs_m_in.REQ_GID;
-
- Copy the link name's last component
- len = fs_m_in.REQ_PATH_LEN;
- if (len > NAME_MAX || len > EXT2_NAME_MAX)
- return(ENAMETOOLONG);
-
- r = sys_safecopyfrom(VFS_PROC_NR, (cp_grant_id_t) fs_m_in.REQ_GRANT,
- (vir_bytes) 0, (vir_bytes) string, (size_t) len);
- if (r != OK) return(r);
- NUL(string, len, sizeof(string));
-
- Temporarily open the dir.
- if( (dir_fi = get_inode(fs_dev, (ino_t) fs_m_in.REQ_INODE_NR)) == NULL)
- return(EINVAL);
-
- Create the inode for the symlink.
- sip = new_node(dir_fi, string, (mode_t) (I_SYMBOLIC_LINK | RWX_MODES),
- (block_t) 0);
-
- If we can then create fast symlink (store it in inode),
- * Otherwise allocate a disk block for the contents of the symlink and
- * copy contents of symlink (the name pointed to) into first disk block.
- if( (r = err_code) == OK) {
- if ( (fs_m_in.REQ_MEM_SIZE + 1) > sip->i_sp->s_block_size) {
- r = ENAMETOOLONG;
- } else if ((fs_m_in.REQ_MEM_SIZE + 1) <= MAX_FAST_SYMLINK_LENGTH) {
- r = sys_safecopyfrom(VFS_PROC_NR,
- (cp_grant_id_t) fs_m_in.REQ_GRANT3,
- (vir_bytes) 0, (vir_bytes) sip->i_block,
- (vir_bytes) fs_m_in.REQ_MEM_SIZE);
- sip->i_dirt = IN_DIRTY;
- link_target_buf = (char*) sip->i_block;
- } else {
- if ((bp = new_block(sip, (off_t) 0)) != NULL) {
- sys_safecopyfrom(VFS_PROC_NR,
- (cp_grant_id_t) fs_m_in.REQ_GRANT3,
- (vir_bytes) 0, (vir_bytes) b_data(bp),
- (vir_bytes) fs_m_in.REQ_MEM_SIZE);
- //lmfs_markdirty(bp);
- link_target_buf = b_data(bp);
- } else {
- r = err_code;
- }
- }
- if (r == OK) {
- assert(link_target_buf);
- link_target_buf[fs_m_in.REQ_MEM_SIZE] = '\0';
- sip->i_size = (off_t) strlen(link_target_buf);
- if (sip->i_size != fs_m_in.REQ_MEM_SIZE) {
- This can happen if the user provides a buffer
- * with a \0 in it. This can cause a lot of trouble
- * when the symlink is used later. We could just use
- * the strlen() value, but we want to let the user
- * know he did something wrong. ENAMETOOLONG doesn't
- * exactly describe the error, but there is no
- * ENAMETOOWRONG.
-
- r = ENAMETOOLONG;
- }
- }
-
- put_block(bp, DIRECTORY_BLOCK);  put_block() accepts NULL.
-
- if(r != OK) {
- sip->i_links_count = NO_LINK;
- if (search_dir(dir_fi, string, NULL, DELETE, IGN_PERM, 0) != OK)
- panic("Symbolic link vanished");
- }
- }
-
- put_inode() accepts NULL as a noop, so the below are safe.
- put_inode(sip);
- put_inode(dir_fi);
-
- return(r);
- }*/
 
 static void ext2_wipe_inode(struct ext2_file_info *fi,
 		struct ext2_file_info *dir_fi) {
@@ -1814,20 +1644,16 @@ static void ext2_free_inode_bit(struct nas *nas, uint32_t bit_returned,
 	if (NULL == (gd = ext2_get_group_desc(group, fsi))) {
 		return;
 	}
-
 	if (1 != ext2_read_sector(nas, fi->f_buf, 1, gd->inode_bitmap)) {
 		return;
 	}
-
 	if (ext2_unsetbit(b_bitmap(fi->f_buf), bit)) {
 		return;
 	}
 
 	ext2_write_sector(nas, fi->f_buf, 1, gd->inode_bitmap);
-
 	gd->free_inodes_count++;
 	fsi->e2sb.s_free_inodes_count++;
-
 	if (is_dir) {
 		gd->used_dirs_count--;
 	}
@@ -2057,21 +1883,18 @@ static int ext2_dir_operation(struct nas *nas, char *string, ino_t *numb,
 	match = 0; /* set when a string match occurs */
 	pos = 0;
 
-	if (flag == ENTER) {
+	if (ENTER == flag) {
 		string_len = strlen(string);
 		required_space = MIN_DIR_ENTRY_SIZE + string_len;
 		required_space +=
 				(required_space & 0x03) == 0 ?
 						0 : (DIR_ENTRY_ALIGN - (required_space & 0x03));
-
-		/*if (fi->f_last_dpos < fi->f_di.i_size &&
-		 fi->f_last_dentry_size <= required_space) {
-		 pos = fi->f_last_dpos;
-		 }*/
 	}
 
 	for (; pos < fi->f_di.i_size; pos += fsi->s_block_size) {
-		b = ext2_read_map(nas, pos); /* get block number */
+		if(0 != ext2_block_map(nas, lblkno(fsi, pos), &b)) {
+			return -1;
+		}
 
 		/* Since directories don't have holes, 'b' cannot be NO_BLOCK. */
 		/* get a dir block */
@@ -2270,3 +2093,97 @@ static struct ext2_file_info *ext2_new_node(struct nas *nas,
 }
 
 DECLARE_FILE_SYSTEM_DRIVER(ext2_drv);
+
+
+/*
+ int ext2_fs_slink() {
+	phys_bytes len;
+	struct ext2_file_info *sip;            inode containing symbolic link
+	struct ext2_file_info *dir_fi;          directory containing link
+	int r;               error code
+	char string[NAME_MAX];        last component of the new dir's path name
+	char* link_target_buf = NULL;        either sip->i_block or bp->b_data
+	struct buf *bp = NULL;     disk buffer for link
+
+	caller_uid = (uid_t) fs_m_in.REQ_UID;
+	caller_gid = (gid_t) fs_m_in.REQ_GID;
+
+	Copy the link name's last component
+	len = fs_m_in.REQ_PATH_LEN;
+	if (len > NAME_MAX || len > EXT2_NAME_MAX) {
+		return(ENAMETOOLONG);
+	}
+
+	r = sys_safecopyfrom(VFS_PROC_NR, (cp_grant_id_t) fs_m_in.REQ_GRANT,
+	(vir_bytes) 0, (vir_bytes) string, (size_t) len);
+	if (r != OK) {
+	 	 return(r);
+	}
+	NUL(string, len, sizeof(string));
+
+	Temporarily open the dir.
+	if( (dir_fi = get_inode(fs_dev, (ino_t) fs_m_in.REQ_INODE_NR)) == NULL) {
+	 	 return(EINVAL);
+	}
+	Create the inode for the symlink.
+	sip = new_node(dir_fi, string, (mode_t) (I_SYMBOLIC_LINK | RWX_MODES),
+	(block_t) 0);
+
+	If we can then create fast symlink (store it in inode),
+	* Otherwise allocate a disk block for the contents of the symlink and
+	* copy contents of symlink (the name pointed to) into first disk block.
+	if((r = err_code) == OK) {
+		 if ( (fs_m_in.REQ_MEM_SIZE + 1) > sip->i_sp->s_block_size) {
+			 r = ENAMETOOLONG;
+		 } else if ((fs_m_in.REQ_MEM_SIZE + 1) <= MAX_FAST_SYMLINK_LENGTH) {
+			 r = sys_safecopyfrom(VFS_PROC_NR,
+			 (cp_grant_id_t) fs_m_in.REQ_GRANT3,
+			 (vir_bytes) 0, (vir_bytes) sip->i_block,
+			 (vir_bytes) fs_m_in.REQ_MEM_SIZE);
+			 sip->i_dirt = IN_DIRTY;
+			 link_target_buf = (char*) sip->i_block;
+		 } else {
+			 if ((bp = new_block(sip, (off_t) 0)) != NULL) {
+				 sys_safecopyfrom(VFS_PROC_NR,
+				 (cp_grant_id_t) fs_m_in.REQ_GRANT3,
+				 (vir_bytes) 0, (vir_bytes) b_data(bp),
+				 (vir_bytes) fs_m_in.REQ_MEM_SIZE);
+				 //lmfs_markdirty(bp);
+				 link_target_buf = b_data(bp);
+			 } else {
+				 r = err_code;
+			 }
+		 }
+		 if (r == OK) {
+			 assert(link_target_buf);
+			 link_target_buf[fs_m_in.REQ_MEM_SIZE] = '\0';
+			 sip->i_size = (off_t) strlen(link_target_buf);
+			 if (sip->i_size != fs_m_in.REQ_MEM_SIZE) {
+				 This can happen if the user provides a buffer
+				 * with a \0 in it. This can cause a lot of trouble
+				 * when the symlink is used later. We could just use
+				 * the strlen() value, but we want to let the user
+				 * know he did something wrong. ENAMETOOLONG doesn't
+				 * exactly describe the error, but there is no
+				 * ENAMETOOWRONG.
+
+				 r = ENAMETOOLONG;
+			 }
+		 }
+
+		 put_block(bp, DIRECTORY_BLOCK);  put_block() accepts NULL.
+
+		 if(r != OK) {
+			 sip->i_links_count = NO_LINK;
+			 if (search_dir(dir_fi, string, NULL, DELETE, IGN_PERM, 0) != OK)
+			 panic("Symbolic link vanished");
+		 }
+	}
+
+	put_inode() accepts NULL as a noop, so the below are safe.
+	put_inode(sip);
+	put_inode(dir_fi);
+
+	return(r);
+ }
+ */
