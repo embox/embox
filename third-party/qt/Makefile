@@ -150,13 +150,12 @@ build_and_install: configure
 			echo Nothing to do - no rebuild is required.; \
 		else \
 			echo Building... && \
-			(rm -r $(QT_APPS_DIR_EMBOX) || true) && \
+			(rm -r $(QT_COMPONENTS_DIR_EMBOX) || true) && \
 			make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' && \
 			make install; \
 		fi
 
 all: build_and_install
-
 
 
 
@@ -168,38 +167,87 @@ TARGET_APPS += examples/animation/animatedtiles
 TARGET_APPS += examples/animation/moveblocks
 TARGET_APPS += examples/widgets/charactermap
 
-TARGET_QMAKE_EMBOX=$(QT_INSTALL_DIR_EMBOX)/bin/qmake
 
-QT_APPS_DIR_EMBOX = $(QT_DIR)/apps_embox
 
-define BUILD_APP_template
-$(QT_APPS_DIR_EMBOX)/$(notdir $(1)):
+
+# Component compilation template
+# arguments to the template
+# 1: full path of the component's source directory
+# 2: platform, expected values are 'EMBOX' or 'LINUX'
+# 3: install flag: 'install' or ''
+define BUILD_COMPONENT_template
+$(QT_COMPONENTS_DIR_$(2))/$(notdir $(1)):
 	$(AT)mkdir -p $$@
-$(QT_APPS_DIR_EMBOX)/$(notdir $(1))/Makefile: $(TARGET_QMAKE_EMBOX) | $(QT_APPS_DIR_EMBOX)/$(notdir $(1))
-	$(AT)cd $$(dir $$@) && $(TARGET_QMAKE_EMBOX) $(QT_SRC_DIR)/$(1)/$(notdir $(1)).pro
-.PHONY: $(QT_APPS_DIR_EMBOX)/$(notdir $(1))/$(notdir $(1))
-$(QT_APPS_DIR_EMBOX)/$(notdir $(1))/$(notdir $(1)): $(QT_APPS_DIR_EMBOX)/$(notdir $(1))/Makefile
+.PHONY: $(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/$(notdir $(1))
+$(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/Makefile: $$(TARGET_QMAKE_$(2)$(3)) | $(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))
+	$(AT)cd $$(dir $$@) && $$(TARGET_QMAKE_$(2)$(3)) $(1)/$(notdir $(1)).pro
+$(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/$(notdir $(1)): $(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/Makefile
+ifneq ($(3),install)
 	$(AT)cd $$(dir $$@) && make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)'
-target_apps: $(QT_APPS_DIR_EMBOX)/$(notdir $(1))/$(notdir $(1))
+else
+	$(AT)cd $$(dir $$@) && \
+		if make -q; then \
+			echo Nothing to do for $(notdir $(1)).; \
+		else \
+			make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' && \
+			make install; \
+		fi
+endif
+target_apps_$(2): $(QT_COMPONENTS_DIR_$(2))/$(notdir $(1))/$(notdir $(1))
 endef
 
-$(foreach app,$(TARGET_APPS),$(eval $(call BUILD_APP_template,$(app))))
+# Arguments transformer for the component compilation template
+# 1: Short path to the component with optional ':install' suffix
+# 2: platform, expected values are 'EMBOX' or 'LINUX'
+BUILD_COMPONENT_FUNC = $(call BUILD_COMPONENT_template,$(call COMP_fullpath,$(call COMP_path,$(1))),$(2),$(call COMP_install,$(1)))
+COMP_path     = $(word 1,$(subst :, ,$(1)))
+COMP_install  = $(word 2,$(subst :, ,$(1)))
+COMP_fullpath = $(if $(shell find . -path './$(1)'),$(abspath $(1)),$(QT_SRC_DIR)/$(1))
 
-TARGET_APPS_SEQUENCE = $(join $(addsuffix :,$(filter-out $(lastword $(TARGET_APPS)),$(TARGET_APPS))),$(filter-out $(firstword $(TARGET_APPS)),$(TARGET_APPS)))
-
-define TARGET_APPS_DEP_template
-$(QT_APPS_DIR_EMBOX)/$(notdir $(2))/$(notdir $(2)): $(QT_APPS_DIR_EMBOX)/$(notdir $(1))/$(notdir $(1))
+# Component sequence temlpate
+# arguments to the template
+# 1: path to the preceeding component
+# 2: path to the following component
+# 3: platform, expected values are 'EMBOX' or 'LINUX'
+define TARGET_COMPONENT_DEP_template
+$(QT_COMPONENTS_DIR_$(3))/$(notdir $(2))/$(notdir $(2)): $(QT_COMPONENTS_DIR_$(3))/$(notdir $(1))/$(notdir $(1))
 endef
 
-TARGET_PAIR_DEP_template = $(call TARGET_APPS_DEP_template,$(firstword $(subst :, ,$(1))),$(lastword $(subst :, ,$(1))))
+TARGET_PAIR_DEP_template = $(call TARGET_COMPONENT_DEP_template,$(firstword $(subst :, ,$(1))),$(lastword $(subst :, ,$(1))),$(2))
 
-$(foreach pair,$(TARGET_APPS_SEQUENCE),$(eval $(call TARGET_PAIR_DEP_template,$(pair))))
+# argument: 1: platform, expected values are 'EMBOX' or 'LINUX'
+define TARGET_COMPONENTS_SEQUENCE_PLATFORM
+TARGET_COMPS =  $$(foreach comp,$$(TARGET_COMPONENTS_$(1)),$$(call COMP_path,$$(comp)))
+TARGET_COMPS_SEQUENCE = $$(join $$(addsuffix :,$$(filter-out $$(lastword $$(TARGET_APPS)),$$(TARGET_APPS))),$$(filter-out $$(firstword $$(TARGET_APPS)),$$(TARGET_APPS)))
+$$(foreach pair,$$(TARGET_COMPS_SEQUENCE),$$(eval $$(call TARGET_PAIR_DEP_template,$$(pair),$(1))))
+endef
+
+define TARGET_COMPONENTS_COMPOSITE
+$$(foreach app,$$(TARGET_COMPONENTS_$(1)),$$(eval $$(call BUILD_COMPONENT_FUNC,$$(app),$(1))))
+$$(eval werwer $$(call TARGET_COMPONENTS_SEQUENCE_PLATFORM,$(1)))
+endef
+
+
+# plugins strictly before importing library both with ':install'
+# everything else before applications
+#TARGET_COMPONENTS_EMBOX += src/plugins/platforms/minimal:install
+#TARGET_COMPONENTS_EMBOX += src/plugins/platforms/vnc:install
+TARGET_COMPONENTS_EMBOX += libs/EmboxAutoPluginImporter:install
+TARGET_COMPONENTS_EMBOX += $(TARGET_APPS)
+
+TARGET_QMAKE_EMBOX       =$(QT_INSTALL_DIR_EMBOX)/bin/qmake
+TARGET_QMAKE_EMBOXinstall=$(QT_BUILD_DIR_EMBOX)/bin/qmake
+
+QT_COMPONENTS_DIR_EMBOX = $(QT_DIR)/apps_embox
+
+$(eval $(call TARGET_COMPONENTS_COMPOSITE,EMBOX))
 
 $(TARGET_QMAKE_EMBOX): build_and_install
+$(TARGET_QMAKE_EMBOXinstall): build_and_install
 
-.PHONY: target_apps
+.PHONY: target_apps_EMBOX
 
-all: target_apps
+all: target_apps_EMBOX
 
 
 
