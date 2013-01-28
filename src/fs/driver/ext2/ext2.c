@@ -1554,6 +1554,9 @@ static int ext2_new_block(struct nas *nas, long position) {
 			errno = ENOSPC;
 			return -1;
 		}
+		memset(fi->f_buf, 0, fsi->s_block_size);
+		ext2_write_sector(nas, fi->f_buf, 1, b);
+
 		if ((r = ext2_write_map(nas, position, b, 0)) != 0) {
 			ext2_free_block(nas, b);
 			errno = r;
