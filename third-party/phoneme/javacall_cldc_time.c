@@ -18,7 +18,7 @@
 #define SECONDS_1900_1970 2208988800L
 
 void javacall_time_sleep(javacall_uint64 ms){
-	usleep((useconds_t) ms);
+	msleep((useconds_t) ms);
 }
 
 javacall_result javacall_time_initialize_timer(

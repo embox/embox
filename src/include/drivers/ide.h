@@ -29,7 +29,7 @@
 #define HD1_DRVSEL              0x10 /* was:0xB0 */
 #define HD_LBA                  0x40
 
-#define idedelay() usleep(25)
+#define idedelay() msleep(25)
 
 /*
  * Controller registers

@@ -29,7 +29,7 @@ static int power_mng_cmd(int argc, char **argv) {
 		if (buts & NXT_BUTTON_DOWN) {
 		    break;
 		}
-		usleep(200);
+		msleep(200);
 	}
 	return 0;
 }

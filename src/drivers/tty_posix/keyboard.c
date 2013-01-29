@@ -126,14 +126,14 @@ static int diag_waiting_key(int sec) {
 
 	printf("press 'k' ");
 
-	if (timer_init(&timer, sec*1000, diag_timer_handler, (void *)&timer_elapsed)) {
+	if (timer_init_ms(&timer, sec*1000, diag_timer_handler, (void *)&timer_elapsed)) {
 		LOG_ERROR("Failed to install timer!\n");
 	}
 	// timer installed and started, now wait....
 	for (int i = 0; i < sec*2; i++) {
 
 		printf(".");
-		ksleep(1000);
+		m_ksleep(1000);
 
 		// wait a sec and proof
 		if (timer_elapsed) {

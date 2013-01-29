@@ -20,7 +20,9 @@ struct event {
 };
 
 extern void event_init(struct event *event, const char *name);
-extern int event_wait(struct event *event, unsigned long timeout);
+extern int event_wait_ns(struct event *event, unsigned long timeout);
+extern int event_wait_us(struct event *event, unsigned long timeout);
+extern int event_wait_ms(struct event *event, unsigned long timeout);
 extern void event_notify(struct event *event);
 
 #if 0

@@ -28,7 +28,7 @@ void barrier_wait(barrier_t *b) {
 			sched_wake_all(&b->sq);
 		} else {
 			b->current_count++;
-			sched_sleep_locked(&b->sq, SCHED_TIMEOUT_INFINITE);
+			sched_sleep_locked_ms(&b->sq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();

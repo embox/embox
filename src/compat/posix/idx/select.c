@@ -75,7 +75,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 
 	/* shit may happen here: event may be notified before wait call */
 
-	event_wait(&event, ticks);
+	event_wait_ms(&event, ticks);
 
 	/* And clear all desc */
 	idx_desc_set_event(nfds, readfds, writefds, exceptfds, NULL);

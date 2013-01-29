@@ -170,7 +170,7 @@ static int pipe_read(struct idx_desc *data, void *buf, size_t nbyte) {
 
 	if (!(data->flags & O_NONBLOCK)) {
 		while (!len) {
-			event_wait(&pipe->read_wait, SCHED_TIMEOUT_INFINITE);
+			event_wait_ms(&pipe->read_wait, SCHED_TIMEOUT_INFINITE);
 			len = async_ring_buff_dequeue(pipe->buff, (void*)buf, nbyte);
 		}
 	}
@@ -204,7 +204,7 @@ static int pipe_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 
 	if (!(data->flags & O_NONBLOCK)) {
 		while (!len) {
-			event_wait(&pipe->write_wait, SCHED_TIMEOUT_INFINITE);
+			event_wait_ms(&pipe->write_wait, SCHED_TIMEOUT_INFINITE);
 			len = async_ring_buff_enqueue(pipe->buff, (void*)buf, nbyte);
 		}
 	}

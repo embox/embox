@@ -15,6 +15,8 @@
 extern struct timeval *ktime_get_timeval(struct timeval *tv);
 extern struct timespec *ktime_get_timespec(struct timespec *ts);
 extern time64_t ktime_get_ns(void);
-extern int ksleep(useconds_t usec);
+extern int n_ksleep(useconds_t nsec);
+extern int u_ksleep(useconds_t usec);
+extern int m_ksleep(useconds_t msec);
 
 #endif /* KERNEL_TIME_KTIME_H_ */

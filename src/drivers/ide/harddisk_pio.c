@@ -70,7 +70,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 
     	/* Wait until data read */
 		while(!hdc->result) {
-			ksleep(300);
+			m_ksleep(300);
 		}
 		if (hdc->result < 0) {
 			break;
@@ -159,7 +159,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 
 		/* Wait until data written */
 		while(!hdc->result) {
-			ksleep(300);
+			m_ksleep(300);
 		}
 		if (hdc->result < 0) {
 			break;

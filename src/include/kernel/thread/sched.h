@@ -80,7 +80,9 @@ extern void sched_finish(struct thread *thread);
  * @retval SCHED_TIMEOUT_HAPPENED
  *   Timeout happened.
  */
-extern int sched_sleep(struct sleepq *sleepq, unsigned long timeout);
+extern int sched_sleep_ns(struct sleepq *sleepq, unsigned long timeout);
+extern int sched_sleep_us(struct sleepq *sleepq, unsigned long timeout);
+extern int sched_sleep_ms(struct sleepq *sleepq, unsigned long timeout);
 
 /**
  * Does the same as #sched_sleep() but assumes that the scheduler is
@@ -99,8 +101,9 @@ extern int sched_sleep(struct sleepq *sleepq, unsigned long timeout);
  * @retval SCHED_TIMEOUT_HAPPENED
  *   Timeout happened.
  */
-extern int sched_sleep_locked(struct sleepq *sleepq, unsigned long timeout);
-
+extern int sched_sleep_locked_ns(struct sleepq *sleepq, unsigned long timeout);
+extern int sched_sleep_locked_us(struct sleepq *sleepq, unsigned long timeout);
+extern int sched_sleep_locked_ms(struct sleepq *sleepq, unsigned long timeout);
 /**
  * Wakes up one of the threads contained in the given sleeping queue.
  *

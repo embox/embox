@@ -18,7 +18,7 @@ static int nxt_buttons_example(void) {
 		if (nxt_buttons_pressed()) {
 			break;
 		}
-		usleep(200);
+		msleep(200);
 	}
 	return 0;
 }
