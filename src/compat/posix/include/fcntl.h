@@ -11,6 +11,9 @@
 #define FCNTL_H_
 
 #include <sys/stat.h>
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 /* int open (const char *path, int __oflag);
  * int open (const char *path, int __oflag, mode_t mode);
@@ -47,5 +50,7 @@ extern int fcntl(int fd, int cmd, ...);
 #define O_EXCL             0x0400  /* Open only if file doesn't already exist */
 #define O_DIRECT           0x0800  /* Do not use cache for reads and writes */
 #define O_NONBLOCK         0x1000  /* Non-blocking mode */
+
+__END_DECLS
 
 #endif /* FCNTL_H_ */

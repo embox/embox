@@ -11,6 +11,10 @@
 
 #include <sys/types.h>
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
 #define _FDSETWORDS       0x10
 #define _FDSETBITSPERWORD 0x20 /* 32 bits */
 
@@ -55,5 +59,7 @@ struct timeval;
 
 extern int select(int nfds, fd_set *readfds, fd_set *writefds,
 			fd_set *exceptfds, struct timeval *timeout);
+
+__END_DECLS
 
 #endif /* SYS_SELECT_H_ */

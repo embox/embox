@@ -13,8 +13,9 @@
 #include <sys/types.h>
 #include <fs/node.h>
 
+#include <sys/cdefs.h>
 
-
+__BEGIN_DECLS
 
 #define S_IFMT         0170000   /* File type mask */
 #define S_IFPKT        0160000   /* Packet device */
@@ -106,5 +107,7 @@ extern int    mkdir (const char *, mode_t );
 static inline mode_t umask(mode_t mode) {
 	return 0;
 }
+
+__END_DECLS
 
 #endif /* SYS_STAT_H_ */

@@ -33,7 +33,12 @@ struct __assertion_point {
 	const char *expression;
 };
 
-extern void __attribute__ ((noreturn)) __assertion_handle_failure(
+#ifdef __cplusplus
+extern "C"
+#else
+extern
+#endif
+void __attribute__ ((noreturn)) __assertion_handle_failure(
 		const struct __assertion_point *point);
 
 #ifndef __cplusplus

@@ -13,7 +13,9 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <stddef.h>    /* NULL definition */
+#include <sys/cdefs.h>
 
+__BEGIN_DECLS
 
 /* Parameters used to convert the time specific values */
 #define MSEC_PER_SEC    1000L
@@ -86,5 +88,7 @@ extern time_t time(time_t *t);
 
 /** Format date and time */
 extern size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm);
+
+__END_DECLS
 
 #endif /* POSIX_TIME_H_ */

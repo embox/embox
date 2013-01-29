@@ -13,6 +13,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 /* Standard file descriptors. */
 #define STDIN_FILENO    0   /* Standard input. */
@@ -66,5 +69,7 @@ extern int dup2(int flides, int flides2);
 
 extern int pipe(int pipefd[2]/*, int flags: O_NONBLOCK */);
 extern void _exit(int status);
+
+__END_DECLS
 
 #endif /* UNISTD_H_ */
