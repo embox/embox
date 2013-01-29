@@ -225,7 +225,7 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
 	/* Return a block by turning off its bitmap bit. */
 	int group;		/* group number of bit_returned */
-	//int bit;		/* bit_returned number within its group */
+	int bit;		/* bit_returned number within its group */
 	struct ext2_gd *gd;
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
@@ -235,15 +235,14 @@ void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
 
 	if (bit_returned >= fsi->e2sb.s_blocks_count ||
 		bit_returned < fsi->e2sb.s_first_data_block) {
-		/*panic("trying to free block %d beyond blocks scope.",
-		bit_returned);*/
+		return;
 	}
 
 	/* At first search group, to which bit_returned belongs to
 	* and figure out in what word bit is stored.
 	*/
 	group = (bit_returned - fsi->e2sb.s_first_data_block) / fsi->e2sb.s_blocks_per_group;
-	//bit = (bit_returned - fsi->e2sb.s_first_data_block) % fsi->e2sb.s_blocks_per_group;
+	bit = (bit_returned - fsi->e2sb.s_first_data_block) % fsi->e2sb.s_blocks_per_group;
 
 	gd = ext2_get_group_desc(group, fsi);
 
@@ -254,13 +253,15 @@ void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
 	if (bit_returned == gd->inode_bitmap || bit_returned == gd->block_bitmap
 		|| (bit_returned >= gd->inode_table
 		&& bit_returned < (gd->inode_table + fsi->s_itb_per_group))) {
-		/*panic("trying to deallocate
-		system/control block, hardly poke author.");*/
+		return;
 	}
 
 	ext2_read_sector(nas, (char *) fi->f_buf, 1, gd->block_bitmap);
+	if (ext2_unsetbit(b_bitmap(fi->f_buf), bit)) {
+		return; /*Tried to free unused block*/
+	}
+	ext2_write_sector(nas, (char *) fi->f_buf, 1, gd->block_bitmap);
 
-	//put_block(bp, MAP_BLOCK);
 
 	gd->free_blocks_count++;
 	fsi->e2sb.s_free_blocks_count++;
@@ -286,7 +287,7 @@ uint32_t ext2_alloc_block(struct nas *nas, uint32_t block)
 	fsi = nas->fs->fsi;
 
 	if (fsi->e2sb.s_free_blocks_count == 0) {
-		return(NO_BLOCK);
+		return NO_BLOCK;
 	}
 
 	if (block != NO_BLOCK) {

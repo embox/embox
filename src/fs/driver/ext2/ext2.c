@@ -497,6 +497,7 @@ static int ext2fs_ioctl(struct file_desc *desc, int request, va_list args) {
 
 static int ext2_create(struct nas *nas, struct nas * parents_nas);
 static int ext2_mkdir(struct nas *nas, struct nas * parents_nas);
+static int ext2_unlink(struct nas *dir_nas, struct nas *nas);
 
 static int ext2fs_init(void * par);
 static int ext2fs_format(void *path);
@@ -550,17 +551,24 @@ static int ext2fs_create(struct node *parent_node, struct node *node) {
 }
 
 static int ext2fs_delete(struct node *node) {
-	struct ext2_file_info *fi;
-	struct ext2_fs_info *fsi;
-	node_t *pointnod;
+	int rc;
+	node_t *pointnod, *parents;
 	struct nas *nas;
 	char path[MAX_LENGTH_PATH_NAME];
-
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
 	nas = node->nas;
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
 	vfs_get_path_by_node(node, path);
+	if(NULL == (parents = vfs_get_parent(node))) {
+		return ENOENT;
+	}
+
+	if(0 != (rc = ext2_unlink(parents->nas, node->nas))) {
+		return rc;
+	}
 
 	/* need delete "." and ".." node for directory */
 	if (node_is_directory(node)) {
@@ -1003,8 +1011,7 @@ static int ext2_read_sblock(struct nas *nas) {
 	fsi = nas->fs->fsi;
 	ext2sb = &fsi->e2sb;
 
-	if (1
-			!= ext2_read_sector(nas, (char *) sbbuf, 1,
+	if (1 != ext2_read_sector(nas, (char *) sbbuf, 1,
 					dbtofsb(fsi, SBOFF / SECTOR_SIZE))) {
 		return EIO;
 	}
@@ -1721,24 +1728,41 @@ static uint32_t ext2_alloc_inode_bit(struct nas *nas, int is_dir) { /* inode wil
 
 void ext2_free_inode(struct nas *nas) { /* ext2_file_info to free */
 	/* Return an ext2_file_info to the pool of unallocated inodes. */
+	uint32_t pos;
+	uint32_t b;
+	struct ext2fs_dinode fdi;
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
-	uint32_t b;
-	//u16_t mode;
 
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	b = fi->f_num;
-	//mode = fi->f_di.i_mode;
-
 	/* Locate the appropriate super_block. */
-	ext2_read_sblock(nas);
+	if(0!= ext2_read_sblock(nas)) {
+		return;
+	}
 
+	/* free all data block of file */
+	for(pos = 0; pos <= fi->f_di.i_size; pos += fsi->s_block_size) {
+		if(0 != ext2_block_map(nas, lblkno(fsi, pos), &b)) {
+			return;
+		}
+		ext2_free_block(nas, b);
+	}
+
+	/* clear inode in inode table */
+	memset(&fdi, 0, sizeof(struct ext2fs_dinode));
+	ext2_rw_inode(nas, &fdi, 1);
+
+	/* free inode bitmap */
+	b = fi->f_num;
 	if (b <= 0 || b > fsi->e2sb.s_inodes_count) {
 		return;
 	}
 	ext2_free_inode_bit(nas, b, node_is_directory(nas->node));
+
+	ext2_close(nas);
+	pool_free(&ext2_file_pool, fi);
 }
 
 struct ext2_file_info *ext2_alloc_inode(struct nas *nas,
@@ -1959,7 +1983,7 @@ static int ext2_dir_operation(struct nas *nas, char *string, ino_t *numb,
 				}
 				//put_block(bp, DIRECTORY_BLOCK);
 				ext2_write_sector(nas, fi->f_buf, 1, b);
-				return (r);
+				return r;
 			}
 
 			/* Check for free slot for the benefit of ENTER. */
@@ -2091,6 +2115,82 @@ static struct ext2_file_info *ext2_new_node(struct nas *nas,
 	/* The caller has to return the directory ext2_file_info (*dir_fi).  */
 	return fi;
 }
+
+
+/* Unlink 'file_name'; rip must be the inode of 'file_name' or NULL. */
+static int ext2_unlink_file(struct nas *dir_nas, struct nas *nas) {
+	int rc;
+
+	if(0 != ext2_open(nas)) {
+		return EINVAL;
+	}
+
+	ext2_free_inode(nas);
+	rc = ext2_dir_operation(dir_nas, (char *) nas->node->name, NULL, DELETE, 0);
+
+	return rc;
+}
+
+static int ext2_remove_dir(struct nas *dir_nas, struct nas *nas) {
+	/* A directory file has to be removed. Five conditions have to met:
+	* 	- The file must be a directory
+	*	- The directory must be empty (except for . and ..)
+	*	- The final component of the path must not be . or ..
+	*	- The directory must not be the root of a mounted file system (VFS)
+	*	- The directory must not be anybody's root/working directory (VFS)
+	*/
+	int rc;
+	char *dir_name;
+	struct ext2_file_info *fi;
+
+	fi = nas->fi->privdata;
+	dir_name = (char *) nas->node->name;
+
+	/* search_dir checks that rip is a directory too. */
+	if (0 != (rc = ext2_dir_operation(nas, "", NULL, IS_EMPTY, 0))) {
+		return rc;
+	}
+
+	if (0 == strcmp(dir_name, ".") || 0 == strcmp(dir_name, "..")) {
+		return EINVAL;
+	}
+
+	if (fi->f_num == ROOT_INODE) {
+		return EBUSY; /* can't remove 'root' */
+	}
+
+	/* Actually try to unlink the file; fails if parent is mode 0 etc. */
+	if (0 != (rc = ext2_unlink_file(dir_nas, nas))) {
+		return rc;
+	}
+
+	/* Unlink . and .. from the dir. */
+	rc = ext2_dir_operation(dir_nas, ".", NULL, DELETE, 0);
+	rc |= ext2_dir_operation(dir_nas,"..", NULL, DELETE, 0);
+
+	return rc;
+}
+
+static int ext2_unlink(struct nas *dir_nas, struct nas *nas) {
+	int rc;
+
+	/* Temporarily open the dir. */
+	if (0 != (rc = ext2_open(dir_nas))) {
+		return EINVAL;
+	}
+
+	if(node_is_directory(nas->node)) {
+		rc = ext2_remove_dir(dir_nas, nas); /* call is RMDIR */
+	}
+	else {
+		rc = ext2_unlink_file(dir_nas, nas);
+	}
+
+	ext2_close(dir_nas);
+
+	return rc;
+}
+
 
 DECLARE_FILE_SYSTEM_DRIVER(ext2_drv);
 
