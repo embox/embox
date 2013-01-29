@@ -7,23 +7,39 @@ QT_URL= http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-4
 QT_BUNDLE = $(notdir $(QT_URL))
 QT_MD5 = 89c5ecba180cae74c66260ac732dc5cb  $(QT_BUNDLE)
 
-QT_CONF_FLAGS_EMBOX += -prefix $(QT_INSTALL_DIR_EMBOX)
+QT_CONF_FLAGS_EMBOX += -hostprefix $(QT_INSTALL_DIR_EMBOX)
+# This will be needed to use runtime resources, e.g. fonts
+#QT_CONF_FLAGS_EMBOX += -prefix /qt
 QT_CONF_FLAGS_EMBOX += -embedded-lite vnc -little-endian
 QT_CONF_FLAGS_EMBOX += -xplatform qws/embox-generic-g++ -static
 QT_CONF_FLAGS_EMBOX += -opensource -confirm-license
 QT_CONF_FLAGS_EMBOX += -no-pch -fast
 QT_CONF_FLAGS_EMBOX += -no-largefile -no-qt3support
 QT_CONF_FLAGS_EMBOX += -no-kbd-tty -no-mouse-pc -no-mouse-linuxtp -no-gfx-linuxfb -no-gfx-multiscreen
-QT_CONF_FLAGS_EMBOX += -no-feature-TEMPORARYFILE -no-feature-PROCESS -no-feature-FILESYSTEMWATCHER
-QT_CONF_FLAGS_EMBOX += -no-feature-SHAREDMEMORY -no-feature-NETWORKINTERFACE -no-feature-HOSTINFO
-QT_CONF_FLAGS_EMBOX += -no-feature-QWS_INPUTMETHODS -no-sql-sqlite -D QT_NO_BEARERMANAGEMENT
+QT_CONF_FLAGS_EMBOX += -no-feature-TEMPORARYFILE     -D QT_NO_TEMPORARYFILE
+QT_CONF_FLAGS_EMBOX += -no-feature-PROCESS           -D QT_NO_PROCESS
+QT_CONF_FLAGS_EMBOX += -no-feature-FILESYSTEMWATCHER -D QT_NO_FILESYSTEMWATCHER
+QT_CONF_FLAGS_EMBOX += -no-feature-SHAREDMEMORY      -D QT_NO_SHAREDMEMORY
+QT_CONF_FLAGS_EMBOX += -no-feature-NETWORKINTERFACE  -D QT_NO_NETWORKINTERFACE
+QT_CONF_FLAGS_EMBOX += -no-feature-HOSTINFO          -D QT_NO_HOSTINFO
+QT_CONF_FLAGS_EMBOX += -no-feature-QWS_INPUTMETHODS  -D QT_NO_QWS_INPUTMETHODS
+# Should be transitively disabled by NO_LIBRARY
+QT_CONF_FLAGS_EMBOX += -D QT_NO_BEARERMANAGEMENT
+# This flag looks suspicious: need to check how it works on Linux
+#QT_CONF_FLAGS_EMBOX += -D QT_NO_DYNAMIC_LIBRARY
+#QT_CONF_FLAGS_EMBOX += -D QT_NO_LIBRARY_UNLOAD
+QT_CONF_FLAGS_EMBOX += -no-feature-LIBRARY           -D QT_NO_LIBRARY
+QT_CONF_FLAGS_EMBOX += -no-sql-sqlite
 # examples ?and demos? are not fully compilable
 QT_CONF_FLAGS_EMBOX += -nomake examples -nomake demos
 # translations cause 'make -q' to fail
 QT_CONF_FLAGS_EMBOX += -nomake translations
+ifeq ($(filter -fno-exceptions,$(EMBOX_CXXFLAGS)),-fno-exceptions)
 QT_CONF_FLAGS_EMBOX += -no-exceptions
+endif
 QT_CONF_FLAGS_EMBOX += -debug
 QT_CONF_FLAGS_EMBOX += -qt-gfx-vnc
+QT_CONF_FLAGS_EMBOX += -no-freetype
 
 
 
@@ -41,7 +57,6 @@ EMBOX_IMPORTED_CFLAGS   += $(filter -fno-common,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -march%,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -m32,$(EMBOX_CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -fno-stack-protector,$(EMBOX_CFLAGS))
-EMBOX_IMPORTED_CFLAGS   += $(filter -fno-rtti,$(EMBOX_CFLAGS))
 
 EMBOX_IMPORTED_CXXFLAGS += $(subst .,$(ROOT_DIR),$(filter -I%,$(EMBOX_CXXFLAGS)))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-common,$(EMBOX_CXXFLAGS))
@@ -49,6 +64,8 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -march%,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -m32,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-stack-protector,$(EMBOX_CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-rtti,$(EMBOX_CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -fno-exceptions,$(EMBOX_CXXFLAGS))
+
 
 EMBOX_IMPORTED_MAKEFLAGS += $(filter -j,$(EMBOX_MAKEFLAGS))
 ifneq ($(filter -j,$(EMBOX_MAKEFLAGS)),)
@@ -271,14 +288,26 @@ QT_CONF_FLAGS_LINUX += -fast
 QT_CONF_FLAGS_LINUX += -no-largefile -no-qt3support
 QT_CONF_FLAGS_LINUX += -no-kbd-tty -no-mouse-pc -no-mouse-linuxtp -no-gfx-linuxfb
 # -no-gfx-multiscreen
-QT_CONF_FLAGS_LINUX += -no-feature-TEMPORARYFILE -no-feature-PROCESS -no-feature-FILESYSTEMWATCHER
-QT_CONF_FLAGS_LINUX += -no-feature-SHAREDMEMORY -no-feature-NETWORKINTERFACE -no-feature-HOSTINFO
-QT_CONF_FLAGS_LINUX += -no-feature-QWS_INPUTMETHODS -no-sql-sqlite -D QT_NO_BEARERMANAGEMENT
+QT_CONF_FLAGS_LINUX += -no-feature-TEMPORARYFILE
+QT_CONF_FLAGS_LINUX += -no-feature-PROCESS
+QT_CONF_FLAGS_LINUX += -no-feature-FILESYSTEMWATCHER
+QT_CONF_FLAGS_LINUX += -no-feature-SHAREDMEMORY
+QT_CONF_FLAGS_LINUX += -no-feature-NETWORKINTERFACE
+QT_CONF_FLAGS_LINUX += -no-feature-HOSTINFO
+QT_CONF_FLAGS_LINUX += -no-feature-QWS_INPUTMETHODS
+QT_CONF_FLAGS_LINUX += -D QT_NO_BEARERMANAGEMENT
+# Doesn't make sense to do it on Linux
+#QT_CONF_FLAGS_LINUX += -no-feature-LIBRARY
+#QT_CONF_FLAGS_LINUX += -D QT_NO_DYNAMIC_LIBRARY
+#QT_CONF_FLAGS_LINUX += -D QT_NO_LIBRARY_UNLOAD
 # examples ?and demos? are not fully compilable
+QT_CONF_FLAGS_LINUX += -no-sql-sqlite
 QT_CONF_FLAGS_LINUX += -nomake examples -nomake demos
 # translations cause 'make -q' to fail
 QT_CONF_FLAGS_LINUX += -nomake translations
+ifeq ($(filter -fno-exceptions,$(EMBOX_CXXFLAGS)),-fno-exceptions)
 QT_CONF_FLAGS_LINUX += -no-exceptions
+endif
 QT_CONF_FLAGS_LINUX += -debug
 QT_CONF_FLAGS_LINUX += -qt-gfx-vnc -qt-gfx-qvfb -qt-kbd-qvfb -qt-mouse-qvfb
 QT_CONF_FLAGS_LINUX += -no-webkit -no-javascript-jit -no-script -no-declarative
@@ -286,6 +315,8 @@ QT_CONF_FLAGS_LINUX += -no-webkit -no-javascript-jit -no-script -no-declarative
 QT_CONF_FLAGS_LINUX += -nomake tools
 # ? add this to embox config ?
 QT_CONF_FLAGS_LINUX += -depths 8,16,18,32
+QT_CONF_FLAGS_LINUX += -no-opengl -no-openssl
+QT_CONF_FLAGS_LINUX += -no-freetype
 
 ENVIRONMENT_LINUX = $(QT_BUILD_DIR_LINUX)/.environment
 CONFIGURED_LINUX = $(QT_BUILD_DIR_LINUX)/.configured

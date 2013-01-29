@@ -11,6 +11,10 @@
 
 #include <lib/list.h>
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
 struct task_signal_table;
 struct task_idx_table;
 struct thread;
@@ -79,5 +83,7 @@ extern void __attribute__((noreturn)) task_exit(void *res);
 extern struct task *task_kernel_task(void);
 
 extern int task_notify_switch(struct thread *prev, struct thread *next);
+
+__END_DECLS
 
 #endif /* TASK_H_ */
