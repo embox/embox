@@ -6,17 +6,20 @@
  * @author Ilia Vaprol
  */
 
-#include <stdlib.h>
-#include <fs/file_operation.h>
-#include <fs/node.h>
-#include <embox/device.h>
 #include <drivers/video/display.h>
+#include <embox/device.h>
 #include <errno.h>
+#include <fs/file_operation.h>
+#include <stdlib.h>
 #include <string.h>
 
-static struct kfile_operations fb_ops; /* forward declaration */
+#define FB_DEV_NAME "fb0"
 
-EMBOX_DEVICE("fb0", &fb_ops, NULL);
+/* forward declaration */
+static int fb_init(void);
+static struct kfile_operations fb_ops;
+
+EMBOX_DEVICE(FB_DEV_NAME, &fb_ops, fb_init);
 
 static int fb_open(struct node *node, struct file_desc *file_desc, int flags) {
 	const struct display *displ;
@@ -69,3 +72,33 @@ static struct kfile_operations fb_ops = {
 	.write = fb_write,
 //	.ioctl = fb_ioctl
 };
+
+#include <fs/file_desc.h>
+#include <fs/node.h>
+#include <fs/vfs.h>
+#include <fs/file_operation.h>
+static int fb_init(void) {
+	struct node *nod, *devnod;
+	struct nas *dev_nas;
+
+	/* register char device */
+	nod = vfs_find_node("/dev", NULL);
+	if (nod == NULL) {
+		return -1;
+	}
+
+	devnod = vfs_add_path(FB_DEV_NAME, nod);
+	if (devnod == NULL) {
+		return -1;
+	}
+
+	dev_nas = devnod->nas;
+	dev_nas->fs = alloc_filesystem("empty");
+	if (dev_nas->fs == NULL) {
+		return -1;
+	}
+
+	dev_nas->fs->file_op = &fb_ops;
+
+	return 0;
+}
