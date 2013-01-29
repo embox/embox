@@ -9,30 +9,24 @@
 #ifndef DISPLAY_H_
 #define DISPLAY_H_
 
-#include <types.h>
-
-struct display;
-
-#if 0
-typedef void (*display_set_pixel_ft)(uint16_t pos_x, uint16_t pos_y, uint16_t color);
-typedef void (*display_setup_ft)(struct display *display);
-#endif
+#include <util/list.h>
 
 #define DISPLAY_MODE_DEPTH8  0x00
 #define DISPLAY_MODE_DEPTH16 0x01
 #define DISPLAY_MODE_DEPTH32 0x02
 
-struct display {
-	uint16_t width;
-	uint16_t height;
-	uint32_t mode;
-	uint8_t *vga_regs;
-	void (*setup)(struct display *displ, uint16_t width, uint16_t height, uint32_t mode);
-	uint32_t (*get_pixel)(struct display *displ, uint16_t x, uint16_t y);
-	void (*set_pixel)(struct display *displ, uint16_t x, uint16_t y, uint32_t color);
+struct display;
+
+struct display_options {
+	void (*setup)(struct display *displ, unsigned int width,
+			unsigned int height, unsigned int mode);
+
+	unsigned int (*get_pixel)(struct display *displ, unsigned int x,
+			unsigned int y);
+
+	void (*set_pixel)(struct display *displ, unsigned int x, unsigned int y,
+			unsigned int color);
 };
-
-
 
 struct screen_info {
 	int xres;
@@ -49,10 +43,32 @@ struct screen_info {
 	int bits_per_pixel;
 };
 
+struct display {
+	const char *name;
+	struct list_link lnk;
+	const struct display_options *ops;
+#if 0
+	struct screen_info info;
+#endif
 
-extern void display_clear_screen(struct display *display);
+	void (*set_pixel)(struct display *displ, unsigned short x,
+			unsigned short y, unsigned color); /* TODO remove this (it's for vga_setup_mode) */
 
-extern void display_set_pixel(struct display *display, unsigned x, unsigned y, unsigned c);
+	unsigned int width;
+	unsigned int height;
+	unsigned int mode;
+	void *vga_regs;
+};
 
+extern int display_register(struct display *displ);
+extern void display_unregister(struct display *displ);
+extern struct display * display_get_default(void);
+
+extern void display_clear_screen(struct display *displ);
+
+extern void display_set_pixel(struct display *displ, unsigned int x,
+		unsigned int y, unsigned int color);
+extern unsigned int display_get_pixel(struct display *displ, unsigned int x,
+		unsigned int y);
 
 #endif /* DISPLAY_H_ */

@@ -45,23 +45,23 @@ int xwnd_init(void) {
 	size_t i, j;
 	struct display *displ;
 
-	displ = get_bochs_display();
-	displ->setup(displ, 1280, 1024, DISPLAY_MODE_DEPTH16);
+	displ = display_get_default();
+	displ->ops->setup(displ, 1280, 1024, DISPLAY_MODE_DEPTH16);
 
 	for (i = 0; i < displ->width / 2; ++i) {
 		for (j = 0; j < displ->height / 2; ++j) {
-			displ->set_pixel(displ, i, j, 0xF000);
+			displ->ops->set_pixel(displ, i, j, 0xF000);
 		}
 		for (; j < displ->height; ++j) {
-			displ->set_pixel(displ, i, j, 0x0F00);
+			displ->ops->set_pixel(displ, i, j, 0x0F00);
 		}
 	}
 	for (; i < displ->width; ++i) {
 		for (j = 0; j < displ->height / 2; ++j) {
-			displ->set_pixel(displ, i, j, 0xF0F0);
+			displ->ops->set_pixel(displ, i, j, 0xF0F0);
 		}
 		for (; j < displ->height; ++j) {
-			displ->set_pixel(displ, i, j, 0x000F);
+			displ->ops->set_pixel(displ, i, j, 0x000F);
 		}
 	}
 #endif

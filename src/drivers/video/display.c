@@ -1,26 +1,66 @@
 /**
  * @file
  *
- * @date Dec 14, 2012
- * @author: Anton Bondarev
+ * @date 14.12.12
+ * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
-#include <types.h>
+
+#include <assert.h>
 #include <drivers/video/display.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <util/list.h>
 
-void display_clear_screen(struct display *display) {
-	unsigned x, y;
+static LIST_DEF(registered_displays);
 
-	if(display->set_pixel == NULL) {
-		return;
+int display_register(struct display *displ) {
+	assert(displ != NULL);
+	if (!list_alone_element(displ, lnk)) {
+		return -EEXIST;
 	}
+	list_add_last_element(displ, &registered_displays, lnk);
+	return 0;
+}
+
+void display_unregister(struct display *displ) {
+	assert(displ != NULL);
+	assert(!list_alone_element(displ, lnk));
+
+	list_unlink_element(displ, lnk);
+}
+
+struct display * display_get_default(void) {
+	return list_first_element(&registered_displays, struct display, lnk);
+}
+
+void display_clear_screen(struct display *displ) {
+	unsigned int x, y;
+
+	assert(displ != NULL);
+	assert(displ->ops != NULL);
+	assert(displ->ops->set_pixel != NULL);
+
 	/* clear screen */
-	for(y = 0; y < display->height; y++) {
-		for(x = 0; x < display->width; x++) {
-			display->set_pixel(display, x, y, 0);
+	for (y = 0; y < displ->height; y++) {
+		for (x = 0; x < displ->width; x++) {
+			displ->ops->set_pixel(displ, x, y, 0);
 		}
 	}
 }
 
-void display_set_pixel(struct display *display, unsigned x, unsigned y, unsigned c) {
-	display->set_pixel(display, x, y, c);
+void display_set_pixel(struct display *displ, unsigned int x, unsigned int y,
+		unsigned int color) {
+	assert(displ != NULL);
+	assert(displ->ops != NULL);
+	assert(displ->ops->set_pixel != NULL);
+	displ->ops->set_pixel(displ, x, y, color);
+}
+
+unsigned int display_get_pixel(struct display *displ, unsigned int x,
+		unsigned int y) {
+	assert(displ != NULL);
+	assert(displ->ops != NULL);
+	assert(displ->ops->get_pixel != NULL);
+	return displ->ops->get_pixel(displ, x, y);
 }

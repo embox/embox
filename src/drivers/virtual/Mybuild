@@ -1,5 +1,11 @@
 package embox.driver.virtual
 
+module fb {
+	source "fb.c"
+
+	depends embox.driver.video.display
+}
+
 module diag_device {
 	source "diag_device.c"
 

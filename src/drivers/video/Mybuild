@@ -1,9 +1,17 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.video
 
+module display {
+	source "display.c"
+	depends embox.util.List
+	depends embox.lib.LibC
+}
+
 module bochs {
 	source "bochs.c"
 	depends embox.driver.pci
+	depends embox.driver.video.display
+	depends embox.lib.LibC
 }
 
 abstract module vga { }
