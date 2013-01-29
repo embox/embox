@@ -10,7 +10,7 @@ module multiboot {
 	source "multiboot.c"
 
 	option number video_mode_set=0
-	option number video_width=80
+	option number video_width=800
 	option number video_height=600
 	option number video_depth=24
 }

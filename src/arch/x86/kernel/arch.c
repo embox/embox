@@ -11,8 +11,8 @@
 #include <asm/io.h>
 
 void arch_init(void) {
-	gdt_init();
-	idt_init();
+	//gdt_init();
+	//idt_init();
 }
 
 void arch_idle(void) {

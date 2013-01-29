@@ -34,6 +34,43 @@
 
 #define MULTIBOOT_HEADER_FLAGS     MULTIBOOT_MEMORY_INFO | MULTIBOOT_PAGE_ALIGN
 
+
+
+/* is there basic lower/upper memory information? */
+#define MULTIBOOT_INFO_MEMORY                   0x00000001
+/* is there a boot device set? */
+#define MULTIBOOT_INFO_BOOTDEV                  0x00000002
+/* is the command-line defined? */
+#define MULTIBOOT_INFO_CMDLINE                  0x00000004
+/* are there modules to do something with? */
+#define MULTIBOOT_INFO_MODS                     0x00000008
+
+/* These next two are mutually exclusive */
+
+/* is there a symbol table loaded? */
+#define MULTIBOOT_INFO_AOUT_SYMS                0x00000010
+/* is there an ELF section header table? */
+#define MULTIBOOT_INFO_ELF_SHDR                 0X00000020
+
+/* is there a full memory map? */
+#define MULTIBOOT_INFO_MEM_MAP                  0x00000040
+
+/* Is there drive info? */
+#define MULTIBOOT_INFO_DRIVE_INFO               0x00000080
+
+/* Is there a config table? */
+#define MULTIBOOT_INFO_CONFIG_TABLE             0x00000100
+
+/* Is there a boot loader name? */
+#define MULTIBOOT_INFO_BOOT_LOADER_NAME         0x00000200
+
+/* Is there a APM table? */
+#define MULTIBOOT_INFO_APM_TABLE                0x00000400
+
+/* Is there video information? */
+#define MULTIBOOT_INFO_VIDEO_INFO               0x00000800
+
+
 #ifndef __ASSEMBLER__
 
 /* The Multiboot header. */
@@ -79,34 +116,47 @@ typedef struct elf_section_header_table {
    register EBX on entry. */
 typedef struct multiboot_info {
 	/* These flags indicate which parts of the multiboot_info are valid */
-	unsigned long flags;
+	uint32_t flags;
 	/* Lower/Upper memory installed in the machine. */
-	unsigned long mem_lower;
-	unsigned long mem_upper;
+	uint32_t mem_lower;
+	uint32_t mem_upper;
 	/* BIOS disk device the kernel was loaded from. */
-	unsigned long boot_device;
+	uint32_t boot_device;
 	/* Command-line for the OS kernel: a null-terminated ASCII string. */
-	unsigned long cmdline;
+	uint32_t cmdline;
 	/* List of boot modules loaded with the kernel. */
-	unsigned long mods_count;
-	unsigned long mods_addr;
+	uint32_t mods_count;
+	uint32_t mods_addr;
 	/* Symbol information for a.out or ELF executables. */
 	union {
 		aout_symbol_table_t aout_sym;
 		elf_section_header_table_t elf_sec;
 	} u;
 	/* Memory map buffer. */
-	unsigned long mmap_length;
-	unsigned long mmap_addr;
+	uint32_t mmap_length;
+	uint32_t mmap_addr;
+	/* Drive Info buffer */
+	uint32_t drives_length;
+	uint32_t drives_addr;
+
+	/* ROM configuration table */
+	uint32_t config_table;
+
+	/* Boot Loader Name */
+	uint32_t boot_loader_name;
+
+	/* APM table */
+	uint32_t apm_table;
+
+	/* Video */
+	uint32_t vbe_control_info;
+	uint32_t vbe_mode_info;
+	uint16_t vbe_mode;
+	uint16_t vbe_interface_seg;
+	uint16_t vbe_interface_off;
+	uint16_t vbe_interface_len;
 } multiboot_info_t;
 
-#define MULTIBOOT_MEMORY        0x00000001
-#define MULTIBOOT_BOOT_DEVICE   0x00000002
-#define MULTIBOOT_CMDLINE       0x00000004
-#define MULTIBOOT_MODS          0x00000008
-#define MULTIBOOT_AOUT_SYMS     0x00000010
-#define MULTIBOOT_ELF_SHDR      0x00000020
-#define MULTIBOOT_MEM_MAP       0x00000040
 
 /* The module structure. */
 typedef struct multiboot_module {

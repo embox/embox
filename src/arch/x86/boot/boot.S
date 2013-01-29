@@ -10,7 +10,7 @@
 #include <asm/linkage.h>
 
 	.section .text
-	.align	4
+	.align 4
 
 	/* system entry point */
 C_ENTRY(_start):
@@ -22,19 +22,19 @@ C_ENTRY(_start):
 	cld
 
 	/* Initialize the stack pointer. */
-	movl	$_stack_vma, %esp  /* load base address for system stack */
+	movl    $_stack_vma, %esp  /* load base address for system stack */
 	addl    $_stack_len, %esp  /* setup correct system stack pointer */
 
 	/* Reset EFLAGS. */
-	pushl	$0
+	pushl   $0
 	popf
 
 	/* if we use multiboot header we must save registers which was set by loader
 	eax = magic value and ebx = address of Multiboot information structure */
 	/* Push the pointer to the Multiboot information structure. */
-	pushl	%ebx
+	pushl   %ebx
 	/* Push the magic value. */
-	pushl	%eax
+	pushl   %eax
 
 
 	/* Clean up bss section */
@@ -57,13 +57,16 @@ C_ENTRY(_start):
 	addl    $0xc, %esp
 1:
 
-#ifdef CONFIG_MULTIBOOT_CHECK
-/* we already save eax and ebx on the stack */
-	call	multiboot_check
-	addl    $8, %esp
-#endif
 
-	call	kernel_start /* call C code */
+	call    gdt_init
+	call    idt_init
+
+/* we already save eax and ebx on the stack */
+	call    multiboot_save_info
+	addl    $8, %esp
+
+
+	call    kernel_start /* call C code */
 
 loop:
 	hlt             /* if we return from kernel_start it's error */
