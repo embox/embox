@@ -23,7 +23,17 @@ QT_CONF_FLAGS_EMBOX += -no-feature-SHAREDMEMORY      -D QT_NO_SHAREDMEMORY
 QT_CONF_FLAGS_EMBOX += -no-feature-NETWORKINTERFACE  -D QT_NO_NETWORKINTERFACE
 QT_CONF_FLAGS_EMBOX += -no-feature-HOSTINFO          -D QT_NO_HOSTINFO
 QT_CONF_FLAGS_EMBOX += -no-feature-QWS_INPUTMETHODS  -D QT_NO_QWS_INPUTMETHODS
-# Should be transitively disabled by NO_LIBRARY
+# Necessity to add this appeared after something was added, maybe -no-freetype
+QT_CONF_FLAGS_EMBOX += -D QT_NO_IM
+QT_CONF_FLAGS_EMBOX += -D Q_NO_POSIX_SIGNALS
+# Disabling threading and concurrency stuff is a dead end :(
+#QT_CONF_FLAGS_EMBOX += -D QT_NO_THREAD
+# Automatically defined by NO_CONCURRENT
+#QT_CONF_FLAGS_EMBOX += -D QT_NO_QFUTURE
+#QT_CONF_FLAGS_EMBOX += -no-feature-CONCURRENT        -D QT_NO_CONCURRENT
+# This doesn't work for apparent reason :)
+QT_CONF_FLAGS_EMBOX += -D QT_USE_MMAP
+# Should be transitively disabled by NO_LIBRARY according to qfeatures.txt
 QT_CONF_FLAGS_EMBOX += -D QT_NO_BEARERMANAGEMENT
 # This flag looks suspicious: need to check how it works on Linux
 #QT_CONF_FLAGS_EMBOX += -D QT_NO_DYNAMIC_LIBRARY
@@ -172,7 +182,7 @@ build_and_install: configure
 			make install; \
 		fi
 
-all: build_and_install
+#all: build_and_install
 
 
 
@@ -253,7 +263,7 @@ endef
 
 # plugins strictly before importing library both with ':install'
 # everything else before applications
-TARGET_COMPONENTS_EMBOX += src/plugins/platforms/minimal:install
+#TARGET_COMPONENTS_EMBOX += src/plugins/platforms/minimal:install
 TARGET_COMPONENTS_EMBOX += src/plugins/platforms/vnc:install
 TARGET_COMPONENTS_EMBOX += libs/EmboxAutoPluginImporter:install
 TARGET_COMPONENTS_EMBOX += $(TARGET_APPS)
@@ -352,12 +362,12 @@ linux_build_and_install: linux_configure
 			make install; \
 		fi
 
-all: linux_build_and_install
+#all: linux_build_and_install
 
 
 
 # everything else before applications
-TARGET_COMPONENTS_LINUX += src/plugins/platforms/minimal:install
+#TARGET_COMPONENTS_LINUX += src/plugins/platforms/minimal:install
 TARGET_COMPONENTS_LINUX += src/plugins/platforms/vnc:install
 TARGET_COMPONENTS_LINUX += src/plugins/platforms/qvfb:install
 TARGET_COMPONENTS_LINUX += $(TARGET_APPS)
