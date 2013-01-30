@@ -131,7 +131,9 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 		if(0 == strlen(node_name)) {
 			return 0; /* we create all directory */
 		}
-		create_new_node(node, node_name, NODE_TYPE_DIRECTORY);
+		if(0 != create_new_node(node, node_name, NODE_TYPE_DIRECTORY)) {
+			return -1;
+		}
 		path_offset += (strlen(node_name) + 1);
 
 		node = vfs_get_child(node_name, node);
