@@ -6,13 +6,9 @@
  */
 
 
-#include <embox/unit.h>
-
-EMBOX_UNIT_INIT(cxx_init);
-
 typedef void (*ctor_func_t)(void);
 
-static int cxx_init(void) {
+void cxx_invoke_constructors(void) {
 	extern const char _ctors_start, _ctors_end;
 	ctor_func_t *func;
 	int n_entries;
@@ -22,5 +18,4 @@ static int cxx_init(void) {
 			func++, n_entries++) {
 				(*func)();
 	}
-	return 0;
 }

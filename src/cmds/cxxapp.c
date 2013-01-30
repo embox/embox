@@ -8,10 +8,10 @@
 
 #include <embox/cmd.h>
 
-#include <cxxapp.hpp>
+#include <cxx_app_start.h>
 
 EMBOX_CMD(exec);
 
 static int exec(int argc, char **argv) {
-	return main(argc,argv);
+	return cxx_app_start(argc,argv);
 }

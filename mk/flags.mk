@@ -64,6 +64,7 @@ cxxflags := $(CFLAGS)
 override CXXFLAGS = -pipe
 override CXXFLAGS += -fno-rtti
 override CXXFLAGS += -fno-exceptions
+override CXXFLAGS += -fno-threadsafe-statics
 override CXXFLAGS += -fno-strict-aliasing -fno-common
 override CXXFLAGS += -Wall -Werror
 override CXXFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts

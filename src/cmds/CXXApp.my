@@ -12,8 +12,8 @@ package embox.cmd
 	''')
 module cxxapp {
 	@IncludePath("$(SRC_DIR)/lib/c++")
-	source "cxxapp.cpp"
+	source "cxxapp.c"
 
-	depends embox.lib.CXXApp
+	depends embox.lib.cxx.AppStartupShutdown
 	depends embox.framework.LibFramework
 }
