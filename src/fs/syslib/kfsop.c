@@ -97,6 +97,7 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 }
 
 int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
+	int rc;
 	char tpath[MAX_LENGTH_PATH_NAME];
 	char path[MAX_LENGTH_PATH_NAME];
 	int path_offset;
@@ -131,8 +132,8 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 		if(0 == strlen(node_name)) {
 			return 0; /* we create all directory */
 		}
-		if(0 != create_new_node(node, node_name, NODE_TYPE_DIRECTORY)) {
-			return -1;
+		if(0 != (rc = create_new_node(node, node_name, NODE_TYPE_DIRECTORY))) {
+			return -rc;
 		}
 		path_offset += (strlen(node_name) + 1);
 
