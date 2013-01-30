@@ -60,6 +60,8 @@ struct display {
 	void *vga_regs;
 };
 
+extern void display_init(struct display *displ, const char *name,
+		const struct display_options *ops, void *vga_regs);
 extern int display_register(struct display *displ);
 extern void display_unregister(struct display *displ);
 extern struct display * display_get_default(void);

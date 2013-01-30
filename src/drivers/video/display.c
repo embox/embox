@@ -10,9 +10,19 @@
 #include <drivers/video/display.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <util/list.h>
 
 static LIST_DEF(registered_displays);
+
+void display_init(struct display *displ, const char *name,
+		const struct display_options *ops, void *vga_regs) {
+	memset(displ, 0, sizeof *displ);
+	displ->name = name;
+	list_link_init(&displ->lnk);
+	displ->ops = ops;
+	displ->vga_regs = vga_regs;
+}
 
 int display_register(struct display *displ) {
 	assert(displ != NULL);
