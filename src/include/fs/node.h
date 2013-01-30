@@ -25,12 +25,14 @@
 #define NODE_TYPE_DIRECTORY  0x10
 #define NODE_TYPE_SPECIAL    0x20
 
+struct nas;
+
 typedef struct node {
 	const char            name[MAX_LENGTH_FILE_NAME];
 	int                   type;  /* FILE, DIRECTORY, DEVICE, LINK ... */
 	int                   mode;
 	struct tree_link      tree_link;
-	void                 *nas;
+	struct nas            *nas;
 } node_t;
 
 struct node_info {
