@@ -12,6 +12,10 @@
 #include <fs/node.h>
 #include <fs/fs_drv.h>
 
+#define XATTR_CREATE  (1 << 0)
+#define XATTR_REMOVE  (1 << 1)
+#define XATTR_REPLACE (1 << 2)
+
 /**
  * @brief Get xattr
  *
