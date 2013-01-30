@@ -10,6 +10,7 @@
 #include <embox/device.h>
 #include <errno.h>
 #include <fs/file_operation.h>
+#include <fs/file_desc.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -17,7 +18,7 @@
 
 /* forward declaration */
 static int fb_init(void);
-static struct kfile_operations fb_ops;
+static const struct kfile_operations fb_ops;
 
 EMBOX_DEVICE(FB_DEV_NAME, &fb_ops, fb_init);
 
@@ -59,46 +60,18 @@ static size_t fb_write(struct file_desc *desc, void *buf, size_t size) {
 	return size;
 }
 
-#if 0
 static int fb_ioctl(struct file_desc *desc, int request, va_list args) {
 	return 0;
 }
-#endif
 
-static struct kfile_operations fb_ops = {
+static const struct kfile_operations fb_ops = {
 	.open = fb_open,
 	.close = fb_close,
 	.read = fb_read,
 	.write = fb_write,
-//	.ioctl = fb_ioctl
+	.ioctl = fb_ioctl
 };
 
-#include <fs/file_desc.h>
-#include <fs/node.h>
-#include <fs/vfs.h>
-#include <fs/file_operation.h>
 static int fb_init(void) {
-	struct node *nod, *devnod;
-	struct nas *dev_nas;
-
-	/* register char device */
-	nod = vfs_find_node("/dev", NULL);
-	if (nod == NULL) {
-		return -1;
-	}
-
-	devnod = vfs_add_path(FB_DEV_NAME, nod);
-	if (devnod == NULL) {
-		return -1;
-	}
-
-	dev_nas = devnod->nas;
-	dev_nas->fs = alloc_filesystem("empty");
-	if (dev_nas->fs == NULL) {
-		return -1;
-	}
-
-	dev_nas->fs->file_op = &fb_ops;
-
-	return 0;
+	return char_dev_register(FB_DEV_NAME, &fb_ops);
 }

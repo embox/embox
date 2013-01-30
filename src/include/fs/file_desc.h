@@ -16,7 +16,7 @@ struct node;
 
 struct file_desc {
 	struct node *node;
-	struct kfile_operations *ops;
+	const struct kfile_operations *ops;
 	size_t cursor;
 	void *file_info; /* customize in each file system */
 };

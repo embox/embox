@@ -27,7 +27,7 @@ struct file_desc *kopen(const char *path, int flag) {
 	struct node *node;
 	struct nas *nas;
 	struct file_desc *desc;
-	struct kfile_operations *ops;
+	const struct kfile_operations *ops;
 	int res;
 	int path_len;
 
