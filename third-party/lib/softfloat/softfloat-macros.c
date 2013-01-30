@@ -19,7 +19,7 @@ RESULT IN INCORRECT BEHAVIOR.  USE OF THIS SOFTWARE IS RESTRICTED TO PERSONS
 AND ORGANIZATIONS WHO CAN AND WILL TAKE FULL RESPONSIBILITY FOR ALL LOSSES,
 COSTS, OR OTHER PROBLEMS THEY INCUR DUE TO THE SOFTWARE, AND WHO FURTHERMORE
 EFFECTIVELY INDEMNIFY JOHN HAUSER AND THE INTERNATIONAL COMPUTER SCIENCE
-INSTITUTE (possibly via similar legal warning) AGAINST ALL LOSSES, COSTS, OR
+INSTITUTE (possibly via similar legal notice) AGAINST ALL LOSSES, COSTS, OR
 OTHER PROBLEMS INCURRED BY THEIR CUSTOMERS AND CLIENTS DUE TO THE SOFTWARE.
 
 Derivative works are acceptable, even for commercial purposes, so long as
@@ -58,69 +58,66 @@ void shift32RightJamming( bits32 a, int16 count, bits32 *zPtr )
 }
 
 /*----------------------------------------------------------------------------
-| Shifts the 64-bit value formed by concatenating `a0' and `a1' right by the
-| number of bits given in `count'.  Any bits shifted off are lost.  The value
-| of `count' can be arbitrarily large; in particular, if `count' is greater
-| than 64, the result will be 0.  The result is broken into two 32-bit pieces
-| which are stored at the locations pointed to by `z0Ptr' and `z1Ptr'.
+| Shifts `a' right by the number of bits given in `count'.  If any nonzero
+| bits are shifted off, they are ``jammed'' into the least significant bit of
+| the result by setting the least significant bit to 1.  The value of `count'
+| can be arbitrarily large; in particular, if `count' is greater than 64, the
+| result will be either 0 or 1, depending on whether `a' is zero or nonzero.
+| The result is stored in the location pointed to by `zPtr'.
 *----------------------------------------------------------------------------*/
 
-void
- shift64Right(
-     bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr )
+void shift64RightJamming( bits64 a, int16 count, bits64 *zPtr )
 {
-    bits32 z0, z1;
-    int8 negCount = ( - count ) & 31;
+    bits64 z;
 
     if ( count == 0 ) {
-        z1 = a1;
-        z0 = a0;
+        z = a;
     }
-    else if ( count < 32 ) {
-        z1 = ( a0<<negCount ) | ( a1>>count );
-        z0 = a0>>count;
+    else if ( count < 64 ) {
+        z = ( a>>count ) | ( ( a<<( ( - count ) & 63 ) ) != 0 );
     }
     else {
-        z1 = ( count < 64 ) ? ( a0>>( count & 31 ) ) : 0;
-        z0 = 0;
+        z = ( a != 0 );
     }
-    *z1Ptr = z1;
-    *z0Ptr = z0;
+    *zPtr = z;
 
 }
 
 /*----------------------------------------------------------------------------
-| Shifts the 64-bit value formed by concatenating `a0' and `a1' right by the
-| number of bits given in `count'.  If any nonzero bits are shifted off, they
-| are ``jammed'' into the least significant bit of the result by setting the
-| least significant bit to 1.  The value of `count' can be arbitrarily large;
-| in particular, if `count' is greater than 64, the result will be either 0
-| or 1, depending on whether the concatenation of `a0' and `a1' is zero or
-| nonzero.  The result is broken into two 32-bit pieces which are stored at
-| the locations pointed to by `z0Ptr' and `z1Ptr'.
+| Shifts the 128-bit value formed by concatenating `a0' and `a1' right by 64
+| _plus_ the number of bits given in `count'.  The shifted result is at most
+| 64 nonzero bits; this is stored at the location pointed to by `z0Ptr'.  The
+| bits shifted off form a second 64-bit result as follows:  The _last_ bit
+| shifted off is the most-significant bit of the extra result, and the other
+| 63 bits of the extra result are all zero if and only if _all_but_the_last_
+| bits shifted off were all zero.  This extra result is stored in the location
+| pointed to by `z1Ptr'.  The value of `count' can be arbitrarily large.
+|     (This routine makes more sense if `a0' and `a1' are considered to form
+| a fixed-point value with binary point between `a0' and `a1'.  This fixed-
+| point value is shifted right by the number of bits given in `count', and
+| the integer part of the result is returned at the location pointed to by
+| `z0Ptr'.  The fractional part of the result may be slightly corrupted as
+| described above, and is returned at the location pointed to by `z1Ptr'.)
 *----------------------------------------------------------------------------*/
 
 void
- shift64RightJamming(
-     bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr )
+ shift64ExtraRightJamming(
+     bits64 a0, bits64 a1, int16 count, bits64 *z0Ptr, bits64 *z1Ptr )
 {
-    bits32 z0, z1;
-    int8 negCount = ( - count ) & 31;
+    bits64 z0, z1;
+    int8 negCount = ( - count ) & 63;
 
     if ( count == 0 ) {
         z1 = a1;
         z0 = a0;
     }
-    else if ( count < 32 ) {
-        z1 = ( a0<<negCount ) | ( a1>>count ) | ( ( a1<<negCount ) != 0 );
+    else if ( count < 64 ) {
+        z1 = ( a0<<negCount ) | ( a1 != 0 );
         z0 = a0>>count;
     }
     else {
-        if ( count == 32 ) {
+        if ( count == 64 ) {
             z1 = a0 | ( a1 != 0 );
-        }
-        else if ( count < 64 ) {
-            z1 = ( a0>>( count & 31 ) ) | ( ( ( a0<<negCount ) | a1 ) != 0 );
         }
         else {
             z1 = ( ( a0 | a1 ) != 0 );
@@ -133,12 +130,87 @@ void
 }
 
 /*----------------------------------------------------------------------------
-| Shifts the 96-bit value formed by concatenating `a0', `a1', and `a2' right
-| by 32 _plus_ the number of bits given in `count'.  The shifted result is
-| at most 64 nonzero bits; these are broken into two 32-bit pieces which are
+| Shifts the 128-bit value formed by concatenating `a0' and `a1' right by the
+| number of bits given in `count'.  Any bits shifted off are lost.  The value
+| of `count' can be arbitrarily large; in particular, if `count' is greater
+| than 128, the result will be 0.  The result is broken into two 64-bit pieces
+| which are stored at the locations pointed to by `z0Ptr' and `z1Ptr'.
+*----------------------------------------------------------------------------*/
+
+void
+ shift128Right(
+     bits64 a0, bits64 a1, int16 count, bits64 *z0Ptr, bits64 *z1Ptr )
+{
+    bits64 z0, z1;
+    int8 negCount = ( - count ) & 63;
+
+    if ( count == 0 ) {
+        z1 = a1;
+        z0 = a0;
+    }
+    else if ( count < 64 ) {
+        z1 = ( a0<<negCount ) | ( a1>>count );
+        z0 = a0>>count;
+    }
+    else {
+        z1 = ( count < 64 ) ? ( a0>>( count & 63 ) ) : 0;
+        z0 = 0;
+    }
+    *z1Ptr = z1;
+    *z0Ptr = z0;
+
+}
+
+/*----------------------------------------------------------------------------
+| Shifts the 128-bit value formed by concatenating `a0' and `a1' right by the
+| number of bits given in `count'.  If any nonzero bits are shifted off, they
+| are ``jammed'' into the least significant bit of the result by setting the
+| least significant bit to 1.  The value of `count' can be arbitrarily large;
+| in particular, if `count' is greater than 128, the result will be either
+| 0 or 1, depending on whether the concatenation of `a0' and `a1' is zero or
+| nonzero.  The result is broken into two 64-bit pieces which are stored at
+| the locations pointed to by `z0Ptr' and `z1Ptr'.
+*----------------------------------------------------------------------------*/
+
+void
+ shift128RightJamming(
+     bits64 a0, bits64 a1, int16 count, bits64 *z0Ptr, bits64 *z1Ptr )
+{
+    bits64 z0, z1;
+    int8 negCount = ( - count ) & 63;
+
+    if ( count == 0 ) {
+        z1 = a1;
+        z0 = a0;
+    }
+    else if ( count < 64 ) {
+        z1 = ( a0<<negCount ) | ( a1>>count ) | ( ( a1<<negCount ) != 0 );
+        z0 = a0>>count;
+    }
+    else {
+        if ( count == 64 ) {
+            z1 = a0 | ( a1 != 0 );
+        }
+        else if ( count < 128 ) {
+            z1 = ( a0>>( count & 63 ) ) | ( ( ( a0<<negCount ) | a1 ) != 0 );
+        }
+        else {
+            z1 = ( ( a0 | a1 ) != 0 );
+        }
+        z0 = 0;
+    }
+    *z1Ptr = z1;
+    *z0Ptr = z0;
+
+}
+
+/*----------------------------------------------------------------------------
+| Shifts the 192-bit value formed by concatenating `a0', `a1', and `a2' right
+| by 64 _plus_ the number of bits given in `count'.  The shifted result is
+| at most 128 nonzero bits; these are broken into two 64-bit pieces which are
 | stored at the locations pointed to by `z0Ptr' and `z1Ptr'.  The bits shifted
-| off form a third 32-bit result as follows:  The _last_ bit shifted off is
-| the most-significant bit of the extra result, and the other 31 bits of the
+| off form a third 64-bit result as follows:  The _last_ bit shifted off is
+| the most-significant bit of the extra result, and the other 63 bits of the
 | extra result are all zero if and only if _all_but_the_last_ bits shifted off
 | were all zero.  This extra result is stored in the location pointed to by
 | `z2Ptr'.  The value of `count' can be arbitrarily large.
@@ -152,18 +224,18 @@ void
 *----------------------------------------------------------------------------*/
 
 void
- shift64ExtraRightJamming(
-     bits32 a0,
-     bits32 a1,
-     bits32 a2,
+ shift128ExtraRightJamming(
+     bits64 a0,
+     bits64 a1,
+     bits64 a2,
      int16 count,
-     bits32 *z0Ptr,
-     bits32 *z1Ptr,
-     bits32 *z2Ptr
+     bits64 *z0Ptr,
+     bits64 *z1Ptr,
+     bits64 *z2Ptr
  )
 {
-    bits32 z0, z1, z2;
-    int8 negCount = ( - count ) & 31;
+    bits64 z0, z1, z2;
+    int8 negCount = ( - count ) & 63;
 
     if ( count == 0 ) {
         z2 = a2;
@@ -171,24 +243,24 @@ void
         z0 = a0;
     }
     else {
-        if ( count < 32 ) {
+        if ( count < 64 ) {
             z2 = a1<<negCount;
             z1 = ( a0<<negCount ) | ( a1>>count );
             z0 = a0>>count;
         }
         else {
-            if ( count == 32 ) {
+            if ( count == 64 ) {
                 z2 = a1;
                 z1 = a0;
             }
             else {
                 a2 |= a1;
-                if ( count < 64 ) {
+                if ( count < 128 ) {
                     z2 = a0<<negCount;
-                    z1 = a0>>( count & 31 );
+                    z1 = a0>>( count & 63 );
                 }
                 else {
-                    z2 = ( count == 64 ) ? a0 : ( a0 != 0 );
+                    z2 = ( count == 128 ) ? a0 : ( a0 != 0 );
                     z1 = 0;
                 }
             }
@@ -203,50 +275,50 @@ void
 }
 
 /*----------------------------------------------------------------------------
-| Shifts the 64-bit value formed by concatenating `a0' and `a1' left by the
+| Shifts the 128-bit value formed by concatenating `a0' and `a1' left by the
 | number of bits given in `count'.  Any bits shifted off are lost.  The value
-| of `count' must be less than 32.  The result is broken into two 32-bit
+| of `count' must be less than 64.  The result is broken into two 64-bit
 | pieces which are stored at the locations pointed to by `z0Ptr' and `z1Ptr'.
 *----------------------------------------------------------------------------*/
 
 void
- shortShift64Left(
-     bits32 a0, bits32 a1, int16 count, bits32 *z0Ptr, bits32 *z1Ptr )
+ shortShift128Left(
+     bits64 a0, bits64 a1, int16 count, bits64 *z0Ptr, bits64 *z1Ptr )
 {
 
     *z1Ptr = a1<<count;
     *z0Ptr =
-        ( count == 0 ) ? a0 : ( a0<<count ) | ( a1>>( ( - count ) & 31 ) );
+        ( count == 0 ) ? a0 : ( a0<<count ) | ( a1>>( ( - count ) & 63 ) );
 
 }
 
 /*----------------------------------------------------------------------------
-| Shifts the 96-bit value formed by concatenating `a0', `a1', and `a2' left
+| Shifts the 192-bit value formed by concatenating `a0', `a1', and `a2' left
 | by the number of bits given in `count'.  Any bits shifted off are lost.
-| The value of `count' must be less than 32.  The result is broken into three
-| 32-bit pieces which are stored at the locations pointed to by `z0Ptr',
+| The value of `count' must be less than 64.  The result is broken into three
+| 64-bit pieces which are stored at the locations pointed to by `z0Ptr',
 | `z1Ptr', and `z2Ptr'.
 *----------------------------------------------------------------------------*/
 
 void
- shortShift96Left(
-     bits32 a0,
-     bits32 a1,
-     bits32 a2,
+ shortShift192Left(
+     bits64 a0,
+     bits64 a1,
+     bits64 a2,
      int16 count,
-     bits32 *z0Ptr,
-     bits32 *z1Ptr,
-     bits32 *z2Ptr
+     bits64 *z0Ptr,
+     bits64 *z1Ptr,
+     bits64 *z2Ptr
  )
 {
-    bits32 z0, z1, z2;
+    bits64 z0, z1, z2;
     int8 negCount;
 
     z2 = a2<<count;
     z1 = a1<<count;
     z0 = a0<<count;
     if ( 0 < count ) {
-        negCount = ( ( - count ) & 31 );
+        negCount = ( ( - count ) & 63 );
         z1 |= a2>>negCount;
         z0 |= a1>>negCount;
     }
@@ -257,17 +329,17 @@ void
 }
 
 /*----------------------------------------------------------------------------
-| Adds the 64-bit value formed by concatenating `a0' and `a1' to the 64-bit
-| value formed by concatenating `b0' and `b1'.  Addition is modulo 2^64, so
-| any carry out is lost.  The result is broken into two 32-bit pieces which
+| Adds the 128-bit value formed by concatenating `a0' and `a1' to the 128-bit
+| value formed by concatenating `b0' and `b1'.  Addition is modulo 2^128, so
+| any carry out is lost.  The result is broken into two 64-bit pieces which
 | are stored at the locations pointed to by `z0Ptr' and `z1Ptr'.
 *----------------------------------------------------------------------------*/
 
 void
- add64(
-     bits32 a0, bits32 a1, bits32 b0, bits32 b1, bits32 *z0Ptr, bits32 *z1Ptr )
+ add128(
+     bits64 a0, bits64 a1, bits64 b0, bits64 b1, bits64 *z0Ptr, bits64 *z1Ptr )
 {
-    bits32 z1;
+    bits64 z1;
 
     z1 = a1 + b1;
     *z1Ptr = z1;
@@ -276,27 +348,27 @@ void
 }
 
 /*----------------------------------------------------------------------------
-| Adds the 96-bit value formed by concatenating `a0', `a1', and `a2' to the
-| 96-bit value formed by concatenating `b0', `b1', and `b2'.  Addition is
-| modulo 2^96, so any carry out is lost.  The result is broken into three
-| 32-bit pieces which are stored at the locations pointed to by `z0Ptr',
+| Adds the 192-bit value formed by concatenating `a0', `a1', and `a2' to the
+| 192-bit value formed by concatenating `b0', `b1', and `b2'.  Addition is
+| modulo 2^192, so any carry out is lost.  The result is broken into three
+| 64-bit pieces which are stored at the locations pointed to by `z0Ptr',
 | `z1Ptr', and `z2Ptr'.
 *----------------------------------------------------------------------------*/
 
 void
- add96(
-     bits32 a0,
-     bits32 a1,
-     bits32 a2,
-     bits32 b0,
-     bits32 b1,
-     bits32 b2,
-     bits32 *z0Ptr,
-     bits32 *z1Ptr,
-     bits32 *z2Ptr
+ add192(
+     bits64 a0,
+     bits64 a1,
+     bits64 a2,
+     bits64 b0,
+     bits64 b1,
+     bits64 b2,
+     bits64 *z0Ptr,
+     bits64 *z1Ptr,
+     bits64 *z2Ptr
  )
 {
-    bits32 z0, z1, z2;
+    bits64 z0, z1, z2;
     int8 carry0, carry1;
 
     z2 = a2 + b2;
@@ -314,16 +386,16 @@ void
 }
 
 /*----------------------------------------------------------------------------
-| Subtracts the 64-bit value formed by concatenating `b0' and `b1' from the
-| 64-bit value formed by concatenating `a0' and `a1'.  Subtraction is modulo
-| 2^64, so any borrow out (carry out) is lost.  The result is broken into two
-| 32-bit pieces which are stored at the locations pointed to by `z0Ptr' and
+| Subtracts the 128-bit value formed by concatenating `b0' and `b1' from the
+| 128-bit value formed by concatenating `a0' and `a1'.  Subtraction is modulo
+| 2^128, so any borrow out (carry out) is lost.  The result is broken into two
+| 64-bit pieces which are stored at the locations pointed to by `z0Ptr' and
 | `z1Ptr'.
 *----------------------------------------------------------------------------*/
 
 void
- sub64(
-     bits32 a0, bits32 a1, bits32 b0, bits32 b1, bits32 *z0Ptr, bits32 *z1Ptr )
+ sub128(
+     bits64 a0, bits64 a1, bits64 b0, bits64 b1, bits64 *z0Ptr, bits64 *z1Ptr )
 {
 
     *z1Ptr = a1 - b1;
@@ -332,27 +404,27 @@ void
 }
 
 /*----------------------------------------------------------------------------
-| Subtracts the 96-bit value formed by concatenating `b0', `b1', and `b2' from
-| the 96-bit value formed by concatenating `a0', `a1', and `a2'.  Subtraction
-| is modulo 2^96, so any borrow out (carry out) is lost.  The result is broken
-| into three 32-bit pieces which are stored at the locations pointed to by
-| `z0Ptr', `z1Ptr', and `z2Ptr'.
+| Subtracts the 192-bit value formed by concatenating `b0', `b1', and `b2'
+| from the 192-bit value formed by concatenating `a0', `a1', and `a2'.
+| Subtraction is modulo 2^192, so any borrow out (carry out) is lost.  The
+| result is broken into three 64-bit pieces which are stored at the locations
+| pointed to by `z0Ptr', `z1Ptr', and `z2Ptr'.
 *----------------------------------------------------------------------------*/
 
 void
- sub96(
-     bits32 a0,
-     bits32 a1,
-     bits32 a2,
-     bits32 b0,
-     bits32 b1,
-     bits32 b2,
-     bits32 *z0Ptr,
-     bits32 *z1Ptr,
-     bits32 *z2Ptr
+ sub192(
+     bits64 a0,
+     bits64 a1,
+     bits64 a2,
+     bits64 b0,
+     bits64 b1,
+     bits64 b2,
+     bits64 *z0Ptr,
+     bits64 *z1Ptr,
+     bits64 *z2Ptr
  )
 {
-    bits32 z0, z1, z2;
+    bits64 z0, z1, z2;
     int8 borrow0, borrow1;
 
     z2 = a2 - b2;
@@ -370,27 +442,27 @@ void
 }
 
 /*----------------------------------------------------------------------------
-| Multiplies `a' by `b' to obtain a 64-bit product.  The product is broken
-| into two 32-bit pieces which are stored at the locations pointed to by
+| Multiplies `a' by `b' to obtain a 128-bit product.  The product is broken
+| into two 64-bit pieces which are stored at the locations pointed to by
 | `z0Ptr' and `z1Ptr'.
 *----------------------------------------------------------------------------*/
 
-void mul32To64( bits32 a, bits32 b, bits32 *z0Ptr, bits32 *z1Ptr )
+void mul64To128( bits64 a, bits64 b, bits64 *z0Ptr, bits64 *z1Ptr )
 {
-    bits16 aHigh, aLow, bHigh, bLow;
-    bits32 z0, zMiddleA, zMiddleB, z1;
+    bits32 aHigh, aLow, bHigh, bLow;
+    bits64 z0, zMiddleA, zMiddleB, z1;
 
     aLow = a;
-    aHigh = a>>16;
+    aHigh = a>>32;
     bLow = b;
-    bHigh = b>>16;
-    z1 = ( (bits32) aLow ) * bLow;
-    zMiddleA = ( (bits32) aLow ) * bHigh;
-    zMiddleB = ( (bits32) aHigh ) * bLow;
-    z0 = ( (bits32) aHigh ) * bHigh;
+    bHigh = b>>32;
+    z1 = ( (bits64) aLow ) * bLow;
+    zMiddleA = ( (bits64) aLow ) * bHigh;
+    zMiddleB = ( (bits64) aHigh ) * bLow;
+    z0 = ( (bits64) aHigh ) * bHigh;
     zMiddleA += zMiddleB;
-    z0 += ( ( (bits32) ( zMiddleA < zMiddleB ) )<<16 ) + ( zMiddleA>>16 );
-    zMiddleA <<= 16;
+    z0 += ( ( (bits64) ( zMiddleA < zMiddleB ) )<<32 ) + ( zMiddleA>>32 );
+    zMiddleA <<= 32;
     z1 += zMiddleA;
     z0 += ( z1 < zMiddleA );
     *z1Ptr = z1;
@@ -399,27 +471,27 @@ void mul32To64( bits32 a, bits32 b, bits32 *z0Ptr, bits32 *z1Ptr )
 }
 
 /*----------------------------------------------------------------------------
-| Multiplies the 64-bit value formed by concatenating `a0' and `a1' by `b'
-| to obtain a 96-bit product.  The product is broken into three 32-bit pieces
-| which are stored at the locations pointed to by `z0Ptr', `z1Ptr', and
+| Multiplies the 128-bit value formed by concatenating `a0' and `a1' by
+| `b' to obtain a 192-bit product.  The product is broken into three 64-bit
+| pieces which are stored at the locations pointed to by `z0Ptr', `z1Ptr', and
 | `z2Ptr'.
 *----------------------------------------------------------------------------*/
 
 void
- mul64By32To96(
-     bits32 a0,
-     bits32 a1,
-     bits32 b,
-     bits32 *z0Ptr,
-     bits32 *z1Ptr,
-     bits32 *z2Ptr
+ mul128By64To192(
+     bits64 a0,
+     bits64 a1,
+     bits64 b,
+     bits64 *z0Ptr,
+     bits64 *z1Ptr,
+     bits64 *z2Ptr
  )
 {
-    bits32 z0, z1, z2, more1;
+    bits64 z0, z1, z2, more1;
 
-    mul32To64( a1, b, &z1, &z2 );
-    mul32To64( a0, b, &z0, &more1 );
-    add64( z0, more1, 0, z1, &z0, &z1 );
+    mul64To128( a1, b, &z1, &z2 );
+    mul64To128( a0, b, &z0, &more1 );
+    add128( z0, more1, 0, z1, &z0, &z1 );
     *z2Ptr = z2;
     *z1Ptr = z1;
     *z0Ptr = z0;
@@ -427,35 +499,35 @@ void
 }
 
 /*----------------------------------------------------------------------------
-| Multiplies the 64-bit value formed by concatenating `a0' and `a1' to the
-| 64-bit value formed by concatenating `b0' and `b1' to obtain a 128-bit
-| product.  The product is broken into four 32-bit pieces which are stored at
+| Multiplies the 128-bit value formed by concatenating `a0' and `a1' to the
+| 128-bit value formed by concatenating `b0' and `b1' to obtain a 256-bit
+| product.  The product is broken into four 64-bit pieces which are stored at
 | the locations pointed to by `z0Ptr', `z1Ptr', `z2Ptr', and `z3Ptr'.
 *----------------------------------------------------------------------------*/
 
 void
- mul64To128(
-     bits32 a0,
-     bits32 a1,
-     bits32 b0,
-     bits32 b1,
-     bits32 *z0Ptr,
-     bits32 *z1Ptr,
-     bits32 *z2Ptr,
-     bits32 *z3Ptr
+ mul128To256(
+     bits64 a0,
+     bits64 a1,
+     bits64 b0,
+     bits64 b1,
+     bits64 *z0Ptr,
+     bits64 *z1Ptr,
+     bits64 *z2Ptr,
+     bits64 *z3Ptr
  )
 {
-    bits32 z0, z1, z2, z3;
-    bits32 more1, more2;
+    bits64 z0, z1, z2, z3;
+    bits64 more1, more2;
 
-    mul32To64( a1, b1, &z2, &z3 );
-    mul32To64( a1, b0, &z1, &more2 );
-    add64( z1, more2, 0, z2, &z1, &z2 );
-    mul32To64( a0, b0, &z0, &more1 );
-    add64( z0, more1, 0, z1, &z0, &z1 );
-    mul32To64( a0, b1, &more1, &more2 );
-    add64( more1, more2, 0, z2, &more1, &z2 );
-    add64( z0, z1, 0, more1, &z0, &z1 );
+    mul64To128( a1, b1, &z2, &z3 );
+    mul64To128( a1, b0, &z1, &more2 );
+    add128( z1, more2, 0, z2, &z1, &z2 );
+    mul64To128( a0, b0, &z0, &more1 );
+    add128( z0, more1, 0, z1, &z0, &z1 );
+    mul64To128( a0, b1, &more1, &more2 );
+    add128( more1, more2, 0, z2, &more1, &z2 );
+    add128( z0, z1, 0, more1, &z0, &z1 );
     *z3Ptr = z3;
     *z2Ptr = z2;
     *z1Ptr = z1;
@@ -464,32 +536,32 @@ void
 }
 
 /*----------------------------------------------------------------------------
-| Returns an approximation to the 32-bit integer quotient obtained by dividing
-| `b' into the 64-bit value formed by concatenating `a0' and `a1'.  The
-| divisor `b' must be at least 2^31.  If q is the exact quotient truncated
+| Returns an approximation to the 64-bit integer quotient obtained by dividing
+| `b' into the 128-bit value formed by concatenating `a0' and `a1'.  The
+| divisor `b' must be at least 2^63.  If q is the exact quotient truncated
 | toward zero, the approximation returned lies between q and q + 2 inclusive.
-| If the exact quotient q is larger than 32 bits, the maximum positive 32-bit
+| If the exact quotient q is larger than 64 bits, the maximum positive 64-bit
 | unsigned integer is returned.
 *----------------------------------------------------------------------------*/
 
-bits32 estimateDiv64To32( bits32 a0, bits32 a1, bits32 b )
+bits64 estimateDiv128To64( bits64 a0, bits64 a1, bits64 b )
 {
-    bits32 b0, b1;
-    bits32 rem0, rem1, term0, term1;
-    bits32 z;
+    bits64 b0, b1;
+    bits64 rem0, rem1, term0, term1;
+    bits64 z;
 
-    if ( b <= a0 ) return 0xFFFFFFFF;
-    b0 = b>>16;
-    z = ( b0<<16 <= a0 ) ? 0xFFFF0000 : ( a0 / b0 )<<16;
-    mul32To64( b, z, &term0, &term1 );
-    sub64( a0, a1, term0, term1, &rem0, &rem1 );
-    while ( ( (sbits32) rem0 ) < 0 ) {
-        z -= 0x10000;
-        b1 = b<<16;
-        add64( rem0, rem1, b0, b1, &rem0, &rem1 );
+    if ( b <= a0 ) return LIT64( 0xFFFFFFFFFFFFFFFF );
+    b0 = b>>32;
+    z = ( b0<<32 <= a0 ) ? LIT64( 0xFFFFFFFF00000000 ) : ( a0 / b0 )<<32;
+    mul64To128( b, z, &term0, &term1 );
+    sub128( a0, a1, term0, term1, &rem0, &rem1 );
+    while ( ( (sbits64) rem0 ) < 0 ) {
+        z -= LIT64( 0x100000000 );
+        b1 = b<<32;
+        add128( rem0, rem1, b0, b1, &rem0, &rem1 );
     }
-    rem0 = ( rem0<<16 ) | ( rem1>>16 );
-    z |= ( b0<<16 <= rem0 ) ? 0xFFFF : rem0 / b0;
+    rem0 = ( rem0<<32 ) | ( rem1>>32 );
+    z |= ( b0<<32 <= rem0 ) ? 0xFFFFFFFF : rem0 / b0;
     return z;
 
 }
@@ -529,7 +601,7 @@ bits32 estimateSqrt32( int16 aExp, bits32 a )
         z = ( 0x20000 <= z ) ? 0xFFFF8000 : ( z<<15 );
         if ( z <= a ) return (bits32) ( ( (sbits32) a )>>1 );
     }
-    return ( ( estimateDiv64To32( a, 0, z ) )>>1 ) + ( z>>1 );
+    return ( (bits32) ( ( ( (bits64) a )<<31 ) / z ) ) + ( z>>1 );
 
 }
 
@@ -575,12 +647,33 @@ int8 countLeadingZeros32( bits32 a )
 }
 
 /*----------------------------------------------------------------------------
-| Returns 1 if the 64-bit value formed by concatenating `a0' and `a1' is
-| equal to the 64-bit value formed by concatenating `b0' and `b1'.  Otherwise,
-| returns 0.
+| Returns the number of leading 0 bits before the most-significant 1 bit of
+| `a'.  If `a' is zero, 64 is returned.
 *----------------------------------------------------------------------------*/
 
-flag eq64( bits32 a0, bits32 a1, bits32 b0, bits32 b1 )
+int8 countLeadingZeros64( bits64 a )
+{
+    int8 shiftCount;
+
+    shiftCount = 0;
+    if ( a < ( (bits64) 1 )<<32 ) {
+        shiftCount += 32;
+    }
+    else {
+        a >>= 32;
+    }
+    shiftCount += countLeadingZeros32( a );
+    return shiftCount;
+
+}
+
+/*----------------------------------------------------------------------------
+| Returns 1 if the 128-bit value formed by concatenating `a0' and `a1'
+| is equal to the 128-bit value formed by concatenating `b0' and `b1'.
+| Otherwise, returns 0.
+*----------------------------------------------------------------------------*/
+
+flag eq128( bits64 a0, bits64 a1, bits64 b0, bits64 b1 )
 {
 
     return ( a0 == b0 ) && ( a1 == b1 );
@@ -588,12 +681,12 @@ flag eq64( bits32 a0, bits32 a1, bits32 b0, bits32 b1 )
 }
 
 /*----------------------------------------------------------------------------
-| Returns 1 if the 64-bit value formed by concatenating `a0' and `a1' is less
-| than or equal to the 64-bit value formed by concatenating `b0' and `b1'.
+| Returns 1 if the 128-bit value formed by concatenating `a0' and `a1' is less
+| than or equal to the 128-bit value formed by concatenating `b0' and `b1'.
 | Otherwise, returns 0.
 *----------------------------------------------------------------------------*/
 
-flag le64( bits32 a0, bits32 a1, bits32 b0, bits32 b1 )
+flag le128( bits64 a0, bits64 a1, bits64 b0, bits64 b1 )
 {
 
     return ( a0 < b0 ) || ( ( a0 == b0 ) && ( a1 <= b1 ) );
@@ -601,12 +694,12 @@ flag le64( bits32 a0, bits32 a1, bits32 b0, bits32 b1 )
 }
 
 /*----------------------------------------------------------------------------
-| Returns 1 if the 64-bit value formed by concatenating `a0' and `a1' is less
-| than the 64-bit value formed by concatenating `b0' and `b1'.  Otherwise,
+| Returns 1 if the 128-bit value formed by concatenating `a0' and `a1' is less
+| than the 128-bit value formed by concatenating `b0' and `b1'.  Otherwise,
 | returns 0.
 *----------------------------------------------------------------------------*/
 
-flag lt64( bits32 a0, bits32 a1, bits32 b0, bits32 b1 )
+flag lt128( bits64 a0, bits64 a1, bits64 b0, bits64 b1 )
 {
 
     return ( a0 < b0 ) || ( ( a0 == b0 ) && ( a1 < b1 ) );
@@ -614,12 +707,12 @@ flag lt64( bits32 a0, bits32 a1, bits32 b0, bits32 b1 )
 }
 
 /*----------------------------------------------------------------------------
-| Returns 1 if the 64-bit value formed by concatenating `a0' and `a1' is not
-| equal to the 64-bit value formed by concatenating `b0' and `b1'.  Otherwise,
-| returns 0.
+| Returns 1 if the 128-bit value formed by concatenating `a0' and `a1' is
+| not equal to the 128-bit value formed by concatenating `b0' and `b1'.
+| Otherwise, returns 0.
 *----------------------------------------------------------------------------*/
 
-flag ne64( bits32 a0, bits32 a1, bits32 b0, bits32 b1 )
+flag ne128( bits64 a0, bits64 a1, bits64 b0, bits64 b1 )
 {
 
     return ( a0 != b0 ) || ( a1 != b1 );

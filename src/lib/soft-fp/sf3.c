@@ -3,8 +3,10 @@
  *
  * @date 26.11.09
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  */
 
+#include "conversion_routines.h"
 #include <lib/softfloat.h>
 
 #define PROCESS_OP(op) \

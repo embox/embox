@@ -6,18 +6,26 @@
  * @author Ilia Vaprol
  */
 
-#include <lib/math/ieee754.h>
+#include <assert.h>
+#include <lib/math/ieee.h>
 
 int signbit(double x) {
-	return ((union ieee754_double *)&x)->ieee.negative;
+	static_assert(sizeof x == sizeof(struct ieee_binary64));
+	return ((struct ieee_binary64 *)&x)->negative;
 }
 
 int signbitf(float x) {
-	return ((union ieee754_single *)&x)->ieee.negative;
+	static_assert(sizeof x == sizeof(struct ieee_binary32));
+	return ((struct ieee_binary32 *)&x)->negative;
 }
 
 int signbitl(long double x) {
-	/* FIXME it's work only if size of double and long double are the same */
-	/*assert(sizeof x == sizeof(double));*/
-	return signbit((double)x);
+	static_assert((sizeof x == sizeof(struct ieee_binary64))
+			|| (sizeof x == sizeof(struct ieee_binary80))
+			|| (sizeof x == sizeof(struct ieee_binary96)));
+	return sizeof x == sizeof(struct ieee_binary64)
+			? ((struct ieee_binary64 *)&x)->negative
+			: sizeof x == sizeof(struct ieee_binary80)
+				? ((struct ieee_binary80 *)&x)->negative
+				: ((struct ieee_binary96 *)&x)->negative;
 }
