@@ -89,7 +89,7 @@ static int read_file(char *path, char *buffer, size_t b_count, blkno_t blkno) {
 		return -1;
 	}
 
-	bytesread = read(file, buffer, b_count * BSIZE);
+	bytesread = read(file, buffer, b_count);
 	close(file);
 
 	return bytesread;
@@ -130,7 +130,7 @@ static int exec(int argc, char **argv) {
 		return -1;
 	}
 
-	blkno = 0; b_count = 1;
+	blkno = 0; b_count = BSIZE;
 	if(0 == get_arg(argc, argv, NUM_B, num)) {
 		sscanf(num, "%u", &b_count);
 	}
@@ -145,9 +145,9 @@ static int exec(int argc, char **argv) {
 
 	if (node_is_block_dev(nod)) {
 		nas = nod->nas;
-		if(b_count * BSIZE == block_dev_read(nas->fi->privdata,
-							buffer, b_count * BSIZE, blkno)) {
-			print_data(buffer, b_count * BSIZE, blkno);
+		if(b_count == block_dev_read(nas->fi->privdata,
+							buffer, b_count, blkno)) {
+			print_data(buffer, b_count, blkno);
 		}
 		else {
 			rc = -1;
