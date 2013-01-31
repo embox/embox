@@ -10,13 +10,16 @@
 #include <drivers/video/fb.h>
 #include <embox/device.h>
 #include <errno.h>
+#include <framework/mod/options.h>
 #include <mem/misc/pool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-POOL_DEF(fb_pool, struct fb_info, FB_MAX);
-static struct fb_info *registered_fb[FB_MAX];
+#define MODOPS_FB_AMOUNT OPTION_GET(NUMBER, fb_amount)
+
+POOL_DEF(fb_pool, struct fb_info, MODOPS_FB_AMOUNT);
+static struct fb_info *registered_fb[MODOPS_FB_AMOUNT];
 static unsigned int num_registered_fb = 0;
 
 extern const struct kfile_operations fb_common_ops;

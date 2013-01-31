@@ -6,8 +6,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef LINUX_FB_H_
-#define LINUX_FB_H_
+#ifndef DRIVERS_VIDEO_FB_H_
+#define DRIVERS_VIDEO_FB_H_
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -90,4 +90,4 @@ extern void fb_release(struct fb_info *info);
 #define fb_memcpy_fromfb     memcpy
 #define fb_memcpy_tofb       memcpy
 
-#endif /* LINUX_FB_H_ */
+#endif /* DRIVERS_VIDEO_FB_H_ */

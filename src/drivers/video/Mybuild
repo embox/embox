@@ -3,6 +3,7 @@ package embox.driver.video
 
 module fb {
 	source "fb.c"
+	option number fb_amount=2
 	depends embox.mem.pool
 	depends embox.lib.LibC
 	depends embox.fs.rootfs
