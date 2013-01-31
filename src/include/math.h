@@ -79,6 +79,7 @@ extern long double logl(long double x);
 /* Square root functions */
 extern double sqrt(double x);
 extern float sqrtf(float x);
+extern long double sqrtl(long double x);
 
 extern double acos(double);
 extern double asin(double);

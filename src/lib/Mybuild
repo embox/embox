@@ -112,7 +112,7 @@ static module LibCMath {
 	depends third_party.lib.Fdlibm
 
 	@IncludePath("$(THIRDPARTY_DIR)/include")
-	source "soft-fp/df3.c", "soft-fp/sf3.c"
+	source "soft-fp/sf.c", "soft-fp/df.c", "soft-fp/tf.c"
 	depends third_party.lib.softfloat
 
 	source "gcc/clzsi2.c"
