@@ -38,8 +38,8 @@ static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
 };
 
 static const struct fb_var_screeninfo bochs_default_var_screeninfo = {
-	.xres = 1024,
-	.yres = 768,
+	.xres = 1280,
+	.yres = 1024,
 	.bits_per_pixel = 16
 };
 

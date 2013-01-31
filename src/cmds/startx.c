@@ -41,8 +41,8 @@ int xwnd_init(void) {
 
 	display_clear_screen(&display);
 #else
-	const unsigned short color1 = 0xF000, color2 = 0x0F00,
-		 	 color3 = 0xF0F0, color4 = 0x000F;
+	const unsigned short color1 = 0xF0, color2 = 0x0F,
+		 	 color3 = 0x70, color4 = 0x07;
 	struct fb_info *info = fb_lookup("fb0");
 	info->ops->fb_set_par(info);
 	fb_memset(info->screen_base, color1, info->screen_size / 4);
