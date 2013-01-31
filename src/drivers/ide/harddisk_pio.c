@@ -37,6 +37,9 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
 	sectsleft = count / SECTOR_SIZE;
+	if(count % SECTOR_SIZE) {
+		sectsleft++;
+	}
 
 	while (sectsleft > 0) {
 		/* Select drive */

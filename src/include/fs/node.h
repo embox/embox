@@ -58,7 +58,7 @@ extern void node_free(node_t *node);
 
 
 static inline int node_is_block_dev(struct node *node) {
-	return 1;
+	return node->type & NODE_TYPE_SPECIAL;
 }
 
 static inline int node_is_directory(struct node *node) {

@@ -92,7 +92,13 @@ int cpio_unpack(char *dir) {
 		cpio_h = cpio_next;
 		if(param.size == 0) {
 			/* this is a directory */
-			printk("cpio initramfs not support directory now\n");
+			//printk("cpio initramfs not support directory now\n");
+			if (NULL == (node = vfs_find_node(param.name, unpack_dir_node))) {
+				return 0;/*file already exist*/
+			}
+			node->type = NODE_TYPE_DIRECTORY | S_IREAD; /* read only file */
+			((struct nas *)(node->nas))->fi =(void *) &param;
+			nas->fs->drv->fsop->create_node(unpack_dir_node, node);
 		} else {
 			/* this is a regular file */
 			if (NULL == (node = vfs_add_path(param.name, unpack_dir_node))) {
