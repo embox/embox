@@ -7,6 +7,7 @@
  */
 
 #include <embox/device.h>
+#include <errno.h>
 #include <fs/file_desc.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
@@ -38,7 +39,7 @@ int char_dev_register(const char *name, const struct kfile_operations *ops) {
 
 	nod = vfs_find_node("/dev", NULL);
 	if (nod == NULL) {
-		return -1;
+		return -ENODEV;
 	}
 
 	devnod = vfs_add_path(name, nod);
@@ -49,7 +50,7 @@ int char_dev_register(const char *name, const struct kfile_operations *ops) {
 	dev_nas = devnod->nas;
 	dev_nas->fs = alloc_filesystem("empty");
 	if (dev_nas->fs == NULL) {
-		return -1;
+		return -ENOMEM;
 	}
 
 	dev_nas->fs->file_op = ops;

@@ -1,6 +1,13 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.video
 
+module fb {
+	source "fb.c"
+	depends embox.mem.pool
+	depends embox.lib.LibC
+	depends embox.fs.rootfs
+}
+
 module display {
 	source "display.c"
 	depends embox.util.List
@@ -9,8 +16,8 @@ module display {
 
 module bochs {
 	source "bochs.c"
+	depends fb
 	depends embox.driver.pci
-	depends embox.driver.video.display
 	depends embox.lib.LibC
 }
 

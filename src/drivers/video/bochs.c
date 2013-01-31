@@ -7,79 +7,63 @@
 
 #include <assert.h>
 #include <drivers/pci/pci.h>
-#include <drivers/video/display.h>
+#include <drivers/video/fb.h>
 #include <drivers/video/vbe.h>
+#include <errno.h>
 
 PCI_DRIVER("bochs", bochs_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 
-static void bochs_set_resolution(uint16_t xres, uint16_t yres, uint16_t bpp) {
+int bochs_check_var(struct fb_var_screeninfo *var, struct fb_info *info) {
+	return 0;
+}
+
+int bochs_set_par(struct fb_info *info) {
+	info->screen_size = info->var.xres * info->var.yres
+			* (info->var.bits_per_pixel / 8);
 	vbe_write(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_DISABLED);
-	vbe_write(VBE_DISPI_INDEX_XRES, xres);
-	vbe_write(VBE_DISPI_INDEX_YRES, yres);
-	vbe_write(VBE_DISPI_INDEX_BPP, bpp);
+	vbe_write(VBE_DISPI_INDEX_XRES, info->var.xres);
+	vbe_write(VBE_DISPI_INDEX_YRES, info->var.yres);
+	vbe_write(VBE_DISPI_INDEX_BPP, info->var.bits_per_pixel);
 	vbe_write(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_ENABLED | VBE_DISPI_LFB_ENABLED);
+	return 0;
 }
 
-static void bochs_setup(struct display *displ, unsigned int width,
-		unsigned int height, unsigned int mode) {
-	assert(displ != NULL);
+static const struct fb_ops bochs_ops = {
+	.fb_check_var = bochs_check_var,
+	.fb_set_par = bochs_set_par
+};
 
-	displ->width = width;
-	displ->height = height;
-	displ->mode = mode;
+static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
+	.name = "Bochs framebuffer"
+};
 
-	bochs_set_resolution(displ->width, displ->height,
-			displ->mode & DISPLAY_MODE_DEPTH16 ? 16
-				: displ->mode & DISPLAY_MODE_DEPTH32 ? 32 : 8); /* depth is 8 by default */
-}
-
-static void bochs_set_pixel(struct display *displ, unsigned int x, unsigned int y,
-		unsigned int color) {
-	size_t pixel_offset;
-
-	assert(displ != NULL);
-	assert(displ->vga_regs != NULL);
-
-	pixel_offset = x + y * displ->width;
-	if (displ->mode & DISPLAY_MODE_DEPTH16) {
-		*((uint16_t *)displ->vga_regs + pixel_offset) = color;
-	}
-	else if (displ->mode & DISPLAY_MODE_DEPTH32) {
-		*((uint32_t *)displ->vga_regs + pixel_offset) = color;
-	}
-	else {
-		*((uint8_t *)displ->vga_regs + pixel_offset) = color;
-	}
-}
-
-static unsigned int bochs_get_pixel(struct display *displ, unsigned int x,
-		unsigned int y) {
-	size_t pixel_offset;
-
-	assert(displ != NULL);
-	assert(displ->vga_regs != NULL);
-
-	pixel_offset = x + y * displ->width;
-	return displ->mode & DISPLAY_MODE_DEPTH16
-			? *((uint16_t *)displ->vga_regs + pixel_offset)
-			: displ->mode & DISPLAY_MODE_DEPTH32
-				? *((uint32_t *)displ->vga_regs + pixel_offset)
-				: *((uint8_t *)displ->vga_regs + pixel_offset);
-}
-
-static const struct display_options bochs_display_options = {
-	.setup = &bochs_setup,
-	.get_pixel = &bochs_get_pixel,
-	.set_pixel = &bochs_set_pixel
+static const struct fb_var_screeninfo bochs_default_var_screeninfo = {
+	.xres = 1024,
+	.yres = 768,
+	.bits_per_pixel = 16
 };
 
 static int bochs_init(struct pci_slot_dev *pci_dev) {
-	static struct display bochs_display;
+	int ret;
+	struct fb_info *info;
 
 	assert(pci_dev != NULL);
 
-	display_init(&bochs_display, "Bochs display", &bochs_display_options,
-			(void *)(pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK));
+	info = fb_alloc();
+	if (info == NULL) {
+		return -ENOMEM;
+	}
 
-	return display_register(&bochs_display);
+	memcpy(&info->fix, &bochs_fix_screeninfo, sizeof info->fix);
+	memcpy(&info->var, &bochs_default_var_screeninfo, sizeof info->var);
+	info->ops = &bochs_ops;
+	info->screen_base = (void *)(pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
+
+	ret = fb_register(info);
+	if (ret != 0) {
+		fb_release(info);
+		return ret;
+	}
+
+	return 0;
 }
