@@ -591,6 +591,7 @@ struct ext2_xattr_hdr {
 };
 
 #define EXT2_XATTR_HDR_MAGIC 0xea020000
+#define EXT2_XATTR_PAD 4
 
 /* balloc.c */
 //void ext2_discard_preallocated_blocks(struct nas *nas);

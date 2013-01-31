@@ -51,14 +51,13 @@ TEST_CASE("xattr should be getted") {
 	test_assert_zero(strcmp(buf, xattr_vl));
 }
 
-#if 0
 TEST_CASE("xattr should be added and removed") {
-	test_assert_zero(setxattr(TEST_FILE_NM, xattr_nm, xattr_vl, strlen(xattr_vl),
-				XATTR_CREATE));
+	/*test_assert_zero(setxattr(TEST_FILE_NM, xattr_nm, xattr_vl, strlen(xattr_vl),*/
+				/*XATTR_CREATE));*/
 	test_assert_zero(setxattr(TEST_FILE_NM, xattr_nm, NULL, 0, XATTR_REMOVE));
 	test_assert_zero(listxattr(TEST_FILE_NM, NULL, 0));
 }
-#endif
+
 static int setup_suite(void) {
         int res;
 
