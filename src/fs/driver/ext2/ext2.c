@@ -112,11 +112,14 @@ static int ext2_block_map(struct nas *nas, int32_t, uint32_t *);
 static int ext2_buf_read_file(struct nas *nas, char **, size_t *);
 static size_t ext2_write_file(struct nas *nas, char *buf_p, size_t size);
 static int ext2_new_block(struct nas *nas, long position);
-static void ext2_rw_inode(struct nas *nas, struct ext2fs_dinode* fdi, int rw_flag);
 static int ext2_search_directory(struct nas *nas, const char *, int, uint32_t *);
 static int ext2_read_sblock(struct nas *nas);
 static int ext2_read_gdblock(struct nas *nas);
 static int ext2_mount_entry(struct nas *nas);
+
+extern fsop_listxattr_ft ext2fs_listxattr __attribute__((weak));
+extern fsop_getxattr_ft ext2fs_getxattr __attribute__((weak));
+extern fsop_setxattr_ft ext2fs_setxattr __attribute__((weak));
 
 /* ext filesystem description pool */
 POOL_DEF(ext2_fs_pool, struct ext2_fs_info,
@@ -142,7 +145,7 @@ static struct kfile_operations ext2_fop = { ext2fs_open, ext2fs_close,
  * help function
  */
 
-static void *ext2_buff_alloc(struct nas *nas, size_t size) {
+void *ext2_buff_alloc(struct nas *nas, size_t size) {
 	struct ext2_fs_info *fsi;
 
 	fsi = nas->fs->fsi;
@@ -161,7 +164,7 @@ static void *ext2_buff_alloc(struct nas *nas, size_t size) {
 	return page_alloc(__phymem_allocator, fsi->s_page_count);
 }
 
-static int ext2_buff_free(struct nas *nas, char *buff) {
+int ext2_buff_free(struct nas *nas, char *buff) {
 	struct ext2_fs_info *fsi;
 
 	fsi = nas->fs->fsi;
@@ -296,9 +299,8 @@ static void ext2_set_node_type(int *type, uint8_t e2d_type) {
 		break;
 	}
 }
-;
 
-static int ext2_close(struct nas *nas) {
+int ext2_close(struct nas *nas) {
 	struct ext2_file_info *fi;
 
 	fi = nas->fi->privdata;
@@ -312,7 +314,7 @@ static int ext2_close(struct nas *nas) {
 	return 0;
 }
 
-static int ext2_open(struct nas *nas) {
+int ext2_open(struct nas *nas) {
 	int rc;
 	char path[MAX_LENGTH_PATH_NAME];
 	const char *cp, *ncp;
@@ -498,8 +500,17 @@ static int ext2fs_mount(void *dev, void *dir);
 static int ext2fs_create(struct node *parent_node, struct node *node);
 static int ext2fs_delete(struct node *node);
 
-static fsop_desc_t ext2_fsop = { ext2fs_init, ext2fs_format, ext2fs_mount,
-		ext2fs_create, ext2fs_delete };
+static fsop_desc_t ext2_fsop = {
+	.init	     = ext2fs_init,
+	.format	     = ext2fs_format,
+	.mount	     = ext2fs_mount,
+	.create_node = ext2fs_create,
+	.delete_node = ext2fs_delete,
+
+	.getxattr    = ext2fs_getxattr,
+	.setxattr    = ext2fs_setxattr,
+	.listxattr   = ext2fs_listxattr,
+};
 
 static int ext2fs_init(void * par) {
 
@@ -1833,7 +1844,7 @@ static int ext2_alloc_inode(struct nas *nas,
 	return rc;
 }
 
-static void ext2_rw_inode(struct nas *nas, struct ext2fs_dinode *fdi,
+void ext2_rw_inode(struct nas *nas, struct ext2fs_dinode *fdi,
 		int rw_flag) {
 	/* An entry in the inode table is to be copied to or from the disk. */
 

@@ -69,7 +69,7 @@
  *  Modified for ext2fs by Manuel Bouyer.
  */
 
-
+/* FIXME: prefix with EXT2_ */
 #define SECTOR_SIZE 512
 #define BBSIZE		1024
 #define SBSIZE		1024
@@ -570,18 +570,49 @@ typedef struct ext2_file_info {
 								 */
 } ext2_file_info_t;
 
+struct ext2_xattr_ent {
+	uint8_t		e_name_len;
+	uint8_t		e_name_index;
+	uint16_t	e_value_offs;
+	uint32_t	e_value_block;
+	uint32_t	e_value_size;
+	uint32_t	e_hash;
+	char		e_name;
+};
+
+struct ext2_xattr_hdr {
+	uint32_t	h_magic;
+	uint32_t	h_refcount;
+	uint32_t	h_blocks;
+	uint32_t	h_hash;
+	uint8_t		reserved[16];
+	struct ext2_xattr_ent
+			first_entry;
+};
+
+#define EXT2_XATTR_HDR_MAGIC 0xea020000
+
 /* balloc.c */
 //void ext2_discard_preallocated_blocks(struct nas *nas);
-uint32_t ext2_alloc_block(struct nas *nas, uint32_t goal);
-void ext2_free_block(struct nas *nas, uint32_t bit);
+extern uint32_t ext2_alloc_block(struct nas *nas, uint32_t goal);
+extern void ext2_free_block(struct nas *nas, uint32_t bit);
 
-int ext2_read_sector(struct nas *nas, char *buffer,
+extern int ext2_read_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector);
-int ext2_write_sector(struct nas *nas, char *buffer,
+extern int ext2_write_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector);
-struct ext2_gd* ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi);
+extern struct ext2_gd* ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi);
 
-uint32_t ext2_setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word);
-int ext2_unsetbit(uint32_t *bitmap, uint32_t bit);
+extern void *ext2_buff_alloc(struct nas *nas, size_t size);
+extern int ext2_buff_free(struct nas *nas, char *buff);
+
+extern uint32_t ext2_setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word);
+extern int ext2_unsetbit(uint32_t *bitmap, uint32_t bit);
+
+#define EXT2_R_INODE 0
+#define EXT2_W_INODE 1
+
+extern void ext2_rw_inode(struct nas *nas, struct ext2fs_dinode *fdi,
+	int rw_flag);
 
 #endif /* EXT_H_ */

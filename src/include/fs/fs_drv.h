@@ -12,29 +12,30 @@
 #include <fs/file_operation.h>
 #include <util/array.h>
 
-typedef int (*fsop_init_ft)(void *par);
-typedef int (*fsop_format_ft)(void *par);
-typedef int (*fsop_mount_ft)(void *dev_node, void *dir_node);
-typedef int (*fsop_create_ft)(struct node *parent_node, struct node *new_node);
-typedef int (*fsop_delete_ft)(struct node *node);
+typedef int (fsop_init_ft)(void *par);
+typedef int (fsop_format_ft)(void *par);
+typedef int (fsop_mount_ft)(void *dev_node, void *dir_node);
+typedef int (fsop_create_ft)(struct node *parent_node, struct node *new_node);
+typedef int (fsop_delete_ft)(struct node *node);
 
-typedef int (*fsop_getxattr_ft)(struct node *node, const char *name,
+/* TODO: consider following to accept nas * as first arg (Anton Kozlov) */
+typedef int (fsop_getxattr_ft)(struct node *node, const char *name,
                 char *value, size_t len);
-typedef int (*fsop_setxattr_ft)(struct node *node, const char *name,
+typedef int (fsop_setxattr_ft)(struct node *node, const char *name,
                 const char *value, size_t len, int flags);
-typedef int (*fsop_listxattr_ft)(struct node *node, const char *list,
+typedef int (fsop_listxattr_ft)(struct node *node, char *list,
                 size_t len);
 
 typedef struct fsop_desc {
-        fsop_init_ft      init;
-        fsop_format_ft    format;
-        fsop_mount_ft     mount;
-        fsop_create_ft    create_node;
-        fsop_delete_ft    delete_node;
+        fsop_init_ft      *init;
+        fsop_format_ft    *format;
+        fsop_mount_ft     *mount;
+        fsop_create_ft    *create_node;
+        fsop_delete_ft    *delete_node;
 
-        fsop_getxattr_ft  getxattr;
-        fsop_setxattr_ft  setxattr;
-        fsop_listxattr_ft listxattr;
+        fsop_getxattr_ft  *getxattr;
+        fsop_setxattr_ft  *setxattr;
+        fsop_listxattr_ft *listxattr;
 } fsop_desc_t;
 
 struct kfile_operations;
