@@ -1,0 +1,8 @@
+
+
+package embox.fs.driver.ext2
+
+module xattr {
+	source "xattr.c"
+}
+
