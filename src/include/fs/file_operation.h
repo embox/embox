@@ -6,12 +6,13 @@
  * @author Anton Kozlov
  */
 
-#ifndef KERNEL_FILE_H_
-#define KERNEL_FILE_H_
+#ifndef FS_FILE_OPERATION_H_
+#define FS_FILE_OPERATION_H_
 
-#include <types.h>
+#include <fs/file_desc.h>
+#include <fs/node.h>
 #include <stdarg.h>
-
+#include <stddef.h>
 
 struct node;
 struct file_desc;
@@ -30,4 +31,4 @@ typedef struct kfile_operations {
 	kfile_op_ioctl_ft ioctl;
 } kfile_operations_t;
 
-#endif /* KERNEL_FILE_H_ */
+#endif /* FS_FILE_OPERATION_H_ */
