@@ -36,9 +36,10 @@ QT_CONF_FLAGS_EMBOX += -D QT_USE_MMAP
 # Should be transitively disabled by NO_LIBRARY according to qfeatures.txt
 QT_CONF_FLAGS_EMBOX += -D QT_NO_BEARERMANAGEMENT
 # This flag looks suspicious: need to check how it works on Linux
-#QT_CONF_FLAGS_EMBOX += -D QT_NO_DYNAMIC_LIBRARY
+QT_CONF_FLAGS_EMBOX += -D QT_NO_DYNAMIC_LIBRARY
 #QT_CONF_FLAGS_EMBOX += -D QT_NO_LIBRARY_UNLOAD
-QT_CONF_FLAGS_EMBOX += -no-feature-LIBRARY           -D QT_NO_LIBRARY
+# QT_NO_LIBRARY disables static plugins so not using it
+#QT_CONF_FLAGS_EMBOX += -no-feature-LIBRARY           -D QT_NO_LIBRARY
 QT_CONF_FLAGS_EMBOX += -no-sql-sqlite
 # examples ?and demos? are not fully compilable
 QT_CONF_FLAGS_EMBOX += -nomake examples -nomake demos
