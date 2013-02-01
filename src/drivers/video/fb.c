@@ -71,6 +71,8 @@ int fb_unregister(struct fb_info *info) {
 struct fb_info * fb_lookup(const char *name) {
 	unsigned int num;
 
+	assert(name != NULL);
+
 	sscanf(name, "fb%u", &num);
 
 	assert(num < sizeof registered_fb / sizeof registered_fb[0]);
@@ -81,6 +83,9 @@ struct fb_info * fb_lookup(const char *name) {
 int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 	int ret;
 	struct fb_var_screeninfo old;
+
+	assert(info != NULL);
+	assert(var != NULL);
 
 	if (info->ops->fb_check_var == NULL) {
 		memcpy(var, &info->var, sizeof(struct fb_var_screeninfo));
@@ -110,6 +115,9 @@ void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
 	uint32_t size_x, size_y, j;
 	char *base;
 
+	assert(info != NULL);
+	assert(area != NULL);
+
 	size_x = area->width;
 	size_x = area->sx + size_x > info->var.xres
 			? info->var.xres - area->sx : size_x;
@@ -123,35 +131,36 @@ void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
 			? info->var.yres - area->dy : size_y;
 
 	base = (char *)info->screen_base;
+	assert(base != NULL);
 
 	if (area->sx <= area->dx) {
 		if (area->sy < area->dy) {
-			for (j = size_y; j > 0; --j) {
-				memmove(base + (area->dx + (j + area->dy ) * info->var.xres) * info->var.bits_per_pixel / 8,
-						base + (area->sx + (j + area->sy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+			for (j = size_y - 1; j >= 0; --j) {
+				memmove(base + (area->dx + (j + area->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
+						base + (area->sx + (j + area->sy) * info->var.xres) * info->var.bits_per_pixel / 8,
 						size_x * info->var.bits_per_pixel / 8);
 			}
 		}
 		else {
 			for (j = 0; j < size_y; ++j) {
-				memmove(base + (area->dx + (j + area->dy ) * info->var.xres) * info->var.bits_per_pixel / 8,
-						base + (area->sx + (j + area->sy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+				memmove(base + (area->dx + (j + area->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
+						base + (area->sx + (j + area->sy) * info->var.xres) * info->var.bits_per_pixel / 8,
 						size_x * info->var.bits_per_pixel / 8);
 			}
 		}
 	}
 	else {
 		if (area->sy < area->dy) {
-			for (j = size_y; j > 0; --j) {
-				memcpy(base + (area->dx + (j + area->dy ) * info->var.xres) * info->var.bits_per_pixel / 8,
-						base + (area->sx + (j + area->sy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+			for (j = size_y - 1; j >= 0; --j) {
+				memcpy(base + (area->dx + (j + area->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
+						base + (area->sx + (j + area->sy) * info->var.xres) * info->var.bits_per_pixel / 8,
 						size_x * info->var.bits_per_pixel / 8);
 			}
 		}
 		else {
 			for (j = 0; j < size_y; ++j) {
-				memcpy(base + (area->dx + (j + area->dy ) * info->var.xres) * info->var.bits_per_pixel / 8,
-						base + (area->sx + (j + area->sy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+				memcpy(base + (area->dx + (j + area->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
+						base + (area->sx + (j + area->sy) * info->var.xres) * info->var.bits_per_pixel / 8,
 						size_x * info->var.bits_per_pixel / 8);
 			}
 		}
@@ -159,6 +168,23 @@ void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
 }
 
 void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
-	;
-}
+	uint32_t size_x, size_y, j;
+	char *base;
 
+	assert(info != NULL);
+	assert(rect != NULL);
+
+	size_x = rect->dx + rect->width > info->var.xres
+			? info->var.xres - rect->dx : rect->width;
+
+	size_y = rect->dy + rect->height > info->var.yres
+			? info->var.yres - rect->dy : rect->height;
+
+	base = (char *)info->screen_base;
+	assert(base != NULL);
+
+	for (j = 0; j < size_y; ++j) {
+		fb_memset(base + (rect->dx + (j + rect->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
+				rect->color, size_x * info->var.bits_per_pixel / 8);
+	}
+}

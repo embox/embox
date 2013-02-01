@@ -17,7 +17,7 @@
 EMBOX_EXAMPLE(run);
 
 static const unsigned char colors[] = {
-		0xF0, 0x0F, 0x70, 0x07
+		0xD0, 0xA0, 0x60, 0x20
 };
 
 static int framebuffer_turn_on(void) {
@@ -58,20 +58,56 @@ static int framebuffer_memset(void) {
 
 static int framebuffer_copyarea(void) {
 	int ret;
+	struct fb_fillrect rect;
 	struct fb_copyarea area;
+	struct fb_info *info;
 
-	ret = framebuffer_memset();
+	ret = framebuffer_turn_on();
 	if (ret != 0) {
 		return ret;
 	}
 
-	area.dx = 400;
-	area.dy = 300;
-	area.width = 200;
+	info = fb_lookup("fb0");
+	if (info == NULL) {
+		return -ENODEV;
+	}
+
+	rect.dx = 0;
+	rect.dy = 0;
+	rect.width = info->var.xres / 2;
+	rect.height = info->var.yres / 2;
+	rect.color = colors[0];
+	fb_fillrect(info, &rect);
+
+	rect.dx = info->var.xres / 2;
+	rect.dy = 0;
+	rect.width = info->var.xres / 2;
+	rect.height = info->var.yres / 2;
+	rect.color = colors[1];
+//	fb_fillrect(info, &rect);
+
+	rect.dx = 0;
+	rect.dy = info->var.yres / 2;
+	rect.width = info->var.xres / 2;
+	rect.height = info->var.yres / 2;
+	rect.color = colors[2];
+//	fb_fillrect(info, &rect);
+
+	rect.dx = info->var.xres / 2;
+	rect.dy = info->var.yres / 2;
+	rect.width = info->var.xres / 2;
+	rect.height = info->var.yres / 2;
+	rect.color = colors[3];
+//	fb_fillrect(info, &rect);
+
+	area.dx = info->var.xres / 2 - 150;
+	area.dy = info->var.yres / 2 - 100;
+	area.width = 300;
 	area.height = 200;
-	area.sx = 800;
-	area.sy = 600;
-	fb_copyarea(fb_lookup("fb0"), &area);
+	area.dx = info->var.xres / 2;
+	area.dy = info->var.yres / 2;
+	area = area;
+//	fb_copyarea(info, &area);
 
 	return 0;
 }
