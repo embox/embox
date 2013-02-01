@@ -77,7 +77,7 @@ static int get_arg(int argc, char **argv, const char *mask, char *data) {
 	return -1;
 }
 
-static int read_file(char *path, char *buffer, size_t b_count, blkno_t blkno) {
+static int read_file(char *path, char *buffer, size_t size, blkno_t blkno) {
 	ssize_t bytesread;
 	int file;
 
@@ -89,7 +89,7 @@ static int read_file(char *path, char *buffer, size_t b_count, blkno_t blkno) {
 		return -1;
 	}
 
-	bytesread = read(file, buffer, b_count);
+	bytesread = read(file, buffer, size);
 	close(file);
 
 	return bytesread;
@@ -101,7 +101,7 @@ static int exec(int argc, char **argv) {
 	struct nas *nas;
 	char path[MAX_LENGTH_PATH_NAME];
 	char num[MAX_LENGTH_FILE_NAME];
-	size_t b_count;
+	size_t bytes;
 	blkno_t blkno;
 	char *buffer;
 	ssize_t bytesread;
@@ -130,31 +130,32 @@ static int exec(int argc, char **argv) {
 		return -1;
 	}
 
-	blkno = 0; b_count = BSIZE;
+	blkno = 0; bytes = BSIZE;
 	if(0 == get_arg(argc, argv, NUM_B, num)) {
-		sscanf(num, "%u", &b_count);
+		sscanf(num, "%u", &bytes);
 	}
 	if(0 == get_arg(argc, argv, START_B, num)) {
 		sscanf(num, "%u", &blkno);
 	}
 
 	rc = 0;
-	if(NULL == (buffer = page_alloc(__phymem_allocator, b_count / 4 + 1))) {
+	if(NULL == (buffer =
+			page_alloc(__phymem_allocator, bytes / PAGE_SIZE() + 1))) {
 		return -1;
 	}
 
 	if (node_is_block_dev(nod)) {
 		nas = nod->nas;
-		if(b_count == block_dev_read(nas->fi->privdata,
-							buffer, b_count, blkno)) {
-			print_data(buffer, b_count, blkno);
+		if(bytes <= (bytesread =  block_dev_read(nas->fi->privdata,
+							buffer, bytes, blkno))) {
+			print_data(buffer, bytesread, blkno);
 		}
 		else {
 			rc = -1;
 		}
 	}
 	else if (node_is_file(nod)) {
-		if(0 < (bytesread = read_file(path, buffer, b_count, blkno))) {
+		if(0 <= (bytesread = read_file(path, buffer, bytes, blkno))) {
 			print_data(buffer, bytesread, blkno);
 		}
 		else {
@@ -167,6 +168,6 @@ static int exec(int argc, char **argv) {
 	}
 
 	/* free buffer */
-	page_free(__phymem_allocator, buffer, b_count / 4 + 1);
+	page_free(__phymem_allocator, buffer, bytes / PAGE_SIZE() + 1);
 	return rc;
 }
