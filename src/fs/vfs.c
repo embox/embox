@@ -15,7 +15,6 @@
 
 static node_t *root_node;
 
-
 int vfs_get_path_by_node(node_t *nod, char *path) {
 	node_t *parent, *node;
 	char buff[MAX_LENGTH_PATH_NAME];
@@ -89,8 +88,11 @@ node_t *vfs_add_path(const char *path, node_t *parent) {
 
 int vfs_del_leaf(node_t *node) {
 	int rc;
+
+	assert(node);
+
 	rc = tree_unlink_link(&(node->tree_link));
-	if(NULL != node) {
+	if (rc) {
 		node_free(node);
 	}
 	return rc;
@@ -118,17 +120,20 @@ node_t *vfs_get_child(const char *name, node_t *parent) {
 }
 
 node_t *vfs_find_node(const char *path, node_t *parent) {
-	node_t *node = parent;
+	node_t *node;
 	char node_name[MAX_LENGTH_FILE_NAME];
 	char *p_path = (char *) path;
 
-	if (NULL == parent) {
-		node = vfs_get_root();
+	if (!parent) {
+		parent = vfs_get_root();
 	}
+
+	node = parent;
+
 	//FIXME if we return immediately we return root node
-	while (NULL != (p_path = path_get_next_name(p_path, node_name,
-													sizeof(node_name)))) {
-		if (NULL == (node = vfs_get_child(node_name, node))) {
+	while ((p_path = path_get_next_name(p_path, node_name, sizeof(node_name)))) {
+		node = vfs_get_child(node_name, node);
+		if (!node) {
 			return NULL;
 		}
 	}
