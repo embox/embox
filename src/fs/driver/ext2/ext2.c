@@ -215,7 +215,8 @@ static uint32_t ext2_rd_indir(char *buf, int index) {
  * of divide and remainder and avoinds pulling in the
  * 64bit division routine into the boot code.
  */
-static int ext2_shift_culc(struct ext2_file_info *fi, struct ext2_fs_info *fsi) {
+static int ext2_shift_culc(struct ext2_file_info *fi,
+								struct ext2_fs_info *fsi) {
 	int32_t mult;
 	int ln2;
 
@@ -391,6 +392,9 @@ int ext2_open(struct nas *nas) {
 			}
 		}
 	}
+
+	fi->f_num = inumber;
+
 	return 0;
 
 	out: ext2_close(nas);
@@ -404,12 +408,19 @@ static int ext2fs_open(struct node *node, struct file_desc *desc, int flags) {
 	int rc;
 	struct nas *nas;
 	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
 	fi->f_pointer = desc->cursor; /* reset seek pointer */
 
-	if(0 != (rc = ext2_open(nas))) {
+	if (NULL == (fi->f_buf = ext2_buff_alloc(nas, fsi->s_block_size))) {
+		return -ENOMEM;
+	}
+
+	if (0 != (rc = ext2_read_inode(nas, fi->f_num))) {
+//	if(0 != (rc = ext2_open(nas))) {
 		ext2_close(nas);
 		return -rc;
 	}
@@ -699,7 +710,7 @@ static int ext2_read_inode(struct nas *nas, uint32_t inumber) {
 			+ EXT2_DINODE_SIZE(fsi) * ino_to_fsbo(fsi, inumber));
 	/* load inode struct to file info */
 	e2fs_iload(dip, &fi->f_di);
-	fi->f_num = inumber;
+	//fi->f_num = inumber;
 
 	/* Clear out the old buffers */
 	fi->f_ind_cache_block = ~0;
@@ -1116,7 +1127,8 @@ static int ext2_read_gdblock(struct nas *nas) {
 		}
 		e2fs_cgload((struct ext2_gd *)fi->f_buf, &fsi->e2fs_gd[i * gdpb],
 				(i == (fsi->s_gdb_count - 1)) ?
-				(fsi->s_ncg - gdpb * i) * sizeof(struct ext2_gd): fsi->s_block_size);
+				(fsi->s_ncg - gdpb * i) * sizeof(struct ext2_gd)
+				: fsi->s_block_size);
 	}
 	return 0;
 }
@@ -1126,7 +1138,7 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 	char *buf;
 	size_t buf_size;
 	struct ext2fs_direct *dp, *edp;
-	struct ext2_file_info *dir_fi;
+	struct ext2_file_info *dir_fi, *fi;
 	struct ext2_fs_info *fsi;
 	char *name, *full_path;
 	node_t *node;
@@ -1177,15 +1189,20 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 				rc = ENOMEM;
 				goto out;
 			}
-			if (NULL == ext2_fi_alloc(node->nas, dir_nas->fs)) {
+			if (NULL == (fi = ext2_fi_alloc(node->nas, dir_nas->fs))) {
 				rc = ENOMEM;
 				goto out;
 			}
 			node->type = type;
 
-			if (node_is_directory(node) && (0 != strcmp(name, "."))
-					&& (0 != strcmp(name, ".."))) {
-				rc = ext2_mount_entry(node->nas);
+			if (node_is_directory(node)) {
+				if (0 != strcmp(name, ".") && 0 != strcmp(name, "..")) {
+					rc = ext2_mount_entry(node->nas);
+				}
+			}
+			/* read inode into fi->f_di*/
+			else if (0 == ext2_open(node->nas)) {
+				ext2_close(node->nas);
 			}
 		}
 		dir_fi->f_pointer += buf_size;
@@ -1202,7 +1219,8 @@ static void ext2_wr_indir(char *buf, int index, uint32_t block);
 static int ext2_empty_indir(char *buf, struct ext2_fs_info *fsi);
 static void ext2_zero_block(char *buf);
 
-int ext2_write_map(struct nas *nas, long position, uint32_t new_block, int op) {
+int ext2_write_map(struct nas *nas, long position,
+							uint32_t new_block, int op) {
 	/* Write a new block into an inode.
 	 *
 	 * If op includes WMAP_FREE, free the block corresponding to that position
@@ -1242,7 +1260,8 @@ int ext2_write_map(struct nas *nas, long position, uint32_t new_block, int op) {
 		first_time = 0;
 	}
 
-	if(out_range_s <= (block_pos = position / fsi->s_block_size)) { /* relative blk # in file */
+	if(out_range_s <= (block_pos = position / fsi->s_block_size)) {
+		/* relative blk # in file */
 		return EFBIG;
 	}
 	/* Is 'position' to be found in the inode itself? */
