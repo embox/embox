@@ -1180,11 +1180,11 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 			ext2_set_node_type(&type, dp->e2d_type);
 			/* set null determine name */
 			name = (char *) &dp->e2d_name;
-			*(name + fs2h16(dp->e2d_namlen)) = 0;
+			//*(name + fs2h16(dp->e2d_namlen)) = 0;
 
 			vfs_get_path_by_node(dir_nas->node, full_path);
 			strcat(full_path, "/");
-			strcat(full_path, name);
+			strncat(full_path, name, fs2h16(dp->e2d_namlen));
 			if (NULL == (node = vfs_add_path(full_path, NULL ))) {
 				rc = ENOMEM;
 				goto out;
