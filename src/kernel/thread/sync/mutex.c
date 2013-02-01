@@ -14,14 +14,14 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+#include <math.h>
 
-#include <lib/list.h>
 #include <hal/ipl.h>
 #include <kernel/thread/state.h>
 #include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sched.h>
-#include <math.h>
+
 
 static int trylock_sched_locked(struct mutex *m, struct thread *current);
 

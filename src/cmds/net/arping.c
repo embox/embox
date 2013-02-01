@@ -13,11 +13,13 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <errno.h>
+#include <arpa/inet.h>
+#include <string.h>
 
 #include <net/util.h>
 #include <net/arp.h>
 #include <net/neighbour.h>
-#include <string.h>
+
 
 
 EMBOX_CMD(exec);

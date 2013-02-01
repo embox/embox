@@ -17,7 +17,6 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <lib/list.h>
 
 #include <kernel/critical.h>
 #include <kernel/irq_lock.h>

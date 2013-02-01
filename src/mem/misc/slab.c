@@ -13,9 +13,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <embox/unit.h>
 
-#include <lib/list.h>
 #include <util/dlist.h>
 #include <util/slist.h>
 #include <util/binalign.h>
@@ -25,6 +23,8 @@
 #include <mem/heap.h>
 #include <framework/mod/member/ops.h>
 #include <mem/phymem.h>
+
+#include <embox/unit.h>
 
 EMBOX_UNIT_INIT(heap_init);
 
