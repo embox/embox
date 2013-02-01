@@ -31,12 +31,13 @@ struct file_desc *kopen(const char *path, int flag) {
 	int ret;
 	int path_len;
 
+	assert(path);
+
 	path_len = strlen(path);
 
-	if ('/' == path[path_len]) {
+	if (!path_len || path[path_len - 1] == '/') {
 		return NULL; /* this can't be a directory */
 	}
-
 
 	if (NULL == (node = vfs_find_node(path, NULL))) {
 		/* we try create file */
