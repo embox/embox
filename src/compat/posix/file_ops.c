@@ -84,7 +84,7 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	return ops->read(desc, buf, nbyte);
 }
 
-int lseek(int fd, long int offset, int origin) {
+off_t lseek(int fd, off_t offset, int origin) {
 	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
 

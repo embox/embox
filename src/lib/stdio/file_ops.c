@@ -124,6 +124,8 @@ int fclose(FILE *file) {
 }
 
 int fseek(FILE *file, long int offset, int origin) {
+	off_t ret;
+
 	if (origin != SEEK_SET && origin != SEEK_CUR
 			&& origin != SEEK_END) {
 		SET_ERRNO(EINVAL);
@@ -134,7 +136,13 @@ int fseek(FILE *file, long int offset, int origin) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
-	return lseek(file->fd, offset, origin);
+
+	ret = lseek(file->fd, offset, origin);
+	if (ret == (off_t)-1) {
+		return -1;
+	}
+
+	return 0;
 }
 
 long int ftell(FILE *file) {

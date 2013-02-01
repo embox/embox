@@ -47,7 +47,7 @@ extern ssize_t write(int fd, const void *buf, size_t nbyte);
 
 extern ssize_t read(int fd, void *buf, size_t nbyte);
 
-extern int lseek(int fd, long int offset, int origin);
+extern off_t lseek(int fd, off_t offset, int origin);
 
 extern int fsync(int);
 
