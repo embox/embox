@@ -24,6 +24,10 @@ int bochs_set_par(struct fb_info *info) {
 	vbe_write(VBE_DISPI_INDEX_XRES, info->var.xres);
 	vbe_write(VBE_DISPI_INDEX_YRES, info->var.yres);
 	vbe_write(VBE_DISPI_INDEX_BPP, info->var.bits_per_pixel);
+	vbe_write(VBE_DISPI_INDEX_VIRT_WIDTH, info->var.xres_virtual);
+	vbe_write(VBE_DISPI_INDEX_VIRT_HEIGHT, info->var.yres_virtual);
+	vbe_write(VBE_DISPI_INDEX_X_OFFSET, info->var.xoffset);
+	vbe_write(VBE_DISPI_INDEX_Y_OFFSET, info->var.yoffset);
 	vbe_write(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_ENABLED | VBE_DISPI_LFB_ENABLED);
 	return 0;
 }
@@ -40,6 +44,8 @@ static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
 static const struct fb_var_screeninfo bochs_default_var_screeninfo = {
 	.xres = 1280,
 	.yres = 1024,
+	.xres_virtual = 1280,
+	.yres_virtual = 1024,
 	.bits_per_pixel = 16
 };
 
@@ -57,7 +63,8 @@ static int bochs_init(struct pci_slot_dev *pci_dev) {
 	memcpy(&info->fix, &bochs_fix_screeninfo, sizeof info->fix);
 	memcpy(&info->var, &bochs_default_var_screeninfo, sizeof info->var);
 	info->ops = &bochs_ops;
-	info->screen_base = (void *)(pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
+//	info->screen_base = (void *)(pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
+	info->screen_base = (void *)(pci_dev->bar[0] & ~0xf); /* FIXME */
 
 	ret = fb_register(info);
 	if (ret != 0) {

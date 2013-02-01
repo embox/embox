@@ -17,7 +17,7 @@
 EMBOX_EXAMPLE(run);
 
 static const unsigned char colors[] = {
-		0xD0, 0xA0, 0x60, 0x20
+		0xDD, 0xAA, 0x66, 0x32
 };
 
 static int framebuffer_turn_on(void) {
@@ -84,21 +84,21 @@ static int framebuffer_copyarea(void) {
 	rect.width = info->var.xres / 2;
 	rect.height = info->var.yres / 2;
 	rect.color = colors[1];
-//	fb_fillrect(info, &rect);
+	fb_fillrect(info, &rect);
 
 	rect.dx = 0;
 	rect.dy = info->var.yres / 2;
 	rect.width = info->var.xres / 2;
 	rect.height = info->var.yres / 2;
 	rect.color = colors[2];
-//	fb_fillrect(info, &rect);
+	fb_fillrect(info, &rect);
 
 	rect.dx = info->var.xres / 2;
 	rect.dy = info->var.yres / 2;
 	rect.width = info->var.xres / 2;
 	rect.height = info->var.yres / 2;
 	rect.color = colors[3];
-//	fb_fillrect(info, &rect);
+	fb_fillrect(info, &rect);
 
 	area.dx = info->var.xres / 2 - 150;
 	area.dy = info->var.yres / 2 - 100;
@@ -107,7 +107,7 @@ static int framebuffer_copyarea(void) {
 	area.dx = info->var.xres / 2;
 	area.dy = info->var.yres / 2;
 	area = area;
-//	fb_copyarea(info, &area);
+	fb_copyarea(info, &area);
 
 	return 0;
 }
