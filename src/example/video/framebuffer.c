@@ -56,6 +56,26 @@ static int framebuffer_memset(void) {
 	return 0;
 }
 
+static int framebuffer_copyarea(void) {
+	int ret;
+	struct fb_copyarea area;
+
+	ret = framebuffer_memset();
+	if (ret != 0) {
+		return ret;
+	}
+
+	area.dx = 400;
+	area.dy = 300;
+	area.width = 200;
+	area.height = 200;
+	area.sx = 800;
+	area.sy = 600;
+	fb_copyarea(fb_lookup("fb0"), &area);
+
+	return 0;
+}
+
 static int framebuffer_dev(void) {
 	int ret;
 	size_t i, j, size;
@@ -106,5 +126,6 @@ static int run(int argc, char **argv) {
 
 	return !strcmp(argv[1], "memset") ? framebuffer_memset()
 			 : !strcmp(argv[1], "dev") ? framebuffer_dev()
+			 : !strcmp(argv[1], "copyarea") ? framebuffer_copyarea()
 			 : -EINVAL;
 }

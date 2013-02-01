@@ -107,7 +107,55 @@ int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 }
 
 void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
-	;
+	uint32_t size_x, size_y, j;
+	char *base;
+
+	size_x = area->width;
+	size_x = area->sx + size_x > info->var.xres
+			? info->var.xres - area->sx : size_x;
+	size_x = area->dx + size_x > info->var.xres
+			? info->var.xres - area->dx : size_x;
+
+	size_y = area->height;
+	size_y = area->sy + size_y > info->var.yres
+			? info->var.yres - area->sy : size_y;
+	size_y = area->dy + size_y > info->var.yres
+			? info->var.yres - area->dy : size_y;
+
+	base = (char *)info->screen_base;
+
+	if (area->sx <= area->dx) {
+		if (area->sy < area->dy) {
+			for (j = size_y; j > 0; --j) {
+				memmove(base + (area->dx + (j + area->dy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+						base + (area->sx + (j + area->sy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+						size_x * info->var.bits_per_pixel / 8);
+			}
+		}
+		else {
+			for (j = 0; j < size_y; ++j) {
+				memmove(base + (area->dx + (j + area->dy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+						base + (area->sx + (j + area->sy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+						size_x * info->var.bits_per_pixel / 8);
+			}
+		}
+	}
+	else {
+		if (area->sy < area->dy) {
+			for (j = size_y; j > 0; --j) {
+				memcpy(base + (area->dx + (j + area->dy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+						base + (area->sx + (j + area->sy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+						size_x * info->var.bits_per_pixel / 8);
+			}
+		}
+		else {
+			for (j = 0; j < size_y; ++j) {
+				memcpy(base + (area->dx + (j + area->dy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+						base + (area->sx + (j + area->sy ) * info->var.xres) * info->var.bits_per_pixel / 8,
+						size_x * info->var.bits_per_pixel / 8);
+			}
+		}
+	}
 }
 
 void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
