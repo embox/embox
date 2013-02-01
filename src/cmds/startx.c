@@ -21,7 +21,6 @@
 #include <lib/xwnd/application.h>
 
 #include <drivers/video/display.h>
-#include <drivers/video/fb.h>
 
 static int exec(int argc, char ** argv);
 
@@ -34,25 +33,11 @@ struct display *display_get(void) {
 }
 
 int xwnd_init(void) {
-#if 0
 	if(NULL == vga_setup_mode(&display, 0x13)) {
 		return -1;
 	}
 
 	display_clear_screen(&display);
-#else
-	const unsigned short color1 = 0xF0, color2 = 0x0F,
-		 	 color3 = 0x70, color4 = 0x07;
-	struct fb_info *info = fb_lookup("fb0");
-	info->ops->fb_set_par(info);
-	fb_memset(info->screen_base, color1, info->screen_size / 4);
-	fb_memset((info->screen_base + info->screen_size / 4),
-			color2, info->screen_size / 4);
-	fb_memset((info->screen_base + info->screen_size / 2),
-			color3, info->screen_size / 4);
-	fb_memset((info->screen_base + 3 * info->screen_size / 4),
-			color4, info->screen_size / 4);
-#endif
 	return 0;
 }
 
