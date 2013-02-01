@@ -111,6 +111,7 @@ TEST_CASE("Call fstat for a file") {
 }
 
 /* TODO - not implemented
+ * https://www.securecoding.cert.org/confluence/display/seccode/FIO08-C.+Take+care+when+calling+remove()+on+an+open+file
 TEST_CASE("Read from removed open file") {
 	char test_buff[SIZE_OF_FILE];
 	struct stat stat_buff;
