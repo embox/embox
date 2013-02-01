@@ -137,6 +137,14 @@ int fseek(FILE *file, long int offset, int origin) {
 	return lseek(file->fd, offset, origin);
 }
 
+long int ftell(FILE *file) {
+	if(NULL == file) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+	return ltell(file->fd);
+}
+
 void rewind(FILE *file) {
 	fseek(file, 0L, SEEK_SET);
 }

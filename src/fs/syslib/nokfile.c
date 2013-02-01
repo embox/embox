@@ -28,6 +28,10 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 	return -1;
 }
 
+long int ktell(struct file_desc *desc) {
+	return -1;
+}
+
 int kfstat(struct file_desc *desc, void *buff) {
 	return -1;
 }

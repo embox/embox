@@ -34,6 +34,10 @@ static int this_lseek(struct idx_desc *data, long int offset, int origin) {
 	return kseek(from_data(data), offset, origin);
 }
 
+static long int this_ltell(struct idx_desc *data) {
+	return ktell(from_data(data));
+}
+
 static int this_stat(struct idx_desc *data, void *buff) {
 	return kfstat(from_data(data), buff);
 }
@@ -47,6 +51,7 @@ const struct task_idx_ops task_idx_ops_file = {
 	.read  = this_read,
 	.write = this_write,
 	.fseek = this_lseek,
+	.ftell = this_ltell,
 	.ioctl = this_ioctl,
 	.fstat = this_stat,
 };

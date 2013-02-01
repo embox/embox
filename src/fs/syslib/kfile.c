@@ -172,28 +172,33 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 	ni = &nas->fi->ni;
 
 	switch (origin) {
-	    case SEEK_SET:
-	    	desc->cursor = offset;
-	    	break;
+		case SEEK_SET:
+			desc->cursor = offset;
+			break;
 
-	    case SEEK_CUR:
-	    	desc->cursor += offset;
-	    	break;
+		case SEEK_CUR:
+			desc->cursor += offset;
+			break;
 
-	    case SEEK_END:
-	    	desc->cursor = ni->size + offset;
-	    	break;
+		case SEEK_END:
+			desc->cursor = ni->size + offset;
+			break;
+	}
 
-	    default:
-	    	desc->cursor = -1;
-	    	break;
-
-	  }
-	if(desc->cursor > ni->size) {
+	if (desc->cursor > ni->size) {
 		desc->cursor = ni->size;
 	}
-	return desc->cursor;
 
+	return desc->cursor;
+}
+
+long int ktell(struct file_desc *desc) {
+	if (NULL == desc) {
+		errno = EBADF;
+		return -1;
+	}
+
+	return desc->cursor;
 }
 
 int kfile_fill_stat(struct node *node, struct stat *stat_buff) {
