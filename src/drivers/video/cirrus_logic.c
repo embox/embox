@@ -15,21 +15,30 @@
 
 //CIRRUS_LOGIC_GD_5446
 #include <types.h>
+#include <errno.h>
+
 #include <drivers/pci/pci_driver.h>
 #include <drivers/pci/pci_id.h>
 
 #include <drivers/video/vga.h>
-#include <drivers/video/vesa.h>
-#include <drivers/video/vesa_mode.h>
-#include <drivers/video/cirrus_logic.h>
+//#include <drivers/video/vesa.h>
+//#include <drivers/video/vesa_mode.h>
+
 #include <drivers/video/display.h>
+
+#include <drivers/video/fb.h>
+
+#include <drivers/video/cirrus_logic.h>
+
+#include <drivers/pci/pci.h>
+
 
 #define FB_VMODE_DOUBLE 0x1
 
 
 struct cirrus_chip_info {
 	unsigned int *regbase;
-	struct screen_info *screen_info;
+	struct fb_var_screeninfo *screen_info;
 	int doubleVCLK;
 	int multiplexing;
 };
@@ -69,7 +78,7 @@ static void WHDR(const struct cirrus_chip_info *cinfo, unsigned char val) {
 
 }
 
-void chipset_init(struct cirrus_chip_info *cinfo) {
+static void chipset_init(struct cirrus_chip_info *cinfo) {
 	/* plane mask: nothing */
 	vga_wseq(cinfo->regbase, VGA_SEQ_PLANE_MASK, 0xff);
 	/* character map select: doesn't even matter in gx mode */
@@ -190,7 +199,7 @@ static void setup_resolution(struct cirrus_chip_info *cinfo) {
 	int hdispend, hsyncstart, hsyncend, htotal;
 	int tmp;
 	unsigned int *regbase = cinfo->regbase;
-	struct screen_info *var = cinfo->screen_info;
+	struct fb_var_screeninfo *var = cinfo->screen_info;
 
 	hsyncstart = var->xres + var->right_margin;
 	hsyncend = hsyncstart + var->hsync_len;
@@ -333,24 +342,68 @@ static int cirrus_setup_bits_per_pixel(struct cirrus_chip_info *cinfo) {
 	return 0;
 }
 
-static int cirrus_init(struct pci_slot_dev *pci_dev) {
+
+static int cl_check_var(struct fb_var_screeninfo *var, struct fb_info *info) {
 	return 0;
 }
 
-void cirrus_setup(struct screen_info *screen_info) {
+static int cl_set_par(struct fb_info *info) {
 	cirrus_chip_info.doubleVCLK = 0;
 	cirrus_chip_info.multiplexing = 0;
-	cirrus_chip_info.screen_info = screen_info;
+	cirrus_chip_info.screen_info = (struct fb_var_screeninfo *)&info->var;
 
 
 	setup_resolution(&cirrus_chip_info);
 
 	cirrus_setup_bits_per_pixel(&cirrus_chip_info);
+
+	chipset_init(&cirrus_chip_info);
+
+	return 0;
+}
+
+static const struct fb_ops cl_ops = {
+	.fb_check_var = cl_check_var,
+	.fb_set_par = cl_set_par
+};
+
+static const struct fb_fix_screeninfo cl_fix_screeninfo = {
+	.name = "cirrus logic framebuffer"
+};
+
+static const struct fb_var_screeninfo cl_default_var_screeninfo = {
+	.xres = 1280,
+	.yres = 1024,
+	.bits_per_pixel = 16
+};
+
+static int cirrus_init(struct pci_slot_dev *pci_dev) {
+	int ret;
+	struct fb_info *info;
+
+	assert(pci_dev != NULL);
+
+	info = fb_alloc();
+	if (info == NULL) {
+		return -ENOMEM;
+	}
+
+	memcpy(&info->fix, &cl_fix_screeninfo, sizeof(info->fix));
+	memcpy(&info->var, &cl_default_var_screeninfo, sizeof(info->var));
+	info->ops = &cl_ops;
+	info->screen_base = (void *)(pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
+
+	ret = fb_register(info);
+	if (ret != 0) {
+		fb_release(info);
+		return ret;
+	}
+
+	return 0;
 }
 
 
-//VGA_MODE_DEFINE(0x114, NULL, NULL, NULL, cirrus_vga_setup, 800, 600);
-//VGA_MODE_DEFINE(0x115, NULL, NULL, NULL, cirrus_vga_setup, 800, 600);
+
 
 
 PCI_DRIVER("cl_gd5446", cirrus_init, PCI_VENDOR_ID_CIRRUS, PCI_DEV_ID_CIRRUS_5446);

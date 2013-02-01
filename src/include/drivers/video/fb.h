@@ -27,6 +27,15 @@ struct fb_fix_screeninfo {
 struct fb_var_screeninfo {
 	uint32_t xres;
 	uint32_t yres;
+
+	uint32_t right_margin;
+	uint32_t hsync_len;
+	uint32_t left_margin;
+	uint32_t lower_margin;
+	uint32_t vsync_len;
+	uint32_t upper_margin;
+
+	uint32_t vmode;
 	uint32_t bits_per_pixel;
 };
 

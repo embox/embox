@@ -28,6 +28,7 @@ struct display_options {
 			unsigned int color);
 };
 
+#if 0
 struct screen_info {
 	int xres;
 	int right_margin;
@@ -42,6 +43,7 @@ struct screen_info {
 	int vmode;
 	int bits_per_pixel;
 };
+#endif
 
 struct display {
 	const char *name;
