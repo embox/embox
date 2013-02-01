@@ -13,4 +13,12 @@ static module Fdlibm {
 	source "s_rint.c"
 	source "s_scalbn.c"
 	source "s_scalbn.c"
+	source "s_frexp.c"
+	source "e_exp.c"
+	source "w_exp.c"
+	source "e_log.c"
+	source "w_log.c"
+	source "e_atan2.c"
+	source "w_atan2.c"
+	source "s_atan.c"
 }

@@ -99,6 +99,7 @@ static module LibCMath {
 	source "math/round.c"
 	source "math/floor.c"
 	source "math/ceil.c"
+	source "math/trunc.c"
 	source "math/copysign.c"
 	source "math/signbit.c"
 	source "math/fmod.c"
