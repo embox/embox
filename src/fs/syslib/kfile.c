@@ -192,15 +192,6 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 	return desc->cursor;
 }
 
-long int ktell(struct file_desc *desc) {
-	if (NULL == desc) {
-		errno = EBADF;
-		return -1;
-	}
-
-	return desc->cursor;
-}
-
 int kfile_fill_stat(struct node *node, struct stat *stat_buff) {
 	struct nas *nas;
 	struct node_info *ni;

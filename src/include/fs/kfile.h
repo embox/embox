@@ -26,8 +26,6 @@ extern int kclose(struct file_desc *desc);
 
 extern int kseek(struct file_desc *desc, long int offset, int origin);
 
-extern long int ktell(struct file_desc *desc);
-
 extern int kioctl(struct file_desc *fp, int request, ...);
 
 extern int kfstat(struct file_desc *fp, struct stat *buff);

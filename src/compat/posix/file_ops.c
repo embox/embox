@@ -102,24 +102,6 @@ int lseek(int fd, long int offset, int origin) {
 	return ops->fseek(desc, offset, origin);
 }
 
-long int ltell(int fd) {
-	const struct task_idx_ops *ops;
-	struct idx_desc *desc;
-
-	assert(task_self_idx_table());
-
-	desc = task_self_idx_get(fd);
-	if (!desc) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	ops = task_idx_desc_ops(desc);
-	assert(ops);
-	assert(ops->ftell);
-	return ops->ftell(desc);
-}
-
 int ioctl(int fd, int request, ...) {
 	va_list args;
 	const struct task_idx_ops *ops;
