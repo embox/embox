@@ -11,56 +11,65 @@
 #define SYS_STAT_H_
 
 #include <sys/types.h>
-#include <fs/node.h>
-
 #include <sys/cdefs.h>
+
+#include <framework/mod/options.h>
+#include <module/embox/fs/fs_name_opt.h>
 
 __BEGIN_DECLS
 
-#define S_IFMT         0170000   /* File type mask */
-#define S_IFPKT        0160000   /* Packet device */
-#define S_IFSOCK       0140000   /* Socket */
-#define S_IFLNK        0120000   /* Symbolic link */
-#define S_IFREG        0100000   /* Regular file */
-#define S_IFBLK        0060000   /* Block device */
-#define S_IFDIR        0040000   /* Directory */
-#define S_IFCHR        0020000   /* Character device */
-#define S_IFIFO        0010000   /* Pipe */
+#define MAX_LENGTH_FILE_NAME  OPTION_MODULE_GET(embox__fs__fs_name_opt,NUMBER,file_name_length)
+#define MAX_LENGTH_PATH_NAME  OPTION_MODULE_GET(embox__fs__fs_name_opt,NUMBER,path_length)
 
-#define S_ISLNK(m)      (((m) & S_IFMT) == S_IFLNK) /* Test for a symbolic link. */
-#define S_ISREG(m)      (((m) & S_IFMT) == S_IFREG) /* Test for a regular file. */
-#define S_ISDIR(m)      (((m) & S_IFMT) == S_IFDIR) /* Test for a directory. */
-#define S_ISCHR(m)      (((m) & S_IFMT) == S_IFCHR) /* Test for a character special file. */
-#define S_ISBLK(m)      (((m) & S_IFMT) == S_IFBLK) /* Test for a block special file. */
-#define S_ISFIFO(m)     (((m) & S_IFMT) == S_IFIFO) /* Test for a pipe or FIFO special file. */
-#define S_ISSOCK(m)     (((m) & S_IFMT) == S_IFSOCK) /* Test for a socket. */
-#define S_ISPKT(m)      (((m) & S_IFMT) == S_IFPKT)  /* Test for a packet device */
+#define S_IFMT   0170000   /* File type mask */
+#define S_IFPKT  0160000   /* Packet device */
+#define S_IFSOCK 0140000   /* Socket */
+#define S_IFLNK  0120000   /* Symbolic link */
+#define S_IFREG  0100000   /* Regular file */
+#define S_IFBLK  0060000   /* Block device */
+#define S_IFDIR  0040000   /* Directory */
+#define S_IFCHR  0020000   /* Character device */
+#define S_IFIFO  0010000   /* Pipe */
+
+#define __s_is(fmt, m) (((m) & S_IFMT) == fmt)
+
+#define S_ISPKT(m)  __s_is(S_IFPKT, m)  /* Test for a packet device */
+#define S_ISSOCK(m) __s_is(S_IFSOCK, m) /* Test for a socket. */
+#define S_ISLNK(m)  __s_is(S_IFLNK, m)  /* Test for a symbolic link. */
+#define S_ISREG(m)  __s_is(S_IFREG, m)  /* Test for a regular file. */
+#define S_ISBLK(m)  __s_is(S_IFBLK, m)  /* Test for a block device. */
+#define S_ISDIR(m)  __s_is(S_IFDIR, m)  /* Test for a directory. */
+#define S_ISCHR(m)  __s_is(S_IFCHR, m)  /* Test for a character device. */
+#define S_ISFIFO(m) __s_is(S_IFIFO, m)  /* Test for a pipe or FIFO. */
+
+/* Permissions: owner, group, other */
+
+#define S_IRWXU  0700  /**< rwx, owner */
+#define S_IRUSR  0400  /**< r--, owner */
+#define S_IWUSR  0200  /**< -w-, owner */
+#define S_IXUSR  0100  /**< --x, owner */
+
+#define S_IRWXG  0070  /**< rwx, group */
+#define S_IRGRP  0040  /**< r--, group */
+#define S_IWGRP  0020  /**< -w-, group */
+#define S_IXGRP  0010  /**< --x, group */
+
+#define S_IRWXO  0007  /**< rwx, other */
+#define S_IROTH  0004  /**< r--, other */
+#define S_IWOTH  0002  /**< -w-, other */
+#define S_IXOTH  0001  /**< --x, other */
+
+/* BSD compat */
+
+#define S_IREAD        S_IRUSR   /* Read permission, owner */
+#define S_IWRITE       S_IWUSR   /* Write permission, owner */
+#define S_IEXEC        S_IXUSR   /* Execute/search permission, owner */
 
 /* not implemented */
 
 #define S_TYPEISMQ(buf)    //Test for a message queue
 #define S_TYPEISSEM(buf)   //Test for a semaphore
 #define S_TYPEISSHM(buf)   //Test for a shared memory object
-
-
-#define S_IREAD        0000400   /* Read permission, owner */
-#define S_IWRITE       0000200   /* Write permission, owner */
-#define S_IEXEC        0000100   /* Execute/search permission, owner */
-
-#define S_IRWXU 00700
-#define S_IRUSR 00400
-#define S_IWUSR 00200
-#define S_IXUSR 00100
-
-#define S_IRWXG 00070
-#define S_IRGRP 00040
-#define S_IWGRP 00020
-#define S_IXGRP 00010
-
-#define S_IRWXO 00007
-#define S_IROTH 00004
-#define S_IWOTH 00002
-#define S_IXOTH 00001
 
 typedef struct stat {
 	int       st_dev;     /* ID of device containing file */

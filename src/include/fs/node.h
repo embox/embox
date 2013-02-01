@@ -9,17 +9,9 @@
 #ifndef FS_NODE_H_
 #define FS_NODE_H_
 
+#include <sys/stat.h>
 #include <fs/file_system.h>
 #include <util/tree.h>
-
-#include <module/embox/fs/fs_name_opt.h>
-#include <framework/mod/options.h>
-
-
-
-#define MAX_LENGTH_FILE_NAME  OPTION_MODULE_GET(embox__fs__fs_name_opt,NUMBER,file_name_length)
-#define MAX_LENGTH_PATH_NAME  OPTION_MODULE_GET(embox__fs__fs_name_opt,NUMBER,path_length)
-
 
 #define NODE_TYPE_FILE       0x01
 #define NODE_TYPE_DIRECTORY  0x10
@@ -30,9 +22,14 @@ struct nas;
 typedef struct node {
 	const char            name[MAX_LENGTH_FILE_NAME];
 	int                   type;  /* FILE, DIRECTORY, DEVICE, LINK ... */
-	int                   mode;
+
+	mode_t                mode;
+	uid_t                 uid;
+	gid_t                 gid;
+
 	struct tree_link      tree_link;
 	struct nas            *nas;
+
 } node_t;
 
 struct node_info {
