@@ -135,7 +135,8 @@ void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
 
 	if (area->sx <= area->dx) {
 		if (area->sy < area->dy) {
-			for (j = size_y - 1; j >= 0; --j) {
+			j = size_y;
+			while (j--) {
 				memmove(base + (area->dx + (j + area->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
 						base + (area->sx + (j + area->sy) * info->var.xres) * info->var.bits_per_pixel / 8,
 						size_x * info->var.bits_per_pixel / 8);
@@ -151,7 +152,8 @@ void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
 	}
 	else {
 		if (area->sy < area->dy) {
-			for (j = size_y - 1; j >= 0; --j) {
+			j = size_y;
+			while (j--) {
 				memcpy(base + (area->dx + (j + area->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
 						base + (area->sx + (j + area->sy) * info->var.xres) * info->var.bits_per_pixel / 8,
 						size_x * info->var.bits_per_pixel / 8);

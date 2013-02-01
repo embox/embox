@@ -100,13 +100,12 @@ static int framebuffer_copyarea(void) {
 	rect.color = colors[3];
 	fb_fillrect(info, &rect);
 
-	area.dx = info->var.xres / 2 - 150;
-	area.dy = info->var.yres / 2 - 100;
+	area.dx = 20;
+	area.dy = 20;
 	area.width = 300;
 	area.height = 200;
-	area.dx = info->var.xres / 2;
-	area.dy = info->var.yres / 2;
-	area = area;
+	area.sx = info->var.xres / 2 - 150;
+	area.sy = info->var.yres / 2 - 100;
 	fb_copyarea(info, &area);
 
 	return 0;
