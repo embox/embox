@@ -31,8 +31,8 @@ struct fb_var_screeninfo {
 };
 
 struct fb_ops {
-	size_t (*fb_read)(struct fb_info *info, char *buff, size_t size);
-	size_t (*fb_write)(struct fb_info *info, const char *buff, size_t size);
+	size_t (*fb_read)(struct fb_info *info, char *buff, size_t size, size_t *ppos);
+	size_t (*fb_write)(struct fb_info *info, const char *buff, size_t size, size_t *ppos);
 	int (*fb_ioctl)(struct fb_info *info, int cmd, va_list args);
 
 	int (*fb_check_var)(struct fb_var_screeninfo *var, struct fb_info *info);

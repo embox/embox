@@ -74,7 +74,6 @@ struct fb_info * fb_lookup(const char *name) {
 	sscanf(name, "fb%u", &num);
 
 	assert(num < sizeof registered_fb / sizeof registered_fb[0]);
-	assert(registered_fb[num] != NULL);
 
 	return registered_fb[num];
 }

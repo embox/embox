@@ -12,7 +12,7 @@
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 #include <fs/node.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 
 static int fb_common_open(struct node *node, struct file_desc *file_desc, int flags) {
@@ -32,40 +32,49 @@ static int fb_common_close(struct file_desc *desc) {
 
 static size_t fb_common_read(struct file_desc *desc, void *buf, size_t size) {
 	struct fb_info *info;
-	size_t available;
+	const void *data;
+	size_t left;
 
 	info = (struct fb_info *)desc->file_info;
 	assert(info != NULL);
 
 	assert(info->ops != NULL);
 	if (info->ops->fb_read != NULL) {
-		return info->ops->fb_read(info, buf, size);
+		return info->ops->fb_read(info, buf, size, &desc->cursor);
 	}
 
-	available = info->screen_size;
-	size = size < available ? size : available;
+	data = info->screen_base + desc->cursor;
+	left = info->screen_size - desc->cursor;
+	size = size < left ? size : left;
 
-	fb_memcpy_fromfb(buf, info->screen_base, size);
+	fb_memcpy_fromfb(buf, data, size);
+	desc->cursor += size;
 
 	return size;
 }
 
 static size_t fb_common_write(struct file_desc *desc, void *buf, size_t size) {
 	struct fb_info *info;
+	void *data;
+	size_t left;
 
 	info = (struct fb_info *)desc->file_info;
 	assert(info != NULL);
 
 	assert(info->ops != NULL);
 	if (info->ops->fb_write != NULL) {
-		return info->ops->fb_write(info, buf, size);
+		return info->ops->fb_write(info, buf, size, &desc->cursor);
 	}
 
-	if (size > info->screen_size) {
+	data = info->screen_base + desc->cursor;
+	left = info->screen_size - desc->cursor;
+
+	if (size > left) {
 		return -EFBIG;
 	}
 
-	fb_memcpy_tofb(info->screen_base, buf, size);
+	fb_memcpy_tofb(data, buf, size);
+	desc->cursor += size;
 
 	return size;
 }
