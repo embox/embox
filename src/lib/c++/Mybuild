@@ -11,8 +11,6 @@ module lib {
 }
 
 module ConstructorsInvocator {
-	/*linker sections */
-	source "cxx.lds.S"
 	source "cxx_invoke_constructors.c"
 	source "cxx_invoke_constructors.h"
 }

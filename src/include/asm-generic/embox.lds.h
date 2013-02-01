@@ -36,6 +36,12 @@
 	                               \
 	*(SORT(.array_spread.*.rodata)) \
 	                               \
+        _ctors_start = .;              \
+	KEEP(*(SORT(.init_array)))     \
+	KEEP(*(SORT(.ctors)))          \
+	KEEP(*(SORT(.ctors.*)))        \
+        _ctors_end   = .;              \
+	                               \
 	ALIGNMENT();                   \
 	*(.checksum)                   \
 
