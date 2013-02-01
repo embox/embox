@@ -577,7 +577,7 @@ struct ext2_xattr_ent {
 	uint32_t	e_value_block;
 	uint32_t	e_value_size;
 	uint32_t	e_hash;
-	char		e_name;
+	char		e_name[];
 };
 
 struct ext2_xattr_hdr {
@@ -587,7 +587,7 @@ struct ext2_xattr_hdr {
 	uint32_t	h_hash;
 	uint8_t		reserved[16];
 	struct ext2_xattr_ent
-			first_entry;
+			h_entries[];
 };
 
 #define EXT2_XATTR_HDR_MAGIC 0xea020000

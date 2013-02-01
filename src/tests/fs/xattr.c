@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief Testing ext2 xattr with /dev/hda attached to EXT2_TEST_IMAGE
  *
  * @author  Anton Kozlov
  * @date    30.01.2013
@@ -28,36 +28,101 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 
 #define TEST_CLEAN_FILE_NM "/test_xattr/clean_test"
 #define TEST_FILE_NM "/test_xattr/test"
+#define TEST_FILE2_NM "/test_xattr/test"
 
-static const char *xattr_nm = "attr1";
-static const char *xattr_vl = "value1";
+static const char *xattr_nm1 = "attr1";
+static const char *xattr_vl1 = "value1";
+static const char *xattr_vl1n = "new_value1";
 
+static const char *xattr_nm2 = "attr2";
+static const char *xattr_vl2 = "value2";
+
+static const char *xattr_nm3 = "Attr3";
+static const char *xattr_vl3 = "value3";
+
+static const char *xattr_nm4 = "1ttr4";
+static const char *xattr_vl4 = "value4";
+
+#define MAX_ATTR_L 32
+#define MAX_ATTR_N 4
+static int check_xattr(const char *path, const char *name, const char *value) {
+        char buf[MAX_ATTR_L];
+	int ret;
+	const int vlen = strlen(value) + 1;
+
+	if (vlen != (ret = getxattr(path, name, buf, MAX_ATTR_L))) {
+		return ret;
+	}
+
+	return strcmp(value, buf);
+}
+
+static int check_xattr_list(const char *path, const char *xattr_nms[], const char *xattr_vls[]) {
+	const char **nm, **vl;
+	int ret, list_len;
+
+	char buf[MAX_ATTR_L * MAX_ATTR_N];
+	char *p = buf;
+
+	const int xattrs_len = listxattr(path, buf, MAX_ATTR_L * MAX_ATTR_N);
+
+	list_len = 0;
+	for (nm = xattr_nms, vl = xattr_vls; *nm != NULL; nm++, vl++) {
+		if (0 != (ret = check_xattr(path, *nm, *vl))) {
+			return ret;
+		}
+		list_len++;
+	}
+
+	for (int i = 0; i < list_len; i++) {
+		int xlen = strlen(xattr_nms[i]) + 1;
+
+		if (0 != (ret = strcmp(p, xattr_nms[i]))) {
+			return ret;
+		}
+
+		p += xlen;
+	}
+
+	return (p == (buf + xattrs_len)) ? 0 : -1;
+
+}
+
+TEST_CASE("xattr should be replaced") {
+	const char *xattr_nms_old[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls_old[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
+
+	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1n, xattr_vl2};
+
+        test_assert_zero(check_xattr_list(TEST_FILE2_NM, xattr_nms_old, xattr_vls_old));
+	test_assert_zero(setxattr(TEST_FILE2_NM, xattr_nm1, xattr_vl1n, strlen(xattr_vl1n),
+				XATTR_REPLACE));
+        test_assert_zero(check_xattr_list(TEST_FILE2_NM, xattr_nms, xattr_vls));
+}
+#if 0
 TEST_CASE("xattr should be ok for clean file") {
-        test_assert_zero(listxattr(TEST_CLEAN_FILE_NM, NULL, 0));
+	const char *xattr_nms[1] = {};
+	const char *xattr_vls[1] = {};
+
+        test_assert_zero(check_xattr_list(TEST_CLEAN_FILE_NM, xattr_nms, xattr_vls));
 }
 
-#define BUF_LEN 32
+TEST_CASE("xattr should be listed and getted") {
+	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
 
-TEST_CASE("xattr should be listed") {
-        char buf[BUF_LEN];
-
-        test_assert_equal(listxattr(TEST_FILE_NM, NULL, 0), strlen(xattr_nm) + 1);
-        test_assert_equal(listxattr(TEST_FILE_NM, buf, BUF_LEN), strlen(xattr_nm) + 1);
+        test_assert_zero(check_xattr_list(TEST_FILE_NM, xattr_nms, xattr_vls));
 }
 
-TEST_CASE("xattr should be getted") {
-        char buf[BUF_LEN];
-	test_assert_equal(getxattr(TEST_FILE_NM, xattr_nm, buf, BUF_LEN), strlen(xattr_vl) + 1);
-	test_assert_zero(strcmp(buf, xattr_vl));
-}
+TEST_CASE("xattr should be removed") {
+	const char *xattr_nms[4] = {xattr_nm4, xattr_nm3, xattr_nm2};
+	const char *xattr_vls[4] = {xattr_vl4, xattr_vl3, xattr_vl2};
 
-TEST_CASE("xattr should be added and removed") {
-	/*test_assert_zero(setxattr(TEST_FILE_NM, xattr_nm, xattr_vl, strlen(xattr_vl),*/
-				/*XATTR_CREATE));*/
-	test_assert_zero(setxattr(TEST_FILE_NM, xattr_nm, NULL, 0, XATTR_REMOVE));
-	test_assert_zero(listxattr(TEST_FILE_NM, NULL, 0));
+	test_assert_zero(setxattr(TEST_FILE_NM, xattr_nm1, NULL, 0, XATTR_REMOVE));
+        test_assert_zero(check_xattr_list(TEST_FILE_NM, xattr_nms, xattr_vls));
 }
-
+#endif
 static int setup_suite(void) {
         int res;
 
