@@ -8,11 +8,28 @@
 
 #include <assert.h>
 #include <lib/math/ieee.h>
-#include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <math.h>
 
+/**
+ * TODO
+ * SoftFloat library support the operation of taking
+ * the remainder but it doesn't work on microblaze :(
+ * use #if 1 for test this. also set #if 0 on fmod.c
+ */
+
 double modf(double x, double *iptr) {
+#if 0
+	double fract_part;
+
+	fract_part = fmod(x, 1.0);
+
+	assert(iptr != NULL);
+	*iptr = copysign(x - fract_part, x);
+
+	return fract_part;
+#else
 	struct ieee_binary64 ieee64_x;
 	int exponent, bit_mask;
 
@@ -39,9 +56,20 @@ double modf(double x, double *iptr) {
 
 	memcpy(iptr, &ieee64_x, sizeof *iptr);
 	return x - *iptr;
+#endif
 }
 
 float modff(float x, float *iptr) {
+#if 0
+	float fract_part;
+
+	fract_part = fmodf(x, 1.0F);
+
+	assert(iptr != NULL);
+	*iptr = copysignf(x - fract_part, x);
+
+	return fract_part;
+#else
 	struct ieee_binary32 ieee32_x;
 	int exponent, bit_mask;
 
@@ -64,9 +92,20 @@ float modff(float x, float *iptr) {
 
 	memcpy(iptr, &ieee32_x, sizeof *iptr);
 	return x - *iptr;
+#endif
 }
 
 long double modfl(long double x, long double *iptr) {
+#if 0
+	long double fract_part;
+
+	fract_part = fmodl(x, 1.0L);
+
+	assert(iptr != NULL);
+	*iptr = copysignl(x - fract_part, x);
+
+	return fract_part;
+#else
 	struct ieee_binary64 ieee64_x;
 	struct ieee_binary80 ieee80_x;
 	struct ieee_binary96 ieee96_x;
@@ -123,4 +162,5 @@ long double modfl(long double x, long double *iptr) {
 			: sizeof x == sizeof ieee80_x ? (const void *)&ieee80_x
 			: (const void *)&ieee96_x, sizeof *iptr);
 	return x - *iptr;
+#endif
 }

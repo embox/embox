@@ -190,7 +190,8 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	if (with_exp) {
 		do {
-			ch = (int)(round(fmod(fabs(ep), (double)base) * base));
+			ch = (int)fmod(fabs(ep), (double)base);
+			assert((ch >= 0) && (ch < base));
 			if (ch >= 10) ch += letter_base - 10 - '0';
 			*--postfix = ch + '0';
 			modf(ep / base, &ep);
@@ -205,7 +206,8 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	}
 
 	for (; i < sign_count; ++i) {
-		ch = (int)(round(fmod(fp, (double)base) * base));
+		ch = (int)fmod(fp, (double)base);
+		assert((ch >= 0) && (ch < base));
 		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
 		modf(fp / base, &fp);
@@ -217,7 +219,8 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	}
 
 	do {
-		ch = (int)(round(fmod(ip, (double)base) * base));
+		ch = (int)fmod(ip, (double)base);
+		assert((ch >= 0) && (ch < base));
 		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
 		modf(ip / base, &ip);
