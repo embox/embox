@@ -77,28 +77,28 @@ static int framebuffer_copyarea(void) {
 	rect.width = info->var.xres / 2;
 	rect.height = info->var.yres / 2;
 	rect.color = colors[0];
-	fb_fillrect(info, &rect);
+	info->ops->fb_fillrect(info, &rect);
 
 	rect.dx = info->var.xres / 2;
 	rect.dy = 0;
 	rect.width = info->var.xres / 2;
 	rect.height = info->var.yres / 2;
 	rect.color = colors[1];
-	fb_fillrect(info, &rect);
+	info->ops->fb_fillrect(info, &rect);
 
 	rect.dx = 0;
 	rect.dy = info->var.yres / 2;
 	rect.width = info->var.xres / 2;
 	rect.height = info->var.yres / 2;
 	rect.color = colors[2];
-	fb_fillrect(info, &rect);
+	info->ops->fb_fillrect(info, &rect);
 
 	rect.dx = info->var.xres / 2;
 	rect.dy = info->var.yres / 2;
 	rect.width = info->var.xres / 2;
 	rect.height = info->var.yres / 2;
 	rect.color = colors[3];
-	fb_fillrect(info, &rect);
+	info->ops->fb_fillrect(info, &rect);
 
 	area.dx = 20;
 	area.dy = 20;
@@ -106,7 +106,7 @@ static int framebuffer_copyarea(void) {
 	area.height = 200;
 	area.sx = info->var.xres / 2 - 150;
 	area.sy = info->var.yres / 2 - 100;
-	fb_copyarea(info, &area);
+	info->ops->fb_copyarea(info, &area);
 
 	return 0;
 }

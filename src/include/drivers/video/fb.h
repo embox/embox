@@ -14,8 +14,6 @@
 #include <string.h>
 #include <types.h>
 
-#define FB_MAX 2
-
 struct fb_info;
 struct fb_copyarea;
 struct fb_fillrect;

@@ -34,7 +34,9 @@ int bochs_set_par(struct fb_info *info) {
 
 static const struct fb_ops bochs_ops = {
 	.fb_check_var = bochs_check_var,
-	.fb_set_par = bochs_set_par
+	.fb_set_par = bochs_set_par,
+	.fb_copyarea = fb_copyarea,
+	.fb_fillrect = fb_fillrect
 };
 
 static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
