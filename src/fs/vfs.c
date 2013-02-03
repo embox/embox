@@ -98,11 +98,6 @@ int vfs_del_leaf(node_t *node) {
 	return rc;
 }
 
-static int compare_children_names(struct tree_link* link, void *name) {
-	node_t *node = tree_element(link, node_t, tree_link);
-	return 0 == strcmp(node->name, (char *)name);
-}
-
 node_t *vfs_get_parent(node_t *child) {
 	struct tree_link *tlink;
 
@@ -111,10 +106,15 @@ node_t *vfs_get_parent(node_t *child) {
 	return tree_element(tlink->par, struct node, tree_link);
 }
 
+static int node_name_is(struct tree_link *link, void *name) {
+	node_t *node = tree_element(link, node_t, tree_link);
+	return strcmp(node->name, name) == 0;
+}
+
 node_t *vfs_get_child(const char *name, node_t *parent) {
 	struct tree_link *tlink;
 
-	tlink = tree_children_arg_find(&(parent->tree_link), (void *)name, compare_children_names);
+	tlink = tree_lookup_child(&(parent->tree_link), node_name_is, (void *) name);
 
 	return tree_element(tlink, struct node, tree_link);
 }
