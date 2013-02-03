@@ -42,11 +42,11 @@ static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
 };
 
 static const struct fb_var_screeninfo bochs_default_var_screeninfo = {
-	.xres = 1280,
-	.yres = 1024,
+	.xres = 1024, /* 1280 */
+	.yres = 600, /* 1024 */
 	.xres_virtual = 1280,
 	.yres_virtual = 1024,
-	.bits_per_pixel = 16
+	.bits_per_pixel = 32
 };
 
 static int bochs_init(struct pci_slot_dev *pci_dev) {

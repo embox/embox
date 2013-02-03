@@ -154,6 +154,56 @@ static int framebuffer_dev(void) {
 	return 0;
 }
 
+static int framebuffer_image(void) {
+	int ret;
+	size_t size, bytes;
+	FILE *fbuf, *fimg;
+	char buff[1024];
+
+	fbuf = fimg = NULL;
+
+	ret = framebuffer_turn_on();
+	if (ret != 0) {
+		return ret;
+	}
+
+	fbuf = fopen("/dev/fb0", "w");
+	if (fbuf == NULL) goto error;
+
+	ret = fseek(fbuf, 0, SEEK_END);
+	if (ret != 0) goto error;
+
+	size = ftell(fbuf);
+	if ((long int)size == -1L) goto error;
+
+	ret = fseek(fbuf, 0, SEEK_SET);
+	if (ret != 0) goto error;
+
+	fimg = fopen("/image.raw", "r");
+	if (fimg == NULL) goto error;
+
+	while (size != 0) {
+		bytes = size < sizeof buff ? size : sizeof buff;
+
+		bytes = fread(&buff[0], sizeof buff[0], bytes, fimg);
+		if (bytes < 0) goto error;
+		else if (bytes == 0) break;
+
+		if (fwrite(&buff[0], sizeof buff[0], bytes, fbuf) != bytes) goto error;
+
+		size -= bytes;
+	}
+
+	fclose(fbuf);
+	fclose(fimg);
+
+	return 0;
+error:
+	if (fbuf) fclose(fbuf);
+	if (fimg) fclose(fimg);
+	return -errno;
+}
+
 static int run(int argc, char **argv) {
 	if (argc != 2) {
 		return -EINVAL;
@@ -162,5 +212,6 @@ static int run(int argc, char **argv) {
 	return !strcmp(argv[1], "memset") ? framebuffer_memset()
 			 : !strcmp(argv[1], "dev") ? framebuffer_dev()
 			 : !strcmp(argv[1], "copyarea") ? framebuffer_copyarea()
+			 : !strcmp(argv[1], "image") ? framebuffer_image()
 			 : -EINVAL;
 }
