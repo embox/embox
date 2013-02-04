@@ -17,7 +17,9 @@
 
 EMBOX_UNIT_INIT(graphic_init);
 extern const struct fb_videomode *fb_desc_to_videomode(int x, int y, int depth);
+
 static int graphic_init(void) {
+	int ret;
 	struct fb_info *info;
 	struct vesa_mode_desc *desc;
 	const struct fb_videomode *mode;
@@ -33,7 +35,10 @@ static int graphic_init(void) {
 	desc = vesa_mode_get_desc(VESA_MODE_NUMBER);
 	mode = fb_desc_to_videomode(desc->xres, desc->yres, desc->bpp);
 
-	fb_videomode_to_var(&info->var, mode);
+	ret = fb_try_mode(&info->var, info, mode, desc->bpp);
+	if (ret != 0) {
+		return ret;
+	}
 
 	return info->ops->fb_set_par(info);
 }

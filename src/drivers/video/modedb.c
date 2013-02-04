@@ -143,6 +143,18 @@ const struct fb_videomode *fb_desc_to_videomode(int x, int y, int depth) {
 	return NULL;
 }
 
+int fb_try_mode(struct fb_var_screeninfo *var, struct fb_info *info,
+		const struct fb_videomode *mode, uint32_t bpp) {
+	fb_videomode_to_var(var, mode);
+	var->bits_per_pixel = bpp;
+
+	if (info->ops->fb_check_var != NULL) {
+		return info->ops->fb_check_var(var, info);
+	}
+
+	return 0;
+}
+
 void fb_videomode_to_var(struct fb_var_screeninfo *var,
 		const struct fb_videomode *mode) {
 	var->xres = mode->xres;

@@ -136,6 +136,8 @@ extern void fb_videomode_to_var(struct fb_var_screeninfo *var,
 		const struct fb_videomode *mode);
 extern void fb_var_to_videomode(struct fb_videomode *mode,
 		const struct fb_var_screeninfo *var);
+extern int fb_try_mode(struct fb_var_screeninfo *var, struct fb_info *info,
+		const struct fb_videomode *mode, uint32_t bpp);
 
 #define fb_readb(addr)       (*(uint8_t *) (addr))
 #define fb_readw(addr)       (*(uint16_t *) (addr))
