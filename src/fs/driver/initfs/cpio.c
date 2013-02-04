@@ -91,7 +91,7 @@ int cpio_unpack(node_t *dir_node) {
 		if (param.size == 0) {
 			/* this is a directory */
 			//printk("cpio initramfs not support directory now\n");
-			if (NULL == (node = vfs_find_node(param.name, dir_node))) {
+			if (NULL == (node = vfs_lookup(dir_node, param.name))) {
 				return 0;/*file already exist*/
 			}
 			node->type = NODE_TYPE_DIRECTORY | S_IREAD; /* read only file */

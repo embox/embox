@@ -204,7 +204,7 @@ static void *open_factory(const char *fname, const char *_mode) {
 	if (strcmp(strupr((char *) mode),"W") != 0)
 		return NULL;
 
-	node_factory = vfs_find_node("/dev/console", NULL);
+	node_factory = vfs_lookup(NULL, "/dev/console");
 	if (!node_factory)
 		return NULL;
 
@@ -257,7 +257,7 @@ static void *open(const char *fname, const char *_mode) {
 	if (strcmp(strupr((char *)mode),"W") != 0)
 		return NULL;
 
-	node_factory = vfs_find_node("/dev/console",NULL);
+	node_factory = vfs_lookup(NULL, "/dev/console");
 	if (node_factory == NULL)
 		return NULL;
 

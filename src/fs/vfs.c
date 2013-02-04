@@ -119,7 +119,7 @@ node_t *vfs_lookup_child(node_t *parent, const char *name) {
 	return tree_element(tlink, struct node, tree_link);
 }
 
-node_t *vfs_find_node(const char *path, node_t *parent) {
+node_t *vfs_lookup(node_t *parent, const char *path) {
 	node_t *node;
 	char node_name[MAX_LENGTH_FILE_NAME];
 	char *p_path = (char *) path;

@@ -59,13 +59,10 @@ static struct kfile_operations nfsfs_fop = {
 /*
  * file_operation
  */
-static int nfsfs_open(struct node *nod, struct file_desc *desc, int flags) {
-
-	node_t *node;
+static int nfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 	nfs_file_info_t *fi;
 	struct nas *nas;
 
-	node = nod;
 	nas = node->nas;
 	fi = (nfs_file_info_t *)nas->fi->privdata;
 
@@ -219,10 +216,10 @@ static int nfsfs_init(void * par) {
 }
 
 static int nfsfs_format(void *path) {
-	node_t *nod;
+	node_t *node;
 
-	if (NULL == (nod = vfs_find_node((char *) path, NULL))) {
-		return -ENODEV;/*device not found*/
+	if (NULL == (node = vfs_lookup(NULL, path))) {
+		return -ENODEV;
 	}
 	/* TODO format command support */
 	return 0;
@@ -361,9 +358,9 @@ static node_t  *nfs_create_file (struct nas *parent_nas,
 	nfs_file_info_t *fi;
 	struct nas *nas;
 
-	if (NULL == (node = vfs_find_node(full_name, NULL))) {
+	if (NULL == (node = vfs_lookup(NULL, full_name))) {
 		/*TODO usually mount doesn't create a directory*/
-		if (NULL == (node = vfs_add_path (full_name, NULL))) {
+		if (NULL == (node = vfs_add_path(full_name, NULL))) {
 			return NULL;/*device not found*/
 		}
 		if(NULL == (fi = pool_alloc(&nfs_file_pool))) {
@@ -408,7 +405,7 @@ static int nfs_create_dir_entry(char *parent) {
 	char full_path[MAX_LENGTH_PATH_NAME];
 	char *rcv_buf;
 
-	if (NULL == (parent_node = vfs_find_node(parent, NULL))) {
+	if (NULL == (parent_node = vfs_lookup(NULL, parent))) {
 		return -1;/*device not found*/
 	}
 

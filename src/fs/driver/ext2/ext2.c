@@ -570,7 +570,7 @@ static int ext2fs_create(struct node *parent_node, struct node *node) {
 
 static int ext2fs_delete(struct node *node) {
 	int rc;
-	node_t *pointnod, *parents;
+	node_t *dot_node, *parents;
 	struct nas *nas;
 	char path[MAX_LENGTH_PATH_NAME];
 	struct ext2_file_info *fi;
@@ -591,16 +591,15 @@ static int ext2fs_delete(struct node *node) {
 
 	/* need delete "." and ".." node for directory */
 	if (node_is_directory(node)) {
+		dot_node = vfs_lookup_child(node, ".");
+		if (dot_node) {
+			vfs_del_leaf(dot_node);
+		}
 
-		strcat(path, "/.");
-		pointnod = vfs_find_node(path, NULL );
-		vfs_del_leaf(pointnod);
-
-		strcat(path, ".");
-		pointnod = vfs_find_node(path, NULL );
-		vfs_del_leaf(pointnod);
-
-		path[strlen(path) - 3] = '\0';
+		dot_node = vfs_lookup_child(node, "..");
+		if (dot_node) {
+			vfs_del_leaf(dot_node);
+		}
 
 		pool_free(&ext2_file_pool, fi);
 	}

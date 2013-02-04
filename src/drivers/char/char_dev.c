@@ -34,15 +34,15 @@ int char_dev_init_all(void) {
 }
 
 int char_dev_register(const char *name, const struct kfile_operations *ops) {
-	struct node *nod, *devnod;
+	struct node *node, *devnod;
 	struct nas *dev_nas;
 
-	nod = vfs_find_node("/dev", NULL);
-	if (nod == NULL) {
+	node = vfs_lookup(NULL, "/dev");
+	if (node == NULL) {
 		return -ENODEV;
 	}
 
-	devnod = vfs_add_path(name, nod);
+	devnod = vfs_add_path(name, node);
 	if (devnod == NULL) {
 		return -1;
 	}

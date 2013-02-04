@@ -26,9 +26,9 @@ extern node_t *vfs_add_path(const char *path, node_t *parent);
 
 extern node_t *vfs_lookup_child(node_t *parent, const char *name);
 
-extern node_t *vfs_get_parent(node_t *child);
+extern node_t *vfs_lookup(node_t *parent, const char *path);
 
-extern node_t *vfs_find_node(const char *path, node_t *parent);
+extern node_t *vfs_get_parent(node_t *child);
 
 /**
  * Checks the path on the node_tree and forms correct string with the path which already exist.

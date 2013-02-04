@@ -59,14 +59,14 @@ static int tmpfs_init(void * par) {
 		return -1;
 	}
 
-	if((NULL == (dev_node = vfs_find_node(TMPFS_DEV, NULL))) ||
+	if ((NULL == (dev_node = vfs_lookup(NULL, TMPFS_DEV))) ||
 	  (NULL == (dir_node = vfs_add_path(TMPFS_DIR, NULL)))) {
 		return -1;
 	}
 	dir_node->type = NODE_TYPE_DIRECTORY;
 
 	/* format filesystem */
-	if(0 != tmpfs_format((void *)dev_node)) {
+	if (0 != tmpfs_format((void *)dev_node)) {
 		return -1;
 	}
 
@@ -464,7 +464,7 @@ static int tmpfs_create(struct node *parent_node, struct node *node) {
 static int tmpfs_delete(struct node *node) {
 	struct tmpfs_file_info *fi;
 	struct tmpfs_fs_info *fsi;
-	node_t *pointnod;
+	node_t *dot_node;
 	struct nas *nas;
 	char path [MAX_LENGTH_PATH_NAME];
 
@@ -476,18 +476,17 @@ static int tmpfs_delete(struct node *node) {
 
 	/* need delete "." and ".." node for directory */
 	if (node_is_directory(node)) {
+		dot_node = vfs_lookup_child(node, ".");
+		if (dot_node) {
+			vfs_del_leaf(dot_node);
+		}
 
-		strcat(path, "/.");
-		pointnod = vfs_find_node(path, NULL);
-		vfs_del_leaf(pointnod);
+		dot_node = vfs_lookup_child(node, "..");
+		if (dot_node) {
+			vfs_del_leaf(dot_node);
+		}
 
-		strcat(path, ".");
-		pointnod = vfs_find_node(path, NULL);
-		vfs_del_leaf(pointnod);
-
-		path[strlen(path) - 3] = '\0';
-	}
-	else {
+	} else {
 		index_free(&tmpfs_file_idx, fi->index);
 		pool_free(&tmpfs_file_pool, fi);
 	}

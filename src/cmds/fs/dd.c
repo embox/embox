@@ -97,7 +97,7 @@ static int read_file(char *path, char *buffer, size_t size, blkno_t blkno) {
 
 static int exec(int argc, char **argv) {
 	int rc;
-	node_t *nod;
+	node_t *node;
 	struct nas *nas;
 	char path[MAX_LENGTH_PATH_NAME];
 	char num[MAX_LENGTH_FILE_NAME];
@@ -121,48 +121,45 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	if(0 > get_arg(argc, argv, PATH, path)) {
+	if (0 > get_arg(argc, argv, PATH, path)) {
 		return -1;
 	}
-	nod = vfs_find_node(path, NULL);
-	if (NULL == nod) {
+
+	node = vfs_lookup(NULL, path);
+	if (NULL == node) {
 		printf("dd: No such device or file\n");
 		return -1;
 	}
 
 	blkno = 0; bytes = BSIZE;
-	if(0 == get_arg(argc, argv, NUM_B, num)) {
+	if (0 == get_arg(argc, argv, NUM_B, num)) {
 		sscanf(num, "%u", &bytes);
 	}
-	if(0 == get_arg(argc, argv, START_B, num)) {
+	if (0 == get_arg(argc, argv, START_B, num)) {
 		sscanf(num, "%u", &blkno);
 	}
 
 	rc = 0;
-	if(NULL == (buffer =
+	if (NULL == (buffer =
 			page_alloc(__phymem_allocator, bytes / PAGE_SIZE() + 1))) {
 		return -1;
 	}
 
-	if (node_is_block_dev(nod)) {
-		nas = nod->nas;
+	if (node_is_block_dev(node)) {
+		nas = node->nas;
 		if(bytes <= (bytesread =  block_dev_read(nas->fi->privdata,
 							buffer, bytes, blkno))) {
 			print_data(buffer, bytesread, blkno);
-		}
-		else {
+		} else {
 			rc = -1;
 		}
-	}
-	else if (node_is_file(nod)) {
+	} else if (node_is_file(node)) {
 		if(0 <= (bytesread = read_file(path, buffer, bytes, blkno))) {
 			print_data(buffer, bytesread, blkno);
-		}
-		else {
+		} else {
 			rc = -1;
 		}
-	}
-	else { /* node is directory or not specified */
+	} else { /* node is directory or not specified */
 		printf("dd: Not a device or file\n");
 		rc = -1;
 	}

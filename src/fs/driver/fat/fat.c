@@ -2250,20 +2250,15 @@ static int fatfs_delete(struct node *node) {
 
 	/* need delete "." and ".." node for directory */
 	if (node_is_directory(node)) {
-
-		strcat(path, "/.");
-		dot_node = vfs_find_node(path, NULL);
+		dot_node = vfs_lookup_child(node, ".");
 		if (dot_node) {
 			vfs_del_leaf(dot_node);
 		}
 
-		strcat(path, ".");
-		dot_node = vfs_find_node(path, NULL);
+		dot_node = vfs_lookup_child(node, "..");
 		if (dot_node) {
 			vfs_del_leaf(dot_node);
 		}
-
-		path[strlen(path) - 3] = '\0';
 	}
 
 	/*

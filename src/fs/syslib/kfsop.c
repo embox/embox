@@ -52,7 +52,7 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 	struct node *node;
 
 	/* if node already exist return error */
-	if (NULL != (node = vfs_find_node(pathname, root_node))) {
+	if (NULL != (node = vfs_lookup(root_node, pathname))) {
 		errno = EBUSY;
 		return -1;
 	}
@@ -138,7 +138,7 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 	char node_name[MAX_LENGTH_FILE_NAME];
 	struct node *node;
 
-	if (NULL != (node = vfs_find_node(pathname, root_node))) {
+	if (NULL != (node = vfs_lookup(root_node, pathname))) {
 		errno = EBUSY;
 		return -1;
 	}
@@ -183,7 +183,7 @@ int kremove(const char *pathname) {
 	struct nas *nas;
 	fs_drv_t *drv;
 
-	if (NULL == (node = vfs_find_node(pathname, NULL))) {
+	if (NULL == (node = vfs_lookup(NULL, pathname))) {
 		errno = ENOENT;
 		return -1;
 	}
@@ -208,7 +208,7 @@ int kunlink(const char *pathname) {
 	fs_drv_t *drv;
 	struct nas *nas;
 
-	node = vfs_find_node(pathname, NULL);
+	node = vfs_lookup(NULL, pathname);
 	/*
 	if(0 == (node->type & S_IWRITE)) {
 		return -EPERM;
@@ -229,7 +229,7 @@ int krmdir(const char *pathname) {
 	fs_drv_t *drv;
 	struct nas *nas;
 
-	node = vfs_find_node(pathname, NULL);
+	node = vfs_lookup(NULL, pathname);
 	nas = node->nas;
 	drv = nas->fs->drv;
 
@@ -244,7 +244,7 @@ int krmdir(const char *pathname) {
 int klstat(const char *path, struct stat *buf) {
 	node_t *node;
 
-	if(NULL == (node = vfs_find_node(path, NULL))) {
+	if(NULL == (node = vfs_lookup(NULL, path))) {
 		return -1;
 	}
 
@@ -270,7 +270,7 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -EINVAL;
 	}
 
-	node = vfs_find_node(pathname, NULL);
+	node = vfs_lookup(NULL, pathname);
 	if(NULL == node) {
 		return -ENODEV;
 	}
@@ -301,7 +301,7 @@ int kmount(char *dev, char *dir, char *fs_type) {
 	}
 
 	/* find device */
-	if(NULL == (dev_node = vfs_find_node((const char *) dev, NULL))) {
+	if(NULL == (dev_node = vfs_lookup(NULL, (const char *) dev))) {
 		if(0 != strcmp((const char *) fs_type, "nfs")) {
 			printf("mount: no such device\n");
 			return -ENODEV;
@@ -311,7 +311,7 @@ int kmount(char *dev, char *dir, char *fs_type) {
 		}
 	}
 	/* find directory */
-	if (NULL == (dir_node = vfs_find_node(dir, NULL))) {
+	if (NULL == (dir_node = vfs_lookup(NULL, dir))) {
 		/*FIXME: usually mount doesn't create a directory*/
 		if (NULL == (dir_node = vfs_add_path (dir, NULL))) {
 			return -ENODEV;/*device not found*/

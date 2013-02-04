@@ -28,7 +28,8 @@ static struct uart_device *uart_dev_lookup(char *name) {
 	return uart_dev;
 }
 
-static int dev_uart_open(struct node *node, struct file_desc *file_desc, int flags);
+static int dev_uart_open(struct node *node, struct file_desc *file_desc,
+	int flags);
 static int dev_uart_close(struct file_desc *desc);
 static size_t dev_uart_read(struct file_desc *desc, void *buf, size_t size);
 static size_t dev_uart_write(struct file_desc *desc, void *buf, size_t size);
@@ -145,7 +146,7 @@ int uart_dev_register(struct uart_device *dev) {
 	uart_dev = dev;
 
 	/* register char device */
-	if (NULL == (nod = vfs_find_node("/dev", NULL))) {
+	if (NULL == (nod = vfs_lookup(NULL, "/dev"))) {
 		return -1;
 	}
 	if (NULL == (devnod = vfs_add_path(dev->dev_name, nod))) {

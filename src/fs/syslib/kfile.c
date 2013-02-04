@@ -39,7 +39,7 @@ struct file_desc *kopen(const char *path, int flag) {
 		return NULL; /* this can't be a directory */
 	}
 
-	if (NULL == (node = vfs_find_node(path, NULL))) {
+	if (NULL == (node = vfs_lookup(NULL, path))) {
 		/* we try create file */
 		/* check the mode */
 		if ((O_WRONLY != flag) && (O_APPEND != flag)) {
@@ -53,7 +53,7 @@ struct file_desc *kopen(const char *path, int flag) {
 		}
 	}
 
-	if (NULL == (node = vfs_find_node(path, NULL))) {
+	if (NULL == (node = vfs_lookup(NULL, path))) {
 		return NULL;
 	}
 

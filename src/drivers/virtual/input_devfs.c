@@ -148,7 +148,7 @@ static int input_devfs_register(struct input_dev *dev) {
 	assert(dev);
 
 	/* register char device */
-	if (NULL == (node = vfs_find_node("/dev/input", NULL))) {
+	if (NULL == (node = vfs_lookup(NULL, "/dev/input"))) {
 		return -1;
 	}
 	if (NULL == (devnode = vfs_add_path(dev->name, node))) {
@@ -169,7 +169,7 @@ static int init(void) {
 	struct node *node;
 	struct input_dev *dev, *nxt;
 
-	if (NULL == (node = vfs_find_node("/dev", NULL))) {
+	if (NULL == (node = vfs_lookup(NULL, "/dev"))) {
 		return -1;
 	}
 
