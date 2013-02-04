@@ -251,3 +251,25 @@ void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 		bitn += info->var.xres * info->var.bits_per_pixel;
 	}
 }
+
+void fb_imageblit(struct fb_info *info, const struct fb_image *image) {
+	/* TODO it's slow version:) */
+	uint32_t i, j;
+	struct fb_fillrect rect;
+
+	assert(info != NULL);
+	assert(image != NULL);
+	assert(image->depth == 1);
+	assert(image->width == 8);
+
+	rect.width = rect.height = 1;
+	for (j = 0; j < image->height; ++j) {
+		rect.dy = image->dy + j * rect.height;
+		for (i = 0; i < image->width; ++i) {
+			rect.dx = image->dx + i * rect.width;
+			rect.color = *(uint8_t *)(image->data + j) & (1 << ((image->width - i - 1)))
+					? image->fg_color : image->bg_color;
+			fb_fillrect(info, &rect);
+		}
+	}
+}

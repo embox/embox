@@ -36,7 +36,8 @@ static const struct fb_ops bochs_ops = {
 	.fb_check_var = bochs_check_var,
 	.fb_set_par = bochs_set_par,
 	.fb_copyarea = fb_copyarea,
-	.fb_fillrect = fb_fillrect
+	.fb_fillrect = fb_fillrect,
+	.fb_imageblit = fb_imageblit
 };
 
 static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
@@ -48,7 +49,7 @@ static const struct fb_var_screeninfo bochs_default_var_screeninfo = {
 	.yres = 600, /* 1024 */
 	.xres_virtual = 1280,
 	.yres_virtual = 1024,
-	.bits_per_pixel = 32
+	.bits_per_pixel = 16
 };
 
 static int bochs_init(struct pci_slot_dev *pci_dev) {
