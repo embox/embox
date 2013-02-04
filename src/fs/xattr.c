@@ -85,6 +85,10 @@ int setxattr(const char *path, const char *name, const char *value, size_t len, 
 		RETURN_ERRNO(EINVAL);
 	}
 
+	if (value == NULL || len == 0) {
+		flags |= XATTR_REMOVE;
+	}
+
 	if (0 > (err = fsop->setxattr(node, name, value, len, flags))) {
 		RETURN_ERRNO(-err);
 	}

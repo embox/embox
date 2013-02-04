@@ -1018,7 +1018,7 @@ static int ext2_search_directory(struct nas *nas, const char *name, int length,
 	return ENOENT;
 }
 
-static int ext2_write_sblock(struct nas *nas) {
+int ext2_write_sblock(struct nas *nas) {
 	struct ext2_fs_info *fsi;
 
 	fsi = nas->fs->fsi;
@@ -1085,7 +1085,7 @@ static int ext2_read_sblock(struct nas *nas) {
 	return 0;
 }
 
-static int ext2_write_gdblock(struct nas *nas) {
+int ext2_write_gdblock(struct nas *nas) {
 	uint gdpb;
 	int i;
 	char *buff;

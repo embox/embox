@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Testing ext2 xattr with /dev/hda attached to EXT2_TEST_IMAGE
+ * @brief Testing ext2 xattr with /dev/hda attached to http://embox.googlecode.com/files/ext2_xattr_hd.img
  *
  * @author  Anton Kozlov
  * @date    30.01.2013
@@ -31,7 +31,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define TEST_FILE_NM "/test_xattr/test"
 #define TEST_FILE2_NM "/test_xattr/test2"
 #define TEST_FILE_ADD_NM "/test_xattr/test_add_with_xattr"
-#define TEST_FILE_ADDC_NM "/test_xattr/test_add_clean"
+#define TEST_FILE_ADD_CLEAN_NM "/test_xattr/test_add_clean"
 
 static const char *xattr_nm1 = "attr1";
 static const char *xattr_vl1 = "value1";
@@ -137,13 +137,23 @@ TEST_CASE("xattr entry should be added for file with xattr") {
 	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
 	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
 
-	test_assert_equal(setxattr(TEST_FILE_ADD_NM, xattr_nm1, xattr_vl1, strlen(xattr_vl1n),
+	test_assert_equal(setxattr(TEST_FILE_ADD_NM, xattr_nm1, xattr_vl1, strlen(xattr_vl1),
 				XATTR_CREATE), -1);
 	test_assert_equal(EEXIST, errno);
 
 	test_assert_zero(setxattr(TEST_FILE_ADD_NM, xattr_nm3, xattr_vl3, strlen(xattr_vl3),
 				XATTR_CREATE));
-	test_assert_zero(check_xattr_list(TEST_FILE2_NM, xattr_nms, xattr_vls));
+	test_assert_zero(check_xattr_list(TEST_FILE_ADD_NM, xattr_nms, xattr_vls));
+}
+
+TEST_CASE("xattr entry should be added for clean file") {
+	const char *xattr_nms[2] = {xattr_nm1};
+	const char *xattr_vls[2] = {xattr_vl1};
+
+	test_assert_zero(setxattr(TEST_FILE_ADD_CLEAN_NM, xattr_nm1, xattr_vl1, strlen(xattr_vl1),
+				XATTR_CREATE));
+
+	test_assert_zero(check_xattr_list(TEST_FILE_ADD_CLEAN_NM, xattr_nms, xattr_vls));
 }
 
 static int setup_suite(void) {
