@@ -38,6 +38,15 @@ module xattr {
 	depends embox.fs.xattr
 }
 
+module dirent {
+	option number dir_quantity=32
+	source "dirent.c"
+
+	depends embox.fs.core
+	depends embox.mem.objalloc
+	depends embox.lib.LibCString
+}
+
 static module open {
 	source "open.c"
 
