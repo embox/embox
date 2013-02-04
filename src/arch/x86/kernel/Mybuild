@@ -62,5 +62,6 @@ module smp {
 	source "ap_trampoline.S"
 
 	depends embox.driver.interrupt.lapic
+	depends embox.driver.clock.lapic_timer
 	depends cpu
 }

@@ -125,7 +125,7 @@ static void idt_init_syscall(void) {
 
 static struct idt_pointer idt_ptr;
 
-static void inline idt_load(void) {
+void idt_load(void) {
 	__asm__ __volatile__(
 		"lidt %0\n\t"
 		:
