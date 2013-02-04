@@ -129,3 +129,18 @@ static inline int sigaction(int signum, const struct sigaction *act,
 }
 
 
+// Required by libtiff
+static inline void *
+lfind(const void *key, const void *base, size_t *nmemb, size_t size,
+      int(*compar)(const void *, const void *))
+{
+	char *element, *end;
+
+	end = (char *)base + *nmemb * size;
+	for (element = (char *)base; element < end; element += size)
+		if (!compar(element, key))		/* key found */
+			return element;
+
+	return NULL;
+}
+
