@@ -272,7 +272,7 @@ static inline int pthread_cond_broadcast(pthread_cond_t *c){
 
 struct tm * localtime ( const time_t * timer );
 
-void tzset(void) {
+inline void tzset(void) {
 	DPRINT();
 }
 extern char *tzname[2];
@@ -302,7 +302,7 @@ struct flock {
   pid_t  l_pid;
 };
 
-ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
+inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
 	printf(">>> readLink(%s)\n", path);
 	return 0;
 }
