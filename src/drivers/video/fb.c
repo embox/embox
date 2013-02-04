@@ -250,25 +250,3 @@ void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 		bitn += info->var.xres * info->var.bits_per_pixel;
 	}
 }
-
-void fb_videomode_to_var(struct fb_var_screeninfo *var,
-		const struct fb_videomode *mode) {
-	var->xres = mode->xres;
-	var->yres = mode->yres;
-	var->xres_virtual = mode->xres;
-	var->yres_virtual = mode->yres;
-	var->xoffset = 0;
-	var->yoffset = 0;
-	var->pixclock = mode->pixclock;
-	var->left_margin = mode->left_margin;
-	var->right_margin = mode->right_margin;
-	var->upper_margin = mode->upper_margin;
-	var->lower_margin = mode->lower_margin;
-	var->hsync_len = mode->hsync_len;
-	var->vsync_len = mode->vsync_len;
-	var->sync = mode->sync;
-	var->vmode = mode->vmode & FB_VMODE_MASK;
-}
-
-void fb_var_to_videomode(struct fb_videomode *mode,
-		const struct fb_var_screeninfo *var) { }
