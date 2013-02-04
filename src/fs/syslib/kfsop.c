@@ -19,15 +19,17 @@
 #include <fs/fs_drv.h>
 #include <fs/kfsop.h>
 
-static int create_new_node(struct node * parent, char *node_name, uint8_t node_type) {
+static int create_new_node(struct node * parent, char *node_name, mode_t mode) {
 	struct node *new_node;
 	struct nas *nas;
 	fs_drv_t *drv;
 
-	if( NULL == (new_node = vfs_add_path(node_name, parent))) {
+	if(NULL == (new_node = vfs_add_path(node_name, parent))) {
 		return -1;
 	}
-	new_node->type = node_type;
+	new_node->type = mode;
+	new_node->mode = mode;
+
 	/* check drv of parents */
 	nas = parent->nas;
 	drv = nas->fs->drv;
@@ -45,8 +47,8 @@ static int create_new_node(struct node * parent, char *node_name, uint8_t node_t
 int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 	char tpath[MAX_LENGTH_PATH_NAME];
 	char path[MAX_LENGTH_PATH_NAME];
-	int path_offset;
 	char node_name[MAX_LENGTH_FILE_NAME];
+	size_t path_offset, path_len, name_len;
 	struct node *node;
 
 	/* if node already exist return error */
@@ -55,7 +57,7 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 		return -1;
 	}
 
-	if(NULL != root_node) {
+	if (NULL != root_node) {
 		vfs_get_path_by_node(root_node, path);
 		strncat(path, "/", sizeof(path));
 	} else {
@@ -66,11 +68,41 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 
 	/* get last exist node */
 	node = vfs_get_exist_path(path, tpath, sizeof(tpath));
-	if(NULL == node) {
+	if (NULL == node) {
 		return -1;
 	}
 
+	mode &= S_IRWXU | S_IRWXG | S_IRWXO; /* leave only permission bits */
+
+	path_len = strlen(path);
 	path_offset = strlen(tpath);
+
+#if 1
+	while (1) {
+		path_get_next_name(path + path_offset, node_name, sizeof(node_name));
+		name_len = strlen(node_name);
+
+		if (path_offset + name_len + 1 < path_len) {
+			path_offset += name_len + 1;
+		} else {
+			break;
+		}
+
+		if (-1 == kmkdir(node, node_name, mode)) {
+			return -1;
+		}
+
+		node = vfs_get_child(node_name, node);
+		assert (node);
+	}
+
+	if (0 == name_len) {
+		path_get_next_name(path + path_offset, node_name, sizeof(node_name));
+	}
+
+//	return create_new_node(node, node_name, mode | S_IFREG);
+	return create_new_node(node, node_name, NODE_TYPE_FILE);
+#else
 
 	do {
 		path_get_next_name(&path[path_offset], node_name, sizeof(node_name));
@@ -94,6 +126,8 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 	/* set permission */
 
 	return 0;
+
+#endif
 }
 
 int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
@@ -133,6 +167,7 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 			return 0; /* we create all directory */
 		}
 		if(0 != (rc = create_new_node(node, node_name, NODE_TYPE_DIRECTORY))) {
+//		if(0 != (rc = create_new_node(node, node_name, S_IFDIR | S_IRUSR))) {
 			return -rc;
 		}
 		path_offset += (strlen(node_name) + 1);
