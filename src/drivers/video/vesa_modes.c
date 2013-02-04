@@ -33,7 +33,6 @@ static struct vesa_mode_desc vesa_mode_svga_descriptions[] = {
 		{800, 600, 8},
 		{1024, 768, 4},
 		{1024, 768, 8}, /* VESA_MODE_SVGA_1024x768x256 */
-		{1024, 768, 4},
 		{1280, 1024, 4},
 		{1280, 1024, 8}, /* VESA_MODE_SVGA_1280x1024x256 */
 		{80, 60, 0},
