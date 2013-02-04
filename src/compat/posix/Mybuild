@@ -32,6 +32,11 @@ module file {
 	depends open
 }
 
+module xattr {
+	source "xattr.c"
+
+	depends embox.fs.xattr
+}
 
 static module open {
 	source "open.c"
