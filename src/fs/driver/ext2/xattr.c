@@ -193,6 +193,31 @@ static void del_ent(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xat
 			- (unsigned int) src);
 }
 
+static struct ext2_xattr_ent * str_ent(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *end_ent,
+		const char *name) {
+	struct ext2_xattr_ent *i_ent;
+	size_t name_len = strlen(name);
+
+	foreach_xattr(i_ent, xattr_blk->h_entries) {
+		if (strncmp(name, i_ent->e_name, i_ent->e_name_len) < 0) {
+			break;
+		}
+	}
+
+	memmove(((void *) i_ent) + sizeof(struct ext2_xattr_ent) + iceil(strlen(name), EXT2_XATTR_PAD),
+			i_ent,
+			((unsigned int) end_ent) - ((unsigned int) i_ent) + sizeof(unsigned int));
+
+	i_ent->e_name_len = (uint8_t) name_len;
+	i_ent->e_name_index = 1;
+	i_ent->e_value_block = 0;
+
+	memcpy(i_ent->e_name, name, name_len);
+
+	return i_ent;
+}
+
+
 static void str_val(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xattr_ent,
 		int *min_value_offs, const char *value, size_t len) {
 
@@ -202,7 +227,6 @@ static void str_val(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xat
 	memcpy(((char *) xattr_blk) + *min_value_offs, value, len);
 	xattr_ent->e_value_size = h2d32(len);
 	xattr_ent->e_value_offs = h2d32(*min_value_offs);
-	entry_rehash(xattr_blk, xattr_ent);
 }
 
 int ext2fs_setxattr(struct node *node, const char *name, const char *value,
@@ -275,7 +299,22 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 			return -EEXIST;
 		}
 
-		return -ENOSYS;
+		if (((unsigned int) i_ent) - ((unsigned int) xattr_blk)
+				+ sizeof(struct ext2_xattr_ent) +
+				iceil(strlen(name), EXT2_XATTR_PAD) + 4
+				> min_value_offs - iceil(len, EXT2_XATTR_PAD)) {
+			return -ENOMEM;
+		}
+
+		if (strlen(name) > ((uint8_t) -1)) {
+			return -ENOMEM;
+		}
+
+		i_ent = str_ent(xattr_blk, i_ent, name);
+		str_val(xattr_blk, i_ent, &min_value_offs, value, len);
+
+		entry_rehash(xattr_blk, i_ent);
+
 	} else if (flags & XATTR_REMOVE) {
 		if (NULL == xattr_ent) {
 			return -ENOENT;
@@ -289,13 +328,17 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 			return -ENOENT;
 		}
 
-		if (((unsigned int) i_ent) - ((unsigned int) xattr_blk) + 4 >
-				min_value_offs + d2h32(xattr_ent->e_value_size) - len) {
+		if (((unsigned int) i_ent) - ((unsigned int) xattr_blk) + 4
+				> min_value_offs
+				    + iceil(d2h32(xattr_ent->e_value_size), EXT2_XATTR_PAD)
+				    - len) {
 			return -ENOMEM;
 		}
 
 		del_val(xattr_blk, xattr_ent, &min_value_offs);
 		str_val(xattr_blk, xattr_ent, &min_value_offs, value, len);
+
+		entry_rehash(xattr_blk, xattr_ent);
 	}
 
 	block_rehash(xattr_blk);

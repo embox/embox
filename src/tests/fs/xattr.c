@@ -133,12 +133,18 @@ TEST_CASE("xattr should be replaced") {
         test_assert_zero(check_xattr_list(TEST_FILE2_NM, xattr_nms, xattr_vls));
 }
 
-#if 0
-TEST_CASE("xattr entry should be added") {
-	test_assert_zero(setxattr(TEST_FILE_ADD_NM, xattr_nm1, xattr_vl1n, strlen(xattr_vl1n),
-				XATTR_CREATE));
-#endif
+TEST_CASE("xattr entry should be added for file with xattr") {
+	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
 
+	test_assert_equal(setxattr(TEST_FILE_ADD_NM, xattr_nm1, xattr_vl1, strlen(xattr_vl1n),
+				XATTR_CREATE), -1);
+	test_assert_equal(EEXIST, errno);
+
+	test_assert_zero(setxattr(TEST_FILE_ADD_NM, xattr_nm3, xattr_vl3, strlen(xattr_vl3),
+				XATTR_CREATE));
+	test_assert_zero(check_xattr_list(TEST_FILE2_NM, xattr_nms, xattr_vls));
+}
 
 static int setup_suite(void) {
         int res;
