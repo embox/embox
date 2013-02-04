@@ -4,29 +4,35 @@ module context extends embox.arch.context {
 	source "context.c", "context_switch.S", "context.h"
 }
 
-/*FIXME mybuild may be split this to differernt modules */
 module locore extends embox.arch.locore {
-	/* FIXME:
-	 * 1.it use multiboot.c (called from boot.S)
-	 * 2.it depends from arch (called from exception_handler.c)
-	 */
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "idt.c", "exception_entry.S", "irq_handler.c"
-	source "gdt.c", "gdt_flush.S"
-	source "ipl.c", "exception_handler.c", "traps_core.c"
-
-	depends embox.lib.LibC
-	depends embox.kernel.critical
+	depends entry, interrupt
 	depends embox.arch.x86.boot.multiboot
 }
 
 module interrupt extends embox.arch.interrupt {
-	source "irq_entry.S", "ipl_impl.h"
-	depends locore
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+
+	source "irq_entry.S", "irq_handler.c", "ipl.c", "ipl_impl.h"
+
+	depends arch
+
+	depends embox.kernel.critical
+	depends embox.lib.LibC
+}
+
+module entry extends embox.arch.entry {
+	/* FIXME: Depends on kernel panic */
+	source "exception_entry.S", "exception_handler.c"
+
+	source "traps_core.c" /* Replace? */
+
+	depends arch
 }
 
 module usermode extends embox.arch.usermode {
 	source "tss.c", "usermode_entry.S"
+
+	depends arch
 }
 
 /*FIXME mybuild arch module what is it */
@@ -36,8 +42,12 @@ module arch {
 	 */
 	source "arch.c"
 	source "cpu_triple_reset.S"
+	source "gdt.c", "gdt_flush.S"
+	source "idt.c"
 
-	depends locore
+	@NoRuntime
+	depends embox.arch.entry
+
 	depends embox.arch.x86.cpu
 }
 
