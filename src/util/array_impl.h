@@ -102,17 +102,14 @@
 		(size_t) (__ARRAY_SPREAD_PRIVATE(array_nm, marker) - array_nm);   \
 	})
 
-/* Static array size. */
-
-#define __ARRAY_SIZE(array) \
-	(sizeof(array) / sizeof(*(array)))
-
 /* Scalar foreach iterations. */
 
 #define __array_foreach(element, array, size) \
-	__array_range_foreach_nm(element, array, \
-			MACRO_GUARD(__ptr) + (size), \
-			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
+	__array_foreach_nm(element, array, size, MACRO_GUARD(__ptr))
+
+#define __array_foreach_nm(element, array, size, _ptr) \
+	for (const typeof(element) *_ptr = (array), *_end = _ptr + (size); \
+			(_ptr < _end) && (((element) = *_ptr) || 1); ++_ptr)
 
 #define __array_range_foreach(element, array_begin, array_end) \
 	__array_range_foreach_nm(element, array_begin, array_end, \
