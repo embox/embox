@@ -286,18 +286,27 @@ static int ext2_read_symlink(struct nas *nas, uint32_t parent_inumber,
 }
 
 /* set node type by file system file type */
-static void ext2_set_node_type(int *type, uint8_t e2d_type) {
-
+static mode_t ext2_type_to_mode_fmt(uint8_t e2d_type) {
 	switch (e2d_type) {
-	case EXT2_FT_REG_FILE:
-		*type = NODE_TYPE_FILE;
-		break;
-	case EXT2_FT_DIR:
-		*type = NODE_TYPE_DIRECTORY;
-		break;
-	default:
-		*type = NODE_TYPE_SPECIAL;
-		break;
+	case EXT2_FT_REG_FILE: return S_IFREG;
+	case EXT2_FT_DIR: return S_IFDIR;
+	case EXT2_FT_SYMLINK: return S_IFLNK;
+	case EXT2_FT_BLKDEV: return S_IFBLK;
+	case EXT2_FT_CHRDEV: return S_IFCHR;
+	case EXT2_FT_FIFO: return S_IFIFO;
+	default: return 0;
+	}
+}
+
+static uint8_t ext2_type_from_mode_fmt(mode_t mode) {
+	switch (mode & S_IFMT) {
+	case S_IFREG: return EXT2_FT_REG_FILE;
+	case S_IFDIR: return EXT2_FT_DIR;
+	case S_IFLNK: return EXT2_FT_SYMLINK;
+	case S_IFBLK: return EXT2_FT_BLKDEV;
+	case S_IFCHR: return EXT2_FT_CHRDEV;
+	case S_IFIFO: return EXT2_FT_FIFO;
+	default: return EXT2_FT_UNKNOWN;
 	}
 }
 
@@ -361,7 +370,7 @@ int ext2_open(struct nas *nas) {
 		}
 
 		/* Check that current node is a directory */
-		if ((fi->f_di.i_mode & S_IFMT) != S_IFDIR) {
+		if (!S_ISDIR(fi->f_di.i_mode)) {
 			rc = ENOTDIR;
 			goto out;
 		}
@@ -386,7 +395,7 @@ int ext2_open(struct nas *nas) {
 		}
 
 		/* Check for symbolic link */
-		if ((fi->f_di.i_mode & S_IFMT) == S_IFLNK) {
+		if (S_ISLNK(fi->f_di.i_mode)) {
 			if (0 != (rc = ext2_read_symlink(nas, parent_inumber, &cp))) {
 				goto out;
 			}
@@ -1139,13 +1148,13 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 	struct ext2fs_direct *dp, *edp;
 	struct ext2_file_info *dir_fi, *fi;
 	struct ext2_fs_info *fsi;
-	char *name, *full_path;
+	char *name, *name_buff;
 	node_t *node;
-	int type;
+	mode_t mode;
 
 	dir_fi = dir_nas->fi->privdata;
 	fsi = dir_nas->fs->fsi;
-	if (NULL == (full_path = ext2_buff_alloc(dir_nas, MAX_LENGTH_PATH_NAME))) {
+	if (NULL == (name_buff = ext2_buff_alloc(dir_nas, MAX_LENGTH_FILE_NAME))) {
 		rc = ENOMEM;
 		return rc;
 	}
@@ -1175,27 +1184,30 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 			if (fs2h32(dp->e2d_ino) == 0) {
 				continue;
 			}
-			/* set node type by bogus type*/
-			ext2_set_node_type(&type, dp->e2d_type);
+
 			/* set null determine name */
 			name = (char *) &dp->e2d_name;
-			//*(name + fs2h16(dp->e2d_namlen)) = 0;
 
-			vfs_get_path_by_node(dir_nas->node, full_path);
-			strcat(full_path, "/");
-			strncat(full_path, name, fs2h16(dp->e2d_namlen));
-			if (NULL == (node = vfs_add_path(full_path, NULL ))) {
+			memcpy(name_buff, name, fs2h16(dp->e2d_namlen));
+			name_buff[fs2h16(dp->e2d_namlen)] = '\0';
+
+			mode = ext2_type_to_mode_fmt(dp->e2d_type);
+			// TODO get file permissions/credentials
+
+			node = vfs_create(NULL, name_buff, mode);
+			if (!node) {
 				rc = ENOMEM;
 				goto out;
 			}
-			if (NULL == (fi = ext2_fi_alloc(node->nas, dir_nas->fs))) {
+			fi = ext2_fi_alloc(node->nas, dir_nas->fs);
+			if (!fi) {
 				rc = ENOMEM;
 				goto out;
 			}
-			node->type = type;
 
 			if (node_is_directory(node)) {
-				if (0 != strcmp(name, ".") && 0 != strcmp(name, "..")) {
+				if (0 != strcmp(name_buff, ".") &&
+					0 != strcmp(name_buff, "..")) {
 					rc = ext2_mount_entry(node->nas);
 				}
 			}
@@ -1208,7 +1220,7 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 	}
 
 	out: ext2_close(dir_nas);
-	ext2_buff_free(dir_nas, full_path);
+	ext2_buff_free(dir_nas, name_buff);
 	return rc;
 }
 
@@ -1626,24 +1638,25 @@ static void ext2_wipe_inode(struct ext2_file_info *fi,
 	 * when a new ext2_file_info is to be allocated, and from truncate(), when an existing
 	 * ext2_file_info is to be truncated.
 	 */
-	int i;
+	struct ext2fs_dinode *di = &fi->f_di;
+	struct ext2fs_dinode *dir_di = &dir_fi->f_di;
 
-	fi->f_di.i_size = 0;
-	fi->f_di.i_blocks = 0;
-	fi->f_di.i_flags = 0;
-	fi->f_di.i_faddr = 0;
+	di->i_size = 0;
+	di->i_blocks = 0;
+	di->i_flags = 0;
+	di->i_faddr = 0;
 
-	for (i = 0; i < EXT2_N_BLOCKS; i++) {
-		fi->f_di.i_block[i] = NO_BLOCK;
+	for (int i = 0; i < EXT2_N_BLOCKS; i++) {
+		di->i_block[i] = NO_BLOCK;
 	}
 
-	fi->f_di.i_mode = dir_fi->f_di.i_mode & ~S_IFMT;
-	fi->f_di.i_ctime = dir_fi->f_di.i_ctime;
-	fi->f_di.i_mtime = dir_fi->f_di.i_mtime;
-	fi->f_di.i_dtime = dir_fi->f_di.i_dtime;
-	fi->f_di.i_atime = dir_fi->f_di.i_atime;
-	fi->f_di.i_gid = dir_fi->f_di.i_gid;
-	fi->f_di.i_uid = dir_fi->f_di.i_uid;
+	di->i_mode  = dir_di->i_mode & ~S_IFMT;
+	di->i_uid   = dir_di->i_uid;
+	di->i_atime = dir_di->i_atime;
+	di->i_ctime = dir_di->i_ctime;
+	di->i_mtime = dir_di->i_mtime;
+	di->i_dtime = dir_di->i_dtime;
+	di->i_gid   = dir_di->i_gid;
 }
 
 /*
@@ -1905,26 +1918,6 @@ void ext2_rw_inode(struct nas *nas, struct ext2fs_dinode *fdi,
 	}
 }
 
-static int ext2_set_file_type(int ftype, struct ext2fs_direct *dp) {
-	/* Convert ftype (from inode.i_mode) to dp->d_file_type */
-	if (ftype == S_IFREG) {
-		dp->e2d_type = EXT2_FT_REG_FILE;
-	} else if (ftype == S_IFDIR) {
-		dp->e2d_type = EXT2_FT_DIR;
-	} else if (ftype == S_IFLNK) {
-		dp->e2d_type = EXT2_FT_SYMLINK;
-	} else if (ftype == S_IFBLK) {
-		dp->e2d_type = EXT2_FT_BLKDEV;
-	} else if (ftype == S_IFCHR) {
-		dp->e2d_type = EXT2_FT_CHRDEV;
-	} else if (ftype == S_IFIFO) {
-		dp->e2d_type = EXT2_FT_FIFO;
-	} else {
-		dp->e2d_type = EXT2_FT_UNKNOWN;
-	}
-	return 0;
-}
-
 static int ext2_dir_operation(struct nas *nas, char *string, ino_t *numb,
 		int flag, int ftype) {
 	/* This function searches the directory whose inode is pointed to :
@@ -2108,7 +2101,7 @@ static int ext2_dir_operation(struct nas *nas, char *string, ino_t *numb,
 	}
 	dp->e2d_ino = (int) *numb;
 	if (HAS_INCOMPAT_FEATURE(&fsi->e2sb, EXT2F_INCOMPAT_FILETYPE)) {
-		ext2_set_file_type(ftype, dp);
+		dp->e2d_type = ext2_type_from_mode_fmt(ftype);
 	}
 
 	if (1 != ext2_write_sector(nas, fi->f_buf, 1, b)) {
