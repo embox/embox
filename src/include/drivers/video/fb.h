@@ -29,16 +29,17 @@ struct fb_var_screeninfo {
 	uint32_t yres_virtual;
 	uint32_t xoffset;
 	uint32_t yoffset;
-
-	uint32_t right_margin;
-	uint32_t hsync_len;
-	uint32_t left_margin;
-	uint32_t lower_margin;
-	uint32_t vsync_len;
-	uint32_t upper_margin;
-
-	uint32_t vmode;
 	uint32_t bits_per_pixel;
+
+	uint32_t pixclock;
+	uint32_t left_margin;
+	uint32_t right_margin;
+	uint32_t upper_margin;
+	uint32_t lower_margin;
+	uint32_t hsync_len;
+	uint32_t vsync_len;
+	uint32_t sync;
+	uint32_t vmode;
 };
 
 
@@ -130,6 +131,11 @@ extern void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
 
 extern struct fb_info * fb_alloc(void);
 extern void fb_release(struct fb_info *info);
+
+extern void fb_videomode_to_var(struct fb_var_screeninfo *var,
+		const struct fb_videomode *mode);
+extern void fb_var_to_videomode(struct fb_videomode *mode,
+		const struct fb_var_screeninfo *var);
 
 #define fb_readb(addr)       (*(uint8_t *) (addr))
 #define fb_readw(addr)       (*(uint16_t *) (addr))
