@@ -28,7 +28,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 
 #define TEST_CLEAN_FILE_NM "/test_xattr/clean_test"
 #define TEST_FILE_NM "/test_xattr/test"
-#define TEST_FILE2_NM "/test_xattr/test"
+#define TEST_FILE2_NM "/test_xattr/test2"
 
 static const char *xattr_nm1 = "attr1";
 static const char *xattr_vl1 = "value1";
@@ -88,19 +88,6 @@ static int check_xattr_list(const char *path, const char *xattr_nms[], const cha
 
 }
 
-TEST_CASE("xattr should be replaced") {
-	const char *xattr_nms_old[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
-	const char *xattr_vls_old[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
-
-	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
-	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1n, xattr_vl2};
-
-        test_assert_zero(check_xattr_list(TEST_FILE2_NM, xattr_nms_old, xattr_vls_old));
-	test_assert_zero(setxattr(TEST_FILE2_NM, xattr_nm1, xattr_vl1n, strlen(xattr_vl1n),
-				XATTR_REPLACE));
-        test_assert_zero(check_xattr_list(TEST_FILE2_NM, xattr_nms, xattr_vls));
-}
-#if 0
 TEST_CASE("xattr should be ok for clean file") {
 	const char *xattr_nms[1] = {};
 	const char *xattr_vls[1] = {};
@@ -122,7 +109,20 @@ TEST_CASE("xattr should be removed") {
 	test_assert_zero(setxattr(TEST_FILE_NM, xattr_nm1, NULL, 0, XATTR_REMOVE));
         test_assert_zero(check_xattr_list(TEST_FILE_NM, xattr_nms, xattr_vls));
 }
-#endif
+
+TEST_CASE("xattr should be replaced") {
+	const char *xattr_nms_old[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls_old[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
+
+	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1n, xattr_vl2};
+
+	test_assert_zero(check_xattr_list(TEST_FILE2_NM, xattr_nms_old, xattr_vls_old));
+	test_assert_zero(setxattr(TEST_FILE2_NM, xattr_nm1, xattr_vl1n, strlen(xattr_vl1n),
+				XATTR_REPLACE));
+        test_assert_zero(check_xattr_list(TEST_FILE2_NM, xattr_nms, xattr_vls));
+}
+
 static int setup_suite(void) {
         int res;
 
