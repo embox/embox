@@ -140,9 +140,9 @@ extern void fb_var_to_videomode(struct fb_videomode *mode,
 #define fb_readb(addr)       (*(uint8_t *) (addr))
 #define fb_readw(addr)       (*(uint16_t *) (addr))
 #define fb_readl(addr)       (*(uint32_t *) (addr))
-#define fb_writeb(val, addr) (*(uint8_t *) (addr) = (b))
-#define fb_writew(val, addr) (*(uint16_t *) (addr) = (b))
-#define fb_writel(val, addr) (*(uint32_t *) (addr) = (b))
+#define fb_writeb(val, addr) (*(uint8_t *) (addr) = (val))
+#define fb_writew(val, addr) (*(uint16_t *) (addr) = (val))
+#define fb_writel(val, addr) (*(uint32_t *) (addr) = (val))
 #define fb_memset            memset
 #define fb_memcpy_fromfb     memcpy
 #define fb_memcpy_tofb       memcpy

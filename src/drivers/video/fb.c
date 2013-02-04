@@ -196,12 +196,12 @@ static void bitfill(uint32_t *dest, uint32_t bitn, uint32_t pat,
 
 	if (bitn + len <= sizeof(*dest) * CHAR_BIT) {
 		mask1 &= mask2 != 0 ? mask2 : mask1;
-		*dest = (pat & mask1) | (*dest & ~mask1);
+		fb_writel((pat & mask1) | (fb_readl(dest) & ~mask1), dest);
 		return;
 	}
 
 	if (mask1 != 0) {
-		*dest = (pat & mask1) | (*dest & ~mask1);
+		fb_writel((pat & mask1) | (fb_readl(dest) & ~mask1), dest);
 		++dest;
 		pat = (pat << loff) | (pat >> roff);
 		len -= sizeof(*dest) * CHAR_BIT - bitn;
@@ -209,7 +209,8 @@ static void bitfill(uint32_t *dest, uint32_t bitn, uint32_t pat,
 
 	len /= sizeof(*dest) * CHAR_BIT;
 	while (len-- > 0) {
-		*dest++ = pat;
+		fb_writel(pat, dest);
+		++dest;
 		pat = (pat << loff) | (pat >> roff);
 	}
 
