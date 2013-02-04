@@ -29,6 +29,48 @@ static inline unsigned int iceil(unsigned int val, unsigned int div) {
 #define d2h8(v) v
 #define h2d8(v) v
 
+static inline size_t ent_len(struct ext2_xattr_ent *ent) {
+	return sizeof(struct ext2_xattr_ent) +
+		iceil(d2h8(ent->e_name_len), EXT2_XATTR_PAD);
+}
+
+#define foreach_xattr(_var, _first_entry) \
+	for(_var = _first_entry; \
+			*(uint32_t *) _var != 0; \
+			_var = (struct ext2_xattr_ent *) \
+				(((unsigned int) _var) + ent_len(_var)))
+
+#define XATTR_ENT_HASH_NAM_SHIFT 5
+#define XATTR_ENT_HASH_VAL_SHIFT 16
+
+static void entry_rehash(struct ext2_xattr_hdr *xattr_blk,
+		struct ext2_xattr_ent *xattr_ent) {
+	size_t len;
+
+	char *p = xattr_ent->e_name;
+	unsigned int *vp = (unsigned int *)
+		(((unsigned int) xattr_blk) + d2h16(xattr_ent->e_value_offs));
+
+	unsigned int hash = 0;
+
+	len = xattr_ent->e_name_len;
+	while (len--) {
+		hash = (hash << XATTR_ENT_HASH_NAM_SHIFT) ^
+			(hash >> (8 * sizeof(hash) - XATTR_ENT_HASH_NAM_SHIFT)) ^
+			*p++;
+	}
+
+	if (xattr_ent->e_value_block == 0 && xattr_ent->e_value_size != 0) {
+		len = iceil(d2h32(xattr_ent->e_value_size), EXT2_XATTR_PAD) >> 2;
+		while (len--) {
+			hash = (hash << XATTR_ENT_HASH_VAL_SHIFT) ^
+				(hash >> (8 * sizeof(hash) - XATTR_ENT_HASH_VAL_SHIFT)) ^
+				d2h32(*vp++);
+		}
+	}
+	xattr_ent->e_hash = h2d32(hash);
+}
+
 static int ensure_dinode(struct nas *nas) {
 	/* Sorry for doing that (Anton Kozlov).
 	 * Needed as mount not filling nas struct,
@@ -74,16 +116,21 @@ static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk) {
 	return 0;
 }
 
-static inline size_t ent_len(struct ext2_xattr_ent *ent) {
-	return sizeof(struct ext2_xattr_ent) +
-		iceil(d2h32(ent->e_name_len), EXT2_XATTR_PAD);
-}
+#define XATTR_BLK_HASH_SHIFT 16
 
-#define foreach_xattr(_var, _first_entry) \
-	for(_var = _first_entry; \
-			*(uint32_t *) _var != 0; \
-			_var = (struct ext2_xattr_ent *) \
-				(((unsigned int) _var) + ent_len(_var)))
+static void block_rehash(struct ext2_xattr_hdr *xattr_blk) {
+	struct ext2_xattr_ent *i_ent;
+
+	unsigned int hash = 0;
+
+	foreach_xattr(i_ent, xattr_blk->h_entries) {
+		hash = (hash << XATTR_BLK_HASH_SHIFT) ^
+			(hash >> (8 * sizeof(unsigned int) - XATTR_BLK_HASH_SHIFT)) ^
+			d2h32(i_ent->e_hash);
+	}
+
+	xattr_blk->h_hash = h2d32(hash);
+}
 
 int ext2fs_listxattr(struct node *node, char *list, size_t len) {
 	struct ext2_xattr_hdr *xattr_blk;
@@ -132,6 +179,7 @@ static void del_val(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xat
 		unsigned short ent_off = d2h16(i_ent->e_value_offs);
 		if (ent_off < deloff) {
 			i_ent->e_value_offs = h2d16(ent_off + dellen);
+			entry_rehash(xattr_blk, i_ent);
 		}
 	}
 	*min_value_offs += dellen;
@@ -154,6 +202,7 @@ static void str_val(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xat
 	memcpy(((char *) xattr_blk) + *min_value_offs, value, len);
 	xattr_ent->e_value_size = h2d32(len);
 	xattr_ent->e_value_offs = h2d32(*min_value_offs);
+	entry_rehash(xattr_blk, xattr_ent);
 }
 
 int ext2fs_setxattr(struct node *node, const char *name, const char *value,
@@ -195,6 +244,8 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 		memcpy(blk_copy, xattr_blk, BBSIZE);
 
 		xattr_blk->h_refcount = h2d32(d2h32(xattr_blk->h_refcount) - 1);
+		block_rehash(xattr_blk);
+
 		blk_copy->h_refcount = h2d32(1);
 
 		ext2_write_sector(node->nas, (char *) xattr_blk, 1, d2h32(dinode->i_facl));
@@ -213,7 +264,7 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 			min_value_offs = d2h16(i_ent->e_value_offs);
 		}
 
-		if (xattr_ent == NULL && name_len == d2h32(i_ent->e_name_len) &&
+		if (xattr_ent == NULL && name_len == d2h8(i_ent->e_name_len) &&
 				0 == strcmp(name, i_ent->e_name)) {
 			xattr_ent = i_ent;
 		}
@@ -246,6 +297,8 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 		del_val(xattr_blk, xattr_ent, &min_value_offs);
 		str_val(xattr_blk, xattr_ent, &min_value_offs, value, len);
 	}
+
+	block_rehash(xattr_blk);
 
 	ext2_write_sector(node->nas, (char *) xattr_blk, 1, d2h32(dinode->i_facl));
 	ext2_buff_free(node->nas, (char *) xattr_blk);

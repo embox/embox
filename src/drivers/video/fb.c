@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #define MODOPS_FB_AMOUNT OPTION_GET(NUMBER, fb_amount)
 
@@ -100,7 +101,7 @@ int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 	memcpy(&old, &info->var, sizeof(struct fb_var_screeninfo));
 	memcpy(&info->var, var, sizeof(struct fb_var_screeninfo));
 
-	if (info->ops->fb_set_par) {
+	if (info->ops->fb_set_par != NULL) {
 		ret = info->ops->fb_set_par(info);
 		if (ret != 0) {
 			memcpy(&info->var, &old, sizeof(struct fb_var_screeninfo));
@@ -169,24 +170,84 @@ void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
 	}
 }
 
+static uint32_t pixel_to_pat(uint32_t bpp, uint32_t pixel) {
+	assert(pixel >> bpp == 0);
+	return bpp == 1 ? 0xffffffffUL * pixel
+			: bpp == 2 ? 0x55555555UL * pixel
+			: bpp == 4 ? 0x11111111UL * pixel
+			: bpp == 8 ? 0x01010101UL * pixel
+			: bpp == 12 ? 0x01001001UL * pixel
+			: bpp == 16 ? 0x00010001UL * pixel
+			: bpp == 24 ? 0x01000001UL * pixel
+			: bpp == 32 ? 0x00000001UL * pixel
+			: 0;
+}
+
+static void bitfill(uint32_t *dest, uint32_t bitn, uint32_t pat,
+		uint32_t loff, uint32_t roff, uint32_t len) {
+	uint32_t mask1, mask2;
+
+	assert(dest != NULL);
+
+	if (len == 0) return;
+
+	mask1 = ~(uint32_t)0 << bitn;
+	mask2 = ~(~(uint32_t)0 << (bitn + len) % (sizeof(*dest) * CHAR_BIT));
+
+	if (bitn + len <= sizeof(*dest) * CHAR_BIT) {
+		mask1 &= mask2 != 0 ? mask2 : mask1;
+		fb_writel((pat & mask1) | (fb_readl(dest) & ~mask1), dest);
+		return;
+	}
+
+	if (mask1 != 0) {
+		fb_writel((pat & mask1) | (fb_readl(dest) & ~mask1), dest);
+		++dest;
+		pat = (pat << loff) | (pat >> roff);
+		len -= sizeof(*dest) * CHAR_BIT - bitn;
+	}
+
+	len /= sizeof(*dest) * CHAR_BIT;
+	while (len-- > 0) {
+		fb_writel(pat, dest);
+		++dest;
+		pat = (pat << loff) | (pat >> roff);
+	}
+
+	*dest = (pat & mask2) | (*dest & ~mask2);
+}
+
 void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
-	uint32_t size_x, size_y, j;
-	char *base;
+	uint32_t width, height, pat_orig, pat, *dest, bitn, loff, roff;
 
 	assert(info != NULL);
 	assert(rect != NULL);
 
-	size_x = rect->dx + rect->width > info->var.xres
+	width = rect->dx + rect->width > info->var.xres
 			? info->var.xres - rect->dx : rect->width;
 
-	size_y = rect->dy + rect->height > info->var.yres
+	height = rect->dy + rect->height > info->var.yres
 			? info->var.yres - rect->dy : rect->height;
 
-	base = (char *)info->screen_base;
-	assert(base != NULL);
+	pat_orig = pixel_to_pat(info->var.bits_per_pixel, rect->color);
 
-	for (j = 0; j < size_y; ++j) {
-		fb_memset(base + (rect->dx + (j + rect->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
-				rect->color, size_x * info->var.bits_per_pixel / 8);
+	assert(info->screen_base != NULL);
+	bitn = (uint32_t)info->screen_base % sizeof(*dest);
+	dest = (uint32_t *)((uint32_t)info->screen_base - bitn);
+	bitn = bitn * CHAR_BIT + (rect->dy * info->var.xres
+			+ rect->dx) * info->var.bits_per_pixel;
+
+	roff = sizeof(*dest) * CHAR_BIT % info->var.bits_per_pixel;
+	loff = info->var.bits_per_pixel - roff;
+
+	while (height-- > 0) {
+		dest += bitn / (sizeof(*dest) * CHAR_BIT);
+		bitn %= sizeof(*dest) * CHAR_BIT;
+
+		pat = roff != 0 ? pat_orig : (pat_orig << (bitn % info->var.bits_per_pixel))
+				| (pat_orig >> (info->var.bits_per_pixel - bitn % info->var.bits_per_pixel));
+
+		bitfill(dest, bitn, pat, loff, roff, width * info->var.bits_per_pixel);
+		bitn += info->var.xres * info->var.bits_per_pixel;
 	}
 }

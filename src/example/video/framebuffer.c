@@ -17,7 +17,7 @@
 EMBOX_EXAMPLE(run);
 
 static const unsigned char colors[] = {
-		0xDD, 0xAA, 0x66, 0x32
+		0x07, 0x15, 0x1C, 0x0E
 };
 
 static int framebuffer_turn_on(void) {
@@ -106,7 +106,8 @@ static int framebuffer_copyarea(void) {
 	area.height = 200;
 	area.sx = info->var.xres / 2 - 150;
 	area.sy = info->var.yres / 2 - 100;
-	info->ops->fb_copyarea(info, &area);
+	area = area;
+//	info->ops->fb_copyarea(info, &area);
 
 	return 0;
 }
@@ -115,6 +116,7 @@ static int framebuffer_dev(void) {
 	int ret;
 	size_t i, j, size;
 	FILE *fbuf;
+	unsigned short color = 0x26AD;
 
 	ret = framebuffer_turn_on();
 	if (ret != 0) {
@@ -123,27 +125,32 @@ static int framebuffer_dev(void) {
 
 	fbuf = fopen("/dev/fb0", "w");
 	if (fbuf == NULL) {
+		fclose(fbuf);
 		return -errno;
 	}
 
 	ret = fseek(fbuf, 0, SEEK_END);
 	if (ret != 0) {
+		fclose(fbuf);
 		return ret;
 	}
 
 	size = ftell(fbuf);
 	if ((long int)size == -1L) {
+		fclose(fbuf);
 		return -errno;
 	}
 
 	ret = fseek(fbuf, 0, SEEK_SET);
 	if (ret != 0) {
+		fclose(fbuf);
 		return ret;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(colors); ++i) {
 		for (j = 0; j < size / ARRAY_SIZE(colors); ++j) {
-			if (fwrite(&colors[i], sizeof colors[0], 1, fbuf) != 1) {
+			if (fwrite(&color, sizeof color, 1, fbuf) != 2) {
+				fclose(fbuf);
 				return -errno;
 			}
 		}

@@ -22,9 +22,3 @@ gdt_flush:
 	ljmp  $(__KERNEL_CS), $flush
 flush:
 	ret
-
-	.global tss_flush
-tss_flush:
-	movw $(__TSS), %ax
-	ltr %ax
-	ret
