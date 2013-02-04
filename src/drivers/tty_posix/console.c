@@ -196,25 +196,25 @@ int tty_posix_console_diag_init(void)
 static void *open_factory(const char *fname, const char *_mode) {
 //	struct tty *tp;
 //	int line;
-	node_t * node_factory;
-	node_t * node_line;
+	node_t *node_factory;
+	node_t *node_line;
 	char node_name[MAX_LENGTH_FILE_NAME];
 	console_t *cons;
 
-	if (strcmp(strupr((char *)mode),"W") != 0)
+	if (strcmp(strupr((char *) mode),"W") != 0)
 		return NULL;
 
-	node_factory = vfs_find_node("/dev/console",NULL);
-	if (node_factory == NULL)
-		return (void *)NULL;
+	node_factory = vfs_find_node("/dev/console", NULL);
+	if (!node_factory)
+		return NULL;
 
 	//factory creates all console CONFIG_NR_CONS
-	for (int i=0;i<CONFIG_NR_CONS;i++) {
-		sprintf(node_name,"%d",i);
+	for (int i = 0; i < CONFIG_NR_CONS; i++) {
+		sprintf(node_name, "%d", i);
 
-		node_line 	= vfs_get_child(node_name,node_factory);
+		node_line = vfs_lookup_child(node_factory, node_name);
 		if (node_line == NULL) {
-			node_line 				= vfs_add_path(node_name,node_factory);
+			node_line 				= vfs_add_path(node_name, node_factory);
 			node_line->file_info 	= (void*) &file_op;
 			cons 					= &cons_table[i];
 			node_line->dev_attr		= cons;
@@ -222,7 +222,7 @@ static void *open_factory(const char *fname, const char *_mode) {
 			node_line->fs_type 		= &devfs_drv;
 		}
 	}
-	return (void *)node_factory;
+	return node_factory;
 }
 static int close_factory(void *file) {
 	return 0;
@@ -268,7 +268,7 @@ static void *open(const char *fname, const char *_mode) {
 	if (line < 0)
 		return NULL;
 
-	node_line 	= vfs_get_child(p_path,node_factory);
+	node_line 	= vfs_lookup_child(node_factory, p_path);
 	if (node_line == NULL)
 		return NULL;
 

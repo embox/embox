@@ -92,7 +92,7 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 			return -1;
 		}
 
-		node = vfs_get_child(node_name, node);
+		node = vfs_lookup_child(node, node_name);
 		assert (node);
 	}
 
@@ -117,7 +117,7 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 				return -1;
 			}
 
-			node = vfs_get_child(node_name, node);
+			node = vfs_lookup_child(node, node_name);
 			path_offset += (strlen(node_name) + 1);
 		}
 	} while (NULL != node);
@@ -172,7 +172,7 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 		}
 		path_offset += (strlen(node_name) + 1);
 
-		node = vfs_get_child(node_name, node);
+		node = vfs_lookup_child(node, node_name);
 	} while (NULL != node);
 
 	return 0;

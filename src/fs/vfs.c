@@ -78,7 +78,7 @@ node_t *vfs_add_path(const char *path, node_t *parent) {
 	while (NULL != (p_path = path_get_next_name(p_path,	node_name,
 													sizeof(node_name)))) {
 		parent = node;
-		if (NULL == (node = vfs_get_child(node_name, node))) {
+		if (NULL == (node = vfs_lookup_child(node, node_name))) {
 			return vfs_add_new_path(parent, p_path, node_name);
 		}
 	}
@@ -111,7 +111,7 @@ static int node_name_is(struct tree_link *link, void *name) {
 	return strcmp(node->name, name) == 0;
 }
 
-node_t *vfs_get_child(const char *name, node_t *parent) {
+node_t *vfs_lookup_child(node_t *parent, const char *name) {
 	struct tree_link *tlink;
 
 	tlink = tree_lookup_child(&(parent->tree_link), node_name_is, (void *) name);
@@ -132,7 +132,7 @@ node_t *vfs_find_node(const char *path, node_t *parent) {
 
 	//FIXME if we return immediately we return root node
 	while ((p_path = path_get_next_name(p_path, node_name, sizeof(node_name)))) {
-		node = vfs_get_child(node_name, node);
+		node = vfs_lookup_child(node, node_name);
 		if (!node) {
 			return NULL;
 		}
@@ -174,7 +174,7 @@ node_t *vfs_get_exist_path(const char *path, char *exist_path, size_t buff_len) 
 			return parent; /* we found full path */
 		}
 
-		if(NULL != (node = vfs_get_child(cname, node))) {
+		if(NULL != (node = vfs_lookup_child(node, cname))) {
 			/*add node to exist_path*/
 			strncat(exist_path, "/", buff_len);
 			strncat((char *)exist_path, cname, buff_len);
