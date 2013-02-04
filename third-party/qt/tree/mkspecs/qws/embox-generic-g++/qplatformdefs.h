@@ -115,25 +115,59 @@ typedef int pthread_mutexattr_t;
 typedef int pthread_condattr_t;
 typedef int pthread_attr_t;
 
-extern int pthread_mutex_init (pthread_mutex_t *__mutex,
-                               __const pthread_mutexattr_t *__mutexattr);
-extern int pthread_mutex_destroy (pthread_mutex_t *__mutex);
+#if 1
+#define DPRINT() printf("QT CALL %s\n", __FUNCTION__)
+#else
+#define DPRINT()
+#endif
 
-extern int pthread_cond_init (pthread_cond_t *__restrict __cond,
+static inline int pthread_mutex_init (pthread_mutex_t *__mutex,
+                               __const pthread_mutexattr_t *__mutexattr) {
+	DPRINT();
+	return -1;
+}
+
+static inline int pthread_mutex_destroy (pthread_mutex_t *__mutex) {
+	DPRINT();
+	return -1;
+}
+
+static inline int pthread_cond_init (pthread_cond_t *__restrict __cond,
                               __const pthread_condattr_t *__restrict
-                              __cond_attr);
-extern int pthread_cond_destroy (pthread_cond_t *__cond);
+                              __cond_attr){
+	DPRINT();
+	return -1;
+}
+static inline int pthread_cond_destroy (pthread_cond_t *__cond){
+	DPRINT();
+	return -1;
+}
 
-extern int pthread_mutex_lock (pthread_mutex_t *__mutex);
-extern int pthread_mutex_unlock (pthread_mutex_t *__mutex);
+static inline int pthread_mutex_lock (pthread_mutex_t *__mutex){
+	DPRINT();
+	return -1;
+}
+static inline int pthread_mutex_unlock (pthread_mutex_t *__mutex){
+	DPRINT();
+	return -1;
+}
 
-extern int pthread_cond_wait (pthread_cond_t *__restrict __cond,
-                              pthread_mutex_t *__restrict __mutex);
-extern int pthread_cond_signal (pthread_cond_t *__cond);
-extern int pthread_cond_timedwait (pthread_cond_t *__restrict __cond,
+static inline int pthread_cond_wait (pthread_cond_t *__restrict __cond,
+                              pthread_mutex_t *__restrict __mutex){
+	DPRINT();
+	return -1;
+}
+static inline int pthread_cond_signal (pthread_cond_t *__cond){
+	DPRINT();
+	return -1;
+}
+static inline int pthread_cond_timedwait (pthread_cond_t *__restrict __cond,
                                    pthread_mutex_t *__restrict __mutex,
                                    __const struct timespec *__restrict
-                                   __abstime);
+                                   __abstime){
+	DPRINT();
+	return -1;
+}
 
 
 
@@ -149,48 +183,98 @@ typedef int pthread_once_t;
 
 typedef unsigned int pthread_key_t;
 
-extern int pthread_once (pthread_once_t *__once_control,
-                         void (*__init_routine) (void));
+static inline int pthread_once (pthread_once_t *__once_control,
+                         void (*__init_routine) (void)){
+	DPRINT();
+	return -1;
+}
 
-extern void *pthread_getspecific (pthread_key_t __key);
-extern int pthread_setspecific (pthread_key_t __key,
-                                __const void *__pointer);
+static inline void *pthread_getspecific (pthread_key_t __key) {
+	DPRINT();
+	return NULL;
+}
+static inline int pthread_setspecific (pthread_key_t __key,
+                                __const void *__pointer){
+	DPRINT();
+	return -1;
+}
 
-extern int pthread_key_create (pthread_key_t *__key,
-                               void (*__destr_function) (void *));
-extern int pthread_key_delete (pthread_key_t __key);
+static inline int pthread_key_create (pthread_key_t *__key,
+                               void (*__destr_function) (void *)){
+	DPRINT();
+	return -1;
+}
+static inline int pthread_key_delete (pthread_key_t __key){
+	DPRINT();
+	return -1;
+}
 
-extern pthread_t pthread_self (void);
+static inline pthread_t pthread_self (void){
+	DPRINT();
+	return -1;
+}
 
-extern int pthread_setcancelstate (int __state, int *__oldstate);
+static inline int pthread_setcancelstate (int __state, int *__oldstate){
+	DPRINT();
+	return -1;
+}
 
-extern void pthread_cleanup_push(void (*routine)(void*), void *arg);
+static inline void pthread_cleanup_push(void (*routine)(void*), void *arg){
+	DPRINT();
+}
 
-extern void  pthread_cleanup_pop(int);
+static inline void  pthread_cleanup_pop(int a){
+	DPRINT();
+}
 
-extern void  pthread_testcancel(void);
+static inline void  pthread_testcancel(void){
+	DPRINT();
+}
 
-extern int pthread_attr_init(pthread_attr_t *);
+static inline int pthread_attr_init(pthread_attr_t *a){
+	DPRINT();
+	return -1;
+}
 
-extern int pthread_attr_setdetachstate(pthread_attr_t *, int);
+static inline int pthread_attr_setdetachstate(pthread_attr_t *a, int p){
+	DPRINT();
+	return -1;
+}
 
-extern int pthread_create(pthread_t *, const pthread_attr_t *,
-          void *(*)(void *), void *);
+static inline int pthread_create(pthread_t *t, const pthread_attr_t *a,
+          void *(*func)(void *), void *arg){
+	DPRINT();
+	return -1;
+}
 
-extern int pthread_attr_setinheritsched(pthread_attr_t *, int);
+static inline int pthread_attr_setinheritsched(pthread_attr_t *a, int p){
+	DPRINT();
+	return -1;
+}
 
-extern int pthread_attr_destroy(pthread_attr_t *);
+static inline int pthread_attr_destroy(pthread_attr_t *a){
+	DPRINT();
+	return -1;
+}
 
-extern int pthread_cancel(pthread_t);
+static inline int pthread_cancel(pthread_t t){
+	DPRINT();
+	return -1;
+}
 
-extern int pthread_cond_broadcast(pthread_cond_t *);
+static inline int pthread_cond_broadcast(pthread_cond_t *c){
+	DPRINT();
+	return -1;
+}
 
 
 
 
 struct tm * localtime ( const time_t * timer );
 
-void tzset(void);
+void tzset(void) {
+	DPRINT();
+}
 extern char *tzname[2];
 
 
