@@ -19,7 +19,7 @@
 #define __UCLIBC__
 #define QT_LINUXBASE
 
-#define __MAKEDEPEND__
+// #define __MAKEDEPEND__
 
 #define RAND_MAX 32767
 

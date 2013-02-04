@@ -1,0 +1,154 @@
+/home/fsulima/embox/repo/embox/build/qt/apps_embox/vnc/../../source/src/3rdparty/freetype/builds/unix/ftsystem.c:200: undefined reference to `munmap'
+./build/base/obj/image_nosymbols.o: In function `FT_Stream_Open':
+/home/fsulima/embox/repo/embox/build/qt/apps_embox/vnc/../../source/src/3rdparty/freetype/builds/unix/ftsystem.c:295: undefined reference to `mmap'
+./build/base/obj/image_nosymbols.o: In function `TIFFFindFieldInfoByName':
+/home/fsulima/embox/repo/embox/build/qt/source/src/3rdparty/libtiff/libtiff/tif_dirinfo.c:795: undefined reference to `lfind'
+./build/base/obj/image_nosymbols.o: In function `QHostInfoAgent::fromName(QString const&)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/network/kernel/qhostinfo_unix.cpp:180: undefined reference to `gethostbyaddr(void const*, int, int)'
+./build/base/obj/image_nosymbols.o: In function `QHostInfo::localHostName()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/network/kernel/qhostinfo_unix.cpp:327: undefined reference to `gethostname(char*, unsigned int)'
+./build/base/obj/image_nosymbols.o: In function `qrand()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/global/qglobal.cpp:2698: undefined reference to `rand_r'
+./build/base/obj/image_nosymbols.o: In function `QMutexPrivate::QMutexPrivate(QMutex::RecursionMode)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qmutex_unix.cpp:82: undefined reference to `pthread_mutex_init(int*, int const*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qmutex_unix.cpp:83: undefined reference to `pthread_cond_init(int*, int const*)'
+./build/base/obj/image_nosymbols.o: In function `QMutexPrivate::~QMutexPrivate()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qmutex_unix.cpp:90: undefined reference to `pthread_cond_destroy(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qmutex_unix.cpp:91: undefined reference to `pthread_mutex_destroy(int*)'
+./build/base/obj/image_nosymbols.o: In function `QMutexPrivate::wait(int)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qmutex_unix.cpp:147: undefined reference to `pthread_mutex_lock(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qmutex_unix.cpp:151: undefined reference to `pthread_cond_wait(int*, int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qmutex_unix.cpp:161: undefined reference to `pthread_cond_timedwait(int*, int*, timespec const*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qmutex_unix.cpp:173: undefined reference to `pthread_mutex_unlock(int*)'
+./build/base/obj/image_nosymbols.o: In function `QMutexPrivate::wakeUp()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qmutex_unix.cpp:180: undefined reference to `pthread_mutex_lock(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qmutex_unix.cpp:182: undefined reference to `pthread_cond_signal(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qmutex_unix.cpp:183: undefined reference to `pthread_mutex_unlock(int*)'
+./build/base/obj/image_nosymbols.o: In function `destroy_current_thread_data':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:143: undefined reference to `pthread_setspecific(unsigned int, void const*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:161: undefined reference to `pthread_setspecific(unsigned int, void const*)'
+./build/base/obj/image_nosymbols.o: In function `create_current_thread_data_key':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:167: undefined reference to `pthread_key_create(unsigned int*, void (*)(void*))'
+./build/base/obj/image_nosymbols.o: In function `destroy_current_thread_data_key':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:172: undefined reference to `pthread_once(int*, void (*)())'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:173: undefined reference to `pthread_key_delete(unsigned int)'
+./build/base/obj/image_nosymbols.o: In function `get_thread_data':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:184: undefined reference to `pthread_once(int*, void (*)())'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:185: undefined reference to `pthread_getspecific(unsigned int)'
+./build/base/obj/image_nosymbols.o: In function `set_thread_data':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:194: undefined reference to `pthread_once(int*, void (*)())'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:195: undefined reference to `pthread_setspecific(unsigned int, void const*)'
+./build/base/obj/image_nosymbols.o: In function `clear_thread_data':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:203: undefined reference to `pthread_setspecific(unsigned int, void const*)'
+./build/base/obj/image_nosymbols.o: In function `QThreadData::current()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:233: undefined reference to `pthread_self()'
+./build/base/obj/image_nosymbols.o: In function `QAdoptedThread::init()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:244: undefined reference to `pthread_self()'
+./build/base/obj/image_nosymbols.o: In function `QThreadPrivate::start(void*)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:301: undefined reference to `pthread_setcancelstate(int, int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:302: undefined reference to `pthread_cleanup_push(void (*)(void*), void*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:312: undefined reference to `pthread_self()'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:336: undefined reference to `pthread_setcancelstate(int, int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:337: undefined reference to `pthread_testcancel()'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:340: undefined reference to `pthread_cleanup_pop(int)'
+./build/base/obj/image_nosymbols.o: In function `QThread::currentThreadId()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:392: undefined reference to `pthread_self()'
+./build/base/obj/image_nosymbols.o: In function `QThread::yieldCurrentThread()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:459: undefined reference to `sched_yield'
+./build/base/obj/image_nosymbols.o: In function `thread_sleep':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:471: undefined reference to `pthread_mutex_init(int*, int const*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:472: undefined reference to `pthread_cond_init(int*, int const*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:474: undefined reference to `pthread_mutex_lock(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:475: undefined reference to `pthread_cond_timedwait(int*, int*, timespec const*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:476: undefined reference to `pthread_mutex_unlock(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:478: undefined reference to `pthread_cond_destroy(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:479: undefined reference to `pthread_mutex_destroy(int*)'
+./build/base/obj/image_nosymbols.o: In function `QThread::start(QThread::Priority)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:572: undefined reference to `pthread_attr_init(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:573: undefined reference to `pthread_attr_setdetachstate(int*, int)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:640: undefined reference to `pthread_create(int*, int const*, void* (*)(void*), void*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:644: undefined reference to `pthread_attr_setinheritsched(int*, int)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:646: undefined reference to `pthread_create(int*, int const*, void* (*)(void*), void*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:649: undefined reference to `pthread_attr_destroy(int*)'
+./build/base/obj/image_nosymbols.o: In function `QThread::terminate()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:668: undefined reference to `pthread_cancel(int)'
+./build/base/obj/image_nosymbols.o: In function `QThread::wait(unsigned long)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:682: undefined reference to `pthread_self()'
+./build/base/obj/image_nosymbols.o: In function `QThread::setTerminationEnabled(bool)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:704: undefined reference to `pthread_setcancelstate(int, int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qthread_unix.cpp:706: undefined reference to `pthread_testcancel()'
+./build/base/obj/image_nosymbols.o: In function `QWaitCondition::QWaitCondition()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:116: undefined reference to `pthread_mutex_init(int*, int const*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:117: undefined reference to `pthread_cond_init(int*, int const*)'
+./build/base/obj/image_nosymbols.o: In function `QWaitCondition::~QWaitCondition()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:124: undefined reference to `pthread_cond_destroy(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:125: undefined reference to `pthread_mutex_destroy(int*)'
+./build/base/obj/image_nosymbols.o: In function `QWaitCondition::wakeOne()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:131: undefined reference to `pthread_mutex_lock(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:133: undefined reference to `pthread_cond_signal(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:134: undefined reference to `pthread_mutex_unlock(int*)'
+./build/base/obj/image_nosymbols.o: In function `QWaitCondition::wakeAll()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:139: undefined reference to `pthread_mutex_lock(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:141: undefined reference to `pthread_cond_broadcast(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:142: undefined reference to `pthread_mutex_unlock(int*)'
+./build/base/obj/image_nosymbols.o: In function `QWaitCondition::wait(QMutex*, unsigned long)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:154: undefined reference to `pthread_mutex_lock(int*)'
+./build/base/obj/image_nosymbols.o: In function `QWaitCondition::wait(QReadWriteLock*, unsigned long)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:174: undefined reference to `pthread_mutex_lock(int*)'
+./build/base/obj/image_nosymbols.o: In function `QDate::currentDate()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/tools/qdatetime.cpp:3098: undefined reference to `localtime(long const*)'
+./build/base/obj/image_nosymbols.o: In function `QTime::currentTime()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/tools/qdatetime.cpp:3120: undefined reference to `localtime(long const*)'
+./build/base/obj/image_nosymbols.o: In function `QDateTime::currentDateTime()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/tools/qdatetime.cpp:3143: undefined reference to `localtime(long const*)'
+./build/base/obj/image_nosymbols.o: In function `utcToLocal':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/tools/qdatetime.cpp:4077: undefined reference to `localtime(long const*)'
+./build/base/obj/image_nosymbols.o: In function `timeZone':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/tools/qlocale.cpp:1366: undefined reference to `tzset()'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/tools/qlocale.cpp:1367: undefined reference to `tzname'
+./build/base/obj/image_nosymbols.o: In function `QString::localeAwareCompare_helper(QChar const*, int, QChar const*, int)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/tools/qstring.cpp:4899: undefined reference to `strcoll(char const*, char const*)'
+./build/base/obj/image_nosymbols.o: In function `QFile::open(file_struct*, QFlags<QIODevice::OpenModeFlag>, QFlags<QFile::FileHandleFlag>)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfile.cpp:1166: undefined reference to `ftello(file_struct*)'
+./build/base/obj/image_nosymbols.o: In function `QFileSystemEngine::getLinkTarget(QFileSystemEntry const&, QFileSystemMetaData&)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemengine_unix.cpp:119: undefined reference to `readlink(char const*, char*, unsigned int)'
+./build/base/obj/image_nosymbols.o: In function `QFileSystemEngine::resolveUserName(unsigned int)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemengine_unix.cpp:277: undefined reference to `getpwuid(unsigned short)'
+./build/base/obj/image_nosymbols.o: In function `QFileSystemEngine::resolveGroupName(unsigned int)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemengine_unix.cpp:314: undefined reference to `getgrgid(unsigned short)'
+./build/base/obj/image_nosymbols.o: In function `QFileSystemEngine::fillMetaData(QFileSystemEntry const&, QFileSystemMetaData&, QFlags<QFileSystemMetaData::MetaDataFlag>)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemengine_unix.cpp:438: undefined reference to `access(char const*, int)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemengine_unix.cpp:442: undefined reference to `access(char const*, int)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemengine_unix.cpp:446: undefined reference to `access(char const*, int)'
+./build/base/obj/image_nosymbols.o: In function `QFileSystemEngine::createLink(QFileSystemEntry const&, QFileSystemEntry const&, QSystemError&)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemengine_unix.cpp:542: undefined reference to `symlink(char const*, char const*)'
+./build/base/obj/image_nosymbols.o: In function `QFileSystemEngine::renameFile(QFileSystemEntry const&, QFileSystemEntry const&, QSystemError&)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemengine_unix.cpp:560: undefined reference to `rename(char const*, char const*)'
+./build/base/obj/image_nosymbols.o: In function `QFileSystemEngine::setCurrentPath(QFileSystemEntry const&)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemengine_unix.cpp:654: undefined reference to `chdir(char const*)'
+./build/base/obj/image_nosymbols.o: In function `QFileSystemEngine::currentPath()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemengine_unix.cpp:671: undefined reference to `getcwd(char*, unsigned int)'
+./build/base/obj/image_nosymbols.o: In function `QFileSystemIterator::QFileSystemIterator(QFileSystemEntry const&, QFlags<QDir::Filter>, QStringList const&, QFlags<QDirIterator::IteratorFlag>)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemiterator_unix.cpp:66: undefined reference to `opendir(char const*)'
+./build/base/obj/image_nosymbols.o: In function `QFileSystemIterator::~QFileSystemIterator()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemiterator_unix.cpp:100: undefined reference to `closedir(DIR*)'
+./build/base/obj/image_nosymbols.o: In function `QFileSystemIterator::advance(QFileSystemEntry&, QFileSystemMetaData&)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/io/qfilesystemiterator_unix.cpp:118: undefined reference to `readdir(DIR*)'
+./build/base/obj/image_nosymbols.o: In function `QCoreApplication::init()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/kernel/qcoreapplication.cpp:742: undefined reference to `setlocale(int, char const*)'
+./build/base/obj/image_nosymbols.o: In function `QTimerInfoList::QTimerInfoList()':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/kernel/qeventdispatcher_unix.cpp:336: undefined reference to `times(tms*)'
+./build/base/obj/image_nosymbols.o: In function `QTimerInfoList::timeChanged(timeval*)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/kernel/qeventdispatcher_unix.cpp:387: undefined reference to `times(tms*)'
+./build/base/obj/image_nosymbols.o: In function `QCoreApplication::watchUnixSignal(int, bool)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/kernel/qeventdispatcher_unix.cpp:980: undefined reference to `sigemptyset(int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/kernel/qeventdispatcher_unix.cpp:986: undefined reference to `sigaction(int, sigaction const*, sigaction*)'
+./build/base/obj/image_nosymbols.o: In function `ru_RU_hack':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/codecs/qtextcodec.cpp:537: undefined reference to `setlocale(int, char const*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/codecs/qtextcodec.cpp:557: undefined reference to `setlocale(int, char const*)'
+./build/base/obj/image_nosymbols.o: In function `setupLocaleMapper':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/codecs/qtextcodec.cpp:618: undefined reference to `setlocale(int, char const*)'
+./build/base/obj/image_nosymbols.o: In function `QWaitConditionPrivate::wait(unsigned long)':
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:84: undefined reference to `pthread_cond_timedwait(int*, int*, timespec const*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:86: undefined reference to `pthread_cond_wait(int*, int*)'
+/home/fsulima/embox/repo/embox/build/qt/source/src/corelib/thread/qwaitcondition_unix.cpp:103: undefined reference to `pthread_mutex_unlock(int*)'

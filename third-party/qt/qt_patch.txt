@@ -27,3 +27,45 @@ diff -ur qt-everywhere-opensource-src-4.8.4/src/plugins/imageformats/ico/qicohan
  }
  
  void ICOReader::findColorInfo(QImage & image)
+diff -ur qt-everywhere-opensource-src-4.8.4/src/corelib/global/qglobal.h source/src/corelib/global/qglobal.h
+--- qt-everywhere-opensource-src-4.8.4/src/corelib/global/qglobal.h	2012-11-23 14:09:55.000000000 +0400
++++ source/src/corelib/global/qglobal.h	2013-02-04 13:50:32.971306897 +0400
+@@ -261,6 +261,8 @@
+ #  define Q_OS_INTEGRITY
+ #elif defined(VXWORKS) /* there is no "real" VxWorks define - this has to be set in the mkspec! */
+ #  define Q_OS_VXWORKS
++#elif defined(__EMBOX__)
++#  define Q_OS_EMBOX
+ #elif defined(__MAKEDEPEND__)
+ #else
+ #  error "Qt has not been ported to this OS - talk to qt-bugs@trolltech.com"
+diff -ur qt-everywhere-opensource-src-4.8.4/src/corelib/io/qresource.cpp source/src/corelib/io/qresource.cpp
+--- qt-everywhere-opensource-src-4.8.4/src/corelib/io/qresource.cpp	2012-11-23 14:09:55.000000000 +0400
++++ source/src/corelib/io/qresource.cpp	2013-02-04 13:59:50.975111629 +0400
+@@ -929,8 +929,10 @@
+ };
+ 
+ #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined (Q_OS_NACL) && !defined(Q_OS_INTEGRITY)
++#if !defined(Q_OS_EMBOX)
+ #define QT_USE_MMAP
+ #endif
++#endif
+ 
+ // most of the headers below are already included in qplatformdefs.h
+ // also this lacks Large File support but that's probably irrelevant
+diff -ur qt-everywhere-opensource-src-4.8.4/src/corelib/kernel/qtranslator.cpp source/src/corelib/kernel/qtranslator.cpp
+--- qt-everywhere-opensource-src-4.8.4/src/corelib/kernel/qtranslator.cpp	2012-11-23 14:09:55.000000000 +0400
++++ source/src/corelib/kernel/qtranslator.cpp	2013-02-04 14:00:29.965913619 +0400
+@@ -61,9 +61,11 @@
+ #include "qresource.h"
+ 
+ #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_INTEGRITY)
++#if !defined(Q_OS_EMBOX)
+ #define QT_USE_MMAP
+ #include "private/qcore_unix_p.h"
+ #endif
++#endif
+ 
+ #ifdef Q_OS_SYMBIAN
+ #include "private/qcore_symbian_p.h"
+ 
