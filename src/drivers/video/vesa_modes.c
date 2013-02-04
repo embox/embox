@@ -65,11 +65,11 @@ struct vesa_mode_desc *vesa_mode_get_desc(enum vesa_video_mode mode) {
 
 	if(mode >= VESA_MODE_EGA_320x200x16 && mode <= VESA_MODE_VGA_320x200x256) {
 		/* setup text mode */
-		return &vesa_mode_vga_descriptions[mode];
+		return &vesa_mode_vga_descriptions[mode - VESA_MODE_EGA_320x200x16];
 	}
 
 	if(mode >= VESA_MODE_SVGA_640x480x256 && mode <= VESA_MODE_SVGA_1280x1024x16M) {
-		return &vesa_mode_svga_descriptions[mode];
+		return &vesa_mode_svga_descriptions[mode - VESA_MODE_SVGA_640x480x256];
 	}
 	return NULL;
 }
