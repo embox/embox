@@ -13,6 +13,8 @@
 
 #include <fs/xattr.h>
 
+#define RETURN_ERRNO(err) errno = err; return -1
+
 static int check_fsop(struct node *node, const struct fsop_desc **fsop) {
 	if (!node) {
 		return -ENOENT;
@@ -47,19 +49,23 @@ int getxattr(const char *path, const char *name, char *value, size_t len) {
 	int err;
 	struct node *node = vfs_find_node(path, NULL);
 
-	if ((err = check_xattr_access(node))) {
-		return err;
+	if (0 > (err = check_xattr_access(node))) {
+		RETURN_ERRNO(-err);
 	}
 
-	if ((err = check_fsop(node, &fsop))) {
-		return err;
+	if (0 > (err = check_fsop(node, &fsop))) {
+		RETURN_ERRNO(-err);
 	}
 
 	if (!fsop->getxattr) {
-		return -EINVAL;
+		RETURN_ERRNO(EINVAL);
 	}
 
-	return fsop->getxattr(node, name, value, len);
+	if (0 > (err = fsop->getxattr(node, name, value, len))) {
+		RETURN_ERRNO(-err);
+	}
+
+	return err;
 }
 
 int setxattr(const char *path, const char *name, const char *value, size_t len, int flags) {
@@ -67,19 +73,23 @@ int setxattr(const char *path, const char *name, const char *value, size_t len, 
 	int err;
 	struct node *node = vfs_find_node(path, NULL);
 
-	if ((err = check_xattr_access(node))) {
-		return err;
+	if (0 > (err = check_xattr_access(node))) {
+		RETURN_ERRNO(-err);
 	}
 
-	if ((err = check_fsop(node, &fsop))) {
-		return err;
+	if (0 > (err = check_fsop(node, &fsop))) {
+		RETURN_ERRNO(-err);
 	}
 
 	if (!fsop->setxattr) {
-		return -EINVAL;
+		RETURN_ERRNO(EINVAL);
 	}
 
-	return fsop->setxattr(node, name, value, len, flags);
+	if (0 > (err = fsop->setxattr(node, name, value, len, flags))) {
+		RETURN_ERRNO(-err);
+	}
+
+	return err;
 }
 
 int listxattr(const char *path, char *list, size_t len) {
@@ -87,18 +97,22 @@ int listxattr(const char *path, char *list, size_t len) {
 	int err;
 	struct node *node = vfs_find_node(path, NULL);
 
-	if ((err = check_xattr_access(node))) {
-		return err;
+	if (0 > (err = check_xattr_access(node))) {
+		RETURN_ERRNO(-err);
 	}
 
-	if ((err = check_fsop(node, &fsop))) {
-		return err;
+	if (0 > (err = check_fsop(node, &fsop))) {
+		RETURN_ERRNO(-err);
 	}
 
 	if (!fsop->listxattr) {
-		return -EINVAL;
+		RETURN_ERRNO(EINVAL);
 	}
 
-	return fsop->listxattr(node, list, len);
+	if (0 > (err = fsop->listxattr(node, list, len))) {
+		RETURN_ERRNO(-err);
+	}
+
+	return err;
 }
 
