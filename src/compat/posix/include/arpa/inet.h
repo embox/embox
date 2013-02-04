@@ -9,6 +9,11 @@
 #define ARPA_INET_H_
 
 #include <types.h>
+#include <lib/bits/byteswap.h>
+
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 #define htons(n)            __bswap_16(n)
 #define ntohs(n)            __bswap_16(n) /* same as htons() */
@@ -35,7 +40,7 @@ in_addr_t inet_addr(const char *cp);
  */
 int inet_aton(const char *cp, struct in_addr *addr);
 
-
+__END_DECLS
 
 
 #endif /* ARPA_INET_H_ */

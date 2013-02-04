@@ -64,7 +64,7 @@ FILE *fopen(const char *path, const char *mode) {
 }
 
 FILE *freopen(const char *path, const char *mode, FILE *file) {
-	if(NULL == file) {
+	if (NULL == file) {
 		return file;
 	}
 	return NULL;
@@ -81,7 +81,7 @@ int ferror(FILE *file) {
 }
 
 size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
-	if(NULL == file) {
+	if (NULL == file) {
 		return -1;
 	}
 	return write(file->fd, buf, size * count);
@@ -96,7 +96,7 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		return -1;
 	}
 
-	if(file->has_ungetc) {
+	if (file->has_ungetc) {
 		file->has_ungetc = 0;
 		cbuff = buf;
 		cbuff[0] = (char)file->ungetc;
@@ -111,30 +111,46 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 int fclose(FILE *file) {
 	int res;
 
-	if(NULL == file){
+	if (NULL == file){
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 	res = close(file->fd);
 
-	if(res >= 0) {
+	if (res >= 0) {
 		pool_free(&file_pool, file);
 	}
 	return res;
 }
 
 int fseek(FILE *file, long int offset, int origin) {
+	off_t ret;
+
 	if (origin != SEEK_SET && origin != SEEK_CUR
 			&& origin != SEEK_END) {
 		SET_ERRNO(EINVAL);
 		return -1;
 	}
 
-	if(NULL == file) {
+	if (NULL == file) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
-	return lseek(file->fd, offset, origin);
+
+	ret = lseek(file->fd, offset, origin);
+	if (ret == (off_t)-1) {
+		return -1;
+	}
+
+	return 0;
+}
+
+long int ftell(FILE *file) {
+	if (NULL == file) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+	return lseek(file->fd, 0L, SEEK_CUR);
 }
 
 void rewind(FILE *file) {
@@ -143,7 +159,7 @@ void rewind(FILE *file) {
 
 int fioctl(FILE *file, int request, ...) {
 	va_list args;
-	if(NULL == file) {
+	if (NULL == file) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
@@ -152,7 +168,7 @@ int fioctl(FILE *file, int request, ...) {
 }
 
 int ungetc(int ch, FILE *file) {
-	if(NULL == file) {
+	if (NULL == file) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}

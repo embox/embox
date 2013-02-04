@@ -8,6 +8,9 @@
  */
 
 #include <errno.h>
+
+#include <util/math.h>
+
 #include <net/ip.h>
 #include <net/udp.h>
 #include <net/inet_sock.h>
@@ -18,7 +21,8 @@
 #include <net/skbuff.h>
 #include <net/icmp.h>
 #include <net/socket_registry.h>
-#include <math.h>
+#include <net/in.h>
+
 
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,

@@ -6,21 +6,26 @@
  * @author Anton Bondarev
  */
 
+#include <fcntl.h>
+#include <errno.h>
+#include <assert.h>
+#include <string.h>
+#include <sys/uio.h>
+
 #include <net/tcp.h>
 #include <net/socket.h>
 #include <net/net.h>
 #include <net/ip.h>
-#include <assert.h>
-#include <errno.h>
-#include <err.h>
-#include <lib/list.h>
 #include <net/sock.h>
-#include <string.h>
-#include <mem/objalloc.h>
-#include <embox/net/sock.h>
 #include <net/route.h>
 #include <net/inetdevice.h>
-#include <fcntl.h>
+
+#include <kernel/time/time.h>
+
+#include <mem/objalloc.h>
+#include <embox/net/sock.h>
+
+
 
 EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, tcp_prot, inet_stream_ops, 0, true);
 
@@ -38,8 +43,8 @@ static int tcp_v4_init_sock(struct sock *sk) {
 
 	tcp_set_st(sock, TCP_CLOSED);
 	sock.tcp_sk->this_unack = 100; // TODO remove constant
-	sock.tcp_sk->seq_queue = sock.tcp_sk->this.seq = sock.tcp_sk->this_unack;
-	sock.tcp_sk->this.wind = TCP_WINDOW_DEFAULT;
+	sock.tcp_sk->seq_queue = sock.tcp_sk->self.seq = sock.tcp_sk->this_unack;
+	sock.tcp_sk->self.wind = TCP_WINDOW_DEFAULT;
 	sock.tcp_sk->lock = 0;
 	sock.tcp_sk->last_activity = 0; // TODO 0 or not?
 	sock.tcp_sk->oper_timeout = TCP_OPER_TIMEOUT * USEC_PER_MSEC;
@@ -201,7 +206,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 	case TCP_LISTEN:
 		/* waiting anyone */
 		if (list_empty(&sock.tcp_sk->conn_wait)) { /* TODO sync this */
-			event_wait(&sock.tcp_sk->new_conn, EVENT_TIMEOUT_INFINITE);
+			event_wait_ms(&sock.tcp_sk->new_conn, EVENT_TIMEOUT_INFINITE);
 		}
 		assert(!list_empty(&sock.tcp_sk->conn_wait));
 		/* get first socket from */

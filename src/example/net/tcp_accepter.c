@@ -6,11 +6,14 @@
  * @author Ilia Vaprol
  */
 
-#include <prom/prom_printf.h>
-#include <net/ip.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
+
+#include <net/ip.h>
 #include <net/socket.h>
+#include <prom/prom_printf.h>
 #include <framework/example/self.h>
+
 
 EMBOX_EXAMPLE(exec);
 

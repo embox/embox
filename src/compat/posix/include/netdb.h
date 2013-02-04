@@ -9,6 +9,10 @@
 #ifndef NET_NETDB_H_
 #define NET_NETDB_H_
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
 /**
  * Error return value for networt database operations
  */
@@ -59,5 +63,7 @@ extern struct hostent * gethostent(void);
  * Converting a hostname into a network address
  */
 extern struct hostent * gethostbyname(const char *hostname);
+
+__END_DECLS
 
 #endif /* NET_NETDB_H_ */

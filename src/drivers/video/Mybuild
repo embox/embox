@@ -1,8 +1,33 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.video
 
+module fb {
+	source "fb.c"
+	option number fb_amount=2
+	depends embox.mem.pool
+	depends embox.lib.LibC
+	depends embox.fs.rootfs
+}
+
+module display {
+	source "display.c"
+	depends embox.util.List
+	depends embox.lib.LibC
+}
+
+module bochs {
+	source "bochs.c"
+	depends fb
+	depends embox.driver.pci
+	depends embox.lib.LibC
+}
+
 abstract module vga { }
 
 module vga_console extends vga {
 	source "vga_console.c"
+}
+
+module cirrus_logic {
+	source "cirrus_logic.c"
 }

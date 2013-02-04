@@ -1,9 +1,55 @@
 package embox.util
 
+module Prioq {
+	source "prioq_impl.h"
+}
+
+module Array {
+	source "array_impl.h"
+}
+
+module Bit {
+	source "bit_impl.h"
+}
+
+@DefaultImpl(SListDebug)
+abstract module SList {
+}
+module SListDebug extends SList {
+	source "slist_debug.h"
+	source "slist_impl.h"
+}
+module SListNDebug extends SList {
+	source "slist_ndebug.h"
+	source "slist_impl.h"
+}
+
+@DefaultImpl(ListNDebug)
+abstract module List {
+	source "list_impl.h"
+}
+
+module ListDebug extends List {
+	source "list_debug.h"
+}
+module ListNDebug extends List {
+	source "list_ndebug.h"
+}
+
+@DefaultImpl(DListDebug)
+abstract module DList {}
+
+module DListDebug extends DList {
+	source "dlist_debug.h"
+}
+module DListNDebug extends DList {
+	source "dlist_ndebug.h"
+}
+
 static module LibUtil {
-	//FIXME mybuild Option handling is not yet implemented
 	source "slist_debug.c"
 	source "list_debug.c"
+
 	source "tree_set.c"
 	source "tree.c"
 	source "priority_q.c"
@@ -11,14 +57,13 @@ static module LibUtil {
 	source "sys_log.c"
 
 	depends embox.lib.LibC
-	/*requires embox.mem.iobjalloc.rt_alloc	*/
-}
 
-static module LibSync {
-	source "async_ring_buff.c"
-
-	depends LibUtil
-	depends embox.kernel.thread.sync
+	depends Prioq
+	depends Array
+	depends DList
+	depends SList
+	depends List
+	depends Bit
 }
 
 module hashtable {
@@ -32,6 +77,21 @@ module hashtable {
 	depends embox.mem.objalloc
 }
 
+module indexator {
+	source "indexator.c"
+}
+
+
+//TODO move in from here it depends on kernel modules
+static module LibSync {
+	source "async_ring_buff.c"
+
+	depends LibUtil
+	depends embox.kernel.thread.sync
+}
+
+
+//TODO this is too abstract in my mind
 @DefaultImpl(num_alloc_array)
 abstract module num_alloc { }
 
@@ -43,6 +103,4 @@ module idx_table {
 	depends num_alloc
 }
 
-module indexator {
-	source "indexator.c"
-}
+

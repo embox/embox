@@ -25,43 +25,43 @@ static int run_new_fill(void) {
 		}
 
 	}
-	usleep(2000);
+	msleep(2000);
 
 	display_fill(0, 0, 100, 64, 1);
-	usleep(200);
+	msleep(200);
 	display_fill(4, 4, 92, 56, 0);
-	usleep(200);
+	msleep(200);
 	display_fill(8, 8, 84, 48, 1);
-	usleep(200);
+	msleep(200);
 	display_fill(12, 12, 76, 40, 0);
-	usleep(200);
+	msleep(200);
 	display_fill(16, 16, 68, 32, 1);
-	usleep(200);
+	msleep(200);
 	display_fill(20, 20, 60, 24, 0);
-	usleep(200);
+	msleep(200);
 	display_fill(24, 24, 52, 16, 1);
-	usleep(200);
+	msleep(200);
 	display_fill(28, 28, 44, 8, 0);
-	usleep(200);
+	msleep(200);
 	display_fill(32, 31, 36, 2, 1);
-	usleep(2000);
+	msleep(2000);
 
 	for (i = 0; i < 8; i++) {
 		t = (i % 2)+1;
 		display_fill( i*4, i*4, (100 - i*8), (64 - i*8), t);
-		usleep(1000);
+		msleep(1000);
 	}
 	//display_fill(32, 34, 36, 2, 1);
 
-	usleep(2000);
+	msleep(2000);
 
 	/*for (i = 0; i < 1; i++) {
 		t = (i % 2);
 		display_fill( i * 4, i * 4, 100 - i*8, 64 - i*8, t);
-		usleep(500);
+		msleep(500);
 	}
 	display_fill(32, 36, 36, 2, 0);
-	usleep(2000000);*/
+	msleep(2000000);*/
 
 	return 0;
 }

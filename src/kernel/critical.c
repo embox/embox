@@ -19,7 +19,7 @@ static struct critical_dispatcher *dispatch_queue;
 void critical_dispatch_pending(void) {
 	struct critical_dispatcher *d;
 	critical_t mask;
-	critical_t count = __critical_count_get();
+	critical_t count = __critical_count;
 	ipl_t ipl;
 
 	ipl = ipl_save();
@@ -28,6 +28,7 @@ void critical_dispatch_pending(void) {
 		dispatch_queue = d->next;
 		d->mask = ~mask;
 
+		assert(d->dispatch != NULL);
 		d->dispatch();
 	}
 

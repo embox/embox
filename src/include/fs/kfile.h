@@ -9,10 +9,14 @@
 #ifndef FS_KFILE_H_
 #define FS_KFILE_H_
 
+#include <fs/file_desc.h>
+#include <stddef.h>
+#include <sys/stat.h>
+
 struct file_desc;
 struct stat;
 
-extern struct file_desc *kopen(const char *path, int flag);
+extern struct file_desc * kopen(const char *path, int flag);
 
 extern size_t kwrite(const void *buf, size_t size, struct file_desc *file);
 

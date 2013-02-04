@@ -126,8 +126,7 @@ static int ramfs_create(struct node *parent_node, struct node *new_node) {
 
 
 static int ramfs_mount(void * dev, void *dir) {
-
-	assert(dir);
-	cpio_unpack(dir);
-	return 0;
+	node_t *dir_node = dir;
+	assert(dir_node);
+	return cpio_unpack(dir_node);
 }

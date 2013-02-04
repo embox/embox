@@ -67,40 +67,45 @@ static cpio_newc_header_t *cpio_parse_item(cpio_newc_header_t *cpio_h, char *nam
 	return (cpio_newc_header_t*) F_ALIGN(start_addr + file_size);
 }
 
-int cpio_unpack(char *dir) {
+int cpio_unpack(node_t *dir_node) {
 	extern char _ramfs_start, _ramfs_end;
 	cpio_newc_header_t *cpio_h, *cpio_next;
 	char buff_name[MAX_LENGTH_FILE_NAME];
 	struct nas *nas;
 	struct node *node;
-	struct node *unpack_dir_node;
 	ramfs_create_param_t param;
 
 	if (&_ramfs_end == &_ramfs_start) {
 		return -1;
 	}
-	printk("cpio initramfs at 0x%08x to the directory %s\n", (unsigned int)&_ramfs_start, dir);
+	printk("%s: initramfs at %p into %s\n", __func__, &_ramfs_start,
+			dir_node->name);
 
-	unpack_dir_node = vfs_find_node(dir, NULL);
-
-	nas = unpack_dir_node->nas;
+	nas = dir_node->nas;
 	nas->fs = alloc_filesystem("ramfs");
 
-	param.root_node = unpack_dir_node;
-	cpio_h = (cpio_newc_header_t *)&_ramfs_start;
+	param.root_node = dir_node;
+	cpio_h = (cpio_newc_header_t *) &_ramfs_start;
 	while (NULL != (cpio_next = cpio_parse_item(cpio_h, buff_name, &param))) {
 		cpio_h = cpio_next;
-		if(param.size == 0) {
+		if (param.size == 0) {
 			/* this is a directory */
-			printk("cpio initramfs not support directory now\n");
-		} else {
-			/* this is a regular file */
-			if (NULL == (node = vfs_add_path(param.name, unpack_dir_node))) {
+			//printk("cpio initramfs not support directory now\n");
+			if (NULL == (node = vfs_find_node(param.name, dir_node))) {
 				return 0;/*file already exist*/
 			}
-			node->type = NODE_TYPE_FILE | S_IREAD; /* read only file */
+			node->type = NODE_TYPE_DIRECTORY | S_IREAD; /* read only file */
 			((struct nas *)(node->nas))->fi =(void *) &param;
-			nas->fs->drv->fsop->create_node(unpack_dir_node, node);
+			nas->fs->drv->fsop->create_node(dir_node, node);
+		} else {
+			/* this is a regular file */
+			if (!(node = vfs_add_path(param.name, dir_node))) {
+				return 0; /* file already exists */
+			}
+			node->type = NODE_TYPE_FILE | S_IREAD; /* read only file */
+//			node->mode = S_IFREG | S_IRUSR; /* read only file */
+			((struct nas *) (node->nas))->fi = (void *) &param;
+			nas->fs->drv->fsop->create_node(dir_node, node);
 		}
 	}
 

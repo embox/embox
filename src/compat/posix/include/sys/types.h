@@ -13,8 +13,6 @@
 
 #include <asm/types.h>
 
-#include <sys/select.h>
-
 #ifndef __size_t_defined
 #define __size_t_defined
 typedef unsigned int size_t; /**<Used for sizes of objects*/
@@ -36,7 +34,7 @@ typedef unsigned long useconds_t;
 typedef long suseconds_t;
 
 typedef unsigned long spinlock_t;
-typedef __s32 socklen_t;
+
 typedef __u32 gfp_t;
 
 typedef struct {
@@ -55,14 +53,14 @@ typedef unsigned int ino_t;
 
 typedef unsigned short nlink_t;
 
-typedef unsigned short uid_t;
+typedef unsigned int mode_t;
 
+typedef unsigned short uid_t;
 typedef unsigned short gid_t;
 
 typedef unsigned int blkno_t;
 
-typedef unsigned int mode_t;
-
+typedef int off_t;  /*  Used for file sizes. */
 
 #endif /* __ASSEMBLER__ */
 

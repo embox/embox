@@ -34,16 +34,13 @@ struct tree_link {
 /**
  * Type of functions, returning true or false for given tree_link.
  */
-typedef int (*tree_link_predicate_t)(struct tree_link *link);
+typedef int (*tree_predicate_t)(struct tree_link *link, void *arg);
 
 /**
- * Type of functions, returning true or false for given tree_link with some argument.
- */
-typedef int (*tree_link_arg_predicate_t)(struct tree_link *link, void *arg);
-
-/*
- * Initialize tree link.
- * @param tree_link Link to initialize.
+ * Initializes tree link.
+ *
+ * @param link Link to initialize.
+ * @return The argument.
  */
 extern struct tree_link *tree_link_init(struct tree_link *link);
 
@@ -102,27 +99,18 @@ extern struct tree_link *tree_postorder_begin(struct tree_link *tree);
 extern struct tree_link *tree_postorder_end(struct tree_link *tree);
 
 /**
- * Find children of given node, for what specified predicate is true.
+ * Searches for a child of the given node, for which the specified predicate
+ * evaluates to a non-zero value.
  *
- * @param node Node, what children are tested.
- * @param predicate Predicate, with what nodes are tested.
- *
- * @return Child, for what predicate is true, or NULL, if it doesn't exist.
- */
-extern struct tree_link *tree_children_find(struct tree_link *node,
-		tree_link_predicate_t predicate);
-
-/**
- * Find children of given node, for what specified predicate with set argument is true.
- *
- * @param node Node, what children are tested.
+ * @param node Target node to search.
+ * @param predicate Predicate function to check each child.
  * @param arg Additional argument for predicate.
- * @param predicate Predicate, with what nodes are tested.
  *
- * @return Child, for what predicate is true, or NULL, if it doesn't exist.
+ * @return
+ *   The first child which satisfies the predicate (if any), NULL otherwise.
  */
-extern struct tree_link *tree_children_arg_find(struct tree_link *node,
-		void *arg, tree_link_arg_predicate_t predicate);
+extern struct tree_link *tree_lookup_child(struct tree_link *node,
+		tree_predicate_t predicate, void *arg);
 
 /**
  * Find element of subtree, for what specified predicate is true.
@@ -132,8 +120,8 @@ extern struct tree_link *tree_children_arg_find(struct tree_link *node,
  *
  * @return Node, for what predicate is true, or NULL, if it doesn't exist.
  */
-extern struct tree_link *tree_find(struct tree_link *tree,
-		tree_link_predicate_t predicate);
+extern struct tree_link *tree_lookup(struct tree_link *tree,
+		tree_predicate_t predicate, void *arg);
 
 extern struct tree_link *tree_children_begin(struct tree_link *tree);
 

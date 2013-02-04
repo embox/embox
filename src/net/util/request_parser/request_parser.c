@@ -7,106 +7,71 @@
  */
 
 #include <net/util/request_parser.h>
-#include <lib/url_parser.h>
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <assert.h>
+#include <lib/url_parser.h>
 
-char * try_parse_method(http_request *parsed_request, char *subrequenst);
-char * try_parse_url(http_request *parsed_request, char *subrequenst);
-char * try_parse_proto(http_request *parsed_request, char *subrequenst);
-char * try_parse_host(http_request *parsed_request, char *subrequenst);
-char * try_parse_connection(http_request *parsed_request, char *subrequenst);
+static const char * try_parse_method(http_request *parsed_request,
+		const char *subrequest);
+static const char * try_parse_url(http_request *parsed_request,
+		const char *subrequest);
+static const char * try_parse_proto(http_request *parsed_request,
+		const char *subrequest);
+static const char * try_parse_host(http_request *parsed_request,
+		const char *subrequest);
+static const char * try_parse_connection(http_request *parsed_request,
+		const char *subrequest);
 
-void request_parser_full_strcpy(char *to, char *from) {
-	if (from == NULL) {
-		to[0] = 0;
-		return;
+int request_parser_copy(http_request *to, const http_request *from) {
+	assert(to != NULL);
+	assert(from != NULL);
+
+	memset(to, 0, sizeof(struct http_request));
+
+	if (((from->method != NULL) && ((to->method = strdup(from->method)) == NULL))
+			|| ((to->parsed_url = malloc(sizeof(struct parsed_url))) == NULL)
+			|| ((to->parsed_url->scheme = strdup(from->parsed_url->scheme))
+					== NULL)
+			|| ((to->parsed_url->host = strdup(from->parsed_url->host)) == NULL)
+			|| ((to->parsed_url->port = strdup(from->parsed_url->port)) == NULL)
+			|| ((to->parsed_url->path = strdup(from->parsed_url->path)) == NULL)
+			|| ((to->parsed_url->query = strdup(from->parsed_url->query))
+					== NULL)
+			|| ((to->parsed_url->fragment = strdup(from->parsed_url->fragment))
+					== NULL)
+			|| ((to->parsed_url->username = strdup(from->parsed_url->username))
+					== NULL)
+			|| ((to->parsed_url->password = strdup(from->parsed_url->password))
+					== NULL)
+			|| ((from->proto != NULL)
+					&& ((to->proto = strdup(from->proto)) == NULL))
+			|| ((from->connection != NULL)
+					&& ((to->connection = strdup(from->connection)) == NULL))) {
+		free_http_request(to);
+		return -1;
 	}
-	strcpy(to, from);
-	to[strlen(from)] = 0;
+
+	return 0;
 }
 
-void request_parser_cpy(http_request *to, http_request *from) {
-	to->method = malloc(strlen(from->method) + 1);
-	request_parser_full_strcpy(to->method, from->method);
+int parse_http(const char *request, http_request *parsed_request) {
+	const char *subrequest;
 
-	to->parsed_url = malloc(sizeof(struct parsed_url));
+	assert(request != NULL);
+	assert(parsed_request != NULL);
 
-	to->parsed_url->fragment = malloc(strlen(from->parsed_url->fragment) + 1);
-	request_parser_full_strcpy(to->parsed_url->fragment,
-			from->parsed_url->fragment);
+	memset(parsed_request, 0, sizeof(struct http_request));
 
-	to->parsed_url->host = malloc(strlen(from->parsed_url->host) + 1);
-	request_parser_full_strcpy(to->parsed_url->host, from->parsed_url->host);
-
-	to->parsed_url->password = malloc(strlen(from->parsed_url->password) + 1);
-	request_parser_full_strcpy(to->parsed_url->password,
-			from->parsed_url->password);
-
-	to->parsed_url->path = malloc(strlen(from->parsed_url->path) + 1);
-	request_parser_full_strcpy(to->parsed_url->path, from->parsed_url->path);
-
-	to->parsed_url->port = malloc(strlen(from->parsed_url->port) + 1);
-	request_parser_full_strcpy(to->parsed_url->port, from->parsed_url->port);
-
-	to->parsed_url->query = malloc(strlen(from->parsed_url->query) + 1);
-	request_parser_full_strcpy(to->parsed_url->query, from->parsed_url->query);
-
-	to->parsed_url->scheme = malloc(strlen(from->parsed_url->scheme) + 1);
-	request_parser_full_strcpy(to->parsed_url->scheme,
-			from->parsed_url->scheme);
-
-	to->parsed_url->username = malloc(strlen(from->parsed_url->username) + 1);
-	request_parser_full_strcpy(to->parsed_url->username,
-			from->parsed_url->username);
-
-	to->proto = malloc(strlen(from->proto) + 1);
-	request_parser_full_strcpy(to->proto, from->proto);
-
-	to->connection = malloc(strlen(from->connection) + 1);
-	request_parser_full_strcpy(to->connection, from->connection);
-}
-
-int parse_http(char * request, http_request *parsed_request) {
-	char * subrequenst;
-
-	parsed_request->method = NULL;
-	if (parsed_request->parsed_url != NULL) {
-		parsed_url_free(parsed_request->parsed_url);
-	}
-	parsed_request->parsed_url = NULL;
-	parsed_request->proto = NULL;
-
-	subrequenst = request;
-
-	subrequenst = try_parse_method(parsed_request, subrequenst);
-	if (subrequenst == NULL) {
-		free_http_request(parsed_request);
-		return -1;
-	}
-
-	subrequenst = try_parse_url(parsed_request, subrequenst);
-	if (subrequenst == NULL) {
-		free_http_request(parsed_request);
-		return -1;
-	}
-
-	subrequenst = try_parse_proto(parsed_request, subrequenst);
-	if (subrequenst == NULL) {
-		free_http_request(parsed_request);
-		return -1;
-	}
-
-	subrequenst = try_parse_host(parsed_request, subrequenst);
-	if (subrequenst == NULL) {
-		free_http_request(parsed_request);
-		return -1;
-	}
-
-	subrequenst = try_parse_connection(parsed_request, subrequenst);
-	if (subrequenst == NULL) {
+	if (((subrequest = try_parse_method(parsed_request, request)) == NULL)
+			|| ((subrequest = try_parse_url(parsed_request, subrequest)) == NULL)
+			|| ((subrequest = try_parse_proto(parsed_request, subrequest))
+					== NULL)
+			|| ((subrequest = try_parse_host(parsed_request, subrequest))
+					== NULL)
+			|| ((subrequest = try_parse_connection(parsed_request, subrequest))
+					== NULL)) {
 		free_http_request(parsed_request);
 		return -1;
 	}
@@ -115,232 +80,267 @@ int parse_http(char * request, http_request *parsed_request) {
 }
 
 void free_http_request(http_request *request) {
-	if (NULL != request) {
-		if (NULL != request->method) {
-			free(request->method);
-		}
-		if (NULL != request->proto) {
-			free(request->proto);
-		}
-		if (NULL != request->parsed_url) {
-			parsed_url_free(request->parsed_url);
-		}
+	assert(request != NULL);
+
+	if (request->method != NULL) {
+		free(request->method);
+		request->method = NULL;
+	}
+	if (request->parsed_url != NULL) {
+		parsed_url_free(request->parsed_url);
+		request->parsed_url = NULL;
+	}
+	if (request->proto != NULL) {
+		free(request->proto);
+		request->proto = NULL;
+	}
+	if (request->connection != NULL) {
+		free(request->connection);
+		request->connection = NULL;
 	}
 }
 
-char *try_parse_method(http_request *parsed_request, char *subrequenst) {
-	int lexeme_length;
-	char * lexeme_end;
-	lexeme_end = strchr(subrequenst, ' ');
+static const char * try_parse_method(http_request *parsed_request,
+		const char *subrequest) {
+	const char *lexeme_end;
+	size_t lexeme_length;
 
-	if (lexeme_end != NULL) {
-		lexeme_length = lexeme_end - subrequenst;
+	assert(parsed_request != NULL);
+	assert(subrequest != NULL);
 
-		if (lexeme_length <= 0) {
-			return NULL;
-		}
-
-		parsed_request->method = malloc(lexeme_length + 1);
-		if (NULL == parsed_request->method) {
-			return NULL;
-		}
-		(void) strncpy(parsed_request->method, subrequenst, lexeme_length);
-		parsed_request->method[lexeme_length] = '\0';
-		for (int i = 0; i < lexeme_length; i++) {
-			if (!isupper(parsed_request->method[i])) {
-				return NULL;
-			}
-		}
-		lexeme_end++;
-		return lexeme_end;
+	lexeme_end = strchr(subrequest, ' ');
+	if (lexeme_end == NULL) {
+		return NULL;
 	}
-	return NULL;
+
+	lexeme_length = lexeme_end - subrequest;
+	if (lexeme_length == 0) {
+		return NULL;
+	}
+
+	parsed_request->method = malloc(lexeme_length + 1);
+	if (parsed_request->method == NULL) {
+		return NULL;
+	}
+
+	strncpy(parsed_request->method, subrequest, lexeme_length);
+	parsed_request->method[lexeme_length] = '\0';
+
+	while (isupper(parsed_request->method[--lexeme_length])
+			&& (lexeme_length != 0))
+		;
+
+	return lexeme_length == 0 ? lexeme_end + 1 : NULL;
 }
 
-char *try_parse_url(http_request *parsed_request, char *subrequenst) {
-	int lexeme_length;
-	char * lexeme_end;
-	lexeme_end = strchr(subrequenst, ' ');
-	if (lexeme_end != NULL) {
-		char * url;
-		lexeme_length = lexeme_end - subrequenst;
+static const char * try_parse_url(http_request *parsed_request,
+		const char *subrequest) {
+	const char *lexeme_end;
+	char *url;
+	size_t lexeme_length;
 
-		if (lexeme_length <= 0) {
-			return NULL;
-		}
+	assert(parsed_request != NULL);
+	assert(subrequest != NULL);
 
-		url = malloc(lexeme_length + 1);
-		if (NULL == url) {
-			return NULL;
-		}
-		strncpy(url, subrequenst, lexeme_length);
-		url[lexeme_length] = '\0';
-		parsed_request->parsed_url = parse_url(url);
-		free(url);
-		if (NULL == parsed_request->parsed_url) {
-			return NULL;
-		}
-		lexeme_end++;
-		return lexeme_end;
+	lexeme_end = strchr(subrequest, ' ');
+	if (lexeme_end == NULL) {
+		return NULL;
 	}
-	return NULL;
+
+	lexeme_length = lexeme_end - subrequest;
+	if (lexeme_length == 0) {
+		return NULL;
+	}
+
+	url = malloc(lexeme_length + 1);
+	if (url == NULL) {
+		return NULL;
+	}
+
+	strncpy(url, subrequest, lexeme_length);
+	url[lexeme_length] = '\0';
+
+	parsed_request->parsed_url = parse_url(url);
+
+	free(url);
+
+	return parsed_request->parsed_url != NULL ? lexeme_end + 1 : NULL;
 }
 
-char *try_parse_proto(http_request *parsed_request, char *subrequenst) {
-	int lexeme_length;
-	char * lexeme_end;
+static const char * try_parse_proto(http_request *parsed_request,
+		const char *subrequest) {
+	char *lexeme_end;
+	size_t lexeme_length;
 
-	lexeme_end =
-			strchr(subrequenst, '\r') != NULL ?
-					strchr(subrequenst, '\r') : strchr(subrequenst, '\0');
-	lexeme_length = lexeme_end - subrequenst;
+	assert(parsed_request != NULL);
+	assert(subrequest != NULL);
 
-	if (lexeme_length <= 0) {
+	lexeme_end = strchr(subrequest, '\r');
+	lexeme_end = lexeme_end != NULL ? lexeme_end : strchr(subrequest, '\0');
+	assert(lexeme_end != NULL);
+
+	lexeme_length = lexeme_end - subrequest;
+	if (lexeme_length == 0) {
 		return NULL;
 	}
 
 	parsed_request->proto = malloc(lexeme_length + 1);
-
-	if (NULL == parsed_request->proto) {
+	if (parsed_request->proto == NULL) {
 		return NULL;
 	}
-	(void) strncpy(parsed_request->proto, subrequenst, lexeme_length);
+
+	strncpy(parsed_request->proto, subrequest, lexeme_length);
 	parsed_request->proto[lexeme_length] = '\0';
-	for (int i = 0; i < lexeme_length; i++) {
-		if ((!isupper(parsed_request->proto[i]))
-				&& (!isdigit(parsed_request->proto[i]))
-				&& (parsed_request->proto[i] != '.')
-				&& (parsed_request->proto[i] != '/')) {
-			return NULL;
-		}
+
+	while ((isupper(parsed_request->proto[--lexeme_length])
+			|| isdigit(parsed_request->proto[lexeme_length])
+			|| (parsed_request->proto[lexeme_length] == '.')
+			|| (parsed_request->proto[lexeme_length] == '/'))
+			&& (lexeme_length != 0))
+		;
+
+	if (lexeme_end[0] != '\0') {
+		lexeme_end++;
 	}
-	lexeme_end++;
-	return lexeme_end;
+	return lexeme_length == 0 ? lexeme_end : NULL;
 }
 
-char *try_parse_host(http_request *parsed_request, char *subrequenst) {
-	int lexeme_length;
-	char * lexeme_end;
-	char * host_identifyer;
-	struct parsed_url * parsed_host;
-	char *expected_host_identifyer = "Host:";
+static const char * try_parse_host(http_request *parsed_request,
+		const char *subrequest) {
+	const char *lexeme_end, expected_host_identifyer[] = "Host:";
+	char *url;
+	size_t lexeme_length;
+	struct parsed_url *parsed_host;
 
-	if (strlen(subrequenst) == 0) {
-		return subrequenst;
-	}
+	assert(parsed_request != NULL);
+	assert(subrequest != NULL);
 
-	if (subrequenst[0] == '\n') {
-		subrequenst++;
-	} else {
+	if ((parsed_request->parsed_url->host != NULL)
+			&& (parsed_request->parsed_url->port != NULL)) {
 		return NULL;
 	}
 
-	lexeme_end = strchr(subrequenst, ' ');
-	lexeme_length = lexeme_end - subrequenst;
-
-	if (lexeme_length <= 0) {
+	if (subrequest[0] == '\0') {
+		return subrequest;
+	} else if (subrequest[0] != '\n') {
 		return NULL;
 	}
 
-	host_identifyer = malloc(lexeme_length + 1);
-
-	(void) strncpy(host_identifyer, subrequenst, lexeme_length);
-	host_identifyer[lexeme_length] = '\0';
-
-	if ((strlen(expected_host_identifyer) != lexeme_length)
-			|| (strncmp(host_identifyer, expected_host_identifyer,
-					lexeme_length) != 0)) {
-		free(host_identifyer);
-		return subrequenst;
-	}
-	if (parsed_request->parsed_url->host != NULL) {
+	lexeme_end = strchr(++subrequest, ' ');
+	if (lexeme_end == NULL) {
 		return NULL;
 	}
-	free(host_identifyer);
-	subrequenst = ++lexeme_end;
-	lexeme_end =
-			strchr(subrequenst, '\r') != NULL ?
-					strchr(subrequenst, '\r') : strchr(subrequenst, '\0');
-	if (lexeme_end != NULL) {
-		char * url;
-		lexeme_length = lexeme_end - subrequenst;
-		url = malloc(lexeme_length + 1);
-		if (NULL == url) {
-			return NULL;
-		}
-		(void) strncpy(url, subrequenst, lexeme_length);
-		url[lexeme_length] = '\0';
-		parsed_host = parse_url(url);
-		free(url);
-		if ((NULL == parsed_host) || (parsed_host->host == NULL)) {
-			return NULL;
-		}
+
+	lexeme_length = lexeme_end - subrequest;
+	if (lexeme_length == 0) {
+		return NULL;
+	}
+
+	if ((lexeme_length != sizeof expected_host_identifyer - 1)
+			|| (strncmp(subrequest, &expected_host_identifyer[0], lexeme_length)
+					!= 0)) {
+		return subrequest;
+	}
+
+	subrequest = ++lexeme_end;
+
+	lexeme_end = strchr(subrequest, '\r');
+	lexeme_end = lexeme_end != NULL ? lexeme_end : strchr(subrequest, '\0');
+	assert(lexeme_end != NULL);
+
+	lexeme_length = lexeme_end - subrequest;
+	if (lexeme_length == 0) {
+		return NULL;
+	}
+
+	url = malloc(lexeme_length + 1);
+	if (url == NULL) {
+		return NULL;
+	}
+
+	strncpy(url, subrequest, lexeme_length);
+	url[lexeme_length] = '\0';
+
+	parsed_host = parse_url(url);
+
+	free(url);
+
+	if (parsed_host == NULL) {
+		return NULL;
+	}
+
+	if ((parsed_request->parsed_url->host == NULL)
+			&& (parsed_host->host != NULL)) {
 		lexeme_length = strlen(parsed_host->host);
+
 		parsed_request->parsed_url->host = malloc(lexeme_length + 1);
-		strncpy(parsed_request->parsed_url->host, parsed_host->host,
-				lexeme_length);
-		parsed_request->parsed_url->host[lexeme_length] = '\0';
-		if (parsed_host->port != NULL) {
-			lexeme_length = strlen(parsed_host->port);
-			parsed_request->parsed_url->port = malloc(lexeme_length + 1);
-			strncpy(parsed_request->parsed_url->port, parsed_host->port,
-					lexeme_length);
-			parsed_request->parsed_url->port[lexeme_length] = '\0';
+		if (parsed_request->parsed_url->host != NULL) {
+			memcpy(parsed_request->parsed_url->host, parsed_host->host,
+					lexeme_length + 1);
 		}
-		lexeme_end++;
-		parsed_url_free(parsed_host);
-		return lexeme_end;
 	}
-	return NULL;
+
+	if ((parsed_request->parsed_url->port == NULL)
+			&& (parsed_host->port != NULL)) {
+		lexeme_length = strlen(parsed_host->port);
+
+		parsed_request->parsed_url->port = malloc(lexeme_length + 1);
+		if (parsed_request->parsed_url->port != NULL) {
+			memcpy(parsed_request->parsed_url->port, parsed_host->port,
+					lexeme_length + 1);
+		}
+	}
+
+	parsed_url_free(parsed_host);
+
+	return lexeme_end + 1;
 }
 
-char *try_parse_connection(http_request *parsed_request, char *subrequenst) {
-	int lexeme_length;
-	char * lexeme_end;
-	char * host_identifyer;
-	char *expected_host_identifyer = "Connection:";
+static const char * try_parse_connection(http_request *parsed_request,
+		const char *subrequest) {
+	const char *lexeme_end, expected_connection_identifyer[] = "Connection:";
+	size_t lexeme_length;
 
-	if (strlen(subrequenst) == 0) {
-		return subrequenst;
-	}
-
-	if (subrequenst[0] == '\n') {
-		subrequenst++;
-	} else {
+	if (subrequest[0] == '\0') {
+		return subrequest;
+	} else if (subrequest[0] != '\n') {
 		return NULL;
 	}
 
-	lexeme_end = strchr(subrequenst, ' ');
-	lexeme_length = lexeme_end - subrequenst;
-
-	if (lexeme_length <= 0) {
+	lexeme_end = strchr(++subrequest, ' ');
+	if (lexeme_end == NULL) {
 		return NULL;
 	}
 
-	host_identifyer = malloc(lexeme_length + 1);
+	lexeme_length = lexeme_end - subrequest;
+	if (lexeme_length == 0) {
+		return NULL;
+	}
 
-	(void) strncpy(host_identifyer, subrequenst, lexeme_length);
-	host_identifyer[lexeme_length] = '\0';
-
-	if ((strlen(expected_host_identifyer) != lexeme_length)
-			|| (strncmp(host_identifyer, expected_host_identifyer,
+	if ((lexeme_length != sizeof expected_connection_identifyer - 1)
+			|| (strncmp(subrequest, &expected_connection_identifyer[0],
 					lexeme_length) != 0)) {
-		free(host_identifyer);
-		return subrequenst;
+		return subrequest;
 	}
-	free(host_identifyer);
-	subrequenst = ++lexeme_end;
-	lexeme_end =
-			strchr(subrequenst, '\r') != NULL ?
-					strchr(subrequenst, '\r') : strchr(subrequenst, '\0');
-	if (lexeme_end != NULL) {
-		lexeme_length = lexeme_end - subrequenst;
-		parsed_request->connection = malloc(lexeme_length + 1);
-		strncpy(parsed_request->connection, subrequenst, lexeme_length);
-		parsed_request->connection[lexeme_length] = 0;
-		lexeme_end++;
-		return lexeme_end;
-	}
-	return NULL;
-}
 
+	subrequest = ++lexeme_end;
+
+	lexeme_end = strchr(subrequest, '\r');
+	lexeme_end = lexeme_end != NULL ? lexeme_end : strchr(subrequest, '\0');
+	assert(lexeme_end != NULL);
+
+	lexeme_length = lexeme_end - subrequest;
+	if (lexeme_length == 0) {
+		return NULL;
+	}
+
+	parsed_request->connection = malloc(lexeme_length + 1);
+	if (parsed_request->connection == NULL) {
+		return NULL;
+	}
+
+	strncpy(parsed_request->connection, subrequest, lexeme_length);
+	parsed_request->connection[lexeme_length] = '\0';
+
+	return lexeme_end + 1;
+}

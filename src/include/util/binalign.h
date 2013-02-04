@@ -9,7 +9,35 @@
 #ifndef UTIL_BINALIGN_H_
 #define UTIL_BINALIGN_H_
 
-#include __impl_x(util/binalign_impl.h)
+#define __binalign_mask(x, mask)       (((x) + (mask)) & ~(mask))
+
+#define __binalign(x, power) \
+		__binalign_bound(x, 0x1 << (power))
+
+#ifndef __ASSEMBLER__
+
+# define __binalign_bound(x, bound) \
+		__binalign_mask(x, (typeof(x)) (bound) - 1)
+
+#else /* __ASSEMBLER__ */
+
+# define __binalign_bound(x, bound) \
+		__binalign_mask(x, (bound) - 1)
+
+#endif /* __ASSEMBLER__ */
+
+#define __binalign_check_mask(x, mask)  ((x) & (mask) == 0)
+
+#ifndef __ASSEMBLER__
+
+# define __binalign_check(x, power) \
+		__binalign_check_bound(x, 0x1 << (power))
+
+# define __binalign_check_bound(x, bound) \
+		__binalign_check_mask(x, (typeof(x)) (bound) - 1)
+
+#endif /* __ASSEMBLER__ */
+
 
 /**
  * Aligns the @c x value up to the @c 2^power boundary.

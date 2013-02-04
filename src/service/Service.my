@@ -19,6 +19,7 @@ module TestService {
 
 module NewService {
 	source "new_service.c"
+	option string template_file="img_service.in"
 
 	@InitFS
 	source "img_service.in"

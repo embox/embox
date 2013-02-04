@@ -91,10 +91,10 @@ static void init_usart(void) {
 void bluetooth_hw_hard_reset(void) {
 	pin_config_output(CONFIG_BTM_BT_RST_PIN);
 	pin_set_output(CONFIG_BTM_BT_RST_PIN);
-	ksleep(1000);
+	m_ksleep(1000);
 
 	pin_clear_output(CONFIG_BTM_BT_RST_PIN);
-	ksleep(5000);
+	m_ksleep(5000);
 
 	pin_config_input(CONFIG_BTM_BT_LINK_PIN);
 	REG_STORE(AT91C_PIOA_PPUER, CONFIG_BTM_BT_LINK_PIN);

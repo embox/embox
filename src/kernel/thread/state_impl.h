@@ -12,8 +12,7 @@
 
 #include <assert.h>
 
-// TODO don't like this include. -- Eldar
-#include "types.h"
+#include <kernel/thread/types.h>
 
 #define __THREAD_STATE_INIT       0
 

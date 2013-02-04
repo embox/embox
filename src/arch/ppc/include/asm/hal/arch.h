@@ -1,15 +1,5 @@
-/**
- * @file
- *
- * @date Oct 17, 2012
- * @author: Anton Bondarev
- */
+#ifndef HAL_ARCH_H_
+# error "Do not include this file directly!"
+#endif /* HAL_ARCH_H_ */
 
-
-#ifndef PPC_HAL_ARCH_H_
-#define PPC_HAL_ARCH_H_
-
-//# error "Do not include this file directly!"
-
-
-#endif /* PPC_HAL_ARCH_H_ */
+#define __BIG_ENDIAN 1

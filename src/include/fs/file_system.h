@@ -13,7 +13,7 @@ typedef struct filesystem {
 	struct fs_drv    *drv;    /* file system driver */
 	struct block_dev *bdev;   /* block device, where is this file system */
 	void             *fsi;    /* extended information */
-	struct kfile_operations *file_op;
+	const struct kfile_operations *file_op;
 } filesystem_t;
 
 

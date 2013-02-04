@@ -1,0 +1,1 @@
+/* man res_init */

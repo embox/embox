@@ -10,12 +10,13 @@
 #define NET_DEVICE_H_
 
 #include <net/if_ether.h>
-#include <util/array.h>
+//#include <util/array.h>
 #include <net/if.h>
-#include <arpa/inet.h>
-#include <lib/list.h>
+//#include <arpa/inet.h>
 
-#include <util/hashtable.h>
+#include <linux/list.h>
+
+//#include <util/hashtable.h>
 
 /**
  * Prototypes

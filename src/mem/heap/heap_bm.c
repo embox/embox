@@ -7,13 +7,16 @@
  */
 
 #include <types.h>
-#include <mem/page.h>
+#include <stdlib.h>
 #include <string.h>
-#include <math.h>
+
+#include <mem/page.h>
+
+#include <util/math.h>
 #include <embox/unit.h>
 #include <mem/heap.h>
 
-#include <stdlib.h>
+
 
 #define DEBUG 0
 #if DEBUG
@@ -40,6 +43,7 @@ struct free_block {
 };
 
 static void *pool;
+static void *pool_end;
 static struct free_block_link free_blocks = { &free_blocks, &free_blocks };
 
 #define get_clear_size(size) ((size) & ~3)
@@ -164,6 +168,36 @@ static struct free_block * cut(struct free_block *block, size_t size) {
 	return block;
 }
 
+static void *block_aligning(struct free_block *block, size_t boundary) {
+	struct free_block *aligned_block;
+	void *ret_addr;
+	size_t size;
+
+	ret_addr =
+			(void *) ((size_t) (block) + sizeof(struct free_block) + boundary);
+	ret_addr = (void *) ((size_t) (ret_addr) & ~(boundary - 1));
+
+	aligned_block =
+			(struct free_block *) ((size_t) ret_addr - sizeof(ret_addr));
+
+	size = get_clear_size(block->size) - ((size_t) aligned_block - (size_t) block);
+
+	aligned_block->size = block->size; /* copy flags*/
+	block_set_size(aligned_block, size);
+	mark_block(aligned_block);
+	clear_prev(aligned_block);
+
+	ret_addr = (void *) ((uint32_t *) aligned_block + 1);
+
+	block_set_size(block, (size_t) aligned_block - (size_t) block);
+	block_link(block);
+	clear_block(block);
+	set_end_size(block);
+	clear_next(block);
+
+	return ret_addr;
+}
+
 void *memalign(size_t boundary, size_t size) {
 	struct free_block *block;
 	struct free_block_link *link;
@@ -178,8 +212,8 @@ void *memalign(size_t boundary, size_t size) {
 	}
 
 	if (0 != boundary) {
-		boundary = max(boundary, sizeof(struct free_block) << 1);
-		size = (size + 1 + (boundary - 1)) & ~(boundary - 1);
+		// boundary = max(boundary, sizeof(struct free_block) << 1);
+		size = (size + 1 + (sizeof(struct free_block) << 1) +(boundary - 1)) & ~(boundary - 1);
 	} else {
 		size = (size + (3)) & ~(3); /* align by word*/
 	}
@@ -204,24 +238,7 @@ void *memalign(size_t boundary, size_t size) {
 
 		ret_addr = (void *) ((uint32_t *) block + 1);
 		if (0 != ((size_t) ret_addr & ~(boundary - 1))) {
-			struct free_block *aligned_block;
-
-			aligned_block = (struct free_block *) (((size_t)((size_t)(block)
-					+ boundary) & ~(boundary - 1)) - 4);
-
-			aligned_block->size = block->size;
-			block_set_size(aligned_block,
-					get_clear_size(block->size) - ((size_t) aligned_block - (size_t) block));
-			mark_block(aligned_block);
-			clear_prev(aligned_block);
-
-			ret_addr = (void *) ((uint32_t *) aligned_block + 1);
-
-			block_set_size(block, (size_t) aligned_block - (size_t) block);
-			block_link(block);
-			clear_block(block);
-			set_end_size(block);
-			clear_next(block);
+			ret_addr = block_aligning(block, boundary);
 		}
 
 		return ret_addr;
@@ -233,12 +250,29 @@ void *malloc(size_t size) {
 	return memalign(0, size);
  }
 
+#include <prom/prom_printf.h>
 void free(void *ptr) {
 	struct free_block *block;
+
 	if (ptr == NULL) {
 		return;
 	}
+
+	if (ptr < pool || ptr >= pool_end) {
+		prom_printf("***** free(): incorrect address space\n");
+		return;
+	}
+	/* assert((ptr < pool) || (ptr >= pool_end)); */;
+
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
+
+	if (!block_is_busy(block)) {
+		prom_printf("***** free(): the block not busy\n");
+		return; /* if we try to free block more than once */
+	}
+
+	/* assert(block_is_busy(block) */;
+
 	block = concatenate_prev(block);
 	block = concatenate_next(block);
 
@@ -249,6 +283,7 @@ void free(void *ptr) {
 
 		set_end_size(block);
 	}
+	clear_block((struct free_block *)ptr);
 }
 
 void *realloc(void *ptr, size_t size) {
@@ -288,15 +323,17 @@ static int heap_init(void) {
 	}
 
 	block = (struct free_block *) pool;
-	block->size = HEAP_SIZE / 2 - sizeof(block->size);
+	block->size = HEAP_SIZE - (PAGE_SIZE() * 2) - sizeof(block->size);
 	set_end_size(block);
 
 	mark_prev(block);
 	block_link(block);
 
 	/* last work we mark as persistence busy */
-	block = (void *) ((char *) pool + HEAP_SIZE - sizeof(block->size));
+	block = (void *) ((char *) pool + block->size);
 	mark_block(block);
+
+	pool_end = block;
 
 	return 0;
 }

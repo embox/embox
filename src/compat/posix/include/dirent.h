@@ -26,8 +26,8 @@ extern DIR           *opendir(const char *);
 
 extern struct dirent *readdir(DIR *);
 
-extern int            readdir_r(DIR *restrict, struct dirent *restrict,
-                   struct dirent **restrict);
+extern int            readdir_r(DIR *, struct dirent *,
+				struct dirent **);
 
 extern void           rewinddir(DIR *);
 

@@ -6,16 +6,19 @@
  * @author Alexander Kalmuk
  */
 
-#include <net/ip_fragment.h>
-#include <net/skbuff.h>
-#include <mem/objalloc.h>
 #include <errno.h>
 #include <string.h>
-#include <kernel/time/timer.h>
-#include <math.h>
+
+#include <net/ip_fragment.h>
+#include <net/skbuff.h>
 #include <net/icmp.h>
 #include <net/ip.h>
-#include <errno.h>
+
+#include <mem/objalloc.h>
+#include <kernel/time/timer.h>
+
+#include <util/math.h>
+
 
 /**
  * Datagram receive buffer

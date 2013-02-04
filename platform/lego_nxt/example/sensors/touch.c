@@ -40,14 +40,14 @@ static int touch_example(int argc, char *argv[]) {
 	nxt_motor_set_power(NXT_MOTOR_B, MOTOR_POWER);
 
 	while (flag) {
-		usleep(BREAK_TIME);
+		msleep(BREAK_TIME);
 		if (nxt_buttons_pressed()) {
 			nxt_motor_set_power(NXT_MOTOR_A, 0);
 			nxt_motor_set_power(NXT_MOTOR_B, 0);
 			return 1;
 		}
 	}
-	usleep(BREAK_TIME);
+	msleep(BREAK_TIME);
 	nxt_motor_set_power(NXT_MOTOR_A, 0);
 	nxt_motor_set_power(NXT_MOTOR_B, 0);
 

@@ -14,14 +14,14 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+#include <math.h>
 
-#include <lib/list.h>
 #include <hal/ipl.h>
 #include <kernel/thread/state.h>
 #include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/sched.h>
-#include <math.h>
+
 
 static int trylock_sched_locked(struct mutex *m, struct thread *current);
 
@@ -49,7 +49,7 @@ void mutex_lock(struct mutex *m) {
 			/* We have to wait for a mutex to be released. */
 
 			priority_inherit(current);
-			sched_sleep_locked(&m->sq, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
+			sched_sleep_locked_ms(&m->sq, SCHED_TIMEOUT_INFINITE); /* Sleep here... */
 		}
 
 		current->mutex_waiting = NULL;

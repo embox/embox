@@ -24,12 +24,20 @@ clock_t ns2jiffies(time64_t ns) {
 	return ns_to_clock(cs_jiffies->event_device->resolution, ns);
 }
 
+clock_t us2jiffies(time64_t us) {
+	return ns2jiffies(us * 1000);
+}
+
 clock_t ms2jiffies(time64_t ms) {
 	return ns2jiffies(ms * 1000000);
 }
 
 time64_t jiffies2ms(clock_t jiff) {
 	return clock_to_ns(cs_jiffies->event_device->resolution, jiff) / 1000000;
+}
+
+uint32_t clock_freq(void) {
+	return cs_jiffies->event_device->resolution;
 }
 
 static int module_init(void) {

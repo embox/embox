@@ -1,7 +1,7 @@
 Index: build/javacall_i386_gcc/javacall_i386_gcc.cfg
 ===================================================================
---- build/javacall_i386_gcc/javacall_i386_gcc.cfg	(revision 20547)
-+++ build/javacall_i386_gcc/javacall_i386_gcc.cfg	(working copy)
+--- cldc/build/javacall_i386_gcc/javacall_i386_gcc.cfg	(revision 20547)
++++ cldc/build/javacall_i386_gcc/javacall_i386_gcc.cfg	(working copy)
 @@ -75,6 +75,7 @@
      JAVACALL_INCLUDE_DIR=$(JAVACALL_OUTPUT_DIR)/inc
  
@@ -10,10 +10,10 @@ Index: build/javacall_i386_gcc/javacall_i386_gcc.cfg
  
      JC_STUBS_OBJ = $(JAVACALL_LIB_DIR)/cldc_javanotify_stubs.o
  endif
-Index: build/share/jvm.make
+Index: cldc/build/share/jvm.make
 ===================================================================
---- build/share/jvm.make	(revision 20547)
-+++ build/share/jvm.make	(working copy)
+--- cldc/build/share/jvm.make	(revision 20547)
++++ cldc/build/share/jvm.make	(working copy)
 @@ -2294,6 +2294,9 @@
  	$(A)echo generated `pwd`/$@
  
@@ -32,41 +32,10 @@ Index: build/share/jvm.make
  
  PRINT_CONFIG = print_config
  
-@@ -2545,8 +2549,8 @@
- 	$(A)echo "JVM_LIB_SUFFIX           = $(LIB_SUFFIX)"               >> $@
- 	$(A)echo "JVM_EXE_SUFFIX           = $(EXE_SUFFIX)"               >> $@
- 	$(A)echo "JVM_HOST_EXE_SUFFIX      = $(HOST_EXE_SUFFIX)"          >> $@
--	$(A)echo "JVM_CC_FLAGS             = $(CC_FLAGS_EXPORT)"          >> $@
--	$(A)echo "JVM_CPP_FLAGS            = $(CPP_FLAGS_EXPORT)"         >> $@
-+	$(A)echo 'JVM_CC_FLAGS             = $(CC_FLAGS_EXPORT)'          >> $@
-+	$(A)echo 'JVM_CPP_FLAGS            = $(CPP_FLAGS_EXPORT)'         >> $@
- 	$(A)echo "JVM_CC_OPT_FLAGS         = $(CC_OPT_FLAGS)"             >> $@
- 	$(A)echo "JVM_CPP_OPT_FLAGS        = $(CPP_OPT_FLAGS)"            >> $@
- 	$(A)echo "JVM_ARM_CFLAGS           = $(ARM_CFLAGS)"               >> $@
-Index: src/vm/share/utilities/GlobalDefinitions.hpp
+Index: cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp
 ===================================================================
---- src/vm/share/utilities/GlobalDefinitions.hpp	(revision 20547)
-+++ src/vm/share/utilities/GlobalDefinitions.hpp	(working copy)
-@@ -727,6 +727,7 @@
- // a jboolean (e.g., when you call OopDesc::bool_field_put(), always use the
- // CAST_TO_JBOOLEAN.
- 
-+#ifndef __EMBOX__
- #define bool    jint
- 
- #define true    v_true
-@@ -734,6 +735,7 @@
- 
- const bool true        = 1;
- const bool false       = 0;
-+#endif //__EMBOX__
- 
- const jboolean g_true  = 1;
- const jboolean g_false = 0;
-Index: src/vm/cpu/i386/SourceAssembler_i386.cpp
-===================================================================
---- src/vm/cpu/i386/SourceAssembler_i386.cpp	(revision 20547)
-+++ src/vm/cpu/i386/SourceAssembler_i386.cpp	(working copy)
+--- cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp	(revision 20547)
++++ cldc/src/vm/cpu/i386/SourceAssembler_i386.cpp	(working copy)
 @@ -129,7 +129,7 @@
        emit("\t.MODEL flat, C\n\n");
      }

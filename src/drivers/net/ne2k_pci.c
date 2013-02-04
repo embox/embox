@@ -16,18 +16,24 @@
  *         - Adaptation for Embox
  */
 
-#include <asm/io.h>
-#include <embox/unit.h>
+#include <stdint.h>
+#include <string.h>
 #include <errno.h>
+#include <arpa/inet.h>
+
+#include <asm/io.h>
+
+
 #include <drivers/pci/pci.h>
 #include <kernel/irq.h>
 #include <net/etherdevice.h>
 #include <net/if_ether.h>
 #include <drivers/ethernet/ne2k_pci.h>
+
 #include <net/netdevice.h>
 #include <net/skbuff.h>
-#include <stdint.h>
-#include <string.h>
+
+#include <embox/unit.h>
 
 
 PCI_DRIVER("ne2k_pci", ne2k_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8029);
@@ -343,7 +349,8 @@ static irq_return_t ne2k_handler(unsigned int irq_num, void *dev_id) {
 }
 
 static net_device_stats_t * get_eth_stat(struct net_device *dev) {
-	return &(dev->stats);
+	assert(dev != NULL);
+	return &dev->stats;
 }
 
 static int set_mac_address(struct net_device *dev, void *addr) {

@@ -56,21 +56,70 @@
 #define VGA_CRTC_H_SYNC_END    0x5
 #define VGA_CRTC_V_TOTAL       0x6
 #define VGA_CRTC_OVERFLOW      0x7
+#define VGA_CRTC_PRESET_ROW    0x8
+#define VGA_CRTC_MAX_SCAN      0x9
+
+#define VGA_CRTC_CURSOR_START  0xA
+#define VGA_CRTC_CURSOR_END    0xB
+
+#define VGA_CRTC_CURSOR_HI     0xE
+#define VGA_CRTC_CURSOR_LO     0xF
 
 #define VGA_CRTC_V_SYNC_START  0x10
 #define VGA_CRTC_V_SYNC_END    0x11
 #define VGA_CRTC_V_DISP_END    0x12
+
+#define VGA_CRTC_UNDERLINE     0x14
 #define VGA_CRTC_V_BLANK_START 0x15
 #define VGA_CRTC_V_BLANK_END   0x16
 #define VGA_CRTC_MODE_CONTROL  0x17
 #define VGA_CRTC_LINE_COMPARE  0x18
 
-#define VGA_GC_READ_MAP_SEL   0x4
-#define VGA_GC_MISCELLANEOUS  0x6
+#if 0
+/* graphic controller registers */
+#define VGA_GC_READ_MAP_SEL    0x4
+#define VGA_GC_MISCELLANEOUS   0x6
+#endif
+
+/* VGA graphics controller register indices */
+#define VGA_GFX_SR_VALUE       0x00
+#define VGA_GFX_SR_ENABLE      0x01
+#define VGA_GFX_COMPARE_VALUE  0x02
+#define VGA_GFX_DATA_ROTATE    0x03
+#define VGA_GFX_PLANE_READ     0x04
+#define VGA_GFX_MODE           0x05
+#define VGA_GFX_MISC           0x06
+#define VGA_GFX_COMPARE_MASK   0x07
+#define VGA_GFX_BIT_MASK       0x08
 
 
-#define VGA_SEQ_PLANE_MASK   0x2
 
+/* sequencer registers * */
+#define VGA_SEQ_PLANE_MASK     0x2
+#define VGA_SEQ_CHARACTER_MAP  0x3
+#define VGA_SEQ_MEMORY_MODE    0x4
+
+/* attribute controller registers */
+#define VGA_ATC_PALETTE0       0x0
+#define VGA_ATC_PALETTE1       0x1
+#define VGA_ATC_PALETTE2       0x2
+#define VGA_ATC_PALETTE3       0x3
+#define VGA_ATC_PALETTE4       0x4
+#define VGA_ATC_PALETTE5       0x5
+#define VGA_ATC_PALETTE6       0x6
+#define VGA_ATC_PALETTE7       0x7
+#define VGA_ATC_PALETTE8       0x8
+#define VGA_ATC_PALETTE9       0x9
+#define VGA_ATC_PALETTEA       0xA
+#define VGA_ATC_PALETTEB       0xB
+#define VGA_ATC_PALETTEC       0xC
+#define VGA_ATC_PALETTED       0xD
+#define VGA_ATC_PALETTEE       0xE
+#define VGA_ATC_PALETTEF       0xF
+#define VGA_ATC_MODE           0x10 /* Attribute Controller Mode */
+#define VGA_ATC_OVERSCAN       0x11 /* Overscan (Border) Color */
+#define VGA_ATC_PLANE_ENABLE   0x12 /* Color Plane Enable */
+#define VGA_ATC_COLOR_PAGE     0x14 /* Color Select */
 
 
 
@@ -129,23 +178,23 @@ static inline unsigned char vga_rseq(uint32_t *regbase, unsigned char index) {
 }
 
 
-static inline void vga_gc_write(unsigned char value, unsigned char index) {
+static inline void vga_wgfx(unsigned int *regbase, unsigned char value, unsigned char index) {
 	out8(index, VGA_GC_INDEX);
 	out8(value, VGA_GC_DATA);
 }
 
-static inline unsigned char vga_gc_read(unsigned char index) {
+static inline unsigned char vga_rgfx(unsigned int *regbase, unsigned char index) {
 	out8(index, VGA_GC_INDEX);
 	return in8(VGA_GC_DATA);
 }
 
-static inline void vga_ac_write(unsigned char value, unsigned char index) {
+static inline void vga_wattr(uint32_t *regbase, unsigned char index, unsigned char value) {
 	in8(VGA_INSTAT_READ);
 	out8(index, VGA_AC_INDEX);
 	out8(value, VGA_AC_WRITE);
 }
 
-static inline unsigned char vga_ac_read(unsigned char index) {
+static inline unsigned char vga_rattr(uint32_t *regbase, unsigned char index) {
 	out8(index, VGA_AC_INDEX);
 	return in8(VGA_AC_READ);
 }

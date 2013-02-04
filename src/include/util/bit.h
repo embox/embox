@@ -9,7 +9,7 @@
 #ifndef UTIL_BIT_H_
 #define UTIL_BIT_H_
 
-#include __impl_x(util/bit_impl.h)
+#include <module/embox/util/Bit.h>
 
 /**
  * Count trailing (least significant) zero bits.

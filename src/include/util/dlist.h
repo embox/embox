@@ -17,11 +17,7 @@
 #ifndef DLIST_H_
 #define DLIST_H_
 
-#if defined CONFIG_LIST_NDEBUG || 0
-# include __impl_x(util/dlist_ndebug.h)
-#else
-# include __impl_x(util/dlist_debug.h)
-#endif
+#include <module/embox/util/DList.h>
 
 /**
  * A service list data structure. It's used both for elements and for list head.
@@ -85,7 +81,7 @@ extern struct dlist_head *dlist_head_init(struct dlist_head *item_head);
  * @param new - head of the item which wants to be inserted into the list
  * @param -list - head of the list which we want to join the new item
  */
-extern void dlist_add_next(struct dlist_head *new_head, struct dlist_head *list);
+extern void dlist_add_next(struct dlist_head *_new, struct dlist_head *list);
 
 /**
  * Inserts new item to a list before pointed list head
@@ -95,7 +91,7 @@ extern void dlist_add_next(struct dlist_head *new_head, struct dlist_head *list)
  * @param new - head of the item which wants to be inserted into the list
  * @param -list - head of the list which we want to join the new item
  */
-extern void dlist_add_prev(struct dlist_head *new_head,	struct dlist_head *list);
+extern void dlist_add_prev(struct dlist_head *_new,	struct dlist_head *list);
 
 /**
  * Remove item from its list and initialize item head for future using. It

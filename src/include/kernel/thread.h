@@ -15,7 +15,17 @@
 #ifndef KERNEL_THREAD_API_H_
 #define KERNEL_THREAD_API_H_
 
-#include __impl_x(kernel/thread/api_impl.h)
+#include <kernel/thread/sched.h> /* sched_current */
+
+#define __thread_foreach(thread_ptr) \
+	list_for_each_entry(thread_ptr, __extension__ ({   \
+				extern struct list_head __thread_list; \
+				&__thread_list;                        \
+			}), thread_link)                           \
+
+static inline struct thread *thread_self(void) {
+	return sched_current();
+}
 
 /**
  * Thread control block.

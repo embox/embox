@@ -4,6 +4,7 @@
  *
  * @date 12.03.11
  * @author Eldar Abusalimov
+ * @author Ilia Vaprol
  */
 
 #include <embox/test.h>
@@ -319,6 +320,75 @@ TEST_CASE("list_insert_before and list_insert_after on a single element list"
 
 	test_assert_equal(list_first_link(&m), &x.lnk);
 	test_assert_equal(list_last_link(&m), &z.lnk);
+}
+
+TEST_CASE("list_front should return null for empty list") {
+	test_assert_null(list_front(element_in_list, &m));
+}
+
+TEST_CASE("list_back should return null for empty list") {
+	test_assert_null(list_back(element_in_list, &m));
+}
+
+TEST_CASE("list_dequeue should return null for empty list") {
+	test_assert_null(list_dequeue(element_in_list, &m));
+}
+
+TEST_CASE("list_front and list_back on a single element list "
+		"constructed using list_enqueue should return the element's link") {
+	list_enqueue(element_in_list, &x, &m);
+
+	test_assert_equal(list_front(element_in_list, &m), &x);
+	test_assert_equal(list_back(element_in_list, &m), &x);
+
+	test_assert_equal(list_dequeue(element_in_list, &m), &x);
+}
+
+TEST_CASE("list_front and list_back should return a new and an old "
+		"element accordingly after adding a new one with list_enqueue") {
+	test_assert_not_equal(&x, &y);
+
+	list_enqueue(element_in_list, &x, &m);
+	list_enqueue(element_in_list, &y, &m);
+
+	test_assert_equal(list_front(element_in_list, &m), &x);
+	test_assert_equal(list_back(element_in_list, &m), &y);
+
+	test_assert_equal(list_dequeue(element_in_list, &m), &x);
+	test_assert_equal(list_front(element_in_list, &m), &y);
+	test_assert_equal(list_back(element_in_list, &m), &y);
+
+	test_assert_equal(list_dequeue(element_in_list, &m), &y);
+}
+
+TEST_CASE("list_top should return null for empty list") {
+	test_assert_null(list_top(element_in_list, &m));
+}
+
+TEST_CASE("list_pop should return null for empty list") {
+	test_assert_null(list_pop(element_in_list, &m));
+}
+
+TEST_CASE("list_top on a single element list "
+		"constructed using list_push should return the element's link") {
+	list_push(element_in_list, &x, &m);
+
+	test_assert_equal(list_top(element_in_list, &m), &x);
+	test_assert_equal(list_pop(element_in_list, &m), &x);
+}
+
+TEST_CASE("list_top should return a new "
+		"element accordingly after adding a new one with list_push") {
+	test_assert_not_equal(&x, &y);
+
+	list_push(element_in_list, &x, &m);
+	list_push(element_in_list, &y, &m);
+
+	test_assert_equal(list_top(element_in_list, &m), &y);
+	test_assert_equal(list_pop(element_in_list, &m), &y);
+
+	test_assert_equal(list_top(element_in_list, &m), &x);
+	test_assert_equal(list_pop(element_in_list, &m), &x);
 }
 
 TEST_CASE("list_bulk_add_first shouldn't modify a destination list "

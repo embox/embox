@@ -1,0 +1,16 @@
+package embox.arch.x86.boot
+
+module real_boot {
+	source "realmode_boot.S"
+}
+
+module multiboot {
+	source "boot.S"
+	source "multiboot_header.S"
+	source "multiboot.c"
+
+	option number video_mode_set=0
+	option number video_width=800
+	option number video_height=600
+	option number video_depth=24
+}

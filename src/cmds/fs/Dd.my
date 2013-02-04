@@ -1,0 +1,21 @@
+package embox.cmd.fs
+
+@Cmd(name = "dd",
+	help = "Read blocks of file",
+	man = '''
+		NAME
+			dd - read files and block devices
+		SYNOPSIS
+			dd if=SOURCE skip=START count=BLOCKS
+		DESCRIPTION
+			Print data of SOURCE to standard output.
+		AUTHOR
+			Andrey Gazukin
+	''')
+module dd {
+	source "dd.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
+}

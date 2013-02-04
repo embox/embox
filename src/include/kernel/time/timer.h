@@ -86,9 +86,14 @@ typedef struct sys_timer sys_timer_t;
  * @retval 0 if the timer is set
  * @retval non-0 if the timer isn't set
  */
-extern int timer_init(struct sys_timer *tmr, unsigned int flags, uint32_t ticks,
+extern int timer_init_ns(struct sys_timer *tmr, unsigned int flags, uint32_t nsec,
 		sys_timer_handler_t handle, void *param);
 
+extern int timer_init_us(struct sys_timer *tmr, unsigned int flags, uint32_t usec,
+		sys_timer_handler_t handle, void *param);
+
+extern int timer_init_ms(struct sys_timer *tmr, unsigned int flags, uint32_t msec,
+		sys_timer_handler_t handle, void *param);
 /**
  * Set 'handle' timer for executing every 'ticks' ms.
  * Memory for set_tmr instance will be allocated inside timer_set.
@@ -111,6 +116,5 @@ extern int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t tic
  * @param id timer identifier
  */
 extern int timer_close(struct sys_timer *ptimer);
-
 
 #endif /* KERNEL_TIMER_H_ */

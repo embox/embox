@@ -19,8 +19,8 @@
 #include <module/embox/arch/usermode.h>
 
 gdt_gate_t gdt[GDT_ENTRIES];
-gdt_pointer_t gdt_ptr;
-tss_entry_t tss_entry;
+static gdt_pointer_t gdt_ptr;
+static tss_entry_t tss_entry;
 
 static inline void tss_fill(void);
 
@@ -55,19 +55,22 @@ void gdt_init(void) {
 	tss_flush(); /* XXX: This need only for usermode. */
 }
 
-static inline void tss_fill() {
-	// Firstly, let's compute the base and limit of our entry into the GDT.
-	uint32_t base = (uint32_t) &tss_entry;
-	uint32_t limit = base + sizeof(tss_entry);
+static inline void tss_fill(void) {
+	uint32_t base;
+	uint32_t limit;
 
-	// Now, add our TSS descriptor's address to the GDT.
+	/* Firstly, let's compute the base and limit of our entry into the GDT. */
+	base = (uint32_t) &tss_entry;
+	limit = base + sizeof(tss_entry);
+
+	/* Now, add our TSS descriptor's address to the GDT. */
 	gdt_set_gate(GDT_ENTRY_TSS, base, limit, 0xE9, 0x00);
 
-	// Ensure the descriptor is initially zero.
+	/* Ensure the descriptor is initially zero. */
 	memset(&tss_entry, 0, sizeof(tss_entry));
 
-	tss_entry.ss0  = __KERNEL_DS;  // Set the kernel stack segment.
-	tss_entry.esp0 = 0;            // Set the kernel stack pointer.
+	tss_entry.ss0  = __KERNEL_DS;  /* Set the kernel stack segment. */
+	tss_entry.esp0 = 0;            /* Set the kernel stack pointer. */
 
 	/*
 	 * Here we set the cs, ss, ds, es, fs and gs entries in the TSS. These

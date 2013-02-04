@@ -21,7 +21,7 @@ EMBOX_TEST_SUITE("test for change thread state by events");
 static void *thread_run(void *arg) {
 	struct event *event = (struct event *)arg;
 
-	event_wait(event, SCHED_TIMEOUT_INFINITE);
+	event_wait_ms(event, SCHED_TIMEOUT_INFINITE);
 	return 0;
 }
 

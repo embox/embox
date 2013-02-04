@@ -9,7 +9,7 @@
 #include <lib/xwnd/draw_helpers.h>
 //#include <drivers/vesa.h>
 #include <drivers/video/display.h>
-#include <math.h>
+#include <util/math.h>
 #include <stdlib.h>
 
 void xwnd_draw_pixel(const struct xwnd_window * wnd, unsigned x, unsigned y,

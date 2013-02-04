@@ -95,7 +95,7 @@ static int exec(int argc, char **argv) {
 		neighbour_del(&tha[0], hln, NULL, 0, in_dev->dev);
 		rarp_send(RARP_OPER_REQUEST, ETH_P_IP, hln, pln, &sha[0], NULL,
 			&tha[0], NULL, NULL, in_dev->dev);
-		usleep(DEFAULT_INTERVAL);
+		msleep(DEFAULT_INTERVAL);
 		ret = neighbour_get_protocol_address(&tha[0], hln, in_dev->dev,
 				pln, &tpa[0], NULL);
 		if (ret == ENOERR) {

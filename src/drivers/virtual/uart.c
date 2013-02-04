@@ -101,7 +101,7 @@ static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
 				event_init(&rx_happend, "event_rx_happend");
 			irq_unlock();
 
-			event_wait(&rx_happend, SCHED_TIMEOUT_INFINITE);
+			event_wait_ms(&rx_happend, SCHED_TIMEOUT_INFINITE);
 		sched_unlock();
 	}
 

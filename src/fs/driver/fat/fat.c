@@ -2236,7 +2236,7 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 }
 
 static int fatfs_delete(struct node *node) {
-	struct node *pointnode;
+	struct node *dot_node;
 	struct nas *nas;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
@@ -2252,12 +2252,16 @@ static int fatfs_delete(struct node *node) {
 	if (node_is_directory(node)) {
 
 		strcat(path, "/.");
-		pointnode = vfs_find_node(path, NULL);
-		vfs_del_leaf(pointnode);
+		dot_node = vfs_find_node(path, NULL);
+		if (dot_node) {
+			vfs_del_leaf(dot_node);
+		}
 
 		strcat(path, ".");
-		pointnode = vfs_find_node(path, NULL);
-		vfs_del_leaf(pointnode);
+		dot_node = vfs_find_node(path, NULL);
+		if (dot_node) {
+			vfs_del_leaf(dot_node);
+		}
 
 		path[strlen(path) - 3] = '\0';
 	}

@@ -7,21 +7,23 @@
  * @author Nikolay Korotky
  * @author Ilia Vaprol
  */
-
+#include <string.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <stddef.h>
+#include <types.h>
+#include <sys/uio.h>
+
 #include <net/inet_sock.h>
 #include <net/kernel_socket.h>
 #include <net/net.h>
 #include <net/socket.h>
-#include <stddef.h>
-#include <types.h>
 #include <util/array.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <net/arp_queue.h>
-#include <string.h>
-#include <fcntl.h>
+
 
 #include <kernel/thread.h>
 #include <kernel/thread/event.h>
@@ -222,7 +224,7 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	res = kernel_socket_sendmsg(NULL, sock, &m, len);
 	if (res == -EINPROGRESS) {
 		/* wait until resolving destonation ip */
-		res_sleep = event_wait(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
+		res_sleep = event_wait_ms(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
 		if (res_sleep == ENOERR) {
 			/* was resolved */
 			res = 1;
@@ -306,7 +308,7 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 	res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
 	/* if !O_NONBLOCK on socket's file descriptor {*/
 	if (!res) {
-		event_wait(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
+		event_wait_ms(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
 		res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
 	}
 	/* } */

@@ -72,7 +72,7 @@ static int exec (int argc, char ** argv) {
 
 		while (1) {
 			if (!keyboard_has_symbol()) {
-				usleep(100);
+				msleep(100);
 			}
 			else {
 				char key = keyboard_getc();

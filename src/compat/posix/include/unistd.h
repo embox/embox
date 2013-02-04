@@ -13,6 +13,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
 
 /* Standard file descriptors. */
 #define STDIN_FILENO    0   /* Standard input. */
@@ -33,16 +36,18 @@ extern int sleep(unsigned int seconds);
 
 /**
  * suspend execution for an interval of time
- * @param useconds interval in microseconds
+ * @param useconds interval in nanoseconds,microseconds,milliseconds
  * @return 0 if time has elapsed if was error then return -1
  */
+extern int nsleep(useconds_t nseconds);
 extern int usleep(useconds_t useconds);
+extern int msleep(useconds_t mseconds);
 
 extern ssize_t write(int fd, const void *buf, size_t nbyte);
 
 extern ssize_t read(int fd, void *buf, size_t nbyte);
 
-extern int lseek(int fd, long int offset, int origin);
+extern off_t lseek(int fd, off_t offset, int origin);
 
 extern int fsync(int);
 
@@ -65,5 +70,8 @@ extern int dup(int flides);
 extern int dup2(int flides, int flides2);
 
 extern int pipe(int pipefd[2]/*, int flags: O_NONBLOCK */);
+extern void _exit(int status);
+
+__END_DECLS
 
 #endif /* UNISTD_H_ */

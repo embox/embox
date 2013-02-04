@@ -30,7 +30,8 @@ module NoFileSystem extends fs_api{
 }
 
 module core extends fs_api {
-	source "vfs.c", "path.c"
+	source "vfs.c", "path.c",
+                "xattr.c"
 
 	depends fs_name_opt
 

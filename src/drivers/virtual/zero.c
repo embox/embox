@@ -6,39 +6,38 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
-#include <fs/file_operation.h>
-#include <fs/node.h>
-
 #include <embox/device.h>
+#include <fs/file_operation.h>
+#include <stdlib.h>
+#include <string.h>
 
+#define ZERO_DEV_NAME "zero"
 
-static void *zero_open(const char *fname, const char *mode);
-static int zero_close(void *file);
-static size_t zero_read(void *buf, size_t size, size_t count, void *file);
+/* forward declaration */
+static int zero_init(void);
+static const struct kfile_operations zero_ops;
 
+EMBOX_DEVICE(ZERO_DEV_NAME, &zero_ops, zero_init);
 
-static file_operations_t file_op = {
-		.fread = zero_read,
-		.fopen = zero_open,
-		.fclose = zero_close,
-		.fwrite = NULL
-};
-
-/*
- * file_operation
- */
-static void *zero_open(const char *fname, const char *mode) {
-	return (void *)&file_op;
-}
-
-static int zero_close(void *file) {
+static int zero_open(struct node *node, struct file_desc *file_desc, int flags) {
 	return 0;
 }
 
-static size_t zero_read(void *buf, size_t size, size_t count, void *file) {
-	memset(buf, 0, count * size);
-	return count * size;
+static int zero_close(struct file_desc *desc) {
+	return 0;
 }
 
-EMBOX_DEVICE("zero", &file_op); /* doesn't matter if we have fs */
+static size_t zero_read(struct file_desc *desc, void *buf, size_t size) {
+	memset(buf, 0, size);
+	return size;
+}
+
+static const struct kfile_operations zero_ops = {
+		.open = zero_open,
+		.close = zero_close,
+		.read = zero_read
+};
+
+static int zero_init(void) {
+	return char_dev_register(ZERO_DEV_NAME, &zero_ops);
+}

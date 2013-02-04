@@ -14,6 +14,7 @@
 #include <net/netdevice.h>
 #include <net/net.h>
 #include <net/socket_options.h>
+#include <kernel/thread/event.h>
 
 typedef struct {
 	spinlock_t slock;
@@ -92,7 +93,7 @@ typedef struct sock {
 	sk_encap_hnd sk_encap_rcv;
 //	int (* get_port)(struct sock *sk, unsigned short num); // TODO
 	int32_t sk_err;
-	bool ready;
+	int ready;
 	struct event sock_is_ready;
 	struct event sock_is_not_empty;
 } sock_t;

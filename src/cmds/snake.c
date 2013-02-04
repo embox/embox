@@ -218,7 +218,7 @@ static int exec(int argc, char **argv) {
 		point d2 = nil;
 		char ch = ' ';
 
-		usleep(sleep_time);
+		msleep(sleep_time);
 		last_valid = 0;
 		while (diag_has_symbol() && !last_valid ) {
 			d = dispatch((ch = getchar()));

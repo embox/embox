@@ -16,7 +16,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <lib/list.h>
 #include <util/array.h>
 #include <util/prioq.h>
 
@@ -26,6 +25,8 @@
 #include <kernel/thread/sched.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
+
+#include <kernel/time/timer.h>
 
 #include <stdio.h>
 
@@ -66,7 +67,7 @@ void runq_fini(struct runq *rq) {
 }
 
 static void sched_tick(sys_timer_t *timer, void *param) {
-	sched_request_switch();
+	sched_post_switch();
 }
 
 int runq_start(struct runq *rq, struct thread *t) {

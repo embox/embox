@@ -10,6 +10,7 @@
 #define HAL_CLOCK_H_
 
 #include <sys/types.h>
+#include <types.h> /* for uint32_t */
 
 /**
  * Alias used to disable a clock when calling #clock_setup().
@@ -34,6 +35,7 @@ extern void clock_setup(useconds_t useconds);
 extern void clock_tick_handler(int irq_num, void *dev_id);
 
 extern clock_t clock_sys_ticks(void);
+extern uint32_t clock_freq(void);
 extern clock_t clock_sys_sec(void);
 
 #endif /* HAL_CLOCK_H_ */

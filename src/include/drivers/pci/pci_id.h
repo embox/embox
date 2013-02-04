@@ -16,6 +16,7 @@
 #define PCI_VENDOR_ID_ATHEROS             0x168c
 #define PCI_VENDOR_ID_RDC                 0x17f3
 #define PCI_VENDOR_ID_INTEL               0x8086
+#define PCI_VENDOR_ID_BOCHS               0x1234
 
 /* Cirrus device id's */
 #define PCI_DEV_ID_CIRRUS_5446            0x00b8
@@ -61,5 +62,8 @@
 #define PCI_DEV_ID_INTEL_IGC_GM965        0x2a02
 #define PCI_DEV_ID_INTEL_82371SB_ISA      0x7000
 #define PCI_DEV_ID_INTEL_82371SB_IDE      0x7010
+
+/* Bochs device id's */
+#define PCI_DEV_ID_BOCHS_VGA              0x1111
 
 #endif /* PCI_ID_H_ */

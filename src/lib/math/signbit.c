@@ -6,21 +6,26 @@
  * @author Ilia Vaprol
  */
 
-#include <math.h>
-
-/**
- * TODO it works with mistake when x is -0.0:
- *  right answer is 1, but we return 0
- */
+#include <assert.h>
+#include <lib/math/ieee.h>
 
 int signbit(double x) {
-    return x < 0;
+	static_assert(sizeof x == sizeof(struct ieee_binary64));
+	return ((struct ieee_binary64 *)&x)->negative;
 }
 
 int signbitf(float x) {
-    return x < 0;
+	static_assert(sizeof x == sizeof(struct ieee_binary32));
+	return ((struct ieee_binary32 *)&x)->negative;
 }
 
 int signbitl(long double x) {
-    return x < 0;
+	static_assert((sizeof x == sizeof(struct ieee_binary64))
+			|| (sizeof x == sizeof(struct ieee_binary80))
+			|| (sizeof x == sizeof(struct ieee_binary96)));
+	return sizeof x == sizeof(struct ieee_binary64)
+			? ((struct ieee_binary64 *)&x)->negative
+			: sizeof x == sizeof(struct ieee_binary80)
+				? ((struct ieee_binary80 *)&x)->negative
+				: ((struct ieee_binary96 *)&x)->negative;
 }

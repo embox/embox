@@ -1,0 +1,21 @@
+
+# Don't know how to make it the right way
+# The following attempts didn't work one way or another
+# QMAKE_LFLAGS_APP        +=
+#app {
+#!isEmpty(QMAKE_APP_FLAG) {
+#isEmpty(QMAKE_LIB_FLAG) {
+#!contains(TEMPLATE, .*(lib)) {
+# But this one worked
+#contains(TEMPLATE, .*(app)) {
+contains(TEMPLATE, .*(app)) {
+	# # These dependencies are transitive through EmboxAutoPluginImporter
+	#QMAKE_LIBS        += -L$$[QT_INSTALL_PLUGINS]/platforms
+	#QTPLUGIN          += qvncgraphicssystem
+	#CONFIG += link_prl
+	QMAKE_LFLAGS      += -Wl,--undefined=embox_auto_plugin_importer_linker_hook
+	LIBS              += -lEmboxAutoPluginImporter
+}
+
+# Previous value derived from tools.pri = -lm
+LIBS_PRIVATE =

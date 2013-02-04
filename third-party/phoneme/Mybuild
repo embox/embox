@@ -2,28 +2,40 @@ package third_party.phoneme
 
 @Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/phoneme MAKEFLAGS= ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 module core {
-    /*
-	@InitFS
-	source "HelloWorld.class"
-	*/
-
-	/*
-	@IncludePath("$(THIRDPARTY_DIR)/phoneme/...")
-	@Rule(prerequisites="$(THIRDPARTY_DIR)/phoneme/...")
-	source "phoneme.c"
-	*/
-
 	depends embox.lib.LibC
-	depends embox.lib.LibCXX
+	depends embox.lib.cxx.lib
 }
 
-module cldc_standalone {
+@DefaultImpl(third_party.phoneme.cldc_standalone)
+abstract module cldc {
+	/*
+	@InitFS
+	@Generated(script="cat $(ROOT_DIR)/build/phoneme/build/amalgamated/bin/hello/dist/hello.jar")
+	@Rule(prerequisites="$(ROOT_DIR)/build/phoneme/build/amalgamated/bin/hello/dist/hello.jar")
+	source "hello.jar"
+	*/
+	@InitFS
+	source "hello/hello.jar"
 
+	depends third_party.phoneme.core // this is to build hello.jar
+}
+
+module cldc_standalone extends cldc {
 	/*
 	@IncludePath("$(ROOT_DIR)/build/phoneme/build/cldc/javacall_i386_gcc/dist/include")
 	@IncludePath("$(ROOT_DIR)/build/phoneme/build/pcsl/javacall_i386/inc")
+	@Rule(prerequisites="$(THIRDPARTY_DIR)/phoneme/...")
 	source "cldc_standalone.c"
 	*/
 
+    depends third_party.phoneme.core
+}
+
+module midp extends cldc {
 	depends third_party.phoneme.core
+}
+
+module javacall {
+	depends third_party.phoneme.core
+	depends embox.compat.posix.file
 }

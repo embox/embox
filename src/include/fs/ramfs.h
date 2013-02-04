@@ -21,6 +21,6 @@ typedef struct _ramfs_create_param {
 } ramfs_create_param_t;
 
 
-extern int cpio_unpack(char *pathto);
+extern int cpio_unpack(node_t *dir_node);
 
 #endif /* FS_RAMFS_H_ */

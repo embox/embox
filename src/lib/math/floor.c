@@ -9,13 +9,22 @@
 #include <math.h>
 
 double floor(double x) {
-	return 0;
+	double rounded;
+
+	rounded = round(x);
+	return rounded <= x ? rounded : rounded - 1.0;
 }
 
 float floorf(float x) {
-	return 0;
+	float rounded;
+
+	rounded = round(x);
+	return rounded <= x ? rounded : rounded - 1.0F;
 }
 
 long double floorl(long double x) {
-	return 0;
+	long double rounded;
+
+	rounded = round(x);
+	return rounded <= x ? rounded : rounded - 1.0L;
 }

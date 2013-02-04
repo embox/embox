@@ -3,4 +3,5 @@ package embox.driver
 
 module keyboard {
 	source "keyboard.c"
+	depends embox.driver.virtual.input_common
 }

@@ -11,9 +11,11 @@
 #define NET_IP_H_
 
 #include <arpa/inet.h>
+#include <netinet/in.h>
+
 #include <net/skbuff.h>
 #include <net/inet_sock.h>
-#include <hal/arch.h>
+#include <hal/arch.h> /* endianess */
 #include <net/checksum.h>
 
 /**
@@ -85,18 +87,7 @@ typedef struct iphdr {
 	in_addr_t   daddr;        /**< destination address */
 } __attribute__((packed)) iphdr_t;
 
-/**< Standard well-defined IP protocols.  */
-enum {
-	IPPROTO_IP   = 0,     /* Dummy protocol for TCP            */
-	IPPROTO_ICMP = 1,     /* Internet Control Message Protocol */
-	IPPROTO_TCP  = 6,     /* Transmission Control Protocol     */
-	IPPROTO_UDP  = 17,    /* User Datagram Protocol            */
-	/* A protocol of IPPROTO_RAW is able to send any IP protocol
-	 * that is specified in the passed header. Receiving of all
-	 * IP protocols via IPPROTO_RAW is not possible using raw sockets. */
-	IPPROTO_RAW  = 255,   /* Raw IP packets                    */
-	IPPROTO_MAX
-};
+
 
 #define IP_MIN_HEADER_SIZE   (sizeof(struct iphdr))
 #define IP_HEADER_SIZE(iph) (((iph)->ihl) << 2)

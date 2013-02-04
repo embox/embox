@@ -159,36 +159,28 @@ static int link2int(struct tree_link *link) {
 	return tree_element(link, struct int_tree, link)->data;
 }
 
-static int is20(struct tree_link *link) {
-	return (link2int(link) == 20);
+static int link2int_is(struct tree_link *link, void *x) {
+	return (link2int(link) == (int) x);
 }
 
 TEST_CASE("Successful search among children") {
 	struct tree_link *root = tree_build_base();
-	test_assert(tree_children_find(root, is20) != NULL);
-}
-
-static int is30(struct tree_link *link) {
-	return (link2int(link) == 30);
+	test_assert(tree_lookup_child(root, link2int_is, (void *) 20) != NULL);
 }
 
 TEST_CASE("Unsuccessful search among children") {
 	struct tree_link *root = tree_build_base();
-	test_assert(tree_children_find(root, is30) == NULL);
+	test_assert(tree_lookup_child(root, link2int_is, (void *) 30) == NULL);
 }
 
 TEST_CASE("Successful search in subtree") {
 	struct tree_link *root = tree_build_base();
-	test_assert(tree_find(root, is30) != NULL);
-}
-
-static int is100(struct tree_link *link) {
-	return (link2int(link) == 100);
+	test_assert(tree_lookup(root, link2int_is, (void *) 30) != NULL);
 }
 
 TEST_CASE("Unsuccessful search in subtree") {
 	struct tree_link *root = tree_build_base();
-	test_assert(tree_find(root, is100) == NULL);
+	test_assert(tree_lookup(root, link2int_is, (void *) 100) == NULL);
 }
 
 TEST_CASE("Move nodes") {
