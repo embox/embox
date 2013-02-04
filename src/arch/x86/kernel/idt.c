@@ -123,18 +123,18 @@ static void idt_init_syscall(void) {
 #define idt_init_syscall() do { } while(0)
 #endif
 
-static void inline idt_flush(struct idt_pointer *idt_ptr) {
+static struct idt_pointer idt_ptr;
+
+static void inline idt_load(void) {
 	__asm__ __volatile__(
 		"lidt %0\n\t"
 		:
-		: "m"(idt_ptr->limit),
-		  "m"(*idt_ptr)
+		: "m"(idt_ptr.limit),
+		  "m"(idt_ptr)
 	);
 }
 
 void idt_init(void) {
-	static struct idt_pointer idt_ptr;
-
 	idt_ptr.limit = sizeof(idt) - 1;
 	idt_ptr.base = (uint32_t) idt;
 
@@ -145,5 +145,5 @@ void idt_init(void) {
 	idt_init_irq();
 	idt_init_syscall();
 
-	idt_flush(&idt_ptr);
+	idt_load();
 }
