@@ -98,7 +98,10 @@
 
 
 
-#define putenv(x) -1
+inline int putenv(char *x) {
+	printf(">>> putenv(%s)\n",x);
+	return -1;
+}
 
 
 
@@ -192,8 +195,10 @@ extern char *tzname[2];
 
 
 
-long ftello(FILE *stream);
-int fseeko(FILE *stream, off_t offset, int whence);
+inline off_t ftello(FILE *stream) {
+	ftell(stream);
+}
+//int fseeko(FILE *stream, off_t offset, int whence);
 
 #define O_LARGEFILE 0
 
@@ -213,40 +218,77 @@ struct flock {
   pid_t  l_pid;
 };
 
-ssize_t readlink(const char *path, char *buf, size_t bufsiz);
+ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
+	printf(">>> readLink(%s)\n", path);
+	return 0;
+}
 
+/*
 int getpwuid_r(uid_t uid, struct passwd *pwd,
 	       char *buf, size_t buflen, struct passwd **result);
+*/
 
-int access(const char *pathname, int mode);
-#define R_OK 0
-#define W_OK 0
-#define X_OK 0
-#define F_OK 0
-int rename(const char *oldpath, const char *newpath);
-int symlink(const char *oldpath, const char *newpath);
+#include <errno.h>
 
-int chdir(const char *path);
+#define R_OK (printf(">>> R_OK\n"),1)
+#define W_OK (printf(">>> W_OK\n"),2)
+#define X_OK (printf(">>> X_OK\n"),4)
+#define F_OK (printf(">>> F_OK\n"),8)
+inline int access(const char *pathname, int mode) {
+	printf(">>> access(%s, %x)\n", pathname, mode);
+	errno = EPERM;
+	return -1;
+}
+inline int rename(const char *oldpath, const char *newpath) {
+	printf(">>> rename(%s, %s)\n", oldpath, newpath);
+	errno = EPERM;
+	return -1;
+}
+inline int symlink(const char *oldpath, const char *newpath) {
+	printf(">>> symlink(%s, %s)\n", oldpath, newpath);
+	errno = EPERM;
+	return -1;
+}
 
-char *get_current_dir_name(void);
+inline int chdir(const char *path) {
+	printf(">>> chdir(%s)\n", path);
+	errno = EPERM;
+	return -1;
+}
+
+//char *get_current_dir_name(void);
 
 
 
 // Either this or define __GLIBC__
 #define PATH_MAX 256
-char *getcwd(char *buf, size_t size);
+inline char *getcwd(char *buf, size_t size) {
+	if(size<2) {
+		printf(">>> getcwd()\n");
+		return NULL;
+	}
+	buf[0] = '/';
+	buf[1] = 0;
+	printf(">>> getcwd(%s)\n", buf);
+	return buf;
+}
 
 
 
 
-char *setlocale(int category, const char *locale);
-#define LC_ALL 0
-#define LC_CTYPE 0
+inline char *setlocale(int category, const char *locale) {
+	printf(">>> setlocale(%x, %s)\n", category, locale);
+	return NULL;
+}
+#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
+#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
 
 
+/*
 #define RTLD_LAZY 0
 #define RTLD_GLOBAL 0
 #define RTLD_LOCAL 0
+*/
 
 
 
@@ -271,6 +313,7 @@ extern clock_t times (struct tms *__buffer);
 typedef int sig_atomic_t;
 
 // Bad thing to do
+//#define NSIG (printf(">>> NSIG=0\n"),0)
 #define NSIG 0
 
 
@@ -386,7 +429,7 @@ struct __res_state {
 
 
 
-uid_t getuid(void);
+//uid_t getuid(void);
 
 
 
