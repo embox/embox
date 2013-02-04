@@ -3,7 +3,7 @@
  * @brief Creates special file in virtual file systems
  *
  * @date 15.10.10
- * @author Anton BOndarev
+ * @author Anton Bondarev
  */
 
 #include <embox/cmd.h>
@@ -19,6 +19,7 @@ static void print_usage(void) {
 
 static int exec(int argc, char **argv) {
 	int opt;
+	mode_t mode;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
@@ -31,8 +32,12 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
+	mode = S_IFBLK; // XXX this should me an argument, creating block dev
+	mode |= S_IRALL | S_IWALL; // TODO umask. -- Eldar
+
 	if (argc > 1) {
-		vfs_add_path(argv[argc - 1], NULL);
+		vfs_create(NULL, argv[argc - 1], mode);
 	}
+
 	return 0;
 }

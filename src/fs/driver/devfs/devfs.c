@@ -19,16 +19,14 @@ static int devfs_init(void *par) {
 static int devfs_mount(void *dev, void *dir) {
 	int ret;
 	struct node *node;
+	mode_t mode;
 
-	node = vfs_lookup(NULL, dev);
-	if (node != NULL) {
-		/* we already initialized devfs */
-		// TODO maybe die instead? -- Eldar
-		return 0;
-	}
+	mode = S_IFDIR | S_IRALL | S_IWALL;
 
-	node = vfs_add_path(dev, NULL);
-	if (node == NULL) {
+	assert(!vfs_lookup(NULL, dev)); // XXX remove it -- Eldar
+
+	node = vfs_create(NULL, dev, mode);
+	if (node) {
 		return -1;
 	}
 

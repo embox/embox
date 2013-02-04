@@ -19,7 +19,7 @@
 #include <mem/objalloc.h>
 #include <util/ring_buff.h>
 
-EMBOX_UNIT_INIT(init);
+EMBOX_UNIT_INIT(input_devfs_init);
 
 #define MAX_OPEN_CNT      64
 #define EVENT_SIZE        sizeof(struct input_event)
@@ -28,6 +28,8 @@ EMBOX_UNIT_INIT(init);
 OBJALLOC_DEF(__input_handlers, struct input_handler, MAX_OPEN_CNT);
 
 extern struct dlist_head __input_devices;
+
+static node_t *input_devfs_root;
 
 static int input_devfs_open(struct node *node, struct file_desc *file_desc, int flags);
 static int input_devfs_close(struct file_desc *desc);
@@ -142,40 +144,47 @@ static size_t input_devfs_read(struct file_desc *desc, void *buff, size_t size) 
 
 /* from uart.c */
 static int input_devfs_register(struct input_dev *dev) {
-	struct node *node, *devnode;
-	struct nas *dev_nas;
+	struct node *node, *node;
+	struct nas *nas;
+	mode_t mode;
 
 	assert(dev);
 
-	/* register char device */
-	if (NULL == (node = vfs_lookup(NULL, "/dev/input"))) {
-		return -1;
-	}
-	if (NULL == (devnode = vfs_add_path(dev->name, node))) {
+	mode = S_IFCHR | S_IRALL | S_IWALL; // TODO is it a char dev? -- Eldar
+
+	node = vfs_create_child(input_devfs_root, dev->name, mode);
+	if (!node) {
 		return -1;
 	}
 
-	dev_nas = devnode->nas;
-	if(NULL == (dev_nas->fs = alloc_filesystem("empty"))) {
+	nas = node->nas;
+	if (NULL == (nas->fs = alloc_filesystem("empty"))) {
 		return -1;
 	}
 
-	dev_nas->fs->file_op = &input_dev_file_op;
+	nas->fs->file_op = &input_dev_file_op;
 
 	return 0;
 }
 
-static int init(void) {
+static int input_devfs_init(void) {
 	struct node *node;
 	struct input_dev *dev, *nxt;
+	mode_t mode;
 
-	if (NULL == (node = vfs_lookup(NULL, "/dev"))) {
-		return -1;
+	mode = S_IFDIR | S_IRALL | S_IWALL;
+
+	node = vfs_lookup(NULL, "/dev");
+	if (!node) {
+		return -ENOENT;
 	}
 
-	if (NULL == vfs_add_path("input", node)) {
-		return -1;
+	node = vfs_create_child(node, "input", mode);
+	if (!node) {
+		return -ENOMEM;
 	}
+
+	input_devfs_root = node;
 
 	dlist_foreach_entry(dev, nxt, &__input_devices, input_dev_link) {
 		if (input_devfs_register(dev) < 0) {

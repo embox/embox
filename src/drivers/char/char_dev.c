@@ -42,7 +42,7 @@ int char_dev_register(const char *name, const struct kfile_operations *ops) {
 		return -ENODEV;
 	}
 
-	devnod = vfs_add_path(name, node);
+	devnod = vfs_create_child(name, node, S_IFCHR | S_IRALL | S_IWALL);
 	if (devnod == NULL) {
 		return -1;
 	}
