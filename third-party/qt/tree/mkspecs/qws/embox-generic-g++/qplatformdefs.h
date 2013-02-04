@@ -72,13 +72,13 @@
 
 
 
-#define FD_CLOEXEC	1
-#define F_DUPFD		printf(">>> FD_DUPFD\n"),0
+#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),1)
+#define F_DUPFD		(printf(">>> FD_DUPFD\n"),0)
 
 #include <stdio.h>
 #define execvp(f,a) printf(">>> execvp(%s,...)\n",f),-1
 
-#define sysconf(x) printf(">>> sysconf(%s)\n",#x),-1
+#define sysconf(x) (printf(">>> sysconf(%s)\n",#x),-1)
 
 #include <time.h>
 
@@ -116,7 +116,7 @@ typedef int pthread_condattr_t;
 typedef int pthread_attr_t;
 
 #if 1
-#define DPRINT() printf("QT CALL %s\n", __FUNCTION__)
+#define DPRINT() printf(">>> QT CALL %s\n", __FUNCTION__)
 #else
 #define DPRINT()
 #endif
@@ -270,8 +270,9 @@ static inline int pthread_cond_broadcast(pthread_cond_t *c){
 
 
 
-struct tm * localtime ( const time_t * timer );
-
+inline struct tm * localtime ( const time_t * timer ) {
+	return gmtime(timer);
+}
 inline void tzset(void) {
 	DPRINT();
 }
@@ -280,7 +281,7 @@ extern char *tzname[2];
 
 
 inline off_t ftello(FILE *stream) {
-	ftell(stream);
+	return ftell(stream);
 }
 //int fseeko(FILE *stream, off_t offset, int whence);
 
@@ -397,8 +398,9 @@ extern clock_t times (struct tms *__buffer);
 typedef int sig_atomic_t;
 
 // Bad thing to do
-//#define NSIG (printf(">>> NSIG=0\n"),0)
 #define NSIG 0
+// Not possible to do so because used in global context
+//#define NSIG (printf(">>> NSIG=0\n"),0)
 
 
 
@@ -410,10 +412,18 @@ typedef int sig_atomic_t;
 #include <arpa/inet.h>
 
 
-struct hostent *gethostbyaddr(const void *addr,
-			      socklen_t len, int type);
+inline struct hostent *gethostbyaddr(const void *addr,
+			      socklen_t len, int type) {
+	printf(">>> gethostbyaddr(%p,%i,%x)\n",addr,len,type);
+	return NULL;
+}
 
-int gethostname(char *name, size_t len);
+inline int gethostname(char *name, size_t len) {
+	char localhost[] = "localhost";
+	DPRINT();
+	strncpy(name, localhost, len);
+	return 0;
+}
 
 
 typedef __u32 u_int32_t;
