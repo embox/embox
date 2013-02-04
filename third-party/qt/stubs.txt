@@ -1,3 +1,4 @@
+./build/base/obj/image_nosymbols.o: In function `ft_close_stream_by_munmap':
 /home/fsulima/embox/repo/embox/build/qt/apps_embox/vnc/../../source/src/3rdparty/freetype/builds/unix/ftsystem.c:200: undefined reference to `munmap'
 ./build/base/obj/image_nosymbols.o: In function `FT_Stream_Open':
 /home/fsulima/embox/repo/embox/build/qt/apps_embox/vnc/../../source/src/3rdparty/freetype/builds/unix/ftsystem.c:295: undefined reference to `mmap'

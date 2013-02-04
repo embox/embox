@@ -11,13 +11,15 @@
 #undef __linux
 #endif
 
+/*
 #if defined(__STDC__)
 // Causes problems with fdlibm
 #undef __STDC__
 #endif
+*/
 
-#define __UCLIBC__
-#define QT_LINUXBASE
+//#define __UCLIBC__
+//#define QT_LINUXBASE
 
 // #define __MAKEDEPEND__
 
