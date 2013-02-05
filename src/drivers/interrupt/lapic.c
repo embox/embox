@@ -17,8 +17,6 @@
 
 #include "lapic.h"
 
-//EMBOX_UNIT_INIT(unit_init);
-
 #define lapic_write_icr1(val)	lapic_write(LAPIC_ICR1, val)
 #define lapic_write_icr2(val)	lapic_write(LAPIC_ICR2, val)
 
@@ -102,6 +100,7 @@ int lapic_enable(void) {
 	lapic_write(LOCAL_APIC_DEF_ADDR+APIC_LVT_LINT0, APIC_DISABLE);
 	lapic_write(LOCAL_APIC_DEF_ADDR+APIC_LVT_LINT1, APIC_DISABLE);
 	lapic_write(LOCAL_APIC_DEF_ADDR + APIC_TASKPRIOR, 0);
+
 #endif
 
 #if 1
@@ -113,8 +112,3 @@ int lapic_enable(void) {
 
 	return 0;
 }
-/*
-static int unit_init(void) {
-	return lapic_enable();
-}
-*/

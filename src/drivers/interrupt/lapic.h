@@ -13,6 +13,7 @@
 #define LOCAL_APIC_DEF_ADDR	 0xFEE00000 /* Default local apic address */
 
 #define LAPIC_ID        (LOCAL_APIC_DEF_ADDR + 0x020)
+#define LAPIC_EOI       (LOCAL_APIC_DEF_ADDR + 0x0b0)
 #define LAPIC_SIVR      (LOCAL_APIC_DEF_ADDR + 0x0F0)
 #define LAPIC_ESR       (LOCAL_APIC_DEF_ADDR + 0x280)
 #define LAPIC_ICR1      (LOCAL_APIC_DEF_ADDR + 0x300)
@@ -38,6 +39,10 @@ static inline uint32_t lapic_errstatus(void)
 {
 	lapic_write(LAPIC_ESR, 0);
 	return lapic_read(LAPIC_ESR);
+}
+
+static inline void lapic_eoi(void) {
+	lapic_write(LAPIC_EOI, 0);
 }
 
 extern int lapic_enable(void);

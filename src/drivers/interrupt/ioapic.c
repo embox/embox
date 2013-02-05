@@ -11,7 +11,9 @@
 #include <types.h>
 
 #include <asm/io.h>
+
 #include "i8259_regs.h"
+#include "lapic.h"
 
 #include <drivers/irqctrl.h>
 
@@ -54,43 +56,87 @@ static inline void i8259_disable(void)
  */
 static int ioapic_enable(void) {
 	static int inited = 0;
-	int version, maxirq;
+	//int version, maxirq;
 	if (1 == inited) {
 		return 0;
 	}
 	inited = 1;
 
+#if 0
 	version = ioapic_read(IOAPIC_VERSION);
 	maxirq = (version & (0xFFUL << 16)) >> 16;
 
 	for (int i = 0; i <= maxirq; i++) {
-		irqctrl_disable(i);
+		irqctrl_enable(i);
 	}
+#endif
 
+#if 1
 	/* I'm not sure that it is correct */
 	outb(0x70, 0x22);
 	outb(0x01, 0x23);
+#endif
 
 	return 0;
 }
 
 void apic_init(void) {
-	lapic_enable();
-
 	i8259_disable();
 	ioapic_enable();
+
+	lapic_enable();
+}
+
+static inline uint32_t irq_redir_low(unsigned int irq) {
+	#define APIC_ICR_TRIGGER		(1 << 15)
+	#define APIC_LVTT_VECTOR_MASK	0x000000FF
+	#define APIC_ICR_VECTOR			APIC_LVTT_VECTOR_MASK
+	#define APIC_ICR_INT_POLARITY		(1 << 13)
+
+	uint32_t val = 0;
+
+	/* clear the polarity, trigger, mask and vector fields */
+	val &= ~(APIC_ICR_VECTOR | APIC_ICR_INT_MASK |
+			APIC_ICR_TRIGGER | APIC_ICR_INT_POLARITY);
+
+	if (irq < 16) {
+		/* ISA active-high */
+		val &= ~APIC_ICR_INT_POLARITY;
+		/* ISA edge triggered */
+		val &= ~APIC_ICR_TRIGGER;
+	}
+	else {
+		/* PCI active-low */
+		val |= APIC_ICR_INT_POLARITY;
+		/* PCI level triggered */
+		val |= APIC_ICR_TRIGGER;
+	}
+
+	val |= (irq + 0x20);
+
+	return val;
 }
 
 void irqctrl_enable(unsigned int irq) {
-	uint32_t lo = ioapic_read(IOAPIC_REDIR_TABLE + irq * 2);
-	lo &= ~APIC_ICR_INT_MASK;
-	ioapic_write(IOAPIC_REDIR_TABLE + irq * 2, lo);
+	uint32_t low, high;
+
+	low = irq_redir_low(irq);
+	high = lapic_id() << 24;
+
+	if (irq == 0) irq = 2; /* Hack. FIXME */
+
+	ioapic_write(IOAPIC_REDIR_TABLE + irq * 2 + 1, high);
+	ioapic_write(IOAPIC_REDIR_TABLE + irq * 2, low);
 }
 
 void irqctrl_disable(unsigned int irq) {
-	u32_t lo = ioapic_read(IOAPIC_REDIR_TABLE + irq * 2);
-	lo |= APIC_ICR_INT_MASK;
-	ioapic_write(IOAPIC_REDIR_TABLE + irq * 2, lo);
+	uint32_t low;
+
+	if (irq == 0) irq = 2; /* Hack. FIXME */
+
+	low = ioapic_read(IOAPIC_REDIR_TABLE + irq * 2);
+	low |= APIC_ICR_INT_MASK;
+	ioapic_write(IOAPIC_REDIR_TABLE + irq * 2, low);
 }
 
 void irqctrl_force(unsigned int irq) {
@@ -101,7 +147,7 @@ int i8259_irq_pending(unsigned int irq) {
 	return 1;
 }
 
-/* Sends an EOI (end of interrupt) signal to the PICs. */
 void i8259_send_eoi(unsigned int irq) {
-
+	//TODO: irq >= 16
+	lapic_eoi();
 }
