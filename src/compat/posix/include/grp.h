@@ -16,7 +16,6 @@ struct group {
 	char  **gr_mem; /* Pointer to a null-terminated array of character pointers to member names.*/
 };
 
-extern struct group *getgrgid(gid_t);
 static inline struct group *getgrnam(const char *name) {
 	return NULL;
 }

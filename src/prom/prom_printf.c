@@ -10,7 +10,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <prom/prom_printf.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 
 extern int __print(void(*printchar_handler)(char **str, int c), char **out,
 		const char *format, va_list args);

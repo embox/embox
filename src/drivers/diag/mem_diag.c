@@ -7,7 +7,7 @@
  * @author Anton Kozlov
  */
 
-#include <prom/diag.h>
+#include <drivers/diag.h>
 #include <string.h>
 
 #define BUF_LEN 0x100

@@ -8,7 +8,7 @@
 
 #include <types.h>
 #include <fs/file_operation.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 #include <embox/device.h>
 #include <errno.h>
 #include <fs/ioctl.h>

@@ -32,7 +32,7 @@ module xattr {
         source "xattr.c"
 
 	depends embox.driver.ramdisk
-        depends embox.fs.core
+        depends embox.compat.posix.xattr
 }
 
 module file_test {

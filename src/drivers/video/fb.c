@@ -23,7 +23,7 @@ POOL_DEF(fb_pool, struct fb_info, MODOPS_FB_AMOUNT);
 static struct fb_info *registered_fb[MODOPS_FB_AMOUNT];
 static unsigned int num_registered_fb = 0;
 
-extern const struct kfile_operations fb_common_ops;
+extern const struct kfile_operations fb_device_ops;
 
 struct fb_info * fb_alloc(void) {
 	struct fb_info *info;
@@ -59,7 +59,7 @@ int fb_register(struct fb_info *info) {
 	registered_fb[num] = info;
 
 	snprintf(&name[0], sizeof name, "fb%u", num);
-	return char_dev_register(&name[0], &fb_common_ops);
+	return char_dev_register(&name[0], &fb_device_ops);
 }
 
 int fb_unregister(struct fb_info *info) {
@@ -249,5 +249,27 @@ void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 
 		bitfill(dest, bitn, pat, loff, roff, width * info->var.bits_per_pixel);
 		bitn += info->var.xres * info->var.bits_per_pixel;
+	}
+}
+
+void fb_imageblit(struct fb_info *info, const struct fb_image *image) {
+	/* TODO it's slow version:) */
+	uint32_t i, j;
+	struct fb_fillrect rect;
+
+	assert(info != NULL);
+	assert(image != NULL);
+	assert(image->depth == 1);
+	assert(image->width == 8);
+
+	rect.width = rect.height = 1;
+	for (j = 0; j < image->height; ++j) {
+		rect.dy = image->dy + j * rect.height;
+		for (i = 0; i < image->width; ++i) {
+			rect.dx = image->dx + i * rect.width;
+			rect.color = *(uint8_t *)(image->data + j) & (1 << ((image->width - i - 1)))
+					? image->fg_color : image->bg_color;
+			fb_fillrect(info, &rect);
+		}
 	}
 }

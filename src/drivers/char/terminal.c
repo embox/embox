@@ -14,7 +14,7 @@
 #include <assert.h>
 
 #include <drivers/terminal.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 
 static void vtparse_callback(struct vtparse *parser, struct vt_token *);
 

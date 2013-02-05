@@ -224,6 +224,8 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 #define freespace(fs) \
    ((fs)->e2sb.e2fs_fbcount - (fs)->e2sb.e2fs_rbcount)
 
+#define	EXT2_BSIZE(fs)	((fs)->s_block_size)
+
 /*
  * Number of indirects in a file system block.
  */
@@ -603,6 +605,9 @@ extern int ext2_read_sector(struct nas *nas, char *buffer,
 extern int ext2_write_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector);
 extern struct ext2_gd* ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi);
+
+extern int ext2_write_gdblock(struct nas *nas);
+extern int ext2_write_sblock(struct nas *nas);
 
 extern void *ext2_buff_alloc(struct nas *nas, size_t size);
 extern int ext2_buff_free(struct nas *nas, char *buff);

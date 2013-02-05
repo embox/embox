@@ -17,6 +17,7 @@
 struct fb_info;
 struct fb_copyarea;
 struct fb_fillrect;
+struct fb_image;
 
 struct fb_fix_screeninfo {
 	const char *name;
@@ -90,8 +91,9 @@ struct fb_ops {
 	int (*fb_check_var)(struct fb_var_screeninfo *var, struct fb_info *info);
 	int (*fb_set_par)(struct fb_info *info);
 
-	void (*fb_copyarea)(struct fb_info *info, const struct fb_copyarea *region);
+	void (*fb_copyarea)(struct fb_info *info, const struct fb_copyarea *area);
 	void (*fb_fillrect)(struct fb_info *info, const struct fb_fillrect *rect);
+	void (*fb_imageblit)(struct fb_info *info, const struct fb_image *image);
 };
 
 struct fb_info {
@@ -120,6 +122,18 @@ struct fb_fillrect {
 	uint32_t color;
 };
 
+struct fb_image {
+	uint32_t dx;
+	uint32_t dy;
+	uint32_t width;
+	uint32_t height;
+	uint32_t fg_color;
+	uint32_t bg_color;
+	uint32_t depth;
+	const char *data;
+//	struct fb_cmap cmap;
+};
+
 extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var);
 
 extern int fb_register(struct fb_info *info);
@@ -128,6 +142,7 @@ extern struct fb_info * fb_lookup(const char *name);
 
 extern void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
 extern void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
+extern void fb_imageblit(struct fb_info *info, const struct fb_image *image);
 
 extern struct fb_info * fb_alloc(void);
 extern void fb_release(struct fb_info *info);
@@ -136,6 +151,8 @@ extern void fb_videomode_to_var(struct fb_var_screeninfo *var,
 		const struct fb_videomode *mode);
 extern void fb_var_to_videomode(struct fb_videomode *mode,
 		const struct fb_var_screeninfo *var);
+extern int fb_try_mode(struct fb_var_screeninfo *var, struct fb_info *info,
+		const struct fb_videomode *mode, uint32_t bpp);
 
 #define fb_readb(addr)       (*(uint8_t *) (addr))
 #define fb_readw(addr)       (*(uint16_t *) (addr))

@@ -7,6 +7,7 @@
 
 #include <asm/io.h>
 #include <drivers/video/vga.h>
+#include <drivers/video/font.h>
 
 #define inportb(P)	      in8(P)
 #define outportb(P,V)	   out8(V, P)
@@ -718,3 +719,19 @@ void setup_font(unsigned font_height) {
 		write_font(g_8x16_font, font_height);
 	}
 }
+
+const struct font_desc font_vga_8x8 = {
+	.idx = VGA8x8_IDX,
+	.name = "VGA8x8",
+	.width = 8,
+	.height = 8,
+	.data = (const char *)&g_8x8_font[0]
+};
+
+const struct font_desc font_vga_8x16 = {
+	.idx = VGA8x16_IDX,
+	.name = "VGA8x16",
+	.width = 8,
+	.height = 16,
+	.data = (const char *)&g_8x16_font[0]
+};

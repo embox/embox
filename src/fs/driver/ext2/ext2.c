@@ -1018,7 +1018,7 @@ static int ext2_search_directory(struct nas *nas, const char *name, int length,
 	return ENOENT;
 }
 
-static int ext2_write_sblock(struct nas *nas) {
+int ext2_write_sblock(struct nas *nas) {
 	struct ext2_fs_info *fsi;
 
 	fsi = nas->fs->fsi;
@@ -1085,7 +1085,7 @@ static int ext2_read_sblock(struct nas *nas) {
 	return 0;
 }
 
-static int ext2_write_gdblock(struct nas *nas) {
+int ext2_write_gdblock(struct nas *nas) {
 	uint gdpb;
 	int i;
 	char *buff;
@@ -1230,6 +1230,7 @@ int ext2_write_map(struct nas *nas, long position,
 	 * the double/triple indirect block.
 	 * It's the only function which should take care about fi->i_blocks counter.
 	 */
+	int rc;
 	int index1, index2, index3; /* indexes in single..triple indirect blocks */
 	long excess, block_pos;
 	char new_ind, new_dbl, new_triple;
@@ -1278,6 +1279,15 @@ int ext2_write_map(struct nas *nas, long position,
 		return 0;
 	}
 
+	rc = 0;
+	bp = ext2_buff_alloc(nas, 0);
+	bp_dindir = ext2_buff_alloc(nas, 0);
+	bp_tindir = ext2_buff_alloc(nas, 0);
+	if ((NULL == bp) || (NULL == bp) || (NULL == bp)) {
+		rc = ENOMEM;
+		goto out;
+	}
+
 	/* It is not in the inode, so it must be single, double or triple indirect */
 	if (block_pos < doub_ind_s) {
 		b1 = fi->f_di.i_block[EXT2_NDIR_BLOCKS]; /* addr of single indirect block */
@@ -1295,7 +1305,8 @@ int ext2_write_map(struct nas *nas, long position,
 			if (NO_BLOCK == b3 && !(op & WMAP_FREE)) {
 				/* Create triple indirect block. */
 				if (NO_BLOCK == (b3 = ext2_alloc_block(nas, fi->f_bsearch))) {
-					return ENOSPC;
+					rc = ENOSPC;
+					goto out;
 				}
 				fi->f_di.i_block[EXT2_TIND_BLOCK] = b3;
 				fi->f_di.i_blocks += fsi->s_sectors_in_block;
@@ -1313,7 +1324,8 @@ int ext2_write_map(struct nas *nas, long position,
 			}
 			else {
 				if (1 != ext2_read_sector(nas, (char *) bp_tindir, 1, b3)) {
-					return EIO;
+					rc = EIO;
+					goto out;
 				}
 				if (new_triple) {
 					ext2_zero_block(bp_tindir);
@@ -1329,12 +1341,15 @@ int ext2_write_map(struct nas *nas, long position,
 		if (NO_BLOCK == b2 && !(op & WMAP_FREE)) {
 			/* Create the double indirect block. */
 			if (NO_BLOCK == (b2 = ext2_alloc_block(nas, fi->f_bsearch))) {
-				/* Release triple ind blk. */
-				//put_block(bp_tindir, INDIRECT_BLOCK);
-				return ENOSPC;
+				rc = ENOSPC;
+				goto out;
 			}
 			if (triple) {
 				ext2_wr_indir(bp_tindir, index3, b2); /* update triple indir */
+				if (1 != ext2_write_sector(nas, (char *) bp_dindir, 1, b3)) {
+					rc = EIO;
+					goto out;
+				}
 			}
 			else {
 				fi->f_di.i_block[EXT2_DIND_BLOCK] = b2;
@@ -1355,7 +1370,8 @@ int ext2_write_map(struct nas *nas, long position,
 		}
 		else {
 			if (1 != ext2_read_sector(nas, (char *) bp_dindir, 1, b2)) {
-				return EIO;
+				rc = EIO;
+				goto out;
 			}
 			if (new_dbl) {
 				ext2_zero_block(bp_dindir);
@@ -1374,13 +1390,18 @@ int ext2_write_map(struct nas *nas, long position,
 	if (NO_BLOCK == b1 && !(op & WMAP_FREE)) {
 		if (NO_BLOCK == (b1 = ext2_alloc_block(nas, fi->f_bsearch))) {
 			/*failed to allocate dblock*/
-			return ENOSPC;
+			rc = ENOSPC;
+			goto out;
 		}
 		if (single) {
 			fi->f_di.i_block[EXT2_NDIR_BLOCKS] = b1; /* update inode single indirect */
 		}
 		else {
 			ext2_wr_indir(bp_dindir, index2, b1); /* update dbl indir */
+			if (1 != ext2_write_sector(nas, (char *) bp_dindir, 1, b2)) {
+				rc = EIO;
+				goto out;
+			}
 		}
 		fi->f_di.i_blocks += fsi->s_sectors_in_block;
 		new_ind = 1;
@@ -1391,7 +1412,8 @@ int ext2_write_map(struct nas *nas, long position,
 	 */
 	if (NO_BLOCK != b1) {
 		if (1 != ext2_read_sector(nas, (char *) bp, 1, b1)) {
-			return EIO;
+			rc = EIO;
+			goto out;
 		}
 		if (new_ind) {
 			ext2_zero_block(bp);
@@ -1441,6 +1463,10 @@ int ext2_write_map(struct nas *nas, long position,
 		b2 = NO_BLOCK;
 		if (triple) {
 			ext2_wr_indir(bp_tindir, index3, b2); /* update triple indir */
+			if (1 != ext2_write_sector(nas, (char *) bp_tindir, 1, b3)) {
+				rc = EIO;
+				goto out;
+			}
 		} else {
 			fi->f_di.i_block[EXT2_DIND_BLOCK] = b2;
 		}
@@ -1456,12 +1482,24 @@ int ext2_write_map(struct nas *nas, long position,
 		fi->f_di.i_block[EXT2_TIND_BLOCK] = NO_BLOCK;
 	}
 
-	//put_block(bp_dindir, INDIRECT_BLOCK);
-	ext2_read_sector(nas, bp_dindir, 1, b2);/* release double indirect blk */
-	//put_block(bp_tindir, INDIRECT_BLOCK);
-	ext2_read_sector(nas, bp_tindir, 1, b3);/* release triple indirect blk */
+	if (new_dbl && NO_BLOCK != (b2 = fi->f_di.i_block[EXT2_DIND_BLOCK])) {
+		ext2_write_sector(nas, bp_dindir, 1, b2);/* release double indirect blk */
+	}
+	if (new_triple && NO_BLOCK != (b3 = fi->f_di.i_block[EXT2_TIND_BLOCK])) {
+		ext2_write_sector(nas, bp_tindir, 1, b3);/* release triple indirect blk */
+	}
 
-	return 0;
+	out:
+	if(NULL != bp) {
+		ext2_buff_free(nas, (char *) bp);
+	}
+	if(NULL != bp_dindir) {
+		ext2_buff_free(nas, (char *) bp_dindir);
+	}
+	if(NULL != bp_tindir) {
+		ext2_buff_free(nas, (char *) bp_tindir);
+	}
+	return rc;
 }
 
 static void ext2_wr_indir(char *buf, int index, uint32_t block) {

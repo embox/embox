@@ -8,6 +8,7 @@
 #ifndef PWD_H_
 #define PWD_H_
 
+#if 0
 struct passwd {
 	char *pw_name;
 	uid_t pw_uid;
@@ -19,5 +20,6 @@ struct passwd {
 
 extern struct passwd *getpwuid(uid_t uid);
 extern struct passwd *getpwnam(const char *name);
+#endif
 
 #endif /* PWD_H_ */

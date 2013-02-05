@@ -9,7 +9,7 @@
 
 #include <types.h>
 #include <asm/bitops.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 
 typedef struct diag_regs {
 	uint32_t rx_data;

@@ -1,7 +1,7 @@
 package embox.driver.virtual
 
-module fb_common {
-	source "fb_common.c"
+module fb_device {
+	source "fb_device.c"
 
 	depends embox.driver.video.fb
 }

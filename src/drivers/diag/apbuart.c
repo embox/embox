@@ -11,7 +11,7 @@
 #include <embox/unit.h>
 #include <hal/reg.h>
 #include <hal/system.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 
 #define APBUART_BASE  0x80000100
 #define DATA_REG             0x0

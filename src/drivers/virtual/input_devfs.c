@@ -6,18 +6,20 @@
  */
 
 #include <types.h>
-#include <embox/unit.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <fs/file_desc.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/file_operation.h>
 
-#include <embox/input_dev.h>
-#include <stdlib.h>
-#include <string.h>
 #include <mem/objalloc.h>
 #include <util/ring_buff.h>
+
+#include <embox/unit.h>
+
+#include <drivers/input/input_dev.h>
 
 EMBOX_UNIT_INIT(init);
 

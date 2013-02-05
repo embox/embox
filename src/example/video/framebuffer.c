@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <drivers/video/fb.h>
+#include <drivers/video/font.h>
 #include <errno.h>
 #include <framework/example/self.h>
 #include <stddef.h>
@@ -108,6 +109,41 @@ static int framebuffer_copyarea(void) {
 	area.sy = info->var.yres / 2 - 100;
 	area = area;
 //	info->ops->fb_copyarea(info, &area);
+
+	return 0;
+}
+
+static int framebuffer_imageblit(void) {
+	int ret;
+	struct fb_image img;
+	struct fb_info *info;
+	const char *hello = "Embox> ...", *tmp;
+	const struct font_desc *font;
+
+	ret = framebuffer_turn_on();
+	if (ret != 0) {
+		return ret;
+	}
+
+	info = fb_lookup("fb0");
+	if (info == NULL) {
+		return -ENODEV;
+	}
+
+	font = &font_vga_8x8;
+
+	img.dx = 20;
+	img.dy = 20;
+	img.width = font->width;
+	img.height = font->height;
+	img.fg_color = 0xF0F0;
+	img.bg_color = 0x0;
+
+	img.depth = 1;
+	for (tmp = hello; *tmp; ++tmp, img.dx += img.width) {
+		img.data = font->data + (unsigned char)(*tmp) * font->width / 8 * font->height;
+		info->ops->fb_imageblit(info, &img);
+	}
 
 	return 0;
 }
@@ -220,5 +256,6 @@ static int run(int argc, char **argv) {
 			 : !strcmp(argv[1], "dev") ? framebuffer_dev()
 			 : !strcmp(argv[1], "copyarea") ? framebuffer_copyarea()
 			 : !strcmp(argv[1], "image") ? framebuffer_image()
+			 : !strcmp(argv[1], "imageblit") ? framebuffer_imageblit()
 			 : -EINVAL;
 }
