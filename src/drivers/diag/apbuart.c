@@ -11,6 +11,7 @@
 #include <hal/reg.h>
 #include <hal/system.h>
 #include <drivers/diag.h>
+#include <framework/mod/options.h>
 
 #define APBUART_BASE  0x80000100
 #define DATA_REG             0x0
@@ -36,7 +37,7 @@ static void diag_apbuart_putc(char ch) {
 	REG_STORE((volatile uint32_t *) (APBUART_BASE + DATA_REG), (uint32_t) ch);
 }
 
-static int diag_apbuart_kbhitl(void) {
+static int diag_apbuart_kbhit(void) {
 	return (0x1 & REG_LOAD((volatile uint32_t *) (APBUART_BASE + STATUS_REG)));
 }
 

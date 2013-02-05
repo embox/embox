@@ -20,6 +20,10 @@ int fgetc(FILE *file) {
 
 }
 
+int getc(FILE *f) {
+	return fgetc(f);
+}
+
 int getchar(void) {
 	int c;
 	c = getc(stdin);

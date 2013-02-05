@@ -1,9 +1,10 @@
 /**
  * @file
- * @brief TODO
+ * @brief
  *
  * @date 13.02.10
  * @author Eldar Abusalimov
+ * @author Ilia Vaprol
  */
 
 #ifndef DRIVERS_DIAG_H_

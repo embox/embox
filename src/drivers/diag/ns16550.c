@@ -7,6 +7,7 @@
  */
 
 #include <hal/reg.h>
+#include <drivers/diag.h>
 
 #define UART_LSR_DR     0x01            /* Data ready */
 #define UART_LSR_THRE   0x20            /* Xmit holding register empty */
@@ -16,7 +17,7 @@
         unsigned char x;                                                \
         unsigned char postpad_##x[3];
 
-static struct com {
+struct com {
         UART_REG(rbr);          /* 0 */
         UART_REG(ier);          /* 1 */
         UART_REG(fcr);          /* 2 */

@@ -1,10 +1,9 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 28.11.2011
- * @author Anton Bondarev
+ * @date 05.02.13
+ * @author Ilia Vaprol
  */
 
 #include <drivers/diag.h>

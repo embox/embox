@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-#include <math.h>
+#include <util/math.h>
 #include <fs/fs_drv.h>
 #include <unistd.h>
 #include <fs/ioctl.h>

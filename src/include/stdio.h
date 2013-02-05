@@ -45,18 +45,17 @@ struct stat;
 
 __BEGIN_DECLS
 
-#define putc(c, f) fputc((c), (f))
+extern int putc(int c, FILE *f);
 extern int fputc(int c, FILE *f);
-extern int fgetc(FILE *f);
 
-#define getc(file) fgetc(file)
+extern int getc(FILE *f);
+extern int fgetc(FILE *f);
 
 /**
  * Writes the string s and a trailing newline to stdout.
  */
 extern int puts(const char *s);
-
-#define fputs(s, stream) puts(s)
+extern int fputs(const char *s, FILE *f);
 
 extern int putchar(int c);
 

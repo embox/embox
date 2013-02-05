@@ -16,6 +16,7 @@
 
 #include <net/util.h>
 #include <arpa/inet.h>
+#include <util/hashtable.h>
 
 #include <pnet/netfilter/match_lin.h>
 #include <pnet/core.h>
