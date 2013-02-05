@@ -9,6 +9,7 @@
 #include <asm/io.h>
 #include <drivers/diag.h>
 #include <drivers/serial/8250.h>
+#include <framework/mod/options.h>
 
 /** Default I/O addresses
  * NOTE: The actual I/O addresses used are stored
