@@ -78,7 +78,7 @@ static size_t diag_read(void *buf, size_t size, size_t count, void *file) {
 
 	if (nonblocking) {
 		for (int i = 0; i < n; ++i) {
-			if (!diag_has_symbol()) {
+			if (!diag_kbhit()) {
 				if (0 == i) {
 					return -EAGAIN;
 				}

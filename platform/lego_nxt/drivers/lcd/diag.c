@@ -25,7 +25,7 @@ void diag_putc(char ch) {
 }
 
 
-int diag_has_symbol(void) {
+int diag_kbhit(void) {
 	/* as no symbol can be obtained... */
 #define DEBUG_GETC
 	/*should be disabled in release for consistency */
