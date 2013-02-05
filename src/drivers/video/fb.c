@@ -23,7 +23,7 @@ POOL_DEF(fb_pool, struct fb_info, MODOPS_FB_AMOUNT);
 static struct fb_info *registered_fb[MODOPS_FB_AMOUNT];
 static unsigned int num_registered_fb = 0;
 
-extern const struct kfile_operations fb_common_ops;
+extern const struct kfile_operations fb_device_ops;
 
 struct fb_info * fb_alloc(void) {
 	struct fb_info *info;
@@ -59,7 +59,7 @@ int fb_register(struct fb_info *info) {
 	registered_fb[num] = info;
 
 	snprintf(&name[0], sizeof name, "fb%u", num);
-	return char_dev_register(&name[0], &fb_common_ops);
+	return char_dev_register(&name[0], &fb_device_ops);
 }
 
 int fb_unregister(struct fb_info *info) {

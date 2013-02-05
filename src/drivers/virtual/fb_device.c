@@ -15,7 +15,7 @@
 #include <stddef.h>
 #include <string.h>
 
-static int fb_common_open(struct node *node, struct file_desc *file_desc, int flags) {
+static int fb_device_open(struct node *node, struct file_desc *file_desc, int flags) {
 	struct fb_info *info;
 
 	info = fb_lookup(&node->name[0]);
@@ -27,11 +27,11 @@ static int fb_common_open(struct node *node, struct file_desc *file_desc, int fl
 	return 0;
 }
 
-static int fb_common_close(struct file_desc *desc) {
+static int fb_device_close(struct file_desc *desc) {
 	return 0;
 }
 
-static size_t fb_common_read(struct file_desc *desc, void *buf, size_t size) {
+static size_t fb_device_read(struct file_desc *desc, void *buf, size_t size) {
 	struct fb_info *info;
 	const void *data;
 	size_t left;
@@ -54,7 +54,7 @@ static size_t fb_common_read(struct file_desc *desc, void *buf, size_t size) {
 	return size;
 }
 
-static size_t fb_common_write(struct file_desc *desc, void *buf, size_t size) {
+static size_t fb_device_write(struct file_desc *desc, void *buf, size_t size) {
 	struct fb_info *info;
 	void *data;
 	size_t left;
@@ -80,7 +80,7 @@ static size_t fb_common_write(struct file_desc *desc, void *buf, size_t size) {
 	return size;
 }
 
-static int fb_common_ioctl(struct file_desc *desc, int request, va_list args) {
+static int fb_device_ioctl(struct file_desc *desc, int request, va_list args) {
 	int ret;
 	struct fb_info *info;
 
@@ -103,10 +103,10 @@ static int fb_common_ioctl(struct file_desc *desc, int request, va_list args) {
 	return 0;
 }
 
-const struct kfile_operations fb_common_ops = {
-	.open = fb_common_open,
-	.close = fb_common_close,
-	.read = fb_common_read,
-	.write = fb_common_write,
-	.ioctl = fb_common_ioctl
+const struct kfile_operations fb_device_ops = {
+	.open = fb_device_open,
+	.close = fb_device_close,
+	.read = fb_device_read,
+	.write = fb_device_write,
+	.ioctl = fb_device_ioctl
 };
