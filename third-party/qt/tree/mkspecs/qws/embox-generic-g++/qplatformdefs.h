@@ -396,7 +396,10 @@ struct tms
    dead children (and their dead children) in BUFFER.
    Return the elapsed real time, or (clock_t) -1 for errors.
    All times are in CLK_TCKths of a second.  */
-extern clock_t times (struct tms *__buffer);
+static inline clock_t times (struct tms *__buffer) {
+	DPRINT();
+	return (clock_t) -1;
+}
 
 typedef int sig_atomic_t;
 
@@ -543,9 +546,12 @@ static inline struct passwd *getpwnam(const char *name) {
 	return NULL;
 }
 
+static inline struct group *getgrgid(gid_t gid) {
+	printf(">>> getgrgid %d\n", gid);
+	return NULL;
+}
+
 //uid_t getuid(void);
-
-
 
 #endif // __QEMBOX__
 
