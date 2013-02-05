@@ -40,6 +40,7 @@ static inline uint32_t lapic_errstatus(void)
 	return lapic_read(LAPIC_ESR);
 }
 
+extern int lapic_enable(void);
 extern void lapic_send_init_ipi(uint32_t apic_id);
 extern void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline);
 

@@ -17,6 +17,12 @@ module i8259 extends irqctrl_api {
 	source "i8259.c", "i8259.h"
 }
 
+module ioapic extends irqctrl_api {
+	source "ioapic.c", "ioapic.h"
+
+	depends lapic
+}
+
 module lapic {
 	source "lapic.c", "lapic.h"
 }

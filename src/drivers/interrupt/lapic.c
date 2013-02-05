@@ -17,7 +17,7 @@
 
 #include "lapic.h"
 
-EMBOX_UNIT_INIT(unit_init);
+//EMBOX_UNIT_INIT(unit_init);
 
 #define lapic_write_icr1(val)	lapic_write(LAPIC_ICR1, val)
 #define lapic_write_icr2(val)	lapic_write(LAPIC_ICR2, val)
@@ -111,7 +111,8 @@ int lapic_enable(void) {
 
 	return 0;
 }
-
+/*
 static int unit_init(void) {
 	return lapic_enable();
 }
+*/

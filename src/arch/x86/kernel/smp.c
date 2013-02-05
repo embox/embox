@@ -31,9 +31,10 @@ void startup_ap(void) {
 	idt_load();
 
 	lapic_enable();
-	lapic_timer_init(1);
 
-	__asm__ __volatile__ ("sti");
+/*	lapic_timer_init(1);
+
+	__asm__ __volatile__ ("sti");*/
 
 	while (1) {
 		;
