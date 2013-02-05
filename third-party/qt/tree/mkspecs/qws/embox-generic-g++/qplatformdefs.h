@@ -273,10 +273,13 @@ static inline int pthread_cond_broadcast(pthread_cond_t *c){
 inline struct tm * localtime ( const time_t * timer ) {
 	return gmtime(timer);
 }
+static char *tzname[2];
 inline void tzset(void) {
 	DPRINT();
+	// http://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
+	tzname[0] = "EST";
+	tzname[1] = "EDT";
 }
-extern char *tzname[2];
 
 
 

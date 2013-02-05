@@ -6,6 +6,7 @@ module LibPosix {
 	depends embox.compat.posix.idx.All
 	depends file
 	depends fs
+	depends sched
 }
 
 static module fs {
@@ -54,5 +55,6 @@ static module open {
 	depends embox.kernel.task.errno
 }
 
-
-
+static module sched {
+	source "sched_posix.c"
+}
