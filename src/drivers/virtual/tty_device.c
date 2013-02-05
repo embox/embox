@@ -56,7 +56,8 @@ static size_t tty_device_write(struct file_desc *desc, void *buf, size_t size) {
 		.dx = 0,
 		.dy = 0,
 		.fg_color = 0xF0F0,
-		.bg_color = 0x0000
+		.bg_color = 0x0000,
+		.depth = 1
 	};
 	size_t i;
 	struct fb_info *info;
@@ -70,6 +71,16 @@ static size_t tty_device_write(struct file_desc *desc, void *buf, size_t size) {
 
 	data = (const unsigned char *)buf;
 	for (i = 0; i < size; ++i) {
+		if (symbol.dx + symbol.width > info->var.xres) {
+			symbol.dx = 0;
+			symbol.dy += symbol.height + 3;
+		}
+		else if (data[i] == '\n') {
+			symbol.dx = 0;
+			symbol.dy += symbol.height + 3;
+			continue;
+		}
+
 		symbol.data = font->data + data[i] * font->height * font->width / CHAR_BIT;
 		info->ops->fb_imageblit(info, &symbol);
 		symbol.dx += symbol.width;
