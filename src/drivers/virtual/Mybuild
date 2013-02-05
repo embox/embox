@@ -35,7 +35,6 @@ module uart {
 }
 
 module input_dev {
-	source "input_dev.c"
 	source "input_devfs.c"
 
 	depends embox.mem.objalloc
