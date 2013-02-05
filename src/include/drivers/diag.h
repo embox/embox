@@ -9,8 +9,6 @@
 #ifndef DRIVERS_DIAG_H_
 #define DRIVERS_DIAG_H_
 
-
-//TODO here header implementation
 extern void diag_init(void);
 
 extern char diag_getc(void);
