@@ -23,7 +23,7 @@
 #include <util/indexator.h>
 #include <kernel/time/ktime.h>
 
-#define CD_WAIT_MS 300
+#define CD_WAIT_US 3000
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
 INDEX_DEF(idecd_idx,0,MAX_DEV_QUANTITY);
@@ -69,14 +69,9 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	pio_write_buffer(hd, (char *) pkt, pktlen);
 
 	/* Data transfer */
-	while (!hdc->result) {
+	while (1) {
 		/* Wait until data ready */
-		sched_lock();
-		{
-			event_wait_ms(&hdc->event, CD_WAIT_MS);
-		}
-		sched_unlock();
-
+		u_ksleep(CD_WAIT_US);
 
 		/* Check for errors */
 		if (hdc->status & HDCS_ERR) {
