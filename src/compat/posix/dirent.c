@@ -22,7 +22,7 @@ struct dir_info {
 	struct dlist_head link; /* link to global list of directories */
 };
 
-OBJALLOC_DEF(__dir_pool, struct directory, MAX_DIR_QUANTITY);
+OBJALLOC_DEF(__dir_pool, struct dir_info, MAX_DIR_QUANTITY);
 
 DIR *opendir(const char *path) {
 	node_t *node;
@@ -71,7 +71,7 @@ int closedir(DIR *dir) {
 		return -1;
 	}
 
-	dlist_del(&d.link);
+	dlist_del(&d->link);
 	objfree(&__dir_pool, d);
 
 	return 0;

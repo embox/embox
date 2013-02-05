@@ -38,8 +38,8 @@ module xattr {
 	depends embox.fs.xattr
 }
 
-module dirent {
-	option number dir_quantity=32
+static module dirent {
+	option number dir_quantity=4
 	source "dirent.c"
 
 	depends embox.fs.core
