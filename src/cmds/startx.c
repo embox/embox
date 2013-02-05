@@ -58,7 +58,7 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (-1 == xwnd_init()) {
-		print("Can't setup VGA mode\n");
+		printf("Can't setup VGA mode\n");
 		return -1;
 	}
 
