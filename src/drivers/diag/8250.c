@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <prom/diag.h>
+#include <drivers/diag.h>
 #include <asm/io.h>
 #include <drivers/serial/8250.h>
 

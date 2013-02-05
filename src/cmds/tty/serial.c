@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 #include <drivers/tty_ng.h>
 #include <embox/cmd.h>
 #include <cmd/shell.h>

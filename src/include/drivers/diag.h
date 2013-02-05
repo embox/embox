@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef KERNEL_DIAG_H_
-#define KERNEL_DIAG_H_
+#ifndef DRIVERS_DIAG_H_
+#define DRIVERS_DIAG_H_
 
 
 //TODO here header implementation
@@ -19,4 +19,4 @@ extern void diag_putc(char ch);
 
 extern int diag_has_symbol(void);
 
-#endif /* KERNEL_DIAG_H_ */
+#endif /* DRIVERS_DIAG_H_ */

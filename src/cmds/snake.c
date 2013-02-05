@@ -8,7 +8,7 @@
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <drivers/vt.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 #include <unistd.h>
 #include <time.h>
 

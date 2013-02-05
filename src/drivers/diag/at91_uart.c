@@ -10,7 +10,7 @@
 #include <drivers/at91sam7s256.h>
 #include <hal/reg.h>
 #include <hal/system.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 
 /* Baudrate = SYS_CLOCK/(8(2-Over)CD) = MCK/16CD = 18432000/(16*30) = 38400
  * CD = SYS_CLOCK / (16 * UART_BAUD_RATE)

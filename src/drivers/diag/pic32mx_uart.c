@@ -10,7 +10,7 @@
 #include <hal/reg.h>
 #include <embox/unit.h>
 
-#include <prom/diag.h>
+#include <drivers/diag.h>
 
 #define UART_NM 5
 

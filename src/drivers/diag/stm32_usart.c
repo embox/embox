@@ -11,7 +11,7 @@
 #include <drivers/gpio.h>
 #include <hal/reg.h>
 #include <hal/system.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 
 #include <embox/unit.h>
 

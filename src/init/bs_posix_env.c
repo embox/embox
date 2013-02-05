@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <prom/diag.h>
+#include <drivers/diag.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 
