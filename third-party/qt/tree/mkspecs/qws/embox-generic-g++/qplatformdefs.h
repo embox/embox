@@ -47,7 +47,7 @@
 
 //#define _POSIX_THREAD_SAFE_FUNCTIONS
 
-#define QT_NO_FSFILEENGINE
+///#define QT_NO_FSFILEENGINE
 
 // TEMPORARYFILE requires FSFILEENGINE
 // Moved to command line
@@ -185,14 +185,15 @@ typedef unsigned int pthread_key_t;
 
 static inline int pthread_once (pthread_once_t *__once_control,
                          void (*__init_routine) (void)){
-	DPRINT();
+	//DPRINT();
+	__init_routine();
 	return -1;
 }
 
 static void *global_thread_specific;
 
 static inline void *pthread_getspecific (pthread_key_t __key) {
-	DPRINT();
+	//DPRINT();
 	if (__key == 0) {
 		return global_thread_specific;
 	}
@@ -210,7 +211,7 @@ static inline int pthread_setspecific (pthread_key_t __key,
 
 static inline int pthread_key_create (pthread_key_t *__key,
                                void (*__destr_function) (void *)){
-	DPRINT();
+	//DPRINT();
 	return -1;
 }
 static inline int pthread_key_delete (pthread_key_t __key){
@@ -295,7 +296,23 @@ inline void tzset(void) {
 inline off_t ftello(FILE *stream) {
 	return ftell(stream);
 }
-//int fseeko(FILE *stream, off_t offset, int whence);
+inline int fseeko(FILE *stream, off_t offset, int whence) {
+	DPRINT();
+	return fseek(stream, offset, whence);
+}
+
+inline int truncate(const char *path, off_t length) {
+	DPRINT();
+	return -1;
+}
+inline int ftruncate(int fd, off_t length) {
+	DPRINT();
+	return -1;
+}
+inline int getpagesize(void) {
+	DPRINT();
+	return 4096;
+}
 
 #define O_LARGEFILE 0
 
@@ -406,7 +423,7 @@ struct tms
    Return the elapsed real time, or (clock_t) -1 for errors.
    All times are in CLK_TCKths of a second.  */
 static inline clock_t times (struct tms *__buffer) {
-	DPRINT();
+	//DPRINT();
 	return (clock_t) -1;
 }
 
