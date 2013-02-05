@@ -8,6 +8,7 @@
 #ifndef FS_PATH_H_
 #define FS_PATH_H_
 
+extern const char *path_next(const char *path, size_t *p_len);
 
 /*
  * remove the top directory name from path

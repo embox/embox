@@ -104,6 +104,29 @@ char *path_get_next_name(const char *path, char *node_name, int buff_len) {
 	return NULL;
 }
 
+const char *path_next(const char *path, size_t *p_len) {
+	/* Skip leading slashes. */
+	while (*path == '/') {
+		++path;
+	}
+
+	if (!*path) {
+		return NULL;
+	}
+
+	if (p_len) {
+		const char *end = path;
+
+		while (*end && *end != '/') {
+			++end;
+		}
+
+		*p_len = end - path;
+	}
+
+	return path;
+}
+
 #include <fs/fat.h>
 /*
  *	Convert a filename element from canonical (8.3) to directory entry (11)
