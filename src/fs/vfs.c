@@ -43,47 +43,120 @@ int vfs_get_path_by_node(node_t *nod, char *path) {
 	return 0;
 }
 
+struct lookup_tuple {
+	const char *name;
+	size_t len;
+};
+
+static int vfs_lookup_cmp(struct tree_link *link, void *data) {
+	struct lookup_tuple *lookup = data;
+	node_t *node = tree_element(link, node_t, tree_link);
+	return strncmp(node->name, lookup->name, lookup->len) == 0;
+}
+
+static node_t *__vfs_lookup_child(node_t *parent, const char *name, size_t len) {
+	struct lookup_tuple lookup = { .name = name, .len = len };
+	struct tree_link *tlink;
+
+	assert(parent);
+
+	tlink = tree_lookup_child(&(parent->tree_link), vfs_lookup_cmp, &lookup);
+
+	return tree_element(tlink, struct node, tree_link);
+}
+
+static node_t *__vfs_lookup_existing(node_t *parent, const char *path,
+		const char **p_end_existent) {
+	node_t *child;
+	size_t len = 0;
+
+	assert(parent && path);
+
+	while ((path = path_next(path, &len))) {
+		child = __vfs_lookup_child(parent, path, len);
+		if (!child) {
+			break;
+		}
+
+		path += len;
+		parent = child;
+	}
+
+	if (p_end_existent) {
+		*p_end_existent = path;
+	}
+
+	return parent;
+}
+
+node_t *vfs_lookup_child(node_t *parent, const char *name) {
+	if (!parent) {
+		parent = vfs_get_root();
+	}
+
+	return __vfs_lookup_child(parent, name, strlen(name));
+}
+
+node_t *vfs_lookup(node_t *parent, const char *path) {
+	if (!parent) {
+		parent = vfs_get_root();
+	}
+
+	parent = __vfs_lookup_existing(parent, path, &path);
+
+	if (path_next(path, NULL)) {
+		/* Have unresolved fragments in path. */
+		return NULL;
+	}
+
+	return parent;
+}
+
 int vfs_add_leaf(node_t *child, node_t *parent) {
 	tree_add_link(&(parent->tree_link), &(child->tree_link));
 	return 0;
 }
 
-static node_t *vfs_add_new_path(node_t *parent,
-		char *p_path, char *child_name) {
+static node_t *__vfs_create_child(node_t *parent, const char *name, size_t len,
+		mode_t mode) {
 	node_t *child;
-	if(NULL == (child = node_alloc(child_name))) {
+
+	assert(parent);
+
+	child = node_alloc(name, len);
+	if (!child) {
 		return NULL;
 	}
+
 	vfs_add_leaf(child, parent);
-	while (NULL != (p_path = path_get_next_name(p_path, child_name,
-											MAX_LENGTH_FILE_NAME))) {
-		parent->type = NODE_TYPE_DIRECTORY;
-		parent = child;
-		if(NULL == (child = node_alloc(child_name))) {
-			return NULL;
-		}
-		vfs_add_leaf(child, parent);
-	}
+
 	return child;
 }
 
-node_t *vfs_add_path(const char *path, node_t *parent) {
-	node_t *node = parent;
-	char node_name[MAX_LENGTH_FILE_NAME];
-	char *p_path = (char *) path;
-
-	if (NULL == parent) {
-		node = vfs_get_root();
-	}
-	while (NULL != (p_path = path_get_next_name(p_path,	node_name,
-													sizeof(node_name)))) {
-		parent = node;
-		if (NULL == (node = vfs_lookup_child(node, node_name))) {
-			return vfs_add_new_path(parent, p_path, node_name);
-		}
+node_t *vfs_create_child(node_t *parent, const char *name, mode_t mode) {
+	if (!parent) {
+		parent = vfs_get_root();
 	}
 
-	return NULL;
+	return __vfs_create_child(parent, name, strlen(name), mode);
+}
+
+node_t *vfs_create(node_t *parent, const char *path, mode_t mode) {
+	size_t len = 0;
+
+	if (!parent) {
+		parent = vfs_get_root();
+	}
+
+	parent = __vfs_lookup_existing(parent, path, &path);
+	path = path_next(path, &len);
+
+	if (!path || path_next(path + len, NULL)) {
+		/* Node already exists, or missing intermediate node. */
+		return NULL;
+	}
+
+	return __vfs_create_child(parent, path, len, mode);
 }
 
 int vfs_del_leaf(node_t *node) {
@@ -106,44 +179,9 @@ node_t *vfs_get_parent(node_t *child) {
 	return tree_element(tlink->par, struct node, tree_link);
 }
 
-static int node_name_is(struct tree_link *link, void *name) {
-	node_t *node = tree_element(link, node_t, tree_link);
-	return strcmp(node->name, name) == 0;
-}
-
-node_t *vfs_lookup_child(node_t *parent, const char *name) {
-	struct tree_link *tlink;
-
-	tlink = tree_lookup_child(&(parent->tree_link), node_name_is, (void *) name);
-
-	return tree_element(tlink, struct node, tree_link);
-}
-
-node_t *vfs_lookup(node_t *parent, const char *path) {
-	node_t *node;
-	char node_name[MAX_LENGTH_FILE_NAME];
-	char *p_path = (char *) path;
-
-	if (!parent) {
-		parent = vfs_get_root();
-	}
-
-	node = parent;
-
-	//FIXME if we return immediately we return root node
-	while ((p_path = path_get_next_name(p_path, node_name, sizeof(node_name)))) {
-		node = vfs_lookup_child(node, node_name);
-		if (!node) {
-			return NULL;
-		}
-	}
-
-	return node;
-}
-
 node_t *vfs_get_root(void) {
 	if(NULL == root_node) {
-		root_node = node_alloc("/");
+		root_node = node_alloc("/", 0);
 		assert(NULL != root_node);
 		root_node->type = NODE_TYPE_DIRECTORY;
 		//TODO set pseudofs driver

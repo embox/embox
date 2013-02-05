@@ -20,7 +20,7 @@
 struct nas;
 
 typedef struct node {
-	const char            name[MAX_LENGTH_FILE_NAME];
+	char                  name[MAX_LENGTH_FILE_NAME + 1];
 	int                   type;  /* FILE, DIRECTORY, DEVICE, LINK ... */
 
 	mode_t                mode;
@@ -48,11 +48,14 @@ typedef struct nas {
 	struct node_fi       *fi;
 } nas_t;
 
+/**
+ * @param name Non-empty string.
+ * @param name_len (optional) how many bytes to take from name.
+ *    If zero, the name must be a null-terminated string.
+ */
+extern node_t *node_alloc(const char *name, size_t name_len);
 
-
-extern node_t *node_alloc(const char *name);
 extern void node_free(node_t *node);
-
 
 static inline int node_is_block_dev(struct node *node) {
 	return node->type & NODE_TYPE_SPECIAL;
