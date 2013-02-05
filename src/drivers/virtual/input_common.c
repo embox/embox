@@ -6,9 +6,9 @@
  */
 
 #include <types.h>
-#include <embox/input_dev.h>
+#include <drivers/input/input_dev.h>
 
-DLIST_DEFINE(__input_devices);
+static DLIST_DEFINE(__input_devices);
 
 void input_dev_register(struct input_dev *dev) {
 	assert(dev != NULL);

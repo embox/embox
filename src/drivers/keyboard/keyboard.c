@@ -7,11 +7,11 @@
  */
 
 #include <types.h>
+
 #include <asm/io.h>
+
 #include <drivers/keyboard.h>
-#include <kernel/irq.h>
-#include <kernel/printk.h>
-#include <embox/input_dev.h>
+#include <drivers/input/input_dev.h>
 
 #define  I8042_CMD_READ_MODE   0x20
 #define  I8042_CMD_WRITE_MODE  0x60
@@ -252,7 +252,6 @@ void keyboard_init(void) {
 	mode &= ~I8042_MODE_DISABLE;
 	/* Write the new mode */
 	keyboard_set_mode(mode);
-	printk("Keyboard init OK! \n");
 
 	//irq_attach(IRQ1, kbd_handler, 0, NULL, "kbd");
 	input_dev_register(&kbd_dev);
