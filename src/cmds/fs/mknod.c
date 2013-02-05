@@ -32,7 +32,7 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	mode = S_IFBLK; // XXX this should me an argument, creating block dev
+	mode = S_IFBLK; // XXX this should be an argument, creating block dev
 	mode |= S_IRALL | S_IWALL; // TODO umask. -- Eldar
 
 	if (argc > 1) {

@@ -26,7 +26,7 @@ static int devfs_mount(void *dev, void *dir) {
 	assert(!vfs_lookup(NULL, dev)); // XXX remove it -- Eldar
 
 	node = vfs_create(NULL, dev, mode);
-	if (node) {
+	if (!node) {
 		return -1;
 	}
 

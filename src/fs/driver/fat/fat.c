@@ -1780,22 +1780,24 @@ static int fat_mount_files(struct nas *dir_nas) {
 	/* move out from first root directory entry table*/
 	cluster = fat_get_next(dir_nas, &di, &de);
 
-	while(DFS_EOF != (cluster = fat_get_next(dir_nas, &di, &de))) {
+	while (DFS_EOF != (cluster = fat_get_next(dir_nas, &di, &de))) {
 		/* after fat_get_next de.name[0]=0, if it is not a valid name */
-		if(0 != de.name[0]) {
+		if (0 != de.name[0]) {
 			path_dir_to_canonical((char *) name, (char *) de.name,
 								  de.attr & ATTR_DIRECTORY);
 			/* Create node and file descriptor*/
 			memset(full_path, 0, sizeof(full_path));
 			vfs_get_path_by_node(dir_nas->node, full_path);
 			strcat(full_path, "/");
-			strcat (full_path, (const char *) name);
+			strcat(full_path, (const char *) name);
 
-			if(NULL == (node = vfs_add_path (full_path, NULL))) {
+			fi = pool_alloc(&fat_file_pool);
+			if (!fi) {
 				return -ENOMEM;
 			}
-			if(NULL == (fi = pool_alloc(&fat_file_pool))) {
-				vfs_del_leaf(node);
+			node = vfs_create_child(dir_nas->node, (const char *) name, 0);
+			if (!node) {
+				pool_free(&fat_file_pool, fi);
 				return -ENOMEM;
 			}
 

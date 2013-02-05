@@ -73,7 +73,7 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	bdev->driver = driver;
 	bdev->privdata = privdata;
 
-	if (NULL == (node = vfs_create(NULL, path, S_FBLK | S_IRALL | S_IWALL))) {
+	if (NULL == (node = vfs_create(NULL, path, S_IFBLK | S_IRALL | S_IWALL))) {
 		pool_free(&blockdev_pool, bdev);
 		index_free(&block_dev_idx, bdev->id);
 		return NULL;

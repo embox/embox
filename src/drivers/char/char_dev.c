@@ -34,7 +34,7 @@ int char_dev_init_all(void) {
 }
 
 int char_dev_register(const char *name, const struct kfile_operations *ops) {
-	struct node *node, *devnod;
+	struct node *node;
 	struct nas *dev_nas;
 
 	node = vfs_lookup(NULL, "/dev");
@@ -42,12 +42,12 @@ int char_dev_register(const char *name, const struct kfile_operations *ops) {
 		return -ENODEV;
 	}
 
-	devnod = vfs_create_child(name, node, S_IFCHR | S_IRALL | S_IWALL);
-	if (devnod == NULL) {
+	node = vfs_create_child(node, name, S_IFCHR | S_IRALL | S_IWALL);
+	if (!node) {
 		return -1;
 	}
 
-	dev_nas = devnod->nas;
+	dev_nas = node->nas;
 	dev_nas->fs = alloc_filesystem("empty");
 	if (dev_nas->fs == NULL) {
 		return -ENOMEM;
