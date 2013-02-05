@@ -29,6 +29,48 @@ static inline unsigned int iceil(unsigned int val, unsigned int div) {
 #define d2h8(v) v
 #define h2d8(v) v
 
+static inline size_t ent_len(struct ext2_xattr_ent *ent) {
+	return sizeof(struct ext2_xattr_ent) +
+		iceil(d2h8(ent->e_name_len), EXT2_XATTR_PAD);
+}
+
+#define foreach_xattr(_var, _first_entry) \
+	for(_var = _first_entry; \
+			*(uint32_t *) _var != 0; \
+			_var = (struct ext2_xattr_ent *) \
+				(((unsigned int) _var) + ent_len(_var)))
+
+#define XATTR_ENT_HASH_NAM_SHIFT 5
+#define XATTR_ENT_HASH_VAL_SHIFT 16
+
+static void entry_rehash(struct ext2_xattr_hdr *xattr_blk,
+		struct ext2_xattr_ent *xattr_ent) {
+	size_t len;
+
+	char *p = xattr_ent->e_name;
+	unsigned int *vp = (unsigned int *)
+		(((unsigned int) xattr_blk) + d2h16(xattr_ent->e_value_offs));
+
+	unsigned int hash = 0;
+
+	len = xattr_ent->e_name_len;
+	while (len--) {
+		hash = (hash << XATTR_ENT_HASH_NAM_SHIFT) ^
+			(hash >> (8 * sizeof(hash) - XATTR_ENT_HASH_NAM_SHIFT)) ^
+			*p++;
+	}
+
+	if (xattr_ent->e_value_block == 0 && xattr_ent->e_value_size != 0) {
+		len = iceil(d2h32(xattr_ent->e_value_size), EXT2_XATTR_PAD) >> 2;
+		while (len--) {
+			hash = (hash << XATTR_ENT_HASH_VAL_SHIFT) ^
+				(hash >> (8 * sizeof(hash) - XATTR_ENT_HASH_VAL_SHIFT)) ^
+				d2h32(*vp++);
+		}
+	}
+	xattr_ent->e_hash = h2d32(hash);
+}
+
 static int ensure_dinode(struct nas *nas) {
 	/* Sorry for doing that (Anton Kozlov).
 	 * Needed as mount not filling nas struct,
@@ -40,7 +82,7 @@ static int ensure_dinode(struct nas *nas) {
 	return 0;
 }
 
-static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk) {
+static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk, char check_magic) {
 	struct ext2fs_dinode *dinode;
 	struct ext2_xattr_hdr *xattr_blk;
 	int res;
@@ -63,10 +105,12 @@ static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk) {
 
 	if (0 > (res = ext2_read_sector(node->nas, (char *) xattr_blk, 1,
 			d2h32(dinode->i_facl)))) {
+		ext2_buff_free(node->nas, (char *) xattr_blk);
 		return res;
 	}
 
-	if (xattr_blk->h_magic != EXT2_XATTR_HDR_MAGIC) {
+	if (check_magic && d2h32(xattr_blk->h_magic) != EXT2_XATTR_HDR_MAGIC) {
+		ext2_buff_free(node->nas, (char *) xattr_blk);
 		return -EIO;
 	}
 
@@ -74,16 +118,21 @@ static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk) {
 	return 0;
 }
 
-static inline size_t ent_len(struct ext2_xattr_ent *ent) {
-	return sizeof(struct ext2_xattr_ent) +
-		iceil(d2h32(ent->e_name_len), EXT2_XATTR_PAD);
-}
+#define XATTR_BLK_HASH_SHIFT 16
 
-#define foreach_xattr(_var, _first_entry) \
-	for(_var = _first_entry; \
-			*(uint32_t *) _var != 0; \
-			_var = (struct ext2_xattr_ent *) \
-				(((unsigned int) _var) + ent_len(_var)))
+static void block_rehash(struct ext2_xattr_hdr *xattr_blk) {
+	struct ext2_xattr_ent *i_ent;
+
+	unsigned int hash = 0;
+
+	foreach_xattr(i_ent, xattr_blk->h_entries) {
+		hash = (hash << XATTR_BLK_HASH_SHIFT) ^
+			(hash >> (8 * sizeof(unsigned int) - XATTR_BLK_HASH_SHIFT)) ^
+			d2h32(i_ent->e_hash);
+	}
+
+	xattr_blk->h_hash = h2d32(hash);
+}
 
 int ext2fs_listxattr(struct node *node, char *list, size_t len) {
 	struct ext2_xattr_hdr *xattr_blk;
@@ -92,7 +141,7 @@ int ext2fs_listxattr(struct node *node, char *list, size_t len) {
 	char check = list == NULL || len == 0;
 	char *p = list;
 
-	if (0 != (res = xattr_block(node, &xattr_blk))) {
+	if (0 != (res = xattr_block(node, &xattr_blk, 1))) {
 		if (res == -ENOENT) {
 			return 0;
 		}
@@ -132,6 +181,7 @@ static void del_val(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xat
 		unsigned short ent_off = d2h16(i_ent->e_value_offs);
 		if (ent_off < deloff) {
 			i_ent->e_value_offs = h2d16(ent_off + dellen);
+			entry_rehash(xattr_blk, i_ent);
 		}
 	}
 	*min_value_offs += dellen;
@@ -141,9 +191,34 @@ static void del_ent(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xat
 		struct ext2_xattr_ent *end_ent) {
 	void *src = ((char *) xattr_ent) + ent_len(xattr_ent);
 
-	memmove(xattr_ent, src, sizeof(unsigned int) + (unsigned int) end_ent
+	memmove(xattr_ent, src, EXT2_XATTR_PAD + (unsigned int) end_ent
 			- (unsigned int) src);
 }
+
+static struct ext2_xattr_ent * str_ent(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *end_ent,
+		const char *name) {
+	struct ext2_xattr_ent *i_ent;
+	size_t name_len = strlen(name);
+
+	foreach_xattr(i_ent, xattr_blk->h_entries) {
+		if (strncmp(name, i_ent->e_name, i_ent->e_name_len) < 0) {
+			break;
+		}
+	}
+
+	memmove(((void *) i_ent) + sizeof(struct ext2_xattr_ent) + iceil(strlen(name), EXT2_XATTR_PAD),
+			i_ent,
+			((unsigned int) end_ent) - ((unsigned int) i_ent) + EXT2_XATTR_PAD);
+
+	i_ent->e_name_len = (uint8_t) name_len;
+	i_ent->e_name_index = 1;
+	i_ent->e_value_block = 0;
+
+	memcpy(i_ent->e_name, name, name_len);
+
+	return i_ent;
+}
+
 
 static void str_val(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xattr_ent,
 		int *min_value_offs, const char *value, size_t len) {
@@ -158,48 +233,79 @@ static void str_val(struct ext2_xattr_hdr *xattr_blk, struct ext2_xattr_ent *xat
 
 int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 		size_t len, int flags) {
-	struct ext2_xattr_hdr *xattr_blk;
+	struct ext2_xattr_hdr *xattr_blk = NULL;
 	struct ext2_xattr_ent *xattr_ent, *i_ent;
 	struct ext2fs_dinode *dinode = node->nas->fi->privdata;
 	int xblk_n, min_value_offs = BBSIZE, name_len = strlen(name);
-	int res;
+	int res = 0;
 
 	assert(node->nas);
 
-	if (0 != (res = xattr_block(node, &xattr_blk))) {
+	if (0 != (res = xattr_block(node, &xattr_blk, 1))) {
 		if (res != -ENOENT) {
 			return res;
 		}
 
 		if (NO_BLOCK == (xblk_n = ext2_alloc_block(node->nas, 0))) {
-			return -ENOMEM;
+			res = -ENOMEM;
+			goto cleanup_out;
 		}
 
-		dinode->i_facl = h2d32(xblk_n);
+		if ((res = ext2_write_gdblock(node->nas))) {
+			goto cleanup_out;
+		}
+
+		if ((res = ext2_write_sblock(node->nas))) {
+			goto cleanup_out;
+		}
+
+		{
+			struct ext2_fs_info *fsi = node->nas->fs->fsi;
+			dinode->i_facl = h2d32(xblk_n);
+			dinode->i_blocks = h2d32(d2h32(dinode->i_blocks) +
+					fsi->s_sectors_in_block);
+		}
 
 		ext2_rw_inode(node->nas, dinode, EXT2_W_INODE);
 
-		if (0 != (res = xattr_block(node, &xattr_blk))) {
-			return res;
+		if (0 != (res = xattr_block(node, &xattr_blk, 0))) {
+			goto cleanup_out;
 		}
+
+		xattr_blk->h_magic = h2d32(EXT2_XATTR_HDR_MAGIC);
+		xattr_blk->h_refcount = h2d32(1);
+		xattr_blk->h_blocks = h2d32(1);
+		memset(xattr_blk->h_entries, 0, EXT2_XATTR_PAD);
 	}
 
 	if (d2h32(xattr_blk->h_refcount) > 1) {
 		struct ext2_xattr_hdr *blk_copy;
 
 		if (NO_BLOCK == (xblk_n = ext2_alloc_block(node->nas, 0))) {
-			return -ENOMEM;
+			res = -ENOMEM;
+			goto cleanup_out;
 		}
 
-		blk_copy = ext2_buff_alloc(node->nas, BBSIZE);
+		if (NULL == (blk_copy = ext2_buff_alloc(node->nas, BBSIZE))) {
+			res = -ENOMEM;
+			goto cleanup_out;
+		}
+
 		memcpy(blk_copy, xattr_blk, BBSIZE);
 
 		xattr_blk->h_refcount = h2d32(d2h32(xattr_blk->h_refcount) - 1);
+		block_rehash(xattr_blk);
+
 		blk_copy->h_refcount = h2d32(1);
 
-		ext2_write_sector(node->nas, (char *) xattr_blk, 1, d2h32(dinode->i_facl));
+		if ((res = ext2_write_sector(node->nas, (char *) xattr_blk,
+						1, d2h32(dinode->i_facl)))) {
+			res = -EIO;
+			goto cleanup_out;
+		}
 
 		dinode->i_facl = h2d32(xblk_n);
+		/* TODO: should we alter i_blocks* */
 
 		ext2_buff_free(node->nas, (char *) xattr_blk);
 		xattr_blk = blk_copy;
@@ -213,21 +319,44 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 			min_value_offs = d2h16(i_ent->e_value_offs);
 		}
 
-		if (xattr_ent == NULL && name_len == d2h32(i_ent->e_name_len) &&
+		if (xattr_ent == NULL && name_len == d2h8(i_ent->e_name_len) &&
 				0 == strcmp(name, i_ent->e_name)) {
 			xattr_ent = i_ent;
 		}
 	}
 
+	if (!flags) {
+		flags |= xattr_ent ? XATTR_REPLACE : XATTR_CREATE;
+	}
+
 	if (flags & XATTR_CREATE) {
 		if (xattr_ent != NULL) {
-			return -EEXIST;
+			res = -EEXIST;
+			goto cleanup_out;
 		}
 
-		return -ENOSYS;
+		if (((unsigned int) i_ent) - ((unsigned int) xattr_blk)
+				+ sizeof(struct ext2_xattr_ent) +
+				iceil(strlen(name), EXT2_XATTR_PAD) + 4
+				> min_value_offs - iceil(len, EXT2_XATTR_PAD)) {
+			res = -ENOMEM;
+			goto cleanup_out;
+		}
+
+		if (strlen(name) > ((uint8_t) -1)) {
+			res = -ENOMEM;
+			goto cleanup_out;
+		}
+
+		i_ent = str_ent(xattr_blk, i_ent, name);
+		str_val(xattr_blk, i_ent, &min_value_offs, value, len);
+
+		entry_rehash(xattr_blk, i_ent);
+
 	} else if (flags & XATTR_REMOVE) {
 		if (NULL == xattr_ent) {
-			return -ENOENT;
+			res = -ENOENT;
+			goto cleanup_out;
 		}
 
 		del_val(xattr_blk, xattr_ent, &min_value_offs);
@@ -235,22 +364,34 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 
 	} else if (flags & XATTR_REPLACE) {
 		if (NULL == xattr_ent) {
-			return -ENOENT;
+			res = -ENOENT;
+			goto cleanup_out;
 		}
 
-		if (((unsigned int) i_ent) - ((unsigned int) xattr_blk) + 4 >
-				min_value_offs + d2h32(xattr_ent->e_value_size) - len) {
-			return -ENOMEM;
+		if (((unsigned int) i_ent) - ((unsigned int) xattr_blk) + 4
+				> min_value_offs
+				    + iceil(d2h32(xattr_ent->e_value_size), EXT2_XATTR_PAD)
+				    - len) {
+			res = -ENOMEM;
+			goto cleanup_out;
 		}
 
 		del_val(xattr_blk, xattr_ent, &min_value_offs);
 		str_val(xattr_blk, xattr_ent, &min_value_offs, value, len);
+
+		entry_rehash(xattr_blk, xattr_ent);
 	}
 
-	ext2_write_sector(node->nas, (char *) xattr_blk, 1, d2h32(dinode->i_facl));
-	ext2_buff_free(node->nas, (char *) xattr_blk);
+	block_rehash(xattr_blk);
 
-	return 0;
+	ext2_write_sector(node->nas, (char *) xattr_blk, 1, d2h32(dinode->i_facl));
+
+cleanup_out:
+	if (xattr_blk) {
+		ext2_buff_free(node->nas, (char *) xattr_blk);
+	}
+
+	return res;
 }
 
 int ext2fs_getxattr(struct node *node, char *name, char *value, size_t len) {
@@ -259,7 +400,7 @@ int ext2fs_getxattr(struct node *node, char *name, char *value, size_t len) {
 	size_t name_len = strlen(name);
 	int res;
 
-	if (0 != (res = xattr_block(node, &xattr_blk))) {
+	if (0 != (res = xattr_block(node, &xattr_blk, 1))) {
 		return res;
 	}
 

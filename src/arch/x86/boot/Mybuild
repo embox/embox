@@ -13,4 +13,6 @@ module multiboot {
 	option number video_width=800
 	option number video_height=600
 	option number video_depth=24
+
+	depends embox.arch.x86.kernel.arch
 }

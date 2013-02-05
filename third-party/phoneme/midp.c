@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <embox/input_dev.h>
+#include <drivers/input/input_dev.h>
 
 #include <javacall_lifecycle.h>
 

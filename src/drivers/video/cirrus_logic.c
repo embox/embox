@@ -33,7 +33,6 @@
 #include <drivers/pci/pci.h>
 
 
-#define FB_VMODE_DOUBLE 0x1
 
 
 struct cirrus_chip_info {

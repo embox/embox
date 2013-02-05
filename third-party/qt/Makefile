@@ -31,8 +31,6 @@ QT_CONF_FLAGS_EMBOX += -D Q_NO_POSIX_SIGNALS
 # Automatically defined by NO_CONCURRENT
 #QT_CONF_FLAGS_EMBOX += -D QT_NO_QFUTURE
 #QT_CONF_FLAGS_EMBOX += -no-feature-CONCURRENT        -D QT_NO_CONCURRENT
-# This doesn't work for apparent reason :)
-QT_CONF_FLAGS_EMBOX += -D QT_USE_MMAP
 # Should be transitively disabled by NO_LIBRARY according to qfeatures.txt
 QT_CONF_FLAGS_EMBOX += -D QT_NO_BEARERMANAGEMENT
 # This flag looks suspicious: need to check how it works on Linux
@@ -383,7 +381,7 @@ $(TARGET_QMAKE_LINUX): linux_build_and_install
 
 .PHONY: target_apps_LINUX
 
-all: target_apps_LINUX
+#all: target_apps_LINUX
 
 
 

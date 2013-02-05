@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <drivers/video/fb.h>
+#include <drivers/video/font.h>
 #include <errno.h>
 #include <framework/example/self.h>
 #include <stddef.h>
@@ -17,7 +18,7 @@
 EMBOX_EXAMPLE(run);
 
 static const unsigned char colors[] = {
-		0xDD, 0xAA, 0x66, 0x32
+		0x07, 0x15, 0x1C, 0x0E
 };
 
 static int framebuffer_turn_on(void) {
@@ -106,7 +107,43 @@ static int framebuffer_copyarea(void) {
 	area.height = 200;
 	area.sx = info->var.xres / 2 - 150;
 	area.sy = info->var.yres / 2 - 100;
-	info->ops->fb_copyarea(info, &area);
+	area = area;
+//	info->ops->fb_copyarea(info, &area);
+
+	return 0;
+}
+
+static int framebuffer_imageblit(void) {
+	int ret;
+	struct fb_image img;
+	struct fb_info *info;
+	const char *hello = "Embox> ...", *tmp;
+	const struct font_desc *font;
+
+	ret = framebuffer_turn_on();
+	if (ret != 0) {
+		return ret;
+	}
+
+	info = fb_lookup("fb0");
+	if (info == NULL) {
+		return -ENODEV;
+	}
+
+	font = &font_vga_8x8;
+
+	img.dx = 20;
+	img.dy = 20;
+	img.width = font->width;
+	img.height = font->height;
+	img.fg_color = 0xF0F0;
+	img.bg_color = 0x0;
+
+	img.depth = 1;
+	for (tmp = hello; *tmp; ++tmp, img.dx += img.width) {
+		img.data = font->data + (unsigned char)(*tmp) * font->width / 8 * font->height;
+		info->ops->fb_imageblit(info, &img);
+	}
 
 	return 0;
 }
@@ -115,6 +152,7 @@ static int framebuffer_dev(void) {
 	int ret;
 	size_t i, j, size;
 	FILE *fbuf;
+	unsigned short color = 0x26AD;
 
 	ret = framebuffer_turn_on();
 	if (ret != 0) {
@@ -123,27 +161,32 @@ static int framebuffer_dev(void) {
 
 	fbuf = fopen("/dev/fb0", "w");
 	if (fbuf == NULL) {
+		fclose(fbuf);
 		return -errno;
 	}
 
 	ret = fseek(fbuf, 0, SEEK_END);
 	if (ret != 0) {
+		fclose(fbuf);
 		return ret;
 	}
 
 	size = ftell(fbuf);
 	if ((long int)size == -1L) {
+		fclose(fbuf);
 		return -errno;
 	}
 
 	ret = fseek(fbuf, 0, SEEK_SET);
 	if (ret != 0) {
+		fclose(fbuf);
 		return ret;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(colors); ++i) {
 		for (j = 0; j < size / ARRAY_SIZE(colors); ++j) {
-			if (fwrite(&colors[i], sizeof colors[0], 1, fbuf) != 1) {
+			if (fwrite(&color, sizeof color, 1, fbuf) != 2) {
+				fclose(fbuf);
 				return -errno;
 			}
 		}
@@ -213,5 +256,6 @@ static int run(int argc, char **argv) {
 			 : !strcmp(argv[1], "dev") ? framebuffer_dev()
 			 : !strcmp(argv[1], "copyarea") ? framebuffer_copyarea()
 			 : !strcmp(argv[1], "image") ? framebuffer_image()
+			 : !strcmp(argv[1], "imageblit") ? framebuffer_imageblit()
 			 : -EINVAL;
 }
