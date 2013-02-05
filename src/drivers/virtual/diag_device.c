@@ -52,7 +52,7 @@ static int diag_close(struct file_desc *desc) {
 
 /**
  * This used for save current new ch to buff
- * and it's replace sequances \r\n, \r, \n to \n on the fly
+ * and it's replace sequences \r\n, \r, \n to \n on the fly
  * @return non-zero if symbol was saved, zero otherwise
  */
 static int save_to_buf(char *save_to, char ch) {

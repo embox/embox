@@ -38,7 +38,6 @@
 #define  STATUS_PORT           0x64
 #define  DATA_PORT             0x60
 
-#define  IRQ1 1
 
 #define keyboard_wait_read()  do {} while (0 == (inb(STATUS_PORT) & 0x01))
 #define keyboard_wait_write() do {} while (0 != (inb(STATUS_PORT) & 0x02))
@@ -130,9 +129,6 @@ static const unsigned int keymap[][4] = {
 	{0xae,0xae,0x7e335b1b},   /* 83 - Numeric keypad '.', Delete */
 };
 
-static struct input_dev kbd_dev = {
-		.name = "keyboard"
-};
 
 static int keyboard_havechar(void) {
 	unsigned char c = inb(STATUS_PORT);
@@ -160,7 +156,7 @@ int keyboard_has_symbol(void) {
 	return keyboard_havechar();
 }
 
-char keyboard_getc(void) {
+int keyboard_getc(void) {
 	static unsigned int shift_state;
 	static unsigned int outp;
 	uint8_t status, scan_code;
@@ -169,12 +165,7 @@ char keyboard_getc(void) {
 	while (1) {
 		if (outp) {
 			unsigned char ch = outp & 0xff;
-			struct input_event e = {
-					.type = KEY_PRESSED,
-					.value = ch
-			};
 			outp >>=8;
-			input_dev_inject_event(&kbd_dev, e);
 			return ch;
 		}
 
@@ -217,18 +208,15 @@ char keyboard_getc(void) {
 	}
 }
 
-#if 0
 
-#include <kernel/printk.h>
 
-static irq_return_t kbd_handler(unsigned int irq_nr, void *data) {
-	uint8_t scancode;
-	scancode = in8(DATA_PORT);
-	//TODO:
-	printk("keycode 0x%X\n", scancode);
-	return IRQ_HANDLED;
-}
-#endif
+static struct input_dev kbd_dev = {
+		.name = "keyboard",
+		.irq = 1,
+		.getc = keyboard_getc
+};
+
+
 void keyboard_init(void) {
 	uint8_t mode;
 
@@ -253,8 +241,7 @@ void keyboard_init(void) {
 	/* Write the new mode */
 	keyboard_set_mode(mode);
 
-	//irq_attach(IRQ1, kbd_handler, 0, NULL, "kbd");
-	input_dev_register(&kbd_dev);
-
 	keyboard_send_cmd(I8042_CMD_PORT_EN);
+
+	input_dev_register(&kbd_dev);
 }
