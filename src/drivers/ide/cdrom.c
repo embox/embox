@@ -14,6 +14,7 @@
 
 #include <asm/io.h>
 
+#include <kernel/thread/sched_lock.h>
 #include <arpa/inet.h>
 #include <fs/fat.h>
 #include <drivers/ide.h>
@@ -21,6 +22,8 @@
 #include <mem/phymem.h>
 #include <util/indexator.h>
 #include <kernel/time/ktime.h>
+
+#define CD_WAIT_MS 300
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
 INDEX_DEF(idecd_idx,0,MAX_DEV_QUANTITY);
@@ -68,7 +71,12 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	/* Data transfer */
 	while (!hdc->result) {
 		/* Wait until data ready */
-		m_ksleep(300);
+		sched_lock();
+		{
+			event_wait_ms(&hdc->event, CD_WAIT_MS);
+		}
+		sched_unlock();
+
 
 		/* Check for errors */
 		if (hdc->status & HDCS_ERR) {
