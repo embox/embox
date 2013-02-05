@@ -524,7 +524,24 @@ struct __res_state {
 #define IP_MULTICAST_LOOP 0
 #define FIONREAD 0
 
+struct passwd {
+	char *pw_name;
+	uid_t pw_uid;
+	gid_t pw_gid;
+	char *pw_dir;
+	char *pw_shell;
+	char *pw_passwd;
+};
 
+static inline struct passwd *getpwuid(uid_t uid) {
+	printf(">>> getpwuid %d\n", uid);
+	return NULL;
+}
+
+static inline struct passwd *getpwnam(const char *name) {
+	printf(">>> getpwnam %s\n", name);
+	return NULL;
+}
 
 //uid_t getuid(void);
 
