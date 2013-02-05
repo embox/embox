@@ -104,10 +104,12 @@ int lapic_enable(void) {
 	lapic_write(LOCAL_APIC_DEF_ADDR + APIC_TASKPRIOR, 0);
 #endif
 
+#if 1
     /* Set the spurious interrupt vector register */
 	val = lapic_read(LAPIC_SIVR);
 	val |= 0x100;
 	lapic_write(LAPIC_SIVR, val);
+#endif
 
 	return 0;
 }
