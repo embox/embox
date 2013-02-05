@@ -224,6 +224,8 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 #define freespace(fs) \
    ((fs)->e2sb.e2fs_fbcount - (fs)->e2sb.e2fs_rbcount)
 
+#define	EXT2_BSIZE(fs)	((fs)->s_block_size)
+
 /*
  * Number of indirects in a file system block.
  */
