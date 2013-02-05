@@ -13,11 +13,11 @@
 
 PCI_DRIVER("bochs", bochs_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 
-int bochs_check_var(struct fb_var_screeninfo *var, struct fb_info *info) {
+static int bochs_check_var(struct fb_var_screeninfo *var, struct fb_info *info) {
 	return 0;
 }
 
-int bochs_set_par(struct fb_info *info) {
+static int bochs_set_par(struct fb_info *info) {
 	info->screen_size = info->var.xres * info->var.yres
 			* (info->var.bits_per_pixel / 8);
 	vbe_write(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_DISABLED);
