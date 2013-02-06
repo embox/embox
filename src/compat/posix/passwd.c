@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include <pwd.h>
+#include <shadow.h>
 
 #define PASSWD_FILE "/passwd"
 
@@ -60,15 +61,13 @@ static int read_field(FILE *stream, char **buf, size_t *buflen, char **field,
 	return 0;
 }
 
-static int read_int_field(FILE *stream, unsigned short *field, int delim) {
+static int read_int_field(FILE *stream, const char *format, void *field, int delim) {
 	int val;
-	int ret = fscanf(stream, "%d", &val);
+	int ret = fscanf(stream, format, field);
 
 	if (0 > ret) {
 		return -ret;
 	}
-
-	*field = val;
 
 	if (delim != (val = fgetc(stream))) {
 		return EIO;
@@ -90,11 +89,11 @@ static int read_pwd(FILE *stream, char *buf, size_t buflen, struct passwd *pwd) 
 		return res;
 	}
 
-	if (0 != (res = read_int_field(stream, &pwd->pw_uid, ':'))) {
+	if (0 != (res = read_int_field(stream, "%d", &pwd->pw_uid, ':'))) {
 		return res;
 	}
 
-	if (0 != (res = read_int_field(stream, &pwd->pw_gid, ':'))) {
+	if (0 != (res = read_int_field(stream, "%d", &pwd->pw_gid, ':'))) {
 		return res;
 	}
 
@@ -182,5 +181,55 @@ int getpwuid_r(uid_t uid, struct passwd *pwd,
 	}
 
 	return 0;
+}
+
+#define SHADOW_NAME_BUF_LEN 64
+#define SHADOW_PSWD_BUF_LEN 128
+
+static struct spwd spwd;
+static char spwd_buf[SHADOW_NAME_BUF_LEN + SHADOW_PSWD_BUF_LEN];
+
+struct spwd *fgetspent(FILE *file) {
+	int res;
+	char *buf = spwd_buf;
+	size_t buf_len = SHADOW_NAME_BUF_LEN + SHADOW_PSWD_BUF_LEN;
+
+	if (0 != (res = read_field(file, &buf, &buf_len, &spwd.sp_namp, ':'))) {
+		return NULL;
+	}
+
+	if (0 != (res = read_field(file, &buf, &buf_len, &spwd.sp_pwdp, ':'))) {
+		return NULL;
+	}
+
+	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_lstchg, ':'))) {
+		return NULL;
+	}
+
+	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_min, ':'))) {
+		return NULL;
+	}
+
+	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_max, ':'))) {
+		return NULL;
+	}
+
+	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_warn, ':'))) {
+		return NULL;
+	}
+
+	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_inact, ':'))) {
+		return NULL;
+	}
+
+	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_expire, ':'))) {
+		return NULL;
+	}
+
+	if (0 != (res = read_int_field(file, "%ld", &spwd.sp_expire, '\n'))) {
+		return NULL;
+	}
+
+	return &spwd;
 }
 
