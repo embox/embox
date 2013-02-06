@@ -11,7 +11,7 @@
 #include <drivers/diag.h>
 #include <embox/device.h>
 #include <errno.h>
-#include <fs/ioctl.h>
+
 #include <fcntl.h>
 
 static int nonblocking = 0;
@@ -52,7 +52,7 @@ static int diag_close(struct file_desc *desc) {
 
 /**
  * This used for save current new ch to buff
- * and it's replace sequances \r\n, \r, \n to \n on the fly
+ * and it's replace sequences \r\n, \r, \n to \n on the fly
  * @return non-zero if symbol was saved, zero otherwise
  */
 static int save_to_buf(char *save_to, char ch) {
@@ -78,7 +78,7 @@ static size_t diag_read(void *buf, size_t size, size_t count, void *file) {
 
 	if (nonblocking) {
 		for (int i = 0; i < n; ++i) {
-			if (!diag_has_symbol()) {
+			if (!diag_kbhit()) {
 				if (0 == i) {
 					return -EAGAIN;
 				}

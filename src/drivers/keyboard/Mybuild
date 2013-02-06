@@ -1,7 +1,6 @@
-/*FIXME mybuild wrong packet name */
 package embox.driver
 
 module keyboard {
 	source "keyboard.c"
-	depends embox.driver.virtual.input_common
+	@NoRuntime depends embox.driver.virtual.input_dev
 }

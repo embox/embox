@@ -420,6 +420,7 @@ static void hd_dpc(void *arg) {
 	if((0 == hdc->result) && (HD_XFER_IDLE != hdc->dir)
 			              && (HD_XFER_IGNORE != hdc->dir)) {
 		hdc->result = 1;
+		event_notify(&hdc->event);
 	}
 }
 
@@ -509,6 +510,7 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 	hdc->irq = irq;
 	hdc->bmregbase = bmregbase;
 	hdc->dir = HD_XFER_IGNORE;
+	event_init(&hdc->event, "hard disc event");
 
 	if (hdc->bmregbase) {
 		if(hdc->prds) {

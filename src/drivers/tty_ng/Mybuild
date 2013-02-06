@@ -1,8 +1,5 @@
 package embox.driver.tty_ng
 
-/* FIXME:
- * Unused files: vga.c
- */
 
 module core {
 	@IncludePath("$(THIRDPARTY_DIR)/include/")

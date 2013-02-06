@@ -220,7 +220,7 @@ static int exec(int argc, char **argv) {
 
 		msleep(sleep_time);
 		last_valid = 0;
-		while (diag_has_symbol() && !last_valid ) {
+		while (diag_kbhit() && !last_valid ) {
 			d = dispatch((ch = getchar()));
 			d2 = point_plus(d,diff);
 			valid(d2);
@@ -229,7 +229,7 @@ static int exec(int argc, char **argv) {
 			diff = d;
 			diff_char = ch;
 		}
-		while (diag_has_symbol())
+		while (diag_kbhit())
 			getchar();
 	}
 	getchar();

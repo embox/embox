@@ -1,16 +1,5 @@
-/**
- * @file
- *
- * @brief
- *
- * @date 22.06.2012
- * @author Anton Bondarev
- */
+#ifndef HAL_ARCH_H_
+# error "Do not include this file directly!"
+#endif /* HAL_ARCH_H_ */
 
-#ifndef MIPS_HAL_ARCH_H_
-#define MIPS_HAL_ARCH_H_
-
-//# error "Do not include this file directly!"
-
-
-#endif /* MIPS_HAL_ARCH_H_ */
+#define __BIG_ENDIAN 1

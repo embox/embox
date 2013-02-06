@@ -25,6 +25,8 @@
 #include <sys/utsname.h>
 #endif
 
+#include <sys/select.h>
+
 typedef int lval;
 lval *o2c(lval o) {
 	return (lval *) (o - 1);
