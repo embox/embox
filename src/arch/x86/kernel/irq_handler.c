@@ -25,15 +25,13 @@ fastcall void irq_handler(pt_regs_t *regs) {
 	{
 		int irq = regs->trapno - 0x20;
 
-		irqctrl_disable(irq);
 		ipl_enable();
-
-		i8259_send_eoi(irq);
 
 		irq_dispatch(irq);
 
+		i8259_send_eoi(irq);
+
 		ipl_disable();
-		irqctrl_enable(irq);
 	}
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
