@@ -191,10 +191,6 @@ int fcntl(int fd, int cmd, ...) {
 	case F_SETFD:
 		flag = va_arg(args, int);
 		*task_idx_desc_flags_ptr(desc) = flag;
-		if (flag & O_NONBLOCK) {
-			io_op_unblock(&desc->data->read_state);
-			io_op_unblock(&desc->data->write_state);
-		}
 		res = 0;
 		break;
 	case F_GETPIPE_SZ:
