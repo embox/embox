@@ -15,3 +15,7 @@ int puts(const char *s) {
 	}
 	return putchar('\n');
 }
+
+int fputs(const char *s, FILE *f) {
+	return puts(s);
+}

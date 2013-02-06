@@ -3,9 +3,6 @@ package embox.kernel.thread
 module sync {
 	source "mutex.c", "sem.c", "barrier.c", "cond.c", "rwlock.c", "mqueue.c"
 
-	// Deprecated
-	// source "message.c"
-
 	depends embox.kernel.thread.sched
 }
 

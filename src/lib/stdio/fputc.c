@@ -19,6 +19,10 @@ int fputc(int c, FILE *stream) {
 	return c;
 }
 
+int putc(int c, FILE *f) {
+	return fputc(c, f);
+}
+
 int putchar(int c) {
 #if 0
 #if OPTION_GET(BOOLEAN,stdio_lf_crlf_map)

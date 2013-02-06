@@ -10,7 +10,7 @@
 
 #include <hal/arch.h>
 #include <hal/ipl.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 #include <embox/runlevel.h>
 #include <prom/prom_printf.h>
 

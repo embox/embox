@@ -18,6 +18,7 @@
 #include <pnet/dev.h>
 
 #include <net/netdevice.h>
+#include <util/hashtable.h>
 
 EMBOX_UNIT_INIT(net_dev_init);
 

@@ -18,6 +18,7 @@
 #include <net/net.h>
 #include <net/etherdevice.h>
 #include <embox/unit.h>
+#include <arpa/inet.h>
 
 
 EMBOX_UNIT_INIT(emaclite_init);

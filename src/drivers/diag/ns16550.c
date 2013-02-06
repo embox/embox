@@ -7,6 +7,7 @@
  */
 
 #include <hal/reg.h>
+#include <drivers/diag.h>
 
 #define UART_LSR_DR     0x01            /* Data ready */
 #define UART_LSR_THRE   0x20            /* Xmit holding register empty */
@@ -42,24 +43,34 @@ struct com {
 #define COM3_RBR (((struct com *) COM3_BASE)->rbr)
 #define COM3_LSR (((struct com *) COM3_BASE)->lsr)
 
-void diag_init(void) {
+static char diag_ns16550_getc(void) {
+
+	while ((COM3_LSR & UART_LSR_DR) == 0);
+
+	return COM3_RBR;
 
 }
 
-void diag_putc(char c) {
+static void diag_ns16550_putc(char ch) {
 	unsigned char *state = &COM3_LSR;
 
 	state = state;
 
 	while ((COM3_LSR & UART_LSR_THRE) == 0);
 
-	COM3_RBR = c;
+	COM3_RBR = ch;
 }
 
-char diag_getc(void) {
+static int diag_ns16550_kbhit(void) {
+	return 0; /* TODO */
+}
 
-	while ((COM3_LSR & UART_LSR_DR) == 0);
+static const struct diag_ops diag_ns16550_ops = {
+	.getc = &diag_ns16550_getc,
+	.putc = &diag_ns16550_putc,
+	.kbhit = &diag_ns16550_kbhit
+};
 
-	return COM3_RBR;
-
+void diag_init(void) {
+	diag_common_set_ops(&diag_ns16550_ops);
 }

@@ -8,7 +8,9 @@
 #define DIRENT_H_
 
 #include <sys/types.h>
+#include <sys/cdefs.h>
 
+__BEGIN_DECLS
 
 struct dirent {
 	ino_t  d_ino;      /* File serial number. */
@@ -34,5 +36,7 @@ extern void           rewinddir(DIR *);
 extern void           seekdir(DIR *, long);
 
 extern long           telldir(DIR *);
+
+__END_DECLS
 
 #endif /* DIRENT_H_ */

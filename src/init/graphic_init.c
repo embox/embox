@@ -40,5 +40,10 @@ static int graphic_init(void) {
 		return ret;
 	}
 
-	return info->ops->fb_set_par(info);
+	ret = info->ops->fb_set_par(info);
+	if (ret != 0) {
+		return ret;
+	}
+
+	return 0;
 }

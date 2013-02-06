@@ -7,7 +7,7 @@
  * @author Anton Kozlov
  */
 
-#include <prom/diag.h>
+#include <drivers/diag.h>
 #include <string.h>
 
 #define BUF_LEN 0x100
@@ -23,17 +23,11 @@ char *diag_get_last_part(void) {
 	return diag_buf;
 }
 
-void diag_init(void) {
-	diag_buf_head = 0;
-	memset(diag_buf, 0, BUF_LEN + 1);
-}
-
-char diag_getc(void) {
+static char diag_mem_getc(void) {
 	return 0;
-
 }
 
-void diag_putc(char ch) {
+static void diag_mem_putc(char ch) {
 	if (diag_buf_head == BUF_LEN) {
 		diag_buf_head = 0;
 	}
@@ -43,6 +37,18 @@ void diag_putc(char ch) {
 
 }
 
-int diag_has_symbol(void) {
+static int diag_mem_kbhit(void) {
 	return 0;
+}
+
+static const struct diag_ops diag_mem_ops = {
+	.getc = &diag_mem_getc,
+	.putc = &diag_mem_putc,
+	.kbhit = &diag_mem_kbhit
+};
+
+void diag_init(void) {
+	diag_common_set_ops(&diag_mem_ops);
+	diag_buf_head = 0;
+	memset(diag_buf, 0, BUF_LEN + 1);
 }

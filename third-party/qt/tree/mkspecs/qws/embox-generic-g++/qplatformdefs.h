@@ -47,7 +47,7 @@
 
 //#define _POSIX_THREAD_SAFE_FUNCTIONS
 
-#define QT_NO_FSFILEENGINE
+///#define QT_NO_FSFILEENGINE
 
 // TEMPORARYFILE requires FSFILEENGINE
 // Moved to command line
@@ -124,7 +124,7 @@ typedef int pthread_attr_t;
 static inline int pthread_mutex_init (pthread_mutex_t *__mutex,
                                __const pthread_mutexattr_t *__mutexattr) {
 	DPRINT();
-	return -1;
+	return 0;
 }
 
 static inline int pthread_mutex_destroy (pthread_mutex_t *__mutex) {
@@ -136,7 +136,7 @@ static inline int pthread_cond_init (pthread_cond_t *__restrict __cond,
                               __const pthread_condattr_t *__restrict
                               __cond_attr){
 	DPRINT();
-	return -1;
+	return 0;
 }
 static inline int pthread_cond_destroy (pthread_cond_t *__cond){
 	DPRINT();
@@ -185,23 +185,33 @@ typedef unsigned int pthread_key_t;
 
 static inline int pthread_once (pthread_once_t *__once_control,
                          void (*__init_routine) (void)){
-	DPRINT();
+	//DPRINT();
+	__init_routine();
 	return -1;
 }
 
+static void *global_thread_specific;
+
 static inline void *pthread_getspecific (pthread_key_t __key) {
-	DPRINT();
+	//DPRINT();
+	if (__key == 0) {
+		return global_thread_specific;
+	}
 	return NULL;
 }
 static inline int pthread_setspecific (pthread_key_t __key,
                                 __const void *__pointer){
 	DPRINT();
+	if (__key == 0) {
+		global_thread_specific = __pointer;
+		return 0;
+	}
 	return -1;
 }
 
 static inline int pthread_key_create (pthread_key_t *__key,
                                void (*__destr_function) (void *)){
-	DPRINT();
+	//DPRINT();
 	return -1;
 }
 static inline int pthread_key_delete (pthread_key_t __key){
@@ -273,17 +283,36 @@ static inline int pthread_cond_broadcast(pthread_cond_t *c){
 inline struct tm * localtime ( const time_t * timer ) {
 	return gmtime(timer);
 }
+static char *tzname[2];
 inline void tzset(void) {
 	DPRINT();
+	// http://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
+	tzname[0] = "EST";
+	tzname[1] = "EDT";
 }
-extern char *tzname[2];
 
 
 
 inline off_t ftello(FILE *stream) {
 	return ftell(stream);
 }
-//int fseeko(FILE *stream, off_t offset, int whence);
+inline int fseeko(FILE *stream, off_t offset, int whence) {
+	DPRINT();
+	return fseek(stream, offset, whence);
+}
+
+inline int truncate(const char *path, off_t length) {
+	DPRINT();
+	return -1;
+}
+inline int ftruncate(int fd, off_t length) {
+	DPRINT();
+	return -1;
+}
+inline int getpagesize(void) {
+	DPRINT();
+	return 4096;
+}
 
 #define O_LARGEFILE 0
 
@@ -393,7 +422,10 @@ struct tms
    dead children (and their dead children) in BUFFER.
    Return the elapsed real time, or (clock_t) -1 for errors.
    All times are in CLK_TCKths of a second.  */
-extern clock_t times (struct tms *__buffer);
+static inline clock_t times (struct tms *__buffer) {
+	//DPRINT();
+	return (clock_t) -1;
+}
 
 typedef int sig_atomic_t;
 
@@ -521,11 +553,31 @@ struct __res_state {
 #define IP_MULTICAST_LOOP 0
 #define FIONREAD 0
 
+struct passwd {
+	char *pw_name;
+	uid_t pw_uid;
+	gid_t pw_gid;
+	char *pw_dir;
+	char *pw_shell;
+	char *pw_passwd;
+};
 
+static inline struct passwd *getpwuid(uid_t uid) {
+	printf(">>> getpwuid %d\n", uid);
+	return NULL;
+}
+
+static inline struct passwd *getpwnam(const char *name) {
+	printf(">>> getpwnam %s\n", name);
+	return NULL;
+}
+
+static inline struct group *getgrgid(gid_t gid) {
+	printf(">>> getgrgid %d\n", gid);
+	return NULL;
+}
 
 //uid_t getuid(void);
-
-
 
 #endif // __QEMBOX__
 

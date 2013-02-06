@@ -40,6 +40,7 @@ module r6040 {
 }
 
 module xemaclite {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "xilinx_emaclite.c"
 
 	option number xemaclite_base

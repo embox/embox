@@ -7,7 +7,7 @@
  */
 
 #include <assert.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 #include <stdarg.h>
 #include <stdio.h>
 
