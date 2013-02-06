@@ -72,6 +72,15 @@ extern int dup2(int flides, int flides2);
 extern int pipe(int pipefd[2]/*, int flags: O_NONBLOCK */);
 extern void _exit(int status);
 
+extern uid_t getuid(void);
+extern uid_t geteuid(void);
+
+extern uid_t getgid(void);
+extern uid_t getegid(void);
+
+extern int setuid(uid_t uid);
+extern int seteuid(uid_t uid);
+
 __END_DECLS
 
 #endif /* UNISTD_H_ */
