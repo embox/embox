@@ -9,19 +9,23 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
-#include <util/math.h>
-#include <fs/fs_drv.h>
 #include <unistd.h>
-#include <fs/ioctl.h>
-#include <fs/file_desc.h>
-#include <kernel/thread.h>
-#include <kernel/task/idx.h>
-#include <lib/linenoise.h>
-#include <drivers/tty_ng.h>
-#include <embox/unit.h>
 #include <fcntl.h>
 
-#include <fs/posix.h>
+#include <util/math.h>
+
+#include <fs/fs_drv.h>
+#include <fs/file_desc.h>
+
+#include <lib/linenoise.h>
+
+#include <kernel/thread.h>
+#include <kernel/task/idx.h>
+
+#include <drivers/tty_ng.h>
+#include <embox/unit.h>
+
+
 
 EMBOX_UNIT_INIT(tty_ng_manager_init);
 
