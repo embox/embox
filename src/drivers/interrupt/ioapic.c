@@ -120,10 +120,13 @@ static inline uint32_t irq_redir_low(unsigned int irq) {
 void irqctrl_enable(unsigned int irq) {
 	uint32_t low, high;
 
+	if (irq == 0) {
+		/* LAPIC timer interrupt */
+		return ;
+	}
+
 	low = irq_redir_low(irq);
 	high = lapic_id() << 24;
-
-	if (irq == 0) irq = 2; /* Hack. FIXME */
 
 	ioapic_write(IOAPIC_REDIR_TABLE + irq * 2 + 1, high);
 	ioapic_write(IOAPIC_REDIR_TABLE + irq * 2, low);
@@ -132,7 +135,10 @@ void irqctrl_enable(unsigned int irq) {
 void irqctrl_disable(unsigned int irq) {
 	uint32_t low;
 
-	if (irq == 0) irq = 2; /* Hack. FIXME */
+	if (irq == 0) {
+		/* LAPIC timer interrupt */
+		return ;
+	}
 
 	low = ioapic_read(IOAPIC_REDIR_TABLE + irq * 2);
 	low |= APIC_ICR_INT_MASK;

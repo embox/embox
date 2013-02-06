@@ -25,16 +25,15 @@ EMBOX_UNIT_INIT(unit_init);
 
 void startup_ap(void) {
 	extern int lapic_enable(void);
-	extern void lapic_timer_init(uint32_t quantum);
+	extern void lapic_timer_init(struct time_dev_conf *conf);
 	extern void idt_load(void);
 
 	idt_load();
 
 	lapic_enable();
+	lapic_timer_init(NULL);
 
-/*	lapic_timer_init(1);
-
-	__asm__ __volatile__ ("sti");*/
+	__asm__ __volatile__ ("sti");
 
 	while (1) {
 		;

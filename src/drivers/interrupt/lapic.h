@@ -21,6 +21,7 @@
 #define LAPIC_LVT_TR    (LOCAL_APIC_DEF_ADDR + 0x320)
 #define LAPIC_LVT_PCR   (LOCAL_APIC_DEF_ADDR + 0x340)
 #define LAPIC_TIMER_ICR	(LOCAL_APIC_DEF_ADDR + 0x380)
+#define LAPIC_TIMER_CCR	(LOCAL_APIC_DEF_ADDR + 0x390)
 #define LAPIC_TIMER_DCR	(LOCAL_APIC_DEF_ADDR + 0x3E0)
 
 static inline uint32_t lapic_read(uint32_t reg) {
