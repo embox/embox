@@ -197,24 +197,24 @@ static void bitfill(uint32_t *dest, uint32_t bitn, uint32_t pat,
 	if (bitn + len <= sizeof(*dest) * CHAR_BIT) {
 		mask1 &= mask2 != 0 ? mask2 : mask1;
 		fb_writel((pat & mask1) | (fb_readl(dest) & ~mask1), dest);
-		return;
 	}
+	else {
+		if (mask1 != 0) {
+			fb_writel((pat & mask1) | (fb_readl(dest) & ~mask1), dest);
+			++dest;
+			pat = (pat << loff) | (pat >> roff);
+			len -= sizeof(*dest) * CHAR_BIT - bitn;
+		}
 
-	if (mask1 != 0) {
-		fb_writel((pat & mask1) | (fb_readl(dest) & ~mask1), dest);
-		++dest;
-		pat = (pat << loff) | (pat >> roff);
-		len -= sizeof(*dest) * CHAR_BIT - bitn;
+		len /= sizeof(*dest) * CHAR_BIT;
+		while (len-- > 0) {
+			fb_writel(pat, dest);
+			++dest;
+			pat = (pat << loff) | (pat >> roff);
+		}
+
+		fb_writel((pat & mask2) | (fb_readl(dest) & ~mask2), dest);
 	}
-
-	len /= sizeof(*dest) * CHAR_BIT;
-	while (len-- > 0) {
-		fb_writel(pat, dest);
-		++dest;
-		pat = (pat << loff) | (pat >> roff);
-	}
-
-	*dest = (pat & mask2) | (*dest & ~mask2);
 }
 
 void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
@@ -244,7 +244,7 @@ void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 		dest += bitn / (sizeof(*dest) * CHAR_BIT);
 		bitn %= sizeof(*dest) * CHAR_BIT;
 
-		pat = roff != 0 ? pat_orig : (pat_orig << (bitn % info->var.bits_per_pixel))
+		pat = roff == 0 ? pat_orig : (pat_orig << (bitn % info->var.bits_per_pixel))
 				| (pat_orig >> (info->var.bits_per_pixel - bitn % info->var.bits_per_pixel));
 
 		bitfill(dest, bitn, pat, loff, roff, width * info->var.bits_per_pixel);
