@@ -144,6 +144,7 @@ void irqctrl_force(unsigned int irq) {
 }
 
 int i8259_irq_pending(unsigned int irq) {
+	// TODO Emm?.. -- Anton
 	return 1;
 }
 
