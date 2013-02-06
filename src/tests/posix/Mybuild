@@ -5,8 +5,5 @@ module passwd {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "passwd.c"
 
-	@InitFS
-	source "test_passwd"
-
 	depends embox.compat.posix.passwd
 }

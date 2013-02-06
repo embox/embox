@@ -7,14 +7,18 @@
  */
 
 #include <types.h>
+#include <errno.h>
+#include <stdio.h>
 #include <pwd.h>
 #include <embox/test.h>
 
 EMBOX_TEST_SUITE("passwd");
 
-#define TEST_DB "/test_passwd"
+#define PASSWD_FILE "/passwd"
 
-#define BUF_LEN (512)
+#define BUF_LEN 512
+#define SMALL_BUF_LEN 1
+#define NONEXISTING_NAME "nonexisting"
 
 const struct passwd root_passwd = {
 	.pw_name = "root",
@@ -40,7 +44,7 @@ TEST_CASE("Existing entry should be find by name") {
 	char buf[BUF_LEN];
 	struct passwd pwd, *result;
 
-	getpwby_db_r(TEST_DB, root_passwd.pw_name, 0, &pwd, buf, BUF_LEN, &result);
+	test_assert_zero(getpwnam_r(root_passwd.pw_name, &pwd, buf, BUF_LEN, &result));
 
 	test_assert_zero(passwdcmp(&root_passwd, result));
 }
@@ -49,7 +53,38 @@ TEST_CASE("Existing entry should be find by uid") {
 	char buf[BUF_LEN];
 	struct passwd pwd, *result;
 
-	getpwby_db_r(TEST_DB, NULL, root_passwd.pw_uid, &pwd, buf, BUF_LEN, &result);
+	test_assert_zero(getpwuid_r(root_passwd.pw_uid, &pwd, buf, BUF_LEN, &result));
 
 	test_assert_zero(passwdcmp(&root_passwd, result));
+}
+
+TEST_CASE("Nonexisting entry shouldn't be find") {
+	char buf[BUF_LEN];
+	struct passwd pwd, *result;
+
+	test_assert_zero(getpwnam_r(NONEXISTING_NAME, &pwd, buf, BUF_LEN, &result));
+	test_assert_zero(result);
+}
+
+TEST_CASE("fgetpwent should return ERANGE on small buffer") {
+	char buf[SMALL_BUF_LEN];
+	struct passwd pwd, *result;
+	FILE *f = fopen(PASSWD_FILE, "r");
+
+	test_assert_equal(fgetpwent_r(f, &pwd, buf, SMALL_BUF_LEN, &result), ERANGE);
+
+	fclose(f);
+}
+
+TEST_CASE("fgetpwent should return ENOENT after last entry") {
+	char buf[BUF_LEN];
+	struct passwd pwd, *result;
+	FILE *f = fopen(PASSWD_FILE, "r");
+
+	test_assert_zero(fgetpwent_r(f, &pwd, buf, BUF_LEN, &result));
+	test_assert_zero(passwdcmp(&root_passwd, result));
+	test_assert_zero(fgetpwent_r(f, &pwd, buf, BUF_LEN, &result));
+	test_assert_equal(fgetpwent_r(f, &pwd, buf, BUF_LEN, &result), ENOENT);
+
+	fclose(f);
 }

@@ -32,12 +32,16 @@ static int read_field(FILE *stream, char **buf, size_t *buflen, char **field,
 	*field = *buf;
 
 	while (ch != delim) {
+		if (ch == EOF) {
+			return EOF;
+		}
+
 		if (ch == ':' || ch == '\n') {
-			return -EIO;
+			return EIO;
 		}
 
 		if (*buflen <= 0) {
-			return -ERANGE;
+			return ERANGE;
 		}
 
 		*((*buf)++) = (char) ch;
@@ -61,13 +65,13 @@ static int read_int_field(FILE *stream, unsigned short *field, int delim) {
 	int ret = fscanf(stream, "%d", &val);
 
 	if (0 > ret) {
-		return ret;
+		return -ret;
 	}
 
 	*field = val;
 
 	if (delim != (val = fgetc(stream))) {
-		return -EIO;
+		return EIO;
 	}
 
 	return 0;
@@ -109,49 +113,74 @@ static int read_pwd(FILE *stream, char *buf, size_t buflen, struct passwd *pwd) 
 	return 0;
 }
 
-int getpwby_db_r(const char *db_path, const char *name, uid_t uid,
-		struct passwd *pwd, char *buf, size_t buflen,
+int fgetpwent_r(FILE *file, struct passwd *pwd, char *buf, size_t buflen,
 		struct passwd **result) {
+
+	int res = read_pwd(file, buf, buflen, pwd);
+
+	if (res == EOF) {
+		*result = NULL;
+		return ENOENT;
+	}
+
+	*result = pwd;
+	return res;
+
+}
+
+int getpwnam_r(const char *name, struct passwd *pwd,
+		char *buf, size_t buflen, struct passwd **result) {
 	int res;
 	FILE *file;
-	if (0 != (res = open_db(db_path, &file))) {
+
+	if (0 != (res = open_db(PASSWD_FILE, &file))) {
 		return res;
 	}
 
-	if (name) {
-		while (0 == (res = read_pwd(file, buf, buflen, pwd))) {
-			if (0 == strcmp(pwd->pw_name, name)) {
-				break;
-			}
-		}
-	} else {
-		while (0 == (res = read_pwd(file, buf, buflen, pwd))) {
-			if (pwd->pw_uid == uid) {
-				break;
-			}
+	while (0 == (res = fgetpwent_r(file, pwd, buf, buflen, result))) {
+		if (0 == strcmp(pwd->pw_name, name)) {
+			break;
 		}
 	}
 
 	fclose(file);
 
-	if (res) {
-		errno = -res;
-		result = NULL;
-	} else {
-		*result = pwd;
+	if (0 != res) {
+		*result = NULL;
 	}
 
-	return res ? -1 : 0;
-}
+	if (res == ENOENT) {
+		return 0;
+	} else if (res != 0) {
+		return res;
+	}
 
-int getpwnam_r(const char *name, struct passwd *pwd,
-		char *buf, size_t buflen, struct passwd **result) {
-	return getpwby_db_r(PASSWD_FILE, name, 0, pwd, buf, buflen, result);
-}
+	return 0;
 
+}
 
 int getpwuid_r(uid_t uid, struct passwd *pwd,
 		char *buf, size_t buflen, struct passwd **result) {
-	return getpwby_db_r(PASSWD_FILE, NULL, uid, pwd, buf, buflen, result);
+	int res;
+	FILE *file;
+
+	if (0 != (res = open_db(PASSWD_FILE, &file))) {
+		return res;
+	}
+
+	while (0 == (res = fgetpwent_r(file, pwd, buf, buflen, result))) {
+		if (pwd->pw_uid == uid) {
+			break;
+		}
+	}
+
+	fclose(file);
+
+	if (0 != res) {
+		result = NULL;
+		return -1;
+	}
+
+	return 0;
 }
 
