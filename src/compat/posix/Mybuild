@@ -58,3 +58,8 @@ static module open {
 static module sched {
 	source "sched_posix.c"
 }
+
+static module passwd {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "passwd.c"
+}
