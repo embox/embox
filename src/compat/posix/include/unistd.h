@@ -15,6 +15,8 @@
 #include <sys/stat.h>
 #include <sys/cdefs.h>
 
+#include <kernel/task.h>
+
 __BEGIN_DECLS
 
 /* Standard file descriptors. */
@@ -61,7 +63,7 @@ extern int unlink(const char *pathname);
 extern int rmdir(const char *pathname);
 
 static inline pid_t getpid(void) {
-	return -1;
+	return task_getid();
 }
 
 extern int isatty(int fd);
