@@ -20,6 +20,7 @@
 #include <lib/linenoise.h>
 
 #include <kernel/thread.h>
+#include <kernel/task.h>
 #include <kernel/task/idx.h>
 
 #include <drivers/tty_ng.h>
