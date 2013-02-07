@@ -63,31 +63,23 @@ static struct uart_stm32 * uart1 = UART1;
 #define RCC_APB2GPIOx 0x000001fc
 #define RCC_APB2AFIO  0x00000001
 
-static char diag_stm32_usart_getc(void) {
+char diag_getc(void) {
 	while (!(REG_LOAD(&uart1->sr) & USART_FLAG_RXNE));
 
 	return REG_LOAD(&uart1->dr);
 }
 
-static void diag_stm32_usart_putc(char ch) {
+void diag_putc(char ch) {
 	while (!(REG_LOAD(&uart1->sr) & USART_FLAG_TXE)) { }
 
 	REG_STORE(&uart1->dr, ch);
 }
 
-static int diag_stm32_usart_kbhit(void) {
+int diag_kbhit(void) {
 	return 0; /* TODO */
 }
 
-static const struct diag_ops diag_stm32_usart_ops = {
-	.getc = &diag_stm32_usart_getc,
-	.putc = &diag_stm32_usart_putc,
-	.kbhit = &diag_stm32_usart_kbhit
-};
-
 void diag_init(void) {
-	diag_common_set_ops(&diag_stm32_usart_ops);
-
 	REG_ORIN(RCC_APB1RSTR,RCC_APB1PWR);
 	REG_ORIN(RCC_APB2ENR,RCC_APB2GPIOx);
 	REG_ORIN(RCC_APB2ENR,RCC_APB2AFIO);

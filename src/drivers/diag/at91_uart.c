@@ -24,30 +24,23 @@
 
 #define TTGR_DISABLE 0
 
-static int diag_at91_uart_kbhit(void) {
+int diag_kbhit(void) {
 	return (AT91C_US_RXRDY & REG_LOAD(AT91C_US0_CSR));
 }
 
-static char diag_at91_uart_getc(void) {
-	while (!diag_at91_uart_kbhit()) {
+char diag_getc(void) {
+	while (!diag_kbhit()) {
 	}
 	return (char) REG_LOAD(AT91C_US0_RHR);
 }
 
-static void diag_at91_uart_putc(char ch) {
+void diag_putc(char ch) {
 	while (!(AT91C_US_TXRDY & REG_LOAD(AT91C_US0_CSR))) {
 	}
 	REG_STORE(AT91C_US0_THR, (unsigned long) ch);
 }
 
-static const struct diag_ops diag_at91_uart_ops = {
-	.getc = &diag_at91_uart_getc,
-	.putc = &diag_at91_uart_putc,
-	.kbhit = &diag_at91_uart_kbhit
-};
-
 void diag_init(void) {
-	diag_common_set_ops(&diag_at91_uart_ops);
 	/* Disabling controling PA5 and PA6 by PIO */
 	REG_STORE(AT91C_PIOA_PDR, AT91C_PA5_RXD0 | AT91C_PA6_TXD0);
 	/* Selecting control by USART controller */
@@ -64,5 +57,4 @@ void diag_init(void) {
 	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_US0);
 	/* enabling RX, TX */
 	REG_STORE(AT91C_US0_CR, AT91C_US_RXEN | AT91C_US_TXEN);
-
 }

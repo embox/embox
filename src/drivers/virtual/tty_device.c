@@ -46,7 +46,7 @@ static int tty_device_close(struct file_desc *desc) {
 static size_t tty_device_read(struct file_desc *desc, void *buf, size_t size) {
 	if (size == 0) return 0;
 
-	*(char *)buf = diag_getc();
+	*(char *)buf = iodev_getc();
 	return sizeof(char);
 }
 
@@ -56,7 +56,7 @@ static size_t tty_device_write(struct file_desc *desc, void *buf, size_t size) {
 
 	data = (const char *)buf;
 	for (i = 0; i < size; ++i)
-		diag_putc(data[i]);
+		iodev_putc(data[i]);
 
 	return size;
 }

@@ -11,11 +11,11 @@ module GraphicMode extends Display {
 	source "graphic_init.c"
 
 	depends embox.driver.video.fb
-	depends embox.driver.diag.diag_video_api
+	depends embox.driver.iodev.core
+	depends embox.driver.iodev.iodev_video
 }
 
 module TextMode extends Display {
-	depends embox.driver.diag.diag_api
 }
 
 

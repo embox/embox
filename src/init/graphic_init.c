@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <drivers/iodev.h>
 #include <drivers/video/vesa.h>
 #include <drivers/video/fb.h>
 #include <embox/unit.h>
@@ -16,9 +17,6 @@
 
 EMBOX_UNIT_INIT(graphic_init);
 extern const struct fb_videomode *fb_desc_to_videomode(int x, int y, int depth);
-
-#include <drivers/diag.h>
-extern const struct diag_ops diag_vga_ops;
 
 static int graphic_init(void) {
 	int ret;
@@ -47,7 +45,10 @@ static int graphic_init(void) {
 		return ret;
 	}
 
-	diag_common_set_ops(&diag_vga_ops);
+	ret = iodev_setup_video();
+	if (ret != 0) {
+		return ret;
+	}
 
 	return 0;
 }

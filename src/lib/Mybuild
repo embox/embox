@@ -149,9 +149,10 @@ static module LibCStdio {
 	source "stdio/printk.c"
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
+
 	depends LibCMath
 	depends LibCString
-
+	depends embox.driver.iodev.core
 }
 
 static module LibC {
