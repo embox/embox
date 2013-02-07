@@ -65,4 +65,7 @@ static module passwd {
 
 	@InitFS
 	source "passwd"
+
+	@InitFS
+	source "shadow"
 }

@@ -78,8 +78,13 @@ extern uid_t geteuid(void);
 extern uid_t getgid(void);
 extern uid_t getegid(void);
 
+extern int setreuid(uid_t ruid, uid_t euid);
 extern int setuid(uid_t uid);
 extern int seteuid(uid_t uid);
+
+extern int setregid(gid_t rgid, gid_t egid);
+extern int setgid(gid_t gid);
+extern int setegid(gid_t gid);
 
 __END_DECLS
 

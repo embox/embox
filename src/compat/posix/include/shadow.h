@@ -21,14 +21,14 @@ struct spwd {
 };
 
 #if 0
-extern struct spwd *getspent();
+extern struct spwd *getspent(void);
 extern struct swpd *getspname(char *name);
 
-extern void setspent();
+extern void setspent(void);
 
-extern int lckpwdf();
+extern int lckpwdf(void);
 
-extern int ulckpwdf();
+extern int ulckpwdf(void);
 #endif
 
 extern struct spwd *fgetspent(FILE *file);
