@@ -4,6 +4,20 @@ module diag_common {
 	source "diag_common.c"
 }
 
+@DefaultImpl(no_diag_video)
+abstract module diag_video_api {
+}
+
+module no_diag_video extends diag_video_api {
+	source "no_diag_video.c"
+	depends diag_common
+}
+
+module vga extends diag_video_api {
+	source "vga.c"
+	depends diag_common
+}
+
 abstract module diag_api {
 }
 
@@ -38,8 +52,8 @@ module i8250 extends diag_api {
 	depends diag_common
 }
 
-module vga extends diag_api {
-	source "vga.c"
+module vga_early extends diag_api {
+	source "vga_early.c"
 
 	depends diag_common
 	depends embox.driver.video.vga
