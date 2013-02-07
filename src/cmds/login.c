@@ -24,7 +24,7 @@ EMBOX_CMD(login_cmd);
 
 #define BUF_LEN 64
 
-#define LOGIN_PROMPT "\n\nlogin: "
+#define LOGIN_PROMPT "login: "
 #define PASSW_PROMPT "password: "
 
 #define SHADOW_FILE "/shadow"
@@ -74,6 +74,7 @@ static int login_cmd(int argc, char **argv) {
 
 
 	while (1) {
+		printf("\n\n");
 		if (0 > (res = linenoise(LOGIN_PROMPT, namebuf, BUF_LEN, NULL, NULL))) {
 			continue;
 		}
