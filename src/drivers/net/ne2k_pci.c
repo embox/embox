@@ -160,8 +160,6 @@ static inline void copy_data_from_card(uint16_t src, uint8_t *dest,
 	}
 }
 
-#include <prom/prom_printf.h>
-
 static int start_xmit(struct sk_buff *skb, struct net_device *dev) {
 	uint16_t count;
 	unsigned long base_addr;

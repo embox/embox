@@ -16,12 +16,10 @@
 #include <embox/unit.h>
 #include <mem/heap.h>
 
-
+#include <kernel/printk.h>
 
 #define DEBUG 0
 #if DEBUG
-#include <kernel/printk.h>
-
 #define printd(...) printk(__VA_ARGS__)
 #else
 #define printd(...) do {} while(0);
@@ -250,7 +248,6 @@ void *malloc(size_t size) {
 	return memalign(0, size);
  }
 
-#include <prom/prom_printf.h>
 void free(void *ptr) {
 	struct free_block *block;
 
@@ -259,7 +256,7 @@ void free(void *ptr) {
 	}
 
 	if (ptr < pool || ptr >= pool_end) {
-		prom_printf("***** free(): incorrect address space\n");
+		printk("***** free(): incorrect address space\n");
 		return;
 	}
 	/* assert((ptr < pool) || (ptr >= pool_end)); */;
@@ -267,7 +264,7 @@ void free(void *ptr) {
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
 
 	if (!block_is_busy(block)) {
-		prom_printf("***** free(): the block not busy\n");
+		printk("***** free(): the block not busy\n");
 		return; /* if we try to free block more than once */
 	}
 

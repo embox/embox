@@ -31,6 +31,7 @@
 #include <kernel/time/ktime.h>
 
 #include <kernel/task/io_sync.h>
+#include <prom/prom_printf.h>
 
 EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
 

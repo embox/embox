@@ -9,7 +9,6 @@
 #include <hal/context.h>
 #include <embox/test.h>
 #include <stdio.h>
-#include <prom/prom_printf.h>
 #define STACK_SZ 0x10000
 
 EMBOX_TEST(run);

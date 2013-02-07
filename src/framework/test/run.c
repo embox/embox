@@ -16,7 +16,7 @@
 #include <string.h>
 #include <setjmp.h>
 
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 #include <util/location.h>
 
 #include <framework/test/api.h>
@@ -64,7 +64,7 @@ int test_suite_run(const struct test_suite *test) {
 
 	fixture_ops = &test->suite_fixture_ops;
 
-	prom_printf("\ttest: running %s ", test_name(test));
+	printk("\ttest: running %s ", test_name(test));
 
 	if ((fx_op = *fixture_ops->p_setup) && (ret = fx_op()) != 0) {
 		handle_suite_fixture_failure(test, ret, 1);
@@ -147,26 +147,26 @@ void __test_assertion_handle(int pass,
 
 static void handle_suite_fixture_failure(const struct test_suite *test_suite,
 		int code, int setup) {
-	prom_printf("\n\tsuite fixture %s failed with code %d: %s\n",
+	printk("\n\tsuite fixture %s failed with code %d: %s\n",
 			setup ? "setup" : "tear down", code, strerror(-code));
 }
 
 static void handle_suite_result(const struct test_suite *test_suite,
 		int failures, int total) {
 	if (failures > 0) {
-		prom_printf("\n\ttesting %s (%s) failed\n"
+		printk("\n\ttesting %s (%s) failed\n"
 				"\t\t%d/%d failures\n",
 				test_name(test_suite), test_suite->description,
 				failures, total);
 	} else if (!failures) {
-		prom_printf(" done\n");
+		printk(" done\n");
 	}
 
 }
 
 static void handle_case_fixture_failure(const struct test_case *test_case,
 		int code, int setup) {
-	prom_printf("\n\tcase fixture %s failed with code %d: %s\n",
+	printk("\n\tcase fixture %s failed with code %d: %s\n",
 			setup ? "setup" : "tear down", code, strerror(-code));
 }
 
@@ -176,18 +176,18 @@ static void handle_case_result(const struct test_case *test_case,
 	const struct location_func __attribute__ ((unused)) *fail_loc;
 
 	if (!failure) {
-		prom_printf(".");
+		printk(".");
 		return;
 	}
 
 	test_loc = &test_case->location;
 	fail_loc = &failure->location;
 
-	prom_printf("\n\tfailure at %s : %d, in function %s\n"
+	printk("\n\tfailure at %s : %d, in function %s\n"
 			"\t\t%s\n",
 			fail_loc->at.file, fail_loc->at.line, fail_loc->func,
 			failure->reason);
-	prom_printf("\t   case at %s : %d\n"
+	printk("\t   case at %s : %d\n"
 			"\t\t\"%s\"\n\t",
 			test_loc->file, test_loc->line, test_case->description);
 }

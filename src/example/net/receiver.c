@@ -17,7 +17,7 @@
 #include <net/socket.h>
 #include <framework/example/self.h>
 #include <getopt.h>
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 #include <err.h>
 
 EMBOX_EXAMPLE(exec);
@@ -37,7 +37,7 @@ static int exec(int argc, char **argv) {
 	//sock2 = socket(AF_INET, SOCK_DGRAM, 0);
 	/* check if file descriptor is positive*/
 	if (sock < 0) {
-		prom_printf("%s", "can't create socket!");
+		printk("%s", "can't create socket!");
 		return sock;
 	}
 
@@ -53,19 +53,19 @@ static int exec(int argc, char **argv) {
 	/* assigns the address specified to by addr to the socket referred to
 	 * by the file descriptor sock. You can bind only one socket on port of concrete type */
 	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
-		prom_printf("%s","sock can't bind!");
+		printk("%s","sock can't bind!");
 		return -1;
 	}
 
 	/*if(bind(sock2, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
-	     prom_printf("%s","sock2 can't bind!");
+	     printk("%s","sock2 can't bind!");
 	}*/
 
 	/* write data form socket in buffer buf. And then print buffer data */
 	while (1) {
 		bytes_read = recvfrom(sock, buf, 1024, 0, NULL, NULL);
 		buf[bytes_read] = '\0';
-		prom_printf("%s",buf);
+		printk("%s",buf);
 	}
 
 	return 0;

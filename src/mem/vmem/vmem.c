@@ -19,6 +19,7 @@
 
 #include "../kernel/task/common.h"
 #include <types.h>
+#include <kernel/printk.h>
 
 /* Section pointers. */
 extern char _text_vma, _rodata_vma, _bss_vma, _data_vma, _reserve_vma, _stack_vma, _heap_vma;
@@ -88,18 +89,18 @@ void vmem_free_context(mmu_ctx_t ctx) {
 
 /*
 static inline void vmem_print_info(void) {
-	prom_printf("\n");
-	prom_printf("MMU_PTE_MASK = 0x%08x\n", (unsigned int) MMU_PTE_MASK);
-	prom_printf("MMU_PMD_MASK = 0x%08x\n", (unsigned int) MMU_PMD_MASK);
-	prom_printf("MMU_PGD_MASK = 0x%08x\n", (unsigned int) MMU_PGD_MASK);
+	printk("\n");
+	printk("MMU_PTE_MASK = 0x%08x\n", (unsigned int) MMU_PTE_MASK);
+	printk("MMU_PMD_MASK = 0x%08x\n", (unsigned int) MMU_PMD_MASK);
+	printk("MMU_PGD_MASK = 0x%08x\n", (unsigned int) MMU_PGD_MASK);
 
-	prom_printf("\n");
-	prom_printf("   text: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_text_vma, (unsigned int) &_text_len);
-	prom_printf(" rodata: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_rodata_vma, (unsigned int) &_rodata_len);
-	prom_printf("    bss: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_bss_vma, (unsigned int) &_bss_len);
-	prom_printf("   data: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_data_vma, (unsigned int) &_data_len);
-	prom_printf("reserve: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_reserve_vma, (unsigned int) &_reserve_len);
-	prom_printf("  stack: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_stack_vma, (unsigned int) &_stack_len);
-	prom_printf("   heap: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_heap_vma, (unsigned int) &_heap_len);
+	printk("\n");
+	printk("   text: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_text_vma, (unsigned int) &_text_len);
+	printk(" rodata: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_rodata_vma, (unsigned int) &_rodata_len);
+	printk("    bss: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_bss_vma, (unsigned int) &_bss_len);
+	printk("   data: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_data_vma, (unsigned int) &_data_len);
+	printk("reserve: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_reserve_vma, (unsigned int) &_reserve_len);
+	printk("  stack: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_stack_vma, (unsigned int) &_stack_len);
+	printk("   heap: start = 0x%08x, size = 0x%08x\n", (unsigned int) &_heap_vma, (unsigned int) &_heap_len);
 }
 */

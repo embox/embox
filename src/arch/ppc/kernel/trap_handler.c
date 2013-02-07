@@ -6,12 +6,12 @@
  */
 
 #include <asm/traps.h>
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 
 void trap_handler(struct pt_regs *regs) {
     unsigned int *r;
     r = &regs->gpr[0];
-    prom_printf(
+    printk(
             "\nTRAP[0x%X]:\n"
             " r0   %08X r1   %08X r2   %08X r3   %08X\n"
             " r4   %08X r5   %08X r6   %08X r7   %08X\n"
