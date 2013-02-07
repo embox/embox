@@ -114,7 +114,7 @@ static int find_active(int nfds, fd_set *set, char op) {
 			} else {
 				state = op == 'r' ? &desc->data->read_state
 						: &desc->data->write_state;
-				if ((desc->flags & O_NONBLOCK) || state->can_perform_op) {
+				if (state->can_perform_op) {
 					fd_cnt++;
 				} else {
 					FD_CLR(fd, set);
