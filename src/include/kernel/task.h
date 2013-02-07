@@ -13,6 +13,7 @@
 #include <util/array.h>
 
 #include <sys/cdefs.h>
+#include <sys/types.h>
 
 __BEGIN_DECLS
 
@@ -48,6 +49,8 @@ struct task {
 	struct task_u_area *u_area;
 
 	int err; /**< @brief Last occurred error code */
+
+	clock_t per_cpu; /**< task times */
 };
 
 struct task_resource_desc {
