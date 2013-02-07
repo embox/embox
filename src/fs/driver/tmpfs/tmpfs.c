@@ -59,14 +59,18 @@ static int tmpfs_init(void * par) {
 		return -1;
 	}
 
-	if ((NULL == (dev_node = vfs_lookup(NULL, TMPFS_DEV))) ||
-	  (NULL == (dir_node = vfs_add_path(TMPFS_DIR, NULL)))) {
+	dev_node = vfs_lookup(NULL, TMPFS_DEV);
+	if (!dev_node) {
 		return -1;
 	}
-	dir_node->type = NODE_TYPE_DIRECTORY;
 
 	/* format filesystem */
-	if (0 != tmpfs_format((void *)dev_node)) {
+	if (0 != tmpfs_format((void *) dev_node)) {
+		return -1;
+	}
+
+	dir_node = vfs_create(NULL, TMPFS_DIR, S_IFDIR);
+	if (!dir_node) {
 		return -1;
 	}
 

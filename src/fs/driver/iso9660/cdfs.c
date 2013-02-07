@@ -986,7 +986,9 @@ static int cdfs_create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath,
 			name[namelen] = 0;
 
 			strcat(full_name, name);
-			if(NULL == (node = vfs_add_path (full_name, NULL))) {
+
+			node = vfs_create_child(full_name, NULL);
+			if (!node) {
 				return -ENOMEM;
 			}
 
@@ -1061,7 +1063,7 @@ static int cdfs_create_dir_entry (struct nas *parent_nas) {
 				node->type = NODE_TYPE_DIRECTORY;
 			}
 
-			cdfs_create_file_node (node, cdfs, name, n);
+			cdfs_create_file_node(node, cdfs, n);
 		}
 
 	return 0;
