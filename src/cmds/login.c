@@ -12,11 +12,13 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include <lib/linenoise.h>
 #include <cmd/shell.h>
 #include <pwd.h>
 #include <shadow.h>
+#include <utmp.h>
 
 #include <embox/cmd.h>
 
@@ -63,6 +65,31 @@ static int pass_prompt(const char *prompt, char *buf, int buflen) {
 	return 0;
 }
 
+static int utmp_login(short ut_type, const char *ut_user) {
+	struct utmp utmp;
+	struct timeval tv;
+
+	utmp.ut_type = ut_type;
+	utmp.ut_pid = getpid();
+	snprintf(utmp.ut_line, UT_LINESIZE, "pty/%d", utmp.ut_pid);
+	snprintf(utmp.ut_id, UT_IDSIZE, "%d", utmp.ut_pid);
+	strcpy(utmp.ut_user, ut_user);
+	memset(&utmp.ut_host, 0, UT_HOSTSIZE);
+	memset(&utmp.ut_exit, 0, sizeof(struct exit_status));
+
+	gettimeofday(&tv, NULL);
+
+	utmp.ut_tv.tv_sec = tv.tv_sec;
+	utmp.ut_tv.tv_usec = tv.tv_usec;
+
+	setutent();
+
+	if (NULL == pututline(&utmp)) {
+		return errno;
+	}
+
+	return 0;
+}
 
 static int login_cmd(int argc, char **argv) {
 	int res, len;
@@ -72,6 +99,9 @@ static int login_cmd(int argc, char **argv) {
 	FILE *shdwf;
 	const struct shell *shell;
 
+	if (0 != (res = utmp_login(LOGIN_PROCESS, ""))) {
+		return res;
+	}
 
 	while (1) {
 		printf("\n\n");
@@ -135,7 +165,13 @@ static int login_cmd(int argc, char **argv) {
 		return -ENOENT;
 	}
 
+	if (0 != (res = utmp_login(USER_PROCESS, namebuf))) {
+		return res;
+	}
+
 	shell->exec();
+
+	res = utmp_login(DEAD_PROCESS, "");
 
 	return 0;
 }
