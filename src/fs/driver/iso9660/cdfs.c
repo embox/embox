@@ -894,7 +894,7 @@ static int cdfsfs_mount(void *dev, void *dir) {
 	return cdfs_mount(dir_nas);
 }
 
-static int cdfs_create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath, int dir) {
+static int cdfs_create_file_node(node_t *dir_node, cdfs_t *cdfs, int dir) {
 	block_dev_cache_t *cache;
 	char *p;
 	iso_directory_record_t *rec;
@@ -908,7 +908,6 @@ static int cdfs_create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath,
 	struct nas *nas, *dir_nas;
 	wchar_t *wname;
 	char name[MAX_LENGTH_PATH_NAME];
-	char full_name[MAX_LENGTH_PATH_NAME];
 
 	dir_nas = dir_node->nas;
 
@@ -957,9 +956,6 @@ static int cdfs_create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath,
 				continue;
 			}
 
-			strncpy(full_name, dirpath, MAX_LENGTH_PATH_NAME);
-			strcat(full_name, "/");
-
 			if (cdfs->joliet) {
 				namelen /= 2;
 				wname = (wchar_t *) rec->name;
@@ -985,9 +981,7 @@ static int cdfs_create_file_node (node_t *dir_node, cdfs_t *cdfs, char *dirpath,
 			}
 			name[namelen] = 0;
 
-			strcat(full_name, name);
-
-			node = vfs_create_child(full_name, NULL);
+			node = vfs_create_child(dir_node, name, S_IFREG);
 			if (!node) {
 				return -ENOMEM;
 			}
