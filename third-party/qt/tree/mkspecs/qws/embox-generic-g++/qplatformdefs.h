@@ -136,7 +136,7 @@ typedef int pthread_attr_t;
 
 static inline int pthread_mutex_init (pthread_mutex_t *__mutex,
                                __const pthread_mutexattr_t *__mutexattr) {
-	DPRINT();
+	//DPRINT();
 	return 0;
 }
 
@@ -148,7 +148,7 @@ static inline int pthread_mutex_destroy (pthread_mutex_t *__mutex) {
 static inline int pthread_cond_init (pthread_cond_t *__restrict __cond,
                               __const pthread_condattr_t *__restrict
                               __cond_attr){
-	DPRINT();
+	//DPRINT();
 	return 0;
 }
 static inline int pthread_cond_destroy (pthread_cond_t *__cond){
@@ -200,7 +200,7 @@ static inline int pthread_once (pthread_once_t *__once_control,
                          void (*__init_routine) (void)){
 	//DPRINT();
 	__init_routine();
-	return -1;
+	return 0;
 }
 
 static void *global_thread_specific;
@@ -233,8 +233,8 @@ static inline int pthread_key_delete (pthread_key_t __key){
 }
 
 static inline pthread_t pthread_self (void){
-	DPRINT();
-	return -1;
+	//DPRINT();
+	return 0;
 }
 
 static inline int pthread_setcancelstate (int __state, int *__oldstate){
@@ -571,14 +571,7 @@ struct __res_state {
 #define IP_MULTICAST_LOOP 0
 #define FIONREAD 0
 
-struct passwd {
-	char *pw_name;
-	uid_t pw_uid;
-	gid_t pw_gid;
-	char *pw_dir;
-	char *pw_shell;
-	char *pw_passwd;
-};
+
 
 static inline struct passwd *getpwuid(uid_t uid) {
 	printf(">>> getpwuid %d\n", uid);
