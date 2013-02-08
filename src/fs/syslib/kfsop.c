@@ -287,26 +287,25 @@ int kformat(const char *pathname, const char *fs_type) {
 	return drv->fsop->format (node);
 }
 
-int kmount(char *dev, char *dir, char *fs_type) {
+int kmount(const char *dev, const char *dir, const char *fs_type) {
 	struct node *dev_node, *dir_node;
 	fs_drv_t *drv;
 
-	if (0 != fs_type) {
-		drv = fs_driver_find_drv((const char *) fs_type);
-		if (NULL == drv) {
-			return -EINVAL;
-		}
-		if (NULL == drv->fsop->mount) {
-			return  -ENOSYS;
-		}
-	}
-	else {
+	if (!fs_type) {
 		return -EINVAL;
 	}
 
-	/* find device */
-	if (NULL == (dev_node = vfs_lookup(NULL, (const char *) dev))) {
-		if (0 != strcmp((const char *) fs_type, "nfs")) {
+	drv = fs_driver_find_drv(fs_type);
+	if (!drv) {
+		return -EINVAL;
+	}
+	if (!drv->fsop->mount) {
+		return  -ENOSYS;
+	}
+
+		/* find device */
+	if (NULL == (dev_node = vfs_lookup(NULL, dev))) {
+		if (0 != strcmp(fs_type, "nfs")) {
 			printf("mount: no such device\n");
 			return -ENODEV;
 		}
@@ -317,11 +316,13 @@ int kmount(char *dev, char *dir, char *fs_type) {
 	/* find directory */
 	dir_node = vfs_lookup(NULL, dir);
 	if (!dir_node) {
-		return -ENOENT;
 #if 0
+		return -ENOENT;
+#else
 		/*FIXME: usually mount doesn't create a directory*/
-		if (NULL == (dir_node = vfs_add_path (dir, NULL))) {
-			return -ENODEV;/*device not found*/
+		dir_node = vfs_create(NULL, dir, S_IFDIR);
+		if (!dir_node) {
+			return -ENOENT; /*device not found*/
 		}
 		dir_node->type = NODE_TYPE_DIRECTORY;
 #endif

@@ -29,12 +29,11 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define FS_NAME  "vfat"
 #define FS_DEV  "/dev/ramdisk"
 #define FS_BLOCKS  124
-#define FS_DIR  "/test_fsop"
-#define FS_DIR3  "/test_fsop/1/2/3"
-#define FS_DIR2  "/test_fsop/1/2"
-#define FS_DIR1  "/test_fsop/1"
-#define FS_FILE1  "/test_fsop/1/2/3/1.txt"
-#define FS_FILE2  "/test_fsop/1/2/2.txt"
+#define FS_DIR    "/test_fsop"
+#define FS_DIR1   "/test_fsop/foo"
+#define FS_DIR2   "/test_fsop/foo/bar"
+#define FS_FILE1  "/test_fsop/foo/bar/abc.txt"
+#define FS_FILE2  "/test_fsop/foo/bar/xyz.txt"
 
 TEST_CASE("Create fat filesystem") {
 	test_assert_zero(format(FS_DEV, FS_NAME));
@@ -44,11 +43,10 @@ TEST_CASE("Mount fat filesystem") {
 	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME));
 }
 
-TEST_CASE("Create file 1") {
+TEST_CASE("Create files and directories") {
+	test_assert_zero(mkdir(FS_DIR1, 0));
+	test_assert_zero(mkdir(FS_DIR2, 0));
 	test_assert_zero(creat(FS_FILE1, 0));
-}
-
-TEST_CASE("Create file 2") {
 	test_assert_zero(creat(FS_FILE2, 0));
 }
 
@@ -57,7 +55,6 @@ TEST_CASE("Delete file") {
 	test_assert_zero(remove(FS_FILE2));
 	test_assert(0 > open(FS_FILE1, O_RDONLY));
 	test_assert(0 > open(FS_FILE2, O_RDONLY));
-	test_assert_zero(remove(FS_DIR3));
 	test_assert_zero(remove(FS_DIR2));
 	test_assert_zero(remove(FS_DIR1));
 	test_assert_zero(remove(FS_DIR));
