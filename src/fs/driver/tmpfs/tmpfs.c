@@ -412,7 +412,8 @@ static fs_drv_t tmpfs_drv = {
 static tmpfs_file_info_t *tmpfs_create_file(struct nas *nas) {
 	tmpfs_file_info_t *fi;
 
-	if(NULL == (fi = pool_alloc(&tmpfs_file_pool))) {
+	fi = pool_alloc(&tmpfs_file_pool);
+	if (!fi) {
 		return NULL;
 	}
 
@@ -422,43 +423,38 @@ static tmpfs_file_info_t *tmpfs_create_file(struct nas *nas) {
 	return fi;
 }
 
-static int tmpfs_create(struct node *parent_node, struct node *node) {
-	struct nas *nas, *parents_nas;
-	int node_quantity;
-	char path[MAX_LENGTH_PATH_NAME];
+static node_t *tmpfs_create_dot(node_t *parent_node, const char *name) {
+	node_t *dot_node;
+	struct nas *parent_nas, *nas;
 
-	parents_nas = parent_node->nas;
+	parent_nas = parent_node->nas;
 
-	if (node_is_directory(node)) {
-		node_quantity = 3; /* need create . and .. directory */
-	}
-	else {
-		node_quantity = 1;
-	}
-	vfs_get_path_by_node(node, path);
-
-	for (int count = 0; count < node_quantity; count ++) {
-		if(0 < count) {
-			if(1 == count) {
-				strcat(path, "/.");
-			}
-			else if(2 == count) {
-				strcat(path, ".");
-			}
-			if(NULL == (node = vfs_add_path (path, NULL))) {
-				return -ENOMEM;
-			}
-		}
-
-		nas = node->nas;
-		nas->fs = parents_nas->fs;
+	dot_node = vfs_create_child(parent_node, name, S_IFDIR);
+	if (dot_node) {
+		nas = dot_node->nas;
+		nas->fs = parent_nas->fs;
 		/* don't need create fi for directory - take root node fi */
-		nas->fi->privdata = parents_nas->fi->privdata;
+		nas->fi->privdata = parent_nas->fi->privdata;
+	}
 
-		if((0 >= count) & (!node_is_directory(node))) {
-			if(NULL == (nas->fi->privdata = tmpfs_create_file(nas))) {
-				return -ENOMEM;
-			}
+	return dot_node;
+}
+
+static int tmpfs_create(struct node *parent_node, struct node *node) {
+	struct nas *nas;
+
+	nas = node->nas;
+
+	if (!node_is_directory(node)) {
+		if (!(nas->fi->privdata = tmpfs_create_file(nas))) {
+			return -ENOMEM;
+		}
+		nas->fs = parent_node->nas->fs;
+
+	} else {
+		if (!tmpfs_create_dot(node, ".") ||
+			!tmpfs_create_dot(node, "..")) {
+			return -ENOMEM;
 		}
 	}
 

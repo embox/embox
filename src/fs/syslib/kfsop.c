@@ -19,29 +19,33 @@
 #include <fs/fs_drv.h>
 #include <fs/kfsop.h>
 
-static int create_new_node(struct node * parent, char *node_name, mode_t mode) {
-	struct node *new_node;
-	struct nas *nas;
+static int create_new_node(struct node *parent, char *name, mode_t mode) {
+	struct node *node;
 	fs_drv_t *drv;
+	int retval = 0;
 
-	if(NULL == (new_node = vfs_add_path(node_name, parent))) {
-		return -1;
+	node = vfs_create(parent, name, mode);
+	if (!node) {
+		return -ENOMEM;
 	}
-	new_node->type = mode;
-	new_node->mode = mode;
 
 	/* check drv of parents */
-	nas = parent->nas;
-	drv = nas->fs->drv;
-	if ((NULL == drv) || (NULL == drv->fsop->create_node)) {
-		return -1;
+	drv = parent->nas->fs->drv;
+	if (!drv || !drv->fsop->create_node) {
+		retval = -1;
+		goto out;
 	}
 
-	if(0 > drv->fsop->create_node(parent, new_node)) {
-		vfs_del_leaf(new_node);
-		return -1;
+	retval = drv->fsop->create_node(parent, node);
+	if (retval) {
+		goto out;
 	}
+
 	return 0;
+
+out:
+	vfs_del_leaf(node);
+	return retval;
 }
 
 int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
@@ -100,20 +104,20 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 		path_get_next_name(path + path_offset, node_name, sizeof(node_name));
 	}
 
-//	return create_new_node(node, node_name, mode | S_IFREG);
-	return create_new_node(node, node_name, NODE_TYPE_FILE);
+	return create_new_node(node, node_name, mode | S_IFREG);
+	// return create_new_node(node, node_name, NODE_TYPE_FILE);
 #else
 
 	do {
 		path_get_next_name(&path[path_offset], node_name, sizeof(node_name));
-		if((path_offset + strlen(node_name) + 1) >= strlen(path)) {
-			if(0 == strlen(node_name)) {
+		if ((path_offset + strlen(node_name) + 1) >= strlen(path)) {
+			if (0 == strlen(node_name)) {
 				path_get_next_name(&path[path_offset], node_name, sizeof(node_name));
 			}
 			/* this is a file */
 			return create_new_node(node, node_name, NODE_TYPE_FILE);
 		} else {
-			if(-1 == kmkdir(node, node_name, mode)) {
+			if (-1 == kmkdir(node, node_name, mode)) {
 				return -1;
 			}
 
@@ -155,7 +159,7 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 
 	/* get last exist node */
 	node = vfs_get_exist_path(path, tpath, sizeof(tpath));
-	if(NULL == node) {
+	if (NULL == node) {
 		return -1;
 	}
 
@@ -163,11 +167,11 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 
 	do {
 		path_get_next_name(&path[path_offset], node_name, sizeof(tpath));
-		if(0 == strlen(node_name)) {
+		if (0 == strlen(node_name)) {
 			return 0; /* we create all directory */
 		}
-		if(0 != (rc = create_new_node(node, node_name, NODE_TYPE_DIRECTORY))) {
-//		if(0 != (rc = create_new_node(node, node_name, S_IFDIR | S_IRUSR))) {
+		if (0 != (rc = create_new_node(node, node_name, NODE_TYPE_DIRECTORY))) {
+//		if (0 != (rc = create_new_node(node, node_name, S_IFDIR | S_IRUSR))) {
 			return -rc;
 		}
 		path_offset += (strlen(node_name) + 1);
@@ -210,13 +214,13 @@ int kunlink(const char *pathname) {
 
 	node = vfs_lookup(NULL, pathname);
 	/*
-	if(0 == (node->type & S_IWRITE)) {
+	if (0 == (node->type & S_IWRITE)) {
 		return -EPERM;
 	}
 	*/
 	nas = node->nas;
 	drv = nas->fs->drv;
-	if(NULL == drv->fsop->delete_node) {
+	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
 		return -1;
 	}
@@ -233,7 +237,7 @@ int krmdir(const char *pathname) {
 	nas = node->nas;
 	drv = nas->fs->drv;
 
-	if(NULL == drv->fsop->delete_node) {
+	if (NULL == drv->fsop->delete_node) {
 		return -1;
 	}
 
@@ -244,7 +248,7 @@ int krmdir(const char *pathname) {
 int klstat(const char *path, struct stat *buf) {
 	node_t *node;
 
-	if(NULL == (node = vfs_lookup(NULL, path))) {
+	if (NULL == (node = vfs_lookup(NULL, path))) {
 		return -1;
 	}
 
@@ -257,9 +261,9 @@ int kformat(const char *pathname, const char *fs_type) {
 	node_t *node;
 	fs_drv_t *drv;
 
-	if(0 != fs_type) {
+	if (0 != fs_type) {
 		drv = fs_driver_find_drv((const char *) fs_type);
-		if(NULL == drv) {
+		if (NULL == drv) {
 			return -EINVAL;
 		}
 		if (NULL == drv->fsop->format) {
@@ -271,11 +275,11 @@ int kformat(const char *pathname, const char *fs_type) {
 	}
 
 	node = vfs_lookup(NULL, pathname);
-	if(NULL == node) {
+	if (NULL == node) {
 		return -ENODEV;
 	}
 	/*
-	if(0 == (node->type & S_IWRITE)) {
+	if (0 == (node->type & S_IWRITE)) {
 		return -EPERM;
 	}
 	*/
@@ -287,9 +291,9 @@ int kmount(char *dev, char *dir, char *fs_type) {
 	struct node *dev_node, *dir_node;
 	fs_drv_t *drv;
 
-	if(0 != fs_type) {
+	if (0 != fs_type) {
 		drv = fs_driver_find_drv((const char *) fs_type);
-		if(NULL == drv) {
+		if (NULL == drv) {
 			return -EINVAL;
 		}
 		if (NULL == drv->fsop->mount) {
@@ -301,8 +305,8 @@ int kmount(char *dev, char *dir, char *fs_type) {
 	}
 
 	/* find device */
-	if(NULL == (dev_node = vfs_lookup(NULL, (const char *) dev))) {
-		if(0 != strcmp((const char *) fs_type, "nfs")) {
+	if (NULL == (dev_node = vfs_lookup(NULL, (const char *) dev))) {
+		if (0 != strcmp((const char *) fs_type, "nfs")) {
 			printf("mount: no such device\n");
 			return -ENODEV;
 		}
@@ -311,12 +315,16 @@ int kmount(char *dev, char *dir, char *fs_type) {
 		}
 	}
 	/* find directory */
-	if (NULL == (dir_node = vfs_lookup(NULL, dir))) {
+	dir_node = vfs_lookup(NULL, dir);
+	if (!dir_node) {
+		return -ENOENT;
+#if 0
 		/*FIXME: usually mount doesn't create a directory*/
 		if (NULL == (dir_node = vfs_add_path (dir, NULL))) {
 			return -ENODEV;/*device not found*/
 		}
 		dir_node->type = NODE_TYPE_DIRECTORY;
+#endif
 	}
 
 	return drv->fsop->mount(dev_node, dir_node);
