@@ -97,13 +97,13 @@ int cpio_unpack(node_t *dir_node) {
 			node->type = NODE_TYPE_DIRECTORY | S_IREAD; /* read only file */
 			((struct nas *)(node->nas))->fi =(void *) &param;
 			nas->fs->drv->fsop->create_node(dir_node, node);
+
 		} else {
 			/* this is a regular file */
-			if (!(node = vfs_add_path(param.name, dir_node))) {
+			node = vfs_create_child(dir_node, param.name, S_IFREG | S_IRUSR);
+			if (!node) {
 				return 0; /* file already exists */
 			}
-			node->type = NODE_TYPE_FILE | S_IREAD; /* read only file */
-//			node->mode = S_IFREG | S_IRUSR; /* read only file */
 			((struct nas *) (node->nas))->fi = (void *) &param;
 			nas->fs->drv->fsop->create_node(dir_node, node);
 		}
