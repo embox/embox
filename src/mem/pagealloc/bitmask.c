@@ -265,6 +265,16 @@ void *page_alloc(struct page_allocator *allocator, size_t page_q) {
 	return search_multi_page(allocator, page_q);
 }
 
+void *page_alloc_zero(struct page_allocator *allocator, size_t page_q) {
+	char *page_p;
+
+	if(NULL != (page_p = page_alloc(allocator, page_q))) {
+		memset(page_p, 0, PAGE_SIZE());
+	}
+
+	return page_p;
+}
+
 void page_free(struct page_allocator *allocator, void *page, size_t page_q) {
 	int word_offset;
 	int bit_offset;
