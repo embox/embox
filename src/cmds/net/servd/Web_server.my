@@ -3,4 +3,6 @@ package embox.cmd.net
 module web_server {
 	@IncludePath("$(THIRDPARTY_DIR)/include")
 	source "web_server.c"
+	option string default_page="index.html"
+	option number max_services_amount=10
 }

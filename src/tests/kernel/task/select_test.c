@@ -13,7 +13,6 @@
 #include <kernel/task.h>
 #include <kernel/thread/sched.h>
 #include <sys/select.h>
-#include <prom/prom_printf.h>
 #include <math.h>
 
 EMBOX_TEST_SUITE("select test");

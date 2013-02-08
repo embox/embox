@@ -270,7 +270,7 @@ static int begin_splash(void) {
 	display_clear_screen();
 	display_string("\nnxtSnake\n\nUp + Down = exit\nEat't up!");
 	while (!nxt_buttons_was_pressed()) {
-		usleep(100);
+		msleep(100);
 	}
 	return 1;
 }
@@ -279,7 +279,7 @@ static void end_splash(void) {
 	display_clear_screen();
 	display_string("Game over =(");
 	while (!nxt_buttons_was_pressed()) {
-		usleep(100);
+		msleep(100);
 	}
 }
 
@@ -296,7 +296,7 @@ static int exec(int argc, char **argv) {
 		point d = nil;
 		point d2 = nil;
 
-		usleep(sleep_time);
+		msleep(sleep_time);
 		ch = button_dispatch(nxt_buttons_was_pressed());
 		if (ch == 'q') {
 			break;

@@ -75,7 +75,7 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 
 	/* shit may happen here: event may be notified before wait call */
 
-	event_wait(&event, ticks);
+	event_wait_ms(&event, ticks);
 
 	/* And clear all desc */
 	idx_desc_set_event(nfds, readfds, writefds, exceptfds, NULL);
@@ -112,15 +112,9 @@ static int find_active(int nfds, fd_set *set, char op) {
 			if (!(desc = task_self_idx_get(fd))) {
 				return -EBADF;
 			} else {
-				switch (op) {
-				case 'r':
-					state = &desc->data->read_state;
-					break;
-				case 'w':
-					state = &desc->data->write_state;
-					break;
-				}
-				if ((desc->flags & O_NONBLOCK) || state->can_perform_op) {
+				state = op == 'r' ? &desc->data->read_state
+						: &desc->data->write_state;
+				if (state->can_perform_op) {
 					fd_cnt++;
 				} else {
 					FD_CLR(fd, set);

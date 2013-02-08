@@ -15,7 +15,7 @@
 #include <kernel/time/timer.h>
 #include <errno.h>
 #include <string.h>
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 #include <unistd.h>
 #include <math.h>
 
@@ -253,7 +253,7 @@ int ntp_start(void) {
 	server_config.stratum = 0;
 
 	if (0 > (ntp_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))) {
-		prom_printf("Can't to allocate NTP socket");
+		printk("Can't to allocate NTP socket");
 		return -ENOMEM;
 	}
 
@@ -264,13 +264,13 @@ int ntp_start(void) {
 	our.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (0 > bind(ntp_sock, (struct sockaddr *)&our, sizeof(our))) {
-		prom_printf("error at bind()\n");
+		printk("error at bind()\n");
 		return -EBUSY;
 	}
 
 	if (0 > timer_set(&ntp_poll_timer, TIMER_PERIODIC, (1 << MIN_POLL) * MSEC_PER_SEC,
 			send_request, NULL)) {
-		prom_printf("Can't to initialize NTP timer");
+		printk("Can't to initialize NTP timer");
 		return -ENOENT;
 	}
 

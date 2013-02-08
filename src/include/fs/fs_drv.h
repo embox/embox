@@ -12,20 +12,30 @@
 #include <fs/file_operation.h>
 #include <util/array.h>
 
-typedef int (*fsop_init_ft)(void *par);
-typedef int (*fsop_format_ft)(void *par);
-typedef int (*fsop_mount_ft)(void *dev_node, void *dir_node);
-typedef int (*fsop_create_ft)(struct node *parent_node, struct node *new_node);
-typedef int (*fsop_delete_ft)(struct node *node);
+typedef int (fsop_init_ft)(void *par);
+typedef int (fsop_format_ft)(void *par);
+typedef int (fsop_mount_ft)(void *dev_node, void *dir_node);
+typedef int (fsop_create_ft)(struct node *parent_node, struct node *new_node);
+typedef int (fsop_delete_ft)(struct node *node);
 
-
+/* TODO: consider following to accept nas * as first arg (Anton Kozlov) */
+typedef int (fsop_getxattr_ft)(struct node *node, const char *name,
+                char *value, size_t len);
+typedef int (fsop_setxattr_ft)(struct node *node, const char *name,
+                const char *value, size_t len, int flags);
+typedef int (fsop_listxattr_ft)(struct node *node, char *list,
+                size_t len);
 
 typedef struct fsop_desc {
-	fsop_init_ft init;
-	fsop_format_ft format;
-	fsop_mount_ft mount;
-	fsop_create_ft create_node;
-	fsop_delete_ft delete_node;
+        fsop_init_ft      *init;
+        fsop_format_ft    *format;
+        fsop_mount_ft     *mount;
+        fsop_create_ft    *create_node;
+        fsop_delete_ft    *delete_node;
+
+        fsop_getxattr_ft  *getxattr;
+        fsop_setxattr_ft  *setxattr;
+        fsop_listxattr_ft *listxattr;
 } fsop_desc_t;
 
 struct kfile_operations;
@@ -35,16 +45,16 @@ struct kfile_operations;
  * our system.
  */
 typedef struct fs_drv {
-	const char                    *name;
-	const struct kfile_operations *file_op;
-	const fsop_desc_t             *fsop;
+        const char                    *name;
+        const struct kfile_operations *file_op;
+        const fsop_desc_t             *fsop;
 } fs_drv_t;
 
 
 extern const fs_drv_t * __fs_drivers_registry[];
 
 #define DECLARE_FILE_SYSTEM_DRIVER(fs_driver) \
-		ARRAY_SPREAD_ADD(__fs_drivers_registry, &fs_driver)
+                ARRAY_SPREAD_ADD(__fs_drivers_registry, &fs_driver)
 
 /**
  * allocate structure for fs_driver structure

@@ -9,7 +9,7 @@
 
 #include <types.h>
 #include <asm/bitops.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 
 typedef struct diag_regs {
 	uint32_t rx_data;
@@ -56,14 +56,6 @@ static inline int can_tx_trans(void) {
 	return !(uart->status & STATUS_TX_FIFO_FULL);
 }
 
-void diag_init(void) {
-
-}
-
-int diag_has_symbol(void) {
-	return !is_rx_empty();
-}
-
 char diag_getc(void) {
 	while (is_rx_empty());
 	return (char) (uart->rx_data & 0xFF);
@@ -72,4 +64,11 @@ char diag_getc(void) {
 void diag_putc(char ch) {
 	while (!can_tx_trans());
 	uart->tx_data = (unsigned int)ch;
+}
+
+int diag_kbhit(void) {
+	return !is_rx_empty();
+}
+
+void diag_init(void) {
 }

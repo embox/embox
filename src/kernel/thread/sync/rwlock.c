@@ -46,7 +46,7 @@ static void do_up(rwlock_t *r, int status) {
 	sched_lock();
 	{
 		while (tryenter_sched_lock(r, status) != 0) {
-			sched_sleep_locked(&r->sq, SCHED_TIMEOUT_INFINITE);
+			sched_sleep_locked_ms(&r->sq, SCHED_TIMEOUT_INFINITE);
 		}
 	}
 	sched_unlock();

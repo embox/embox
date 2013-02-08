@@ -166,7 +166,7 @@ static void  nxt_bt_timer_handler(struct sys_timer *timer, void *param) {
 }
 void bluetooth_hw_hard_reset(void) {
 	pin_clear_output(RST_PIN);
-	ksleep(2000);
+	m_ksleep(2000);
 	pin_set_output(RST_PIN);
 }
 

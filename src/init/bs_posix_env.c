@@ -10,43 +10,43 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <prom/diag.h>
+#include <drivers/iodev.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(diag_env_init);
+EMBOX_UNIT_INIT(iodev_env_init);
 
-static int diag_read(struct idx_desc *data, void *buf, size_t nbyte) {
+static int iodev_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
-		*cbuf++ = diag_getc();
+		*cbuf++ = iodev_getc();
 	}
 
 	return (int) cbuf - (int) buf;
 
 }
 
-static int diag_write(struct idx_desc *data, const void *buf, size_t nbyte) {
+static int iodev_write(struct idx_desc *data, const void *buf, size_t nbyte) {
 	char *cbuf = (char *) buf;
 
 	while (nbyte--) {
-		diag_putc(*cbuf++);
+		iodev_putc(*cbuf++);
 	}
 
 	return (int) cbuf - (int) buf;
 }
 
-static int diag_close(struct idx_desc *idx) {
+static int iodev_close(struct idx_desc *idx) {
 	return 0;
 }
 
-static const struct task_idx_ops diag_idx_ops = {
-	.read = diag_read,
-	.write = diag_write,
-	.close = diag_close
+static const struct task_idx_ops iodev_idx_ops = {
+	.read = iodev_read,
+	.write = iodev_write,
+	.close = iodev_close
 };
 
 static int check_valid(int fd, int reference_fd) {
@@ -66,8 +66,8 @@ static int check_valid(int fd, int reference_fd) {
 	return -1;
 }
 
-static int diag_env_init(void) {
-	int fd = task_self_idx_alloc(&diag_idx_ops, NULL);
+static int iodev_env_init(void) {
+	int fd = task_self_idx_alloc(&iodev_idx_ops, NULL);
 	int res = 0;
 
 	if ((res = check_valid(fd, 0)) != 0) {

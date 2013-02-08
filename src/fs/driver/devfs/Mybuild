@@ -5,6 +5,5 @@ module devfs {
 	depends embox.fs.rootfs
 	depends embox.fs.driver.PseudoFs
 	depends embox.driver.char_dev
-	depends embox.driver.char_dev
 	depends embox.driver.block
 }

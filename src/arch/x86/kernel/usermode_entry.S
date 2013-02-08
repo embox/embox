@@ -32,7 +32,7 @@ usermode_entry:
 	pushl $(__USER_DS)
 	pushl 4(%ebx)
 
-	// Work with EFLAGS
+	/* Work with EFLAGS */
 	pushf
 	popl %eax
 	or $0x200, %eax        /* Enable IF flag */

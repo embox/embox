@@ -15,6 +15,10 @@
 #include <sys/types.h>
 #include <time.h>
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
 /*
  * Scheduling policies
  */
@@ -66,5 +70,7 @@ extern int sched_setscheduler(pid_t, int, const struct sched_param *);
  *  yield processor
  */
 extern int sched_yield(void);
+
+__END_DECLS
 
 #endif /* POSIX_SCHED_H_ */

@@ -1,0 +1,96 @@
+diff -ur qt-everywhere-opensource-src-4.8.4/src/gui/image/qmnghandler.cpp qt-embox/src/gui/image/qmnghandler.cpp
+--- qt-everywhere-opensource-src-4.8.4/src/gui/image/qmnghandler.cpp	2012-11-23 14:09:53.000000000 +0400
++++ qt-embox/src/gui/image/qmnghandler.cpp	2013-01-18 17:26:02.551811916 +0400
+@@ -98,7 +98,7 @@
+         (iChunkname>>8)&0xff,
+         (iChunkname>>0)&0xff,
+         iExtra1,iExtra2);
+-    return TRUE;
++    return MNG_TRUE;
+ }
+ 
+ static mng_ptr myalloc(mng_size_t iSize)
+diff -ur qt-everywhere-opensource-src-4.8.4/src/plugins/imageformats/ico/qicohandler.cpp qt-embox/src/plugins/imageformats/ico/qicohandler.cpp
+--- qt-everywhere-opensource-src-4.8.4/src/plugins/imageformats/ico/qicohandler.cpp	2012-11-23 14:09:55.000000000 +0400
++++ qt-embox/src/plugins/imageformats/ico/qicohandler.cpp	2013-01-18 18:15:22.040301090 +0400
+@@ -364,11 +364,11 @@
+     if (iod) {
+         if (iod->seek(startpos + imageOffset)) {
+             if (readBMPInfoHeader(iod, header)) {
+-                return TRUE;
++                return true;
+             }
+         }
+     }
+-    return FALSE;
++    return false;
+ }
+ 
+ void ICOReader::findColorInfo(QImage & image)
+diff -ur qt-everywhere-opensource-src-4.8.4/src/corelib/global/qglobal.h source/src/corelib/global/qglobal.h
+--- qt-everywhere-opensource-src-4.8.4/src/corelib/global/qglobal.h	2012-11-23 14:09:55.000000000 +0400
++++ source/src/corelib/global/qglobal.h	2013-02-04 13:50:32.971306897 +0400
+@@ -261,6 +261,8 @@
+ #  define Q_OS_INTEGRITY
+ #elif defined(VXWORKS) /* there is no "real" VxWorks define - this has to be set in the mkspec! */
+ #  define Q_OS_VXWORKS
++#elif defined(__EMBOX__)
++#  define Q_OS_EMBOX
+ #elif defined(__MAKEDEPEND__)
+ #else
+ #  error "Qt has not been ported to this OS - talk to qt-bugs@trolltech.com"
+diff -ur qt-everywhere-opensource-src-4.8.4/src/corelib/io/qresource.cpp source/src/corelib/io/qresource.cpp
+--- qt-everywhere-opensource-src-4.8.4/src/corelib/io/qresource.cpp	2012-11-23 14:09:55.000000000 +0400
++++ source/src/corelib/io/qresource.cpp	2013-02-04 13:59:50.975111629 +0400
+@@ -929,8 +929,10 @@
+ };
+ 
+ #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined (Q_OS_NACL) && !defined(Q_OS_INTEGRITY)
++#if !defined(Q_OS_EMBOX)
+ #define QT_USE_MMAP
+ #endif
++#endif
+ 
+ // most of the headers below are already included in qplatformdefs.h
+ // also this lacks Large File support but that's probably irrelevant
+diff -ur qt-everywhere-opensource-src-4.8.4/src/corelib/kernel/qtranslator.cpp source/src/corelib/kernel/qtranslator.cpp
+--- qt-everywhere-opensource-src-4.8.4/src/corelib/kernel/qtranslator.cpp	2012-11-23 14:09:55.000000000 +0400
++++ source/src/corelib/kernel/qtranslator.cpp	2013-02-04 14:00:29.965913619 +0400
+@@ -61,9 +61,11 @@
+ #include "qresource.h"
+ 
+ #if defined(Q_OS_UNIX) && !defined(Q_OS_SYMBIAN) && !defined(Q_OS_INTEGRITY)
++#if !defined(Q_OS_EMBOX)
+ #define QT_USE_MMAP
+ #include "private/qcore_unix_p.h"
+ #endif
++#endif
+ 
+ #ifdef Q_OS_SYMBIAN
+ #include "private/qcore_symbian_p.h"
+ --- qt-everywhere-opensource-src-4.8.4/src/network/socket/qnet_unix_p.h	2012-11-23 14:09:54.000000000 +0400
++++ source/src/network/socket/qnet_unix_p.h	2013-02-06 16:38:16.818871045 +0400
+@@ -94,7 +94,7 @@
+         return fd;
+ #endif
+ 
+-    fd = ::socket(domain, type, protocol);
++    fd = ::socket(domain, type, IPPROTO_TCP);
+     if (fd == -1)
+         return -1;
+ 
+ diff -ur qt-everywhere-opensource-src-4.8.4/src/plugins/platforms/platforms.pro source/src/plugins/platforms/platforms.pro
+--- qt-everywhere-opensource-src-4.8.4/src/plugins/platforms/platforms.pro	2012-11-23 14:09:55.000000000 +0400
++++ source/src/plugins/platforms/platforms.pro	2013-02-08 18:13:28.532850953 +0400
+@@ -3,7 +3,9 @@
+ SUBDIRS += minimal
+ 
+ contains(QT_CONFIG, wayland) {
+-    SUBDIRS += wayland
++	!contains(DEFINES, QT_OVERRIDE_NO_WAYLAND) {
++	    SUBDIRS += wayland
++	}
+ }
+ 
+ qnx {
+ 

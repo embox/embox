@@ -21,7 +21,7 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 
 #define BUF_INP_SIZE OPTION_GET(NUMBER,input_buffer)
 
@@ -40,12 +40,12 @@ static int run_cmd(int argc, char *argv[]) {
 	}
 
 	if (NULL == (cmd = cmd_lookup(argv[0]))) {
-		prom_printf("%s: Command not found\n", argv[0]);
+		printk("%s: Command not found\n", argv[0]);
 		return 0;
 	}
 
 	if (0 != (code = cmd_exec(cmd, argc, argv))) {
-		prom_printf("%s: Command returned with code %d: %s\n",
+		printk("%s: Command returned with code %d: %s\n",
 			cmd_name(cmd), code, strerror(-code));
 	}
 	return code;
@@ -99,13 +99,13 @@ static void setup_tty(const char *dev_name) {
 static int run_script(void) {
 	const char *command;
 	const struct shell *shell;
-	prom_printf("\nStarting shell [%s] at device [%s]\n",
+	printk("\nStarting shell [%s] at device [%s]\n",
 		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
 	setup_tty(OPTION_STRING_GET(tty_dev));
 
-	prom_printf("loading start script:\n");
+	printk("loading start script:\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
-		prom_printf("> %s \n", command);
+		printk("> %s \n", command);
 		parse(command);
 	}
 

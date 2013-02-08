@@ -27,6 +27,8 @@ extern struct page_allocator *page_allocator_init(char *start, size_t len, size_
 
 extern void *page_alloc(struct page_allocator *allocator, size_t page_number);
 
+extern void *page_alloc_zero(struct page_allocator *allocator, size_t page_number);
+
 extern void page_free(struct page_allocator *allocator, void *page, size_t page_number);
 
 #endif /* MEM_PAGE_H_ */

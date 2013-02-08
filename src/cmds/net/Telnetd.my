@@ -22,6 +22,7 @@ module telnetd {
 	depends embox.kernel.task.std_signal
 	depends embox.net.socket
 	depends embox.cmd.sh.tish
+	depends embox.compat.posix.utmp_api
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

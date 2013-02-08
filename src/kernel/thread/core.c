@@ -232,7 +232,7 @@ int thread_join(struct thread *t, void **p_ret) {
 		if (!thread_state_exited(t->state)) {
 			/* Target thread is not exited. Waiting for his exiting. */
 			assert(sleepq_empty(&t->exit_sleepq));
-			sched_sleep_locked(&t->exit_sleepq, SCHED_TIMEOUT_INFINITE);
+			sched_sleep_locked_ms(&t->exit_sleepq, SCHED_TIMEOUT_INFINITE);
 		}
 		join_ret = t->run_ret;
 		t->state = thread_state_do_detach(t->state);

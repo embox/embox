@@ -52,7 +52,7 @@ static int menu_start(int argc, char **argv) {
 
 	while (i > 0) {
 		buts = nxt_buttons_was_pressed();
-		usleep(600);
+		msleep(600);
 		if (buts & BT_RIGHT) {
 			if (current_test == max_cur_test) {
 				if (max_cur_test < (number-1)) {

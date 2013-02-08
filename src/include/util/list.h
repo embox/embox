@@ -4,6 +4,7 @@
  *
  * @date 27.02.11
  * @author Eldar Abusalimov
+ * @author Ilia Vaprol
  */
 
 #ifndef UTIL_LIST_H_
@@ -133,7 +134,7 @@ extern void list_unlink_link(struct list_link *link);
 #define list_first_element(list, element_type, link_member) \
 	member_cast_out_or_null(list_first_link(list), element_type, link_member)
 
-struct list_link *list_first_link(struct list *list);
+extern struct list_link *list_first_link(struct list *list);
 
 #define list_last(linkage_t, list) \
 	member_to_object_or_null(list_last_link(list), linkage_t)
@@ -193,7 +194,7 @@ extern void list_insert_after_link(struct list_link *new_link,
 #define list_remove_first_element(list, element_type, link_member) \
 	member_cast_out_or_null(list_remove_first_link(list), element_type, link_member)
 
-struct list_link *list_remove_first_link(struct list *list);
+extern struct list_link *list_remove_first_link(struct list *list);
 
 #define list_remove_last(linkage_t, list) \
 	member_to_object_or_null(list_remove_last_link(list), linkage_t)
@@ -202,6 +203,39 @@ struct list_link *list_remove_first_link(struct list *list);
 	member_cast_out_or_null(list_remove_last_link(list), element_type, link_member)
 
 extern struct list_link *list_remove_last_link(struct list *list);
+
+/* Implementing a queue data structure on list. */
+
+#define list_front           list_first
+#define list_front_element   list_first_element
+#define list_front_link      list_first_link
+
+#define list_back            list_last
+#define list_back_element    list_last_element
+#define list_back_link       list_last_link
+
+#define list_enqueue         list_add_last
+#define list_enqueue_element list_add_last_element
+#define list_enqueue_link    list_add_last_link
+
+#define list_dequeue         list_remove_first
+#define list_dequeue_element list_remove_first_element
+#define list_dequeue_link    list_remove_first_link
+
+/* Implementing a stack data structure on list. */
+
+#define list_top          list_last
+#define list_top_element  list_last_element
+#define list_top_link     list_last_link
+
+#define list_push         list_add_last
+#define list_push_element list_add_last_element
+#define list_push_link    list_add_last_link
+
+#define list_pop          list_remove_last
+#define list_pop_element  list_remove_last_element
+#define list_pop_link     list_remove_last_link
+
 
 extern void list_bulk_add_first(struct list *from_list, struct list *to_list);
 

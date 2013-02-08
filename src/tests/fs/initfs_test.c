@@ -33,7 +33,8 @@ static const char test_file_contains[] = { "\""
 static char test_buff[SIZE_OF_FILE + 1 + 1]; /* enough size for read overhead data */
 
 TEST_CASE("Write data to a read only file on a initfs file system") {
-	test_assert_equal(-EPERM, write(test_fd, test_buff, 1));
+	test_assert_equal(-1, write(test_fd, test_buff, 1));
+	test_assert_equal(EPERM, errno);
 }
 
 TEST_CASE("Read data from a file") {

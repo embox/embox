@@ -8,12 +8,16 @@
 
 #include <embox/cmd.h>
 
+#include <stdio.h>
 #include <getopt.h>
+#include <arpa/inet.h>
+
 #include <net/util.h>
 #include <net/if_arp.h>
 #include <net/neighbour.h>
 #include <net/inetdevice.h>
-#include <stdio.h>
+
+
 
 EMBOX_CMD(exec);
 

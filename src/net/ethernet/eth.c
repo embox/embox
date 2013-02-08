@@ -8,15 +8,19 @@
  */
 
 #include <err.h>
+
 #include <errno.h>
+#include <arpa/inet.h>
+#include <string.h>
+#include <assert.h>
+
+#include <compiler.h>
+
 #include <net/arp.h>
 #include <net/etherdevice.h>
 #include <net/if.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
-#include <string.h>
-#include <assert.h>
-#include <compiler.h>
 
 /**
  * Create the Ethernet header

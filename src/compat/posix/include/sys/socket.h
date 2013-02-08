@@ -12,6 +12,10 @@
 
 #include <types.h>
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
 typedef int32_t socklen_t;
 
 typedef unsigned short sa_family_t;
@@ -374,5 +378,6 @@ static inline int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addr
 /* TODO not implemented now */
 extern ssize_t recvmsg(int socket, struct msghdr *message, int flags);
 
+__END_DECLS
 
 #endif /* SYS_SOCKET_H_ */

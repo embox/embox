@@ -9,6 +9,8 @@
 #ifndef IDE_H_
 #define IDE_H_
 
+#include <kernel/thread/event.h>
+
 #define CDSECTORSIZE            2048
 
 #define HD_CONTROLLERS          2
@@ -29,7 +31,7 @@
 #define HD1_DRVSEL              0x10 /* was:0xB0 */
 #define HD_LBA                  0x40
 
-#define idedelay() usleep(25)
+#define idedelay() msleep(25)
 
 /*
  * Controller registers
@@ -293,6 +295,8 @@ typedef struct hdc  {
 
 	struct prd *prds;                    /* PRD list for DMA transfer */
 	unsigned long prds_phys;             /* Physical address of PRD list */
+
+	struct event event;
 } hdc_t;
 
 struct partition {

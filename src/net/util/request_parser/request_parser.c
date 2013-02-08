@@ -296,7 +296,6 @@ static const char * try_parse_host(http_request *parsed_request,
 	return lexeme_end + 1;
 }
 
-#include <stdio.h>
 static const char * try_parse_connection(http_request *parsed_request,
 		const char *subrequest) {
 	const char *lexeme_end, expected_connection_identifyer[] = "Connection:";
@@ -321,7 +320,6 @@ static const char * try_parse_connection(http_request *parsed_request,
 	if ((lexeme_length != sizeof expected_connection_identifyer - 1)
 			|| (strncmp(subrequest, &expected_connection_identifyer[0],
 					lexeme_length) != 0)) {
-		printf("RETURN!\nlen %u, sub %s\n", lexeme_length, subrequest);
 		return subrequest;
 	}
 

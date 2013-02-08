@@ -45,18 +45,17 @@ struct stat;
 
 __BEGIN_DECLS
 
-#define putc(c, f) fputc((c), (f))
+extern int putc(int c, FILE *f);
 extern int fputc(int c, FILE *f);
-extern int fgetc(FILE *f);
 
-#define getc(file) fgetc(file)
+extern int getc(FILE *f);
+extern int fgetc(FILE *f);
 
 /**
  * Writes the string s and a trailing newline to stdout.
  */
 extern int puts(const char *s);
-
-#define fputs(s, stream) puts(s)
+extern int fputs(const char *s, FILE *f);
 
 extern int putchar(int c);
 
@@ -166,6 +165,8 @@ extern int remove(const char *pathname);
  *  position indicator, or end-of-file, respectively
  */
 extern int fseek(FILE *stream, long int offset, int origin);
+
+extern long int ftell(FILE *stream);
 
 /**
  * Sets the file position indicator for the stream pointed to by stream to the beginning of the file.

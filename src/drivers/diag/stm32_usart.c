@@ -11,7 +11,7 @@
 #include <drivers/gpio.h>
 #include <hal/reg.h>
 #include <hal/system.h>
-#include <prom/diag.h>
+#include <drivers/diag.h>
 
 #include <embox/unit.h>
 
@@ -63,16 +63,20 @@ static struct uart_stm32 * uart1 = UART1;
 #define RCC_APB2GPIOx 0x000001fc
 #define RCC_APB2AFIO  0x00000001
 
+char diag_getc(void) {
+	while (!(REG_LOAD(&uart1->sr) & USART_FLAG_RXNE));
+
+	return REG_LOAD(&uart1->dr);
+}
+
 void diag_putc(char ch) {
 	while (!(REG_LOAD(&uart1->sr) & USART_FLAG_TXE)) { }
 
 	REG_STORE(&uart1->dr, ch);
 }
 
-char diag_getc(void) {
-	while (!(REG_LOAD(&uart1->sr) & USART_FLAG_RXNE));
-
-	return REG_LOAD(&uart1->dr);
+int diag_kbhit(void) {
+	return 0; /* TODO */
 }
 
 void diag_init(void) {

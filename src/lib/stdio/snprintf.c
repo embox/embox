@@ -8,12 +8,9 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <types.h>
+#include <stdlib.h>
 
-struct printchar_handler_data;
-extern int __print(void (*printchar_handler)(struct printchar_handler_data *d, int c),
-		struct printchar_handler_data *printchar_data,
-		const char *format, va_list args);
+#include "printf_impl.h"
 
 struct printchar_handler_data {
 	char *str;

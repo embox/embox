@@ -8,6 +8,7 @@
 
 extern float __sqrtsf2(float a);
 extern double __sqrtdf2(double a);
+extern long double __sqrttf2(long double a);
 
 double sqrt(double x) {
 	return __sqrtdf2(x);
@@ -15,4 +16,8 @@ double sqrt(double x) {
 
 float sqrtf(float x) {
 	return __sqrtsf2(x);
+}
+
+long double sqrtl(long double x) {
+	return __sqrttf2(x);
 }

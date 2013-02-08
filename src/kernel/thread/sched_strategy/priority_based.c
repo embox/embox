@@ -16,7 +16,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <lib/list.h>
 #include <util/array.h>
 #include <util/prioq.h>
 

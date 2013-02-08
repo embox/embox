@@ -14,7 +14,7 @@
 
 struct timeval {
 	time_t		tv_sec;
-	useconds_t	tv_usec;
+	suseconds_t	tv_usec;
 };
 
 

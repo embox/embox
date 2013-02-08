@@ -18,7 +18,7 @@
  * That means any another tasks could not send/recv events.
  * */
 
-int java_pipe[2];
+static int java_pipe[2];
 
 static struct mutex java_global_mutex;
 
@@ -88,6 +88,9 @@ javacall_result javacall_destroy_event_queue_lock(void) {
 }
 
 javacall_result javacall_events_init(void) {
+	if (-1 == pipe(java_pipe)) {
+		return JAVACALL_FAIL;
+	}
 	mutex_init(&java_global_mutex);
 	return JAVACALL_OK;
 }

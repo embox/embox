@@ -1,6 +1,7 @@
 package embox.driver.diag
 
-abstract module diag_api { }
+abstract module diag_api {
+}
 
 module apbuart extends diag_api {
 	option number baud_rate
@@ -16,7 +17,6 @@ module at91_uart extends diag_api {
 
 module mem_diag extends diag_api {
 	source "mem_diag.c"
-
 	depends embox.lib.LibC
 }
 
@@ -37,9 +37,9 @@ module vga extends diag_api {
 }
 
 module xuartlite extends diag_api {
-	source "xuartlite.c"
-
 	option number xuartlite_base
+
+	source "xuartlite.c"
 }
 
 module stm32_usart extends diag_api {

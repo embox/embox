@@ -10,7 +10,7 @@
 #include <hal/reg.h>
 #include <embox/unit.h>
 
-#include <prom/diag.h>
+#include <drivers/diag.h>
 
 #define UART_NM 5
 
@@ -214,6 +214,26 @@ extern void mips_delay(int cnt);
 #define TRISB            0xBF886040
 #define PORTB            0xBF886050
 
+char diag_getc(void) {
+	while (!(REG_LOAD(UxSTA) & STA_URXDA)) {
+
+	}
+
+	return REG_LOAD(UxRXREG);
+}
+
+void diag_putc(char c) {
+	while (REG_LOAD(UxSTA) & STA_UTXBF) {
+
+	}
+
+	REG_STORE(UxTXREG, c);
+}
+
+int diag_kbhit(void) {
+	return REG_LOAD(UxSTA) & STA_URXDA;
+}
+
 void diag_init(void) {
 	REG_STORE(TRISB, 0);
 	REG_STORE(PORTB, 0);
@@ -225,25 +245,4 @@ void diag_init(void) {
 	REG_STORE(UxSTA,  STA_URXEN | STA_UTXEN);
 
 	mips_delay(100000);
-
-}
-
-void diag_putc(char c) {
-	while (REG_LOAD(UxSTA) & STA_UTXBF) {
-
-	}
-
-	REG_STORE(UxTXREG, c);
-}
-
-char diag_getc(void) {
-	while (!(REG_LOAD(UxSTA) & STA_URXDA)) {
-
-	}
-
-	return REG_LOAD(UxRXREG);
-}
-
-int diag_has_symbol(void) {
-	return REG_LOAD(UxSTA) & STA_URXDA;
 }

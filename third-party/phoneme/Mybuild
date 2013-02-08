@@ -3,7 +3,7 @@ package third_party.phoneme
 @Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/phoneme MAKEFLAGS= ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 module core {
 	depends embox.lib.LibC
-	depends embox.lib.LibCXX
+	depends embox.lib.cxx.lib
 }
 
 @DefaultImpl(third_party.phoneme.cldc_standalone)

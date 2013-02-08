@@ -6,31 +6,18 @@
  * @author Ilia Vaprol
  */
 
-#include <math.h>
+extern float __roundsf2(float a);
+extern double __rounddf2(double a);
+extern long double __roundtf2(long double a);
 
 double round(double x) {
-	double int_part, frac_part;
-
-	frac_part = modf(x, &int_part);
-	return frac_part <= -0.5 ? int_part - 1.0
-			: frac_part >= 0.5 ? int_part + 1.0
-			: int_part;
+	return __rounddf2(x);
 }
 
 float roundf(float x) {
-	float int_part, frac_part;
-
-	frac_part = modff(x, &int_part);
-	return frac_part <= -0.5F ? int_part - 1.0F
-			: frac_part >= 0.5F ? int_part + 1.0F
-			: int_part;
+	return __roundsf2(x);
 }
 
 long double roundl(long double x) {
-	long double int_part, frac_part;
-
-	frac_part = modfl(x, &int_part);
-	return frac_part <= -0.5L ? int_part - 1.0L
-			: frac_part >= 0.5L ? int_part + 1.0L
-			: int_part;
+	return __roundtf2(x);
 }

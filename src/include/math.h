@@ -36,6 +36,16 @@ extern double round(double x);
 extern float roundf(float x);
 extern long double roundl(long double x);
 
+/* Round to nearest integer, away from zero */
+extern long int lround(double x);
+extern long int lroundf(float x);
+extern long int lroundl(long double x);
+
+/* Round to nearest integer, away from zero */
+extern long long int llround(double x);
+extern long long int llroundf(float x);
+extern long long int llroundl(long double x);
+
 /* Ceiling function: smallest integral value not less than argument */
 extern double ceil(double x);
 extern float ceilf(float x);
@@ -79,6 +89,7 @@ extern long double logl(long double x);
 /* Square root functions */
 extern double sqrt(double x);
 extern float sqrtf(float x);
+extern long double sqrtl(long double x);
 
 extern double acos(double);
 extern double asin(double);
@@ -96,6 +107,12 @@ extern double exp(double);
 extern double frexp(double, int *);
 extern double ldexp(double, int);
 
+extern int isnan(double);
+extern int isnanl(long double);
+extern int isnanf(float);
+extern int finite(double);
+extern int finitel(long double);
+extern int finitef(float);
 
 __END_DECLS
 

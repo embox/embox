@@ -69,7 +69,7 @@
  *  Modified for ext2fs by Manuel Bouyer.
  */
 
-
+/* FIXME: prefix with EXT2_ */
 #define SECTOR_SIZE 512
 #define BBSIZE		1024
 #define SBSIZE		1024
@@ -224,6 +224,8 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 #define freespace(fs) \
    ((fs)->e2sb.e2fs_fbcount - (fs)->e2sb.e2fs_rbcount)
 
+#define	EXT2_BSIZE(fs)	((fs)->s_block_size)
+
 /*
  * Number of indirects in a file system block.
  */
@@ -282,27 +284,6 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 
 #define WMAP_FREE           (1 << 0)
 
-#define IN_CLEAN              0    /* inode disk and memory copies identical */
-#define IN_DIRTY              1    /* inode disk and memory copies differ */
-#define ATIME            002    /* set if atime field needs updating */
-#define CTIME            004    /* set if ctime field needs updating */
-#define MTIME            010    /* set if mtime field needs updating */
-
-/* Miscellaneous constants */
-#define SU_UID          0     /* super_user's uid_t */
-#define NORMAL          0     /* forces get_block to do disk read */
-#define NO_READ         1     /* prevents get_block from doing disk read */
-#define PREFETCH        2     /* tells get_block not to read or mark dev */
-
-#define INODE_BLOCK        0                             /* inode block */
-#define DIRECTORY_BLOCK    1                             /* directory block */
-#define INDIRECT_BLOCK     2                             /* pointer block */
-#define MAP_BLOCK          3                             /* bit map */
-#define FULL_DATA_BLOCK    5                             /* data, fully used */
-#define PARTIAL_DATA_BLOCK 6                             /* data, partly used*/
-
-#define EXT2_PREALLOC_BLOCKS		8
-#define NR_INODES        512
 #define CHAR_BIT 8
 
 /* Ext2 directory file types (not the same as FFS. Sigh.) */
@@ -474,6 +455,18 @@ struct	ext2fs_direct {
 #define IND_CACHE_SZ		(1 << LN2_IND_CACHE_SZ)
 #define IND_CACHE_MASK		(IND_CACHE_SZ - 1)
 
+union fsdata_u {
+    char b__data[PAGE_SIZE()];             /* ordinary user data */
+/* indirect block */
+    uint32_t b__ind[PAGE_SIZE()/sizeof(uint32_t)];
+/* bit map block */
+    uint32_t b__bitmap[FS_BITMAP_CHUNKS(PAGE_SIZE())];
+};
+
+#define b_data(data)   ((union fsdata_u *) data)->b__data
+#define b_ind(data) ((union fsdata_u *) data)->b__ind
+#define b_bitmap(data) ((union fsdata_u *) data)->b__bitmap
+
 struct ext2fs_dinode {
 	uint16_t	i_mode;	/*   0: IFMT, permissions; see below. */
 	uint16_t	i_uid;	/*   2: Owner UID */
@@ -533,33 +526,25 @@ typedef struct ext2_fs_info {
 	char mntfrom[MAX_LENGTH_PATH_NAME];
 	char mntto[MAX_LENGTH_PATH_NAME];
 	struct ext2sb e2sb;
-
+	struct	ext2_gd *e2fs_gd; /* group descripors */
+	/* The following items are only used when the super_block is in memory. */
 	int32_t s_bshift;	/* ``lblkno'' calc of logical blkno */
 	int32_t s_bmask;	/* ``blkoff'' calc of blk offsets */
 	int64_t s_qbmask;	/* ~fs_bmask - for use with quad size */
 	int32_t	s_fsbtodb;	/* fsbtodb and dbtofsb shift constant */
 	int32_t	s_ncg;	/* number of cylinder groups */
-
-	/* The following items are only used when the super_block is in memory. */
-	struct	ext2_gd *e2fs_gd; /* group descripors */
 	uint32_t   s_block_size;           /* block size in bytes. */
 	uint32_t   s_inodes_per_block;     /* Number of inodes per block */
 	uint32_t   s_itb_per_group;        /* Number of inode table blocks per group */
 	uint32_t   s_gdb_count;            /* Number of group descriptor blocks */
 	uint32_t   s_desc_per_block;       /* Number of group descriptors per block */
 	uint32_t   s_groups_count;         /* Number of groups in the fs */
-	size_t     s_page_count;		   /* Number of pages of embox sor file r/w buffer*/
-	u8_t    s_blocksize_bits;       /* Used to calculate offsets
-									 * (e.g. inode block),
-									 * always s_log_block_size+10.
-									 */
-
-	u16_t   s_sectors_in_block; /* s_block_size / 512 */
-	uint32_t   s_max_size;         /* maximum file size on this device */
-	uint32_t s_bsearch;	/* all data blocks  below this block are in use*/
-	int     s_igsearch; /* all groups below this one have no free inodes */
-	char    s_is_root;
-	uint32_t   s_dirs_counter;
+	size_t     s_page_count;		   /* Number of pages of embox for file r/w buffer*/
+	u16_t      s_sectors_in_block;     /* s_block_size / 512 */
+	uint32_t   s_bsearch;	           /* all data blocks  below this block are in use*/
+	u8_t       s_blocksize_bits;       /* Used to calculate offsets (e.g. inode block),
+								        * always s_log_block_size + 10.
+									    */
 } ext2_fs_info_t;
 
 /*
@@ -573,7 +558,7 @@ typedef struct ext2_file_info {
 
 	char		*f_buf;		/* buffer for data block */
 	size_t		f_buf_size;	/* size of data block */
-	int64_t		f_buf_blkno;	/* block number of data block */
+	int64_t		f_buf_blkno;/* block number of data block */
 	long		f_pointer;	/* local seek pointer */
 
 	ino_t f_num;                /* inode number on its (minor) device */
@@ -585,34 +570,54 @@ typedef struct ext2_file_info {
 								 * a new block (should be block i_bsearch).
 								 * used to check for sequential operation.
 								 */
-	long f_last_dpos;           /* where to start dentry search */
-	int f_last_dentry_size;	    /* size of last found dentry */
 } ext2_file_info_t;
 
-union fsdata_u {
-    char b__data[PAGE_SIZE()];             /* ordinary user data */
-/* indirect block */
-    uint32_t b__ind[PAGE_SIZE()/sizeof(uint32_t)];
-/* bit map block */
-    uint32_t b__bitmap[FS_BITMAP_CHUNKS(PAGE_SIZE())];
+struct ext2_xattr_ent {
+	uint8_t		e_name_len;
+	uint8_t		e_name_index;
+	uint16_t	e_value_offs;
+	uint32_t	e_value_block;
+	uint32_t	e_value_size;
+	uint32_t	e_hash;
+	char		e_name[];
 };
 
-#define b_data(data)   ((union fsdata_u *) data)->b__data
-#define b_ind(data) ((union fsdata_u *) data)->b__ind
-#define b_bitmap(data) ((union fsdata_u *) data)->b__bitmap
+struct ext2_xattr_hdr {
+	uint32_t	h_magic;
+	uint32_t	h_refcount;
+	uint32_t	h_blocks;
+	uint32_t	h_hash;
+	uint8_t		reserved[16];
+	struct ext2_xattr_ent
+			h_entries[];
+};
+
+#define EXT2_XATTR_HDR_MAGIC 0xea020000
+#define EXT2_XATTR_PAD 4
 
 /* balloc.c */
-//void ext2_discard_preallocated_blocks(struct nas *nas);
-uint32_t ext2_alloc_block(struct nas *nas, uint32_t goal);
-void ext2_free_block(struct nas *nas, uint32_t bit);
+extern uint32_t ext2_alloc_block(struct nas *nas, uint32_t goal);
+extern void ext2_free_block(struct nas *nas, uint32_t bit);
 
-int ext2_read_sector(struct nas *nas, char *buffer,
+extern int ext2_read_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector);
-int ext2_write_sector(struct nas *nas, char *buffer,
+extern int ext2_write_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector);
-struct ext2_gd* ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi);
+extern struct ext2_gd* ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi);
 
-uint32_t ext2_setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word);
-int ext2_unsetbit(uint32_t *bitmap, uint32_t bit);
+extern int ext2_write_gdblock(struct nas *nas);
+extern int ext2_write_sblock(struct nas *nas);
+
+extern void *ext2_buff_alloc(struct nas *nas, size_t size);
+extern int ext2_buff_free(struct nas *nas, char *buff);
+
+extern uint32_t ext2_setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word);
+extern int ext2_unsetbit(uint32_t *bitmap, uint32_t bit);
+
+#define EXT2_R_INODE 0
+#define EXT2_W_INODE 1
+
+extern void ext2_rw_inode(struct nas *nas, struct ext2fs_dinode *fdi,
+	int rw_flag);
 
 #endif /* EXT_H_ */

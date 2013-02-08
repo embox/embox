@@ -97,8 +97,11 @@ static module LibCStrdup {
 static module LibCMath {
 	source "math/fabs.c"
 	source "math/round.c"
+	source "math/lround.c"
+	source "math/llround.c"
 	source "math/floor.c"
 	source "math/ceil.c"
+	source "math/trunc.c"
 	source "math/copysign.c"
 	source "math/signbit.c"
 	source "math/fmod.c"
@@ -109,11 +112,12 @@ static module LibCMath {
 	source "math/ldiv.c"
 	source "math/blog2.c"
 	source "math/sqrt.c"
-	source "soft-fp/df3.c"
-	source "soft-fp/sf3.c"
-	source "soft-fp/softfloat.c"
-	source "soft-fp/softfloat-macros.c"
-	source "soft-fp/softfloat-spec.c"
+	depends third_party.lib.Fdlibm
+
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	source "soft-fp/sf.c", "soft-fp/df.c", "soft-fp/tf.c"
+	depends third_party.lib.softfloat
+
 	source "gcc/clzsi2.c"
 	source "gcc/lshrdi3.c"
 	source "gcc/divdi3.c"
@@ -125,8 +129,6 @@ static module LibCMath {
 	source "gcc/umoddi3.c"
 	source "gcc/umodsi3.c"
 	source "gcc/muldi3.c"
-
-	depends third_party.lib.Fdlibm
 }
 
 static module LibCStdio {
@@ -147,9 +149,10 @@ static module LibCStdio {
 	source "stdio/printk.c"
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
+
 	depends LibCMath
 	depends LibCString
-	depends embox.compat.posix.file
+	depends embox.driver.iodev.core
 }
 
 static module LibC {
@@ -165,5 +168,4 @@ static module LibC {
 	depends	LibCStdio
 /* not here */
 	source "shell/tokenizer.c"
-	//source "readline/readline.c"
 }

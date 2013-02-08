@@ -42,7 +42,7 @@ static int angle_example(int argc, char **argv) {
 		 NXT_ANGLE_COMMAND_RPM_LOW (low byte) and does some calcs
 		 ((high << 8) | low). In general, it's like what
 		 we just have done */
-		usleep(1000);
+		msleep(1000);
 	}
 	return 0;
 }

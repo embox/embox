@@ -41,7 +41,7 @@ static int run_picture_with_fill(void) {
 	display_fill(96, 60, 4, 4, 1);
 	for (int i = 0; i < 6; i++) {
 	display_fill(2, 0, 92, 40, 0);
-	//usleep(500);
+	//msleep(500);
 	/*e*/
 	/*2*/	display_draw(2, i-2, 1, 8, &pict_buff1[0]);
 	/*3*/	display_draw(10, i-2, 1, 8, &pict_buff3[0]);
@@ -83,7 +83,7 @@ static int run_picture_with_fill(void) {
 	/*32*/	display_draw(74, i, 1, 8, &pict_buff8[0]);
 	/*33*/	display_draw(82, i, 1, 8, &pict_buff10[0]);
 	/*34*/	display_draw(90, i, 1, 8, &pict_buff7[0]);
-	usleep(250);
+	msleep(250);
 	}
 
 /*jamp*/
@@ -102,7 +102,7 @@ static int run_picture_with_fill(void) {
 		/*14*/	display_draw(10, 3, 1, 8, &pict_buff4[0]);
 		/*23*/	display_draw(2, 4, 1, 8, &pict_buff1[0]);
 		/*24*/	display_draw(10, 4, 1, 8, &pict_buff2[0]);
-		usleep(250);
+		msleep(250);
 		display_fill(2, 16, 16, 24, 0);
 		/*e*/
 		/*2*/	display_draw(2, 3, 1, 8, &pict_buff1[0]);
@@ -111,7 +111,7 @@ static int run_picture_with_fill(void) {
 		/*14*/	display_draw(10, 4, 1, 8, &pict_buff4[0]);
 		/*23*/	display_draw(2, 5, 1, 8, &pict_buff1[0]);
 		/*24*/	display_draw(10, 5, 1, 8, &pict_buff2[0]);
-		usleep(250);
+		msleep(250);
 		display_fill(18, 24, 24, 24, 0);
 		/*m*/
 		/*4*/	display_draw(18, 2, 1, 8, &pict_buff1[0]);
@@ -123,7 +123,7 @@ static int run_picture_with_fill(void) {
 		/*25*/	display_draw(18, 4, 1, 8, &pict_buff1[0]);
 		/*26*/	display_draw(26, 4, 1, 8, &pict_buff1[0]);
 		/*27*/	display_draw(34, 4, 1, 8, &pict_buff1[0]);
-		usleep(250);
+		msleep(250);
 		display_fill(18, 16, 24, 24, 0);
 		/*m*/
 		/*4*/	display_draw(18, 3, 1, 8, &pict_buff1[0]);
@@ -135,7 +135,7 @@ static int run_picture_with_fill(void) {
 		/*25*/	display_draw(18, 5, 1, 8, &pict_buff1[0]);
 		/*26*/	display_draw(26, 5, 1, 8, &pict_buff1[0]);
 		/*27*/	display_draw(34, 5, 1, 8, &pict_buff1[0]);
-		usleep(250);
+		msleep(250);
 		display_fill(42, 16, 16, 32, 0);
 		/*b*/
 		/*1*/	display_draw(42, 1, 1, 8, &pict_buff1[0]);
@@ -144,7 +144,7 @@ static int run_picture_with_fill(void) {
 		/*19*/	display_draw(50, 3, 1, 8, &pict_buff3[0]);
 		/*28*/	display_draw(42, 4, 1, 8, &pict_buff1[0]);
 		/*29*/	display_draw(50, 4, 1, 8, &pict_buff4[0]);
-		usleep(250);
+		msleep(250);
 		display_fill(42, 8, 16, 32, 0);
 		/*b*/
 		/*1*/	display_draw(42, 2, 1, 8, &pict_buff1[0]);
@@ -153,7 +153,7 @@ static int run_picture_with_fill(void) {
 		/*19*/	display_draw(50, 4, 1, 8, &pict_buff3[0]);
 		/*28*/	display_draw(42, 5, 1, 8, &pict_buff1[0]);
 		/*29*/	display_draw(50, 5, 1, 8, &pict_buff4[0]);
-		usleep(250);
+		msleep(250);
 		display_fill(58, 24, 16, 24, 0);
 		/*o*/
 		/*8*/	display_draw(58, 2, 1, 8, &pict_buff1[0]);
@@ -163,7 +163,7 @@ static int run_picture_with_fill(void) {
 		/*30*/	display_draw(58, 4, 1, 8, &pict_buff1[0]);
 		/*31*/	display_draw(66, 4, 1, 8, &pict_buff4[0]);
 
-		usleep(250);
+		msleep(250);
 		display_fill(58, 16, 16, 24, 0);
 		/*o*/
 		/*8*/	display_draw(58, 3, 1, 8, &pict_buff1[0]);
@@ -173,7 +173,7 @@ static int run_picture_with_fill(void) {
 		/*30*/	display_draw(58, 5, 1, 8, &pict_buff1[0]);
 		/*31*/	display_draw(66, 5, 1, 8, &pict_buff4[0]);
 
-		usleep(250);
+		msleep(250);
 		display_fill(74, 24, 24, 24, 0);
 		/*x*/
 		/*10*/	display_draw(74, 2, 1, 8, &pict_buff6[0]);
@@ -183,7 +183,7 @@ static int run_picture_with_fill(void) {
 		/*32*/	display_draw(74, 4, 1, 8, &pict_buff8[0]);
 		/*33*/	display_draw(82, 4, 1, 8, &pict_buff10[0]);
 		/*34*/	display_draw(90, 4, 1, 8, &pict_buff7[0]);
-		usleep(250);
+		msleep(250);
 		display_fill(74, 16, 24, 24, 0);
 		/*x*/
 		/*10*/	display_draw(74, 3, 1, 8, &pict_buff6[0]);
@@ -194,7 +194,7 @@ static int run_picture_with_fill(void) {
 		/*33*/	display_draw(82, 5, 1, 8, &pict_buff10[0]);
 		/*34*/	display_draw(90, 5, 1, 8, &pict_buff7[0]);
 
-		usleep(250);
+		msleep(250);
 	}
 	return 0;
 }

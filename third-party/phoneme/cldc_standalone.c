@@ -35,7 +35,7 @@ int phoneme_cldc(int argc, char **argv) {
 	};
 
 	new_task(phoneme_run, &params);
-	while(!list_empty(&task_self()->children)) { } /* XXX make it throw signals */
+	while(!list_empty(&task_self()->children)) { } /* XXX make it throw waitpid() */
 
 	return params.code;
 }

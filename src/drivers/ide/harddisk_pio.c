@@ -13,12 +13,16 @@
 
 #include <asm/io.h>
 
+#include <kernel/irq_lock.h>
+#include <kernel/thread/sched_lock.h>
 #include <fs/fat.h>
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
 #include <util/indexator.h>
 #include <kernel/time/ktime.h>
+
+#define HD_WAIT_MS 10
 
 extern int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size);
 
@@ -37,6 +41,9 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
 	sectsleft = count / SECTOR_SIZE;
+	if(count % SECTOR_SIZE) {
+		sectsleft++;
+	}
 
 	while (sectsleft > 0) {
 		/* Select drive */
@@ -69,9 +76,14 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 				hdc->iobase + HDC_COMMAND);
 
     	/* Wait until data read */
-		while(!hdc->result) {
-			ksleep(300);
+		sched_lock();
+		{
+			while(!hdc->result) {
+				event_wait_ms(&hdc->event, HD_WAIT_MS);
+			}
 		}
+		sched_unlock();
+
 		if (hdc->result < 0) {
 			break;
 		}
@@ -158,9 +170,14 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 		}
 
 		/* Wait until data written */
-		while(!hdc->result) {
-			ksleep(300);
+		sched_lock();
+		{
+			while(!hdc->result) {
+				event_wait_ms(&hdc->event, HD_WAIT_MS);
+			}
 		}
+		sched_unlock();
+
 		if (hdc->result < 0) {
 			break;
 		}

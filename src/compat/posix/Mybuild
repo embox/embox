@@ -6,6 +6,7 @@ module LibPosix {
 	depends embox.compat.posix.idx.All
 	depends file
 	depends fs
+	depends sched
 }
 
 static module fs {
@@ -32,6 +33,20 @@ module file {
 	depends open
 }
 
+module xattr {
+	source "xattr.c"
+
+	depends embox.fs.xattr
+}
+
+static module dirent {
+	option number dir_quantity=4
+	source "dirent.c"
+
+	depends embox.fs.core
+	depends embox.mem.objalloc
+	depends embox.lib.LibCString
+}
 
 static module open {
 	source "open.c"
@@ -40,5 +55,17 @@ static module open {
 	depends embox.kernel.task.errno
 }
 
+static module sched {
+	source "sched_posix.c"
+}
 
+static module passwd {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "passwd.c"
 
+	@InitFS
+	source "passwd"
+
+	@InitFS
+	source "shadow"
+}

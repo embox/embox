@@ -29,6 +29,10 @@ module NoFileSystem extends fs_api{
 	depends SysLibFileSystemNone
 }
 
+module xattr {
+	source "xattr.c"
+}
+
 module core extends fs_api {
 	source "vfs.c", "path.c"
 

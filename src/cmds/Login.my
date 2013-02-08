@@ -1,0 +1,29 @@
+
+package embox.cmd
+
+@Cmd(name = "login",
+	help = "Prompts user name and password and login that user",
+	man = '''
+		NAME
+			login - prompts user name and password and perform
+				login for that user
+		SYNOPSIS
+			login
+		DESCRIPTION
+			Logins user.
+		AUTHOR
+			Anton Kozlov
+	''')
+module login {
+	@IncludePath("$(THIRDPARTY_DIR)/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "login.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.passwd
+	depends embox.compat.posix.utmp_api
+	depends third_party.lib.linenoise
+
+	requires embox.cmd.Shell.commandLine
+
+}

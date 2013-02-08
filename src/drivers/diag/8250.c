@@ -6,12 +6,10 @@
  * @author Anton Kozlov
  */
 
-#include <prom/diag.h>
 #include <asm/io.h>
+#include <drivers/diag.h>
 #include <drivers/serial/8250.h>
-
-#include <embox/unit.h>
-
+#include <framework/mod/options.h>
 
 /** Default I/O addresses
  * NOTE: The actual I/O addresses used are stored
@@ -22,7 +20,19 @@
 #define COM2_PORT           0x3e8
 #define COM3_PORT           0x2e8
 
+int diag_kbhit(void) {
+	return in8(COM0_PORT + UART_LSR) & UART_DATA_READY;
+}
 
+char diag_getc(void) {
+	while (!diag_kbhit());
+	return in8(COM0_PORT + UART_RX);
+}
+
+void diag_putc(char ch) {
+	while (!(in8(COM0_PORT + UART_LSR) & UART_EMPTY_TX));
+	out8((uint8_t) ch, COM0_PORT + UART_TX);
+}
 
 void diag_init(void) {
 	/* Turn off the interrupt */
@@ -38,18 +48,4 @@ void diag_init(void) {
 	out8(UART_ENABLE_FIFO, COM0_PORT + UART_FCR);
 	/* Uart enable modem (turn on DTR, RTS, and OUT2) */
 	out8(UART_ENABLE_MODEM, COM0_PORT + UART_MCR);
-}
-
-char diag_getc(void) {
-	while (!diag_has_symbol());
-	return in8(COM0_PORT + UART_RX);
-}
-
-void diag_putc(char ch) {
-	while (!(in8(COM0_PORT + UART_LSR) & UART_EMPTY_TX));
-	out8((uint8_t) ch, COM0_PORT + UART_TX);
-}
-
-int diag_has_symbol(void) {
-	return in8(COM0_PORT + UART_LSR) & UART_DATA_READY;
 }

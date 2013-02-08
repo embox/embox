@@ -6,29 +6,25 @@
  * @author Anton Bondarev
  */
 
-#include <stdio.h>
+#include <assert.h>
+#include <drivers/iodev.h>
 #include <stdarg.h>
-#include <types.h>
-#include <prom/diag.h>
+#include <stdio.h>
 
-int __print(void (*printchar_handler)(char **str, int c),
-		char **out, const char *format, va_list args);
+#include "printf_impl.h"
 
-static void diag_printchar(char **str, int c) {
-	if (str) {
-		**str = c;
-		++(*str);
-	} else {
-		diag_putc(c);
-	}
+static void iodev_printchar(struct printchar_handler_data *d, int c) {
+	iodev_putc(c);
 }
 
 int printk(const char *format, ...) {
 	int ret;
 	va_list args;
 
+	assert(format != NULL);
+
 	va_start(args, format);
-	ret = __print(diag_printchar, 0, format, args);
+	ret = __print(iodev_printchar, NULL, format, args);
 	va_end(args);
 
 	return ret;

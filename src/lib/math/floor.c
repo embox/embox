@@ -9,19 +9,22 @@
 #include <math.h>
 
 double floor(double x) {
-	double int_part;
+	double rounded;
 
-	return modf(x, &int_part) < 0.0 ? int_part - 1.0 : int_part;
+	rounded = round(x);
+	return rounded <= x ? rounded : rounded - 1.0;
 }
 
 float floorf(float x) {
-	float int_part;
+	float rounded;
 
-	return modff(x, &int_part) < 0.0F ? int_part - 1.0F : int_part;
+	rounded = round(x);
+	return rounded <= x ? rounded : rounded - 1.0F;
 }
 
 long double floorl(long double x) {
-	long double int_part;
+	long double rounded;
 
-	return modfl(x, &int_part) < 0.0L ? int_part - 1.0L : int_part;
+	rounded = round(x);
+	return rounded <= x ? rounded : rounded - 1.0L;
 }

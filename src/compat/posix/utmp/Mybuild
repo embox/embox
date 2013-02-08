@@ -1,0 +1,16 @@
+
+package embox.compat.posix
+
+@DefaultImpl(no_utmp)
+abstract module utmp_api { }
+
+module utmp extends utmp_api {
+	option number max_ent_count = 64
+
+	source "utmp.c"
+}
+
+module no_utmp extends utmp_api {
+
+	source "no_utmp.c"
+}

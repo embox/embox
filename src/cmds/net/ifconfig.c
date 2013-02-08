@@ -7,14 +7,18 @@
  * @author Alexander Batyukov
  */
 
-#include <embox/cmd.h>
+#include <string.h>
+#include <arpa/inet.h>
 #include <string.h>
 #include <getopt.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+
+#include <embox/cmd.h>
+
 #include <net/inetdevice.h>
 #include <net/util.h>
-#include <err.h>
 
 EMBOX_CMD(exec);
 
@@ -139,86 +143,86 @@ static int exec(int argc, char **argv) {
 			strncpy(iname, optarg, ARRAY_SIZE(iname));
 			printf("iface = %s\n", optarg);
 			if (!(in_dev = inet_dev_find_by_name(optarg))) {
-				LOG_ERROR("can't find interface %s\n", optarg);
+				printf("can't find interface %s\n", optarg);
 				return -1;
 			}
 			break;
 
 		case 'a': /* the IP address to be assigned to this iface */
 			if (0 == inet_aton(optarg, &ipaddr)) {
-				LOG_ERROR("wrong ip addr format %s\n", optarg);
+				printf("wrong ip addr format %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'p': /* the IP mask */
 			if (0 == inet_aton(optarg, &mask)) {
-				LOG_ERROR("wrong mask format %s\n", optarg);
+				printf("wrong mask format %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'm': /* the MAC address to be assigned to this iface */
 			if (NULL == macaddr_scan((const unsigned char *) optarg, macaddr)) {
-				LOG_ERROR("wrong mac addr format %s\n", optarg);
+				printf("wrong mac addr format %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'r': /* enable arp protocol using */
 			if (1 != sscanf(optarg, "%d", &no_arp)) {
-				LOG_ERROR("wrong -b argument %s\n", optarg);
+				printf("wrong -b argument %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'f': /* promiscuous state control */
 			if (1 != sscanf(optarg, "%d", &promisc)) {
-				LOG_ERROR("wrong -f argument %s\n", optarg);
+				printf("wrong -f argument %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'c': /* all-multicast state control */
 			if (1 != sscanf(optarg, "%d", &allmulti)) {
-				LOG_ERROR("wrong -c argument %s\n", optarg);
+				printf("wrong -c argument %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'g': /* control flag for group data transfer support */
 			if (1 != sscanf(optarg, "%d", &multicast)) {
-				LOG_ERROR("wrong -g argument %s\n", optarg);
+				printf("wrong -g argument %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'l': /* set max packet length */
 			if (0 == sscanf(optarg, "%d", &mtu)) {
-				LOG_ERROR("wrong -l argument %s\n", optarg);
+				printf("wrong -l argument %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'b': /* set iface base address */
 			if (0 == sscanf(optarg, "0x%lX", &base_addr)) {
-				LOG_ERROR("wrong -b argument %s\n", optarg);
+				printf("wrong -b argument %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'i': /* set iface irq */
 			if (0 == sscanf(optarg, "%d", &irq_num)) {
-				LOG_ERROR("wrong -i argument %s\n", optarg);
+				printf("wrong -i argument %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 't': /* set iface tx queue length */
 			if (1 != sscanf(optarg, "%ld", &tx_queue_len)) {
-				LOG_ERROR("wrong -t argument %s\n", optarg);
+				printf("wrong -t argument %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'w': /* the broadcast address to be assigned */
 			if (NULL == macaddr_scan((const unsigned char *) optarg, broadcastaddr)) {
-				LOG_ERROR("wrong broadcast addr format %s\n", optarg);
+				printf("wrong broadcast addr format %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'z': /* pointipoint connection addr to be assigned */
 			if (0 == sscanf(optarg, "%d", &p2p)) {
-				LOG_ERROR("wrong -z argument %s\n", optarg);
+				printf("wrong -z argument %s\n", optarg);
 				return -1;
 			}
 			break;
@@ -248,7 +252,7 @@ static int exec(int argc, char **argv) {
 			 */
 		}
 		if (NULL == (in_dev = inet_dev_find_by_name(argv[argc - 1]))) {
-			LOG_ERROR("can't find interface %s\n", argv[argc - 1]);
+			printf("can't find interface %s\n", argv[argc - 1]);
 			return -1;
 		}
 	}
@@ -299,7 +303,7 @@ static int exec(int argc, char **argv) {
 
 	if (broadcastaddr[0] != 0) {
 		if (NULL == in_dev) {
-			LOG_ERROR("Enter interface name\n");
+			printf("Enter interface name\n");
 			print_usage();
 			return -1;
 		}
@@ -321,7 +325,7 @@ static int exec(int argc, char **argv) {
 	}
 	if (ipaddr.s_addr != 0) { /* set new IP address to iface */
 		if (NULL == in_dev) {
-			LOG_ERROR("Enter interface name\n");
+			printf("Enter interface name\n");
 			print_usage();
 			return -1;
 		}
@@ -331,7 +335,7 @@ static int exec(int argc, char **argv) {
 	}
 	if (mask.s_addr != 0) { /* set new mask to iface */
 		if (NULL == in_dev) {
-			LOG_ERROR("Enter interface name\n");
+			printf("Enter interface name\n");
 			print_usage();
 			return -1;
 		}
@@ -341,7 +345,7 @@ static int exec(int argc, char **argv) {
 	}
 	if (macaddr[0] != 0) { /* set new MAC address to iface */
 		if (NULL == in_dev) {
-			LOG_ERROR("Enter interface name\n");
+			printf("Enter interface name\n");
 			print_usage();
 			return -1;
 		}

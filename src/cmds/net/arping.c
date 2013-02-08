@@ -13,11 +13,13 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <errno.h>
+#include <arpa/inet.h>
+#include <string.h>
 
 #include <net/util.h>
 #include <net/arp.h>
 #include <net/neighbour.h>
-#include <string.h>
+
 
 
 EMBOX_CMD(exec);
@@ -84,7 +86,7 @@ static int exec(int argc, char **argv) {
 				in_dev->dev);
 		arp_send(ARP_OPER_REQUEST, ETH_P_ARP, in_dev->dev, dst.s_addr,
 				in_dev->ifa_address, NULL, (in_dev->dev)->dev_addr, NULL);
-		usleep(DEFAULT_INTERVAL);
+		msleep(DEFAULT_INTERVAL);
 		if (neighbour_get_hardware_address((const unsigned char *)&dst,
 					sizeof dst, in_dev->dev, sizeof hw_addr, &hw_addr[0],
 					NULL) == ENOERR) {

@@ -10,9 +10,11 @@
 #define IN_H_
 
 #include <types.h>
+#include <arpa/inet.h>
 #include <lib/bits/byteswap.h>
 #include <net/socket.h>
 #include <netinet/in.h>
+
 
 
 static inline bool ipv4_is_loopback(in_addr_t addr) {

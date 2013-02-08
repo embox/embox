@@ -84,7 +84,7 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	return ops->read(desc, buf, nbyte);
 }
 
-int lseek(int fd, long int offset, int origin) {
+off_t lseek(int fd, off_t offset, int origin) {
 	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
 
@@ -164,7 +164,7 @@ int fstat(int fd, struct stat *buff) {
 
 int fcntl(int fd, int cmd, ...) {
 	va_list args;
-	int res = 0, flag;
+	int res = -1, flag;
 	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
 
@@ -180,6 +180,10 @@ int fcntl(int fd, int cmd, ...) {
 
 	va_start(args, cmd);
 
+	/* Fcntl works in two steps:
+	 * 1. Make general commands like F_SETFD, F_GETFD.
+	 * 2. If fd has some internal fcntl(), it will be called.
+	 *    Otherwise result of point 1 will be returned. */
 	switch(cmd) {
 	case F_GETFD:
 		res = *task_idx_desc_flags_ptr(desc);
@@ -187,10 +191,7 @@ int fcntl(int fd, int cmd, ...) {
 	case F_SETFD:
 		flag = va_arg(args, int);
 		*task_idx_desc_flags_ptr(desc) = flag;
-		if (flag & O_NONBLOCK) {
-			io_op_unblock(&desc->data->read_state);
-			io_op_unblock(&desc->data->write_state);
-		}
+		res = 0;
 		break;
 	case F_GETPIPE_SZ:
 	case F_SETPIPE_SZ:
@@ -202,7 +203,7 @@ int fcntl(int fd, int cmd, ...) {
 	}
 
 	if (NULL == ops->fcntl) {
-		return -1;
+		return res;
 	}
 
 	res = ops->fcntl(desc, cmd, args);

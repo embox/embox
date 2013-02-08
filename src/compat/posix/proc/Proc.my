@@ -7,8 +7,8 @@ module All {
 		fork,
 		wait,
 		signal,
-		exit
-
+		exit,
+		uid
 }
 
 static module exec {
@@ -47,3 +47,9 @@ static module exit {
 	depends embox.util.LibUtil
 }
 
+static module uid {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "uid.c"
+
+	depends embox.kernel.task.u_area
+}

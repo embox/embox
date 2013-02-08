@@ -33,7 +33,7 @@ static void *thread_handler(void *args) {
 			thread_self()->id);
 
 
-	event_wait(event, SCHED_TIMEOUT_INFINITE);/* sleeping here*/
+	event_wait_ms(event, SCHED_TIMEOUT_INFINITE);/* sleeping here*/
 
 	/* print a thread structure address and a thread's ID */
 	for(i = 0; i < CONF_HANDLER_REPEAT_NUMBER; i ++) {

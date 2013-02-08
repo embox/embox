@@ -13,6 +13,7 @@
    but these catch some common cases. */
 
 #include <hal/arch.h>
+#include <math.h>
 
 #ifdef __LITTLE_ENDIAN
 #define __HI(x) *(1+(int*)&x)
@@ -125,12 +126,15 @@ extern double erf __P((double));
 extern double erfc __P((double));
 extern double gamma __P((double));
 extern double hypot __P((double, double));
+/*
+ * defines in <math.h>
 extern int isnan __P((double));
 extern int isnanl __P((long double));
 extern int isnanf __P((float));
 extern int finite __P((double));
 extern int finitel __P((long double));
 extern int finitef __P((float));
+*/
 extern double j0 __P((double));
 extern double j1 __P((double));
 extern double jn __P((int, double));

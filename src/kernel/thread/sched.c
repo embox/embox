@@ -17,7 +17,6 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <lib/list.h>
 
 #include <kernel/critical.h>
 #include <kernel/irq_lock.h>
@@ -186,7 +185,7 @@ static void timeout_handler(struct sys_timer *timer, void *sleep_data) {
 	thread_wake_force(thread, -ETIMEDOUT);
 }
 
-int sched_sleep_locked(struct sleepq *sq, unsigned long timeout) {
+int sched_sleep_locked_ns(struct sleepq *sq, unsigned long timeout) {
 	int ret;
 	struct sys_timer tmr;
 	struct thread *current = sched_current();
@@ -197,7 +196,7 @@ int sched_sleep_locked(struct sleepq *sq, unsigned long timeout) {
 	current->sleep_res = ENOERR; /* clean out sleep_res */
 
 	if (timeout != SCHED_TIMEOUT_INFINITE) {
-		ret = timer_init(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
+		ret = timer_init_ns(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
 		if (ret != ENOERR) {
 			return ret;
 		}
@@ -220,13 +219,107 @@ int sched_sleep_locked(struct sleepq *sq, unsigned long timeout) {
 	return current->sleep_res;
 }
 
-int sched_sleep(struct sleepq *sq, unsigned long timeout) {
+int sched_sleep_locked_us(struct sleepq *sq, unsigned long timeout) {
+	int ret;
+	struct sys_timer tmr;
+	struct thread *current = sched_current();
+
+	assert(in_sched_locked() && !in_harder_critical());
+	assert(thread_state_running(current->state));
+
+	current->sleep_res = ENOERR; /* clean out sleep_res */
+
+	if (timeout != SCHED_TIMEOUT_INFINITE) {
+		ret = timer_init_us(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
+		if (ret != ENOERR) {
+			return ret;
+		}
+	}
+
+	do_sleep_locked(sq);
+
+	sched_unlock();
+
+	/* At this point we have been awakened and are ready to go. */
+	assert(!in_sched_locked());
+	assert(thread_state_running(current->state));
+
+	sched_lock();
+
+	if (timeout != SCHED_TIMEOUT_INFINITE) {
+		timer_close(&tmr);
+	}
+
+	return current->sleep_res;
+}
+
+int sched_sleep_locked_ms(struct sleepq *sq, unsigned long timeout) {
+	int ret;
+	struct sys_timer tmr;
+	struct thread *current = sched_current();
+
+	assert(in_sched_locked() && !in_harder_critical());
+	assert(thread_state_running(current->state));
+
+	current->sleep_res = ENOERR; /* clean out sleep_res */
+
+	if (timeout != SCHED_TIMEOUT_INFINITE) {
+		ret = timer_init_ms(&tmr, TIMER_ONESHOT, (uint32_t)timeout, timeout_handler, current);
+		if (ret != ENOERR) {
+			return ret;
+		}
+	}
+
+	do_sleep_locked(sq);
+
+	sched_unlock();
+
+	/* At this point we have been awakened and are ready to go. */
+	assert(!in_sched_locked());
+	assert(thread_state_running(current->state));
+
+	sched_lock();
+
+	if (timeout != SCHED_TIMEOUT_INFINITE) {
+		timer_close(&tmr);
+	}
+
+	return current->sleep_res;
+}
+
+int sched_sleep_ns(struct sleepq *sq, unsigned long timeout) {
 	int sleep_res;
 	assert(!in_sched_locked());
 
 	sched_lock();
 	{
-		sleep_res = sched_sleep_locked(sq, timeout);
+		sleep_res = sched_sleep_locked_ns(sq, timeout);
+	}
+	sched_unlock();
+
+	return sleep_res;
+}
+
+int sched_sleep_us(struct sleepq *sq, unsigned long timeout) {
+	int sleep_res;
+	assert(!in_sched_locked());
+
+	sched_lock();
+	{
+		sleep_res = sched_sleep_locked_us(sq, timeout);
+	}
+	sched_unlock();
+
+	return sleep_res;
+}
+
+int sched_sleep_ms(struct sleepq *sq, unsigned long timeout) {
+	int sleep_res;
+	assert(!in_sched_locked());
+
+	sched_lock();
+	{
+		sleep_res = sched_sleep_locked_ms(sq, timeout);
 	}
 	sched_unlock();
 

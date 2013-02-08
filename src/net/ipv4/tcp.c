@@ -31,6 +31,7 @@
 #include <kernel/time/ktime.h>
 
 #include <kernel/task/io_sync.h>
+#include <prom/prom_printf.h>
 
 EMBOX_NET_PROTO_INIT(IPPROTO_TCP, tcp_v4_rcv, NULL, tcp_v4_init);
 
@@ -1063,7 +1064,7 @@ static int tcp_v4_init(void) {
 	memset(tcp_table, 0, sizeof tcp_table);
 
 	/* Create default timer */
-	res = timer_init(&tcp_tmr_default, TIMER_PERIODIC, TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
+	res = timer_init_ms(&tcp_tmr_default, TIMER_PERIODIC, TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
 	if (res < 0) {
 		return res;
 	}

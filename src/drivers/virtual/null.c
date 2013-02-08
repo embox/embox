@@ -6,35 +6,36 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
-#include <fs/file_operation.h>
-#include <fs/node.h>
 #include <embox/device.h>
+#include <fs/file_operation.h>
+#include <stdlib.h>
 
-static void *null_open(const char *fname, const char *mode);
-static int null_close(void *file);
-static size_t null_write(const void *buff, size_t size, size_t count, void *file);
+#define NULL_DEV_NAME "null"
 
-static file_operations_t file_op = {
-		.fread = NULL,
-		.fopen = null_open,
-		.fclose = null_close,
-		.fwrite = null_write
-};
+/* forward declaration */
+static int null_init(void);
+static const struct kfile_operations null_ops;
 
-/*
- * file_operation
- */
-static void *null_open(const char *fname, const char *mode) {
-	return (void *)&file_op;
-}
+EMBOX_DEVICE(NULL_DEV_NAME, &null_ops, null_init);
 
-static int null_close(void *file) {
+static int null_open(struct node *node, struct file_desc *file_desc, int flags) {
 	return 0;
 }
 
-static size_t null_write(const void *buff, size_t size, size_t count, void *file) {
-	return count * size;
+static int null_close(struct file_desc *desc) {
+	return 0;
 }
 
-EMBOX_DEVICE("null", &file_op); /* doesn't matter if we have fs */
+static size_t null_write(struct file_desc *desc, void *buf, size_t size) {
+	return size;
+}
+
+static const struct kfile_operations null_ops = {
+		.open = null_open,
+		.close = null_close,
+		.write = null_write
+};
+
+static int null_init(void) {
+	return char_dev_register(NULL_DEV_NAME, &null_ops);
+}

@@ -28,6 +28,13 @@ module filesystem_test {
 	depends embox.framework.LibFramework
 }
 
+module xattr {
+        source "xattr.c"
+
+	depends embox.driver.ramdisk
+        depends embox.compat.posix.xattr
+}
+
 module file_test {
 	source "file_op_test.c"
 

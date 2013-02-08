@@ -84,6 +84,7 @@ int new_task(void *(*run)(void *), void *arg) {
 		}
 
 		self_task->main_thread = thd;
+		self_task->per_cpu = 0;
 
 		thd->stack += task_sz;
 		thd->stack_sz -= task_sz;

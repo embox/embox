@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief Smaller integral value not less than argument
  *
  * @date 05.01.13
  * @author Ilia Vaprol
@@ -9,19 +9,22 @@
 #include <math.h>
 
 double ceil(double x) {
-	double int_part;
+	double rounded;
 
-	return modf(x, &int_part) > 0.0 ? int_part + 1.0 : int_part;
+	rounded = round(x);
+	return rounded < x ? rounded + 1.0 : rounded;
 }
 
 float ceilf(float x) {
-	float int_part;
+	float rounded;
 
-	return modff(x, &int_part) > 0.0F ? int_part + 1.0F : int_part;
+	rounded = roundf(x);
+	return rounded < x ? rounded + 1.0F : rounded;
 }
 
 long double ceill(long double x) {
-	long double int_part;
+	long double rounded;
 
-	return modfl(x, &int_part) > 0.0L ? int_part + 1.0L : int_part;
+	rounded = roundf(x);
+	return rounded < x ? rounded + 1.0L : rounded;
 }

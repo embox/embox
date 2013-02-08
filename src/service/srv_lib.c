@@ -78,16 +78,18 @@ int web_service_start_service(const char *srv_name,
 		struct service_data * srv_data) {
 	const struct web_service_desc *srv_desc;
 
-	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
+	srv_desc = web_service_desc_lookup(srv_name);
+	if (srv_desc == NULL) {
 		return -1;
 	}
-	if (!*srv_desc->is_started){
+	if (!*srv_desc->is_started) {
 		return -1;
 	}
 
-	new_task(srv_desc->run, (void *) srv_data);
-	/* When we closing http connection after content sending
-	 * this means socket must be opened only in one task.  */
+	if (new_task(srv_desc->run, (void *)srv_data) < 0) {
+		return -1;
+	}
+
 	close(srv_data->sock);
 
 	return 0;
@@ -95,7 +97,8 @@ int web_service_start_service(const char *srv_name,
 
 int is_service_started(const char *srv_name) {
 	const struct web_service_desc *srv_desc;
-	if (NULL == (srv_desc = web_service_desc_lookup(srv_name))) {
+	srv_desc = web_service_desc_lookup(srv_name);
+	if (srv_desc == NULL) {
 		return 0;
 	}
 	if (!*srv_desc->is_started){

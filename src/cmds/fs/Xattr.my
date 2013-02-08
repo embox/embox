@@ -1,0 +1,84 @@
+package embox.cmd.fs
+
+@Cmd(name = "xattr",
+	help = "Display and manipulate extended attributes",
+	man = '''
+NAME
+     xattr -- display and manipulate extended attributes
+
+SYNOPSIS
+     xattr [-lrsvx] file ...
+     xattr -p [-lrsvx] attr_name file ...
+     xattr -w [-rsx] attr_name attr_value file ...
+     xattr -d [-rsv] attr_name file ...
+     xattr -c [-rsv] file ...
+     xattr -h | --help
+
+DESCRIPTION
+     The xattr command can be used to display, modify or remove the extended
+     attributes of one or more files, including directories and symbolic links.
+     Extended attributes are arbitrary metadata stored with a file, but
+     separate from the filesystem attributes (such as modification time or file
+     size). The metadata is often a null-terminated UTF-8 string, but can also
+     be arbitrary binary data.
+
+     One or more files may be specified on the command line.  For the first two
+     forms of the command, when there are more than one file, the file name is
+     displayed along with the actual results.  When only one file is specified,
+     the display of the file name is usually suppressed (unless the -v option
+     described below, is also specified).
+
+     In the first form of the command (without any other mode option specified),
+     the names of all extended attributes are listed.
+     Attribute names can also be displayed using ``ls -l@''.
+
+     In the second form, using the -p option (``print''), the value associated
+     with the given attribute name is displayed.  Attribute values are usually
+     displayed as strings.  However, if nils are detected in the
+     data, the value is displayed in a hexadecimal representation.
+
+     The third form, with the -w option (``write''), causes the given attribute
+     name to be assigned the given value.
+
+     The fourth form, with the -d option (``delete''), causes the given
+     attribute name (and associated value), to be removed.
+
+     In the fifth form, with the -c option (``clear''), causes all attributes
+     (including their associated values), to be removed.
+
+     Finally, the last form, with either the -h or --help option, displays a
+     short help message and exits immediately.
+
+OPTIONS
+     -l  By default, the first two command forms either displays just the
+         attribute names or values, respectively.
+         The -l option causes both the attribute names and corresponding values
+         to be displayed. For hexadecimal display of values, the output is
+         preceeded with the hexadecimal offset values and followed by ASCII
+         display, enclosed by ``|''.
+
+     -x  Force the attribute value to be displayed in the hexadecimal
+         representation.
+
+         The -w option normally assumes the input attribute value is a string.
+         Specifying the -x option causes xattr to expect the input in
+         hexadecimal (whitespace is ignored).  The xxd(1) command can be used
+         to create hexadecimal representations from existing binary data, to
+         pass to xattr.
+
+      	''')
+module xattr {
+	@IncludePath("$(SRC_DIR)/compat/linux/include")
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "xattr.c"
+
+	depends embox.lib.LibC
+
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.file
+	depends embox.fs.core
+	depends embox.prom.printf
+	depends embox.framework.LibFramework
+	depends embox.compat.posix.xattr
+	depends embox.fs.driver.ext2.xattr
+}

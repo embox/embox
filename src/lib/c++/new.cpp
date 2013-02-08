@@ -7,8 +7,6 @@
 
 #include <new>
 
-#include "cxxabi.hpp"
-
 const std::nothrow_t std::nothrow = { };
 
 static std::new_handler __new_handler = 0;
@@ -27,12 +25,16 @@ void* operator new(std::size_t size) throw(std::bad_alloc) {
 		size = 1;
 	}
 
-	while ((ptr = std::malloc(size)) == 0) {
+	if ((ptr = std::malloc(size)) == 0) {
 		std::new_handler handler = __new_handler;
 		if (handler == 0) {
+		/*
+			Cannot throw: exceptions are disabled
 			throw std::bad_alloc();
+		*/
+		} else {
+			handler();
 		}
-		handler();
 	}
 
 	return ptr;
@@ -45,17 +47,21 @@ void* operator new(std::size_t size, const std::nothrow_t& nothrow_const) throw(
 		size = 1;
 	}
 
-	while ((ptr = std::malloc(size)) == 0) {
+	if ((ptr = std::malloc(size)) == 0) {
 		std::new_handler handler = __new_handler;
 		if (handler == 0) {
 			return 0;
 		}
+		/*
+		Cannot use: no exceptions
 		try {
 			handler();
 		}
 		catch (const std::bad_alloc&) {
 			return 0;
 		}
+		*/
+		handler();
 	}
 
 	return ptr;

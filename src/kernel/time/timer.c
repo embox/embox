@@ -10,6 +10,7 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/timer.h>
 #include <kernel/softirq.h>
+#include <kernel/task.h>
 
 EMBOX_UNIT_INIT(init);
 
@@ -25,6 +26,7 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 	cs->jiffies++;
 
 	if (cs_jiffies->event_device && irq_num == cs_jiffies->event_device->irq_nr) {
+		task_self()->per_cpu++;
 		softirq_raise(SOFTIRQ_NR_TIMER);
 	}
 }

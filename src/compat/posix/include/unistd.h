@@ -13,6 +13,11 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/cdefs.h>
+
+#include <kernel/task.h>
+
+__BEGIN_DECLS
 
 /* Standard file descriptors. */
 #define STDIN_FILENO    0   /* Standard input. */
@@ -33,16 +38,18 @@ extern int sleep(unsigned int seconds);
 
 /**
  * suspend execution for an interval of time
- * @param useconds interval in microseconds
+ * @param useconds interval in nanoseconds,microseconds,milliseconds
  * @return 0 if time has elapsed if was error then return -1
  */
+extern int nsleep(useconds_t nseconds);
 extern int usleep(useconds_t useconds);
+extern int msleep(useconds_t mseconds);
 
 extern ssize_t write(int fd, const void *buf, size_t nbyte);
 
 extern ssize_t read(int fd, void *buf, size_t nbyte);
 
-extern int lseek(int fd, long int offset, int origin);
+extern off_t lseek(int fd, off_t offset, int origin);
 
 extern int fsync(int);
 
@@ -56,7 +63,7 @@ extern int unlink(const char *pathname);
 extern int rmdir(const char *pathname);
 
 static inline pid_t getpid(void) {
-	return -1;
+	return task_getid();
 }
 
 extern int isatty(int fd);
@@ -66,5 +73,21 @@ extern int dup2(int flides, int flides2);
 
 extern int pipe(int pipefd[2]/*, int flags: O_NONBLOCK */);
 extern void _exit(int status);
+
+extern uid_t getuid(void);
+extern uid_t geteuid(void);
+
+extern uid_t getgid(void);
+extern uid_t getegid(void);
+
+extern int setreuid(uid_t ruid, uid_t euid);
+extern int setuid(uid_t uid);
+extern int seteuid(uid_t uid);
+
+extern int setregid(gid_t rgid, gid_t egid);
+extern int setgid(gid_t gid);
+extern int setegid(gid_t gid);
+
+__END_DECLS
 
 #endif /* UNISTD_H_ */
