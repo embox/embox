@@ -17,6 +17,10 @@
 #include <embox/block_dev.h>
 #include <drivers/ramdisk.h>
 
+/* For command testing */
+#include <cmd/cmdline.h>
+#include <framework/cmd/api.h>
+
 #include <mem/page.h>
 #include <embox/test.h>
 
@@ -116,7 +120,7 @@ TEST_CASE("stat and fstat should return same stats") {
 */
 
 TEST_CASE("Rename file") {
-	/* Prepare to directories and files for tests */
+	/* Prepare directories and files for tests */
 	test_assert_zero(creat(FS_MV_F1, 0));
 	test_assert_zero(creat(FS_MV_F2, 0));
 
@@ -158,6 +162,85 @@ TEST_CASE("Rename file") {
 	test_assert_zero(remove(FS_DTR));
 }
 
+/* Exec shell command and return it's exit code */
+static int exec_shell_cmd(char *cmdline) {
+	const struct cmd *cmd;
+	int argc = 0, code;
+	/* In the worst case cmdline looks like "x x x x x x". */
+	char *argv[(80 + 1) / 2];
+
+	/* Test simple move */
+	if (0 == (argc = cmdline_tokenize(cmdline, argv))) {
+		/* Only spaces were entered */
+		return -1;
+	}
+
+	if (NULL == (cmd = cmd_lookup(argv[0]))) {
+		printf("%s: Command not found\n", argv[0]);
+		return -1;
+	}
+
+	if (0 != (code = cmd_exec(cmd, argc, argv))) {
+		printf("%s: Command returned with code %d: %s\n",
+				cmd_name(cmd), code, strerror(-code));
+	}
+
+	return code;
+}
+
+TEST_CASE("Move file") {
+	/* This should be improved to not use hard-coded paths */
+	char *cmd_recursive_err = "mv /test_fop/dtr /test_fop/tmpdtr";
+	char *cmd_force_err = "mv /test_fop/dtr/file1 /test_fop/dtr/sub/file2";
+	char *cmd_multi_err =
+				"mv /test_fop/dtr/file1 /test_fop/dtr/sub/file2 /test_fop/file";
+
+	char *cmd_simple = "mv /test_fop/dtr/file1 /test_fop/dtr/sub/tmpfile";
+	char *cmd_simple_back = "mv /test_fop/dtr/sub/tmpfile /test_fop/dtr/file1";
+	char *cmd_recursive = "mv -r /test_fop/dtr /test_fop/tmpdtr";
+	char *cmd_recursive_back =  "mv -r /test_fop/tmpdtr /test_fop/dtr";
+	char *cmd_multi =
+			"mv /test_fop/dtr/file1 /test_fop/dtr/sub/file2 /test_fop";
+	char *cmd_force = "mv -f /test_fop/file1 /test_fop/file2";
+
+	/* Prepare directories and files for tests */
+	test_assert_zero(creat(FS_MV_F1, 0));
+	test_assert_zero(creat(FS_MV_F2, 0));
+
+	/**
+	 * Error codes tests
+	 */
+
+	/* Move directory without recursive key */
+	test_assert(-EINVAL == exec_shell_cmd(cmd_recursive_err));
+
+	/* Overwrite without force key */
+	test_assert(-EINVAL == exec_shell_cmd(cmd_force_err));
+
+	/* Multi-source with not directory as destination */
+	test_assert(-EINVAL == exec_shell_cmd(cmd_multi_err));
+
+	/**
+	 * Valid tests
+	 */
+
+	/* Simple test */
+	test_assert_zero(exec_shell_cmd(cmd_simple));
+	test_assert_zero(exec_shell_cmd(cmd_simple_back));
+
+	/* Recursive test */
+	test_assert_zero(exec_shell_cmd(cmd_recursive));
+	test_assert_zero(exec_shell_cmd(cmd_recursive_back));
+
+	/* Multi-source test */
+	test_assert_zero(exec_shell_cmd(cmd_multi));
+
+	/* Force test */
+	test_assert_zero(exec_shell_cmd(cmd_force));
+
+	/* Test cleanup */
+	test_assert_zero(remove(FS_DTR));
+}
 
 static int setup_suite(void) {
 
