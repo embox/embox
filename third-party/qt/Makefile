@@ -10,6 +10,7 @@ QT_MD5 = 89c5ecba180cae74c66260ac732dc5cb  $(QT_BUNDLE)
 QT_CONF_FLAGS_EMBOX += -hostprefix $(QT_INSTALL_DIR_EMBOX)
 # This will be needed to use runtime resources, e.g. fonts
 #QT_CONF_FLAGS_EMBOX += -prefix /qt
+QT_CONF_FLAGS_EMBOX += -arch i386
 QT_CONF_FLAGS_EMBOX += -embedded-lite vnc -little-endian
 QT_CONF_FLAGS_EMBOX += -xplatform qws/embox-generic-g++ -static
 QT_CONF_FLAGS_EMBOX += -opensource -confirm-license
@@ -188,10 +189,10 @@ build_and_install: configure
 
 #TARGET_APPS += examples/declarative/animation/basics/color-animation
 #TARGET_APPS += demos/textedit
-TARGET_APPS += demos/spreadsheet
+#TARGET_APPS += demos/spreadsheet
 TARGET_APPS += examples/animation/animatedtiles
 TARGET_APPS += examples/animation/moveblocks
-TARGET_APPS += examples/widgets/charactermap
+#TARGET_APPS += examples/widgets/charactermap
 
 
 
@@ -255,7 +256,7 @@ endef
 
 define TARGET_COMPONENTS_COMPOSITE
 $$(foreach app,$$(TARGET_COMPONENTS_$(1)),$$(eval $$(call BUILD_COMPONENT_FUNC,$$(app),$(1))))
-$$(eval werwer $$(call TARGET_COMPONENTS_SEQUENCE_PLATFORM,$(1)))
+$$(eval $$(call TARGET_COMPONENTS_SEQUENCE_PLATFORM,$(1)))
 endef
 
 
@@ -381,7 +382,7 @@ $(TARGET_QMAKE_LINUX): linux_build_and_install
 
 .PHONY: target_apps_LINUX
 
-#all: target_apps_LINUX
+all: target_apps_LINUX
 
 
 
