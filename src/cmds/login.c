@@ -44,6 +44,16 @@ static int pass_prompt(const char *prompt, char *buf, int buflen) {
 	ch = fgetc(stdin);
 
 	while ('\n' != ch && '\r' != ch) {
+
+		/* Avoid strange symbols in stdin.
+		 * Actually, telnet sends \r as \r\0,
+		 * so trying bypass it.
+		 */
+		if (ch == '\0') {
+			ch = fgetc(stdin);
+			continue;
+		}
+
 		if (buflen-- <= 0) {
 			return -ERANGE;
 		}
@@ -70,9 +80,10 @@ static int utmp_login(short ut_type, const char *ut_user) {
 	struct timeval tv;
 
 	utmp.ut_type = ut_type;
+	utmp.ut_type = ut_type;
 	utmp.ut_pid = getpid();
+	snprintf(utmp.ut_id, UT_IDSIZE, "/%d", utmp.ut_pid);
 	snprintf(utmp.ut_line, UT_LINESIZE, "pty/%d", utmp.ut_pid);
-	snprintf(utmp.ut_id, UT_IDSIZE, "%d", utmp.ut_pid);
 	strcpy(utmp.ut_user, ut_user);
 	memset(&utmp.ut_host, 0, UT_HOSTSIZE);
 	memset(&utmp.ut_exit, 0, sizeof(struct exit_status));
@@ -81,8 +92,6 @@ static int utmp_login(short ut_type, const char *ut_user) {
 
 	utmp.ut_tv.tv_sec = tv.tv_sec;
 	utmp.ut_tv.tv_usec = tv.tv_usec;
-
-	setutent();
 
 	if (NULL == pututline(&utmp)) {
 		return errno;

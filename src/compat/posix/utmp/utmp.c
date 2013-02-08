@@ -16,6 +16,11 @@
 
 static int utmp_f_pos, utmp_f_end;
 static struct utmp utmp_f[MAX_ENT_COUNT];
+static struct utmp result;
+
+static struct utmp *ret_result(struct utmp *ut) {
+	return memcpy(&result, ut, sizeof(struct utmp));
+}
 
 struct utmp *getutent(void) {
 	if (utmp_f_pos >= utmp_f_end) {
@@ -23,7 +28,7 @@ struct utmp *getutent(void) {
 		return NULL;
 	}
 
-	return &utmp_f[utmp_f_pos++];
+	return ret_result(&utmp_f[utmp_f_pos++]);
 }
 
 struct utmp *getutid(struct utmp *ut) {
@@ -43,7 +48,7 @@ struct utmp *getutid(struct utmp *ut) {
 	while (utmp_f_pos < utmp_f_end) {
 		if ((!mode && ut->ut_type == utmp_f[utmp_f_pos].ut_type) ||
 				(mode && 0 == strcmp(ut->ut_id, utmp_f[utmp_f_pos].ut_id))) {
-			return &utmp_f[utmp_f_pos++];
+			return ret_result(&utmp_f[utmp_f_pos++]);
 		}
 		utmp_f_pos++;
 	}
@@ -58,7 +63,7 @@ struct utmp *getutline(struct utmp *ut) {
 
 		if ((utt == USER_PROCESS || utt == LOGIN_PROCESS) &&
 			0 == strcmp(utmp_f[utmp_f_pos].ut_line, ut->ut_line)) {
-			return &utmp_f[utmp_f_pos++];
+			return ret_result(&utmp_f[utmp_f_pos++]);
 		}
 
 		utmp_f_pos++;
@@ -69,7 +74,11 @@ struct utmp *getutline(struct utmp *ut) {
 }
 
 struct utmp *pututline(struct utmp *ut) {
-	struct utmp *rec = getutid(ut);
+	struct utmp *rec;
+
+	setutent();
+
+	rec = getutid(ut);
 
 	if (NULL == rec) {
 		if (utmp_f_end >= MAX_ENT_COUNT) {
@@ -77,12 +86,13 @@ struct utmp *pututline(struct utmp *ut) {
 			return NULL;
 		}
 
-		utmp_f_pos = utmp_f_end ++;
-		rec = &utmp_f[utmp_f_pos];
+		utmp_f_pos = ++utmp_f_end;
 	}
 
-	memmove(rec, ut, sizeof(struct utmp));
-	return rec;
+	rec = &utmp_f[--utmp_f_pos];
+	++utmp_f_pos;
+
+	return memcpy(rec, ut, sizeof(struct utmp));
 
 }
 
