@@ -357,9 +357,14 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 	struct nas *nas;
 	node_t  *node;
 	nfs_file_info_t *fi;
+	const char *name;
+	mode_t mode;
+
+	name = (const char *) predesc->file_name.name.data;
 
 	node = vfs_lookup_child(parent_nas->node, name);
 	if (node) {
+		nas = node->nas;
 		fi = nas->fi->privdata;
 
 	} else {
@@ -387,8 +392,7 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 	}
 
 	if (!node) {
-		const char *name = (const char *) fi->name_dsc.name.data;
-		mode_t mode = attr->attr.mode;
+		mode = fi->attr.mode;
 		// TODO what is mode is not known (!VALUE_FOLLOWS_YES)?
 
 		node = vfs_create_child(parent_nas->node, name, mode);
@@ -396,8 +400,9 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 			pool_free(&nfs_file_pool, fi);
 			return NULL; /* device not found */
 		}
+
+		nas = node->nas;
 	}
-	nas = node->nas;
 
 	nas->fs = parent_nas->fs;
 	nas->fi->privdata = fi;
@@ -406,14 +411,13 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 
 static int nfs_create_dir_entry(node_t *parent_node) {
 	node_t *node;
-	struct nas *parent_nas, *nas;
+	struct nas *parent_nas;
 	__u32 vf;
 	char *point;
-	nfs_file_info_t *parent_fi, *fi;
+	nfs_file_info_t *parent_fi;
 	nfs_filehandle_t *fh;
 	readdir_desc_t *predesc;
 
-	char full_path[MAX_LENGTH_PATH_NAME];
 	char *rcv_buf;
 
 	parent_nas = parent_node->nas;
@@ -470,7 +474,6 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 				return -1;
 			}
 
-			nas = node->nas;
 			if (node_is_directory(node)) {
 				if (0 != strcmp(node->name, ".") &&
 				    0 != strcmp(node->name, "..")) {
@@ -480,12 +483,11 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 			point += sizeof(*predesc);
 		}
 		point += sizeof(vf);
-		if(NFS_EOF == *(__u32 *)point) {
+		if (NFS_EOF != *(__u32 *)point) {
+			fh->cookie = predesc->file_name.cookie;
+		} else {
 			fh->cookie = 0;
 			break;
-		}
-		else {
-			fh->cookie = predesc->file_name.cookie;
 		}
 	}
 	free(rcv_buf);
