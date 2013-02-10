@@ -153,6 +153,12 @@ static module LibCStdio {
 	depends LibCMath
 	depends LibCString
 	depends embox.driver.iodev.core
+
+	/**
+	 * XXX
+	 * putchar depends from embox.kernel.task.task_table
+	 */
+	depends embox.compat.posix.file
 }
 
 static module LibC {
