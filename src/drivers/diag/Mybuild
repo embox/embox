@@ -32,7 +32,11 @@ module i8250 extends diag_api {
 module vga extends diag_api {
 	source "vga.c"
 
-	depends embox.driver.video.vga
+	/**
+	 * TODO cycle
+	depends embox.lib.LibC
+	 */
+	depends embox.driver.tty.tty
 	depends embox.driver.keyboard
 }
 
