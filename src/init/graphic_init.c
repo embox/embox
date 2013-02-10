@@ -50,5 +50,10 @@ static int graphic_init(void) {
 		return ret;
 	}
 
+	ret = iodev_init();
+	if (ret != 0) {
+		return ret;
+	}
+
 	return 0;
 }
