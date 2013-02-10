@@ -105,12 +105,11 @@ static int iodev_video_init(void) {
 	data.font = &font_vga_8x16;
 	data.fb = fb_lookup("fb0");
 	assert(data.fb != NULL);
-	data.fg_color = 0xF0F0;
-	data.bg_color = 0x0000;
-	data.cur_color = 0x0F00;
+	data.fg_color = 0x00F0;
+	data.bg_color = 0xFFFF;
+	data.cur_color = 0x0FF0;
 
-	tty_init(&video_tty, data.fb->var.xres / data.font->width,
-			data.fb->var.yres / data.font->height, &video_tty_ops, &data);
+	tty_init(&video_tty, 80, 24, &video_tty_ops, &data);
 	return 0;
 }
 
