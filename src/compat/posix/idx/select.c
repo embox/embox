@@ -8,104 +8,83 @@
  * @author Alexander Kalmuk
  */
 
+#include <errno.h>
+#include <fcntl.h>
+#include <hal/clock.h>
+
 #include <sys/time.h>
 #include <sys/select.h>
-#include <errno.h>
+
 #include <kernel/thread/event.h>
 #include <kernel/thread/sched_lock.h>
-#include <hal/clock.h>
 #include <kernel/time/time.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <fcntl.h>
-
-static void fd_set_copy(fd_set *dst, fd_set *src);
 
 /**
  * @brief Save only descriptors with active op.
  * */
-static int find_active(int nfds, fd_set *set, char op);
+static int filter_out_with_op(int nfds, fd_set *set, char op, int update);
 
-/** @brief Update sets with find_active() IF these sets contain at least one
- * active descriptor
+/** @brief Search for active descriptors in all sets.
+ * @param update - show if we filter out inactive fds or only count them.
  * @return count of active descriptors
  * @retval -EBAFD if some descriptor is invalid */
-static int update_sets(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd);
+static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, int update);
 
 /**
  * @brief Link each desc in fd_set to event.
  */
-static void idx_desc_set_event(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, struct event *event);
+static void set_event_for_fds(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, struct event *event);
 
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
-	int res, fd_cnt = 0;
-
+	int fd_cnt;
 	struct event event;
-	fd_set tmp_r, tmp_w;
-	fd_set *p_r = &tmp_r, *p_w = &tmp_w;
-	clock_t ticks = (timeout == NULL ? EVENT_TIMEOUT_INFINITE : ns2jiffies(timeval_to_ns(timeout)));
+	clock_t ticks;
 
-	/* Lock scheduler until we search active descriptor and build event set.*/
-	/* First try to find some active descriptor */
+	fd_cnt = 0;
+	ticks = (timeout == NULL ? EVENT_TIMEOUT_INFINITE : ns2jiffies(timeval_to_ns(timeout)));
+
 	sched_lock();
-	{
-		readfds == NULL ? p_r = NULL : fd_set_copy(p_r, readfds);
-		writefds == NULL ? p_w = NULL : fd_set_copy(p_w, writefds);
 
-		fd_cnt = update_sets(nfds, p_r, p_w, exceptfds);
+	/* Install event on each descriptor to be notified if
+	 * some of them can to perform corresponding operations (read/write) */
+	event_init(&event, "select_event");
+	set_event_for_fds(nfds, readfds, writefds, exceptfds, &event);
 
-		if (fd_cnt < 0) {
-			res = fd_cnt;
-			goto error_locked;
-		} else if (fd_cnt > 0 || !ticks) {
-			if (readfds)
-				fd_set_copy(readfds, p_r);
-			if (writefds)
-				fd_set_copy(writefds, p_w);
-			goto out_locked;
-		}
+	/* Search active descriptor and build event set.
+	 * First try to find some active descriptor before going to sleep */
+	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 0);
 
-		/* If no active descriptors now, than build set of events corresponding
-		 * to each descriptor in fd_set. */
-		event_init(&event, "select_event");
-
-		idx_desc_set_event(nfds, readfds, writefds, exceptfds, &event);
+	if (fd_cnt < 0) {
+		SET_ERRNO(-fd_cnt);
+		fd_cnt = -1;
+		goto out;
+	} else if (fd_cnt > 0 || !ticks) {
+		/* We know there are some active descriptors in three sets.
+		 * So we can simply update the sets and return fd_cnt. */
+		fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 1);
+		goto out;
 	}
-	sched_unlock();
-
-	/* shit may happen here: event may be notified before wait call */
 
 	event_wait_ms(&event, ticks);
 
-	/* And clear all desc */
-	idx_desc_set_event(nfds, readfds, writefds, exceptfds, NULL);
+	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 1);
 
-	sched_lock();
-	{
-		fd_cnt = update_sets(nfds, readfds, writefds, exceptfds);
-	}
-out_locked:
+out:
 	sched_unlock();
+	/* Unset event for all remaining fds */
+	set_event_for_fds(nfds, readfds, writefds, exceptfds, NULL);
 	return fd_cnt;
-
-error_locked:
-	sched_unlock();
-	SET_ERRNO(-res);
-	return -1;
-}
-
-static void fd_set_copy(fd_set *dst, fd_set *src) {
-	int i;
-	for (i = 0; i < _FDSETWORDS; i++) {
-		dst->fds_bits[i] = src->fds_bits[i];
-	}
 }
 
 /* Suppose that set != NULL */
-static int find_active(int nfds, fd_set *set, char op) {
-	int fd, fd_cnt = 0;
+static int filter_out_with_op(int nfds, fd_set *set, char op, int update) {
+	int fd, fd_cnt;
 	struct idx_desc *desc;
 	struct idx_io_op_state *state;
+
+	fd_cnt = 0;
 
 	for (fd = 0; fd < nfds; fd++) {
 		if (FD_ISSET(fd, set)) {
@@ -117,7 +96,11 @@ static int find_active(int nfds, fd_set *set, char op) {
 				if (state->can_perform_op) {
 					fd_cnt++;
 				} else {
-					FD_CLR(fd, set);
+					/* Filter out inactive descriptor and unset corresponding event.*/
+					if (update) {
+						desc->data->read_state.unblock = NULL;
+						FD_CLR(fd, set);
+					}
 				}
 			}
 		}
@@ -126,12 +109,14 @@ static int find_active(int nfds, fd_set *set, char op) {
 	return fd_cnt;
 }
 
-static int update_sets(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd) {
-	int fd_cnt = 0, res;
+static int filter_out(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, int update) {
+	int fd_cnt, res;
+
+	fd_cnt = 0;
 
 	/* Try to find active fd in readfds*/
 	if (readfds != NULL) {
-		res = find_active(nfds, readfds, 'r');
+		res = filter_out_with_op(nfds, readfds, 'r', update);
 		if (res < 0) {
 			return -EBADF;
 		} else {
@@ -141,7 +126,7 @@ static int update_sets(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exce
 
 	/* Try to find active fd in writefds*/
 	if (writefds != NULL) {
-		res = find_active(nfds, writefds, 'w');
+		res = filter_out_with_op(nfds, writefds, 'w', update);
 		if (res < 0) {
 			return -EBADF;
 		} else {
@@ -152,7 +137,7 @@ static int update_sets(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exce
 	return fd_cnt;
 }
 
-static void idx_desc_set_event(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, struct event *event) {
+static void set_event_for_fds(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfd, struct event *event) {
 	int fd;
 	struct idx_desc *desc;
 

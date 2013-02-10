@@ -72,9 +72,7 @@ module u_area {
 }
 
 @DefaultImpl(io_sync_simple)
-abstract module io_sync_api {
-	depends embox.kernel.irq_lock
-}
+abstract module io_sync_api { }
 
 module io_sync_simple extends io_sync_api {
 	source "io_sync_simple.c"
