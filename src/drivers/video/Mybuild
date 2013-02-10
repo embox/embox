@@ -27,12 +27,6 @@ module bochs {
 	depends embox.lib.LibC
 }
 
-abstract module vga { }
-
-module vga_console extends vga {
-	source "vga_console.c"
-}
-
 module cirrus_logic {
 	source "cirrus_logic.c"
 }

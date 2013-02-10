@@ -11,9 +11,16 @@
 #include <drivers/diag.h>
 #include <drivers/keyboard.h>
 #include <drivers/tty.h>
-#include <drivers/vga_console.h>
 #include <stddef.h>
 #include <string.h>
+
+typedef struct vchar {
+	char c;
+	char a;
+} __attribute__((packed)) vchar_t ;
+
+/* The video memory address. */
+#define VIDEO          0xB8000
 
 #define VGA_MISC_WRITE  0x3C2
 #define VGA_CRTC_INDEX  0x3D4
