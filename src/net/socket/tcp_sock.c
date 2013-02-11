@@ -204,6 +204,9 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 	case TCP_LISTEN:
 		/* waiting anyone */
 		if (list_empty(&sock.tcp_sk->conn_wait)) { /* TODO sync this */
+			if (sk->sk_socket->desc->flags & O_NONBLOCK) {
+				return -EAGAIN;
+			}
 			event_wait_ms(&sock.tcp_sk->new_conn, EVENT_TIMEOUT_INFINITE);
 		}
 		assert(!list_empty(&sock.tcp_sk->conn_wait));
