@@ -44,28 +44,35 @@ __BEGIN_DECLS
 
 /* Permissions: owner, group, other */
 
-#define S_IRWXU  0700  /**< rwx, owner */
-#define S_IRUSR  0400  /**< r--, owner */
-#define S_IWUSR  0200  /**< -w-, owner */
-#define S_IXUSR  0100  /**< --x, owner */
+#define S_IRWXU  0700  /**< owner: rwx --- --- */
+#define S_IRUSR  0400  /**< owner: r-- --- --- */
+#define S_IWUSR  0200  /**< owner: -w- --- --- */
+#define S_IXUSR  0100  /**< owner: --x --- --- */
 
-#define S_IRWXG  0070  /**< rwx, group */
-#define S_IRGRP  0040  /**< r--, group */
-#define S_IWGRP  0020  /**< -w-, group */
-#define S_IXGRP  0010  /**< --x, group */
+#define S_IRWXG  0070  /**< group: --- rwx --- */
+#define S_IRGRP  0040  /**< group: --- r-- --- */
+#define S_IWGRP  0020  /**< group: --- -w- --- */
+#define S_IXGRP  0010  /**< group: --- --x --- */
 
-#define S_IRWXO  0007  /**< rwx, other */
-#define S_IROTH  0004  /**< r--, other */
-#define S_IWOTH  0002  /**< -w-, other */
-#define S_IXOTH  0001  /**< --x, other */
+#define S_IRWXO  0007  /**< other: --- --- rwx */
+#define S_IROTH  0004  /**< other: --- --- r-- */
+#define S_IWOTH  0002  /**< other: --- --- -w- */
+#define S_IXOTH  0001  /**< other: --- --- --x */
 
-/* BSD compat */
+/* TODO non-standard, but useful. -- Eldar*/
+
+#define S_IRWXA  0777  /**<   all: rwx rwx rwx */
+#define S_IRALL  0444  /**<   all: r-- r-- r-- */
+#define S_IWALL  0222  /**<   all: -w- -w- -w- */
+#define S_IXALL  0111  /**<   all: --x --x --x */
+
+/* TODO non-standard, BSD compat */
 
 #define S_IREAD        S_IRUSR   /* Read permission, owner */
 #define S_IWRITE       S_IWUSR   /* Write permission, owner */
 #define S_IEXEC        S_IXUSR   /* Execute/search permission, owner */
 
-/* not implemented */
+/* TODO not implemented */
 
 #define S_TYPEISMQ(buf)    //Test for a message queue
 #define S_TYPEISSEM(buf)   //Test for a semaphore

@@ -116,7 +116,7 @@
  * @see array_range_foreach()
  */
 #define array_range_foreach_ptr(element_ptr, array_begin, array_end) \
-	  __array_range_foreach(element_ptr, array_begin, array_end)
+	  __array_range_foreach_ptr(element_ptr, array_begin, array_end)
 
 /* Static arrays with their size known at the compile-time. */
 
@@ -134,7 +134,7 @@
  *   result is returned without any error or warning.
  */
 #define ARRAY_SIZE(array) \
-	  __ARRAY_SIZE(array)
+	(sizeof(array) / sizeof(*(array)))
 
 /* Spread arrays and spread-specific iterators. */
 

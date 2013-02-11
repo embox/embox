@@ -29,7 +29,7 @@ javacall_handle javacall_dir_open(const javacall_utf16* path, int pathLen) {
 		return NULL;
 	}
 
-    node = vfs_find_node((const char *)utf8Name, NULL);
+    node = vfs_lookup(NULL, (const char *) utf8Name);
     jdir = objalloc(&__dir_pool);
     if (NULL == jdir) {
     	return NULL;

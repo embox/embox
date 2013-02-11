@@ -73,28 +73,21 @@ static int exec(int argc, char **argv) {
 		case 't':
 			min_argc = 4;
 			fs_name = optarg;
-			if (check_invalid(min_argc, argc, argv)){
-				return -EINVAL;
-			}
 			operation_flag |= MKFS_FORMAT_DEV;
 			break;
 		case 'q':
 			min_argc += 1;
 			operation_flag |= MKFS_CREATE_RAMDISK;
-			if (check_invalid(min_argc, argc, argv)){
-				return -EINVAL;
-			}
 			break;
 		case '?':
-			if (check_invalid(min_argc, argc, argv)){
-				return -EINVAL;
-			}
-			break;
 		case 'h':
 			print_usage();
 			return 0;
 		default:
 			return 0;
+		}
+		if (check_invalid(min_argc, argc, argv)) {
+			return -EINVAL;
 		}
 	}
 
@@ -134,7 +127,7 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 			return -EINVAL;
 		}
 
-		if (NULL == (node = vfs_find_node((char *) path, NULL))) {
+		if (NULL == (node = vfs_lookup(NULL, (char *) path))) {
 			return -ENODEV;
 		}
 

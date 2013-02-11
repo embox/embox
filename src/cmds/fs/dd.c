@@ -44,14 +44,15 @@ static void print_data(char *buff, size_t size, blkno_t start) {
 			for (i_substr = 0; i_substr < 4; i_substr++) {
 				printf("%02hhX ", (unsigned char) *point++);
 			}
-			if (i_str < 3) {
+			if(i_str < 3) {
 				printf("| ");
 			}
 		}
 		for (i_str = 0; i_str < 16; i_str++) {
 			if (((unsigned char) *substr_p) >= 32) { /*is not service simbol */
 				printf("%c", *substr_p);
-			} else {
+			}
+			else {
 				printf(".");
 			}
 			substr_p++;
@@ -68,7 +69,7 @@ static int get_arg(int argc, char **argv, const char *mask, char *data) {
 	len = strlen(mask);
 
 	for (i = 0; i < argc; i++) {
-		if (0 == strncmp(mask, argv[i], len)) {
+		if(0 == strncmp(mask, argv[i], len)) {
 			sprintf(data, "%s", &argv[i][len]);
 			return 0;
 		}
@@ -96,7 +97,7 @@ static int read_file(char *path, char *buffer, size_t size, blkno_t blkno) {
 
 static int exec(int argc, char **argv) {
 	int rc;
-	node_t *nod;
+	node_t *node;
 	struct nas *nas;
 	char path[MAX_LENGTH_PATH_NAME];
 	char num[MAX_LENGTH_FILE_NAME];
@@ -123,8 +124,9 @@ static int exec(int argc, char **argv) {
 	if (0 > get_arg(argc, argv, PATH, path)) {
 		return -1;
 	}
-	nod = vfs_find_node(path, NULL);
-	if (NULL == nod) {
+
+	node = vfs_lookup(NULL, path);
+	if (NULL == node) {
 		printf("dd: No such device or file\n");
 		return -1;
 	}
@@ -143,16 +145,16 @@ static int exec(int argc, char **argv) {
 		return -1;
 	}
 
-	if (node_is_block_dev(nod)) {
-		nas = nod->nas;
-		if (bytes <= (bytesread =  block_dev_read(nas->fi->privdata,
+	if (node_is_block_dev(node)) {
+		nas = node->nas;
+		if(bytes <= (bytesread =  block_dev_read(nas->fi->privdata,
 							buffer, bytes, blkno))) {
 			print_data(buffer, bytesread, blkno);
 		} else {
 			rc = -1;
 		}
-	} else if (node_is_file(nod)) {
-		if (0 <= (bytesread = read_file(path, buffer, bytes, blkno))) {
+	} else if (node_is_file(node)) {
+		if(0 <= (bytesread = read_file(path, buffer, bytes, blkno))) {
 			print_data(buffer, bytesread, blkno);
 		} else {
 			rc = -1;

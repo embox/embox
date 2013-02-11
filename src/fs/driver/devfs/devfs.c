@@ -18,21 +18,17 @@ static int devfs_init(void *par) {
 
 static int devfs_mount(void *dev, void *dir) {
 	int ret;
-	struct node *nod;
+	struct node *node;
+	mode_t mode;
 
-	nod = vfs_find_node(dev, NULL);
-	if (nod != NULL) {
-		/* we already initialized devfs */
-		return 0;
-	}
+	mode = S_IFDIR | S_IRALL | S_IWALL;
 
-	nod = vfs_add_path(dev, NULL);
-	if (nod == NULL) {
+	assert(!vfs_lookup(NULL, dev)); // XXX remove it -- Eldar
+
+	node = vfs_create(NULL, dev, mode);
+	if (!node) {
 		return -1;
 	}
-
-	nod->type = NODE_TYPE_DIRECTORY;
-	nod->nas = NULL; /* this is virtual folder to add folder or file we just add node */
 
 	ret = char_dev_init_all();
 	if (ret != 0) {

@@ -86,7 +86,7 @@ ramdisk_t *ramdisk_get_param(char *path) {
 	struct nas *nas;
 	struct node_fi *node_fi;
 
-	if (NULL == (ramdisk_node = vfs_find_node(path, NULL))) {
+	if (NULL == (ramdisk_node = vfs_lookup(NULL, path))) {
 		return NULL;
 	}
 	nas = ramdisk_node->nas;
@@ -100,7 +100,7 @@ int ramdisk_delete(const char *name) {
 	struct nas *nas;
 	struct node_fi *node_fi;
 
-	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
+	if (NULL == (ramdisk_node = vfs_lookup(NULL, name))) {
 		return -1;
 	}
 	nas = ramdisk_node->nas;

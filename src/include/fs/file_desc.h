@@ -16,8 +16,13 @@
 struct node;
 struct kfile_operations;
 
+#define FDESK_FLAG_WRITE	    (1 << 0)
+#define FDESK_FLAG_READ		    (1 << 1)
+#define FDESK_FLAG_APPEND	    (1 << 2)
+
 struct file_desc {
 	struct node *node;
+	int flags;
 	const struct kfile_operations *ops;
 	size_t cursor;
 	void *file_info; /* customize in each file system */

@@ -65,18 +65,18 @@ static void print_folder(char *path, node_t *node, int recursive) {
 	}
 }
 
-typedef void (*print_func_t)(char *path, node_t *nod, int recursive);
 
 static int exec(int argc, char **argv) {
 	//int long_list = 0;
-	int opt_cnt = 0;
-	node_t *nod;
+	node_t *node;
 	char path[MAX_LENGTH_FILE_NAME];
 
+	void (*print_func)(char *path, node_t *node, int recursive) = print_folder;
 	int recursive = 0;
-	volatile print_func_t print_func = print_folder;
 
+	int opt_cnt = 0;
 	int opt;
+
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "Rlh"))) {
 		switch(opt) {
@@ -107,12 +107,12 @@ static int exec(int argc, char **argv) {
 		sprintf(path, "/");
 	}
 
-	nod = vfs_find_node(path, NULL);
-	if (NULL == nod) {
+	node = vfs_lookup(NULL, path);
+	if (NULL == node) {
 		printf("ls: cannot access %s: No such file or directory\n", path);
 		return -1;
 	}
-	print_func(path, nod, recursive);
+	print_func(path, node, recursive);
 
 	return 0;
 }

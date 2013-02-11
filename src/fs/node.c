@@ -31,11 +31,20 @@ static int node_init(void) {
 	return 0;
 }
 
-node_t *node_alloc(const char *name) {
+node_t *node_alloc(const char *name, size_t name_len) {
 	struct node_tuple *nt;
 
 	struct node *node;
 	struct nas *nas;
+
+	if (!name_len) {
+		name_len = strlen(name);
+	}
+
+	if (!*name || name_len > MAX_LENGTH_FILE_NAME) {
+		/* TODO behave more clever here? -- Eldar */
+		return NULL;
+	}
 
 	nt = pool_alloc(&node_pool);
 	if (!nt) {
@@ -51,7 +60,9 @@ node_t *node_alloc(const char *name) {
 	nas->fi = &nt->fi;
 
 	tree_link_init(&node->tree_link);
-	strcpy((char *) node->name, name);
+
+	strncpy((char *) node->name, name, name_len);
+	node->name[name_len] = '\0';
 
 	return node;
 }
