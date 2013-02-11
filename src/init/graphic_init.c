@@ -7,9 +7,9 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <drivers/iodev.h>
 #include <drivers/video/vesa.h>
 #include <drivers/video/fb.h>
-
 #include <embox/unit.h>
 
 #define VESA_MODE_NUMBER OPTION_GET(NUMBER,vesa_mode)
@@ -41,6 +41,16 @@ static int graphic_init(void) {
 	}
 
 	ret = info->ops->fb_set_par(info);
+	if (ret != 0) {
+		return ret;
+	}
+
+	ret = iodev_setup_video();
+	if (ret != 0) {
+		return ret;
+	}
+
+	ret = iodev_init();
 	if (ret != 0) {
 		return ret;
 	}

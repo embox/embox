@@ -10,9 +10,9 @@
 
 #include <hal/arch.h>
 #include <hal/ipl.h>
-#include <drivers/diag.h>
+#include <drivers/iodev.h>
 #include <embox/runlevel.h>
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 
 static void kernel_init(void);
 static int init(void);
@@ -40,7 +40,8 @@ static void kernel_init(void) {
 
 	ipl_init();
 
-	diag_init();
+	iodev_setup_diag();
+	iodev_init();
 }
 
 /**
@@ -51,10 +52,10 @@ static int init(void) {
 	int ret = 0;
 	const runlevel_nr_t target_level = RUNLEVEL_NRS_TOTAL - 1;
 
-	prom_printf("\nEmbox kernel start\n");
+	printk("\nEmbox kernel start\n");
 
 	if (0 != (ret = runlevel_set(target_level))) {
-		prom_printf("Failed to get into level %d, current level %d\n",
+		printk("Failed to get into level %d, current level %d\n",
 				target_level, runlevel_get_entered());
 	}
 	return ret;

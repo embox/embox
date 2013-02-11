@@ -12,6 +12,9 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
+
+#include <utmp.h>
 
 #include <net/ip.h>
 #include <net/socket.h>
@@ -33,7 +36,10 @@ EMBOX_CMD(exec);
 	 * ToDo: move those into config files
 	 */
 #define TELNETD_MAX_CONNECTIONS 5
-static int clients[TELNETD_MAX_CONNECTIONS];
+static struct {
+	int fd;
+	struct sockaddr_in addr_in;
+} clients[TELNETD_MAX_CONNECTIONS];
 	/* Telnetd address bind to */
 #define TELNETD_ADDR INADDR_ANY
 	/* Telnetd port bind to */
@@ -128,10 +134,41 @@ static void ignore_telnet_options(int msg[2]) {
 	}
 }
 
+static int utmp_login(short ut_type, const char *host) {
+	struct utmp utmp;
+	struct timeval tv;
+
+	utmp.ut_type = ut_type;
+	utmp.ut_type = ut_type;
+	utmp.ut_pid = getpid();
+	snprintf(utmp.ut_id, UT_IDSIZE, "/%hd", utmp.ut_pid);
+	snprintf(utmp.ut_line, UT_LINESIZE, "pty/%d", utmp.ut_pid);
+	strcpy(utmp.ut_host, host);
+	memset(&utmp.ut_exit, 0, sizeof(struct exit_status));
+
+	gettimeofday(&tv, NULL);
+
+	utmp.ut_tv.tv_sec = tv.tv_sec;
+	utmp.ut_tv.tv_usec = tv.tv_usec;
+
+	if (NULL == pututline(&utmp)) {
+		return errno;
+	}
+
+	return 0;
+
+}
+
 extern int kill(int tid, int sig);
 
 static void *shell_hnd(void* args) {
 	int *msg = (int*)args;
+
+	struct sockaddr_in *addr_in = &clients[msg[2]].addr_in;
+
+	utmp_login(LOGIN_PROCESS, "");
+
+	addr_in = addr_in;
 
 	close(STDIN_FILENO);
 	close(STDOUT_FILENO);
@@ -140,6 +177,8 @@ static void *shell_hnd(void* args) {
 	dup2(msg[1], STDOUT_FILENO);
 
 	shell_lookup("tish")->exec();
+
+	utmp_login(DEAD_PROCESS, "");
 
 	return NULL;
 }
@@ -170,8 +209,9 @@ static void *telnet_thread_handler(void* args) {
 	unsigned char *s = sbuff, *p = pbuff;
 	int sock_data_len = 0; /* len of rest of socket data in local buffer sbuff */
 	int pipe_data_len = 0; /* len of rest of pipe data in local buffer pbuff */
-	int sock = *(int *)args;
-	int pipefd1[2], pipefd2[2], msg[2];
+	int client_num = (int) args;
+	int sock = clients[client_num].fd;
+	int pipefd1[2], pipefd2[2], msg[3];
 	int tid;
 	int nfds;
 	fd_set readfds, writefds;
@@ -197,6 +237,7 @@ static void *telnet_thread_handler(void* args) {
 
 	msg[0] = pipefd1[0];
 	msg[1] = pipefd2[1];
+	msg[2] = client_num;
 	if ((tid = new_task(shell_hnd, &msg)) < 0) {
 		goto out;
 	}
@@ -275,7 +316,7 @@ out:
 	close(pipefd1[1]);
 	close(pipefd2[0]);
 	close(sock);
-	*(int *)args = -1;
+	clients[client_num].fd = -1;
 
 	return NULL;
 }
@@ -286,7 +327,7 @@ static int exec(int argc, char **argv) {
 	struct sockaddr_in listening_socket;
 
 	for (res = 0; res < TELNETD_MAX_CONNECTIONS; res++) {
-		clients[res] = -1;
+		clients[res].fd = -1;
 	}
 
 	listening_socket.sin_family = AF_INET;
@@ -312,41 +353,42 @@ static int exec(int argc, char **argv) {
 	MD(printf("telnetd is ready to accept connections\n"));
 	while (1) {
 		struct sockaddr_in client_socket;
-		bool connectlimit = true;
 		int client_socket_len = sizeof(client_socket);
 		int client_descr = accept(listening_descr, (struct sockaddr *)&client_socket,
 								  &client_socket_len);
+		struct thread *thread;
+		size_t i;
 
 		if (client_descr < 0) {
 			MD(printf("accept() failed. code=%d\n", client_descr));
-		} else {
-			struct thread *thread;
+			continue;
+		}
 
-			MD(printf("Attempt to connect from address %s:%d",
-				inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)));
+		MD(printf("Attempt to connect from address %s:%d",
+			inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)));
 
-			for (size_t i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
-				if (clients[i] == -1) {
-					clients[i] = client_descr;
-
-					if (0 != thread_create(&thread, 0, telnet_thread_handler, &clients[i])) {
-						telnet_cmd(client_descr, T_INTERRUPT, 0);
-						MD(printf("thread_create() returned with code=%d\n", res));
-						clients[i] = -1;
-					}
-
-					connectlimit = false;
-					break;
-				} /* if - if we have space for this connection */
-			}
-
-			if (connectlimit) {
-				telnet_cmd(client_descr, T_INTERRUPT, 0);
-				printf("%s\n", "limit");
-				MD(printf("%s\n", "limit of connections"));
+		for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
+			if (clients[i].fd == -1) {
+				break;
 			}
 		}
-	} /* while(1) */
+
+		if (i >= TELNETD_MAX_CONNECTIONS) {
+			telnet_cmd(client_descr, T_INTERRUPT, 0);
+			printf("%s\n", "limit");
+			MD(printf("limit of connections exceded\n"));
+			continue;
+		}
+
+		clients[i].fd = client_descr;
+		memcpy(&clients[i].addr_in, &client_socket, sizeof(struct sockaddr_in));
+
+		if (0 != thread_create(&thread, 0, telnet_thread_handler, (void *) i)) {
+			telnet_cmd(client_descr, T_INTERRUPT, 0);
+			MD(printf("thread_create() returned with code=%d\n", res));
+			clients[i].fd = -1;
+		}
+	}
 
 	assert(0);
 	{
@@ -354,8 +396,8 @@ static int exec(int argc, char **argv) {
 		 * So it'll influence to them
 		 */
 		for (size_t i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
-			if (clients[i] != -1) {
-				close(clients[i]);
+			if (clients[i].fd != -1) {
+				close(clients[i].fd);
 			}
 		}
 		close(listening_descr);

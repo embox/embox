@@ -43,7 +43,7 @@ struct com {
 #define COM3_RBR (((struct com *) COM3_BASE)->rbr)
 #define COM3_LSR (((struct com *) COM3_BASE)->lsr)
 
-static char diag_ns16550_getc(void) {
+char diag_getc(void) {
 
 	while ((COM3_LSR & UART_LSR_DR) == 0);
 
@@ -51,7 +51,7 @@ static char diag_ns16550_getc(void) {
 
 }
 
-static void diag_ns16550_putc(char ch) {
+void diag_putc(char ch) {
 	unsigned char *state = &COM3_LSR;
 
 	state = state;
@@ -61,16 +61,9 @@ static void diag_ns16550_putc(char ch) {
 	COM3_RBR = ch;
 }
 
-static int diag_ns16550_kbhit(void) {
+int diag_kbhit(void) {
 	return 0; /* TODO */
 }
 
-static const struct diag_ops diag_ns16550_ops = {
-	.getc = &diag_ns16550_getc,
-	.putc = &diag_ns16550_putc,
-	.kbhit = &diag_ns16550_kbhit
-};
-
 void diag_init(void) {
-	diag_common_set_ops(&diag_ns16550_ops);
 }

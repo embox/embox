@@ -19,7 +19,7 @@
 #include <pnet/graph.h>
 
 #include <framework/example/self.h>
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 EMBOX_EXAMPLE(match_example);
 
 static int match_example(int argc, char **argv) {
@@ -65,7 +65,7 @@ static int match_example(int argc, char **argv) {
 	/* now graph can packets handle */
 	pnet_graph_start(graph);
 
-	prom_printf("hello!\n");
+	printk("hello!\n");
 
 	return 0;
 }

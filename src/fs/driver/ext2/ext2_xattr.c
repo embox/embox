@@ -320,7 +320,7 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 		}
 
 		if (xattr_ent == NULL && name_len == d2h8(i_ent->e_name_len) &&
-				0 == strcmp(name, i_ent->e_name)) {
+				0 == strncmp(name, i_ent->e_name, name_len)) {
 			xattr_ent = i_ent;
 		}
 	}
@@ -407,7 +407,7 @@ int ext2fs_getxattr(struct node *node, char *name, char *value, size_t len) {
 	res = -ENOENT;
 	foreach_xattr(xattr_ent, xattr_blk->h_entries) {
 		if (name_len == xattr_ent->e_name_len &&
-				0 == strcmp(name, xattr_ent->e_name)) {
+				0 == strncmp(name, xattr_ent->e_name, strlen(name))) {
 			if (xattr_ent->e_value_size < len) {
 				strncpy(value, ((char *) xattr_blk) + xattr_ent->e_value_offs,
 						xattr_ent->e_value_size);

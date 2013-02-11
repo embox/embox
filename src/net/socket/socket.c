@@ -412,9 +412,11 @@ static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
 
 	len = recvfrom_sock(task_idx_desc_data(data), buf, nbyte, * task_idx_desc_flags_ptr(data), NULL, 0);
 
+	softirq_lock();
 	if (NULL == skb_queue_front(sock->sk->sk_receive_queue)) {
 		io_op_block(&data->data->read_state);
 	}
+	softirq_unlock();
 
 	return len;
 }

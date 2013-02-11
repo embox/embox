@@ -7,14 +7,14 @@
  */
 
 #include <assert.h>
-#include <drivers/diag.h>
+#include <drivers/iodev.h>
 #include <stdarg.h>
 #include <stdio.h>
 
 #include "printf_impl.h"
 
-static void diag_printchar(struct printchar_handler_data *d, int c) {
-	diag_putc(c);
+static void iodev_printchar(struct printchar_handler_data *d, int c) {
+	iodev_putc(c);
 }
 
 int printk(const char *format, ...) {
@@ -24,7 +24,7 @@ int printk(const char *format, ...) {
 	assert(format != NULL);
 
 	va_start(args, format);
-	ret = __print(diag_printchar, NULL, format, args);
+	ret = __print(iodev_printchar, NULL, format, args);
 	va_end(args);
 
 	return ret;

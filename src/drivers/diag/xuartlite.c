@@ -56,26 +56,19 @@ static inline int can_tx_trans(void) {
 	return !(uart->status & STATUS_TX_FIFO_FULL);
 }
 
-static char diag_xuartlite_getc(void) {
+char diag_getc(void) {
 	while (is_rx_empty());
 	return (char) (uart->rx_data & 0xFF);
 }
 
-static void diag_xuartlite_putc(char ch) {
+void diag_putc(char ch) {
 	while (!can_tx_trans());
 	uart->tx_data = (unsigned int)ch;
 }
 
-static int diag_xuartlite_kbhit(void) {
+int diag_kbhit(void) {
 	return !is_rx_empty();
 }
 
-static const struct diag_ops diag_xuartlite_ops = {
-	.getc = &diag_xuartlite_getc,
-	.putc = &diag_xuartlite_putc,
-	.kbhit = &diag_xuartlite_kbhit
-};
-
 void diag_init(void) {
-	diag_common_set_ops(&diag_xuartlite_ops);
 }

@@ -72,13 +72,26 @@
 
 
 
-#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),1)
+#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
 #define F_DUPFD		(printf(">>> FD_DUPFD\n"),0)
 
 #include <stdio.h>
 #define execvp(f,a) printf(">>> execvp(%s,...)\n",f),-1
 
-#define sysconf(x) (printf(">>> sysconf(%s)\n",#x),-1)
+//#define sysconf(x) (printf(">>> sysconf(%s)\n",#x),-1)
+
+#define _SC_CLK_TCK 0
+#define _SC_NPROCESSORS_ONLN 1
+
+inline long sysconf(int name) {
+	printf(">>> sysconf(%d)\n", name);
+	switch (name) {
+	case _SC_CLK_TCK: return 1000;
+	case _SC_NPROCESSORS_ONLN : return 1;
+	default: break;
+	}
+	return -1;
+}
 
 #include <time.h>
 
@@ -123,7 +136,7 @@ typedef int pthread_attr_t;
 
 static inline int pthread_mutex_init (pthread_mutex_t *__mutex,
                                __const pthread_mutexattr_t *__mutexattr) {
-	DPRINT();
+	//DPRINT();
 	return 0;
 }
 
@@ -135,7 +148,7 @@ static inline int pthread_mutex_destroy (pthread_mutex_t *__mutex) {
 static inline int pthread_cond_init (pthread_cond_t *__restrict __cond,
                               __const pthread_condattr_t *__restrict
                               __cond_attr){
-	DPRINT();
+	//DPRINT();
 	return 0;
 }
 static inline int pthread_cond_destroy (pthread_cond_t *__cond){
@@ -187,7 +200,7 @@ static inline int pthread_once (pthread_once_t *__once_control,
                          void (*__init_routine) (void)){
 	//DPRINT();
 	__init_routine();
-	return -1;
+	return 0;
 }
 
 static void *global_thread_specific;
@@ -220,8 +233,8 @@ static inline int pthread_key_delete (pthread_key_t __key){
 }
 
 static inline pthread_t pthread_self (void){
-	DPRINT();
-	return -1;
+	//DPRINT();
+	return 0;
 }
 
 static inline int pthread_setcancelstate (int __state, int *__oldstate){
@@ -417,6 +430,7 @@ struct tms
   clock_t tms_cstime;         /* System CPU time of dead children.  */
 };
 
+#include <kernel/task.h>
 
 /* Store the CPU time used by this process and all its
    dead children (and their dead children) in BUFFER.
@@ -424,7 +438,11 @@ struct tms
    All times are in CLK_TCKths of a second.  */
 static inline clock_t times (struct tms *__buffer) {
 	//DPRINT();
-	return (clock_t) -1;
+	__buffer->tms_cstime = __buffer->tms_cutime = 0;
+	__buffer->tms_stime = task_self()->per_cpu;
+	__buffer->tms_utime = 0;
+
+	return __buffer->tms_stime;
 }
 
 typedef int sig_atomic_t;
@@ -553,14 +571,7 @@ struct __res_state {
 #define IP_MULTICAST_LOOP 0
 #define FIONREAD 0
 
-struct passwd {
-	char *pw_name;
-	uid_t pw_uid;
-	gid_t pw_gid;
-	char *pw_dir;
-	char *pw_shell;
-	char *pw_passwd;
-};
+
 
 static inline struct passwd *getpwuid(uid_t uid) {
 	printf(">>> getpwuid %d\n", uid);

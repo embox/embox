@@ -1,9 +1,5 @@
 package embox.driver.diag
 
-module diag_common {
-	source "diag_common.c"
-}
-
 abstract module diag_api {
 }
 
@@ -11,38 +7,36 @@ module apbuart extends diag_api {
 	option number baud_rate
 
 	source "apbuart.c"
-	depends diag_common
 }
 
 module at91_uart extends diag_api {
 	option number baud_rate
 
 	source "at91_uart.c"
-	depends diag_common
 }
 
 module mem_diag extends diag_api {
 	source "mem_diag.c"
-	depends diag_common
 	depends embox.lib.LibC
 }
 
 module no_diag extends diag_api {
 	source "no_diag.c"
-	depends diag_common
 }
 
 module i8250 extends diag_api {
 	option number baud_rate
 	source "8250.c"
-	depends diag_common
 }
 
 module vga extends diag_api {
 	source "vga.c"
 
-	depends diag_common
-	depends embox.driver.video.vga
+	/**
+	 * TODO cycle
+	depends embox.lib.LibC
+	 */
+	depends embox.driver.tty.tty
 	depends embox.driver.keyboard
 }
 
@@ -50,21 +44,17 @@ module xuartlite extends diag_api {
 	option number xuartlite_base
 
 	source "xuartlite.c"
-	depends diag_common
 }
 
 module stm32_usart extends diag_api {
 	source "stm32_usart.c"
-	depends diag_common
 	depends embox.driver.gpio.stm32
 }
 
 module pic32mx_uart extends diag_api {
 	source "pic32mx_uart.c"
-	depends diag_common
 }
 
 module ns16550 extends diag_api {
 	source "ns16550.c"
-	depends diag_common
 }

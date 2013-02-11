@@ -28,12 +28,30 @@ C_ENTRY(__ap_trampoline):
 	orb $1, %al
 	mov %eax, %cr0
 
-	ljmpl $(__KERNEL_CS), $startup_ap
+	ljmpl $(__KERNEL_CS), $__ap_trampoline_32
 
 	.align 0x4
 
+C_LABEL(__ap_sp):
+	.space 4
 C_LABEL(__ap_gdtr):
 	.space 8
 C_LABEL(__ap_gdt):
 	.space 128 /* TODO: Fix size */
 C_LABEL(__ap_trampoline_end):
+
+	.code32
+__ap_trampoline_32:
+	/* Setting up selectors */
+	movw $(__KERNEL_DS), %ax
+	movw %ax, %ds
+	movw %ax, %es
+	movw %ax, %fs
+	movw %ax, %gs
+	movw %ax, %ss
+
+	/* Setting up stack */
+	mov	__ap_sp, %esp
+
+	/* Jumping forward */
+	jmp startup_ap

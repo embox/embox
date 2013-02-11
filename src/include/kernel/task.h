@@ -10,8 +10,10 @@
 #define TASK_H_
 
 #include <lib/list.h>
+#include <util/array.h>
 
 #include <sys/cdefs.h>
+#include <sys/types.h>
 
 __BEGIN_DECLS
 
@@ -19,6 +21,7 @@ struct task_signal_table;
 struct task_idx_table;
 struct thread;
 struct mmap;
+struct task_u_area;
 
 /**
  * @brief Task resources container
@@ -43,8 +46,31 @@ struct task {
 
 	struct thread *main_thread;
 
+	struct task_u_area *u_area;
+
 	int err; /**< @brief Last occurred error code */
+
+	clock_t per_cpu; /**< task times */
 };
+
+struct task_resource_desc {
+	void (*init)(struct task *task, void *resource_space);
+	void (*inherit)(struct task *task, struct task *parent_task);
+	void (*deinit)(struct task *task);
+	size_t resource_size; /* to be used in on-stack allocation */
+};
+
+typedef int (*task_notifing_resource_hnd)(struct thread *prev, struct thread *next);
+
+extern const struct task_resource_desc *task_resource_desc_array[];
+
+extern const task_notifing_resource_hnd task_notifing_resource[];
+
+#define TASK_RESOURCE_DESC(res) \
+	ARRAY_SPREAD_ADD(task_resource_desc_array, res)
+
+#define TASK_RESOURCE_NOTIFY(fn) \
+	ARRAY_SPREAD_ADD(task_notifing_resource, fn)
 
 /**
  * @brief Get task resources struct from task

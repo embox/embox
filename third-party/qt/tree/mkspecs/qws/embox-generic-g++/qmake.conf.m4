@@ -22,7 +22,7 @@ QMAKE_LIBS_DYNLOAD =
 QMAKE_LFLAGS      += -Wl,--relocatable -nostdlib
 # Not sure if it should be here but if it should
 # it should be imported from Embox build settings
-QMAKE_LFLAGS      += -fno-rtti
+QMAKE_LFLAGS      += -fno-rtti -m32
 
 CONFIG += embox_auto_import_plugins
 

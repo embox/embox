@@ -7,7 +7,7 @@
  */
 
 #include <string.h>
-#include <prom/prom_printf.h>
+#include <kernel/printk.h>
 
 #include <framework/mod/ops.h>
 #include <framework/mod/api.h>
@@ -30,12 +30,12 @@ static int unit_mod_enable(struct mod_info *mod_info) {
 		return 0;
 	}
 
-	prom_printf("\tunit: initializing %s.%s: ",
+	printk("\tunit: initializing %s.%s: ",
 		mod_info->mod->package->name, mod_info->mod->name);
 	if (0 == (ret = unit->init())) {
-		prom_printf("done\n");
+		printk("done\n");
 	} else {
-		prom_printf("error: %s\n", strerror(-ret));
+		printk("error: %s\n", strerror(-ret));
 	}
 
 	return ret;
@@ -49,12 +49,12 @@ static int unit_mod_disable(struct mod_info *mod_info) {
 		return 0;
 	}
 
-	prom_printf("unit: finalizing %s.%s: ",
+	printk("unit: finalizing %s.%s: ",
 		mod_info->mod->package->name, mod_info->mod->name);
 	if (0 == (ret = unit->fini())) {
-		prom_printf("done\n");
+		printk("done\n");
 	} else {
-		prom_printf("error: %s\n", strerror(-ret));
+		printk("error: %s\n", strerror(-ret));
 	}
 
 	return ret;

@@ -596,7 +596,6 @@ struct ext2_xattr_hdr {
 #define EXT2_XATTR_PAD 4
 
 /* balloc.c */
-//void ext2_discard_preallocated_blocks(struct nas *nas);
 extern uint32_t ext2_alloc_block(struct nas *nas, uint32_t goal);
 extern void ext2_free_block(struct nas *nas, uint32_t bit);
 

@@ -9,8 +9,6 @@
 #ifndef KERNEL_CPU_H_
 #define KERNEL_CPU_H_
 
-#include <util/array.h>
-
 #define NCPU 2
 
 #if defined(NCPU) && NCPU > 1

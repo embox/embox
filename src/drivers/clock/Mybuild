@@ -67,3 +67,9 @@ module mips_clk extends embox.arch.clock {
 	depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
 }
+
+module lapic_timer extends embox.arch.clock {
+	source "lapic_timer.c"
+
+	depends embox.driver.interrupt.lapic
+}

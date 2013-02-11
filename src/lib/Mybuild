@@ -149,8 +149,15 @@ static module LibCStdio {
 	source "stdio/printk.c"
 	source "stdio/puts.c"
 	source "stdio/scanf.c"
+
 	depends LibCMath
 	depends LibCString
+	depends embox.driver.iodev.core
+
+	/**
+	 * XXX
+	 * putchar depends from embox.kernel.task.task_table
+	 */
 	depends embox.compat.posix.file
 }
 
@@ -167,5 +174,4 @@ static module LibC {
 	depends	LibCStdio
 /* not here */
 	source "shell/tokenizer.c"
-	//source "readline/readline.c"
 }

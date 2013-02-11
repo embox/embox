@@ -23,6 +23,6 @@ int rand(void) {
 }
 
 int rand_r(unsigned int *seedp) {
-	*seedp = (unsigned int)(seed * 16546134871 + 513585871) % (204814687);
+	*seedp = (unsigned int)(*seedp * 16546134871 + 513585871) % (204814687);
 	return (int)(*seedp) >> 1;
 }

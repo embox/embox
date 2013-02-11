@@ -11,7 +11,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <kernel/task.h>
-#include <prom/prom_printf.h>
 
 EMBOX_TEST_SUITE("pipe_test");
 

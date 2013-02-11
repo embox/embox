@@ -10,7 +10,7 @@
 #ifndef PROM_PRINTF_IMPL_H_
 #define PROM_PRINTF_IMPL_H_
 
-#include <stdio.h>
+#include <stdarg.h>
 
 extern int prom_printf(const char *format, ...) __attribute__ ((format
 				(printf, 1, 2)));
