@@ -22,30 +22,24 @@
 #include <fs/kfile.h>
 #include <fs/kfsop.h>
 
-static int check_open_perm(struct node *node, int fd_flags) {
-	int nmode = node->mode;
+static int check_perm(struct node *node, int fd_flags) {
+	int perm = node->mode & S_IRWXA;
+	uid_t uid = getuid();
 
-	if (fd_flags & FDESK_FLAG_READ) {
-		if (/*(nmode & S_IRUSR && node->uid == getuid())
-				|| (nmode & S_IRGRP && node->gid == getgid())
-				|| */(nmode & S_IRALL)) {
-			return 0;
-		}
-
-		return -EACCES;
+	if (uid == 0) {
+		/* super user */
+		return 0;
 	}
 
-	if (fd_flags & FDESK_FLAG_WRITE) {
-		if (/*(nmode & S_IWUSR && node->uid == getuid())
-				|| (nmode & S_IWGRP && node->gid == getgid())
-				|| */(nmode & S_IWALL)) {
-			return 0;
-		}
-
-		return -EACCES;
+	if (node->uid == uid) {
+		perm >>= 6;
+	} else if (node->gid == getgid()) {
+		perm >>= 3;
 	}
+	perm &= S_IRWXO;
 
-	return 0;
+	/* Here, we rely on the fact that fd_flags correspond to OTH perm bits. */
+	return (~fd_flags & perm) ? -EACCES : 0;
 }
 
 struct file_desc *kopen(const char *path, int flag, mode_t mode) {
@@ -117,7 +111,7 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 		| ((flag & O_APPEND) ? FDESK_FLAG_APPEND : 0);
 	desc->cursor = 0;
 
-	if (0 > (ret = check_open_perm(node, desc->flags))) {
+	if (0 > (ret = check_perm(node, desc->flags))) {
 		goto free_out;
 	}
 
