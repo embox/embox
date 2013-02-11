@@ -16,7 +16,7 @@
 struct file_desc;
 struct stat;
 
-extern struct file_desc * kopen(const char *path, int flag);
+extern struct file_desc * kopen(const char *path, int flag, mode_t mode);
 
 extern size_t kwrite(const void *buf, size_t size, struct file_desc *file);
 
