@@ -13,6 +13,7 @@
 #include <util/ring_buff.h>
 #include <kernel/thread/event.h>
 
+
 struct input_event {
 	/* e.g. KEY_PRESSED. Device-dependent */
 	int type;

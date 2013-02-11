@@ -13,6 +13,14 @@
 #include <drivers/keyboard.h>
 #include <drivers/input/input_dev.h>
 
+#define KEYBOARD_SCAN_CODE_EXT    0xE0
+
+#define KEYBOARD_SCAN_CODE_CTRL   0x1D
+#define KEYBOARD_SCAN_CODE_ALT    0x38
+#define KEYBOARD_SCAN_CODE_SHIFT  0x2A
+#define KEYBOARD_SCAN_CODE_CAPS   0x3A
+
+
 #define  I8042_CMD_READ_MODE   0x20
 #define  I8042_CMD_WRITE_MODE  0x60
 #define  I8042_CMD_PORT_DIS    0xAD
@@ -22,17 +30,6 @@
 #define  I8042_MODE_DISABLE    0x10
 
 
-#define  KEY_CURSOR_UP         0xb8
-#define  KEY_CURSOR_DOWN       0xb2
-#define  KEY_CURSOR_LEFT       0xb4
-#define  KEY_CURSOR_RIGHT      0xb6
-#define  KEY_CURSOR_HOME       0xb7
-#define  KEY_CURSOR_END        0xb1
-#define  KEY_PAGE_UP           0xb9
-#define  KEY_PAGE_DOWN         0xb3
-#define  KEY_INSERT            0xb0
-#define  KEY_DELETE            0xae
-#define  KEY_F1                0xc0
 
 #define  CMD_PORT              0x64
 #define  STATUS_PORT           0x64
@@ -42,93 +39,7 @@
 #define keyboard_wait_read()  do {} while (0 == (inb(STATUS_PORT) & 0x01))
 #define keyboard_wait_write() do {} while (0 != (inb(STATUS_PORT) & 0x02))
 
-static const unsigned int keymap[][4] = {
-	{0       },    /* 0 */
-	{27,	27 },  /* 1 - ESC */
-	{'1',	'!'},  /* 2 */
-	{'2',	'@'},
-	{'3',	'#'},
-	{'4',	'$'},
-	{'5',	'%'},
-	{'6',	'^'},
-	{'7',	'&'},
-	{'8',	'*'},
-	{'9',	'('},
-	{'0',	')'},
-	{'-',	'_'},
-	{'=',	'+'},
-	{8,	8  },  /* 14 - Backspace */
-	{'\t', '\t'},  /* 15 */
-	{'q',	'Q'},
-	{'w',	'W'},
-	{'e',	'E'},
-	{'r',	'R'},
-	{'t',	'T'},
-	{'y',	'Y'},
-	{'u',	'U'},
-	{'i',	'I'},
-	{'o',	'O'},
-	{'p',	'P'},
-	{'[',	'{'},
-	{']','}'},     /* 27 */
-	{'\r','\r'},   /* 28 - Enter */
-	{0,	0  },  /* 29 - Ctrl */
-	{'a',	'A'},  /* 30 */
-	{'s',	'S'},
-	{'d',	'D'},
-	{'f',	'F'},
-	{'g',	'G'},
-	{'h',	'H'},
-	{'j',	'J'},
-	{'k',	'K'},
-	{'l',	'L'},
-	{';',	':'},
-	{'\'',  '"'},  /* 40 */
-	{'`',	'~'},  /* 41 */
-	{0xff, 0xff},  /* 42 - Left Shift */
-	{'\\',  '|'},  /* 43 */
-	{'z',	'Z'},  /* 44 */
-	{'x',	'X'},
-	{'c',	'C'},
-	{'v',	'V'},
-	{'b',	'B'},
-	{'n',	'N'},
-	{'m',	'M'},
-	{',',	'<'},
-	{'.',	'>'},
-	{'/',   '?'},  /* 53 */
-	{0xff, 0xff},  /* 54 - Right Shift */
-	{0,	 0},   /* 55 - Print Screen */
-	{0,	 0},   /* 56 - Alt */
-	{' ',  ' '},   /* 57 - Space bar */
-	{0,	 0},   /* 58 - Caps Lock */
-	{0,	 0},   /* 59 - F1 */
-	{0,	 0},   /* 60 - F2 */
-	{0,	 0},   /* 61 - F3 */
-	{0,	 0},   /* 62 - F4 */
-	{0,	 0},   /* 63 - F5 */
-	{0,	 0},   /* 64 - F6 */
-	{0,	 0},   /* 65 - F7 */
-	{0,	 0},   /* 66 - F8 */
-	{0,	 0},   /* 67 - F9 */
-	{0,	 0},   /* 68 - F10 */
-	{0,	 0},   /* 69 - Num Lock */
-	{0,	 0},   /* 70 - Scroll Lock */
-	{0xb7,0xb7,0x485b1b},   /* 71 - Numeric keypad 7, Home */
-	{0xb8,0xb8,0x415b1b},   /* 72 - Numeric keypad 8, Up Arrow */
-	{0xb9,0xb9,0x7e355b1b},   /* 73 - Numeric keypad 9, Page up */
-	{'-',  '-'},   /* 74 - Numeric keypad '-' */
-	{0xb4,0xb4,0x445b1b},   /* 75 - Numeric keypad 4, Left Arrow*/
-	{0xb5,0xb5},   /* 76 - Numeric keypad 5 */
-	{0xb6,0xb6,0x435b1b},   /* 77 - Numeric keypad 6, Right Arrow*/
-	{'+',  '+'},   /* 78 - Numeric keypad '+' */
-	{0xb1,0xb1,0x465b1b},   /* 79 - Numeric keypad 1, End*/
-	{0xb2,0xb2,0x425b1b},   /* 80 - Numeric keypad 2, Down Arrow */
-	{0xb3,0xb3,0x7e365b1b},   /* 81 - Numeric keypad 3, Page Down*/
-	{0xb0,0xb0,0x7e325b1b},   /* 82 - Numeric keypad 0, Insert*/
-	{0xae,0xae,0x7e335b1b},   /* 83 - Numeric keypad '.', Delete */
-};
-
+extern const unsigned int keymap[][4];
 
 static int keyboard_havechar(void) {
 	unsigned char c = inb(STATUS_PORT);
@@ -156,56 +67,92 @@ int keyboard_has_symbol(void) {
 	return keyboard_havechar();
 }
 
-int keyboard_getc(void) {
-	static unsigned int shift_state;
-	static unsigned int outp;
-	uint8_t status, scan_code;
-	unsigned char extended_state;
-
-	while (1) {
-		if (outp) {
-			unsigned char ch = outp & 0xff;
-			outp >>=8;
-			return ch;
-		}
-
-		status = inb(CMD_PORT);
-		if ((status & 0x01) == 0) {
-			continue;
-		}
-		scan_code = inb(DATA_PORT);
-		if ((status & 0x20) != 0) {
-			continue;
-		}
-
-		if (scan_code == 0xe0) {
-			extended_state = 2;
-			continue;
-		}
-
-		if (scan_code & 0x80) {
-			scan_code &= 0x7f;
-			if (keymap[scan_code][0] == 0xff) {
-				shift_state = 0;
-			}
-			extended_state = 0;
-			continue;
-		}
-
-		if ((scan_code & 0x7f) >= sizeof(keymap)/sizeof(keymap[0])) {
-			continue;
-		}
+#include <kernel/printk.h>
 
 
-		outp = keymap[scan_code][extended_state ? extended_state : shift_state];
 
-		extended_state = 0;
+static int kbd_state;
 
-		if (outp == 0xff) {
-			shift_state = 1;
-			outp = 0;
-		}
+int key_is_pressed(struct input_event *event) {
+	return event->type & KEY_PRESSED;
+}
+
+static void kbd_key_serv_press(int state, int flag) {
+	if(state & KEY_PRESSED) {
+		kbd_state |= flag;
+	} else {
+		kbd_state &= ~flag;
 	}
+}
+
+
+#define KMC_PORTB 0x61
+int keyboard_get_input_event(struct input_event *event) {
+	uint8_t scan_code;
+	int flag = 0;
+	keyboard_wait_read();
+
+	scan_code = inb(DATA_PORT);
+
+//	printk("s 0x%X\n", scan_code);
+	if(scan_code == KEYBOARD_SCAN_CODE_EXT) {
+		keyboard_wait_read();
+		scan_code = inb(DATA_PORT);
+	}
+	if(scan_code & 0x80) {
+		/* key unpressed */
+		event->type &= ~KEY_PRESSED;
+	} else {
+		/* key pressed */
+		event->type |= KEY_PRESSED;
+	}
+	scan_code &= 0x7F;
+
+	switch(scan_code) {
+	case KEYBOARD_SCAN_CODE_CTRL:
+		flag = CTRL_PRESSED;
+		break;
+
+	case KEYBOARD_SCAN_CODE_ALT:
+		flag = ALT_PRESSED;
+		break;
+	case KEYBOARD_SCAN_CODE_SHIFT:
+		flag = SHIFT_PRESSED;
+		break;
+	case KEYBOARD_SCAN_CODE_CAPS:
+		flag = CAPS_PRESSED;
+		break;
+	}
+	kbd_key_serv_press(event->type, flag);
+
+	event->value = kbd_state | scan_code;
+
+	return 0;
+}
+
+extern int keymap_to_ascii(struct input_event *event, unsigned char ascii_buff[4]);
+
+int keyboard_getc(void) {
+	static unsigned char ascii_buff[4];
+	static int ascii_len;
+	static int seq_cnt = 0;
+	struct input_event event;
+
+	if(ascii_len > seq_cnt) {
+		return ascii_buff[seq_cnt++];
+	}
+	ascii_len = 0;
+
+	do {
+		keyboard_get_input_event(&event);
+		if(key_is_pressed(&event)) {
+			ascii_len = keymap_to_ascii(&event, ascii_buff);
+		}
+	} while(ascii_len == 0);
+
+	seq_cnt = 0;
+
+	return ascii_buff[seq_cnt++];
 }
 
 
@@ -244,4 +191,5 @@ void keyboard_init(void) {
 	keyboard_send_cmd(I8042_CMD_PORT_EN);
 
 	input_dev_register(&kbd_dev);
+	kbd_state = 0;
 }

@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <util/math.h>
 
 #define MODOPS_FB_AMOUNT OPTION_GET(NUMBER, fb_amount)
 
@@ -112,60 +113,244 @@ int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 	return 0;
 }
 
+static void bitcpy(uint32_t *dst, uint32_t dstn, uint32_t *src, uint32_t srcn,
+		uint32_t len) {
+	uint32_t mask1, mask2, loff, roff, lval, rval, left;
+	int32_t shift;
+
+	assert(dst != NULL);
+	assert(src != NULL);
+
+	if (len == 0) return;
+
+	mask1 = ~(uint32_t)0 << dstn;
+	mask2 = ~(~(uint32_t)0 << (dstn + len) % (sizeof(*dst) * CHAR_BIT));
+	shift = dstn - srcn;
+
+	if (shift == 0) {
+		if (dstn + len <= sizeof(*dst) * CHAR_BIT) {
+			mask1 &= mask2 != 0 ? mask2 : mask1;
+			fb_writel((fb_readl(src) & mask1) | (fb_readl(dst) & ~mask1), dst);
+		}
+		else {
+			if (mask1 != 0) {
+				fb_writel((fb_readl(src) & mask1) | (fb_readl(dst) & ~mask1), dst);
+				++dst, ++src;
+				len -= sizeof(*dst) * CHAR_BIT - dstn;
+			}
+
+			len /= sizeof(*dst) * CHAR_BIT;
+			while (len-- != 0) {
+				fb_writel(fb_readl(src), dst);
+				++dst, ++src;
+			}
+
+			fb_writel((fb_readl(src) & mask2) | (fb_readl(dst) & ~mask2), dst);
+		}
+	}
+	else {
+		loff = (uint32_t)-shift % (sizeof(*dst) * CHAR_BIT);
+		roff = (uint32_t)shift % (sizeof(*dst) * CHAR_BIT);
+
+		if (dstn + len <= sizeof(*dst) * CHAR_BIT) {
+			mask1 &= mask2 != 0 ? mask2 : mask1;
+			if (shift > 0) {
+				fb_writel(((fb_readl(src) >> roff) & mask1) | (fb_readl(dst) & ~mask1), dst);
+			}
+			else if (srcn + len <= sizeof(*dst) * CHAR_BIT) {
+				fb_writel(((fb_readl(src) << loff) & mask1) | (fb_readl(dst) & ~mask1), dst);
+			}
+			else {
+				lval = fb_readl(src);
+				++src;
+				rval = fb_readl(src);
+				fb_writel((((lval << loff) | (rval >> roff)) & mask1) | (fb_readl(dst) & ~mask1), dst);
+			}
+		}
+		else {
+			lval = fb_readl(src);
+			++src;
+			if (shift > 0) {
+				fb_writel(((lval >> roff) & mask1) | (fb_readl(dst) & ~mask1), dst);
+				++dst;
+				len -= sizeof(*dst) * CHAR_BIT - dstn;
+			}
+			else {
+				rval = fb_readl(src);
+				++src;
+				fb_writel((((lval << loff) | (fb_readl(dst) >> roff)) & mask1) | (fb_readl(dst) & ~mask1), dst);
+				lval = rval;
+				++dst;
+				len -= sizeof(*dst) * CHAR_BIT - dstn;
+			}
+
+			left = len % (sizeof(*dst) * CHAR_BIT);
+			len /= sizeof(*dst) * CHAR_BIT;
+			while (len-- != 0) {
+				rval = fb_readl(src);
+				++src;
+				fb_writel((lval << loff) | (rval >> roff), dst);
+				++dst;
+				lval = rval;
+			}
+
+			if (left <= roff) {
+				fb_writel(((lval << loff) & mask2) | (fb_readl(dst) & ~mask2), dst);
+			}
+			else {
+				rval = fb_readl(src);
+				fb_writel((((lval << loff) | (rval >> roff)) & mask2) | (fb_readl(dst) & ~mask2), dst);
+			}
+		}
+	}
+}
+
+static void bitcpy_rev(uint32_t *dst, uint32_t dstn, uint32_t *src,
+		uint32_t srcn, uint32_t len) {
+	uint32_t mask1, mask2, roff, loff, rval, lval, left;
+	int32_t shift;
+
+	assert(dst != NULL);
+	assert(src != NULL);
+
+	if (len == 0) return;
+
+	dst += (len - 1) / (sizeof(*dst) * CHAR_BIT);
+	src += (len - 1) / (sizeof(*src) * CHAR_BIT);
+	if ((len - 1) % (sizeof(*dst) * CHAR_BIT) != 0) {
+		dstn += (len - 1) % (sizeof(*dst) * CHAR_BIT);
+		dst += dstn / (sizeof(*dst) * CHAR_BIT);
+		dstn %= sizeof(*dst) * CHAR_BIT;
+		srcn += (len - 1) % (sizeof(*src) * CHAR_BIT);
+		src += srcn / (sizeof(*src) * CHAR_BIT);
+		srcn %= sizeof(*src) * CHAR_BIT;
+	}
+
+	mask1 = ~(uint32_t)0 >> (sizeof(*dst) * CHAR_BIT - 1 - dstn);
+	mask2 = ~(~(uint32_t)0 >> (sizeof(*dst) * CHAR_BIT - 1 - (dstn - len) % (sizeof(*dst) * CHAR_BIT)));
+	shift = dstn - srcn;
+
+	if (shift == 0) {
+		if (dstn + 1 >= len) {
+			mask1 &= mask2 != 0 ? mask2 : mask1;
+			fb_writel((fb_readl(src) & mask1) | (fb_readl(dst) & ~mask1), dst);
+		}
+		else {
+			if (mask1 != 0) {
+				fb_writel((fb_readl(src) & mask1) | (fb_readl(dst) & ~mask1), dst);
+				--dst, --src;
+				len -= dstn + 1;
+			}
+
+			len /= sizeof(*dst) * CHAR_BIT;
+			while (len-- != 0) {
+				fb_writel(fb_readl(src), dst);
+				--dst, --src;
+			}
+
+			fb_writel((fb_readl(src) & mask2) | (fb_readl(dst) & ~mask2), dst);
+		}
+	}
+	else {
+		roff = (uint32_t)shift % (sizeof(*dst) * CHAR_BIT);
+		loff = (uint32_t)-shift % (sizeof(*dst) * CHAR_BIT);
+
+		if (dstn + 1 >= len) {
+			mask1 &= mask2 != 0 ? mask2 : mask1;
+			if (shift < 0) {
+				fb_writel(((fb_readl(src) << loff) & mask1) | (fb_readl(dst) & ~mask1), dst);
+			}
+			else if (srcn + 1 >= len) {
+				fb_writel(((fb_readl(src) >> roff) & mask1) | (fb_readl(dst) & ~mask1), dst);
+			}
+			else {
+				rval = fb_readl(src);
+				--src;
+				lval = fb_readl(src);
+				fb_writel((((rval >> roff) | (lval << loff)) & mask1) | (fb_readl(dst) & ~mask1), dst);
+			}
+		}
+		else {
+			rval = fb_readl(src);
+			--src;
+			if (shift < 0) {
+				fb_writel(((rval << loff) & mask1) | (fb_readl(dst) & ~mask1), dst);
+				--dst;
+				len -= dstn + 1;
+			}
+			else {
+				lval = fb_readl(src);
+				--src;
+				fb_writel((((rval >> roff) | (lval << loff)) & mask1) | (fb_readl(dst) & ~mask1), dst);
+				rval = lval;
+				--dst;
+				len -= dstn + 1;
+			}
+
+			left = len % (sizeof(*dst) * CHAR_BIT);
+			len /= sizeof(*dst) * CHAR_BIT;
+			while (len-- != 0) {
+				lval = fb_readl(src);
+				--src;
+				fb_writel((rval >> roff) | (lval << loff), dst);
+				--dst;
+				rval = lval;
+			}
+
+			if (left <= loff) {
+				fb_writel(((rval >> roff) & mask2) | (fb_readl(dst) & ~mask2), dst);
+			}
+			else {
+				lval = fb_readl(src);
+				fb_writel((((rval << roff) | (lval >> loff)) & mask2) | (fb_readl(dst) & ~mask2), dst);
+			}
+		}
+	}
+}
+
 void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
-	uint32_t size_x, size_y, j;
-	char *base;
+	uint32_t width, height, *dst, dstn, *src, srcn;
 
 	assert(info != NULL);
 	assert(area != NULL);
 
-	size_x = area->width;
-	size_x = area->sx + size_x > info->var.xres
-			? info->var.xres - area->sx : size_x;
-	size_x = area->dx + size_x > info->var.xres
-			? info->var.xres - area->dx : size_x;
+	if ((area->dx >= info->var.xres) || (area->dy >= info->var.yres)
+			|| (area->sx >= info->var.xres) || (area->sy >= info->var.yres)) return;
 
-	size_y = area->height;
-	size_y = area->sy + size_y > info->var.yres
-			? info->var.yres - area->sy : size_y;
-	size_y = area->dy + size_y > info->var.yres
-			? info->var.yres - area->dy : size_y;
+	width = min(area->width, info->var.xres - max(area->sx, area->dx));
+	height = min(area->height, info->var.yres - max(area->sy, area->dy));
 
-	base = (char *)info->screen_base;
-	assert(base != NULL);
+	assert(info->screen_base != NULL);
+	dstn = srcn = (uint32_t)info->screen_base % sizeof(*dst);
+	dst = src = (uint32_t *)((uint32_t)info->screen_base - dstn);
+	dstn = dstn * CHAR_BIT + (area->dy * info->var.xres
+			+ area->dx) * info->var.bits_per_pixel;
+	srcn = srcn * CHAR_BIT + (area->sy * info->var.xres
+			+ area->sx) * info->var.bits_per_pixel;
 
-	if (area->sx <= area->dx) {
-		if (area->sy < area->dy) {
-			j = size_y;
-			while (j--) {
-				memmove(base + (area->dx + (j + area->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
-						base + (area->sx + (j + area->sy) * info->var.xres) * info->var.bits_per_pixel / 8,
-						size_x * info->var.bits_per_pixel / 8);
-			}
-		}
-		else {
-			for (j = 0; j < size_y; ++j) {
-				memmove(base + (area->dx + (j + area->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
-						base + (area->sx + (j + area->sy) * info->var.xres) * info->var.bits_per_pixel / 8,
-						size_x * info->var.bits_per_pixel / 8);
-			}
+	if (((area->dy == area->sy) && (area->dx > area->sx))
+			|| (area->dy > area->sy)) {
+		dstn += height * info->var.xres * info->var.bits_per_pixel;
+		srcn += height * info->var.xres * info->var.bits_per_pixel;
+		while (height-- != 0) {
+			dstn -= info->var.xres * info->var.bits_per_pixel;
+			dst += dstn / (sizeof(*dst) * CHAR_BIT);
+			dstn %= sizeof(*dst) * CHAR_BIT;
+			srcn -= info->var.xres * info->var.bits_per_pixel;
+			src += srcn / (sizeof(*src) * CHAR_BIT);
+			srcn %= sizeof(*src) * CHAR_BIT;
+			bitcpy_rev(dst, dstn, src, srcn, width * info->var.bits_per_pixel);
 		}
 	}
 	else {
-		if (area->sy < area->dy) {
-			j = size_y;
-			while (j--) {
-				memcpy(base + (area->dx + (j + area->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
-						base + (area->sx + (j + area->sy) * info->var.xres) * info->var.bits_per_pixel / 8,
-						size_x * info->var.bits_per_pixel / 8);
-			}
-		}
-		else {
-			for (j = 0; j < size_y; ++j) {
-				memcpy(base + (area->dx + (j + area->dy) * info->var.xres) * info->var.bits_per_pixel / 8,
-						base + (area->sx + (j + area->sy) * info->var.xres) * info->var.bits_per_pixel / 8,
-						size_x * info->var.bits_per_pixel / 8);
-			}
+		while (height-- != 0) {
+			dst += dstn / (sizeof(*dst) * CHAR_BIT);
+			dstn %= sizeof(*dst) * CHAR_BIT;
+			src += srcn / (sizeof(*src) * CHAR_BIT);
+			srcn %= sizeof(*src) * CHAR_BIT;
+			bitcpy(dst, dstn, src, srcn, width * info->var.bits_per_pixel);
+			dstn += info->var.xres * info->var.bits_per_pixel;
+			srcn += info->var.xres * info->var.bits_per_pixel;
 		}
 	}
 }
@@ -183,72 +368,70 @@ static uint32_t pixel_to_pat(uint32_t bpp, uint32_t pixel) {
 			: 0;
 }
 
-static void bitfill(uint32_t *dest, uint32_t bitn, uint32_t pat,
+static void bitfill(uint32_t *dst, uint32_t dstn, uint32_t pat,
 		uint32_t loff, uint32_t roff, uint32_t len) {
 	uint32_t mask1, mask2;
 
-	assert(dest != NULL);
+	assert(dst != NULL);
 
 	if (len == 0) return;
 
-	mask1 = ~(uint32_t)0 << bitn;
-	mask2 = ~(~(uint32_t)0 << (bitn + len) % (sizeof(*dest) * CHAR_BIT));
+	mask1 = ~(uint32_t)0 << dstn;
+	mask2 = ~(~(uint32_t)0 << (dstn + len) % (sizeof(*dst) * CHAR_BIT));
 
-	if (bitn + len <= sizeof(*dest) * CHAR_BIT) {
+	if (dstn + len <= sizeof(*dst) * CHAR_BIT) {
 		mask1 &= mask2 != 0 ? mask2 : mask1;
-		fb_writel((pat & mask1) | (fb_readl(dest) & ~mask1), dest);
+		fb_writel((pat & mask1) | (fb_readl(dst) & ~mask1), dst);
 	}
 	else {
 		if (mask1 != 0) {
-			fb_writel((pat & mask1) | (fb_readl(dest) & ~mask1), dest);
-			++dest;
+			fb_writel((pat & mask1) | (fb_readl(dst) & ~mask1), dst);
+			++dst;
 			pat = (pat << loff) | (pat >> roff);
-			len -= sizeof(*dest) * CHAR_BIT - bitn;
+			len -= sizeof(*dst) * CHAR_BIT - dstn;
 		}
 
-		len /= sizeof(*dest) * CHAR_BIT;
-		while (len-- > 0) {
-			fb_writel(pat, dest);
-			++dest;
+		len /= sizeof(*dst) * CHAR_BIT;
+		while (len-- != 0) {
+			fb_writel(pat, dst);
+			++dst;
 			pat = (pat << loff) | (pat >> roff);
 		}
 
-		fb_writel((pat & mask2) | (fb_readl(dest) & ~mask2), dest);
+		fb_writel((pat & mask2) | (fb_readl(dst) & ~mask2), dst);
 	}
 }
 
 void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
-	uint32_t width, height, pat_orig, pat, *dest, bitn, loff, roff;
+	uint32_t width, height, pat_orig, pat, *dst, dstn, loff, roff;
 
 	assert(info != NULL);
 	assert(rect != NULL);
 
-	width = rect->dx + rect->width > info->var.xres
-			? info->var.xres - rect->dx : rect->width;
+	if ((rect->dx >= info->var.xres) || (rect->dy >= info->var.yres)) return;
 
-	height = rect->dy + rect->height > info->var.yres
-			? info->var.yres - rect->dy : rect->height;
+	width = min(rect->width, info->var.xres - rect->dx);
+	height = min(rect->height, info->var.yres - rect->dy);
 
 	pat_orig = pixel_to_pat(info->var.bits_per_pixel, rect->color);
 
 	assert(info->screen_base != NULL);
-	bitn = (uint32_t)info->screen_base % sizeof(*dest);
-	dest = (uint32_t *)((uint32_t)info->screen_base - bitn);
-	bitn = bitn * CHAR_BIT + (rect->dy * info->var.xres
+	dstn = (uint32_t)info->screen_base % sizeof(*dst);
+	dst = (uint32_t *)((uint32_t)info->screen_base - dstn);
+	dstn = dstn * CHAR_BIT + (rect->dy * info->var.xres
 			+ rect->dx) * info->var.bits_per_pixel;
-
-	roff = sizeof(*dest) * CHAR_BIT % info->var.bits_per_pixel;
+	roff = sizeof(*dst) * CHAR_BIT % info->var.bits_per_pixel;
 	loff = info->var.bits_per_pixel - roff;
 
-	while (height-- > 0) {
-		dest += bitn / (sizeof(*dest) * CHAR_BIT);
-		bitn %= sizeof(*dest) * CHAR_BIT;
+	while (height-- != 0) {
+		dst += dstn / (sizeof(*dst) * CHAR_BIT);
+		dstn %= sizeof(*dst) * CHAR_BIT;
 
-		pat = roff == 0 ? pat_orig : (pat_orig << (bitn % info->var.bits_per_pixel))
-				| (pat_orig >> (info->var.bits_per_pixel - bitn % info->var.bits_per_pixel));
+		pat = roff == 0 ? pat_orig : (pat_orig << (dstn % info->var.bits_per_pixel))
+				| (pat_orig >> (info->var.bits_per_pixel - dstn % info->var.bits_per_pixel));
 
-		bitfill(dest, bitn, pat, loff, roff, width * info->var.bits_per_pixel);
-		bitn += info->var.xres * info->var.bits_per_pixel;
+		bitfill(dst, dstn, pat, loff, roff, width * info->var.bits_per_pixel);
+		dstn += info->var.xres * info->var.bits_per_pixel;
 	}
 }
 
