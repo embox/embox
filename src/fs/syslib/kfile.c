@@ -112,10 +112,9 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 
 	desc->node = node;
 	desc->ops = ops;
-	desc->flags = (flag & O_APPEND || flag & O_WRONLY
-			|| flag & O_RDWR) ? FDESK_FLAG_WRITE : 0
-		| (flag == O_RDONLY || flag & O_RDWR) ? FDESK_FLAG_READ : 0
-		| (flag & O_APPEND) ? FDESK_FLAG_APPEND : 0;
+	desc->flags = ((flag & O_WRONLY || flag & O_RDWR) ? FDESK_FLAG_WRITE : 0)
+		| ((flag == O_RDONLY || flag & O_RDWR) ? FDESK_FLAG_READ : 0)
+		| ((flag & O_APPEND) ? FDESK_FLAG_APPEND : 0);
 	desc->cursor = 0;
 
 	if (0 > (ret = check_open_perm(node, desc->flags))) {

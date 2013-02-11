@@ -29,7 +29,7 @@ static int create_test_file(void) {
 	int fd;
 	int ret;
 
-	if (0 > (fd = open(test_file_filename, O_WRONLY))) {
+	if (0 > (fd = open(test_file_filename, O_WRONLY, S_IRALL | S_IWALL))) {
 		return -1;
 	}
 
