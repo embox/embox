@@ -194,15 +194,14 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 			if (0 == word) {
 				/* allocator failed to allocate a bit in bitmap	with free bits.*/
 				return 0;
-			}
-			else {
+			} else {
 				word = 0;
 				continue;
 			}
 		}
 
 		block = fsi->e2sb.s_first_data_block + group * fsi->e2sb.s_blocks_per_group + bit;
-		if(ext2_check_block_number(block, fsi, gd)) {
+		if (ext2_check_block_number(block, fsi, gd)) {
 			return 0;
 		}
 
@@ -292,8 +291,7 @@ uint32_t ext2_alloc_block(struct nas *nas, uint32_t block)
 
 	if (block != NO_BLOCK) {
 		goal = block;
-	}
-	else {
+	} else {
 		group = (fi->f_num - 1) / fsi->e2sb.s_inodes_per_group;
 		goal = fsi->e2sb.s_blocks_per_group * group + fsi->e2sb.s_first_data_block;
 	}

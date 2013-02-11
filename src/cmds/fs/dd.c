@@ -44,15 +44,14 @@ static void print_data(char *buff, size_t size, blkno_t start) {
 			for (i_substr = 0; i_substr < 4; i_substr++) {
 				printf("%02hhX ", (unsigned char) *point++);
 			}
-			if(i_str < 3) {
+			if (i_str < 3) {
 				printf("| ");
 			}
 		}
 		for (i_str = 0; i_str < 16; i_str++) {
 			if (((unsigned char) *substr_p) >= 32) { /*is not service simbol */
 				printf("%c", *substr_p);
-			}
-			else {
+			} else {
 				printf(".");
 			}
 			substr_p++;
@@ -69,7 +68,7 @@ static int get_arg(int argc, char **argv, const char *mask, char *data) {
 	len = strlen(mask);
 
 	for (i = 0; i < argc; i++) {
-		if(0 == strncmp(mask, argv[i], len)) {
+		if (0 == strncmp(mask, argv[i], len)) {
 			sprintf(data, "%s", &argv[i][len]);
 			return 0;
 		}
@@ -121,7 +120,7 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	if(0 > get_arg(argc, argv, PATH, path)) {
+	if (0 > get_arg(argc, argv, PATH, path)) {
 		return -1;
 	}
 	nod = vfs_find_node(path, NULL);
@@ -131,38 +130,34 @@ static int exec(int argc, char **argv) {
 	}
 
 	blkno = 0; bytes = BSIZE;
-	if(0 == get_arg(argc, argv, NUM_B, num)) {
+	if (0 == get_arg(argc, argv, NUM_B, num)) {
 		sscanf(num, "%u", &bytes);
 	}
-	if(0 == get_arg(argc, argv, START_B, num)) {
+	if (0 == get_arg(argc, argv, START_B, num)) {
 		sscanf(num, "%u", &blkno);
 	}
 
 	rc = 0;
-	if(NULL == (buffer =
+	if (NULL == (buffer =
 			page_alloc(__phymem_allocator, bytes / PAGE_SIZE() + 1))) {
 		return -1;
 	}
 
 	if (node_is_block_dev(nod)) {
 		nas = nod->nas;
-		if(bytes <= (bytesread =  block_dev_read(nas->fi->privdata,
+		if (bytes <= (bytesread =  block_dev_read(nas->fi->privdata,
 							buffer, bytes, blkno))) {
 			print_data(buffer, bytesread, blkno);
-		}
-		else {
+		} else {
 			rc = -1;
 		}
-	}
-	else if (node_is_file(nod)) {
-		if(0 <= (bytesread = read_file(path, buffer, bytes, blkno))) {
+	} else if (node_is_file(nod)) {
+		if (0 <= (bytesread = read_file(path, buffer, bytes, blkno))) {
 			print_data(buffer, bytesread, blkno);
-		}
-		else {
+		} else {
 			rc = -1;
 		}
-	}
-	else { /* node is directory or not specified */
+	} else { /* node is directory or not specified */
 		printf("dd: Not a device or file\n");
 		rc = -1;
 	}

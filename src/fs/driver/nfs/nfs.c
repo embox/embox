@@ -72,7 +72,7 @@ static int nfsfs_open(struct node *nod, struct file_desc *desc, int flags) {
 	fi->mode = flags;
 	fi->offset = desc->cursor;
 
-	if(0 == nfs_lookup(nas)) {
+	if (0 == nfs_lookup(nas)) {
 		nas->fi->ni.size = fi->attr.size;
 		return 0;
 	}
@@ -106,8 +106,7 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 	while(1) {
 		if (size > DIRCOUNT) {
 			size_to_read = DIRCOUNT;
-		}
-		else {
+		} else {
 			size_to_read = size;
 		}
 		size -= size_to_read;
@@ -288,7 +287,7 @@ static int nfs_client_init(struct nfs_fs_info *fsi) {
 		clnt_pcreateerror(fsi->srv_name);
 		return -1;
 	}
-	if(0 != nfs_unix_auth_set(fsi->mnt)) {
+	if (0 != nfs_unix_auth_set(fsi->mnt)) {
 		return -1;
 	}
 
@@ -311,13 +310,13 @@ static int nfsfs_mount(void *dev, void *dir) {
 
 	/* there are nodev for nfs. we create fs here and set nfs fs_drv*/
 	dir_nas = dir_node->nas;
-	if(NULL == (dir_nas->fs = alloc_filesystem("nfs"))){
+	if (NULL == (dir_nas->fs = alloc_filesystem("nfs"))){
 		return -ENOMEM;
 	}
 
 	if ((NULL == (fsi = pool_alloc(&nfs_fs_pool))) ||
 			(NULL == (fi = pool_alloc(&nfs_file_pool)))) {
-		if(NULL != fsi) {
+		if (NULL != fsi) {
 			pool_free(&nfs_fs_pool, fsi);
 		}
 		return -ENOMEM;
@@ -329,14 +328,14 @@ static int nfsfs_mount(void *dev, void *dir) {
 	strncpy(fsi->mnt_point, dir, MAX_LENGTH_PATH_NAME);
 
 	/* get server name and mount directory from params */
-	if(0 >  nfs_prepare(fsi, dev)) {
+	if (0 >  nfs_prepare(fsi, dev)) {
 		return -1;
 	}
-	if(0 >  nfs_client_init(fsi)) {
+	if (0 >  nfs_client_init(fsi)) {
 		return -1;
 	}
 
-	if(0 >  nfs_mount(dir_nas)) {
+	if (0 >  nfs_mount(dir_nas)) {
 		nfs_clnt_destroy(fsi);
 		pool_free(&nfs_fs_pool, fsi);
 		pool_free(&nfs_file_pool, fi);
@@ -346,7 +345,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 	/* copy filesystem filehandle to root directory filehandle */
 	memcpy(&fi->fh, &fsi->fh, sizeof(fi->fh));
 
-	if(0 >  nfs_create_dir_entry(fsi->mnt_point)) {
+	if (0 >  nfs_create_dir_entry(fsi->mnt_point)) {
 		nfs_clnt_destroy(fsi);
 		pool_free(&nfs_fs_pool, fsi);
 		pool_free(&nfs_file_pool, fi);
@@ -366,12 +365,11 @@ static node_t  *nfs_create_file (struct nas *parent_nas,
 		if (NULL == (node = vfs_add_path (full_name, NULL))) {
 			return NULL;/*device not found*/
 		}
-		if(NULL == (fi = pool_alloc(&nfs_file_pool))) {
+		if (NULL == (fi = pool_alloc(&nfs_file_pool))) {
 			return NULL;
 		}
 		nas = node->nas;
-	}
-	else {
+	} else {
 		nas = node->nas;
 		fi = nas->fi->privdata;
 	}
@@ -380,11 +378,11 @@ static node_t  *nfs_create_file (struct nas *parent_nas,
 	memcpy(&fi->name_dsc, &predesc->file_name,
 			sizeof(predesc->file_name));
 
-	if(VALUE_FOLLOWS_YES == predesc->vf_attr) {
+	if (VALUE_FOLLOWS_YES == predesc->vf_attr) {
 		memcpy(&fi->attr, &predesc->file_attr,
 				sizeof(predesc->file_attr));
 	}
-	if(VALUE_FOLLOWS_YES == predesc->vf_fh) {
+	if (VALUE_FOLLOWS_YES == predesc->vf_fh) {
 		memcpy(&fi->fh, &predesc->file_handle,
 				sizeof(predesc->file_handle));
 		fi->fh.count = fi->fh.maxcount = DIRCOUNT;
@@ -418,7 +416,7 @@ static int nfs_create_dir_entry(char *parent) {
 	fh->count = fh->maxcount = DIRCOUNT;
 	fh->cookie = 0;
 
-	if(NULL == (rcv_buf = malloc(MAXDIRCOUNT * 2))) {
+	if (NULL == (rcv_buf = malloc(MAXDIRCOUNT * 2))) {
 		return -1;
 	}
 
@@ -426,7 +424,7 @@ static int nfs_create_dir_entry(char *parent) {
 
 		memset(rcv_buf, 0, sizeof(rcv_buf));
 
-		if(0 >  nfs_call_proc_nfs(parent_nas, NFSPROC3_READDIRPLUS,
+		if (0 >  nfs_call_proc_nfs(parent_nas, NFSPROC3_READDIRPLUS,
 			(char *)fh, rcv_buf)) {
 			free(rcv_buf);
 			return -1;
@@ -435,7 +433,7 @@ static int nfs_create_dir_entry(char *parent) {
 		point = rcv_buf;
 		/* check status */
 		vf = *(__u32 *)point;
-		if(STATUS_OK != vf) {
+		if (STATUS_OK != vf) {
 			free(rcv_buf);
 			return -1;
 		}
@@ -443,7 +441,7 @@ static int nfs_create_dir_entry(char *parent) {
 
 		/* check if a directory attributes */
 		vf = *(__u32 *)point;
-		if(VALUE_FOLLOWS_YES != vf) {
+		if (VALUE_FOLLOWS_YES != vf) {
 			break;
 		}
 		point += sizeof(vf);
@@ -453,7 +451,7 @@ static int nfs_create_dir_entry(char *parent) {
 
 		/* check if a new files attributes */
 		vf = *(__u32 *)point;
-		if(VALUE_FOLLOWS_YES != vf) {
+		if (VALUE_FOLLOWS_YES != vf) {
 			break;
 		}
 
@@ -476,22 +474,20 @@ static int nfs_create_dir_entry(char *parent) {
 			fi = (nfs_file_info_t *) nas->fi->privdata;
 			if (NFS_DIRECTORY_NODE_TYPE == fi->attr.type) {
 				node->type = NODE_TYPE_DIRECTORY;
-				if((0 != strcmp(fi->name_dsc.name.data, "."))
+				if ((0 != strcmp(fi->name_dsc.name.data, "."))
 					&& (0 != strcmp(fi->name_dsc.name.data, ".."))) {
 					nfs_create_dir_entry(full_path);
 				}
-			}
-			else {
+			} else {
 				node->type = NODE_TYPE_FILE;
 			}
 			point += sizeof(*predesc);
 		}
 		point += sizeof(vf);
-		if(NFS_EOF == *(__u32 *)point) {
+		if (NFS_EOF == *(__u32 *)point) {
 			fh->cookie = 0;
 			break;
-		}
-		else {
+		} else {
 			fh->cookie = predesc->file_name.cookie;
 		}
 	}
@@ -522,8 +518,7 @@ static int nfsfs_create(struct node *parent_node, struct node *node) {
 		req.create_mode = UNCHECKED_MODE;
 		req.mode = 0x01ff;
 		req.size = 512;
-	}
-	else {
+	} else {
 		procnum = NFSPROC3_CREATE;
 		req.type = NFS_FILE_NODE_TYPE;
 		req.create_mode = GURDED_MODE;
@@ -547,7 +542,7 @@ static int nfsfs_create(struct node *parent_node, struct node *node) {
 		return -1;
 	}
 
-	if(NULL == (fi = pool_alloc(&nfs_file_pool))) {
+	if (NULL == (fi = pool_alloc(&nfs_file_pool))) {
 		return -1;
 	}
 	nas->fi->privdata = (void *) fi;
@@ -569,7 +564,7 @@ static int nfsfs_delete(struct node *node) {
 	nas = node->nas;
 	fi = (nfs_file_info_t *) nas->fi->privdata;
 
-	if(NULL == (dir_node = vfs_get_parent(node))) {
+	if (NULL == (dir_node = vfs_get_parent(node))) {
 		return -1;
 	}
 
@@ -581,8 +576,7 @@ static int nfsfs_delete(struct node *node) {
 
 	if (node_is_directory(node)) {
 		procnum = NFSPROC3_RMDIR;
-	}
-	else {
+	} else {
 		procnum = NFSPROC3_REMOVE;
 	}
 
@@ -607,8 +601,8 @@ static int nfs_call_proc_mnt(struct nas *nas,
 
 	fsi = nas->fs->fsi;
 
-	if(NULL == fsi->mnt){
-		if(0 >  nfs_client_init(fsi)) {
+	if (NULL == fsi->mnt){
+		if (0 >  nfs_client_init(fsi)) {
 			return -1;
 		}
 	}
@@ -662,8 +656,8 @@ static int nfs_call_proc_nfs(struct nas *nas,
 	struct nfs_fs_info *fsi;
 
 	fsi = nas->fs->fsi;
-	if(NULL == fsi->nfs){
-		if(0 >  nfs_client_init(fsi)) {
+	if (NULL == fsi->nfs){
+		if (0 >  nfs_client_init(fsi)) {
 			return -1;
 		}
 	}
@@ -775,7 +769,7 @@ static int nfs_lookup(struct nas *nas) {
 	lookup_reply_t reply;
 
 	fi = nas->fi->privdata;
-	if(NULL == (dir_node = vfs_get_parent(nas->node))) {
+	if (NULL == (dir_node = vfs_get_parent(nas->node))) {
 		return -1;
 	}
 	dir_nas = dir_node->nas;
@@ -806,7 +800,7 @@ static int nfs_mount(struct nas *nas) {
 		0, (char *)&fsi->export)){
 		return -1;
 	}
-	if(0 != strcmp(fsi->srv_dir, fsi->export.dir_name)) {
+	if (0 != strcmp(fsi->srv_dir, fsi->export.dir_name)) {
 		return -1;
 	}
 	/* send NULL procedure*/

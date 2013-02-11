@@ -21,11 +21,11 @@ struct filesystem *alloc_filesystem(const char *drv_name) {
 	struct filesystem *fs;
 
 	fs = pool_alloc(&filesystem_pool);
-	if(NULL == fs) {
+	if (NULL == fs) {
 		return NULL;
 	}
 
-	if(0 != *drv_name) {
+	if (0 != *drv_name) {
 		fs->drv = fs_driver_find_drv(drv_name);
 	}
 

@@ -27,7 +27,7 @@ int vfs_get_path_by_node(node_t *nod, char *path) {
 			(parent = vfs_get_parent(node))) {
 		strncpy((char *) path,
 				(const char *) &parent->name, MAX_LENGTH_FILE_NAME);
-		if('/' != *path) {
+		if ('/' != *path) {
 			strcat((char *) path, (const char *) "/");
 		}
 		strcat((char *) path, (const char *) buff);
@@ -51,7 +51,7 @@ int vfs_add_leaf(node_t *child, node_t *parent) {
 static node_t *vfs_add_new_path(node_t *parent,
 		char *p_path, char *child_name) {
 	node_t *child;
-	if(NULL == (child = node_alloc(child_name))) {
+	if (NULL == (child = node_alloc(child_name))) {
 		return NULL;
 	}
 	vfs_add_leaf(child, parent);
@@ -59,7 +59,7 @@ static node_t *vfs_add_new_path(node_t *parent,
 											MAX_LENGTH_FILE_NAME))) {
 		parent->type = NODE_TYPE_DIRECTORY;
 		parent = child;
-		if(NULL == (child = node_alloc(child_name))) {
+		if (NULL == (child = node_alloc(child_name))) {
 			return NULL;
 		}
 		vfs_add_leaf(child, parent);
@@ -142,7 +142,7 @@ node_t *vfs_find_node(const char *path, node_t *parent) {
 }
 
 node_t *vfs_get_root(void) {
-	if(NULL == root_node) {
+	if (NULL == root_node) {
 		root_node = node_alloc("/");
 		assert(NULL != root_node);
 		root_node->type = NODE_TYPE_DIRECTORY;
@@ -157,7 +157,7 @@ node_t *vfs_get_exist_path(const char *path, char *exist_path, size_t buff_len) 
 	char cname[MAX_LENGTH_FILE_NAME]; /* child name buffer*/
 	char *p_path;
 
-	if(path[0] != '/') { /* we can operate only with full path now */
+	if (path[0] != '/') { /* we can operate only with full path now */
 		return NULL;
 	}
 
@@ -170,16 +170,16 @@ node_t *vfs_get_exist_path(const char *path, char *exist_path, size_t buff_len) 
 		parent = node;
 		p_path = path_get_next_name(p_path, cname, sizeof(cname));
 
-		if(0 == strlen(cname)) {
+		if (0 == strlen(cname)) {
 			return parent; /* we found full path */
 		}
 
-		if(NULL != (node = vfs_get_child(cname, node))) {
+		if (NULL != (node = vfs_get_child(cname, node))) {
 			/*add node to exist_path*/
 			strncat(exist_path, "/", buff_len);
 			strncat((char *)exist_path, cname, buff_len);
 
-			if(!node_is_directory(node)) { /* only directory may has children */
+			if (!node_is_directory(node)) { /* only directory may has children */
 				return node; /* this is the last element in the path */
 			}
 			continue;

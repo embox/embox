@@ -54,7 +54,7 @@ int xdr_nfs_namestring(struct xdr *xs, rpc_string_t *fh) {
 	assert(fh != NULL);
 
 	point = fh->data;
-	if(xdr_bytes(xs, (char **)&point, &fh->len, sizeof(*fh))) {
+	if (xdr_bytes(xs, (char **)&point, &fh->len, sizeof(*fh))) {
 		point += fh->len;
 		*point = 0;
 		return XDR_SUCCESS;
@@ -69,7 +69,7 @@ int xdr_nfs_name_fh(struct xdr *xs, rpc_fh_string_t *fh) {
 	assert(fh != NULL);
 
 	point = fh->data;
-	if(xdr_bytes(xs, (char **)&point, &fh->len, sizeof(*fh))) {
+	if (xdr_bytes(xs, (char **)&point, &fh->len, sizeof(*fh))) {
 		return XDR_SUCCESS;
 	}
 
@@ -125,7 +125,7 @@ int xdr_nfs_delete(struct xdr *xs, char *point) {
 			if (xdr_u_int(xs, &reply->status) && (STATUS_OK == reply->status)
 				&& xdr_u_int(xs, &reply->before_vf)) {
 				if (VALUE_FOLLOWS_YES == reply->before_vf) {
-					if(XDR_SUCCESS !=
+					if (XDR_SUCCESS !=
 						xdr_nfs_get_attr(xs, (char *) &reply->before_attr)) {
 						break;
 					}
@@ -177,8 +177,8 @@ int xdr_nfs_create(struct xdr *xs, char *point) {
 
 			if (xdr_nfs_name_fh(xs, req->new.dir_fh)
 				&& xdr_nfs_namestring(xs, req->new.fname)) {
-				if(NFS_FILE_NODE_TYPE == req->type) {
-					if(XDR_SUCCESS != xdr_u_int(xs, &req->create_mode)) {
+				if (NFS_FILE_NODE_TYPE == req->type) {
+					if (XDR_SUCCESS != xdr_u_int(xs, &req->create_mode)) {
 						break;
 					}
 				}
@@ -300,10 +300,10 @@ int xdr_nfs_readdirplus(struct xdr *xs, nfs_filehandle_t *fh) {
 	assert(fh != NULL);
 
 	point = fh->name_fh.data;
-	if(xdr_bytes(xs, (char **)&point, &fh->name_fh.len, sizeof(*fh))) {
+	if (xdr_bytes(xs, (char **)&point, &fh->name_fh.len, sizeof(*fh))) {
 		point = (char *)&fh->cookie;
 		size = sizeof(fh->cookie) + sizeof(fh->cookieverf);
-		if(xdr_opaque(xs, point, size)) {
+		if (xdr_opaque(xs, point, size)) {
 			if (xdr_u_int(xs, &fh->count)) {
 				if (xdr_u_int(xs, &fh->maxcount)) {
 					return XDR_SUCCESS;
@@ -321,7 +321,7 @@ int xdr_nfs_get_dirattr(struct xdr *xs, char *point) {
 	assert(point != NULL);
 
 	dir_attr = (dir_attribute_rep_t *) point;
-	if(XDR_SUCCESS == xdr_nfs_get_attr(xs, point)) {
+	if (XDR_SUCCESS == xdr_nfs_get_attr(xs, point)) {
 		if (xdr_opaque(xs, (char *)&dir_attr->verifier,
 				sizeof(dir_attr->verifier))) {
 			return XDR_SUCCESS;
@@ -370,14 +370,14 @@ int xdr_nfs_get_dirdesc(struct xdr *xs, char *point) {
 
 	desc = (readdir_desc_t *) point;
 	while(1) {
-		if(XDR_SUCCESS != xdr_nfs_get_name(xs, (char *) &desc->file_name)) {
+		if (XDR_SUCCESS != xdr_nfs_get_name(xs, (char *) &desc->file_name)) {
 			break;
 		}
 
 		vf = &desc->vf_attr;
 		if (xdr_u_int(xs, vf)) {
-			if(VALUE_FOLLOWS_YES == *vf) {
-				if(XDR_SUCCESS != xdr_nfs_get_attr(xs,
+			if (VALUE_FOLLOWS_YES == *vf) {
+				if (XDR_SUCCESS != xdr_nfs_get_attr(xs,
 						(char *) &desc->file_attr)) {
 					break;
 				}
@@ -386,8 +386,8 @@ int xdr_nfs_get_dirdesc(struct xdr *xs, char *point) {
 
 		vf = &desc->vf_fh;
 		if (xdr_u_int(xs, vf)) {
-			if(VALUE_FOLLOWS_YES == *vf) {
-				if(XDR_SUCCESS != xdr_nfs_name_fh(xs,
+			if (VALUE_FOLLOWS_YES == *vf) {
+				if (XDR_SUCCESS != xdr_nfs_name_fh(xs,
 						&desc->file_handle.name_fh)) {
 					break;
 				}
@@ -407,25 +407,24 @@ int xdr_nfs_get_dirlist(struct xdr *xs, char *buff) {
 	point = buff;
 
 	if (xdr_u_int(xs, &vf)) {
-		if(STATUS_OK == (*(__u32 *) point = vf)) {
+		if (STATUS_OK == (*(__u32 *) point = vf)) {
 			point += sizeof(vf);
 			if (xdr_u_int(xs,  &vf)) {
-				if(VALUE_FOLLOWS_YES == (*(__u32 *) point = vf)) {
+				if (VALUE_FOLLOWS_YES == (*(__u32 *) point = vf)) {
 					point += sizeof(vf);
-					if(xdr_nfs_get_dirattr(xs, point)) {
+					if (xdr_nfs_get_dirattr(xs, point)) {
 						point += sizeof(dir_attribute_rep_t);
 						while(1) {
 							if (xdr_u_int(xs, &vf)) {
-								if(VALUE_FOLLOWS_YES ==
+								if (VALUE_FOLLOWS_YES ==
 										(*(__u32 *) point = vf)) {
 									point += sizeof(vf);
 									/*file = (readdir_desc_t *)point;*/
-									if(XDR_SUCCESS == xdr_nfs_get_dirdesc(xs,
+									if (XDR_SUCCESS == xdr_nfs_get_dirdesc(xs,
 											point)) {
 										point += sizeof(readdir_desc_t);
 									}
-								}
-								else {
+								} else {
 									point += sizeof(vf);
 									break;
 								}

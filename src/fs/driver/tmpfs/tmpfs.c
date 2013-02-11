@@ -49,7 +49,7 @@ static int tmpfs_mount(void *dev, void *dir);
 static int tmpfs_init(void * par) {
 	struct node *dev_node, *dir_node;
 
-	if(NULL == par) {
+	if (NULL == par) {
 		return 0;
 	}
 
@@ -59,14 +59,14 @@ static int tmpfs_init(void * par) {
 		return -1;
 	}
 
-	if((NULL == (dev_node = vfs_find_node(TMPFS_DEV, NULL))) ||
+	if ((NULL == (dev_node = vfs_find_node(TMPFS_DEV, NULL))) ||
 	  (NULL == (dir_node = vfs_add_path(TMPFS_DIR, NULL)))) {
 		return -1;
 	}
 	dir_node->type = NODE_TYPE_DIRECTORY;
 
 	/* format filesystem */
-	if(0 != tmpfs_format((void *)dev_node)) {
+	if (0 != tmpfs_format((void *)dev_node)) {
 		return -1;
 	}
 
@@ -128,11 +128,10 @@ static int tmpfs_read_sector(struct nas *nas, char *buffer,
 
 	fsi = nas->fs->fsi;
 
-	if(0 > block_dev_read(nas->fs->bdev, (char *) buffer,
+	if (0 > block_dev_read(nas->fs->bdev, (char *) buffer,
 			count * fsi->block_size, sector)) {
 		return -1;
-	}
-	else {
+	} else {
 		return count;
 	}
 }
@@ -143,11 +142,10 @@ static int tmpfs_write_sector(struct nas *nas, char *buffer,
 
 	fsi = nas->fs->fsi;
 
-	if(0 > block_dev_write(nas->fs->bdev, (char *) buffer,
+	if (0 > block_dev_write(nas->fs->bdev, (char *) buffer,
 			count * fsi->block_size, sector)) {
 		return -1;
-	}
-	else {
+	} else {
 		return count;
 	}
 }
@@ -183,15 +181,14 @@ static size_t tmpfs_read(struct file_desc *desc, void *buf, size_t size) {
 	while(len) {
 		blk = fi->pointer / fsi->block_size;
 		/* check if block over the file */
-		if(blk >= fsi->block_per_file) {
+		if (blk >= fsi->block_per_file) {
 			bytecount = 0;
 			break;
-		}
-		else {
+		} else {
 			blk += start_block;
 		}
 		/* check if block over the filesystem */
-		if(blk >= fsi->numblocks) {
+		if (blk >= fsi->numblocks) {
 			bytecount = 0;
 			break;
 		}
@@ -199,20 +196,18 @@ static size_t tmpfs_read(struct file_desc *desc, void *buf, size_t size) {
 		current = fi->pointer % fsi->block_size;
 
 		/* set the counter how many bytes read from block */
-		if(end_pointer - fi->pointer > fsi->block_size) {
-			if(current) {
+		if (end_pointer - fi->pointer > fsi->block_size) {
+			if (current) {
 				cnt = fsi->block_size - current;
-			}
-			else {
+			} else {
 				cnt = fsi->block_size;
 			}
-		}
-		else {
+		} else {
 			cnt = end_pointer - fi->pointer;
 		}
 
 		/* one 4096-bytes block read operation */
-		if(1 != tmpfs_read_sector(nas, sector_buff, 1, blk)) {
+		if (1 != tmpfs_read_sector(nas, sector_buff, 1, blk)) {
 			bytecount = 0;
 			break;
 		}
@@ -222,7 +217,7 @@ static size_t tmpfs_read(struct file_desc *desc, void *buf, size_t size) {
 		bytecount += cnt;
 		/* shift the pointer */
 		fi->pointer += cnt;
-		if(end_pointer >= fi->pointer) {
+		if (end_pointer >= fi->pointer) {
 			break;
 		}
 	}
@@ -260,40 +255,37 @@ static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size) {
 	start_block = fi->index * fsi->block_per_file;
 
 	while(1) {
-		if(0 == fsi->block_size) {
+		if (0 == fsi->block_size) {
 			return 0;
 		}
 		blk = fi->pointer / fsi->block_size;
 		/* check if block over the file */
-		if(blk >= fsi->block_per_file) {
+		if (blk >= fsi->block_per_file) {
 			bytecount = 0;
 			break;
-		}
-		else {
+		} else {
 			blk += start_block;
 		}
 		/* calculate pointer in scratch buffer */
 		current = fi->pointer % fsi->block_size;
 
 		/* set the counter how many bytes written in block */
-		if(end_pointer - fi->pointer > fsi->block_size) {
-			if(current) {
+		if (end_pointer - fi->pointer > fsi->block_size) {
+			if (current) {
 				cnt = fsi->block_size - current;
-			}
-			else {
+			} else {
 				cnt = fsi->block_size;
 			}
-		}
-		else {
+		} else {
 			cnt = end_pointer - fi->pointer;
 			/* over the block ? */
-			if((current + cnt) > fsi->block_size) {
+			if ((current + cnt) > fsi->block_size) {
 				cnt -= (current + cnt) % fsi->block_size;
 			}
 		}
 
 		/* one 4096-bytes block read operation */
-		if(1 != tmpfs_read_sector(nas, sector_buff, 1, blk)) {
+		if (1 != tmpfs_read_sector(nas, sector_buff, 1, blk)) {
 			bytecount = 0;
 			break;
 		}
@@ -301,14 +293,14 @@ static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size) {
 		memcpy (sector_buff + current, buf, cnt);
 
 		/* write one block to device */
-		if(1 != tmpfs_write_sector(nas, sector_buff, 1, blk)) {
+		if (1 != tmpfs_write_sector(nas, sector_buff, 1, blk)) {
 			bytecount = 0;
 			break;
 		}
 		bytecount += cnt;
 		/* shift the pointer */
 		fi->pointer += cnt;
-		if(end_pointer <= fi->pointer) {
+		if (end_pointer <= fi->pointer) {
 			break;
 		}
 	}
@@ -408,7 +400,7 @@ static fs_drv_t tmpfs_drv = {
 static tmpfs_file_info_t *tmpfs_create_file(struct nas *nas) {
 	tmpfs_file_info_t *fi;
 
-	if(NULL == (fi = pool_alloc(&tmpfs_file_pool))) {
+	if (NULL == (fi = pool_alloc(&tmpfs_file_pool))) {
 		return NULL;
 	}
 
@@ -427,21 +419,19 @@ static int tmpfs_create(struct node *parent_node, struct node *node) {
 
 	if (node_is_directory(node)) {
 		node_quantity = 3; /* need create . and .. directory */
-	}
-	else {
+	} else {
 		node_quantity = 1;
 	}
 	vfs_get_path_by_node(node, path);
 
 	for (int count = 0; count < node_quantity; count ++) {
-		if(0 < count) {
-			if(1 == count) {
+		if (0 < count) {
+			if (1 == count) {
 				strcat(path, "/.");
-			}
-			else if(2 == count) {
+			} else if (2 == count) {
 				strcat(path, ".");
 			}
-			if(NULL == (node = vfs_add_path (path, NULL))) {
+			if (NULL == (node = vfs_add_path (path, NULL))) {
 				return -ENOMEM;
 			}
 		}
@@ -451,8 +441,8 @@ static int tmpfs_create(struct node *parent_node, struct node *node) {
 		/* don't need create fi for directory - take root node fi */
 		nas->fi->privdata = parents_nas->fi->privdata;
 
-		if((0 >= count) & (!node_is_directory(node))) {
-			if(NULL == (nas->fi->privdata = tmpfs_create_file(nas))) {
+		if ((0 >= count) & (!node_is_directory(node))) {
+			if (NULL == (nas->fi->privdata = tmpfs_create_file(nas))) {
 				return -ENOMEM;
 			}
 		}
@@ -486,14 +476,13 @@ static int tmpfs_delete(struct node *node) {
 		vfs_del_leaf(pointnod);
 
 		path[strlen(path) - 3] = '\0';
-	}
-	else {
+	} else {
 		index_free(&tmpfs_file_idx, fi->index);
 		pool_free(&tmpfs_file_pool, fi);
 	}
 
 	/* root node - have fi, but haven't index*/
-	if(0 == strcmp((const char *) path, (const char *) fsi->mntto)){
+	if (0 == strcmp((const char *) path, (const char *) fsi->mntto)){
 		pool_free(&tmpfs_fs_pool, fsi);
 	}
 
@@ -511,13 +500,13 @@ static int tmpfs_format(void *dev) {
 		return -ENODEV;/*device not found*/
 	}
 
-	if(!node_is_block_dev(dev_node)) {
+	if (!node_is_block_dev(dev_node)) {
 		return -ENODEV;
 	}
 	dev_nas = dev_node->nas;
 	dev_fi = dev_nas->fi;
 
-	if(MAX_FILE_SIZE > block_dev(dev_fi->privdata)->size / PAGE_SIZE()) {
+	if (MAX_FILE_SIZE > block_dev(dev_fi->privdata)->size / PAGE_SIZE()) {
 		return -ENOSPC;
 	}
 	return 0;
@@ -545,7 +534,7 @@ static int tmpfs_mount(void *dev, void *dir) {
 	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
-	if(NULL == (fsi = pool_alloc(&tmpfs_fs_pool))) {
+	if (NULL == (fsi = pool_alloc(&tmpfs_fs_pool))) {
 		free_filesystem(dir_nas->fs);
 		return -ENOMEM;
 	}
@@ -558,7 +547,7 @@ static int tmpfs_mount(void *dev, void *dir) {
 	fsi->numblocks = block_dev(dev_fi->privdata)->size / PAGE_SIZE();
 
 	/* allocate this directory info */
-	if(NULL == (fi = pool_alloc(&tmpfs_file_pool))) {
+	if (NULL == (fi = pool_alloc(&tmpfs_file_pool))) {
 		return -ENOMEM;
 	}
 	memset(fi, 0, sizeof(struct tmpfs_file_info));

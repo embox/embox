@@ -52,17 +52,17 @@ static int exec(int argc, char **argv) {
 		case 'e':
 		case 'd':
 			/* if types to display are inputed from command line */
-			if(!setting_types){
+			if (!setting_types){
 				for(i=0; i<LT_MAX; i++)
 					disp_types[i] = false;
 			}
-			if(opt == 'i')
+			if (opt == 'i')
 				disp_types[LT_INFO] = true;
-			if(opt == 'w')
+			if (opt == 'w')
 				disp_types[LT_WARNING] = true;
-			if(opt == 'e')
+			if (opt == 'e')
 				disp_types[LT_ERROR] = true;
-			if(opt == 'd')
+			if (opt == 'd')
 				disp_types[LT_DEBUG] = true;
 			setting_types = true;  /* we are setting types to display from cmd line  */
 			break;
@@ -81,8 +81,8 @@ static int exec(int argc, char **argv) {
 	};
 
 	/* toggle intrusive mode and exit */
-	if(intrusive_mode){
-		if(setting_types){  /* if set then we are setting message types to display
+	if (intrusive_mode){
+		if (setting_types){  /* if set then we are setting message types to display
 													 for intrusive mode */
 			syslog_toggle_intrusive(NULL);
 		}

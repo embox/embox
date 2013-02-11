@@ -60,7 +60,7 @@ static int fs_driver_init(void) {
 			return -EINVAL;
 		}
 
-		if(NULL != __fs_drivers_registry[i]->fsop->init) {
+		if (NULL != __fs_drivers_registry[i]->fsop->init) {
 			__fs_drivers_registry[i]->fsop->init(NULL);
 		}
 	}

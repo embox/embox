@@ -51,23 +51,21 @@ static int check_invalid(int min_argc, int argc, char **argv) {
 		printf("Invalid option `-%c' `%s'\n", optind, argv[optind]);
 		print_usage();
 		return EINVAL;
-	}
-	else {
+	} else {
 		return 0;
 	}
 }
 
 static void print_value(char *rvalue, size_t size, int op_flag) {
-	if(0 == size) {
+	if (0 == size) {
 		return;
 	}
-	if(XATTR_CMD_HEX & op_flag) {
+	if (XATTR_CMD_HEX & op_flag) {
 		while(size--) {
 			printf("%02hhX", (unsigned char) *rvalue++);
 			printf("|");
 		}
-	}
-	else {
+	} else {
 		printf("%s", rvalue);
 	}
 }
@@ -77,7 +75,7 @@ static int scan_hex_value(char *rvalue, const char *hex_str) {
 	unsigned char *dst;
 	char *src, *end;
 
-	if(0 == (size = strlen(hex_str))) {
+	if (0 == (size = strlen(hex_str))) {
 		return 0;
 	}
 
@@ -101,7 +99,7 @@ static int print_list(const char *path, char *point, char *rvalue, int op_flags)
 	printf("%s", point);
 	if (op_flags & XATTR_CMD_VDISP) {
 		memset(rvalue, 0, XATTR_MAX_VSIZE);
-		if(0 > (rc = getxattr(path, (const char *) point,
+		if (0 > (rc = getxattr(path, (const char *) point,
 				rvalue, XATTR_MAX_VSIZE))) {
 			return rc;
 		}
@@ -130,52 +128,47 @@ static int xattr_do_operation(const char *path, const char *name,
 	if ((op_flags & XATTR_CMD_DELETE) || (op_flags &  XATTR_CMD_WRITE)) {
 		if (op_flags & XATTR_CMD_DELETE) {
 			flags = XATTR_REMOVE;
-		}
-		else {
+		} else {
 			flags = XATTR_CREATE;
 			if (op_flags & XATTR_CMD_HEX) {
 				size = scan_hex_value(rvalue, strvalue);
 				value = rvalue;
-			}
-			else {
+			} else {
 				value = (char *) strvalue;
 				size = strlen(value);
 			}
 		}
 
 		return setxattr(path, name, (const char *) value, size, flags);
-	}
-	else if (op_flags & XATTR_CMD_PRINT) {
+	} else if (op_flags & XATTR_CMD_PRINT) {
 		memset(rvalue, 0, XATTR_MAX_VSIZE);
-		if(0 > (rc = getxattr(path, name, rvalue, XATTR_MAX_VSIZE))) {
+		if (0 > (rc = getxattr(path, name, rvalue, XATTR_MAX_VSIZE))) {
 			return rc;
 		}
 		size = rc;
 		print_value(rvalue, size, op_flags);
 		printf("\n");
 		return 0;
-	}
-	else if (op_flags & XATTR_CMD_CLEAR || (0 == (op_flags & XATTR_CMD_MSK))) {
-		if(NULL == (list = page_alloc_zero(__phymem_allocator,
+	} else if (op_flags & XATTR_CMD_CLEAR || (0 == (op_flags & XATTR_CMD_MSK))) {
+		if (NULL == (list = page_alloc_zero(__phymem_allocator,
 							XATTR_MAX_BSIZE / PAGE_SIZE() + 1))) {
 			return -ENOMEM;
 		}
-		if(0 > (rc = listxattr(path, list, XATTR_MAX_BSIZE))) {
+		if (0 > (rc = listxattr(path, list, XATTR_MAX_BSIZE))) {
 			goto free_list;
 		}
 
 		point = list;
 		while ((0 != (len = strlen(point))) &&
 				(list + XATTR_MAX_BSIZE > point)) {
-			if(op_flags & XATTR_CMD_CLEAR){ /* delete */
+			if (op_flags & XATTR_CMD_CLEAR){ /* delete */
 				flags = XATTR_REMOVE;
-				if(0 > (rc = setxattr(path, (const char *)point,
+				if (0 > (rc = setxattr(path, (const char *)point,
 											0, 0, flags))) {
 					goto free_list;
 				}
-			}
-			else { /* print list*/
-				if(0 > (rc = print_list(path, point, rvalue, op_flags))) {
+			} else { /* print list*/
+				if (0 > (rc = print_list(path, point, rvalue, op_flags))) {
 					goto free_list;
 				}
 			}
@@ -188,7 +181,7 @@ static int xattr_do_operation(const char *path, const char *name,
 	return -1;
 	free_list:page_free(__phymem_allocator, list,
 			XATTR_MAX_BSIZE / PAGE_SIZE() + 1);
-	if(0 > rc) {
+	if (0 > rc) {
 		return rc;
 	}
 	return 0;
@@ -259,11 +252,11 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	if(check_invalid(min_argc, argc, argv)){
+	if (check_invalid(min_argc, argc, argv)){
 		return -EINVAL;
 	}
 	if (argc > 1) {
-		if(operation_flag &  XATTR_CMD_WRITE) {
+		if (operation_flag &  XATTR_CMD_WRITE) {
 			value = argv[argc - 2];
 		}
 		name = argv[name_arg];

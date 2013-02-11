@@ -34,7 +34,7 @@ static block_dev_module_t *block_dev_find(char *name) {
 	size_t i;
 
 	for(i = 0; i < ARRAY_SPREAD_SIZE(__block_dev_registry); i++) {
-		if(!strcmp(__block_dev_registry[i].name, name)) {
+		if (!strcmp(__block_dev_registry[i].name, name)) {
 			b_dev = (block_dev_module_t *) &(__block_dev_registry[i]);
 			return b_dev;
 		}
@@ -63,7 +63,7 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	memset(bdev, 0, sizeof(block_dev_t));
 
 	bdev->id = (dev_t) index_alloc(&block_dev_idx, INDEX_ALLOC_MIN);
-	if(-1 == bdev->id) {
+	if (-1 == bdev->id) {
 		pool_free(&blockdev_pool, bdev);
 		return NULL;
 	}
@@ -73,7 +73,7 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	bdev->driver = driver;
 	bdev->privdata = privdata;
 
-	if(NULL == (node = vfs_add_path(path, NULL))) {
+	if (NULL == (node = vfs_add_path(path, NULL))) {
 		pool_free(&blockdev_pool, bdev);
 		index_free(&block_dev_idx, bdev->id);
 		return NULL;
@@ -147,29 +147,29 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	block_dev_cache_free(dev);
 
 	bdev = block_dev(dev);
-	if(NULL == (cache = bdev->cache = pool_alloc(&cache_pool))) {
+	if (NULL == (cache = bdev->cache = pool_alloc(&cache_pool))) {
 		return NULL;
 	}
 
 	cache->lastblkno = -1;
 	cache->buff_cntr = -1;
 
-	if(0 >= (cache->blksize =
+	if (0 >= (cache->blksize =
 			block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0))) {
 		return NULL;
 	}
 
 	/* cache size is a multiple of the memory page */
 	pagecnt = 1;
-	if(cache->blksize > PAGE_SIZE()) {
+	if (cache->blksize > PAGE_SIZE()) {
 		pagecnt = cache->blksize / PAGE_SIZE();
-		if(cache->blksize % PAGE_SIZE()) {
+		if (cache->blksize % PAGE_SIZE()) {
 			pagecnt++;
 		}
 	}
 	cache->blkfactor = pagecnt;
 
-	if(NULL == (cache->pool = page_alloc(__phymem_allocator, blocks * pagecnt))) {
+	if (NULL == (cache->pool = page_alloc(__phymem_allocator, blocks * pagecnt))) {
 		return NULL;
 	}
 	cache->depth = blocks;
@@ -186,12 +186,12 @@ block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
 	}
 	bdev = block_dev(dev);
 
-	if(NULL == (cache = bdev->cache)) {
+	if (NULL == (cache = bdev->cache)) {
 		return NULL;
 	}
 
 	/* set pointer to the buffer in pool */
-	if(cache->lastblkno != blkno) {
+	if (cache->lastblkno != blkno) {
 		cache->buff_cntr++;
 		cache->buff_cntr %= cache->depth;
 

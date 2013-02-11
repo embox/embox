@@ -38,7 +38,7 @@ node_t *node_alloc(const char *name) {
 	struct nas *nas;
 
 	nt = pool_alloc(&node_pool);
-	if(!nt) {
+	if (!nt) {
 		return NULL;
 	}
 

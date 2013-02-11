@@ -60,7 +60,7 @@ int path_increase_tail(char *head, char *tail) {
 		strcat(head, tail);
 
 		do {
-			if('\0' == *p_tail) {
+			if ('\0' == *p_tail) {
 				break;
 			}
 			p_tail++;
@@ -83,7 +83,7 @@ char *path_get_next_name(const char *path, char *node_name, int buff_len) {
 	*nm = '\0'; /* empty node_name */
 
 	/* we must pass '/' symbol */
-	if('/' == *p) {
+	if ('/' == *p) {
 		p++;
 	}
 

@@ -24,16 +24,14 @@ static void print_drive (struct ide_tab *ide) {
 	for(int i  = 0; i < 4; i++) {
 		printf("\nIDE Channel %d-%d: ", i/2, i%2);
 
-		if(i%2) {
+		if (i%2) {
 			printf(" Slave  Disk:");
-		}
-		else {
+		} else {
 			printf(" Master Disk:");
 		}
-		if(NULL == ide->drive[i]) {
+		if (NULL == ide->drive[i]) {
 			printf(" None");
-		}
-		else {
+		} else {
 			drive = (hd_t *) ide->drive[i];
 			printf(" %s;", block_dev(drive->bdev)->dev_node->name);
 			printf(" %s", drive->param.serial);

@@ -94,8 +94,7 @@ static int fatfs_create_partition(void *bdev) {
 	if (0xFFFF > num_sect)	{
 		lbr.bpb.sectors_s_l = (uint8_t)(0x00000FF & num_sect);
 		lbr.bpb.sectors_s_h = (uint8_t)(0x00000FF & (num_sect >> 8));
-	}
-	else {
+	} else {
 		lbr.bpb.sectors_l_0 = (uint8_t)(0x00000FF & num_sect );
 		lbr.bpb.sectors_l_1 = (uint8_t)(0x00000FF & (num_sect >> 8));
 		lbr.bpb.sectors_l_2 = (uint8_t)(0x00000FF & (num_sect >> 16));
@@ -103,7 +102,7 @@ static int fatfs_create_partition(void *bdev) {
 	}
 
 	secperfat = (uint16_t)(0xFFFF & (num_sect / bytepersec));
-	if(0 == secperfat) {
+	if (0 == secperfat) {
 		secperfat++;
 	}
 	lbr.bpb.secperfat_l = (uint8_t)(0x00FF & secperfat );
@@ -149,7 +148,7 @@ static uint32_t fat_get_ptn_start(void *bdev,
 		return DFS_ERRMISC;
 	}
 	/* check if that a lbr */
-	if((mbr->bootcode[0] == 0xeb) &&
+	if ((mbr->bootcode[0] == 0xeb) &&
 	   (mbr->bootcode[1] == 0x3c) &&
 	   (mbr->bootcode[2] == 0x90)) {
 		return 0;
@@ -192,7 +191,7 @@ static uint32_t fat_get_vol_info(void *bdev, p_vol_info_t volinfo,
 
 	volinfo->startsector = startsector;
 
-	if(fat_read_sector(bdev, p_scratchsector, startsector, 1)) {
+	if (fat_read_sector(bdev, p_scratchsector, startsector, 1)) {
 		return DFS_ERRMISC;
 	}
 
@@ -226,8 +225,7 @@ static uint32_t fat_get_vol_info(void *bdev, p_vol_info_t volinfo,
 		memcpy(volinfo->label, lbr->ebpb.ebpb32.label, MSDOS_NAME);
 		volinfo->label[11] = 0;
 
-	}
-	else {
+	} else {
 		memcpy(volinfo->label, lbr->ebpb.ebpb.label, MSDOS_NAME);
 		volinfo->label[11] = 0;
 
@@ -250,8 +248,7 @@ static uint32_t fat_get_vol_info(void *bdev, p_vol_info_t volinfo,
 		volinfo->rootdir = volinfo->fat1 + (volinfo->secperfat * 2);
 		volinfo->dataarea = volinfo->rootdir + (((volinfo->rootentries * 32) +
 				(SECTOR_SIZE - 1)) / SECTOR_SIZE);
-	}
-	else {
+	} else {
 		volinfo->dataarea = volinfo->fat1 + (volinfo->secperfat * 2);
 		volinfo->rootdir = (uint32_t) lbr->ebpb.ebpb32.root_0 |
 		  (((uint32_t) lbr->ebpb.ebpb32.root_1) << 8) |
@@ -263,11 +260,10 @@ static uint32_t fat_get_vol_info(void *bdev, p_vol_info_t volinfo,
 	 * Calculate number of clusters in data area and infer FAT type from
 	 * this information.
 	 */
-	if(0 == volinfo->secperclus) {
+	if (0 == volinfo->secperclus) {
 		volinfo->numclusters = 0;
 		return DFS_ERRMISC;
-	}
-	else {
+	} else {
 		volinfo->numclusters =
 				(volinfo->numsecs - volinfo->dataarea) / volinfo->secperclus;
 	}
@@ -276,23 +272,17 @@ static uint32_t fat_get_vol_info(void *bdev, p_vol_info_t volinfo,
 	if ((0 == strcmp((const char *)lbr->ebpb.ebpb.system, "FAT12")) ||
 		(0 == strcmp((const char *)lbr->ebpb.ebpb32.system, "FAT12"))) {
 		volinfo->filesystem = FAT12;
-	}
-	else if ((0 == strcmp((const char *)lbr->ebpb.ebpb.system, "FAT16")) ||
+	} else if ((0 == strcmp((const char *)lbr->ebpb.ebpb.system, "FAT16")) ||
 			(0 == strcmp((const char *)lbr->ebpb.ebpb32.system, "FAT16"))) {
 		volinfo->filesystem = FAT16;
-	}
-	else if ((0 == strcmp((const char *)lbr->ebpb.ebpb.system, "FAT32")) ||
+	} else if ((0 == strcmp((const char *)lbr->ebpb.ebpb.system, "FAT32")) ||
 			(0 == strcmp((const char *)lbr->ebpb.ebpb32.system, "FAT32"))) {
 		volinfo->filesystem = FAT32;
-	}
-	/* set FAT type by size */
-	else if (volinfo->numclusters < 4085) {
+	} else if (volinfo->numclusters < 4085) { /* set FAT type by size */
 		volinfo->filesystem = FAT12;
-	}
-	else if (volinfo->numclusters < 65525) {
+	} else if (volinfo->numclusters < 65525) {
 		volinfo->filesystem = FAT16;
-	}
-	else {
+	} else {
 		volinfo->filesystem = FAT32;
 	}
 
@@ -314,16 +304,13 @@ static uint32_t fat_get_fat_(void *bdev, vol_info_t *volinfo,
 
 	if (volinfo->filesystem == FAT12) {
 		offset = cluster + (cluster / 2);
-	}
-	else if (volinfo->filesystem == FAT16) {
+	} else if (volinfo->filesystem == FAT16) {
 		offset = cluster * 2;
-	}
-	else if (volinfo->filesystem == FAT32) {
+	} else if (volinfo->filesystem == FAT32) {
 		offset = cluster * 4;
-	}
-	else
+	} else {
 		return 0x0ffffff7;	/* FAT32 bad cluster */
-
+	}
 	/*
 	 * at this point, offset is the BYTE offset of the desired sector from
 	 * the start of the FAT. Calculate the physical sector containing this
@@ -333,7 +320,7 @@ static uint32_t fat_get_fat_(void *bdev, vol_info_t *volinfo,
 
 	/* If this is not the same sector we last read, then read it into RAM */
 	if (sector != *p_scratchcache) {
-		if(fat_read_sector(bdev, p_scratch, sector, 1)) {
+		if (fat_read_sector(bdev, p_scratch, sector, 1)) {
 			/*
 			 * avoid anyone assuming that this cache value is still valid,
 			 * which might cause disk corruption
@@ -361,7 +348,7 @@ static uint32_t fat_get_fat_(void *bdev, vol_info_t *volinfo,
 		if (offset == SECTOR_SIZE - 1) {
 			result = (uint32_t) p_scratch[offset];
 			sector++;
-			if(fat_read_sector(bdev, p_scratch, sector, 1)) {
+			if (fat_read_sector(bdev, p_scratch, sector, 1)) {
 				/*
 				 * avoid anyone assuming that this cache value is still valid,
 				 *  which might cause disk corruption
@@ -371,29 +358,24 @@ static uint32_t fat_get_fat_(void *bdev, vol_info_t *volinfo,
 			}
 			*p_scratchcache = sector;
 			result |= ((uint32_t) p_scratch[0]) << 8;
-		}
-		else {
+		} else {
 			result = (uint32_t) p_scratch[offset] |
 			  ((uint32_t) p_scratch[offset+1]) << 8;
 		}
 		if (cluster & 1) {
 			result = result >> 4;
-		}
-		else {
+		} else {
 			result = result & 0xfff;
 		}
-	}
-	else if (volinfo->filesystem == FAT16) {
+	} else if (volinfo->filesystem == FAT16) {
 		result = (uint32_t) p_scratch[offset] |
 		  ((uint32_t) p_scratch[offset+1]) << 8;
-	}
-	else if (volinfo->filesystem == FAT32) {
+	} else if (volinfo->filesystem == FAT32) {
 		result = ((uint32_t) p_scratch[offset] |
 		  ((uint32_t) p_scratch[offset+1]) << 8 |
 		  ((uint32_t) p_scratch[offset+2]) << 16 |
 		  ((uint32_t) p_scratch[offset+3]) << 24) & 0x0fffffff;
-	}
-	else {
+	} else {
 		result = 0x0ffffff7;	/* FAT32 bad cluster */
 	}
 	return result;
@@ -425,18 +407,15 @@ static uint32_t fat_set_fat_(void *bdev, vol_info_t *volinfo, uint8_t *p_scratch
 	if (volinfo->filesystem == FAT12) {
 		offset = cluster + (cluster / 2);
 		new_contents &=0xfff;
-	}
-	else if (volinfo->filesystem == FAT16) {
+	} else if (volinfo->filesystem == FAT16) {
 		offset = cluster * 2;
 		new_contents &=0xffff;
-	}
-	else if (volinfo->filesystem == FAT32) {
+	} else if (volinfo->filesystem == FAT32) {
 		offset = cluster * 4;
 		new_contents &=0x0fffffff;	/* FAT32 is really "FAT28" */
-	}
-	else
+	} else {
 		return DFS_ERRMISC;
-
+	}
 	/*
 	 * at this point, offset is the BYTE offset of the desired sector from
 	 * the start of the FAT.
@@ -446,7 +425,7 @@ static uint32_t fat_set_fat_(void *bdev, vol_info_t *volinfo, uint8_t *p_scratch
 
 	/* If this is not the same sector we last read, then read it into RAM */
 	if (sector != *p_scratchcache) {
-		if(fat_read_sector(bdev, p_scratch, sector, 1)) {
+		if (fat_read_sector(bdev, p_scratch, sector, 1)) {
 			/*
 			 * avoid anyone assuming that this cache value is still valid,
 			 * which might cause disk corruption
@@ -482,9 +461,8 @@ static uint32_t fat_set_fat_(void *bdev, vol_info_t *volinfo, uint8_t *p_scratch
 			if (cluster & 1) {
 				p_scratch[offset] = (p_scratch[offset] & 0x0f) |
 						(new_contents & 0xf0);
-			}
+			} else {
 			/* Even cluster: Low 12 bits being set */
-			else {
 				p_scratch[offset] = new_contents & 0xff;
 			}
 			result = fat_write_sector(bdev, p_scratch, *p_scratchcache, 1);
@@ -505,9 +483,8 @@ static uint32_t fat_set_fat_(void *bdev, vol_info_t *volinfo, uint8_t *p_scratch
 					/* Odd cluster: High 12 bits being set*/
 					if (cluster & 1) {
 						p_scratch[0] = new_contents & 0xff00;
-					}
+					} else {
 					/* Even cluster: Low 12 bits being set */
-					else {
 						p_scratch[0] = (p_scratch[0] & 0xf0) |
 								(new_contents & 0x0f);
 					}
@@ -518,8 +495,7 @@ static uint32_t fat_set_fat_(void *bdev, vol_info_t *volinfo, uint8_t *p_scratch
 						result = fat_write_sector(bdev, p_scratch,
 								(*p_scratchcache)+volinfo->secperfat, 1);
 					}
-				}
-				else {
+				} else {
 					/*
 					 * avoid anyone assuming that this cache value is still
 					 * valid, which might cause disk corruption
@@ -527,21 +503,18 @@ static uint32_t fat_set_fat_(void *bdev, vol_info_t *volinfo, uint8_t *p_scratch
 					*p_scratchcache = 0;
 				}
 			}
-		}
-
 		/*
 		 * Not a sector boundary. But we still have to worry about if it's an
 		 * odd or even cluster number.
 		 */
-		else {
+		} else {
 			/* Odd cluster: High 12 bits being set */
 			if (cluster & 1) {
 				p_scratch[offset] = (p_scratch[offset] & 0x0f) |
 						(new_contents & 0xf0);
 				p_scratch[offset + 1] = (new_contents & 0xff00) >> 8;
-			}
+			} else {
 			/* Even cluster: Low 12 bits being set */
-			else {
 				p_scratch[offset] = new_contents & 0xff;
 				p_scratch[offset+1] = (p_scratch[offset+1] & 0xf0) |
 						((new_contents & 0x0f00) >> 8);
@@ -553,8 +526,7 @@ static uint32_t fat_set_fat_(void *bdev, vol_info_t *volinfo, uint8_t *p_scratch
 						(*p_scratchcache) + volinfo->secperfat, 1);
 			}
 		}
-	}
-	else if (volinfo->filesystem == FAT16) {
+	} else if (volinfo->filesystem == FAT16) {
 		p_scratch[offset] = (new_contents & 0xff);
 		p_scratch[offset+1] = (new_contents & 0xff00) >> 8;
 		result = fat_write_sector(bdev, p_scratch, *p_scratchcache, 1);
@@ -563,8 +535,7 @@ static uint32_t fat_set_fat_(void *bdev, vol_info_t *volinfo, uint8_t *p_scratch
 			result = fat_write_sector(bdev, p_scratch,
 					(*p_scratchcache) + volinfo->secperfat, 1);
 		}
-	}
-	else if (volinfo->filesystem == FAT32) {
+	} else if (volinfo->filesystem == FAT32) {
 		p_scratch[offset] = (new_contents & 0xff);
 		p_scratch[offset + 1] = (new_contents & 0xff00) >> 8;
 		p_scratch[offset + 2] = (new_contents & 0xff0000) >> 16;
@@ -582,8 +553,7 @@ static uint32_t fat_set_fat_(void *bdev, vol_info_t *volinfo, uint8_t *p_scratch
 			result = fat_write_sector(bdev, p_scratch,
 					(*p_scratchcache) + volinfo->secperfat, 1);
 		}
-	}
-	else {
+	} else {
 		result = DFS_ERRMISC;
 	}
 
@@ -643,8 +613,7 @@ static uint32_t fat_open_dir(struct nas *nas,
 			return fat_read_sector(nas->fs->bdev, dirinfo->p_scratch,
 					volinfo->dataarea +	((volinfo->rootdir - 2)
 							* volinfo->secperclus), 1);
-		}
-		else {
+		} else {
 			dirinfo->currentcluster = 0;
 			dirinfo->currentsector = 0;
 			dirinfo->currententry = 0;
@@ -653,14 +622,12 @@ static uint32_t fat_open_dir(struct nas *nas,
 			return fat_read_sector(nas->fs->bdev, dirinfo->p_scratch,
 					volinfo->rootdir, 1);
 		}
-	}
-
 	/*
 	 * This is not the root directory.
 	 * We need to find the start of this subdirectory. We do this by devious
 	 * means, using our own companion function fat_get_next.
 	 */
-	else {
+	} else {
 		uint8_t tmpfn[12];
 		uint8_t *ptr = dirname;
 		uint32_t result;
@@ -676,8 +643,7 @@ static uint32_t fat_open_dir(struct nas *nas,
 					((volinfo->rootdir - 2) * volinfo->secperclus), 1)) {
 				return DFS_ERRMISC;
 			}
-		}
-		else {
+		} else {
 			dirinfo->currentcluster = 0;
 			dirinfo->currentsector = 0;
 			dirinfo->currententry = 0;
@@ -714,8 +680,7 @@ static uint32_t fat_open_dir(struct nas *nas,
 					  ((uint32_t) de.startclus_l_h) << 8 |
 					  ((uint32_t) de.startclus_h_l) << 16 |
 					  ((uint32_t) de.startclus_h_h) << 24;
-				}
-				else {
+				} else {
 					dirinfo->currentcluster = (uint32_t) de.startclus_l_l |
 					  ((uint32_t) de.startclus_l_h) << 8;
 				}
@@ -727,8 +692,7 @@ static uint32_t fat_open_dir(struct nas *nas,
 								volinfo->secperclus), 1)) {
 					return DFS_ERRMISC;
 				}
-			}
-			else if (!memcmp(de.name, tmpfn, MSDOS_NAME) &&
+			} else if (!memcmp(de.name, tmpfn, MSDOS_NAME) &&
 					!(de.attr & ATTR_DIRECTORY)) {
 				return DFS_NOTFOUND;
 			}
@@ -791,10 +755,8 @@ static uint32_t fat_get_next(struct nas *nas,
 					volinfo->rootdir + dirinfo->currentsector, 1)) {
 				return DFS_ERRMISC;
 			}
-		}
-
 		/* Normal handling */
-		else {
+		} else {
 			if (dirinfo->currentsector >= volinfo->secperclus) {
 				dirinfo->currentsector = 0;
 				if ((dirinfo->currentcluster >= 0xff7 &&
@@ -810,14 +772,12 @@ static uint32_t fat_get_next(struct nas *nas,
 				  	 */
 				  	if (!(dirinfo->flags & DFS_DI_BLANKENT)) {
 				  		return DFS_EOF;
-				  	}
-
-					/*
+				  	/*
 					 * On the other hand, if this is a "find free entry"
 					 * search, we need to tell the caller to allocate a
 					 * new cluster
 					 */
-					else {
+				  	} else {
 						return DFS_ALLOCNEW;
 					}
 				}
@@ -840,20 +800,17 @@ static uint32_t fat_get_next(struct nas *nas,
 		if (dirinfo->flags & DFS_DI_BLANKENT) {
 			dirinfo->currententry++; // DOSFS 1.03 BUG, currententry was not incremented in this case
 			return DFS_OK;
-		}
-		else {
+		} else {
 			return DFS_EOF;
 		}
 	}
 
 	if (dirent->name[0] == 0xe5) {	/* handle deleted file entries */
 		dirent->name[0] = 0;
-	}
-	else if ((dirent->attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) {
+	} else if ((dirent->attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) {
 		dirent->name[0] = 0;
-	}
 	/* handle kanji filenames beginning with 0xE5*/
-	else if (dirent->name[0] == 0x05) {
+	} else if (dirent->name[0] == 0x05) {
 		dirent->name[0] = 0xe5;
 	}
 
@@ -900,13 +857,10 @@ static uint32_t fat_get_free_dir_ent(struct nas *nas, uint8_t *path,
 		/* Empty entry found */
 		if (tempclus == DFS_OK && (!de->name[0])) {
 			return DFS_OK;
-		}
 		/* End of root directory reached */
-		else if (tempclus == DFS_EOF) {
+		} else if (tempclus == DFS_EOF) {
 			return DFS_ERRMISC;
-		}
-
-		else if (tempclus == DFS_ALLOCNEW) {
+		} else if (tempclus == DFS_ALLOCNEW) {
 			tempclus = fat_get_free_fat_(nas->fs->bdev, &fsi->vi, di->p_scratch);
 			if (tempclus == 0x0ffffff7) {
 				return DFS_ERRMISC;
@@ -1049,8 +1003,7 @@ static int fatfs_create_file(struct node * parant_node, struct node *node) {
 	 */
 	if (di.currentcluster == 0) {
 		fi->dirsector = volinfo->rootdir + di.currentsector;
-	}
-	else {
+	} else {
 		fi->dirsector = volinfo->dataarea +
 				((di.currentcluster - 2) * volinfo->secperclus) +
 				di.currentsector;
@@ -1161,8 +1114,7 @@ static uint32_t fat_open_file(struct nas *nas, uint8_t *path, int mode,
 			 */
 			if (di.currentcluster == 0) {
 				fi->dirsector = volinfo->rootdir + di.currentsector;
-			}
-			else {
+			} else {
 				fi->dirsector = volinfo->dataarea +
 						((di.currentcluster - 2) *
 						volinfo->secperclus) + di.currentsector;
@@ -1173,8 +1125,7 @@ static uint32_t fat_open_file(struct nas *nas, uint8_t *path, int mode,
 				  ((uint32_t) de.startclus_l_h) << 8 |
 				  ((uint32_t) de.startclus_h_l) << 16 |
 				  ((uint32_t) de.startclus_h_h) << 24;
-			}
-			else {
+			} else {
 				fi->cluster = (uint32_t) de.startclus_l_l |
 				  ((uint32_t) de.startclus_l_h) << 8;
 			}
@@ -1253,9 +1204,8 @@ static uint32_t fat_read_file(struct nas *nas, uint8_t *p_scratch,
 				buffer += tempreadsize;
 				fi->pointer += tempreadsize;
 				remain -= tempreadsize;
-			}
 			/* Case 1B - This read concludes the file read operation */
-			else {
+		   	} else {
 				memcpy(buffer, p_scratch +
 						(SECTOR_SIZE - tempreadsize), remain);
 
@@ -1264,9 +1214,8 @@ static uint32_t fat_read_file(struct nas *nas, uint8_t *p_scratch,
 				bytesread = remain;
 				remain = 0;
 			}
-		}
 		/* Case 2 - File pointer is on sector boundary */
-		else {
+		} else {
 			/*
 			 * Case 2A - We have at least one more full sector to read and
 			 * don't have to go through the scratch buffer. You could insert
@@ -1283,9 +1232,8 @@ static uint32_t fat_read_file(struct nas *nas, uint8_t *p_scratch,
 				buffer += SECTOR_SIZE;
 				fi->pointer += SECTOR_SIZE;
 				bytesread = SECTOR_SIZE;
-			}
 			/* Case 2B - We are only reading a partial sector */
-			else {
+			} else {
 				result = fat_read_sector(nas->fs->bdev, p_scratch, sector, 1);
 				memcpy(buffer, p_scratch, remain);
 				buffer += remain;
@@ -1312,8 +1260,7 @@ static uint32_t fat_read_file(struct nas *nas, uint8_t *p_scratch,
 							((fi->volinfo->filesystem == FAT32) &&
 									(fi->cluster >= 0x0ffffff8))) {
 				result = DFS_EOF;
-			}
-			else {
+			} else {
 				fi->cluster = fat_get_fat_(nas->fs->bdev, fi->volinfo,
 						p_scratch, &bytesread, fi->cluster);
 			}
@@ -1487,9 +1434,8 @@ static uint32_t fat_write_file(struct nas *nas, uint8_t *p_scratch,
 					nas->fi->ni.size = fi->pointer;
 				}
 				remain -= SECTOR_SIZE - tempsize;
-			}
 			/* Case 1B - This concludes the file write operation */
-			else {
+		   	} else {
 				memcpy(p_scratch + tempsize, buffer, remain);
 				if (!result) {
 					result = fat_write_sector(nas->fs->bdev, p_scratch, sector, 1);
@@ -1503,9 +1449,8 @@ static uint32_t fat_write_file(struct nas *nas, uint8_t *p_scratch,
 				byteswritten = remain;
 				remain = 0;
 			}
-		} /* case 1 */
 		/* Case 2 - File pointer is on sector boundary */
-		else {
+		} else {
 			/* Case 2A - We have at least one more full sector to write and
 			 * don't have to go through the scratch buffer. You could insert
 			 * optimizations here to write multiple sectors at a time, if you
@@ -1520,12 +1465,11 @@ static uint32_t fat_write_file(struct nas *nas, uint8_t *p_scratch,
 					nas->fi->ni.size = fi->pointer;
 				}
 				byteswritten = SECTOR_SIZE;
-			}
 			/*
 			 * Case 2B - We are only writing a partial sector and potentially
 			 * need to go through the scratch buffer.
 			 */
-			else {
+			} else {
 				/* If the current file pointer is not yet at or beyond the file
 				 * length, we are writing somewhere in the middle of the file
 				 * and need to load the original sector to do
@@ -1537,8 +1481,7 @@ static uint32_t fat_write_file(struct nas *nas, uint8_t *p_scratch,
 						memcpy(p_scratch, buffer, remain);
 						result = fat_write_sector(nas->fs->bdev, p_scratch, sector, 1);
 					}
-				}
-				else {
+				} else {
 					memset(p_scratch, 0, SECTOR_SIZE);
 					memcpy(p_scratch, buffer, remain);
 					result = fat_write_sector(nas->fs->bdev, p_scratch, sector, 1);
@@ -1607,7 +1550,7 @@ static uint32_t fat_write_file(struct nas *nas, uint8_t *p_scratch,
 		}
 	}
 	    /* If cleared, then mark free clusters*/
-		if(nas->fi->ni.size > fi->pointer) {
+		if (nas->fi->ni.size > fi->pointer) {
 			if (div(nas->fi->ni.size, clastersize).quot !=
 				div(fi->pointer, clastersize).quot) {
 
@@ -1673,10 +1616,9 @@ static uint32_t fat_write_file(struct nas *nas, uint8_t *p_scratch,
 static int fat_read_sector(void *bdev, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
 
-	if(0 > block_dev_read(bdev, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if (0 > block_dev_read(bdev, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
-	}
-	else {
+	} else {
 		return DFS_OK;
 	}
 }
@@ -1684,10 +1626,9 @@ static int fat_read_sector(void *bdev, uint8_t *buffer,
 static int fat_write_sector(void *bdev, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
 
-	if(0 > block_dev_write(bdev, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if (0 > block_dev_write(bdev, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
-	}
-	else {
+	} else {
 		return DFS_OK;
 	}
 }
@@ -1782,7 +1723,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 
 	while(DFS_EOF != (cluster = fat_get_next(dir_nas, &di, &de))) {
 		/* after fat_get_next de.name[0]=0, if it is not a valid name */
-		if(0 != de.name[0]) {
+		if (0 != de.name[0]) {
 			path_dir_to_canonical((char *) name, (char *) de.name,
 								  de.attr & ATTR_DIRECTORY);
 			/* Create node and file descriptor*/
@@ -1791,10 +1732,10 @@ static int fat_mount_files(struct nas *dir_nas) {
 			strcat(full_path, "/");
 			strcat (full_path, (const char *) name);
 
-			if(NULL == (node = vfs_add_path (full_path, NULL))) {
+			if (NULL == (node = vfs_add_path (full_path, NULL))) {
 				return -ENOMEM;
 			}
-			if(NULL == (fi = pool_alloc(&fat_file_pool))) {
+			if (NULL == (fi = pool_alloc(&fat_file_pool))) {
 				vfs_del_leaf(node);
 				return -ENOMEM;
 			}
@@ -1811,8 +1752,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 					(0 != strncmp((char *) de.name, ".. ", 3))) {
 					fat_create_dir_entry(nas);
 				}
-			}
-			else {
+			} else {
 				node->type = NODE_TYPE_FILE;
 			}
 		}
@@ -1834,7 +1774,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 
 	fsi = parent_nas->fs->fsi;
 
-	if(NULL == (rcv_buf = page_alloc(__phymem_allocator, 1))) {
+	if (NULL == (rcv_buf = page_alloc(__phymem_allocator, 1))) {
 		return -ENOMEM;
 	}
 	memset(rcv_buf, 0, sizeof(rcv_buf));
@@ -1849,7 +1789,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 	}
 
 	while(DFS_EOF != (cluster = fat_get_next(parent_nas, &di, &de))) {
-		if(0 != de.name[0]) {
+		if (0 != de.name[0]) {
 			path_dir_to_canonical((char *) name, (char *) de.name,
 								  de.attr & ATTR_DIRECTORY);
 			/* Create node and file descriptor*/
@@ -1857,10 +1797,10 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 			strcat(full_path, "/");
 			strncat (full_path, (const char *) name, MSDOS_NAME);
 
-			if(NULL == (node = vfs_add_path (full_path, NULL))) {
+			if (NULL == (node = vfs_add_path (full_path, NULL))) {
 				return -ENOMEM;
 			}
-			if(NULL == (fi = pool_alloc(&fat_file_pool))) {
+			if (NULL == (fi = pool_alloc(&fat_file_pool))) {
 				vfs_del_leaf(node);
 				return -ENOMEM;
 			}
@@ -1877,8 +1817,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 					(0 != strncmp((char *) de.name, ".. ", 3))) {
 					fat_create_dir_entry(nas);
 				}
-			}
-			else {
+			} else {
 				node->type = NODE_TYPE_FILE;
 			}
 		}
@@ -1915,9 +1854,9 @@ static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 	/* set relative path in this file system */
 	path_cut_mount_dir((char *) path, (char *) fsi->mntto);
 
-	if(DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
+	if (DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
-		if(flag & O_WRONLY) {
+		if (flag & O_WRONLY) {
 			nas->fi->ni.size = 0;
 		}
 		return 0;
@@ -2012,9 +1951,8 @@ static void fat_fseek(void *fisc, uint32_t offset, uint8_t *p_scratch) {
 		fi->cluster = fi->firstcluster;
 		fi->pointer = 0;
 		return;
-	}
 	// Case 2 - Seeking backwards. Need to reset and seek forwards
-	else if (offset < fi->pointer) {
+	} else if (offset < fi->pointer) {
 		fi->cluster = fi->firstcluster;
 		fi->pointer = 0;
 		// NOTE NO RETURN HERE!
@@ -2025,9 +1963,8 @@ static void fat_fseek(void *fisc, uint32_t offset, uint8_t *p_scratch) {
 			div(fi->pointer + offset, fi->volinfo->secperclus *
 					SECTOR_SIZE).quot) {
 		fi->pointer = offset;
-	}
 	//Case 3b - Seeking across cluster boundary(ies)
-	else {
+	} else {
 		// round file pointer down to cluster boundary
 		fi->pointer = div(fi->pointer,
 				clastersize).quot * clastersize;
@@ -2160,7 +2097,7 @@ static int fatfs_mount(void *dev, void *dir) {
 	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
-	if(NULL == (fsi = pool_alloc(&fat_fs_pool))) {
+	if (NULL == (fsi = pool_alloc(&fat_fs_pool))) {
 		free_filesystem(dir_nas->fs);
 		return -ENOMEM;
 	}
@@ -2170,7 +2107,7 @@ static int fatfs_mount(void *dev, void *dir) {
 	vfs_get_path_by_node(dev_node, fsi->mntfrom);
 
 	/* allocate this directory info */
-	if(NULL == (fi = pool_alloc(&fat_file_pool))) {
+	if (NULL == (fi = pool_alloc(&fat_file_pool))) {
 		return -ENOMEM;
 	}
 	memset(fi, 0, sizeof(struct fat_file_info));
@@ -2191,25 +2128,23 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 	if (node_is_directory(node)) {
 		node_quantity = 3; /* need create . and .. directory */
 		vfs_get_path_by_node(node, path);
-	}
-	else {
+	} else {
 		node_quantity = 1;
 	}
 
 	for (int count = 0; count < node_quantity; count ++) {
-		if(0 < count) {
-			if(1 == count) {
+		if (0 < count) {
+			if (1 == count) {
 				strcat(path, "/.");
-			}
-			else if(2 == count) {
+			} else if (2 == count) {
 				strcat(path, ".");
 			}
-			if(NULL == (node = vfs_add_path (path, NULL))) {
+			if (NULL == (node = vfs_add_path (path, NULL))) {
 				return -ENOMEM;
 			}
 		}
 
-		if(NULL == (fi = pool_alloc(&fat_file_pool))) {
+		if (NULL == (fi = pool_alloc(&fat_file_pool))) {
 			vfs_del_leaf(node);
 			return -ENOMEM;
 		}
@@ -2223,7 +2158,7 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 		 * fatfs_create_file called only once for the newly created directory.
 		 * Creation of dir . and .. occurs into the function fatfs_create_file.
 		 */
-		if(0 >= count) {
+		if (0 >= count) {
 			fatfs_create_file(parent_node, node);
 		}
 	}
@@ -2272,19 +2207,17 @@ static int fatfs_delete(struct node *node) {
 	 */
 	path_cut_mount_dir(path, (char *) fsi->mntto);
 	/* delete file system descriptor when delete root dir */
-	if(0 == *path) {
+	if (0 == *path) {
 		pool_free(&fat_fs_pool, fsi);
-	}
-	else {
+	} else {
 		if (node_is_directory(node)) {
-			if(fat_unlike_directory(nas, (uint8_t *) path,
+			if (fat_unlike_directory(nas, (uint8_t *) path,
 				(uint8_t *) sector_buff)) {
 				return -1;
 			}
-		}
-		else {
+		} else {
 			/* delete file from fat fs*/
-			if(fat_unlike_file(nas, (uint8_t *) path,
+			if (fat_unlike_file(nas, (uint8_t *) path,
 				(uint8_t *) sector_buff)) {
 				return -1;
 			}

@@ -24,7 +24,7 @@ static int exec(int argc, char **argv) {
 	FILE *fd;
 	char buff;
 
-	if(argc < 2) {
+	if (argc < 2) {
 		printf("Please enter correct file name\n");
 		return 0;
 	}

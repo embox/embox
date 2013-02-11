@@ -41,7 +41,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
 	sectsleft = count / SECTOR_SIZE;
-	if(count % SECTOR_SIZE) {
+	if (count % SECTOR_SIZE) {
 		sectsleft++;
 	}
 
@@ -59,8 +59,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 		/* Calculate maximum number of sectors we can transfer */
 		if (sectsleft > 256) {
 			nsects = 256;
-		}
-		else {
+		} else {
 			nsects = sectsleft;
 		}
 
@@ -96,7 +95,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 	/* Cleanup */
 	hdc->dir = HD_XFER_IDLE;
 	hdc->active = NULL;
-	if(0 < hdc->result) {
+	if (0 < hdc->result) {
 		result = hdc->result = 0;
 	}
 
@@ -134,8 +133,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 		/* Calculate maximum number of sectors we can transfer */
 		if (sectsleft > 256) {
 			nsects = 256;
-		}
-		else {
+		} else {
 			nsects = sectsleft;
 		}
 
@@ -212,33 +210,30 @@ static int idedisk_init (void *args) {
 	ide = ide_get_drive();
 
 	for(int i = 0; i < HD_DRIVES; i++) {
-		if(NULL == ide->drive[i]) {
+		if (NULL == ide->drive[i]) {
 			continue;
-		}
-		else {
+		} else {
 			drive = (hd_t *) ide->drive[i];
 			/* Make new device */
 			if ((drive->media == IDE_DISK) && (drive->udmamode == -1)) {
 				*path = 0;
 				strcat(path, "/dev/hd*");
-				if(0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
+				if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
 					return -1;
 				}
 				drive->bdev = block_dev_create(path,
 						&idedisk_pio_driver, drive);
-				if(NULL != drive->bdev) {
+				if (NULL != drive->bdev) {
 					size = (double) drive->param.cylinders *
 						   (double) drive->param.heads *
 						   (double) drive->param.unfbytes *
 						   (double) (drive->param.sectors + 1);
 					block_dev(drive->bdev)->size = (size_t) size;
-				}
-				else {
+				} else {
 					return -1;
 				}
 				create_partitions(drive);
-			}
-			else {
+			} else {
 				continue;
 			}
 		}

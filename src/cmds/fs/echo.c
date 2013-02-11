@@ -38,11 +38,11 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 3) {
-		if(NULL == (fd = fopen((const char *) argv[argc - 1], "a"))) {
+		if (NULL == (fd = fopen((const char *) argv[argc - 1], "a"))) {
 			return -errno;
 		}
 
-		if(0 != strcmp((const char *) argv[argc - 2], ">>")) {
+		if (0 != strcmp((const char *) argv[argc - 2], ">>")) {
 			print_usage();
 			return 0;
 		}
