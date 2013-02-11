@@ -94,7 +94,7 @@ int cpio_unpack(node_t *dir_node) {
 			if (NULL == (node = vfs_lookup(dir_node, param.name))) {
 				return 0;/*file already exist*/
 			}
-			node->type = NODE_TYPE_DIRECTORY | S_IREAD; /* read only file */
+			// node->type = NODE_TYPE_DIRECTORY | S_IREAD; /* read only file */
 			((struct nas *)(node->nas))->fi =(void *) &param;
 			nas->fs->drv->fsop->create_node(dir_node, node);
 

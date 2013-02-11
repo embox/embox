@@ -108,13 +108,13 @@ size_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 	size_t ret;
 	struct node *node;
 
-	if (NULL == file) {
+	if (!file) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
 	node = file->node;
-	if ((node != NULL) && (node->type & S_IREAD)) {
+	if (node && !(node->mode & S_IWUSR)) {
 		SET_ERRNO(EPERM);
 		return -1;
 	}

@@ -122,14 +122,13 @@ static node_t *__vfs_create_child(node_t *parent, const char *name, size_t len,
 	node_t *child;
 
 	assert(parent);
+	assert(mode & S_IFMT, "Must provide a type of node, see S_IFXXX");
 
 	child = node_alloc(name, len);
-	if (!child) {
-		return NULL;
+	if (child) {
+		child->mode = mode;
+		vfs_add_leaf(child, parent);
 	}
-
-	vfs_add_leaf(child, parent);
-
 	return child;
 }
 
@@ -180,10 +179,10 @@ node_t *vfs_get_parent(node_t *child) {
 }
 
 node_t *vfs_get_root(void) {
-	if(NULL == root_node) {
+	if (!root_node) {
 		root_node = node_alloc("/", 0);
-		assert(NULL != root_node);
-		root_node->type = NODE_TYPE_DIRECTORY;
+		assert(root_node);
+		root_node->mode = S_IFDIR;
 		//TODO set pseudofs driver
 	}
 	return root_node;

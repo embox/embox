@@ -105,7 +105,6 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 	}
 
 	return create_new_node(node, node_name, mode | S_IFREG);
-	// return create_new_node(node, node_name, NODE_TYPE_FILE);
 #else
 
 	do {
@@ -170,8 +169,7 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 		if (0 == strlen(node_name)) {
 			return 0; /* we create all directory */
 		}
-		if (0 != (rc = create_new_node(node, node_name, NODE_TYPE_DIRECTORY))) {
-//		if (0 != (rc = create_new_node(node, node_name, S_IFDIR | S_IRUSR))) {
+		if (0 != (rc = create_new_node(node, node_name, S_IFDIR | S_IRUSR))) {
 			return -rc;
 		}
 		path_offset += (strlen(node_name) + 1);
@@ -324,7 +322,6 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		if (!dir_node) {
 			return -ENOENT; /*device not found*/
 		}
-		dir_node->type = NODE_TYPE_DIRECTORY;
 #endif
 	}
 

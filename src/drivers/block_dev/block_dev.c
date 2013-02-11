@@ -78,7 +78,7 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 		index_free(&block_dev_idx, bdev->id);
 		return NULL;
 	}
-	node->type = NODE_TYPE_SPECIAL;
+
 	strncpy (bdev->name, node->name, MAX_LENGTH_FILE_NAME);
 	bdev->dev_node = node;
 

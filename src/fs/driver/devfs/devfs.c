@@ -30,8 +30,6 @@ static int devfs_mount(void *dev, void *dir) {
 		return -1;
 	}
 
-	node->type = NODE_TYPE_DIRECTORY;
-
 	ret = char_dev_init_all();
 	if (ret != 0) {
 		return ret;

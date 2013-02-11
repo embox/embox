@@ -723,8 +723,7 @@ static uint32_t fat_open_dir(struct nas *nas,
 				result = fat_get_next(nas, dirinfo, &de);
 			} while (!result && memcmp(de.name, tmpfn, MSDOS_NAME));
 
-			if (!memcmp(de.name, tmpfn, MSDOS_NAME) &&
-					((de.attr & ATTR_DIRECTORY) == ATTR_DIRECTORY)) {
+			if (!memcmp(de.name, tmpfn, MSDOS_NAME) && (de.attr & ATTR_DIRECTORY)) {
 				if (volinfo->filesystem == FAT32) {
 					dirinfo->currentcluster = (uint32_t) de.startclus_l_l |
 					  ((uint32_t) de.startclus_l_h) << 8 |
@@ -1044,7 +1043,7 @@ static int fatfs_create_file(struct node * parent_node, struct node *node) {
 	/* put sane values in the directory entry */
 	memset(&de, 0, sizeof(de));
 	memcpy(de.name, filename, MSDOS_NAME);
-	de.attr = node->type;
+	de.attr = S_ISDIR(node->mode) ? ATTR_DIRECTORY : 0;
 	fat_set_filetime(&de);
 
 	/* allocate a starting cluster for the directory entry */
@@ -1778,6 +1777,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 	uint8_t name[MSDOS_NAME + 2];
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
+	mode_t mode;
 
 	fsi = dir_nas->fs->fsi;
 
@@ -1807,11 +1807,13 @@ static int fat_mount_files(struct nas *dir_nas) {
 			strcat(full_path, "/");
 			strcat(full_path, (const char *) name);
 
+			mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
+
 			fi = pool_alloc(&fat_file_pool);
 			if (!fi) {
 				return -ENOMEM;
 			}
-			node = vfs_create_child(dir_nas->node, (const char *) name, 0);
+			node = vfs_create_child(dir_nas->node, (const char *) name, mode);
 			if (!node) {
 				pool_free(&fat_file_pool, fi);
 				return -ENOMEM;
@@ -1823,15 +1825,11 @@ static int fat_mount_files(struct nas *dir_nas) {
 			nas->fs = dir_nas->fs;
 			nas->fi->privdata = (void *)fi;
 
-			if ((ATTR_DIRECTORY & de.attr) == ATTR_DIRECTORY) {
-				node->type = NODE_TYPE_DIRECTORY;
+			if (de.attr & ATTR_DIRECTORY) {
 				if ((0 != strncmp((char *) de.name, ".  ", 3)) &&
 					(0 != strncmp((char *) de.name, ".. ", 3))) {
 					fat_create_dir_entry(nas);
 				}
-			}
-			else {
-				node->type = NODE_TYPE_FILE;
 			}
 		}
 	}
