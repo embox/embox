@@ -39,7 +39,7 @@ static int check_perm(struct node *node, int fd_flags) {
 	perm &= S_IRWXO;
 
 	/* Here, we rely on the fact that fd_flags correspond to OTH perm bits. */
-	return (~fd_flags & perm) ? -EACCES : 0;
+	return (fd_flags & ~perm) ? -EACCES : 0;
 }
 
 struct file_desc *kopen(const char *path, int flag, mode_t mode) {
