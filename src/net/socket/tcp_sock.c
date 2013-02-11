@@ -187,6 +187,10 @@ static int tcp_v4_listen(struct sock *sk, int backlog) {
 	return res;
 }
 
+#include <net/net.h>
+#include <kernel/task.h>
+#include <kernel/task/idx.h>
+
 static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		struct sockaddr *addr, int *addr_len) {
 	union sock_pointer sock, newsock;
