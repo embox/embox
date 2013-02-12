@@ -9,9 +9,10 @@
 
 #include <kernel/task/io_sync.h>
 
-void io_op_unblock(struct idx_io_op_state *op) {
+void idx_io_enable(struct idx_desc *desc, int op) {
 	softirq_lock();
-	op->can_perform_op = 1;
+	assert(desc->data);
+	desc->data->io_state.io_ready |= op;
 	softirq_unlock();
 }
 

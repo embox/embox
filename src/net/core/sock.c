@@ -171,7 +171,7 @@ void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 
 	event_notify(&sk->sock_is_not_empty);
 	if (desc->data) {
-		io_op_unblock(&desc->data->read_state);
+		idx_io_enable(desc, IDX_IO_READING);
 	}
 }
 

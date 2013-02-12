@@ -13,20 +13,33 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <kernel/softirq_lock.h>
+#include <assert.h>
 
 struct event;
 
-extern void io_op_unblock(struct idx_io_op_state *op);
-extern void io_op_set_event(struct idx_io_op_state *op, struct event *e);
+/* I/O operations */
+#define IDX_IO_READING 0x01
+#define IDX_IO_WRITING 0x10
 
-static inline void io_op_block(struct idx_io_op_state *op) {
+static inline void idx_io_set_monitor(struct idx_desc *desc, int op) {
+	assert(desc->data);
+	desc->data->io_state.io_monitoring |= op;
+}
+
+static inline void idx_io_unset_monitor(struct idx_desc *desc, int op) {
+	assert(desc->data);
+	desc->data->io_state.io_monitoring &= ~op;
+}
+
+static inline void idx_io_disable(struct idx_desc *desc, int op) {
 	softirq_lock();
-	op->can_perform_op = 0; /* it must be test_and_set */
+	assert(desc->data);
+	desc->data->io_state.io_ready &= ~op;
 	softirq_unlock();
 }
 
-static inline int io_op_is_blocked(struct idx_io_op_state *op) {
-	return !op->can_perform_op;
-}
+extern void idx_io_enable(struct idx_desc *desc, int op);
+
+extern void idx_io_set_event(struct idx_desc *desc, struct event *event);
 
 #endif /* KERNEL_TASK_IO_SYNC_H_ */

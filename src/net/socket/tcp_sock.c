@@ -223,7 +223,7 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		softirq_lock();
 		{
 			if (list_empty(&sock.tcp_sk->conn_wait)) {
-				io_op_block(&sk->sk_socket->desc->data->read_state);
+				idx_io_disable(sk->sk_socket->desc, IDX_IO_READING);
 			}
 		}
 		softirq_unlock();
