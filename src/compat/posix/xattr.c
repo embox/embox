@@ -15,7 +15,8 @@
 
 int getxattr(const char *path, const char *name, char *value, size_t size) {
 	int res;
-	struct node *node = vfs_find_node(path, NULL);
+	struct node *node;
+	node = vfs_lookup(NULL, path);
 
 	if (!node) {
 		errno = ENOENT;
@@ -53,7 +54,7 @@ int fgetxattr(int fd, const char *name, void *value, size_t size) {
 int setxattr(const char *path, const char *name, const char *value, size_t size,
 	       	int flags) {
 	int res;
-	struct node *node = vfs_find_node(path, NULL);
+	struct node *node = vfs_lookup(NULL, path);
 
 	if (!node) {
 		errno = -ENOENT;
@@ -91,7 +92,7 @@ int fsetxattr(int fd, const char *name, const char *value, size_t size, int flag
 
 int listxattr(const char *path, char *list, size_t size) {
 	int res;
-	struct node *node = vfs_find_node(path, NULL);
+	struct node *node = vfs_lookup(NULL, path);
 
 	if (!node) {
 		errno = -ENOENT;
