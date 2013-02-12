@@ -68,7 +68,7 @@ POOL_DEF(cdfs_file_pool, struct cdfs_file_info, OPTION_GET(NUMBER,inode_quantity
 
 static int cdfs_open(struct nas *nas, char *name);
 static int cdfs_create_dir_entry (struct nas *parent_nas);
-static int cdfs_get_full_path(cdfs_t *cdfs, int numrec, char *path);
+//static int cdfs_get_full_path(cdfs_t *cdfs, int numrec, char *path);
 
 static int cdfs_isonum_711(unsigned char *p) {
   return p[0];
@@ -1016,7 +1016,7 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 	struct cdfs_file_info *fi, *parent_fi;
 	struct cdfs_fs_info *fsi;
 
-	root_node = root_nas->node;
+	root_node = node = root_nas->node;
 
 	fi = parent_fi = root_nas->fi->privdata;
 	fsi = root_nas->fs->fsi;
@@ -1030,9 +1030,9 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 		memcpy(name, pathrec->name, namelen);
 		name[20 >= name[0] ? 0 : namelen] = 0; /* root dir name empty */
 
-		cdfs_get_full_path(cdfs, n, name);
+		//cdfs_get_full_path(cdfs, n, name);
 
-		if (!*name) {
+		if (*name) {
 			node = vfs_create_child(root_node, name, S_IFDIR);
 			if (!node) {
 				return -ENOMEM;
@@ -1054,22 +1054,22 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 
 	return 0;
 }
-
-static int cdfs_get_full_path(cdfs_t *cdfs, int numrec, char *path) {
-	char full_path[MAX_LENGTH_PATH_NAME];
-	iso_pathtable_record_t *pathrec;
-
-	pathrec = cdfs->path_table[numrec];
-
-	/* go up to the root folder */
-	while (1 != pathrec->parent) {
-		strncpy(full_path, path, MAX_LENGTH_PATH_NAME);
-		pathrec = cdfs->path_table[pathrec->parent];
-		memcpy(path, pathrec->name, pathrec->length);
-		path[pathrec->length] = 0;
-		strcat(path, "/");
-		strcat(path, full_path);
-	}
-
-	return 0;
-}
+//
+//static int cdfs_get_full_path(cdfs_t *cdfs, int numrec, char *path) {
+//	char full_path[MAX_LENGTH_PATH_NAME];
+//	iso_pathtable_record_t *pathrec;
+//
+//	pathrec = cdfs->path_table[numrec];
+//
+//	/* go up to the root folder */
+//	while (1 != pathrec->parent) {
+//		strncpy(full_path, path, MAX_LENGTH_PATH_NAME);
+//		pathrec = cdfs->path_table[pathrec->parent];
+//		memcpy(path, pathrec->name, pathrec->length);
+//		path[pathrec->length] = 0;
+//		strcat(path, "/");
+//		strcat(path, full_path);
+//	}
+//
+//	return 0;
+//}
