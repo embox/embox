@@ -1202,7 +1202,7 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 
 			mode = ext2_type_to_mode_fmt(dp->e2d_type);
 
-			node = vfs_create(NULL, name_buff, mode);
+			node = vfs_create(dir_nas->node, name_buff, mode);
 			if (!node) {
 				pool_free(&ext2_file_pool, fi);
 				rc = ENOMEM;
