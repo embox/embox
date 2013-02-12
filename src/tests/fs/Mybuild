@@ -64,3 +64,10 @@ module tmpfs_test {
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }
+
+module permissions {
+	source "permissions.c"
+
+	depends embox.compat.posix.proc.uid
+	depends embox.fs.driver.ext2
+}
