@@ -47,11 +47,11 @@ FILE *fopen(const char *path, const char *mode) {
 	}
 
 	if (strchr(mode, 'w')) {
-		flags |= O_WRONLY;
+		flags |= O_WRONLY | O_TRUNC | O_CREAT;
 	}
 
 	if (strchr(mode, 'a')) {
-		flags |= O_APPEND;
+		flags |= O_APPEND | O_WRONLY | O_CREAT;
 	}
 
 	if ((fd = open(path, flags)) > 0) {
