@@ -1188,12 +1188,6 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 				continue;
 			}
 
-			fi = ext2_fi_alloc(node->nas, dir_nas->fs);
-			if (!fi) {
-				rc = ENOMEM;
-				goto out;
-			}
-
 			/* set null determine name */
 			name = (char *) &dp->e2d_name;
 
@@ -1204,7 +1198,13 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 
 			node = vfs_create(dir_nas->node, name_buff, mode);
 			if (!node) {
-				pool_free(&ext2_file_pool, fi);
+				rc = ENOMEM;
+				goto out;
+			}
+
+			fi = ext2_fi_alloc(node->nas, dir_nas->fs);
+			if (!fi) {
+				vfs_del_leaf(node);
 				rc = ENOMEM;
 				goto out;
 			}
