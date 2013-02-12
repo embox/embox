@@ -30,4 +30,6 @@ extern int kioctl(struct file_desc *fp, int request, ...);
 
 extern int kfstat(struct file_desc *fp, struct stat *buff);
 
+int ktruncate(struct node *node, off_t length);
+
 #endif /* FS_KFILE_H_ */

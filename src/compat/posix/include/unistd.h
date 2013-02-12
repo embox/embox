@@ -88,6 +88,9 @@ extern int setregid(gid_t rgid, gid_t egid);
 extern int setgid(gid_t gid);
 extern int setegid(gid_t gid);
 
+extern int truncate(const char *path, off_t length);
+extern int ftruncate(int fd, off_t length);
+
 __END_DECLS
 
 #endif /* UNISTD_H_ */

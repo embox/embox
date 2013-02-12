@@ -97,6 +97,7 @@ static struct kfile_operations tmpfs_fop = {
 		tmpfs_read,
 		tmpfs_write,
 		tmpfs_ioctl
+
 };
 
 /*
@@ -265,7 +266,7 @@ static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	while(1) {
 		if(0 == fsi->block_size) {
-			return 0;
+			break;
 		}
 		blk = fi->pointer / fsi->block_size;
 		/* check if block over the file */
@@ -394,13 +395,16 @@ static int tmpfs_format(void *path);
 static int tmpfs_mount(void *dev, void *dir);
 static int tmpfs_create(struct node *parent_node, struct node *node);
 static int tmpfs_delete(struct node *node);
+static int tmpfs_truncate(struct node *node, off_t length);
 
 static fsop_desc_t tmpfs_fsop = {
 		tmpfs_init,
 		tmpfs_format,
 		tmpfs_mount,
 		tmpfs_create,
-		tmpfs_delete
+		tmpfs_delete,
+
+		.truncate = tmpfs_truncate,
 };
 
 static fs_drv_t tmpfs_drv = {
@@ -497,6 +501,18 @@ static int tmpfs_delete(struct node *node) {
 	}
 
 	vfs_del_leaf(node);
+
+	return 0;
+}
+
+static int tmpfs_truncate(struct node *node, off_t length) {
+	struct nas *nas = node->nas;
+
+	if (length > MAX_FILE_SIZE) {
+		return -EFBIG;
+	}
+
+	nas->fi->ni.size = length;
 
 	return 0;
 }

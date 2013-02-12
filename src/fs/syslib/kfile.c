@@ -64,7 +64,7 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 		char node_name[MAX_LENGTH_FILE_NAME];
 		fs_drv_t *drv;
 		size_t path_offset, path_len, name_len;
-		struct node *node, *parent;
+		struct node *parent;
 
 		if (!(flag & O_CREAT)) {
 			SET_ERRNO(ENOENT);
@@ -128,10 +128,6 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 			return NULL;
 	}
 
-	if (NULL == (node = vfs_lookup(NULL, path))) {
-		return NULL;
-	}
-
 	if (node_is_directory(node)) {
 		SET_ERRNO(EISDIR);
 		return NULL;
@@ -163,7 +159,7 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 	desc->node = node;
 	desc->ops = ops;
 	desc->flags = ((flag & O_WRONLY || flag & O_RDWR) ? FDESK_FLAG_WRITE : 0)
-		| ((flag == O_RDONLY || flag & O_RDWR) ? FDESK_FLAG_READ : 0)
+		| ((flag & O_WRONLY) ? 0 : FDESK_FLAG_READ)
 		| ((flag & O_APPEND) ? FDESK_FLAG_APPEND : 0);
 	desc->cursor = 0;
 
@@ -175,6 +171,11 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 		goto free_out;
 	}
 
+	if (flag & O_TRUNC) {
+		/*if (0 > (ret = ktruncate(desc->node, 0))) { }*/
+		ktruncate(desc->node, 0);
+	}
+
 free_out:
 	if (ret < 0) {
 		file_desc_free(desc);
@@ -182,7 +183,39 @@ free_out:
 		return NULL;
 	}
 
+
 	return desc;
+}
+
+int ktruncate(struct node *node, off_t length) {
+	int ret;
+	struct nas *nas;
+	fs_drv_t *drv;
+
+	nas = node->nas;
+	drv = nas->fs->drv;
+
+	if (NULL == drv->fsop->truncate) {
+		errno = EPERM;
+		return -1;
+	}
+
+	if (0 > (ret = check_perm(node, FDESK_FLAG_WRITE))) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	if (node->mode & S_IFDIR) {
+		SET_ERRNO(EISDIR);
+		return -1;
+	}
+
+	if (0 > (ret = drv->fsop->truncate(node, length))) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	return ret;
 }
 
 size_t kwrite(const void *buf, size_t size, struct file_desc *file) {

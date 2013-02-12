@@ -26,6 +26,8 @@ typedef int (fsop_setxattr_ft)(struct node *node, const char *name,
 typedef int (fsop_listxattr_ft)(struct node *node, char *list,
                 size_t len);
 
+typedef int (fsop_truncate_ft)(struct node *node, off_t length);
+
 typedef struct fsop_desc {
         fsop_init_ft      *init;
         fsop_format_ft    *format;
@@ -36,6 +38,8 @@ typedef struct fsop_desc {
         fsop_getxattr_ft  *getxattr;
         fsop_setxattr_ft  *setxattr;
         fsop_listxattr_ft *listxattr;
+
+	fsop_truncate_ft  *truncate;
 } fsop_desc_t;
 
 struct kfile_operations;
