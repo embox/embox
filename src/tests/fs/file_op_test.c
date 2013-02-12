@@ -53,7 +53,7 @@ TEST_CASE("Copy file") {
 	int bytesread;
 
 	test_assert(0 <=  (src_file = open(FS_FILE1, O_RDONLY)));
-	test_assert(0 <=  (dst_file = open(FS_FILE2, O_WRONLY, S_IRUSR | S_IWUSR)));
+	test_assert(0 <=  (dst_file = open(FS_FILE2, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR)));
 	test_assert_zero(lseek(dst_file, 0, SEEK_SET));
 
 	bytesread = 0;
@@ -102,6 +102,7 @@ TEST_CASE("stat and fstat should return same stats") {
 */
 
 static int setup_suite(void) {
+	int fd;
 
 	if (0 != ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())) {
 		return -1;
@@ -117,7 +118,13 @@ static int setup_suite(void) {
 		return -1;
 	}
 
-	return creat(FS_FILE1, S_IRUSR | S_IWUSR);
+	if (-1 == (fd = creat(FS_FILE1, S_IRUSR | S_IWUSR))) {
+		return -1;
+	}
+
+	close(fd);
+
+	return 0;
 }
 
 static int teardown_suite(void) {

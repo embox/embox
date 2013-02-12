@@ -21,6 +21,7 @@
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
 #include <fs/kfsop.h>
+#include <fs/path.h>
 
 static int check_perm(struct node *node, int fd_flags) {
 	int perm = node->mode & S_IRWXA;
@@ -59,17 +60,72 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 	}
 
 	if (NULL == (node = vfs_lookup(NULL, path))) {
-		/* we try create file */
-		/* check the mode */
-		if ((O_WRONLY != flag) && (O_APPEND != flag)) {
+		char tpath[MAX_LENGTH_PATH_NAME];
+		char node_name[MAX_LENGTH_FILE_NAME];
+		fs_drv_t *drv;
+		size_t path_offset, path_len, name_len;
+		struct node *node, *parent;
+
+		if (!(flag & O_CREAT)) {
 			SET_ERRNO(ENOENT);
 			return NULL;
 		}
 
-		/* create file */
-		if (kcreat(NULL, path, mode) < 0) {
+		/* get last exist node */
+		node = vfs_get_exist_path(path, tpath, sizeof(tpath));
+		if (NULL == node) {
+			SET_ERRNO(ENOENT);
 			return NULL;
 		}
+
+		mode &= S_IRWXU | S_IRWXG | S_IRWXO; /* leave only permission bits */
+
+		path_len = strlen(path);
+		path_offset = strlen(tpath);
+
+		while (1) {
+			path_get_next_name(path + path_offset, node_name, sizeof(node_name));
+			name_len = strlen(node_name);
+
+			if (path_offset + name_len + 1 < path_len) {
+				path_offset += name_len + 1;
+			} else {
+				break;
+			}
+
+			if (-1 == kmkdir(node, node_name, mode)) {
+				return NULL;
+			}
+
+			node = vfs_lookup_child(node, node_name);
+			assert(node);
+		}
+
+		parent = node;
+		node = vfs_create(node, node_name, S_IFREG | mode);
+
+		if (!node) {
+			SET_ERRNO(ENOMEM);
+			return NULL;
+		}
+
+		/* check drv of parents */
+		drv = parent->nas->fs->drv;
+		if (!drv || !drv->fsop->create_node) {
+			SET_ERRNO(EBADF);
+			vfs_del_leaf(node);
+			return NULL;
+		}
+
+		if (0 != (ret = drv->fsop->create_node(parent, node))) {
+			SET_ERRNO(-ret);
+			vfs_del_leaf(node);
+			return NULL;
+		}
+
+	} else if (flag & O_CREAT && flag & O_EXCL) {
+			SET_ERRNO(EEXIST);
+			return NULL;
 	}
 
 	if (NULL == (node = vfs_lookup(NULL, path))) {

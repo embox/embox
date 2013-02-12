@@ -8,10 +8,11 @@
  */
 
 #include <types.h>
+#include <fcntl.h>
 #include <fs/kfsop.h>
 
 int creat(const char *pathname, mode_t mode) {
-	return kcreat(NULL, pathname, mode);
+	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC);
 }
 
 int mkdir(const char *pathname, mode_t mode) {

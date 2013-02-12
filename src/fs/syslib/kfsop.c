@@ -47,7 +47,7 @@ out:
 	vfs_del_leaf(node);
 	return retval;
 }
-
+#if 0
 int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 	char tpath[MAX_LENGTH_PATH_NAME];
 	char path[MAX_LENGTH_PATH_NAME];
@@ -132,7 +132,7 @@ int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
 
 #endif
 }
-
+#endif
 int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 	int rc;
 	char tpath[MAX_LENGTH_PATH_NAME];

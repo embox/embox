@@ -44,10 +44,15 @@ TEST_CASE("Mount fat filesystem") {
 }
 
 TEST_CASE("Create files and directories") {
+	int fd;
 	test_assert_zero(mkdir(FS_DIR1, 0));
 	test_assert_zero(mkdir(FS_DIR2, 0));
-	test_assert_zero(creat(FS_FILE1, 0));
-	test_assert_zero(creat(FS_FILE2, 0));
+	test_assert_not_zero(fd = creat(FS_FILE1, 0));
+	test_assert_not_equal(-1, fd);
+	close(fd);
+	test_assert_not_zero(fd = creat(FS_FILE2, 0));
+	test_assert_not_equal(-1, fd);
+	close(fd);
 }
 
 TEST_CASE("Delete file") {
