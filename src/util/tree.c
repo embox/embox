@@ -138,7 +138,7 @@ struct tree_link *tree_children_end(struct tree_link *tree) {
 		return NULL;
 	}
 
-	return list_element(lnk->next, struct tree_link, list_link);
+	return list_element(lnk, struct tree_link, list_link);
 }
 
 
