@@ -497,7 +497,6 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 			struct idx_desc *desc = sock.sk->sk_socket->desc;
 			assert(desc != NULL);
 			io_op_unblock(&desc->data->read_state);
-			io_op_unblock(&desc->data->write_state);
 		}
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 		return TCP_RET_OK;

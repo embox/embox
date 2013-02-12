@@ -67,6 +67,13 @@ int socket(int domain, int type, int protocol) {
 
 	sock->desc = task_self_idx_get(res);
 
+	assert(sock->state != SS_CONNECTED);
+	/* Block stream socket on writing while it is unconnected.
+	 * Otherwise unblock it. */
+	if (type != SOCK_STREAM) {
+		io_op_unblock(&sock->desc->data->write_state);
+	}
+
 	return res;
 }
 
@@ -90,6 +97,10 @@ int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 		SET_ERRNO(-res);
 		return -1;
 	}
+
+	/* If connection established, than we can write in this socket always. */
+	io_op_unblock(&sock->desc->data->write_state);
+
 	return ENOERR;
 }
 
@@ -166,6 +177,8 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	}
 
 	new_sock->desc = task_self_idx_get(res);
+	/* If connection established, than we can write in this socket always. */
+	io_op_unblock(&new_sock->desc->data->write_state);
 
 	return res;
 }

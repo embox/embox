@@ -116,6 +116,9 @@ int pipe(int pipefd[2]) {
 	event_init(&pipe->write_wait, "pipe_write_wait");
 	pipe->writing_end = task_self_idx_get(pipefd[1]);
 
+	/* And enable writing in pipe */
+	io_op_unblock(&pipe->writing_end->data->write_state);
+
 	return 0;
 
 free_memory:

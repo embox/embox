@@ -72,9 +72,9 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	fd_cnt = filter_out(nfds, readfds, writefds, exceptfds, 1);
 
 out:
-	sched_unlock();
 	/* Unset event for all remaining fds */
 	set_event_for_fds(nfds, readfds, writefds, exceptfds, NULL);
+	sched_unlock();
 	return fd_cnt;
 }
 

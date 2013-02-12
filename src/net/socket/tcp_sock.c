@@ -24,6 +24,7 @@
 
 #include <mem/objalloc.h>
 #include <embox/net/sock.h>
+#include <kernel/task/io_sync.h>
 
 
 
@@ -217,7 +218,16 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		/* get first socket from */
 		newsock.tcp_sk = list_entry(sock.tcp_sk->conn_wait.next, struct tcp_sock, conn_wait);
 		tcp_obj_lock(sock, TCP_SYNC_CONN_QUEUE);
+		/* Delete new socket from list and block listening socket if there are no connections. */
 		list_del_init(&newsock.tcp_sk->conn_wait);
+		softirq_lock();
+		{
+			if (list_empty(&sock.tcp_sk->conn_wait)) {
+				io_op_block(&sk->sk_socket->desc->data->read_state);
+			}
+		}
+		softirq_unlock();
+
 		tcp_obj_unlock(sock, TCP_SYNC_CONN_QUEUE);
 		/* save remote address */
 		if (addr != NULL) {
