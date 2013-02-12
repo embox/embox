@@ -51,7 +51,8 @@ struct lookup_tuple {
 static int vfs_lookup_cmp(struct tree_link *link, void *data) {
 	struct lookup_tuple *lookup = data;
 	node_t *node = tree_element(link, node_t, tree_link);
-	return strncmp(node->name, lookup->name, lookup->len) == 0;
+	const char *name = node->name;
+	return !(strncmp(name, lookup->name, lookup->len) || name[lookup->len]);
 }
 
 static node_t *__vfs_lookup_child(node_t *parent, const char *name, size_t len) {
