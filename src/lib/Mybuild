@@ -135,6 +135,7 @@ static module LibCStdio {
 
 	option boolean stdio_lf_crlf_map = true
 	option number file_quantity = 16
+	option number support_floating = 1
 
 	source "stdio/fgetc.c"
 	source "stdio/file_ops.c"
