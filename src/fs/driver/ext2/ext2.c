@@ -486,7 +486,7 @@ static size_t ext2fs_read(struct file_desc *desc, void *buff, size_t size) {
 		size -= csize;
 	}
 
-	return ((char *) buff - addr);
+	return (addr - (char *) buff);
 }
 
 static size_t ext2fs_write(struct file_desc *desc, void *buff, size_t size) {
@@ -519,6 +519,7 @@ static int ext2fs_format(void *path);
 static int ext2fs_mount(void *dev, void *dir);
 static int ext2fs_create(struct node *parent_node, struct node *node);
 static int ext2fs_delete(struct node *node);
+static int ext2fs_truncate (struct node *node, off_t length);
 
 static fsop_desc_t ext2_fsop = {
 	.init	     = ext2fs_init,
@@ -530,6 +531,7 @@ static fsop_desc_t ext2_fsop = {
 	.getxattr    = ext2fs_getxattr,
 	.setxattr    = ext2fs_setxattr,
 	.listxattr   = ext2fs_listxattr,
+	.truncate    = ext2fs_truncate
 };
 
 static int ext2fs_init(void * par) {
@@ -686,6 +688,11 @@ static int ext2fs_mount(void *dev, void *dir) {
 
 	rc = ext2_mount_entry(dir_nas);
 	return -rc;
+}
+
+static int ext2fs_truncate (struct node *node, off_t length) {
+
+	return 0;
 }
 
 /*
