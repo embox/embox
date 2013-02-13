@@ -691,6 +691,9 @@ static int ext2fs_mount(void *dev, void *dir) {
 }
 
 static int ext2fs_truncate (struct node *node, off_t length) {
+	struct nas *nas = node->nas;
+
+	nas->fi->ni.size = length;
 
 	return 0;
 }

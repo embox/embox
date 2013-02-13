@@ -204,9 +204,10 @@ static int nfsfs_format(void * par);
 static int nfsfs_mount(void * dev, void *dir);
 static int nfsfs_create(struct node *parent_node, struct node *node);
 static int nfsfs_delete(struct node *node);
+static int nfsfs_truncate (struct node *node, off_t length);
 
 static fsop_desc_t nfsfs_fsop = { nfsfs_init, nfsfs_format, nfsfs_mount,
-		nfsfs_create, nfsfs_delete };
+		nfsfs_create, nfsfs_delete, NULL, NULL, NULL, nfsfs_truncate };
 
 static fs_drv_t nfsfs_drv = { "nfs", &nfsfs_fop, &nfsfs_fsop };
 
@@ -222,6 +223,14 @@ static int nfsfs_format(void *path) {
 		return -ENODEV;
 	}
 	/* TODO format command support */
+	return 0;
+}
+
+static int nfsfs_truncate (struct node *node, off_t length) {
+	struct nas *nas = node->nas;
+
+	nas->fi->ni.size = length;
+
 	return 0;
 }
 

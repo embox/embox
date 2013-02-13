@@ -1938,9 +1938,9 @@ static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 
 	if(DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
-		if(flag & O_WRONLY) {
-			nas->fi->ni.size = 0;
-		}
+//		if(flag & O_WRONLY) {
+//			nas->fi->ni.size = 0;
+//		}
 		return 0;
 	}
 	return -1;
@@ -2132,9 +2132,10 @@ static int fatfs_format(void * bdev);
 static int fatfs_mount(void * dev, void *dir);
 static int fatfs_create(struct node *parent_node, struct node *new_node);
 static int fatfs_delete(struct node *node);
+static int fatfs_truncate (struct node *node, off_t length);
 
 static fsop_desc_t fatfs_fsop = { fatfs_init, fatfs_format, fatfs_mount,
-		fatfs_create, fatfs_delete };
+		fatfs_create, fatfs_delete, NULL, NULL, NULL, fatfs_truncate };
 
 static fs_drv_t fatfs_drv = { "vfat", &fatfs_fop, &fatfs_fsop };
 
@@ -2345,6 +2346,14 @@ static int fatfs_delete(struct node *node) {
 	pool_free(&fat_file_pool, fi);
 
 	vfs_del_leaf(node);
+	return 0;
+}
+
+static int fatfs_truncate (struct node *node, off_t length) {
+	struct nas *nas = node->nas;
+
+	nas->fi->ni.size = length;
+
 	return 0;
 }
 
