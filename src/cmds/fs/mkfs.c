@@ -16,7 +16,7 @@
 #include <fcntl.h>
 
 #include <fs/ramfs.h>
-#include <fs/vfs.h>
+#include <fs/kfsop.h>
 #include <fs/fs_drv.h>
 #include <drivers/ramdisk.h>
 
@@ -109,10 +109,8 @@ static int exec(int argc, char **argv) {
 }
 
 static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
-						unsigned int fs_type, unsigned int operation_flag) {
-	struct fs_drv *fs_drv;
+		unsigned int fs_type, unsigned int operation_flag) {
 	int rezult;
-	struct node *node;
 
 	if (operation_flag & MKFS_CREATE_RAMDISK) {
 		if (0 > (rezult = ramdisk_create(path, blocks * PAGE_SIZE()))) {
@@ -121,18 +119,7 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 	}
 
 	if (operation_flag & MKFS_FORMAT_DEV) {
-		/* find filesystem driver by name */
-		if (NULL == (fs_drv =
-				fs_driver_find_drv((const char *) fs_name))) {
-			return -EINVAL;
-		}
-
-		if (NULL == (node = vfs_lookup(NULL, (char *) path))) {
-			return -ENODEV;
-		}
-
-		/* format filesystem */
-		if (0 != (rezult = fs_drv->fsop->format((void *) node))) {
+		if (0 != (rezult = kformat(path, fs_name))) {
 			return rezult;
 		}
 	}

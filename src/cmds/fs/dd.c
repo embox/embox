@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <fs/vfs.h>
 #include <mem/phymem.h>
 #include <embox/cmd.h>
 #include <embox/block_dev.h>
