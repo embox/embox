@@ -7,6 +7,7 @@
  */
 
 #include <fcntl.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <fs/sys/fsop.h>/* now mount declaration in this header */
 
@@ -40,13 +41,15 @@ TEST_CASE("Create fat filesystem") {
 }
 
 TEST_CASE("Mount fat filesystem") {
+	rmdir(FS_DIR);
+	test_assert_zero(mkdir(FS_DIR, 0777));
 	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME));
 }
 
 TEST_CASE("Create files and directories") {
 	int fd;
-	test_assert_zero(mkdir(FS_DIR1, 0));
-	test_assert_zero(mkdir(FS_DIR2, 0));
+	test_assert_zero(mkdir(FS_DIR1, 0777));
+	test_assert_zero(mkdir(FS_DIR2, 0777));
 	test_assert_not_zero(fd = creat(FS_FILE1, 0));
 	test_assert_not_equal(-1, fd);
 	close(fd);

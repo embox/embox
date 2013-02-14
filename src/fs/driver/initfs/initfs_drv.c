@@ -119,7 +119,7 @@ static int ramfs_create(struct node *parent_node, struct node *new_node) {
 	fi->ni.size = par->size;
 	fi->ni.mtime = par->mtime;
 
-	new_node->mode = par->mode;
+	/*new_node->mode = par->mode;*/
 
 	return 0;
 }

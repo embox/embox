@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <fs/vfs.h>
 #include <fs/fs_drv.h>
@@ -116,6 +117,18 @@ static int setup_suite(void) {
 	/* mount filesystem */
 	if(mount(FS_DEV, FS_DIR, FS_NAME)) {
 		return -1;
+	}
+
+	if (0 != mkdir(FS_DIR1, 0777)) {
+		return -EEXIST;
+	}
+
+	if (0 != mkdir(FS_DIR2, 0777)) {
+		return -EEXIST;
+	}
+
+	if (0 != mkdir(FS_DIR3, 0777)) {
+		return -EEXIST;
 	}
 
 	if (-1 == (fd = creat(FS_FILE1, S_IRUSR | S_IWUSR))) {

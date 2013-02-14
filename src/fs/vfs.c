@@ -55,7 +55,7 @@ static int vfs_lookup_cmp(struct tree_link *link, void *data) {
 	return !(strncmp(name, lookup->name, lookup->len) || name[lookup->len]);
 }
 
-static node_t *__vfs_lookup_child(node_t *parent, const char *name, size_t len) {
+node_t *vfs_lookup_childn(node_t *parent, const char *name, size_t len) {
 	struct lookup_tuple lookup = { .name = name, .len = len };
 	struct tree_link *tlink;
 
@@ -74,7 +74,7 @@ static node_t *__vfs_lookup_existing(node_t *parent, const char *path,
 	assert(parent && path);
 
 	while ((path = path_next(path, &len))) {
-		child = __vfs_lookup_child(parent, path, len);
+		child = vfs_lookup_childn(parent, path, len);
 		if (!child) {
 			break;
 		}
@@ -95,7 +95,7 @@ node_t *vfs_lookup_child(node_t *parent, const char *name) {
 		parent = vfs_get_root();
 	}
 
-	return __vfs_lookup_child(parent, name, strlen(name));
+	return vfs_lookup_childn(parent, name, strlen(name));
 }
 
 node_t *vfs_lookup(node_t *parent, const char *path) {

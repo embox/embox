@@ -169,7 +169,7 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 		if (0 == strlen(node_name)) {
 			return 0; /* we create all directory */
 		}
-		if (0 != (rc = create_new_node(node, node_name, S_IFDIR | S_IRUSR))) {
+		if (0 != (rc = create_new_node(node, node_name, S_IFDIR | mode))) {
 			return -rc;
 		}
 		path_offset += (strlen(node_name) + 1);
@@ -231,7 +231,10 @@ int krmdir(const char *pathname) {
 	fs_drv_t *drv;
 	struct nas *nas;
 
-	node = vfs_lookup(NULL, pathname);
+	if (NULL == (node = vfs_lookup(NULL, pathname))) {
+		return -1;
+	}
+
 	nas = node->nas;
 	drv = nas->fs->drv;
 
