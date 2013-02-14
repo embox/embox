@@ -12,8 +12,6 @@
 #include <errno.h>
 
 #include <embox/cmd.h>
-#include <fs/vfs.h>
-#include <fs/fs_drv.h>
 #include <fs/sys/fsop.h>/* now mount declaration in this header */
 
 EMBOX_CMD(exec);

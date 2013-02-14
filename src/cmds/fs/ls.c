@@ -6,7 +6,6 @@
  * @author Anton Bondarev
  */
 
-
 #include <getopt.h>
 #include <string.h>
 #include <time.h>

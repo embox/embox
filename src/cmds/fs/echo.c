@@ -5,9 +5,9 @@
  * @date 25.04.2012
  * @author Andrey Gazukin
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
-#include <fs/vfs.h>
 #include <types.h>
 #include <errno.h>
 #include <unistd.h>
