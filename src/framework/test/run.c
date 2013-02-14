@@ -17,6 +17,7 @@
 #include <setjmp.h>
 
 #include <kernel/printk.h>
+#include <kernel/panic.h>
 #include <util/location.h>
 
 #include <framework/test/api.h>
@@ -140,9 +141,15 @@ void __test_assertion_handle(int pass,
 		return;
 	}
 
-	assert(point != NULL);
-	assert(current != NULL);
-	longjmp(current->before_run, (int) point);
+	assert(point);
+
+	if (current) {
+		longjmp(current->before_run, (int) point);
+
+	} else {
+		handle_case_result(NULL, point);
+		panic("\n\ttest_assert failed inside fixture\n");
+	}
 }
 
 static void handle_suite_fixture_failure(const struct test_suite *test_suite,
@@ -180,14 +187,16 @@ static void handle_case_result(const struct test_case *test_case,
 		return;
 	}
 
-	test_loc = &test_case->location;
 	fail_loc = &failure->location;
-
 	printk("\n\tfailure at %s : %d, in function %s\n"
 			"\t\t%s\n",
 			fail_loc->at.file, fail_loc->at.line, fail_loc->func,
 			failure->reason);
-	printk("\t   case at %s : %d\n"
-			"\t\t\"%s\"\n\t",
-			test_loc->file, test_loc->line, test_case->description);
+
+	if (test_case) {
+		test_loc = &test_case->location;
+		printk("\t   case at %s : %d\n"
+				"\t\t\"%s\"\n\t",
+				test_loc->file, test_loc->line, test_case->description);
+	}
 }
