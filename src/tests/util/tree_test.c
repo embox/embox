@@ -245,3 +245,19 @@ TEST_CASE("Delete subtree") {
 	push(10);
 	compare(root);
 }
+
+TEST_CASE("After adding tree element must be in children") {
+	struct tree_link root, child, *item;
+	struct tree_link *pattern[] = {&child};
+	int pattern_pos = 0;
+
+	tree_link_init(&root);
+	tree_link_init(&child);
+	tree_add_link(&root, &child);
+
+	tree_foreach_children_link(item, &root) {
+		test_assert_equal(pattern[pattern_pos++], item);
+	}
+
+	test_assert_equal(pattern_pos, sizeof(pattern) / sizeof(pattern[0]));
+}
