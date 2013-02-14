@@ -16,70 +16,13 @@
 #include <fs/rootfs.h>
 #include <fs/ramfs.h>
 #include <fs/vfs.h>
+#include <fs/path.h>
 #include <fs/fs_drv.h>
 #include <fs/file_operation.h>
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
 #include <fs/kfsop.h>
-#include <fs/path.h>
-
-static int perm_mask(struct node *node) {
-	int perm = node->mode & S_IRWXA;
-	uid_t uid = getuid();
-
-	if (uid == 0) {
-		/* super user */
-		return S_IRWXO;
-	}
-
-	if (node->uid == uid) {
-		perm >>= 6;
-	} else if (node->gid == getgid()) {
-		perm >>= 3;
-	}
-	perm &= S_IRWXO;
-
-	return perm;
-}
-
-static int perm_check(struct node *node, int fd_flags) {
-	/* Here, we rely on the fact that fd_flags correspond to OTH perm bits. */
-	return (fd_flags & ~perm_mask(node)) ? -EACCES : 0;
-}
-
-static int perm_lookup(const char *path, const char **pathlast, struct node **node, mode_t *mode) {
-	struct node *child;
-	size_t len = 0;
-	int ret;
-
-	if (path[0] == '/') {
-		path = path_next(path, NULL);
-	}
-	*pathlast = path;
-
-	*node = vfs_get_root();
-
-	while (1) {
-		*mode = perm_mask(*node);
-
-		if (NULL == (path = path_next(path + len, &len))) {
-			return 0;
-		}
-
-		if (0 != (ret = perm_check(*node, S_IXOTH))) {
-			return ret;
-		}
-
-		if (NULL == (child = vfs_lookup_childn(*node, path, len))) {
-			return -ENOENT;
-		}
-
-		*node = child;
-		*pathlast = path + len + 1;
-	}
-
-	return 0;
-}
+#include <fs/perm.h>
 
 struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 	struct node *node;
@@ -91,18 +34,20 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 	int perm_flags;
 
 	assert(path);
-	ret = perm_lookup(path, &path, &node, &dirmode);
+	ret = fs_perm_lookup(NULL, path, &path, &node);
+	dirmode = fs_perm_mask(node);
 
 	if (-ENOENT == ret) {
 		fs_drv_t *drv;
 		struct node *child;
+		char *ch;
 
 		if (!(flag & O_CREAT)) {
 			SET_ERRNO(ENOENT);
 			return NULL;
 		}
 
-		if (NULL != strchr(path, '/')) {
+		if (NULL != (ch = strchr(path, '/'))) {
 			SET_ERRNO(ENOENT);
 			return NULL;
 		}
@@ -178,7 +123,7 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 	desc->flags = perm_flags | ((flag & O_APPEND) ? FDESK_FLAG_APPEND : 0);
 	desc->cursor = 0;
 
-	if (0 > (ret = perm_check(node, perm_flags))) {
+	if (0 > (ret = fs_perm_check(node, perm_flags))) {
 		goto free_out;
 	}
 
@@ -215,7 +160,7 @@ int ktruncate(struct node *node, off_t length) {
 		return -1;
 	}
 
-	if (0 > (ret = perm_check(node, FDESK_FLAG_WRITE))) {
+	if (0 > (ret = fs_perm_check(node, FDESK_FLAG_WRITE))) {
 		SET_ERRNO(-ret);
 		return -1;
 	}

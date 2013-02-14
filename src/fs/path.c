@@ -195,5 +195,3 @@ char *path_dir_to_canonical(char *dest, char *src, char dir) {
         }
         return dest;
 }
-
-

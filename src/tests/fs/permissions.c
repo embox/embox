@@ -48,6 +48,8 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 
 #define TEST_FNM4 "/test_permision/dir/f2"
 
+#define TEST_DNM2 "/test_permision/dir2"
+
 #define TEST_UID_INVAL 0xdead
 #define TEST_GID_INVAL 0xdead
 
@@ -78,13 +80,14 @@ static int teardown_suite(void) {
         return 0;
 }
 
-static char temp_buf[4];
 
 #include <kernel/task/u_area.h>
 static int clear_id(void) {
 	memset(task_self_u_area(), 0, sizeof(struct task_u_area));
 	return 0;
 }
+
+static char temp_buf[4];
 
 TEST_CASE("Writeable file must be writeable for owner") {
 	int fd;
@@ -184,3 +187,19 @@ TEST_CASE("Creating should not be allowed for not writeable dir") {
 	test_assert_equal(errno, EACCES);
 }
 
+TEST_CASE("mkdir should be allowed for writeable dir") {
+	test_assert_zero(setuid(TEST_UID3));
+	test_assert_zero(setgid(TEST_GID3));
+
+	test_assert_not_equal(-1, mkdir(TEST_DNM2, 0777));
+
+	test_assert_not_equal(-1, rmdir(TEST_DNM2));
+}
+
+TEST_CASE("mkdir should not be allowed for not writeable dir") {
+	test_assert_zero(setuid(TEST_UID_INVAL));
+	test_assert_zero(setgid(TEST_DGID1));
+
+	test_assert_equal(-1, mkdir(TEST_DNM2, 0777));
+	test_assert_equal(errno, EACCES);
+}
