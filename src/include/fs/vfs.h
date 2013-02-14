@@ -24,6 +24,8 @@ extern node_t *vfs_get_root(void);
 
 extern node_t *vfs_create(node_t *parent, const char *path, mode_t mode);
 extern node_t *vfs_create_child(node_t *parent, const char *name, mode_t mode);
+extern node_t *vfs_create_intermediate(node_t *parent, const char *path,
+	mode_t mode);
 
 extern node_t *vfs_lookup(node_t *parent, const char *path);
 extern node_t *vfs_lookup_child(node_t *parent, const char *name);

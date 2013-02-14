@@ -5,6 +5,7 @@
  *
  * @date 12.10.10
  * @author Anton Bondarev
+ * @author Eldar Abusalimov
  */
 
 #include <stdio.h>
@@ -79,8 +80,8 @@ static node_t *__vfs_lookup_existing(node_t *parent, const char *path,
 			break;
 		}
 
-		path += len;
 		parent = child;
+		path += len;
 	}
 
 	if (p_end_existent) {
@@ -141,8 +142,9 @@ node_t *vfs_create_child(node_t *parent, const char *name, mode_t mode) {
 	return __vfs_create_child(parent, name, strlen(name), mode);
 }
 
-node_t *vfs_create(node_t *parent, const char *path, mode_t mode) {
-	size_t len = 0;
+static node_t *__vfs_create(node_t *parent, const char *path, mode_t mode,
+		int intermediate) {
+	size_t len;
 
 	if (!parent) {
 		parent = vfs_get_root();
@@ -151,12 +153,41 @@ node_t *vfs_create(node_t *parent, const char *path, mode_t mode) {
 	parent = __vfs_lookup_existing(parent, path, &path);
 	path = path_next(path, &len);
 
-	if (!path || path_next(path + len, NULL)) {
-		/* Node already exists, or missing intermediate node. */
+	/* Here path points to the first non-existent fragment, if any. */
+
+	if (intermediate && !path) {
+		/* Node already exist, set mode. */
+		parent->mode = mode;
+		return parent;
+
+	} else if (intermediate) {
+		const char *next_path;
+		size_t next_len;
+
+		while ((next_path = path_next(path + len, &next_len))) {
+			parent = __vfs_create_child(parent, path, len, S_IFDIR);
+			if (!parent) {
+				return NULL;
+			}
+
+			path = next_path;
+			len = next_len;
+		}
+
+	} else if (!path || path_next(path + len, NULL)) {
+		/* Node already exists or missing intermediate node. */
 		return NULL;
 	}
 
 	return __vfs_create_child(parent, path, len, mode);
+}
+
+node_t *vfs_create(node_t *parent, const char *path, mode_t mode) {
+	return __vfs_create(parent, path, mode, 0);
+}
+
+node_t *vfs_create_intermediate(node_t *parent, const char *path, mode_t mode) {
+	return __vfs_create(parent, path, mode, 1);
 }
 
 int vfs_del_leaf(node_t *node) {
