@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <fs/ramfs.h>
 #include <fs/fs_drv.h>
 #include <fs/ext2.h>
 #include <fs/xattr.h>

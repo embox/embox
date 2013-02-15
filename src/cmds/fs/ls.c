@@ -14,8 +14,8 @@
 #include <time.h>
 #include <stdio.h>
 
-#include <sys/stat.h>
 #include <dirent.h>
+#include <sys/stat.h>
 
 #include <embox/cmd.h>
 

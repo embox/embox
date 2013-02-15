@@ -12,7 +12,7 @@
 #include <errno.h>
 
 #include <embox/cmd.h>
-#include <fs/sys/fsop.h>/* now mount declaration in this header */
+#include <fs/sys/fsop.h>
 
 EMBOX_CMD(exec);
 

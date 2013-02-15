@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 
 #include <fs/rootfs.h>
-#include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <fs/path.h>
 #include <fs/fs_drv.h>
