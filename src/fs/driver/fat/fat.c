@@ -83,7 +83,7 @@ static fat_file_info_t *fat_fi_alloc(struct nas *nas, void *fs) {
 }
 
 
-static int fatfs_create_partition(void *bdev) {
+static int fat_create_partition(void *bdev) {
 	lbr_t lbr;
 	size_t num_sect;
 	uint16_t bytepersec, secperfat, rootentries;
@@ -969,7 +969,7 @@ static uint32_t fat_get_free_dir_ent(struct nas *nas, uint8_t *path,
 
 #define MSDOS_DOT     ".          "
 #define MSDOS_DOTDOT  "..         "
-static void fatfs_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
+static void fat_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
 	p_dir_ent_t de;
 
 	de = (dir_ent_t *) sector_buff;
@@ -999,7 +999,7 @@ static void fatfs_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
  * Returns various DFS_* error states. If the result is DFS_OK, file
  * was created and can be used.
  */
-static int fatfs_create_file(struct node * parent_node, struct node *node) {
+static int fat_create_file(struct node * parent_node, struct node *node) {
 	char tmppath[MAX_LENGTH_PATH_NAME];
 	uint8_t filename[12];
 	dir_info_t di;
@@ -1103,7 +1103,7 @@ static int fatfs_create_file(struct node * parent_node, struct node *node) {
 
 	if (node_is_directory(node)) {
 		/* create . and ..  files of this catalog */
-		fatfs_set_direntry(di.currentcluster, fi->cluster);
+		fat_set_direntry(di.currentcluster, fi->cluster);
 		cluster = fi->volinfo->dataarea +
 				  ((fi->cluster - 2) * fi->volinfo->secperclus);
 		if (fat_write_sector(nas->fs->bdev, sector_buff, cluster, 1)) {
@@ -1707,7 +1707,7 @@ static int fat_write_sector(void *bdev, uint8_t *buffer,
 	}
 }
 
-static int fatfs_root_dir_record(void *bdev) {
+static int fat_root_dir_record(void *bdev) {
 	uint32_t cluster;
 	vol_info_t volinfo;
 	uint32_t pstart, psize;
@@ -2119,9 +2119,9 @@ static int fatfs_ioctl(struct file_desc *desc, int request, va_list args) {
 }
 
 static int fat_mount_files (struct nas *dir_nas);
-static int fatfs_create_file(struct node *parent_node, struct node *new_node);
-static int fatfs_create_partition (void *bdev);
-static int fatfs_root_dir_record(void *bdev);
+static int fat_create_file(struct node *parent_node, struct node *new_node);
+static int fat_create_partition (void *bdev);
+static int fat_root_dir_record(void *bdev);
 static int fat_unlike_file(struct nas *nas, uint8_t *path, uint8_t *scratch);
 static int fat_unlike_directory(struct nas *nas, uint8_t *path, uint8_t *scratch);
 
@@ -2154,8 +2154,8 @@ static int fatfs_format(void *dev) {
 	dev_nas = dev_node->nas;
 
 	/* private file_info for dev node is *bdev */
-	fatfs_create_partition(dev_nas->fi->privdata);
-	fatfs_root_dir_record(dev_nas->fi->privdata);
+	fat_create_partition(dev_nas->fi->privdata);
+	fat_root_dir_record(dev_nas->fi->privdata);
 
 	return 0;
 }
@@ -2275,7 +2275,7 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 		return -ENOMEM;
 	}
 
-	fatfs_create_file(parent_node, node);
+	fat_create_file(parent_node, node);
 
 	if (node_is_directory(node)) {
 		/* Create . and .. directories. */
@@ -2353,6 +2353,8 @@ static int fatfs_truncate (struct node *node, off_t length) {
 	struct nas *nas = node->nas;
 
 	nas->fi->ni.size = length;
+
+	/* TODO realloc blocks*/
 
 	return 0;
 }

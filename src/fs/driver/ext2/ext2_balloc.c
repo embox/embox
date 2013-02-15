@@ -207,8 +207,10 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 
 		ext2_write_sector(nas, fi->f_buf, 1, gd->block_bitmap);
 
-		gd->free_blocks_count--;
 		fsi->e2sb.s_free_blocks_count--;
+		ext2_write_sblock(nas);
+		gd->free_blocks_count--;
+		ext2_write_gdblock(nas);
 
 		if (update_bsearch && block != -1 && block != NO_BLOCK) {
 			/* We searched from the beginning, update bsearch. */
@@ -262,8 +264,10 @@ void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
 	ext2_write_sector(nas, (char *) fi->f_buf, 1, gd->block_bitmap);
 
 
-	gd->free_blocks_count++;
 	fsi->e2sb.s_free_blocks_count++;
+	ext2_write_sblock(nas);
+	gd->free_blocks_count++;
+	ext2_write_gdblock(nas);
 
 	if (bit_returned < fsi->s_bsearch) {
 		fsi->s_bsearch = bit_returned;

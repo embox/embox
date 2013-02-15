@@ -130,6 +130,7 @@ POOL_DEF(ext2_file_pool, struct ext2_file_info,
 		OPTION_GET(NUMBER,ext_inode_quantity));
 
 #define EXT_NAME "ext2"
+/* TODO link counter */
 
 static int ext2fs_open(struct node *node, struct file_desc *file_desc,
 		int flags);
@@ -582,10 +583,8 @@ static int ext2fs_delete(struct node *node) {
 	node_t *dot_node, *parents;
 	struct nas *nas;
 	char path[MAX_LENGTH_PATH_NAME];
-	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 	nas = node->nas;
-	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
 	vfs_get_path_by_node(node, path);
@@ -602,15 +601,15 @@ static int ext2fs_delete(struct node *node) {
 	if (node_is_directory(node)) {
 		dot_node = vfs_lookup_child(node, ".");
 		if (dot_node) {
+			pool_free(&ext2_file_pool, dot_node->nas->fi->privdata);
 			vfs_del_leaf(dot_node);
 		}
 
 		dot_node = vfs_lookup_child(node, "..");
 		if (dot_node) {
+			pool_free(&ext2_file_pool, dot_node->nas->fi->privdata);
 			vfs_del_leaf(dot_node);
 		}
-
-		pool_free(&ext2_file_pool, fi);
 	}
 
 	/* root node - have fi, but haven't index*/
@@ -2095,7 +2094,7 @@ static int ext2_dir_operation(struct nas *nas, char *string, ino_t *numb,
 			}
 
 			/* Check for free slot for the benefit of ENTER. */
-			if (ENTER ==  flag&& 0 == dp->e2d_ino) {
+			if (ENTER ==  flag && 0 == dp->e2d_ino) {
 				/* we found a free slot, check if it has enough space */
 				if (required_space <= dp->e2d_reclen) {
 					e_hit = 1; /* we found a free slot */
@@ -2264,14 +2263,18 @@ static int ext2_remove_dir(struct nas *dir_nas, struct nas *nas) {
 		return EBUSY; /* can't remove 'root' */
 	}
 
+	/* Unlink . and .. from the dir. */
+	if (0 != (rc = (ext2_dir_operation(nas, ".", NULL, DELETE, 0) |
+				ext2_dir_operation(nas, "..", NULL, DELETE, 0)))) {
+		return rc;
+	}
+
 	/* Actually try to unlink the file; fails if parent is mode 0 etc. */
 	if (0 != (rc = ext2_unlink_file(dir_nas, nas))) {
 		return rc;
 	}
 
-	/* Unlink . and .. from the dir. */
-	return (ext2_dir_operation(dir_nas, ".", NULL, DELETE, 0) |
-			ext2_dir_operation(dir_nas, "..", NULL, DELETE, 0));
+	return 0;
 }
 
 static int ext2_unlink(struct nas *dir_nas, struct nas *nas) {
