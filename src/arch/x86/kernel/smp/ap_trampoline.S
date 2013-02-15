@@ -9,10 +9,10 @@
 #include <asm/linkage.h>
 #include <asm/gdt.h>
 
-	.section .text
+	.section .data
 	.code16
 
-	.align 4
+	.align 0x1000
 C_ENTRY(__ap_trampoline):
 	cli
 
@@ -40,7 +40,9 @@ C_LABEL(__ap_gdt):
 	.space 128 /* TODO: Fix size */
 C_LABEL(__ap_trampoline_end):
 
+	.section .text
 	.code32
+
 __ap_trampoline_32:
 	/* Setting up selectors */
 	movw $(__KERNEL_DS), %ax
