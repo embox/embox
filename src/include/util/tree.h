@@ -140,7 +140,7 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
 
 #define __tree_foreach_link(link, end_link, tree, begin, end, next) \
 	for (struct tree_link *end_link = (link = begin(tree), end(tree)); \
-			link != end_link; \
+			link != next(end_link); \
 			link = next(link))
 
 
@@ -160,7 +160,7 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
 #define __tree_foreach_link_safe(link, next_link, end_link, tree, begin, end, next) \
 	for (struct tree_link *next_link = (link = begin(tree), next(link)) \
 			, *end_link = end(tree); \
-		link != end_link; \
+		link != next(end_link); \
 		link = next_link, next_link = next(link))
 
 /**
@@ -177,7 +177,7 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
 			element, tree, link_member, begin, end, next) \
 	for (struct tree_link *link = begin(tree), \
 			*end_link = end(tree);\
-		link != end_link \
+		link != next(end_link) \
 			&& (element = tree_element(link, typeof(*element), link_member)); \
 		link = next(link))
 

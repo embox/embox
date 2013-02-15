@@ -87,7 +87,7 @@ struct tree_link *tree_postorder_begin(struct tree_link *tree) {
 }
 
 struct tree_link *tree_postorder_end(struct tree_link *tree) {
-	return tree_postorder_next(tree);
+	return tree;
 }
 
 struct tree_link *tree_lookup_child(struct tree_link *node,
@@ -138,7 +138,7 @@ struct tree_link *tree_children_end(struct tree_link *tree) {
 		return NULL;
 	}
 
-	return list_element(lnk->next, struct tree_link, list_link);
+	return list_element(lnk, struct tree_link, list_link);
 }
 
 
