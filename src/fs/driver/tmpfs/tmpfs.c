@@ -48,15 +48,21 @@ static int tmpfs_mount(void *dev, void *dir);
 
 static int tmpfs_init(void * par) {
 	struct node *dev_node, *dir_node;
+	int res;
 
-	if(NULL == par) {
+	if (!par) {
 		return 0;
 	}
 
 	/*TODO */
 
-	if (0 != ramdisk_create(TMPFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE())) {
+	dir_node = vfs_lookup(NULL, TMPFS_DIR);
+	if (!dir_node) {
 		return -1;
+	}
+
+	if (0 != (res = ramdisk_create(TMPFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE()))) {
+		return res;
 	}
 
 	dev_node = vfs_lookup(NULL, TMPFS_DEV);
@@ -65,13 +71,8 @@ static int tmpfs_init(void * par) {
 	}
 
 	/* format filesystem */
-	if (0 != tmpfs_format((void *) dev_node)) {
-		return -1;
-	}
-
-	dir_node = vfs_create(NULL, TMPFS_DIR, S_IFDIR);
-	if (!dir_node) {
-		return -1;
+	if (0 != (res = tmpfs_format((void *) dev_node))) {
+		return res;
 	}
 
 	/* mount filesystem */
@@ -81,8 +82,8 @@ static int tmpfs_init(void * par) {
 static int tmp_ramdisk_fs_init(void) {
 	return tmpfs_init(TMPFS_DEV);
 }
-EMBOX_UNIT_INIT(tmp_ramdisk_fs_init); /*TODO*/
 
+EMBOX_UNIT_INIT(tmp_ramdisk_fs_init); /*TODO*/
 
 
 static int    tmpfs_open(struct node *node, struct file_desc *file_desc, int flags);
