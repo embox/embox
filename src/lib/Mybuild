@@ -1,29 +1,10 @@
 package embox.lib
 
-
-
 static module LibElf {
 	source "new_elf/elf_header.c"
 	source "new_elf/elf_ph_table.c"
 	source "new_elf/elf_segment.c"
 	source "new_elf/elf_interp.c"
-}
-
-static module LibDl {
-	source "dl/dl.c"
-	source "dl/dl_global_symbols.c"
-	source "dl/dl_relocs.c"
-
-	depends LibElf
-	depends embox.arch.x86.LibDl
-}
-
-static module LibElfloader {
-	source "elfloader/elfloader.c"
-	source "elfloader/elfloader_placement.c"
-
-	depends embox.mem.mmap_api
-	depends LibElf, LibDl
 }
 
 static module LibExec {
