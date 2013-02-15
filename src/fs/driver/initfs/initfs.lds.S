@@ -3,10 +3,8 @@
 SECTIONS {
 	.rodata () : {
 		ALIGNMENT();
-		_ramfs_start = .;
-		*(.ramfs)
-		_ramfs_end = .;
-		ALIGNMENT();
+		_initfs_start = .;
+		*(.initfs.rodata)
+		_initfs_end = .;
 	} SECTION_REGION(rodata)
-	SECTION_SYMBOLS(rodata)
 }

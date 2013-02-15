@@ -1,113 +1,128 @@
 /**
  * @file
- * @brief parse cpio initramfs
+ * @brief CPIO file format.
  *
  * @date 29.09.10
  * @author Nikolay Korotky
+ * @author Eldar Abusalimov
+ *          - Rewrite from scratch, no more dependencies on initfs.
  */
+
+#include <cpio.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <sys/stat.h>
 
-#include <fs/ramfs.h>
 #include <fs/vfs.h>
 #include <fs/fs_drv.h>
-#include <cpio.h>
-
 
 /**
  * The pathname is followed by NUL bytes so that the total size of the fixed
  * header plus pathname is a multiple of four. Likewise, the file data is
  * padded to a multiple of four bytes.
  */
-#define N_ALIGN(len) ((((len) + 1) & ~3) + 2)
-#define F_ALIGN(len) (((len) + 3) & ~3)
+#define NEWC_NAME_ALIGN(len) ((((len) + 1) & ~3) + 2)
+#define NEWC_FILE_ALIGN(len) (((len) + 3) & ~3)
 
+/* Value for the field `c_magic'.  */
+#define NEWC_MAGIC       "070701"
+#define OLD_BIN_MAGIC    "070707"
 
-static cpio_newc_header_t *cpio_parse_item(cpio_newc_header_t *cpio_h, char *name, ramfs_create_param_t *param) {
-	char *s;
-	size_t i;
-	unsigned long parsed[12], file_size, start_addr, mode, mtime;
-	char buf[9];
+#define NEWC_FIELD_SZ     8
 
-	buf[8] = '\0';
-	if (memcmp(cpio_h->c_magic, MAGIC_OLD_BINARY, 6)==0) {
-		printk("Use -H newc option for create cpio arch\n");
+/* New ASCII Format */
+struct newc_hdr {
+	char c_magic[sizeof(NEWC_MAGIC) - 1]; /**< Must be "070701". */
+	char c_ino[NEWC_FIELD_SZ];       /**< The inode numbers from the disk. */
+	char c_mode[NEWC_FIELD_SZ];      /**< Permissions and the file type.*/
+	char c_uid[NEWC_FIELD_SZ];       /**< User id of the owner. */
+	char c_gid[NEWC_FIELD_SZ];       /**< Group id of the owner. */
+	char c_nlink[NEWC_FIELD_SZ];     /**< The number of links to this file.*/
+	char c_mtime[NEWC_FIELD_SZ];     /**< Modification time, seconds. */
+	char c_filesize[NEWC_FIELD_SZ];  /**< Zero for FIFOs and directories. */
+	char c_devmajor[NEWC_FIELD_SZ];
+	char c_devminor[NEWC_FIELD_SZ];
+	char c_rdevmajor[NEWC_FIELD_SZ];
+	char c_rdevminor[NEWC_FIELD_SZ];
+	char c_namesize[NEWC_FIELD_SZ];  /**< Bytes in the pathname.*/
+	char c_check[NEWC_FIELD_SZ];     /**< Ignored, must be zero. */
+};
+
+struct newc_hdr_parsed {
+	unsigned long ino;
+	unsigned long mode;
+	unsigned long uid;
+	unsigned long gid;
+	unsigned long nlink;
+	unsigned long mtime;
+	unsigned long filesize;
+	unsigned long devmajor;
+	unsigned long devminor;
+	unsigned long rdevmajor;
+	unsigned long rdevminor;
+	unsigned long namesize;
+};
+
+#define STR_LEN_TUPLE(str) (str), (sizeof(str) - 1)
+
+static char *cpio_parse_newc(const struct newc_hdr *hdr,
+		struct cpio_entry *entry) {
+	char *raw = (char *) hdr + sizeof(hdr->c_magic);
+	struct newc_hdr_parsed parsed;
+	char field_buff[NEWC_FIELD_SZ + 1];
+
+	field_buff[NEWC_FIELD_SZ] = '\0';
+
+	for (unsigned long *p_field = (unsigned long *) &parsed;
+	     p_field < (unsigned long *) (&parsed + 1);
+	     ++p_field, raw += NEWC_FIELD_SZ) {
+
+		memcpy(field_buff, raw, NEWC_FIELD_SZ);
+		*p_field = strtol(field_buff, NULL, 16);
+	}
+
+	raw += NEWC_FIELD_SZ; /* skip c_check field, now raw points to name. */
+
+	if (strncmp(raw, STR_LEN_TUPLE("TRAILER!!!")) == 0) {
 		return NULL;
 	}
-	if (memcmp(cpio_h->c_magic, MAGIC_NEWC, 6)) {
-		printk("Newc ASCII CPIO format not recognized.\n");
-		return NULL;
-	}
-	s = (char*) cpio_h;
-	for (i = 0, s += 6; i < 12; i++, s += 8) {
-		memcpy(buf, s, 8);
-		parsed[i] = strtol(buf, NULL, 16);
-	}
 
-	strncpy(name, (char*) cpio_h + sizeof(cpio_newc_header_t), parsed[11]);
-	name[parsed[11]] = '\0';
-	file_size  = parsed[6];
-	start_addr = (unsigned long)cpio_h + sizeof(cpio_newc_header_t) + N_ALIGN(parsed[11]);
-	mode       = parsed[1];
-	mtime      = parsed[5];
+	entry->mode  = parsed.mode;
+	entry->uid   = parsed.uid;
+	entry->gid   = parsed.gid;
+	entry->mtime = parsed.mtime;
+#if 0
+	entry->ino   = parsed.ino;
+	entry->nlink = parsed.nlink;
+	entry->devmajor = parsed.devmajor;
+	entry->devminor = parsed.devminor;
+	entry->rdevmajor = parsed.rdevmajor;
+	entry->rdevminor = parsed.rdevminor;
+#endif
 
-	if (0 == strcmp(name, "TRAILER!!!")) {
-		return NULL;
-	} else {
-		//TODO: set start_addr, file_size, mode.
-		strncpy(param->name, name, parsed[11]);
-		param->size = file_size;
-		param->mode = mode;
-		param->mtime = mtime;
-		param->start_addr = start_addr;
+	entry->name = raw;
+	entry->name_len = parsed.namesize;
+	raw += NEWC_NAME_ALIGN(parsed.namesize);
 
-	}
-	return (cpio_newc_header_t*) F_ALIGN(start_addr + file_size);
+	entry->data = raw;
+	entry->size = parsed.filesize;
+	raw += NEWC_FILE_ALIGN(parsed.filesize);
+
+	return raw;
 }
 
-int cpio_unpack(node_t *dir_node) {
-	extern char _ramfs_start, _ramfs_end;
-	cpio_newc_header_t *cpio_h, *cpio_next;
-	char buff_name[MAX_LENGTH_FILE_NAME];
-	struct nas *nas;
-	struct node *node;
-	ramfs_create_param_t param;
-
-	if (&_ramfs_end == &_ramfs_start) {
-		return -1;
+char *cpio_parse_entry(const char *cpio, struct cpio_entry *entry) {
+	if (memcmp(cpio, STR_LEN_TUPLE(OLD_BIN_MAGIC)) == 0) {
+		printk("Use -H newc option for create CPIO archive\n");
+		return NULL;
 	}
-	printk("%s: initramfs at %p into %s\n", __func__, &_ramfs_start,
-			dir_node->name);
-
-	nas = dir_node->nas;
-	nas->fs = alloc_filesystem("ramfs");
-
-	param.root_node = dir_node;
-	cpio_h = (cpio_newc_header_t *) &_ramfs_start;
-	while (NULL != (cpio_next = cpio_parse_item(cpio_h, buff_name, &param))) {
-		cpio_h = cpio_next;
-		if (param.size == 0) {
-			/* this is a directory */
-			//printk("cpio initramfs not support directory now\n");
-			if (NULL == (node = vfs_lookup(dir_node, param.name))) {
-				return 0;/*file already exist*/
-			}
-			// node->type = NODE_TYPE_DIRECTORY | S_IREAD; /* read only file */
-			((struct nas *)(node->nas))->fi =(void *) &param;
-			nas->fs->drv->fsop->create_node(dir_node, node);
-
-		} else {
-			/* this is a regular file */
-			node = vfs_create_child(dir_node, param.name, S_IFREG | S_IRUSR);
-			if (!node) {
-				return 0; /* file already exists */
-			}
-			((struct nas *) (node->nas))->fi = (void *) &param;
-			nas->fs->drv->fsop->create_node(dir_node, node);
-		}
+	if (memcmp(cpio, STR_LEN_TUPLE(NEWC_MAGIC)) != 0) {
+		printk("Newc ASCII CPIO format not recognized\n");
+		return NULL;
 	}
 
-	return 0;
+	return cpio_parse_newc((struct newc_hdr *) cpio, entry);
 }
+
