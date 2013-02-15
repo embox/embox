@@ -191,12 +191,11 @@ int kremove(const char *pathname) {
 }
 
 int kunlink(const char *pathname) {
-	const char *lastpath;
 	node_t *node;
 	fs_drv_t *drv;
 	int res;
 
-	if (0 != fs_perm_lookup(vfs_get_root(), pathname, &lastpath, &node)) {
+	if (0 != fs_perm_lookup(vfs_get_root(), pathname, NULL, &node)) {
 		errno = EACCES;
 		return -1;
 	}
@@ -225,12 +224,11 @@ int kunlink(const char *pathname) {
 }
 
 int krmdir(const char *pathname) {
-	const char *lastpath;
 	node_t *node;
 	fs_drv_t *drv;
 	int res;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), pathname, &lastpath, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), pathname, NULL, &node))) {
 		errno = -res;
 		return -1;
 	}
@@ -260,10 +258,9 @@ int krmdir(const char *pathname) {
 
 int klstat(const char *path, struct stat *buf) {
 	node_t *node;
-	const char *lastpath;
 	int res;
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, &lastpath, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
 		errno = -res;
 		return -1;
 	}
@@ -276,7 +273,6 @@ int klstat(const char *path, struct stat *buf) {
 int kformat(const char *pathname, const char *fs_type) {
 	node_t *node;
 	fs_drv_t *drv;
-	const char *lastpath;
 	int res;
 
 	if (0 != fs_type) {
@@ -292,7 +288,7 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -EINVAL;
 	}
 
-	if (0 != (res = fs_perm_lookup(vfs_get_root(), pathname, &lastpath, &node))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), pathname, NULL, &node))) {
 		errno = res == -ENOENT ? ENODEV : -res;
 		return -1;
 	}
