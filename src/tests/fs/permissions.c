@@ -65,13 +65,14 @@ static int setup_suite(void) {
 	vfs_get_root()->mode = S_IFDIR | 0777;
 
 	if ((res = mkdir(FS_DIR, 0777))) {
-			return res;
+		return res;
 	}
-        if ((res = mount(FS_DEV, FS_DIR, FS_NAME))) {
-                return res;
-        }
 
-        return 0;
+	if ((res = mount(FS_DEV, FS_DIR, FS_NAME))) {
+		return res;
+	}
+
+	return 0;
 
 }
 
