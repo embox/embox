@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <dirent.h>
 
 #include <fs/sys/fsop.h>
 
@@ -164,6 +165,24 @@ TEST_CASE("Opening should not be allowed for not executable dir") {
 	test_assert_zero(setgid(TEST_GID_INVAL));
 
 	test_assert_equal(-1, fd = open(TEST_FNM3, O_RDONLY));
+	test_assert_equal(errno, EACCES);
+}
+
+TEST_CASE("Listing should be allowed for readable dir") {
+	DIR *d;
+	test_assert_zero(setuid(TEST_DUID1));
+	test_assert_zero(setgid(TEST_DGID1));
+
+	test_assert_not_null(d = opendir(TEST_DNM1));
+	closedir(d);
+}
+
+TEST_CASE("Listing should not be allowed for not readable dir") {
+	DIR *d;
+	test_assert_zero(setuid(TEST_UID_INVAL));
+	test_assert_zero(setgid(TEST_DGID1));
+
+	test_assert_null(d = opendir(TEST_DNM1));
 	test_assert_equal(errno, EACCES);
 }
 

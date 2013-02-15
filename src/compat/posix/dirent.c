@@ -7,11 +7,13 @@
 
 #include <types.h>
 #include <errno.h>
-#include <dirent.h>
+#include <string.h>
+#include <fs/perm.h>
 #include <fs/vfs.h>
 #include <mem/objalloc.h>
 #include <util/dlist.h>
-#include <string.h>
+
+#include <dirent.h>
 
 #define MAX_DIR_QUANTITY OPTION_GET(NUMBER, dir_quantity)
 
@@ -20,14 +22,20 @@ OBJALLOC_DEF(dir_pool, struct DIR, MAX_DIR_QUANTITY);
 DIR *opendir(const char *path) {
 	node_t *node;
 	DIR *d;
+	int res;
 
-	if (NULL == (node = vfs_lookup(NULL, path))) {
-		SET_ERRNO(EBADF);
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+		SET_ERRNO(-res);
 		return NULL;
 	}
 
 	if (!node_is_directory(node)) {
 		SET_ERRNO(ENOTDIR);
+		return NULL;
+	}
+
+	if (0 != fs_perm_check(node, S_IROTH)) {
+		SET_ERRNO(EACCES);
 		return NULL;
 	}
 
