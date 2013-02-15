@@ -4,17 +4,18 @@
  *
  * @date 02.07.09
  * @author Anton Bondarev
+ * @author Anton Kozlov
+ *	    -- rewritten to use opendir
  */
 
+#include <errno.h>
 #include <getopt.h>
 #include <string.h>
 #include <time.h>
 #include <stdio.h>
 
-#include <fs/vfs.h>
-#include <fs/ramfs.h>
 #include <sys/stat.h>
-#include <util/tree.h>
+#include <dirent.h>
 
 #include <embox/cmd.h>
 
@@ -23,6 +24,10 @@ EMBOX_CMD(exec);
 static void print_usage(void) {
 	printf("Usage: ls [-hl] path\n");
 }
+
+
+static char dir_name[MAX_LENGTH_FILE_NAME];
+static size_t dir_namel;
 
 /*
 static void print_long_list(char *path, node_t *node, int recursive) {
@@ -42,35 +47,52 @@ static void print_long_list(char *path, node_t *node, int recursive) {
 }
 */
 
-static void print_folder(char *path, node_t *node, int recursive) {
-	node_t *item;
+static void print_folder(char *path, DIR *dir, int recursive) {
+	struct dirent *dent;
 
-	if (!node_is_directory(node)) {
-		printf("%s\n",  path);
-		return;
-	}
-	tree_foreach_children(item, (&node->tree_link), tree_link) {
-		if (recursive) {
-			if (0 == strcmp(path, "/")) {
-				printf("%s\n",  (char *) item->name);
-			} else {
-				printf("%s/%s\n", path, (char *) item->name);
-				strcat(path, (char *) item->name);
-				print_folder(path, item, recursive);
-			}
+	while (NULL != (dent = readdir(dir))) {
+		int pathlen = strlen(path);
+		int dent_namel = strlen(dent->d_name);
+		char line[pathlen + dent_namel + 3];
+
+		if (pathlen > 0) {
+			sprintf(line, "%s/%s", path, dent->d_name);
 		} else {
-			printf("%s\n", (char *) item->name);
+			strcpy(line, dent->d_name);
+		}
+
+		printf("%s\n", line);
+
+		if (recursive) {
+			char this_fullpath[pathlen + dent_namel + dir_namel];
+			stat_t sb;
+			DIR *d;
+
+			sprintf(this_fullpath, "%s/%s", dir_name, line);
+
+			stat(this_fullpath, &sb);
+
+			if (0 == (sb.st_mode & S_IFDIR)) {
+				continue;
+			}
+
+			if (NULL == (d = opendir(this_fullpath))) {
+				printf("Cannot recurse %s\n", this_fullpath);
+			}
+
+			print_folder(line, d, recursive);
+
+			closedir(d);
 		}
 	}
+
 }
 
 
 static int exec(int argc, char **argv) {
-	//int long_list = 0;
-	node_t *node;
-	char path[MAX_LENGTH_FILE_NAME];
+	DIR *dir;
 
-	void (*print_func)(char *path, node_t *node, int recursive) = print_folder;
+	void (*print_func)(char *path, DIR *d, int recursive) = print_folder;
 	int recursive = 0;
 
 	int opt_cnt = 0;
@@ -101,17 +123,20 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (optind < argc) {
-		sprintf(path, "%s", argv[optind]);
+		sprintf(dir_name, "%s", argv[optind]);
 	} else {
-		sprintf(path, "/");
+		sprintf(dir_name, "/");
 	}
 
-	node = vfs_lookup(NULL, path);
-	if (NULL == node) {
-		printf("ls: cannot access %s: No such file or directory\n", path);
-		return -1;
+	dir_namel = strlen(dir_name);
+
+	if (NULL == (dir = opendir(dir_name))) {
+		return errno;
 	}
-	print_func(path, node, recursive);
+
+	print_func("", dir, recursive);
+
+	closedir(dir);
 
 	return 0;
 }
