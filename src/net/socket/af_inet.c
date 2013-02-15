@@ -121,10 +121,12 @@ static int inet_release(struct socket *sock) {
 
 	assert(sock != NULL);
 
+	if (!sock_lock(&sock->sk)) {
+		return -EINVAL;
+	}
+
 	sk = sock->sk;
 	assert(sk != NULL);
-
-	sock_lock(sk);
 
 	/* free port */
 	inet = inet_sk(sk);
@@ -153,8 +155,6 @@ static int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 	struct sockaddr_in *addr_in;
 	struct inet_sock *inet;
 
-	assert(sock != NULL);
-
 	if ((addr == NULL) || (addr_len != sizeof *addr_in)) {
 		return -EINVAL;
 	}
@@ -170,10 +170,14 @@ static int inet_bind(struct socket *sock, struct sockaddr *addr, int addr_len) {
 		return -EADDRNOTAVAIL;
 	}
 
+	assert(sock != NULL);
+
+	if (!sock_lock(&sock->sk)) {
+		return -EINVAL;
+	}
+
 	sk = sock->sk;
 	assert(sk != NULL);
-
-	sock_lock(sk);
 
 	inet = inet_sk(sk);
 	inet->rcv_saddr = addr_in->sin_addr.s_addr;
@@ -208,16 +212,22 @@ static int inet_stream_connect(struct socket *sock, struct sockaddr * addr,
 	struct sock *sk;
 
 	assert(sock != NULL);
-	assert(sock->sk != NULL);
-	assert(sock->sk->sk_prot != NULL);
 
-	sk = sock->sk;
-	if (sk->sk_prot->connect == NULL) {
-		return -EOPNOTSUPP;
+	if (!sock_lock(&sock->sk)) {
+		return -EINVAL;
 	}
 
-	sock_lock(sk);
-	res = sk->sk_prot->connect(sk, addr, addr_len);
+	sk = sock->sk;
+	assert(sk != NULL);
+	assert(sk->sk_prot != NULL);
+
+	if (sk->sk_prot->connect != NULL) {
+		res = sk->sk_prot->connect(sk, addr, addr_len);
+	}
+	else {
+		res = -EOPNOTSUPP;
+	}
+
 	sock_unlock(sk);
 
 	return res;
@@ -229,18 +239,25 @@ static int inet_dgram_connect(struct socket *sock, struct sockaddr * addr,
 	struct sock *sk;
 
 	assert(sock != NULL);
-	assert(sock->sk != NULL);
-	assert(sock->sk->sk_prot != NULL);
 
-	sk = sock->sk;
-	if (sk->sk_prot->connect == NULL) {
-		sock_lock(sk);
-		res = sk->sk_prot->connect(sk, addr, addr_len);
-		sock_unlock(sk);
-		return res;
+	if (!sock_lock(&sock->sk)) {
+		return -EINVAL;
 	}
 
-	return ENOERR;
+	sk = sock->sk;
+	assert(sk != NULL);
+	assert(sk->sk_prot != NULL);
+
+	if (sk->sk_prot->connect == NULL) {
+		res = sk->sk_prot->connect(sk, addr, addr_len);
+	}
+	else {
+		res = 0;
+	}
+
+	sock_unlock(sk);
+
+	return res;
 }
 
 int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
@@ -249,16 +266,22 @@ int inet_sendmsg(struct kiocb *iocb, struct socket *sock,
 	struct sock *sk;
 
 	assert(sock != NULL);
-	assert(sock->sk != NULL);
-	assert(sock->sk->sk_prot != NULL);
 
-	sk = sock->sk;
-	if (sk->sk_prot->sendmsg == NULL) {
-		return -EOPNOTSUPP;
+	if (!sock_lock(&sock->sk)) {
+		return -EINVAL;
 	}
 
-	sock_lock(sk);
-	res = sk->sk_prot->sendmsg(iocb, sk, msg, size);
+	sk = sock->sk;
+	assert(sk != NULL);
+	assert(sk->sk_prot != NULL);
+
+	if (sk->sk_prot->sendmsg != NULL) {
+		res = sk->sk_prot->sendmsg(iocb, sk, msg, size);
+	}
+	else {
+		res = -EOPNOTSUPP;
+	}
+
 	sock_unlock(sk);
 
 	return res;
@@ -270,16 +293,22 @@ int inet_recvmsg(struct kiocb *iocb, struct socket *sock,
 	struct sock *sk;
 
 	assert(sock != NULL);
-	assert(sock->sk != NULL);
-	assert(sock->sk->sk_prot != NULL);
 
-	sk = sock->sk;
-	if (sk->sk_prot->recvmsg == NULL) {
-		return -EOPNOTSUPP;
+	if (!sock_lock(&sock->sk)) {
+		return -EINVAL;
 	}
 
-	sock_lock(sk);
-	res = sk->sk_prot->recvmsg(iocb, sk, msg, size, 0, flags);
+	sk = sock->sk;
+	assert(sk != NULL);
+	assert(sk->sk_prot != NULL);
+
+	if (sk->sk_prot->recvmsg != NULL) {
+		res = sk->sk_prot->recvmsg(iocb, sk, msg, size, 0, flags);
+	}
+	else {
+		res = -EOPNOTSUPP;
+	}
+
 	sock_unlock(sk);
 
 	return res;
@@ -290,16 +319,22 @@ int inet_listen(struct socket *sock, int backlog) {
 	struct sock *sk;
 
 	assert(sock != NULL);
-	assert(sock->sk != NULL);
-	assert(sock->sk->sk_prot != NULL);
 
-	sk = sock->sk;
-	if (sk->sk_prot->listen == NULL) {
-		return -EOPNOTSUPP;
+	if (!sock_lock(&sock->sk)) {
+		return -EINVAL;
 	}
 
-	sock_lock(sk);
-	res = sk->sk_prot->listen(sk, backlog);
+	sk = sock->sk;
+	assert(sk != NULL);
+	assert(sk->sk_prot != NULL);
+
+	if (sk->sk_prot->listen != NULL) {
+		res = sk->sk_prot->listen(sk, backlog);
+	}
+	else {
+		res = -EOPNOTSUPP;
+	}
+
 	sock_unlock(sk);
 
 	return res;
@@ -308,15 +343,20 @@ int inet_listen(struct socket *sock, int backlog) {
 static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, int *addr_len) {
 	int res;
 
+	if (!sock_lock(&sk)) {
+		return -EINVAL;
+	}
+
 	assert(sk != NULL);
 	assert(sk->sk_prot != NULL);
 
-	if (sk->sk_prot->accept == NULL) {
-		return -EOPNOTSUPP;
+	if (sk->sk_prot->accept != NULL) {
+		res = sk->sk_prot->accept(sk, newsk, addr, addr_len);
+	}
+	else {
+		res = -EOPNOTSUPP;
 	}
 
-	sock_lock(sk);
-	res = sk->sk_prot->accept(sk, newsk, addr, addr_len);
 	sock_unlock(sk);
 
 	return res;
@@ -327,11 +367,10 @@ static int inet_setsockopt(struct socket *sock, int level, int optname,
 	net_device_t *dev;
 	struct socket_opt_state *ops;
 	struct sock *sk;
-	int res = ENOERR;
+	int res;
 
 	assert(sock != NULL);
-	assert(sock->sk != NULL);
-	assert(sock->sk->sk_prot != NULL);
+	assert(sock->socket_node != NULL);
 
 	if (optname == SO_BINDTODEVICE) {
 		dev = netdev_get_by_name(optval);
@@ -341,9 +380,15 @@ static int inet_setsockopt(struct socket *sock, int level, int optname,
 		ops->so_bindtodev = dev;
 	}
 
-	sk = sock->sk;
+	if (!sock_lock(&sock->sk)) {
+		return -EINVAL;
+	}
 
-	sock_lock(sk);
+	sk = sock->sk;
+	assert(sk != NULL);
+	assert(sk->sk_prot != NULL);
+	assert(sk->sk_prot->setsockopt != NULL);
+
 	res = sk->sk_prot->setsockopt(sk, level, optname, optval, optlen);
 	sock_unlock(sk);
 
@@ -352,14 +397,23 @@ static int inet_setsockopt(struct socket *sock, int level, int optname,
 
 int inet_shutdown(struct socket *sock, int how) {
 	struct sock *sk;
-	int res = ENOERR;
+	int res;
 
-	assert(sock->sk != NULL);
+	assert(sock != NULL);
+
+	if (!sock_lock(&sock->sk)) {
+		return -EINVAL;
+	}
+
 	sk = sock->sk;
-	assert(sk->sk_prot);
+	assert(sk != NULL);
+	assert(sk->sk_prot != NULL);
 
-	if (sk->sk_prot->shutdown) {
+	if (sk->sk_prot->shutdown != NULL) {
 		res = sk->sk_prot->shutdown(sk, how);
+	}
+	else {
+		res = 0;
 	}
 
 	return res;

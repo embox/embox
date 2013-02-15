@@ -186,7 +186,7 @@ extern int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
 extern void sk_common_release(struct sock *sk);
 
 /* Simple spinlock */
-extern void sock_lock(struct sock *sk);
+extern int sock_lock(struct sock **psk);
 extern void sock_unlock(struct sock *sk);
 
 /**

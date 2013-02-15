@@ -14,6 +14,7 @@
 #include <net/sock.h>
 #include <mem/misc/pool.h>
 #include <hal/ipl.h>
+#include <kernel/softirq_lock.h>
 #include <kernel/thread/event.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
@@ -202,22 +203,29 @@ void sk_common_release(struct sock *sk) {
 	sk_free(sk);
 }
 
-static int test_and_set(unsigned long *a) {
-	register int tmp;
-	ipl_t ipl = ipl_save();
-	tmp = *a;
-	*a = 1;
-	ipl_restore(ipl);
+int sock_lock(struct sock **psk) {
+	struct sock *sk;
+	spinlock_t is_locked;
 
-	return tmp;
-}
+	assert(psk != NULL);
 
-void sock_lock(struct sock *sk) {
-	assert(sk != NULL);
-	while(test_and_set(&sk->sk_lock.slock));
+	do {
+		softirq_lock();
+		{
+			sk = *psk;
+			if (sk != NULL) {
+				is_locked = sk->sk_lock.slock;
+				sk->sk_lock.slock = 1;
+			}
+		}
+		softirq_unlock();
+	} while ((sk != NULL) && is_locked);
+
+	return sk != NULL ? 1 : 0;
 }
 
 void sock_unlock(struct sock *sk) {
 	assert(sk != NULL);
+
 	sk->sk_lock.slock = 0;
 }
