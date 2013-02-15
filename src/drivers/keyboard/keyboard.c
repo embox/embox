@@ -12,55 +12,34 @@
 
 #include <drivers/keyboard.h>
 #include <drivers/input/input_dev.h>
-
-#define KEYBOARD_SCAN_CODE_EXT    0xE0
-
-#define KEYBOARD_SCAN_CODE_CTRL   0x1D
-#define KEYBOARD_SCAN_CODE_ALT    0x38
-#define KEYBOARD_SCAN_CODE_SHIFT  0x2A
-#define KEYBOARD_SCAN_CODE_CAPS   0x3A
+#include <drivers/i8042.h>
 
 
-#define  I8042_CMD_READ_MODE   0x20
-#define  I8042_CMD_WRITE_MODE  0x60
-#define  I8042_CMD_PORT_DIS    0xAD
-#define  I8042_CMD_PORT_EN     0xAE
-
-#define  I8042_MODE_XLATE      0x40
-#define  I8042_MODE_DISABLE    0x10
-
-
-
-#define  CMD_PORT              0x64
-#define  STATUS_PORT           0x64
-#define  DATA_PORT             0x60
-
-
-#define keyboard_wait_read()  do {} while (0 == (inb(STATUS_PORT) & 0x01))
-#define keyboard_wait_write() do {} while (0 != (inb(STATUS_PORT) & 0x02))
+#define keyboard_wait_read()  do {} while (0 == (inb(I8042_STS_PORT) & 0x01))
+#define keyboard_wait_write() do {} while (0 != (inb(I8042_STS_PORT) & 0x02))
 
 extern const unsigned int keymap[][4];
 
 static int keyboard_havechar(void) {
-	unsigned char c = inb(STATUS_PORT);
+	unsigned char c = inb(I8042_STS_PORT);
 	return (c == 0xFF) ? 0 : c & 1;
 }
 
 static void keyboard_send_cmd(uint8_t cmd) {
 	keyboard_wait_write();
-	outb(cmd, CMD_PORT);
+	outb(cmd, I8042_CMD_PORT);
 }
 
 static unsigned char keyboard_get_mode(void) {
 	keyboard_send_cmd(I8042_CMD_READ_MODE);
 	keyboard_wait_read();
-	return inb(DATA_PORT);
+	return inb(I8042_DATA_PORT);
 }
 
 static void keyboard_set_mode(unsigned char mode) {
 	keyboard_send_cmd(I8042_CMD_WRITE_MODE);
 	keyboard_wait_write();
-	outb(mode, DATA_PORT);
+	outb(mode, I8042_DATA_PORT);
 }
 
 int keyboard_has_symbol(void) {
@@ -86,18 +65,18 @@ static void kbd_key_serv_press(int state, int flag) {
 }
 
 
-#define KMC_PORTB 0x61
-int keyboard_get_input_event(struct input_event *event) {
+//#define KMC_PORTB 0x61
+static int keyboard_get_input_event(struct input_event *event) {
 	uint8_t scan_code;
 	int flag = 0;
 	keyboard_wait_read();
 
-	scan_code = inb(DATA_PORT);
+	scan_code = inb(I8042_DATA_PORT);
 
 //	printk("s 0x%X\n", scan_code);
 	if(scan_code == KEYBOARD_SCAN_CODE_EXT) {
 		keyboard_wait_read();
-		scan_code = inb(DATA_PORT);
+		scan_code = inb(I8042_DATA_PORT);
 	}
 	if(scan_code & 0x80) {
 		/* key unpressed */
@@ -176,7 +155,7 @@ void keyboard_init(void) {
 	keyboard_send_cmd(I8042_CMD_PORT_DIS);
 
 	/* Empty keyboard buffer */
-	while (keyboard_havechar()) inb(DATA_PORT);
+	while (keyboard_havechar()) inb(I8042_DATA_PORT);
 
 	/* Read the current mode */
 	mode = keyboard_get_mode();
