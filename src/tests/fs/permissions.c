@@ -25,31 +25,31 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 
 #define FS_NAME  "ext2"
 #define FS_DEV  "/dev/hda"
-#define FS_DIR  "/test_permision"
+#define FS_DIR  "/tmp"
 
-#define TEST_FNM1 "/test_permision/f1"
+#define TEST_FNM1 "/tmp/f1"
 #define TEST_UID1 1000
 #define TEST_GID1 1000
 #define TEST_MOD1 0664
 
-#define TEST_FNM2 "/test_permision/f2"
+#define TEST_FNM2 "/tmp/f2"
 #define TEST_UID2 1001
 #define TEST_GID2 1001
 #define TEST_MOD2 0006
 
-#define TEST_DNM1 "/test_permision/dir"
+#define TEST_DNM1 "/tmp/dir"
 #define TEST_DUID1 1000
 #define TEST_DGID1 1000
 #define TEST_DMOD1 0710
 
-#define TEST_FNM3 "/test_permision/dir/f1"
+#define TEST_FNM3 "/tmp/dir/f1"
 #define TEST_UID3 0
 #define TEST_GID3 0
 #define TEST_MOD3 0777
 
-#define TEST_FNM4 "/test_permision/dir/f2"
+#define TEST_FNM4 "/tmp/dir/f2"
 
-#define TEST_DNM2 "/test_permision/dir2"
+#define TEST_DNM2 "/tmp/dir2"
 
 #define TEST_UID_INVAL 0xdead
 #define TEST_GID_INVAL 0xdead
