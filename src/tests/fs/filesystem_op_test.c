@@ -9,11 +9,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <fs/sys/fsop.h>/* now mount declaration in this header */
 
 #include <cmd/mkfs.h>
 #include <fs/vfs.h>
 #include <fs/fs_drv.h>
+#include <fs/sys/fsop.h>
 
 #include <drivers/ramdisk.h>
 #include <embox/block_dev.h>
@@ -30,19 +30,17 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define FS_NAME  "vfat"
 #define FS_DEV  "/dev/ramdisk"
 #define FS_BLOCKS  124
-#define FS_DIR    "/test_fsop"
-#define FS_DIR1   "/test_fsop/foo"
-#define FS_DIR2   "/test_fsop/foo/bar"
-#define FS_FILE1  "/test_fsop/foo/bar/abc.txt"
-#define FS_FILE2  "/test_fsop/foo/bar/xyz.txt"
+#define FS_DIR    "/tmp"
+#define FS_DIR1   "/tmp/foo"
+#define FS_DIR2   "/tmp/foo/bar"
+#define FS_FILE1  "/tmp/foo/bar/abc.txt"
+#define FS_FILE2  "/tmp/foo/bar/xyz.txt"
 
 TEST_CASE("Create fat filesystem") {
 	test_assert_zero(format(FS_DEV, FS_NAME));
 }
 
 TEST_CASE("Mount fat filesystem") {
-	rmdir(FS_DIR);
-	test_assert_zero(mkdir(FS_DIR, 0777));
 	test_assert_zero(mount(FS_DEV, FS_DIR, FS_NAME));
 }
 
@@ -65,7 +63,6 @@ TEST_CASE("Delete file") {
 	test_assert(0 > open(FS_FILE2, O_RDONLY));
 	test_assert_zero(remove(FS_DIR2));
 	test_assert_zero(remove(FS_DIR1));
-	test_assert_zero(remove(FS_DIR));
 }
 
 static int setup_suite(void) {

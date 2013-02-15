@@ -10,10 +10,10 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include <fs/sys/fsop.h>/* now mount declaration in this header */
 #include <drivers/ramdisk.h>
 #include <mem/page.h>
 #include <sys/xattr.h>
+#include <fs/sys/fsop.h>
 
 #include <embox/test.h>
 
@@ -25,13 +25,13 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 
 #define FS_NAME  "ext2"
 #define FS_DEV  "/dev/hda"
-#define FS_DIR  "/test_xattr"
+#define FS_DIR  "/tmp"
 
-#define TEST_CLEAN_FILE_NM "/test_xattr/clean_test"
-#define TEST_FILE_NM "/test_xattr/test"
-#define TEST_FILE2_NM "/test_xattr/test2"
-#define TEST_FILE_ADD_NM "/test_xattr/test_add_with_xattr"
-#define TEST_FILE_ADD_CLEAN_NM "/test_xattr/test_add_clean"
+#define TEST_CLEAN_FILE_NM "/tmp/clean_test"
+#define TEST_FILE_NM "/tmp/test"
+#define TEST_FILE2_NM "/tmp/test2"
+#define TEST_FILE_ADD_NM "/tmp/test_add_with_xattr"
+#define TEST_FILE_ADD_CLEAN_NM "/tmp/test_add_clean"
 
 static const char *xattr_nm1 = "attr1";
 static const char *xattr_vl1 = "value1";

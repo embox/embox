@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include <fs/sys/fsop.h>/* now mount declaration in this header */
+#include <fs/sys/fsop.h>
 
 #include <embox/test.h>
 

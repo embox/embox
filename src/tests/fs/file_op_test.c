@@ -13,7 +13,7 @@
 
 #include <fs/vfs.h>
 #include <fs/fs_drv.h>
-#include <fs/sys/fsop.h>/* now mount declaration in this header */
+#include <fs/sys/fsop.h>
 #include <embox/block_dev.h>
 #include <drivers/ramdisk.h>
 
@@ -28,14 +28,15 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 
 #define FS_NAME  "vfat"
 #define FS_DEV  "/dev/ramdisk"
+#define FS_DIR  "/tmp"
 #define FS_TYPE  12
 #define FS_BLOCKS  124
-#define FS_DIR  "/test_fop"
-#define FS_FILE1  "/test_fop/1/2/3/1.txt"
-#define FS_FILE2  "/test_fop/1/2/3/2.txt"
-#define FS_DIR3  "/test_fop/1/2/3"
-#define FS_DIR2  "/test_fop/1/2"
-#define FS_DIR1  "/test_fop/1"
+
+#define FS_FILE1  "/tmp/1/2/3/1.txt"
+#define FS_FILE2  "/tmp/1/2/3/2.txt"
+#define FS_DIR3  "/tmp/1/2/3"
+#define FS_DIR2  "/tmp/1/2"
+#define FS_DIR1  "/tmp/1"
 #define FS_TESTDATA  "qwerty\n"
 
 TEST_CASE("Write file") {
@@ -115,10 +116,6 @@ static int setup_suite(void) {
 		return res;
 	}
 
-	if (0 != (res = mkdir(FS_DIR, MKDIR_PERM))) {
-		return res;
-	}
-
 	/* mount filesystem */
 	if (0 != (res = mount(FS_DEV, FS_DIR, FS_NAME))) {
 		return res;
@@ -149,7 +146,7 @@ static int teardown_suite(void) {
 
 	if (remove(FS_FILE1) ||	remove(FS_FILE2) ||
 		remove(FS_DIR3)  ||	remove(FS_DIR2)  ||
-		remove(FS_DIR1)  ||	remove(FS_DIR)) {
+		remove(FS_DIR1)) {
 		return -1;
 	}
 	if (ramdisk_delete(FS_DEV)) {
