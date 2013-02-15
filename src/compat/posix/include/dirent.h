@@ -9,16 +9,21 @@
 
 #include <sys/types.h>
 #include <sys/cdefs.h>
+#include <fs/node.h>
 
 __BEGIN_DECLS
 
+#define DIRENT_DNAME_LEN 40
+
 struct dirent {
 	ino_t  d_ino;      /* File serial number. */
-	char   d_name[40]; /* Name of entry. */
+	char   d_name[DIRENT_DNAME_LEN]; /* Name of entry. */
 };
 
 typedef struct DIR {
 	struct dirent current;
+	node_t *node;
+	struct tree_link *child_lnk;
 } DIR;
 
 
