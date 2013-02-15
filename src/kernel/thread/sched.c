@@ -21,6 +21,7 @@
 #include <kernel/critical.h>
 #include <kernel/irq_lock.h>
 #include <kernel/thread/sched.h>
+#include <kernel/thread/current.h>
 #include <kernel/thread/sched_strategy.h>
 #include <kernel/thread/state.h>
 #include <kernel/time/timer.h>
@@ -75,14 +76,12 @@ int sched_init(struct thread* current, struct thread *idle) {
 
 	runq_init(&rq, current, idle);
 
+	thread_set_current(current);
+
 	assert(thread_state_started(current->state));
 	assert(thread_state_started(idle->state));
 
 	return 0;
-}
-
-struct thread *sched_current(void) {
-	return runq_current(&rq);
 }
 
 void sched_start(struct thread *t) {
@@ -168,7 +167,7 @@ void do_wake_thread(struct thread *thread, int sleep_result) {
 }
 
 static void do_sleep_locked(struct sleepq *sq) {
-	struct thread *current = runq_current(&rq);
+	struct thread *current = sched_current();
 	assert(in_sched_locked() && !in_harder_critical());
 	assert(thread_state_running(current->state));
 
@@ -326,24 +325,6 @@ int sched_sleep_ms(struct sleepq *sq, unsigned long timeout) {
 	return sleep_res;
 }
 
-#if 0
-int sched_tryrun(struct thread *t) {
-	sched_lock();
-	{
-		if (thread_state_sleeping(t->state)) {
-			thread_wake_force(t, SCHED_SLEEP_INTERRUPT);
-		}
-		/*
-		if (thread_state_suspended(t->state)) {
-			do_thread_resume(t);
-		}
-		*/
-	}
-	sched_unlock();
-	return 0;
-}
-#endif
-
 void sched_post_switch(void) {
 	sched_lock();
 	{
@@ -420,7 +401,6 @@ static void sched_switch(void) {
 	assert(!in_sched_locked());
 
 	sched_lock();
-
 	{
 		startq_flush();
 
@@ -431,9 +411,9 @@ static void sched_switch(void) {
 
 		ipl_enable();
 
-		prev = runq_current(&rq);
+		prev = sched_current();
 
-		if (!runq_switch(&rq)) {
+		if (prev == (next = runq_switch(&rq))) {
 			ipl_disable();
 			goto out;
 		}
@@ -442,16 +422,15 @@ static void sched_switch(void) {
 		prev->running_time += new_clock - prev_clock;
 		prev_clock = new_clock;
 
-		next = runq_current(&rq);
-
 		assert(thread_state_running(next->state));
-		assert(next != prev);
 
 		trace_point("context switch");
 
 		ipl_disable();
 
 		task_notify_switch(prev, next);
+
+		thread_set_current(next);
 		context_switch(&prev->context, &next->context);
 	}
 
@@ -477,6 +456,16 @@ int sched_tryrun(struct thread *thread) {
 	sched_unlock();
 
 	return res;
+}
+
+int sched_cpu_init(struct thread *current) {
+	extern int runq_cpu_init(struct runq *rq, struct thread *current);
+
+	runq_cpu_init(&rq, current);
+
+	thread_set_current(current);
+
+	return 0;
 }
 
 static int unit_init(void) {

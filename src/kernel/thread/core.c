@@ -354,21 +354,40 @@ static void *idle_run(void *arg) {
 	return NULL;
 }
 
-static int unit_init(void) {
-	static struct thread bootstrap;
-	struct thread *idle;
+struct thread *thread_init_self(void *stack, size_t stack_sz,
+		thread_priority_t priority) {
 	struct task *kernel_task = task_kernel_task();
+	struct thread *thread = stack - stack_sz; /* Allocating at the bottom */
+
+	/* Stack setting up */
+	thread->stack = stack;
+	thread->stack_sz = stack_sz;
+
+	/* Global list addition and id setting up */
+	thread->id = id_counter++;
+	list_add_tail(&thread->thread_link, &__thread_list);
+
+	/* General initialization and task setting up */
+	thread_init(thread, 0, NULL, NULL, kernel_task);
+	kernel_task->main_thread = thread;
+
+	/* Priority setting up */
+	thread->priority = priority;
+
+	return thread;
+}
+
+static int unit_init(void) {
+	struct thread *idle;
+	struct thread *bootstrap;
+	struct task *kernel_task = task_kernel_task();
+	extern char _stack_vma, _stack_len;
+
 	id_counter = 0;
 
-	bootstrap.id = id_counter++;
-	list_add_tail(&bootstrap.thread_link, &__thread_list);
-
-	thread_init(&bootstrap, 0, NULL, NULL, kernel_task);
-
-	// TODO priority for bootstrap thread -- Eldar
-	bootstrap.priority = THREAD_PRIORITY_NORMAL;
-
-	kernel_task->main_thread = &bootstrap;
+	/* TODO: priority */
+	bootstrap = thread_init_self(&_stack_vma + (uint32_t) &_stack_len,
+			(uint32_t) &_stack_len, THREAD_PRIORITY_NORMAL);
 
 	if (!(idle = thread_new())) {
 		return -ENOMEM;
@@ -376,12 +395,11 @@ static int unit_init(void) {
 	thread_init(idle, 0, idle_run, NULL, kernel_task);
 	thread_context_init(idle);
 
-	bootstrap.task = kernel_task;
 	idle->task = kernel_task;
 
 	idle->priority = THREAD_PRIORITY_MIN;
 
-	return sched_init(&bootstrap, idle);
+	return sched_init(bootstrap, idle);
 }
 
 static int unit_fini(void) {
@@ -426,10 +444,10 @@ static void thread_delete(struct thread *t) {
 	}
 }
 
-typedef struct thread_pool_entry {
+typedef union thread_pool_entry {
 	struct thread thread;
 	char stack[STACK_SZ];
-} thread_pool_entry_t;
+} thread_pool_entry_t __attribute__((aligned(STACK_SZ)));
 
 POOL_DEF(thread_pool, thread_pool_entry_t, POOL_SZ);
 

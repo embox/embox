@@ -11,6 +11,7 @@
 #ifndef KERNEL_THREAD_SCHED_H_
 #define KERNEL_THREAD_SCHED_H_
 
+#include <kernel/thread/current.h>
 #include <kernel/thread/sched_lock.h>
 #include <kernel/thread/sched_priority.h>
 
@@ -45,7 +46,7 @@ extern int sched_init(struct thread *current, struct thread *idle);
  * @return
  *   The currently executing thread.
  */
-extern struct thread *sched_current(void);
+#define sched_current() thread_get_current()
 
 /**
  * Makes active thread and adds thread to the queue of ready to executing

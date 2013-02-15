@@ -9,36 +9,34 @@
 #ifndef KERNEL_PERCPU_H_
 #define KERNEL_PERCPU_H_
 
+#include <types.h>
+
 #include <kernel/cpu.h>
 
 #ifdef SMP
 
-#define PERCPU_DEFINE(type, name) \
-		type PERCPU_##name[NCPU]
+extern char _percpu_vma, _percpu_len;
 
-#define PERCPU_DECLARE(type, name) \
-		extern type PERCPU_##name[]
+#define __percpu__     __attribute__((section(".data.percpu")))
+#define __PERCPU_START ((char *) &_percpu_vma)
+#define __PERCPU_LEN   ((size_t) &_percpu_len)
 
-#define __PERCPU_VAR(name) \
-		PERCPU_##name[cpu_get_id()]
+#define __PERCPU_VAR_PTR(name) \
+		((typeof(name)) (((char *) (name)) + (cpu_get_id() * __PERCPU_LEN)))
 
 #else
 
-#define PERCPU_DEFINE(type, name) \
-		type PERCPU_##name
+#define __percpu__
 
-#define PERCPU_DECLARE(type, name) \
-		extern type PERCPU_##name
-
-#define __PERCPU_VAR(name) \
-		PERCPU_##name
+#define __PERCPU_VAR_PTR(name) \
+		(name)
 
 #endif /* SMP */
 
-#define percpu_get(name) \
-		(__PERCPU_VAR(name))
+#define percpu_ptr(name) \
+		__PERCPU_VAR_PTR(name)
 
-#define percpu_set(name, val) \
-		do { __PERCPU_VAR(name) = val } while (0)
+#define percpu_var(name) \
+		(*percpu_ptr(&(name)))
 
 #endif /* KERNEL_PERCPU_H_ */

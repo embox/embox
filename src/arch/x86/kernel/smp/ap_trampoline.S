@@ -12,7 +12,7 @@
 	.section .text
 	.code16
 
-	.align 0x1000
+	.align 4
 C_ENTRY(__ap_trampoline):
 	cli
 

@@ -155,12 +155,10 @@ extern int sleepq_wake_thread(struct runq *runq, struct sleepq *sleepq, struct t
  *
  * @param runq
  *   Running queue.
- * @retval 0
- *   Current thread is not switched.
- * @retval non-zero
- *   Current thread is switched.
+ * @retval
+ *   Thread to perform next. May equals to current.
  */
-extern int runq_switch(struct runq *runq);
+extern struct thread *runq_switch(struct runq *runq);
 
 /**
  * Sets scheduling priority of running thread.

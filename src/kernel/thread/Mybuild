@@ -28,6 +28,7 @@ module sched {
 	depends embox.arch.context /* context_switch */
 	depends embox.kernel.thread.sched_policy.api
 
+	@NoRuntime depends embox.kernel.thread.current.api
 	@NoRuntime depends embox.compat.posix.util.time
 	@NoRuntime depends embox.kernel.critical
 }

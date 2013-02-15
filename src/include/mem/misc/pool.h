@@ -33,25 +33,24 @@ struct pool {
 
 /**
  * Create pool descriptor. The memory for pool is allocated in special section
- * "reserve.pool"
+ * "reserve.pool".
  *
  * @param name of cache
  * @param type of objects in cache
  * @param count of objects in cache
  */
 #define POOL_DEF(name, object_type, size) \
-	static union {                                  \
+	static union {                       \
 		typeof(object_type) object;                 \
 		struct slist_link free_link;      \
-	} __pool_storage ## name[size] __attribute__((section(".reserve.pool"))); \
+	} __pool_storage ## name[size] __attribute__((section(".reserve.pool")));  \
 	static struct pool name = { \
 			.memory = __pool_storage ## name, \
 			.bound_free = __pool_storage ## name, \
 			.free_blocks = SLIST_INIT(&name.free_blocks),\
 			.obj_size = sizeof(*__pool_storage ## name), \
 			.pool_size = sizeof(*__pool_storage ## name) * size, \
-};
-
+	};
 
 /**
  * allocate single object from the cache and return it to the caller

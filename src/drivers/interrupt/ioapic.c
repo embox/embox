@@ -19,17 +19,20 @@
 
 #include <module/embox/driver/interrupt/lapic.h>
 
-#define IOAPIC_DEF_ADDR	    0xFEC00000
+#define IOAPIC_DEF_ADDR	          0xFEC00000
 
-#define IOREGSEL            (IOAPIC_DEF_ADDR + 0x00)
-#define IOREGWIN            (IOAPIC_DEF_ADDR + 0x10)
+#define IOREGSEL                  (IOAPIC_DEF_ADDR + 0x00)
+#define IOREGWIN                  (IOAPIC_DEF_ADDR + 0x10)
 
-#define IOAPIC_ID           0x0
-#define IOAPIC_VERSION      0x1
-#define IOAPIC_ARB          0x2
-#define IOAPIC_REDIR_TABLE  0x10
+#define IOAPIC_ID                 0x0
+#define IOAPIC_VERSION            0x1
+#define IOAPIC_ARB                0x2
+#define IOAPIC_REDIR_TABLE        0x10
 
-#define APIC_ICR_INT_MASK   (1 << 16)
+#define IOAPIC_ICR_VECTOR         0x000000FF
+#define IOAPIC_ICR_INT_POLARITY   (1 << 13)
+#define IOAPIC_ICR_TRIGGER        (1 << 15)
+#define IOAPIC_ICR_INT_MASK       (1 << 16)
 
 EMBOX_UNIT_INIT(ioapic_enable);
 
@@ -46,30 +49,20 @@ static inline void ioapic_write(uint8_t reg, uint32_t val) {
 
 static inline void i8259_disable(void)
 {
-	outb(0xFF, 0xA1);
-	outb(0xFF, 0x21);
-	//inb(0x21);
+	outb(0xFF, PIC2_DATA);
+	outb(0xFF, PIC1_DATA);
+	//inb(PIC1_DATA);
 }
 
 /**
- * Initialize the PIC
+ * Initialize the IOAPIC
  */
 static int ioapic_enable(void) {
 	static int inited = 0;
-	//int version, maxirq;
 	if (1 == inited) {
 		return 0;
 	}
 	inited = 1;
-
-#if 0
-	version = ioapic_read(IOAPIC_VERSION);
-	maxirq = (version & (0xFFUL << 16)) >> 16;
-
-	for (int i = 0; i <= maxirq; i++) {
-		irqctrl_enable(i);
-	}
-#endif
 
 #if 1
 	/* I'm not sure that it is correct */
@@ -87,29 +80,25 @@ void apic_init(void) {
 	lapic_enable();
 }
 
+/* TODO: Rewrite it! */
 static inline uint32_t irq_redir_low(unsigned int irq) {
-	#define APIC_ICR_TRIGGER		(1 << 15)
-	#define APIC_LVTT_VECTOR_MASK	0x000000FF
-	#define APIC_ICR_VECTOR			APIC_LVTT_VECTOR_MASK
-	#define APIC_ICR_INT_POLARITY		(1 << 13)
-
 	uint32_t val = 0;
 
 	/* clear the polarity, trigger, mask and vector fields */
-	val &= ~(APIC_ICR_VECTOR | APIC_ICR_INT_MASK |
-			APIC_ICR_TRIGGER | APIC_ICR_INT_POLARITY);
+	val &= ~(IOAPIC_ICR_VECTOR | IOAPIC_ICR_INT_MASK |
+			IOAPIC_ICR_TRIGGER | IOAPIC_ICR_INT_POLARITY);
 
 	if (irq < 16) {
 		/* ISA active-high */
-		val &= ~APIC_ICR_INT_POLARITY;
+		val &= ~IOAPIC_ICR_INT_POLARITY;
 		/* ISA edge triggered */
-		val &= ~APIC_ICR_TRIGGER;
+		val &= ~IOAPIC_ICR_TRIGGER;
 	}
 	else {
 		/* PCI active-low */
-		val |= APIC_ICR_INT_POLARITY;
+		val |= IOAPIC_ICR_INT_POLARITY;
 		/* PCI level triggered */
-		val |= APIC_ICR_TRIGGER;
+		val |= IOAPIC_ICR_TRIGGER;
 	}
 
 	val |= (irq + 0x20);
@@ -141,7 +130,7 @@ void irqctrl_disable(unsigned int irq) {
 	}
 
 	low = ioapic_read(IOAPIC_REDIR_TABLE + irq * 2);
-	low |= APIC_ICR_INT_MASK;
+	low |= IOAPIC_ICR_INT_MASK;
 	ioapic_write(IOAPIC_REDIR_TABLE + irq * 2, low);
 }
 
@@ -156,5 +145,5 @@ int i8259_irq_pending(unsigned int irq) {
 
 void i8259_send_eoi(unsigned int irq) {
 	//TODO: irq >= 16
-	lapic_eoi();
+	lapic_send_eoi();
 }

@@ -15,17 +15,21 @@
 #ifndef KERNEL_THREAD_API_H_
 #define KERNEL_THREAD_API_H_
 
-#include <kernel/thread/sched.h> /* sched_current */
+#include <framework/mod/options.h>
+
+#include <module/embox/kernel/thread/core.h>
+
+#include <kernel/thread/current.h>
+#include <kernel/thread/sched.h>
+
+#define THREAD_STACK_SIZE OPTION_MODULE_GET(embox__kernel__thread__core, \
+			NUMBER,thread_stack_size)
 
 #define __thread_foreach(thread_ptr) \
 	list_for_each_entry(thread_ptr, __extension__ ({   \
 				extern struct list_head __thread_list; \
 				&__thread_list;                        \
 			}), thread_link)                           \
-
-static inline struct thread *thread_self(void) {
-	return sched_current();
-}
 
 /**
  * Thread control block.
@@ -79,7 +83,17 @@ extern struct thread *thread_lookup(thread_id_t id);
  * @return
  *   The currently executing thread.
  */
-extern struct thread *thread_self(void);
+#define thread_self() sched_current()
+
+/*
+ * Initializes thread structure for current thread, adds it to list of threads
+ * and to kernel task. Use this ONLY for bootstrap threads.
+ *
+ * @param
+ *   TODO:
+ */
+extern struct thread *thread_init_self(void *stack, size_t stack_sz,
+		thread_priority_t priority);
 
 /**
  * Creates a new thread.

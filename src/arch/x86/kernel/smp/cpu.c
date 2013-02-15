@@ -6,10 +6,15 @@
  * @author Anton Bulychev
  */
 
-#include <module/embox/driver/interrupt/lapic.h>
-
 #include <kernel/cpu.h>
+
+/* TODO: Delete it */
+#ifdef SMP
+
+#include <module/embox/driver/interrupt/lapic.h>
 
 unsigned int cpu_get_id(void) {
 	return lapic_id();
 }
+
+#endif /* SMP */

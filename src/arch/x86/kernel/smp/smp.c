@@ -15,7 +15,11 @@
 #include <asm/msr.h>
 #include <asm/ap.h>
 
+#include <hal/arch.h>
+
 #include <kernel/cpu.h>
+#include <kernel/thread.h>
+#include <kernel/spinlock.h>
 
 #include <module/embox/driver/interrupt/lapic.h>
 
@@ -23,24 +27,33 @@ EMBOX_UNIT_INIT(unit_init);
 
 #define TRAMPOLINE_ADDR 0x20000UL
 
+static SPINLOCK_DEFINE(startup_lock);
+
+char AP_STACK[THREAD_STACK_SIZE] __attribute__((aligned(THREAD_STACK_SIZE)));
+
 void startup_ap(void) {
-	extern int lapic_enable(void);
-	extern void lapic_timer_init(struct time_dev_conf *conf);
 	extern void idt_load(void);
+	extern int sched_cpu_init(struct thread *thread);
+
+	struct thread *bootstrap;
 
 	idt_load();
 
 	lapic_enable();
-	lapic_timer_init(NULL);
+
+	bootstrap = thread_init_self(AP_STACK + THREAD_STACK_SIZE, THREAD_STACK_SIZE,
+			THREAD_PRIORITY_MIN);
+
+	sched_cpu_init(bootstrap);
 
 	__asm__ __volatile__ ("sti");
 
-	while (1) {
-		;
+	spin_unlock(&startup_lock);
+
+	while(1) {
+		arch_idle();
 	}
 }
-
-char AP_STACK[2048];
 
 static inline void init_trampoline(void) {
 	/* Initialize gdt */
@@ -80,8 +93,23 @@ static int unit_init(void)
     		continue;
     	}
 
+    	spin_lock(&startup_lock);
     	cpu_start(i);
+    	spin_lock(&startup_lock);
     }
 
     return 0;
 }
+
+void smp_send_resched(int cpu_id) {
+	lapic_send_ipi(0x50, cpu_id, LAPIC_IPI_DEST);
+}
+
+void resched(void) {
+	extern void sched_post_switch(void);
+
+	lapic_send_eoi();
+
+	sched_post_switch();
+}
+

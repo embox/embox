@@ -15,6 +15,8 @@
 #include <asm/regs.h>
 #include <asm/traps.h>
 #include <asm/gdt.h>
+
+#include <kernel/cpu.h>
 #include <kernel/panic.h>
 
 #include <module/embox/arch/interrupt.h>
@@ -123,6 +125,18 @@ static void idt_init_syscall(void) {
 #define idt_init_syscall() do { } while(0)
 #endif
 
+#ifdef SMP
+
+static void idt_init_smp(void) {
+	idt_set_gate(0x50, (unsigned) __FWD_DECL(resched_trap), __KERNEL_CS, 0x8E);
+}
+
+#else
+
+#define idt_init_smp() do { } while(0)
+
+#endif
+
 static struct idt_pointer idt_ptr;
 
 void idt_load(void) {
@@ -144,6 +158,7 @@ void idt_init(void) {
 	idt_init_except();
 	idt_init_irq();
 	idt_init_syscall();
+	idt_init_smp();
 
 	idt_load();
 }

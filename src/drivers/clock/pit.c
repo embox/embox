@@ -6,13 +6,15 @@
  * @author Nikolay Korotky
  */
 
+#include <embox/unit.h>
+#include <framework/mod/options.h>
+
 #include <types.h>
 #include <errno.h>
 #include <stdio.h>
 
 #include <asm/io.h>
 #include <drivers/i8259.h>
-#include <embox/unit.h>
 #include <hal/clock.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
@@ -21,7 +23,7 @@
 #include <util/array.h>
 
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
-#define IRQ0               0x0
+#define IRQ_NR             OPTION_GET(NUMBER,irq_num)
 
 #define PIT_HZ 1000
 static int pit_clock_setup(struct time_dev_conf * conf);
@@ -106,7 +108,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 static struct time_event_device pit_event_device = {
 	.config = pit_clock_setup,
 	.resolution = PIT_HZ,
-	.irq_nr = IRQ0,
+	.irq_nr = IRQ_NR,
 	.pending = i8259_irq_pending
 };
 
@@ -128,7 +130,7 @@ static int pit_clock_init(void) {
 	pit_clock_setup(NULL);
 	clock_source_register(&pit_clock_source);
 
-	if (ENOERR != irq_attach(IRQ0, clock_handler, 0, &pit_clock_source, "PIT")) {
+	if (ENOERR != irq_attach(IRQ_NR, clock_handler, 0, &pit_clock_source, "PIT")) {
 		panic("pit timer irq_attach failed");
 	}
 

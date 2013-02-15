@@ -19,3 +19,7 @@ module mmu extends embox.arch.mmu {
 module nousermode extends embox.arch.usermode {
 	source "nousermode.h"
 }
+
+module nosmp extends embox.arch.smp {
+	source "nosmp.h"
+}

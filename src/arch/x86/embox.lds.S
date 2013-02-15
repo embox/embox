@@ -11,50 +11,57 @@ MEMORY {
 	MEMORY_REGION(flash)
 }
 
+PHDRS {
+	text PT_LOAD FLAGS(5);  /* R_E */
+	data PT_LOAD FLAGS(7);  /* RWE */
+	//note PT_NOTE FLAGS(0);  /* ___ */
+}
+
 SECTIONS {
 	.text : {
-		ALIGNMENT(); . = ALIGN(0x1000);
+		ALIGNMENT();
 		*(.multiboot)
 		_traps_text_start = .;
 		*(.traps.*)
 		_traps_text_end = .;
 		*(.text)
 		*(.text.*)
-		ALIGNMENT(); . = ALIGN(0x1000);
-	} SECTION_REGION(text)
+		ALIGNMENT();
+	} SECTION_REGION(text) :text
 	SECTION_SYMBOLS(text)
 
 	.rodata : {
-		ALIGNMENT(); . = ALIGN(0x1000);
+		ALIGNMENT();
 		LDS_INPUT_RODATA
-		ALIGNMENT(); . = ALIGN(0x1000);
-	} SECTION_REGION(rodata)
+		ALIGNMENT();
+	} SECTION_REGION(rodata) :text
 	SECTION_SYMBOLS(rodata)
 
 	.data : {
-		ALIGNMENT(); . = ALIGN(0x1000);
+		ALIGNMENT();
 		*(.data)
-		ALIGNMENT(); . = ALIGN(0x1000);
-	} SECTION_REGION(data)
+		ALIGNMENT();
+	} SECTION_REGION(data) :data
 	SECTION_SYMBOLS(data)
 
 	.bss : {
-		ALIGNMENT(); . = ALIGN(0x1000);
+		ALIGNMENT();
 		*(.bss)
-		ALIGNMENT(); . = ALIGN(0x1000);
-	} SECTION_REGION(bss)
+		ALIGNMENT();
+	} SECTION_REGION(bss) :data
 	SECTION_SYMBOLS(bss)
 
-	.reserve (NOLOAD): {
-		ALIGNMENT(); . = ALIGN(0x1000);
+	.reserve (NOLOAD) : {
+		ALIGNMENT();
 		LDS_INPUT_RESERVE
-		ALIGNMENT(); . = ALIGN(0x1000);
+		ALIGNMENT();
 	/* TODO memory region for reserve output section. */
-	} SECTION_REGION(bss)
+	} SECTION_REGION(bss) :data
 	SECTION_SYMBOLS(reserve)
 
 	/* Sections to be discarded */
 	/DISCARD/ : {
+		*(.comment)
 		*(.eh_frame)
 	}
 }

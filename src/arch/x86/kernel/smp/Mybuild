@@ -1,0 +1,18 @@
+package embox.arch.x86.kernel
+
+module cpu {
+	source "cpu.c"
+
+	depends embox.driver.interrupt.lapic
+}
+
+module smp extends embox.arch.smp {
+	source "smp_traps.S", "ap_trampoline.S", "smp.c"
+	source "smp.h"
+
+	depends cpu
+
+	depends embox.driver.interrupt.lapic
+	depends embox.driver.interrupt.ioapic
+	depends embox.kernel.thread.core
+}

@@ -23,12 +23,12 @@ module ioapic extends irqctrl_api {
 	depends lapic
 }
 
+/* TODO: lapic doesn't depend on ioapic, only in current realization */
 module lapic {
 	source "lapic.c", "lapic.h"
 
-	/* TODO: lapic doesn't depend on ioapic, only in current realization */
-	/*@NoRuntime*/
-	/*depends ioapic */
+	//@NoRuntime
+	//depends ioapic
 }
 
 module irqmp extends irqctrl_api {

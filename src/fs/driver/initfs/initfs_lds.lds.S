@@ -1,4 +1,5 @@
 #include <asm-generic/embox.lds.h>
+
 SECTIONS {
 	.rodata () : {
 		ALIGNMENT();
