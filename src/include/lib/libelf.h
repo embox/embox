@@ -1,15 +1,13 @@
 /**
  * @file
- * @brief ELF (Executable and Linkable Format) parser.
+ * @brief ELF (Executable and Linkable Format) reader.
  *
- * @date 27.04.10
- * @author Aleksandr Kirov
+ * @date 15.02.2013
+ * @author Anton Bulychev
  */
 
 #ifndef LIB_ELF_H_
 #define LIB_ELF_H_
-
-#include <hal/arch.h>
 
 #include <lib/elf_consts.h>
 #include <lib/elf_types.h>

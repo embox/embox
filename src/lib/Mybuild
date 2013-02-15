@@ -1,10 +1,10 @@
 package embox.lib
 
 static module LibElf {
-	source "elf/elf_header.c"
-	source "elf/elf_ph_table.c"
-	source "elf/elf_segment.c"
-	source "elf/elf_interp.c"
+	source "elf/elf.c"
+
+	depends LibCStdio
+	depends LibCString
 }
 
 static module LibExec {
