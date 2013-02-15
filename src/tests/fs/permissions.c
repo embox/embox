@@ -65,10 +65,6 @@ static int setup_suite(void) {
 	root_backup_mode = vfs_get_root()->mode;
 	vfs_get_root()->mode = S_IFDIR | 0777;
 
-	if ((res = mkdir(FS_DIR, 0777))) {
-		return res;
-	}
-
 	if ((res = mount(FS_DEV, FS_DIR, FS_NAME))) {
 		return res;
 	}
