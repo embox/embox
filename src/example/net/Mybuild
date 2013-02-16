@@ -8,12 +8,25 @@ module gethostbyname {
 	source "gethostbyname.c"
 
 	depends embox.net.netdb
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
 }
 
 module gethostent {
 	source "gethostent.c"
 
 	depends embox.net.netdb
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}
+
+module echo_server {
+	source "echo_server.c"
+
+	depends embox.net.socket
+	depends embox.lib.LibC
+	depends embox.compat.posix.LibPosix
+	depends embox.framework.LibFramework
 }
 
 module checkopts {
@@ -94,7 +107,6 @@ module tcp_receiver {
 	depends embox.net.socket
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
-	depends embox.prom.printf
 	depends embox.framework.LibFramework
 }
 
@@ -104,7 +116,6 @@ module tcp_sender {
 	depends embox.net.socket
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
-	depends embox.prom.printf
 	depends embox.framework.LibFramework
 }
 
@@ -113,6 +124,5 @@ module udp_echo {
 
 	depends embox.net.socket
 	depends embox.compat.posix.LibPosix
-	depends embox.prom.printf
 	depends embox.framework.LibFramework
 }
