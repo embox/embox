@@ -76,8 +76,15 @@ const struct example *example_lookup(const char *full_name) {
 	example_foreach(example) {
 		if ((strcmp(example_name(example), name) == 0) &&
 				(strcmp(strtostr(example_path(example)), path) == 0)) {
+			if (*path != '\0') {
+				*(name - 1) = '.';
+			}
 			return example;
 		}
+	}
+
+	if (*path != '\0') {
+		*(name - 1) = '.';
 	}
 
 	return NULL;

@@ -4,7 +4,7 @@
  * @brief Just demonstrates structure of example
  * @details This demo presents "hello world" example
  *
- * @date 16.08.2011
+ * @date 16.08.11
  * @author Anton Bondarev
  */
 
@@ -25,8 +25,15 @@ EMBOX_EXAMPLE(run);
  * It has been declare with macro EMBOX_EXAMPLE
  */
 static int run(int argc, char **argv) {
+	int i;
 
-	printf("Hi, I'm %s\n",MACRO_STRING(__EMBUILD_MOD__));
+	printf("Hi, I'm %s\n", MACRO_STRING(__EMBUILD_MOD__));
+
+	printf("My arguments are:\n");
+	i = 0;
+	do {
+		printf("\t[%2d] %s\n", i, argv[i]);
+	} while (++i < argc);
 
 	return ENOERR;
 }
