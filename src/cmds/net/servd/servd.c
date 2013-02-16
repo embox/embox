@@ -18,7 +18,7 @@
 #include <embox/cmd.h>
 #include <kernel/task.h>
 #include <errno.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 EMBOX_CMD(servd);
 

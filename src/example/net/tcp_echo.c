@@ -8,7 +8,7 @@
 
 #include <string.h>
 #include <arpa/inet.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 #include <kernel/printk.h>
 #include <net/ip.h>

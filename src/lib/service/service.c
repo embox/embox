@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <unistd.h>
 #include <net/socket.h>
 
 #include <cmd/servd.h>

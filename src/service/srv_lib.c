@@ -10,7 +10,7 @@
 #include <mem/misc/pool.h>
 #include <string.h>
 #include <kernel/task.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 ARRAY_SPREAD_DEF(const struct web_service_desc, __web_services_repository);
 

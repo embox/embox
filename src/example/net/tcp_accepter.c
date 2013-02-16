@@ -7,7 +7,7 @@
  */
 
 #include <arpa/inet.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 #include <net/ip.h>
 #include <net/socket.h>

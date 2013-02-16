@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <string.h>
 #include <arpa/inet.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 #include <net/rpc/clnt.h>
 #include <net/rpc/rpc.h>

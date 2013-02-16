@@ -12,7 +12,7 @@
 #include <getopt.h>
 #include <string.h>
 #include <stdio.h>
-#include <fcntl.h>
+#include <unistd.h>
 #include <types.h>
 #include <net/socket.h>
 #include <net/ip.h>

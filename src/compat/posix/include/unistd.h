@@ -51,6 +51,8 @@ extern ssize_t read(int fd, void *buf, size_t nbyte);
 
 extern off_t lseek(int fd, off_t offset, int origin);
 
+extern int close(int fd);
+
 extern int fsync(int);
 
 extern pid_t fork(void);
