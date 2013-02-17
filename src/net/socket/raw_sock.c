@@ -107,7 +107,7 @@ int raw_rcv(struct sk_buff *skb) {
 			}
 			res = raw_rcv_skb(sk, cloned);
 			if (res < 0) {
-				LOG_ERROR("sk 0x%p can't received packet\n", sk);
+				LOG_ERROR("sk %p can't received packet\n", sk);
 				skb_free(cloned);
 			}
 		}

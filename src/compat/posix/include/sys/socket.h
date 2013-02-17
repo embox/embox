@@ -1,18 +1,17 @@
 /**
  * @file
- *
  * @brief POSIX socket API
  *
- * @date 01.02.2012
+ * @date 01.02.12
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
-#ifndef SYS_SOCKET_H_
-#define SYS_SOCKET_H_
-
-#include <types.h>
+#ifndef COMPAT_POSIX_SYS_SOCKET_H_
+#define COMPAT_POSIX_SYS_SOCKET_H_
 
 #include <sys/cdefs.h>
+#include <types.h>
 
 __BEGIN_DECLS
 
@@ -51,22 +50,28 @@ struct linger {
 };
 
 
-
-enum supported_address_families{
-	AF_UNSPEC = 0,
-	AF_UNIX   = 1,  /* Unix domain sockets */
-	AF_INET   = 2,  /* Internet IP Protocol */
-	AF_PACKET = 17, /* Packet family */
-	AF_MAX
-};
-/* socket types are somewhy defined in net.h */
-
-#define AF_LOCAL AF_UNIX /* POSIX name for AF_UNIX */
-/* this should be removed. the link is socket_repo.c and so on */
-
-/* POSIX requred follow macros
- * SOCK_DGRAM, SOCK_STREAM, SOCK_SEQPACKET
+/**
+ * Supported protocol/address families
  */
+enum {
+	PF_UNSPEC =  0, /* unspecified */
+#define AF_UNSPEC PF_UNSPEC
+	PF_UNIX   =  1, /* local to host (pipes and file-domain) */
+#define AF_UNIX   PF_UNIX
+#define PF_LOCAL  PF_UNIX /* POSIX name for PF_UNIX */
+#define AF_LOCAL  PF_LOCAL
+#define PF_FILE   PF_UNIX /* another name for PF_LOCAL */
+#define AF_FILE   PF_FILE
+	PF_INET   =  2, /* IP protocol family */
+#define AF_INET   PF_INET
+	PF_INET6  = 10, /* IPv6 protocol family */
+#define AF_INET6  PF_INET6
+	PF_PACKET = 17, /* packet family */
+#define AF_PACKET PF_PACKET
+	PF_MAX          /* upper bound of protocol family */
+#define AF_MAX    PF_MAX
+};
+
 /**
  * enum sock_type - Socket types
  * @SOCK_STREAM: stream (connection) socket
@@ -82,15 +87,16 @@ enum supported_address_families{
  * grep ARCH_HAS_SOCKET_TYPE include/asm-* /socket.h, at least MIPS
  * overrides this enum for binary compat reasons.
  */
-enum sock_type {
-	SOCK_STREAM	= 1,    /* Byte-stream socket */
-	SOCK_DGRAM	= 2,    /* Datagram socket */
-	SOCK_RAW	= 3,
-	SOCK_RDM	= 4,
-	SOCK_SEQPACKET	= 5,
-	SOCK_DCCP	= 6,
-	SOCK_PACKET	= 10,   /* Sequenced-packet socket */
-	SOCK_TYPE_MAX       /* i.e. SOCK_PACKET + 1 */
+/**
+ * Socket types
+ */
+enum {
+	SOCK_STREAM    =  1, /* byte-stream socket */
+	SOCK_DGRAM     =  2, /* datagram socket */
+	SOCK_RAW       =  3, /* raw protocol socket */
+	SOCK_SEQPACKET =  5, /* sequential packet socket */
+	SOCK_PACKET    = 10, /* packet socket */
+	SOCK_TYPE_MAX        /* i.e. SOCK_PACKET + 1 */
 };
 
 
@@ -313,6 +319,16 @@ extern ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen);
 
 /**
+ * send a message on a socket.
+ * @param sockfd socket file descriptor
+ * @param buf pointer to data
+ * @param len length of buf
+ * @param flags
+ * @return the number of characters sent. -1 on failure with errno indicating error.
+ */
+extern ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+
+/**
  * receive a message from a socket.
  * @param sockfd socket descriptor
  * @param buf buffer
@@ -325,11 +341,15 @@ extern ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 extern ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 		struct sockaddr *daddr, socklen_t *daddrlen);
 
+/**
+ * receive a message from a socket.
+ * @param sockfd socket descriptor
+ * @param buf buffer
+ * @param len size of buffer
+ * @param flags
+ * @return the number of bytes received. -1 on failure with errno indicating error.
+ */
 extern ssize_t recv(int sockfd, void *buf, size_t len, int flags);
-
-extern ssize_t send(int sockfd, const void *buf, size_t len, int flags);
-
-
 
 /**
  * get socket options
@@ -355,7 +375,6 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 int setsockopt(int sockfd, int level, int optname, void *optval,
                socklen_t optlen);
 
-
 /**
  * shut down part of a full-duplex connection
  * @param sockfd socket descriptor
@@ -364,20 +383,16 @@ int setsockopt(int sockfd, int level, int optname, void *optval,
  */
 extern int shutdown(int sockfd, int how);
 
-
-static inline int getsockname(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
-	/* TODO not implemented now */
-	return -1;
-}
-
-static inline int getpeername(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
-	/* TODO not implemented now */
-	return -1;
-}
-
-/* TODO not implemented now */
-extern ssize_t recvmsg(int socket, struct msghdr *message, int flags);
+/**
+ * TODO not implemented now
+ */
+static inline int getsockname(int sockfd, struct sockaddr *addr,
+		socklen_t *addrlen) { return -1; }
+static inline int getpeername(int sockfd, struct sockaddr *addr,
+		socklen_t *addrlen) { return -1; }
+static inline ssize_t recvmsg(int socket, struct msghdr *message,
+		int flags) { return -1; }
 
 __END_DECLS
 
-#endif /* SYS_SOCKET_H_ */
+#endif /* COMPAT_POSIX_SYS_SOCKET_H_ */
