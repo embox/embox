@@ -28,13 +28,13 @@ EMBOX_EXAMPLE(exec);
 static char buff[BUFF_SZ];
 
 static int sock_udp_init(int *out_sock) {
-	int res, sock;
+	int ret, res, sock;
 	struct sockaddr_in addr;
 
 	assert(out_sock != NULL);
 
 	res = socket(AF_INET, SOCK_DGRAM, 0);
-	if (res == -1) return -errno;
+	if (res == -1) { ret = -errno; perror("socket"); return ret; }
 	sock = res;
 
 	addr.sin_family = AF_INET;
@@ -42,7 +42,7 @@ static int sock_udp_init(int *out_sock) {
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	res = bind(sock, (struct sockaddr *)&addr, sizeof addr);
-	if (res == -1) { close(sock); return -errno; }
+	if (res == -1) { ret = -errno; perror("bind"); close(sock); return ret; }
 
 	*out_sock = sock;
 
@@ -50,19 +50,20 @@ static int sock_udp_init(int *out_sock) {
 }
 
 static int sock_udp_hnd(int sock) {
+	int ret;
 	char *data;
 	struct sockaddr addr;
 	socklen_t addr_len;
 	ssize_t bytes, bytes_left;
 
 	bytes = recvfrom(sock, &buff, sizeof buff, 0, &addr, &addr_len);
-	if (bytes == -1) return -errno;
+	if (bytes == -1) { ret = -errno; perror("recvfrom"); return ret; }
 
 	data = &buff[0];
 	bytes_left = bytes;
 	while (bytes_left > 0) {
 		bytes = sendto(sock, data, bytes_left, 0, &addr, addr_len);
-		if (bytes == -1) return -errno;
+		if (bytes == -1) { ret = -errno; perror("sendto"); return ret; }
 
 		data += bytes;
 		bytes_left -= bytes;
@@ -72,13 +73,13 @@ static int sock_udp_hnd(int sock) {
 }
 
 static int sock_tcp_init(int *out_sock) {
-	int res, sock;
+	int ret, res, sock;
 	struct sockaddr_in addr;
 
 	assert(out_sock != NULL);
 
 	res = socket(AF_INET, SOCK_STREAM, 0);
-	if (res == -1) return -errno;
+	if (res == -1) { perror("socket"); return -errno; }
 	sock = res;
 
 	addr.sin_family = AF_INET;
@@ -86,10 +87,10 @@ static int sock_tcp_init(int *out_sock) {
 	addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	res = bind(sock, (struct sockaddr *)&addr, sizeof addr);
-	if (res == -1) { close(sock); return -errno; }
+	if (res == -1) { ret = -errno; perror("bind"); close(sock); return ret; }
 
 	res = listen(sock, 1);
-	if (res == -1) { close(sock); return -errno; }
+	if (res == -1) { ret = -errno; perror("listen"); close(sock); return ret; }
 
 	*out_sock = sock;
 
@@ -97,33 +98,34 @@ static int sock_tcp_init(int *out_sock) {
 }
 
 static int sock_tcp_hnd(int sock) {
-	int res;
+	int ret, res;
 	char *data;
 	struct sockaddr addr;
 	socklen_t addr_len;
 	ssize_t bytes, bytes_left;
 
 	res = accept(sock, &addr, &addr_len);
-	if (res == -1) return errno;
+	if (res == -1) { ret = -errno; perror("accept"); return ret; }
 	sock = res;
 
 	while (1) {
 		bytes = recv(sock, &buff, sizeof buff, 0);
-		if (bytes == -1) return -errno;
+		if (bytes == -1) { ret = -errno; perror("recv"); return ret; }
 		else if (bytes == 0) break;
 
 		data = &buff[0];
 		bytes_left = bytes;
 		while (bytes_left > 0) {
 			bytes = send(sock, data, bytes_left, 0);
-			if (bytes == -1) return -errno;
+			if (bytes == -1) { ret = -errno; perror("send"); return ret; }
 
 			data += bytes;
 			bytes_left -= bytes;
 		}
 	}
 
-	close(sock);
+	res = close(sock);
+	if (res == -1) { ret = -errno; perror("close"); return ret; }
 
 	return 0;
 }
@@ -141,7 +143,7 @@ static int socks_handler(int sock_udp, int sock_tcp) {
 		memcpy(&readfds, &fds, sizeof fds);
 
 		res = select(nfds, &readfds, NULL, NULL, NULL);
-		if (res == -1) return -errno;
+		if (res == -1) { ret = -errno; perror("select"); return ret; }
 
 		if (FD_ISSET(sock_udp, &readfds)) {
 			ret = sock_udp_hnd(sock_udp);
@@ -161,7 +163,7 @@ static int socks_handler(int sock_udp, int sock_tcp) {
 }
 
 static int exec(int argc, char *argv[]) {
-	int ret, sock_udp, sock_tcp;
+	int ret, res, sock_udp, sock_tcp;
 
 	ret = sock_udp_init(&sock_udp);
 	if (ret != 0) return ret;
@@ -172,8 +174,11 @@ static int exec(int argc, char *argv[]) {
 	ret = socks_handler(sock_udp, sock_tcp);
 	if (ret != 0) { close(sock_udp); close(sock_tcp); return ret; }
 
-	close(sock_udp);
-	close(sock_tcp);
+	res = close(sock_udp);
+	if (res == -1) { ret = -errno; perror("close"); close(sock_tcp); return ret; }
+
+	res = close(sock_tcp);
+	if (res == -1) { ret = -errno; perror("close"); return ret; }
 
 	return 0;
 }
