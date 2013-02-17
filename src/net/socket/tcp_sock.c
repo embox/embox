@@ -92,12 +92,12 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 
 	tcp_obj_lock(sock, TCP_SYNC_STATE);
 	{
+		assert(sock.sk->sk_state < TCP_MAX_STATE);
 		switch (sock.sk->sk_state) {
 		default:
-			ret = -EBADF;
+			ret = -EISCONN;
 			break;
 		case TCP_CLOSED:
-		case TCP_SYN_RECV_PRE:
 			/* XXX setup inet_sock */
 			addr_in = (struct sockaddr_in *)addr;
 			rte = rt_fib_get_best(addr_in->sin_addr.s_addr, NULL);
@@ -135,20 +135,6 @@ static int tcp_v4_connect(struct sock *sk, struct sockaddr *addr, int addr_len) 
 				ret = tcp_st_status(sock) == TCP_ST_SYNC ? 0 : -ECONNRESET;
 			}
 			break;
-		case TCP_LISTEN:
-			ret = -1;
-			break;
-		case TCP_SYN_SENT:
-		case TCP_SYN_RECV:
-		case TCP_ESTABIL:
-		case TCP_FINWAIT_1:
-		case TCP_FINWAIT_2:
-		case TCP_CLOSEWAIT:
-		case TCP_CLOSING:
-		case TCP_LASTACK:
-		case TCP_TIMEWAIT:
-			ret = -1; /* error: connection already exists */
-			break;
 		}
 	}
 	tcp_obj_unlock(sock, TCP_SYNC_STATE);
@@ -167,28 +153,15 @@ static int tcp_v4_listen(struct sock *sk, int backlog) {
 
 	tcp_obj_lock(sock, TCP_SYNC_STATE);
 	{
+		assert(sock.sk->sk_state < TCP_MAX_STATE);
 		switch (sock.sk->sk_state) {
 		default:
-			ret = -EBADF;
+			ret = -EINVAL; /* error: connection already exists */
 			break;
 		case TCP_CLOSED:
 		case TCP_LISTEN:
 			tcp_set_st(sock, TCP_LISTEN);
 			ret = 0;
-			break;
-		case TCP_SYN_RECV_PRE:
-			ret = -1; /* TODO */
-			break;
-		case TCP_SYN_SENT:
-		case TCP_SYN_RECV:
-		case TCP_ESTABIL:
-		case TCP_FINWAIT_1:
-		case TCP_FINWAIT_2:
-		case TCP_CLOSEWAIT:
-		case TCP_CLOSING:
-		case TCP_LASTACK:
-		case TCP_TIMEWAIT:
-			ret = -1; /* error: connection already exists */
 			break;
 		}
 	}
@@ -214,9 +187,10 @@ static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 	sock.sk = sk;
 	debug_print(3, "tcp_v4_accept: sk %p, st%d\n", sock.tcp_sk, sock.sk->sk_state);
 
+	assert(sock.sk->sk_state < TCP_MAX_STATE);
 	switch (sock.sk->sk_state) {
-	default: /* TODO another states */
-		return -EBADF;
+	default:
+		return -EINVAL; /* error: the socket is not accepting connections */
 	case TCP_LISTEN:
 		/* waiting anyone */
 		if (list_empty(&sock.tcp_sk->conn_wait)) { /* TODO sync this */
@@ -274,16 +248,10 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 	sock.sk = sk;
 	debug_print(3, "tcp_v4_sendmsg: sk %p\n", sock.tcp_sk);
 
+	assert(sock.sk->sk_state < TCP_MAX_STATE);
 	switch (sock.sk->sk_state) {
 	default:
-		return -EBADF;
-	case TCP_CLOSED:
-	case TCP_LISTEN:
-	case TCP_SYN_RECV_PRE:
-		return -1; /* error: connection does not exist */
-	case TCP_SYN_SENT:
-	case TCP_SYN_RECV:
-		return -1; /* TODO save data and send them later */
+		return -ENOTCONN;
 	case TCP_ESTABIL:
 	case TCP_CLOSEWAIT:
 		max_len = (sock.tcp_sk->rem.wind > TCP_MAX_DATA_LEN ?
@@ -316,7 +284,7 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 	case TCP_CLOSING:
 	case TCP_LASTACK:
 	case TCP_TIMEWAIT:
-		return -1; /* error: connection closing */
+		return -EPIPE;
 	}
 }
 
@@ -338,16 +306,10 @@ static int tcp_v4_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 	started = tcp_get_usec();
 
 check_state:
+	assert(sock.sk->sk_state < TCP_MAX_STATE);
 	switch (sock.sk->sk_state) {
 	default:
-		return -EBADF;
-	case TCP_CLOSED:
-	case TCP_LISTEN:
-		return -1; /* error: connection does not exist */
-	case TCP_SYN_SENT:
-	case TCP_SYN_RECV_PRE:
-	case TCP_SYN_RECV:
-		return -1; /* TODO this in tcp_st_xxx function*/
+		return -ENOTCONN;
 	case TCP_ESTABIL:
 	case TCP_FINWAIT_1:
 	case TCP_FINWAIT_2:
@@ -391,7 +353,7 @@ check_state:
 	case TCP_CLOSING:
 	case TCP_LASTACK:
 	case TCP_TIMEWAIT:
-		return -ECONNREFUSED; /* error: connection closing */
+		return -EBADF;
 	}
 }
 
@@ -407,6 +369,7 @@ static void tcp_v4_close(struct sock *sk, long timeout) {
 
 	tcp_obj_lock(sock, TCP_SYNC_STATE);
 	{
+		assert(sock.sk->sk_state < TCP_MAX_STATE);
 		switch (sock.sk->sk_state) {
 		default:
 			break; /* error: EBADF */
@@ -435,20 +398,13 @@ static void tcp_v4_close(struct sock *sk, long timeout) {
 			tcph->ack = 1;
 			send_from_sock(sock, skb, TCP_XMIT_DEFAULT);
 			break;
-		case TCP_FINWAIT_1:
-		case TCP_FINWAIT_2:
-			break; /* error: connection closing */
-		case TCP_CLOSING:
-		case TCP_LASTACK:
-		case TCP_TIMEWAIT:
-			break; /* error: connection closing */
 		}
 	}
 	tcp_obj_unlock(sock, TCP_SYNC_STATE);
 }
 
 /* TODO */
-int tcp_v4_shutdown(struct sock *sk, int how) {
+static int tcp_v4_shutdown(struct sock *sk, int how) {
 	if (!(how & (SHUT_WR + 1))) {
 		return 0;
 	}
