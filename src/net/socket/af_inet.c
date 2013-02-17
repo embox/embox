@@ -103,14 +103,16 @@ static int inet_create(struct socket *sock, int protocol) {
 		return res;
 	}
 
-	sk = inet_create_sock(0, (struct proto *)p_netsock->prot, type, protocol);
+	sk = inet_create_sock(0, (struct proto *)p_netsock->prot, type,
+			p_netsock->protocol);
 	if (sk == NULL) {
 		return -ENOMEM;
 	}
 
 	sock->sk = sk;
-	sk->sk_socket = sock;
 	sock->ops = p_netsock->ops;
+	sk->sk_socket = sock;
+	sk->sk_protocol = p_netsock->protocol;
 
 	return ENOERR;
 }
