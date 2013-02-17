@@ -19,6 +19,7 @@
 #include <net/kernel_socket.h>
 #include <net/net.h>
 #include <net/socket.h>
+#include <sys/socket.h>
 #include <util/array.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>

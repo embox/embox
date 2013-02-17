@@ -12,7 +12,7 @@
 #include <string.h>
 #include <sys/uio.h>
 
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/net.h>
 #include <net/ip.h>
 #include <net/udp.h>

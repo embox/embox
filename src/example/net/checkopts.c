@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <net/net.h>
 #include <net/ip.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 EMBOX_EXAMPLE(exec);
 
@@ -208,7 +210,7 @@ static int exec(int argc, char **argv)
 	printf("\nInversed options:\n");
 	display_options_and_set_inverse(&sock_opts[0], sockfd);
 
-	socket_close(sockfd);
+	close(sockfd);
 
 	return 0;
 }

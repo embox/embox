@@ -22,7 +22,7 @@
 #include <net/rpc/rpc_msg.h>
 #include <net/rpc/pmap.h>
 
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/net.h>
 #include <net/ip.h>
 

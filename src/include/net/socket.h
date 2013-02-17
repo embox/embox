@@ -10,7 +10,6 @@
 #ifndef NET_SOCKET_H_
 #define NET_SOCKET_H_
 
-#include <sys/socket.h>
 #include <netinet/in.h>
 
 struct sock;
@@ -23,12 +22,14 @@ struct sk_buff;
  */
 typedef int (* sk_encap_hnd) (struct sock *sk, struct sk_buff *pack);
 
+#if 0
 /**
  * close a socket descriptor
  * @param sockfd socket description
  * @return 0 on success. -1 on failure with errno indicating error.
  */
 extern int socket_close(int sockfd);
+#endif
 
 extern int check_icmp_err(int sockfd);
 

@@ -11,7 +11,7 @@
 #define NET_KERNEL_SOCKET_H_
 
 #include <linux/aio.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/net.h>
 #include <types.h>
 

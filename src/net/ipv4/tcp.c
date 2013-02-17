@@ -15,7 +15,7 @@
 #include <util/array.h>
 
 #include <net/inetdevice.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/checksum.h>
 #include <net/route.h>
 #include <net/skbuff.h>

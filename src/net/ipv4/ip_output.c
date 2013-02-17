@@ -22,7 +22,7 @@
 #include <net/icmp.h>
 #include <net/socket_registry.h>
 #include <net/in.h>
-
+#include <net/etherdevice.h>
 
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,
 		unsigned short id, unsigned short len, in_addr_t saddr,

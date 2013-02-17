@@ -12,7 +12,7 @@
 #include <types.h>
 #include <arpa/inet.h>
 #include <lib/bits/byteswap.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 
 

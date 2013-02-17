@@ -13,6 +13,7 @@
 #include <mem/misc/slab.h>
 #include <net/netdevice.h>
 #include <net/net.h>
+#include <net/socket.h>
 #include <net/socket_options.h>
 #include <kernel/thread/event.h>
 

@@ -10,11 +10,13 @@
 
 #include <stdio.h>
 #include <net/ip.h>
+#include <sys/socket.h>
 #include <net/socket.h>
 #include <framework/example/self.h>
 #include <getopt.h>
 #include <net/icmp.h>
 #include <err.h>
+#include <unistd.h>
 
 EMBOX_EXAMPLE(exec);
 
@@ -61,7 +63,7 @@ static int exec(int argc, char **argv) {
 		}
 	}
 #endif
-	socket_close(sock);
+	close(sock);
 
 	return 0;
 }

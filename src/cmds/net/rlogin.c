@@ -8,13 +8,14 @@
 #include <unistd.h>
 #include <string.h>
 #include <net/ip.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <fcntl.h>
 #include <embox/cmd.h>
 #include <getopt.h>
 #include <err.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
 
 EMBOX_CMD(exec);
 

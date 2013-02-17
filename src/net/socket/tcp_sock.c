@@ -14,7 +14,7 @@
 #include <util/array.h>
 
 #include <net/tcp.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/net.h>
 #include <net/ip.h>
 #include <net/sock.h>

@@ -12,9 +12,11 @@
 #include <getopt.h>
 #include <util/dlist.h>
 
+#include <sys/socket.h>
 #include <net/socket.h>
 #include <net/inetdevice.h>
 #include <net/bootp.h>
+#include <unistd.h>
 
 #define DEFAULT_WAIT_TIME 3000
 

@@ -12,7 +12,7 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 
 #include <cmd/servd.h>
 

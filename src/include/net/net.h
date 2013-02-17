@@ -13,7 +13,7 @@
 
 #include <linux/compiler.h>
 #include <linux/aio.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 
 
 #define NPROTO          AF_MAX /* a number of net protocols id in system */
@@ -46,6 +46,10 @@ typedef enum {
 /* in process of disconnecting  */
 } socket_state;
 
+struct sock;
+struct idx_desc;
+struct socket_node;
+struct proto_ops;
 
 /**
  * General BSD socket

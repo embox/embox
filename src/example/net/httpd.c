@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <net/ip.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <framework/example/self.h>
 #include <getopt.h>
 #include <prom/prom_printf.h>

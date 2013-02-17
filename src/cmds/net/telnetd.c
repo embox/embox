@@ -17,7 +17,7 @@
 #include <utmp.h>
 
 #include <net/ip.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/inetdevice.h>
 
 #include <util/ring_buff.h>

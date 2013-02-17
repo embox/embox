@@ -9,7 +9,7 @@
 #include <types.h>
 #include <mem/misc/pool.h>
 #include <net/net.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <hal/ipl.h>
 
 #include <framework/mod/options.h>

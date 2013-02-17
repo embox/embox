@@ -12,7 +12,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #include <ctype.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/ip.h>
 #include <arpa/inet.h>
 #include <embox/cmd.h>

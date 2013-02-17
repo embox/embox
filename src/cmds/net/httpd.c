@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <net/ip.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <embox/cmd.h>
 #include <err.h>
 #include <errno.h>

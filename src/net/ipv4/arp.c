@@ -25,6 +25,7 @@
 #include <net/route.h>
 #include <net/arp_queue.h>
 #include <net/in.h>
+#include <net/etherdevice.h>
 
 #include <embox/net/pack.h>
 

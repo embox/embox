@@ -18,7 +18,7 @@
 #include <net/dns.h>
 
 #include <net/ip.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 
 
 #include <err.h>

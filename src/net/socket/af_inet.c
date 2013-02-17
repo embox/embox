@@ -15,7 +15,7 @@
 #include <net/protocol.h>
 #include <arpa/inet.h>
 #include <net/sock.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/socket_registry.h>
 #include <net/inet_sock.h>
 //#include <net/tcp.h>
