@@ -183,7 +183,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	return res;
 }
 
-static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,
+static ssize_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen) {
 	int res, res_sleep;
 	struct inet_sock *inet;
@@ -238,7 +238,7 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 	if (res == -EINPROGRESS) {
 		/* wait until resolving destonation ip */
 		res_sleep = event_wait_ms(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
-		if (res_sleep == ENOERR) {
+		if (res_sleep == 0) {
 			/* was resolved */
 			res = 1;
 		}
@@ -255,14 +255,7 @@ static size_t sendto_sock(struct socket *sock, const void *buf, size_t len, int 
 
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 		const struct sockaddr *daddr, socklen_t daddrlen) {
-	int res;
-
-	res = sendto_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
-	if(res < 0){
-		SET_ERRNO(-res);
-		return -1;
-	}
-	return res;
+	return sendto_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
 }
 
 int check_icmp_err(int sockfd) {
@@ -320,52 +313,31 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 	sched_lock();
 	res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
 	/* if !O_NONBLOCK on socket's file descriptor {*/
-	if (!res) {
+	if (res == -1) {
 		event_wait_ms(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
 		res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
 	}
 	/* } */
 	sched_unlock();
-	if (res < 0){
-		SET_ERRNO(-res);
-		return -1;
-	}
 
 	return res;
 }
 
 ssize_t recv(int sockfd, void *buf, size_t len, int flags) {
-	int res;
-
-	res = recvfrom(sockfd, buf, len, flags, NULL, NULL);
-
-	if (res < 0) {
-		SET_ERRNO(-res);
-		return -1;
-	}
-
-	return res;
+	return recvfrom(sockfd, buf, len, flags, NULL, NULL);
 }
 
 ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
-	int res;
 	struct socket *sock;
 
 	sock = idx2sock(sockfd);
 
-	if(!sk_is_connected(sock)) {
+	if (!sk_is_connected(sock)) {
 		SET_ERRNO(ENOTCONN);
 		return -1;
 	}
 
-	res = sendto_sock(sock, buf, len, flags, NULL, 0);
-
-	if (res < 0) {
-		SET_ERRNO(-res);
-		return -1;
-	}
-
-	return res;
+	return sendto_sock(sock, buf, len, flags, NULL, 0);
 }
 
 int shutdown(int sockfd, int how) {
