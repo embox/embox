@@ -93,4 +93,39 @@ diff -ur qt-everywhere-opensource-src-4.8.4/src/corelib/kernel/qtranslator.cpp s
  }
  
  qnx {
+diff -ur qt-everywhere-opensource-src-4.8.4/src/gui/styles/qplastiquestyle.cpp source/src/gui/styles/qplastiquestyle.cpp
+--- qt-everywhere-opensource-src-4.8.4/src/gui/styles/qplastiquestyle.cpp	2012-11-23 14:09:53.000000000 +0400
++++ source/src/gui/styles/qplastiquestyle.cpp	2013-02-18 17:49:44.539055376 +0400
+@@ -1513,17 +1513,21 @@
+             handle.setColor(3, option->palette.light().color().rgba());
+ 
+             if (option->state & State_Horizontal) {
+-                int nchunks = cacheRect.height() / handle.height();
+-                int indent = (cacheRect.height() - (nchunks * handle.height())) / 2;
+-                for (int i = 0; i < nchunks; ++i)
+-                    cachePainter.drawImage(QPoint(cacheRect.left() + 3, cacheRect.top() + indent + i * handle.height()),
+-                                           handle);
++                if (0 < handle.height()) {
++            	    int nchunks = cacheRect.height() / handle.height();
++                    int indent = (cacheRect.height() - (nchunks * handle.height())) / 2;
++                    for (int i = 0; i < nchunks; ++i)
++                        cachePainter.drawImage(QPoint(cacheRect.left() + 3, cacheRect.top() + indent + i * handle.height()),
++                                               handle);
++                }
+             } else {
+-                int nchunks = cacheRect.width() / handle.width();
+-                int indent = (cacheRect.width() - (nchunks * handle.width())) / 2;
+-                for (int i = 0; i < nchunks; ++i)
+-                    cachePainter.drawImage(QPoint(cacheRect.left() + indent + i * handle.width(), cacheRect.top() + 3),
+-                                           handle);
++                if (0 < handle.width()) {
++            	    int nchunks = cacheRect.width() / handle.width();
++                    int indent = (cacheRect.width() - (nchunks * handle.width())) / 2;
++                    for (int i = 0; i < nchunks; ++i)
++                        cachePainter.drawImage(QPoint(cacheRect.left() + indent + i * handle.width(), cacheRect.top() + 3),
++                                               handle);
++                }
+             }
+             cachePainter.end();
+             QPixmapCache::insert(pixmapName, cache);
  
