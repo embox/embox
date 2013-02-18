@@ -3,7 +3,12 @@
 	[
 		{
 			"path": ".",
-			"folder_exclude_patterns": ["build/base/bin", "build/base/obj"]
+			"folder_exclude_patterns": [
+				"build/base/bin",
+				"build/base/obj",
+				".*"
+			],
+			"file_exclude_patterns": [".*"]
 		}
 	],
     "settings":
