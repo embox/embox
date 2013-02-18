@@ -2,9 +2,14 @@
 	"folders":
 	[
 		{
-			"path": "."
+			"path": ".",
+			"folder_exclude_patterns": ["build/base/bin", "build/base/obj"]
 		}
 	],
+    "settings":
+    {
+        "tab_size": 4
+    },
 
 	"build_systems":
 	[
