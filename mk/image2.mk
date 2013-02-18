@@ -81,7 +81,7 @@ $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
 initfs_cp_prerequisites = $(common_prereqs) $(src_file) $(extra_prereqs)
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
 	@$(CP) -r -T $(src_file) $@
-	@find $@ -name .gitkeep -delete
+	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
 $(ROOTFS_DIR)/. :
 	@$(MKDIR) $(@D)
 
