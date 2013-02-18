@@ -50,11 +50,11 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size);
 static int    nfsfs_ioctl(struct file_desc *desc, int request, va_list args);
 
 static struct kfile_operations nfsfs_fop = {
-		nfsfs_open,
-		nfsfs_close,
-		nfsfs_read,
-		nfsfs_write,
-		nfsfs_ioctl
+	.open = nfsfs_open,
+	.close = nfsfs_close,
+	.read = nfsfs_read,
+	.write = nfsfs_write,
+	.ioctl = nfsfs_ioctl,
 };
 /*
  * file_operation

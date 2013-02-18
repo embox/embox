@@ -93,12 +93,11 @@ static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size);
 static int    tmpfs_ioctl(struct file_desc *desc, int request, va_list args);
 
 static struct kfile_operations tmpfs_fop = {
-		tmpfs_open,
-		tmpfs_close,
-		tmpfs_read,
-		tmpfs_write,
-		tmpfs_ioctl
-
+	.open = tmpfs_open,
+	.close = tmpfs_close,
+	.read = tmpfs_read,
+	.write = tmpfs_write,
+	.ioctl = tmpfs_ioctl,
 };
 
 /*

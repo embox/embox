@@ -104,7 +104,7 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 			SET_ERRNO(ENOSUPP);
 			return NULL;
 		}
-		ops = (struct kfile_operations *)nas->fs->drv->file_op;
+		ops = (struct kfile_operations *) nas->fs->drv->file_op;
 	} else {
 		ops = nas->fs->file_op;
 	}

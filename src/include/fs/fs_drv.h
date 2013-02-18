@@ -43,6 +43,7 @@ typedef struct fsop_desc {
 } fsop_desc_t;
 
 struct kfile_operations;
+
 /**
  * Structure of file system driver.
  * We can mount some file system with name of FS which has been registered in
@@ -53,7 +54,6 @@ typedef struct fs_drv {
         const struct kfile_operations *file_op;
         const fsop_desc_t             *fsop;
 } fs_drv_t;
-
 
 extern const fs_drv_t * __fs_drivers_registry[];
 

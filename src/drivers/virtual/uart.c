@@ -36,7 +36,7 @@ static size_t dev_uart_read(struct file_desc *desc, void *buf, size_t size);
 static size_t dev_uart_write(struct file_desc *desc, void *buf, size_t size);
 static int dev_uart_ioctl(struct file_desc *desc, int request, va_list args);
 
-kfile_operations_t uart_dev_file_op = {
+struct kfile_operations uart_dev_file_op = {
 	.open = dev_uart_open,
 	.close = dev_uart_close,
 	.read = dev_uart_read,

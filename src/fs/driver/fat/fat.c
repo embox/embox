@@ -1915,8 +1915,14 @@ static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size);
 static int    fatfs_ioctl(struct file_desc *desc, int request, va_list args);
 
-static struct kfile_operations fatfs_fop = { fatfs_open, fatfs_close, fatfs_read,
-		fatfs_write, fatfs_ioctl };
+static struct kfile_operations fatfs_fop = {
+	.open = fatfs_open,
+	.close = fatfs_close,
+	.read = fatfs_read,
+	.write = fatfs_write,
+	.ioctl = fatfs_ioctl,
+};
+
 /*
  * file_operation
  */

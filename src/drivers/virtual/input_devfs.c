@@ -41,7 +41,7 @@ static int input_devfs_open(struct node *node, struct file_desc *file_desc, int 
 static int input_devfs_close(struct file_desc *desc);
 static size_t input_devfs_read(struct file_desc *desc, void *buf, size_t size);
 
-static kfile_operations_t input_dev_file_op = {
+static struct kfile_operations input_dev_file_op = {
 	.open = input_devfs_open,
 	.close = input_devfs_close,
 	.read = input_devfs_read

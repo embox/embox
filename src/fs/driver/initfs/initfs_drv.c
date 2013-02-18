@@ -129,8 +129,12 @@ static int initfs_mount(void *dev, void *dir) {
 	return 0;
 }
 
-static struct kfile_operations initfs_fop = { initfs_open, initfs_close, initfs_read,
-		NULL,  initfs_ioctl };
+static struct kfile_operations initfs_fop = {
+	.open = initfs_open,
+	.close = initfs_close,
+	.read = initfs_read,
+	.ioctl = initfs_ioctl,
+};
 
 static fsop_desc_t initfs_fsop = { NULL, NULL, initfs_mount,
 		NULL, NULL };

@@ -777,11 +777,10 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size);
 static int    cdfsfs_ioctl(struct file_desc *desc, int request, va_list args);
 
 static struct kfile_operations cdfsfs_fop = {
-		cdfsfs_open,
-		cdfsfs_close,
-		cdfsfs_read,
-		NULL,
-		cdfsfs_ioctl
+	.open = cdfsfs_open,
+	.close = cdfsfs_close,
+	.read = cdfsfs_read,
+	.ioctl = cdfsfs_ioctl,
 };
 
 static int cdfsfs_open(struct node *node, struct file_desc *desc, int flags) {

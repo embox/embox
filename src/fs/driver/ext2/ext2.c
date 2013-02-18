@@ -139,14 +139,20 @@ static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size);
 static int ext2fs_ioctl(struct file_desc *desc, int request, va_list args);
 
-static struct kfile_operations ext2_fop = { ext2fs_open, ext2fs_close,
-		ext2fs_read, ext2fs_write, ext2fs_ioctl };
+static struct kfile_operations ext2_fop = {
+	.open = ext2fs_open,
+	.close = ext2fs_close,
+	.read = ext2fs_read,
+	.write = ext2fs_write,
+	.ioctl = ext2fs_ioctl,
+};
 
 /*
  * help function
  */
 
-void *ext2_buff_alloc(struct nas *nas, size_t size) {
+void *ext2_buff_alloc(struct nas *nas,
+ size_t size) {
 	struct ext2_fs_info *fsi;
 
 	fsi = nas->fs->fsi;
