@@ -16,23 +16,23 @@ EMBOX_UNIT_INIT(ps_mouse_init);
 
 static void kmc_send_auxcmd(unsigned char val) {
 	kmc_wait_ibe();
-	out8(I8042_CMD_PORT, 0x60);
+	out8(0x60, I8042_CMD_PORT);
 	kmc_wait_ibe();
-	out8(I8042_DATA_PORT, val);
+	out8(val, I8042_DATA_PORT);
 }
 
 static int kmc_write_aux(unsigned char val) {
 	/* Write the value to the device */
 	kmc_wait_ibe();
-	outb(I8042_CMD_PORT, 0xd4);
+	outb(0xd4, I8042_CMD_PORT);
 	kmc_wait_ibe();
-	outb(I8042_DATA_PORT, val);
+	outb(val, I8042_DATA_PORT);
 
 	return 0;
 }
-#include <kernel/printk.h>
+//#include <kernel/printk.h>
 
-
+//http://lists.gnu.org/archive/html/qemu-devel/2004-11/msg00082.html
 static int ps_mouse_get_input_event(void) {
 	unsigned char code;
 
@@ -42,13 +42,13 @@ static int ps_mouse_get_input_event(void) {
 	}
 
 	code = inb(I8042_DATA_PORT);
-	printk("mouse:%X", code);
+	//printk("mouse:%X", code);
 
 	return code;
 }
 
 static struct input_dev mouse_dev = {
-		.name = "PC/2 mouse",
+		.name = "mouse",
 		.irq = 12,
 		.getc = ps_mouse_get_input_event
 };
@@ -58,7 +58,7 @@ static int ps_mouse_init(void) {
 	input_dev_register(&mouse_dev);
 
 	kmc_wait_ibe();
-	outb(I8042_CMD_PORT, 0xa8); /* Enable aux */
+	outb(0xa8, I8042_CMD_PORT); /* Enable aux */
 
 	kmc_write_aux(0xf3); /* Set sample rate */
 	kmc_write_aux(100); /* 100 samples/sec */
