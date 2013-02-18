@@ -35,7 +35,7 @@ static void echo_mod(char on) {
 	/*printf("\033[12%c", on ? 'l' : 'h');*/
 }
 
-static int pass_prompt(const char *prompt, char *buf, int buflen) {
+static int passw_prompt(const char *prompt, char *buf, int buflen) {
 	int ch;
 	printf("%s", prompt);
 
@@ -109,7 +109,7 @@ static int login_cmd(int argc, char **argv) {
 	const struct shell *shell;
 
 	if (0 != (res = utmp_login(LOGIN_PROCESS, ""))) {
-		return res;
+		/* */
 	}
 
 	while (1) {
@@ -145,7 +145,7 @@ static int login_cmd(int argc, char **argv) {
 			continue;
 		}
 
-		if (0 > (res = pass_prompt(PASSW_PROMPT, passbuf, BUF_LEN))) {
+		if (0 > (res = passw_prompt(PASSW_PROMPT, passbuf, BUF_LEN))) {
 			continue;
 		}
 
