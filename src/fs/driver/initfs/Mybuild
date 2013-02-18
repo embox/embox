@@ -6,5 +6,5 @@ module initfs {
 	source "initfs.lds.S"
 	depends embox.fs.core
 	depends embox.mem.pool
-	option number fdesc_quantity=32
+	option number fdesc_quantity=128
 }
