@@ -74,9 +74,9 @@ static inline int in_sched_locked(void) {
 int sched_init(struct thread* current, struct thread *idle) {
 	prev_clock = clock();
 
-	runq_init(&rq, current, idle);
-
 	thread_set_current(current);
+
+	runq_init(&rq, current, idle);
 
 	assert(thread_state_started(current->state));
 	assert(thread_state_started(idle->state));

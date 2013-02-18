@@ -41,7 +41,7 @@ void startup_ap(void) {
 
 	lapic_enable();
 
-	bootstrap = thread_init_self(AP_STACK + THREAD_STACK_SIZE, THREAD_STACK_SIZE,
+	bootstrap = thread_init_self(AP_STACK, THREAD_STACK_SIZE,
 			THREAD_PRIORITY_MIN);
 
 	sched_cpu_init(bootstrap);

@@ -357,11 +357,11 @@ static void *idle_run(void *arg) {
 struct thread *thread_init_self(void *stack, size_t stack_sz,
 		thread_priority_t priority) {
 	struct task *kernel_task = task_kernel_task();
-	struct thread *thread = stack - stack_sz; /* Allocating at the bottom */
+	struct thread *thread = stack; /* Allocating at the bottom */
 
 	/* Stack setting up */
-	thread->stack = stack;
-	thread->stack_sz = stack_sz;
+	thread->stack = stack + sizeof(struct thread);
+	thread->stack_sz = stack_sz - sizeof(struct thread);
 
 	/* Global list addition and id setting up */
 	thread->id = id_counter++;
@@ -369,7 +369,6 @@ struct thread *thread_init_self(void *stack, size_t stack_sz,
 
 	/* General initialization and task setting up */
 	thread_init(thread, 0, NULL, NULL, kernel_task);
-	kernel_task->main_thread = thread;
 
 	/* Priority setting up */
 	thread->priority = priority;
@@ -386,16 +385,16 @@ static int unit_init(void) {
 	id_counter = 0;
 
 	/* TODO: priority */
-	bootstrap = thread_init_self(&_stack_vma + (uint32_t) &_stack_len,
-			(uint32_t) &_stack_len, THREAD_PRIORITY_NORMAL);
+	bootstrap = thread_init_self(&_stack_vma, (uint32_t) &_stack_len,
+			THREAD_PRIORITY_NORMAL);
+
+	kernel_task->main_thread = bootstrap;
 
 	if (!(idle = thread_new())) {
 		return -ENOMEM;
 	}
 	thread_init(idle, 0, idle_run, NULL, kernel_task);
 	thread_context_init(idle);
-
-	idle->task = kernel_task;
 
 	idle->priority = THREAD_PRIORITY_MIN;
 
@@ -461,8 +460,8 @@ static struct thread *thread_alloc(void) {
 
 	t = &block->thread;
 
-	t->stack = &block->stack;
-	t->stack_sz = STACK_SZ;
+	t->stack = &block->stack + sizeof(struct thread);
+	t->stack_sz = STACK_SZ - sizeof(struct thread);
 
 	return t;
 }
