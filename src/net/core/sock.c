@@ -22,6 +22,7 @@
 #include <framework/mod/options.h>
 
 #include <kernel/task/io_sync.h>
+#include <mem/misc/slab.h>
 
 #define MODOPS_MIN_AMOUNT_SOCK OPTION_GET(NUMBER, min_amount_sock)
 
