@@ -1,16 +1,15 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 31.01.2012
+ * @date 31.01.12
  * @author Anton Bondarev
  */
 
 #include <embox/test.h>
 #include <sys/socket.h>
-#include <net/ip.h>
-#include <net/net.h>
+#include <netinet/in.h>
+#include <unistd.h>
 
 EMBOX_TEST_SUITE("network/socket/inet test");
 

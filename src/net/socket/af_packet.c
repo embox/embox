@@ -1,15 +1,14 @@
 /**
  * @file
- *
  * @brief PF_PACKET protocol family socket handler
  *
- * @date 30.01.2012
+ * @date 30.01.12
  * @author Anton Bondarev
  */
+
 #include <errno.h>
 #include <sys/socket.h>
 #include <net/sock.h>
-#include <net/net.h>
 #include <embox/net/pack.h>
 #include <net/if_ether.h>
 #include <net/ip.h>

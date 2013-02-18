@@ -10,10 +10,11 @@
 #include <util/macro.h>
 #include <framework/example/self.h>
 #include <stdio.h>
-#include <net/net.h>
-#include <net/ip.h>
 #include <sys/socket.h>
+#include <sys/time.h>
+#include <netinet/in.h>
 #include <unistd.h>
+#include <net/socket_options.h>
 
 EMBOX_EXAMPLE(exec);
 

@@ -18,8 +18,8 @@
 
 #include <net/inet_sock.h>
 #include <net/kernel_socket.h>
-#include <net/net.h>
 #include <net/socket.h>
+#include <net/sock.h>
 #include <sys/socket.h>
 #include <util/array.h>
 #include <kernel/task.h>
@@ -438,14 +438,11 @@ int setsockopt(int sockfd, int level, int optname, void *optval,
 	return 0;
 }
 
+#if 1 /********** TODO remove this ****************/
 int check_icmp_err(int sockfd) {
-	struct socket *sock;
-	int err;
-
-	sock = idx2sock(sockfd);
-	err = sock->sk->sk_err;
-	sock->sk->sk_err = -1;
-
+	struct socket *sock = idx2sock(sockfd);
+	int err = sock->sk->sk_err;
+	sk_clear_pending_error(sock->sk);
 	return err;
 }
 
@@ -453,3 +450,4 @@ void socket_set_encap_recv(int sockfd, sk_encap_hnd hnd) {
 	struct socket *sock = idx2sock(sockfd);
 	sock->sk->sk_encap_rcv = hnd;
 }
+#endif

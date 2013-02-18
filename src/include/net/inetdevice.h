@@ -9,7 +9,6 @@
 #define NET_INETDEVICE_H_
 
 #include <net/netdevice.h>
-#include <net/net.h>
 #include <netinet/in.h>
 #include <types.h>
 

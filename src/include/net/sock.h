@@ -10,13 +10,19 @@
 #ifndef NET_SOCK_H_
 #define NET_SOCK_H_
 
-#include <kernel/thread/sync/mutex.h>
-#include <mem/misc/slab.h>
-#include <net/netdevice.h>
-#include <net/net.h>
 #include <net/socket.h>
-#include <net/socket_options.h>
+#include <sys/socket.h>
+#include <mem/misc/slab.h>
 #include <kernel/thread/event.h>
+#include <net/skbuff.h>
+#include <linux/aio.h>
+
+struct proto;
+struct sk_buff_head;
+struct socket;
+struct kiocb;
+struct msghdr;
+struct skbuff;
 
 typedef struct {
 	spinlock_t slock;
@@ -32,8 +38,8 @@ typedef struct {
 struct sock_common {
 	unsigned short skc_family;
 	unsigned char skc_state;
-	unsigned char skc_reuse;
 #if 0
+	unsigned char skc_reuse;
 	int skc_bound_dev_if;
 #endif
 	struct proto *skc_prot;
@@ -101,7 +107,7 @@ typedef struct sock {
 	void (* sk_destruct)(struct sock *sk);
 	int (* get_port)(struct sock *sk, unsigned short num); // TODO
 #endif
-	sk_encap_hnd sk_encap_rcv;
+	int (*sk_encap_rcv)(struct sock *sk, struct sk_buff *pack);
 
 	int32_t sk_err;
 
@@ -172,7 +178,7 @@ typedef struct proto {
 	sock_t *(*sock_alloc)(void); /**< if not NULL, allocate proto socket casted to sock_t */
 	void (*sock_free)(sock_t *); /**< must not be NULL if sock_alloc is not NULL */
 	unsigned int obj_size;
-	cache_t *cachep;             /**< associated cache in which socks will be stored */
+	struct cache *cachep;             /**< associated cache in which socks will be stored */
 	char name[32];
 } proto_t;
 
@@ -184,16 +190,16 @@ extern void sk_init(void);
  * @priority - isn't used now
  * @prot - pointer to the proto structure
  */
-extern sock_t *sk_alloc(int family, gfp_t priority, proto_t *prot);
+extern sock_t *sk_alloc(int family, gfp_t priority, struct proto *prot);
 
 /**
  * Returns specified structure sock into pull,
  * assuming there are no more handle on it.
  */
-extern void sk_free(sock_t *sk);
+extern void sk_free(struct sock *sk);
 
 /** This function used by all transports to attempt to queue received packets*/
-extern void sock_queue_rcv_skb(sock_t *sk, sk_buff_t *skb);
+extern void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb);
 
 /**
  * Functions to fill in entries in struct proto_ops when a protocol

@@ -9,7 +9,7 @@
 #ifndef SOCKET_REGISTRY_H_
 #define SOCKET_REGISTRY_H_
 
-#include <net/net.h>
+#include <net/socket.h>
 #include <net/socket_options.h>
 #include <util/dlist.h>
 

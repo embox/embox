@@ -365,7 +365,7 @@ static int inet_accept(struct sock *sk, struct sock **newsk, sockaddr_t *addr, i
 }
 
 static int inet_setsockopt(struct socket *sock, int level, int optname,
-		char __user *optval, int optlen) {
+		char *optval, int optlen) {
 	net_device_t *dev;
 	struct socket_opt_state *ops;
 	struct sock *sk;

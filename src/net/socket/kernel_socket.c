@@ -10,11 +10,12 @@
 #include <errno.h>
 #include <hal/ipl.h>
 #include <linux/aio.h>
-#include <net/net.h>
+#include <net/socket.h>
 #include <sys/socket.h>
 #include <stddef.h>
 #include <types.h>
 #include <string.h>
+#include <net/net.h>
 
 #include <net/sock.h>
 #include <util/sys_log.h>

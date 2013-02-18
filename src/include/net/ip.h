@@ -17,11 +17,16 @@
 #include <net/inet_sock.h>
 #include <hal/arch.h> /* endianess */
 #include <net/checksum.h>
+#include <net/netdevice.h>
+#include <net/sock.h>
 
 /**
  * Prototypes
  */
 struct sk_buff;
+struct packet_type;
+struct net_device;
+struct sock;
 
 #define IP_ADDR_LEN      4
 #define IPv6_ADDR_LEN    16
@@ -92,7 +97,7 @@ typedef struct iphdr {
 #define IP_MIN_HEADER_SIZE   (sizeof(struct iphdr))
 #define IP_HEADER_SIZE(iph) (((iph)->ihl) << 2)
 
-static inline iphdr_t *ip_hdr(const sk_buff_t *skb) {
+static inline iphdr_t *ip_hdr(const struct sk_buff *skb) {
 	return skb->nh.iph;
 }
 
@@ -127,8 +132,8 @@ static inline void init_ip_header(iphdr_t *hdr, uint8_t proto, __be16 ip_id, __b
 /**
  * Main IP Receive routine.
  */
-extern int ip_rcv(sk_buff_t *pack, net_device_t *dev,
-				packet_type_t *pt, net_device_t *orig_dev);
+extern int ip_rcv(struct sk_buff *pack, struct net_device *dev,
+				struct packet_type *pt, struct net_device *orig_dev);
 
 /**
  * Add an ip header to a net_packet and send it out.
@@ -140,16 +145,16 @@ extern int ip_rcv(sk_buff_t *pack, net_device_t *dev,
  *	RAW: socket, IP header is ready, but LL header unknown
  *	TCP: socket, TCP header is built, IP header is placed, LL header unknown
  */
-extern int ip_send_packet(inet_sock_t *sk, sk_buff_t *pack);
+extern int ip_send_packet(struct inet_sock *sk, struct sk_buff *pack);
 
 /**
  * Perform forwarding of obtained packet
  */
-extern int ip_forward_packet(sk_buff_t *skb);
+extern int ip_forward_packet(struct sk_buff *skb);
 
-extern int ip_queue_xmit(sk_buff_t *skb, int ipfragok);
+extern int ip_queue_xmit(struct sk_buff *skb, int ipfragok);
 
-extern int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl,
+extern int rebuild_ip_header(struct sk_buff *pack, unsigned char ttl,
 			unsigned char proto, unsigned short id, unsigned short len,
 			in_addr_t saddr, in_addr_t daddr/*, ip_options_t *opt*/);
 
@@ -161,12 +166,12 @@ extern int rebuild_ip_header(sk_buff_t *pack, unsigned char ttl,
  * Parses a block of options from an IP header
  * and initializes an instance of an ip_options structure accordingly
  */
-extern int ip_options_compile(sk_buff_t *skb, ip_options_t *opt);
+extern int ip_options_compile(struct sk_buff *skb, struct ip_options *opt);
 
 /*
  * Handles socket buffer route info due to SRR options
  */
-extern int ip_options_handle_srr(sk_buff_t *skb);
+extern int ip_options_handle_srr(struct sk_buff *skb);
 
 extern struct net_proto_family inet_family_ops;
 extern const struct proto_ops inet_stream_ops;

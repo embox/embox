@@ -13,7 +13,6 @@
 #include <sys/uio.h>
 
 #include <sys/socket.h>
-#include <net/net.h>
 #include <net/ip.h>
 #include <net/udp.h>
 

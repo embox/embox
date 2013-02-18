@@ -13,6 +13,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <kernel/thread.h>
 
 #include <utmp.h>
 

@@ -15,13 +15,14 @@
 
 #include <net/tcp.h>
 #include <sys/socket.h>
-#include <net/net.h>
 #include <net/ip.h>
 #include <net/sock.h>
 #include <net/route.h>
 #include <net/inetdevice.h>
 
 #include <kernel/time/time.h>
+#include <kernel/task.h>
+#include <kernel/task/idx.h>
 
 #include <mem/objalloc.h>
 #include <embox/net/sock.h>
@@ -169,10 +170,6 @@ static int tcp_v4_listen(struct sock *sk, int backlog) {
 
 	return ret;
 }
-
-#include <net/net.h>
-#include <kernel/task.h>
-#include <kernel/task/idx.h>
 
 static int tcp_v4_accept(struct sock *sk, struct sock **newsk,
 		struct sockaddr *addr, int *addr_len) {

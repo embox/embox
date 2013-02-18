@@ -11,7 +11,6 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <net/socket_options.h>
-#include <net/net.h>
 
 /**
  * default stream type socket options set

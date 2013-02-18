@@ -12,6 +12,8 @@
 #include <errno.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 #include <unistd.h>
 
 #include <net/rpc/clnt.h>
@@ -19,10 +21,6 @@
 #include <net/rpc/rpc_msg.h>
 #include <net/rpc/auth.h>
 #include <net/rpc/pmap.h>
-
-#include <sys/socket.h>
-#include <net/net.h>
-#include <net/ip.h>
 
 #define TCP_MSG_MAX_SZ 1024
 
