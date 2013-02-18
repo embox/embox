@@ -27,4 +27,8 @@ static inline const char *test_name(const struct test_suite *test) {
 	return NULL != test ? test->mod->name : NULL;
 }
 
+static inline const char *test_package(const struct test_suite *test) {
+	return NULL != test ? test->mod->package->name : NULL;
+}
+
 #endif /* FRAMEWORK_TEST_API_IMPL_H_ */
