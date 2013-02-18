@@ -22,6 +22,7 @@ struct socket;
 struct kiocb;
 struct msghdr;
 struct skbuff;
+struct cache;
 
 typedef struct {
 	spinlock_t slock;
