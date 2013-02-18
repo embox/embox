@@ -7,9 +7,10 @@
  * @author Anton Kozlov
  */
 
+#include <assert.h>
+#include <errno.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <assert.h>
 
 #include <fs/kfile.h>
 
@@ -42,12 +43,12 @@ static int this_ioctl(struct idx_desc *data, int request, va_list args) {
 	return kioctl(from_data(data), request, args);
 }
 
-#include <errno.h>
 static int this_truncate(struct idx_desc *data, off_t length) {
 	if (!(from_data(data)->flags & FDESK_FLAG_WRITE)) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
+
 	return ktruncate(from_data(data)->node, length);
 }
 

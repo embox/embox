@@ -223,6 +223,7 @@ int ftruncate(int fd, off_t length) {
 	assert(task_self_idx_table());
 
 	desc = task_self_idx_get(fd);
+
 	if (!desc) {
 		SET_ERRNO(EBADF);
 		return -1;
@@ -230,6 +231,11 @@ int ftruncate(int fd, off_t length) {
 
 	ops = task_idx_desc_ops(desc);
 	assert(ops);
-	assert(ops->ftruncate);
+
+	if (!ops->ftruncate) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
 	return ops->ftruncate(desc, length);
 }

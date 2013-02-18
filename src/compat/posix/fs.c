@@ -8,8 +8,13 @@
  */
 
 #include <types.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <fs/kfsop.h>
+#include <fs/node.h>
+#include <fs/vfs.h>
+#include <fs/perm.h>
+#include <fs/kfile.h>
 
 int creat(const char *pathname, mode_t mode) {
 	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
@@ -39,15 +44,12 @@ int stat(const char *path, struct stat *buf) {
 	return lstat(path, buf);
 }
 
-#include <fs/node.h>
-#include <fs/vfs.h>
-#include <fs/kfile.h>
-#include <errno.h>
 int truncate(const char *path, off_t length) {
 	node_t *node;
+	int res;
 
-	if (NULL == (node = vfs_lookup(NULL, path))) {
-		errno = ENOENT;
+	if (0 == (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+		errno = -res;
 		return -1;
 	}
 
