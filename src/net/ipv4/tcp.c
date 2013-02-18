@@ -205,7 +205,7 @@ void tcp_obj_lock(union sock_pointer sock, unsigned int obj) {
 		usleep(0);
 
 		if (++tmp_bug_fix > 1000) {
-			LOG_ERROR("wake up from infinite loop");
+			LOG_ERROR("wake up from infinite loop\n");
 			break;
 		}
 	}

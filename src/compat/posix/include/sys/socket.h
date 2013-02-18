@@ -11,6 +11,7 @@
 #define COMPAT_POSIX_SYS_SOCKET_H_
 
 #include <sys/cdefs.h>
+#include <sys/uio.h>
 #include <types.h>
 
 __BEGIN_DECLS
@@ -391,6 +392,8 @@ static inline int getsockname(int sockfd, struct sockaddr *addr,
 static inline int getpeername(int sockfd, struct sockaddr *addr,
 		socklen_t *addrlen) { return -1; }
 static inline ssize_t recvmsg(int socket, struct msghdr *message,
+		int flags) { return -1; }
+static inline ssize_t sendmsg(int socket, const struct msghdr *message,
 		int flags) { return -1; }
 
 __END_DECLS

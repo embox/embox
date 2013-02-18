@@ -7,6 +7,7 @@
  * @author Nikolay Korotky
  * @author Ilia Vaprol
  */
+
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -24,7 +25,6 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <net/arp_queue.h>
-
 
 #include <kernel/thread.h>
 #include <kernel/thread/event.h>
@@ -48,29 +48,30 @@ static struct socket *idx2sock(int fd) {
 }
 
 int socket(int domain, int type, int protocol) {
-	int res;
+	int ret, res;
 	struct socket *sock;
 
-	res = kernel_socket_create(domain, type, protocol, &sock, NULL, NULL);
-	if (res < 0) {
-		SET_ERRNO(-res);
-		return -1; /* return error code */
+	ret = kernel_socket_create(domain, type, protocol, &sock, NULL, NULL);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
+		return -1;
 	}
 
 	res = task_self_idx_alloc(&task_idx_ops_socket, sock);
-	if (res < 0) { // release socket if can't alloc idx
+	if (res < 0) {
 		kernel_socket_release(sock);
-		/* TODO: EMFILE should be returned when no fids left for process to use.
-		   If the system cannot allocate more fids at all, ENFILE should be returned */
 		SET_ERRNO(EMFILE);
 		return -1;
 	}
 
 	sock->desc = task_self_idx_get(res);
 
-	assert(sock->state != SS_CONNECTED);
-	/* Block stream socket on writing while it is unconnected.
-	 * Otherwise unblock it. */
+	assert(sock->state != SS_CONNECTED); /* XXX ?? */
+
+	/**
+	 * Block stream socket on writing while
+	 * it is unconnected. Otherwise unblock it.
+	 */
 	if (type != SOCK_STREAM) {
 		idx_io_enable(sock->desc, IDX_IO_WRITING);
 	}
@@ -79,13 +80,8 @@ int socket(int domain, int type, int protocol) {
 }
 
 int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
+	int ret;
 	struct socket *sock;
-	int res;
-
-	if (sockfd < 0) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
 
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
@@ -93,26 +89,21 @@ int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen) {
 		return -1;
 	}
 
-	res = kernel_socket_connect(sock, daddr, daddrlen, 0);
-	if(res < 0){
-		SET_ERRNO(-res);
+	ret = kernel_socket_connect(sock, daddr, daddrlen, 0);
+	if (ret != 0){
+		SET_ERRNO(-ret);
 		return -1;
 	}
 
 	/* If connection established, than we can write in this socket always. */
 	idx_io_enable(sock->desc, IDX_IO_WRITING);
 
-	return ENOERR;
+	return 0;
 }
 
 int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
-	int res;
+	int ret;
 	struct socket *sock;
-
-	if (sockfd < 0) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
 
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
@@ -120,73 +111,71 @@ int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 		return -1;
 	}
 
-	res = kernel_socket_bind(sock, addr, addrlen);
-	if(res < 0){
-		SET_ERRNO(-res);
+	ret = kernel_socket_bind(sock, addr, addrlen);
+	if (ret != 0){
+		SET_ERRNO(-ret);
 		return -1;
 	}
-	return ENOERR;
+
+	return 0;
 }
 
 int listen(int sockfd, int backlog) {
+	int ret;
 	struct socket *sock;
-	int res;
 
-	if (sockfd < 0) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
-	res = kernel_socket_listen(sock, backlog);
-	if(res < 0){
-		SET_ERRNO(-res);
+
+	ret = kernel_socket_listen(sock, backlog);
+	if (ret != 0){
+		SET_ERRNO(-ret);
 		return -1;
 	}
-	return ENOERR;
 
+	return 0;
 }
 
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
+	int ret, res;
 	struct socket *sock, *new_sock;
-	int res;
 
-	if (sockfd < 0) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	res = kernel_socket_accept(sock, &new_sock, addr, addrlen);
-	if (res < 0) {
-		SET_ERRNO(-res);
+	ret = kernel_socket_accept(sock, &new_sock, addr, addrlen);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
 		return -1;
 	}
 
 	res = task_self_idx_alloc(&task_idx_ops_socket, new_sock);
 	if (res < 0) {
 		kernel_socket_release(new_sock);
-		SET_ERRNO(EMFILE);  /* also could be ENFILE */
+		SET_ERRNO(EMFILE);
 		return -1;
 	}
 
 	new_sock->desc = task_self_idx_get(res);
-	/* If connection established, than we can write in this socket always. */
+
+	/**
+	 * If connection established, than we can
+	 * write in this socket always.
+	 */
 	idx_io_enable(new_sock->desc, IDX_IO_WRITING);
 
 	return res;
 }
 
-static ssize_t sendto_sock(struct socket *sock, const void *buf, size_t len, int flags,
-		const struct sockaddr *daddr, socklen_t daddrlen) {
-	int res, res_sleep;
+static ssize_t sendto_sock(struct socket *sock, const void *buf, size_t len,
+		int flags, const struct sockaddr *daddr, socklen_t daddrlen) {
+	int ret;
 	struct inet_sock *inet;
 	struct iovec iov;
 	struct msghdr m;
@@ -203,26 +192,23 @@ static ssize_t sendto_sock(struct socket *sock, const void *buf, size_t len, int
 
 	assert(sock->sk);
 
-	inet = inet_sk(sock->sk);
-	if ( (sock->type == SOCK_STREAM) || (sock->type ==  SOCK_SEQPACKET) ) {
-		/* Quotation: "If sendto() is used on a connection-mode (SOCK_STREAM, SOCK_SEQPACKET)
-		 * socket, the arguments dest_addr and addrlen are ignored
-		 * (and the error EISCONN MAY be returned when they are not NULL and 0)"
-		 *------------
-		 * Currently we do nothing and believe that inet has correct pair address-port
-		 * from tcp_v4_accept() call. As a compromise with the old code we can
-		 * check that new parameters don't change anything. If not - return
-		 * an error.
-		 */
-	} else {
-		if(!daddr || (daddrlen < sizeof(struct sockaddr_in))) {
+	switch (sock->type) {
+	case SOCK_DGRAM:
+	case SOCK_RAW:
+	case SOCK_PACKET:
+		if (daddr == NULL) {
 			SET_ERRNO(EDESTADDRREQ);
 			return -1;
-		} else {
-			dest_addr = (struct sockaddr_in *)daddr;
-			inet->daddr = dest_addr->sin_addr.s_addr;
-			inet->dport = dest_addr->sin_port;
 		}
+		if (daddrlen != sizeof *dest_addr) {
+			SET_ERRNO(EINVAL);
+			return -1;
+		}
+		dest_addr = (struct sockaddr_in *)daddr;
+		inet = inet_sk(sock->sk);
+		inet->daddr = dest_addr->sin_addr.s_addr;
+		inet->dport = dest_addr->sin_port;
+		break;
 	}
 
 	if (sock->sk->sk_shutdown & (SHUT_WR + 1)) {
@@ -231,23 +217,12 @@ static ssize_t sendto_sock(struct socket *sock, const void *buf, size_t len, int
 	}
 
 	/* socket is ready for usage and has no data transmitting errors yet */
-	sock->sk->sk_err = -1;
+	sock->sk->sk_err = -1; /* XXX ?? */
 	sock_set_ready(sock->sk);
 
-	sched_lock();
-	res = kernel_socket_sendmsg(NULL, sock, &m, len);
-	if (res == -EINPROGRESS) {
-		/* wait until resolving destonation ip */
-		res_sleep = event_wait_ms(&sock->sk->sock_is_ready, MAX_WAIT_TIME);
-		if (res_sleep == 0) {
-			/* was resolved */
-			res = 1;
-		}
-	}
-	sched_unlock();
-
-	if (res < 0) {
-		SET_ERRNO(-res);
+	ret = kernel_socket_sendmsg(NULL, sock, &m, len);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
 		return -1;
 	}
 
@@ -259,20 +234,9 @@ ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
 	return sendto_sock(idx2sock(sockfd), buf, len, flags, daddr, daddrlen);
 }
 
-int check_icmp_err(int sockfd) {
-	struct socket *sock;
-	int err;
-
-	sock = idx2sock(sockfd);
-	err = sock->sk->sk_err;
-	sock->sk->sk_err = -1;
-
-	return err;
-}
-
-static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int flags,
-			struct sockaddr *daddr, socklen_t *daddrlen) {
-	int res;
+static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len,
+		int flags, struct sockaddr *daddr, socklen_t *daddrlen) {
+	int ret;
 	struct inet_sock *inet;
 	struct iovec iov;
 	struct msghdr m;
@@ -287,14 +251,14 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 	iov.iov_len = len;
 	m.msg_iov = &iov;
 
-	res = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
-	if (res < 0) {
-		SET_ERRNO(-res);
+	ret = kernel_socket_recvmsg(NULL, sock, &m, len, flags);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	inet = inet_sk(sock->sk);
 	if ((daddr != NULL) && (daddrlen != NULL)) {
+		inet = inet_sk(sock->sk);
 		dest_addr = (struct sockaddr_in *)daddr;
 		dest_addr->sin_family = AF_INET;
 		dest_addr->sin_addr.s_addr = inet->daddr;
@@ -303,25 +267,33 @@ static ssize_t recvfrom_sock(struct socket *sock, void *buf, size_t len, int fla
 		*daddrlen = sizeof *dest_addr;
 	}
 
-	return iov.iov_len; /* return length of received msg */
+	return (ssize_t)iov.iov_len;
 }
 
 ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 			struct sockaddr *daddr, socklen_t *daddrlen) {
-	int res;
-	struct socket *sock = idx2sock(sockfd);
+	ssize_t ret;
+	struct socket *sock;
+
+	sock = idx2sock(sockfd);
+	if (sock == NULL) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
 
 	sched_lock();
-	res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
-	/* if !O_NONBLOCK on socket's file descriptor {*/
-	if (res == -1) {
-		event_wait_ms(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
-		res = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
+	{
+		ret = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
+		/* if !O_NONBLOCK on socket's file descriptor {*/
+		if (ret == -1) {
+			event_wait_ms(&sock->sk->sock_is_not_empty, SCHED_TIMEOUT_INFINITE);
+			ret = recvfrom_sock(sock, buf, len, flags, daddr, daddrlen);
+		}
+		/* } */
 	}
-	/* } */
 	sched_unlock();
 
-	return res;
+	return ret;
 }
 
 ssize_t recv(int sockfd, void *buf, size_t len, int flags) {
@@ -332,6 +304,10 @@ ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
 	struct socket *sock;
 
 	sock = idx2sock(sockfd);
+	if (sock == NULL) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
 
 	if (!sk_is_connected(sock)) {
 		SET_ERRNO(ENOTCONN);
@@ -342,13 +318,8 @@ ssize_t send(int sockfd, const void *buf, size_t len, int flags) {
 }
 
 int shutdown(int sockfd, int how) {
-	int res;
+	int ret;
 	struct socket *sock;
-
-	if (sockfd < 0) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
 
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
@@ -358,24 +329,19 @@ int shutdown(int sockfd, int how) {
 
 	sock->sk->sk_shutdown |= (how + 1);
 
-	res = kernel_socket_shutdown(sock, how);
-
-	if(res < 0){
-		SET_ERRNO(-res);
+	ret = kernel_socket_shutdown(sock, how);
+	if (ret != 0){
+		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	return ENOERR;
+	return 0;
 }
 
+#if 0
 int socket_close(int sockfd) {
-	int res;
+	int ret;
 	struct socket *sock;
-
-	if (sockfd < 0) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
 
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
@@ -383,14 +349,15 @@ int socket_close(int sockfd) {
 		return -1;
 	}
 
-	res = kernel_socket_release(sock);
-	if(res < 0){
-		SET_ERRNO(-res);
+	ret = kernel_socket_release(sock);
+	if (ret < 0){
+		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	return ENOERR;
+	return 0;
 }
+#endif
 
 static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	struct socket *sock = task_idx_desc_data(data);
@@ -399,8 +366,10 @@ static ssize_t this_read(struct idx_desc *data, void *buf, size_t nbyte) {
 	len = recvfrom_sock(task_idx_desc_data(data), buf, nbyte, * task_idx_desc_flags_ptr(data), NULL, 0);
 
 	softirq_lock();
-	if (NULL == skb_queue_front(sock->sk->sk_receive_queue)) {
-		idx_io_disable(data, IDX_IO_READING);
+	{
+		if (skb_queue_front(sock->sk->sk_receive_queue) == NULL) {
+			idx_io_disable(data, IDX_IO_READING);
+		}
 	}
 	softirq_unlock();
 
@@ -416,56 +385,66 @@ static int this_ioctl(struct idx_desc *socket, int request, va_list args) {
 }
 
 static int this_close(struct idx_desc *socket) {
-	/* TODO set errno */
-	return kernel_socket_release(task_idx_desc_data(socket));
+	int ret;
+
+	ret = kernel_socket_release(task_idx_desc_data(socket));
+	if (ret != 0) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	return 0;
 }
 
 int getsockopt(int sockfd, int level, int optname, void *optval,
-		socklen_t *optlen){
+		socklen_t *optlen) {
+	int ret;
 	struct socket *sock;
-	int res;
 
-	if (sockfd < 0) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
-	res = kernel_socket_getsockopt(sock, level, optname,
-			optval, optlen);
-	if(res < 0){
-		SET_ERRNO(-res);
+
+	ret = kernel_socket_getsockopt(sock, level, optname, optval, optlen);
+	if (ret != 0){
+		SET_ERRNO(-ret);
 		return -1;
 	}
-	return ENOERR;
 
+	return 0;
 }
 
 int setsockopt(int sockfd, int level, int optname, void *optval,
-		socklen_t optlen){
+		socklen_t optlen) {
+	int ret;
 	struct socket *sock;
-	int res;
 
-	if (sockfd < 0) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
 	sock = idx2sock(sockfd);
 	if (sock == NULL) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
-	res = kernel_socket_setsockopt(sock, level, optname,
-			optval, optlen);
-	if(res < 0){
-		SET_ERRNO(-res);
+
+	ret = kernel_socket_setsockopt(sock, level, optname, optval, optlen);
+	if (ret != 0) {
+		SET_ERRNO(-ret);
 		return -1;
 	}
-	return ENOERR;
 
+	return 0;
+}
+
+int check_icmp_err(int sockfd) {
+	struct socket *sock;
+	int err;
+
+	sock = idx2sock(sockfd);
+	err = sock->sk->sk_err;
+	sock->sk->sk_err = -1;
+
+	return err;
 }
 
 void socket_set_encap_recv(int sockfd, sk_encap_hnd hnd) {
