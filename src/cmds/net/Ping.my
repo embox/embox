@@ -51,7 +51,7 @@ module ping {
 	depends embox.net.netdb
 	depends embox.lib.LibC
 	depends embox.kernel.timer.sys_timer
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.net.util
 	depends embox.kernel.timer.sleep_api
 	depends embox.compat.posix.util.getopt

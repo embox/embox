@@ -23,7 +23,7 @@ module gethostent {
 module echo_server {
 	source "echo_server.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
@@ -32,7 +32,7 @@ module echo_server {
 module checkopts {
 	source "checkopts.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }
@@ -41,7 +41,7 @@ module httpd {
 	source "httpd.c"
 
 	depends embox.lib.LibC
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 
@@ -60,7 +60,7 @@ module r6040_example {
 module receiver {
 	source "receiver.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.prom.printf
 	depends embox.framework.LibFramework
 }
@@ -68,7 +68,7 @@ module receiver {
 module sender {
 	source "sender.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }
@@ -76,7 +76,7 @@ module sender {
 module tcp_accepter {
 	source "tcp_accepter.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.prom.printf
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
@@ -85,7 +85,7 @@ module tcp_accepter {
 module tcp_connect {
 	source "tcp_connect.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.prom.printf
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
@@ -94,7 +94,7 @@ module tcp_connect {
 module tcp_echo {
 	source "tcp_echo.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.prom.printf
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
@@ -104,7 +104,7 @@ module tcp_echo {
 module tcp_receiver {
 	source "tcp_receiver.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
@@ -113,7 +113,7 @@ module tcp_receiver {
 module tcp_sender {
 	source "tcp_sender.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
@@ -122,7 +122,7 @@ module tcp_sender {
 module udp_echo {
 	source "udp_echo.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

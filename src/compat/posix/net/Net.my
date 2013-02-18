@@ -1,0 +1,16 @@
+package embox.compat.posix.net
+
+module All {
+	depends socket
+}
+
+static module socket {
+	source "socket.c"
+
+	depends embox.net.core
+	depends embox.kernel.task.idx_table
+	depends embox.kernel.task.errno
+	depends embox.kernel.thread.event
+	depends embox.kernel.task.io_sync_api
+	depends embox.net.socket
+}

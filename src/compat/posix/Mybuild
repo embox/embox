@@ -4,6 +4,7 @@ module LibPosix {
 	depends embox.compat.posix.util.All
 	depends embox.compat.posix.proc.All
 	depends embox.compat.posix.idx.All
+	depends embox.compat.posix.net.All
 	depends file
 	depends fs
 	depends sched
