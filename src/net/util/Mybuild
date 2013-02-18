@@ -1,6 +1,16 @@
-package embox.net
+package embox.net.util
 
-module util {
-	source "inet_addr.c", "misc.c"
+module hostent_api {
+	source "hostent_api.c"
+
+	option number max_name_len=256
+	option number max_aliases_num=40
+	option number max_addr_len=16
+	option number max_addrs_num=40
+	depends embox.lib.LibC
+}
+
+module misc {
+	source "misc.c"
 	depends embox.lib.LibC
 }

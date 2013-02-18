@@ -20,8 +20,13 @@
 #include <net/ip.h>
 #include <sys/socket.h>
 
-
 #include <err.h>
+
+/**
+ * DNS nameservers
+ */
+#include <framework/mod/options.h>
+#define MODOPS_NAMESERVER OPTION_STRING_GET(nameserver)
 
 union dns_msg {
 	char raw[DNS_MAX_MESSAGE_SZ];
@@ -213,7 +218,7 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 	memset(&nameserver_addr, 0, sizeof nameserver_addr);
 	nameserver_addr.sin_family = AF_INET;
 	nameserver_addr.sin_port = htons(DNS_PORT_NUMBER);
-	if (!inet_aton(MODOPS_DNS_NAMESERVER, &nameserver_addr.sin_addr)) {
+	if (!inet_aton(dns_get_nameserver(), &nameserver_addr.sin_addr)) {
 		return -EINVAL;
 	}
 	nameserver_addr_sz = sizeof nameserver_addr;
@@ -563,4 +568,8 @@ int dns_result_free(struct dns_result *result) {
 	free(result->ns);
 	free(result->ar);
 	return 0;
+}
+
+const char * dns_get_nameserver(void) {
+	return MODOPS_NAMESERVER;
 }

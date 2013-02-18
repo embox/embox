@@ -47,8 +47,9 @@ module ifconfig {
 	source "ifconfig.c"
 
 	depends embox.lib.LibC
-	depends embox.net.util
+	depends embox.compat.posix.net.inet_addr
 	depends embox.net.core
+	depends embox.net.util.misc
 	depends embox.compat.posix.util.getopt
 	depends embox.net.eth
 	depends embox.net.af_inet

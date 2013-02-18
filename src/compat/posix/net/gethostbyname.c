@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief
  *
  * @date 20.08.12
  * @author Ilia Vaprol
@@ -11,7 +12,7 @@
 #include <string.h>
 #include <net/dns.h>
 #include <assert.h>
-#include "hostent_api.h"
+#include <net/util/hostent_api.h>
 
 static struct hostent * get_hostent_from_ip(const char *ip_str) {
 	struct hostent *he;

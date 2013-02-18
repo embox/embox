@@ -6,7 +6,7 @@ module tcp_sock {
 
 	depends tcp
 	depends route
-	depends util
+	depends embox.compat.posix.net.inet_addr
 	depends embox.lib.LibC
 	depends embox.mem.objalloc
 	depends embox.framework.LibFrameworkNet

@@ -6,8 +6,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef NET_NETDB_H_
-#define NET_NETDB_H_
+#ifndef COMPAT_POSIX_NETDB_H_
+#define COMPAT_POSIX_NETDB_H_
 
 #include <sys/cdefs.h>
 
@@ -66,4 +66,4 @@ extern struct hostent * gethostbyname(const char *hostname);
 
 __END_DECLS
 
-#endif /* NET_NETDB_H_ */
+#endif /* COMPAT_POSIX_NETDB_H_ */

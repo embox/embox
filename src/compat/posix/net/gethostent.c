@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief
  *
  * @date 20.08.12
  * @author Ilia Vaprol
@@ -12,7 +13,7 @@
 #include <err.h>
 #include <ctype.h>
 #include <errno.h>
-#include "hostent_api.h"
+#include <net/util/hostent_api.h>
 
 #include <framework/mod/options.h>
 #define MODOPS_PATH_TO_HOSTS OPTION_STRING_GET(path_to_hosts)

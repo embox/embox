@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief
  *
  * @date 18.11.09
  * @author Nikolay Korotky

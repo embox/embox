@@ -22,7 +22,7 @@ package embox.cmd.net
 module nslookup {
 	source "nslookup.c"
 
-	depends embox.net.netdb
+	depends embox.net.dns
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }

@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <netdb.h>
-#include "hostent_api.h"
+#include <net/util/hostent_api.h>
 
 #include <framework/mod/options.h>
 #define MODOPS_MAX_NAME_LEN OPTION_GET(NUMBER, max_name_len)

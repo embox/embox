@@ -1,16 +1,49 @@
 package embox.compat.posix.net
 
 module All {
-	depends socket
+	depends socket,
+		gethostent,
+		gethostbyname,
+		herror,
+		inet_addr
 }
 
 static module socket {
 	source "socket.c"
 
 	depends embox.net.core
+	depends embox.net.socket
 	depends embox.kernel.task.idx_table
 	depends embox.kernel.task.errno
 	depends embox.kernel.thread.event
 	depends embox.kernel.task.io_sync_api
-	depends embox.net.socket
+}
+
+static module gethostent {
+	source "gethostent.c"
+	option string path_to_hosts="/hosts"
+
+	depends embox.lib.LibC
+	depends embox.net.util.hostent_api
+	depends embox.net.dns
+}
+
+static module gethostbyname {
+	source "gethostbyname.c"
+
+	depends embox.lib.LibC
+	depends embox.net.util.hostent_api
+	depends embox.net.dns
+}
+
+static module herror {
+	source "herror.c"
+
+	depends embox.lib.LibC
+}
+
+static module inet_addr {
+	source "inet_addr.c"
+
+	depends embox.lib.LibC
 }

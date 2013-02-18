@@ -7,7 +7,7 @@ package embox.example.net
 module gethostbyname {
 	source "gethostbyname.c"
 
-	depends embox.net.netdb
+	depends embox.compat.posix.net.gethostbyname
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }
@@ -15,7 +15,7 @@ module gethostbyname {
 module gethostent {
 	source "gethostent.c"
 
-	depends embox.net.netdb
+	depends embox.compat.posix.net.gethostent
 	depends embox.lib.LibC
 	depends embox.framework.LibFramework
 }

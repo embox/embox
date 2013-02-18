@@ -1,5 +1,6 @@
 /**
  * @file
+ * @brief
  *
  * @date 31.08.12
  * @author Ilia Vaprol
