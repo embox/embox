@@ -11,14 +11,11 @@
 #include <asm/io.h>
 
 #include <drivers/keyboard.h>
+#include <drivers/input/keymap.h>
 #include <drivers/input/input_dev.h>
+
 #include <drivers/i8042.h>
 
-
-#define keyboard_wait_read()  do {} while (0 == (inb(I8042_STS_PORT) & 0x01))
-#define keyboard_wait_write() do {} while (0 != (inb(I8042_STS_PORT) & 0x02))
-
-extern const unsigned int keymap[][4];
 
 static int keyboard_havechar(void) {
 	unsigned char c = inb(I8042_STS_PORT);
@@ -46,10 +43,6 @@ int keyboard_has_symbol(void) {
 	return keyboard_havechar();
 }
 
-#include <kernel/printk.h>
-
-
-
 static int kbd_state;
 
 int key_is_pressed(struct input_event *event) {
@@ -65,7 +58,6 @@ static void kbd_key_serv_press(int state, int flag) {
 }
 
 
-//#define KMC_PORTB 0x61
 static int keyboard_get_input_event(struct input_event *event) {
 	uint8_t scan_code;
 	int flag = 0;
@@ -73,7 +65,6 @@ static int keyboard_get_input_event(struct input_event *event) {
 
 	scan_code = inb(I8042_DATA_PORT);
 
-//	printk("s 0x%X\n", scan_code);
 	if(scan_code == KEYBOARD_SCAN_CODE_EXT) {
 		keyboard_wait_read();
 		scan_code = inb(I8042_DATA_PORT);
@@ -109,7 +100,6 @@ static int keyboard_get_input_event(struct input_event *event) {
 	return 0;
 }
 
-extern int keymap_to_ascii(struct input_event *event, unsigned char ascii_buff[4]);
 
 int keyboard_getc(void) {
 	static unsigned char ascii_buff[4];

@@ -12,7 +12,6 @@
 
 EMBOX_UNIT_INIT(ps_mouse_init);
 
-#define kmc_wait_ibe()	while (inb(I8042_STS_PORT) & I8042_STS_IBF)
 
 static void kmc_send_auxcmd(unsigned char val) {
 	kmc_wait_ibe();
@@ -30,7 +29,6 @@ static int kmc_write_aux(unsigned char val) {
 
 	return 0;
 }
-//#include <kernel/printk.h>
 
 //http://lists.gnu.org/archive/html/qemu-devel/2004-11/msg00082.html
 static int ps_mouse_get_input_event(void) {
@@ -42,7 +40,6 @@ static int ps_mouse_get_input_event(void) {
 	}
 
 	code = inb(I8042_DATA_PORT);
-	//printk("mouse:%X", code);
 
 	return code;
 }
@@ -69,7 +66,6 @@ static int ps_mouse_init(void) {
 
 	kmc_write_aux(0xf4); /* Enable aux device */
 	kmc_send_auxcmd(0x47); /* Enable controller ints */
-
 
 	return 0;
 }

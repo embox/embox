@@ -14,8 +14,9 @@ extern void keyboard_init(void);
 extern int keyboard_getc(void);
 
 extern int keyboard_has_symbol(void);
-struct input_event;
-extern int keymap_kbd(struct input_event *event);
+
+
+
 
 enum KBD_EVENT_CODE {
 	KEY_PRESSED = 0x8000,
