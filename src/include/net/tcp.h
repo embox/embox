@@ -116,7 +116,7 @@ enum {
 #define TCP_REXMIT_DELAY      2000  /* Delay between rexmitting */
 #define TCP_OPER_TIMEOUT      5000  /* Time-out */
 
-#define TCP_WINDOW_DEFAULT    500  /* Default size of widnow */
+#define TCP_WINDOW_DEFAULT    16384 /* Default size of widnow */
 
 /**
  * TODO TCP_MAX_DATA_LEN is temporary thing, becouse skb_alloc return NULL

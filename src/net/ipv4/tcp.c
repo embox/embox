@@ -807,7 +807,9 @@ static int process_ack(union sock_pointer sock, struct tcphdr *tcph,
 		sock.tcp_sk->last_ack = ack;
 		tcp_sock_xmit(sock, TCP_XMIT_IGNORE_DELAY); /* rexmit next data from queue */
 	}
-	else if (ack == last_ack) { } /* no new acknowledgments */
+	else if (ack == last_ack) { /* no new acknowledgments so rexmit last data */
+		tcp_sock_xmit(sock, TCP_XMIT_IGNORE_DELAY); /* rexmit next data from queue */
+	}
 	else if (ack < last_ack) { } /* package with non-last acknowledgment */
 	else {
 		assert(ack > self_seq);
