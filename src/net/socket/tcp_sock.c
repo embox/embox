@@ -254,7 +254,7 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 		max_len = (sock.tcp_sk->rem.wind > TCP_MAX_DATA_LEN ?
 				TCP_MAX_DATA_LEN : sock.tcp_sk->rem.wind);
 		buff = (char *)msg->msg_iov->iov_base;
-		while (len > 0) {
+		while (len != 0) {
 			bytes = (len > max_len ? max_len : len);
 			debug_print(3, "tcp_v4_sendmsg: sending len %d\n", bytes);
 			skb = alloc_prep_skb(0, bytes);
@@ -270,7 +270,7 @@ static int tcp_v4_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *ms
 			buff += bytes;
 			len -= bytes;
 			/* Fill TCP header */
-			skb->h.th->psh = 1; /* XXX not req */
+			skb->h.th->psh = len != 0 ? 0 : 1;
 			skb->h.th->ack = 1;
 			send_data_from_sock(sock, skb);
 		}
