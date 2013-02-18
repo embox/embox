@@ -38,3 +38,18 @@ int lstat(const char *path, struct stat *buf) {
 int stat(const char *path, struct stat *buf) {
 	return lstat(path, buf);
 }
+
+#include <fs/node.h>
+#include <fs/vfs.h>
+#include <fs/kfile.h>
+#include <errno.h>
+int truncate(const char *path, off_t length) {
+	node_t *node;
+
+	if (NULL == (node = vfs_lookup(NULL, path))) {
+		errno = ENOENT;
+		return -1;
+	}
+
+	return ktruncate(node, length);
+}

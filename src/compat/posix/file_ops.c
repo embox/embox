@@ -16,9 +16,6 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <kernel/task/io_sync.h>
-#include <fs/node.h>
-#include <fs/vfs.h>
-#include <fs/kfile.h>
 
 int close(int fd) {
 	const struct task_idx_ops *ops;
@@ -219,37 +216,20 @@ int fsync(int fd) {
 	return 0;
 }
 
-int truncate(const char *path, off_t length) {
-	node_t *node;
-
-	if (NULL == (node = vfs_lookup(NULL, path))) {
-		errno = ENOENT;
-		return -1;
-	}
-
-	return ktruncate(node, length);
-}
-
 int ftruncate(int fd, off_t length) {
+	const struct task_idx_ops *ops;
 	struct idx_desc *desc;
-	struct file_desc *file_desc;
 
 	assert(task_self_idx_table());
 
 	desc = task_self_idx_get(fd);
-
 	if (!desc) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	file_desc = (struct file_desc *) desc->data;
-
-	if (!(file_desc->flags & FDESK_FLAG_WRITE)) {
-		SET_ERRNO(EBADF);
-		return -1;
-	}
-
-	return ktruncate(file_desc->node, length);
-
+	ops = task_idx_desc_ops(desc);
+	assert(ops);
+	assert(ops->ftruncate);
+	return ops->ftruncate(desc, length);
 }

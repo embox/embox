@@ -64,6 +64,7 @@ struct task_idx_ops {
 	int (*fseek)(struct idx_desc *data, long int offset, int origin);
 	long int (*ftell)(struct idx_desc *data);
 	int (*fstat)(struct idx_desc *data, void *buff);
+	int (*ftruncate)(struct idx_desc *data, off_t length);
 	const enum task_idx_ops_type type;
 };
 

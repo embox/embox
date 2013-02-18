@@ -35,3 +35,9 @@ int kfstat(struct file_desc *desc, void *buff) {
 int kioctl(struct file_desc *fp, int request, ...) {
 	return -1;
 }
+
+struct node;
+
+int ktruncate(struct node *node, off_t length) {
+	return -1;
+}
