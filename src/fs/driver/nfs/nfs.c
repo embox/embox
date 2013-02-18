@@ -216,7 +216,11 @@ static struct fsop_desc nfsfs_fsop = {
 	.truncate = nfsfs_truncate,
 };
 
-static struct fs_driver nfsfs_driver = { "nfs", &nfsfs_fop, &nfsfs_fsop };
+static struct fs_driver nfsfs_driver = {
+	.name = "nfs",
+	.file_op = &nfsfs_fop,
+	.fsop = &nfsfs_fsop
+};
 
 static int nfsfs_init(void * par) {
 

@@ -409,7 +409,7 @@ static struct fsop_desc tmpfs_fsop = {
 static struct fs_driver tmpfs_driver = {
 	.name = TMPFS_NAME,
 	.file_op = &tmpfs_fop,
-	.fsop = &tmpfs_fsop
+	.fsop = &tmpfs_fsop,
 };
 
 static tmpfs_file_info_t *tmpfs_create_file(struct nas *nas) {

@@ -845,7 +845,11 @@ static struct fsop_desc cdfsfs_fsop = {
 	.mount = cdfsfs_mount,
 };
 
-static struct fs_driver cdfsfs_driver = { "iso9660", &cdfsfs_fop, &cdfsfs_fsop };
+static struct fs_driver cdfsfs_driver = {
+	.name = "iso9660",
+	.file_op = &cdfsfs_fop,
+	.fsop = &cdfsfs_fsop,
+};
 
 DECLARE_FILE_SYSTEM_DRIVER(cdfsfs_driver);
 

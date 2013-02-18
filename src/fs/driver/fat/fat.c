@@ -2149,7 +2149,11 @@ static struct fsop_desc fatfs_fsop = {
 	.truncate = fatfs_truncate,
 };
 
-static struct fs_driver fatfs_driver = { "vfat", &fatfs_fop, &fatfs_fsop };
+static struct fs_driver fatfs_driver = {
+	.name = "vfat",
+	.file_op = &fatfs_fop,
+	.fsop = &fatfs_fsop,
+};
 
 static int fatfs_init(void * par) {
 	return 0;
@@ -2361,7 +2365,7 @@ static int fatfs_delete(struct node *node) {
 	return 0;
 }
 
-static int fatfs_truncate (struct node *node, off_t length) {
+static int fatfs_truncate(struct node *node, off_t length) {
 	struct nas *nas = node->nas;
 
 	nas->fi->ni.size = length;

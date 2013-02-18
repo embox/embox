@@ -526,7 +526,7 @@ static int ext2fs_format(void *path);
 static int ext2fs_mount(void *dev, void *dir);
 static int ext2fs_create(struct node *parent_node, struct node *node);
 static int ext2fs_delete(struct node *node);
-static int ext2fs_truncate (struct node *node, off_t length);
+static int ext2fs_truncate(struct node *node, off_t length);
 
 static struct fsop_desc ext2_fsop = {
 	.init	     = ext2fs_init,
@@ -543,12 +543,14 @@ static struct fsop_desc ext2_fsop = {
 };
 
 static int ext2fs_init(void * par) {
-
 	return 0;
 };
 
-static struct fs_driver ext2_drv = { .name = EXT_NAME, .file_op = &ext2_fop, .fsop =
-		&ext2_fsop };
+static struct fs_driver ext2fs_driver = {
+	.name = EXT_NAME,
+	.file_op = &ext2_fop,
+	.fsop = &ext2_fsop,
+};
 
 static ext2_file_info_t *ext2_fi_alloc(struct nas *nas, void *fs) {
 	ext2_file_info_t *fi;
@@ -2304,7 +2306,7 @@ static int ext2_unlink(struct nas *dir_nas, struct nas *nas) {
 }
 
 
-DECLARE_FILE_SYSTEM_DRIVER(ext2_drv);
+DECLARE_FILE_SYSTEM_DRIVER(ext2fs_driver);
 
 
 /*
