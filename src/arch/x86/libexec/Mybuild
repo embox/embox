@@ -1,5 +1,0 @@
-package embox.arch.x86
-
-module libexec {
-	source "elf_start.S"
-}
