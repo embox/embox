@@ -13,7 +13,6 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <kernel/softirq_lock.h>
-#include <kernel/thread/event.h>
 #include <assert.h>
 
 struct event;
