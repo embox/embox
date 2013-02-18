@@ -89,8 +89,6 @@ int new_task(void *(*run)(void *), void *arg) {
 		thd->stack += task_sz;
 		thd->stack_sz -= task_sz;
 
-		context_set_stack(&thd->context, thd->stack + thd->stack_sz);
-
 		/* init new task */
 
 		task_init_parent(self_task, task_self());
