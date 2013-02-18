@@ -206,8 +206,15 @@ static int nfsfs_create(struct node *parent_node, struct node *node);
 static int nfsfs_delete(struct node *node);
 static int nfsfs_truncate (struct node *node, off_t length);
 
-static fsop_desc_t nfsfs_fsop = { nfsfs_init, nfsfs_format, nfsfs_mount,
-		nfsfs_create, nfsfs_delete, NULL, NULL, NULL, nfsfs_truncate };
+static struct fsop_desc nfsfs_fsop = {
+	.init = nfsfs_init,
+	.format = nfsfs_format,
+	.mount = nfsfs_mount,
+	.create_node = nfsfs_create,
+	.delete_node = nfsfs_delete,
+
+	.truncate = nfsfs_truncate,
+};
 
 static fs_drv_t nfsfs_drv = { "nfs", &nfsfs_fop, &nfsfs_fsop };
 

@@ -840,8 +840,10 @@ static int cdfsfs_ioctl(struct file_desc *desc, int request, va_list args) {
 static int cdfsfs_init(void * par);
 static int cdfsfs_mount(void * dev, void *dir);
 
-static fsop_desc_t cdfsfs_fsop = { cdfsfs_init, NULL, cdfsfs_mount,
-		NULL, NULL };
+static struct fsop_desc cdfsfs_fsop = {
+	.init = cdfsfs_init,
+	.mount = cdfsfs_mount,
+};
 
 static fs_drv_t cdfsfs_drv = { "iso9660", &cdfsfs_fop, &cdfsfs_fsop };
 

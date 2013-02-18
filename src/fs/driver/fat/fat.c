@@ -2140,8 +2140,14 @@ static int fatfs_create(struct node *parent_node, struct node *new_node);
 static int fatfs_delete(struct node *node);
 static int fatfs_truncate (struct node *node, off_t length);
 
-static fsop_desc_t fatfs_fsop = { fatfs_init, fatfs_format, fatfs_mount,
-		fatfs_create, fatfs_delete, NULL, NULL, NULL, fatfs_truncate };
+static struct fsop_desc fatfs_fsop = {
+	.init = fatfs_init,
+	.format = fatfs_format,
+	.mount = fatfs_mount,
+	.create_node = fatfs_create,
+	.delete_node = fatfs_delete,
+	.truncate = fatfs_truncate,
+};
 
 static fs_drv_t fatfs_drv = { "vfat", &fatfs_fop, &fatfs_fsop };
 

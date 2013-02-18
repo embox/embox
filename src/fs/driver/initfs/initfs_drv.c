@@ -136,8 +136,9 @@ static struct kfile_operations initfs_fop = {
 	.ioctl = initfs_ioctl,
 };
 
-static fsop_desc_t initfs_fsop = { NULL, NULL, initfs_mount,
-		NULL, NULL };
+static struct fsop_desc initfs_fsop = {
+	.mount = initfs_mount,
+};
 
 static fs_drv_t initfs_drv = { "initfs", &initfs_fop, &initfs_fsop };
 

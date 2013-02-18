@@ -38,8 +38,10 @@ static int devfs_mount(void *dev, void *dir) {
 	return block_devs_init();
 }
 
-static fsop_desc_t devfs_fsop = { devfs_init, NULL, devfs_mount,
-		NULL, NULL};
+static struct fsop_desc devfs_fsop = {
+	.init = devfs_init,
+	.mount = devfs_mount,
+};
 
 static const fs_drv_t devfs_drv = {
 	.name = "devfs",

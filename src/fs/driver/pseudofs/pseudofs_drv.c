@@ -19,11 +19,8 @@ static int pseudofs_delete(struct node *nod) {
 }
 
 static const struct fsop_desc pseudofs_fsop = {
-		.init = NULL,
-		.format = NULL,
-		.mount = NULL,
-		.create_node = pseudofs_create,
-		.delete_node = pseudofs_delete
+	.create_node = pseudofs_create,
+	.delete_node = pseudofs_delete
 };
 
 static const struct fs_drv pseudofs_drv = {

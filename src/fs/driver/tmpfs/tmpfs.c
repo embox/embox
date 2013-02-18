@@ -104,7 +104,6 @@ static struct kfile_operations tmpfs_fop = {
  * file_operation
  */
 
-
 static int tmpfs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct nas *nas;
 	//char path [MAX_LENGTH_PATH_NAME];
@@ -397,14 +396,14 @@ static int tmpfs_create(struct node *parent_node, struct node *node);
 static int tmpfs_delete(struct node *node);
 static int tmpfs_truncate(struct node *node, off_t length);
 
-static fsop_desc_t tmpfs_fsop = {
-		tmpfs_init,
-		tmpfs_format,
-		tmpfs_mount,
-		tmpfs_create,
-		tmpfs_delete,
+static struct fsop_desc tmpfs_fsop = {
+	.init = tmpfs_init,
+	.format = tmpfs_format,
+	.mount = tmpfs_mount,
+	.create_node = tmpfs_create,
+	.delete_node = tmpfs_delete,
 
-		.truncate = tmpfs_truncate,
+	.truncate = tmpfs_truncate,
 };
 
 static fs_drv_t tmpfs_drv = {

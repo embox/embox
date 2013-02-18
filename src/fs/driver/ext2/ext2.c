@@ -528,7 +528,7 @@ static int ext2fs_create(struct node *parent_node, struct node *node);
 static int ext2fs_delete(struct node *node);
 static int ext2fs_truncate (struct node *node, off_t length);
 
-static fsop_desc_t ext2_fsop = {
+static struct fsop_desc ext2_fsop = {
 	.init	     = ext2fs_init,
 	.format	     = ext2fs_format,
 	.mount	     = ext2fs_mount,
@@ -538,7 +538,8 @@ static fsop_desc_t ext2_fsop = {
 	.getxattr    = ext2fs_getxattr,
 	.setxattr    = ext2fs_setxattr,
 	.listxattr   = ext2fs_listxattr,
-	.truncate    = ext2fs_truncate
+
+	.truncate    = ext2fs_truncate,
 };
 
 static int ext2fs_init(void * par) {
