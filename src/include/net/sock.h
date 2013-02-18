@@ -1,9 +1,10 @@
 /**
  * @file
- * @brief Definitions for the AF_INET socket handler.
+ * @brief
  *
  * @date 17.03.09
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
 #ifndef NET_SOCK_H_
@@ -30,9 +31,11 @@ typedef struct {
  */
 struct sock_common {
 	unsigned short skc_family;
-	volatile unsigned char skc_state;
+	unsigned char skc_state;
 	unsigned char skc_reuse;
+#if 0
 	int skc_bound_dev_if;
+#endif
 	struct proto *skc_prot;
 };
 
@@ -70,19 +73,24 @@ typedef struct sock {
 	unsigned char sk_protocol;
 	unsigned char sk_shutdown;
 	unsigned short sk_type;
-	int sk_rcvbuf;
 	socket_lock_t sk_lock;
+
+#if 0
 	struct {
 		struct sk_buff *head;
 		struct sk_buff *tail;
 	} sk_backlog;
+
 	int sk_sndbuf;
+	int sk_rcvbuf;
 	unsigned long sk_flags;
+#endif
 
 	struct sk_buff_head *sk_receive_queue;
 	struct sk_buff_head *sk_write_queue;
 
 	struct socket *sk_socket;
+#if 0
 	void *sk_user_data;
 
 	void (* sk_state_change)(struct sock *sk);
@@ -91,14 +99,21 @@ typedef struct sock {
 	void (* sk_error_report)(struct sock *sk);
 	int (* sk_backlog_rcv)(struct sock *sk, sk_buff_t *pack);
 	void (* sk_destruct)(struct sock *sk);
+	int (* get_port)(struct sock *sk, unsigned short num); // TODO
+#endif
 	sk_encap_hnd sk_encap_rcv;
-//	int (* get_port)(struct sock *sk, unsigned short num); // TODO
+
 	int32_t sk_err;
+
+#if 0
 	int ready;
 	struct event sock_is_ready;
+#endif
+
 	struct event sock_is_not_empty;
 } sock_t;
 
+#if 0
 static inline void sock_set_ready(struct sock *sk) {
 	sk->ready = true;
 }
@@ -115,7 +130,9 @@ static inline void sock_unset_ready(struct sock *sk){
 static inline bool sock_is_ready(struct sock *sk) {
 	return sk->ready;
 }
+#endif
 
+#if 0
 /** Sock flags */
 enum sock_flags {
 	SOCK_DEAD,
@@ -123,18 +140,23 @@ enum sock_flags {
 	SOCK_DESTROY,
 	SOCK_BROADCAST
 };
+#endif
 
 /** Protocol specific functions */
 typedef struct proto {
 	void (*close)(sock_t *sk, long timeout);
 	int (*shutdown)(struct sock *sk, int flags);
 	int (*connect)(sock_t *sk, sockaddr_t *addr, int addr_len);
-//	int (*disconnect)(sock_t *sk, int flags);
+#if 0
+	int (*disconnect)(sock_t *sk, int flags);
+#endif
 	int (*listen)(sock_t *sk, int backlog);
 	int (*accept)(sock_t *sk, sock_t **newsk, sockaddr_t *addr, int *addr_len);
 	int (*ioctl)(struct sock *sk, int cmd, unsigned long arg);
 	int (*init)(sock_t *sk);
+#if 0
 	void (*destroy)(struct sock *sk);
+#endif
 	int (*setsockopt)(struct sock *sk, int level, int optname, char *optval,
 			int optlen);
 	int (*getsockopt)(struct sock *sk, int level, int optname, char *optval,
@@ -162,8 +184,7 @@ extern void sk_init(void);
  * @priority - isn't used now
  * @prot - pointer to the proto structure
  */
-extern sock_t *sk_alloc(/*struct net *net,*/int family, gfp_t priority,
-			proto_t *prot);
+extern sock_t *sk_alloc(int family, gfp_t priority, proto_t *prot);
 
 /**
  * Returns specified structure sock into pull,
@@ -196,6 +217,5 @@ extern void sock_unlock(struct sock *sk);
 static inline void sk_clear_pending_error(struct sock *sk){
 	sk->sk_err = 0;
 }
-
 
 #endif /* NET_SOCK_H_ */

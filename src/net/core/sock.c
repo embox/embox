@@ -119,13 +119,17 @@ struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 		}
 	}
 
+#if 0
 	sk->sk_destruct = NULL;
+#endif
 	sk->sk_family = family;
 	sk->sk_prot = prot;
 
 	/* FIXME in tcp.c tcp_default_sock is created without call socket() */
 	event_init(&sk->sock_is_not_empty, "sock_is_not_empty");
+#if 0
 	event_init(&sk->sock_is_ready, "sock_is_ready");
+#endif
 
 	sk->sk_shutdown = 0;
 
@@ -143,9 +147,11 @@ void sk_free(struct sock *sk) {
 	if (sk->sk_prot->unhash != NULL) {
 		sk->sk_prot->unhash(sk);
 	}
+#if 0
 	if (sk->sk_destruct != NULL) {
 		sk->sk_destruct(sk);
 	}
+#endif
 	sk_prot_free(sk->sk_prot, sk);
 }
 
@@ -193,9 +199,11 @@ void sk_common_release(struct sock *sk) {
 	assert(sk->sk_receive_queue);
 	assert(sk->sk_write_queue);
 
+#if 0
 	if (sk->sk_prot->destroy != NULL) {
 		sk->sk_prot->destroy(sk);
 	}
+#endif
 
 	skb_queue_free(sk->sk_receive_queue);
 	skb_queue_free(sk->sk_write_queue);

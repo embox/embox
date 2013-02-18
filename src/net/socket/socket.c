@@ -218,7 +218,9 @@ static ssize_t sendto_sock(struct socket *sock, const void *buf, size_t len,
 
 	/* socket is ready for usage and has no data transmitting errors yet */
 	sock->sk->sk_err = -1; /* XXX ?? */
+#if 0
 	sock_set_ready(sock->sk);
+#endif
 
 	ret = kernel_socket_sendmsg(NULL, sock, &m, len);
 	if (ret != 0) {
