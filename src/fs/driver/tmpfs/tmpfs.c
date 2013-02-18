@@ -553,14 +553,14 @@ static int tmpfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if (NULL == (dir_nas->fs = alloc_filesystem("tmpfs"))) {
+	if (NULL == (dir_nas->fs = filesystem_alloc("tmpfs"))) {
 		return -ENOMEM;
 	}
 	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
 	if(NULL == (fsi = pool_alloc(&tmpfs_fs_pool))) {
-		free_filesystem(dir_nas->fs);
+		filesystem_free(dir_nas->fs);
 		return -ENOMEM;
 	}
 	memset(fsi, 0, sizeof(struct tmpfs_fs_info));

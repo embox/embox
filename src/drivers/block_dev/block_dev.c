@@ -99,7 +99,7 @@ static struct kfile_operations blockdev_fop = {
 static struct filesystem *blockdev_fs;
 
 static int blockdev_init(void) {
-	blockdev_fs = alloc_filesystem("empty");
+	blockdev_fs = filesystem_alloc("empty");
 	blockdev_fs->file_op = &blockdev_fop;
 
 	return 0;

@@ -2192,14 +2192,14 @@ static int fatfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if (NULL == (dir_nas->fs = alloc_filesystem("vfat"))) {
+	if (NULL == (dir_nas->fs = filesystem_alloc("vfat"))) {
 		return -ENOMEM;
 	}
 	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
 	if(NULL == (fsi = pool_alloc(&fat_fs_pool))) {
-		free_filesystem(dir_nas->fs);
+		filesystem_free(dir_nas->fs);
 		return -ENOMEM;
 	}
 	memset(fsi, 0, sizeof(struct fat_fs_info));

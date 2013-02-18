@@ -328,7 +328,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 
 	/* there are nodev for nfs. we create fs here and set nfs fs_driver*/
 	dir_nas = dir_node->nas;
-	if (NULL == (dir_nas->fs = alloc_filesystem("nfs"))) {
+	if (NULL == (dir_nas->fs = filesystem_alloc("nfs"))) {
 		return -ENOMEM;
 	}
 

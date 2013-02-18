@@ -17,7 +17,7 @@
 
 POOL_DEF(filesystem_pool, struct filesystem, OPTION_GET(NUMBER,fs_quantity));
 
-struct filesystem *alloc_filesystem(const char *drv_name) {
+struct filesystem *filesystem_alloc(const char *drv_name) {
 	struct filesystem *fs;
 
 	fs = pool_alloc(&filesystem_pool);
@@ -32,7 +32,7 @@ struct filesystem *alloc_filesystem(const char *drv_name) {
 	return fs;
 }
 
-void free_filesystem(struct filesystem *fs) {
+void filesystem_free(struct filesystem *fs) {
 	if (NULL == fs) {
 		return;
 	}

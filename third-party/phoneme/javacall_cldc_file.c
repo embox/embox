@@ -102,7 +102,7 @@ javacall_int64 javacall_file_seek(javacall_handle handle, javacall_int64 offset,
 	return fseek((FILE*)handle, offset, flag);
 }
 
-/* FIXME May be use alloc_filesystem and free_filesystem --Alexander */
+/* FIXME May be use filesystem_alloc and filesystem_free --Alexander */
 javacall_result javacall_file_init(void) {
     return JAVACALL_OK;
 }

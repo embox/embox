@@ -654,7 +654,7 @@ static int ext2fs_mount(void *dev, void *dir) {
 		return -rc;
 	}
 
-	if (NULL == (dir_nas->fs = alloc_filesystem(EXT_NAME))) {
+	if (NULL == (dir_nas->fs = filesystem_alloc(EXT_NAME))) {
 		rc = ENOMEM;
 		return -rc;
 	}
@@ -662,7 +662,7 @@ static int ext2fs_mount(void *dev, void *dir) {
 
 	/* allocate this fs info */
 	if (NULL == (fsi = pool_alloc(&ext2_fs_pool))) {
-		free_filesystem(dir_nas->fs);
+		filesystem_free(dir_nas->fs);
 		rc = ENOMEM;
 		return -rc;
 	}

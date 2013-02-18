@@ -92,7 +92,7 @@ static int initfs_mount(void *dev, void *dir) {
 	node_t *dir_node = dir;
 
 	dir_nas = dir_node->nas;
-	dir_nas->fs = alloc_filesystem("initfs");
+	dir_nas->fs = filesystem_alloc("initfs");
 
 	if (&_initfs_start == &_initfs_end) {
 		return -1;

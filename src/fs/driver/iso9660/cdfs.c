@@ -874,14 +874,14 @@ static int cdfsfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if (NULL == (dir_nas->fs = alloc_filesystem("iso9660"))) {
+	if (NULL == (dir_nas->fs = filesystem_alloc("iso9660"))) {
 		return -ENOMEM;
 	}
 	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
 	if(NULL == (fsi = pool_alloc(&cdfs_fs_pool))) {
-		free_filesystem(dir_nas->fs);
+		filesystem_free(dir_nas->fs);
 		return -ENOMEM;
 	}
 	memset(fsi, 0, sizeof(struct cdfs_fs_info));

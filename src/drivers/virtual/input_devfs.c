@@ -215,7 +215,7 @@ static int input_devfs_register(struct input_dev *dev) {
 	}
 
 	nas = node->nas;
-	nas->fs = alloc_filesystem("empty");
+	nas->fs = filesystem_alloc("empty");
 	if (!nas->fs) {
 		return -1;
 	}

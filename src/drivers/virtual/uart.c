@@ -161,7 +161,7 @@ int uart_dev_register(struct uart_device *dev) {
 	}
 
 	nas = node->nas;
-	if (NULL == (nas->fs = alloc_filesystem("empty"))) {
+	if (NULL == (nas->fs = filesystem_alloc("empty"))) {
 		return -1;
 	}
 	//strncpy((char*)node->name, dev->dev_name, sizeof(node->name) - 1);
