@@ -1,9 +1,8 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 17.10.2012
+ * @date 17.10.12
  * @author Alexander Kalmuk
  */
 
@@ -16,6 +15,6 @@ void idx_io_enable(struct idx_desc *desc, int op) {
 	softirq_unlock();
 }
 
-void io_op_set_event(struct idx_io_op_state *op, struct event *e) {
+void idx_io_set_event(struct idx_desc *desc, struct event *event) {
 	return; /* do nothing */
 }

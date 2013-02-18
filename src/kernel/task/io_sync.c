@@ -1,9 +1,8 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 17.10.2012
+ * @date 17.10.12
  * @author Alexander Kalmuk
  */
 

@@ -13,9 +13,11 @@
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
 #include <kernel/softirq_lock.h>
+#include <kernel/thread/event.h>
 #include <assert.h>
 
 struct event;
+struct idx_desc;
 
 /* I/O operations */
 #define IDX_IO_READING 0x01
