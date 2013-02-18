@@ -13,7 +13,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include <fs/rootfs.h>
 #include <fs/vfs.h>
 #include <fs/path.h>
 #include <fs/fs_driver.h>
