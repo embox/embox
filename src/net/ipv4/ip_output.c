@@ -21,7 +21,7 @@
 #include <net/skbuff.h>
 #include <net/icmp.h>
 #include <net/socket_registry.h>
-#include <net/in.h>
+#include <linux/in.h>
 #include <net/etherdevice.h>
 
 int rebuild_ip_header(sk_buff_t *skb, unsigned char ttl, unsigned char proto,

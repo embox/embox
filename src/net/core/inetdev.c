@@ -15,7 +15,7 @@
 #include <mem/misc/pool.h>
 
 #include <net/inetdevice.h>
-#include <net/in.h>
+#include <linux/in.h>
 #include <framework/mod/options.h>
 
 #include <lib/list.h>

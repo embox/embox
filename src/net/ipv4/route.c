@@ -13,7 +13,7 @@
 
 #include <net/route.h>
 #include <net/socket_registry.h>
-#include <net/in.h>
+#include <linux/in.h>
 
 #include <util/member.h>
 #include <mem/misc/pool.h>
@@ -21,7 +21,7 @@
 #include <lib/list.h>
 
 #include <net/inetdevice.h>
-#include <net/in.h>
+#include <types.h>
 
 
 #include <framework/mod/options.h>
@@ -185,6 +185,16 @@ struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
 	rt_info = member_cast_out(rt_info->lnk.next, struct rt_entry_info, lnk);
 
 	return (&rt_info->lnk == &rt_entry_info_list) ? NULL : &rt_info->entry;
+}
+
+static uint8_t ipv4_mask_len(in_addr_t mask) {
+	/* ToDo: reimplement as xor/not, +1 and array map */
+	uint8_t m_len = 0;
+	while (mask > 0) {
+		mask <<= 1;
+		m_len++;
+	}
+	return m_len;
 }
 
 /* ToDo: It's too ugly to perform sorting for every packet.
