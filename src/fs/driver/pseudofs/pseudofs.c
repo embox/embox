@@ -7,7 +7,7 @@
  * @author: Anton Bondarev
  */
 
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 
 
 static int pseudofs_create(struct node *parent_node, struct node *new_node) {
@@ -23,10 +23,10 @@ static const struct fsop_desc pseudofs_fsop = {
 	.delete_node = pseudofs_delete
 };
 
-static const struct fs_drv pseudofs_drv = {
+static const struct fs_driver pseudofs_driver = {
 	.name = "pseudofs",
 	.file_op = NULL,
 	.fsop = &pseudofs_fsop
 };
 
-DECLARE_FILE_SYSTEM_DRIVER(pseudofs_drv);
+DECLARE_FILE_SYSTEM_DRIVER(pseudofs_driver);

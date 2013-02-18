@@ -58,7 +58,7 @@
 #include <fs/path.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 
 /* cdfs filesystem description pool */
 POOL_DEF(cdfs_fs_pool, struct cdfs_fs_info, OPTION_GET(NUMBER,cdfs_descriptor_quantity));
@@ -845,9 +845,9 @@ static struct fsop_desc cdfsfs_fsop = {
 	.mount = cdfsfs_mount,
 };
 
-static fs_drv_t cdfsfs_drv = { "iso9660", &cdfsfs_fop, &cdfsfs_fsop };
+static struct fs_driver cdfsfs_driver = { "iso9660", &cdfsfs_fop, &cdfsfs_fsop };
 
-DECLARE_FILE_SYSTEM_DRIVER(cdfsfs_drv);
+DECLARE_FILE_SYSTEM_DRIVER(cdfsfs_driver);
 
 static int cdfsfs_init(void * par) {
 

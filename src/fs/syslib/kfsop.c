@@ -16,13 +16,13 @@
 
 #include <fs/vfs.h>
 #include <fs/path.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/kfsop.h>
 #include <fs/perm.h>
 
 static int create_new_node(struct node *parent, const char *name, mode_t mode) {
 	struct node *node;
-	fs_drv_t *drv;
+	struct fs_driver *drv;
 	int retval = 0;
 
 	node = vfs_create(parent, name, mode);
@@ -168,7 +168,7 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 int kremove(const char *pathname) {
 	node_t *node;
 	struct nas *nas;
-	fs_drv_t *drv;
+	struct fs_driver *drv;
 
 	if (NULL == (node = vfs_lookup(NULL, pathname))) {
 		errno = ENOENT;
@@ -192,7 +192,7 @@ int kremove(const char *pathname) {
 
 int kunlink(const char *pathname) {
 	node_t *node;
-	fs_drv_t *drv;
+	struct fs_driver *drv;
 	int res;
 
 	if (0 != fs_perm_lookup(vfs_get_root(), pathname, NULL, &node)) {
@@ -225,7 +225,7 @@ int kunlink(const char *pathname) {
 
 int krmdir(const char *pathname) {
 	node_t *node;
-	fs_drv_t *drv;
+	struct fs_driver *drv;
 	int res;
 
 	if (0 != (res = fs_perm_lookup(vfs_get_root(), pathname, NULL, &node))) {
@@ -272,7 +272,7 @@ int klstat(const char *path, struct stat *buf) {
 
 int kformat(const char *pathname, const char *fs_type) {
 	node_t *node;
-	fs_drv_t *drv;
+	struct fs_driver *drv;
 	int res;
 
 	if (0 != fs_type) {
@@ -303,7 +303,7 @@ int kformat(const char *pathname, const char *fs_type) {
 
 int kmount(const char *dev, const char *dir, const char *fs_type) {
 	struct node *dev_node, *dir_node;
-	fs_drv_t *drv;
+	struct fs_driver *drv;
 	const char *lastpath;
 	int res;
 

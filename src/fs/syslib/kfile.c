@@ -16,7 +16,7 @@
 #include <fs/rootfs.h>
 #include <fs/vfs.h>
 #include <fs/path.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/file_operation.h>
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
@@ -37,7 +37,7 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 	dirmode = fs_perm_mask(node);
 
 	if (-ENOENT == ret) {
-		fs_drv_t *drv;
+		struct fs_driver *drv;
 		struct node *child;
 		char *ch;
 
@@ -149,7 +149,7 @@ free_out:
 int ktruncate(struct node *node, off_t length) {
 	int ret;
 	struct nas *nas;
-	fs_drv_t *drv;
+	struct fs_driver *drv;
 
 	nas = node->nas;
 	drv = nas->fs->drv;

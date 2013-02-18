@@ -12,7 +12,7 @@
 
 #include <cmd/mkfs.h>
 #include <fs/vfs.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/sys/fsop.h>
 
 #include <drivers/ramdisk.h>

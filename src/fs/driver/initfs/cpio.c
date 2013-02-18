@@ -16,7 +16,7 @@
 #include <sys/stat.h>
 
 #include <fs/vfs.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 
 /**
  * The pathname is followed by NUL bytes so that the total size of the fixed

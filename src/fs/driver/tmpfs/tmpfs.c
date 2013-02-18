@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/tmpfs.h>
 #include <util/array.h>
@@ -406,7 +406,7 @@ static struct fsop_desc tmpfs_fsop = {
 	.truncate = tmpfs_truncate,
 };
 
-static fs_drv_t tmpfs_drv = {
+static struct fs_driver tmpfs_driver = {
 	.name = TMPFS_NAME,
 	.file_op = &tmpfs_fop,
 	.fsop = &tmpfs_fsop
@@ -583,5 +583,5 @@ static int tmpfs_mount(void *dev, void *dir) {
 	return 0;
 }
 
-DECLARE_FILE_SYSTEM_DRIVER(tmpfs_drv);
+DECLARE_FILE_SYSTEM_DRIVER(tmpfs_driver);
 

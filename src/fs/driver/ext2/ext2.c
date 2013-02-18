@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/ext2.h>
 #include <fs/path.h>
@@ -547,7 +547,7 @@ static int ext2fs_init(void * par) {
 	return 0;
 };
 
-static fs_drv_t ext2_drv = { .name = EXT_NAME, .file_op = &ext2_fop, .fsop =
+static struct fs_driver ext2_drv = { .name = EXT_NAME, .file_op = &ext2_fop, .fsop =
 		&ext2_fsop };
 
 static ext2_file_info_t *ext2_fi_alloc(struct nas *nas, void *fs) {

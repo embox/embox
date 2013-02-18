@@ -12,7 +12,7 @@
 #include <errno.h>
 
 #include <fs/vfs.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/sys/fsop.h>
 #include <embox/block_dev.h>
 #include <drivers/ramdisk.h>

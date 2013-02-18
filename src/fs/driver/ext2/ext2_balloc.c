@@ -24,7 +24,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/ext2.h>
 #include <fs/path.h>

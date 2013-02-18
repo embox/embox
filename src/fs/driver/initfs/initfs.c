@@ -16,7 +16,7 @@
 #include <unistd.h>
 #include <cpio.h>
 
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
 
@@ -140,6 +140,6 @@ static struct fsop_desc initfs_fsop = {
 	.mount = initfs_mount,
 };
 
-static fs_drv_t initfs_drv = { "initfs", &initfs_fop, &initfs_fsop };
+static struct fs_driver initfs_driver = { "initfs", &initfs_fop, &initfs_fsop };
 
-DECLARE_FILE_SYSTEM_DRIVER(initfs_drv);
+DECLARE_FILE_SYSTEM_DRIVER(initfs_driver);

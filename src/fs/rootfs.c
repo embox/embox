@@ -10,7 +10,7 @@
 #include <errno.h>
 
 #include <fs/sys/fsop.h> /* mount */
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
 
@@ -19,7 +19,7 @@
 EMBOX_UNIT_INIT(unit_init);
 
 static int rootfs_mount(const char *dev, const char *dir, const char *fs_type) {
-	fs_drv_t *fsdrv;
+	struct fs_driver *fsdrv;
 
 	/* mount dev filesystem */
 	fsdrv = fs_driver_find_drv("devfs");

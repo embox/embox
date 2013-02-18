@@ -11,7 +11,7 @@
 #include <util/array.h>
 
 #include <fs/file_system.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 
 #include <mem/misc/pool.h>
 

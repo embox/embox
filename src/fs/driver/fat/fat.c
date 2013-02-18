@@ -17,7 +17,7 @@
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/fat.h>
@@ -59,7 +59,7 @@ char bootcode[130] =
 	  0x69, 0x6e, 0x20, 0x2e, 0x2e, 0x2e, 0x20, 0x0d, 0x0a, 0x00 };
 
 
-static fs_drv_t fatfs_drv;
+static struct fs_driver fatfs_driver;
 static int fat_write_sector(void *bdev, uint8_t *buffer,
 		uint32_t sector, uint32_t count);
 static int fat_read_sector(void *bdev, uint8_t *buffer,
@@ -2149,7 +2149,7 @@ static struct fsop_desc fatfs_fsop = {
 	.truncate = fatfs_truncate,
 };
 
-static fs_drv_t fatfs_drv = { "vfat", &fatfs_fop, &fatfs_fsop };
+static struct fs_driver fatfs_driver = { "vfat", &fatfs_fop, &fatfs_fsop };
 
 static int fatfs_init(void * par) {
 	return 0;
@@ -2371,10 +2371,10 @@ static int fatfs_truncate (struct node *node, off_t length) {
 	return 0;
 }
 
-const fs_drv_t *fatfs_get_fs(void) {
-    return &fatfs_drv;
+const struct fs_driver *fatfs_get_fs(void) {
+    return &fatfs_driver;
 }
 
-DECLARE_FILE_SYSTEM_DRIVER(fatfs_drv);
+DECLARE_FILE_SYSTEM_DRIVER(fatfs_driver);
 
 

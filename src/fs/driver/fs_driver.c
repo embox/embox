@@ -15,23 +15,23 @@
 #include <util/dlist.h>
 
 #include <util/array.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 
 EMBOX_UNIT_INIT(fs_driver_init);
 
 typedef struct fs_driver_head {
 	struct dlist_head link;
-	fs_drv_t *drv;
+	struct fs_driver *drv;
 } fs_driver_head_t;
 
 POOL_DEF(fs_driver_pool, struct fs_driver_head, OPTION_GET(NUMBER,drivers_quantity));
 
-ARRAY_SPREAD_DEF(const fs_drv_t *, __fs_drivers_registry);
+ARRAY_SPREAD_DEF(const struct fs_driver *, __fs_drivers_registry);
 
 static DLIST_DEFINE(file_systems);
 
 
-static fs_driver_head_t *fs_driver_alloc(fs_drv_t *drv) {
+static fs_driver_head_t *fs_driver_alloc(struct fs_driver *drv) {
 	fs_driver_head_t *head;
 
 	head = pool_alloc(&fs_driver_pool);
@@ -42,7 +42,7 @@ static fs_driver_head_t *fs_driver_alloc(fs_drv_t *drv) {
 	return head;
 }
 
-static void fs_driver_free(fs_drv_t *drv) {
+static void fs_driver_free(struct fs_driver *drv) {
 	fs_driver_head_t *head = (fs_driver_head_t *)drv;
 
 	dlist_del((struct dlist_head *)head);
@@ -56,7 +56,7 @@ static int fs_driver_init(void) {
 
 	for (i = 0; i < ARRAY_SPREAD_SIZE(__fs_drivers_registry); i++) {
 		if (NULL == (head = fs_driver_alloc(
-				(fs_drv_t *) __fs_drivers_registry[i]))) {
+				(struct fs_driver *) __fs_drivers_registry[i]))) {
 			return -EINVAL;
 		}
 
@@ -68,21 +68,21 @@ static int fs_driver_init(void) {
 	return ENOERR;
 }
 
-fs_drv_t *fs_driver_find_drv(const char *name) {
+struct fs_driver *fs_driver_find_drv(const char *name) {
 	struct fs_driver_head *tmp;
-	struct fs_driver_head *fs_drv;
+	struct fs_driver_head *fs_driver;
 
-	dlist_foreach_entry(fs_drv, tmp, &file_systems, link) {
-		if (0 == strcmp(fs_drv->drv->name, name)) {
-			return fs_drv->drv;
+	dlist_foreach_entry(fs_driver, tmp, &file_systems, link) {
+		if (0 == strcmp(fs_driver->drv->name, name)) {
+			return fs_driver->drv;
 		}
 	}
 	return NULL;
 }
 
-int ffs_driver_register_drv(fs_drv_t *fs) {
+int ffs_driver_register_drv(struct fs_driver *fs) {
 	int res = 0;
-	fs_drv_t *p;
+	struct fs_driver *p;
 
 	if (NULL == fs) {
 		return EINVAL;
@@ -96,7 +96,7 @@ int ffs_driver_register_drv(fs_drv_t *fs) {
 	return res;
 }
 
-int fs_driver_unregister_drv(fs_drv_t *fs) {
+int fs_driver_unregister_drv(struct fs_driver *fs) {
 	if (NULL == fs) {
 		return -EINVAL;
 	}

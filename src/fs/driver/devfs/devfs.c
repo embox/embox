@@ -6,7 +6,7 @@
  * @author Nikolay Korotky
  */
 
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/vfs.h>
 
 #include <embox/device.h>
@@ -43,10 +43,10 @@ static struct fsop_desc devfs_fsop = {
 	.mount = devfs_mount,
 };
 
-static const fs_drv_t devfs_drv = {
+static const struct fs_driver devfs_driver = {
 	.name = "devfs",
 	.file_op = NULL,
 	.fsop = &devfs_fsop
 };
 
-DECLARE_FILE_SYSTEM_DRIVER(devfs_drv);
+DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);

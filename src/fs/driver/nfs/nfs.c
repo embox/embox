@@ -19,7 +19,7 @@
 #include <fs/path.h>
 #include <fs/node.h>
 #include <fs/file_desc.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/file_operation.h>
 #include <fs/file_system.h>
 
@@ -216,7 +216,7 @@ static struct fsop_desc nfsfs_fsop = {
 	.truncate = nfsfs_truncate,
 };
 
-static fs_drv_t nfsfs_drv = { "nfs", &nfsfs_fop, &nfsfs_fsop };
+static struct fs_driver nfsfs_driver = { "nfs", &nfsfs_fop, &nfsfs_fsop };
 
 static int nfsfs_init(void * par) {
 
@@ -322,7 +322,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 
 	dir_node = dir;
 
-	/* there are nodev for nfs. we create fs here and set nfs fs_drv*/
+	/* there are nodev for nfs. we create fs here and set nfs fs_driver*/
 	dir_nas = dir_node->nas;
 	if (NULL == (dir_nas->fs = alloc_filesystem("nfs"))) {
 		return -ENOMEM;
@@ -605,7 +605,7 @@ static int nfsfs_delete(struct node *node) {
 	return 0;
 }
 
-DECLARE_FILE_SYSTEM_DRIVER(nfsfs_drv);
+DECLARE_FILE_SYSTEM_DRIVER(nfsfs_driver);
 
 static int nfs_call_proc_mnt(struct nas *nas,
 		__u32 procnum, char *req, char *reply) {

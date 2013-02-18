@@ -2,7 +2,7 @@ package embox.fs.driver
 
 module initfs {
 	source "cpio.c", "initfs_cpio.S"
-	source "initfs_drv.c"
+	source "initfs.c"
 	source "initfs.lds.S"
 	depends embox.fs.core
 	depends embox.mem.pool

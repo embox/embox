@@ -16,7 +16,7 @@
 #include <fcntl.h>
 
 #include <fs/kfsop.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <drivers/ramdisk.h>
 
 
