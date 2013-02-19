@@ -7,6 +7,9 @@ abstract module SysLibFile {
 
 module SysLibFsFull extends SysLibFile {
 	source "kfile.c"
+
+	depends embox.security.api
+
 	depends SysLibFileSystemFull
 	depends Perm
 }
@@ -31,4 +34,6 @@ module SysLibFileSystemFull extends SysLibFileSystem {
 
 module Perm {
 	source "perm.c"
+
+	depends embox.security.api
 }

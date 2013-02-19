@@ -48,6 +48,8 @@ struct task {
 
 	struct task_u_area *u_area;
 
+	void   *security;
+
 	int err; /**< @brief Last occurred error code */
 
 	clock_t per_cpu; /**< task times */
@@ -92,6 +94,10 @@ extern struct task *task_self(void);
 
 static inline int task_getid(void) {
 	return task_self()->tid;
+}
+
+static inline void *task_self_security(void) {
+	return task_self()->security;
 }
 
 /**

@@ -11,6 +11,8 @@
 #include <fs/vfs.h>
 #include <fs/path.h>
 
+#include <security/security.h>
+
 int fs_perm_mask(struct node *node) {
 	int perm = node->mode & S_IRWXA;
 	uid_t uid = getuid();
@@ -32,7 +34,8 @@ int fs_perm_mask(struct node *node) {
 
 int fs_perm_check(struct node *node, int fd_flags) {
 	/* Here, we rely on the fact that fd_flags correspond to OTH perm bits. */
-	return (fd_flags & ~fs_perm_mask(node)) ? -EACCES : 0;
+	return (fd_flags & ~fs_perm_mask(node)) ? -EACCES :
+		security_node_permissions(node, fd_flags);
 }
 
 int fs_perm_lookup(struct node *root, const char *path, const char **pathlast,

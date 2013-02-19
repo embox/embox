@@ -1,0 +1,11 @@
+package embox.security
+
+module smac extends api {
+	source "smac.c",
+	       "smac_task.c"
+
+	option number max_entries = 64
+
+	depends embox.fs.xattr
+
+}

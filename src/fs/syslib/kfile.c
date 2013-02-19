@@ -21,6 +21,7 @@
 #include <fs/kfile.h>
 #include <fs/kfsop.h>
 #include <fs/perm.h>
+#include <security/security.h>
 
 struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 	struct node *node;
@@ -52,6 +53,11 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 
 		if (0 == (dirmode & S_IWOTH)) {
 			SET_ERRNO(EACCES);
+			return NULL;
+		}
+
+		if (0 != (ret = security_node_create(node, S_IFREG | mode))) {
+			SET_ERRNO(-ret);
 			return NULL;
 		}
 
@@ -122,6 +128,10 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 	desc->cursor = 0;
 
 	if (0 > (ret = fs_perm_check(node, perm_flags))) {
+		goto free_out;
+	}
+
+	if (0 > (ret = security_node_permissions(node, flag))) {
 		goto free_out;
 	}
 
