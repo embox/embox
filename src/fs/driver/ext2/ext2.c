@@ -731,7 +731,6 @@ static int ext2_read_inode(struct nas *nas, uint32_t inumber) {
 			+ EXT2_DINODE_SIZE(fsi) * ino_to_fsbo(fsi, inumber));
 	/* load inode struct to file info */
 	e2fs_iload(dip, &fi->f_di);
-	//fi->f_num = inumber;
 
 	/* Clear out the old buffers */
 	fi->f_ind_cache_block = ~0;
@@ -988,7 +987,7 @@ static size_t ext2_write_file(struct nas *nas, char *buf, size_t size) {
 		fi->f_di.i_size = fi->f_pointer;
 	}
 	memcpy(&fdi, &fi->f_di, sizeof(struct ext2fs_dinode));
-	ext2_rw_inode(nas, &fdi, 1);
+	ext2_rw_inode(nas, &fdi, EXT2_W_INODE);
 
 	return bytecount;
 }
@@ -1621,7 +1620,9 @@ static int ext2_new_node(struct nas *nas,
 
 static int ext2_create(struct nas *nas, struct nas *parents_nas) {
 	int rc;
-	struct ext2_file_info *fi;
+	struct ext2_file_info *fi, *dir_fi;
+
+	dir_fi = parents_nas->fi->privdata;
 
 	if (0 != (rc = ext2_open(parents_nas))) {
 		return rc;
@@ -1632,6 +1633,9 @@ static int ext2_create(struct nas *nas, struct nas *parents_nas) {
 		return rc;
 	}
 	fi = nas->fi->privdata;
+
+	dir_fi->f_di.i_links_count++;
+	ext2_rw_inode(parents_nas, &dir_fi->f_di, EXT2_W_INODE);
 
 	ext2_close(parents_nas);
 
@@ -1685,6 +1689,9 @@ static int ext2_mkdir(struct nas *nas, struct nas *parents_nas) {
 		/* TODO del inode and clear the pool*/
 		return (r1 | r2);
 	}
+
+	dir_fi->f_di.i_links_count++;
+	ext2_rw_inode(parents_nas, &dir_fi->f_di, EXT2_W_INODE);
 
 	ext2_buff_free(nas, fi->f_buf);
 	ext2_close(parents_nas);
@@ -1876,7 +1883,7 @@ static int ext2_free_inode(struct nas *nas) { /* ext2_file_info to free */
 
 	/* clear inode in inode table */
 	memset(&fdi, 0, sizeof(struct ext2fs_dinode));
-	ext2_rw_inode(nas, &fdi, 1);
+	ext2_rw_inode(nas, &fdi, EXT2_W_INODE);
 
 	/* free inode bitmap */
 	b = fi->f_num;
@@ -2176,7 +2183,7 @@ static int ext2_dir_operation(struct nas *nas, char *string, ino_t *numb,
 		/* Send the change to disk if the directory is extended. */
 		if (extended) {
 			memcpy(&fdi, &fi->f_di, sizeof(struct ext2fs_dinode));
-			ext2_rw_inode(nas, &fdi, 1);
+			ext2_rw_inode(nas, &fdi, EXT2_W_INODE);
 		}
 	}
 	return 0;
@@ -2213,12 +2220,13 @@ static int ext2_new_node(struct nas *nas,
 		if (0 != ext2_new_block(nas, fsi->s_block_size - 1)) {
 			return ENOSPC;
 		}
+		fi->f_di.i_links_count++; /* directory have 2 links */
 	}
 	fi->f_di.i_mode = nas->node->mode;
 	fi->f_di.i_links_count++;
 
 	memcpy(&fdi, &fi->f_di, sizeof(struct ext2fs_dinode));
-	ext2_rw_inode(nas, &fdi, 1);/* force inode to disk now */
+	ext2_rw_inode(nas, &fdi, EXT2_W_INODE);/* force inode to disk now */
 
 	/* New inode acquired.  Try to make directory entry. */
 	if (0 != (rc = ext2_dir_operation(parents_nas, (char *) nas->node->name,
@@ -2233,6 +2241,7 @@ static int ext2_new_node(struct nas *nas,
 /* Unlink 'file_name'; rip must be the inode of 'file_name' or NULL. */
 static int ext2_unlink_file(struct nas *dir_nas, struct nas *nas) {
 	int rc;
+
 
 	if ((0 != (rc = ext2_open(nas))) || (0 != (rc = ext2_free_inode(nas)))) {
 		return rc;
@@ -2285,6 +2294,9 @@ static int ext2_remove_dir(struct nas *dir_nas, struct nas *nas) {
 
 static int ext2_unlink(struct nas *dir_nas, struct nas *nas) {
 	int rc;
+	struct ext2_file_info *dir_fi;
+
+	dir_fi = dir_nas->fi->privdata;
 
 	/* Temporarily open the dir. */
 	if (0 != (rc = ext2_open(dir_nas))) {
@@ -2297,11 +2309,16 @@ static int ext2_unlink(struct nas *dir_nas, struct nas *nas) {
 	else {
 		rc = ext2_unlink_file(dir_nas, nas);
 	}
+
+	if(0 == rc) {
+		dir_fi->f_di.i_links_count--;
+		ext2_rw_inode(dir_nas, &dir_fi->f_di, EXT2_W_INODE);
+	}
+
 	ext2_close(dir_nas);
 
 	return rc;
 }
-
 
 DECLARE_FILE_SYSTEM_DRIVER(ext2fs_driver);
 
