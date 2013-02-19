@@ -20,7 +20,6 @@
 #include <getopt.h>
 #include <string.h>
 #include <stdio.h>
-#include <err.h>
 
 #include <drivers/amba_pnp.h>
 #include <drivers/amba_registry.h>
@@ -155,7 +154,7 @@ static int print_apb_pnp_devs(void) {
 static void print_ahbm_pnp_dev(uint32_t slot) {
 	amba_dev_t dev;
 	if (slot >AHB_MASTERS_QUANTITY) {
-    		LOG_ERROR("print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
+    		printf("print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
     		return;
 	}
 
@@ -166,14 +165,14 @@ static void print_ahbm_pnp_dev(uint32_t slot) {
 	if (-1 != fill_amba_dev(&dev, slot, true, true)) {
 		show_dev(&dev, false);
 	} else {
-		LOG_ERROR("No such device.\n");
+		printf("No such device.\n");
 	}
 }
 
 static void print_ahbsl_pnp_dev(uint32_t slot) {
 	amba_dev_t dev;
 	if (slot >AHB_SLAVES_QUANTITY) {
-		LOG_ERROR("print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
+		printf("print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
 		return;
 	}
 	if (NULL != ahbsl_devices[slot]) {
@@ -184,7 +183,7 @@ static void print_ahbsl_pnp_dev(uint32_t slot) {
 	if (-1 != fill_amba_dev(&dev, slot, true, false)) {
 		show_dev(&dev, false);
 	} else {
-		LOG_ERROR("No such device.\n");
+		printf("No such device.\n");
 	}
 }
 
@@ -264,19 +263,19 @@ static int exec(int argc, char **argv) {
 			return 0;
 		case 'b':
 			if (NULL == (show_func = set_bus_type(optarg))) {
-				LOG_ERROR("Parsing: chose right bus type '-b'\n");
+				printf("Parsing: chose right bus type '-b'\n");
 				print_usage();
 				return -1;
 			}
 			break;
 		case 'n':
 			if (show_all == show_func) {
-				LOG_ERROR("Parsing: chose bus type '-b'\n");
+				printf("Parsing: chose bus type '-b'\n");
 				print_usage();
 				return -1;
 			}
 			if (1 != sscanf(optarg,"%d", &dev_number)) {
-				LOG_ERROR("parsing: enter validly dev_number '-n'\n");
+				printf("parsing: enter validly dev_number '-n'\n");
 				print_usage();
 				return -1;
 			}

@@ -15,7 +15,7 @@
 #include <framework/example/self.h>
 #include <getopt.h>
 #include <prom/prom_printf.h>
-#include <err.h>
+
 
 EMBOX_EXAMPLE(httpd_exec);
 

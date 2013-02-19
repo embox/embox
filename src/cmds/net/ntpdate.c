@@ -7,19 +7,19 @@
  */
 
 #include <stdio.h>
-#include <err.h>
 #include <errno.h>
-#include <embox/cmd.h>
+#include <time.h>
 #include <getopt.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 #include <net/ip.h>
-#include <arpa/inet.h>
 #include <net/socket.h>
-#include <sys/socket.h>
 #include <net/ntp.h>
 
-#include <time.h>
+
 #include <kernel/time/time.h>
+#include <embox/cmd.h>
 
 #define DEFAULT_WAIT_TIME 10000
 

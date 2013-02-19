@@ -7,8 +7,6 @@
  */
 
 #include <errno.h>
-#include <err.h>
-#include <embox/cmd.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <string.h>
@@ -23,6 +21,9 @@
 #include <pnet/node.h>
 #include <pnet/repo.h>
 #include <pnet/graph.h>
+
+
+#include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 

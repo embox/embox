@@ -7,7 +7,6 @@
  */
 
 #include <stdio.h>
-#include <err.h>
 #include <errno.h>
 #include <embox/cmd.h>
 #include <getopt.h>

@@ -11,11 +11,11 @@
 #include <string.h>
 #include <net/ip.h>
 #include <sys/socket.h>
-#include <embox/cmd.h>
-#include <err.h>
 #include <errno.h>
-#include <net/inetdevice.h>
 #include <arpa/inet.h>
+
+#include <net/inetdevice.h>
+#include <embox/cmd.h>
 
 EMBOX_CMD(httpd);
 
@@ -143,7 +143,7 @@ static char * get_next_line(struct client_info *info) {
 	}
 
 	/* error: string is too long */
-	LOG_ERROR("Error.. string is too long\n");
+	printf("Error.. string is too long\n");
 	info->next_len = 0;
 
 	return NULL;

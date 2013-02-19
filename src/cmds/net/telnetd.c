@@ -24,7 +24,6 @@
 #include <util/ring_buff.h>
 #include <util/math.h>
 
-//#include <err.h>
 
 #include <kernel/task.h>
 

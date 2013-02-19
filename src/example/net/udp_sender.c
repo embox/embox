@@ -15,7 +15,7 @@
 #include <framework/example/self.h>
 #include <getopt.h>
 #include <net/icmp.h>
-#include <err.h>
+
 #include <unistd.h>
 
 EMBOX_EXAMPLE(exec);

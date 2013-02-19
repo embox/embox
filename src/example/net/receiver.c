@@ -18,7 +18,7 @@
 #include <framework/example/self.h>
 #include <getopt.h>
 #include <kernel/printk.h>
-#include <err.h>
+
 
 EMBOX_EXAMPLE(exec);
 
