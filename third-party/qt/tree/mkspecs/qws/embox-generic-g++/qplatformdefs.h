@@ -57,7 +57,7 @@
 //#define QT_NO_FILESYSTEMWATCHER
 
 // Moved to command line
-//#define QT_NO_PROCESS
+//#define QT_NO_PROCESSlong pathconf(char *path, int name);
 
 // Moved to command line
 //#define QT_NO_NETWORKINTERFACE
@@ -589,6 +589,10 @@ static inline struct group *getgrgid(gid_t gid) {
 }
 
 //uid_t getuid(void);
+
+// this is for FILESYSTEMWATCHER
+#define pathconf(path,name) \
+	printf(">>> pathconf(%s,%s)\n",#path,#name),32
 
 #endif // __QEMBOX__
 

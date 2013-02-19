@@ -19,7 +19,7 @@ QT_CONF_FLAGS_EMBOX += -no-largefile -no-qt3support
 QT_CONF_FLAGS_EMBOX += -no-kbd-tty -no-mouse-pc -no-mouse-linuxtp -no-gfx-linuxfb -no-gfx-multiscreen
 QT_CONF_FLAGS_EMBOX += -no-feature-TEMPORARYFILE     -D QT_NO_TEMPORARYFILE
 QT_CONF_FLAGS_EMBOX += -no-feature-PROCESS           -D QT_NO_PROCESS
-QT_CONF_FLAGS_EMBOX += -no-feature-FILESYSTEMWATCHER -D QT_NO_FILESYSTEMWATCHER
+#QT_CONF_FLAGS_EMBOX += -no-feature-FILESYSTEMWATCHER -D QT_NO_FILESYSTEMWATCHER
 QT_CONF_FLAGS_EMBOX += -no-feature-SHAREDMEMORY      -D QT_NO_SHAREDMEMORY
 QT_CONF_FLAGS_EMBOX += -no-feature-NETWORKINTERFACE  -D QT_NO_NETWORKINTERFACE
 QT_CONF_FLAGS_EMBOX += -no-feature-HOSTINFO          -D QT_NO_HOSTINFO
@@ -302,7 +302,7 @@ QT_CONF_FLAGS_LINUX += -no-kbd-tty -no-mouse-pc -no-mouse-linuxtp -no-gfx-linuxf
 # -no-gfx-multiscreen
 QT_CONF_FLAGS_LINUX += -no-feature-TEMPORARYFILE
 QT_CONF_FLAGS_LINUX += -no-feature-PROCESS
-QT_CONF_FLAGS_LINUX += -no-feature-FILESYSTEMWATCHER
+#QT_CONF_FLAGS_LINUX += -no-feature-FILESYSTEMWATCHER
 QT_CONF_FLAGS_LINUX += -no-feature-SHAREDMEMORY
 QT_CONF_FLAGS_LINUX += -no-feature-NETWORKINTERFACE
 QT_CONF_FLAGS_LINUX += -no-feature-HOSTINFO
