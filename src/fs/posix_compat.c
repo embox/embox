@@ -44,7 +44,7 @@ static int this_ioctl(struct idx_desc *data, int request, va_list args) {
 }
 
 static int this_truncate(struct idx_desc *data, off_t length) {
-	if (!(from_data(data)->flags & FDESK_FLAG_WRITE)) {
+	if (!(from_data(data)->flags & FS_MAY_WRITE)) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}

@@ -12,6 +12,7 @@
 #include <fs/vfs.h>
 #include <mem/objalloc.h>
 #include <util/dlist.h>
+#include <fs/flags.h>
 
 #include <dirent.h>
 
@@ -34,7 +35,7 @@ DIR *opendir(const char *path) {
 		return NULL;
 	}
 
-	if (0 != fs_perm_check(node, S_IROTH)) {
+	if (0 != fs_perm_check(node, FS_MAY_READ)) {
 		SET_ERRNO(EACCES);
 		return NULL;
 	}

@@ -116,9 +116,9 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 
 	desc->node = node;
 	desc->ops = ops;
-	perm_flags = ((flag & O_WRONLY || flag & O_RDWR) ? FDESK_FLAG_WRITE : 0)
-		| ((flag & O_WRONLY) ? 0 : FDESK_FLAG_READ);
-	desc->flags = perm_flags | ((flag & O_APPEND) ? FDESK_FLAG_APPEND : 0);
+	perm_flags = ((flag & O_WRONLY || flag & O_RDWR) ? FS_MAY_WRITE : 0)
+		| ((flag & O_WRONLY) ? 0 : FS_MAY_READ);
+	desc->flags = perm_flags | ((flag & O_APPEND) ? FS_MAY_APPEND : 0);
 	desc->cursor = 0;
 
 	if (0 > (ret = fs_perm_check(node, perm_flags))) {
@@ -158,12 +158,12 @@ int ktruncate(struct node *node, off_t length) {
 		return -1;
 	}
 
-	if (0 > (ret = fs_perm_check(node, FDESK_FLAG_WRITE))) {
+	if (0 > (ret = fs_perm_check(node, FS_MAY_WRITE))) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
 
-	if (node->mode & S_IFDIR) {
+	if (node_is_directory(node)) {
 		SET_ERRNO(EISDIR);
 		return -1;
 	}
@@ -184,7 +184,7 @@ size_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 		return -1;
 	}
 
-	if (!(file->flags & FDESK_FLAG_WRITE)) {
+	if (!(file->flags & FS_MAY_WRITE)) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
@@ -194,7 +194,7 @@ size_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 		return -1;
 	}
 
-	if (file->flags & FDESK_FLAG_APPEND) {
+	if (file->flags & FS_MAY_APPEND) {
 		kseek(file, 0, SEEK_END);
 	}
 
@@ -215,7 +215,7 @@ size_t kread(void *buf, size_t size, struct file_desc *desc) {
 		return -1;
 	}
 
-	if (!(desc->flags & FDESK_FLAG_READ)) {
+	if (!(desc->flags & FS_MAY_READ)) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}

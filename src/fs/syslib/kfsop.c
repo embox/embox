@@ -153,7 +153,7 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 		return -1;
 	}
 
-	if (0 != fs_perm_check(node, S_IWOTH)) {
+	if (0 != fs_perm_check(node, FS_MAY_WRITE)) {
 		errno = EACCES;
 		return -1;
 	}
@@ -200,7 +200,7 @@ int kunlink(const char *pathname) {
 		return -1;
 	}
 
-	if (0 != fs_perm_check(node, S_IWOTH)) {
+	if (0 != fs_perm_check(node, FS_MAY_WRITE)) {
 		errno = EACCES;
 		return -1;
 	}
@@ -233,7 +233,7 @@ int krmdir(const char *pathname) {
 		return -1;
 	}
 
-	if (0 != (res = fs_perm_check(node, S_IWOTH))) {
+	if (0 != (res = fs_perm_check(node, FS_MAY_WRITE))) {
 		errno = EACCES;
 		return -1;
 	}
@@ -293,7 +293,7 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -1;
 	}
 
-	if (0 != (res = fs_perm_check(node, S_IWOTH))) {
+	if (0 != (res = fs_perm_check(node, FS_MAY_WRITE))) {
 		errno = EACCES;
 		return -1;
 	}
@@ -329,7 +329,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		return -1;
 	}
 
-	if (0 != fs_perm_check(dev_node, S_IROTH)) {
+	if (0 != fs_perm_check(dev_node, FS_MAY_READ)) {
 		errno = EACCES;
 		return -1;
 	}
