@@ -157,12 +157,12 @@ static inline int pthread_cond_destroy (pthread_cond_t *__cond){
 }
 
 static inline int pthread_mutex_lock (pthread_mutex_t *__mutex){
-	DPRINT();
-	return -1;
+	//DPRINT();
+	return 0;
 }
 static inline int pthread_mutex_unlock (pthread_mutex_t *__mutex){
-	DPRINT();
-	return -1;
+	//DPRINT();
+	return 0;
 }
 
 static inline int pthread_cond_wait (pthread_cond_t *__restrict __cond,
@@ -171,8 +171,8 @@ static inline int pthread_cond_wait (pthread_cond_t *__restrict __cond,
 	return -1;
 }
 static inline int pthread_cond_signal (pthread_cond_t *__cond){
-	DPRINT();
-	return -1;
+	//DPRINT();
+	return 0;
 }
 static inline int pthread_cond_timedwait (pthread_cond_t *__restrict __cond,
                                    pthread_mutex_t *__restrict __mutex,

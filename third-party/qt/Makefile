@@ -195,7 +195,7 @@ TARGET_APPS += demos/spreadsheet
 TARGET_APPS += examples/animation/animatedtiles
 TARGET_APPS += examples/animation/moveblocks
 TARGET_APPS += examples/widgets/charactermap
-
+TARGET_APPS += examples/texteditor
 
 
 
