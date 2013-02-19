@@ -9,7 +9,7 @@
 #include "savefiledialog.h"
 
 #define TEDIT_APP_TITLE "TextEditor"
-#define TEDIT_DIR "/home/vita/"
+#define TEDIT_DIR "/tmp/"
 
 class TextEditor : public QMainWindow
 {
