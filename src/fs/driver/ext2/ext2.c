@@ -117,10 +117,6 @@ static int ext2_read_sblock(struct nas *nas);
 static int ext2_read_gdblock(struct nas *nas);
 static int ext2_mount_entry(struct nas *nas);
 
-extern fsop_listxattr_ft ext2fs_listxattr __attribute__((weak));
-extern fsop_getxattr_ft ext2fs_getxattr __attribute__((weak));
-extern fsop_setxattr_ft ext2fs_setxattr __attribute__((weak));
-
 /* ext filesystem description pool */
 POOL_DEF(ext2_fs_pool, struct ext2_fs_info,
 		OPTION_GET(NUMBER,ext_descriptor_quantity));
@@ -130,6 +126,7 @@ POOL_DEF(ext2_file_pool, struct ext2_file_info,
 		OPTION_GET(NUMBER,ext_inode_quantity));
 
 #define EXT_NAME "ext2"
+
 /* TODO link counter */
 
 static int ext2fs_open(struct node *node, struct file_desc *file_desc,

@@ -394,7 +394,7 @@ cleanup_out:
 	return res;
 }
 
-int ext2fs_getxattr(struct node *node, char *name, char *value, size_t len) {
+int ext2fs_getxattr(struct node *node, const char *name, char *value, size_t len) {
 	struct ext2_xattr_hdr *xattr_blk;
 	struct ext2_xattr_ent *xattr_ent;
 	size_t name_len = strlen(name);
