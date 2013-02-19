@@ -23,66 +23,69 @@
 #include <fs/perm.h>
 #include <security/security.h>
 
+static struct node *kcreat(struct node *dir, const char *path, mode_t mode) {
+	struct fs_driver *drv;
+	struct node *child;
+	int ret;
+
+	if (NULL != strchr(path, '/')) {
+		SET_ERRNO(ENOENT);
+		return NULL;
+	}
+
+	if (0 != (fs_perm_check(dir, FS_MAY_WRITE))) {
+		SET_ERRNO(EACCES);
+		return NULL;
+	}
+
+	if (0 != (ret = security_node_create(dir, S_IFREG | mode))) {
+		SET_ERRNO(-ret);
+		return NULL;
+	}
+
+	child = vfs_create(dir, path, S_IFREG | mode);
+
+	if (!child) {
+		SET_ERRNO(ENOMEM);
+		return NULL;
+	}
+
+	/* check drv of parents */
+	drv = dir->nas->fs->drv;
+	if (!drv || !drv->fsop->create_node) {
+		SET_ERRNO(EBADF);
+		vfs_del_leaf(child);
+		return NULL;
+	}
+
+	if (0 != (ret = drv->fsop->create_node(dir, child))) {
+		SET_ERRNO(-ret);
+		vfs_del_leaf(child);
+		return NULL;
+	}
+
+	return child;
+}
+
 struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 	struct node *node;
 	struct nas *nas;
 	struct file_desc *desc;
 	const struct kfile_operations *ops;
-	int ret;
-	mode_t dirmode;
-	int perm_flags;
+	int perm_flags, ret;
 
 	assert(path);
 	ret = fs_perm_lookup(NULL, path, &path, &node);
-	dirmode = fs_perm_mask(node);
 
 	if (-ENOENT == ret) {
-		struct fs_driver *drv;
-		struct node *child;
-		char *ch;
-
 		if (!(flag & O_CREAT)) {
 			SET_ERRNO(ENOENT);
 			return NULL;
 		}
 
-		if (NULL != (ch = strchr(path, '/'))) {
-			SET_ERRNO(ENOENT);
+		if (NULL == (node = kcreat(node, path, mode))) {
 			return NULL;
 		}
-
-		if (0 == (dirmode & S_IWOTH)) {
-			SET_ERRNO(EACCES);
-			return NULL;
-		}
-
-		if (0 != (ret = security_node_create(node, S_IFREG | mode))) {
-			SET_ERRNO(-ret);
-			return NULL;
-		}
-
-		child = vfs_create(node, path, S_IFREG | mode);
-
-		if (!child) {
-			SET_ERRNO(ENOMEM);
-			return NULL;
-		}
-
-		/* check drv of parents */
-		drv = node->nas->fs->drv;
-		if (!drv || !drv->fsop->create_node) {
-			SET_ERRNO(EBADF);
-			vfs_del_leaf(node);
-			return NULL;
-		}
-
-		if (0 != (ret = drv->fsop->create_node(node, child))) {
-			SET_ERRNO(-ret);
-			vfs_del_leaf(node);
-			return NULL;
-		}
-
-		node = child;
 
 	} else if (-EACCES == ret) {
 		SET_ERRNO(EACCES);
@@ -131,10 +134,6 @@ struct file_desc *kopen(const char *path, int flag, mode_t mode) {
 		goto free_out;
 	}
 
-	if (0 > (ret = security_node_permissions(node, flag))) {
-		goto free_out;
-	}
-
 	if (0 > (ret = desc->ops->open(node, desc, flag))) {
 		goto free_out;
 	}
@@ -150,7 +149,6 @@ free_out:
 		SET_ERRNO(-ret);
 		return NULL;
 	}
-
 
 	return desc;
 }

@@ -14,6 +14,7 @@
 #include <security/smac.h>
 #include <fs/vfs.h>
 #include <fs/sys/fsop.h>
+#include <fs/flags.h>
 #include <kernel/task.h>
 
 #include <embox/test.h>
@@ -45,10 +46,8 @@ static struct smac_entry smac_backup[SMAC_BACKUP_LEN];
 static int smac_back_n;
 
 static struct smac_entry test_env[] = {
-	{HIGH, HIGH, S_IRWXO},
-	{HIGH, LOW,  S_IROTH},
-	{LOW,  HIGH, S_IWOTH},
-	{LOW,  LOW,  S_IRWXO},
+	{HIGH, LOW,  FS_MAY_READ },
+	{LOW,  HIGH, FS_MAY_WRITE},
 };
 
 static mode_t root_backup_mode;

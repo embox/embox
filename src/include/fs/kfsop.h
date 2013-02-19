@@ -15,8 +15,6 @@
 struct node;
 struct stat;
 
-extern int kcreat(struct node *node, const char *pathname, mode_t mode);
-
 extern int kmkdir(struct node *node, const char *pathname, mode_t mode);
 
 extern int kremove(const char *pathname);
