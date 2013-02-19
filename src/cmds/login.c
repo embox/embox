@@ -175,7 +175,7 @@ static int login_cmd(int argc, char **argv) {
 	}
 
 	if (0 != (res = utmp_login(USER_PROCESS, namebuf))) {
-		return res;
+		/* */
 	}
 
 	shell->exec();
