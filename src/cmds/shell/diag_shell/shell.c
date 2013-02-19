@@ -14,7 +14,7 @@
 #include <util/array.h>
 #include <cmd/cmdline.h>
 #include <framework/cmd/api.h>
-#include <err.h>
+#include <cmd/shell.h>
 
 #include "console/console.h"
 
@@ -98,13 +98,13 @@ static int shell_start(void) {
 	callback->exec = exec_callback;
 	callback->guess = guess_callback;
 	if (console_init(console, callback) == NULL) {
-		LOG_ERROR("Failed to create a console");
+		printf("Failed to create a console");
 		return -1;
 	}
 
 	return 0;
 }
-#include <cmd/shell.h>
+
 static void shell_run(void) {
 	static const char* prompt = OPTION_STRING_GET(prompt);
 

@@ -24,7 +24,7 @@
 #define CB_EDIT_MODEL(action) \
 		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action)
 
-CONSOLE *cur_console = NULL;
+static CONSOLE *cur_console = NULL;
 
 static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
@@ -32,12 +32,6 @@ static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	/*FIXME: resolve "(reverse-i-search)`':" statement */
 	char *cmd;
 
-#if 0
-	= strstr(this->model->string, ":");
-	        if (cmd)
-	    		*cmd++;
-	    	else
-#endif
 	cmd = this->model->string;
 
 	if (this->callback != NULL && this->callback->exec != NULL && *cmd) {

@@ -8,7 +8,7 @@
 #include "screen.h"
 #include <assert.h>
 #include "console.h"
-#include <drivers/diag.h>
+
 
 #define FIRE_CALLBACK(cb, func, view, ...)	do {((cb->func != NULL) ? cb->func(cb, view, ## __VA_ARGS__) : 0) ;} while (0)
 
