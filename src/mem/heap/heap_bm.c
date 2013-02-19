@@ -9,13 +9,11 @@
 #include <types.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <mem/page.h>
-
-#include <util/math.h>
 #include <embox/unit.h>
+#include <mem/page.h>
 #include <mem/heap.h>
-
+#include <util/math.h>
+#include <util/binalign.h>
 #include <kernel/printk.h>
 
 #define DEBUG 0
@@ -35,9 +33,10 @@ struct free_block_link {
 };
 
 struct free_block {
-	size_t size;
-	struct free_block_link link;
-	size_t end_size;
+	/* This member must be first. */
+	size_t size;                 /**<< Size of block. First two bits of size stores service information about busing
+	                                   of current and previous blocks. */
+	struct free_block_link link; /**<< Link in global list of free blocks. */
 };
 
 static void *pool;
@@ -79,10 +78,6 @@ static void mark_prev(struct free_block *block) {
 	block->size |= 0x2;
 }
 
-static void clear_prev(struct free_block *block) {
-	block->size &= ~0x2;
-}
-
 static void mark_next(struct free_block *block) {
 	struct free_block *nblock; /* next block */
 	size_t size = get_clear_size(block->size);
@@ -115,9 +110,14 @@ static struct free_block * concatenate_prev(struct free_block *block) {
 
 	prev_size = *((uint32_t *) ((uint32_t *) block - 1));
 	pblock = (struct free_block *) ((char *) block - get_clear_size(prev_size));
+
+	/* Set size for new free block */
 	new_size = get_clear_size(prev_size) + get_clear_size(block->size); /* block->size is clear) */
 	pblock->size = new_size | 0x2; /* prev is busy */
 	set_end_size(pblock);
+
+	/* @c pblock already in list of free blocks. So, simply unlink @c block */
+	block_unlink(block);
 
 	return pblock;
 }
@@ -133,9 +133,12 @@ static struct free_block * concatenate_next(struct free_block *block) {
 		return block;
 	}
 
+	/* Set size for new free block. All flags inherited from @block */
 	size += get_clear_size(nblock->size);
 	block->size = size | get_flags(block->size);
 	set_end_size(block);
+
+	/* @c block already in list of free blocks. So, simply unlink @c nblock */
 	block_unlink(nblock);
 
 	return block;
@@ -156,44 +159,66 @@ static struct free_block * cut(struct free_block *block, size_t size) {
 	block_unlink(block);
 	block_link(nblock);
 
+	/* Set size for new free block: in begin and end of block */
 	nblock->size = get_clear_size(block->size) - offset;
 	set_end_size(nblock);
 
+	/* Set size of new busy block: in begin of block.
+	 * Also inherit flags of initial @c block.  */
 	block_set_size(block, offset);
 
+	/* Set corresponding flags in busy */
+	mark_block(block);
 	mark_prev(nblock);
 
 	return block;
 }
 
-static void *block_aligning(struct free_block *block, size_t boundary) {
+/* Splits one block in two: free block aligned on @c boundary (of size >= @c size) and remainder.
+ * If we cant' split so, do nothing and return NULL. */
+static struct free_block *block_align(struct free_block *block, size_t boundary, size_t size) {
 	struct free_block *aligned_block;
-	void *ret_addr;
-	size_t size;
+	size_t aligned_addr;
+	size_t aligned_block_size = 1;
 
-	ret_addr =
-			(void *) ((size_t) (block) + sizeof(struct free_block) + boundary);
-	ret_addr = (void *) ((size_t) (ret_addr) & ~(boundary - 1));
+	/* If we are already aligning */
+	if (binalign_check_bound((size_t)block + sizeof(block->size), boundary)) {
+		return ((get_clear_size(block->size) - sizeof(block->size)) >= size) ? block : NULL;
+	}
 
-	aligned_block =
-			(struct free_block *) ((size_t) ret_addr - sizeof(ret_addr));
+	/* @c block == |remainder|new aligned block|
+	 *
+	 * Remainder is free block with at least minimum size */
+	aligned_addr = binalign_bound((size_t)block + sizeof(struct free_block) +
+			2 * sizeof(block->size), boundary);
 
-	size = get_clear_size(block->size) - ((size_t) aligned_block - (size_t) block);
+	/* If aligned address is outer of block */
+	if (aligned_addr > (size_t)block + get_clear_size(block->size)) {
+		return NULL;
+	}
 
-	aligned_block->size = block->size; /* copy flags*/
-	block_set_size(aligned_block, size);
-	mark_block(aligned_block);
-	clear_prev(aligned_block);
+	aligned_block = (struct free_block *) (aligned_addr - sizeof(aligned_addr));
 
-	ret_addr = (void *) ((uint32_t *) aligned_block + 1);
+	aligned_block_size = get_clear_size(block->size) - ((size_t) aligned_block - (size_t) block);
 
+	/* If there are no memory to allocate @c size bytes in aligned block than return NULL */
+	if (aligned_block_size < size + sizeof(aligned_addr)) {
+		return NULL;
+	}
+
+	/* So, if we are here, we have aligned block, that can store @c size bytes,
+	 * and free remainder. */
+
+	/* Init aligned block */
+	aligned_block->size = aligned_block_size;
+	set_end_size(aligned_block);
+	block_link(aligned_block);
+
+	/* Init remainder */
 	block_set_size(block, (size_t) aligned_block - (size_t) block);
-	block_link(block);
-	clear_block(block);
 	set_end_size(block);
-	clear_next(block);
 
-	return ret_addr;
+	return aligned_block;
 }
 
 void *memalign(size_t boundary, size_t size) {
@@ -209,12 +234,7 @@ void *memalign(size_t boundary, size_t size) {
 		size = sizeof(struct free_block);
 	}
 
-	if (0 != boundary) {
-		// boundary = max(boundary, sizeof(struct free_block) << 1);
-		size = (size + 1 + (sizeof(struct free_block) << 1) +(boundary - 1)) & ~(boundary - 1);
-	} else {
-		size = (size + (3)) & ~(3); /* align by word*/
-	}
+	size = (size + (3)) & ~(3); /* align by word*/
 
 	for (link = free_blocks.next; link != &free_blocks; link = link->next) {
 		block = (struct free_block *) ((uint32_t *) link - 1);
@@ -222,11 +242,24 @@ void *memalign(size_t boundary, size_t size) {
 			continue;
 		}
 
-		if ((size + sizeof(block->size))
+		/* Change block to aligned subblock to allocate memory start from aligned address. */
+		if (boundary != 0) {
+			struct free_block *aligned_block;
+
+			aligned_block = block_align(block, boundary, size);
+
+			if (NULL == aligned_block) {
+				continue;
+			}
+			block = aligned_block;
+		}
+
+		/* To cut piece of memory from free block we need set three service information:
+		 * 1. Two for new free block (in begin and end of block): sizeof(block->size) + sizeof(struct free_block).
+		 * 2. One for new busy block (in begin of block): sizeof(block->size). */
+		if ((size + 2 * sizeof(block->size))
 				< (get_clear_size(block->size) - sizeof(struct free_block))) {
 			block = cut(block, size);
-			mark_block(block);
-			mark_next(block);
 		} else {
 			block_unlink(block);
 			mark_block(block);
@@ -235,9 +268,6 @@ void *memalign(size_t boundary, size_t size) {
 		}
 
 		ret_addr = (void *) ((uint32_t *) block + 1);
-		if (0 != ((size_t) ret_addr & ~(boundary - 1))) {
-			ret_addr = block_aligning(block, boundary);
-		}
 
 		return ret_addr;
 	}
@@ -270,17 +300,15 @@ void free(void *ptr) {
 
 	/* assert(block_is_busy(block) */;
 
+	/* Free block */
+	block_link(block);
+	set_end_size(block);
+	clear_block(block);
+	clear_next(block);
+
+	/* And than concatenate with neighbors */
 	block = concatenate_prev(block);
 	block = concatenate_next(block);
-
-	if (block_is_busy(block)) {
-		block_link(block);
-		clear_block(block);
-		clear_next(block);
-
-		set_end_size(block);
-	}
-	clear_block((struct free_block *)ptr);
 }
 
 void *realloc(void *ptr, size_t size) {
@@ -295,9 +323,16 @@ void *realloc(void *ptr, size_t size) {
 	}
 
 	tmp = malloc(size);
+	if (NULL == tmp) {
+		return NULL;
+	}
+
 	block = (struct free_block *) ((uint32_t *) ptr - 1);
 
-	memcpy(tmp, ptr, min(size, get_clear_size(block->size)));
+	/* Copy minimum of @c size and actual size of object pointed by @c ptr. And then free @c ptr */
+	memcpy(tmp, ptr, min(size, get_clear_size(block->size) - sizeof(block->size)));
+	free(ptr);
+
 	printd("addr = 0x%X\n", (uint32_t)tmp);
 	return tmp;
 }
