@@ -163,6 +163,14 @@ int security_node_permissions(struct node *node, int flags) {
 	return security_access(task_self_security(), label, flags);
 }
 
+int security_node_delete(struct node *dir, struct node *node) {
+	return 0;
+}
+
+int security_mount(struct node *dev) {
+	return 0;
+}
+
 static int smac_init(void) {
 	strcpy(((struct smac_task *) task_self_security())->label, smac_floor);
 

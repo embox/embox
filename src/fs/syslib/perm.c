@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <fs/vfs.h>
 #include <fs/path.h>
+#include <fs/flags.h>
 
 #include <security/security.h>
 
@@ -59,7 +60,7 @@ int fs_perm_lookup(struct node *root, const char *path, const char **pathlast,
 			return 0;
 		}
 
-		if (0 != (ret = fs_perm_check(*node, S_IXOTH))) {
+		if (0 != (ret = fs_perm_check(*node, FS_MAY_EXEC))) {
 			return ret;
 		}
 
