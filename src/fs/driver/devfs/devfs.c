@@ -21,7 +21,7 @@ static int devfs_mount(void *dev, void *dir) {
 	struct node *node;
 	mode_t mode;
 
-	mode = S_IFDIR | S_IRALL | S_IWALL;
+	mode = S_IFDIR | S_IRALL | S_IWALL | S_IXALL;
 
 	assert(!vfs_lookup(NULL, dev)); // XXX remove it -- Eldar
 

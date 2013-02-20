@@ -14,6 +14,8 @@
 #include <fs/path.h>
 #include <fs/vfs.h>
 
+#define ROOT_MODE 0755
+
 static node_t *root_node;
 
 int vfs_get_path_by_node(node_t *nod, char *path) {
@@ -214,7 +216,7 @@ node_t *vfs_get_root(void) {
 	if (!root_node) {
 		root_node = node_alloc("/", 0);
 		assert(root_node);
-		root_node->mode = S_IFDIR;
+		root_node->mode = S_IFDIR | ROOT_MODE;
 		//TODO set pseudofs driver
 	}
 	return root_node;

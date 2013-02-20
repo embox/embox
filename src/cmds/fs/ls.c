@@ -59,11 +59,14 @@ static void print(char *path, DIR *dir) {
 			strcpy(line, dent->d_name);
 		}
 
-		stat(line, &sb);
+		if (-1 == stat(line, &sb)) {
+			printf("Cannot stat %s\n", line);
+			continue;
+		}
 
 		printer(line, &sb);
 
-		if (0 != (sb.st_mode & S_IFDIR) && recursive) {
+		if (sb.st_mode & S_IFDIR && recursive) {
 			DIR *d;
 
 			if (NULL == (d = opendir(line))) {
