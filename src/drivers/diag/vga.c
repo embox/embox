@@ -7,12 +7,17 @@
  * @author Ilia Vaprol
  */
 
+#include <stddef.h>
+#include <string.h>
+
 #include <asm/io.h>
+
+#include <drivers/video/vga.h>
+
 #include <drivers/diag.h>
 #include <drivers/keyboard.h>
 #include <drivers/tty.h>
-#include <stddef.h>
-#include <string.h>
+
 
 typedef struct vchar {
 	char c;
@@ -22,8 +27,6 @@ typedef struct vchar {
 /* The video memory address. */
 #define VIDEO          0xB8000
 
-#define VGA_MISC_WRITE  0x3C2
-#define VGA_CRTC_INDEX  0x3D4
 
 struct diag_tty_data {
 	char attr;
@@ -120,17 +123,10 @@ static const struct tty_ops diag_tty_ops = {
 	.move = &diag_tty_move
 };
 
-char diag_getc(void) {
-	return keyboard_getc();
-}
-
 void diag_putc(char ch) {
 	tty_putc(&diag_tty, ch);
 }
 
-int diag_kbhit(void) {
-	return keyboard_has_symbol();
-}
 
 void diag_init(void) {
 	static struct diag_tty_data data = {
@@ -139,5 +135,4 @@ void diag_init(void) {
 	};
 
 	tty_init(&diag_tty, 80, 25, &diag_tty_ops, &data);
-	keyboard_init();
 }

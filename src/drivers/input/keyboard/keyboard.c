@@ -7,15 +7,18 @@
  */
 
 #include <types.h>
+#include <drivers/diag.h>
 
 #include <asm/io.h>
 
 #include <drivers/keyboard.h>
 #include <drivers/input/keymap.h>
 #include <drivers/input/input_dev.h>
+#include <embox/unit.h>
 
 #include <drivers/i8042.h>
 
+EMBOX_UNIT_INIT(keyboard_init);
 
 static int keyboard_havechar(void) {
 	unsigned char c = inb(I8042_STS_PORT);
@@ -37,10 +40,6 @@ static void keyboard_set_mode(unsigned char mode) {
 	keyboard_send_cmd(I8042_CMD_WRITE_MODE);
 	keyboard_wait_write();
 	outb(mode, I8042_DATA_PORT);
-}
-
-int keyboard_has_symbol(void) {
-	return keyboard_havechar();
 }
 
 static int kbd_state;
@@ -101,7 +100,7 @@ static int keyboard_get_input_event(struct input_event *event) {
 }
 
 
-int keyboard_getc(void) {
+static int keyboard_getc(void) {
 	static unsigned char ascii_buff[4];
 	static int ascii_len;
 	static int seq_cnt = 0;
@@ -133,13 +132,13 @@ static struct input_dev kbd_dev = {
 };
 
 
-void keyboard_init(void) {
+static int keyboard_init(void) {
 	uint8_t mode;
 
 	/* If 0x64 returns 0xff, then we have no keyboard
 	 * controller */
 	if (inb(0x64) == 0xFF) {
-		return;
+		return 0;
 	}
 
 	keyboard_send_cmd(I8042_CMD_PORT_DIS);
@@ -161,4 +160,18 @@ void keyboard_init(void) {
 
 	input_dev_register(&kbd_dev);
 	kbd_state = 0;
+
+	return 0;
+}
+
+
+/*
+ * Diag interface
+ */
+char diag_getc(void) {
+	return keyboard_getc();
+}
+
+int diag_kbhit(void) {
+	return keyboard_havechar();
 }

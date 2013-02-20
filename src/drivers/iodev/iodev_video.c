@@ -118,7 +118,7 @@ static void iodev_video_putc(char ch) {
 }
 
 static char iodev_video_getc(void) {
-	return keyboard_getc();
+	return diag_getc();
 }
 
 static int iodev_video_kbhit(void) {
