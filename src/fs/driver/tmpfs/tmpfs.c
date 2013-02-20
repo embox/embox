@@ -106,7 +106,6 @@ static struct kfile_operations tmpfs_fop = {
 
 static int tmpfs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct nas *nas;
-	//char path [MAX_LENGTH_PATH_NAME];
 	tmpfs_file_info_t *fi;
 
 	nas = node->nas;
@@ -426,6 +425,7 @@ static tmpfs_file_info_t *tmpfs_create_file(struct nas *nas) {
 	return fi;
 }
 
+/*
 static node_t *tmpfs_create_dot(node_t *parent_node, const char *name) {
 	node_t *dot_node;
 	struct nas *parent_nas, *nas;
@@ -436,12 +436,13 @@ static node_t *tmpfs_create_dot(node_t *parent_node, const char *name) {
 	if (dot_node) {
 		nas = dot_node->nas;
 		nas->fs = parent_nas->fs;
-		/* don't need create fi for directory - take root node fi */
+		// don't need create fi for directory - take root node fi /
 		nas->fi->privdata = parent_nas->fi->privdata;
 	}
 
 	return dot_node;
 }
+*/
 
 static int tmpfs_create(struct node *parent_node, struct node *node) {
 	struct nas *nas;
@@ -452,14 +453,9 @@ static int tmpfs_create(struct node *parent_node, struct node *node) {
 		if (!(nas->fi->privdata = tmpfs_create_file(nas))) {
 			return -ENOMEM;
 		}
-		nas->fs = parent_node->nas->fs;
-
-	} else {
-		if (!tmpfs_create_dot(node, ".") ||
-			!tmpfs_create_dot(node, "..")) {
-			return -ENOMEM;
-		}
 	}
+
+	nas->fs = parent_node->nas->fs;
 
 	return 0;
 }
@@ -467,7 +463,6 @@ static int tmpfs_create(struct node *parent_node, struct node *node) {
 static int tmpfs_delete(struct node *node) {
 	struct tmpfs_file_info *fi;
 	struct tmpfs_fs_info *fsi;
-	node_t *dot_node;
 	struct nas *nas;
 	char path [MAX_LENGTH_PATH_NAME];
 
@@ -477,19 +472,7 @@ static int tmpfs_delete(struct node *node) {
 
 	vfs_get_path_by_node(node, path);
 
-	/* need delete "." and ".." node for directory */
-	if (node_is_directory(node)) {
-		dot_node = vfs_lookup_child(node, ".");
-		if (dot_node) {
-			vfs_del_leaf(dot_node);
-		}
-
-		dot_node = vfs_lookup_child(node, "..");
-		if (dot_node) {
-			vfs_del_leaf(dot_node);
-		}
-
-	} else {
+	if (!node_is_directory(node)) {
 		index_free(&tmpfs_file_idx, fi->index);
 		pool_free(&tmpfs_file_pool, fi);
 	}
