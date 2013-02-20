@@ -1801,6 +1801,10 @@ static int fat_mount_files(struct nas *dir_nas) {
 		if (0 != de.name[0]) {
 			path_dir_to_canonical((char *) name, (char *) de.name,
 								  de.attr & ATTR_DIRECTORY);
+			if ((0 == strncmp((char *) de.name, ".  ", 3)) ||
+				(0 == strncmp((char *) de.name, ".. ", 3))) {
+				continue;
+			}
 			/* Create node and file descriptor*/
 			memset(full_path, 0, sizeof(full_path));
 			vfs_get_path_by_node(dir_nas->node, full_path);
@@ -1826,10 +1830,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 			nas->fi->privdata = (void *)fi;
 
 			if (de.attr & ATTR_DIRECTORY) {
-				if ((0 != strncmp((char *) de.name, ".  ", 3)) &&
-					(0 != strncmp((char *) de.name, ".. ", 3))) {
-					fat_create_dir_entry(nas);
-				}
+				fat_create_dir_entry(nas);
 			}
 		}
 	}
@@ -1872,6 +1873,10 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 		if (*de.name) {
 			path_dir_to_canonical(name, (char *) de.name,
 								  de.attr & ATTR_DIRECTORY);
+			if ((0 == strncmp((char *) de.name, ".  ", 3)) ||
+				(0 == strncmp((char *) de.name, ".. ", 3))) {
+				continue;
+			}
 
 			/* Create node and file descriptor*/
 			fi = pool_alloc(&fat_file_pool);
@@ -1944,9 +1949,7 @@ static int fatfs_open(struct node *nod, struct file_desc *desc,  int flag) {
 
 	if(DFS_OK == fat_open_file(nas, (uint8_t *)path, flag, sector_buff)) {
 		fi->pointer = desc->cursor;
-//		if(flag & O_WRONLY) {
-//			nas->fi->ni.size = 0;
-//		}
+
 		return 0;
 	}
 	return -1;
@@ -2217,69 +2220,9 @@ static int fatfs_mount(void *dev, void *dir) {
 	return fat_mount_files(dir_nas);
 }
 
-#if 0
-static int fatfs_create(struct node *parent_node, struct node *node) {
-	struct fat_file_info *fi;
-	struct nas *nas, *parents_nas;
-	int node_quantity;
-	char path [MAX_LENGTH_PATH_NAME];
-
-	nas = node->nas;
-	parents_nas = parent_node->nas;
-
-	if (node_is_directory(node)) {
-		node_quantity = 3; /* need create . and .. directory */
-		vfs_get_path_by_node(node, path);
-	}
-	else {
-		node_quantity = 1;
-	}
-
-	for (int count = 0; count < node_quantity; count ++) {
-		if (0 < count) {
-			if (1 == count) {
-				strcat(path, "/.");
-			} else if (2 == count) {
-				strcat(path, ".");
-			}
-
-			if(NULL == (node = vfs_add_path (path, NULL))) {
-				return -ENOMEM;
-			}
-		}
-
-		if(NULL == (fi = pool_alloc(&fat_file_pool))) {
-			vfs_del_leaf(node);
-			return -ENOMEM;
-		}
-
-		memset(fi, 0, sizeof(struct fat_file_info));
-
-		nas->fs = parents_nas->fs;
-		nas->fi->privdata = (void *)fi;
-
-		/*
-		 * fatfs_create_file called only once for the newly created directory.
-		 * Creation of dir . and .. occurs into the function fatfs_create_file.
-		 */
-		if(0 >= count) {
-			fatfs_create_file(parent_node, node);
-		}
-	}
-	/* cut /.. from end of PATH, if need */
-	if (1 < node_quantity) {
-		//param->path[strlen(param->path) - 3] = '\0';
-	}
-
-	return 0;
-}
-#endif
-
-// XXX this is shit, rewrite it.
 static int fatfs_create(struct node *parent_node, struct node *node) {
 	struct fat_file_info *fi;
 	struct nas *parent_nas, *nas;
-	struct node *dot_node;
 
 	assert(parent_node && node);
 
@@ -2293,24 +2236,10 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 
 	fat_create_file(parent_node, node);
 
-	if (node_is_directory(node)) {
-		/* Create . and .. directories. */
-		// XXX do we need to setup file info here? -- Eldar
-		dot_node = vfs_create_child(node, ".", S_IFDIR);
-		if (!dot_node) {
-			return -ENOMEM;
-		}
-		dot_node = vfs_create_child(node, "..", S_IFDIR);
-		if (!dot_node) {
-			return -ENOMEM;
-		}
-	}
-
 	return 0;
 }
 
 static int fatfs_delete(struct node *node) {
-	struct node *dot_node;
 	struct nas *nas;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
@@ -2321,19 +2250,6 @@ static int fatfs_delete(struct node *node) {
 	fsi = nas->fs->fsi;
 
 	vfs_get_path_by_node(node, path);
-
-	/* need delete "." and ".." node for directory */
-	if (node_is_directory(node)) {
-		dot_node = vfs_lookup_child(node, ".");
-		if (dot_node) {
-			vfs_del_leaf(dot_node);
-		}
-
-		dot_node = vfs_lookup_child(node, "..");
-		if (dot_node) {
-			vfs_del_leaf(dot_node);
-		}
-	}
 
 	/*
 	 * remove the root name to give a name to fat file system name
