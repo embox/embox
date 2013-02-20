@@ -23,6 +23,7 @@ static const char *smac_hat   = "^";
 /*static const char *smac_web   = "@";*/
 
 const char *smac_xattrkey = "SMAC32LABEL";
+const char *smac_admin = "smac_admin";
 
 #define SMAC_MAX_ENTS OPTION_GET(NUMBER, max_entries)
 

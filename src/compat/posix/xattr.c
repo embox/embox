@@ -10,16 +10,22 @@
 #include <fs/vfs.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
+#include <fs/perm.h>
+#include <security/security.h>
 
 #include <sys/xattr.h>
 
 int getxattr(const char *path, const char *name, char *value, size_t size) {
 	int res;
 	struct node *node;
-	node = vfs_lookup(NULL, path);
 
-	if (!node) {
-		errno = ENOENT;
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+		errno = -res;
+		return -1;
+	}
+
+	if (0 > (res = security_xattr_get(node, name, value, size))) {
+		errno = EACCES;
 		return -1;
 	}
 
@@ -43,6 +49,11 @@ int fgetxattr(int fd, const char *name, void *value, size_t size) {
 
 	assert(file->node);
 
+	if (0 > (res = security_xattr_get(file->node, name, value, size))) {
+		errno = EACCES;
+		return -1;
+	}
+
 	if (0 > (res = kfile_xattr_get(file->node, name, value, size))) {
 		errno = -res;
 		return -1;
@@ -54,10 +65,15 @@ int fgetxattr(int fd, const char *name, void *value, size_t size) {
 int setxattr(const char *path, const char *name, const char *value, size_t size,
 	       	int flags) {
 	int res;
-	struct node *node = vfs_lookup(NULL, path);
+	struct node *node;
 
-	if (!node) {
-		errno = -ENOENT;
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+		errno = -res;
+		return -1;
+	}
+
+	if (0 > (res = security_xattr_set(node, name, value, size, flags))) {
+		errno = EACCES;
 		return -1;
 	}
 
@@ -81,6 +97,12 @@ int fsetxattr(int fd, const char *name, const char *value, size_t size, int flag
 
 	assert(file->node);
 
+	if (0 > (res = security_xattr_set(file->node, name, value, size, flags))) {
+		errno = EACCES;
+		return -1;
+	}
+
+
 	if (0 > (res = kfile_xattr_set(file->node, name, value, size, flags))) {
 		errno = -res;
 		return -1;
@@ -92,10 +114,15 @@ int fsetxattr(int fd, const char *name, const char *value, size_t size, int flag
 
 int listxattr(const char *path, char *list, size_t size) {
 	int res;
-	struct node *node = vfs_lookup(NULL, path);
+	struct node *node;
 
-	if (!node) {
-		errno = -ENOENT;
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+		errno = -res;
+		return -1;
+	}
+
+	if (0 > (res = security_xattr_list(node, list, size))) {
+		errno = EACCES;
 		return -1;
 	}
 
@@ -118,6 +145,11 @@ int flistxattr(int fd, char *list, size_t size) {
 	}
 
 	assert(file->node);
+
+	if (0 > (res = security_xattr_list(file->node, list, size))) {
+		errno = EACCES;
+		return -1;
+	}
 
 	if (0 > (res = kfile_xattr_list(file->node, list, size))) {
 		errno = -res;

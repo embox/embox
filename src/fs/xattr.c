@@ -8,10 +8,9 @@
 
 #include <types.h>
 #include <errno.h>
+#include <security/security.h>
 
 #include <fs/xattr.h>
-
-#define RETURN_ERRNO(err) errno = err; return -1
 
 static int check_fsop(struct node *node, const struct fsop_desc **fsop) {
 	if (!node) {
@@ -38,17 +37,9 @@ static int check_fsop(struct node *node, const struct fsop_desc **fsop) {
 	return 0;
 }
 
-static int check_xattr_access(struct node *node) {
-	return 0;
-}
-
 int kfile_xattr_get(struct node *node, const char *name, char *value, size_t len) {
 	const struct fsop_desc *fsop;
 	int err;
-
-	if (0 > (err = check_xattr_access(node))) {
-		return err;
-	}
 
 	if (0 > (err = check_fsop(node, &fsop))) {
 		return err;
@@ -66,13 +57,9 @@ int kfile_xattr_get(struct node *node, const char *name, char *value, size_t len
 }
 
 int kfile_xattr_set(struct node *node, const char *name,
-					const char *value, size_t len, int flags) {
+			const char *value, size_t len, int flags) {
 	const struct fsop_desc *fsop;
 	int err;
-
-	if (0 > (err = check_xattr_access(node))) {
-		return err;
-	}
 
 	if (0 > (err = check_fsop(node, &fsop))) {
 		return err;
@@ -96,10 +83,6 @@ int kfile_xattr_set(struct node *node, const char *name,
 int kfile_xattr_list(struct node *node, char *list, size_t len) {
 	const struct fsop_desc *fsop;
 	int err;
-
-	if (0 > (err = check_xattr_access(node))) {
-		return err;
-	}
 
 	if (0 > (err = check_fsop(node, &fsop))) {
 		return err;

@@ -16,6 +16,7 @@
 #include <fs/sys/fsop.h>
 #include <fs/flags.h>
 #include <kernel/task.h>
+#include <sys/xattr.h>
 
 #include <embox/test.h>
 
@@ -39,6 +40,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 
 const static char *high_static = HIGH;
 const static char *low_static = LOW;
+const static char *smac_star = "*";
 
 #define SMAC_BACKUP_LEN 64
 
@@ -128,4 +130,37 @@ TEST_CASE("Low subject should be able r/w low object") {
 	test_assert_not_equal(-1, fd = open(FILE_L, O_RDWR));
 
 	close(fd);
+}
+
+TEST_CASE("High subject shouldn't be able change high object label") {
+
+	smac_labelset(high_static);
+
+	test_assert_equal(-1, setxattr(FILE_H, smac_xattrkey, smac_star,
+				strlen(smac_star), 0));
+
+	test_assert_equal(EACCES, errno);
+
+}
+
+TEST_CASE("Low subject shouldn't be able change high object label") {
+
+	smac_labelset(low_static);
+
+	test_assert_equal(-1, setxattr(FILE_H, smac_xattrkey, smac_star,
+				strlen(smac_star), 0));
+
+	test_assert_equal(EACCES, errno);
+
+}
+
+TEST_CASE("smac admin should be able change high object label") {
+
+	smac_labelset(smac_admin);
+
+	test_assert_zero(setxattr(FILE_H, smac_xattrkey, smac_star,
+				strlen(smac_star), 0));
+
+	test_assert_zero(setxattr(FILE_H, smac_xattrkey, high_static,
+				strlen(high_static), 0));
 }

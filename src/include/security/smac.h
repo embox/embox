@@ -12,6 +12,7 @@
 #define SMAC_LABELLEN 32
 
 extern const char *smac_xattrkey;
+extern const char *smac_admin;
 
 struct smac_entry {
 	char	subject[SMAC_LABELLEN];

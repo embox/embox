@@ -38,6 +38,8 @@ module xattr {
 	source "xattr.c"
 
 	depends embox.fs.xattr
+	depends embox.fs.Perm
+	depends embox.security.api
 }
 
 static module dirent {

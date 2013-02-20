@@ -21,7 +21,7 @@ struct node;
  * @param mode mode of creating node
  *
  * @return 0 on allowed
- * @return -EACCESS in access denied
+ * @return -EACCES in access denied
  */
 extern int security_node_create(struct node *dir, mode_t mode);
 
@@ -33,7 +33,7 @@ extern int security_node_create(struct node *dir, mode_t mode);
  * @param node node is deletting
  *
  * @return 0 on allowed
- * @return -EACCESS in access denied
+ * @return -EACCES in access denied
  */
 extern int security_node_delete(struct node *dir, struct node *node);
 
@@ -44,7 +44,7 @@ extern int security_node_delete(struct node *dir, struct node *node);
  * @param flags access flags in MAY format
  *
  * @return 0 on allowed
- * @return -EACCESS in access denied
+ * @return -EACCES in access denied
  */
 extern int security_node_permissions(struct node *node, int flags);
 
@@ -55,8 +55,49 @@ extern int security_node_permissions(struct node *node, int flags);
  * @param dev device node which is mounted
  *
  * @return 0 on allowed
- * @return -EACCESS in access denied
+ * @return -EACCES in access denied
  */
 extern int security_mount(struct node *dev, struct node *mountpoint);
+
+/**
+ * @brief Check for xattr get.
+ *
+ * @param node
+ * @param name
+ * @param value
+ * @param len
+ *
+ * @return 0 on allowed
+ * @return -EACCES on denied
+ *
+ */
+extern int security_xattr_get(struct node *node, const char *name, char *value, size_t len);
+
+/**
+ * @brief Check for xattr set.
+ *
+ * @param node
+ * @param name
+ * @param value
+ * @param len
+ * @param flags
+ *
+ * @return 0 on allowed
+ * @return -EACCES on denied
+ *
+ */
+extern int security_xattr_set(struct node *node, const char *name,
+			const char *value, size_t len, int flags);
+
+/**
+ * @brief Check for xattr set.
+ *
+ * @param node
+ *
+ * @return 0 on allowed
+ * @return -EACCES on denied
+ *
+ */
+extern int security_xattr_list(struct node *node, char *list, size_t len);
 
 #endif /* SECURITY_SECURITY_H_ */
