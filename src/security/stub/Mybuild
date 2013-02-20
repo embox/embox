@@ -1,6 +1,0 @@
-
-package embox.security
-
-module stub extends api {
-	source "stub.c"
-}
