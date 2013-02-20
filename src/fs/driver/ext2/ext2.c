@@ -586,7 +586,8 @@ static int ext2fs_create(struct node *parent_node, struct node *node) {
 
 static int ext2fs_delete(struct node *node) {
 	int rc;
-	node_t *dot_node, *parents;
+//	node_t *dot_node, *parents;
+	node_t *parents;
 	struct nas *nas;
 	char path[MAX_LENGTH_PATH_NAME];
 	struct ext2_fs_info *fsi;
@@ -604,19 +605,19 @@ static int ext2fs_delete(struct node *node) {
 	}
 
 	/* need delete "." and ".." node for directory */
-	if (node_is_directory(node)) {
-		dot_node = vfs_lookup_child(node, ".");
-		if (dot_node) {
-			pool_free(&ext2_file_pool, dot_node->nas->fi->privdata);
-			vfs_del_leaf(dot_node);
-		}
-
-		dot_node = vfs_lookup_child(node, "..");
-		if (dot_node) {
-			pool_free(&ext2_file_pool, dot_node->nas->fi->privdata);
-			vfs_del_leaf(dot_node);
-		}
-	}
+//	if (node_is_directory(node)) {
+//		dot_node = vfs_lookup_child(node, ".");
+//		if (dot_node) {
+//			pool_free(&ext2_file_pool, dot_node->nas->fi->privdata);
+//			vfs_del_leaf(dot_node);
+//		}
+//
+//		dot_node = vfs_lookup_child(node, "..");
+//		if (dot_node) {
+//			pool_free(&ext2_file_pool, dot_node->nas->fi->privdata);
+//			vfs_del_leaf(dot_node);
+//		}
+//	}
 
 	/* root node - have fi, but haven't index*/
 	if (0 == strcmp((const char *) path, (const char *) fsi->mntto)) {
@@ -1208,6 +1209,11 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 			memcpy(name_buff, name, fs2h16(dp->e2d_namlen));
 			name_buff[fs2h16(dp->e2d_namlen)] = '\0';
 
+			if(0 != path_is_dotname(name_buff, dp->e2d_namlen)) {
+				/* dont need create dot or dotdot node */
+				continue;
+			}
+
 			mode = ext2_type_to_mode_fmt(dp->e2d_type);
 
 			node = vfs_create(dir_nas->node, name_buff, mode);
@@ -1224,10 +1230,10 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 			}
 
 			if (node_is_directory(node)) {
-				if (0 != strcmp(name_buff, ".") &&
-					0 != strcmp(name_buff, "..")) {
-					rc = ext2_mount_entry(node->nas);
-				}
+//				if (0 != strcmp(name_buff, ".") &&
+//					0 != strcmp(name_buff, "..")) {
+				rc = ext2_mount_entry(node->nas);
+//				}
 			} else {
 				/* read inode into fi->f_di*/
 				if (0 == ext2_open(node->nas)) {
@@ -2061,8 +2067,9 @@ static int ext2_dir_operation(struct nas *nas, char *string, ino_t *numb,
 			if (ENTER != flag && 0 != dp->e2d_ino) {
 				if (IS_EMPTY == flag) {
 					/* If this test succeeds, dir is not empty. */
-					if (0 != strncmp(dp->e2d_name, ".", dp->e2d_namlen)
-						&& 0 != strncmp(dp->e2d_name, "..", dp->e2d_namlen)) {
+//					if (0 != strncmp(dp->e2d_name, ".", dp->e2d_namlen)
+//						&& 0 != strncmp(dp->e2d_name, "..", dp->e2d_namlen)) {
+					if(0 == path_is_dotname(dp->e2d_name, dp->e2d_namlen)) {
 						match = 1;
 					}
 				}
@@ -2270,7 +2277,8 @@ static int ext2_remove_dir(struct nas *dir_nas, struct nas *nas) {
 		return -1;
 	}
 
-	if (0 == strcmp(dir_name, ".") || 0 == strcmp(dir_name, "..")) {
+//	if (0 == strcmp(dir_name, ".") || 0 == strcmp(dir_name, "..")) {
+	if(path_is_dotname(dir_name, strlen(dir_name))) {
 		return EINVAL;
 	}
 

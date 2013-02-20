@@ -195,3 +195,16 @@ char *path_dir_to_canonical(char *dest, char *src, char dir) {
         }
         return dest;
 }
+
+/*
+ * check if name is dot or dotdot
+ */
+int path_is_dotname(char *name, int namlen) {
+
+	if (0 != strncmp(name, ".", namlen)
+		&& 0 != strncmp(name, "..", namlen)) {
+		return 0;
+	}
+	return 1;
+
+}

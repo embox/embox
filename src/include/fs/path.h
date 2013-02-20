@@ -28,6 +28,11 @@ extern int path_increase_tail(char *head, char *tail);
  */
 extern char *path_get_next_name(const char *path, char *buff, int buff_len);
 
+/*
+ * check if name is dot or dotdot
+ */
+extern int path_is_dotname(char *name, int namlen);
+
 
 //TODO this is only FAT function
 extern char *path_dir_to_canonical(char *dest, char *src, char dir);
