@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <hal/ipl.h>
-#include <lib/list.h>
+#include <linux/list.h>
 
 static LIST_HEAD(rx_dev_queue);
 

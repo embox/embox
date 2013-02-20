@@ -14,7 +14,7 @@
 #include <string.h>
 #include <compiler.h>
 #include <framework/mod/options.h>
-#include <lib/list.h>
+#include <linux/list.h>
 
 #define MODOPS_AMOUNT_SKB      OPTION_GET(NUMBER, amount_skb)
 #define MODOPS_AMOUNT_SKB_BUFF OPTION_GET(NUMBER, amount_skb_buff)

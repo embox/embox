@@ -18,7 +18,7 @@
 #include <linux/in.h>
 #include <framework/mod/options.h>
 
-#include <lib/list.h>
+#include <linux/list.h>
 
 #include <err.h>
 

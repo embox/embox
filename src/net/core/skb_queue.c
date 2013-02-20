@@ -10,7 +10,7 @@
 #include <mem/misc/pool.h>
 #include <assert.h>
 #include <framework/mod/options.h>
-#include <lib/list.h>
+#include <linux/list.h>
 
 #define MODOPS_AMOUNT_SKB_QUEUE OPTION_GET(NUMBER, amount_skb_queue)
 
