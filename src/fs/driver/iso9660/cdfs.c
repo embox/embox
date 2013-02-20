@@ -1032,10 +1032,12 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 		pathrec = cdfs->path_table[n];
 		namelen = pathrec->length;
 
+		if(path_is_dotname(pathrec->name, namelen)) {
+			continue;
+		}
+
 		memcpy(name, pathrec->name, namelen);
 		name[20 >= name[0] ? 0 : namelen] = 0; /* root dir name empty */
-
-		//cdfs_get_full_path(cdfs, n, name);
 
 		if (*name) {
 			node = vfs_create_child(root_node, name, S_IFDIR);

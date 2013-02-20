@@ -489,14 +489,14 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 			point += sizeof(vf);
 			predesc = (readdir_desc_t *) point;
 
-			if (NULL == (node = nfs_create_file(parent_nas, predesc))) {
-				free(rcv_buf);
-				return -1;
-			}
+			if(0 == path_is_dotname(predesc->file_name.name.data,
+									predesc->file_name.name.len)) {
+				if (NULL == (node = nfs_create_file(parent_nas, predesc))) {
+					free(rcv_buf);
+					return -1;
+				}
 
-			if (node_is_directory(node)) {
-				if (0 != strcmp(node->name, ".") &&
-				    0 != strcmp(node->name, "..")) {
+				if (node_is_directory(node)) {
 					nfs_create_dir_entry(node);
 				}
 			}
