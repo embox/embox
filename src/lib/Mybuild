@@ -50,6 +50,7 @@ static module LibCStdlib {
 static module LibCString {
 	source "string/memchr.c"
 	source "string/memcmp.c"
+	source "string/memcpy.c"
 	source "string/memmove.c"
 	source "string/memset.c"
 	source "string/strcat.c"
