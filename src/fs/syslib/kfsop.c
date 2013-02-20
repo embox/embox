@@ -266,10 +266,6 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		return -1;
 	}
 
-	if (0 != (res = security_mount(dev_node))) {
-		return res;
-	}
-
 skip_dev_lookup:
 	/* find directory */
 	if (0 != (res = fs_perm_lookup(vfs_get_root(), dir, &lastpath, &dir_node))) {
@@ -286,6 +282,11 @@ skip_dev_lookup:
 		}
 #endif
 	}
+
+	if (0 != (res = security_mount(dev_node, dir_node))) {
+		return res;
+	}
+
 
 	return drv->fsop->mount(dev_node, dir_node);
 }

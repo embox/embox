@@ -9,6 +9,8 @@
 #ifndef FS_FLAGS_H_
 #define FS_FLAGS_H_
 
+#include <sys/stat.h>
+
 #define FS_MAY_EXEC    (0x1 << 0) /* must equal to S_IXOTH */
 #define FS_MAY_WRITE   (0x1 << 1) /* must equal to S_IWOTH */
 #define FS_MAY_READ    (0x1 << 2) /* must equal to S_IROTH */

@@ -20,7 +20,7 @@ int security_node_delete(struct node *dir, struct node *node) {
 	return 0;
 }
 
-int security_mount(struct node *dev) {
+int security_mount(struct node *dev, struct node *mountpoint) {
 	return 0;
 }
 

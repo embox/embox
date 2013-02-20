@@ -3,19 +3,16 @@
  * @brief
  *
  * @author  Anton Kozlov
- * @date    18.02.2013
+ * @date    20.02.2013
  */
 
 #include <errno.h>
 #include <string.h>
-#include <assert.h>
-#include <fs/node.h>
+#include <fs/flags.h>
 #include <kernel/task.h>
 #include <embox/unit.h>
-#include <fs/xattr.h>
 
 #include <security/smac.h>
-#include <security/security.h>
 
 EMBOX_UNIT_INIT(smac_init);
 
@@ -35,8 +32,8 @@ static int smac_env_n;
 /*
  * steps below is from smack deciding order
  */
-static int security_access(const char *s_subject, const char *s_object,
-		int access) {
+int smac_access(const char *s_subject, const char *s_object,
+		int may_access) {
 
 	/* 1 */
 	if (0 == strcmp(s_subject, smac_star)) {
@@ -45,13 +42,13 @@ static int security_access(const char *s_subject, const char *s_object,
 
 	/* 2 */
 	if (0 == strcmp(s_subject, smac_hat)
-		&& 0 == (~(FS_MAY_READ | FS_MAY_EXEC) & access)) {
+		&& 0 == (~(FS_MAY_READ | FS_MAY_EXEC) & may_access)) {
 		return 0;
 	}
 
 	/* 3 */
 	if (0 == strcmp(s_object, smac_floor)
-		&& 0 == (~(FS_MAY_READ | FS_MAY_EXEC) & access)) {
+		&& 0 == (~(FS_MAY_READ | FS_MAY_EXEC) & may_access)) {
 		return 0;
 	}
 
@@ -69,7 +66,7 @@ static int security_access(const char *s_subject, const char *s_object,
 	for (int i = 0; i < smac_env_n; i++) {
 		if (0 == strcmp(s_subject, smac_env[i].subject)
 				&& 0 == strcmp(s_object, smac_env[i].object)) {
-			if (~smac_env[i].flags & access) {
+			if (~smac_env[i].flags & may_access) {
 				return -EACCES;
 			}
 
@@ -85,9 +82,9 @@ int smac_setenv(struct smac_entry *entries, int n,
 		struct smac_entry *backup, size_t backup_len, int *wasn) {
 
 	if (backup || backup_len || wasn) {
-		assert(backup);
-		assert(backup_len);
-		assert(wasn);
+		if (!(backup && backup_len && wasn)) {
+			return -EINVAL;
+		}
 
 		if (backup_len < (smac_env_n * sizeof(struct smac_entry))) {
 			return -ERANGE;
@@ -110,7 +107,7 @@ int smac_setenv(struct smac_entry *entries, int n,
 int smac_labelset(const char *label) {
 	int res, newlen;
 
-	if (0 != (res = security_access(task_self_security(), smac_floor,
+	if (0 != (res = smac_access(task_self_security(), smac_floor,
 					FS_MAY_WRITE))) {
 		return res;
 	}
@@ -127,7 +124,7 @@ int smac_labelset(const char *label) {
 int smac_labelget(char *label, size_t len) {
 	int res, thislen;
 
-	if (0 != (res = security_access(task_self_security(), smac_floor,
+	if (0 != (res = smac_access(task_self_security(), smac_floor,
 					FS_MAY_READ))) {
 		return res;
 	}
@@ -138,36 +135,6 @@ int smac_labelget(char *label, size_t len) {
 
 	strcpy(label, ((struct smac_task *) task_self_security())->label);
 
-	return 0;
-}
-
-int security_node_create(struct node *dir, mode_t mode) {
-	char label[SMAC_LABELLEN];
-	int res;
-
-	if (0 > (res = kfile_xattr_get(dir, smac_xattrkey, label, SMAC_LABELLEN))) {
-		return 0;
-	}
-
-	return security_access(task_self_security(), label, FS_MAY_WRITE);
-}
-
-int security_node_permissions(struct node *node, int flags) {
-	char label[SMAC_LABELLEN];
-	int res;
-
-	if (0 > (res = kfile_xattr_get(node, smac_xattrkey, label, SMAC_LABELLEN))) {
-		return 0;
-	}
-
-	return security_access(task_self_security(), label, flags);
-}
-
-int security_node_delete(struct node *dir, struct node *node) {
-	return 0;
-}
-
-int security_mount(struct node *dev) {
 	return 0;
 }
 

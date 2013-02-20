@@ -30,4 +30,7 @@ extern int smac_labelset(const char *label);
 
 extern int smac_labelget(char *label, size_t len);
 
+extern int smac_access(const char *s_subject, const char *s_object,
+		int may_access);
+
 #endif /* SECURITY_SMAC_H_ */
