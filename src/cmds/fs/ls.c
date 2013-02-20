@@ -21,39 +21,37 @@
 
 EMBOX_CMD(exec);
 
-static void print_usage(void) {
-	printf("Usage: ls [-hl] path\n");
-}
+typedef void item_print(const char *path, stat_t *sb);
 
+static void print_usage(void) {
+	printf("Usage: ls [-hlR] path\n");
+}
 
 static char dir_name[MAX_LENGTH_FILE_NAME];
 static size_t dir_namel;
+static int recursive;
+static item_print *printer;
 
-/*
-static void print_long_list(char *path, node_t *node, int recursive) {
-	node_t *item;
-	stat_t sb;
-	char time_buff[26]; //ctime_r requires it least 26 byte buffer lentgh
-	printf("%s\t%s\t%s\t\t\t%s\n", "mode", "size", "mtime", "name");
-	tree_foreach_children(item, &node->tree_link, tree_link) {
-		//stat((char *) item->name, &sb);
-		ctime_r((time_t *) &(sb.st_mtime), time_buff);
-		printf("%d\t%d\t%s\t%s\n",
-			sb.st_mode,
-			sb.st_size,
-			time_buff,
-			(char *) item->name);
+static void printer_long(const char *path, stat_t *sb) {
+	printf("%3o %6d %6d %s", 0777 & sb->st_mode, sb->st_uid, sb->st_gid, path);
+	if (sb->st_mode & S_IFDIR) {
+		printf("/");
 	}
+	printf("\n");
 }
-*/
 
-static void print_folder(char *path, DIR *dir, int recursive) {
+static void printer_simple(const char *path, stat_t *sb) {
+	printf("%s\n", path);
+}
+
+static void print(char *path, DIR *dir) {
 	struct dirent *dent;
 
 	while (NULL != (dent = readdir(dir))) {
 		int pathlen = strlen(path);
 		int dent_namel = strlen(dent->d_name);
 		char line[pathlen + dent_namel + 3];
+		stat_t sb;
 
 		if (pathlen > 0) {
 			sprintf(line, "%s/%s", path, dent->d_name);
@@ -61,26 +59,18 @@ static void print_folder(char *path, DIR *dir, int recursive) {
 			strcpy(line, dent->d_name);
 		}
 
-		printf("%s\n", line);
+		stat(line, &sb);
 
-		if (recursive) {
-			char this_fullpath[pathlen + dent_namel + dir_namel];
-			stat_t sb;
+		printer(line, &sb);
+
+		if (0 != (sb.st_mode & S_IFDIR) && recursive) {
 			DIR *d;
 
-			sprintf(this_fullpath, "%s/%s", dir_name, line);
-
-			stat(this_fullpath, &sb);
-
-			if (0 == (sb.st_mode & S_IFDIR)) {
-				continue;
+			if (NULL == (d = opendir(line))) {
+				printf("Cannot recurse %s\n", line);
 			}
 
-			if (NULL == (d = opendir(this_fullpath))) {
-				printf("Cannot recurse %s\n", this_fullpath);
-			}
-
-			print_folder(line, d, recursive);
+			print(line, d);
 
 			closedir(d);
 		}
@@ -88,15 +78,14 @@ static void print_folder(char *path, DIR *dir, int recursive) {
 
 }
 
-
 static int exec(int argc, char **argv) {
 	DIR *dir;
 
-	void (*print_func)(char *path, DIR *d, int recursive) = print_folder;
-	int recursive = 0;
-
 	int opt_cnt = 0;
 	int opt;
+
+	printer = printer_simple;
+	recursive = 0;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "Rlh"))) {
@@ -104,14 +93,12 @@ static int exec(int argc, char **argv) {
 		case 'h':
 			print_usage();
 			return 0;
-		/*case 'l':
-			//long_list = 1;
-			print_func = print_long_list;
+		case 'l':
+			printer = printer_long;
 			opt_cnt++;
-			break;*/
+			break;
 		case 'R':
 			recursive = 1;
-			print_func = print_folder;
 			opt_cnt++;
 			break;
 		case '?':
@@ -125,7 +112,7 @@ static int exec(int argc, char **argv) {
 	if (optind < argc) {
 		sprintf(dir_name, "%s", argv[optind]);
 	} else {
-		sprintf(dir_name, "/");
+		sprintf(dir_name, "");
 	}
 
 	dir_namel = strlen(dir_name);
@@ -134,7 +121,7 @@ static int exec(int argc, char **argv) {
 		return errno;
 	}
 
-	print_func("", dir, recursive);
+	print(dir_name, dir);
 
 	closedir(dir);
 

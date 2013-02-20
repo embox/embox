@@ -308,14 +308,9 @@ int kfile_fill_stat(struct node *node, struct stat *stat_buff) {
 	ni = &nas->fi->ni;
 
 	stat_buff->st_size = ni->size;
-
-	if (node_is_directory(node)) {
-		stat_buff->st_mode = S_IFDIR;
-		return 0;
-	}
-	if (node_is_file(node)){
-		stat_buff->st_mode = S_IFREG;
-	}
+	stat_buff->st_mode = node->mode;
+	stat_buff->st_uid = node->uid;
+	stat_buff->st_gid = node->gid;
 
 	return 0;
 }

@@ -70,4 +70,5 @@ module permissions {
 
 	depends embox.compat.posix.proc.uid
 	depends embox.fs.driver.ext2
+	depends embox.driver.ide
 }
