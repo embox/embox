@@ -4,6 +4,9 @@
  *
  * @date 19.11.2012
  * @author Andrey Gazukin
+ *          - Initial implementation.
+ * @author Eldar Abusalimov
+ *          - path_next
  */
 #include <stdio.h>
 #include <string.h>
@@ -196,15 +199,10 @@ char *path_dir_to_canonical(char *dest, char *src, char dir) {
         return dest;
 }
 
-/*
- * check if name is dot or dotdot
- */
-int path_is_dotname(char *name, int namlen) {
-
-	if (0 != strncmp(name, ".", namlen)
-		&& 0 != strncmp(name, "..", namlen)) {
+int path_is_dotname(const char *name, size_t name_len) {
+	if (name_len - 1 <= 1 && name[0] == '.' && name[name_len - 1] == '.') {
+		return name_len;
+	} else {
 		return 0;
 	}
-	return 1;
-
 }

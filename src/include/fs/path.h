@@ -28,11 +28,13 @@ extern int path_increase_tail(char *head, char *tail);
  */
 extern char *path_get_next_name(const char *path, char *buff, int buff_len);
 
-/*
- * check if name is dot or dotdot
+/**
+ * Tells whether a given @a name is "." or "..".
+ * @retval 1 for "."
+ * @retval 2 for ".."
+ * @retval 0 otherwise
  */
-extern int path_is_dotname(char *name, int namlen);
-
+extern int path_is_dotname(const char *name, size_t name_len);
 
 //TODO this is only FAT function
 extern char *path_dir_to_canonical(char *dest, char *src, char dir);
