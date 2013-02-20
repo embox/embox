@@ -60,7 +60,8 @@ VPATH := $(SRCGEN_DIR)
 %/. :
 	@$(MKDIR) $*
 
-cc_prerequisites    = $(common_prereqs) $(extra_prereqs)
+o_prerequisites     = $(common_prereqs)
+cc_prerequisites    = $(common_prereqs)
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c | $$(@D)/.
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
@@ -73,12 +74,12 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cpp | $$(@D)/.
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx | $$(@D)/.
 	$(CC) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
-cpp_prerequisites   = $(common_prereqs) $(extra_prereqs)
+cpp_prerequisites   = $(common_prereqs)
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
 	$(CPP) -P -undef $(CPPFLAGS) $(flags) -imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
-initfs_cp_prerequisites = $(common_prereqs) $(src_file) $(extra_prereqs)
+initfs_cp_prerequisites = $(common_prereqs) $(src_file)
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
 	@$(CP) -r -T $(src_file) $@
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
