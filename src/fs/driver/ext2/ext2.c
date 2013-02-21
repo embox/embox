@@ -2113,7 +2113,8 @@ static int ext2_dir_operation(struct nas *nas, char *string, ino_t *numb,
 					}
 				}
 				else {
-					if (0 == strncmp(dp->e2d_name, string, dp->e2d_namlen)) {
+					if ((dp->e2d_namlen == strlen(string)) &&
+						(0 == strncmp(dp->e2d_name, string, dp->e2d_namlen))) {
 						match = 1;
 					}
 				}
