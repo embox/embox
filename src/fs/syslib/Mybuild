@@ -36,4 +36,5 @@ module Perm {
 	source "perm.c"
 
 	depends embox.security.api
+	depends embox.compat.posix.proc.All
 }

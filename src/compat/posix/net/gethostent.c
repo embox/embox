@@ -10,7 +10,6 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <err.h>
 #include <ctype.h>
 #include <errno.h>
 #include <net/util/hostent_api.h>
@@ -35,7 +34,7 @@ static void close_hosts(void) {
 	}
 
 	if (fclose(hosts) < 0) {
-		LOG_ERROR("can't close file");
+		//LOG_ERROR("can't close file");
 	}
 	hosts = NULL;
 }
