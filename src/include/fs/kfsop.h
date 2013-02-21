@@ -29,6 +29,7 @@ extern int kformat(const char *pathname, const char *fs_type);
 
 extern int kmount(const char *dev, const char *dir, const char *fs_type);
 
+extern int kumount(const char *dir);
 
 extern int kfile_fill_stat(struct node *node, struct stat *stat_buff);
 

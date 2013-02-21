@@ -33,10 +33,15 @@ int krmdir(const char *pathname) {
 int klstat(const char *path, stat_t *buf) {
 	return -1;
 }
+
 int kmount(const char *dev, const char *dir, const char *fs_type) {
 	return -1;
 }
 
 int kformat(const char *pathname, const char *fs_type) {
+	return -1;
+}
+
+int kumount(const char *dir) {
 	return -1;
 }

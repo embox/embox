@@ -18,5 +18,8 @@ int format(const char *pathname, const char *fs_type) {
 	return kformat(pathname, fs_type);
 }
 
+int umount(char *dir) {
+	return kumount(dir);
+}
 
 

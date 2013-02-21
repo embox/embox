@@ -60,6 +60,16 @@ extern int security_node_permissions(struct node *node, int flags);
 extern int security_mount(struct node *dev, struct node *mountpoint);
 
 /**
+ * @brief Checks for umount operation.
+ *
+ * @param mountpoint root directory node
+ *
+ * @return 0 on allowed
+ * @return -EACCES in access denied
+ */
+extern int security_umount(struct node *mountpoint);
+
+/**
  * @brief Check for xattr get.
  *
  * @param node

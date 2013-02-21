@@ -271,7 +271,6 @@ skip_dev_lookup:
 	if (0 != (res = fs_perm_lookup(vfs_get_root(), dir, &lastpath, &dir_node))) {
 		errno = -res;
 		return -1;
-
 #if 0
 		if (res != -ENOENT) {
 			errno = -res;
@@ -287,6 +286,35 @@ skip_dev_lookup:
 		return res;
 	}
 
-
 	return drv->fsop->mount(dev_node, dir_node);
+}
+
+int kumount(const char *dir) {
+	struct node *dir_node;
+	struct fs_driver *drv;
+	const char *lastpath;
+	int res;
+
+	/* find directory */
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), dir, &lastpath, &dir_node))) {
+		errno = -res;
+		return -1;
+	}
+
+	/* TODO fs_perm_check(dir_node, FS_MAY_XXX) */
+
+	drv = dir_node->nas->fs->drv;
+
+	if (!drv) {
+		return -EINVAL;
+	}
+	if (!drv->fsop->umount) {
+		return  -ENOSYS;
+	}
+
+	if (0 != (res = security_umount(dir_node))) {
+		return res;
+	}
+
+	return drv->fsop->umount(dir_node);
 }

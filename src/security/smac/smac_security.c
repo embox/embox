@@ -46,6 +46,10 @@ int security_mount(struct node *dev, struct node *mountpoint) {
 	return 0;
 }
 
+int security_umount(struct node *mountpoint) {
+	return 0;
+}
+
 int security_xattr_get(struct node *node, const char *name, char *value,
 		size_t len) {
 	char label[SMAC_LABELLEN];
