@@ -159,7 +159,7 @@ static int exec(int argc, char **argv) {
 	dir_namel = strlen(dir_name);
 
 	if (NULL == (dir = opendir(dir_name))) {
-		return errno;
+		return -errno;
 	}
 
 	print(dir_name, dir);

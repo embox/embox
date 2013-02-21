@@ -43,6 +43,7 @@ char *strerror(int errnum) {
 	case ENOSUPP:      return "Operation not supported";
 	case EDEVNOSUPP:   return "Device does not support this operation";
 	case ETIMEDOUT:    return "Connection timed out";
+	case EACCES:       return "Access denied";
 	default:           return "Unknown error code. PLEASE REPORT ISSUE 519!";
 	}
 }
