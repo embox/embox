@@ -1,7 +1,8 @@
 /**
  * @file
  * @brief simple ports allocator for dgram/stream sockets
- * @date 29.05.2012
+
+ * @date 29.05.12
  * @author Anton Bondarev
  * @author Ilia Vaprol
  */
@@ -9,8 +10,8 @@
 #include <types.h>
 #include <errno.h>
 #include <net/ip.h>
-#include <kernel/thread/sched_lock.h>
 
+#include <kernel/thread/sched_lock.h>
 #include <framework/mod/options.h>
 
 #define WORD_LENGTH       32

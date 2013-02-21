@@ -55,7 +55,7 @@ struct sock * inet_create_sock(gfp_t priority, struct proto *prot,
 	return sk;
 }
 
-int inet_proto_find(unsigned short type, unsigned char protocol,
+static int inet_proto_find(unsigned short type, unsigned char protocol,
 		struct inet_protosw **pp_netsock) {
 	const struct net_sock *net_sock_ptr;
 	int type_is_supported;
