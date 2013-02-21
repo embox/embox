@@ -438,12 +438,18 @@ $(@source_initfs_cp_rulemk) : o_file = $(call source_initfs_cp_o_file,$@)
 $(@source_initfs_cp_rulemk) : src_file = $(file)
 $(@source_initfs_cp_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$(file))
 $(@source_initfs_cp_rulemk) : kind := initfs_cp
+$(@source_initfs_cp_rulemk) : str_of = \
+		$(call sh_quote,$(call get,$(call values_of,$1),value))
+$(@source_initfs_cp_rulemk) : chmod = $(call str_of,$(my_initfs_chmod))
+$(@source_initfs_cp_rulemk) : chown = $(call str_of,$(my_initfs_chown))
 
 $(@source_initfs_cp_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
 		$(call gen_make_tsvar,$(o_file),src_file,$(src_file)); \
+		$(call gen_make_tsvar,$(o_file),chmod,$(chmod)); \
+		$(call gen_make_tsvar,$(o_file),chown,$(chown)); \
 		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)))
 
 $(@source_gen) : @file = $(SRCGEN_DIR)/$(file)
