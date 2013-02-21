@@ -10,10 +10,16 @@
  * @author Eldar Abusalimov
  */
 
-#include "console.h"
-#include <drivers/iodev.h>
 #include <string.h>
+#include <assert.h>
+
 #include <drivers/terminal.h>
+#include <drivers/iodev.h>
+
+#include "console.h"
+
+
+
 
 #define EDIT_MODEL(console, update, action) \
 		do if (action) { \
@@ -24,7 +30,7 @@
 #define CB_EDIT_MODEL(action) \
 		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action)
 
-static CONSOLE *cur_console = NULL;
+//static CONSOLE *cur_console = NULL;
 
 static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = (CONSOLE *) cb->outer;
@@ -104,7 +110,7 @@ static int on_etx(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 }
 
 static int on_eot(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	console_stop(cur_console);
+	//console_stop(cur_console);
 	return 0;
 }
 
@@ -172,7 +178,7 @@ CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
 		return NULL;
 	}
 
-	cur_console = this;
+	//cur_console = this;
 	return this;
 }
 
@@ -185,6 +191,7 @@ void console_start(CONSOLE *this, const char *prompt) {
 		return;
 	}
 /*TODO may be do static initialize*/
+#if 0
 	INIT_MEMBER(screen_callback,on_char);
 	INIT_MEMBER(screen_callback,on_cursor_up);
 	INIT_MEMBER(screen_callback,on_cursor_left);
@@ -202,6 +209,7 @@ void console_start(CONSOLE *this, const char *prompt) {
 	INIT_MEMBER(screen_callback,on_dc2);
 	INIT_MEMBER(screen_callback,on_dc4);
 	INIT_MEMBER(screen_callback,on_ack);
+#endif
 	screen_callback->outer = this;
 
 	strncpy(this->prompt, (prompt != NULL) ? prompt : default_prompt,
@@ -214,4 +222,155 @@ void console_start(CONSOLE *this, const char *prompt) {
 void console_stop(CONSOLE *this) {
 	screen_out_puts(this->view, "\rConsole exit!");
 	screen_in_stop(this->view);
+}
+
+
+//#define FIRE_CALLBACK(cb, func, view, ...)	do {((cb->func != NULL) ? cb->func(cb, view, ## __VA_ARGS__) : 0) ;} while (0)
+
+/*
+ * screen
+ */
+static void handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
+	SCREEN_CALLBACK *cb = this->callback;
+	if (cb == NULL) {
+		return;
+	}
+
+	//FIRE_CALLBACK(cb, on_char, this, ch);
+	on_char(cb, this, ch);
+}
+
+static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
+		short *params, int params_len) {
+	SCREEN_CALLBACK *cb = this->callback;
+	static TERMINAL_TOKEN prev_token = TERMINAL_TOKEN_EMPTY;
+	if (cb == NULL) {
+		return;
+	}
+
+	switch (token) {
+	case TERMINAL_TOKEN_CURSOR_LEFT:
+		//FIRE_CALLBACK(cb, on_cursor_left, this, 1);
+		on_cursor_left(cb, this, 1);
+		break;
+	case TERMINAL_TOKEN_CURSOR_RIGHT:
+		//FIRE_CALLBACK(cb, on_cursor_right, this, 1);
+		on_cursor_right(cb, this, 1);
+		break;
+	case TERMINAL_TOKEN_CURSOR_UP:
+		//FIRE_CALLBACK(cb, on_cursor_up, this, 1);
+		on_cursor_up(cb, this, 1);
+		break;
+	case TERMINAL_TOKEN_CURSOR_DOWN:
+		//FIRE_CALLBACK(cb, on_cursor_down, this, 1);
+		on_cursor_down(cb, this, 1);
+		break;
+	case TERMINAL_TOKEN_BS:
+		//FIRE_CALLBACK(cb, on_backspace, this, 0);
+		on_backspace(cb,this,0);
+		break;
+	case TERMINAL_TOKEN_DEL:
+		//FIRE_CALLBACK(cb, on_delete, this, 0);
+		on_delete(cb, this, 0);
+		break;
+	case TERMINAL_TOKEN_END:
+		/* TODO: strange char 'F' */
+		//FIRE_CALLBACK(cb, on_end, this, 0);
+		on_end(cb, this, 0);
+		break;
+	case TERMINAL_TOKEN_ETX:
+		//FIRE_CALLBACK(cb, on_etx, this, 0);
+		on_etx(cb, this, 0);
+		break;
+	case TERMINAL_TOKEN_EOT:
+		//FIRE_CALLBACK(cb, on_eot, this, 0);
+		on_eot(cb, this, 0);
+		break;
+	case TERMINAL_TOKEN_DC2:
+		//FIRE_CALLBACK(cb, on_dc2, this, 0);
+		on_dc2(cb, this, 0);
+		break;
+	case TERMINAL_TOKEN_DC4:
+		//FIRE_CALLBACK(cb, on_dc4, this, 0);
+		on_dc4(cb, this, 0);
+		break;
+	case TERMINAL_TOKEN_ACK:
+		//FIRE_CALLBACK(cb, on_ack, this, 0);
+		on_ack(cb, this, 0);
+		break;
+	case TERMINAL_TOKEN_LF:
+		if (prev_token == TERMINAL_TOKEN_CR) {
+			break;
+		}
+		/* FALLTHROUGH */
+	case TERMINAL_TOKEN_CR:
+		//FIRE_CALLBACK(cb, on_new_line, this, 0);
+		on_new_line(cb, this, 0);
+		break;
+	case TERMINAL_TOKEN_PRIVATE:
+		if (params_len == 0) {
+			break;
+		}
+		switch (params[0]) {
+		case TERMINAL_TOKEN_PARAM_PRIVATE_DELETE:
+			//FIRE_CALLBACK(cb, on_delete, this, 0);
+			on_delete(cb, this, 0);
+			break;
+		case TERMINAL_TOKEN_PARAM_PRIVATE_HOME:
+			//FIRE_CALLBACK(cb, on_home, this, 0);
+			on_home(cb, this, 0);
+			break;
+		case TERMINAL_TOKEN_PARAM_PRIVATE_INSERT:
+			//FIRE_CALLBACK(cb, on_insert, this, 0);
+			on_insert(cb, this, 0);
+			break;
+		default:
+			break;
+		}
+		break;
+	case TERMINAL_TOKEN_HT:
+		//FIRE_CALLBACK(cb, on_tab, this, 0);
+		on_tab(cb, this, 0);
+		break;
+	default:
+		break;
+	}
+
+	prev_token = token;
+}
+
+
+void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
+	static TERMINAL_TOKEN token;
+	short *params;
+	int params_len;
+	char ch;
+
+	if ((this == NULL) || this->running) {
+		return;
+	}
+	this->running = true;
+
+	this->callback = cb;
+
+	while (this->callback != NULL && terminal_receive(this->terminal, &token,
+			&params, &params_len)) {
+		ch = token & 0xFF;
+		if (ch == token) {
+			handle_char_token(this, token);
+		} else {
+			handle_ctrl_token(this, token, params, params_len);
+		}
+	}
+
+	assert(this->callback == NULL);
+	this->running = false;
+}
+
+void screen_in_stop(SCREEN *this) {
+	if (this == NULL) {
+		return;
+	}
+
+	this->callback = NULL;
 }

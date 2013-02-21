@@ -15,6 +15,7 @@
 struct _SCREEN;
 
 typedef struct _SCREEN_CALLBACK {
+#if 0
 #define CALLBACK_ENTRY(key) int (*on_##key)(struct _SCREEN_CALLBACK *, \
 	struct _SCREEN *view, int by);
 	CALLBACK_ENTRY(char)
@@ -34,6 +35,7 @@ typedef struct _SCREEN_CALLBACK {
 	CALLBACK_ENTRY(dc2)
 	CALLBACK_ENTRY(dc4)
 	CALLBACK_ENTRY(ack)
+#endif
 	void *outer;
 } SCREEN_CALLBACK;
 
@@ -43,14 +45,8 @@ typedef struct _SCREEN {
 	SCREEN_CALLBACK *callback;
 	TERMINAL terminal[1];
 	char string[CMDLINE_MAX_LENGTH + 1]; /**< line itself */
-#if 0
-	int length; /**< string length */
-#endif
 	int cursor;   /**< cursor current position */
 	const char *prompt;
-#if 0
-	int prompt_len;
-#endif
 	bool running;
 } SCREEN;
 
