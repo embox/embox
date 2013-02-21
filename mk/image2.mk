@@ -60,6 +60,7 @@ VPATH := $(SRCGEN_DIR)
 %/. :
 	@$(MKDIR) $*
 
+a_prerequisites     = $(common_prereqs)
 o_prerequisites     = $(common_prereqs)
 cc_prerequisites    = $(common_prereqs)
 
