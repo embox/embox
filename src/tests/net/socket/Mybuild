@@ -3,7 +3,7 @@ package embox.test.net.socket
 module port_test {
 	source "port_test.c"
 
-	depends embox.compat.posix.net.socket
+	depends embox.net.socket
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

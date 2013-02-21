@@ -1,10 +1,12 @@
 /**
  * @file
  * @brief implementation of remote printing via RPC (client side)
+ *
  * @date 28.05.12
  * @author Ilia Vaprol
  */
 
+#include <errno.h>
 #include <net/rpc/clnt.h>
 #include <net/rpc/xdr.h>
 #include <framework/example/self.h>
@@ -27,7 +29,7 @@ static int exec(int argc, char *argv[])
 
 	if (argc != 3) {
 		printf("usage %s: <host> <message>\n", argv[0]);
-		return -1;
+		return -EINVAL;
 	}
 
 	server = argv[1];

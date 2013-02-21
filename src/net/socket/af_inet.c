@@ -18,7 +18,6 @@
 #include <sys/socket.h>
 #include <net/socket_registry.h>
 #include <net/inet_sock.h>
-//#include <net/tcp.h>
 #include <net/inetdevice.h>
 
 #include <net/ip_port.h>
@@ -85,7 +84,7 @@ static int inet_proto_find(unsigned short type, unsigned char protocol,
 		}
 	}
 
-	return (type_is_supported ? -EPROTONOSUPPORT : -EPROTOTYPE);
+	return type_is_supported ? -EPROTONOSUPPORT : -EPROTOTYPE;
 }
 
 static int inet_create(struct socket *sock, int protocol) {

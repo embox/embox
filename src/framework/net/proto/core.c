@@ -5,6 +5,7 @@
  * @date 04.07.11
  * @author Dmitry Zubarevich
  */
+
 #include <kernel/printk.h>
 #include <string.h>
 #include <framework/mod/ops.h>
@@ -22,31 +23,37 @@ const struct mod_ops __net_proto_mod_ops = {
 };
 
 static int net_proto_mod_enable(struct mod_info *mod) {
-	int ret = 0;
+	int ret;
 	net_proto_t *net_proto_ptr = ((struct net_proto *) mod->data);
 	net_protocol_t *net_proto = net_proto_ptr->netproto;
 
 	printk("NET: initializing protocol %s.%s: ", mod->mod->package->name, mod->mod->name);
 
-	if ((ret = inet_add_protocol(net_proto, net_proto->type)) >= 0) {
+	ret = inet_add_protocol(net_proto, net_proto->type);
+	if (ret == 0) {
 		if (net_proto_ptr->init != NULL) {
 			ret = net_proto_ptr->init();
 		}
 	}
+
 	if (ret == 0) {
 		printk("done\n");
 	} else {
 		printk("error: %s\n", strerror(-ret));
 	}
+
 	return ret;
 }
 
 static int net_proto_mod_disable(struct mod_info *mod) {
-	int ret = 0;
+	int ret;
 	net_protocol_t *net_proto = ((struct net_proto *) mod->data)->netproto;
 
 	printk("NET: finalizing protocol %s: ", mod->mod->name);
-	if (inet_del_protocol(net_proto, net_proto->type) < 0) {
+
+	ret = inet_del_protocol(net_proto, net_proto->type);
+
+	if (ret == 0) {
 		printk("done\n");
 	} else {
 		printk("error: %s\n", strerror(-ret));
