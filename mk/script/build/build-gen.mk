@@ -204,8 +204,7 @@ $(@build_initfs) : target_file = \
 		$(patsubst %,$(value build_initfs_rulemk_target_pat),$$(build_initfs))
 
 $(@build_initfs) : cpio_files = \
-		$(addprefix $$(ROOTFS_DIR)/, \
-			$(notdir $(call get,$(@source_initfs_cp_rulemk),fileName)))
+		$(call source_initfs_cp_o_file,$(@source_initfs_cp_rulemk))
 
 $(@build_initfs) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -327,10 +326,15 @@ my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
 			$(call source_annotation_values,$s,$(my_gen_script))))
 
 my_initfs := $(call mybuild_resolve_or_die,mybuild.lang.InitFS)
+my_initfs_target := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.target)
+my_initfs_chmod := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chmod)
+my_initfs_chown := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chown)
 
 @source_initfs_cp_rulemk := \
 	$(foreach s,$(build_sources), \
-		$(if $(call source_annotations,$s,$(my_initfs)),source-initfs-cp-rulemk/$s))
+		$(if $(call source_annotations,$s,$(my_initfs)), \
+			source-initfs-cp-rulemk/$(strip \
+				$(call source_annotation_values,$s,$(my_initfs_target)))$s))
 
 source_o_pats   := %.o
 source_a_pats   := %.a
@@ -423,7 +427,14 @@ $(@source_cpp_rulemk) $(@source_cc_rulemk) $(@source_o_rulemk) $(@source_a_rulem
 		$(call gen_make_rule,$(o_file),$(prereqs),$(script)); \
 		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))
 
-$(@source_initfs_cp_rulemk) : o_file  = $$(ROOTFS_DIR)/$(notdir $(file))
+source_initfs_cp_o_file = \
+	$(addprefix $$(ROOTFS_DIR)/, \
+		$(foreach s,$1,$(or \
+			$(call get,$(notdir $(basename $(basename $s))),value), \
+			$(call get,$s,fileName))))
+
+$(@source_initfs_cp_rulemk) : o_file = $(call source_initfs_cp_o_file,$@)
+
 $(@source_initfs_cp_rulemk) : src_file = $(file)
 $(@source_initfs_cp_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$(file))
 $(@source_initfs_cp_rulemk) : kind := initfs_cp
