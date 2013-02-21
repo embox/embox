@@ -12,9 +12,11 @@
 #include <string.h>
 
 #include <pwd.h>
+#include <grp.h>
 #include <shadow.h>
 
 #define PASSWD_FILE "/passwd"
+#define GROUP_FILE "/group"
 
 static int open_db(const char *db_path, FILE **result) {
 	FILE *f;
@@ -145,17 +147,11 @@ int getpwnam_r(const char *name, struct passwd *pwd,
 	fclose(file);
 
 	if (0 != res) {
-		*result = NULL;
-	}
-
-	if (res == ENOENT) {
-		return 0;
-	} else if (res != 0) {
-		return res;
+		result = NULL;
+		return res == ENOENT ? 0 : -1;
 	}
 
 	return 0;
-
 }
 
 int getpwuid_r(uid_t uid, struct passwd *pwd,
@@ -177,7 +173,110 @@ int getpwuid_r(uid_t uid, struct passwd *pwd,
 
 	if (0 != res) {
 		result = NULL;
-		return -1;
+		return res == ENOENT ? 0 : -1;
+	}
+
+	return 0;
+}
+
+int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
+		size_t buflen, struct group **gbufp) {
+	int res;
+	char *buf = tbuf;
+	size_t buf_len = buflen;
+	char *ch, **pmem;
+
+	*gbufp = NULL;
+
+	if (0 != (res = read_field(fp, &buf, &buf_len, &gbuf->gr_name, ':'))) {
+		return res;
+	}
+
+	if (0 != (res = read_field(fp, &buf, &buf_len, &gbuf->gr_passwd, ':'))) {
+		return res;
+	}
+
+	if (0 != (res = read_int_field(fp, "%d", &gbuf->gr_gid, ':'))) {
+		return res;
+	}
+
+	if (0 != (res = read_field(fp, &buf, &buf_len, &ch, '\n'))) {
+		return res;
+	}
+
+	gbuf->gr_mem = pmem = (char **) buf;
+
+	*pmem = ch;
+
+	while (NULL != (ch = strchr(ch, ','))) {
+
+		if (buf_len < sizeof(char *)) {
+			return -ERANGE;
+		}
+
+		buf_len -= sizeof(char *);
+
+		*ch++ = '\0';
+
+		*(++pmem) = ch;
+
+	}
+
+	if (buf_len < sizeof(char *)) {
+		return -ERANGE;
+	}
+	*(++pmem) = NULL;
+
+	*gbufp = gbuf;
+
+	return 0;
+}
+
+int getgrnam_r(const char *name, struct group *grp,
+	char *buf, size_t buflen, struct group **result) {
+	int res;
+	FILE *file;
+
+	if (0 != (res = open_db(GROUP_FILE, &file))) {
+		return res;
+	}
+
+	while (0 == (res = fgetgrent_r(file, grp, buf, buflen, result))) {
+		if (0 == strcmp((*result)->gr_name, name)) {
+			break;
+		}
+	}
+
+	fclose(file);
+
+	if (0 != res) {
+		result = NULL;
+		return res == ENOENT ? 0 : -1;
+	}
+	return 0;
+
+}
+
+int getgrgid_r(gid_t gid, struct group *grp,
+	char *buf, size_t buflen, struct group **result) {
+	int res;
+	FILE *file;
+
+	if (0 != (res = open_db(GROUP_FILE, &file))) {
+		return res;
+	}
+
+	while (0 == (res = fgetgrent_r(file, grp, buf, buflen, result))) {
+		if ((*result)->gr_gid == gid) {
+			break;
+		}
+	}
+
+	fclose(file);
+
+	if (0 != res) {
+		result = NULL;
+		return res == ENOENT ? 0 : -1;
 	}
 
 	return 0;

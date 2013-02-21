@@ -62,13 +62,3 @@ static module sched {
 	source "sched_posix.c"
 }
 
-static module passwd {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "passwd.c"
-
-	@InitFS
-	source "passwd"
-
-	@InitFS
-	source "shadow"
-}
