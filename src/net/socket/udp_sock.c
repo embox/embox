@@ -76,8 +76,10 @@ static int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	} else {
 		len = 0;
 	}
+
 	msg->msg_iov->iov_len = len;
-	return len;
+
+	return 0;
 }
 
 static void udp_hash(struct sock *sk) {
