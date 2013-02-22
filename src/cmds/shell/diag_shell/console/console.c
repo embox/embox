@@ -19,21 +19,15 @@
 #include "console.h"
 
 
-
-
-#define EDIT_MODEL(console, update, action) \
-		do if (action) { \
-			(update)((console)->view, (console)->model); \
-		} while (0)
-
-#define CB_MODEL(cb) (((CONSOLE *) cb->outer)->model)
+#if 1
 #define CB_EDIT_MODEL(action) \
-		EDIT_MODEL((CONSOLE *) cb->outer, screen_out_update, action)
-
-//static CONSOLE *cur_console = NULL;
+	if(action) { \
+		screen_out_update(cb->outer->view, cb->outer->model); \
+	}
+#endif
 
 static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CONSOLE *this = (CONSOLE *) cb->outer;
+	CONSOLE *this = cb->outer;
 	char buf[CMDLINE_MAX_LENGTH + 1];
 	/*FIXME: resolve "(reverse-i-search)`':" statement */
 	char *cmd;
@@ -45,7 +39,7 @@ static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 		strcpy(buf, cmd);
 		this->callback->exec(this->callback, this, buf);
 	}
-	CB_EDIT_MODEL(cmdline_history_new_entry(CB_MODEL(cb)));
+	CB_EDIT_MODEL(cmdline_history_new_entry(cb->outer->model));
 	screen_out_show_prompt(this->view, this->prompt);
 
 	return 0;
@@ -53,52 +47,52 @@ static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 
 static int on_char(SCREEN_CALLBACK *cb, SCREEN *view, int ch) {
 	char tmp_ch = (char)ch;
-	CB_EDIT_MODEL(cmdline_chars_insert((CB_MODEL(cb)), &tmp_ch, 1));
+	CB_EDIT_MODEL(cmdline_chars_insert(cb->outer->model, &tmp_ch, 1));
 	return 0;
 }
 
 static int on_cursor_up(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_history_backward(CB_MODEL(cb)));
+	CB_EDIT_MODEL(cmdline_history_backward(cb->outer->model));
 	return 0;
 }
 
 static int on_cursor_down(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_history_forward(CB_MODEL(cb)));
+	CB_EDIT_MODEL(cmdline_history_forward(cb->outer->model));
 	return 0;
 }
 
 static int on_cursor_left(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_left(CB_MODEL(cb)));
+	CB_EDIT_MODEL(cmdline_cursor_left(cb->outer->model));
 	return 0;
 }
 
 static int on_cursor_right(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_right(CB_MODEL(cb)));
+	CB_EDIT_MODEL(cmdline_cursor_right(cb->outer->model));
 	return 0;
 }
 
 static int on_backspace(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_chars_backspace(CB_MODEL(cb), 1));
+	CB_EDIT_MODEL(cmdline_chars_backspace(cb->outer->model, 1));
 	return 0;
 }
 
 static int on_delete(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_chars_delete(CB_MODEL(cb), 1));
+	CB_EDIT_MODEL(cmdline_chars_delete(cb->outer->model, 1));
 	return 0;
 }
 
 static int on_home(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_home(CB_MODEL(cb)));
+	CB_EDIT_MODEL(cmdline_cursor_home(cb->outer->model));
 	return 0;
 }
 
 static int on_end(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_end(CB_MODEL(cb)));
+	CB_EDIT_MODEL(cmdline_cursor_end(cb->outer->model));
 	return 0;
 }
 
 static int on_insert(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CONSOLE *this = (CONSOLE *) cb->outer;
+	CONSOLE *this = cb->outer;
 	CMDLINE *cmd = this->model;
 	cmd->is_insert_mode = cmd->is_insert_mode ? 0 : 1;
 	return 0;
@@ -110,17 +104,16 @@ static int on_etx(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 }
 
 static int on_eot(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	//console_stop(cur_console);
 	return 0;
 }
 
 static int on_dc2(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_dc2_reverse(CB_MODEL(cb)));
+	CB_EDIT_MODEL(cmdline_dc2_reverse(cb->outer->model));
 	return 0;
 }
 
 static int on_dc4(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_dc4_reverse(CB_MODEL(cb)));
+	CB_EDIT_MODEL(cmdline_dc4_reverse(cb->outer->model));
 	return 0;
 }
 
@@ -132,7 +125,7 @@ static int on_ack(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 #define MAX_PROPOSALS	64
 
 static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CONSOLE *this = (CONSOLE *) cb->outer;
+	CONSOLE *this = cb->outer;
 	static const char *proposals[MAX_PROPOSALS];
 	int proposals_len, offset, common;
 	if (this->callback != NULL && this->callback->guess != NULL) {
@@ -145,10 +138,10 @@ static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 		if (proposals_len == 1) {
 			cmdline_chars_insert(this->model, proposals[0] + offset, strlen(
 					proposals[0] + offset));
-			CB_EDIT_MODEL(cmdline_chars_insert(CB_MODEL(cb), " ", 1));
+			CB_EDIT_MODEL(cmdline_chars_insert(cb->outer->model, " ", 1));
 		} else if (proposals_len > 0) {
 			if (common > 0) {
-				CB_EDIT_MODEL(cmdline_chars_insert(CB_MODEL(cb), proposals[0] + offset, common));
+				CB_EDIT_MODEL(cmdline_chars_insert(cb->outer->model, proposals[0] + offset, common));
 			} else {
 				int i;
 				screen_out_puts(this->view, NULL);
@@ -178,11 +171,9 @@ CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
 		return NULL;
 	}
 
-	//cur_console = this;
 	return this;
 }
 
-#define INIT_MEMBER(obj, member) 	obj->member = member
 
 void console_start(CONSOLE *this, const char *prompt) {
 	static SCREEN_CALLBACK screen_callback[1];
@@ -190,26 +181,6 @@ void console_start(CONSOLE *this, const char *prompt) {
 	if (this == NULL) {
 		return;
 	}
-/*TODO may be do static initialize*/
-#if 0
-	INIT_MEMBER(screen_callback,on_char);
-	INIT_MEMBER(screen_callback,on_cursor_up);
-	INIT_MEMBER(screen_callback,on_cursor_left);
-	INIT_MEMBER(screen_callback,on_cursor_down);
-	INIT_MEMBER(screen_callback,on_cursor_right);
-	INIT_MEMBER(screen_callback,on_new_line);
-	INIT_MEMBER(screen_callback,on_backspace);
-	INIT_MEMBER(screen_callback,on_tab);
-	INIT_MEMBER(screen_callback,on_delete);
-	INIT_MEMBER(screen_callback,on_home);
-	INIT_MEMBER(screen_callback,on_end);
-	INIT_MEMBER(screen_callback,on_insert);
-	INIT_MEMBER(screen_callback,on_etx);
-	INIT_MEMBER(screen_callback,on_eot);
-	INIT_MEMBER(screen_callback,on_dc2);
-	INIT_MEMBER(screen_callback,on_dc4);
-	INIT_MEMBER(screen_callback,on_ack);
-#endif
 	screen_callback->outer = this;
 
 	strncpy(this->prompt, (prompt != NULL) ? prompt : default_prompt,
@@ -225,8 +196,6 @@ void console_stop(CONSOLE *this) {
 }
 
 
-//#define FIRE_CALLBACK(cb, func, view, ...)	do {((cb->func != NULL) ? cb->func(cb, view, ## __VA_ARGS__) : 0) ;} while (0)
-
 /*
  * screen
  */
@@ -236,7 +205,6 @@ static void handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
 		return;
 	}
 
-	//FIRE_CALLBACK(cb, on_char, this, ch);
 	on_char(cb, this, ch);
 }
 
@@ -250,52 +218,40 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 
 	switch (token) {
 	case TERMINAL_TOKEN_CURSOR_LEFT:
-		//FIRE_CALLBACK(cb, on_cursor_left, this, 1);
 		on_cursor_left(cb, this, 1);
 		break;
 	case TERMINAL_TOKEN_CURSOR_RIGHT:
-		//FIRE_CALLBACK(cb, on_cursor_right, this, 1);
 		on_cursor_right(cb, this, 1);
 		break;
 	case TERMINAL_TOKEN_CURSOR_UP:
-		//FIRE_CALLBACK(cb, on_cursor_up, this, 1);
 		on_cursor_up(cb, this, 1);
 		break;
 	case TERMINAL_TOKEN_CURSOR_DOWN:
-		//FIRE_CALLBACK(cb, on_cursor_down, this, 1);
 		on_cursor_down(cb, this, 1);
 		break;
 	case TERMINAL_TOKEN_BS:
-		//FIRE_CALLBACK(cb, on_backspace, this, 0);
 		on_backspace(cb,this,0);
 		break;
 	case TERMINAL_TOKEN_DEL:
-		//FIRE_CALLBACK(cb, on_delete, this, 0);
 		on_delete(cb, this, 0);
 		break;
 	case TERMINAL_TOKEN_END:
 		/* TODO: strange char 'F' */
-		//FIRE_CALLBACK(cb, on_end, this, 0);
 		on_end(cb, this, 0);
 		break;
 	case TERMINAL_TOKEN_ETX:
-		//FIRE_CALLBACK(cb, on_etx, this, 0);
 		on_etx(cb, this, 0);
 		break;
 	case TERMINAL_TOKEN_EOT:
-		//FIRE_CALLBACK(cb, on_eot, this, 0);
 		on_eot(cb, this, 0);
 		break;
 	case TERMINAL_TOKEN_DC2:
-		//FIRE_CALLBACK(cb, on_dc2, this, 0);
 		on_dc2(cb, this, 0);
 		break;
 	case TERMINAL_TOKEN_DC4:
-		//FIRE_CALLBACK(cb, on_dc4, this, 0);
 		on_dc4(cb, this, 0);
 		break;
 	case TERMINAL_TOKEN_ACK:
-		//FIRE_CALLBACK(cb, on_ack, this, 0);
 		on_ack(cb, this, 0);
 		break;
 	case TERMINAL_TOKEN_LF:
@@ -304,7 +260,6 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		}
 		/* FALLTHROUGH */
 	case TERMINAL_TOKEN_CR:
-		//FIRE_CALLBACK(cb, on_new_line, this, 0);
 		on_new_line(cb, this, 0);
 		break;
 	case TERMINAL_TOKEN_PRIVATE:
@@ -313,15 +268,12 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		}
 		switch (params[0]) {
 		case TERMINAL_TOKEN_PARAM_PRIVATE_DELETE:
-			//FIRE_CALLBACK(cb, on_delete, this, 0);
 			on_delete(cb, this, 0);
 			break;
 		case TERMINAL_TOKEN_PARAM_PRIVATE_HOME:
-			//FIRE_CALLBACK(cb, on_home, this, 0);
 			on_home(cb, this, 0);
 			break;
 		case TERMINAL_TOKEN_PARAM_PRIVATE_INSERT:
-			//FIRE_CALLBACK(cb, on_insert, this, 0);
 			on_insert(cb, this, 0);
 			break;
 		default:
@@ -329,7 +281,6 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		}
 		break;
 	case TERMINAL_TOKEN_HT:
-		//FIRE_CALLBACK(cb, on_tab, this, 0);
 		on_tab(cb, this, 0);
 		break;
 	default:
