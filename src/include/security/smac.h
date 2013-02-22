@@ -9,6 +9,8 @@
 #ifndef SECURITY_SMAC_H_
 #define SECURITY_SMAC_H_
 
+#include <types.h>
+
 #define SMAC_LABELLEN 32
 
 extern const char *smac_xattrkey;
@@ -20,12 +22,19 @@ struct smac_entry {
 	int 	flags;
 };
 
+struct smac_env {
+	int n;
+	struct smac_entry entries[];
+};
+
 struct smac_task {
 	char 	label[SMAC_LABELLEN];
 };
 
-extern int smac_setenv(struct smac_entry *entries, int n,
-		struct smac_entry *backup, size_t backup_len, int *wasn);
+extern int smac_setenv(struct smac_env *env);
+extern int smac_getenv(void *buf, size_t buflen, struct smac_env **env);
+extern int smac_flushenv(void);
+extern int smac_addenv(const char *subject, const char *object, int flags);
 
 extern int smac_labelset(const char *label);
 
