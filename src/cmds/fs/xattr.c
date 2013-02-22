@@ -99,7 +99,7 @@ static int print_list(const char *path, char *point, char *rvalue, int op_flags)
 		memset(rvalue, 0, XATTR_MAX_VSIZE);
 		if (0 > (rc = getxattr(path, (const char *) point,
 				rvalue, XATTR_MAX_VSIZE))) {
-			return rc;
+			return -errno;
 		}
 		size = rc;
 		printf(": ");
@@ -137,11 +137,13 @@ static int xattr_do_operation(const char *path, const char *name,
 			}
 		}
 
-		return setxattr(path, name, (const char *) value, size, flags);
+		if (-1 == setxattr(path, name, (const char *) value, size, flags) ) {
+			return -errno;
+		}
 	} else if (op_flags & XATTR_CMD_PRINT) {
 		memset(rvalue, 0, XATTR_MAX_VSIZE);
 		if (0 > (rc = getxattr(path, name, rvalue, XATTR_MAX_VSIZE))) {
-			return rc;
+			return -errno;
 		}
 		size = rc;
 		print_value(rvalue, size, op_flags);
@@ -161,8 +163,9 @@ static int xattr_do_operation(const char *path, const char *name,
 				(list + XATTR_MAX_BSIZE > point)) {
 			if (op_flags & XATTR_CMD_CLEAR){ /* delete */
 				flags = XATTR_REMOVE;
-				if (0 > (rc = setxattr(path, (const char *)point,
+				if (0 > (setxattr(path, (const char *)point,
 											0, 0, flags))) {
+					rc = -errno;
 					goto free_list;
 				}
 			} else { /* print list*/
@@ -179,7 +182,7 @@ static int xattr_do_operation(const char *path, const char *name,
 	return -1;
 	free_list:page_free(__phymem_allocator, list,
 			XATTR_MAX_BSIZE / PAGE_SIZE() + 1);
-	if (0 > rc) {
+	if (0 != rc) {
 		return rc;
 	}
 	return 0;
