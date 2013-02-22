@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief test for access of http://embox.googlecode.com/files/ext2_smac.img
+ * @brief test for access of http://embox.googlecode.com/files/ext2_users.img
  *
  * @author  Anton Kozlov
  * @date    18.02.2013
@@ -80,6 +80,7 @@ static int setup_suite(void) {
 }
 
 static int teardown_suite(void) {
+	int res;
 
 	vfs_get_root()->mode = root_backup_mode;
 
