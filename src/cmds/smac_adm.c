@@ -30,7 +30,7 @@ static int print_rules(void) {
 
 	printf("Total rules: %d\n", env->n);
 
-	for (ent = env->entries, i = env->n; i > 0; i--) {
+	for (ent = env->entries, i = env->n; i > 0; ++ent, --i) {
 		printf("%16s %16s    ", ent->subject, ent->object);
 		putchar(ent->flags & FS_MAY_READ  ? 'r' : '-');
 		putchar(ent->flags & FS_MAY_WRITE ? 'w' : '-');
@@ -50,6 +50,19 @@ static int new_rule(const char *subject, const char *object,
 	flags |= strchr(access, 'x') ? FS_MAY_EXEC  : 0;
 
 	return smac_addenv(subject, object, flags);
+}
+
+static int print_label(void) {
+	char buf[BUFLEN];
+	int res;
+
+	if (0 != (res = smac_labelget(buf, BUFLEN))) {
+		return res;
+	}
+
+	puts(buf);
+
+	return 0;
 }
 
 static int smac_adm(int argc, char *argv[]) {
@@ -125,6 +138,8 @@ static int smac_adm(int argc, char *argv[]) {
 	switch(action) {
 	case ACT_SET:
 		return smac_labelset(lset);
+	case ACT_GET:
+		return print_label();
 	case ACT_FLUSH:
 		return smac_flushenv();
 	case ACT_RULE:

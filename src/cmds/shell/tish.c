@@ -50,7 +50,7 @@ static int run_cmd(int argc, char *argv[]) {
 
 	if (NULL == (cmd = cmd_lookup(argv[0]))) {
 		printf("%s: Command not found\n", argv[0]);
-		return 0;
+		return -ENOENT;
 	}
 
 	if (0 != (code = cmd_exec(cmd, argc, argv))) {
