@@ -1,0 +1,17 @@
+package embox.cmd
+
+@Cmd(name = "smac_adm",
+	help = "administration utility for SMAC",
+	man = '''
+		NAME
+			smac
+		OPTIONS
+		EXAMPLES
+		AUTHORS
+			Anton Kozlov
+	''')
+module smac_adm {
+	source "smac_adm.c"
+
+	depends embox.security.smac
+}
