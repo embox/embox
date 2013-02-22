@@ -10,9 +10,11 @@
 #define FILE_SYSTEM_H_
 
 struct filesystem {
-	struct fs_driver *drv;    /* file system driver */
-	struct block_dev *bdev;   /* block device, where is this file system */
-	void             *fsi;    /* extended information */
+	struct fs_driver *drv;    			/* file system driver */
+	struct block_dev *bdev;   			/* block device, where is this file system */
+	void             *fsi;    			/* extended information */
+	void             *rootdir_prev_fs;	/* root directory previous file system info */
+	void             *rootdir_prev_fi;	/* root directory previous file info */
 
 	const struct kfile_operations *file_op;
 };

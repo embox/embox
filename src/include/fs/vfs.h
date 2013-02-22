@@ -33,6 +33,8 @@ extern node_t *vfs_lookup_childn(node_t *parent, const char *name, size_t nprefl
 
 extern node_t *vfs_get_parent(node_t *child);
 
+extern node_t *vfs_get_child_next(node_t *parent);
+
 /**
  * Checks the path on the node_tree and forms correct string with the path which already exist.
  *
