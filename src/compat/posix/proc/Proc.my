@@ -12,28 +12,24 @@ module All {
 }
 
 static module exec {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "exec.c"
 
 	depends embox.util.LibUtil
 }
 
 static module fork {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "fork.c"
 
 	depends embox.util.LibUtil
 }
 
 static module wait {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "wait.c"
 
 	depends embox.util.LibUtil
 }
 
 static module signal {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "signal.c"
 
 	depends embox.kernel.task.std_signal
@@ -41,14 +37,12 @@ static module signal {
 }
 
 static module exit {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "exit.c"
 
 	depends embox.util.LibUtil
 }
 
 static module uid {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "uid.c"
 
 	depends embox.kernel.task.u_area

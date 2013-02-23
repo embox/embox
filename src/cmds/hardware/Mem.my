@@ -24,8 +24,6 @@ package embox.cmd
 			Alexey Fomin
 	''')
 module mem {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "mem.c"
 
 	depends embox.lib.LibC

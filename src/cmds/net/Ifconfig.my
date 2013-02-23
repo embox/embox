@@ -42,8 +42,6 @@ package embox.cmd.net
 			Anton Bondarev, Alexandr Batyukov
 	''')
 module ifconfig {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ifconfig.c"
 
 	depends embox.lib.LibC

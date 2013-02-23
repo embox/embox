@@ -15,8 +15,6 @@ package embox.cmd.fs
 			Andrey Gazukin
 	''')
 module stat {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "stat.c"
 
 	depends embox.lib.LibC

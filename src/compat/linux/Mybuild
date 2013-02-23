@@ -3,8 +3,6 @@ package embox.compat.linux
 module LibLinux {
 	option number nrs_total = 32
 
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "kernel/softirq.c"
 
 	depends embox.kernel.softirq

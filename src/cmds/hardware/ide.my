@@ -15,8 +15,6 @@ package embox.cmd
 			Andrey Gazukin
 	''')
 module ide {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ide.c"
 
 	depends embox.driver.ide

@@ -1,19 +1,16 @@
 package embox.test.stdlib
 
 module strtod_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "strtod_test.c"
 	depends embox.framework.LibFramework
 }
 
 module math_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "math_test.c"
 	depends embox.framework.LibFramework
 }
 
 module bsearch_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "bsearch_test.c"
 
 	depends embox.lib.LibC
@@ -21,7 +18,6 @@ module bsearch_test {
 }
 
 module getopt_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "getopt_test.c"
 
 	depends embox.compat.posix.LibPosix
@@ -29,7 +25,6 @@ module getopt_test {
 }
 
 module qsort_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "qsort_test.c"
 
 	depends embox.lib.LibC
@@ -37,7 +32,6 @@ module qsort_test {
 }
 
 module setjmp_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "setjmp_test.c"
 
 	depends embox.arch.libarch

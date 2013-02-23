@@ -25,8 +25,6 @@ package embox.cmd.net
 			Ilia Vaprol
 	''')
 module rarping {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "rarping.c"
 
 	depends embox.lib.LibC

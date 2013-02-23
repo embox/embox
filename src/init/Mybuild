@@ -39,7 +39,6 @@ module start_script {
 module make_term {
 	option boolean lf_crlf_map = true
 
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "make_term.c"
 
 	depends embox.compat.posix.idx.dup

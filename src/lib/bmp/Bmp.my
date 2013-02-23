@@ -1,8 +1,6 @@
 package embox.xwnd
 
 module bmp {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	//@IncludePath("$(SRC_DIR)/compat/posix/include")
 	//@IncludePath("$(SRC_DIR)/include/drivers")
 	//source "bmp.c"
 

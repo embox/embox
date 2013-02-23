@@ -10,8 +10,6 @@ module locore extends embox.arch.locore {
 }
 
 module interrupt extends embox.arch.interrupt {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-
 	source "irq_entry.S", "irq_handler.c", "ipl.c", "ipl_impl.h"
 
 	depends arch

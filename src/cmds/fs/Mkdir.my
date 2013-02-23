@@ -13,8 +13,6 @@ package embox.cmd.fs
 			Nikolay Korotky
 	''')
 module mkdir {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "mkdir.c"
 
 	depends embox.lib.LibC

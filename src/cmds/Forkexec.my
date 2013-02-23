@@ -13,8 +13,6 @@ package embox.cmd
 			Anton Bulychev
 	''')
 module forkexec {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "forkexec.c"
 
 	depends embox.lib.LibC

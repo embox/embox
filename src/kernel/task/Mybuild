@@ -36,14 +36,12 @@ module task_table {
 }
 
 module std_signal {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "std_signal.c"
 	source "sighnd_impl.h"
 	depends signal_common
 }
 
 module rt_signal {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "rt_signal.c"
 	depends signal_common
 	depends embox.mem.objalloc
