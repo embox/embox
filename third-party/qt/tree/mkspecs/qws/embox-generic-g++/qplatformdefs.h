@@ -57,7 +57,7 @@
 //#define QT_NO_FILESYSTEMWATCHER
 
 // Moved to command line
-//#define QT_NO_PROCESS
+//#define QT_NO_PROCESSlong pathconf(char *path, int name);
 
 // Moved to command line
 //#define QT_NO_NETWORKINTERFACE
@@ -157,12 +157,12 @@ static inline int pthread_cond_destroy (pthread_cond_t *__cond){
 }
 
 static inline int pthread_mutex_lock (pthread_mutex_t *__mutex){
-	DPRINT();
-	return -1;
+	//DPRINT();
+	return 0;
 }
 static inline int pthread_mutex_unlock (pthread_mutex_t *__mutex){
-	DPRINT();
-	return -1;
+	//DPRINT();
+	return 0;
 }
 
 static inline int pthread_cond_wait (pthread_cond_t *__restrict __cond,
@@ -171,8 +171,8 @@ static inline int pthread_cond_wait (pthread_cond_t *__restrict __cond,
 	return -1;
 }
 static inline int pthread_cond_signal (pthread_cond_t *__cond){
-	DPRINT();
-	return -1;
+	//DPRINT();
+	return 0;
 }
 static inline int pthread_cond_timedwait (pthread_cond_t *__restrict __cond,
                                    pthread_mutex_t *__restrict __mutex,
@@ -589,6 +589,10 @@ static inline struct group *getgrgid(gid_t gid) {
 }
 
 //uid_t getuid(void);
+
+// this is for FILESYSTEMWATCHER
+#define pathconf(path,name) \
+	printf(">>> pathconf(%s,%s)\n",#path,#name),32
 
 #endif // __QEMBOX__
 

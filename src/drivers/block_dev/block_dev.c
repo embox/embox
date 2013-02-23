@@ -13,12 +13,16 @@
 #include <embox/unit.h>
 #include <embox/block_dev.h>
 #include <fs/vfs.h>
+#include <fs/node.h>
+#include <fs/file_desc.h>
 #include <mem/phymem.h>
 #include <mem/misc/pool.h>
 #include <util/array.h>
 #include <util/indexator.h>
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
+
+EMBOX_UNIT_INIT(blockdev_init);
 
 POOL_DEF(blockdev_pool, struct block_dev, MAX_DEV_QUANTITY);
 POOL_DEF(cache_pool, struct block_dev_cache, MAX_DEV_QUANTITY);
@@ -27,6 +31,79 @@ INDEX_DEF(block_dev_idx,0,MAX_DEV_QUANTITY);
 static struct block_dev *devtab[MAX_DEV_QUANTITY];
 
 static int block_dev_cache_free(void *dev_id);
+
+static int bdev_open(struct node *node, struct file_desc *file_desc, int flags) {
+	return 0;
+}
+
+static int bdev_close(struct file_desc *desc) {
+	return 0;
+}
+
+static size_t bdev_read(struct file_desc *desc, void *buf, size_t size) {
+	block_dev_t *dev = (block_dev_t *) desc->node->nas->fi->privdata;
+	int blksize = block_dev_ioctl(dev, IOCTL_GETBLKSIZE, NULL, 0);
+	int blkno, blkcount, blkoff, res;
+	int pages = size / PAGE_SIZE();
+	char *bigbuf;
+	size_t err;
+
+	if (pages == 0) {
+		pages++;
+	}
+
+	if (blksize <= 0) {
+		return -ENOTSUP;
+	}
+
+	if (NULL == (bigbuf = page_alloc(__phymem_allocator, pages))) {
+		return -ENOMEM;
+	}
+
+	blkno = desc->cursor / blksize;
+	blkoff = desc->cursor % blksize;
+	blkcount = size / blksize + (size % blksize ? 1 : 0);
+
+	err = 0;
+
+	if (blkcount * blksize != (res = block_dev_read(dev, bigbuf, blkcount * blksize, blkno))) {
+		err = -EIO;
+		goto out;
+	}
+
+	memcpy(buf, bigbuf + blkoff, size);
+	err = size;
+
+out:
+	page_free(__phymem_allocator, bigbuf, pages);
+	return err;
+}
+
+static size_t bdev_write(struct file_desc *desc, void *buf, size_t size) {
+	return -ENOTSUP;
+}
+
+static int bdev_ioctl(struct file_desc *desc, int request, va_list args) {
+	return -ENOTSUP;
+}
+
+static struct kfile_operations blockdev_fop = {
+	.open = bdev_open,
+	.close = bdev_close,
+	.read = bdev_read,
+	.write = bdev_write,
+	.ioctl = bdev_ioctl,
+
+};
+
+static struct filesystem *blockdev_fs;
+
+static int blockdev_init(void) {
+	blockdev_fs = filesystem_alloc("empty");
+	blockdev_fs->file_op = &blockdev_fop;
+
+	return 0;
+}
 
 /*
 static block_dev_module_t *block_dev_find(char *name) {
@@ -63,7 +140,7 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	memset(bdev, 0, sizeof(block_dev_t));
 
 	bdev->id = (dev_t) index_alloc(&block_dev_idx, INDEX_ALLOC_MIN);
-	if(-1 == bdev->id) {
+	if (-1 == bdev->id) {
 		pool_free(&blockdev_pool, bdev);
 		return NULL;
 	}
@@ -73,16 +150,17 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	bdev->driver = driver;
 	bdev->privdata = privdata;
 
-	if(NULL == (node = vfs_add_path(path, NULL))) {
+	if (NULL == (node = vfs_create(NULL, path, S_IFBLK | S_IRALL | S_IWALL))) {
 		pool_free(&blockdev_pool, bdev);
 		index_free(&block_dev_idx, bdev->id);
 		return NULL;
 	}
-	node->type = NODE_TYPE_SPECIAL;
+
 	strncpy (bdev->name, node->name, MAX_LENGTH_FILE_NAME);
 	bdev->dev_node = node;
 
 	nas = node->nas;
+	nas->fs = blockdev_fs;
 	node_fi = nas->fi;
 	node_fi->privdata = bdev;
 	node_fi->ni.size = 0;/*TODO*/

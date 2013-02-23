@@ -14,7 +14,8 @@
 #include <kernel/time/timer.h>
 #include <kernel/task.h>
 #include <drivers/video/vesa.h>
-#include <drivers/keyboard.h>
+//#include <drivers/keyboard.h>
+#include <drivers/diag.h>
 #include <embox/cmd.h>
 
 #include <xwnd/xappreg.h>
@@ -69,10 +70,10 @@ static int exec(int argc, char **argv) {
 	}
 
 	while (1) {
-		if (!keyboard_has_symbol()) {
+		if (!diag_kbhit()) {
 			msleep(100);
 		} else {
-			key = keyboard_getc();
+			key = diag_getc();
 			if ('q' == key) {
 				xwnd_app_registry_broadcast_quit_event();
 				sleep(1);

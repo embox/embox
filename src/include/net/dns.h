@@ -17,13 +17,6 @@
 #include <net/ip.h>
 
 /**
- * DNS nameservers
- */
-#include <framework/mod/options.h>
-#include <module/embox/net/netdb.h>
-#define MODOPS_DNS_NAMESERVER OPTION_MODULE_STRING_GET(embox__net__netdb, dns_nameserver)
-
-/**
  * Protocol's specific constants
  */
 #define DNS_MAX_LABEL_SZ   64
@@ -40,9 +33,7 @@ enum dns_msg_type {
 };
 
 /**
- * Types of operations
- */
-enum dns_oper_code {
+ * Types of operations */ enum dns_oper_code {
 	DNS_OPER_CODE_QUERY = 0,  /* a standard query */
 	DNS_OPER_CODE_IQUERY = 1, /* an inverse query */
 	DNS_OPER_CODE_STATUS = 2  /* a server status requset */
@@ -224,5 +215,10 @@ extern int dns_query(const char *query, enum dns_type qtype, enum dns_class qcla
  * dns_result_free - free resource from dns_result structure
  */
 extern int dns_result_free(struct dns_result *result);
+
+/**
+ * dns_get_nameserver - get dns nameserver
+ */
+extern const char * dns_get_nameserver(void);
 
 #endif /* NET_DNS_H_ */

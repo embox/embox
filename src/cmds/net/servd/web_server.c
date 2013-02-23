@@ -7,7 +7,7 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 #include <net/ip.h>
 

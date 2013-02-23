@@ -16,6 +16,7 @@
 #include <embox/net/pack.h>
 #include <net/inetdevice.h>
 #include <arpa/inet.h>
+#include <net/etherdevice.h>
 
 EMBOX_NET_PACK(ETH_P_RARP, rarp_rcv, rarp_init);
 

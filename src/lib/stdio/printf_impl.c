@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <util/math.h>
+#include <framework/mod/options.h>
 
 #include "printf_impl.h"
 
@@ -140,7 +141,7 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	return pc;
 }
-
+#if OPTION_GET(NUMBER,support_floating)
 static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data, double r, int width,
 		int precision, unsigned int ops, int base, int with_exp, int is_shortened) {
@@ -260,6 +261,13 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	return pc;
 }
+#else
+static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
+		struct printchar_handler_data *printchar_data, double r, int width,
+		int precision, unsigned int ops, int base, int with_exp, int is_shortened) {
+	return 0;
+}
+#endif
 
 int __print(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data,

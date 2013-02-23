@@ -44,14 +44,14 @@ block_dev_driver_t ramdisk_pio_driver = {
 int ramdisk_create(char *path, size_t size) {
 	ramdisk_t *ramdisk;
 
-	if(NULL == (ramdisk = pool_alloc(&ramdisk_pool))) {
+	if (NULL == (ramdisk = pool_alloc(&ramdisk_pool))) {
 		return -ENOMEM;
 	}
-	if(0 > (ramdisk->idx = block_dev_named(path, &ramdisk_idx))) {
+	if (0 > (ramdisk->idx = block_dev_named(path, &ramdisk_idx))) {
 		return -ENOENT;
 	}
 
-	if(NULL == (ramdisk->bdev = block_dev_create(path,
+	if (NULL == (ramdisk->bdev = block_dev_create(path,
 			&ramdisk_pio_driver, ramdisk))) {
 		index_free(&ramdisk_idx, ramdisk->idx);
 		pool_free(&ramdisk_pool, ramdisk);
@@ -61,10 +61,10 @@ int ramdisk_create(char *path, size_t size) {
 	ramdisk->dev_node = block_dev(ramdisk->bdev)->dev_node;
 
 	ramdisk->blocks = size / RAMDISK_BLOCK_SIZE;
-	if(size % RAMDISK_BLOCK_SIZE) {
+	if (size % RAMDISK_BLOCK_SIZE) {
 		ramdisk->blocks++;
 	}
-	if(NULL == (ramdisk->p_start_addr =
+	if (NULL == (ramdisk->p_start_addr =
 			page_alloc(__phymem_allocator, ramdisk->blocks))) {
 		block_dev_destroy(ramdisk->bdev);
 		index_free(&ramdisk_idx, ramdisk->idx);
@@ -86,7 +86,7 @@ ramdisk_t *ramdisk_get_param(char *path) {
 	struct nas *nas;
 	struct node_fi *node_fi;
 
-	if (NULL == (ramdisk_node = vfs_find_node(path, NULL))) {
+	if (NULL == (ramdisk_node = vfs_lookup(NULL, path))) {
 		return NULL;
 	}
 	nas = ramdisk_node->nas;
@@ -100,12 +100,12 @@ int ramdisk_delete(const char *name) {
 	struct nas *nas;
 	struct node_fi *node_fi;
 
-	if (NULL == (ramdisk_node = vfs_find_node(name, NULL))) {
+	if (NULL == (ramdisk_node = vfs_lookup(NULL, name))) {
 		return -1;
 	}
 	nas = ramdisk_node->nas;
 	node_fi = nas->fi;
-	if(NULL != (ramdisk = (ramdisk_t *) block_dev(node_fi->privdata)->privdata)) {
+	if (NULL != (ramdisk = (ramdisk_t *) block_dev(node_fi->privdata)->privdata)) {
 		index_free(&ramdisk_idx, ramdisk->idx);
 		pool_free(&ramdisk_pool, ramdisk);
 		block_dev_destroy (node_fi->privdata);

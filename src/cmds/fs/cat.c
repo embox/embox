@@ -24,7 +24,7 @@ static int exec(int argc, char **argv) {
 	FILE *fd;
 	char buff;
 
-	if(argc < 2) {
+	if (argc < 2) {
 		printf("Please enter correct file name\n");
 		return 0;
 	}
@@ -55,7 +55,7 @@ static int exec(int argc, char **argv) {
 		return -errno;
 	}
 
-	while (fread(&buff, 1, 1, fd) > 0) {
+	while (fread(&buff, 1, 1, fd) == 1) {
 		if (new_line && number) {
 			printf("\t%d %c", line++, buff);
 		} else {

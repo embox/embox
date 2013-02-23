@@ -33,7 +33,8 @@ module arp {
 	source "arp.c"
 
 	depends embox.net.neighbour
-	depends embox.net.util
+	depends embox.net.util.misc
+	depends embox.compat.posix.net.inet_addr
 	depends embox.lib.LibC
 	depends embox.compat.posix.util.getopt
 	depends embox.net.core

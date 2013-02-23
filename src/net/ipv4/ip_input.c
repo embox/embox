@@ -130,9 +130,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		p_netproto = net_proto_ptr->netproto;
 		if (p_netproto->type == iph->proto) {
 			/* if we are here then socket is registered in one of hash tables. */
-			return ((p_netproto->handler(skb) == ENOERR) /* handler must free skb */
-					? NET_RX_SUCCESS
-					: NET_RX_DROP);
+			return p_netproto->handler(skb) == 0 ? NET_RX_SUCCESS : NET_RX_DROP;
 		}
 	}
 

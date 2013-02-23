@@ -8,6 +8,7 @@
 #include <types.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include <fs/file_desc.h>
 #include <fs/node.h>
@@ -26,9 +27,7 @@
 
 #include <drivers/input/input_dev.h>
 
-
-
-EMBOX_UNIT_INIT(init);
+EMBOX_UNIT_INIT(input_devfs_init);
 
 #define MAX_OPEN_CNT      64
 #define EVENT_SIZE        sizeof(struct input_event)
@@ -36,21 +35,19 @@ EMBOX_UNIT_INIT(init);
 
 OBJALLOC_DEF(__input_handlers, struct input_subscriber, MAX_OPEN_CNT);
 
+static node_t *input_devfs_root;
 
 static int input_devfs_open(struct node *node, struct file_desc *file_desc, int flags);
 static int input_devfs_close(struct file_desc *desc);
 static size_t input_devfs_read(struct file_desc *desc, void *buf, size_t size);
 
-static kfile_operations_t input_dev_file_op = {
+static struct kfile_operations input_dev_file_op = {
 	.open = input_devfs_open,
 	.close = input_devfs_close,
 	.read = input_devfs_read
 };
 
-
 static DLIST_DEFINE(__input_devices);
-
-
 
 static struct input_subscriber *input_dev_find_subscriber(struct input_dev *dev, unsigned int handler_id) {
 	struct input_subscriber *cur, *nxt;
@@ -74,7 +71,6 @@ void input_dev_register(struct input_dev *dev) {
 	dlist_add_prev(dlist_head_init(&dev->global_indev_list), &__input_devices);
 }
 
-
 static irq_return_t input_irq_handler(unsigned int irq_nr, void *data) {
 	struct input_dev *dev;
 	char symbol;
@@ -94,7 +90,6 @@ static irq_return_t input_irq_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-
 static struct input_dev *input_devfs_lookup(char *name) {
 	struct input_dev *dev, *nxt;
 
@@ -106,7 +101,6 @@ static struct input_dev *input_devfs_lookup(char *name) {
 
 	return NULL;
 }
-
 
 static int input_devfs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct input_dev *dev;
@@ -206,41 +200,49 @@ static size_t input_devfs_read(struct file_desc *desc, void *buff, size_t size) 
 
 
 static int input_devfs_register(struct input_dev *dev) {
-	struct node *node, *devnode;
-	struct nas *dev_nas;
+	struct node *node;
+	struct nas *nas;
+	mode_t mode;
 
 	assert(dev);
 
+	mode = S_IFCHR | S_IRALL | S_IWALL; // TODO is it a char dev? -- Eldar
+
 	/* register char device */
-	if (NULL == (node = vfs_find_node("/dev/input", NULL))) {
-		return -1;
-	}
-	if (NULL == (devnode = vfs_add_path(dev->name, node))) {
-		return -1;
-	}
-
-	dev_nas = devnode->nas;
-	if(NULL == (dev_nas->fs = alloc_filesystem("empty"))) {
+	node = vfs_create_child(input_devfs_root, dev->name, mode);
+	if (!node) {
 		return -1;
 	}
 
-	dev_nas->fs->file_op = &input_dev_file_op;
+	nas = node->nas;
+	nas->fs = filesystem_alloc("empty");
+	if (!nas->fs) {
+		return -1;
+	}
+
+	nas->fs->file_op = &input_dev_file_op;
 
 	return 0;
 }
 
-static int init(void) {
+static int input_devfs_init(void) {
 	struct node *node;
 	struct input_dev *dev, *nxt;
+	mode_t mode;
 
-	if (NULL == (node = vfs_find_node("/dev", NULL))) {
-		return -1;
+	mode = S_IFDIR | S_IRALL | S_IWALL;
+
+	node = vfs_lookup(NULL, "/dev");
+	if (!node) {
+		return -ENOENT;
 	}
 
-	if (NULL == (node = vfs_add_path("input", node))) {
-		return -1;
+	node = vfs_create_child(node, "input", mode);
+	if (!node) {
+		return -ENOMEM;
 	}
-	node->type = NODE_TYPE_DIRECTORY;
+
+	input_devfs_root = node;
 
 	dlist_foreach_entry(dev, nxt, &__input_devices, global_indev_list) {
 		if (input_devfs_register(dev) < 0) {
@@ -250,3 +252,4 @@ static int init(void) {
 
 	return 0;
 }
+

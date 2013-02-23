@@ -28,8 +28,8 @@ static int exec(int argc, char **argv) {
 		return ret;
 	}
 
-	printf("Server: %s\n", MODOPS_DNS_NAMESERVER);
-	printf("Address: %s#%d\n", MODOPS_DNS_NAMESERVER, DNS_PORT_NUMBER);
+	printf("Server: %s\n", dns_get_nameserver());
+	printf("Address: %s#%d\n", dns_get_nameserver(), DNS_PORT_NUMBER);
 
 	printf("\nAnswers:\n");
 	for (i = 0, rr = result.an; i < result.ancount; ++i, ++rr) {

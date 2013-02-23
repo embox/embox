@@ -1,14 +1,12 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 05.11.2011
+ * @date 05.11.11
  * @author Anton Bondarev
  */
-#include <types.h>
+
 #include <mem/misc/pool.h>
-#include <net/net.h>
 #include <net/socket.h>
 #include <hal/ipl.h>
 

@@ -2,6 +2,7 @@
  * @file
  * @details sk_buff management API implementation.
  * @date 20.10.09
+ *
  * @author Anton Bondarev
  * @author Ilia Vaprol
  * @author Vladimir Sokolov
@@ -14,7 +15,7 @@
 #include <string.h>
 #include <compiler.h>
 #include <framework/mod/options.h>
-#include <lib/list.h>
+#include <linux/list.h>
 
 #define MODOPS_AMOUNT_SKB      OPTION_GET(NUMBER, amount_skb)
 #define MODOPS_AMOUNT_SKB_BUFF OPTION_GET(NUMBER, amount_skb_buff)

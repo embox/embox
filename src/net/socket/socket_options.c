@@ -9,9 +9,8 @@
 
 #include <errno.h>
 #include <string.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/socket_options.h>
-#include <net/net.h>
 
 /**
  * default stream type socket options set

@@ -30,12 +30,13 @@ EMBOX_CMD(login_cmd);
 #define PASSW_PROMPT "password: "
 
 #define SHADOW_FILE "/shadow"
+#define SMAC_USERS "/smac_users"
 
 static void echo_mod(char on) {
 	/*printf("\033[12%c", on ? 'l' : 'h');*/
 }
 
-static int pass_prompt(const char *prompt, char *buf, int buflen) {
+static int passw_prompt(const char *prompt, char *buf, int buflen) {
 	int ch;
 	printf("%s", prompt);
 
@@ -100,16 +101,34 @@ static int utmp_login(short ut_type, const char *ut_user) {
 	return 0;
 }
 
+static struct spwd *spwd_find(const char *spwd_path, const char *name) {
+	struct spwd *spwd;
+	FILE *shdwf;
+
+	if (NULL == (shdwf = fopen(spwd_path, "r"))) {
+		return NULL;
+	}
+
+	while (NULL != (spwd = fgetspent(shdwf))) {
+		if (0 == strcmp(spwd->sp_namp, name)) {
+			break;
+		}
+	}
+
+	fclose(shdwf);
+
+	return spwd;
+}
+
 static int login_cmd(int argc, char **argv) {
 	int res, len;
-	struct passwd pwd, *result;
-	struct spwd *spwd;
+	struct passwd pwd, *result = NULL;
+	struct spwd *spwd = NULL;
 	char namebuf[BUF_LEN], pwdbuf[BUF_LEN], passbuf[BUF_LEN];
-	FILE *shdwf;
 	const struct shell *shell;
 
 	if (0 != (res = utmp_login(LOGIN_PROCESS, ""))) {
-		return res;
+		/* */
 	}
 
 	while (1) {
@@ -124,28 +143,18 @@ static int login_cmd(int argc, char **argv) {
 		}
 
 		res = getpwnam_r(namebuf, &pwd, pwdbuf, BUF_LEN, &result);
-		if (0 != res || result == NULL) {
-			printf("No such user found\n");
+
+		if (result) {
+			spwd = spwd_find(SHADOW_FILE, result->pw_name);
+		}
+
+		if (result == NULL || spwd == NULL) {
+			printf("login: no such user found\n");
 			continue;
 		}
 
-		if (NULL == (shdwf = fopen(SHADOW_FILE, "r"))) {
-			return -ENOENT;
-		}
 
-		while (NULL != (spwd = fgetspent(shdwf))) {
-			if (0 == strcmp(spwd->sp_namp, result->pw_name)) {
-				break;
-			}
-		}
-
-		fclose(shdwf);
-
-		if (NULL == result || NULL == spwd) {
-			continue;
-		}
-
-		if (0 > (res = pass_prompt(PASSW_PROMPT, passbuf, BUF_LEN))) {
+		if (0 > (res = passw_prompt(PASSW_PROMPT, passbuf, BUF_LEN))) {
 			continue;
 		}
 
@@ -159,10 +168,24 @@ static int login_cmd(int argc, char **argv) {
 		return res;
 	}
 
-	printf("Welcome, %s!", result->pw_gecos);
+	printf("Welcome, %s!\n", result->pw_gecos);
 
 	setuid(result->pw_uid);
 	setgid(result->pw_gid);
+
+	{
+		char smac_cmd[BUF_LEN], *smac_label = "_";
+
+		if (NULL != (spwd = spwd_find(SMAC_USERS, result->pw_name))) {
+			smac_label = spwd->sp_pwdp;
+		}
+
+		snprintf(smac_cmd, BUF_LEN, "smac_adm -S %s", smac_label);
+
+		if (0 != shell_line_input(smac_cmd)) {
+			printf("login: cannot initialize SMAC label\n");
+		}
+	}
 
 	shell = shell_lookup(result->pw_shell);
 
@@ -175,7 +198,7 @@ static int login_cmd(int argc, char **argv) {
 	}
 
 	if (0 != (res = utmp_login(USER_PROCESS, namebuf))) {
-		return res;
+		/* */
 	}
 
 	shell->exec();

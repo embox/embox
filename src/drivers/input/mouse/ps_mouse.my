@@ -1,0 +1,6 @@
+package embox.driver.input.mouse
+
+module PsMouse {
+	source "ps_mouse.c"
+	@NoRuntime depends embox.driver.virtual.input_dev
+}

@@ -22,7 +22,6 @@
 #include <mem/pagealloc/opallocator.h>
 #include <mem/vmem/virtalloc.h>
 
-#include <err.h>
 
 #include <prom/prom_printf.h>
 

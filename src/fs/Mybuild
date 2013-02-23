@@ -60,10 +60,10 @@ module posix_compat {
 
 module rootfs {
 	source "rootfs.c"
-	option string fstype = "ramfs"
+	option string fstype = "initfs"
 	option string src = ""
 	option string dst = "/"
 	depends node, driver.repo
-	depends embox.mem.heap_bm
+//	depends embox.mem.heap_bm
 	depends embox.fs.sys.fsop
 }

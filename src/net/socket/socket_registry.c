@@ -6,19 +6,21 @@
  * @author Timur Abdukadyrov
  */
 
-/* clean out unnecessary headers */
 #include <errno.h>
-#include <string.h>
-#include <stdlib.h>
-
+#include <framework/mod/options.h>
+#include <mem/misc/pool.h>
 #include <net/sock.h>
-#include <util/sys_log.h>
-#include <mem/objalloc.h>
-#include <util/dlist.h>
 #include <net/socket_registry.h>
+#include <stdlib.h>
+#include <string.h>
+#include <util/dlist.h>
+#include <util/sys_log.h>
+
+/* maximum number of socket connections */
+#define MODOPS_AMOUNT_SOCKET_NODE OPTION_GET(NUMBER, amount_socket_node)
 
 /* system socket registry */
-POOL_DEF(socket_pool, socket_node_t, MAX_SYSTEM_CONNECTIONS);
+POOL_DEF(socket_node_pool, socket_node_t, MODOPS_AMOUNT_SOCKET_NODE);
 DLIST_DEFINE(socket_registry);
 
 static inline socket_node_t *get_sock_node_by_socket(struct socket *sock);
@@ -31,7 +33,7 @@ int sr_add_socket_to_registry(struct socket *sock){
 	socket_node_t *newnode;
 
 	/* allocate new node */
-	newnode = (socket_node_t *)pool_alloc(&socket_pool);
+	newnode = (socket_node_t *)pool_alloc(&socket_node_pool);
 	newnode->link.list_id = 0;  /* 0_o */
 	if (newnode == NULL)
 		return -ENOMEM;
@@ -61,7 +63,7 @@ int sr_remove_socket_from_registry(struct socket *sock){
 	if (node) {
 		LOG_INFO("remove_socket_from_pool", "removing socket entity...");
 		dlist_del(&node->link);
-		pool_free(&socket_pool, node);
+		pool_free(&socket_node_pool, node);
 		return ENOERR;
 	}
 	return -1;

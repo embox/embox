@@ -20,7 +20,7 @@ module httpd {
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.LibPosix
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.fs.core
 	depends embox.framework.LibFramework
 	depends embox.net.lib.parser

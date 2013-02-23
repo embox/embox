@@ -14,6 +14,7 @@
 #include <net/route.h>
 #include <net/bootp.h>
 #include <errno.h>
+#include <util/hashtable.h>
 
 static void process_options(in_device_t *in_dev, struct bootphdr *r) {
 	struct in_addr addr;

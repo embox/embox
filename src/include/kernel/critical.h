@@ -124,6 +124,9 @@
 #ifndef KERNEL_CRITICAL_H_
 #define KERNEL_CRITICAL_H_
 
+#include <kernel/percpu.h>
+#include <kernel/bkl.h>
+
 /* Critical levels mask. */
 
 #define CRITICAL_IRQ_LOCK         0x0000003f /**< 64 calls depth. */
@@ -165,10 +168,10 @@ struct critical_dispatcher {
 };
 
 #define CRITICAL_DISPATCHER_DEF(name, dispatch_fn, critical_mask) \
-	static struct critical_dispatcher name = {       \
-		.dispatch = (dispatch_fn),                   \
-		.mask = ~((critical_mask)                    \
-				| __CRITICAL_HARDER(critical_mask)), \
+	static struct critical_dispatcher name __percpu__ = { \
+		.dispatch = (dispatch_fn),                        \
+		.mask = ~((critical_mask)                         \
+				| __CRITICAL_HARDER(critical_mask)),      \
 	}
 
 /** Optimization barrier. TODO move somewhere */
@@ -178,29 +181,31 @@ struct critical_dispatcher {
 extern critical_t __critical_count;
 
 static inline void __critical_count_add(critical_t count) {
-	__critical_count += count;
+	percpu_var(__critical_count) += count;
 	__barrier();
 }
 
 static inline void __critical_count_sub(critical_t count) {
 	__barrier();
-	__critical_count -= count;
+	percpu_var(__critical_count) -= count;
 }
 
 static inline int critical_allows(critical_t level) {
-	return !(__critical_count & (level | __CRITICAL_HARDER(level)));
+	return !(percpu_var(__critical_count) & (level | __CRITICAL_HARDER(level)));
 }
 
 static inline int critical_inside(critical_t level) {
-	return __critical_count & level;
+	return percpu_var(__critical_count) & level;
 }
 
 static inline void critical_enter(critical_t level) {
+	bkl_lock();
 	__critical_count_add(__CRITICAL_COUNT(level));
 }
 
 static inline void critical_leave(critical_t level) {
 	__critical_count_sub(__CRITICAL_COUNT(level));
+	bkl_unlock();
 }
 
 static inline int critical_pending(struct critical_dispatcher *d) {

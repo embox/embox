@@ -13,7 +13,7 @@
 #include <string.h>
 
 #include <kernel/task.h>
-#include <lib/list.h>
+#include <linux/list.h>
 #include "common.h"
 
 #include <module/embox/kernel/task/api.h>

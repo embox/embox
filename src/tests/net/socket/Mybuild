@@ -11,7 +11,7 @@ module port_test {
 module inet_socket_test {
 	source "inet_socket_test.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }
@@ -19,7 +19,7 @@ module inet_socket_test {
 module tcp_socket_test {
 	source "tcp_socket_test.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 	depends embox.net.tcp_sock
@@ -28,7 +28,7 @@ module tcp_socket_test {
 module packet_socket_test {
 	source "packet_socket_test.c"
 
-	depends embox.net.socket
+	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

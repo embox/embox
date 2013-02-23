@@ -13,14 +13,10 @@
 #include <fs/file_system.h>
 #include <util/tree.h>
 
-#define NODE_TYPE_FILE       0x01
-#define NODE_TYPE_DIRECTORY  0x10
-#define NODE_TYPE_SPECIAL    0x20
-
 struct nas;
 
 typedef struct node {
-	const char            name[MAX_LENGTH_FILE_NAME];
+	char                  name[MAX_LENGTH_FILE_NAME + 1];
 	int                   type;  /* FILE, DIRECTORY, DEVICE, LINK ... */
 
 	mode_t                mode;
@@ -48,22 +44,30 @@ typedef struct nas {
 	struct node_fi       *fi;
 } nas_t;
 
+/**
+ * @param name Non-empty string.
+ * @param name_len (optional) how many bytes to take from name.
+ *    If zero, the name must be a null-terminated string.
+ */
+extern node_t *node_alloc(const char *name, size_t name_len);
 
-
-extern node_t *node_alloc(const char *name);
 extern void node_free(node_t *node);
 
+static inline struct node *node_parent(struct node *node) {
+	return tree_element(node->tree_link.par, struct node, tree_link);
+}
 
 static inline int node_is_block_dev(struct node *node) {
-	return node->type & NODE_TYPE_SPECIAL;
+	return S_ISBLK(node->mode);
 }
 
 static inline int node_is_directory(struct node *node) {
-	return node->type & NODE_TYPE_DIRECTORY;
+	return S_ISDIR(node->mode);
 }
 
 static inline int node_is_file(struct node *node) {
-	return node->type & NODE_TYPE_FILE;
+	return S_ISREG(node->mode);
 }
+
 
 #endif /* FS_NODE_H_ */

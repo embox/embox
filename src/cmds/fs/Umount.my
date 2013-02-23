@@ -1,0 +1,29 @@
+package embox.cmd.fs
+
+import embox.compat.posix.LibPosix
+
+@Cmd(name = "umount",
+	help = "Unmount a filesystem",
+	man = '''
+		NAME
+			umount - unmount file systems
+		SYNOPSIS
+			umount [-h]  dir ...
+		DESCRIPTION
+			The  umount command detaches the file system(s) mentioned from the file
+			hierarchy.  A file system is specified by giving the directory where it
+			has  been  mounted.  Giving the special device on which the file system
+			lives may also work, but is obsolete, mainly because it  will  fail  in
+			case this device was mounted on more than one directory.
+		AUTHORS
+			Andrey Gazukin
+	''')
+module umount {
+	source "umount.c"
+
+	depends embox.lib.LibC
+	depends embox.compat.posix.util.getopt
+	depends embox.fs.core
+	depends embox.framework.LibFramework
+	depends embox.fs.sys.fsop
+}

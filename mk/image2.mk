@@ -60,7 +60,9 @@ VPATH := $(SRCGEN_DIR)
 %/. :
 	@$(MKDIR) $*
 
-cc_prerequisites    = $(common_prereqs) $(extra_prereqs)
+a_prerequisites     = $(common_prereqs)
+o_prerequisites     = $(common_prereqs)
+cc_prerequisites    = $(common_prereqs)
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c | $$(@D)/.
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
@@ -73,14 +75,16 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cpp | $$(@D)/.
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx | $$(@D)/.
 	$(CC) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
-cpp_prerequisites   = $(common_prereqs) $(extra_prereqs)
+cpp_prerequisites   = $(common_prereqs)
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
 	$(CPP) -P -undef $(CPPFLAGS) $(flags) -imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
-initfs_cp_prerequisites = $(common_prereqs) $(src_file) $(extra_prereqs)
+initfs_cp_prerequisites = $(common_prereqs) $(src_file)
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
-	@$(CP) -T $(src_file) $@
+	@$(CP) -r -T $(src_file) $@$(foreach c,chmod chown,$(if \
+		$(and $($c),$(findstring $($c),'')),,;$c $($c) $@))
+	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
 $(ROOTFS_DIR)/. :
 	@$(MKDIR) $(@D)
 
@@ -132,7 +136,7 @@ $(symbols_pass2_c) : image_o = $(image_pass1_o)
 $(symbols_c_files) :
 $(symbols_c_files) : $$(common_prereqs_nomk) mk/script/nm2c.awk | $$(@D)/.
 $(symbols_c_files) : $$(image_o)
-	$(NM) -n $< | awk -f mk/script/nm2c.awk > $@
+	$(NM) --demangle -n $< | awk -f mk/script/nm2c.awk > $@
 
 symbols_pass1_a = $(OBJ_DIR)/symbols_pass1.a
 symbols_pass2_a = $(OBJ_DIR)/symbols_pass2.a

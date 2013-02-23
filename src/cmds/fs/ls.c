@@ -4,93 +4,142 @@
  *
  * @date 02.07.09
  * @author Anton Bondarev
+ * @author Anton Kozlov
+ *	    -- rewritten to use opendir
  */
 
-
+#include <errno.h>
 #include <getopt.h>
 #include <string.h>
 #include <time.h>
 #include <stdio.h>
 
-#include <fs/vfs.h>
-#include <fs/ramfs.h>
+#include <dirent.h>
+#include <pwd.h>
+#include <grp.h>
 #include <sys/stat.h>
-#include <util/tree.h>
 
 #include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 
+typedef void item_print(const char *path, stat_t *sb);
+
 static void print_usage(void) {
-	printf("Usage: ls [-hl] path\n");
+	printf("Usage: ls [-hlR] path\n");
 }
 
-/*
-static void print_long_list(char *path, node_t *node, int recursive) {
-	node_t *item;
-	stat_t sb;
-	char time_buff[26]; //ctime_r requires it least 26 byte buffer lentgh
-	printf("%s\t%s\t%s\t\t\t%s\n", "mode", "size", "mtime", "name");
-	tree_foreach_children(item, &node->tree_link, tree_link) {
-		//stat((char *) item->name, &sb);
-		ctime_r((time_t *) &(sb.st_mtime), time_buff);
-		printf("%d\t%d\t%s\t%s\n",
-			sb.st_mode,
-			sb.st_size,
-			time_buff,
-			(char *) item->name);
-	}
+static char dir_name[MAX_LENGTH_FILE_NAME];
+static size_t dir_namel;
+static int recursive;
+static item_print *printer;
+
+static void print_access(int flags) {
+	putchar(flags & S_IROTH ? 'r' : '-');
+	putchar(flags & S_IWOTH ? 'w' : '-');
+	putchar(flags & S_IXOTH ? 'x' : '-');
 }
-*/
 
-static void print_folder(char *path, node_t *node, int recursive) {
-	node_t *item;
+#define BUFLEN 1024
 
-	if(!node_is_directory(node)) {
-		printf("%s\n",  path);
-		return;
+static void printer_long(const char *path, stat_t *sb) {
+	struct passwd pwd, *res;
+	struct group grp, *gres;
+	char buf[BUFLEN];
+
+	putchar(sb->st_mode & S_IFDIR ? 'd' : '-');
+
+	print_access(sb->st_mode >> 6);
+	print_access(sb->st_mode >> 3);
+	print_access(sb->st_mode);
+
+	getpwuid_r(sb->st_uid, &pwd, buf, BUFLEN, &res);
+
+	if (NULL == res) {
+		printf(" %10d", sb->st_uid);
+	} else {
+		printf(" %10s", res->pw_name);
 	}
-	tree_foreach_children(item, (&node->tree_link), tree_link) {
-		if (recursive) {
-			if (0 == strcmp(path, "/")) {
-				printf("%s\n",  (char *) item->name);
-			} else {
-				printf("%s/%s\n", path, (char *) item->name);
-				strcat(path, (char *) item->name);
-				print_folder(path, item, recursive);
-			}
+
+	getgrgid_r(sb->st_gid, &grp, buf, BUFLEN, &gres);
+
+	if (NULL == res) {
+		printf(" %10d", sb->st_uid);
+	} else {
+		printf(" %10s", gres->gr_name);
+	}
+
+	printf(" %s", path);
+
+	if (sb->st_mode & S_IFDIR) {
+		putchar('/');
+	}
+
+	putchar('\n');
+}
+
+static void printer_simple(const char *path, stat_t *sb) {
+	printf("%s\n", path);
+}
+
+static void print(char *path, DIR *dir) {
+	struct dirent *dent;
+
+	while (NULL != (dent = readdir(dir))) {
+		int pathlen = strlen(path);
+		int dent_namel = strlen(dent->d_name);
+		char line[pathlen + dent_namel + 3];
+		stat_t sb;
+
+		if (pathlen > 0) {
+			sprintf(line, "%s/%s", path, dent->d_name);
 		} else {
-			printf("%s\n", (char *) item->name);
+			strcpy(line, dent->d_name);
+		}
+
+		if (-1 == stat(line, &sb)) {
+			printf("Cannot stat %s\n", line);
+			continue;
+		}
+
+		printer(line, &sb);
+
+		if (sb.st_mode & S_IFDIR && recursive) {
+			DIR *d;
+
+			if (NULL == (d = opendir(line))) {
+				printf("Cannot recurse to %s\n", line);
+			}
+
+			print(line, d);
+
+			closedir(d);
 		}
 	}
+
 }
 
-typedef void (*print_func_t)(char *path, node_t *nod, int recursive);
-
 static int exec(int argc, char **argv) {
-	//int long_list = 0;
+	DIR *dir;
+
 	int opt_cnt = 0;
-	node_t *nod;
-	char path[MAX_LENGTH_FILE_NAME];
-
-	int recursive = 0;
-	volatile print_func_t print_func = print_folder;
-
 	int opt;
+
+	printer = printer_simple;
+	recursive = 0;
+
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "Rlh"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;
-		/*case 'l':
-			//long_list = 1;
-			print_func = print_long_list;
+		case 'l':
+			printer = printer_long;
 			opt_cnt++;
-			break;*/
+			break;
 		case 'R':
 			recursive = 1;
-			print_func = print_folder;
 			opt_cnt++;
 			break;
 		case '?':
@@ -102,17 +151,20 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (optind < argc) {
-		sprintf(path, "%s", argv[optind]);
+		sprintf(dir_name, "%s", argv[optind]);
 	} else {
-		sprintf(path, "/");
+		sprintf(dir_name, "");
 	}
 
-	nod = vfs_find_node(path, NULL);
-	if (NULL == nod) {
-		printf("ls: cannot access %s: No such file or directory\n", path);
-		return -1;
+	dir_namel = strlen(dir_name);
+
+	if (NULL == (dir = opendir(dir_name))) {
+		return -errno;
 	}
-	print_func(path, nod, recursive);
+
+	print(dir_name, dir);
+
+	closedir(dir);
 
 	return 0;
 }

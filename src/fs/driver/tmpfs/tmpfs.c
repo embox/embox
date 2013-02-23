@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/tmpfs.h>
 #include <util/array.h>
@@ -48,26 +48,31 @@ static int tmpfs_mount(void *dev, void *dir);
 
 static int tmpfs_init(void * par) {
 	struct node *dev_node, *dir_node;
+	int res;
 
-	if(NULL == par) {
+	if (!par) {
 		return 0;
 	}
 
 	/*TODO */
 
-	if (0 != ramdisk_create(TMPFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE())) {
+	dir_node = vfs_lookup(NULL, TMPFS_DIR);
+	if (!dir_node) {
 		return -1;
 	}
 
-	if((NULL == (dev_node = vfs_find_node(TMPFS_DEV, NULL))) ||
-	  (NULL == (dir_node = vfs_add_path(TMPFS_DIR, NULL)))) {
+	if (0 != (res = ramdisk_create(TMPFS_DEV, FILESYSTEM_SIZE * PAGE_SIZE()))) {
+		return res;
+	}
+
+	dev_node = vfs_lookup(NULL, TMPFS_DEV);
+	if (!dev_node) {
 		return -1;
 	}
-	dir_node->type = NODE_TYPE_DIRECTORY;
 
 	/* format filesystem */
-	if(0 != tmpfs_format((void *)dev_node)) {
-		return -1;
+	if (0 != (res = tmpfs_format((void *) dev_node))) {
+		return res;
 	}
 
 	/* mount filesystem */
@@ -77,8 +82,8 @@ static int tmpfs_init(void * par) {
 static int tmp_ramdisk_fs_init(void) {
 	return tmpfs_init(TMPFS_DEV);
 }
-EMBOX_UNIT_INIT(tmp_ramdisk_fs_init); /*TODO*/
 
+EMBOX_UNIT_INIT(tmp_ramdisk_fs_init); /*TODO*/
 
 
 static int    tmpfs_open(struct node *node, struct file_desc *file_desc, int flags);
@@ -88,21 +93,19 @@ static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size);
 static int    tmpfs_ioctl(struct file_desc *desc, int request, va_list args);
 
 static struct kfile_operations tmpfs_fop = {
-		tmpfs_open,
-		tmpfs_close,
-		tmpfs_read,
-		tmpfs_write,
-		tmpfs_ioctl
+	.open = tmpfs_open,
+	.close = tmpfs_close,
+	.read = tmpfs_read,
+	.write = tmpfs_write,
+	.ioctl = tmpfs_ioctl,
 };
 
 /*
  * file_operation
  */
 
-
 static int tmpfs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct nas *nas;
-	//char path [MAX_LENGTH_PATH_NAME];
 	tmpfs_file_info_t *fi;
 
 	nas = desc->node->nas;
@@ -261,7 +264,7 @@ static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	while(1) {
 		if(0 == fsi->block_size) {
-			return 0;
+			break;
 		}
 		blk = fi->pointer / fsi->block_size;
 		/* check if block over the file */
@@ -390,25 +393,29 @@ static int tmpfs_format(void *path);
 static int tmpfs_mount(void *dev, void *dir);
 static int tmpfs_create(struct node *parent_node, struct node *node);
 static int tmpfs_delete(struct node *node);
+static int tmpfs_truncate(struct node *node, off_t length);
 
-static fsop_desc_t tmpfs_fsop = {
-		tmpfs_init,
-		tmpfs_format,
-		tmpfs_mount,
-		tmpfs_create,
-		tmpfs_delete
+static struct fsop_desc tmpfs_fsop = {
+	.init = tmpfs_init,
+	.format = tmpfs_format,
+	.mount = tmpfs_mount,
+	.create_node = tmpfs_create,
+	.delete_node = tmpfs_delete,
+
+	.truncate = tmpfs_truncate,
 };
 
-static fs_drv_t tmpfs_drv = {
+static struct fs_driver tmpfs_driver = {
 	.name = TMPFS_NAME,
 	.file_op = &tmpfs_fop,
-	.fsop = &tmpfs_fsop
+	.fsop = &tmpfs_fsop,
 };
 
 static tmpfs_file_info_t *tmpfs_create_file(struct nas *nas) {
 	tmpfs_file_info_t *fi;
 
-	if(NULL == (fi = pool_alloc(&tmpfs_file_pool))) {
+	fi = pool_alloc(&tmpfs_file_pool);
+	if (!fi) {
 		return NULL;
 	}
 
@@ -418,45 +425,37 @@ static tmpfs_file_info_t *tmpfs_create_file(struct nas *nas) {
 	return fi;
 }
 
+/*
+static node_t *tmpfs_create_dot(node_t *parent_node, const char *name) {
+	node_t *dot_node;
+	struct nas *parent_nas, *nas;
+
+	parent_nas = parent_node->nas;
+
+	dot_node = vfs_create_child(parent_node, name, S_IFDIR);
+	if (dot_node) {
+		nas = dot_node->nas;
+		nas->fs = parent_nas->fs;
+		// don't need create fi for directory - take root node fi /
+		nas->fi->privdata = parent_nas->fi->privdata;
+	}
+
+	return dot_node;
+}
+*/
+
 static int tmpfs_create(struct node *parent_node, struct node *node) {
-	struct nas *nas, *parents_nas;
-	int node_quantity;
-	char path[MAX_LENGTH_PATH_NAME];
+	struct nas *nas;
 
-	parents_nas = parent_node->nas;
+	nas = node->nas;
 
-	if (node_is_directory(node)) {
-		node_quantity = 3; /* need create . and .. directory */
-	}
-	else {
-		node_quantity = 1;
-	}
-	vfs_get_path_by_node(node, path);
-
-	for (int count = 0; count < node_quantity; count ++) {
-		if(0 < count) {
-			if(1 == count) {
-				strcat(path, "/.");
-			}
-			else if(2 == count) {
-				strcat(path, ".");
-			}
-			if(NULL == (node = vfs_add_path (path, NULL))) {
-				return -ENOMEM;
-			}
-		}
-
-		nas = node->nas;
-		nas->fs = parents_nas->fs;
-		/* don't need create fi for directory - take root node fi */
-		nas->fi->privdata = parents_nas->fi->privdata;
-
-		if((0 >= count) & (!node_is_directory(node))) {
-			if(NULL == (nas->fi->privdata = tmpfs_create_file(nas))) {
-				return -ENOMEM;
-			}
+	if (!node_is_directory(node)) {
+		if (!(nas->fi->privdata = tmpfs_create_file(nas))) {
+			return -ENOMEM;
 		}
 	}
+
+	nas->fs = parent_node->nas->fs;
 
 	return 0;
 }
@@ -464,7 +463,6 @@ static int tmpfs_create(struct node *parent_node, struct node *node) {
 static int tmpfs_delete(struct node *node) {
 	struct tmpfs_file_info *fi;
 	struct tmpfs_fs_info *fsi;
-	node_t *pointnod;
 	struct nas *nas;
 	char path [MAX_LENGTH_PATH_NAME];
 
@@ -474,20 +472,7 @@ static int tmpfs_delete(struct node *node) {
 
 	vfs_get_path_by_node(node, path);
 
-	/* need delete "." and ".." node for directory */
-	if (node_is_directory(node)) {
-
-		strcat(path, "/.");
-		pointnod = vfs_find_node(path, NULL);
-		vfs_del_leaf(pointnod);
-
-		strcat(path, ".");
-		pointnod = vfs_find_node(path, NULL);
-		vfs_del_leaf(pointnod);
-
-		path[strlen(path) - 3] = '\0';
-	}
-	else {
+	if (!node_is_directory(node)) {
 		index_free(&tmpfs_file_idx, fi->index);
 		pool_free(&tmpfs_file_pool, fi);
 	}
@@ -498,6 +483,18 @@ static int tmpfs_delete(struct node *node) {
 	}
 
 	vfs_del_leaf(node);
+
+	return 0;
+}
+
+static int tmpfs_truncate(struct node *node, off_t length) {
+	struct nas *nas = node->nas;
+
+	if (length > MAX_FILE_SIZE) {
+		return -EFBIG;
+	}
+
+	nas->fi->ni.size = length;
 
 	return 0;
 }
@@ -539,14 +536,14 @@ static int tmpfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if (NULL == (dir_nas->fs = alloc_filesystem("tmpfs"))) {
+	if (NULL == (dir_nas->fs = filesystem_alloc("tmpfs"))) {
 		return -ENOMEM;
 	}
 	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
 	if(NULL == (fsi = pool_alloc(&tmpfs_fs_pool))) {
-		free_filesystem(dir_nas->fs);
+		filesystem_free(dir_nas->fs);
 		return -ENOMEM;
 	}
 	memset(fsi, 0, sizeof(struct tmpfs_fs_info));
@@ -569,5 +566,5 @@ static int tmpfs_mount(void *dev, void *dir) {
 	return 0;
 }
 
-DECLARE_FILE_SYSTEM_DRIVER(tmpfs_drv);
+DECLARE_FILE_SYSTEM_DRIVER(tmpfs_driver);
 

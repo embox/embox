@@ -4,6 +4,7 @@
  * @date Oct 25, 2012
  * @author: Anton Bondarev
  */
+
 #include <types.h>
 #include <string.h>
 
@@ -28,13 +29,14 @@ static struct uart_device *uart_dev_lookup(char *name) {
 	return uart_dev;
 }
 
-static int dev_uart_open(struct node *node, struct file_desc *file_desc, int flags);
+static int dev_uart_open(struct node *node, struct file_desc *file_desc,
+	int flags);
 static int dev_uart_close(struct file_desc *desc);
 static size_t dev_uart_read(struct file_desc *desc, void *buf, size_t size);
 static size_t dev_uart_write(struct file_desc *desc, void *buf, size_t size);
 static int dev_uart_ioctl(struct file_desc *desc, int request, va_list args);
 
-kfile_operations_t uart_dev_file_op = {
+struct kfile_operations uart_dev_file_op = {
 	.open = dev_uart_open,
 	.close = dev_uart_close,
 	.read = dev_uart_read,
@@ -95,7 +97,7 @@ static int dev_uart_close(struct file_desc *desc) {
 static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
 	size_t cnt = size;
 
-	if(0 == ring_buff_get_cnt(&dev_buff)) {
+	if (0 == ring_buff_get_cnt(&dev_buff)) {
 		sched_lock();
 			irq_lock();
 				event_init(&rx_happend, "event_rx_happend");
@@ -105,7 +107,7 @@ static size_t dev_uart_read(struct file_desc *desc, void *buff, size_t size) {
 		sched_unlock();
 	}
 
-	for(;0 < cnt;--cnt) {
+	for (; 0 < cnt; --cnt) {
 		int tmp;
 		char *tmp_char = buff;
 
@@ -138,27 +140,33 @@ static int dev_uart_ioctl(struct file_desc *desc, int request, va_list args) {
 }
 
 int uart_dev_register(struct uart_device *dev) {
-	struct node *nod, *devnod;
-	struct nas *dev_nas;
+	struct node *node;
+	struct nas *nas;
+	mode_t mode;
 
 	//TODO tmp (we can have only one device)
 	uart_dev = dev;
 
+	mode = S_IFCHR | S_IRALL | S_IWALL;
+
 	/* register char device */
-	if (NULL == (nod = vfs_find_node("/dev", NULL))) {
-		return -1;
-	}
-	if (NULL == (devnod = vfs_add_path(dev->dev_name, nod))) {
+	node = vfs_lookup(NULL, "/dev");
+	if (!node) {
 		return -1;
 	}
 
-	dev_nas = devnod->nas;
-	if(NULL == (dev_nas->fs = alloc_filesystem("empty"))) {
+	node = vfs_create_child(node, dev->dev_name, mode);
+	if (!node) {
 		return -1;
 	}
-	//strncpy((char*)devnod->name, dev->dev_name, sizeof(devnod->name) - 1);
 
-	dev_nas->fs->file_op = &uart_dev_file_op;
+	nas = node->nas;
+	if (NULL == (nas->fs = filesystem_alloc("empty"))) {
+		return -1;
+	}
+	//strncpy((char*)node->name, dev->dev_name, sizeof(node->name) - 1);
+
+	nas->fs->file_op = &uart_dev_file_op;
 
 	return 0;
 }

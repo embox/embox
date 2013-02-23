@@ -91,7 +91,7 @@ module tcp {
 	depends core
 	depends ipv4 /* for ip_output.c */
 	depends af_inet /* for af_inet.c */
-	depends util
+	depends embox.compat.posix.net.inet_addr
 	depends embox.kernel.time.kernel_time
 	depends embox.kernel.time.clock_source
 	depends embox.kernel.critical

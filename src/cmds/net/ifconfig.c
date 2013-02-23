@@ -18,6 +18,8 @@
 #include <embox/cmd.h>
 
 #include <net/inetdevice.h>
+#include <net/netdevice.h>
+#include <net/etherdevice.h>
 #include <net/util.h>
 
 EMBOX_CMD(exec);

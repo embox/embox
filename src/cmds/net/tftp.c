@@ -12,9 +12,9 @@
 #include <getopt.h>
 #include <string.h>
 #include <stdio.h>
-#include <fcntl.h>
+#include <unistd.h>
 #include <types.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/ip.h>
 #include <arpa/inet.h>
 #include <errno.h>

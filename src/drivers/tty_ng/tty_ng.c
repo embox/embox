@@ -14,7 +14,7 @@
 
 #include <util/math.h>
 
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/file_desc.h>
 
 #include <lib/linenoise.h>

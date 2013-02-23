@@ -9,9 +9,11 @@
 #define NET_RPC_PMAP_H_
 
 #include <types.h>
-#include <net/socket.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 /* Prototypes */
+struct sockaddr_in;
 struct xdr;
 
 #define PMAPPORT         111

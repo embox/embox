@@ -79,6 +79,7 @@ static int exec(int argc, char **argv) {
 			printf("Invalid a number of example\n");
 			return -EINVAL;
 		}
+		argv[1] = (char *)example_name(example);
 	}
 
 	return example_exec(example, argc - 1, argv + 1);

@@ -100,8 +100,10 @@ int task_self_idx_alloc(const struct task_idx_ops *res_ops, void *fd_struct) {
 		return -1;
 	}
 
-	data->read_state.unblock = data->write_state.unblock = NULL;
-	data->write_state.can_perform_op = 1;
+	/* Disable reading/writing on descriptor */
+	data->io_state.io_enable = NULL;
+	data->io_state.io_monitoring = 0;
+	data->io_state.io_ready = 0;
 
 	return new_fd;
 }

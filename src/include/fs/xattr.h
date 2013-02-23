@@ -10,7 +10,7 @@
 #define FS_XATTR_H_
 
 #include <fs/node.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 
 #define XATTR_CREATE  (1 << 0)
 #define XATTR_REMOVE  (1 << 1)

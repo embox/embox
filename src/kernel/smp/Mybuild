@@ -1,0 +1,15 @@
+package embox.kernel
+
+module smp {
+	source "bkl.c"
+
+	depends embox.arch.x86.kernel.smp
+	depends percpu
+
+	depends embox.kernel.thread.core
+}
+
+module percpu {
+	source "percpu.lds.S"
+	source "percpu.c"
+}

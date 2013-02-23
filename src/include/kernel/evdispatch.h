@@ -26,7 +26,7 @@
 #ifndef EVDISPATCH_H_
 #define EVDISPATCH_H_
 
-#include <lib/list.h>
+#include <linux/list.h>
 #include <kernel/softirq.h>
 
 /** The count of messages */

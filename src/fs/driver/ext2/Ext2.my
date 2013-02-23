@@ -4,5 +4,7 @@ package embox.fs.driver.ext2
 
 module xattr {
 	source "ext2_xattr.c"
+
+	depends embox.fs.driver.ext2
 }
 

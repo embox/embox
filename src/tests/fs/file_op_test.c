@@ -12,8 +12,8 @@
 #include <errno.h>
 
 #include <fs/vfs.h>
-#include <fs/fs_drv.h>
-#include <fs/sys/fsop.h>/* now mount declaration in this header */
+#include <fs/fs_driver.h>
+#include <fs/sys/fsop.h>
 #include <embox/block_dev.h>
 #include <drivers/ramdisk.h>
 
@@ -30,33 +30,34 @@ TEST_SETUP_SUITE(setup_suite);
 
 TEST_TEARDOWN_SUITE(teardown_suite);
 
-
 #define FS_NAME			"vfat"
 #define FS_DEV			"/dev/ramdisk"
 #define FS_TYPE			12
 #define FS_BLOCKS		124
-#define FS_DIR			"/test_fop"
-#define FS_FILE1		"/test_fop/1/2/3/1.txt"
-#define FS_FILE2		"/test_fop/1/2/3/2.txt"
-#define FS_DIR3			"/test_fop/1/2/3"
-#define FS_DIR2			"/test_fop/1/2"
-#define FS_DIR1			"/test_fop/1"
-#define FS_DTR			"/test_fop/dtr"
-#define FS_MV_SUB		"/test_fop/dtr/sub"
-#define FS_MV_SUB_F1	"/test_fop/dtr/sub/file1"
-#define FS_MV_F1		"/test_fop/dtr/file1"
-#define FS_MV_F2		"/test_fop/dtr/sub/file2"
-#define FS_MV_F2_NAME	"file2"
-#define FS_MV_F3		"/test_fop/dtr/sub/file3"
-#define FS_MV_F3_NAME	"file3"
-#define FS_MV_RENAMED	"/test_fop/renamed"
+#define FS_DIR			"/tmp"
+#define FS_DIR			"/tmp"
+#define FS_FILE1		"/tmp/1/2/3/1.txt"
+#define FS_FILE2		"/tmp/1/2/3/2.txt"
+#define FS_DIR3			"/tmp/1/2/3"
+#define FS_DIR2			"/tmp/1/2"
+#define FS_DIR1			"/tmp/1"
 #define FS_TESTDATA		"qwerty\n"
-#define FS_MV_LONGNAME	"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-						"toolongnam"
+#define FS_DTR			"/tmp/dtr"
+#define FS_MV_SUB		"/tmp/dtr/sub"
+#define FS_MV_SUB_F1		"/tmp/dtr/sub/file1"
+#define FS_MV_F1		"/tmp/dtr/file1"
+#define FS_MV_F2		"/tmp/dtr/sub/file2"
+#define FS_MV_F2_NAME		"file2"
+#define FS_MV_F3		"/tmp/dtr/sub/file3"
+#define FS_MV_F3_NAME		"file3"
+#define FS_MV_RENAMED		"/tmp/renamed"
+#define FS_TESTDATA		"qwerty\n"
+#define FS_MV_LONGNAME		"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+				"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+				"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+				"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+				"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+				"toolongnam"
 
 TEST_CASE("Write file") {
 	int file;
@@ -73,7 +74,7 @@ TEST_CASE("Copy file") {
 	int bytesread;
 
 	test_assert(0 <=  (src_file = open(FS_FILE1, O_RDONLY)));
-	test_assert(0 <=  (dst_file = open(FS_FILE2, O_WRONLY)));
+	test_assert(0 <=  (dst_file = open(FS_FILE2, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR)));
 	test_assert_zero(lseek(dst_file, 0, SEEK_SET));
 
 	bytesread = 0;
@@ -93,10 +94,12 @@ TEST_CASE("Read file") {
 	int file;
 	char buf[PAGE_SIZE()];
 
-	test_assert(0 <=  (file = open(FS_FILE2, O_RDONLY)));
+	memset(buf, 0, PAGE_SIZE());
+
+	test_assert(0 <=  (file = open(FS_FILE2, O_RDONLY, S_IRUSR)));
 	test_assert_zero(lseek(file, 0, SEEK_SET));
 
-	test_assert(0 <= read(file, buf, PAGE_SIZE()));
+	test_assert_equal(strlen(FS_TESTDATA), read(file, buf, PAGE_SIZE()));
 	test_assert_zero(strcmp(FS_TESTDATA, buf));
 
 	test_assert_zero(close(file));
@@ -190,18 +193,18 @@ static int exec_shell_cmd(char *cmdline) {
 
 TEST_CASE("Move file") {
 	/* This should be improved to not use hard-coded paths */
-	char *cmd_recursive_err = "mv /test_fop/dtr /test_fop/tmpdtr";
-	char *cmd_force_err = "mv /test_fop/dtr/file1 /test_fop/dtr/sub/file2";
+	char *cmd_recursive_err = "mv /tmp/dtr /test_fop/tmpdtr";
+	char *cmd_force_err = "mv /tmp/dtr/file1 /test_fop/dtr/sub/file2";
 	char *cmd_multi_err =
-				"mv /test_fop/dtr/file1 /test_fop/dtr/sub/file2 /test_fop/file";
+				"mv /tmp/dtr/file1 /test_fop/dtr/sub/file2 /test_fop/file";
 
-	char *cmd_simple = "mv /test_fop/dtr/file1 /test_fop/dtr/sub/tmpfile";
-	char *cmd_simple_back = "mv /test_fop/dtr/sub/tmpfile /test_fop/dtr/file1";
-	char *cmd_recursive = "mv -r /test_fop/dtr /test_fop/tmpdtr";
-	char *cmd_recursive_back =  "mv -r /test_fop/tmpdtr /test_fop/dtr";
+	char *cmd_simple = "mv /tmp/dtr/file1 /test_fop/dtr/sub/tmpfile";
+	char *cmd_simple_back = "mv /tmp/dtr/sub/tmpfile /test_fop/dtr/file1";
+	char *cmd_recursive = "mv -r /tmp/dtr /test_fop/tmpdtr";
+	char *cmd_recursive_back =  "mv -r /tmp/tmpdtr /test_fop/dtr";
 	char *cmd_multi =
-			"mv /test_fop/dtr/file1 /test_fop/dtr/sub/file2 /test_fop";
-	char *cmd_force = "mv -f /test_fop/file1 /test_fop/file2";
+			"mv /tmp/dtr/file1 /test_fop/dtr/sub/file2 /test_fop";
+	char *cmd_force = "mv -f /tmp/file1 /test_fop/file2";
 
 	/* Prepare directories and files for tests */
 	test_assert_zero(creat(FS_MV_F1, 0));
@@ -242,30 +245,51 @@ TEST_CASE("Move file") {
 	test_assert_zero(remove(FS_DTR));
 }
 
+#define MKDIR_PERM 0700
+
 static int setup_suite(void) {
+	int fd, res;
 
 	if (0 != ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())) {
 		return -1;
 	}
 
 	/* format filesystem */
-	if(0 != format(FS_DEV, FS_NAME)) {
-		return -1;
+	if (0 != (res = format(FS_DEV, FS_NAME))) {
+		return res;
 	}
 
 	/* mount filesystem */
-	if(mount(FS_DEV, FS_DIR, FS_NAME)) {
-		return -1;
+	if (0 != (res = mount(FS_DEV, FS_DIR, FS_NAME))) {
+		return res;
 	}
 
-	return creat(FS_FILE1, 0);
+	if (0 != (res = mkdir(FS_DIR1, MKDIR_PERM))) {
+		return res;
+	}
+
+	if (0 != (res = mkdir(FS_DIR2, MKDIR_PERM))) {
+		return res;
+	}
+
+	if (0 != (res = mkdir(FS_DIR3, 0777))) {
+		return res;
+	}
+
+	if (-1 == (fd = creat(FS_FILE1, S_IRUSR | S_IWUSR))) {
+		return -errno;
+	}
+
+	close(fd);
+
+	return 0;
 }
 
 static int teardown_suite(void) {
 
 	if (remove(FS_FILE1) ||	remove(FS_FILE2) ||
 		remove(FS_DIR3)  ||	remove(FS_DIR2)  ||
-		remove(FS_DIR1)  ||	remove(FS_DIR)) {
+		remove(FS_DIR1)) {
 		return -1;
 	}
 	if (ramdisk_delete(FS_DEV)) {

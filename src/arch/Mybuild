@@ -34,3 +34,7 @@ abstract module syscall_caller { }
 abstract module usermode { }
 
 abstract module stackframe { }
+
+@Mandatory
+@DefaultImpl(embox.arch.generic.nosmp)
+abstract module smp { }

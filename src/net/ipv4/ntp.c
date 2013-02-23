@@ -18,6 +18,8 @@
 #include <kernel/printk.h>
 #include <unistd.h>
 #include <math.h>
+#include <sys/socket.h>
+#include <net/socket.h>
 
 #define MIN_POLL 3 /* By RFC 4330 minimum poll interval is about 15 seconds */
 #define MAX_POLL 16

@@ -7,26 +7,40 @@
  * @author Alexander Kalmuk
  */
 
-#ifndef IO_SYNC_H_
-#define IO_SYNC_H_
+#ifndef KERNEL_TASK_IO_SYNC_H_
+#define KERNEL_TASK_IO_SYNC_H_
 
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <kernel/irq_lock.h>
+#include <kernel/softirq_lock.h>
+#include <assert.h>
 
 struct event;
+struct idx_desc;
 
-extern void io_op_unblock(struct idx_io_op_state *op);
-extern void io_op_set_event(struct idx_io_op_state *op, struct event *e);
+/* I/O operations */
+#define IDX_IO_READING 0x01
+#define IDX_IO_WRITING 0x10
 
-static inline void io_op_block(struct idx_io_op_state *op) {
-	irq_lock();
-	op->can_perform_op = 0; /* it must be test_and_set */
-	irq_unlock();
+static inline void idx_io_set_monitor(struct idx_desc *desc, int op) {
+	assert(desc->data);
+	desc->data->io_state.io_monitoring |= op;
 }
 
-static inline int io_op_is_block(struct idx_io_op_state *op) {
-	return op->can_perform_op;
+static inline void idx_io_unset_monitor(struct idx_desc *desc, int op) {
+	assert(desc->data);
+	desc->data->io_state.io_monitoring &= ~op;
 }
 
-#endif /* IO_SYNC_H_ */
+static inline void idx_io_disable(struct idx_desc *desc, int op) {
+	softirq_lock();
+	assert(desc->data);
+	desc->data->io_state.io_ready &= ~op;
+	softirq_unlock();
+}
+
+extern void idx_io_enable(struct idx_desc *desc, int op);
+
+extern void idx_io_set_event(struct idx_desc *desc, struct event *event);
+
+#endif /* KERNEL_TASK_IO_SYNC_H_ */

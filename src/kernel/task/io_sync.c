@@ -1,30 +1,34 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 17.10.2012
+ * @date 17.10.12
  * @author Alexander Kalmuk
  */
 
 #include <kernel/task/io_sync.h>
-#include <kernel/thread/sched_lock.h>
 #include <kernel/thread/event.h>
-#include <kernel/irq_lock.h>
 
-void io_op_unblock(struct idx_io_op_state *op) {
-	irq_lock();
+void idx_io_enable(struct idx_desc *desc, int op) {
+	struct idx_io_state *io_state;
+
+	assert(desc->data);
+
+	io_state = &desc->data->io_state;
+
+	softirq_lock();
 	{
-		op->can_perform_op = 1;
-		if (op->unblock) {
-			event_notify(op->unblock);
+		io_state->io_ready |= op;
+		if (io_state->io_enable && (io_state->io_monitoring & op)) {
+			event_notify(io_state->io_enable);
 		}
 	}
-	irq_unlock();
+	softirq_unlock();
 }
 
-void io_op_set_event(struct idx_io_op_state *op, struct event *e) {
-	irq_lock();
-	op->unblock = e;
-	irq_unlock();
+void idx_io_set_event(struct idx_desc *desc, struct event *event) {
+	softirq_lock();
+	assert(desc->data);
+	desc->data->io_state.io_enable = event;
+	softirq_unlock();
 }

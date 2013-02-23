@@ -11,7 +11,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <embox/unit.h>
-#include <lib/list.h>
+#include <linux/list.h>
 #include <net/inetdevice.h>
 #include <linux/interrupt.h>
 #include <kernel/irq.h>

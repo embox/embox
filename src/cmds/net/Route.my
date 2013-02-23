@@ -26,7 +26,7 @@ module route {
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.util.getopt
-	depends embox.net.util
+	depends embox.compat.posix.net.inet_addr
 	depends embox.net.core
 	depends embox.net.route
 	depends embox.framework.LibFramework

@@ -107,7 +107,7 @@ int raw_rcv(struct sk_buff *skb) {
 			}
 			res = raw_rcv_skb(sk, cloned);
 			if (res < 0) {
-				LOG_ERROR("sk 0x%p can't received packet\n", sk);
+				LOG_ERROR("sk %p can't received packet\n", sk);
 				skb_free(cloned);
 			}
 		}
@@ -208,8 +208,10 @@ static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	} else {
 		len = 0;
 	}
+
 	msg->msg_iov->iov_len = len;
-	return len;
+
+	return 0;
 }
 
 static int raw_bind(struct sock *sk, struct sockaddr *uaddr, int addr_len) {

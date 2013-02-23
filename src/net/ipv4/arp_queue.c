@@ -12,7 +12,7 @@
 #include <util/hashtable.h>
 #include <kernel/thread/event.h>
 #include <embox/unit.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <errno.h>
 #include <mem/misc/pool.h>
 #include <net/arp.h>
@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <kernel/softirq_lock.h>
 #include <net/route.h>
+#include <err.h>
 
 
 EMBOX_UNIT_INIT(arp_queue_init);
@@ -63,11 +64,13 @@ static uint32_t get_msec(void) {
 }
 
 void arp_queue_process(struct sk_buff *arp_skb) {
-	int res;
+	int ret;
 	uint32_t now, lifetime;
 	in_addr_t *resolved_ip;
 	struct arp_queue_item *waiting_item;
+#if 0
 	struct event *sock_ready;
+#endif
 	struct arpg_stuff arph_stuff;
 
 	assert(arp_skb != NULL);
@@ -90,21 +93,28 @@ void arp_queue_process(struct sk_buff *arp_skb) {
 		assert(waiting_item->skb->dev != NULL);
 		assert(waiting_item->skb->dev->header_ops != NULL);
 		assert(waiting_item->skb->dev->header_ops->rebuild != NULL);
-		res = waiting_item->skb->dev->header_ops->rebuild(waiting_item->skb);
-		if (res < 0) {
+		ret = waiting_item->skb->dev->header_ops->rebuild(waiting_item->skb);
+		if (ret != 0) {
+			LOG_ERROR("can't rebuild after resolving\n");
 			goto free_skb_and_item; /* XXX it's not normal */
 		}
 
+#if 0
 		/* save socket's event if it exist */
 		sock_ready = ((waiting_item->skb->sk == NULL) ? NULL
 				: &waiting_item->skb->sk->sock_is_ready);
+#endif
 
 		/* try to xmit */
-		if (dev_queue_xmit(waiting_item->skb) == ENOERR) {
+		ret = dev_queue_xmit(waiting_item->skb);
+		if (ret != 0) {
+			LOG_ERROR("can't xmit over device\n");
+#if 0
 			/* notify owning socket */
 			if (sock_ready != NULL) {
 				event_notify(sock_ready);
 			}
+#endif
 		}
 
 		/* free resourse */

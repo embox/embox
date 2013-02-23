@@ -2,34 +2,31 @@
  *
  * @date 04.02.2013
  * @author Alexander Kalmuk
+ * @author Anton Kozlov
  */
 
 #include <types.h>
 #include <errno.h>
-#include <dirent.h>
+#include <string.h>
+#include <fs/perm.h>
 #include <fs/vfs.h>
 #include <mem/objalloc.h>
 #include <util/dlist.h>
-#include <string.h>
+#include <fs/flags.h>
+
+#include <dirent.h>
 
 #define MAX_DIR_QUANTITY OPTION_GET(NUMBER, dir_quantity)
 
-static DLIST_DEFINE(dir_list);
-
-struct dir_info {
-	DIR dir;
-	node_t *node; /* node to increase speed when search directory */
-	struct dlist_head link; /* link to global list of directories */
-};
-
-OBJALLOC_DEF(__dir_pool, struct dir_info, MAX_DIR_QUANTITY);
+OBJALLOC_DEF(dir_pool, struct DIR, MAX_DIR_QUANTITY);
 
 DIR *opendir(const char *path) {
 	node_t *node;
-	struct dir_info *d;
+	DIR *d;
+	int res;
 
-	if (NULL == (node = vfs_find_node(path, NULL))) {
-		SET_ERRNO(EBADF);
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+		SET_ERRNO(-res);
 		return NULL;
 	}
 
@@ -38,68 +35,53 @@ DIR *opendir(const char *path) {
 		return NULL;
 	}
 
-	if (NULL == (d = objalloc(&__dir_pool))) {
+	if (0 != fs_perm_check(node, FS_MAY_READ)) {
+		SET_ERRNO(EACCES);
+		return NULL;
+	}
+
+	if (NULL == (d = objalloc(&dir_pool))) {
 		SET_ERRNO(ENOMEM);
 		return NULL;
 	}
 
-	dlist_head_init(&d->link);
-	dlist_add_prev(&d->link, &dir_list);
 	d->node = node;
-	d->dir.current.d_name[0] = '\0';
+	d->child_lnk = tree_children_begin(&node->tree_link);
 
-	return &d->dir;
-}
-
-static struct dir_info *get_dirinfo(DIR *dir) {
-	struct dir_info *d, *nxt;
-
-	dlist_foreach_entry(d, nxt, &dir_list, link) {
-		if (dir == &d->dir) {
-			return d;
-		}
-	}
-
-	return NULL;
+	return d;
 }
 
 int closedir(DIR *dir) {
-	struct dir_info *d;
 
-	if (NULL == (d = get_dirinfo(dir))) {
+	if (NULL == dir) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
-	dlist_del(&d->link);
-	objfree(&__dir_pool, d);
+	objfree(&dir_pool, dir);
 
 	return 0;
 }
 
 struct dirent *readdir(DIR *dir) {
-	struct dir_info *d;
-	node_t *node;
-	struct tree_link *link;
+	struct node *chldnod;
 
-	if (NULL == (d = get_dirinfo(dir))) {
+	SET_ERRNO(0);
+
+	if (NULL == dir) {
 		SET_ERRNO(EBADF);
 		return NULL;
 	}
 
-	node = vfs_get_child(dir->current.d_name, d->node);
-	if (NULL == node) {
-		/* we are in directory's node, not in child */
-		node = d->node;
-	}
-
-	link = tree_children_next(&node->tree_link);
-	node = tree_element(link, struct node, tree_link);
-	if (node == d->node) {
-		/* last file in directory was reached on previous readdir()'s call */
+	if (tree_children_end(&dir->node->tree_link) == dir->child_lnk) {
 		return NULL;
 	}
-	strcpy(dir->current.d_name, node->name);
+
+	chldnod = tree_element(dir->child_lnk, struct node, tree_link);
+
+	strcpy(dir->current.d_name, chldnod->name);
+
+	dir->child_lnk = tree_children_next(dir->child_lnk);
 
 	return &dir->current;
 }

@@ -1,20 +1,28 @@
 /**
  * @file
- * @brief Definitions for the AF_INET socket handler.
+ * @brief
  *
  * @date 17.03.09
  * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
 #ifndef NET_SOCK_H_
 #define NET_SOCK_H_
 
-#include <kernel/thread/sync/mutex.h>
-#include <mem/misc/slab.h>
-#include <net/netdevice.h>
-#include <net/net.h>
-#include <net/socket_options.h>
+#include <net/socket.h>
+#include <sys/socket.h>
 #include <kernel/thread/event.h>
+#include <net/skbuff.h>
+#include <linux/aio.h>
+
+struct proto;
+struct sk_buff_head;
+struct socket;
+struct kiocb;
+struct msghdr;
+struct skbuff;
+struct cache;
 
 typedef struct {
 	spinlock_t slock;
@@ -29,9 +37,11 @@ typedef struct {
  */
 struct sock_common {
 	unsigned short skc_family;
-	volatile unsigned char skc_state;
+	unsigned char skc_state;
+#if 0
 	unsigned char skc_reuse;
 	int skc_bound_dev_if;
+#endif
 	struct proto *skc_prot;
 };
 
@@ -69,19 +79,24 @@ typedef struct sock {
 	unsigned char sk_protocol;
 	unsigned char sk_shutdown;
 	unsigned short sk_type;
-	int sk_rcvbuf;
 	socket_lock_t sk_lock;
+
+#if 0
 	struct {
 		struct sk_buff *head;
 		struct sk_buff *tail;
 	} sk_backlog;
+
 	int sk_sndbuf;
+	int sk_rcvbuf;
 	unsigned long sk_flags;
+#endif
 
 	struct sk_buff_head *sk_receive_queue;
 	struct sk_buff_head *sk_write_queue;
 
 	struct socket *sk_socket;
+#if 0
 	void *sk_user_data;
 
 	void (* sk_state_change)(struct sock *sk);
@@ -90,14 +105,21 @@ typedef struct sock {
 	void (* sk_error_report)(struct sock *sk);
 	int (* sk_backlog_rcv)(struct sock *sk, sk_buff_t *pack);
 	void (* sk_destruct)(struct sock *sk);
-	sk_encap_hnd sk_encap_rcv;
-//	int (* get_port)(struct sock *sk, unsigned short num); // TODO
+	int (* get_port)(struct sock *sk, unsigned short num); // TODO
+#endif
+	int (*sk_encap_rcv)(struct sock *sk, struct sk_buff *pack);
+
 	int32_t sk_err;
+
+#if 0
 	int ready;
 	struct event sock_is_ready;
+#endif
+
 	struct event sock_is_not_empty;
 } sock_t;
 
+#if 0
 static inline void sock_set_ready(struct sock *sk) {
 	sk->ready = true;
 }
@@ -114,7 +136,9 @@ static inline void sock_unset_ready(struct sock *sk){
 static inline bool sock_is_ready(struct sock *sk) {
 	return sk->ready;
 }
+#endif
 
+#if 0
 /** Sock flags */
 enum sock_flags {
 	SOCK_DEAD,
@@ -122,18 +146,23 @@ enum sock_flags {
 	SOCK_DESTROY,
 	SOCK_BROADCAST
 };
+#endif
 
 /** Protocol specific functions */
 typedef struct proto {
 	void (*close)(sock_t *sk, long timeout);
 	int (*shutdown)(struct sock *sk, int flags);
 	int (*connect)(sock_t *sk, sockaddr_t *addr, int addr_len);
-//	int (*disconnect)(sock_t *sk, int flags);
+#if 0
+	int (*disconnect)(sock_t *sk, int flags);
+#endif
 	int (*listen)(sock_t *sk, int backlog);
 	int (*accept)(sock_t *sk, sock_t **newsk, sockaddr_t *addr, int *addr_len);
 	int (*ioctl)(struct sock *sk, int cmd, unsigned long arg);
 	int (*init)(sock_t *sk);
+#if 0
 	void (*destroy)(struct sock *sk);
+#endif
 	int (*setsockopt)(struct sock *sk, int level, int optname, char *optval,
 			int optlen);
 	int (*getsockopt)(struct sock *sk, int level, int optname, char *optval,
@@ -149,7 +178,7 @@ typedef struct proto {
 	sock_t *(*sock_alloc)(void); /**< if not NULL, allocate proto socket casted to sock_t */
 	void (*sock_free)(sock_t *); /**< must not be NULL if sock_alloc is not NULL */
 	unsigned int obj_size;
-	cache_t *cachep;             /**< associated cache in which socks will be stored */
+	struct cache *cachep;             /**< associated cache in which socks will be stored */
 	char name[32];
 } proto_t;
 
@@ -161,17 +190,16 @@ extern void sk_init(void);
  * @priority - isn't used now
  * @prot - pointer to the proto structure
  */
-extern sock_t *sk_alloc(/*struct net *net,*/int family, gfp_t priority,
-			proto_t *prot);
+extern sock_t *sk_alloc(int family, gfp_t priority, struct proto *prot);
 
 /**
  * Returns specified structure sock into pull,
  * assuming there are no more handle on it.
  */
-extern void sk_free(sock_t *sk);
+extern void sk_free(struct sock *sk);
 
 /** This function used by all transports to attempt to queue received packets*/
-extern void sock_queue_rcv_skb(sock_t *sk, sk_buff_t *skb);
+extern void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb);
 
 /**
  * Functions to fill in entries in struct proto_ops when a protocol
@@ -186,7 +214,7 @@ extern int sock_common_recvmsg(struct kiocb *iocb, struct socket *sock,
 extern void sk_common_release(struct sock *sk);
 
 /* Simple spinlock */
-extern void sock_lock(struct sock *sk);
+extern int sock_lock(struct sock **psk);
 extern void sock_unlock(struct sock *sk);
 
 /**
@@ -195,6 +223,5 @@ extern void sock_unlock(struct sock *sk);
 static inline void sk_clear_pending_error(struct sock *sk){
 	sk->sk_err = 0;
 }
-
 
 #endif /* NET_SOCK_H_ */

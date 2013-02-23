@@ -88,8 +88,7 @@ int create_partitions(hd_t *hd) {
 			devno = dev_open(devname);
 			if (devno == NODEV) {
 				devno = dev_make(devname, &partition_driver, NULL, &hd->parts[i]);
-			}
-			else {
+			} else {
 				dev_close(devno);
 			}
 		}

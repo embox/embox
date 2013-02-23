@@ -52,7 +52,7 @@ cppflags_fn = \
 # Preprocessor flags
 cppflags := $(CPPFLAGS)
 override CPPFLAGS  = $(call cppflags_fn,) $(cppflags)
-EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(PWD)/)
+EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(abspath $(ROOT_DIR))/)
 
 # Assembler flags
 asflags := $(CFLAGS)

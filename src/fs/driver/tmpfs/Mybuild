@@ -1,6 +1,8 @@
 package embox.fs.driver
 
 module tmpfs {
+	@InitFS source "tmp"
+
 	source "tmpfs.c"
 	option number tmpfs_inode_quantity=64
 	option number tmpfs_descriptor_quantity=4

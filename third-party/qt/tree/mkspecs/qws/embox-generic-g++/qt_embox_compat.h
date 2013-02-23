@@ -46,7 +46,7 @@ static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, o
 	(void)prot;
 	(void)flags;
 	(void)off;
-	printf(">>> mmap(%i)\n",fd);
+	//printf(">>> mmap(%i)\n",fd);
 	errno = EPERM;
 	return NULL;
 }
@@ -68,8 +68,10 @@ static inline char *getenv(const char *name) {
 	}
 	return 0;
 }
-static inline int fflush(FILE *x)
-  { printf(">>> fflush(%d)\n",(int)x); return EOF; }
+static inline int fflush(FILE *x) {
+	//printf(">>> fflush(%d)\n",(int)x);
+	return EOF;
+}
 
 // because of strcmp
 #include <string.h>

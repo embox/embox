@@ -14,7 +14,7 @@
 
 #include <net/netdevice.h>
 #include <net/skbuff.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <stdint.h>
 
 /**

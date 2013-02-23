@@ -18,12 +18,10 @@
 static char block_dev_check_type_name (char *p) {
 	if (*p == '#') {
 		return DIGITAL_IDX;
-	}
-	else if(*p == '*') {
+	} else if (*p == '*') {
 		return CHARACTER_IDX;
-	}
+	} else {
 	/* specifies the full name of the device */
-	else {
 		return WHOLE_NAME;
 	}
 }
@@ -34,8 +32,7 @@ static void block_dev_select_name(char *name, int idx) {
 	p = name;
 	if (*p) {
 	    p += strlen(p+1);
-	}
-	else {
+	} else {
 		return;
 	}
 
@@ -57,7 +54,7 @@ static void block_dev_select_name(char *name, int idx) {
 int block_dev_named(char *name, struct indexator *indexator) {
 	int idx;
 
-	if(-1 == (idx = index_alloc(indexator, INDEX_ALLOC_MIN))) {
+	if (-1 == (idx = index_alloc(indexator, INDEX_ALLOC_MIN))) {
 		return -1;
 	}
 	block_dev_select_name(name, idx);

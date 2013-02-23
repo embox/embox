@@ -12,7 +12,7 @@
 #include <prom/prom_printf.h>
 #include <util/binalign.h>
 #include <math.h>
-#include <err.h>
+
 
 #define MMU_PAGE_PRESENT 3
 

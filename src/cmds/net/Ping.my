@@ -48,14 +48,15 @@ module ping {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ping.c"
 
-	depends embox.net.netdb
+	depends embox.net.dns
 	depends embox.lib.LibC
 	depends embox.kernel.timer.sys_timer
-	depends embox.net.socket
-	depends embox.net.util
+	depends embox.compat.posix.net.socket
+	depends embox.compat.posix.net.inet_addr
 	depends embox.kernel.timer.sleep_api
 	depends embox.compat.posix.util.getopt
 	depends embox.net.core
 	depends embox.net.route
 	depends embox.framework.LibFramework
+	depends embox.compat.posix.net.gethostbyname
 }

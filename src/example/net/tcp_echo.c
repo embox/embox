@@ -8,11 +8,11 @@
 
 #include <string.h>
 #include <arpa/inet.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 #include <kernel/printk.h>
 #include <net/ip.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <framework/example/self.h>
 
 EMBOX_EXAMPLE(exec);

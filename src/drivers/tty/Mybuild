@@ -1,0 +1,6 @@
+/*FIXME mybuild wrong packet name */
+package embox.driver.tty
+
+module tty {
+	source "tty.c"
+}

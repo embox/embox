@@ -6,7 +6,7 @@
  * @author Nikolay Korotky
  */
 
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/vfs.h>
 
 #include <embox/device.h>
@@ -18,21 +18,17 @@ static int devfs_init(void *par) {
 
 static int devfs_mount(void *dev, void *dir) {
 	int ret;
-	struct node *nod;
+	struct node *node;
+	mode_t mode;
 
-	nod = vfs_find_node(dev, NULL);
-	if (nod != NULL) {
-		/* we already initialized devfs */
-		return 0;
-	}
+	mode = S_IFDIR | S_IRALL | S_IWALL | S_IXALL;
 
-	nod = vfs_add_path(dev, NULL);
-	if (nod == NULL) {
+	assert(!vfs_lookup(NULL, dev)); // XXX remove it -- Eldar
+
+	node = vfs_create(NULL, dev, mode);
+	if (!node) {
 		return -1;
 	}
-
-	nod->type = NODE_TYPE_DIRECTORY;
-	nod->nas = NULL; /* this is virtual folder to add folder or file we just add node */
 
 	ret = char_dev_init_all();
 	if (ret != 0) {
@@ -42,13 +38,15 @@ static int devfs_mount(void *dev, void *dir) {
 	return block_devs_init();
 }
 
-static fsop_desc_t devfs_fsop = { devfs_init, NULL, devfs_mount,
-		NULL, NULL};
+static struct fsop_desc devfs_fsop = {
+	.init = devfs_init,
+	.mount = devfs_mount,
+};
 
-static const fs_drv_t devfs_drv = {
+static const struct fs_driver devfs_driver = {
 	.name = "devfs",
 	.file_op = NULL,
 	.fsop = &devfs_fsop
 };
 
-DECLARE_FILE_SYSTEM_DRIVER(devfs_drv);
+DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);

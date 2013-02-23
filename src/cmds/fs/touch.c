@@ -5,11 +5,12 @@
  * @date 24.04.2012
  * @author Andrey Gazukin
  */
-#include <embox/cmd.h>
+
 #include <fcntl.h>
 #include <getopt.h>
 #include <stdio.h>
-#include <fs/vfs.h>
+
+#include <embox/cmd.h>
 
 EMBOX_CMD(exec);
 

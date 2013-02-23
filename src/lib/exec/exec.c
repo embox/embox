@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-#include <lib/elfloader.h>
+#include <lib/libelf.h>
 #include <kernel/usermode.h>
 #include <mem/mmap.h>
 #include <kernel/task.h>

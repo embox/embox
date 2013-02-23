@@ -16,19 +16,24 @@
 
 extern int vfs_get_path_by_node (node_t *nod, char *path);
 
-extern int vfs_add_leaf(node_t *child, node_t *parrent);
+extern int vfs_add_leaf(node_t *child, node_t *parent);
 
 extern int vfs_del_leaf(node_t *nod);
 
 extern node_t *vfs_get_root(void);
 
-extern node_t *vfs_add_path(const char *path, node_t *parrent);
+extern node_t *vfs_create(node_t *parent, const char *path, mode_t mode);
+extern node_t *vfs_create_child(node_t *parent, const char *name, mode_t mode);
+extern node_t *vfs_create_intermediate(node_t *parent, const char *path,
+	mode_t mode);
 
-extern node_t *vfs_get_child(const char *name, node_t *parrent);
+extern node_t *vfs_lookup(node_t *parent, const char *path);
+extern node_t *vfs_lookup_child(node_t *parent, const char *name);
+extern node_t *vfs_lookup_childn(node_t *parent, const char *name, size_t npreflen);
 
 extern node_t *vfs_get_parent(node_t *child);
 
-extern node_t *vfs_find_node(const char *path, node_t *parrent);
+extern node_t *vfs_get_child_next(node_t *parent);
 
 /**
  * Checks the path on the node_tree and forms correct string with the path which already exist.

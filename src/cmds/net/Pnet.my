@@ -92,8 +92,10 @@ module pnet {
 	depends embox.pnet.node.linux_dev
 	depends embox.mem.heap_api
 	depends embox.pnet.node.skbuff.matcher
-	depends embox.net.util
+	depends embox.net.util.misc
+	depends embox.compat.posix.net.inet_addr
 	depends embox.compat.posix.LibPosix
 	depends embox.net.dev
+	depends embox.compat.posix.net.gethostbyname
 	depends embox.framework.LibFramework
 }

@@ -1,5 +1,11 @@
 package embox.test.stdlib
 
+module strtod_test {
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	source "strtod_test.c"
+	depends embox.framework.LibFramework
+}
+
 module math_test {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "math_test.c"

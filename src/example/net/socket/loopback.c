@@ -8,7 +8,8 @@
 
 #include <stdio.h>
 #include <net/ip.h>
-#include <net/socket.h>
+#include <sys/socket.h>
+#include <unistd.h>
 #include <framework/example/self.h>
 
 /**This macro is used for registration of this example at system

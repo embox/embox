@@ -7,9 +7,10 @@
  * @author Anton Kozlov
  */
 
+#include <assert.h>
+#include <errno.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
-#include <assert.h>
 
 #include <fs/kfile.h>
 
@@ -42,6 +43,15 @@ static int this_ioctl(struct idx_desc *data, int request, va_list args) {
 	return kioctl(from_data(data), request, args);
 }
 
+static int this_truncate(struct idx_desc *data, off_t length) {
+	if (!(from_data(data)->flags & FS_MAY_WRITE)) {
+		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	return ktruncate(from_data(data)->node, length);
+}
+
 const struct task_idx_ops task_idx_ops_file = {
 	.close = this_close,
 	.read  = this_read,
@@ -49,4 +59,5 @@ const struct task_idx_ops task_idx_ops_file = {
 	.fseek = this_lseek,
 	.ioctl = this_ioctl,
 	.fstat = this_stat,
+	.ftruncate = this_truncate
 };

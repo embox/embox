@@ -20,6 +20,8 @@
 
 #define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)
 
+#define DEFAULT_MODE 0755
+
 POOL_DEF(file_pool, FILE, FILE_QUANTITY);
 
 FILE stdin_struct = {
@@ -47,14 +49,14 @@ FILE *fopen(const char *path, const char *mode) {
 	}
 
 	if (strchr(mode, 'w')) {
-		flags |= O_WRONLY;
+		flags |= O_WRONLY | O_TRUNC | O_CREAT;
 	}
 
 	if (strchr(mode, 'a')) {
-		flags |= O_APPEND;
+		flags |= O_APPEND | O_WRONLY | O_CREAT;
 	}
 
-	if ((fd = open(path, flags)) > 0) {
+	if ((fd = open(path, flags, DEFAULT_MODE)) > 0) {
 		file = pool_alloc(&file_pool);
 		file->fd = fd;
 	}

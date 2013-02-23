@@ -11,7 +11,6 @@
 #include <drivers/irqctrl.h>
 #include <hal/mm/mmu_core.h>
 #include <stdio.h>
-#include <err.h>
 #include "uimage.h"
 
 EMBOX_CMD(exec);
@@ -99,13 +98,13 @@ static int exec(int argc, char **argv) {
 		switch(opt) {
 		case 'f':
 			if (1 != sscanf(optarg, "%c", &format)) {
-				LOG_ERROR("wrong format %s\n", optarg);
+				printf("wrong format %s\n", optarg);
 				return -1;
 			}
 			break;
 		case 'a':
 			if (sscanf(optarg, "0x%x", &load_addr) < 0) {
-				LOG_ERROR("invalid value \"%s\"\n", optarg);
+				printf("invalid value \"%s\"\n", optarg);
 				return -1;
 			}
 			break;

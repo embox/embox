@@ -7,7 +7,11 @@ abstract module SysLibFile {
 
 module SysLibFsFull extends SysLibFile {
 	source "kfile.c"
+
+	depends embox.security.api
+
 	depends SysLibFileSystemFull
+	depends Perm
 }
 
 module SysLibFsNone extends SysLibFile {
@@ -25,4 +29,12 @@ module SysLibFileSystemNone extends SysLibFileSystem {
 
 module SysLibFileSystemFull extends SysLibFileSystem {
 	source "kfsop.c"
+	depends Perm
+}
+
+module Perm {
+	source "perm.c"
+
+	depends embox.security.api
+	@NoRuntime depends embox.compat.posix.proc.All
 }

@@ -19,7 +19,7 @@ QT_CONF_FLAGS_EMBOX += -no-largefile -no-qt3support
 QT_CONF_FLAGS_EMBOX += -no-kbd-tty -no-mouse-pc -no-mouse-linuxtp -no-gfx-linuxfb -no-gfx-multiscreen
 QT_CONF_FLAGS_EMBOX += -no-feature-TEMPORARYFILE     -D QT_NO_TEMPORARYFILE
 QT_CONF_FLAGS_EMBOX += -no-feature-PROCESS           -D QT_NO_PROCESS
-QT_CONF_FLAGS_EMBOX += -no-feature-FILESYSTEMWATCHER -D QT_NO_FILESYSTEMWATCHER
+#QT_CONF_FLAGS_EMBOX += -no-feature-FILESYSTEMWATCHER -D QT_NO_FILESYSTEMWATCHER
 QT_CONF_FLAGS_EMBOX += -no-feature-SHAREDMEMORY      -D QT_NO_SHAREDMEMORY
 QT_CONF_FLAGS_EMBOX += -no-feature-NETWORKINTERFACE  -D QT_NO_NETWORKINTERFACE
 QT_CONF_FLAGS_EMBOX += -no-feature-HOSTINFO          -D QT_NO_HOSTINFO
@@ -179,7 +179,9 @@ build_and_install: configure
 			echo Building... && \
 			(rm -r $(QT_COMPONENTS_DIR_EMBOX) || true) && \
 			make MAKEFLAGS='$(EMBOX_DERIVED_MAKEFLAGS)' && \
-			make install; \
+			make install && \
+			mkdir -p $(ROOT_DIR)/conf/rootfs && \
+			cp -l -f -u `find $(QT_INSTALL_DIR_EMBOX)/lib/fonts/ -type f` $(ROOT_DIR)/conf/rootfs/; \
 		fi
 
 #all: build_and_install
@@ -189,11 +191,11 @@ build_and_install: configure
 
 #TARGET_APPS += examples/declarative/animation/basics/color-animation
 #TARGET_APPS += demos/textedit
-#TARGET_APPS += demos/spreadsheet
+TARGET_APPS += demos/spreadsheet
 TARGET_APPS += examples/animation/animatedtiles
 TARGET_APPS += examples/animation/moveblocks
-#TARGET_APPS += examples/widgets/charactermap
-
+TARGET_APPS += examples/widgets/charactermap
+TARGET_APPS += examples/texteditor
 
 
 
@@ -300,7 +302,7 @@ QT_CONF_FLAGS_LINUX += -no-kbd-tty -no-mouse-pc -no-mouse-linuxtp -no-gfx-linuxf
 # -no-gfx-multiscreen
 QT_CONF_FLAGS_LINUX += -no-feature-TEMPORARYFILE
 QT_CONF_FLAGS_LINUX += -no-feature-PROCESS
-QT_CONF_FLAGS_LINUX += -no-feature-FILESYSTEMWATCHER
+#QT_CONF_FLAGS_LINUX += -no-feature-FILESYSTEMWATCHER
 QT_CONF_FLAGS_LINUX += -no-feature-SHAREDMEMORY
 QT_CONF_FLAGS_LINUX += -no-feature-NETWORKINTERFACE
 QT_CONF_FLAGS_LINUX += -no-feature-HOSTINFO

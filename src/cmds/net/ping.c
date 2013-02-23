@@ -12,22 +12,25 @@
  */
 
 #include <embox/cmd.h>
+
 #include <getopt.h>
-#include <net/icmp.h>
-#include <net/ip.h>
-#include <net/inetdevice.h>
-#include <net/checksum.h>
-#include <net/util.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <stdio.h>
 #include <fcntl.h>
-#include <err.h>
+
 #include <errno.h>
-#include <net/route.h>
 #include <netdb.h>
+
+#include <net/route.h>
+#include <net/icmp.h>
+#include <net/ip.h>
+#include <net/inetdevice.h>
+#include <net/checksum.h>
+#include <net/util.h>
+
 
 EMBOX_CMD(exec);
 
@@ -73,7 +76,7 @@ static int sent_result(int sock, uint32_t timeout, union packet *ptx_pack, char 
 	int res = 0;
 
 	if (rx_pack == NULL) {
-		LOG_ERROR("packet allocate fail");
+		printf("packet allocate fail");
 		return -1;
 
 	}
@@ -119,7 +122,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	union packet *tx_pack = malloc(sizeof(union packet));
 
 	if (tx_pack == NULL) {
-		LOG_ERROR("packet allocate fail");
+		printf("packet allocate fail");
 		return -1;
 
 	}
@@ -146,7 +149,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 	/* open socket */
 	sk = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (sk < 0) {
-		LOG_ERROR("socket failed. error=%d\n", sk);
+		printf("socket failed. error=%d\n", sk);
 		free(tx_pack);
 		return -1;
 	}

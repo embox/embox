@@ -6,7 +6,7 @@ module tcp_sock {
 
 	depends tcp
 	depends route
-	depends util
+	depends embox.compat.posix.net.inet_addr
 	depends embox.lib.LibC
 	depends embox.mem.objalloc
 	depends embox.framework.LibFrameworkNet
@@ -89,20 +89,15 @@ module socket {
 	depends embox.lib.LibC
 
 	source "socket_registry.c"
+	option number amount_socket_node=4
 	depends embox.mem.pool
 	depends embox.lib.LibC
 	depends embox.util.LibUtil
 
 	source "socket_repo.c"
 
-	source "socket.c"
-	depends core /* for sock.c */
-	depends embox.kernel.task.idx_table
-	depends embox.kernel.task.errno
-	depends embox.kernel.thread.event
-	depends embox.kernel.task.io_sync_api
-	/* depends from kernel_socket.c */
-
 	source "ip_port.c"
-	option number protocol_ports_quantity=128
+	option number ports_per_protocol=1500
+	option number ports_get_free_since=1024
+	depends embox.util.Bit
 }

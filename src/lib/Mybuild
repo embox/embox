@@ -1,29 +1,10 @@
 package embox.lib
 
-
-
 static module LibElf {
-	source "new_elf/elf_header.c"
-	source "new_elf/elf_ph_table.c"
-	source "new_elf/elf_segment.c"
-	source "new_elf/elf_interp.c"
-}
+	source "elf/elf.c"
 
-static module LibDl {
-	source "dl/dl.c"
-	source "dl/dl_global_symbols.c"
-	source "dl/dl_relocs.c"
-
-	depends LibElf
-	depends embox.arch.x86.LibDl
-}
-
-static module LibElfloader {
-	source "elfloader/elfloader.c"
-	source "elfloader/elfloader_placement.c"
-
-	depends embox.mem.mmap_api
-	depends LibElf, LibDl
+	depends LibCStdio
+	depends LibCString
 }
 
 static module LibExec {
@@ -69,6 +50,7 @@ static module LibCStdlib {
 static module LibCString {
 	source "string/memchr.c"
 	source "string/memcmp.c"
+	source "string/memcpy.c"
 	source "string/memmove.c"
 	source "string/memset.c"
 	source "string/strcat.c"
@@ -135,6 +117,7 @@ static module LibCStdio {
 
 	option boolean stdio_lf_crlf_map = true
 	option number file_quantity = 16
+	option number support_floating = 1
 
 	source "stdio/fgetc.c"
 	source "stdio/file_ops.c"
@@ -153,6 +136,12 @@ static module LibCStdio {
 	depends LibCMath
 	depends LibCString
 	depends embox.driver.iodev.core
+
+	/**
+	 * XXX
+	 * putchar depends from embox.kernel.task.task_table
+	 */
+	depends embox.compat.posix.file
 }
 
 static module LibC {

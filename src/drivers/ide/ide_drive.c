@@ -156,7 +156,7 @@ int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout) {
 		if (tmr_chk_timeout(timeout)) {
 			return -ETIMEDOUT;
 		}
-		if((HDCS_DRQ == mask) && (0 == status)) {
+		if ((HDCS_DRQ == mask) && (0 == status)) {
 			return -EIO;
 		}
 	}
@@ -176,8 +176,7 @@ void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects) {
 		track = (blkno >> 8) & 0xFFFF;
 		head = ((blkno >> 24) & 0xF) | HD_LBA;
 		sector = blkno & 0xFF;
-	}
-	else {
+	} else {
 		track = blkno / (hd->heads * hd->sectors);
 		head = (blkno / hd->sectors) % hd->heads;
 		sector = blkno % hd->sectors + 1;
@@ -197,8 +196,7 @@ void pio_read_buffer(hd_t *hd, char *buffer, int size) {
 
 	if (hd->use32bits) {
 		insl(hdc->iobase + HDC_DATA, buffer, size / 4);
-	}
-	else {
+	} else {
 		insw(hdc->iobase + HDC_DATA, buffer, size / 2);
 	}
 }
@@ -208,8 +206,7 @@ void pio_write_buffer(hd_t *hd, char *buffer, int size) {
 
 	if (hd->use32bits) {
 		outsl(hdc->iobase + HDC_DATA, buffer, size / 4);
-	}
-	else {
+	} else {
 		outsw(hdc->iobase + HDC_DATA, buffer, size / 2);
 	}
 }
@@ -254,8 +251,7 @@ static int hd_identify(hd_t *hd) {
 
 	if (hd->iftype == HDIF_ATA) {
 		hd->media = IDE_DISK;
-	}
-	else {
+	} else {
 		hd->media = (hd->param.config >> 8) & 0x1f;
 	}
 
@@ -270,8 +266,7 @@ static int hd_identify(hd_t *hd) {
 			&& hd->sectors == 0xFFFF) {
 			return -EIO;
 		}
-	}
-	else {
+	} else {
 		hd->lba = 1;
 		hd->blks = (hd->param.totalsec1 << 16) | hd->param.totalsec0;
 		if (hd->media == IDE_DISK && (hd->blks == 0 ||
@@ -350,10 +345,8 @@ static void hd_dpc(void *arg) {
 			error = inb(hdc->iobase + HDC_ERR);
 			hd_error("hdread", error);
 			hdc->result = -EIO;
-		}
-		else
-		{
-			/* Read sector data */
+		} else {
+		/* Read sector data */
 			nsects = hdc->active->multsect;
 			if (nsects > hdc->nsects) {
 				nsects = hdc->nsects;
@@ -376,8 +369,7 @@ static void hd_dpc(void *arg) {
 			hd_error("hdwrite", error);
 
 			hdc->result = -EIO;
-		}
-		else {
+		} else {
 			/* Transfer next sector(s) or signal end of transfer */
 			nsects = hdc->active->multsect;
 			if (nsects > hdc->nsects) {
@@ -417,7 +409,7 @@ static void hd_dpc(void *arg) {
 		break;
 	}
 
-	if((0 == hdc->result) && (HD_XFER_IDLE != hdc->dir)
+	if ((0 == hdc->result) && (HD_XFER_IDLE != hdc->dir)
 			              && (HD_XFER_IGNORE != hdc->dir)) {
 		hdc->result = 1;
 		event_notify(&hdc->event);
@@ -451,8 +443,7 @@ static int probe_device(hdc_t *hdc, int drvsel) {
 
 	if (sc == 0x55 && sn == 0xAA) {
 		return 1;
-	}
-	else {
+	} else {
 		return -EIO;
 	}
 }
@@ -513,7 +504,7 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 	event_init(&hdc->event, "hard disc event");
 
 	if (hdc->bmregbase) {
-		if(hdc->prds) {
+		if (hdc->prds) {
 			page_free(__phymem_allocator, hdc->prds, 1);
 		}
 		/* Allocate one page for PRD list */
@@ -594,8 +585,7 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
 		/* Try other interface type */
 		if (hd->iftype == HDIF_ATA) {
 			hd->iftype = HDIF_ATAPI;
-		}
-		else if (hd->iftype == HDIF_ATAPI) {
+		} else if (hd->iftype == HDIF_ATAPI) {
 			hd->iftype = HDIF_ATA;
 		}
 		rc = hd_identify(hd);
@@ -609,29 +599,22 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
 	/* Determine UDMA mode */
 	if (!hdc->bmregbase) {
 		hd->udmamode = -1;
-	}
-	else if ((hd->param.valid & 4) &&
+	} else if ((hd->param.valid & 4) &&
 			(hd->param.dmaultra & (hd->param.dmaultra >> 8) & 0x3F)) {
 		if ((hd->param.dmaultra >> 13) & 1) {
 			hd->udmamode = 5; /* UDMA 100 */
-		}
-		else if ((hd->param.dmaultra >> 12) & 1) {
+		} else if ((hd->param.dmaultra >> 12) & 1) {
 			hd->udmamode = 4; /* UDMA 66 */
-		}
-		else if ((hd->param.dmaultra >> 11) & 1) {
+		} else if ((hd->param.dmaultra >> 11) & 1) {
 			hd->udmamode = 3; /* UDMA 44 */
-		}
-		else if ((hd->param.dmaultra >> 10) & 1) {
+		} else if ((hd->param.dmaultra >> 10) & 1) {
 			hd->udmamode = 2; /* UDMA 33 */
-		}
-		else if ((hd->param.dmaultra >> 9) & 1) {
+		} else if ((hd->param.dmaultra >> 9) & 1) {
 			hd->udmamode = 1; /* UDMA 25 */
-		}
-		else {
+		} else {
 			hd->udmamode = 0; /* UDMA 16 */
 		}
-	}
-	else {
+	} else {
 		hd->udmamode = -1;
 	}
 

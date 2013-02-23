@@ -20,7 +20,7 @@
 //#include <kernel/thread/sync/mutex.h>
 
 struct tty_buf {
-	kfile_operations_t file_op; /**< must be first */
+	struct kfile_operations file_op; /**< must be first */
 	int id; /**< id, used for implementation special purpose */
 	/* output */
 	char *out_buf;/**< output store for refresh on make_active */

@@ -20,8 +20,6 @@ __BEGIN_DECLS
  */
 extern int open(const char *path, int __oflag, ...);
 
-extern int close(int file);
-
 /*
  * shall be equivalent to: open(path, O_WRONLY|O_CREAT|O_TRUNC, mode)
  */

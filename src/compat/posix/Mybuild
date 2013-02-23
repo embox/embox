@@ -4,6 +4,7 @@ module LibPosix {
 	depends embox.compat.posix.util.All
 	depends embox.compat.posix.proc.All
 	depends embox.compat.posix.idx.All
+	depends embox.compat.posix.net.All
 	depends file
 	depends fs
 	depends sched
@@ -37,6 +38,8 @@ module xattr {
 	source "xattr.c"
 
 	depends embox.fs.xattr
+	depends embox.fs.Perm
+	depends embox.security.api
 }
 
 static module dirent {
@@ -59,13 +62,3 @@ static module sched {
 	source "sched_posix.c"
 }
 
-static module passwd {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "passwd.c"
-
-	@InitFS
-	source "passwd"
-
-	@InitFS
-	source "shadow"
-}

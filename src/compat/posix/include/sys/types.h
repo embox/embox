@@ -62,6 +62,8 @@ typedef unsigned int blkno_t;
 
 typedef int off_t;  /*  Used for file sizes. */
 
+typedef long long loff_t;
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* SYS_TYPES_H_ */

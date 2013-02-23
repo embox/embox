@@ -13,6 +13,10 @@
 #include <net/ip.h>
 #include <net/net.h>
 #include <string.h>
+#include <net/sock.h>
+#include <netinet/in.h>
+#include <net/skbuff.h>
+
 
 //#define HOSTNAME "embox"
 //#define DHCP_SUPPORT 1

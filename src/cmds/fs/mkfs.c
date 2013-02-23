@@ -15,9 +15,8 @@
 #include <string.h>
 #include <fcntl.h>
 
-#include <fs/ramfs.h>
-#include <fs/vfs.h>
-#include <fs/fs_drv.h>
+#include <fs/kfsop.h>
+#include <fs/fs_driver.h>
 #include <drivers/ramdisk.h>
 
 
@@ -46,8 +45,7 @@ static int check_invalid(int min_argc, int argc, char **argv) {
 		printf("Invalid option `-%c' `%s'\n", optind, argv[optind]);
 		print_usage();
 		return EINVAL;
-	}
-	else {
+	} else {
 		return 0;
 	}
 }
@@ -74,40 +72,32 @@ static int exec(int argc, char **argv) {
 		case 't':
 			min_argc = 4;
 			fs_name = optarg;
-			if(check_invalid(min_argc, argc, argv)){
-				return -EINVAL;
-			}
 			operation_flag |= MKFS_FORMAT_DEV;
 			break;
 		case 'q':
 			min_argc += 1;
 			operation_flag |= MKFS_CREATE_RAMDISK;
-			if(check_invalid(min_argc, argc, argv)){
-				return -EINVAL;
-			}
 			break;
 		case '?':
-			if(check_invalid(min_argc, argc, argv)){
-				return -EINVAL;
-			}
-			break;
 		case 'h':
 			print_usage();
 			return 0;
 		default:
 			return 0;
 		}
+		if (check_invalid(min_argc, argc, argv)) {
+			return -EINVAL;
+		}
 	}
 
 	if (argc > 1) {
 		if (argc > min_argc) {/** last arg should be block quantity*/
-			if(0 >= sscanf(argv[argc - 1], "%d", &blocks)){
+			if (0 >= sscanf(argv[argc - 1], "%d", &blocks)){
 				print_usage();
 				return -EINVAL;
 			}
 			path = argv[argc - 2];
-		}
-		else {/** last arg should be diskname*/
+		} else {/** last arg should be diskname*/
 			path = argv[argc - 1];
 		}
 
@@ -118,30 +108,17 @@ static int exec(int argc, char **argv) {
 }
 
 static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
-						unsigned int fs_type, unsigned int operation_flag) {
-	struct fs_drv *fs_drv;
+		unsigned int fs_type, unsigned int operation_flag) {
 	int rezult;
-	struct node *node;
 
-	if(operation_flag & MKFS_CREATE_RAMDISK) {
-		if(0 > (rezult = ramdisk_create(path, blocks * PAGE_SIZE()))) {
+	if (operation_flag & MKFS_CREATE_RAMDISK) {
+		if (0 > (rezult = ramdisk_create(path, blocks * PAGE_SIZE()))) {
 			return rezult;
 		}
 	}
 
-	if(operation_flag & MKFS_FORMAT_DEV) {
-		/* find filesystem driver by name */
-		if(NULL == (fs_drv =
-				fs_driver_find_drv((const char *) fs_name))) {
-			return -EINVAL;
-		}
-
-		if(NULL == (node = vfs_find_node((char *) path, NULL))) {
-			return -ENODEV;
-		}
-
-		/* format filesystem */
-		if (0 != (rezult = fs_drv->fsop->format((void *) node))) {
+	if (operation_flag & MKFS_FORMAT_DEV) {
+		if (0 != (rezult = kformat(path, fs_name))) {
 			return rezult;
 		}
 	}

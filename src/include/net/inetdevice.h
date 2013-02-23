@@ -5,14 +5,16 @@
  * @author Anton Bondarev
  */
 
-#ifndef INETDEVICE_H_
-#define INETDEVICE_H_
+#ifndef NET_INETDEVICE_H_
+#define NET_INETDEVICE_H_
 
-#include <net/etherdevice.h>
 #include <net/netdevice.h>
-#include <net/net.h>
+#include <netinet/in.h>
+#include <types.h>
 
 typedef void (*devinet_callback_t)(void *pack);
+
+struct net_device;
 
 /**
  * structute of inet(IP) device
@@ -125,4 +127,4 @@ extern int ifdev_up(const char *iname);
 extern int ifdev_down(const char *iname);
 
 
-#endif /* INETDEVICE_H_ */
+#endif /* NET_INETDEVICE_H_ */

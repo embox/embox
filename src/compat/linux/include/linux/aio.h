@@ -9,7 +9,7 @@
 #ifndef LINUX_AIO_H_
 #define LINUX_AIO_H_
 
-#include <lib/list.h>
+#include <linux/list.h>
 /**
  * AIO control block structure use in asynchronous I/O operations
  * we use it's in kernel mode instead of <aio.h> from standart library.

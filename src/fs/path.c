@@ -4,6 +4,9 @@
  *
  * @date 19.11.2012
  * @author Andrey Gazukin
+ *          - Initial implementation.
+ * @author Eldar Abusalimov
+ *          - path_next
  */
 #include <stdio.h>
 #include <string.h>
@@ -60,7 +63,7 @@ int path_increase_tail(char *head, char *tail) {
 		strcat(head, tail);
 
 		do {
-			if('\0' == *p_tail) {
+			if ('\0' == *p_tail) {
 				break;
 			}
 			p_tail++;
@@ -83,7 +86,7 @@ char *path_get_next_name(const char *path, char *node_name, int buff_len) {
 	*nm = '\0'; /* empty node_name */
 
 	/* we must pass '/' symbol */
-	if('/' == *p) {
+	if ('/' == *p) {
 		p++;
 	}
 
@@ -102,6 +105,29 @@ char *path_get_next_name(const char *path, char *node_name, int buff_len) {
 	}
 
 	return NULL;
+}
+
+const char *path_next(const char *path, size_t *p_len) {
+	/* Skip leading slashes. */
+	while (*path == '/') {
+		++path;
+	}
+
+	if (!*path) {
+		return NULL;
+	}
+
+	if (p_len) {
+		const char *end = path;
+
+		while (*end && *end != '/') {
+			++end;
+		}
+
+		*p_len = end - path;
+	}
+
+	return path;
 }
 
 #include <fs/fat.h>
@@ -173,4 +199,10 @@ char *path_dir_to_canonical(char *dest, char *src, char dir) {
         return dest;
 }
 
-
+int path_is_dotname(const char *name, size_t name_len) {
+	if (name_len - 1 <= 1 && name[0] == '.' && name[name_len - 1] == '.') {
+		return name_len;
+	} else {
+		return 0;
+	}
+}

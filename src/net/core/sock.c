@@ -14,6 +14,7 @@
 #include <net/sock.h>
 #include <mem/misc/pool.h>
 #include <hal/ipl.h>
+#include <kernel/softirq_lock.h>
 #include <kernel/thread/event.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>
@@ -21,6 +22,7 @@
 #include <framework/mod/options.h>
 
 #include <kernel/task/io_sync.h>
+#include <mem/misc/slab.h>
 
 #define MODOPS_MIN_AMOUNT_SOCK OPTION_GET(NUMBER, min_amount_sock)
 
@@ -118,13 +120,17 @@ struct sock * sk_alloc(int family, gfp_t priority, struct proto *prot) {
 		}
 	}
 
+#if 0
 	sk->sk_destruct = NULL;
+#endif
 	sk->sk_family = family;
 	sk->sk_prot = prot;
 
 	/* FIXME in tcp.c tcp_default_sock is created without call socket() */
 	event_init(&sk->sock_is_not_empty, "sock_is_not_empty");
+#if 0
 	event_init(&sk->sock_is_ready, "sock_is_ready");
+#endif
 
 	sk->sk_shutdown = 0;
 
@@ -142,9 +148,11 @@ void sk_free(struct sock *sk) {
 	if (sk->sk_prot->unhash != NULL) {
 		sk->sk_prot->unhash(sk);
 	}
+#if 0
 	if (sk->sk_destruct != NULL) {
 		sk->sk_destruct(sk);
 	}
+#endif
 	sk_prot_free(sk->sk_prot, sk);
 }
 
@@ -171,7 +179,7 @@ void sock_queue_rcv_skb(struct sock *sk, struct sk_buff *skb) {
 
 	event_notify(&sk->sock_is_not_empty);
 	if (desc->data) {
-		io_op_unblock(&desc->data->read_state);
+		idx_io_enable(desc, IDX_IO_READING);
 	}
 }
 
@@ -192,9 +200,11 @@ void sk_common_release(struct sock *sk) {
 	assert(sk->sk_receive_queue);
 	assert(sk->sk_write_queue);
 
+#if 0
 	if (sk->sk_prot->destroy != NULL) {
 		sk->sk_prot->destroy(sk);
 	}
+#endif
 
 	skb_queue_free(sk->sk_receive_queue);
 	skb_queue_free(sk->sk_write_queue);
@@ -202,22 +212,29 @@ void sk_common_release(struct sock *sk) {
 	sk_free(sk);
 }
 
-static int test_and_set(unsigned long *a) {
-	register int tmp;
-	ipl_t ipl = ipl_save();
-	tmp = *a;
-	*a = 1;
-	ipl_restore(ipl);
+int sock_lock(struct sock **psk) {
+	struct sock *sk;
+	spinlock_t is_locked;
 
-	return tmp;
-}
+	assert(psk != NULL);
 
-void sock_lock(struct sock *sk) {
-	assert(sk != NULL);
-	while(test_and_set(&sk->sk_lock.slock));
+	do {
+		softirq_lock();
+		{
+			sk = *psk;
+			if (sk != NULL) {
+				is_locked = sk->sk_lock.slock;
+				sk->sk_lock.slock = 1;
+			}
+		}
+		softirq_unlock();
+	} while ((sk != NULL) && is_locked);
+
+	return sk != NULL ? 1 : 0;
 }
 
 void sock_unlock(struct sock *sk) {
 	assert(sk != NULL);
+
 	sk->sk_lock.slock = 0;
 }

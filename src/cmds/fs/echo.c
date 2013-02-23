@@ -5,9 +5,9 @@
  * @date 25.04.2012
  * @author Andrey Gazukin
  */
+
 #include <embox/cmd.h>
 #include <getopt.h>
-#include <fs/vfs.h>
 #include <types.h>
 #include <errno.h>
 #include <unistd.h>
@@ -38,11 +38,11 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 3) {
-		if(NULL == (fd = fopen((const char *) argv[argc - 1], "a"))) {
+		if (NULL == (fd = fopen((const char *) argv[argc - 1], "a"))) {
 			return -errno;
 		}
 
-		if(0 != strcmp((const char *) argv[argc - 2], ">>")) {
+		if (0 != strcmp((const char *) argv[argc - 2], ">>")) {
 			print_usage();
 			return 0;
 		}

@@ -10,7 +10,7 @@
 #include <getopt.h>
 #include <arpa/inet.h>
 #include <net/ip.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/inetdevice.h>
 #include <cmd/web_server.h>
 #include <cmd/servd.h>
@@ -18,7 +18,7 @@
 #include <embox/cmd.h>
 #include <kernel/task.h>
 #include <errno.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 EMBOX_CMD(servd);
 

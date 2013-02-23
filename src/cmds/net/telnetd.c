@@ -13,17 +13,17 @@
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+#include <kernel/thread.h>
 
 #include <utmp.h>
 
 #include <net/ip.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <net/inetdevice.h>
 
 #include <util/ring_buff.h>
 #include <util/math.h>
 
-//#include <err.h>
 
 #include <kernel/task.h>
 

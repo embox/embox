@@ -15,8 +15,14 @@
 
 int open(const char *path, int __oflag, ...) {
 	struct file_desc *kfile;
+	va_list args;
+	mode_t mode;
 
-	kfile = kopen(path, __oflag);
+	va_start(args, __oflag);
+	mode = va_arg(args, mode_t);
+	va_end(args);
+
+	kfile = kopen(path, __oflag, mode);
 
 	if (NULL == kfile) {
 		return -1;

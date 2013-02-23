@@ -7,9 +7,10 @@
  */
 
 #include <errno.h>
-#include <drivers/diag.h>
-#include <drivers/iodev.h>
 #include <stddef.h>
+
+#include <drivers/iodev.h>
+
 
 static const struct iodev_ops *current_iodev = NULL;
 

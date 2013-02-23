@@ -123,18 +123,17 @@ struct tree_link *tree_lookup(struct tree_link *node,
 struct tree_link *tree_children_begin(struct tree_link *tree) {
 	struct list_link *lnk;
 
-	if(NULL == (lnk = list_first_link(&tree->children))) {
+	if (NULL == (lnk = list_first_link(&tree->children))) {
 		return NULL;
 	}
 
 	return list_element(lnk, struct tree_link, list_link);
 }
 
-
 struct tree_link *tree_children_end(struct tree_link *tree) {
 	struct list_link *lnk;
 
-	if(NULL == (lnk = list_last_link(&tree->children))) {
+	if (NULL == (lnk = list_last_link(&tree->children))) {
 		return NULL;
 	}
 

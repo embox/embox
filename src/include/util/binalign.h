@@ -26,7 +26,7 @@
 
 #endif /* __ASSEMBLER__ */
 
-#define __binalign_check_mask(x, mask)  ((x) & (mask) == 0)
+#define __binalign_check_mask(x, mask)  (((x) & (mask)) == 0)
 
 #ifndef __ASSEMBLER__
 

@@ -1,0 +1,7 @@
+package embox.driver.input.keyboard
+
+module keyboard {
+	source "keyboard.c"
+	source "keymap.c"
+	@NoRuntime depends embox.driver.virtual.input_dev
+}

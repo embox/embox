@@ -9,6 +9,8 @@
 
 #include <asm/linkage.h>
 
+#include <kernel/cpu.h>
+
 	.section .text
 	.align 4
 
@@ -57,9 +59,12 @@ C_ENTRY(_start):
 	addl    $0xc, %esp
 1:
 
-
 	call    gdt_init
 	call    idt_init
+
+#ifdef SMP
+	call    percpu_init
+#endif
 
 /* we already save eax and ebx on the stack */
 	call    multiboot_save_info

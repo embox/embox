@@ -12,9 +12,7 @@
 #include <errno.h>
 
 #include <embox/cmd.h>
-#include <fs/vfs.h>
-#include <fs/fs_drv.h>
-#include <fs/sys/fsop.h>/* now mount declaration in this header */
+#include <fs/sys/fsop.h>
 
 EMBOX_CMD(exec);
 
@@ -49,17 +47,16 @@ static int exec(int argc, char **argv) {
 	if (argc > 2) {
 		dev = argv[argc - 2];
 		dir = argv[argc - 1];
-		if(argc > 3) {
-			if(opt_cnt) {
+		if (argc > 3) {
+			if (opt_cnt) {
 				fs_type = argv[argc - 3];
-			}
-			else {
+			} else {
 				print_usage();
 				return 0;
 			}
 		}
 
-		if(0 == fs_type) {
+		if (0 == fs_type) {
 			print_usage();
 			printf("try to set \"-t [fstype]\" option\n");
 			return 0;

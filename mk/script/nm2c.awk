@@ -20,7 +20,8 @@ BEGIN {
 }
 
 /^[0-9a-fA-F]* [tT]/ {
-	printf "\t{ (void *) 0x%s, \"%s\" },\n", $1, $3;
+	split($0,a," [tT] ");
+	printf "\t{ (void *) 0x%s, \"%s\" },\n", $1, a[2];
 }
 
 END {

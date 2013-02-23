@@ -1,0 +1,9 @@
+package embox.test.security
+
+module smac {
+	source "smac.c"
+
+	depends embox.security.smac
+	depends embox.fs.driver.ext2
+	depends embox.compat.posix.xattr
+}

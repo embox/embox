@@ -12,12 +12,14 @@
 #include <fs/node.h>
 #include <fs/file_operation.h>
 #include <stddef.h>
+#include <fs/flags.h>
 
 struct node;
 struct kfile_operations;
 
 struct file_desc {
 	struct node *node;
+	int flags;
 	const struct kfile_operations *ops;
 	size_t cursor;
 	void *file_info; /* customize in each file system */

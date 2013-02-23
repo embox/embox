@@ -1,0 +1,25 @@
+package embox.cmd
+
+interface Shell {
+	feature commandLine
+}
+
+module shell {
+	option number prompt_len = 80
+	option string prompt = "embox> "
+	option string welcome_msg = "Welcome to Embox and have a lot of fun!"
+
+	provides Shell.commandLine
+
+	@IncludePath("$(SRC_DIR)/compat/posix/include")
+	@IncludePath("$(CONF_DIR)")
+	source "shell.c", "console/console.c",
+		"console/cmdline.c", "console/screen.c",
+		"console/screen_in.c", "console/screen_out.c"
+
+	depends embox.lib.LibC
+	depends embox.util.LibUtil
+	depends embox.driver.terminal
+	depends embox.framework.LibFramework
+	depends embox.cmd.sh.shell
+}

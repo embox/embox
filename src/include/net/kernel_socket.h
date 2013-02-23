@@ -11,9 +11,15 @@
 #define NET_KERNEL_SOCKET_H_
 
 #include <linux/aio.h>
+#include <sys/socket.h>
 #include <net/socket.h>
-#include <net/net.h>
+#include <net/sock.h>
 #include <types.h>
+
+struct socket;
+struct sock;
+struct kiocb;
+struct msghdr;
 
 /**
  * Create socket method in kernel layer.
@@ -33,7 +39,7 @@
 /* extern int kernel_socket_create(int family, int type, int protocol, */
 /* 					struct socket **res); */
 extern int kernel_socket_create(int family, int type, int protocol, struct socket **psock,
-																struct sock *sk, struct proto_ops *sk_ops);
+		struct sock *sk, struct proto_ops *sk_ops);
 
 /**
  * Close socket method in kernel layer.
@@ -59,7 +65,7 @@ extern int kernel_socket_release(struct socket *sock);
  * @return 0 on success, minus posix errno indicating the reason
  */
 extern int kernel_socket_bind(struct socket *sock, const struct sockaddr *addr,
-					socklen_t addrlen);
+		socklen_t addrlen);
 
 /**
  * Listen for connections on a connection-mode socket.
@@ -102,35 +108,35 @@ extern int kernel_socket_accept(struct socket *sock, struct socket **new_sock,
  * @return 0 on success, minus posix errno on failure
  */
 extern int kernel_socket_connect(struct socket *sock, const struct sockaddr *addr,
-					int addrlen, int flags);
+		int addrlen, int flags);
 
 /**
  * Get socket name.
  * Note: not realized.
  */
 extern int kernel_socket_getsockname(struct socket *sock, struct sockaddr *addr,
-					int *addrlen);
+		int *addrlen);
 
 /**
  * Get name of connected peer socket.
  * Note: not realized.
  */
 extern int kernel_socket_getpeername(struct socket *sock, struct sockaddr *addr,
-					int *addrlen);
+		int *addrlen);
 
 /**
  * Get socket options.
  * Note: not realized.
  */
 extern int kernel_socket_getsockopt(struct socket *sock, int level, int optname,
-					char *optval, socklen_t *optlen);
+		char *optval, socklen_t *optlen);
 
 /**
  * Set socket options.
  * Note: not realized.
  */
 extern int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
-					char *optval, socklen_t optlen);
+		char *optval, socklen_t optlen);
 
 /**
  * Send a message on a socket.
@@ -143,7 +149,7 @@ extern int kernel_socket_setsockopt(struct socket *sock, int level, int optname,
  * @return error code
  */
 extern int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,
-				struct msghdr *msg, size_t size);
+		struct msghdr *msg, size_t size);
 
 /**
  * Receive a message from a socket.
@@ -157,7 +163,7 @@ extern int kernel_socket_sendmsg(struct kiocb *iocb, struct socket *sock,
  * @return error code
  */
 extern int kernel_socket_recvmsg(struct kiocb *iocb, struct socket *sock,
-				struct msghdr *msg, size_t size, int flags);
+		struct msghdr *msg, size_t size, int flags);
 
 extern int kernel_socket_shutdown(struct socket *sock, int how);
 extern int kernel_socket_close(struct socket *sock);

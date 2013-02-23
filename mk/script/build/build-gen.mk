@@ -147,9 +147,10 @@ $(@build_image) : target_file = \
 
 $(@build_image) : scripts = $(patsubst %,$(value source_cpp_rulemk_o_pat), \
 			$(call source_base,$(@source_cpp_rulemk)))
-$(@build_image) : objs = $(patsubst %,$(value source_cc_rulemk_o_pat), \
-			$(basename $(call module_cc_source_files,$(normal_modules))))
+$(@build_image) : objs = $(patsubst %,$(value source_occ_rulemk_o_pat), \
+			$(basename $(call module_occ_source_files,$(normal_modules))))
 $(@build_image) : libs = $(patsubst %,$(value module_ar_rulemk_a_pat), \
+			$(basename $(call module_a_source_files,$(build_modules))) \
 			$(call module_path,$(archived_modules)))
 
 $(@build_image) :
@@ -203,8 +204,7 @@ $(@build_initfs) : target_file = \
 		$(patsubst %,$(value build_initfs_rulemk_target_pat),$$(build_initfs))
 
 $(@build_initfs) : cpio_files = \
-		$(addprefix $$(ROOTFS_DIR)/, \
-			$(notdir $(call get,$(@source_initfs_cp_rulemk),fileName)))
+		$(call source_initfs_cp_o_file,$(@source_initfs_cp_rulemk))
 
 $(@build_initfs) :
 	@$(call cmd_notouch_stdout,$(@file), \
@@ -254,12 +254,15 @@ $(@module_ar_rulemk) : @file   = $(path:%=$(module_ar_rulemk_mk_pat))
 $(@module_ar_rulemk) : mk_file = $(patsubst %,$(value module_ar_rulemk_mk_pat),$$(module_path))
 $(@module_ar_rulemk) : a_file  = $(patsubst %,$(value module_ar_rulemk_a_pat),$$(module_path))
 
-module_cc_source_files = \
-	$(filter $(source_cc_pats),$(filter-out $(source_cpp_pats), \
+module_occ_source_files = \
+	$(filter $(source_cc_pats) $(source_o_pats),$(filter-out $(source_cpp_pats), \
 		$(call source_file,$(call get,$1,sources))))
 
-$(@module_ar_rulemk) : objs = $(patsubst %,$(value source_cc_rulemk_o_pat), \
-			$(basename $(call module_cc_source_files,$@)))
+module_a_source_files = \
+	$(filter $(source_a_pats),$(call source_file,$(call get,$1,sources)))
+
+$(@module_ar_rulemk) : objs = $(patsubst %,$(value source_occ_rulemk_o_pat), \
+			$(basename $(call module_occ_source_files,$@)))
 $(@module_ar_rulemk) : check_objs = $(or $(strip $1), \
 	$$(warning static module '$(fqn)' must specify at least one source file.))
 
@@ -323,22 +326,38 @@ my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
 			$(call source_annotation_values,$s,$(my_gen_script))))
 
 my_initfs := $(call mybuild_resolve_or_die,mybuild.lang.InitFS)
+my_initfs_target := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.target)
+my_initfs_chmod := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chmod)
+my_initfs_chown := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.chown)
 
 @source_initfs_cp_rulemk := \
 	$(foreach s,$(build_sources), \
-		$(if $(call source_annotations,$s,$(my_initfs)),source-initfs-cp-rulemk/$s))
+		$(if $(call source_annotations,$s,$(my_initfs)), \
+			source-initfs-cp-rulemk/$(strip \
+				$(call source_annotation_values,$s,$(my_initfs_target)))$s))
 
-source_cpp_pats := %.lds.S
+source_o_pats   := %.o
+source_a_pats   := %.a
 source_cc_pats  := %.S %.c %.cpp %.cxx
+source_cpp_pats := %.lds.S
 
 @source_rulemk := \
 	$(foreach s,$(build_sources), \
-		$(foreach f,$(call get,$s,fileName), \
-			$(if $(filter $(source_cpp_pats),$f),source-cpp-rule-mk/$s, \
-				$(if $(filter $(source_cc_pats),$f),source-cc-rule-mk/$s))))
+		$(foreach f,$(call get,$s,fileName),$(or \
+			$(and $(filter $(source_cpp_pats),$f),source-cpp-rule-mk/$s), \
+			$(and $(filter $(source_cc_pats),$f), source-cc-rule-mk/$s), \
+			$(and $(filter $(source_a_pats),$f),  source-a-rule-mk/$s), \
+			$(and $(filter $(source_o_pats),$f),  source-o-rule-mk/$s))))
 
-@source_cpp_rulemk := $(filter source-cpp-rule-mk/%,$(@source_rulemk))
+@source_o_rulemk   := $(filter source-o-rule-mk/%,$(@source_rulemk))
+@source_a_rulemk   := $(filter source-a-rule-mk/%,$(@source_rulemk))
 @source_cc_rulemk  := $(filter source-cc-rule-mk/%,$(@source_rulemk))
+@source_cpp_rulemk := $(filter source-cpp-rule-mk/%,$(@source_rulemk))
+
+$(@source_o_rulemk)   : kind := o
+$(@source_a_rulemk)   : kind := a
+$(@source_cc_rulemk)  : kind := cc
+$(@source_cpp_rulemk) : kind := cpp
 
 @source_rulemk += \
 	$(@source_initfs_cp_rulemk)
@@ -360,9 +379,15 @@ $(@source_all) : base = $(call source_base,$@)
 
 $(@source_all) : values_of = $(call source_annotation_values,$@,$1)
 
+my_rule_script  = $(call mybuild_resolve_or_die,mybuild.lang.Rule.script)
 my_rule_prereqs = $(call mybuild_resolve_or_die,mybuild.lang.Rule.prerequisites)
 
+$(@source_all) : script  = $(call get,$(call values_of,$(my_rule_script)),value)
 $(@source_all) : prereqs = $(call get,$(call values_of,$(my_rule_prereqs)),value)
+
+$(@source_o_rulemk) $(@source_a_rulemk) : script  = $(or \
+			$(call get,$(call values_of,$(my_rule_script)),value), \
+			$$(CP) $(file) $$@)
 
 my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
 my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
@@ -382,36 +407,49 @@ source_rulemk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 $(@source_rulemk) : @file   = $(file:%=$(source_rulemk_mk_pat))
 $(@source_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$$(source_file))
 
+source_occ_rulemk_o_pat = $(OBJ_DIR)/%.o
+
+source_o_rulemk_o_pat   = $(OBJ_DIR)/%.o
+source_a_rulemk_o_pat   = $(OBJ_DIR)/%.a
 source_cc_rulemk_o_pat  = $(OBJ_DIR)/%.o
 source_cpp_rulemk_o_pat = $(OBJ_DIR)/%# foo.lds.S -> foo.lds
 
 $(@source_rulemk)  : o_file = $(patsubst %,$(value source_$(kind)_rulemk_o_pat),$$(source_base))
 
-$(@source_cpp_rulemk) $(@source_cc_rulemk) :
+$(@source_cpp_rulemk) $(@source_cc_rulemk) $(@source_o_rulemk) $(@source_a_rulemk):
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,source_file,$(file)); \
 		$(call gen_make_var,source_base,$$(basename $$(source_file))); \
 		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
-		$(call gen_make_tsvar,$(o_file),extra_prereqs,$(prereqs)); \
 		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(o_file),flags,$(flags)); \
+		$(call gen_make_rule,$(o_file),$(prereqs),$(script)); \
 		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))
 
-$(@source_cc_rulemk)  : kind := cc
-$(@source_cpp_rulemk) : kind := cpp
+source_initfs_cp_o_file = \
+	$(addprefix $$(ROOTFS_DIR)/, \
+		$(foreach s,$1,$(or \
+			$(call get,$(notdir $(basename $(basename $s))),value), \
+			$(call get,$s,fileName))))
 
-$(@source_initfs_cp_rulemk) : o_file  = $$(ROOTFS_DIR)/$(notdir $(file))
+$(@source_initfs_cp_rulemk) : o_file = $(call source_initfs_cp_o_file,$@)
+
 $(@source_initfs_cp_rulemk) : src_file = $(file)
 $(@source_initfs_cp_rulemk) : mk_file = $(patsubst %,$(value source_rulemk_mk_pat),$(file))
 $(@source_initfs_cp_rulemk) : kind := initfs_cp
+$(@source_initfs_cp_rulemk) : str_of = \
+		$(call sh_quote,$(call get,$(call values_of,$1),value))
+$(@source_initfs_cp_rulemk) : chmod = $(call str_of,$(my_initfs_chmod))
+$(@source_initfs_cp_rulemk) : chown = $(call str_of,$(my_initfs_chown))
 
 $(@source_initfs_cp_rulemk) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_dep,$(o_file),$$$$($(kind)_prerequisites)); \
-		$(call gen_make_tsvar,$(o_file),extra_prereqs,$(prereqs)); \
 		$(call gen_make_tsvar,$(o_file),src_file,$(src_file)); \
+		$(call gen_make_tsvar,$(o_file),chmod,$(chmod)); \
+		$(call gen_make_tsvar,$(o_file),chown,$(chown)); \
 		$(call gen_make_tsvar,$(o_file),mk_file,$(mk_file)))
 
 $(@source_gen) : @file = $(SRCGEN_DIR)/$(file)

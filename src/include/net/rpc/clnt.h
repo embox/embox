@@ -9,14 +9,17 @@
 #define NET_RPC_CLNT_H_
 
 #include <stdint.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 #include <sys/time.h>
 #include <net/rpc/xdr.h>
 #include <net/rpc/rpc_msg.h>
+#include <netinet/in.h>
 
 /* Prototypes */
-struct client;
 struct auth;
+struct client;
+struct sockaddr_in;
+struct timeval;
 
 enum clnt_stat {
 	RPC_SUCCESS,           /* call succeeded */

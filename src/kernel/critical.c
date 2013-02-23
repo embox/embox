@@ -9,23 +9,26 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <kernel/critical.h>
 #include <hal/ipl.h>
 
-critical_t __critical_count = 0;
+#include <kernel/percpu.h>
+#include <kernel/critical.h>
 
-static struct critical_dispatcher *dispatch_queue;
+critical_t __critical_count __percpu__ = 0;
+
+static struct critical_dispatcher *dispatch_queue __percpu__;
 
 void critical_dispatch_pending(void) {
+	struct critical_dispatcher **pp = percpu_ptr(&dispatch_queue);
+	critical_t count = percpu_var(__critical_count);
 	struct critical_dispatcher *d;
 	critical_t mask;
-	critical_t count = __critical_count;
 	ipl_t ipl;
 
 	ipl = ipl_save();
 
-	while ((d = dispatch_queue) && !((mask = d->mask) & count)) {
-		dispatch_queue = d->next;
+	while ((d = *pp) && !((mask = d->mask) & count)) {
+		*pp = d->next;
 		d->mask = ~mask;
 
 		assert(d->dispatch != NULL);
@@ -36,11 +39,13 @@ void critical_dispatch_pending(void) {
 }
 
 void critical_request_dispatch(struct critical_dispatcher *d) {
-	struct critical_dispatcher **pp = &dispatch_queue;
+	struct critical_dispatcher **pp = percpu_ptr(&dispatch_queue);
 	critical_t inv_mask;
 	ipl_t ipl;
 
 	assert(d != NULL);
+
+	d = percpu_ptr(d); /* Getting dispatcher of current CPU */
 
 	ipl = ipl_save();
 	if (critical_pending(d)) {

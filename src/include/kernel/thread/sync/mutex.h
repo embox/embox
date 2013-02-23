@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_SYNC_MUTEX_H_
 #define KERNEL_THREAD_SYNC_MUTEX_H_
 
-#include <lib/list.h>
+
 #include <kernel/thread.h>
 
 /**

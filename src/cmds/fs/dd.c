@@ -6,14 +6,13 @@
  * @author Andrey Gazukin
  */
 
-
+#include <errno.h>
 #include <getopt.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <fs/vfs.h>
 #include <mem/phymem.h>
 #include <embox/cmd.h>
 #include <embox/block_dev.h>
@@ -77,6 +76,7 @@ static int get_arg(int argc, char **argv, const char *mask, char *data) {
 	return -1;
 }
 
+#if 0
 static int read_file(char *path, char *buffer, size_t size, blkno_t blkno) {
 	ssize_t bytesread;
 	int file;
@@ -94,11 +94,10 @@ static int read_file(char *path, char *buffer, size_t size, blkno_t blkno) {
 
 	return bytesread;
 }
+#endif
 
 static int exec(int argc, char **argv) {
 	int rc;
-	node_t *nod;
-	struct nas *nas;
 	char path[MAX_LENGTH_PATH_NAME];
 	char num[MAX_LENGTH_FILE_NAME];
 	size_t bytes;
@@ -106,6 +105,7 @@ static int exec(int argc, char **argv) {
 	char *buffer;
 	ssize_t bytesread;
 	int opt;
+	int fd;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "h"))) {
@@ -121,52 +121,43 @@ static int exec(int argc, char **argv) {
 		}
 	}
 
-	if(0 > get_arg(argc, argv, PATH, path)) {
-		return -1;
-	}
-	nod = vfs_find_node(path, NULL);
-	if (NULL == nod) {
-		printf("dd: No such device or file\n");
-		return -1;
-	}
+	blkno = 0;
+	bytes = BSIZE;
+	rc = 0;
 
-	blkno = 0; bytes = BSIZE;
-	if(0 == get_arg(argc, argv, NUM_B, num)) {
+	if (0 == get_arg(argc, argv, NUM_B, num)) {
 		sscanf(num, "%u", &bytes);
 	}
-	if(0 == get_arg(argc, argv, START_B, num)) {
+
+	if (0 == get_arg(argc, argv, START_B, num)) {
 		sscanf(num, "%u", &blkno);
 	}
 
-	rc = 0;
-	if(NULL == (buffer =
-			page_alloc(__phymem_allocator, bytes / PAGE_SIZE() + 1))) {
+	if (0 > get_arg(argc, argv, PATH, path)) {
 		return -1;
 	}
 
-	if (node_is_block_dev(nod)) {
-		nas = nod->nas;
-		if(bytes <= (bytesread =  block_dev_read(nas->fi->privdata,
-							buffer, bytes, blkno))) {
-			print_data(buffer, bytesread, blkno);
-		}
-		else {
-			rc = -1;
-		}
-	}
-	else if (node_is_file(nod)) {
-		if(0 <= (bytesread = read_file(path, buffer, bytes, blkno))) {
-			print_data(buffer, bytesread, blkno);
-		}
-		else {
-			rc = -1;
-		}
-	}
-	else { /* node is directory or not specified */
-		printf("dd: Not a device or file\n");
-		rc = -1;
+	if (-1 == (fd = open(path, O_RDONLY))) {
+		return -errno;
 	}
 
+	if ((off_t) -1 == lseek(fd, blkno * BSIZE, SEEK_SET)) {
+		return -errno;
+	}
+
+	if (NULL == (buffer =
+			page_alloc(__phymem_allocator, bytes / PAGE_SIZE() + 1))) {
+		return -ENOMEM;
+	}
+
+	if (-1 == (bytesread = read(fd, buffer, bytes))) {
+		rc = -errno;
+		goto out;
+	}
+
+	print_data(buffer, bytesread, blkno);
+
+out:
 	/* free buffer */
 	page_free(__phymem_allocator, buffer, bytes / PAGE_SIZE() + 1);
 	return rc;

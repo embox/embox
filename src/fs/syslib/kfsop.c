@@ -16,129 +16,74 @@
 
 #include <fs/vfs.h>
 #include <fs/path.h>
-#include <fs/fs_drv.h>
+#include <fs/fs_driver.h>
 #include <fs/kfsop.h>
+#include <fs/perm.h>
+#include <security/security.h>
 
-static int create_new_node(struct node * parent, char *node_name, uint8_t node_type) {
-	struct node *new_node;
-	struct nas *nas;
-	fs_drv_t *drv;
-
-	if( NULL == (new_node = vfs_add_path(node_name, parent))) {
-		return -1;
-	}
-	new_node->type = node_type;
-	/* check drv of parents */
-	nas = parent->nas;
-	drv = nas->fs->drv;
-	if ((NULL == drv) || (NULL == drv->fsop->create_node)) {
-		return -1;
-	}
-
-	if(0 > drv->fsop->create_node(parent, new_node)) {
-		vfs_del_leaf(new_node);
-		return -1;
-	}
-	return 0;
-}
-
-int kcreat(struct node *root_node, const char *pathname, mode_t mode) {
-	char tpath[MAX_LENGTH_PATH_NAME];
-	char path[MAX_LENGTH_PATH_NAME];
-	int path_offset;
-	char node_name[MAX_LENGTH_FILE_NAME];
+static int create_new_node(struct node *parent, const char *name, mode_t mode) {
 	struct node *node;
+	struct fs_driver *drv;
+	int retval = 0;
 
-	/* if node already exist return error */
-	if (NULL != (node = vfs_find_node(pathname, root_node))) {
-		errno = EBUSY;
-		return -1;
+	node = vfs_create(parent, name, mode);
+	if (!node) {
+		return -ENOMEM;
 	}
 
-	if(NULL != root_node) {
-		vfs_get_path_by_node(root_node, path);
-		strncat(path, "/", sizeof(path));
-	} else {
-		path[0] = '\0';
+	/* check drv of parents */
+	drv = parent->nas->fs->drv;
+	if (!drv || !drv->fsop->create_node) {
+		retval = -1;
+		goto out;
 	}
 
-	strncat(path, pathname, sizeof(path));
-
-	/* get last exist node */
-	node = vfs_get_exist_path(path, tpath, sizeof(tpath));
-	if(NULL == node) {
-		return -1;
+	retval = drv->fsop->create_node(parent, node);
+	if (retval) {
+		goto out;
 	}
-
-	path_offset = strlen(tpath);
-
-	do {
-		path_get_next_name(&path[path_offset], node_name, sizeof(node_name));
-		if((path_offset + strlen(node_name) + 1) >= strlen(path)) {
-			if(0 == strlen(node_name)) {
-				path_get_next_name(&path[path_offset], node_name, sizeof(node_name));
-			}
-			/* this is a file */
-			return create_new_node(node, node_name, NODE_TYPE_FILE);
-		} else {
-			if(-1 == kmkdir(node, node_name, mode)) {
-				return -1;
-			}
-
-			node = vfs_get_child(node_name, node);
-			path_offset += (strlen(node_name) + 1);
-		}
-	} while (NULL != node);
-
-
-	/* set permission */
 
 	return 0;
+
+out:
+	vfs_del_leaf(node);
+	return retval;
 }
 
 int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
-	int rc;
-	char tpath[MAX_LENGTH_PATH_NAME];
-	char path[MAX_LENGTH_PATH_NAME];
-	int path_offset;
-	char node_name[MAX_LENGTH_FILE_NAME];
 	struct node *node;
+	const char *lastpath, *ch;
+	int res;
 
-	if (NULL != (node = vfs_find_node(pathname, root_node))) {
+	if (0 == (res = fs_perm_lookup(root_node, pathname, &lastpath, &node))) {
 		errno = EBUSY;
 		return -1;
-	}
-
-	if (NULL != root_node) {
-		vfs_get_path_by_node(root_node, path);
-		strncat(path, "/", sizeof(path));
-	} else {
-		path[0] = '\0';
-	}
-
-
-	strncat(path, pathname, sizeof(path));
-
-	/* get last exist node */
-	node = vfs_get_exist_path(path, tpath, sizeof(tpath));
-	if(NULL == node) {
+	} else if (-EACCES == res) {
+		errno = EACCES;
 		return -1;
 	}
 
-	path_offset = strlen(tpath);
+	if (NULL != (ch = strchr(lastpath, '/'))
+			&& NULL != path_next(ch, NULL)) {
+		errno = ENOENT;
+		return -1;
+	}
 
-	do {
-		path_get_next_name(&path[path_offset], node_name, sizeof(tpath));
-		if(0 == strlen(node_name)) {
-			return 0; /* we create all directory */
-		}
-		if(0 != (rc = create_new_node(node, node_name, NODE_TYPE_DIRECTORY))) {
-			return -rc;
-		}
-		path_offset += (strlen(node_name) + 1);
+	if (0 != fs_perm_check(node, FS_MAY_WRITE)) {
+		errno = EACCES;
+		return -1;
+	}
 
-		node = vfs_get_child(node_name, node);
-	} while (NULL != node);
+	if (0 != (res = security_node_create(node, S_IFDIR | mode))) {
+		errno = -res;
+		return -1;
+	}
+
+
+	if (0 != (res = create_new_node(node, lastpath, S_IFDIR | mode))) {
+		errno = -res;
+		return -1;
+	}
 
 	return 0;
 }
@@ -146,10 +91,11 @@ int kmkdir(struct node *root_node, const char *pathname, mode_t mode) {
 int kremove(const char *pathname) {
 	node_t *node;
 	struct nas *nas;
-	fs_drv_t *drv;
+	struct fs_driver *drv;
+	int res;
 
-	if (NULL == (node = vfs_find_node(pathname, NULL))) {
-		errno = ENOENT;
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), pathname, NULL, &node))) {
+		errno = -res;
 		return -1;
 	}
 
@@ -170,46 +116,84 @@ int kremove(const char *pathname) {
 
 int kunlink(const char *pathname) {
 	node_t *node;
-	fs_drv_t *drv;
-	struct nas *nas;
+	struct fs_driver *drv;
+	int res;
 
-	node = vfs_find_node(pathname, NULL);
-	/*
-	if(0 == (node->type & S_IWRITE)) {
-		return -EPERM;
+	if (0 != fs_perm_lookup(vfs_get_root(), pathname, NULL, &node)) {
+		errno = EACCES;
+		return -1;
 	}
-	*/
-	nas = node->nas;
-	drv = nas->fs->drv;
-	if(NULL == drv->fsop->delete_node) {
+
+	if (0 != fs_perm_check(node_parent(node), FS_MAY_WRITE)) {
+		errno = EACCES;
+		return -1;
+	}
+
+	if (0 != (res = security_node_delete(node_parent(node), node))) {
+		return res;
+	}
+
+	drv = node->nas->fs->drv;
+
+	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
 		return -1;
 	}
 
-	return drv->fsop->delete_node (node);
+	if (0 != (res = drv->fsop->delete_node(node))) {
+		errno = -res;
+		return -1;
+	}
+
+	/*vfs_del_leaf(node);*/
+
+	return 0;
+
 }
 
 int krmdir(const char *pathname) {
 	node_t *node;
-	fs_drv_t *drv;
-	struct nas *nas;
+	struct fs_driver *drv;
+	int res;
 
-	node = vfs_find_node(pathname, NULL);
-	nas = node->nas;
-	drv = nas->fs->drv;
-
-	if(NULL == drv->fsop->delete_node) {
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), pathname, NULL, &node))) {
+		errno = -res;
 		return -1;
 	}
 
-	return drv->fsop->delete_node(node);
-}
+	if (0 != (res = fs_perm_check(node, FS_MAY_WRITE))) {
+		errno = EACCES;
+		return -1;
+	}
 
+	if (0 != (res = security_node_delete(node_parent(node), node))) {
+		return res;
+	}
+
+	drv = node->nas->fs->drv;
+
+	if (NULL == drv->fsop->delete_node) {
+		errno = EPERM;
+		return -1;
+	}
+
+	if (0 != (res = drv->fsop->delete_node(node))) {
+		errno = -res;
+		return -1;
+	}
+
+	/*vfs_del_leaf(node);*/
+
+	return 0;
+
+}
 
 int klstat(const char *path, struct stat *buf) {
 	node_t *node;
+	int res;
 
-	if(NULL == (node = vfs_find_node(path, NULL))) {
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), path, NULL, &node))) {
+		errno = -res;
 		return -1;
 	}
 
@@ -220,11 +204,12 @@ int klstat(const char *path, struct stat *buf) {
 
 int kformat(const char *pathname, const char *fs_type) {
 	node_t *node;
-	fs_drv_t *drv;
+	struct fs_driver *drv;
+	int res;
 
-	if(0 != fs_type) {
+	if (0 != fs_type) {
 		drv = fs_driver_find_drv((const char *) fs_type);
-		if(NULL == drv) {
+		if (NULL == drv) {
 			return -EINVAL;
 		}
 		if (NULL == drv->fsop->format) {
@@ -235,53 +220,70 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -EINVAL;
 	}
 
-	node = vfs_find_node(pathname, NULL);
-	if(NULL == node) {
-		return -ENODEV;
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), pathname, NULL, &node))) {
+		errno = res == -ENOENT ? ENODEV : -res;
+		return -1;
 	}
-	/*
-	if(0 == (node->type & S_IWRITE)) {
-		return -EPERM;
-	}
-	*/
 
-	return drv->fsop->format (node);
+	if (0 != (res = fs_perm_check(node, FS_MAY_WRITE))) {
+		errno = EACCES;
+		return -1;
+	}
+
+	return drv->fsop->format(node);
 }
 
-int kmount(char *dev, char *dir, char *fs_type) {
+int kmount(const char *dev, const char *dir, const char *fs_type) {
 	struct node *dev_node, *dir_node;
-	fs_drv_t *drv;
+	struct fs_driver *drv;
+	const char *lastpath;
+	int res;
 
-	if(0 != fs_type) {
-		drv = fs_driver_find_drv((const char *) fs_type);
-		if(NULL == drv) {
-			return -EINVAL;
-		}
-		if (NULL == drv->fsop->mount) {
-			return  -ENOSYS;
-		}
-	}
-	else {
+	if (!fs_type) {
 		return -EINVAL;
 	}
 
-	/* find device */
-	if(NULL == (dev_node = vfs_find_node((const char *) dev, NULL))) {
-		if(0 != strcmp((const char *) fs_type, "nfs")) {
-			printf("mount: no such device\n");
-			return -ENODEV;
-		}
-		else {
-			dev_node = (node_t *) dev;
-		}
+	drv = fs_driver_find_drv(fs_type);
+	if (!drv) {
+		return -EINVAL;
 	}
+	if (!drv->fsop->mount) {
+		return  -ENOSYS;
+	}
+
+	if (0 == strcmp(fs_type, "nfs")) {
+		dev_node = (node_t *) dev;
+		goto skip_dev_lookup;
+	}
+
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), dev, &lastpath, &dev_node))) {
+		errno = res == -ENOENT ? ENODEV : -res;
+		return -1;
+	}
+
+	if (0 != fs_perm_check(dev_node, FS_MAY_READ | FS_MAY_EXEC)) {
+		errno = EACCES;
+		return -1;
+	}
+
+skip_dev_lookup:
 	/* find directory */
-	if (NULL == (dir_node = vfs_find_node(dir, NULL))) {
-		/*FIXME: usually mount doesn't create a directory*/
-		if (NULL == (dir_node = vfs_add_path (dir, NULL))) {
-			return -ENODEV;/*device not found*/
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), dir, &lastpath, &dir_node))) {
+		errno = -res;
+		return -1;
+#if 0
+		if (res != -ENOENT) {
+			errno = -res;
 		}
-		dir_node->type = NODE_TYPE_DIRECTORY;
+
+		if (0 != (res = kmkdir(dir_node, lastpath, 0755))) {
+			return res;
+		}
+#endif
+	}
+
+	if (0 != (res = security_mount(dev_node, dir_node))) {
+		return res;
 	}
 
 	return drv->fsop->mount(dev_node, dir_node);
@@ -461,4 +463,34 @@ int krename(const char *oldpath, const char *newpath) {
 	}
 
 	return ENOERR;
+}
+
+int kumount(const char *dir) {
+	struct node *dir_node;
+	struct fs_driver *drv;
+	const char *lastpath;
+	int res;
+
+	/* find directory */
+	if (0 != (res = fs_perm_lookup(vfs_get_root(), dir, &lastpath, &dir_node))) {
+		errno = -res;
+		return -1;
+	}
+
+	/* TODO fs_perm_check(dir_node, FS_MAY_XXX) */
+
+	drv = dir_node->nas->fs->drv;
+
+	if (!drv) {
+		return -EINVAL;
+	}
+	if (!drv->fsop->umount) {
+		return  -ENOSYS;
+	}
+
+	if (0 != (res = security_umount(dir_node))) {
+		return res;
+	}
+
+	return drv->fsop->umount(dir_node);
 }

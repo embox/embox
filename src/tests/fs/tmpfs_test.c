@@ -29,7 +29,7 @@ static int create_test_file(void) {
 	int fd;
 	int ret;
 
-	if (0 > (fd = open(test_file_filename, O_WRONLY))) {
+	if (0 > (fd = creat(test_file_filename, S_IRALL | S_IWALL))) {
 		return -1;
 	}
 
@@ -144,6 +144,27 @@ TEST_CASE("Test append") {
 	test_assert(0 <= (fd = open(test_file_filename,O_RDONLY)));
 	test_assert_equal(SIZE_OF_FILE, read(fd, test_buff, SIZE_OF_FILE));
 	test_assert_zero(strncmp(test_buff, test_file_contents, SIZE_OF_FILE));
+	test_assert_equal(SIZE_OF_FILE, read(fd, test_buff, SIZE_OF_FILE));
+	test_assert_zero(strncmp(test_buff, test_file_contents, SIZE_OF_FILE));
+	test_assert_zero(close(fd));
+
+	test_assert_zero(remove_test_file());
+}
+
+TEST_CASE("Test truncate") {
+	char test_buff[SIZE_OF_FILE];
+	int fd;
+	int ret;
+
+	memset(test_buff, 0, sizeof(test_buff));
+	test_assert_zero(create_test_file());
+
+	test_assert(0 <= (fd = open(test_file_filename,O_WRONLY|O_TRUNC)));
+	ret = lseek(fd, 0, SEEK_END);
+	test_assert_equal(0, ret);
+	test_assert(SIZE_OF_FILE == write(fd, test_file_contents, SIZE_OF_FILE));
+	test_assert_zero(close(fd));
+	test_assert(0 <= (fd = open(test_file_filename,O_RDONLY)));
 	test_assert_equal(SIZE_OF_FILE, read(fd, test_buff, SIZE_OF_FILE));
 	test_assert_zero(strncmp(test_buff, test_file_contents, SIZE_OF_FILE));
 	test_assert_zero(close(fd));

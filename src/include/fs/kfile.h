@@ -16,7 +16,7 @@
 struct file_desc;
 struct stat;
 
-extern struct file_desc * kopen(const char *path, int flag);
+extern struct file_desc * kopen(const char *path, int flag, mode_t mode);
 
 extern size_t kwrite(const void *buf, size_t size, struct file_desc *file);
 
@@ -29,5 +29,8 @@ extern int kseek(struct file_desc *desc, long int offset, int origin);
 extern int kioctl(struct file_desc *fp, int request, ...);
 
 extern int kfstat(struct file_desc *fp, struct stat *buff);
+
+struct node;
+extern int ktruncate(struct node *node, off_t length);
 
 #endif /* FS_KFILE_H_ */

@@ -104,7 +104,7 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	/* Cleanup */
 	hdc->dir = HD_XFER_IDLE;
 	hdc->active = NULL;
-	if(0 < hdc->result) {
+	if (0 < hdc->result) {
 		result = hdc->result = 0;
 	}
 	return result == 0 ? bufsize - bufleft : result;
@@ -221,7 +221,7 @@ static int idecd_init (void *args) {
 	ide = ide_get_drive();
 
 	for(i = 0; i < HD_DRIVES; i++) {
-		if(NULL == ide->drive[i]) {
+		if (NULL == ide->drive[i]) {
 			continue;
 		}
 
@@ -235,14 +235,13 @@ static int idecd_init (void *args) {
 			}
 			drive->bdev = block_dev_create(path, &idecd_pio_driver, drive);
 
-			if(NULL != drive->bdev) {
+			if (NULL != drive->bdev) {
 				size = (double) drive->param.cylinders *
 					   (double) drive->param.heads *
 					   (double) drive->param.unfbytes *
 					   (double) (drive->param.sectors + 1);
 				block_dev(drive->bdev)->size = (size_t) size;
-			}
-			else {
+			} else {
 				return -1;
 			}
 

@@ -1,0 +1,59 @@
+/**
+ * @file
+ * @brief
+ *
+ * @date 21.12.2012
+ * @author Anton Bulychev
+ */
+
+#include <asm/linkage.h>
+#include <asm/gdt.h>
+
+	.section .data
+	.code16
+
+	.align 0x1000
+C_ENTRY(__ap_trampoline):
+	cli
+
+	/* %cs has some value and we must use the same for data */
+	mov	%cs, %ax
+	mov	%ax, %ds
+
+	/* load gdt prepared by bsp */
+	lgdtl __ap_gdtr - __ap_trampoline
+
+	/* switch to protected mode */
+	mov %cr0, %eax
+	orb $1, %al
+	mov %eax, %cr0
+
+	ljmpl $(__KERNEL_CS), $__ap_trampoline_32
+
+	.align 0x4
+
+C_LABEL(__ap_sp):
+	.space 4
+C_LABEL(__ap_gdtr):
+	.space 8
+C_LABEL(__ap_gdt):
+	.space 128 /* TODO: Fix size */
+C_LABEL(__ap_trampoline_end):
+
+	.section .text
+	.code32
+
+__ap_trampoline_32:
+	/* Setting up selectors */
+	movw $(__KERNEL_DS), %ax
+	movw %ax, %ds
+	movw %ax, %es
+	movw %ax, %fs
+	movw %ax, %gs
+	movw %ax, %ss
+
+	/* Setting up stack */
+	mov	__ap_sp, %esp
+
+	/* Jumping forward */
+	jmp startup_ap

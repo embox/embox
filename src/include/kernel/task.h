@@ -9,7 +9,7 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-#include <lib/list.h>
+#include <linux/list.h>
 #include <util/array.h>
 
 #include <sys/cdefs.h>
@@ -47,6 +47,8 @@ struct task {
 	struct thread *main_thread;
 
 	struct task_u_area *u_area;
+
+	void   *security;
 
 	int err; /**< @brief Last occurred error code */
 
@@ -92,6 +94,10 @@ extern struct task *task_self(void);
 
 static inline int task_getid(void) {
 	return task_self()->tid;
+}
+
+static inline void *task_self_security(void) {
+	return task_self()->security;
 }
 
 /**

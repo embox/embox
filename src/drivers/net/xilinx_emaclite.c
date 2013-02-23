@@ -9,13 +9,12 @@
 #include <types.h>
 #include <string.h>
 #include <errno.h>
-#include <err.h>
+
 
 #include <kernel/irq.h>
 #include <net/if_ether.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
-#include <net/net.h>
 #include <net/etherdevice.h>
 #include <embox/unit.h>
 #include <arpa/inet.h>
@@ -212,7 +211,7 @@ static void pack_receiving(void *dev_id) {
 
 	skb = skb_alloc(len + 4);
 	if (NULL == skb) {
-		LOG_ERROR("Can't allocate packet, pack_pool is full\n");
+		//LOG_ERROR("Can't allocate packet, pack_pool is full\n");
 		current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
 		switch_rx_buff();
 		return;

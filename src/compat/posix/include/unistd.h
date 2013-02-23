@@ -51,6 +51,8 @@ extern ssize_t read(int fd, void *buf, size_t nbyte);
 
 extern off_t lseek(int fd, off_t offset, int origin);
 
+extern int close(int fd);
+
 extern int fsync(int);
 
 extern pid_t fork(void);
@@ -87,6 +89,9 @@ extern int seteuid(uid_t uid);
 extern int setregid(gid_t rgid, gid_t egid);
 extern int setgid(gid_t gid);
 extern int setegid(gid_t gid);
+
+extern int truncate(const char *path, off_t length);
+extern int ftruncate(int fd, off_t length);
 
 __END_DECLS
 

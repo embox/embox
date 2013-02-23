@@ -30,6 +30,8 @@ module mb_timer extends embox.arch.clock {
 module pit extends embox.arch.clock {
 	source "pit.c"
 
+	option number irq_num=0
+
 	depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
 }

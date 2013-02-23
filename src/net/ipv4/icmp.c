@@ -20,6 +20,7 @@
 #include <net/inetdevice.h>
 #include <net/icmp.h>
 #include <net/raw.h>
+#include <net/etherdevice.h>
 
 #include <embox/net/proto.h>
 #include <framework/net/proto/api.h>

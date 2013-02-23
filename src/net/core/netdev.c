@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <hal/ipl.h>
-#include <lib/list.h>
+#include <linux/list.h>
 #include <util/hashtable.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>

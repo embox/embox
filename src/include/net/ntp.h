@@ -12,7 +12,7 @@
 #include <types.h>
 #include <kernel/time/time.h>
 #include <net/skbuff.h>
-#include <net/socket.h>
+#include <sys/socket.h>
 
 struct s_ntpdata {
 	__u16 sec;

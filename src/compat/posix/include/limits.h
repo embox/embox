@@ -1,15 +1,19 @@
 /**
  * @file
+ * @brief
  *
- * @date Nov 16, 2012
- * @author: Anton Bondarev
+ * @date 16.11.12
+ * @author Anton Bondarev
  */
 
-#ifndef LIMITS_H_
-#define LIMITS_H_
+#ifndef COMPAT_POSIX_LIMITS_H_
+#define COMPAT_POSIX_LIMITS_H_
 
 /* Number of bits in a `char'.	*/
 #define CHAR_BIT	8
+
+/* Number of bits in a `long int'.	*/
+#define LONG_BIT	32
 
 /* Minimum and maximum values a `signed char' can hold.  */
 #define SCHAR_MIN	(-128)
@@ -46,4 +50,4 @@
 /* Maximum value an `unsigned long long int' can hold.  (Minimum is 0.)  */
 #define ULLONG_MAX	18446744073709551615ULL
 
-#endif /* LIMITS_H_ */
+#endif /* COMPAT_POSIX_LIMITS_H_ */
