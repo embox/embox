@@ -34,6 +34,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define FS_DEV			"/dev/ramdisk"
 #define FS_TYPE			12
 #define FS_BLOCKS		124
+#define MKDIR_PERM		0700
 #define FS_DIR			"/tmp"
 #define FS_DIR			"/tmp"
 #define FS_FILE1		"/tmp/1/2/3/1.txt"
@@ -44,20 +45,20 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define FS_TESTDATA		"qwerty\n"
 #define FS_DTR			"/tmp/dtr"
 #define FS_MV_SUB		"/tmp/dtr/sub"
-#define FS_MV_SUB_F1		"/tmp/dtr/sub/file1"
+#define FS_MV_SUB_F1	"/tmp/dtr/sub/file1"
 #define FS_MV_F1		"/tmp/dtr/file1"
 #define FS_MV_F2		"/tmp/dtr/sub/file2"
-#define FS_MV_F2_NAME		"file2"
+#define FS_MV_F2_NAME	"file2"
 #define FS_MV_F3		"/tmp/dtr/sub/file3"
-#define FS_MV_F3_NAME		"file3"
-#define FS_MV_RENAMED		"/tmp/renamed"
+#define FS_MV_F3_NAME	"file3"
+#define FS_MV_RENAMED	"/tmp/renamed"
 #define FS_TESTDATA		"qwerty\n"
-#define FS_MV_LONGNAME		"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-				"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-				"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-				"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-				"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
-				"toolongnam"
+#define FS_MV_LONGNAME	"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+						"toolongnamtoolongnamtoolongnamtoolongnamtoolongnam" \
+						"toolongnam"
 
 TEST_CASE("Write file") {
 	int file;
@@ -124,24 +125,26 @@ TEST_CASE("stat and fstat should return same stats") {
 
 TEST_CASE("Rename file") {
 	/* Prepare directories and files for tests */
-	test_assert_zero(creat(FS_MV_F1, 0));
-	test_assert_zero(creat(FS_MV_F2, 0));
+	test_assert_zero(mkdir(FS_DTR, MKDIR_PERM));
+	test_assert_zero(mkdir(FS_MV_SUB, MKDIR_PERM));
+	test_assert(-1 != creat(FS_MV_F1, S_IRUSR | S_IWUSR));
+	test_assert(-1 != creat(FS_MV_F2, S_IRUSR | S_IWUSR));
 
 	/* Check error code for non-existent file */
 	test_assert(-1 == rename("no_such_file", FS_MV_F3));
-	test_assert(EINVAL == errno);
+	test_assert(-ENOENT == errno);
 
 	/* Check error code if destination file exists */
 	test_assert(-1 == rename(FS_MV_F1, FS_MV_F2));
-	test_assert(EINVAL == errno);
+	test_assert(-EINVAL == errno);
 
 	/* Check error code with too long source file name */
 	test_assert(-1 == rename(FS_MV_LONGNAME, "no_matter"));
-	test_assert(ENAMETOOLONG == errno);
+	test_assert(-ENAMETOOLONG == errno);
 
 	/* Check error code with too long destination file name */
 	test_assert(-1 == rename("no_matter", FS_MV_LONGNAME));
-	test_assert(ENAMETOOLONG == errno);
+	test_assert(-ENAMETOOLONG == errno);
 
 	/* Test with relative paths */
 #ifdef ENABLE_RELATIVE_PATH
@@ -193,22 +196,24 @@ static int exec_shell_cmd(char *cmdline) {
 
 TEST_CASE("Move file") {
 	/* This should be improved to not use hard-coded paths */
-	char *cmd_recursive_err = "mv /tmp/dtr /test_fop/tmpdtr";
-	char *cmd_force_err = "mv /tmp/dtr/file1 /test_fop/dtr/sub/file2";
+	char *cmd_recursive_err = "mv /tmp/dtr /tmp/tmpdtr";
+	char *cmd_force_err = "mv /tmp/dtr/file1 /tmp/dtr/sub/file2";
 	char *cmd_multi_err =
-				"mv /tmp/dtr/file1 /test_fop/dtr/sub/file2 /test_fop/file";
+				"mv /tmp/dtr/file1 /tmp/dtr/sub/file2 /tmp/file";
 
-	char *cmd_simple = "mv /tmp/dtr/file1 /test_fop/dtr/sub/tmpfile";
-	char *cmd_simple_back = "mv /tmp/dtr/sub/tmpfile /test_fop/dtr/file1";
-	char *cmd_recursive = "mv -r /tmp/dtr /test_fop/tmpdtr";
-	char *cmd_recursive_back =  "mv -r /tmp/tmpdtr /test_fop/dtr";
+	char *cmd_simple = "mv /tmp/dtr/file1 /tmp/dtr/sub/tmpfile";
+	char *cmd_simple_back = "mv /tmp/dtr/sub/tmpfile /tmp/dtr/file1";
+	char *cmd_recursive = "mv -r /tmp/dtr /tmp/tmpdtr";
+	char *cmd_recursive_back =  "mv -r /tmp/tmpdtr /tmp/dtr";
 	char *cmd_multi =
-			"mv /tmp/dtr/file1 /test_fop/dtr/sub/file2 /test_fop";
-	char *cmd_force = "mv -f /tmp/file1 /test_fop/file2";
+			"mv /tmp/dtr/file1 /tmp/dtr/sub/file2 /tmp";
+	char *cmd_force = "mv -f /tmp/file1 /tmp/file2";
 
 	/* Prepare directories and files for tests */
-	test_assert_zero(creat(FS_MV_F1, 0));
-	test_assert_zero(creat(FS_MV_F2, 0));
+	test_assert_zero(mkdir(FS_DTR, MKDIR_PERM));
+	test_assert_zero(mkdir(FS_MV_SUB, MKDIR_PERM));
+	test_assert(-1 != creat(FS_MV_F1, S_IRUSR | S_IWUSR));
+	test_assert(-1 != creat(FS_MV_F2, S_IRUSR | S_IWUSR));
 
 	/**
 	 * Error codes tests
@@ -244,8 +249,6 @@ TEST_CASE("Move file") {
 	/* Test cleanup */
 	test_assert_zero(remove(FS_DTR));
 }
-
-#define MKDIR_PERM 0700
 
 static int setup_suite(void) {
 	int fd, res;

@@ -10,6 +10,9 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fs/perm.h>
 #include <fs/vfs.h>
 #include <fs/sys/fsop.h>
 
@@ -35,11 +38,24 @@ static void print_usage(void) {
 }
 
 static int exec(int argc, char **argv) {
-	int opt;
+	int opt, rc;
 	unsigned int flags = 0;
+	char *oldpathcopy = NULL, *newpathcopy = NULL;
+	char *opc_free, *npc_free;
 	char *oldpath, *newpath = argv[argc - 1];
-	node_t *oldnode, *newnode = vfs_find_node(newpath, NULL);
+	node_t *oldnode, *newnode;
 	char **pos;
+
+	newpathcopy = strdup(newpath);
+	npc_free = newpathcopy;
+	rc = fs_perm_lookup(NULL, (const char *) newpathcopy,
+			(const char **) &newpathcopy, &newnode);
+	free(npc_free);
+	if (-ENOENT == rc) {
+		newnode = NULL;
+	} else if (0 != rc && -ENOENT != rc) {
+		return rc;
+	}
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "rfh"))) {
@@ -71,10 +87,16 @@ static int exec(int argc, char **argv) {
 	for_each_path(argv[optind], argc - optind - 1, pos, oldpath) {
 		/* We wouldn't rename directory without -r */
 		if (! (flags & MV_RECURSIVE)) {
-			oldnode = vfs_find_node(oldpath, NULL);
-			if (NULL == oldnode) {
+			oldpathcopy = strdup(oldpath);
+			opc_free = oldpathcopy;
+			rc = fs_perm_lookup(NULL, (const char *) oldpathcopy,
+					(const char **) &oldpathcopy, &oldnode);
+			free(opc_free);
+			if (-ENOENT == rc) {
 				fprintf(stderr,	CMD": source '%s' does not exist\n", oldpath);
-				return -EINVAL;
+				return rc;
+			} else if (0 != rc) {
+				return rc;
 			}
 			if (node_is_directory(oldnode)) {
 				fprintf(stderr,	CMD": source '%s' is a directory\n", oldpath);
@@ -94,7 +116,7 @@ static int exec(int argc, char **argv) {
 
 	for_each_path(argv[optind], argc - optind - 1, pos, oldpath) {
 		if (-1 == rename(oldpath, newpath)) {
-			return -errno;
+			return errno;
 		}
 	}
 
