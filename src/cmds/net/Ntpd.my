@@ -14,7 +14,6 @@ package embox.cmd.net
 	''')
 
 module ntpd {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ntpd.c"
 
 	depends embox.kernel.task.api

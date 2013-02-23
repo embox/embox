@@ -20,7 +20,6 @@ static module getopt {
 }
 
 static module utsname {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "utsname.c"
 
 	depends embox.lib.LibC

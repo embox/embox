@@ -43,7 +43,6 @@ module select_test {
 }
 
 module rtsignal_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "rt_signal.c"
 
 	depends embox.kernel.task.rt_signal

@@ -52,7 +52,6 @@ module fs_name_opt {
 }
 
 module posix_compat {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "posix_compat.c"
 	depends fs_api
 	depends embox.kernel.task.idx_table

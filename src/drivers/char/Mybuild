@@ -1,7 +1,6 @@
 package embox.driver
 
 module terminal {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "terminal.c"
 	source "vtbuild.c", "vtparse.c", "vtparse_state.c"
 

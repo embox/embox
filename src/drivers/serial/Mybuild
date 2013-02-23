@@ -27,7 +27,6 @@ module at91_uart extends serial {
 module serial_port extends serial {
 	option number baud_rate
 
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "8250.c"
 
 	depends embox.util.LibUtil

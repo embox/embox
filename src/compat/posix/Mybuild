@@ -11,14 +11,12 @@ module LibPosix {
 }
 
 static module fs {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "fs.c"
 
 	depends embox.kernel.task.errno
 }
 
 static module file_ops {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "file_ops.c"
 
 	depends embox.kernel.task.api

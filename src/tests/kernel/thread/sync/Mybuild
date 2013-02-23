@@ -1,7 +1,6 @@
 package embox.test.kernel.thread.sync
 
 module mutex_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "mutex_test.c"
 
 	depends embox.kernel.thread.core
@@ -12,7 +11,6 @@ module mutex_test {
 }
 
 module priority_inheritance_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "priority_inheritance_test.c"
 
 	depends embox.kernel.thread.core
@@ -23,7 +21,6 @@ module priority_inheritance_test {
 }
 
 module sem_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "sem_test.c"
 
 	depends embox.kernel.thread.core
@@ -34,7 +31,6 @@ module sem_test {
 }
 
 module barrier_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "barrier_test.c"
 
 	depends embox.kernel.thread.core
@@ -45,7 +41,6 @@ module barrier_test {
 }
 
 module cond_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "cond_test.c"
 
 	depends embox.kernel.thread.core
@@ -56,7 +51,6 @@ module cond_test {
 }
 
 module rwlock_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "rwlock_test.c"
 
 	depends embox.kernel.thread.core

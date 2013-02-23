@@ -19,8 +19,6 @@ package embox.cmd
 			Anatoly Trosinenko, Aleksandr Kirov, Nikolay Korotky
 	''')
 module readelf {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "readelf.c"
 
 	depends embox.lib.LibC

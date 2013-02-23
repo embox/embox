@@ -27,8 +27,6 @@ package embox.cmd.net
 			Andrey Baboshin, Nikolay Korotky, Ilia Vaprol
 	''')
 module tftp {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "tftp.c"
 
 	depends embox.lib.LibC

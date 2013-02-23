@@ -1,6 +1,5 @@
 package embox.test.framework.mod.member
 
 module ops_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ops_test.c"
 }

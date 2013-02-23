@@ -9,7 +9,6 @@ module clock_source {
 }
 
 module kernel_time {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ktime.c"
 	depends embox.kernel.timer.itimer
 	depends embox.arch.clock
@@ -30,12 +29,10 @@ module timer {
 }
 
 static module timeval {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "timeval.c"
 }
 
 module timekeeper {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "timekeeping.c"
 	depends kernel_time
 }

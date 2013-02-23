@@ -21,7 +21,6 @@ package embox.cmd
 			Eldar Abusalimov
 	''')
 module test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "test.c"
 
 	depends embox.lib.LibC
