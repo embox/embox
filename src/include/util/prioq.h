@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <util/member.h>
 #include <util/list.h>
-#include <lib/list.h>
+#include <linux/list.h>
 
 struct prioq {
 	struct list prio_list;

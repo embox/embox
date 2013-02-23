@@ -11,7 +11,7 @@
 
 #include <pnet/types.h>
 #include <mem/objalloc.h>
-#include <lib/list.h>
+#include <linux/list.h>
 
 #define MAX_GRAPH_NAME_SIZE 20
 

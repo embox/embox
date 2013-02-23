@@ -9,7 +9,7 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-#include <lib/list.h>
+#include <linux/list.h>
 #include <util/array.h>
 
 #include <sys/cdefs.h>

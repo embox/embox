@@ -10,7 +10,7 @@
 #include <util/member.h>
 #include <string.h>
 #include <mem/objalloc.h>
-#include <lib/list.h>
+#include <linux/list.h>
 #include <assert.h>
 #include <stdio.h>
 #include <embox/unit.h>

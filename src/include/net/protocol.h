@@ -9,7 +9,7 @@
 #ifndef PROTOCOL_H_
 #define PROTOCOL_H_
 
-#include <lib/list.h>
+#include <linux/list.h>
 #include <net/skbuff.h>
 
 #define MAX_INET_PROTOS 256

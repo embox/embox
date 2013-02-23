@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <embox/unit.h>
 #include <mem/objalloc.h>
-#include <lib/list.h>
+#include <linux/list.h>
 #include <stdio.h>
 
 #include <linux/interrupt.h>

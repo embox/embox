@@ -18,7 +18,7 @@
 #include <util/member.h>
 #include <mem/misc/pool.h>
 
-#include <lib/list.h>
+#include <linux/list.h>
 
 #include <net/inetdevice.h>
 #include <types.h>
