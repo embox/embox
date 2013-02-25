@@ -9,7 +9,7 @@
  */
 
 #include <embox/example.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <types.h>
 #include <hal/mm/mmu_core.h>
 #include <stdio.h>

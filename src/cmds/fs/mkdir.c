@@ -7,7 +7,7 @@
  */
 
 #include <fcntl.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <stdio.h>
 
 #include <embox/cmd.h>

@@ -9,7 +9,7 @@
  */
 
 #include <embox/cmd.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <net/route.h>
 #include <net/inetdevice.h>
 #include <unistd.h>

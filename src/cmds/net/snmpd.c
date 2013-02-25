@@ -15,7 +15,7 @@
 #include <embox/cmd.h>
 #include <string.h>
 #include <kernel/thread.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <unistd.h>
 
 #define SNMP_ADDR INADDR_ANY

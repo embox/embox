@@ -8,7 +8,7 @@
 
 #include <types.h>
 #include <errno.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>

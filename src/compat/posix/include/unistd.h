@@ -8,8 +8,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef UNISTD_H_
-#define UNISTD_H_
+#ifndef COMPAT_POSIX_UNISTD_H_
+#define COMPAT_POSIX_UNISTD_H_
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -93,6 +93,23 @@ extern int setegid(gid_t gid);
 extern int truncate(const char *path, off_t length);
 extern int ftruncate(int fd, off_t length);
 
+
+/**
+ * @param argc is the number of arguments on cmdline
+ * @param argv is the pointer to array of cmdline arguments
+ * @param opts is the string of all valid options
+ * each char case must be given; options taking an arg are followed by = ':'
+ */
+extern int getopt(int argc, char **argv, const char *opts);
+
+extern char *optarg; /**< argument to optopt */
+extern int optind;   /**< last touched cmdline argument */
+extern int optopt;   /**< last returned option */
+extern int opterr;   /**< flag:error message on unrecognzed options */
+
+/** setup optind and opterr */
+extern void getopt_init(void); /* TODO remove this */
+
 __END_DECLS
 
-#endif /* UNISTD_H_ */
+#endif /* COMPAT_POSIX_UNISTD_H_ */

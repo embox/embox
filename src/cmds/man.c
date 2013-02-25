@@ -9,7 +9,7 @@
 #include <embox/cmd.h>
 
 #include <string.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <stdio.h>
 
 #include <util/array.h>

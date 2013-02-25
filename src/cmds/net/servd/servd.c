@@ -7,7 +7,7 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 #include <net/ip.h>
 #include <sys/socket.h>

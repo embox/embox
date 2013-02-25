@@ -9,7 +9,7 @@
 #include <types.h>
 #include <embox/cmd.h>
 
-#include <getopt.h>
+#include <unistd.h>
 #include <stdio.h>
 
 #include <drivers/pci/pci.h>

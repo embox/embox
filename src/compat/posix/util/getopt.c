@@ -5,7 +5,7 @@
  * @author Nikolay Korotky
  */
 
-#include <getopt.h>
+#include <unistd.h>
 #include <string.h>
 
 int   opterr = 1;

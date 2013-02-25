@@ -7,7 +7,7 @@
  * @author Anton Bondarev
  */
 #include <embox/test.h>
-#include <getopt.h>
+#include <unistd.h>
 
 EMBOX_TEST_SUITE("stdlib/getopt test");
 

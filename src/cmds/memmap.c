@@ -6,7 +6,7 @@
  */
 
 #include <embox/cmd.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <mem/phymem.h>
 

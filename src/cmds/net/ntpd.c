@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <embox/cmd.h>
-#include <getopt.h>
+#include <unistd.h>
 
 #include <kernel/task.h>
 #include <net/ntp.h>

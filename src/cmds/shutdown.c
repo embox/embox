@@ -6,7 +6,7 @@
  */
 
 #include <embox/cmd.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <hal/arch.h>
 
 EMBOX_CMD(exec);

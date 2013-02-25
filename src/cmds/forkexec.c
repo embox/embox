@@ -8,7 +8,7 @@
 
 #include <embox/cmd.h>
 
-#include <getopt.h>
+#include <unistd.h>
 
 #include <stdlib.h>
 #include <string.h>
