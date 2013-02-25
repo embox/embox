@@ -12,8 +12,8 @@
 static struct utsname sys_name = {
 	.sysname = "Embox",
 	.nodename = "",
-	.release = "",
-	.version = "",
+	.release = "0.3.3",
+	.version = __DATE__ __TIME__,
 	.machine = "Platform"
 };
 
