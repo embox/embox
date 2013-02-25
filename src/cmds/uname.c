@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <sys/utsname.h>
 #include <errno.h>
+#include <string.h>
 
 EMBOX_CMD(exec);
 
@@ -37,7 +38,9 @@ static int exec(int argc, char *argv[0]) {
 	int opt;
 	struct utsname info;
 	struct uname_args args;
-	char *null_ptr;
+	char *processor, *platform, *system;
+
+	memset(&args, 0, sizeof args);
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hasnrvmpio"))) {
@@ -64,16 +67,20 @@ static int exec(int argc, char *argv[0]) {
 		args.with_s = 1;
 
 	uname(&info);
-	null_ptr = NULL;
+	processor = NULL;
+	platform = NULL;
+	system = NULL;
 
 	if (args.with_a || args.with_s) printf("%s ", info.sysname);
 	if (args.with_a || args.with_n) printf("%s ", info.nodename);
 	if (args.with_a || args.with_r) printf("%s ", info.release);
 	if (args.with_a || args.with_v) printf("%s ", info.version);
 	if (args.with_a || args.with_m) printf("%s ", info.machine);
-	if (args.with_a || args.with_p) printf("%s ", null_ptr);
-	if (args.with_a || args.with_i) printf("%s ", null_ptr);
-	if (args.with_a || args.with_o) printf("%s ", null_ptr);
+	if ((args.with_a && processor) || args.with_p)
+		printf("%s ", processor ? processor : "unknown");
+	if ((args.with_a && platform) || args.with_i)
+		printf("%s ", platform ? platform : "unknown");
+	if (args.with_a || args.with_o) printf("%s ", system);
 	printf("\n");
 
 	return 0;

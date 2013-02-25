@@ -20,6 +20,8 @@ static module getopt {
 }
 
 static module utsname {
+	option string release="0.3.3"
+	option string platform
 	source "utsname.c"
 
 	depends embox.lib.LibC
