@@ -96,6 +96,12 @@ extern int inet_dev_set_ipaddr(in_device_t *in_dev, const in_addr_t ipaddr);
 extern int inet_dev_set_mask(in_device_t *in_dev, const in_addr_t mask);
 
 /**
+ * Set broadcast addres
+ * @param bcast - broadcast protocol address
+ */
+extern int inet_dev_set_bcast(in_device_t *in_dev, const in_addr_t bcast);
+
+/**
  * Set MAC address
  * @param macaddr - MAC devices address
  */

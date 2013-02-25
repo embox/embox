@@ -1,4 +1,4 @@
-"ifconfig -a 127.0.0.1 -p 255.0.0.0 -u lo",
-"ifconfig -a 10.0.2.16 -p 255.255.255.0 -m AA:BB:CC:DD:EE:02 -u eth0",
+"ifconfig lo 127.0.0.1 netmask 255.0.0.0 up",
+"ifconfig eth0 10.0.2.16 netmask 255.255.255.0 hw ether AA:BB:CC:DD:EE:02 up",
 "route -n 127.0.0.0 -m 255.0.0.0 -d lo add",
 "route -n 10.0.2.0 -m 255.255.255.0 -d eth0 add",

@@ -222,6 +222,14 @@ int inet_dev_set_mask(struct in_device *in_dev, in_addr_t mask) {
 	return ENOERR;
 }
 
+int inet_dev_set_bcast(struct in_device *in_dev, in_addr_t bcast) {
+	assert(in_dev != NULL);
+
+	in_dev->ifa_broadcast = bcast;
+
+	return ENOERR;
+}
+
 int inet_dev_set_macaddr(struct in_device *in_dev, const unsigned char *macaddr) {
 	struct net_device *dev;
 
