@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include <err.h>
 
 #include <net/rpc/clnt.h>
 #include <net/rpc/auth.h>
@@ -45,7 +44,6 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	if ((clnt == NULL) || (ath == NULL)) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = ENOMEM;
-		LOG_ERROR("no memory\n");
 		goto exit_with_error;
 	}
 
@@ -62,7 +60,6 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	if (sock < 0) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = errno;
-		LOG_ERROR("can't create socket\n");
 		goto exit_with_error;
 	}
 

@@ -11,7 +11,6 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <err.h>
 
 static const struct xdr_ops xdrrec_ops;
 
@@ -45,7 +44,6 @@ void xdrrec_create(struct xdr *xs, unsigned int sendsz, unsigned int recvsz,
 
 	buff = (char *)malloc(sendsz + recvsz);
 	if (buff == NULL) {
-		LOG_ERROR("no memory");
 		return;
 	}
 

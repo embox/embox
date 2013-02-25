@@ -7,7 +7,6 @@
  * @author Ilia Vaprol
  */
 
-#include <err.h>
 
 #include <errno.h>
 #include <arpa/inet.h>
@@ -21,6 +20,7 @@
 #include <net/if.h>
 #include <net/if_ether.h>
 #include <net/netdevice.h>
+#include <kernel/printk.h>
 
 /**
  * Create the Ethernet header
@@ -77,8 +77,8 @@ static int eth_rebuild_header(struct sk_buff *skb) {
 
 	switch (skb->protocol) {
 	default:
-		LOG_ERROR("%s: unable to resolve type %X addresses.\n",
-					dev->name, (int)skb->protocol);
+		printk("%s: unable to resolve type %X addresses.\n", dev->name,
+				(int)skb->protocol);
 		return -EINVAL;
 	case ETH_P_LOOP:
 		/* Fill out source and destonation MAC addresses */

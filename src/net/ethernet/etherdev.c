@@ -7,7 +7,6 @@
  * @author Ilia Vaprol
  */
 
-#include <err.h>
 #include <errno.h>
 #include <net/arp.h>
 #include <net/etherdevice.h>
@@ -17,6 +16,7 @@
 #include <string.h>
 #include <assert.h>
 #include <util/array.h>
+#include <stdio.h>
 
 int etherdev_mac_addr(struct net_device *dev, struct sockaddr *addr) {
 	assert(dev != NULL);
