@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
-#include <kernel/task.h>
+#include <kernel/task/task_table.h>
 
 EMBOX_CMD(exec);
 
@@ -20,6 +20,12 @@ static void print_usage(void) {
 }
 
 static void print_all(void) {
+	int tid = 0;
+
+	while (0 <= (tid = task_table_get_first(tid))) {
+		printf("tid: %d\n", tid);
+		++tid;
+	}
 
 }
 
@@ -42,7 +48,7 @@ static int exec(int argc, char **argv) {
 		case 'h':
 			print_usage();
 			break;
-		case 's':
+		case 'a':
 			print_all();
 			break;
 		default:

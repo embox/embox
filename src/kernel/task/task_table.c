@@ -35,6 +35,10 @@ int task_table_has_space(void) {
 	return (util_idx_table_next_alloc((util_idx_table_t *) &task_table) >= 0);
 }
 
+int task_table_get_first(int since) {
+	return util_idx_table_next_mark((util_idx_table_t *) &task_table, since, 1);
+}
+
 static int task_table_unit_init(void) {
 	UTIL_IDX_TABLE_INIT(&task_table, TASK_QUANT);
 	return 0;
