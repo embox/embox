@@ -1,0 +1,20 @@
+package embox.cmd
+
+@Cmd(name = "ps",
+	help = "report a snapshot of the current processes.",
+	man = '''
+		NAME
+			ps - report a snapshot of the current processes.
+		SYNOPSIS
+			ps
+		DESCRIPTION
+			report a snapshot of the current processes.
+		AUTHORS
+			Anton Bulychev
+	''')
+module ps {
+	source "ps.c"
+
+	depends embox.lib.LibC
+	depends embox.kernel.task.task_table
+}
