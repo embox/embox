@@ -11,6 +11,7 @@
 
 #include <types.h>
 #include <util/dlist.h>
+#include <util/array.h>
 
 enum pdu_type {
 	/* simple types */
@@ -53,6 +54,8 @@ extern mib_obj_t mib_obj_addbyoid(const char *oid, unsigned char len);
 /* Unlink subtree with obj as root. */
 /*extern void mib_obj_unlink(mib_obj_t obj);*/
 extern mib_obj_t mib_obj_getbyoid(const char *oid, unsigned char len);
+/* Initialize all mibs */
+extern int mib_init_all(void);
 /*extern mib_obj_t mib_obj_getbyname(const char *name);*/
 
 #define MIB_OBJECT_REGISTER(init) \
