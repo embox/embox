@@ -390,7 +390,7 @@ static int exec(int argc, char *argv[]) {
 				return -EINVAL;
 			}
 		}
-		else {
+		else if (!args.with_addr) {
 			args.with_addr = 1;
 			if (!strcmp("inet", argv[i]) || !strcmp("inet6", argv[i])
 					|| !strcmp("unix", argv[i])) ++i;
@@ -398,6 +398,10 @@ static int exec(int argc, char *argv[]) {
 				printf("%s: unknown host\n", argv[i]);
 				return -EINVAL;
 			}
+		}
+		else {
+			printf("%s: unknown argument\n", argv[i]);
+			return -EINVAL;
 		}
 	}
 

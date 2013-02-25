@@ -16,135 +16,131 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <util/array.h>
+#include <errno.h>
+#include <arpa/inet.h>
 
 EMBOX_CMD(exec);
 
-enum {
-	LEN_DEST  = 15,
-	LEN_GW    = 15,
-	LEN_NMASK = 15,
-	LEN_FLAGS = 5,
-	LEN_IFACE = 5,
+struct route_args {
+	char with_a;
+	char with_n;
+	char with_add_or_del; char add;
+	char with_tar; struct in_addr tar;
+	char with_net_or_host; char net;
+	char with_netmask; struct in_addr netmask;
+	char with_gw; struct in_addr gw;
+	char with_iface; char iface[IFNAMSIZ];
 };
 
-enum {
-	OFFSET_START,
-	OFFSET_DEST  = OFFSET_START,
-	OFFSET_GW    = OFFSET_DEST + LEN_DEST + 1,
-	OFFSET_NMASK = OFFSET_GW + LEN_GW + 1,
-	OFFSET_FLAGS = OFFSET_NMASK + LEN_NMASK + 1,
-	OFFSET_IFACE = OFFSET_FLAGS + LEN_FLAGS + 1,
-	OFFSET_EOS   = OFFSET_IFACE + LEN_IFACE + 1,
-	BUFF_SZ
-};
+static int route_args_not_empty(struct route_args *args) {
+	return args->with_add_or_del || args->with_tar || args->with_net_or_host
+			|| args->with_netmask || args->with_gw || args->with_iface;
+}
 
-static void print_usage(void) {
-	printf("Usage: route [-nmgdh] [add|del]\n");
+static int route_show_all(struct route_args *args) {
+	struct rt_entry *rt;
+
+	printf("Destination     Gateway         Genmask         Flags Iface\n");
+
+	for (rt = rt_fib_get_first(); rt != NULL; rt = rt_fib_get_next(rt)) {
+		printf("%-15s ", (rt->rt_dst != INADDR_ANY) || args->with_n
+				? inet_ntoa(*(struct in_addr *)&rt->rt_dst) : "default");
+
+		printf("%-15s ", (rt->rt_gateway != INADDR_ANY) || args->with_n
+				? inet_ntoa(*(struct in_addr *)&rt->rt_gateway) : "*");
+
+		printf("%-15s ", inet_ntoa(*(struct in_addr *)&rt->rt_mask));
+
+		if (rt->rt_flags & RTF_UP) printf("U");
+		if (rt->rt_flags & RTF_GATEWAY) printf("G");
+		printf("    ");
+
+		printf(" %5s", rt->dev->name);
+
+		printf("\n");
+	}
+
+	return 0;
 }
 
 static int exec(int argc, char **argv) {
-	int opt;
-	in_device_t *ifdev;
-	struct rt_entry *rt;
-	size_t l;
-	struct in_addr net, mask, gw;
-	char buff[BUFF_SZ], *str;
+	int i;
+	struct in_device *iface;
+	struct route_args args;
 
-	ifdev = NULL;
-	net.s_addr = mask.s_addr = gw.s_addr = INADDR_ANY;
-	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "n:m:d:g:h"))) {
-		switch ((char)opt) {
-		case 'n':
-			if (!inet_aton(optarg, &net)) {
-				printf("Unknown host\n");
-				return -1;
-			}
-			break;
-		case 'm':
-			if (!inet_aton(optarg, &mask)) {
-				printf("Unknown mask\n");
-				return -1;
-			}
-			break;
-		case 'g':
-			if (!inet_aton(optarg, &gw)) {
-				printf("Unknown gateway\n");
-				return -1;
-			}
-			break;
-		case 'd':
-			if ((ifdev = inet_dev_find_by_name(optarg)) == NULL) {
-				printf("route: unknown iface %s\n", optarg);
-				return -1;
-			}
-			break;
-		case '?':
-			printf("Invalid option '-%c'\n", optopt);
-			return -1;
-		case 'h':
-			print_usage();
-			return 0;
-		default:
+	memset(&args, 0, sizeof args);
+
+	for (i = 1; i < argc; ++i) {
+		if (!strcmp("-h", argv[i]) || !strcmp("--help", argv[i])) {
 			return 0;
 		}
-	}
-	/* ToDo: check that mask is correct (leading ones etc) */
-	net.s_addr = net.s_addr & mask.s_addr;
-
-	if (!strcmp(argv[argc - 1], "add")) {
-		/* ToDo:
-		 * 	reject route if there is a route with the same length of the mask
-		 * 	We don't allow the similar routes in the kernel
-		 */
-		return rt_add_route(ifdev->dev, net.s_addr, mask.s_addr, gw.s_addr,
-			((gw.s_addr == INADDR_ANY) ? RTF_UP : RTF_UP | RTF_GATEWAY));
-	} else if (!strcmp(argv[argc - 1], "del")) {
-		return rt_del_route(ifdev->dev, net.s_addr, mask.s_addr, gw.s_addr);
-	} else {
-		printf("Destination     Gateway         Genmask         Flags Iface\n");
-
-		buff[OFFSET_EOS] = '\0';
-		rt = rt_fib_get_first();
-		while (rt != NULL) {
-			memset(&buff[0], ' ', (BUFF_SZ - 1) * sizeof(char));
-
-			/* Get route info */
-			net.s_addr = rt->rt_dst;
-			gw.s_addr = rt->rt_gateway;
-			mask.s_addr = rt->rt_mask;
-
-			/* Parse network */
-			str = inet_ntoa(net);
-			l = strlen(str);
-			memcpy(&buff[OFFSET_DEST], str, (l < LEN_DEST ? l : LEN_DEST) * sizeof(char));
-
-			/* Parse gateway */
-			str = (gw.s_addr == INADDR_ANY) ? "*" : inet_ntoa(gw);
-			l = strlen(str);
-			memcpy(&buff[OFFSET_GW], str, (l < LEN_GW ? l : LEN_GW) * sizeof(char));
-
-			/* Parse mask */
-			str = inet_ntoa(mask);
-			l = strlen(str);
-			memcpy(&buff[OFFSET_NMASK], str, (l < LEN_NMASK ? l : LEN_NMASK) * sizeof(char));
-
-			l = OFFSET_FLAGS;
-			if (rt->rt_flags & RTF_UP) {
-				buff[l++] = 'U';
+		else if (!strcmp("-A", argv[i])) {
+			args.with_a = 1;
+			if (strcmp("inet", argv[++i])) {
+				return -EINVAL;
 			}
-			if (rt->rt_flags & RTF_GATEWAY) {
-				buff[l++] = 'G';
+		}
+		else if (!strcmp("-n", argv[i])) args.with_n = 1;
+		else if (!args.with_add_or_del) {
+			args.with_add_or_del = 1;
+			if (strcmp("add", argv[i]) && strcmp("del", argv[i])) {
+				printf("%s: invalid operation\n", argv[i]);
+				return -EINVAL;
 			}
-
-			str = rt->dev->name;
-			l = strlen(str);
-			memcpy(&buff[OFFSET_IFACE], str, (l < LEN_IFACE ? l : LEN_IFACE) * sizeof(char));
-
-			printf("%s\n", &buff[OFFSET_START]);  /* print info */
-
-			rt = rt_fib_get_next(rt);
+			args.add = argv[i][0] == 'a';
+		}
+		else if (!strcmp("-net", argv[i]) || !strcmp("-host", argv[i])) {
+			args.with_net_or_host = 1;
+			args.net = argv[i][1] == 'n';
+		}
+		else if (!args.with_tar) {
+			args.with_tar = 1;
+			if (!strcmp("default", argv[i])) {
+				args.tar.s_addr = INADDR_ANY;
+			}
+			else if (!inet_aton(argv[i], &args.tar)) {
+				printf("%s: unknown host\n", argv[i]);
+				return -EINVAL;
+			}
+		}
+		else if (!strcmp("netmask", argv[i])) {
+			args.with_netmask = 1;
+			if (!inet_aton(argv[++i], &args.netmask)) {
+				printf("%s: unknown host\n", argv[i]);
+				return -EINVAL;
+			}
+		}
+		else if (!strcmp("gw", argv[i])) {
+			args.with_gw = 1;
+			if (!inet_aton(argv[++i], &args.gw)) {
+				printf("%s: unknown host\n", argv[i]);
+				return -EINVAL;
+			}
+		}
+		else if (!args.with_iface) {
+			args.with_iface = 1;
+			if (!strcmp("dev", argv[i])) ++i;
+			strncpy(&args.iface[0], argv[i], ARRAY_SIZE(args.iface));
+		}
+		else {
+			printf("%s: unknown argument\n", argv[i]);
+			return -EINVAL;
 		}
 	}
-	return 0;
+
+	if (args.with_iface) {
+		iface = inet_dev_find_by_name(&args.iface[0]);
+		if (iface == NULL) {
+			printf("%s: unknown interface\n", &args.iface[0]);
+			return -ENODEV;
+		}
+	}
+
+	return !route_args_not_empty(&args) ? route_show_all(&args)
+			: args.add ? rt_add_route(iface->dev, args.tar.s_addr,
+				args.netmask.s_addr, args.gw.s_addr,
+				args.gw.s_addr == INADDR_ANY ? RTF_UP : RTF_UP | RTF_GATEWAY)
+			: rt_del_route(iface->dev, args.tar.s_addr, args.netmask.s_addr,
+				args.gw.s_addr);
 }
