@@ -24,6 +24,8 @@ struct l_ntpdata {
 	__u32 fraction;
 };
 
+struct sockaddr_in;
+
 /* @see RFC 5905: Packet Header Format */
 typedef struct ntphdr {
 	__u8 status; /*< LI, VN, Mode */
