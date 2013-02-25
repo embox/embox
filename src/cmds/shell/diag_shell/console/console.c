@@ -18,13 +18,7 @@
 
 #include "console.h"
 
-
-#if 1
-#define CB_EDIT_MODEL(action) \
-	if(action) { \
-		screen_out_update(cb->outer->view, cb->outer->model); \
-	}
-#endif
+#define MAX_PROPOSALS	64
 
 static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = cb->outer;
@@ -39,18 +33,18 @@ static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 		strcpy(buf, cmd);
 		this->callback->exec(this->callback, this, buf);
 	}
-	CB_EDIT_MODEL(cmdline_history_new_entry(cb->outer->model));
+
 	screen_out_show_prompt(this->view, this->prompt);
 
-	return 0;
+	return cmdline_history_new_entry(cb->outer->model);
 }
-
-#define MAX_PROPOSALS	64
 
 static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = cb->outer;
-	static const char *proposals[MAX_PROPOSALS];
+	const char *proposals[MAX_PROPOSALS];
+
 	int proposals_len, offset, common;
+
 	if (this->callback != NULL && this->callback->guess != NULL) {
 		char buf[CMDLINE_MAX_LENGTH + 1];
 		strncpy(buf, this->model->string, this->model->cursor);
@@ -58,24 +52,30 @@ static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 
 		this->callback->guess(this->callback, this, buf, MAX_PROPOSALS,
 				&proposals_len, proposals, &offset, &common);
-		if (proposals_len == 1) {
-			cmdline_chars_insert(this->model, proposals[0] + offset, strlen(
-					proposals[0] + offset));
-			CB_EDIT_MODEL(cmdline_chars_insert(cb->outer->model, " ", 1));
-		} else if (proposals_len > 0) {
-			if (common > 0) {
-				CB_EDIT_MODEL(cmdline_chars_insert(cb->outer->model, proposals[0] + offset, common));
-			} else {
-				int i;
-				screen_out_puts(this->view, NULL);
-				for (i = 0; i < proposals_len; ++i) {
-					screen_out_puts(this->view, proposals[i]);
-				}
-				screen_out_show_prompt(this->view, this->prompt);
-				screen_out_update(this->view, this->model);
-			}
+
+		if (!proposals_len) {
+			return 0;
 		}
+		if (proposals_len == 1) {
+			cmdline_chars_insert(this->model, proposals[0] + offset,
+					strlen(proposals[0] + offset));
+			cmdline_chars_insert(cb->outer->model, " ", 1);
+			return 1;
+		}
+
+		if (common > 0) {
+			return cmdline_chars_insert(cb->outer->model,
+					proposals[0] + offset, common);
+		}
+
+		screen_out_puts(this->view, NULL);
+		for (int i = 0; i < proposals_len; ++i) {
+			screen_out_puts(this->view, proposals[i]);
+		}
+		screen_out_show_prompt(this->view, this->prompt);
+		screen_out_update(this->view, this->model);
 	}
+
 	return 0;
 }
 
@@ -118,101 +118,77 @@ void console_stop(CONSOLE *this) {
 	screen_in_stop(this->view);
 }
 
-
 /*
- * screen
+ * Token handling functions modify the cmdline and tell whether the screen
+ * should be redrawn or not.
  */
-static void handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
+
+static int handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
 	char tmp_ch[] = { (char) ch };
 	SCREEN_CALLBACK *cb = this->callback;
 
-	if (cb == NULL) {
-		return;
-	}
+	assert(cb);
 
-	CB_EDIT_MODEL(cmdline_chars_insert(cb->outer->model, tmp_ch, 1));
+	return cmdline_chars_insert(cb->outer->model, tmp_ch, 1);
 }
 
-static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
+static int handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		short *params, int params_len) {
 	SCREEN_CALLBACK *cb = this->callback;
-	static TERMINAL_TOKEN prev_token = TERMINAL_TOKEN_EMPTY;
-	if (cb == NULL) {
-		return;
-	}
+	CMDLINE *cmdline;
+
+	assert(cb);
+
+	cmdline = cb->outer->model;
 
 	switch (token) {
 	case TERMINAL_TOKEN_CURSOR_LEFT:
-		CB_EDIT_MODEL(cmdline_cursor_left(cb->outer->model));
-		break;
+		return cmdline_cursor_left(cmdline);
 	case TERMINAL_TOKEN_CURSOR_RIGHT:
-		CB_EDIT_MODEL(cmdline_cursor_right(cb->outer->model));
-		break;
+		return cmdline_cursor_right(cmdline);
 	case TERMINAL_TOKEN_CURSOR_UP:
-		CB_EDIT_MODEL(cmdline_history_backward(cb->outer->model));
-		break;
+		return cmdline_history_backward(cmdline);
 	case TERMINAL_TOKEN_CURSOR_DOWN:
-		CB_EDIT_MODEL(cmdline_history_forward(cb->outer->model));
-		break;
+		return cmdline_history_forward(cmdline);
 	case TERMINAL_TOKEN_BS:
-		CB_EDIT_MODEL(cmdline_chars_backspace(cb->outer->model, 1));
-		break;
+		return cmdline_chars_backspace(cmdline, 1);
 	case TERMINAL_TOKEN_DEL:
-		CB_EDIT_MODEL(cmdline_chars_delete(cb->outer->model, 1));
-		break;
-	case TERMINAL_TOKEN_END:
-		/* TODO: strange char 'F' */
-		CB_EDIT_MODEL(cmdline_cursor_end(cb->outer->model));
-		break;
+		return cmdline_chars_delete(cmdline, 1);
+	case TERMINAL_TOKEN_END: /* TODO: strange char 'F' */
+		return cmdline_cursor_end(cmdline);
 	case TERMINAL_TOKEN_ETX:
-		on_new_line(cb, this, 0);
-		break;
-	case TERMINAL_TOKEN_EOT:
-		// on_eot(cb, this, 0);
-		break;
+		return on_new_line(cb, this, 0);
+	case TERMINAL_TOKEN_EOT: // on_eot(cb, this, 0);
+		return 0;
 	case TERMINAL_TOKEN_DC2:
-		CB_EDIT_MODEL(cmdline_dc2_reverse(cb->outer->model));
-		break;
+		return cmdline_dc2_reverse(cmdline);
 	case TERMINAL_TOKEN_DC4:
-		CB_EDIT_MODEL(cmdline_dc4_reverse(cb->outer->model));
-		break;
-	case TERMINAL_TOKEN_ACK:
-		// on_ack(cb, this, 0);
-		break;
+		return cmdline_dc4_reverse(cmdline);
+	case TERMINAL_TOKEN_ACK: // on_ack(cb, this, 0);
+		return 0;
 	case TERMINAL_TOKEN_LF:
-		if (prev_token == TERMINAL_TOKEN_CR) {
-			break;
-		}
-		/* FALLTHROUGH */
 	case TERMINAL_TOKEN_CR:
-		on_new_line(cb, this, 0);
-		break;
+		return on_new_line(cb, this, 0);
 	case TERMINAL_TOKEN_PRIVATE:
 		if (params_len == 0) {
-			break;
+			return 0;
 		}
 		switch (params[0]) {
 		case TERMINAL_TOKEN_PARAM_PRIVATE_DELETE:
-			CB_EDIT_MODEL(cmdline_chars_delete(cb->outer->model, 1));
-			break;
+			return cmdline_chars_delete(cmdline, 1);
 		case TERMINAL_TOKEN_PARAM_PRIVATE_HOME:
-			CB_EDIT_MODEL(cmdline_cursor_home(cb->outer->model));
-			break;
+			return cmdline_cursor_home(cmdline);
 		case TERMINAL_TOKEN_PARAM_PRIVATE_INSERT:
-			cb->outer->model->is_insert_mode = !cb->outer->model->is_insert_mode;
-			break;
+			cmdline->is_insert_mode = !cmdline->is_insert_mode;
+			return 0;
 		default:
-			break;
+			return 0;
 		}
-		break;
 	case TERMINAL_TOKEN_HT:
-		on_tab(cb, this, 0);
-		break;
+		return on_tab(cb, this, 0);
 	default:
-		break;
+		return 0;
 	}
-
-	prev_token = token;
 }
 
 
@@ -220,6 +196,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	static TERMINAL_TOKEN token;
 	short *params;
 	int params_len;
+	int redraw;
 	char ch;
 
 	if ((this == NULL) || this->running) {
@@ -232,10 +209,15 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	while (this->callback != NULL && terminal_receive(this->terminal, &token,
 			&params, &params_len)) {
 		ch = token & 0xFF;
+
 		if (ch == token) {
-			handle_char_token(this, token);
+			redraw = handle_char_token(this, token);
 		} else {
-			handle_ctrl_token(this, token, params, params_len);
+			redraw = handle_ctrl_token(this, token, params, params_len);
+		}
+
+		if (redraw) {
+			screen_out_update(cb->outer->view, cb->outer->model);
 		}
 	}
 
