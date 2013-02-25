@@ -7,12 +7,12 @@
  */
 
 #include <drivers/iodev.h>
-#include <drivers/keyboard.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/font.h>
 #include <drivers/tty.h>
 #include <assert.h>
 #include <stddef.h>
+#include <drivers/diag.h>
 
 struct video_tty_data {
 	const struct font_desc *font;
@@ -122,7 +122,7 @@ static char iodev_video_getc(void) {
 }
 
 static int iodev_video_kbhit(void) {
-	return keyboard_has_symbol();
+	return diag_kbhit();
 }
 
 static const struct iodev_ops iodev_video_ops_struct = {

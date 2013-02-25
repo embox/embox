@@ -16,6 +16,8 @@ struct iodev_ops {
 	int (*kbhit)(void);
 };
 
+extern struct tty diag_tty;
+
 extern const struct iodev_ops *iodev_diag_ops;
 extern const struct iodev_ops *iodev_video_ops;
 

@@ -3,8 +3,8 @@ package embox.driver.iodev
 module core {
 	source "iodev.c", "iodev_diag.c"
 
-	depends embox.driver.diag.diag_api
 	depends video_api
+	depends embox.driver.tty.tty
 }
 
 @DefaultImpl(iodev_no_video)
