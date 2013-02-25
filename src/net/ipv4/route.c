@@ -7,25 +7,19 @@
  * @author Ilia Vaprol
  * @author Vladimir Sokolov
  */
+
 #include <errno.h>
 #include <assert.h>
-
-
 #include <net/route.h>
 #include <net/socket_registry.h>
 #include <linux/in.h>
-
-#include <util/member.h>
 #include <mem/misc/pool.h>
-
-#include <linux/list.h>
-
 #include <net/inetdevice.h>
 #include <types.h>
-
+#include <util/bit.h>
+#include <linux/list.h>
 
 #include <framework/mod/options.h>
-
 
 /**
  * NOTE: Linux route uses 3 structures for routing:
@@ -187,16 +181,6 @@ struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
 	return (&rt_info->lnk == &rt_entry_info_list) ? NULL : &rt_info->entry;
 }
 
-static uint8_t ipv4_mask_len(in_addr_t mask) {
-	/* ToDo: reimplement as xor/not, +1 and array map */
-	uint8_t m_len = 0;
-	while (mask > 0) {
-		mask <<= 1;
-		m_len++;
-	}
-	return m_len;
-}
-
 /* ToDo: It's too ugly to perform sorting for every packet.
  * Routes must be added into list with mask_len decrease.
  * In this case we'll simply take the first match
@@ -209,7 +193,8 @@ struct rt_entry * rt_fib_get_best(in_addr_t dst, net_device_t *out_dev) {
 	best_rte = NULL;
 	best_mask_len = -1;
 	list_for_each_entry(rt_info, &rt_entry_info_list, lnk) {
-		mask_len = ipv4_mask_len(rt_info->entry.rt_mask);
+		mask_len = ~rt_info->entry.rt_mask
+			? bit_clz(~rt_info->entry.rt_mask) + 1 : 32;
 		if (((dst & rt_info->entry.rt_mask) == rt_info->entry.rt_dst)
 				&& (out_dev == NULL || out_dev == rt_info->entry.dev)
 				&& (mask_len > best_mask_len)) {
