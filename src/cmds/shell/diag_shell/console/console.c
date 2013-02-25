@@ -45,83 +45,6 @@ static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	return 0;
 }
 
-static int on_char(SCREEN_CALLBACK *cb, SCREEN *view, int ch) {
-	char tmp_ch = (char)ch;
-	CB_EDIT_MODEL(cmdline_chars_insert(cb->outer->model, &tmp_ch, 1));
-	return 0;
-}
-
-static int on_cursor_up(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_history_backward(cb->outer->model));
-	return 0;
-}
-
-static int on_cursor_down(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_history_forward(cb->outer->model));
-	return 0;
-}
-
-static int on_cursor_left(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_left(cb->outer->model));
-	return 0;
-}
-
-static int on_cursor_right(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_right(cb->outer->model));
-	return 0;
-}
-
-static int on_backspace(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_chars_backspace(cb->outer->model, 1));
-	return 0;
-}
-
-static int on_delete(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_chars_delete(cb->outer->model, 1));
-	return 0;
-}
-
-static int on_home(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_home(cb->outer->model));
-	return 0;
-}
-
-static int on_end(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_cursor_end(cb->outer->model));
-	return 0;
-}
-
-static int on_insert(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CONSOLE *this = cb->outer;
-	CMDLINE *cmd = this->model;
-	cmd->is_insert_mode = cmd->is_insert_mode ? 0 : 1;
-	return 0;
-}
-
-static int on_etx(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	on_new_line(cb, view, 0);
-	return 0;
-}
-
-static int on_eot(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	return 0;
-}
-
-static int on_dc2(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_dc2_reverse(cb->outer->model));
-	return 0;
-}
-
-static int on_dc4(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	CB_EDIT_MODEL(cmdline_dc4_reverse(cb->outer->model));
-	return 0;
-}
-
-static int on_ack(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
-	/* Not implemented. */
-	return 0;
-}
-
 #define MAX_PROPOSALS	64
 
 static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
@@ -200,12 +123,14 @@ void console_stop(CONSOLE *this) {
  * screen
  */
 static void handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
+	char tmp_ch[] = { (char) ch };
 	SCREEN_CALLBACK *cb = this->callback;
+
 	if (cb == NULL) {
 		return;
 	}
 
-	on_char(cb, this, ch);
+	CB_EDIT_MODEL(cmdline_chars_insert(cb->outer->model, tmp_ch, 1));
 }
 
 static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
@@ -218,41 +143,41 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 
 	switch (token) {
 	case TERMINAL_TOKEN_CURSOR_LEFT:
-		on_cursor_left(cb, this, 1);
+		CB_EDIT_MODEL(cmdline_cursor_left(cb->outer->model));
 		break;
 	case TERMINAL_TOKEN_CURSOR_RIGHT:
-		on_cursor_right(cb, this, 1);
+		CB_EDIT_MODEL(cmdline_cursor_right(cb->outer->model));
 		break;
 	case TERMINAL_TOKEN_CURSOR_UP:
-		on_cursor_up(cb, this, 1);
+		CB_EDIT_MODEL(cmdline_history_backward(cb->outer->model));
 		break;
 	case TERMINAL_TOKEN_CURSOR_DOWN:
-		on_cursor_down(cb, this, 1);
+		CB_EDIT_MODEL(cmdline_history_forward(cb->outer->model));
 		break;
 	case TERMINAL_TOKEN_BS:
-		on_backspace(cb,this,0);
+		CB_EDIT_MODEL(cmdline_chars_backspace(cb->outer->model, 1));
 		break;
 	case TERMINAL_TOKEN_DEL:
-		on_delete(cb, this, 0);
+		CB_EDIT_MODEL(cmdline_chars_delete(cb->outer->model, 1));
 		break;
 	case TERMINAL_TOKEN_END:
 		/* TODO: strange char 'F' */
-		on_end(cb, this, 0);
+		CB_EDIT_MODEL(cmdline_cursor_end(cb->outer->model));
 		break;
 	case TERMINAL_TOKEN_ETX:
-		on_etx(cb, this, 0);
+		on_new_line(cb, this, 0);
 		break;
 	case TERMINAL_TOKEN_EOT:
-		on_eot(cb, this, 0);
+		// on_eot(cb, this, 0);
 		break;
 	case TERMINAL_TOKEN_DC2:
-		on_dc2(cb, this, 0);
+		CB_EDIT_MODEL(cmdline_dc2_reverse(cb->outer->model));
 		break;
 	case TERMINAL_TOKEN_DC4:
-		on_dc4(cb, this, 0);
+		CB_EDIT_MODEL(cmdline_dc4_reverse(cb->outer->model));
 		break;
 	case TERMINAL_TOKEN_ACK:
-		on_ack(cb, this, 0);
+		// on_ack(cb, this, 0);
 		break;
 	case TERMINAL_TOKEN_LF:
 		if (prev_token == TERMINAL_TOKEN_CR) {
@@ -268,13 +193,13 @@ static void handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		}
 		switch (params[0]) {
 		case TERMINAL_TOKEN_PARAM_PRIVATE_DELETE:
-			on_delete(cb, this, 0);
+			CB_EDIT_MODEL(cmdline_chars_delete(cb->outer->model, 1));
 			break;
 		case TERMINAL_TOKEN_PARAM_PRIVATE_HOME:
-			on_home(cb, this, 0);
+			CB_EDIT_MODEL(cmdline_cursor_home(cb->outer->model));
 			break;
 		case TERMINAL_TOKEN_PARAM_PRIVATE_INSERT:
-			on_insert(cb, this, 0);
+			cb->outer->model->is_insert_mode = !cb->outer->model->is_insert_mode;
 			break;
 		default:
 			break;
