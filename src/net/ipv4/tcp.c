@@ -318,25 +318,24 @@ static void rebuild_tcp_packet(__be32 ip_src, __be32 ip_dest,
 		       tcph, TCP_HEADER_SIZE(tcph) + tcp_data_len(skb));
 }
 
-static int tcp_xmit(union sock_pointer sock, struct sk_buff *skb) {
+static void tcp_xmit(union sock_pointer sock, struct sk_buff *skb) {
 	int ret;
 	rebuild_tcp_packet(sock.inet_sk->saddr, sock.inet_sk->daddr,
 			sock.tcp_sk->rem.seq, sock.tcp_sk->self.wind, skb);
 	packet_print(sock, skb, "<=", sock.inet_sk->daddr, sock.inet_sk->dport);
 	ret = ip_send_packet(sock.inet_sk, skb);
-	if (ret < 0) {
+	if (ret != 0) {
 		printk("tcp_xmit: erorr: ip_send_packet returned %d\n", ret);
 	}
-	return ret;
 }
 
-static int tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
+static void tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 	struct sk_buff *skb, *skb_send;
 
 	/* check time wait */
 	if (!(xmit_mod & TCP_XMIT_IGNORE_DELAY) &&
 	    (tcp_get_usec() - sock.tcp_sk->last_activity < TCP_REXMIT_DELAY * USEC_PER_MSEC)) {
-		return 0;
+		return;
 	}
 
 	tcp_obj_lock(sock, TCP_SYNC_WRITE_QUEUE);
@@ -351,13 +350,13 @@ static int tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 			 */
 			/* assert(sock.tcp_sk->last_ack == sock.tcp_sk->self.seq); */
 			tcp_obj_unlock(sock, TCP_SYNC_WRITE_QUEUE);
-			return 0;
+			return;
 		}
 		if (tcp_seq_len(skb) > 0) {
 			skb_send = skb_duplicate(skb);
 			if (skb_send == NULL) {
 				tcp_obj_unlock(sock, TCP_SYNC_WRITE_QUEUE);
-				return -ENOMEM;
+				return;
 			}
 			debug_print(9, "tcp_sock_xmit: send skb %p, postponed %p\n", skb_send, skb);
 		}
@@ -371,7 +370,7 @@ static int tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 
 	sock.tcp_sk->last_activity = tcp_get_usec(); /* set last xmit time */
 
-	return tcp_xmit(sock, skb_send);
+	tcp_xmit(sock, skb_send);
 }
 
 /**

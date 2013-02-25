@@ -58,7 +58,8 @@ static int udp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	/* Fill UDP header */
 	rebuild_udp_header(skb, inet->sport, inet->dport, len);
 
-	return ip_send_packet(inet, skb);
+	ip_send_packet(inet, skb);
+	return 0;
 }
 
 static int udp_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
