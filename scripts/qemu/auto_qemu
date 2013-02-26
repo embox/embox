@@ -3,7 +3,30 @@
 QEMU=qemu-system-i386
 IMAGE=../../build/base/bin/embox
 
-sudo $QEMU -kernel $IMAGE \
+egrep '(vmx|svm)' /proc/cpuinfo > /dev/null
+
+if [ $? -ne 0 ]; then
+echo "warning: VT is not supported by CPU"
+else
+QEMU_KVM_ENABLE="-enable-kvm"
+fi
+
+dmesg | tail | grep "kvm: disabled by bios" > /dev/null
+
+if [ $? -eq 0 ]; then
+echo "warning: kvm: disabled by bios. You can enable VT in bios"
+QEMU_KVM_ENABLE=""
+fi
+
+lsmod | egrep '(kvm_intel|kvm_amd)' > /dev/null
+
+if [ $? -ne 0 ]; then
+echo "warning: No kvm_intel [kvm_amd] kernel module"
+QEMU_KVM_ENABLE=""
+fi
+
+sudo $QEMU $QEMU_KVM_ENABLE -kernel $IMAGE \
 	-net nic,model=ne2k_pci,macaddr=AA:BB:CC:DD:EE:02 \
 	-net tap,name=tap0,script=start_script,downscript=stop_script \
 	-nographic $@
+
