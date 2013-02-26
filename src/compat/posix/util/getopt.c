@@ -1,33 +1,52 @@
 /**
  * @file
+ * @brief
  *
  * @date 23.09.09
  * @author Nikolay Korotky
+ * @author Ilia Vaprol
  */
 
+#include <stddef.h>
 #include <unistd.h>
 #include <string.h>
 
 int   opterr = 1;
 int   optind = 1;
-int   optopt;
-char  *optarg;
+int   optopt = 0;
+char  *optarg = NULL;
+
+static int sp = 1;
+static int not_opt = 0;
 
 int getopt(int argc, char **argv, const char *opts) {
-	static int sp = 1;
 	int c;
 	char *cp;
+
 	if (sp == 1) {
 		/* check for end of options */
-		if (optind >= argc ||
-				argv[optind][0] != '-' ||
-				argv[optind][1] == '\0') {
+		while (optind < argc
+				&& (argv[optind][0] != '-' || argv[optind][1] == '\0')) {
+			optind++;
+			not_opt++;
+		}
+		if (optind >= argc) {
+			optarg = NULL;
+			optind -= not_opt;
+			sp = 1;
+			not_opt = 0;
 			return -1;
-		} else if (!strcmp(argv[optind], "--")) {
+		}
+		else if (!strcmp(argv[optind], "--")) {
+			optind++;
+			optarg = NULL;
+			optind -= not_opt;
+			sp = 1;
+			not_opt = 0;
 			return -1;
 		}
 	}
-	optopt = c = argv[optind][sp];
+	c = argv[optind][sp];
 	if (c == ':' || (cp=strchr(opts, c)) == NULL) {
 		/* if arg sentinel as option or other invalid option,
 		handle the error and return '?' */
@@ -35,6 +54,7 @@ int getopt(int argc, char **argv, const char *opts) {
 			optind++;
 			sp = 1;
 		}
+		optopt = c;
 		return '?';
 	}
 	if (*++cp == ':') {
@@ -46,6 +66,7 @@ int getopt(int argc, char **argv, const char *opts) {
 			/* but if the OptArg isn't there and the next CmdLineArg
 			 isn't either, handle the error... */
 			sp = 1;
+			optopt = c;
 			return '?';
 		} else
 			/* but if there is another CmdLineArg there, return that */
@@ -66,4 +87,8 @@ int getopt(int argc, char **argv, const char *opts) {
 void getopt_init() {
 	opterr = 1;
 	optind = 1;
+	optopt = 0;
+	optarg = NULL;
+	sp = 1;
+	not_opt = 0;
 }
