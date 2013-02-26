@@ -205,6 +205,7 @@ static int nfsfs_mount(void * dev, void *dir);
 static int nfsfs_create(struct node *parent_node, struct node *node);
 static int nfsfs_delete(struct node *node);
 static int nfsfs_truncate (struct node *node, off_t length);
+static int nfsfs_umount(void *dir);
 
 static struct fsop_desc nfsfs_fsop = {
 	.init = nfsfs_init,
@@ -214,6 +215,7 @@ static struct fsop_desc nfsfs_fsop = {
 	.delete_node = nfsfs_delete,
 
 	.truncate = nfsfs_truncate,
+	.umount = nfsfs_umount,
 };
 
 static struct fs_driver nfsfs_driver = {
@@ -286,6 +288,7 @@ static int nfs_prepare(struct nfs_fs_info *fsi, char *dev) {
 		}
 		*dst++ = *src++;
 	} while (':' != *src);
+	*dst = 0;
 
 	src++;
 	dst = fsi->srv_dir;
@@ -318,58 +321,132 @@ static int nfs_client_init(struct nfs_fs_info *fsi) {
 	return nfs_unix_auth_set(fsi->nfs);
 }
 
+static void nfs_free_fs(struct nas *nas) {
+	struct nfs_file_info *fi;
+	struct nfs_fs_info *fsi;
+
+	if(NULL != nas->fs) {
+		fsi = nas->fs->fsi;
+
+		if(NULL != fsi) {
+			nfs_clnt_destroy(fsi);
+			pool_free(&nfs_fs_pool, fsi);
+		}
+		filesystem_free(nas->fs);
+	}
+
+	if(NULL != (fi = nas->fi->privdata)) {
+		pool_free(&nfs_file_pool, fi);
+	}
+}
+
 static int nfsfs_mount(void *dev, void *dir) {
 	node_t *dir_node;
 	nfs_file_info_t *fi;
 	struct nas *dir_nas;
 	struct nfs_fs_info *fsi;
+	void *prev_fi, *prev_fs;
+	int rc;
 
 	dir_node = dir;
-
 	/* there are nodev for nfs. we create fs here and set nfs fs_driver*/
 	dir_nas = dir_node->nas;
+
+	prev_fi = dir_nas->fi->privdata;
+	prev_fs = dir_nas->fs;
+
+	dir_nas->fi->privdata = NULL;
+	dir_nas->fs = NULL;
+
 	if (NULL == (dir_nas->fs = filesystem_alloc("nfs"))) {
 		return -ENOMEM;
 	}
+	dir_nas->fs->rootdir_prev_fi = prev_fi;
+	dir_nas->fs->rootdir_prev_fs = prev_fs;
 
 	if ((NULL == (fsi = pool_alloc(&nfs_fs_pool))) ||
 			(NULL == (fi = pool_alloc(&nfs_file_pool)))) {
-		if(NULL != fsi) {
-			pool_free(&nfs_fs_pool, fsi);
-		}
-		return -ENOMEM;
+		rc = -ENOMEM;
+		goto error;
 	}
 
 	dir_nas->fs->fsi = fsi;
 	dir_nas->fi->privdata = (void *) fi;
 
-	// XXX what is the real type of dir? node or string?
-	strncpy(fsi->mnt_point, dir, MAX_LENGTH_PATH_NAME);
+	vfs_get_path_by_node(dir_node, fsi->mnt_point);
 
 	/* get server name and mount directory from params */
-	if (0 > nfs_prepare(fsi, dev)) {
-		return -1;
-	}
-	if (0 > nfs_client_init(fsi)) {
-		return -1;
-	}
-
-	if (0 > nfs_mount(dir_nas)) {
-		nfs_clnt_destroy(fsi);
-		pool_free(&nfs_fs_pool, fsi);
-		pool_free(&nfs_file_pool, fi);
-		return -1;
+	if ((0 > nfs_prepare(fsi, dev)) || (0 > nfs_client_init(fsi)) ||
+		(0 > nfs_mount(dir_nas))) {
+		rc = -1;
+		goto error;
 	}
 
 	/* copy filesystem filehandle to root directory filehandle */
 	memcpy(&fi->fh, &fsi->fh, sizeof(fi->fh));
 
 	if (0 >	nfs_create_dir_entry(dir_node)) { // XXX check the argument
-		nfs_clnt_destroy(fsi);
-		pool_free(&nfs_fs_pool, fsi);
-		pool_free(&nfs_file_pool, fi);
-		return -1;
+		rc = -1;
+	} else {
+		return 0;
 	}
+
+	error:
+	nfs_free_fs(dir_nas);
+
+	dir_nas->fi->privdata = prev_fi;
+	dir_nas->fs = prev_fs;
+	return rc;
+}
+
+static int nfs_umount_entry(struct nas *nas) {
+	struct node *child;
+
+	if(node_is_directory(nas->node)) {
+		while(NULL != (child =	vfs_get_child_next(nas->node))) {
+			if(node_is_directory(child)) {
+				nfs_umount_entry(child->nas);
+			}
+
+			pool_free(&nfs_file_pool, child->nas->fi->privdata);
+			vfs_del_leaf(child);
+		}
+	}
+
+	return 0;
+}
+
+static int nfsfs_umount(void *dir) {
+	struct node *dir_node;
+	struct nas *dir_nas;
+	struct nfs_fs_info *fsi;
+	void *prev_fi, *prev_fs;
+	char path[MAX_LENGTH_PATH_NAME];
+
+	dir_node = dir;
+	dir_nas = dir_node->nas;
+
+	fsi = dir_nas->fs->fsi;
+
+	/* check if dir not a root dir */
+	vfs_get_path_by_node(dir_node, path);
+	if(0 != strcmp(fsi->mnt_point, path)) {
+		return -EINVAL;
+	}
+	/*TODO check if it has a opened files */
+
+	prev_fi = dir_nas->fs->rootdir_prev_fi;
+	prev_fs = dir_nas->fs->rootdir_prev_fs;
+
+	/* delete all entry node */
+	nfs_umount_entry(dir_nas);
+
+	/* free nfs file system pools, clnt and buffers*/
+	nfs_free_fs(dir_nas);
+
+	dir_nas->fi->privdata = prev_fi;
+	dir_nas->fs = prev_fs;
+
 	return 0;
 }
 
