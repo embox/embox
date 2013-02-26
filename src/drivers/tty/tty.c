@@ -45,6 +45,24 @@ void tty_cursor(struct tty *t) {
 	t->ops->cursor(t, t->cur_x, t->cur_y);
 }
 
+static int setup_cursor(struct tty *t, int x, int y) {
+	t->cur_x = t->esc_args[1];
+	if (t->cur_x) {
+		--t->cur_x;
+	}
+	t->cur_y = t->esc_args[0];
+	if (t->cur_y) {
+		--t->cur_y;
+	}
+	if (t->cur_x >= t->width) {
+		t->cur_x = t->width - 1;
+	}
+	if (t->cur_y >= t->height) {
+		t->cur_y = t->height - 1;
+	}
+	return 0;
+}
+
 static void tty_esc_putc(struct tty *t, char ch) {
 	if (ch == '[') {
 		t->esc_args[0] = t->esc_args[1] = 0;
@@ -58,31 +76,8 @@ static void tty_esc_putc(struct tty *t, char ch) {
 	else {
 		switch (ch) {
 		case 'f': /* Move cursor + blink cursor to location v,h */
-			t->cur_x = t->esc_args[1];
-			if (t->cur_x != 0) {
-				--t->cur_y;
-			}
-			t->cur_y = t->esc_args[0];
-			if (t->cur_y) {
-				--t->cur_x;
-			}
-			tty_cursor(t);
-			break;
 		case 'H': /* Move cursor to screen location v,h */
-			t->cur_x = t->esc_args[1];
-			if (t->cur_x) {
-				--t->cur_x;
-			}
-			t->cur_y = t->esc_args[0];
-			if (t->cur_y) {
-				--t->cur_y;
-			}
-			if (t->cur_x >= t->width) {
-				t->cur_x = t->width - 1;
-			}
-			if (t->cur_y >= t->height) {
-				t->cur_y = t->height - 1;
-			}
+			setup_cursor(t, t->esc_args[1], t->esc_args[0]);
 			break;
 		case 'm': /* color */
 			break; /* TODO */
@@ -124,6 +119,12 @@ static void tty_esc_putc(struct tty *t, char ch) {
 		t->esc_state = 0;
 	}
 }
+static inline void inc_line(struct tty *t) {
+	++t->cur_y;
+	if (t->cur_y >= t->height) {
+		tty_scroll(t, t->cur_y - t->height + 1);
+	}
+}
 
 void tty_putc(struct tty *t, char ch) {
 	if (t->esc_state) {
@@ -132,12 +133,9 @@ void tty_putc(struct tty *t, char ch) {
 	else {
 		switch (ch) {
 		case '\n':
-		case '\f':
+		case '\f': /* Form feed/clear screen*/
 			t->cur_x = 0;
-			++t->cur_y;
-			if (t->cur_y >= t->height) {
-				tty_scroll(t, t->cur_y - t->height + 1);
-			}
+			inc_line(t);
 			break;
 		case '\r':
 			t->cur_x = 0;
@@ -145,12 +143,13 @@ void tty_putc(struct tty *t, char ch) {
 		case '\t':
 			t->cur_x += 4;
 			if (t->cur_x >= t->width) {
-				++t->cur_y;
-				if (t->cur_y >= t->height) {
-					tty_scroll(t, t->cur_y - t->height + 1);
-				}
+				inc_line(t);
 				t->cur_x -= t->width;
 			}
+			break;
+		case '\b': /* back space */
+			if (t->cur_x != 0)
+				--t->cur_x;
 			break;
 		case 27: /* ESC */
 			t->esc_state = 1;
@@ -171,22 +170,17 @@ void tty_putc(struct tty *t, char ch) {
 		case 5: /* clear to end of line */
 			t->ops->clear(t, t->cur_x, t->cur_y, t->width - t->cur_x - 1, 1);
 			break;
-		case 8: /* back space */
-			if (t->cur_x != 0)
-				--t->cur_x;
-			break;
+
 		default:
-			if ((unsigned char)ch >= 32) {
-				if (t->cur_x >= t->width) {
-					t->cur_x = 0;
-					++t->cur_y;
-				}
-				if (t->cur_y >= t->height) {
-					tty_scroll(t, t->cur_y - t->height + 1);
-				}
-				t->ops->putc(t, ch == '\265' ? '\346' : ch, t->cur_x, t->cur_y);
-				++t->cur_x;
+			if (t->cur_x >= t->width) {
+				t->cur_x = 0;
+
+				inc_line(t);
 			}
+
+			t->ops->putc(t, ch, t->cur_x, t->cur_y);
+			++t->cur_x;
+
 			break;
 		}
 	}
