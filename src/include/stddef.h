@@ -32,11 +32,16 @@
 #ifndef __size_t_defined
 #define __size_t_defined
 typedef __size_t size_t;
-#endif/*__size_t_defined */
+#endif /*__size_t_defined */
+
+#ifndef __wchar_t_defined
+#define __wchar_t_defined
+typedef unsigned short wchar_t;
+#endif /*__wchar_t_defined */
 
 #ifndef __ptrdiff_t_defined
 #define __ptrdiff_t_defined
 typedef __ptrdiff_t ptrdiff_t;
-#endif/*__ptrdiff_t_defined */
+#endif /*__ptrdiff_t_defined */
 
 #endif /* STDDEF_H_ */

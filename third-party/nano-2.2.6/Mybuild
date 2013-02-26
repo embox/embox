@@ -1,0 +1,22 @@
+package embox.third_party.nano
+
+module nano {
+	source "browser.c"
+	source "chars.c"
+	source "color.c"
+	source "cut.c"
+	source "files.c"
+	source "global.c"
+	source "help.c"
+	source "move.c"
+	source "nano.c"
+	source "prompt.c"
+	source "rcfile.c"
+	source "search.c"
+	source "text.c"
+	source "utils.c"
+	source "winio.c"
+
+	depends embox.compat.posix.curses
+	depends embox.lib.LibC
+}

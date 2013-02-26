@@ -93,6 +93,14 @@ extern int setegid(gid_t gid);
 extern int truncate(const char *path, off_t length);
 extern int ftruncate(int fd, off_t length);
 
+static inline char * getcwd(char *buff, size_t size) { return "/"; }
+static inline int chdir(const char *path) { return 0; }
+
+#define R_OK 4
+#define W_OK 2
+#define X_OK 1
+#define F_OK 0
+static inline int access(const char *path, int amode) { return 0; }
 
 /**
  * @param argc is the number of arguments on cmdline

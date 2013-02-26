@@ -64,7 +64,6 @@
 
 #define __int64 long long
 typedef __int64 off64_t;
-typedef unsigned short wchar_t;
 
 #define ISODCL(from, to) (to - from + 1)
 

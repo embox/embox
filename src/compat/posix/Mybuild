@@ -49,6 +49,10 @@ static module dirent {
 	depends embox.lib.LibCString
 }
 
+static module curses {
+	source "curses.c"
+}
+
 static module open {
 	source "open.c"
 

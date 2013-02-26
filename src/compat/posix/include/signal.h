@@ -69,4 +69,18 @@ static inline int raise(int sig) {
 #define SIGRTMIN    TASK_SIGRTMIN
 #define SIGRTMAX    TASK_SIGRTMAX
 
+typedef int sigset_t;
+typedef int siginfo_t;
+
+struct sigaction {
+	void (*sa_handler)(int);
+	sigset_t sa_mask;
+	int sa_flags;
+	void (*sa_sigaction)(int, siginfo_t *, void *);
+};
+
+static inline int sigaction(int sig, const struct sigaction *act,
+		struct sigaction *oact) { return 0; }
+static inline int sigfillset(sigset_t *set) { return 0; }
+
 #endif /* SIGNAL_H_ */

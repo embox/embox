@@ -113,7 +113,7 @@ typedef struct termios {
 #define TCIOFF             3    /* transmit a STOP character on the line */
 #define TCION              4    /* transmit a START character on the line */
 
-//extern int tcgetattr(int fd, struct termios *termios_p);
-//extern int tcsetattr(int fd, int optional_actions, struct termios *termios_p);
+static inline int tcgetattr(int fd, struct termios *termios_p) { return 0; }
+static inline int tcsetattr(int fd, int optional_actions, struct termios *termios_p) { return 0; }
 
 #endif /* TERMIOS_H_ */
