@@ -356,7 +356,6 @@ void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
 }
 
 static uint32_t pixel_to_pat(uint32_t bpp, uint32_t pixel) {
-	assert(pixel >> bpp == 0);
 	return bpp == 1 ? 0xffffffffUL * pixel
 			: bpp == 2 ? 0x55555555UL * pixel
 			: bpp == 4 ? 0x11111111UL * pixel
@@ -365,7 +364,7 @@ static uint32_t pixel_to_pat(uint32_t bpp, uint32_t pixel) {
 			: bpp == 16 ? 0x00010001UL * pixel
 			: bpp == 24 ? 0x01000001UL * pixel
 			: bpp == 32 ? 0x00000001UL * pixel
-			: 0;
+			: 0xbadffbad;
 }
 
 static void bitfill(uint32_t *dst, uint32_t dstn, uint32_t pat,

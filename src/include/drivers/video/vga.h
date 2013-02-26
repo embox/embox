@@ -75,12 +75,6 @@
 #define VGA_CRTC_MODE_CONTROL  0x17
 #define VGA_CRTC_LINE_COMPARE  0x18
 
-#if 0
-/* graphic controller registers */
-#define VGA_GC_READ_MAP_SEL    0x4
-#define VGA_GC_MISCELLANEOUS   0x6
-#endif
-
 /* VGA graphics controller register indices */
 #define VGA_GFX_SR_VALUE       0x00
 #define VGA_GFX_SR_ENABLE      0x01
@@ -91,8 +85,6 @@
 #define VGA_GFX_MISC           0x06
 #define VGA_GFX_COMPARE_MASK   0x07
 #define VGA_GFX_BIT_MASK       0x08
-
-
 
 /* sequencer registers * */
 #define VGA_SEQ_PLANE_MASK     0x2

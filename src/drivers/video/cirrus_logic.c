@@ -189,6 +189,7 @@ static void chipset_init(struct cirrus_chip_info *cinfo) {
 
 	/* misc... */
 	WHDR(cinfo, 0);	/* Hidden DAC register: - */
+
 }
 
 
@@ -351,19 +352,25 @@ static int cl_set_par(struct fb_info *info) {
 	cirrus_chip_info.multiplexing = 0;
 	cirrus_chip_info.screen_info = (struct fb_var_screeninfo *)&info->var;
 
+	chipset_init(&cirrus_chip_info);
 
 	setup_resolution(&cirrus_chip_info);
 
 	cirrus_setup_bits_per_pixel(&cirrus_chip_info);
 
-	chipset_init(&cirrus_chip_info);
+	vga_wgfx(0, VGA_GFX_MISC, 1);
+
+	vga_display_enable(1);
 
 	return 0;
 }
 
 static const struct fb_ops cl_ops = {
 	.fb_check_var = cl_check_var,
-	.fb_set_par = cl_set_par
+	.fb_set_par = cl_set_par,
+	.fb_copyarea = fb_copyarea,
+	.fb_fillrect = fb_fillrect,
+	.fb_imageblit = fb_imageblit
 };
 
 static const struct fb_fix_screeninfo cl_fix_screeninfo = {
