@@ -17,13 +17,6 @@ module bsearch_test {
 	depends embox.framework.LibFramework
 }
 
-module getopt_test {
-	source "getopt_test.c"
-
-	depends embox.compat.posix.LibPosix
-	depends embox.framework.LibFramework
-}
-
 module qsort_test {
 	source "qsort_test.c"
 

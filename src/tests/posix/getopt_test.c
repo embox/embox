@@ -1,11 +1,11 @@
 /**
  * @file
- *
  * @brief Tests for standard 'getopt' calling functionality
  *
- * @date 15.03.2012
+ * @date 15.03.12
  * @author Anton Bondarev
  */
+
 #include <embox/test.h>
 #include <unistd.h>
 
