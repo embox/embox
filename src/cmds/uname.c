@@ -34,7 +34,7 @@ static int uname_args_not_empty(struct uname_args *args) {
 			|| args->with_o;
 }
 
-static int exec(int argc, char *argv[0]) {
+static int exec(int argc, char *argv[]) {
 	int opt;
 	struct utsname info;
 	struct uname_args args;
