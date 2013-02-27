@@ -64,7 +64,7 @@ int phoneme_midp(int argc, char **argv) {
 		return -1;
 	}
 
-	new_task(phoneme_run, &params);
+	new_task("", phoneme_run, &params);
 	notify_loop();
 
 	return params.code;
@@ -77,7 +77,7 @@ int phoneme_cldc(int argc, char **argv) {
 			.code = -1
 	};
 
-	new_task(phoneme_run, &params);
+	new_task("", phoneme_run, &params);
 	while(!list_empty(&task_self()->children)) { } /* XXX make it throw waitpid() */
 
 	return params.code;

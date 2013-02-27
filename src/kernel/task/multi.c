@@ -41,7 +41,7 @@ static void *task_trampoline(void *arg);
 static void thread_set_task(struct thread *t, struct task *tsk);
 static void task_init_parent(struct task *task, struct task *parent);
 
-int new_task(void *(*run)(void *), void *arg) {
+int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
@@ -86,6 +86,13 @@ int new_task(void *(*run)(void *), void *arg) {
 		thd->stack_sz -= task_sz;
 
 		/* init new task */
+
+		if (strlen(name) > MAX_TASK_NAME_LEN) {
+			res = -EPERM;
+			goto out_threadfree;
+		}
+
+		strcpy(self_task->name, name);
 
 		if ((res = task_table_add(self_task)) < 0) {
 			goto out_threadfree;

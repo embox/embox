@@ -157,7 +157,7 @@ static int servd(int argc, char **argv) {
 	int opt;
 
 	if (!web_server_started) {
-		web_server_task = new_task(start_server, NULL);
+		web_server_task = new_task("servd", start_server, NULL);
 		if (web_server_task < 0) {
 			printf("Server isn't started, try again\n");
 			return 0;

@@ -58,7 +58,7 @@ asmlinkage int sys_fork(struct pt_regs regs) {
 
 		memcpy(data, &regs, sizeof(struct pt_regs));
 
-		res = new_task(fork_trampoline, data);
+		res = new_task(task_self()->name, fork_trampoline, data);
 	}
 	sched_unlock();
 

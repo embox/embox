@@ -30,8 +30,8 @@ static void *tsk2_hnd(void *data) {
 }
 
 TEST_CASE("Create two tasks") {
-	new_task(tsk1_hnd, NULL);
-	new_task(tsk2_hnd, SOMEPOINTER);
+	new_task("", tsk1_hnd, NULL);
+	new_task("", tsk2_hnd, SOMEPOINTER);
 
 	// TODO: waitpid
 }
@@ -57,7 +57,7 @@ static void *tsk3_thr1_hnd(void *data) {
 
 TEST_CASE("Create task with 2 threads and terminate "
 		"task in main one not detaching another") {
-	new_task(tsk3_thr1_hnd, NULL);
+	new_task("", tsk3_thr1_hnd, NULL);
 	// TODO: waitpid
 }
 
@@ -84,7 +84,7 @@ static void *tsk4_thr1_hnd(void *data) {
 
 TEST_CASE("Create task with 2 threads and terminate "
 		"task in main one with detaching another") {
-	new_task(tsk4_thr1_hnd, NULL);
+	new_task("", tsk4_thr1_hnd, NULL);
 	// TODO: waitpid
 }
 
@@ -111,7 +111,7 @@ static void *tsk5_thr1_hnd(void *data) {
 
 TEST_CASE("Create task with 2 threads and terminate "
 		"task not in main one") {
-	new_task(tsk5_thr1_hnd, NULL);
+	new_task("", tsk5_thr1_hnd, NULL);
 	// TODO: waitpid
 }
 
@@ -138,7 +138,7 @@ static void *tsk6_thr1_hnd(void *data) {
 
 TEST_CASE("Create task with 2 threads and terminate "
 		"task in main thread by exiting threads") {
-	new_task(tsk6_thr1_hnd, NULL);
+	new_task("", tsk6_thr1_hnd, NULL);
 	// TODO: waitpid
 }
 
@@ -165,7 +165,7 @@ static void *tsk7_thr1_hnd(void *data) {
 
 TEST_CASE("Create task with 2 threads and terminate "
 		"task by exiting threads") {
-	new_task(tsk7_thr1_hnd, NULL);
+	new_task("", tsk7_thr1_hnd, NULL);
 	// TODO: waitpid
 }
 
