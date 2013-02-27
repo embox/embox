@@ -61,14 +61,14 @@ static inline int munmap(void *addr, size_t size) {
 #include <string.h>
 // Stuff below moved here because of testlib
 
-#define EMBOX_OVERRIDE_GETENV
-static inline char *getenv(const char *name) {
+//#define EMBOX_OVERRIDE_GETENV
+/*static inline char *getenv(const char *name) {
 	printf(">>> getenv(%s)\n",name);
 	if (strcmp(name, "QT_QPA_FONTDIR") == 0) {
 		return "/";
 	}
 	return 0;
-}
+}*/
 /*static inline int fflush(FILE *x) {
 	//printf(">>> fflush(%d)\n",(int)x);
 	return EOF;
