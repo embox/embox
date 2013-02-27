@@ -125,6 +125,8 @@ extern int opterr;   /**< flag:error message on unrecognzed options */
 /** setup optind and opterr */
 extern void getopt_init(void); /* TODO remove this */
 
+extern char **environ;
+
 __END_DECLS
 
 #endif /* COMPAT_POSIX_UNISTD_H_ */
