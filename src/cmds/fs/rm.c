@@ -26,10 +26,10 @@ static int exec(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc - 1, argv, "frh"))) {
 		switch(opt) {
 		case 'f':
-          //              ignore = 1;
+//      ignore = 1;
 			break;
 		case 'r':
-	//		recursive = 1;
+//		recursive = 1;
 			break;
 		case 'h':
 			print_usage();
