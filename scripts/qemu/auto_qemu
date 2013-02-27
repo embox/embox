@@ -6,10 +6,11 @@ EMBOX_MODS_CONF=../../conf/mods.config
 
 # Checking for network driver
 
-for DRIVER in "ne2k_pci" "e1000" "rtl8139" "r6040"
+for DRIVER in "ne2k_pci" "e1000" "rtl8139"
 do
-QEMU_NET_DRIVER=`grep -o $DRIVER $EMBOX_MODS_CONF`
-if [ "$QEMU_NET_DRIVER" ]; then
+grep embox.driver.net.$DRIVER $EMBOX_MODS_CONF > /dev/null
+if [ $? -eq 0 ]; then
+QEMU_NET_DRIVER=$DRIVER
 break
 fi
 done
