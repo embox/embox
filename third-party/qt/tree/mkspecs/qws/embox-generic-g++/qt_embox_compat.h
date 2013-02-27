@@ -87,7 +87,7 @@ static inline int strcoll(const char *s1, const char *s2) {
 #include <sys/types.h>
 
 // The definition is not precise, please revise
-typedef struct {
+/*typedef struct {
 	int si_signo;
 	int si_code;
         //union sigval si_value;
@@ -97,7 +97,7 @@ typedef struct {
 	void *si_addr;
 	int si_status;
 	int si_band;
-} siginfo_t;
+} siginfo_t;*/
 
 typedef int sigset_t;
 
