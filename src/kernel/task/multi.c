@@ -104,8 +104,6 @@ int new_task(const char *name, void *(*run)(void *), void *arg) {
 
 		thread_detach(thd);
 
-		strcpy(self_task->name, ""); /* TODO: */
-
 		goto out_unlock;
 
 out_threadfree:

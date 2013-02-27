@@ -33,7 +33,7 @@ struct task_u_area;
  */
 struct task {
 	int tid;
-	char name[MAX_TASK_NAME_LEN];
+	char name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
 	struct task *parent; /**< @brief Task's parent */
 
 	struct list_head children; /**< @brief Task's children */
