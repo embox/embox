@@ -10,6 +10,13 @@
 
 #define VT_TOKEN_ATTRS_MAX     2
 
+/** ANSI Escape */
+#define ESC		'\033'
+
+/** ANSI Control Sequence Introducer */
+#define CSI		'['
+
+
 enum vt_action {
 	VT_ACTION_NONE         = 0,
 	VT_ACTION_CLEAR        = 1,

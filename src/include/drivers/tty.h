@@ -10,6 +10,7 @@
 #define DRIVERS_VIDEO_TTY_H_
 
 #include <types.h>
+#include <termios.h>
 
 struct tty;
 
@@ -23,24 +24,31 @@ struct tty_ops {
 			uint32_t height, uint32_t dx, uint32_t dy);
 };
 
+struct win_size {
+	uint32_t x;
+	uint32_t y;
+	uint32_t width;
+	uint32_t height;
+};
+
 struct tty {
 	uint32_t cur_x;
 	uint32_t cur_y;
 	uint32_t width;
 	uint32_t height;
+
 	const struct tty_ops *ops;
 	void *data;
 
 	int esc_state;
 	int esc_args[5];
 	int esc_args_count;
+
+	//struct termios termios;
 };
 
 extern void tty_init(struct tty *t, uint32_t width, uint32_t height,
 		const struct tty_ops *ops, void *data);
-extern void tty_scroll(struct tty *t, int32_t delta);
-extern void tty_clear(struct tty *t);
-extern void tty_cursor(struct tty *t);
 extern void tty_putc(struct tty *t, char ch);
 
 #endif /* DRIVERS_VIDEO_TTY_H_ */
