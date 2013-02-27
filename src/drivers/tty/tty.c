@@ -11,37 +11,25 @@
 #include <util/array.h>
 #include <drivers/tty.h>
 
-void tty_init(struct tty *t, uint32_t width, uint32_t height,
-		const struct tty_ops *ops, void *data) {
-	t->cur_x = 0;
-	t->cur_y = 0;
-	t->width = width;
-	t->height = height;
-	t->ops = ops;
-	t->data = data;
 
-	t->ops->init(t);
-	tty_clear(t);
-}
 
-void tty_scroll(struct tty *t, int32_t delta) {
+static void tty_scroll(struct tty *t, int32_t delta) {
 	if (delta > 0) {
 		t->ops->move(t, 0, delta, t->width, t->cur_y - delta, 0, 0);
 		t->ops->clear(t, 0, t->cur_y - delta, t->width, delta);
 		t->cur_y -= delta;
-	}
-	else {
+	} else {
 		t->ops->move(t, 0, 0, t->width, t->cur_y + delta, 0, -delta);
 		t->ops->clear(t, 0, 0, t->width, -delta);
 		t->cur_y += -delta;
 	}
 }
 
-void tty_clear(struct tty *t) {
+static void tty_clear(struct tty *t) {
 	t->ops->clear(t, 0, 0, t->width, t->height);
 }
 
-void tty_cursor(struct tty *t) {
+static void tty_cursor(struct tty *t) {
 	t->ops->cursor(t, t->cur_x, t->cur_y);
 }
 
@@ -154,27 +142,10 @@ void tty_putc(struct tty *t, char ch) {
 		case 27: /* ESC */
 			t->esc_state = 1;
 			return;
-		case 6: /* cursor */
-			++t->cur_y;
-			t->cur_x += 2;
-			if (t->cur_y >= t->height) {
-				t->cur_y = t->height - 1;
-			}
-			if (t->cur_x >= t->width) {
-				t->cur_x = t->width - 1;
-			}
-			break;
-		case 1: /* home */
-			t->cur_x = 0;
-			break;
-		case 5: /* clear to end of line */
-			t->ops->clear(t, t->cur_x, t->cur_y, t->width - t->cur_x - 1, 1);
-			break;
 
 		default:
 			if (t->cur_x >= t->width) {
 				t->cur_x = 0;
-
 				inc_line(t);
 			}
 
@@ -185,4 +156,18 @@ void tty_putc(struct tty *t, char ch) {
 		}
 	}
 	tty_cursor(t);
+}
+
+
+void tty_init(struct tty *t, uint32_t width, uint32_t height,
+		const struct tty_ops *ops, void *data) {
+	t->cur_x = 0;
+	t->cur_y = 0;
+	t->width = width;
+	t->height = height;
+	t->ops = ops;
+	t->data = data;
+
+	t->ops->init(t);
+	tty_clear(t);
 }
