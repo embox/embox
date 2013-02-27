@@ -111,10 +111,10 @@ inline long sysconf(int name) {
 
 
 
-inline int putenv(char *x) {
+/* inline int putenv(char *x) {
 	printf(">>> putenv(%s)\n",x);
 	return -1;
-}
+} */
 
 
 
