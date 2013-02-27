@@ -1,15 +1,16 @@
 package third_party.qt
 
-@Build(script="$(MAKE) -C $(THIRDPARTY_DIR)/qt MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
 module core {
 	depends embox.lib.LibC
 	depends embox.lib.cxx.lib
 	depends embox.arch.x86.LibM // FIXME:
 	depends embox.compat.posix.dirent
+	source "core.c"
 	// Posix
 }
 
 module example extends embox.lib.cxx.app {
+	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/qt MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)'")
+	source "../../../../qt/apps_embox/animatedtiles/animatedtiles.o"
 	depends core
-	depends embox.lib.cxx.lib
 }
