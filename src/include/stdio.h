@@ -153,7 +153,7 @@ extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
  */
 extern int fclose(FILE *fp);
 
-static inline int fflush(FILE *fp) { return 0; }
+static inline int fflush(FILE *fp) { return EOF; }
 
 /**
  * Deletes a name from the file system.

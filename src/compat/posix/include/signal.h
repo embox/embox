@@ -73,14 +73,15 @@ typedef int sigset_t;
 typedef int siginfo_t;
 
 struct sigaction {
-	void (*sa_handler)(int);
-	sigset_t sa_mask;
-	int sa_flags;
-	void (*sa_sigaction)(int, siginfo_t *, void *);
+    void (*sa_handler)(int);
+    void (*sa_sigaction)(int, siginfo_t *, void *);
+    sigset_t sa_mask;
+    int sa_flags;
+    void (*sa_restorer)(void);
 };
 
 static inline int sigaction(int sig, const struct sigaction *act,
-		struct sigaction *oact) { return 0; }
-static inline int sigfillset(sigset_t *set) { return 0; }
+		struct sigaction *oact) { return -1; }
+static inline int sigfillset(sigset_t *set) { return -1; }
 
 #endif /* SIGNAL_H_ */

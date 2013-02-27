@@ -127,7 +127,10 @@ static inline long labs(long x) { return x < 0 ? -x : x; }
 
 static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) { return 0; }
 static inline int wctomb(char *s, wchar_t wchar) { return 0; }
+
+#ifndef EMBOX_OVERRIDE_GETENV /* XXX hack for qt */
 static inline char * getenv(const char *name) { return NULL; }
+#endif
 static inline int mkstemp(char *path_template) { return -1; }
 
 __END_DECLS

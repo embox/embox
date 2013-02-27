@@ -93,7 +93,14 @@ extern int setegid(gid_t gid);
 extern int truncate(const char *path, off_t length);
 extern int ftruncate(int fd, off_t length);
 
-static inline char * getcwd(char *buff, size_t size) { return "/"; }
+static inline char * getcwd(char *buff, size_t size) {
+	if (size < 2) {
+		return NULL;
+	}
+	buff[0] = '/';
+	buff[1] = 0;
+	return buff;
+}
 static inline int chdir(const char *path) { return 0; }
 
 #define R_OK 4

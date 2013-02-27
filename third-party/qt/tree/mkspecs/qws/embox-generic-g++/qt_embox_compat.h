@@ -61,6 +61,7 @@ static inline int munmap(void *addr, size_t size) {
 #include <string.h>
 // Stuff below moved here because of testlib
 
+#define EMBOX_OVERRIDE_GETENV
 static inline char *getenv(const char *name) {
 	printf(">>> getenv(%s)\n",name);
 	if (strcmp(name, "QT_QPA_FONTDIR") == 0) {
@@ -68,10 +69,10 @@ static inline char *getenv(const char *name) {
 	}
 	return 0;
 }
-static inline int fflush(FILE *x) {
+/*static inline int fflush(FILE *x) {
 	//printf(">>> fflush(%d)\n",(int)x);
 	return EOF;
-}
+}*/
 
 // because of strcmp
 #include <string.h>
@@ -100,13 +101,13 @@ typedef struct {
 
 typedef int sigset_t;
 
-struct sigaction {
+/*struct sigaction {
     void (*sa_handler)(int);
     void (*sa_sigaction)(int, siginfo_t *, void *);
     sigset_t sa_mask;
     int sa_flags;
     void (*sa_restorer)(void);
-};
+};*/
 
 
 
@@ -129,11 +130,11 @@ static inline int sigemptyset(sigset_t *set) {
 	return -1;
 }
 
-static inline int sigaction(int signum, const struct sigaction *act,
+/*static inline int sigaction(int signum, const struct sigaction *act,
 	      struct sigaction *oldact) {
 	printf(">>> sigaction(%x,%p,%p)\n",signum,act,oldact);
 	return -1;
-}
+}*/
 
 
 // Required by libtiff

@@ -361,11 +361,11 @@ int getpwuid_r(uid_t uid, struct passwd *pwd,
 #define W_OK (printf(">>> W_OK\n"),2)
 #define X_OK (printf(">>> X_OK\n"),4)
 #define F_OK (printf(">>> F_OK\n"),8)
-inline int access(const char *pathname, int mode) {
+/*inline int access(const char *pathname, int mode) {
 	printf(">>> access(%s, %x)\n", pathname, mode);
 	errno = EPERM;
 	return -1;
-}
+}*/
 inline int rename(const char *oldpath, const char *newpath) {
 	printf(">>> rename(%s, %s)\n", oldpath, newpath);
 	errno = EPERM;
@@ -377,11 +377,11 @@ inline int symlink(const char *oldpath, const char *newpath) {
 	return -1;
 }
 
-inline int chdir(const char *path) {
+/*inline int chdir(const char *path) {
 	printf(">>> chdir(%s)\n", path);
 	errno = EPERM;
 	return -1;
-}
+}*/
 
 //char *get_current_dir_name(void);
 
@@ -389,7 +389,7 @@ inline int chdir(const char *path) {
 
 // Either this or define __GLIBC__
 #define PATH_MAX 256
-inline char *getcwd(char *buf, size_t size) {
+/*inline char *getcwd(char *buf, size_t size) {
 	if(size<2) {
 		printf(">>> getcwd()\n");
 		return NULL;
@@ -398,15 +398,15 @@ inline char *getcwd(char *buf, size_t size) {
 	buf[1] = 0;
 	printf(">>> getcwd(%s)\n", buf);
 	return buf;
-}
+}*/
 
 
 
 
-inline char *setlocale(int category, const char *locale) {
+/*inline char *setlocale(int category, const char *locale) {
 	printf(">>> setlocale(%x, %s)\n", category, locale);
 	return NULL;
-}
+}*/
 #define LC_ALL   (printf(">>> LC_ALL\n"),  1)
 #define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
 
@@ -573,10 +573,10 @@ struct __res_state {
 
 
 
-static inline struct passwd *getpwuid(uid_t uid) {
+/*static inline struct passwd *getpwuid(uid_t uid) {
 	printf(">>> getpwuid %d\n", uid);
 	return NULL;
-}
+}*/
 
 static inline struct passwd *getpwnam(const char *name) {
 	printf(">>> getpwnam %s\n", name);

@@ -34,10 +34,12 @@
 typedef __size_t size_t;
 #endif /*__size_t_defined */
 
+#ifndef __cplusplus
 #ifndef __wchar_t_defined
 #define __wchar_t_defined
 typedef unsigned short wchar_t;
 #endif /*__wchar_t_defined */
+#endif
 
 #ifndef __ptrdiff_t_defined
 #define __ptrdiff_t_defined
