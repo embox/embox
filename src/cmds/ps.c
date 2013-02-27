@@ -21,9 +21,14 @@ static void print_usage(void) {
 
 static void print_all(void) {
 	int tid = 0;
+	struct task *task;
+
+	printf(" %3s  %20s\n", "tid", "name");
 
 	while (0 <= (tid = task_table_get_first(tid))) {
-		printf("tid: %d\n", tid);
+		task = task_table_get(tid);
+		printf(" %3d  %20s\n", tid, task->name);
+
 		++tid;
 	}
 

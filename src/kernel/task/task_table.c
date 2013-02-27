@@ -19,8 +19,13 @@ EMBOX_UNIT_INIT(task_table_unit_init);
 UTIL_IDX_TABLE_DEF(struct task *, task_table, TASK_QUANT);
 
 int task_table_add(struct task *task) {
-	task->tid = util_idx_table_add((util_idx_table_t *) &task_table, task);
-	return task->tid;
+	int res = util_idx_table_add((util_idx_table_t *) &task_table, task);
+
+	if (res >= 0) {
+		task->tid = res;
+	}
+
+	return res;
 }
 
 struct task *task_table_get(int n) {

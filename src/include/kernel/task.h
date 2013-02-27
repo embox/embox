@@ -15,6 +15,8 @@
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
+#define MAX_TASK_NAME_LEN 20
+
 __BEGIN_DECLS
 
 struct task_signal_table;
@@ -31,6 +33,7 @@ struct task_u_area;
  */
 struct task {
 	int tid;
+	char name[MAX_TASK_NAME_LEN];
 	struct task *parent; /**< @brief Task's parent */
 
 	struct list_head children; /**< @brief Task's children */
