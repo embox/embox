@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Change working direcory to scripts/qemu
+cd "$(dirname "$0")"
+
 QEMU=qemu-system-i386
 IMAGE=../../build/base/bin/embox
 EMBOX_MODS_CONF=../../conf/mods.config
