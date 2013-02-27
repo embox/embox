@@ -15,7 +15,7 @@ contains(TEMPLATE, .*(app)) {
 	#CONFIG += link_prl
 	QMAKE_LFLAGS      += -Wl,--undefined=embox_auto_plugin_importer_linker_hook
 	LIBS              += -lEmboxAutoPluginImporter
-	TARGET             = $${TARGET}.o
+	TARGET             = $${TARGET}.embox.o
 }
 
 # Previous value derived from tools.pri = -lm
