@@ -132,4 +132,4 @@ static const struct iodev_ops iodev_video_ops_struct = {
 	.kbhit = &iodev_video_kbhit
 };
 
-const struct iodev_ops *iodev_video_ops = &iodev_video_ops_struct;
+const struct iodev_ops *const iodev_video_ops = &iodev_video_ops_struct;

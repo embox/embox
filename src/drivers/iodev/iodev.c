@@ -11,27 +11,27 @@
 
 #include <drivers/iodev.h>
 
-
-static const struct iodev_ops *current_iodev = NULL;
+extern const struct iodev_ops iodev_diag_ops_struct;
+static const struct iodev_ops *curr_iodev = &iodev_diag_ops_struct;
 
 int iodev_init(void) {
-	return current_iodev->init();
+	return curr_iodev->init();
 }
 
 char iodev_getc(void) {
-	return current_iodev->getc();
+	return curr_iodev->getc();
 }
 
 void iodev_putc(char ch) {
-	current_iodev->putc(ch);
+	curr_iodev->putc(ch);
 }
 
 int iodev_kbhit(void) {
-	return current_iodev->kbhit();
+	return curr_iodev->kbhit();
 }
 
 void iodev_setup(const struct iodev_ops *new_iodev) {
-	current_iodev = new_iodev;
+	curr_iodev = new_iodev;
 }
 
 int iodev_setup_diag(void) {
