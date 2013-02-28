@@ -17,6 +17,7 @@
 #define pokew(S,O,V)	    *(unsigned short *)(16uL * (S) + (O)) = (V)
 #define _vmemwr(DS,DO,S,N)      memcpy((char *)((DS) * 16 + (DO)), S, N)
 
+#define VGA_PEL_MSK    0x3C6   /* PEL mask register */
 
 /* AC - attribute controller */
 #define VGA_AC_INDEX        0x3C0
@@ -68,7 +69,7 @@
 #define VGA_CRTC_V_SYNC_START  0x10
 #define VGA_CRTC_V_SYNC_END    0x11
 #define VGA_CRTC_V_DISP_END    0x12
-
+#define VGA_CRTC_OFFSET        0x13
 #define VGA_CRTC_UNDERLINE     0x14
 #define VGA_CRTC_V_BLANK_START 0x15
 #define VGA_CRTC_V_BLANK_END   0x16
@@ -149,7 +150,7 @@ static inline unsigned char vga_misc_read(void) {
 	return in8(VGA_MISC_READ);
 }
 
-static inline void vga_wcrt(uint32_t *regbase, unsigned char value, unsigned char index) {
+static inline void vga_wcrt(uint32_t *regbase, unsigned char index, unsigned char value) {
 	out8(index, VGA_CRTC_INDEX);
 	out8(value, VGA_CRTC_DATA);
 }
@@ -159,7 +160,7 @@ static inline unsigned char vga_rcrt(uint32_t *regbase, unsigned index) {
 	return in8(VGA_CRTC_DATA);
 }
 
-static inline void vga_wseq(uint32_t *regbase, unsigned char value, unsigned char index) {
+static inline void vga_wseq(uint32_t *regbase, unsigned char index, unsigned char value) {
 	out8(index, VGA_SEQ_INDEX);
 	out8(value, VGA_SEQ_DATA);
 }
@@ -170,7 +171,7 @@ static inline unsigned char vga_rseq(uint32_t *regbase, unsigned char index) {
 }
 
 
-static inline void vga_wgfx(unsigned int *regbase, unsigned char value, unsigned char index) {
+static inline void vga_wgfx(unsigned int *regbase, unsigned char index, unsigned char value) {
 	out8(index, VGA_GC_INDEX);
 	out8(value, VGA_GC_DATA);
 }

@@ -5,8 +5,6 @@
  * @author: Anton Bondarev
  */
 
-
-
 //http://linuxconsole.sourceforge.net/fbdev/HOWTO/3.html
 
 //http://www.faqs.org/faqs/pc-hardware-faq/supervga-programming/
@@ -16,6 +14,7 @@
 //CIRRUS_LOGIC_GD_5446
 #include <types.h>
 #include <errno.h>
+#include <string.h>
 
 #include <drivers/pci/pci_driver.h>
 #include <drivers/pci/pci_id.h>
@@ -32,14 +31,12 @@
 
 #include <drivers/pci/pci.h>
 
-
-
-
 struct cirrus_chip_info {
 	unsigned int *regbase;
 	struct fb_var_screeninfo *screen_info;
 	int doubleVCLK;
 	int multiplexing;
+	uint8_t *screen_base;
 };
 
 static struct cirrus_chip_info cirrus_chip_info;
@@ -56,24 +53,50 @@ void cirrus_chip_reset(struct cirrus_chip_info *cinfo) {
 	vga_wgfx(cinfo->regbase, CL_GR31, 0x00);
 }
 
+void udelay(int cnt) {
+	volatile int tcnt = cnt * 1000;
+
+	while(tcnt--) {}
+
+}
+
 /* write to hidden DAC registers */
 static void WHDR(const struct cirrus_chip_info *cinfo, unsigned char val) {
-#if 0
 	unsigned char dummy;
 
 	/* now do the usual stuff to access the HDR */
-	dummy = RGen(cinfo, VGA_PEL_MSK);
+	dummy = in8(VGA_PEL_MSK);
 	udelay(200);
-	dummy = RGen(cinfo, VGA_PEL_MSK);
+	dummy = in8(VGA_PEL_MSK);
 	udelay(200);
-	dummy = RGen(cinfo, VGA_PEL_MSK);
+	dummy = in8(VGA_PEL_MSK);
 	udelay(200);
-	dummy = RGen(cinfo, VGA_PEL_MSK);
+	dummy = in8(VGA_PEL_MSK);
 	udelay(200);
 
-	WGen(cinfo, VGA_PEL_MSK, val);
-	udelay(200)
-#endif
+	out8(val, VGA_PEL_MSK);
+	udelay(200);
+
+	dummy = dummy;
+}
+
+unsigned char RHDR(const struct cirrus_chip_info *cinfo) {
+	unsigned char dummy;
+
+	/* now do the usual stuff to access the HDR */
+	dummy = in8(VGA_PEL_MSK);
+	udelay(200);
+	dummy = in8(VGA_PEL_MSK);
+	udelay(200);
+	dummy = in8(VGA_PEL_MSK);
+	udelay(200);
+	dummy = in8(VGA_PEL_MSK);
+	udelay(200);
+
+	dummy = in8(VGA_PEL_MSK);
+	udelay(200);
+
+	return dummy;
 
 }
 
@@ -116,10 +139,6 @@ static void chipset_init(struct cirrus_chip_info *cinfo) {
 	/* Underline Row scanline: - */
 	vga_wcrt(cinfo->regbase, VGA_CRTC_UNDERLINE, 0x00);
 
-
-	/* ### add 0x40 for text modes with > 30 MHz pixclock */
-	/* ext. display controls: ext.adr. wrap */
-	vga_wcrt(cinfo->regbase, CL_CRT1B, 0x02);
 
 	/* Set/Reset registes: - */
 	vga_wgfx(cinfo->regbase, VGA_GFX_SR_VALUE, 0x00);
@@ -192,8 +211,6 @@ static void chipset_init(struct cirrus_chip_info *cinfo) {
 
 }
 
-
-
 static void setup_resolution(struct cirrus_chip_info *cinfo) {
 	int vdispend, vsyncstart, vsyncend, vtotal;
 	int hdispend, hsyncstart, hsyncend, htotal;
@@ -236,8 +253,6 @@ static void setup_resolution(struct cirrus_chip_info *cinfo) {
 	vga_wcrt(regbase, VGA_CRTC_V_SYNC_END, 0x20);	/* previously: 0x00) */
 	/* mode control: VGA_CRTC_START_HI enable, ROTATE(?), 16bit
 	* address wrap, no compat. */
-	vga_wcrt(regbase, VGA_CRTC_MODE_CONTROL, 0xc3);
-
 	vga_wcrt(regbase, VGA_CRTC_H_TOTAL, htotal);
 
 	vga_wcrt(regbase, VGA_CRTC_H_DISP_END, hdispend);
@@ -297,6 +312,20 @@ static void setup_resolution(struct cirrus_chip_info *cinfo) {
 	vga_wcrt(regbase, VGA_CRTC_V_BLANK_END, vtotal & 0xff);
 
 	vga_wcrt(regbase, VGA_CRTC_LINE_COMPARE, 0xff);
+
+	tmp = var->xres >> 2;
+	vga_wcrt(regbase, VGA_CRTC_OFFSET, tmp & 0xff);
+	tmp >>= 8;
+
+	/* ### add 0x40 for text modes with > 30 MHz pixclock */
+	/* ext. display controls: ext.adr. wrap */
+	/* add extended bit of OFFSET */
+	vga_wcrt(cinfo->regbase, CL_CRT1B, 0x02 | (tmp ? 0x10 : 0) );
+
+	vga_wcrt(regbase, VGA_CRTC_MODE_CONTROL, 0xc3);
+
+	memset(cinfo->screen_base, 0, var->xres * var->yres);
+
 }
 
 
@@ -331,7 +360,6 @@ static int cirrus_setup_bpp24(struct cirrus_chip_info *cinfo) {
 	return 0;
 }
 
-
 static int cirrus_setup_bits_per_pixel(struct cirrus_chip_info *cinfo) {
 	switch(cinfo->screen_info->bits_per_pixel) {
 	case 24:
@@ -351,14 +379,13 @@ static int cl_set_par(struct fb_info *info) {
 	cirrus_chip_info.doubleVCLK = 0;
 	cirrus_chip_info.multiplexing = 0;
 	cirrus_chip_info.screen_info = (struct fb_var_screeninfo *)&info->var;
+	cirrus_chip_info.screen_base = info->screen_base;
 
 	chipset_init(&cirrus_chip_info);
 
 	setup_resolution(&cirrus_chip_info);
 
 	cirrus_setup_bits_per_pixel(&cirrus_chip_info);
-
-	vga_wgfx(0, VGA_GFX_MISC, 1);
 
 	vga_display_enable(1);
 
