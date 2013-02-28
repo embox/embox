@@ -28,13 +28,13 @@ void tty_scroll(struct tty *t, int32_t delta) {
 	if (delta > 0) {
 		t->ops->move(t, 0, delta, t->width, t->cur_y - delta, 0, 0);
 		t->ops->clear(t, 0, t->cur_y - delta, t->width, delta);
-		t->cur_y -= delta;
 	}
 	else {
 		t->ops->move(t, 0, 0, t->width, t->cur_y + delta, 0, -delta);
 		t->ops->clear(t, 0, 0, t->width, -delta);
-		t->cur_y += -delta;
 	}
+	t->cur_y -= delta;
+	t->back_cy -= delta;
 }
 
 void tty_clear(struct tty *t) {
@@ -42,7 +42,9 @@ void tty_clear(struct tty *t) {
 }
 
 void tty_cursor(struct tty *t) {
-	t->ops->cursor(t, t->cur_x, t->cur_y);
+	t->ops->cursor(t, t->back_cx, t->back_cy);
+	t->back_cx = t->cur_x;
+	t->back_cy = t->cur_y;
 }
 
 static void tty_esc_putc(struct tty *t, char ch) {

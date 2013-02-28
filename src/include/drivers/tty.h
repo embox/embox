@@ -26,6 +26,7 @@ struct tty_ops {
 struct tty {
 	uint32_t cur_x;
 	uint32_t cur_y;
+	uint32_t back_cx, back_cy;
 	uint32_t width;
 	uint32_t height;
 	const struct tty_ops *ops;
