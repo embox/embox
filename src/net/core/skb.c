@@ -13,7 +13,7 @@
 #include <mem/misc/pool.h>
 #include <assert.h>
 #include <string.h>
-#include <compiler.h>
+#include <linux/compiler.h>
 #include <framework/mod/options.h>
 #include <linux/list.h>
 #include <kernel/printk.h>

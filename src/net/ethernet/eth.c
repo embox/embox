@@ -13,7 +13,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include <compiler.h>
+#include <linux/compiler.h>
 
 #include <net/arp.h>
 #include <net/etherdevice.h>

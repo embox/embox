@@ -10,7 +10,7 @@
 #define LIBC_ASSERT_IMPL_H_
 
 #include <util/location.h>
-#include <compiler.h>
+#include <linux/compiler.h>
 
 #ifdef NDEBUG
 
