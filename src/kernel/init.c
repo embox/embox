@@ -40,7 +40,6 @@ static void kernel_init(void) {
 
 	ipl_init();
 
-	iodev_setup_diag();
 	iodev_init();
 }
 
@@ -49,14 +48,16 @@ static void kernel_init(void) {
  * @return 0
  */
 static int init(void) {
-	int ret = 0;
+	int ret;
 	const runlevel_nr_t target_level = RUNLEVEL_NRS_TOTAL - 1;
 
 	printk("\nEmbox kernel start\n");
 
-	if (0 != (ret = runlevel_set(target_level))) {
+	ret = runlevel_set(target_level);
+	if (ret != 0) {
 		printk("Failed to get into level %d, current level %d\n",
 				target_level, runlevel_get_entered());
 	}
+
 	return ret;
 }
