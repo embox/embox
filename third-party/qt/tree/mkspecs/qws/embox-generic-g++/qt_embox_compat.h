@@ -33,6 +33,10 @@
 
 
 #include <sys/types.h> // for size_t
+#include <linux/types.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #define MAP_SHARED    0x00
 #define MAP_PRIVATE   0x01
 #define PROT_READ     0x10
