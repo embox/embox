@@ -29,8 +29,6 @@
 #endif /* ! __cplusplus */
 #endif
 
-#ifndef __ASSEMBLER__
-
 #ifndef __size_t_defined
 #define __size_t_defined
 typedef __size_t size_t;
@@ -47,7 +45,5 @@ typedef unsigned short wchar_t;
 #define __ptrdiff_t_defined
 typedef __ptrdiff_t ptrdiff_t;
 #endif /*__ptrdiff_t_defined */
-
-#endif /* __ASSEMBLER__ */
 
 #endif /* STDDEF_H_ */

@@ -9,10 +9,11 @@
 #ifndef SPARC_PTRACE_H_
 #define SPARC_PTRACE_H_
 
-#include <stdint.h>
 #include <asm/stack.h>
 
 #ifndef __ASSEMBLER__
+
+#include <stdint.h>
 
 #define PTRACE_REGS_SZ sizeof(struct pt_regs)
 

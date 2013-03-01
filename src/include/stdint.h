@@ -15,8 +15,6 @@
 # error "You must define __WORDSIZE in asm/types.h"
 #endif
 
-#ifndef __ASSEMBLER__
-
 typedef __s8  int8_t;
 typedef __s16 int16_t;
 typedef __s32 int32_t;
@@ -63,7 +61,5 @@ typedef uint64_t uintmax_t;
 /* ToDo: WARNING 32bit now */
 typedef int intptr_t;
 typedef unsigned int uintptr_t;
-
-#endif /* __ASSEMBLER__ */
 
 #endif /* STDINT_H_ */
