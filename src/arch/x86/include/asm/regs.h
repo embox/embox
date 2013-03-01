@@ -8,7 +8,6 @@
 #ifndef X86_REGS_H_
 #define X86_REGS_H_
 
-#include <types.h>
 #include <asm/flags.h>
 
 #endif /* X86_REGS_H_ */

@@ -14,8 +14,8 @@
 #ifndef HAL_CONTEXT_H_
 #define HAL_CONTEXT_H_
 
-#include <types.h>
 #include <module/embox/arch/context.h>
+#include <stdbool.h>
 
 #ifndef __ASSEMBLER__
 

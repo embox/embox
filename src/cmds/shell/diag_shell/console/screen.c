@@ -7,7 +7,7 @@
 
 #include "screen.h"
 #include "cmdline.h"
-#include <types.h>
+#include <stddef.h>
 
 SCREEN * screen_init(SCREEN *this, SCREEN_IO *io) {
 	if (this == NULL || io == NULL) {

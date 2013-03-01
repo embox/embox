@@ -7,7 +7,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <embox/example.h>

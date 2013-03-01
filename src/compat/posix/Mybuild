@@ -11,14 +11,12 @@ module LibPosix {
 }
 
 static module fs {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "fs.c"
 
 	depends embox.kernel.task.errno
 }
 
 static module file_ops {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "file_ops.c"
 
 	depends embox.kernel.task.api
@@ -51,6 +49,10 @@ static module dirent {
 	depends embox.lib.LibCString
 }
 
+static module curses {
+	source "curses.c"
+}
+
 static module open {
 	source "open.c"
 
@@ -62,13 +64,3 @@ static module sched {
 	source "sched_posix.c"
 }
 
-static module passwd {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "passwd.c"
-
-	@InitFS
-	source "passwd"
-
-	@InitFS
-	source "shadow"
-}

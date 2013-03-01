@@ -44,7 +44,6 @@
 #include <embox/unit.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
-#include <types.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>

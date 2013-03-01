@@ -10,7 +10,7 @@
 #ifndef MEM_PAGE_H_
 #define MEM_PAGE_H_
 
-#include <types.h>
+#include <stddef.h>
 #include <framework/mod/options.h>
 
 #include <module/embox/mem/page_api.h>

@@ -9,7 +9,7 @@
 #ifndef ARRAY_TIMER_
 #define ARRAY_TIMER_
 
-#include <lib/list.h>
+#include <linux/list.h>
 
 #define DOUBLE_ARRAY_IMPL
 

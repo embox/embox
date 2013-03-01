@@ -13,7 +13,7 @@
 #include <sys/socket.h>
 #include <net/socket.h>
 #include <framework/example/self.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <net/icmp.h>
 
 #include <unistd.h>

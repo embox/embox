@@ -8,9 +8,9 @@
  */
 
 #include <net/inetdevice.h>
-#include <err.h>
 #include <errno.h>
 #include <assert.h>
+#include <kernel/printk.h>
 
 int ifdev_up(const char *if_name) {
 	struct net_device *dev;
@@ -19,7 +19,7 @@ int ifdev_up(const char *if_name) {
 
 	dev = netdev_get_by_name(if_name);
 	if (dev == NULL) {
-		LOG_ERROR("ifdev up: can't find net_device with name %s\n", if_name);
+		printk("ifdev_up: error: can't find net_device with name %s\n", if_name);
 		return -ENOENT;
 	}
 
@@ -33,7 +33,7 @@ int ifdev_down(const char *if_name) {
 
 	in_dev = inet_dev_find_by_name(if_name);
 	if (in_dev == NULL) {
-		LOG_ERROR("ifdev down: can't find in_device with name %s\n", if_name);
+		printk("ifdev_up: error: can't find net_device with name %s\n", if_name);
 		return -ENOENT;
 	}
 

@@ -30,13 +30,21 @@ static void video_tty_cursor(struct tty *t, uint32_t x, uint32_t y) {
 
 	data = (struct video_tty_data *)t->data;
 
+	rect.width = data->font->width;
+	rect.height = data->font->height / 5;
+
 	rect.dx = x * data->font->width;
-	rect.dy = y * data->font->height + 3 * data->font->height / 4;
-	rect.width = data->font->width / 4;
-	rect.height = data->font->height / 4;
+	rect.dy = y * data->font->height + 4 * data->font->height / 5;
+	rect.color = data->bg_color;
+
+	data->fb->ops->fb_fillrect(data->fb, &rect);
+
+	rect.dx = t->cur_x * data->font->width;
+	rect.dy = t->cur_y * data->font->height + 3 * data->font->height / 4;
 	rect.color = data->cur_color;
 
 	data->fb->ops->fb_fillrect(data->fb, &rect);
+
 }
 
 static void video_tty_putc(struct tty *t, char ch, uint32_t x, uint32_t y) {
@@ -107,7 +115,7 @@ static int iodev_video_init(void) {
 	assert(data.fb != NULL);
 	data.fg_color = 0x00F0;
 	data.bg_color = 0xFFFF;
-	data.cur_color = 0x0FF0;
+	data.cur_color = 0x0000;
 
 	tty_init(&video_tty, 80, 24, &video_tty_ops, &data);
 	return 0;
@@ -132,4 +140,4 @@ static const struct iodev_ops iodev_video_ops_struct = {
 	.kbhit = &iodev_video_kbhit
 };
 
-const struct iodev_ops *iodev_video_ops = &iodev_video_ops_struct;
+const struct iodev_ops *const iodev_video_ops = &iodev_video_ops_struct;

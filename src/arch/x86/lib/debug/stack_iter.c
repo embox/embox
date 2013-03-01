@@ -8,6 +8,7 @@
 
 #include <asm/traps.h>
 #include "stack_iter.h"
+#include <stddef.h>
 
 #define IN_TRAPS_TEXT(pc)      \
 	(TRAPS_TEXT_START <= (pc)  \

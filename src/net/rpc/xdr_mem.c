@@ -2,19 +2,20 @@
  * @file
  * @brief Realization of the eXternal Data Representation
  * @details XDR: External Data Representation Standard, RFC 1832
+ *
  * @date 21.05.12
  * @author Ilia Vaprol
  */
 
 #include <net/rpc/xdr.h>
-#include <lib/bits/byteswap.h>
+#include <arpa/inet.h>
 #include <string.h>
 #include <assert.h>
 
 static const struct xdr_ops xdrmem_ops;
 
-static xdr_unit_t encode_unit(xdr_unit_t u) { return __bswap_32(u); }
-static xdr_unit_t decode_unit(xdr_unit_t u) { return __bswap_32(u); }
+static xdr_unit_t encode_unit(xdr_unit_t u) { return htonl(u); }
+static xdr_unit_t decode_unit(xdr_unit_t u) { return ntohl(u); }
 
 void xdrmem_create(struct xdr *xs, char *addr,
 		size_t size, enum xdr_op oper) {

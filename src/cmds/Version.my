@@ -9,7 +9,6 @@ package embox.cmd
 			Nikolay Korotky
 	''')
 module version {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "version.c"
 
 	depends embox.lib.LibC

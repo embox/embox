@@ -45,6 +45,10 @@ static module LibCStdlib {
 	source "stdlib/strtol.c"
 	source "stdlib/strtoul.c"
 	source "stdlib/abort.c"
+
+	option number env_amount=0x10
+	option number env_str_len=0x100
+	source "stdlib/environ.c"
 }
 
 static module LibCString {
@@ -120,7 +124,10 @@ static module LibCStdio {
 	option number support_floating = 1
 
 	source "stdio/fgetc.c"
+
 	source "stdio/file_ops.c"
+	depends embox.compat.posix.open
+
 	source "stdio/fputc.c"
 	source "stdio/gets.c"
 	source "stdio/perror.c"

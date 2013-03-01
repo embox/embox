@@ -60,6 +60,7 @@ VPATH := $(SRCGEN_DIR)
 %/. :
 	@$(MKDIR) $*
 
+a_prerequisites     = $(common_prereqs)
 o_prerequisites     = $(common_prereqs)
 cc_prerequisites    = $(common_prereqs)
 
@@ -81,7 +82,8 @@ $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S | $$(@D)/.
 
 initfs_cp_prerequisites = $(common_prereqs) $(src_file)
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
-	@$(CP) -r -T $(src_file) $@
+	@$(CP) -r -T $(src_file) $@$(foreach c,chmod chown,$(if \
+		$(and $($c),$(findstring $($c),'')),,;$c $($c) $@))
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
 $(ROOTFS_DIR)/. :
 	@$(MKDIR) $(@D)

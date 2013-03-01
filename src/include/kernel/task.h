@@ -9,11 +9,13 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-#include <lib/list.h>
+#include <linux/list.h>
 #include <util/array.h>
 
 #include <sys/cdefs.h>
 #include <sys/types.h>
+
+#define MAX_TASK_NAME_LEN 20
 
 __BEGIN_DECLS
 
@@ -31,6 +33,7 @@ struct task_u_area;
  */
 struct task {
 	int tid;
+	char name[MAX_TASK_NAME_LEN]; /**< @brief Task's name */
 	struct task *parent; /**< @brief Task's parent */
 
 	struct list_head children; /**< @brief Task's children */
@@ -83,7 +86,7 @@ static inline struct task_idx_table *task_idx_table(struct task *task) {
 	return task->idx_table;
 }
 
-extern int new_task(void *(*run)(void *), void *arg);
+extern int new_task(const char *name, void *(*run)(void *), void *arg);
 
 /**
  * @brief Get self task (task which current execution thread associated with)

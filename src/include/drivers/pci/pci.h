@@ -9,7 +9,7 @@
 #ifndef PCI_H_
 #define PCI_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <drivers/pci/pci_id.h>
 #include <util/slist.h>
 #include <util/array.h>

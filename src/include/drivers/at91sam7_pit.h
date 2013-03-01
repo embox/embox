@@ -9,7 +9,7 @@
 #ifndef AT91SAM7_PIT_H_
 #define AT91SAM7_PIT_H_
 
-#include <hal/reg.h>
+#include <drivers/at91sam7s256.h>
 
 typedef struct _AT91S_PITC {
 	at91_reg_t	 PITC_PIMR; 	// Period Interval Mode Register

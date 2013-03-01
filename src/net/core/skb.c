@@ -2,6 +2,7 @@
  * @file
  * @details sk_buff management API implementation.
  * @date 20.10.09
+ *
  * @author Anton Bondarev
  * @author Ilia Vaprol
  * @author Vladimir Sokolov
@@ -12,9 +13,10 @@
 #include <mem/misc/pool.h>
 #include <assert.h>
 #include <string.h>
-#include <compiler.h>
+#include <linux/compiler.h>
 #include <framework/mod/options.h>
 #include <linux/list.h>
+#include <kernel/printk.h>
 
 #define MODOPS_AMOUNT_SKB      OPTION_GET(NUMBER, amount_skb)
 #define MODOPS_AMOUNT_SKB_BUFF OPTION_GET(NUMBER, amount_skb_buff)
@@ -50,11 +52,13 @@ struct sk_buff * skb_alloc(unsigned int size) {
 	unsigned char *head;
 
 	if ((size == 0) || (size > MODOPS_SKB_BUFF_SIZE)) {
+		printk("skb_alloc: error: size is 0 or too big\n");
 		return NULL;
 	}
 
 	head = net_buff_alloc();
 	if (head == NULL) {
+		printk("skb_alloc: error: net_buff_alloc return NULL\n");
 		return NULL;
 	}
 
@@ -64,6 +68,7 @@ struct sk_buff * skb_alloc(unsigned int size) {
 
 	if (skb == NULL) {
 		net_buff_free(head);
+		printk("skb_alloc: error: can't alloc skb structure\n");
 		return NULL;
 	}
 

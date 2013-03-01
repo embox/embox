@@ -7,7 +7,7 @@
  * @author Alexander Batyukov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>

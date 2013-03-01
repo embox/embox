@@ -39,13 +39,28 @@ void util_num_free(util_num_alloc_t *num_alloc, int n) {
 	num_alloc->mark_table[n] = 0;
 }
 
-int util_num_alloc_next_alloc(util_num_alloc_t *num_alloc) {
-	for (int i = 0; i < num_alloc->n; i++) {
-		if (! num_alloc->mark_table[i]) {
-			return i;
+int util_num_alloc_next_mark(util_num_alloc_t *num_alloc, int i, char mark) {
+	int m;
+	mark = mark ? 1 : 0;
+
+	for (int j = i; j < num_alloc->n; j++) {
+		m = num_alloc->mark_table[j] ? 1 : 0;
+		if (mark == m) {
+			return j;
 		}
 	}
-	return -ENOMEM;
+
+	return -ENOENT;
+}
+
+int util_num_alloc_next_alloc(util_num_alloc_t *num_alloc) {
+	int n = util_num_alloc_next_mark(num_alloc, 0, 0);
+
+	if (n == -ENOENT) {
+		return -ENOMEM;
+	}
+
+	return n;
 }
 
 int util_num_alloc_specified(util_num_alloc_t *num_alloc, int n) {

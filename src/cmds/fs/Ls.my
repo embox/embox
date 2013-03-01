@@ -20,13 +20,12 @@ package embox.cmd.fs
 			Anton Bondarev
 	''')
 module ls {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ls.c"
 
 	depends embox.lib.LibC
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs
+	depends embox.compat.posix.passwd
 	depends embox.compat.posix.dirent
 	depends embox.fs.core
 	depends embox.util.LibUtil

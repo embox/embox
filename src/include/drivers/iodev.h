@@ -18,8 +18,8 @@ struct iodev_ops {
 
 extern struct tty diag_tty;
 
-extern const struct iodev_ops *iodev_diag_ops;
-extern const struct iodev_ops *iodev_video_ops;
+extern const struct iodev_ops *const iodev_diag_ops;
+extern const struct iodev_ops *const iodev_video_ops;
 
 extern void iodev_setup(const struct iodev_ops *iodev);
 extern int iodev_setup_diag(void);

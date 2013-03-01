@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <embox/unit.h>
 #include <hal/reg.h>
 #include <kernel/time/ktime.h>

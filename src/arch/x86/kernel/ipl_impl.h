@@ -10,7 +10,7 @@
 
 #ifndef __ASSEMBLER__
 
-#include <types.h>
+#include <stdint.h>
 #include <asm/flags.h>
 
 #include <drivers/irqctrl.h>

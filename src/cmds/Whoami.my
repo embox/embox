@@ -14,7 +14,6 @@ package embox.cmd
 			Anton Kozlov
 	''')
 module whoami {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "whoami.c"
 
 	depends embox.lib.LibC

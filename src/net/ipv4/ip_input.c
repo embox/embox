@@ -8,7 +8,6 @@
  * @author Vladimir Sokolov
  */
 
-#include <err.h>
 #include <string.h>
 #include <errno.h>
 #include <net/ip.h>
@@ -43,7 +42,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	 *   4.  Doesn't have a bogus length
 	 */
 	if (iph->ihl < 5 || iph->version != 4) {
-		LOG_ERROR("invalid IPv4 header\n");
+		//LOG_ERROR("invalid IPv4 header\n");
 		stats->rx_err++;
 		skb_free(skb);
 		return NET_RX_DROP;
@@ -51,7 +50,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 
 	len = ntohs(iph->tot_len);
 	if (skb->len < len || len < IP_HEADER_SIZE(iph)) {
-		LOG_ERROR("invalid IPv4 header length\n");
+		//LOG_ERROR("invalid IPv4 header length\n");
 		stats->rx_length_errors++;
 		skb_free(skb);
 		return NET_RX_DROP;
@@ -60,7 +59,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 	tmp = iph->check;
 	iph->check = 0;
 	if (tmp != ptclbsum(iph, IP_HEADER_SIZE(iph))) {
-		LOG_ERROR("bad ip checksum\n");
+		//LOG_ERROR("bad ip checksum\n");
 		stats->rx_crc_errors++;
 		skb_free(skb);
 		return NET_RX_DROP;
@@ -130,9 +129,7 @@ int ip_rcv(sk_buff_t *skb, net_device_t *dev,
 		p_netproto = net_proto_ptr->netproto;
 		if (p_netproto->type == iph->proto) {
 			/* if we are here then socket is registered in one of hash tables. */
-			return ((p_netproto->handler(skb) == ENOERR) /* handler must free skb */
-					? NET_RX_SUCCESS
-					: NET_RX_DROP);
+			return p_netproto->handler(skb) == 0 ? NET_RX_SUCCESS : NET_RX_DROP;
 		}
 	}
 

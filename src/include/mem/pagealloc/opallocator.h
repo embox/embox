@@ -10,7 +10,7 @@
 #ifndef MEM_PAGEALLOC_OPALLOCATOR_H_
 #define MEM_PAGEALLOC_OPALLOCATOR_H_
 
-#include <types.h>
+#include <stdint.h>
 
 /**
  * Allocates one physical memory page from the pool. We return pointer to page

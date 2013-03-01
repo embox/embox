@@ -7,7 +7,6 @@
  */
 
 #include <asm/io.h>
-#include <types.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>

@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <lib/list.h>
+#include <linux/list.h>
 #include <drivers/amba_pnp.h>
 
 /**

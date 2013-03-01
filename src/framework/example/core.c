@@ -7,7 +7,6 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
 #include <util/array.h>
 #include <errno.h>
 #include <string.h>

@@ -2,7 +2,6 @@ package embox.test.kernel
 
 @TestFor(embox.kernel.irq)
 module irq_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "irq_test.c"
 
 	depends embox.kernel.irq
@@ -11,7 +10,6 @@ module irq_test {
 
 @TestFor(embox.kernel.softirq)
 module softirq_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "softirq_test.c"
 
 	depends embox.kernel.softirq
@@ -20,7 +18,6 @@ module softirq_test {
 
 @TestFor(embox.kernel.timer.strategy.api)
 module timer_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "timer_test.c"
 
 	depends embox.kernel.timer.strategy.api
@@ -30,7 +27,6 @@ module timer_test {
 
 @TestFor(embox.kernel.timer.strategy.api)
 module periodic_timer_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "periodic_timer_test.c"
 
 	depends embox.kernel.timer.strategy.api
@@ -39,7 +35,6 @@ module periodic_timer_test {
 
 @TestFor(embox.kernel.timer.strategy.api)
 module oneshot_timer_test {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "oneshot_timer_test.c"
 
 	depends embox.kernel.timer.strategy.api

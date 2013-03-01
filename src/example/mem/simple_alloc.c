@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <types.h>
+#include <stdint.h>
 #include <framework/example/self.h>
 
 EMBOX_EXAMPLE(run);

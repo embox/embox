@@ -7,8 +7,8 @@
  */
 
 #include <embox/cmd.h>
-#include <getopt.h>
-#include <types.h>
+#include <unistd.h>
+#include <stdint.h>
 #include <fs/vfs.h>
 
 EMBOX_CMD(exec);

@@ -19,7 +19,8 @@
 //#include <net/icmp.h>
 //#include <net/sock.h>
 //#include <net/udp.h>
-#include <types.h>
+#include <stdint.h>
+#include <sys/types.h>
 
 /* Prototypes */
 struct sk_buff;

@@ -11,7 +11,7 @@
 
 #include <framework/mod/options.h>
 
-#include <types.h>
+#include <stdint.h>
 
 #include <module/embox/kernel/thread/core.h>
 

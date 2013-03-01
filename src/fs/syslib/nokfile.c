@@ -5,7 +5,8 @@
  * @author: Anton Bondarev
  */
 
-#include <types.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 struct file_desc *kopen(const char *path, int flag) {
 	return NULL;

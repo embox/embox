@@ -7,8 +7,10 @@
  */
 
 #include <fcntl.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
 
 #include <embox/cmd.h>
 
@@ -20,6 +22,8 @@ static void print_usage(void) {
 
 static int exec(int argc, char **argv) {
 	int opt;
+	char *point;
+
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
 		switch(opt) {
@@ -32,7 +36,12 @@ static int exec(int argc, char **argv) {
 	}
 
 	if (argc > 1) {
-		return creat(argv[argc - 1], 0);
+		point = argv[argc - 1];
+		/*TODO relative path*/
+		if(0 != strncmp(point, "/", 1)) {
+			return -EINVAL;
+		}
+		return creat(point, 0);
 	}
 
 	return 0;

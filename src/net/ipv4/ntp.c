@@ -11,15 +11,16 @@
 #include <net/udp.h>
 #include <net/ip.h>
 #include <net/ntp.h>
+#include <net/socket.h>
 #include <kernel/time/time.h>
 #include <kernel/time/timer.h>
+#include <kernel/printk.h>
+#include <util/math.h>
 #include <errno.h>
 #include <string.h>
-#include <kernel/printk.h>
 #include <unistd.h>
 #include <math.h>
 #include <sys/socket.h>
-#include <net/socket.h>
 
 #define MIN_POLL 3 /* By RFC 4330 minimum poll interval is about 15 seconds */
 #define MAX_POLL 16

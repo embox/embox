@@ -7,7 +7,7 @@
  * @date 29.07.11
  * @author Anton Kozlov
  */
-#include <types.h>
+#include <stdint.h>
 #include <string.h>
 #include <embox/unit.h>
 #include <mem/page.h>

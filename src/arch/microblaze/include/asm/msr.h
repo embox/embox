@@ -9,7 +9,6 @@
 #ifndef MICROBLAZE_MSR_H_
 #define MICROBLAZE_MSR_H_
 
-#include <types.h>
 #include <asm/bitops.h>
 
 #define MSR_VMS_BIT    17
@@ -45,6 +44,8 @@
 #define MSR_C_MASK     REVERSE_MASK(MSR_C_BIT)
 
 #ifndef __ASSEMBLER__
+
+#include <stdint.h>
 
 #define XILINX_USE_MSR_INSTR
 /* code from u-boot (modified)*/

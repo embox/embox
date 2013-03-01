@@ -1,12 +1,12 @@
 /**
  * @file
- * @brief test for access of http://embox.googlecode.com/files/ext2_smac.img
+ * @brief test for access of http://embox.googlecode.com/files/ext2_users.img
  *
  * @author  Anton Kozlov
  * @date    18.02.2013
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -42,14 +42,17 @@ const static char *high_static = HIGH;
 const static char *low_static = LOW;
 const static char *smac_star = "*";
 
-#define SMAC_BACKUP_LEN 64
+#define SMAC_BACKUP_LEN 1024
 
-static struct smac_entry smac_backup[SMAC_BACKUP_LEN];
-static int smac_back_n;
+static char buf[SMAC_BACKUP_LEN];
+static struct smac_env *backup;
 
-static struct smac_entry test_env[] = {
-	{HIGH, LOW,  FS_MAY_READ },
-	{LOW,  HIGH, FS_MAY_WRITE},
+static struct smac_env test_env = {
+	.n = 2,
+	.entries = {
+		{HIGH, LOW,  FS_MAY_READ },
+		{LOW,  HIGH, FS_MAY_WRITE},
+	},
 };
 
 static mode_t root_backup_mode;
@@ -57,8 +60,11 @@ static mode_t root_backup_mode;
 static int setup_suite(void) {
 	int res;
 
-	if (0 != (res = smac_setenv(test_env, sizeof(test_env) / sizeof(struct smac_entry),
-			smac_backup, sizeof(smac_backup), &smac_back_n))) {
+	if (0 != (res = smac_getenv(buf, SMAC_BACKUP_LEN, &backup))) {
+		return res;
+	}
+
+	if (0 != (res = smac_setenv(&test_env))) {
 		return res;
 	}
 
@@ -74,16 +80,17 @@ static int setup_suite(void) {
 }
 
 static int teardown_suite(void) {
+	int res;
 
 	vfs_get_root()->mode = root_backup_mode;
 
-	return smac_setenv(smac_backup, smac_back_n, NULL, 0, NULL);
+	return smac_setenv(backup);
 }
 
 static int clear_id(void) {
 	struct smac_task *smac_task = (struct smac_task *) task_self_security();
 
-	strcpy(smac_task->label, "_");
+	strcpy(smac_task->label, "smac_admin");
 
 	return 0;
 }

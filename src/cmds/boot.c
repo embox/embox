@@ -7,7 +7,7 @@
  */
 
 #include <embox/cmd.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <drivers/irqctrl.h>
 #include <hal/mm/mmu_core.h>
 #include <stdio.h>

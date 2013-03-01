@@ -5,7 +5,7 @@
  * @author: Anton Bondarev
  */
 
-#include <types.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <fs/kfsop.h>
 

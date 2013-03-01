@@ -9,16 +9,16 @@
 #include <net/rpc/xdr.h>
 #include <net/rpc/clnt.h>
 #include <net/rpc/rpc.h>
-#include <types.h>
+#include <stdint.h>
 #include <arpa/inet.h>
 #include <string.h>
 #include <assert.h>
 
-__u16 pmap_getport(struct sockaddr_in *raddr, __u32 prognum,
-		__u32 versnum, __u32 protocol) {
+uint16_t pmap_getport(struct sockaddr_in *raddr, uint32_t prognum,
+		uint32_t versnum, uint32_t protocol) {
 	const struct timeval resend_every = { 5, 0 };
 	const struct timeval timeout = { 60, 0 };
-	__u16 port;
+	uint16_t port;
 	int sock;
 	struct client *clnt;
 	struct sockaddr_in addr;

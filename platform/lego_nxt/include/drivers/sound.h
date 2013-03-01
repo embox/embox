@@ -8,7 +8,7 @@
 #ifndef NXT_SOUND_H_
 #define NXT_SOUND_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define   DURATION_MIN          10        // [mS]
 #define   FREQUENCY_MIN         220       // [Hz]

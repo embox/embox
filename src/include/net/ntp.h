@@ -9,7 +9,8 @@
 #ifndef NET_NTP_H_
 #define NET_NTP_H_
 
-#include <types.h>
+#include <linux/types.h>
+#include <stdint.h>
 #include <kernel/time/time.h>
 #include <net/skbuff.h>
 #include <sys/socket.h>
@@ -23,6 +24,8 @@ struct l_ntpdata {
 	__u32 sec;
 	__u32 fraction;
 };
+
+struct sockaddr_in;
 
 /* @see RFC 5905: Packet Header Format */
 typedef struct ntphdr {

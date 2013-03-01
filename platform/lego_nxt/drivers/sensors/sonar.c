@@ -6,7 +6,7 @@
  * @author Alexander Batyukov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <drivers/nxt/sonar_sensor.h>
 #include <drivers/nxt/sensor.h>
 

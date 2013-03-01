@@ -6,7 +6,6 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <prom/prom_printf.h>

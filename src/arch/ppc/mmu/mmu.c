@@ -9,7 +9,7 @@
 #include <asm/psr.h>
 #include <asm/regs.h>
 #include <hal/mmu.h>
-#include <types.h>
+#include <stdint.h>
 
 #define MMU_PAGE_PRESENT        (1UL)
 #define MMU_PAGE_WRITABLE       (1UL << 11)

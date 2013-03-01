@@ -15,7 +15,8 @@
 #ifndef KERNEL_TIMER_H_
 #define KERNEL_TIMER_H_
 
-#include <types.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include <kernel/time/timer_strat.h>
 

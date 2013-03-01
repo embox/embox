@@ -10,11 +10,8 @@
 #include <string.h>
 #include <errno.h>
 
-#include <types.h>
 #include <stdlib.h>
 #include <assert.h>
-
-#include <err.h>
 
 #include <net/rpc/clnt.h>
 #include <net/rpc/auth.h>
@@ -32,12 +29,12 @@
 
 static const struct clnt_ops clntudp_ops;
 
-struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
-		__u32 versnum, struct timeval resend, int *psock) {
+struct client * clntudp_create(struct sockaddr_in *raddr, uint32_t prognum,
+		uint32_t versnum, struct timeval resend, int *psock) {
 	struct client *clnt;
 	struct auth *ath;
 	int sock;
-	__u16 port;
+	uint16_t port;
 
 	assert((raddr != NULL) && (psock != NULL));
 
@@ -45,7 +42,6 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	if ((clnt == NULL) || (ath == NULL)) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = ENOMEM;
-		LOG_ERROR("no memory\n");
 		goto exit_with_error;
 	}
 
@@ -62,7 +58,6 @@ struct client * clntudp_create(struct sockaddr_in *raddr, __u32 prognum,
 	if (sock < 0) {
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = errno;
-		LOG_ERROR("can't create socket\n");
 		goto exit_with_error;
 	}
 
@@ -85,7 +80,7 @@ exit_with_error:
 	return NULL;
 }
 
-static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
+static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
 		struct timeval timeout) {
 	int res;
@@ -104,7 +99,7 @@ static enum clnt_stat clntudp_call(struct client *clnt, __u32 procnum,
 	wait_timeout = timeout.tv_sec * USEC_PER_SEC + timeout.tv_usec;
 	assert(wait_timeout != 0); // TODO remove this
 
-	msg_call.xid = (__u32)rand();
+	msg_call.xid = (uint32_t)rand();
 	msg_call.type = CALL;
 	msg_call.b.call.rpcvers = RPC_VERSION;
 	msg_call.b.call.prog = clnt->prognum;

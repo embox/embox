@@ -7,7 +7,6 @@
  * @author Ilia Vaprol
  */
 
-#include <err.h>
 #include <errno.h>
 #include <net/arp.h>
 #include <net/etherdevice.h>
@@ -16,8 +15,8 @@
 #include <net/netdevice.h>
 #include <string.h>
 #include <assert.h>
-
-static unsigned char etherdev_idx = 0;
+#include <util/array.h>
+#include <stdio.h>
 
 int etherdev_mac_addr(struct net_device *dev, struct sockaddr *addr) {
 	assert(dev != NULL);
@@ -96,9 +95,10 @@ static void etherdev_setup(struct net_device *dev) {
 }
 
 struct net_device * etherdev_alloc(void) {
+	static unsigned char etherdev_idx = 0;
 	char buff[IFNAMSIZ];
 
-	sprintf(buff, "eth%u", etherdev_idx++); /* TODO use snprintf instead */
+	snprintf(buff, ARRAY_SIZE(buff), "eth%u", etherdev_idx++);
 
 	return netdev_alloc(buff, &etherdev_setup);
 }

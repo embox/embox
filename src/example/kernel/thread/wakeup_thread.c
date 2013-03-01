@@ -6,7 +6,7 @@
  * @date 21.03.2012
  * @author Anton Bondarev
  */
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>

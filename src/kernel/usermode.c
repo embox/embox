@@ -79,7 +79,7 @@ int user_task_create(void *ip, void *sp) {
 		data->ip = ip;
 		data->sp = sp;
 
-		if ((res = new_task(TRAMPOLINE, data)) < 0) {
+		if ((res = new_task("", TRAMPOLINE, data)) < 0) {
 			pool_free(&ue_data_pool, data);
 			sched_unlock();
 			return res;

@@ -6,7 +6,6 @@ interface iobjalloc {
 }
 
 module slab {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	option number heap_size = 524288
 	source "slab.c", "slab_impl.h"
 	provides iobjalloc.alloc
@@ -16,7 +15,6 @@ module slab {
 }
 
 module pool {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "pool.c"
 	provides iobjalloc.rt_alloc
 }

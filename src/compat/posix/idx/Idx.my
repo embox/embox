@@ -10,14 +10,12 @@ module All {
 }
 
 static module isatty {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "isatty.c"
 
 	depends embox.kernel.task.api
 }
 
 static module select {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "select.c"
 
 	depends embox.kernel.task.api
@@ -25,14 +23,12 @@ static module select {
 }
 
 static module dup {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "dup.c"
 
 	depends embox.kernel.task.api
 }
 
 static module pipe {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "pipe.c"
 
 	option number pipe_buffer_size=256

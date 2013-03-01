@@ -11,7 +11,7 @@
 #define MEM_MISC_UTIL_POOL_H_
 
 
-#include <types.h>
+#include <stddef.h>
 #include <util/macro.h>
 #include <util/slist.h>
 

@@ -44,8 +44,6 @@ package embox.cmd.net
 			Ilia Vaprol, Daria Dzendzik
 	''')
 module ping {
-	@IncludePath("$(SRC_DIR)/compat/linux/include")
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "ping.c"
 
 	depends embox.net.dns
@@ -58,5 +56,6 @@ module ping {
 	depends embox.net.core
 	depends embox.net.route
 	depends embox.framework.LibFramework
-	depends embox.compat.posix.net.All
+	depends embox.compat.posix.net.gethostbyname
+	depends embox.compat.posix.net.herror
 }

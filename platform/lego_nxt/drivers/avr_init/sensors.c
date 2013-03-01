@@ -6,10 +6,10 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
 #include <drivers/nxt/avr.h>
 #include <drivers/nxt/sensor.h>
 #include <drivers/soft_i2c.h>
+#include <stddef.h>
 
 #define DIGIA0 23
 #define DIGIA1 18

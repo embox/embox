@@ -9,7 +9,7 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <types.h>
+#include <stdint.h>
 
 #include <hal/reg.h>
 #include <drivers/irqctrl.h>

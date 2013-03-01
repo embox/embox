@@ -9,8 +9,8 @@
 #ifndef PNET_TYPES_H_
 #define PNET_TYPES_H_
 
-#include <types.h>
-#include <lib/list.h>
+#include <stdint.h>
+#include <linux/list.h>
 
 
 typedef int net_addr_t;

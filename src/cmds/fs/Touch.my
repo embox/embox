@@ -13,7 +13,6 @@ package embox.cmd.fs
 			Andrey Gazukin
 	''')
 module touch {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "touch.c"
 
 	depends embox.compat.posix.fs

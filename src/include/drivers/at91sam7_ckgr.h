@@ -9,7 +9,7 @@
 #ifndef AT91SAM7_CKGR_H_
 #define AT91SAM7_CKGR_H_
 
-#include <types.h>
+#include <drivers/at91sam7s256.h>
 
 typedef struct _AT91S_CKGR {
 	at91_reg_t	 CKGR_MOR; 	// Main Oscillator Register

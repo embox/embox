@@ -12,6 +12,8 @@
 #include <net/sock.h>
 #include <arpa/inet.h>
 
+#include <linux/types.h>
+
 /**
  * @struct ip_options
  * @brief IP Options

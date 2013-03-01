@@ -43,5 +43,14 @@ extern void task_table_del(int n);
  */
 extern int task_table_has_space(void);
 
+/**
+ * @brief Get first task with task id greater or equal @a since
+ *
+ * @param since low bound for returned id
+ *
+ * @return task id greater or equal @a since
+ * @return negative on error (not found)
+ */
+extern int task_table_get_first(int since);
 
 #endif /* KERNEL_TASK_TASK_TABLE_H_ */

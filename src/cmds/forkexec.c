@@ -8,12 +8,12 @@
 
 #include <embox/cmd.h>
 
-#include <getopt.h>
+#include <unistd.h>
 
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <types.h>
+#include <stdint.h>
 
 #include <kernel/task.h>
 
@@ -24,7 +24,7 @@ static void *new_task_entry(void *file);
 static int exec(int argc, char **argv) {
 	char *filename = malloc(strlen(argv[argc-1]));
 	strcpy(filename, argv[argc - 1]);
-	return new_task(new_task_entry, filename);
+	return new_task(filename, new_task_entry, filename);
 }
 
 static void *new_task_entry(void *filename) {

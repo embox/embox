@@ -13,7 +13,6 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <stddef.h>
-#include <types.h>
 #include <sys/uio.h>
 
 #include <net/inet_sock.h>

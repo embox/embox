@@ -7,7 +7,7 @@
  */
 
 #include <embox/cmd.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <errno.h>
 #include <stddef.h>
 #include <stdio.h>

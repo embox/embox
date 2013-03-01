@@ -9,7 +9,7 @@
 #ifndef SPARC_SETJMP_H_
 #define SPARC_SETJMP_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #ifndef __ASSEMBLER__
 

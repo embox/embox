@@ -6,7 +6,6 @@
  * @date    31.05.12
  */
 
-#include <types.h>
 #include <unistd.h>
 #include <kernel/task.h>
 #include <kernel/task/idx.h>

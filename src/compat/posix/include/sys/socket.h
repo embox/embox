@@ -12,7 +12,9 @@
 
 #include <sys/cdefs.h>
 #include <sys/uio.h>
-#include <types.h>
+#include <stdint.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 __BEGIN_DECLS
 

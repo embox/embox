@@ -149,7 +149,7 @@ static int teardown_suite(void) {
 		remove(FS_DIR1)) {
 		return -1;
 	}
-	if (ramdisk_delete(FS_DEV)) {
+	if (umount(FS_DIR) || ramdisk_delete(FS_DEV)) {
 		return -1;
 	}
 	return 0;

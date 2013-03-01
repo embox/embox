@@ -1,14 +1,13 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 12.09.2011
+ * @date 12.09.11
  * @author Anton Bondarev
  */
 
-#ifndef SYS_UTSNAME_H_
-#define SYS_UTSNAME_H_
+#ifndef COMPAT_POSIX_SYS_UTSNAME_H_
+#define COMPAT_POSIX_SYS_UTSNAME_H_
 
 struct utsname {
 	const char  *sysname;  /* Name of this implementation of the operating system. */
@@ -20,4 +19,4 @@ struct utsname {
 
 extern int uname(struct utsname *);
 
-#endif /* SYS_UTSNAME_H_ */
+#endif /* COMPAT_POSIX_SYS_UTSNAME_H_ */

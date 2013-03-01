@@ -8,8 +8,9 @@
  */
 
 
-#include <types.h>
-//todo endian (now only for big endian)
+#include <stdint.h>
+//TODO endian (now only for big endian)
+
 struct dw_struct {
 	int32_t high;
 	int32_t low;

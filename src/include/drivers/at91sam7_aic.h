@@ -9,8 +9,7 @@
 #ifndef AT91SAM7_AIC_H_
 #define AT91SAM7_AIC_H_
 
-#include <types.h>
-#include <hal/reg.h>
+#include <drivers/at91sam7s256.h>
 
 typedef struct _AT91S_AIC {
 	at91_reg_t	 AIC_SMR[32]; 	// Source Mode Register

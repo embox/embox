@@ -22,7 +22,6 @@ package embox.cmd
 			Alexey Fomin
 	''')
 module wmem {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "wmem.c"
 
 	depends embox.lib.LibC

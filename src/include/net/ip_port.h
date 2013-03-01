@@ -1,19 +1,16 @@
 /**
  * @file
- *
  * @brief
  *
- * @date 29.05.2012
+ * @date 29.05.12
  * @author Anton Bondarev
  */
 
-#ifndef IP_PORT_H_
-#define IP_PORT_H_
+#ifndef NET_IP_PORT_H_
+#define NET_IP_PORT_H_
 
-#include <types.h>
+extern int ip_port_lock(int type, unsigned short pnum);
+extern int ip_port_unlock(int type, unsigned short pnum);
+extern unsigned short ip_port_get_free(int type);
 
-int ip_port_lock(int type, uint16_t pnum);
-int ip_port_unlock(int type, uint16_t pnum);
-extern uint16_t ip_port_get_free(int type);
-
-#endif /* IP_PORT_H_ */
+#endif /* NET_IP_PORT_H_ */

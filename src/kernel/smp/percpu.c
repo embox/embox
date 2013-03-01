@@ -6,7 +6,7 @@
  * @author Anton Bulychev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <kernel/percpu.h>

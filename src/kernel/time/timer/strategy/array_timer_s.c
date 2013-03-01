@@ -7,7 +7,7 @@
  */
 
 #include <kernel/timer.h>
-#include <lib/list.h>
+#include <linux/list.h>
 #include <embox/unit.h>
 
 #ifdef SINGLE_ARRAY_IMPL

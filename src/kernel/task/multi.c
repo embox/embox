@@ -8,6 +8,7 @@
 
 #include <embox/unit.h>
 
+#include <string.h>
 #include <errno.h>
 
 #include <kernel/task/task_table.h>
@@ -40,7 +41,7 @@ static void *task_trampoline(void *arg);
 static void thread_set_task(struct thread *t, struct task *tsk);
 static void task_init_parent(struct task *task, struct task *parent);
 
-int new_task(void *(*run)(void *), void *arg) {
+int new_task(const char *name, void *(*run)(void *), void *arg) {
 	struct task_creat_param *param;
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
@@ -51,14 +52,13 @@ int new_task(void *(*run)(void *), void *arg) {
 	{
 		param = (struct task_creat_param *) pool_alloc(&creat_param);
 		if (!param) {
-			sched_unlock();
-			return -EAGAIN;
+			res = -EAGAIN;
+			goto out_unlock;
 		}
 
 		if (!task_table_has_space()) {
-			pool_free(&creat_param, param);
-			sched_unlock();
-			return -ENOMEM;
+			res = -ENOMEM;
+			goto out_poolfree;
 		}
 
 		param->run = run;
@@ -69,18 +69,14 @@ int new_task(void *(*run)(void *), void *arg) {
 		 */
 		if (0 != (res = thread_create(&thd, THREAD_FLAG_PRIORITY_INHERIT,
 				task_trampoline, param))) {
-			sched_unlock();
-			return res;
+			goto out_poolfree;
 		}
 
 		/* alloc space for task & resources on top of created thread's stack */
 
 		if ((self_task = task_init(thd->stack, thd->stack_sz)) == NULL) {
-			thread_terminate(thd);
-			thread_detach(thd);
-			pool_free(&creat_param, param);
-			sched_unlock();
-			return -EPERM;
+			res = -EPERM;
+			goto out_threadfree;
 		}
 
 		self_task->main_thread = thd;
@@ -91,14 +87,34 @@ int new_task(void *(*run)(void *), void *arg) {
 
 		/* init new task */
 
+		if (strlen(name) > MAX_TASK_NAME_LEN) {
+			res = -EPERM;
+			goto out_threadfree;
+		}
+
+		strcpy(self_task->name, name);
+
+		if ((res = task_table_add(self_task)) < 0) {
+			goto out_threadfree;
+		}
+
 		task_init_parent(self_task, task_self());
 
 		thread_set_task(thd, self_task);
 
 		thread_detach(thd);
 
-		res = task_table_add(self_task);
+		goto out_unlock;
+
+out_threadfree:
+		thread_terminate(thd);
+		thread_detach(thd);
+
+out_poolfree:
+		pool_free(&creat_param, param);
+
 	}
+out_unlock:
 	sched_unlock();
 
 	return res;

@@ -8,9 +8,9 @@
 #ifndef ARCH_PPC_CONTEXT_H_
 #define ARCH_PPC_CONTEXT_H_
 
-#include <types.h>
-
 #ifndef __ASSEMBLER__
+
+#include <stdint.h>
 
 struct context {
 	uint32_t gpr[19]; /* General Purpose Register 13..31 */

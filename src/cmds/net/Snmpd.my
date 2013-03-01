@@ -12,5 +12,6 @@ module snmpd {
 	source "snmpd.c"
 
 	depends embox.net.snmp
+	depends embox.net.mib.all_mibs
 	depends embox.kernel.thread.core
 }

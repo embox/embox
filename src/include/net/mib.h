@@ -9,8 +9,9 @@
 #ifndef NET_MIB_H_
 #define NET_MIB_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <util/dlist.h>
+#include <util/array.h>
 
 enum pdu_type {
 	/* simple types */
@@ -28,14 +29,14 @@ enum pdu_type {
 typedef struct obj_data {
 	enum pdu_type type;
 	void *data;
-	__u8 datalen;
+	uint8_t datalen;
 } *obj_data_t;
 
 extern struct mib_obj mib_root;
 
 typedef struct mib_obj {
 	const char *name;
-	__u8 id;
+	uint8_t id;
 	struct dlist_head parent_link;
 	struct dlist_head children;
 	obj_data_t data;
@@ -53,6 +54,8 @@ extern mib_obj_t mib_obj_addbyoid(const char *oid, unsigned char len);
 /* Unlink subtree with obj as root. */
 /*extern void mib_obj_unlink(mib_obj_t obj);*/
 extern mib_obj_t mib_obj_getbyoid(const char *oid, unsigned char len);
+/* Initialize all mibs */
+extern int mib_init_all(void);
 /*extern mib_obj_t mib_obj_getbyname(const char *name);*/
 
 #define MIB_OBJECT_REGISTER(init) \

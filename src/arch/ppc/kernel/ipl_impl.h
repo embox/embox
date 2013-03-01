@@ -12,7 +12,7 @@
 
 #include <asm/psr.h>
 #include <asm/regs.h>
-#include <types.h>
+#include <stdint.h>
 
 typedef uint32_t __ipl_t;
 

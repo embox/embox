@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-#include <getopt.h>
+#include <unistd.h>
 #include <embox/cmd.h>
 #include <util/array.h>
 #include <profiler/tracing/trace.h>

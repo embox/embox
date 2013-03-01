@@ -6,10 +6,9 @@
  * @author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <util/array.h>
 #include <drivers/amba_pnp.h>
-#include <err.h>
 
 /** AMBA High-performance Bus (AHB) slot */
 typedef struct ahb_slot {
@@ -229,11 +228,11 @@ int capture_amba_dev(amba_dev_t *dev, uint8_t ven_id,
 		slot_number = find_apbdev_slotnum(ven_id, dev_id);
 	}
 	if (slot_number == -1) {
-		LOG_WARN("can't find slot\n");
+		/* can't find slot */
 		return -1;
 	}
 	if (-1 == lock_amba_slot(slot_number, dev, is_ahb, is_master)) {
-		LOG_WARN("a device can be opened only once\n");
+		/* a device can be opened only once */
 		return -1;
 	}
 	fill_amba_dev(dev, slot_number, is_ahb, is_master);

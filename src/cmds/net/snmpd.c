@@ -7,14 +7,15 @@
  */
 
 #include <net/snmp.h>
+#include <net/ip.h>
+#include <net/mib.h>
 #include <stdio.h>
 #include <string.h>
-#include <net/ip.h>
 #include <sys/socket.h>
 #include <embox/cmd.h>
 #include <string.h>
 #include <kernel/thread.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <unistd.h>
 
 #define SNMP_ADDR INADDR_ANY
@@ -101,6 +102,8 @@ static int exec(int argc, char **argv) {
 	}
 
 	thread_create(&thread, 0, snmp_agent, NULL);
+
+	mib_init_all();
 
 	printf("*SNMP agent started*\n");
 

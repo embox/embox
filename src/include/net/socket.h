@@ -14,6 +14,8 @@
 #include <linux/aio.h>
 #include <netinet/in.h>
 #include <net/sock.h>
+#include <stdbool.h>
+#include <sys/socket.h>
 
 #if 0
 #define SYS_SOCKET      1     /* sys_socket(2) */

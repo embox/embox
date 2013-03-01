@@ -9,7 +9,7 @@
 #ifndef PROFILER_MEASURING_MEASURE_H_
 #define PROFILER_MEASURING_MEASURE_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <drivers/irqctrl.h>
 
 typedef struct {

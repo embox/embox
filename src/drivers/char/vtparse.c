@@ -14,7 +14,7 @@
 
 #include <drivers/vtparse.h>
 #include <drivers/vtparse_state.h>
-#include <err.h>
+#include <stddef.h>
 
 struct vtparse *vtparse_init(struct vtparse *parser, vtparse_callback_t cb) {
 	if (parser == NULL) {
@@ -109,7 +109,8 @@ static void do_action(struct vtparse *parser, vt_action_t action, char ch) {
 		break;
 
 	default:
-		LOG_ERROR("vtparse: unknown action %d\n", action);
+		//LOG_ERROR("vtparse: unknown action %d\n", action);
+		break;
 	}
 }
 

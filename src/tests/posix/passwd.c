@@ -6,7 +6,7 @@
  * @date    06.02.2013
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 #include <stdio.h>
 #include <pwd.h>

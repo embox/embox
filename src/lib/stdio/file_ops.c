@@ -91,7 +91,7 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 
 size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 	char *cbuff;
-	uint addon = 0;
+	unsigned int addon = 0;
 
 	if (NULL == file) {
 		SET_ERRNO(EBADF);

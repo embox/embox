@@ -5,7 +5,7 @@
  * @author Darya Dzendzik
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include <embox/example.h>

@@ -8,7 +8,8 @@
 #ifndef UART_DEVICE_H_
 #define UART_DEVICE_H_
 
-#include <types.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 struct uart_params {
 	uint32_t baud_rate;

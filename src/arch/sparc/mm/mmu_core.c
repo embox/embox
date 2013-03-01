@@ -9,7 +9,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <hal/mm/mmu_types.h>

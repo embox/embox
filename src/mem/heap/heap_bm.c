@@ -6,9 +6,9 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #include <embox/unit.h>
 #include <mem/page.h>
 #include <mem/heap.h>

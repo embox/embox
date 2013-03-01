@@ -8,7 +8,7 @@
 #ifndef NET_RPC_AUTH_H_
 #define NET_RPC_AUTH_H_
 
-#include <types.h>
+#include <stdint.h>
 
 /* Prototypes */
 struct xdr;
@@ -41,7 +41,7 @@ enum auth_flavor {
 struct opaque_auth {
 	enum auth_flavor flavor;
 	char *data;
-	__u32 data_len;
+	uint32_t data_len;
 };
 
 struct auth_ops {
@@ -55,12 +55,12 @@ struct auth {
 };
 
 struct authunix_parms {
-	__u32 stamp;
+	uint32_t stamp;
 	char *host;
-	__u32 uid;
-	__u32 gid;
-	__u32 *gids;
-	__u32 gids_len;
+	uint32_t uid;
+	uint32_t gid;
+	uint32_t *gids;
+	uint32_t gids_len;
 };
 
 extern const struct opaque_auth __opaque_auth_null;

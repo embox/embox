@@ -10,7 +10,7 @@
 #ifndef MIPS_IO_H_
 #define MIPS_IO_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define IO_OFFSET    0x1fd00000 + 0xA0000000 /* ISA_BASE + kseg1 */
 

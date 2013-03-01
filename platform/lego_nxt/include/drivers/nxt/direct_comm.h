@@ -13,6 +13,8 @@
  *       | type | command| depends on types and length
  */
 
+#include <stdint.h>
+
 #define DC_MAX_LEN 64
 
 struct lego_dc_msg {

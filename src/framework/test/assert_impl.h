@@ -74,25 +74,29 @@ extern void __test_assertion_handle(int pass,
 
 #define __test_assert_str_equal(actual, expected, \
 		act_str, exp_str) \
-	__test_assertion_handle(0 == strcmp((actual), (expected)), \
+	__test_assertion_handle(((actual) == (expected)) \
+			|| (0 == strcmp((actual), (expected))), \
 			__test_assertion_point_ref( "test_assert_str_equal(" \
 					act_str ", " exp_str ")"))
 
 #define __test_assert_str_not_equal(actual, expected, \
 		act_str, exp_str) \
-	__test_assertion_handle(0 != strcmp((actual), (expected)), \
+	__test_assertion_handle(((actual) != (expected)) \
+			&& (0 != strcmp((actual), (expected))), \
 			__test_assertion_point_ref( "test_assert_str_not_equal(" \
 					act_str ", " exp_str ")"))
 
 #define __test_assert_strn_equal(actual, expected, n, \
 		act_str, exp_str, n_str) \
-	__test_assertion_handle(0 == strncmp((actual), (expected), (n)), \
+	__test_assertion_handle(((actual) == (expected)) \
+			|| (0 == strncmp((actual), (expected), (n))), \
 			__test_assertion_point_ref( "test_assert_strn_equal(" \
 					act_str ", " exp_str ")"))
 
 #define __test_assert_strn_not_equal(actual, expected, n, \
 		act_str, exp_str, n_str) \
-	__test_assertion_handle(0 != strcmp((actual), (expected), (n)), \
+	__test_assertion_handle(((actual) != (expected)) \
+			&& (0 != strcmp((actual), (expected), (n))), \
 			__test_assertion_point_ref( "test_assert_strn_not_equal(" \
 					act_str ", " exp_str ")"))
 

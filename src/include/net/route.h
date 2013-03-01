@@ -10,16 +10,19 @@
 #ifndef NET_ROUTE_H_
 #define NET_ROUTE_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <net/skbuff.h>
 #include <net/ip.h>
 #include <stddef.h>
+#include <net/netdevice.h>
+
+struct net_device;
 
 /**
  * Routing table entry.
  */
 typedef struct rt_entry {
-	net_device_t *dev;
+	struct net_device *dev;
 	in_addr_t    rt_dst;
 	uint32_t     rt_flags;
 	in_addr_t    rt_mask;

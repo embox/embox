@@ -6,7 +6,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <asm/bitops.h>
 #include <hal/reg.h>
 

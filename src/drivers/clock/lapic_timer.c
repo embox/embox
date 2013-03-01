@@ -8,7 +8,7 @@
 
 #include <embox/unit.h>
 
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 
 #include <asm/io.h>

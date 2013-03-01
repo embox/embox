@@ -6,7 +6,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <framework/example/self.h>
 #include <mem/page.h>
 #include <util/list.h>

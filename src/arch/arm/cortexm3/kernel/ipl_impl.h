@@ -9,7 +9,7 @@
 # error "Do not include this file directly!"
 #endif /* HAL_IPL_H_ */
 
-#include <types.h>
+#include <stdint.h>
 
 typedef uint32_t __ipl_t;
 

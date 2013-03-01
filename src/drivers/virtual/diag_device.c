@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <fs/file_operation.h>
 #include <drivers/diag.h>
 #include <embox/device.h>

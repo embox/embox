@@ -14,7 +14,6 @@ package embox.cmd
 			Anton Kozlov
 	''')
 module who {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "who.c"
 
 	depends embox.lib.LibC

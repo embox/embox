@@ -23,7 +23,7 @@
 #include <assert.h>
 #include <kernel/softirq_lock.h>
 #include <net/route.h>
-#include <err.h>
+#include <kernel/printk.h>
 
 
 EMBOX_UNIT_INIT(arp_queue_init);
@@ -95,7 +95,7 @@ void arp_queue_process(struct sk_buff *arp_skb) {
 		assert(waiting_item->skb->dev->header_ops->rebuild != NULL);
 		ret = waiting_item->skb->dev->header_ops->rebuild(waiting_item->skb);
 		if (ret != 0) {
-			LOG_ERROR("can't rebuild after resolving\n");
+			printk("arp_queue_process: error: can't rebuild after resolving\n");
 			goto free_skb_and_item; /* XXX it's not normal */
 		}
 
@@ -108,7 +108,7 @@ void arp_queue_process(struct sk_buff *arp_skb) {
 		/* try to xmit */
 		ret = dev_queue_xmit(waiting_item->skb);
 		if (ret != 0) {
-			LOG_ERROR("can't xmit over device\n");
+			printk("arp_queue_process: erorr: can't xmit over device\n");
 #if 0
 			/* notify owning socket */
 			if (sock_ready != NULL) {

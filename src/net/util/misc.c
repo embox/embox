@@ -5,7 +5,6 @@
  * @author Nikolay Korotky
  */
 
-#include <lib/bits/byteswap.h>
 #include <arpa/inet.h>
 #include <net/util.h>
 #include <stdio.h>

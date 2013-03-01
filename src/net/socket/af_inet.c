@@ -18,7 +18,6 @@
 #include <sys/socket.h>
 #include <net/socket_registry.h>
 #include <net/inet_sock.h>
-//#include <net/tcp.h>
 #include <net/inetdevice.h>
 
 #include <net/ip_port.h>
@@ -55,7 +54,7 @@ struct sock * inet_create_sock(gfp_t priority, struct proto *prot,
 	return sk;
 }
 
-int inet_proto_find(unsigned short type, unsigned char protocol,
+static int inet_proto_find(unsigned short type, unsigned char protocol,
 		struct inet_protosw **pp_netsock) {
 	const struct net_sock *net_sock_ptr;
 	int type_is_supported;
@@ -85,7 +84,7 @@ int inet_proto_find(unsigned short type, unsigned char protocol,
 		}
 	}
 
-	return (type_is_supported ? -EPROTONOSUPPORT : -EPROTOTYPE);
+	return type_is_supported ? -EPROTONOSUPPORT : -EPROTOTYPE;
 }
 
 static int inet_create(struct socket *sock, int protocol) {

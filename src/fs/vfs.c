@@ -204,6 +204,14 @@ int vfs_del_leaf(node_t *node) {
 	return rc;
 }
 
+node_t *vfs_get_child_next(node_t *parent) {
+	struct tree_link *tlink;
+
+	tlink = tree_children_begin(&(parent->tree_link));
+
+	return tree_element(tlink, struct node, tree_link);
+}
+
 node_t *vfs_get_parent(node_t *child) {
 	struct tree_link *tlink;
 

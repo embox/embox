@@ -10,7 +10,7 @@
 
 #ifndef __ASSEMBLER__
 
-#include <types.h>
+#include <stdint.h>
 
 #include <asm/modes.h>
 #include <asm/hal/reg.h>

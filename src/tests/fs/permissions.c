@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Test with http://embox.googlecode.com/files/ext2_perm.img
+ * @brief Test with http://embox.googlecode.com/files/ext2_users.img
  *
  * @author  Anton Kozlov
  * @date    12.02.2013
@@ -166,7 +166,7 @@ TEST_CASE("Opening should not be allowed for not executable dir") {
 
 TEST_CASE("Listing should be allowed for readable dir") {
 	DIR *d;
-	test_assert_zero(setuid(TEST_DUID1));
+	test_assert_zero(setuid(TEST_UID_INVAL));
 	test_assert_zero(setgid(TEST_DGID1));
 
 	test_assert_not_null(d = opendir(TEST_DNM1));
@@ -175,7 +175,7 @@ TEST_CASE("Listing should be allowed for readable dir") {
 
 TEST_CASE("Listing should not be allowed for not readable dir") {
 	DIR *d;
-	test_assert_zero(setuid(TEST_UID_INVAL));
+	test_assert_zero(setuid(TEST_DGID1));
 	test_assert_zero(setgid(TEST_DGID1));
 
 	test_assert_null(d = opendir(TEST_DNM1));

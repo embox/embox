@@ -8,7 +8,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <unistd.h> /* msleep */
 #include <stdio.h>  /* printf */
 #include <framework/example/self.h>

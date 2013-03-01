@@ -30,11 +30,15 @@ const char *smac_admin = "smac_admin";
 static struct smac_entry smac_env[SMAC_MAX_ENTS];
 static int smac_env_n;
 
+#define foreach_entry(ent) \
+	for (ent = smac_env; ent != smac_env + smac_env_n; ++ent)
+
 /*
  * steps below is from smack deciding order
  */
 int smac_access(const char *s_subject, const char *s_object,
 		int may_access) {
+	struct smac_entry *ent;
 
 	/* 1 */
 	if (0 == strcmp(s_subject, smac_star)) {
@@ -64,10 +68,10 @@ int smac_access(const char *s_subject, const char *s_object,
 	}
 
 	/* 6 */
-	for (int i = 0; i < smac_env_n; i++) {
-		if (0 == strcmp(s_subject, smac_env[i].subject)
-				&& 0 == strcmp(s_object, smac_env[i].object)) {
-			if (~smac_env[i].flags & may_access) {
+	foreach_entry(ent) {
+		if (0 == strcmp(s_subject, ent->subject)
+				&& 0 == strcmp(s_object, ent->object)) {
+			if (~ent->flags & may_access) {
 				return -EACCES;
 			}
 
@@ -79,28 +83,75 @@ int smac_access(const char *s_subject, const char *s_object,
 	return -EACCES;
 }
 
-int smac_setenv(struct smac_entry *entries, int n,
-		struct smac_entry *backup, size_t backup_len, int *wasn) {
+int smac_getenv(void *buf, size_t buflen, struct smac_env **oenv) {
+	struct smac_env *env = (struct smac_env *) buf;
+	int res;
 
-	if (backup || backup_len || wasn) {
-		if (!(backup && backup_len && wasn)) {
-			return -EINVAL;
-		}
-
-		if (backup_len < (smac_env_n * sizeof(struct smac_entry))) {
-			return -ERANGE;
-		}
-
-		*wasn = smac_env_n;
-		memcpy(backup, smac_env, smac_env_n * sizeof(struct smac_entry));
+	if (0 != (res = smac_access(task_self_security(), smac_admin,
+					FS_MAY_READ))) {
+		return res;
 	}
 
-	if (n > SMAC_MAX_ENTS) {
-		return -ENOMEM;
+	if (buflen < sizeof(struct smac_env) + smac_env_n * sizeof(struct smac_entry)) {
+		return -ERANGE;
 	}
 
-	memcpy(smac_env, entries, n * sizeof(struct smac_entry));
-	smac_env_n = n;
+	env->n = smac_env_n;
+	memcpy(env->entries, smac_env, smac_env_n * sizeof(struct smac_entry));
+
+	*oenv = env;
+	return 0;
+}
+
+int smac_flushenv(void) {
+	int res;
+
+	if (0 != (res = smac_access(task_self_security(), smac_admin,
+					FS_MAY_WRITE))) {
+		return res;
+	}
+
+	smac_env_n = 0;
+
+	return 0;
+}
+
+int smac_addenv(const char *subject, const char *object, int flags) {
+	struct smac_entry *ent;
+	int res;
+
+	if (0 != (res = smac_access(task_self_security(), smac_admin,
+					FS_MAY_WRITE))) {
+		return res;
+	}
+
+	foreach_entry(ent) {
+		if (0 == strcmp(ent->subject, subject)
+				&& 0 == strcmp(ent->object, subject)) {
+			ent->flags = flags;
+			return 0;
+		}
+	}
+
+	ent = &smac_env[smac_env_n++];
+	strcpy(ent->subject, subject);
+	strcpy(ent->object, object);
+	ent->flags = flags;
+
+	return 0;
+}
+
+int smac_setenv(struct smac_env *env) {
+	int i, res;
+
+	if (0 != (res = smac_flushenv())) {
+		return res;
+	}
+
+	for (i = 0; i < env->n; i++) {
+		struct smac_entry *ent = &env->entries[i];
+		smac_addenv(ent->subject, ent->object, ent->flags);
+	}
 
 	return 0;
 }
@@ -108,7 +159,7 @@ int smac_setenv(struct smac_entry *entries, int n,
 int smac_labelset(const char *label) {
 	int res, newlen;
 
-	if (0 != (res = smac_access(task_self_security(), smac_floor,
+	if (0 != (res = smac_access(task_self_security(), smac_admin,
 					FS_MAY_WRITE))) {
 		return res;
 	}
@@ -125,7 +176,7 @@ int smac_labelset(const char *label) {
 int smac_labelget(char *label, size_t len) {
 	int res, thislen;
 
-	if (0 != (res = smac_access(task_self_security(), smac_floor,
+	if (0 != (res = smac_access(task_self_security(), smac_admin,
 					FS_MAY_READ))) {
 		return res;
 	}
@@ -140,7 +191,7 @@ int smac_labelget(char *label, size_t len) {
 }
 
 static int smac_init(void) {
-	strcpy(((struct smac_task *) task_self_security())->label, smac_floor);
+	strcpy(((struct smac_task *) task_self_security())->label, smac_admin);
 
 	return 0;
 }

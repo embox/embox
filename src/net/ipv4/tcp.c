@@ -20,12 +20,12 @@
 #include <net/route.h>
 #include <net/skbuff.h>
 #include <errno.h>
-#include <err.h>
 #include <assert.h>
 #include <net/sock.h>
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
+#include <kernel/printk.h>
 
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>
@@ -147,19 +147,9 @@ void build_tcp_packet(size_t opt_len, size_t data_len, union sock_pointer sock,
 }
 
 struct sk_buff * alloc_prep_skb(size_t opt_len, size_t data_len) {
-	struct sk_buff *skb;
-
 	opt_len = (opt_len + 3) & ~(size_t)3; /* round */
-
-	skb = skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_MIN_HEADER_SIZE
+	return skb_alloc(ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE + TCP_MIN_HEADER_SIZE
 			+ opt_len + data_len);
-	if (skb == NULL) {
-		LOG_ERROR("no memory or len is too big. len=%zu\n", ETH_HEADER_SIZE
-				+ IP_MIN_HEADER_SIZE + TCP_MIN_HEADER_SIZE + opt_len + data_len);
-		return NULL;
-	}
-
-	return skb;
 }
 
 static void tcp_sock_save_skb(union sock_pointer sock, struct sk_buff *skb) {
@@ -205,7 +195,7 @@ void tcp_obj_lock(union sock_pointer sock, unsigned int obj) {
 		usleep(0);
 
 		if (++tmp_bug_fix > 1000) {
-			LOG_ERROR("wake up from infinite loop\n");
+			printk("tcp_obj_lock: error: wake up from infinite loop\n");
 			break;
 		}
 	}
@@ -328,25 +318,24 @@ static void rebuild_tcp_packet(__be32 ip_src, __be32 ip_dest,
 		       tcph, TCP_HEADER_SIZE(tcph) + tcp_data_len(skb));
 }
 
-static int tcp_xmit(union sock_pointer sock, struct sk_buff *skb) {
+static void tcp_xmit(union sock_pointer sock, struct sk_buff *skb) {
 	int ret;
 	rebuild_tcp_packet(sock.inet_sk->saddr, sock.inet_sk->daddr,
 			sock.tcp_sk->rem.seq, sock.tcp_sk->self.wind, skb);
 	packet_print(sock, skb, "<=", sock.inet_sk->daddr, sock.inet_sk->dport);
 	ret = ip_send_packet(sock.inet_sk, skb);
-	if (ret < 0) {
-		LOG_ERROR("ip_send_packet returned %d\n", ret);
+	if (ret != 0) {
+		printk("tcp_xmit: erorr: ip_send_packet returned %d\n", ret);
 	}
-	return ret;
 }
 
-static int tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
+static void tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 	struct sk_buff *skb, *skb_send;
 
 	/* check time wait */
 	if (!(xmit_mod & TCP_XMIT_IGNORE_DELAY) &&
 	    (tcp_get_usec() - sock.tcp_sk->last_activity < TCP_REXMIT_DELAY * USEC_PER_MSEC)) {
-		return 0;
+		return;
 	}
 
 	tcp_obj_lock(sock, TCP_SYNC_WRITE_QUEUE);
@@ -361,14 +350,13 @@ static int tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 			 */
 			/* assert(sock.tcp_sk->last_ack == sock.tcp_sk->self.seq); */
 			tcp_obj_unlock(sock, TCP_SYNC_WRITE_QUEUE);
-			return 0;
+			return;
 		}
 		if (tcp_seq_len(skb) > 0) {
 			skb_send = skb_duplicate(skb);
 			if (skb_send == NULL) {
-				LOG_ERROR("no memory\n");
 				tcp_obj_unlock(sock, TCP_SYNC_WRITE_QUEUE);
-				return -ENOMEM;
+				return;
 			}
 			debug_print(9, "tcp_sock_xmit: send skb %p, postponed %p\n", skb_send, skb);
 		}
@@ -382,7 +370,7 @@ static int tcp_sock_xmit(union sock_pointer sock, int xmit_mod) {
 
 	sock.tcp_sk->last_activity = tcp_get_usec(); /* set last xmit time */
 
-	return tcp_xmit(sock, skb_send);
+	tcp_xmit(sock, skb_send);
 }
 
 /**
@@ -402,9 +390,6 @@ void send_data_from_sock(union sock_pointer sock, struct sk_buff *skb) {
 	skb->p_data = skb->h.raw + TCP_HEADER_SIZE(skb->h.th);
 
 	skb_send = skb_duplicate(skb);
-	if (skb_send == NULL) {
-		LOG_ERROR("no memory\n");
-	}
 
 	tcp_obj_lock(sock, TCP_SYNC_WRITE_QUEUE);
 	{
@@ -527,7 +512,6 @@ static int tcp_st_listen(union sock_pointer sock, struct sk_buff **pskb,
 		/* Allocate new socket for this connection */
 		newsock.sk = inet_create_sock(0, (struct proto *)&tcp_prot, SOCK_STREAM, IPPROTO_TCP);
 		if (newsock.sk == NULL) {
-			LOG_ERROR("no memory\n");
 			return -ENOMEM;
 		}
 		debug_print(8, "\t append sk %p for skb %p to sk %p queue\n", newsock.tcp_sk, *pskb, sock.tcp_sk);
@@ -853,8 +837,8 @@ static int pre_process(union sock_pointer sock, struct sk_buff **pskb,
 		tcph->check = 0;
 		if (check != tcp_checksum(sock.inet_sk->daddr, sock.inet_sk->saddr,
 				IPPROTO_TCP, tcph, TCP_HEADER_SIZE(tcph) + tcp_data_len(*pskb))) {
-			LOG_ERROR("invalid ckecksum %x sk %p skb %p\n", (int)check,
-							sock.tcp_sk, *pskb);
+			printk("pre_process: error: invalid ckecksum %x sk %p skb %p\n",
+					(int)check, sock.tcp_sk, *pskb);
 			return TCP_RET_DROP;
 		}
 		break;

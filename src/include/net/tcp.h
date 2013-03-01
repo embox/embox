@@ -11,7 +11,7 @@
 #define NET_TCP_H_
 
 #include <hal/arch.h>
-#include <types.h>
+#include <linux/types.h>
 
 #include <netinet/tcp.h>
 

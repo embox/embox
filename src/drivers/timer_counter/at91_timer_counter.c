@@ -11,6 +11,8 @@
 
 #include <assert.h>
 #include <hal/reg.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 void tc_init(uint8_t channel) {
 	assert(channel < 3);

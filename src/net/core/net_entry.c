@@ -6,10 +6,10 @@
  * @author Anton Kozlov
  */
 
-#include <errno.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <assert.h>
+#include <stddef.h>
 
 int netif_rx(void *data) {
 	struct sk_buff *skb;

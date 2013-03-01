@@ -13,7 +13,7 @@
 #include <string.h>
 
 #include <kernel/task.h>
-#include <lib/list.h>
+#include <linux/list.h>
 #include "common.h"
 
 #include <module/embox/kernel/task/api.h>
@@ -78,6 +78,8 @@ static int kernel_task_init(void) {
 	if (!task_init(task_kernel_task(), task_kernel_size())) {
 		return -ENOMEM;
 	}
+
+	strcpy(task_kernel_task()->name, "kernel");
 
 	return 0;
 }

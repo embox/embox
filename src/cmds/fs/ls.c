@@ -9,12 +9,14 @@
  */
 
 #include <errno.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <string.h>
 #include <time.h>
 #include <stdio.h>
 
 #include <dirent.h>
+#include <pwd.h>
+#include <grp.h>
 #include <sys/stat.h>
 
 #include <embox/cmd.h>
@@ -32,12 +34,48 @@ static size_t dir_namel;
 static int recursive;
 static item_print *printer;
 
+static void print_access(int flags) {
+	putchar(flags & S_IROTH ? 'r' : '-');
+	putchar(flags & S_IWOTH ? 'w' : '-');
+	putchar(flags & S_IXOTH ? 'x' : '-');
+}
+
+#define BUFLEN 1024
+
 static void printer_long(const char *path, stat_t *sb) {
-	printf("%3o %6d %6d %s", 0777 & sb->st_mode, sb->st_uid, sb->st_gid, path);
-	if (sb->st_mode & S_IFDIR) {
-		printf("/");
+	struct passwd pwd, *res;
+	struct group grp, *gres;
+	char buf[BUFLEN];
+
+	putchar(sb->st_mode & S_IFDIR ? 'd' : '-');
+
+	print_access(sb->st_mode >> 6);
+	print_access(sb->st_mode >> 3);
+	print_access(sb->st_mode);
+
+	getpwuid_r(sb->st_uid, &pwd, buf, BUFLEN, &res);
+
+	if (NULL == res) {
+		printf(" %10d", sb->st_uid);
+	} else {
+		printf(" %10s", res->pw_name);
 	}
-	printf("\n");
+
+	getgrgid_r(sb->st_gid, &grp, buf, BUFLEN, &gres);
+
+	if (NULL == res) {
+		printf(" %10d", sb->st_uid);
+	} else {
+		printf(" %10s", gres->gr_name);
+	}
+
+	printf(" %s", path);
+
+	if (sb->st_mode & S_IFDIR) {
+		putchar('/');
+	}
+
+	putchar('\n');
 }
 
 static void printer_simple(const char *path, stat_t *sb) {
@@ -70,7 +108,7 @@ static void print(char *path, DIR *dir) {
 			DIR *d;
 
 			if (NULL == (d = opendir(line))) {
-				printf("Cannot recurse %s\n", line);
+				printf("Cannot recurse to %s\n", line);
 			}
 
 			print(line, d);
@@ -121,7 +159,7 @@ static int exec(int argc, char **argv) {
 	dir_namel = strlen(dir_name);
 
 	if (NULL == (dir = opendir(dir_name))) {
-		return errno;
+		return -errno;
 	}
 
 	print(dir_name, dir);

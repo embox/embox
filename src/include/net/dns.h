@@ -13,7 +13,7 @@
 #include <hal/arch.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <types.h>
+#include <linux/types.h>
 #include <net/ip.h>
 
 /**

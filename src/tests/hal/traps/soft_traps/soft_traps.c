@@ -6,7 +6,7 @@
  * @author Alexander Batyukov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <embox/test.h>
 
 #include <hal/test/traps_core.h>

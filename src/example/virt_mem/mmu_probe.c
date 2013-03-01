@@ -9,8 +9,8 @@
  */
 
 #include <embox/example.h>
-#include <getopt.h>
-#include <types.h>
+#include <unistd.h>
+#include <stdint.h>
 #include <hal/mm/mmu_core.h>
 #include <stdio.h>
 

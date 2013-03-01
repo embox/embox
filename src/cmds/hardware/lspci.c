@@ -6,10 +6,10 @@
  * @author Gleb Efimov
  * @author Nikolay Korotkiy
  */
-#include <types.h>
+#include <stdint.h>
 #include <embox/cmd.h>
 
-#include <getopt.h>
+#include <unistd.h>
 #include <stdio.h>
 
 #include <drivers/pci/pci.h>

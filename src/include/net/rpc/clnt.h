@@ -62,7 +62,7 @@ struct rpc_err {
 
 
 struct clnt_ops {
-	enum clnt_stat (*call)(struct client *clnt, __u32 procnum, xdrproc_t inproc,
+	enum clnt_stat (*call)(struct client *clnt, uint32_t procnum, xdrproc_t inproc,
 			char *in, xdrproc_t outproc, char *out, struct timeval wait);
 	void (*geterr)(struct client *clnt, struct rpc_err *perr);
 	void (*destroy)(struct client *clnt);
@@ -73,8 +73,8 @@ struct client {
 	const struct clnt_ops *ops;
 	int sock;
 	struct rpc_err err;
-	__u32 prognum;
-	__u32 versnum;
+	uint32_t prognum;
+	uint32_t versnum;
 	/* Protocol specific options */
 	union {
 		struct {
@@ -95,22 +95,22 @@ struct rpc_createerr {
 
 extern struct rpc_createerr rpc_create_error;
 
-extern struct client * clnt_create(const char *host, __u32 prognum, __u32 versnum,
+extern struct client * clnt_create(const char *host, uint32_t prognum, uint32_t versnum,
 		const char *prot);
-extern struct client * clntudp_create(struct sockaddr_in *addr, __u32 prognum,
-		__u32 versnum, struct timeval wait, int *psock);
+extern struct client * clntudp_create(struct sockaddr_in *addr, uint32_t prognum,
+		uint32_t versnum, struct timeval wait, int *psock);
 
-extern struct client * clnttcp_create(struct sockaddr_in *addr, __u32 prognum,
-		__u32 versnum, int *psock, unsigned int sendsz, unsigned int recvsz);
+extern struct client * clnttcp_create(struct sockaddr_in *addr, uint32_t prognum,
+		uint32_t versnum, int *psock, unsigned int sendsz, unsigned int recvsz);
 
-extern enum clnt_stat clnt_call(struct client *clnt, __u32 procnum, xdrproc_t inproc,
+extern enum clnt_stat clnt_call(struct client *clnt, uint32_t procnum, xdrproc_t inproc,
 		char *in, xdrproc_t outproc, char *out, struct timeval wait);
 
 extern void clnt_geterr(struct client * clnt, struct rpc_err *perr);
 
 extern void clnt_destroy(struct client *clnt);
 
-extern struct client * clnttcp_create(struct sockaddr_in *addr, __u32 prognum, 	__u32 versnum,
+extern struct client * clnttcp_create(struct sockaddr_in *addr, uint32_t prognum, 	uint32_t versnum,
 		int *psock, unsigned int sendsz, unsigned int __recvsz);
 
 extern char * clnt_sperrno(enum clnt_stat stat);

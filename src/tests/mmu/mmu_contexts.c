@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <embox/test.h>
 #include <hal/mm/mmu_core.h>
 #include <hal/test/mmu_core.h>

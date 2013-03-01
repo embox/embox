@@ -1,0 +1,15 @@
+
+package embox.compat.posix
+
+static module passwd {
+	source "pwd_grp.c"
+
+	@InitFS
+	source "passwd"
+
+	@InitFS
+	source "shadow"
+
+	@InitFS
+	source "group"
+}
