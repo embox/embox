@@ -66,6 +66,6 @@ struct vesa_mode_desc {
 struct dislay;
 extern struct display *vga_setup_mode(struct display *display, enum vesa_video_mode mode);
 
-extern struct vesa_mode_desc *vesa_mode_get_desc(enum vesa_video_mode mode);
+extern const struct vesa_mode_desc * vesa_mode_get_desc(enum vesa_video_mode mode);
 
 #endif /* DRIVERS_VIDEO_VESA_H_ */

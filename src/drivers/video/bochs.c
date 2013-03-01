@@ -9,7 +9,11 @@
 #include <drivers/pci/pci.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/vbe.h>
+#include <drivers/video/vesa.h>
 #include <errno.h>
+#include <framework/mod/options.h>
+
+#define MODOPS_DEFAULT_MODE OPTION_GET(NUMBER, default_mode)
 
 PCI_DRIVER("bochs", bochs_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 
@@ -45,17 +49,11 @@ static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
 	.name = "Bochs framebuffer"
 };
 
-static const struct fb_var_screeninfo bochs_default_var_screeninfo = {
-	.xres = 1024, /* 1280 */
-	.yres = 600, /* 1024 */
-	.xres_virtual = 1280,
-	.yres_virtual = 1024,
-	.bits_per_pixel = 16
-};
-
 static int bochs_init(struct pci_slot_dev *pci_dev) {
 	int ret;
 	struct fb_info *info;
+	const struct vesa_mode_desc *desc;
+	const struct fb_videomode *mode;
 
 	assert(pci_dev != NULL);
 
@@ -65,10 +63,27 @@ static int bochs_init(struct pci_slot_dev *pci_dev) {
 	}
 
 	memcpy(&info->fix, &bochs_fix_screeninfo, sizeof info->fix);
-	memcpy(&info->var, &bochs_default_var_screeninfo, sizeof info->var);
+
 	info->ops = &bochs_ops;
-//	info->screen_base = (void *)(pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
 	info->screen_base = (void *)(pci_dev->bar[0] & ~0xf); /* FIXME */
+
+	desc = vesa_mode_get_desc(MODOPS_DEFAULT_MODE);
+	if (desc == NULL) {
+		fb_release(info);
+		return -EINVAL;
+	}
+
+	mode = fb_desc_to_videomode(desc->xres, desc->yres, desc->bpp);
+	if (mode == NULL) {
+		fb_release(info);
+		return -EINVAL;
+	}
+
+	ret = fb_try_mode(&info->var, info, mode, desc->bpp);
+	if (ret != 0) {
+		fb_release(info);
+		return ret;
+	}
 
 	ret = fb_register(info);
 	if (ret != 0) {

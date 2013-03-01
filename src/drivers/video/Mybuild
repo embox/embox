@@ -21,8 +21,11 @@ module display {
 }
 
 module bochs {
+	option number default_mode=0x114
 	source "bochs.c"
+
 	depends fb
+	depends vesa
 	depends embox.driver.pci
 	depends embox.lib.LibC
 }

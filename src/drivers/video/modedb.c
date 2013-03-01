@@ -133,13 +133,15 @@ static const struct fb_videomode vesa_modes[] = {
 	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
 };
 
-const struct fb_videomode *fb_desc_to_videomode(int x, int y, int depth) {
-	int i;
-	for(i = 0; i < ARRAY_SIZE(vesa_modes); i ++) {
-		if(x == vesa_modes[i].xres && y == vesa_modes[i].yres) {
+const struct fb_videomode * fb_desc_to_videomode(int x, int y, int depth) {
+	size_t i;
+
+	for (i = 0; i < ARRAY_SIZE(vesa_modes); ++i) {
+		if ((x == vesa_modes[i].xres) && (y == vesa_modes[i].yres)) {
 			return &vesa_modes[i];
 		}
 	}
+
 	return NULL;
 }
 
