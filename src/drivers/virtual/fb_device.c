@@ -80,12 +80,15 @@ static size_t fb_device_write(struct file_desc *desc, void *buf, size_t size) {
 	return size;
 }
 
-static int fb_device_ioctl(struct file_desc *desc, int request, va_list args) {
+static int fb_device_ioctl(struct file_desc *desc, int request, ...) {
 	int ret;
 	struct fb_info *info;
+	va_list args;
 
 	info = (struct fb_info *)desc->file_info;
 	assert(info != NULL);
+
+
 
 	switch (request) {
 	default:
@@ -93,7 +96,9 @@ static int fb_device_ioctl(struct file_desc *desc, int request, va_list args) {
 		if (info->ops->fb_ioctl == NULL) {
 			return -ENOTTY;
 		}
+		va_start(args, request);
 		ret = info->ops->fb_ioctl(info, request, args);
+		va_end(args);
 		if (ret != 0) {
 			return ret;
 		}
