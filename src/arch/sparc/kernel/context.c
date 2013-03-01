@@ -8,7 +8,7 @@
 
 // XXX this is the very very temporal solution. -- Eldar
 
-#include <stdint.h>
+#include <stddef.h>
 #include <assert.h>
 
 #include <hal/context.h>
