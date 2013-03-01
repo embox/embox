@@ -17,4 +17,5 @@ module slab {
 module pool {
 	source "pool.c"
 	provides iobjalloc.rt_alloc
+	depends embox.util.SList
 }

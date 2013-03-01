@@ -1,0 +1,6 @@
+
+package embox.arch.usermode86
+
+module lds extends embox.arch.lds {
+	source "embox.lds.S"
+}
