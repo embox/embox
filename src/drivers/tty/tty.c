@@ -61,9 +61,7 @@ void tty_cursor(struct tty *t) {
 	if (!t || !t->ops || !t->ops->cursor) {
 		return;
 	}
-	t->ops->cursor(t, t->back_cx, t->back_cy);
-	t->back_cx = t->cur_x;
-	t->back_cy = t->cur_y;
+	t->ops->cursor(t, t->cur_x, t->cur_y);
 }
 
 static void tty_esc_putc(struct tty *t, char ch) {
@@ -151,7 +149,8 @@ void tty_putc(struct tty *t, char ch) {
 		return;
 	}
 
-	t->ops->cursor(t, t->cur_x, t->cur_y);
+	tty_cursor(t); /* erase cursor */
+
 	if (t->esc_state) {
 		tty_esc_putc(t, ch);
 	}
@@ -216,7 +215,8 @@ void tty_putc(struct tty *t, char ch) {
 			break;
 		}
 	}
+
+	tty_cursor(t); /* draw cursor */
 	t->back_cx = t->cur_x;
 	t->back_cy = t->cur_y;
-	t->ops->cursor(t, t->cur_x, t->cur_y);
 }

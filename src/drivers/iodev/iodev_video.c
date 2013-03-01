@@ -29,22 +29,23 @@ static void video_tty_cursor(struct tty *t, uint32_t x, uint32_t y) {
 	struct video_tty_data *data;
 
 	data = (struct video_tty_data *)t->data;
+	assert(data != NULL);
+
+	assert(data->font != NULL);
 
 	cursor.enable = 1;
 	cursor.rop = ROP_XOR;
 	cursor.image.width = data->font->width;
 	cursor.image.height = data->font->height;
-	cursor.image.fg_color = data->fg_color;
+	cursor.image.fg_color = data->cur_color;
 
 	cursor.hot.x = x;
 	cursor.hot.y = y;
 
+	assert(data->fb != NULL);
+	assert(data->fb->ops != NULL);
+	assert(data->fb->ops->fb_cursor != NULL);
 	data->fb->ops->fb_cursor(data->fb, &cursor);
-
-	cursor.hot.x = t->cur_x;
-	cursor.hot.y = t->cur_y;
-
-//	data->fb->ops->fb_cursor(data->fb, &cursor);
 }
 
 static void video_tty_putc(struct tty *t, char ch, uint32_t x, uint32_t y) {
@@ -52,6 +53,9 @@ static void video_tty_putc(struct tty *t, char ch, uint32_t x, uint32_t y) {
 	struct video_tty_data *data;
 
 	data = (struct video_tty_data *)t->data;
+	assert(data != NULL);
+
+	assert(data->font != NULL);
 
 	symbol.dx = x * data->font->width;
 	symbol.dy = y * data->font->height;
@@ -62,6 +66,9 @@ static void video_tty_putc(struct tty *t, char ch, uint32_t x, uint32_t y) {
 	symbol.depth = 1;
 	symbol.data = data->font->data + (unsigned char)ch * data->font->height * data->font->width / 8;
 
+	assert(data->fb != NULL);
+	assert(data->fb->ops != NULL);
+	assert(data->fb->ops->fb_imageblit != NULL);
 	data->fb->ops->fb_imageblit(data->fb, &symbol);
 }
 
@@ -71,6 +78,9 @@ static void video_tty_clear(struct tty *t, uint32_t x, uint32_t y,
 	struct video_tty_data *data;
 
 	data = (struct video_tty_data *)t->data;
+	assert(data != NULL);
+
+	assert(data->font != NULL);
 
 	rect.dx = x * data->font->width;
 	rect.dy = y * data->font->height;
@@ -79,6 +89,9 @@ static void video_tty_clear(struct tty *t, uint32_t x, uint32_t y,
 	rect.color = data->bg_color;
 	rect.rop = ROP_COPY;
 
+	assert(data->fb != NULL);
+	assert(data->fb->ops != NULL);
+	assert(data->fb->ops->fb_fillrect != NULL);
 	data->fb->ops->fb_fillrect(data->fb, &rect);
 }
 
@@ -88,6 +101,9 @@ static void video_tty_move(struct tty *t, uint32_t sx, uint32_t sy,
 	struct video_tty_data *data;
 
 	data = (struct video_tty_data *)t->data;
+	assert(data != NULL);
+
+	assert(data->font != NULL);
 
 	area.dx = dx * data->font->width;
 	area.dy = dy * data->font->height;
@@ -96,6 +112,9 @@ static void video_tty_move(struct tty *t, uint32_t sx, uint32_t sy,
 	area.sx = sx * data->font->width;
 	area.sy = sy * data->font->height;
 
+	assert(data->fb != NULL);
+	assert(data->fb->ops != NULL);
+	assert(data->fb->ops->fb_copyarea != NULL);
 	data->fb->ops->fb_copyarea(data->fb, &area);
 }
 
@@ -116,7 +135,7 @@ static int iodev_video_init(void) {
 	assert(data.fb != NULL);
 	data.fg_color = 0x00F0;
 	data.bg_color = 0xFFFF;
-	data.cur_color = 0x0000;
+	data.cur_color = 0x00F0;
 
 	tty_init(&video_tty, 80, 24, &video_tty_ops, &data);
 	return 0;
