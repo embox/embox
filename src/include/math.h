@@ -56,6 +56,24 @@ extern double copysign(double x, double y);
 extern float copysignf(float x, float y);
 extern long double copysignl(long double x, long double y);
 
+/* x is a NaN value */
+extern int isnan(double x);
+extern int isnanf(float x);
+extern int isnanl(long double x);
+
+/* x is a infinity value */
+extern int isinf(double x);
+extern int isinff(float x);
+extern int isinfl(long double x);
+
+/* x is a finite value */
+extern int finite(double x);
+extern int finitef(float x);
+extern int finitel(long double x);
+static inline int isfinite(double x) { return finite(x); }
+static inline int isfinitef(float x) { return finitel(x); }
+static inline int isfinitel(long double x) { return finitef(x); }
+
 /*  Test sign of a real floating-point number */
 extern int signbit(double x);
 extern int signbitf(float x);

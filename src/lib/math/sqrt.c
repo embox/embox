@@ -6,6 +6,8 @@
  * @author Ilia Vaprol
  */
 
+#include <math.h>
+
 extern float __sqrtsf2(float a);
 extern double __sqrtdf2(double a);
 extern long double __sqrttf2(long double a);
