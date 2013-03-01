@@ -4,4 +4,5 @@ package embox.arch.sparc
 static module libarch extends embox.arch.libarch {
 	source "setjmp.S"
 	source "ashldi3.S"
+	source "ucmpdi2.c"
 }
