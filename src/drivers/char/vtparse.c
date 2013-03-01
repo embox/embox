@@ -90,6 +90,8 @@ static void do_action(struct vtparse *parser, vt_action_t action, char ch) {
 	case VT_ACTION_CLEAR:
 		token->params_len = 0;
 		token->attrs_len = 0;
+		token->params[0] = 0;
+		token->params[1] = 0;
 		break;
 
 	case VT_ACTION_OSC_START:

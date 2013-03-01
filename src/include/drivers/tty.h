@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include <termios.h>
+#include <drivers/vtparse.h>
 
 struct tty;
 
@@ -41,11 +42,8 @@ struct tty {
 	const struct tty_ops *ops;
 	void *data;
 
-	int esc_state;
-	int esc_args[5];
-	int esc_args_count;
-
 	struct termios termios;
+	struct vtparse parser;
 };
 
 extern void tty_init(struct tty *t, uint32_t width, uint32_t height,
