@@ -32,6 +32,7 @@ static void video_tty_cursor(struct tty *t, uint32_t x, uint32_t y) {
 
 	rect.width = data->font->width;
 	rect.height = data->font->height / 5;
+	rect.rop = ROP_COPY;
 
 	rect.dx = x * data->font->width;
 	rect.dy = y * data->font->height + 4 * data->font->height / 5;
@@ -77,6 +78,7 @@ static void video_tty_clear(struct tty *t, uint32_t x, uint32_t y,
 	rect.width = width * data->font->width;
 	rect.height = height * data->font->height;
 	rect.color = data->bg_color;
+	rect.rop = ROP_COPY;
 
 	data->fb->ops->fb_fillrect(data->fb, &rect);
 }

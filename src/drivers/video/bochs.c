@@ -37,7 +37,8 @@ static const struct fb_ops bochs_ops = {
 	.fb_set_par = bochs_set_par,
 	.fb_copyarea = fb_copyarea,
 	.fb_fillrect = fb_fillrect,
-	.fb_imageblit = fb_imageblit
+	.fb_imageblit = fb_imageblit,
+	.fb_cursor = fb_cursor
 };
 
 static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
