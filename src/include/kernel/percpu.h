@@ -9,7 +9,7 @@
 #ifndef KERNEL_PERCPU_H_
 #define KERNEL_PERCPU_H_
 
-#include <types.h>
+#include <stddef.h>
 
 #include <kernel/cpu.h>
 

@@ -6,7 +6,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>

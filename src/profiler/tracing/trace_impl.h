@@ -10,6 +10,7 @@
 #define PROFILER_TRACING_TRACE_IMPL_H_
 
 #include <string.h>
+#include <stdbool.h>
 
 #include <util/array.h>
 #include <util/location.h>

@@ -7,7 +7,7 @@
  * @author Ilia Vaprol
  */
 
-#include <types.h>
+#include <stdint.h>
 
 uint64_t __udivdi3(uint64_t num, uint64_t den) {
 	uint64_t result = 0;

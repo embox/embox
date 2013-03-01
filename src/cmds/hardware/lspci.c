@@ -6,7 +6,7 @@
  * @author Gleb Efimov
  * @author Nikolay Korotkiy
  */
-#include <types.h>
+#include <stdint.h>
 #include <embox/cmd.h>
 
 #include <unistd.h>

@@ -9,9 +9,9 @@
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 
-#include <types.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include <asm/io.h>
 #include <drivers/i8259.h>

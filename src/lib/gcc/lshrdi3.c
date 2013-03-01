@@ -8,8 +8,8 @@
  */
 
 
-#include <types.h>
-#define BITS_PER_UNIT 8 /*number of bits in one byte*/
+#include <stdint.h>
+#include <limits.h>
 
 typedef union {
 	struct {
@@ -29,7 +29,7 @@ uint64_t __lshrdi3(uint64_t u, unsigned int b) {
 
 	uu.ll = u;
 
-	bm = (sizeof(uint32_t) * BITS_PER_UNIT) - b;
+	bm = (sizeof(uint32_t) * CHAR_BIT) - b;
 
 	if (bm <= 0) {
 		w.s.high = 0;

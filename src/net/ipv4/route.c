@@ -15,7 +15,6 @@
 #include <linux/in.h>
 #include <mem/misc/pool.h>
 #include <net/inetdevice.h>
-#include <types.h>
 #include <util/bit.h>
 #include <linux/list.h>
 

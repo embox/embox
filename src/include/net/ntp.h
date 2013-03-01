@@ -9,7 +9,8 @@
 #ifndef NET_NTP_H_
 #define NET_NTP_H_
 
-#include <types.h>
+#include <linux/types.h>
+#include <stdint.h>
 #include <kernel/time/time.h>
 #include <net/skbuff.h>
 #include <sys/socket.h>

@@ -5,8 +5,9 @@
  * @author Nikolay Korotky
  */
 
-#include <types.h>
 #include <hal/context.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #include <string.h>
 

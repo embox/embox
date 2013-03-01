@@ -6,7 +6,7 @@
  * @author Alexandr Batyukov, Alexey Fomin, Eldar Abusalimov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <util/array.h>
 #include <drivers/amba_pnp.h>
 

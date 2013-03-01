@@ -12,7 +12,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <types.h>
+#include <stdint.h>
 
 struct fb_info;
 struct fb_copyarea;

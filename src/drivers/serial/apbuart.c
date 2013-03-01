@@ -5,7 +5,7 @@
  * @author Eldar Abusalimov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 
 #include <drivers/amba_pnp.h>

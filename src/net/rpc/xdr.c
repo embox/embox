@@ -7,11 +7,10 @@
  */
 
 #include <net/rpc/xdr.h>
-#include <types.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-
+#include <stddef.h>
+#include <stdlib.h>
 
 #define XDR_SAVE(xs, s)            \
 	s = xdr_getpos(xs)

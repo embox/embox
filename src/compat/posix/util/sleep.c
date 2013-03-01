@@ -6,9 +6,9 @@
  */
 
 #include <errno.h>
-#include <types.h>
 #include <unistd.h>
 #include <kernel/time/ktime.h>
+#include <sys/types.h>
 
 int nsleep(useconds_t nsec) {
 	int res;

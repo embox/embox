@@ -11,7 +11,7 @@
 #ifndef PCI_REPO_H_
 #define PCI_REPO_H_
 
-#include <types.h>
+#include <stdint.h>
 
 extern const char *find_vendor_name(uint16_t ven_id);
 

@@ -9,7 +9,7 @@
 #include <embox/test.h>
 #include <netinet/in.h>
 #include <net/ip_port.h>
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 
 EMBOX_TEST_SUITE("Tests for ip_port functions");

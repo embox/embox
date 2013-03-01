@@ -16,7 +16,7 @@
 #ifndef NXT_MOTOR_H_
 #define NXT_MOTOR_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <drivers/nxt/avr.h>
 #include <drivers/pins.h>
 

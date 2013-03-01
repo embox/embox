@@ -6,7 +6,7 @@
  * @author Ilia Vaprol
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <ctype.h>
 #include <util/array.h>
 #include <drivers/tty.h>

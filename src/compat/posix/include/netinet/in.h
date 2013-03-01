@@ -12,9 +12,8 @@
 #ifndef NETINET_IN_H_
 #define NETINET_IN_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <sys/socket.h>
-
 
 typedef uint16_t in_port_t; /* An unsigned integral type of exactly 16 bits. */
 typedef uint32_t in_addr_t; /* An unsigned integral type of exactly 32 bits. */

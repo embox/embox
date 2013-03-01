@@ -6,7 +6,7 @@
  */
 
 #include <prom/prom_printf.h>
-#include <types.h>
+#include <stdint.h>
 #include <asm/winmacro.h>
 #include <asm/ptrace.h>
 

@@ -6,7 +6,7 @@
  * @author Eldar Abusalimov
  */
 
-#include <types.h>
+#include <stdint.h>
 
 #include <hal/reg.h>
 #include <hal/system.h>

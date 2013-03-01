@@ -41,7 +41,6 @@
 
 #include <errno.h>
 #include <unistd.h>
-#include <types.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/iso9660.h>

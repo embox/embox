@@ -19,6 +19,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <stddef.h>
+#include <stdbool.h>
 
 #include <kernel/irq.h>
 #include <kernel/irq_lock.h>

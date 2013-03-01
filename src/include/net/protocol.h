@@ -11,6 +11,9 @@
 
 #include <linux/list.h>
 #include <net/skbuff.h>
+#include <linux/types.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #define MAX_INET_PROTOS 256
 

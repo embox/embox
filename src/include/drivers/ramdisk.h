@@ -9,8 +9,8 @@
 #ifndef RAMDISK_H_
 #define RAMDISK_H_
 
-#include <types.h>
 #include <fs/node.h>
+#include <stddef.h>
 
 typedef struct ramdisk {
 	int             idx;

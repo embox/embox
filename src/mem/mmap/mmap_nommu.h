@@ -9,7 +9,7 @@
 #ifndef MEM_MMAP_NOMMU_H_
 #define MEM_MMAP_NOMMU_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <util/dlist.h>
 
 struct marea {

@@ -6,8 +6,6 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
-
 #include <drivers/irqctrl.h>
 #include <hal/clock.h>
 #include <hal/reg.h>

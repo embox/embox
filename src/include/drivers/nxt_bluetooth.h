@@ -9,7 +9,7 @@
 #ifndef NXT_BLUETOOTH_H_
 #define NXT_BLUETOOTH_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define MSG_BEGIN_INQUIRY                0
 #define MSG_CANCEL_INQUIRY               1

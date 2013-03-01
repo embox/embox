@@ -8,7 +8,8 @@
 #ifndef NET_IP_FRAGMENT_H
 #define NET_IP_FRAGMENT_H
 
-#include <types.h>
+#include <stdint.h>
+#include <net/skbuff.h>
 
 #define MAX_BUFS_CNT 0x10      /* Maximum uncomplete packets count */
 #define MSL          2*60*1000 /* Maximum Segment Lifetime is 2 minutes */

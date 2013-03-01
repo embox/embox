@@ -9,7 +9,7 @@
 #ifndef SPARC_WINDOWS_H_
 #define SPARC_WINDOWS_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #ifndef __ASSEMBLER__
 

@@ -9,7 +9,7 @@
 #ifndef SECURITY_SMAC_H_
 #define SECURITY_SMAC_H_
 
-#include <types.h>
+#include <stddef.h>
 
 #define SMAC_LABELLEN 32
 

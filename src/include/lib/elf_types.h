@@ -10,7 +10,7 @@
 #define LIB_ELF_TYPES_H_
 
 #include <stdio.h>
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 #include <lib/elf_consts.h>
 

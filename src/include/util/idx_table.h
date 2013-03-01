@@ -12,6 +12,7 @@
 
 #include <assert.h>
 #include <util/num_alloc.h>
+#include <stddef.h>
 
 typedef struct util_idx_table_struct {
 	int n;

@@ -12,7 +12,7 @@
  */
 
 #include <stdio.h>
-#include <types.h>
+#include <stddef.h>
 #include <mem/misc/pool.h>
 
 void *pool_alloc(struct pool* pool) {

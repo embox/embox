@@ -9,7 +9,7 @@
 #ifndef MEM_MMAP_MMU_H_
 #define MEM_MMAP_MMU_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #include <mem/vmem.h>
 #include <util/dlist.h>

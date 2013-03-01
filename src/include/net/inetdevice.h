@@ -10,7 +10,8 @@
 
 #include <net/netdevice.h>
 #include <netinet/in.h>
-#include <types.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 typedef void (*devinet_callback_t)(void *pack);
 

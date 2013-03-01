@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <ctype.h>
-#include <types.h>
+#include <stdbool.h>
 #include <fs/file_operation.h>
 
 FILE *file;

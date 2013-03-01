@@ -12,7 +12,7 @@
 //http://www.osdever.net/FreeVGA/vga/crtcreg.htm
 
 //CIRRUS_LOGIC_GD_5446
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 #include <string.h>
 

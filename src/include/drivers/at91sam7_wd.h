@@ -9,7 +9,7 @@
 #ifndef AT91SAM7_WD_H_
 #define AT91SAM7_WD_H_
 
-#include <types.h>
+#include <drivers/at91sam7s256.h>
 
 typedef struct _AT91S_WDTC {
 	at91_reg_t	 WDTC_WDCR; 	// Watchdog Control Register

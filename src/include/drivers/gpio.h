@@ -9,8 +9,6 @@
 #ifndef DRIVERS_GPIO_H_
 #define DRIVERS_GPIO_H_
 
-#include <types.h>
-
 #include <module/embox/driver/gpio/api.h>
 
 struct gpio;

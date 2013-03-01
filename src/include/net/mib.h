@@ -9,7 +9,7 @@
 #ifndef NET_MIB_H_
 #define NET_MIB_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <util/dlist.h>
 #include <util/array.h>
 
@@ -29,14 +29,14 @@ enum pdu_type {
 typedef struct obj_data {
 	enum pdu_type type;
 	void *data;
-	__u8 datalen;
+	uint8_t datalen;
 } *obj_data_t;
 
 extern struct mib_obj mib_root;
 
 typedef struct mib_obj {
 	const char *name;
-	__u8 id;
+	uint8_t id;
 	struct dlist_head parent_link;
 	struct dlist_head children;
 	obj_data_t data;

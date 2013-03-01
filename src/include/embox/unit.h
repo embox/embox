@@ -12,7 +12,7 @@
 #ifndef EMBOX_UNIT_H_
 #define EMBOX_UNIT_H_
 
-#include <types.h>
+#include <stddef.h>
 #include <framework/mod/self.h>
 
 #define __EMBOX_UNIT(_init, _fini) \

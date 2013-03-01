@@ -9,7 +9,7 @@
 #ifndef DRIVERS_VIDEO_TTY_H_
 #define DRIVERS_VIDEO_TTY_H_
 
-#include <types.h>
+#include <stdint.h>
 
 struct tty;
 

@@ -12,6 +12,7 @@
 #define UTIL_DEBUG_MSG_H_
 
 #include <util/macro.h>
+#include <stdbool.h>
 
 #define N_DEBUG_MSG 100  /* Quantity of messages in a queue */
 #define MAX_MSG_LENGTH (256+1)  /* Length of a message + '\0' */

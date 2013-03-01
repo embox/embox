@@ -6,7 +6,8 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <assert.h>
 
 #include <hal/context.h>

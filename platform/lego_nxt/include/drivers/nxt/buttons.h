@@ -9,7 +9,7 @@
 #ifndef NXT_BUTTONS_H_
 #define NXT_BUTTONS_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define NXT_BUTTON_ENTER  1
 #define NXT_BUTTON_LEFT   2

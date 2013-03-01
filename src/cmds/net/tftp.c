@@ -13,11 +13,12 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <types.h>
+#include <linux/types.h>
 #include <sys/socket.h>
 #include <net/ip.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <stddef.h>
 
 EMBOX_CMD(exec);
 

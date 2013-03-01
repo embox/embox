@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <mem/phymem.h>
+#include <stdint.h>
 
 EMBOX_CMD(exec);
 

@@ -7,7 +7,7 @@
  * @author Fedor Burdun
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <embox/unit.h>
 #include <kernel/panic.h>
 #include <hal/reg.h>

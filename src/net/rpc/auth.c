@@ -8,8 +8,7 @@
 #include <net/rpc/auth.h>
 #include <net/rpc/xdr.h>
 #include <assert.h>
-#include <stdlib.h>
-#include <types.h>
+#include <stddef.h>
 
 const struct opaque_auth __opaque_auth_null = {
 		.flavor = AUTH_NULL,

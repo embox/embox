@@ -11,7 +11,7 @@
 
 #ifndef __ASSEMBLER__
 
-#include <types.h>
+#include <stdint.h>
 
 typedef struct tss_entry_struct {
 	uint32_t prev_tss; // The previous TSS - if we used hardware task switching this would form a linked list.

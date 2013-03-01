@@ -8,7 +8,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <framework/example/self.h>

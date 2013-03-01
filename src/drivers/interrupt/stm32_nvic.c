@@ -7,7 +7,7 @@
  */
 
 #include <assert.h>
-#include <types.h>
+#include <stdint.h>
 
 #include <kernel/critical.h>
 #include <hal/reg.h>

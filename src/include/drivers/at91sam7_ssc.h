@@ -2,6 +2,8 @@
 #ifndef AT91SAM7_SSC_H_
 #define AT91SAM7_SSC_H_
 
+#include <drivers/at91sam7s256.h>
+
 typedef struct _AT91S_SSC {
 	at91_reg_t	 SSC_CR; 	// Control Register
 	at91_reg_t	 SSC_CMR; 	// Clock Mode Register

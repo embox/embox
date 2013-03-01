@@ -6,7 +6,7 @@
  * @author Nikolay Korotky
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <asm/io.h>
 #include <drivers/serial/8250.h>
 #include <drivers/uart_device.h>

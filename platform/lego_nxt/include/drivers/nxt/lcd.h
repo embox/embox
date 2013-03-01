@@ -10,7 +10,7 @@
 #ifndef NXT_LCD_H_
 #define NXT_LCD_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define NXT_LCD_DEPTH 8
 #define NXT_LCD_WIDTH 100

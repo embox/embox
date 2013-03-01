@@ -8,9 +8,9 @@
 #ifndef X86_TRAPS_H_
 #define X86_TRAPS_H_
 
-#include <types.h>
-
 #ifndef __ASSEMBLER__
+
+#include <stdint.h>
 
 extern char _traps_text_start, _traps_text_end;
 

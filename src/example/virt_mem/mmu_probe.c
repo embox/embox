@@ -10,7 +10,7 @@
 
 #include <embox/example.h>
 #include <unistd.h>
-#include <types.h>
+#include <stdint.h>
 #include <hal/mm/mmu_core.h>
 #include <stdio.h>
 

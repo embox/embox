@@ -9,8 +9,6 @@
 #ifndef X86_MULTIBOOT_H_
 #define X86_MULTIBOOT_H_
 
-#include <types.h>
-
 /* The magic number for the Multiboot header. */
 #define MULTIBOOT_HEADER_MAGIC      0x1BADB002
 
@@ -72,6 +70,8 @@
 
 
 #ifndef __ASSEMBLER__
+
+#include <stdint.h>
 
 /* The Multiboot header. */
 typedef struct multiboot_header {

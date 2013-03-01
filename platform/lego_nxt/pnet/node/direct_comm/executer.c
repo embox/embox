@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <embox/unit.h>

@@ -8,7 +8,7 @@
 #ifndef NET_RPC_RPC_MSG_H_
 #define NET_RPC_RPC_MSG_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <net/rpc/auth.h>
 
 /* Prototypes */
@@ -42,8 +42,8 @@ enum reject_stat {
 };
 
 struct mismatch_info {
-	__u32 low;
-	__u32 high;
+	uint32_t low;
+	uint32_t high;
 };
 
 /* Reply to a RPC request that was accepted by the server */
@@ -79,17 +79,17 @@ struct reply_body {
 
 /* Body of a RPC request call */
 struct call_body {
-	__u32 rpcvers;
-	__u32 prog;
-	__u32 vers;
-	__u32 proc;
+	uint32_t rpcvers;
+	uint32_t prog;
+	uint32_t vers;
+	uint32_t proc;
 	struct opaque_auth cred;
 	struct opaque_auth verf;
 };
 
 /* RPC message */
 struct rpc_msg {
-	__u32 xid;
+	uint32_t xid;
 	enum msg_type type;
 	union {
 		struct call_body call;

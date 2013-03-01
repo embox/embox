@@ -10,7 +10,7 @@
 #define SOFT_I2C_H_
 
 #include <drivers/pins.h>
-#include <types.h>
+#include <stdint.h>
 
 typedef enum {
 	SOFT_I2C_START,

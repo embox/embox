@@ -8,9 +8,9 @@
 #ifndef ARCH_X86_CONTEXT_H_
 #define ARCH_X86_CONTEXT_H_
 
-#include <types.h>
-
 #ifndef __ASSEMBLER__
+
+#include <stdint.h>
 
 struct context {
 	/* 0x00 */uint32_t eip; /**< TODO */

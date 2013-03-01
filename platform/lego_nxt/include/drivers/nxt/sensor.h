@@ -11,6 +11,7 @@
 
 #include <drivers/nxt/avr.h>
 #include <drivers/soft_i2c.h>
+#include <stdint.h>
 
 #define NXT_SENSOR_ERR_NOT_CONFIG     42
 

@@ -8,7 +8,7 @@
 #ifndef TEST_MMU_CORE_H_
 #define TEST_MMU_CORE_H_
 
-#include <types.h>
+#include <stdint.h>
 //#include <hal/mm/mmu_core.h>
 //#include <asm/hal/test/mmu_core.h>
 

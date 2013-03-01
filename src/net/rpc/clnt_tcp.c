@@ -7,7 +7,7 @@
  */
 
 #include <assert.h>
-#include <types.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
@@ -29,8 +29,8 @@ static int writetcp(struct client *clnt, char *buf, size_t len);
 
 static const struct clnt_ops clnttcp_ops;
 
-struct client * clnttcp_create(struct sockaddr_in *raddr, __u32 prognum,
-		__u32 versnum, int *psock, unsigned int sendsz, unsigned int recvsz) {
+struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
+		uint32_t versnum, int *psock, unsigned int sendsz, unsigned int recvsz) {
 	struct client *clnt;
 	struct auth *ath;
 	int sock;
@@ -81,7 +81,7 @@ exit_with_error:
 	return NULL;
 }
 
-static enum clnt_stat clnttcp_call(struct client *clnt, __u32 procnum,
+static enum clnt_stat clnttcp_call(struct client *clnt, uint32_t procnum,
 		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
 		struct timeval timeout) {
 	struct xdr xstream;
@@ -89,7 +89,7 @@ static enum clnt_stat clnttcp_call(struct client *clnt, __u32 procnum,
 
 	assert((clnt != NULL) && (inproc != NULL));
 
-	msg_call.xid = (__u32)rand();
+	msg_call.xid = (uint32_t)rand();
 	msg_call.type = CALL;
 	msg_call.b.call.rpcvers = RPC_VERSION;
 	msg_call.b.call.prog = clnt->prognum;

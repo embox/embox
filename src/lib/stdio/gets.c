@@ -7,7 +7,6 @@
  */
 
 #include <stdio.h>
-#include <types.h>
 
 char * fgets(char *s, int n, FILE *file) {
 	int c = EOF; // has to add it, since compiler claims it's uninited --Anton Kozlov

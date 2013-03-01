@@ -7,8 +7,6 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
-
 #include <asm/bitops.h>
 #include <hal/clock.h>
 #include <hal/system.h>

@@ -11,7 +11,7 @@
 
 #ifndef __ASSEMBLER__
 
-#include <types.h>
+#include <stdint.h>
 
 struct context {
 	uint32_t system_r[13];

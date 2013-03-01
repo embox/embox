@@ -10,7 +10,7 @@
 #include <asm/io.h>
 #include <string.h>
 #include <unistd.h>
-#include <types.h>
+#include <stdint.h>
 #include <kernel/time/ktime.h>
 #include <embox/unit.h>
 #include <net/etherdevice.h>

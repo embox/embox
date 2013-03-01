@@ -9,7 +9,6 @@
 #ifndef AT91_OLIMEX_DEBUG_LED_H_
 #define AT91_OLIMEX_DEBUG_LED_H_
 
-#include <types.h>
 #include <drivers/at91sam7s256.h>
 
 #define OLIMEX_SAM7_LED1 AT91C_PIO_PA17

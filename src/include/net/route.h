@@ -10,7 +10,7 @@
 #ifndef NET_ROUTE_H_
 #define NET_ROUTE_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <net/skbuff.h>
 #include <net/ip.h>
 #include <stddef.h>

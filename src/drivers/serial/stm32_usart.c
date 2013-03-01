@@ -6,7 +6,7 @@
  * @date    03.07.2012
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include <drivers/gpio.h>

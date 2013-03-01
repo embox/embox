@@ -21,7 +21,7 @@
 
 #ifndef __ASSEMBLER__
 
-#include <types.h>
+#include <stdint.h>
 
 static inline uint32_t tbr_tba_get(void) {
 	register unsigned tba;

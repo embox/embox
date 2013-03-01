@@ -121,7 +121,7 @@
 #define VGA_NUM_GC_REGS    9
 #define VGA_NUM_AC_REGS    21
 
-#include <types.h>
+#include <stdint.h>
 #include <asm/io.h>
 
 struct vga_registers {

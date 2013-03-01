@@ -9,7 +9,7 @@
 #ifndef SPARC_STACK_H_
 #define SPARC_STACK_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #include <asm/winmacro.h>
 

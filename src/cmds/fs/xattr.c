@@ -6,9 +6,8 @@
  * @author Andrey Gazukin
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
-#include <unistd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>

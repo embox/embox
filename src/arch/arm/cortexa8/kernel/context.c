@@ -6,7 +6,9 @@
  * @date    25.10.2012
  */
 
-#include <types.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include <hal/context.h>
 
 #include <asm/modes.h>

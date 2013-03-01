@@ -8,7 +8,6 @@
  */
 
 #include <errno.h>
-#include <types.h>
 #include <kernel/time/ktime.h>
 
 #include <kernel/time/timer.h>

@@ -5,7 +5,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <hal/test/traps_core.h>
 
 static traps_env_t test_env[1];

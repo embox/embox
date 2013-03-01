@@ -7,7 +7,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <asm/bitops.h>
 #include <kernel/irq.h>
 

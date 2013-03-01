@@ -12,7 +12,7 @@
 #define STDIO_H_
 
 #include <stdarg.h>
-#include <types.h>
+#include <stddef.h>
 #include <kernel/printk.h>
 
 #define EOF (-1)

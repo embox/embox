@@ -8,7 +8,6 @@
 
 #include <embox/cmd.h>
 #include <unistd.h>
-#include <types.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>

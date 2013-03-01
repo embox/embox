@@ -10,7 +10,7 @@
 
 #ifndef __ASSEMBLER__
 
-#include <types.h>
+#include <stdint.h>
 
 typedef struct stack_frame {
 	uint32_t regs[32];

@@ -9,7 +9,8 @@
 #ifndef SECURITY_SECURITY_H_
 #define SECURITY_SECURITY_H_
 
-#include <types.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 struct node;
 

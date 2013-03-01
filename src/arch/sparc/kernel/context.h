@@ -9,7 +9,7 @@
 #ifndef ARCH_SPARC_CONTEXT_H_
 #define ARCH_SPARC_CONTEXT_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #ifndef __ASSEMBLER__
 

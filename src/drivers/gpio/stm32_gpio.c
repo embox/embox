@@ -6,7 +6,6 @@
  * @date    07.04.2012
  */
 
-#include <types.h>
 #include <assert.h>
 
 #define RCC_APB1RSTR  0x40021010

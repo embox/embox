@@ -6,8 +6,6 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
-
 #include <embox/unit.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/irqctrl.h>

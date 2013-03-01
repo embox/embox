@@ -11,7 +11,7 @@
 #ifndef NET_IF_ARP_H
 #define NET_IF_ARP_H
 
-#include <types.h>
+#include <linux/types.h>
 #include <stdlib.h>
 #include <net/skbuff.h>
 

@@ -7,7 +7,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <embox/test.h>
 #include <kernel/task.h>

@@ -9,6 +9,8 @@
 #ifndef TMPFS_H_
 #define TMPFS_H_
 
+#include <stdint.h>
+
 /* DOS attribute bits  */
 #define ATTR_READ_ONLY	0x01
 #define ATTR_HIDDEN		0x02

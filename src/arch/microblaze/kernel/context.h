@@ -9,9 +9,9 @@
 #ifndef ARCH_MICROBLAZE_CONTEXT_H_
 #define ARCH_MICROBLAZE_CONTEXT_H_
 
-#include <types.h>
-
 #ifndef __ASSEMBLER__
+
+#include <stdint.h>
 
 struct context {
 	/* 0x00 */ uint32_t r1; /* stack pointer */

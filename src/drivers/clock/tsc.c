@@ -6,7 +6,7 @@
  * @author Alexander Kalmuk
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 #include <util/array.h>
 

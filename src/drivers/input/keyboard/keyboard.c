@@ -6,7 +6,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <drivers/diag.h>
 
 #include <asm/io.h>

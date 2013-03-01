@@ -9,7 +9,7 @@
 #ifndef IF_ETHER_H_
 #define IF_ETHER_H_
 
-#include <types.h>
+#include <linux/types.h>
 #include <net/skbuff.h>
 
 /**

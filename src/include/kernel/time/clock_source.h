@@ -9,7 +9,7 @@
 #ifndef KERNEL_CLOCK_SOURCE_H_
 #define KERNEL_CLOCK_SOURCE_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <util/dlist.h>
 #include <kernel/time/time_device.h>
 #include <kernel/time/ktime.h>

@@ -9,7 +9,7 @@
 #ifndef SRC_INCLUDE_KERNEL_TASK_SIGNAL_COMMON_H_
 #define SRC_INCLUDE_KERNEL_TASK_SIGNAL_COMMON_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <kernel/task.h>
 #include <util/dlist.h>
 

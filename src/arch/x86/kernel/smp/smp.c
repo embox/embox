@@ -10,7 +10,7 @@
 
 #include <string.h>
 #include <unistd.h>
-#include <types.h>
+#include <stdint.h>
 
 #include <asm/msr.h>
 #include <asm/ap.h>

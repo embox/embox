@@ -15,8 +15,6 @@
 #ifndef UTIL_NUM_ALLOC_H_
 #define UTIL_NUM_ALLOC_H_
 
-#include <types.h>
-
 #include <module/embox/util/num_alloc.h>
 
 /**
@@ -100,7 +98,7 @@ int util_num_alloc_next_alloc(util_num_alloc_t *num_alloc);
  * @brief Test if a number is free or allocated
  *
  * @param num_alloc
- * @param n
+a_family_t* @param n
  *
  * @return 0 on free, otherwise on allocated
  */

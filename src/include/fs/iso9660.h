@@ -45,7 +45,6 @@
  */
 
 #include <sys/stat.h>
-#include <types.h>
 #include <fs/vfs.h>
 
 #define ISO_VD_BOOT         0

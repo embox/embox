@@ -5,7 +5,7 @@
  * @author: Anton Bondarev
  */
 
-#include <types.h>
+#include <stddef.h>
 #include <string.h>
 
 #include <util/ring_buff.h>

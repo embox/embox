@@ -16,7 +16,7 @@
  * @date 16.08.2011
  * @author Anton Bondarev
  */
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 #include <stdio.h>
 #include <util/array.h>

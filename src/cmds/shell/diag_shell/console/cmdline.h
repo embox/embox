@@ -9,9 +9,9 @@
 #ifndef CMDLINE_H_
 #define CMDLINE_H_
 
-#include <types.h>
-
 #include <embox/unit.h>
+
+#include <stdbool.h>
 
 #define CMDLINE_MAX_LENGTH      OPTION_GET(NUMBER, prompt_len)
 #define CMDLINE_HISTORY_SIZE    8

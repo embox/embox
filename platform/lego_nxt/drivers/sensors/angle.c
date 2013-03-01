@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <drivers/nxt/angle_sensor.h>
 #include <drivers/nxt/sensor.h>
 

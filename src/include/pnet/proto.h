@@ -9,6 +9,8 @@
 #ifndef PNET_PROTO_H_
 #define PNET_PROTO_H_
 
+#include <stddef.h>
+
 struct net_node;
 
 struct pnet_pack;

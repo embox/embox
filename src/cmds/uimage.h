@@ -13,7 +13,7 @@
 #ifndef BOOT_IMAGE_H_
 #define BOOT_IMAGE_H_
 
-#include <types.h>
+#include <stdint.h>
 
 /**
  * Operating System Codes

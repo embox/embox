@@ -11,7 +11,7 @@
 #ifndef SPARC_TRAPS_CORE_H_
 #define SPARC_TRAPS_CORE_H_
 
-#include <types.h>
+#include <stdint.h>
 
 /*FIXME move MMU_TABLE_SIZE to arch dependent config*/
 #define TRAP_TABLE_SIZE      (256)

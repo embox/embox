@@ -9,7 +9,7 @@
 #ifndef SPARC_PTRACE_H_
 #define SPARC_PTRACE_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <asm/stack.h>
 
 #ifndef __ASSEMBLER__

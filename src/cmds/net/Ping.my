@@ -57,4 +57,5 @@ module ping {
 	depends embox.net.route
 	depends embox.framework.LibFramework
 	depends embox.compat.posix.net.gethostbyname
+	depends embox.compat.posix.net.herror
 }

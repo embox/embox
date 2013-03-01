@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <drivers/pins.h>
 #include <embox/unit.h>
 #include <kernel/irq.h>

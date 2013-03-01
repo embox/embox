@@ -124,7 +124,10 @@ static module LibCStdio {
 	option number support_floating = 1
 
 	source "stdio/fgetc.c"
+
 	source "stdio/file_ops.c"
+	depends embox.compat.posix.open
+
 	source "stdio/fputc.c"
 	source "stdio/gets.c"
 	source "stdio/perror.c"

@@ -9,7 +9,7 @@
 #ifndef NXT_AVR_H_
 #define NXT_AVR_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define NXT_AVR_ADDRESS 1
 #define NXT_AVR_N_OUTPUTS 4

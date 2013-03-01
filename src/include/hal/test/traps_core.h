@@ -9,9 +9,9 @@
 #ifndef TEST_TRAPS_CORE_H_
 #define TEST_TRAPS_CORE_H_
 
-#include <types.h>
 #include <hal/env/traps_core.h>
 #include <asm/hal/test/traps_core.h>
+#include <stdint.h>
 
 /**
  * Set specified handler for trap

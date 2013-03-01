@@ -8,7 +8,7 @@
 #include <asm/linkage.h>
 #include <asm/traps.h>
 
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 #include <string.h>
 

@@ -10,7 +10,7 @@
 #ifndef MEM_PAGEALLOC_MPALLOCATOR_H_
 #define MEM_PAGEALLOC_MPALLOCATOR_H_
 
-#include <types.h>
+#include <stdint.h>
 
 typedef struct block_info {
 	struct list_head *next, *prev;

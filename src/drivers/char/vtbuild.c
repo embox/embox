@@ -8,9 +8,8 @@
  * @author Eldar Abusalimov
  */
 
-#include <types.h>
-
 #include <drivers/vtbuild.h>
+#include <stddef.h>
 
 #include <util/math.h>
 

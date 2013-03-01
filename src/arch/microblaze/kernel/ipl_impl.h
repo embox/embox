@@ -16,7 +16,7 @@
 #ifndef __ASSEMBLER__
 
 #include <asm/msr.h>
-#include <types.h>
+#include <stdint.h>
 
 typedef uint32_t __ipl_t;
 
