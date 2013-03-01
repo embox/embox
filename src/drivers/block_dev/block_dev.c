@@ -83,7 +83,7 @@ static size_t bdev_write(struct file_desc *desc, void *buf, size_t size) {
 	return -ENOTSUP;
 }
 
-static int bdev_ioctl(struct file_desc *desc, int request, va_list args) {
+static int bdev_ioctl(struct file_desc *desc, int request, ...) {
 	return -ENOTSUP;
 }
 

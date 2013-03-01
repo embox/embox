@@ -52,4 +52,10 @@ extern void tty_init(struct tty *t, uint32_t width, uint32_t height,
 		const struct tty_ops *ops, void *data);
 extern void tty_putc(struct tty *t, char ch);
 
+/* tty ioctls */
+#define TTY_IOCTL_GETATTR  0x1
+#define TTY_IOCTL_SETATTR  0x2
+#define TTY_IOCTL_SETBAUD  0x3
+
+
 #endif /* DRIVERS_VIDEO_TTY_H_ */

@@ -7,6 +7,8 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <errno.h>
+#include <stdarg.h>
 
 #include <util/ring_buff.h>
 
@@ -16,6 +18,7 @@
 #include <fs/file_operation.h>
 
 #include <drivers/uart_device.h>
+#include <drivers/tty.h>
 
 #include <kernel/irq.h>
 
@@ -34,7 +37,7 @@ static int dev_uart_open(struct node *node, struct file_desc *file_desc,
 static int dev_uart_close(struct file_desc *desc);
 static size_t dev_uart_read(struct file_desc *desc, void *buf, size_t size);
 static size_t dev_uart_write(struct file_desc *desc, void *buf, size_t size);
-static int dev_uart_ioctl(struct file_desc *desc, int request, va_list args);
+static int dev_uart_ioctl(struct file_desc *desc, int request, ...);
 
 struct kfile_operations uart_dev_file_op = {
 	.open = dev_uart_open,
@@ -135,8 +138,37 @@ static size_t dev_uart_write(struct file_desc *desc, void *buff, size_t size) {
 	return 0;
 }
 
-static int dev_uart_ioctl(struct file_desc *desc, int request, va_list args) {
-	return 0;
+static int dev_uart_ioctl(struct file_desc *desc, int request, ...) {
+	struct uart_device *dev = (struct uart_device *)desc->node->nas->fi;
+	int speed;
+	va_list args;
+	struct termios *term;
+
+	va_start(args, request);
+
+	switch(request) {
+	case TTY_IOCTL_GETATTR:
+		term = va_arg(args, struct termios *);
+
+		memcpy(term, &dev->tty, sizeof(struct termios));
+		break;
+	case TTY_IOCTL_SETATTR:
+		term = va_arg(args, struct termios *);
+
+		memcpy(&dev->tty, term, sizeof(struct termios));
+
+		dev->operations->setup(dev, dev->params);
+		break;
+	case TTY_IOCTL_SETBAUD:
+		speed = va_arg(args,int);
+		dev->params->baud_rate = speed;
+		break;
+	default:
+		va_end(args);
+		return -ENOSYS;
+	}
+	va_end(args);
+	return ENOERR;
 }
 
 int uart_dev_register(struct uart_device *dev) {
@@ -164,9 +196,12 @@ int uart_dev_register(struct uart_device *dev) {
 	if (NULL == (nas->fs = filesystem_alloc("empty"))) {
 		return -1;
 	}
-	//strncpy((char*)node->name, dev->dev_name, sizeof(node->name) - 1);
 
 	nas->fs->file_op = &uart_dev_file_op;
+	nas->fi = (void *)dev;
+
+	memset(&dev->tty, 0, sizeof(dev->tty));
+	dev->tty.termios.c_cflag = CLOCAL | CREAD | CS8;
 
 	return 0;
 }

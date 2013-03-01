@@ -22,7 +22,7 @@ struct kfile_operations {
 	int    (*close)(struct file_desc *desc);
 	size_t (*read)(struct file_desc *desc, void *buf, size_t size);
 	size_t (*write)(struct file_desc *desc, void *buf, size_t size);
-	int    (*ioctl)(struct file_desc *desc, int request, va_list args);
+	int    (*ioctl)(struct file_desc *desc, int request, ...);
 };
 
 #endif /* FS_FILE_OPERATION_H_ */
