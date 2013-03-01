@@ -148,7 +148,7 @@ struct fbcurpos {
 struct fb_cursor {
 //	uint16_t set;
 	uint16_t enable;
-//	uint16_t rop;
+	uint16_t rop;
 	const char *mask;
 	struct fbcurpos hot;
 	struct fb_image image;

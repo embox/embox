@@ -516,12 +516,12 @@ void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor) {
 	if (!cursor->enable) return;
 
 	rect.width = rect.height = 1;
-	rect.rop = ROP_XOR;
+	rect.rop = cursor->rop;
 	rect.color = cursor->image.fg_color;
 	for (j = 0; j < cursor->image.height; ++j) {
-		rect.dy = cursor->hot.y + j * rect.height;
+		rect.dy = cursor->hot.y * cursor->image.height + j * rect.height;
 		for (i = 0; i < cursor->image.width; ++i) {
-			rect.dx = cursor->hot.x + i * rect.width;
+			rect.dx = cursor->hot.x * cursor->image.width + i * rect.width;
 			info->ops->fb_fillrect(info, &rect);
 		}
 	}

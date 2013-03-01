@@ -25,27 +25,26 @@ struct video_tty_data {
 static void video_tty_init(struct tty *t) { }
 
 static void video_tty_cursor(struct tty *t, uint32_t x, uint32_t y) {
-	struct fb_fillrect rect;
+	struct fb_cursor cursor;
 	struct video_tty_data *data;
 
 	data = (struct video_tty_data *)t->data;
 
-	rect.width = data->font->width;
-	rect.height = data->font->height / 5;
-	rect.rop = ROP_COPY;
+	cursor.enable = 1;
+	cursor.rop = ROP_XOR;
+	cursor.image.width = data->font->width;
+	cursor.image.height = data->font->height;
+	cursor.image.fg_color = data->fg_color;
 
-	rect.dx = x * data->font->width;
-	rect.dy = y * data->font->height + 4 * data->font->height / 5;
-	rect.color = data->bg_color;
+	cursor.hot.x = x;
+	cursor.hot.y = y;
 
-	data->fb->ops->fb_fillrect(data->fb, &rect);
+	data->fb->ops->fb_cursor(data->fb, &cursor);
 
-	rect.dx = t->cur_x * data->font->width;
-	rect.dy = t->cur_y * data->font->height + 3 * data->font->height / 4;
-	rect.color = data->cur_color;
+	cursor.hot.x = t->cur_x;
+	cursor.hot.y = t->cur_y;
 
-	data->fb->ops->fb_fillrect(data->fb, &rect);
-
+//	data->fb->ops->fb_cursor(data->fb, &cursor);
 }
 
 static void video_tty_putc(struct tty *t, char ch, uint32_t x, uint32_t y) {

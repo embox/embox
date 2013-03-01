@@ -151,6 +151,7 @@ void tty_putc(struct tty *t, char ch) {
 		return;
 	}
 
+	t->ops->cursor(t, t->cur_x, t->cur_y);
 	if (t->esc_state) {
 		tty_esc_putc(t, ch);
 	}
@@ -179,7 +180,7 @@ void tty_putc(struct tty *t, char ch) {
 			break;
 		case 27: /* ESC */
 			t->esc_state = 1;
-			return;
+			break;
 		case 6: /* cursor */
 			++t->cur_y;
 			t->cur_x += 2;
@@ -215,5 +216,7 @@ void tty_putc(struct tty *t, char ch) {
 			break;
 		}
 	}
-	tty_cursor(t);
+	t->back_cx = t->cur_x;
+	t->back_cy = t->cur_y;
+	t->ops->cursor(t, t->cur_x, t->cur_y);
 }
