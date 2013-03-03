@@ -132,19 +132,19 @@ TEST_CASE("Rename file") {
 
 	/* Check error code for non-existent file */
 	test_assert(-1 == rename("no_such_file", FS_MV_F3));
-	test_assert(-ENOENT == errno);
+	test_assert(ENOENT == errno);
 
 	/* Check error code if destination file exists */
 	test_assert(-1 == rename(FS_MV_F1, FS_MV_F2));
-	test_assert(-EINVAL == errno);
+	test_assert(EINVAL == errno);
 
 	/* Check error code with too long source file name */
 	test_assert(-1 == rename(FS_MV_LONGNAME, "no_matter"));
-	test_assert(-ENAMETOOLONG == errno);
+	test_assert(ENAMETOOLONG == errno);
 
 	/* Check error code with too long destination file name */
 	test_assert(-1 == rename("no_matter", FS_MV_LONGNAME));
-	test_assert(-ENAMETOOLONG == errno);
+	test_assert(ENAMETOOLONG == errno);
 
 	/* Test with relative paths */
 #ifdef ENABLE_RELATIVE_PATH

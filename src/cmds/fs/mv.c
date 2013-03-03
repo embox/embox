@@ -7,7 +7,7 @@
  */
 
 
-#include <getopt.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stdlib.h>
@@ -116,7 +116,7 @@ static int exec(int argc, char **argv) {
 
 	for_each_path(argv[optind], argc - optind - 1, pos, oldpath) {
 		if (-1 == rename(oldpath, newpath)) {
-			return errno;
+			return -errno;
 		}
 	}
 

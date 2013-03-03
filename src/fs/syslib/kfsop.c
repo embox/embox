@@ -311,7 +311,7 @@ int copy_file(const char *oldpath, const char *newpath) {
 	/* Copy bytes */
 	while ((rc = read(oldfd, buf, sizeof(buf))) > 0) {
 		if (write(newfd, buf, rc) <= 0) {
-			SET_ERRNO(-EIO);
+			SET_ERRNO(EIO);
 			return -1;
 		}
 	}
@@ -348,7 +348,7 @@ int krename(const char *oldpath, const char *newpath) {
 
 	if (MAX_LENGTH_PATH_NAME < strlen(oldpath) ||
 			MAX_LENGTH_PATH_NAME < strlen(newpath)) {
-		SET_ERRNO(-ENAMETOOLONG);
+		SET_ERRNO(ENAMETOOLONG);
 		return -1;
 	}
 
@@ -359,7 +359,7 @@ int krename(const char *oldpath, const char *newpath) {
 			(const char **) &oldpathcopy, &oldnode);
 	free(opc_free);
 	if (0 != rc) {
-		SET_ERRNO(rc);
+		SET_ERRNO(-rc);
 		return -1;
 	}
 
@@ -376,12 +376,12 @@ int krename(const char *oldpath, const char *newpath) {
 			name = strrchr(oldpath, '/') + 1;
 			newpathlen = strlen(newpath) + strlen(name);
 			if (newpathlen > MAX_LENGTH_PATH_NAME) {
-				SET_ERRNO(-ENAMETOOLONG);
+				SET_ERRNO(ENAMETOOLONG);
 				return -1;
 			}
 			newpathbuf = calloc(newpathlen + 2, sizeof(char));
 			if (NULL == newpathbuf) {
-				SET_ERRNO(-ENOMEM);
+				SET_ERRNO(ENOMEM);
 				return -1;
 			}
 			strcat(newpathbuf, newpath);
@@ -391,7 +391,7 @@ int krename(const char *oldpath, const char *newpath) {
 			strcat(newpathbuf, name);
 			newpath = newpathbuf;
 		} else {
-			SET_ERRNO(-EINVAL);
+			SET_ERRNO(EINVAL);
 			return -1;
 		}
 	}
@@ -430,7 +430,7 @@ int krename(const char *oldpath, const char *newpath) {
 				newpatharg =
 						calloc(strlen(newpath) + diritemlen + 2, sizeof(char));
 				if (NULL == oldpatharg || NULL == newpatharg) {
-					SET_ERRNO(-ENOMEM);
+					SET_ERRNO(ENOMEM);
 					return -1;
 				}
 
