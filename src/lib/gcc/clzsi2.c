@@ -6,7 +6,7 @@
  * @date    24.07.2012
  */
 
-#include <types.h>
+#include <stdint.h>
 
 int32_t __clzsi2(int32_t a) {
 	int i = 32;

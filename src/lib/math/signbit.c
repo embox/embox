@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <lib/math/ieee.h>
+#include <math.h>
 
 int signbit(double x) {
 	static_assert(sizeof x == sizeof(struct ieee_binary64));

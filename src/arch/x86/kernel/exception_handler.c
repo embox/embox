@@ -11,6 +11,7 @@
 #include <asm/linkage.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
+#include <stddef.h>
 
 #include <asm/hal/env/traps_core.h>
 

@@ -5,7 +5,8 @@
  * @date 13.03.11
  * @author Anton Kozlov
  */
-#include <types.h>
+
+#include <stdint.h>
 #include <string.h>
 
 #include <drivers/nxt/direct_comm.h>

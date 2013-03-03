@@ -7,12 +7,12 @@
  */
 
 #include <drivers/iodev.h>
-#include <drivers/keyboard.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/font.h>
 #include <drivers/tty.h>
 #include <assert.h>
 #include <stddef.h>
+#include <drivers/diag.h>
 
 struct video_tty_data {
 	const struct font_desc *font;
@@ -25,18 +25,27 @@ struct video_tty_data {
 static void video_tty_init(struct tty *t) { }
 
 static void video_tty_cursor(struct tty *t, uint32_t x, uint32_t y) {
-	struct fb_fillrect rect;
+	struct fb_cursor cursor;
 	struct video_tty_data *data;
 
 	data = (struct video_tty_data *)t->data;
+	assert(data != NULL);
 
-	rect.dx = x * data->font->width;
-	rect.dy = y * data->font->height + 3 * data->font->height / 4;
-	rect.width = data->font->width / 4;
-	rect.height = data->font->height / 4;
-	rect.color = data->cur_color;
+	assert(data->font != NULL);
 
-	data->fb->ops->fb_fillrect(data->fb, &rect);
+	cursor.enable = 1;
+	cursor.rop = ROP_XOR;
+	cursor.image.width = data->font->width;
+	cursor.image.height = data->font->height;
+	cursor.image.fg_color = data->cur_color;
+
+	cursor.hot.x = x;
+	cursor.hot.y = y;
+
+	assert(data->fb != NULL);
+	assert(data->fb->ops != NULL);
+	assert(data->fb->ops->fb_cursor != NULL);
+	data->fb->ops->fb_cursor(data->fb, &cursor);
 }
 
 static void video_tty_putc(struct tty *t, char ch, uint32_t x, uint32_t y) {
@@ -44,6 +53,9 @@ static void video_tty_putc(struct tty *t, char ch, uint32_t x, uint32_t y) {
 	struct video_tty_data *data;
 
 	data = (struct video_tty_data *)t->data;
+	assert(data != NULL);
+
+	assert(data->font != NULL);
 
 	symbol.dx = x * data->font->width;
 	symbol.dy = y * data->font->height;
@@ -54,6 +66,9 @@ static void video_tty_putc(struct tty *t, char ch, uint32_t x, uint32_t y) {
 	symbol.depth = 1;
 	symbol.data = data->font->data + (unsigned char)ch * data->font->height * data->font->width / 8;
 
+	assert(data->fb != NULL);
+	assert(data->fb->ops != NULL);
+	assert(data->fb->ops->fb_imageblit != NULL);
 	data->fb->ops->fb_imageblit(data->fb, &symbol);
 }
 
@@ -63,13 +78,20 @@ static void video_tty_clear(struct tty *t, uint32_t x, uint32_t y,
 	struct video_tty_data *data;
 
 	data = (struct video_tty_data *)t->data;
+	assert(data != NULL);
+
+	assert(data->font != NULL);
 
 	rect.dx = x * data->font->width;
 	rect.dy = y * data->font->height;
 	rect.width = width * data->font->width;
 	rect.height = height * data->font->height;
 	rect.color = data->bg_color;
+	rect.rop = ROP_COPY;
 
+	assert(data->fb != NULL);
+	assert(data->fb->ops != NULL);
+	assert(data->fb->ops->fb_fillrect != NULL);
 	data->fb->ops->fb_fillrect(data->fb, &rect);
 }
 
@@ -79,6 +101,9 @@ static void video_tty_move(struct tty *t, uint32_t sx, uint32_t sy,
 	struct video_tty_data *data;
 
 	data = (struct video_tty_data *)t->data;
+	assert(data != NULL);
+
+	assert(data->font != NULL);
 
 	area.dx = dx * data->font->width;
 	area.dy = dy * data->font->height;
@@ -87,6 +112,9 @@ static void video_tty_move(struct tty *t, uint32_t sx, uint32_t sy,
 	area.sx = sx * data->font->width;
 	area.sy = sy * data->font->height;
 
+	assert(data->fb != NULL);
+	assert(data->fb->ops != NULL);
+	assert(data->fb->ops->fb_copyarea != NULL);
 	data->fb->ops->fb_copyarea(data->fb, &area);
 }
 
@@ -107,7 +135,7 @@ static int iodev_video_init(void) {
 	assert(data.fb != NULL);
 	data.fg_color = 0x00F0;
 	data.bg_color = 0xFFFF;
-	data.cur_color = 0x0FF0;
+	data.cur_color = 0x00F0;
 
 	tty_init(&video_tty, 80, 24, &video_tty_ops, &data);
 	return 0;
@@ -122,7 +150,7 @@ static char iodev_video_getc(void) {
 }
 
 static int iodev_video_kbhit(void) {
-	return keyboard_has_symbol();
+	return diag_kbhit();
 }
 
 static const struct iodev_ops iodev_video_ops_struct = {
@@ -132,4 +160,4 @@ static const struct iodev_ops iodev_video_ops_struct = {
 	.kbhit = &iodev_video_kbhit
 };
 
-const struct iodev_ops *iodev_video_ops = &iodev_video_ops_struct;
+const struct iodev_ops *const iodev_video_ops = &iodev_video_ops_struct;

@@ -9,9 +9,9 @@
 #ifndef SPARC_WINDOWS_H_
 #define SPARC_WINDOWS_H_
 
-#include <types.h>
-
 #ifndef __ASSEMBLER__
+
+#include <stdint.h>
 
 #define REG_WINDOW_SZ sizeof(struct reg_window)
 

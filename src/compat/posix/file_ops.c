@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+#include <sys/types.h>
 
 #include <kernel/task.h>
 #include <kernel/task/idx.h>

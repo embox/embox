@@ -9,7 +9,7 @@
 #ifndef MICROBLAZE_MMU_CORE_H_
 #define MICROBLAZE_MMU_CORE_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <asm/bitops.h>
 //#include <hal/mm/mmu_types.h>
 

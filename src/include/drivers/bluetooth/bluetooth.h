@@ -9,7 +9,8 @@
 #ifndef BLUETOOTH_H_
 #define BLUETOOTH_H_
 
-#include <types.h>
+#include <stdint.h>
+#include <stddef.h>
 
 #include <util/callback.h>
 

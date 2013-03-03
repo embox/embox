@@ -13,7 +13,6 @@
 #include <net/socket.h>
 #include <sys/socket.h>
 #include <stddef.h>
-#include <types.h>
 #include <string.h>
 #include <net/net.h>
 

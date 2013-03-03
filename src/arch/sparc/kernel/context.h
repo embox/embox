@@ -9,9 +9,9 @@
 #ifndef ARCH_SPARC_CONTEXT_H_
 #define ARCH_SPARC_CONTEXT_H_
 
-#include <types.h>
-
 #ifndef __ASSEMBLER__
+
+#include <stdint.h>
 
 struct context_kregs {
 	/* 0x00 */uint32_t ksp; /**< Kernel stack pointer. */

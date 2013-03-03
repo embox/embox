@@ -7,7 +7,7 @@
  */
 
 #include <assert.h>
-#include <types.h>
+#include <stdint.h>
 
 #include <asm/psr.h>
 #include <asm/modes.h>

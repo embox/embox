@@ -33,6 +33,7 @@
 #define MEM_MISC_SLAB_H_
 
 #include <module/embox/mem/slab.h>
+#include <stdbool.h>
 
 /** cache descriptor */
 typedef struct cache cache_t;

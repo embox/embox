@@ -7,7 +7,7 @@
  * @author Nikolay Korotky
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <hal/mm/mmu_core.h>
 #include <hal/test/mmu_core.h>
 

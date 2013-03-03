@@ -10,7 +10,6 @@
 #include <util/array.h>
 #include <drivers/amba_registry.h>
 #include <embox/unit.h>
-#include <err.h>
 
 EMBOX_UNIT_INIT(init);
 
@@ -93,7 +92,7 @@ amba_registry_vendor_info_t *amba_registry_get_head(void) {
 
 char* amba_registry_get_ven_name(uint8_t ven_id) {
 	amba_registry_vendor_entry_t *entry;
-	LOG_DEBUG("amba_get_ven_name: ven_id=0x%X\n", ven_id);
+	//LOG_DEBUG("amba_get_ven_name: ven_id=0x%X\n", ven_id);
 	if (NULL == (entry = find_vendor_entry(ven_id))) {
 		return "Unknown";
 	}
@@ -107,7 +106,7 @@ char* amba_registry_get_dev_name(uint8_t ven_id, uint16_t dev_id) {
 	if (NULL == (ven_entry = find_vendor_entry(ven_id))) {
 		return "Unknown";
 	}
-	LOG_DEBUG("get_dev_name: ven_id=0x%X, dev_id=0x%X\n", ven_id, dev_id);
+	//LOG_DEBUG("get_dev_name: ven_id=0x%X, dev_id=0x%X\n", ven_id, dev_id);
 	dev_entry = find_device_entry(&ven_entry->dev_list, dev_id);
 	if (NULL == dev_entry) {
 		return "Unknown";

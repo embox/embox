@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <drivers/irqctrl.h>
 #include <math.h>
 #include <profiler/measuring/measure.h>

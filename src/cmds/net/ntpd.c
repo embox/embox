@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <embox/cmd.h>
-#include <getopt.h>
+#include <unistd.h>
 
 #include <kernel/task.h>
 #include <net/ntp.h>
@@ -19,12 +19,6 @@ EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: ntpdate [-q] server");
-}
-
-static void *ntpd_run(void *arg) {
-	if (ntp_start() == ENOERR)
-		while(1);
-	return NULL;
 }
 
 static int exec(int argc, char **argv) {
@@ -48,11 +42,9 @@ static int exec(int argc, char **argv) {
 	}
 
 	ntp_server_set(sin_addr.s_addr);
+	ntp_start();
 
-	if (argc == 2) {
-		printf("*Starting NTP daemon\n");
-		new_task(ntpd_run, NULL);
-	}
+	printf("*Starting NTP daemon\n");
 
 	return 0;
 }

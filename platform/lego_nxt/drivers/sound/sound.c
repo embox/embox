@@ -6,7 +6,8 @@
  * @author Darya Dzendzik
  */
 
-#include <types.h>
+#include <stdint.h>
+#include <stddef.h>
 #include <unistd.h>
 #include <kernel/time/ktime.h>
 #include <kernel/irq.h>

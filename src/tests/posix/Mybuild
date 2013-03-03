@@ -1,6 +1,13 @@
 
 package embox.test.posix
 
+module getopt_test {
+	source "getopt_test.c"
+
+	depends embox.compat.posix.util.getopt
+	depends embox.framework.LibFramework
+}
+
 module passwd {
 	source "passwd.c"
 

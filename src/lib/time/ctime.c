@@ -8,6 +8,7 @@
 
 #include <time.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #define YEAR_1900 1900
 #define EPOCH_START 1970

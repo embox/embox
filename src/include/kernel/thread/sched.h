@@ -14,6 +14,7 @@
 #include <kernel/thread/current.h>
 #include <kernel/thread/sched_lock.h>
 #include <kernel/thread/sched_priority.h>
+#include <sys/types.h>
 
 #include <kernel/thread/types.h>
 

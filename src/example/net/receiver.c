@@ -16,7 +16,7 @@
 #include <net/ip.h>
 #include <sys/socket.h>
 #include <framework/example/self.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <kernel/printk.h>
 
 

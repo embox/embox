@@ -6,7 +6,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <drivers/pci/pci.h>
 
 //TODO separate common and architecture pci's part

@@ -1,3 +1,3 @@
-"ifconfig -a 127.0.0.1 -p 255.0.0.0 -u lo",
-"route -n 127.0.0.0 -m 255.0.0.0 -d lo add",
+"ifconfig lo 127.0.0.1 netmask 255.0.0.0 up",
+"route add 127.0.0.0 netmask 255.0.0.0 lo",
 "test -t loopback"

@@ -11,7 +11,7 @@
 
 #ifndef __ASSEMBLER__
 
-#include <types.h>
+#include <stdint.h>
 typedef  uint32_t reg_t;
 
 struct pt_regs {

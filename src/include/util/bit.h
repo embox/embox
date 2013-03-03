@@ -2,12 +2,14 @@
  * @file
  * @brief TODO
  *
- * @date Sep 20, 2012
+ * @date 20.09.12
  * @author Eldar Abusalimov
  */
 
 #ifndef UTIL_BIT_H_
 #define UTIL_BIT_H_
+
+#include <limits.h>
 
 #include <module/embox/util/Bit.h>
 
@@ -71,7 +73,7 @@ extern int bit_clz(unsigned long x);
  *   or zero if @c x is zero.
  */
 static inline int bit_fls(unsigned long x) {
-	return x ? (sizeof(x) * 8 - bit_clz(x)) : 0;
+	return x ? (sizeof(x) * CHAR_BIT - bit_clz(x)) : 0;
 }
 
 /**

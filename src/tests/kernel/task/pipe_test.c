@@ -37,11 +37,11 @@ static void *write_task_hnd(void *arg) {
 
 	write(pipefd[1], (void*)str, strlen(str));
 
-	tid_write = new_task(read_task_hnd, NULL);
+	tid_write = new_task("", read_task_hnd, NULL);
 
 	return NULL;
 }
 
 TEST_CASE("test read/write pipe operations: Running two tasks and link them by pipe") {
-	tid_read = new_task(write_task_hnd, NULL);
+	tid_read = new_task("", write_task_hnd, NULL);
 }

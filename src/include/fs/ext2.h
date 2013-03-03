@@ -10,6 +10,8 @@
 #ifndef EXT_H_
 #define EXT_H_
 #include <mem/page.h>
+#include <linux/types.h>
+#include <stdint.h>
 /*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.

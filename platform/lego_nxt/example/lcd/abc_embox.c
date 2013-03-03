@@ -8,7 +8,7 @@
 #include <embox/example.h>
 #include <drivers/nxt/lcd.h>
 #include <unistd.h>
-#include <types.h>
+#include <stdint.h>
 
 EMBOX_EXAMPLE(run_abc_embox);
 

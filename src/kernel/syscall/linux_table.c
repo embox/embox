@@ -7,7 +7,7 @@
  */
 
 
-#include <types.h>
+#include <stdint.h>
 #include <errno.h>
 
 #define SYSCALL_NRS_TOTAL 200

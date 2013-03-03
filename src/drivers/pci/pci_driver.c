@@ -7,6 +7,8 @@
 
 #include <drivers/pci/pci.h>
 #include <framework/mod/api.h>
+#include <kernel/printk.h>
+#include <string.h>
 
 ARRAY_SPREAD_DEF(const struct pci_driver *, __pci_driver_registry);
 
@@ -21,6 +23,7 @@ static const struct pci_driver * pci_driver_find(uint16_t ven_id, uint16_t dev_i
 }
 
 int pci_driver_load(struct pci_slot_dev *dev) {
+	int ret;
 	const struct pci_driver *drv;
 	const struct mod *dep;
 
@@ -39,7 +42,14 @@ int pci_driver_load(struct pci_slot_dev *dev) {
 		mod_enable_rec_safe(dep, true);
 	}
 
-	drv->init(dev);
+	printk("\tpci: loading %s.%s: ", drv->mod->package->name, drv->mod->name);
+	ret = drv->init(dev);
+	if (ret == 0) {
+		printk("done\n");
+	}
+	else {
+		printk("error: %s\n", strerror(-ret));
+	}
 
-	return 0;
+	return ret;
 }

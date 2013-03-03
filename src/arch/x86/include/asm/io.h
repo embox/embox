@@ -10,7 +10,7 @@
 #ifndef X86_IO_H_
 #define X86_IO_H_
 
-#include <types.h>
+#include <stdint.h>
 
 static inline void farpokeb( unsigned sel, void *off, char v ) {
 	__asm__ __volatile__ (

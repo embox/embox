@@ -11,8 +11,6 @@
  * @author Nikolay Korotky
  */
 
-#include <types.h>
-
 #include <asm/io.h>
 #include <asm/regs.h>
 #include <asm/traps.h>

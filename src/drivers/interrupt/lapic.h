@@ -8,7 +8,7 @@
 #ifndef DRIVER_INTERRUPT_LAPIC_H_
 #define DRIVER_INTERRUPT_LAPIC_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define LOCAL_APIC_DEF_ADDR	 0xFEE00000 /* Default local apic address */
 

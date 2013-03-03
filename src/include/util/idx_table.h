@@ -12,6 +12,7 @@
 
 #include <assert.h>
 #include <util/num_alloc.h>
+#include <stddef.h>
 
 typedef struct util_idx_table_struct {
 	int n;
@@ -82,6 +83,10 @@ static inline void util_idx_table_set(util_idx_table_t *idx_table, int n, void *
 
 static inline int util_idx_table_next_alloc(util_idx_table_t *idx_table) {
 	return util_num_alloc_next_alloc(idx_table->num_alloc);
+}
+
+static inline int util_idx_table_next_mark(util_idx_table_t *idx_table, int i, char mark) {
+	return util_num_alloc_next_mark(idx_table->num_alloc, i, mark);
 }
 
 #endif /* UTIL_IDX_TABLE_H_ */

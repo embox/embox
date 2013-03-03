@@ -6,7 +6,7 @@
  * @author Anton Bulychev
  */
 
-#include <types.h>
+#include <stdint.h>
 
 #include <asm/flags.h>
 

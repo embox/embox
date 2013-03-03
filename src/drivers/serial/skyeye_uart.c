@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <kernel/irq.h>
 #include <hal/reg.h>
 #include <drivers/at91sam7_us.h>

@@ -7,7 +7,6 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <fs/kfsop.h>
@@ -15,6 +14,7 @@
 #include <fs/vfs.h>
 #include <fs/perm.h>
 #include <fs/kfile.h>
+#include <sys/types.h>
 
 int creat(const char *pathname, mode_t mode) {
 	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);

@@ -33,6 +33,10 @@
 
 
 #include <sys/types.h> // for size_t
+#include <linux/types.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #define MAP_SHARED    0x00
 #define MAP_PRIVATE   0x01
 #define PROT_READ     0x10
@@ -61,17 +65,18 @@ static inline int munmap(void *addr, size_t size) {
 #include <string.h>
 // Stuff below moved here because of testlib
 
-static inline char *getenv(const char *name) {
+//#define EMBOX_OVERRIDE_GETENV
+/*static inline char *getenv(const char *name) {
 	printf(">>> getenv(%s)\n",name);
 	if (strcmp(name, "QT_QPA_FONTDIR") == 0) {
 		return "/";
 	}
 	return 0;
-}
-static inline int fflush(FILE *x) {
+}*/
+/*static inline int fflush(FILE *x) {
 	//printf(">>> fflush(%d)\n",(int)x);
 	return EOF;
-}
+}*/
 
 // because of strcmp
 #include <string.h>
@@ -86,7 +91,7 @@ static inline int strcoll(const char *s1, const char *s2) {
 #include <sys/types.h>
 
 // The definition is not precise, please revise
-typedef struct {
+/*typedef struct {
 	int si_signo;
 	int si_code;
         //union sigval si_value;
@@ -96,17 +101,17 @@ typedef struct {
 	void *si_addr;
 	int si_status;
 	int si_band;
-} siginfo_t;
+} siginfo_t;*/
 
 typedef int sigset_t;
 
-struct sigaction {
+/*struct sigaction {
     void (*sa_handler)(int);
     void (*sa_sigaction)(int, siginfo_t *, void *);
     sigset_t sa_mask;
     int sa_flags;
     void (*sa_restorer)(void);
-};
+};*/
 
 
 
@@ -129,11 +134,11 @@ static inline int sigemptyset(sigset_t *set) {
 	return -1;
 }
 
-static inline int sigaction(int signum, const struct sigaction *act,
+/*static inline int sigaction(int signum, const struct sigaction *act,
 	      struct sigaction *oldact) {
 	printf(">>> sigaction(%x,%p,%p)\n",signum,act,oldact);
 	return -1;
-}
+}*/
 
 
 // Required by libtiff

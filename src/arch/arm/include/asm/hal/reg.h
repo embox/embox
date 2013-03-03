@@ -8,7 +8,7 @@
 #ifndef ARM_REG_H_
 #define ARM_REG_H_
 
-#include <types.h>
+#include <stdint.h>
 
 static inline uint32_t get_cpsr(void) {
 	volatile uint32_t reg;

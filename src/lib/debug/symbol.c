@@ -7,7 +7,7 @@
  */
 
 #include <debug/symbol.h>
-#include <types.h>
+#include <stddef.h>
 
 extern const struct symbol __symbol_table[];
 extern const size_t __symbol_table_size;

@@ -10,7 +10,7 @@
 #ifndef PCI_UTILS_H_
 #define PCI_UTILS_H_
 
-#include <types.h>
+#include <stdint.h>
 
 extern int pci_is_supported(void);
 

@@ -9,8 +9,6 @@
 #ifndef X86_SETJMP_H_
 #define X86_SETJMP_H_
 
-#include <types.h>
-
 #ifndef __ASSEMBLER__
 
 #define __JMPBUF_LEN  9

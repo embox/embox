@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 
-#include <types.h>
+#include <stdint.h>
 #include <hal/env/traps_core.h>
 #include <hal/test/traps_core.h>
 

@@ -12,7 +12,7 @@
 #define STDIO_H_
 
 #include <stdarg.h>
-#include <types.h>
+#include <stddef.h>
 #include <kernel/printk.h>
 
 #define EOF (-1)
@@ -24,6 +24,7 @@
 #define L_tmpnam      0x20
 #define FILENAME_MAX  0x20
 
+#define P_tmpdir   "/tmp"
 
 
 /* Values for the WHENCE argument to lseek. */
@@ -126,7 +127,7 @@ extern FILE *fopen(const char *path, const char *mode);
  * Opens the file whose file descriptor is the fd
  * and associates a stream with it.
  */
-extern FILE *fdopen(int fd, const char *mode);
+static inline FILE *fdopen(int fd, const char *mode) { return NULL; }
 
 /**
  * Opens the file whose name is the string pointed to by
@@ -151,6 +152,8 @@ extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
  * output data using fflush(3)) and closes the underlying file descriptor.
  */
 extern int fclose(FILE *fp);
+
+static inline int fflush(FILE *fp) { return EOF; }
 
 /**
  * Deletes a name from the file system.

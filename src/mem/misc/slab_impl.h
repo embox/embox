@@ -9,10 +9,10 @@
 #ifndef MEM_MISC_SLAB_IMPL_H_
 #define MEM_MISC_SLAB_IMPL_H_
 
-#include <types.h>
-
 #include <util/dlist.h>
 #include <framework/mod/member/self.h>
+#include <stddef.h>
+#include <stdbool.h>
 
 /** Length of name of any cache */
 #define __CACHE_NAMELEN 16

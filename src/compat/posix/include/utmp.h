@@ -9,8 +9,9 @@
 #ifndef COMPAT_POSIX_UTMP_H_
 #define COMPAT_POSIX_UTMP_H_
 
-#include <types.h>
 #include <sys/time.h>
+#include <stdint.h>
+#include <sys/types.h>
 
 #define EMPTY         0 /* Record does not contain valid info
 		      (formerly known as UT_UNKNOWN on Linux) */

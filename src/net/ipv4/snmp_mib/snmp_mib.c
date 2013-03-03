@@ -13,9 +13,6 @@
 #include <net/mib.h>
 #include <embox/unit.h>
 #include <util/array.h>
-#include <embox/cmd.h>
-
-EMBOX_CMD(mib_init);
 
 ARRAY_SPREAD_DEF(const mib_register_func, __mib_register);
 OBJALLOC_DEF(mib_obj_pool, struct mib_obj, OPTION_GET(NUMBER, max_obj_count));
@@ -101,8 +98,16 @@ static mib_obj_t getchild_by_id(mib_obj_t obj, unsigned char id) {
 	return (&cur->parent_link == &obj->children ? NULL : cur);
 }
 
-static int mib_init(int argc, char **argv) {
+static int mibs_inited;
+
+int mib_init_all(void) {
 	mib_register_func init;
+
+	if (mibs_inited) {
+		return 0;
+	}
+
+	mibs_inited = 1;
 
 	dlist_init(&mib_root.children);
 	mib_root.name = "root";

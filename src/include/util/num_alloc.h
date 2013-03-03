@@ -15,8 +15,6 @@
 #ifndef UTIL_NUM_ALLOC_H_
 #define UTIL_NUM_ALLOC_H_
 
-#include <types.h>
-
 #include <module/embox/util/num_alloc.h>
 
 /**
@@ -76,6 +74,18 @@ int util_num_alloc_specified(util_num_alloc_t *num_alloc, int n);
 void util_num_free(util_num_alloc_t *num_alloc, int n);
 
 /**
+ * @brief Return next after @a i number (inclusive) marked with @a mark
+ *
+ * @param num_alloc num_alloc to search in
+ * @param i position to start search
+ * @param mark searching criteria
+ *
+ * @return negative on error
+ * @return zero or greater number meeting criteria
+ */
+int util_num_alloc_next_mark(util_num_alloc_t *num_alloc, int i, char mark);
+
+/**
  * @brief Return a number that will be allocated on next allocation request
  *
  * @param num_alloc
@@ -88,11 +98,14 @@ int util_num_alloc_next_alloc(util_num_alloc_t *num_alloc);
  * @brief Test if a number is free or allocated
  *
  * @param num_alloc
- * @param n
+a_family_t* @param n
  *
  * @return 0 on free, otherwise on allocated
  */
 int util_num_alloc_test(util_num_alloc_t *num_alloc, int n);
+
+#define util_numforeach(i, nalloc) \
+	__util_numforeach(i, nalloc)
 
 /* Optional */
 

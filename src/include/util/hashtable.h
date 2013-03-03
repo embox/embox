@@ -15,7 +15,7 @@
 #ifndef UTIL_HASHTABLE_H_
 #define UTIL_HASHTABLE_H_
 
-#include <types.h>
+#include <stddef.h>
 
 /**
  * hash-table handler declaration. You do not allow to use field of this

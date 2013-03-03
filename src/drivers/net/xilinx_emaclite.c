@@ -6,7 +6,8 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
+#include <stddef.h>
 #include <string.h>
 #include <errno.h>
 

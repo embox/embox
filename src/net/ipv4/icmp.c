@@ -27,7 +27,6 @@
 
 #include <kernel/time/ktime.h>
 
-#include <err.h>
 
 EMBOX_NET_PROTO_INIT(IPPROTO_ICMP, icmp_rcv, NULL, icmp_init);
 
@@ -116,7 +115,7 @@ static inline int icmp_unreach_usability_check(sk_buff_t *skb,
 		case ICMP_PORT_UNREACH:
 			break;
 		case ICMP_FRAG_NEEDED:
-			LOG_WARN("fragmentation needed but DF is set");
+			//LOG_WARN("fragmentation needed but DF is set");
 			/* They don't like our IP header */
 			*give_to_only_raw = true;
 			*info |= ntohs(icmph->un.frag.mtu) << 16;
@@ -211,7 +210,7 @@ static int icmp_unreach(sk_buff_t *skb) {
 }
 
 static int icmp_redirect(sk_buff_t *skb) {
-	LOG_WARN("Our routes might be incorrect\n");
+	//LOG_WARN("Our routes might be incorrect\n");
 	icmp_discard(skb);	/* Don't check length, it's useless here */
 	return -1;
 }
@@ -266,7 +265,7 @@ static int icmp_timestamp(sk_buff_t *skb) {
 	if (unlikely(ntohs(skb->nh.iph->tot_len) !=
 				 (IP_HEADER_SIZE(skb->nh.iph) + ICMP_LEN_TIMESTAMP))) {
 		net_device_stats_t *stats = &skb->dev->stats;
-		LOG_WARN("icmp timestamp request length is too small\n");
+		//LOG_WARN("icmp timestamp request length is too small\n");
 		stats->rx_length_errors++;
 		return -1;
 	}
@@ -459,14 +458,14 @@ static inline int __icmp_rcv(sk_buff_t *pack) {
 
 	if (unlikely(ntohs(pack->nh.iph->tot_len) <
 			 (IP_HEADER_SIZE(pack->nh.iph) + ICMP_HEADER_SIZE))) {
-		LOG_WARN("icmp length is obviously too small\n");
+		//LOG_WARN("icmp length is obviously too small\n");
 		stats->rx_length_errors++;
 		return -1;
 	}
 
 	icmp_send_check_skb(pack);
 	if (unlikely(icmph->checksum != orig_crc)) {
-		LOG_WARN("bad icmp checksum\n");
+		//LOG_WARN("bad icmp checksum\n");
 		icmph->checksum = orig_crc;
 		stats->rx_crc_errors++;
 		return -1;
@@ -474,7 +473,7 @@ static inline int __icmp_rcv(sk_buff_t *pack) {
 
 	/* RFC 1122: 3.2.2 Unknown ICMP messages types MUST be silently discarded (in Kernel)*/
 	if (unlikely(icmph->type >= NR_ICMP_TYPES)) {
-		LOG_WARN("Unsupported type of ICMP packet %i\n", icmph->type);
+		//LOG_WARN("Unsupported type of ICMP packet %i\n", icmph->type);
 		return -1;
 	}
 

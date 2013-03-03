@@ -9,7 +9,7 @@
 #ifndef BLUE_CORE4_H_
 #define BLUE_CORE4_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define MSG_BEGIN_INQUIRY                0
 #define MSG_CANCEL_INQUIRY               1

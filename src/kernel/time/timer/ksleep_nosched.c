@@ -7,7 +7,7 @@
  * @author Ilia Vaprol
  */
 
-#include <types.h>
+#include <sys/types.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/timer.h>
 #include <hal/arch.h>

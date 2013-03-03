@@ -9,7 +9,7 @@
 #ifndef AT91SAM7_US_H_
 #define AT91SAM7_US_H_
 
-#include <types.h>
+#include <drivers/at91sam7s256.h>
 
 typedef struct _AT91S_USART {
 	at91_reg_t	 US_CR; 	// Control Register

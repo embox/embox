@@ -1913,6 +1913,41 @@ out: page_free(__phymem_allocator, rcv_buf, 1);
 	return rc;
 }
 
+static void fat_free_fs(struct nas *nas) {
+	struct fat_file_info *fi;
+	struct fat_fs_info *fsi;
+
+	if(NULL != nas->fs) {
+		fsi = nas->fs->fsi;
+
+		if(NULL != fsi) {
+			pool_free(&fat_fs_pool, fsi);
+		}
+		filesystem_free(nas->fs);
+	}
+
+	if(NULL != (fi = nas->fi->privdata)) {
+		pool_free(&fat_file_pool, fi);
+	}
+}
+
+static int fat_umount_entry(struct nas *nas) {
+	struct node *child;
+
+	if(node_is_directory(nas->node)) {
+		while(NULL != (child =	vfs_get_child_next(nas->node))) {
+			if(node_is_directory(child)) {
+				fat_umount_entry(child->nas);
+			}
+
+			pool_free(&fat_file_pool, child->nas->fi->privdata);
+			vfs_del_leaf(child);
+		}
+	}
+
+	return 0;
+}
+
 /* File operations */
 static int    fatfs_open(struct node *node, struct file_desc *file_desc, int flags);
 static int    fatfs_close(struct file_desc *desc);
@@ -2142,6 +2177,7 @@ static int fatfs_mount(void * dev, void *dir);
 static int fatfs_create(struct node *parent_node, struct node *new_node);
 static int fatfs_delete(struct node *node);
 static int fatfs_truncate (struct node *node, off_t length);
+static int fatfs_umount(void *dir);
 
 static struct fsop_desc fatfs_fsop = {
 	.init = fatfs_init,
@@ -2150,6 +2186,7 @@ static struct fsop_desc fatfs_fsop = {
 	.create_node = fatfs_create,
 	.delete_node = fatfs_delete,
 	.truncate = fatfs_truncate,
+	.umount = fatfs_umount,
 };
 
 static struct fs_driver fatfs_driver = {
@@ -2185,6 +2222,8 @@ static int fatfs_mount(void *dev, void *dir) {
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
 	struct node_fi *dev_fi;
+	void *prev_fi, *prev_fs;
+	int rc;
 
 	dev_node = dev;
 	dev_nas = dev_node->nas;
@@ -2192,18 +2231,29 @@ static int fatfs_mount(void *dev, void *dir) {
 	dir_nas = dir_node->nas;
 
 	if (NULL == (dev_fi = dev_nas->fi)) {
-		return -ENODEV;
+		rc =  -ENODEV;
 	}
+	if(NULL != vfs_get_child_next(dir_node)) {
+		rc =  -ENOTEMPTY;
+	}
+	prev_fi = dir_nas->fi->privdata;
+	prev_fs = dir_nas->fs;
+
+	dir_nas->fi->privdata = NULL;
+	dir_nas->fs = NULL;
 
 	if (NULL == (dir_nas->fs = filesystem_alloc("vfat"))) {
-		return -ENOMEM;
+		rc =  -ENOMEM;
 	}
+
+	dir_nas->fs->rootdir_prev_fi = prev_fi;
+	dir_nas->fs->rootdir_prev_fs = prev_fs;
 	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
 	if(NULL == (fsi = pool_alloc(&fat_fs_pool))) {
-		filesystem_free(dir_nas->fs);
-		return -ENOMEM;
+		rc =  -ENOMEM;
+		goto error;
 	}
 	memset(fsi, 0, sizeof(struct fat_fs_info));
 	dir_nas->fs->fsi = fsi;
@@ -2212,12 +2262,20 @@ static int fatfs_mount(void *dev, void *dir) {
 
 	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&fat_file_pool))) {
-		return -ENOMEM;
+		rc =  -ENOMEM;
+		goto error;
 	}
 	memset(fi, 0, sizeof(struct fat_file_info));
 	dir_nas->fi->privdata = (void *) fi;
 
 	return fat_mount_files(dir_nas);
+
+	error:
+	fat_free_fs(dir_nas);
+
+	dir_nas->fi->privdata = prev_fi;
+	dir_nas->fs = prev_fs;
+	return rc;
 }
 
 static int fatfs_create(struct node *parent_node, struct node *node) {
@@ -2287,6 +2345,40 @@ static int fatfs_truncate(struct node *node, off_t length) {
 	nas->fi->ni.size = length;
 
 	/* TODO realloc blocks*/
+
+	return 0;
+}
+
+static int fatfs_umount(void *dir) {
+	struct node *dir_node;
+	struct nas *dir_nas;
+	struct fat_fs_info *fsi;
+	void *prev_fi, *prev_fs;
+	char path[MAX_LENGTH_PATH_NAME];
+
+	dir_node = dir;
+	dir_nas = dir_node->nas;
+
+	fsi = dir_nas->fs->fsi;
+
+	/* check if dir not a root dir */
+	vfs_get_path_by_node(dir_node, path);
+	if(0 != strcmp(fsi->mntto, path)) {
+		return -EINVAL;
+	}
+	/*TODO check if it has a opened files */
+
+	prev_fi = dir_nas->fs->rootdir_prev_fi;
+	prev_fs = dir_nas->fs->rootdir_prev_fs;
+
+	/* delete all entry node */
+	fat_umount_entry(dir_nas);
+
+	/* free fat file system pools and buffers*/
+	fat_free_fs(dir_nas);
+
+	dir_nas->fi->privdata = prev_fi;
+	dir_nas->fs = prev_fs;
 
 	return 0;
 }

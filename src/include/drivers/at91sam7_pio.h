@@ -9,8 +9,7 @@
 #ifndef AT91SAM7_PIO_H_
 #define AT91SAM7_PIO_H_
 
-#include <types.h>
-#include <hal/reg.h>
+#include <drivers/at91sam7s256.h>
 
 typedef struct _AT91S_PIO {
 	volatile at91_reg_t	 PIO_PER; 	// PIO Enable Register

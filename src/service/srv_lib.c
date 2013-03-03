@@ -86,7 +86,7 @@ int web_service_start_service(const char *srv_name,
 		return -1;
 	}
 
-	if (new_task(srv_desc->run, (void *)srv_data) < 0) {
+	if (new_task(srv_name, srv_desc->run, (void *)srv_data) < 0) {
 		return -1;
 	}
 

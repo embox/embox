@@ -7,7 +7,6 @@
  */
 
 #include <assert.h>
-#include <types.h>
 
 #include <asm/io.h>
 #include <asm/regs.h>

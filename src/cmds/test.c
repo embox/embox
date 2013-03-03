@@ -11,7 +11,7 @@
 
 #include <embox/cmd.h>
 
-#include <getopt.h>
+#include <unistd.h>
 #include <stdio.h>
 
 #include <framework/test/api.h>

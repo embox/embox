@@ -8,7 +8,7 @@
 #ifndef MICROBLAZE_TRAPS_CORE_H_
 #define MICROBLAZE_TRAPS_CORE_H_
 
-#include <types.h>
+#include <stdint.h>
 
 /*FIXME move UTLB_QUANTITY_RECORDS to arch dependent config*/
 #define MAX_HWTRAP_NUMBER    0x14

@@ -20,7 +20,6 @@
 
 #include <linux/list.h>
 
-#include <err.h>
 
 struct callback_info {
 	struct list_head lnk;
@@ -222,6 +221,14 @@ int inet_dev_set_mask(struct in_device *in_dev, in_addr_t mask) {
 	return ENOERR;
 }
 
+int inet_dev_set_bcast(struct in_device *in_dev, in_addr_t bcast) {
+	assert(in_dev != NULL);
+
+	in_dev->ifa_broadcast = bcast;
+
+	return ENOERR;
+}
+
 int inet_dev_set_macaddr(struct in_device *in_dev, const unsigned char *macaddr) {
 	struct net_device *dev;
 
@@ -252,13 +259,11 @@ int inet_dev_add_dev(struct net_device *dev) {
 
 	indev_info = (struct inetdev_info *)pool_alloc(&indev_info_pool);
 	if (indev_info == NULL) {
-		LOG_ERROR("ifdev up: can't find find free handler\n");
 		return -ENOMEM;
 	}
 
 	res = netdev_open(dev);
 	if (res < 0) {
-		LOG_ERROR("ifdev up: can't open device with name %s\n", dev->name);
 		pool_free(&indev_info_pool, indev_info);
 		return res;
 	}
@@ -285,7 +290,6 @@ int inet_dev_remove_dev(struct in_device *in_dev) {
 
 	res = netdev_close(indev_info->in_dev.dev);
 	if (res < 0) {
-		LOG_ERROR("ifdev down: can't close device with name %s\n", in_dev->dev->name);
 		list_add_tail(&indev_info->lnk, &indev_info_list);
 		return res;
 	}

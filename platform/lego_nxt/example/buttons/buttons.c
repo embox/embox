@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <embox/example.h>
 #include <unistd.h>
 #include <drivers/nxt/buttons.h>

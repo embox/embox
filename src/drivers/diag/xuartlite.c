@@ -7,9 +7,9 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
 #include <asm/bitops.h>
 #include <drivers/diag.h>
+#include <stdint.h>
 
 typedef struct diag_regs {
 	uint32_t rx_data;

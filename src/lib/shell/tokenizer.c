@@ -9,7 +9,6 @@
  *         - quotes parsing
  */
 
-#include <types.h>
 #include <errno.h>
 #include <cmd/cmdline.h>
 #include <ctype.h>

@@ -10,7 +10,7 @@
 #define MEM_VMEM_H_
 
 #include <hal/mmu.h>
-#include <types.h>
+#include <stdint.h>
 
 #define VMEM_PAGE_SIZE        MMU_PAGE_SIZE
 #define VMEM_PAGE_MASK        MMU_PAGE_MASK

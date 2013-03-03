@@ -10,7 +10,7 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <types.h>
+#include <stdint.h>
 
 #include <hal/mmu.h>
 #include <mem/vmem.h>
@@ -18,7 +18,7 @@
 #include <kernel/thread/sched_lock.h>
 
 #include "../kernel/task/common.h"
-#include <types.h>
+#include <stdint.h>
 #include <kernel/printk.h>
 
 /* Section pointers. */

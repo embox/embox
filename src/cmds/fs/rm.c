@@ -7,8 +7,10 @@
  */
 
 #include <embox/cmd.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
+#include <string.h>
 
 EMBOX_CMD(exec);
 
@@ -24,10 +26,10 @@ static int exec(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc - 1, argv, "frh"))) {
 		switch(opt) {
 		case 'f':
-          //              ignore = 1;
+//      ignore = 1;
 			break;
 		case 'r':
-	//		recursive = 1;
+//		recursive = 1;
 			break;
 		case 'h':
 			print_usage();
@@ -39,6 +41,11 @@ static int exec(int argc, char **argv) {
 
 	file_path = argv[argc - 1];
 	//TODO:
+
+	/*TODO relative path*/
+	if(0 != strncmp(file_path, "/", 1)) {
+		return -EINVAL;
+	}
 
 	return remove(file_path);
 }

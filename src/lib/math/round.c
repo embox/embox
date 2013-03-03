@@ -6,6 +6,8 @@
  * @author Ilia Vaprol
  */
 
+#include <math.h>
+
 extern float __roundsf2(float a);
 extern double __rounddf2(double a);
 extern long double __roundtf2(long double a);

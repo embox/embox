@@ -9,4 +9,4 @@
 #include <drivers/iodev.h>
 #include <stddef.h>
 
-const struct iodev_ops *iodev_video_ops = NULL;
+const struct iodev_ops *const iodev_video_ops = NULL;

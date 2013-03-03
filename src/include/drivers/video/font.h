@@ -9,7 +9,7 @@
 #ifndef DRIVERS_VIDEO_FONT_H_
 #define DRIVERS_VIDEO_FONT_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define VGA8x8_IDX      0
 #define VGA8x16_IDX     1

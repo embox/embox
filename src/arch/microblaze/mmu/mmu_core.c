@@ -7,7 +7,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <string.h>
 #include <asm/msr.h>
 #include <asm/hal/mmu/mmu_core.h>

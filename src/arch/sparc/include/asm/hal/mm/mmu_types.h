@@ -8,7 +8,7 @@
 #ifndef SPARC_MMU_TYPES_H_
 #define SPARC_MMU_TYPES_H_
 
-#include <types.h>
+#include <stdint.h>
 
 typedef uint32_t __mmu_paddr_t;
 typedef uint32_t __mmu_vaddr_t;

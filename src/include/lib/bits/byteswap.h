@@ -5,8 +5,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef BITS_BYTESWAP_H_
-#define BITS_BYTESWAP_H_
+#ifndef LIB_BITS_BYTESWAP_H_
+#define LIB_BITS_BYTESWAP_H_
 
 /* Swap bytes in 16 bit value.  */
 #define __bswap_constant_16(x) \
@@ -27,4 +27,4 @@ static inline unsigned int __bswap_32(unsigned int _bsx) {
 	return *((unsigned char *) &x) == 0 ? _bsx : __bswap_constant_32(_bsx);
 }
 
-#endif /* BITS_BYTESWAP_H_ */
+#endif /* LIB_BITS_BYTESWAP_H_ */

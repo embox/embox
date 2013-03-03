@@ -6,7 +6,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <util/array.h>
 #include <drivers/pci/pci_id.h>
 #include <drivers/pci/pci_repo.h>

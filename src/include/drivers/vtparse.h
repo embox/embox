@@ -17,7 +17,6 @@
 
 #include <drivers/vt.h>
 #include <drivers/vtparse_state.h>
-#include <types.h>
 
 #define VTPARSE_TOKEN_PARAMS_MAX    8
 

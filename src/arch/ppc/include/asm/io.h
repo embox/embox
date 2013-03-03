@@ -8,7 +8,7 @@
 #ifndef PPC_IO_H_
 #define PPC_IO_H_
 
-#include <types.h>
+#include <stdint.h>
 
 //FIXME BAD BAD BAD (this is for only serial diag 8250 on PPC architecture)
 

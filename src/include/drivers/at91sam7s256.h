@@ -42,7 +42,6 @@
 #ifndef AT91SAM7S256_H_
 #define AT91SAM7S256_H_
 
-#include <types.h>
 #include <hal/reg.h>
 
 typedef volatile unsigned int at91_reg_t;

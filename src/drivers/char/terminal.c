@@ -12,6 +12,7 @@
 
 #include <stdarg.h>
 #include <assert.h>
+#include <stddef.h>
 
 #include <drivers/terminal.h>
 #include <drivers/diag.h>

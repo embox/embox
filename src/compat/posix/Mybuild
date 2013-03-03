@@ -27,7 +27,7 @@ static module file_ops {
 
 }
 
-module file {
+static module file {
 	depends file_ops
 	depends open
 }

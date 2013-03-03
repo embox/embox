@@ -8,7 +8,7 @@
 #ifndef NET_RPC_PMAP_H_
 #define NET_RPC_PMAP_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
@@ -22,14 +22,14 @@ struct xdr;
 #define PMAPPROC_GETPORT 3
 
 struct pmap {
-	__u32 prog;
-	__u32 vers;
-	__u32 prot;
-	__u32 port;
+	uint32_t prog;
+	uint32_t vers;
+	uint32_t prot;
+	uint32_t port;
 };
 
-extern __u16 pmap_getport(struct sockaddr_in *raddr,
-		__u32 prognum, __u32 versnum, __u32 protocol);
+extern uint16_t pmap_getport(struct sockaddr_in *raddr,
+		uint32_t prognum, uint32_t versnum, uint32_t protocol);
 
 extern int xdr_pmap(struct xdr *xs, struct pmap *pmp);
 

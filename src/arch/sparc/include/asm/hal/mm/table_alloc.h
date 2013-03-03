@@ -5,7 +5,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdint.h>
 
 extern unsigned long *mmu_table_alloc(size_t size);
 

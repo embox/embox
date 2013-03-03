@@ -7,6 +7,7 @@
  */
 
 #include <utmp.h>
+#include <stddef.h>
 
 struct utmp *getutent(void) {
 	return NULL;

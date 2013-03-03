@@ -11,7 +11,6 @@
 #include <assert.h>
 #include <sys/uio.h>
 
-#include <err.h>
 
 #include <net/protocol.h>
 #include <net/sock.h>
@@ -101,13 +100,11 @@ int raw_rcv(struct sk_buff *skb) {
 		if ((sk != NULL) && (sk->sk_protocol == skb->nh.iph->proto)) {
 			cloned = skb_duplicate(skb); // TODO without skb_clone()
 			if (cloned == NULL) {
-				LOG_ERROR("couldn't clone socket buffer\n");
 				continue;
 				//return -ENOMEM;
 			}
 			res = raw_rcv_skb(sk, cloned);
 			if (res < 0) {
-				LOG_ERROR("sk %p can't received packet\n", sk);
 				skb_free(cloned);
 			}
 		}
@@ -190,7 +187,8 @@ static int raw_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
 	skb->h.raw = skb->mac.raw + ETH_HEADER_SIZE + IP_MIN_HEADER_SIZE;// + inet->opt->optlen;
 
 	skb->sk = sk;
-	return ip_send_packet(inet, skb);
+	ip_send_packet(inet, skb);
+	return 0;
 }
 
 static int raw_recvmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,

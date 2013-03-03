@@ -9,14 +9,14 @@
 #ifndef SPARC_STACK_H_
 #define SPARC_STACK_H_
 
-#include <types.h>
-
 #include <asm/winmacro.h>
 
 /** SPARC stack is doubleword aligned. */
 #define STACK_ALIGNMENT 8
 
 #ifndef __ASSEMBLER__
+
+#include <stdint.h>
 
 /** The size of minimal required stack frame. */
 #define STACK_FRAME_SZ  sizeof(struct stack_frame)

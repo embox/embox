@@ -6,10 +6,11 @@
  * @author Alexander Kalmuk
  */
 
+#include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
 #include <time.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
@@ -100,7 +101,7 @@ static int exec(int argc, char **argv) {
 			break;
 		case 't': /* Maximum time waiting for a server response */
 			if (1 != sscanf(optarg, "%d", &ntp_server_timeout)) {
-				LOG_ERROR("wrong -t argument %s\n", optarg);
+				printf("wrong -t argument %s\n", optarg);
 				return -1;
 			}
 			break;

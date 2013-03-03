@@ -79,5 +79,7 @@ static int kernel_task_init(void) {
 		return -ENOMEM;
 	}
 
+	strcpy(task_kernel_task()->name, "kernel");
+
 	return 0;
 }

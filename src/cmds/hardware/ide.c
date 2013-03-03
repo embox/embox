@@ -7,7 +7,7 @@
  */
 
 #include <embox/cmd.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <drivers/ide.h>
 #include <embox/block_dev.h>

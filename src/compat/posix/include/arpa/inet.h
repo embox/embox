@@ -8,8 +8,9 @@
 #ifndef ARPA_INET_H_
 #define ARPA_INET_H_
 
-#include <types.h>
 #include <lib/bits/byteswap.h>
+
+#include <netinet/in.h>
 
 #include <sys/cdefs.h>
 
@@ -20,7 +21,6 @@ __BEGIN_DECLS
 #define htonl(n)            __bswap_32(n)
 #define ntohl(n)            __bswap_32(n) /* same as htonl() */
 
-#include <netinet/in.h>
 
 /**
  * Convert Internet number in IN to ASCII representation.

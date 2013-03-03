@@ -5,7 +5,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stddef.h>
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
@@ -177,7 +177,7 @@ void tty_ng_manager(int count, void (*init)(struct tty_buf *tty), void (*run)(vo
 
 		params[i].tty = &ttys[i];
 		params[i].run = run;
-		new_task(task_handler, &params[i]);
+		new_task("tty", task_handler, &params[i]);
 	}
 
 	current_tty = &ttys[0];

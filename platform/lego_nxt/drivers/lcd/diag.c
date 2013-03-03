@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stdbool.h>
 #include <drivers/nxt/lcd.h>
 #include <drivers/diag.h>
 

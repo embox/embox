@@ -9,6 +9,9 @@
 #ifndef AT91SAM7_PMC_H_
 #define AT91SAM7_PMC_H_
 
+#include <hal/reg.h>
+#include <drivers/at91sam7s256.h>
+
 typedef struct _AT91S_PMC {
 	at91_reg_t	 PMC_SCER; 	// System Clock Enable Register
 	at91_reg_t	 PMC_SCDR; 	// System Clock Disable Register

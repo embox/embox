@@ -21,7 +21,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>

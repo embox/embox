@@ -6,7 +6,7 @@
  * @date    02.07.2012
  */
 
-#include <types.h>
+#include <stdint.h>
 
 extern uint64_t __udivdi3(uint64_t num, uint64_t den);
 extern uint64_t __umoddi3(uint64_t num, uint64_t den);

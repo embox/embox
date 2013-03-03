@@ -6,7 +6,7 @@
  * @author Anton Bulychev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <kernel/task.h>

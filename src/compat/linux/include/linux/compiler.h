@@ -6,8 +6,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef LINUX_COMPILER_H_
-#define LINUX_COMPILER_H_
+#ifndef COMPAT_LINUX_LINUX_COMPILER_H_
+#define COMPAT_LINUX_LINUX_COMPILER_H_
 
 /* In linux it defined as "noderef". It means that pointer cannot be
  * dereferenced. And use in sys_calls because this variable must be copied by
@@ -30,4 +30,11 @@
 # define __release(x) (void)0
 # define __cond_lock(x,c) (c)
 
-#endif /* LINUX_COMPILER_H_ */
+/* Helps compiler to generate more optimal code.
+ * It shows which branch has higher probability.
+ * See gcc documentation for __builtin_expect()
+ */
+#define likely(x)	(__builtin_constant_p(x) ? !!(x) :  __builtin_expect(!!(x), 1))
+#define unlikely(x)	(__builtin_constant_p(x) ? !!(x) :  __builtin_expect(!!(x), 0))
+
+#endif /* COMPAT_LINUX_LINUX_COMPILER_H_ */

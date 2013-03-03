@@ -142,7 +142,8 @@ static void bitcpy(uint32_t *dst, uint32_t dstn, uint32_t *src, uint32_t srcn,
 			len /= sizeof(*dst) * CHAR_BIT;
 			while (len-- != 0) {
 				fb_writel(fb_readl(src), dst);
-				++dst, ++src;
+				++dst;
+				++src;
 			}
 
 			fb_writel((fb_readl(src) & mask2) | (fb_readl(dst) & ~mask2), dst);
@@ -154,12 +155,10 @@ static void bitcpy(uint32_t *dst, uint32_t dstn, uint32_t *src, uint32_t srcn,
 
 		if (dstn + len <= sizeof(*dst) * CHAR_BIT) {
 			mask1 &= mask2 != 0 ? mask2 : mask1;
-			if (shift > 0) {
+			if (shift > 0)
 				fb_writel(((fb_readl(src) >> roff) & mask1) | (fb_readl(dst) & ~mask1), dst);
-			}
-			else if (srcn + len <= sizeof(*dst) * CHAR_BIT) {
+			else if (srcn + len <= sizeof(*dst) * CHAR_BIT)
 				fb_writel(((fb_readl(src) << loff) & mask1) | (fb_readl(dst) & ~mask1), dst);
-			}
 			else {
 				lval = fb_readl(src);
 				++src;
@@ -194,9 +193,8 @@ static void bitcpy(uint32_t *dst, uint32_t dstn, uint32_t *src, uint32_t srcn,
 				lval = rval;
 			}
 
-			if (left <= roff) {
+			if (left <= roff)
 				fb_writel(((lval << loff) & mask2) | (fb_readl(dst) & ~mask2), dst);
-			}
 			else {
 				rval = fb_readl(src);
 				fb_writel((((lval << loff) | (rval >> roff)) & mask2) | (fb_readl(dst) & ~mask2), dst);
@@ -238,14 +236,16 @@ static void bitcpy_rev(uint32_t *dst, uint32_t dstn, uint32_t *src,
 		else {
 			if (mask1 != 0) {
 				fb_writel((fb_readl(src) & mask1) | (fb_readl(dst) & ~mask1), dst);
-				--dst, --src;
+				--dst;
+				--src;
 				len -= dstn + 1;
 			}
 
 			len /= sizeof(*dst) * CHAR_BIT;
 			while (len-- != 0) {
 				fb_writel(fb_readl(src), dst);
-				--dst, --src;
+				--dst;
+				--src;
 			}
 
 			fb_writel((fb_readl(src) & mask2) | (fb_readl(dst) & ~mask2), dst);
@@ -257,12 +257,10 @@ static void bitcpy_rev(uint32_t *dst, uint32_t dstn, uint32_t *src,
 
 		if (dstn + 1 >= len) {
 			mask1 &= mask2 != 0 ? mask2 : mask1;
-			if (shift < 0) {
+			if (shift < 0)
 				fb_writel(((fb_readl(src) << loff) & mask1) | (fb_readl(dst) & ~mask1), dst);
-			}
-			else if (srcn + 1 >= len) {
+			else if (srcn + 1 >= len)
 				fb_writel(((fb_readl(src) >> roff) & mask1) | (fb_readl(dst) & ~mask1), dst);
-			}
 			else {
 				rval = fb_readl(src);
 				--src;
@@ -297,9 +295,8 @@ static void bitcpy_rev(uint32_t *dst, uint32_t dstn, uint32_t *src,
 				rval = lval;
 			}
 
-			if (left <= loff) {
+			if (left <= loff)
 				fb_writel(((rval >> roff) & mask2) | (fb_readl(dst) & ~mask2), dst);
-			}
 			else {
 				lval = fb_readl(src);
 				fb_writel((((rval << roff) | (lval >> loff)) & mask2) | (fb_readl(dst) & ~mask2), dst);
@@ -356,7 +353,6 @@ void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
 }
 
 static uint32_t pixel_to_pat(uint32_t bpp, uint32_t pixel) {
-	assert(pixel >> bpp == 0);
 	return bpp == 1 ? 0xffffffffUL * pixel
 			: bpp == 2 ? 0x55555555UL * pixel
 			: bpp == 4 ? 0x11111111UL * pixel
@@ -365,7 +361,7 @@ static uint32_t pixel_to_pat(uint32_t bpp, uint32_t pixel) {
 			: bpp == 16 ? 0x00010001UL * pixel
 			: bpp == 24 ? 0x01000001UL * pixel
 			: bpp == 32 ? 0x00000001UL * pixel
-			: 0;
+			: 0xbadffbad;
 }
 
 static void bitfill(uint32_t *dst, uint32_t dstn, uint32_t pat,
@@ -402,8 +398,58 @@ static void bitfill(uint32_t *dst, uint32_t dstn, uint32_t pat,
 	}
 }
 
+static void bitfill_rev(uint32_t *dst, uint32_t dstn, uint32_t pat,
+		uint32_t loff, uint32_t roff, uint32_t len) {
+	uint32_t mask1, mask2;
+
+	assert(dst != NULL);
+
+	if (len == 0) return;
+
+	mask1 = ~(uint32_t)0 << dstn;
+	mask2 = ~(~(uint32_t)0 << (dstn + len) % (sizeof(*dst) * CHAR_BIT));
+
+	if (dstn + len <= sizeof(*dst) * CHAR_BIT) {
+		mask1 &= mask2 != 0 ? mask2 : mask1;
+		fb_writel(((fb_readl(dst) ^ pat) & mask1) | (fb_readl(dst) & ~mask1), dst);
+	}
+	else {
+		if (mask1 != 0) {
+			fb_writel(((fb_readl(dst) ^ pat) & mask1) | (fb_readl(dst) & ~mask1), dst);
+			++dst;
+			pat = (pat << loff) | (pat >> roff);
+			len -= sizeof(*dst) * CHAR_BIT - dstn;
+		}
+
+		len /= sizeof(*dst) * CHAR_BIT;
+		while (len >= 4) {
+			fb_writel(fb_readl(dst) ^ pat, dst);
+			++dst;
+			pat = (pat << loff) | (pat >> roff);
+			fb_writel(fb_readl(dst) ^ pat, dst);
+			++dst;
+			pat = (pat << loff) | (pat >> roff);
+			fb_writel(fb_readl(dst) ^ pat, dst);
+			++dst;
+			pat = (pat << loff) | (pat >> roff);
+			fb_writel(fb_readl(dst) ^ pat, dst);
+			++dst;
+			pat = (pat << loff) | (pat >> roff);
+			len -= 4;
+		}
+		while (len-- != 0) {
+			fb_writel(fb_readl(dst) ^ pat, dst);
+			pat = (pat << loff) | (pat >> roff);
+		}
+
+		fb_writel(((fb_readl(dst) ^ pat) & mask2) | (fb_readl(dst) & ~mask2), dst);
+	}
+}
+
 void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 	uint32_t width, height, pat_orig, pat, *dst, dstn, loff, roff;
+	void (*fill_op)(uint32_t *dst, uint32_t dstn, uint32_t pat,
+		uint32_t loff, uint32_t roff, uint32_t len);
 
 	assert(info != NULL);
 	assert(rect != NULL);
@@ -423,6 +469,8 @@ void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 	roff = sizeof(*dst) * CHAR_BIT % info->var.bits_per_pixel;
 	loff = info->var.bits_per_pixel - roff;
 
+	fill_op = rect->rop == ROP_COPY ? &bitfill : &bitfill_rev;
+
 	while (height-- != 0) {
 		dst += dstn / (sizeof(*dst) * CHAR_BIT);
 		dstn %= sizeof(*dst) * CHAR_BIT;
@@ -430,7 +478,7 @@ void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 		pat = roff == 0 ? pat_orig : (pat_orig << (dstn % info->var.bits_per_pixel))
 				| (pat_orig >> (info->var.bits_per_pixel - dstn % info->var.bits_per_pixel));
 
-		bitfill(dst, dstn, pat, loff, roff, width * info->var.bits_per_pixel);
+		fill_op(dst, dstn, pat, loff, roff, width * info->var.bits_per_pixel);
 		dstn += info->var.xres * info->var.bits_per_pixel;
 	}
 }
@@ -446,13 +494,35 @@ void fb_imageblit(struct fb_info *info, const struct fb_image *image) {
 	assert(image->width == 8);
 
 	rect.width = rect.height = 1;
+	rect.rop = ROP_COPY;
 	for (j = 0; j < image->height; ++j) {
 		rect.dy = image->dy + j * rect.height;
 		for (i = 0; i < image->width; ++i) {
 			rect.dx = image->dx + i * rect.width;
 			rect.color = *(uint8_t *)(image->data + j) & (1 << ((image->width - i - 1)))
 					? image->fg_color : image->bg_color;
-			fb_fillrect(info, &rect);
+			info->ops->fb_fillrect(info, &rect);
+		}
+	}
+}
+
+void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor) {
+	uint32_t i, j;
+	struct fb_fillrect rect;
+
+	assert(info != NULL);
+	assert(cursor != NULL);
+
+	if (!cursor->enable) return;
+
+	rect.width = rect.height = 1;
+	rect.rop = cursor->rop;
+	rect.color = cursor->image.fg_color;
+	for (j = 0; j < cursor->image.height; ++j) {
+		rect.dy = cursor->hot.y * cursor->image.height + j * rect.height;
+		for (i = 0; i < cursor->image.width; ++i) {
+			rect.dx = cursor->hot.x * cursor->image.width + i * rect.width;
+			info->ops->fb_fillrect(info, &rect);
 		}
 	}
 }

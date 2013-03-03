@@ -13,12 +13,13 @@ typedef int __thread_id_t;
 typedef short __thread_priority_t;
 typedef unsigned int __thread_state_t;
 
-
 #include <hal/context.h>
 #include <kernel/thread/startq.h>
 #include <kernel/thread/sched_strategy.h>
 #include <util/slist.h>
 #include <util/list.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 struct context;
 

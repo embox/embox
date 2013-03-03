@@ -9,7 +9,7 @@
  */
 
 #include <errno.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <string.h>
 #include <time.h>
 #include <stdio.h>

@@ -17,6 +17,7 @@
 #define pokew(S,O,V)	    *(unsigned short *)(16uL * (S) + (O)) = (V)
 #define _vmemwr(DS,DO,S,N)      memcpy((char *)((DS) * 16 + (DO)), S, N)
 
+#define VGA_PEL_MSK    0x3C6   /* PEL mask register */
 
 /* AC - attribute controller */
 #define VGA_AC_INDEX        0x3C0
@@ -68,18 +69,12 @@
 #define VGA_CRTC_V_SYNC_START  0x10
 #define VGA_CRTC_V_SYNC_END    0x11
 #define VGA_CRTC_V_DISP_END    0x12
-
+#define VGA_CRTC_OFFSET        0x13
 #define VGA_CRTC_UNDERLINE     0x14
 #define VGA_CRTC_V_BLANK_START 0x15
 #define VGA_CRTC_V_BLANK_END   0x16
 #define VGA_CRTC_MODE_CONTROL  0x17
 #define VGA_CRTC_LINE_COMPARE  0x18
-
-#if 0
-/* graphic controller registers */
-#define VGA_GC_READ_MAP_SEL    0x4
-#define VGA_GC_MISCELLANEOUS   0x6
-#endif
 
 /* VGA graphics controller register indices */
 #define VGA_GFX_SR_VALUE       0x00
@@ -91,8 +86,6 @@
 #define VGA_GFX_MISC           0x06
 #define VGA_GFX_COMPARE_MASK   0x07
 #define VGA_GFX_BIT_MASK       0x08
-
-
 
 /* sequencer registers * */
 #define VGA_SEQ_PLANE_MASK     0x2
@@ -128,7 +121,7 @@
 #define VGA_NUM_GC_REGS    9
 #define VGA_NUM_AC_REGS    21
 
-#include <types.h>
+#include <stdint.h>
 #include <asm/io.h>
 
 struct vga_registers {
@@ -157,7 +150,7 @@ static inline unsigned char vga_misc_read(void) {
 	return in8(VGA_MISC_READ);
 }
 
-static inline void vga_wcrt(uint32_t *regbase, unsigned char value, unsigned char index) {
+static inline void vga_wcrt(uint32_t *regbase, unsigned char index, unsigned char value) {
 	out8(index, VGA_CRTC_INDEX);
 	out8(value, VGA_CRTC_DATA);
 }
@@ -167,7 +160,7 @@ static inline unsigned char vga_rcrt(uint32_t *regbase, unsigned index) {
 	return in8(VGA_CRTC_DATA);
 }
 
-static inline void vga_wseq(uint32_t *regbase, unsigned char value, unsigned char index) {
+static inline void vga_wseq(uint32_t *regbase, unsigned char index, unsigned char value) {
 	out8(index, VGA_SEQ_INDEX);
 	out8(value, VGA_SEQ_DATA);
 }
@@ -178,7 +171,7 @@ static inline unsigned char vga_rseq(uint32_t *regbase, unsigned char index) {
 }
 
 
-static inline void vga_wgfx(unsigned int *regbase, unsigned char value, unsigned char index) {
+static inline void vga_wgfx(unsigned int *regbase, unsigned char index, unsigned char value) {
 	out8(index, VGA_GC_INDEX);
 	out8(value, VGA_GC_DATA);
 }

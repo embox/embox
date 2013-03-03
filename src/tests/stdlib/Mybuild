@@ -1,5 +1,10 @@
 package embox.test.stdlib
 
+module environ_test {
+	source "environ_test.c"
+	depends embox.framework.LibFramework
+}
+
 module strtod_test {
 	source "strtod_test.c"
 	depends embox.framework.LibFramework
@@ -14,13 +19,6 @@ module bsearch_test {
 	source "bsearch_test.c"
 
 	depends embox.lib.LibC
-	depends embox.framework.LibFramework
-}
-
-module getopt_test {
-	source "getopt_test.c"
-
-	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }
 

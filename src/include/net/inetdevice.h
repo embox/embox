@@ -10,7 +10,8 @@
 
 #include <net/netdevice.h>
 #include <netinet/in.h>
-#include <types.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 typedef void (*devinet_callback_t)(void *pack);
 
@@ -94,6 +95,12 @@ extern int inet_dev_set_ipaddr(in_device_t *in_dev, const in_addr_t ipaddr);
  * @param mask - ip mask
  */
 extern int inet_dev_set_mask(in_device_t *in_dev, const in_addr_t mask);
+
+/**
+ * Set broadcast addres
+ * @param bcast - broadcast protocol address
+ */
+extern int inet_dev_set_bcast(in_device_t *in_dev, const in_addr_t bcast);
 
 /**
  * Set MAC address

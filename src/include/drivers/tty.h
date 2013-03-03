@@ -9,7 +9,7 @@
 #ifndef DRIVERS_VIDEO_TTY_H_
 #define DRIVERS_VIDEO_TTY_H_
 
-#include <types.h>
+#include <stdint.h>
 
 struct tty;
 
@@ -26,6 +26,7 @@ struct tty_ops {
 struct tty {
 	uint32_t cur_x;
 	uint32_t cur_y;
+	uint32_t back_cx, back_cy;
 	uint32_t width;
 	uint32_t height;
 	const struct tty_ops *ops;

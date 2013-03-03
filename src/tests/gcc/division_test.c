@@ -7,7 +7,7 @@
  */
 
 #include <embox/test.h>
-#include <types.h>
+#include <stdint.h>
 
 EMBOX_TEST_SUITE("gcc/division with remainder tests");
 

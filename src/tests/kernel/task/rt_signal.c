@@ -34,7 +34,7 @@ static void *task_hnd(void *data) {
 TEST_CASE("send 3 rt signals of the same type between two tasks and check"
 		" of handling count and order") {
 	union sigval value;
-	int tid = new_task(task_hnd, NULL);
+	int tid = new_task("", task_hnd, NULL);
 
 	test_assert(tid >= 0);
 

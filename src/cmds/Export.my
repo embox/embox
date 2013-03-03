@@ -1,0 +1,25 @@
+package embox.cmd
+
+@Cmd(name = "export",
+	help = "Set/unset environment variables",
+	man = '''
+		NAME
+			export - set/unset environment variables
+		SYNOPSIS
+			export name=value
+			export name=
+		DESCRIPTION
+			Set enviroment variable or remove them
+		OPTIONS
+			name   name of new enviroment variable
+			value  value according this name or null
+			       to unset veriable
+		AUTHORS
+			Ilia Vaprol
+	''')
+module export {
+	source "export.c"
+
+	depends embox.lib.LibC
+	depends embox.framework.LibFramework
+}

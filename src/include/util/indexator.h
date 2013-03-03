@@ -8,7 +8,8 @@
 #ifndef INDEXATOR_H_
 #define INDEXATOR_H_
 
-#include <types.h>
+#include <stddef.h>
+#include <stdint.h>
 
 enum indexator_allocation_type {
 	INDEX_ALLOC_MIN = 0, INDEX_ALLOC_RANDOM = 1, INDEX_ALLOC_MAX = 2

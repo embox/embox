@@ -10,7 +10,7 @@
 #define DRIVERS_VIDEO_VBE_H_
 
 #include <asm/io.h>
-#include <types.h>
+#include <stdint.h>
 
 #define VBE_DISPI_IOPORT_INDEX      0x01CE
 #define VBE_DISPI_IOPORT_DATA       0x01CF

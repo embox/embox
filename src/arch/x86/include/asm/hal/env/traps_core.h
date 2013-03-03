@@ -10,8 +10,8 @@
 #ifndef X86_TRAPS_CORE_H_
 #define X86_TRAPS_CORE_H_
 
-#include <types.h>
 #include <asm/traps.h>
+#include <stdint.h>
 
 #define MAX_HWTRAP_NUMBER    0x14
 #define MAX_SOFTTRAP_NUMBER  0x10

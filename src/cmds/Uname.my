@@ -1,16 +1,26 @@
 package embox.cmd
 
 @Cmd(name = "uname",
-	help = "Vesion Embox",
+	help = "Print system information",
 	man = '''
 		NAME
-			uname - version embox
+			uname - print system information
 		SYNOPSIS
-			uname [OPTIONS]
+			uname [OPTIONS] ...
 		DESCRIPTION
-			Version
+			Print certain system information
+			-a	print all information
+			-s	print the kernel name
+			-n	print the network node hostname
+			-r	print the kernel release
+			-v	print the kernel version
+			-m	print the machine hardware name
+			-p	print the processor type
+			-i	print the hardware platform
+			-o	print the operating system
+			-h	help message
 		AUTHOR
-			Sergey
+			Serge Ivantsov, Ilia Vaprol
 	''')
 module uname {
 	source "uname.c"

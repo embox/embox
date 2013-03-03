@@ -1,9 +1,56 @@
 #!/bin/bash
 
+# Change working direcory to scripts/qemu
+cd "$(dirname "$0")"
+
 QEMU=qemu-system-i386
 IMAGE=../../build/base/bin/embox
+EMBOX_MODS_CONF=../../conf/mods.config
 
-sudo $QEMU -kernel $IMAGE \
-	-net nic,model=ne2k_pci,macaddr=AA:BB:CC:DD:EE:02 \
+# Checking for network driver
+
+for DRIVER in "ne2k_pci" "e1000" "rtl8139"
+do
+grep embox.driver.net.$DRIVER $EMBOX_MODS_CONF > /dev/null
+if [ $? -eq 0 ]; then
+QEMU_NET_DRIVER=$DRIVER
+break
+fi
+done
+
+if ! [ "$QEMU_NET_DRIVER"  ]; then
+echo "auto_qemu: No supported network drivers in $EMBOX_MODS_CONF"
+exit 1
+fi
+
+# Checking for KVM and VT support
+
+egrep '(vmx|svm)' /proc/cpuinfo > /dev/null
+
+if [ $? -ne 0 ]; then
+echo "auto_qemu: VT is not supported by CPU"
+else
+QEMU_KVM_ENABLE="-enable-kvm"
+fi
+
+dmesg | tail | grep "kvm: disabled by bios" > /dev/null
+
+if [ $? -eq 0 ]; then
+echo "auto_qemu: kvm: disabled by bios. You can enable VT in bios"
+QEMU_KVM_ENABLE=""
+fi
+
+lsmod | egrep '(kvm_intel|kvm_amd)' > /dev/null
+
+if [ $? -ne 0 ]; then
+echo "auto_qemu: No kvm_intel [kvm_amd] kernel module"
+QEMU_KVM_ENABLE=""
+fi
+
+# Run qemu
+
+sudo $QEMU $QEMU_KVM_ENABLE -kernel $IMAGE \
+	-net nic,model=$QEMU_NET_DRIVER,macaddr=AA:BB:CC:DD:EE:02 \
 	-net tap,name=tap0,script=start_script,downscript=stop_script \
 	-nographic $@
+

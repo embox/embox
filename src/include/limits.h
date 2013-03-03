@@ -6,8 +6,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef COMPAT_POSIX_LIMITS_H_
-#define COMPAT_POSIX_LIMITS_H_
+#ifndef LIMITS_H_
+#define LIMITS_H_
 
 /* Number of bits in a `char'.	*/
 #define CHAR_BIT	8
@@ -50,4 +50,4 @@
 /* Maximum value an `unsigned long long int' can hold.  (Minimum is 0.)  */
 #define ULLONG_MAX	18446744073709551615ULL
 
-#endif /* COMPAT_POSIX_LIMITS_H_ */
+#endif /* LIMITS_H_ */

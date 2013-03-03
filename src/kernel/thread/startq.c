@@ -11,7 +11,6 @@
 #include <kernel/thread/startq.h>
 #include <kernel/thread/state.h>
 #include <util/dlist.h>
-#include "types.h"
 
 extern void do_wake_thread(struct thread *thread, int sleep_result);
 extern void do_wake_sleepq(struct sleepq *sleepq, int wake_all);

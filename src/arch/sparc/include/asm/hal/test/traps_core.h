@@ -9,7 +9,7 @@
 #ifndef SPARC_TESTTRAPS_H_
 #define SPARC_TESTTRAPS_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <hal/env/traps_core.h>
 
 extern trap_handler_t test_handlers[CONFIG_TRAP_TABLE_SIZE];

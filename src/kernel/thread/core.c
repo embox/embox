@@ -349,7 +349,6 @@ struct thread *thread_lookup(thread_id_t id) {
  */
 static void *idle_run(void *arg) {
 	while (true) {
-		thread_yield();
 		arch_idle();
 	}
 	return NULL;

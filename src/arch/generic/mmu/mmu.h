@@ -9,7 +9,7 @@
 #ifndef ARCH_GENERIC_MMU_H_
 #define ARCH_GENERIC_MMU_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define __MMU_PGD_SHIFT         24
 #define __MMU_PMD_SHIFT         18

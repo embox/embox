@@ -6,7 +6,7 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
+#include <stddef.h>
 #include <assert.h>
 #include <drivers/nxt/avr.h>
 #include <drivers/pins.h>

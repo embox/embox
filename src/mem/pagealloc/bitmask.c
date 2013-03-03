@@ -7,9 +7,10 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
 #include <embox/unit.h>
 #include <util/array.h>
+#include <stdint.h>
+#include <stddef.h>
 
 #include <mem/page.h>
 #include <mem/heap.h>

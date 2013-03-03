@@ -7,8 +7,6 @@
  * @author Avdyukhin Dmitry
  */
 
-#include <types.h>
-#include <stddef.h>
 #include <stdlib.h>
 
 static unsigned int seed = 314567651;

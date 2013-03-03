@@ -8,9 +8,9 @@
 #ifndef SCREEN_H_
 #define SCREEN_H_
 
-#include <types.h>
 #include "cmdline.h"
 #include <drivers/terminal.h>
+#include <stdbool.h>
 
 struct _SCREEN;
 

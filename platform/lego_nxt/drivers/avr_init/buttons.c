@@ -6,7 +6,6 @@
  * @author Anton Kozlov
  */
 
-#include <types.h>
 #include <drivers/nxt/buttons.h>
 
 static nxt_buttons_mask_t buttons_state = 0;

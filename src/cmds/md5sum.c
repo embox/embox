@@ -7,11 +7,12 @@
  */
 
 #include <embox/cmd.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <fs/file_operation.h>
 #include <lib/md5.h>
 #include <sys/stat.h>
+#include <stdint.h>
 
 EMBOX_CMD(exec);
 

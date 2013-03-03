@@ -33,7 +33,7 @@ these four paragraphs for those parts of this code that are retained.
 #define SOFTFLOAT_H_
 
 #include <hal/arch.h>
-#include <types.h>
+#include <stdint.h>
 
 /*----------------------------------------------------------------------------
 | Each of the following `typedef's defines the most convenient type that holds

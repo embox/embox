@@ -10,18 +10,18 @@
 #define NET_RPC_XDR_H_
 
 #include <stddef.h>
-#include <types.h>
+#include <stdint.h>
 
 /* Prototypes */
 struct xdr;
 
 /* Standard size of XDR unit is 4 bytes */
 #define BYTES_PER_XDR_UNIT 4
-typedef __u32 xdr_unit_t;
+typedef uint32_t xdr_unit_t;
 
 #define XDR_SUCCESS     1
 #define XDR_FAILURE     0
-#define XDR_LAST_UINT32 ((__u32)-1)
+#define XDR_LAST_UINT32 ((uint32_t)-1)
 
 enum xdr_op {
 	XDR_ENCODE,
@@ -31,7 +31,7 @@ enum xdr_op {
 
 union xdrrec_hdr {
 	struct {
-		__u32 len:31,
+		uint32_t len:31,
 			is_last:1;
 	} h;
 	xdr_unit_t unit;
@@ -98,18 +98,18 @@ extern void xdr_free(xdrproc_t proc, char *obj);
 /* XDR filters */
 extern int xdr_void(void);
 extern int xdr_int(struct xdr *xs, __s32 *pi);
-extern int xdr_u_int(struct xdr *xs, __u32 *pui);
+extern int xdr_u_int(struct xdr *xs, uint32_t *pui);
 extern int xdr_short(struct xdr *xs, __s16 *ps);
 extern int xdr_u_short(struct xdr *xs, __u16 *pus);
 extern int xdr_hyper(struct xdr *xs, __s64 *ph);
 extern int xdr_u_hyper(struct xdr *xs, __u64 *puh);
 extern int xdr_enum(struct xdr *xs, __s32 *pe);
 extern int xdr_bool(struct xdr *xs, __s32 *pb);
-extern int xdr_array(struct xdr *xs, char **parray, __u32 *psize, __u32 maxsize,
-		__u32 elem_size, xdrproc_t elem_proc);
-extern int xdr_bytes(struct xdr *xs, char **ppc, __u32 *psize, __u32 maxsize);
+extern int xdr_array(struct xdr *xs, char **parray, uint32_t *psize, uint32_t maxsize,
+		uint32_t elem_size, xdrproc_t elem_proc);
+extern int xdr_bytes(struct xdr *xs, char **ppc, uint32_t *psize, uint32_t maxsize);
 extern int xdr_opaque(struct xdr *xs, char *pc, size_t size);
-extern int xdr_string(struct xdr *xs, char **pstr, __u32 maxsize);
+extern int xdr_string(struct xdr *xs, char **pstr, uint32_t maxsize);
 extern int xdr_wrapstring(struct xdr *xs, char **pstr);
 extern int xdr_union(struct xdr *xs, __s32 *pdscm, void *pun,
 		const struct xdr_discrim *choices, xdrproc_t dfault);

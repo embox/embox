@@ -98,7 +98,7 @@ int xwnd_app_start(const char *app_name, char *arg) {
 		return -1;
 	}
 
-	new_task(app_desc->run, (void *)arg);
+	new_task(app_name, app_desc->run, (void *)arg);
 	return 0;
 }
 

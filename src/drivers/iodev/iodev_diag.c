@@ -14,11 +14,11 @@ static int iodev_diag_init(void) {
 	return 0;
 }
 
-static const struct iodev_ops iodev_diag_ops_struct = {
+const struct iodev_ops iodev_diag_ops_struct = {
 	.init = &iodev_diag_init,
 	.getc = &diag_getc,
 	.putc = &diag_putc,
 	.kbhit = &diag_kbhit
 };
 
-const struct iodev_ops *iodev_diag_ops = &iodev_diag_ops_struct;
+const struct iodev_ops *const iodev_diag_ops = &iodev_diag_ops_struct;

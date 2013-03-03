@@ -33,8 +33,6 @@
 
 #include <time.h>
 
-#include "types.h"
-
 #include <embox/unit.h>
 
 EMBOX_UNIT(unit_init, unit_fini);

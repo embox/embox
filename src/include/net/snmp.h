@@ -9,29 +9,29 @@
 #ifndef NET_SNMP_H_
 #define NET_SNMP_H_
 
-#include <types.h>
+#include <stdint.h>
 #include <util/dlist.h>
 #include <net/mib.h>
 
 struct snmp_desc {
-	__u8 version;
+	uint8_t version;
 	char *security;
-	__u32 id;
-	__u8 error;
-	__u8 error_index;
+	uint32_t id;
+	uint8_t error;
+	uint8_t error_index;
 	enum pdu_type pdu_type;
 	struct dlist_head varbind_list;
 };
 
 struct varbind {
 	struct dlist_head link;
-	__u8 oid_len;
+	uint8_t oid_len;
 	char *oid;
 	obj_data_t data;
 };
 
 /* Functions for manipulating with SNMP */
-extern __u32 snmp_build(struct snmp_desc *snmp_desc, const char *snmp_packet);
+extern uint32_t snmp_build(struct snmp_desc *snmp_desc, const char *snmp_packet);
 /* Reverse operation for snmp_op_build */
 extern int snmp_parse(struct snmp_desc *snmp_desc, const char *snmp_recv, char *userbuf, size_t bufsize);
 

@@ -5,7 +5,8 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
+#include <stddef.h>
 #include <asm/ptrace.h>
 #include <hal/test/traps_core.h>
 

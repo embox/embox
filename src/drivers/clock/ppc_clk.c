@@ -13,7 +13,7 @@
 #include <hal/system.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
-#include <types.h>
+#include <stdint.h>
 
 
 EMBOX_UNIT_INIT(ppc_clk_init);

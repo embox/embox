@@ -16,6 +16,7 @@
 #include <net/skbuff.h>
 #include <sys/socket.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 /**
  * Determine if the Ethernet address is a multicast.

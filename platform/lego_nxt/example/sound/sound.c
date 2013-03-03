@@ -5,7 +5,7 @@
  * @author Anton Bondarev
  */
 
-#include <types.h>
+#include <stdint.h>
 #include <embox/example.h>
 #include <drivers/sound.h>
 #include <kernel/irq.h>

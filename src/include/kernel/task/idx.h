@@ -14,9 +14,9 @@
 
 #define TASKS_RES_QUANTITY OPTION_MODULE_GET(embox__kernel__task__idx_table,NUMBER,task_res_quantity)
 
-#include <types.h>
 #include <assert.h>
 #include <stdarg.h>
+#include <sys/types.h>
 
 struct event;
 

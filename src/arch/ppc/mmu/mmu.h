@@ -9,7 +9,7 @@
 #ifndef PPC_MMU_H_
 #define PPC_MMU_H_
 
-#include <types.h>
+#include <stdint.h>
 
 #define __MMU_PGD_SHIFT         22
 #define __MMU_PMD_SHIFT         22

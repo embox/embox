@@ -8,7 +8,7 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <getopt.h>
+#include <unistd.h>
 #include <security/smac.h>
 #include <fs/flags.h>
 
