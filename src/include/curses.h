@@ -12,20 +12,15 @@
 #include <sys/cdefs.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 __BEGIN_DECLS
 
-#undef TRUE
-#define TRUE 1
+#define TRUE  true
+#define FALSE false
 
-#undef FALSE
-#define FALSE 0
-
-#undef	ERR
-#define ERR (-1)
-
-#undef	OK
-#define OK (0)
+#define OK   0
+#define ERR -1
 
 typedef int WINDOW;
 typedef unsigned long chtype;
@@ -34,34 +29,34 @@ extern int COLS;
 extern int LINES;
 extern WINDOW *curscr;
 
-extern int beep(void);
-extern int wrefresh(WINDOW *win);
-extern int endwin(void);
-extern int delwin(WINDOW *win);
-extern WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x);
-extern int keypad(WINDOW *win, bool bf);
-extern int doupdate(void);
-extern int move(int y, int x);
-extern int curs_set(int visibility);
-extern int wnoutrefresh(WINDOW *win);
-extern int raw(void);
-extern int nonl(void);
-extern int noecho(void);
-extern WINDOW *initscr(void);
-extern int wmove(WINDOW *win, int y, int x);
-extern int wattron(WINDOW *, int);
-extern int mvwaddnstr(WINDOW *, int, int, const char *, int);
-extern int waddch(WINDOW *, const chtype);
-extern int waddstr(WINDOW *, const char *);
-extern int wattroff(WINDOW *, int);
-extern int wgetch(WINDOW *win);
-extern int nodelay(WINDOW *win, bool bf);
-extern int waddnstr(WINDOW *, const char *, int);
-extern bool isendwin(void);
-extern int mvwaddstr(WINDOW *, int, int, const char *);
-extern int mvwaddch(WINDOW *, int, int, const chtype);
-extern int scrollok(WINDOW *, bool);
-extern int wscrl(WINDOW *, int);
+static inline int beep(void) { return 0; }
+static inline int wrefresh(WINDOW *win) { return 0; }
+static inline int endwin(void) { return 0; }
+static inline int delwin(WINDOW *win) { return 0; }
+static inline WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x) { return NULL; }
+static inline int keypad(WINDOW *win, bool bf) { return 0; }
+static inline int doupdate(void) { return 0; }
+static inline int move(int y, int x) { return 0; }
+static inline int curs_set(int visibility) { return 0; }
+static inline int wnoutrefresh(WINDOW *win) { return 0; }
+static inline int raw(void) { return 0; }
+static inline int nonl(void) { return 0; }
+static inline int noecho(void) { return 0; }
+static inline WINDOW *initscr(void) { return NULL; }
+static inline int wmove(WINDOW *win, int y, int x) { return 0; }
+static inline int wattron(WINDOW *win, int attrs) { return 0; }
+static inline int mvwaddnstr(WINDOW *win, int y, int x, const char *str, int n) { return 0; }
+static inline int waddch(WINDOW *win, const chtype ch) { return 0; }
+static inline int waddstr(WINDOW *win, const char *str) { return 0; }
+static inline int wattroff(WINDOW *win, int attrs) { return 0; }
+static inline int wgetch(WINDOW *win) { return 0; }
+static inline int nodelay(WINDOW *win, bool bf) { return 0; }
+static inline int waddnstr(WINDOW *win, const char *str, int n) { return 0; }
+static inline bool isendwin(void) { return TRUE; }
+static inline int mvwaddstr(WINDOW *win, int y, int x, const char *str) { return 0; }
+static inline int mvwaddch(WINDOW *win, int y, int x, const chtype ch) { return 0; }
+static inline int scrollok(WINDOW *win, bool bf) { return 0; }
+static inline int wscrl(WINDOW *win, int n) { return 0; }
 
 #define KEY_DOWN	0402		/* down-arrow key */
 #define KEY_UP		0403		/* up-arrow key */
@@ -153,32 +148,11 @@ extern int wscrl(WINDOW *, int);
 #define KEY_MOUSE	0631		/* Mouse event has occurred */
 #define KEY_RESIZE	0632		/* Terminal resize event */
 #define KEY_EVENT	0633		/* We were interrupted by an event */
-
 #define KEY_MAX		0777		/* Maximum key value is 0633 */
 
-
-#define NCURSES_ATTR_SHIFT       8
-#define NCURSES_BITS(mask,shift) ((mask) << ((shift) + NCURSES_ATTR_SHIFT))
-
-#define A_NORMAL	(1UL - 1UL)
-#define A_ATTRIBUTES	NCURSES_BITS(~(1UL - 1UL),0)
-#define A_CHARTEXT	(NCURSES_BITS(1UL,0) - 1UL)
-#define A_COLOR		NCURSES_BITS(((1UL) << 8) - 1UL,0)
-#define A_STANDOUT	NCURSES_BITS(1UL,8)
-#define A_UNDERLINE	NCURSES_BITS(1UL,9)
-#define A_REVERSE	NCURSES_BITS(1UL,10)
-#define A_BLINK		NCURSES_BITS(1UL,11)
-#define A_DIM		NCURSES_BITS(1UL,12)
-#define A_BOLD		NCURSES_BITS(1UL,13)
-#define A_ALTCHARSET	NCURSES_BITS(1UL,14)
-#define A_INVIS		NCURSES_BITS(1UL,15)
-#define A_PROTECT	NCURSES_BITS(1UL,16)
-#define A_HORIZONTAL	NCURSES_BITS(1UL,17)
-#define A_LEFT		NCURSES_BITS(1UL,18)
-#define A_LOW		NCURSES_BITS(1UL,19)
-#define A_RIGHT		NCURSES_BITS(1UL,20)
-#define A_TOP		NCURSES_BITS(1UL,21)
-#define A_VERTICAL	NCURSES_BITS(1UL,22)
+#define A_NORMAL	0x0000
+#define A_REVERSE   0x1000
+#define A_BOLD      0x2000
 
 __END_DECLS
 
