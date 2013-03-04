@@ -8,6 +8,8 @@ abstract module Display {
 module GraphicMode extends Display {
 	option string fb_name="fb0"
 	option number vesa_mode=3
+	option number fb_init=1
+
 	source "graphic_init.c"
 
 	depends embox.driver.video.fb

@@ -432,8 +432,4 @@ static int cirrus_init(struct pci_slot_dev *pci_dev) {
 	return 0;
 }
 
-
-
-
-
 PCI_DRIVER("cl_gd5446", cirrus_init, PCI_VENDOR_ID_CIRRUS, PCI_DEV_ID_CIRRUS_5446);

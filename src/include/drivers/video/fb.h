@@ -44,7 +44,6 @@ struct fb_var_screeninfo {
 	uint32_t vmode;
 };
 
-
 struct fb_videomode {
 	const char *name;	/* optional */
 	uint32_t refresh;		/* optional */
