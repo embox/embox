@@ -11,21 +11,6 @@
 #ifndef TERMIOS_H_
 #define TERMIOS_H_
 
-typedef unsigned char   cc_t;
-typedef unsigned int    speed_t;
-typedef unsigned int    tcflag_t;
-
-#define NCCS      8 /* Size of the array c_cc for control characters.*/
-
-typedef struct termios {
-	tcflag_t c_iflag; /* input mode flags */
-	tcflag_t c_oflag; /* output mode flags */
-	tcflag_t c_cflag; /* control mode flags */
-	tcflag_t c_lflag; /* local mode flags */
-	cc_t c_line;      /* line discipline */
-	cc_t c_cc[NCCS];  /* control characters */
-} termios_t;
-
 /* Values for termios c_iflag bit map.  POSIX Table 7-2. */
 #define BRKINT          0x0001  /* signal interrupt on break */
 #define ICRNL           0x0002  /* map CR to NL on input */
@@ -67,17 +52,19 @@ typedef struct termios {
 #define TOSTOP          0x0100  /* send SIGTTOU (job control, not implemented*/
 
 /* Indices into c_cc array.  Default values in parentheses. POSIX Table 7-5. */
-#define VEOF                 0  /* cc_c[VEOF] = EOF char (^D) */
-#define VEOL                 1  /* cc_c[VEOL] = EOL char (undef) */
+#define VEOF                 0  /* cc_c[VEOF]   = EOF char (^D) */
+#define VEOL                 1  /* cc_c[VEOL]   = EOL char (undef) */
 #define VERASE               2  /* cc_c[VERASE] = ERASE char (^H) */
-#define VINTR                3  /* cc_c[VINTR] = INTR char (DEL) */
-#define VKILL                4  /* cc_c[VKILL] = KILL char (^U) */
-#define VMIN                 5  /* cc_c[VMIN] = MIN value for timer */
-#define VQUIT                6  /* cc_c[VQUIT] = QUIT char (^\) */
-#define VTIME                7  /* cc_c[VTIME] = TIME value for timer */
-#define VSUSP                8  /* cc_c[VSUSP] = SUSP (^Z, ignored) */
+#define VINTR                3  /* cc_c[VINTR]  = INTR char (DEL) */
+#define VKILL                4  /* cc_c[VKILL]  = KILL char (^U) */
+#define VMIN                 5  /* cc_c[VMIN]   = MIN value for timer */
+#define VQUIT                6  /* cc_c[VQUIT]  = QUIT char (^\) */
+#define VTIME                7  /* cc_c[VTIME]  = TIME value for timer */
+#define VSUSP                8  /* cc_c[VSUSP]  = SUSP (^Z, ignored) */
 #define VSTART               9  /* cc_c[VSTART] = START char (^S) */
-#define VSTOP               10  /* cc_c[VSTOP] = STOP char (^Q) */
+#define VSTOP               10  /* cc_c[VSTOP]  = STOP char (^Q) */
+
+#define NCCS                11  /* Size of the array of control characters.*/
 
 /* Values for the baud rate settings.  POSIX Table 7-6. */
 #define B0              0x0000  /* hang up the line */
@@ -113,22 +100,34 @@ typedef struct termios {
 #define TCIOFF             3    /* transmit a STOP character on the line */
 #define TCION              4    /* transmit a START character on the line */
 
+typedef unsigned char   cc_t;
+typedef unsigned int    speed_t;
+typedef unsigned int    tcflag_t;
 
-extern int tcgetattr(int fd, struct termios *termios_p);
+struct termios {
+	tcflag_t c_iflag; /* input mode flags */
+	tcflag_t c_oflag; /* output mode flags */
+	tcflag_t c_cflag; /* control mode flags */
+	tcflag_t c_lflag; /* local mode flags */
+	cc_t c_line;      /* line discipline */
+	cc_t c_cc[NCCS];  /* control characters */
+};
 
-extern int tcsetattr(int fd, int optional_actions, struct termios *termios_p);
+// TODO part of tty_ioctl, not termios -- Eldar
+struct winsize {
+	unsigned short ws_row;
+	unsigned short ws_col;
+	unsigned short ws_xpixel;   /* unused */
+	unsigned short ws_ypixel;   /* unused */
+};
 
-extern speed_t cfgetispeed(const struct termios *termios_p);
+extern int tcgetattr(int fd, struct termios *termios);
+extern int tcsetattr(int fd, int optional_actions, struct termios *termios);
 
-extern speed_t cfgetospeed(const struct termios *termios_p);
+extern speed_t cfgetispeed(const struct termios *termios);
+extern speed_t cfgetospeed(const struct termios *termios);
 
-extern int cfsetispeed(struct termios *termios_p, speed_t speed);
-
-extern int cfsetospeed(struct termios *termios_p, speed_t speed);
-
-extern int cfsetspeed(struct termios *termios_p, speed_t speed);
-
-
-
+extern int cfsetispeed(struct termios *termios, speed_t speed);
+extern int cfsetospeed(struct termios *termios, speed_t speed);
 
 #endif /* TERMIOS_H_ */
