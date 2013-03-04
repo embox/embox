@@ -20,10 +20,6 @@
 #include <drivers/pci/pci_id.h>
 
 #include <drivers/video/vga.h>
-//#include <drivers/video/vesa.h>
-//#include <drivers/video/vesa_mode.h>
-
-#include <drivers/video/display.h>
 
 #include <drivers/video/fb.h>
 
