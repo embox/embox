@@ -7,6 +7,7 @@
  * @author Nikolay Korotky
  */
 
+#include <string.h> /* for memcpy */
 #include <asm/multiboot.h>
 #include <kernel/printk.h>
 #include <kernel/panic.h>
@@ -14,17 +15,21 @@
 /* Check if the bit BIT in FLAGS is set. */
 #define CHECK_FLAG(flags, bit) ((flags) & (1 << (bit)))
 
-static struct multiboot_info *multiboot_info;
+static struct multiboot_info multiboot_info;
 
 void multiboot_save_info(unsigned long magic, struct multiboot_info *mbi) {
+	void *dst = &multiboot_info;
+	void *src = mbi;
+	size_t size = sizeof(struct multiboot_info);
+
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
 		panic("Invalid magic number: 0x%x\n", (unsigned) magic);
 		return;
 	}
 
-	multiboot_info = mbi;
+	memcpy(dst, src, size);
 
-	if(multiboot_info->flags & MULTIBOOT_INFO_VIDEO_INFO) {
+	if(multiboot_info.flags & MULTIBOOT_INFO_VIDEO_INFO) {
 		/* setup video mode */
 	}
 }
