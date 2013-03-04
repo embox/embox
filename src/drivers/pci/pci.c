@@ -130,11 +130,17 @@ static int pci_scan_start(void) {
 }
 
 /* load every available pci driver */
-static void pci_load(void) {
+static int  pci_load(void) {
 	struct pci_slot_dev *dev;
+	int ret;
+
 	pci_foreach_dev(dev) {
-		pci_driver_load(dev);
+		if ((ret = pci_driver_load(dev))) {
+			return ret;
+		}
 	}
+
+	return 0;
 }
 
 static int pci_init(void) {
@@ -145,7 +151,6 @@ static int pci_init(void) {
 	pci_scan_start();
 
 	/* load all available pci drivers */
-	pci_load();
+	return pci_load();
 
-	return 0;
 }

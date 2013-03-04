@@ -39,7 +39,9 @@ int pci_driver_load(struct pci_slot_dev *dev) {
 	 * This introduced since some driver can be inited before pci_driver_load, then next lines
 	 * just ensure that other dependecies of driver are satisfied */
 	mod_foreach_requires(dep, drv->mod) {
-		mod_enable_rec_safe(dep, true);
+		if ((ret = mod_enable_rec_safe(dep, true))) {
+			return ret;
+		}
 	}
 
 	printk("\tpci: loading %s.%s: ", drv->mod->package->name, drv->mod->name);
