@@ -11,6 +11,7 @@
  * @author Nikolay Korotky
  */
 
+#include <errno.h>
 #include <util/slist.h>
 #include <util/array.h>
 #include <mem/misc/pool.h>
@@ -130,12 +131,16 @@ static int pci_scan_start(void) {
 }
 
 /* load every available pci driver */
-static int  pci_load(void) {
+static int pci_load(void) {
 	struct pci_slot_dev *dev;
 	int ret;
 
 	pci_foreach_dev(dev) {
 		if ((ret = pci_driver_load(dev))) {
+			if (ret == -ENOENT) {
+				continue;
+			}
+
 			return ret;
 		}
 	}

@@ -5,6 +5,7 @@
  * @author Anton Bondarev
  */
 
+#include <errno.h>
 #include <drivers/pci/pci.h>
 #include <framework/mod/api.h>
 #include <kernel/printk.h>
@@ -32,7 +33,7 @@ int pci_driver_load(struct pci_slot_dev *dev) {
 	drv = pci_driver_find(dev->vendor, dev->device);
 
 	if (NULL == drv) {
-		return -1;
+		return -ENOENT;
 	}
 
 	/* Enable mod (and dependencies) without cyclic detection error generating.

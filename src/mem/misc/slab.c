@@ -26,7 +26,7 @@
 
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(heap_init);
+EMBOX_UNIT_INIT(slab_init);
 
 /**
  * slab descriptor
@@ -52,8 +52,8 @@ typedef struct page_info {
 
 #define HEAP_SIZE OPTION_MODULE_GET(embox__mem__slab,NUMBER,heap_size)
 
-static char *HEAP_START_PTR;
-static char *HEAP_END_PTR;
+static char *heap_start_ptr;
+static char *heap_end_ptr;
 
 static page_info_t pages[HEAP_SIZE / PAGE_SIZE()];
 
@@ -79,7 +79,7 @@ void print_slab_info(cache_t *cachep, slab_t *slabp) {
 
 /* return information about page which an object belongs to */
 static page_info_t* ptr_to_page(void *objp) {
-	unsigned int index = ((unsigned int) objp - (unsigned int) HEAP_START_PTR)
+	unsigned int index = ((unsigned int) objp - (unsigned int) heap_start_ptr)
 			/ PAGE_SIZE();
 	return &(pages[index]);
 }
@@ -378,15 +378,17 @@ int cache_shrink(cache_t *cachep) {
 	return ret;
 }
 
-static int heap_init(void) {
+static int slab_init(void) {
 	extern struct page_allocator *__heap_pgallocator;
 	int page_cnt = (HEAP_SIZE / PAGE_SIZE() - 2);
 
-	HEAP_START_PTR = page_alloc(__heap_pgallocator, page_cnt);
-	if(NULL == HEAP_START_PTR) {
+	heap_start_ptr = page_alloc(__heap_pgallocator, page_cnt);
+
+	if (NULL == heap_start_ptr) {
 		return -1;
 	}
-	HEAP_END_PTR = HEAP_START_PTR + page_cnt * PAGE_SIZE();
+
+	heap_end_ptr = heap_start_ptr + page_cnt * PAGE_SIZE();
 
 	return 0;
 }
