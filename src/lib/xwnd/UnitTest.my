@@ -1,9 +1,0 @@
-package embox.xwnd
-
-module unit_test {
-	@IncludePath("$(SRC_DIR)/include/drivers")
-	source "unit_test.c"
-
-	depends embox.lib.LibC
-}
-
